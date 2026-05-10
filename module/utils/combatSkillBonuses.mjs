@@ -126,6 +126,7 @@ export async function getNonWeaponAbility(actor, ability) {
   const damageTotal = damageRoll ? Math.floor(damageRoll.total) : 0;
   const penetration = system.penetration;
   const halfDamage = system.roll?.halfDamage || false;
+  const penCap = system.roll?.penCap || false;
   const validRolls = [];
 
   if (attributeTestRoll instanceof Roll && attributeTestRoll._evaluated) {
@@ -184,6 +185,7 @@ export async function getNonWeaponAbility(actor, ability) {
           damage: damageTotal,
           penetration: penetration,
           halfDamage: halfDamage,
+          penCap: penCap,
         },
       },
     },
@@ -1285,6 +1287,7 @@ export function evaluateDmgVsArmor({
   tempHp,
   halfDamage = false,
   shield = 0,
+  penCap = false,
 }) {
   const { expression } = damageProfile;
   const armorTable = armor ?? {};
@@ -1300,7 +1303,11 @@ export function evaluateDmgVsArmor({
 
   /* 3. Penetration Floor */
   const effectivePenetration = Math.min(penetration ?? 0, damage);
-  baseDamage = Math.max(baseDamage, effectivePenetration);
+  if (penCap) {
+    baseDamage = Math.min(baseDamage, effectivePenetration);
+  } else {
+    baseDamage = Math.max(baseDamage, effectivePenetration);
+  }
 
   /* 4. Specialized Armor Reduction */
   let specializedReduction = 0;

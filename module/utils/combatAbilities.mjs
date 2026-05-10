@@ -211,6 +211,7 @@ export async function combatAbilities() {
         ability.system.critChance || 0,
         ability.system.critFail || 0,
         ability.system.roll.halfDamage || false,
+        ability.system.roll.penCap || false,
       );
     } else if (isDefenseRoll || ability.system.weaponAbility) {
       const mode = isDefenseRoll ? "defense" : "attack";
@@ -515,6 +516,7 @@ export async function combatAbilities() {
 
       const abilityDamage = ability.system.roll.diceBonusFormula || 0;
       const halfDamage = ability.system.roll.halfDamage;
+      const penCap = ability.system.roll.penCap;
       const abilityAttack = ability.system.attack || 0;
       const abilityBreakthrough = ability.system.breakthrough || 0;
       const abilityPenetration = ability.system.penetration || 0;
@@ -539,6 +541,7 @@ export async function combatAbilities() {
         abilityCritChance,
         abilityCritFail,
         halfDamage,
+        penCap,
         intent.longReachPenalty,
       );
     }
@@ -591,6 +594,7 @@ export async function combatAbilities() {
       } else {
         const abilityDamage = ability.system.roll.diceBonusFormula || 0;
         const halfDamage = ability.system.roll.halfDamage;
+        const penCap = ability.system.roll.penCap;
         const abilityAttack = ability.system.attack || 0;
         const abilityBreakthrough = ability.system.breakthrough || 0;
         const abilityPenetration = ability.system.penetration || 0;
@@ -615,6 +619,7 @@ export async function combatAbilities() {
           abilityCritChance,
           abilityCritFail,
           halfDamage,
+          penCap,
           intent.longReachPenalty,
         );
       }
@@ -733,6 +738,7 @@ export async function combatAbilities() {
     criticalSuccessThreshold,
     criticalFailureThreshold,
     halfDamage = 0,
+    penCap = false,
     concatRollAndDescription,
     mechanicalEffects,
     damageProfile = [],
@@ -856,16 +862,18 @@ ${damageLine}
           type: "attack",
           damageProfile,
           effects: mechanicalEffects,
-          normal: { damage: damageTotal, penetration, halfDamage },
+          normal: { damage: damageTotal, penetration, halfDamage, penCap },
           critical: {
             damage: critDamageTotal,
             penetration: critBonusPenetration,
             halfDamage,
+            penCap,
           },
           breakthrough: {
             damage: breakthroughRollResult,
             penetration,
             halfDamage,
+            penCap,
           },
         },
       },
@@ -966,12 +974,18 @@ ${damageLine}
     abilityCritChance,
     abilityCritFail,
     halfDamage,
+    penCap,
     longReachPenalty = 0,
   ) {
     let totalHalfDamage = Boolean(halfDamage);
     for (const mod of selectedModifiers) {
       if (mod.system?.roll?.halfDamage) {
         totalHalfDamage = true;
+      }
+    }
+    for (const mod of selectedModifiers) {
+      if (mod.system?.roll?.penCap) {
+        penCap = true;
       }
     }
     const weapon = weaponContext?.weapon ?? null;
@@ -1268,6 +1282,7 @@ Margin of Success: ${attributeRoll.total}
       mechanicalEffects,
       damageProfile,
       halfDamage: totalHalfDamage,
+      penCap,
       attributeTestHTML,
     });
     // ─── AMMO DEDUCTION ───

@@ -112,10 +112,16 @@ export async function universalAttackLogic({
     let customCritChance = 0;
     let concatDescription = "";
     let halfDamage = false;
+    let penCap = false;
 
     for (const mod of selectedModifiers) {
       if (mod.system?.roll?.halfDamage) {
         halfDamage = true;
+      }
+    }
+    for (const mod of selectedModifiers) {
+      if (mod.system?.roll?.penCap) {
+        penCap = true;
       }
     }
     for (const mod of selectedModifiers) {
@@ -223,7 +229,8 @@ export async function universalAttackLogic({
       typeof flavorLabel === "function" ? flavorLabel(weapon) : flavorLabel;
 
     const resolvedContext =
-      preResolvedContext ?? game.redsteel.resolveWeaponContext(actor, null, weapon);
+      preResolvedContext ??
+      game.redsteel.resolveWeaponContext(actor, null, weapon);
 
     if (!resolvedContext) return;
 
@@ -428,17 +435,20 @@ ${damageLine}
             damage: damageTotal,
             penetration: penetration,
             halfDamage: halfDamage,
+            penCap: penCap,
           },
 
           critical: {
             damage: critDamageTotal,
             penetration: critBonusPenetration,
             halfDamage: halfDamage,
+            penCap: penCap,
           },
           breakthrough: {
             damage: breakthroughRollResult,
             penetration: penetration,
             halfDamage: halfDamage,
+            penCap: penCap,
           },
         },
       },

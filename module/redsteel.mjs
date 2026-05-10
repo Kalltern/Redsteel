@@ -765,6 +765,7 @@ async function applyDamageAsGM(data) {
       hp: currentHp,
       tempHp: currentTemporaryHp,
       halfDamage: attack[mode].halfDamage ?? false,
+      penCap: attack[mode].penCap ?? false,
     });
     const author =
       message.user ??
@@ -842,6 +843,7 @@ function openDamageSelectionDialog(message, targets) {
           hp: t.actor.system.stats.health.value,
           tempHp: t.actor.system.stats.temporaryHealth.value,
           halfDamage: attack[mode].halfDamage ?? false,
+          penCap: attack[mode].penCap ?? false,
         });
 
         const effectPreview = Object.entries(effects)

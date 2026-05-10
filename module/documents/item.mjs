@@ -193,26 +193,36 @@ export class RedsteelItem extends Item {
 
     // Semantic flags
     this.system.roll.halfDamage = parsed.half;
+    this.system.roll.penCap = parsed.penCap;
   }
 
   _parseAbilityDiceBonus(input) {
     if (!input) {
-      return { formula: "", half: false };
+      return { formula: "", half: false, penCap: false };
     }
 
     let half = false;
+    let penCap = false;
     let formula = input;
-    if (typeof formula === "string" && formula.includes("@Half")) {
-      half = true;
-      formula = formula.replace("@Half", "");
+
+    if (typeof formula === "string") {
+      if (formula.includes("@Half")) {
+        half = true;
+        formula = formula.replace("@Half", "");
+      }
+
+      if (formula.includes("@penCap")) {
+        penCap = true;
+        formula = formula.replace("@penCap", "");
+      }
     }
 
     return {
       formula: formula.trim(),
       half,
+      penCap,
     };
   }
-
   /**
    * Prepare a data object which defines the data schema used by dice roll commands against this Item
    * @override

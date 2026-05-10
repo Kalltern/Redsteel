@@ -388,6 +388,15 @@ export class RedsteelActor extends Actor {
               attributeScore[1].total * 3 +
               combatSkill.bonus +
               globalMod;
+          } else if (
+            archery.value > 0 &&
+            rangedDefenseSet[archery.value] > combatset1[melee]
+          ) {
+            combat.finesseRating =
+              rangedDefenseSet[archery.value] +
+              attributeScore[1].total * 3 +
+              combatSkill.bonus +
+              globalMod;
           } else {
             combat.finesseRating =
               combatset1[melee] +
@@ -401,6 +410,15 @@ export class RedsteelActor extends Actor {
           if (ranger > 0) {
             combatSkill.rating =
               rangerGroup[ranger] +
+              attributeScore[combatSkill.id].total * 3 +
+              combatSkill.bonus +
+              globalMod;
+          } else if (
+            archery.value > 0 &&
+            rangedDefenseSet[archery.value] > combatset1[melee]
+          ) {
+            combatSkill.rating =
+              rangedDefenseSet[archery.value] +
               attributeScore[combatSkill.id].total * 3 +
               combatSkill.bonus +
               globalMod;
