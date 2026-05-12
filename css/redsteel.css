@@ -1957,3 +1957,21 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 .crit-fail-accept:hover {
   background: #e74c3c; /* brighter on hover */
 }
+
+/* Keep Foundry's chat tab aligned with the other sidebar tabs. */
+#sidebar .sidebar-tab.chat-sidebar,
+#sidebar .sidebar-tab.chat-sidebar #chat-log,
+#sidebar .sidebar-tab.chat-sidebar #chat-form {
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+}
+
+#sidebar .sidebar-tab.chat-sidebar ol#chat-log,
+#sidebar .sidebar-tab.chat-sidebar ol.chat-log,
+#sidebar ol#chat-log,
+#sidebar ol.chat-log {
+  padding: 0 !important;
+  padding-left: 0 !important;
+  padding-inline-start: 0 !important;
+}
