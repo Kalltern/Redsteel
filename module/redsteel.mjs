@@ -146,16 +146,30 @@ Hooks.once("init", function () {
   CONFIG.ActiveEffect.legacyTransferral = false;
 
   // Register sheet application classes
-  Actors.unregisterSheet("core", ActorSheet);
-  Actors.registerSheet("redsteel", RedsteelActorSheet, {
-    makeDefault: true,
-    label: "REDSTEEL.SheetLabels.Actor",
-  });
-  Items.unregisterSheet("core", ItemSheet);
-  Items.registerSheet("redsteel", RedsteelItemSheet, {
-    makeDefault: true,
-    label: "REDSTEEL.SheetLabels.Item",
-  });
+  foundry.documents.collections.Actors.unregisterSheet(
+    "core",
+    foundry.appv1.sheets.ActorSheet,
+  );
+  foundry.documents.collections.Actors.registerSheet(
+    "redsteel",
+    RedsteelActorSheet,
+    {
+      makeDefault: true,
+      label: "REDSTEEL.SheetLabels.Actor",
+    },
+  );
+  foundry.documents.collections.Items.unregisterSheet(
+    "core",
+    foundry.appv1.sheets.ItemSheet,
+  );
+  foundry.documents.collections.Items.registerSheet(
+    "redsteel",
+    RedsteelItemSheet,
+    {
+      makeDefault: true,
+      label: "REDSTEEL.SheetLabels.Item",
+    },
+  );
 
   game.keybindings.register("redsteel-system", "helpScreen", {
     name: "Show Help Screen",
@@ -329,7 +343,10 @@ Handlebars.registerHelper("healthPercentage", function (current, max) {
 /* -------------------------------------------- */
 
 Hooks.once("ready", () => {
-  ui.controls.initialize();
+  ui.controls.render({
+    controls: ui.controls.controls,
+    tool: ui.controls.tool.name,
+  });
   RedsteelActiveEffect.registerStatusCounterIntegration();
 });
 
@@ -984,7 +1001,7 @@ async function applyEffectToActor(actor, effectId, stacks = 1) {
   return await game.redsteel.applyEffect(actor, effectId, { stacks });
 }
 
-Hooks.on("renderChatMessage", (message, html) => {
+Hooks.on("renderChatMessageHTML", (message, html) => {
   // Only apply to your attack messages
   const attackFlag = message.flags?.attack;
   if (!attackFlag?.damageProfile) return;
@@ -1000,19 +1017,18 @@ Hooks.on("renderChatMessage", (message, html) => {
   footer.classList.add("redsteel-damage-footer");
   footer.innerHTML = `${formatted}`;
 
-  // IMPORTANT: html[0] is <li class="chat-message">
-  const content = html[0].querySelector(".message-content");
-  content.after(footer);
+  const content = html.querySelector(".message-content");
+  if (content) content.after(footer);
 });
 
-Hooks.on("renderChatMessage", (message, html, data) => {
+Hooks.on("renderChatMessageHTML", (message, html, data) => {
   function updateButtonContainerLayout(container) {
-    const buttonCount = container.find("button, a.button").length;
+    const buttonCount = container.querySelectorAll("button, a.button").length;
 
     if (buttonCount <= 1) {
-      container.addClass("single");
+      container.classList.add("single");
     } else {
-      container.removeClass("single");
+      container.classList.remove("single");
     }
   }
 
@@ -1022,21 +1038,21 @@ Hooks.on("renderChatMessage", (message, html, data) => {
     const hasTestRoll = message.rolls?.some((r) => r.formula.includes("1d100"));
 
     if (hasTestRoll) {
-      const rerollButton = $('<button class="reroll-button">Re-Roll</button>');
+      const rerollButton = document.createElement("button");
+      rerollButton.className = "reroll-button";
+      rerollButton.type = "button";
+      rerollButton.textContent = "Re-Roll";
 
-      // Check if a button container already exists, if not, create one
-      let buttonContainer = html.find(".button-container");
-
-      if (buttonContainer.length === 0) {
-        buttonContainer = $('<div class="button-container"></div>');
-        html.find(".message-content").append(buttonContainer);
+      let buttonContainer = html.querySelector(".button-container");
+      if (!buttonContainer) {
+        buttonContainer = document.createElement("div");
+        buttonContainer.className = "button-container";
+        html.querySelector(".message-content")?.appendChild(buttonContainer);
       }
 
-      // Append the reroll button to the container
-      buttonContainer.append(rerollButton);
+      buttonContainer.appendChild(rerollButton);
       updateButtonContainerLayout(buttonContainer);
-      // Add click event listener for the reroll button
-      rerollButton.on("click", async (event) => {
+      rerollButton.addEventListener("click", async (event) => {
         event.preventDefault();
         console.log("Re-roll button clicked");
 
@@ -1078,26 +1094,23 @@ Hooks.on("renderChatMessage", (message, html, data) => {
 
     // Only create Apply Damage if this is an attack message
     if (message.flags?.attack) {
-      // Reuse or create the button container
-      let buttonContainer = html.find(".button-container");
+      let buttonContainer = html.querySelector(".button-container");
 
-      if (buttonContainer.length === 0) {
-        buttonContainer = $('<div class="button-container"></div>');
-        html.find(".message-content").append(buttonContainer);
+      if (!buttonContainer) {
+        buttonContainer = document.createElement("div");
+        buttonContainer.className = "button-container";
+        html.querySelector(".message-content")?.appendChild(buttonContainer);
       }
 
-      const applyDamageButton = $(`
-      <button
-        type="button"
-        class="redsteel-apply-damage"
-        data-message-id="${message.id}">
-        Apply Damage
-      </button>
-    `);
+      const applyDamageButton = document.createElement("button");
+      applyDamageButton.type = "button";
+      applyDamageButton.className = "redsteel-apply-damage";
+      applyDamageButton.dataset.messageId = message.id;
+      applyDamageButton.textContent = "Apply Damage";
 
-      buttonContainer.append(applyDamageButton);
+      buttonContainer.appendChild(applyDamageButton);
       updateButtonContainerLayout(buttonContainer);
-      applyDamageButton.on("click", async () => {
+      applyDamageButton.addEventListener("click", async () => {
         console.log("Apply Damage clicked", message);
         await handleApplyDamage(message.id);
       });
@@ -1107,26 +1120,24 @@ Hooks.on("renderChatMessage", (message, html, data) => {
       const effects = message.flags.effects;
 
       if (Object.keys(effects).length > 0) {
-        let buttonContainer = html.find(".button-container");
+        let buttonContainer = html.querySelector(".button-container");
 
-        if (buttonContainer.length === 0) {
-          buttonContainer = $('<div class="button-container"></div>');
-          html.find(".message-content").append(buttonContainer);
+        if (!buttonContainer) {
+          buttonContainer = document.createElement("div");
+          buttonContainer.className = "button-container";
+          html.querySelector(".message-content")?.appendChild(buttonContainer);
         }
 
-        const applyEffectsButton = $(`
-      <button
-        type="button"
-        class="redsteel-apply-effects"
-        data-message-id="${message.id}">
-        Apply Effects
-      </button>
-    `);
+        const applyEffectsButton = document.createElement("button");
+        applyEffectsButton.type = "button";
+        applyEffectsButton.className = "redsteel-apply-effects";
+        applyEffectsButton.dataset.messageId = message.id;
+        applyEffectsButton.textContent = "Apply Effects";
 
-        buttonContainer.append(applyEffectsButton);
+        buttonContainer.appendChild(applyEffectsButton);
         updateButtonContainerLayout(buttonContainer);
 
-        applyEffectsButton.on("click", async () => {
+        applyEffectsButton.addEventListener("click", async () => {
           await handleApplyEffects(message.id);
         });
       }
@@ -1284,10 +1295,10 @@ async function applyEffectsAsGM(data) {
   }
 }
 
-Hooks.on("renderChatMessage", (message, html) => {
+Hooks.on("renderChatMessageHTML", (message, html) => {
   if (!message.flags?.attack) return;
 
-  html.find(".dice-formula").each((_, el) => {
+  html.querySelectorAll(".dice-formula").forEach((el) => {
     let formula = el.textContent;
 
     // Remove + 0 or - 0
@@ -1638,43 +1649,49 @@ Hooks.once("ready", async () => {
   console.log("Stun → Stagger migration complete");
 });
 // Magic crit fails evaluation
-Hooks.on("renderChatMessage", (message, html) => {
-  html.find(".crit-fail-accept").click(async (event) => {
-    const button = event.currentTarget;
+Hooks.on("renderChatMessageHTML", (message, html) => {
+  html.querySelectorAll(".crit-fail-accept").forEach((button) => {
+    button.addEventListener("click", async (event) => {
+      const target = event.currentTarget;
+      if (!(target instanceof HTMLElement)) return;
 
-    const msg = game.messages.get(message.id);
-    const data = msg.flags.redsteel;
+      const msg = game.messages.get(message.id);
+      const data = msg.flags.redsteel;
 
-    if (!data || data.type !== "critFailPrompt") return;
+      if (!data || data.type !== "critFailPrompt") return;
 
-    const actor = game.actors.get(data.actorId);
-    const spellType = data.spellType;
-    const spellRank = data.spellRank;
+      const actor = game.actors.get(data.actorId);
+      const spellType = data.spellType;
+      const spellRank = data.spellRank;
 
-    // --- EXISTING LOGIC ---
-    const table = game.tables.find(
-      (t) => t.getFlag("redsteel", "critTable") === spellType,
-    );
+      // --- EXISTING LOGIC ---
+      const table = game.tables.find(
+        (t) => t.getFlag("redsteel", "critTable") === spellType,
+      );
 
-    if (!table) return;
+      if (!table) return;
 
-    const rankModifier = {
-      wild: -10,
-      apprentice: -2,
-      expert: 2,
-      master: 4,
-      grandmaster: 5,
-    };
+      const rankModifier = {
+        wild: -10,
+        apprentice: -2,
+        expert: 2,
+        master: 4,
+        grandmaster: 5,
+      };
 
-    const modifier = rankModifier[spellRank] ?? 0;
-    const formula = `1d20 + ${modifier}`;
-    const roll = await new Roll(formula).evaluate();
+      const modifier = rankModifier[spellRank] ?? 0;
+      const formula = `1d20 + ${modifier}`;
+      const roll = await new Roll(formula).evaluate();
 
-    await table.draw({ roll });
+      await table.draw({ roll });
 
-    // Disable button after use
-    button.disabled = true;
-    button.innerText = "Resolved";
+      // Disable button after use
+      target.dataset.disabled = "true";
+      if (target instanceof HTMLButtonElement) {
+        target.disabled = true;
+      }
+      target.innerText = "Resolved";
+    });
   });
 });
 

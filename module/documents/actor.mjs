@@ -14,6 +14,9 @@ export class RedsteelActor extends Actor {
 
   /** @override */
   prepareBaseData() {
+    // Ensure core Actor base-data initialization still runs.
+    super.prepareBaseData();
+
     // Data modifications in this step occur before processing embedded
     // documents or derived data.
     const system = this.system;

@@ -249,7 +249,7 @@ export class RedsteelActiveEffect extends ActiveEffect {
 
       changes.push({
         key: "system.secondaryAttributes.ini.bonus",
-        mode: CONST.ACTIVE_EFFECT_MODES.ADD,
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
         value: -penalty,
       });
     }

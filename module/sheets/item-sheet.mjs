@@ -58,7 +58,8 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
       template: "systems/redsteel/templates/item/attribute-parts/gear.hbs",
     },
     attributesAmmunition: {
-      template: "systems/redsteel/templates/item/attribute-parts/ammunition.hbs",
+      template:
+        "systems/redsteel/templates/item/attribute-parts/ammunition.hbs",
     },
     attributesItem: {
       template: "systems/redsteel/templates/item/attribute-parts/item.hbs",
@@ -67,7 +68,8 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
       template: "systems/redsteel/templates/item/attribute-parts/race.hbs",
     },
     attributesConsumable: {
-      template: "systems/redsteel/templates/item/attribute-parts/consumable.hbs",
+      template:
+        "systems/redsteel/templates/item/attribute-parts/consumable.hbs",
     },
     attributesWeapon: {
       template: "systems/redsteel/templates/item/attribute-parts/weapon.hbs",
@@ -101,7 +103,7 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
       case "gear":
         options.parts.push("attributesGear", "effects");
         break;
-      case "ammuniton":
+      case "ammunition":
         options.parts.push("attributesAmmunition", "effects");
         break;
       case "race":

@@ -93,9 +93,9 @@ table tr td:nth-child(3) {
   cursor: pointer;
 }
 
-.prosemirror,
-#prosemirror-dropdown,
-prose-mirror {
+.redsteel .prosemirror,
+.redsteel #prosemirror-dropdown,
+.redsteel prose-mirror {
   min-height: 300px;
 }
 
@@ -989,31 +989,31 @@ prose-mirror {
   max-height: 20px;
   text-align: center;
 }
-.tab.skills {
+.redsteel .tab.skills {
   text-align: center;
 }
 
 @media (max-height: 1080px) {
-  .tab.features,
-  .tab.abilities,
-  .tab.inventory,
-  .tab.skills,
-  .tab.miracles,
-  .tab.spells,
-  .tab.config {
+  .redsteel .tab.features,
+  .redsteel .tab.abilities,
+  .redsteel .tab.inventory,
+  .redsteel .tab.skills,
+  .redsteel .tab.miracles,
+  .redsteel .tab.spells,
+  .redsteel .tab.config {
     max-height: 70vh;
     overflow-y: auto;
   }
 }
 
 @media (min-height: 1081px) {
-  .tab.features,
-  .tab.abilities,
-  .tab.inventory,
-  .tab.skills,
-  .tab.miracles,
-  .tab.spells,
-  .tab.config {
+  .redsteel .tab.features,
+  .redsteel .tab.abilities,
+  .redsteel .tab.inventory,
+  .redsteel .tab.skills,
+  .redsteel .tab.miracles,
+  .redsteel .tab.spells,
+  .redsteel .tab.config {
     max-height: 688px !important; /* Height for higher resolutions */
   }
 }
@@ -1032,13 +1032,13 @@ prose-mirror {
   display: block !important;
 }
 
-.tab.features,
-.tab.abilities,
-.tab.inventory,
-.tab.skills,
-.tab.miracles,
-.tab.spells,
-.tab.config {
+.redsteel .tab.features,
+.redsteel .tab.abilities,
+.redsteel .tab.inventory,
+.redsteel .tab.skills,
+.redsteel .tab.miracles,
+.redsteel .tab.spells,
+.redsteel .tab.config {
   flex-direction: column;
   flex-grow: 1;
   overflow-y: auto; /* Scrollbar for long content */
