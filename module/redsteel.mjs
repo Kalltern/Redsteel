@@ -767,8 +767,11 @@ async function applyDamageAsGM(data) {
     const actor = tokenDoc.actor;
     if (!actor) continue;
 
-    const currentHp = getProperty(actor, "system.stats.health.value");
-    const currentTemporaryHp = getProperty(
+    const currentHp = foundry.utils.getProperty(
+      actor,
+      "system.stats.health.value",
+    );
+    const currentTemporaryHp = foundry.utils.getProperty(
       actor,
       "system.stats.temporaryHealth.value",
     );
@@ -784,13 +787,14 @@ async function applyDamageAsGM(data) {
       halfDamage: attack[mode].halfDamage ?? false,
       penCap: attack[mode].penCap ?? false,
     });
-    const author =
-      message.user ??
-      game.users.get(message.userId) ??
-      game.users.get(message.author);
+    const author = [message.author, message.user, message.userId]
+      .map((candidate) =>
+        typeof candidate === "string" ? game.users.get(candidate) : candidate,
+      )
+      .find((user) => user?.name);
     const authorIsGM = author?.isGM;
 
-    if (game.user.isGM && !authorIsGM) {
+    if (game.user.isGM && author && !authorIsGM) {
       ui.notifications.info(
         `${author.name} applied ${result.totalHpLoss} damage to ${actor.name}`,
       );
@@ -1000,6 +1004,39 @@ async function applyEffectToActor(actor, effectId, stacks = 1) {
 
   return await game.redsteel.applyEffect(actor, effectId, { stacks });
 }
+
+const TOKEN_BAR_RESOURCE_PATHS = [
+  "system.stats.health",
+  "system.stats.stamina",
+  "system.stats.mana",
+  "system.stats.temporaryHealth",
+  "system.stats.toxicity",
+];
+
+function changesTokenBarResource(changes) {
+  const flattened = foundry.utils.flattenObject(changes);
+  const flattenedKeys = Object.keys(flattened);
+  return TOKEN_BAR_RESOURCE_PATHS.some((path) => {
+    return (
+      foundry.utils.hasProperty(changes, path) ||
+      flattenedKeys.some(
+        (key) => key === path || key.startsWith(`${path}.`),
+      )
+    );
+  });
+}
+
+function refreshActorTokenBars(actor) {
+  for (const tokenOrDocument of actor.getActiveTokens(false)) {
+    const token = tokenOrDocument.object ?? tokenOrDocument;
+    token.renderFlags?.set({ refreshBars: true });
+    if (!token.renderFlags) token.drawBars?.();
+  }
+}
+
+Hooks.on("updateActor", (actor, changes) => {
+  if (changesTokenBarResource(changes)) refreshActorTokenBars(actor);
+});
 
 Hooks.on("renderChatMessageHTML", (message, html) => {
   // Only apply to your attack messages
