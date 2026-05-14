@@ -3,6 +3,12 @@
  * @extends {Item}
  */
 export class RedsteelItem extends Item {
+  get localizedName() {
+    const key = this.system.localizationKey?.trim();
+    if (!key || !game.i18n.has(key)) return this.name;
+    return game.i18n.localize(key);
+  }
+
   /**
    * Augment the basic Item data model with additional dynamic data.
    */
@@ -259,7 +265,7 @@ export class RedsteelItem extends Item {
     // Initialize chat data.
     const speaker = ChatMessage.getSpeaker({ actor: this.actor });
     const rollMode = game.settings.get("core", "rollMode");
-    const label = `[${item.type}] ${item.name}`;
+    const label = `[${item.type}] ${item.localizedName}`;
 
     // If there's no roll data, send a chat message.
     if (!this.system.formula) {
@@ -316,7 +322,7 @@ export class RedsteelItem extends Item {
     }
     // fallback for other item types
     return {
-      title: this.name,
+      title: this.localizedName,
       img: this.img,
       sections: [],
       stats: [],
@@ -342,7 +348,7 @@ export class RedsteelItem extends Item {
 
     return {
       icon: this.img,
-      title: this.name,
+      title: this.localizedName,
       sections: [
         { label: "Damage types", lines: [damageLines.join(" ")] },
         { label: "Effect types", lines: effectLines },
@@ -374,7 +380,7 @@ export class RedsteelItem extends Item {
 
     return {
       icon: this.img,
-      title: this.name,
+      title: this.localizedName,
       sections: [{ label: "Effect types", lines: effectLines }],
       stats: [
         { label: "Difficulty", value: data.difficulty },
@@ -401,7 +407,7 @@ export class RedsteelItem extends Item {
 
     return {
       icon: this.img,
-      title: this.name,
+      title: this.localizedName,
       sections: [{ label: "Effect types", lines: effectLines }],
       stats: [
         { label: "Weapon Type", value: `${data.type} ${data.class}` },
@@ -434,7 +440,7 @@ export class RedsteelItem extends Item {
   _getGearTooltipData(data) {
     return {
       icon: this.img,
-      title: this.name,
+      title: this.localizedName,
       stats: [
         { label: "Armor layer", value: data.layer },
         { label: "Armor", value: data.armor.value },
@@ -470,7 +476,7 @@ export class RedsteelItem extends Item {
   _getShieldTooltipData(data) {
     return {
       icon: this.img,
-      title: this.name,
+      title: this.localizedName,
       stats: [
         { label: "Defense", value: data.defense },
         { label: "Ranged defense", value: data.rangedDefense },
@@ -504,7 +510,7 @@ export class RedsteelItem extends Item {
 
     return {
       icon: this.img,
-      title: this.name,
+      title: this.localizedName,
       sections: [{ label: "Effect types", lines: effectLines }],
       stats: [
         { label: "Potion Type", value: `${data.type} ${data.option}` },
@@ -523,7 +529,7 @@ export class RedsteelItem extends Item {
   _getFeatureTooltipData(data) {
     return {
       icon: this.img,
-      title: this.name,
+      title: this.localizedName,
       stats: [
         { label: "Type:", value: data.option },
         { label: "Number of rerolls", value: data.reroll.value },

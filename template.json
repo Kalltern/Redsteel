@@ -1160,6 +1160,7 @@
     "htmlFields": ["description"],
     "templates": {
       "base": {
+        "localizationKey": "",
         "description": ""
       }
     },

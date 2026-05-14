@@ -106,7 +106,7 @@ ${
   <input type="checkbox"
          class="attack-modifier-checkbox"
          data-ability-id="${mod.id}" />
-  <span>${mod.name}</span>
+  <span>${mod.localizedName ?? mod.name}</span>
 </label>
   `,
     )
@@ -285,7 +285,7 @@ function renderWeaponLoadoutsDialog(actor) {
          data-set="${setId}" data-slot="main">
       ${
         ws.main
-          ? `<img src="${ws.main.img}" title="${ws.main.name}">`
+          ? `<img src="${ws.main.img}" title="${ws.main.localizedName ?? ws.main.name}">`
           : `<span>Main</span>`
       }
     </div>
@@ -301,12 +301,12 @@ function renderWeaponLoadoutsDialog(actor) {
           ? `
             <div class="two-handed-ghost">
               <img src="${ws.main.img}"
-                   title="${ws.main.name} (Two-handed)"
+                   title="${ws.main.localizedName ?? ws.main.name} (Two-handed)"
                    width="44" height="44">
             </div>
           `
           : ws.off
-            ? `<img src="${ws.off.img}" title="${ws.off.name}" width="44" height="44">`
+            ? `<img src="${ws.off.img}" title="${ws.off.localizedName ?? ws.off.name}" width="44" height="44">`
             : `<span>Off</span>`
       }
 

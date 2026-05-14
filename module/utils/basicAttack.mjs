@@ -21,7 +21,7 @@ export async function universalAttackLogic({
   }
 
   const weaponChoices = weapons.map((weapon, index) => ({
-    label: weapon.name,
+    label: weapon.localizedName ?? weapon.name,
     value: index,
   }));
   function buildDamageProfile(systemData) {
@@ -126,7 +126,7 @@ export async function universalAttackLogic({
     }
     for (const mod of selectedModifiers) {
       if (mod.system.description) {
-        concatDescription += `<b>${mod.name}</b><br>${mod.system.description}`;
+        concatDescription += `<b>${mod.localizedName ?? mod.name}</b><br>${mod.system.description}`;
       }
     }
 
@@ -167,7 +167,7 @@ export async function universalAttackLogic({
     <span
     title="Test chance ${attributeTotalValue}%&#10;Rolled: ${attributeRoll.result}"
     style="display:inline-block;">
-    <b>${mod.name} — ${testName} Test ${attributeTotalValue}%</b><br>
+    <b>${mod.localizedName ?? mod.name} — ${testName} Test ${attributeTotalValue}%</b><br>
     Margin of Success: [${attributeRoll.total}]<br>
       </span>
     </td>
@@ -379,7 +379,7 @@ ${
     const attackHTML = await attackRoll.render();
     const damageHTML = await damageRoll.render();
     const modifierLabel = selectedModifiers.length
-      ? ` + ${selectedModifiers.map((m) => m.name).join(", ")}`
+      ? ` + ${selectedModifiers.map((m) => m.localizedName ?? m.name).join(", ")}`
       : "";
     await ChatMessage.create({
       speaker: ChatMessage.getSpeaker(),
@@ -505,7 +505,7 @@ ${weaponChoices
 export async function rangedAttack(options = {}) {
   return universalAttackLogic({
     attackType: "ranged",
-    flavorLabel: (weapon) => `Ranged attack with ${weapon.name}`,
+    flavorLabel: (weapon) => `Ranged attack with ${weapon.localizedName ?? weapon.name}`,
     showBreakthrough: false,
     weaponFilter: (i) =>
       i.type === "weapon" && ["bow", "crossbow"].includes(i.system.class),
@@ -517,7 +517,7 @@ export async function rangedAttack(options = {}) {
 export async function throwingAttack(options = {}) {
   return universalAttackLogic({
     attackType: "throwing",
-    flavorLabel: (weapon) => `Throwing attack with ${weapon.name}`,
+    flavorLabel: (weapon) => `Throwing attack with ${weapon.localizedName ?? weapon.name}`,
     showBreakthrough: true,
     weaponFilter: (i) => i.type === "weapon" && i.system.thrown === true,
     getWeaponSkillData: (actor, weapon) =>
@@ -530,7 +530,7 @@ export async function throwingAttack(options = {}) {
 export async function meleeAttack(options = {}) {
   return universalAttackLogic({
     attackType: "melee",
-    flavorLabel: (weapon) => `Melee attack with ${weapon.name}`,
+    flavorLabel: (weapon) => `Melee attack with ${weapon.localizedName ?? weapon.name}`,
     showBreakthrough: true,
     weaponFilter: (i) =>
       i.type === "weapon" &&

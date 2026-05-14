@@ -1,11 +1,12 @@
 {
-  "TOS": {
+  "REDSTEEL": {
     "SheetLabels": {
       "Actor": "List Actor ToS",
       "Item": "List Item ToS"
     },
     "UI": {
       "name": "Jméno",
+      "localizationKey": "Lokalizační klíč",
       "option": "Možnost",
       "type": "Typ",
       "selectType": "-- Vyber typ --",
@@ -487,6 +488,11 @@
       "type1": "Extra Efekt typ 1",
       "type2": "Extra Efekt typ 2",
       "type3": "Extra Efekt typ 3"
+    },
+    "Items": {
+      "ShortSword": {
+        "name": "Krátký meč"
+      }
     }
   },
   "TYPES": {

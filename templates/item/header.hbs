@@ -8,12 +8,22 @@
     src="{{item.img}}"
     data-edit="img"
     data-action="onEditImage"
-    title="{{item.name}}"
+    title="{{itemDisplayName}}"
   />
 
   <div class="header-fields">
     <div class="document-name">
-      <input name="name" type="text" value="{{item.name}}" placeholder="{{localize 'REDSTEEL.UI.name'}}" />
+      {{#if hasLocalizedName}}
+        <input type="text" value="{{itemDisplayName}}" readonly title="{{item.name}}" />
+      {{else}}
+        <input name="name" type="text" value="{{item.name}}" placeholder="{{localize 'REDSTEEL.UI.name'}}" />
+      {{/if}}
+      <input
+        name="system.localizationKey"
+        type="text"
+        value="{{system.localizationKey}}"
+        placeholder="{{localize 'REDSTEEL.UI.localizationKey'}}"
+      />
     </div>
     {{!-- =====================
          AMMUNITION

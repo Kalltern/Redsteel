@@ -68,8 +68,8 @@ export async function usePotion() {
       rolls: [roll, drinkingRoll],
       flavor: `
     <span style="display:inline-flex; align-items:center;">
-      <img src="${consumable.img}" title="${consumable.name}" width="36" height="36" style="margin-right:8px;">
-      <strong style="font-size:20px;">Drinking ${consumable.name}</strong>
+      <img src="${consumable.img}" title="${consumable.localizedName ?? consumable.name}" width="36" height="36" style="margin-right:8px;">
+      <strong style="font-size:20px;">Drinking ${consumable.localizedName ?? consumable.name}</strong>
     </span>
         <table style="width: 100%; text-align: center; font-size: 15px;">
           <tr><th>Potion Effects</th></tr>
@@ -109,7 +109,7 @@ export async function usePotion() {
     }
 
     const potionChoices = consumables.map((c, i) => ({
-      label: `${c.name} (${c.system.quantity ?? 1})`,
+      label: `${c.localizedName ?? c.name} (${c.system.quantity ?? 1})`,
       value: i,
     }));
 

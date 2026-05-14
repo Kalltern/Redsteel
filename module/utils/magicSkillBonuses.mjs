@@ -133,7 +133,7 @@ export function showSpellSelectionDialogs(actor) {
   <img src="${spell.img}"
        class="ability-icon">
   <span class="ability-name">
-    ${spell.name}
+    ${spell.localizedName ?? spell.name}
   </span>
 </li>
     `,
@@ -312,7 +312,7 @@ export async function deductMana(actor, spell) {
 
     if (currentMana < spellCost) {
       ui.notifications.warn(
-        `Not enough mana to cast ${spell.name} (Cost: ${spellCost}).`,
+        `Not enough mana to cast ${spell.localizedName ?? spell.name} (Cost: ${spellCost}).`,
       );
       return false;
     }
@@ -797,7 +797,7 @@ export async function finalizeRollsAndPostChat(
   }
 
   if (maintainChanneling && costPerRound <= 0) {
-    ui.notifications.warn(`${spell.name} does not allow prolonged channeling.`);
+    ui.notifications.warn(`${spell.localizedName ?? spell.name} does not allow prolonged channeling.`);
     return;
   }
   // --- CRITICAL SCORE ROLL ---
@@ -860,7 +860,7 @@ export async function finalizeRollsAndPostChat(
 `
     : "";
 
-  let rollName = spell.name;
+  let rollName = spell.localizedName ?? spell.name;
   const hasEffects = effectsRollResults.trim().length > 0;
   const effectsTable = hasEffects
     ? `
@@ -974,9 +974,9 @@ export async function finalizeRollsAndPostChat(
     flavor: `
           <div style="display:flex; align-items:center; justify-content:left; gap:8px; font-size:1.3em; font-weight:bold;">
             <img src="${spell.img}" title="${
-              spell.name
+              spell.localizedName ?? spell.name
             }" width="36" height="36">
-            <span>${spell.name}</span>
+            <span>${spell.localizedName ?? spell.name}</span>
         </div>
         ${tags}
         <hr>

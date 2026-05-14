@@ -81,6 +81,30 @@ globalThis.redsteel = {
   },
 };
 
+function localizeItemDirectoryNames(element) {
+  const root = element instanceof HTMLElement ? element : element?.[0];
+  if (!root) return;
+
+  const entries = root.querySelectorAll(
+    "[data-document-id], [data-entry-id], [data-item-id]",
+  );
+  for (const entry of entries) {
+    const id =
+      entry.dataset.documentId ?? entry.dataset.entryId ?? entry.dataset.itemId;
+    const item = game.items?.get(id);
+    if (!item || item.localizedName === item.name) continue;
+
+    entry.title = entry.title?.replace(item.name, item.localizedName) ?? "";
+    const walker = document.createTreeWalker(entry, NodeFilter.SHOW_TEXT);
+    while (walker.nextNode()) {
+      const node = walker.currentNode;
+      if (node.nodeValue.trim() === item.name) {
+        node.nodeValue = node.nodeValue.replace(item.name, item.localizedName);
+      }
+    }
+  }
+}
+
 Hooks.once("init", function () {
   // Add custom constants for configuration.
   CONFIG.REDSTEEL = REDSTEEL;
@@ -179,6 +203,16 @@ Hooks.once("init", function () {
       return true;
     },
   });
+});
+
+Hooks.on("renderItemDirectory", (_app, element) => {
+  localizeItemDirectoryNames(element);
+});
+
+Hooks.on("renderApplicationV2", (app, element) => {
+  if (app.constructor.name === "ItemDirectory") {
+    localizeItemDirectoryNames(element);
+  }
 });
 
 /* -------------------------------------------- */

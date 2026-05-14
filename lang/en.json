@@ -6,6 +6,7 @@
     },
     "UI": {
       "name": "Name",
+      "localizationKey": "Localization key",
       "option": "Option",
       "type": "Type",
       "selectType": "-- Select a type --",
@@ -487,6 +488,11 @@
       "type1": "Extra Effect Type 1",
       "type2": "Extra Effect Type 2",
       "type3": "Extra Effect Type 3"
+    },
+    "Items": {
+      "ShortSword": {
+        "name": "Short Sword"
+      }
     }
   },
   "TYPES": {

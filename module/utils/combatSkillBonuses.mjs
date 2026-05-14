@@ -122,7 +122,7 @@ export async function getNonWeaponAbility(actor, ability) {
     await damageRoll.evaluate();
   }
   const damageProfile = buildDamageProfile(system);
-  let rollName = ability.name;
+  let rollName = ability.localizedName ?? ability.name;
   const damageTotal = damageRoll ? Math.floor(damageRoll.total) : 0;
   const penetration = system.penetration;
   const halfDamage = system.roll?.halfDamage || false;
@@ -191,8 +191,8 @@ export async function getNonWeaponAbility(actor, ability) {
     },
     flavor: `
 <div style="display:flex; align-items:center; justify-content:left; gap:8px; font-size:1.3em; font-weight:bold;">
-  <img src="${ability.img}" title="${ability.name}" width="36" height="36">
-  <span>${ability.name}</span>
+  <img src="${ability.img}" title="${ability.localizedName ?? ability.name}" width="36" height="36">
+  <span>${ability.localizedName ?? ability.name}</span>
 </div>
 <hr>
 <table style="width: 100%; text-align: center; font-size: 15px;">
@@ -547,7 +547,7 @@ export async function getAttackRolls(
 
   // Roll data setup
 
-  let rollName = weapon ? `${weapon.name} Attack` : "Ability Attack";
+  let rollName = weapon ? `${weapon.localizedName ?? weapon.name} Attack` : "Ability Attack";
   const rollData = {
     combatSkills: actor.system.combatSkills,
     weaponAttack: ws.attack || 0,

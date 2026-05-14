@@ -72,7 +72,7 @@ export async function combatAbilities() {
         <img src="${ability.img}"
              class="ability-icon">
         <span class="ability-name">
-          ${ability.name}
+          ${ability.localizedName ?? ability.name}
         </span>
       </li>
     `,
@@ -112,7 +112,7 @@ export async function combatAbilities() {
   }
 
   const abilityChoices = abilities.map((a, idx) => ({
-    label: a.name,
+    label: a.localizedName ?? a.name,
     value: idx,
   }));
 
@@ -230,7 +230,7 @@ export async function combatAbilities() {
       // Add header + buttons
       html.find(".ability-dialog-form").prepend(`
     <div class="multiattack-header">
-      <h3>⚔ Multi-Attack: ${ability.name} (Strike ${multiAttackCount})</h3>
+      <h3>⚔ Multi-Attack: ${ability.localizedName ?? ability.name} (Strike ${multiAttackCount})</h3>
       <div style="display:flex; gap:8px; margin-bottom:8px;">
         <button type="button" id="continue-multiattack">
           ⚔ Attack Again
@@ -298,7 +298,7 @@ export async function combatAbilities() {
   <input type="checkbox"
          class="attack-modifier-checkbox"
          data-ability-id="${mod.id}" />
-  <span>${mod.name}</span>
+  <span>${mod.localizedName ?? mod.name}</span>
 </label>
   `,
     )
@@ -569,7 +569,7 @@ export async function combatAbilities() {
     if (!weapons?.length)
       return ui.notifications.warn("This actor has no valid weapons.");
     const weaponChoices = weapons.map((w, idx) => ({
-      label: w.name,
+      label: w.localizedName ?? w.name,
       value: idx,
     }));
 
@@ -652,7 +652,7 @@ export async function combatAbilities() {
     document.head.appendChild(styleSheet);
 
     const weaponDialog = new Dialog({
-      title: `Select Weapon - ${ability.name} (${
+      title: `Select Weapon - ${ability.localizedName ?? ability.name} (${
         mode === "defense" ? "Defense" : "Attack"
       })`,
       content: `
@@ -1192,7 +1192,7 @@ ${damageLine}
 <td>
 <span
 title="Test chance ${attributeTotalValue}%&#10;Rolled: ${attributeRoll.result}">
-<b>${mod.name} — ${testName} Test ${attributeTotalValue}%</b><br>
+<b>${mod.localizedName ?? mod.name} — ${testName} Test ${attributeTotalValue}%</b><br>
 Margin of Success: [${attributeRoll.total}]
 </span>
 </td>
@@ -1249,12 +1249,12 @@ Margin of Success: ${attributeRoll.total}
 `;
     }
     const modifierLabel = selectedModifiers.length
-      ? ` + ${selectedModifiers.map((m) => m.name).join(", ")}`
+      ? ` + ${selectedModifiers.map((m) => m.localizedName ?? m.name).join(", ")}`
       : "";
 
     rollName = weapon
-      ? `${ability.name}${modifierLabel} with ${weapon.name}`
-      : `${ability.name}${modifierLabel}`;
+      ? `${ability.localizedName ?? ability.name}${modifierLabel} with ${weapon.localizedName ?? weapon.name}`
+      : `${ability.localizedName ?? ability.name}${modifierLabel}`;
     await postUniversalStyleAttackChat({
       actor,
       weapon,
@@ -1400,7 +1400,7 @@ function renderWeaponLoadoutsDialog(actor) {
          data-set="${setId}" data-slot="main">
       ${
         ws.main
-          ? `<img src="${ws.main.img}" title="${ws.main.name}">`
+          ? `<img src="${ws.main.img}" title="${ws.main.localizedName ?? ws.main.name}">`
           : `<span>Main</span>`
       }
     </div>
@@ -1416,12 +1416,12 @@ function renderWeaponLoadoutsDialog(actor) {
           ? `
             <div class="two-handed-ghost">
               <img src="${ws.main.img}"
-                   title="${ws.main.name} (Two-handed)"
+                   title="${ws.main.localizedName ?? ws.main.name} (Two-handed)"
                    width="44" height="44">
             </div>
           `
           : ws.off
-            ? `<img src="${ws.off.img}" title="${ws.off.name}" width="44" height="44">`
+            ? `<img src="${ws.off.img}" title="${ws.off.localizedName ?? ws.off.name}" width="44" height="44">`
             : `<span>Off</span>`
       }
 
@@ -1454,7 +1454,7 @@ async function runUtilityAbility(actor, ability, modifiers = []) {
     if (mod.system.description) {
       description += `
 <hr>
-<b>${mod.name}</b><br>
+<b>${mod.localizedName ?? mod.name}</b><br>
 ${mod.system.description}
 `;
     }
@@ -1465,7 +1465,7 @@ ${mod.system.description}
     flavor: `
 <span style="display:inline-flex; align-items:center;">
   <img src="${ability.img}" width="36" height="36" style="margin-right:8px;">
-  <strong style="font-size:20px;">${ability.name}</strong>
+  <strong style="font-size:20px;">${ability.localizedName ?? ability.name}</strong>
 </span>
 <hr>
 <div style="text-align:center; font-size:16px;">

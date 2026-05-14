@@ -236,7 +236,7 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
                 <li class="weapon-choice"
                     data-value="${index}"
                     style="cursor:pointer;padding:5px;border-bottom:1px solid #444;">
-                  ${weapon.name}
+                  ${weapon.localizedName ?? weapon.name}
                 </li>`,
               )
               .join("")}
@@ -268,7 +268,7 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
     const resolveWithContext = async (context) => {
       const weapon = context.weapon;
       const offProps = getOffhandProps(context);
-      const rollName = `Defense with ${weapon.name}`;
+      const rollName = `Defense with ${weapon.localizedName ?? weapon.name}`;
       const mainDefense = Number(weapon.system.defense) || 0;
       const offDefense = Number(offProps?.defense) || 0;
       const mainCrit = Number(weapon.system.critDefense) || 0;
@@ -375,7 +375,7 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
       const weapon = context.weapon;
       const offProps = getOffhandProps(context);
 
-      const rollName = `Ranged defense with ${weapon.name}`;
+      const rollName = `Ranged defense with ${weapon.localizedName ?? weapon.name}`;
 
       const { doctrineCritDefenseBonus, doctrineRangedDefenseBonus } =
         await game.redsteel.getDoctrineBonuses(actor, weapon);
@@ -460,7 +460,7 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
       const weapon = context.weapon;
       const offProps = getOffhandProps(context);
 
-      const rollName = `Dodge with ${weapon.name}`;
+      const rollName = `Dodge with ${weapon.localizedName ?? weapon.name}`;
 
       const mainDodge = Number(weapon.system.dodge) || 0;
       const offDodge = Number(offProps?.dodge) || 0;
@@ -783,7 +783,7 @@ function renderWeaponLoadoutsDialog(actor) {
          data-set="${setId}" data-slot="main">
       ${
         ws.main
-          ? `<img src="${ws.main.img}" title="${ws.main.name}">`
+          ? `<img src="${ws.main.img}" title="${ws.main.localizedName ?? ws.main.name}">`
           : `<span>Main</span>`
       }
     </div>
@@ -799,12 +799,12 @@ function renderWeaponLoadoutsDialog(actor) {
           ? `
             <div class="two-handed-ghost">
               <img src="${ws.main.img}"
-                   title="${ws.main.name} (Two-handed)"
+                   title="${ws.main.localizedName ?? ws.main.name} (Two-handed)"
                    width="44" height="44">
             </div>
           `
           : ws.off
-            ? `<img src="${ws.off.img}" title="${ws.off.name}" width="44" height="44">`
+            ? `<img src="${ws.off.img}" title="${ws.off.localizedName ?? ws.off.name}" width="44" height="44">`
             : `<span>Off</span>`
       }
 

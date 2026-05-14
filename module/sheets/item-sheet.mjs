@@ -89,6 +89,11 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
   };
 
   /** @override */
+  get title() {
+    return super.title.replace(this.document.name, this.document.localizedName);
+  }
+
+  /** @override */
   _configureRenderOptions(options) {
     super._configureRenderOptions(options);
     // Not all parts always render
@@ -135,6 +140,8 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
       limited: this.document.limited,
       // Add the item document.
       item: this.item,
+      itemDisplayName: this.item.localizedName,
+      hasLocalizedName: this.item.localizedName !== this.item.name,
       // Adding system and flags for easier access
       system: this.item.system,
       flags: this.item.flags,

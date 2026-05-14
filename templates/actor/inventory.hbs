@@ -30,7 +30,7 @@
         {{/if}}
       >
         {{#if weaponSets.1.main}}
-          <img src="{{weaponSets.1.main.img}}" title="{{weaponSets.1.main.name}}" />
+          <img src="{{weaponSets.1.main.img}}" title="{{weaponSets.1.main.localizedName}}" />
         {{else}}
           <span>Main</span>
         {{/if}}
@@ -56,7 +56,7 @@
     <div class="two-handed-ghost">
       <img
         src="{{weaponSets.1.main.img}}"
-        title="{{weaponSets.1.main.name}} (Two-handed)"
+        title="{{weaponSets.1.main.localizedName}} (Two-handed)"
         width="44"
         height="44"
       />
@@ -66,7 +66,7 @@
   {{else if weaponSets.1.offIsShield}}
     <img
       src="{{weaponSets.1.off.img}}"
-      title="{{weaponSets.1.off.name}}"
+      title="{{weaponSets.1.off.localizedName}}"
       width="44"
       height="44"
     />
@@ -75,7 +75,7 @@
   {{else if weaponSets.1.off}}
     <img
       src="{{weaponSets.1.off.img}}"
-      title="{{weaponSets.1.off.name}}"
+      title="{{weaponSets.1.off.localizedName}}"
       width="44"
       height="44"
     />
@@ -124,7 +124,7 @@
         {{/if}}
       >
         {{#if weaponSets.2.main}}
-          <img src="{{weaponSets.2.main.img}}" title="{{weaponSets.2.main.name}}" />
+          <img src="{{weaponSets.2.main.img}}" title="{{weaponSets.2.main.localizedName}}" />
         {{else}}
           <span>Main</span>
         {{/if}}
@@ -150,7 +150,7 @@
     <div class="two-handed-ghost">
       <img
         src="{{weaponSets.2.main.img}}"
-        title="{{weaponSets.2.main.name}} (Two-handed)"
+        title="{{weaponSets.2.main.localizedName}} (Two-handed)"
         width="44"
         height="44"
       />
@@ -160,7 +160,7 @@
   {{else if weaponSets.2.offIsShield}}
     <img
       src="{{weaponSets.2.off.img}}"
-      title="{{weaponSets.2.off.name}}"
+      title="{{weaponSets.2.off.localizedName}}"
       width="44"
       height="44"
     />
@@ -169,7 +169,7 @@
   {{else if weaponSets.2.off}}
     <img
       src="{{weaponSets.2.off.img}}"
-      title="{{weaponSets.2.off.name}}"
+      title="{{weaponSets.2.off.localizedName}}"
       width="44"
       height="44"
     />
@@ -259,7 +259,7 @@
               <img src="{{item.img}}" class="item-icon" data-item-id="{{item.id}}"width="24" height="24" />
             </a>
           </div>
-          <div>{{item.name}}</div>
+          <div>{{item.localizedName}}</div>
         </div>
           <!-- Equipped Checkbox (Editable) -->
 <div class="item-formula item-prop">
@@ -407,7 +407,7 @@
         </div>
 
         <div>
-          {{item.name}}
+          {{item.localizedName}}
 {{#if (eq actor.type "character")}}
           {{#if (and (eq system.combat.activeWeaponSet 1) (eq item._id @root.weaponSets.1.main._id))}}
             <span class="equip-tag">(Main)</span>
@@ -523,7 +523,7 @@
         </a>
       </div>
       <div>
-        {{item.name}}
+        {{item.localizedName}}
 
         {{!-- Optional subtle type tag --}}
         <span class="supply-type">
@@ -648,7 +648,7 @@
         />
       </a>
     </div>
-    <div>{{item.name}}</div>
+    <div>{{item.localizedName}}</div>
   </div>
 
   <div class="item-formula item-prop"></div>  <!-- spacer -->

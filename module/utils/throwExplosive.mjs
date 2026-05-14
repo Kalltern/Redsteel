@@ -16,7 +16,7 @@ export async function throwExplosive() {
   }
 
   const explosiveChoices = consumables.map((consumable, index) => ({
-    label: consumable.name,
+    label: consumable.localizedName ?? consumable.name,
     value: index,
   }));
 
@@ -147,7 +147,7 @@ export async function throwExplosive() {
 </div>
 `;
     const effectResults = await applyConsumableEffects(consumable);
-    const rollName = `Threw ${consumable.name}`;
+    const rollName = `Threw ${consumable.localizedName ?? consumable.name}`;
     const flavor = `
 <div style="display:flex; align-items:center; gap:8px; font-size:1.3em; font-weight:bold;">
   <img src="${consumable.img}" width="36" height="36">
