@@ -44,42 +44,6 @@ REDSTEEL.secondaryAttributeAbbreviations = {
   ini: "REDSTEEL.Actor.Character.SecondaryAttribute.Ini.abbr",
 };
 
-REDSTEEL.statusEffects = [
-  {
-    id: "dead",
-    name: "EFFECT.StatusDead",
-    img: "icons/svg/skull.svg",
-  },
-  {
-    id: "prone",
-    name: "EFFECT.StatusProne",
-    img: "icons/svg/falling.svg",
-  },
-  {
-    id: "bleed",
-    name: "Bleeding",
-    img: "icons/svg/blood.svg",
-    statuses: ["bleed"],
-  },
-  {
-    id: "stagger",
-    name: "EFFECT.StatusStaggered",
-    img: "icons/svg/daze.svg",
-    statuses: ["stagger"],
-  },
-  {
-    id: "burn",
-    name: "Burning",
-    img: "icons/magic/fire/flame-burning-embers-yellow.webp",
-    statuses: ["burn"],
-  },
-  {
-    id: "channeling",
-    name: "Channeling",
-    img: "icons/magic/lightning/orb-ball-spiral-blue.webp",
-  },
-];
-
 REDSTEEL.effectDefinitions = {
   stagger: {
     name: "Staggered",
@@ -401,6 +365,7 @@ REDSTEEL.effectDefinitions = {
         value: -25,
       },
     ],
+    stackBehavior: "refresh",
   },
   resist_acid: {
     name: "Resist Acid",
@@ -413,6 +378,7 @@ REDSTEEL.effectDefinitions = {
         value: true,
       },
     ],
+    stackBehavior: "ignore",
   },
 
   resist_fire: {
@@ -426,6 +392,7 @@ REDSTEEL.effectDefinitions = {
         value: true,
       },
     ],
+    stackBehavior: "ignore",
   },
 
   resist_frost: {
@@ -439,6 +406,7 @@ REDSTEEL.effectDefinitions = {
         value: true,
       },
     ],
+    stackBehavior: "ignore",
   },
 
   resist_lightning: {
@@ -452,6 +420,7 @@ REDSTEEL.effectDefinitions = {
         value: true,
       },
     ],
+    stackBehavior: "ignore",
   },
 
   resist_magic: {
@@ -465,6 +434,7 @@ REDSTEEL.effectDefinitions = {
         value: true,
       },
     ],
+    stackBehavior: "ignore",
   },
 
   resist_dark: {
@@ -478,6 +448,7 @@ REDSTEEL.effectDefinitions = {
         value: true,
       },
     ],
+    stackBehavior: "ignore",
   },
 
   ice_weapon: {
@@ -498,6 +469,7 @@ REDSTEEL.effectDefinitions = {
         slow: 15,
       },
     },
+    stackBehavior: "ignore",
   },
   lightning_weapon: {
     name: "Lightning Weapon",
@@ -515,6 +487,7 @@ REDSTEEL.effectDefinitions = {
         stagger: 10,
       },
     },
+    stackBehavior: "ignore",
   },
   fire_weapon: {
     name: "Fire Weapon",
@@ -532,6 +505,7 @@ REDSTEEL.effectDefinitions = {
         burning: 5,
       },
     },
+    stackBehavior: "ignore",
   },
   poisoned_weapon: {
     name: "Poisoned Weapon",
@@ -548,6 +522,7 @@ REDSTEEL.effectDefinitions = {
         poison: 10,
       },
     },
+    stackBehavior: "ignore",
   },
   acid_weapon: {
     name: "Acid Weapon",
@@ -566,6 +541,7 @@ REDSTEEL.effectDefinitions = {
         corrosion: 35,
       },
     },
+    stackBehavior: "ignore",
   },
   dark_weapon: {
     name: "Dark Weapon",
@@ -581,6 +557,7 @@ REDSTEEL.effectDefinitions = {
       damageTypeMode: "expand",
       damageTypes: ["magic", "dark"],
     },
+    stackBehavior: "ignore",
   },
   whetstone: {
     name: "Whetstone",
@@ -593,6 +570,7 @@ REDSTEEL.effectDefinitions = {
         bleed: 10,
       },
     },
+    stackBehavior: "ignore",
   },
   defensive_stance: {
     name: "Defensive stance",
@@ -617,6 +595,7 @@ REDSTEEL.effectDefinitions = {
         value: 10,
       },
     ],
+    stackBehavior: "ignore",
   },
 
   guard: {
@@ -625,6 +604,7 @@ REDSTEEL.effectDefinitions = {
     statuses: ["guard"],
     defaultTurns: 1,
     useDuration: true,
+    stackBehavior: "ignore",
   },
 
   stone_skin: {
@@ -646,6 +626,7 @@ REDSTEEL.effectDefinitions = {
     triggers: {
       onApply: { custom: "stoneSkinUpdate" },
     },
+    stackBehavior: "ignore",
   },
 
   channeling: {
@@ -658,6 +639,7 @@ REDSTEEL.effectDefinitions = {
         custom: "channelingDrain",
       },
     },
+    stackBehavior: "ignore",
   },
 
   // Wild magic spells DoTs
@@ -715,3 +697,11 @@ REDSTEEL.effectDefinitions = {
     statuses: ["nourishing_rest"],
   },
 };
+
+REDSTEEL.statusEffects = Object.entries(REDSTEEL.effectDefinitions).map(
+  ([id, def]) => ({
+    id,
+    name: def.name,
+    img: def.img,
+  }),
+);

@@ -1053,9 +1053,7 @@ function changesTokenBarResource(changes) {
   return TOKEN_BAR_RESOURCE_PATHS.some((path) => {
     return (
       foundry.utils.hasProperty(changes, path) ||
-      flattenedKeys.some(
-        (key) => key === path || key.startsWith(`${path}.`),
-      )
+      flattenedKeys.some((key) => key === path || key.startsWith(`${path}.`))
     );
   });
 }

@@ -16,26 +16,38 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
   /* -------------------------------------------- */
 
   const css = `
-  #weapon-list .weapon-choice {
-    position: relative;
-    font-size: 16px;
-    color: black;
-  }
+#weapon-list .weapon-choice {
+  position: relative;
+  font-size: 16px;
+  color: black;
+}
 
-  #weapon-list .weapon-choice:hover {
-    color: black;
-    text-shadow: 0 0 1px red, 0 0 2px red;
-  }
+#weapon-list .weapon-choice:hover {
+  color: black;
+  text-shadow: 0 0 1px red, 0 0 2px red;
+}
 
-  .weapon-dialog .window-content {
-    max-width: 300px;
-    width: 100%;
-  }
+.weapon-dialog .window-content {
+  max-width: 300px;
+  width: 100%;
+}
 
-  .weapon-dialog .window {
-    width: auto;
-  }
-  `;
+.weapon-dialog .window {
+  width: auto;
+}
+
+/* Defense dialog buttons */
+.dialog .dialog-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+
+.dialog .dialog-buttons button {
+  width: 100%;
+  min-width: 0;
+}
+`;
 
   if (!document.getElementById("redsteel-defense-css")) {
     const styleSheet = document.createElement("style");
@@ -504,7 +516,8 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
       await roll.evaluate();
       const d100 = roll.dice.find((d) => d.faces === 100);
       const d100Result = d100?.total;
-      const dodgeFailed = d100Result > actor.system.dodgeLimit.total;
+      const dodgeFailed =
+        d100Result > actor.system.dodgeLimit.total && roll.total >= 0;
       console.log("dodgeFailed", dodgeFailed);
 
       await createDefenseChatMessage(
@@ -604,8 +617,8 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
     };
 
     new Dialog({
-      title: "Magic Defense",
-      content: `<p>Select your Magic Defense level:</p>`,
+      title: "Magic defense",
+      content: `<p>Select your Magic defense level:</p>`,
       buttons: Object.entries(defenseLevels).reduce(
         (buttons, [level, cost]) => {
           buttons[level] = {
@@ -713,7 +726,7 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
               : critFailure
                 ? "Critical Failure!"
                 : dodgeFailed
-                  ? "Dodge Failed"
+                  ? "Bad Dodge!"
                   : ""
           }
 

@@ -15,47 +15,47 @@ export class RedsteelActiveEffect extends ActiveEffect {
       return;
     }
 
-    const counterApi = game.modules.get("statuscounter")?.api;
-    if (!counterApi) return;
+    const module = game.modules.get("statuscounter");
+    if (!module?.active) return;
 
     Hooks.on("preCreateActiveEffect", (effect) => {
       const statusId = effect.getFlag("core", "statusId");
       const def = CONFIG.REDSTEEL.effectDefinitions[statusId];
       if (!def) return;
 
-      const hasStacks = !!def.maxStacks;
+      const hasStacks = def.stackBehavior === "stack";
+
       const hasRounds = !!def.defaultRounds;
       const hasTurns = !!def.defaultTurns;
 
-      // Only show counter if something actually changes over time
       const shouldShowCounter = hasStacks || hasRounds || hasTurns;
 
       if (!shouldShowCounter) {
         effect.updateSource({
           "flags.statuscounter.visible": false,
         });
+
         return;
       }
 
-      // 🔑 Decide what the counter represents
-      const useStacks = !!def.maxStacks && !def.useDuration;
+      const useStacks = def.stackBehavior === "stack";
 
-      // Default: duration unless explicitly stack-based
-      const dataSource = useStacks
-        ? "flags.redsteel.stacks"
-        : def.defaultRounds
-          ? "flags.redsteel.rounds"
-          : "flags.redsteel.actorTurns";
+      const stackValue = effect.getFlag("redsteel", "stacks");
 
       effect.updateSource({
-        "flags.statuscounter.config.dataSource": dataSource,
         "flags.statuscounter.visible": true,
+
+        "flags.statuscounter.value": useStacks
+          ? stackValue
+          : def.defaultRounds
+            ? (effect.getFlag("redsteel", "rounds") ?? 0)
+            : (effect.getFlag("redsteel", "actorTurns") ?? 0),
       });
     });
 
     Hooks.on("updateActiveEffect", async (effect) => {
-      const status = [...(effect.statuses ?? [])][0];
-      const def = CONFIG.REDSTEEL.effectDefinitions[status];
+      const statusId = effect.getFlag("core", "statusId");
+      const def = CONFIG.REDSTEEL.effectDefinitions[statusId];
       if (!def?.maxStacks) return;
 
       const stacks = effect.getFlag("redsteel", "stacks");
@@ -258,34 +258,79 @@ export class RedsteelActiveEffect extends ActiveEffect {
     // EXISTING EFFECT
     // ============================================
     if (existing) {
-      // -----------------------------
-      // FEAR: Reset instead of stack
-      // -----------------------------
-      if (effectId === "fear") {
-        await existing.setFlag("redsteel", "stacks", 3);
-        await existing.executeTrigger("onApply", { appliedStacks: 3 });
+      const stackBehavior = def.stackBehavior ?? "stack";
+
+      // =========================================
+      // IGNORE
+      // =========================================
+      if (stackBehavior === "ignore") {
         return existing;
       }
 
-      const currentStacks = existing.getFlag("redsteel", "stacks") ?? 1;
-      const newStacks = Math.min(currentStacks + stacks, maxStacks);
-      const appliedStacks = newStacks - currentStacks;
+      // =========================================
+      // REFRESH DURATION
+      // =========================================
+      if (stackBehavior === "refresh") {
+        const updates = {};
 
-      if (appliedStacks <= 0) return existing;
+        if (turnsDuration > 0) {
+          updates["flags.redsteel.actorTurns"] = turnsDuration;
+        }
 
-      await existing.setFlag("redsteel", "stacks", newStacks);
-      await existing.updateCorrosionChange();
+        if (roundsDuration > 0) {
+          updates["flags.redsteel.rounds"] = roundsDuration;
+        }
 
-      if (turnsDuration > 0) {
-        await existing.setFlag("redsteel", "actorTurns", turnsDuration);
+        await existing.update(updates);
+
+        return existing;
       }
 
-      if (roundsDuration > 0) {
-        await existing.setFlag("redsteel", "rounds", roundsDuration);
+      // =========================================
+      // RESET STACKS
+      // =========================================
+      if (stackBehavior === "reset") {
+        await existing.update({
+          "flags.redsteel.stacks": initialStacks,
+          "flags.statuscounter.value": initialStacks,
+        });
+
+        return existing;
       }
 
-      await existing.executeTrigger("onApply", { appliedStacks });
-      return existing;
+      // =========================================
+      // NORMAL STACKING
+      // =========================================
+      if (stackBehavior === "stack") {
+        const currentStacks = existing.getFlag("redsteel", "stacks") ?? 1;
+
+        const newStacks = Math.min(currentStacks + stacks, maxStacks);
+
+        const appliedStacks = newStacks - currentStacks;
+
+        if (appliedStacks <= 0) return existing;
+
+        await existing.update({
+          "flags.redsteel.stacks": newStacks,
+          "flags.statuscounter.value": newStacks,
+        });
+
+        await existing.updateCorrosionChange();
+
+        if (turnsDuration > 0) {
+          await existing.setFlag("redsteel", "actorTurns", turnsDuration);
+        }
+
+        if (roundsDuration > 0) {
+          await existing.setFlag("redsteel", "rounds", roundsDuration);
+        }
+
+        await existing.executeTrigger("onApply", {
+          appliedStacks,
+        });
+
+        return existing;
+      }
     }
 
     // ============================================
@@ -293,8 +338,11 @@ export class RedsteelActiveEffect extends ActiveEffect {
     // ============================================
     const redsteelFlags = {
       triggers: def.triggers ?? {},
-      stacks: initialStacks,
     };
+
+    if (def.stackBehavior === "stack" || def.stackBehavior === "reset") {
+      redsteelFlags.stacks = initialStacks;
+    }
 
     if (turnsDuration > 0) {
       redsteelFlags.actorTurns = turnsDuration;
@@ -304,15 +352,34 @@ export class RedsteelActiveEffect extends ActiveEffect {
       redsteelFlags.rounds = roundsDuration;
     }
 
-    const [created] = await actor.createEmbeddedDocuments("ActiveEffect", [
-      {
-        name: def.name,
-        img: def.img,
-        statuses: def.statuses ?? [],
-        flags: { redsteel: redsteelFlags, core: { statusId: effectId } },
-        changes: changes,
+    await actor.toggleStatusEffect(effectId, { active: true });
+
+    const created = actor.effects.find((e) => e.statuses?.has(effectId));
+    await created.update({
+      name: def.name,
+      img: def.img,
+      changes,
+
+      flags: {
+        core: {
+          statusId: effectId,
+        },
+
+        redsteel: redsteelFlags,
+
+        statuscounter: {
+          visible:
+            def.stackBehavior === "stack" ||
+            !!def.defaultRounds ||
+            !!def.defaultTurns,
+
+          value:
+            def.stackBehavior === "stack"
+              ? initialStacks
+              : roundsDuration || turnsDuration || 0,
+        },
       },
-    ]);
+    });
     await created.executeTrigger("onApply", { appliedStacks: initialStacks });
     // Corrosion armor update
     await created.updateCorrosionChange();
@@ -352,7 +419,10 @@ export class RedsteelActiveEffect extends ActiveEffect {
       return;
     }
 
-    await this.setFlag("redsteel", "actorTurns", remaining);
+    await this.update({
+      "flags.redsteel.actorTurns": remaining,
+      "flags.statuscounter.value": remaining,
+    });
   }
 
   async decrementRound() {
@@ -366,7 +436,10 @@ export class RedsteelActiveEffect extends ActiveEffect {
       return;
     }
 
-    await this.setFlag("redsteel", "rounds", remaining);
+    await this.update({
+      "flags.redsteel.rounds": remaining,
+      "flags.statuscounter.value": remaining,
+    });
   }
   /* -------------------------------------------- */
   /*  TRIGGER STRUCTURE                           */
@@ -430,7 +503,10 @@ export class RedsteelActiveEffect extends ActiveEffect {
     // =========================
     if (total <= -60 || diceResult >= 96) {
       stacks += 1;
-      await this.setFlag("redsteel", "stacks", stacks);
+      await this.update({
+        "flags.redsteel.stacks": stacks,
+        "flags.statuscounter.value": stacks,
+      });
 
       ui.notifications.info(`${actor.name} is overwhelmed by fear! (+1 round)`);
       return;
@@ -448,7 +524,10 @@ export class RedsteelActiveEffect extends ActiveEffect {
         return;
       }
 
-      await this.setFlag("redsteel", "stacks", stacks);
+      await this.update({
+        "flags.redsteel.stacks": stacks,
+        "flags.statuscounter.value": stacks,
+      });
       ui.notifications.info(`${actor.name} steels their nerves. (-1 round)`);
       return;
     }
@@ -520,7 +599,10 @@ export class RedsteelActiveEffect extends ActiveEffect {
       return;
     }
 
-    await this.setFlag("redsteel", "stacks", stacks);
+    await this.update({
+      "flags.redsteel.stacks": stacks,
+      "flags.statuscounter.value": stacks,
+    });
 
     // -------------------------
     // Now perform resolve test
@@ -570,7 +652,7 @@ export class RedsteelActiveEffect extends ActiveEffect {
       .replace("{stacks}", stacks)
       .replace("{appliedStacks}", appliedStacks);
 
-    const roll = await new Roll(formula).evaluate({ async: true });
+    const roll = await new Roll(formula).evaluate();
 
     if (trigger.target) {
       const current = foundry.utils.getProperty(actor, trigger.target) ?? 0;
@@ -611,7 +693,7 @@ export class RedsteelActiveEffect extends ActiveEffect {
     const actor = this.parent;
     if (!actor) return;
 
-    const roll = await new Roll(trigger.formula).evaluate({ async: true });
+    const roll = await new Roll(trigger.formula).evaluate();
 
     const path = "system.stats.health.value";
     const current = foundry.utils.getProperty(actor, path) ?? 0;
@@ -634,7 +716,7 @@ export class RedsteelActiveEffect extends ActiveEffect {
     const stacks = this.getFlag("redsteel", "stacks") ?? 1;
     formula = formula.replace("{stacks}", stacks);
 
-    const roll = await new Roll(formula).evaluate({ async: true });
+    const roll = await new Roll(formula).evaluate();
     const cost = roll.total;
 
     const path = trigger.target;
