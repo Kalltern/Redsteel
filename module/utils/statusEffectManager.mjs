@@ -60,7 +60,12 @@ export async function statusEffectManager() {
         }
 
         // Otherwise reduce by 1
-        await existing.setFlag("redsteel", "stacks", stacks - 1);
+        const newStacks = stacks - 1;
+
+        await existing.update({
+          "flags.redsteel.stacks": newStacks,
+          "flags.statuscounter.value": newStacks,
+        });
       }),
     );
   }
@@ -145,12 +150,24 @@ export async function statusEffectManager() {
     🗑 Remove All Status Effects
   </button>
   <hr/>
+  <div style="margin-bottom:6px;">
+  <input
+    type="text"
+    id="redsteel-effect-search"
+    placeholder="Search effects..."
+    style="width:100%; padding:4px;"
+  />
+</div>
   <div class="redsteel-scroll">
 `;
 
   for (const effect of STATUS_EFFECTS) {
     content += `
-<div class="redsteel-row" data-effect-row="${effect.id}">
+<div
+  class="redsteel-row"
+  data-effect-row="${effect.id}"
+  data-effect-name="${effect.name.toLowerCase()}"
+>
   <div class="redsteel-effect-info">
     <img src="${effect.icon}" class="redsteel-effect-icon"/>
     <span class="redsteel-effect-name">${effect.name}</span>
@@ -176,6 +193,21 @@ export async function statusEffectManager() {
     render: (html) => {
       const root = html[0];
 
+      const searchInput = root.querySelector("#redsteel-effect-search");
+
+      searchInput?.addEventListener("input", (e) => {
+        const value = e.currentTarget.value.toLowerCase().trim();
+
+        const rows = root.querySelectorAll(".redsteel-row");
+
+        rows.forEach((row) => {
+          const effectName = row.dataset.effectName ?? "";
+
+          const matches = effectName.startsWith(value);
+
+          row.style.display = matches ? "flex" : "none";
+        });
+      });
       root
         .querySelector('[data-action="removeAll"]')
         .addEventListener("click", async () => {

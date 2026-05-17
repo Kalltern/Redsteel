@@ -865,7 +865,7 @@ async function applyDamageAsGM(data) {
       }
 
       stacks += stackMod;
-
+      if (stacks <= 0) continue;
       if (name === "bleed") {
       }
       await applyEffectToActor(actor, name, stacks);

@@ -294,6 +294,6 @@ export async function firstAid() {
       },
     },
     rolls: healRoll ? [firstAidRoll, healRoll] : [firstAidRoll],
-    type: CONST.CHAT_MESSAGE_TYPES.ROLL,
+    type: CONST.CHAT_MESSAGE_STYLES.ROLL,
   });
 }

@@ -65,6 +65,7 @@ REDSTEEL.effectDefinitions = {
     img: "icons/skills/wounds/blood-drip-droplet-red.webp",
     statuses: ["bleed"],
     maxStacks: 6,
+    stackBehavior: "stack",
     triggers: {
       onApply: {
         formula: "{appliedStacks}d4",
@@ -316,6 +317,7 @@ REDSTEEL.effectDefinitions = {
     img: "icons/skills/melee/shield-damaged-broken-gold.webp",
     statuses: ["corrosion"],
     maxStacks: 99,
+    stackBehavior: "stack",
     changes: [
       {
         key: "system.armor.natural.bonus",
@@ -336,6 +338,7 @@ REDSTEEL.effectDefinitions = {
     defaultRounds: 3,
     maxStacks: 99,
     useDuration: false,
+    stackBehavior: "stack",
     triggers: {
       onApply: {
         custom: "fearTest",
