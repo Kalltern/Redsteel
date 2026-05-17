@@ -147,82 +147,118 @@ export async function restAndRecover() {
 }
 
 export async function longRest() {
-  // Ensure a token is selected
-  const context = game.redsteel.selectToken({ notifyFallback: true });
-  if (!context) return;
-  const { actor, token } = context;
-  const system = actor.system;
-  const nourishingEffect = actor.effects.find((e) =>
-    e.statuses?.has("nourishing_rest"),
-  );
+  const controlled = canvas.tokens.controlled;
 
-  const regenMultiplier = nourishingEffect ? 2 : 1;
-
-  // ─── Stamina ───
-  const stamina = system.stats.stamina.value ?? 0;
-  const newStamina = Math.max(0, stamina + system.stats.stamina.max);
-
-  // ─── Health ───
-  const health = system.stats.health.value ?? 0;
-  const healthRegen = (10 + system.attributes.end.total * 2) * regenMultiplier;
-  const newHealth = Math.max(0, health + healthRegen);
-
-  // ─── Toxicity ───
-  const toxicity = system.stats.toxicity.value ?? 0;
-  const toxicityReduction =
-    (5 + system.attributes.end.total * 2) * regenMultiplier;
-  const newToxicity = Math.max(0, toxicity - toxicityReduction);
-
-  // ─── Fatigue ───
-  const fatigue = system.stats.fatigue.value ?? 0;
-  const newFatigue = Math.max(0, fatigue - 1);
-
-  // ─── Mind ───
-  const mind = Number(system.stats.mind.value ?? 0);
-  const newMind = Math.max(0, mind + 1);
-
-  await actor.update({
-    "system.stats.stamina.value": newStamina,
-    "system.stats.health.value": newHealth,
-    "system.stats.toxicity.value": newToxicity,
-    "system.stats.fatigue.value": newFatigue,
-    "system.stats.mind.value": newMind,
-  });
-
-  if (nourishingEffect) {
-    await nourishingEffect.delete();
+  if (!controlled.length) {
+    ui.notifications.warn("Select at least one token.");
+    return;
   }
 
-  // ─── Mana (Elementalist only) ───
-  if (system.doctrines.elementalist.value > 0) {
+  for (const token of controlled) {
+    const actor = token.actor;
+    if (!actor) continue;
+
+    const system = actor.system;
+
+    const nourishingEffect = actor.effects.find((e) =>
+      e.statuses?.has("nourishing_rest"),
+    );
+
+    const regenMultiplier = nourishingEffect ? 2 : 1;
+
+    // ─── Stamina ───
+    const stamina = system.stats.stamina.value ?? 0;
+    const newStamina = Math.max(0, stamina + system.stats.stamina.max);
+
+    // ─── Health ───
+    const health = system.stats.health.value ?? 0;
+    const healthRegen =
+      (10 + system.attributes.end.total * 2) * regenMultiplier;
+
+    const newHealth = Math.max(0, health + healthRegen);
+
+    // ─── Toxicity ───
+    const toxicity = system.stats.toxicity.value ?? 0;
+
+    const toxicityReduction =
+      (5 + system.attributes.end.total * 2) * regenMultiplier;
+
+    const newToxicity = Math.max(0, toxicity - toxicityReduction);
+
+    // ─── Fatigue ───
+    const fatigue = system.stats.fatigue.value ?? 0;
+    const newFatigue = Math.max(0, fatigue - 1);
+
+    // ─── Mind ───
+    const mind = Number(system.stats.mind.value ?? 0);
+    const newMind = Math.max(0, mind + 1);
+    // ─── Mana ───
     const mana = system.stats.mana.value ?? 0;
-    const newMana = Math.max(0, mana + 25);
+    const maxMana = system.stats.mana.max ?? 0;
 
-    await actor.update({
-      "system.stats.mana.value": newMana,
-    });
-  }
+    const elementalistRank = system.doctrines.elementalist.value ?? 0;
+    const elymasRank = system.doctrines.elymas.value ?? 0;
+    const incantatorRank = system.doctrines.incantator.value ?? 0;
+    const veneficusRank = system.doctrines.veneficus.value ?? 0;
 
-  // ─── Chat Message ───
-  const iconUrl = "icons/magic/time/day-night-sunset-sunrise.webp";
-  const characterName = actor.name;
+    let newMana = 0;
 
-  const chatMessage = `
+    if (elementalistRank > 0) {
+      newMana = elementalistRank >= 7 ? 50 : elementalistRank >= 5 ? 35 : 25;
+    } else if (elymasRank > 0) {
+      newMana = elymasRank >= 5 ? maxMana : Math.floor(maxMana / 2);
+    } else if (incantatorRank > 0) {
+      newMana = incantatorRank >= 9 ? 40 : incantatorRank >= 5 ? 30 : 20;
+    } else if (veneficusRank > 0) {
+      newMana = maxMana;
+    }
+
+    const manaText = newMana > 0 ? `, Mana +${newMana}` : "";
+
+    if (nourishingEffect) {
+      await nourishingEffect.delete();
+    }
+
+    const updates = {
+      "system.stats.stamina.value": newStamina,
+      "system.stats.health.value": newHealth,
+      "system.stats.toxicity.value": newToxicity,
+      "system.stats.fatigue.value": newFatigue,
+      "system.stats.mind.value": newMind,
+      "system.stats.mana.value": Math.min(maxMana, mana + newMana),
+    };
+    await actor.update(updates);
+    // ─── Chat Message ───
+    const iconUrl = "icons/magic/time/day-night-sunset-sunrise.webp";
+
+    const chatMessage = `
 <div style="display:flex; align-items:center; gap:10px;">
-  <img src="${iconUrl}" width="36" height="36" style="border-radius:50%;" />
+  <img src="${iconUrl}" width="36" height="36"
+       style="border-radius:50%;" />
   <div>
     <p style="color:#007ba9; font-size:1.2em;">
       <strong>Used Long Rest action</strong>
     </p>
-    <strong>${characterName}</strong> had a long rest that soothes body and soul.
+    <strong>${actor.name}</strong>
+    had a long rest that soothes body and soul.
+    <br>
+    <em>
+      Health +${healthRegen},
+      Stamina +${system.stats.stamina.max}
+      ${manaText},
+      Mind +1,
+      Fatigue -1,
+      Toxicity -${toxicityReduction}.
+    </em>
   </div>
 </div>
 `;
 
-  await ChatMessage.create({
-    content: chatMessage,
-    speaker: ChatMessage.getSpeaker({ actor }),
-  });
+    await ChatMessage.create({
+      content: chatMessage,
+      speaker: ChatMessage.getSpeaker({ actor }),
+    });
+  }
 }
 
 export async function firstAid() {
