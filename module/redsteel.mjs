@@ -411,6 +411,48 @@ Hooks.once("ready", () => {
   RedsteelActiveEffect.registerHooks();
 });
 
+Hooks.once("ready", () => {
+  console.log("REDSTEEL | Socket Listener Registered");
+
+  game.socket.on(SOCKET, async (data) => {
+    console.log("REDSTEEL | Socket Data:", data);
+
+    // ------------------------
+    // GM AUTHORITY ACTIONS
+    // ------------------------
+
+    if (data.type === "applyDamage") {
+      if (!game.user.isGM) return;
+      await applyDamageAsGM(data);
+    }
+
+    if (data.type === "applyEffects") {
+      if (!game.user.isGM) return;
+      await applyEffectsAsGM(data);
+    }
+
+    // ------------------------
+    // PLAYER-OWNED CHANNELING
+    // ------------------------
+
+    if (data.type === "sustainSpell") {
+      const actor = game.actors.get(data.actorId);
+      if (!actor) return;
+
+      // only owners execute
+      if (!actor.isOwner) return;
+
+      // prevent GM duplicate execution
+      if (game.user.isGM && actor.hasPlayerOwner) return;
+
+      const effect = actor.effects.get(data.effectId);
+      if (!effect) return;
+
+      await resolveChannelingTick(actor, effect);
+    }
+  });
+});
+
 Hooks.once("ready", async () => {
   // Prevent re-adding macros every load
   if (game.user.getFlag("redsteel", "hotbarInitialized")) return;

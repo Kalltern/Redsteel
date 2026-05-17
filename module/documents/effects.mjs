@@ -779,7 +779,11 @@ export class RedsteelActiveEffect extends ActiveEffect {
     }
 
     // ✅ Now resolve (even if mana is now 0)
-    await game.redsteel.resolveChannelingTick(actor, this);
+    game.socket.emit("system.redsteel", {
+      type: "sustainSpell",
+      actorId: actor.id,
+      effectId: this.id,
+    });
   }
 }
 

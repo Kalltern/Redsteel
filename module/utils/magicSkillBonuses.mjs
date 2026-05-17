@@ -797,7 +797,9 @@ export async function finalizeRollsAndPostChat(
   }
 
   if (maintainChanneling && costPerRound <= 0) {
-    ui.notifications.warn(`${spell.localizedName ?? spell.name} does not allow prolonged channeling.`);
+    ui.notifications.warn(
+      `${spell.localizedName ?? spell.name} does not allow prolonged channeling.`,
+    );
     return;
   }
   // --- CRITICAL SCORE ROLL ---
@@ -968,7 +970,7 @@ export async function finalizeRollsAndPostChat(
 
   console.log("Attack Flag:", attackFlag);
   await ChatMessage.create({
-    speaker: ChatMessage.getSpeaker(),
+    speaker: ChatMessage.getSpeaker({ actor }),
     content,
     rolls: rolls,
     flavor: `
