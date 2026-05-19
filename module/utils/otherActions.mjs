@@ -266,21 +266,64 @@ export async function firstAid() {
   if (!context) return;
 
   const { actor, token } = context;
-  let firstAidData = actor.system.skills.firstAid;
+
+  new Dialog({
+    title: "Medical Action",
+
+    content: `
+      <p>Select medical action:</p>
+    `,
+
+    buttons: {
+      firstAid: {
+        label: "First Aid",
+
+        callback: async () => {
+          await performFirstAid(actor, token);
+        },
+      },
+
+      stopBleeding: {
+        label: "Stop Bleeding",
+
+        callback: async () => {
+          await performStopBleeding(actor, token);
+        },
+      },
+    },
+
+    default: "firstAid",
+  }).render(true);
+}
+
+async function performFirstAid(actor, token) {
+  let firstAidData =
+    actor.type === "npc"
+      ? actor.system.attributes.int.mod
+      : actor.system.skills.firstAid;
+
   let healbonus = "";
+
+  const criticalFailureThreshold =
+    actor.type === "npc" ? 96 : firstAidData.criticalFailureThreshold;
+
+  const criticalSuccessThreshold =
+    actor.type === "npc" ? 5 : firstAidData.criticalSuccessThreshold;
 
   if (actor.system.feldsher2) healbonus = "+2d6";
   else if (actor.system.feldsher1) healbonus = "+1d6";
 
-  const firstAidRoll = new Roll(
-    `@skills.firstAid.rating - 1d100`,
-    actor.getRollData(),
-  );
+  const rollFormula =
+    actor.type === "npc"
+      ? "@attributes.int.mod - 1d100"
+      : "@skills.firstAid.rating - 1d100";
+
+  const firstAidRoll = new Roll(rollFormula, actor.getRollData());
+
   await firstAidRoll.evaluate({ async: true });
 
   const d100 = firstAidRoll.dice[0]?.total;
-  const { criticalFailureThreshold, criticalSuccessThreshold } = firstAidData;
-  console.log("feldsher", healbonus);
+
   const bonus = healbonus ? `${healbonus}` : "";
 
   let critStatus = "";
@@ -292,6 +335,8 @@ export async function firstAid() {
       "<strong style='color: red;'>Critical Failure! Injury caused!</strong>";
 
     healRoll = new Roll(`2d4${bonus}`);
+  } else if (firstAidRoll.total <= 0) {
+    healRoll = null;
   } else if (d100 <= criticalSuccessThreshold || firstAidRoll.total >= 60) {
     critStatus = "<strong style='color: green;'>Critical Success!</strong>";
 
@@ -302,7 +347,9 @@ export async function firstAid() {
     healRoll = new Roll(`3d6+3${bonus}`);
   }
 
-  await healRoll.evaluate({ async: true });
+  if (healRoll) {
+    await healRoll.evaluate({ async: true });
+  }
 
   const iconUrl = "icons/magic/life/cross-yellow-green.webp";
 
@@ -311,6 +358,7 @@ export async function firstAid() {
       actor,
       token: token?.document,
     }),
+
     flavor: `
 <div style="display:flex; align-items:center; gap:10px;">
   <img src="${iconUrl}" width="36" height="36" style="border-radius:50%;" />
@@ -321,7 +369,8 @@ export async function firstAid() {
     </p>
   </div>
 </div>
-  `,
+    `,
+
     flags: {
       redsteel: {
         rollName,
@@ -329,7 +378,47 @@ export async function firstAid() {
         criticalFailureThreshold,
       },
     },
+
     rolls: healRoll ? [firstAidRoll, healRoll] : [firstAidRoll],
+
+    type: CONST.CHAT_MESSAGE_STYLES.ROLL,
+  });
+}
+async function performStopBleeding(actor, token) {
+  const dex = actor.system.attributes.dex.mod;
+  const int = actor.system.attributes.int.mod;
+
+  const bestAttribute = Math.max(dex, int);
+
+  const stopBleedingRoll = new Roll(`30 + ${bestAttribute} - 1d100`);
+
+  await stopBleedingRoll.evaluate({ async: true });
+
+  const success = stopBleedingRoll.total >= 0;
+
+  const resultText = success
+    ? "<strong style='color: green;'>Success!</strong>"
+    : "<strong style='color: red;'>Failure!</strong>";
+
+  ChatMessage.create({
+    speaker: ChatMessage.getSpeaker({
+      actor,
+      token: token?.document,
+    }),
+
+    flavor: `
+<div style="display:flex; align-items:center; gap:10px;">
+  <div>
+    <p style="color:#007ba9; font-size:1.2em;">
+      <strong>Attempted to stop bleeding</strong><br>
+      ${resultText}
+    </p>
+  </div>
+</div>
+    `,
+
+    rolls: [stopBleedingRoll],
+
     type: CONST.CHAT_MESSAGE_STYLES.ROLL,
   });
 }
