@@ -332,13 +332,13 @@ async function performFirstAid(actor, token) {
 
   if (d100 >= criticalFailureThreshold) {
     critStatus =
-      "<strong style='color: red;'>Critical Failure! Injury caused!</strong>";
+      "<br><strong style='color: red;'>Critical Failure! Injury caused!</strong>";
 
     healRoll = new Roll(`2d4${bonus}`);
   } else if (firstAidRoll.total <= 0) {
     healRoll = null;
   } else if (d100 <= criticalSuccessThreshold || firstAidRoll.total >= 60) {
-    critStatus = "<strong style='color: green;'>Critical Success!</strong>";
+    critStatus = "<br><strong style='color: green;'>Critical Success!</strong>";
 
     healRoll = new Roll(`(3d6+3${bonus})*2`);
   } else if (firstAidRoll.total >= 25) {
