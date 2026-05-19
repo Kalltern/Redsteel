@@ -41,6 +41,7 @@ export class RedsteelItem extends Item {
         "chain",
         "corrosion",
         "corrosion_severe",
+        "crippled",
         "dazzled",
         "disorientation",
         "dispell",

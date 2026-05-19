@@ -1833,3 +1833,29 @@ export function selectToken({ warn = true, notifyFallback = false } = {}) {
 
   return { actor, token };
 }
+
+Hooks.once("ready", async () => {
+  console.log("Redsteel | Migrating crit table flags");
+
+  for (const table of game.tables) {
+    const oldValue = table.flags?.tos?.critTable;
+
+    if (!oldValue) continue;
+
+    // Create new flag if missing
+    if (!table.flags?.redsteel?.critTable) {
+      await table.setFlag("redsteel", "critTable", oldValue);
+    }
+
+    // Remove old namespace
+    await table.update({
+      flags: {
+        tos: new foundry.data.operators.ForcedDeletion(),
+      },
+    });
+
+    console.log(`Migrated ${table.name}: ${oldValue}`);
+  }
+
+  console.log("Redsteel | Migration complete");
+});

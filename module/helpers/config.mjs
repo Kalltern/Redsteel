@@ -328,7 +328,7 @@ REDSTEEL.effectDefinitions = {
   },
   soul_mark: {
     name: "Soul Mark",
-    img: "icons/svg/daze.svg",
+    img: "icons/magic/unholy/orb-contained-pink.webp",
     statuses: ["soul_mark"],
   },
   fear: {
@@ -372,7 +372,7 @@ REDSTEEL.effectDefinitions = {
   },
   resist_acid: {
     name: "Resist Acid",
-    img: "icons/magic/acid/projectile-bubble.webp",
+    img: "icons/magic/defensive/shield-barrier-glowing-triangle-green.webp",
     statuses: ["resist_acid"],
     changes: [
       {
@@ -386,7 +386,7 @@ REDSTEEL.effectDefinitions = {
 
   resist_fire: {
     name: "Resist Fire",
-    img: "icons/magic/fire/flame-burning-embers-yellow.webp",
+    img: "icons/magic/defensive/shield-barrier-glowing-triangle-orange.webp",
     statuses: ["resist_fire"],
     changes: [
       {
@@ -400,7 +400,7 @@ REDSTEEL.effectDefinitions = {
 
   resist_frost: {
     name: "Resist Frost",
-    img: "icons/magic/water/snowflake-ice-blue.webp",
+    img: "icons/magic/defensive/shield-barrier-glowing-triangle-teal-purple.webp",
     statuses: ["resist_frost"],
     changes: [
       {
@@ -414,7 +414,7 @@ REDSTEEL.effectDefinitions = {
 
   resist_lightning: {
     name: "Resist Lightning",
-    img: "icons/magic/lightning/bolt-strike-blue.webp",
+    img: "icons/magic/defensive/shield-barrier-glowing-triangle-blue-yellow.webp",
     statuses: ["resist_lightning"],
     changes: [
       {
@@ -428,7 +428,7 @@ REDSTEEL.effectDefinitions = {
 
   resist_magic: {
     name: "Resist Magic",
-    img: "icons/magic/symbols/runes-star-glow-purple.webp",
+    img: "icons/magic/defensive/shield-barrier-glowing-triangle-blue.webp",
     statuses: ["resist_magic"],
     changes: [
       {
@@ -442,7 +442,7 @@ REDSTEEL.effectDefinitions = {
 
   resist_dark: {
     name: "Resist Dark",
-    img: "icons/magic/death/skull-energy-purple.webp",
+    img: "icons/magic/defensive/shield-barrier-glowing-triangle-magenta.webp",
     statuses: ["resist_dark"],
     changes: [
       {
@@ -456,7 +456,7 @@ REDSTEEL.effectDefinitions = {
 
   ice_weapon: {
     name: "Ice Weapon",
-    img: "icons/magic/water/snowflake-ice-blue.webp",
+    img: "icons/magic/fire/dagger-rune-enchant-flame-teal.webp",
     statuses: ["ice_weapon"],
 
     combatModifiers: {
@@ -698,6 +698,58 @@ REDSTEEL.effectDefinitions = {
     name: "Nourishing rest",
     img: "icons/magic/nature/cornucopia-orange.webp",
     statuses: ["nourishing_rest"],
+  },
+  dead: {
+    name: "Dead",
+    img: "icons/svg/skull.svg",
+  },
+  prone: {
+    name: "Prone",
+    img: "icons/svg/falling.svg",
+    statuses: ["prone"],
+
+    triggers: {
+      onApply: {
+        custom: "proneInitiative",
+      },
+    },
+    changes: [
+      {
+        key: "system.combatSkills.meleeDefense.bonus",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: -20,
+      },
+      {
+        key: "system.combatSkills.rangedDefense.bonus",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: -20,
+      },
+      {
+        key: "system.combatSkills.dodge.bonus",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: -25,
+      },
+      {
+        key: "system.combatSkills.combat.bonus",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: -20,
+      },
+    ],
+  },
+  crippled: {
+    name: "Crippled",
+    img: "icons/skills/ranged/arrow-strike-apple-orange.webp",
+    statuses: ["crippled"],
+    defaultTurns: 3,
+    useDuration: true,
+
+    changes: [
+      {
+        key: "system.combatSkills.dodge.bonus",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: -20,
+      },
+    ],
   },
 };
 

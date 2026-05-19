@@ -10,6 +10,7 @@ export class RedsteelCombat extends Combat {
     console.log("Rolling initiative for IDs:", ids);
 
     ids = typeof ids === "string" ? [ids] : ids;
+
     const currentId = this.combatant?.id;
     const chatRollMode = game.settings.get("core", "rollMode");
 
@@ -19,20 +20,49 @@ export class RedsteelCombat extends Combat {
     for (let [i, id] of ids.entries()) {
       const combatant = this.combatants.get(id);
       const actor = combatant?.actor;
+
       if (!combatant?.isOwner || !actor) continue;
 
-      // Custom formula per actor type
-      const rollFormula =
-        actor.type === "npc"
+      // -----------------------------------------
+      // Prone initiative override
+      // -----------------------------------------
+
+      const isProne = actor.effects.some(
+        (e) => e.getFlag("core", "statusId") === "prone",
+      );
+
+      // -----------------------------------------
+      // Initiative formula
+      // -----------------------------------------
+
+      const rollFormula = isProne
+        ? "1"
+        : actor.type === "npc"
           ? "1d12 + @secondaryAttributes.ini.total"
           : actor.system.doctrines.rogue.value >= 7
             ? "2d12kh1 + @secondaryAttributes.ini.total + @secondaryAttributes.spd.total"
             : "1d12 + @secondaryAttributes.ini.total + @secondaryAttributes.spd.total";
 
+      // -----------------------------------------
+      // Roll initiative
+      // -----------------------------------------
+
       const roll = new Roll(rollFormula, actor.getRollData());
+
       await roll.evaluate();
 
-      updates.push({ _id: id, initiative: roll.total });
+      // -----------------------------------------
+      // Store initiative update
+      // -----------------------------------------
+
+      updates.push({
+        _id: id,
+        initiative: roll.total,
+      });
+
+      // -----------------------------------------
+      // Chat message data
+      // -----------------------------------------
 
       const messageData = foundry.utils.mergeObject(
         {
@@ -41,15 +71,30 @@ export class RedsteelCombat extends Combat {
             token: combatant.token,
             alias: combatant.name,
           }),
+
           flavor: game.i18n.format("COMBAT.RollsInitiative", {
             name: combatant.name,
           }),
-          flags: { "core.initiativeRoll": true },
+
+          flags: {
+            "core.initiativeRoll": true,
+          },
         },
         messageOptions,
       );
 
-      const chatData = await roll.toMessage(messageData, { create: false });
+      // -----------------------------------------
+      // Create chat data
+      // -----------------------------------------
+
+      const chatData = await roll.toMessage(messageData, {
+        create: false,
+      });
+
+      // -----------------------------------------
+      // Roll mode
+      // -----------------------------------------
+
       chatData.rollMode =
         "rollMode" in messageOptions
           ? messageOptions.rollMode
@@ -57,13 +102,28 @@ export class RedsteelCombat extends Combat {
             ? CONST.DICE_ROLL_MODES.PRIVATE
             : chatRollMode;
 
-      if (i > 0) chatData.sound = null;
+      // -----------------------------------------
+      // Only first roll makes sound
+      // -----------------------------------------
+
+      if (i > 0) {
+        chatData.sound = null;
+      }
+
       messages.push(chatData);
     }
 
     if (!updates.length) return this;
 
+    // -----------------------------------------
+    // Apply initiative updates
+    // -----------------------------------------
+
     await this.updateEmbeddedDocuments("Combatant", updates);
+
+    // -----------------------------------------
+    // Preserve current turn
+    // -----------------------------------------
 
     if (updateTurn && currentId) {
       await this.update({
@@ -71,7 +131,12 @@ export class RedsteelCombat extends Combat {
       });
     }
 
+    // -----------------------------------------
+    // Create chat messages
+    // -----------------------------------------
+
     await ChatMessage.implementation.create(messages);
+
     return this;
   }
 }

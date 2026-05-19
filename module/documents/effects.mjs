@@ -110,6 +110,8 @@ export class RedsteelActiveEffect extends ActiveEffect {
   }
 
   static async _onRoundStart(combat) {
+    const combatant = combat.combatant;
+
     const lastProcessed = combat.getFlag("redsteel", "lastProcessedRound");
 
     if (lastProcessed === combat.round) {
@@ -123,6 +125,12 @@ export class RedsteelActiveEffect extends ActiveEffect {
 
     for (const combatant of combat.combatants.values()) {
       const actor = combatant.actor;
+      if (!actor) continue;
+      const prone = actor.effects.find(
+        (e) =>
+          e.getFlag("core", "statusId") === "prone" &&
+          e.getFlag("redsteel", "proneDelayInit"),
+      );
       if (!actor) continue;
 
       // -------------------------
@@ -148,6 +156,16 @@ export class RedsteelActiveEffect extends ActiveEffect {
         if (bleed) {
           await bleed.delete();
         }
+      }
+
+      if (prone) {
+        await combatant.setFlag("redsteel", "proneInitiativePending", true);
+
+        await prone.unsetFlag("redsteel", "proneDelayInit");
+
+        ui.notifications.info(
+          `${actor.name} drops to initiative 1 from Prone.`,
+        );
       }
     }
   }
@@ -642,6 +660,9 @@ export class RedsteelActiveEffect extends ActiveEffect {
       return this._handleRegenerationHeal(trigger);
     }
 
+    if (trigger.custom === "proneInitiative") {
+      return this._handleProneInitiative();
+    }
     let formula = trigger.formula;
     if (!formula) return;
 
@@ -784,6 +805,48 @@ export class RedsteelActiveEffect extends ActiveEffect {
       actorId: actor.id,
       effectId: this.id,
     });
+  }
+
+  async _handleProneInitiative() {
+    const actor = this.parent;
+    if (!actor) return;
+
+    const combat = game.combat;
+    if (!combat) return;
+
+    const combatant = combat.combatants.find((c) => c.actorId === actor.id);
+
+    if (!combatant) return;
+
+    const currentTurn = combat.turn;
+
+    const combatantTurn = combat.turns.findIndex((t) => t.id === combatant.id);
+
+    const alreadyActed = combatantTurn < currentTurn;
+
+    // -----------------------------------
+    // Already acted
+    // -----------------------------------
+
+    if (alreadyActed) {
+      ui.notifications.info(
+        `${actor.name} will act last next round due to being prone.`,
+      );
+
+      return;
+    }
+
+    // -----------------------------------
+    // Has not acted yet
+    // -----------------------------------
+
+    await combatant.update({
+      initiative: 1,
+    });
+
+    ui.notifications.info(
+      `${actor.name} falls prone and drops to initiative 1.`,
+    );
   }
 }
 
