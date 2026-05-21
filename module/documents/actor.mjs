@@ -935,6 +935,12 @@ export class RedsteelActor extends Actor {
         (attribute.modBonus ?? 0) +
         (systemData.globalMod ?? 0);
     }
+
+    for (let [key, attribute] of Object.entries(
+      systemData.secondaryAttributes,
+    )) {
+      attribute.total = (attribute.value ?? 0) + (attribute.bonus ?? 0);
+    }
     const initiative = systemData.secondaryAttributes.ini;
     initiative.total = initiative.value + initiative.bonus;
     const hp = systemData.stats.health;
