@@ -15,7 +15,7 @@ const ODD_NEIGHBORS = [
   [-1, 1],
   [0, 1],
 ];
-
+// Planning movement with CTRL is supported by Foundry's built-in pathing and this code does interfere with it and make it crash.
 // Track mutation observers per token to avoid leaks across interrupted drags.
 const _labelObservers = new Map();
 
@@ -42,13 +42,23 @@ export class RedsteelToken extends Token {
   // Runtime-only: observers are tracked in `_labelObservers` map above.
 
   async _onDragLeftMove(event) {
-    super._onDragLeftMove(event);
+    await super._onDragLeftMove(event);
+
+    // Let Foundry handle CTRL path planning normally
+    if (this.#isPlanningMovement(event)) return;
+
     this.#ensureMovementLabel();
     this.#updateMovementLabel();
+  }
+  #isPlanningMovement(event) {
+    return event?.interactionData?.originalEvent?.ctrlKey === true;
   }
 
   async _onDragLeftDrop(event) {
     const result = await super._onDragLeftDrop(event);
+
+    // CTRL drag is only measurement/planning
+    if (this.#isPlanningMovement(event)) return result;
 
     try {
       const label = document.querySelector(
@@ -80,8 +90,10 @@ export class RedsteelToken extends Token {
     }
 
     this.#clearMovementRange();
+
     return result;
   }
+
   async _onDragLeftCancel(event) {
     const result = await super._onDragLeftCancel(event);
     try {
@@ -102,7 +114,10 @@ export class RedsteelToken extends Token {
 
   async _onDragLeftStart(event) {
     await super._onDragLeftStart(event);
-    // Clear any previous layers to avoid accumulation from interrupted drags
+
+    // Don't interfere with Foundry ruler planning
+    if (this.#isPlanningMovement(event)) return;
+
     this.#clearMovementRange();
 
     const state = this.#getMovementState();
@@ -113,21 +128,21 @@ export class RedsteelToken extends Token {
       Math.max(0, state.sprintRemaining),
     );
 
-    // Render largest-first
     this.#renderRange(this.#sprintLayerId, sprintRange, {
       color: 0xffff66,
       alpha: 0.15,
     });
+
     this.#renderRange(this.#movementLayerId, movementRange, {
       color: 0x66ff99,
       alpha: 0.15,
     });
+
     this.#renderRange(this.#walkLayerId, walkRange, {
       color: 0x66ccff,
       alpha: 0.15,
     });
 
-    // Ensure the label is present and observed while dragging
     this.#ensureMovementLabel();
   }
 
@@ -201,29 +216,46 @@ export class RedsteelToken extends Token {
   }
 
   #updateMovementLabel() {
-    const label = document.querySelector(
+    const labels = document.querySelectorAll(
       "#measurement .token-ruler-labels .waypoint-label",
     );
-    if (!label) return;
-    const distanceText = label.textContent || "";
-    const meters =
-      Number(distanceText.match(/[\d.,]+/)?.[0]?.replace(",", ".") ?? 0) || 0;
-    const distance = Math.round(meters / 1.5);
+
+    if (!labels.length) return;
 
     const state = this.#getMovementState();
-    const max = state.max;
-    const spent = state.spent;
-    const remaining = state.remaining;
 
-    let movement = label.querySelector(".redsteel-movement");
-    if (!movement) {
-      movement = document.createElement("span");
-      movement.classList.add("redsteel-movement");
-      label.appendChild(movement);
-    }
+    // Always use full movement allowance as the cap.
+    const cap = state.max;
 
-    movement.textContent = ` (${distance}/${remaining} Hex)`;
-    movement.style.color = distance > remaining ? "red" : "white";
+    labels.forEach((label, index) => {
+      const distanceText = label.textContent || "";
+
+      const meters =
+        Number(distanceText.match(/[\d.,]+/)?.[0]?.replace(",", ".") ?? 0) || 0;
+
+      // Foundry labels are already cumulative.
+      const traversed = Math.round(meters / 1.5);
+
+      let movement = label.querySelector(".redsteel-movement");
+
+      if (!movement) {
+        movement = document.createElement("span");
+        movement.classList.add("redsteel-movement");
+        label.appendChild(movement);
+      }
+
+      const isPlanned = index === labels.length - 1;
+
+      if (isPlanned) {
+        movement.textContent = ` (Planned: ${traversed}/${cap} Hex)`;
+
+        movement.style.color = traversed > cap ? "red" : "white";
+      } else {
+        movement.textContent = ` (Passed: ${traversed} Hex)`;
+
+        movement.style.color = "#999999";
+      }
+    });
   }
 
   #ensureMovementLabel() {
