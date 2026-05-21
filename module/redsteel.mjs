@@ -11,6 +11,7 @@ import { registerEffectSheetExtensions } from "./sheets/effect-sheet.mjs";
 // Import helper/utility classes and constants.
 
 import { REDSTEEL } from "./helpers/config.mjs";
+import { RedsteelToken } from "./documents/token.mjs";
 import { statusEffectManager } from "./utils/statusEffectManager.mjs";
 import { usePotion } from "./utils/usePotion.mjs";
 import { defenseRoll } from "./utils/defense.mjs";
@@ -160,6 +161,7 @@ Hooks.once("init", function () {
 
   // Define custom Document classes
   CONFIG.Actor.documentClass = RedsteelActor;
+  CONFIG.Token.objectClass = RedsteelToken;
   CONFIG.Item.documentClass = RedsteelItem;
   CONFIG.Combat.documentClass = RedsteelCombat;
   CONFIG.ActiveEffect.documentClass = RedsteelActiveEffect;

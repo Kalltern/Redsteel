@@ -593,6 +593,16 @@
           "visible": true,
           "bonus": 0
         },
+        "mindBending": {
+          "value": 0,
+          "rating": 0,
+          "critbonus": 0,
+          "critfailpenalty": 0,
+          "id": 4,
+          "type": 1,
+          "visible": true,
+          "bonus": 0
+        },
         "rituals": {
           "value": 0,
           "rating": 0,
@@ -944,6 +954,13 @@
           "min": 0,
           "base": 0,
           "max": 900,
+          "bonus": 0
+        },
+          "mind": {
+          "value": 3,
+          "min": 0,
+          "base": 0,
+          "max": 0,
           "bonus": 0
         },
         "holyEnergy": {
