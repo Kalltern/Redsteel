@@ -44,9 +44,9 @@
       "thumbnail": "systems/redsteel/assets/start_screen.png"
     }
   ],
-  "version": "0.8.3",
+  "version": "0.8.4",
   "compatibility": {
-    "minimum": "12.331",
+    "minimum": "13",
     "verified": "14.362"
   },
   "esmodules": ["module/redsteel.mjs"],
