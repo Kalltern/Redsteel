@@ -8,26 +8,149 @@ function _injectDialogCSS() {
           }
 
           .casting-options {
-            border: 1px solid #7a7971;
+            border: 1px solid #5b4a2c;
             border-radius: 4px;
-            padding: 6px;
-            background: #f8f8f8;
+            padding: 8px;
+            background: #1f1f1f;
+            color: #d0d0d0;
           }
 
           .casting-options .option-row {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             font-size: 14px;
           }
+
+          .tab-headers {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 6px;
+          }
+
+          .tab-item {
+            padding: 6px 10px;
+            background: #252525;
+            border: 1px solid #444;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #c8c2a1;
+            font-size: 12px;
+          }
+
+          .tab-item.active {
+            background: #2f2b24;
+            border-color: #8b6914;
+            color: #f0e4b8;
+          }
+
         /* General Dialog styling */
         .spell-dialog .window-content {
-            max-width: 400px; /* Increased max width for tabs */
-            min-height: 530px;
+            max-width: 520px;
+            max-height: 620px;
             width: 100%;
+            overflow: hidden;
+            background: #1d1d1d;
+            color: #d0d0d0;
         }
         .spell-dialog .window{
             width: auto;
+            background: #141414;
+            border: 1px solid #8b6914;
+        }
+        .spell-dialog .tab-content {
+          max-height: 420px;
+          overflow-y: auto;
+        }
+        
+        /* Compact table-style spell list */
+        .spell-tabs table {
+          width: 100%;
+          border-collapse: collapse;
+          background: #222121;
+          color: #d0d0d0;
+          font-size: 12px;
+          margin-top: 4px;
+        }
+        
+        .spell-tabs thead tr {
+          border-bottom: 2px solid #8b6914;
+          background: #1a1a1a;
+        }
+        
+        .spell-tabs th {
+          text-align: left;
+          padding: 4px 6px;
+          color: #c9b26b;
+          font-weight: bold;
+          text-transform: uppercase;
+          font-size: 10px;
+          letter-spacing: 0.5px;
+        }
+        
+        .spell-tabs tbody tr {
+          border-bottom: 1px solid #444;
+          cursor: pointer;
+          transition: background 0.15s ease;
+        }
+        
+        .spell-tabs tbody tr:hover {
+          background: #3a3a3a;
+        }
+        
+        .spell-tabs td {
+          padding: 4px 6px;
+          vertical-align: middle;
+        }
+        
+        .icon-cell {
+          padding: 2px 4px;
+          text-align: center;
+        }
+        
+        .spell-icon {
+          width: 44px;
+          height: 44px;
+          border-radius: 3px;
+          vertical-align: middle;
+          cursor: help;
+        }
+        
+        .tooltip-popup {
+          position: absolute;
+          background: #1a1a1a;
+          border: 2px solid #8b6914;
+          border-radius: 4px;
+          padding: 8px;
+          max-width: 340px;
+          color: #d0d0d0;
+          font-size: 11px;
+          z-index: 1000;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+        
+        .tooltip-popup .tooltip-title {
+          color: #c9b26b;
+          font-weight: bold;
+          margin-bottom: 4px;
+          border-bottom: 1px solid #8b6914;
+          padding-bottom: 4px;
+        }
+        
+        .tooltip-popup .tooltip-section {
+          margin-bottom: 4px;
+        }
+        
+        .tooltip-popup .tooltip-section-title {
+          color: #c9b26b;
+          font-weight: bold;
+          font-size: 10px;
+          text-transform: uppercase;
+        }
+        
+        .spell-choice.table-row {
+          display: table-row;
         }
     `;
 
@@ -124,27 +247,50 @@ export function showSpellSelectionDialogs(actor) {
                         })
                     </div>`;
 
-          // Tab Content (List of spells)
-          const spellListHtml = spells
-            .map(
-              (spell) => `
-<li class="spell-choice ability-choice"
-    data-spell-id="${spell.id}">
-  <img src="${spell.img}"
-       class="ability-icon">
-  <span class="ability-name">
-    ${spell.localizedName ?? spell.name}
-  </span>
-</li>
-    `,
-            )
+          // Tab Content (List of spells) - as table rows
+          const spellTableRows = spells
+            .map((spell) => {
+              const actionCost = spell.system.actionCost || "-";
+              const manaCost = spell.system.cost || 0;
+              const resources = Array.isArray(spell.system.resources)
+                ? spell.system.resources
+                : Object.values(spell.system.resources || {});
+
+              let resourceCosts = manaCost > 0 ? `${manaCost} Mana` : "";
+              resources.forEach((res) => {
+                if (res && res.type && res.amount) {
+                  resourceCosts +=
+                    (resourceCosts ? ", " : "") + `${res.amount} ${res.type}`;
+                }
+              });
+              resourceCosts = resourceCosts || "-";
+
+              return `
+                <tr class="spell-choice ability-choice table-row" data-spell-id="${spell.id}">
+                  <td class="icon-cell"><img src="${spell.img}" class="spell-icon" title="${spell.localizedName ?? spell.name}"></td>
+                  <td>${spell.localizedName ?? spell.name}</td>
+                  <td style="text-align: center;">${actionCost}</td>
+                  <td style="text-align: center;">${resourceCosts}</td>
+                </tr>
+              `;
+            })
             .join("");
 
           tabContentHtml += `
                         <div class="tab-pane" data-tab="${tabId}">
-                            <ul style="list-style: none; padding: 0;">
-                                ${spellListHtml}
-                            </ul>
+                            <table>
+                              <thead>
+                                <tr>
+                                  <th style="width: 32px;"></th>
+                                  <th>Name</th>
+                                  <th style="text-align: center; width: 80px;">Action Cost</th>
+                                  <th style="text-align: center; width: 100px;">Resource Cost</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                ${spellTableRows}
+                              </tbody>
+                            </table>
                         </div>
                     `;
         }
@@ -221,8 +367,76 @@ export function showSpellSelectionDialogs(actor) {
             html.find(`.tab-pane[data-tab="${tab}"]`).addClass("active");
           });
 
+          // Spell icon tooltip hover
+          html
+            .find(".spell-icon")
+            .on("mouseenter", function (e) {
+              const spellId = $(this).closest(".spell-choice").data("spell-id");
+              const spell = allSpells.find((s) => s.id === spellId);
+              if (!spell) return;
+
+              const tooltipData = spell.getTooltipData?.();
+              if (!tooltipData) {
+                $(this).attr("title", spell.localizedName ?? spell.name);
+                return;
+              }
+
+              const actionCost = spell.system.actionCost || "-";
+              const manaCost = Number(spell.system.cost) || 0;
+              const resources = Array.isArray(spell.system.resources)
+                ? spell.system.resources
+                : Object.values(spell.system.resources || {});
+              let resourceCosts = manaCost > 0 ? `${manaCost} Mana` : "";
+              resources.forEach((res) => {
+                if (res && res.type && res.amount) {
+                  resourceCosts +=
+                    (resourceCosts ? ", " : "") + `${res.amount} ${res.type}`;
+                }
+              });
+              resourceCosts = resourceCosts || "-";
+
+              let tooltipHtml = `<div class="tooltip-title">${tooltipData.title ?? spell.localizedName ?? spell.name}</div>`;
+              tooltipHtml += `<div class="tooltip-section"><strong>Action Cost:</strong> ${actionCost}</div>`;
+              tooltipHtml += `<div class="tooltip-section"><strong>Resource Cost:</strong> ${resourceCosts}</div>`;
+              if (tooltipData.sections) {
+                tooltipData.sections.forEach((section) => {
+                  if (section.label && section.value) {
+                    tooltipHtml += `<div class="tooltip-section"><strong>${section.label}:</strong> ${section.value}</div>`;
+                  }
+                });
+              }
+              if (tooltipData.stats) {
+                tooltipData.stats.forEach((stat) => {
+                  if (stat.label && stat.value) {
+                    tooltipHtml += `<div class="tooltip-section"><strong>${stat.label}:</strong> ${stat.value}</div>`;
+                  }
+                });
+              }
+              if (tooltipData.description) {
+                tooltipHtml += `<div class="tooltip-section" style="border-top: 1px solid #8b6914; padding-top: 4px; margin-top: 4px;">${tooltipData.description}</div>`;
+              }
+
+              const tooltip = $(
+                `<div class="tooltip-popup">${tooltipHtml}</div>`,
+              );
+              $("body").append(tooltip);
+
+              const offset = $(this).offset();
+              tooltip.css({
+                left: offset.left + 50 + "px",
+                top: offset.top + "px",
+              });
+
+              $(this).data("tooltip", tooltip);
+            })
+            .on("mouseleave", function () {
+              const tooltip = $(this).data("tooltip");
+              if (tooltip) tooltip.remove();
+            });
+
           // 3. Handle spell selection
           html.find(".spell-choice").click(async (event) => {
+            if ($(event.target).hasClass("spell-icon")) return; // Don't select if clicking icon
             const selectedId = $(event.currentTarget).data("spell-id");
             // Find the spell item object using its ID
             const selectedSpell = allSpells.find((s) => s.id === selectedId);

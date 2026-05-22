@@ -250,39 +250,7 @@ ${
 
     render: (html) => {
       html.find(".weapon-set-toggle").on("click", async () => {
-        const next = actor.system.combat.activeWeaponSet === 1 ? 2 : 1;
-
-        // Preview next set before switching
-        const weaponSets = game.redsteel.buildWeaponSetView(actor);
-        const ws = weaponSets[next];
-
-        const mainImg = ws.main?.img
-          ? `<img src="${ws.main.img}" width="32" height="32">`
-          : "";
-
-        const offImg = ws.off?.img
-          ? `<img src="${ws.off.img}" width="32" height="32">`
-          : "";
-
-        await ChatMessage.create({
-          speaker: ChatMessage.getSpeaker({ actor }),
-          whisper: ChatMessage.getWhisperRecipients("GM"),
-          content: `
-          <div class="redsteel-weapon-switch">
-            <strong>${actor.name}</strong> switches weapon set.
-            <hr>
-            Default cost is 1 action, but this can be reduced with certain feats or abilities.
-            <hr>
-            <div><strong>Main:</strong> ${ws.main?.localizedName ?? ws.main?.name ?? "Empty"} ${mainImg}</div>
-            <div><strong>Off:</strong> ${ws.off?.localizedName ?? ws.off?.name ?? "Empty"} ${offImg}</div>
-          </div>
-        `,
-        });
-
-        await actor.update({
-          "system.combat.activeWeaponSet": next,
-        });
-
+        await game.redsteel.switchWeaponSet(actor);
         dialog.close();
 
         // Re-open with refreshed state

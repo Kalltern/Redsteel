@@ -64,26 +64,45 @@ export async function combatAbilities() {
     </div>
   `;
 
-    const abilityListHtml = list
-      .map(
-        (ability) => `
-      <li class="spell-choice ability-choice"
-          data-ability-id="${ability.id}">
-        <img src="${ability.img}"
-             class="ability-icon">
-        <span class="ability-name">
-          ${ability.localizedName ?? ability.name}
-        </span>
-      </li>
-    `,
-      )
+    const abilityTableRows = list
+      .map((ability) => {
+        const actionCost = ability.system.actionCost || "-";
+
+        // Build resource cost from cost and costType
+        const cost = ability.system.cost || 0;
+        const costType = ability.system.costType || "";
+        let resourceCosts = "-";
+
+        if (cost > 0 && costType) {
+          resourceCosts = `${cost} ${costType}`;
+        }
+
+        return `
+        <tr class="spell-choice ability-choice table-row" data-ability-id="${ability.id}">
+          <td class="icon-cell"><img src="${ability.img}" class="ability-icon" title="${ability.localizedName ?? ability.name}"></td>
+          <td>${ability.localizedName ?? ability.name}</td>
+          <td style="text-align: center;">${actionCost}</td>
+          <td style="text-align: center;">${resourceCosts}</td>
+        </tr>
+      `;
+      })
       .join("");
 
     tabContentHtml += `
     <div class="tab-pane" data-tab="${tab.id}">
-      <ul style="list-style:none; padding:0;">
-        ${abilityListHtml}
-      </ul>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 44px;"></th>
+            <th>Name</th>
+            <th style="text-align: center; width: 80px;">Action Cost</th>
+            <th style="text-align: center; width: 100px;">Resource Cost</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${abilityTableRows}
+        </tbody>
+      </table>
     </div>
   `;
   }
@@ -99,10 +118,100 @@ export async function combatAbilities() {
 
   if (!document.getElementById("redsteel-ability-dialog-styles")) {
     const css = `
-        .ability-dialog .window-content { max-width: 300px; width: 100%; height: auto; }
-        .ability-dialog .window { width: auto; height: auto; }
+        .ability-dialog .window-content { max-width: 540px; max-height: 620px; width: 100%; overflow: hidden; background: #1d1d1d; color: #d0d0d0; }
+        .ability-dialog .window { width: auto; height: auto; background: #141414; border: 1px solid #8b6914; }
         #keep-open-container { margin-bottom: 8px; font-size: 14px; }
         #keep-open { margin-right: 5px; }
+        .ability-dialog .tab-content { max-height: 420px; overflow-y: auto; }
+        
+        /* Compact table-style ability list */
+        .ability-tabs table {
+          width: 100%;
+          border-collapse: collapse;
+          background: #222121;
+          color: #d0d0d0;
+          font-size: 12px;
+          margin-top: 4px;
+        }
+        
+        .ability-tabs thead tr {
+          border-bottom: 2px solid #8b6914;
+          background: #1a1a1a;
+        }
+        
+        .ability-tabs th {
+          text-align: left;
+          padding: 4px 6px;
+          color: #c9b26b;
+          font-weight: bold;
+          text-transform: uppercase;
+          font-size: 10px;
+          letter-spacing: 0.5px;
+        }
+        
+        .ability-tabs tbody tr {
+          border-bottom: 1px solid #444;
+          cursor: pointer;
+          transition: background 0.15s ease;
+        }
+        
+        .ability-tabs tbody tr:hover {
+          background: #3a3a3a;
+        }
+        
+        .ability-tabs td {
+          padding: 4px 6px;
+          vertical-align: middle;
+        }
+        
+        .icon-cell {
+          padding: 2px 4px;
+          text-align: center;
+        }
+        
+        .ability-icon {
+          width: 44px;
+          height: 44px;
+          border-radius: 3px;
+          vertical-align: middle;
+          cursor: help;
+        }
+        
+        .tooltip-popup {
+          position: absolute;
+          background: #1a1a1a;
+          border: 2px solid #8b6914;
+          border-radius: 4px;
+          padding: 8px;
+          max-width: 340px;
+          color: #d0d0d0;
+          font-size: 11px;
+          z-index: 1000;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+        
+        .tooltip-popup .tooltip-title {
+          color: #c9b26b;
+          font-weight: bold;
+          margin-bottom: 4px;
+          border-bottom: 1px solid #8b6914;
+          padding-bottom: 4px;
+        }
+        
+        .tooltip-popup .tooltip-section {
+          margin-bottom: 4px;
+        }
+        
+        .tooltip-popup .tooltip-section-title {
+          color: #c9b26b;
+          font-weight: bold;
+          font-size: 10px;
+          text-transform: uppercase;
+        }
+        
+        .ability-choice.table-row {
+          display: table-row;
+        }
     `;
     const styleSheet = document.createElement("style");
     styleSheet.id = "redsteel-ability-dialog-styles";
@@ -230,16 +339,15 @@ export async function combatAbilities() {
       // Add header + buttons
       html.find(".ability-dialog-form").prepend(`
     <div class="multiattack-header">
-      <h3>⚔ Multi-Attack: ${ability.localizedName ?? ability.name} (Strike ${multiAttackCount})</h3>
+      <h3>Multi-Attack: ${ability.localizedName ?? ability.name} (Strike ${multiAttackCount})</h3>
       <div style="display:flex; gap:8px; margin-bottom:8px;">
         <button type="button" id="continue-multiattack">
-          ⚔ Attack Again
+          Attack Again
         </button>
       </div>
       <hr>
     </div>
   `);
-
       // Continue attack
       html.find("#continue-multiattack").click(async () => {
         multiAttackCount++;
@@ -416,6 +524,29 @@ export async function combatAbilities() {
   background: #a54a4a;
   border-color: #ff6e6e;
 }
+
+.tab-headers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.tab-item {
+  padding: 6px 10px;
+  background: #252525;
+  border: 1px solid #444;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #c8c2a1;
+  font-size: 12px;
+}
+
+.tab-item.active {
+  background: #2f2b24;
+  border-color: #8b6914;
+  color: #f0e4b8;
+}
   </style>
 `,
     classes: ["ability-dialog"],
@@ -456,6 +587,7 @@ export async function combatAbilities() {
 
       // Ability selection
       html.find(".ability-choice").click(async (event) => {
+        if ($(event.target).hasClass("ability-icon")) return; // Don't select if clicking icon
         const abilityId = event.currentTarget.dataset.abilityId;
         const ability = abilities.find((a) => a.id === abilityId);
         if (!ability) return;
@@ -471,13 +603,67 @@ export async function combatAbilities() {
         await onAbilityChosen(ability, root, abilityDialog, actor);
       });
 
-      html.find(".weapon-set-toggle").on("click", async () => {
-        const next = actor.system.combat.activeWeaponSet === 1 ? 2 : 1;
+      // Ability icon tooltip hover
+      html
+        .find(".ability-icon")
+        .on("mouseenter", function (e) {
+          const abilityId = $(this)
+            .closest(".ability-choice")
+            .data("ability-id");
+          const ability = abilities.find((a) => a.id === abilityId);
+          if (!ability) return;
 
-        await actor.update({
-          "system.combat.activeWeaponSet": next,
+          const tooltipData = ability.getTooltipData?.();
+          const actionCost = ability.system.actionCost || "-";
+          const cost = ability.system.cost || 0;
+          const costType = ability.system.costType || "";
+          let resourceCosts = "-";
+          if (cost > 0 && costType) {
+            resourceCosts = `${cost} ${costType}`;
+          }
+
+          let tooltipHtml = `<div class="tooltip-title">${tooltipData?.title ?? ability.localizedName ?? ability.name}</div>`;
+          tooltipHtml += `<div class="tooltip-section"><strong>Action Cost:</strong> ${actionCost}</div>`;
+          tooltipHtml += `<div class="tooltip-section"><strong>Resource Cost:</strong> ${resourceCosts}</div>`;
+
+          if (tooltipData) {
+            if (tooltipData.sections) {
+              tooltipData.sections.forEach((section) => {
+                if (section.label && section.value) {
+                  tooltipHtml += `<div class="tooltip-section"><strong>${section.label}:</strong> ${section.value}</div>`;
+                }
+              });
+            }
+            if (tooltipData.stats) {
+              tooltipData.stats.forEach((stat) => {
+                if (stat.label && stat.value) {
+                  tooltipHtml += `<div class="tooltip-section"><strong>${stat.label}:</strong> ${stat.value}</div>`;
+                }
+              });
+            }
+            if (tooltipData.description) {
+              tooltipHtml += `<div class="tooltip-section" style="border-top: 1px solid #8b6914; padding-top: 4px; margin-top: 4px;">${tooltipData.description}</div>`;
+            }
+          }
+
+          const tooltip = $(`<div class="tooltip-popup">${tooltipHtml}</div>`);
+          $("body").append(tooltip);
+
+          const offset = $(this).offset();
+          tooltip.css({
+            left: offset.left + 50 + "px",
+            top: offset.top + "px",
+          });
+
+          $(this).data("tooltip", tooltip);
+        })
+        .on("mouseleave", function () {
+          const tooltip = $(this).data("tooltip");
+          if (tooltip) tooltip.remove();
         });
 
+      html.find(".weapon-set-toggle").on("click", async () => {
+        await game.redsteel.switchWeaponSet(actor);
         abilityDialog.close();
         combatAbilities();
       });

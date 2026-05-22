@@ -2009,3 +2009,447 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
     translateX(-50%)
     scale(1.08);
 }
+
+/* Shared Redsteel dialog skin: dark fantasy panels, aged gold accents, readable fields. */
+.window-app.dialog,
+.dialog.window-app,
+.application.dialog {
+  color: #c8bea8;
+  border: 1px solid #4f422b !important;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.68) !important;
+}
+
+.window-app.dialog .window-header,
+.dialog.window-app .window-header,
+.application.dialog .window-header {
+  background: #0e0d0b !important;
+  border-bottom: 1px solid #4f422b !important;
+  color: #cdbb88 !important;
+  font-weight: 700;
+}
+
+.window-app.dialog .window-header a,
+.window-app.dialog .window-title,
+.dialog.window-app .window-header a,
+.dialog.window-app .window-title,
+.application.dialog .window-header a,
+.application.dialog .window-title {
+  color: #cdbb88 !important;
+  text-shadow: 1px 1px 0 #000;
+}
+
+.window-app.dialog .window-content,
+.dialog.window-app .window-content,
+.application.dialog .window-content {
+  background:
+    linear-gradient(rgba(10, 9, 7, 0.9), rgba(22, 19, 14, 0.92)),
+    url("../ui/parchment_dark.jpg") repeat !important;
+  color: #d6c7a3 !important;
+}
+
+.window-app.dialog form,
+.window-app.dialog fieldset,
+.dialog.window-app form,
+.dialog.window-app fieldset,
+.application.dialog form,
+.application.dialog fieldset {
+  color: #c8bea8;
+}
+
+.window-app.dialog fieldset,
+.dialog.window-app fieldset,
+.application.dialog fieldset {
+  border-color: #4f422b;
+}
+
+.window-app.dialog legend,
+.window-app.dialog label,
+.dialog.window-app legend,
+.dialog.window-app label,
+.application.dialog legend,
+.application.dialog label {
+  color: #c8bea8;
+}
+
+.window-app.dialog hr,
+.dialog.window-app hr,
+.application.dialog hr {
+  border: 0;
+  border-top: 1px solid rgba(117, 95, 55, 0.72);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.85);
+}
+
+.window-app.dialog button,
+.dialog.window-app button,
+.application.dialog button {
+  background: #14120f !important;
+  border: 1px solid #4f422b !important;
+  border-radius: 0 !important;
+  color: #cdbb88 !important;
+  font-weight: 700;
+  text-shadow: 1px 1px 0 #000;
+  box-shadow: none !important;
+}
+
+.window-app.dialog button:hover,
+.window-app.dialog button:focus,
+.dialog.window-app button:hover,
+.dialog.window-app button:focus,
+.application.dialog button:hover,
+.application.dialog button:focus {
+  background: #1c1812 !important;
+  border-color: #665534 !important;
+  box-shadow: none !important;
+}
+
+.window-app.dialog .dialog-buttons,
+.dialog.window-app .dialog-buttons,
+.application.dialog .dialog-buttons {
+  gap: 8px;
+}
+
+.window-app.dialog table,
+.dialog.window-app table,
+.application.dialog table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #15130f;
+  color: #c8bea8;
+}
+
+.window-app.dialog thead tr,
+.dialog.window-app thead tr,
+.application.dialog thead tr {
+  background: #0f0e0b;
+  border-bottom: 1px solid #5f4d2e;
+}
+
+.window-app.dialog th,
+.dialog.window-app th,
+.application.dialog th {
+  color: #bca66b;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.window-app.dialog td,
+.dialog.window-app td,
+.application.dialog td {
+  background: transparent !important;
+  border-color: rgba(117, 95, 55, 0.28);
+}
+
+.window-app.dialog tbody tr:nth-child(odd),
+.dialog.window-app tbody tr:nth-child(odd),
+.application.dialog tbody tr:nth-child(odd) {
+  background: rgba(19, 17, 15, 0.94);
+}
+
+.window-app.dialog tbody tr:nth-child(even),
+.dialog.window-app tbody tr:nth-child(even),
+.application.dialog tbody tr:nth-child(even) {
+  background: rgba(42, 36, 29, 0.92);
+}
+
+.window-app.dialog tbody tr:hover,
+.dialog.window-app tbody tr:hover,
+.application.dialog tbody tr:hover {
+  background: rgba(45, 38, 28, 0.98);
+}
+
+.window-app.dialog input:not([type="checkbox"]):not([type="radio"]),
+.window-app.dialog textarea,
+.window-app.dialog select,
+.dialog.window-app input:not([type="checkbox"]):not([type="radio"]),
+.dialog.window-app textarea,
+.dialog.window-app select,
+.application.dialog input:not([type="checkbox"]):not([type="radio"]),
+.application.dialog textarea,
+.application.dialog select {
+  background: #ddd3bd !important;
+  border: 1px solid #4f422b !important;
+  color: #17110b !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.window-app.dialog input:not([type="checkbox"]):not([type="radio"])::placeholder,
+.window-app.dialog textarea::placeholder,
+.dialog.window-app input:not([type="checkbox"]):not([type="radio"])::placeholder,
+.dialog.window-app textarea::placeholder,
+.application.dialog input:not([type="checkbox"]):not([type="radio"])::placeholder,
+.application.dialog textarea::placeholder {
+  color: #6a5840;
+}
+
+.window-app.dialog input[type="checkbox"],
+.window-app.dialog input[type="radio"],
+.dialog.window-app input[type="checkbox"],
+.dialog.window-app input[type="radio"],
+.application.dialog input[type="checkbox"],
+.application.dialog input[type="radio"] {
+  accent-color: #8f7848;
+}
+
+.window-app.dialog .tab-item,
+.dialog.window-app .tab-item,
+.application.dialog .tab-item,
+.window-app.dialog .pill span,
+.dialog.window-app .pill span,
+.application.dialog .pill span,
+.window-app.dialog .weapon-set-toggle,
+.dialog.window-app .weapon-set-toggle,
+.application.dialog .weapon-set-toggle {
+  background: #15130f !important;
+  border: 1px solid #4f422b !important;
+  border-radius: 0 !important;
+  color: #c8bea8 !important;
+  box-shadow: none !important;
+}
+
+.window-app.dialog .tab-item.active,
+.dialog.window-app .tab-item.active,
+.application.dialog .tab-item.active,
+.window-app.dialog .pill input:checked + span,
+.dialog.window-app .pill input:checked + span,
+.application.dialog .pill input:checked + span {
+  background: #1b1711 !important;
+  border-color: #665534 !important;
+  color: #d7c697 !important;
+  box-shadow: none !important;
+}
+
+.window-app.dialog .tab-item:hover,
+.dialog.window-app .tab-item:hover,
+.application.dialog .tab-item:hover,
+.window-app.dialog .pill span:hover,
+.dialog.window-app .pill span:hover,
+.application.dialog .pill span:hover,
+.window-app.dialog .weapon-set-toggle:hover,
+.dialog.window-app .weapon-set-toggle:hover,
+.application.dialog .weapon-set-toggle:hover {
+  background: #1a1712 !important;
+  border-color: #665534 !important;
+  color: #d7c697 !important;
+}
+
+.window-app.dialog input[type="checkbox"]:checked,
+.dialog.window-app input[type="checkbox"]:checked,
+.application.dialog input[type="checkbox"]:checked {
+  filter: brightness(0.78) saturate(0.72);
+}
+
+.window-app.dialog .weapon-slot,
+.dialog.window-app .weapon-slot,
+.application.dialog .weapon-slot {
+  background: #14120f !important;
+  border: 1px solid #4f422b !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.window-app.dialog .weapon-slot img,
+.dialog.window-app .weapon-slot img,
+.application.dialog .weapon-slot img {
+  border-radius: 0 !important;
+}
+
+.window-app.dialog .weapon-loadouts.active-set-1 .weapon-slot.filled[data-set="1"],
+.window-app.dialog .weapon-loadouts.active-set-2 .weapon-slot.filled[data-set="2"],
+.dialog.window-app .weapon-loadouts.active-set-1 .weapon-slot.filled[data-set="1"],
+.dialog.window-app .weapon-loadouts.active-set-2 .weapon-slot.filled[data-set="2"],
+.application.dialog .weapon-loadouts.active-set-1 .weapon-slot.filled[data-set="1"],
+.application.dialog .weapon-loadouts.active-set-2 .weapon-slot.filled[data-set="2"] {
+  border-color: #7b6a43 !important;
+  outline: 1px solid #19150f;
+  box-shadow: none !important;
+}
+
+.window-app.dialog .weapon-slot.empty,
+.dialog.window-app .weapon-slot.empty,
+.application.dialog .weapon-slot.empty {
+  background: #100f0d !important;
+  color: #706958;
+}
+
+.window-app.dialog .weapon-loadout-label,
+.dialog.window-app .weapon-loadout-label,
+.application.dialog .weapon-loadout-label {
+  position: relative;
+  min-width: 54px;
+  margin-bottom: 4px;
+  padding-bottom: 2px;
+  color: #9d947f;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.window-app.dialog .weapon-loadout-label::after,
+.dialog.window-app .weapon-loadout-label::after,
+.application.dialog .weapon-loadout-label::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 0;
+  height: 1px;
+  background: #4f422b;
+}
+
+.window-app.dialog .weapon-loadouts.active-set-1 .weapon-set-block:nth-of-type(1) .weapon-loadout-label,
+.window-app.dialog .weapon-loadouts.active-set-2 .weapon-set-block:nth-of-type(2) .weapon-loadout-label,
+.dialog.window-app .weapon-loadouts.active-set-1 .weapon-set-block:nth-of-type(1) .weapon-loadout-label,
+.dialog.window-app .weapon-loadouts.active-set-2 .weapon-set-block:nth-of-type(2) .weapon-loadout-label,
+.application.dialog .weapon-loadouts.active-set-1 .weapon-set-block:nth-of-type(1) .weapon-loadout-label,
+.application.dialog .weapon-loadouts.active-set-2 .weapon-set-block:nth-of-type(2) .weapon-loadout-label {
+  color: #cfddea;
+  text-shadow: 0 0 5px rgba(89, 146, 185, 0.45);
+}
+
+.window-app.dialog .weapon-loadouts.active-set-1 .weapon-set-block:nth-of-type(1) .weapon-loadout-label::before,
+.window-app.dialog .weapon-loadouts.active-set-2 .weapon-set-block:nth-of-type(2) .weapon-loadout-label::before,
+.dialog.window-app .weapon-loadouts.active-set-1 .weapon-set-block:nth-of-type(1) .weapon-loadout-label::before,
+.dialog.window-app .weapon-loadouts.active-set-2 .weapon-set-block:nth-of-type(2) .weapon-loadout-label::before,
+.application.dialog .weapon-loadouts.active-set-1 .weapon-set-block:nth-of-type(1) .weapon-loadout-label::before,
+.application.dialog .weapon-loadouts.active-set-2 .weapon-set-block:nth-of-type(2) .weapon-loadout-label::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 5px;
+  background: #78b9e2;
+  box-shadow: 0 0 6px rgba(86, 159, 207, 0.85);
+  vertical-align: 1px;
+}
+
+.window-app.dialog .weapon-loadouts.active-set-1 .weapon-set-block:nth-of-type(1) .weapon-loadout-label::after,
+.window-app.dialog .weapon-loadouts.active-set-2 .weapon-set-block:nth-of-type(2) .weapon-loadout-label::after,
+.dialog.window-app .weapon-loadouts.active-set-1 .weapon-set-block:nth-of-type(1) .weapon-loadout-label::after,
+.dialog.window-app .weapon-loadouts.active-set-2 .weapon-set-block:nth-of-type(2) .weapon-loadout-label::after,
+.application.dialog .weapon-loadouts.active-set-1 .weapon-set-block:nth-of-type(1) .weapon-loadout-label::after,
+.application.dialog .weapon-loadouts.active-set-2 .weapon-set-block:nth-of-type(2) .weapon-loadout-label::after {
+  background: #4d7290;
+  box-shadow: 0 0 5px rgba(78, 139, 180, 0.45);
+}
+
+.window-app.dialog .weapon-loadouts.active-set-1 .weapon-set-block:nth-of-type(1) .weapon-slot,
+.window-app.dialog .weapon-loadouts.active-set-2 .weapon-set-block:nth-of-type(2) .weapon-slot,
+.dialog.window-app .weapon-loadouts.active-set-1 .weapon-set-block:nth-of-type(1) .weapon-slot,
+.dialog.window-app .weapon-loadouts.active-set-2 .weapon-set-block:nth-of-type(2) .weapon-slot,
+.application.dialog .weapon-loadouts.active-set-1 .weapon-set-block:nth-of-type(1) .weapon-slot,
+.application.dialog .weapon-loadouts.active-set-2 .weapon-set-block:nth-of-type(2) .weapon-slot {
+  border-color: #4d7290 !important;
+  box-shadow: 0 0 6px rgba(78, 139, 180, 0.36) !important;
+}
+
+.window-app.dialog .ability-tabs th:first-child,
+.window-app.dialog .spell-tabs th:first-child,
+.dialog.window-app .ability-tabs th:first-child,
+.dialog.window-app .spell-tabs th:first-child,
+.application.dialog .ability-tabs th:first-child,
+.application.dialog .spell-tabs th:first-child {
+  width: 48px !important;
+}
+
+.window-app.dialog .ability-tabs .icon-cell,
+.window-app.dialog .spell-tabs .icon-cell,
+.dialog.window-app .ability-tabs .icon-cell,
+.dialog.window-app .spell-tabs .icon-cell,
+.application.dialog .ability-tabs .icon-cell,
+.application.dialog .spell-tabs .icon-cell {
+  width: 48px;
+  min-width: 48px;
+  padding: 3px 6px !important;
+  text-align: center;
+}
+
+.window-app.dialog .ability-tabs .ability-choice,
+.window-app.dialog .spell-tabs .spell-choice,
+.dialog.window-app .ability-tabs .ability-choice,
+.dialog.window-app .spell-tabs .spell-choice,
+.application.dialog .ability-tabs .ability-choice,
+.application.dialog .spell-tabs .spell-choice {
+  height: 52px;
+}
+
+.window-app.dialog .ability-icon,
+.window-app.dialog .spell-icon,
+.dialog.window-app .ability-icon,
+.dialog.window-app .spell-icon,
+.application.dialog .ability-icon,
+.application.dialog .spell-icon {
+  display: block;
+  width: 40px !important;
+  height: 40px !important;
+  max-width: none !important;
+  object-fit: cover;
+  background: #0b0a08;
+  border: 1px solid #4f422b;
+  border-radius: 0 !important;
+  box-sizing: border-box;
+}
+
+.window-app.dialog .ability-dialog .tab-content,
+.window-app.dialog .spell-dialog .tab-content,
+.window-app.dialog .ability-tabs .tab-content,
+.window-app.dialog .spell-tabs .tab-content,
+.dialog.window-app .ability-dialog .tab-content,
+.dialog.window-app .spell-dialog .tab-content,
+.dialog.window-app .ability-tabs .tab-content,
+.dialog.window-app .spell-tabs .tab-content,
+.application.dialog .ability-tabs .tab-content,
+.application.dialog .spell-tabs .tab-content {
+  max-height: 360px !important;
+  overflow-y: auto !important;
+  scrollbar-color: #665534 #0e0d0b;
+  scrollbar-width: thin;
+}
+
+.window-app.dialog .pill input:checked + span,
+.dialog.window-app .pill input:checked + span,
+.application.dialog .pill input:checked + span {
+  background: #17232c !important;
+  border-color: #4d7290 !important;
+  color: #d9edf8 !important;
+  box-shadow: 0 0 7px rgba(78, 139, 180, 0.52) !important;
+}
+
+.window-app.dialog .casting-options .option-row label:has(input[type="checkbox"]),
+.dialog.window-app .casting-options .option-row label:has(input[type="checkbox"]),
+.application.dialog .casting-options .option-row label:has(input[type="checkbox"]) {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 4px 9px;
+  background: #15130f !important;
+  border: 1px solid #4f422b !important;
+  color: #c8bea8 !important;
+  cursor: pointer;
+}
+
+.window-app.dialog .casting-options .option-row label:has(input[type="checkbox"]) input,
+.dialog.window-app .casting-options .option-row label:has(input[type="checkbox"]) input,
+.application.dialog .casting-options .option-row label:has(input[type="checkbox"]) input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.window-app.dialog .casting-options .option-row label:has(input[type="checkbox"]:checked),
+.dialog.window-app .casting-options .option-row label:has(input[type="checkbox"]:checked),
+.application.dialog .casting-options .option-row label:has(input[type="checkbox"]:checked) {
+  background: #17232c !important;
+  border-color: #4d7290 !important;
+  color: #d9edf8 !important;
+  box-shadow: 0 0 7px rgba(78, 139, 180, 0.52) !important;
+}
+
+.window-app.dialog .casting-options .option-row label:has(input[type="checkbox"]):hover,
+.dialog.window-app .casting-options .option-row label:has(input[type="checkbox"]):hover,
+.application.dialog .casting-options .option-row label:has(input[type="checkbox"]):hover {
+  border-color: #665534 !important;
+  color: #d7c697 !important;
+}

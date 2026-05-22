@@ -106,6 +106,45 @@ function localizeItemDirectoryNames(element) {
   }
 }
 
+async function switchWeaponSet(actor) {
+  if (!actor || actor.type !== "character") return null;
+
+  const current = actor.system.combat?.activeWeaponSet ?? 1;
+  const next = current === 1 ? 2 : 1;
+  const weaponSets = buildWeaponSetView(actor);
+  const nextSet = weaponSets[next] ?? {};
+
+  const renderWeaponPreview = (label, item) => {
+    const name = item?.localizedName ?? item?.name ?? "Empty";
+    const image = item?.img
+      ? `<img src="${item.img}" width="32" height="32" style="vertical-align:middle; margin-left:6px;">`
+      : "";
+
+    return `<div><strong>${label}:</strong> ${name} ${image}</div>`;
+  };
+
+  await ChatMessage.create({
+    speaker: ChatMessage.getSpeaker({ actor }),
+    whisper: ChatMessage.getWhisperRecipients("GM"),
+    content: `
+      <div class="redsteel-weapon-switch">
+        <strong>${actor.name}</strong> switches to weapon set ${next}.
+        <hr>
+        Default cost is 1 action, but this can be reduced with certain feats or abilities.
+        <hr>
+        ${renderWeaponPreview("Main", nextSet.main)}
+        ${renderWeaponPreview("Off", nextSet.off)}
+      </div>
+    `,
+  });
+
+  await actor.update({
+    "system.combat.activeWeaponSet": next,
+  });
+
+  return next;
+}
+
 Hooks.once("init", function () {
   // Add custom constants for configuration.
   CONFIG.REDSTEEL = REDSTEEL;
@@ -118,6 +157,7 @@ Hooks.once("init", function () {
   game.redsteel.applyEffect =
     RedsteelActiveEffect.applyEffect.bind(RedsteelActiveEffect);
   game.redsteel.resolveWeaponContext = resolveWeaponContext;
+  game.redsteel.switchWeaponSet = switchWeaponSet;
   game.redsteel.deductAbilityCost = deductAbilityCost;
   game.redsteel.buildWeaponSetView = buildWeaponSetView;
   game.redsteel.evaluateDmgVsArmor = evaluateDmgVsArmor;
@@ -1539,15 +1579,15 @@ Hooks.once("ready", () => {
   });
 });
 
-// Bar brawl integration, first three bars 0-2 are reserved for ingame customisation
+// Bar brawl integration
 Hooks.on("preCreateToken", function (document, data) {
   const actor = document.actor;
   if (!actor) return;
   document.updateSource({
     "flags.barbrawl.resourceBars": {
-      bar4: {
-        order: 3,
-        id: "bar4",
+      bar1: {
+        order: 0,
+        id: "bar1",
         attribute: "stats.health",
         mincolor: "#3e1e1e",
         maxcolor: "#a80000",
@@ -1573,9 +1613,9 @@ Hooks.on("preCreateToken", function (document, data) {
         bgImage: "",
         opacity: null,
       },
-      bar5: {
-        order: 4,
-        id: "bar5",
+      bar2: {
+        order: 1,
+        id: "bar2",
         attribute: "stats.stamina",
         mincolor: "#a3a3a3",
         maxcolor: "#e6d200",
@@ -1601,9 +1641,9 @@ Hooks.on("preCreateToken", function (document, data) {
         bgImage: "",
         opacity: null,
       },
-      bar6: {
-        order: 5,
-        id: "bar6",
+      bar3: {
+        order: 2,
+        id: "bar3",
         attribute: "stats.toxicity",
         mincolor: "#83ff7a",
         maxcolor: "#2e9900",
@@ -1629,9 +1669,9 @@ Hooks.on("preCreateToken", function (document, data) {
         bgImage: "",
         opacity: null,
       },
-      bar7: {
-        order: 6,
-        id: "bar7",
+      bar4: {
+        order: 3,
+        id: "bar4",
         attribute: "stats.temporaryHealth",
         mincolor: "#C8C8C8",
         maxcolor: "#C8C8C8",
@@ -1663,9 +1703,9 @@ Hooks.on("preCreateToken", function (document, data) {
   if (actor.system.magicPotential) {
     document.updateSource({
       "flags.barbrawl.resourceBars": {
-        bar8: {
-          order: 7,
-          id: "bar8",
+        bar5: {
+          order: 4,
+          id: "bar5",
           attribute: "stats.mana",
           mincolor: "#001547",
           maxcolor: "#004ddd",

@@ -216,11 +216,7 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
       default: "melee",
       render: (html) => {
         html.find(".weapon-set-toggle").on("click", async () => {
-          const next = actor.system.combat.activeWeaponSet === 1 ? 2 : 1;
-
-          await actor.update({
-            "system.combat.activeWeaponSet": next,
-          });
+          await game.redsteel.switchWeaponSet(actor);
 
           dialog.close();
           defenseRoll({ actor }); // 🔁 reopen with updated preview

@@ -279,15 +279,10 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     }
   }
 
-  static _setActiveWeaponSet(event, target) {
+  static async _setActiveWeaponSet(event, target) {
     if (this.actor.type !== "character") return;
 
-    const current = this.actor.system.combat.activeWeaponSet ?? 1;
-    const next = current === 1 ? 2 : 1;
-
-    this.actor.update({
-      "system.combat.activeWeaponSet": next,
-    });
+    await game.redsteel.switchWeaponSet(this.actor);
   }
 
   _assignWeaponDirect(itemId, set, slot) {
