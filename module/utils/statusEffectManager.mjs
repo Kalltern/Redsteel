@@ -21,6 +21,21 @@ export async function statusEffectManager() {
     return actor.effects.find((e) => e.statuses?.has(effectId));
   }
 
+  function normalizeSearchText(value) {
+    return String(value ?? "").toLowerCase().trim().replace(/\s+/g, " ");
+  }
+
+  function effectMatchesSearch(effectName, searchValue) {
+    const normalizedEffectName = normalizeSearchText(effectName);
+    const normalizedSearch = normalizeSearchText(searchValue);
+
+    if (!normalizedSearch) return true;
+
+    return normalizedSearch
+      .split(" ")
+      .every((term) => normalizedEffectName.includes(term));
+  }
+
   async function applyEffectToAll(effectId) {
     const actors = getSelectedActors();
     if (!actors.length) return;
@@ -196,14 +211,14 @@ export async function statusEffectManager() {
       const searchInput = root.querySelector("#redsteel-effect-search");
 
       searchInput?.addEventListener("input", (e) => {
-        const value = e.currentTarget.value.toLowerCase().trim();
+        const value = e.currentTarget.value;
 
         const rows = root.querySelectorAll(".redsteel-row");
 
         rows.forEach((row) => {
           const effectName = row.dataset.effectName ?? "";
 
-          const matches = effectName.startsWith(value);
+          const matches = effectMatchesSearch(effectName, value);
 
           row.style.display = matches ? "flex" : "none";
         });

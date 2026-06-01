@@ -851,11 +851,18 @@ async function handleApplyDamage(messageId) {
   // Targets already selected
   checkTargetsAndContinue();
 }
-async function applyDamageToTargets(message, targets, mode, selectedEffects) {
+async function applyDamageToTargets(
+  message,
+  targets,
+  mode,
+  selectedEffects,
+  criticalDegree = null,
+) {
   const data = {
     type: "applyDamage",
     messageId: message.id,
     mode: mode,
+    criticalDegree,
     sceneId: canvas.scene.id,
     targetIds: targets.map((t) => t.id),
     selectedEffects: selectedEffects,
@@ -872,9 +879,22 @@ async function applyDamageAsGM(data) {
   const message = game.messages.get(messageId);
 
   const attack = message.flags.attack;
+  const selectedCriticalDegree = Number.isFinite(Number(data.criticalDegree))
+    ? Number(data.criticalDegree)
+    : (attack.critical?.degree ?? null);
+  const suggestedCriticalDegree = Number.isFinite(
+    Number(attack.critical?.degree),
+  )
+    ? Number(attack.critical.degree)
+    : selectedCriticalDegree;
+  const selectedAttack =
+    mode === "critical"
+      ? getCriticalAttackData(attack, selectedCriticalDegree)
+      : attack[mode];
 
   const scene = game.scenes.get(sceneId);
   const combat = game.combat;
+  const criticalOverrideRows = [];
   for (const tokenId of targetIds) {
     const tokenDoc = scene.tokens.get(tokenId);
     if (!tokenDoc) {
@@ -896,15 +916,43 @@ async function applyDamageAsGM(data) {
     const damageProfile = attack.damageProfile ?? { expression: [] };
 
     const result = evaluateDmgVsArmor({
-      damage: attack[mode].damage,
-      penetration: attack[mode].penetration ?? 0,
+      damage: selectedAttack.damage,
+      penetration: selectedAttack.penetration ?? 0,
       damageProfile,
       armor: actor.system.armor,
       hp: currentHp,
       tempHp: currentTemporaryHp,
-      halfDamage: attack[mode].halfDamage ?? false,
-      penCap: attack[mode].penCap ?? false,
+      halfDamage: selectedAttack.halfDamage ?? false,
+      penCap: selectedAttack.penCap ?? false,
     });
+
+    if (
+      mode === "critical" &&
+      selectedCriticalDegree !== null &&
+      selectedCriticalDegree !== suggestedCriticalDegree
+    ) {
+      const suggestedAttack = getCriticalAttackData(
+        attack,
+        suggestedCriticalDegree,
+      );
+      const suggestedResult = evaluateDmgVsArmor({
+        damage: suggestedAttack.damage,
+        penetration: suggestedAttack.penetration ?? 0,
+        damageProfile,
+        armor: actor.system.armor,
+        hp: currentHp,
+        tempHp: currentTemporaryHp,
+        halfDamage: suggestedAttack.halfDamage ?? false,
+        penCap: suggestedAttack.penCap ?? false,
+      });
+
+      criticalOverrideRows.push({
+        targetName: actor.name,
+        suggestedDamage: suggestedResult.finalDamage,
+        selectedDamage: result.finalDamage,
+      });
+    }
+
     const author = [message.author, message.user, message.userId]
       .map((candidate) =>
         typeof candidate === "string" ? game.users.get(candidate) : candidate,
@@ -958,31 +1006,49 @@ async function applyDamageAsGM(data) {
     const combatant = combat?.combatants.find((c) => c.tokenId === tokenDoc.id);
     await handlePostDamageStatus({ actor, combatant });
   }
+
+  if (criticalOverrideRows.length) {
+    await notifyCriticalDegreeOverride({
+      message,
+      attack,
+      suggestedDegree: suggestedCriticalDegree,
+      selectedDegree: selectedCriticalDegree,
+      rows: criticalOverrideRows,
+    });
+  }
 }
 
 function openDamageSelectionDialog(message, targets) {
   const attack = message.flags.attack;
   const effects = attack.effects || {};
   let mode = "normal";
+  let criticalDegree = attack.critical?.degree ?? 0;
   const hasCritical = attack.critical !== "" && attack.critical !== undefined;
   const hasBreakthrough =
     attack.breakthrough?.damage !== "" &&
     attack.breakthrough?.damage !== undefined;
+  const criticalOptions = getCriticalOptions(attack);
+
+  const getSelectedAttack = () =>
+    mode === "critical"
+      ? getCriticalAttackData(attack, criticalDegree)
+      : attack[mode];
 
   const renderPreview = () =>
     targets
       .map((t) => {
         const damageProfile = attack.damageProfile ?? { expression: [] };
-        console.log("attack[mode]:", attack[mode]);
+        const selectedAttack = getSelectedAttack();
+        console.log("attack[mode]:", selectedAttack);
         const result = evaluateDmgVsArmor({
-          damage: attack[mode].damage,
-          penetration: attack[mode].penetration ?? 0,
+          damage: selectedAttack.damage,
+          penetration: selectedAttack.penetration ?? 0,
           damageProfile,
           armor: t.actor.system.armor,
           hp: t.actor.system.stats.health.value,
           tempHp: t.actor.system.stats.temporaryHealth.value,
-          halfDamage: attack[mode].halfDamage ?? false,
-          penCap: attack[mode].penCap ?? false,
+          halfDamage: selectedAttack.halfDamage ?? false,
+          penCap: selectedAttack.penCap ?? false,
         });
 
         const effectPreview = Object.entries(effects)
@@ -1045,6 +1111,20 @@ function openDamageSelectionDialog(message, targets) {
               : ""
           }
         </fieldset>
+        <fieldset class="critical-degree-fieldset" style="display:none;">
+          <legend>Critical Degree</legend>
+          ${criticalOptions
+            .map(
+              (option) => `
+                <label>
+                  <input type="radio" name="criticalDegree" value="${option.degree}"
+                    ${option.degree === criticalDegree ? "checked" : ""}>
+                  ${option.degree}
+                </label>
+              `,
+            )
+            .join("")}
+        </fieldset>
 
         <ul class="damage-preview">
           ${renderPreview()}
@@ -1071,18 +1151,124 @@ function openDamageSelectionDialog(message, targets) {
             selectedEffects[tokenId].push(effectName);
           });
 
-          applyDamageToTargets(message, targets, mode, selectedEffects);
+          applyDamageToTargets(
+            message,
+            targets,
+            mode,
+            selectedEffects,
+            mode === "critical" ? criticalDegree : null,
+          );
         },
       },
       cancel: { label: "Cancel" },
     },
     render: (html) => {
+      const updateCriticalDegreeVisibility = () => {
+        html
+          .find(".critical-degree-fieldset")
+          .toggle(mode === "critical" && criticalOptions.length > 0);
+        html.closest(".app").css("height", "auto");
+      };
+
+      updateCriticalDegreeVisibility();
       html.find('input[name="mode"]').on("change", (ev) => {
         mode = ev.target.value;
+        updateCriticalDegreeVisibility();
+        html
+          .find(`input[name="criticalDegree"][value="${criticalDegree}"]`)
+          .prop("checked", true);
+        html.find(".damage-preview").html(renderPreview());
+      });
+      html.find('input[name="criticalDegree"]').on("change", (ev) => {
+        criticalDegree = Number(ev.target.value);
         html.find(".damage-preview").html(renderPreview());
       });
     },
+  }, {
+    height: "auto",
   }).render(true);
+}
+
+function getCriticalOptions(attack) {
+  const fallback = attack.critical
+    ? [
+        {
+          degree: attack.critical.degree ?? 0,
+          damage: attack.critical.damage,
+          penetration: attack.critical.penetration,
+        },
+      ]
+    : [];
+
+  return Array.isArray(attack.critical?.options)
+    ? attack.critical.options
+    : fallback;
+}
+
+function getCriticalAttackData(attack, degree) {
+  const critical = attack.critical ?? {};
+  const option = getCriticalOptions(attack).find(
+    (candidate) => Number(candidate.degree) === Number(degree),
+  );
+
+  return {
+    ...critical,
+    ...(option ?? {}),
+    degree: option?.degree ?? critical.degree ?? degree,
+    halfDamage: critical.halfDamage ?? false,
+    penCap: critical.penCap ?? false,
+  };
+}
+
+async function notifyCriticalDegreeOverride({
+  message,
+  attack,
+  suggestedDegree,
+  selectedDegree,
+  rows,
+}) {
+  const suggestedAttack = getCriticalAttackData(attack, suggestedDegree);
+  const selectedAttack = getCriticalAttackData(attack, selectedDegree);
+  const targetRows = rows
+    .map(
+      (row) => `
+        <tr>
+          <td>${row.targetName}</td>
+          <td style="text-align:center;">${row.suggestedDamage}</td>
+          <td style="text-align:center;">${row.selectedDamage}</td>
+          <td style="text-align:center;">${row.selectedDamage - row.suggestedDamage}</td>
+        </tr>
+      `,
+    )
+    .join("");
+
+  await ChatMessage.create({
+    speaker: ChatMessage.getSpeaker({ user: game.user }),
+    whisper: ChatMessage.getWhisperRecipients("GM"),
+    content: `
+      <div class="redsteel-critical-override">
+        <strong>Critical degree changed during damage application.</strong>
+        <p>
+          Suggested degree ${suggestedDegree} was changed to ${selectedDegree}.
+          Critical range result: ${attack.critical?.result ?? "unknown"}.
+        </p>
+        <p>
+          Suggested critical: ${suggestedAttack.damage} damage / ${suggestedAttack.penetration ?? 0} penetration.<br>
+          Applied critical: ${selectedAttack.damage} damage / ${selectedAttack.penetration ?? 0} penetration.
+        </p>
+        <table style="width:100%;">
+          <tr>
+            <th>Target</th>
+            <th>Suggested Damage</th>
+            <th>Applied Damage</th>
+            <th>Diff</th>
+          </tr>
+          ${targetRows}
+        </table>
+        <p>Source message: ${message.id}</p>
+      </div>
+    `,
+  });
 }
 
 async function handlePostDamageStatus({ actor, combatant }) {

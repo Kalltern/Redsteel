@@ -82,11 +82,11 @@ export async function usePotion() {
   const css = `
     #potion-list .potion-choice {
       font-size: 16px;
-      color: black;
+      color: #c8bea8;
     }
     #potion-list .potion-choice:hover {
-      color: black;
-      text-shadow: 0 0 1px green, 0 0 2px green;
+      color: #d7c697;
+      text-shadow: 1px 1px 0 #000;
     }
     .potion-dialog .window-content {
       max-width: 300px;
@@ -131,6 +131,7 @@ export async function usePotion() {
         </ul>
       </form>
     `,
+      classes: ["potion-dialog"],
       buttons: {},
       render: function (html) {
         html.find("#potion-list li").click(async (event) => {

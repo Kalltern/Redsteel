@@ -711,8 +711,6 @@ export async function getCriticalRolls(
   const perBonus = Number(actor.system.attributes.per.total) || 0;
   const critDamageMapping = [0, 5, 5, 10, 20];
   const critPenetrationMapping = [5, 5, 10, 10, 15];
-  const critBonusDamage =
-    critDamageMapping[critScore] + weaponSkillCritDmg || 0;
   const actorCritBonus = Number(actor.system.critDamage) || 0;
   const weaponDamageTypes = [ws.dmgType1, ws.dmgType2, ws.dmgType3, ws.dmgType4]
     .filter((e) => typeof e === "string")
@@ -727,8 +725,19 @@ export async function getCriticalRolls(
       deadlyLungeBonus = 5;
     }
   }
-  const critBonusPenetration =
-    critPenetrationMapping[critScore] +
+  const buildCriticalTotals = (degree) => {
+    const critDamageTotal =
+      (critDamageMapping[degree] ?? 0) +
+      weaponSkillCritDmg +
+      deadlyLungeBonus +
+      perBonus +
+      actorCritBonus +
+      (weapon?.system.critDamage || 0) +
+      damageTotal +
+      doctrineCritDmg;
+
+    const critBonusPenetration =
+      (critPenetrationMapping[degree] ?? 0) +
       perBonus +
       actorCritBonus +
       sneakCritPenetration +
@@ -738,20 +747,25 @@ export async function getCriticalRolls(
       weaponSkillCritPen +
       doctrineSkillCritPen || 0;
 
-  let critDamageTotal =
-    critBonusDamage +
-    deadlyLungeBonus +
-    perBonus +
-    actorCritBonus +
-    (weapon?.system.critDamage || 0) +
-    damageTotal +
-    doctrineCritDmg;
+    return {
+      degree,
+      damage: critDamageTotal,
+      penetration: critBonusPenetration,
+    };
+  };
+
+  const criticalOptions = [0, 1, 2, 3, 4].map(buildCriticalTotals);
+  const selectedCritical = criticalOptions[critScore] ?? criticalOptions[0];
+  const critBonusPenetration = selectedCritical.penetration;
+
+  let critDamageTotal = selectedCritical.damage;
 
   return {
     critScore,
     critScoreResult,
     critBonusPenetration,
     critDamageTotal,
+    criticalOptions,
   };
 }
 

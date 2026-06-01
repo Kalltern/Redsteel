@@ -314,6 +314,7 @@ export async function universalAttackLogic({
       critScoreResult,
       critBonusPenetration,
       critDamageTotal,
+      criticalOptions,
     } = critData;
 
     // ─── Effects Roll ───
@@ -443,6 +444,9 @@ ${damageLine}
             penetration: critBonusPenetration,
             halfDamage: halfDamage,
             penCap: penCap,
+            degree: critScore,
+            result: critScoreResult,
+            options: criticalOptions,
           },
           breakthrough: {
             damage: breakthroughRollResult,
