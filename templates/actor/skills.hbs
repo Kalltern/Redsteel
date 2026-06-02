@@ -7,21 +7,9 @@
 
 <section class="skills-box">
 <div class="skills-toolbar-row">
-  {{#if @root.editable}}
-  <div class="skills-toolbar">
-    <button
-      type="button"
-      class="skills-edit-toggle {{#if @root.skillsEditMode}}active{{/if}}"
-      data-action="toggleSkillsEdit"
-      aria-pressed="{{#if @root.skillsEditMode}}true{{else}}false{{/if}}"
-    >
-      <i class="fas fa-pen-to-square"></i>
-      {{#if @root.skillsEditMode}}Done{{else}}Edit Skills{{/if}}
-    </button>
-  </div>
-  {{/if}}
 
   <nav class="tabs skills-subtabs" data-group="skills-subtabs" data-action="tab">
+
     <a
       class="item subtab-link {{#if (or (eq activeSkillsSubtab 'general') (not activeSkillsSubtab))}}active{{/if}}"
       data-group="skills-subtabs"
@@ -29,6 +17,19 @@
     >
       General
     </a>
+
+    {{#if @root.editable}}
+    <button
+      type="button"
+      class="skills-edit-toggle {{#if @root.skillsEditMode}}active{{/if}}"
+      data-action="toggleSkillsEdit"
+      aria-pressed="{{#if @root.skillsEditMode}}true{{else}}false{{/if}}"
+    >
+      <i class="fas fa-pen-to-square"></i>
+      {{#if @root.skillsEditMode}}Done{{else}}{{/if}}
+    </button>
+    {{/if}}
+
     <a
       class="item subtab-link {{#if (eq activeSkillsSubtab 'combat')}}active{{/if}}"
       data-group="skills-subtabs"
@@ -36,7 +37,9 @@
     >
       Combat
     </a>
+
   </nav>
+
 </div>
 
 <section

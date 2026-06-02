@@ -528,25 +528,71 @@ table tr td:nth-child(3) {
 .redsteel .tab.biography {
   flex: 1;
 }
-/* Skills toolbar + subtabs on one row */
+/* ===== Skills Navigation Strip ===== */
 .skills-toolbar-row {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(60, 60, 60, 0.18) 10%,
+      rgba(12, 12, 11, 0.82) 80%
+    ),
+    url(../ui/headertexture.jpg);
+
+}
+
+.skills-toolbar-row > .item {
+  flex: 1;
+
   display: flex;
   align-items: center;
-  justify-content: center; /* center the subtab text in the top */
-  gap: 12px;
-  margin: 6px 0 12px 0;
-  padding: 6px 8px; /* compact padding */
+  justify-content: center;
 }
-.skills-toolbar { flex: 0 0 auto; margin-right: 12px; }
-.skills-subtabs { flex: 0 1 auto; display: flex; justify-content: center; }
-.skills-subtabs .item { background: transparent; border: none; padding: 6px 10px; margin: 0 6px; cursor: pointer; color: var(--redsteel-c-faint); text-decoration: none; font-weight: 600; }
-.skills-subtabs .item.subtab-link:hover { color: var(--redsteel-c-white); }
-.skills-subtabs .item.active { color: var(--redsteel-c-white); background: transparent; font-weight: 700; }
+.skills-toolbar {
+  flex: 0 0 48px;
 
-/* Style for edit toggle */
-.skills-edit-toggle { display: inline-flex; gap: 6px; align-items: center; padding: 6px 8px; border-radius: 4px; border: 1px solid transparent; }
-.skills-edit-toggle.active { background: rgba(0,0,0,0.06); border-color: rgba(0,0,0,0.06); }
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
+.skills-subtabs {
+  display: grid;
+  grid-template-columns: 1fr 48px 1fr;
+  align-items: center;
+  width: 100%;
+}
+
+.skills-subtabs .item {
+  text-align: center;
+  justify-self: center;
+}
+
+
+.skills-subtabs .item + .item {
+  border-left: 1px solid #514226;
+}
+
+.skills-subtabs .item:hover {
+  color: #f0d7aa;
+}
+
+.skills-subtabs .item.active {
+  color: #f0d7aa;
+  border-bottom: 2px solid #9c7b45;
+}
+
+.skills-edit-toggle {
+  justify-self: center;
+}
+
+.skills-edit-toggle:hover,
+.skills-edit-toggle.active {
+  color: #f0d7aa;
+}
 /* Skill entry alignment and rating centering */
 .skill-entry { display: flex; align-items: center; gap: 2px; justify-content: flex-start; }
 .skill-rating { width: 42px; text-align: center; flex: 0 0 42px; }
@@ -1128,11 +1174,6 @@ table tr td:nth-child(3) {
 .skills-combat-container {
   padding-bottom: 14px;
 }
-.skills-toolbar {
-  display: flex;
-  justify-content: flex-start;
-  margin: 0 0 6px;
-}
 
 .skills-edit-toggle {
   display: inline-flex;
@@ -1153,24 +1194,7 @@ table tr td:nth-child(3) {
   color: #f0d7aa;
   background: rgba(33, 27, 18, 0.9);
 }
-.skills-subtabs {
-  justify-content: flex-start;
-  gap: 6px;
-  margin: 0 0 8px;
-}
-.skills-subtabs .item {
-  flex: 0 0 auto;
-  padding: 3px 10px;
-  border: 1px solid #403625;
-  border-radius: 4px;
-  color: rgb(219 199 169);
-  background: rgba(7, 8, 8, 0.64);
-}
-.skills-subtabs .item.active {
-  border-color: #9c7b45;
-  color: #f0d7aa;
-  background: rgba(23, 20, 15, 0.9);
-}
+
 .skills-combat-container {
   justify-content: center;
 }
