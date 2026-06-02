@@ -337,7 +337,8 @@
           "blood": { "label": "Blood" },
           "gnosis": { "label": "Gnosis" },
           "spellPower": { "label": "Spell Power" }
-        }
+        },
+        "headerRank": { "label": "Rank" }
       },
       "NPC": {
         "FIELDS": {

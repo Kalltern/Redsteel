@@ -496,6 +496,40 @@ table tr td:nth-child(3) {
 .redsteel .tab.biography {
   flex: 1;
 }
+/* Skills toolbar + subtabs on one row */
+.skills-toolbar-row {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* center the subtab text in the top */
+  gap: 12px;
+  margin: 6px 0 12px 0;
+  padding: 6px 8px; /* compact padding */
+}
+.skills-toolbar { flex: 0 0 auto; margin-right: 12px; }
+.skills-subtabs { flex: 0 1 auto; display: flex; justify-content: center; }
+.skills-subtabs .item { background: transparent; border: none; padding: 6px 10px; margin: 0 6px; cursor: pointer; color: var(--redsteel-c-faint); text-decoration: none; font-weight: 600; }
+.skills-subtabs .item.subtab-link:hover { color: var(--redsteel-c-white); }
+.skills-subtabs .item.active { color: var(--redsteel-c-white); background: transparent; font-weight: 700; }
+
+/* Style for edit toggle */
+.skills-edit-toggle { display: inline-flex; gap: 6px; align-items: center; padding: 6px 8px; border-radius: 4px; border: 1px solid transparent; }
+.skills-edit-toggle.active { background: rgba(0,0,0,0.06); border-color: rgba(0,0,0,0.06); }
+
+/* Skill entry alignment and rating centering */
+.skill-entry { display: flex; align-items: center; gap: 6px; justify-content: flex-start; }
+.skill-name { text-align: left; flex: 0 0 200px; /* fixed column start so names align */ padding-right: 6px; }
+.skill-rating { width: 46px; text-align: center; flex: 0 0 46px; }
+
+/* Stronger selector to override other utility classes */
+.skill-entry > .skill-name { flex: 0 0 200px !important; }
+.skill-entry > .skill-rating { flex: 0 0 46px !important; }
+.skill-entry > .skill-rank-editor { flex: 0 0 auto; margin-left: 6px !important; }
+.skill-rank-editor { display: flex; align-items: center; gap: 6px; margin-left: 8px; }
+.skill-rank-button { min-width: 26px; padding: 2px 6px; }
+.skill-rank-progress { min-width: 48px; text-align: center; }
+/* Column header & entry centering */
+.skills-column { padding-left: 8px; }
+.skills-column h5 { text-align: left; margin-bottom: 8px; padding-left: 4px; }
 .redsteel .tab.biography .editor {
   height: 100%;
 }
@@ -511,10 +545,10 @@ table tr td:nth-child(3) {
 .skill-name,
 .skill-label.rollable {
   flex: 1 0 auto; /* Allow label to grow without shrinking */
-  max-width: 140px; /* Optional: Keep the max-width */
-  width: 100%;
-  padding: 0.4rem; /* Optional: Adjust padding */
-  text-align: center; /* Ensure text is left-aligned */
+  max-width: none;
+  width: auto;
+  padding: 0.2rem 0.4rem; /* Slight padding */
+  text-align: left; /* Left-align skill names so first letters line up */
 }
 
 .skill-label {
@@ -956,6 +990,51 @@ table tr td:nth-child(3) {
   flex-direction: row;
   gap: 1rem;
 }
+.skills-toolbar {
+  display: flex;
+  justify-content: flex-start;
+  margin: 0 0 6px;
+}
+.skills-edit-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  padding: 2px 8px;
+  border: 1px solid #55462e;
+  border-radius: 4px;
+  color: rgb(219 199 169);
+  background: rgba(12, 12, 12, 0.78);
+  box-shadow:
+    inset 0 1px 2px rgb(255 255 255 / 7%),
+    0 1px 3px rgb(0 0 0 / 45%);
+}
+.skills-edit-toggle.active {
+  border-color: #9c7b45;
+  color: #f0d7aa;
+  background: rgba(33, 27, 18, 0.9);
+}
+.skills-subtabs {
+  justify-content: flex-start;
+  gap: 6px;
+  margin: 0 0 8px;
+}
+.skills-subtabs .item {
+  flex: 0 0 auto;
+  padding: 3px 10px;
+  border: 1px solid #403625;
+  border-radius: 4px;
+  color: rgb(219 199 169);
+  background: rgba(7, 8, 8, 0.64);
+}
+.skills-subtabs .item.active {
+  border-color: #9c7b45;
+  color: #f0d7aa;
+  background: rgba(23, 20, 15, 0.9);
+}
+.skills-combat-container {
+  justify-content: center;
+}
 
 .skills-column {
   flex: 1;
@@ -988,6 +1067,50 @@ table tr td:nth-child(3) {
   max-width: 40px;
   max-height: 20px;
   text-align: center;
+}
+.skill-rank-editor {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 4px;
+  margin-left: 6px;
+  white-space: nowrap;
+  color: rgb(219 199 169);
+  font-size: 12px;
+}
+.skill-rank-label {
+  font-weight: 700;
+}
+.skill-rank-progress {
+  min-width: 42px;
+  text-align: center;
+  color: silver;
+}
+.skills-container button.skill-rank-button {
+  width: 20px;
+  height: 20px;
+  min-height: 20px;
+  padding: 0;
+  border: 1px solid #292c2b;
+  border-radius: 3px;
+  line-height: 18px;
+  text-align: center;
+  color: rgb(219 199 169);
+  background: radial-gradient(
+    circle at 30% 30%,
+    #181717,
+    #0b0c0c 65%,
+    #121212 100%
+  );
+  box-shadow:
+    inset 0 -2px 3px #292929,
+    inset 0 3px 5px rgb(0 0 0 / 70%),
+    0 1px 2px rgb(0 0 0);
+}
+.skills-container button.skill-rank-button:hover,
+.skills-container button.skill-rank-button:focus {
+  border-color: #7a633c;
+  color: #f0d7aa;
 }
 .redsteel .tab.skills {
   text-align: center;

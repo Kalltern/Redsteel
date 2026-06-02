@@ -328,6 +328,40 @@ Handlebars.registerHelper("gt", function (a, b) {
   return a > b;
 });
 
+Handlebars.registerHelper("skillRankMax", function (skill, fallbackOrOptions) {
+  const fallback =
+    typeof fallbackOrOptions === "number" ? fallbackOrOptions : 10;
+
+  if (!skill) return fallback;
+  if (Number.isFinite(Number(skill.max))) return Number(skill.max);
+
+  const typeCaps = {
+    0: 10,
+    1: 10,
+    2: 5,
+    3: 5,
+    4: 3,
+    5: 5,
+    6: 5,
+    7: 5,
+  };
+
+  return typeCaps[skill.type] ?? fallback;
+});
+
+Handlebars.registerHelper("combatSkillRating", function (skill, key) {
+  if (!skill) return 0;
+  if (key === "combat" || key === "throwing") {
+    return Math.max(Number(skill.rating) || 0, Number(skill.finesseRating) || 0);
+  }
+  return skill.rating ?? 0;
+});
+
+Handlebars.registerHelper("hasVisibleEntries", function (entries) {
+  if (!entries) return false;
+  return Object.values(entries).some((entry) => entry.visible);
+});
+
 Handlebars.registerHelper("hasValue", function (value) {
   return value !== null && value !== undefined && value !== "";
 });

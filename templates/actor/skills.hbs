@@ -12,166 +12,49 @@
 
 </section>
 
+<div class="skills-toolbar-row">
+  {{#if @root.editable}}
+  <div class="skills-toolbar">
+    <button
+      type="button"
+      class="skills-edit-toggle {{#if @root.skillsEditMode}}active{{/if}}"
+      data-action="toggleSkillsEdit"
+      aria-pressed="{{#if @root.skillsEditMode}}true{{else}}false{{/if}}"
+    >
+      <i class="fas fa-pen-to-square"></i>
+      {{#if @root.skillsEditMode}}Done{{else}}Edit Skills{{/if}}
+    </button>
+  </div>
+  {{/if}}
+
+  <nav class="tabs skills-subtabs" data-group="skills-subtabs" data-action="tab">
+    <a
+      class="item subtab-link {{#if (or (eq activeSkillsSubtab 'general') (not activeSkillsSubtab))}}active{{/if}}"
+      data-group="skills-subtabs"
+      data-tab="general"
+    >
+      General
+    </a>
+    <a
+      class="item subtab-link {{#if (eq activeSkillsSubtab 'combat')}}active{{/if}}"
+      data-group="skills-subtabs"
+      data-tab="combat"
+    >
+      Combat
+    </a>
+  </nav>
+</div>
+
+<section
+  class="tab skills-subtab general {{#if (or (eq activeSkillsSubtab 'general') (not activeSkillsSubtab))}}active{{/if}}"
+  data-group="skills-subtabs"
+  data-tab="general"
+>
+
   <section class="skills-container ">
 
     {{! Left Column }}
     <div class="skills-column skills-checkbox-container">
-      <div class="combat-skills">
-      <h5>Combat</h5>
-      {{#each system.combatSkills as |skill key|}}
-  {{#if (eq skill.isSkill 1)}}
-  
-    <label class="toggle-label hidden">
-      <input 
-        type="checkbox" 
-        class="toggle-skill-visibility" 
-        data-skill="{{key}}" 
-        {{#if skill.visible}}checked{{/if}}>
-        {{key}}
-    </label>       
-
-    <div class="skill-entry flexrow {{#unless skill.visible}}hidden-skill{{/unless}}">
-      <label
-        class="skill-label flexlarge align-left skill-name"  
-        data-label="{{key}}"
-      >
-        {{localize (concat 'REDSTEEL.Actor.Character.combatSkills.' key '.label')}}
-      </label>
-
-      <input
-        type="text"
-        name="system.combatSkills.{{key}}.value"
-        value="{{skill.value}}"
-        class="skill-value"
-        data-dtype="Number"
-      />
-      
-     <input
-       type="text"
-       class="skill-rating"
-       data-dtype="Number"
-       value="{{#if (eq key 'combat')}}{{#if skill.finesseRating}}{{#if (gt skill.finesseRating skill.rating)}}{{skill.finesseRating}}{{else}}{{skill.rating}}{{/if}}{{else}}{{skill.rating}}{{/if}}{{else}}{{skill.rating}}{{/if}}"
-       readonly
-     />
-      
-    </div>
-
-  {{/if}}
-{{/each}}
-
-        {{#each system.weaponSkills as |skill key|}}
-         <label class="toggle-label hidden">
-          <input 
-            type="checkbox" 
-            class="toggle-skill-visibility" 
-            data-skill="{{key}}" 
-            {{#if skill.visible}}checked{{/if}}>
-             {{key}}
-        </label>       
-        <div class="skill-entry {{#unless skill.visible}}hidden-skill{{/unless}}">
-          <label
-            class="skill-label flexlarge align-left skill-name"  
-            data-roll="{{skill.rating}}-1d100"
-            data-roll-type="skill"
-            data-label="{{key}}"
-          >
-             {{localize (concat 'REDSTEEL.Actor.Character.weaponSkills.' key '.label')}}
-          </label>
-          <input
-            type="text"
-            name="system.weaponSkills.{{key}}.value"
-            value="{{skill.value}}"
-            class="skill-value"
-            data-dtype="Number"
-          />
-           </div>
-  {{/each}}
-     {{#each system.doctrines as |skill key|}}
-         <label class="toggle-label hidden">
-          <input 
-            type="checkbox" 
-            class="toggle-skill-visibility" 
-            data-skill="{{key}}" 
-            {{#if skill.visible}}checked{{/if}}>
-             {{key}}
-        </label>  
-                 <div class="skill-entry {{#unless skill.visible}}hidden-skill{{/unless}}">
-          <label
-            class="skill-label flexlarge align-left skill-name"  
-            data-action="roll"
-            data-roll="{{skill.rating}}-1d100"
-            data-roll-type="skill"
-            data-label="{{key}}"
-          >
-             {{localize (concat 'REDSTEEL.Actor.Character.doctrines.' key '.label')}}
-          </label>
-          <input
-            type="text"
-            name="system.doctrines.{{key}}.value"
-            value="{{skill.value}}"
-            class="skill-value"
-            data-dtype="Number"
-          />
-           </div>
-  {{/each}}
-   {{#each system.schools as |skill key|}}
-         <label class="toggle-label hidden">
-          <input 
-            type="checkbox" 
-            class="toggle-skill-visibility" 
-            data-skill="{{key}}" 
-            {{#if skill.visible}}checked{{/if}}>
-             {{key}}
-        </label>       
-        <div class="skill-entry {{#unless skill.visible}}hidden-skill{{/unless}}">
-          <label
-            class="skill-label flexlarge align-left skill-name"  
-            data-action="roll"
-            data-roll="{{skill.rating}}-1d100"
-            data-roll-type="skill"
-            data-label="{{key}}"
-          >
-             {{localize (concat 'REDSTEEL.Actor.Character.schools.' key '.label')}}
-          </label>
-          <input
-            type="text"
-            name="system.schools.{{key}}.value"
-            value="{{skill.value}}"
-            class="skill-value"
-            data-dtype="Number"
-          />
-           </div>
-  {{/each}}
-   {{#each system.combatSkills as |skill key|}}
-    {{#if (eq skill.isSkill 0)}}
-         <label class="toggle-label hidden">
-          <input 
-            type="checkbox" 
-            class="toggle-skill-visibility" 
-            data-skill="{{key}}" 
-            {{#if skill.visible}}checked{{/if}}>
-             {{key}}
-        </label>       
-        <div class="skill-entry flexrow {{#unless skill.visible}}hidden-skill{{/unless}}">
-          <label
-            class="skill-label flexlarge align-left skill-name"  
-            data-action="roll"
-            data-label="{{key}}"
-          >
-             {{localize (concat 'REDSTEEL.Actor.Character.combatSkills.' key '.label')}}
-          </label>
-            <input
-              type="text"
-              class="skill-rating"
-              data-dtype="Number"
-              value="{{#if (eq key 'throwing')}}{{#if (gt skill.finesseRating skill.rating)}}{{skill.finesseRating}}{{else}}{{skill.rating}}{{/if}}{{else}}{{skill.rating}}{{/if}}"
-              readonly
-            />
-        </div>
-    
-  {{/if}}
-  {{/each}}
-  </div>
 {{#if (hasVisibleSkillsOfId system.skills 0)}}  
       <h5>{{localize "REDSTEEL.Actor.Character.Attribute.Str.long"}}</h5>
 {{/if}}     
@@ -202,19 +85,19 @@
 
     <input
       type="text"
-      name="system.skills.{{key}}.value"
-      value="{{skill.value}}"
-      class="skill-value"
-      data-dtype="Number"
-    />
-
-    <input
-      type="text"
       class="skill-rating"
       data-dtype="Number"
       value="{{skill.rating}}"
       readonly
     />
+
+    {{#if @root.skillsEditMode}}
+    <div class="skill-rank-editor">
+      <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="-1" data-min="0" data-max="{{skillRankMax skill}}">-</button>
+      <span class="skill-rank-progress">{{skill.value}} / {{skillRankMax skill}}</span>
+      <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="1" data-min="0" data-max="{{skillRankMax skill}}">+</button>
+    </div>
+    {{/if}}
   </div>
 
   <!-- SWIMMING -->
@@ -271,18 +154,18 @@
           </label>
             <input
               type="text"
-              name="system.skills.{{key}}.value"
-              value="{{skill.value}}"
-              class="skill-value"
-              data-dtype="Number"
-            />
-            <input
-              type="text"
               class="skill-rating"
               data-dtype="Number"
               value="{{skill.rating}}"
               readonly
             />
+            {{#if @root.skillsEditMode}}
+            <div class="skill-rank-editor">
+              <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="-1" data-min="0" data-max="{{skillRankMax skill}}">-</button>
+              <span class="skill-rank-progress">{{skill.value}} / {{skillRankMax skill}}</span>
+              <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="1" data-min="0" data-max="{{skillRankMax skill}}">+</button>
+            </div>
+            {{/if}}
           </div>
         </div>
         {{/if}}
@@ -314,18 +197,18 @@
           </label>
             <input
               type="text"
-              name="system.skills.{{key}}.value"
-              value="{{skill.value}}"
-              class="skill-value"
-              data-dtype="Number"
-            />
-            <input
-              type="text"
               class="skill-rating"
               data-dtype="Number"
               value="{{skill.rating}}"
               readonly
             />
+            {{#if @root.skillsEditMode}}
+            <div class="skill-rank-editor">
+              <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="-1" data-min="0" data-max="{{skillRankMax skill}}">-</button>
+              <span class="skill-rank-progress">{{skill.value}} / {{skillRankMax skill}}</span>
+              <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="1" data-min="0" data-max="{{skillRankMax skill}}">+</button>
+            </div>
+            {{/if}}
           </div>
           </div>
         {{/if}}
@@ -360,18 +243,18 @@
           </label>
             <input
               type="text"
-              name="system.skills.{{key}}.value"
-              value="{{skill.value}}"
-              class="skill-value"
-              data-dtype="Number"
-            />
-            <input
-              type="text"
               class="skill-rating"
               data-dtype="Number"
               value="{{skill.rating}}"
               readonly
             />
+            {{#if @root.skillsEditMode}}
+            <div class="skill-rank-editor">
+              <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="-1" data-min="0" data-max="{{skillRankMax skill}}">-</button>
+              <span class="skill-rank-progress">{{skill.value}} / {{skillRankMax skill}}</span>
+              <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="1" data-min="0" data-max="{{skillRankMax skill}}">+</button>
+            </div>
+            {{/if}}
           </div>
           </div>
         {{/if}}
@@ -403,18 +286,18 @@
           </label>
             <input
               type="text"
-              name="system.skills.{{key}}.value"
-              value="{{skill.value}}"
-              class="skill-value"
-              data-dtype="Number"
-            />
-            <input
-              type="text"
               class="skill-rating"
               data-dtype="Number"
               value="{{skill.rating}}"
               readonly
             />
+            {{#if @root.skillsEditMode}}
+            <div class="skill-rank-editor">
+              <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="-1" data-min="0" data-max="{{skillRankMax skill}}">-</button>
+              <span class="skill-rank-progress">{{skill.value}} / {{skillRankMax skill}}</span>
+              <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="1" data-min="0" data-max="{{skillRankMax skill}}">+</button>
+            </div>
+            {{/if}}
           </div>
           </div>
         {{/if}}
@@ -449,18 +332,17 @@
 
       <input
         type="text"
-        name="system.skills.{{key}}.value"
-        value="{{skill.value}}"
-        class="skill-value"
-        data-dtype="Number"
-      />
-
-      <input
-        type="text"
         class="skill-rating"
         value="{{skill.rating}}"
         readonly
       />
+      {{#if @root.skillsEditMode}}
+      <div class="skill-rank-editor">
+        <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="-1" data-min="0" data-max="{{skillRankMax skill}}">-</button>
+        <span class="skill-rank-progress">{{skill.value}} / {{skillRankMax skill}}</span>
+        <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="1" data-min="0" data-max="{{skillRankMax skill}}">+</button>
+      </div>
+      {{/if}}
     </div>
   </div>
 
@@ -516,18 +398,18 @@
           </label>
             <input
               type="text"
-              name="system.skills.{{key}}.value"
-              value="{{skill.value}}"
-              class="skill-value"
-              data-dtype="Number"
-            />
-            <input
-              type="text"
               class="skill-rating"
               data-dtype="Number"
               value="{{skill.rating}}"
               readonly
             />
+            {{#if @root.skillsEditMode}}
+            <div class="skill-rank-editor">
+              <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="-1" data-min="0" data-max="{{skillRankMax skill}}">-</button>
+              <span class="skill-rank-progress">{{skill.value}} / {{skillRankMax skill}}</span>
+              <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="1" data-min="0" data-max="{{skillRankMax skill}}">+</button>
+            </div>
+            {{/if}}
             </div>
           </div>
         {{/if}}
@@ -535,5 +417,227 @@
     </div>
   
   </section>
+
+</section>
+
+<section
+  class="tab skills-subtab combat {{#if (eq activeSkillsSubtab 'combat')}}active{{/if}}"
+  data-group="skills-subtabs"
+  data-tab="combat"
+>
+  <section class="skills-container skills-combat-container">
+    <div class="skills-column">
+      <h5>Combat</h5>
+      {{!-- Show only ranks for these combat entries: Combat, Archery, Channeling, Ranger --}}
+      {{#with (lookup system.combatSkills 'combat') as |skill|}}
+        {{#if skill}}
+        <div class="skill-entry flexrow">
+          <label class="skill-label flexlarge align-left skill-name" data-label="combat">
+            {{localize 'REDSTEEL.Actor.Character.combatSkills.combat.label'}}
+          </label>
+          <input type="text" class="skill-rating" data-dtype="Number" value="{{skill.value}}" readonly />
+          {{#if @root.skillsEditMode}}
+          <div class="skill-rank-editor">
+            <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.combatSkills.combat.value" data-delta="-1" data-min="0" data-max="{{skillRankMax skill}}">-</button>
+            <span class="skill-rank-progress">{{skill.value}} / {{skillRankMax skill}}</span>
+            <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.combatSkills.combat.value" data-delta="1" data-min="0" data-max="{{skillRankMax skill}}">+</button>
+          </div>
+          {{/if}}
+        </div>
+        {{/if}}
+      {{/with}}
+      {{#with (lookup system.combatSkills 'archery') as |skill|}}
+        {{#if skill}}
+        <div class="skill-entry flexrow">
+          <label class="skill-label flexlarge align-left skill-name" data-label="archery">
+            {{localize 'REDSTEEL.Actor.Character.combatSkills.archery.label'}}
+          </label>
+          <input type="text" class="skill-rating" data-dtype="Number" value="{{skill.value}}" readonly />
+          {{#if @root.skillsEditMode}}
+          <div class="skill-rank-editor">
+            <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.combatSkills.archery.value" data-delta="-1" data-min="0" data-max="{{skillRankMax skill}}">-</button>
+            <span class="skill-rank-progress">{{skill.value}} / {{skillRankMax skill}}</span>
+            <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.combatSkills.archery.value" data-delta="1" data-min="0" data-max="{{skillRankMax skill}}">+</button>
+          </div>
+          {{/if}}
+        </div>
+        {{/if}}
+      {{/with}}
+      {{#with (lookup system.combatSkills 'channeling') as |skill|}}
+        {{#if skill}}
+        <div class="skill-entry flexrow">
+          <label class="skill-label flexlarge align-left skill-name" data-label="channeling">
+            {{localize 'REDSTEEL.Actor.Character.combatSkills.channeling.label'}}
+          </label>
+          <input type="text" class="skill-rating" data-dtype="Number" value="{{skill.value}}" readonly />
+          {{#if @root.skillsEditMode}}
+          <div class="skill-rank-editor">
+            <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.combatSkills.channeling.value" data-delta="-1" data-min="0" data-max="10">-</button>
+            <span class="skill-rank-progress">{{skill.value}} / 10</span>
+            <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.combatSkills.channeling.value" data-delta="1" data-min="0" data-max="10">+</button>
+          </div>
+          {{/if}}
+        </div>
+        {{/if}}
+      {{/with}}
+      {{#with (lookup system.combatSkills 'ranger') as |skill|}}
+        {{#if skill}}
+        <div class="skill-entry flexrow">
+          <label class="skill-label flexlarge align-left skill-name" data-label="ranger">
+            {{localize 'REDSTEEL.Actor.Character.combatSkills.ranger.label'}}
+          </label>
+          <input type="text" class="skill-rating" data-dtype="Number" value="{{skill.value}}" readonly />
+          {{#if @root.skillsEditMode}}
+          <div class="skill-rank-editor">
+            <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.combatSkills.ranger.value" data-delta="-1" data-min="0" data-max="10">-</button>
+            <span class="skill-rank-progress">{{skill.value}} / 10</span>
+            <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.combatSkills.ranger.value" data-delta="1" data-min="0" data-max="10">+</button>
+          </div>
+          {{/if}}
+        </div>
+        {{/if}}
+      {{/with}}
+
+      {{!-- Weapon Skills, Doctrines, and Schools in left column --}}
+      {{#if (hasVisibleEntries system.weaponSkills)}}
+      <h5>Weapon Skills</h5>
+      {{#each system.weaponSkills as |skill key|}}
+        {{#if skill.visible}}
+        <div class="skill-entry flexrow">
+          <label class="skill-label flexlarge align-left skill-name" data-label="{{key}}">
+            {{localize (concat 'REDSTEEL.Actor.Character.weaponSkills.' key '.label')}}
+          </label>
+          <input type="text" class="skill-rating" data-dtype="Number" value="{{skill.value}}" readonly />
+          {{#if @root.skillsEditMode}}
+          <div class="skill-rank-editor">
+            <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.weaponSkills.{{key}}.value" data-delta="-1" data-min="0" data-max="{{skillRankMax skill}}">-</button>
+            <span class="skill-rank-progress">{{skill.value}} / {{skillRankMax skill}}</span>
+            <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.weaponSkills.{{key}}.value" data-delta="1" data-min="0" data-max="{{skillRankMax skill}}">+</button>
+          </div>
+          {{/if}}
+        </div>
+        {{/if}}
+      {{/each}}
+      {{/if}}
+
+      {{#if (hasVisibleEntries system.doctrines)}}
+      <h5>Doctrines</h5>
+      {{#each system.doctrines as |skill key|}}
+          {{#if skill.visible}}
+          <div class="skill-entry flexrow">
+            <label class="skill-label flexlarge align-left skill-name" data-label="{{key}}">
+              {{localize (concat 'REDSTEEL.Actor.Character.doctrines.' key '.label')}}
+            </label>
+            <input type="text" class="skill-rating" data-dtype="Number" value="{{skill.value}}" readonly />
+            {{#if @root.skillsEditMode}}
+            <div class="skill-rank-editor">
+              <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.doctrines.{{key}}.value" data-delta="-1" data-min="0" data-max="{{skillRankMax skill}}">-</button>
+              <span class="skill-rank-progress">{{skill.value}} / {{skillRankMax skill}}</span>
+              <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.doctrines.{{key}}.value" data-delta="1" data-min="0" data-max="{{skillRankMax skill}}">+</button>
+            </div>
+            {{/if}}
+          </div>
+          {{/if}}
+      {{/each}}
+      {{/if}}
+
+      {{#if (hasVisibleEntries system.schools)}}
+      <h5>Schools</h5>
+      {{#each system.schools as |skill key|}}
+          {{#if skill.visible}}
+          <div class="skill-entry flexrow">
+            <label class="skill-label flexlarge align-left skill-name" data-label="{{key}}">
+              {{localize (concat 'REDSTEEL.Actor.Character.schools.' key '.label')}}
+            </label>
+            <input type="text" class="skill-rating" data-dtype="Number" value="{{skill.value}}" readonly />
+            {{#if @root.skillsEditMode}}
+            <div class="skill-rank-editor">
+              <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.schools.{{key}}.value" data-delta="-1" data-min="0" data-max="{{skillRankMax skill}}">-</button>
+              <span class="skill-rank-progress">{{skill.value}} / {{skillRankMax skill}}</span>
+              <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.schools.{{key}}.value" data-delta="1" data-min="0" data-max="{{skillRankMax skill}}">+</button>
+            </div>
+            {{/if}}
+          </div>
+          {{/if}}
+      {{/each}}
+      {{/if}}
+    </div>
+
+    <div class="skills-column">
+      <h5>Combat Ratings</h5>
+      {{#with (lookup system.combatSkills 'throwing') as |skill|}}
+        {{#if skill}}
+        <div class="skill-entry flexrow">
+          <label class="skill-label flexlarge align-left skill-name" data-label="throwing">
+            {{localize 'REDSTEEL.Actor.Character.combatSkills.throwing.label'}}
+          </label>
+          <input type="text" class="skill-rating" data-dtype="Number" value="{{combatSkillRating skill 'throwing'}}" readonly />
+        </div>
+        {{/if}}
+      {{/with}}
+      {{#with (lookup system.combatSkills 'meleeDefense') as |skill|}}
+        {{#if skill}}
+        <div class="skill-entry flexrow">
+          <label class="skill-label flexlarge align-left skill-name" data-label="meleeDefense">
+            {{localize 'REDSTEEL.Actor.Character.combatSkills.meleeDefense.label'}}
+          </label>
+          <input type="text" class="skill-rating" data-dtype="Number" value="{{combatSkillRating skill 'meleeDefense'}}" readonly />
+        </div>
+        {{/if}}
+      {{/with}}
+      {{#with (lookup system.combatSkills 'rangedDefense') as |skill|}}
+        {{#if skill}}
+        <div class="skill-entry flexrow">
+          <label class="skill-label flexlarge align-left skill-name" data-label="rangedDefense">
+            {{localize 'REDSTEEL.Actor.Character.combatSkills.rangedDefense.label'}}
+          </label>
+          <input type="text" class="skill-rating" data-dtype="Number" value="{{combatSkillRating skill 'rangedDefense'}}" readonly />
+        </div>
+        {{/if}}
+      {{/with}}
+      {{#with (lookup system.combatSkills 'dodge') as |skill|}}
+        {{#if skill}}
+        <div class="skill-entry flexrow">
+          <label class="skill-label flexlarge align-left skill-name" data-label="dodge">
+            {{localize 'REDSTEEL.Actor.Character.combatSkills.dodge.label'}}
+          </label>
+          <input type="text" class="skill-rating" data-dtype="Number" value="{{combatSkillRating skill 'dodge'}}" readonly />
+        </div>
+        {{/if}}
+      {{/with}}
+      {{#with (lookup system.combatSkills 'combat') as |skill|}}
+        {{#if skill}}
+        <div class="skill-entry flexrow">
+          <label class="skill-label flexlarge align-left skill-name" data-label="combat-rating">
+            {{localize 'REDSTEEL.Actor.Character.combatSkills.combat.label'}}
+          </label>
+          <input type="text" class="skill-rating" data-dtype="Number" value="{{combatSkillRating skill 'combat'}}" readonly />
+        </div>
+        {{/if}}
+      {{/with}}
+      {{#with (lookup system.combatSkills 'archery') as |skill|}}
+        {{#if skill}}
+        <div class="skill-entry flexrow">
+          <label class="skill-label flexlarge align-left skill-name" data-label="archery-rating">
+            {{localize 'REDSTEEL.Actor.Character.combatSkills.archery.label'}}
+          </label>
+          <input type="text" class="skill-rating" data-dtype="Number" value="{{combatSkillRating skill 'archery'}}" readonly />
+        </div>
+        {{/if}}
+      {{/with}}
+      {{#with (lookup system.combatSkills 'channeling') as |skill|}}
+        {{#if skill}}
+        <div class="skill-entry flexrow">
+          <label class="skill-label flexlarge align-left skill-name" data-label="channeling-rating">
+            {{localize 'REDSTEEL.Actor.Character.combatSkills.channeling.label'}}
+          </label>
+          <input type="text" class="skill-rating" data-dtype="Number" value="{{combatSkillRating skill 'channeling'}}" readonly />
+        </div>
+        {{/if}}
+      {{/with}}
+    </div>
+  </section>
+</section>
+
   </div>
 </section>

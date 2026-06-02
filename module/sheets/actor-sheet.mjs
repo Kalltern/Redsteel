@@ -14,6 +14,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     console.log("Actor sheet loaded");
     this.#dragDrop = this.#createDragDropHandlers();
     this._boundRightClick = this._onRightClick.bind(this);
+    this._skillsEditMode = false;
   }
 
   /** @override */
@@ -29,6 +30,8 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       createDoc: this._createDoc,
       deleteDoc: this._deleteDoc,
       adjustNumericField: this._adjustNumericField,
+      adjustActorNumber: this._adjustActorNumber,
+      toggleSkillsEdit: this._toggleSkillsEdit,
       toggleEffect: this._toggleEffect,
       roll: this._onRoll,
       toggleEquipped: this._toggleEquipped,
@@ -531,9 +534,12 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
   _configureRenderOptions(options) {
     super._configureRenderOptions(options);
     // Not all parts always render, add "testtab" for testing
-    options.parts = ["header", "tabs", "biography"];
+    options.parts = ["header", "tabs"];
     // Don't show the other tabs if only limited view
-    if (this.document.limited) return;
+    if (this.document.limited) {
+      options.parts.push("biography");
+      return;
+    }
     // Control which parts show based on document subtype
     switch (this.document.type) {
       case "character":
@@ -545,11 +551,13 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
           "spells",
           "miracles",
           "effects",
+          "biography",
           "config",
         );
         break;
       case "npc":
         options.parts.push(
+          "biography",
           "inventory",
           "abilities",
           "spells",
@@ -577,6 +585,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       flags: this.actor.flags,
       // Adding a pointer to CONFIG.REDSTEEL
       config: CONFIG.REDSTEEL,
+      skillsEditMode: this.isEditable && this._skillsEditMode,
       tabs: this._getTabs(options.parts),
     };
 
@@ -617,6 +626,9 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       case "features":
       case "testtab":
       case "skills":
+        context.activeSkillsSubtab = this.tabGroups["skills-subtabs"] ?? null;
+        context.tab = context.tabs[partId];
+        break;
       case "abilities":
       case "spells":
         context.tab = context.tabs[partId];
@@ -666,7 +678,11 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     const tabGroup = "primary";
     const tabSpellGroup = "spells-subtabs";
     // Default tab for first time it's rendered this session
-    if (!this.tabGroups[tabGroup]) this.tabGroups[tabGroup] = "biography";
+    if (!this.tabGroups[tabGroup]) {
+      this.tabGroups[tabGroup] = parts.includes("skills")
+        ? "skills"
+        : "biography";
+    }
     return parts.reduce((tabs, partId) => {
       const tab = {
         cssClass: "",
@@ -1036,6 +1052,25 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
 
     // ✅ Default behavior (durability, etc.)
     await doc.update({ [path]: newValue });
+  }
+
+  static async _adjustActorNumber(event, target) {
+    const path = target.dataset.path;
+    if (!path) return;
+
+    const delta = Number(target.dataset.delta ?? 1);
+    const min = Number(target.dataset.min ?? 0);
+    const max = Number(target.dataset.max ?? Number.MAX_SAFE_INTEGER);
+    const current = Number(foundry.utils.getProperty(this.actor, path) ?? 0);
+    const newValue = Math.min(max, Math.max(min, current + delta));
+
+    await this.actor.update({ [path]: newValue });
+  }
+
+  static _toggleSkillsEdit() {
+    if (!this.isEditable) return;
+    this._skillsEditMode = !this._skillsEditMode;
+    this.render();
   }
 
   /**
