@@ -349,10 +349,33 @@ Handlebars.registerHelper("skillRankMax", function (skill, fallbackOrOptions) {
   return typeCaps[skill.type] ?? fallback;
 });
 
+Handlebars.registerHelper("romanRank", function (value) {
+  if (!value) return "-";
+
+  const romans = [
+    "",
+    "I",
+    "II",
+    "III",
+    "IV",
+    "V",
+    "VI",
+    "VII",
+    "VIII",
+    "IX",
+    "X",
+  ];
+
+  return romans[value] ?? value;
+});
+
 Handlebars.registerHelper("combatSkillRating", function (skill, key) {
   if (!skill) return 0;
   if (key === "combat" || key === "throwing") {
-    return Math.max(Number(skill.rating) || 0, Number(skill.finesseRating) || 0);
+    return Math.max(
+      Number(skill.rating) || 0,
+      Number(skill.finesseRating) || 0,
+    );
   }
   return skill.rating ?? 0;
 });
@@ -1127,9 +1150,10 @@ function openDamageSelectionDialog(message, targets) {
       })
       .join("");
 
-  new Dialog({
-    title: "Apply Damage",
-    content: `
+  new Dialog(
+    {
+      title: "Apply Damage",
+      content: `
       <form>
         <fieldset>
           <legend>Damage Type</legend>
@@ -1165,62 +1189,64 @@ function openDamageSelectionDialog(message, targets) {
         </ul>
       </form>
     `,
-    buttons: {
-      apply: {
-        label: "Apply",
-        callback: (html) => {
-          const selectedEffects = {};
+      buttons: {
+        apply: {
+          label: "Apply",
+          callback: (html) => {
+            const selectedEffects = {};
 
-          html.find('input[type="checkbox"]').each((_, el) => {
-            if (!el.checked) return;
+            html.find('input[type="checkbox"]').each((_, el) => {
+              if (!el.checked) return;
 
-            const parts = el.name.split("-");
-            const tokenId = parts[1];
-            const effectName = parts[2];
+              const parts = el.name.split("-");
+              const tokenId = parts[1];
+              const effectName = parts[2];
 
-            if (!selectedEffects[tokenId]) {
-              selectedEffects[tokenId] = [];
-            }
+              if (!selectedEffects[tokenId]) {
+                selectedEffects[tokenId] = [];
+              }
 
-            selectedEffects[tokenId].push(effectName);
-          });
+              selectedEffects[tokenId].push(effectName);
+            });
 
-          applyDamageToTargets(
-            message,
-            targets,
-            mode,
-            selectedEffects,
-            mode === "critical" ? criticalDegree : null,
-          );
+            applyDamageToTargets(
+              message,
+              targets,
+              mode,
+              selectedEffects,
+              mode === "critical" ? criticalDegree : null,
+            );
+          },
         },
+        cancel: { label: "Cancel" },
       },
-      cancel: { label: "Cancel" },
-    },
-    render: (html) => {
-      const updateCriticalDegreeVisibility = () => {
-        html
-          .find(".critical-degree-fieldset")
-          .toggle(mode === "critical" && criticalOptions.length > 0);
-        html.closest(".app").css("height", "auto");
-      };
+      render: (html) => {
+        const updateCriticalDegreeVisibility = () => {
+          html
+            .find(".critical-degree-fieldset")
+            .toggle(mode === "critical" && criticalOptions.length > 0);
+          html.closest(".app").css("height", "auto");
+        };
 
-      updateCriticalDegreeVisibility();
-      html.find('input[name="mode"]').on("change", (ev) => {
-        mode = ev.target.value;
         updateCriticalDegreeVisibility();
-        html
-          .find(`input[name="criticalDegree"][value="${criticalDegree}"]`)
-          .prop("checked", true);
-        html.find(".damage-preview").html(renderPreview());
-      });
-      html.find('input[name="criticalDegree"]').on("change", (ev) => {
-        criticalDegree = Number(ev.target.value);
-        html.find(".damage-preview").html(renderPreview());
-      });
+        html.find('input[name="mode"]').on("change", (ev) => {
+          mode = ev.target.value;
+          updateCriticalDegreeVisibility();
+          html
+            .find(`input[name="criticalDegree"][value="${criticalDegree}"]`)
+            .prop("checked", true);
+          html.find(".damage-preview").html(renderPreview());
+        });
+        html.find('input[name="criticalDegree"]').on("change", (ev) => {
+          criticalDegree = Number(ev.target.value);
+          html.find(".damage-preview").html(renderPreview());
+        });
+      },
     },
-  }, {
-    height: "auto",
-  }).render(true);
+    {
+      height: "auto",
+    },
+  ).render(true);
 }
 
 function getCriticalOptions(attack) {

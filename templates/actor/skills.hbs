@@ -5,13 +5,7 @@
 >
 <div class="scrollable-tab">
 
-<section class=" grid-skills"> 
-  
-
-
-
-</section>
-
+<section class="skills-box">
 <div class="skills-toolbar-row">
   {{#if @root.editable}}
   <div class="skills-toolbar">
@@ -52,106 +46,45 @@
 >
 
   <section class="skills-container ">
-
-    {{! Left Column }}
-    <div class="skills-column skills-checkbox-container">
-{{#if (hasVisibleSkillsOfId system.skills 0)}}  
-      <h5>{{localize "REDSTEEL.Actor.Character.Attribute.Str.long"}}</h5>
-{{/if}}     
-{{#each system.skills as |skill key|}}
-  {{#if (eq skill.id 0)}}
-
-<div class="skill-toggle-wrapper">
-  <label class="toggle-label hidden">
-    <input 
-      type="checkbox" 
-      class="toggle-skill-visibility" 
-      data-skill="{{key}}" 
-      {{#if skill.visible}}checked{{/if}}>
-      {{key}}
-  </label>       
-
-  <!-- PARENT SKILL -->
-  <div class="skill-entry flexrow {{#unless skill.visible}}hidden-skill{{/unless}}">
-    <label
-      class="skill-label rollable flexlarge align-left skill-name"  
-      data-action="roll"
-      data-roll="{{skill.rating}}-1d100"
-      data-roll-type="skill"
-      data-label="{{key}}"
-    >
-      {{localize (concat 'REDSTEEL.Actor.Character.skills.' key '.label')}}
-    </label>
-
-    <input
-      type="text"
-      class="skill-rating"
-      data-dtype="Number"
-      value="{{skill.rating}}"
-      readonly
-    />
-
-    {{#if @root.skillsEditMode}}
-    <div class="skill-rank-editor">
-      <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="-1" data-min="0" data-max="{{skillRankMax skill}}">-</button>
-      <span class="skill-rank-progress">{{skill.value}} / {{skillRankMax skill}}</span>
-      <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="1" data-min="0" data-max="{{skillRankMax skill}}">+</button>
-    </div>
-    {{/if}}
-  </div>
-
-  <!-- SWIMMING -->
-  {{#if (eq key "athletics")}}
-  <div class="skill-entry flexrow {{#unless skill.visible}}hidden-skill{{/unless}}">
-  <label
-    class="skill-label rollable flexlarge align-left skill-name"
-    data-action="roll"
-    data-roll="{{@root.system.skills.athletics.swimming}}-1d100"
-    data-roll-type="skill"
-    data-label="swimming"
-  >
-      {{localize "REDSTEEL.Actor.Character.skills.swimming.label"}}
-    </label>
-
-    <input
-  type="text"
-  class="skill-rating"
-  data-dtype="Number"
-  value="{{@root.system.skills.athletics.swimming}}"
-  readonly
-/>
-  </div>
-  {{/if}}
-
+    <div class="skills-column">
+      {{#if (hasVisibleSkillsOfId system.skills 0)}}
+      <div class="skill-section attribute-str">
+        <h5>{{localize "REDSTEEL.Actor.Character.Attribute.Str.long"}}
+    <span>Rating</span>
+    <span>Rank</span></h5>
+        <div class="skill-header">
 
 </div>
-
-  {{/if}}
-{{/each}}
-{{#if (hasVisibleSkillsOfId system.skills 1)}}
-      <h5>{{localize "REDSTEEL.Actor.Character.Attribute.Dex.long"}}</h5>
-{{/if}}      
       {{#each system.skills as |skill key|}}
-        {{#if (eq skill.id 1)}}
+        {{#if (eq skill.id 0)}}
         <div class="skill-toggle-wrapper">
-        <label class="toggle-label hidden">
-          <input 
-            type="checkbox" 
-            class="toggle-skill-visibility" 
-            data-skill="{{key}}" 
-            {{#if skill.visible}}checked{{/if}}>
-          {{key}}
-        </label>
-           <div class="skill-entry flexrow {{#unless skill.visible}}hidden-skill{{/unless}}">
-          <label
-            class="skill-label rollable flexlarge align-left skill-name"  
-            data-action="roll"
-            data-roll="{{skill.rating}}-1d100"
-            data-roll-type="skill"
-            data-label="{{key}}"
-          >
-            {{localize (concat 'REDSTEEL.Actor.Character.skills.' key '.label')}}
+          <label class="toggle-label hidden">
+            <input
+              type="checkbox"
+              class="toggle-skill-visibility"
+              data-skill="{{key}}"
+              {{#if skill.visible}}checked{{/if}}>
+            {{key}}
           </label>
+          <div class="skill-entry flexrow {{#unless skill.visible}}hidden-skill{{/unless}}">
+            <label
+              class="skill-label rollable flexlarge align-left skill-name"
+              data-action="roll"
+              data-roll="{{skill.rating}}-1d100"
+              data-roll-type="skill"
+              data-label="{{key}}"
+            >
+              {{localize (concat 'REDSTEEL.Actor.Character.skills.' key '.label')}}
+            </label>
+            {{#if @root.skillsEditMode}}
+            <div class="skill-rank-editor">
+              <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="-1" data-min="0" data-max="{{skillRankMax skill}}">-</button>
+              <span class="skill-rank-progress">{{skill.value}} / {{skillRankMax skill}}</span>
+              <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="1" data-min="0" data-max="{{skillRankMax skill}}">+</button>
+            </div>
+            {{else}}
+            <span class="skill-rank-label">{{romanRank skill.value}}</span>
+            {{/if}}
             <input
               type="text"
               class="skill-rating"
@@ -159,42 +92,133 @@
               value="{{skill.rating}}"
               readonly
             />
-            {{#if @root.skillsEditMode}}
-            <div class="skill-rank-editor">
-              <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="-1" data-min="0" data-max="{{skillRankMax skill}}">-</button>
-              <span class="skill-rank-progress">{{skill.value}} / {{skillRankMax skill}}</span>
-              <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="1" data-min="0" data-max="{{skillRankMax skill}}">+</button>
-            </div>
-            {{/if}}
+          </div>
+        </div>
+        {{/if}}
+        {{#if (eq key "athletics")}}
+        <div class="skill-toggle-wrapper subskill-wrapper">
+          <label class="toggle-label hidden">
+            <input
+              type="checkbox"
+              class="toggle-skill-visibility"
+              data-skill="{{key}}"
+              {{#if skill.visible}}checked{{/if}}>
+            {{key}}
+          </label>
+          <div class="skill-entry flexrow subskill {{#unless skill.visible}}hidden-skill{{/unless}}">
+                    <label
+            class="skill-label rollable flexlarge align-left skill-name"
+            data-action="roll"
+            data-roll="{{@root.system.skills.athletics.swimming}}-1d100"
+            data-roll-type="skill"
+            data-label="blend"
+          >
+                      {{localize "REDSTEEL.Actor.Character.skills.swimming.label"}}
+          </label>
+          <input
+            type="text"
+            class="skill-rating"
+            data-dtype="Number"
+            value="{{@root.system.skills.athletics.swimming}}"
+            readonly
+          />
+
           </div>
         </div>
         {{/if}}
       {{/each}}
-      
-{{#if (hasVisibleSkillsOfId system.skills 2)}}
-      <h5>{{localize "REDSTEEL.Actor.Character.Attribute.End.long"}}</h5>
-{{/if}}      
+      </div>
+      {{/if}}
+
+      {{#if (hasVisibleSkillsOfId system.skills 1)}}
+      <div class="skill-section attribute-dex">
+        <h5>{{localize "REDSTEEL.Actor.Character.Attribute.Dex.long"}}    
+          <span>Rating</span>
+    <span>Rank</span>
+    </h5>
+        
+      {{/if}}
+      {{#each system.skills as |skill key|}}
+        {{#if (eq skill.id 1)}}
+        <div class="skill-toggle-wrapper">
+          <label class="toggle-label hidden">
+            <input
+              type="checkbox"
+              class="toggle-skill-visibility"
+              data-skill="{{key}}"
+              {{#if skill.visible}}checked{{/if}}>
+            {{key}}
+          </label>
+          <div class="skill-entry flexrow {{#unless skill.visible}}hidden-skill{{/unless}}">
+            <label
+              class="skill-label rollable flexlarge align-left skill-name"
+              data-action="roll"
+              data-roll="{{skill.rating}}-1d100"
+              data-roll-type="skill"
+              data-label="{{key}}"
+            >
+              {{localize (concat 'REDSTEEL.Actor.Character.skills.' key '.label')}}
+            </label>
+            {{#if @root.skillsEditMode}}
+            <div class="skill-rank-editor">
+              <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="-1" data-min="0" data-max="{{skillRankMax skill}}">-</button>
+              <span class="skill-rank-progress">{{skill.value}} / {{skillRankMax skill}}</span>
+              <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="1" data-min="0" data-max="{{skillRankMax skill}}">+</button>
+            </div>
+            {{else}}
+            <span class="skill-rank-label">{{romanRank skill.value}}</span>
+            {{/if}}
+            <input
+              type="text"
+              class="skill-rating"
+              data-dtype="Number"
+              value="{{skill.rating}}"
+              readonly
+            />
+          </div>
+        </div>
+          {{/if}}
+        {{/each}}
+      {{#if (hasVisibleSkillsOfId system.skills 1)}}
+      </div>
+      {{/if}}
+
+      {{#if (hasVisibleSkillsOfId system.skills 2)}}
+      <div class="skill-section attribute-end">
+        <h5>{{localize "REDSTEEL.Actor.Character.Attribute.End.long"}}
+          <span>Rating</span>
+    <span>Rank</span></h5>
+      {{/if}}
       {{#each system.skills as |skill key|}}
         {{#if (eq skill.id 2)}}
         <div class="skill-toggle-wrapper">
-        <label class="toggle-label hidden">
-          <input 
-            type="checkbox" 
-            class="toggle-skill-visibility" 
-            data-skill="{{key}}" 
-            {{#if skill.visible}}checked{{/if}}>
-          {{key}}
-        </label>
-           <div class="skill-entry flexrow {{#unless skill.visible}}hidden-skill{{/unless}}">
-          <label
-            class="skill-label rollable flexlarge align-left skill-name"  
-            data-action="roll"
-            data-roll="{{skill.rating}}-1d100"
-            data-roll-type="skill"
-            data-label="{{key}}"
-          >
-            {{localize (concat 'REDSTEEL.Actor.Character.skills.' key '.label')}}
+          <label class="toggle-label hidden">
+            <input
+              type="checkbox"
+              class="toggle-skill-visibility"
+              data-skill="{{key}}"
+              {{#if skill.visible}}checked{{/if}}>
+            {{key}}
           </label>
+          <div class="skill-entry flexrow {{#unless skill.visible}}hidden-skill{{/unless}}">
+            <label
+              class="skill-label rollable flexlarge align-left skill-name"
+              data-action="roll"
+              data-roll="{{skill.rating}}-1d100"
+              data-roll-type="skill"
+              data-label="{{key}}"
+            >
+              {{localize (concat 'REDSTEEL.Actor.Character.skills.' key '.label')}}
+            </label>
+            {{#if @root.skillsEditMode}}
+            <div class="skill-rank-editor">
+              <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="-1" data-min="0" data-max="{{skillRankMax skill}}">-</button>
+              <span class="skill-rank-progress">{{skill.value}} / {{skillRankMax skill}}</span>
+              <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="1" data-min="0" data-max="{{skillRankMax skill}}">+</button>
+            </div>
+            {{else}}
+            <span class="skill-rank-label">{{romanRank skill.value}}</span>
+            {{/if}}
             <input
               type="text"
               class="skill-rating"
@@ -202,45 +226,50 @@
               value="{{skill.rating}}"
               readonly
             />
-            {{#if @root.skillsEditMode}}
-            <div class="skill-rank-editor">
-              <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="-1" data-min="0" data-max="{{skillRankMax skill}}">-</button>
-              <span class="skill-rank-progress">{{skill.value}} / {{skillRankMax skill}}</span>
-              <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="1" data-min="0" data-max="{{skillRankMax skill}}">+</button>
-            </div>
-            {{/if}}
           </div>
-          </div>
+        </div>
         {{/if}}
       {{/each}}
-            
-    </div>
-    {{! Right Column }}
-    <div class="skills-column">
-{{#if (hasVisibleSkillsOfId system.skills 3)}}  
-      <h5>{{localize "REDSTEEL.Actor.Character.Attribute.Int.long"}}</h5>
-{{/if}}      
+      {{#if (hasVisibleSkillsOfId system.skills 2)}}
+      </div>
+      {{/if}}
+
+      {{#if (hasVisibleSkillsOfId system.skills 3)}}
+      <div class="skill-section attribute-int">
+        <h5>{{localize "REDSTEEL.Actor.Character.Attribute.Int.long"}}          
+          <span>Rating</span>
+    <span>Rank</span></h5>
+      {{/if}}
       {{#each system.skills as |skill key|}}
         {{#if (eq skill.id 3)}}
-                  <div class="skill-toggle-wrapper">
-        <label class="toggle-label hidden">
-          <input 
-            type="checkbox" 
-            class="toggle-skill-visibility" 
-            data-skill="{{key}}" 
-            {{#if skill.visible}}checked{{/if}}>
-          {{key}}
-        </label>
-           <div class="skill-entry flexrow {{#unless skill.visible}}hidden-skill{{/unless}}">
-          <label
-            class="skill-label rollable flexlarge align-left skill-name"  
-            data-action="roll"
-            data-roll="{{skill.rating}}-1d100"
-            data-roll-type="skill"
-            data-label="{{key}}"
-          >
-             {{localize (concat 'REDSTEEL.Actor.Character.skills.' key '.label')}}
+        <div class="skill-toggle-wrapper">
+          <label class="toggle-label hidden">
+            <input
+              type="checkbox"
+              class="toggle-skill-visibility"
+              data-skill="{{key}}"
+              {{#if skill.visible}}checked{{/if}}>
+            {{key}}
           </label>
+          <div class="skill-entry flexrow {{#unless skill.visible}}hidden-skill{{/unless}}">
+            <label
+              class="skill-label rollable flexlarge align-left skill-name"
+              data-action="roll"
+              data-roll="{{skill.rating}}-1d100"
+              data-roll-type="skill"
+              data-label="{{key}}"
+            >
+              {{localize (concat 'REDSTEEL.Actor.Character.skills.' key '.label')}}
+            </label>
+            {{#if @root.skillsEditMode}}
+            <div class="skill-rank-editor">
+              <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="-1" data-min="0" data-max="{{skillRankMax skill}}">-</button>
+              <span class="skill-rank-progress">{{skill.value}} / {{skillRankMax skill}}</span>
+              <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="1" data-min="0" data-max="{{skillRankMax skill}}">+</button>
+            </div>
+            {{else}}
+            <span class="skill-rank-label">{{romanRank skill.value}}</span>
+            {{/if}}
             <input
               type="text"
               class="skill-rating"
@@ -248,174 +277,211 @@
               value="{{skill.rating}}"
               readonly
             />
-            {{#if @root.skillsEditMode}}
-            <div class="skill-rank-editor">
-              <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="-1" data-min="0" data-max="{{skillRankMax skill}}">-</button>
-              <span class="skill-rank-progress">{{skill.value}} / {{skillRankMax skill}}</span>
-              <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="1" data-min="0" data-max="{{skillRankMax skill}}">+</button>
-            </div>
-            {{/if}}
           </div>
-          </div>
+        </div>
         {{/if}}
       {{/each}}
-
-{{#if (hasVisibleSkillsOfId system.skills 4)}}
-      <h5>{{localize "REDSTEEL.Actor.Character.Attribute.Wil.long"}}</h5>
-{{/if}}      
-        {{#each system.skills as |skill key|}}
-        {{#if (eq skill.id 4)}}
-                 <div class="skill-toggle-wrapper">
-        <label class="toggle-label hidden">
-          <input 
-            type="checkbox" 
-            class="toggle-skill-visibility" 
-            data-skill="{{key}}" 
-            {{#if skill.visible}}checked{{/if}}>
-          {{key}}
-        </label>
-           <div class="skill-entry flexrow {{#unless skill.visible}}hidden-skill{{/unless}}">
-          <label
-            class="skill-label rollable flexlarge align-left skill-name"  
-            data-action="roll"
-            data-roll="{{skill.rating}}-1d100"
-            data-roll-type="skill"
-            data-label="{{key}}"
-          >
-             {{localize (concat 'REDSTEEL.Actor.Character.skills.' key '.label')}}
-          </label>
-            <input
-              type="text"
-              class="skill-rating"
-              data-dtype="Number"
-              value="{{skill.rating}}"
-              readonly
-            />
-            {{#if @root.skillsEditMode}}
-            <div class="skill-rank-editor">
-              <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="-1" data-min="0" data-max="{{skillRankMax skill}}">-</button>
-              <span class="skill-rank-progress">{{skill.value}} / {{skillRankMax skill}}</span>
-              <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="1" data-min="0" data-max="{{skillRankMax skill}}">+</button>
-            </div>
-            {{/if}}
-          </div>
-          </div>
-        {{/if}}
-      {{/each}}
-{{#if (hasVisibleSkillsOfId system.skills 5)}}
-<h5>{{localize "REDSTEEL.Actor.Character.Attribute.Cha.long"}}</h5>
-{{/if}}
-
-{{#each system.skills as |skill key|}}
-  {{#if (eq skill.id 5)}}
-
-  <div class="skill-toggle-wrapper">
-    <label class="toggle-label hidden">
-      <input 
-        type="checkbox" 
-        class="toggle-skill-visibility" 
-        data-skill="{{key}}" 
-        {{#if skill.visible}}checked{{/if}}>
-      {{key}}
-    </label>
-
-    <div class="skill-entry flexrow {{#unless skill.visible}}hidden-skill{{/unless}}">
-      <label
-        class="skill-label rollable flexlarge align-left skill-name"
-        data-action="roll"
-        data-roll="{{skill.rating}}-1d100"
-        data-roll-type="skill"
-        data-label="{{key}}"
-      >
-        {{localize (concat 'REDSTEEL.Actor.Character.skills.' key '.label')}}
-      </label>
-
-      <input
-        type="text"
-        class="skill-rating"
-        value="{{skill.rating}}"
-        readonly
-      />
-      {{#if @root.skillsEditMode}}
-      <div class="skill-rank-editor">
-        <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="-1" data-min="0" data-max="{{skillRankMax skill}}">-</button>
-        <span class="skill-rank-progress">{{skill.value}} / {{skillRankMax skill}}</span>
-        <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="1" data-min="0" data-max="{{skillRankMax skill}}">+</button>
+      {{#if (hasVisibleSkillsOfId system.skills 3)}}
       </div>
       {{/if}}
     </div>
-  </div>
-
-  {{/if}}
-{{/each}}
-
-<!-- BLEND (shown in charisma, but calculated from acting) -->
-{{#if @root.system.skills.acting.visible}}
-<div class="skill-entry flexrow subskill">
-  <label
-    class="skill-label rollable flexlarge align-left skill-name"
-    data-action="roll"
-    data-roll="{{@root.system.skills.acting.blend}}-1d100"
-    data-roll-type="skill"
-    data-label="blend"
-  >
-    {{localize "REDSTEEL.Actor.Character.skills.blend.label"}}
-  </label>
-
-  <input
-    type="text"
-    class="skill-rating"
-    data-dtype="Number"
-    value="{{@root.system.skills.acting.blend}}"
-    readonly
-  />
-
-</div>
-  {{/if}}
-{{#if (hasVisibleSkillsOfId system.skills 6)}}
-      <h5>{{localize "REDSTEEL.Actor.Character.Attribute.Per.long"}}</h5>
-{{/if}}      
-      {{#each system.skills as |skill key|}}
-        {{#if (eq skill.id 6)}}
-                  <div class="skill-toggle-wrapper">
-        <label class="toggle-label hidden">
-          <input 
-            type="checkbox" 
-            class="toggle-skill-visibility" 
-            data-skill="{{key}}" 
-            {{#if skill.visible}}checked{{/if}}>
-          {{key}}
-        </label>
-           <div class="skill-entry flexrow {{#unless skill.visible}}hidden-skill{{/unless}}">
-          <label
-            class="skill-label rollable flexlarge align-left skill-name"  
-            data-action="roll"
-            data-roll="{{skill.rating}}-1d100"
-            data-roll-type="skill"
-            data-label="{{key}}"
-          >
-            {{localize (concat 'REDSTEEL.Actor.Character.skills.' key '.label')}}
-          </label>
-            <input
-              type="text"
-              class="skill-rating"
-              data-dtype="Number"
-              value="{{skill.rating}}"
-              readonly
-            />
-            {{#if @root.skillsEditMode}}
-            <div class="skill-rank-editor">
-              <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="-1" data-min="0" data-max="{{skillRankMax skill}}">-</button>
-              <span class="skill-rank-progress">{{skill.value}} / {{skillRankMax skill}}</span>
-              <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="1" data-min="0" data-max="{{skillRankMax skill}}">+</button>
-            </div>
-            {{/if}}
+    <div class="skills-column">
+      {{#if (hasVisibleSkillsOfId system.skills 4)}}
+      <div class="skill-section attribute-wil">
+        <h5>{{localize "REDSTEEL.Actor.Character.Attribute.Wil.long"}}          
+          <span>Rating</span>
+    <span>Rank</span></h5>
+        {{#each system.skills as |skill key|}}
+          {{#if (eq skill.id 4)}}
+          <div class="skill-toggle-wrapper">
+            <label class="toggle-label hidden">
+              <input
+                type="checkbox"
+                class="toggle-skill-visibility"
+                data-skill="{{key}}"
+                {{#if skill.visible}}checked{{/if}}>
+              {{key}}
+            </label>
+            <div class="skill-entry flexrow {{#unless skill.visible}}hidden-skill{{/unless}}">
+              <label
+                class="skill-label rollable flexlarge align-left skill-name"
+                data-action="roll"
+                data-roll="{{skill.rating}}-1d100"
+                data-roll-type="skill"
+                data-label="{{key}}"
+              >
+                {{localize (concat 'REDSTEEL.Actor.Character.skills.' key '.label')}}
+              </label>
+              {{#if @root.skillsEditMode}}
+              <div class="skill-rank-editor">
+                <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="-1" data-min="0" data-max="{{skillRankMax skill}}">-</button>
+                <span class="skill-rank-progress">{{skill.value}} / {{skillRankMax skill}}</span>
+                <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="1" data-min="0" data-max="{{skillRankMax skill}}">+</button>
+              </div>
+              {{else}}
+              <span class="skill-rank-label">{{romanRank skill.value}}</span>
+              {{/if}}
+              <input
+                type="text"
+                class="skill-rating"
+                data-dtype="Number"
+                value="{{skill.rating}}"
+                readonly
+              />
             </div>
           </div>
+          {{/if}}
+        {{/each}}
+      </div>
+      {{/if}}
+
+      {{#if (or (hasVisibleSkillsOfId system.skills 5) @root.system.skills.acting.visible)}}
+      <div class="skill-section attribute-cha">
+        <h5>{{localize "REDSTEEL.Actor.Character.Attribute.Cha.long"}}          
+          <span>Rating</span>
+    <span>Rank</span></h5>
+        {{#each system.skills as |skill key|}}
+          {{#if (eq skill.id 5)}}
+          <div class="skill-toggle-wrapper">
+            <label class="toggle-label hidden">
+              <input
+                type="checkbox"
+                class="toggle-skill-visibility"
+                data-skill="{{key}}"
+                {{#if skill.visible}}checked{{/if}}>
+              {{key}}
+            </label>
+            <div class="skill-entry flexrow {{#unless skill.visible}}hidden-skill{{/unless}}">
+              <label
+                class="skill-label rollable flexlarge align-left skill-name"
+                data-action="roll"
+                data-roll="{{skill.rating}}-1d100"
+                data-roll-type="skill"
+                data-label="{{key}}"
+              >
+                {{localize (concat 'REDSTEEL.Actor.Character.skills.' key '.label')}}
+              </label>
+              {{#if @root.skillsEditMode}}
+              <div class="skill-rank-editor">
+                <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="-1" data-min="0" data-max="{{skillRankMax skill}}">-</button>
+                <span class="skill-rank-progress">{{skill.value}} / {{skillRankMax skill}}</span>
+                <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.skills.{{key}}.value" data-delta="1" data-min="0" data-max="{{skillRankMax skill}}">+</button>
+              </div>
+              {{else}}
+              <span class="skill-rank-label">{{romanRank skill.value}}</span>
+              {{/if}}
+              <input
+                type="text"
+                class="skill-rating"
+                value="{{skill.rating}}"
+                readonly
+              />
+            </div>
+          </div>
+          {{/if}}
+        {{/each}}
+        {{#if @root.system.skills.acting.visible}}
+        <div class="skill-entry flexrow subskill">
+
+          <label
+            class="skill-label rollable flexlarge align-left skill-name"
+            data-action="roll"
+            data-roll="{{@root.system.skills.acting.blend}}-1d100"
+            data-roll-type="skill"
+            data-label="blend"
+          >
+          
+            {{localize "REDSTEEL.Actor.Character.skills.blend.label"}}
+          </label>
+          <input
+            type="text"
+            class="skill-rating"
+            data-dtype="Number"
+            value="{{@root.system.skills.acting.blend}}"
+            readonly
+          />
+        </div>
         {{/if}}
-      {{/each}}
+      </div>
+      {{/if}}
+
+{{#if (hasVisibleSkillsOfId system.skills 6)}}
+<div class="skill-section attribute-per">
+  <h5>{{localize "REDSTEEL.Actor.Character.Attribute.Per.long"}}
+    <span>Rating</span>
+    <span>Rank</span>
+  </h5>
+
+  {{#each system.skills as |skill key|}}
+    {{#if (eq skill.id 6)}}
+    <div class="skill-toggle-wrapper">
+      <label class="toggle-label hidden">
+        <input
+          type="checkbox"
+          class="toggle-skill-visibility"
+          data-skill="{{key}}"
+          {{#if skill.visible}}checked{{/if}}>
+        {{key}}
+      </label>
+
+      <div class="skill-entry flexrow {{#unless skill.visible}}hidden-skill{{/unless}}">
+        <label
+          class="skill-label rollable flexlarge align-left skill-name"
+          data-action="roll"
+          data-roll="{{skill.rating}}-1d100"
+          data-roll-type="skill"
+          data-label="{{key}}"
+        >
+          {{localize (concat 'REDSTEEL.Actor.Character.skills.' key '.label')}}
+        </label>
+
+        {{#if @root.skillsEditMode}}
+        <div class="skill-rank-editor">
+          <button
+            type="button"
+            class="skill-rank-button"
+            data-action="adjustActorNumber"
+            data-path="system.skills.{{key}}.value"
+            data-delta="-1"
+            data-min="0"
+            data-max="{{skillRankMax skill}}">
+            -
+          </button>
+
+          <span class="skill-rank-progress">
+            {{skill.value}} / {{skillRankMax skill}}
+          </span>
+
+          <button
+            type="button"
+            class="skill-rank-button"
+            data-action="adjustActorNumber"
+            data-path="system.skills.{{key}}.value"
+            data-delta="1"
+            data-min="0"
+            data-max="{{skillRankMax skill}}">
+            +
+          </button>
+        </div>
+        {{else}}
+        <span class="skill-rank-label">{{romanRank skill.value}}</span>
+        {{/if}}
+
+        <input
+          type="text"
+          class="skill-rating"
+          data-dtype="Number"
+          value="{{skill.rating}}"
+          readonly
+        />
+      </div>
     </div>
-  
+    {{/if}}
+  {{/each}}
+</div>
+{{/if}}
+    </div>
+
   </section>
 
 </section>
@@ -638,6 +704,6 @@
     </div>
   </section>
 </section>
-
+</section>
   </div>
 </section>

@@ -908,6 +908,12 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     // Foundry comes with a large number of utility classes, e.g. SearchFilter
     // That you may want to implement yourself.
     // Use standard DOM method to select input elements
+    console.log("Restoring scroll:", this._skillsScrollTop);
+
+    const scrollable = this.element.querySelector(".tab.skills");
+    if (scrollable) {
+      scrollable.scrollTop = this._skillsScrollTop ?? 0;
+    }
   }
 
   /**************
@@ -1055,8 +1061,24 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
   }
 
   static async _adjustActorNumber(event, target) {
+    console.log("Sheet id:", this.id);
     const path = target.dataset.path;
     if (!path) return;
+
+    console.log(
+      "scrollable-tab",
+      this.element.querySelector(".scrollable-tab"),
+    );
+    console.log("tab.skills", this.element.querySelector(".tab.skills"));
+    console.log(
+      "window-content",
+      this.element.querySelector(".window-content"),
+    );
+    // Save scroll position
+    const scrollable = this.element.querySelector(".tab.skills");
+    this._skillsScrollTop = scrollable?.scrollTop ?? 0;
+
+    console.log("Saving scroll:", this._skillsScrollTop);
 
     const delta = Number(target.dataset.delta ?? 1);
     const min = Number(target.dataset.min ?? 0);
