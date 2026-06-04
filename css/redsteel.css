@@ -28,27 +28,50 @@ body.theme-dark.application {
   font-family: "Roboto", sans-serif;
 }
 
+/* -------------------------------------------- */
+/*  Redsteel chat palette                       */
+/*  Steel (silver) text · dark-red brutal linings */
+/*  Defined theme-independently so chat stays dark */
+/* -------------------------------------------- */
+:root {
+  --rs-chat-bg: #0f0f0f; /* near-black */
+  --rs-chat-bg-alt: #181818; /* raised: dice panels + table cells */
+  --rs-chat-border: #5e2020; /* dark blood-red lining */
+  --rs-chat-border-bright: #843131; /* hover / emphasis edge */
+  --rs-chat-border-dim: #3a1717; /* muted red for inner panels */
+  --rs-chat-divider: rgba(140, 45, 45, 0.45); /* hr, grid splits */
+  --rs-chat-glow: rgba(120, 30, 30, 0.55); /* inset red glow */
+  --rs-chat-text: #b8bbbd; /* muted silver primary text */
+  --rs-chat-text-dim: #8a8e90; /* silver secondary text */
+  --rs-chat-text-strong: #cdd0d2; /* steel: headers, totals */
+  --rs-chat-whisper-bg: #18101350; /* red-tinted whisper */
+  --rs-chat-whisper-border: #6a2740;
+}
+
 .chat-message {
   margin: 3px;
   padding: 5px;
   font-size: var(--font-size-14);
-  color: var(--color-text-light-primary);
-  background: #0b0a13fa;
-  border: 2px solid #6c6c6782;
-  border-radius: 5px;
+  color: var(--rs-chat-text);
+  background: var(--rs-chat-bg);
+  border: 2px solid #575757;
+  border-radius: 3px;
+  box-shadow:
+    inset 0 0 18px rgba(0, 0, 0, 0.6),
+    0 0 6px rgba(94, 32, 32, 0.25);
 }
 
 .chat-message.whisper {
-  background: #131121;
-  border: 2px solid #545469;
+  background: var(--rs-chat-whisper-bg);
+  border: 2px solid var(--rs-chat-whisper-border);
 }
 
 .message.whisper table tr td {
-  background-color: #131121;
+  background-color: var(--rs-chat-whisper-bg);
 }
 
 .chat-message img {
-  border: 1.5px solid #b5b3a487;
+  border: 1.5px solid rgba(132, 49, 49, 0.6);
   border-radius: 20px;
   margin-bottom: 1px;
 }
@@ -56,22 +79,44 @@ body.theme-dark.application {
 .chat-message .message-header .flavor-text,
 .chat-message .message-header,
 .chat-message .message-header .whisper-to {
-  color: var(--color-text-light-primary);
+  color: var(--rs-chat-text-strong);
+}
+
+/* Sender name + timestamp sit a touch dimmer than flavor */
+.chat-message .message-sender {
+  color: var(--rs-chat-text);
+}
+.chat-message .message-metadata {
+  color: var(--rs-chat-text-dim);
 }
 
 .dice-roll .dice-formula,
 .dice-roll .dice-total {
-  border: #201b1b;
-  box-shadow: 0 0 2px #ffffff inset;
+  color: var(--rs-chat-text-strong);
+  background: var(--rs-chat-bg-alt);
+  border: 1px solid #514226;
+  box-shadow: 0 0 4px rgb(0 0 0) inset
 }
 
-#chat-form textarea {
+#chat-form textarea,
+#chat-form .editor-content.ProseMirror,
+#sidebar .chat-sidebar .editor-content.ProseMirror {
   width: 100%;
   height: 100%;
   resize: none;
   font-family: var(--font-primary);
-  color: var(--color-text-light-primary);
-  background: url(../ui/parchment_dark.jpg) repeat;
+  /* Redsteel chat palette — matches the message cards */
+  color: var(--rs-chat-text);
+  background: var(--rs-chat-bg);
+  border: 1px solid var(--rs-chat-border);
+  border-radius: 3px;
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.6);
+}
+
+/* Dim the placeholder so it reads as a hint, not content */
+#chat-form textarea::placeholder,
+#sidebar .chat-sidebar .ProseMirror[data-placeholder]::before {
+  color: var(--rs-chat-text-dim);
 }
 
 hr {
@@ -83,7 +128,7 @@ hr {
 table tr td:first-child,
 table tr td:nth-child(2),
 table tr td:nth-child(3) {
-  background-color: #1412238a;
+  background-color: var(--rs-chat-bg-alt);
 }
 
 .rollable:hover,
@@ -1734,6 +1779,9 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
    Chat adjustments
    ========================= */
 
+   .prosemirror menu, prose-mirror menu {
+    background: #0f0f0f;
+}
 /* 1) Global line-height tightening (biggest win) */
 .chat-message {
   line-height: 1.25;
@@ -1742,6 +1790,13 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 /* 2) Neutralize paragraph vertical bloat */
 .chat-message p {
   margin: 0.2em 0;
+}
+
+/* Drop the leading gap above the first line of a cell's description
+   (rich-text descriptions are wrapped in <p>, which adds a top margin) */
+.chat-message td > :first-child,
+.chat-message td > p:first-child {
+  margin-top: 0;
 }
 
 /* 3) Reduce list spacing (bullets are tall by default) */
@@ -1758,7 +1813,7 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 .chat-message hr {
   margin: 0.4em 0;
   border: none;
-  border-top: 1px solid rgba(255, 255, 255, 0.25);
+  border-top: 1px solid var(--rs-chat-divider);
 }
 
 /* 5) Clamp generic block spacing (tables, divs, etc.) */
@@ -1769,6 +1824,11 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 .chat-message th,
 .chat-message td {
   padding: 0.25em 0.4em;
+  /* Same raised treatment as the dice formula/total panels */
+  color: var(--rs-chat-text-strong);
+  background-color: var(--rs-chat-bg-alt);
+  border: 1px solid #514226;
+    box-shadow: 0 0 4px rgb(0 0 0) inset
 }
 
 .chat-message .num3 {
@@ -1794,7 +1854,7 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   bottom: 0;
   left: 50%;
   width: 1px;
-  background: rgb(123 117 110);
+  background: var(--rs-chat-divider);
   pointer-events: none;
 }
 .dual-roll {

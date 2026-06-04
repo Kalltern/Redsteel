@@ -550,7 +550,9 @@ export async function getAttackRolls(
 
   // Roll data setup
 
-  let rollName = weapon ? `${weapon.localizedName ?? weapon.name} Attack` : "Ability Attack";
+  let rollName = weapon
+    ? `${weapon.localizedName ?? weapon.name} Attack`
+    : "Ability Attack";
   const rollData = {
     combatSkills: actor.system.combatSkills,
     weaponAttack: ws.attack || 0,
@@ -741,14 +743,14 @@ export async function getCriticalRolls(
 
     const critBonusPenetration =
       (critPenetrationMapping[degree] ?? 0) +
-      perBonus +
-      actorCritBonus +
-      sneakCritPenetration +
-      deadlyLungeBonus +
-      penetration +
-      (weapon?.system.critPenetration || 0) +
-      weaponSkillCritPen +
-      doctrineSkillCritPen || 0;
+        perBonus +
+        actorCritBonus +
+        sneakCritPenetration +
+        deadlyLungeBonus +
+        penetration +
+        (weapon?.system.critPenetration || 0) +
+        weaponSkillCritPen +
+        doctrineSkillCritPen || 0;
 
     return {
       degree,
@@ -909,7 +911,7 @@ export async function getEffectRolls(
           effectName.charAt(0).toUpperCase() + effectName.slice(1);
         const successText =
           d100Roll.total <= roundedModifiedValue
-            ? `<i class="fa-sharp-duotone fa-solid fa-star-christmas" style="--fa-primary-color: #c4c700; --fa-secondary-color: #5c5400;"></i> SUCCESS`
+            ? `<i class="fa-regular fa-star" style="--fa-primary-color: #c4c700; --fa-secondary-color: #5c5400;"></i> SUCCESS`
             : ``;
 
         effectsRollResults += `<p><b>| ${displayName}: </b>${d100Roll.total} | < ${roundedModifiedValue}% ${successText}</p>`;

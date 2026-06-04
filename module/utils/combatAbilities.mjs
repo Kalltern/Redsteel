@@ -1016,29 +1016,25 @@ ${critHTML}
   </strong>
 </span>
 <hr>
-<div style="text-align:center; font-size:16px;">
-<table style="width:100%; text-align:center; font-size:16px;">
-<tr>
-  <td>
-    ${concatRollAndDescription}
-    ${attributeTestHTML}
-  </td>
-</tr>
-</table>
- </div>
- <hr>
 <p style="text-align:center; font-size:20px;">
   <b>${critSuccess ? "Critical Success!" : critFailure ? "Critical Failure!" : ""}</b>
 </p>
+<hr>
+${damageLine}
+<hr>
+<div style="text-align:center; font-size:16px;">
+<table style="width:100%; text-align:center; font-size:16px;">
+  <tr><th>Description</th></tr>
+  <tr><td>${concatRollAndDescription}</td></tr>
+  ${attributeTestHTML}
+</table>
+ </div>
 <table style="width:100%; text-align:center; font-size:15px;">
   <tr><th>Effects</th></tr>
   <tr>
     <td><b>${allBleedRollResults}</b> ${effectsRollResults}</td>
   </tr>
 </table>
-<hr>
-${damageLine}
-<hr>
 `,
       flags: {
         redsteel: {

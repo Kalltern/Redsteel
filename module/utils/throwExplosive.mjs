@@ -167,6 +167,7 @@ export async function throwExplosive() {
       : ""
   }
 </b></p>
+<hr>
 ${damageLine}
 <hr>
 <table style="width:100%; text-align:center; font-size:15px;">
@@ -175,7 +176,6 @@ ${damageLine}
     <td>${effectResults}</td>
   </tr>
 </table>
-<hr>
 `;
 
     await ChatMessage.create({

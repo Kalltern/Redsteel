@@ -414,6 +414,7 @@ ${
 <p style="text-align:center; font-size:20px;">
   <b>${critSuccess ? "Critical Success!" : critFailure ? "Critical Failure!" : ""}</b>
 </p>
+ <hr>
 ${damageLine}
 
 <table style="width:100%; text-align:center; font-size:15px;">
@@ -422,7 +423,7 @@ ${damageLine}
     <td><b>${allBleedRollResults}</b> ${effectsRollResults}</td>
   </tr>
 </table>
-<hr>
+
 `,
       flags: {
         redsteel: {
@@ -512,7 +513,8 @@ ${weaponChoices
 export async function rangedAttack(options = {}) {
   return universalAttackLogic({
     attackType: "ranged",
-    flavorLabel: (weapon) => `Ranged attack with ${weapon.localizedName ?? weapon.name}`,
+    flavorLabel: (weapon) =>
+      `Ranged attack with ${weapon.localizedName ?? weapon.name}`,
     showBreakthrough: false,
     weaponFilter: (i) =>
       i.type === "weapon" && ["bow", "crossbow"].includes(i.system.class),
@@ -524,7 +526,8 @@ export async function rangedAttack(options = {}) {
 export async function throwingAttack(options = {}) {
   return universalAttackLogic({
     attackType: "throwing",
-    flavorLabel: (weapon) => `Throwing attack with ${weapon.localizedName ?? weapon.name}`,
+    flavorLabel: (weapon) =>
+      `Throwing attack with ${weapon.localizedName ?? weapon.name}`,
     showBreakthrough: true,
     weaponFilter: (i) => i.type === "weapon" && i.system.thrown === true,
     getWeaponSkillData: (actor, weapon) =>
@@ -537,7 +540,8 @@ export async function throwingAttack(options = {}) {
 export async function meleeAttack(options = {}) {
   return universalAttackLogic({
     attackType: "melee",
-    flavorLabel: (weapon) => `Melee attack with ${weapon.localizedName ?? weapon.name}`,
+    flavorLabel: (weapon) =>
+      `Melee attack with ${weapon.localizedName ?? weapon.name}`,
     showBreakthrough: true,
     weaponFilter: (i) =>
       i.type === "weapon" &&

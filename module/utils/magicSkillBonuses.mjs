@@ -1074,7 +1074,6 @@ export async function finalizeRollsAndPostChat(
   <tr>${damageHeaders}</tr>
   <tr>${damageValues}</tr>
 </table>
-<hr>
 `
     : "";
 
@@ -1086,12 +1085,12 @@ export async function finalizeRollsAndPostChat(
     <tr><th>Effects</th></tr>
     <tr><td>${effectsRollResults}</td></tr>
   </table>
-  <hr>
   `
     : "";
 
   const hasPenetration = spell.system.penetration > 0;
-  const hasCrit = showCrit === true;
+  // Critical Score is only meaningful on a critical success (not on failures)
+  const hasCrit = (ignoreChanneling ? displayCritSuccess : critSuccess) === true;
   const showTable = hasPenetration || hasCrit;
   const headers = [
     hasPenetration ? "<th>Penetration</th>" : "",
@@ -1109,7 +1108,6 @@ export async function finalizeRollsAndPostChat(
   <tr>${headers}</tr>
   <tr>${values}</tr>
 </table>
-<hr>
 `
     : "";
 
@@ -1198,7 +1196,6 @@ export async function finalizeRollsAndPostChat(
         </div>
         ${tags}
         <hr>
-        <table style="width: 100%; text-align: center;font-size: 15px;">
         <p style="text-align: center; font-size: 20px;"><b>
         ${
           ignoreChanneling
@@ -1214,10 +1211,11 @@ export async function finalizeRollsAndPostChat(
                 : ""
         }
         </b></p>
-            <tr><th>Description:</th></tr>
-            <tr><td><br>${renderedDescription}</td></tr>
-        </table>
         <hr>
+        <table style="width: 100%; text-align: center;font-size: 15px;">
+            <tr><th>Description:</th></tr>
+            <tr><td>${renderedDescription}</td></tr>
+        </table>
         ${damageTable}
         ${critPenTable}
         ${effectsTable}
