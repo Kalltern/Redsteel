@@ -518,7 +518,7 @@ table tr td:nth-child(3) {
 }
 .skill-section h5 {
   display: grid;
-  grid-template-columns: 176px 110px 80px;
+  grid-template-columns: 176px 111px 80px;
   justify-items: start;
 }
 
@@ -573,6 +573,8 @@ table tr td:nth-child(3) {
 .redsteel .tab.biography {
   flex: 1;
   box-sizing: border-box;
+  /* Match the header background's 5px gap from the tab toolbar */
+  margin-top: 5px;
   /* Scroll when content overflows; reserve the gutter so width stays static */
   overflow-y: auto;
   scrollbar-gutter: stable;
@@ -749,6 +751,37 @@ table tr td:nth-child(3) {
 }
 .skills-column { padding-left: 8px; }
 .skills-column h5 { text-align: left; margin-bottom: 8px; padding-left: 4px; }
+
+/* Combat sub-tab headers: underline + small "Rank"/"Rating" label,
+   matching the General sub-tab section headers. */
+.skills-combat-container .skills-column h5 {
+  display: grid;
+  grid-template-columns: 144px 110px 80px;
+  align-items: center;
+  margin: 0 0 12px;
+  padding-left: 4px;
+  padding-bottom: 8px;
+  text-align: left;
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #8f7b5d;
+  border-bottom: 1px solid #8f7b5d;
+}
+.skills-combat-container .skills-column h5 span {
+  justify-self: center;
+  color: silver;
+  font-size: 0.8rem;
+}
+/* Rank header (left combat column) — tune independently here */
+.skills-combat-container .skills-column:first-child h5 span {
+  transform: none;
+}
+/* Rating header (right combat column) — nudge left to line up with the
+   rating inputs, independently of the Rank label */
+.skills-combat-container .skills-column:last-child h5 span {
+  transform: translateX(-5px);
+}
 .redsteel .tab.biography .editor {
   height: 100%;
 }
@@ -810,6 +843,25 @@ table tr td:nth-child(3) {
   width: 40px;
   max-width: 40px;
   text-align: center;
+}
+
+/* Armor-type labels shown as engraved Font Awesome icons */
+.redsteel .armor-icon {
+  cursor: help;
+}
+.redsteel .armor-icon i {
+  font-size: 16px;
+  /* Slightly-lifted-from-black fill with a light bottom edge and dark top
+     edge = looks pressed/engraved into the dark sheet. */
+  color: #2c2823;
+  text-shadow:
+    0 1px 1px rgba(255, 255, 255, 0.07),
+    0 -1px 1px rgba(0, 0, 0, 0.7);
+  transition: filter 0.15s ease;
+}
+/* Brighten on hover — works regardless of each icon's own (inline) color */
+.redsteel .armor-icon:hover i {
+  filter: brightness(1.45);
 }
 
 .redsteel .attribute-score,
@@ -1228,6 +1280,8 @@ table tr td:nth-child(3) {
   box-shadow:
     inset 0 0 25px rgba(0, 0, 0, 0.65),
     0 0 12px rgba(0, 0, 0, 0.35);
+  /* Match the header background's 5px gap from the tab toolbar */
+  margin-top: 5px;
   margin-bottom: 16px;
 }
 .skills-container {

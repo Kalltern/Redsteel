@@ -38,6 +38,18 @@ export class RedsteelItem extends Item {
       } else if (Array.isArray(this.system.rollTriggers)) {
         this.system.rollTriggersRaw = this.system.rollTriggers.join(", ");
       }
+
+      // Sync statusEffectsRaw (comma-separated string) ↔ statusEffects (array).
+      // Status effect ids are case-sensitive (e.g. "iceStrike"), so preserve case.
+      const statusRaw = this.system.statusEffectsRaw ?? "";
+      if (statusRaw) {
+        this.system.statusEffects = statusRaw
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+      } else if (Array.isArray(this.system.statusEffects)) {
+        this.system.statusEffectsRaw = this.system.statusEffects.join(", ");
+      }
     }
 
     // Only initialize effectTypes for relevant items (e.g., spells, consumables)

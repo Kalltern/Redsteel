@@ -496,7 +496,7 @@
 >
   <section class="skills-container skills-combat-container">
     <div class="skills-column">
-      <h5>Combat</h5>
+      <h5>Combat <span>Rank</span></h5>
       {{!-- Show only ranks for these combat entries: Combat, Archery, Channeling, Ranger --}}
       {{#with (lookup system.combatSkills 'combat') as |skill|}}
         {{#if skill.visible}}
@@ -573,7 +573,7 @@
 
       {{!-- Weapon Skills, Doctrines, and Schools in left column --}}
       {{#if (hasVisibleEntries system.weaponSkills)}}
-      <h5>Weapon Skills</h5>
+      <h5>Weapon Skills <span>Rank</span></h5>
       {{#each system.weaponSkills as |skill key|}}
         {{#if skill.visible}}
         <div class="skill-entry flexrow">
@@ -595,7 +595,7 @@
       {{/if}}
 
       {{#if (hasVisibleEntries system.doctrines)}}
-      <h5>Doctrines</h5>
+      <h5>Doctrines <span>Rank</span></h5>
       {{#each system.doctrines as |skill key|}}
           {{#if skill.visible}}
           <div class="skill-entry flexrow">
@@ -617,7 +617,7 @@
       {{/if}}
 
       {{#if (hasVisibleEntries system.schools)}}
-      <h5>Schools</h5>
+      <h5>Schools <span>Rank</span></h5>
       {{#each system.schools as |skill key|}}
           {{#if skill.visible}}
           <div class="skill-entry flexrow">
@@ -640,7 +640,7 @@
     </div>
 
     <div class="skills-column">
-      <h5>Combat Ratings</h5>
+      <h5>Statistics <span>Rating</span></h5>
       {{#with (lookup system.combatSkills 'throwing') as |skill|}}
         {{#if skill}}
         <div class="skill-entry flexrow">

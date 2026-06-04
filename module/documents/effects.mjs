@@ -326,6 +326,16 @@ export class RedsteelActiveEffect extends ActiveEffect {
 
         const appliedStacks = newStacks - currentStacks;
 
+        // Always refresh the duration on re-application — even when already at
+        // max stacks (so e.g. poison's timer resets to its full duration).
+        if (turnsDuration > 0) {
+          await existing.setFlag("redsteel", "actorTurns", turnsDuration);
+        }
+
+        if (roundsDuration > 0) {
+          await existing.setFlag("redsteel", "rounds", roundsDuration);
+        }
+
         if (appliedStacks <= 0) return existing;
 
         await existing.update({
@@ -334,14 +344,6 @@ export class RedsteelActiveEffect extends ActiveEffect {
         });
 
         await existing.updateCorrosionChange();
-
-        if (turnsDuration > 0) {
-          await existing.setFlag("redsteel", "actorTurns", turnsDuration);
-        }
-
-        if (roundsDuration > 0) {
-          await existing.setFlag("redsteel", "rounds", roundsDuration);
-        }
 
         await existing.executeTrigger("onApply", {
           appliedStacks,

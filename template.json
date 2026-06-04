@@ -1317,6 +1317,8 @@
       "options": ["feature", "trait", "priest"],
       "rollTriggers": [],
       "rollTriggersRaw": "",
+      "statusEffects": [],
+      "statusEffectsRaw": "",
       "reroll": {
         "name": "",
         "active": [false, false],

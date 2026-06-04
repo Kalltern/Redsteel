@@ -14,6 +14,7 @@ import { REDSTEEL } from "./helpers/config.mjs";
 import { RedsteelToken } from "./documents/token.mjs";
 import { statusEffectManager } from "./utils/statusEffectManager.mjs";
 import { wireAttributeFollowups } from "./utils/attributeFollowup.mjs";
+import { applyTraitStatusEffects } from "./utils/traitStatusEffects.mjs";
 import { usePotion } from "./utils/usePotion.mjs";
 import { defenseRoll } from "./utils/defense.mjs";
 import { throwExplosive } from "./utils/throwExplosive.mjs";
@@ -1044,10 +1045,40 @@ async function applyDamageAsGM(data) {
       let stacks = 1;
 
       if (name === "bleed") {
-        const normal = effect.normalStacks ?? 0;
         const crit = effect.critStacks ?? 0;
+        const normalStacks = effect.normalStacks ?? 0;
 
-        stacks = normal;
+        if (effect.auto) {
+          // Auto bleed is guaranteed — chance/resistance don't apply.
+          stacks = normalStacks;
+        } else {
+          // Each gathered bleed counts as 100% chance: the stored `chance`
+          // already encodes "full stacks ×100 + remainder" (e.g. 120%).
+          // Deduct the target's bleed resistance (targetMod, negative for
+          // resistance), then resolve against the original attack roll.
+          //   120% attacker - 50% resist = 70% → 0 or 1 bleed (roll ≤ 70).
+          const baseChance = effect.chance ?? 0;
+          const roll = effect.roll ?? 100;
+
+          const resolveStacks = (chancePct) => {
+            if (chancePct <= 0) return 0;
+            let s = Math.floor(chancePct / 100);
+            const remainder = chancePct % 100;
+            if (remainder > 0 && roll <= remainder) s += 1;
+            return s;
+          };
+
+          const resistedRegular = resolveStacks(baseChance + targetMod);
+
+          // Preserve extra stacks rolled separately (e.g. sharp-weapon
+          // bleed) that aren't represented in `chance`.
+          const extraStacks = Math.max(
+            0,
+            normalStacks - resolveStacks(baseChance),
+          );
+
+          stacks = resistedRegular + extraStacks;
+        }
 
         if (mode === "critical") {
           stacks += crit;
@@ -1056,8 +1087,6 @@ async function applyDamageAsGM(data) {
 
       stacks += stackMod;
       if (stacks <= 0) continue;
-      if (name === "bleed") {
-      }
       await applyEffectToActor(actor, name, stacks);
     }
 
@@ -2181,4 +2210,11 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
 // Make "Margin of Success" lines clickable → follow-up attribute test
 Hooks.on("renderChatMessageHTML", (message, html) => {
   wireAttributeFollowups(html);
+});
+
+// On token deploy, apply status effects granted by the actor's trait features.
+// Only the creating user runs this, to avoid duplicate application.
+Hooks.on("createToken", async (tokenDoc, options, userId) => {
+  if (game.user.id !== userId) return;
+  await applyTraitStatusEffects(tokenDoc);
 });
