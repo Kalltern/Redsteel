@@ -26,6 +26,20 @@ export class RedsteelItem extends Item {
       ];
     }
 
+    // Sync rollTriggersRaw (comma-separated string) ↔ rollTriggers (array)
+    // This lets the item sheet use a plain text input for editing triggers.
+    if (this.type === "feature") {
+      const raw = this.system.rollTriggersRaw ?? "";
+      if (raw) {
+        this.system.rollTriggers = raw
+          .split(",")
+          .map((s) => s.trim().toLowerCase())
+          .filter(Boolean);
+      } else if (Array.isArray(this.system.rollTriggers)) {
+        this.system.rollTriggersRaw = this.system.rollTriggers.join(", ");
+      }
+    }
+
     // Only initialize effectTypes for relevant items (e.g., spells, consumables)
 
     if (

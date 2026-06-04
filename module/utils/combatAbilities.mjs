@@ -1,3 +1,5 @@
+import { getTraitPills } from "./traitPills.mjs";
+
 export async function combatAbilities() {
   // ====================================================================
   // 1. INITIAL SETUP AND FILTERING
@@ -1043,6 +1045,7 @@ ${damageLine}
           rollName,
           criticalSuccessThreshold,
           criticalFailureThreshold,
+          traitPills: getTraitPills(actor, "attack"),
         },
         attack: {
           type: "attack",

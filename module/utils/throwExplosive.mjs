@@ -1,3 +1,5 @@
+import { getTraitPills } from "./traitPills.mjs";
+
 export async function throwExplosive() {
   const selectedToken = canvas.tokens.controlled[0];
   if (!selectedToken) {
@@ -187,6 +189,7 @@ ${damageLine}
           rollName,
           criticalSuccessThreshold,
           criticalFailureThreshold,
+          traitPills: getTraitPills(actor, "attack"),
         },
 
         attack: {

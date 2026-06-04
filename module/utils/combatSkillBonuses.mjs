@@ -1,3 +1,5 @@
+import { getTraitPills } from "./traitPills.mjs";
+
 async function getSneakDamageFormula(actor, weapon, weaponContext = null) {
   const ws = weapon?.system ?? {};
   const offProps = weaponContext ? getOffhandProps(weaponContext) : null;
@@ -176,6 +178,7 @@ export async function getNonWeaponAbility(actor, ability) {
     flags: {
       redsteel: {
         rollName,
+        traitPills: getTraitPills(actor, "attack"),
       },
       attack: {
         type: "attack",

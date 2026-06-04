@@ -1315,6 +1315,8 @@
     "feature": {
       "templates": ["base"],
       "options": ["feature", "trait", "priest"],
+      "rollTriggers": [],
+      "rollTriggersRaw": "",
       "reroll": {
         "name": "",
         "active": [false, false],

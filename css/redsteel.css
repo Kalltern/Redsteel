@@ -2785,3 +2785,32 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   border-color: #665534 !important;
   color: #d7c697 !important;
 }
+/* -------------------------------------------- */
+/*  Trait Reminder Pills (Chat)                 */
+/* -------------------------------------------- */
+
+.trait-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.trait-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #3a1a1a;
+  color: #f0d9a0;
+  font-size: 0.72em;
+  font-weight: bold;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: default;
+  border: 1px solid #7a2f2f;
+}
+
+.trait-pill:hover {
+  border-color: #a04040;
+  background: #4a2020;
+}

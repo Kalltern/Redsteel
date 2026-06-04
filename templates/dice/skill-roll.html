@@ -1,12 +1,17 @@
 <div class="dice-roll skill-roll">
-  <!-- Added .skill-roll -->
-  <!-- Roll Result -->
+
+  {{#if traitPills.length}}
+  <div class="trait-pills">
+    {{#each traitPills}}
+    <span class="trait-pill" data-tooltip="{{this.description}}">{{this.name}}</span>
+    {{/each}}
+  </div>
+  {{/if}}
+
   <div class="roll-result" style="text-align: center; margin-bottom: 10px">
     <div style="font-size: 2em; font-weight: bold">
       <span>{{rollResult}}</span>
     </div>
   </div>
 
-  
-  </div>
 </div>

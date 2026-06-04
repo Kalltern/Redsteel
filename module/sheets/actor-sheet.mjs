@@ -1,4 +1,5 @@
 import { prepareActiveEffectCategories } from "../helpers/effects.mjs";
+import { getTraitPills } from "../utils/traitPills.mjs";
 
 const { api, sheets } = foundry.applications;
 
@@ -1270,6 +1271,8 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
         const { criticalSuccessThreshold, criticalFailureThreshold } =
           skillData;
 
+        const traitPills = getTraitPills(this.actor, skillKey);
+
         // Now, pass only the deconstructed values in the flags
         await roll.toMessage({
           flavor: `<p style="text-align: center; font-size: 20px;"><b>${label}</b></p>`,
@@ -1279,6 +1282,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
               rollName,
               criticalSuccessThreshold, // Store critical success threshold
               criticalFailureThreshold, // Store critical failure threshold
+              traitPills,
             },
           },
         });

@@ -1,3 +1,5 @@
+import { getTraitPills } from "./traitPills.mjs";
+
 export async function defenseRoll({ actor, weapon, ability = null } = {}) {
   if (!actor) {
     const context = game.redsteel.selectToken();
@@ -595,6 +597,9 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
       await roll.toMessage({
         speaker: ChatMessage.getSpeaker({ actor }),
         flavor: `<strong>Holy Defense</strong>`,
+        flags: {
+          redsteel: { traitPills: getTraitPills(actor, "defense") },
+        },
       });
 
       return;
@@ -652,6 +657,9 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
 
                 ${overwhelm > 0 ? `<p style="text-align:center">Overwhelm: -${overwhelm * 5}</p>` : ""}
                 `,
+                flags: {
+                  redsteel: { traitPills: getTraitPills(actor, "defense") },
+                },
               });
             },
           };
@@ -737,6 +745,7 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
           rollName,
           criticalSuccessThreshold,
           criticalFailureThreshold,
+          traitPills: getTraitPills(actor, "defense"),
         },
       },
     });

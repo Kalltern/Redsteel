@@ -1,3 +1,5 @@
+import { getTraitPills } from "./traitPills.mjs";
+
 export async function spellDefense() {
   // Ensure a token is selected
   const token = canvas.tokens.controlled[0];
@@ -33,6 +35,9 @@ export async function spellDefense() {
     await roll.toMessage({
       speaker: ChatMessage.getSpeaker({ actor }),
       flavor: `<strong>Holy Defense</strong>`,
+      flags: {
+        redsteel: { traitPills: getTraitPills(actor, "defense") },
+      },
     });
 
     return;
@@ -73,6 +78,9 @@ export async function spellDefense() {
           await roll.toMessage({
             speaker: ChatMessage.getSpeaker({ actor }),
             flavor: `<strong>Magic Defense (${level})</strong>`,
+            flags: {
+              redsteel: { traitPills: getTraitPills(actor, "defense") },
+            },
           });
         },
       };

@@ -2147,3 +2147,32 @@ Hooks.once("ready", async () => {
 
   console.log("Redsteel | Migration complete");
 });
+
+Hooks.on("renderChatMessageHTML", (message, html) => {
+  const pills = message.getFlag("redsteel", "traitPills");
+  if (!pills?.length) return;
+
+  const container = document.createElement("div");
+  container.classList.add("trait-pills");
+
+  for (const pill of pills) {
+    const span = document.createElement("span");
+    span.classList.add("trait-pill");
+    span.dataset.tooltip = pill.description;
+    span.textContent = pill.name;
+    container.appendChild(span);
+  }
+
+  // Place pills right after the name/icon header in the flavor — the same
+  // spot the magic action-tags occupy. Fall back to the roll card.
+  const flavor = html.querySelector(".flavor-text");
+  if (flavor) {
+    const header = flavor.firstElementChild;
+    if (header) header.after(container);
+    else flavor.prepend(container);
+    return;
+  }
+
+  const rollCard = html.querySelector(".dice-roll");
+  if (rollCard) rollCard.prepend(container);
+});

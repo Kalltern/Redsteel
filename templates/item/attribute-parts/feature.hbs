@@ -26,5 +26,19 @@
     min="0" 
     placeholder="Enter number of rerolls" />
 
+{{#if (eq system.option "trait")}}
+<div class="form-group stacked">
+  <label>Roll Triggers</label>
+  <input
+    type="text"
+    name="system.rollTriggersRaw"
+    value="{{system.rollTriggersRaw}}"
+    placeholder="e.g. res, athletics"
+  />
+  <p class="hint">
+    Comma-separated. Pills appear in chat when a matching roll is made. attributes are written with shortcut only (str,res)
+  </p>
+</div>
+{{/if}}
 
 </section>

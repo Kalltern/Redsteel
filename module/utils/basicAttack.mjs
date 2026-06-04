@@ -1,3 +1,5 @@
+import { getTraitPills } from "./traitPills.mjs";
+
 export async function universalAttackLogic({
   attackType,
   weaponFilter,
@@ -427,6 +429,7 @@ ${damageLine}
           rollName,
           criticalSuccessThreshold,
           criticalFailureThreshold,
+          traitPills: getTraitPills(actor, "attack"),
         },
         attack: {
           type: "attack",

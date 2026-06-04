@@ -1,3 +1,5 @@
+import { getTraitPills } from "./traitPills.mjs";
+
 // --- Helper for Dialogs (CSS Injection) ---
 function _injectDialogCSS() {
   const css = `
@@ -1227,6 +1229,7 @@ export async function finalizeRollsAndPostChat(
           actor.system.combatSkills.channeling.criticalSuccessThreshold,
         criticalFailureThreshold:
           actor.system.combatSkills.channeling.criticalFailureThreshold,
+        traitPills: getTraitPills(actor, "attack"),
       },
       ...(attackFlag && { attack: attackFlag }),
       ...(effectsFlag && { effects: effectsFlag }),
