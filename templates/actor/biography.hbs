@@ -4,8 +4,70 @@
   data-group='primary'
   data-tab='biography'
 >
+  {{! NPC Traits — shown above the biography for NPCs only }}
+  {{#if (eq actor.type "npc")}}
+  <section class="npc-traits">
+    <header class="npc-traits-header">
+      <h3>{{localize "Traits"}}</h3>
+      {{#if editable}}
+        <a
+          class="item-control item-create"
+          title="{{localize 'DOCUMENT.New' type='feature'}}"
+          data-action="createDoc"
+          data-document-class="Item"
+          data-type="feature"
+          data-system.option="trait"
+        >
+          <i class="fas fa-plus"></i>
+        </a>
+      {{/if}}
+    </header>
+
+    <ul class="npc-traits-grid">
+      {{#each features as |item|}}
+        {{#if (eq item.system.option "trait")}}
+        <li
+          class="npc-trait"
+          data-item-id="{{item._id}}"
+          data-document-class="Item"
+          data-drag="true"
+        >
+          <a class="npc-trait-icon rollable" data-action="roll" data-roll-type="item">
+            <img src="{{item.img}}" data-item-id="{{item.id}}" width="48" height="48" />
+          </a>
+          <div class="npc-trait-main">
+            <div class="npc-trait-top">
+              <span class="npc-trait-name">{{item.localizedName}}</span>
+              <span class="npc-trait-controls">
+                <a
+                  class="item-control item-edit"
+                  title="{{localize 'DOCUMENT.Update' type='feature'}}"
+                  data-action="viewDoc"
+                >
+                  <i class="fas fa-edit"></i>
+                </a>
+                {{#if @root.editable}}
+                  <a
+                    class="item-control item-delete"
+                    title="{{localize 'DOCUMENT.Delete' type='feature'}}"
+                    data-action="deleteDoc"
+                  >
+                    <i class="fas fa-trash"></i>
+                  </a>
+                {{/if}}
+              </span>
+            </div>
+            <div class="npc-trait-desc">{{{item.system.description}}}</div>
+          </div>
+        </li>
+        {{/if}}
+      {{/each}}
+    </ul>
+  </section>
+  {{/if}}
+
   {{! Editors must receive enriched text data from getData to properly handle rolls, UUID links, etc. }}
-  {{#if editable}} 
+  {{#if editable}}
     <prose-mirror name="system.biography" data-document-u-u-i-d="{{actor.uuid}}" value="{{system.biography}}" collaborate="true" toggled="true">
       {{{enrichedBiography}}}
     </prose-mirror>

@@ -499,7 +499,7 @@
       <h5>Combat</h5>
       {{!-- Show only ranks for these combat entries: Combat, Archery, Channeling, Ranger --}}
       {{#with (lookup system.combatSkills 'combat') as |skill|}}
-        {{#if skill}}
+        {{#if skill.visible}}
         <div class="skill-entry flexrow">
           <label class="skill-label flexlarge align-left skill-name" data-label="combat">
             {{localize 'REDSTEEL.Actor.Character.combatSkills.combat.label'}}
@@ -516,7 +516,7 @@
         {{/if}}
       {{/with}}
       {{#with (lookup system.combatSkills 'archery') as |skill|}}
-        {{#if skill}}
+        {{#if skill.visible}}
         <div class="skill-entry flexrow">
           <label class="skill-label flexlarge align-left skill-name" data-label="archery">
             {{localize 'REDSTEEL.Actor.Character.combatSkills.archery.label'}}
@@ -533,7 +533,7 @@
         {{/if}}
       {{/with}}
       {{#with (lookup system.combatSkills 'channeling') as |skill|}}
-        {{#if skill}}
+        {{#if skill.visible}}
         <div class="skill-entry flexrow">
           <label class="skill-label flexlarge align-left skill-name" data-label="channeling">
             {{localize 'REDSTEEL.Actor.Character.combatSkills.channeling.label'}}
@@ -550,7 +550,7 @@
         {{/if}}
       {{/with}}
       {{#with (lookup system.combatSkills 'ranger') as |skill|}}
-        {{#if skill}}
+        {{#if skill.visible}}
         <div class="skill-entry flexrow">
           <label class="skill-label flexlarge align-left skill-name" data-label="ranger">
             {{localize 'REDSTEEL.Actor.Character.combatSkills.ranger.label'}}
