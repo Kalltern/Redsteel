@@ -2881,6 +2881,50 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   color: #d7c697 !important;
 }
 /* -------------------------------------------- */
+/*  NPC header — combat skills grid             */
+/* -------------------------------------------- */
+
+.redsteel .npc-combat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  /* No column gap: the dividers live on the item borders instead */
+  gap: 4px 0;
+  width: 100%;
+  margin-top: 6px;
+}
+
+/* Each entry: label on the left, input on the right */
+.redsteel .npc-combat-grid .attribute-armor {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  max-width: none;
+  margin: 0;
+  padding: 0 12px;
+  text-align: left;
+}
+
+/* Vertical separators between the three columns */
+.redsteel .npc-combat-grid .attribute-armor:not(:nth-child(3n + 1)) {
+  border-left: 1px solid rgba(181, 151, 80, 0.35);
+}
+
+.redsteel .npc-combat-grid .attribute-armor .resource-label {
+  flex: 1 1 auto;
+  text-align: left;
+  white-space: nowrap;
+}
+
+/* A little smaller input cell */
+.redsteel .npc-combat-grid .attribute-score {
+  flex: 0 0 auto;
+  width: 45px;
+  max-height: 25px;
+}
+
+/* -------------------------------------------- */
 /*  Trait Reminder Pills (Chat)                 */
 /* -------------------------------------------- */
 
