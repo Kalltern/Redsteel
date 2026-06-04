@@ -1375,10 +1375,9 @@ ${damageLine}
       attributeTestHTML += `
 <tr>
 <td>
-<span
-title="Test chance ${attributeTotalValue}%&#10;Rolled: ${attributeRoll.result}">
+<span>
 <b>${mod.localizedName ?? mod.name} — ${testName} Test ${attributeTotalValue}%</b><br>
-Margin of Success: [${attributeRoll.total}]
+<span class="mos-followup" data-margin="${attributeRoll.total}" data-source="${ability.localizedName ?? ability.name}" data-tooltip="Test chance ${attributeTotalValue}%<br>Rolled: ${attributeRoll.result}<br>Click to roll an attribute against this margin" style="cursor:pointer; text-decoration:underline dotted;">Margin of Success: [${attributeRoll.total}]</span>
 </span>
 </td>
 </tr>
@@ -1430,7 +1429,7 @@ Margin of Success: [${attributeRoll.total}]
       concatRollAndDescription += `
 
 <b>${abilityAttributeTestName} Test ${totalModifier}%</b><br>
-Margin of Success: ${attributeRoll.total}
+<span class="mos-followup" data-margin="${attributeRoll.total}" data-source="${ability.localizedName ?? ability.name}" data-tooltip="Test chance ${totalModifier}%<br>Rolled: ${attributeRoll.result}<br>Click to roll an attribute against this margin" style="cursor:pointer; text-decoration:underline dotted;">Margin of Success: ${attributeRoll.total}</span>
 `;
     }
     const modifierLabel = selectedModifiers.length

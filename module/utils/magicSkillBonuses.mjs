@@ -870,11 +870,8 @@ export async function finalizeRollsAndPostChat(
 
     const attributeString = `
     <hr>
-  <span
-    title="Test chance ${modifierRoll.total}%&#10;Rolled: ${attributeRoll.result}"
-    style="display:inline-block;"
-  >
-    ${capitalizedName} Test Margin of Success: [${attributeRoll.total}]
+  <span style="display:inline-block;">
+    ${capitalizedName} Test <span class="mos-followup" data-margin="${attributeRoll.total}" data-source="${spell.localizedName ?? spell.name}" data-tooltip="Test chance ${modifierRoll.total}%<br>Rolled: ${attributeRoll.result}<br>Click to roll an attribute against this margin" style="cursor:pointer; text-decoration:underline dotted;">Margin of Success: [${attributeRoll.total}]</span>
   </span>
 
 `;

@@ -660,7 +660,7 @@ table tr td:nth-child(3) {
 
 /* Stronger selector to override other utility classes */
 .skill-entry > .skill-rating { flex: 0 0 42px !important; }
-.skill-entry > .skill-rank-editor { flex: 0 0 auto; margin-left: 2px !important; }
+.skill-entry > .skill-rank-editor { flex: 0 0 auto; margin-left: 0 !important; }
 .skill-rank-editor { display: flex; align-items: center; gap: 6px; margin-left: 8px; }
 .skill-rank-button { min-width: 26px; padding: 2px 6px; }
 .skill-rank-progress { min-width: 48px; text-align: center; }
@@ -1330,7 +1330,10 @@ table tr td:nth-child(3) {
   flex: 0 0 auto;
   align-items: center;
   gap: 4px;
-  margin-left: 4px;
+  /* Center within the rank cell so the - x/y + controls line up with the
+     (centered) roman rank instead of overflowing to the right. */
+  justify-self: center;
+  margin-left: 0;
   margin-right: 0;
   white-space: nowrap;
   color: rgb(219 199 169);
@@ -2905,6 +2908,25 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 .trait-pill:hover {
   border-color: #a04040;
   background: #4a2020;
+}
+
+/* Clickable "Margin of Success" follow-up trigger in chat */
+.chat-message .mos-followup {
+  color: var(--rs-chat-text-strong, #cdd0d2);
+}
+.chat-message .mos-followup:hover {
+  color: #f0d7aa;
+  text-shadow: 0 0 6px rgba(160, 60, 60, 0.8);
+}
+
+/* Attribute follow-up dialog: stack the choices as a vertical list */
+.attribute-followup-dialog .dialog-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.attribute-followup-dialog .dialog-buttons button {
+  width: 100%;
 }
 
 /* -------------------------------------------- */

@@ -504,13 +504,14 @@
           <label class="skill-label flexlarge align-left skill-name" data-label="combat">
             {{localize 'REDSTEEL.Actor.Character.combatSkills.combat.label'}}
           </label>
-          <input type="text" class="skill-rating" data-dtype="Number" value="{{skill.value}}" readonly />
           {{#if @root.skillsEditMode}}
           <div class="skill-rank-editor">
             <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.combatSkills.combat.value" data-delta="-1" data-min="0" data-max="{{skillRankMax skill}}">-</button>
             <span class="skill-rank-progress">{{skill.value}} / {{skillRankMax skill}}</span>
             <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.combatSkills.combat.value" data-delta="1" data-min="0" data-max="{{skillRankMax skill}}">+</button>
           </div>
+          {{else}}
+          <span class="skill-rank-label">{{romanRank skill.value}}</span>
           {{/if}}
         </div>
         {{/if}}
@@ -521,13 +522,14 @@
           <label class="skill-label flexlarge align-left skill-name" data-label="archery">
             {{localize 'REDSTEEL.Actor.Character.combatSkills.archery.label'}}
           </label>
-          <input type="text" class="skill-rating" data-dtype="Number" value="{{skill.value}}" readonly />
           {{#if @root.skillsEditMode}}
           <div class="skill-rank-editor">
             <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.combatSkills.archery.value" data-delta="-1" data-min="0" data-max="{{skillRankMax skill}}">-</button>
             <span class="skill-rank-progress">{{skill.value}} / {{skillRankMax skill}}</span>
             <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.combatSkills.archery.value" data-delta="1" data-min="0" data-max="{{skillRankMax skill}}">+</button>
           </div>
+          {{else}}
+          <span class="skill-rank-label">{{romanRank skill.value}}</span>
           {{/if}}
         </div>
         {{/if}}
@@ -538,13 +540,14 @@
           <label class="skill-label flexlarge align-left skill-name" data-label="channeling">
             {{localize 'REDSTEEL.Actor.Character.combatSkills.channeling.label'}}
           </label>
-          <input type="text" class="skill-rating" data-dtype="Number" value="{{skill.value}}" readonly />
           {{#if @root.skillsEditMode}}
           <div class="skill-rank-editor">
             <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.combatSkills.channeling.value" data-delta="-1" data-min="0" data-max="10">-</button>
             <span class="skill-rank-progress">{{skill.value}} / 10</span>
             <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.combatSkills.channeling.value" data-delta="1" data-min="0" data-max="10">+</button>
           </div>
+          {{else}}
+          <span class="skill-rank-label">{{romanRank skill.value}}</span>
           {{/if}}
         </div>
         {{/if}}
@@ -555,13 +558,14 @@
           <label class="skill-label flexlarge align-left skill-name" data-label="ranger">
             {{localize 'REDSTEEL.Actor.Character.combatSkills.ranger.label'}}
           </label>
-          <input type="text" class="skill-rating" data-dtype="Number" value="{{skill.value}}" readonly />
           {{#if @root.skillsEditMode}}
           <div class="skill-rank-editor">
             <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.combatSkills.ranger.value" data-delta="-1" data-min="0" data-max="10">-</button>
             <span class="skill-rank-progress">{{skill.value}} / 10</span>
             <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.combatSkills.ranger.value" data-delta="1" data-min="0" data-max="10">+</button>
           </div>
+          {{else}}
+          <span class="skill-rank-label">{{romanRank skill.value}}</span>
           {{/if}}
         </div>
         {{/if}}
@@ -576,13 +580,14 @@
           <label class="skill-label flexlarge align-left skill-name" data-label="{{key}}">
             {{localize (concat 'REDSTEEL.Actor.Character.weaponSkills.' key '.label')}}
           </label>
-          <input type="text" class="skill-rating" data-dtype="Number" value="{{skill.value}}" readonly />
           {{#if @root.skillsEditMode}}
           <div class="skill-rank-editor">
             <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.weaponSkills.{{key}}.value" data-delta="-1" data-min="0" data-max="{{skillRankMax skill}}">-</button>
             <span class="skill-rank-progress">{{skill.value}} / {{skillRankMax skill}}</span>
             <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.weaponSkills.{{key}}.value" data-delta="1" data-min="0" data-max="{{skillRankMax skill}}">+</button>
           </div>
+          {{else}}
+          <span class="skill-rank-label">{{romanRank skill.value}}</span>
           {{/if}}
         </div>
         {{/if}}
@@ -597,13 +602,14 @@
             <label class="skill-label flexlarge align-left skill-name" data-label="{{key}}">
               {{localize (concat 'REDSTEEL.Actor.Character.doctrines.' key '.label')}}
             </label>
-            <input type="text" class="skill-rating" data-dtype="Number" value="{{skill.value}}" readonly />
             {{#if @root.skillsEditMode}}
             <div class="skill-rank-editor">
               <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.doctrines.{{key}}.value" data-delta="-1" data-min="0" data-max="{{skillRankMax skill}}">-</button>
               <span class="skill-rank-progress">{{skill.value}} / {{skillRankMax skill}}</span>
               <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.doctrines.{{key}}.value" data-delta="1" data-min="0" data-max="{{skillRankMax skill}}">+</button>
             </div>
+            {{else}}
+            <span class="skill-rank-label">{{romanRank skill.value}}</span>
             {{/if}}
           </div>
           {{/if}}
@@ -618,13 +624,14 @@
             <label class="skill-label flexlarge align-left skill-name" data-label="{{key}}">
               {{localize (concat 'REDSTEEL.Actor.Character.schools.' key '.label')}}
             </label>
-            <input type="text" class="skill-rating" data-dtype="Number" value="{{skill.value}}" readonly />
             {{#if @root.skillsEditMode}}
             <div class="skill-rank-editor">
               <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.schools.{{key}}.value" data-delta="-1" data-min="0" data-max="{{skillRankMax skill}}">-</button>
               <span class="skill-rank-progress">{{skill.value}} / {{skillRankMax skill}}</span>
               <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.schools.{{key}}.value" data-delta="1" data-min="0" data-max="{{skillRankMax skill}}">+</button>
             </div>
+            {{else}}
+            <span class="skill-rank-label">{{romanRank skill.value}}</span>
             {{/if}}
           </div>
           {{/if}}

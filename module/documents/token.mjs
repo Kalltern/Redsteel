@@ -47,6 +47,9 @@ export class RedsteelToken extends Token {
     // Let Foundry handle CTRL path planning normally
     if (this.#isPlanningMovement(event)) return;
 
+    // No movement overlay outside of combat
+    if (!this.#isInCombat()) return;
+
     this.#ensureMovementLabel();
     this.#updateMovementLabel();
   }
@@ -54,11 +57,22 @@ export class RedsteelToken extends Token {
     return event?.interactionData?.originalEvent?.ctrlKey === true;
   }
 
+  // The movement-range overlay is only meaningful during an active encounter.
+  #isInCombat() {
+    return game.combat?.started === true;
+  }
+
   async _onDragLeftDrop(event) {
     const result = await super._onDragLeftDrop(event);
 
     // CTRL drag is only measurement/planning
     if (this.#isPlanningMovement(event)) return result;
+
+    // Outside combat there is no movement budget to track
+    if (!this.#isInCombat()) {
+      this.#clearMovementRange();
+      return result;
+    }
 
     try {
       const label = document.querySelector(
@@ -117,6 +131,9 @@ export class RedsteelToken extends Token {
 
     // Don't interfere with Foundry ruler planning
     if (this.#isPlanningMovement(event)) return;
+
+    // No movement overlay outside of combat
+    if (!this.#isInCombat()) return;
 
     this.#clearMovementRange();
 

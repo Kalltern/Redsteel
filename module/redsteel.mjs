@@ -13,6 +13,7 @@ import { registerEffectSheetExtensions } from "./sheets/effect-sheet.mjs";
 import { REDSTEEL } from "./helpers/config.mjs";
 import { RedsteelToken } from "./documents/token.mjs";
 import { statusEffectManager } from "./utils/statusEffectManager.mjs";
+import { wireAttributeFollowups } from "./utils/attributeFollowup.mjs";
 import { usePotion } from "./utils/usePotion.mjs";
 import { defenseRoll } from "./utils/defense.mjs";
 import { throwExplosive } from "./utils/throwExplosive.mjs";
@@ -2175,4 +2176,9 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
 
   const rollCard = html.querySelector(".dice-roll");
   if (rollCard) rollCard.prepend(container);
+});
+
+// Make "Margin of Success" lines clickable → follow-up attribute test
+Hooks.on("renderChatMessageHTML", (message, html) => {
+  wireAttributeFollowups(html);
 });
