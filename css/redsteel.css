@@ -805,6 +805,13 @@ table tr td:nth-child(3) {
   text-align: center; /* Center text in input and span */
 }
 
+/* Read-only armor total: match the editable input's size so the two align */
+.redsteel .attribute-total {
+  width: 40px;
+  max-width: 40px;
+  text-align: center;
+}
+
 .redsteel .attribute-score,
 .redsteel .attribute-armor input[readonly] {
   color: rgb(219 199 169);
