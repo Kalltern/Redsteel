@@ -1358,7 +1358,7 @@ export function evaluateDmgVsArmor({
       }
 
       if (armorTable?.[token]?.vulnerability) {
-        modifier *= 2;
+        modifier *= 1.5;
       }
     }
 
