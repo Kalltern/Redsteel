@@ -45,7 +45,12 @@ export async function applyTraitStatusEffects(tokenDoc) {
   const ids = getTraitStatusEffects(actor);
   if (!ids.length) return;
 
-  const valid = new Set((CONFIG.statusEffects ?? []).map((e) => e.id));
+  // CONFIG.statusEffects is an array in v13 and an {[id]: config} dictionary
+  // in v14 — handle both shapes.
+  const cfg = CONFIG.statusEffects ?? [];
+  const valid = new Set(
+    Array.isArray(cfg) ? cfg.map((e) => e.id) : Object.keys(cfg),
+  );
 
   for (const id of ids) {
     if (!valid.has(id)) {

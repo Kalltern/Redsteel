@@ -1307,6 +1307,7 @@ export function evaluateDmgVsArmor({
   halfDamage = false,
   shield = 0,
   penCap = false,
+  ignoreBaseArmor = false,
 }) {
   const { expression } = damageProfile;
   const armorTable = armor ?? {};
@@ -1316,9 +1317,12 @@ export function evaluateDmgVsArmor({
   const shieldLoss = Math.min(shield, baseDamage);
   baseDamage -= shieldLoss;
 
-  /* 2. Normal Armor */
-  const normalArmor = armorTable?.total ?? 0;
-  baseDamage = Math.max(baseDamage - normalArmor, 0);
+  /* 2. Normal Armor (skipped e.g. for condition damage ticks, which are
+     only mitigated by specialized armor / resistances / vulnerabilities) */
+  if (!ignoreBaseArmor) {
+    const normalArmor = armorTable?.total ?? 0;
+    baseDamage = Math.max(baseDamage - normalArmor, 0);
+  }
 
   /* 3. Penetration Floor */
   const effectivePenetration = Math.min(penetration ?? 0, damage);

@@ -1172,7 +1172,8 @@
       "ability",
       "ammunition",
       "item",
-      "consumable"
+      "consumable",
+      "condition"
     ],
     "htmlFields": ["description"],
     "templates": {
@@ -1327,6 +1328,34 @@
     },
     "race": {
       "templates": ["base"]
+    },
+    "condition": {
+      "templates": ["base"],
+      "rounds": 0,
+      "turns": 0,
+      "damage": "",
+      "dmgType1": "",
+      "bool2": "",
+      "dmgType2": "",
+      "bool3": "",
+      "dmgType3": "",
+      "bool4": "",
+      "dmgType4": "",
+      "dmgTypes": [
+        "fire",
+        "frost",
+        "lightning",
+        "acid",
+        "poison",
+        "magic",
+        "dark",
+        "physical",
+        "psychic",
+        "blunt",
+        "piercing",
+        "slash"
+      ],
+      "effectOptions": ["and", "or"]
     },
     "item": {
       "templates": ["base"],

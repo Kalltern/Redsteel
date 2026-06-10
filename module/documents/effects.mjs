@@ -1,3 +1,6 @@
+import { resolveEffectDefinition } from "../utils/customConditions.mjs";
+import { evaluateDmgVsArmor } from "../utils/combatSkillBonuses.mjs";
+
 export class RedsteelActiveEffect extends ActiveEffect {
   /* -------------------------------------------- */
   /*  CHANGE STRUCTURE                            */
@@ -20,7 +23,7 @@ export class RedsteelActiveEffect extends ActiveEffect {
 
     Hooks.on("preCreateActiveEffect", (effect) => {
       const statusId = effect.getFlag("core", "statusId");
-      const def = CONFIG.REDSTEEL.effectDefinitions[statusId];
+      const def = resolveEffectDefinition(statusId)?.def;
       if (!def) return;
 
       const hasStacks = def.stackBehavior === "stack";
@@ -55,7 +58,7 @@ export class RedsteelActiveEffect extends ActiveEffect {
 
     Hooks.on("updateActiveEffect", async (effect) => {
       const statusId = effect.getFlag("core", "statusId");
-      const def = CONFIG.REDSTEEL.effectDefinitions[statusId];
+      const def = resolveEffectDefinition(statusId)?.def;
       if (!def?.maxStacks) return;
 
       const stacks = effect.getFlag("redsteel", "stacks");
@@ -190,7 +193,7 @@ export class RedsteelActiveEffect extends ActiveEffect {
   }
 
   static async _removeCombatModifiers(actor, effectId) {
-    const def = CONFIG.REDSTEEL.effectDefinitions[effectId];
+    const def = resolveEffectDefinition(effectId)?.def;
     if (!def?.combatModifiers) return;
 
     const group = def.combatModifiers.exclusiveGroup ?? "default";
@@ -223,11 +226,15 @@ export class RedsteelActiveEffect extends ActiveEffect {
   }
 
   static async applyEffect(actor, effectId, { stacks = 1, turns } = {}) {
-    const def = CONFIG.REDSTEEL.effectDefinitions[effectId];
-    if (!def) {
+    const resolved = resolveEffectDefinition(effectId);
+    if (!resolved) {
       ui.notifications.error(`Effect not found: ${effectId}`);
       return;
     }
+    // Canonical status id — free-typed condition names are normalized
+    // (e.g. "Curse of Doom" → "curse_of_doom").
+    effectId = resolved.id;
+    const def = resolved.def;
 
     const maxStacks = def.maxStacks ?? 99;
 
@@ -665,6 +672,10 @@ export class RedsteelActiveEffect extends ActiveEffect {
     if (trigger.custom === "proneInitiative") {
       return this._handleProneInitiative();
     }
+
+    if (trigger.custom === "conditionDamage") {
+      return this._handleConditionDamage(trigger);
+    }
     let formula = trigger.formula;
     if (!formula) return;
 
@@ -710,6 +721,62 @@ export class RedsteelActiveEffect extends ActiveEffect {
     if (!effectId) return;
 
     await RedsteelActiveEffect._removeCombatModifiers(actor, effectId);
+  }
+
+  /**
+   * Per-round damage tick of a user-created condition. The rolled damage is
+   * mitigated by the target's armor, resistances, vulnerabilities and
+   * immunities against the condition's damage type expression — the same
+   * evaluateDmgVsArmor pipeline used for attacks.
+   */
+  async _handleConditionDamage(trigger) {
+    const actor = this.parent;
+    if (!actor) return;
+
+    const formula = String(trigger.damage ?? "").trim();
+    if (!formula) return;
+
+    let roll;
+    try {
+      roll = await new Roll(formula).evaluate();
+    } catch (err) {
+      console.error(
+        `Redsteel | Invalid condition damage formula "${formula}" on "${this.name}"`,
+        err,
+      );
+      ui.notifications.warn(
+        `Condition "${this.name}" has an invalid damage formula: ${formula}`,
+      );
+      return;
+    }
+
+    const result = evaluateDmgVsArmor({
+      damage: roll.total,
+      penetration: 0,
+      damageProfile: trigger.damageProfile ?? { expression: [] },
+      armor: actor.system.armor,
+      hp: actor.system.stats.health.value ?? 0,
+      tempHp: actor.system.stats.temporaryHealth.value ?? 0,
+      // Condition ticks bypass base armor — only specialized armor,
+      // resistances, vulnerabilities and immunities mitigate them.
+      ignoreBaseArmor: true,
+    });
+
+    await actor.update({
+      "system.stats.health.value": Number(result.newHp),
+      "system.stats.temporaryHealth.value": Number(result.newTempHp),
+    });
+
+    const types = (trigger.damageProfile?.expression ?? [])
+      .filter((t) => t !== "and" && t !== "or")
+      .join(", ");
+
+    await roll.toMessage({
+      speaker: ChatMessage.getSpeaker({ actor }),
+      flavor: `${this.name} – ${result.totalHpLoss} damage${
+        types ? ` (${types})` : ""
+      } after specialized armor & resistances`,
+    });
   }
 
   async _handleRegenerationHeal(trigger) {

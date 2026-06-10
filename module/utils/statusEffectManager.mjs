@@ -1,11 +1,29 @@
+import {
+  getConditionItems,
+  conditionStatusId,
+} from "./customConditions.mjs";
+
 export async function statusEffectManager() {
-  const STATUS_EFFECTS = Object.entries(CONFIG.REDSTEEL.effectDefinitions)
-    .map(([id, def]) => ({
-      id,
-      name: def.name,
-      icon: def.img,
-    }))
-    .sort((a, b) => a.name.localeCompare(b.name));
+  const builtInEffects = Object.entries(
+    CONFIG.REDSTEEL.effectDefinitions,
+  ).map(([id, def]) => ({
+    id,
+    name: def.name,
+    icon: def.img,
+  }));
+
+  const builtInIds = new Set(builtInEffects.map((e) => e.id));
+  const conditionEffects = [];
+  for (const item of getConditionItems()) {
+    const id = conditionStatusId(item);
+    if (!id || builtInIds.has(id)) continue;
+    if (conditionEffects.some((e) => e.id === id)) continue;
+    conditionEffects.push({ id, name: item.name, icon: item.img });
+  }
+
+  const STATUS_EFFECTS = [...builtInEffects, ...conditionEffects].sort(
+    (a, b) => a.name.localeCompare(b.name),
+  );
   function getSelectedActors() {
     const tokens = canvas.tokens.controlled;
 

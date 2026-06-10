@@ -13,6 +13,10 @@ import { registerEffectSheetExtensions } from "./sheets/effect-sheet.mjs";
 import { REDSTEEL } from "./helpers/config.mjs";
 import { RedsteelToken } from "./documents/token.mjs";
 import { statusEffectManager } from "./utils/statusEffectManager.mjs";
+import {
+  registerCustomConditions,
+  resolveEffectDefinition,
+} from "./utils/customConditions.mjs";
 import { wireAttributeFollowups } from "./utils/attributeFollowup.mjs";
 import { applyTraitStatusEffects } from "./utils/traitStatusEffects.mjs";
 import { usePotion } from "./utils/usePotion.mjs";
@@ -158,6 +162,7 @@ Hooks.once("init", function () {
   game.redsteel.getActorCombatModifiers = getActorCombatModifiers;
   game.redsteel.applyEffect =
     RedsteelActiveEffect.applyEffect.bind(RedsteelActiveEffect);
+  game.redsteel.resolveEffectDefinition = resolveEffectDefinition;
   game.redsteel.resolveWeaponContext = resolveWeaponContext;
   game.redsteel.switchWeaponSet = switchWeaponSet;
   game.redsteel.deductAbilityCost = deductAbilityCost;
@@ -195,6 +200,7 @@ Hooks.once("init", function () {
   registerDynamicInitiative();
   registerEffectSheetExtensions();
   registerKeepDialogOpen();
+  registerCustomConditions();
 
   /**
    * Set an initiative formula for the system
@@ -1230,7 +1236,8 @@ function openDamageSelectionDialog(message, targets) {
 
               const parts = el.name.split("-");
               const tokenId = parts[1];
-              const effectName = parts[2];
+              // Effect names may themselves contain hyphens
+              const effectName = parts.slice(2).join("-");
 
               if (!selectedEffects[tokenId]) {
                 selectedEffects[tokenId] = [];
@@ -1389,9 +1396,12 @@ async function handlePostDamageStatus({ actor, combatant }) {
   }
 }
 async function applyEffectToActor(actor, effectId, stacks = 1) {
-  if (!CONFIG.REDSTEEL.effectDefinitions[effectId]) {
+  if (!resolveEffectDefinition(effectId)) {
     console.warn(
-      `Effect ${effectId} not defined in CONFIG.REDSTEEL.effectDefinitions`,
+      `Effect ${effectId} matches neither CONFIG.REDSTEEL.effectDefinitions nor a world Condition item`,
+    );
+    ui.notifications.warn(
+      `Unknown effect "${effectId}" — create a Condition item with this name to make it applicable.`,
     );
     return;
   }
@@ -1662,7 +1672,8 @@ function openEffectSelectionDialog(message, targets) {
 
             const parts = el.name.split("-");
             const tokenId = parts[1];
-            const effectName = parts[2];
+            // Effect names may themselves contain hyphens
+            const effectName = parts.slice(2).join("-");
 
             if (!selectedEffects[tokenId]) {
               selectedEffects[tokenId] = [];

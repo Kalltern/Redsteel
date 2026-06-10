@@ -1,0 +1,125 @@
+{{! Attributes Tab }}
+<section
+  class='tab attributes {{tab.cssClass}}'
+  data-group='primary'
+  data-tab='attributes'
+>
+  <h3>{{localize 'REDSTEEL.Item.Condition.duration'}}</h3>
+
+  <div class="form-group stacked">
+    <label for="condition-rounds">{{localize 'REDSTEEL.Item.Condition.rounds'}}</label>
+    <input
+      type="number"
+      id="condition-rounds"
+      name="system.rounds"
+      value="{{system.rounds}}"
+      min="0"
+      step="1" />
+    <p class="hint">{{localize 'REDSTEEL.Item.Condition.roundsHint'}}</p>
+  </div>
+
+  <div class="form-group stacked">
+    <label for="condition-turns">{{localize 'REDSTEEL.Item.Condition.turns'}}</label>
+    <input
+      type="number"
+      id="condition-turns"
+      name="system.turns"
+      value="{{system.turns}}"
+      min="0"
+      step="1" />
+    <p class="hint">{{localize 'REDSTEEL.Item.Condition.turnsHint'}}</p>
+  </div>
+
+  <h3>{{localize 'REDSTEEL.Item.Condition.damageHeader'}}</h3>
+
+  <div class="form-group stacked">
+    <label for="condition-damage">{{localize 'REDSTEEL.Item.Condition.damage'}}</label>
+    <input
+      type="text"
+      id="condition-damage"
+      name="system.damage"
+      value="{{system.damage}}"
+      placeholder="e.g. 5 or 3d6+3d8" />
+    <p class="hint">{{localize 'REDSTEEL.Item.Condition.damageHint'}}</p>
+  </div>
+
+  <div
+    class="condition-dmg-types"
+    style="display:grid; grid-template-columns: 2fr 1fr; gap: 4px 8px; align-items:center; margin-bottom:6px;"
+  >
+    <label class="resource-label">{{localize
+      "REDSTEEL.Item.Spell.FIELDS.headerType.label"
+    }}</label>
+    <label class="resource-label">{{localize
+      "REDSTEEL.Item.Condition.andOr"
+    }}</label>
+
+    <select name="system.dmgType1" id="dmg-type-1">
+      <option value="">-- Select a type --</option>
+      {{#each system.dmgTypes as |dmgType|}}
+        <option value="{{dmgType}}" {{#if (eq ../system.dmgType1 dmgType)}}selected{{/if}}>
+          {{dmgType}}
+        </option>
+      {{/each}}
+    </select>
+
+    <select name="system.bool2" id="effect-bool-2">
+      <option value="">--</option>
+      {{#each system.effectOptions as |bool|}}
+        <option value="{{bool}}" {{#if (eq ../system.bool2 bool)}}selected{{/if}}>
+          {{bool}}
+        </option>
+      {{/each}}
+    </select>
+
+    <select name="system.dmgType2" id="dmg-type-2">
+      <option value="">-- Select a type --</option>
+      {{#each system.dmgTypes as |dmgType|}}
+        <option value="{{dmgType}}" {{#if (eq ../system.dmgType2 dmgType)}}selected{{/if}}>
+          {{dmgType}}
+        </option>
+      {{/each}}
+    </select>
+
+    <select name="system.bool3" id="effect-bool-3">
+      <option value="">--</option>
+      {{#each system.effectOptions as |bool|}}
+        <option value="{{bool}}" {{#if (eq ../system.bool3 bool)}}selected{{/if}}>
+          {{bool}}
+        </option>
+      {{/each}}
+    </select>
+
+    <select name="system.dmgType3" id="dmg-type-3">
+      <option value="">-- Select a type --</option>
+      {{#each system.dmgTypes as |dmgType|}}
+        <option value="{{dmgType}}" {{#if (eq ../system.dmgType3 dmgType)}}selected{{/if}}>
+          {{dmgType}}
+        </option>
+      {{/each}}
+    </select>
+
+    <select name="system.bool4" id="effect-bool-4">
+      <option value="">--</option>
+      {{#each system.effectOptions as |bool|}}
+        <option value="{{bool}}" {{#if (eq ../system.bool4 bool)}}selected{{/if}}>
+          {{bool}}
+        </option>
+      {{/each}}
+    </select>
+
+    <select name="system.dmgType4" id="dmg-type-4">
+      <option value="">-- Select a type --</option>
+      {{#each system.dmgTypes as |dmgType|}}
+        <option value="{{dmgType}}" {{#if (eq ../system.dmgType4 dmgType)}}selected{{/if}}>
+          {{dmgType}}
+        </option>
+      {{/each}}
+    </select>
+    <span></span>
+  </div>
+
+  <p class="hint">{{localize 'REDSTEEL.Item.Condition.dmgTypesHint'}}</p>
+
+  <p class="hint">{{localize 'REDSTEEL.Item.Condition.usageHint'}}</p>
+</section>

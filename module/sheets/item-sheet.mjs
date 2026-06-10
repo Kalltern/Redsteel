@@ -83,6 +83,9 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
     attributesAbility: {
       template: "systems/redsteel/templates/item/attribute-parts/ability.hbs",
     },
+    attributesCondition: {
+      template: "systems/redsteel/templates/item/attribute-parts/condition.hbs",
+    },
     effects: {
       template: "systems/redsteel/templates/item/effects.hbs",
     },
@@ -126,6 +129,9 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
       case "spell":
         options.parts.push("attributesSpell", "combatEffects");
         break;
+      case "condition":
+        options.parts.push("attributesCondition", "effects");
+        break;
     }
   }
 
@@ -164,6 +170,7 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
       case "attributesRace":
       case "attributesConsumable":
       case "attributesAbility":
+      case "attributesCondition":
       case "doctrines":
       case "combatEffects":
       case "attributesWeapon":
@@ -235,6 +242,7 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
         case "attributesGear":
         case "attributesAmmunition":
         case "attributesWeapon":
+        case "attributesCondition":
           tab.id = "attributes";
           tab.label += "Attributes";
           break;

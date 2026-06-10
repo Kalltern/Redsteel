@@ -358,6 +358,19 @@
         "combatEffects": "Bojové efekty",
         "OffHand": "Druhá ruka"
       },
+      "Condition": {
+        "duration": "Trvání",
+        "rounds": "Kola",
+        "roundsHint": "Trvá tento počet bojových kol (odpočítává se na začátku každého kola). 0 = bez limitu kol.",
+        "turns": "Tahy",
+        "turnsHint": "Trvá tento počet tahů zasažené postavy. 0 = bez limitu tahů.",
+        "damageHeader": "Poškození za kolo",
+        "andOr": "A / Nebo",
+        "damage": "Vzorec poškození",
+        "damageHint": "Hází se na začátku každého bojového kola a uděluje se zasažené postavě. Pevná čísla (5) nebo kostky (3d6+3d8). Prázdné = žádné poškození.",
+        "dmgTypesHint": "Typy poškození, jako které se poškození za kolo počítá. Uplatní se specializovaná zbroj, odolnosti, zranitelnosti a imunity cíle — základní zbroj se zcela ignoruje.",
+        "usageHint": "Změny statistik přidej na záložce Efekty. Na tento stav se odkazuje jeho jménem v sekci efektů zbraně, kouzla nebo schopnosti — při zásahu se nabídne v dialogu Apply Effects a aplikuje se na cíl jako status efekt. Zobrazuje se i v Token HUD."
+      },
       "Weapon": {
         "FIELDS": {
           "offhand": { "label": "Může být drženo v druhé ruce" },
@@ -510,7 +523,8 @@
       "ability": "Schopnost",
       "ammunition": "Munice",
       "feature": "Rys",
-      "spell": "Kouzlo"
+      "spell": "Kouzlo",
+      "condition": "Stav"
     }
   }
 }

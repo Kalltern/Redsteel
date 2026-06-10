@@ -359,6 +359,19 @@
         "combatEffects": "Combat Effects",
         "OffHand": "Offhand"
       },
+      "Condition": {
+        "duration": "Duration",
+        "rounds": "Rounds",
+        "roundsHint": "Lasts this many combat rounds (counts down at the start of each round). 0 = no round limit.",
+        "turns": "Turns",
+        "turnsHint": "Lasts this many of the affected character's turns. 0 = no turn limit.",
+        "damageHeader": "Damage per Round",
+        "andOr": "And / Or",
+        "damage": "Damage formula",
+        "damageHint": "Rolled at the start of each combat round and dealt to the affected character. Flat numbers (5) or dice (3d6+3d8). Leave empty for no damage.",
+        "dmgTypesHint": "Damage types the per-round damage counts as. The target's specialized armor, resistances, vulnerabilities and immunities apply — base armor is ignored entirely.",
+        "usageHint": "Add the stat changes on the Effects tab. Reference this condition by its name in a weapon, spell or ability effects section — when the attack hits, it is offered in the Apply Effects dialog and applied to the target as a status effect. It also appears in the Token HUD."
+      },
       "Weapon": {
         "FIELDS": {
           "offhand": { "label": "Can be held offhand" },
@@ -511,7 +524,8 @@
       "ability": "Ability",
       "ammunition": "Ammunition",
       "feature": "Feature",
-      "spell": "Spell"
+      "spell": "Spell",
+      "condition": "Condition"
     }
   }
 }
