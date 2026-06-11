@@ -44,6 +44,7 @@ import {
   restAndRecover,
   longRest,
   firstAid,
+  registerFirstAidHealing,
 } from "./utils/otherActions.mjs";
 
 import {
@@ -59,6 +60,8 @@ import {
 } from "./utils/combatSkillBonuses.mjs";
 import {
   showSpellSelectionDialogs,
+  getValidSpellVariants,
+  showVariantSelectionDialog,
   deductMana,
   calculateAttackBonuses,
   performAttackRoll,
@@ -190,6 +193,8 @@ Hooks.once("init", function () {
   game.redsteel.getEffectRolls = getEffectRolls;
   game.redsteel.getCriticalRolls = getCriticalRolls;
   game.redsteel.showSpellSelectionDialogs = showSpellSelectionDialogs;
+  game.redsteel.getValidSpellVariants = getValidSpellVariants;
+  game.redsteel.showVariantSelectionDialog = showVariantSelectionDialog;
   game.redsteel.deductMana = deductMana;
   game.redsteel.calculateAttackBonuses = calculateAttackBonuses;
   game.redsteel.performAttackRoll = performAttackRoll;
@@ -201,6 +206,7 @@ Hooks.once("init", function () {
   registerEffectSheetExtensions();
   registerKeepDialogOpen();
   registerCustomConditions();
+  registerFirstAidHealing();
 
   /**
    * Set an initiative formula for the system

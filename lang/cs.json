@@ -356,7 +356,8 @@
         "Doctrines": "Doktríny",
         "Effects": "Efekty",
         "combatEffects": "Bojové efekty",
-        "OffHand": "Druhá ruka"
+        "OffHand": "Druhá ruka",
+        "Variants": "Varianty"
       },
       "Condition": {
         "duration": "Trvání",

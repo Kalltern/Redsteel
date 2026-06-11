@@ -7,6 +7,8 @@ export class RedsteelActiveEffect extends ActiveEffect {
   /* -------------------------------------------- */
   static EFFECT_OVERRIDES = {
     stun: ["stagger"],
+    paralyze: ["stun", "stagger"],
+    terror: ["fear"],
     guard: ["defensive_stance"],
   };
   static registerStatusCounterIntegration() {
@@ -204,11 +206,18 @@ export class RedsteelActiveEffect extends ActiveEffect {
       [`system.activeCombatEffects.-=${group}`]: null,
     });
   }
+  static CORROSION_PENALTIES = {
+    corrosion: -4,
+    corrosion_severe: -8,
+  };
+
   async updateCorrosionChange() {
-    if (this.getFlag("core", "statusId") !== "corrosion") return;
+    const statusId = this.getFlag("core", "statusId");
+    const perStack = RedsteelActiveEffect.CORROSION_PENALTIES[statusId];
+    if (perStack == null) return;
 
     const stacks = this.getFlag("redsteel", "stacks") ?? 1;
-    const penalty = -4 * stacks;
+    const penalty = perStack * stacks;
 
     const changes = this.changes.map((c) => {
       if (c.key === "system.armor.natural.bonus") {
@@ -676,6 +685,14 @@ export class RedsteelActiveEffect extends ActiveEffect {
     if (trigger.custom === "conditionDamage") {
       return this._handleConditionDamage(trigger);
     }
+
+    if (trigger.custom === "clearBleeds") {
+      return this._handleClearBleeds();
+    }
+
+    if (trigger.custom === "insectSwarm") {
+      return this._handleInsectSwarm(trigger);
+    }
     let formula = trigger.formula;
     if (!formula) return;
 
@@ -777,6 +794,62 @@ export class RedsteelActiveEffect extends ActiveEffect {
         types ? ` (${types})` : ""
       } after specialized armor & resistances`,
     });
+  }
+
+  /**
+   * Removes all bleed effects from the actor (e.g. Bleed Ward on apply).
+   */
+  async _handleClearBleeds() {
+    const actor = this.parent;
+    if (!actor) return;
+
+    const bleeds = actor.effects.filter(
+      (e) => e.getFlag("core", "statusId") === "bleed",
+    );
+
+    for (const bleed of bleeds) {
+      await bleed.delete();
+    }
+
+    if (bleeds.length) {
+      ui.notifications.info(`${actor.name}'s bleeding is stopped.`);
+    }
+  }
+
+  /**
+   * Insect swarm round tick: armor-ignoring damage plus a resolve test —
+   * failure applies panic (same test pattern as burning).
+   */
+  async _handleInsectSwarm(trigger) {
+    const actor = this.parent;
+    if (!actor) return;
+
+    const roll = await new Roll(trigger.formula).evaluate();
+
+    const path = "system.stats.health.value";
+    const current = foundry.utils.getProperty(actor, path) ?? 0;
+
+    await actor.update({
+      [path]: current - roll.total,
+    });
+
+    await roll.toMessage({
+      speaker: ChatMessage.getSpeaker({ actor }),
+      flavor: `${this.name} – Damage`,
+    });
+
+    const resolve = actor.system.secondaryAttributes.res?.total ?? 0;
+
+    const test = await new Roll(`${resolve * 10} - 1d100`).roll();
+
+    await test.toMessage({
+      speaker: ChatMessage.getSpeaker({ actor }),
+      flavor: `${this.name} – Panic Test`,
+    });
+
+    if (test.total < 0) {
+      await game.redsteel.applyEffect(actor, "panic");
+    }
   }
 
   async _handleRegenerationHeal(trigger) {

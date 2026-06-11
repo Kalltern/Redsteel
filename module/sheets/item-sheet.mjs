@@ -23,6 +23,9 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
       createDoc: this._createEffect,
       deleteDoc: this._deleteEffect,
       toggleEffect: this._toggleEffect,
+      addVariant: this._addVariant,
+      removeVariant: this._removeVariant,
+      openVariant: this._openVariant,
     },
     form: {
       submitOnChange: true,
@@ -80,6 +83,9 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
     attributesSpell: {
       template: "systems/redsteel/templates/item/attribute-parts/spell.hbs",
     },
+    attributesVariants: {
+      template: "systems/redsteel/templates/item/attribute-parts/variants.hbs",
+    },
     attributesAbility: {
       template: "systems/redsteel/templates/item/attribute-parts/ability.hbs",
     },
@@ -127,7 +133,7 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
         }
         break;
       case "spell":
-        options.parts.push("attributesSpell", "combatEffects");
+        options.parts.push("attributesSpell", "combatEffects", "attributesVariants");
         break;
       case "condition":
         options.parts.push("attributesCondition", "effects");
@@ -179,6 +185,19 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
         // Necessary for preserving active tab on re-render
         context.tab = context.tabs[partId];
         break;
+      case "attributesVariants": {
+        context.tab = context.tabs[partId];
+        // One entry per stored variant ID, with the resolved world Item (if any)
+        context.variantEntries = this._getVariantArray().map((id, index) => {
+          const item = typeof id === "string" ? game.items.get(id.trim()) : null;
+          const valid = !!item && item.type === "spell";
+          let name = "";
+          if (valid) name = item.localizedName ?? item.name;
+          else if (id) name = "— invalid —";
+          return { index, id, name, valid };
+        });
+        break;
+      }
       case "description":
         context.tab = context.tabs[partId];
         // Enrich description info for display
@@ -253,6 +272,10 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
         case "attributesSpell":
           tab.id = "attributes";
           tab.label += "Attributes";
+          break;
+        case "attributesVariants":
+          tab.id = "variants";
+          tab.label += "Variants";
           break;
         case "effects":
           tab.id = "effects";
@@ -394,7 +417,67 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
     await effect.update({ disabled: !effect.disabled });
   }
 
+  /**
+   * Adds a new empty variant ID input to a spell
+   *
+   * @this RedsteelItemSheet
+   * @param {PointerEvent} event   The originating click event
+   * @param {HTMLElement} target   The capturing HTML element which defined a [data-action]
+   * @protected
+   */
+  static async _addVariant(event, target) {
+    const variants = this._getVariantArray();
+    variants.push("");
+    await this.item.update({ "system.variants": variants });
+  }
+
+  /**
+   * Removes a variant ID input from a spell
+   *
+   * @this RedsteelItemSheet
+   * @param {PointerEvent} event   The originating click event
+   * @param {HTMLElement} target   The capturing HTML element which defined a [data-action]
+   * @protected
+   */
+  static async _removeVariant(event, target) {
+    const index = Number(target.dataset.index);
+    const variants = this._getVariantArray();
+    if (Number.isNaN(index) || index < 0 || index >= variants.length) return;
+    variants.splice(index, 1);
+    await this.item.update({ "system.variants": variants });
+  }
+
+  /**
+   * Opens the sheet of the world spell Item a variant ID points to
+   *
+   * @this RedsteelItemSheet
+   * @param {PointerEvent} event   The originating click event
+   * @param {HTMLElement} target   The capturing HTML element which defined a [data-action]
+   * @protected
+   */
+  static async _openVariant(event, target) {
+    const index = Number(target.dataset.index);
+    const id = this._getVariantArray()[index];
+    const item = typeof id === "string" ? game.items.get(id.trim()) : null;
+    if (!item) {
+      ui.notifications.warn("No world Item found for this variant ID.");
+      return;
+    }
+    item.sheet.render(true);
+  }
+
   /** Helper Functions */
+
+  /**
+   * Returns the spell's variant IDs as a plain array.
+   * Form submission can store the list as an object, so normalize.
+   * @returns {string[]}
+   */
+  _getVariantArray() {
+    const raw = this.item.system.variants;
+    const ids = Array.isArray(raw) ? raw : Object.values(raw ?? {});
+    return ids.map((id) => (typeof id === "string" ? id : ""));
+  }
 
   /**
    * Fetches the row with the data for the rendered embedded document

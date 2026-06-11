@@ -330,7 +330,9 @@ async function performFirstAid(actor, token) {
   let rollName = "firstAid";
   let healRoll = null;
 
-  if (d100 >= criticalFailureThreshold) {
+  const isCritFail = d100 >= criticalFailureThreshold;
+
+  if (isCritFail) {
     critStatus =
       "<br><strong style='color: red;'>Critical Failure! Injury caused!</strong>";
 
@@ -376,6 +378,9 @@ async function performFirstAid(actor, token) {
         rollName,
         criticalSuccessThreshold,
         criticalFailureThreshold,
+        ...(healRoll && !isCritFail
+          ? { firstAidHeal: { amount: healRoll.total } }
+          : {}),
       },
     },
 
@@ -420,5 +425,225 @@ async function performStopBleeding(actor, token) {
     rolls: [stopBleedingRoll],
 
     type: CONST.CHAT_MESSAGE_STYLES.ROLL,
+  });
+}
+
+/* -------------------------------------------- */
+/*  First Aid Healing                           */
+/* -------------------------------------------- */
+
+const SOCKET = "system.redsteel";
+const FLAG_SCOPE = "redsteel";
+const HEALTH_SNAPSHOT_FLAG = "combatStartHealth";
+
+// First aid may not heal above the health the target had when the last
+// combat started — only recently received damage can be patched up.
+async function snapshotCombatHealth(combatant) {
+  const actor = combatant?.actor;
+  if (!actor) return;
+
+  const hp = actor.system?.stats?.health?.value;
+  if (typeof hp !== "number") return;
+
+  await actor.setFlag(FLAG_SCOPE, HEALTH_SNAPSHOT_FLAG, hp);
+}
+
+function getFirstAidHealContext(actor, healAmount, force) {
+  const amount = Math.floor(Number(healAmount) || 0);
+  const currentHp = Number(actor.system.stats.health.value ?? 0);
+  const cap = actor.getFlag(FLAG_SCOPE, HEALTH_SNAPSHOT_FLAG);
+  const hasCap = typeof cap === "number";
+
+  const applied =
+    force || !hasCap ? amount : Math.max(0, Math.min(amount, cap - currentHp));
+
+  return { amount, currentHp, cap, hasCap, applied };
+}
+
+export function registerFirstAidHealing() {
+  // Snapshot every combatant's health when combat actually begins
+  Hooks.on("combatStart", async (combat) => {
+    if (!game.users.activeGM?.isSelf) return;
+
+    for (const combatant of combat.combatants) {
+      await snapshotCombatHealth(combatant);
+    }
+  });
+
+  // Combatants joining an already running combat get snapshotted on entry
+  Hooks.on("createCombatant", async (combatant) => {
+    if (!game.users.activeGM?.isSelf) return;
+    if (!combatant.parent?.started) return;
+
+    await snapshotCombatHealth(combatant);
+  });
+
+  Hooks.on("renderChatMessageHTML", (message, html) => {
+    const heal = message.flags?.redsteel?.firstAidHeal;
+    if (!heal) return;
+    if (game.user.id !== message.author?.id && !game.user.isGM) return;
+
+    let buttonContainer = html.querySelector(".button-container");
+    if (!buttonContainer) {
+      buttonContainer = document.createElement("div");
+      buttonContainer.className = "button-container";
+      html.querySelector(".message-content")?.appendChild(buttonContainer);
+    }
+
+    const applyHealButton = document.createElement("button");
+    applyHealButton.type = "button";
+    applyHealButton.className = "redsteel-apply-heal";
+    applyHealButton.dataset.messageId = message.id;
+    applyHealButton.textContent = "Apply Heal";
+
+    buttonContainer.appendChild(applyHealButton);
+
+    const buttonCount = buttonContainer.querySelectorAll(
+      "button, a.button",
+    ).length;
+    buttonContainer.classList.toggle("single", buttonCount <= 1);
+
+    applyHealButton.addEventListener("click", () => {
+      handleApplyHeal(message.id);
+    });
+  });
+
+  Hooks.once("ready", () => {
+    game.socket.on(SOCKET, async (data) => {
+      if (data.type !== "applyFirstAidHeal") return;
+      if (!game.user.isGM) return;
+
+      await applyFirstAidHealAsGM(data);
+    });
+  });
+}
+
+function handleApplyHeal(messageId) {
+  const message = game.messages.get(messageId);
+  if (!message?.flags?.redsteel?.firstAidHeal) return;
+
+  const targets = Array.from(game.user.targets);
+  if (targets.length !== 1) {
+    ui.notifications.warn("Target exactly one token to apply the heal.");
+    return;
+  }
+
+  openHealDialog(message, targets[0]);
+}
+
+function openHealDialog(message, target) {
+  const heal = message.flags.redsteel.firstAidHeal;
+  const actor = target.actor;
+  if (!actor) return;
+
+  const normal = getFirstAidHealContext(actor, heal.amount, false);
+  const forced = getFirstAidHealContext(actor, heal.amount, true);
+
+  const capInfo = normal.hasCap
+    ? `<p>Heal cap (health at combat start): <strong>${normal.cap}</strong></p>`
+    : `<p><em>No combat snapshot found for this target — cap not applied.</em></p>`;
+
+  const previewText = (force) =>
+    `Will heal: <strong>${force ? forced.applied : normal.applied}</strong> HP`;
+
+  new Dialog({
+    title: "Apply First Aid Heal",
+    content: `
+      <form>
+        <p><strong>${target.name}</strong> — current health: ${normal.currentHp}</p>
+        <p>Heal rolled: <strong>${normal.amount}</strong></p>
+        ${capInfo}
+        <label>
+          <input type="checkbox" name="forceHeal">
+          Force heal (bypass cap)
+        </label>
+        <p class="heal-preview">${previewText(false)}</p>
+      </form>
+    `,
+    buttons: {
+      apply: {
+        label: "Apply",
+        callback: (html) => {
+          const force = html.find('[name="forceHeal"]').is(":checked");
+          requestApplyFirstAidHeal(message, target, force);
+        },
+      },
+      cancel: { label: "Cancel" },
+    },
+    default: "apply",
+    render: (html) => {
+      html.find('[name="forceHeal"]').on("change", (ev) => {
+        html.find(".heal-preview").html(previewText(ev.target.checked));
+      });
+    },
+  }).render(true);
+}
+
+async function requestApplyFirstAidHeal(message, target, force) {
+  const data = {
+    type: "applyFirstAidHeal",
+    messageId: message.id,
+    sceneId: canvas.scene.id,
+    targetId: target.id,
+    force,
+  };
+
+  if (game.user.isGM) {
+    await applyFirstAidHealAsGM(data);
+  } else {
+    game.socket.emit(SOCKET, data);
+    ui.notifications.info("Heal request sent to GM.");
+  }
+}
+
+async function applyFirstAidHealAsGM(data) {
+  const { messageId, sceneId, targetId, force } = data;
+
+  const message = game.messages.get(messageId);
+  const heal = message?.flags?.redsteel?.firstAidHeal;
+  if (!heal) return;
+
+  const tokenDoc = game.scenes.get(sceneId)?.tokens.get(targetId);
+  const actor = tokenDoc?.actor;
+  if (!actor) return;
+
+  const { amount, currentHp, cap, hasCap, applied } = getFirstAidHealContext(
+    actor,
+    heal.amount,
+    force,
+  );
+
+  if (applied <= 0) {
+    ui.notifications.warn(
+      `${actor.name} is already at or above their combat-start health (${cap}). Use Force heal to bypass the cap.`,
+    );
+    return;
+  }
+
+  await actor.update({
+    "system.stats.health.value": currentHp + applied,
+  });
+
+  const capNote = force
+    ? " <em>(force heal — cap bypassed)</em>"
+    : hasCap && applied < amount
+      ? ` <em>(capped at combat-start health ${cap})</em>`
+      : "";
+
+  const iconUrl = "icons/magic/life/cross-yellow-green.webp";
+
+  await ChatMessage.create({
+    speaker: ChatMessage.getSpeaker({ actor }),
+    content: `
+<div style="display:flex; align-items:center; gap:10px;">
+  <img src="${iconUrl}" width="36" height="36" style="border-radius:50%;" />
+  <div>
+    <p style="color:green; font-size:1.2em;">
+      <strong>First aid applied</strong>
+    </p>
+    <strong>${actor.name}</strong> is healed for ${applied} HP${capNote}.
+  </div>
+</div>
+`,
   });
 }

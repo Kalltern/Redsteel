@@ -1,0 +1,61 @@
+{{! Variants Tab }}
+<section
+  class='tab variants {{tab.cssClass}}'
+  data-group='primary'
+  data-tab='variants'
+>
+  <div class='flexcol'>
+    <div
+      class='flexrow'
+      style='align-items: center; justify-content: space-between; margin-bottom: 6px;'
+    >
+      <label class='resource-label'>Variant Spell IDs</label>
+      <a
+        class='variant-control'
+        data-action='addVariant'
+        title='Add Variant'
+        style='flex: 0 0 auto;'
+      >
+        <i class='fas fa-plus'></i> Add Variant
+      </a>
+    </div>
+
+    {{#each variantEntries as |entry|}}
+      <div class='flexrow' style='align-items: center; gap: 4px; margin-bottom: 4px;'>
+        <input
+          type='text'
+          name='system.variants.{{entry.index}}'
+          value='{{entry.id}}'
+          placeholder='Spell Item ID'
+          data-dtype='String'
+        />
+        <span style='flex: 1; padding: 0 4px; opacity: 0.8;'>{{entry.name}}</span>
+        {{#if entry.valid}}
+          <a
+            class='variant-control'
+            data-action='openVariant'
+            data-index='{{entry.index}}'
+            title='Open Variant Sheet'
+            style='flex: 0 0 auto;'
+          >
+            <i class='fas fa-edit'></i>
+          </a>
+        {{/if}}
+        <a
+          class='variant-control'
+          data-action='removeVariant'
+          data-index='{{entry.index}}'
+          title='Remove Variant'
+          style='flex: 0 0 auto;'
+        >
+          <i class='fas fa-trash'></i>
+        </a>
+      </div>
+    {{else}}
+      <p style='opacity: 0.7;'>
+        No variants linked. Add a world spell Item ID to offer alternate
+        versions of this spell when casting.
+      </p>
+    {{/each}}
+  </div>
+</section>

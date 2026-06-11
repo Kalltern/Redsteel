@@ -9,8 +9,15 @@ export async function castSpell() {
     return;
   }
 
-  const { spell, freeCast, focusSpent, ignoreChanneling, maintainChanneling } =
-    result;
+  const { freeCast, focusSpent, ignoreChanneling, maintainChanneling } = result;
+
+  // If the spell has linked variants, let the player choose which version to
+  // cast. Resolves with the parent spell itself when no valid variants exist.
+  const spell = await game.redsteel.showVariantSelectionDialog(result.spell);
+  if (!spell) {
+    ui.notifications.info("Spell casting canceled.");
+    return;
+  }
 
   if (!freeCast) {
     const ok = await game.redsteel.deductMana(actor, spell);

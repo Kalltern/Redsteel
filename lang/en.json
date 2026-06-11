@@ -357,7 +357,8 @@
         "Doctrines": "Doctrines",
         "Effects": "Effects",
         "combatEffects": "Combat Effects",
-        "OffHand": "Offhand"
+        "OffHand": "Offhand",
+        "Variants": "Variants"
       },
       "Condition": {
         "duration": "Duration",

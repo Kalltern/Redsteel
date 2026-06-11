@@ -510,6 +510,104 @@ export function showSpellSelectionDialogs(actor) {
   });
 }
 
+// --- 1.b Spell Variant Selection ---
+
+/**
+ * Resolves a spell's variant IDs into valid spell Items.
+ * Invalid IDs, missing Items, and non-spell Items are silently ignored.
+ * @param {object} spell - The parent spell item.
+ * @returns {object[]} - An array of valid variant spell Items (world Items).
+ */
+export function getValidSpellVariants(spell) {
+  const raw = spell.system?.variants;
+  const ids = Array.isArray(raw) ? raw : Object.values(raw ?? {});
+
+  const seen = new Set();
+  const variants = [];
+  for (const id of ids) {
+    if (typeof id !== "string") continue;
+    const trimmed = id.trim();
+    if (!trimmed || trimmed === spell.id || seen.has(trimmed)) continue;
+    const item = game.items.get(trimmed);
+    if (!item || item.type !== "spell") continue;
+    seen.add(trimmed);
+    variants.push(item);
+  }
+  return variants;
+}
+
+/**
+ * If the spell has valid variants, prompts the user to choose which version
+ * to cast ("Normal" = the parent spell itself, or any linked variant).
+ * If no valid variants exist, resolves immediately with the parent spell.
+ * @param {object} spell - The parent spell item.
+ * @returns {Promise<object | null>} - The spell Item to cast, or null if canceled.
+ */
+export function showVariantSelectionDialog(spell) {
+  const variants = getValidSpellVariants(spell);
+  if (!variants.length) return Promise.resolve(spell);
+
+  _injectDialogCSS();
+
+  const parentName = spell.localizedName ?? spell.name;
+  const optionsHtml = [
+    { id: spell.id, name: "Normal" },
+    ...variants.map((v) => ({ id: v.id, name: v.localizedName ?? v.name })),
+  ]
+    .map(
+      (opt, index) => `
+        <div class="option-row">
+          <label>
+            <input type="radio" name="variantChoice" value="${opt.id}"
+              ${index === 0 ? "checked" : ""}>
+            ${opt.name}
+          </label>
+        </div>`,
+    )
+    .join("");
+
+  return new Promise((resolve) => {
+    let resolved = false;
+    const finish = (value) => {
+      if (resolved) return;
+      resolved = true;
+      resolve(value);
+    };
+
+    new Dialog(
+      {
+        title: `Cast ${parentName}`,
+        content: `
+          <form class="spell-dialog-form">
+            <p>Choose version:</p>
+            <div class="casting-options">
+              ${optionsHtml}
+            </div>
+          </form>`,
+        buttons: {
+          cast: {
+            label: "Cast",
+            callback: (html) => {
+              const selectedId = html
+                .find('input[name="variantChoice"]:checked')
+                .val();
+              if (selectedId === spell.id) return finish(spell);
+              finish(variants.find((v) => v.id === selectedId) ?? spell);
+            },
+          },
+          cancel: {
+            label: "Cancel",
+            callback: () => finish(null),
+          },
+        },
+        default: "cast",
+        close: () => finish(null),
+      },
+      { classes: ["dialog", "spell-dialog"] },
+    ).render(true);
+  });
+}
+
 // --- 2. Mana Deduction ---
 
 /**
@@ -1263,7 +1361,8 @@ export async function resolveChannelingTick(actor, effect) {
   // ✅ behavior decision lives here
   if (!data.isSustained) return;
 
-  const spell = actor.items.get(data.spellId);
+  // Variant spells live in the world, not on the actor, so fall back there
+  const spell = actor.items.get(data.spellId) ?? game.items.get(data.spellId);
   if (!spell) {
     await effect.delete();
     return;
