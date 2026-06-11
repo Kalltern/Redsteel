@@ -551,8 +551,8 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
           "abilities",
           "spells",
           "miracles",
-          "effects",
           "biography",
+          "effects",
           "config",
         );
         break;

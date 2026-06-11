@@ -418,7 +418,13 @@ table tr td:nth-child(3) {
   margin-bottom: 10px;
   align-self: center;
 
-  border: 3px solid #5f5843; /* gold border */
+  /* Raised frame bevel in faded golden brown: lit on top/left,
+     gently shaded on right/bottom (kept low-contrast and warm) */
+  border: 3px solid;
+    border-color: #433c2f #433c2f #433c2f #433c2f;
+    padding: 3px;
+    background: #2e271c;
+    box-shadow: 0 0 0 1px rgba(24, 18, 10, 0.8), 0 0 12px rgba(0, 0, 0, 0.5), inset 0 2px 3px rgba(20, 15, 8, 0.65), inset 0 -1px 0 rgb(39 30 15 / 50%);
 }
 
 .redsteel .sheet-header-item {
@@ -679,13 +685,18 @@ table tr td:nth-child(3) {
 .skill-rating {
   justify-self: center;
 }
-.skills-box {
+.skills-box,
+.features-box,
+.config-box,
+.effects-box,
+.spells-box,
+.miracles-box,
+.abilities-box,
+.inventory-box {
+  /* Flat overlay instead of a radial gradient: the gradient scaled with the
+     box height, so the tall General subtab rendered darker than Combat */
   background:
-    radial-gradient(
-      circle at center,
-      rgba(60, 60, 60, 0.18) 10%,
-      rgba(12, 12, 11, 0.82) 80%
-    ),
+    linear-gradient(rgba(12, 12, 11, 0.5), rgba(12, 12, 11, 0.5)),
     url(../ui/headertexture.jpg);
   border: 2px solid #514226;
   border-radius: 0;
@@ -758,7 +769,9 @@ table tr td:nth-child(3) {
   display: grid;
   grid-template-columns: 144px 110px 80px;
   align-items: center;
-  margin: 0 0 12px;
+  /* No bottom margin: the column's flex gap already spaces the header
+     from the first entry, same as between entries */
+  margin: 0;
   padding-left: 4px;
   padding-bottom: 8px;
   text-align: left;
@@ -975,20 +988,32 @@ table tr td:nth-child(3) {
   padding-left: 6px;
 }
 
+/* Ability list headers mirror the row flex template (.item-name is
+   flex 2.5, each .item-prop flex 1) so the columns stay aligned at
+   any sheet width instead of using fixed pixel widths */
 .redsteel .items-header .ability-name {
-  width: 228px;
+  flex: 2.15;
   text-align: left;
   justify-content: flex-start;
   padding-left: 6px;
-  flex: 0 0 auto;
 }
 
 .redsteel .items-header .ability-type,
 .redsteel .items-header .ability-cost,
 .redsteel .items-header .ability-damage,
 .redsteel .items-header .ability-test {
-  width: 100px;
-  flex: 0 0 auto;
+  flex: 1;
+  text-align: center;
+}
+
+/* Header and row controls must occupy the same width, otherwise the
+   flex columns before them drift apart (the header holds the New
+   button while rows hold two small icons) */
+.redsteel .tab.abilities .items-header .item-controls,
+.redsteel .tab.abilities .items-list .item .item-controls {
+  flex: 0 0 110px;
+  justify-content: flex-end;
+  white-space: nowrap;
 }
 
 .redsteel .items-header .item-prop {
@@ -1132,7 +1157,7 @@ table tr td:nth-child(3) {
   text-align: left;
 }
 .redsteel .items-list .items-header.gear .item-name {
-  max-width: 260px;
+  max-width: 245px;
 }
 .redsteel .items-list .items-header.gear .item-durability {
   margin-right: 85px;
@@ -1263,16 +1288,21 @@ table tr td:nth-child(3) {
   border: none;
 }
 
-.skills-box {
+.skills-box,
+.features-box,
+.config-box,
+.effects-box,
+.spells-box,
+.miracles-box,
+.abilities-box,
+.inventory-box {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  /* Flat overlay instead of a radial gradient: the gradient scaled with the
+     box height, so the tall General subtab rendered darker than Combat */
   background:
-    radial-gradient(
-      circle at center,
-      rgba(60, 60, 60, 0.18) 10%,
-      rgba(12, 12, 11, 0.82) 80%
-    ),
+    linear-gradient(rgba(12, 12, 11, 0.5), rgba(12, 12, 11, 0.5)),
     url(../ui/headertexture.jpg);
   border: 2px solid #514226;
   border-radius: 0;
@@ -1283,6 +1313,22 @@ table tr td:nth-child(3) {
   /* Match the header background's 5px gap from the tab toolbar */
   margin-top: 5px;
   margin-bottom: 16px;
+}
+/* These boxes stretch to fill the entire tab body, even with little content */
+.effects-box,
+.spells-box,
+.miracles-box,
+.abilities-box,
+.inventory-box,
+.features-box,
+.skills-box {
+  flex: 1 1 auto;
+}
+/* The skills tab nests its box in this wrapper: pass the tab height down */
+.scrollable-tab {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
 }
 .skills-container {
   display: flex;
@@ -1455,6 +1501,7 @@ table tr td:nth-child(3) {
   .redsteel .tab.skills,
   .redsteel .tab.miracles,
   .redsteel .tab.spells,
+  .redsteel .tab.effects,
   .redsteel .tab.config {
     max-height: 70vh;
     overflow-y: auto;
@@ -1468,6 +1515,7 @@ table tr td:nth-child(3) {
   .redsteel .tab.skills,
   .redsteel .tab.miracles,
   .redsteel .tab.spells,
+  .redsteel .tab.effects,
   .redsteel .tab.config {
     max-height: 688px !important; /* Height for higher resolutions */
   }
@@ -1487,12 +1535,26 @@ table tr td:nth-child(3) {
   display: block !important;
 }
 
+/* The active tab must be a flex container for the *-box wrappers to
+   stretch to the full tab height. Scoped to .active so the core
+   display:none on inactive tabs is not overridden. */
+.redsteel .tab.features.active,
+.redsteel .tab.abilities.active,
+.redsteel .tab.inventory.active,
+.redsteel .tab.skills.active,
+.redsteel .tab.miracles.active,
+.redsteel .tab.spells.active,
+.redsteel .tab.effects.active,
+.redsteel .tab.config.active {
+  display: flex;
+}
 .redsteel .tab.features,
 .redsteel .tab.abilities,
 .redsteel .tab.inventory,
 .redsteel .tab.skills,
 .redsteel .tab.miracles,
 .redsteel .tab.spells,
+.redsteel .tab.effects,
 .redsteel .tab.config {
   flex-direction: column;
   flex-grow: 1;
@@ -1679,50 +1741,6 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 
 .attributes.flexrow {
   margin-bottom: 3px;
-}
-
-.reroll-container {
-  display: flex;
-  justify-content: flex-end; /* Align icons at the right of the container */
-  width: 100%; /* Ensure the container takes the full width */
-  padding: 5px 0; /* Optional: adjust padding as needed */
-}
-
-.reroll-container:nth-child(odd) {
-  background: #3131311f;
-}
-
-.reroll-container:nth-child(even) {
-  background: #00000038;
-}
-
-.reroll-container span {
-  font-size: 1rem; /* Adjust as needed */
-  font-weight: bold;
-  margin-right: auto; /* Keep the span on the left side */
-}
-
-/* Style for the reroll icon */
-.reroll-icon {
-  cursor: pointer;
-  transition:
-    transform 0.3s ease,
-    filter 0.3s ease,
-    background-color 0.3s ease;
-  font-size: 1.5rem; /* Adjust for bigger icons */
-  align-items: center; /* Vertically center the icon */
-  display: flex; /* Horizontally center the icon */
-  margin: 0; /* Ensure no margin between icons */
-}
-/* Active (shining) state */
-.reroll-icon.active {
-  color: rgb(243, 195, 92); /* Icon color changes to white for contrast */
-}
-
-/* Inactive state */
-.reroll-icon:not(.active) {
-  background-color: transparent; /* Transparent when inactive */
-  color: inherit; /* Default color */
 }
 
 #item-tooltip {
@@ -3082,6 +3100,9 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   display: flex;
   align-items: flex-start;
   gap: 10px;
+  /* Kill default li margins: grid items stretch to the row track minus
+     their own margin, so uneven li margins make card heights differ */
+  margin: 0;
   padding: 8px 10px;
   background: rgba(0, 0, 0, 0.55);
   border: 1px solid rgba(181, 151, 80, 0.35);
@@ -3149,4 +3170,84 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   .npc-traits-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* -------------------------------------------- */
+/*  Features tab (character sheet)              */
+/*  Reuses the npc-trait card styling above     */
+/* -------------------------------------------- */
+
+/* The box's flex gap spaces the sections; keep only the separator line */
+.features-box .npc-traits {
+  margin-bottom: 0;
+}
+.features-box .npc-traits:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+/* Rerolls — trait-style toggle boxes */
+.reroll-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.reroll-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  /* Kill default li margins (see .npc-trait) */
+  margin: 0;
+  padding: 8px 10px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(128, 128, 128, 0.45);
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.28);
+  color: #8d8d8d;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    color 0.2s ease;
+}
+
+.reroll-box .reroll-box-icon {
+  display: block;
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(128, 128, 128, 0.45);
+  border-radius: 4px;
+  object-fit: cover;
+  filter: grayscale(1) brightness(0.55);
+  transition:
+    filter 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.reroll-box-name {
+  font-weight: 700;
+  text-align: left;
+}
+
+.reroll-box:hover {
+  border-color: rgba(181, 151, 80, 0.5);
+}
+
+/* ON state: dark gilded glow on the borders, icon in full color */
+.reroll-box.active {
+  border-color: #9c7b45;
+  color: #c9b26b;
+  box-shadow:
+    inset 0 0 12px rgba(0, 0, 0, 0.28),
+    inset 0 0 6px rgba(181, 151, 80, 0.25),
+    0 0 8px rgba(156, 123, 69, 0.55);
+}
+
+.reroll-box.active .reroll-box-icon {
+  border-color: rgba(181, 151, 80, 0.6);
+  filter: none;
 }
