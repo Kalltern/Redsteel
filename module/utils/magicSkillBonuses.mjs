@@ -875,7 +875,7 @@ export async function performAttackRoll(
 
   const attackRoll = new Roll(attackRollFormula, rollData);
   await attackRoll.evaluate();
-  const rollResult = attackRoll.dice[0].results[0].result;
+  const rollResult = attackRoll.dice[0].total;
   const displayCritSuccess = rollResult <= critSuccessThreshold;
   const displayCritFailure = rollResult >= critFailureThreshold;
 

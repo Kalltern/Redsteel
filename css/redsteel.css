@@ -3722,3 +3722,38 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   background: #6fa8dc;
   border: 1px solid #1d1a16;
 }
+
+/* -------------------------------------------- */
+/*  Hotbar roll-modifier dice button            */
+/* -------------------------------------------- */
+
+.redsteel-roll-modifier-controls {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.redsteel-roll-modifier-controls .redsteel-roll-modifier {
+  position: relative;
+}
+
+.redsteel-roll-modifier-controls .redsteel-roll-modifier.active {
+  color: #ffb351;
+  border-color: #ffb351;
+  box-shadow: 0 0 6px rgba(255, 179, 81, 0.6);
+}
+
+.redsteel-roll-modifier-controls .redsteel-roll-modifier .modifier-badge {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  display: none;
+  padding: 2px 4px;
+  border-radius: 7px;
+  font-size: 9px;
+  font-weight: bold;
+  line-height: 1;
+  background: #ffb351;
+  color: #191813;
+  pointer-events: none;
+}

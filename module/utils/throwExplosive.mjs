@@ -81,7 +81,7 @@ export async function throwExplosive() {
 
       attackRoll = new Roll(formula, actor.getRollData());
       await attackRoll.evaluate();
-      rollResult = attackRoll.dice[0].results[0].result;
+      rollResult = attackRoll.dice[0].total;
     }
 
     const criticalSuccessThreshold =

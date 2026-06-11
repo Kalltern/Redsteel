@@ -684,7 +684,7 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
     overwhelm,
     { dodgeFailed = false } = {},
   ) {
-    const rollResult = roll.dice[0].results[0].result;
+    const rollResult = roll.dice[0].total;
 
     const critSuccess = rollResult <= criticalSuccessThreshold;
     const critFailure = rollResult >= criticalFailureThreshold;

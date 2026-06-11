@@ -18,6 +18,7 @@ import {
   resolveEffectDefinition,
 } from "./utils/customConditions.mjs";
 import { wireAttributeFollowups } from "./utils/attributeFollowup.mjs";
+import { registerRollModifier } from "./utils/rollModifier.mjs";
 import { applyTraitStatusEffects } from "./utils/traitStatusEffects.mjs";
 import { usePotion } from "./utils/usePotion.mjs";
 import { defenseRoll } from "./utils/defense.mjs";
@@ -203,6 +204,7 @@ Hooks.once("init", function () {
   game.redsteel.autoAttack = autoAttack;
   game.redsteel.resolveChannelingTick = resolveChannelingTick;
   registerDynamicInitiative();
+  registerRollModifier();
   registerEffectSheetExtensions();
   registerKeepDialogOpen();
   registerCustomConditions();
@@ -1502,7 +1504,8 @@ Hooks.on("renderChatMessageHTML", (message, html, data) => {
   // Check if the current user is the one who made the roll
   if (game.user.id === message.author?.id) {
     // Add logic to check if the message is a roll message and create a reroll button
-    const hasTestRoll = message.rolls?.some((r) => r.formula.includes("1d100"));
+    // Match 1d100 tests as well as advantage/disadvantage variants (2d100kl/kh)
+    const hasTestRoll = message.rolls?.some((r) => /\d+d100/i.test(r.formula));
 
     if (hasTestRoll) {
       const rerollButton = document.createElement("button");
@@ -1526,7 +1529,7 @@ Hooks.on("renderChatMessageHTML", (message, html, data) => {
         const rollFormula = message.rolls[0].formula;
         const roll = new Roll(rollFormula);
         await roll.evaluate();
-        const d100Result = roll.dice?.[0]?.results?.[0]?.result ?? roll.total; // Extract the d100 result
+        const d100Result = roll.dice?.[0]?.total ?? roll.total; // Kept d100 result (works with 2d100kl/kh)
         const criticalSuccessThreshold =
           message.flags.redsteel.criticalSuccessThreshold;
         const criticalFailureThreshold =
