@@ -398,6 +398,144 @@ table tr td:nth-child(3) {
   margin-bottom: 5px;
 }
 
+/* ===== Grimdark resource bars (character header) ===== */
+.redsteel .resource-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  width: 100%;
+  margin-top: 6px;
+}
+
+.redsteel .resource-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* Recessed trough the fill sits in, tinted as a very dark version of the
+   fill color (--bar-track comes from the per-resource rules below) */
+.redsteel .resource-bar-track {
+  position: relative;
+  flex: 1 1 auto;
+  height: 20px;
+  overflow: hidden;
+  background-color: var(--bar-track, #0f0c09);
+  background-image: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.6) 0%,
+    rgba(0, 0, 0, 0.15) 55%,
+    rgba(0, 0, 0, 0.65) 100%
+  );
+  border: 1px solid #514226;
+  border-radius: 2px;
+  box-shadow:
+    inset 0 2px 5px rgba(0, 0, 0, 0.85),
+    inset 0 0 8px rgba(0, 0, 0, 0.6),
+    0 1px 0 rgba(214, 188, 140, 0.07);
+}
+
+/* The fill: lacquered look — dark edges, bright glowing core just below
+   center, soft organic mottling on top (inline SVG noise, no asset) */
+.redsteel .resource-bar-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  background-color: var(--bar-lo);
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='28'%3E%3Cfilter id='mottle'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.015 0.12' numOctaves='3' seed='13' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.7 0.7 0.7 0 -0.65'/%3E%3C/filter%3E%3Crect width='220' height='28' filter='url(%23mottle)'/%3E%3C/svg%3E"),
+    linear-gradient(
+      180deg,
+      var(--bar-lo) 0%,
+      var(--bar-mid) 32%,
+      var(--bar-hi) 58%,
+      var(--bar-mid) 84%,
+      var(--bar-lo) 100%
+    );
+  box-shadow:
+    inset 0 2px 3px rgba(0, 0, 0, 0.55),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.6),
+    inset -3px 0 4px rgba(0, 0, 0, 0.5);
+  transition: width 0.4s ease;
+}
+
+/* Per-resource palettes, set on the bar so both track and fill see them */
+.redsteel .resource-bar.health {
+  --bar-hi: #a8150e;
+  --bar-mid: #5e0a06;
+  --bar-lo: #1e0302;
+  --bar-track: #140201;
+}
+.redsteel .resource-bar.stamina {
+  --bar-hi: #b09a23;
+  --bar-mid: #645612;
+  --bar-lo: #262005;
+  --bar-track: #181403;
+}
+.redsteel .resource-bar.toxicity {
+  --bar-hi: #4f9c2f;
+  --bar-mid: #2c5e1d;
+  --bar-lo: #102708;
+  --bar-track: #0a1805;
+}
+.redsteel .resource-bar.mana {
+  --bar-hi: #2c5cc0;
+  --bar-mid: #1a3672;
+  --bar-lo: #091430;
+  --bar-track: #060d1f;
+}
+.redsteel .resource-bar.holyEnergy {
+  --bar-hi: #9b79c0;
+  --bar-mid: #5a4374;
+  --bar-lo: #251a33;
+  --bar-track: #170f20;
+}
+
+/* Current / max readout overlaid on the bar */
+.redsteel .resource-bar-values {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #e8dcc0;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.9),
+    0 0 4px rgba(0, 0, 0, 0.8);
+}
+
+.redsteel .profile-container .resource-bar-values input[type="text"] {
+  width: 34px;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  text-shadow: inherit;
+}
+.redsteel .profile-container .resource-bar-values .resource-bar-current {
+  text-align: right;
+}
+.redsteel .profile-container .resource-bar-values .resource-bar-max {
+  text-align: left;
+}
+.redsteel .resource-bar-sep {
+  margin: 0 2px;
+}
+.redsteel .profile-container .resource-bar-values input[type="text"]:focus {
+  outline: none;
+  box-shadow: 0 0 5px rgba(214, 188, 140, 0.6);
+}
+
 .redsteel .item-form {
   font-family: "Roboto", sans-serif;
 }

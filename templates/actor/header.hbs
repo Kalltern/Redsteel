@@ -1,4 +1,4 @@
-{{! Sheet Header }}
+﻿{{! Sheet Header }}
 
 {{#if (eq actor.type "character")}}
 <header class="sheet-header">
@@ -14,109 +14,123 @@
       width="216"
     />
 
-    <div class="grid {{#if (or system.magicPotential system.priest)}}grid-4col{{else}}grid-3col{{/if}}">
+    <div class="resource-bars">
 
-      <div class="grid-span-1">
-        <label class="stats-resource-label">{{localize (concat 'REDSTEEL.Actor.Character.stats.health.value.label')}}</label>
-        <div class="stat-values">
-          <input
-            type="text"
-            class="stat-input stat-current resource health"
-            name="system.stats.health.value"
-            value="{{system.stats.health.value}}"
-            data-value="system.stats.health.value"
-          />
-          <input
-            type="text"
-            class="stat-input stat-max resource health"
-            value="{{system.stats.health.max}}"
-            data-value="system.stats.health.max"
-            readonly
-          />
+      <div class="resource-bar health">
+        <div class="resource-bar-track" title="{{localize 'REDSTEEL.Actor.Character.stats.health.value.label'}}">
+          <div class="resource-bar-fill" style="width: {{percentOf system.stats.health.value system.stats.health.max}}%"></div>
+          <div class="resource-bar-values">
+            <input
+              type="text"
+              class="resource-bar-current"
+              name="system.stats.health.value"
+              value="{{system.stats.health.value}}"
+              data-value="system.stats.health.value"
+            />
+            <span class="resource-bar-sep">/</span>
+            <input
+              type="text"
+              class="resource-bar-max"
+              value="{{system.stats.health.max}}"
+              data-value="system.stats.health.max"
+              readonly
+            />
+          </div>
         </div>
       </div>
 
-      <div class="grid-span-1">
-        <label class="stats-resource-label">{{localize (concat 'REDSTEEL.Actor.Character.stats.stamina.value.label')}}</label>
-        <div class="stat-values">
-          <input
-            type="text"
-            class="stat-input stat-current resource stamina"
-            name="system.stats.stamina.value"
-            value="{{system.stats.stamina.value}}"
-            data-value="system.stats.stamina.value"
-          />
-          <input
-            type="text"
-            class="stat-input stat-max resource stamina"
-            value="{{system.stats.stamina.max}}"
-            data-value="system.stats.stamina.max"
-            readonly
-          />
+      <div class="resource-bar stamina">
+        <div class="resource-bar-track" title="{{localize 'REDSTEEL.Actor.Character.stats.stamina.value.label'}}">
+          <div class="resource-bar-fill" style="width: {{percentOf system.stats.stamina.value system.stats.stamina.max}}%"></div>
+          <div class="resource-bar-values">
+            <input
+              type="text"
+              class="resource-bar-current"
+              name="system.stats.stamina.value"
+              value="{{system.stats.stamina.value}}"
+              data-value="system.stats.stamina.value"
+            />
+            <span class="resource-bar-sep">/</span>
+            <input
+              type="text"
+              class="resource-bar-max"
+              value="{{system.stats.stamina.max}}"
+              data-value="system.stats.stamina.max"
+              readonly
+            />
+          </div>
         </div>
       </div>
 
-      <div class="grid-span-1">
-        <label class="stats-resource-label">{{localize (concat 'REDSTEEL.Actor.Character.stats.toxicity.value.label')}}</label>
-        <div class="stat-values">
-          <input
-            type="text"
-            class="stat-input stat-current resource toxicity"
-            name="system.stats.toxicity.value"
-            value="{{system.stats.toxicity.value}}"
-            data-value="system.stats.toxicity.value"
-          />
-          <input
-            type="text"
-            class="stat-input stat-max resource toxicity"
-            value="{{system.stats.toxicity.max}}"
-            data-value="system.stats.toxicity.max"
-            readonly
-          />
+      <div class="resource-bar toxicity">
+        <div class="resource-bar-track" title="{{localize 'REDSTEEL.Actor.Character.stats.toxicity.value.label'}}">
+          <div class="resource-bar-fill" style="width: {{percentOf system.stats.toxicity.value system.stats.toxicity.max}}%"></div>
+          <div class="resource-bar-values">
+            <input
+              type="text"
+              class="resource-bar-current"
+              name="system.stats.toxicity.value"
+              value="{{system.stats.toxicity.value}}"
+              data-value="system.stats.toxicity.value"
+            />
+            <span class="resource-bar-sep">/</span>
+            <input
+              type="text"
+              class="resource-bar-max"
+              value="{{system.stats.toxicity.max}}"
+              data-value="system.stats.toxicity.max"
+              readonly
+            />
+          </div>
         </div>
       </div>
 
       {{#if system.magicPotential}}
-      <div class="grid-span-1">
-        <label class="stats-resource-label">{{localize (concat 'REDSTEEL.Actor.Character.stats.mana.value.label')}}</label>
-        <div class="stat-values">
-          <input
-            type="text"
-            class="stat-input stat-current resource mana"
-            name="system.stats.mana.value"
-            value="{{system.stats.mana.value}}"
-            data-value="system.stats.mana.value"
-          />
-          <input
-            type="text"
-            class="stat-input stat-max resource mana"
-            value="{{system.stats.mana.max}}"
-            data-value="system.stats.mana.max"
-            readonly
-          />
+      <div class="resource-bar mana">
+        <div class="resource-bar-track" title="{{localize 'REDSTEEL.Actor.Character.stats.mana.value.label'}}">
+          <div class="resource-bar-fill" style="width: {{percentOf system.stats.mana.value system.stats.mana.max}}%"></div>
+          <div class="resource-bar-values">
+            <input
+              type="text"
+              class="resource-bar-current"
+              name="system.stats.mana.value"
+              value="{{system.stats.mana.value}}"
+              data-value="system.stats.mana.value"
+            />
+            <span class="resource-bar-sep">/</span>
+            <input
+              type="text"
+              class="resource-bar-max"
+              value="{{system.stats.mana.max}}"
+              data-value="system.stats.mana.max"
+              readonly
+            />
+          </div>
         </div>
       </div>
       {{/if}}
 
-            {{#if system.priest}}
-      <div class="grid-span-1">
-        <label class="stats-resource-label">{{localize (concat 'REDSTEEL.Actor.Character.stats.holyEnergy.value.label')}}</label>
-        <div class="stat-values">
-          <input
-            type="text"
-            class="stat-input stat-current resource holyEnergy"
-            name="system.stats.holyEnergy.value"
-            value="{{system.stats.holyEnergy.value}}"
-            data-value="system.stats.holyEnergy.value"
-          />
-          <input
-            type="text"
-            class="stat-input stat-max resource holyEnergy"
-            name="system.stats.holyEnergy.max"
-            value="{{system.stats.holyEnergy.max}}"
-            data-value="system.stats.holyEnergy.max"
-            readonly
-          />
+      {{#if system.priest}}
+      <div class="resource-bar holyEnergy">
+        <div class="resource-bar-track" title="{{localize 'REDSTEEL.Actor.Character.stats.holyEnergy.value.label'}}">
+          <div class="resource-bar-fill" style="width: {{percentOf system.stats.holyEnergy.value system.stats.holyEnergy.max}}%"></div>
+          <div class="resource-bar-values">
+            <input
+              type="text"
+              class="resource-bar-current"
+              name="system.stats.holyEnergy.value"
+              value="{{system.stats.holyEnergy.value}}"
+              data-value="system.stats.holyEnergy.value"
+            />
+            <span class="resource-bar-sep">/</span>
+            <input
+              type="text"
+              class="resource-bar-max"
+              value="{{system.stats.holyEnergy.max}}"
+              data-value="system.stats.holyEnergy.max"
+              readonly
+            />
+          </div>
         </div>
       </div>
       {{/if}}

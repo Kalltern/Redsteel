@@ -338,6 +338,14 @@ Handlebars.registerHelper("range", function (start, end) {
   return range;
 });
 
+// Percentage of value within max, clamped to 0-100 (for resource bar fills)
+Handlebars.registerHelper("percentOf", function (value, max) {
+  const v = Number(value);
+  const m = Number(max);
+  if (!m || isNaN(v)) return 0;
+  return Math.max(0, Math.min(100, (v / m) * 100));
+});
+
 Handlebars.registerHelper("gt", function (a, b) {
   return a > b;
 });
