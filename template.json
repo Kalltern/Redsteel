@@ -218,6 +218,12 @@
           "cast": 0,
           "power": 0
         },
+        "bloodPool": {
+          "value": 0,
+          "min": 0,
+          "max": 10,
+          "bonus": 0
+        },
         "temporaryHealth": {
           "value": 0,
           "min": 0,
@@ -918,6 +924,14 @@
           "spellPower": 0,
           "bonus": 0
         }
+      },
+      "specialisations": {
+        "shadow": { "active": false, "nodes": {} },
+        "swordServant": { "active": false, "nodes": {} },
+        "weaponMaster": { "active": false, "nodes": {} },
+        "hoplite": { "active": false, "nodes": {} },
+        "swordDancer": { "active": false, "nodes": {} },
+        "bloodSchool": { "active": false, "nodes": {} }
       }
     },
     "npc": {
@@ -970,6 +984,12 @@
           "max": 900,
           "bonus": 0,
           "power": 0
+        },
+        "bloodPool": {
+          "value": 900,
+          "min": 0,
+          "max": 900,
+          "bonus": 0
         },
         "temporaryHealth": {
           "value": 0,

@@ -18,3 +18,6 @@ module/instructions.md
 /src/packs
 Kniha kouzel pro ToS V12.1 (WIP).xlsx
 SPELL_EFFECTS_ANALYSIS.md
+Pravidla pro ToS V12.1 (WIP).xlsx
+scripts/gen_spec_lang.py
+SPECIALISATIONS.md

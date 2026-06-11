@@ -621,17 +621,39 @@ export async function deductMana(actor, spell) {
 
   const spellCost = Number(spell.system.cost) || 0;
 
+  // Blood school spells cost blood from the blood pool instead of mana
+  const isBloodSpell = spell.system.type === "blood";
+
   if (spellCost) {
-    const currentMana = actor.system.stats.mana?.value ?? 0;
+    if (isBloodSpell) {
+      const currentBlood = actor.system.stats.bloodPool?.value ?? 0;
 
-    if (currentMana < spellCost) {
-      ui.notifications.warn(
-        `Not enough mana to cast ${spell.localizedName ?? spell.name} (Cost: ${spellCost}).`,
+      if (currentBlood < spellCost) {
+        ui.notifications.warn(
+          `Not enough blood to cast ${spell.localizedName ?? spell.name} (Cost: ${spellCost}).`,
+        );
+        return false;
+      }
+
+      updates["system.stats.bloodPool.value"] = Math.max(
+        currentBlood - spellCost,
+        0,
       );
-      return false;
-    }
+    } else {
+      const currentMana = actor.system.stats.mana?.value ?? 0;
 
-    updates["system.stats.mana.value"] = Math.max(currentMana - spellCost, 0);
+      if (currentMana < spellCost) {
+        ui.notifications.warn(
+          `Not enough mana to cast ${spell.localizedName ?? spell.name} (Cost: ${spellCost}).`,
+        );
+        return false;
+      }
+
+      updates["system.stats.mana.value"] = Math.max(
+        currentMana - spellCost,
+        0,
+      );
+    }
   }
 
   const resources = Array.isArray(spell.system.resources)

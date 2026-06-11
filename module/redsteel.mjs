@@ -2049,6 +2049,42 @@ Hooks.on("preCreateToken", function (document, data) {
       },
     });
   }
+
+  // Blood Pool bar, only for blood mages (at least one level in the school)
+  if (actor.system.schools?.blood?.value > 0) {
+    document.updateSource({
+      "flags.barbrawl.resourceBars": {
+        bar6: {
+          order: 5,
+          id: "bar6",
+          attribute: "stats.bloodPool",
+          mincolor: "#2e0508",
+          maxcolor: "#9e1b35",
+          position: "bottom-outer",
+          otherVisibility: 0,
+          ownerVisibility: 50,
+          gmVisibility: -1,
+          hideFull: false,
+          hideEmpty: false,
+          hideCombat: false,
+          hideNoCombat: false,
+          hideHud: false,
+          indentLeft: null,
+          indentRight: null,
+          shareHeight: false,
+          style: "user",
+          label: "",
+          invert: false,
+          invertDirection: false,
+          subdivisions: null,
+          subdivisionsOwner: false,
+          fgImage: "",
+          bgImage: "",
+          opacity: null,
+        },
+      },
+    });
+  }
 });
 
 // seduction to temptation conversion and removal of seduction

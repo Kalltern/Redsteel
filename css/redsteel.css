@@ -694,6 +694,12 @@ table tr td:nth-child(3) {
   --bar-lo: #251a33;
   --bar-track: #170f20;
 }
+.redsteel .resource-bar.bloodPool {
+  --bar-hi: #8c1f3a;
+  --bar-mid: #541122;
+  --bar-lo: #1d040b;
+  --bar-track: #130206;
+}
 
 /* Current / max readout overlaid on the bar */
 .redsteel .resource-bar-values {
@@ -1033,7 +1039,8 @@ table tr td:nth-child(3) {
 .spells-box,
 .miracles-box,
 .abilities-box,
-.inventory-box {
+.inventory-box,
+.specialisations-box {
   /* Flat overlay instead of a radial gradient: the gradient scaled with the
      box height, so the tall General subtab rendered darker than Combat */
   background:
@@ -1636,7 +1643,8 @@ table tr td:nth-child(3) {
 .spells-box,
 .miracles-box,
 .abilities-box,
-.inventory-box {
+.inventory-box,
+.specialisations-box {
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -1662,7 +1670,8 @@ table tr td:nth-child(3) {
 .abilities-box,
 .inventory-box,
 .features-box,
-.skills-box {
+.skills-box,
+.specialisations-box {
   flex: 1 1 auto;
 }
 /* The skills tab nests its box in this wrapper: pass the tab height down */
@@ -1843,7 +1852,8 @@ table tr td:nth-child(3) {
   .redsteel .tab.miracles,
   .redsteel .tab.spells,
   .redsteel .tab.effects,
-  .redsteel .tab.config {
+  .redsteel .tab.config,
+  .redsteel .tab.specialisations {
     max-height: 70vh;
     overflow-y: auto;
   }
@@ -1857,7 +1867,8 @@ table tr td:nth-child(3) {
   .redsteel .tab.miracles,
   .redsteel .tab.spells,
   .redsteel .tab.effects,
-  .redsteel .tab.config {
+  .redsteel .tab.config,
+  .redsteel .tab.specialisations {
     max-height: 688px !important; /* Height for higher resolutions */
   }
 }
@@ -1886,7 +1897,8 @@ table tr td:nth-child(3) {
 .redsteel .tab.miracles.active,
 .redsteel .tab.spells.active,
 .redsteel .tab.effects.active,
-.redsteel .tab.config.active {
+.redsteel .tab.config.active,
+.redsteel .tab.specialisations.active {
   display: flex;
 }
 .redsteel .tab.features,
@@ -1896,7 +1908,8 @@ table tr td:nth-child(3) {
 .redsteel .tab.miracles,
 .redsteel .tab.spells,
 .redsteel .tab.effects,
-.redsteel .tab.config {
+.redsteel .tab.config,
+.redsteel .tab.specialisations {
   flex-direction: column;
   flex-grow: 1;
   overflow-y: auto; /* Scrollbar for long content */
@@ -3591,4 +3604,121 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 .reroll-box.active .reroll-box-icon {
   border-color: rgba(181, 151, 80, 0.6);
   filter: none;
+}
+/* ===================================================================== */
+/* Specialisation talent trees                                           */
+/* ===================================================================== */
+
+/* Tab sizing, background and the vertical scrollbar come from the shared
+   tab/box rules (same lists as config, spells, …). Wide trees additionally
+   scroll horizontally inside the active pane. */
+.redsteel .spec-tree-tab.active {
+  overflow-x: auto;
+}
+
+.redsteel .spec-tree-wrap {
+  /* Sized by content so a wide tree can overflow the pane horizontally;
+     small trees still stretch and center */
+  width: max-content;
+  min-width: 100%;
+}
+
+/* Positioning canvas; width/height set inline from the node grid */
+.redsteel .spec-tree {
+  position: relative;
+  margin: 1.5rem auto 3rem;
+}
+
+/* Connection lines layer (behind the nodes) */
+.redsteel .spec-tree-links {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.redsteel .spec-link {
+  stroke: #4a4136;
+  stroke-width: 3;
+}
+
+.redsteel .spec-link.active {
+  stroke: #d9a13b;
+}
+
+/* Node: a "radio button" circle centered on its grid coordinate */
+.redsteel .spec-node {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
+  border-radius: 50%;
+  border: 2px solid #4a4136;
+  background: #1d1a16;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.redsteel .spec-node img {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.redsteel .spec-node-label {
+  position: absolute;
+  top: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 92px;
+  text-align: center;
+  line-height: 1.15;
+  font-size: 10px;
+  color: #b5a98c;
+  pointer-events: none;
+}
+
+/* Prerequisites not met */
+.redsteel .spec-node.locked {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* Unlockable: prerequisites met but not taken yet */
+.redsteel .spec-node.available {
+  border-color: #8a7a4e;
+  cursor: pointer;
+}
+
+.redsteel .spec-node.available:hover {
+  border-color: #d9a13b;
+  box-shadow: 0 0 6px rgba(217, 161, 59, 0.6);
+}
+
+/* Taken: shines up */
+.redsteel .spec-node.unlocked {
+  border-color: #d9a13b;
+  background: radial-gradient(circle, #6e5117 0%, #2a2115 75%);
+  box-shadow: 0 0 10px rgba(217, 161, 59, 0.85);
+  cursor: pointer;
+}
+
+.redsteel .spec-node.unlocked .spec-node-label {
+  color: #e6c878;
+}
+
+/* Small marker on nodes whose passive buff is automated */
+.redsteel .spec-node.automated::after {
+  content: "";
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #6fa8dc;
+  border: 1px solid #1d1a16;
 }

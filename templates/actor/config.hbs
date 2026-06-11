@@ -127,13 +127,23 @@
   
 {{#each system.skills as |skill key|}}
          <label class="toggle-label">
-          <input 
-            type="checkbox" 
+          <input
+            type="checkbox"
             name="system.skills.{{key}}.visible"
-            data-skill="{{key}}" 
+            data-skill="{{key}}"
             {{#if skill.visible}}checked{{/if}}>
              {{key}}
-        </label>       
+        </label>
+   {{/each}}
+
+{{#each @root.config.specialisations as |spec key|}}
+         <label class="toggle-label">
+          <input
+            type="checkbox"
+            name="system.specialisations.{{key}}.active"
+            {{#if (lookup (lookup @root.system.specialisations key) "active")}}checked{{/if}}>
+             {{localize spec.label}}
+        </label>
    {{/each}}
 </section>
   <ol class="items-list">

@@ -135,6 +135,32 @@
       </div>
       {{/if}}
 
+      {{!-- Blood Pool: only blood mages ever use it; max is freely editable --}}
+      {{#if (gt system.schools.blood.value 0)}}
+      <div class="resource-bar bloodPool">
+        <div class="resource-bar-track" title="{{localize 'REDSTEEL.Actor.Character.stats.bloodPool.value.label'}}">
+          <div class="resource-bar-fill" style="width: {{percentOf system.stats.bloodPool.value system.stats.bloodPool.max}}%"></div>
+          <div class="resource-bar-values">
+            <input
+              type="text"
+              class="resource-bar-current"
+              name="system.stats.bloodPool.value"
+              value="{{system.stats.bloodPool.value}}"
+              data-value="system.stats.bloodPool.value"
+            />
+            <span class="resource-bar-sep">/</span>
+            <input
+              type="text"
+              class="resource-bar-max"
+              name="system.stats.bloodPool.max"
+              value="{{system.stats.bloodPool.max}}"
+              data-value="system.stats.bloodPool.max"
+            />
+          </div>
+        </div>
+      </div>
+      {{/if}}
+
     </div>
   </div>
 

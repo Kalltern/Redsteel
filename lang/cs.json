@@ -14,21 +14,15 @@
       "selectLayer": "-- Vyber vrstvu --",
       "selectRank": "-- Vyber hodnost --",
       "selectSchool": "-- Vyber školu --",
-
       "weaponClass": "Zbraňová třída",
       "weaponType": "Typ zbraně",
-
       "abilityClass": "Třída schopnosti",
       "abilityType": "Typ schopnosti",
-
       "costType": "Typ ceny",
       "testType": "Typ testu",
       "testModifier": "Modifikátor testu",
-
       "gearLayer": "Vrstva zbroje",
-
       "potionType": "Typ lektvaru",
-
       "school": "Škola",
       "rank": "Stupeň"
     },
@@ -72,7 +66,6 @@
         "reactionSpell": "Vyrušení",
         "focus": "Soustředění"
       },
-
       "Round": {
         "Step1": {
           "Title": "1. Začátek kola",
@@ -132,7 +125,6 @@
           }
         }
       },
-
       "Cost": {
         "oneAction": "1 Akce",
         "twoActions": "2 Akce",
@@ -141,7 +133,6 @@
         "variable": "X Akcí",
         "reload": "1–2 Akce"
       },
-
       "Description": {
         "move": "Pohne se maximálně o tolik hex, kolik je Rychlost. Pohyb okolo nepřítele je vždy jedna a může být přerušen úspěšným Příležitostným útokem. Pohyb může vyvolat Reakci. Výsledný pohyb může být ovlivněn terénem. Při Příležitostném útoku vyvolaném pohybem od oponenta nemá právo na Obranu.",
         "sprint": "Běh o vzdálenosti Rychlost*2 hex. Zvyšuje Kryt o 15%, snižuje Obranu o -25%. Maximální vzdálenost běhu je 12 hex. Výsledný pohyb může být ovlivněn terénem. Při Příležitostném útoku vyvolaném pohybem od oponenta nemá právo na Obranu.",
@@ -174,179 +165,952 @@
         "Abilities": "Schopnosti",
         "OffHand": "Druhá ruka",
         "Effects": "Efekty",
-        "Config": "Nastavení"
+        "Config": "Nastavení",
+        "Specialisations": "Specializace"
+      },
+      "Specialisations": {
+        "warnLocked": "Nejdříve odemkni propojený předchozí uzel.",
+        "warnDependents": "Na tomto uzlu závisí jiný odemčený uzel — nejdříve zamkni ten.",
+        "shadow": {
+          "label": "Stín",
+          "nodes": {
+            "sneakAttack": {
+              "label": "Zákeřný útok +1d6",
+              "description": "15 CP; Tulák VII. Kritický rozsah +3 zatím není automatizován. Částečně automatizováno."
+            },
+            "critAsSneak": {
+              "label": "Kritický zásah jako Zákeřný útok",
+              "description": "10 CP; Tulák VIII. Ručně — řeší se u stolu."
+            },
+            "outnumberSneak": {
+              "label": "Přesila 2:1 jako Zákeřný útok",
+              "description": "20 CP; Tulák X. Přesila 2:1 se po zásahu počítá jako Zákeřný útok. Ručně — řeší se u stolu."
+            },
+            "bleed1": {
+              "label": "Krvácení +10%",
+              "description": "5 CP. Automatizováno."
+            },
+            "bleed2": {
+              "label": "Krvácení +10%",
+              "description": "5 CP. Automatizováno."
+            },
+            "bleed3": {
+              "label": "Krvácení +10%",
+              "description": "5 CP. Automatizováno."
+            },
+            "calculation": {
+              "label": "Vypočítavost",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "aimedAttack": {
+              "label": "Cílený útok +5%",
+              "description": "10 CP. Cílený útok: Zásah, Vrh a Střelba +5% — situační, zatím ručně. Ručně — řeší se u stolu."
+            },
+            "stealthAdvantage": {
+              "label": "Plížení: Výhoda",
+              "description": "5 SP; Plížení: Adept. Ručně — řeší se u stolu."
+            },
+            "stealthCritFail": {
+              "label": "Plížení: Krit. neúspěch -3%",
+              "description": "10 SP. Automatizováno."
+            },
+            "bane1": {
+              "label": "Odemyká jednu Metlu",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "bane2": {
+              "label": "Odemyká jednu Metlu",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "bane3": {
+              "label": "Odemyká jednu Metlu",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "quickFeet": {
+              "label": "Rychlé nohy",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            },
+            "backDodge": {
+              "label": "Úhyb do zad",
+              "description": "10 CP. Lze uhýbat útokům do zad s postihem -20%. Ručně — řeší se u stolu."
+            },
+            "weakSpotMastery": {
+              "label": "Vylepšený útok/vrh na slabinu",
+              "description": "20 CP; Tulák VII. Ručně — řeší se u stolu."
+            },
+            "speedTests": {
+              "label": "Výhoda na versus Testy Rychlosti",
+              "description": "10 CP; Tulák VII. Ručně — řeší se u stolu."
+            },
+            "daggerDefense": {
+              "label": "Obrana s dýkou bez postihu",
+              "description": "0 CP. Odstraňuje postih na Obranu proti zbraním u dýky. Ručně — řeší se u stolu."
+            },
+            "skillDiscount1": {
+              "label": "Sleva 3 SP na dovednost",
+              "description": "0 SP. Sleva 3 SP za stupeň jedné dovednosti z výběru. Ručně — řeší se u stolu."
+            },
+            "skillDiscount2": {
+              "label": "Sleva 3 SP na dovednost",
+              "description": "0 SP. Sleva 3 SP za stupeň jedné dovednosti z výběru. Ručně — řeší se u stolu."
+            }
+          }
+        },
+        "swordServant": {
+          "label": "Služebník meče",
+          "nodes": {
+            "bleedA": {
+              "label": "Krvácení +10%",
+              "description": "5 CP. Automatizováno."
+            },
+            "critHitDef": {
+              "label": "Krit. zásah +3% / Krit. obrana +3%",
+              "description": "5 CP. Automatizováno."
+            },
+            "bleedB": {
+              "label": "Krvácení +10%",
+              "description": "5 CP. Automatizováno."
+            },
+            "initiative": {
+              "label": "Iniciativa +2",
+              "description": "5 CP. Automatizováno."
+            },
+            "hitBonus": {
+              "label": "Zásah +5%",
+              "description": "5 CP. Automatizováno."
+            },
+            "ripostaFree": {
+              "label": "Riposta jako Volná akce",
+              "description": "10 CP; Šermíř X. Ručně — řeší se u stolu."
+            },
+            "ripostaStamina": {
+              "label": "Riposta: Výdrž -4",
+              "description": "15 CP. Ručně — řeší se u stolu."
+            },
+            "ripostaCrit": {
+              "label": "Riposta: vždy Kritický zásah",
+              "description": "10 CP; Meče X. Ručně — řeší se u stolu."
+            },
+            "odvetnyUder": {
+              "label": "Odvetný úder",
+              "description": "10 CP; Meče IV. Ručně — řeší se u stolu."
+            },
+            "improvedAim": {
+              "label": "Vylepšené míření",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "aimReduction": {
+              "label": "Redukce Míření po zásahu",
+              "description": "5 CP. Redukce Míření po zásahu. Zákeřný útok: Přidává Míření. Ručně — řeší se u stolu."
+            },
+            "draciSpanek": {
+              "label": "Dračí spánek",
+              "description": "10 CP; Šermíř IV. Ručně — řeší se u stolu."
+            },
+            "draciStraz": {
+              "label": "Dračí stráž",
+              "description": "10 CP; Šermíř V. Ručně — řeší se u stolu."
+            },
+            "chargeDamage": {
+              "label": "Zteč: +1d4 zranění",
+              "description": "10 CP; Meče VII. Ručně — řeší se u stolu."
+            },
+            "chargeDistance": {
+              "label": "Zteč: Min. vzdálenost -1 hex",
+              "description": "10 CP; Meče VIII. Ručně — řeší se u stolu."
+            },
+            "priskok": {
+              "label": "Přískok",
+              "description": "5 CP; Meče IV. Ručně — řeší se u stolu."
+            },
+            "draciVypad": {
+              "label": "Dračí výpad",
+              "description": "10 CP; Šermíř IV. Ručně — řeší se u stolu."
+            },
+            "prosmyknuti": {
+              "label": "Prosmýknutí",
+              "description": "5 CP; Meče IV. Ručně — řeší se u stolu."
+            },
+            "dexTests": {
+              "label": "Bojové Testy Obratnosti +10%",
+              "description": "5 CP. Situační bonus na Testy — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "presneRozseknuti": {
+              "label": "Přesné rozseknutí",
+              "description": "0 CP. Ručně — řeší se u stolu."
+            },
+            "vyhodnyManevr": {
+              "label": "Výhodný manévr",
+              "description": "5 CP; Šermíř V. Ručně — řeší se u stolu."
+            },
+            "utokSPohybem": {
+              "label": "Útok s pohybem",
+              "description": "10 CP; Meče IV. Ručně — řeší se u stolu."
+            },
+            "vylUtokSPohybem": {
+              "label": "Vylepšený útok s pohybem",
+              "description": "10 CP; Šermíř VII. Ručně — řeší se u stolu."
+            }
+          }
+        },
+        "weaponMaster": {
+          "label": "Mistr zbraní",
+          "nodes": {
+            "mistrZbrani": {
+              "label": "Mistr zbraní",
+              "description": "0 CP. Ručně — řeší se u stolu."
+            },
+            "vytrvalyValecnik": {
+              "label": "Vytrvalý válečník",
+              "description": "15 CP; M/T/S/D V. Ručně — řeší se u stolu."
+            },
+            "vycvikSeZbrani": {
+              "label": "Výcvik se zbraní",
+              "description": "0 CP; M/T/S/D VI. Ručně — řeší se u stolu."
+            },
+            "bdelyOchrance": {
+              "label": "Bdělý ochránce",
+              "description": "25 CP; M/T/S/D VIII. Ručně — řeší se u stolu."
+            },
+            "zbrojnos1": {
+              "label": "Zbrojnoš I",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            },
+            "zbrojnos2": {
+              "label": "Zbrojnoš II",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            },
+            "odrazeni": {
+              "label": "Odražení",
+              "description": "10 CP; M/T/S/D VI. Ručně — řeší se u stolu."
+            },
+            "veteran1": {
+              "label": "Veterán I",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "veteran2": {
+              "label": "Veterán II",
+              "description": "5 CP; M/T/S/D V. Ručně — řeší se u stolu."
+            },
+            "vylZbranoveDovednosti": {
+              "label": "Vylepšené zbraňové dovednosti",
+              "description": "15 CP; M/T/S/D VIII. Ručně — řeší se u stolu."
+            },
+            "bleedStun": {
+              "label": "Krvácení +10% / Omráčení +6%",
+              "description": "10 CP. Automatizováno."
+            },
+            "critDefRange": {
+              "label": "Krit. obrana +2% / Krit. rozsah +1",
+              "description": "5 CP. Kritický rozsah +1 zatím není automatizován. Částečně automatizováno."
+            },
+            "precision": {
+              "label": "Ověření +10%",
+              "description": "10 CP. Automatizováno."
+            },
+            "penetration": {
+              "label": "Průbojnost +2",
+              "description": "5 CP. Automatizováno."
+            },
+            "presileni": {
+              "label": "Přesílení",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "rychlaReakce": {
+              "label": "Vylepšená rychlá reakce",
+              "description": "5 CP; M/T/S/D V. Ručně — řeší se u stolu."
+            },
+            "weakSpotPen": {
+              "label": "Útok na slabinu: Průbojnost +10",
+              "description": "5 CP. Situační — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "primaryDamage": {
+              "label": "Zranění +50% za Primární Vlastnosti",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            }
+          }
+        },
+        "hoplite": {
+          "label": "Hoplita",
+          "nodes": {
+            "nabodnuti": {
+              "label": "Nabodnutí",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "velkeTvory": {
+              "label": "Bonus proti velkým tvorům",
+              "description": "10 CP. Bonus proti velkým tvorům. Nabodnutí: Navazující útok. Ručně — řeší se u stolu."
+            },
+            "prilezitostnyUtok": {
+              "label": "Příležitostný útok za kolo",
+              "description": "15 CP; Štítonoš V. Ručně — řeší se u stolu."
+            },
+            "pripravnyPostoj": {
+              "label": "Přípravný postoj",
+              "description": "10 CP; Dřevcová IV. Ručně — řeší se u stolu."
+            },
+            "obranaProtiZteci": {
+              "label": "Obrana proti zteči",
+              "description": "5 CP; Štítonoš VI. Ručně — řeší se u stolu."
+            },
+            "bleedStun": {
+              "label": "Krvácení +20% / Omráčení +10%",
+              "description": "15 CP. Automatizováno."
+            },
+            "kritZasah": {
+              "label": "Kritický zásah +3%",
+              "description": "5 CP. Automatizováno."
+            },
+            "momentum": {
+              "label": "Momentum",
+              "description": "15 CP; Štítonoš VIII. Ručně — řeší se u stolu."
+            },
+            "postup": {
+              "label": "Postup",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "raznyPostup": {
+              "label": "Rázný postup",
+              "description": "10 CP; Štítonoš IV. Ručně — řeší se u stolu."
+            },
+            "napor1": {
+              "label": "Nápor I",
+              "description": "15 CP; Štítonoš V. Ručně — řeší se u stolu."
+            },
+            "napor2": {
+              "label": "Nápor II",
+              "description": "15 CP; Štítonoš VI. Ručně — řeší se u stolu."
+            },
+            "hoplitaStance": {
+              "label": "Hoplita",
+              "description": "0 CP. Ručně — řeší se u stolu."
+            },
+            "damage1d6": {
+              "label": "Zranění +1d6",
+              "description": "5 CP; Dřevcové V. Automatizováno."
+            },
+            "troufalyVrh": {
+              "label": "Troufalý vrh",
+              "description": "15 CP; Dřevcové VII. Ručně — řeší se u stolu."
+            },
+            "penetration2": {
+              "label": "Průbojnost +2",
+              "description": "5 CP. Automatizováno."
+            },
+            "hexAttack": {
+              "label": "Útok přes okupovaný hex",
+              "description": "10 CP; Dřevcové V. Může útočit přes oponentem okupovaný hex. Ručně — řeší se u stolu."
+            },
+            "silaObratnost": {
+              "label": "Zranění za Sílu i Obratnost",
+              "description": "10 CP; Štítonoš X, Dřevcové X. Ručně — řeší se u stolu."
+            }
+          }
+        },
+        "swordDancer": {
+          "label": "Mečový tanečník",
+          "nodes": {
+            "duelistuvPostoj": {
+              "label": "Duelistův postoj",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "krvaveBodnuti": {
+              "label": "Krvavé bodnutí",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "mireniRedukce": {
+              "label": "Redukce Míření",
+              "description": "10 CP; Duelista V. Redukce Míření po neúspěchu a Zákeřném útoku. Ručně — řeší se u stolu."
+            },
+            "vyhodnyManevr": {
+              "label": "Výhodný manévr",
+              "description": "15 CP; Duelista VII. Ručně — řeší se u stolu."
+            },
+            "posileniObrany": {
+              "label": "Posílení obrany",
+              "description": "10 CP; Duelista VIII. Ručně — řeší se u stolu."
+            },
+            "postojMireni": {
+              "label": "Duelistův postoj: Neztrácí Míření",
+              "description": "10 CP; Duelista IX. Ručně — řeší se u stolu."
+            },
+            "precision10": {
+              "label": "Ověření +10%",
+              "description": "10 CP; Meče X. Automatizováno."
+            },
+            "oddechMireni": {
+              "label": "Oddech: Míření +1",
+              "description": "15 CP; Meče V. Ručně — řeší se u stolu."
+            },
+            "akrobatickeOdpoutani": {
+              "label": "Akrobatické odpoutání",
+              "description": "15 CP; Meče VI. Ručně — řeší se u stolu."
+            },
+            "vylUtokSPohybem": {
+              "label": "Vylepšený útok s pohybem",
+              "description": "10 CP; Duelista VII. Ručně — řeší se u stolu."
+            },
+            "rafinovanyManevr": {
+              "label": "Rafinovaný manévr: Výdrž -2",
+              "description": "15 CP; Duelista IX. Ručně — řeší se u stolu."
+            },
+            "posledniVypad": {
+              "label": "Poslední výpad",
+              "description": "20 CP; Duelista VI, Meče VI. Ručně — řeší se u stolu."
+            },
+            "vylDuelistuvKrok": {
+              "label": "Vylepšený duelistův krok",
+              "description": "15 CP; Duelista VII. Ručně — řeší se u stolu."
+            },
+            "brilantniProtiutok": {
+              "label": "Vylepšený brilantní protiútok",
+              "description": "15 CP; Duelista X. Ručně — řeší se u stolu."
+            }
+          }
+        },
+        "bloodSchool": {
+          "label": "Škola Krve",
+          "nodes": {
+            "apprentice": {
+              "label": "Škola Krve - Učedník",
+              "description": "5 CP. Kapacita Zásoby krve +10 automatizována; stupeň Školy ručně. Částečně automatizováno."
+            },
+            "spellPower1": {
+              "label": "Síla kouzla +2",
+              "description": "10 CP. Automatizováno."
+            },
+            "expert": {
+              "label": "Škola Krve - Expert",
+              "description": "20 CP; MsK/D:C V. Kapacita Zásoby krve +10 automatizována; stupeň Školy ručně. Částečně automatizováno."
+            },
+            "spellPower2": {
+              "label": "Síla kouzla +2",
+              "description": "10 CP. Automatizováno."
+            },
+            "master": {
+              "label": "Škola Krve - Mistr",
+              "description": "25 CP; MsK/D:C VII. Kapacita Zásoby krve +20 automatizována; stupeň Školy ručně. Částečně automatizováno."
+            },
+            "spellPower3": {
+              "label": "Síla kouzla +2",
+              "description": "10 CP. Automatizováno."
+            },
+            "grandmaster": {
+              "label": "Škola Krve - Velmistr",
+              "description": "30 CP; MsK/D:C IX. Kapacita Zásoby krve +50 automatizována; stupeň Školy ručně. Částečně automatizováno."
+            },
+            "spellPower4": {
+              "label": "Síla kouzla +2",
+              "description": "15 CP; Škola Krve - Velmistr. Automatizováno."
+            },
+            "bloodPool1": {
+              "label": "Kapacita Zásoby krve +15",
+              "description": "10 CP; Škola Krve - Expert. Automatizováno."
+            },
+            "bloodPool2": {
+              "label": "Kapacita Zásoby krve +15",
+              "description": "10 CP; Škola Krve - Mistr. Automatizováno."
+            },
+            "magicAttack1": {
+              "label": "Magický útok +5%",
+              "description": "0 CP; Škola Krve - Expert. Specifický bonus Školy Krve — vyřešit později. Ručně — řeší se u stolu."
+            },
+            "magicAttack2": {
+              "label": "Magický útok +5%",
+              "description": "0 CP; Škola Krve - Mistr. Specifický bonus Školy Krve — vyřešit později. Ručně — řeší se u stolu."
+            },
+            "magicAttack3": {
+              "label": "Magický útok +5%",
+              "description": "0 CP; Škola Krve - Velmistr. Specifický bonus Školy Krve — vyřešit později. Ručně — řeší se u stolu."
+            },
+            "magicDefense1": {
+              "label": "Magická obrana proti Škole Krve +5%",
+              "description": "0 CP; Škola Krve - Expert. Specifický bonus Školy Krve — vyřešit později. Ručně — řeší se u stolu."
+            },
+            "magicDefense2": {
+              "label": "Magická obrana proti Škole Krve +5%",
+              "description": "0 CP; Škola Krve - Mistr. Specifický bonus Školy Krve — vyřešit později. Ručně — řeší se u stolu."
+            },
+            "magicDefense3": {
+              "label": "Magická obrana proti Škole Krve +5%",
+              "description": "0 CP; Škola Krve - Velmistr. Specifický bonus Školy Krve — vyřešit později. Ručně — řeší se u stolu."
+            },
+            "magickaKrev": {
+              "label": "Magická krev",
+              "description": "0 CP. Ručně — řeší se u stolu."
+            },
+            "krvavyPakt": {
+              "label": "Krvavý pakt",
+              "description": "5 CP; Škola Krve - Učedník. Ručně — řeší se u stolu."
+            },
+            "precision15": {
+              "label": "Škola Krve: Ověření +15%",
+              "description": "5 CP; Škola Krve - Expert. Automatizováno."
+            },
+            "hnevKrve": {
+              "label": "Hněv krve",
+              "description": "10 CP; Škola Krve - Expert. Ručně — řeší se u stolu."
+            },
+            "krvavaPlatba": {
+              "label": "Krvavá platba",
+              "description": "10 CP; Škola Krve - Expert. Ručně — řeší se u stolu."
+            },
+            "kritRozsah2": {
+              "label": "Škola Krve: Kritický rozsah +2",
+              "description": "5 SP. Kritický rozsah zatím není automatizován. Ručně — řeší se u stolu."
+            },
+            "oslabeniTrvani": {
+              "label": "Oslabení: Trvání +1 tah",
+              "description": "5 CP; Škola Krve - Expert. Ručně — řeší se u stolu."
+            },
+            "krvavyStit": {
+              "label": "Krvavý štít",
+              "description": "15 CP; Škola Krve - Expert. Ručně — řeší se u stolu."
+            },
+            "darKrve": {
+              "label": "Dar krve",
+              "description": "20 CP; Škola Krve - Mistr. Ručně — řeší se u stolu."
+            }
+          }
+        }
       },
       "base": {
         "FIELDS": {
-          "biography": { "label": "Životopis" },
-          "actionCost": { "label": "Akční cena" }
+          "biography": {
+            "label": "Životopis"
+          },
+          "actionCost": {
+            "label": "Akční cena"
+          }
         }
       },
       "Character": {
         "stats": {
           "health": {
-            "value": { "label": "Životy" },
-            "max": { "label": "Maximální životy" }
+            "value": {
+              "label": "Životy"
+            },
+            "max": {
+              "label": "Maximální životy"
+            }
           },
           "graveWounds": {
-            "value": { "label": "Vážná zranění" },
-            "max": { "label": "Maximální vážná zranění" },
-            "treated": { "label": "Ošetřená vážná zranění" }
+            "value": {
+              "label": "Vážná zranění"
+            },
+            "max": {
+              "label": "Maximální vážná zranění"
+            },
+            "treated": {
+              "label": "Ošetřená vážná zranění"
+            }
           },
           "stamina": {
-            "value": { "label": "Výdrž" },
-            "max": { "label": "Maximální výdrž" }
+            "value": {
+              "label": "Výdrž"
+            },
+            "max": {
+              "label": "Maximální výdrž"
+            }
           },
           "toxicity": {
-            "value": { "label": "Toxicita" },
-            "max": { "label": "Maximální toxicita" }
+            "value": {
+              "label": "Toxicita"
+            },
+            "max": {
+              "label": "Maximální toxicita"
+            }
           },
           "mana": {
-            "value": { "label": "Mana" },
-            "max": { "label": "Maximální Mana" }
+            "value": {
+              "label": "Mana"
+            },
+            "max": {
+              "label": "Maximální Mana"
+            }
           },
           "mind": {
-            "value": { "label": "Mentální životy" },
-            "max": { "label": "Maximální mentální životy" }
+            "value": {
+              "label": "Mentální životy"
+            },
+            "max": {
+              "label": "Maximální mentální životy"
+            }
           },
           "insanity": {
-            "value": { "label": "Body šílenství" },
-            "max": { "label": "Hranice šílenství" }
+            "value": {
+              "label": "Body šílenství"
+            },
+            "max": {
+              "label": "Hranice šílenství"
+            }
           },
           "corruption": {
-            "value": { "label": "Korupce" },
-            "max": { "label": "Maximální korupce" }
+            "value": {
+              "label": "Korupce"
+            },
+            "max": {
+              "label": "Maximální korupce"
+            }
           },
           "fatigue": {
-            "value": { "label": "Únava" },
-            "max": { "label": "Maximální únava" }
+            "value": {
+              "label": "Únava"
+            },
+            "max": {
+              "label": "Maximální únava"
+            }
           },
           "holyEnergy": {
-            "value": { "label": "Svatá energie" },
-            "max": { "label": "Maximální svatá energie" }
+            "value": {
+              "label": "Svatá energie"
+            },
+            "max": {
+              "label": "Maximální svatá energie"
+            }
           }
         },
         "Attribute": {
-          "Str": { "long": "Síla", "abbr": "str" },
-          "End": { "long": "Odolnost", "abbr": "end" },
-          "Dex": { "long": "Obratnost", "abbr": "dex" },
-          "Int": { "long": "Inteligence", "abbr": "int" },
-          "Wil": { "long": "Vůle", "abbr": "wil" },
-          "Cha": { "long": "Charisma", "abbr": "cha" },
-          "Per": { "long": "Vnímání", "abbr": "per" }
+          "Str": {
+            "long": "Síla",
+            "abbr": "str"
+          },
+          "End": {
+            "long": "Odolnost",
+            "abbr": "end"
+          },
+          "Dex": {
+            "long": "Obratnost",
+            "abbr": "dex"
+          },
+          "Int": {
+            "long": "Inteligence",
+            "abbr": "int"
+          },
+          "Wil": {
+            "long": "Vůle",
+            "abbr": "wil"
+          },
+          "Cha": {
+            "long": "Charisma",
+            "abbr": "cha"
+          },
+          "Per": {
+            "long": "Vnímání",
+            "abbr": "per"
+          }
         },
         "SecondaryAttribute": {
-          "Spd": { "long": "Rychlost", "abbr": "spd" },
-          "Lck": { "long": "Štěstí", "abbr": "lck" },
-          "Res": { "long": "Nervy", "abbr": "res" },
-          "Fth": { "long": "Víra", "abbr": "fth" },
-          "Sin": { "long": "Hříšnost", "abbr": "sin" },
-          "Vis": { "long": "Vzhled", "abbr": "vis" },
-          "Ini": { "long": "Iniciativa", "abbr": "ini" }
+          "Spd": {
+            "long": "Rychlost",
+            "abbr": "spd"
+          },
+          "Lck": {
+            "long": "Štěstí",
+            "abbr": "lck"
+          },
+          "Res": {
+            "long": "Nervy",
+            "abbr": "res"
+          },
+          "Fth": {
+            "long": "Víra",
+            "abbr": "fth"
+          },
+          "Sin": {
+            "long": "Hříšnost",
+            "abbr": "sin"
+          },
+          "Vis": {
+            "long": "Vzhled",
+            "abbr": "vis"
+          },
+          "Ini": {
+            "long": "Iniciativa",
+            "abbr": "ini"
+          }
         },
         "skills": {
-          "athletics": { "label": "Atletika" },
-          "muscles": { "label": "Svaly" },
-          "smithing": { "label": "Kovářství" },
-          "swimming": { "label": "Plavání" },
-          "blend": { "label": "Splývání v davu" },
-          "brawler": { "label": "Rváč" },
-          "acrobacy": { "label": "Akrobacie" },
-          "craft": { "label": "Řemeslo" },
-          "dancing": { "label": "Taneční" },
-          "lockpicking": { "label": "Odemykání zámků" },
-          "nimbleness": { "label": "Hbitost" },
-          "pickpocketing": { "label": "Kapsářství" },
-          "riding": { "label": "Jezdectví" },
-          "sailing": { "label": "Mořeplavba" },
-          "stealth": { "label": "Plížení" },
-          "drinking": { "label": "Pijáctví" },
-          "alchemy": { "label": "Alchymie" },
-          "arcana": { "label": "Arcana" },
-          "art": { "label": "Umělecká tvorba" },
-          "engineering": { "label": "Inženýrství" },
-          "firstAid": { "label": "Ranhojičství" },
-          "logic": { "label": "Logika" },
-          "research": { "label": "Výzkum" },
-          "tactics": { "label": "Taktika" },
-          "augury": { "label": "Věštění" },
-          "dreamwalker": { "label": "Chodec ve snu" },
-          "meditation": { "label": "Meditace" },
-          "mindBending": { "label": "Mentální souboj" },
-          "rituals": { "label": "Rituály" },
-          "acting": { "label": "Herectví" },
-          "animalHandling": { "label": "Zacházení se zvířaty" },
-          "deception": { "label": "Klamání" },
-          "intimidation": { "label": "Zastrašování" },
-          "leadership": { "label": "Velení" },
-          "music": { "label": "Hudba" },
-          "painting": { "label": "Malování" },
-          "persuasion": { "label": "Přesvědčování" },
-          "temptation": { "label": "Pokoušení" },
-          "herbalism": { "label": "Bylinářství" },
-          "insight": { "label": "Vhled" },
-          "traps": { "label": "Pasti" },
-          "survival": { "label": "Přežití" }
+          "athletics": {
+            "label": "Atletika"
+          },
+          "muscles": {
+            "label": "Svaly"
+          },
+          "smithing": {
+            "label": "Kovářství"
+          },
+          "swimming": {
+            "label": "Plavání"
+          },
+          "blend": {
+            "label": "Splývání v davu"
+          },
+          "brawler": {
+            "label": "Rváč"
+          },
+          "acrobacy": {
+            "label": "Akrobacie"
+          },
+          "craft": {
+            "label": "Řemeslo"
+          },
+          "dancing": {
+            "label": "Taneční"
+          },
+          "lockpicking": {
+            "label": "Odemykání zámků"
+          },
+          "nimbleness": {
+            "label": "Hbitost"
+          },
+          "pickpocketing": {
+            "label": "Kapsářství"
+          },
+          "riding": {
+            "label": "Jezdectví"
+          },
+          "sailing": {
+            "label": "Mořeplavba"
+          },
+          "stealth": {
+            "label": "Plížení"
+          },
+          "drinking": {
+            "label": "Pijáctví"
+          },
+          "alchemy": {
+            "label": "Alchymie"
+          },
+          "arcana": {
+            "label": "Arcana"
+          },
+          "art": {
+            "label": "Umělecká tvorba"
+          },
+          "engineering": {
+            "label": "Inženýrství"
+          },
+          "firstAid": {
+            "label": "Ranhojičství"
+          },
+          "logic": {
+            "label": "Logika"
+          },
+          "research": {
+            "label": "Výzkum"
+          },
+          "tactics": {
+            "label": "Taktika"
+          },
+          "augury": {
+            "label": "Věštění"
+          },
+          "dreamwalker": {
+            "label": "Chodec ve snu"
+          },
+          "meditation": {
+            "label": "Meditace"
+          },
+          "mindBending": {
+            "label": "Mentální souboj"
+          },
+          "rituals": {
+            "label": "Rituály"
+          },
+          "acting": {
+            "label": "Herectví"
+          },
+          "animalHandling": {
+            "label": "Zacházení se zvířaty"
+          },
+          "deception": {
+            "label": "Klamání"
+          },
+          "intimidation": {
+            "label": "Zastrašování"
+          },
+          "leadership": {
+            "label": "Velení"
+          },
+          "music": {
+            "label": "Hudba"
+          },
+          "painting": {
+            "label": "Malování"
+          },
+          "persuasion": {
+            "label": "Přesvědčování"
+          },
+          "temptation": {
+            "label": "Pokoušení"
+          },
+          "herbalism": {
+            "label": "Bylinářství"
+          },
+          "insight": {
+            "label": "Vhled"
+          },
+          "traps": {
+            "label": "Pasti"
+          },
+          "survival": {
+            "label": "Přežití"
+          }
         },
         "combatSkills": {
-          "throwing": { "label": "Vrh" },
-          "meleeDefense": { "label": "Obrana" },
-          "rangedDefense": { "label": "Kryt" },
-          "dodge": { "label": "Úhyb" },
-          "combat": { "label": "Souboj" },
-          "archery": { "label": "Střelba" },
-          "channeling": { "label": "Usměrňování" },
-          "ranger": { "label": "Hraničář" },
-          "damageBonus": { "label": "Bonus do zranění" }
+          "throwing": {
+            "label": "Vrh"
+          },
+          "meleeDefense": {
+            "label": "Obrana"
+          },
+          "rangedDefense": {
+            "label": "Kryt"
+          },
+          "dodge": {
+            "label": "Úhyb"
+          },
+          "combat": {
+            "label": "Souboj"
+          },
+          "archery": {
+            "label": "Střelba"
+          },
+          "channeling": {
+            "label": "Usměrňování"
+          },
+          "ranger": {
+            "label": "Hraničář"
+          },
+          "damageBonus": {
+            "label": "Bonus do zranění"
+          }
         },
         "doctrines": {
-          "swordsman": { "label": "Šermíř" },
-          "shieldbearer": { "label": "Štítonoš" },
-          "reaver": { "label": "Plenitel" },
-          "pikeman": { "label": "Pikenýr" },
-          "dimakerus": { "label": "Dimakerus" },
-          "duelist": { "label": "Duelista" },
-          "monk": { "label": "Mnich" },
-          "rogue": { "label": "Tulák" },
-          "rider": { "label": "Jezdec" },
-          "archer": { "label": "Lukostřelec" },
-          "arbalest": { "label": "Kušník" },
-          "peltast": { "label": "Peltast" },
-          "juggler": { "label": "Kejklíř" },
-          "musketeer": { "label": "Mušketýr" },
-          "cordinas": { "label": "Cordinas" },
-          "elymas": { "label": "Elymas" },
-          "incantator": { "label": "Incantator" },
-          "veneficus": { "label": "Veneficus" },
-          "elementalist": { "label": "Elementalista" }
+          "swordsman": {
+            "label": "Šermíř"
+          },
+          "shieldbearer": {
+            "label": "Štítonoš"
+          },
+          "reaver": {
+            "label": "Plenitel"
+          },
+          "pikeman": {
+            "label": "Pikenýr"
+          },
+          "dimakerus": {
+            "label": "Dimakerus"
+          },
+          "duelist": {
+            "label": "Duelista"
+          },
+          "monk": {
+            "label": "Mnich"
+          },
+          "rogue": {
+            "label": "Tulák"
+          },
+          "rider": {
+            "label": "Jezdec"
+          },
+          "archer": {
+            "label": "Lukostřelec"
+          },
+          "arbalest": {
+            "label": "Kušník"
+          },
+          "peltast": {
+            "label": "Peltast"
+          },
+          "juggler": {
+            "label": "Kejklíř"
+          },
+          "musketeer": {
+            "label": "Mušketýr"
+          },
+          "cordinas": {
+            "label": "Cordinas"
+          },
+          "elymas": {
+            "label": "Elymas"
+          },
+          "incantator": {
+            "label": "Incantator"
+          },
+          "veneficus": {
+            "label": "Veneficus"
+          },
+          "elementalist": {
+            "label": "Elementalista"
+          }
         },
         "weaponSkills": {
-          "swords": { "label": "Meče" },
-          "axes": { "label": "Sekery" },
-          "blunt": { "label": "Tupé" },
-          "polearms": { "label": "Dřevcové" }
+          "swords": {
+            "label": "Meče"
+          },
+          "axes": {
+            "label": "Sekery"
+          },
+          "blunt": {
+            "label": "Tupé"
+          },
+          "polearms": {
+            "label": "Dřevcové"
+          }
         },
         "schools": {
-          "fire": { "label": "Oheň" },
-          "water": { "label": "Voda" },
-          "earth": { "label": "Země" },
-          "air": { "label": "Vzduch" },
-          "spirit": { "label": "Duch" },
-          "body": { "label": "Tělo" },
-          "darkness": { "label": "Temnota" },
-          "blood": { "label": "Krev" },
-          "gnosis": { "label": "Gnóze" },
-          "spellPower": { "label": "Síla kouzla" }
+          "fire": {
+            "label": "Oheň"
+          },
+          "water": {
+            "label": "Voda"
+          },
+          "earth": {
+            "label": "Země"
+          },
+          "air": {
+            "label": "Vzduch"
+          },
+          "spirit": {
+            "label": "Duch"
+          },
+          "body": {
+            "label": "Tělo"
+          },
+          "darkness": {
+            "label": "Temnota"
+          },
+          "blood": {
+            "label": "Krev"
+          },
+          "gnosis": {
+            "label": "Gnóze"
+          },
+          "spellPower": {
+            "label": "Síla kouzla"
+          }
         }
       },
       "NPC": {
         "FIELDS": {
-          "cr": { "label": "CR" },
-          "mov": { "label": "Pohyb" },
-          "mage": { "label": "Čaroděj" },
-          "priest": { "label": "Kněz" }
+          "cr": {
+            "label": "CR"
+          },
+          "mov": {
+            "label": "Pohyb"
+          },
+          "mage": {
+            "label": "Čaroděj"
+          },
+          "priest": {
+            "label": "Kněz"
+          }
         },
-        "xp": { "label": "Zkušenosti" }
+        "xp": {
+          "label": "Zkušenosti"
+        }
       }
     },
     "Item": {
@@ -374,118 +1138,310 @@
       },
       "Weapon": {
         "FIELDS": {
-          "offhand": { "label": "Může být drženo v druhé ruce" },
-          "key": { "label": "Klíč" },
-          "twoHandGrip": { "label": "Může být drženo obouručně" },
-          "longReach": { "label": "Dlouhý dosah" },
-          "rollFormula": { "label": "Vzorec pro házení kostky" },
-          "diceNum": { "label": "Počet kostek" },
-          "dieSize": { "label": "Velikost kostek" },
-          "rollMod": { "label": "Modifikátor hodu" },
-          "finesse": { "label": "Finesa" },
-          "sharp": { "label": "Ostrá" },
-          "thrown": { "label": "Vrhací" },
-          "stagger": { "label": "Omráčení" },
-          "bleed": { "label": "Krvácení" },
-          "attack": { "label": "Útok" },
-          "defense": { "label": "Obrana" },
-          "critRange": { "label": "Kritický rozsah" },
-          "critChance": { "label": "Kritický úspěch" },
-          "critPenetration": { "label": "Kritická průbojnost" },
-          "critDamage": { "label": "Kritické poškození" },
-          "critFail": { "label": "Kritický neúspěch" },
-          "critDefense": { "label": "Kritická obrana" },
-          "critDodge": { "label": "Kritický úhyb" },
-          "dodge": { "label": "Úhyb" },
-          "weight": { "label": "Váha" },
-          "penetration": { "label": "Průbojnost" },
-          "breakthrough": { "label": "Průraznost" },
-          "sneakDamage": { "label": "Zákeřný útok" },
-          "extra1": { "label": "Extra Efekt 1" },
-          "extra2": { "label": "Extra Efekt 2" },
-          "extra3": { "label": "Extra Efekt 3" }
+          "offhand": {
+            "label": "Může být drženo v druhé ruce"
+          },
+          "key": {
+            "label": "Klíč"
+          },
+          "twoHandGrip": {
+            "label": "Může být drženo obouručně"
+          },
+          "longReach": {
+            "label": "Dlouhý dosah"
+          },
+          "rollFormula": {
+            "label": "Vzorec pro házení kostky"
+          },
+          "diceNum": {
+            "label": "Počet kostek"
+          },
+          "dieSize": {
+            "label": "Velikost kostek"
+          },
+          "rollMod": {
+            "label": "Modifikátor hodu"
+          },
+          "finesse": {
+            "label": "Finesa"
+          },
+          "sharp": {
+            "label": "Ostrá"
+          },
+          "thrown": {
+            "label": "Vrhací"
+          },
+          "stagger": {
+            "label": "Omráčení"
+          },
+          "bleed": {
+            "label": "Krvácení"
+          },
+          "attack": {
+            "label": "Útok"
+          },
+          "defense": {
+            "label": "Obrana"
+          },
+          "critRange": {
+            "label": "Kritický rozsah"
+          },
+          "critChance": {
+            "label": "Kritický úspěch"
+          },
+          "critPenetration": {
+            "label": "Kritická průbojnost"
+          },
+          "critDamage": {
+            "label": "Kritické poškození"
+          },
+          "critFail": {
+            "label": "Kritický neúspěch"
+          },
+          "critDefense": {
+            "label": "Kritická obrana"
+          },
+          "critDodge": {
+            "label": "Kritický úhyb"
+          },
+          "dodge": {
+            "label": "Úhyb"
+          },
+          "weight": {
+            "label": "Váha"
+          },
+          "penetration": {
+            "label": "Průbojnost"
+          },
+          "breakthrough": {
+            "label": "Průraznost"
+          },
+          "sneakDamage": {
+            "label": "Zákeřný útok"
+          },
+          "extra1": {
+            "label": "Extra Efekt 1"
+          },
+          "extra2": {
+            "label": "Extra Efekt 2"
+          },
+          "extra3": {
+            "label": "Extra Efekt 3"
+          }
         }
       },
       "Gear": {
         "FIELDS": {
-          "armor": { "label": "KZ" },
-          "armorTotal": { "label": "Celkové KZ" },
-          "weight": { "label": "Váha" },
-          "acid": { "label": "Kyselinové KZ" },
-          "fire": { "label": "Ohnivé KZ" },
-          "frost": { "label": "Mrazivé KZ" },
-          "lightning": { "label": "Bleskové KZ" },
-          "dark": { "label": "Temnotné KZ" },
-          "poison": { "label": "Jedovaté KZ" },
-          "holy": { "label": "Svaté KZ" },
-          "magic": { "label": "Magické KZ" },
-          "equipped": { "label": "Vybaveno" },
-          "layer": { "label": "Vrstva zbroje" },
-          "helmet": { "label": "Má helmu" },
-          "shield": { "label": "Je štít" },
-          "durability": { "label": "Životy zbroje" },
-          "swimPenalty": { "label": "Postih na plavání" },
-          "dodgePenalty": { "label": "Postih na úhyb" },
-          "castPenalty": { "label": "Postih na usměrňování" },
-          "acroPenalty": { "label": "Postih na akrobacii" },
-          "stealthPenalty": { "label": "Postih na plížení" },
-          "iniPenalty": { "label": "Postih na iniciativu" },
-          "maxSpeed": { "label": "Maximální rychlost" },
-          "rangedDefense": { "label": "Kryt" },
-          "defense": { "label": "Obrana" },
-          "healthBonus": { "label": "Životy" },
-          "critDefense": { "label": "Kritická obrana" },
-          "rangedCritDefense": { "label": "Kritický kryt" },
-          "archeryPenalty": { "label": "Postih do střelby" },
-          "perPenalty": { "label": "Postih na vnímání" }
+          "armor": {
+            "label": "KZ"
+          },
+          "armorTotal": {
+            "label": "Celkové KZ"
+          },
+          "weight": {
+            "label": "Váha"
+          },
+          "acid": {
+            "label": "Kyselinové KZ"
+          },
+          "fire": {
+            "label": "Ohnivé KZ"
+          },
+          "frost": {
+            "label": "Mrazivé KZ"
+          },
+          "lightning": {
+            "label": "Bleskové KZ"
+          },
+          "dark": {
+            "label": "Temnotné KZ"
+          },
+          "poison": {
+            "label": "Jedovaté KZ"
+          },
+          "holy": {
+            "label": "Svaté KZ"
+          },
+          "magic": {
+            "label": "Magické KZ"
+          },
+          "equipped": {
+            "label": "Vybaveno"
+          },
+          "layer": {
+            "label": "Vrstva zbroje"
+          },
+          "helmet": {
+            "label": "Má helmu"
+          },
+          "shield": {
+            "label": "Je štít"
+          },
+          "durability": {
+            "label": "Životy zbroje"
+          },
+          "swimPenalty": {
+            "label": "Postih na plavání"
+          },
+          "dodgePenalty": {
+            "label": "Postih na úhyb"
+          },
+          "castPenalty": {
+            "label": "Postih na usměrňování"
+          },
+          "acroPenalty": {
+            "label": "Postih na akrobacii"
+          },
+          "stealthPenalty": {
+            "label": "Postih na plížení"
+          },
+          "iniPenalty": {
+            "label": "Postih na iniciativu"
+          },
+          "maxSpeed": {
+            "label": "Maximální rychlost"
+          },
+          "rangedDefense": {
+            "label": "Kryt"
+          },
+          "defense": {
+            "label": "Obrana"
+          },
+          "healthBonus": {
+            "label": "Životy"
+          },
+          "critDefense": {
+            "label": "Kritická obrana"
+          },
+          "rangedCritDefense": {
+            "label": "Kritický kryt"
+          },
+          "archeryPenalty": {
+            "label": "Postih do střelby"
+          },
+          "perPenalty": {
+            "label": "Postih na vnímání"
+          }
         }
       },
       "Consumable": {
         "FIELDS": {
-          "toxicity": { "label": "Toxicita" },
-          "bleed": { "label": "Šance na zastavení krvácení" },
-          "aimed": { "label": "Jeden cíl" },
-          "burn": { "label": "Podpálení" },
-          "freeze": { "label": "Zmražení" },
-          "stagger": { "label": "Omráčení" },
-          "quantity": { "label": "Množství" }
+          "toxicity": {
+            "label": "Toxicita"
+          },
+          "bleed": {
+            "label": "Šance na zastavení krvácení"
+          },
+          "aimed": {
+            "label": "Jeden cíl"
+          },
+          "burn": {
+            "label": "Podpálení"
+          },
+          "freeze": {
+            "label": "Zmražení"
+          },
+          "stagger": {
+            "label": "Omráčení"
+          },
+          "quantity": {
+            "label": "Množství"
+          }
         }
       },
       "Ability": {
         "FIELDS": {
-          "modifier": { "label": "Úprava" },
-          "costType": { "label": "Typ ceny" },
-          "cost": { "label": "Cena" },
-          "actionCost": { "label": "Akční cena" },
-          "damage": { "label": "Poškození" },
-          "attributeTest": { "label": "Test vlastnosti" },
-          "weaponAbility": { "label": "Zbraňová akce" },
-          "modifiesAttack": { "label": "Modifikace útoku" },
-          "standalone": { "label": "Samostatná akce" },
-          "multiAttack": { "label": "Více útoků" },
-          "resourceCost": { "label": "Spotřeba munice" }
+          "modifier": {
+            "label": "Úprava"
+          },
+          "costType": {
+            "label": "Typ ceny"
+          },
+          "cost": {
+            "label": "Cena"
+          },
+          "actionCost": {
+            "label": "Akční cena"
+          },
+          "damage": {
+            "label": "Poškození"
+          },
+          "attributeTest": {
+            "label": "Test vlastnosti"
+          },
+          "weaponAbility": {
+            "label": "Zbraňová akce"
+          },
+          "modifiesAttack": {
+            "label": "Modifikace útoku"
+          },
+          "standalone": {
+            "label": "Samostatná akce"
+          },
+          "multiAttack": {
+            "label": "Více útoků"
+          },
+          "resourceCost": {
+            "label": "Spotřeba munice"
+          }
         }
       },
       "Spell": {
         "FIELDS": {
-          "isOffensive": { "label": "Útočné" },
-          "sustained": { "label": "Udržovací" },
-          "difficulty": { "label": "Obtížnost" },
-          "cost": { "label": "Cena" },
-          "perRound": { "label": "Cena za kolo" },
-          "headerRank": { "label": "Stupeň" },
-          "headerCost": { "label": "Cena / Za kolo" },
-          "headerActions": { "label": "Akční náklady | K" },
-          "headerRange": { "label": "Dosah" },
-          "holyPower": { "label": "Svatá energie" },
-          "domain": { "label": "Doména" },
-          "shepherdsWill": { "label": "Pastýřova vůlel" },
-          "headerType": { "label": "Typ poškození" },
-          "wild": { "label": "Divoká" },
-          "apprentice": { "label": "Učedník" },
-          "expert": { "label": "Expert" },
-          "master": { "label": "Mistr" },
-          "grandmaster": { "label": "Velmistr" }
+          "isOffensive": {
+            "label": "Útočné"
+          },
+          "sustained": {
+            "label": "Udržovací"
+          },
+          "difficulty": {
+            "label": "Obtížnost"
+          },
+          "cost": {
+            "label": "Cena"
+          },
+          "perRound": {
+            "label": "Cena za kolo"
+          },
+          "headerRank": {
+            "label": "Stupeň"
+          },
+          "headerCost": {
+            "label": "Cena / Za kolo"
+          },
+          "headerActions": {
+            "label": "Akční náklady | K"
+          },
+          "headerRange": {
+            "label": "Dosah"
+          },
+          "holyPower": {
+            "label": "Svatá energie"
+          },
+          "domain": {
+            "label": "Doména"
+          },
+          "shepherdsWill": {
+            "label": "Pastýřova vůlel"
+          },
+          "headerType": {
+            "label": "Typ poškození"
+          },
+          "wild": {
+            "label": "Divoká"
+          },
+          "apprentice": {
+            "label": "Učedník"
+          },
+          "expert": {
+            "label": "Expert"
+          },
+          "master": {
+            "label": "Mistr"
+          },
+          "grandmaster": {
+            "label": "Velmistr"
+          }
         }
       }
     },

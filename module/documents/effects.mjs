@@ -916,28 +916,33 @@ export class RedsteelActiveEffect extends ActiveEffect {
     const costPerRound = this.getFlag("redsteel", "costPerRound") ?? 0;
 
     if (costPerRound > 0) {
-      const currentMana = actor.system.stats.mana?.value ?? 0;
+      // Blood school spells sustain from the blood pool instead of mana
+      const spell =
+        actor.items.get(data.spellId) ?? game.items.get(data.spellId);
+      const isBloodSpell = spell?.system?.type === "blood";
+      const statKey = isBloodSpell ? "bloodPool" : "mana";
+      const resourceName = isBloodSpell ? "Blood" : "Mana";
+
+      const current = actor.system.stats[statKey]?.value ?? 0;
 
       // 🔴 CHECK FIRST
-      if (currentMana < costPerRound) {
+      if (current < costPerRound) {
         await this.delete();
 
         ui.notifications.info(
-          `<p><b>Channeling Broken (Not Enough Mana)</b></p>`,
+          `<p><b>Channeling Broken (Not Enough ${resourceName})</b></p>`,
         );
 
         return;
       }
 
       // 🔋 THEN PAY
-      const newMana = currentMana - costPerRound;
-
       await actor.update({
-        "system.stats.mana.value": newMana,
+        [`system.stats.${statKey}.value`]: current - costPerRound,
       });
 
       ui.notifications.info(
-        `<p><b>Maintaining Channeling:</b> -${costPerRound} Mana</p>`,
+        `<p><b>Maintaining Channeling:</b> -${costPerRound} ${resourceName}</p>`,
       );
     }
 

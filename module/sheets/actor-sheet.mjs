@@ -1,4 +1,8 @@
 import { prepareActiveEffectCategories } from "../helpers/effects.mjs";
+import {
+  prepareSpecialisationTrees,
+  syncSpecialisationPassive,
+} from "../helpers/specialisations.mjs";
 import { getTraitPills } from "../utils/traitPills.mjs";
 
 const { api, sheets } = foundry.applications;
@@ -43,6 +47,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       toggleTwoHandGrip: this._toggleTwoHandGrip,
       toggleNpcOffhand: this._toggleNpcOffhand,
       toggleAmmoEquipped: this._toggleAmmoEquipped,
+      toggleSpecNode: this._toggleSpecNode,
     },
     // Custom property that's merged into `this.options`
     dragDrop: [{ dragSelector: "[data-drag]", dropSelector: null }],
@@ -109,6 +114,55 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       rerollActive[index] ? "active" : "inactive",
     );
   }
+  /**
+   * Toggle a specialisation talent-tree node. Unlocking requires all linked
+   * prerequisite nodes to be unlocked; locking is blocked while another
+   * unlocked node still depends on this one.
+   */
+  static async _toggleSpecNode(event) {
+    const target = event.target.closest("[data-action='toggleSpecNode']");
+    if (!target || !this.isEditable) return;
+
+    const specId = target.dataset.spec;
+    const nodeId = target.dataset.node;
+    const specDef = CONFIG.REDSTEEL.specialisations?.[specId];
+    const nodeDef = specDef?.nodes?.[nodeId];
+    if (!nodeDef) return;
+
+    const unlockedNodes =
+      this.actor.system.specialisations?.[specId]?.nodes ?? {};
+    const unlocked = !!unlockedNodes[nodeId];
+
+    if (!unlocked) {
+      const requirementsMet = (nodeDef.requires ?? []).every(
+        (r) => !!unlockedNodes[r],
+      );
+      if (!requirementsMet) {
+        ui.notifications.warn(
+          game.i18n.localize("REDSTEEL.Actor.Specialisations.warnLocked"),
+        );
+        return;
+      }
+    } else {
+      const hasUnlockedDependent = Object.entries(specDef.nodes).some(
+        ([id, n]) => unlockedNodes[id] && (n.requires ?? []).includes(nodeId),
+      );
+      if (hasUnlockedDependent) {
+        ui.notifications.warn(
+          game.i18n.localize("REDSTEEL.Actor.Specialisations.warnDependents"),
+        );
+        return;
+      }
+    }
+
+    await this.actor.update({
+      [`system.specialisations.${specId}.nodes.${nodeId}`]: !unlocked,
+    });
+
+    // Passive buffs are real ActiveEffects — create/remove alongside the node
+    await syncSpecialisationPassive(this.actor, specId, nodeId, !unlocked);
+  }
+
   static _onBuildTooltip(event) {
     const target = event.target.closest("[data-item-id]");
     if (!target) return;
@@ -508,6 +562,9 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     features: {
       template: "systems/redsteel/templates/actor/features.hbs",
     },
+    specialisations: {
+      template: "systems/redsteel/templates/actor/specialisations.hbs",
+    },
     biography: {
       template: "systems/redsteel/templates/actor/biography.hbs",
     },
@@ -547,6 +604,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
         options.parts.push(
           "skills",
           "features",
+          "specialisations",
           "inventory",
           "abilities",
           "spells",
@@ -629,6 +687,12 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       case "skills":
         context.activeSkillsSubtab = this.tabGroups["skills-subtabs"] ?? null;
         context.tab = context.tabs[partId];
+        break;
+      case "specialisations":
+        context.tab = context.tabs[partId];
+        context.specTrees = prepareSpecialisationTrees(this.actor);
+        context.activeSpecSubtab =
+          this.tabGroups["specialisations-subtabs"] ?? null;
         break;
       case "abilities":
       case "spells":
@@ -715,6 +779,17 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
           tab.id = "skills";
           tab.label += "Skills";
           break;
+        case "specialisations": {
+          tab.id = "specialisations";
+          tab.label += "Specialisations";
+          // Only show the tab when at least one specialisation is active
+          const specs = this.actor.system.specialisations ?? {};
+          const anyActive = Object.keys(
+            CONFIG.REDSTEEL.specialisations ?? {},
+          ).some((id) => specs[id]?.active);
+          if (!anyActive) tab.cssClass += " hidden";
+          break;
+        }
         case "features":
           tab.id = "features";
           tab.label += "Features";

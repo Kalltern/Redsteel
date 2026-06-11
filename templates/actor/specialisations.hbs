@@ -1,0 +1,74 @@
+<section
+  class="tab specialisations {{tab.cssClass}}"
+  data-group="primary"
+  data-tab="specialisations"
+>
+  <div class="specialisations-box">
+
+    <!-- Sub-tab navigation: one entry per active specialisation -->
+    <nav class="tabs" data-group="specialisations-subtabs" data-action="tab">
+      {{#each specTrees as |tree index|}}
+        <a
+          class="item
+            {{#if (or
+              (eq tree.id ../activeSpecSubtab)
+              (and (eq index 0) (not ../activeSpecSubtab))
+            )}}active{{/if}}"
+          data-group="specialisations-subtabs"
+          data-tab="{{tree.id}}"
+        >
+          {{localize tree.label}}
+        </a>
+      {{/each}}
+    </nav>
+
+    {{#each specTrees as |tree index|}}
+      <section
+        class="tab spec-tree-tab
+          {{#if (or
+            (eq tree.id ../activeSpecSubtab)
+            (and (eq index 0) (not ../activeSpecSubtab))
+          )}}active{{/if}}"
+        data-group="specialisations-subtabs"
+        data-tab="{{tree.id}}"
+      >
+        <div class="spec-tree-wrap">
+          <div
+            class="spec-tree"
+            style="width: {{tree.width}}px; height: {{tree.height}}px;"
+          >
+            <svg
+              class="spec-tree-links"
+              width="{{tree.width}}"
+              height="{{tree.height}}"
+            >
+              {{#each tree.links as |link|}}
+                <line
+                  class="spec-link {{#if link.active}}active{{/if}}"
+                  x1="{{link.x1}}" y1="{{link.y1}}"
+                  x2="{{link.x2}}" y2="{{link.y2}}"
+                />
+              {{/each}}
+            </svg>
+
+            {{#each tree.nodes as |node|}}
+              <a
+                class="spec-node {{node.state}} {{#if node.automated}}automated{{/if}}"
+                style="left: {{node.x}}px; top: {{node.y}}px;"
+                data-action="toggleSpecNode"
+                data-spec="{{tree.id}}"
+                data-node="{{node.id}}"
+                data-tooltip="{{localize node.description}}"
+              >
+                {{#if node.icon}}
+                  <img src="{{node.icon}}" alt="" />
+                {{/if}}
+                <span class="spec-node-label">{{localize node.label}}</span>
+              </a>
+            {{/each}}
+          </div>
+        </div>
+      </section>
+    {{/each}}
+  </div>
+</section>

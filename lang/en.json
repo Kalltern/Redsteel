@@ -14,21 +14,15 @@
       "selectLayer": "-- Select a layer --",
       "selectRank": "-- Select a rank --",
       "selectSchool": "-- Select a school --",
-
       "weaponClass": "Weapon Class",
       "weaponType": "Weapon Type",
-
       "abilityClass": "Ability Class",
       "abilityType": "Ability Type",
-
       "costType": "Cost Type",
       "testType": "Test Type",
       "testModifier": "Test Modifier",
-
       "gearLayer": "Gear layer",
-
       "potionType": "Potion type",
-
       "school": "School",
       "rank": "Rank"
     },
@@ -72,7 +66,6 @@
         "reactionSpell": "Reaction Cast",
         "focus": "Focus"
       },
-
       "Round": {
         "Step1": {
           "Title": "1. Start of the Round",
@@ -132,7 +125,6 @@
           }
         }
       },
-
       "Cost": {
         "oneAction": "1 Action",
         "twoActions": "2 Actions",
@@ -141,7 +133,6 @@
         "variable": "X Actions",
         "reload": "1–2 Actions"
       },
-
       "Description": {
         "move": "Move up to a number of hexes equal to Speed. Moving around an enemy always costs 1 hex and may be interrupted by a successful Opportunity Attack. Movement may trigger a Reaction. The final movement may be affected by terrain. When an Opportunity Attack is triggered by movement, the character does not have the right to Defense.",
         "sprint": "Run a distance of Speed * 2 hexes. Increases Ranged defense by 15% and reduces Defense by 25%. Maximum running distance is 12 hexes. If an Opportunity Attack is triggered by moving away from an opponent, the character cannot use Defense. Final movement may be affected by terrain",
@@ -174,180 +165,963 @@
         "Abilities": "Abilities",
         "OffHand": "Offhand",
         "Effects": "Effects",
-        "Config": "Config"
+        "Config": "Config",
+        "Specialisations": "Specialisations"
+      },
+      "Specialisations": {
+        "warnLocked": "Unlock the connected previous node first.",
+        "warnDependents": "Another unlocked node depends on this one — lock that one first.",
+        "shadow": {
+          "label": "Shadow",
+          "nodes": {
+            "sneakAttack": {
+              "label": "Sneak Attack +1d6",
+              "description": "15 CP; Tulák VII. Critical range +3 is not automated yet. Partially automated."
+            },
+            "critAsSneak": {
+              "label": "Critical Hit counts as Sneak Attack",
+              "description": "10 CP; Tulák VIII. Manual — resolved at the table."
+            },
+            "outnumberSneak": {
+              "label": "Outnumbering 2:1 counts as Sneak Attack",
+              "description": "20 CP; Tulák X. After a hit while outnumbering 2:1, it counts as a Sneak Attack. Manual — resolved at the table."
+            },
+            "bleed1": {
+              "label": "Bleeding +10%",
+              "description": "5 CP. Automated."
+            },
+            "bleed2": {
+              "label": "Bleeding +10%",
+              "description": "5 CP. Automated."
+            },
+            "bleed3": {
+              "label": "Bleeding +10%",
+              "description": "5 CP. Automated."
+            },
+            "calculation": {
+              "label": "Calculation",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "aimedAttack": {
+              "label": "Aimed Attack +5%",
+              "description": "10 CP. Aimed attack: Hit, Throw and Shooting +5% — situational, manual for now. Manual — resolved at the table."
+            },
+            "stealthAdvantage": {
+              "label": "Stealth: Advantage",
+              "description": "5 SP; Plížení: Adept. Manual — resolved at the table."
+            },
+            "stealthCritFail": {
+              "label": "Stealth: Crit Failure -3%",
+              "description": "10 SP. Automated."
+            },
+            "bane1": {
+              "label": "Unlocks one Bane",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "bane2": {
+              "label": "Unlocks one Bane",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "bane3": {
+              "label": "Unlocks one Bane",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "quickFeet": {
+              "label": "Quick Feet",
+              "description": "10 CP. Manual — resolved at the table."
+            },
+            "backDodge": {
+              "label": "Rear Dodge",
+              "description": "10 CP. Can dodge attacks from behind at a -20% penalty. Manual — resolved at the table."
+            },
+            "weakSpotMastery": {
+              "label": "Improved Weak Spot Attack/Throw",
+              "description": "20 CP; Tulák VII. Manual — resolved at the table."
+            },
+            "speedTests": {
+              "label": "Advantage on opposed Speed Tests",
+              "description": "10 CP; Tulák VII. Manual — resolved at the table."
+            },
+            "daggerDefense": {
+              "label": "No Defense penalty with dagger",
+              "description": "0 CP. Removes the Defense penalty against weapons when using a dagger. Manual — resolved at the table."
+            },
+            "skillDiscount1": {
+              "label": "3 SP discount on a skill",
+              "description": "0 SP. 3 SP discount per rank of one skill from a list. Manual — resolved at the table."
+            },
+            "skillDiscount2": {
+              "label": "3 SP discount on a skill",
+              "description": "0 SP. 3 SP discount per rank of one skill from a list. Manual — resolved at the table."
+            }
+          }
+        },
+        "swordServant": {
+          "label": "Servant of the Sword",
+          "nodes": {
+            "bleedA": {
+              "label": "Bleeding +10%",
+              "description": "5 CP. Automated."
+            },
+            "critHitDef": {
+              "label": "Crit Hit +3% / Crit Defense +3%",
+              "description": "5 CP. Automated."
+            },
+            "bleedB": {
+              "label": "Bleeding +10%",
+              "description": "5 CP. Automated."
+            },
+            "initiative": {
+              "label": "Initiative +2",
+              "description": "5 CP. Automated."
+            },
+            "hitBonus": {
+              "label": "Hit +5%",
+              "description": "5 CP. Automated."
+            },
+            "ripostaFree": {
+              "label": "One Riposte per round as Free action",
+              "description": "10 CP; Šermíř X. Manual — resolved at the table."
+            },
+            "ripostaStamina": {
+              "label": "Riposte: Stamina -4",
+              "description": "15 CP. Manual — resolved at the table."
+            },
+            "ripostaCrit": {
+              "label": "Riposte: always counts as Critical",
+              "description": "10 CP; Meče X. Manual — resolved at the table."
+            },
+            "odvetnyUder": {
+              "label": "Retaliatory Strike",
+              "description": "10 CP; Meče IV. Manual — resolved at the table."
+            },
+            "improvedAim": {
+              "label": "Improved Aiming",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "aimReduction": {
+              "label": "Aim reduction after a hit",
+              "description": "5 CP. Aim is reduced after a hit. Sneak Attack: adds Aim. Manual — resolved at the table."
+            },
+            "draciSpanek": {
+              "label": "Dragon's Sleep",
+              "description": "10 CP; Šermíř IV. Manual — resolved at the table."
+            },
+            "draciStraz": {
+              "label": "Dragon's Guard",
+              "description": "10 CP; Šermíř V. Manual — resolved at the table."
+            },
+            "chargeDamage": {
+              "label": "Charge: +1d4 damage",
+              "description": "10 CP; Meče VII. Manual — resolved at the table."
+            },
+            "chargeDistance": {
+              "label": "Charge: Min. distance -1 hex",
+              "description": "10 CP; Meče VIII. Manual — resolved at the table."
+            },
+            "priskok": {
+              "label": "Lunge Step",
+              "description": "5 CP; Meče IV. Manual — resolved at the table."
+            },
+            "draciVypad": {
+              "label": "Dragon's Thrust",
+              "description": "10 CP; Šermíř IV. Manual — resolved at the table."
+            },
+            "prosmyknuti": {
+              "label": "Slip Through",
+              "description": "5 CP; Meče IV. Manual — resolved at the table."
+            },
+            "dexTests": {
+              "label": "Combat Dexterity Tests +10%",
+              "description": "5 CP. Situational test bonus — manual for now. Manual — resolved at the table."
+            },
+            "presneRozseknuti": {
+              "label": "Precise Cleave",
+              "description": "0 CP. Manual — resolved at the table."
+            },
+            "vyhodnyManevr": {
+              "label": "Advantageous Maneuver",
+              "description": "5 CP; Šermíř V. Manual — resolved at the table."
+            },
+            "utokSPohybem": {
+              "label": "Attack on the Move",
+              "description": "10 CP; Meče IV. Manual — resolved at the table."
+            },
+            "vylUtokSPohybem": {
+              "label": "Improved Attack on the Move",
+              "description": "10 CP; Šermíř VII. Manual — resolved at the table."
+            }
+          }
+        },
+        "weaponMaster": {
+          "label": "Weapon Master",
+          "nodes": {
+            "mistrZbrani": {
+              "label": "Weapon Master",
+              "description": "0 CP. Manual — resolved at the table."
+            },
+            "vytrvalyValecnik": {
+              "label": "Enduring Warrior",
+              "description": "15 CP; M/T/S/D V. Manual — resolved at the table."
+            },
+            "vycvikSeZbrani": {
+              "label": "Weapon Training",
+              "description": "0 CP; M/T/S/D VI. Manual — resolved at the table."
+            },
+            "bdelyOchrance": {
+              "label": "Vigilant Protector",
+              "description": "25 CP; M/T/S/D VIII. Manual — resolved at the table."
+            },
+            "zbrojnos1": {
+              "label": "Armiger I",
+              "description": "10 CP. Manual — resolved at the table."
+            },
+            "zbrojnos2": {
+              "label": "Armiger II",
+              "description": "10 CP. Manual — resolved at the table."
+            },
+            "odrazeni": {
+              "label": "Deflection",
+              "description": "10 CP; M/T/S/D VI. Manual — resolved at the table."
+            },
+            "veteran1": {
+              "label": "Veteran I",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "veteran2": {
+              "label": "Veteran II",
+              "description": "5 CP; M/T/S/D V. Manual — resolved at the table."
+            },
+            "vylZbranoveDovednosti": {
+              "label": "Improved Weapon Skills",
+              "description": "15 CP; M/T/S/D VIII. Manual — resolved at the table."
+            },
+            "bleedStun": {
+              "label": "Bleeding +10% / Stun +6%",
+              "description": "10 CP. Automated."
+            },
+            "critDefRange": {
+              "label": "Crit Defense +2% / Crit Range +1",
+              "description": "5 CP. Critical range +1 is not automated yet. Partially automated."
+            },
+            "precision": {
+              "label": "Precision +10%",
+              "description": "10 CP. Automated."
+            },
+            "penetration": {
+              "label": "Penetration +2",
+              "description": "5 CP. Automated."
+            },
+            "presileni": {
+              "label": "Overpowering",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "rychlaReakce": {
+              "label": "Improved Quick Reaction",
+              "description": "5 CP; M/T/S/D V. Manual — resolved at the table."
+            },
+            "weakSpotPen": {
+              "label": "Weak Spot Attack: Penetration +10",
+              "description": "5 CP. Situational — manual for now. Manual — resolved at the table."
+            },
+            "primaryDamage": {
+              "label": "Damage +50% from Primary Attributes",
+              "description": "10 CP. Manual — resolved at the table."
+            }
+          }
+        },
+        "hoplite": {
+          "label": "Hoplite",
+          "nodes": {
+            "nabodnuti": {
+              "label": "Impale",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "velkeTvory": {
+              "label": "Bonus vs. large creatures",
+              "description": "10 CP. Bonus against large creatures. Impale: Follow-up attack. Manual — resolved at the table."
+            },
+            "prilezitostnyUtok": {
+              "label": "Opportunity attack per round",
+              "description": "15 CP; Štítonoš V. Manual — resolved at the table."
+            },
+            "pripravnyPostoj": {
+              "label": "Prepared Stance",
+              "description": "10 CP; Dřevcová IV. Manual — resolved at the table."
+            },
+            "obranaProtiZteci": {
+              "label": "Defense against Charge",
+              "description": "5 CP; Štítonoš VI. Manual — resolved at the table."
+            },
+            "bleedStun": {
+              "label": "Bleeding +20% / Stun +10%",
+              "description": "15 CP. Automated."
+            },
+            "kritZasah": {
+              "label": "Critical Hit +3%",
+              "description": "5 CP. Automated."
+            },
+            "momentum": {
+              "label": "Momentum",
+              "description": "15 CP; Štítonoš VIII. Manual — resolved at the table."
+            },
+            "postup": {
+              "label": "Advance",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "raznyPostup": {
+              "label": "Forceful Advance",
+              "description": "10 CP; Štítonoš IV. Manual — resolved at the table."
+            },
+            "napor1": {
+              "label": "Onslaught I",
+              "description": "15 CP; Štítonoš V. Manual — resolved at the table."
+            },
+            "napor2": {
+              "label": "Onslaught II",
+              "description": "15 CP; Štítonoš VI. Manual — resolved at the table."
+            },
+            "hoplitaStance": {
+              "label": "Hoplite",
+              "description": "0 CP. Manual — resolved at the table."
+            },
+            "damage1d6": {
+              "label": "Damage +1d6",
+              "description": "5 CP; Dřevcové V. Automated."
+            },
+            "troufalyVrh": {
+              "label": "Daring Throw",
+              "description": "15 CP; Dřevcové VII. Manual — resolved at the table."
+            },
+            "penetration2": {
+              "label": "Penetration +2",
+              "description": "5 CP. Automated."
+            },
+            "hexAttack": {
+              "label": "Attack through occupied hex",
+              "description": "10 CP; Dřevcové V. Can attack through a hex occupied by an opponent. Manual — resolved at the table."
+            },
+            "silaObratnost": {
+              "label": "Damage from Strength and Dexterity",
+              "description": "10 CP; Štítonoš X, Dřevcové X. Manual — resolved at the table."
+            }
+          }
+        },
+        "swordDancer": {
+          "label": "Sword Dancer",
+          "nodes": {
+            "duelistuvPostoj": {
+              "label": "Duelist's Stance",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "krvaveBodnuti": {
+              "label": "Bloody Thrust",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "mireniRedukce": {
+              "label": "Aim Reduction",
+              "description": "10 CP; Duelista V. Aim reduction after a failure and a Sneak Attack. Manual — resolved at the table."
+            },
+            "vyhodnyManevr": {
+              "label": "Advantageous Maneuver",
+              "description": "15 CP; Duelista VII. Manual — resolved at the table."
+            },
+            "posileniObrany": {
+              "label": "Defense Reinforcement",
+              "description": "10 CP; Duelista VIII. Manual — resolved at the table."
+            },
+            "postojMireni": {
+              "label": "Duelist's Stance: keeps Aim",
+              "description": "10 CP; Duelista IX. Manual — resolved at the table."
+            },
+            "precision10": {
+              "label": "Precision +10%",
+              "description": "10 CP; Meče X. Automated."
+            },
+            "oddechMireni": {
+              "label": "Respite: Aim +1",
+              "description": "15 CP; Meče V. Manual — resolved at the table."
+            },
+            "akrobatickeOdpoutani": {
+              "label": "Acrobatic Disengage",
+              "description": "15 CP; Meče VI. Manual — resolved at the table."
+            },
+            "vylUtokSPohybem": {
+              "label": "Improved Attack on the Move",
+              "description": "10 CP; Duelista VII. Manual — resolved at the table."
+            },
+            "rafinovanyManevr": {
+              "label": "Refined Maneuver: Stamina -2",
+              "description": "15 CP; Duelista IX. Manual — resolved at the table."
+            },
+            "posledniVypad": {
+              "label": "Final Thrust",
+              "description": "20 CP; Duelista VI, Meče VI. Manual — resolved at the table."
+            },
+            "vylDuelistuvKrok": {
+              "label": "Improved Duelist's Step",
+              "description": "15 CP; Duelista VII. Manual — resolved at the table."
+            },
+            "brilantniProtiutok": {
+              "label": "Improved Brilliant Counter",
+              "description": "15 CP; Duelista X. Manual — resolved at the table."
+            }
+          }
+        },
+        "bloodSchool": {
+          "label": "School of Blood",
+          "nodes": {
+            "apprentice": {
+              "label": "School of Blood - Apprentice",
+              "description": "5 CP. Blood Pool capacity +10 automated; school rank manual. Partially automated."
+            },
+            "spellPower1": {
+              "label": "Spell Power +2",
+              "description": "10 CP. Automated."
+            },
+            "expert": {
+              "label": "School of Blood - Expert",
+              "description": "20 CP; MsK/D:C V. Blood Pool capacity +10 automated; school rank manual. Partially automated."
+            },
+            "spellPower2": {
+              "label": "Spell Power +2",
+              "description": "10 CP. Automated."
+            },
+            "master": {
+              "label": "School of Blood - Master",
+              "description": "25 CP; MsK/D:C VII. Blood Pool capacity +20 automated; school rank manual. Partially automated."
+            },
+            "spellPower3": {
+              "label": "Spell Power +2",
+              "description": "10 CP. Automated."
+            },
+            "grandmaster": {
+              "label": "School of Blood - Grandmaster",
+              "description": "30 CP; MsK/D:C IX. Blood Pool capacity +50 automated; school rank manual. Partially automated."
+            },
+            "spellPower4": {
+              "label": "Spell Power +2",
+              "description": "15 CP; Škola Krve - Velmistr. Automated."
+            },
+            "bloodPool1": {
+              "label": "Blood Pool capacity +15",
+              "description": "10 CP; Škola Krve - Expert. Automated."
+            },
+            "bloodPool2": {
+              "label": "Blood Pool capacity +15",
+              "description": "10 CP; Škola Krve - Mistr. Automated."
+            },
+            "magicAttack1": {
+              "label": "Magic Attack +5%",
+              "description": "0 CP; Škola Krve - Expert. School-of-Blood-specific bonus — to be tackled later. Manual — resolved at the table."
+            },
+            "magicAttack2": {
+              "label": "Magic Attack +5%",
+              "description": "0 CP; Škola Krve - Mistr. School-of-Blood-specific bonus — to be tackled later. Manual — resolved at the table."
+            },
+            "magicAttack3": {
+              "label": "Magic Attack +5%",
+              "description": "0 CP; Škola Krve - Velmistr. School-of-Blood-specific bonus — to be tackled later. Manual — resolved at the table."
+            },
+            "magicDefense1": {
+              "label": "Magic Defense vs. Blood spells +5%",
+              "description": "0 CP; Škola Krve - Expert. School-of-Blood-specific bonus — to be tackled later. Manual — resolved at the table."
+            },
+            "magicDefense2": {
+              "label": "Magic Defense vs. Blood spells +5%",
+              "description": "0 CP; Škola Krve - Mistr. School-of-Blood-specific bonus — to be tackled later. Manual — resolved at the table."
+            },
+            "magicDefense3": {
+              "label": "Magic Defense vs. Blood spells +5%",
+              "description": "0 CP; Škola Krve - Velmistr. School-of-Blood-specific bonus — to be tackled later. Manual — resolved at the table."
+            },
+            "magickaKrev": {
+              "label": "Magic Blood",
+              "description": "0 CP. Manual — resolved at the table."
+            },
+            "krvavyPakt": {
+              "label": "Blood Pact",
+              "description": "5 CP; Škola Krve - Učedník. Manual — resolved at the table."
+            },
+            "precision15": {
+              "label": "School of Blood: Precision +15%",
+              "description": "5 CP; Škola Krve - Expert. Automated."
+            },
+            "hnevKrve": {
+              "label": "Wrath of Blood",
+              "description": "10 CP; Škola Krve - Expert. Manual — resolved at the table."
+            },
+            "krvavaPlatba": {
+              "label": "Blood Payment",
+              "description": "10 CP; Škola Krve - Expert. Manual — resolved at the table."
+            },
+            "kritRozsah2": {
+              "label": "School of Blood: Critical Range +2",
+              "description": "5 SP. Critical range is not automated yet. Manual — resolved at the table."
+            },
+            "oslabeniTrvani": {
+              "label": "Weaken: Duration +1 turn",
+              "description": "5 CP; Škola Krve - Expert. Manual — resolved at the table."
+            },
+            "krvavyStit": {
+              "label": "Blood Shield",
+              "description": "15 CP; Škola Krve - Expert. Manual — resolved at the table."
+            },
+            "darKrve": {
+              "label": "Gift of Blood",
+              "description": "20 CP; Škola Krve - Mistr. Manual — resolved at the table."
+            }
+          }
+        }
       },
       "base": {
         "FIELDS": {
-          "biography": { "label": "Biography" },
-          "actionCost": { "label": "Action cost" }
+          "biography": {
+            "label": "Biography"
+          },
+          "actionCost": {
+            "label": "Action cost"
+          }
         }
       },
       "Character": {
         "stats": {
           "health": {
-            "value": { "label": "Health" },
-            "max": { "label": "Maximum Health" }
+            "value": {
+              "label": "Health"
+            },
+            "max": {
+              "label": "Maximum Health"
+            }
           },
           "graveWounds": {
-            "value": { "label": "Wounds" },
-            "max": { "label": "Maximum Wounds" },
-            "treated": { "label": "Treated Wounds" }
+            "value": {
+              "label": "Wounds"
+            },
+            "max": {
+              "label": "Maximum Wounds"
+            },
+            "treated": {
+              "label": "Treated Wounds"
+            }
           },
           "stamina": {
-            "value": { "label": "Stamina" },
-            "max": { "label": "Maximum Stamina" }
+            "value": {
+              "label": "Stamina"
+            },
+            "max": {
+              "label": "Maximum Stamina"
+            }
           },
           "toxicity": {
-            "value": { "label": "Toxicity" },
-            "max": { "label": "Maximum Toxicity" }
+            "value": {
+              "label": "Toxicity"
+            },
+            "max": {
+              "label": "Maximum Toxicity"
+            }
           },
           "mana": {
-            "value": { "label": "Mana" },
-            "max": { "label": "Maximum Mana" }
+            "value": {
+              "label": "Mana"
+            },
+            "max": {
+              "label": "Maximum Mana"
+            }
           },
           "mind": {
-            "value": { "label": "Mind" },
-            "max": { "label": "Maximum Mind" }
+            "value": {
+              "label": "Mind"
+            },
+            "max": {
+              "label": "Maximum Mind"
+            }
           },
           "insanity": {
-            "value": { "label": "Insanity" },
-            "max": { "label": "Maximum Insanity" }
+            "value": {
+              "label": "Insanity"
+            },
+            "max": {
+              "label": "Maximum Insanity"
+            }
           },
           "corruption": {
-            "value": { "label": "Corruption" },
-            "max": { "label": "Maximum Corruption" }
+            "value": {
+              "label": "Corruption"
+            },
+            "max": {
+              "label": "Maximum Corruption"
+            }
           },
           "fatigue": {
-            "value": { "label": "Fatigue" },
-            "max": { "label": "Maximum Fatigue" }
+            "value": {
+              "label": "Fatigue"
+            },
+            "max": {
+              "label": "Maximum Fatigue"
+            }
           },
           "holyEnergy": {
-            "value": { "label": "Holy Energy" },
-            "max": { "label": "Maximum Holy Energy" }
+            "value": {
+              "label": "Holy Energy"
+            },
+            "max": {
+              "label": "Maximum Holy Energy"
+            }
+          },
+          "bloodPool": {
+            "value": {
+              "label": "Blood Pool"
+            },
+            "max": {
+              "label": "Maximum Blood Pool"
+            }
           }
         },
         "Attribute": {
-          "Str": { "long": "Strength", "abbr": "str" },
-          "End": { "long": "Endurance", "abbr": "end" },
-          "Dex": { "long": "Dexterity", "abbr": "dex" },
-          "Int": { "long": "Intelligence", "abbr": "int" },
-          "Wil": { "long": "Will", "abbr": "wil" },
-          "Cha": { "long": "Charisma", "abbr": "cha" },
-          "Per": { "long": "Perception", "abbr": "per" }
+          "Str": {
+            "long": "Strength",
+            "abbr": "str"
+          },
+          "End": {
+            "long": "Endurance",
+            "abbr": "end"
+          },
+          "Dex": {
+            "long": "Dexterity",
+            "abbr": "dex"
+          },
+          "Int": {
+            "long": "Intelligence",
+            "abbr": "int"
+          },
+          "Wil": {
+            "long": "Will",
+            "abbr": "wil"
+          },
+          "Cha": {
+            "long": "Charisma",
+            "abbr": "cha"
+          },
+          "Per": {
+            "long": "Perception",
+            "abbr": "per"
+          }
         },
         "SecondaryAttribute": {
-          "Spd": { "long": "Speed", "abbr": "spd" },
-          "Lck": { "long": "Luck", "abbr": "lck" },
-          "Res": { "long": "Resolve", "abbr": "res" },
-          "Fth": { "long": "Faith", "abbr": "fth" },
-          "Sin": { "long": "Sinfulness", "abbr": "sin" },
-          "Vis": { "long": "Visage", "abbr": "vis" },
-          "Ini": { "long": "Initiative", "abbr": "ini" }
+          "Spd": {
+            "long": "Speed",
+            "abbr": "spd"
+          },
+          "Lck": {
+            "long": "Luck",
+            "abbr": "lck"
+          },
+          "Res": {
+            "long": "Resolve",
+            "abbr": "res"
+          },
+          "Fth": {
+            "long": "Faith",
+            "abbr": "fth"
+          },
+          "Sin": {
+            "long": "Sinfulness",
+            "abbr": "sin"
+          },
+          "Vis": {
+            "long": "Visage",
+            "abbr": "vis"
+          },
+          "Ini": {
+            "long": "Initiative",
+            "abbr": "ini"
+          }
         },
         "skills": {
-          "athletics": { "label": "Athletics" },
-          "muscles": { "label": "Muscles" },
-          "smithing": { "label": "Smithing" },
-          "swimming": { "label": "Swimming" },
-          "blend": { "label": "Blend" },
-          "brawler": { "label": "Brawler" },
-          "acrobacy": { "label": "Acrobacy" },
-          "craft": { "label": "Craft" },
-          "dancing": { "label": "Dancing" },
-          "lockpicking": { "label": "Lockpicking" },
-          "nimbleness": { "label": "Nimbleness" },
-          "pickpocketing": { "label": "Pickpocketing" },
-          "riding": { "label": "Riding" },
-          "sailing": { "label": "Sailing" },
-          "stealth": { "label": "Stealth" },
-          "drinking": { "label": "Drinking" },
-          "alchemy": { "label": "Alchemy" },
-          "arcana": { "label": "Arcana" },
-          "art": { "label": "Art" },
-          "engineering": { "label": "Engineering" },
-          "firstAid": { "label": "First Aid" },
-          "logic": { "label": "Logic" },
-          "research": { "label": "Research" },
-          "tactics": { "label": "Tactics" },
-          "augury": { "label": "Augury" },
-          "dreamwalker": { "label": "Dreamwalker" },
-          "meditation": { "label": "Meditation" },
-          "mindBending": { "label": "Mind Bending" },
-          "rituals": { "label": "Rituals" },
-          "acting": { "label": "Acting" },
-          "animalHandling": { "label": "Animal Handling" },
-          "deception": { "label": "Deception" },
-          "intimidation": { "label": "Intimidation" },
-          "leadership": { "label": "Leadership" },
-          "music": { "label": "Music" },
-          "painting": { "label": "Painting" },
-          "persuasion": { "label": "Persuasion" },
-          "temptation": { "label": "Temptation" },
-          "herbalism": { "label": "Herbalism" },
-          "insight": { "label": "Insight" },
-          "traps": { "label": "Traps" },
-          "survival": { "label": "Survival" }
+          "athletics": {
+            "label": "Athletics"
+          },
+          "muscles": {
+            "label": "Muscles"
+          },
+          "smithing": {
+            "label": "Smithing"
+          },
+          "swimming": {
+            "label": "Swimming"
+          },
+          "blend": {
+            "label": "Blend"
+          },
+          "brawler": {
+            "label": "Brawler"
+          },
+          "acrobacy": {
+            "label": "Acrobacy"
+          },
+          "craft": {
+            "label": "Craft"
+          },
+          "dancing": {
+            "label": "Dancing"
+          },
+          "lockpicking": {
+            "label": "Lockpicking"
+          },
+          "nimbleness": {
+            "label": "Nimbleness"
+          },
+          "pickpocketing": {
+            "label": "Pickpocketing"
+          },
+          "riding": {
+            "label": "Riding"
+          },
+          "sailing": {
+            "label": "Sailing"
+          },
+          "stealth": {
+            "label": "Stealth"
+          },
+          "drinking": {
+            "label": "Drinking"
+          },
+          "alchemy": {
+            "label": "Alchemy"
+          },
+          "arcana": {
+            "label": "Arcana"
+          },
+          "art": {
+            "label": "Art"
+          },
+          "engineering": {
+            "label": "Engineering"
+          },
+          "firstAid": {
+            "label": "First Aid"
+          },
+          "logic": {
+            "label": "Logic"
+          },
+          "research": {
+            "label": "Research"
+          },
+          "tactics": {
+            "label": "Tactics"
+          },
+          "augury": {
+            "label": "Augury"
+          },
+          "dreamwalker": {
+            "label": "Dreamwalker"
+          },
+          "meditation": {
+            "label": "Meditation"
+          },
+          "mindBending": {
+            "label": "Mind Bending"
+          },
+          "rituals": {
+            "label": "Rituals"
+          },
+          "acting": {
+            "label": "Acting"
+          },
+          "animalHandling": {
+            "label": "Animal Handling"
+          },
+          "deception": {
+            "label": "Deception"
+          },
+          "intimidation": {
+            "label": "Intimidation"
+          },
+          "leadership": {
+            "label": "Leadership"
+          },
+          "music": {
+            "label": "Music"
+          },
+          "painting": {
+            "label": "Painting"
+          },
+          "persuasion": {
+            "label": "Persuasion"
+          },
+          "temptation": {
+            "label": "Temptation"
+          },
+          "herbalism": {
+            "label": "Herbalism"
+          },
+          "insight": {
+            "label": "Insight"
+          },
+          "traps": {
+            "label": "Traps"
+          },
+          "survival": {
+            "label": "Survival"
+          }
         },
         "combatSkills": {
-          "throwing": { "label": "Throwing" },
-          "meleeDefense": { "label": "Melee Defense" },
-          "rangedDefense": { "label": "Ranged Defense" },
-          "dodge": { "label": "Dodge" },
-          "combat": { "label": "Combat" },
-          "archery": { "label": "Archery" },
-          "channeling": { "label": "Channeling" },
-          "ranger": { "label": "Ranger" },
-          "damageBonus": { "label": "Damage Bonus" }
+          "throwing": {
+            "label": "Throwing"
+          },
+          "meleeDefense": {
+            "label": "Melee Defense"
+          },
+          "rangedDefense": {
+            "label": "Ranged Defense"
+          },
+          "dodge": {
+            "label": "Dodge"
+          },
+          "combat": {
+            "label": "Combat"
+          },
+          "archery": {
+            "label": "Archery"
+          },
+          "channeling": {
+            "label": "Channeling"
+          },
+          "ranger": {
+            "label": "Ranger"
+          },
+          "damageBonus": {
+            "label": "Damage Bonus"
+          }
         },
         "doctrines": {
-          "swordsman": { "label": "Swordsman" },
-          "shieldbearer": { "label": "Shieldbearer" },
-          "reaver": { "label": "Reaver" },
-          "pikeman": { "label": "Pikeman" },
-          "dimakerus": { "label": "Dimakerus" },
-          "duelist": { "label": "Duelist" },
-          "monk": { "label": "Monk" },
-          "rogue": { "label": "Rogue" },
-          "rider": { "label": "Rider" },
-          "archer": { "label": "Archer" },
-          "arbalest": { "label": "Arbalest" },
-          "peltast": { "label": "Peltast" },
-          "juggler": { "label": "Juggler" },
-          "musketeer": { "label": "Musketeer" },
-          "cordinas": { "label": "Cordinas" },
-          "elymas": { "label": "Elymas" },
-          "incantator": { "label": "Incantator" },
-          "veneficus": { "label": "Veneficus" },
-          "elementalist": { "label": "Elementalist" }
+          "swordsman": {
+            "label": "Swordsman"
+          },
+          "shieldbearer": {
+            "label": "Shieldbearer"
+          },
+          "reaver": {
+            "label": "Reaver"
+          },
+          "pikeman": {
+            "label": "Pikeman"
+          },
+          "dimakerus": {
+            "label": "Dimakerus"
+          },
+          "duelist": {
+            "label": "Duelist"
+          },
+          "monk": {
+            "label": "Monk"
+          },
+          "rogue": {
+            "label": "Rogue"
+          },
+          "rider": {
+            "label": "Rider"
+          },
+          "archer": {
+            "label": "Archer"
+          },
+          "arbalest": {
+            "label": "Arbalest"
+          },
+          "peltast": {
+            "label": "Peltast"
+          },
+          "juggler": {
+            "label": "Juggler"
+          },
+          "musketeer": {
+            "label": "Musketeer"
+          },
+          "cordinas": {
+            "label": "Cordinas"
+          },
+          "elymas": {
+            "label": "Elymas"
+          },
+          "incantator": {
+            "label": "Incantator"
+          },
+          "veneficus": {
+            "label": "Veneficus"
+          },
+          "elementalist": {
+            "label": "Elementalist"
+          }
         },
         "weaponSkills": {
-          "swords": { "label": "Swords" },
-          "axes": { "label": "Axes" },
-          "blunt": { "label": "Blunt" },
-          "polearms": { "label": "Polearms" }
+          "swords": {
+            "label": "Swords"
+          },
+          "axes": {
+            "label": "Axes"
+          },
+          "blunt": {
+            "label": "Blunt"
+          },
+          "polearms": {
+            "label": "Polearms"
+          }
         },
         "schools": {
-          "fire": { "label": "Fire" },
-          "water": { "label": "Water" },
-          "earth": { "label": "Earth" },
-          "air": { "label": "Air" },
-          "spirit": { "label": "Spirit" },
-          "body": { "label": "Body" },
-          "darkness": { "label": "Darkness" },
-          "blood": { "label": "Blood" },
-          "gnosis": { "label": "Gnosis" },
-          "spellPower": { "label": "Spell Power" }
+          "fire": {
+            "label": "Fire"
+          },
+          "water": {
+            "label": "Water"
+          },
+          "earth": {
+            "label": "Earth"
+          },
+          "air": {
+            "label": "Air"
+          },
+          "spirit": {
+            "label": "Spirit"
+          },
+          "body": {
+            "label": "Body"
+          },
+          "darkness": {
+            "label": "Darkness"
+          },
+          "blood": {
+            "label": "Blood"
+          },
+          "gnosis": {
+            "label": "Gnosis"
+          },
+          "spellPower": {
+            "label": "Spell Power"
+          }
         },
-        "headerRank": { "label": "Rank" }
+        "headerRank": {
+          "label": "Rank"
+        }
       },
       "NPC": {
         "FIELDS": {
-          "cr": { "label": "CR" },
-          "mov": { "label": "Movement" },
-          "mage": { "label": "Mage" },
-          "priest": { "label": "Priest" }
+          "cr": {
+            "label": "CR"
+          },
+          "mov": {
+            "label": "Movement"
+          },
+          "mage": {
+            "label": "Mage"
+          },
+          "priest": {
+            "label": "Priest"
+          }
         },
-        "xp": { "label": "XP" }
+        "xp": {
+          "label": "XP"
+        }
       }
     },
     "Item": {
@@ -375,118 +1149,310 @@
       },
       "Weapon": {
         "FIELDS": {
-          "offhand": { "label": "Can be held offhand" },
-          "key": { "label": "Key" },
-          "twoHandGrip": { "label": "Can Two hand grip" },
-          "longReach": { "label": "Long reach" },
-          "rollFormula": { "label": "Roll Formula" },
-          "diceNum": { "label": "Dice count" },
-          "dieSize": { "label": "Die size" },
-          "rollMod": { "label": "Roll modifier" },
-          "finesse": { "label": "Finesse" },
-          "sharp": { "label": "Sharp" },
-          "thrown": { "label": "Thrown" },
-          "stagger": { "label": "Stagger" },
-          "bleed": { "label": "Bleed" },
-          "attack": { "label": "Attack" },
-          "defense": { "label": "Defense" },
-          "critRange": { "label": "Crit range" },
-          "critChance": { "label": "Crit chance" },
-          "critPenetration": { "label": "Crit penetration" },
-          "critDamage": { "label": "Crit damage" },
-          "critFail": { "label": "Crit fail" },
-          "critDefense": { "label": "Crit defense" },
-          "critDodge": { "label": "Crit dodge" },
-          "dodge": { "label": "Dodge" },
-          "weight": { "label": "Weight" },
-          "penetration": { "label": "Penetration" },
-          "breakthrough": { "label": "Breakthrough" },
-          "sneakDamage": { "label": "Sneak Damage" },
-          "extra1": { "label": "Extra Effect 1" },
-          "extra2": { "label": "Extra Effect 2" },
-          "extra3": { "label": "Extra Effect 3" }
+          "offhand": {
+            "label": "Can be held offhand"
+          },
+          "key": {
+            "label": "Key"
+          },
+          "twoHandGrip": {
+            "label": "Can Two hand grip"
+          },
+          "longReach": {
+            "label": "Long reach"
+          },
+          "rollFormula": {
+            "label": "Roll Formula"
+          },
+          "diceNum": {
+            "label": "Dice count"
+          },
+          "dieSize": {
+            "label": "Die size"
+          },
+          "rollMod": {
+            "label": "Roll modifier"
+          },
+          "finesse": {
+            "label": "Finesse"
+          },
+          "sharp": {
+            "label": "Sharp"
+          },
+          "thrown": {
+            "label": "Thrown"
+          },
+          "stagger": {
+            "label": "Stagger"
+          },
+          "bleed": {
+            "label": "Bleed"
+          },
+          "attack": {
+            "label": "Attack"
+          },
+          "defense": {
+            "label": "Defense"
+          },
+          "critRange": {
+            "label": "Crit range"
+          },
+          "critChance": {
+            "label": "Crit chance"
+          },
+          "critPenetration": {
+            "label": "Crit penetration"
+          },
+          "critDamage": {
+            "label": "Crit damage"
+          },
+          "critFail": {
+            "label": "Crit fail"
+          },
+          "critDefense": {
+            "label": "Crit defense"
+          },
+          "critDodge": {
+            "label": "Crit dodge"
+          },
+          "dodge": {
+            "label": "Dodge"
+          },
+          "weight": {
+            "label": "Weight"
+          },
+          "penetration": {
+            "label": "Penetration"
+          },
+          "breakthrough": {
+            "label": "Breakthrough"
+          },
+          "sneakDamage": {
+            "label": "Sneak Damage"
+          },
+          "extra1": {
+            "label": "Extra Effect 1"
+          },
+          "extra2": {
+            "label": "Extra Effect 2"
+          },
+          "extra3": {
+            "label": "Extra Effect 3"
+          }
         }
       },
       "Gear": {
         "FIELDS": {
-          "armor": { "label": "Armor" },
-          "armorTotal": { "label": "Armor total" },
-          "weight": { "label": "Weight" },
-          "acid": { "label": "Acid" },
-          "fire": { "label": "Fire" },
-          "frost": { "label": "Frost" },
-          "lightning": { "label": "Lightning" },
-          "dark": { "label": "Dark" },
-          "poison": { "label": "Poison" },
-          "holy": { "label": "Holy" },
-          "magic": { "label": "Magic" },
-          "equipped": { "label": "Equipped" },
-          "layer": { "label": "Armor layer" },
-          "helmet": { "label": "Has helmet" },
-          "shield": { "label": "Is a shield" },
-          "durability": { "label": "Durability" },
-          "swimPenalty": { "label": "Swim penalty" },
-          "dodgePenalty": { "label": "Dodge penalty" },
-          "castPenalty": { "label": "Cast penalty" },
-          "acroPenalty": { "label": "Acro. penalty" },
-          "stealthPenalty": { "label": "Stealth penalty" },
-          "iniPenalty": { "label": "Ini. penalty" },
-          "maxSpeed": { "label": "Max speed" },
-          "rangedDefense": { "label": "Ranged defense" },
-          "defense": { "label": "Defense bonus" },
-          "healthBonus": { "label": "Health bonus" },
-          "critDefense": { "label": "Critical defense" },
-          "rangedCritDefense": { "label": "Ranged Crit Def" },
-          "archeryPenalty": { "label": "Archery penalty" },
-          "perPenalty": { "label": "Per. penalty" }
+          "armor": {
+            "label": "Armor"
+          },
+          "armorTotal": {
+            "label": "Armor total"
+          },
+          "weight": {
+            "label": "Weight"
+          },
+          "acid": {
+            "label": "Acid"
+          },
+          "fire": {
+            "label": "Fire"
+          },
+          "frost": {
+            "label": "Frost"
+          },
+          "lightning": {
+            "label": "Lightning"
+          },
+          "dark": {
+            "label": "Dark"
+          },
+          "poison": {
+            "label": "Poison"
+          },
+          "holy": {
+            "label": "Holy"
+          },
+          "magic": {
+            "label": "Magic"
+          },
+          "equipped": {
+            "label": "Equipped"
+          },
+          "layer": {
+            "label": "Armor layer"
+          },
+          "helmet": {
+            "label": "Has helmet"
+          },
+          "shield": {
+            "label": "Is a shield"
+          },
+          "durability": {
+            "label": "Durability"
+          },
+          "swimPenalty": {
+            "label": "Swim penalty"
+          },
+          "dodgePenalty": {
+            "label": "Dodge penalty"
+          },
+          "castPenalty": {
+            "label": "Cast penalty"
+          },
+          "acroPenalty": {
+            "label": "Acro. penalty"
+          },
+          "stealthPenalty": {
+            "label": "Stealth penalty"
+          },
+          "iniPenalty": {
+            "label": "Ini. penalty"
+          },
+          "maxSpeed": {
+            "label": "Max speed"
+          },
+          "rangedDefense": {
+            "label": "Ranged defense"
+          },
+          "defense": {
+            "label": "Defense bonus"
+          },
+          "healthBonus": {
+            "label": "Health bonus"
+          },
+          "critDefense": {
+            "label": "Critical defense"
+          },
+          "rangedCritDefense": {
+            "label": "Ranged Crit Def"
+          },
+          "archeryPenalty": {
+            "label": "Archery penalty"
+          },
+          "perPenalty": {
+            "label": "Per. penalty"
+          }
         }
       },
       "Consumable": {
         "FIELDS": {
-          "toxicity": { "label": "Toxicity" },
-          "bleed": { "label": "Stop bleed %" },
-          "aimed": { "label": "Single target" },
-          "burn": { "label": "Burn" },
-          "freeze": { "label": "Freeze" },
-          "stagger": { "label": "Stagger" },
-          "quantity": { "label": "Quantity" }
+          "toxicity": {
+            "label": "Toxicity"
+          },
+          "bleed": {
+            "label": "Stop bleed %"
+          },
+          "aimed": {
+            "label": "Single target"
+          },
+          "burn": {
+            "label": "Burn"
+          },
+          "freeze": {
+            "label": "Freeze"
+          },
+          "stagger": {
+            "label": "Stagger"
+          },
+          "quantity": {
+            "label": "Quantity"
+          }
         }
       },
       "Ability": {
         "FIELDS": {
-          "modifier": { "label": "Modifier" },
-          "costType": { "label": "Cost type" },
-          "cost": { "label": "Cost" },
-          "actionCost": { "label": "Action Cost" },
-          "damage": { "label": "Damage" },
-          "attributeTest": { "label": "Test" },
-          "weaponAbility": { "label": "Weapon Ability" },
-          "modifiesAttack": { "label": "Modifies Attack" },
-          "standalone": { "label": "Standalone" },
-          "multiAttack": { "label": "Multiattack" },
-          "resourceCost": { "label": "Resource Cost" }
+          "modifier": {
+            "label": "Modifier"
+          },
+          "costType": {
+            "label": "Cost type"
+          },
+          "cost": {
+            "label": "Cost"
+          },
+          "actionCost": {
+            "label": "Action Cost"
+          },
+          "damage": {
+            "label": "Damage"
+          },
+          "attributeTest": {
+            "label": "Test"
+          },
+          "weaponAbility": {
+            "label": "Weapon Ability"
+          },
+          "modifiesAttack": {
+            "label": "Modifies Attack"
+          },
+          "standalone": {
+            "label": "Standalone"
+          },
+          "multiAttack": {
+            "label": "Multiattack"
+          },
+          "resourceCost": {
+            "label": "Resource Cost"
+          }
         }
       },
       "Spell": {
         "FIELDS": {
-          "isOffensive": { "label": "Offensive" },
-          "sustained": { "label": "Sustained" },
-          "difficulty": { "label": "Difficulty" },
-          "cost": { "label": "Cost" },
-          "perRound": { "label": "Cost per round" },
-          "headerRank": { "label": "Rank" },
-          "headerCost": { "label": "Cost / Per round" },
-          "headerActions": { "label": "Action cost | C" },
-          "headerRange": { "label": "Range" },
-          "holyPower": { "label": "Holy power" },
-          "domain": { "label": "Domain" },
-          "shepherdsWill": { "label": "Shepherd's will" },
-          "headerType": { "label": "Damage Type" },
-          "wild": { "label": "Wild" },
-          "apprentice": { "label": "Apprentice" },
-          "expert": { "label": "Expert" },
-          "master": { "label": "Master" },
-          "grandmaster": { "label": "Grandmaster" }
+          "isOffensive": {
+            "label": "Offensive"
+          },
+          "sustained": {
+            "label": "Sustained"
+          },
+          "difficulty": {
+            "label": "Difficulty"
+          },
+          "cost": {
+            "label": "Cost"
+          },
+          "perRound": {
+            "label": "Cost per round"
+          },
+          "headerRank": {
+            "label": "Rank"
+          },
+          "headerCost": {
+            "label": "Cost / Per round"
+          },
+          "headerActions": {
+            "label": "Action cost | C"
+          },
+          "headerRange": {
+            "label": "Range"
+          },
+          "holyPower": {
+            "label": "Holy power"
+          },
+          "domain": {
+            "label": "Domain"
+          },
+          "shepherdsWill": {
+            "label": "Shepherd's will"
+          },
+          "headerType": {
+            "label": "Damage Type"
+          },
+          "wild": {
+            "label": "Wild"
+          },
+          "apprentice": {
+            "label": "Apprentice"
+          },
+          "expert": {
+            "label": "Expert"
+          },
+          "master": {
+            "label": "Master"
+          },
+          "grandmaster": {
+            "label": "Grandmaster"
+          }
         }
       }
     },
