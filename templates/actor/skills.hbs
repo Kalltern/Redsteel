@@ -711,6 +711,21 @@
         </div>
         {{/if}}
       {{/with}}
+
+      {{!-- Spell Power per school, only for schools with at least one level --}}
+      {{#if (hasLeveledEntries system.schools)}}
+      <h5>{{localize "REDSTEEL.Actor.Character.schools.spellPower.label"}} <span>Rating</span></h5>
+      {{#each system.schools as |school key|}}
+        {{#if (gt school.value 0)}}
+        <div class="skill-entry flexrow">
+          <label class="skill-label flexlarge align-left skill-name" data-label="{{key}}-spellpower">
+            {{localize (concat 'REDSTEEL.Actor.Character.schools.' key '.label')}}
+          </label>
+          <input type="text" class="skill-rating" data-dtype="Number" value="{{school.spellPower}}" readonly />
+        </div>
+        {{/if}}
+      {{/each}}
+      {{/if}}
     </div>
   </section>
 </section>

@@ -1318,6 +1318,7 @@ export async function finalizeRollsAndPostChat(
     flags: {
       redsteel: {
         rollName,
+        spellSchool: spell.system.type,
         criticalSuccessThreshold:
           actor.system.combatSkills.channeling.criticalSuccessThreshold,
         criticalFailureThreshold:

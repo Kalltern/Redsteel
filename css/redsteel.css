@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap");
+﻿@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap");
 :root {
   --redsteel-c-dark: #191813;
   --redsteel-c-faint: #c9c7b8;
@@ -30,7 +30,7 @@ body.theme-dark.application {
 
 /* -------------------------------------------- */
 /*  Redsteel chat palette                       */
-/*  Steel (silver) text · dark-red brutal linings */
+/*  Steel (silver) text Â· dark-red brutal linings */
 /*  Defined theme-independently so chat stays dark */
 /* -------------------------------------------- */
 :root {
@@ -64,6 +64,209 @@ body.theme-dark.application {
 .chat-message.whisper {
   background: var(--rs-chat-whisper-bg);
   border: 2px solid var(--rs-chat-whisper-border);
+}
+
+/* -------------------------------------------- */
+/*  Water spell messages: blue-toned card with  */
+/*  pale blue borders and dividers              */
+/* -------------------------------------------- */
+.chat-message.spell-msg-water {
+  background: #14242f;
+  border-color: #6c93ad;
+  box-shadow:
+    inset 0 0 18px rgba(0, 0, 0, 0.55),
+    0 0 6px rgba(75, 120, 155, 0.35);
+}
+.chat-message.spell-msg-water hr {
+  border-top-color: #7ba1bb;
+  border-bottom-color: #7ba1bb;
+}
+.chat-message.spell-msg-water img {
+  border-color: rgba(108, 147, 173, 0.6);
+}
+.chat-message.spell-msg-water th,
+.chat-message.spell-msg-water td {
+  background-color: #101c25;
+}
+.chat-message.spell-msg-water .dice-roll .dice-formula,
+.chat-message.spell-msg-water .dice-roll .dice-total {
+  background: #16242f;
+  border-color: #405c72;
+}
+
+/* Earth: emerald green */
+.chat-message.spell-msg-earth {
+  background: #12281c;
+  border-color: #519673;
+  box-shadow:
+    inset 0 0 18px rgba(0, 0, 0, 0.55),
+    0 0 6px rgba(50, 130, 85, 0.35);
+}
+.chat-message.spell-msg-earth hr {
+  border-top-color: #5fa680;
+  border-bottom-color: #5fa680;
+}
+.chat-message.spell-msg-earth img {
+  border-color: rgba(81, 150, 115, 0.6);
+}
+.chat-message.spell-msg-earth th,
+.chat-message.spell-msg-earth td {
+  background-color: #0e2016;
+}
+.chat-message.spell-msg-earth .dice-roll .dice-formula,
+.chat-message.spell-msg-earth .dice-roll .dice-total {
+  background: #13271e;
+  border-color: #356a4f;
+}
+
+/* Fire: lava red / orange */
+.chat-message.spell-msg-fire {
+  background: #2b1409;
+  border-color: #ba6630;
+  box-shadow:
+    inset 0 0 18px rgba(0, 0, 0, 0.55),
+    0 0 6px rgba(195, 95, 35, 0.4);
+}
+.chat-message.spell-msg-fire hr {
+  border-top-color: #c4773d;
+  border-bottom-color: #c4773d;
+}
+.chat-message.spell-msg-fire img {
+  border-color: rgba(186, 102, 48, 0.6);
+}
+.chat-message.spell-msg-fire th,
+.chat-message.spell-msg-fire td {
+  background-color: #221006;
+}
+.chat-message.spell-msg-fire .dice-roll .dice-formula,
+.chat-message.spell-msg-fire .dice-roll .dice-total {
+  background: #291509;
+  border-color: #773e1c;
+}
+
+/* Air: grayish white */
+.chat-message.spell-msg-air {
+  background: #232830;
+  border-color: #a9b1ba;
+  box-shadow:
+    inset 0 0 18px rgba(0, 0, 0, 0.55),
+    0 0 6px rgba(175, 185, 196, 0.3);
+}
+.chat-message.spell-msg-air hr {
+  border-top-color: #b4bcc4;
+  border-bottom-color: #b4bcc4;
+}
+.chat-message.spell-msg-air img {
+  border-color: rgba(169, 177, 186, 0.6);
+}
+.chat-message.spell-msg-air th,
+.chat-message.spell-msg-air td {
+  background-color: #1b2026;
+}
+.chat-message.spell-msg-air .dice-roll .dice-formula,
+.chat-message.spell-msg-air .dice-roll .dice-total {
+  background: #23282e;
+  border-color: #7a828b;
+}
+
+/* Spirit: arcane dark pink */
+.chat-message.spell-msg-spirit {
+  background: #2a1422;
+  border-color: #aa4d86;
+  box-shadow:
+    inset 0 0 18px rgba(0, 0, 0, 0.55),
+    0 0 6px rgba(175, 68, 130, 0.35);
+}
+.chat-message.spell-msg-spirit hr {
+  border-top-color: #b65d93;
+  border-bottom-color: #b65d93;
+}
+.chat-message.spell-msg-spirit img {
+  border-color: rgba(170, 77, 134, 0.6);
+}
+.chat-message.spell-msg-spirit th,
+.chat-message.spell-msg-spirit td {
+  background-color: #210f1b;
+}
+.chat-message.spell-msg-spirit .dice-roll .dice-formula,
+.chat-message.spell-msg-spirit .dice-roll .dice-total {
+  background: #28121f;
+  border-color: #6d3156;
+}
+
+/* Body: yellow / burnt yellow */
+.chat-message.spell-msg-body {
+  background: #2a2310;
+  border-color: #b08e32;
+  box-shadow:
+    inset 0 0 18px rgba(0, 0, 0, 0.55),
+    0 0 6px rgba(175, 140, 42, 0.35);
+}
+.chat-message.spell-msg-body hr {
+  border-top-color: #ba983e;
+  border-bottom-color: #ba983e;
+}
+.chat-message.spell-msg-body img {
+  border-color: rgba(176, 142, 50, 0.6);
+}
+.chat-message.spell-msg-body th,
+.chat-message.spell-msg-body td {
+  background-color: #211b0b;
+}
+.chat-message.spell-msg-body .dice-roll .dice-formula,
+.chat-message.spell-msg-body .dice-roll .dice-total {
+  background: #28220e;
+  border-color: #736125;
+}
+
+/* Darkness: dark purple */
+.chat-message.spell-msg-darkness {
+  background: #1c1226;
+  border-color: #5b427b;
+  box-shadow:
+    inset 0 0 18px rgba(0, 0, 0, 0.55),
+    0 0 6px rgba(95, 60, 140, 0.4);
+}
+.chat-message.spell-msg-darkness hr {
+  border-top-color: #694d8d;
+  border-bottom-color: #694d8d;
+}
+.chat-message.spell-msg-darkness img {
+  border-color: rgba(91, 66, 123, 0.6);
+}
+.chat-message.spell-msg-darkness th,
+.chat-message.spell-msg-darkness td {
+  background-color: #150d1d;
+}
+.chat-message.spell-msg-darkness .dice-roll .dice-formula,
+.chat-message.spell-msg-darkness .dice-roll .dice-total {
+  background: #1b1227;
+  border-color: #3f2d57;
+}
+
+/* Blood: red on dark burnt red */
+.chat-message.spell-msg-blood {
+  background: #260a08;
+  border-color: #9e2b22;
+  box-shadow:
+    inset 0 0 18px rgba(0, 0, 0, 0.55),
+    0 0 6px rgba(150, 40, 30, 0.4);
+}
+.chat-message.spell-msg-blood hr {
+  border-top-color: #a93328;
+  border-bottom-color: #a93328;
+}
+.chat-message.spell-msg-blood img {
+  border-color: rgba(158, 43, 34, 0.6);
+}
+.chat-message.spell-msg-blood th,
+.chat-message.spell-msg-blood td {
+  background-color: #1d0705;
+}
+.chat-message.spell-msg-blood .dice-roll .dice-formula,
+.chat-message.spell-msg-blood .dice-roll .dice-total {
+  background: #250a08;
+  border-color: #6e231b;
 }
 
 .message.whisper table tr td {
@@ -105,7 +308,7 @@ body.theme-dark.application {
   height: 100%;
   resize: none;
   font-family: var(--font-primary);
-  /* Redsteel chat palette — matches the message cards */
+  /* Redsteel chat palette â€” matches the message cards */
   color: var(--rs-chat-text);
   background: var(--rs-chat-bg);
   border: 1px solid var(--rs-chat-border);
@@ -435,7 +638,7 @@ table tr td:nth-child(3) {
     0 1px 0 rgba(214, 188, 140, 0.07);
 }
 
-/* The fill: lacquered look — dark edges, bright glowing core just below
+/* The fill: lacquered look â€” dark edges, bright glowing core just below
    center, soft organic mottling on top (inline SVG noise, no asset) */
 .redsteel .resource-bar-fill {
   position: absolute;
@@ -924,11 +1127,11 @@ table tr td:nth-child(3) {
   color: silver;
   font-size: 0.8rem;
 }
-/* Rank header (left combat column) — tune independently here */
+/* Rank header (left combat column) â€” tune independently here */
 .skills-combat-container .skills-column:first-child h5 span {
   transform: none;
 }
-/* Rating header (right combat column) — nudge left to line up with the
+/* Rating header (right combat column) â€” nudge left to line up with the
    rating inputs, independently of the Rank label */
 .skills-combat-container .skills-column:last-child h5 span {
   transform: translateX(-5px);
@@ -1010,7 +1213,7 @@ table tr td:nth-child(3) {
     0 -1px 1px rgba(0, 0, 0, 0.7);
   transition: filter 0.15s ease;
 }
-/* Brighten on hover — works regardless of each icon's own (inline) color */
+/* Brighten on hover â€” works regardless of each icon's own (inline) color */
 .redsteel .armor-icon:hover i {
   filter: brightness(1.45);
 }
@@ -1899,9 +2102,9 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   pointer-events: none;
 }
 .tooltip-header {
-  display: flex; /* 👈 makes children sit next to each other */
-  align-items: center; /* 👈 vertical alignment */
-  gap: 8px; /* 👈 space between icon and title */
+  display: flex; /* ðŸ‘ˆ makes children sit next to each other */
+  align-items: center; /* ðŸ‘ˆ vertical alignment */
+  gap: 8px; /* ðŸ‘ˆ space between icon and title */
 }
 .tooltip-icon {
   width: 48px;
@@ -2208,7 +2411,7 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 }
 
 /* ============================= */
-/* WEAPON LOADOUTS – CORE LAYOUT */
+/* WEAPON LOADOUTS â€“ CORE LAYOUT */
 /* ============================= */
 
 .weapon-loadouts {
@@ -3098,7 +3301,7 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   color: #d7c697 !important;
 }
 /* -------------------------------------------- */
-/*  NPC header — combat skills grid             */
+/*  NPC header â€” combat skills grid             */
 /* -------------------------------------------- */
 
 .redsteel .npc-combat-grid {
@@ -3324,7 +3527,7 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   padding-bottom: 0;
 }
 
-/* Rerolls — trait-style toggle boxes */
+/* Rerolls â€” trait-style toggle boxes */
 .reroll-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));

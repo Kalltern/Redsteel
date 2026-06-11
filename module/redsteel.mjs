@@ -407,6 +407,12 @@ Handlebars.registerHelper("hasVisibleEntries", function (entries) {
   return Object.values(entries).some((entry) => entry.visible);
 });
 
+// True if any entry has at least one level (value > 0)
+Handlebars.registerHelper("hasLeveledEntries", function (entries) {
+  if (!entries) return false;
+  return Object.values(entries).some((entry) => Number(entry?.value) > 0);
+});
+
 Handlebars.registerHelper("hasValue", function (value) {
   return value !== null && value !== undefined && value !== "";
 });
@@ -1472,6 +1478,14 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
 
   const content = html.querySelector(".message-content");
   if (content) content.after(footer);
+});
+
+// Tint spell-cast chat messages by school (styled per school in CSS,
+// e.g. .chat-message.spell-msg-water)
+Hooks.on("renderChatMessageHTML", (message, html) => {
+  const school = message.getFlag("redsteel", "spellSchool");
+  if (!school) return;
+  html.classList.add(`spell-msg-${school}`);
 });
 
 Hooks.on("renderChatMessageHTML", (message, html, data) => {

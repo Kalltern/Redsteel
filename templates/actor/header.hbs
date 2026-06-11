@@ -251,6 +251,12 @@
         >
         {{/if}}
 
+        {{!-- Non-rollable secondary attributes (e.g. Initiative, Visage)
+              still need the label wrapper so they share the same format --}}
+        {{#unless (or (eq key "spd") (eq key "lck") (eq key "res") (eq key "fth") (eq key "sin"))}}
+        <label class="resource-label">
+        {{/unless}}
+
           {{localize (lookup @root.config.secondaryAttributes key)}}
         </label>
 
