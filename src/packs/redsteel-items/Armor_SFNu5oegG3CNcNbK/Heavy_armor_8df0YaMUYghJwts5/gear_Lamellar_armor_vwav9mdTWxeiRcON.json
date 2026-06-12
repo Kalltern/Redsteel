@@ -57,7 +57,8 @@
     "rangedCritDefense": 0,
     "archeryPenalty": -5,
     "perPenalty": -5,
-    "layer": "Top"
+    "layer": "Top",
+    "localizationKey": "REDSTEEL.Items.LamellarArmor.name"
   },
   "effects": [],
   "sort": 200000,

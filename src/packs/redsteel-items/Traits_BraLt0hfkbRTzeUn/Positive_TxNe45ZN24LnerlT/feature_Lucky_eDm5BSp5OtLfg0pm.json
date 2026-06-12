@@ -18,7 +18,8 @@
       ],
       "value": 1
     },
-    "option": "trait"
+    "option": "trait",
+    "localizationKey": "REDSTEEL.Items.Lucky.name"
   },
   "effects": [
     {

@@ -87,7 +87,8 @@
     "dmgType3": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "localizationKey": "REDSTEEL.Items.AntiLarge.name"
   },
   "effects": [],
   "sort": 0,

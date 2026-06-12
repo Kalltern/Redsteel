@@ -18,7 +18,8 @@
       ],
       "value": 0
     },
-    "option": "feature"
+    "option": "feature",
+    "localizationKey": "REDSTEEL.Items.PreciseLunge.name"
   },
   "effects": [],
   "sort": 400000,

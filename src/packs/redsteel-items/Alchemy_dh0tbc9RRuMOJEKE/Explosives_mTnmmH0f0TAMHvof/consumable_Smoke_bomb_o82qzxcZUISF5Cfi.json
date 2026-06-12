@@ -22,7 +22,8 @@
       "diceNum": null,
       "diceSize": "",
       "diceBonus": ""
-    }
+    },
+    "localizationKey": "REDSTEEL.Items.SmokeBomb.name"
   },
   "effects": [],
   "sort": 0,

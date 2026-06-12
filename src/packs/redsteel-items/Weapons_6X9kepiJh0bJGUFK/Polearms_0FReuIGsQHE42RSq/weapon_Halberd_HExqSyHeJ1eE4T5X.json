@@ -116,7 +116,8 @@
     "dmgType4": "blunt",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "localizationKey": "REDSTEEL.Items.Halberd.name"
   },
   "effects": [],
   "sort": 100000,

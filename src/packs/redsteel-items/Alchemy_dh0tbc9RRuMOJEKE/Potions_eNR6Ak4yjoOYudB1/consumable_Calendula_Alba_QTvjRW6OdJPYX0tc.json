@@ -24,7 +24,8 @@
     },
     "type": "",
     "toxicity": -25,
-    "bleed": 0
+    "bleed": 0,
+    "localizationKey": "REDSTEEL.Items.CalendulaAlba.name"
   },
   "effects": [],
   "sort": 0,

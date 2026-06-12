@@ -124,6 +124,11 @@
         "weaponSets": {
           "1": { "main": null, "off": null },
           "2": { "main": null, "off": null }
+        },
+        "armorSlots": {
+          "bottom": null,
+          "middle": null,
+          "top": null
         }
       },
       "shepherdsWill": {
@@ -931,7 +936,36 @@
         "weaponMaster": { "active": false, "nodes": {} },
         "hoplite": { "active": false, "nodes": {} },
         "swordDancer": { "active": false, "nodes": {} },
-        "bloodSchool": { "active": false, "nodes": {} }
+        "bloodSchool": { "active": false, "nodes": {} },
+        "berserk": { "active": false, "nodes": {} },
+        "spellslinger": { "active": false, "nodes": {} },
+        "elementalist": { "active": false, "nodes": {} },
+        "elymas": { "active": false, "nodes": {} },
+        "skirmisher": { "active": false, "nodes": {} },
+        "ranger": { "active": false, "nodes": {} },
+        "incantator": { "active": false, "nodes": {} },
+        "sharpshooter": { "active": false, "nodes": {} },
+        "vanguard": { "active": false, "nodes": {} },
+        "warden": { "active": false, "nodes": {} },
+        "champion": { "active": false, "nodes": {} },
+        "veneficus": { "active": false, "nodes": {} },
+        "alchemist": { "active": false, "nodes": {} },
+        "astramancer": { "active": false, "nodes": {} },
+        "bard": { "active": false, "nodes": {} },
+        "cryomancer": { "active": false, "nodes": {} },
+        "entomancer": { "active": false, "nodes": {} },
+        "geomancer": { "active": false, "nodes": {} },
+        "gnostic": { "active": false, "nodes": {} },
+        "grimm": { "active": false, "nodes": {} },
+        "illusionist": { "active": false, "nodes": {} },
+        "priest": { "active": false, "nodes": {} },
+        "countermage": { "active": false, "nodes": {} },
+        "maleficarum": { "active": false, "nodes": {} },
+        "mentalist": { "active": false, "nodes": {} },
+        "mystic": { "active": false, "nodes": {} },
+        "pyromancer": { "active": false, "nodes": {} },
+        "runeWarrior": { "active": false, "nodes": {} },
+        "vitamancer": { "active": false, "nodes": {} }
       }
     },
     "npc": {
@@ -1290,6 +1324,7 @@
       "armor": {
         "value": 0,
         "durability": 0,
+        "durabilityMax": 0,
         "acid": {
           "value": 0
         },

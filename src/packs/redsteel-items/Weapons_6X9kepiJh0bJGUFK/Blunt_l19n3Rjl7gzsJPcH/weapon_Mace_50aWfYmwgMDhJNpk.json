@@ -116,7 +116,8 @@
     "dmgType4": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "localizationKey": "REDSTEEL.Items.Mace.name"
   },
   "effects": [],
   "sort": 0,

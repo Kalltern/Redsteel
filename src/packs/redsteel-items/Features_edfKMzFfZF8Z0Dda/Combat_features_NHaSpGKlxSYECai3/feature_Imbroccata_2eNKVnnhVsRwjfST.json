@@ -18,7 +18,8 @@
       ],
       "value": null
     },
-    "option": "feature"
+    "option": "feature",
+    "localizationKey": "REDSTEEL.Items.Imbroccata.name"
   },
   "effects": [],
   "flags": {

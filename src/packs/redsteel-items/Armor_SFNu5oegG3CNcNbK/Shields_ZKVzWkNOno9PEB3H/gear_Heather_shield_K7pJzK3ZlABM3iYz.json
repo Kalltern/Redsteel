@@ -57,7 +57,8 @@
     "rangedCritDefense": 3,
     "archeryPenalty": 0,
     "perPenalty": 0,
-    "layer": ""
+    "layer": "",
+    "localizationKey": "REDSTEEL.Items.HeaterShield.name"
   },
   "effects": [],
   "sort": 0,

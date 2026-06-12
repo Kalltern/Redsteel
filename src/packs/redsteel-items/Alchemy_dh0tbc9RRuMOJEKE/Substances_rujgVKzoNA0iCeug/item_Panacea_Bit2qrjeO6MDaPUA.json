@@ -5,7 +5,8 @@
   "img": "systems/tos/assets/icons/Panacea.png",
   "system": {
     "description": "<p>Effect - Creates the alchemical substance Panacea, needed for alchemical production.<br />Production Bonus - -10% -&gt; 1 dose<br />Composition - 5x ingredients containing Panacea</p>",
-    "quantity": 1
+    "quantity": 1,
+    "localizationKey": "REDSTEEL.Items.Panacea.name"
   },
   "effects": [],
   "sort": 0,

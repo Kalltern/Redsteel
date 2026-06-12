@@ -7,6 +7,9 @@ import { getTraitPills } from "../utils/traitPills.mjs";
 
 const { api, sheets } = foundry.applications;
 
+// Maps the gear "layer" select values to armor slot keys on the actor
+const ARMOR_LAYER_SLOTS = { Bottom: "bottom", Middle: "middle", Top: "top" };
+
 /**
  * Extend the basic ActorSheet with some very simple modifications
  * @extends {ActorSheetV2}
@@ -47,6 +50,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       toggleTwoHandGrip: this._toggleTwoHandGrip,
       toggleNpcOffhand: this._toggleNpcOffhand,
       toggleAmmoEquipped: this._toggleAmmoEquipped,
+      toggleArmorDurability: this._toggleArmorDurability,
       toggleSpecNode: this._toggleSpecNode,
     },
     // Custom property that's merged into `this.options`
@@ -515,7 +519,21 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     }
 
     /* ---------------------------------- */
-    /* 2️⃣ INVENTORY WEAPON RIGHT-CLICK    */
+    /* 2️⃣ ARMOR SLOT RIGHT-CLICK (CLEAR)  */
+    /* ---------------------------------- */
+    const armorSlot = event.target.closest(".armor-slot");
+    if (armorSlot) {
+      event.preventDefault();
+
+      const layer = armorSlot.dataset.layer;
+      if (!layer) return;
+
+      this._clearArmorSlot(layer);
+      return;
+    }
+
+    /* ---------------------------------- */
+    /* 3️⃣ INVENTORY ITEM RIGHT-CLICK      */
     /* ---------------------------------- */
     const itemRow = event.target.closest(".item[data-item-id]");
     if (!itemRow) return;
@@ -526,9 +544,22 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     if (!itemId) return;
 
     const item = this.actor.items.get(itemId);
-    if (!item || item.type !== "weapon") return;
+    if (!item) return;
 
-    this._openWeaponEquipMenuFromItem(itemId);
+    if (item.type === "weapon") {
+      this._openWeaponEquipMenuFromItem(itemId);
+      return;
+    }
+
+    // Layered armor equips straight into its slot; right-click toggles it
+    if (item.type === "gear" && !item.system.shield) {
+      const layer = ARMOR_LAYER_SLOTS[item.system.layer];
+      if (!layer) return;
+
+      const slots = this.actor.system.combat.armorSlots ?? {};
+      if (slots[layer] === itemId) this._clearArmorSlot(layer);
+      else this._assignArmorDirect(itemId, layer);
+    }
   }
 
   _clearWeaponSlot(set, hand) {
@@ -542,6 +573,79 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     return this.actor.update({
       [path]: null,
     });
+  }
+
+  /**
+   * Keep `system.equipped` (and the item's effects) in sync with the armor
+   * slots, since derived armor data on the actor is driven by `equipped`.
+   */
+  async _setArmorEquipped(item, equipped) {
+    if (!item) return;
+
+    await item.update({ "system.equipped": equipped });
+
+    for (const effect of item.effects) {
+      await effect.update({ disabled: !equipped });
+    }
+  }
+
+  async _assignArmorDirect(itemId, layer) {
+    if (this.actor.type !== "character") return;
+    if (!itemId || !layer) return;
+
+    const item = this.actor.items.get(itemId);
+    if (!item || item.type !== "gear" || item.system.shield) return;
+
+    // Armor only fits the slot matching its own layer
+    if (ARMOR_LAYER_SLOTS[item.system.layer] !== layer) return;
+
+    const slots = this.actor.system.combat.armorSlots ?? {};
+    if (slots[layer] === itemId) return;
+
+    const current = slots[layer] ? this.actor.items.get(slots[layer]) : null;
+    if (current) await this._setArmorEquipped(current, false);
+    await this._setArmorEquipped(item, true);
+
+    return this.actor.update({
+      [`system.combat.armorSlots.${layer}`]: itemId,
+    });
+  }
+
+  async _clearArmorSlot(layer) {
+    if (this.actor.type !== "character") return;
+    if (!layer) return;
+
+    const slots = this.actor.system.combat.armorSlots ?? {};
+    const item = slots[layer] ? this.actor.items.get(slots[layer]) : null;
+    if (item) await this._setArmorEquipped(item, false);
+
+    return this.actor.update({
+      [`system.combat.armorSlots.${layer}`]: null,
+    });
+  }
+
+  /**
+   * Golden shield pips under an armor slot, one per point of durabilityMax.
+   * Pips 0..durability-1 are lit; toggling a lit pip spends 1 durability,
+   * toggling a dim one restores 1, clamped to [0, durabilityMax].
+   */
+  static async _toggleArmorDurability(event, target) {
+    const itemId = target.dataset.itemId;
+    const index = Number(target.dataset.index ?? 0);
+    const item = this.actor.items.get(itemId);
+    if (!item || item.type !== "gear") return;
+
+    const armor = item.system.armor ?? {};
+    const current = Number(armor.durability ?? 0);
+    const max = Number(armor.durabilityMax ?? 0);
+
+    const active = index < current;
+    const durability = Math.max(
+      0,
+      Math.min(active ? current - 1 : current + 1, max),
+    );
+
+    await item.update({ "system.armor.durability": durability });
   }
 
   /** @override */
@@ -668,11 +772,57 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
 
         const offIsShield = !!offItem && offItem.system?.shield;
 
+        // Equipped shields get the same durability pips as layered armor
+        const offDurability = offIsShield
+          ? Number(offItem.system.armor?.durability ?? 0)
+          : 0;
+        const offDurabilityMax = offIsShield
+          ? Number(offItem.system.armor?.durabilityMax ?? 0)
+          : 0;
+        const offDurabilityPips = [];
+        for (let i = 0; i < offDurabilityMax; i++) {
+          offDurabilityPips.push({ index: i, active: i < offDurability });
+        }
+
         context.weaponSets[setId] = {
           main: mainItem,
           off: offItem,
           mainIsTwoHanded,
           offIsShield,
+          offDurability,
+          offDurabilityMax,
+          offDurabilityPips,
+          offHasDurability:
+            offIsShield && !mainIsTwoHanded && offDurabilityMax > 0,
+        };
+      }
+    }
+
+    // Resolve armor slots -> Item documents (VIEW DATA ONLY)
+    context.armorSlots = {};
+    if (this.actor.type === "character") {
+      const slots = this.actor.system.combat.armorSlots ?? {};
+      for (const [label, layer] of Object.entries(ARMOR_LAYER_SLOTS)) {
+        const item = slots[layer]
+          ? (this.actor.items.get(slots[layer]) ?? null)
+          : null;
+
+        const durability = Number(item?.system.armor?.durability ?? 0);
+        const durabilityMax = Number(item?.system.armor?.durabilityMax ?? 0);
+
+        // One shield pip per point of max durability; lit pips = current value
+        const durabilityPips = [];
+        for (let i = 0; i < durabilityMax; i++) {
+          durabilityPips.push({ index: i, active: i < durability });
+        }
+
+        context.armorSlots[layer] = {
+          item,
+          label,
+          durability,
+          durabilityMax,
+          durabilityPips,
+          hasDurability: !!item && durabilityMax > 0,
         };
       }
     }
@@ -1124,7 +1274,11 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     if (!path) return;
 
     const current = Number(foundry.utils.getProperty(doc, path) ?? 0);
-    const newValue = Math.max(0, current + delta);
+    let newValue = Math.max(0, current + delta);
+
+    // Optional cap, e.g. armor durability capped at durabilityMax (0 = no cap)
+    const max = Number(target.dataset.max);
+    if (Number.isFinite(max) && max > 0) newValue = Math.min(newValue, max);
 
     // 🧠 SPECIAL CASE: Supplies (quantity)
     if (path === "system.quantity" && newValue === 0) {
@@ -1470,7 +1624,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
    * @protected
    */
   _onDragOver(event) {
-    const slot = event.target.closest(".weapon-slot");
+    const slot = event.target.closest(".weapon-slot, .armor-slot");
     if (!slot) return;
 
     event.preventDefault();
@@ -1490,6 +1644,11 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     const dropTarget = event.target.closest(".weapon-slot");
     if (dropTarget) {
       return this._onDropWeaponSlot(event, dropTarget);
+    }
+    const armorTarget = event.target.closest(".armor-slot");
+    if (armorTarget) {
+      armorTarget.classList.remove("drop-hover");
+      return this._onDropArmorSlot(event, armorTarget);
     }
     const allowed = Hooks.call("dropActorSheetData", actor, this, data);
     if (allowed === false) return;
@@ -1726,6 +1885,29 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     if (item.type !== "weapon" && !isShield) return;
 
     this._assignWeaponDirect(item.id, toSet, toSlot);
+  }
+
+  /**
+   * Handle dropping an owned armor (gear) item onto one of the layered
+   * armor slots. Layer validation happens in _assignArmorDirect.
+   * @param {DragEvent} event       The concluding DragEvent
+   * @param {HTMLElement} slotEl    The armor slot element dropped on
+   * @private
+   */
+  async _onDropArmorSlot(event, slotEl) {
+    if (this.actor.type !== "character") return;
+    event.preventDefault();
+
+    const data = TextEditor.getDragEventData(event);
+    if (data?.type !== "Item") return;
+
+    const layer = slotEl.dataset.layer;
+    if (!layer) return;
+
+    const item = await Item.implementation.fromDropData(data);
+    if (!item?.isOwned) return;
+
+    return this._assignArmorDirect(item.id, layer);
   }
 
   /**

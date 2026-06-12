@@ -22,7 +22,8 @@
       "diceNum": null,
       "diceSize": "",
       "diceBonus": ""
-    }
+    },
+    "localizationKey": "REDSTEEL.Items.FireResistantSalve.name"
   },
   "effects": [],
   "sort": 0,

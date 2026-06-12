@@ -108,7 +108,8 @@
     "dmgType2": "",
     "bool3": "",
     "dmgType3": "",
-    "key": "guard"
+    "key": "guard",
+    "localizationKey": "REDSTEEL.Items.GuardStance.name"
   },
   "effects": [],
   "folder": "9Ug73JNNSqmkEdOI",

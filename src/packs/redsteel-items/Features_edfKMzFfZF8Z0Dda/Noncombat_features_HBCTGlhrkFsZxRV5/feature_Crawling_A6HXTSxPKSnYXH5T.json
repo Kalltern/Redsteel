@@ -18,7 +18,8 @@
       ],
       "value": 0
     },
-    "option": "feature"
+    "option": "feature",
+    "localizationKey": "REDSTEEL.Items.Crawling.name"
   },
   "effects": [],
   "sort": 0,

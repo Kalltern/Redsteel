@@ -26,7 +26,8 @@
     "penetration": 5,
     "burn": null,
     "freeze": null,
-    "stagger": 10
+    "stagger": 10,
+    "localizationKey": "REDSTEEL.Items.CracklingClay.name"
   },
   "effects": [],
   "sort": 0,

@@ -107,7 +107,8 @@
     "dmgType3": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "localizationKey": "REDSTEEL.Items.AimingMelee.name"
   },
   "effects": [],
   "folder": "laOvi1sJV6MKCK7M",

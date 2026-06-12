@@ -18,7 +18,8 @@
       ],
       "value": 0
     },
-    "option": "feature"
+    "option": "feature",
+    "localizationKey": "REDSTEEL.Items.Haste.name"
   },
   "effects": [],
   "sort": 800000,

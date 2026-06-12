@@ -18,7 +18,8 @@
       ],
       "value": 1
     },
-    "option": "feature"
+    "option": "feature",
+    "localizationKey": "REDSTEEL.Items.ElvenTalentAthletics.name"
   },
   "effects": [
     {

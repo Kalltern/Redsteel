@@ -85,7 +85,8 @@
     "dmgType3": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "localizationKey": "REDSTEEL.Items.LegSweepStrength.name"
   },
   "effects": [],
   "sort": 200000,

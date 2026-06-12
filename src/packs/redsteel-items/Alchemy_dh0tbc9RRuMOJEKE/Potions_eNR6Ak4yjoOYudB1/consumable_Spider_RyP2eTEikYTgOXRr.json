@@ -24,7 +24,8 @@
     },
     "type": "",
     "toxicity": 14,
-    "bleed": 0
+    "bleed": 0,
+    "localizationKey": "REDSTEEL.Items.Spider.name"
   },
   "effects": [],
   "sort": 0,

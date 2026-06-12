@@ -25,7 +25,8 @@
     },
     "type": "health",
     "toxicity": 8,
-    "bleed": 0
+    "bleed": 0,
+    "localizationKey": "REDSTEEL.Items.ScarletTear.name"
   },
   "effects": [],
   "sort": 0,

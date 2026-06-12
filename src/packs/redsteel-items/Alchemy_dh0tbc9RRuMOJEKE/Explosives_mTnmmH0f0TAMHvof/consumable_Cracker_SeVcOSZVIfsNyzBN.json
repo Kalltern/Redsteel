@@ -21,7 +21,8 @@
       "diceNum": 8,
       "diceSize": "6",
       "diceBonus": ""
-    }
+    },
+    "localizationKey": "REDSTEEL.Items.Cracker.name"
   },
   "effects": [],
   "sort": 0,

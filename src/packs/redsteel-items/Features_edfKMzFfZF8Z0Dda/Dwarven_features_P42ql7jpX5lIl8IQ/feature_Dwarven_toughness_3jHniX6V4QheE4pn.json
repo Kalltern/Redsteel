@@ -18,7 +18,8 @@
       ],
       "value": null
     },
-    "option": "feature"
+    "option": "feature",
+    "localizationKey": "REDSTEEL.Items.DwarvenToughness.name"
   },
   "effects": [],
   "flags": {

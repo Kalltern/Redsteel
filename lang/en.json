@@ -672,6 +672,2655 @@
               "description": "20 CP; Škola Krve - Mistr. Manual — resolved at the table."
             }
           }
+        },
+        "berserk": {
+          "label": "Berserk",
+          "nodes": {
+            "zbesilost": {
+              "label": "Frenzy",
+              "description": "0 CP. Manual — resolved at the table."
+            },
+            "imunitaPanika": {
+              "label": "Frenzy: Immune to Panic, Fear and Terror",
+              "description": "10 CP. Manual — resolved at the table."
+            },
+            "obnovaVydrze": {
+              "label": "Frenzy: Kills restore 4 Stamina",
+              "description": "10 CP. Manual — resolved at the table."
+            },
+            "nezastavitelny": {
+              "label": "Unstoppable",
+              "description": "15 CP; Doktrína IV. Manual — resolved at the table."
+            },
+            "mentalniOdolnost": {
+              "label": "Frenzy: Mental resilience",
+              "description": "5 CP. Mental resilience and immunity to Disorientation. Manual — resolved at the table."
+            },
+            "divokyVypad": {
+              "label": "Wild Lunge",
+              "description": "10 CP. Manual — resolved at the table."
+            },
+            "pevnaVule": {
+              "label": "Iron Will",
+              "description": "10 CP; Doktrína VI. Manual — resolved at the table."
+            },
+            "zbesilyUtokPostih": {
+              "label": "Frenzied Attack: penalty 5% smaller",
+              "description": "15 CP; M/S/T/D V. Manual — resolved at the table."
+            },
+            "zbesilyUtokVyhoda": {
+              "label": "Frenzied Attack: Advantage to Hit",
+              "description": "15 CP; M/S/T/D X. Manual — resolved at the table."
+            },
+            "zurivyUder": {
+              "label": "Furious Blow",
+              "description": "20 CP; M/S/T/D VI. Manual — resolved at the table."
+            },
+            "zurivyUderZasah": {
+              "label": "Furious Blow: Hit +5%",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "zurivaNezdolnost": {
+              "label": "Furious Resilience",
+              "description": "20 CP; Doktrína V. Manual — resolved at the table."
+            },
+            "odolnostStun": {
+              "label": "Chance to be Stunned -10% / to Bleed -15%",
+              "description": "5 CP. Automated."
+            },
+            "desiveVzezreni": {
+              "label": "Terrifying Visage",
+              "description": "5 CP; Zastrašování I. Manual — resolved at the table."
+            },
+            "masakr1": {
+              "label": "Terrifying Massacre I",
+              "description": "10 CP; M/S/T/D VIII. Manual — resolved at the table."
+            },
+            "masakr2": {
+              "label": "Terrifying Massacre II",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "rychlaLecba": {
+              "label": "Grave wounds heal 10 days faster",
+              "description": "15 SP. Manual — resolved at the table."
+            },
+            "zivotyVydrz": {
+              "label": "Health +5 / Stamina +5",
+              "description": "10 CP. Automated."
+            },
+            "primarniZraneni": {
+              "label": "Damage +50% from Primary Attributes",
+              "description": "10 CP. Manual — resolved at the table."
+            }
+          }
+        },
+        "spellslinger": {
+          "label": "Spellslinger",
+          "nodes": {
+            "ucednik": {
+              "label": "Spellslinger: Apprentice",
+              "description": "0 CP. Manual — resolved at the table."
+            },
+            "expert": {
+              "label": "Spellslinger: Expert",
+              "description": "15 CP; Doktrína V. Manual — resolved at the table."
+            },
+            "mistr": {
+              "label": "Spellslinger: Master",
+              "description": "15 CP; Doktrína X. Manual — resolved at the table."
+            },
+            "salamander": {
+              "label": "Salamander",
+              "description": "5 CP; Čarostřelec: Učedník. Manual — resolved at the table."
+            },
+            "salamander2": {
+              "label": "Salamander: Ignite +10%",
+              "description": "5 CP; Čarostřelec: Expert. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+            },
+            "salamander3": {
+              "label": "Salamander: Ignite +15%",
+              "description": "5 CP; Čarostřelec: Mistr. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+            },
+            "zabak": {
+              "label": "Frog",
+              "description": "5 CP; Čarostřelec: Učedník. Manual — resolved at the table."
+            },
+            "zabak2": {
+              "label": "Frog: Slow +20%",
+              "description": "5 CP; Čarostřelec: Expert. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+            },
+            "zabak3": {
+              "label": "Frog: Slow +1 turn",
+              "description": "5 CP; Čarostřelec: Mistr. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+            },
+            "jiskra": {
+              "label": "Spark",
+              "description": "5 CP; Čarostřelec: Učedník. Manual — resolved at the table."
+            },
+            "jiskra2": {
+              "label": "Spark: Stun +20%",
+              "description": "5 CP; Čarostřelec: Expert. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+            },
+            "jiskra3": {
+              "label": "Spark: Chaining +25%; full damage",
+              "description": "5 CP; Čarostřelec: Mistr. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+            },
+            "harpuna": {
+              "label": "Harpoon",
+              "description": "5 CP; Čarostřelec: Učedník. Manual — resolved at the table."
+            },
+            "harpuna2": {
+              "label": "Harpoon: Penetration +5",
+              "description": "5 CP; Čarostřelec: Expert. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+            },
+            "harpuna3": {
+              "label": "Harpoon: Penetration +5",
+              "description": "5 CP; Čarostřelec: Mistr. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+            },
+            "slepice": {
+              "label": "Hen",
+              "description": "5 CP; Čarostřelec: Učedník. Manual — resolved at the table."
+            },
+            "slepice2": {
+              "label": "Hen: Disorientation +1 turn",
+              "description": "5 CP; Čarostřelec: Expert. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+            },
+            "slepice3": {
+              "label": "Hen: Full damage",
+              "description": "5 CP; Čarostřelec: Mistr. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+            },
+            "termit": {
+              "label": "Termite",
+              "description": "5 CP; Čarostřelec: Učedník. Manual — resolved at the table."
+            },
+            "termit2": {
+              "label": "Termite: Chance +15%",
+              "description": "5 CP; Čarostřelec: Expert. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+            },
+            "termit3": {
+              "label": "Termite: Chance +20%",
+              "description": "5 CP; Čarostřelec: Mistr. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+            },
+            "svetluska": {
+              "label": "Firefly",
+              "description": "5 CP; Čarostřelec: Expert. Manual — resolved at the table."
+            },
+            "svetluska2": {
+              "label": "Firefly: Blind +1 turn",
+              "description": "5 CP; Čarostřelec: Mistr. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+            },
+            "jezek": {
+              "label": "Hedgehog",
+              "description": "5 CP; Čarostřelec: Expert. Manual — resolved at the table."
+            },
+            "netopyr": {
+              "label": "Bat",
+              "description": "5 CP; Čarostřelec: Expert. Manual — resolved at the table."
+            },
+            "netopyr2": {
+              "label": "Bat: Difficulty +15%",
+              "description": "5 CP; Čarostřelec: Mistr. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+            },
+            "beran": {
+              "label": "Ram",
+              "description": "5 CP; Čarostřelec: Expert. Manual — resolved at the table."
+            },
+            "beran2": {
+              "label": "Ram: Push +1 hex",
+              "description": "5 CP; Čarostřelec: Mistr. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+            },
+            "inkvizitor": {
+              "label": "Inquisitor",
+              "description": "5 CP; Čarostřelec: Expert. Manual — resolved at the table."
+            },
+            "intZraneni": {
+              "label": "Enchanted projectiles: +Int damage",
+              "description": "5 CP; Čarostřelec: Expert. Manual — resolved at the table."
+            },
+            "polarka": {
+              "label": "Polestar",
+              "description": "5 CP; Čarostřelec: Mistr. Manual — resolved at the table."
+            },
+            "posel": {
+              "label": "Messenger",
+              "description": "5 CP; Čarostřelec: Mistr. Manual — resolved at the table."
+            },
+            "sokol": {
+              "label": "Falcon",
+              "description": "5 CP; Čarostřelec: Mistr. Manual — resolved at the table."
+            }
+          }
+        },
+        "elementalist": {
+          "label": "Elementalist",
+          "nodes": {
+            "familiar": {
+              "label": "Familiar",
+              "description": "0 CP. Manual — resolved at the table."
+            },
+            "magickyPomocnik": {
+              "label": "Magical Assistant",
+              "description": "5 CP; Elementalista V. Manual — resolved at the table."
+            },
+            "dar1a": {
+              "label": "Gift, 1st degree",
+              "description": "5 CP; Elementalista I. Manual — resolved at the table."
+            },
+            "dar2a": {
+              "label": "Gift, 2nd degree",
+              "description": "10 CP; Elementalista II. Manual — resolved at the table."
+            },
+            "dar1b": {
+              "label": "Gift, 1st degree",
+              "description": "10 CP; Elementalista III. Manual — resolved at the table."
+            },
+            "dar2b": {
+              "label": "Gift, 2nd degree",
+              "description": "15 CP; Elementalista IV. Manual — resolved at the table."
+            },
+            "dar3a": {
+              "label": "Gift, 3rd degree",
+              "description": "20 CP; Elementalista V. Manual — resolved at the table."
+            },
+            "dar4": {
+              "label": "Gift, 4th degree",
+              "description": "15 CP; Elementalista VI. Manual — resolved at the table."
+            },
+            "dar2c": {
+              "label": "Gift, 2nd degree",
+              "description": "15 CP; Elementalista VII. Manual — resolved at the table."
+            },
+            "dar1c": {
+              "label": "Gift, 1st degree",
+              "description": "10 CP; Elementalista VII. Manual — resolved at the table."
+            },
+            "dar2d": {
+              "label": "Gift, 2nd degree",
+              "description": "15 CP; Elementalista VIII. Manual — resolved at the table."
+            },
+            "dar5": {
+              "label": "Gift, 5th degree",
+              "description": "20 CP; Elementalista IX. Manual — resolved at the table."
+            },
+            "dar3b": {
+              "label": "Gift, 3rd degree",
+              "description": "20 CP; Elementalista X. Manual — resolved at the table."
+            },
+            "znalosti": {
+              "label": "Elementalist's Knowledge",
+              "description": "5 SP; Elementalista I. Manual — resolved at the table."
+            },
+            "vznesenaObet": {
+              "label": "Noble Sacrifice",
+              "description": "10 SP; Elementalista IV. Manual — resolved at the table."
+            },
+            "privolaniFamiliara": {
+              "label": "Summon Familiar",
+              "description": "10 SP; Elementalista IV. Manual — resolved at the table."
+            }
+          }
+        },
+        "elymas": {
+          "label": "Elymas",
+          "nodes": {
+            "magProtiutok": {
+              "label": "Magic Counterattack",
+              "description": "10 CP; Škola IV. Manual — resolved at the table."
+            },
+            "mpExpert": {
+              "label": "Magic Counterattack: Expert",
+              "description": "10 CP; Škola VI. Manual — resolved at the table."
+            },
+            "mpUtok10": {
+              "label": "MC: Magic Attack +10% for Apprentice",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "mpVolnaAkce": {
+              "label": "One MC per round as Free action",
+              "description": "10 CP; Elymas V. Manual — resolved at the table."
+            },
+            "mpKritNeuspech": {
+              "label": "MC: Critical failure -5%",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "mpMistr": {
+              "label": "Magic Counterattack: Master",
+              "description": "10 CP; Škola IX. Manual — resolved at the table."
+            },
+            "soustredenaObrana": {
+              "label": "Focused Defense",
+              "description": "10 CP. Manual — resolved at the table."
+            },
+            "soKrit": {
+              "label": "FD: Magic Defense crit +10%",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "soReakce": {
+              "label": "FD: Reaction +1",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "soRedukce": {
+              "label": "FD: Magic damage reduction 50%",
+              "description": "10 CP; Elymas V. Manual — resolved at the table."
+            },
+            "magObranaMana": {
+              "label": "Magic Defense: free, Crit +3%",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "opakovaniUsmernovani": {
+              "label": "Once per day reroll Channeling",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "rozsahObrany": {
+              "label": "Magic Defense range +1.5m",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "magickaOzvena": {
+              "label": "Magic Echo",
+              "description": "5 CP; Elymas V. Manual — resolved at the table."
+            },
+            "modifikatorMany": {
+              "label": "Mana modifier 5",
+              "description": "10 CP; Elymas X. Automated."
+            }
+          }
+        },
+        "skirmisher": {
+          "label": "Skirmisher",
+          "nodes": {
+            "harcovnikuvUm": {
+              "label": "Skirmisher's Craft",
+              "description": "10 CP. Manual — resolved at the table."
+            },
+            "kryciPostoj": {
+              "label": "Covering Stance",
+              "description": "5 CP; Štítonoš II. Manual — resolved at the table."
+            },
+            "odvetnyVrh": {
+              "label": "Retaliatory Throw",
+              "description": "10 CP; Štítonoš V. Manual — resolved at the table."
+            },
+            "navazujiciVrh": {
+              "label": "Follow-up Throw",
+              "description": "10 CP. Manual — resolved at the table."
+            },
+            "vrh5": {
+              "label": "Throwing +5%",
+              "description": "10 CP; Štítonoš X. Automated."
+            },
+            "prezbrojeni": {
+              "label": "Re-arm: -6 Stamina",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "mireniPohyb": {
+              "label": "Keeps Aim while moving",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "oddechMireni": {
+              "label": "Respite: Aim +1",
+              "description": "10 CP. Manual — resolved at the table."
+            },
+            "mireniPoVrhu": {
+              "label": "Gains one Aim after a throw",
+              "description": "10 CP; Štítonoš IV. Manual — resolved at the table."
+            },
+            "pohybPoVrhu": {
+              "label": "May Slow Move after a throw",
+              "description": "10 CP. Manual — resolved at the table."
+            },
+            "presnyVystrel": {
+              "label": "Precise Shot: -1 action, -5 Stamina",
+              "description": "10 CP; Štítonoš VIII. Manual — resolved at the table."
+            },
+            "lehkaZbroj": {
+              "label": "Light armor: Respite restores +1 Stamina",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "bleedStun": {
+              "label": "Bleeding +20% / Stun +15%",
+              "description": "10 CP. Automated."
+            },
+            "kritRozsah": {
+              "label": "Critical Range +2",
+              "description": "5 CP. Critical range is not automated yet. Manual — resolved at the table."
+            },
+            "kritKryt": {
+              "label": "Critical Cover +5%",
+              "description": "5 CP. Automated."
+            },
+            "zmrzacujiciVystrel": {
+              "label": "Crippling Shot: 50% to stop movement",
+              "description": "10 CP; Štítonoš VI. Manual — resolved at the table."
+            },
+            "vylZmrzacujici": {
+              "label": "Improved Crippling Shot",
+              "description": "10 CP; Štítonoš VIII. Manual — resolved at the table."
+            },
+            "vrhSRozbehem": {
+              "label": "Running Throw: Move +50%, Impact +1d6",
+              "description": "5 CP; Štítonoš IV. Manual — resolved at the table."
+            },
+            "utokSPohybem": {
+              "label": "Attack on the Move",
+              "description": "10 CP; Štítonoš IV. Manual — resolved at the table."
+            },
+            "zbesilyVrh": {
+              "label": "Frenzied Throw: Shield strain +25%",
+              "description": "5 CP; Štítonoš V. Manual — resolved at the table."
+            }
+          }
+        },
+        "ranger": {
+          "label": "Ranger",
+          "nodes": {
+            "ucednik": {
+              "label": "Ranger - Apprentice",
+              "description": "0 CP. Manual — resolved at the table."
+            },
+            "zast": {
+              "label": "Grudge",
+              "description": "10 CP; Hraničář II. Manual — resolved at the table."
+            },
+            "lovcuvVystrel": {
+              "label": "Hunter's Shot",
+              "description": "10 CP. Manual — resolved at the table."
+            },
+            "expert": {
+              "label": "Ranger - Expert",
+              "description": "15 CP; Hraničář V. Manual — resolved at the table."
+            },
+            "utokDravce": {
+              "label": "Predator's Attack",
+              "description": "15 CP; Hraničář VIII. Manual — resolved at the table."
+            },
+            "dorazeni": {
+              "label": "Finishing Blow",
+              "description": "15 CP. Manual — resolved at the table."
+            },
+            "mistr": {
+              "label": "Ranger - Master",
+              "description": "5 CP; Hraničář a Doktrína X. Manual — resolved at the table."
+            },
+            "metlaPrubojnost": {
+              "label": "Bane: Penetration +3",
+              "description": "5 CP; Hraničář IV. Situational (vs. the Bane) — manual for now. Manual — resolved at the table."
+            },
+            "metlaKritRozsah": {
+              "label": "Bane: Critical Range +2",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "odhaleniSlabiny": {
+              "label": "Expose Weakness",
+              "description": "15 CP; Přežití III. Manual — resolved at the table."
+            },
+            "metlaKritObrana": {
+              "label": "Bane: Critical Defense +3%",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "metlaKritZasah": {
+              "label": "Bane: Critical Hit +3%",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "metlaOvereni": {
+              "label": "Bane: Precision +10%",
+              "description": "10 CP. Manual — resolved at the table."
+            },
+            "metlaKritZraneni": {
+              "label": "Bane: Crit damage/Penetration +5",
+              "description": "10 CP. Manual — resolved at the table."
+            },
+            "bane1": {
+              "label": "Unlocks one Bane",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "bane2": {
+              "label": "Unlocks one Bane",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "bane3": {
+              "label": "Unlocks one Bane",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "vnimaniStopovani": {
+              "label": "Perception and Tracking +15%",
+              "description": "10 SP; Přežití II. Manual — resolved at the table."
+            },
+            "dravciSmysly": {
+              "label": "Predatory Senses",
+              "description": "10 CP. Manual — resolved at the table."
+            },
+            "pohybVPrirode": {
+              "label": "In nature: Stealth +15%",
+              "description": "5 SP; Plížení IV. Manual — resolved at the table."
+            },
+            "slevaPlizeni": {
+              "label": "3 SP discount per Stealth rank",
+              "description": "0 SP. Manual — resolved at the table."
+            },
+            "slevaPreziti": {
+              "label": "3 SP discount per Survival rank",
+              "description": "0 SP. Manual — resolved at the table."
+            },
+            "slevaRanhojicstvi": {
+              "label": "3 SP discount per First Aid rank",
+              "description": "0 SP. Manual — resolved at the table."
+            },
+            "prezbrojeni": {
+              "label": "Re-arm: -6 Stamina",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "vylPrezbrojeni": {
+              "label": "Improved Sudden Re-arm",
+              "description": "10 CP. Manual — resolved at the table."
+            }
+          }
+        },
+        "incantator": {
+          "label": "Incantator",
+          "nodes": {
+            "ohniskovyPredmet": {
+              "label": "Focus item: Critical Range +5",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "soustredeni": {
+              "label": "Focus: Magic Attack +5%, Crit +1%",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "rychleSoustredeni": {
+              "label": "Quick Focus",
+              "description": "10 CP; Incantator V. Manual — resolved at the table."
+            },
+            "precizniInkantace": {
+              "label": "Precise Incantation",
+              "description": "15 CP; Incantator V. Manual — resolved at the table."
+            },
+            "moudraKniha": {
+              "label": "Wise Book",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "vlnaEnergie": {
+              "label": "Wave of Energy",
+              "description": "10 CP; Incantator IV. Manual — resolved at the table."
+            },
+            "dvojnasobnaMana": {
+              "label": "Magic attacks cost defender double mana",
+              "description": "0 CP. Manual — resolved at the table."
+            },
+            "stabilizaceZdroje": {
+              "label": "Source Stabilization",
+              "description": "15 CP. Manual — resolved at the table."
+            },
+            "katalyzator": {
+              "label": "Catalyst",
+              "description": "10 CP. Manual — resolved at the table."
+            },
+            "dlouhyOdpocinek": {
+              "label": "Long rest: 50 mana",
+              "description": "15 CP; Incantator X. Manual — resolved at the table."
+            },
+            "modifikatorMany": {
+              "label": "Mana modifier 14",
+              "description": "15 CP; Incantator X. Automated."
+            }
+          }
+        },
+        "sharpshooter": {
+          "label": "Sharpshooter",
+          "nodes": {
+            "mireniPomalyPohyb": {
+              "label": "Keeps Aim during Slow Move",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "zmenaCile": {
+              "label": "Change Aim target once per round free",
+              "description": "5 CP; Lukostřelec/Kušník V. Manual — resolved at the table."
+            },
+            "zacileni": {
+              "label": "Target Lock",
+              "description": "10 CP. Manual — resolved at the table."
+            },
+            "redukceMireni": {
+              "label": "Aim reduction after a hit",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "mireniPoMinuti": {
+              "label": "Gains Aim after a missed shot",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "zmrzacujiciVystrel": {
+              "label": "Crippling Shot: 35% to stop movement",
+              "description": "10 CP; Lukostřelec/Kušník VII. Manual — resolved at the table."
+            },
+            "bleed1": {
+              "label": "Bleeding +5%",
+              "description": "5 CP. Automated."
+            },
+            "bleed2": {
+              "label": "Bleeding +5%",
+              "description": "5 CP. Automated."
+            },
+            "bleed3": {
+              "label": "Bleeding +5%",
+              "description": "5 CP. Automated."
+            },
+            "presnyVystrel": {
+              "label": "Precise Shot: Crit Range Advantage",
+              "description": "10 CP; Lukostřelec/Kušník VII. Manual — resolved at the table."
+            },
+            "strazStrelba": {
+              "label": "Guard: Shooting +10%",
+              "description": "10 CP; Lukostřelec/Kušník VIII. Manual — resolved at the table."
+            },
+            "streleckyPostoj": {
+              "label": "Shooting Stance: Dodge +5%, Cover +10%",
+              "description": "10 CP; Lukostřelec/Kušník X. Manual — resolved at the table."
+            },
+            "ignorujeKryt": {
+              "label": "Ignores half cover",
+              "description": "5 CP; Lukostřelec/Kušník X. Full cover counts as half. Manual — resolved at the table."
+            },
+            "strelba5": {
+              "label": "Shooting +5%",
+              "description": "10 CP. Automated."
+            },
+            "iniciativa2": {
+              "label": "Initiative +2",
+              "description": "5 CP. Automated."
+            },
+            "mireniOvereni": {
+              "label": "Aiming: Precision +5%",
+              "description": "10 CP; Lukostřelec/Kušník VI. Tied to Aiming — manual for now. Manual — resolved at the table."
+            },
+            "pozadavkyLuku": {
+              "label": "Bow and crossbow requirements -1",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "oddechMireni": {
+              "label": "Respite: Aim +1",
+              "description": "10 CP; Lukostřelec/Kušník V. Manual — resolved at the table."
+            },
+            "odvetnyVystrel": {
+              "label": "Retaliatory Shot",
+              "description": "20 CP; Lukostřelec/Kušník VIII. Manual — resolved at the table."
+            },
+            "tesnyZasah": {
+              "label": "Close Hit",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "kritRozsah": {
+              "label": "Critical Range +2",
+              "description": "5 CP. Critical range is not automated yet. Manual — resolved at the table."
+            },
+            "prubojnost2": {
+              "label": "Penetration +2",
+              "description": "5 CP. Automated."
+            },
+            "primarniZraneni": {
+              "label": "Damage +50% from Primary Attributes",
+              "description": "10 CP. Manual — resolved at the table."
+            },
+            "kryt10": {
+              "label": "Ranged Cover +10%",
+              "description": "5 CP; Lukostřelec/Kušník VI. Automated."
+            }
+          }
+        },
+        "vanguard": {
+          "label": "Vanguard",
+          "nodes": {
+            "ztecPohyb50": {
+              "label": "Charge: Movement +50%",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "ztecZraneniHexa": {
+              "label": "Charge: +1 damage per hex",
+              "description": "10 CP. Manual — resolved at the table."
+            },
+            "ztecPohyb100": {
+              "label": "Charge: Movement +100%",
+              "description": "5 CP; M/T/S/D IV. Manual — resolved at the table."
+            },
+            "rozrazeni": {
+              "label": "Breakthrough",
+              "description": "10 CP. Manual — resolved at the table."
+            },
+            "zatlaceni": {
+              "label": "Push Back",
+              "description": "10 CP. Manual — resolved at the table."
+            },
+            "ztecSRozseknutim": {
+              "label": "Charge with Cleave",
+              "description": "15 CP; P/P/Š V. Manual — resolved at the table."
+            },
+            "momentumVydrz": {
+              "label": "Momentum: Stamina -1",
+              "description": "5 CP; P/P/Š X. Manual — resolved at the table."
+            },
+            "momentumSpecialni": {
+              "label": "Momentum: Special actions",
+              "description": "20 CP; M/T/S/D X. Manual — resolved at the table."
+            },
+            "opakovaniUtoku": {
+              "label": "Once per day reroll an Attack",
+              "description": "10 CP; P/P/Š V. Manual — resolved at the table."
+            },
+            "presilaPostih": {
+              "label": "Defender's outnumber penalty -5%",
+              "description": "10 CP; M/T/S/D V. Manual — resolved at the table."
+            },
+            "triumf": {
+              "label": "Triumph / Improved Triumph",
+              "description": "15 CP; P/P/Š X. Manual — resolved at the table."
+            },
+            "prubojnost2": {
+              "label": "Penetration +2",
+              "description": "5 CP. Automated."
+            },
+            "rozseknutiCil": {
+              "label": "Cleave: Target +1",
+              "description": "10 CP; P/P/Š V. Manual — resolved at the table."
+            },
+            "rozseknutiZasah": {
+              "label": "Cleave: Hit +5%",
+              "description": "10 CP; P/P/Š VII. Manual — resolved at the table."
+            },
+            "bojoveTestySily": {
+              "label": "Combat Strength Tests +10%",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "opakovaniTestuSily": {
+              "label": "Reroll combat Strength Test for 5 Stamina",
+              "description": "10 CP. Manual — resolved at the table."
+            },
+            "zbrojeRychlost": {
+              "label": "Armor doesn't reduce Speed or Initiative",
+              "description": "10 CP. Manual — resolved at the table."
+            },
+            "ocelovyStisk": {
+              "label": "Steel Grip",
+              "description": "10 CP; M/T/S/D V. Manual — resolved at the table."
+            }
+          }
+        },
+        "warden": {
+          "label": "Warden",
+          "nodes": {
+            "kritObranaKryt": {
+              "label": "Critical Defense/Cover +2%",
+              "description": "5 CP. Automated."
+            },
+            "redukceBoku": {
+              "label": "Flank Reduction II",
+              "description": "5 CP; Štítonoš V. Manual — resolved at the table."
+            },
+            "zatizeniStitu": {
+              "label": "Shield strain -15%",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "spolehlivyStit1": {
+              "label": "Reliable Shield I",
+              "description": "10 CP; M/T/S/D V. Manual — resolved at the table."
+            },
+            "spolehlivyStit2": {
+              "label": "Reliable Shield II",
+              "description": "15 CP; Štítonoš X. Manual — resolved at the table."
+            },
+            "uderStitemOdveta": {
+              "label": "Shield Bash as a Retaliation",
+              "description": "10 CP; Štítonoš VI. Manual — resolved at the table."
+            },
+            "uderZraneniA": {
+              "label": "Shield Bash/Charge: Damage +1d4",
+              "description": "10 CP. Manual — resolved at the table."
+            },
+            "uderZraneniSila": {
+              "label": "Shield Bash/Charge: Damage +Str/2",
+              "description": "10 CP; Štítonoš IV. Manual — resolved at the table."
+            },
+            "bonusZaStit": {
+              "label": "Shield Bonus",
+              "description": "10 CP. Manual — resolved at the table."
+            },
+            "uderZraneniB": {
+              "label": "Shield Bash/Charge: Damage +1d4",
+              "description": "10 CP; Štítonoš VI. Manual — resolved at the table."
+            },
+            "uderSila10": {
+              "label": "Shield Bash/Charge: Strength +10%",
+              "description": "10 CP. Manual — resolved at the table."
+            },
+            "dvojityUder": {
+              "label": "Double Strike",
+              "description": "10 CP; Štítonoš VIII. Manual — resolved at the table."
+            },
+            "obrannyPostojSpojenci": {
+              "label": "Defensive Stance: allies +5% Defense",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "vylObrannyPostoj": {
+              "label": "Improved Defensive Stance",
+              "description": "10 CP; Štítonoš VI. Manual — resolved at the table."
+            },
+            "ochranaVolna": {
+              "label": "Protection: once per round as Free action",
+              "description": "20 CP; Štítonoš VIII. Manual — resolved at the table."
+            },
+            "protiutokZasah": {
+              "label": "Counterattack: Hit +10%",
+              "description": "15 CP; M/T/S/D X. Manual — resolved at the table."
+            },
+            "vylObrneni": {
+              "label": "Improved Armoring",
+              "description": "20 CP; Štítonoš X. Manual — resolved at the table."
+            }
+          }
+        },
+        "champion": {
+          "label": "Champion",
+          "nodes": {
+            "stredniZbran": {
+              "label": "Medium weapon in off-hand",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "bonusDruhaZbran1": {
+              "label": "Off-hand Bonus I",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "bonusDruhaZbran2": {
+              "label": "Off-hand Bonus II",
+              "description": "10 CP; M/T/S V. Manual — resolved at the table."
+            },
+            "bonusDruhaZbran3": {
+              "label": "Off-hand Bonus III",
+              "description": "10 CP; M/T/S VII. Manual — resolved at the table."
+            },
+            "smrstUtoku": {
+              "label": "Flurry of Blows: Hit +5%",
+              "description": "15 CP; D/M V. Manual — resolved at the table."
+            },
+            "uhyb5": {
+              "label": "Dodge +5%",
+              "description": "10 CP. Automated."
+            },
+            "zatlaceni": {
+              "label": "Push Back",
+              "description": "10 CP. Manual — resolved at the table."
+            },
+            "utokPoZteci": {
+              "label": "Attack after Charge as Free action",
+              "description": "10 CP; M/T/S V. Manual — resolved at the table."
+            },
+            "presilaPostih": {
+              "label": "Defender's outnumber penalty -5%",
+              "description": "10 CP; M/T/S V. Manual — resolved at the table."
+            },
+            "vylUtokSPohybem": {
+              "label": "Improved Attack on the Move",
+              "description": "10 CP; D/M VIII. Manual — resolved at the table."
+            },
+            "vetrnyPostoj": {
+              "label": "Wind Stance: Defense and Hit bonus",
+              "description": "15 CP; D/M VII. Manual — resolved at the table."
+            },
+            "ztecSRozseknutim": {
+              "label": "Charge with Cleave",
+              "description": "15 CP; M/T/S V. Manual — resolved at the table."
+            },
+            "odvetnyUder": {
+              "label": "Retaliatory Strike / Improved",
+              "description": "15 CP; D/M V. Manual — resolved at the table."
+            },
+            "klamavyUtok": {
+              "label": "Feint Attack / Improved",
+              "description": "15 CP; D/M X. Manual — resolved at the table."
+            },
+            "riposta": {
+              "label": "Riposte",
+              "description": "25 CP; M/T/S X. Manual — resolved at the table."
+            }
+          }
+        },
+        "veneficus": {
+          "label": "Veneficus",
+          "nodes": {
+            "lindar": {
+              "label": "Lindar",
+              "description": "0 CP. Manual — resolved at the table."
+            },
+            "navazujiciKouzlo": {
+              "label": "Follow-up Spell",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "postihZbroje": {
+              "label": "Armor Channeling penalty -5%",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "magickyVeteran": {
+              "label": "Magic Veteran",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "slevaMany": {
+              "label": "Melee kill: -2 mana on next spell",
+              "description": "5 CP; Veneficus V. Manual — resolved at the table."
+            },
+            "magickeKz": {
+              "label": "Magic Armor +3",
+              "description": "5 CP. Automated."
+            },
+            "soubojZaManu": {
+              "label": "Melee actions paid with mana",
+              "description": "5 CP; Veneficus VII. Manual — resolved at the table."
+            },
+            "lindaruvVypad1": {
+              "label": "Lindar's Thrust I",
+              "description": "10 CP; Škola VI. Manual — resolved at the table."
+            },
+            "lindaruvVypad2": {
+              "label": "Lindar's Thrust II",
+              "description": "10 CP; Veneficus V. Manual — resolved at the table."
+            },
+            "usmernovani5": {
+              "label": "Melee/Shooting: Channeling +5%",
+              "description": "0 CP; Veneficus X. Manual — resolved at the table."
+            },
+            "magickaZbran": {
+              "label": "Magic Weapon",
+              "description": "10 CP; Veneficus V. Manual — resolved at the table."
+            },
+            "magickePosileni": {
+              "label": "Magic Reinforcement",
+              "description": "10 CP. Manual — resolved at the table."
+            },
+            "modifikatorMany": {
+              "label": "Mana modifier 2",
+              "description": "15 CP; Veneficus X. Automated."
+            },
+            "magickeMireni": {
+              "label": "Magic Aiming",
+              "description": "10 CP. Manual — resolved at the table."
+            },
+            "mireniObtiznost": {
+              "label": "Aiming: Difficulty -5%",
+              "description": "0 CP; Veneficus VII. Manual — resolved at the table."
+            },
+            "magickeMomentum": {
+              "label": "Magic Momentum",
+              "description": "15 CP. Manual — resolved at the table."
+            },
+            "lindarovyUdery": {
+              "label": "Lindar's Strikes",
+              "description": "5 CP; Veneficus IV. Manual — resolved at the table."
+            }
+          }
+        },
+        "alchemist": {
+          "label": "Alchemist",
+          "nodes": {
+            "lecZastaveni1": {
+              "label": "Healing potions: Stop bleeding +25%",
+              "description": "5 SP. Manual — resolved at the table."
+            },
+            "lecZivoty1": {
+              "label": "Healing potions: +1d6 health",
+              "description": "5 SP. Manual — resolved at the table."
+            },
+            "lecZastaveni2": {
+              "label": "Healing potions: Stop bleeding +25%",
+              "description": "10 SP; Alchemie: Expert. Manual — resolved at the table."
+            },
+            "lecZivoty2": {
+              "label": "Healing potions: +1d6 health",
+              "description": "10 SP. Manual — resolved at the table."
+            },
+            "lekToxicita": {
+              "label": "Potions: Toxicity -2",
+              "description": "10 SP. Manual — resolved at the table."
+            },
+            "kombinaceLektvaru": {
+              "label": "Potion Combination",
+              "description": "20 SP; Alchemie: Mistr. Manual — resolved at the table."
+            },
+            "lekTrvani": {
+              "label": "Potions: Duration +50%",
+              "description": "5 SP. Manual — resolved at the table."
+            },
+            "lekDuplikace1": {
+              "label": "Potions: Duplication +10%",
+              "description": "10 SP; Alchemie: Expert. Manual — resolved at the table."
+            },
+            "lekDuplikace2": {
+              "label": "Potions: Duplication +5%",
+              "description": "5 SP. Manual — resolved at the table."
+            },
+            "lekDuplikace3": {
+              "label": "Potions: Duplication +10%",
+              "description": "10 SP. Manual — resolved at the table."
+            },
+            "lekVyhoda": {
+              "label": "Potions: Advantage on crafting",
+              "description": "5 SP. Manual — resolved at the table."
+            },
+            "lekKritNeuspech": {
+              "label": "Potions: Crit failure -3%",
+              "description": "5 SP. Manual — resolved at the table."
+            },
+            "jedSance1": {
+              "label": "Poisons: Chance and Difficulty +5%",
+              "description": "5 SP. Manual — resolved at the table."
+            },
+            "jedZraneni1": {
+              "label": "Poisons: Damage +1d4",
+              "description": "5 SP. Manual — resolved at the table."
+            },
+            "jedSance2": {
+              "label": "Poisons: Chance and Difficulty +5%",
+              "description": "5 SP; Alchemie: Expert. Manual — resolved at the table."
+            },
+            "jedZraneni2": {
+              "label": "Poisons: Damage +1d4",
+              "description": "10 SP. Manual — resolved at the table."
+            },
+            "jedSance3": {
+              "label": "Poisons: Chance and Difficulty +5%",
+              "description": "10 SP. Manual — resolved at the table."
+            },
+            "kombinaceJedu": {
+              "label": "Poison Combination",
+              "description": "20 SP; Alchemie: Mistr. Manual — resolved at the table."
+            },
+            "jedTrvani": {
+              "label": "Poisons: Duration +50%",
+              "description": "5 SP. Manual — resolved at the table."
+            },
+            "jedDuplikace1": {
+              "label": "Poisons: Duplication +10%",
+              "description": "5 SP; Alchemie: Expert. Manual — resolved at the table."
+            },
+            "jedDuplikace2": {
+              "label": "Poisons: Duplication +5%",
+              "description": "5 SP. Manual — resolved at the table."
+            },
+            "jedDuplikace3": {
+              "label": "Poisons: Duplication +10%",
+              "description": "5 SP. Manual — resolved at the table."
+            },
+            "jedVyhoda": {
+              "label": "Poisons: Advantage on crafting",
+              "description": "5 SP. Manual — resolved at the table."
+            },
+            "jedKritNeuspech": {
+              "label": "Poisons: Crit failure -3%",
+              "description": "5 SP. Manual — resolved at the table."
+            },
+            "petTrvani": {
+              "label": "Firecrackers: Duration +50%",
+              "description": "5 SP. Manual — resolved at the table."
+            },
+            "traskavice": {
+              "label": "Blasting charge: Damage +4d6",
+              "description": "5 SP; Alchemie: Expert. Manual — resolved at the table."
+            },
+            "acidum": {
+              "label": "Acidum: Armor -2",
+              "description": "10 SP. Manual — resolved at the table."
+            },
+            "ignum": {
+              "label": "Ignum: Ignite +1d6 damage",
+              "description": "5 SP. Manual — resolved at the table."
+            },
+            "draciSen": {
+              "label": "Dragon's Dream: Damage +5d6",
+              "description": "10 SP; Alchemie: Mistr. Manual — resolved at the table."
+            },
+            "pavouciObjeti": {
+              "label": "Spider's Embrace: penalty -10%",
+              "description": "5 SP. Manual — resolved at the table."
+            },
+            "dablovaPecka": {
+              "label": "Devil's Pit: Combination",
+              "description": "20 SP. Manual — resolved at the table."
+            },
+            "petDuplikace1": {
+              "label": "Firecrackers: Duplication +10%",
+              "description": "10 SP; Alchemie: Expert. Manual — resolved at the table."
+            },
+            "petDuplikace2": {
+              "label": "Firecrackers: Duplication +5%",
+              "description": "5 SP. Manual — resolved at the table."
+            },
+            "petDuplikace3": {
+              "label": "Firecrackers: Duplication +10%",
+              "description": "10 SP. Manual — resolved at the table."
+            },
+            "petVyhoda": {
+              "label": "Firecrackers: Advantage on crafting",
+              "description": "5 SP. Manual — resolved at the table."
+            },
+            "petKritNeuspech": {
+              "label": "Firecrackers: Crit failure -3%",
+              "description": "5 SP. Manual — resolved at the table."
+            },
+            "olejDuplikace1": {
+              "label": "Oils: Duplication +10%",
+              "description": "5 SP; Alchemie: Expert. Manual — resolved at the table."
+            },
+            "olejDuplikace2": {
+              "label": "Oils: Duplication +5%",
+              "description": "5 SP. Manual — resolved at the table."
+            },
+            "olejDuplikace3": {
+              "label": "Oils: Duplication +10%",
+              "description": "5 SP. Manual — resolved at the table."
+            },
+            "olejZraneni1": {
+              "label": "Oils: Damage +1d6",
+              "description": "5 SP. Manual — resolved at the table."
+            },
+            "olejZranitelnost": {
+              "label": "Oils: Vulnerability +25%",
+              "description": "10 SP; Alchemie: Expert. Manual — resolved at the table."
+            },
+            "olejZraneni2": {
+              "label": "Oils: Damage +1d6",
+              "description": "10 SP. Manual — resolved at the table."
+            },
+            "olejVyhoda": {
+              "label": "Oils: Advantage on crafting",
+              "description": "5 SP. Manual — resolved at the table."
+            },
+            "olejKritNeuspech": {
+              "label": "Oils: Crit failure -3%",
+              "description": "5 SP. Manual — resolved at the table."
+            },
+            "sleva1": {
+              "label": "3 SP discount on a skill",
+              "description": "0 SP. Manual — resolved at the table."
+            },
+            "sleva2": {
+              "label": "3 SP discount on a skill",
+              "description": "0 SP. Manual — resolved at the table."
+            },
+            "mastTrvani": {
+              "label": "Salves: Duration +50%",
+              "description": "5 SP. Manual — resolved at the table."
+            },
+            "mastDuplikace1": {
+              "label": "Salves: Duplication +10%",
+              "description": "5 SP. Manual — resolved at the table."
+            },
+            "mastDuplikace2": {
+              "label": "Salves: Duplication +5%",
+              "description": "5 SP. Manual — resolved at the table."
+            },
+            "mastDuplikace3": {
+              "label": "Salves: Duplication +10%",
+              "description": "5 SP. Manual — resolved at the table."
+            },
+            "mastVyhoda": {
+              "label": "Salves: Advantage on crafting",
+              "description": "5 SP. Manual — resolved at the table."
+            },
+            "mastKritNeuspech": {
+              "label": "Salves: Crit failure -3%",
+              "description": "5 SP. Manual — resolved at the table."
+            },
+            "drogaDuplikace1": {
+              "label": "Drugs: Duplication +10%",
+              "description": "5 SP; Alchemie: Expert. Manual — resolved at the table."
+            },
+            "drogaDuplikace2": {
+              "label": "Drugs: Duplication +10%",
+              "description": "5 SP. Manual — resolved at the table."
+            },
+            "drogaDuplikace3": {
+              "label": "Drugs: Duplication +10%",
+              "description": "5 SP. Manual — resolved at the table."
+            },
+            "drogaNavykovostPlus": {
+              "label": "Drugs: Addictiveness up to +10%",
+              "description": "10 SP. Manual — resolved at the table."
+            },
+            "drogaNavykovostMinus": {
+              "label": "Drugs: Addictiveness up to -10%",
+              "description": "10 SP. Manual — resolved at the table."
+            },
+            "garantovanyUspech": {
+              "label": "Substance crafting: guaranteed success",
+              "description": "10 SP. Manual — resolved at the table."
+            },
+            "meneIngredienci": {
+              "label": "Crafting: 1 fewer ingredient",
+              "description": "15 SP; Alchemie: Expert. Manual — resolved at the table."
+            },
+            "meneTkane": {
+              "label": "Mutagens: 5 less tissue",
+              "description": "10 SP; Alchemie: Expert. Manual — resolved at the table."
+            },
+            "vedeniMutace": {
+              "label": "Guiding mutation: success +30%",
+              "description": "10 SP. Manual — resolved at the table."
+            },
+            "drogaVyhoda": {
+              "label": "Drugs: Advantage on crafting",
+              "description": "5 SP. Manual — resolved at the table."
+            },
+            "drogaKritNeuspech": {
+              "label": "Drugs: Crit failure -3%",
+              "description": "5 SP. Manual — resolved at the table."
+            }
+          }
+        },
+        "astramancer": {
+          "label": "Astramancer",
+          "nodes": {
+            "ucednik": {
+              "label": "Astramancer: Apprentice",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "expert": {
+              "label": "Astramancer: Expert",
+              "description": "5 CP; Škola Vzduchu VI. Manual — resolved at the table."
+            },
+            "mistr": {
+              "label": "Astramancer: Master",
+              "description": "5 CP; Škola Vzduchu VIII. Manual — resolved at the table."
+            },
+            "velmistr": {
+              "label": "Astramancer: Grandmaster",
+              "description": "5 CP; Škola Vzduchu X. Manual — resolved at the table."
+            },
+            "stunResist": {
+              "label": "Chance to be Stunned -10%",
+              "description": "15 SP. Automated."
+            },
+            "bleskovaOdolnost": {
+              "label": "Lightning Resilience",
+              "description": "10 CP; Astramancer: Mistr. Manual — resolved at the table."
+            },
+            "bleskovySok": {
+              "label": "Lightning Shock",
+              "description": "15 CP; Astramancer: Expert. Manual — resolved at the table."
+            },
+            "omraceniKrit": {
+              "label": "Stun +100% from 2nd-degree Crit",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "padPirka": {
+              "label": "Feather Fall: control fall speed",
+              "description": "5 SP; Astramancer: Expert. Manual — resolved at the table."
+            },
+            "kulovyBlesk": {
+              "label": "Ball Lightning: Stun +15%",
+              "description": "5 CP; Astramancer: Mistr. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+            },
+            "retezovyBlesk": {
+              "label": "Chain Lightning: Target +1",
+              "description": "5 CP; Astramancer: Mistr. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+            },
+            "overeni": {
+              "label": "School of Air: Precision +10%",
+              "description": "5 CP; Astramancer: Expert. Applies to all attacks for now. Partially automated."
+            },
+            "retezeni": {
+              "label": "Chaining",
+              "description": "10 CP; Astramancer: Učedník. Manual — resolved at the table."
+            },
+            "dvojiteRetezeni": {
+              "label": "Double Chaining",
+              "description": "15 CP; Astramancer: Velmistr. Manual — resolved at the table."
+            },
+            "bleskoveTornado": {
+              "label": "Lightning Tornado: caster-controlled",
+              "description": "5 CP; Astramancer: Mistr. Manual — resolved at the table."
+            },
+            "kritRozsah": {
+              "label": "School of Air: Critical Range +2",
+              "description": "5 SP. Critical range is not automated yet. Manual — resolved at the table."
+            },
+            "cyklonPohyb": {
+              "label": "Cyclone: Movement +2 hexes",
+              "description": "15 SP; Astramancer: Expert. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+            }
+          }
+        },
+        "bard": {
+          "label": "Bard",
+          "nodes": {
+            "inspiracePisne": {
+              "label": "Inspiration / Songs",
+              "description": "0 CP. Manual — resolved at the table."
+            },
+            "magUtokObrana1": {
+              "label": "Magic Attack/Defense +5%",
+              "description": "2 CP. Bard-specific bonus — to be tackled later. Manual — resolved at the table."
+            },
+            "inspirace3a": {
+              "label": "Inspiration +3",
+              "description": "6 CP. Manual — resolved at the table."
+            },
+            "magUtokObrana2": {
+              "label": "Magic Attack/Defense +5%",
+              "description": "2 CP; Bard: Expert. Bard-specific bonus — to be tackled later. Manual — resolved at the table."
+            },
+            "inspirace3b": {
+              "label": "Inspiration +3",
+              "description": "6 CP. Manual — resolved at the table."
+            },
+            "magUtokObrana3": {
+              "label": "Magic Attack/Defense +5%",
+              "description": "2 CP; Bard: Mistr. Bard-specific bonus — to be tackled later. Manual — resolved at the table."
+            },
+            "inspirace3c": {
+              "label": "Inspiration +3",
+              "description": "6 CP. Manual — resolved at the table."
+            },
+            "bardUcednik": {
+              "label": "Bard: Apprentice",
+              "description": "5 CP; Písně. Manual — resolved at the table."
+            },
+            "silaMelodie2": {
+              "label": "Melody Power +2",
+              "description": "6 CP. Manual — resolved at the table."
+            },
+            "bardExpert": {
+              "label": "Bard: Expert",
+              "description": "20 CP; Hudba VI. Manual — resolved at the table."
+            },
+            "silaMelodie3": {
+              "label": "Melody Power +3",
+              "description": "9 CP. Manual — resolved at the table."
+            },
+            "bardMistr": {
+              "label": "Bard: Master",
+              "description": "30 CP; Hudba VIII. Manual — resolved at the table."
+            },
+            "silaMelodie1": {
+              "label": "Melody Power +1",
+              "description": "6 CP; Hudba: Mistr. Manual — resolved at the table."
+            },
+            "bardskaOdolnost": {
+              "label": "Bardic Resilience",
+              "description": "0 CP; Písně. Manual — resolved at the table."
+            },
+            "sylvanskaPohotovost": {
+              "label": "Sylvan Readiness",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "bardskaObrana": {
+              "label": "Bardic Defense",
+              "description": "5 CP; Bard: Mistr. Manual — resolved at the table."
+            },
+            "sylvanskyOdpocinek1": {
+              "label": "Sylvan Rest I",
+              "description": "10 SP. Manual — resolved at the table."
+            },
+            "sylvanskyOdpocinek2": {
+              "label": "Sylvan Rest II",
+              "description": "10 SP; Hudba V. Manual — resolved at the table."
+            },
+            "sylvanskyOdpocinek3": {
+              "label": "Sylvan Rest III",
+              "description": "15 SP; Hudba VII. Manual — resolved at the table."
+            },
+            "dvur1": {
+              "label": "Court I",
+              "description": "0 CP; Bard: Učedník. Manual — resolved at the table."
+            },
+            "dvur2": {
+              "label": "Court II",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "dvur3": {
+              "label": "Court III",
+              "description": "10 CP; Bard: Expert. Manual — resolved at the table."
+            },
+            "dvur4": {
+              "label": "Court IV",
+              "description": "10 CP; Bard: Mistr. Manual — resolved at the table."
+            },
+            "slovaMoci": {
+              "label": "Words of Power",
+              "description": "15 CP; Bard: Expert. Manual — resolved at the table."
+            },
+            "tanecVyhoda": {
+              "label": "Dancing: Advantage",
+              "description": "5 SP; Tanec I. Manual — resolved at the table."
+            },
+            "umtvorbaVyhoda": {
+              "label": "Art: Advantage",
+              "description": "5 SP; Umělecká tvorba: Adept. Manual — resolved at the table."
+            },
+            "umtvorbaKritNeuspech": {
+              "label": "Art: Crit failure -3%",
+              "description": "5 SP; Umělecká tvorba: Expert. Automated."
+            },
+            "umtvorbaKrit": {
+              "label": "Art: Critical success +5%",
+              "description": "5 SP; Umělecká tvorba: Mistr. Automated."
+            },
+            "slevaUmtvorba": {
+              "label": "5 SP discount per Art rank",
+              "description": "0 SP. Manual — resolved at the table."
+            },
+            "pokouseni5": {
+              "label": "Temptation +5%",
+              "description": "5 SP. Automated."
+            },
+            "klamani5": {
+              "label": "Deception +5%",
+              "description": "5 SP. Automated."
+            },
+            "hudbaVyhoda": {
+              "label": "Music: Advantage",
+              "description": "5 SP; Hudba: Adept. Manual — resolved at the table."
+            },
+            "hudbaKritNeuspech": {
+              "label": "Music: Crit failure -3%",
+              "description": "10 SP; Hudba: Mistr. Automated."
+            },
+            "herectviVyhoda": {
+              "label": "Acting: Advantage",
+              "description": "5 SP; Herectví: Adept. Manual — resolved at the table."
+            },
+            "herectviKritNeuspech": {
+              "label": "Acting: Crit failure -3%",
+              "description": "10 SP. Automated."
+            },
+            "presvedcovani5": {
+              "label": "Persuasion +5%",
+              "description": "5 SP. Automated."
+            },
+            "sleva1": {
+              "label": "3 SP discount on a skill",
+              "description": "0 SP. Manual — resolved at the table."
+            },
+            "sleva2": {
+              "label": "3 SP discount on a skill",
+              "description": "0 SP. Manual — resolved at the table."
+            },
+            "sleva3": {
+              "label": "3 SP discount on a skill",
+              "description": "0 SP. Manual — resolved at the table."
+            },
+            "sleva4": {
+              "label": "3 SP discount on a skill",
+              "description": "0 SP. Manual — resolved at the table."
+            }
+          }
+        },
+        "cryomancer": {
+          "label": "Cryomancer",
+          "nodes": {
+            "ucednik": {
+              "label": "Cryomancer: Apprentice",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "expert": {
+              "label": "Cryomancer: Expert",
+              "description": "5 CP; Škola Vody VI. Manual — resolved at the table."
+            },
+            "mistr": {
+              "label": "Cryomancer: Master",
+              "description": "5 CP; Škola Vody VIII. Manual — resolved at the table."
+            },
+            "velmistr": {
+              "label": "Cryomancer: Grandmaster",
+              "description": "5 CP; Škola Vody X. Manual — resolved at the table."
+            },
+            "ledoveUlomky": {
+              "label": "Ice Shards",
+              "description": "10 CP; Cryomancer: Expert. Manual — resolved at the table."
+            },
+            "ledoveKopi": {
+              "label": "Ice Lance: hits up to three targets",
+              "description": "5 CP; Cryomancer: Mistr. Manual — resolved at the table."
+            },
+            "freezeResist": {
+              "label": "Chance to be Frozen -15%",
+              "description": "15 SP. Automated."
+            },
+            "imunitaZpomaleni": {
+              "label": "Immunity to Slow",
+              "description": "20 SP; Cryomancer: Mistr. Manual — resolved at the table."
+            },
+            "kritRozsah": {
+              "label": "School of Water: Critical Range +2",
+              "description": "5 SP. Critical range is not automated yet. Manual — resolved at the table."
+            },
+            "overeni": {
+              "label": "School of Water: Precision +10%",
+              "description": "5 CP; Cryomancer: Expert. Applies to all attacks for now. Partially automated."
+            },
+            "zmrazeniKrit": {
+              "label": "Freeze +100% from 4th-degree Crit",
+              "description": "5 CP; Hluboký mráz I. Manual — resolved at the table."
+            },
+            "hlubokyMraz1": {
+              "label": "Deep Frost I",
+              "description": "15 CP; Cryomancer: Expert. Manual — resolved at the table."
+            },
+            "hlubokyMraz2": {
+              "label": "Deep Frost II",
+              "description": "15 CP; Cryomancer: Mistr. Manual — resolved at the table."
+            },
+            "hlubokyMraz3": {
+              "label": "Deep Frost III",
+              "description": "15 CP; Cryomancer: Velmistr. Manual — resolved at the table."
+            },
+            "ostryLed": {
+              "label": "Sharp Ice",
+              "description": "5 CP; Cryomancer: Expert. Manual — resolved at the table."
+            }
+          }
+        },
+        "entomancer": {
+          "label": "Entomancer",
+          "nodes": {
+            "ucednik": {
+              "label": "Entomancer: Apprentice",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "expert": {
+              "label": "Entomancer: Expert",
+              "description": "5 CP; Škola Země VI. Manual — resolved at the table."
+            },
+            "mistr": {
+              "label": "Entomancer: Master",
+              "description": "5 CP; Škola Země VIII. Manual — resolved at the table."
+            },
+            "velmistr": {
+              "label": "Entomancer: Grandmaster",
+              "description": "5 CP; Škola Země X. Manual — resolved at the table."
+            },
+            "feromony": {
+              "label": "Pheromones",
+              "description": "5 SP. Manual — resolved at the table."
+            },
+            "jedovatyHmyz": {
+              "label": "Venomous Insects",
+              "description": "15 SP; Travič II. Manual — resolved at the table."
+            },
+            "jedResist1": {
+              "label": "Chance to resist poison +10%",
+              "description": "5 SP. Automated."
+            },
+            "jedResist2": {
+              "label": "Chance to resist poison +10%",
+              "description": "5 SP. Automated."
+            },
+            "leptavaKyselina1": {
+              "label": "Caustic Acid I",
+              "description": "5 CP; Entomancer: Expert. Manual — resolved at the table."
+            },
+            "leptavaKyselina2": {
+              "label": "Caustic Acid II",
+              "description": "10 CP. Manual — resolved at the table."
+            },
+            "protijed": {
+              "label": "Antidote: Chance +25%",
+              "description": "5 SP; Entomancer: Expert. Manual — resolved at the table."
+            },
+            "pavouciSplh": {
+              "label": "Spider Climb",
+              "description": "10 SP; Entomancer: Expert. Manual — resolved at the table."
+            },
+            "travic1": {
+              "label": "Poisoner I",
+              "description": "10 CP; Entomancer: Učedník. Manual — resolved at the table."
+            },
+            "travic2": {
+              "label": "Poisoner II",
+              "description": "15 CP; Entomancer: Expert. Manual — resolved at the table."
+            },
+            "travic3": {
+              "label": "Poisoner III",
+              "description": "10 CP. Manual — resolved at the table."
+            },
+            "toxiny": {
+              "label": "Toxins",
+              "description": "15 CP; Entomancer: Mistr. Manual — resolved at the table."
+            },
+            "kyselinovaStrela": {
+              "label": "Acid Bolt: Armor -2",
+              "description": "5 CP; Entomancer: Expert. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+            },
+            "jedovaSprska": {
+              "label": "Poison Spray: Area +1.5m",
+              "description": "5 CP; Entomancer: Expert. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+            }
+          }
+        },
+        "geomancer": {
+          "label": "Geomancer",
+          "nodes": {
+            "ucednik": {
+              "label": "Geomancer: Apprentice",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "expert": {
+              "label": "Geomancer: Expert",
+              "description": "5 CP; Škola Země VI. Manual — resolved at the table."
+            },
+            "mistr": {
+              "label": "Geomancer: Master",
+              "description": "5 CP; Škola Země VIII. Manual — resolved at the table."
+            },
+            "velmistr": {
+              "label": "Geomancer: Grandmaster",
+              "description": "5 CP; Škola Země X. Manual — resolved at the table."
+            },
+            "kz2": {
+              "label": "Armor +2",
+              "description": "10 SP; Geomancer: Expert. Automated."
+            },
+            "kritRozsah": {
+              "label": "School of Earth: Critical Range +2",
+              "description": "5 SP. Critical range is not automated yet. Manual — resolved at the table."
+            },
+            "maskovani": {
+              "label": "Camouflage: also rocky areas",
+              "description": "10 SP; Geomancer: Učedník. Manual — resolved at the table."
+            },
+            "regeneraceVydrze": {
+              "label": "Regeneration: restores 2d4 Stamina",
+              "description": "5 CP; Geomancer: Expert. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+            },
+            "kamennaKuze": {
+              "label": "Stone Skin: sacrifice armor to Stun",
+              "description": "5 CP; Geomancer: Expert. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+            },
+            "kamennaZed": {
+              "label": "Stone Wall: hexes need not connect",
+              "description": "5 CP; Geomancer: Mistr. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+            },
+            "overeni": {
+              "label": "School of Earth: Precision +10%",
+              "description": "5 CP; Geomancer: Expert. Applies to all attacks for now. Partially automated."
+            },
+            "povaleni": {
+              "label": "Guaranteed Knockdown from 3rd-degree Crit",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "omracujiciRany1": {
+              "label": "Stunning Wounds I",
+              "description": "15 CP; Geomancer: Expert. Manual — resolved at the table."
+            },
+            "omracujiciRany2": {
+              "label": "Stunning Wounds II",
+              "description": "15 CP; Geomancer: Mistr. Manual — resolved at the table."
+            },
+            "omracujiciRany3": {
+              "label": "Stunning Wounds III",
+              "description": "20 CP; Geomancer: Velmistr. Manual — resolved at the table."
+            },
+            "pevnyKrok": {
+              "label": "Firm Step",
+              "description": "25 SP; Geomancer: Mistr. Manual — resolved at the table."
+            },
+            "urhanovaSila": {
+              "label": "Urhan's Strength",
+              "description": "10 CP; Geomancer: Expert. Manual — resolved at the table."
+            }
+          }
+        },
+        "gnostic": {
+          "label": "Gnostic",
+          "nodes": {
+            "adept": {
+              "label": "Gnostic: Adept",
+              "description": "15 CP. Manual — resolved at the table."
+            },
+            "gsp1": {
+              "label": "Gnosis: Spell Power +3",
+              "description": "10 CP. Automated."
+            },
+            "mistr": {
+              "label": "Gnostic: Master",
+              "description": "25 CP; E/I/V VI. Manual — resolved at the table."
+            },
+            "gsp2": {
+              "label": "Gnosis: Spell Power +3",
+              "description": "10 CP. Automated."
+            },
+            "velmistr": {
+              "label": "Gnostic: Grandmaster",
+              "description": "35 CP; E/I/V X. Manual — resolved at the table."
+            },
+            "gsp3": {
+              "label": "Gnosis: Spell Power +2",
+              "description": "5 CP. Automated."
+            },
+            "zpomaleniZraneni1": {
+              "label": "Slow: Damage +1d6",
+              "description": "10 CP. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+            },
+            "zpomaleniZraneni2": {
+              "label": "Slow: Damage +1d6",
+              "description": "15 CP; Gnostik: Mistr. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+            },
+            "casovaDisonance": {
+              "label": "Temporal Dissonance",
+              "description": "15 CP; Gnostik: Adept. Manual — resolved at the table."
+            },
+            "isadurovaTechnika": {
+              "label": "Isadur's Technique",
+              "description": "10 CP; Gnostik: Adept. Manual — resolved at the table."
+            },
+            "nekonecnaCesta": {
+              "label": "Endless Road: Slow",
+              "description": "5 CP; Gnostik: Adept. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+            },
+            "prostorovaKlec": {
+              "label": "Spatial Cage: Slow",
+              "description": "5 SP; Gnostik: Mistr. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+            },
+            "meditaceMZ2": {
+              "label": "Meditation restores 2 Mental health",
+              "description": "5 SP; Meditace I. Manual — resolved at the table."
+            },
+            "meditaceMZ3": {
+              "label": "Meditation restores 3 Mental health",
+              "description": "10 SP. Manual — resolved at the table."
+            },
+            "mzMeditace": {
+              "label": "Mental health +1 / Meditation +5%",
+              "description": "10 SP. Automated."
+            },
+            "isaduruvKruh": {
+              "label": "Isadur's Circle: Slow",
+              "description": "5 CP; Gnostik: Mistr. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+            },
+            "posunutiDezorientace": {
+              "label": "Shift and Spatial Leap: Disorientation +25%",
+              "description": "5 CP; Gnostik: Mistr. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+            },
+            "overeni": {
+              "label": "Gnosis: Precision +10%",
+              "description": "5 CP; Gnostik: Adept. Applies to all attacks for now. Partially automated."
+            }
+          }
+        },
+        "grimm": {
+          "label": "Grimm",
+          "nodes": {
+            "bane1": {
+              "label": "Unlocks one Bane",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "bane2": {
+              "label": "Unlocks one Bane",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "bane3": {
+              "label": "Unlocks one Bane",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "bane4": {
+              "label": "Unlocks one Bane",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "bane5": {
+              "label": "Unlocks one Bane",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "bane6": {
+              "label": "Unlocks one Bane",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "bane7": {
+              "label": "Unlocks one Bane",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "metlaVnimani": {
+              "label": "Bane: Perception and Tracking +10%",
+              "description": "10 SP; Přežití II. Manual — resolved at the table."
+            },
+            "metlaIniciativa": {
+              "label": "Bane: Initiative +3",
+              "description": "10 CP. Manual — resolved at the table."
+            },
+            "metlaOpakovani": {
+              "label": "Bane: one combat reroll",
+              "description": "15 CP. Manual — resolved at the table."
+            },
+            "tkane1": {
+              "label": "Survival: Tissues and Substances +50%",
+              "description": "10 SP; Přežití III. Manual — resolved at the table."
+            },
+            "tkane2": {
+              "label": "Survival: Tissues and Substances +50%",
+              "description": "10 SP. Manual — resolved at the table."
+            }
+          }
+        },
+        "illusionist": {
+          "label": "Illusionist",
+          "nodes": {
+            "ucednik": {
+              "label": "Illusionist: Apprentice",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "expert": {
+              "label": "Illusionist: Expert",
+              "description": "5 CP; Škola Ducha VI. Manual — resolved at the table."
+            },
+            "mistr": {
+              "label": "Illusionist: Master",
+              "description": "5 CP; Škola Ducha VIII. Manual — resolved at the table."
+            },
+            "velmistr": {
+              "label": "Illusionist: Grandmaster",
+              "description": "5 CP; Škola Ducha X. Manual — resolved at the table."
+            },
+            "kapesniIluze": {
+              "label": "Pocket Illusion",
+              "description": "5 SP; Iluzionista: Expert. Manual — resolved at the table."
+            },
+            "mysterinoOko": {
+              "label": "Mystera's Eye",
+              "description": "10 SP; Iluzionista: Expert. Manual — resolved at the table."
+            },
+            "dokonalaIluze1": {
+              "label": "Perfect Illusion I",
+              "description": "5 SP; Iluzionista: Expert. Manual — resolved at the table."
+            },
+            "obtiznostPopreni1": {
+              "label": "Illusions: +20% harder to Deny",
+              "description": "5 SP. Manual — resolved at the table."
+            },
+            "dokonalaIluze2": {
+              "label": "Perfect Illusion II",
+              "description": "10 SP; Iluzionista: Mistr. Manual — resolved at the table."
+            },
+            "dokonalaIluze3": {
+              "label": "Perfect Illusion III",
+              "description": "10 SP. Manual — resolved at the table."
+            },
+            "obtiznostPopreni2": {
+              "label": "Illusions: +25% harder to Deny",
+              "description": "5 SP; Iluzionista: Velmistr. Manual — resolved at the table."
+            },
+            "prohlednutiIluzi": {
+              "label": "Seeing through illusions +30%",
+              "description": "5 SP; Arcana IV. Manual — resolved at the table."
+            },
+            "malaIluzeZvuky": {
+              "label": "Minor Illusion: complex sounds",
+              "description": "0 SP; Iluzionista: Expert. Manual — resolved at the table."
+            },
+            "mysterinKrok": {
+              "label": "Mystera's Step",
+              "description": "5 CP; Iluzionista: Expert. Manual — resolved at the table."
+            },
+            "udrzovaneIluze": {
+              "label": "Sustained Illusions",
+              "description": "10 SP; Iluzionista: Mistr. Manual — resolved at the table."
+            },
+            "duplikaceKouzla": {
+              "label": "Duplication of master spells",
+              "description": "5 CP; Iluzionista: Mistr. Manual — resolved at the table."
+            },
+            "mzitky": {
+              "label": "Floaters: Disadvantage for one round",
+              "description": "10 CP; Iluzionista: Mistr. Manual — resolved at the table."
+            },
+            "dvojnik": {
+              "label": "Double: full effect and health",
+              "description": "20 CP; Iluzionista: Velmistr. Manual — resolved at the table."
+            },
+            "skrytaMagie1": {
+              "label": "Hidden Magic I",
+              "description": "15 SP; Iluzionista: Mistr. Manual — resolved at the table."
+            },
+            "skrytaMagie2": {
+              "label": "Hidden Magic II",
+              "description": "10 CP; Iluzionista: Velmistr. Manual — resolved at the table."
+            },
+            "mysterinStrazce": {
+              "label": "Mystera's Guardian",
+              "description": "10 CP; Iluzionista: Velmistr. Manual — resolved at the table."
+            }
+          }
+        },
+        "priest": {
+          "label": "Priest",
+          "nodes": {
+            "modlitba": {
+              "label": "Prayer",
+              "description": "0 CP. Manual — resolved at the table."
+            },
+            "testViry1": {
+              "label": "Faith Test on Attack/Defense +10%",
+              "description": "3 CP. Manual — resolved at the table."
+            },
+            "testViry2": {
+              "label": "Faith Test on Attack/Defense +10%",
+              "description": "3 CP. Manual — resolved at the table."
+            },
+            "testViry3": {
+              "label": "Faith Test on Attack/Defense +10%",
+              "description": "3 CP; Víra 5. Manual — resolved at the table."
+            },
+            "testViry4": {
+              "label": "Faith Test on Attack/Defense +10%",
+              "description": "3 CP; Víra 8. Manual — resolved at the table."
+            },
+            "testViry5": {
+              "label": "Faith Test on Attack/Defense +10%",
+              "description": "3 CP. Manual — resolved at the table."
+            },
+            "zazraky": {
+              "label": "Miracles",
+              "description": "0 CP. Manual — resolved at the table."
+            },
+            "novic": {
+              "label": "Novice",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "svataEnergie1": {
+              "label": "Holy Energy +10",
+              "description": "10 CP; Víra 4. Automated."
+            },
+            "akolyta": {
+              "label": "Acolyte",
+              "description": "20 CP; Víra 5. Manual — resolved at the table."
+            },
+            "svataEnergie2": {
+              "label": "Holy Energy +10",
+              "description": "15 CP; Víra 6. Automated."
+            },
+            "klerik": {
+              "label": "Cleric",
+              "description": "40 CP; Víra 8. Manual — resolved at the table."
+            },
+            "svataEnergie3": {
+              "label": "Holy Energy +10",
+              "description": "20 CP; Víra 9. Automated."
+            },
+            "pozehnani1a": {
+              "label": "Blessing of the 1st degree",
+              "description": "5 CP; 15 SP. Manual — resolved at the table."
+            },
+            "pozehnani1b": {
+              "label": "Blessing of the 1st degree",
+              "description": "5 CP; 15 SP; Víra 4. Manual — resolved at the table."
+            },
+            "pozehnani2a": {
+              "label": "Blessing of the 2nd degree",
+              "description": "10 CP; 30 SP; Víra 5. Manual — resolved at the table."
+            },
+            "pozehnani1c": {
+              "label": "Blessing of the 1st degree",
+              "description": "5 CP; 15 SP; Víra 6. Manual — resolved at the table."
+            },
+            "pozehnani2b": {
+              "label": "Blessing of the 2nd degree",
+              "description": "10 CP; 30 SP; Víra 7. Manual — resolved at the table."
+            },
+            "pozehnani3a": {
+              "label": "Blessing of the 3rd degree",
+              "description": "15 CP; 40 SP; Víra 8. Manual — resolved at the table."
+            },
+            "pozehnani3b": {
+              "label": "Blessing of the 3rd degree",
+              "description": "15 CP; 40 SP; Víra 10. Manual — resolved at the table."
+            },
+            "ranhojicstvi1d6": {
+              "label": "First Aid +1d6",
+              "description": "10 SP; Ranhojičství: Adept. Manual — resolved at the table."
+            },
+            "felcaruvDotek": {
+              "label": "Healer's Touch",
+              "description": "20 SP; Ranhojičství: Expert. Manual — resolved at the table."
+            },
+            "ranhojicstviVyhoda": {
+              "label": "First Aid: Advantage",
+              "description": "5 SP; Ranhojičství: Adept. Manual — resolved at the table."
+            },
+            "ranhojicstviKritNeuspech": {
+              "label": "First Aid: Crit failure -3%",
+              "description": "10 SP. Automated."
+            },
+            "presvedcovani3": {
+              "label": "Persuasion +3%",
+              "description": "5 SP. Automated."
+            },
+            "pastyrovaVule": {
+              "label": "Shepherd's Will",
+              "description": "0 SP. Manual — resolved at the table."
+            }
+          }
+        },
+        "countermage": {
+          "label": "Countermage",
+          "nodes": {
+            "ucednik": {
+              "label": "Countermage: Apprentice",
+              "description": "0 CP. Manual — resolved at the table."
+            },
+            "mz1": {
+              "label": "Mental health +1",
+              "description": "10 CP. Automated."
+            },
+            "mz2": {
+              "label": "Mental health +1",
+              "description": "10 CP. Automated."
+            },
+            "expert": {
+              "label": "Countermage: Expert / Willpower +1",
+              "description": "25 CP; Kontramág 6. Countermage rank manual. Partially automated."
+            },
+            "mz3": {
+              "label": "Mental health +1",
+              "description": "10 CP. Automated."
+            },
+            "mz4": {
+              "label": "Mental health +1",
+              "description": "10 CP. Automated."
+            },
+            "mistr": {
+              "label": "Countermage: Master / Willpower +1",
+              "description": "35 CP; Kontramág 18. Countermage rank manual. Partially automated."
+            },
+            "meditace2": {
+              "label": "Meditation restores 2 Mental health",
+              "description": "5 SP; Meditace I. Manual — resolved at the table."
+            },
+            "meditace3": {
+              "label": "Meditation restores 3 Mental health",
+              "description": "15 SP. Manual — resolved at the table."
+            },
+            "meditace4": {
+              "label": "Meditation restores 4 Mental health",
+              "description": "15 SP; Kontramág: Expert. Manual — resolved at the table."
+            },
+            "vynucenySouboj": {
+              "label": "Forced Mental Duel -20%",
+              "description": "15 SP; Mentální souboj I. Manual — resolved at the table."
+            },
+            "soubojDemoni": {
+              "label": "Mental Duel +20% vs. Demons",
+              "description": "20 SP; Mentální souboj IV. Manual — resolved at the table."
+            },
+            "cistaMysl": {
+              "label": "Clear Mind",
+              "description": "10 SP. Manual — resolved at the table."
+            },
+            "antimagickaZbran": {
+              "label": "Antimagic Weapon",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "bane1": {
+              "label": "Unlocks one Bane",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "magickyKryt": {
+              "label": "Magic Cover",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "bane2": {
+              "label": "Unlocks two Banes",
+              "description": "10 CP. Manual — resolved at the table."
+            },
+            "magickaImunita": {
+              "label": "Magic Immunity chance +25%",
+              "description": "10 CP. Manual — resolved at the table."
+            },
+            "odolnostMagii": {
+              "label": "Magic Resistance +50%",
+              "description": "15 CP; Kontramág: Mistr. Manual — resolved at the table."
+            },
+            "citiMagii": {
+              "label": "Senses active magic within 25m",
+              "description": "10 SP; Arcana: Adept. Manual — resolved at the table."
+            },
+            "popreniIluze": {
+              "label": "Illusion Denial +25%",
+              "description": "10 SP. Manual — resolved at the table."
+            },
+            "horlivost": {
+              "label": "Zeal",
+              "description": "10 CP. Manual — resolved at the table."
+            },
+            "nezlomnaMysl": {
+              "label": "Unbreakable Mind",
+              "description": "10 SP; Čistá mysl. Manual — resolved at the table."
+            },
+            "vhled5": {
+              "label": "Insight +5%",
+              "description": "5 SP. Automated."
+            },
+            "slevaArcana": {
+              "label": "3 SP discount per Arcana rank",
+              "description": "0 SP. Manual — resolved at the table."
+            }
+          }
+        },
+        "maleficarum": {
+          "label": "Maleficarum",
+          "nodes": {
+            "ucednik": {
+              "label": "Maleficarum: Apprentice",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "expert": {
+              "label": "Maleficarum: Expert",
+              "description": "5 CP; Škola Temnoty VI. Manual — resolved at the table."
+            },
+            "mistr": {
+              "label": "Maleficarum: Master",
+              "description": "5 CP; Škola Temnoty VIII. Manual — resolved at the table."
+            },
+            "velmistr": {
+              "label": "Maleficarum: Grandmaster",
+              "description": "5 CP; Škola Temnoty X. Manual — resolved at the table."
+            },
+            "vysaniDuse": {
+              "label": "Soul Drain: drains 1 MH per round",
+              "description": "5 SP; Maleficarum: Expert. Manual — resolved at the table."
+            },
+            "kritRozsah": {
+              "label": "School of Darkness: Critical Range +2",
+              "description": "5 SP. Critical range is not automated yet. Manual — resolved at the table."
+            },
+            "stoparDusi": {
+              "label": "Soul Tracker",
+              "description": "5 SP; Maleficarum: Učedník. Manual — resolved at the table."
+            },
+            "drzitelDusi": {
+              "label": "Soul Holder",
+              "description": "10 SP. Manual — resolved at the table."
+            },
+            "lapeniDuse": {
+              "label": "Soul-capture chance +25%",
+              "description": "5 SP. Manual — resolved at the table."
+            },
+            "poziracDusi": {
+              "label": "Soul Devourer",
+              "description": "10 CP; Maleficarum: Mistr. Manual — resolved at the table."
+            },
+            "hraniceKorupce": {
+              "label": "4th Corruption degree: threshold +20",
+              "description": "10 SP; Maleficarum: Expert. Manual — resolved at the table."
+            },
+            "zastaveniMutace": {
+              "label": "Stop Mutation",
+              "description": "20 SP; Maleficarum: Mistr. Manual — resolved at the table."
+            },
+            "oslabeni": {
+              "label": "Weaken",
+              "description": "10 CP; Maleficarum: Učedník. Manual — resolved at the table."
+            },
+            "temnaObet": {
+              "label": "Dark Sacrifice",
+              "description": "10 CP; Maleficarum: Učedník. Manual — resolved at the table."
+            },
+            "overeni": {
+              "label": "School of Darkness: Precision +15%",
+              "description": "5 CP; Maleficarum: Expert. Applies to all attacks for now. Partially automated."
+            },
+            "zakleti": {
+              "label": "Hexing",
+              "description": "10 CP; Maleficarum: Učedník. Manual — resolved at the table."
+            },
+            "kontrolovanaMutace": {
+              "label": "Controlled Mutation",
+              "description": "15 SP; Maleficarum: Mistr. Manual — resolved at the table."
+            },
+            "pozehnaniKozula": {
+              "label": "Kozul's Blessing",
+              "description": "25 CP; Maleficarum: Velmistr. Manual — resolved at the table."
+            }
+          }
+        },
+        "mentalist": {
+          "label": "Mentalist",
+          "nodes": {
+            "ucednik": {
+              "label": "Mentalist: Apprentice",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "expert": {
+              "label": "Mentalist: Expert",
+              "description": "5 CP; Škola Ducha VI. Manual — resolved at the table."
+            },
+            "mistr": {
+              "label": "Mentalist: Master",
+              "description": "5 CP; Škola Ducha VIII. Manual — resolved at the table."
+            },
+            "velmistr": {
+              "label": "Mentalist: Grandmaster",
+              "description": "5 CP; Škola Ducha X. Manual — resolved at the table."
+            },
+            "vytrvalaSnaha": {
+              "label": "Persistent Effort",
+              "description": "5 CP; Mentalista: Učedník. Manual — resolved at the table."
+            },
+            "mentalniUder": {
+              "label": "Mental Strike: kill restores 1 MH",
+              "description": "10 CP; Mentalista: Velmistr. Manual — resolved at the table."
+            },
+            "mentalniZtec": {
+              "label": "Mental Charge",
+              "description": "0 CP; Mentalista: Učedník. Manual — resolved at the table."
+            },
+            "soubojDotek": {
+              "label": "Mental Duel: Touch +30% to initiate",
+              "description": "5 SP. Manual — resolved at the table."
+            },
+            "soubojZahajeni1": {
+              "label": "Mental Duel: Initiation +10%",
+              "description": "5 CP; Mentální souboj IV. Manual — resolved at the table."
+            },
+            "soubojZahajeni2": {
+              "label": "Mental Duel: Initiation +10%",
+              "description": "5 CP; Mentalista: Expert. Manual — resolved at the table."
+            },
+            "soubojZahajeni3": {
+              "label": "Mental Duel: Initiation +10%",
+              "description": "5 CP; Mentalista: Mistr. Manual — resolved at the table."
+            },
+            "soubojZahajeni4": {
+              "label": "Mental Duel: Initiation +10%",
+              "description": "5 CP; Mentalista: Velmistr. Manual — resolved at the table."
+            },
+            "mentalistuvUprk": {
+              "label": "Mentalist's Escape",
+              "description": "5 CP; Mentalista: Učedník. Manual — resolved at the table."
+            },
+            "vybojMysli": {
+              "label": "Mind Burst",
+              "description": "5 CP; Mentalista: Expert. Manual — resolved at the table."
+            },
+            "zoufalyVzdor": {
+              "label": "Desperate Defiance",
+              "description": "10 CP; Mentalista: Velmistr. Manual — resolved at the table."
+            },
+            "soubojUdrzovani": {
+              "label": "Mental Duel: Upkeep -1 Action",
+              "description": "10 CP; Mentalista: Expert. Manual — resolved at the table."
+            },
+            "soubojPostih": {
+              "label": "Mental Duel: Success penalty -10%",
+              "description": "10 CP; Mentalista: Mistr. Manual — resolved at the table."
+            },
+            "mentalniSouboj10a": {
+              "label": "Mental Duel +10%",
+              "description": "15 SP. Manual — resolved at the table."
+            },
+            "soubojMZ1": {
+              "label": "Mental Duel: success drains +1 MH",
+              "description": "10 CP; Mentalista: Expert. Manual — resolved at the table."
+            },
+            "mentalniSouboj10b": {
+              "label": "Mental Duel +10%",
+              "description": "15 SP. Manual — resolved at the table."
+            },
+            "soubojMZ2": {
+              "label": "Mental Duel: success drains +1 MH",
+              "description": "10 CP; Mentalista: Velmistr. Manual — resolved at the table."
+            },
+            "telepat1": {
+              "label": "Telepath I",
+              "description": "15 SP; Mentalista: Expert. Manual — resolved at the table."
+            },
+            "telepat2": {
+              "label": "Telepath II",
+              "description": "5 SP; Mentalista: Mistr. Manual — resolved at the table."
+            },
+            "vytizeniKoncentrace": {
+              "label": "Mental Strain: cancels Concentrations",
+              "description": "5 CP; Mentalista: Učedník. Manual — resolved at the table."
+            },
+            "vytizeniReakce": {
+              "label": "Mental Strain: -1 Reaction",
+              "description": "5 CP; Mentalista: Expert. Manual — resolved at the table."
+            },
+            "vytizeniZakerne": {
+              "label": "Mental Strain: attacks count as Sneak",
+              "description": "5 CP; Mentální souboj VI. Manual — resolved at the table."
+            },
+            "vytizeniAkce": {
+              "label": "Mental Strain: -1 Action",
+              "description": "5 CP; Mentalista: Mistr. Manual — resolved at the table."
+            },
+            "vysati": {
+              "label": "Drain",
+              "description": "5 CP; Mentalista: Učedník. Manual — resolved at the table."
+            },
+            "ovladnuti": {
+              "label": "Domination",
+              "description": "10 CP; Mentalista: Expert. Manual — resolved at the table."
+            },
+            "cteniMysli": {
+              "label": "Mind Reading",
+              "description": "15 SP; Mentalista: Mistr. Manual — resolved at the table."
+            },
+            "pokrocileCteni": {
+              "label": "Advanced Mind Reading",
+              "description": "10 SP; Mentální souboj X. Manual — resolved at the table."
+            },
+            "meditace2": {
+              "label": "Meditation restores 2 Mental health",
+              "description": "5 SP; Meditace I. Manual — resolved at the table."
+            },
+            "meditace3": {
+              "label": "Meditation restores 3 Mental health",
+              "description": "15 SP. Manual — resolved at the table."
+            },
+            "mzMeditace": {
+              "label": "Mental health +1 / Meditation +5%",
+              "description": "15 SP; Mentalista: Expert. Automated."
+            }
+          }
+        },
+        "mystic": {
+          "label": "Mystic",
+          "nodes": {
+            "ucednik": {
+              "label": "Mystic: Apprentice",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "expert": {
+              "label": "Mystic: Expert",
+              "description": "10 CP; Rituály VI. Manual — resolved at the table."
+            },
+            "mistr": {
+              "label": "Mystic: Master",
+              "description": "15 CP; Rituály VIII. Manual — resolved at the table."
+            },
+            "kapacitaOvladani": {
+              "label": "Control capacity +1",
+              "description": "20 CP; Rituály: Mistr. Manual — resolved at the table."
+            },
+            "podmaneni1": {
+              "label": "Subjugation I",
+              "description": "20 SP; Arcana V. Manual — resolved at the table."
+            },
+            "podmaneni2": {
+              "label": "Subjugation II",
+              "description": "10 SP. Manual — resolved at the table."
+            },
+            "mesicniStudna": {
+              "label": "Moon Well",
+              "description": "15 SP; Rituály: Adept. Manual — resolved at the table."
+            },
+            "studna15a": {
+              "label": "Moon Well: +15 ME",
+              "description": "10 SP. Manual — resolved at the table."
+            },
+            "studna15b": {
+              "label": "Moon Well: +15 ME",
+              "description": "10 SP. Manual — resolved at the table."
+            },
+            "podmineneRitualy": {
+              "label": "Conditional Rituals",
+              "description": "10 SP. Manual — resolved at the table."
+            },
+            "mystickaObet": {
+              "label": "Mystic Sacrifice",
+              "description": "15 SP; Rituály VI. Manual — resolved at the table."
+            },
+            "bane1": {
+              "label": "Unlocks one Bane",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "ritualyVyhoda": {
+              "label": "Rituals: Advantage",
+              "description": "5 SP. Manual — resolved at the table."
+            },
+            "ritualyKritNeuspech": {
+              "label": "Rituals: Crit failure -3%",
+              "description": "5 SP. Automated."
+            },
+            "sleva1": {
+              "label": "3 SP discount on a skill",
+              "description": "0 SP. Manual — resolved at the table."
+            },
+            "sleva2": {
+              "label": "3 SP discount on a skill",
+              "description": "0 SP. Manual — resolved at the table."
+            }
+          }
+        },
+        "pyromancer": {
+          "label": "Pyromancer",
+          "nodes": {
+            "ucednik": {
+              "label": "Pyromancer: Apprentice",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "expert": {
+              "label": "Pyromancer: Expert",
+              "description": "5 CP; Škola Ohně VI. Manual — resolved at the table."
+            },
+            "mistr": {
+              "label": "Pyromancer: Master",
+              "description": "5 CP; Škola Ohně VIII. Manual — resolved at the table."
+            },
+            "velmistr": {
+              "label": "Pyromancer: Grandmaster",
+              "description": "5 CP; Škola Ohně X. Manual — resolved at the table."
+            },
+            "overeni": {
+              "label": "School of Fire: Precision +15%",
+              "description": "5 CP; Pyromancer: Expert. Applies to all attacks for now. Partially automated."
+            },
+            "kritRozsah": {
+              "label": "School of Fire: Critical Range +2",
+              "description": "5 SP. Critical range is not automated yet. Manual — resolved at the table."
+            },
+            "burnResist1": {
+              "label": "Chance to be Ignited -10%",
+              "description": "10 SP. Automated."
+            },
+            "burnResist2": {
+              "label": "Chance to be Ignited -10%",
+              "description": "10 SP; Pyromancer: Expert. Automated."
+            },
+            "podpaleniPanika": {
+              "label": "Ignition causes no Panic Test",
+              "description": "15 SP. Manual — resolved at the table."
+            },
+            "ohnivaAura": {
+              "label": "Fire Aura: Ignite +5%",
+              "description": "5 CP; Pyromancer: Expert. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+            },
+            "ohnivyStit": {
+              "label": "Fire Shield: Penetration +3, Damage +1d4",
+              "description": "5 CP; Pyromancer: Expert. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+            },
+            "podpaleniKrit": {
+              "label": "Ignite +100% from 3rd-degree Crit",
+              "description": "5 CP; Divoký oheň I. Manual — resolved at the table."
+            },
+            "divokyOhen1": {
+              "label": "Wildfire I",
+              "description": "15 CP; Pyromancer: Expert. Manual — resolved at the table."
+            },
+            "divokyOhen2": {
+              "label": "Wildfire II",
+              "description": "15 CP; Pyromancer: Mistr. Manual — resolved at the table."
+            },
+            "barevnyOhen1": {
+              "label": "Colored Fire I",
+              "description": "5 CP; Pyromancer: Učedník. Manual — resolved at the table."
+            },
+            "barevnyOhen2": {
+              "label": "Colored Fire II",
+              "description": "5 CP; Pyromancer: Expert. Manual — resolved at the table."
+            },
+            "barevnyOhen3": {
+              "label": "Colored Fire III",
+              "description": "5 CP; Pyromancer: Mistr. Manual — resolved at the table."
+            },
+            "barevnyOhen4": {
+              "label": "Colored Fire IV",
+              "description": "15 CP; Pyromancer: Velmistr. Manual — resolved at the table."
+            }
+          }
+        },
+        "runeWarrior": {
+          "label": "Rune Warrior",
+          "nodes": {
+            "obnoveniRun1": {
+              "label": "Rune Renewal I",
+              "description": "0 CP. Manual — resolved at the table."
+            },
+            "obnoveniRun2": {
+              "label": "Rune Renewal II",
+              "description": "25 SP; Arcana V. Manual — resolved at the table."
+            },
+            "nohyRunaA": {
+              "label": "Legs: Rune A",
+              "description": "10 CP. Manual — resolved at the table."
+            },
+            "nohyRunaB": {
+              "label": "Legs: Rune B",
+              "description": "10 CP; Arcana V. Manual — resolved at the table."
+            },
+            "zadaRuna": {
+              "label": "Back: Rune",
+              "description": "10 CP; Arcana V. Manual — resolved at the table."
+            },
+            "hlavaRuna": {
+              "label": "Head: Rune",
+              "description": "20 CP; Arcana VII. Manual — resolved at the table."
+            },
+            "pravaRuka1": {
+              "label": "Right Arm: Rune I",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "pravaRuka2": {
+              "label": "Right Arm: Rune II",
+              "description": "15 CP; Arcana VI. Manual — resolved at the table."
+            },
+            "pravaRuka3": {
+              "label": "Right Arm: Rune III",
+              "description": "20 CP; Arcana X. Manual — resolved at the table."
+            },
+            "levaRuka1": {
+              "label": "Left Arm: Rune I",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "levaRuka2": {
+              "label": "Left Arm: Rune II",
+              "description": "15 CP; Arcana VI. Manual — resolved at the table."
+            },
+            "levaRuka3": {
+              "label": "Left Arm: Rune III",
+              "description": "20 CP; Arcana X. Manual — resolved at the table."
+            },
+            "hrud1": {
+              "label": "Chest: Rune I",
+              "description": "10 CP; Arcana IV. Manual — resolved at the table."
+            },
+            "hrud2": {
+              "label": "Chest: Rune II",
+              "description": "15 CP; Arcana VI. Manual — resolved at the table."
+            },
+            "hrud3": {
+              "label": "Chest: Rune III",
+              "description": "20 CP; Arcana X. Manual — resolved at the table."
+            }
+          }
+        },
+        "vitamancer": {
+          "label": "Vitamancer",
+          "nodes": {
+            "ucednik": {
+              "label": "Vitamancer: Apprentice",
+              "description": "5 CP. Manual — resolved at the table."
+            },
+            "expert": {
+              "label": "Vitamancer: Expert",
+              "description": "5 CP; Škola Ducha/Těla VI. Manual — resolved at the table."
+            },
+            "mistr": {
+              "label": "Vitamancer: Master",
+              "description": "5 CP; Škola Ducha/Těla VIII. Manual — resolved at the table."
+            },
+            "velmistr": {
+              "label": "Vitamancer: Grandmaster",
+              "description": "5 CP; Škola Ducha/Těla X. Manual — resolved at the table."
+            },
+            "kritRozsah": {
+              "label": "Spirit and Body: Critical Range +2",
+              "description": "5 SP. Critical range is not automated yet. Manual — resolved at the table."
+            },
+            "overeni": {
+              "label": "Spirit and Body: Precision +10%",
+              "description": "5 CP; Vitamancer: Expert. Applies to all attacks for now. Partially automated."
+            },
+            "ochromeni1": {
+              "label": "School of Spirit: Stun +5%",
+              "description": "5 CP; Vitamancer: Expert. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+            },
+            "ochromeni2": {
+              "label": "School of Spirit: Stun +5%",
+              "description": "5 CP; Vitamancer: Mistr. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+            },
+            "zivoty5": {
+              "label": "Health +5",
+              "description": "10 CP; Vitamancer: Mistr. Automated."
+            },
+            "rychlaLecba": {
+              "label": "Grave wounds heal 10 days faster",
+              "description": "15 SP. Manual — resolved at the table."
+            },
+            "bleedResist": {
+              "label": "Chance to Bleed -10%",
+              "description": "10 SP. Automated."
+            },
+            "obnoveniKrvaceni": {
+              "label": "Restoration: removes a Bleed when it ends",
+              "description": "5 CP; Vitamancer: Expert. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+            },
+            "stabilizace": {
+              "label": "Stabilization: Chance +20%",
+              "description": "10 SP; Vitamancer: Expert. Manual — resolved at the table."
+            },
+            "lorikovoKopi": {
+              "label": "Lorik's Spear: may change direction",
+              "description": "5 CP; Vitamancer: Mistr. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+            },
+            "lorinoPouto": {
+              "label": "Lora's Bond: suppresses incapacitation",
+              "description": "5 CP; Vitamancer: Mistr. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+            },
+            "maguvOdpocinek": {
+              "label": "Mage's Rest",
+              "description": "10 CP; Vitamancer: Učedník. Manual — resolved at the table."
+            },
+            "sdilenaOchrana": {
+              "label": "Shared Protection",
+              "description": "20 CP; Vitamancer: Expert. Manual — resolved at the table."
+            },
+            "sebekontrola": {
+              "label": "Self-Control",
+              "description": "5 CP; Vitamancer: Mistr. Manual — resolved at the table."
+            },
+            "ochrance": {
+              "label": "Protector",
+              "description": "30 CP; Vitamancer: Expert. Manual — resolved at the table."
+            },
+            "rusivaKouzla": {
+              "label": "Disruptive Spells",
+              "description": "15 CP; Vitamancer: Mistr. Manual — resolved at the table."
+            },
+            "hibernace": {
+              "label": "Hibernation",
+              "description": "15 CP; Vitamancer: Velmistr. Manual — resolved at the table."
+            },
+            "magickyStit": {
+              "label": "Magic Shield: absorbs Holy damage too",
+              "description": "5 CP; Vitamancer: Mistr. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+            },
+            "magickaStena": {
+              "label": "Magic Wall: Stun becomes Daze",
+              "description": "5 CP; Vitamancer: Mistr. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+            }
+          }
         }
       },
       "base": {
@@ -1291,6 +3940,9 @@
           "durability": {
             "label": "Durability"
           },
+          "durabilityMax": {
+            "label": "Max Durability"
+          },
           "swimPenalty": {
             "label": "Swim penalty"
           },
@@ -1472,8 +4124,1169 @@
       "type3": "Extra Effect Type 3"
     },
     "Items": {
+      "AccurateShot": {
+        "name": "Accurate Shot"
+      },
+      "AceUpOnesSleeve": {
+        "name": "Ace up One's Sleeve"
+      },
+      "AcidResistantSalve": {
+        "name": "Acid-Resistant Salve"
+      },
+      "AcrobaticDefense": {
+        "name": "Acrobatic Defense"
+      },
+      "AdeptAcrobacy": {
+        "name": "Adept: Acrobacy"
+      },
+      "AdeptAlchemy": {
+        "name": "Adept: Alchemy"
+      },
+      "AdeptAnimalHandling": {
+        "name": "Adept: Animal Handling"
+      },
+      "AdeptArcana": {
+        "name": "Adept: Arcana"
+      },
+      "AdeptAthletics": {
+        "name": "Adept: Athletics"
+      },
+      "AdeptCombat": {
+        "name": "Adept: Combat"
+      },
+      "AdeptFirstAid": {
+        "name": "Adept: First Aid"
+      },
+      "AdeptLeadership": {
+        "name": "Adept: Leadership"
+      },
+      "AdeptLockpicking": {
+        "name": "Adept: Lockpicking"
+      },
+      "AdeptOfMagic": {
+        "name": "Adept of Magic"
+      },
+      "AdeptPickpocketing": {
+        "name": "Adept: Pickpocketing"
+      },
+      "AdeptResearch": {
+        "name": "Adept: Research"
+      },
+      "AdeptStealth": {
+        "name": "Adept: Stealth"
+      },
+      "AdeptTraps": {
+        "name": "Adept: Traps"
+      },
+      "AgileI": {
+        "name": "Agile I"
+      },
+      "AgileII": {
+        "name": "Agile II"
+      },
+      "AimedStrike": {
+        "name": "Aimed Strike"
+      },
+      "AimingMelee": {
+        "name": "Aiming - Melee"
+      },
+      "AimingRanged": {
+        "name": "Aiming - Ranged"
+      },
+      "Aketon": {
+        "name": "Aketon"
+      },
+      "Alkahest": {
+        "name": "Alkahest"
+      },
+      "AntiLarge": {
+        "name": "Anti-Large"
+      },
+      "ArcaneAffinity": {
+        "name": "Arcane Affinity"
+      },
+      "ArcaneEssence": {
+        "name": "Arcane Essence!"
+      },
+      "AreaDefense": {
+        "name": "Area Defense"
+      },
+      "ArmorTrainingI": {
+        "name": "Armor Training I"
+      },
+      "ArmorTrainingII": {
+        "name": "Armor Training II"
+      },
+      "Arrows": {
+        "name": "Arrows"
+      },
+      "Asthmatic": {
+        "name": "Asthmatic"
+      },
+      "Attack": {
+        "name": "Attack"
+      },
+      "Bardiche": {
+        "name": "Bardiche"
+      },
+      "Baton": {
+        "name": "Baton"
+      },
+      "Battlebrother": {
+        "name": "Battlebrother"
+      },
+      "BattleHardenedI": {
+        "name": "Battle Hardened I"
+      },
+      "BecDeCorbin": {
+        "name": "Bec de Corbin"
+      },
+      "Bezoardicum": {
+        "name": "Bezoardicum"
+      },
+      "BloodyKiss": {
+        "name": "Bloody Kiss"
+      },
+      "BlueCross": {
+        "name": "Blue Cross"
+      },
+      "BlueStar": {
+        "name": "Blue Star"
+      },
+      "Bolts": {
+        "name": "Bolts"
+      },
+      "Brave": {
+        "name": "Brave"
+      },
+      "Brawny": {
+        "name": "Brawny"
+      },
+      "Brigandine": {
+        "name": "Brigandine"
+      },
+      "Broadsword": {
+        "name": "Broadsword"
+      },
+      "Butcher": {
+        "name": "Butcher"
+      },
+      "CalendulaAlba": {
+        "name": "Calendula Alba"
+      },
+      "CalmBody": {
+        "name": "Calm Body"
+      },
+      "Casting": {
+        "name": "Casting"
+      },
+      "Cleave": {
+        "name": "Cleave"
+      },
+      "CleaverCleave": {
+        "name": "Cleaver Cleave"
+      },
+      "CombatGenius": {
+        "name": "Combat Genius"
+      },
+      "CombatGeniusII": {
+        "name": "Combat Genius II"
+      },
+      "CorpseBreath": {
+        "name": "Corpse Breath"
+      },
+      "Counterattack": {
+        "name": "Counterattack"
+      },
+      "Cracker": {
+        "name": "Cracker"
+      },
+      "CracklingClay": {
+        "name": "Crackling Clay"
+      },
+      "Craftsman": {
+        "name": "Craftsman"
+      },
+      "Crawling": {
+        "name": "Crawling"
+      },
+      "CripplingShot": {
+        "name": "Crippling Shot"
+      },
+      "Crossbow": {
+        "name": "Crossbow"
+      },
+      "CryophoricClay": {
+        "name": "Cryophoric Clay"
+      },
+      "Dagger": {
+        "name": "Dagger"
+      },
+      "DeadlyLunge": {
+        "name": "Deadly Lunge"
+      },
+      "DeepFocus": {
+        "name": "Deep Focus"
+      },
+      "DeepSlash": {
+        "name": "Deep Slash"
+      },
+      "DefensiveStance": {
+        "name": "Defensive Stance"
+      },
+      "Determination": {
+        "name": "Determination"
+      },
+      "Diehard": {
+        "name": "Diehard"
+      },
+      "Disengage": {
+        "name": "Disengage"
+      },
+      "Disfigured": {
+        "name": "Disfigured"
+      },
+      "DistractionDexterity": {
+        "name": "Distraction (Dexterity)"
+      },
+      "DistractionPerception": {
+        "name": "Distraction (Perception)"
+      },
+      "Dodge": {
+        "name": "Dodge"
+      },
+      "Drinker": {
+        "name": "Drinker"
+      },
+      "DropProne": {
+        "name": "Drop Prone"
+      },
+      "DuelistsAdvance": {
+        "name": "Duelist's Advance"
+      },
+      "DuelistsSlayer": {
+        "name": "Duelist's Slayer"
+      },
+      "Dwarf": {
+        "name": "Dwarf"
+      },
+      "DwarvenImmunityI": {
+        "name": "Dwarven Immunity I"
+      },
+      "DwarvenImmunityII": {
+        "name": "Dwarven Immunity II"
+      },
+      "DwarvenLiver": {
+        "name": "Dwarven Liver"
+      },
+      "DwarvenPerseverance": {
+        "name": "Dwarven Perseverance"
+      },
+      "DwarvenResilience": {
+        "name": "Dwarven Resilience"
+      },
+      "DwarvenTalent": {
+        "name": "Dwarven Talent"
+      },
+      "DwarvenToughness": {
+        "name": "Dwarven Toughness"
+      },
+      "EagleSenses": {
+        "name": "Eagle Senses"
+      },
+      "Eldarai": {
+        "name": "Eldarai"
+      },
+      "ElvenGrace": {
+        "name": "Elven Grace"
+      },
+      "ElvenPerfectionAcrobacy": {
+        "name": "Elven Perfection: Acrobacy"
+      },
+      "ElvenPerfectionAlchemy": {
+        "name": "Elven Perfection: Alchemy"
+      },
+      "ElvenPerfectionArcana": {
+        "name": "Elven Perfection: Arcana"
+      },
+      "ElvenPerfectionAthletics": {
+        "name": "Elven Perfection: Athletics"
+      },
+      "ElvenPerfectionFirstAid": {
+        "name": "Elven Perfection: First Aid"
+      },
+      "ElvenPerfectionLeadership": {
+        "name": "Elven Perfection: Leadership"
+      },
+      "ElvenPerfectionPickpocketing": {
+        "name": "Elven Perfection: Pickpocketing"
+      },
+      "ElvenPerfectionStealth": {
+        "name": "Elven Perfection: Stealth"
+      },
+      "ElvenReflexes": {
+        "name": "Elven Reflexes"
+      },
+      "ElvenTalentAnimalHandling": {
+        "name": "Elven Talent: Animal Handling"
+      },
+      "ElvenTalentArcana": {
+        "name": "Elven Talent: Arcana"
+      },
+      "ElvenTalentAthletics": {
+        "name": "Elven Talent: Athletics"
+      },
+      "ElvenTalentFirstAid": {
+        "name": "Elven Talent: First Aid"
+      },
+      "ElvenTalentPickpocketing": {
+        "name": "Elven Talent: Pickpocketing"
+      },
+      "ElvenTalentStealth": {
+        "name": "Elven Talent: Stealth"
+      },
+      "EnduranceOfStone": {
+        "name": "Endurance of Stone"
+      },
+      "ExpertAcrobacy": {
+        "name": "Expert: Acrobacy"
+      },
+      "ExpertAlchemy": {
+        "name": "Expert: Alchemy"
+      },
+      "ExpertAnimalHandling": {
+        "name": "Expert: Animal Handling"
+      },
+      "ExpertArcana": {
+        "name": "Expert: Arcana"
+      },
+      "ExpertAthletics": {
+        "name": "Expert: Athletics"
+      },
+      "ExpertFirstAid": {
+        "name": "Expert: First Aid"
+      },
+      "ExpertLeadership": {
+        "name": "Expert: Leadership"
+      },
+      "ExpertLockpicking": {
+        "name": "Expert: Lockpicking"
+      },
+      "ExpertPickpocketing": {
+        "name": "Expert: Pickpocketing"
+      },
+      "ExpertResearch": {
+        "name": "Expert: Research"
+      },
+      "ExpertStealth": {
+        "name": "Expert: Stealth"
+      },
+      "ExpertTraps": {
+        "name": "Expert: Traps"
+      },
+      "ExploitWeakness": {
+        "name": "Exploit Weakness"
+      },
+      "ExploitWeaknessThrow": {
+        "name": "Exploit Weakness (Throw)"
+      },
+      "ExtendedLunge": {
+        "name": "Extended Lunge"
+      },
+      "Falcon": {
+        "name": "Falcon"
+      },
+      "FastSpells": {
+        "name": "Fast Spells"
+      },
+      "Fatso": {
+        "name": "Fatso"
+      },
+      "FeatherFooted": {
+        "name": "Feather Footed"
+      },
+      "FeintDexterity": {
+        "name": "Feint (Dexterity)"
+      },
+      "FeintPerception": {
+        "name": "Feint (Perception)"
+      },
+      "FeldsherI": {
+        "name": "Feldsher I"
+      },
+      "FeldsherII": {
+        "name": "Feldsher II"
+      },
+      "FencingDagger": {
+        "name": "Fencing Dagger"
+      },
+      "Finesse": {
+        "name": "Finesse"
+      },
+      "FireResistantSalve": {
+        "name": "Fire-Resistant Salve"
+      },
+      "Flail": {
+        "name": "Flail"
+      },
+      "Flamberge": {
+        "name": "Flamberge"
+      },
+      "FlambergeCleave": {
+        "name": "Flamberge Cleave"
+      },
+      "FlambergeCleaveAbility": {
+        "name": "Flamberge Cleave (Ability)"
+      },
+      "FleshRending": {
+        "name": "Flesh Rending"
+      },
+      "Flurry": {
+        "name": "Flurry"
+      },
+      "FlurryOfThrows": {
+        "name": "Flurry of Throws"
+      },
+      "Focus": {
+        "name": "Focus"
+      },
+      "Foodie": {
+        "name": "Foodie"
+      },
+      "Fragile": {
+        "name": "Fragile"
+      },
+      "FreeHandI": {
+        "name": "Free Hand I"
+      },
+      "FreeHandII": {
+        "name": "Free Hand II"
+      },
+      "FrenziedThrow": {
+        "name": "Frenzied Throw"
+      },
+      "FrostResistantSalve": {
+        "name": "Frost-Resistant Salve"
+      },
+      "Gambeson": {
+        "name": "Gambeson"
+      },
+      "Genius": {
+        "name": "Genius"
+      },
+      "Giant": {
+        "name": "Giant"
+      },
+      "Giantslayer": {
+        "name": "Giantslayer"
+      },
+      "Gills": {
+        "name": "Gills"
+      },
+      "Glaive": {
+        "name": "Glaive"
+      },
+      "Gorgeous": {
+        "name": "Gorgeous"
+      },
+      "GracefulStep": {
+        "name": "Graceful Step"
+      },
+      "GreatHammer": {
+        "name": "Great Hammer"
+      },
+      "GreenCross": {
+        "name": "Green Cross"
+      },
+      "GuardStance": {
+        "name": "Guard (Stance)"
+      },
+      "Halberd": {
+        "name": "Halberd"
+      },
+      "Halfling": {
+        "name": "Halfling"
+      },
+      "HalflingInsidiousness": {
+        "name": "Halfling Insidiousness"
+      },
+      "HalflingLuck": {
+        "name": "Halfling Luck"
+      },
+      "HalflingReroll": {
+        "name": "Halfling Reroll"
+      },
+      "HalfPirouette": {
+        "name": "Half Pirouette"
+      },
+      "HamFisted": {
+        "name": "Ham Fisted"
+      },
+      "HandyFingers": {
+        "name": "Handy Fingers"
+      },
+      "Hardened": {
+        "name": "Hardened"
+      },
+      "Haste": {
+        "name": "Haste"
+      },
+      "HastenedCast": {
+        "name": "Hastened Cast"
+      },
+      "Hasty": {
+        "name": "Hasty"
+      },
+      "Hatchet": {
+        "name": "Hatchet"
+      },
+      "Haubergeon": {
+        "name": "Haubergeon"
+      },
+      "HealingSalve": {
+        "name": "Healing Salve"
+      },
+      "HeaterShield": {
+        "name": "Heater Shield"
+      },
+      "HeavyCrossbow": {
+        "name": "Heavy Crossbow"
+      },
+      "HeavyCharge": {
+        "name": "Heavy Charge"
+      },
+      "Hemophobia": {
+        "name": "Hemophobia"
+      },
+      "Hemophylia": {
+        "name": "Hemophilia!"
+      },
+      "Human": {
+        "name": "Human"
+      },
+      "HuntingBow": {
+        "name": "Hunting Bow"
+      },
+      "Huntsman": {
+        "name": "Huntsman"
+      },
+      "Charge": {
+        "name": "Charge"
+      },
+      "Choleric": {
+        "name": "Choleric"
+      },
+      "Ignum": {
+        "name": "Ignum"
+      },
+      "Imbroccata": {
+        "name": "Imbroccata"
+      },
+      "ImbroccataExploitWeakness": {
+        "name": "Imbroccata: Exploit Weakness"
+      },
+      "Imp": {
+        "name": "Imp"
+      },
+      "Impale": {
+        "name": "Impale"
+      },
+      "ImpaleFollowUpAttack": {
+        "name": "Impale: Follow-up Attack"
+      },
+      "ImprovedAiming": {
+        "name": "Improved Aiming"
+      },
+      "ImprovedBurn": {
+        "name": "Improved Burn"
+      },
+      "ImprovedSlow": {
+        "name": "Improved Slow"
+      },
+      "ImprovisedShield": {
+        "name": "Improvised Shield"
+      },
+      "IncendiaryClay": {
+        "name": "Incendiary Clay"
+      },
+      "Inconspicuous": {
+        "name": "Inconspicuous"
+      },
+      "Indestructible": {
+        "name": "Indestructible"
+      },
+      "Intimidation": {
+        "name": "Intimidation"
+      },
+      "IronMuscles": {
+        "name": "Iron Muscles"
+      },
+      "IronSkin": {
+        "name": "Iron Skin"
+      },
+      "IronWill": {
+        "name": "Iron Will"
+      },
+      "Javelin": {
+        "name": "Javelin"
+      },
+      "JavelinMelee": {
+        "name": "Javelin (melee)"
+      },
+      "Javelins": {
+        "name": "Javelins"
+      },
+      "Kaftan": {
+        "name": "Kaftan"
+      },
+      "Kleptomaniac": {
+        "name": "Kleptomaniac"
+      },
+      "Knives": {
+        "name": "Knives"
+      },
+      "Knockdown": {
+        "name": "Knockdown"
+      },
+      "LamellarArmor": {
+        "name": "Lamellar Armor"
+      },
+      "LeatherArmor": {
+        "name": "Leather Armor"
+      },
+      "LegSweep": {
+        "name": "Leg Sweep"
+      },
+      "LegSweepDexterity": {
+        "name": "Leg Sweep (Dexterity)"
+      },
+      "LegSweepStrength": {
+        "name": "Leg Sweep (Strength)"
+      },
+      "LightningReflexes": {
+        "name": "Lightning Reflexes"
+      },
+      "LightningResistantSalve": {
+        "name": "Lightning-Resistant Salve"
+      },
+      "LiquorConnoisseur": {
+        "name": "Liquor Connoisseur"
+      },
+      "LongAxe": {
+        "name": "Long Axe"
+      },
+      "Longbow": {
+        "name": "Longbow"
+      },
+      "LongReload": {
+        "name": "Long Reload"
+      },
+      "Longsword": {
+        "name": "Longsword"
+      },
+      "LookUpASpell": {
+        "name": "Look Up a Spell"
+      },
+      "LucksEdge": {
+        "name": "Luck's Edge"
+      },
+      "Lucky": {
+        "name": "Lucky"
+      },
+      "Mace": {
+        "name": "Mace"
+      },
+      "MagicalConduit": {
+        "name": "Magical Conduit"
+      },
+      "MagicalReserve": {
+        "name": "Magical Reserve"
+      },
+      "MagicCommander": {
+        "name": "Magic Commander"
+      },
+      "MagicPotential": {
+        "name": "Magic Potential"
+      },
+      "MagicResistance": {
+        "name": "Magic Resistance"
+      },
+      "MagicTraps": {
+        "name": "Magic Traps"
+      },
+      "MagicWard": {
+        "name": "Magic Ward"
+      },
+      "MasterHerbalist": {
+        "name": "Master Herbalist"
+      },
+      "MasterOfKnives": {
+        "name": "Master of Knives"
+      },
+      "MasterThief": {
+        "name": "Master Thief"
+      },
+      "Melancholic": {
+        "name": "Melancholic"
+      },
+      "MilitaryCleaver": {
+        "name": "Military Cleaver"
+      },
+      "Mithridat": {
+        "name": "Mithridat"
+      },
+      "Movement": {
+        "name": "Movement"
+      },
+      "Multiattack": {
+        "name": "Multiattack"
+      },
+      "MuscularI": {
+        "name": "Muscular I"
+      },
+      "MuscularII": {
+        "name": "Muscular II"
+      },
+      "Nimble": {
+        "name": "Nimble"
+      },
+      "NimbleFeet": {
+        "name": "Nimble Feet"
+      },
+      "Oak": {
+        "name": "Oak"
+      },
+      "OpportunityAttack": {
+        "name": "Opportunity Attack"
+      },
+      "Orator": {
+        "name": "Orator"
+      },
+      "Overwatch": {
+        "name": "Overwatch"
+      },
+      "Panacea": {
+        "name": "Panacea"
+      },
+      "PassingStrike": {
+        "name": "Passing Strike"
+      },
+      "Patron": {
+        "name": "Patron"
+      },
+      "PerfectOpening": {
+        "name": "Perfect Opening"
+      },
+      "PerfectOpeningHastened": {
+        "name": "Perfect Opening (Hastened)"
+      },
+      "Perseverance": {
+        "name": "Perseverance"
+      },
+      "Phlegmatic": {
+        "name": "Phlegmatic"
+      },
+      "PikemanHeavyCharge": {
+        "name": "Pikeman Heavy Charge"
+      },
+      "PikemanCharge": {
+        "name": "Pikeman Charge"
+      },
+      "PlateMail": {
+        "name": "Plate Mail"
+      },
+      "PolearmCleave": {
+        "name": "Polearm Cleave"
+      },
+      "PolearmMaster": {
+        "name": "Polearm Master"
+      },
+      "Posthumous": {
+        "name": "Posthumous"
+      },
+      "PreciseLunge": {
+        "name": "Precise Lunge"
+      },
+      "PrecisionStrike": {
+        "name": "Precision Strike"
+      },
+      "Pretty": {
+        "name": "Pretty"
+      },
+      "ProficiencyAcrobacy": {
+        "name": "Proficiency: Acrobacy"
+      },
+      "ProficiencyAlchemy": {
+        "name": "Proficiency: Alchemy"
+      },
+      "ProficiencyAnimalHandling": {
+        "name": "Proficiency: Animal Handling"
+      },
+      "ProficiencyArcana": {
+        "name": "Proficiency: Arcana"
+      },
+      "ProficiencyAthletics": {
+        "name": "Proficiency: Athletics"
+      },
+      "ProficiencyFirstAid": {
+        "name": "Proficiency: First Aid"
+      },
+      "ProficiencyLeadership": {
+        "name": "Proficiency: Leadership"
+      },
+      "ProficiencyLockpicking": {
+        "name": "Proficiency: Lockpicking"
+      },
+      "ProficiencyPickpocketing": {
+        "name": "Proficiency: Pickpocketing"
+      },
+      "ProficiencyResearch": {
+        "name": "Proficiency: Research"
+      },
+      "ProficiencyStealth": {
+        "name": "Proficiency: Stealth"
+      },
+      "ProficiencyTraps": {
+        "name": "Proficiency: Traps"
+      },
+      "Qudat": {
+        "name": "Qudat"
+      },
+      "QuickHands": {
+        "name": "Quick Hands"
+      },
+      "QuickChanneling": {
+        "name": "Quick Channeling"
+      },
+      "QuickWitted": {
+        "name": "Quick-witted"
+      },
+      "RapidAdaptationI": {
+        "name": "Rapid Adaptation I"
+      },
+      "Rapier": {
+        "name": "Rapier"
+      },
+      "RatDreams": {
+        "name": "Rat Dreams"
+      },
+      "ReactionCast": {
+        "name": "Reaction Cast"
+      },
+      "RecklessStrike": {
+        "name": "Reckless Strike"
+      },
+      "RecklessStrikeReaver": {
+        "name": "Reckless Strike (Reaver)"
+      },
+      "ReflexBow": {
+        "name": "Reflex Bow"
+      },
+      "Reload": {
+        "name": "Reload"
+      },
+      "Rest": {
+        "name": "Rest"
+      },
+      "RetaliatoryStrike": {
+        "name": "Retaliatory Strike"
+      },
+      "Robe": {
+        "name": "Robe"
+      },
+      "RunningThrow": {
+        "name": "Running Throw"
+      },
+      "Sabre": {
+        "name": "Sabre"
+      },
+      "SaintJohn": {
+        "name": "Saint John"
+      },
+      "Sanguine": {
+        "name": "Sanguine"
+      },
+      "ScaleMail": {
+        "name": "Scale Mail"
+      },
+      "ScarletTear": {
+        "name": "Scarlet Tear"
+      },
+      "Scarred": {
+        "name": "Scarred"
+      },
+      "SecondWind": {
+        "name": "Second Wind"
+      },
+      "ShieldBash": {
+        "name": "Shield Bash"
+      },
+      "ShieldBashSmallShield": {
+        "name": "Shield Bash (Small Shield)"
+      },
+      "ShieldbearerDefensiveStance": {
+        "name": "Shieldbearer Defensive Stance"
+      },
+      "ShieldCharge": {
+        "name": "Shield Charge"
+      },
+      "ShieldChargeSmallShield": {
+        "name": "Shield Charge (Small Shield)"
+      },
       "ShortSword": {
         "name": "Short Sword"
+      },
+      "ShoveDexterity": {
+        "name": "Shove (Dexterity)"
+      },
+      "ShoveStrength": {
+        "name": "Shove (Strength)"
+      },
+      "Shy": {
+        "name": "Shy"
+      },
+      "ScholarI": {
+        "name": "Scholar I"
+      },
+      "ScholarII": {
+        "name": "Scholar II"
+      },
+      "SilverTongue": {
+        "name": "Silver Tongue"
+      },
+      "SixthSense": {
+        "name": "Sixth Sense"
+      },
+      "SlimyFingers": {
+        "name": "Slimy Fingers"
+      },
+      "SlowMovement": {
+        "name": "Slow Movement"
+      },
+      "Slowpoke": {
+        "name": "Slowpoke"
+      },
+      "SmallShield": {
+        "name": "Small Shield"
+      },
+      "SmokeBomb": {
+        "name": "Smoke Bomb"
+      },
+      "SnakeBite": {
+        "name": "Snake Bite"
+      },
+      "SneakAttack": {
+        "name": "Sneak Attack"
+      },
+      "SoftBones": {
+        "name": "Soft Bones"
+      },
+      "Spear": {
+        "name": "Spear"
+      },
+      "SpecializationAcrobacy": {
+        "name": "Specialization: Acrobacy"
+      },
+      "SpecializationAlchemy": {
+        "name": "Specialization: Alchemy"
+      },
+      "SpecializationArcana": {
+        "name": "Specialization: Arcana"
+      },
+      "SpecializationAthletics": {
+        "name": "Specialization: Athletics"
+      },
+      "SpecializationDeception": {
+        "name": "Specialization: Deception"
+      },
+      "SpecializationFirstAid": {
+        "name": "Specialization: First Aid"
+      },
+      "SpecializationHerbalism": {
+        "name": "Specialization: Herbalism"
+      },
+      "SpecializationInsight": {
+        "name": "Specialization: Insight"
+      },
+      "SpecializationIntimidation": {
+        "name": "Specialization: Intimidation"
+      },
+      "SpecializationLeadership": {
+        "name": "Specialization: Leadership"
+      },
+      "SpecializationLockpicking": {
+        "name": "Specialization: Lockpicking"
+      },
+      "SpecializationPersuasion": {
+        "name": "Specialization: Persuasion"
+      },
+      "SpecializationPickpocketing": {
+        "name": "Specialization: Pickpocketing"
+      },
+      "SpecializationStealth": {
+        "name": "Specialization: Stealth"
+      },
+      "SpecializationSurvival": {
+        "name": "Specialization: Survival"
+      },
+      "SpecializationTemptation": {
+        "name": "Specialization: Temptation"
+      },
+      "SpecializationTraps": {
+        "name": "Specialization: Traps"
+      },
+      "SpeedyAdvantage": {
+        "name": "Speedy Advantage"
+      },
+      "Spider": {
+        "name": "Spider"
+      },
+      "SplinteringStrike": {
+        "name": "Splintering Strike"
+      },
+      "Sprint": {
+        "name": "Sprint"
+      },
+      "StabilisingTouch": {
+        "name": "Stabilising Touch"
+      },
+      "Staff": {
+        "name": "Staff"
+      },
+      "StaggeringBlow": {
+        "name": "Staggering Blow"
+      },
+      "StaggeringLightnings": {
+        "name": "Staggering Lightnings"
+      },
+      "Strain": {
+        "name": "Strain"
+      },
+      "StuddedArmor": {
+        "name": "Studded Armor"
+      },
+      "Studiousness": {
+        "name": "Studiousness"
+      },
+      "SunderingBlowsI": {
+        "name": "Sundering Blows I"
+      },
+      "SunderingBlowsII": {
+        "name": "Sundering Blows II"
+      },
+      "SwiftRetaliation": {
+        "name": "Swift Retaliation"
+      },
+      "TalentedIArcana": {
+        "name": "Talented I: Arcana"
+      },
+      "TalentedIAthletics": {
+        "name": "Talented I: Athletics"
+      },
+      "TalentedIFirstAid": {
+        "name": "Talented I: First Aid"
+      },
+      "TalentedIIAcrobacy": {
+        "name": "Talented II: Acrobacy"
+      },
+      "TalentedIIAlchemy": {
+        "name": "Talented II: Alchemy"
+      },
+      "TalentedIIArcana": {
+        "name": "Talented II: Arcana"
+      },
+      "TalentedIIAthletics": {
+        "name": "Talented II: Athletics"
+      },
+      "TalentedIIFirstAid": {
+        "name": "Talented II: First Aid"
+      },
+      "TalentedIILeadership": {
+        "name": "Talented II: Leadership"
+      },
+      "TalentedIIPickpocketing": {
+        "name": "Talented II: Pickpocketing"
+      },
+      "TalentedIIStealth": {
+        "name": "Talented II: Stealth"
+      },
+      "TalentedIPickpocketing": {
+        "name": "Talented I: Pickpocketing"
+      },
+      "TalentedIStealth": {
+        "name": "Talented I: Stealth"
+      },
+      "ThrowingAxe": {
+        "name": "Throwing Axe"
+      },
+      "ThrowingAxeMelee": {
+        "name": "Throwing Axe (melee)"
+      },
+      "ThrowingAxes": {
+        "name": "Throwing Axes"
+      },
+      "ThrowingKnife": {
+        "name": "Throwing Knife"
+      },
+      "Tortura": {
+        "name": "Tortura"
+      },
+      "TowerShield": {
+        "name": "Tower Shield"
+      },
+      "TripDexterity": {
+        "name": "Trip (Dexterity)"
+      },
+      "TripStrength": {
+        "name": "Trip (Strength)"
+      },
+      "TwoHandedFlail": {
+        "name": "Two-Handed Flail"
+      },
+      "Ugly": {
+        "name": "Ugly"
+      },
+      "UntiringLuck": {
+        "name": "Untiring Luck"
+      },
+      "Verdigris": {
+        "name": "Verdigris"
+      },
+      "WarAxe": {
+        "name": "War Axe"
+      },
+      "WarHammer": {
+        "name": "War Hammer"
+      },
+      "WarPick": {
+        "name": "War Pick"
+      },
+      "Waterstrider": {
+        "name": "Waterstrider"
+      },
+      "WeaponSpecializationI": {
+        "name": "Weapon Specialization I"
+      },
+      "WhiteDove": {
+        "name": "White Dove"
+      },
+      "WillfulnessI": {
+        "name": "Willfulness I"
+      },
+      "WillfulnessII": {
+        "name": "Willfulness II"
+      },
+      "WillingnessToLearn": {
+        "name": "Willingness to Learn"
+      },
+      "Woodsman": {
+        "name": "Woodsman"
+      },
+      "Wordsmith": {
+        "name": "Wordsmith"
+      },
+      "Yliaster": {
+        "name": "Yliaster"
       }
     }
   },

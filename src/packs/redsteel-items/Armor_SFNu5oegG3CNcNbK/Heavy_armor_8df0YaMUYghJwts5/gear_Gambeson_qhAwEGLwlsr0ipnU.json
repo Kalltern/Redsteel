@@ -58,7 +58,8 @@
     "rangedCritDefense": 0,
     "archeryPenalty": 0,
     "perPenalty": 0,
-    "layer": "Bottom"
+    "layer": "Bottom",
+    "localizationKey": "REDSTEEL.Items.Gambeson.name"
   },
   "effects": [],
   "sort": 100000,

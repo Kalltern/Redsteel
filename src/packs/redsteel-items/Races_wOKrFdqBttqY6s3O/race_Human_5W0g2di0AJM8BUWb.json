@@ -3,7 +3,8 @@
   "type": "race",
   "img": "icons/svg/aura.svg",
   "system": {
-    "description": ""
+    "description": "",
+    "localizationKey": "REDSTEEL.Items.Human.name"
   },
   "effects": [
     {

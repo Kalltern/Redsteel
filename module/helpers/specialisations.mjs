@@ -1,4 +1,5 @@
 import { REDSTEEL } from "./config.mjs";
+import { GENERATED_SPECS } from "./specialisations-generated.mjs";
 
 /* ===========================================================================
  * Specialisation talent-tree definitions
@@ -360,6 +361,10 @@ const SPEC_DEFS = {
     },
   },
 };
+
+// Bulk specialisations generated from the rules workbook (see
+// scripts/gen_specs_batch2.py) — merged alongside the handwritten ones.
+Object.assign(SPEC_DEFS, GENERATED_SPECS);
 
 // Inject localization keys and defaults derived from spec/node ids
 for (const [specId, spec] of Object.entries(SPEC_DEFS)) {

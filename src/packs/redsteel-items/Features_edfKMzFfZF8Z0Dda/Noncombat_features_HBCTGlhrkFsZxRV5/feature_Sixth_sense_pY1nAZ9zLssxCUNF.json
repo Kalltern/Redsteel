@@ -18,7 +18,8 @@
       ],
       "value": 2
     },
-    "option": "feature"
+    "option": "feature",
+    "localizationKey": "REDSTEEL.Items.SixthSense.name"
   },
   "effects": [
     {

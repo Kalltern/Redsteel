@@ -116,7 +116,8 @@
     "dmgType4": "",
     "effectType1": "shield_strain",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "localizationKey": "REDSTEEL.Items.Javelin.name"
   },
   "effects": [],
   "sort": 200000,

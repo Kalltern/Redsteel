@@ -19,7 +19,8 @@
       ],
       "value": 1
     },
-    "option": "feature"
+    "option": "feature",
+    "localizationKey": "REDSTEEL.Items.AdeptOfMagic.name"
   },
   "effects": [
     {

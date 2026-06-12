@@ -21,7 +21,8 @@
       "diceNum": null,
       "diceSize": "",
       "diceBonus": ""
-    }
+    },
+    "localizationKey": "REDSTEEL.Items.RatDreams.name"
   },
   "effects": [],
   "sort": 0,

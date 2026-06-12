@@ -8,7 +8,8 @@
     "option": "arrows",
     "options": [],
     "bleed": null,
-    "penetration": null
+    "penetration": null,
+    "localizationKey": "REDSTEEL.Items.Arrows.name"
   },
   "effects": [],
   "folder": "GCGXFuObx5excja0",

@@ -94,7 +94,8 @@
     "penetration": 0,
     "critRange": 0,
     "critChance": 0,
-    "critFail": 0
+    "critFail": 0,
+    "localizationKey": "REDSTEEL.Items.DropProne.name"
   },
   "effects": [],
   "folder": "laOvi1sJV6MKCK7M",

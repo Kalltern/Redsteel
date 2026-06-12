@@ -19,7 +19,8 @@
       ],
       "value": 0
     },
-    "option": "feature"
+    "option": "feature",
+    "localizationKey": "REDSTEEL.Items.AreaDefense.name"
   },
   "effects": [],
   "sort": 0,

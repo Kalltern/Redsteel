@@ -18,7 +18,8 @@
       ],
       "value": 2
     },
-    "option": "trait"
+    "option": "trait",
+    "localizationKey": "REDSTEEL.Items.Kleptomaniac.name"
   },
   "effects": [
     {

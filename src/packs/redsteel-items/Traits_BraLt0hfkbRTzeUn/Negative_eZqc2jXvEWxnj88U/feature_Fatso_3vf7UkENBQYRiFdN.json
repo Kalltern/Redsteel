@@ -18,7 +18,8 @@
       ],
       "value": 0
     },
-    "option": "trait"
+    "option": "trait",
+    "localizationKey": "REDSTEEL.Items.Fatso.name"
   },
   "effects": [
     {

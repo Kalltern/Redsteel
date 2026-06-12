@@ -57,7 +57,8 @@
     "rangedCritDefense": 0,
     "archeryPenalty": -10,
     "perPenalty": -10,
-    "layer": "Top"
+    "layer": "Top",
+    "localizationKey": "REDSTEEL.Items.PlateMail.name"
   },
   "effects": [],
   "sort": 400000,

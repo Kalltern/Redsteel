@@ -113,7 +113,8 @@
     "dmgType4": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "localizationKey": "REDSTEEL.Items.Longbow.name"
   },
   "effects": [],
   "sort": 100000,

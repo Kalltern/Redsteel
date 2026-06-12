@@ -24,7 +24,8 @@
     },
     "type": "",
     "toxicity": 12,
-    "bleed": 0
+    "bleed": 0,
+    "localizationKey": "REDSTEEL.Items.Gills.name"
   },
   "effects": [],
   "sort": 0,

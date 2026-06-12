@@ -197,21 +197,21 @@ export class RedsteelActor extends Actor {
         const mainHand = actorData.items.get(activeSet.main);
 
         if (offHand?.system?.shield) {
-          const shield = offHand;
+          // Broken shields (0 durability) grant improvised shield stats instead
+          const shield = offHand.getShieldStats();
           // Defense bonuses
-          combatSkills.meleeDefense.bonus += shield.system.defense ?? 0;
-          combatSkills.rangedDefense.bonus += shield.system.rangedDefense ?? 0;
+          combatSkills.meleeDefense.bonus += shield.defense;
+          combatSkills.rangedDefense.bonus += shield.rangedDefense;
 
-          combatSkills.meleeDefense.critbonus += shield.system.critDefense ?? 0;
+          combatSkills.meleeDefense.critbonus += shield.critDefense;
 
-          combatSkills.rangedDefense.critbonus +=
-            shield.system.rangedCritDefense ?? 0;
+          combatSkills.rangedDefense.critbonus += shield.rangedCritDefense;
 
           // Dodge penalty
-          combatSkills.dodge.bonus += shield.system.dodgePenalty ?? 0;
+          combatSkills.dodge.bonus += shield.dodgePenalty;
           // Initiative / speed penalties
-          secondary.ini.bonus += shield.system.iniPenalty ?? 0;
-          secondary.spd.bonus += shield.system.maxSpeed ?? 0;
+          secondary.ini.bonus += shield.iniPenalty;
+          secondary.spd.bonus += shield.maxSpeed;
         }
         if (!offHand?.system?.shield) {
           const weaponClass = mainHand?.system?.weapon?.class;

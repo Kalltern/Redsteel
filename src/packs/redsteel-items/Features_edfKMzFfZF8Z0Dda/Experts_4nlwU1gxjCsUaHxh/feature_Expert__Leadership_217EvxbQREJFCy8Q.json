@@ -18,7 +18,8 @@
       ],
       "value": 2
     },
-    "option": "feature"
+    "option": "feature",
+    "localizationKey": "REDSTEEL.Items.ExpertLeadership.name"
   },
   "effects": [],
   "flags": {

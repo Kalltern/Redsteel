@@ -1,4 +1,20 @@
 /**
+ * Stat block of the "Improvised shield" compendium item
+ * (src/packs/redsteel-items/.../gear_Improvised_shield_cfblSb9uigt23fRA.json).
+ * A shield broken down to 0 durability ignores its own stat block and
+ * behaves like an improvised shield instead.
+ */
+export const IMPROVISED_SHIELD_STATS = {
+  defense: 5,
+  rangedDefense: 10,
+  critDefense: 0,
+  rangedCritDefense: 0,
+  dodgePenalty: -5,
+  iniPenalty: 0,
+  maxSpeed: 0,
+};
+
+/**
  * Extend the basic Item with some very simple modifications.
  * @extends {Item}
  */
@@ -7,6 +23,35 @@ export class RedsteelItem extends Item {
     const key = this.system.localizationKey?.trim();
     if (!key || !game.i18n.has(key)) return this.name;
     return game.i18n.localize(key);
+  }
+
+  /**
+   * A shield only counts as broken when it tracks durability
+   * (durabilityMax > 0) and has been reduced to 0.
+   */
+  get isBrokenShield() {
+    if (this.type !== "gear" || !this.system.shield) return false;
+    const max = Number(this.system.armor?.durabilityMax ?? 0);
+    return max > 0 && Number(this.system.armor?.durability ?? 0) <= 0;
+  }
+
+  /**
+   * Combat stats this shield currently grants. Broken shields fall back
+   * to the improvised shield stat block instead of their own.
+   * @returns {typeof IMPROVISED_SHIELD_STATS}
+   */
+  getShieldStats() {
+    if (this.isBrokenShield) return { ...IMPROVISED_SHIELD_STATS };
+
+    return {
+      defense: this.system.defense ?? 0,
+      rangedDefense: this.system.rangedDefense ?? 0,
+      critDefense: this.system.critDefense ?? 0,
+      rangedCritDefense: this.system.rangedCritDefense ?? 0,
+      dodgePenalty: this.system.dodgePenalty ?? 0,
+      iniPenalty: this.system.iniPenalty ?? 0,
+      maxSpeed: this.system.maxSpeed ?? 0,
+    };
   }
 
   /**
@@ -501,24 +546,34 @@ export class RedsteelItem extends Item {
     };
   }
   _getShieldTooltipData(data) {
+    // Broken shields report improvised shield stats (and no armor values)
+    const broken = this.isBrokenShield;
+    const shield = this.getShieldStats();
+
+    const armorStats = broken
+      ? []
+      : [
+          { label: "Armor", value: data.armor.value },
+          { label: "Acid armor", value: data.armor.acid.value },
+          { label: "Fire armor", value: data.armor.fire.value },
+          { label: "Frost armor", value: data.armor.frost.value },
+          { label: "Lightning armor", value: data.armor.lightning.value },
+          { label: "Magic armor", value: data.armor.magic.value },
+          { label: "Dark armor", value: data.armor.dark.value },
+          { label: "Poison armor", value: data.armor.poison.value },
+          { label: "Holy armor", value: data.armor.holy.value },
+        ];
+
     return {
       icon: this.img,
-      title: this.localizedName,
+      title: broken ? `${this.localizedName} (broken)` : this.localizedName,
       stats: [
-        { label: "Defense", value: data.defense },
-        { label: "Ranged defense", value: data.rangedDefense },
-        { label: "Critical defense", value: data.critDefense },
-        { label: "Critical ranged defense", value: data.rangedCritDefense },
-        { label: "Dodge penalty", value: data.dodgePenalty },
-        { label: "Armor", value: data.armor.value },
-        { label: "Acid armor", value: data.armor.acid.value },
-        { label: "Fire armor", value: data.armor.fire.value },
-        { label: "Frost armor", value: data.armor.frost.value },
-        { label: "Lightning armor", value: data.armor.lightning.value },
-        { label: "Magic armor", value: data.armor.magic.value },
-        { label: "Dark armor", value: data.armor.dark.value },
-        { label: "Poison armor", value: data.armor.poison.value },
-        { label: "Holy armor", value: data.armor.holy.value },
+        { label: "Defense", value: shield.defense },
+        { label: "Ranged defense", value: shield.rangedDefense },
+        { label: "Critical defense", value: shield.critDefense },
+        { label: "Critical ranged defense", value: shield.rangedCritDefense },
+        { label: "Dodge penalty", value: shield.dodgePenalty },
+        ...armorStats,
         { label: "Durability", value: data.armor.durability },
       ].filter(
         (stat) =>

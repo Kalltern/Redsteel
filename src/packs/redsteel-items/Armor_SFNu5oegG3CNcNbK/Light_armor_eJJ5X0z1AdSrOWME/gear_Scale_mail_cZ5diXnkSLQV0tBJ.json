@@ -57,7 +57,8 @@
     "rangedCritDefense": 0,
     "archeryPenalty": 0,
     "perPenalty": 0,
-    "layer": "Middle"
+    "layer": "Middle",
+    "localizationKey": "REDSTEEL.Items.ScaleMail.name"
   },
   "effects": [],
   "sort": 0,

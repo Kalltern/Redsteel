@@ -24,7 +24,8 @@
     },
     "type": "health",
     "toxicity": 12,
-    "bleed": 25
+    "bleed": 25,
+    "localizationKey": "REDSTEEL.Items.WhiteDove.name"
   },
   "effects": [],
   "sort": 0,

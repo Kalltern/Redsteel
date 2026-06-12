@@ -7,6 +7,45 @@
 <div class="inventory-box">
 {{#if (eq actor.type "character")}}
 
+{{!-- ARMOR SLOTS (layered: Bottom / Middle / Top) --}}
+<section class="armor-loadout">
+  {{#each armorSlots as |slot layer|}}
+    <div class="armor-slot-block">
+      <div class="armor-slot-label">{{slot.label}}</div>
+
+      <div
+        class="armor-slot {{#if slot.item}}filled{{else}}empty{{/if}}"
+        data-layer="{{layer}}"
+        {{#if slot.item}}
+          data-item-id="{{slot.item._id}}"
+        {{/if}}
+      >
+        {{#if slot.item}}
+          <img src="{{slot.item.img}}" title="{{slot.item.localizedName}}" />
+        {{else}}
+          <span>{{slot.label}}</span>
+        {{/if}}
+      </div>
+
+      <div class="armor-durability-row">
+        {{#if slot.hasDurability}}
+          {{#each slot.durabilityPips as |pip|}}
+            <a
+              class="armor-durability-toggle {{#if pip.active}}active{{/if}}"
+              data-action="toggleArmorDurability"
+              data-item-id="{{slot.item._id}}"
+              data-index="{{pip.index}}"
+              title="{{localize "REDSTEEL.Item.Gear.FIELDS.durability.label"}}: {{slot.durability}} / {{slot.durabilityMax}}"
+            >
+              <i class="fa-solid fa-shield"></i>
+            </a>
+          {{/each}}
+        {{/if}}
+      </div>
+    </div>
+  {{/each}}
+</section>
+
 <section class="weapon-loadouts horizontal active-set-{{system.combat.activeWeaponSet}}">
 
   {{!-- LEFT: SET 1 --}}
@@ -38,6 +77,7 @@
       </div>
 
       {{!-- OFF --}}
+<div class="weapon-slot-column">
 <div
   class="weapon-slot off
     {{#if weaponSets.1.mainIsTwoHanded}}blocked{{else}}
@@ -88,6 +128,24 @@
 
 </div>
 
+{{!-- SHIELD DURABILITY PIPS --}}
+{{#if weaponSets.1.offHasDurability}}
+  <div class="armor-durability-row" data-set="1">
+    {{#each weaponSets.1.offDurabilityPips as |pip|}}
+      <a
+        class="armor-durability-toggle {{#if pip.active}}active{{/if}}"
+        data-action="toggleArmorDurability"
+        data-item-id="{{@root.weaponSets.1.off._id}}"
+        data-index="{{pip.index}}"
+        title="{{localize "REDSTEEL.Item.Gear.FIELDS.durability.label"}}: {{@root.weaponSets.1.offDurability}} / {{@root.weaponSets.1.offDurabilityMax}}"
+      >
+        <i class="fa-solid fa-shield"></i>
+      </a>
+    {{/each}}
+  </div>
+{{/if}}
+</div>
+
     </div>
   </div>
 
@@ -132,6 +190,7 @@
       </div>
 
       {{!-- OFF --}}
+<div class="weapon-slot-column">
 <div
   class="weapon-slot off
     {{#if weaponSets.2.mainIsTwoHanded}}blocked{{else}}
@@ -180,6 +239,24 @@
     <span>Off</span>
   {{/if}}
 
+</div>
+
+{{!-- SHIELD DURABILITY PIPS --}}
+{{#if weaponSets.2.offHasDurability}}
+  <div class="armor-durability-row" data-set="2">
+    {{#each weaponSets.2.offDurabilityPips as |pip|}}
+      <a
+        class="armor-durability-toggle {{#if pip.active}}active{{/if}}"
+        data-action="toggleArmorDurability"
+        data-item-id="{{@root.weaponSets.2.off._id}}"
+        data-index="{{pip.index}}"
+        title="{{localize "REDSTEEL.Item.Gear.FIELDS.durability.label"}}: {{@root.weaponSets.2.offDurability}} / {{@root.weaponSets.2.offDurabilityMax}}"
+      >
+        <i class="fa-solid fa-shield"></i>
+      </a>
+    {{/each}}
+  </div>
+{{/if}}
 </div>
 
     </div>
@@ -243,6 +320,9 @@
       {{/if}}
 
     {{/if}}
+    {{#if (and item.system.equipped (and item.system.layer (not (eq item.system.layer "Not Armor"))))}}
+      equipped-armor
+    {{/if}}
   "
   data-item-id="{{item._id}}"
   data-drag="true"
@@ -264,7 +344,8 @@
         </div>
           <!-- Equipped Checkbox (Editable) -->
 <div class="item-formula item-prop">
-  {{#unless (and item.system.shield (eq actor.type "character"))}}
+  {{!-- Characters equip shields via weapon slots and layered armor via armor slots --}}
+  {{#unless (and (eq actor.type "character") (or item.system.shield (and item.system.layer (not (eq item.system.layer "Not Armor")))))}}
     <input
       type="checkbox"
       class="item-toggle-equipped"
@@ -285,7 +366,7 @@
   {{/unless}}
 </div>
                 <div class="item-durability item-prop">
-          {{item.system.armor.durability}}
+          {{item.system.armor.durability}}{{#if item.system.armor.durabilityMax}} / {{item.system.armor.durabilityMax}}{{/if}}
         </div>
         <div class="item-controls">
            
@@ -305,6 +386,7 @@
            data-item-id="{{item._id}}"
            data-path="system.armor.durability"
            data-delta="1"
+           data-max="{{item.system.armor.durabilityMax}}"
            title="Increase Durability"
          >
            <i class="fa-solid fa-plus"></i>

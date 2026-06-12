@@ -57,7 +57,8 @@
     "rangedCritDefense": 0,
     "archeryPenalty": 0,
     "perPenalty": -5,
-    "layer": "Bottom"
+    "layer": "Bottom",
+    "localizationKey": "REDSTEEL.Items.Robe.name"
   },
   "effects": [],
   "sort": 0,

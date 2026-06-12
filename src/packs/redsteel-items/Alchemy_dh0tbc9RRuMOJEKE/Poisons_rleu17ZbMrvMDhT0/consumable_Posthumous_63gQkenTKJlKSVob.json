@@ -21,7 +21,8 @@
       "diceNum": null,
       "diceSize": "",
       "diceBonus": ""
-    }
+    },
+    "localizationKey": "REDSTEEL.Items.Posthumous.name"
   },
   "effects": [],
   "sort": 0,

@@ -175,7 +175,7 @@
     <hr />
     <div class="grid grid-8col">
       {{#each system.armor as |armor key|}}
-        {{#unless (or (eq key "value") (eq key "durability"))}}
+        {{#unless (or (eq key "value") (or (eq key "durability") (eq key "durabilityMax")))}}
           <div class="grid-span-1">
             <label>
               {{localize (concat "REDSTEEL.Item.Gear.FIELDS." key ".label")}}

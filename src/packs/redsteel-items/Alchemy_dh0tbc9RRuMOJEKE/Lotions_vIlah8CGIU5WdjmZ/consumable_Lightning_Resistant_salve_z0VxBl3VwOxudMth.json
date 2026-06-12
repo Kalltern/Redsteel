@@ -22,7 +22,8 @@
       "diceNum": null,
       "diceSize": "",
       "diceBonus": ""
-    }
+    },
+    "localizationKey": "REDSTEEL.Items.LightningResistantSalve.name"
   },
   "effects": [],
   "sort": 0,

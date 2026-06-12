@@ -19,7 +19,8 @@
       ]
     },
     "finesse": false,
-    "option": "feature"
+    "option": "feature",
+    "localizationKey": "REDSTEEL.Items.CombatGenius.name"
   },
   "effects": [],
   "folder": "NHaSpGKlxSYECai3",

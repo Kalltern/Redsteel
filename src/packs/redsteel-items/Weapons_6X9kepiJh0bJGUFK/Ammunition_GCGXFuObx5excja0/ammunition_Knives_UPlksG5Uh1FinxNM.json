@@ -9,7 +9,8 @@
     "option": "knives",
     "options": [],
     "bleed": null,
-    "penetration": null
+    "penetration": null,
+    "localizationKey": "REDSTEEL.Items.Knives.name"
   },
   "effects": [],
   "folder": "GCGXFuObx5excja0",

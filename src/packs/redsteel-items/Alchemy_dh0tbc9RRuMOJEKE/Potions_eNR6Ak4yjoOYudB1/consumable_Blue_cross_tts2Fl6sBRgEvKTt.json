@@ -24,7 +24,8 @@
     },
     "type": "mana",
     "toxicity": 8,
-    "bleed": 0
+    "bleed": 0,
+    "localizationKey": "REDSTEEL.Items.BlueCross.name"
   },
   "effects": [],
   "sort": 0,

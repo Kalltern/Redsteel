@@ -672,6 +672,2655 @@
               "description": "20 CP; Škola Krve - Mistr. Ručně — řeší se u stolu."
             }
           }
+        },
+        "berserk": {
+          "label": "Berserk",
+          "nodes": {
+            "zbesilost": {
+              "label": "Zběsilost",
+              "description": "0 CP. Ručně — řeší se u stolu."
+            },
+            "imunitaPanika": {
+              "label": "Zběsilost: Imunita na Paniku, Strach a Teror",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            },
+            "obnovaVydrze": {
+              "label": "Zběsilost: Zabití obnovuje 4 Výdrže",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            },
+            "nezastavitelny": {
+              "label": "Nezastavitelný",
+              "description": "15 CP; Doktrína IV. Ručně — řeší se u stolu."
+            },
+            "mentalniOdolnost": {
+              "label": "Zběsilost: Mentální odolnost",
+              "description": "5 CP. Mentální odolnost a imunita na Dezorientaci. Ručně — řeší se u stolu."
+            },
+            "divokyVypad": {
+              "label": "Divoký výpad",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            },
+            "pevnaVule": {
+              "label": "Pevná vůle",
+              "description": "10 CP; Doktrína VI. Ručně — řeší se u stolu."
+            },
+            "zbesilyUtokPostih": {
+              "label": "Zběsilý útok: Postih -5% menší",
+              "description": "15 CP; M/S/T/D V. Ručně — řeší se u stolu."
+            },
+            "zbesilyUtokVyhoda": {
+              "label": "Zběsilý útok: Výhoda na Zásah",
+              "description": "15 CP; M/S/T/D X. Ručně — řeší se u stolu."
+            },
+            "zurivyUder": {
+              "label": "Zuřivý úder",
+              "description": "20 CP; M/S/T/D VI. Ručně — řeší se u stolu."
+            },
+            "zurivyUderZasah": {
+              "label": "Zuřivý úder: Zásah +5%",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "zurivaNezdolnost": {
+              "label": "Zuřivá nezdolnost",
+              "description": "20 CP; Doktrína V. Ručně — řeší se u stolu."
+            },
+            "odolnostStun": {
+              "label": "Šance být Omráčen -10% / Krvácení -15%",
+              "description": "5 CP. Automatizováno."
+            },
+            "desiveVzezreni": {
+              "label": "Děsivé vzezření",
+              "description": "5 CP; Zastrašování I. Ručně — řeší se u stolu."
+            },
+            "masakr1": {
+              "label": "Děsivý masakr I",
+              "description": "10 CP; M/S/T/D VIII. Ručně — řeší se u stolu."
+            },
+            "masakr2": {
+              "label": "Děsivý masakr II",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "rychlaLecba": {
+              "label": "Vážná zranění se léčí o 10 dnů rychleji",
+              "description": "15 SP. Ručně — řeší se u stolu."
+            },
+            "zivotyVydrz": {
+              "label": "Životy +5 / Výdrž +5",
+              "description": "10 CP. Automatizováno."
+            },
+            "primarniZraneni": {
+              "label": "Zranění +50% za Primární Vlastnosti",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            }
+          }
+        },
+        "spellslinger": {
+          "label": "Čarostřelec",
+          "nodes": {
+            "ucednik": {
+              "label": "Čarostřelec: Učedník",
+              "description": "0 CP. Ručně — řeší se u stolu."
+            },
+            "expert": {
+              "label": "Čarostřelec: Expert",
+              "description": "15 CP; Doktrína V. Ručně — řeší se u stolu."
+            },
+            "mistr": {
+              "label": "Čarostřelec: Mistr",
+              "description": "15 CP; Doktrína X. Ručně — řeší se u stolu."
+            },
+            "salamander": {
+              "label": "Salamander",
+              "description": "5 CP; Čarostřelec: Učedník. Ručně — řeší se u stolu."
+            },
+            "salamander2": {
+              "label": "Salamander: Podpálení +10%",
+              "description": "5 CP; Čarostřelec: Expert. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "salamander3": {
+              "label": "Salamander: Podpálení +15%",
+              "description": "5 CP; Čarostřelec: Mistr. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "zabak": {
+              "label": "Žabák",
+              "description": "5 CP; Čarostřelec: Učedník. Ručně — řeší se u stolu."
+            },
+            "zabak2": {
+              "label": "Žabák: Zpomalení +20%",
+              "description": "5 CP; Čarostřelec: Expert. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "zabak3": {
+              "label": "Žabák: Zpomalení +1 tah",
+              "description": "5 CP; Čarostřelec: Mistr. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "jiskra": {
+              "label": "Jiskra",
+              "description": "5 CP; Čarostřelec: Učedník. Ručně — řeší se u stolu."
+            },
+            "jiskra2": {
+              "label": "Jiskra: Omráčení +20%",
+              "description": "5 CP; Čarostřelec: Expert. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "jiskra3": {
+              "label": "Jiskra: Řetězení +25%; Plné zranění",
+              "description": "5 CP; Čarostřelec: Mistr. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "harpuna": {
+              "label": "Harpuna",
+              "description": "5 CP; Čarostřelec: Učedník. Ručně — řeší se u stolu."
+            },
+            "harpuna2": {
+              "label": "Harpuna: Průbojnost +5",
+              "description": "5 CP; Čarostřelec: Expert. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "harpuna3": {
+              "label": "Harpuna: Průbojnost +5",
+              "description": "5 CP; Čarostřelec: Mistr. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "slepice": {
+              "label": "Slepice",
+              "description": "5 CP; Čarostřelec: Učedník. Ručně — řeší se u stolu."
+            },
+            "slepice2": {
+              "label": "Slepice: Dezorientace +1 tah",
+              "description": "5 CP; Čarostřelec: Expert. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "slepice3": {
+              "label": "Slepice: Plné zranění",
+              "description": "5 CP; Čarostřelec: Mistr. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "termit": {
+              "label": "Termit",
+              "description": "5 CP; Čarostřelec: Učedník. Ručně — řeší se u stolu."
+            },
+            "termit2": {
+              "label": "Termit: Šance +15%",
+              "description": "5 CP; Čarostřelec: Expert. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "termit3": {
+              "label": "Termit: Šance +20%",
+              "description": "5 CP; Čarostřelec: Mistr. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "svetluska": {
+              "label": "Světluška",
+              "description": "5 CP; Čarostřelec: Expert. Ručně — řeší se u stolu."
+            },
+            "svetluska2": {
+              "label": "Světluška: Oslepení +1 tah",
+              "description": "5 CP; Čarostřelec: Mistr. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "jezek": {
+              "label": "Ježek",
+              "description": "5 CP; Čarostřelec: Expert. Ručně — řeší se u stolu."
+            },
+            "netopyr": {
+              "label": "Netopýr",
+              "description": "5 CP; Čarostřelec: Expert. Ručně — řeší se u stolu."
+            },
+            "netopyr2": {
+              "label": "Netopýr: Obtížnost +15%",
+              "description": "5 CP; Čarostřelec: Mistr. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "beran": {
+              "label": "Beran",
+              "description": "5 CP; Čarostřelec: Expert. Ručně — řeší se u stolu."
+            },
+            "beran2": {
+              "label": "Beran: Odsunutí +1 hexa",
+              "description": "5 CP; Čarostřelec: Mistr. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "inkvizitor": {
+              "label": "Inkvizitor",
+              "description": "5 CP; Čarostřelec: Expert. Ručně — řeší se u stolu."
+            },
+            "intZraneni": {
+              "label": "Očarované projektily: +Int zranění",
+              "description": "5 CP; Čarostřelec: Expert. Ručně — řeší se u stolu."
+            },
+            "polarka": {
+              "label": "Polárka",
+              "description": "5 CP; Čarostřelec: Mistr. Ručně — řeší se u stolu."
+            },
+            "posel": {
+              "label": "Posel",
+              "description": "5 CP; Čarostřelec: Mistr. Ručně — řeší se u stolu."
+            },
+            "sokol": {
+              "label": "Sokol",
+              "description": "5 CP; Čarostřelec: Mistr. Ručně — řeší se u stolu."
+            }
+          }
+        },
+        "elementalist": {
+          "label": "Elementalista",
+          "nodes": {
+            "familiar": {
+              "label": "Familiár",
+              "description": "0 CP. Ručně — řeší se u stolu."
+            },
+            "magickyPomocnik": {
+              "label": "Magický pomocník",
+              "description": "5 CP; Elementalista V. Ručně — řeší se u stolu."
+            },
+            "dar1a": {
+              "label": "Dar 1. stupně",
+              "description": "5 CP; Elementalista I. Ručně — řeší se u stolu."
+            },
+            "dar2a": {
+              "label": "Dar 2. stupně",
+              "description": "10 CP; Elementalista II. Ručně — řeší se u stolu."
+            },
+            "dar1b": {
+              "label": "Dar 1. stupně",
+              "description": "10 CP; Elementalista III. Ručně — řeší se u stolu."
+            },
+            "dar2b": {
+              "label": "Dar 2. stupně",
+              "description": "15 CP; Elementalista IV. Ručně — řeší se u stolu."
+            },
+            "dar3a": {
+              "label": "Dar 3. stupně",
+              "description": "20 CP; Elementalista V. Ručně — řeší se u stolu."
+            },
+            "dar4": {
+              "label": "Dar 4. stupně",
+              "description": "15 CP; Elementalista VI. Ručně — řeší se u stolu."
+            },
+            "dar2c": {
+              "label": "Dar 2. stupně",
+              "description": "15 CP; Elementalista VII. Ručně — řeší se u stolu."
+            },
+            "dar1c": {
+              "label": "Dar 1. stupně",
+              "description": "10 CP; Elementalista VII. Ručně — řeší se u stolu."
+            },
+            "dar2d": {
+              "label": "Dar 2. stupně",
+              "description": "15 CP; Elementalista VIII. Ručně — řeší se u stolu."
+            },
+            "dar5": {
+              "label": "Dar 5. stupně",
+              "description": "20 CP; Elementalista IX. Ručně — řeší se u stolu."
+            },
+            "dar3b": {
+              "label": "Dar 3. stupně",
+              "description": "20 CP; Elementalista X. Ručně — řeší se u stolu."
+            },
+            "znalosti": {
+              "label": "Znalosti Elementalisty",
+              "description": "5 SP; Elementalista I. Ručně — řeší se u stolu."
+            },
+            "vznesenaObet": {
+              "label": "Vznešená oběť",
+              "description": "10 SP; Elementalista IV. Ručně — řeší se u stolu."
+            },
+            "privolaniFamiliara": {
+              "label": "Přivolání Familiára",
+              "description": "10 SP; Elementalista IV. Ručně — řeší se u stolu."
+            }
+          }
+        },
+        "elymas": {
+          "label": "Elymas",
+          "nodes": {
+            "magProtiutok": {
+              "label": "Magický protiútok",
+              "description": "10 CP; Škola IV. Ručně — řeší se u stolu."
+            },
+            "mpExpert": {
+              "label": "Magický protiútok: Expert",
+              "description": "10 CP; Škola VI. Ručně — řeší se u stolu."
+            },
+            "mpUtok10": {
+              "label": "MP: Magický útok +10% pro Učedníka",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "mpVolnaAkce": {
+              "label": "Jeden MP za kolo jako Volná akce",
+              "description": "10 CP; Elymas V. Ručně — řeší se u stolu."
+            },
+            "mpKritNeuspech": {
+              "label": "MP: Kritický neúspěch -5%",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "mpMistr": {
+              "label": "Magický protiútok: Mistr",
+              "description": "10 CP; Škola IX. Ručně — řeší se u stolu."
+            },
+            "soustredenaObrana": {
+              "label": "Soustředěná obrana",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            },
+            "soKrit": {
+              "label": "SO: Kritický úspěch Mag. obrany +10%",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "soReakce": {
+              "label": "SO: Reakce +1",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "soRedukce": {
+              "label": "SO: Redukce magického zranění 50%",
+              "description": "10 CP; Elymas V. Ručně — řeší se u stolu."
+            },
+            "magObranaMana": {
+              "label": "Magická obrana: Nestojí manu, Krit +3%",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "opakovaniUsmernovani": {
+              "label": "1x za den opakovat hod na Usměrňování",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "rozsahObrany": {
+              "label": "Rozsah Magické obrany +1,5m",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "magickaOzvena": {
+              "label": "Magická ozvěna",
+              "description": "5 CP; Elymas V. Ručně — řeší se u stolu."
+            },
+            "modifikatorMany": {
+              "label": "Modifikátor many 5",
+              "description": "10 CP; Elymas X. Automatizováno."
+            }
+          }
+        },
+        "skirmisher": {
+          "label": "Harcovník",
+          "nodes": {
+            "harcovnikuvUm": {
+              "label": "Harcovníkův um",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            },
+            "kryciPostoj": {
+              "label": "Krycí postoj",
+              "description": "5 CP; Štítonoš II. Ručně — řeší se u stolu."
+            },
+            "odvetnyVrh": {
+              "label": "Odvetný vrh",
+              "description": "10 CP; Štítonoš V. Ručně — řeší se u stolu."
+            },
+            "navazujiciVrh": {
+              "label": "Navazující vrh",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            },
+            "vrh5": {
+              "label": "Vrh +5%",
+              "description": "10 CP; Štítonoš X. Automatizováno."
+            },
+            "prezbrojeni": {
+              "label": "Přezbrojení: -6 Výdrže",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "mireniPohyb": {
+              "label": "Při pohybu neztrácí Míření",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "oddechMireni": {
+              "label": "Oddech: Míření +1",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            },
+            "mireniPoVrhu": {
+              "label": "Po vrhu získává jedno Míření",
+              "description": "10 CP; Štítonoš IV. Ručně — řeší se u stolu."
+            },
+            "pohybPoVrhu": {
+              "label": "Po vrhu může provést Pomalý pohyb",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            },
+            "presnyVystrel": {
+              "label": "Přesný výstřel: -1 akce a -5 Výdrže",
+              "description": "10 CP; Štítonoš VIII. Ručně — řeší se u stolu."
+            },
+            "lehkaZbroj": {
+              "label": "Lehká zbroj: Oddech obnovuje +1 výdrž",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "bleedStun": {
+              "label": "Krvácení +20% / Omráčení +15%",
+              "description": "10 CP. Automatizováno."
+            },
+            "kritRozsah": {
+              "label": "Kritický rozsah +2",
+              "description": "5 CP. Kritický rozsah zatím není automatizován. Ručně — řeší se u stolu."
+            },
+            "kritKryt": {
+              "label": "Kritický kryt +5%",
+              "description": "5 CP. Automatizováno."
+            },
+            "zmrzacujiciVystrel": {
+              "label": "Zmrzačující výstřel: 50% na zbavení pohybu",
+              "description": "10 CP; Štítonoš VI. Ručně — řeší se u stolu."
+            },
+            "vylZmrzacujici": {
+              "label": "Vylepšený zmrzačující výstřel",
+              "description": "10 CP; Štítonoš VIII. Ručně — řeší se u stolu."
+            },
+            "vrhSRozbehem": {
+              "label": "Vrh s rozběhem: Pohyb +50%, Průraznost +1d6",
+              "description": "5 CP; Štítonoš IV. Ručně — řeší se u stolu."
+            },
+            "utokSPohybem": {
+              "label": "Útok s pohybem",
+              "description": "10 CP; Štítonoš IV. Ručně — řeší se u stolu."
+            },
+            "zbesilyVrh": {
+              "label": "Zběsilý vrh: Zatížení štítu +25%",
+              "description": "5 CP; Štítonoš V. Ručně — řeší se u stolu."
+            }
+          }
+        },
+        "ranger": {
+          "label": "Hraničář",
+          "nodes": {
+            "ucednik": {
+              "label": "Hraničář - Učedník",
+              "description": "0 CP. Ručně — řeší se u stolu."
+            },
+            "zast": {
+              "label": "Zášť",
+              "description": "10 CP; Hraničář II. Ručně — řeší se u stolu."
+            },
+            "lovcuvVystrel": {
+              "label": "Lovcův výstřel",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            },
+            "expert": {
+              "label": "Hraničář - Expert",
+              "description": "15 CP; Hraničář V. Ručně — řeší se u stolu."
+            },
+            "utokDravce": {
+              "label": "Útok dravce",
+              "description": "15 CP; Hraničář VIII. Ručně — řeší se u stolu."
+            },
+            "dorazeni": {
+              "label": "Doražení",
+              "description": "15 CP. Ručně — řeší se u stolu."
+            },
+            "mistr": {
+              "label": "Hraničář - Mistr",
+              "description": "5 CP; Hraničář a Doktrína X. Ručně — řeší se u stolu."
+            },
+            "metlaPrubojnost": {
+              "label": "Metla: Průbojnost +3",
+              "description": "5 CP; Hraničář IV. Situační (proti Metle) — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "metlaKritRozsah": {
+              "label": "Metla: Kritický rozsah +2",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "odhaleniSlabiny": {
+              "label": "Odhalení slabiny",
+              "description": "15 CP; Přežití III. Ručně — řeší se u stolu."
+            },
+            "metlaKritObrana": {
+              "label": "Metla: Kritická obrana +3%",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "metlaKritZasah": {
+              "label": "Metla: Kritický zásah +3%",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "metlaOvereni": {
+              "label": "Metla: Ověření +10%",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            },
+            "metlaKritZraneni": {
+              "label": "Metla: Kritické zranění/Průbojnost +5",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            },
+            "bane1": {
+              "label": "Odemyká jednu Metlu",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "bane2": {
+              "label": "Odemyká jednu Metlu",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "bane3": {
+              "label": "Odemyká jednu Metlu",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "vnimaniStopovani": {
+              "label": "Vnímání a Stopování +15%",
+              "description": "10 SP; Přežití II. Ručně — řeší se u stolu."
+            },
+            "dravciSmysly": {
+              "label": "Dravčí smysly",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            },
+            "pohybVPrirode": {
+              "label": "Pohyb v přírodě: Plížení +15%",
+              "description": "5 SP; Plížení IV. Ručně — řeší se u stolu."
+            },
+            "slevaPlizeni": {
+              "label": "Sleva 3 SP za stupeň Plížení",
+              "description": "0 SP. Ručně — řeší se u stolu."
+            },
+            "slevaPreziti": {
+              "label": "Sleva 3 SP za stupeň Přežití",
+              "description": "0 SP. Ručně — řeší se u stolu."
+            },
+            "slevaRanhojicstvi": {
+              "label": "Sleva 3 SP za stupeň Ranhojičství",
+              "description": "0 SP. Ručně — řeší se u stolu."
+            },
+            "prezbrojeni": {
+              "label": "Přezbrojení: -6 Výdrže",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "vylPrezbrojeni": {
+              "label": "Vylepšené náhlé přezbrojení",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            }
+          }
+        },
+        "incantator": {
+          "label": "Incantator",
+          "nodes": {
+            "ohniskovyPredmet": {
+              "label": "Ohniskový předmět: Kritický rozsah +5",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "soustredeni": {
+              "label": "Soustředění: Mag. útok +5%, Krit +1%",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "rychleSoustredeni": {
+              "label": "Rychlé soustředění",
+              "description": "10 CP; Incantator V. Ručně — řeší se u stolu."
+            },
+            "precizniInkantace": {
+              "label": "Precizní inkantace",
+              "description": "15 CP; Incantator V. Ručně — řeší se u stolu."
+            },
+            "moudraKniha": {
+              "label": "Moudrá kniha",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "vlnaEnergie": {
+              "label": "Vlna energie",
+              "description": "10 CP; Incantator IV. Ručně — řeší se u stolu."
+            },
+            "dvojnasobnaMana": {
+              "label": "Mag. útoky stojí obránce 2x many",
+              "description": "0 CP. Ručně — řeší se u stolu."
+            },
+            "stabilizaceZdroje": {
+              "label": "Stabilizace zdroje",
+              "description": "15 CP. Ručně — řeší se u stolu."
+            },
+            "katalyzator": {
+              "label": "Katalyzátor",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            },
+            "dlouhyOdpocinek": {
+              "label": "Dlouhý odpočinek 50 many",
+              "description": "15 CP; Incantator X. Ručně — řeší se u stolu."
+            },
+            "modifikatorMany": {
+              "label": "Modifikátor many 14",
+              "description": "15 CP; Incantator X. Automatizováno."
+            }
+          }
+        },
+        "sharpshooter": {
+          "label": "Ostrostřelec",
+          "nodes": {
+            "mireniPomalyPohyb": {
+              "label": "Při Pomalém pohybu neztrácí Míření",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "zmenaCile": {
+              "label": "Změna cíle Míření 1x za kolo zdarma",
+              "description": "5 CP; Lukostřelec/Kušník V. Ručně — řeší se u stolu."
+            },
+            "zacileni": {
+              "label": "Zacílení",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            },
+            "redukceMireni": {
+              "label": "Redukce Míření po zásahu",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "mireniPoMinuti": {
+              "label": "Míření po minutí Střelbou",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "zmrzacujiciVystrel": {
+              "label": "Zmrzačující výstřel: 35% na zbavení pohybu",
+              "description": "10 CP; Lukostřelec/Kušník VII. Ručně — řeší se u stolu."
+            },
+            "bleed1": {
+              "label": "Krvácení +5%",
+              "description": "5 CP. Automatizováno."
+            },
+            "bleed2": {
+              "label": "Krvácení +5%",
+              "description": "5 CP. Automatizováno."
+            },
+            "bleed3": {
+              "label": "Krvácení +5%",
+              "description": "5 CP. Automatizováno."
+            },
+            "presnyVystrel": {
+              "label": "Přesný výstřel: Krit. rozsah Výhoda",
+              "description": "10 CP; Lukostřelec/Kušník VII. Ručně — řeší se u stolu."
+            },
+            "strazStrelba": {
+              "label": "Stráž: Střelba +10%",
+              "description": "10 CP; Lukostřelec/Kušník VIII. Ručně — řeší se u stolu."
+            },
+            "streleckyPostoj": {
+              "label": "Střelecký postoj: Úhyb +5%, Kryt +10%",
+              "description": "10 CP; Lukostřelec/Kušník X. Ručně — řeší se u stolu."
+            },
+            "ignorujeKryt": {
+              "label": "Ignoruje poloviční kryt",
+              "description": "5 CP; Lukostřelec/Kušník X. Plný kryt se počítá jako poloviční. Ručně — řeší se u stolu."
+            },
+            "strelba5": {
+              "label": "Střelba +5%",
+              "description": "10 CP. Automatizováno."
+            },
+            "iniciativa2": {
+              "label": "Iniciativa +2",
+              "description": "5 CP. Automatizováno."
+            },
+            "mireniOvereni": {
+              "label": "Míření: Ověření +5%",
+              "description": "10 CP; Lukostřelec/Kušník VI. Vázáno na Míření — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "pozadavkyLuku": {
+              "label": "Požadavky na luky a kuše -1",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "oddechMireni": {
+              "label": "Oddech: Míření +1",
+              "description": "10 CP; Lukostřelec/Kušník V. Ručně — řeší se u stolu."
+            },
+            "odvetnyVystrel": {
+              "label": "Odvetný výstřel",
+              "description": "20 CP; Lukostřelec/Kušník VIII. Ručně — řeší se u stolu."
+            },
+            "tesnyZasah": {
+              "label": "Těsný zásah",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "kritRozsah": {
+              "label": "Kritický rozsah +2",
+              "description": "5 CP. Kritický rozsah zatím není automatizován. Ručně — řeší se u stolu."
+            },
+            "prubojnost2": {
+              "label": "Průbojnost +2",
+              "description": "5 CP. Automatizováno."
+            },
+            "primarniZraneni": {
+              "label": "Zranění +50% za Primární Vlastnosti",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            },
+            "kryt10": {
+              "label": "Kryt +10%",
+              "description": "5 CP; Lukostřelec/Kušník VI. Automatizováno."
+            }
+          }
+        },
+        "vanguard": {
+          "label": "Předvoj",
+          "nodes": {
+            "ztecPohyb50": {
+              "label": "Zteč: Pohyb +50%",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "ztecZraneniHexa": {
+              "label": "Zteč: +1 Zranění za hexu",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            },
+            "ztecPohyb100": {
+              "label": "Zteč: Pohyb +100%",
+              "description": "5 CP; M/T/S/D IV. Ručně — řeší se u stolu."
+            },
+            "rozrazeni": {
+              "label": "Rozražení",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            },
+            "zatlaceni": {
+              "label": "Zatlačení",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            },
+            "ztecSRozseknutim": {
+              "label": "Zteč s rozseknutím",
+              "description": "15 CP; P/P/Š V. Ručně — řeší se u stolu."
+            },
+            "momentumVydrz": {
+              "label": "Momentum: Výdrž -1",
+              "description": "5 CP; P/P/Š X. Ručně — řeší se u stolu."
+            },
+            "momentumSpecialni": {
+              "label": "Momentum: Speciální akce",
+              "description": "20 CP; M/T/S/D X. Ručně — řeší se u stolu."
+            },
+            "opakovaniUtoku": {
+              "label": "1x za den opakovat hod na Útok",
+              "description": "10 CP; P/P/Š V. Ručně — řeší se u stolu."
+            },
+            "presilaPostih": {
+              "label": "Obránce: postih za Přesilu -5%",
+              "description": "10 CP; M/T/S/D V. Ručně — řeší se u stolu."
+            },
+            "triumf": {
+              "label": "Triumf / Vylepšený triumf",
+              "description": "15 CP; P/P/Š X. Ručně — řeší se u stolu."
+            },
+            "prubojnost2": {
+              "label": "Průbojnost +2",
+              "description": "5 CP. Automatizováno."
+            },
+            "rozseknutiCil": {
+              "label": "Rozseknutí: Cíl +1",
+              "description": "10 CP; P/P/Š V. Ručně — řeší se u stolu."
+            },
+            "rozseknutiZasah": {
+              "label": "Rozseknutí: Zásah +5%",
+              "description": "10 CP; P/P/Š VII. Ručně — řeší se u stolu."
+            },
+            "bojoveTestySily": {
+              "label": "Bojové Testy Síly +10%",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "opakovaniTestuSily": {
+              "label": "Za 5 výdrže opakovat bojový Test Síly",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            },
+            "zbrojeRychlost": {
+              "label": "Zbroje nesnižují Rychlost ani Iniciativu",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            },
+            "ocelovyStisk": {
+              "label": "Ocelový stisk",
+              "description": "10 CP; M/T/S/D V. Ručně — řeší se u stolu."
+            }
+          }
+        },
+        "warden": {
+          "label": "Strážce",
+          "nodes": {
+            "kritObranaKryt": {
+              "label": "Kritická obrana/kryt +2%",
+              "description": "5 CP. Automatizováno."
+            },
+            "redukceBoku": {
+              "label": "Redukce boku II",
+              "description": "5 CP; Štítonoš V. Ručně — řeší se u stolu."
+            },
+            "zatizeniStitu": {
+              "label": "Zatížení štítu -15%",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "spolehlivyStit1": {
+              "label": "Spolehlivý štít I",
+              "description": "10 CP; M/T/S/D V. Ručně — řeší se u stolu."
+            },
+            "spolehlivyStit2": {
+              "label": "Spolehlivý štít II",
+              "description": "15 CP; Štítonoš X. Ručně — řeší se u stolu."
+            },
+            "uderStitemOdveta": {
+              "label": "Úder štítem jako Odvetná akce",
+              "description": "10 CP; Štítonoš VI. Ručně — řeší se u stolu."
+            },
+            "uderZraneniA": {
+              "label": "Úder/Zteč štítem: Zranění +1d4",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            },
+            "uderZraneniSila": {
+              "label": "Úder/Zteč štítem: Zranění +Síla/2",
+              "description": "10 CP; Štítonoš IV. Ručně — řeší se u stolu."
+            },
+            "bonusZaStit": {
+              "label": "Bonus za štít",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            },
+            "uderZraneniB": {
+              "label": "Úder/Zteč štítem: Zranění +1d4",
+              "description": "10 CP; Štítonoš VI. Ručně — řeší se u stolu."
+            },
+            "uderSila10": {
+              "label": "Úder/Zteč štítem: Síla +10%",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            },
+            "dvojityUder": {
+              "label": "Dvojitý úder",
+              "description": "10 CP; Štítonoš VIII. Ručně — řeší se u stolu."
+            },
+            "obrannyPostojSpojenci": {
+              "label": "Obranný postoj: Spojenci +5% Obrany",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "vylObrannyPostoj": {
+              "label": "Vylepšený obranný postoj",
+              "description": "10 CP; Štítonoš VI. Ručně — řeší se u stolu."
+            },
+            "ochranaVolna": {
+              "label": "Ochrana: 1x za kolo Volná akce",
+              "description": "20 CP; Štítonoš VIII. Ručně — řeší se u stolu."
+            },
+            "protiutokZasah": {
+              "label": "Protiútok: Zásah +10%",
+              "description": "15 CP; M/T/S/D X. Ručně — řeší se u stolu."
+            },
+            "vylObrneni": {
+              "label": "Vylepšené obrnění",
+              "description": "20 CP; Štítonoš X. Ručně — řeší se u stolu."
+            }
+          }
+        },
+        "champion": {
+          "label": "Šampion",
+          "nodes": {
+            "stredniZbran": {
+              "label": "Střední zbraň v druhé ruce",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "bonusDruhaZbran1": {
+              "label": "Bonus za druhou zbraň I",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "bonusDruhaZbran2": {
+              "label": "Bonus za druhou zbraň II",
+              "description": "10 CP; M/T/S V. Ručně — řeší se u stolu."
+            },
+            "bonusDruhaZbran3": {
+              "label": "Bonus za druhou zbraň III",
+              "description": "10 CP; M/T/S VII. Ručně — řeší se u stolu."
+            },
+            "smrstUtoku": {
+              "label": "Smršť útoků: Zásah +5%",
+              "description": "15 CP; D/M V. Ručně — řeší se u stolu."
+            },
+            "uhyb5": {
+              "label": "Úhyb +5%",
+              "description": "10 CP. Automatizováno."
+            },
+            "zatlaceni": {
+              "label": "Zatlačení",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            },
+            "utokPoZteci": {
+              "label": "Po Zteči Útok jako Volná akce",
+              "description": "10 CP; M/T/S V. Ručně — řeší se u stolu."
+            },
+            "presilaPostih": {
+              "label": "Obránce: postih za Přesilu -5%",
+              "description": "10 CP; M/T/S V. Ručně — řeší se u stolu."
+            },
+            "vylUtokSPohybem": {
+              "label": "Vylepšený útok s pohybem",
+              "description": "10 CP; D/M VIII. Ručně — řeší se u stolu."
+            },
+            "vetrnyPostoj": {
+              "label": "Větrný postoj: Obrana i Zásah",
+              "description": "15 CP; D/M VII. Ručně — řeší se u stolu."
+            },
+            "ztecSRozseknutim": {
+              "label": "Zteč s rozseknutím",
+              "description": "15 CP; M/T/S V. Ručně — řeší se u stolu."
+            },
+            "odvetnyUder": {
+              "label": "Odvetný úder / Vylepšený",
+              "description": "15 CP; D/M V. Ručně — řeší se u stolu."
+            },
+            "klamavyUtok": {
+              "label": "Klamavý útok / Vylepšený",
+              "description": "15 CP; D/M X. Ručně — řeší se u stolu."
+            },
+            "riposta": {
+              "label": "Riposta",
+              "description": "25 CP; M/T/S X. Ručně — řeší se u stolu."
+            }
+          }
+        },
+        "veneficus": {
+          "label": "Veneficus",
+          "nodes": {
+            "lindar": {
+              "label": "Lindar",
+              "description": "0 CP. Ručně — řeší se u stolu."
+            },
+            "navazujiciKouzlo": {
+              "label": "Navazující kouzlo",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "postihZbroje": {
+              "label": "Usměrňování za zbroj: postih -5%",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "magickyVeteran": {
+              "label": "Magický veterán",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "slevaMany": {
+              "label": "Zabití Soubojem: -2 many na kouzlo",
+              "description": "5 CP; Veneficus V. Ručně — řeší se u stolu."
+            },
+            "magickeKz": {
+              "label": "Magické Kz +3",
+              "description": "5 CP. Automatizováno."
+            },
+            "soubojZaManu": {
+              "label": "Soubojové akce za manu",
+              "description": "5 CP; Veneficus VII. Ručně — řeší se u stolu."
+            },
+            "lindaruvVypad1": {
+              "label": "Lindarův výpad I",
+              "description": "10 CP; Škola VI. Ručně — řeší se u stolu."
+            },
+            "lindaruvVypad2": {
+              "label": "Lindarův výpad II",
+              "description": "10 CP; Veneficus V. Ručně — řeší se u stolu."
+            },
+            "usmernovani5": {
+              "label": "Souboj/Střelba: Usměrňování +5%",
+              "description": "0 CP; Veneficus X. Ručně — řeší se u stolu."
+            },
+            "magickaZbran": {
+              "label": "Magická zbraň",
+              "description": "10 CP; Veneficus V. Ručně — řeší se u stolu."
+            },
+            "magickePosileni": {
+              "label": "Magické posílení",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            },
+            "modifikatorMany": {
+              "label": "Modifikátor many 2",
+              "description": "15 CP; Veneficus X. Automatizováno."
+            },
+            "magickeMireni": {
+              "label": "Magické míření",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            },
+            "mireniObtiznost": {
+              "label": "Míření: Obtížnost -5%",
+              "description": "0 CP; Veneficus VII. Ručně — řeší se u stolu."
+            },
+            "magickeMomentum": {
+              "label": "Magické momentum",
+              "description": "15 CP. Ručně — řeší se u stolu."
+            },
+            "lindarovyUdery": {
+              "label": "Lindarovy údery",
+              "description": "5 CP; Veneficus IV. Ručně — řeší se u stolu."
+            }
+          }
+        },
+        "alchemist": {
+          "label": "Alchemista",
+          "nodes": {
+            "lecZastaveni1": {
+              "label": "Léčivé lektvary: Zastavení krvácení +25%",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            },
+            "lecZivoty1": {
+              "label": "Léčivé lektvary: +1d6 životů",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            },
+            "lecZastaveni2": {
+              "label": "Léčivé lektvary: Zastavení krvácení +25%",
+              "description": "10 SP; Alchemie: Expert. Ručně — řeší se u stolu."
+            },
+            "lecZivoty2": {
+              "label": "Léčivé lektvary: +1d6 životů",
+              "description": "10 SP. Ručně — řeší se u stolu."
+            },
+            "lekToxicita": {
+              "label": "Lektvary: Toxicita -2",
+              "description": "10 SP. Ručně — řeší se u stolu."
+            },
+            "kombinaceLektvaru": {
+              "label": "Kombinace lektvarů",
+              "description": "20 SP; Alchemie: Mistr. Ručně — řeší se u stolu."
+            },
+            "lekTrvani": {
+              "label": "Lektvary: Trvání +50%",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            },
+            "lekDuplikace1": {
+              "label": "Lektvary: Duplikace +10%",
+              "description": "10 SP; Alchemie: Expert. Ručně — řeší se u stolu."
+            },
+            "lekDuplikace2": {
+              "label": "Lektvary: Duplikace +5%",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            },
+            "lekDuplikace3": {
+              "label": "Lektvary: Duplikace +10%",
+              "description": "10 SP. Ručně — řeší se u stolu."
+            },
+            "lekVyhoda": {
+              "label": "Lektvary: Výhoda na výrobu",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            },
+            "lekKritNeuspech": {
+              "label": "Lektvary: Krit. neúspěch -3%",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            },
+            "jedSance1": {
+              "label": "Jedy: Šance a Obtížnost +5%",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            },
+            "jedZraneni1": {
+              "label": "Jedy: Zranění +1d4",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            },
+            "jedSance2": {
+              "label": "Jedy: Šance a Obtížnost +5%",
+              "description": "5 SP; Alchemie: Expert. Ručně — řeší se u stolu."
+            },
+            "jedZraneni2": {
+              "label": "Jedy: Zranění +1d4",
+              "description": "10 SP. Ručně — řeší se u stolu."
+            },
+            "jedSance3": {
+              "label": "Jedy: Šance a Obtížnost +5%",
+              "description": "10 SP. Ručně — řeší se u stolu."
+            },
+            "kombinaceJedu": {
+              "label": "Kombinace jedů",
+              "description": "20 SP; Alchemie: Mistr. Ručně — řeší se u stolu."
+            },
+            "jedTrvani": {
+              "label": "Jedy: Trvání +50%",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            },
+            "jedDuplikace1": {
+              "label": "Jedy: Duplikace +10%",
+              "description": "5 SP; Alchemie: Expert. Ručně — řeší se u stolu."
+            },
+            "jedDuplikace2": {
+              "label": "Jedy: Duplikace +5%",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            },
+            "jedDuplikace3": {
+              "label": "Jedy: Duplikace +10%",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            },
+            "jedVyhoda": {
+              "label": "Jedy: Výhoda na výrobu",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            },
+            "jedKritNeuspech": {
+              "label": "Jedy: Krit. neúspěch -3%",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            },
+            "petTrvani": {
+              "label": "Petardy: Trvání +50%",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            },
+            "traskavice": {
+              "label": "Třaskavice: Zranění +4d6",
+              "description": "5 SP; Alchemie: Expert. Ručně — řeší se u stolu."
+            },
+            "acidum": {
+              "label": "Acidum: Kz -2",
+              "description": "10 SP. Ručně — řeší se u stolu."
+            },
+            "ignum": {
+              "label": "Ignum: Podpálení +1d6 zranění",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            },
+            "draciSen": {
+              "label": "Dračí sen: Zranění +5d6",
+              "description": "10 SP; Alchemie: Mistr. Ručně — řeší se u stolu."
+            },
+            "pavouciObjeti": {
+              "label": "Pavoučí objetí: Postih -10%",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            },
+            "dablovaPecka": {
+              "label": "Ďáblova pecka: Kombinace",
+              "description": "20 SP. Ručně — řeší se u stolu."
+            },
+            "petDuplikace1": {
+              "label": "Petardy: Duplikace +10%",
+              "description": "10 SP; Alchemie: Expert. Ručně — řeší se u stolu."
+            },
+            "petDuplikace2": {
+              "label": "Petardy: Duplikace +5%",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            },
+            "petDuplikace3": {
+              "label": "Petardy: Duplikace +10%",
+              "description": "10 SP. Ručně — řeší se u stolu."
+            },
+            "petVyhoda": {
+              "label": "Petardy: Výhoda na výrobu",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            },
+            "petKritNeuspech": {
+              "label": "Petardy: Krit. neúspěch -3%",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            },
+            "olejDuplikace1": {
+              "label": "Oleje: Duplikace +10%",
+              "description": "5 SP; Alchemie: Expert. Ručně — řeší se u stolu."
+            },
+            "olejDuplikace2": {
+              "label": "Oleje: Duplikace +5%",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            },
+            "olejDuplikace3": {
+              "label": "Oleje: Duplikace +10%",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            },
+            "olejZraneni1": {
+              "label": "Oleje: Zranění +1d6",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            },
+            "olejZranitelnost": {
+              "label": "Oleje: Zranitelnost +25%",
+              "description": "10 SP; Alchemie: Expert. Ručně — řeší se u stolu."
+            },
+            "olejZraneni2": {
+              "label": "Oleje: Zranění +1d6",
+              "description": "10 SP. Ručně — řeší se u stolu."
+            },
+            "olejVyhoda": {
+              "label": "Oleje: Výhoda na výrobu",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            },
+            "olejKritNeuspech": {
+              "label": "Oleje: Krit. neúspěch -3%",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            },
+            "sleva1": {
+              "label": "Sleva 3 SP na dovednost",
+              "description": "0 SP. Ručně — řeší se u stolu."
+            },
+            "sleva2": {
+              "label": "Sleva 3 SP na dovednost",
+              "description": "0 SP. Ručně — řeší se u stolu."
+            },
+            "mastTrvani": {
+              "label": "Masti: Trvání +50%",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            },
+            "mastDuplikace1": {
+              "label": "Masti: Duplikace +10%",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            },
+            "mastDuplikace2": {
+              "label": "Masti: Duplikace +5%",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            },
+            "mastDuplikace3": {
+              "label": "Masti: Duplikace +10%",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            },
+            "mastVyhoda": {
+              "label": "Masti: Výhoda na výrobu",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            },
+            "mastKritNeuspech": {
+              "label": "Masti: Krit. neúspěch -3%",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            },
+            "drogaDuplikace1": {
+              "label": "Drogy: Duplikace +10%",
+              "description": "5 SP; Alchemie: Expert. Ručně — řeší se u stolu."
+            },
+            "drogaDuplikace2": {
+              "label": "Drogy: Duplikace +10%",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            },
+            "drogaDuplikace3": {
+              "label": "Drogy: Duplikace +10%",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            },
+            "drogaNavykovostPlus": {
+              "label": "Drogy: Návykovost až +10%",
+              "description": "10 SP. Ručně — řeší se u stolu."
+            },
+            "drogaNavykovostMinus": {
+              "label": "Drogy: Návykovost až -10%",
+              "description": "10 SP. Ručně — řeší se u stolu."
+            },
+            "garantovanyUspech": {
+              "label": "Výroba substancí: garantovaný úspěch",
+              "description": "10 SP. Ručně — řeší se u stolu."
+            },
+            "meneIngredienci": {
+              "label": "Výroba: o 1 ingredienci méně",
+              "description": "15 SP; Alchemie: Expert. Ručně — řeší se u stolu."
+            },
+            "meneTkane": {
+              "label": "Mutageny: o 5 tkáně méně",
+              "description": "10 SP; Alchemie: Expert. Ručně — řeší se u stolu."
+            },
+            "vedeniMutace": {
+              "label": "Vedení mutace: Úspěch +30%",
+              "description": "10 SP. Ručně — řeší se u stolu."
+            },
+            "drogaVyhoda": {
+              "label": "Drogy: Výhoda na výrobu",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            },
+            "drogaKritNeuspech": {
+              "label": "Drogy: Krit. neúspěch -3%",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            }
+          }
+        },
+        "astramancer": {
+          "label": "Astramancer",
+          "nodes": {
+            "ucednik": {
+              "label": "Astramancer: Učedník",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "expert": {
+              "label": "Astramancer: Expert",
+              "description": "5 CP; Škola Vzduchu VI. Ručně — řeší se u stolu."
+            },
+            "mistr": {
+              "label": "Astramancer: Mistr",
+              "description": "5 CP; Škola Vzduchu VIII. Ručně — řeší se u stolu."
+            },
+            "velmistr": {
+              "label": "Astramancer: Velmistr",
+              "description": "5 CP; Škola Vzduchu X. Ručně — řeší se u stolu."
+            },
+            "stunResist": {
+              "label": "Snížená šance být Omráčen o 10%",
+              "description": "15 SP. Automatizováno."
+            },
+            "bleskovaOdolnost": {
+              "label": "Blesková odolnost",
+              "description": "10 CP; Astramancer: Mistr. Ručně — řeší se u stolu."
+            },
+            "bleskovySok": {
+              "label": "Bleskový šok",
+              "description": "15 CP; Astramancer: Expert. Ručně — řeší se u stolu."
+            },
+            "omraceniKrit": {
+              "label": "Omráčení +100% od 2. st. Krit. zásahu",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "padPirka": {
+              "label": "Pád pírka: Rychlost pádu dle vůle",
+              "description": "5 SP; Astramancer: Expert. Ručně — řeší se u stolu."
+            },
+            "kulovyBlesk": {
+              "label": "Kulový blesk: Omráčení +15%",
+              "description": "5 CP; Astramancer: Mistr. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "retezovyBlesk": {
+              "label": "Řetězový blesk: Cíl +1",
+              "description": "5 CP; Astramancer: Mistr. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "overeni": {
+              "label": "Škola Vzduchu: Ověření +10%",
+              "description": "5 CP; Astramancer: Expert. Zatím platí globálně na všechny útoky. Částečně automatizováno."
+            },
+            "retezeni": {
+              "label": "Řetězení",
+              "description": "10 CP; Astramancer: Učedník. Ručně — řeší se u stolu."
+            },
+            "dvojiteRetezeni": {
+              "label": "Dvojité řetězení",
+              "description": "15 CP; Astramancer: Velmistr. Ručně — řeší se u stolu."
+            },
+            "bleskoveTornado": {
+              "label": "Bleskové tornádo: Pohyb dle sesilatele",
+              "description": "5 CP; Astramancer: Mistr. Ručně — řeší se u stolu."
+            },
+            "kritRozsah": {
+              "label": "Škola Vzduchu: Kritický rozsah +2",
+              "description": "5 SP. Kritický rozsah zatím není automatizován. Ručně — řeší se u stolu."
+            },
+            "cyklonPohyb": {
+              "label": "Cyklon: Pohyb +2 hexy",
+              "description": "15 SP; Astramancer: Expert. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+            }
+          }
+        },
+        "bard": {
+          "label": "Bard",
+          "nodes": {
+            "inspiracePisne": {
+              "label": "Inspirace / Písně",
+              "description": "0 CP. Ručně — řeší se u stolu."
+            },
+            "magUtokObrana1": {
+              "label": "Magický útok/obrana +5%",
+              "description": "2 CP. Specifický bonus Barda — vyřešit později. Ručně — řeší se u stolu."
+            },
+            "inspirace3a": {
+              "label": "Inspirace +3",
+              "description": "6 CP. Ručně — řeší se u stolu."
+            },
+            "magUtokObrana2": {
+              "label": "Magický útok/obrana +5%",
+              "description": "2 CP; Bard: Expert. Specifický bonus Barda — vyřešit později. Ručně — řeší se u stolu."
+            },
+            "inspirace3b": {
+              "label": "Inspirace +3",
+              "description": "6 CP. Ručně — řeší se u stolu."
+            },
+            "magUtokObrana3": {
+              "label": "Magický útok/obrana +5%",
+              "description": "2 CP; Bard: Mistr. Specifický bonus Barda — vyřešit později. Ručně — řeší se u stolu."
+            },
+            "inspirace3c": {
+              "label": "Inspirace +3",
+              "description": "6 CP. Ručně — řeší se u stolu."
+            },
+            "bardUcednik": {
+              "label": "Bard: Učedník",
+              "description": "5 CP; Písně. Ručně — řeší se u stolu."
+            },
+            "silaMelodie2": {
+              "label": "Síla Melodie +2",
+              "description": "6 CP. Ručně — řeší se u stolu."
+            },
+            "bardExpert": {
+              "label": "Bard: Expert",
+              "description": "20 CP; Hudba VI. Ručně — řeší se u stolu."
+            },
+            "silaMelodie3": {
+              "label": "Síla Melodie +3",
+              "description": "9 CP. Ručně — řeší se u stolu."
+            },
+            "bardMistr": {
+              "label": "Bard: Mistr",
+              "description": "30 CP; Hudba VIII. Ručně — řeší se u stolu."
+            },
+            "silaMelodie1": {
+              "label": "Síla Melodie +1",
+              "description": "6 CP; Hudba: Mistr. Ručně — řeší se u stolu."
+            },
+            "bardskaOdolnost": {
+              "label": "Bardská odolnost",
+              "description": "0 CP; Písně. Ručně — řeší se u stolu."
+            },
+            "sylvanskaPohotovost": {
+              "label": "Sylvanská pohotovost",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "bardskaObrana": {
+              "label": "Bardská obrana",
+              "description": "5 CP; Bard: Mistr. Ručně — řeší se u stolu."
+            },
+            "sylvanskyOdpocinek1": {
+              "label": "Sylvanský odpočinek I",
+              "description": "10 SP. Ručně — řeší se u stolu."
+            },
+            "sylvanskyOdpocinek2": {
+              "label": "Sylvanský odpočinek II",
+              "description": "10 SP; Hudba V. Ručně — řeší se u stolu."
+            },
+            "sylvanskyOdpocinek3": {
+              "label": "Sylvanský odpočinek III",
+              "description": "15 SP; Hudba VII. Ručně — řeší se u stolu."
+            },
+            "dvur1": {
+              "label": "Dvůr I",
+              "description": "0 CP; Bard: Učedník. Ručně — řeší se u stolu."
+            },
+            "dvur2": {
+              "label": "Dvůr II",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "dvur3": {
+              "label": "Dvůr III",
+              "description": "10 CP; Bard: Expert. Ručně — řeší se u stolu."
+            },
+            "dvur4": {
+              "label": "Dvůr IV",
+              "description": "10 CP; Bard: Mistr. Ručně — řeší se u stolu."
+            },
+            "slovaMoci": {
+              "label": "Slova Moci",
+              "description": "15 CP; Bard: Expert. Ručně — řeší se u stolu."
+            },
+            "tanecVyhoda": {
+              "label": "Tanec: Výhoda",
+              "description": "5 SP; Tanec I. Ručně — řeší se u stolu."
+            },
+            "umtvorbaVyhoda": {
+              "label": "Umělecká tvorba: Výhoda",
+              "description": "5 SP; Umělecká tvorba: Adept. Ručně — řeší se u stolu."
+            },
+            "umtvorbaKritNeuspech": {
+              "label": "Umělecká tvorba: Krit. neúspěch -3%",
+              "description": "5 SP; Umělecká tvorba: Expert. Automatizováno."
+            },
+            "umtvorbaKrit": {
+              "label": "Umělecká tvorba: Kritický úspěch +5%",
+              "description": "5 SP; Umělecká tvorba: Mistr. Automatizováno."
+            },
+            "slevaUmtvorba": {
+              "label": "Sleva 5 SP za stupeň Umělecké tvorby",
+              "description": "0 SP. Ručně — řeší se u stolu."
+            },
+            "pokouseni5": {
+              "label": "Pokoušení +5%",
+              "description": "5 SP. Automatizováno."
+            },
+            "klamani5": {
+              "label": "Klamání +5%",
+              "description": "5 SP. Automatizováno."
+            },
+            "hudbaVyhoda": {
+              "label": "Hudba: Výhoda",
+              "description": "5 SP; Hudba: Adept. Ručně — řeší se u stolu."
+            },
+            "hudbaKritNeuspech": {
+              "label": "Hudba: Krit. neúspěch -3%",
+              "description": "10 SP; Hudba: Mistr. Automatizováno."
+            },
+            "herectviVyhoda": {
+              "label": "Herectví: Výhoda",
+              "description": "5 SP; Herectví: Adept. Ručně — řeší se u stolu."
+            },
+            "herectviKritNeuspech": {
+              "label": "Herectví: Krit. neúspěch -3%",
+              "description": "10 SP. Automatizováno."
+            },
+            "presvedcovani5": {
+              "label": "Přesvědčování +5%",
+              "description": "5 SP. Automatizováno."
+            },
+            "sleva1": {
+              "label": "Sleva 3 SP na dovednost",
+              "description": "0 SP. Ručně — řeší se u stolu."
+            },
+            "sleva2": {
+              "label": "Sleva 3 SP na dovednost",
+              "description": "0 SP. Ručně — řeší se u stolu."
+            },
+            "sleva3": {
+              "label": "Sleva 3 SP na dovednost",
+              "description": "0 SP. Ručně — řeší se u stolu."
+            },
+            "sleva4": {
+              "label": "Sleva 3 SP na dovednost",
+              "description": "0 SP. Ručně — řeší se u stolu."
+            }
+          }
+        },
+        "cryomancer": {
+          "label": "Cryomancer",
+          "nodes": {
+            "ucednik": {
+              "label": "Cryomancer: Učedník",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "expert": {
+              "label": "Cryomancer: Expert",
+              "description": "5 CP; Škola Vody VI. Ručně — řeší se u stolu."
+            },
+            "mistr": {
+              "label": "Cryomancer: Mistr",
+              "description": "5 CP; Škola Vody VIII. Ručně — řeší se u stolu."
+            },
+            "velmistr": {
+              "label": "Cryomancer: Velmistr",
+              "description": "5 CP; Škola Vody X. Ručně — řeší se u stolu."
+            },
+            "ledoveUlomky": {
+              "label": "Ledové úlomky",
+              "description": "10 CP; Cryomancer: Expert. Ručně — řeší se u stolu."
+            },
+            "ledoveKopi": {
+              "label": "Ledové kopí: Zasahuje až tři cíle",
+              "description": "5 CP; Cryomancer: Mistr. Ručně — řeší se u stolu."
+            },
+            "freezeResist": {
+              "label": "Snížená šance na Zmražení o 15%",
+              "description": "15 SP. Automatizováno."
+            },
+            "imunitaZpomaleni": {
+              "label": "Imunita na Zpomalení",
+              "description": "20 SP; Cryomancer: Mistr. Ručně — řeší se u stolu."
+            },
+            "kritRozsah": {
+              "label": "Škola Vody: Kritický rozsah +2",
+              "description": "5 SP. Kritický rozsah zatím není automatizován. Ručně — řeší se u stolu."
+            },
+            "overeni": {
+              "label": "Škola Vody: Ověření +10%",
+              "description": "5 CP; Cryomancer: Expert. Zatím platí globálně na všechny útoky. Částečně automatizováno."
+            },
+            "zmrazeniKrit": {
+              "label": "Zmražení +100% od 4. st. Krit. zásahu",
+              "description": "5 CP; Hluboký mráz I. Ručně — řeší se u stolu."
+            },
+            "hlubokyMraz1": {
+              "label": "Hluboký mráz I",
+              "description": "15 CP; Cryomancer: Expert. Ručně — řeší se u stolu."
+            },
+            "hlubokyMraz2": {
+              "label": "Hluboký mráz II",
+              "description": "15 CP; Cryomancer: Mistr. Ručně — řeší se u stolu."
+            },
+            "hlubokyMraz3": {
+              "label": "Hluboký mráz III",
+              "description": "15 CP; Cryomancer: Velmistr. Ručně — řeší se u stolu."
+            },
+            "ostryLed": {
+              "label": "Ostrý led",
+              "description": "5 CP; Cryomancer: Expert. Ručně — řeší se u stolu."
+            }
+          }
+        },
+        "entomancer": {
+          "label": "Entomancer",
+          "nodes": {
+            "ucednik": {
+              "label": "Entomancer: Učedník",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "expert": {
+              "label": "Entomancer: Expert",
+              "description": "5 CP; Škola Země VI. Ručně — řeší se u stolu."
+            },
+            "mistr": {
+              "label": "Entomancer: Mistr",
+              "description": "5 CP; Škola Země VIII. Ručně — řeší se u stolu."
+            },
+            "velmistr": {
+              "label": "Entomancer: Velmistr",
+              "description": "5 CP; Škola Země X. Ručně — řeší se u stolu."
+            },
+            "feromony": {
+              "label": "Feromony",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            },
+            "jedovatyHmyz": {
+              "label": "Jedovatý hmyz",
+              "description": "15 SP; Travič II. Ručně — řeší se u stolu."
+            },
+            "jedResist1": {
+              "label": "Šance na odolání jedu +10%",
+              "description": "5 SP. Automatizováno."
+            },
+            "jedResist2": {
+              "label": "Šance na odolání jedu +10%",
+              "description": "5 SP. Automatizováno."
+            },
+            "leptavaKyselina1": {
+              "label": "Leptavá kyselina I",
+              "description": "5 CP; Entomancer: Expert. Ručně — řeší se u stolu."
+            },
+            "leptavaKyselina2": {
+              "label": "Leptavá kyselina II",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            },
+            "protijed": {
+              "label": "Protijed: Šance +25%",
+              "description": "5 SP; Entomancer: Expert. Ručně — řeší se u stolu."
+            },
+            "pavouciSplh": {
+              "label": "Pavoučí šplh",
+              "description": "10 SP; Entomancer: Expert. Ručně — řeší se u stolu."
+            },
+            "travic1": {
+              "label": "Travič I",
+              "description": "10 CP; Entomancer: Učedník. Ručně — řeší se u stolu."
+            },
+            "travic2": {
+              "label": "Travič II",
+              "description": "15 CP; Entomancer: Expert. Ručně — řeší se u stolu."
+            },
+            "travic3": {
+              "label": "Travič III",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            },
+            "toxiny": {
+              "label": "Toxiny",
+              "description": "15 CP; Entomancer: Mistr. Ručně — řeší se u stolu."
+            },
+            "kyselinovaStrela": {
+              "label": "Kyselinová střela: Zbroj -2 Kz",
+              "description": "5 CP; Entomancer: Expert. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "jedovaSprska": {
+              "label": "Jedová sprška: Oblast +1,5m",
+              "description": "5 CP; Entomancer: Expert. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+            }
+          }
+        },
+        "geomancer": {
+          "label": "Geomancer",
+          "nodes": {
+            "ucednik": {
+              "label": "Geomancer: Učedník",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "expert": {
+              "label": "Geomancer: Expert",
+              "description": "5 CP; Škola Země VI. Ručně — řeší se u stolu."
+            },
+            "mistr": {
+              "label": "Geomancer: Mistr",
+              "description": "5 CP; Škola Země VIII. Ručně — řeší se u stolu."
+            },
+            "velmistr": {
+              "label": "Geomancer: Velmistr",
+              "description": "5 CP; Škola Země X. Ručně — řeší se u stolu."
+            },
+            "kz2": {
+              "label": "Kz +2",
+              "description": "10 SP; Geomancer: Expert. Automatizováno."
+            },
+            "kritRozsah": {
+              "label": "Škola Země: Kritický rozsah +2",
+              "description": "5 SP. Kritický rozsah zatím není automatizován. Ručně — řeší se u stolu."
+            },
+            "maskovani": {
+              "label": "Maskování: I kamenité oblasti",
+              "description": "10 SP; Geomancer: Učedník. Ručně — řeší se u stolu."
+            },
+            "regeneraceVydrze": {
+              "label": "Regenerace: Obnovuje 2d4 Výdrže",
+              "description": "5 CP; Geomancer: Expert. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "kamennaKuze": {
+              "label": "Kamenná kůže: Obětování zbroje Omráčí",
+              "description": "5 CP; Geomancer: Expert. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "kamennaZed": {
+              "label": "Kamenná zeď: Hexy nemusí navazovat",
+              "description": "5 CP; Geomancer: Mistr. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "overeni": {
+              "label": "Škola Země: Ověření +10%",
+              "description": "5 CP; Geomancer: Expert. Zatím platí globálně na všechny útoky. Částečně automatizováno."
+            },
+            "povaleni": {
+              "label": "Garantuje Povalení od 3. st. Krit. zásahu",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "omracujiciRany1": {
+              "label": "Omračující rány I",
+              "description": "15 CP; Geomancer: Expert. Ručně — řeší se u stolu."
+            },
+            "omracujiciRany2": {
+              "label": "Omračující rány II",
+              "description": "15 CP; Geomancer: Mistr. Ručně — řeší se u stolu."
+            },
+            "omracujiciRany3": {
+              "label": "Omračující rány III",
+              "description": "20 CP; Geomancer: Velmistr. Ručně — řeší se u stolu."
+            },
+            "pevnyKrok": {
+              "label": "Pevný krok",
+              "description": "25 SP; Geomancer: Mistr. Ručně — řeší se u stolu."
+            },
+            "urhanovaSila": {
+              "label": "Urhanova síla",
+              "description": "10 CP; Geomancer: Expert. Ručně — řeší se u stolu."
+            }
+          }
+        },
+        "gnostic": {
+          "label": "Gnostik",
+          "nodes": {
+            "adept": {
+              "label": "Gnostik: Adept",
+              "description": "15 CP. Ručně — řeší se u stolu."
+            },
+            "gsp1": {
+              "label": "Gnóze: Síla kouzla +3",
+              "description": "10 CP. Automatizováno."
+            },
+            "mistr": {
+              "label": "Gnostik: Mistr",
+              "description": "25 CP; E/I/V VI. Ručně — řeší se u stolu."
+            },
+            "gsp2": {
+              "label": "Gnóze: Síla kouzla +3",
+              "description": "10 CP. Automatizováno."
+            },
+            "velmistr": {
+              "label": "Gnostik: Velmistr",
+              "description": "35 CP; E/I/V X. Ručně — řeší se u stolu."
+            },
+            "gsp3": {
+              "label": "Gnóze: Síla kouzla +2",
+              "description": "5 CP. Automatizováno."
+            },
+            "zpomaleniZraneni1": {
+              "label": "Zpomalení: Zranění +1d6",
+              "description": "10 CP. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "zpomaleniZraneni2": {
+              "label": "Zpomalení: Zranění +1d6",
+              "description": "15 CP; Gnostik: Mistr. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "casovaDisonance": {
+              "label": "Časová disonance",
+              "description": "15 CP; Gnostik: Adept. Ručně — řeší se u stolu."
+            },
+            "isadurovaTechnika": {
+              "label": "Isadurova technika",
+              "description": "10 CP; Gnostik: Adept. Ručně — řeší se u stolu."
+            },
+            "nekonecnaCesta": {
+              "label": "Nekonečná cesta: Zpomalení",
+              "description": "5 CP; Gnostik: Adept. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "prostorovaKlec": {
+              "label": "Prostorová klec: Zpomalení",
+              "description": "5 SP; Gnostik: Mistr. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "meditaceMZ2": {
+              "label": "Meditace obnovuje 2 Mentální životy",
+              "description": "5 SP; Meditace I. Ručně — řeší se u stolu."
+            },
+            "meditaceMZ3": {
+              "label": "Meditace obnovuje 3 Mentální životy",
+              "description": "10 SP. Ručně — řeší se u stolu."
+            },
+            "mzMeditace": {
+              "label": "Mentální životy +1 / Meditace +5%",
+              "description": "10 SP. Automatizováno."
+            },
+            "isaduruvKruh": {
+              "label": "Isadurův kruh: Zpomalení",
+              "description": "5 CP; Gnostik: Mistr. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "posunutiDezorientace": {
+              "label": "Posunutí a Prostorový skok: Dezorientace +25%",
+              "description": "5 CP; Gnostik: Mistr. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "overeni": {
+              "label": "Gnóze: Ověření +10%",
+              "description": "5 CP; Gnostik: Adept. Zatím platí globálně na všechny útoky. Částečně automatizováno."
+            }
+          }
+        },
+        "grimm": {
+          "label": "Grimm",
+          "nodes": {
+            "bane1": {
+              "label": "Odemyká jednu Metlu",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "bane2": {
+              "label": "Odemyká jednu Metlu",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "bane3": {
+              "label": "Odemyká jednu Metlu",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "bane4": {
+              "label": "Odemyká jednu Metlu",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "bane5": {
+              "label": "Odemyká jednu Metlu",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "bane6": {
+              "label": "Odemyká jednu Metlu",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "bane7": {
+              "label": "Odemyká jednu Metlu",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "metlaVnimani": {
+              "label": "Metla: Vnímání a Stopování +10%",
+              "description": "10 SP; Přežití II. Ručně — řeší se u stolu."
+            },
+            "metlaIniciativa": {
+              "label": "Metla: Iniciativa +3",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            },
+            "metlaOpakovani": {
+              "label": "Metla: 1x opakování hodu na útok/kryt",
+              "description": "15 CP. Ručně — řeší se u stolu."
+            },
+            "tkane1": {
+              "label": "Přežití: Tkáně a Substance +50%",
+              "description": "10 SP; Přežití III. Ručně — řeší se u stolu."
+            },
+            "tkane2": {
+              "label": "Přežití: Tkáně a Substance +50%",
+              "description": "10 SP. Ručně — řeší se u stolu."
+            }
+          }
+        },
+        "illusionist": {
+          "label": "Iluzionista",
+          "nodes": {
+            "ucednik": {
+              "label": "Iluzionista: Učedník",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "expert": {
+              "label": "Iluzionista: Expert",
+              "description": "5 CP; Škola Ducha VI. Ručně — řeší se u stolu."
+            },
+            "mistr": {
+              "label": "Iluzionista: Mistr",
+              "description": "5 CP; Škola Ducha VIII. Ručně — řeší se u stolu."
+            },
+            "velmistr": {
+              "label": "Iluzionista: Velmistr",
+              "description": "5 CP; Škola Ducha X. Ručně — řeší se u stolu."
+            },
+            "kapesniIluze": {
+              "label": "Kapesní iluze",
+              "description": "5 SP; Iluzionista: Expert. Ručně — řeší se u stolu."
+            },
+            "mysterinoOko": {
+              "label": "Mysteřino oko",
+              "description": "10 SP; Iluzionista: Expert. Ručně — řeší se u stolu."
+            },
+            "dokonalaIluze1": {
+              "label": "Dokonalá iluze I",
+              "description": "5 SP; Iluzionista: Expert. Ručně — řeší se u stolu."
+            },
+            "obtiznostPopreni1": {
+              "label": "Iluze: +20% obtížnější na Popření",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            },
+            "dokonalaIluze2": {
+              "label": "Dokonalá iluze II",
+              "description": "10 SP; Iluzionista: Mistr. Ručně — řeší se u stolu."
+            },
+            "dokonalaIluze3": {
+              "label": "Dokonalá iluze III",
+              "description": "10 SP. Ručně — řeší se u stolu."
+            },
+            "obtiznostPopreni2": {
+              "label": "Iluze: +25% obtížnější na Popření",
+              "description": "5 SP; Iluzionista: Velmistr. Ručně — řeší se u stolu."
+            },
+            "prohlednutiIluzi": {
+              "label": "Prohlédnutí iluzí +30%",
+              "description": "5 SP; Arcana IV. Ručně — řeší se u stolu."
+            },
+            "malaIluzeZvuky": {
+              "label": "Malá iluze: Komplexní zvuky",
+              "description": "0 SP; Iluzionista: Expert. Ručně — řeší se u stolu."
+            },
+            "mysterinKrok": {
+              "label": "Mysteřin krok",
+              "description": "5 CP; Iluzionista: Expert. Ručně — řeší se u stolu."
+            },
+            "udrzovaneIluze": {
+              "label": "Udržované iluze",
+              "description": "10 SP; Iluzionista: Mistr. Ručně — řeší se u stolu."
+            },
+            "duplikaceKouzla": {
+              "label": "Duplikace mistrovských kouzel",
+              "description": "5 CP; Iluzionista: Mistr. Ručně — řeší se u stolu."
+            },
+            "mzitky": {
+              "label": "Mžitky: Nevýhoda na jedno kolo",
+              "description": "10 CP; Iluzionista: Mistr. Ručně — řeší se u stolu."
+            },
+            "dvojnik": {
+              "label": "Dvojník: Plný efekt a životy",
+              "description": "20 CP; Iluzionista: Velmistr. Ručně — řeší se u stolu."
+            },
+            "skrytaMagie1": {
+              "label": "Skrytá magie I",
+              "description": "15 SP; Iluzionista: Mistr. Ručně — řeší se u stolu."
+            },
+            "skrytaMagie2": {
+              "label": "Skrytá magie II",
+              "description": "10 CP; Iluzionista: Velmistr. Ručně — řeší se u stolu."
+            },
+            "mysterinStrazce": {
+              "label": "Mysteřin strážce",
+              "description": "10 CP; Iluzionista: Velmistr. Ručně — řeší se u stolu."
+            }
+          }
+        },
+        "priest": {
+          "label": "Kněz",
+          "nodes": {
+            "modlitba": {
+              "label": "Modlitba",
+              "description": "0 CP. Ručně — řeší se u stolu."
+            },
+            "testViry1": {
+              "label": "Test Víry na Útok/Obranu +10%",
+              "description": "3 CP. Ručně — řeší se u stolu."
+            },
+            "testViry2": {
+              "label": "Test Víry na Útok/Obranu +10%",
+              "description": "3 CP. Ručně — řeší se u stolu."
+            },
+            "testViry3": {
+              "label": "Test Víry na Útok/Obranu +10%",
+              "description": "3 CP; Víra 5. Ručně — řeší se u stolu."
+            },
+            "testViry4": {
+              "label": "Test Víry na Útok/Obranu +10%",
+              "description": "3 CP; Víra 8. Ručně — řeší se u stolu."
+            },
+            "testViry5": {
+              "label": "Test Víry na Útok/Obranu +10%",
+              "description": "3 CP. Ručně — řeší se u stolu."
+            },
+            "zazraky": {
+              "label": "Zázraky",
+              "description": "0 CP. Ručně — řeší se u stolu."
+            },
+            "novic": {
+              "label": "Novic",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "svataEnergie1": {
+              "label": "Svatá energie +10",
+              "description": "10 CP; Víra 4. Automatizováno."
+            },
+            "akolyta": {
+              "label": "Akolyta",
+              "description": "20 CP; Víra 5. Ručně — řeší se u stolu."
+            },
+            "svataEnergie2": {
+              "label": "Svatá energie +10",
+              "description": "15 CP; Víra 6. Automatizováno."
+            },
+            "klerik": {
+              "label": "Klerik",
+              "description": "40 CP; Víra 8. Ručně — řeší se u stolu."
+            },
+            "svataEnergie3": {
+              "label": "Svatá energie +10",
+              "description": "20 CP; Víra 9. Automatizováno."
+            },
+            "pozehnani1a": {
+              "label": "Požehnání prvního stupně",
+              "description": "5 CP; 15 SP. Ručně — řeší se u stolu."
+            },
+            "pozehnani1b": {
+              "label": "Požehnání prvního stupně",
+              "description": "5 CP; 15 SP; Víra 4. Ručně — řeší se u stolu."
+            },
+            "pozehnani2a": {
+              "label": "Požehnání druhého stupně",
+              "description": "10 CP; 30 SP; Víra 5. Ručně — řeší se u stolu."
+            },
+            "pozehnani1c": {
+              "label": "Požehnání prvního stupně",
+              "description": "5 CP; 15 SP; Víra 6. Ručně — řeší se u stolu."
+            },
+            "pozehnani2b": {
+              "label": "Požehnání druhého stupně",
+              "description": "10 CP; 30 SP; Víra 7. Ručně — řeší se u stolu."
+            },
+            "pozehnani3a": {
+              "label": "Požehnání třetího stupně",
+              "description": "15 CP; 40 SP; Víra 8. Ručně — řeší se u stolu."
+            },
+            "pozehnani3b": {
+              "label": "Požehnání třetího stupně",
+              "description": "15 CP; 40 SP; Víra 10. Ručně — řeší se u stolu."
+            },
+            "ranhojicstvi1d6": {
+              "label": "Ranhojičství +1d6",
+              "description": "10 SP; Ranhojičství: Adept. Ručně — řeší se u stolu."
+            },
+            "felcaruvDotek": {
+              "label": "Felčarův dotek",
+              "description": "20 SP; Ranhojičství: Expert. Ručně — řeší se u stolu."
+            },
+            "ranhojicstviVyhoda": {
+              "label": "Ranhojičství: Výhoda",
+              "description": "5 SP; Ranhojičství: Adept. Ručně — řeší se u stolu."
+            },
+            "ranhojicstviKritNeuspech": {
+              "label": "Ranhojičství: Krit. neúspěch -3%",
+              "description": "10 SP. Automatizováno."
+            },
+            "presvedcovani3": {
+              "label": "Přesvědčování +3%",
+              "description": "5 SP. Automatizováno."
+            },
+            "pastyrovaVule": {
+              "label": "Pastýřova vůle",
+              "description": "0 SP. Ručně — řeší se u stolu."
+            }
+          }
+        },
+        "countermage": {
+          "label": "Kontramág",
+          "nodes": {
+            "ucednik": {
+              "label": "Kontramág: Učedník",
+              "description": "0 CP. Ručně — řeší se u stolu."
+            },
+            "mz1": {
+              "label": "Mentální životy +1",
+              "description": "10 CP. Automatizováno."
+            },
+            "mz2": {
+              "label": "Mentální životy +1",
+              "description": "10 CP. Automatizováno."
+            },
+            "expert": {
+              "label": "Kontramág: Expert / Síla Vůle +1",
+              "description": "25 CP; Kontramág 6. Stupeň Kontramága ručně. Částečně automatizováno."
+            },
+            "mz3": {
+              "label": "Mentální životy +1",
+              "description": "10 CP. Automatizováno."
+            },
+            "mz4": {
+              "label": "Mentální životy +1",
+              "description": "10 CP. Automatizováno."
+            },
+            "mistr": {
+              "label": "Kontramág: Mistr / Síla Vůle +1",
+              "description": "35 CP; Kontramág 18. Stupeň Kontramága ručně. Částečně automatizováno."
+            },
+            "meditace2": {
+              "label": "Meditace obnovuje 2 Mentální životy",
+              "description": "5 SP; Meditace I. Ručně — řeší se u stolu."
+            },
+            "meditace3": {
+              "label": "Meditace obnovuje 3 Mentální životy",
+              "description": "15 SP. Ručně — řeší se u stolu."
+            },
+            "meditace4": {
+              "label": "Meditace obnovuje 4 Mentální životy",
+              "description": "15 SP; Kontramág: Expert. Ručně — řeší se u stolu."
+            },
+            "vynucenySouboj": {
+              "label": "Vynucený Mentální souboj -20%",
+              "description": "15 SP; Mentální souboj I. Ručně — řeší se u stolu."
+            },
+            "soubojDemoni": {
+              "label": "Mentální souboj +20% proti Démonům",
+              "description": "20 SP; Mentální souboj IV. Ručně — řeší se u stolu."
+            },
+            "cistaMysl": {
+              "label": "Čistá mysl",
+              "description": "10 SP. Ručně — řeší se u stolu."
+            },
+            "antimagickaZbran": {
+              "label": "Antimagická zbraň",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "bane1": {
+              "label": "Odemkne jednu Metlu",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "magickyKryt": {
+              "label": "Magický kryt",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "bane2": {
+              "label": "Odemkne dvě Metly",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            },
+            "magickaImunita": {
+              "label": "Šance na Magickou imunitu +25%",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            },
+            "odolnostMagii": {
+              "label": "Odolnost proti magii +50%",
+              "description": "15 CP; Kontramág: Mistr. Ručně — řeší se u stolu."
+            },
+            "citiMagii": {
+              "label": "Cítí aktivní magii v oblasti 25m",
+              "description": "10 SP; Arcana: Adept. Ručně — řeší se u stolu."
+            },
+            "popreniIluze": {
+              "label": "Popření iluze +25%",
+              "description": "10 SP. Ručně — řeší se u stolu."
+            },
+            "horlivost": {
+              "label": "Horlivost",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            },
+            "nezlomnaMysl": {
+              "label": "Nezlomná mysl",
+              "description": "10 SP; Čistá mysl. Ručně — řeší se u stolu."
+            },
+            "vhled5": {
+              "label": "Vhled +5%",
+              "description": "5 SP. Automatizováno."
+            },
+            "slevaArcana": {
+              "label": "Sleva 3 SP za stupeň Arcany",
+              "description": "0 SP. Ručně — řeší se u stolu."
+            }
+          }
+        },
+        "maleficarum": {
+          "label": "Maleficarum",
+          "nodes": {
+            "ucednik": {
+              "label": "Maleficarum: Učedník",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "expert": {
+              "label": "Maleficarum: Expert",
+              "description": "5 CP; Škola Temnoty VI. Ručně — řeší se u stolu."
+            },
+            "mistr": {
+              "label": "Maleficarum: Mistr",
+              "description": "5 CP; Škola Temnoty VIII. Ručně — řeší se u stolu."
+            },
+            "velmistr": {
+              "label": "Maleficarum: Velmistr",
+              "description": "5 CP; Škola Temnoty X. Ručně — řeší se u stolu."
+            },
+            "vysaniDuse": {
+              "label": "Vysání duše: Vyčerpá 1 MŽ za kolo",
+              "description": "5 SP; Maleficarum: Expert. Ručně — řeší se u stolu."
+            },
+            "kritRozsah": {
+              "label": "Škola Temnoty: Kritický rozsah +2",
+              "description": "5 SP. Kritický rozsah zatím není automatizován. Ručně — řeší se u stolu."
+            },
+            "stoparDusi": {
+              "label": "Stopař duší",
+              "description": "5 SP; Maleficarum: Učedník. Ručně — řeší se u stolu."
+            },
+            "drzitelDusi": {
+              "label": "Držitel duší",
+              "description": "10 SP. Ručně — řeší se u stolu."
+            },
+            "lapeniDuse": {
+              "label": "Šance na lapení duše +25%",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            },
+            "poziracDusi": {
+              "label": "Požírač duší",
+              "description": "10 CP; Maleficarum: Mistr. Ručně — řeší se u stolu."
+            },
+            "hraniceKorupce": {
+              "label": "4. stupeň Korupce: hranice +20",
+              "description": "10 SP; Maleficarum: Expert. Ručně — řeší se u stolu."
+            },
+            "zastaveniMutace": {
+              "label": "Zastavení mutace",
+              "description": "20 SP; Maleficarum: Mistr. Ručně — řeší se u stolu."
+            },
+            "oslabeni": {
+              "label": "Oslabení",
+              "description": "10 CP; Maleficarum: Učedník. Ručně — řeší se u stolu."
+            },
+            "temnaObet": {
+              "label": "Temná oběť",
+              "description": "10 CP; Maleficarum: Učedník. Ručně — řeší se u stolu."
+            },
+            "overeni": {
+              "label": "Škola Temnoty: Ověření +15%",
+              "description": "5 CP; Maleficarum: Expert. Zatím platí globálně na všechny útoky. Částečně automatizováno."
+            },
+            "zakleti": {
+              "label": "Zakletí",
+              "description": "10 CP; Maleficarum: Učedník. Ručně — řeší se u stolu."
+            },
+            "kontrolovanaMutace": {
+              "label": "Kontrolovaná mutace",
+              "description": "15 SP; Maleficarum: Mistr. Ručně — řeší se u stolu."
+            },
+            "pozehnaniKozula": {
+              "label": "Požehnání Kozula",
+              "description": "25 CP; Maleficarum: Velmistr. Ručně — řeší se u stolu."
+            }
+          }
+        },
+        "mentalist": {
+          "label": "Mentalista",
+          "nodes": {
+            "ucednik": {
+              "label": "Mentalista: Učedník",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "expert": {
+              "label": "Mentalista: Expert",
+              "description": "5 CP; Škola Ducha VI. Ručně — řeší se u stolu."
+            },
+            "mistr": {
+              "label": "Mentalista: Mistr",
+              "description": "5 CP; Škola Ducha VIII. Ručně — řeší se u stolu."
+            },
+            "velmistr": {
+              "label": "Mentalista: Velmistr",
+              "description": "5 CP; Škola Ducha X. Ručně — řeší se u stolu."
+            },
+            "vytrvalaSnaha": {
+              "label": "Vytrvalá snaha",
+              "description": "5 CP; Mentalista: Učedník. Ručně — řeší se u stolu."
+            },
+            "mentalniUder": {
+              "label": "Mentální úder: Zabití obnoví 1 MŽ",
+              "description": "10 CP; Mentalista: Velmistr. Ručně — řeší se u stolu."
+            },
+            "mentalniZtec": {
+              "label": "Mentální zteč",
+              "description": "0 CP; Mentalista: Učedník. Ručně — řeší se u stolu."
+            },
+            "soubojDotek": {
+              "label": "Mentální souboj: Dotek +30% na zahájení",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            },
+            "soubojZahajeni1": {
+              "label": "Mentální souboj: Zahájení +10%",
+              "description": "5 CP; Mentální souboj IV. Ručně — řeší se u stolu."
+            },
+            "soubojZahajeni2": {
+              "label": "Mentální souboj: Zahájení +10%",
+              "description": "5 CP; Mentalista: Expert. Ručně — řeší se u stolu."
+            },
+            "soubojZahajeni3": {
+              "label": "Mentální souboj: Zahájení +10%",
+              "description": "5 CP; Mentalista: Mistr. Ručně — řeší se u stolu."
+            },
+            "soubojZahajeni4": {
+              "label": "Mentální souboj: Zahájení +10%",
+              "description": "5 CP; Mentalista: Velmistr. Ručně — řeší se u stolu."
+            },
+            "mentalistuvUprk": {
+              "label": "Mentalistův úprk",
+              "description": "5 CP; Mentalista: Učedník. Ručně — řeší se u stolu."
+            },
+            "vybojMysli": {
+              "label": "Výboj mysli",
+              "description": "5 CP; Mentalista: Expert. Ručně — řeší se u stolu."
+            },
+            "zoufalyVzdor": {
+              "label": "Zoufalý vzdor",
+              "description": "10 CP; Mentalista: Velmistr. Ručně — řeší se u stolu."
+            },
+            "soubojUdrzovani": {
+              "label": "Mentální souboj: Udržování -1 Akce",
+              "description": "10 CP; Mentalista: Expert. Ručně — řeší se u stolu."
+            },
+            "soubojPostih": {
+              "label": "Mentální souboj: Postih na Úspěch -10%",
+              "description": "10 CP; Mentalista: Mistr. Ručně — řeší se u stolu."
+            },
+            "mentalniSouboj10a": {
+              "label": "Mentální souboj +10%",
+              "description": "15 SP. Ručně — řeší se u stolu."
+            },
+            "soubojMZ1": {
+              "label": "Mentální souboj: Úspěch -1 MŽ navíc",
+              "description": "10 CP; Mentalista: Expert. Ručně — řeší se u stolu."
+            },
+            "mentalniSouboj10b": {
+              "label": "Mentální souboj +10%",
+              "description": "15 SP. Ručně — řeší se u stolu."
+            },
+            "soubojMZ2": {
+              "label": "Mentální souboj: Úspěch -1 MŽ navíc",
+              "description": "10 CP; Mentalista: Velmistr. Ručně — řeší se u stolu."
+            },
+            "telepat1": {
+              "label": "Telepat I",
+              "description": "15 SP; Mentalista: Expert. Ručně — řeší se u stolu."
+            },
+            "telepat2": {
+              "label": "Telepat II",
+              "description": "5 SP; Mentalista: Mistr. Ručně — řeší se u stolu."
+            },
+            "vytizeniKoncentrace": {
+              "label": "Mentální vytížení: Ruší Koncentrace",
+              "description": "5 CP; Mentalista: Učedník. Ručně — řeší se u stolu."
+            },
+            "vytizeniReakce": {
+              "label": "Mentální vytížení: -1 Reakce",
+              "description": "5 CP; Mentalista: Expert. Ručně — řeší se u stolu."
+            },
+            "vytizeniZakerne": {
+              "label": "Mentální vytížení: Útoky Zákeřné",
+              "description": "5 CP; Mentální souboj VI. Ručně — řeší se u stolu."
+            },
+            "vytizeniAkce": {
+              "label": "Mentální vytížení: -1 Akce",
+              "description": "5 CP; Mentalista: Mistr. Ručně — řeší se u stolu."
+            },
+            "vysati": {
+              "label": "Vysátí",
+              "description": "5 CP; Mentalista: Učedník. Ručně — řeší se u stolu."
+            },
+            "ovladnuti": {
+              "label": "Ovládnutí",
+              "description": "10 CP; Mentalista: Expert. Ručně — řeší se u stolu."
+            },
+            "cteniMysli": {
+              "label": "Čtení mysli",
+              "description": "15 SP; Mentalista: Mistr. Ručně — řeší se u stolu."
+            },
+            "pokrocileCteni": {
+              "label": "Pokročilé čtení mysli",
+              "description": "10 SP; Mentální souboj X. Ručně — řeší se u stolu."
+            },
+            "meditace2": {
+              "label": "Meditace obnovuje 2 Mentální životy",
+              "description": "5 SP; Meditace I. Ručně — řeší se u stolu."
+            },
+            "meditace3": {
+              "label": "Meditace obnovuje 3 Mentální životy",
+              "description": "15 SP. Ručně — řeší se u stolu."
+            },
+            "mzMeditace": {
+              "label": "Mentální životy +1 / Meditace +5%",
+              "description": "15 SP; Mentalista: Expert. Automatizováno."
+            }
+          }
+        },
+        "mystic": {
+          "label": "Mystik",
+          "nodes": {
+            "ucednik": {
+              "label": "Mystik: Učedník",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "expert": {
+              "label": "Mystik: Expert",
+              "description": "10 CP; Rituály VI. Ručně — řeší se u stolu."
+            },
+            "mistr": {
+              "label": "Mystik: Mistr",
+              "description": "15 CP; Rituály VIII. Ručně — řeší se u stolu."
+            },
+            "kapacitaOvladani": {
+              "label": "Kapacita ovládání +1",
+              "description": "20 CP; Rituály: Mistr. Ručně — řeší se u stolu."
+            },
+            "podmaneni1": {
+              "label": "Podmanění I",
+              "description": "20 SP; Arcana V. Ručně — řeší se u stolu."
+            },
+            "podmaneni2": {
+              "label": "Podmanění II",
+              "description": "10 SP. Ručně — řeší se u stolu."
+            },
+            "mesicniStudna": {
+              "label": "Měsíční studna",
+              "description": "15 SP; Rituály: Adept. Ručně — řeší se u stolu."
+            },
+            "studna15a": {
+              "label": "Měsíční studna: +15 ME",
+              "description": "10 SP. Ručně — řeší se u stolu."
+            },
+            "studna15b": {
+              "label": "Měsíční studna: +15 ME",
+              "description": "10 SP. Ručně — řeší se u stolu."
+            },
+            "podmineneRitualy": {
+              "label": "Podmíněné rituály",
+              "description": "10 SP. Ručně — řeší se u stolu."
+            },
+            "mystickaObet": {
+              "label": "Mystická oběť",
+              "description": "15 SP; Rituály VI. Ručně — řeší se u stolu."
+            },
+            "bane1": {
+              "label": "Odemkne jednu Metlu",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "ritualyVyhoda": {
+              "label": "Rituály: Výhoda",
+              "description": "5 SP. Ručně — řeší se u stolu."
+            },
+            "ritualyKritNeuspech": {
+              "label": "Rituály: Krit. neúspěch -3%",
+              "description": "5 SP. Automatizováno."
+            },
+            "sleva1": {
+              "label": "Sleva 3 SP na dovednost",
+              "description": "0 SP. Ručně — řeší se u stolu."
+            },
+            "sleva2": {
+              "label": "Sleva 3 SP na dovednost",
+              "description": "0 SP. Ručně — řeší se u stolu."
+            }
+          }
+        },
+        "pyromancer": {
+          "label": "Pyromancer",
+          "nodes": {
+            "ucednik": {
+              "label": "Pyromancer: Učedník",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "expert": {
+              "label": "Pyromancer: Expert",
+              "description": "5 CP; Škola Ohně VI. Ručně — řeší se u stolu."
+            },
+            "mistr": {
+              "label": "Pyromancer: Mistr",
+              "description": "5 CP; Škola Ohně VIII. Ručně — řeší se u stolu."
+            },
+            "velmistr": {
+              "label": "Pyromancer: Velmistr",
+              "description": "5 CP; Škola Ohně X. Ručně — řeší se u stolu."
+            },
+            "overeni": {
+              "label": "Škola Ohně: Ověření +15%",
+              "description": "5 CP; Pyromancer: Expert. Zatím platí globálně na všechny útoky. Částečně automatizováno."
+            },
+            "kritRozsah": {
+              "label": "Škola Ohně: Kritický rozsah +2",
+              "description": "5 SP. Kritický rozsah zatím není automatizován. Ručně — řeší se u stolu."
+            },
+            "burnResist1": {
+              "label": "Snížená šance na Podpálení o 10%",
+              "description": "10 SP. Automatizováno."
+            },
+            "burnResist2": {
+              "label": "Snížená šance na Podpálení o 10%",
+              "description": "10 SP; Pyromancer: Expert. Automatizováno."
+            },
+            "podpaleniPanika": {
+              "label": "Podpálení nevyvolává Test na Paniku",
+              "description": "15 SP. Ručně — řeší se u stolu."
+            },
+            "ohnivaAura": {
+              "label": "Ohnivá aura: Podpálení +5%",
+              "description": "5 CP; Pyromancer: Expert. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "ohnivyStit": {
+              "label": "Ohnivý štít: Průbojnost +3, Zranění +1d4",
+              "description": "5 CP; Pyromancer: Expert. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "podpaleniKrit": {
+              "label": "Podpálení +100% od 3. st. Krit. zásahu",
+              "description": "5 CP; Divoký oheň I. Ručně — řeší se u stolu."
+            },
+            "divokyOhen1": {
+              "label": "Divoký oheň I",
+              "description": "15 CP; Pyromancer: Expert. Ručně — řeší se u stolu."
+            },
+            "divokyOhen2": {
+              "label": "Divoký oheň II",
+              "description": "15 CP; Pyromancer: Mistr. Ručně — řeší se u stolu."
+            },
+            "barevnyOhen1": {
+              "label": "Barevný oheň I",
+              "description": "5 CP; Pyromancer: Učedník. Ručně — řeší se u stolu."
+            },
+            "barevnyOhen2": {
+              "label": "Barevný oheň II",
+              "description": "5 CP; Pyromancer: Expert. Ručně — řeší se u stolu."
+            },
+            "barevnyOhen3": {
+              "label": "Barevný oheň III",
+              "description": "5 CP; Pyromancer: Mistr. Ručně — řeší se u stolu."
+            },
+            "barevnyOhen4": {
+              "label": "Barevný oheň IV",
+              "description": "15 CP; Pyromancer: Velmistr. Ručně — řeší se u stolu."
+            }
+          }
+        },
+        "runeWarrior": {
+          "label": "Runový válečník",
+          "nodes": {
+            "obnoveniRun1": {
+              "label": "Obnovení run I",
+              "description": "0 CP. Ručně — řeší se u stolu."
+            },
+            "obnoveniRun2": {
+              "label": "Obnovení run II",
+              "description": "25 SP; Arcana V. Ručně — řeší se u stolu."
+            },
+            "nohyRunaA": {
+              "label": "Nohy: Runa A",
+              "description": "10 CP. Ručně — řeší se u stolu."
+            },
+            "nohyRunaB": {
+              "label": "Nohy: Runa B",
+              "description": "10 CP; Arcana V. Ručně — řeší se u stolu."
+            },
+            "zadaRuna": {
+              "label": "Záda: Runa",
+              "description": "10 CP; Arcana V. Ručně — řeší se u stolu."
+            },
+            "hlavaRuna": {
+              "label": "Hlava: Runa",
+              "description": "20 CP; Arcana VII. Ručně — řeší se u stolu."
+            },
+            "pravaRuka1": {
+              "label": "Pravá ruka: Runa I",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "pravaRuka2": {
+              "label": "Pravá ruka: Runa II",
+              "description": "15 CP; Arcana VI. Ručně — řeší se u stolu."
+            },
+            "pravaRuka3": {
+              "label": "Pravá ruka: Runa III",
+              "description": "20 CP; Arcana X. Ručně — řeší se u stolu."
+            },
+            "levaRuka1": {
+              "label": "Levá ruka: Runa I",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "levaRuka2": {
+              "label": "Levá ruka: Runa II",
+              "description": "15 CP; Arcana VI. Ručně — řeší se u stolu."
+            },
+            "levaRuka3": {
+              "label": "Levá ruka: Runa III",
+              "description": "20 CP; Arcana X. Ručně — řeší se u stolu."
+            },
+            "hrud1": {
+              "label": "Hruď: Runa I",
+              "description": "10 CP; Arcana IV. Ručně — řeší se u stolu."
+            },
+            "hrud2": {
+              "label": "Hruď: Runa II",
+              "description": "15 CP; Arcana VI. Ručně — řeší se u stolu."
+            },
+            "hrud3": {
+              "label": "Hruď: Runa III",
+              "description": "20 CP; Arcana X. Ručně — řeší se u stolu."
+            }
+          }
+        },
+        "vitamancer": {
+          "label": "Vitamancer",
+          "nodes": {
+            "ucednik": {
+              "label": "Vitamancer: Učedník",
+              "description": "5 CP. Ručně — řeší se u stolu."
+            },
+            "expert": {
+              "label": "Vitamancer: Expert",
+              "description": "5 CP; Škola Ducha/Těla VI. Ručně — řeší se u stolu."
+            },
+            "mistr": {
+              "label": "Vitamancer: Mistr",
+              "description": "5 CP; Škola Ducha/Těla VIII. Ručně — řeší se u stolu."
+            },
+            "velmistr": {
+              "label": "Vitamancer: Velmistr",
+              "description": "5 CP; Škola Ducha/Těla X. Ručně — řeší se u stolu."
+            },
+            "kritRozsah": {
+              "label": "Škola Ducha a Těla: Kritický rozsah +2",
+              "description": "5 SP. Kritický rozsah zatím není automatizován. Ručně — řeší se u stolu."
+            },
+            "overeni": {
+              "label": "Škola Ducha a Těla: Ověření +10%",
+              "description": "5 CP; Vitamancer: Expert. Zatím platí globálně na všechny útoky. Částečně automatizováno."
+            },
+            "ochromeni1": {
+              "label": "Škola Ducha: Ochromení +5%",
+              "description": "5 CP; Vitamancer: Expert. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "ochromeni2": {
+              "label": "Škola Ducha: Ochromení +5%",
+              "description": "5 CP; Vitamancer: Mistr. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "zivoty5": {
+              "label": "Životy +5",
+              "description": "10 CP; Vitamancer: Mistr. Automatizováno."
+            },
+            "rychlaLecba": {
+              "label": "Vážná zranění se léčí o 10 dnů rychleji",
+              "description": "15 SP. Ručně — řeší se u stolu."
+            },
+            "bleedResist": {
+              "label": "Snížená šance na Krvácení o 10%",
+              "description": "10 SP. Automatizováno."
+            },
+            "obnoveniKrvaceni": {
+              "label": "Obnovení: Po skončení zruší Krvácení",
+              "description": "5 CP; Vitamancer: Expert. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "stabilizace": {
+              "label": "Stabilizace: Šance +20%",
+              "description": "10 SP; Vitamancer: Expert. Ručně — řeší se u stolu."
+            },
+            "lorikovoKopi": {
+              "label": "Lorikovo kopí: Může změnit směr",
+              "description": "5 CP; Vitamancer: Mistr. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "lorinoPouto": {
+              "label": "Lořino pouto: Potlačuje vyřazení",
+              "description": "5 CP; Vitamancer: Mistr. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "maguvOdpocinek": {
+              "label": "Mágův odpočinek",
+              "description": "10 CP; Vitamancer: Učedník. Ručně — řeší se u stolu."
+            },
+            "sdilenaOchrana": {
+              "label": "Sdílená ochrana",
+              "description": "20 CP; Vitamancer: Expert. Ručně — řeší se u stolu."
+            },
+            "sebekontrola": {
+              "label": "Sebekontrola",
+              "description": "5 CP; Vitamancer: Mistr. Ručně — řeší se u stolu."
+            },
+            "ochrance": {
+              "label": "Ochránce",
+              "description": "30 CP; Vitamancer: Expert. Ručně — řeší se u stolu."
+            },
+            "rusivaKouzla": {
+              "label": "Rušivá kouzla",
+              "description": "15 CP; Vitamancer: Mistr. Ručně — řeší se u stolu."
+            },
+            "hibernace": {
+              "label": "Hibernace",
+              "description": "15 CP; Vitamancer: Velmistr. Ručně — řeší se u stolu."
+            },
+            "magickyStit": {
+              "label": "Magický štít: Absorbuje i Svaté zranění",
+              "description": "5 CP; Vitamancer: Mistr. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+            },
+            "magickaStena": {
+              "label": "Magická stěna: Omráčení → Ochromení",
+              "description": "5 CP; Vitamancer: Mistr. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+            }
+          }
         }
       },
       "base": {
@@ -1280,6 +3929,9 @@
           "durability": {
             "label": "Životy zbroje"
           },
+          "durabilityMax": {
+            "label": "Max. životy zbroje"
+          },
           "swimPenalty": {
             "label": "Postih na plavání"
           },
@@ -1461,8 +4113,1169 @@
       "type3": "Extra Efekt typ 3"
     },
     "Items": {
+      "AccurateShot": {
+        "name": "Přesná střela"
+      },
+      "AceUpOnesSleeve": {
+        "name": "Eso v rukávu"
+      },
+      "AcidResistantSalve": {
+        "name": "Mast proti kyselině"
+      },
+      "AcrobaticDefense": {
+        "name": "Akrobatická obrana"
+      },
+      "AdeptAcrobacy": {
+        "name": "Adept: Akrobacie"
+      },
+      "AdeptAlchemy": {
+        "name": "Adept: Alchymie"
+      },
+      "AdeptAnimalHandling": {
+        "name": "Adept: Zacházení se zvířaty"
+      },
+      "AdeptArcana": {
+        "name": "Adept: Arcana"
+      },
+      "AdeptAthletics": {
+        "name": "Adept: Atletika"
+      },
+      "AdeptCombat": {
+        "name": "Adept: Souboj"
+      },
+      "AdeptFirstAid": {
+        "name": "Adept: Ranhojičství"
+      },
+      "AdeptLeadership": {
+        "name": "Adept: Velení"
+      },
+      "AdeptLockpicking": {
+        "name": "Adept: Odemykání zámků"
+      },
+      "AdeptOfMagic": {
+        "name": "Adept magie"
+      },
+      "AdeptPickpocketing": {
+        "name": "Adept: Kapsářství"
+      },
+      "AdeptResearch": {
+        "name": "Adept: Výzkum"
+      },
+      "AdeptStealth": {
+        "name": "Adept: Plížení"
+      },
+      "AdeptTraps": {
+        "name": "Adept: Pasti"
+      },
+      "AgileI": {
+        "name": "Hbitý I"
+      },
+      "AgileII": {
+        "name": "Hbitý II"
+      },
+      "AimedStrike": {
+        "name": "Mířený úder"
+      },
+      "AimingMelee": {
+        "name": "Míření - na blízko"
+      },
+      "AimingRanged": {
+        "name": "Míření - na dálku"
+      },
+      "Aketon": {
+        "name": "Prošívanice"
+      },
+      "Alkahest": {
+        "name": "Alkahest"
+      },
+      "AntiLarge": {
+        "name": "Proti velkým"
+      },
+      "ArcaneAffinity": {
+        "name": "Arkánová afinita"
+      },
+      "ArcaneEssence": {
+        "name": "Arkánová esence!"
+      },
+      "AreaDefense": {
+        "name": "Plošná obrana"
+      },
+      "ArmorTrainingI": {
+        "name": "Výcvik se zbrojí I"
+      },
+      "ArmorTrainingII": {
+        "name": "Výcvik se zbrojí II"
+      },
+      "Arrows": {
+        "name": "Šípy"
+      },
+      "Asthmatic": {
+        "name": "Astmatik"
+      },
+      "Attack": {
+        "name": "Útok"
+      },
+      "Bardiche": {
+        "name": "Berdyš"
+      },
+      "Baton": {
+        "name": "Obušek"
+      },
+      "Battlebrother": {
+        "name": "Bratr ve zbrani"
+      },
+      "BattleHardenedI": {
+        "name": "Zocelený bojem I"
+      },
+      "BecDeCorbin": {
+        "name": "Havraní zobák"
+      },
+      "Bezoardicum": {
+        "name": "Bezoardikum"
+      },
+      "BloodyKiss": {
+        "name": "Krvavý polibek"
+      },
+      "BlueCross": {
+        "name": "Modrý kříž"
+      },
+      "BlueStar": {
+        "name": "Modrá hvězda"
+      },
+      "Bolts": {
+        "name": "Šipky do kuše"
+      },
+      "Brave": {
+        "name": "Statečný"
+      },
+      "Brawny": {
+        "name": "Urostlý"
+      },
+      "Brigandine": {
+        "name": "Brigantina"
+      },
+      "Broadsword": {
+        "name": "Široký meč"
+      },
+      "Butcher": {
+        "name": "Řezník"
+      },
+      "CalendulaAlba": {
+        "name": "Calendula Alba"
+      },
+      "CalmBody": {
+        "name": "Klidné tělo"
+      },
+      "Casting": {
+        "name": "Čarování"
+      },
+      "Cleave": {
+        "name": "Prosek"
+      },
+      "CleaverCleave": {
+        "name": "Prosek tesákem"
+      },
+      "CombatGenius": {
+        "name": "Bojový génius"
+      },
+      "CombatGeniusII": {
+        "name": "Bojový génius II"
+      },
+      "CorpseBreath": {
+        "name": "Mrtvolný dech"
+      },
+      "Counterattack": {
+        "name": "Protiútok"
+      },
+      "Cracker": {
+        "name": "Petarda"
+      },
+      "CracklingClay": {
+        "name": "Praskavá hlína"
+      },
+      "Craftsman": {
+        "name": "Řemeslník"
+      },
+      "Crawling": {
+        "name": "Plazení"
+      },
+      "CripplingShot": {
+        "name": "Mrzačící střela"
+      },
+      "Crossbow": {
+        "name": "Kuše"
+      },
+      "CryophoricClay": {
+        "name": "Mrazonosná hlína"
+      },
+      "Dagger": {
+        "name": "Dýka"
+      },
+      "DeadlyLunge": {
+        "name": "Smrtící výpad"
+      },
+      "DeepFocus": {
+        "name": "Hluboké soustředění"
+      },
+      "DeepSlash": {
+        "name": "Hluboký sek"
+      },
+      "DefensiveStance": {
+        "name": "Obranný postoj"
+      },
+      "Determination": {
+        "name": "Odhodlání"
+      },
+      "Diehard": {
+        "name": "Tuhý kořínek"
+      },
+      "Disengage": {
+        "name": "Odpoutání"
+      },
+      "Disfigured": {
+        "name": "Znetvořený"
+      },
+      "DistractionDexterity": {
+        "name": "Rozptýlení (Obratnost)"
+      },
+      "DistractionPerception": {
+        "name": "Rozptýlení (Vnímání)"
+      },
+      "Dodge": {
+        "name": "Úhyb"
+      },
+      "Drinker": {
+        "name": "Pijan"
+      },
+      "DropProne": {
+        "name": "Zalehnutí"
+      },
+      "DuelistsAdvance": {
+        "name": "Duelistův postup"
+      },
+      "DuelistsSlayer": {
+        "name": "Zhouba duelistů"
+      },
+      "Dwarf": {
+        "name": "Trpaslík"
+      },
+      "DwarvenImmunityI": {
+        "name": "Trpasličí imunita I"
+      },
+      "DwarvenImmunityII": {
+        "name": "Trpasličí imunita II"
+      },
+      "DwarvenLiver": {
+        "name": "Trpasličí játra"
+      },
+      "DwarvenPerseverance": {
+        "name": "Trpasličí vytrvalost"
+      },
+      "DwarvenResilience": {
+        "name": "Trpasličí odolnost"
+      },
+      "DwarvenTalent": {
+        "name": "Trpasličí talent"
+      },
+      "DwarvenToughness": {
+        "name": "Trpasličí houževnatost"
+      },
+      "EagleSenses": {
+        "name": "Orlí smysly"
+      },
+      "Eldarai": {
+        "name": "Eldarai"
+      },
+      "ElvenGrace": {
+        "name": "Elfí ladnost"
+      },
+      "ElvenPerfectionAcrobacy": {
+        "name": "Elfí dokonalost: Akrobacie"
+      },
+      "ElvenPerfectionAlchemy": {
+        "name": "Elfí dokonalost: Alchymie"
+      },
+      "ElvenPerfectionArcana": {
+        "name": "Elfí dokonalost: Arcana"
+      },
+      "ElvenPerfectionAthletics": {
+        "name": "Elfí dokonalost: Atletika"
+      },
+      "ElvenPerfectionFirstAid": {
+        "name": "Elfí dokonalost: Ranhojičství"
+      },
+      "ElvenPerfectionLeadership": {
+        "name": "Elfí dokonalost: Velení"
+      },
+      "ElvenPerfectionPickpocketing": {
+        "name": "Elfí dokonalost: Kapsářství"
+      },
+      "ElvenPerfectionStealth": {
+        "name": "Elfí dokonalost: Plížení"
+      },
+      "ElvenReflexes": {
+        "name": "Elfí reflexy"
+      },
+      "ElvenTalentAnimalHandling": {
+        "name": "Elfí talent: Zacházení se zvířaty"
+      },
+      "ElvenTalentArcana": {
+        "name": "Elfí talent: Arcana"
+      },
+      "ElvenTalentAthletics": {
+        "name": "Elfí talent: Atletika"
+      },
+      "ElvenTalentFirstAid": {
+        "name": "Elfí talent: Ranhojičství"
+      },
+      "ElvenTalentPickpocketing": {
+        "name": "Elfí talent: Kapsářství"
+      },
+      "ElvenTalentStealth": {
+        "name": "Elfí talent: Plížení"
+      },
+      "EnduranceOfStone": {
+        "name": "Kamenná výdrž"
+      },
+      "ExpertAcrobacy": {
+        "name": "Expert: Akrobacie"
+      },
+      "ExpertAlchemy": {
+        "name": "Expert: Alchymie"
+      },
+      "ExpertAnimalHandling": {
+        "name": "Expert: Zacházení se zvířaty"
+      },
+      "ExpertArcana": {
+        "name": "Expert: Arcana"
+      },
+      "ExpertAthletics": {
+        "name": "Expert: Atletika"
+      },
+      "ExpertFirstAid": {
+        "name": "Expert: Ranhojičství"
+      },
+      "ExpertLeadership": {
+        "name": "Expert: Velení"
+      },
+      "ExpertLockpicking": {
+        "name": "Expert: Odemykání zámků"
+      },
+      "ExpertPickpocketing": {
+        "name": "Expert: Kapsářství"
+      },
+      "ExpertResearch": {
+        "name": "Expert: Výzkum"
+      },
+      "ExpertStealth": {
+        "name": "Expert: Plížení"
+      },
+      "ExpertTraps": {
+        "name": "Expert: Pasti"
+      },
+      "ExploitWeakness": {
+        "name": "Využití slabiny"
+      },
+      "ExploitWeaknessThrow": {
+        "name": "Využití slabiny (vrh)"
+      },
+      "ExtendedLunge": {
+        "name": "Dlouhý výpad"
+      },
+      "Falcon": {
+        "name": "Sokol"
+      },
+      "FastSpells": {
+        "name": "Rychlá kouzla"
+      },
+      "Fatso": {
+        "name": "Tlouštík"
+      },
+      "FeatherFooted": {
+        "name": "Lehkonohý"
+      },
+      "FeintDexterity": {
+        "name": "Finta (Obratnost)"
+      },
+      "FeintPerception": {
+        "name": "Finta (Vnímání)"
+      },
+      "FeldsherI": {
+        "name": "Felčar I"
+      },
+      "FeldsherII": {
+        "name": "Felčar II"
+      },
+      "FencingDagger": {
+        "name": "Šermířská dýka"
+      },
+      "Finesse": {
+        "name": "Finesa"
+      },
+      "FireResistantSalve": {
+        "name": "Mast proti ohni"
+      },
+      "Flail": {
+        "name": "Řemdih"
+      },
+      "Flamberge": {
+        "name": "Flamberg"
+      },
+      "FlambergeCleave": {
+        "name": "Prosek flambergem"
+      },
+      "FlambergeCleaveAbility": {
+        "name": "Prosek flambergem (schopnost)"
+      },
+      "FleshRending": {
+        "name": "Drásání masa"
+      },
+      "Flurry": {
+        "name": "Smršť"
+      },
+      "FlurryOfThrows": {
+        "name": "Smršť vrhů"
+      },
+      "Focus": {
+        "name": "Soustředění"
+      },
+      "Foodie": {
+        "name": "Labužník"
+      },
+      "Fragile": {
+        "name": "Křehký"
+      },
+      "FreeHandI": {
+        "name": "Volná ruka I"
+      },
+      "FreeHandII": {
+        "name": "Volná ruka II"
+      },
+      "FrenziedThrow": {
+        "name": "Zběsilý vrh"
+      },
+      "FrostResistantSalve": {
+        "name": "Mast proti mrazu"
+      },
+      "Gambeson": {
+        "name": "Gambeson"
+      },
+      "Genius": {
+        "name": "Génius"
+      },
+      "Giant": {
+        "name": "Obr"
+      },
+      "Giantslayer": {
+        "name": "Obrobijce"
+      },
+      "Gills": {
+        "name": "Žábry"
+      },
+      "Glaive": {
+        "name": "Glefa"
+      },
+      "Gorgeous": {
+        "name": "Nádherný"
+      },
+      "GracefulStep": {
+        "name": "Ladný krok"
+      },
+      "GreatHammer": {
+        "name": "Obouruční kladivo"
+      },
+      "GreenCross": {
+        "name": "Zelený kříž"
+      },
+      "GuardStance": {
+        "name": "Střeh (postoj)"
+      },
+      "Halberd": {
+        "name": "Halapartna"
+      },
+      "Halfling": {
+        "name": "Půlčík"
+      },
+      "HalflingInsidiousness": {
+        "name": "Půlčičí zákeřnost"
+      },
+      "HalflingLuck": {
+        "name": "Půlčičí štěstí"
+      },
+      "HalflingReroll": {
+        "name": "Půlčičí přehoz"
+      },
+      "HalfPirouette": {
+        "name": "Poloviční pirueta"
+      },
+      "HamFisted": {
+        "name": "Nemotora"
+      },
+      "HandyFingers": {
+        "name": "Šikovné prsty"
+      },
+      "Hardened": {
+        "name": "Otužilý"
+      },
+      "Haste": {
+        "name": "Zrychlení"
+      },
+      "HastenedCast": {
+        "name": "Zrychlené sesílání"
+      },
+      "Hasty": {
+        "name": "Ukvapený"
+      },
+      "Hatchet": {
+        "name": "Sekerka"
+      },
+      "Haubergeon": {
+        "name": "Kroužková košile"
+      },
+      "HealingSalve": {
+        "name": "Hojivá mast"
+      },
+      "HeaterShield": {
+        "name": "Heraldický štít"
+      },
+      "HeavyCrossbow": {
+        "name": "Těžká kuše"
+      },
+      "HeavyCharge": {
+        "name": "Těžká zteč"
+      },
+      "Hemophobia": {
+        "name": "Hemofobie"
+      },
+      "Hemophylia": {
+        "name": "Hemofilie!"
+      },
+      "Human": {
+        "name": "Člověk"
+      },
+      "HuntingBow": {
+        "name": "Lovecký luk"
+      },
+      "Huntsman": {
+        "name": "Lovec"
+      },
+      "Charge": {
+        "name": "Zteč"
+      },
+      "Choleric": {
+        "name": "Cholerik"
+      },
+      "Ignum": {
+        "name": "Ignum"
+      },
+      "Imbroccata": {
+        "name": "Imbroccata"
+      },
+      "ImbroccataExploitWeakness": {
+        "name": "Imbroccata: Využití slabiny"
+      },
+      "Imp": {
+        "name": "Prcek"
+      },
+      "Impale": {
+        "name": "Probodnutí"
+      },
+      "ImpaleFollowUpAttack": {
+        "name": "Probodnutí: následný útok"
+      },
+      "ImprovedAiming": {
+        "name": "Vylepšené míření"
+      },
+      "ImprovedBurn": {
+        "name": "Vylepšené podpálení"
+      },
+      "ImprovedSlow": {
+        "name": "Vylepšené zpomalení"
+      },
+      "ImprovisedShield": {
+        "name": "Improvizovaný štít"
+      },
+      "IncendiaryClay": {
+        "name": "Zápalná hlína"
+      },
+      "Inconspicuous": {
+        "name": "Nenápadný"
+      },
+      "Indestructible": {
+        "name": "Nezničitelný"
+      },
+      "Intimidation": {
+        "name": "Zastrašení"
+      },
+      "IronMuscles": {
+        "name": "Železné svaly"
+      },
+      "IronSkin": {
+        "name": "Železná kůže"
+      },
+      "IronWill": {
+        "name": "Železná vůle"
+      },
+      "Javelin": {
+        "name": "Oštěp"
+      },
+      "JavelinMelee": {
+        "name": "Oštěp (zblízka)"
+      },
+      "Javelins": {
+        "name": "Oštěpy"
+      },
+      "Kaftan": {
+        "name": "Kaftan"
+      },
+      "Kleptomaniac": {
+        "name": "Kleptoman"
+      },
+      "Knives": {
+        "name": "Nože"
+      },
+      "Knockdown": {
+        "name": "Sražení k zemi"
+      },
+      "LamellarArmor": {
+        "name": "Lamelová zbroj"
+      },
+      "LeatherArmor": {
+        "name": "Kožená zbroj"
+      },
+      "LegSweep": {
+        "name": "Podmetení"
+      },
+      "LegSweepDexterity": {
+        "name": "Podmetení (Obratnost)"
+      },
+      "LegSweepStrength": {
+        "name": "Podmetení (Síla)"
+      },
+      "LightningReflexes": {
+        "name": "Bleskové reflexy"
+      },
+      "LightningResistantSalve": {
+        "name": "Mast proti blesku"
+      },
+      "LiquorConnoisseur": {
+        "name": "Znalec lihovin"
+      },
+      "LongAxe": {
+        "name": "Dlouhá sekera"
+      },
+      "Longbow": {
+        "name": "Dlouhý luk"
+      },
+      "LongReload": {
+        "name": "Dlouhé přebíjení"
+      },
+      "Longsword": {
+        "name": "Dlouhý meč"
+      },
+      "LookUpASpell": {
+        "name": "Vyhledání kouzla"
+      },
+      "LucksEdge": {
+        "name": "Ostří štěstěny"
+      },
+      "Lucky": {
+        "name": "Šťastlivec"
+      },
+      "Mace": {
+        "name": "Palcát"
+      },
+      "MagicalConduit": {
+        "name": "Magický vodič"
+      },
+      "MagicalReserve": {
+        "name": "Magická rezerva"
+      },
+      "MagicCommander": {
+        "name": "Magický velitel"
+      },
+      "MagicPotential": {
+        "name": "Magický potenciál"
+      },
+      "MagicResistance": {
+        "name": "Odolnost vůči magii"
+      },
+      "MagicTraps": {
+        "name": "Magické pasti"
+      },
+      "MagicWard": {
+        "name": "Magická ochrana"
+      },
+      "MasterHerbalist": {
+        "name": "Mistr bylinář"
+      },
+      "MasterOfKnives": {
+        "name": "Mistr nožů"
+      },
+      "MasterThief": {
+        "name": "Mistr zloděj"
+      },
+      "Melancholic": {
+        "name": "Melancholik"
+      },
+      "MilitaryCleaver": {
+        "name": "Tesák"
+      },
+      "Mithridat": {
+        "name": "Mithridat"
+      },
+      "Movement": {
+        "name": "Pohyb"
+      },
+      "Multiattack": {
+        "name": "Vícenásobný útok"
+      },
+      "MuscularI": {
+        "name": "Svalnatý I"
+      },
+      "MuscularII": {
+        "name": "Svalnatý II"
+      },
+      "Nimble": {
+        "name": "Mrštný"
+      },
+      "NimbleFeet": {
+        "name": "Hbité nohy"
+      },
+      "Oak": {
+        "name": "Dub"
+      },
+      "OpportunityAttack": {
+        "name": "Příležitostný útok"
+      },
+      "Orator": {
+        "name": "Řečník"
+      },
+      "Overwatch": {
+        "name": "Připravená střelba"
+      },
+      "Panacea": {
+        "name": "Panacea"
+      },
+      "PassingStrike": {
+        "name": "Letmý úder"
+      },
+      "Patron": {
+        "name": "Patron"
+      },
+      "PerfectOpening": {
+        "name": "Dokonalá příležitost"
+      },
+      "PerfectOpeningHastened": {
+        "name": "Dokonalá příležitost (zrychlená)"
+      },
+      "Perseverance": {
+        "name": "Vytrvalost"
+      },
+      "Phlegmatic": {
+        "name": "Flegmatik"
+      },
+      "PikemanHeavyCharge": {
+        "name": "Těžká zteč kopiníka"
+      },
+      "PikemanCharge": {
+        "name": "Zteč kopiníka"
+      },
+      "PlateMail": {
+        "name": "Plátová zbroj"
+      },
+      "PolearmCleave": {
+        "name": "Prosek ratištěm"
+      },
+      "PolearmMaster": {
+        "name": "Mistr ratišťových zbraní"
+      },
+      "Posthumous": {
+        "name": "Posmrtka"
+      },
+      "PreciseLunge": {
+        "name": "Přesný výpad"
+      },
+      "PrecisionStrike": {
+        "name": "Přesný úder"
+      },
+      "Pretty": {
+        "name": "Pohledný"
+      },
+      "ProficiencyAcrobacy": {
+        "name": "Zdatnost: Akrobacie"
+      },
+      "ProficiencyAlchemy": {
+        "name": "Zdatnost: Alchymie"
+      },
+      "ProficiencyAnimalHandling": {
+        "name": "Zdatnost: Zacházení se zvířaty"
+      },
+      "ProficiencyArcana": {
+        "name": "Zdatnost: Arcana"
+      },
+      "ProficiencyAthletics": {
+        "name": "Zdatnost: Atletika"
+      },
+      "ProficiencyFirstAid": {
+        "name": "Zdatnost: Ranhojičství"
+      },
+      "ProficiencyLeadership": {
+        "name": "Zdatnost: Velení"
+      },
+      "ProficiencyLockpicking": {
+        "name": "Zdatnost: Odemykání zámků"
+      },
+      "ProficiencyPickpocketing": {
+        "name": "Zdatnost: Kapsářství"
+      },
+      "ProficiencyResearch": {
+        "name": "Zdatnost: Výzkum"
+      },
+      "ProficiencyStealth": {
+        "name": "Zdatnost: Plížení"
+      },
+      "ProficiencyTraps": {
+        "name": "Zdatnost: Pasti"
+      },
+      "Qudat": {
+        "name": "Qudat"
+      },
+      "QuickHands": {
+        "name": "Rychlé ruce"
+      },
+      "QuickChanneling": {
+        "name": "Rychlé usměrňování"
+      },
+      "QuickWitted": {
+        "name": "Pohotový"
+      },
+      "RapidAdaptationI": {
+        "name": "Rychlá adaptace I"
+      },
+      "Rapier": {
+        "name": "Rapír"
+      },
+      "RatDreams": {
+        "name": "Krysí sny"
+      },
+      "ReactionCast": {
+        "name": "Vyrušení"
+      },
+      "RecklessStrike": {
+        "name": "Riskantní úder"
+      },
+      "RecklessStrikeReaver": {
+        "name": "Riskantní úder (Plenitel)"
+      },
+      "ReflexBow": {
+        "name": "Reflexní luk"
+      },
+      "Reload": {
+        "name": "Přebít"
+      },
+      "Rest": {
+        "name": "Odpočinek"
+      },
+      "RetaliatoryStrike": {
+        "name": "Odvetný úder"
+      },
+      "Robe": {
+        "name": "Hábit"
+      },
+      "RunningThrow": {
+        "name": "Vrh za běhu"
+      },
+      "Sabre": {
+        "name": "Šavle"
+      },
+      "SaintJohn": {
+        "name": "Svatý Jan"
+      },
+      "Sanguine": {
+        "name": "Sangvinik"
+      },
+      "ScaleMail": {
+        "name": "Šupinová zbroj"
+      },
+      "ScarletTear": {
+        "name": "Šarlatová slza"
+      },
+      "Scarred": {
+        "name": "Zjizvený"
+      },
+      "SecondWind": {
+        "name": "Druhý dech"
+      },
+      "ShieldBash": {
+        "name": "Úder štítem"
+      },
+      "ShieldBashSmallShield": {
+        "name": "Úder štítem (malý štít)"
+      },
+      "ShieldbearerDefensiveStance": {
+        "name": "Obranný postoj štítonoše"
+      },
+      "ShieldCharge": {
+        "name": "Zteč se štítem"
+      },
+      "ShieldChargeSmallShield": {
+        "name": "Zteč se štítem (malý štít)"
+      },
       "ShortSword": {
         "name": "Krátký meč"
+      },
+      "ShoveDexterity": {
+        "name": "Odstrčení (Obratnost)"
+      },
+      "ShoveStrength": {
+        "name": "Odstrčení (Síla)"
+      },
+      "Shy": {
+        "name": "Plachý"
+      },
+      "ScholarI": {
+        "name": "Učenec I"
+      },
+      "ScholarII": {
+        "name": "Učenec II"
+      },
+      "SilverTongue": {
+        "name": "Stříbrný jazyk"
+      },
+      "SixthSense": {
+        "name": "Šestý smysl"
+      },
+      "SlimyFingers": {
+        "name": "Kluzké prsty"
+      },
+      "SlowMovement": {
+        "name": "Pomalý pohyb"
+      },
+      "Slowpoke": {
+        "name": "Loudal"
+      },
+      "SmallShield": {
+        "name": "Malý štít"
+      },
+      "SmokeBomb": {
+        "name": "Dýmovnice"
+      },
+      "SnakeBite": {
+        "name": "Hadí uštknutí"
+      },
+      "SneakAttack": {
+        "name": "Zákeřný útok"
+      },
+      "SoftBones": {
+        "name": "Měkké kosti"
+      },
+      "Spear": {
+        "name": "Kopí"
+      },
+      "SpecializationAcrobacy": {
+        "name": "Specializace: Akrobacie"
+      },
+      "SpecializationAlchemy": {
+        "name": "Specializace: Alchymie"
+      },
+      "SpecializationArcana": {
+        "name": "Specializace: Arcana"
+      },
+      "SpecializationAthletics": {
+        "name": "Specializace: Atletika"
+      },
+      "SpecializationDeception": {
+        "name": "Specializace: Klamání"
+      },
+      "SpecializationFirstAid": {
+        "name": "Specializace: Ranhojičství"
+      },
+      "SpecializationHerbalism": {
+        "name": "Specializace: Bylinářství"
+      },
+      "SpecializationInsight": {
+        "name": "Specializace: Vhled"
+      },
+      "SpecializationIntimidation": {
+        "name": "Specializace: Zastrašování"
+      },
+      "SpecializationLeadership": {
+        "name": "Specializace: Velení"
+      },
+      "SpecializationLockpicking": {
+        "name": "Specializace: Odemykání zámků"
+      },
+      "SpecializationPersuasion": {
+        "name": "Specializace: Přesvědčování"
+      },
+      "SpecializationPickpocketing": {
+        "name": "Specializace: Kapsářství"
+      },
+      "SpecializationStealth": {
+        "name": "Specializace: Plížení"
+      },
+      "SpecializationSurvival": {
+        "name": "Specializace: Přežití"
+      },
+      "SpecializationTemptation": {
+        "name": "Specializace: Pokoušení"
+      },
+      "SpecializationTraps": {
+        "name": "Specializace: Pasti"
+      },
+      "SpeedyAdvantage": {
+        "name": "Výhoda rychlosti"
+      },
+      "Spider": {
+        "name": "Pavouk"
+      },
+      "SplinteringStrike": {
+        "name": "Tříštivý úder"
+      },
+      "Sprint": {
+        "name": "Sprint"
+      },
+      "StabilisingTouch": {
+        "name": "Stabilizující dotek"
+      },
+      "Staff": {
+        "name": "Hůl"
+      },
+      "StaggeringBlow": {
+        "name": "Omračující úder"
+      },
+      "StaggeringLightnings": {
+        "name": "Omračující blesky"
+      },
+      "Strain": {
+        "name": "Vypětí"
+      },
+      "StuddedArmor": {
+        "name": "Pobíjená zbroj"
+      },
+      "Studiousness": {
+        "name": "Učenost"
+      },
+      "SunderingBlowsI": {
+        "name": "Drtivé údery I"
+      },
+      "SunderingBlowsII": {
+        "name": "Drtivé údery II"
+      },
+      "SwiftRetaliation": {
+        "name": "Rychlá odveta"
+      },
+      "TalentedIArcana": {
+        "name": "Talentovaný I: Arcana"
+      },
+      "TalentedIAthletics": {
+        "name": "Talentovaný I: Atletika"
+      },
+      "TalentedIFirstAid": {
+        "name": "Talentovaný I: Ranhojičství"
+      },
+      "TalentedIIAcrobacy": {
+        "name": "Talentovaný II: Akrobacie"
+      },
+      "TalentedIIAlchemy": {
+        "name": "Talentovaný II: Alchymie"
+      },
+      "TalentedIIArcana": {
+        "name": "Talentovaný II: Arcana"
+      },
+      "TalentedIIAthletics": {
+        "name": "Talentovaný II: Atletika"
+      },
+      "TalentedIIFirstAid": {
+        "name": "Talentovaný II: Ranhojičství"
+      },
+      "TalentedIILeadership": {
+        "name": "Talentovaný II: Velení"
+      },
+      "TalentedIIPickpocketing": {
+        "name": "Talentovaný II: Kapsářství"
+      },
+      "TalentedIIStealth": {
+        "name": "Talentovaný II: Plížení"
+      },
+      "TalentedIPickpocketing": {
+        "name": "Talentovaný I: Kapsářství"
+      },
+      "TalentedIStealth": {
+        "name": "Talentovaný I: Plížení"
+      },
+      "ThrowingAxe": {
+        "name": "Vrhací sekera"
+      },
+      "ThrowingAxeMelee": {
+        "name": "Vrhací sekera (zblízka)"
+      },
+      "ThrowingAxes": {
+        "name": "Vrhací sekery"
+      },
+      "ThrowingKnife": {
+        "name": "Vrhací nůž"
+      },
+      "Tortura": {
+        "name": "Tortura"
+      },
+      "TowerShield": {
+        "name": "Pavéza"
+      },
+      "TripDexterity": {
+        "name": "Podražení (Obratnost)"
+      },
+      "TripStrength": {
+        "name": "Podražení (Síla)"
+      },
+      "TwoHandedFlail": {
+        "name": "Bojový cep"
+      },
+      "Ugly": {
+        "name": "Ošklivý"
+      },
+      "UntiringLuck": {
+        "name": "Neúnavné štěstí"
+      },
+      "Verdigris": {
+        "name": "Měděnka"
+      },
+      "WarAxe": {
+        "name": "Válečná sekera"
+      },
+      "WarHammer": {
+        "name": "Válečné kladivo"
+      },
+      "WarPick": {
+        "name": "Válečný krumpáč"
+      },
+      "Waterstrider": {
+        "name": "Vodoměrka"
+      },
+      "WeaponSpecializationI": {
+        "name": "Specializace na zbraň I"
+      },
+      "WhiteDove": {
+        "name": "Bílá holubice"
+      },
+      "WillfulnessI": {
+        "name": "Síla vůle I"
+      },
+      "WillfulnessII": {
+        "name": "Síla vůle II"
+      },
+      "WillingnessToLearn": {
+        "name": "Učenlivost"
+      },
+      "Woodsman": {
+        "name": "Zálesák"
+      },
+      "Wordsmith": {
+        "name": "Mistr slova"
+      },
+      "Yliaster": {
+        "name": "Yliaster"
       }
     }
   },

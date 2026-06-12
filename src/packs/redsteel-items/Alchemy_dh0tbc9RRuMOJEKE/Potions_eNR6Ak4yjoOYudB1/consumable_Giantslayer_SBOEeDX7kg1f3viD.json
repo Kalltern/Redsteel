@@ -24,7 +24,8 @@
     },
     "type": "",
     "toxicity": 22,
-    "bleed": 0
+    "bleed": 0,
+    "localizationKey": "REDSTEEL.Items.Giantslayer.name"
   },
   "effects": [],
   "sort": 0,
