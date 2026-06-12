@@ -213,6 +213,26 @@ export function resolveEffectDefinition(effectId) {
   return { id: slug, def: buildConditionDefinition(item) };
 }
 
+/**
+ * True when the actor is immune to the given effect/status
+ * (system.effectMods.<id>.immune). The id is normalized the same way
+ * applyEffect normalizes it, so display names match too
+ * ("Bleeding" → "bleed"). The flag is usually granted by an Active Effect
+ * change on `system.effectMods.<id>.immune`, so truthy string/number
+ * values count as immune as well.
+ */
+export function isImmuneToEffect(actor, effectId) {
+  if (!actor || !effectId) return false;
+
+  const id =
+    resolveEffectDefinition(effectId)?.id ??
+    slugifyConditionName(effectId) ??
+    effectId;
+
+  const immune = actor.system?.effectMods?.[id]?.immune;
+  return immune === true || immune === 1 || immune === "true" || immune === "1";
+}
+
 /* -------------------------------------------- */
 /*  CONFIG.statusEffects synchronization        */
 /* -------------------------------------------- */

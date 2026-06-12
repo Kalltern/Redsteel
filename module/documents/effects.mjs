@@ -1,4 +1,7 @@
-import { resolveEffectDefinition } from "../utils/customConditions.mjs";
+import {
+  resolveEffectDefinition,
+  isImmuneToEffect,
+} from "../utils/customConditions.mjs";
 import { evaluateDmgVsArmor } from "../utils/combatSkillBonuses.mjs";
 
 export class RedsteelActiveEffect extends ActiveEffect {
@@ -69,6 +72,29 @@ export class RedsteelActiveEffect extends ActiveEffect {
       }
     });
   }
+  /**
+   * Last line of defense: block creation of any status effect the parent
+   * actor is immune to (system.effectMods.<id>.immune). Catches paths that
+   * bypass applyEffect, e.g. toggling statuses from the token HUD.
+   * @override
+   */
+  async _preCreate(data, options, user) {
+    const allowed = await super._preCreate(data, options, user);
+    if (allowed === false) return false;
+
+    const actor = this.parent instanceof Actor ? this.parent : null;
+    if (!actor) return;
+
+    for (const statusId of this.statuses ?? []) {
+      if (isImmuneToEffect(actor, statusId)) {
+        ui.notifications.warn(
+          `${actor.name} is immune to "${statusId}" — effect not applied.`,
+        );
+        return false;
+      }
+    }
+  }
+
   static registerHooks() {
     if (this._hooksRegistered) return;
 
@@ -244,6 +270,16 @@ export class RedsteelActiveEffect extends ActiveEffect {
     // (e.g. "Curse of Doom" → "curse_of_doom").
     effectId = resolved.id;
     const def = resolved.def;
+
+    // ============================================
+    // Immunity (system.effectMods.<id>.immune)
+    // ============================================
+    if (isImmuneToEffect(actor, effectId)) {
+      ui.notifications.info(
+        `${actor.name} is immune to ${def.name ?? effectId}.`,
+      );
+      return null;
+    }
 
     const maxStacks = def.maxStacks ?? 99;
 

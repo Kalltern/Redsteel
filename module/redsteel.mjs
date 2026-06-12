@@ -47,6 +47,15 @@ import {
   firstAid,
   registerFirstAidHealing,
 } from "./utils/otherActions.mjs";
+import {
+  handleApplyDamage,
+  handleApplyEffects,
+  applyDamageAsGM,
+  applyEffectsAsGM,
+  getDurabilityItems,
+  getDurabilityReductionPerPoint,
+  SOCKET,
+} from "./utils/applyDamage.mjs";
 
 import {
   getNonWeaponAbility,
@@ -91,6 +100,27 @@ globalThis.redsteel = {
     rollItemMacro,
   },
 };
+
+/**
+ * Item directory whose search also matches the localized item names that
+ * localizeItemDirectoryNames() displays, not just the original document names.
+ */
+class RedsteelItemDirectory extends foundry.applications.sidebar.tabs.ItemDirectory {
+  _matchSearchEntries(query, entryIds, folderIds, autoExpandIds, options) {
+    super._matchSearchEntries(query, entryIds, folderIds, autoExpandIds, options);
+    const cleanQuery = foundry.applications.ux.SearchFilter.cleanQuery;
+    for (const item of this.collection) {
+      if (entryIds.has(item.id)) continue;
+      if (item.localizedName === item.name) continue;
+      if (!query.test(cleanQuery(item.localizedName))) continue;
+      entryIds.add(item.id);
+      for (let folder = item.folder; folder; folder = folder.folder) {
+        folderIds.add(folder.id);
+        autoExpandIds.add(folder.id);
+      }
+    }
+  }
+}
 
 function localizeItemDirectoryNames(element) {
   const root = element instanceof HTMLElement ? element : element?.[0];
@@ -203,6 +233,8 @@ Hooks.once("init", function () {
   game.redsteel.defenseRoll = defenseRoll;
   game.redsteel.autoAttack = autoAttack;
   game.redsteel.resolveChannelingTick = resolveChannelingTick;
+  game.redsteel.getDurabilityItems = getDurabilityItems;
+  game.redsteel.getDurabilityReductionPerPoint = getDurabilityReductionPerPoint;
   registerDynamicInitiative();
   registerRollModifier();
   registerEffectSheetExtensions();
@@ -221,6 +253,7 @@ Hooks.once("init", function () {
   CONFIG.Item.documentClass = RedsteelItem;
   CONFIG.Combat.documentClass = RedsteelCombat;
   CONFIG.ActiveEffect.documentClass = RedsteelActiveEffect;
+  CONFIG.ui.items = RedsteelItemDirectory;
   CONFIG.statusEffects = REDSTEEL.statusEffects;
   // Active Effects are never copied to the Actor,
   // but will still apply to the Actor from within the Item
@@ -268,7 +301,7 @@ Hooks.on("renderItemDirectory", (_app, element) => {
 });
 
 Hooks.on("renderApplicationV2", (app, element) => {
-  if (app.constructor.name === "ItemDirectory") {
+  if (app instanceof foundry.applications.sidebar.tabs.ItemDirectory) {
     localizeItemDirectoryNames(element);
   }
 });
@@ -517,25 +550,6 @@ Hooks.once("ready", function () {
   // Wait to register hotbar drop hook on ready so that modules could register earlier if they want to
   Hooks.on("hotbarDrop", (bar, data, slot) => createDocMacro(data, slot));
 });
-const SOCKET = "system.redsteel";
-
-Hooks.once("ready", () => {
-  console.log("REDSTEEL | Socket Listener Registered");
-
-  game.socket.on(SOCKET, async (data) => {
-    console.log("REDSTEEL | GM Received Socket Data:", data);
-    if (!game.user.isGM) return;
-
-    if (data.type === "applyDamage") {
-      await applyDamageAsGM(data);
-    }
-
-    if (data.type === "applyEffects") {
-      await applyEffectsAsGM(data);
-    }
-  });
-});
-
 Hooks.once("ready", () => {
   RedsteelActiveEffect.registerHooks();
 });
@@ -902,535 +916,6 @@ Hooks.on("createChatMessage", async (message) => {
     console.error("redsteel rollName hook error", err);
   }
 });
-async function handleApplyDamage(messageId) {
-  const message = game.messages.get(messageId);
-  if (!message?.flags?.attack) return;
-
-  const checkTargetsAndContinue = () => {
-    const targets = Array.from(game.user.targets);
-    if (!targets.length) {
-      ui.notifications.warn("Please select at least one target.");
-      return false;
-    }
-    continueApplyDamage(message, targets);
-    return true;
-  };
-  function continueApplyDamage(message, targets) {
-    openDamageSelectionDialog(message, targets);
-  }
-
-  // Initial check
-  if (!Array.from(game.user.targets).length) {
-    new Dialog({
-      title: "No Targets Selected",
-      content: "<p>Please select one or more targets, then press OK.</p>",
-      buttons: {
-        ok: {
-          label: "OK",
-          callback: checkTargetsAndContinue,
-        },
-      },
-      default: "ok",
-    }).render(true);
-    return;
-  }
-
-  // Targets already selected
-  checkTargetsAndContinue();
-}
-async function applyDamageToTargets(
-  message,
-  targets,
-  mode,
-  selectedEffects,
-  criticalDegree = null,
-) {
-  const data = {
-    type: "applyDamage",
-    messageId: message.id,
-    mode: mode,
-    criticalDegree,
-    sceneId: canvas.scene.id,
-    targetIds: targets.map((t) => t.id),
-    selectedEffects: selectedEffects,
-  };
-
-  if (game.user.isGM) {
-    await applyDamageAsGM(data);
-  } else {
-    game.socket.emit(SOCKET, data);
-  }
-}
-async function applyDamageAsGM(data) {
-  const { messageId, mode, targetIds, sceneId, selectedEffects } = data;
-  const message = game.messages.get(messageId);
-
-  const attack = message.flags.attack;
-  const selectedCriticalDegree = Number.isFinite(Number(data.criticalDegree))
-    ? Number(data.criticalDegree)
-    : (attack.critical?.degree ?? null);
-  const suggestedCriticalDegree = Number.isFinite(
-    Number(attack.critical?.degree),
-  )
-    ? Number(attack.critical.degree)
-    : selectedCriticalDegree;
-  const selectedAttack =
-    mode === "critical"
-      ? getCriticalAttackData(attack, selectedCriticalDegree)
-      : attack[mode];
-
-  const scene = game.scenes.get(sceneId);
-  const combat = game.combat;
-  const criticalOverrideRows = [];
-  for (const tokenId of targetIds) {
-    const tokenDoc = scene.tokens.get(tokenId);
-    if (!tokenDoc) {
-      console.warn(`GM: Token ${tokenId} not found in scene ${sceneId}`);
-      continue;
-    }
-
-    const actor = tokenDoc.actor;
-    if (!actor) continue;
-
-    const currentHp = foundry.utils.getProperty(
-      actor,
-      "system.stats.health.value",
-    );
-    const currentTemporaryHp = foundry.utils.getProperty(
-      actor,
-      "system.stats.temporaryHealth.value",
-    );
-    const damageProfile = attack.damageProfile ?? { expression: [] };
-
-    const result = evaluateDmgVsArmor({
-      damage: selectedAttack.damage,
-      penetration: selectedAttack.penetration ?? 0,
-      damageProfile,
-      armor: actor.system.armor,
-      hp: currentHp,
-      tempHp: currentTemporaryHp,
-      halfDamage: selectedAttack.halfDamage ?? false,
-      penCap: selectedAttack.penCap ?? false,
-    });
-
-    if (
-      mode === "critical" &&
-      selectedCriticalDegree !== null &&
-      selectedCriticalDegree !== suggestedCriticalDegree
-    ) {
-      const suggestedAttack = getCriticalAttackData(
-        attack,
-        suggestedCriticalDegree,
-      );
-      const suggestedResult = evaluateDmgVsArmor({
-        damage: suggestedAttack.damage,
-        penetration: suggestedAttack.penetration ?? 0,
-        damageProfile,
-        armor: actor.system.armor,
-        hp: currentHp,
-        tempHp: currentTemporaryHp,
-        halfDamage: suggestedAttack.halfDamage ?? false,
-        penCap: suggestedAttack.penCap ?? false,
-      });
-
-      criticalOverrideRows.push({
-        targetName: actor.name,
-        suggestedDamage: suggestedResult.finalDamage,
-        selectedDamage: result.finalDamage,
-      });
-    }
-
-    const author = [message.author, message.user, message.userId]
-      .map((candidate) =>
-        typeof candidate === "string" ? game.users.get(candidate) : candidate,
-      )
-      .find((user) => user?.name);
-    const authorIsGM = author?.isGM;
-
-    if (game.user.isGM && author && !authorIsGM) {
-      ui.notifications.info(
-        `${author.name} applied ${result.totalHpLoss} damage to ${actor.name}`,
-      );
-    }
-    console.log(
-      `GM: Applying ${result.totalHpLoss} damage to ${actor.name}. New HP: ${result.newHp}`,
-    );
-
-    await actor.update({
-      "system.stats.temporaryHealth.value": Number(result.newTempHp),
-      "system.stats.health.value": Number(result.newHp),
-    });
-
-    const effects = message.flags.attack.effects || {};
-    for (const [name, effect] of Object.entries(effects)) {
-      const targetMod = actor.system.effectMods?.[name]?.applyChance || 0;
-      const stackMod = actor.system.effectMods?.[name]?.stackMod || 0;
-
-      const allowedEffectsForTarget = selectedEffects?.[tokenId] || [];
-
-      if (!allowedEffectsForTarget.includes(name)) continue;
-
-      let stacks = 1;
-
-      if (name === "bleed") {
-        const crit = effect.critStacks ?? 0;
-        const normalStacks = effect.normalStacks ?? 0;
-
-        if (effect.auto) {
-          // Auto bleed is guaranteed — chance/resistance don't apply.
-          stacks = normalStacks;
-        } else {
-          // Each gathered bleed counts as 100% chance: the stored `chance`
-          // already encodes "full stacks ×100 + remainder" (e.g. 120%).
-          // Deduct the target's bleed resistance (targetMod, negative for
-          // resistance), then resolve against the original attack roll.
-          //   120% attacker - 50% resist = 70% → 0 or 1 bleed (roll ≤ 70).
-          const baseChance = effect.chance ?? 0;
-          const roll = effect.roll ?? 100;
-
-          const resolveStacks = (chancePct) => {
-            if (chancePct <= 0) return 0;
-            let s = Math.floor(chancePct / 100);
-            const remainder = chancePct % 100;
-            if (remainder > 0 && roll <= remainder) s += 1;
-            return s;
-          };
-
-          const resistedRegular = resolveStacks(baseChance + targetMod);
-
-          // Preserve extra stacks rolled separately (e.g. sharp-weapon
-          // bleed) that aren't represented in `chance`.
-          const extraStacks = Math.max(
-            0,
-            normalStacks - resolveStacks(baseChance),
-          );
-
-          stacks = resistedRegular + extraStacks;
-        }
-
-        if (mode === "critical") {
-          stacks += crit;
-        }
-      }
-
-      stacks += stackMod;
-      if (stacks <= 0) continue;
-      await applyEffectToActor(actor, name, stacks);
-    }
-
-    const combatant = combat?.combatants.find((c) => c.tokenId === tokenDoc.id);
-    await handlePostDamageStatus({ actor, combatant });
-  }
-
-  if (criticalOverrideRows.length) {
-    await notifyCriticalDegreeOverride({
-      message,
-      attack,
-      suggestedDegree: suggestedCriticalDegree,
-      selectedDegree: selectedCriticalDegree,
-      rows: criticalOverrideRows,
-    });
-  }
-}
-
-function openDamageSelectionDialog(message, targets) {
-  const attack = message.flags.attack;
-  const effects = attack.effects || {};
-  let mode = "normal";
-  let criticalDegree = attack.critical?.degree ?? 0;
-  const hasCritical = attack.critical !== "" && attack.critical !== undefined;
-  const hasBreakthrough =
-    attack.breakthrough?.damage !== "" &&
-    attack.breakthrough?.damage !== undefined;
-  const criticalOptions = getCriticalOptions(attack);
-
-  const getSelectedAttack = () =>
-    mode === "critical"
-      ? getCriticalAttackData(attack, criticalDegree)
-      : attack[mode];
-
-  const renderPreview = () =>
-    targets
-      .map((t) => {
-        const damageProfile = attack.damageProfile ?? { expression: [] };
-        const selectedAttack = getSelectedAttack();
-        console.log("attack[mode]:", selectedAttack);
-        const result = evaluateDmgVsArmor({
-          damage: selectedAttack.damage,
-          penetration: selectedAttack.penetration ?? 0,
-          damageProfile,
-          armor: t.actor.system.armor,
-          hp: t.actor.system.stats.health.value,
-          tempHp: t.actor.system.stats.temporaryHealth.value,
-          halfDamage: selectedAttack.halfDamage ?? false,
-          penCap: selectedAttack.penCap ?? false,
-        });
-
-        const effectPreview = Object.entries(effects)
-          .map(([name, effect]) => {
-            const targetMod =
-              t.actor.system.effectMods?.[name]?.applyChance || 0;
-
-            const modifiedChance = effect.chance + targetMod;
-
-            let displayChance = modifiedChance;
-            let extraInfo = "";
-
-            if (name === "bleed") {
-              if (mode === "critical" && effect.critStacks > 0) {
-                extraInfo = ` + ${effect.critStacks} crit stack(s)`;
-              }
-            }
-
-            const success = effect.roll <= modifiedChance;
-
-            return `
-      <div style="margin-left:15px;">
-        <label>
-          <input type="checkbox"
-                 name="effect-${t.id}-${name}"
-                 ${success ? "checked" : ""}>
-          ${name.toUpperCase()} →
-          ${effect.roll} < ${displayChance}%${extraInfo}
-        </label>
-      </div>
-    `;
-          })
-          .join("");
-
-        return `
-    <li>
-      ${t.name} →
-      <strong>${result.finalDamage} HP</strong>
-      ${effectPreview}
-    </li>
-  `;
-      })
-      .join("");
-
-  new Dialog(
-    {
-      title: "Apply Damage",
-      content: `
-      <form>
-        <fieldset>
-          <legend>Damage Type</legend>
-          <label><input type="radio" name="mode" value="normal" checked> Normal</label>
-         ${
-           hasCritical
-             ? ` <label> <input type="radio" name="mode" value="critical"> Critical </label> `
-             : ""
-         }
-          ${
-            hasBreakthrough
-              ? ` <label> <input type="radio" name="mode" value="breakthrough"> Breakthrough </label> `
-              : ""
-          }
-        </fieldset>
-        <fieldset class="critical-degree-fieldset" style="display:none;">
-          <legend>Critical Degree</legend>
-          ${criticalOptions
-            .map(
-              (option) => `
-                <label>
-                  <input type="radio" name="criticalDegree" value="${option.degree}"
-                    ${option.degree === criticalDegree ? "checked" : ""}>
-                  ${option.degree}
-                </label>
-              `,
-            )
-            .join("")}
-        </fieldset>
-
-        <ul class="damage-preview">
-          ${renderPreview()}
-        </ul>
-      </form>
-    `,
-      buttons: {
-        apply: {
-          label: "Apply",
-          callback: (html) => {
-            const selectedEffects = {};
-
-            html.find('input[type="checkbox"]').each((_, el) => {
-              if (!el.checked) return;
-
-              const parts = el.name.split("-");
-              const tokenId = parts[1];
-              // Effect names may themselves contain hyphens
-              const effectName = parts.slice(2).join("-");
-
-              if (!selectedEffects[tokenId]) {
-                selectedEffects[tokenId] = [];
-              }
-
-              selectedEffects[tokenId].push(effectName);
-            });
-
-            applyDamageToTargets(
-              message,
-              targets,
-              mode,
-              selectedEffects,
-              mode === "critical" ? criticalDegree : null,
-            );
-          },
-        },
-        cancel: { label: "Cancel" },
-      },
-      render: (html) => {
-        const updateCriticalDegreeVisibility = () => {
-          html
-            .find(".critical-degree-fieldset")
-            .toggle(mode === "critical" && criticalOptions.length > 0);
-          html.closest(".app").css("height", "auto");
-        };
-
-        updateCriticalDegreeVisibility();
-        html.find('input[name="mode"]').on("change", (ev) => {
-          mode = ev.target.value;
-          updateCriticalDegreeVisibility();
-          html
-            .find(`input[name="criticalDegree"][value="${criticalDegree}"]`)
-            .prop("checked", true);
-          html.find(".damage-preview").html(renderPreview());
-        });
-        html.find('input[name="criticalDegree"]').on("change", (ev) => {
-          criticalDegree = Number(ev.target.value);
-          html.find(".damage-preview").html(renderPreview());
-        });
-      },
-    },
-    {
-      height: "auto",
-    },
-  ).render(true);
-}
-
-function getCriticalOptions(attack) {
-  const fallback = attack.critical
-    ? [
-        {
-          degree: attack.critical.degree ?? 0,
-          damage: attack.critical.damage,
-          penetration: attack.critical.penetration,
-        },
-      ]
-    : [];
-
-  return Array.isArray(attack.critical?.options)
-    ? attack.critical.options
-    : fallback;
-}
-
-function getCriticalAttackData(attack, degree) {
-  const critical = attack.critical ?? {};
-  const option = getCriticalOptions(attack).find(
-    (candidate) => Number(candidate.degree) === Number(degree),
-  );
-
-  return {
-    ...critical,
-    ...(option ?? {}),
-    degree: option?.degree ?? critical.degree ?? degree,
-    halfDamage: critical.halfDamage ?? false,
-    penCap: critical.penCap ?? false,
-  };
-}
-
-async function notifyCriticalDegreeOverride({
-  message,
-  attack,
-  suggestedDegree,
-  selectedDegree,
-  rows,
-}) {
-  const suggestedAttack = getCriticalAttackData(attack, suggestedDegree);
-  const selectedAttack = getCriticalAttackData(attack, selectedDegree);
-  const targetRows = rows
-    .map(
-      (row) => `
-        <tr>
-          <td>${row.targetName}</td>
-          <td style="text-align:center;">${row.suggestedDamage}</td>
-          <td style="text-align:center;">${row.selectedDamage}</td>
-          <td style="text-align:center;">${row.selectedDamage - row.suggestedDamage}</td>
-        </tr>
-      `,
-    )
-    .join("");
-
-  await ChatMessage.create({
-    speaker: ChatMessage.getSpeaker({ user: game.user }),
-    whisper: ChatMessage.getWhisperRecipients("GM"),
-    content: `
-      <div class="redsteel-critical-override">
-        <strong>Critical degree changed during damage application.</strong>
-        <p>
-          Suggested degree ${suggestedDegree} was changed to ${selectedDegree}.
-          Critical range result: ${attack.critical?.result ?? "unknown"}.
-        </p>
-        <p>
-          Suggested critical: ${suggestedAttack.damage} damage / ${suggestedAttack.penetration ?? 0} penetration.<br>
-          Applied critical: ${selectedAttack.damage} damage / ${selectedAttack.penetration ?? 0} penetration.
-        </p>
-        <table style="width:100%;">
-          <tr>
-            <th>Target</th>
-            <th>Suggested Damage</th>
-            <th>Applied Damage</th>
-            <th>Diff</th>
-          </tr>
-          ${targetRows}
-        </table>
-        <p>Source message: ${message.id}</p>
-      </div>
-    `,
-  });
-}
-
-async function handlePostDamageStatus({ actor, combatant }) {
-  console.log("Actor", actor);
-  console.log("combatant", combatant);
-  const hp = actor.system.stats.health.value;
-  if (hp > 0) return;
-
-  // Characters fall prone
-  if (actor.type === "character") {
-    if (!actor.statuses.has("prone")) {
-      await actor.toggleStatusEffect("prone", { active: true });
-    }
-    return;
-  }
-
-  // NPCs die
-  if (!actor.statuses.has("dead")) {
-    await actor.toggleStatusEffect("dead", {
-      active: true,
-      overlay: true,
-    });
-  }
-
-  // Remove from combat if applicable
-  if (combatant) {
-    await combatant.parent.deleteEmbeddedDocuments("Combatant", [combatant.id]);
-  }
-}
-async function applyEffectToActor(actor, effectId, stacks = 1) {
-  if (!resolveEffectDefinition(effectId)) {
-    console.warn(
-      `Effect ${effectId} matches neither CONFIG.REDSTEEL.effectDefinitions nor a world Condition item`,
-    );
-    ui.notifications.warn(
-      `Unknown effect "${effectId}" — create a Condition item with this name to make it applicable.`,
-    );
-    return;
-  }
-
-  return await game.redsteel.applyEffect(actor, effectId, { stacks });
-}
-
 const TOKEN_BAR_RESOURCE_PATHS = [
   "system.stats.health",
   "system.stats.stamina",
@@ -1614,158 +1099,6 @@ Hooks.on("renderChatMessageHTML", (message, html, data) => {
     }
   }
 });
-async function handleApplyEffects(messageId) {
-  const message = game.messages.get(messageId);
-  if (!message?.flags?.effects) return;
-
-  const checkTargetsAndContinue = () => {
-    const targets = Array.from(game.user.targets);
-    if (!targets.length) {
-      ui.notifications.warn("Please select at least one target.");
-      return false;
-    }
-    openEffectSelectionDialog(message, targets);
-    return true;
-  };
-
-  if (!Array.from(game.user.targets).length) {
-    new Dialog({
-      title: "No Targets Selected",
-      content: "<p>Please select one or more targets, then press OK.</p>",
-      buttons: {
-        ok: {
-          label: "OK",
-          callback: checkTargetsAndContinue,
-        },
-      },
-      default: "ok",
-    }).render(true);
-    return;
-  }
-
-  checkTargetsAndContinue();
-}
-function openEffectSelectionDialog(message, targets) {
-  const effects = message.flags.effects || {};
-
-  const renderPreview = () =>
-    targets
-      .map((t) => {
-        const effectList = Object.entries(effects)
-          .map(([name, effect]) => {
-            const baseChance = effect?.chance;
-            const roll = effect?.roll;
-
-            let previewText = "";
-
-            if (typeof baseChance === "number" && typeof roll === "number") {
-              previewText = ` → ${roll} < ${baseChance}%`;
-            }
-
-            return `
-              <div style="margin-left:15px;">
-                <label>
-                  <input type="checkbox"
-                         name="effect-${t.id}-${name}">
-                  ${name.toUpperCase()}${previewText}
-                </label>
-              </div>
-            `;
-          })
-          .join("");
-
-        return `
-          <li>
-            <strong>${t.name}</strong>
-            ${effectList}
-          </li>
-        `;
-      })
-      .join("");
-
-  new Dialog({
-    title: "Apply Effects",
-    content: `
-      <form>
-        <ul class="effect-preview">
-          ${renderPreview()}
-        </ul>
-      </form>
-    `,
-    buttons: {
-      apply: {
-        label: "Apply",
-        callback: (html) => {
-          const selectedEffects = {};
-
-          html.find('input[type="checkbox"]').each((_, el) => {
-            if (!el.checked) return;
-
-            const parts = el.name.split("-");
-            const tokenId = parts[1];
-            // Effect names may themselves contain hyphens
-            const effectName = parts.slice(2).join("-");
-
-            if (!selectedEffects[tokenId]) {
-              selectedEffects[tokenId] = [];
-            }
-
-            selectedEffects[tokenId].push(effectName);
-          });
-
-          applyEffectsToTargets(message, targets, selectedEffects);
-        },
-      },
-      cancel: { label: "Cancel" },
-    },
-  }).render(true);
-}
-async function applyEffectsToTargets(message, targets, selectedEffects) {
-  const data = {
-    type: "applyEffects",
-    messageId: message.id,
-    sceneId: canvas.scene.id,
-    targetIds: targets.map((t) => t.id),
-    selectedEffects: selectedEffects,
-  };
-
-  if (game.user.isGM) {
-    await applyEffectsAsGM(data);
-  } else {
-    game.socket.emit(SOCKET, data);
-    ui.notifications.info("Effect request sent to GM.");
-  }
-}
-async function applyEffectsAsGM(data) {
-  const { messageId, targetIds, sceneId, selectedEffects } = data;
-
-  const message = game.messages.get(messageId);
-  const effects = message.flags?.effects || {};
-  const scene = game.scenes.get(sceneId);
-
-  for (const tokenId of targetIds) {
-    const tokenDoc = scene.tokens.get(tokenId);
-    if (!tokenDoc) continue;
-
-    const actor = tokenDoc.actor;
-    if (!actor) continue;
-
-    const allowedEffects = selectedEffects?.[tokenId] || [];
-    for (const effectId of allowedEffects) {
-      const effectData = effects[effectId];
-      if (!effectData) continue;
-
-      let stacks = 1;
-
-      if (effectId === "bleed") {
-        stacks = effectData.stacks ?? 0;
-      }
-
-      await applyEffectToActor(actor, effectId, stacks);
-    }
-  }
-}
-
 Hooks.on("renderChatMessageHTML", (message, html) => {
   if (!message.flags?.attack) return;
 

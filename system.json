@@ -44,7 +44,7 @@
       "thumbnail": "systems/redsteel/assets/start_screen.png"
     }
   ],
-  "version": "0.8.16",
+  "version": "0.8.20",
   "compatibility": {
     "minimum": "13",
     "verified": "14.362"
@@ -75,6 +75,12 @@
       "label": "Redsteel-items",
       "type": "Item",
       "system": "redsteel"
+    },
+    {
+      "name": "All-Spells",
+      "label": "All-Spells",
+      "type": "Item",
+      "system": "redsteel"
     }
   ],
   "packFolders": [
@@ -82,7 +88,8 @@
       "name": "Redsteel",
       "packs": [
         "redsteel-items",
-        "redsteel-magic-crit-fails"
+        "redsteel-magic-crit-fails",
+        "All-Spells"
       ]
     }
   ],

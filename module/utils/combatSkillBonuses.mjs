@@ -1126,7 +1126,7 @@ In total :(${totalBleeds}) due to Crit score: ${critScore}">
   };
 }
 
-function applyToHp(damage, hp, tempHp) {
+export function applyToHp(damage, hp, tempHp) {
   const tempHpLoss = Math.min(tempHp, damage);
   damage -= tempHpLoss;
 
