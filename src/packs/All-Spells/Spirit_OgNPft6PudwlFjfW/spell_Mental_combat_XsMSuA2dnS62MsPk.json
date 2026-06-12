@@ -1,0 +1,139 @@
+{
+  "name": "Mental combat",
+  "type": "spell",
+  "img": "icons/svg/mystery-man.svg",
+  "system": {
+    "description": "Initiates mental combat with a Target in range, 65% chance to engage (20% if the Target is not a magician); opponent may voluntarily accept. One attempt only. A critical success guarantees connection. Magic Attack +20.",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": [
+      {
+        "mode": "",
+        "amount": "",
+        "type": ""
+      }
+    ],
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": "TRUE",
+    "sustained": false,
+    "difficulty": -25,
+    "cost": 2,
+    "perRound": 0,
+    "option": "magic",
+    "type": "spirit",
+    "rank": "expert",
+    "actionCost": "1",
+    "range": "50",
+    "spellClass": "lesser",
+    "roll": {
+      "diceNum": 0,
+      "diceSize": 0,
+      "diceBonus": ""
+    },
+    "penetration": 0,
+    "dmgType1": "",
+    "bool2": "",
+    "dmgType2": "",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": "65",
+      "effect2": "0",
+      "effect3": "0",
+      "effect4": "0"
+    }
+  },
+  "effects": [],
+  "folder": "OgNPft6PudwlFjfW",
+  "flags": {
+    "scene-packer": {
+      "hash": "a1c3722a3dc16cdd910d46e820d480a20cba214d"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.spirit-spells.Item.u1XHfXKX2KOim5ql",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601587686,
+    "modifiedTime": 1780601587686,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "XsMSuA2dnS62MsPk",
+  "sort": 0,
+  "_key": "!items!XsMSuA2dnS62MsPk"
+}

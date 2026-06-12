@@ -1,0 +1,154 @@
+{
+  "name": "Fear (reaction)",
+  "type": "spell",
+  "img": "icons/magic/death/undead-ghost-scream-teal.webp",
+  "system": {
+    "description": "<p>Causes Fear for three rounds. All Resolve tests suffer a penalty equal to {{math spellPower \"*\" 1}}. May only be cast as a Reaction if the caster is attacked. Corruption +2.</p>",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": {
+      "0": {
+        "type": "Corruption",
+        "mode": "add",
+        "amount": 2
+      },
+      "1": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      }
+    },
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": true,
+    "sustained": false,
+    "difficulty": 15,
+    "cost": 8,
+    "perRound": 0,
+    "option": "magic",
+    "type": "darkness",
+    "rank": "apprentice",
+    "actionCost": "Reaction",
+    "range": "10",
+    "spellClass": "support",
+    "roll": {
+      "diceNum": 0,
+      "diceSize": "0",
+      "diceBonus": ""
+    },
+    "penetration": 0,
+    "dmgType1": "",
+    "bool2": "",
+    "dmgType2": "",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": "0",
+      "effect2": "0",
+      "effect3": "0",
+      "effect4": "0",
+      "stagger": null,
+      "bleed": null,
+      "extra1": -1,
+      "extra2": null,
+      "extra3": null
+    },
+    "attributeTest": "",
+    "testModifier": "",
+    "effectType1": "fear",
+    "effectType2": "",
+    "effectType3": ""
+  },
+  "effects": [],
+  "folder": "dNkZeCgBcF5AHOTZ",
+  "flags": {
+    "scene-packer": {
+      "hash": "8689188aa71e55f3abbdc4217dc43a853b6a4d98"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.dark-spells.Item.h3H9q1qHtwlIJja1",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601583462,
+    "modifiedTime": 1780601583462,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "cEZ1NlEaQa9PXsWe",
+  "sort": 0,
+  "_key": "!items!cEZ1NlEaQa9PXsWe"
+}

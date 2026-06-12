@@ -1,0 +1,171 @@
+{
+  "name": "Burning Hands",
+  "type": "spell",
+  "img": "icons/magic/fire/flame-burning-embers-yellow.webp",
+  "system": {
+    "description": "<p>Deals 2d6 + 1d6x + {{math spellPower \"+\" 1}} damage per round Area: 45° cone, 4.5m range</p>",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [
+      "bleeding",
+      "burning",
+      "chain",
+      "disorientation",
+      "dispel",
+      "flammable",
+      "frozen",
+      "concussion",
+      "paralyzed",
+      "poisoned",
+      "rooted",
+      "slowed",
+      "stun",
+      "vulnerable",
+      "weakened",
+      "wet"
+    ],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": {
+      "0": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      },
+      "1": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      }
+    },
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": true,
+    "sustained": false,
+    "difficulty": -10,
+    "cost": 6,
+    "perRound": 1,
+    "option": "magic",
+    "type": "fire",
+    "rank": "expert",
+    "actionCost": "1 | C",
+    "range": "1",
+    "spellClass": "lesser",
+    "roll": {
+      "diceNum": 2,
+      "diceSize": "6",
+      "diceBonus": "1d6x+1+@spellPower"
+    },
+    "penetration": 10,
+    "dmgType1": "magic",
+    "bool2": "and",
+    "dmgType2": "fire",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": 0,
+      "effect2": 0,
+      "effect3": 0,
+      "effect4": 0,
+      "bleed": null,
+      "extra1": null,
+      "extra2": null,
+      "extra3": null,
+      "stagger": null
+    },
+    "effectType1": "",
+    "effectType2": "",
+    "effectType3": "",
+    "attributeTest": "",
+    "testModifier": ""
+  },
+  "effects": [],
+  "folder": "UxjnWqOZrypZl1NP",
+  "flags": {
+    "scene-packer": {
+      "hash": "49cf2e8cbaa45b8a832f6aa74ad0efa3d7518188"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.fire-spells.Item.D2X64t9dJpoB9Zem",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601586340,
+    "modifiedTime": 1780601586340,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "zMfmUw65cWYKtJj5",
+  "sort": 0,
+  "_key": "!items!zMfmUw65cWYKtJj5"
+}

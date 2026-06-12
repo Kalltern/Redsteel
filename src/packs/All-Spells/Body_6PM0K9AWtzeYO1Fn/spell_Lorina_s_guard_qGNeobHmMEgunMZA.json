@@ -1,0 +1,139 @@
+{
+  "name": "Lorina's guard",
+  "type": "spell",
+  "img": "icons/svg/mystery-man.svg",
+  "system": {
+    "description": "Completely blocks one physical attack against the Target. +2 to Speed Test if cast before Attack resolution. -2 to Speed Test if cast after. If Speed Test fails, no attack is blocked. Grants 5 temporary HP to the Target. Max 10 temporary HP from this source. Can only be cast as a Reaction if Caster or ally in range is attacked.",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": [
+      {
+        "mode": "",
+        "amount": "",
+        "type": ""
+      }
+    ],
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": "FALSE",
+    "sustained": false,
+    "difficulty": -20,
+    "cost": 10,
+    "perRound": 0,
+    "option": "magic",
+    "type": "body",
+    "rank": "expert",
+    "actionCost": "Reaction",
+    "range": "10",
+    "spellClass": "support",
+    "roll": {
+      "diceNum": 0,
+      "diceSize": 0,
+      "diceBonus": ""
+    },
+    "penetration": 0,
+    "dmgType1": "",
+    "bool2": "",
+    "dmgType2": "",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": "0",
+      "effect2": "0",
+      "effect3": "0",
+      "effect4": "0"
+    }
+  },
+  "effects": [],
+  "folder": "6PM0K9AWtzeYO1Fn",
+  "flags": {
+    "scene-packer": {
+      "hash": "5a59d685d53cc28a5a38fa1c4f1725737ccc0eca"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.body-spells.Item.YjFiw4chx3jXJnJc",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601582195,
+    "modifiedTime": 1780601582195,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "qGNeobHmMEgunMZA",
+  "sort": 0,
+  "_key": "!items!qGNeobHmMEgunMZA"
+}

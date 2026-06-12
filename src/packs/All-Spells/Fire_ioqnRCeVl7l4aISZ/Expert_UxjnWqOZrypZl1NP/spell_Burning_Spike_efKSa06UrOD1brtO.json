@@ -1,0 +1,171 @@
+{
+  "name": "Burning Spike",
+  "type": "spell",
+  "img": "icons/magic/fire/blast-jet-stream-splash.webp",
+  "system": {
+    "description": "<p>Creates a barely visible trap on an unoccupied hex (must not be adjacent to another trap) for 15 minutes.</p><hr /><p>Deals 5d6 + {{spellPower}} damage in a 1.5m radius around it upon anyone entering the hex. <br />First target has +10% chance to get Burning effect. <br />Ignores Magic Defense of the first target.<br /><br />In case of trap trigger, roll this spell manually for 0 mana cost and disregard the channeling test.</p>",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [
+      "bleeding",
+      "burning",
+      "chain",
+      "disorientation",
+      "dispel",
+      "flammable",
+      "frozen",
+      "concussion",
+      "paralyzed",
+      "poisoned",
+      "rooted",
+      "slowed",
+      "stun",
+      "vulnerable",
+      "weakened",
+      "wet"
+    ],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": {
+      "0": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      },
+      "1": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      }
+    },
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": true,
+    "sustained": false,
+    "difficulty": -10,
+    "cost": 4,
+    "perRound": 0,
+    "option": "magic",
+    "type": "fire",
+    "rank": "expert",
+    "actionCost": "1",
+    "range": "10",
+    "spellClass": "support",
+    "roll": {
+      "diceNum": 5,
+      "diceSize": "6",
+      "diceBonus": "@spellPower"
+    },
+    "penetration": 15,
+    "dmgType1": "magic",
+    "bool2": "and",
+    "dmgType2": "fire",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": 10,
+      "effect2": 0,
+      "effect3": 0,
+      "effect4": 0,
+      "bleed": null,
+      "extra1": 10,
+      "extra2": null,
+      "extra3": null,
+      "stagger": null
+    },
+    "effectType1": "burn",
+    "effectType2": "",
+    "effectType3": "",
+    "attributeTest": "",
+    "testModifier": ""
+  },
+  "effects": [],
+  "folder": "UxjnWqOZrypZl1NP",
+  "flags": {
+    "scene-packer": {
+      "hash": "552b1c067f2f55060cdaa82bd67f23a9cc018503"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.fire-spells.Item.M0PQGTwZjTox6EtT",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601586340,
+    "modifiedTime": 1780601586340,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "efKSa06UrOD1brtO",
+  "sort": 0,
+  "_key": "!items!efKSa06UrOD1brtO"
+}

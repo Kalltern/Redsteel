@@ -1,0 +1,155 @@
+{
+  "name": "Cyclone",
+  "type": "spell",
+  "img": "icons/magic/air/wind-tornado-cyclone-white.webp",
+  "system": {
+    "description": "<p>Triggers a vs test of caster's Will + {{math spellPower \"*\" 3}} against target's Strength/Dexterity Test.</p><p>On success, the target is trapped in the cyclone for up to three rounds, unable to act. While trapped, they cannot be harmed by Physical attacks or direct Magic (e.g. projectiles, beams) and can be moved one hex per round. On failure, the target loses one Action.<br /><br />Effects of this spell are not automated and must be resolved manually.</p><p>Apply effect to get a duration counter.</p>",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": {
+      "0": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      },
+      "1": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      }
+    },
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": false,
+    "sustained": false,
+    "difficulty": -10,
+    "cost": 8,
+    "perRound": 0,
+    "option": "magic",
+    "type": "air",
+    "rank": "expert",
+    "actionCost": "1",
+    "range": "12",
+    "spellClass": "support",
+    "roll": {
+      "diceNum": 0,
+      "diceSize": "0",
+      "diceBonus": ""
+    },
+    "penetration": 0,
+    "dmgType1": "",
+    "bool2": "",
+    "dmgType2": "",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": "0",
+      "effect2": "0",
+      "effect3": "0",
+      "effect4": "0",
+      "bleed": null,
+      "extra1": -1,
+      "extra2": null,
+      "extra3": null,
+      "stagger": null,
+      "effectName1": "cyclone"
+    },
+    "effectType1": "custom",
+    "effectType2": "",
+    "effectType3": "",
+    "attributeTest": "will",
+    "testModifier": "@spellPower*3"
+  },
+  "effects": [],
+  "folder": "AdbWyEUEtS9mw4hw",
+  "flags": {
+    "scene-packer": {
+      "hash": "d7deb140eb0206388676a57aded7721f78ecfaa2"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.air-spells.Item.wASNlwLDyacX8evH",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601577685,
+    "modifiedTime": 1780601577685,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "wJZk56NUwBiZeowm",
+  "sort": 0,
+  "_key": "!items!wJZk56NUwBiZeowm"
+}

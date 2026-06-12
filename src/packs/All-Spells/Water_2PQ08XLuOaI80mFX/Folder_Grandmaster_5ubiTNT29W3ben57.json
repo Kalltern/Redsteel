@@ -1,0 +1,27 @@
+{
+  "type": "Item",
+  "folder": "2PQ08XLuOaI80mFX",
+  "name": "Grandmaster",
+  "color": null,
+  "sorting": "a",
+  "_id": "5ubiTNT29W3ben57",
+  "description": "",
+  "sort": 100000,
+  "flags": {
+    "scene-packer": {
+      "hash": "5dec2683abde5c7730cdfe1b6b5850a12d195304"
+    }
+  },
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601589032,
+    "modifiedTime": 1780601589032,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "_key": "!folders!5ubiTNT29W3ben57"
+}

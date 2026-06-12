@@ -1,0 +1,154 @@
+{
+  "name": "Mark of Kozhul",
+  "type": "spell",
+  "img": "icons/magic/unholy/orb-contained-pink.webp",
+  "system": {
+    "description": "<p>Creates a barely visible trap on an unoccupied hex (must not be adjacent to another trap) for 15 minutes.</p><hr /><p>Causing Fear for three rounds to anyone who enters the hex. <br />Corruption +4<br /><br />In case of trap trigger, roll this spell manually for 0 mana cost and disregard the channeling test.</p>",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": {
+      "0": {
+        "type": "Corruption",
+        "mode": "add",
+        "amount": 4
+      },
+      "1": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      }
+    },
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": true,
+    "sustained": false,
+    "difficulty": -10,
+    "cost": 8,
+    "perRound": 0,
+    "option": "magic",
+    "type": "darkness",
+    "rank": "expert",
+    "actionCost": "1",
+    "range": "8",
+    "spellClass": "support",
+    "roll": {
+      "diceNum": 0,
+      "diceSize": "0",
+      "diceBonus": ""
+    },
+    "penetration": 0,
+    "dmgType1": "",
+    "bool2": "",
+    "dmgType2": "",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": "0",
+      "effect2": "0",
+      "effect3": "0",
+      "effect4": "0",
+      "bleed": null,
+      "extra1": 100,
+      "extra2": null,
+      "extra3": null,
+      "stagger": null
+    },
+    "effectType1": "fear",
+    "effectType2": "",
+    "effectType3": "",
+    "attributeTest": "",
+    "testModifier": ""
+  },
+  "effects": [],
+  "folder": "XCC7CG5LovD3hSXR",
+  "flags": {
+    "scene-packer": {
+      "hash": "2cab322d7781eb9b62dc33bb2d9dba97664f6581"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.dark-spells.Item.P3VQamj2Ph2ccoMe",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601583465,
+    "modifiedTime": 1780601583465,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "xDRv4OK6O5djgwvE",
+  "sort": 0,
+  "_key": "!items!xDRv4OK6O5djgwvE"
+}

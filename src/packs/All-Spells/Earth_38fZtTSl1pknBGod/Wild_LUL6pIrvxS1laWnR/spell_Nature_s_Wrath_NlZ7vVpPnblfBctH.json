@@ -1,0 +1,171 @@
+{
+  "name": "Nature's Wrath",
+  "type": "spell",
+  "img": "icons/magic/nature/tree-animated-strike.webp",
+  "system": {
+    "description": "<p>Turns plants, bushes, or trees against up to three targets within range (cost per each target). Deals 2d6+<span style=\"font-family:Signika, sans-serif\">{{math spellPower}} damage</span>, with a 35% chance to Root the target for one turn. A trapped target can break free early by spending 1 Action and succeeding on a Strength Test.</p>",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [
+      "bleeding",
+      "burning",
+      "chain",
+      "disorientation",
+      "dispel",
+      "flammable",
+      "frozen",
+      "concussion",
+      "paralyzed",
+      "poisoned",
+      "rooted",
+      "slowed",
+      "stun",
+      "vulnerable",
+      "weakened",
+      "wet"
+    ],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": {
+      "0": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      },
+      "1": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      }
+    },
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": false,
+    "sustained": false,
+    "difficulty": 30,
+    "cost": 2,
+    "perRound": 0,
+    "option": "magic",
+    "type": "earth",
+    "rank": "wild",
+    "actionCost": "1",
+    "range": "8",
+    "spellClass": "support",
+    "roll": {
+      "diceNum": 2,
+      "diceSize": "6",
+      "diceBonus": "@spellPower"
+    },
+    "penetration": 4,
+    "dmgType1": "physical",
+    "bool2": "and",
+    "dmgType2": "blunt",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": 35,
+      "effect2": 0,
+      "effect3": 0,
+      "effect4": 0,
+      "bleed": null,
+      "extra1": 35,
+      "extra2": null,
+      "extra3": null,
+      "stagger": null
+    },
+    "effectType1": "root",
+    "effectType2": "",
+    "effectType3": "",
+    "attributeTest": "",
+    "testModifier": ""
+  },
+  "effects": [],
+  "folder": "LUL6pIrvxS1laWnR",
+  "flags": {
+    "scene-packer": {
+      "hash": "498c4f8d52db7e5d8cd6e35e4d884f4e6547ce61"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.earth-spells.Item.mR0ijENsGuvDUUWl",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601584978,
+    "modifiedTime": 1780601584978,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "NlZ7vVpPnblfBctH",
+  "sort": 0,
+  "_key": "!items!NlZ7vVpPnblfBctH"
+}

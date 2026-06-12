@@ -1,0 +1,164 @@
+{
+  "name": "Fracture",
+  "type": "spell",
+  "img": "icons/magic/nature/root-vine-sword-broken.webp",
+  "system": {
+    "description": "<p>Damages a metal, wooden, or stone object to the brink of destruction or shatters it (e.g., doors). May require multiple castings. Reduces armor by 10. Deals magic + blunt damage (4d10 + {{spellPower}}) to constructs. Ignores armor.</p>",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [
+      "bleeding",
+      "burning",
+      "chain",
+      "disorientation",
+      "dispel",
+      "flammable",
+      "frozen",
+      "concussion",
+      "paralyzed",
+      "poisoned",
+      "rooted",
+      "slowed",
+      "stun",
+      "vulnerable",
+      "weakened",
+      "wet"
+    ],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": [
+      {
+        "mode": "",
+        "amount": 0,
+        "type": ""
+      }
+    ],
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": true,
+    "sustained": false,
+    "difficulty": -35,
+    "cost": 18,
+    "perRound": 0,
+    "option": "magic",
+    "type": "earth",
+    "rank": "master",
+    "actionCost": "1",
+    "range": "3",
+    "spellClass": "greater",
+    "roll": {
+      "diceNum": 4,
+      "diceSize": "10",
+      "diceBonus": "@spellPower"
+    },
+    "penetration": 100,
+    "dmgType1": "magic",
+    "bool2": "and",
+    "dmgType2": "blunt",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": 0,
+      "effect2": 0,
+      "effect3": 0,
+      "effect4": 0,
+      "bleed": null,
+      "extra1": null,
+      "extra2": null,
+      "extra3": null,
+      "stagger": null
+    },
+    "effectType1": "",
+    "effectType2": "",
+    "effectType3": ""
+  },
+  "effects": [],
+  "folder": "JBcANv6vENmYO1qP",
+  "flags": {
+    "scene-packer": {
+      "hash": "8c766ab2667cc8cdd6f4ec42fcaa1a75914e3ead"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.earth-spells.Item.51z2L48mSvEdufP9",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601584974,
+    "modifiedTime": 1780601584974,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "CZYuYS5reMmRuoRb",
+  "sort": 0,
+  "_key": "!items!CZYuYS5reMmRuoRb"
+}

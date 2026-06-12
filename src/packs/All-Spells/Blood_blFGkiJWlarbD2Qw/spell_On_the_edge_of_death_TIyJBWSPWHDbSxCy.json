@@ -1,0 +1,138 @@
+{
+  "name": "On the edge of death",
+  "type": "spell",
+  "img": "icons/svg/mystery-man.svg",
+  "system": {
+    "description": "For six rounds, the target cannot die (with rare exceptions), but still loses HP and gains Severe Injuries (their penalties are ignored). If, after the spell ends, the target has more Severe Injuries than its limit allows, the Severe Injury limit is reduced by one, existing Severe Injuries are reduced to the new limit, and the target loses consciousness. The spell cannot be extended.",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": [
+      {
+        "mode": "",
+        "amount": "",
+        "type": ""
+      }
+    ],
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": false,
+    "sustained": false,
+    "difficulty": -60,
+    "cost": 20,
+    "perRound": 0,
+    "option": "magic",
+    "type": "blood",
+    "rank": "grandmaster",
+    "actionCost": "1 | C",
+    "range": "Caster",
+    "spellClass": "greater",
+    "roll": {
+      "diceNum": 0,
+      "diceSize": 0,
+      "diceBonus": ""
+    },
+    "penetration": 0,
+    "dmgType1": "",
+    "bool2": "",
+    "dmgType2": "",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "extra1": 0,
+      "extra2": 0,
+      "extra3": 0
+    }
+  },
+  "effects": [],
+  "folder": "blFGkiJWlarbD2Qw",
+  "flags": {
+    "scene-packer": {
+      "hash": "68eb8239e80642bc7087cdc33647e2419a3ff28b"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.blood-spells.Item.sFEfa9e268u2KCUy",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601580519,
+    "modifiedTime": 1780601580519,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "TIyJBWSPWHDbSxCy",
+  "sort": 0,
+  "_key": "!items!TIyJBWSPWHDbSxCy"
+}

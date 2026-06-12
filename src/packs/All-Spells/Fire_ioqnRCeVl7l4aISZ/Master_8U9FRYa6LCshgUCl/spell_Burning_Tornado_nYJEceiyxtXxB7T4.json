@@ -1,0 +1,164 @@
+{
+  "name": "Burning Tornado",
+  "type": "spell",
+  "img": "icons/magic/fire/beam-jet-stream-spiral-yellow.webp",
+  "system": {
+    "description": "<p>Summons a fiery tornado for 4 rounds at a chosen hex, dealing Magical + Fire damage 2d6x +{{math spellPower \"*\" 3}} in a 1.5 m area, and applies Burning effect to a target at its center. At the start of each round, it moves twice randomly by one hex. Armor Penetration: 12. Each target can only be damaged once per round.</p>",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [
+      "bleeding",
+      "burning",
+      "chain",
+      "disorientation",
+      "dispel",
+      "flammable",
+      "frozen",
+      "concussion",
+      "paralyzed",
+      "poisoned",
+      "rooted",
+      "slowed",
+      "stun",
+      "vulnerable",
+      "weakened",
+      "wet"
+    ],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": [
+      {
+        "mode": "",
+        "amount": "",
+        "type": ""
+      }
+    ],
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": true,
+    "sustained": false,
+    "difficulty": -60,
+    "cost": 15,
+    "perRound": 0,
+    "option": "magic",
+    "type": "fire",
+    "rank": "master",
+    "actionCost": "2",
+    "range": "10",
+    "spellClass": "greater",
+    "roll": {
+      "diceNum": 0,
+      "diceSize": "0",
+      "diceBonus": "2d6x+(@spellPower*3)"
+    },
+    "penetration": 12,
+    "dmgType1": "magic",
+    "bool2": "and",
+    "dmgType2": "fire",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": 0,
+      "effect2": 0,
+      "effect3": 0,
+      "effect4": 0,
+      "bleed": null,
+      "extra1": null,
+      "extra2": null,
+      "extra3": null,
+      "stagger": null
+    },
+    "effectType1": "",
+    "effectType2": "",
+    "effectType3": ""
+  },
+  "effects": [],
+  "folder": "8U9FRYa6LCshgUCl",
+  "flags": {
+    "scene-packer": {
+      "hash": "1799c67b4ab2d3ba09182ad8cd49b063a7737073"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.fire-spells.Item.8noBjMPK0CTPnJJq",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601586347,
+    "modifiedTime": 1780601586347,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "nYJEceiyxtXxB7T4",
+  "sort": 0,
+  "_key": "!items!nYJEceiyxtXxB7T4"
+}

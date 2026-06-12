@@ -1,0 +1,139 @@
+{
+  "name": "Lesser purification (AoE)",
+  "type": "spell",
+  "img": "icons/svg/mystery-man.svg",
+  "system": {
+    "description": "Removes one buff or debuff effect from Target (e.g., Weakness, Enhanced Senses, Empowerment, Stun Resistance, Poisoned Blood, Dark Curse, etc.). Cannot dispel effects protected by Magic Shield or barriers. Counts as Magical Attack with +20% Bonus. For an additional cost, affects 3m area.",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": [
+      {
+        "mode": "",
+        "amount": "",
+        "type": ""
+      }
+    ],
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": "FALSE",
+    "sustained": false,
+    "difficulty": -15,
+    "cost": 8,
+    "perRound": 0,
+    "option": "magic",
+    "type": "body",
+    "rank": "expert",
+    "actionCost": "1",
+    "range": "10",
+    "spellClass": "support",
+    "roll": {
+      "diceNum": 0,
+      "diceSize": 0,
+      "diceBonus": ""
+    },
+    "penetration": 0,
+    "dmgType1": "",
+    "bool2": "",
+    "dmgType2": "",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": "0",
+      "effect2": "0",
+      "effect3": "0",
+      "effect4": "0"
+    }
+  },
+  "effects": [],
+  "folder": "6PM0K9AWtzeYO1Fn",
+  "flags": {
+    "scene-packer": {
+      "hash": "84042e0276589e512b1cea1790dc53aa2e675ba2"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.body-spells.Item.s8zq2wwq7WgODl8q",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601582195,
+    "modifiedTime": 1780601582195,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "a48636bkYyJV8apa",
+  "sort": 0,
+  "_key": "!items!a48636bkYyJV8apa"
+}

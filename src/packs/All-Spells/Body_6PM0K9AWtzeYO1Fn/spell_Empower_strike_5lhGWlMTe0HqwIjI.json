@@ -1,0 +1,139 @@
+{
+  "name": "Empower strike",
+  "type": "spell",
+  "img": "icons/svg/mystery-man.svg",
+  "system": {
+    "description": "Empowers the next attack or throw, increasing damage by 1d4 + {{math spellPower \"/\" 2}}. +15% chance to Stun. Cannot be combined with other attack enhancements.",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": [
+      {
+        "mode": "",
+        "amount": "",
+        "type": ""
+      }
+    ],
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": "FALSE",
+    "sustained": false,
+    "difficulty": 20,
+    "cost": 2,
+    "perRound": 0,
+    "option": "magic",
+    "type": "body",
+    "rank": "apprentice",
+    "actionCost": "Free action",
+    "range": "Caster",
+    "spellClass": "support",
+    "roll": {
+      "diceNum": 1,
+      "diceSize": 4,
+      "diceBonus": "@spellPower/2"
+    },
+    "penetration": 0,
+    "dmgType1": "",
+    "bool2": "",
+    "dmgType2": "",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": "15",
+      "effect2": "0",
+      "effect3": "0",
+      "effect4": "0"
+    }
+  },
+  "effects": [],
+  "folder": "6PM0K9AWtzeYO1Fn",
+  "flags": {
+    "scene-packer": {
+      "hash": "209a169a3615e177d3aa00fbee740e006d882486"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.body-spells.Item.TAzVRtT57ryX313b",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601582194,
+    "modifiedTime": 1780601582194,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "5lhGWlMTe0HqwIjI",
+  "sort": 0,
+  "_key": "!items!5lhGWlMTe0HqwIjI"
+}

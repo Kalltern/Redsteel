@@ -1,0 +1,154 @@
+{
+  "name": "Chain lightning",
+  "type": "spell",
+  "img": "icons/magic/lightning/bolt-strike-pink.webp",
+  "system": {
+    "description": "<p>Deals (6d6 + {{math spellPower \"*\" 4}}) damage, hitting up to 5 chosen targets. Chained damage is not halved.</p><hr><p>Targets can't be repeated, each subsequent target must be within 3 hex (4.5m) of previous one.</p>",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": {
+      "0": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      },
+      "1": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      }
+    },
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": true,
+    "sustained": false,
+    "difficulty": -70,
+    "cost": 18,
+    "perRound": 0,
+    "option": "magic",
+    "type": "air",
+    "rank": "master",
+    "actionCost": "2",
+    "range": "20",
+    "spellClass": "greater",
+    "roll": {
+      "diceNum": 6,
+      "diceSize": "6",
+      "diceBonus": "@spellPower*4"
+    },
+    "penetration": 16,
+    "dmgType1": "magic",
+    "bool2": "and",
+    "dmgType2": "lightning",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": "0",
+      "effect2": "0",
+      "effect3": "0",
+      "effect4": "0",
+      "bleed": null,
+      "extra1": null,
+      "extra2": null,
+      "extra3": null,
+      "stagger": null
+    },
+    "effectType1": "",
+    "effectType2": "",
+    "effectType3": "",
+    "attributeTest": "",
+    "testModifier": ""
+  },
+  "effects": [],
+  "folder": "Yee9AI8JHYKBHLNT",
+  "flags": {
+    "scene-packer": {
+      "hash": "78d5f28a09f8d276c886ec2fff211cb9a0cd0a7f"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.air-spells.Item.fs69SqB6sMo42WQI",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601577690,
+    "modifiedTime": 1780601577690,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "6tmWw4LBu2plnlRT",
+  "sort": 0,
+  "_key": "!items!6tmWw4LBu2plnlRT"
+}

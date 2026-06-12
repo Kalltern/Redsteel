@@ -1,0 +1,171 @@
+{
+  "name": "Acid spit",
+  "type": "spell",
+  "img": "icons/magic/acid/projectile-smoke-glowing.webp",
+  "system": {
+    "description": "<p>The caster spits a corrosive glob of acid at a single target, with a 50% chance to corrode the target’s armor, reducing it by 4 points. </p><p>Afterwards, it deals 4d6 + <span style=\"font-family:Signika, sans-serif\">{{math spellPower}} damage</span>.</p>",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [
+      "bleeding",
+      "burning",
+      "chain",
+      "disorientation",
+      "dispel",
+      "flammable",
+      "frozen",
+      "concussion",
+      "paralyzed",
+      "poisoned",
+      "rooted",
+      "slowed",
+      "stun",
+      "vulnerable",
+      "weakened",
+      "wet"
+    ],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": {
+      "0": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      },
+      "1": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      }
+    },
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": true,
+    "sustained": false,
+    "difficulty": 20,
+    "cost": 4,
+    "perRound": 0,
+    "option": "magic",
+    "type": "earth",
+    "rank": "apprentice",
+    "actionCost": "1",
+    "range": "4",
+    "spellClass": "lesser",
+    "roll": {
+      "diceNum": 4,
+      "diceSize": "6",
+      "diceBonus": "@spellPower"
+    },
+    "penetration": 10,
+    "dmgType1": "magic",
+    "bool2": "and",
+    "dmgType2": "acid",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": 50,
+      "effect2": 0,
+      "effect3": 0,
+      "effect4": 0,
+      "bleed": null,
+      "extra1": 50,
+      "extra2": null,
+      "extra3": null,
+      "stagger": null
+    },
+    "effectType1": "corrosion",
+    "effectType2": "",
+    "effectType3": "",
+    "attributeTest": "",
+    "testModifier": ""
+  },
+  "effects": [],
+  "folder": "93jLy3nvMhvY366z",
+  "flags": {
+    "scene-packer": {
+      "hash": "40f55de777396fbe0051c86dbae79eb80c38a8fc"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.earth-spells.Item.S541MdKR4oRc9gVq",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601584963,
+    "modifiedTime": 1780601584963,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "r8OHptEllv2BzEYU",
+  "sort": 0,
+  "_key": "!items!r8OHptEllv2BzEYU"
+}

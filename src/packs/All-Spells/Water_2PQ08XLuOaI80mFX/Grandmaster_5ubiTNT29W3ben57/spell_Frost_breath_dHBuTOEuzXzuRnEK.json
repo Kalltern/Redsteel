@@ -1,0 +1,147 @@
+{
+  "name": "Frost breath",
+  "type": "spell",
+  "img": "icons/magic/water/projectile-ice-snowball.webp",
+  "system": {
+    "description": "<p>Deals 2d20 + {{math spellPower \"*\" 5}} damage in 90° arc and 6m range. +35% Freeze chance.</p>",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": [
+      {
+        "mode": "",
+        "amount": "",
+        "type": ""
+      }
+    ],
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": true,
+    "sustained": false,
+    "difficulty": -60,
+    "cost": 35,
+    "perRound": 0,
+    "option": "magic",
+    "type": "water",
+    "rank": "grandmaster",
+    "actionCost": "2",
+    "range": "2",
+    "spellClass": "greater",
+    "roll": {
+      "diceNum": 2,
+      "diceSize": "20",
+      "diceBonus": "@spellPower*5"
+    },
+    "penetration": 25,
+    "dmgType1": "magic",
+    "bool2": "and",
+    "dmgType2": "frost",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": "35",
+      "effect2": "0",
+      "effect3": "0",
+      "effect4": "0",
+      "bleed": null,
+      "extra1": 35,
+      "extra2": null,
+      "extra3": null,
+      "stagger": null
+    },
+    "effectType1": "freeze",
+    "effectType2": "",
+    "effectType3": ""
+  },
+  "effects": [],
+  "folder": "5ubiTNT29W3ben57",
+  "flags": {
+    "scene-packer": {
+      "hash": "0942cf3b5a763f4bb098a172690400a239ac54ee"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.water-spells.Item.OGMiprbkYYV6Ml3X",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601589069,
+    "modifiedTime": 1780601589069,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "dHBuTOEuzXzuRnEK",
+  "sort": 0,
+  "_key": "!items!dHBuTOEuzXzuRnEK"
+}

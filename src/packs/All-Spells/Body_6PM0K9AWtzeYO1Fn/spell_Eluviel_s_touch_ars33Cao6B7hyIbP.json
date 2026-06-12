@@ -1,0 +1,139 @@
+{
+  "name": "Eluviel's touch",
+  "type": "spell",
+  "img": "icons/svg/mystery-man.svg",
+  "system": {
+    "description": "Heals one Target for 2 + {{spellPower}} Health each round, indefinitely. Also heals broken bones, removes projectiles, and relieves pain. Cannot be cast on self. Once per month, if the Target has full Health, it heals one Serious Wound after five rounds. While casting, it delays the acquisition of a Serious Wound due to the Dying condition.",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": [
+      {
+        "mode": "",
+        "amount": "",
+        "type": ""
+      }
+    ],
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": "FALSE",
+    "sustained": false,
+    "difficulty": -40,
+    "cost": 30,
+    "perRound": 0,
+    "option": "magic",
+    "type": "body",
+    "rank": "master",
+    "actionCost": "1 | C",
+    "range": "Touch",
+    "spellClass": "greater",
+    "roll": {
+      "diceNum": 0,
+      "diceSize": 0,
+      "diceBonus": "2+@spellPower"
+    },
+    "penetration": 0,
+    "dmgType1": "",
+    "bool2": "",
+    "dmgType2": "",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": "0",
+      "effect2": "0",
+      "effect3": "0",
+      "effect4": "0"
+    }
+  },
+  "effects": [],
+  "folder": "6PM0K9AWtzeYO1Fn",
+  "flags": {
+    "scene-packer": {
+      "hash": "f07ac8263a7d780bde0840ebba790282f505eab2"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.body-spells.Item.sghVqFT8ZmHgat7D",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601582193,
+    "modifiedTime": 1780601582193,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "ars33Cao6B7hyIbP",
+  "sort": 0,
+  "_key": "!items!ars33Cao6B7hyIbP"
+}

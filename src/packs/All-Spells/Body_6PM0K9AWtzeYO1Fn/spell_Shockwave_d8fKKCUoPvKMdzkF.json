@@ -1,0 +1,139 @@
+{
+  "name": "Shockwave",
+  "type": "spell",
+  "img": "icons/svg/mystery-man.svg",
+  "system": {
+    "description": "Deals 2d8 + {{spellPower}} Magical + Bludgeoning damage in a 180° arc within 3m and initiates a Willpower (Bonus {{math spellPower \"*\" 2}}) vs. Target's Strength/Endurance Test. On success, pushes Targets back two hexes. On failure, pushes them back one hex. Ignores armor. May only be cast as a Reaction if the Caster is being attacked.",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": [
+      {
+        "mode": "",
+        "amount": "",
+        "type": ""
+      }
+    ],
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": "TRUE",
+    "sustained": false,
+    "difficulty": -20,
+    "cost": 10,
+    "perRound": 0,
+    "option": "magic",
+    "type": "body",
+    "rank": "master",
+    "actionCost": "1",
+    "range": "Caster",
+    "spellClass": "greater",
+    "roll": {
+      "diceNum": 2,
+      "diceSize": 8,
+      "diceBonus": "@spellPower"
+    },
+    "penetration": 100,
+    "dmgType1": "magic",
+    "bool2": "and",
+    "dmgType2": "blunt",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": "0",
+      "effect2": "0",
+      "effect3": "0",
+      "effect4": "0"
+    }
+  },
+  "effects": [],
+  "folder": "6PM0K9AWtzeYO1Fn",
+  "flags": {
+    "scene-packer": {
+      "hash": "a669c70108e7797e273570c9f5b6edb433dcd8a3"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.body-spells.Item.TPqGBjLtYLQ1C2qL",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601582199,
+    "modifiedTime": 1780601582199,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "d8fKKCUoPvKMdzkF",
+  "sort": 0,
+  "_key": "!items!d8fKKCUoPvKMdzkF"
+}

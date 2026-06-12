@@ -1,0 +1,164 @@
+{
+  "name": "Stinger",
+  "type": "spell",
+  "img": "icons/magic/earth/projectile-stone-bullet-pink.webp",
+  "system": {
+    "description": "<p>Deals {{math spellPower \"*\" 3}} + 2d8 damage to up to two targets in a line, with a 75% chance to poison. If the spell immediately kills a target, the poison effect transfers to one target within 3m.</p>",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [
+      "bleeding",
+      "burning",
+      "chain",
+      "disorientation",
+      "dispel",
+      "flammable",
+      "frozen",
+      "concussion",
+      "paralyzed",
+      "poisoned",
+      "rooted",
+      "slowed",
+      "stun",
+      "vulnerable",
+      "weakened",
+      "wet"
+    ],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": [
+      {
+        "mode": "",
+        "amount": "",
+        "type": ""
+      }
+    ],
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": true,
+    "sustained": false,
+    "difficulty": -25,
+    "cost": 12,
+    "perRound": 0,
+    "option": "magic",
+    "type": "earth",
+    "rank": "master",
+    "actionCost": "1",
+    "range": "30",
+    "spellClass": "greater",
+    "roll": {
+      "diceNum": 2,
+      "diceSize": "8",
+      "diceBonus": "(@spellPower*3)"
+    },
+    "penetration": 16,
+    "dmgType1": "magic",
+    "bool2": "and",
+    "dmgType2": "piercing",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": 75,
+      "effect2": 0,
+      "effect3": 0,
+      "effect4": 0,
+      "bleed": null,
+      "extra1": 75,
+      "extra2": null,
+      "extra3": null,
+      "stagger": null
+    },
+    "effectType1": "poison",
+    "effectType2": "",
+    "effectType3": ""
+  },
+  "effects": [],
+  "folder": "JBcANv6vENmYO1qP",
+  "flags": {
+    "scene-packer": {
+      "hash": "19c1f737106783472471dc9eed62a30bc85ed6b3"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.earth-spells.Item.hPwRBzDS4nbPdcu3",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601584975,
+    "modifiedTime": 1780601584975,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "7nrcxgOx4l65oEgx",
+  "sort": 0,
+  "_key": "!items!7nrcxgOx4l65oEgx"
+}

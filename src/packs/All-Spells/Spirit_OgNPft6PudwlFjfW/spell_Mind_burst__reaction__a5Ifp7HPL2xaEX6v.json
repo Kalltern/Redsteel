@@ -1,0 +1,139 @@
+{
+  "name": "Mind burst (reaction)",
+  "type": "spell",
+  "img": "icons/svg/mystery-man.svg",
+  "system": {
+    "description": "In a 4.5m radius around the caster, all Targets make a Willpower Test vs. Caster's Willpower Test. On failure, Targets are Stunned for one round. On success, they are Paralyzed for one round and then Stunned for another round. Interrupts physical attacks. Can only be cast as a Reaction if the caster is attacked.",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": [
+      {
+        "mode": "",
+        "amount": "",
+        "type": ""
+      }
+    ],
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": "TRUE",
+    "sustained": false,
+    "difficulty": -30,
+    "cost": 15,
+    "perRound": 0,
+    "option": "magic",
+    "type": "spirit",
+    "rank": "master",
+    "actionCost": "Reaction",
+    "range": "Caster",
+    "spellClass": "support",
+    "roll": {
+      "diceNum": 0,
+      "diceSize": 0,
+      "diceBonus": ""
+    },
+    "penetration": 0,
+    "dmgType1": "",
+    "bool2": "",
+    "dmgType2": "",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": "0",
+      "effect2": "0",
+      "effect3": "0",
+      "effect4": "0"
+    }
+  },
+  "effects": [],
+  "folder": "OgNPft6PudwlFjfW",
+  "flags": {
+    "scene-packer": {
+      "hash": "238995fabc0d109a6190ded6122f7c3cee54135b"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.spirit-spells.Item.yavfeT1HCqaH5Eow",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601587687,
+    "modifiedTime": 1780601587687,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "a5Ifp7HPL2xaEX6v",
+  "sort": 0,
+  "_key": "!items!a5Ifp7HPL2xaEX6v"
+}

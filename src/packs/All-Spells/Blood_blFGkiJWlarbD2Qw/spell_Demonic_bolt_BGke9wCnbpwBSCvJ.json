@@ -1,0 +1,138 @@
+{
+  "name": "Demonic bolt",
+  "type": "spell",
+  "img": "icons/svg/mystery-man.svg",
+  "system": {
+    "description": "Deals Dark + Fire damage equal to 6d8 + {{spellPower}} to one target, with a 20% chance to apply Burning.",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": [
+      {
+        "mode": "",
+        "amount": "",
+        "type": ""
+      }
+    ],
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": true,
+    "sustained": false,
+    "difficulty": -15,
+    "cost": 5,
+    "perRound": 0,
+    "option": "magic",
+    "type": "blood",
+    "rank": "expert",
+    "actionCost": "1",
+    "range": "40",
+    "spellClass": "lesser",
+    "roll": {
+      "diceNum": 6,
+      "diceSize": 8,
+      "diceBonus": "@spellPower"
+    },
+    "penetration": 10,
+    "dmgType1": "dark",
+    "bool2": "and",
+    "dmgType2": "fire",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "extra1": 20,
+      "extra2": 0,
+      "extra3": 0
+    }
+  },
+  "effects": [],
+  "folder": "blFGkiJWlarbD2Qw",
+  "flags": {
+    "scene-packer": {
+      "hash": "29892847cfb30cf634e5419176f602a948ea0028"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.blood-spells.Item.OHECKKFlOKB0E68O",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601580517,
+    "modifiedTime": 1780601580517,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "BGke9wCnbpwBSCvJ",
+  "sort": 0,
+  "_key": "!items!BGke9wCnbpwBSCvJ"
+}

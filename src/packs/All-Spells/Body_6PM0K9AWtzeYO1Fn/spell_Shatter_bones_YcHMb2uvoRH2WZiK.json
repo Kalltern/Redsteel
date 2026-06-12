@@ -1,0 +1,139 @@
+{
+  "name": "Shatter bones",
+  "type": "spell",
+  "img": "icons/svg/mystery-man.svg",
+  "system": {
+    "description": "Initiates a Willpower vs. Target's Endurance Test. On failure, deals {{math spellPower \"*\" 3}} Magical + Bludgeoning damage and Stuns the Target for one round. Ignores armor. On success, breaks 2d4d1 limbs (chosen by the Caster) and causes the same number of Serious Wounds. This spell cannot kill the Target or exceed the limit of Serious Wounds.",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": [
+      {
+        "mode": "",
+        "amount": "",
+        "type": ""
+      }
+    ],
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": "TRUE",
+    "sustained": false,
+    "difficulty": -50,
+    "cost": 30,
+    "perRound": 0,
+    "option": "magic",
+    "type": "body",
+    "rank": "grandmaster",
+    "actionCost": "2",
+    "range": "10",
+    "spellClass": "greater",
+    "roll": {
+      "diceNum": 0,
+      "diceSize": 0,
+      "diceBonus": "@spellPower*3"
+    },
+    "penetration": 100,
+    "dmgType1": "magic",
+    "bool2": "and",
+    "dmgType2": "blunt",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": "0",
+      "effect2": "0",
+      "effect3": "0",
+      "effect4": "0"
+    }
+  },
+  "effects": [],
+  "folder": "6PM0K9AWtzeYO1Fn",
+  "flags": {
+    "scene-packer": {
+      "hash": "a60d277f576cbb5d00c351fc11501edff43233c8"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.body-spells.Item.VorHVLgfSIkCXkmK",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601582198,
+    "modifiedTime": 1780601582198,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "YcHMb2uvoRH2WZiK",
+  "sort": 0,
+  "_key": "!items!YcHMb2uvoRH2WZiK"
+}

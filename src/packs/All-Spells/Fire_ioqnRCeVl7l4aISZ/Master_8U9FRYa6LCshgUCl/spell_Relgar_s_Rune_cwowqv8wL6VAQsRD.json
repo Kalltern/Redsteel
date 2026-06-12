@@ -1,0 +1,171 @@
+{
+  "name": "Relgar’s Rune",
+  "type": "spell",
+  "img": "icons/magic/symbols/rune-sigil-red-orange.webp",
+  "system": {
+    "description": "<p>Creates a barely visible trap on an unoccupied hex (must not be adjacent to another trap) for 15 minutes.</p><hr><p>Deals {{math spellPower \"*\" 3}} + 3d8 damage in 2 hex (3 m) radius. <br>First target has +15% Burning chance.<br>Ignores Magic Defense of the first target.</p>",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [
+      "bleeding",
+      "burning",
+      "chain",
+      "disorientation",
+      "dispel",
+      "flammable",
+      "frozen",
+      "concussion",
+      "paralyzed",
+      "poisoned",
+      "rooted",
+      "slowed",
+      "stun",
+      "vulnerable",
+      "weakened",
+      "wet"
+    ],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": {
+      "0": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      },
+      "1": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      }
+    },
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": true,
+    "sustained": false,
+    "difficulty": -25,
+    "cost": 8,
+    "perRound": 0,
+    "option": "magic",
+    "type": "fire",
+    "rank": "master",
+    "actionCost": "1",
+    "range": "10",
+    "spellClass": "support",
+    "roll": {
+      "diceNum": 3,
+      "diceSize": "8",
+      "diceBonus": "@spellPower*3"
+    },
+    "penetration": 20,
+    "dmgType1": "magic",
+    "bool2": "and",
+    "dmgType2": "fire",
+    "bool3": "or",
+    "dmgType3": "blunt",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": 15,
+      "effect2": 0,
+      "effect3": 0,
+      "effect4": 0,
+      "bleed": null,
+      "extra1": 15,
+      "extra2": null,
+      "extra3": null,
+      "stagger": null
+    },
+    "effectType1": "burn",
+    "effectType2": "",
+    "effectType3": "",
+    "attributeTest": "",
+    "testModifier": ""
+  },
+  "effects": [],
+  "folder": "8U9FRYa6LCshgUCl",
+  "flags": {
+    "scene-packer": {
+      "hash": "3a38f592d4c3db92220658fee4c425da1e2f0316"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.fire-spells.Item.1kcFmeviseuYxUWb",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601586354,
+    "modifiedTime": 1780601586354,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "cwowqv8wL6VAQsRD",
+  "sort": 0,
+  "_key": "!items!cwowqv8wL6VAQsRD"
+}

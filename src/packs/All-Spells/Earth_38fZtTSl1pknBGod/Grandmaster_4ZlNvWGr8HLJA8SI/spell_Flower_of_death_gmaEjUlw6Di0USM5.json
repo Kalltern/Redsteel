@@ -1,0 +1,164 @@
+{
+  "name": "Flower of death",
+  "type": "spell",
+  "img": "icons/magic/nature/plant-vines-skull-green.webp",
+  "system": {
+    "description": "<p>Deals Magic + Blunt damage (3d20 + <span style=\"font-family:Signika, sans-serif\">{{math spellPower \"*\" 5}}</span>) in a 4.5m area. 50% chance to stun for 1 turn. A 1.5m radius at the epicenter becomes extremely difficult terrain. Pushes targets back 3 hexes and triggers a willpower test (caster’s bonus: <span style=\"font-family:Signika, sans-serif\">{{math spellPower \"*\" 2}}</span>) vs. Target's endurance test to resist being knocked down. Armor penetration 40. Critters or similar sized being do not count.</p>",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [
+      "bleeding",
+      "burning",
+      "chain",
+      "disorientation",
+      "dispel",
+      "flammable",
+      "frozen",
+      "concussion",
+      "paralyzed",
+      "poisoned",
+      "rooted",
+      "slowed",
+      "stun",
+      "vulnerable",
+      "weakened",
+      "wet"
+    ],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": [
+      {
+        "mode": "",
+        "amount": "",
+        "type": ""
+      }
+    ],
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": true,
+    "sustained": false,
+    "difficulty": -80,
+    "cost": 40,
+    "perRound": 0,
+    "option": "magic",
+    "type": "earth",
+    "rank": "grandmaster",
+    "actionCost": "2",
+    "range": "15",
+    "spellClass": "greater",
+    "roll": {
+      "diceNum": 3,
+      "diceSize": "20",
+      "diceBonus": "(@spellPower*5)"
+    },
+    "penetration": 40,
+    "dmgType1": "magic",
+    "bool2": "and",
+    "dmgType2": "blunt",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": 50,
+      "effect2": 0,
+      "effect3": 0,
+      "effect4": 0,
+      "bleed": null,
+      "extra1": null,
+      "extra2": null,
+      "extra3": null,
+      "stagger": null
+    },
+    "effectType1": "",
+    "effectType2": "",
+    "effectType3": ""
+  },
+  "effects": [],
+  "folder": "4ZlNvWGr8HLJA8SI",
+  "flags": {
+    "scene-packer": {
+      "hash": "5e5b31afa45e050e89a051c9490702a28522b2e3"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.earth-spells.Item.aD8RdoL8ZTbMvC4d",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601584972,
+    "modifiedTime": 1780601584972,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "gmaEjUlw6Di0USM5",
+  "sort": 0,
+  "_key": "!items!gmaEjUlw6Di0USM5"
+}

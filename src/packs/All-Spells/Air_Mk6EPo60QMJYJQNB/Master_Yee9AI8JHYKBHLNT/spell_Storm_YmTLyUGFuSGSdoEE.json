@@ -1,0 +1,154 @@
+{
+  "name": "Storm",
+  "type": "spell",
+  "img": "icons/magic/lightning/bolt-strike-clouds-blue.webp",
+  "system": {
+    "description": "<p>Conjures a concentrated storm on any chosen point in range.</p><p>Affects up to 2 + {{spellPower}} targets per round in 30m (20 hex) radius. </p><p>Deals (3d8 + {{math spellPower \"*\" 2}}) damage to each target. </p><hr><p>Area can be moved by one hex  as Free Action once per round. </p><p>Can only be cast outdoors. </p>",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": {
+      "0": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      },
+      "1": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      }
+    },
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": true,
+    "sustained": false,
+    "difficulty": -80,
+    "cost": 20,
+    "perRound": 10,
+    "option": "magic",
+    "type": "air",
+    "rank": "master",
+    "actionCost": "2 | C",
+    "range": "50",
+    "spellClass": "greater",
+    "roll": {
+      "diceNum": 3,
+      "diceSize": "8",
+      "diceBonus": "@spellPower*2"
+    },
+    "penetration": 16,
+    "dmgType1": "magic",
+    "bool2": "and",
+    "dmgType2": "lightning",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": "0",
+      "effect2": "0",
+      "effect3": "0",
+      "effect4": "0",
+      "bleed": null,
+      "extra1": null,
+      "extra2": null,
+      "extra3": null,
+      "stagger": null
+    },
+    "effectType1": "",
+    "effectType2": "",
+    "effectType3": "",
+    "attributeTest": "",
+    "testModifier": ""
+  },
+  "effects": [],
+  "folder": "Yee9AI8JHYKBHLNT",
+  "flags": {
+    "scene-packer": {
+      "hash": "31134386cdeb2af9b9faab551bbae118c3a0d42f"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.air-spells.Item.ZRET2aZ12H97xdZB",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601577693,
+    "modifiedTime": 1780601577693,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "YmTLyUGFuSGSdoEE",
+  "sort": 0,
+  "_key": "!items!YmTLyUGFuSGSdoEE"
+}

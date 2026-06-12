@@ -1,0 +1,154 @@
+{
+  "name": "Shrapnels",
+  "type": "spell",
+  "img": "icons/magic/earth/projectiles-stone-salvo-red.webp",
+  "system": {
+    "description": "<p>Deals 4d6 + {{math spellPower \"*\" 2}} damage in a 90° arc and 6m range. 60% chance to cause Bleeding. Corruption +4</p>",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": {
+      "0": {
+        "type": "Corruption",
+        "mode": "add",
+        "amount": 4
+      },
+      "1": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      }
+    },
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": true,
+    "sustained": false,
+    "difficulty": -30,
+    "cost": 12,
+    "perRound": 0,
+    "option": "magic",
+    "type": "darkness",
+    "rank": "expert",
+    "actionCost": "1",
+    "range": "2",
+    "spellClass": "lesser",
+    "roll": {
+      "diceNum": 4,
+      "diceSize": "6",
+      "diceBonus": "@spellPower*2"
+    },
+    "penetration": 12,
+    "dmgType1": "magic",
+    "bool2": "and",
+    "dmgType2": "dark",
+    "bool3": "and",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": "60",
+      "effect2": "0",
+      "effect3": "0",
+      "effect4": "0",
+      "bleed": 60,
+      "extra1": null,
+      "extra2": null,
+      "extra3": null,
+      "stagger": null
+    },
+    "effectType1": "",
+    "effectType2": "",
+    "effectType3": "",
+    "attributeTest": "",
+    "testModifier": ""
+  },
+  "effects": [],
+  "folder": "XCC7CG5LovD3hSXR",
+  "flags": {
+    "scene-packer": {
+      "hash": "a08b186248045f2fdfcad317d2be4a0c51c00393"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.dark-spells.Item.YdT9PKTdT9IrrqH4",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601583465,
+    "modifiedTime": 1780601583465,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "CHtjoWwDwhvJsRxN",
+  "sort": 0,
+  "_key": "!items!CHtjoWwDwhvJsRxN"
+}

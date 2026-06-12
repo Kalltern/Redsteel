@@ -1,0 +1,147 @@
+{
+  "name": "Blizzard",
+  "type": "spell",
+  "img": "icons/magic/water/snowflake-ice-blue.webp",
+  "system": {
+    "description": "<p>Creates a snowstorm in 250m area that Slows Targets and deals {{math spellPower \"*\" 3}} damage per turn. 3m area around caster is protected. Maximum 30% Freeze chance. Always counts as Magical attack with 50 Strength. Ignores armor. </p>",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": [
+      {
+        "mode": "",
+        "amount": "",
+        "type": ""
+      }
+    ],
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": true,
+    "sustained": false,
+    "difficulty": -80,
+    "cost": 40,
+    "perRound": 10,
+    "option": "magic",
+    "type": "water",
+    "rank": "grandmaster",
+    "actionCost": "4 | C",
+    "range": "200",
+    "spellClass": "greater",
+    "roll": {
+      "diceNum": 0,
+      "diceSize": "0",
+      "diceBonus": "@spellPower*3"
+    },
+    "penetration": 0,
+    "dmgType1": "magic",
+    "bool2": "and",
+    "dmgType2": "frost",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": "30",
+      "effect2": "0",
+      "effect3": "0",
+      "effect4": "0",
+      "bleed": null,
+      "extra1": 100,
+      "extra2": null,
+      "extra3": null,
+      "stagger": null
+    },
+    "effectType1": "slow",
+    "effectType2": "",
+    "effectType3": ""
+  },
+  "effects": [],
+  "folder": "5ubiTNT29W3ben57",
+  "flags": {
+    "scene-packer": {
+      "hash": "8dc90ec4368c6c325108e3c9d50420a9d3079479"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.water-spells.Item.I6PEHpssOGzD6JdF",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601589069,
+    "modifiedTime": 1780601589069,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "5pcx8fcFjQIXSfvv",
+  "sort": 0,
+  "_key": "!items!5pcx8fcFjQIXSfvv"
+}

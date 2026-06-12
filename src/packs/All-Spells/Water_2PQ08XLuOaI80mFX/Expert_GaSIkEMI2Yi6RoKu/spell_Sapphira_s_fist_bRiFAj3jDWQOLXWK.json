@@ -1,0 +1,147 @@
+{
+  "name": "Sapphira's fist",
+  "type": "spell",
+  "img": "icons/magic/water/projectile-ice-chunk.webp",
+  "system": {
+    "description": "<p>Deals 5d6 damage + {{spellPower}} to a single Target. 20% chance to stun.<br>Deals half damage of the same types with penetration 10 in a 1.5m area .</p>",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": [
+      {
+        "mode": "",
+        "amount": "",
+        "type": ""
+      }
+    ],
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": true,
+    "sustained": false,
+    "difficulty": -15,
+    "cost": 8,
+    "perRound": 0,
+    "option": "magic",
+    "type": "water",
+    "rank": "expert",
+    "actionCost": "1",
+    "range": "30",
+    "spellClass": "lesser",
+    "roll": {
+      "diceNum": 5,
+      "diceSize": "6",
+      "diceBonus": "@spellPower"
+    },
+    "penetration": 20,
+    "dmgType1": "magic",
+    "bool2": "and",
+    "dmgType2": "frost",
+    "bool3": "and",
+    "dmgType3": "blunt",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": "20",
+      "effect2": "0",
+      "effect3": "0",
+      "effect4": "0",
+      "bleed": null,
+      "extra1": 20,
+      "extra2": null,
+      "extra3": null,
+      "stagger": null
+    },
+    "effectType1": "stun",
+    "effectType2": "",
+    "effectType3": ""
+  },
+  "effects": [],
+  "folder": "GaSIkEMI2Yi6RoKu",
+  "flags": {
+    "scene-packer": {
+      "hash": "0faac745acd6922f538134e67b17850706b78739"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.water-spells.Item.fXs7iIuX6jXJVn7N",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601589068,
+    "modifiedTime": 1780601589068,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "bRiFAj3jDWQOLXWK",
+  "sort": 0,
+  "_key": "!items!bRiFAj3jDWQOLXWK"
+}

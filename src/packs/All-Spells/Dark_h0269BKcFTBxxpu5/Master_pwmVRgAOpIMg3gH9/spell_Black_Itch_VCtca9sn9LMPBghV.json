@@ -1,0 +1,139 @@
+{
+  "name": "Black Itch",
+  "type": "spell",
+  "img": "icons/skills/wounds/illness-disease-glowing-green.webp",
+  "system": {
+    "description": "The target is afflicted by microscopic parasites for {{math spellPower \"/\" 2}} + 1 rounds, suffering 1d4 damage each round. The Damage dealt is also gained as Corruption. Causes unbearable itching: the target loses 1 Action and 1 Reaction each round. Corruption +6. Ignores Armor.",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": [
+      {
+        "mode": "",
+        "amount": "",
+        "type": ""
+      }
+    ],
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": "TRUE",
+    "sustained": false,
+    "difficulty": -25,
+    "cost": 10,
+    "perRound": 0,
+    "option": "magic",
+    "type": "darkness",
+    "rank": "master",
+    "actionCost": "1",
+    "range": "8",
+    "spellClass": "lesser",
+    "roll": {
+      "diceNum": 1,
+      "diceSize": 4,
+      "diceBonus": ""
+    },
+    "penetration": 100,
+    "dmgType1": "magic",
+    "bool2": "and",
+    "dmgType2": "dark",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": "0",
+      "effect2": "0",
+      "effect3": "0",
+      "effect4": "0"
+    }
+  },
+  "effects": [],
+  "folder": "pwmVRgAOpIMg3gH9",
+  "flags": {
+    "scene-packer": {
+      "hash": "9bb476a4c609ae4e786ed7372fd3ee7268665a3d"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.dark-spells.Item.3fDSlFhx7UGdXZm5",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601583467,
+    "modifiedTime": 1780601583467,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "VCtca9sn9LMPBghV",
+  "sort": 0,
+  "_key": "!items!VCtca9sn9LMPBghV"
+}

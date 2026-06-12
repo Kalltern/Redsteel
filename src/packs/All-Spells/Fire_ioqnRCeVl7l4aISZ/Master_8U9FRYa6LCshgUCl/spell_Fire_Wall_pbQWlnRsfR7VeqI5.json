@@ -1,0 +1,164 @@
+{
+  "name": "Fire Wall",
+  "type": "spell",
+  "img": "icons/magic/fire/flame-burning-fence.webp",
+  "system": {
+    "description": "<p>Creates an opaque wall of fire on unoccupied hexes (must connect) at a cost per 4 hexes. Deals 10 + {{math spellPower \"*\" 5}} damage. +30%  chance to apply Burning.</p>",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [
+      "bleeding",
+      "burning",
+      "chain",
+      "disorientation",
+      "dispel",
+      "flammable",
+      "frozen",
+      "concussion",
+      "paralyzed",
+      "poisoned",
+      "rooted",
+      "slowed",
+      "stun",
+      "vulnerable",
+      "weakened",
+      "wet"
+    ],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": [
+      {
+        "mode": "",
+        "amount": "",
+        "type": ""
+      }
+    ],
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": false,
+    "sustained": false,
+    "difficulty": -35,
+    "cost": 10,
+    "perRound": 5,
+    "option": "magic",
+    "type": "fire",
+    "rank": "master",
+    "actionCost": "1 | C",
+    "range": "15",
+    "spellClass": "support",
+    "roll": {
+      "diceNum": 0,
+      "diceSize": "0",
+      "diceBonus": "10+(@spellPower*5)"
+    },
+    "penetration": 15,
+    "dmgType1": "magic",
+    "bool2": "and",
+    "dmgType2": "fire",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": "30",
+      "effect2": "0",
+      "effect3": "0",
+      "effect4": "0",
+      "bleed": null,
+      "extra1": 30,
+      "extra2": null,
+      "extra3": null,
+      "stagger": null
+    },
+    "effectType1": "burn",
+    "effectType2": "",
+    "effectType3": ""
+  },
+  "effects": [],
+  "folder": "8U9FRYa6LCshgUCl",
+  "flags": {
+    "scene-packer": {
+      "hash": "d54e10c7b1b1dd162be6a1644235ae5c69f0b1b2"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.fire-spells.Item.1c39RZQZNGg98Od9",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601586351,
+    "modifiedTime": 1780601586351,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "pbQWlnRsfR7VeqI5",
+  "sort": 0,
+  "_key": "!items!pbQWlnRsfR7VeqI5"
+}

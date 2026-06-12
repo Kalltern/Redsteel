@@ -1,0 +1,27 @@
+{
+  "type": "Item",
+  "folder": "h0269BKcFTBxxpu5",
+  "name": "Wild",
+  "color": null,
+  "sorting": "a",
+  "_id": "uiFKWM6saw7R2jtx",
+  "description": "",
+  "sort": -150000,
+  "flags": {
+    "scene-packer": {
+      "hash": "1b38eae792f41c2ffec52592546037f21ea120e9"
+    }
+  },
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601583440,
+    "modifiedTime": 1780601583440,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "_key": "!folders!uiFKWM6saw7R2jtx"
+}

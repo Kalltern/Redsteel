@@ -1,0 +1,154 @@
+{
+  "name": "Harold's whirlwind (reaction or target)",
+  "type": "spell",
+  "img": "icons/magic/air/wind-tornado-cyclone-red-orange.webp",
+  "system": {
+    "description": "<p>Harold's Whirlwind: Propels self or target in any direction (vertically or horizontally).</p><hr><p>Will Test (bonus {{math spellPower \"*\" 4}}) vs. Target's Dexterity Test.</p><hr><p>On caster's success: Propels target up to {{math spellPower \"*\" 5}} hexes.</p><p>On failure: Moves the target 3 hexes in any direction. Target takes 1d8 damage per hex it couldn't move.</p><p>Fall damage follows Falling/Acrobatics rules.</p><p>Maximum damage capped at 100. Ignores Armor. Can only be cast as Reaction on self when attacked.</p>",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": {
+      "0": {
+        "type": "",
+        "mode": "",
+        "amount": 0
+      },
+      "1": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      }
+    },
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": false,
+    "sustained": false,
+    "difficulty": -60,
+    "cost": 30,
+    "perRound": 0,
+    "option": "magic",
+    "type": "air",
+    "rank": "grandmaster",
+    "actionCost": "Reaction / 1",
+    "range": "4",
+    "spellClass": "greater",
+    "roll": {
+      "diceNum": null,
+      "diceSize": "",
+      "diceBonus": ""
+    },
+    "penetration": 100,
+    "dmgType1": "",
+    "bool2": "",
+    "dmgType2": "",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": "0",
+      "effect2": "0",
+      "effect3": "0",
+      "effect4": "0",
+      "bleed": null,
+      "extra1": null,
+      "extra2": null,
+      "extra3": null,
+      "stagger": null
+    },
+    "effectType1": "",
+    "effectType2": "",
+    "effectType3": "",
+    "attributeTest": "Will",
+    "testModifier": "@spellPower*4"
+  },
+  "effects": [],
+  "folder": "Cz6tIj1yASsZNLgq",
+  "flags": {
+    "scene-packer": {
+      "hash": "4fca5a97fb1cf7712f29052ab2915d23339f1aee"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.air-spells.Item.S37tkn6sBL2bEQyB",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601577694,
+    "modifiedTime": 1780601577694,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "iRaQEu50BiVcV1FL",
+  "sort": 0,
+  "_key": "!items!iRaQEu50BiVcV1FL"
+}

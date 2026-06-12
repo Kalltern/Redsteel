@@ -1,0 +1,139 @@
+{
+  "name": "Force strike",
+  "type": "spell",
+  "img": "icons/svg/mystery-man.svg",
+  "system": {
+    "description": "No requirements. A direct energy blow dealing Magic + Blunt Damage 2d6 + {{math spellPower \"/\" 2}} to one Target. Triggers a Will Test vs. Target's Strength/Resilience Test to push the Target 1 hex. Penetration 6.",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": [
+      {
+        "mode": "",
+        "amount": "",
+        "type": ""
+      }
+    ],
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": "TRUE",
+    "sustained": false,
+    "difficulty": 25,
+    "cost": 2,
+    "perRound": 0,
+    "option": "magic",
+    "type": "spirit",
+    "rank": "wild",
+    "actionCost": "1",
+    "range": "4",
+    "spellClass": "support",
+    "roll": {
+      "diceNum": 2,
+      "diceSize": 6,
+      "diceBonus": "@spellPower/2"
+    },
+    "penetration": 6,
+    "dmgType1": "magic",
+    "bool2": "and",
+    "dmgType2": "blunt",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": "0",
+      "effect2": "0",
+      "effect3": "0",
+      "effect4": "0"
+    }
+  },
+  "effects": [],
+  "folder": "OgNPft6PudwlFjfW",
+  "flags": {
+    "scene-packer": {
+      "hash": "06042d6303beb772ca8e1acaad91f671abdacde9"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.spirit-spells.Item.w8xySiqjwoqj5No9",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601587683,
+    "modifiedTime": 1780601587683,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "PHE1uZqnciPDASIL",
+  "sort": 0,
+  "_key": "!items!PHE1uZqnciPDASIL"
+}

@@ -1,0 +1,138 @@
+{
+  "name": "Belgar's whip",
+  "type": "spell",
+  "img": "icons/svg/mystery-man.svg",
+  "system": {
+    "description": "Triggers a Will Test (bonus {{math spellPower \"\" 3}}) vs. target's Strength / Dexterity Test. On a success, deals Blunt damage equal to 3d8 + {{math spellPower \"\" 2}} to one target, throws the target in a random direction up to 6 m, and knocks it Prone. Can be cast on up to five targets at once, adds X*3 blood cost per target (min. 1 target = 4 + 3 cost)",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": [
+      {
+        "mode": "",
+        "amount": "",
+        "type": ""
+      }
+    ],
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": true,
+    "sustained": false,
+    "difficulty": -35,
+    "cost": 4,
+    "perRound": 0,
+    "option": "magic",
+    "type": "blood",
+    "rank": "master",
+    "actionCost": "1",
+    "range": "15",
+    "spellClass": "greater",
+    "roll": {
+      "diceNum": 3,
+      "diceSize": 8,
+      "diceBonus": "@spellPower*2"
+    },
+    "penetration": 25,
+    "dmgType1": "blunt",
+    "bool2": "",
+    "dmgType2": "",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "extra1": 0,
+      "extra2": 0,
+      "extra3": 0
+    }
+  },
+  "effects": [],
+  "folder": "blFGkiJWlarbD2Qw",
+  "flags": {
+    "scene-packer": {
+      "hash": "82521bdd1b452f9d5d39c7d9ce32618ead67b951"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.blood-spells.Item.hQkneaWErL1d0bnK",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601580514,
+    "modifiedTime": 1780601580514,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "gqtvLLftmi633iTb",
+  "sort": 0,
+  "_key": "!items!gqtvLLftmi633iTb"
+}

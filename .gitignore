@@ -13,11 +13,28 @@ foundry
 /packs/
 tos.zip
 
+# Logs
 *.log
+
+# Local notes / working documents (not part of releases)
 module/instructions.md
-/src/packs
 Kniha kouzel pro ToS V12.1 (WIP).xlsx
-SPELL_EFFECTS_ANALYSIS.md
 Pravidla pro ToS V12.1 (WIP).xlsx
-scripts/gen_spec_lang.py
+SPELL_EFFECTS_ANALYSIS.md
 SPECIALISATIONS.md
+
+# One-off dev/utility scripts (not part of releases)
+scripts/
+__pycache__/
+*.pyc
+inspect2.py
+inspect_lines.py
+replace_rows2.py
+replace_skill_rows.py
+
+# Local build output / release artifacts
+release/
+redsteel.zip
+
+# Local tool settings
+.claude/

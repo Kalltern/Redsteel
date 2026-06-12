@@ -1,0 +1,154 @@
+{
+  "name": "Lightning tornado",
+  "type": "spell",
+  "img": "icons/magic/lightning/bolt-strike-explosion-blue.webp",
+  "system": {
+    "description": "<p>Summons a Lightning tornado on any hex in range for 4 rounds. <br>Deals (2d4 + {{math spellPower \"*\" 3}}) damage in 1.5m radius and guarantees Stun at its center. <br>At start of each round, moves twice in random direction by one hex (1d6 to determine the direction starting from top hex clockwise). </p><p>Same target can only take damage once per round.</p><hr><ol><li data-start=\"690\" data-end=\"793\"><p data-start=\"692\" data-end=\"793\">When chaining is triggered, the caster selects one creature that was hit by the<strong data-start=\"739\" data-end=\"793\"> </strong>Lightning Tornado.</p></li><li data-start=\"794\" data-end=\"873\"><p data-start=\"796\" data-end=\"873\">The chain <strong data-start=\"806\" data-end=\"848\">cannot target any creature already hit</strong> by the Lightning Tornado</p></li></ol>",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": {
+      "0": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      },
+      "1": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      }
+    },
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": true,
+    "sustained": false,
+    "difficulty": -60,
+    "cost": 15,
+    "perRound": 0,
+    "option": "magic",
+    "type": "air",
+    "rank": "master",
+    "actionCost": "2",
+    "range": "10",
+    "spellClass": "greater",
+    "roll": {
+      "diceNum": 2,
+      "diceSize": "4",
+      "diceBonus": "@spellPower*3"
+    },
+    "penetration": 14,
+    "dmgType1": "magic",
+    "bool2": "and",
+    "dmgType2": "lightning",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": "0",
+      "effect2": "0",
+      "effect3": "0",
+      "effect4": "0",
+      "bleed": null,
+      "extra1": null,
+      "extra2": null,
+      "extra3": null,
+      "stagger": null
+    },
+    "effectType1": "",
+    "effectType2": "",
+    "effectType3": "",
+    "attributeTest": "",
+    "testModifier": ""
+  },
+  "effects": [],
+  "folder": "Yee9AI8JHYKBHLNT",
+  "flags": {
+    "scene-packer": {
+      "hash": "43f7e6c415fe52e0e2515f7b2b3d309521669f46"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.air-spells.Item.XzKqYRIH2G5MxZwl",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601577692,
+    "modifiedTime": 1780601577692,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "KzGnfIKSzywBPSYG",
+  "sort": 0,
+  "_key": "!items!KzGnfIKSzywBPSYG"
+}

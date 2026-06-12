@@ -1,0 +1,27 @@
+{
+  "name": "Air",
+  "sorting": "m",
+  "folder": null,
+  "type": "Item",
+  "_id": "Mk6EPo60QMJYJQNB",
+  "description": "",
+  "sort": 100000,
+  "color": null,
+  "flags": {
+    "scene-packer": {
+      "hash": "1594c7a78885ce8b629a00d204f8afaf49ac0c35"
+    }
+  },
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601577664,
+    "modifiedTime": 1780601577708,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD",
+    "exportSource": null
+  },
+  "_key": "!folders!Mk6EPo60QMJYJQNB"
+}

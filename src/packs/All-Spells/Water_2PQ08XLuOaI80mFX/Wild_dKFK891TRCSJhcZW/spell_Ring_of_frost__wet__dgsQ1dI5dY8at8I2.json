@@ -1,0 +1,154 @@
+{
+  "name": "Ring of frost (wet)",
+  "type": "spell",
+  "img": "icons/magic/water/barrier-ice-wall-explosion.webp",
+  "system": {
+    "description": "<p>Requires wet target. Deals 4d4 + {{math spellPower \"/\" 2}} damage per turn to everyone in a 2 hex (3m) radius around the caster. <br />+10% chance to Slow. <br />Ignores armor.<br /><br />Not fully automated. Resolve damage per turn manually</p>",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": {
+      "0": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      },
+      "1": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      }
+    },
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": true,
+    "sustained": true,
+    "difficulty": 20,
+    "cost": 3,
+    "perRound": 1,
+    "option": "magic",
+    "type": "water",
+    "rank": "wild",
+    "actionCost": "1 | C",
+    "range": "Caster",
+    "spellClass": "support",
+    "roll": {
+      "diceNum": 4,
+      "diceSize": "4",
+      "diceBonus": "@spellPower/2"
+    },
+    "penetration": 100,
+    "dmgType1": "magic",
+    "bool2": "and",
+    "dmgType2": "frost",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": "10",
+      "effect2": "0",
+      "effect3": "0",
+      "effect4": "0",
+      "bleed": null,
+      "extra1": 10,
+      "extra2": null,
+      "extra3": null,
+      "stagger": null
+    },
+    "effectType1": "slow",
+    "effectType2": "",
+    "effectType3": "",
+    "attributeTest": "",
+    "testModifier": ""
+  },
+  "effects": [],
+  "folder": "dKFK891TRCSJhcZW",
+  "flags": {
+    "scene-packer": {
+      "hash": "3664ad3b6e20b76cc8bf50be4a62b5b6938c8391"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.water-spells.Item.yLarYiVvGVTLKYbl",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601589072,
+    "modifiedTime": 1780601589072,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "dgsQ1dI5dY8at8I2",
+  "sort": 0,
+  "_key": "!items!dgsQ1dI5dY8at8I2"
+}

@@ -1,0 +1,139 @@
+{
+  "name": "Dark storm",
+  "type": "spell",
+  "img": "icons/magic/unholy/energy-smoke-pink.webp",
+  "system": {
+    "description": "Can only be cast outdoors. Creates an area up to 15m wide, dealing 5d8 + {{math spellPower \"*\" 3}} Magic + Dark Damage to selected targets. Each hit causes 3d4 Corruption. Always attacks with Magical Attack Power 50. Corruption +10.",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": [
+      {
+        "mode": "",
+        "amount": "",
+        "type": ""
+      }
+    ],
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": "TRUE",
+    "sustained": false,
+    "difficulty": -90,
+    "cost": 40,
+    "perRound": 10,
+    "option": "magic",
+    "type": "darkness",
+    "rank": "grandmaster",
+    "actionCost": "2 | C",
+    "range": "100",
+    "spellClass": "greater",
+    "roll": {
+      "diceNum": 5,
+      "diceSize": 8,
+      "diceBonus": "@spellPower*3"
+    },
+    "penetration": 25,
+    "dmgType1": "magic",
+    "bool2": "and",
+    "dmgType2": "dark",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": "0",
+      "effect2": "0",
+      "effect3": "0",
+      "effect4": "0"
+    }
+  },
+  "effects": [],
+  "folder": "SXOWXMxk1ZTHI0sv",
+  "flags": {
+    "scene-packer": {
+      "hash": "ffcf5b297e25f304d5f3dd5e370f17bccbe24e87"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.dark-spells.Item.JQacaDYPA36qE36m",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601583466,
+    "modifiedTime": 1780601583466,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "chtBCMSNDU4x6yOC",
+  "sort": 0,
+  "_key": "!items!chtBCMSNDU4x6yOC"
+}

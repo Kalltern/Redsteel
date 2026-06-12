@@ -1,0 +1,147 @@
+{
+  "name": "Frost strike",
+  "type": "spell",
+  "img": "icons/magic/water/strike-weapon-blade-ice-blue.webp",
+  "system": {
+    "description": "Enhances the next attack or throw, changing its damage type to Magical + Frost. Freeze chance +30%. Cannot be combined with other attack enhancements.",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": [
+      {
+        "mode": "",
+        "amount": "",
+        "type": ""
+      }
+    ],
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": true,
+    "sustained": false,
+    "difficulty": 20,
+    "cost": 2,
+    "perRound": 0,
+    "option": "magic",
+    "type": "water",
+    "rank": "apprentice",
+    "actionCost": "Free action",
+    "range": "Caster",
+    "spellClass": "support",
+    "roll": {
+      "diceNum": 0,
+      "diceSize": "0",
+      "diceBonus": ""
+    },
+    "penetration": 0,
+    "dmgType1": "magic",
+    "bool2": "or",
+    "dmgType2": "frost",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": "30",
+      "effect2": "0",
+      "effect3": "0",
+      "effect4": "0",
+      "bleed": null,
+      "extra1": 30,
+      "extra2": null,
+      "extra3": null,
+      "stagger": null
+    },
+    "effectType1": "freeze",
+    "effectType2": "",
+    "effectType3": ""
+  },
+  "effects": [],
+  "folder": "mkz1Ivv1zQ2Wn77x",
+  "flags": {
+    "scene-packer": {
+      "hash": "4dd9a4389fef031046a7d0f129c6efc952125947"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.water-spells.Item.gfmpVbubvpkBgHUU",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601589063,
+    "modifiedTime": 1780601589063,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "OhPlVeCQ1qwRnPEe",
+  "sort": 0,
+  "_key": "!items!OhPlVeCQ1qwRnPEe"
+}

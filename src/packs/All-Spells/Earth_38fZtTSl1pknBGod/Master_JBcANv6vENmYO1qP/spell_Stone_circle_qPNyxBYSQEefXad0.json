@@ -1,0 +1,156 @@
+{
+  "name": "Stone circle",
+  "type": "spell",
+  "img": "icons/magic/earth/explosion-lava-stone-yellow.webp",
+  "system": {
+    "description": "<p>Deals magic + blunt damage (3d8 + <span style=\"font-family:Signika, sans-serif\">{{math spellPower \"*\" 4}}</span>) in a 4.5m area (center hex unaffected). 15% chance to stun. Affected targets are pushed 1 hex. Armor penetration 18.</p>",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [
+      "bleeding",
+      "burning",
+      "chain",
+      "disorientation",
+      "dispel",
+      "flammable",
+      "frozen",
+      "concussion",
+      "paralyzed",
+      "poisoned",
+      "rooted",
+      "slowed",
+      "stun",
+      "vulnerable",
+      "weakened",
+      "wet"
+    ],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": [
+      {
+        "mode": "",
+        "amount": "",
+        "type": ""
+      }
+    ],
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": true,
+    "sustained": false,
+    "difficulty": -70,
+    "cost": 18,
+    "perRound": 0,
+    "option": "magic",
+    "type": "earth",
+    "rank": "master",
+    "actionCost": "2",
+    "range": "12",
+    "spellClass": "greater",
+    "roll": {
+      "diceNum": 3,
+      "diceSize": "8",
+      "diceBonus": "(@spellPower*4)"
+    },
+    "penetration": 18,
+    "dmgType1": "magic",
+    "bool2": "and",
+    "dmgType2": "blunt",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": 15,
+      "effect2": 0,
+      "effect3": 0,
+      "effect4": 0
+    }
+  },
+  "effects": [],
+  "folder": "JBcANv6vENmYO1qP",
+  "flags": {
+    "scene-packer": {
+      "hash": "94cc17b36f10338d8ca3625788ee1611d85e8cc0"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.earth-spells.Item.KTvbkFVJkppjzj8x",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601584976,
+    "modifiedTime": 1780601584976,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "qPNyxBYSQEefXad0",
+  "sort": 0,
+  "_key": "!items!qPNyxBYSQEefXad0"
+}

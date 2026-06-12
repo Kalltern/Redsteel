@@ -1,0 +1,154 @@
+{
+  "name": "Harold's lightning",
+  "type": "spell",
+  "img": "icons/magic/lightning/projectile-tendrils-teal.webp",
+  "system": {
+    "description": "<p>During casting, caster levitates (to Long-Range weapon distance), loses all Reactions and gains 75HP shield against Physical/Magic damage. </p><hr><p>Upon release, shield breaks and deals Magic + Lightning damage (2d20 + {{math spellPower \"*\" 6}}) in 15m area to chosen targets. </p><hr><p>Stun chance +50%. Penetration 35. Movement only possible under Flight effect when spell is fully charged. Caster cannot interrupt the spell.</p>",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": {
+      "0": {
+        "type": "",
+        "mode": "",
+        "amount": 0
+      },
+      "1": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      }
+    },
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": true,
+    "sustained": false,
+    "difficulty": -80,
+    "cost": 40,
+    "perRound": 0,
+    "option": "magic",
+    "type": "air",
+    "rank": "grandmaster",
+    "actionCost": "4",
+    "range": "Caster",
+    "spellClass": "greater",
+    "roll": {
+      "diceNum": 2,
+      "diceSize": "20",
+      "diceBonus": "@spellPower*6"
+    },
+    "penetration": 35,
+    "dmgType1": "magic",
+    "bool2": "and",
+    "dmgType2": "lightning",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": "50",
+      "effect2": "0",
+      "effect3": "0",
+      "effect4": "0",
+      "bleed": null,
+      "extra1": null,
+      "extra2": null,
+      "extra3": null,
+      "stagger": null
+    },
+    "effectType1": "",
+    "effectType2": "",
+    "effectType3": "",
+    "attributeTest": "",
+    "testModifier": ""
+  },
+  "effects": [],
+  "folder": "Cz6tIj1yASsZNLgq",
+  "flags": {
+    "scene-packer": {
+      "hash": "866bc5a8108a08293f2e95b088154a116a33b7c9"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.air-spells.Item.kf2EQMqm2QzqVQkg",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601577694,
+    "modifiedTime": 1780601577694,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "kBjis1BhQqkXUS8L",
+  "sort": 0,
+  "_key": "!items!kBjis1BhQqkXUS8L"
+}

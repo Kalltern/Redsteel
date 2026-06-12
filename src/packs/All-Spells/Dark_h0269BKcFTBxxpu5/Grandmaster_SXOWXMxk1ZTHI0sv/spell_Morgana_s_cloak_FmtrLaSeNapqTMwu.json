@@ -1,0 +1,147 @@
+{
+  "name": "Morgana's cloak",
+  "type": "spell",
+  "img": "icons/magic/unholy/silhouette-light-fire-blue.webp",
+  "system": {
+    "description": "Creates a 7.5m aura that attracts fallen souls for immediate use or storage. Enemies within the aura suffer Fear for 2 rounds before each attack, with Nerve Tests at a penalty of {{math spellPower \"*\" 1}}. The aura can be detonated (at the cost of at least one soul) to deal Xd20 + {{math spellPower \"*\" 2}} Magic + Dark Damage to all enemies in the area (X = number of used souls), and causes Fear for 3 rounds (Nerve Test penalty {{math spellPower \"*\" 1}}). Corruption +10.",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": [
+      {
+        "mode": "",
+        "amount": "",
+        "type": ""
+      }
+    ],
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": true,
+    "sustained": false,
+    "difficulty": -60,
+    "cost": 25,
+    "perRound": 4,
+    "option": "magic",
+    "type": "darkness",
+    "rank": "grandmaster",
+    "actionCost": "1 | C",
+    "range": "caster",
+    "spellClass": "greater",
+    "roll": {
+      "diceNum": 0,
+      "diceSize": "20",
+      "diceBonus": "@spellPower*2"
+    },
+    "penetration": 20,
+    "dmgType1": "magic",
+    "bool2": "and",
+    "dmgType2": "dark",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": "0",
+      "effect2": "0",
+      "effect3": "0",
+      "effect4": "0",
+      "bleed": null,
+      "extra1": null,
+      "extra2": null,
+      "extra3": null,
+      "stagger": null
+    },
+    "effectType1": "",
+    "effectType2": "",
+    "effectType3": ""
+  },
+  "effects": [],
+  "folder": "SXOWXMxk1ZTHI0sv",
+  "flags": {
+    "scene-packer": {
+      "hash": "24c7e8f4c58795766fe505ea666e8d4b2be2508b"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.dark-spells.Item.1v6jmEusrdE6zfVW",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601583466,
+    "modifiedTime": 1780601583466,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "FmtrLaSeNapqTMwu",
+  "sort": 0,
+  "_key": "!items!FmtrLaSeNapqTMwu"
+}

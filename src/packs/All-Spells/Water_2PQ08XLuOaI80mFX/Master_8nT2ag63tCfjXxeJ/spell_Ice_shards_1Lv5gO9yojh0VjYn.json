@@ -1,0 +1,147 @@
+{
+  "name": "Ice shards",
+  "type": "spell",
+  "img": "icons/magic/water/projectiles-ice-faceted-shard-salvo-blue.webp",
+  "system": {
+    "description": "<p>Deals 4d6 + {{math spellPower \"*\" 3}} damage in a 90° arc and 6m range.</p>",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": [
+      {
+        "mode": "",
+        "amount": "",
+        "type": ""
+      }
+    ],
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": true,
+    "sustained": false,
+    "difficulty": -30,
+    "cost": 14,
+    "perRound": 0,
+    "option": "magic",
+    "type": "water",
+    "rank": "master",
+    "actionCost": "1",
+    "range": "2",
+    "spellClass": "greater",
+    "roll": {
+      "diceNum": 4,
+      "diceSize": "6",
+      "diceBonus": "@spellPower*3"
+    },
+    "penetration": 15,
+    "dmgType1": "magic",
+    "bool2": "and",
+    "dmgType2": "frost",
+    "bool3": "and",
+    "dmgType3": "piercing",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": "0",
+      "effect2": "0",
+      "effect3": "0",
+      "effect4": "0",
+      "bleed": null,
+      "extra1": null,
+      "extra2": null,
+      "extra3": null,
+      "stagger": null
+    },
+    "effectType1": "",
+    "effectType2": "",
+    "effectType3": ""
+  },
+  "effects": [],
+  "folder": "8nT2ag63tCfjXxeJ",
+  "flags": {
+    "scene-packer": {
+      "hash": "9168381b15b3dff31f265f8662b7e0e919bb8900"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.water-spells.Item.6QDlm0GzZtmIHeXo",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601589070,
+    "modifiedTime": 1780601589070,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "_id": "1Lv5gO9yojh0VjYn",
+  "sort": 0,
+  "_key": "!items!1Lv5gO9yojh0VjYn"
+}

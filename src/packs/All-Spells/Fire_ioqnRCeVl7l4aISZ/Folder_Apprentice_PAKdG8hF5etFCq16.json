@@ -1,0 +1,27 @@
+{
+  "name": "Apprentice",
+  "sorting": "a",
+  "folder": "ioqnRCeVl7l4aISZ",
+  "type": "Item",
+  "_id": "PAKdG8hF5etFCq16",
+  "description": "",
+  "sort": 0,
+  "color": null,
+  "flags": {
+    "scene-packer": {
+      "hash": "7f140f9778215806bc7f47bb4da50b73824bbd80"
+    }
+  },
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601586311,
+    "modifiedTime": 1780601586311,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "_key": "!folders!PAKdG8hF5etFCq16"
+}

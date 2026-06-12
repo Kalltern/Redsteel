@@ -1,0 +1,27 @@
+{
+  "type": "Item",
+  "folder": null,
+  "name": "Water",
+  "color": null,
+  "sorting": "a",
+  "_id": "2PQ08XLuOaI80mFX",
+  "description": "",
+  "sort": 800000,
+  "flags": {
+    "scene-packer": {
+      "hash": "f3c36d8123380da4ffd0126151747b40a9b3527e"
+    }
+  },
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601589032,
+    "modifiedTime": 1780601589088,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "_key": "!folders!2PQ08XLuOaI80mFX"
+}

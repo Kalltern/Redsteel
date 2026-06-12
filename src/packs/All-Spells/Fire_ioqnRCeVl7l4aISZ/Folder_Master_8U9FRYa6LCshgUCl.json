@@ -1,0 +1,27 @@
+{
+  "name": "Master",
+  "sorting": "a",
+  "folder": "ioqnRCeVl7l4aISZ",
+  "type": "Item",
+  "_id": "8U9FRYa6LCshgUCl",
+  "description": "",
+  "sort": 400000,
+  "color": null,
+  "flags": {
+    "scene-packer": {
+      "hash": "a512fc5331341f92ddab824d8c71a46587909780"
+    }
+  },
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601586311,
+    "modifiedTime": 1780601586311,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "_key": "!folders!8U9FRYa6LCshgUCl"
+}
