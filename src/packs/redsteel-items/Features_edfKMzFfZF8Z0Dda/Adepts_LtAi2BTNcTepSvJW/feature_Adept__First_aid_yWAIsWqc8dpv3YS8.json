@@ -4,12 +4,17 @@
   "type": "feature",
   "img": "icons/commodities/treasure/medal-ribbon-striped-gold-red.webp",
   "system": {
+    "localizationKey": "REDSTEEL.Items.AdeptFirstAid.name",
     "description": "<p>Once per day you may reroll this ability. Adds 5% to tests of this ability.</p>",
     "options": [
       "feature",
       "trait",
       "priest"
     ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
     "reroll": {
       "name": "Adept: First aid",
       "active": [
@@ -18,8 +23,7 @@
       ],
       "value": 1
     },
-    "option": "feature",
-    "localizationKey": "REDSTEEL.Items.AdeptFirstAid.name"
+    "option": "feature"
   },
   "effects": [
     {
@@ -28,24 +32,22 @@
       "img": "icons/svg/heal.svg",
       "_id": "AsE76xQotjPYBiwf",
       "type": "base",
-      "system": {},
-      "changes": [
-        {
-          "key": "system.skills.firstAid.bonus",
-          "mode": 2,
-          "value": "5",
-          "priority": null
-        }
-      ],
+      "system": {
+        "changes": [
+          {
+            "key": "system.skills.firstAid.bonus",
+            "value": 5,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
       "disabled": false,
       "duration": {
-        "startTime": null,
-        "combat": null,
-        "seconds": null,
-        "rounds": null,
-        "turns": null,
-        "startRound": null,
-        "startTurn": null
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
       },
       "description": "",
       "tint": "#ffffff",
@@ -68,11 +70,16 @@
         "compendiumSource": null,
         "duplicateSource": null,
         "exportSource": null,
-        "coreVersion": "13.351",
+        "coreVersion": "14.363",
         "systemId": "redsteel",
         "systemVersion": "0.8.1",
-        "lastModifiedBy": null
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
       },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
       "_key": "!items.effects!yWAIsWqc8dpv3YS8.AsE76xQotjPYBiwf"
     }
   ],
@@ -85,7 +92,7 @@
     "compendiumSource": "Compendium.dilnamodulimport.pack-1.Item.fwANzRnUmuj6zxxg",
     "duplicateSource": "Item.rH2izAi84XLI0iUS",
     "exportSource": null,
-    "coreVersion": "13.351",
+    "coreVersion": "14.363",
     "systemId": "redsteel",
     "systemVersion": "0.8.1",
     "createdTime": 1777294839144,

@@ -4,12 +4,17 @@
   "type": "feature",
   "img": "icons/commodities/flowers/clover.webp",
   "system": {
+    "localizationKey": "REDSTEEL.Items.Lucky.name",
     "description": "<p>Luck +1.<br data-start=\"330\" data-end=\"333\" />Once per day may reroll any roll.<br data-start=\"366\" data-end=\"369\" />Can also be used on a Critical Failure, but the ability to reroll is then lost for 7 days.</p>",
     "options": [
       "feature",
       "trait",
       "priest"
     ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
     "reroll": {
       "name": "Lucky",
       "active": [
@@ -18,8 +23,7 @@
       ],
       "value": 1
     },
-    "option": "trait",
-    "localizationKey": "REDSTEEL.Items.Lucky.name"
+    "option": "trait"
   },
   "effects": [
     {
@@ -28,24 +32,22 @@
       "img": "icons/commodities/flowers/clover.webp",
       "_id": "wIjR0KwKS7jDxA66",
       "type": "base",
-      "system": {},
-      "changes": [
-        {
-          "key": "system.secondaryAttributes.lck.bonus",
-          "mode": 2,
-          "value": "1",
-          "priority": null
-        }
-      ],
+      "system": {
+        "changes": [
+          {
+            "key": "system.secondaryAttributes.lck.bonus",
+            "value": 1,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
       "disabled": false,
       "duration": {
-        "startTime": null,
-        "seconds": null,
-        "combat": null,
-        "rounds": null,
-        "turns": null,
-        "startRound": null,
-        "startTurn": null
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
       },
       "description": "",
       "tint": "#ffffff",
@@ -65,11 +67,16 @@
         "compendiumSource": null,
         "duplicateSource": null,
         "exportSource": null,
-        "coreVersion": "13.351",
+        "coreVersion": "14.363",
         "systemId": "redsteel",
         "systemVersion": "0.8.1",
-        "lastModifiedBy": null
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
       },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
       "_key": "!items.effects!eDm5BSp5OtLfg0pm.wIjR0KwKS7jDxA66"
     }
   ],
@@ -82,7 +89,7 @@
     "compendiumSource": "Compendium.dilnamodulimport.pack-1.Item.fsSCF1yC7ixg6Yd2",
     "duplicateSource": "Item.Pl90TGh43GW7k278",
     "exportSource": null,
-    "coreVersion": "13.351",
+    "coreVersion": "14.363",
     "systemId": "redsteel",
     "systemVersion": "0.8.1",
     "createdTime": 1777294846698,

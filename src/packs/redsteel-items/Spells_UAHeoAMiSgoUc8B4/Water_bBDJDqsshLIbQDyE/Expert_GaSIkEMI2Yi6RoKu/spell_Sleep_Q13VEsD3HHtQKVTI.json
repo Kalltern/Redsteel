@@ -3,6 +3,7 @@
   "type": "spell",
   "img": "icons/magic/nature/symbol-moon-stars-white.webp",
   "system": {
+    "localizationKey": "",
     "description": "<p>Puts a calm Target (not frightened, not in combat, etc.) to sleep.<br /><br />Resolve this effect manually</p>",
     "options": [
       "divine",
@@ -90,6 +91,9 @@
     "difficulty": -10,
     "cost": 8,
     "perRound": 0,
+    "variants": {
+      "0": "BDXDGi7cBVGWB547"
+    },
     "option": "magic",
     "type": "water",
     "rank": "expert",
@@ -137,12 +141,12 @@
     "compendiumSource": "Compendium.dilnamodulimport.pack-1.Item.BwCwVPOQAOVyOiLr",
     "duplicateSource": null,
     "exportSource": null,
-    "coreVersion": "13.351",
+    "coreVersion": "14.363",
     "systemId": "redsteel",
-    "systemVersion": "0.8.1",
+    "systemVersion": "0.8.18",
     "createdTime": 1777294844905,
-    "modifiedTime": 1777294844905,
-    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+    "modifiedTime": 1781268881554,
+    "lastModifiedBy": "YjJDoOEWjGrKL8LV"
   },
   "ownership": {
     "default": 0,

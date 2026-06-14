@@ -4,12 +4,17 @@
   "type": "feature",
   "img": "icons/equipment/back/cloak-plain-green.webp",
   "system": {
+    "localizationKey": "REDSTEEL.Items.AcrobaticDefense.name",
     "description": "<p>Increases Ranged defense by 10% and Dodge by 10%.<br data-start=\"118\" data-end=\"121\" />Increases critical Dodge success chance by 3%.<br data-start=\"167\" data-end=\"170\" />Raises the Dodge success threshold to 80%.<br data-start=\"212\" data-end=\"215\" />On a successful Dodge vs Test against a Magical attack, reduces direct magical damage by 50%.</p>",
     "options": [
       "feature",
       "trait",
       "priest"
     ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
     "reroll": {
       "name": "",
       "active": [
@@ -18,8 +23,7 @@
       ],
       "value": null
     },
-    "option": "feature",
-    "localizationKey": "REDSTEEL.Items.AcrobaticDefense.name"
+    "option": "feature"
   },
   "effects": [
     {
@@ -28,41 +32,39 @@
       "img": "icons/equipment/back/cloak-plain-green.webp",
       "_id": "9DhEtnO8InEaXo2x",
       "type": "base",
-      "system": {},
-      "changes": [
-        {
-          "key": "system.combatSkills.dodge.bonus",
-          "mode": 2,
-          "value": "10",
-          "priority": null
-        },
-        {
-          "key": "system.combatSkills.rangedDefense.bonus",
-          "mode": 2,
-          "value": "10",
-          "priority": null
-        },
-        {
-          "key": "system.combatSkills.dodge.critbonus",
-          "mode": 2,
-          "value": "3",
-          "priority": null
-        },
-        {
-          "key": "",
-          "value": "",
-          "mode": 2
-        }
-      ],
+      "system": {
+        "changes": [
+          {
+            "key": "system.combatSkills.dodge.bonus",
+            "value": 10,
+            "priority": null,
+            "type": "add"
+          },
+          {
+            "key": "system.combatSkills.rangedDefense.bonus",
+            "value": 10,
+            "priority": null,
+            "type": "add"
+          },
+          {
+            "key": "system.combatSkills.dodge.critbonus",
+            "value": 3,
+            "priority": null,
+            "type": "add"
+          },
+          {
+            "key": "",
+            "value": "",
+            "type": "add"
+          }
+        ]
+      },
       "disabled": false,
       "duration": {
-        "startTime": null,
-        "seconds": null,
-        "combat": null,
-        "rounds": null,
-        "turns": null,
-        "startRound": null,
-        "startTurn": null
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
       },
       "description": "",
       "tint": "#ffffff",
@@ -85,11 +87,16 @@
         "compendiumSource": null,
         "duplicateSource": null,
         "exportSource": null,
-        "coreVersion": "13.351",
+        "coreVersion": "14.363",
         "systemId": "redsteel",
         "systemVersion": "0.8.1",
-        "lastModifiedBy": null
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
       },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
       "_key": "!items.effects!UYmALzKn6MWIv7VA.9DhEtnO8InEaXo2x"
     }
   ],
@@ -102,7 +109,7 @@
     "compendiumSource": "Compendium.dilnamodulimport.pack-1.Item.ztuDbndFS43K5GMq",
     "duplicateSource": "Item.kcqSnGFSKxF9eC74",
     "exportSource": null,
-    "coreVersion": "13.351",
+    "coreVersion": "14.363",
     "systemId": "redsteel",
     "systemVersion": "0.8.1",
     "createdTime": 1777294839144,

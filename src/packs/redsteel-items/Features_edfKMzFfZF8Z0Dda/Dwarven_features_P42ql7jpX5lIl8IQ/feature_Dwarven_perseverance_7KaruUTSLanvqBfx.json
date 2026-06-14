@@ -4,12 +4,17 @@
   "type": "feature",
   "img": "icons/skills/trades/construction-carpentry-hammer.webp",
   "system": {
+    "localizationKey": "REDSTEEL.Items.DwarvenPerseverance.name",
     "description": "<p>You get a +5% bonus to Strength tests. You can reroll a Strength test once per day. Stamina +2.</p>",
     "options": [
       "feature",
       "trait",
       "priest"
     ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
     "reroll": {
       "name": "Dwarven endurance: Strength",
       "active": [
@@ -18,8 +23,7 @@
       ],
       "value": 1
     },
-    "option": "feature",
-    "localizationKey": "REDSTEEL.Items.DwarvenPerseverance.name"
+    "option": "feature"
   },
   "effects": [
     {
@@ -28,30 +32,28 @@
       "img": "icons/svg/leg.svg",
       "_id": "ZZgnukIeqKHtQKes",
       "type": "base",
-      "system": {},
-      "changes": [
-        {
-          "key": "system.stats.stamina.bonus",
-          "mode": 2,
-          "value": "2",
-          "priority": null
-        },
-        {
-          "key": "system.attributes.str.modBonus",
-          "mode": 2,
-          "value": "5",
-          "priority": null
-        }
-      ],
+      "system": {
+        "changes": [
+          {
+            "key": "system.stats.stamina.bonus",
+            "value": 2,
+            "priority": null,
+            "type": "add"
+          },
+          {
+            "key": "system.attributes.str.modBonus",
+            "value": 5,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
       "disabled": false,
       "duration": {
-        "startTime": null,
-        "combat": null,
-        "seconds": null,
-        "rounds": null,
-        "turns": null,
-        "startRound": null,
-        "startTurn": null
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
       },
       "description": "",
       "tint": "#ffffff",
@@ -74,11 +76,16 @@
         "compendiumSource": null,
         "duplicateSource": null,
         "exportSource": null,
-        "coreVersion": "13.351",
+        "coreVersion": "14.363",
         "systemId": "redsteel",
         "systemVersion": "0.8.1",
-        "lastModifiedBy": null
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
       },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
       "_key": "!items.effects!7KaruUTSLanvqBfx.ZZgnukIeqKHtQKes"
     }
   ],
@@ -91,7 +98,7 @@
     "compendiumSource": "Compendium.dilnamodulimport.pack-1.Item.qY23DhhJfBet7EGs",
     "duplicateSource": "Item.9mH2wGLnG6oN0uVp",
     "exportSource": null,
-    "coreVersion": "13.351",
+    "coreVersion": "14.363",
     "systemId": "redsteel",
     "systemVersion": "0.8.1",
     "createdTime": 1777294839144,

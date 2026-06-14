@@ -4,6 +4,7 @@
   "type": "gear",
   "img": "icons/equipment/shield/wardoor-wooden-boss-brown.webp",
   "system": {
+    "localizationKey": "REDSTEEL.Items.TowerShield.name",
     "description": "",
     "equipped": false,
     "layerOptions": [
@@ -14,7 +15,8 @@
     ],
     "armor": {
       "value": 0,
-      "durability": 1,
+      "durability": 2,
+      "durabilityMax": 2,
       "acid": {
         "value": 0
       },
@@ -57,8 +59,7 @@
     "rangedCritDefense": 5,
     "archeryPenalty": 0,
     "perPenalty": 0,
-    "layer": "",
-    "localizationKey": "REDSTEEL.Items.TowerShield.name"
+    "layer": ""
   },
   "effects": [],
   "sort": 0,
@@ -72,12 +73,12 @@
     "compendiumSource": null,
     "duplicateSource": "Item.K7pJzK3ZlABM3iYz",
     "exportSource": null,
-    "coreVersion": "13.351",
+    "coreVersion": "14.363",
     "systemId": "redsteel",
-    "systemVersion": "0.8.1",
+    "systemVersion": "0.8.19",
     "createdTime": 1777294837982,
-    "modifiedTime": 1777294837982,
-    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+    "modifiedTime": 1781279188325,
+    "lastModifiedBy": "YjJDoOEWjGrKL8LV"
   },
   "_id": "B1Z62yZzAA2L06Fa",
   "_key": "!items!B1Z62yZzAA2L06Fa"

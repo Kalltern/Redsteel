@@ -4043,6 +4043,9 @@
           "isOffensive": {
             "label": "Útočné"
           },
+          "halfDamage": {
+            "label": "Poloviční zranění"
+          },
           "sustained": {
             "label": "Udržovací"
           },

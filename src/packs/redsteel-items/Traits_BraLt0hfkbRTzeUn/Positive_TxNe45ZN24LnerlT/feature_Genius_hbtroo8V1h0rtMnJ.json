@@ -4,12 +4,17 @@
   "type": "feature",
   "img": "icons/commodities/biological/organ-brain-pink-purple.webp",
   "system": {
+    "localizationKey": "REDSTEEL.Items.Genius.name",
     "description": "<p>Intelligence attribute cap +1.<br data-start=\"1232\" data-end=\"1235\" />Skills derived from Intelligence (except Channeling) +5%.<br data-start=\"1292\" data-end=\"1295\" /><span style=\"color:rgb(239, 230, 216);font-family:Signika, 'Palatino Linotype', sans-serif;font-size:14px;font-style:normal;font-variant-ligatures:normal;font-variant-caps:normal;font-weight:400;letter-spacing:normal;orphans:2;text-align:start;text-indent:0px;text-transform:none;widows:2;word-spacing:0px;-webkit-text-stroke-width:0px;white-space:normal;background-color:rgba(12, 12, 12, 0.9);text-decoration-thickness:initial;text-decoration-style:initial;text-decoration-color:initial;display:inline !important;float:none\">May reroll a inteligence based skill once per day.</span></p>",
     "options": [
       "feature",
       "trait",
       "priest"
     ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
     "reroll": {
       "name": "Genius",
       "active": [
@@ -18,8 +23,7 @@
       ],
       "value": 2
     },
-    "option": "trait",
-    "localizationKey": "REDSTEEL.Items.Genius.name"
+    "option": "trait"
   },
   "effects": [
     {
@@ -28,60 +32,58 @@
       "img": "icons/svg/book.svg",
       "_id": "GBF9TM9oMXjvke39",
       "type": "base",
-      "system": {},
-      "changes": [
-        {
-          "key": "system.skills.alchemy.bonus",
-          "mode": 2,
-          "value": "5",
-          "priority": null
-        },
-        {
-          "key": "system.skills.arcana.bonus",
-          "mode": 2,
-          "value": "5",
-          "priority": null
-        },
-        {
-          "key": "system.skills.art.bonus",
-          "mode": 2,
-          "value": "5",
-          "priority": null
-        },
-        {
-          "key": "system.skills.engineering.bonus",
-          "mode": 2,
-          "value": "5",
-          "priority": null
-        },
-        {
-          "key": "system.skills.firstAid.bonus",
-          "mode": 2,
-          "value": "5",
-          "priority": null
-        },
-        {
-          "key": "system.skills.logic.bonus",
-          "mode": 2,
-          "value": "5",
-          "priority": null
-        },
-        {
-          "key": "system.skills.tactics.bonus",
-          "mode": 2,
-          "value": "5",
-          "priority": null
-        }
-      ],
+      "system": {
+        "changes": [
+          {
+            "key": "system.skills.alchemy.bonus",
+            "value": 5,
+            "priority": null,
+            "type": "add"
+          },
+          {
+            "key": "system.skills.arcana.bonus",
+            "value": 5,
+            "priority": null,
+            "type": "add"
+          },
+          {
+            "key": "system.skills.art.bonus",
+            "value": 5,
+            "priority": null,
+            "type": "add"
+          },
+          {
+            "key": "system.skills.engineering.bonus",
+            "value": 5,
+            "priority": null,
+            "type": "add"
+          },
+          {
+            "key": "system.skills.firstAid.bonus",
+            "value": 5,
+            "priority": null,
+            "type": "add"
+          },
+          {
+            "key": "system.skills.logic.bonus",
+            "value": 5,
+            "priority": null,
+            "type": "add"
+          },
+          {
+            "key": "system.skills.tactics.bonus",
+            "value": 5,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
       "disabled": false,
       "duration": {
-        "startTime": null,
-        "seconds": null,
-        "combat": null,
-        "rounds": null,
-        "turns": null,
-        "startRound": null,
-        "startTurn": null
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
       },
       "description": "",
       "tint": "#6dcce3",
@@ -101,11 +103,16 @@
         "compendiumSource": null,
         "duplicateSource": null,
         "exportSource": null,
-        "coreVersion": "13.351",
+        "coreVersion": "14.363",
         "systemId": "redsteel",
         "systemVersion": "0.8.1",
-        "lastModifiedBy": null
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
       },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
       "_key": "!items.effects!hbtroo8V1h0rtMnJ.GBF9TM9oMXjvke39"
     }
   ],
@@ -118,7 +125,7 @@
     "compendiumSource": "Compendium.dilnamodulimport.pack-1.Item.0HKUdWcGOFVxqXp6",
     "duplicateSource": "Item.p0cL9kTBLjqlMj4s",
     "exportSource": null,
-    "coreVersion": "13.351",
+    "coreVersion": "14.363",
     "systemId": "redsteel",
     "systemVersion": "0.8.1",
     "createdTime": 1777294846698,

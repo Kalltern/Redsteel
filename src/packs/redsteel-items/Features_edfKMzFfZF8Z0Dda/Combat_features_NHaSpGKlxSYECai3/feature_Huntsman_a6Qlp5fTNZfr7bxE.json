@@ -4,12 +4,17 @@
   "type": "feature",
   "img": "icons/environment/wilderness/cave-entrance.webp",
   "system": {
+    "localizationKey": "REDSTEEL.Items.Huntsman.name",
     "description": "<p>Advantage on Endurance Tests to resist Fatigue from adverse conditions.<br data-start=\"911\" data-end=\"914\" />Stamina +5.</p>",
     "options": [
       "feature",
       "trait",
       "priest"
     ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
     "reroll": {
       "name": "",
       "active": [
@@ -18,8 +23,7 @@
       ],
       "value": null
     },
-    "option": "feature",
-    "localizationKey": "REDSTEEL.Items.Huntsman.name"
+    "option": "feature"
   },
   "effects": [
     {
@@ -28,24 +32,22 @@
       "img": "icons/environment/wilderness/cave-entrance.webp",
       "_id": "9DhEtnO8InEaXo2x",
       "type": "base",
-      "system": {},
-      "changes": [
-        {
-          "key": "system.stats.stamina.bonus",
-          "mode": 2,
-          "value": "5",
-          "priority": null
-        }
-      ],
+      "system": {
+        "changes": [
+          {
+            "key": "system.stats.stamina.bonus",
+            "value": 5,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
       "disabled": false,
       "duration": {
-        "startTime": null,
-        "seconds": null,
-        "combat": null,
-        "rounds": null,
-        "turns": null,
-        "startRound": null,
-        "startTurn": null
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
       },
       "description": "",
       "tint": "#ffffff",
@@ -68,11 +70,16 @@
         "compendiumSource": null,
         "duplicateSource": null,
         "exportSource": null,
-        "coreVersion": "13.351",
+        "coreVersion": "14.363",
         "systemId": "redsteel",
         "systemVersion": "0.8.1",
-        "lastModifiedBy": null
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
       },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
       "_key": "!items.effects!a6Qlp5fTNZfr7bxE.9DhEtnO8InEaXo2x"
     }
   ],
@@ -85,7 +92,7 @@
     "compendiumSource": "Compendium.dilnamodulimport.pack-1.Item.ztuDbndFS43K5GMq",
     "duplicateSource": "Item.IElEBWg4LRkSSYEm",
     "exportSource": null,
-    "coreVersion": "13.351",
+    "coreVersion": "14.363",
     "systemId": "redsteel",
     "systemVersion": "0.8.1",
     "createdTime": 1777294839144,

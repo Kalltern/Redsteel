@@ -4,6 +4,7 @@
   "type": "gear",
   "img": "icons/commodities/metal/mail-chain-steel.webp",
   "system": {
+    "localizationKey": "REDSTEEL.Items.Haubergeon.name",
     "description": "",
     "equipped": false,
     "layerOptions": [
@@ -15,6 +16,7 @@
     "armor": {
       "value": 8,
       "durability": 1,
+      "durabilityMax": 1,
       "acid": {
         "value": 0
       },
@@ -57,8 +59,7 @@
     "rangedCritDefense": 0,
     "archeryPenalty": 0,
     "perPenalty": 0,
-    "layer": "Middle",
-    "localizationKey": "REDSTEEL.Items.Haubergeon.name"
+    "layer": "Middle"
   },
   "effects": [],
   "sort": 300000,
@@ -72,12 +73,12 @@
     "compendiumSource": null,
     "duplicateSource": "Item.qhAwEGLwlsr0ipnU",
     "exportSource": null,
-    "coreVersion": "13.351",
+    "coreVersion": "14.363",
     "systemId": "redsteel",
-    "systemVersion": "0.8.1",
+    "systemVersion": "0.8.19",
     "createdTime": 1777294837982,
-    "modifiedTime": 1777294837982,
-    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+    "modifiedTime": 1781279148710,
+    "lastModifiedBy": "YjJDoOEWjGrKL8LV"
   },
   "_id": "GlZaAd994ZCJy8wg",
   "_key": "!items!GlZaAd994ZCJy8wg"

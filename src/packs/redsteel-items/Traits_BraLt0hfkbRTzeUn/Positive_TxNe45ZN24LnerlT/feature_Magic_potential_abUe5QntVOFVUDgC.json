@@ -4,12 +4,17 @@
   "type": "feature",
   "img": "icons/magic/symbols/star-rising-purple.webp",
   "system": {
+    "localizationKey": "REDSTEEL.Items.MagicPotential.name",
     "description": "<p>Channeling +5%, Base Mana +5.<br data-start=\"53\" data-end=\"56\" />Mana modifier 1.<br data-start=\"72\" data-end=\"75\" />May reroll a Channeling roll once per day.</p>",
     "options": [
       "feature",
       "trait",
       "priest"
     ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
     "reroll": {
       "name": "Magic potential",
       "active": [
@@ -18,8 +23,7 @@
       ],
       "value": 1
     },
-    "option": "trait",
-    "localizationKey": "REDSTEEL.Items.MagicPotential.name"
+    "option": "trait"
   },
   "effects": [
     {
@@ -28,36 +32,34 @@
       "img": "icons/magic/symbols/star-rising-purple.webp",
       "_id": "eJ0MrBwmzAgJZ9LT",
       "type": "base",
-      "system": {},
-      "changes": [
-        {
-          "key": "system.magicPotential",
-          "mode": 5,
-          "value": "true",
-          "priority": null
-        },
-        {
-          "key": "system.combatSkills.channeling.bonus",
-          "mode": 2,
-          "value": "5",
-          "priority": null
-        },
-        {
-          "key": "system.stats.mana.bonus",
-          "mode": 2,
-          "value": "5",
-          "priority": null
-        }
-      ],
+      "system": {
+        "changes": [
+          {
+            "key": "system.magicPotential",
+            "value": true,
+            "priority": null,
+            "type": "override"
+          },
+          {
+            "key": "system.combatSkills.channeling.bonus",
+            "value": 5,
+            "priority": null,
+            "type": "add"
+          },
+          {
+            "key": "system.stats.mana.bonus",
+            "value": 5,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
       "disabled": false,
       "duration": {
-        "startTime": null,
-        "seconds": null,
-        "combat": null,
-        "rounds": null,
-        "turns": null,
-        "startRound": null,
-        "startTurn": null
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
       },
       "description": "",
       "tint": "#ffffff",
@@ -77,11 +79,16 @@
         "compendiumSource": null,
         "duplicateSource": null,
         "exportSource": null,
-        "coreVersion": "13.351",
+        "coreVersion": "14.363",
         "systemId": "redsteel",
         "systemVersion": "0.8.1",
-        "lastModifiedBy": null
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
       },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
       "_key": "!items.effects!abUe5QntVOFVUDgC.eJ0MrBwmzAgJZ9LT"
     }
   ],
@@ -94,7 +101,7 @@
     "compendiumSource": "Compendium.dilnamodulimport.pack-1.Item.w3oGtwKdgZYoymFh",
     "duplicateSource": "Item.AmaZ6XyR4YcHm1pa",
     "exportSource": null,
-    "coreVersion": "13.351",
+    "coreVersion": "14.363",
     "systemId": "redsteel",
     "systemVersion": "0.8.1",
     "createdTime": 1777294846698,

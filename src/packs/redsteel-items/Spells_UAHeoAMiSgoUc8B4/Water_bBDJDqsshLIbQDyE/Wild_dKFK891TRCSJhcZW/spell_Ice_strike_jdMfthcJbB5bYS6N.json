@@ -3,6 +3,7 @@
   "type": "spell",
   "img": "icons/magic/water/projectile-ice-teardrop.webp",
   "system": {
+    "localizationKey": "",
     "description": "<p>No requirement. Deals 1d4 damage to a single target per turn. Ignores armor.<br /><br />Not fully automated. Resolve damage per turn manually</p>",
     "options": [
       "divine",
@@ -90,6 +91,11 @@
     "difficulty": 30,
     "cost": 2,
     "perRound": 1,
+    "variants": {
+      "0": "xSuVoSJmsjJOtx0O",
+      "1": "ujYE5wSDvrQX1ZlE",
+      "2": "p680a3SBtvFOrk92"
+    },
     "option": "magic",
     "type": "water",
     "rank": "wild",
@@ -138,12 +144,12 @@
     "compendiumSource": "Compendium.dilnamodulimport.pack-1.Item.NgRQLM5np8Tw3p4H",
     "duplicateSource": null,
     "exportSource": null,
-    "coreVersion": "13.351",
+    "coreVersion": "14.363",
     "systemId": "redsteel",
-    "systemVersion": "0.8.1",
+    "systemVersion": "0.8.18",
     "createdTime": 1777294844905,
-    "modifiedTime": 1777294844905,
-    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+    "modifiedTime": 1781268608953,
+    "lastModifiedBy": "YjJDoOEWjGrKL8LV"
   },
   "ownership": {
     "default": 0,

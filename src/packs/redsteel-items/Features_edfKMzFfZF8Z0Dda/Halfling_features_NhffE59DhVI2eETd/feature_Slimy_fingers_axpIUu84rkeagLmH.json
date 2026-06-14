@@ -4,12 +4,17 @@
   "type": "feature",
   "img": "icons/equipment/hand/glove-ring-leather-green.webp",
   "system": {
+    "localizationKey": "REDSTEEL.Items.SlimyFingers.name",
     "description": "<p>You get a +5% bonus to Pickpocketing. You can reroll Pickpocketing once per day.</p>",
     "options": [
       "feature",
       "trait",
       "priest"
     ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
     "reroll": {
       "name": "Slimy Fingers: Pickpocketing",
       "active": [
@@ -18,8 +23,7 @@
       ],
       "value": 1
     },
-    "option": "feature",
-    "localizationKey": "REDSTEEL.Items.SlimyFingers.name"
+    "option": "feature"
   },
   "effects": [
     {
@@ -28,24 +32,22 @@
       "img": "icons/equipment/hand/glove-ring-leather-green.webp",
       "_id": "DS4sHYpUH6BNS1SD",
       "type": "base",
-      "system": {},
-      "changes": [
-        {
-          "key": "system.skills.pickpocketing.bonus",
-          "mode": 2,
-          "value": "5",
-          "priority": null
-        }
-      ],
+      "system": {
+        "changes": [
+          {
+            "key": "system.skills.pickpocketing.bonus",
+            "value": 5,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
       "disabled": false,
       "duration": {
-        "startTime": null,
-        "combat": null,
-        "seconds": null,
-        "rounds": null,
-        "turns": null,
-        "startRound": null,
-        "startTurn": null
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
       },
       "description": "",
       "tint": "#ffffff",
@@ -68,11 +70,16 @@
         "compendiumSource": null,
         "duplicateSource": null,
         "exportSource": null,
-        "coreVersion": "13.351",
+        "coreVersion": "14.363",
         "systemId": "redsteel",
         "systemVersion": "0.8.1",
-        "lastModifiedBy": null
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
       },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
       "_key": "!items.effects!axpIUu84rkeagLmH.DS4sHYpUH6BNS1SD"
     }
   ],
@@ -85,7 +92,7 @@
     "compendiumSource": "Compendium.dilnamodulimport.pack-1.Item.qY23DhhJfBet7EGs",
     "duplicateSource": "Item.jOS3k40tzNNysVQ9",
     "exportSource": null,
-    "coreVersion": "13.351",
+    "coreVersion": "14.363",
     "systemId": "redsteel",
     "systemVersion": "0.8.1",
     "createdTime": 1777294839144,

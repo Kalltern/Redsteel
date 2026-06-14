@@ -3,12 +3,17 @@
   "type": "feature",
   "img": "icons/creatures/birds/raptor-hawk-flying.webp",
   "system": {
+    "localizationKey": "REDSTEEL.Items.Finesse.name",
     "description": "<p>Allows using Dexterity instead of Strength/Perception for Hit and Damage bonuses with refined weapons.</p>",
     "options": [
       "feature",
       "trait",
       "priest"
     ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
     "reroll": {
       "name": "",
       "active": false,
@@ -19,8 +24,7 @@
       ]
     },
     "finesse": false,
-    "option": "feature",
-    "localizationKey": "REDSTEEL.Items.Finesse.name"
+    "option": "feature"
   },
   "effects": [
     {
@@ -29,24 +33,22 @@
       "img": "icons/creatures/birds/raptor-hawk-flying.webp",
       "_id": "In48iDjLaNP4Acp5",
       "type": "base",
-      "system": {},
-      "changes": [
-        {
-          "key": "system.finesse",
-          "mode": 5,
-          "value": "true",
-          "priority": null
-        }
-      ],
+      "system": {
+        "changes": [
+          {
+            "key": "system.finesse",
+            "value": true,
+            "priority": null,
+            "type": "override"
+          }
+        ]
+      },
       "disabled": false,
       "duration": {
-        "startTime": null,
-        "seconds": null,
-        "combat": null,
-        "rounds": null,
-        "turns": null,
-        "startRound": null,
-        "startTurn": null
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
       },
       "description": "",
       "tint": "#ffffff",
@@ -62,11 +64,16 @@
         "compendiumSource": null,
         "duplicateSource": null,
         "exportSource": null,
-        "coreVersion": "13.351",
+        "coreVersion": "14.363",
         "systemId": "redsteel",
         "systemVersion": "0.8.1",
-        "lastModifiedBy": null
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
       },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
       "_key": "!items.effects!qG68toPwtlhC0ouy.In48iDjLaNP4Acp5"
     }
   ],
@@ -80,7 +87,7 @@
     "compendiumSource": "Compendium.dilnamodulimport.pack-1.Item.PLf0yQosY8Yey8lZ",
     "duplicateSource": "Item.O84B4AT1kAEZ6GqR",
     "exportSource": null,
-    "coreVersion": "13.351",
+    "coreVersion": "14.363",
     "systemId": "redsteel",
     "systemVersion": "0.8.1",
     "createdTime": 1777294839144,

@@ -1,8 +1,9 @@
 {
-  "name": "Fire attack (Small)",
+  "name": "Fire attack",
   "type": "spell",
   "img": "icons/magic/fire/explosion-fireball-small-orange.webp",
   "system": {
+    "localizationKey": "",
     "description": "<p>Manipulates a small flame within range and hurls it at a target within range, dealing 2d6 + {{math spellPower \"/\" 2}} damage.</p>",
     "options": [
       "divine",
@@ -107,6 +108,10 @@
     "difficulty": 30,
     "cost": 2,
     "perRound": 1,
+    "variants": {
+      "0": "hrOSQEa5wPyaSXC6",
+      "1": "xacd3qtCHkkMzjq6"
+    },
     "option": "magic",
     "type": "fire",
     "rank": "wild",
@@ -154,12 +159,12 @@
     "compendiumSource": "Compendium.dilnamodulimport.pack-1.Item.y3wZOsMefXxayeY7",
     "duplicateSource": null,
     "exportSource": null,
-    "coreVersion": "13.351",
+    "coreVersion": "14.363",
     "systemId": "redsteel",
-    "systemVersion": "0.8.1",
+    "systemVersion": "0.8.18",
     "createdTime": 1777294844905,
-    "modifiedTime": 1777294844905,
-    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+    "modifiedTime": 1781268932551,
+    "lastModifiedBy": "YjJDoOEWjGrKL8LV"
   },
   "ownership": {
     "default": 0,

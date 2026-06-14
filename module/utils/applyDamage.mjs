@@ -68,6 +68,7 @@ function evaluateAttackDamage({
   actor,
   durabilityPoints = 0,
   perPoint = 0,
+  halfDamage,
 }) {
   const damageProfile = attack.damageProfile ?? { expression: [] };
   const hp = actor.system.stats.health.value;
@@ -80,7 +81,9 @@ function evaluateAttackDamage({
     armor: actor.system.armor,
     hp,
     tempHp,
-    halfDamage: selectedAttack.halfDamage ?? false,
+    // An explicit toggle (e.g. the spell half-damage checkbox in the Apply
+    // Damage dialog) overrides; otherwise fall back to the attack's own flag.
+    halfDamage: halfDamage ?? selectedAttack.halfDamage ?? false,
     penCap: selectedAttack.penCap ?? false,
   });
 
@@ -154,6 +157,7 @@ async function applyDamageToTargets(
   selectedEffects,
   criticalDegree = null,
   durabilitySpend = {},
+  halfDamage = false,
 ) {
   const data = {
     type: "applyDamage",
@@ -164,6 +168,7 @@ async function applyDamageToTargets(
     targetIds: targets.map((t) => t.id),
     selectedEffects: selectedEffects,
     durabilitySpend,
+    halfDamage,
   };
 
   if (game.user.isGM) {
@@ -176,9 +181,11 @@ async function applyDamageToTargets(
 export async function applyDamageAsGM(data) {
   const { messageId, mode, targetIds, sceneId, selectedEffects } = data;
   const durabilitySpend = data.durabilitySpend ?? {};
+  const halfDamage = data.halfDamage ?? false;
   const message = game.messages.get(messageId);
 
   const attack = message.flags.attack;
+  const castingContext = getCastingContext(message);
   const selectedCriticalDegree = Number.isFinite(Number(data.criticalDegree))
     ? Number(data.criticalDegree)
     : (attack.critical?.degree ?? null);
@@ -232,6 +239,7 @@ export async function applyDamageAsGM(data) {
       actor,
       durabilityPoints,
       perPoint,
+      halfDamage,
     });
 
     if (
@@ -247,12 +255,14 @@ export async function applyDamageAsGM(data) {
         attack,
         selectedAttack: suggestedAttack,
         actor,
+        halfDamage,
       });
       // Compare without durability so both columns measure the same thing
       const selectedBaseResult = evaluateAttackDamage({
         attack,
         selectedAttack,
         actor,
+        halfDamage,
       });
 
       criticalOverrideRows.push({
@@ -356,7 +366,7 @@ export async function applyDamageAsGM(data) {
 
       stacks += stackMod;
       if (stacks <= 0) continue;
-      await applyEffectToActor(actor, name, stacks);
+      await applyEffectToActor(actor, name, stacks, castingContext);
     }
 
     const combatant = combat?.combatants.find((c) => c.tokenId === tokenDoc.id);
@@ -378,6 +388,8 @@ function openDamageSelectionDialog(message, targets) {
   const attack = message.flags.attack;
   const effects = attack.effects || {};
   let mode = "normal";
+  let halfDamage = false;
+  const allowHalfDamage = attack.isSpell === true;
   let criticalDegree = attack.critical?.degree ?? 0;
   const hasCritical = attack.critical !== "" && attack.critical !== undefined;
   const hasBreakthrough =
@@ -412,6 +424,7 @@ function openDamageSelectionDialog(message, targets) {
           actor: t.actor,
           durabilityPoints: spend?.points ?? 0,
           perPoint,
+          halfDamage,
         });
 
         const durabilityNote = result.durabilityReduction
@@ -551,6 +564,16 @@ function openDamageSelectionDialog(message, targets) {
             )
             .join("")}
         </fieldset>
+        ${
+          allowHalfDamage
+            ? `<fieldset>
+                 <label>
+                   <input type="checkbox" name="halfDamage" ${halfDamage ? "checked" : ""}>
+                   ${game.i18n.localize("REDSTEEL.Item.Spell.FIELDS.halfDamage.label")}
+                 </label>
+               </fieldset>`
+            : ""
+        }
         ${renderDurabilityControls()}
 
         <ul class="damage-preview">
@@ -566,6 +589,8 @@ function openDamageSelectionDialog(message, targets) {
 
             html.find('input[type="checkbox"]').each((_, el) => {
               if (!el.checked) return;
+              // Only effect checkboxes are named "effect-<tokenId>-<name>".
+              if (!el.name.startsWith("effect-")) return;
 
               const parts = el.name.split("-");
               const tokenId = parts[1];
@@ -596,6 +621,7 @@ function openDamageSelectionDialog(message, targets) {
               selectedEffects,
               mode === "critical" ? criticalDegree : null,
               durabilitySpend,
+              halfDamage,
             );
           },
         },
@@ -623,6 +649,10 @@ function openDamageSelectionDialog(message, targets) {
         });
         html.find('input[name="criticalDegree"]').on("change", (ev) => {
           criticalDegree = Number(ev.target.value);
+          refreshPreview();
+        });
+        html.find('input[name="halfDamage"]').on("change", (ev) => {
+          halfDamage = ev.target.checked;
           refreshPreview();
         });
 
@@ -779,7 +809,12 @@ async function handlePostDamageStatus({ actor, combatant }) {
   }
 }
 
-async function applyEffectToActor(actor, effectId, stacks = 1) {
+async function applyEffectToActor(
+  actor,
+  effectId,
+  stacks = 1,
+  { caster = null, school = null } = {},
+) {
   if (!resolveEffectDefinition(effectId)) {
     console.warn(
       `Effect ${effectId} matches neither CONFIG.REDSTEEL.effectDefinitions nor a world Condition item`,
@@ -790,7 +825,22 @@ async function applyEffectToActor(actor, effectId, stacks = 1) {
     return;
   }
 
-  return await game.redsteel.applyEffect(actor, effectId, { stacks });
+  return await game.redsteel.applyEffect(actor, effectId, {
+    stacks,
+    caster,
+    school,
+  });
+}
+
+/**
+ * Resolve the casting context stored on a spell chat card so applied effects
+ * can scale off the caster's Spell Power. Returns nulls for non-spell sources
+ * (e.g. weapon attacks), which simply means SK-scaled effects fall back.
+ */
+function getCastingContext(message) {
+  const flags = message?.flags?.redsteel ?? {};
+  const caster = flags.casterUuid ? fromUuidSync(flags.casterUuid) : null;
+  return { caster, school: flags.spellSchool ?? null };
 }
 
 /* -------------------------------------------- */
@@ -939,6 +989,7 @@ export async function applyEffectsAsGM(data) {
   const message = game.messages.get(messageId);
   const effects = message.flags?.effects || {};
   const scene = game.scenes.get(sceneId);
+  const castingContext = getCastingContext(message);
 
   for (const tokenId of targetIds) {
     const tokenDoc = scene.tokens.get(tokenId);
@@ -963,7 +1014,7 @@ export async function applyEffectsAsGM(data) {
         stacks = effectData.stacks ?? 0;
       }
 
-      await applyEffectToActor(actor, effectId, stacks);
+      await applyEffectToActor(actor, effectId, stacks, castingContext);
     }
   }
 }

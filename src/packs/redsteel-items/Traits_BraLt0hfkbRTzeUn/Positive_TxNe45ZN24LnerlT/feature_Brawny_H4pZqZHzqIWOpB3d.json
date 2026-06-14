@@ -4,12 +4,17 @@
   "type": "feature",
   "img": "icons/creatures/mammals/bull-horns-eyes-glowin-orange.webp",
   "system": {
+    "localizationKey": "REDSTEEL.Items.Brawny.name",
     "description": "<p>Strength attribute cap +1, Hit Points +5, Athletics +5%.<br data-start=\"913\" data-end=\"916\" />May reroll a strength based skill once per day.</p>",
     "options": [
       "feature",
       "trait",
       "priest"
     ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
     "reroll": {
       "name": "Brawny: Strength",
       "active": [
@@ -18,8 +23,7 @@
       ],
       "value": 1
     },
-    "option": "trait",
-    "localizationKey": "REDSTEEL.Items.Brawny.name"
+    "option": "trait"
   },
   "effects": [
     {
@@ -28,30 +32,28 @@
       "img": "icons/creatures/mammals/bull-horns-eyes-glowin-orange.webp",
       "_id": "2kF8URbtUD6aY2wj",
       "type": "base",
-      "system": {},
-      "changes": [
-        {
-          "key": "system.skills.athletics.bonus",
-          "mode": 2,
-          "value": "5",
-          "priority": null
-        },
-        {
-          "key": "system.stats.health.base",
-          "mode": 2,
-          "value": "5",
-          "priority": null
-        }
-      ],
+      "system": {
+        "changes": [
+          {
+            "key": "system.skills.athletics.bonus",
+            "value": 5,
+            "priority": null,
+            "type": "add"
+          },
+          {
+            "key": "system.stats.health.base",
+            "value": 5,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
       "disabled": false,
       "duration": {
-        "startTime": null,
-        "seconds": null,
-        "combat": null,
-        "rounds": null,
-        "turns": null,
-        "startRound": null,
-        "startTurn": null
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
       },
       "description": "",
       "tint": "#ffffff",
@@ -71,11 +73,16 @@
         "compendiumSource": null,
         "duplicateSource": null,
         "exportSource": null,
-        "coreVersion": "13.351",
+        "coreVersion": "14.363",
         "systemId": "redsteel",
         "systemVersion": "0.8.1",
-        "lastModifiedBy": null
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
       },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
       "_key": "!items.effects!H4pZqZHzqIWOpB3d.2kF8URbtUD6aY2wj"
     }
   ],
@@ -88,7 +95,7 @@
     "compendiumSource": "Compendium.dilnamodulimport.pack-1.Item.0Ho0My3e2N3Vdwnn",
     "duplicateSource": "Item.0fUsRU5TeUrl8yDV",
     "exportSource": null,
-    "coreVersion": "13.351",
+    "coreVersion": "14.363",
     "systemId": "redsteel",
     "systemVersion": "0.8.1",
     "createdTime": 1777294846698,

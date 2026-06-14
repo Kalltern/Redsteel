@@ -4,12 +4,17 @@
   "type": "feature",
   "img": "icons/commodities/flowers/buds-red-green.webp",
   "system": {
+    "localizationKey": "REDSTEEL.Items.MasterHerbalist.name",
     "description": "<p>Grants a <strong data-start=\"9\" data-end=\"35\">+5% bonus to Herbalism</strong>, allows you to reroll a <strong data-start=\"60\" data-end=\"73\">Herbalism</strong> roll twice per day, and reduces the chance of a <strong data-start=\"122\" data-end=\"142\">Critical Failure</strong> by <strong data-start=\"146\" data-end=\"152\">3%</strong>.</p>",
     "options": [
       "feature",
       "trait",
       "priest"
     ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
     "reroll": {
       "name": "Master herbalist",
       "active": [
@@ -18,8 +23,7 @@
       ],
       "value": 2
     },
-    "option": "feature",
-    "localizationKey": "REDSTEEL.Items.MasterHerbalist.name"
+    "option": "feature"
   },
   "effects": [
     {
@@ -28,30 +32,28 @@
       "img": "icons/commodities/flowers/buds-red-green.webp",
       "_id": "QuWJTagpdW4SgFaO",
       "type": "base",
-      "system": {},
-      "changes": [
-        {
-          "key": "system.skills.herbalism.bonus",
-          "mode": 2,
-          "value": "5",
-          "priority": null
-        },
-        {
-          "key": "system.skills.herbalism.critfailpenalty",
-          "mode": 2,
-          "value": "-3",
-          "priority": null
-        }
-      ],
+      "system": {
+        "changes": [
+          {
+            "key": "system.skills.herbalism.bonus",
+            "value": 5,
+            "priority": null,
+            "type": "add"
+          },
+          {
+            "key": "system.skills.herbalism.critfailpenalty",
+            "value": -3,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
       "disabled": false,
       "duration": {
-        "startTime": null,
-        "combat": null,
-        "seconds": null,
-        "rounds": null,
-        "turns": null,
-        "startRound": null,
-        "startTurn": null
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
       },
       "description": "",
       "tint": "#ffffff",
@@ -74,11 +76,16 @@
         "compendiumSource": null,
         "duplicateSource": null,
         "exportSource": null,
-        "coreVersion": "13.351",
+        "coreVersion": "14.363",
         "systemId": "redsteel",
         "systemVersion": "0.8.1",
-        "lastModifiedBy": null
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
       },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
       "_key": "!items.effects!odv87zaCFElkFICf.QuWJTagpdW4SgFaO"
     }
   ],
@@ -93,7 +100,7 @@
     "compendiumSource": null,
     "duplicateSource": "Item.D8gQH5L1qXHg0BfX",
     "exportSource": null,
-    "coreVersion": "13.351",
+    "coreVersion": "14.363",
     "systemId": "redsteel",
     "systemVersion": "0.8.1",
     "createdTime": 1777294839144,

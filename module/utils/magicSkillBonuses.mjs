@@ -1,4 +1,5 @@
 import { getTraitPills } from "./traitPills.mjs";
+import { getSpellPower } from "./spellPower.mjs";
 
 // --- Helper for Dialogs (CSS Injection) ---
 function _injectDialogCSS() {
@@ -936,7 +937,7 @@ export async function finalizeRollsAndPostChat(
     difficulty: spell.system.difficulty,
     int: actor.system.attributes.int.total,
     wil: actor.system.attributes.wil.total,
-    spellPower: actor.system.schools[spell.system.type]?.spellPower || 0,
+    spellPower: getSpellPower(actor, spell.system.type),
   };
 
   const spellAttributeTestName = spell.system.attributeTest || 0;
@@ -1277,11 +1278,12 @@ export async function finalizeRollsAndPostChat(
   if (hasDamage) {
     attackFlag = {
       type: "attack",
+      // Lets the Apply Damage dialog offer the spell half-damage toggle.
+      isSpell: true,
       damageProfile,
       normal: {
         damage: damageTotal,
         penetration: spell.system.penetration,
-        halfDamage: spell.system.halfDamage ?? false,
       },
 
       effects: mechanicalEffects,
@@ -1291,7 +1293,6 @@ export async function finalizeRollsAndPostChat(
       attackFlag.critical = {
         damage: critDamageTotal,
         penetration: critBonusPenetration,
-        halfDamage: spell.system.halfDamage ?? false,
       };
     }
   }
@@ -1341,6 +1342,7 @@ export async function finalizeRollsAndPostChat(
       redsteel: {
         rollName,
         spellSchool: spell.system.type,
+        casterUuid: actor.uuid,
         criticalSuccessThreshold:
           actor.system.combatSkills.channeling.criticalSuccessThreshold,
         criticalFailureThreshold:

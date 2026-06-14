@@ -4,12 +4,17 @@
   "type": "feature",
   "img": "icons/creatures/reptiles/chameleon-camouflage-green-brown.webp",
   "system": {
+    "localizationKey": "REDSTEEL.Items.Inconspicuous.name",
     "description": "<p>Stealth and Blending with Surroundings (part of Acting) +15%.</p>",
     "options": [
       "feature",
       "trait",
       "priest"
     ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
     "reroll": {
       "name": "",
       "active": [
@@ -18,8 +23,7 @@
       ],
       "value": 0
     },
-    "option": "trait",
-    "localizationKey": "REDSTEEL.Items.Inconspicuous.name"
+    "option": "trait"
   },
   "effects": [
     {
@@ -28,30 +32,28 @@
       "img": "icons/creatures/reptiles/chameleon-camouflage-green-brown.webp",
       "_id": "iiaiQ2utK8R2xNNM",
       "type": "base",
-      "system": {},
-      "changes": [
-        {
-          "key": "system.skills.stealth.bonus",
-          "mode": 2,
-          "value": "15",
-          "priority": null
-        },
-        {
-          "key": "system.skills.acting.blend",
-          "mode": 2,
-          "value": "15",
-          "priority": null
-        }
-      ],
+      "system": {
+        "changes": [
+          {
+            "key": "system.skills.stealth.bonus",
+            "value": 15,
+            "priority": null,
+            "type": "add"
+          },
+          {
+            "key": "system.skills.acting.blend",
+            "value": 15,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
       "disabled": false,
       "duration": {
-        "startTime": null,
-        "seconds": null,
-        "combat": null,
-        "rounds": null,
-        "turns": null,
-        "startRound": null,
-        "startTurn": null
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
       },
       "description": "",
       "tint": "#ffffff",
@@ -74,11 +76,16 @@
         "compendiumSource": null,
         "duplicateSource": null,
         "exportSource": null,
-        "coreVersion": "13.351",
+        "coreVersion": "14.363",
         "systemId": "redsteel",
         "systemVersion": "0.8.1",
-        "lastModifiedBy": null
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
       },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
       "_key": "!items.effects!OReI0ocGxLtRYDTy.iiaiQ2utK8R2xNNM"
     }
   ],
@@ -91,7 +98,7 @@
     "compendiumSource": "Compendium.dilnamodulimport.pack-1.Item.WTGY6Dc7Bsbw5ChD",
     "duplicateSource": "Item.xMFuPaZGRNJEwxM5",
     "exportSource": null,
-    "coreVersion": "13.351",
+    "coreVersion": "14.363",
     "systemId": "redsteel",
     "systemVersion": "0.8.1",
     "createdTime": 1777294846698,

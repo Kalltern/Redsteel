@@ -4,6 +4,7 @@
   "type": "gear",
   "img": "icons/equipment/shield/heater-steel-boss-red.webp",
   "system": {
+    "localizationKey": "REDSTEEL.Items.HeaterShield.name",
     "description": "",
     "equipped": false,
     "layerOptions": [
@@ -15,6 +16,7 @@
     "armor": {
       "value": 0,
       "durability": 1,
+      "durabilityMax": 1,
       "acid": {
         "value": 0
       },
@@ -57,8 +59,7 @@
     "rangedCritDefense": 3,
     "archeryPenalty": 0,
     "perPenalty": 0,
-    "layer": "",
-    "localizationKey": "REDSTEEL.Items.HeaterShield.name"
+    "layer": ""
   },
   "effects": [],
   "sort": 0,
@@ -72,12 +73,12 @@
     "compendiumSource": null,
     "duplicateSource": "Item.GD9aFgA0TYsiRwoT",
     "exportSource": null,
-    "coreVersion": "13.351",
+    "coreVersion": "14.363",
     "systemId": "redsteel",
-    "systemVersion": "0.8.1",
+    "systemVersion": "0.8.19",
     "createdTime": 1777294837982,
-    "modifiedTime": 1777294837982,
-    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+    "modifiedTime": 1781279185782,
+    "lastModifiedBy": "YjJDoOEWjGrKL8LV"
   },
   "_id": "K7pJzK3ZlABM3iYz",
   "_key": "!items!K7pJzK3ZlABM3iYz"

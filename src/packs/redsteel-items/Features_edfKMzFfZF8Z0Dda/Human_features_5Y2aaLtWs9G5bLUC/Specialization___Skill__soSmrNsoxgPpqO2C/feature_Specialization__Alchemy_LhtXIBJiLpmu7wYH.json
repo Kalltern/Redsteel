@@ -4,12 +4,17 @@
   "type": "feature",
   "img": "icons/skills/targeting/target-glowing-yellow.webp",
   "system": {
+    "localizationKey": "REDSTEEL.Items.SpecializationAlchemy.name",
     "description": "<p>You get a 3 SP discount per level for Alchemy and a +5% bonus. You can reroll Alchemy once per day.</p>",
     "options": [
       "feature",
       "trait",
       "priest"
     ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
     "reroll": {
       "name": "Specialization: Alchemy",
       "active": [
@@ -18,8 +23,7 @@
       ],
       "value": 1
     },
-    "option": "feature",
-    "localizationKey": "REDSTEEL.Items.SpecializationAlchemy.name"
+    "option": "feature"
   },
   "effects": [
     {
@@ -28,24 +32,22 @@
       "img": "icons/svg/pill.svg",
       "_id": "YsZi3MLMt6MkpK7W",
       "type": "base",
-      "system": {},
-      "changes": [
-        {
-          "key": "system.skills.alchemy.bonus",
-          "mode": 2,
-          "value": "5",
-          "priority": null
-        }
-      ],
+      "system": {
+        "changes": [
+          {
+            "key": "system.skills.alchemy.bonus",
+            "value": 5,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
       "disabled": false,
       "duration": {
-        "startTime": null,
-        "combat": null,
-        "seconds": null,
-        "rounds": null,
-        "turns": null,
-        "startRound": null,
-        "startTurn": null
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
       },
       "description": "",
       "tint": "#ffffff",
@@ -68,11 +70,16 @@
         "compendiumSource": null,
         "duplicateSource": null,
         "exportSource": null,
-        "coreVersion": "13.351",
+        "coreVersion": "14.363",
         "systemId": "redsteel",
         "systemVersion": "0.8.1",
-        "lastModifiedBy": null
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
       },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
       "_key": "!items.effects!LhtXIBJiLpmu7wYH.YsZi3MLMt6MkpK7W"
     }
   ],
@@ -85,7 +92,7 @@
     "compendiumSource": "Compendium.dilnamodulimport.pack-1.Item.qY23DhhJfBet7EGs",
     "duplicateSource": "Item.OVSeMWB5xlyOfIhM",
     "exportSource": null,
-    "coreVersion": "13.351",
+    "coreVersion": "14.363",
     "systemId": "redsteel",
     "systemVersion": "0.8.1",
     "createdTime": 1777294839144,

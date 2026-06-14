@@ -4054,6 +4054,9 @@
           "isOffensive": {
             "label": "Offensive"
           },
+          "halfDamage": {
+            "label": "Half Damage"
+          },
           "sustained": {
             "label": "Sustained"
           },

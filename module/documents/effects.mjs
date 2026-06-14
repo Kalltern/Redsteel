@@ -3,6 +3,7 @@ import {
   isImmuneToEffect,
 } from "../utils/customConditions.mjs";
 import { evaluateDmgVsArmor } from "../utils/combatSkillBonuses.mjs";
+import { getSpellPower } from "../utils/spellPower.mjs";
 
 export class RedsteelActiveEffect extends ActiveEffect {
   /* -------------------------------------------- */
@@ -260,7 +261,11 @@ export class RedsteelActiveEffect extends ActiveEffect {
     await this.decrementActorTurn();
   }
 
-  static async applyEffect(actor, effectId, { stacks = 1, turns } = {}) {
+  static async applyEffect(
+    actor,
+    effectId,
+    { stacks = 1, turns, caster = null, school = null } = {},
+  ) {
     const resolved = resolveEffectDefinition(effectId);
     if (!resolved) {
       ui.notifications.error(`Effect not found: ${effectId}`);
@@ -283,8 +288,10 @@ export class RedsteelActiveEffect extends ActiveEffect {
 
     const maxStacks = def.maxStacks ?? 99;
 
-    const turnsDuration = turns ?? def.defaultTurns ?? 0;
-    const roundsDuration = def.defaultRounds ?? 0;
+    // `let`, not `const`: Spell Power-scaled effects (see the dynamic block
+    // below) can override how long the effect lasts.
+    let turnsDuration = turns ?? def.defaultTurns ?? 0;
+    let roundsDuration = def.defaultRounds ?? 0;
 
     const initialStacks = effectId === "fear" ? 3 : Math.min(stacks, maxStacks);
 
@@ -307,21 +314,66 @@ export class RedsteelActiveEffect extends ActiveEffect {
     // ============================================
     // DYNAMIC EFFECTS
     // ============================================
+    // The casting context is threaded in from the chat card (caster + the
+    // spell's school). Fall back to the controlled token only when an effect
+    // is applied outside a spell cast (e.g. a manual toggle).
+    const sourceCaster =
+      caster ?? canvas.tokens.controlled[0]?.actor ?? game.user.character;
+
     if (effectId === "sleep") {
-      const caster = canvas.tokens.controlled[0]?.actor ?? game.user.character; // character or controlled token
-      if (!caster) {
+      if (!sourceCaster) {
         ui.notifications.warn("No valid caster found.");
         return;
       }
-      const spellPower = caster?.system?.schools?.water?.spellPower ?? 0;
-
-      const penalty = Math.floor(spellPower / 2);
+      // Sleep is a Water-school spell — its initiative penalty scales off
+      // the caster's Water Spell Power (SK / 2).
+      const penalty = getSpellPower(sourceCaster, school ?? "water", {
+        multiplier: 0.5,
+      });
 
       changes.push({
         key: "system.secondaryAttributes.ini.bonus",
         mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
         value: -penalty,
       });
+    }
+
+    // Flicker — fixed −3 Initiative (in the definition's changes); lasts
+    // SK rounds of the casting school (full Spell Power).
+    if (effectId === "flicker" && sourceCaster) {
+      roundsDuration = getSpellPower(sourceCaster, school); // multiplier 1 → SK
+    }
+
+    // ============================================
+    // DEMO / TEMPLATE — Spell Power (SK) scaling
+    // --------------------------------------------
+    // Copy this block as a starting point for new SK-driven effects.
+    // It shows getSpellPower() driving BOTH the effect's magnitude and
+    // its duration. `sourceCaster` is the casting actor and `school` is the
+    // spell's school (`spell.system.type`), both threaded from the cast.
+    // ============================================
+    if (effectId === "sk_demo" && sourceCaster) {
+      // Three ways a rule can reference SK — pick whichever the rule needs:
+      const sk = getSpellPower(sourceCaster, school); //  +SK      (full)
+      const halfSk = getSpellPower(sourceCaster, school, { multiplier: 0.5 }); //  +SK/2
+      const doubleSk = getSpellPower(sourceCaster, school, { multiplier: 2 }); //  +2×SK
+      void doubleSk; // (unused here — shown for reference)
+
+      // --- MAGNITUDE: scale a change value off SK ---------------------
+      // e.g. weaken the target's global bonus by the caster's full SK.
+      changes.push({
+        key: "system.globalBonus",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: -sk, // swap for -halfSk / -doubleSk as the rule dictates
+      });
+
+      // --- DURATION: scale how long the effect lasts off SK -----------
+      // Reassign turnsDuration / roundsDuration here. Patterns:
+      //   • Y + SK   →  2 + sk
+      //   • SK × X   →  doubleSk
+      //   • SK / 2   →  halfSk
+      turnsDuration = 2 + halfSk; // e.g. lasts (2 + SK/2) of the target's turns
+      // roundsDuration = sk;     // …or in rounds instead, scaled by full SK
     }
 
     // ============================================

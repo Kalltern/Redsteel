@@ -4,12 +4,17 @@
   "type": "feature",
   "img": "icons/skills/targeting/target-glowing-yellow.webp",
   "system": {
+    "localizationKey": "REDSTEEL.Items.TalentedIILeadership.name",
     "description": "<p>You get a +5% bonus to Leadership. You can reroll Leadership once per day. Cannot be picked if you already have Specialization: Leadership.</p>",
     "options": [
       "feature",
       "trait",
       "priest"
     ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
     "reroll": {
       "name": "Talented II: Leadership",
       "active": [
@@ -18,8 +23,7 @@
       ],
       "value": 1
     },
-    "option": "feature",
-    "localizationKey": "REDSTEEL.Items.TalentedIILeadership.name"
+    "option": "feature"
   },
   "effects": [
     {
@@ -28,24 +32,22 @@
       "img": "icons/svg/ice-aura.svg",
       "_id": "bzShiJLDLU4vilov",
       "type": "base",
-      "system": {},
-      "changes": [
-        {
-          "key": "system.skills.Leadership.bonus",
-          "mode": 2,
-          "value": "5",
-          "priority": null
-        }
-      ],
+      "system": {
+        "changes": [
+          {
+            "key": "system.skills.Leadership.bonus",
+            "value": 5,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
       "disabled": false,
       "duration": {
-        "startTime": null,
-        "combat": null,
-        "seconds": null,
-        "rounds": null,
-        "turns": null,
-        "startRound": null,
-        "startTurn": null
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
       },
       "description": "",
       "tint": "#ffffff",
@@ -68,11 +70,16 @@
         "compendiumSource": null,
         "duplicateSource": null,
         "exportSource": null,
-        "coreVersion": "13.351",
+        "coreVersion": "14.363",
         "systemId": "redsteel",
         "systemVersion": "0.8.1",
-        "lastModifiedBy": null
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
       },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
       "_key": "!items.effects!pAtxTSwXlqaTk9Ki.bzShiJLDLU4vilov"
     }
   ],
@@ -85,7 +92,7 @@
     "compendiumSource": "Compendium.dilnamodulimport.pack-1.Item.qY23DhhJfBet7EGs",
     "duplicateSource": "Item.ssL6ZHUOWIf3RPTT",
     "exportSource": null,
-    "coreVersion": "13.351",
+    "coreVersion": "14.363",
     "systemId": "redsteel",
     "systemVersion": "0.8.1",
     "createdTime": 1777294839144,

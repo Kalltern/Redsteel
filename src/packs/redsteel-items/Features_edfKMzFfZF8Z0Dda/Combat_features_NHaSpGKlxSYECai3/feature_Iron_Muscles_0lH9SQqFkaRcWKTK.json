@@ -4,12 +4,17 @@
   "type": "feature",
   "img": "icons/equipment/chest/breastplate-helmet-metal.webp",
   "system": {
+    "localizationKey": "REDSTEEL.Items.IronMuscles.name",
     "description": "<p>Hit Point modifier from Strength is increased to 2.</p>",
     "options": [
       "feature",
       "trait",
       "priest"
     ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
     "reroll": {
       "name": "",
       "active": [
@@ -18,8 +23,7 @@
       ],
       "value": 0
     },
-    "option": "feature",
-    "localizationKey": "REDSTEEL.Items.IronMuscles.name"
+    "option": "feature"
   },
   "effects": [
     {
@@ -27,25 +31,23 @@
       "origin": "Item.0lH9SQqFkaRcWKTK",
       "img": "icons/equipment/chest/breastplate-helmet-metal.webp",
       "duration": {
-        "rounds": null,
-        "startTime": null,
-        "combat": null,
-        "seconds": null,
-        "turns": null,
-        "startRound": null,
-        "startTurn": null
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
       },
       "_id": "HBOK98qdaPitaudU",
       "type": "base",
-      "system": {},
-      "changes": [
-        {
-          "key": "system.ironMuscles",
-          "mode": 5,
-          "value": "true",
-          "priority": null
-        }
-      ],
+      "system": {
+        "changes": [
+          {
+            "key": "system.ironMuscles",
+            "value": true,
+            "priority": null,
+            "type": "override"
+          }
+        ]
+      },
       "disabled": false,
       "description": "",
       "tint": "#ffffff",
@@ -68,11 +70,16 @@
         "compendiumSource": null,
         "duplicateSource": null,
         "exportSource": null,
-        "coreVersion": "13.351",
+        "coreVersion": "14.363",
         "systemId": "redsteel",
         "systemVersion": "0.8.1",
-        "lastModifiedBy": null
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
       },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
       "_key": "!items.effects!0lH9SQqFkaRcWKTK.HBOK98qdaPitaudU"
     }
   ],
@@ -88,7 +95,7 @@
     "compendiumSource": null,
     "duplicateSource": "Item.V5hKMoxMIinNcMT7",
     "exportSource": null,
-    "coreVersion": "13.351",
+    "coreVersion": "14.363",
     "systemId": "redsteel",
     "systemVersion": "0.8.1",
     "createdTime": 1777294839144,

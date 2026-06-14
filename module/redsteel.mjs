@@ -57,6 +57,7 @@ import {
   SOCKET,
 } from "./utils/applyDamage.mjs";
 
+import { getSpellPower } from "./utils/spellPower.mjs";
 import {
   getNonWeaponAbility,
   getDoctrineBonuses,
@@ -202,6 +203,7 @@ Hooks.once("init", function () {
   game.redsteel.deductAbilityCost = deductAbilityCost;
   game.redsteel.buildWeaponSetView = buildWeaponSetView;
   game.redsteel.evaluateDmgVsArmor = evaluateDmgVsArmor;
+  game.redsteel.getSpellPower = getSpellPower;
   game.redsteel.firstAid = firstAid;
   game.redsteel.combatAbilities = combatAbilities;
   game.redsteel.delayTurn = delayTurn;

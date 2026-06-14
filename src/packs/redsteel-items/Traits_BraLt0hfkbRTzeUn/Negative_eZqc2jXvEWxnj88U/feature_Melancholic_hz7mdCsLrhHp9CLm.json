@@ -4,12 +4,17 @@
   "type": "feature",
   "img": "icons/environment/wilderness/tree-oak.webp",
   "system": {
+    "localizationKey": "REDSTEEL.Items.Melancholic.name",
     "description": "<p>Self-denial generates one additional point of Madness.</p><p data-start=\"848\" data-end=\"949\"></p>",
     "options": [
       "feature",
       "trait",
       "priest"
     ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
     "reroll": {
       "name": "",
       "active": [
@@ -18,8 +23,7 @@
       ],
       "value": null
     },
-    "option": "trait",
-    "localizationKey": "REDSTEEL.Items.Melancholic.name"
+    "option": "trait"
   },
   "effects": [
     {
@@ -28,30 +32,28 @@
       "img": "icons/environment/wilderness/tree-oak.webp",
       "_id": "PsDQWsD9fmaDLGiu",
       "type": "base",
-      "system": {},
-      "changes": [
-        {
-          "key": "system.secondaryAttributes.res.bonus",
-          "mode": 2,
-          "value": "-1",
-          "priority": null
-        },
-        {
-          "key": "system.schools.earth.bonus",
-          "mode": 2,
-          "value": "1",
-          "priority": null
-        }
-      ],
+      "system": {
+        "changes": [
+          {
+            "key": "system.secondaryAttributes.res.bonus",
+            "value": -1,
+            "priority": null,
+            "type": "add"
+          },
+          {
+            "key": "system.schools.earth.bonus",
+            "value": 1,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
       "disabled": false,
       "duration": {
-        "startTime": null,
-        "seconds": null,
-        "combat": null,
-        "rounds": null,
-        "turns": null,
-        "startRound": null,
-        "startTurn": null
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
       },
       "description": "",
       "tint": "#ffffff",
@@ -71,11 +73,16 @@
         "compendiumSource": null,
         "duplicateSource": null,
         "exportSource": null,
-        "coreVersion": "13.351",
+        "coreVersion": "14.363",
         "systemId": "redsteel",
         "systemVersion": "0.8.1",
-        "lastModifiedBy": null
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
       },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
       "_key": "!items.effects!hz7mdCsLrhHp9CLm.PsDQWsD9fmaDLGiu"
     }
   ],
@@ -88,7 +95,7 @@
     "compendiumSource": "Compendium.dilnamodulimport.pack-1.Item.buyNr8iCf3nVt5cz",
     "duplicateSource": "Item.hRKHj5sCqvuF9Mpy",
     "exportSource": null,
-    "coreVersion": "13.351",
+    "coreVersion": "14.363",
     "systemId": "redsteel",
     "systemVersion": "0.8.1",
     "createdTime": 1777294846698,

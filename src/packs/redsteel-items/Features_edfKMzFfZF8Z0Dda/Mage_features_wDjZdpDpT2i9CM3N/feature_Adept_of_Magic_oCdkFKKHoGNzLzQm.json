@@ -5,12 +5,17 @@
   "_id": "oCdkFKKHoGNzLzQm",
   "img": "icons/commodities/gems/gem-rough-rose-teal.webp",
   "system": {
+    "localizationKey": "REDSTEEL.Items.AdeptOfMagic.name",
     "description": "<p>+5% to <strong>Channeling</strong>, +3 <strong>Base Mana</strong>. Once per day, you may reroll a <strong>Channeling roll</strong>.</p>",
     "options": [
       "feature",
       "trait",
       "priest"
     ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
     "reroll": {
       "name": "Adept of Magic",
       "active": [
@@ -19,8 +24,7 @@
       ],
       "value": 1
     },
-    "option": "feature",
-    "localizationKey": "REDSTEEL.Items.AdeptOfMagic.name"
+    "option": "feature"
   },
   "effects": [
     {
@@ -29,30 +33,28 @@
       "img": "icons/commodities/gems/gem-rough-rose-teal.webp",
       "_id": "W9vKvYvfnQl9BbEs",
       "type": "base",
-      "system": {},
-      "changes": [
-        {
-          "key": "system.stats.mana.bonus",
-          "mode": 2,
-          "value": "3",
-          "priority": null
-        },
-        {
-          "key": "system.combatSkills.channeling.bonus",
-          "mode": 2,
-          "value": "5",
-          "priority": null
-        }
-      ],
+      "system": {
+        "changes": [
+          {
+            "key": "system.stats.mana.bonus",
+            "value": 3,
+            "priority": null,
+            "type": "add"
+          },
+          {
+            "key": "system.combatSkills.channeling.bonus",
+            "value": 5,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
       "disabled": false,
       "duration": {
-        "startTime": null,
-        "combat": null,
-        "seconds": null,
-        "rounds": null,
-        "turns": null,
-        "startRound": null,
-        "startTurn": null
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
       },
       "description": "",
       "tint": "#ffffff",
@@ -75,11 +77,16 @@
         "compendiumSource": null,
         "duplicateSource": null,
         "exportSource": null,
-        "coreVersion": "13.351",
+        "coreVersion": "14.363",
         "systemId": "redsteel",
         "systemVersion": "0.8.1",
-        "lastModifiedBy": null
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
       },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
       "_key": "!items.effects!oCdkFKKHoGNzLzQm.W9vKvYvfnQl9BbEs"
     }
   ],
@@ -94,7 +101,7 @@
     "compendiumSource": null,
     "duplicateSource": null,
     "exportSource": null,
-    "coreVersion": "13.351",
+    "coreVersion": "14.363",
     "systemId": "redsteel",
     "systemVersion": "0.8.1",
     "createdTime": 1777294839144,

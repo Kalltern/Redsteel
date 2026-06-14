@@ -3,6 +3,7 @@
   "type": "spell",
   "img": "icons/magic/air/wind-tornado-spiral-pink-purple.webp",
   "system": {
+    "localizationKey": "",
     "description": "<p>Triggers a vs Test of Will + {{math spellPower \"*\" 2}} against target's Strength/Dexterity Test.</p><hr /><ul><li><p>On caster's success, the target is set Prone and pushed back one hex.</p></li><li><p>On failure, the target is pushed back one hex.</p></li><li><p>On a failure with a target's Margin of Success of at least 50, the target is not pushed at all.</p></li></ul><hr /><p>Cancels Physical attacks.Can only be cast as a Reaction if the caster is attacked.</p>",
     "options": [
       "divine",
@@ -90,6 +91,9 @@
     "difficulty": -10,
     "cost": 6,
     "perRound": 0,
+    "variants": [
+      ""
+    ],
     "option": "magic",
     "type": "air",
     "rank": "expert",
@@ -137,12 +141,12 @@
     "compendiumSource": "Compendium.dilnamodulimport.pack-1.Item.udSPEPzdqpD9yrXY",
     "duplicateSource": null,
     "exportSource": null,
-    "coreVersion": "13.351",
+    "coreVersion": "14.363",
     "systemId": "redsteel",
-    "systemVersion": "0.8.1",
+    "systemVersion": "0.8.18",
     "createdTime": 1777294844905,
-    "modifiedTime": 1777294844905,
-    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+    "modifiedTime": 1781268991624,
+    "lastModifiedBy": "YjJDoOEWjGrKL8LV"
   },
   "ownership": {
     "default": 0,

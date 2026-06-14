@@ -6,7 +6,7 @@
   "sorting": "a",
   "_id": "UAHeoAMiSgoUc8B4",
   "description": "",
-  "sort": 600000,
+  "sort": 500000,
   "flags": {
     "scene-packer": {
       "hash": "06dfa14df554cada822ed33a5c77171fce350ae8"
@@ -16,12 +16,12 @@
     "compendiumSource": null,
     "duplicateSource": null,
     "exportSource": null,
-    "coreVersion": "13.351",
+    "coreVersion": "14.363",
     "systemId": "redsteel",
     "systemVersion": "0.8.1",
     "createdTime": 1777294844856,
-    "modifiedTime": 1777294844954,
-    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+    "modifiedTime": 1781269131157,
+    "lastModifiedBy": "YjJDoOEWjGrKL8LV"
   },
   "_key": "!folders!UAHeoAMiSgoUc8B4"
 }

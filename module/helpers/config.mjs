@@ -1040,7 +1040,7 @@ REDSTEEL.effectDefinitions = {
     name: "Restoration",
     img: "icons/svg/regen.svg",
     statuses: ["restoration"],
-    defaultRounds: 3,
+    defaultRounds: 2,
     useDuration: true,
     stackBehavior: "refresh",
     triggers: {
@@ -1236,6 +1236,46 @@ REDSTEEL.effectDefinitions = {
       },
     ],
     stackBehavior: "ignore",
+  },
+
+  // "Flicker" — drops the target's Initiative by 3 for SK rounds
+  // (full Spell Power of the casting school). The −3 is fixed, so it
+  // lives here; the SK-scaled duration is set in effects.mjs.
+  flicker: {
+    name: "Flicker",
+    img: "icons/magic/lightning/bolt-strike-blue.webp",
+    statuses: ["flicker"],
+    useDuration: true,
+    defaultRounds: 1, // fallback only — real duration = SK rounds
+    changes: [
+      {
+        key: "system.secondaryAttributes.ini.bonus",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: -3,
+      },
+    ],
+    stackBehavior: "refresh",
+  },
+
+  // ==========================================================
+  // DEMO / TEMPLATE — Spell Power (SK) scaled effect.
+  // A worked example of an effect whose magnitude AND duration
+  // derive from the caster's Spell Power in the spell's school.
+  // The numbers are filled in at apply-time in effects.mjs
+  // (applyEffect → dynamic block, case "sk_demo"); copy that
+  // block + this entry as the starting point for new SK effects.
+  // ==========================================================
+  sk_demo: {
+    name: "Spell Power Demo",
+    img: "icons/magic/control/energy-stream-link-blue.webp",
+    statuses: ["sk_demo"],
+    useDuration: true,
+    // Fallback only — the real duration is computed from SK in effects.mjs.
+    defaultTurns: 1,
+    // `changes` stays empty: the SK-scaled change is pushed dynamically so it
+    // can read the live caster value at the moment of casting.
+    changes: [],
+    stackBehavior: "refresh",
   },
 };
 
