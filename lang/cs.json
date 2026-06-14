@@ -3348,6 +3348,17 @@
         }
       },
       "Character": {
+        "Sections": {
+          "Primary": "Primární atributy",
+          "Secondary": "Sekundární atributy",
+          "Condition": "Stav",
+          "Resources": "Zdroje",
+          "Status": "Stav",
+          "Defense": "Obrana"
+        },
+        "Condition": {
+          "max": "max"
+        },
         "stats": {
           "health": {
             "value": {

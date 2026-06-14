@@ -3348,6 +3348,17 @@
         }
       },
       "Character": {
+        "Sections": {
+          "Primary": "Primary Attributes",
+          "Secondary": "Secondary Attributes",
+          "Condition": "Condition",
+          "Resources": "Resources",
+          "Status": "Status",
+          "Defense": "Defense"
+        },
+        "Condition": {
+          "max": "max"
+        },
         "stats": {
           "health": {
             "value": {

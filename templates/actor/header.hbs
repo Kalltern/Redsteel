@@ -191,168 +191,128 @@
 
     <hr>
 
-    <div class="attributes flexrow">
-      {{#each system.attributes as |attribute key|}}
-      <div class="attribute flexcolumn flex-group-center">
-        <label
-          class="resource-label rollable"
+    {{!-- PRIMARY ATTRIBUTES (tier 1 — dominant, 24px values) --}}
+    <div class="stat-section stat-section--primary">
+      <div class="stat-box-grid">
+        {{#each system.attributes as |attribute key|}}
+        <div
+          class="stat-box rollable"
           data-action="roll"
           data-roll="(@attributes.{{key}}.mod)-1d100"
           data-roll-type="attribute"
           data-label="{{key}}"
         >
-          {{localize (lookup @root.config.attributes key)}}
-        </label>
-
-        <input
-          type="text"
-          value="{{attribute.total}}"
-          class="attribute-score"
-          data-dtype="Number"
-          readonly
-        />
-        <input
-          type="text"
-          value="{{numberFormat attribute.mod decimals=0}}"
-          class="attribute-mod"
-          data-dtype="Number"
-          readonly
-        />
-
-      </div>
-      {{/each}}
-    </div>
-
-    <div class="attributes flexrow">
-      {{#each system.secondaryAttributes as |attribute key|}}
-      <div class="attribute flexcolumn flex-group-center">
-
-        {{#if (eq key "spd")}}
-        <label
-          class="resource-label rollable"
-          data-action="roll"
-          data-roll-type="secondaryAttribute"
-          data-roll="(@secondaryAttributes.{{key}}.total)+(@secondaryAttributes.ini.total)+1d12"
-          data-label="{{key}}"
-        >
-        {{/if}}
-
-        {{#if (eq key "lck")}}
-        <label
-          class="resource-label rollable"
-          data-action="roll"
-          data-roll-type="secondaryAttribute"
-          data-roll="(@secondaryAttributes.{{key}}.total*5)+50-1d100"
-          data-label="{{key}}"
-        >
-        {{/if}}
-
-        {{#if (eq key "res")}}
-        <label
-          class="resource-label rollable"
-          data-action="roll"
-          data-roll-type="secondaryAttribute"
-          data-roll="(@secondaryAttributes.{{key}}.total*10)-1d100"
-          data-label="{{key}}"
-        >
-        {{/if}}
-
-        {{#if (eq key "fth")}}
-        <label
-          class="resource-label rollable"
-          data-action="roll"
-          data-roll-type="secondaryAttribute"
-          data-roll="(@secondaryAttributes.{{key}}.total*8)-1d100"
-          data-label="{{key}}"
-        >
-        {{/if}}
-
-        {{#if (eq key "sin")}}
-        <label
-          class="resource-label rollable"
-          data-action="roll"
-          data-roll-type="secondaryAttribute"
-          data-roll="(@secondaryAttributes.res.total*10)-(@secondaryAttributes.{{key}}.total*3)-1d100"
-          data-label="{{key}}"
-        >
-        {{/if}}
-
-        {{!-- Non-rollable secondary attributes (e.g. Initiative, Visage)
-              still need the label wrapper so they share the same format --}}
-        {{#unless (or (eq key "spd") (eq key "lck") (eq key "res") (eq key "fth") (eq key "sin"))}}
-        <label class="resource-label">
-        {{/unless}}
-
-          {{localize (lookup @root.config.secondaryAttributes key)}}
-        </label>
-
-        <input
-          type="text"
-          value="{{attribute.total}}"
-          class="attribute-score"
-          data-dtype="Number"
-          readonly
-        />
-      </div>
-      {{/each}}
-    </div>
-
-    <hr>
-
-<div class="stats">
-  <div class="stat-row">
-
-    {{#each system.stats as |stat key|}}
-      {{#if (or (eq key "graveWounds") (eq key "fatigue") (eq key "corruption") (eq key "mind") (eq key "insanity"))}}
-      <div class="attribute">
-        <label>{{localize (concat 'REDSTEEL.Actor.Character.stats.' key '.value.label')}}</label>
-        <div class="stat-values">
-          <input
-            type="text"
-            class="stat-input stat-current"
-            name="system.stats.{{key}}.value"
-            value="{{stat.value}}"
-            data-value="{{stat.value}}"
-          />
-          <input
-            type="text"
-            class="stat-input stat-max"
-            value="{{stat.max}}"
-            data-value="{{stat.max}}"
-            readonly
-          />
+          <div class="stat-box-label">{{localize (lookup @root.config.attributes key)}}</div>
+          <div class="stat-box-value">{{attribute.total}}</div>
+          <div class="stat-box-sub">{{numberFormat attribute.mod decimals=0}}</div>
         </div>
+        {{/each}}
       </div>
-      {{/if}}
-    {{/each}}
-
-    <!-- Armor -->
-    <div class="attribute">
-      <label class="resource-label">{{localize "Armor"}}</label>
-      <input
-        type="text"
-        value="{{system.armor.total}}"
-        data-dtype="Number"
-        class="stat-input"
-        readonly
-      />
     </div>
 
-    <!-- Detection -->
-    <div class="attribute">
-      <label>{{localize "Detection"}}</label>
-      <input
-        type="text"
-        name="system.detection"
-        value="{{system.detection}}"
-        data-dtype="Number"
-        class="stat-input"
-        readonly
-      />
+    {{!-- SECONDARY ATTRIBUTES (tier 2 — recessive, 17px, name + value only) --}}
+    <div class="stat-section stat-section--secondary">
+      <div class="stat-box-grid">
+        {{#each system.secondaryAttributes as |attribute key|}}
+        {{#if (eq key "spd")}}
+        <div class="stat-box rollable" data-action="roll" data-roll-type="secondaryAttribute" data-roll="(@secondaryAttributes.{{key}}.total)+(@secondaryAttributes.ini.total)+1d12" data-label="{{key}}">
+        {{else if (eq key "lck")}}
+        <div class="stat-box rollable" data-action="roll" data-roll-type="secondaryAttribute" data-roll="(@secondaryAttributes.{{key}}.total*5)+50-1d100" data-label="{{key}}">
+        {{else if (eq key "res")}}
+        <div class="stat-box rollable" data-action="roll" data-roll-type="secondaryAttribute" data-roll="(@secondaryAttributes.{{key}}.total*10)-1d100" data-label="{{key}}">
+        {{else if (eq key "fth")}}
+        <div class="stat-box rollable" data-action="roll" data-roll-type="secondaryAttribute" data-roll="(@secondaryAttributes.{{key}}.total*8)-1d100" data-label="{{key}}">
+        {{else if (eq key "sin")}}
+        <div class="stat-box rollable" data-action="roll" data-roll-type="secondaryAttribute" data-roll="(@secondaryAttributes.res.total*10)-(@secondaryAttributes.{{key}}.total*3)-1d100" data-label="{{key}}">
+        {{else}}
+        <div class="stat-box">
+        {{/if}}
+          <div class="stat-box-label">{{localize (lookup @root.config.secondaryAttributes key)}}</div>
+          <div class="stat-box-value">{{attribute.total}}</div>
+        </div>
+        {{/each}}
+      </div>
     </div>
 
-  </div>
-</div>
+    {{!-- CONDITION (tier 3 — compact, grouped by function) --}}
+    <div class="stat-section stat-section--condition">
+      <div class="condition-row">
+
+        {{!-- RESOURCES --}}
+        <div class="condition-group">          <div class="condition-group-boxes">
+
+            {{!-- Wounds --}}
+            <div class="stat-box stat-box--editable">
+              <div class="stat-box-label">{{localize "REDSTEEL.Actor.Character.stats.graveWounds.value.label"}}</div>
+              <div class="stat-box-value stat-box-value--ratio">
+                <input type="text" class="stat-box-value-input" name="system.stats.graveWounds.value" value="{{system.stats.graveWounds.value}}" />
+                <span class="stat-box-max">/ {{system.stats.graveWounds.max}}</span>
+              </div>
+            </div>
+
+            {{!-- Mind --}}
+            <div class="stat-box stat-box--editable">
+              <div class="stat-box-label">{{localize "REDSTEEL.Actor.Character.stats.mind.value.label"}}</div>
+              <div class="stat-box-value stat-box-value--ratio">
+                <input type="text" class="stat-box-value-input" name="system.stats.mind.value" value="{{system.stats.mind.value}}" />
+                <span class="stat-box-max">/ {{system.stats.mind.max}}</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        {{!-- STATUS --}}
+        <div class="condition-group">          <div class="condition-group-boxes">
+
+            {{!-- Insanity --}}
+            <div class="stat-box stat-box--editable">
+              <div class="stat-box-label">{{localize "REDSTEEL.Actor.Character.stats.insanity.value.label"}}</div>
+              <div class="stat-box-value stat-box-value--ratio">
+                <input type="text" class="stat-box-value-input" name="system.stats.insanity.value" value="{{system.stats.insanity.value}}" />
+                <span class="stat-box-max">/ {{system.stats.insanity.max}}</span>
+              </div>
+            </div>
+
+            {{!-- Corruption (warning tier) --}}
+            <div class="stat-box stat-box--editable stat-box--warn">
+              <div class="stat-box-label">{{localize "REDSTEEL.Actor.Character.stats.corruption.value.label"}}</div>
+              <div class="stat-box-value stat-box-value--ratio">
+                <input type="text" class="stat-box-value-input" name="system.stats.corruption.value" value="{{system.stats.corruption.value}}" />
+                <span class="stat-box-max">/ {{system.stats.corruption.max}}</span>
+              </div>
+            </div>
+
+            {{!-- Fatigue --}}
+            <div class="stat-box stat-box--editable">
+              <div class="stat-box-label">{{localize "REDSTEEL.Actor.Character.stats.fatigue.value.label"}}</div>
+              <div class="stat-box-value stat-box-value--ratio">
+                <input type="text" class="stat-box-value-input" name="system.stats.fatigue.value" value="{{system.stats.fatigue.value}}" />
+                <span class="stat-box-max">/ {{system.stats.fatigue.max}}</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        {{!-- DEFENSE --}}
+        <div class="condition-group">          <div class="condition-group-boxes">
+
+            {{!-- Armor (derived, no max) --}}
+            <div class="stat-box stat-box--armor">
+              <div class="stat-box-label">{{localize "Armor"}}</div>
+              <div class="stat-box-value">{{system.armor.total}}</div>            </div>
+
+            {{!-- Detection (derived, no max) --}}
+            <div class="stat-box">
+              <div class="stat-box-label">{{localize "Detection"}}</div>
+              <div class="stat-box-value">{{system.detection}}</div>            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
 
   </div>
 </header>

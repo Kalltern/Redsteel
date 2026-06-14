@@ -808,9 +808,26 @@ table tr td:nth-child(3) {
   border: 3px solid #5f5843; /* gold border */
 }
 
+/* Keep name/race at the top, then centre the three stat rows in the space
+   below so leftover space splits above/below them instead of one big gap. */
+.redsteel .sheet-header .actor {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.sheet-header .stat-section--primary {
+  margin-top: auto;
+}
+
+.sheet-header .stat-section--condition {
+  margin-bottom: auto;
+}
+
 .redsteel .sheet-header .actor,
 .redsteel .sheet-npc-header {
   flex: 1;
+  min-width: 0;
   padding: 5px;
   box-shadow:
     inset 0 0 40px rgba(0, 0, 0, 0.7),
@@ -823,6 +840,13 @@ table tr td:nth-child(3) {
     ),
     url(../ui/headertexture.jpg);
 }
+
+/* Override after the shared padding rule so it isn't reset: extra bottom
+   room lifts the auto-centred stat rows a little higher. */
+.redsteel .sheet-header .actor {
+  padding-bottom: 48px;
+}
+
 .redsteel .sheet-npc-header {
   min-height: 460px;
   max-height: 460px;
@@ -4210,4 +4234,277 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 
 .inventory-ctrl.item-delete:hover {
   color: #e2706e;
+}
+
+/* ============================================= */
+/* CHARACTER HEADER STAT PANEL                    */
+/* Layout / hierarchy spec. Colours are neutral   */
+/* placeholders — final palette applied later.    */
+/* ============================================= */
+
+.sheet-header .stat-section {
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.sheet-header .stat-section + .stat-section {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #2c2a22;
+}
+
+/* Section header: a tiny quiet label + a thin rule filling the row */
+.sheet-header .stat-section-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 6px 0;
+}
+
+.sheet-header .stat-section-heading-label {
+  font-size: 8px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #6a6280;
+  white-space: nowrap;
+}
+
+.sheet-header .stat-section-heading-rule {
+  flex: 1;
+  height: 1px;
+  background: #2a2740;
+}
+
+/* --- Shared box shell (flat, neutral) --- */
+.sheet-header .stat-box-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 5px;
+}
+
+/* Recessed iron panel: the field is sunk into the plate so the name and
+   number sit deep inside a dark well. Lit from above — dark shadow along the
+   top inner wall, a faint catch-light along the bottom edge, darkened corners
+   for depth. No rivets, no glow. */
+.sheet-header .stat-box {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border-radius: 4px;
+  background-color: rgba(14, 12, 9, 0.22);
+  background-image: radial-gradient(
+    ellipse at 50% 42%,
+    rgba(60, 54, 42, 0.1),
+    rgba(6, 5, 4, 0.22)
+  );
+  border: 1px solid rgb(45 40 32);
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.4),
+    inset 0 -1px 0 rgba(170, 154, 122, 0.06);
+}
+
+.sheet-header .stat-box.rollable {
+  cursor: pointer;
+  transition: box-shadow 0.12s ease;
+}
+
+.sheet-header .stat-box.rollable:hover {
+  box-shadow:
+    inset 0 2px 5px rgba(0, 0, 0, 0.5),
+    inset 0 -1px 0 rgba(198, 180, 142, 0.12);
+}
+
+.sheet-header .stat-box-label {
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  line-height: 1.3;
+  color: #8c8273;
+}
+
+/* Static value and editable input share metrics so they align exactly */
+.sheet-header .stat-box-value,
+.sheet-header .stat-box .stat-box-value-input {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  /* Engraved into the plate: dark recess above, a hairline catch-light below */
+  color: #a39b89;
+  line-height: 1.15;
+  text-align: center;
+  text-shadow:
+    0 -1px 1px rgba(0, 0, 0, 0.85),
+    0 1px 0 rgba(196, 184, 154, 0.12);
+}
+
+/* Strip the inherited header-input chrome so the editable value reads as
+   plain text identical to the readonly ones */
+.redsteel .sheet-header .stat-box .stat-box-value-input {
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  height: auto;
+  min-height: 0;
+  background: none;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  box-sizing: border-box;
+}
+
+.redsteel .sheet-header .stat-box .stat-box-value-input:hover,
+.redsteel .sheet-header .stat-box .stat-box-value-input:focus {
+  background: none;
+  box-shadow: none;
+  border: none;
+  border-bottom: 1px solid #58513f;
+  outline: none;
+}
+
+.sheet-header .stat-box-sub {
+  font-size: 9px;
+  line-height: 1;
+  color: #6f685a;
+}
+
+.sheet-header .stat-box-sub--empty {
+  color: #4a4538;
+}
+
+/* === Tier 1 — Primary attributes (dominant, 24px) === */
+.sheet-header .stat-section--primary .stat-box {
+  padding: 7px 3px 6px;
+  gap: 2px;
+}
+
+.sheet-header .stat-section--primary .stat-box-value {
+  font-size: 24px;
+}
+
+.sheet-header .stat-section--primary .stat-box-sub {
+  font-size: 14px;
+}
+
+/* Each primary attribute carries a faint wash of its skills-tab colour,
+   layered over the recess (depth radial preserved underneath). */
+.sheet-header .stat-section--primary .stat-box[data-label="str"] {
+  background-image:
+    linear-gradient(rgba(179, 30, 43, 0.06), rgba(179, 30, 43, 0.06)),
+    radial-gradient(ellipse at 50% 42%, rgba(60, 54, 42, 0.1), rgba(6, 5, 4, 0.22));
+}
+
+.sheet-header .stat-section--primary .stat-box[data-label="dex"] {
+  background-image:
+    linear-gradient(rgba(34, 144, 78, 0.06), rgba(34, 144, 78, 0.06)),
+    radial-gradient(ellipse at 50% 42%, rgba(60, 54, 42, 0.1), rgba(6, 5, 4, 0.22));
+}
+
+.sheet-header .stat-section--primary .stat-box[data-label="end"] {
+  background-image:
+    linear-gradient(rgba(180, 111, 54, 0.06), rgba(180, 111, 54, 0.06)),
+    radial-gradient(ellipse at 50% 42%, rgba(60, 54, 42, 0.1), rgba(6, 5, 4, 0.22));
+}
+
+.sheet-header .stat-section--primary .stat-box[data-label="int"] {
+  background-image:
+    linear-gradient(rgba(42, 94, 170, 0.06), rgba(42, 94, 170, 0.06)),
+    radial-gradient(ellipse at 50% 42%, rgba(60, 54, 42, 0.1), rgba(6, 5, 4, 0.22));
+}
+
+.sheet-header .stat-section--primary .stat-box[data-label="wil"] {
+  background-image:
+    linear-gradient(rgba(125, 63, 167, 0.06), rgba(125, 63, 167, 0.06)),
+    radial-gradient(ellipse at 50% 42%, rgba(60, 54, 42, 0.1), rgba(6, 5, 4, 0.22));
+}
+
+.sheet-header .stat-section--primary .stat-box[data-label="cha"] {
+  background-image:
+    linear-gradient(rgba(209, 153, 52, 0.06), rgba(209, 153, 52, 0.06)),
+    radial-gradient(ellipse at 50% 42%, rgba(60, 54, 42, 0.1), rgba(6, 5, 4, 0.22));
+}
+
+.sheet-header .stat-section--primary .stat-box[data-label="per"] {
+  background-image:
+    linear-gradient(rgba(143, 188, 196, 0.06), rgba(143, 188, 196, 0.06)),
+    radial-gradient(ellipse at 50% 42%, rgba(60, 54, 42, 0.1), rgba(6, 5, 4, 0.22));
+}
+
+/* === Tier 2 — Secondary attributes (recessive, 17px, no sub) === */
+.sheet-header .stat-section--secondary .stat-box {
+  padding: 5px 3px;
+  gap: 1px;
+  background-color: rgba(8, 7, 5, 0.3);
+  border-color: 1px solid rgb(45 40 32)
+}
+
+.sheet-header .stat-section--secondary .stat-box-value {
+  font-size: 17px;
+  color: #978f7e;
+}
+
+/* === Tier 3 — Condition (compact, 15px, grouped) === */
+.sheet-header .stat-section--condition .stat-box {
+  padding: 8px 5px;
+  gap: 2px;
+}
+
+.sheet-header .stat-section--condition .stat-box-value,
+.sheet-header .stat-section--condition .stat-box .stat-box-value-input {
+  font-size: 15px;
+}
+
+.sheet-header .stat-section--condition .stat-box-sub {
+  font-size: 11px;
+  color: #a89e88;
+}
+
+/* Condition states show their value inline as "current / max" */
+.sheet-header .stat-box-value--ratio {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 3px;
+  white-space: nowrap;
+}
+
+.redsteel .sheet-header .stat-box-value--ratio .stat-box-value-input {
+  width: 2.6ch;
+  text-align: center;
+}
+
+.sheet-header .stat-box-max {
+  white-space: nowrap;
+  color: #6f685a;
+}
+
+/* Condition breaks the grid: sub-groups side by side, centered, no dividers */
+.sheet-header .condition-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 26px;
+}
+
+.sheet-header .condition-group {
+  padding: 0;
+}
+
+.sheet-header .condition-group-label {
+  font-size: 7px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #4a4566;
+  text-align: center;
+  margin: 0 0 4px 0;
+}
+
+.sheet-header .condition-group-boxes {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+}
+
+.sheet-header .condition-group-boxes .stat-box {
+  width: 72px;
+  flex: 0 0 auto;
 }
