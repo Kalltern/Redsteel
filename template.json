@@ -131,6 +131,7 @@
           "top": null
         }
       },
+      "currencies": [],
       "shepherdsWill": {
         "shepherdOptions": [
           "persuasion",

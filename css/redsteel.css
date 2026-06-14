@@ -3874,3 +3874,340 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   color: #191813;
   pointer-events: none;
 }
+
+/* ============================= */
+/* EQUIPPED AMMO SLOT            */
+/* ============================= */
+
+.ammo-loadout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex: 0 0 auto;
+}
+
+.ammo-loadout.drop-hover {
+  outline: 2px dashed var(--color-border-highlight);
+  border-radius: 8px;
+}
+
+.ammo-slot-row {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 110px;
+}
+
+.ammo-slot {
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
+  background: #2b2b2b;
+  border: 2px solid #444;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ammo-slot.filled {
+  border-color: rgba(111, 168, 220, 0.6);
+  box-shadow: 0 0 6px rgba(111, 168, 220, 0.35);
+  cursor: context-menu;
+}
+
+.ammo-slot.empty {
+  opacity: 0.6;
+  color: #9a9388;
+}
+
+.ammo-slot img {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border: none;
+}
+
+.ammo-slot .ammo-qty {
+  position: absolute;
+  bottom: 1px;
+  right: 3px;
+  font-size: 11px;
+  font-weight: bold;
+  line-height: 1;
+  color: #ffe9a8;
+  text-shadow: 0 0 3px #000, 0 0 3px #000;
+  pointer-events: none;
+}
+
+/* ============================= */
+/* CURRENCY DIVIDER              */
+/* ============================= */
+
+.currency-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0;
+  padding: 8px 10px;
+  border-top: 1px solid rgba(217, 161, 59, 0.35);
+  border-bottom: 1px solid rgba(217, 161, 59, 0.35);
+  background: rgba(110, 81, 23, 0.12);
+}
+
+.currency-label {
+  font-size: 0.75em;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.7;
+  flex: 0 0 auto;
+}
+
+.currency-list {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex: 1 1 auto;
+}
+
+.currency-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px 2px 8px;
+  border-radius: 6px;
+  background: #2b2b2b;
+  border: 1px solid #444;
+}
+
+.currency-chip input.currency-name {
+  width: 64px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px dotted #555;
+  color: #e6c878;
+  font-size: 12px;
+  padding: 0 2px;
+}
+
+.currency-chip input.currency-value {
+  width: 48px;
+  background: transparent;
+  border: none;
+  color: #f1efe8;
+  font-size: 13px;
+  font-weight: bold;
+  text-align: right;
+  padding: 0 2px;
+}
+
+.currency-chip input::placeholder {
+  color: #6e655a;
+}
+
+.currency-delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  color: #9a9388;
+  cursor: pointer;
+}
+
+.currency-delete:hover {
+  color: #e2706e;
+}
+
+.currency-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 1px dashed #6e655a;
+  color: #d9a13b;
+  cursor: pointer;
+}
+
+.currency-add:hover {
+  border-color: #d9a13b;
+  background: rgba(217, 161, 59, 0.12);
+}
+
+/* ============================= */
+/* INVENTORY GRID               */
+/* ============================= */
+
+.inventory-grid-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 12px 0 6px;
+}
+
+.inventory-grid-title {
+  font-size: 0.85em;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.7;
+}
+
+.inventory-grid-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.inventory-tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid #444;
+  color: #d6cfc2;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.inventory-tool:hover {
+  border-color: #d9a13b;
+  color: #e6c878;
+}
+
+.inventory-tool.active {
+  border-color: #d9a13b;
+  color: #e6c878;
+  background: rgba(217, 161, 59, 0.15);
+}
+
+.inventory-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 6px;
+}
+
+.inventory-cell {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: 6px;
+  background: #2b2b2b;
+  border: 2px solid #444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.inventory-cell.empty {
+  background: rgba(43, 43, 43, 0.45);
+  border-style: dashed;
+  border-color: #3a3a3a;
+}
+
+.inventory-cell.item {
+  cursor: grab;
+}
+
+.inventory-cell.item:hover {
+  border-color: rgba(217, 161, 59, 0.65);
+  box-shadow: 0 0 6px rgba(217, 161, 59, 0.3);
+}
+
+.inventory-cell.drop-hover {
+  outline: 2px dashed var(--color-border-highlight);
+}
+
+/* Equipped item (e.g. NPC gear/shield toggled via right-click) lit up */
+.inventory-cell.equipped {
+  border-color: #ffd43b;
+  box-shadow: 0 0 6px rgba(255, 243, 136, 0.55);
+}
+
+.inventory-cell.equipped::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  border-width: 0 8px 8px 0;
+  border-style: solid;
+  border-color: transparent #ffd43b transparent transparent;
+  pointer-events: none;
+}
+
+.inventory-cell-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.inventory-cell-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: none;
+  display: block;
+}
+
+.inventory-qty {
+  position: absolute;
+  bottom: 1px;
+  right: 3px;
+  font-size: 11px;
+  font-weight: bold;
+  line-height: 1;
+  color: #ffe9a8;
+  text-shadow: 0 0 3px #000, 0 0 3px #000;
+  pointer-events: none;
+}
+
+/* Hover control strips overlaid on an occupied cell */
+.inventory-cell-controls {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 2px 0;
+  background: rgba(15, 14, 12, 0.88);
+}
+
+.inventory-cell-controls.top {
+  top: 0;
+}
+
+.inventory-cell-controls.bottom {
+  bottom: 0;
+}
+
+.inventory-cell.item:hover .inventory-cell-controls {
+  display: flex;
+}
+
+.inventory-ctrl {
+  color: #d6cfc2;
+  font-size: 11px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.inventory-ctrl:hover {
+  color: #e6c878;
+}
+
+.inventory-ctrl.item-delete:hover {
+  color: #e2706e;
+}

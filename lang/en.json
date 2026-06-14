@@ -168,6 +168,20 @@
         "Config": "Config",
         "Specialisations": "Specialisations"
       },
+      "Inventory": {
+        "Ammo": "Ammo",
+        "Currencies": "Currencies",
+        "CurrencyName": "Name",
+        "AddCurrency": "Add currency",
+        "RemoveCurrency": "Remove currency",
+        "Filter": {
+          "All": "All",
+          "Weapons": "Weapons",
+          "Gear": "Gear",
+          "Alchemy": "Alchemy",
+          "Items": "Items"
+        }
+      },
       "Specialisations": {
         "warnLocked": "Unlock the connected previous node first.",
         "warnDependents": "Another unlocked node depends on this one — lock that one first.",

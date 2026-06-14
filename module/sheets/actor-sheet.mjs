@@ -10,6 +10,32 @@ const { api, sheets } = foundry.applications;
 // Maps the gear "layer" select values to armor slot keys on the actor
 const ARMOR_LAYER_SLOTS = { Bottom: "bottom", Middle: "middle", Top: "top" };
 
+// Inventory grid category filters. `all` shows everything; the rest map a
+// display category to the underlying item types (ammunition rides with the
+// alchemy/supplies bucket, matching the old "supplies" grouping).
+const INVENTORY_CATEGORIES = {
+  all: {
+    labelKey: "REDSTEEL.Actor.Inventory.Filter.All",
+    types: ["weapon", "gear", "consumable", "ammunition", "item"],
+  },
+  weapon: {
+    labelKey: "REDSTEEL.Actor.Inventory.Filter.Weapons",
+    types: ["weapon"],
+  },
+  gear: {
+    labelKey: "REDSTEEL.Actor.Inventory.Filter.Gear",
+    types: ["gear"],
+  },
+  alchemy: {
+    labelKey: "REDSTEEL.Actor.Inventory.Filter.Alchemy",
+    types: ["consumable", "ammunition"],
+  },
+  item: {
+    labelKey: "REDSTEEL.Actor.Inventory.Filter.Items",
+    types: ["item"],
+  },
+};
+
 /**
  * Extend the basic ActorSheet with some very simple modifications
  * @extends {ActorSheetV2}
@@ -23,6 +49,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     this.#dragDrop = this.#createDragDropHandlers();
     this._boundRightClick = this._onRightClick.bind(this);
     this._skillsEditMode = false;
+    this._inventoryFilter = "all";
   }
 
   /** @override */
@@ -52,6 +79,9 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       toggleAmmoEquipped: this._toggleAmmoEquipped,
       toggleArmorDurability: this._toggleArmorDurability,
       toggleSpecNode: this._toggleSpecNode,
+      addCurrency: this._addCurrency,
+      deleteCurrency: this._deleteCurrency,
+      setInventoryFilter: this._setInventoryFilter,
     },
     // Custom property that's merged into `this.options`
     dragDrop: [{ dragSelector: "[data-drag]", dropSelector: null }],
@@ -212,9 +242,11 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       )
       .join("");
 
+    const icon = data.icon ?? data.img ?? "";
+
     return `
   <div class="tooltip-header">
-  <img src="${data.icon}" class="tooltip-icon">
+  <img src="${icon}" class="tooltip-icon">
   <div class="tooltip-title"><strong>${data.title}</strong></div>
   </div>
     ${sectionHTML}
@@ -301,6 +333,31 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     await doc.update({
       "system.equipped": !currentlyEquipped,
     });
+  }
+
+  /**
+   * Equip/unequip an ammunition item. Equipping clears any other ammo sharing
+   * the same `option` (one equipped ammo per ammo type).
+   * @param {Item} item       The ammunition item
+   * @param {boolean} equipped Desired equipped state
+   */
+  async _equipAmmo(item, equipped) {
+    if (!item || item.type !== "ammunition") return;
+
+    if (equipped) {
+      const others = this.actor.items.filter(
+        (i) =>
+          i.type === "ammunition" &&
+          i.system.option === item.system.option &&
+          i.id !== item.id &&
+          i.system.equipped,
+      );
+      for (const other of others) {
+        await other.update({ "system.equipped": false });
+      }
+    }
+
+    await item.update({ "system.equipped": equipped });
   }
 
   static _toggleEquipped(event) {
@@ -500,7 +557,17 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
   }
 
   _onRightClick(event) {
-    if (this.actor.type !== "character") return;
+    // NPCs have no equipment slots — right-clicking gear or a shield just
+    // toggles its equipped state (and effects), lighting it up in the grid.
+    if (this.actor.type !== "character") {
+      const itemRow = event.target.closest(".item[data-item-id]");
+      if (!itemRow) return;
+      const item = this.actor.items.get(itemRow.dataset.itemId);
+      if (!item || item.type !== "gear") return;
+      event.preventDefault();
+      this._setArmorEquipped(item, !item.system.equipped);
+      return;
+    }
 
     /* ---------------------------------- */
     /* 1️⃣ WEAPON SLOT RIGHT-CLICK (CLEAR) */
@@ -533,7 +600,18 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     }
 
     /* ---------------------------------- */
-    /* 3️⃣ INVENTORY ITEM RIGHT-CLICK      */
+    /* 3️⃣ AMMO SLOT RIGHT-CLICK (CLEAR)   */
+    /* ---------------------------------- */
+    const ammoSlot = event.target.closest(".ammo-slot[data-item-id]");
+    if (ammoSlot) {
+      event.preventDefault();
+      const ammo = this.actor.items.get(ammoSlot.dataset.itemId);
+      if (ammo) this._equipAmmo(ammo, false);
+      return;
+    }
+
+    /* ---------------------------------- */
+    /* 4️⃣ INVENTORY ITEM RIGHT-CLICK      */
     /* ---------------------------------- */
     const itemRow = event.target.closest(".item[data-item-id]");
     if (!itemRow) return;
@@ -548,6 +626,12 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
 
     if (item.type === "weapon") {
       this._openWeaponEquipMenuFromItem(itemId);
+      return;
+    }
+
+    // Ammunition equips into the ammo slot; right-click toggles it
+    if (item.type === "ammunition") {
+      this._equipAmmo(item, !item.system.equipped);
       return;
     }
 
@@ -646,6 +730,44 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     );
 
     await item.update({ "system.armor.durability": durability });
+  }
+
+  /* -------------------------------------------- */
+  /*  Currencies (free-form list on the divider)  */
+  /* -------------------------------------------- */
+
+  /** Append a new, empty currency row to the actor. */
+  static async _addCurrency(event, target) {
+    if (!this.isEditable) return;
+    const currencies = foundry.utils.deepClone(
+      this.actor.system.currencies ?? [],
+    );
+    currencies.push({ label: "", value: 0 });
+    await this.actor.update({ "system.currencies": currencies });
+  }
+
+  /** Remove the currency row at data-index. */
+  static async _deleteCurrency(event, target) {
+    if (!this.isEditable) return;
+    const index = Number(target.dataset.index);
+    if (!Number.isInteger(index)) return;
+    const currencies = foundry.utils.deepClone(
+      this.actor.system.currencies ?? [],
+    );
+    if (index < 0 || index >= currencies.length) return;
+    currencies.splice(index, 1);
+    await this.actor.update({ "system.currencies": currencies });
+  }
+
+  /**
+   * Set the inventory grid category filter (all / weapon / gear / alchemy /
+   * item) and re-render to show only that category.
+   */
+  static _setInventoryFilter(event, target) {
+    const filter = target.dataset.filter ?? "all";
+    if (!INVENTORY_CATEGORIES[filter]) return;
+    this._inventoryFilter = filter;
+    this.render();
   }
 
   /** @override */
@@ -826,7 +948,93 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
         };
       }
     }
+
+    // Inventory grid: everything carried that isn't currently equipped.
+    // Equipped weapons/armor/shields/ammo live in the slots above and take
+    // no space in the grid (RPG-style).
+    const STACKABLE_TYPES = ["consumable", "ammunition", "item"];
+    // Only characters have equipment slots to hold equipped gear; NPCs keep
+    // everything in the grid so it stays reachable.
+    const equippedIds =
+      this.actor.type === "character"
+        ? this._getEquippedItemIds()
+        : new Set();
+
+    // Category filter (defaults to "all"); the active category decides which
+    // item types show in the grid.
+    const filter = INVENTORY_CATEGORIES[this._inventoryFilter]
+      ? this._inventoryFilter
+      : "all";
+    const GRID_TYPES = INVENTORY_CATEGORIES[filter].types;
+    context.inventoryFilter = filter;
+    context.inventoryFilters = Object.entries(INVENTORY_CATEGORIES).map(
+      ([key, def]) => ({
+        key,
+        label: game.i18n.localize(def.labelKey),
+        active: key === filter,
+      }),
+    );
+
+    context.inventory = this.actor.items
+      .filter((i) => GRID_TYPES.includes(i.type) && !equippedIds.has(i.id))
+      .sort((a, b) => (a.sort || 0) - (b.sort || 0))
+      .map((i) => {
+        const stackable = STACKABLE_TYPES.includes(i.type);
+        const quantity = Number(i.system.quantity ?? 0);
+        return {
+          item: i,
+          stackable,
+          quantity,
+          showQty: stackable && quantity > 1,
+          equipped: !!i.system.equipped,
+        };
+      });
+
+    // Pad the grid with empty slots: fill to a multiple of the column count
+    // with at least one spare row, minimum 32 cells.
+    const GRID_COLS = 12;
+    const occupied = context.inventory.length;
+    const totalCells = Math.max(
+      GRID_COLS * 4,
+      (Math.ceil(occupied / GRID_COLS) + 1) * GRID_COLS,
+    );
+    context.inventoryEmptySlots = Array.from({
+      length: Math.max(0, totalCells - occupied),
+    });
+
+    // Equipped ammo surfaced as slot(s) in the top loadout area.
+    context.equippedAmmo = this.actor.items
+      .filter((i) => i.type === "ammunition" && i.system.equipped)
+      .sort((a, b) => (a.sort || 0) - (b.sort || 0));
+
+    // Free-form currency list shown on the equipment / inventory divider.
+    context.currencies = this.actor.system.currencies ?? [];
+
     return context;
+  }
+
+  /**
+   * Collect the ids of every item that is currently "equipped" and therefore
+   * occupies a slot rather than the inventory grid: weapons in weapon sets,
+   * armor in layer slots, equipped shields, and any item flagged
+   * `system.equipped` (covers NPC weapons/armor and equipped ammunition).
+   * @returns {Set<string>}
+   */
+  _getEquippedItemIds() {
+    const equipped = new Set();
+    const combat = this.actor.system.combat ?? {};
+
+    for (const set of Object.values(combat.weaponSets ?? {})) {
+      if (set?.main) equipped.add(set.main);
+      if (set?.off) equipped.add(set.off);
+    }
+    for (const id of Object.values(combat.armorSlots ?? {})) {
+      if (id) equipped.add(id);
+    }
+    for (const i of this.actor.items) {
+      if (i.system?.equipped) equipped.add(i.id);
+    }
+    return equipped;
   }
 
   /** @override */
@@ -1608,7 +1816,17 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       return;
     }
 
-    // 🔹 CASE 2: Normal inventory item drag (existing behavior)
+    // 🔹 CASE 2: Equipped ammo slot (a <div>, not an <li>)
+    const ammoEl = event.currentTarget.closest(".ammo-slot[data-item-id]");
+    if (ammoEl) {
+      const ammo = this.actor.items.get(ammoEl.dataset.itemId);
+      const dragData = ammo?.toDragData();
+      if (dragData)
+        event.dataTransfer.setData("text/plain", JSON.stringify(dragData));
+      return;
+    }
+
+    // 🔹 CASE 3: Normal inventory item drag (existing behavior)
     const docRow = event.currentTarget.closest("li");
     if (!docRow) return;
 
@@ -1624,7 +1842,9 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
    * @protected
    */
   _onDragOver(event) {
-    const slot = event.target.closest(".weapon-slot, .armor-slot");
+    const slot = event.target.closest(
+      ".weapon-slot, .armor-slot, .ammo-loadout",
+    );
     if (!slot) return;
 
     event.preventDefault();
@@ -1649,6 +1869,11 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     if (armorTarget) {
       armorTarget.classList.remove("drop-hover");
       return this._onDropArmorSlot(event, armorTarget);
+    }
+    const ammoTarget = event.target.closest(".ammo-loadout");
+    if (ammoTarget) {
+      ammoTarget.classList.remove("drop-hover");
+      return this._onDropAmmoSlot(event, ammoTarget);
     }
     const allowed = Hooks.call("dropActorSheetData", actor, this, data);
     if (allowed === false) return;
@@ -1908,6 +2133,24 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     if (!item?.isOwned) return;
 
     return this._assignArmorDirect(item.id, layer);
+  }
+
+  /**
+   * Handle dropping an owned ammunition item onto the equipped-ammo slot.
+   * @param {DragEvent} event       The concluding DragEvent
+   * @param {HTMLElement} slotEl    The ammo loadout element dropped on
+   * @private
+   */
+  async _onDropAmmoSlot(event, slotEl) {
+    event.preventDefault();
+
+    const data = TextEditor.getDragEventData(event);
+    if (data?.type !== "Item") return;
+
+    const item = await Item.implementation.fromDropData(data);
+    if (!item?.isOwned || item.type !== "ammunition") return;
+
+    return this._equipAmmo(item, true);
   }
 
   /**

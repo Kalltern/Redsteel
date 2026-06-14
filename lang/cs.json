@@ -168,6 +168,20 @@
         "Config": "Nastavení",
         "Specialisations": "Specializace"
       },
+      "Inventory": {
+        "Ammo": "Munice",
+        "Currencies": "Měny",
+        "CurrencyName": "Název",
+        "AddCurrency": "Přidat měnu",
+        "RemoveCurrency": "Odebrat měnu",
+        "Filter": {
+          "All": "Vše",
+          "Weapons": "Zbraně",
+          "Gear": "Výstroj",
+          "Alchemy": "Alchymie",
+          "Items": "Předměty"
+        }
+      },
       "Specialisations": {
         "warnLocked": "Nejdříve odemkni propojený předchozí uzel.",
         "warnDependents": "Na tomto uzlu závisí jiný odemčený uzel — nejdříve zamkni ten.",
