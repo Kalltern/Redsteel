@@ -75,6 +75,7 @@ import {
   showVariantSelectionDialog,
   deductMana,
   calculateAttackBonuses,
+  getCastChance,
   performAttackRoll,
   finalizeRollsAndPostChat,
   resolveChannelingTick,
@@ -230,6 +231,7 @@ Hooks.once("init", function () {
   game.redsteel.showVariantSelectionDialog = showVariantSelectionDialog;
   game.redsteel.deductMana = deductMana;
   game.redsteel.calculateAttackBonuses = calculateAttackBonuses;
+  game.redsteel.getCastChance = getCastChance;
   game.redsteel.performAttackRoll = performAttackRoll;
   game.redsteel.finalizeRollsAndPostChat = finalizeRollsAndPostChat;
   game.redsteel.defenseRoll = defenseRoll;

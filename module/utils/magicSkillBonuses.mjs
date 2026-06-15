@@ -20,9 +20,40 @@ function _injectDialogCSS() {
 
           .casting-options .option-row {
             display: flex;
+            flex-wrap: wrap;
             align-items: center;
-            gap: 8px;
+            gap: 6px 8px;
             font-size: 14px;
+          }
+
+          .focus-stepper {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+          }
+
+          .focus-stepper input[name="focus"] {
+            width: 34px;
+            text-align: center;
+          }
+
+          .focus-btn {
+            width: 20px;
+            height: 20px;
+            line-height: 1;
+            padding: 0;
+            flex: 0 0 auto;
+            background: #2f2b24;
+            border: 1px solid #8b6914;
+            border-radius: 4px;
+            color: #f0e4b8;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+          }
+
+          .focus-btn:hover {
+            background: #3d3729;
           }
 
           .tab-headers {
@@ -268,12 +299,19 @@ export function showSpellSelectionDialogs(actor) {
               });
               resourceCosts = resourceCosts || "-";
 
+              const difficulty = Number(spell.system.difficulty) || 0;
+              // Initial chance assumes 0 focus; the focus input recalculates
+              // this live (see recalcCastChances in the render handler).
+              const castChance = getCastChance(actor, spell, 0);
+
               return `
                 <tr class="spell-choice ability-choice table-row" data-spell-id="${spell.id}">
                   <td class="icon-cell"><img src="${spell.img}" class="spell-icon" title="${spell.localizedName ?? spell.name}"></td>
                   <td>${spell.localizedName ?? spell.name}</td>
                   <td style="text-align: center;">${actionCost}</td>
                   <td style="text-align: center;">${resourceCosts}</td>
+                  <td style="text-align: center;">${difficulty}</td>
+                  <td class="cast-chance-cell" style="text-align: center;">${castChance}%</td>
                 </tr>
               `;
             })
@@ -288,6 +326,8 @@ export function showSpellSelectionDialogs(actor) {
                                   <th>Name</th>
                                   <th style="text-align: center; width: 80px;">Action Cost</th>
                                   <th style="text-align: center; width: 100px;">Resource Cost</th>
+                                  <th style="text-align: center; width: 70px;">Difficulty</th>
+                                  <th style="text-align: center; width: 80px;">Cast Chance</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -314,13 +354,16 @@ export function showSpellSelectionDialogs(actor) {
       <div class="option-row">
         <label>
            Focus:
-   <input type="number"
+        </label>
+        <div class="focus-stepper">
+          <button type="button" class="focus-btn focus-minus" tabindex="-1">−</button>
+          <input type="number"
           name="focus"
           value="0"
           min="0"
-          step="1"
-          style="width: 60px;">
-        </label>
+          step="1">
+          <button type="button" class="focus-btn focus-plus" tabindex="-1">+</button>
+        </div>
        <label>
           <input type="checkbox" name="freeCast">
           Free Cast
@@ -369,6 +412,33 @@ export function showSpellSelectionDialogs(actor) {
             html.find(".tab-pane").removeClass("active");
             html.find(`.tab-pane[data-tab="${tab}"]`).addClass("active");
           });
+
+          // 2.b Recalculate the Cast Chance column whenever Focus changes, so
+          // it always reflects the value that will go into the roll.
+          const recalcCastChances = () => {
+            const focus = Number(html.find('input[name="focus"]').val() || 0);
+            html.find(".cast-chance-cell").each(function () {
+              const spellId = $(this)
+                .closest(".spell-choice")
+                .data("spell-id");
+              const spell = allSpells.find((s) => s.id === spellId);
+              if (!spell) return;
+              $(this).text(`${getCastChance(actor, spell, focus)}%`);
+            });
+          };
+          html
+            .find('input[name="focus"]')
+            .on("input change", recalcCastChances);
+
+          // 2.c +/- stepper buttons for quick Focus adjustment.
+          const stepFocus = (delta) => {
+            const input = html.find('input[name="focus"]');
+            const next = Math.max(0, (Number(input.val()) || 0) + delta);
+            input.val(next);
+            recalcCastChances();
+          };
+          html.find(".focus-plus").click(() => stepFocus(1));
+          html.find(".focus-minus").click(() => stepFocus(-1));
 
           // Spell icon tooltip hover
           html
@@ -851,6 +921,28 @@ function getEffectiveDifficulty(spell, focusSpent) {
   console.log(`base Difficulty`, base);
   console.log(`focus Bonus`, focusBonus);
   return base > 0 ? base : Math.min(0, base + focusBonus);
+}
+
+/**
+ * Calculates the chance (0-100) that a spell cast will succeed for the given
+ * actor. This mirrors the margin-of-success roll in performAttackRoll
+ * (`rating + difficulty + bonus - 1d100 >= 0`), so the value shown in the
+ * selection dialog is exactly the chance that goes into the roll.
+ *
+ * Focus is applied via getEffectiveDifficulty: each focus point reduces a
+ * negative difficulty by 10 toward zero, but never improves the chance past
+ * the 0-difficulty baseline.
+ * @param {object} actor - The casting actor.
+ * @param {object} spell - The spell item being cast.
+ * @param {number} [focusSpent=0] - Focus points committed to the cast.
+ * @returns {number} - Cast chance, clamped to the 0-100 range.
+ */
+export function getCastChance(actor, spell, focusSpent = 0) {
+  const rating = actor.system.combatSkills?.channeling?.rating ?? 0;
+  const effectiveDifficulty = getEffectiveDifficulty(spell, focusSpent);
+  const { attackBonus } = calculateAttackBonuses(actor, spell);
+  const chance = rating + effectiveDifficulty + attackBonus;
+  return Math.max(0, Math.min(100, chance));
 }
 
 export async function performAttackRoll(
