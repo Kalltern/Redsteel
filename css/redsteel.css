@@ -4386,6 +4386,9 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   min-height: 0;
   background: none;
   border: none;
+  /* Reserve the underline space always (transparent) so hover/focus only
+     recolours it and never changes height — prevents the header reflow. */
+  border-bottom: 1px solid transparent;
   border-radius: 0;
   box-shadow: none;
   box-sizing: border-box;
@@ -4395,8 +4398,7 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 .redsteel .sheet-header .stat-box .stat-box-value-input:focus {
   background: none;
   box-shadow: none;
-  border: none;
-  border-bottom: 1px solid #58513f;
+  border-bottom-color: #58513f;
   outline: none;
 }
 
@@ -4512,7 +4514,7 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 
 /* === Tier 3 — Condition (compact, 15px, grouped) === */
 .sheet-header .stat-section--condition .stat-box {
-  padding: 8px 5px;
+  padding: 11px 5px;
   gap: 2px;
 }
 
