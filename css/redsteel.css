@@ -337,7 +337,7 @@ table tr td:nth-child(3) {
 .rollable:hover,
 .rollable:focus {
   color: var(--redsteel-c-black);
-  text-shadow: 0 0 10px red;
+  text-shadow: 0 0 4px #9a7b2e;
   cursor: pointer;
 }
 
@@ -820,8 +820,34 @@ table tr td:nth-child(3) {
   margin-top: auto;
 }
 
-.sheet-header .stat-section--condition {
-  margin-bottom: auto;
+/* Character-only: centre the name/race row in the gap between the top edge
+   and the primary stats (this auto + primary's margin-top:auto split 50/50). */
+.sheet-header .char-identity {
+  margin-top: auto;
+}
+
+/* Name & race: no box — a gilded underline and a larger serif title.
+   `.actor` is included to outrank the global `.header-fields input` box rule. */
+.redsteel .sheet-header .actor .char-identity input {
+  background: none;
+  border: none;
+  border-bottom: 1px solid #9a7d44;
+  border-radius: 0;
+  box-shadow: none;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 19px;
+  color: #d8cdb4;
+  text-align: center;
+  padding: 4px 4px 6px;
+}
+
+.redsteel .sheet-header .actor .char-identity input:hover,
+.redsteel .sheet-header .actor .char-identity input:focus {
+  background: none;
+  box-shadow: none;
+  border: none;
+  border-bottom: 1px solid #c2a259;
+  outline: none;
 }
 
 .redsteel .sheet-header .actor,
@@ -1190,6 +1216,15 @@ table tr td:nth-child(3) {
 
 .skill-label {
   margin-right: 10px;
+}
+
+/* Skill names use the header stat-name font, non-bold (overrides the global
+   `label { font-weight: bold }`). */
+.skill-name,
+.skill-label {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  color: #b9b9b9;
 }
 
 .redsteel .attribute-armor {
@@ -4249,6 +4284,10 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 .sheet-header .stat-section + .stat-section {
   margin-top: 12px;
   padding-top: 12px;
+}
+
+/* Divider only above the secondary row, not above condition */
+.sheet-header .stat-section--secondary {
   border-top: 1px solid #2c2a22;
 }
 
@@ -4320,7 +4359,7 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   font-size: 12px;
   letter-spacing: 0.04em;
   line-height: 1.3;
-  color: #8c8273;
+  color: #aeaeae;
 }
 
 /* Static value and editable input share metrics so they align exactly */
@@ -4430,16 +4469,45 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 }
 
 /* === Tier 2 — Secondary attributes (recessive, 17px, no sub) === */
+/* Secondary attributes have no plate — just label + value, frameless */
 .sheet-header .stat-section--secondary .stat-box {
   padding: 5px 3px;
   gap: 1px;
-  background-color: rgba(8, 7, 5, 0.3);
-  border-color: 1px solid rgb(45 40 32)
+  background: none;
+  border: none;
+  box-shadow: none;
+}
+
+.sheet-header .stat-section--secondary .stat-box.rollable:hover {
+  box-shadow: none;
+}
+
+.sheet-header .stat-section--secondary .stat-box.rollable:hover .stat-box-value {
+  color: #c9c2b0;
 }
 
 .sheet-header .stat-section--secondary .stat-box-value {
   font-size: 17px;
   color: #978f7e;
+}
+
+/* Sink the whole secondary zone (including the padding above/below the row)
+   into a recessed channel so it reads as embedded deeper than the sheet. */
+.sheet-header .stat-section--secondary {
+  background: rgba(0, 0, 0, 0.32);
+  border-radius: 4px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #2a2821;
+  box-shadow:
+    inset 0 3px 7px rgba(0, 0, 0, 0.6),
+    inset 0 1px 2px rgba(0, 0, 0, 0.7),
+    inset 0 -1px 0 rgba(150, 138, 112, 0.07);
+}
+
+.sheet-header .stat-section--secondary .stat-box-grid {
+  padding: 2px 8px 0;
+  background: none;
+  box-shadow: none;
 }
 
 /* === Tier 3 — Condition (compact, 15px, grouped) === */

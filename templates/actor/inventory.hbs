@@ -21,7 +21,7 @@
         {{/if}}
       >
         {{#if slot.item}}
-          <img src="{{slot.item.img}}" class="item-icon" data-item-id="{{slot.item._id}}" title="{{slot.item.localizedName}}" />
+          <img src="{{slot.item.img}}" class="item-icon" data-item-id="{{slot.item._id}}" />
         {{else}}
           <span>{{slot.label}}</span>
         {{/if}}
@@ -70,7 +70,7 @@
         {{/if}}
       >
         {{#if weaponSets.1.main}}
-          <img src="{{weaponSets.1.main.img}}" class="item-icon" data-item-id="{{weaponSets.1.main._id}}" title="{{weaponSets.1.main.localizedName}}" />
+          <img src="{{weaponSets.1.main.img}}" class="item-icon" data-item-id="{{weaponSets.1.main._id}}" />
         {{else}}
           <span>Main</span>
         {{/if}}
@@ -108,9 +108,7 @@
     <img
       src="{{weaponSets.1.off.img}}"
       class="item-icon"
-      data-item-id="{{weaponSets.1.off._id}}"
-      title="{{weaponSets.1.off.localizedName}}"
-      width="44"
+      data-item-id="{{weaponSets.1.off._id}}"      width="44"
       height="44"
     />
 
@@ -119,9 +117,7 @@
     <img
       src="{{weaponSets.1.off.img}}"
       class="item-icon"
-      data-item-id="{{weaponSets.1.off._id}}"
-      title="{{weaponSets.1.off.localizedName}}"
-      width="44"
+      data-item-id="{{weaponSets.1.off._id}}"      width="44"
       height="44"
     />
 
@@ -187,7 +183,7 @@
         {{/if}}
       >
         {{#if weaponSets.2.main}}
-          <img src="{{weaponSets.2.main.img}}" class="item-icon" data-item-id="{{weaponSets.2.main._id}}" title="{{weaponSets.2.main.localizedName}}" />
+          <img src="{{weaponSets.2.main.img}}" class="item-icon" data-item-id="{{weaponSets.2.main._id}}" />
         {{else}}
           <span>Main</span>
         {{/if}}
@@ -225,9 +221,7 @@
     <img
       src="{{weaponSets.2.off.img}}"
       class="item-icon"
-      data-item-id="{{weaponSets.2.off._id}}"
-      title="{{weaponSets.2.off.localizedName}}"
-      width="44"
+      data-item-id="{{weaponSets.2.off._id}}"      width="44"
       height="44"
     />
 
@@ -236,9 +230,7 @@
     <img
       src="{{weaponSets.2.off.img}}"
       class="item-icon"
-      data-item-id="{{weaponSets.2.off._id}}"
-      title="{{weaponSets.2.off.localizedName}}"
-      width="44"
+      data-item-id="{{weaponSets.2.off._id}}"      width="44"
       height="44"
     />
 
@@ -282,7 +274,7 @@
           data-document-class="Item"
         >
           <a class="rollable" data-action="roll" data-roll-type="item" data-item-id="{{ammo._id}}">
-            <img src="{{ammo.img}}" class="item-icon" data-item-id="{{ammo._id}}" title="{{ammo.localizedName}}" />
+            <img src="{{ammo.img}}" class="item-icon" data-item-id="{{ammo._id}}" />
           </a>
           <span class="ammo-qty">{{ammo.system.quantity}}</span>
         </div>
@@ -372,7 +364,7 @@
       data-drag="true"
     >
       <a class="inventory-cell-icon rollable" data-action="roll" data-roll-type="item" data-item-id="{{entry.item._id}}">
-        <img src="{{entry.item.img}}" class="item-icon" data-item-id="{{entry.item._id}}" title="{{entry.item.localizedName}}" />
+        <img src="{{entry.item.img}}" class="item-icon" data-item-id="{{entry.item._id}}" />
       </a>
 
       {{#if entry.showQty}}
