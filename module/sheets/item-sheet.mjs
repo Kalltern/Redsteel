@@ -77,6 +77,9 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
     attributesWeapon: {
       template: "systems/redsteel/templates/item/attribute-parts/weapon.hbs",
     },
+    attributesLight: {
+      template: "systems/redsteel/templates/item/attribute-parts/light.hbs",
+    },
     attributesOffhand: {
       template: "systems/redsteel/templates/item/attribute-parts/offhand.hbs",
     },
@@ -115,7 +118,7 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
         options.parts.push("attributesFeature", "effects");
         break;
       case "gear":
-        options.parts.push("attributesGear", "effects");
+        options.parts.push("attributesGear", "attributesLight", "effects");
         break;
       case "ammunition":
         options.parts.push("attributesAmmunition", "effects");
@@ -131,6 +134,7 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
         if (this.item.system.offhand) {
           options.parts.push("attributesOffhand");
         }
+        options.parts.push("attributesLight");
         break;
       case "spell":
         options.parts.push("attributesSpell", "combatEffects", "attributesVariants");
@@ -184,6 +188,11 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
       case "attributesSpell":
         // Necessary for preserving active tab on re-render
         context.tab = context.tabs[partId];
+        break;
+      case "attributesLight":
+        context.tab = context.tabs[partId];
+        // Choices for the animation type select.
+        context.lightAnimations = this._getLightAnimationChoices();
         break;
       case "attributesVariants": {
         context.tab = context.tabs[partId];
@@ -268,6 +277,10 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
         case "attributesOffhand":
           tab.id = "offhand";
           tab.label += "OffHand";
+          break;
+        case "attributesLight":
+          tab.id = "light";
+          tab.label += "Light";
           break;
         case "attributesSpell":
           tab.id = "attributes";
@@ -467,6 +480,21 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
   }
 
   /** Helper Functions */
+
+  /**
+   * Light animation type choices, sourced from Foundry's registered light
+   * animations. The leading blank entry represents "None".
+   * @returns {{value: string, label: string}[]}
+   */
+  _getLightAnimationChoices() {
+    const anims = CONFIG.Canvas?.lightAnimations ?? {};
+    const choices = Object.entries(anims).map(([value, cfg]) => ({
+      value,
+      label: game.i18n.localize(cfg.label ?? value),
+    }));
+    choices.sort((a, b) => a.label.localeCompare(b.label));
+    return choices;
+  }
 
   /**
    * Returns the spell's variant IDs as a plain array.

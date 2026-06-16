@@ -1065,20 +1065,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
    * @returns {Set<string>}
    */
   _getEquippedItemIds() {
-    const equipped = new Set();
-    const combat = this.actor.system.combat ?? {};
-
-    for (const set of Object.values(combat.weaponSets ?? {})) {
-      if (set?.main) equipped.add(set.main);
-      if (set?.off) equipped.add(set.off);
-    }
-    for (const id of Object.values(combat.armorSlots ?? {})) {
-      if (id) equipped.add(id);
-    }
-    for (const i of this.actor.items) {
-      if (i.system?.equipped) equipped.add(i.id);
-    }
-    return equipped;
+    return this.actor.getEquippedItemIds();
   }
 
   /** @override */

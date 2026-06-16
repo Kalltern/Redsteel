@@ -12,6 +12,30 @@ export class RedsteelActor extends Actor {
     super.prepareData();
   }
 
+  /**
+   * Collect the ids of every item that is currently "equipped" and therefore
+   * occupies a slot rather than the inventory grid: weapons in weapon sets,
+   * armor in layer slots, and any item flagged `system.equipped` (covers NPC
+   * weapons/armor, equipped shields, and equipped ammunition).
+   * @returns {Set<string>}
+   */
+  getEquippedItemIds() {
+    const equipped = new Set();
+    const combat = this.system.combat ?? {};
+
+    for (const set of Object.values(combat.weaponSets ?? {})) {
+      if (set?.main) equipped.add(set.main);
+      if (set?.off) equipped.add(set.off);
+    }
+    for (const id of Object.values(combat.armorSlots ?? {})) {
+      if (id) equipped.add(id);
+    }
+    for (const i of this.items) {
+      if (i.system?.equipped) equipped.add(i.id);
+    }
+    return equipped;
+  }
+
   /** @override */
   prepareBaseData() {
     // Ensure core Actor base-data initialization still runs.

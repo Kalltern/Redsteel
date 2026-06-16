@@ -20,6 +20,7 @@ import {
 import { wireAttributeFollowups } from "./utils/attributeFollowup.mjs";
 import { registerRollModifier } from "./utils/rollModifier.mjs";
 import { applyTraitStatusEffects } from "./utils/traitStatusEffects.mjs";
+import { applyActorLight } from "./utils/itemLight.mjs";
 import { usePotion } from "./utils/usePotion.mjs";
 import { defenseRoll } from "./utils/defense.mjs";
 import { throwExplosive } from "./utils/throwExplosive.mjs";
@@ -1845,4 +1846,56 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
 Hooks.on("createToken", async (tokenDoc, options, userId) => {
   if (game.user.id !== userId) return;
   await applyTraitStatusEffects(tokenDoc);
+});
+
+/* -------------------------------------------- */
+/*  Item-driven token lighting                  */
+/* -------------------------------------------- */
+
+// Gear/weapons carrying a `system.light` block drive the owning actor's token
+// light while equipped (strongest source wins). Recompute whenever the relevant
+// state changes. Only the acting user runs this to avoid duplicate updates.
+const LIGHT_ITEM_TYPES = new Set(["gear", "weapon"]);
+
+function isLightCapableItem(item) {
+  return !!item?.parent && LIGHT_ITEM_TYPES.has(item.type);
+}
+
+Hooks.on("createItem", (item, options, userId) => {
+  if (game.user.id !== userId || !isLightCapableItem(item)) return;
+  applyActorLight(item.parent);
+});
+
+Hooks.on("deleteItem", (item, options, userId) => {
+  if (game.user.id !== userId || !isLightCapableItem(item)) return;
+  applyActorLight(item.parent);
+});
+
+Hooks.on("updateItem", (item, changes, options, userId) => {
+  if (game.user.id !== userId || !isLightCapableItem(item)) return;
+  // Only react to changes that can alter the emitted light.
+  const sys = changes.system;
+  if (!sys || (!("equipped" in sys) && !("light" in sys))) return;
+  applyActorLight(item.parent);
+});
+
+// Weapon/armor equipping — and switching the active weapon set — is recorded on
+// the actor (not on the item), so watch for those changes too.
+Hooks.on("updateActor", (actor, changes, options, userId) => {
+  if (game.user.id !== userId) return;
+  const combat = changes.system?.combat;
+  if (
+    !combat ||
+    (!("weaponSets" in combat) &&
+      !("armorSlots" in combat) &&
+      !("activeWeaponSet" in combat))
+  )
+    return;
+  applyActorLight(actor);
+});
+
+// A freshly placed token should immediately reflect its actor's item-light.
+Hooks.on("createToken", (tokenDoc, options, userId) => {
+  if (game.user.id !== userId || !tokenDoc.actor) return;
+  applyActorLight(tokenDoc.actor, { tokenDocs: [tokenDoc] });
 });

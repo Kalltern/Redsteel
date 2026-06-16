@@ -3796,7 +3796,25 @@
         "Effects": "Efekty",
         "combatEffects": "Bojové efekty",
         "OffHand": "Druhá ruka",
-        "Variants": "Varianty"
+        "Variants": "Varianty",
+        "Light": "Světlo"
+      },
+      "Light": {
+        "hint": "Pokud je tento předmět vybaven, vyzařuje z žetonu vlastníka světlo. Vyzařuje-li světlo více vybavených předmětů, použije se ten s největším dosahem. Pro žádné světlo ponechte Tlumené i Jasné na 0.",
+        "dim": "Tlumený dosah (m)",
+        "bright": "Jasný dosah (m)",
+        "angle": "Úhel vyzařování",
+        "priority": "Priorita",
+        "color": "Barva světla",
+        "alpha": "Intenzita barvy",
+        "luminosity": "Svítivost",
+        "attenuation": "Útlum",
+        "negative": "Zdroj temnoty",
+        "animationType": "Typ animace",
+        "animationNone": "Žádná",
+        "animationSpeed": "Rychlost animace",
+        "animationIntensity": "Intenzita animace",
+        "animationReverse": "Obrácený směr"
       },
       "Condition": {
         "duration": "Trvání",

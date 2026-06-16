@@ -1,0 +1,163 @@
+{{! Light Tab — feeds the owner's token light while this item is equipped }}
+<section
+  class="tab light {{tab.cssClass}}"
+  data-group="primary"
+  data-tab="light"
+>
+  <div class="resource">
+    <p class="notes">
+      {{localize "REDSTEEL.Item.Light.hint"}}
+    </p>
+
+    {{! Basic radius / emission }}
+    <div class="grid grid-4col">
+      <div class="grid-span-1">
+        <label class="resource-label">{{localize "REDSTEEL.Item.Light.dim"}}</label>
+        <input
+          type="text"
+          name="system.light.dim"
+          value="{{system.light.dim}}"
+          data-dtype="Number"
+        />
+      </div>
+      <div class="grid-span-1">
+        <label class="resource-label">{{localize "REDSTEEL.Item.Light.bright"}}</label>
+        <input
+          type="text"
+          name="system.light.bright"
+          value="{{system.light.bright}}"
+          data-dtype="Number"
+        />
+      </div>
+      <div class="grid-span-1">
+        <label class="resource-label">{{localize "REDSTEEL.Item.Light.angle"}}</label>
+        <input
+          type="text"
+          name="system.light.angle"
+          value="{{system.light.angle}}"
+          data-dtype="Number"
+        />
+      </div>
+      <div class="grid-span-1">
+        <label class="resource-label">{{localize "REDSTEEL.Item.Light.priority"}}</label>
+        <input
+          type="text"
+          name="system.light.priority"
+          value="{{system.light.priority}}"
+          data-dtype="Number"
+        />
+      </div>
+    </div>
+
+    <hr />
+
+    {{! Color & intensity }}
+    <div class="grid grid-4col">
+      <div class="grid-span-1">
+        <label class="resource-label">{{localize "REDSTEEL.Item.Light.color"}}</label>
+        <color-picker
+          name="system.light.color"
+          value="{{system.light.color}}"
+        ></color-picker>
+      </div>
+      <div class="grid-span-1">
+        <label class="resource-label">{{localize "REDSTEEL.Item.Light.alpha"}}</label>
+        <input
+          type="number"
+          step="0.05"
+          min="0"
+          max="1"
+          name="system.light.alpha"
+          value="{{system.light.alpha}}"
+          data-dtype="Number"
+        />
+      </div>
+      <div class="grid-span-1">
+        <label class="resource-label">{{localize "REDSTEEL.Item.Light.luminosity"}}</label>
+        <input
+          type="number"
+          step="0.05"
+          min="-1"
+          max="1"
+          name="system.light.luminosity"
+          value="{{system.light.luminosity}}"
+          data-dtype="Number"
+        />
+      </div>
+      <div class="grid-span-1">
+        <label class="resource-label">{{localize "REDSTEEL.Item.Light.attenuation"}}</label>
+        <input
+          type="number"
+          step="0.05"
+          min="0"
+          max="1"
+          name="system.light.attenuation"
+          value="{{system.light.attenuation}}"
+          data-dtype="Number"
+        />
+      </div>
+    </div>
+
+    <div class="checkbox-row">
+      <label class="resource-label">{{localize "REDSTEEL.Item.Light.negative"}}</label>
+      <input
+        type="checkbox"
+        name="system.light.negative"
+        {{checked system.light.negative}}
+      />
+    </div>
+
+    <hr />
+
+    {{! Animation }}
+    <div class="grid grid-4col">
+      <div class="grid-span-2">
+        <label class="resource-label">{{localize "REDSTEEL.Item.Light.animationType"}}</label>
+        <select name="system.light.animation.type">
+          <option value="" {{#unless system.light.animation.type}}selected{{/unless}}>
+            {{localize "REDSTEEL.Item.Light.animationNone"}}
+          </option>
+          {{#each lightAnimations as |anim|}}
+            <option
+              value="{{anim.value}}"
+              {{#if (eq ../system.light.animation.type anim.value)}}selected{{/if}}
+            >{{anim.label}}</option>
+          {{/each}}
+        </select>
+      </div>
+      <div class="grid-span-1">
+        <label class="resource-label">{{localize "REDSTEEL.Item.Light.animationSpeed"}}</label>
+        <input
+          type="number"
+          step="1"
+          min="0"
+          max="10"
+          name="system.light.animation.speed"
+          value="{{system.light.animation.speed}}"
+          data-dtype="Number"
+        />
+      </div>
+      <div class="grid-span-1">
+        <label class="resource-label">{{localize "REDSTEEL.Item.Light.animationIntensity"}}</label>
+        <input
+          type="number"
+          step="1"
+          min="0"
+          max="10"
+          name="system.light.animation.intensity"
+          value="{{system.light.animation.intensity}}"
+          data-dtype="Number"
+        />
+      </div>
+    </div>
+
+    <div class="checkbox-row">
+      <label class="resource-label">{{localize "REDSTEEL.Item.Light.animationReverse"}}</label>
+      <input
+        type="checkbox"
+        name="system.light.animation.reverse"
+        {{checked system.light.animation.reverse}}
+      />
+    </div>
+  </div>
+</section>

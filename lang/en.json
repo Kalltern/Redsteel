@@ -3807,7 +3807,25 @@
         "Effects": "Effects",
         "combatEffects": "Combat Effects",
         "OffHand": "Offhand",
-        "Variants": "Variants"
+        "Variants": "Variants",
+        "Light": "Light"
+      },
+      "Light": {
+        "hint": "While this item is equipped it emits light from the owner's token. If several equipped items emit light, the one with the largest radius is used. Leave Dim and Bright at 0 for no light.",
+        "dim": "Dim Radius (m)",
+        "bright": "Bright Radius (m)",
+        "angle": "Emission Angle",
+        "priority": "Priority",
+        "color": "Light Color",
+        "alpha": "Color Intensity",
+        "luminosity": "Luminosity",
+        "attenuation": "Attenuation",
+        "negative": "Is Darkness Source",
+        "animationType": "Animation Type",
+        "animationNone": "None",
+        "animationSpeed": "Animation Speed",
+        "animationIntensity": "Animation Intensity",
+        "animationReverse": "Reverse Direction"
       },
       "Condition": {
         "duration": "Duration",
