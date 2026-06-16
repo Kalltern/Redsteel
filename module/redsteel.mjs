@@ -59,6 +59,16 @@ import {
   SOCKET,
 } from "./utils/applyDamage.mjs";
 
+import {
+  openMentalDuel,
+  applyMentalDuelLossAsGM,
+  handleRemoteMentalDuel,
+  closeMentalDuel,
+  requestVoluntaryMentalDuel,
+  handleVoluntaryMentalDuel,
+  handleMentalDuelRps,
+  resumeMentalDuel,
+} from "./utils/mentalDuel.mjs";
 import { getSpellPower } from "./utils/spellPower.mjs";
 import {
   getNonWeaponAbility,
@@ -239,6 +249,11 @@ Hooks.once("init", function () {
   game.redsteel.performAttackRoll = performAttackRoll;
   game.redsteel.finalizeRollsAndPostChat = finalizeRollsAndPostChat;
   game.redsteel.defenseRoll = defenseRoll;
+  game.redsteel.openMentalDuel = openMentalDuel;
+  game.redsteel.handleRemoteMentalDuel = handleRemoteMentalDuel;
+  game.redsteel.closeMentalDuel = closeMentalDuel;
+  game.redsteel.requestVoluntaryMentalDuel = requestVoluntaryMentalDuel;
+  game.redsteel.resumeMentalDuel = resumeMentalDuel;
   game.redsteel.autoAttack = autoAttack;
   game.redsteel.resolveChannelingTick = resolveChannelingTick;
   game.redsteel.getDurabilityItems = getDurabilityItems;
@@ -249,6 +264,7 @@ Hooks.once("init", function () {
   registerKeepDialogOpen();
   registerCustomConditions();
   registerFirstAidHealing();
+  registerMentalDuelSetting();
 
   /**
    * Set an initiative formula for the system
@@ -336,6 +352,17 @@ function registerKeepDialogOpen() {
     config: false,
     type: Boolean,
     default: false,
+  });
+}
+
+function registerMentalDuelSetting() {
+  // Stores { attackerUuid, defenderUuid } for the in-progress Mental Duel so it
+  // can be re-opened after a refresh / accidental close. Cleared on End duel.
+  game.settings.register("redsteel", "mentalDuelActive", {
+    scope: "world",
+    config: false,
+    type: Object,
+    default: null,
   });
 }
 /* -------------------------------------------- */
@@ -563,6 +590,11 @@ Hooks.once("ready", () => {
 });
 
 Hooks.once("ready", () => {
+  // Re-open an in-progress Mental Duel after a reload (silent if none).
+  game.redsteel.resumeMentalDuel?.({ notify: false });
+});
+
+Hooks.once("ready", () => {
   console.log("REDSTEEL | Socket Listener Registered");
 
   game.socket.on(SOCKET, async (data) => {
@@ -580,6 +612,31 @@ Hooks.once("ready", () => {
     if (data.type === "applyEffects") {
       if (!game.user.isGM) return;
       await applyEffectsAsGM(data);
+    }
+
+    if (data.type === "mentalDuelApply") {
+      if (!game.user.isGM) return;
+      await applyMentalDuelLossAsGM(data);
+    }
+
+    // Not GM-gated: every client decides for itself whether to show the duel.
+    if (data.type === "openMentalDuel") {
+      handleRemoteMentalDuel(data);
+    }
+
+    // Not GM-gated: the GM ended the duel — every client closes its window.
+    if (data.type === "closeMentalDuel") {
+      closeMentalDuel();
+    }
+
+    // Not GM-gated: only the designated responder (target's owner) prompts.
+    if (data.type === "mentalDuelVoluntary") {
+      await handleVoluntaryMentalDuel(data);
+    }
+
+    // RPS gamble — only the active GM (single authority) mutates the state.
+    if (data.type === "mentalDuelRps") {
+      await handleMentalDuelRps(data);
     }
 
     // ------------------------
@@ -700,6 +757,23 @@ Hooks.once("ready", async () => {
   }
 
   await game.user.setFlag("redsteel", "hotbarInitialized", true);
+});
+
+// Ensure a single shared "Mind Bending — Resume Duel" macro exists in the
+// Macros directory (not on any hotbar). It's an ultra-niche tool, so it lives
+// in the directory for the one player who needs it to drag onto their own bar.
+// Runs independently of the hotbar-init flag so it appears on existing worlds.
+Hooks.once("ready", async () => {
+  if (!game.user.isGM) return;
+  const name = "Mind Bending — Resume Duel";
+  if (game.macros.getName(name)) return;
+  const macro = await Macro.create({
+    name,
+    type: "script",
+    command: `game.redsteel.resumeMentalDuel();`,
+    img: "icons/magic/control/hypnosis-mesmerism-eye.webp",
+  });
+  await macro?.update({ ownership: { default: 2 } }); // shared (observer)
 });
 
 /* -------------------------------------------- */

@@ -1304,6 +1304,61 @@ REDSTEEL.effectDefinitions = {
     changes: [],
     stackBehavior: "refresh",
   },
+
+  // ==========================================================
+  // "Mentální souboj" (Mind Bending) — CASTER side.
+  // ----------------------------------------------------------
+  // Applied to the *caster* (not the target) when Mind Bending is
+  // cast. The rule: while the duel lasts the caster is forced into
+  // Slow Movement and takes −20% to Success, EXCEPT Will Tests and
+  // the Mental Duel itself.
+  //
+  // Encoded so the net effect matches the rule:
+  //   • system.globalBonus −20  → −20% to every Success roll
+  //     (all skill ratings + attribute mods read globalMod).
+  //   • system.attributes.wil.modBonus +20 → cancels the −20 on
+  //     Will Tests (mod = 15 + modBonus + globalMod + …).
+  //   • system.skills.mindBending.bonus +20 → cancels the −20 on
+  //     the Mental Duel skill (rating = … + bonus + globalMod).
+  //
+  // No defaultRounds/Turns: lasts "po dobu trvání" → removed by
+  // hand (or by the GM) when the duel ends. `refresh` so re-casting
+  // doesn't stack the penalty. Slow Movement is applied alongside
+  // as the separate `slow_movement` marker (see castSpell.mjs).
+  // ==========================================================
+  mind_bending_caster: {
+    name: "Mind Bending (Caster)",
+    img: "icons/magic/control/hypnosis-mesmerism-eye.webp",
+    statuses: ["mind_bending_caster"],
+    stackBehavior: "refresh",
+    changes: [
+      {
+        key: "system.globalBonus",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: -20,
+      },
+      {
+        key: "system.attributes.wil.modBonus",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: 20,
+      },
+      {
+        key: "system.skills.mindBending.bonus",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: 20,
+      },
+    ],
+  },
+
+  // "Pomalý pohyb" — forced Slow Movement marker. Pure visual/manual
+  // marker (the action restriction is adjudicated at the table); no
+  // changes. Applied to the Mind Bending caster alongside the debuff.
+  slow_movement: {
+    name: "Slow Movement",
+    img: "icons/magic/movement/chevrons-down-yellow.webp",
+    statuses: ["slow_movement"],
+    stackBehavior: "ignore",
+  },
 };
 
 REDSTEEL.statusEffects = Object.entries(REDSTEEL.effectDefinitions).map(
