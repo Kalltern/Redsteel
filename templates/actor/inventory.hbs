@@ -305,14 +305,23 @@
           name="system.currencies.{{index}}.label"
           value="{{coin.label}}"
           placeholder="{{localize "REDSTEEL.Actor.Inventory.CurrencyName"}}"
+          style="color: {{coin.color}};"
         />
         <input
           type="number"
           class="currency-value"
           name="system.currencies.{{index}}.value"
           value="{{coin.value}}"
+          style="color: {{coin.color}};"
         />
         {{#if @root.editable}}
+          <input
+            type="color"
+            class="currency-color"
+            name="system.currencies.{{index}}.color"
+            value="{{coin.color}}"
+            title="{{localize "REDSTEEL.Actor.Inventory.CurrencyColor"}}"
+          />
           <a
             class="currency-delete"
             data-action="deleteCurrency"

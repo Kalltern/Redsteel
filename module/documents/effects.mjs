@@ -139,6 +139,9 @@ export class RedsteelActiveEffect extends ActiveEffect {
       await effect.executeTrigger?.("onTurnStart");
       await effect.decrementActorTurn?.();
     }
+
+    // Advance any in-combat First Aid the actor has committed to.
+    await game.redsteel.advanceCombatFirstAid?.(actor);
   }
 
   static async _onRoundStart(combat) {
@@ -770,6 +773,18 @@ export class RedsteelActiveEffect extends ActiveEffect {
       return this._handleProneInitiative();
     }
 
+    if (trigger.custom === "dyingStart") {
+      return this._handleDyingStart();
+    }
+
+    if (trigger.custom === "dyingCountdown") {
+      return this._handleDyingCountdown();
+    }
+
+    if (trigger.custom === "downedStart") {
+      return this._handleDownedStart();
+    }
+
     if (trigger.custom === "conditionDamage") {
       return this._handleConditionDamage(trigger);
     }
@@ -787,6 +802,19 @@ export class RedsteelActiveEffect extends ActiveEffect {
     const stacks = this.getFlag("redsteel", "stacks") ?? 1;
     const appliedStacks = context.appliedStacks ?? stacks;
 
+    // While the target is being first-aided, bleed damage is held: collect the
+    // dice to be rolled later (on resume or abort) instead of applying now.
+    if (this.getFlag("core", "statusId") === "bleed") {
+      const pause = actor.getFlag("redsteel", "firstAidPause");
+      if (pause) {
+        await actor.setFlag("redsteel", "firstAidPause", {
+          ...pause,
+          dice: (pause.dice ?? 0) + appliedStacks,
+        });
+        return;
+      }
+    }
+
     formula = formula
       .replace("{stacks}", stacks)
       .replace("{appliedStacks}", appliedStacks);
@@ -799,6 +827,12 @@ export class RedsteelActiveEffect extends ActiveEffect {
       await actor.update({
         [trigger.target]: current - roll.total,
       });
+
+      // A DoT (bleed, burn, …) that drops the actor to 0 health triggers the
+      // same Dying/Downed (or death) handling as taking a hit.
+      if (trigger.target === "system.stats.health.value") {
+        await this._maybeApplyZeroHealthState();
+      }
     }
 
     await roll.toMessage({
@@ -826,6 +860,33 @@ export class RedsteelActiveEffect extends ActiveEffect {
     if (!effectId) return;
 
     await RedsteelActiveEffect._removeCombatModifiers(actor, effectId);
+
+    // When Dying ends (e.g. stabilised by First Aid), the survivor must test
+    // their resolve or take an Insanity point. Posted once, by the user who
+    // removed the effect, with a chat button to roll the test.
+    if (effectId === "dying" && game.user.id === userId) {
+      // Surviving the brink leaves a lasting mark: +1 Wound. Applied every
+      // time Dying is removed — not clamped to the (often very low) wound cap,
+      // which would otherwise silently swallow the increment.
+      const gw = actor.system.stats.graveWounds ?? {};
+      const newWounds = (Number(gw.value) || 0) + 1;
+      await actor.update({ "system.stats.graveWounds.value": newWounds });
+
+      await ChatMessage.create({
+        speaker: ChatMessage.getSpeaker({ actor }),
+        content: `
+          <div class="redsteel-dying">
+            <p><b>${actor.name} steps back from the brink.</b></p>
+            <p>They receive <b>+1 Wound</b> (now ${newWounds}).</p>
+            <p>Once per day, after being close to death, you must test your
+            resolve to prevent receiving an Insanity point.</p>
+            <div class="redsteel-action-buttons">
+              <button type="button" data-action="dyingResolveTest">Resolve Test</button>
+            </div>
+          </div>`,
+        flags: { redsteel: { type: "dyingResolve", actorUuid: actor.uuid } },
+      });
+    }
   }
 
   /**
@@ -871,6 +932,8 @@ export class RedsteelActiveEffect extends ActiveEffect {
       "system.stats.health.value": Number(result.newHp),
       "system.stats.temporaryHealth.value": Number(result.newTempHp),
     });
+
+    await this._maybeApplyZeroHealthState();
 
     const types = (trigger.damageProfile?.expression ?? [])
       .filter((t) => t !== "and" && t !== "or")
@@ -920,6 +983,8 @@ export class RedsteelActiveEffect extends ActiveEffect {
     await actor.update({
       [path]: current - roll.total,
     });
+
+    await this._maybeApplyZeroHealthState();
 
     await roll.toMessage({
       speaker: ChatMessage.getSpeaker({ actor }),
@@ -1043,6 +1108,18 @@ export class RedsteelActiveEffect extends ActiveEffect {
   }
 
   async _handleProneInitiative() {
+    return this._dropToInitiativeOne({
+      actedMsg: `${this.parent?.name} will act last next round due to being prone.`,
+      droppedMsg: `${this.parent?.name} falls prone and drops to initiative 1.`,
+    });
+  }
+
+  /**
+   * Drops the parent actor's combatant to initiative 1. If they have already
+   * acted this round, they instead act last next round (the engine's natural
+   * ordering at initiative 1). Shared by Prone and Downed.
+   */
+  async _dropToInitiativeOne({ actedMsg, droppedMsg } = {}) {
     const actor = this.parent;
     if (!actor) return;
 
@@ -1064,10 +1141,7 @@ export class RedsteelActiveEffect extends ActiveEffect {
     // -----------------------------------
 
     if (alreadyActed) {
-      ui.notifications.info(
-        `${actor.name} will act last next round due to being prone.`,
-      );
-
+      if (actedMsg) ui.notifications.info(actedMsg);
       return;
     }
 
@@ -1079,9 +1153,138 @@ export class RedsteelActiveEffect extends ActiveEffect {
       initiative: 1,
     });
 
-    ui.notifications.info(
-      `${actor.name} falls prone and drops to initiative 1.`,
-    );
+    if (droppedMsg) ui.notifications.info(droppedMsg);
+  }
+
+  /* -------------------------------------------- */
+  /*  DYING / DOWNED (0-health state)             */
+  /* -------------------------------------------- */
+
+  /**
+   * On Dying: blind GM-only roll of 2d4dh1 (drop the higher die). The lower
+   * die becomes the number of rounds until bleed-out, stored on the effect so
+   * the per-round countdown can decrement it (into negatives) and First Aid
+   * can read the worsening penalty.
+   */
+  async _handleDyingStart() {
+    const actor = this.parent;
+    if (!actor) return;
+
+    // Guard: only roll the countdown once per Dying instance.
+    if (this.getFlag("redsteel", "roundsUntilDeath") != null) return;
+
+    const roll = await new Roll("2d4dh1").evaluate();
+    await this.setFlag("redsteel", "roundsUntilDeath", roll.total);
+
+    await roll.toMessage({
+      speaker: ChatMessage.getSpeaker({ actor }),
+      flavor: `${actor.name} is Dying — rounds until bleed-out`,
+      whisper: ChatMessage.getWhisperRecipients("GM"),
+      blind: true,
+    });
+  }
+
+  /**
+   * Each round start, decrement the bleed-out counter and privately tell the
+   * GM how many rounds remain. Once it reaches zero it keeps counting into
+   * negative numbers until the Dying effect is removed (the more negative,
+   * the harder First Aid is to stabilise).
+   */
+  async _handleDyingCountdown() {
+    const actor = this.parent;
+    if (!actor) return;
+
+    let rounds = this.getFlag("redsteel", "roundsUntilDeath");
+    if (rounds == null) return;
+
+    // Decrement first, then announce — so the stored counter always equals the
+    // number shown to the GM (Stabilise reads this exact value; announcing
+    // before decrementing left the flag one lower than displayed).
+    rounds -= 1;
+    await this.setFlag("redsteel", "roundsUntilDeath", rounds);
+
+    let suffix = "";
+    if (rounds === 0) {
+      suffix = ` — now <b>dead</b> unless actively being stabilised.`;
+    } else if (rounds < 0) {
+      // −20% per negative round (Stabilise adds its own −10% base on top).
+      const penalty = 20 * Math.abs(rounds);
+      suffix = ` — <b>−${penalty}%</b> penalty to stabilisation attempts.`;
+    }
+
+    await ChatMessage.create({
+      speaker: ChatMessage.getSpeaker({ actor }),
+      content: `<p><b>${actor.name}</b> — Rounds until death: <b>${rounds}</b>${suffix}</p>`,
+      whisper: ChatMessage.getWhisperRecipients("GM"),
+      blind: true,
+    });
+  }
+
+  /**
+   * On Downed: lose Mind points equal to half (rounded up) the current total.
+   * At 0 Mind the character is knocked unconscious (Incapacitated). Otherwise
+   * they post a prompt to test Endurance or Will (resolved via chat buttons).
+   */
+  async _handleDownedStart() {
+    const actor = this.parent;
+    if (!actor) return;
+
+    // Being Downed drops the character to initiative 1, like Prone.
+    await this._dropToInitiativeOne({
+      actedMsg: `${actor.name} will act last next round (Downed).`,
+      droppedMsg: `${actor.name} is Downed and drops to initiative 1.`,
+    });
+
+    const current = Number(actor.system.stats.mind?.value ?? 0);
+    const loss = Math.ceil(current / 2);
+    const newMind = Math.max(0, current - loss);
+
+    await actor.update({ "system.stats.mind.value": newMind });
+
+    const speaker = ChatMessage.getSpeaker({ actor });
+    const lostLabel = `${loss} Mind point${loss === 1 ? "" : "s"}`;
+
+    if (newMind <= 0) {
+      await game.redsteel.applyEffect(actor, "incapacitated");
+
+      await ChatMessage.create({
+        speaker,
+        content: `
+          <div class="redsteel-downed">
+            <p><b>${actor.name} is Downed.</b></p>
+            <p>They lose <b>${lostLabel}</b> and fall <b>unconscious immediately</b> — they cannot act.</p>
+            <p><em>At 0 Mind points, ${actor.name} regains 1 Mind point after a short rest.</em></p>
+          </div>`,
+      });
+      return;
+    }
+
+    await ChatMessage.create({
+      speaker,
+      content: `
+        <div class="redsteel-downed">
+          <p><b>${actor.name} is Downed.</b></p>
+          <p>They lose <b>${lostLabel}</b> (Mind now <b>${newMind}</b>) but remain conscious.</p>
+          <p>Test to steady yourself — choose an attribute:</p>
+          <div class="redsteel-action-buttons">
+            <button type="button" data-action="downedTest" data-attr="end">Endurance Test</button>
+            <button type="button" data-action="downedTest" data-attr="wil">Will Test</button>
+          </div>
+        </div>`,
+      flags: { redsteel: { type: "downedChoice", actorUuid: actor.uuid } },
+    });
+  }
+
+  /**
+   * Re-reads the parent actor's health after an automated health-reducing tick
+   * and, if it has dropped to 0, applies the same 0-health state used by the
+   * apply-damage flow (Dying + Downed for characters, death for NPCs).
+   */
+  async _maybeApplyZeroHealthState() {
+    const actor = this.parent;
+    if (!actor) return;
+    if (Number(actor.system.stats.health?.value ?? 0) > 0) return;
+    await game.redsteel.applyZeroHealthState?.(actor);
   }
 }
 

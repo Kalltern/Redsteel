@@ -261,42 +261,123 @@ export async function longRest() {
   }
 }
 
+// Spend one charge of the actor's first aid kit (a "first aid" consumable),
+// deleting the stack when it runs out — mirrors the potion-consume pattern.
+async function consumeFirstAidKit(actor) {
+  const kit = actor.items.find(
+    (i) =>
+      i.type === "consumable" &&
+      i.system?.option === "first aid" &&
+      Number(i.system?.quantity ?? 1) > 0,
+  );
+  if (!kit) return;
+
+  const newQty = Number(kit.system.quantity ?? 1) - 1;
+  if (newQty > 0) {
+    await kit.update({ "system.quantity": newQty });
+  } else {
+    await kit.delete();
+  }
+}
+
+// Builds the Medical Action dialog buttons. In combat every action requires a
+// target and starts the 4-action commit process (Treat Wound is unavailable);
+// out of combat the actions roll immediately (and Treat Wound is offered).
+function buildMedicalButtons({ actor, token, getExtraPenalty, consumeKitIfUsed }) {
+  const immediate = (perform) => async (html) => {
+    const done = await perform(actor, token, getExtraPenalty(html));
+    if (done) await consumeKitIfUsed(html);
+  };
+
+  const combatStart = (actionType) => async (html) => {
+    const started = await startCombatFirstAid(
+      actor,
+      actionType,
+      getExtraPenalty(html),
+    );
+    if (started) await consumeKitIfUsed(html);
+  };
+
+  if (isCombatActive(actor)) {
+    return {
+      firstAid: { label: "First Aid", callback: combatStart("firstAid") },
+      stopBleeding: {
+        label: "Stop Bleeding",
+        callback: combatStart("stopBleeding"),
+      },
+      stabilise: { label: "Stabilise", callback: combatStart("stabilise") },
+    };
+  }
+
+  return {
+    firstAid: { label: "First Aid", callback: immediate(performFirstAid) },
+    stopBleeding: {
+      label: "Stop Bleeding",
+      callback: immediate(performStopBleeding),
+    },
+    stabilise: { label: "Stabilise", callback: immediate(performStabilise) },
+    treatWound: { label: "Treat Wound", callback: immediate(performTreatWound) },
+  };
+}
+
 export async function firstAid() {
   const context = game.redsteel.selectToken({ notifyFallback: true });
   if (!context) return;
 
   const { actor, token } = context;
 
-  new Dialog({
-    title: "Medical Action",
+  // A "first aid" consumable in the inventory counts as having a kit on hand.
+  const hasKit = actor.items.some(
+    (i) =>
+      i.type === "consumable" &&
+      i.system?.option === "first aid" &&
+      Number(i.system?.quantity ?? 1) > 0,
+  );
 
-    content: `
+  // −30% per ticked modifier, shared by every medical action below.
+  const getExtraPenalty = (html) => {
+    const selfHeal = html.find('[name="selfHeal"]').is(":checked");
+    const noKit = html.find('[name="noKit"]').is(":checked");
+    return (selfHeal ? 30 : 0) + (noKit ? 30 : 0);
+  };
+
+  // Spend one kit charge — but only when a kit is actually used (the player
+  // has one and didn't tick "No first aid kit").
+  const consumeKitIfUsed = async (html) => {
+    if (!hasKit) return;
+    if (html.find('[name="noKit"]').is(":checked")) return;
+    await consumeFirstAidKit(actor);
+  };
+
+  new Dialog(
+    {
+      title: "Medical Action",
+
+      content: `
       <p>Select medical action:</p>
+      <div class="redsteel-medical-options">
+        <label><input type="checkbox" name="selfHeal"> Self heal (−30%)</label>
+        <label>
+          <input type="checkbox" name="noKit" ${hasKit ? "" : "checked disabled"}>
+          No first aid kit (−30%)${hasKit ? "" : " — none in inventory"}
+        </label>
+      </div>
     `,
 
-    buttons: {
-      firstAid: {
-        label: "First Aid",
+      buttons: buildMedicalButtons({
+        actor,
+        token,
+        getExtraPenalty,
+        consumeKitIfUsed,
+      }),
 
-        callback: async () => {
-          await performFirstAid(actor, token);
-        },
-      },
-
-      stopBleeding: {
-        label: "Stop Bleeding",
-
-        callback: async () => {
-          await performStopBleeding(actor, token);
-        },
-      },
+      default: "firstAid",
     },
-
-    default: "firstAid",
-  }).render(true);
+    { classes: ["dialog", "redsteel-medical-dialog"] },
+  ).render(true);
 }
 
-async function performFirstAid(actor, token) {
+async function performFirstAid(actor, token, extraPenalty = 0) {
   let firstAidData =
     actor.type === "npc"
       ? actor.system.attributes.int.mod
@@ -315,8 +396,8 @@ async function performFirstAid(actor, token) {
 
   const rollFormula =
     actor.type === "npc"
-      ? "@attributes.int.mod - 1d100"
-      : "@skills.firstAid.rating - 1d100";
+      ? `@attributes.int.mod - ${extraPenalty} - 1d100`
+      : `@skills.firstAid.rating - ${extraPenalty} - 1d100`;
 
   const firstAidRoll = new Roll(rollFormula, actor.getRollData());
 
@@ -381,6 +462,11 @@ async function performFirstAid(actor, token) {
         ...(healRoll && !isCritFail
           ? { firstAidHeal: { amount: healRoll.total } }
           : {}),
+        // Critical failure injures the patient — armor-ignoring damage applied
+        // via the Apply Injury button (see registerFirstAidHealing).
+        ...(isCritFail && healRoll
+          ? { firstAidInjury: { amount: healRoll.total } }
+          : {}),
       },
     },
 
@@ -388,14 +474,18 @@ async function performFirstAid(actor, token) {
 
     type: CONST.CHAT_MESSAGE_STYLES.ROLL,
   });
+
+  return true;
 }
-async function performStopBleeding(actor, token) {
+async function performStopBleeding(actor, token, extraPenalty = 0) {
   const dex = actor.system.attributes.dex.mod;
   const int = actor.system.attributes.int.mod;
 
   const bestAttribute = Math.max(dex, int);
 
-  const stopBleedingRoll = new Roll(`30 + ${bestAttribute} - 1d100`);
+  const stopBleedingRoll = new Roll(
+    `30 + ${bestAttribute} - ${extraPenalty} - 1d100`,
+  );
 
   await stopBleedingRoll.evaluate({ async: true });
 
@@ -425,6 +515,628 @@ async function performStopBleeding(actor, token) {
     rolls: [stopBleedingRoll],
 
     type: CONST.CHAT_MESSAGE_STYLES.ROLL,
+  });
+
+  return true;
+}
+
+/**
+ * Stabilise a Dying target: a First Aid roll penalised by −10% plus −20% per
+ * negative round of the target's dying counter (roundsUntilDeath). On success
+ * the target is brought back to 1 health and the Dying effect is removed
+ * (which, via the effect's _onDelete, applies the +1 Wound and resolve test).
+ */
+function getStabilisePenalty(roundsUntilDeath) {
+  const negativeRounds = Math.max(0, -Number(roundsUntilDeath || 0));
+  // −10% base, plus −20% for every negative round of the dying counter.
+  return { negativeRounds, penalty: 10 + 20 * negativeRounds };
+}
+
+async function performStabilise(actor, token, extraPenalty = 0) {
+  void token;
+  const targets = Array.from(game.user.targets);
+  if (targets.length !== 1) {
+    ui.notifications.warn("Target exactly one dying token to stabilise.");
+    return false;
+  }
+
+  const targetToken = targets[0];
+  const targetActor = targetToken.actor;
+  if (!targetActor) return false;
+
+  const dying = targetActor.effects.find(
+    (e) => e.getFlag("core", "statusId") === "dying",
+  );
+  if (!dying) {
+    ui.notifications.warn(`${targetActor.name} is not Dying.`);
+    return false;
+  }
+
+  const { penalty } = getStabilisePenalty(
+    dying.getFlag("redsteel", "roundsUntilDeath"),
+  );
+
+  const base =
+    actor.type === "npc"
+      ? Number(actor.system.attributes.int.mod ?? 0)
+      : Number(actor.system.skills.firstAid.rating ?? 0);
+
+  await rollAndPostStabilise({
+    sceneId: canvas.scene.id,
+    targetId: targetToken.id,
+    base,
+    penalty: penalty + extraPenalty,
+    aiderUuid: actor.uuid,
+  });
+
+  return true;
+}
+
+/**
+ * Rolls (or re-rolls) a stabilisation attempt and posts the result. On success
+ * the target is brought to 1 HP and Dying is removed (via GM). On failure the
+ * posted card carries a dedicated Re-Roll button (see registerFirstAidHealing)
+ * that re-runs this same attempt — so a re-roll can actually succeed and apply.
+ */
+async function rollAndPostStabilise({
+  sceneId,
+  targetId,
+  base,
+  penalty,
+  aiderUuid,
+}) {
+  const targetActor = game.scenes.get(sceneId)?.tokens.get(targetId)?.actor;
+  if (!targetActor) return;
+
+  const aider = aiderUuid ? fromUuidSync(aiderUuid) : null;
+  const aiderName = aider?.name ?? "The healer";
+
+  const roll = new Roll(`${base} - ${penalty} - 1d100`);
+  await roll.evaluate();
+  const success = roll.total >= 0;
+
+  const resultText = success
+    ? `<strong style="color:green;">Success!</strong> ${targetActor.name} is stabilised — brought back to <strong>1 health</strong> and the <strong>Dying</strong> effect is removed.`
+    : `<strong style="color:red;">Failure!</strong> ${aiderName} is having grave difficulties saving the dying ${targetActor.name}.`;
+
+  const iconUrl = "icons/magic/life/cross-yellow-green.webp";
+
+  await ChatMessage.create({
+    speaker: aider
+      ? ChatMessage.getSpeaker({ actor: aider })
+      : ChatMessage.getSpeaker(),
+    flavor: `
+<div style="display:flex; align-items:center; gap:10px;">
+  <img src="${iconUrl}" width="36" height="36" style="border-radius:50%;" />
+  <div>
+    <p style="color:#007ba9; font-size:1.2em;">
+      <strong>Attempted to stabilise ${targetActor.name}</strong><br>
+      ${resultText}
+    </p>
+    <p style="font-size:0.85em; opacity:0.8;">Stabilisation penalty: −${penalty}%.</p>
+  </div>
+</div>`,
+    rolls: [roll],
+    type: CONST.CHAT_MESSAGE_STYLES.ROLL,
+    flags: {
+      redsteel: {
+        rollName: "Stabilise",
+        stabilise: {
+          sceneId,
+          targetId,
+          base,
+          penalty,
+          aiderUuid,
+          failed: !success,
+        },
+      },
+    },
+  });
+
+  if (success) {
+    await requestApplyStabilise(sceneId, targetId);
+  }
+}
+
+async function requestApplyStabilise(sceneId, targetId) {
+  const data = { type: "applyStabilise", sceneId, targetId };
+
+  if (game.user.isGM) {
+    await applyStabiliseAsGM(data);
+  } else {
+    game.socket.emit(SOCKET, data);
+    ui.notifications.info("Stabilisation sent to GM.");
+  }
+}
+
+async function applyStabiliseAsGM(data) {
+  const { sceneId, targetId } = data;
+
+  const tokenDoc = game.scenes.get(sceneId)?.tokens.get(targetId);
+  const actor = tokenDoc?.actor;
+  if (!actor) return;
+
+  // Back to 1 health, then drop Dying (its _onDelete handles +1 Wound and the
+  // resolve test). Downed is intentionally left in place.
+  await actor.update({ "system.stats.health.value": 1 });
+
+  const dying = actor.effects.find(
+    (e) => e.getFlag("core", "statusId") === "dying",
+  );
+  if (dying) await dying.delete();
+}
+
+/**
+ * Treat Wound: a First Aid roll at −30%. On success it marks one more grave
+ * wound as treated on the target, capped so treated never exceeds the actual
+ * wound count.
+ */
+async function performTreatWound(actor, token, extraPenalty = 0) {
+  const targets = Array.from(game.user.targets);
+  if (targets.length !== 1) {
+    ui.notifications.warn("Target exactly one token to treat a wound.");
+    return false;
+  }
+
+  const targetToken = targets[0];
+  const targetActor = targetToken.actor;
+  if (!targetActor) return false;
+
+  const gw = targetActor.system.stats?.graveWounds ?? {};
+  const wounds = Number(gw.value ?? 0);
+  const treated = Number(gw.treated ?? 0);
+
+  if (treated >= wounds) {
+    ui.notifications.warn(
+      `${targetActor.name} has no untreated wounds to treat.`,
+    );
+    return false;
+  }
+
+  const penalty = 30 + extraPenalty;
+  const base =
+    actor.type === "npc"
+      ? Number(actor.system.attributes.int.mod ?? 0)
+      : Number(actor.system.skills.firstAid.rating ?? 0);
+
+  const roll = new Roll(`${base} - ${penalty} - 1d100`);
+  await roll.evaluate();
+  const success = roll.total >= 0;
+
+  const resultText = success
+    ? `<strong style="color:green;">Success!</strong> One of ${targetActor.name}'s wounds is treated.`
+    : `<strong style="color:red;">Failure!</strong> ${actor.name} fails to treat ${targetActor.name}'s wound.`;
+
+  const iconUrl = "icons/magic/life/cross-yellow-green.webp";
+
+  await ChatMessage.create({
+    speaker: ChatMessage.getSpeaker({ actor, token: token?.document }),
+    flavor: `
+<div style="display:flex; align-items:center; gap:10px;">
+  <img src="${iconUrl}" width="36" height="36" style="border-radius:50%;" />
+  <div>
+    <p style="color:#007ba9; font-size:1.2em;">
+      <strong>Attempted to treat ${targetActor.name}'s wound</strong><br>
+      ${resultText}
+    </p>
+    <p style="font-size:0.85em; opacity:0.8;">Treat Wound penalty: −${penalty}%.</p>
+  </div>
+</div>`,
+    rolls: [roll],
+    type: CONST.CHAT_MESSAGE_STYLES.ROLL,
+    flags: { redsteel: { rollName: "Treat Wound" } },
+  });
+
+  if (success) {
+    await requestApplyTreatWound(canvas.scene.id, targetToken.id);
+  }
+
+  return true;
+}
+
+async function requestApplyTreatWound(sceneId, targetId) {
+  const data = { type: "applyTreatWound", sceneId, targetId };
+
+  if (game.user.isGM) {
+    await applyTreatWoundAsGM(data);
+  } else {
+    game.socket.emit(SOCKET, data);
+    ui.notifications.info("Wound treatment sent to GM.");
+  }
+}
+
+async function applyTreatWoundAsGM(data) {
+  const { sceneId, targetId } = data;
+
+  const actor = game.scenes.get(sceneId)?.tokens.get(targetId)?.actor;
+  if (!actor) return;
+
+  const gw = actor.system.stats?.graveWounds ?? {};
+  const wounds = Number(gw.value ?? 0);
+  const treated = Number(gw.treated ?? 0);
+
+  // Never treat more wounds than the target actually has.
+  const newTreated = Math.min(treated + 1, wounds);
+  if (newTreated === treated) return;
+
+  await actor.update({ "system.stats.graveWounds.treated": newTreated });
+}
+
+/* -------------------------------------------- */
+/*  In-combat First Aid (4-action commitment)   */
+/* -------------------------------------------- */
+//
+// In combat a medical action costs 4 actions, so it is committed across
+// rounds: starting it sets a `firstAidProgress` flag on the aider and pauses
+// the target's bleeding (collecting the dice). Each round at the aider's turn
+// a counter card is posted; the aider rolls when 4 actions are spent (or
+// aborts). All state lives on the GM — player clicks just emit a socket.
+
+const FA_STEP_LABELS = [
+  "1 – 2 / 4 actions spent",
+  "2 – 4 / 4 actions spent",
+  "3 – 4 / 4 actions spent",
+  "4 / 4 actions spent",
+];
+
+const FA_LABELS = {
+  firstAid: "First Aid",
+  stopBleeding: "Stop Bleeding",
+  stabilise: "Stabilise",
+};
+
+const FA_APPLY_LABELS = {
+  firstAid: "Apply Heal",
+  stopBleeding: "Stop Bleeding",
+  stabilise: "Stabilise",
+};
+
+// True only when the actor is a participant in the running combat — otherwise
+// the per-turn counter advance would never fire and the attempt would stall.
+function isCombatActive(actor) {
+  if (!game.combat?.started) return false;
+  return game.combat.combatants.some((c) => c.actorId === actor?.id);
+}
+
+// Routes a combat-first-aid request to the GM (all mutations happen GM-side).
+async function faRequest(data) {
+  if (game.user.isGM) await faHandleAsGM(data);
+  else game.socket.emit(SOCKET, data);
+}
+
+async function faHandleAsGM(data) {
+  switch (data.type) {
+    case "faStart":
+      return faStartAsGM(data);
+    case "faRoll":
+      return faRollAsGM(data);
+    case "faAbort":
+      return abortCombatFirstAid(fromUuidSync(data.actorUuid), false);
+    case "faReroll":
+      return faResolveAndPost(fromUuidSync(data.actorUuid), data);
+    case "faResume":
+      return resumeBleeds(
+        game.scenes.get(data.sceneId)?.tokens.get(data.targetId)?.actor,
+      );
+    case "faApply":
+      return faApplyAsGM(data);
+  }
+}
+
+// Client-side: validate the target, then ask the GM to begin the attempt.
+async function startCombatFirstAid(actor, actionType, extraPenalty) {
+  const targets = Array.from(game.user.targets);
+  if (targets.length !== 1) {
+    ui.notifications.warn("Target exactly one token first.");
+    return false;
+  }
+
+  const targetActor = targets[0].actor;
+  if (!targetActor) return false;
+
+  if (actionType === "stabilise") {
+    const dying = targetActor.effects.find(
+      (e) => e.getFlag("core", "statusId") === "dying",
+    );
+    if (!dying) {
+      ui.notifications.warn(`${targetActor.name} is not Dying.`);
+      return false;
+    }
+  }
+
+  if (actor.getFlag("redsteel", "firstAidProgress")) {
+    ui.notifications.warn(`${actor.name} is already performing a medical action.`);
+    return false;
+  }
+
+  await faRequest({
+    type: "faStart",
+    actorUuid: actor.uuid,
+    actionType,
+    sceneId: canvas.scene.id,
+    targetId: targets[0].id,
+    extraPenalty,
+  });
+  return true;
+}
+
+async function faStartAsGM(data) {
+  const actor = fromUuidSync(data.actorUuid);
+  const targetActor = game.scenes
+    .get(data.sceneId)
+    ?.tokens.get(data.targetId)?.actor;
+  if (!actor || !targetActor) return;
+
+  const attemptId = foundry.utils.randomID();
+  await actor.setFlag("redsteel", "firstAidProgress", {
+    attemptId,
+    actionType: data.actionType,
+    sceneId: data.sceneId,
+    targetId: data.targetId,
+    extraPenalty: Number(data.extraPenalty) || 0,
+    step: 1,
+  });
+
+  // Pause the target's bleeding and start collecting dice.
+  await targetActor.setFlag("redsteel", "firstAidPause", {
+    dice: 0,
+    aiderUuid: data.actorUuid,
+  });
+
+  await postFaCounterCard(actor, 1);
+}
+
+async function postFaCounterCard(actor, step) {
+  const prog = actor.getFlag("redsteel", "firstAidProgress");
+  if (!prog) return;
+
+  const label = FA_STEP_LABELS[Math.min(step, FA_STEP_LABELS.length) - 1];
+
+  await ChatMessage.create({
+    speaker: ChatMessage.getSpeaker({ actor }),
+    content: `
+      <div class="redsteel-firstaid">
+        <p><b>${actor.name}</b> is performing <b>${FA_LABELS[prog.actionType]}</b> — ${label}.</p>
+        <div class="redsteel-action-buttons">
+          <button type="button" data-action="faRoll">Roll the test</button>
+          <button type="button" data-action="faAbort">Abort</button>
+        </div>
+      </div>`,
+    flags: {
+      redsteel: {
+        firstAidCounter: { attemptId: prog.attemptId, actorUuid: actor.uuid },
+      },
+    },
+  });
+}
+
+// Called at the aider's turn start (GM, from effects.mjs _onTurnStart).
+export async function advanceCombatFirstAid(actor) {
+  const prog = actor?.getFlag?.("redsteel", "firstAidProgress");
+  if (!prog) return;
+
+  const newStep = prog.step + 1;
+
+  // Past the 4/4 card without resolving → the attempt is abandoned.
+  if (newStep > FA_STEP_LABELS.length) {
+    await abortCombatFirstAid(actor, true);
+    return;
+  }
+
+  await actor.setFlag("redsteel", "firstAidProgress", { ...prog, step: newStep });
+  await postFaCounterCard(actor, newStep);
+}
+
+async function abortCombatFirstAid(actor, timedOut) {
+  const prog = actor?.getFlag?.("redsteel", "firstAidProgress");
+  if (!prog) return;
+
+  await actor.unsetFlag("redsteel", "firstAidProgress");
+
+  const targetActor = game.scenes
+    .get(prog.sceneId)
+    ?.tokens.get(prog.targetId)?.actor;
+
+  await ChatMessage.create({
+    speaker: ChatMessage.getSpeaker({ actor }),
+    content: `<p><b>${actor.name}</b> abandons the medical action${
+      timedOut ? " (ran out of time)" : ""
+    }. Collected bleeding resumes.</p>`,
+  });
+
+  // Interruption rolls the collected bleeding immediately and resumes it.
+  await resumeBleeds(targetActor);
+}
+
+async function faRollAsGM(data) {
+  const actor = fromUuidSync(data.actorUuid);
+  const prog = actor?.getFlag?.("redsteel", "firstAidProgress");
+  if (!prog || prog.attemptId !== data.attemptId) return; // stale card
+
+  await actor.unsetFlag("redsteel", "firstAidProgress");
+  await faResolveAndPost(actor, prog);
+}
+
+function computeFaTest(actor, targetActor, actionType, extraPenalty) {
+  const skillBase =
+    actor.type === "npc"
+      ? Number(actor.system.attributes.int.mod ?? 0)
+      : Number(actor.system.skills.firstAid.rating ?? 0);
+
+  if (actionType === "stopBleeding") {
+    const best = Math.max(
+      Number(actor.system.attributes.dex.mod ?? 0),
+      Number(actor.system.attributes.int.mod ?? 0),
+    );
+    return { base: 30 + best, penalty: extraPenalty };
+  }
+
+  if (actionType === "stabilise") {
+    const dying = targetActor?.effects.find(
+      (e) => e.getFlag("core", "statusId") === "dying",
+    );
+    const { penalty } = getStabilisePenalty(
+      dying?.getFlag("redsteel", "roundsUntilDeath"),
+    );
+    return { base: skillBase, penalty: penalty + extraPenalty };
+  }
+
+  return { base: skillBase, penalty: extraPenalty }; // firstAid
+}
+
+async function computeFaHeal(actor, total) {
+  let bonus = "";
+  if (actor.system.feldsher2) bonus = "+2d6";
+  else if (actor.system.feldsher1) bonus = "+1d6";
+
+  const formula =
+    total >= 60
+      ? `(3d6+3${bonus})*2`
+      : total >= 25
+        ? `(3d6+3${bonus})*1.5`
+        : `3d6+3${bonus}`;
+
+  const roll = new Roll(formula);
+  await roll.evaluate();
+  return Math.floor(roll.total);
+}
+
+// Rolls the committed (or re-rolled) test and posts the success/fail card.
+async function faResolveAndPost(actor, ctx) {
+  if (!actor) return;
+  const targetActor = game.scenes
+    .get(ctx.sceneId)
+    ?.tokens.get(ctx.targetId)?.actor;
+  if (!targetActor) return;
+
+  const extraPenalty = Number(ctx.extraPenalty) || 0;
+  const { base, penalty } = computeFaTest(
+    actor,
+    targetActor,
+    ctx.actionType,
+    extraPenalty,
+  );
+
+  const roll = new Roll(`${base} - ${penalty} - 1d100`);
+  await roll.evaluate();
+  const success = roll.total >= 0;
+
+  let healAmount = 0;
+  if (success && ctx.actionType === "firstAid") {
+    healAmount = await computeFaHeal(actor, roll.total);
+  }
+
+  const label = FA_LABELS[ctx.actionType];
+  let body;
+  let buttons;
+
+  if (success) {
+    const removal =
+      ctx.actionType === "firstAid"
+        ? `Heals <b>${healAmount}</b> HP and removes`
+        : "Removes";
+    body = `<p><b>${label} — Success.</b> ${removal} all bleeding from ${targetActor.name}.</p>`;
+    buttons = `<button type="button" data-action="faApply">${FA_APPLY_LABELS[ctx.actionType]}</button>`;
+  } else {
+    body = `<p><b>${label} — Failure.</b> ${actor.name} fails to help ${targetActor.name}.</p>`;
+    buttons = `
+      <button type="button" data-action="faReroll">Re-Roll</button>
+      <button type="button" data-action="faResume">Resume bleeds</button>`;
+  }
+
+  await ChatMessage.create({
+    speaker: ChatMessage.getSpeaker({ actor }),
+    content: `
+      <div class="redsteel-firstaid">
+        ${body}
+        <p style="font-size:0.85em; opacity:0.8;">Penalty: −${penalty}%.</p>
+        <div class="redsteel-action-buttons">${buttons}</div>
+      </div>`,
+    rolls: [roll],
+    type: CONST.CHAT_MESSAGE_STYLES.ROLL,
+    flags: {
+      redsteel: {
+        rollName: label,
+        firstAidResult: {
+          actorUuid: actor.uuid,
+          actionType: ctx.actionType,
+          sceneId: ctx.sceneId,
+          targetId: ctx.targetId,
+          extraPenalty,
+          success,
+          healAmount,
+        },
+      },
+    },
+  });
+}
+
+// Resume paused bleeding: roll the collected dice, apply, and clear the pause
+// so normal bleed ticks continue next round.
+async function resumeBleeds(targetActor) {
+  if (!targetActor) return;
+  const pause = targetActor.getFlag("redsteel", "firstAidPause");
+  if (!pause) return;
+
+  const dice = Number(pause.dice ?? 0);
+  await targetActor.unsetFlag("redsteel", "firstAidPause");
+
+  if (dice > 0) {
+    const roll = new Roll(`${dice}d4`);
+    await roll.evaluate();
+    const current = Number(targetActor.system.stats.health.value ?? 0);
+    await targetActor.update({
+      "system.stats.health.value": current - roll.total,
+    });
+    await roll.toMessage({
+      speaker: ChatMessage.getSpeaker({ actor: targetActor }),
+      flavor: `Collected bleeding resumes (${dice}d4)`,
+    });
+    await game.redsteel.applyZeroHealthState?.(targetActor);
+  }
+}
+
+async function faApplyAsGM(data) {
+  const targetActor = game.scenes
+    .get(data.sceneId)
+    ?.tokens.get(data.targetId)?.actor;
+  if (!targetActor) return;
+
+  // Guard against double-apply: the pause flag is the marker that the
+  // (successful) attempt is still awaiting resolution.
+  if (!targetActor.getFlag("redsteel", "firstAidPause")) return;
+  await targetActor.unsetFlag("redsteel", "firstAidPause");
+
+  // Every successful action clears all bleeding (the collected dice are
+  // discarded — no damage on success).
+  const bleeds = targetActor.effects.filter(
+    (e) => e.getFlag("core", "statusId") === "bleed",
+  );
+  for (const bleed of bleeds) await bleed.delete();
+
+  let note = "bleeding stopped";
+
+  if (data.actionType === "stabilise") {
+    await targetActor.update({ "system.stats.health.value": 1 });
+    const dying = targetActor.effects.find(
+      (e) => e.getFlag("core", "statusId") === "dying",
+    );
+    if (dying) await dying.delete();
+    note = "stabilised (1 HP) and bleeding stopped";
+  } else if (data.actionType === "firstAid") {
+    const heal = Math.floor(Number(data.healAmount) || 0);
+    if (heal > 0) {
+      const current = Number(targetActor.system.stats.health.value ?? 0);
+      await targetActor.update({
+        "system.stats.health.value": current + heal,
+      });
+    }
+    note = `healed for ${Math.floor(Number(data.healAmount) || 0)} HP and bleeding stopped`;
+  }
+
+  await ChatMessage.create({
+    speaker: ChatMessage.getSpeaker({ actor: targetActor }),
+    content: `<p><b>${targetActor.name}</b> — ${note}.</p>`,
   });
 }
 
@@ -508,13 +1220,206 @@ export function registerFirstAidHealing() {
     });
   });
 
+  // Apply Injury button (First Aid critical failure → armor-ignoring damage).
+  Hooks.on("renderChatMessageHTML", (message, html) => {
+    const injury = message.flags?.redsteel?.firstAidInjury;
+    if (!injury) return;
+    if (game.user.id !== message.author?.id && !game.user.isGM) return;
+
+    let buttonContainer = html.querySelector(".button-container");
+    if (!buttonContainer) {
+      buttonContainer = document.createElement("div");
+      buttonContainer.className = "button-container";
+      html.querySelector(".message-content")?.appendChild(buttonContainer);
+    }
+
+    const applyInjuryButton = document.createElement("button");
+    applyInjuryButton.type = "button";
+    applyInjuryButton.className = "redsteel-apply-injury";
+    applyInjuryButton.dataset.messageId = message.id;
+    applyInjuryButton.textContent = "Apply Injury (ignores armor)";
+
+    buttonContainer.appendChild(applyInjuryButton);
+
+    const buttonCount = buttonContainer.querySelectorAll(
+      "button, a.button",
+    ).length;
+    buttonContainer.classList.toggle("single", buttonCount <= 1);
+
+    applyInjuryButton.addEventListener("click", () => {
+      handleApplyInjury(message.id);
+    });
+  });
+
+  // Dedicated Re-Roll for a failed Stabilise attempt. The generic Re-Roll is
+  // suppressed for these messages (it can't re-apply the stabilisation), so
+  // this re-runs the whole attempt and applies on success.
+  Hooks.on("renderChatMessageHTML", (message, html) => {
+    const stab = message.flags?.redsteel?.stabilise;
+    if (!stab || !stab.failed) return;
+    if (game.user.id !== message.author?.id && !game.user.isGM) return;
+
+    let buttonContainer = html.querySelector(".button-container");
+    if (!buttonContainer) {
+      buttonContainer = document.createElement("div");
+      buttonContainer.className = "button-container";
+      html.querySelector(".message-content")?.appendChild(buttonContainer);
+    }
+
+    const rerollButton = document.createElement("button");
+    rerollButton.type = "button";
+    rerollButton.className = "reroll-button";
+    rerollButton.textContent = "Re-Roll Stabilisation";
+    buttonContainer.appendChild(rerollButton);
+
+    const buttonCount = buttonContainer.querySelectorAll(
+      "button, a.button",
+    ).length;
+    buttonContainer.classList.toggle("single", buttonCount <= 1);
+
+    rerollButton.addEventListener("click", async () => {
+      rerollButton.disabled = true;
+      await rollAndPostStabilise(stab);
+    });
+  });
+
   Hooks.once("ready", () => {
     game.socket.on(SOCKET, async (data) => {
-      if (data.type !== "applyFirstAidHeal") return;
       if (!game.user.isGM) return;
 
-      await applyFirstAidHealAsGM(data);
+      if (data.type === "applyFirstAidHeal") {
+        await applyFirstAidHealAsGM(data);
+      } else if (data.type === "applyFirstAidInjury") {
+        await applyFirstAidInjuryAsGM(data);
+      } else if (data.type === "applyStabilise") {
+        await applyStabiliseAsGM(data);
+      } else if (data.type === "applyTreatWound") {
+        await applyTreatWoundAsGM(data);
+      } else if (typeof data.type === "string" && data.type.startsWith("fa")) {
+        await faHandleAsGM(data);
+      }
     });
+  });
+
+  // Buttons on the in-combat First Aid counter / result cards. Only the aider
+  // (or GM) wires them; clicks just emit a socket — the GM does the work.
+  Hooks.on("renderChatMessageHTML", (message, html) => {
+    const counter = message.flags?.redsteel?.firstAidCounter;
+    const result = message.flags?.redsteel?.firstAidResult;
+    if (!counter && !result) return;
+
+    const actorUuid = counter?.actorUuid ?? result?.actorUuid;
+    const actor = actorUuid ? fromUuidSync(actorUuid) : null;
+    if (!actor?.isOwner) return;
+
+    const wire = (action, build) => {
+      html.querySelectorAll(`[data-action="${action}"]`).forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          btn.disabled = true;
+          await faRequest(build());
+        });
+      });
+    };
+
+    if (counter) {
+      wire("faRoll", () => ({
+        type: "faRoll",
+        actorUuid,
+        attemptId: counter.attemptId,
+      }));
+      wire("faAbort", () => ({ type: "faAbort", actorUuid }));
+    }
+
+    if (result && result.success) {
+      wire("faApply", () => ({
+        type: "faApply",
+        actorUuid,
+        actionType: result.actionType,
+        sceneId: result.sceneId,
+        targetId: result.targetId,
+        healAmount: result.healAmount,
+      }));
+    }
+
+    if (result && !result.success) {
+      wire("faReroll", () => ({
+        type: "faReroll",
+        actorUuid,
+        actionType: result.actionType,
+        sceneId: result.sceneId,
+        targetId: result.targetId,
+        extraPenalty: result.extraPenalty,
+      }));
+      wire("faResume", () => ({
+        type: "faResume",
+        sceneId: result.sceneId,
+        targetId: result.targetId,
+      }));
+    }
+  });
+}
+
+function handleApplyInjury(messageId) {
+  const message = game.messages.get(messageId);
+  if (!message?.flags?.redsteel?.firstAidInjury) return;
+
+  const targets = Array.from(game.user.targets);
+  if (targets.length !== 1) {
+    ui.notifications.warn("Target exactly one token to apply the injury.");
+    return;
+  }
+
+  requestApplyFirstAidInjury(message, targets[0]);
+}
+
+async function requestApplyFirstAidInjury(message, target) {
+  const data = {
+    type: "applyFirstAidInjury",
+    messageId: message.id,
+    sceneId: canvas.scene.id,
+    targetId: target.id,
+  };
+
+  if (game.user.isGM) {
+    await applyFirstAidInjuryAsGM(data);
+  } else {
+    game.socket.emit(SOCKET, data);
+    ui.notifications.info("Injury request sent to GM.");
+  }
+}
+
+async function applyFirstAidInjuryAsGM(data) {
+  const { messageId, sceneId, targetId } = data;
+
+  const message = game.messages.get(messageId);
+  const injury = message?.flags?.redsteel?.firstAidInjury;
+  if (!injury) return;
+
+  const tokenDoc = game.scenes.get(sceneId)?.tokens.get(targetId);
+  const actor = tokenDoc?.actor;
+  if (!actor) return;
+
+  const amount = Math.floor(Number(injury.amount) || 0);
+  const currentHp = Number(actor.system.stats.health.value ?? 0);
+  // Ignores armor completely — the damage is subtracted straight from health.
+  const newHp = currentHp - amount;
+
+  await actor.update({ "system.stats.health.value": newHp });
+
+  // A botched treatment can drop the patient to 0 (Dying/Downed or death).
+  await game.redsteel.applyZeroHealthState?.(actor);
+
+  await ChatMessage.create({
+    speaker: ChatMessage.getSpeaker({ actor }),
+    content: `
+<div style="display:flex; align-items:center; gap:10px;">
+  <div>
+    <p style="color:#a30000; font-size:1.2em;">
+      <strong>Botched first aid!</strong>
+    </p>
+    <strong>${actor.name}</strong> takes <strong>${amount}</strong> damage (ignores armor).
+  </div>
+</div>`,
   });
 }
 

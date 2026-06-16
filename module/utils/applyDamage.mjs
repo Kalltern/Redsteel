@@ -783,14 +783,31 @@ async function notifyCriticalDegreeOverride({
   });
 }
 
-async function handlePostDamageStatus({ actor, combatant }) {
+/**
+ * Reaction to an actor being at (or below) 0 health, whether from applying
+ * damage or from an automated effect tick (bleed, burn, condition damage).
+ * Characters receive the Dying + Downed effects; NPCs die and are removed
+ * from combat. Safe to call repeatedly — the per-effect guards prevent the
+ * Dying countdown and the Downed Mind loss from re-triggering.
+ *
+ * Runs on the authoritative GM (damage application and effect ticks are both
+ * GM-side), so it may freely update any actor and create chat messages.
+ * @param {Actor} actor
+ * @param {object} [options]
+ * @param {Combatant} [options.combatant] - Pre-resolved combatant, if known.
+ */
+export async function applyZeroHealthState(actor, { combatant } = {}) {
+  if (!actor) return;
   const hp = actor.system.stats.health.value;
   if (hp > 0) return;
 
-  // Characters fall prone
+  // Characters begin Dying and are Downed (instead of merely falling prone).
   if (actor.type === "character") {
-    if (!actor.statuses.has("prone")) {
-      await actor.toggleStatusEffect("prone", { active: true });
+    if (!actor.statuses.has("dying")) {
+      await game.redsteel.applyEffect(actor, "dying");
+    }
+    if (!actor.statuses.has("downed")) {
+      await game.redsteel.applyEffect(actor, "downed");
     }
     return;
   }
@@ -804,9 +821,14 @@ async function handlePostDamageStatus({ actor, combatant }) {
   }
 
   // Remove from combat if applicable
+  combatant ??= game.combat?.combatants.find((c) => c.actorId === actor.id);
   if (combatant) {
     await combatant.parent.deleteEmbeddedDocuments("Combatant", [combatant.id]);
   }
+}
+
+async function handlePostDamageStatus({ actor, combatant }) {
+  await applyZeroHealthState(actor, { combatant });
 }
 
 async function applyEffectToActor(

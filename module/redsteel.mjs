@@ -46,12 +46,14 @@ import {
   longRest,
   firstAid,
   registerFirstAidHealing,
+  advanceCombatFirstAid,
 } from "./utils/otherActions.mjs";
 import {
   handleApplyDamage,
   handleApplyEffects,
   applyDamageAsGM,
   applyEffectsAsGM,
+  applyZeroHealthState,
   getDurabilityItems,
   getDurabilityReductionPerPoint,
   SOCKET,
@@ -198,6 +200,8 @@ Hooks.once("init", function () {
   game.redsteel.getActorCombatModifiers = getActorCombatModifiers;
   game.redsteel.applyEffect =
     RedsteelActiveEffect.applyEffect.bind(RedsteelActiveEffect);
+  game.redsteel.applyZeroHealthState = applyZeroHealthState;
+  game.redsteel.advanceCombatFirstAid = advanceCombatFirstAid;
   game.redsteel.resolveEffectDefinition = resolveEffectDefinition;
   game.redsteel.resolveWeaponContext = resolveWeaponContext;
   game.redsteel.switchWeaponSet = switchWeaponSet;
@@ -996,7 +1000,9 @@ Hooks.on("renderChatMessageHTML", (message, html, data) => {
     // Match 1d100 tests as well as advantage/disadvantage variants (2d100kl/kh)
     const hasTestRoll = message.rolls?.some((r) => /\d+d100/i.test(r.formula));
 
-    if (hasTestRoll) {
+    // Stabilise messages carry their own Re-Roll button (which re-applies the
+    // outcome); the generic one can't, so skip it for those.
+    if (hasTestRoll && !message.getFlag("redsteel", "stabilise")) {
       const rerollButton = document.createElement("button");
       rerollButton.className = "reroll-button";
       rerollButton.type = "button";
@@ -1535,6 +1541,139 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
         target.disabled = true;
       }
       target.innerText = "Resolved";
+    });
+  });
+});
+
+/* -------------------------------------------- */
+/*  Dying / Downed chat-button handlers         */
+/* -------------------------------------------- */
+
+function _resolveButtonActor(message) {
+  const uuid = message.getFlag("redsteel", "actorUuid");
+  return uuid ? fromUuidSync(uuid) : null;
+}
+
+function _disableChatButton(button) {
+  button.disabled = true;
+  button.dataset.disabled = "true";
+}
+
+async function _addInsanity(actor, amount = 1) {
+  const current = Number(actor.system.stats.insanity?.value ?? 0);
+  const max = Number(actor.system.stats.insanity?.max ?? Infinity);
+  await actor.update({
+    "system.stats.insanity.value": Math.min(current + amount, max),
+  });
+}
+
+// Downed self-control test: standard attribute test (mod% − 1d100 ≥ 0).
+async function _rollDownedTest(actor, attr) {
+  const label = attr === "wil" ? "Will" : "Endurance";
+  const mod = Number(actor.system.attributes?.[attr]?.mod ?? 0);
+  const roll = await new Roll(`${mod} - 1d100`).evaluate();
+  return { roll, label, success: roll.total >= 0 };
+}
+
+async function _postDownedResult(actor, attr, { roll, label, success }) {
+  // On failure the character is knocked unconscious.
+  if (!success) {
+    await game.redsteel.applyEffect(actor, "incapacitated");
+  }
+
+  const outcome = success
+    ? `<p><b>${label} Test — Success.</b></p>
+       <p>${actor.name} may move only <b>1 hex</b> and has only <b>1 action</b>
+       per turn. They cannot stand up, defend themselves, nor attack. If they
+       move, they must move away from enemies (this does not provoke an Attack
+       of Opportunity).</p>`
+    : `<p><b>${label} Test — Failure.</b></p>
+       <p>${actor.name} falls <b>unconscious</b> and cannot act.</p>`;
+
+  const rollHTML = await roll.render();
+
+  await ChatMessage.create({
+    speaker: ChatMessage.getSpeaker({ actor }),
+    content: `
+      <div class="redsteel-downed">
+        ${outcome}
+        ${rollHTML}
+        <div class="redsteel-action-buttons">
+          <button type="button" data-action="downedReroll" data-attr="${attr}">Reroll (+1 Insanity)</button>
+        </div>
+      </div>`,
+    rolls: [roll],
+    flags: { redsteel: { type: "downedResult", actorUuid: actor.uuid, attr } },
+  });
+}
+
+Hooks.on("renderChatMessageHTML", (message, html) => {
+  const wire = (action, handler) => {
+    html.querySelectorAll(`[data-action="${action}"]`).forEach((button) => {
+      button.addEventListener("click", async (event) => {
+        const target = event.currentTarget;
+        const actor = _resolveButtonActor(message);
+        if (!actor) return;
+        if (!actor.isOwner) {
+          ui.notifications.warn("You don't control this character.");
+          return;
+        }
+        _disableChatButton(target);
+        await handler(actor, target);
+      });
+    });
+  };
+
+  // Downed → choose Endurance or Will test.
+  wire("downedTest", async (actor, target) => {
+    const attr = target.dataset.attr ?? "end";
+    await _postDownedResult(actor, attr, await _rollDownedTest(actor, attr));
+  });
+
+  // Downed → reroll the same test, taking 1 Insanity point.
+  wire("downedReroll", async (actor, target) => {
+    const attr = target.dataset.attr ?? "end";
+    await _addInsanity(actor, 1);
+    await _postDownedResult(actor, attr, await _rollDownedTest(actor, attr));
+  });
+
+  // Dying ended → resolve test or gain an Insanity point. Penalised by
+  // −10 per (grave) wound.
+  wire("dyingResolveTest", async (actor) => {
+    const res = Number(actor.system.secondaryAttributes?.res?.total ?? 0);
+    const wounds = Number(actor.system.stats.graveWounds?.value ?? 0);
+    const penalty = 10 * wounds;
+    const roll = await new Roll(`${res * 10} - ${penalty} - 1d100`).evaluate();
+    const success = roll.total >= 0;
+
+    // Critical failure (same convention as Fear/Burning resolve tests): a
+    // margin of −60 or worse, or a natural d100 of 96+. It costs 2 Insanity.
+    const d100 = roll.dice.find((d) => d.faces === 100)?.total ?? 0;
+    const critFailure = !success && (roll.total <= -60 || d100 >= 96);
+
+    let outcome;
+    if (success) {
+      outcome = `<p><b>Resolve Test — Success.</b> ${actor.name} holds on to their sanity; no Insanity gained.</p>`;
+    } else if (critFailure) {
+      await _addInsanity(actor, 2);
+      outcome = `<p><b>Resolve Test — Critical Failure!</b> ${actor.name} gains <b>2 Insanity points</b>.</p>`;
+    } else {
+      await _addInsanity(actor, 1);
+      outcome = `<p><b>Resolve Test — Failure.</b> ${actor.name} gains <b>1 Insanity point</b>.</p>`;
+    }
+
+    const rollHTML = await roll.render();
+
+    await ChatMessage.create({
+      speaker: ChatMessage.getSpeaker({ actor }),
+      content: `
+        <div class="redsteel-dying">
+          ${outcome}
+          ${rollHTML}
+          <p style="font-size:11px;opacity:.75;">Resolve ${res} ×10 − ${penalty} penalty (10 × ${wounds} wound${wounds === 1 ? "" : "s"})</p>
+        </div>`,
+      rolls: [roll],
+      flags: { redsteel: { type: "dyingResolveResult", actorUuid: actor.uuid } },
     });
   });
 });

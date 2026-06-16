@@ -736,13 +736,34 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
   /*  Currencies (free-form list on the divider)  */
   /* -------------------------------------------- */
 
+  /** Default text color applied to a currency when none is set. */
+  static DEFAULT_CURRENCY_COLOR = "#e6c878";
+
+  /**
+   * Coerce the stored currencies into a real array. Foundry's form submission
+   * expands the `system.currencies.<index>.<field>` inputs into an indexed
+   * object ({0:…, 1:…}), so the persisted value may not be an array.
+   */
+  static _normalizeCurrencies(raw) {
+    let list;
+    if (Array.isArray(raw)) list = raw;
+    else if (raw && typeof raw === "object") list = Object.values(raw);
+    else list = [];
+    // Backfill the text color so older rows (and the template) always have one.
+    return list.map((c) => ({ color: RedsteelActorSheet.DEFAULT_CURRENCY_COLOR, ...c }));
+  }
+
   /** Append a new, empty currency row to the actor. */
   static async _addCurrency(event, target) {
     if (!this.isEditable) return;
-    const currencies = foundry.utils.deepClone(
-      this.actor.system.currencies ?? [],
+    const currencies = RedsteelActorSheet._normalizeCurrencies(
+      foundry.utils.deepClone(this.actor.system.currencies ?? []),
     );
-    currencies.push({ label: "", value: 0 });
+    currencies.push({
+      label: "",
+      value: 0,
+      color: RedsteelActorSheet.DEFAULT_CURRENCY_COLOR,
+    });
     await this.actor.update({ "system.currencies": currencies });
   }
 
@@ -751,8 +772,8 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     if (!this.isEditable) return;
     const index = Number(target.dataset.index);
     if (!Number.isInteger(index)) return;
-    const currencies = foundry.utils.deepClone(
-      this.actor.system.currencies ?? [],
+    const currencies = RedsteelActorSheet._normalizeCurrencies(
+      foundry.utils.deepClone(this.actor.system.currencies ?? []),
     );
     if (index < 0 || index >= currencies.length) return;
     currencies.splice(index, 1);
@@ -854,6 +875,27 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
   }
 
   /* -------------------------------------------- */
+
+  /**
+   * @override
+   * Foundry expands the `system.currencies.<index>.<field>` inputs into an
+   * indexed object on submit. Coerce it back to an array so the stored value
+   * stays array-shaped (otherwise add/delete via splice/push break).
+   */
+  _prepareSubmitData(event, form, formData, updateData) {
+    const submitData = super._prepareSubmitData(
+      event,
+      form,
+      formData,
+      updateData,
+    );
+    const currencies = submitData?.system?.currencies;
+    if (currencies && !Array.isArray(currencies)) {
+      submitData.system.currencies =
+        RedsteelActorSheet._normalizeCurrencies(currencies);
+    }
+    return submitData;
+  }
 
   /** @override */
   async _prepareContext(options) {
@@ -1008,7 +1050,9 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       .sort((a, b) => (a.sort || 0) - (b.sort || 0));
 
     // Free-form currency list shown on the equipment / inventory divider.
-    context.currencies = this.actor.system.currencies ?? [];
+    context.currencies = RedsteelActorSheet._normalizeCurrencies(
+      this.actor.system.currencies,
+    );
 
     return context;
   }

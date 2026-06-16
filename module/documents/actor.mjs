@@ -624,6 +624,12 @@ export class RedsteelActor extends Actor {
     stat.graveWounds.max =
       calcWounds[end] + stat.graveWounds.base + stat.graveWounds.bonus;
 
+    // Treated wounds can never exceed the actual wound count (dynamic cap).
+    stat.graveWounds.treatedMax = stat.graveWounds.value;
+    if (stat.graveWounds.treated > stat.graveWounds.value) {
+      stat.graveWounds.treated = stat.graveWounds.value;
+    }
+
     // Calculate critRanges
     const calcCritRange = [0, 0, 0, 0, 1, 1, 2, 3, 3, 3, 3];
     systemData.critRangeMelee = calcCritRange[str] + calcCritRange[per];

@@ -736,6 +736,33 @@ REDSTEEL.effectDefinitions = {
       },
     ],
   },
+  // Applied (together with Downed) when a character is reduced to 0 health.
+  // See effects.mjs: _handleDyingStart / _handleDyingCountdown and the
+  // dying-removal resolve message in _onDelete.
+  dying: {
+    name: "Dying",
+    img: "icons/svg/blood.svg",
+    statuses: ["dying"],
+    // No stacking: re-applying (e.g. taking more damage while already dying)
+    // must not re-roll the bleed-out countdown.
+    stackBehavior: "ignore",
+    triggers: {
+      onApply: { custom: "dyingStart" },
+      onRoundStart: { custom: "dyingCountdown" },
+    },
+  },
+  // Applied (together with Dying) when a character is reduced to 0 health.
+  // See effects.mjs: _handleDownedStart (Mind loss + Endurance/Will prompt).
+  downed: {
+    name: "Downed",
+    img: "icons/svg/daze.svg",
+    statuses: ["downed"],
+    // No stacking: the Mind-point loss must only happen once.
+    stackBehavior: "ignore",
+    triggers: {
+      onApply: { custom: "downedStart" },
+    },
+  },
   crippled: {
     name: "Crippled",
     img: "icons/skills/ranged/arrow-strike-apple-orange.webp",

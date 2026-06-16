@@ -69,7 +69,9 @@
             "Treated wounds"
           }}</label>
         <input
-          type="text"
+          type="number"
+          min="0"
+          max="{{system.stats.graveWounds.treatedMax}}"
           name="system.stats.graveWounds.treated"
           value="{{system.stats.graveWounds.treated}}"
           data-dtype="Number"

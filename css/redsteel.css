@@ -62,7 +62,7 @@ body.theme-dark.application {
 }
 
 .chat-message.whisper {
-  background: var(--rs-chat-whisper-bg);
+  background: #0f0921;
   border: 2px solid var(--rs-chat-whisper-border);
 }
 
@@ -4068,6 +4068,26 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   color: #6e655a;
 }
 
+.currency-chip input.currency-color {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 1px solid #555;
+  border-radius: 3px;
+  background: transparent;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+
+.currency-chip input.currency-color::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.currency-chip input.currency-color::-webkit-color-swatch {
+  border: none;
+  border-radius: 2px;
+}
+
 .currency-delete {
   display: inline-flex;
   align-items: center;
@@ -4097,6 +4117,61 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 .currency-add:hover {
   border-color: #d9a13b;
   background: rgba(217, 161, 59, 0.12);
+}
+
+/* ============================= */
+/* DYING / DOWNED CHAT CARDS    */
+/* ============================= */
+
+.redsteel-action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.redsteel-action-buttons button {
+  flex: 1 1 auto;
+  width: auto;
+  padding: 4px 8px;
+  background: #2f2b24;
+  border: 1px solid #8b6914;
+  border-radius: 4px;
+  color: #f0e4b8;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.redsteel-action-buttons button:hover {
+  background: #3d3729;
+}
+
+.redsteel-action-buttons button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* ============================= */
+/* MEDICAL ACTION DIALOG        */
+/* ============================= */
+
+.redsteel-medical-dialog .dialog-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.redsteel-medical-dialog .redsteel-medical-options {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 6px 0 2px;
+}
+
+.redsteel-medical-dialog .redsteel-medical-options label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 /* ============================= */
