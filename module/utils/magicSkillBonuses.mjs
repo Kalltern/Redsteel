@@ -1,6 +1,6 @@
 import { getTraitPills } from "./traitPills.mjs";
 import { getSpellPower } from "./spellPower.mjs";
-import { withRollBias } from "./rollAdvantage.mjs";
+import { withRollBias, applyDesperateCrit } from "./rollAdvantage.mjs";
 
 // --- Helper for Dialogs (CSS Injection) ---
 function _injectDialogCSS() {
@@ -970,15 +970,18 @@ export async function performAttackRoll(
   const attackRoll = new Roll(attackRollFormula, withRollBias(rollData, actor));
   await attackRoll.evaluate();
   const rollResult = attackRoll.dice[0].total;
-  const displayCritSuccess = rollResult <= critSuccessThreshold;
-  const displayCritFailure = rollResult >= critFailureThreshold;
+  // Desperate Effort shifts crit thresholds for this spell attack.
+  const { successThreshold: critSuccessT, failureThreshold: critFailT } =
+    applyDesperateCrit(attackRoll, critSuccessThreshold, critFailureThreshold);
+  const displayCritSuccess = rollResult <= critSuccessT;
+  const displayCritFailure = rollResult >= critFailT;
 
   let critSuccess = false;
   let critFailure = false;
 
   if (!ignoreChanneling) {
-    critSuccess = rollResult <= critSuccessThreshold;
-    critFailure = rollResult >= critFailureThreshold;
+    critSuccess = rollResult <= critSuccessT;
+    critFailure = rollResult >= critFailT;
   }
 
   return {

@@ -1,5 +1,5 @@
 import { getTraitPills } from "./traitPills.mjs";
-import { withRollBias } from "./rollAdvantage.mjs";
+import { withRollBias, applyDesperateCrit } from "./rollAdvantage.mjs";
 
 async function getSneakDamageFormula(actor, weapon, weaponContext = null) {
   const ws = weapon?.system ?? {};
@@ -569,15 +569,22 @@ export async function getAttackRolls(
   await attackRoll.evaluate();
   const rollResult = attackRoll.dice[0].total;
 
-  const critSuccess = rollResult <= criticalSuccessThreshold;
-  const critFailure = rollResult >= criticalFailureThreshold;
+  // Desperate Effort shifts the crit thresholds for this attack.
+  const { successThreshold: critSuccessThreshold, failureThreshold: critFailThreshold } =
+    applyDesperateCrit(
+      attackRoll,
+      criticalSuccessThreshold,
+      criticalFailureThreshold,
+    );
+  const critSuccess = rollResult <= critSuccessThreshold;
+  const critFailure = rollResult >= critFailThreshold;
 
   return {
     attackRoll,
     critSuccess,
     critFailure,
-    criticalSuccessThreshold,
-    criticalFailureThreshold,
+    criticalSuccessThreshold: critSuccessThreshold,
+    criticalFailureThreshold: critFailThreshold,
     rollName,
   };
 }

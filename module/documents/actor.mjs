@@ -737,13 +737,16 @@ export class RedsteelActor extends Actor {
     systemData.stats.toxicity.max =
       end * 2 + stat.toxicity.bonus + stat.toxicity.base;
 
-    // Calculate stamina
-    systemData.stats.stamina.max =
+    // Calculate stamina. Fatigue drains -5 per degree, but the maximum never
+    // drops below 5 no matter how exhausted the character is.
+    systemData.stats.stamina.max = Math.max(
+      5,
       end * 5 +
-      stat.stamina.bonus +
-      stat.stamina.base +
-      2 * systemData.skills.athletics.value -
-      5 * fatigueDegree;
+        stat.stamina.bonus +
+        stat.stamina.base +
+        2 * systemData.skills.athletics.value -
+        5 * fatigueDegree,
+    );
     // Calculate temporaryHealth
     systemData.stats.temporaryHealth.max =
       10 + systemData.stats.temporaryHealth.bonus;
@@ -1078,6 +1081,10 @@ export class RedsteelActor extends Actor {
   getRollData() {
     // Starts off by populating the roll data with a shallow copy of `this.system`
     const data = { ...this.system };
+
+    // Identify the acting actor so the roll layer can apply effects that touch
+    // the document itself (e.g. the Desperate Effort fatigue cost).
+    data.actorUuid = this.uuid;
 
     // Prepare character roll data.
     this._getCharacterRollData(data);

@@ -52,8 +52,7 @@ function injectButton(element) {
   endButton.type = "button";
   endButton.className = "redsteel-end-turn";
   endButton.setAttribute("aria-label", "End Turn");
-  endButton.innerHTML =
-    '<i class="fa-solid fa-flag-checkered"></i><span>End Turn</span>';
+  endButton.innerHTML = "<span>End Turn</span>";
   endButton.addEventListener("click", (event) => {
     event.preventDefault();
     onEndTurn();
@@ -63,8 +62,7 @@ function injectButton(element) {
   delayButton.type = "button";
   delayButton.className = "redsteel-delay-turn";
   delayButton.setAttribute("aria-label", "Delay Turn");
-  delayButton.innerHTML =
-    '<i class="fa-solid fa-hourglass-half"></i><span>Delay Turn</span>';
+  delayButton.innerHTML = "<span>Delay Turn</span>";
   delayButton.addEventListener("click", (event) => {
     event.preventDefault();
     game.redsteel.delayTurn();

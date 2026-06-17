@@ -2,8 +2,9 @@
  * Global roll modifier picker attached to the hotbar.
  *
  * A dice button next to the hotbar page controls lets the user pre-select a
- * bonus, penalty, advantage or disadvantage. The selection is applied to the
- * next margin-of-success test this client rolls — i.e. any roll whose formula
+ * flat bonus/penalty AND/OR advantage/disadvantage — the two are independent
+ * axes and can be combined. The selection is applied to the next
+ * margin-of-success test this client rolls — i.e. any roll whose formula
  * subtracts 1d100. Plain "1d100" effect-chance rolls (bleed, status effects)
  * are never modified.
  *
@@ -16,64 +17,81 @@ import { getRollBias } from "./rollAdvantage.mjs";
 const TEST_DIE_PATTERN = /-\s*1d100\b/i;
 
 const state = {
-  type: null, // "bonus" | "penalty" | "advantage" | "disadvantage" | null
-  value: 10,
+  die: null, // "advantage" | "disadvantage" | null
+  flat: 0, // signed flat modifier: >0 bonus, <0 penalty, 0 none
+  desperate: false, // Desperate Effort (S vypětím všech sil)
   sticky: false,
 };
 
+/** Whether the manual picker currently holds any modifier. */
+function isActive() {
+  return state.die !== null || state.flat !== 0 || state.desperate;
+}
+
 function describeModifier() {
-  switch (state.type) {
-    case "bonus":
-      return `+${state.value} bonus`;
-    case "penalty":
-      return `-${state.value} penalty`;
-    case "advantage":
-      return "advantage";
-    case "disadvantage":
-      return "disadvantage";
-    default:
-      return null;
-  }
+  const parts = [];
+  if (state.desperate) parts.push("Desperate Effort");
+  if (state.die) parts.push(state.die);
+  if (state.flat > 0) parts.push(`+${state.flat} bonus`);
+  else if (state.flat < 0) parts.push(`${state.flat} penalty`);
+  return parts.length ? parts.join(" & ") : null;
 }
 
 function badgeText() {
-  switch (state.type) {
-    case "bonus":
-      return `+${state.value}`;
-    case "penalty":
-      return `-${state.value}`;
-    case "advantage":
-      return "ADV";
-    case "disadvantage":
-      return "DIS";
-    default:
-      return "";
-  }
+  const parts = [];
+  if (state.desperate) parts.push("DE");
+  if (state.die === "advantage") parts.push("ADV");
+  else if (state.die === "disadvantage") parts.push("DIS");
+  if (state.flat > 0) parts.push(`+${state.flat}`);
+  else if (state.flat < 0) parts.push(`${state.flat}`);
+  return parts.join(" ");
 }
 
 function refreshButton(root = ui.hotbar?.element) {
   const button = root?.querySelector(".redsteel-roll-modifier");
   if (!button) return;
 
-  button.classList.toggle("active", state.type !== null);
-  button.dataset.tooltip = state.type
+  const active = isActive();
+  button.classList.toggle("active", active);
+  button.dataset.tooltip = active
     ? `Roll Modifier: ${describeModifier()}${state.sticky ? " (until cleared)" : " (next roll)"}`
     : "Roll Modifier";
 
   const badge = button.querySelector(".modifier-badge");
   if (badge) {
     badge.textContent = badgeText();
-    badge.style.display = state.type ? "" : "none";
+    badge.style.display = active ? "" : "none";
   }
 }
 
 function clearModifier({ silent = false } = {}) {
-  const hadModifier = state.type !== null;
-  state.type = null;
+  const hadModifier = isActive();
+  state.die = null;
+  state.flat = 0;
+  state.desperate = false;
   state.sticky = false;
   refreshButton();
   if (hadModifier && !silent) {
     ui.notifications.info("Roll modifier cleared.");
+  }
+}
+
+/**
+ * Apply the Desperate Effort fatigue cost (one degree) to the acting actor,
+ * resolved from the roll's data. Fire-and-forget; clamps to the fatigue max.
+ */
+function applyDesperateFatigueCost(roll) {
+  const uuid = roll.data?.actorUuid;
+  if (!uuid) return;
+  const actor = fromUuidSync(uuid);
+  const fat = actor?.system?.stats?.fatigue;
+  if (!fat) return;
+  const max = fat.max ?? (fat.value ?? 0) + 1;
+  const next = Math.min((fat.value ?? 0) + 1, max);
+  if (next !== fat.value) {
+    Promise.resolve(
+      actor.update({ "system.stats.fatigue.value": next }),
+    ).catch(() => {});
   }
 }
 
@@ -101,26 +119,30 @@ function applyModifier(roll) {
   let bias = getRollBias(roll.data, skillKey);
   const autoBias = bias; // for messaging: was anything contributed by the actor?
 
-  // Manual picker contribution.
-  let flat = 0;
-  switch (state.type) {
-    case "advantage":
-      bias += 1;
-      break;
-    case "disadvantage":
-      bias -= 1;
-      break;
-    case "bonus":
-      flat += state.value;
-      break;
-    case "penalty":
-      flat -= state.value;
-      break;
+  // Manual picker contribution — die mode and flat modifier are independent.
+  const manualActive = isActive();
+  if (state.die === "advantage") bias += 1;
+  else if (state.die === "disadvantage") bias -= 1;
+  let flat = state.flat;
+
+  // Desperate Effort: +20% success, ignores fatigue penalties (restore the
+  // -10 globalMod at degree 3+ and cancel the degree-4 disadvantage die),
+  // costs one degree of Fatigue, and tags the roll so crit thresholds shift
+  // downstream (crit success +5%, crit failure -5%, fatigue crit penalty
+  // ignored — see applyDesperateCrit).
+  if (state.desperate) {
+    roll.options ??= {};
+    roll.options.redsteel = { ...(roll.options.redsteel ?? {}), desperate: true };
+    flat += 20;
+    const fatigueDegree = roll.data?.fatigueDegree ?? 0;
+    if (fatigueDegree >= 3) flat += 10;
+    if (roll.data?.fatigueDisadvantage) bias += 1;
+    applyDesperateFatigueCost(roll);
   }
 
   // Nothing to do — leave the plain roll untouched.
   if (bias === 0 && flat === 0) {
-    if (state.type && !state.sticky) clearModifier({ silent: true });
+    if (manualActive && !state.sticky) clearModifier({ silent: true });
     return;
   }
 
@@ -141,7 +163,7 @@ function applyModifier(roll) {
     label = autoBias > 0 ? "advantage" : "disadvantage";
   }
 
-  if (state.type && !state.sticky) clearModifier({ silent: true });
+  if (manualActive && !state.sticky) clearModifier({ silent: true });
   if (label) ui.notifications.info(`Applied ${label} to roll.`);
 }
 
@@ -167,26 +189,35 @@ function wrapRollEvaluation() {
 }
 
 function openModifierDialog() {
-  const checked = (type) => (state.type === type ? "checked" : "");
+  const dieChecked = (mode) => (state.die === mode ? "checked" : "");
 
   new Dialog({
     title: "Roll Modifier",
     content: `
       <form class="redsteel-roll-modifier-form">
         <p style="margin-top:0;">
-          Pick a modifier for your margin-of-success tests (rolls against 1d100).
+          Set a modifier for your margin-of-success tests (rolls against 1d100).
+          The flat bonus/penalty and advantage/disadvantage are independent — use
+          either or both.
         </p>
         <fieldset>
-          <legend>Modifier</legend>
-          <label><input type="radio" name="modifier-type" value="bonus" ${checked("bonus")}> Bonus</label><br>
-          <label><input type="radio" name="modifier-type" value="penalty" ${checked("penalty")}> Penalty</label><br>
-          <label><input type="radio" name="modifier-type" value="advantage" ${checked("advantage")}> Advantage — roll 2d100, keep the better</label><br>
-          <label><input type="radio" name="modifier-type" value="disadvantage" ${checked("disadvantage")}> Disadvantage — roll 2d100, keep the worse</label>
+          <legend>Advantage / Disadvantage</legend>
+          <label><input type="radio" name="die-mode" value="" ${dieChecked(null)}> None</label><br>
+          <label><input type="radio" name="die-mode" value="advantage" ${dieChecked("advantage")}> Advantage — roll 2d100, keep the better</label><br>
+          <label><input type="radio" name="die-mode" value="disadvantage" ${dieChecked("disadvantage")}> Disadvantage — roll 2d100, keep the worse</label>
         </fieldset>
         <div class="form-group">
-          <label>Bonus / penalty amount</label>
-          <input type="number" name="modifier-value" value="${state.value}" min="1" step="1">
+          <label>Flat modifier (positive = bonus, negative = penalty, 0 = none)</label>
+          <input type="number" name="modifier-flat" value="${state.flat}" step="1">
         </div>
+        <fieldset>
+          <legend>Special</legend>
+          <label>
+            <input type="checkbox" name="modifier-desperate" ${state.desperate ? "checked" : ""}>
+            Desperate Effort — +20% success, +5% crit success, -5% crit failure,
+            ignores Fatigue penalties; costs one degree of Fatigue.
+          </label>
+        </fieldset>
         <div class="form-group">
           <label>
             <input type="checkbox" name="modifier-sticky" ${state.sticky ? "checked" : ""}>
@@ -199,22 +230,24 @@ function openModifierDialog() {
       set: {
         label: "Set",
         callback: (html) => {
-          const type = html.find('input[name="modifier-type"]:checked').val();
-          if (!type) {
-            clearModifier();
-            return;
-          }
-
-          state.type = type;
-          state.value = Math.max(
-            1,
-            Math.floor(
-              Number(html.find('input[name="modifier-value"]').val()) || 10,
-            ),
+          const die = html.find('input[name="die-mode"]:checked').val() || null;
+          const flat = Math.trunc(
+            Number(html.find('input[name="modifier-flat"]').val()) || 0,
           );
+
+          state.die = die;
+          state.flat = flat;
+          state.desperate = html
+            .find('input[name="modifier-desperate"]')
+            .is(":checked");
           state.sticky = html
             .find('input[name="modifier-sticky"]')
             .is(":checked");
+
+          if (!isActive()) {
+            clearModifier();
+            return;
+          }
 
           refreshButton();
           ui.notifications.info(

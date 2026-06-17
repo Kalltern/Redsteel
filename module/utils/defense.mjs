@@ -1,5 +1,5 @@
 import { getTraitPills } from "./traitPills.mjs";
-import { withRollBias } from "./rollAdvantage.mjs";
+import { withRollBias, applyDesperateCrit } from "./rollAdvantage.mjs";
 
 export async function defenseRoll({ actor, weapon, ability = null } = {}) {
   if (!actor) {
@@ -690,8 +690,14 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
   ) {
     const rollResult = roll.dice[0].total;
 
-    const critSuccess = rollResult <= criticalSuccessThreshold;
-    const critFailure = rollResult >= criticalFailureThreshold;
+    // Desperate Effort shifts the crit thresholds for this defense roll.
+    const { successThreshold, failureThreshold } = applyDesperateCrit(
+      roll,
+      criticalSuccessThreshold,
+      criticalFailureThreshold,
+    );
+    const critSuccess = rollResult <= successThreshold;
+    const critFailure = rollResult >= failureThreshold;
 
     const armor = actor.system.armor;
 

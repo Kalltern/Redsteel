@@ -100,5 +100,35 @@ export function tagRollSkill(roll, skillKey) {
 export function withRollBias(rollData = {}, actor) {
   const adv = actor?.system?.rollAdvantage;
   if (adv) rollData.rollAdvantage = adv;
+  // Carry fatigue context + the acting actor's uuid so the roll layer can apply
+  // the actor-wide bias, ignore-fatigue logic, and the Desperate Effort cost.
+  if (actor) {
+    rollData.actorUuid = actor.uuid;
+    rollData.fatigueDegree = actor.system?.fatigueDegree ?? 0;
+    rollData.fatigueDisadvantage = !!actor.system?.fatigueDisadvantage;
+  }
   return rollData;
+}
+
+/**
+ * Shift critical thresholds for a Desperate Effort test (when the roll is tagged
+ * with `options.redsteel.desperate`). Desperate Effort raises crit-success
+ * chance by 5% (successThreshold +5) and lowers crit-failure chance by 5%
+ * (failureThreshold +5), and ignores the fatigue crit-failure penalty by adding
+ * the fatigue degree back to the failure threshold. Returns possibly-unchanged
+ * thresholds, so it's safe to wrap every crit evaluation.
+ * @param {Roll} roll
+ * @param {number} successThreshold
+ * @param {number} failureThreshold
+ * @returns {{successThreshold:number, failureThreshold:number}}
+ */
+export function applyDesperateCrit(roll, successThreshold, failureThreshold) {
+  if (!roll?.options?.redsteel?.desperate) {
+    return { successThreshold, failureThreshold };
+  }
+  const fatigueDegree = roll.data?.fatigueDegree ?? 0;
+  return {
+    successThreshold: successThreshold + 5,
+    failureThreshold: failureThreshold + 5 + fatigueDegree,
+  };
 }

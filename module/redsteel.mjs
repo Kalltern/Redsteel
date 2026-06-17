@@ -705,23 +705,18 @@ Hooks.once("ready", async () => {
       name: "First aid",
       command: `game.redsteel.firstAid();`,
       img: "icons/magic/life/cross-yellow-green.webp",
-      slot: 8,
+      slot: 9,
       shared: true,
     },
     {
       name: "Potions",
       command: `game.redsteel.usePotion();`,
       img: "icons/consumables/potions/bottle-round-label-cork-red.webp",
-      slot: 9,
-      shared: true,
-    },
-    {
-      name: "Delay turn",
-      command: `game.redsteel.delayTurn();`,
-      img: "icons/magic/time/hourglass-brown-orange.webp",
       slot: 10,
       shared: true,
     },
+    // "Delay turn" is now a floating hotbar button (see endTurnButton.mjs), so
+    // it no longer needs a pre-generated macro in hotbar slot 10 ("0" key).
   ];
 
   // GM-only macro
@@ -731,14 +726,14 @@ Hooks.once("ready", async () => {
       scope: "global",
       command: `game.redsteel.longRest();`,
       img: "icons/magic/time/day-night-sunset-sunrise.webp",
-      slot: 6,
+      slot: 7,
       shared: false,
     });
     macroData.push({
       name: "Effect manager",
       command: `await game.redsteel.statusEffectManager();`,
       img: "icons/sundries/documents/document-sealed-signatures-red.webp",
-      slot: 7,
+      slot: 8,
       shared: false,
     });
   }

@@ -5,7 +5,7 @@ import {
 } from "../helpers/specialisations.mjs";
 import { getTraitPills } from "../utils/traitPills.mjs";
 import { gatherHerbs, promptHerbMode } from "../utils/gatherHerbs.mjs";
-import { tagRollSkill } from "../utils/rollAdvantage.mjs";
+import { tagRollSkill, applyDesperateCrit } from "../utils/rollAdvantage.mjs";
 
 const { api, sheets } = foundry.applications;
 
@@ -1737,18 +1737,24 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
         }
 
         if (skillData) {
+          // Desperate Effort shifts the crit thresholds for this roll.
+          const { successThreshold, failureThreshold } = applyDesperateCrit(
+            roll,
+            skillData.criticalSuccessThreshold,
+            skillData.criticalFailureThreshold,
+          );
           const criticalMessage = this.evaluateCriticalSuccess(
             d100Result,
-            skillData.criticalSuccessThreshold, // Use the skill-specific threshold
-            skillData.criticalFailureThreshold, // Use the skill-specific threshold
+            successThreshold,
+            failureThreshold,
           );
           console.log(
             "Rolled:",
             d100Result,
             "Crit chance:",
-            skillData.criticalSuccessThreshold, // Use the skill-specific threshold
+            successThreshold,
             "Crit fail chance:",
-            skillData.criticalFailureThreshold,
+            failureThreshold,
           );
 
           // Modify the label to include critical success/failure indication
@@ -1762,9 +1768,16 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       }
 
       if (skillData) {
-        // Deconstruct the critical thresholds from skillData
-        const { criticalSuccessThreshold, criticalFailureThreshold } =
-          skillData;
+        // Deconstruct the critical thresholds from skillData, applying any
+        // Desperate Effort shift so the chat card matches the rolled outcome.
+        const {
+          successThreshold: criticalSuccessThreshold,
+          failureThreshold: criticalFailureThreshold,
+        } = applyDesperateCrit(
+          roll,
+          skillData.criticalSuccessThreshold,
+          skillData.criticalFailureThreshold,
+        );
 
         const traitPills = getTraitPills(this.actor, skillKey);
 
