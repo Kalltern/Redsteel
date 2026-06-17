@@ -26,6 +26,19 @@ export class RedsteelItem extends Item {
   }
 
   /**
+   * Active Effects authored on a consumable (potion / poison) are *blueprints*:
+   * they only take hold when the item is actually used — at which point they
+   * are copied onto the drinker (see usePotion). Suppress Foundry's default
+   * behaviour of auto-applying an item's effects to its owner just by carrying
+   * it, so a potion in the backpack does nothing until consumed.
+   * @override
+   */
+  get transferredEffects() {
+    if (this.type === "consumable") return [];
+    return super.transferredEffects;
+  }
+
+  /**
    * A shield only counts as broken when it tracks durability
    * (durabilityMax > 0) and has been reduced to 0.
    */
@@ -483,6 +496,12 @@ export class RedsteelItem extends Item {
       sections: [{ label: "Effect types", lines: effectLines }],
       stats: [
         { label: "Weapon Type", value: `${data.type} ${data.class}` },
+        {
+          label: "Coating",
+          value: this.getFlag("redsteel", "coating")
+            ? `${this.getFlag("redsteel", "coating").name} (+${this.getFlag("redsteel", "coating").formula})`
+            : null,
+        },
         {
           label: "Damage",
           value: `${data.roll.diceNum}d${data.roll.diceSize}+${data.roll.diceBonus}`,

@@ -1,0 +1,35 @@
+{
+  "name": "Flower (Yliaster)",
+  "type": "item",
+  "img": "icons/commodities/flowers/iris-blue.webp",
+  "system": {
+    "localizationKey": "",
+    "description": "",
+    "quantity": 1
+  },
+  "effects": [],
+  "folder": "zfyQgt9AHJFkYpBR",
+  "ownership": {
+    "default": 0,
+    "YjJDoOEWjGrKL8LV": 3
+  },
+  "flags": {
+    "redsteel": {
+      "substance": "Yliaster"
+    }
+  },
+  "_stats": {
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.9.27",
+    "createdTime": 1781696107138,
+    "modifiedTime": 1781696107138,
+    "lastModifiedBy": "YjJDoOEWjGrKL8LV",
+    "exportSource": null,
+    "compendiumSource": null,
+    "duplicateSource": null
+  },
+  "_id": "kzF0X7nvMu9jzLyT",
+  "sort": 0,
+  "_key": "!items!kzF0X7nvMu9jzLyT"
+}

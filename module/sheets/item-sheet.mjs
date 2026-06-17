@@ -126,6 +126,10 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
       case "race":
         options.parts.push("attributesRace", "effects");
         break;
+      case "consumable":
+        // Potions/poisons carry authored Active Effects (buffs) applied on use.
+        options.parts.push("effects");
+        break;
       case "ability":
         options.parts.push("attributesAbility", "combatEffects");
         break;

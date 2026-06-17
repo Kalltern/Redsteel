@@ -1,3 +1,5 @@
+import { seedRollAdvantage } from "../utils/rollAdvantage.mjs";
+
 /**
  * Extend the base Actor document by defining a custom roll data structure which is ideal for the Simple system.
  * @extends {Actor}
@@ -47,6 +49,10 @@ export class RedsteelActor extends Actor {
 
     system.globalBonus ??= 0;
     system.globalPenalty ??= 0;
+
+    // Seed the advantage/disadvantage buckets before Active Effects apply, so
+    // ADD-mode effects from features/buffs accumulate onto numeric leaves.
+    seedRollAdvantage(system);
   }
 
   /**
@@ -70,8 +76,21 @@ export class RedsteelActor extends Actor {
     }
 
     // Fatigue
-    const fatigue = system.stats?.fatigue?.value ?? 0;
-    if (fatigue >= 3) {
+    // The effective fatigue degree drives every penalty. "Dwarven toughness"
+    // (system.fatigueResilience) makes fatigue count one degree lower, so the
+    // first point becomes degree 0 (no penalties) and death moves to 7 points.
+    const rawFatigue = system.stats?.fatigue?.value ?? 0;
+    const fatigueDegree = Math.max(0, rawFatigue - (system.fatigueResilience ? 1 : 0));
+    system.fatigueDegree = fatigueDegree;
+    // Degree 4+: disadvantage on every test. Folded into the actor-wide
+    // advantage bucket (seeded in prepareBaseData, already carries any
+    // feature/buff effects); the roll layer reads the net bias.
+    system.fatigueDisadvantage = fatigueDegree >= 4;
+    if (system.fatigueDisadvantage && system.rollAdvantage) {
+      system.rollAdvantage.all -= 1;
+    }
+    // Degree 3+: success chance -10%.
+    if (fatigueDegree >= 3) {
       system.globalMod -= 10;
     }
     system.globalMod += system.globalBonus ?? 0;
@@ -197,6 +216,8 @@ export class RedsteelActor extends Actor {
     const hasFinesse = systemData.finesse;
     const rangeddef = systemData.combatSkills.rangedDefense;
     const stat = systemData.stats;
+    // Effective fatigue degree (after "Dwarven toughness"), set in _prepareGlobalMod.
+    const fatigueDegree = systemData.fatigueDegree ?? 0;
     const globalMod = systemData.globalMod;
     const visage = systemData.secondaryAttributes.vis.total;
     const sin = systemData.secondaryAttributes.sin.total;
@@ -624,14 +645,15 @@ export class RedsteelActor extends Actor {
       calcIni[per] + secAttribute.ini.value + secAttribute.ini.bonus;
 
     // Calculate speed
+    // Fatigue: degree 5+ sets speed to 1; degree 2+ applies a flat -1.
     const calcSpd = [0, 3, 3, 4, 4, 4, 5, 5, 6, 6, 6];
     secAttribute.spd.total =
-      stat.fatigue.value >= 5
+      fatigueDegree >= 5
         ? 1
         : calcSpd[dex] +
           secAttribute.spd.value +
           secAttribute.spd.bonus -
-          (stat.fatigue.value >= 3 ? 1 : 0);
+          (fatigueDegree >= 2 ? 1 : 0);
     Math.floor(secAttribute.spd.total);
 
     // Calculate resolve from endurance and will
@@ -665,7 +687,12 @@ export class RedsteelActor extends Actor {
     secAttribute.sin.total = secAttribute.sin.value + secAttribute.sin.bonus;
     secAttribute.fth.total = secAttribute.fth.value + secAttribute.fth.bonus;
     stat.corruption.max = stat.corruption.base + stat.corruption.bonus;
-    stat.fatigue.max = stat.fatigue.base + stat.fatigue.bonus;
+    // Death by exhaustion happens at the final degree; resilience pushes the
+    // raw point cap from 6 to 7 so the same degree is reached one point later.
+    stat.fatigue.max =
+      stat.fatigue.base +
+      stat.fatigue.bonus +
+      (systemData.fatigueResilience ? 1 : 0);
 
     // persuasion temptation deception intimidation insight ; shepherds will
     if (systemData.priest) {
@@ -716,7 +743,7 @@ export class RedsteelActor extends Actor {
       stat.stamina.bonus +
       stat.stamina.base +
       2 * systemData.skills.athletics.value -
-      5 * stat.fatigue.value;
+      5 * fatigueDegree;
     // Calculate temporaryHealth
     systemData.stats.temporaryHealth.max =
       10 + systemData.stats.temporaryHealth.bonus;
@@ -819,7 +846,7 @@ export class RedsteelActor extends Actor {
             schoolBonus +
             stat.mana.bonus +
             stat.mana.base -
-            3 * stat.fatigue.value) *
+            3 * fatigueDegree) *
             calcElymas[magicDoctrine.elymas.value],
         );
       } else if (magicDoctrine.incantator.value === maxValue) {
@@ -830,7 +857,7 @@ export class RedsteelActor extends Actor {
             schoolBonus +
             stat.mana.bonus +
             stat.mana.base -
-            3 * stat.fatigue.value) *
+            3 * fatigueDegree) *
             calcIncantator[magicDoctrine.incantator.value],
         );
       } else if (magicDoctrine.elementalist.value === maxValue) {
@@ -841,7 +868,7 @@ export class RedsteelActor extends Actor {
             schoolBonus +
             stat.mana.bonus +
             stat.mana.base -
-            3 * stat.fatigue.value) *
+            3 * fatigueDegree) *
             calcElementalist[magicDoctrine.elementalist.value],
         );
       } else if (magicDoctrine.veneficus.value === maxValue) {
@@ -852,7 +879,7 @@ export class RedsteelActor extends Actor {
             schoolBonus +
             stat.mana.bonus +
             stat.mana.base -
-            3 * stat.fatigue.value) *
+            3 * fatigueDegree) *
             calcVeneficus[magicDoctrine.veneficus.value],
         );
       } else {
@@ -864,7 +891,7 @@ export class RedsteelActor extends Actor {
           schoolBonus +
           stat.mana.bonus +
           stat.mana.base -
-          3 * stat.fatigue.value;
+          3 * fatigueDegree;
       }
 
       // prevent mana to go below 0
@@ -899,7 +926,7 @@ export class RedsteelActor extends Actor {
     // Define critical thresholds influenced by luck
     const luck = secAttribute.lck.total;
     const baseCriticalSuccess = 5; // Base critical success threshold
-    const baseCriticalFailure = 96 - stat.fatigue.value; // Base critical failure threshold
+    const baseCriticalFailure = 96 - fatigueDegree; // Base critical failure threshold
 
     // Function to calculate thresholds for each skill type (e.g., skills, combatSkills)
     function calculateSkillThresholds(skillsObject) {

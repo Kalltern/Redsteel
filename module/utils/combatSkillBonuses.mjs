@@ -1,4 +1,5 @@
 import { getTraitPills } from "./traitPills.mjs";
+import { withRollBias } from "./rollAdvantage.mjs";
 
 async function getSneakDamageFormula(actor, weapon, weaponContext = null) {
   const ws = weapon?.system ?? {};
@@ -92,7 +93,10 @@ export async function getNonWeaponAbility(actor, ability) {
     }
     const totalModifier = Number(baseValue) + Number(abilityTestModifier);
     // Create the Roll
-    const attributeRoll = new Roll(`(${totalModifier}) - 1d100`);
+    const attributeRoll = new Roll(
+      `(${totalModifier}) - 1d100`,
+      withRollBias({}, actor),
+    );
     await attributeRoll.evaluate();
 
     const attributeRollTotal = attributeRoll.total;
@@ -561,7 +565,7 @@ export async function getAttackRolls(
     per: actor.system.attributes.per.total,
   };
 
-  const attackRoll = new Roll(attackRollFormula, rollData);
+  const attackRoll = new Roll(attackRollFormula, withRollBias(rollData, actor));
   await attackRoll.evaluate();
   const rollResult = attackRoll.dice[0].total;
 
@@ -626,6 +630,12 @@ export async function getDamageRolls(
   }
   for (const roll of actorMods.damageRolls) {
     damageFormula += ` + ${roll}`;
+  }
+  // Poison/coating applied to this specific weapon (see usePoison). It adds a
+  // flat bonus to this weapon's damage and persists until removed.
+  const coating = weapon?.getFlag?.("redsteel", "coating");
+  if (coating?.formula) {
+    damageFormula += ` + (${coating.formula})`;
   }
   damageFormula += ")";
   damageFormula = damageFormula.replace(/\s*\+\s*$/, "");

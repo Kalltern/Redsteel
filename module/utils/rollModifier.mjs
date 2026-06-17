@@ -11,6 +11,8 @@
  * subtracted); disadvantage keeps the higher die.
  */
 
+import { getRollBias } from "./rollAdvantage.mjs";
+
 const TEST_DIE_PATTERN = /-\s*1d100\b/i;
 
 const state = {
@@ -76,38 +78,71 @@ function clearModifier({ silent = false } = {}) {
 }
 
 /**
- * Rewrite the formula of a not-yet-evaluated test roll according to the
- * currently selected modifier. Called from the Roll evaluation wrappers.
+ * Rewrite the formula of a not-yet-evaluated test roll, combining:
+ *   - the manual hotbar picker (state), and
+ *   - the rolling actor's automatic advantage/disadvantage bias (fatigue,
+ *     features, buffs) read from the roll's data via getRollBias().
+ *
+ * Advantage/disadvantage is a signed bias: the manual picker contributes ±1,
+ * the actor contributes its net bucket value, and they sum. The resulting sign
+ * picks the die (advantage → 2d100kl, disadvantage → 2d100kh, zero → 1d100).
+ * Bonus/penalty from the picker is a separate flat term. Called from the Roll
+ * evaluation wrappers.
  */
 function applyModifier(roll) {
-  if (!state.type || roll._redsteelModifierApplied) return;
+  if (roll._redsteelModifierApplied) return;
 
   const formula = roll.formula;
   if (!TEST_DIE_PATTERN.test(formula)) return;
 
-  let modified;
+  // Actor-driven bias: actor-wide `all` bucket plus, when the call site tagged
+  // a skill, that skill's bucket.
+  const skillKey = roll.options?.redsteel?.skill;
+  let bias = getRollBias(roll.data, skillKey);
+  const autoBias = bias; // for messaging: was anything contributed by the actor?
+
+  // Manual picker contribution.
+  let flat = 0;
   switch (state.type) {
     case "advantage":
-      modified = formula.replace(/\b1d100\b/i, "2d100kl");
+      bias += 1;
       break;
     case "disadvantage":
-      modified = formula.replace(/\b1d100\b/i, "2d100kh");
+      bias -= 1;
       break;
     case "bonus":
-      modified = `${formula} + ${state.value}`;
+      flat += state.value;
       break;
     case "penalty":
-      modified = `${formula} - ${state.value}`;
+      flat -= state.value;
       break;
   }
 
-  const label = describeModifier();
+  // Nothing to do — leave the plain roll untouched.
+  if (bias === 0 && flat === 0) {
+    if (state.type && !state.sticky) clearModifier({ silent: true });
+    return;
+  }
+
+  let modified = formula;
+  if (bias > 0) modified = modified.replace(/\b1d100\b/i, "2d100kl");
+  else if (bias < 0) modified = modified.replace(/\b1d100\b/i, "2d100kh");
+  if (flat > 0) modified = `${modified} + ${flat}`;
+  else if (flat < 0) modified = `${modified} - ${Math.abs(flat)}`;
+
   roll.terms = roll.constructor.parse(modified, roll.data);
   roll._formula = roll.constructor.getFormula(roll.terms);
   roll._redsteelModifierApplied = true;
 
-  if (!state.sticky) clearModifier({ silent: true });
-  ui.notifications.info(`Applied ${label} to roll.`);
+  // Describe what landed. Prefer the explicit manual label; otherwise report
+  // the automatic advantage/disadvantage so players see why the die changed.
+  let label = describeModifier();
+  if (!label && autoBias !== 0) {
+    label = autoBias > 0 ? "advantage" : "disadvantage";
+  }
+
+  if (state.type && !state.sticky) clearModifier({ silent: true });
+  if (label) ui.notifications.info(`Applied ${label} to roll.`);
 }
 
 function wrapRollEvaluation() {

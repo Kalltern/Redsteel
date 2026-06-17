@@ -1,3 +1,46 @@
+import { applyPoisonToWeapon } from "./usePoison.mjs";
+
+/**
+ * Copy the buff Active Effects authored on a consumable onto an actor as
+ * permanent, passive effects. The effects are blueprints on the item (they do
+ * not transfer just by carrying it — see RedsteelItem#transferredEffects); on
+ * use they are duplicated onto the drinker, where they persist until removed.
+ * Their duration is intentionally not tied to combat rounds/turns.
+ *
+ * @param {Actor} actor          The actor receiving the buffs.
+ * @param {Item}  consumable     The potion/poison being used.
+ * @returns {Promise<string>}    Chat summary fragment ("" if no buffs).
+ */
+export async function applyItemBuffsToActor(actor, consumable) {
+  const sources = consumable.effects.filter((e) => !e.disabled);
+  if (!sources.length) return "";
+
+  const effectData = sources.map((effect) => {
+    const data = effect.toObject();
+    delete data._id;
+    data.disabled = false;
+    // Actor-owned effects don't transfer; be explicit anyway.
+    data.transfer = false;
+    // Permanent buff — no combat-round/turn duration.
+    data.duration = {};
+    data.origin = consumable.uuid;
+    foundry.utils.setProperty(
+      data,
+      "flags.redsteel.fromConsumable",
+      consumable.localizedName ?? consumable.name,
+    );
+    return data;
+  });
+
+  const created = await actor.createEmbeddedDocuments(
+    "ActiveEffect",
+    effectData,
+  );
+
+  const names = created.map((e) => e.name).join(", ");
+  return `<p><b>Buff:</b> ${names}</p>`;
+}
+
 export async function usePotion() {
   const context = game.redsteel.selectToken({ notifyFallback: true });
   if (!context) return;
@@ -38,6 +81,10 @@ export async function usePotion() {
       const result = consumable.system.bleed > bleedRoll.total ? "SUCCESS" : "";
       effectResults += `<p><b>Stop bleed:</b> ${consumable.system.bleed} > ${bleedRoll.total} ${result}</p>`;
     }
+
+    // Apply any buff Active Effects authored on the potion (must run before the
+    // item is consumed/deleted below).
+    effectResults += await applyItemBuffsToActor(actor, consumable);
 
     if (consumable.system.quantity > 0) {
       const newQty = consumable.system.quantity - 1;
@@ -99,48 +146,61 @@ export async function usePotion() {
   document.head.appendChild(style);
 
   const renderPotionDialog = () => {
-    const consumables = actor.items.filter(
+    const potions = actor.items.filter(
       (i) => i.type === "consumable" && i.system.option === "potion",
     );
+    const poisons = actor.items.filter(
+      (i) => i.type === "consumable" && i.system.option === "poison",
+    );
 
-    if (!consumables.length) {
-      ui.notifications.warn("No potions left.");
+    if (!potions.length && !poisons.length) {
+      ui.notifications.warn("No potions or poisons left.");
       return;
     }
 
-    const potionChoices = consumables.map((c, i) => ({
-      label: `${c.localizedName ?? c.name} (${c.system.quantity ?? 1})`,
-      value: i,
-    }));
+    const listItems = (items, kind) =>
+      items
+        .map(
+          (c, i) => `
+            <li class="potion-choice" data-kind="${kind}" data-value="${i}" style="cursor: pointer; padding: 5px; border-bottom: 1px solid #444;">
+              ${c.localizedName ?? c.name} (${c.system.quantity ?? 1})
+            </li>`,
+        )
+        .join("");
+
+    const section = (label, items, kind) =>
+      items.length
+        ? `<li class="potion-section" style="list-style:none; padding:5px 0 2px; font-weight:bold; opacity:.8;">${label}</li>${listItems(items, kind)}`
+        : "";
 
     let dialog;
 
     dialog = new Dialog({
-      title: "Select Potion",
+      title: "Use Potion / Poison",
       content: `
       <form>
         <ul id="potion-list" style="list-style: none; padding: 0;">
-          ${potionChoices
-            .map(
-              (choice) => `
-              <li class="potion-choice" data-value="${choice.value}" style="cursor: pointer; padding: 5px; border-bottom: 1px solid #444;">
-                ${choice.label}
-              </li>`,
-            )
-            .join("")}
+          ${section("Potions", potions, "potion")}
+          ${section("Poisons", poisons, "poison")}
         </ul>
       </form>
     `,
       classes: ["potion-dialog"],
       buttons: {},
       render: function (html) {
-        html.find("#potion-list li").click(async (event) => {
-          const index = parseInt(event.currentTarget.dataset.value);
-          const consumable = consumables[index];
+        html.find("#potion-list li.potion-choice").click(async (event) => {
+          const { kind, value } = event.currentTarget.dataset;
+          const index = parseInt(value);
 
-          dialog.close(); // ✅ fixed
+          dialog.close();
 
-          await handlePotionSelection(consumable);
+          if (kind === "poison") {
+            // Poisons coat a weapon (their own follow-up dialog opens).
+            applyPoisonToWeapon(actor, poisons[index]);
+            return;
+          }
+
+          await handlePotionSelection(potions[index]);
 
           renderPotionDialog();
         });

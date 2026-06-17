@@ -1,4 +1,5 @@
 import { getTraitPills } from "./traitPills.mjs";
+import { withRollBias } from "./rollAdvantage.mjs";
 
 export async function spellDefense() {
   // Ensure a token is selected
@@ -28,7 +29,7 @@ export async function spellDefense() {
 
     const faith = actor.system.secondaryAttributes.fth.total ?? 0;
     const rollFormula = `${holyEnergyCast} + ${faith * 8} - 1d100`;
-    const roll = new Roll(rollFormula);
+    const roll = new Roll(rollFormula, withRollBias({}, actor));
 
     await roll.evaluate();
 
@@ -72,7 +73,7 @@ export async function spellDefense() {
             actor.system.combatSkills.channeling.rating +
             actor.system.combatSkills.channeling.defense;
 
-          const roll = new Roll(`${rating} - 1d100`);
+          const roll = new Roll(`${rating} - 1d100`, withRollBias({}, actor));
           await roll.evaluate();
 
           await roll.toMessage({

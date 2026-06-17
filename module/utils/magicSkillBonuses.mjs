@@ -1,5 +1,6 @@
 import { getTraitPills } from "./traitPills.mjs";
 import { getSpellPower } from "./spellPower.mjs";
+import { withRollBias } from "./rollAdvantage.mjs";
 
 // --- Helper for Dialogs (CSS Injection) ---
 function _injectDialogCSS() {
@@ -966,7 +967,7 @@ export async function performAttackRoll(
     difficulty: effectiveDifficulty,
   };
 
-  const attackRoll = new Roll(attackRollFormula, rollData);
+  const attackRoll = new Roll(attackRollFormula, withRollBias(rollData, actor));
   await attackRoll.evaluate();
   const rollResult = attackRoll.dice[0].total;
   const displayCritSuccess = rollResult <= critSuccessThreshold;
@@ -1070,7 +1071,7 @@ export async function finalizeRollsAndPostChat(
 
     const attributeRoll = new Roll(
       `(${selectedAttributeModifier} + ${spellTestModifier}) - 1d100`,
-      rollData,
+      withRollBias({ ...rollData }, actor),
     );
     await attributeRoll.evaluate({ async: true });
 

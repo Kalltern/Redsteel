@@ -8,6 +8,8 @@
  * This lets the second roll be modified directly by the previous margin.
  */
 
+import { withRollBias, tagRollSkill } from "./rollAdvantage.mjs";
+
 const ATTRIBUTE_LABELS = {
   str: "Strength",
   dex: "Dexterity",
@@ -85,7 +87,11 @@ async function rollAttributeFollowup(actor, key, rating, margin, source = "") {
   const label = ATTRIBUTE_LABELS[key] ?? key;
   const vsLabel = source ? source : `Margin ${margin}`;
 
-  const roll = new Roll(`${rating} - 1d100 - ${margin}`);
+  const roll = new Roll(
+    `${rating} - 1d100 - ${margin}`,
+    withRollBias({}, actor),
+  );
+  tagRollSkill(roll, key);
   await roll.evaluate();
 
   // Primary attribute rolls honour critical thresholds (based on the raw d100).

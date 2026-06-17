@@ -4,6 +4,8 @@ import {
   syncSpecialisationPassive,
 } from "../helpers/specialisations.mjs";
 import { getTraitPills } from "../utils/traitPills.mjs";
+import { gatherHerbs, promptHerbMode } from "../utils/gatherHerbs.mjs";
+import { tagRollSkill } from "../utils/rollAdvantage.mjs";
 
 const { api, sheets } = foundry.applications;
 
@@ -1629,6 +1631,28 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
         if (item) return item.roll();
     }
 
+    // Herbalism / Survival can either test the skill or gather herbs. Ask first;
+    // gathering takes over entirely via its own dialog (no chat roll message).
+    if (
+      dataset.roll &&
+      dataset.rollType === "skill" &&
+      (dataset.label === "herbalism" || dataset.label === "survival")
+    ) {
+      const skillName = game.i18n.localize(
+        `REDSTEEL.Actor.Character.skills.${dataset.label}.label`,
+      );
+      const mode = await promptHerbMode(skillName);
+      if (mode === null) return; // dismissed
+      if (mode === "gather") {
+        return gatherHerbs(
+          this.actor,
+          dataset.label,
+          this.actor.system.skills[dataset.label],
+        );
+      }
+      // mode === "test" → fall through to the normal skill roll below.
+    }
+
     if (dataset.roll) {
       const attributeMap = {
         Strength: "Str",
@@ -1679,6 +1703,9 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       const rollName = label;
 
       const roll = new Roll(dataset.roll, this.actor.getRollData());
+      // Tag the roll with its skill/attribute key so per-skill advantage
+      // buckets (features/buffs) apply on top of the actor-wide bias.
+      if (isSkillRoll) tagRollSkill(roll, skillKey);
       await roll.evaluate();
 
       const d100Result = roll.dice[0]?.total; // Extract the d100 result

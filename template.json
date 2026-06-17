@@ -1463,7 +1463,7 @@
     },
     "consumable": {
       "templates": ["base"],
-      "options": ["potion", "explosive", "misc", "first aid"],
+      "options": ["potion", "explosive", "misc", "first aid", "poison"],
       "types": ["mana", "health", "stamina"],
       "quantity": 1
     },

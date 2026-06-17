@@ -1,0 +1,35 @@
+{
+  "name": "Flower (Verdigris)",
+  "type": "item",
+  "img": "icons/commodities/flowers/daisies-pink.webp",
+  "system": {
+    "localizationKey": "",
+    "description": "",
+    "quantity": 1
+  },
+  "effects": [],
+  "folder": "zfyQgt9AHJFkYpBR",
+  "ownership": {
+    "default": 0,
+    "YjJDoOEWjGrKL8LV": 3
+  },
+  "flags": {
+    "redsteel": {
+      "substance": "Verdigris"
+    }
+  },
+  "_stats": {
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.9.27",
+    "createdTime": 1781696105602,
+    "modifiedTime": 1781696105636,
+    "lastModifiedBy": "YjJDoOEWjGrKL8LV",
+    "exportSource": null,
+    "compendiumSource": null,
+    "duplicateSource": null
+  },
+  "_id": "2kRiFc79IgDvcPPh",
+  "sort": 25000,
+  "_key": "!items!2kRiFc79IgDvcPPh"
+}

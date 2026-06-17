@@ -19,9 +19,11 @@ import {
 } from "./utils/customConditions.mjs";
 import { wireAttributeFollowups } from "./utils/attributeFollowup.mjs";
 import { registerRollModifier } from "./utils/rollModifier.mjs";
+import { registerEndTurnButton } from "./utils/endTurnButton.mjs";
 import { applyTraitStatusEffects } from "./utils/traitStatusEffects.mjs";
 import { applyActorLight } from "./utils/itemLight.mjs";
 import { usePotion } from "./utils/usePotion.mjs";
+import { usePoison, clearWeaponCoating } from "./utils/usePoison.mjs";
 import { defenseRoll } from "./utils/defense.mjs";
 import { throwExplosive } from "./utils/throwExplosive.mjs";
 import { castSpell } from "./utils/castSpell.mjs";
@@ -234,6 +236,8 @@ Hooks.once("init", function () {
   game.redsteel.castSpell = castSpell;
   game.redsteel.throwExplosive = throwExplosive;
   game.redsteel.usePotion = usePotion;
+  game.redsteel.usePoison = usePoison;
+  game.redsteel.clearWeaponCoating = clearWeaponCoating;
   game.redsteel.getNonWeaponAbility = getNonWeaponAbility;
   game.redsteel.getDoctrineBonuses = getDoctrineBonuses;
   game.redsteel.getWeaponSkillBonuses = getWeaponSkillBonuses;
@@ -261,6 +265,7 @@ Hooks.once("init", function () {
   game.redsteel.getDurabilityReductionPerPoint = getDurabilityReductionPerPoint;
   registerDynamicInitiative();
   registerRollModifier();
+  registerEndTurnButton();
   registerEffectSheetExtensions();
   registerKeepDialogOpen();
   registerCustomConditions();

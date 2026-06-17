@@ -1,0 +1,35 @@
+{
+  "name": "Flower (Qudat)",
+  "type": "item",
+  "img": "icons/commodities/flowers/buds-red.webp",
+  "system": {
+    "localizationKey": "",
+    "description": "",
+    "quantity": 1
+  },
+  "effects": [],
+  "folder": "zfyQgt9AHJFkYpBR",
+  "ownership": {
+    "default": 0,
+    "YjJDoOEWjGrKL8LV": 3
+  },
+  "flags": {
+    "redsteel": {
+      "substance": "Qudat"
+    }
+  },
+  "_stats": {
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.9.27",
+    "createdTime": 1781696103607,
+    "modifiedTime": 1781696103640,
+    "lastModifiedBy": "YjJDoOEWjGrKL8LV",
+    "exportSource": null,
+    "compendiumSource": null,
+    "duplicateSource": null
+  },
+  "_id": "wTvQ5K7rhEhRIOyt",
+  "sort": 50000,
+  "_key": "!items!wTvQ5K7rhEhRIOyt"
+}

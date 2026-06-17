@@ -1,4 +1,5 @@
 import { getTraitPills } from "./traitPills.mjs";
+import { withRollBias, tagRollSkill } from "./rollAdvantage.mjs";
 
 export async function universalAttackLogic({
   attackType,
@@ -157,7 +158,11 @@ export async function universalAttackLogic({
         attributeValue = actor.system.attributes[shortKey]?.value ?? 0;
       }
       const attributeTotalValue = attributeValue + testModifier;
-      const attributeRoll = new Roll(`(${attributeTotalValue}) - 1d100`);
+      const attributeRoll = new Roll(
+        `(${attributeTotalValue}) - 1d100`,
+        withRollBias({}, actor),
+      );
+      tagRollSkill(attributeRoll, shortKey);
 
       await attributeRoll.evaluate({ async: true });
 

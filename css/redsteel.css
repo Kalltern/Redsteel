@@ -3934,6 +3934,86 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   pointer-events: none;
 }
 
+/* -------------------------------------------- */
+/*  Hotbar End-Turn button (combat only)        */
+/* -------------------------------------------- */
+
+/* Positioning context so the button can float above the hotbar centre */
+#hotbar {
+  position: relative;
+  overflow: visible;
+}
+
+.redsteel-end-turn-controls {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+  z-index: 70;
+  pointer-events: none;
+}
+
+.redsteel-end-turn-controls.hidden {
+  display: none;
+}
+
+.redsteel-end-turn-controls button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 18px;
+  pointer-events: auto;
+  white-space: nowrap;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #f0d9a0;
+  border-radius: 6px;
+  box-shadow:
+    inset 0 0 10px rgba(0, 0, 0, 0.4),
+    0 2px 6px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.redsteel-end-turn-controls button i {
+  font-size: 1.05em;
+}
+
+/* End Turn — red/steel tone */
+.redsteel-end-turn-controls .redsteel-end-turn {
+  background: linear-gradient(180deg, #4a2020 0%, #2a1212 100%);
+  border: 1px solid #7a2f2f;
+}
+
+.redsteel-end-turn-controls .redsteel-end-turn:hover {
+  color: #ffe9b8;
+  border-color: #a04040;
+  box-shadow:
+    inset 0 0 10px rgba(0, 0, 0, 0.4),
+    0 0 10px rgba(160, 60, 60, 0.7);
+}
+
+/* Delay Turn — gilded tone */
+.redsteel-end-turn-controls .redsteel-delay-turn {
+  background: linear-gradient(180deg, #3a3320 0%, #221d10 100%);
+  border: 1px solid #9c7b45;
+}
+
+.redsteel-end-turn-controls .redsteel-delay-turn:hover {
+  color: #ffe9b8;
+  border-color: #c9b26b;
+  box-shadow:
+    inset 0 0 10px rgba(0, 0, 0, 0.4),
+    0 0 10px rgba(181, 151, 80, 0.7);
+}
+
 /* ============================= */
 /* EQUIPPED AMMO SLOT            */
 /* ============================= */

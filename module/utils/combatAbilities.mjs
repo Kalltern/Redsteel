@@ -1,4 +1,5 @@
 import { getTraitPills } from "./traitPills.mjs";
+import { withRollBias, tagRollSkill } from "./rollAdvantage.mjs";
 
 export async function combatAbilities() {
   // ====================================================================
@@ -1369,7 +1370,11 @@ ${damageLine}
 
       const attributeTotalValue = attributeValue + testModifier;
 
-      const attributeRoll = new Roll(`(${attributeTotalValue}) - 1d100`);
+      const attributeRoll = new Roll(
+        `(${attributeTotalValue}) - 1d100`,
+        withRollBias({}, actor),
+      );
+      tagRollSkill(attributeRoll, shortKey);
       await attributeRoll.evaluate({ async: true });
 
       attributeTestHTML += `
@@ -1422,7 +1427,11 @@ ${damageLine}
 
       const totalModifier = Number(baseValue) + Number(abilityTestModifier);
 
-      const attributeRoll = new Roll(`(${totalModifier}) - 1d100`);
+      const attributeRoll = new Roll(
+        `(${totalModifier}) - 1d100`,
+        withRollBias({}, actor),
+      );
+      tagRollSkill(attributeRoll, shortKey);
 
       await attributeRoll.evaluate({ async: true });
 

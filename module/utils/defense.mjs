@@ -1,4 +1,5 @@
 import { getTraitPills } from "./traitPills.mjs";
+import { withRollBias } from "./rollAdvantage.mjs";
 
 export async function defenseRoll({ actor, weapon, ability = null } = {}) {
   if (!actor) {
@@ -312,7 +313,7 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
 
       const roll = new Roll(
         "@defenseRating + @weaponDefense + @doctrineDefenseBonus + @abilityDefense + @overwhelmPenalty + @longReachPenalty - 1d100",
-        rollData,
+        withRollBias(rollData, actor),
       );
 
       await roll.evaluate();
@@ -408,7 +409,7 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
 
       const roll = new Roll(
         "@defenseRating + @doctrineRangedDefenseBonus + @abilityDefense + @overwhelmPenalty - 1d100",
-        rollData,
+        withRollBias(rollData, actor),
       );
 
       await roll.evaluate();
@@ -508,7 +509,7 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
 
       const roll = new Roll(
         "@dodgeRating + @weaponDodge + @abilityDefense + @overwhelmPenalty - 1d100",
-        rollData,
+        withRollBias(rollData, actor),
       );
 
       await roll.evaluate();
@@ -585,11 +586,14 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
 
       const roll = new Roll(
         "@holyEnergyCast + @faithBonus + @overwhelmPenalty - 1d100",
-        {
-          holyEnergyCast,
-          faithBonus: faith * 8,
-          overwhelmPenalty,
-        },
+        withRollBias(
+          {
+            holyEnergyCast,
+            faithBonus: faith * 8,
+            overwhelmPenalty,
+          },
+          actor,
+        ),
       );
 
       await roll.evaluate();
@@ -640,10 +644,10 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
                 actor.system.combatSkills.channeling.rating +
                 actor.system.combatSkills.channeling.defense;
 
-              const roll = new Roll("@rating + @overwhelmPenalty - 1d100", {
-                rating,
-                overwhelmPenalty,
-              });
+              const roll = new Roll(
+                "@rating + @overwhelmPenalty - 1d100",
+                withRollBias({ rating, overwhelmPenalty }, actor),
+              );
 
               await roll.evaluate();
 

@@ -1,8 +1,9 @@
 {
-  "name": "Mental combat",
+  "name": "Mind Bending",
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
+    "localizationKey": "",
     "description": "Initiates mental combat with a Target in range, 65% chance to engage (20% if the Target is not a magician); opponent may voluntarily accept. One attempt only. A critical success guarantees connection. Magic Attack +20.",
     "options": [
       "divine",
@@ -64,13 +65,18 @@
       "Charisma",
       "Perception"
     ],
-    "resources": [
-      {
+    "resources": {
+      "0": {
+        "type": "",
         "mode": "",
-        "amount": "",
-        "type": ""
+        "amount": null
+      },
+      "1": {
+        "type": "",
+        "mode": "",
+        "amount": null
       }
-    ],
+    },
     "resourceOptions": {
       "modes": [
         "add",
@@ -80,11 +86,12 @@
         ""
       ]
     },
-    "isOffensive": "TRUE",
+    "isOffensive": true,
     "sustained": false,
     "difficulty": -25,
     "cost": 2,
     "perRound": 0,
+    "variants": [],
     "option": "magic",
     "type": "spirit",
     "rank": "expert",
@@ -93,7 +100,7 @@
     "spellClass": "lesser",
     "roll": {
       "diceNum": 0,
-      "diceSize": 0,
+      "diceSize": "0",
       "diceBonus": ""
     },
     "penetration": 0,
@@ -108,8 +115,18 @@
       "effect1": "65",
       "effect2": "0",
       "effect3": "0",
-      "effect4": "0"
-    }
+      "effect4": "0",
+      "stagger": null,
+      "bleed": null,
+      "extra1": null,
+      "extra2": null,
+      "extra3": null
+    },
+    "attributeTest": "",
+    "testModifier": "",
+    "effectType1": "",
+    "effectType2": "",
+    "effectType3": ""
   },
   "effects": [],
   "folder": "OgNPft6PudwlFjfW",
@@ -123,11 +140,11 @@
     "duplicateSource": null,
     "exportSource": null,
     "coreVersion": "14.363",
-    "systemId": "tos",
-    "systemVersion": "0.8.0",
+    "systemId": "redsteel",
+    "systemVersion": "0.9.9",
     "createdTime": 1780601587686,
-    "modifiedTime": 1780601587686,
-    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+    "modifiedTime": 1781602840340,
+    "lastModifiedBy": "YjJDoOEWjGrKL8LV"
   },
   "ownership": {
     "default": 0,

@@ -1,0 +1,35 @@
+{
+  "name": "Flower (Alkahest)",
+  "type": "item",
+  "_id": "5jDpjFW3KZ4eszcL",
+  "img": "icons/commodities/flowers/lotus-purple.webp",
+  "system": {
+    "localizationKey": "",
+    "description": "",
+    "quantity": 1
+  },
+  "effects": [],
+  "folder": "zfyQgt9AHJFkYpBR",
+  "ownership": {
+    "default": 0,
+    "YjJDoOEWjGrKL8LV": 3
+  },
+  "flags": {
+    "redsteel": {
+      "substance": "Alkahest"
+    }
+  },
+  "_stats": {
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.9.27",
+    "createdTime": 1781696098222,
+    "modifiedTime": 1781696098222,
+    "lastModifiedBy": "YjJDoOEWjGrKL8LV",
+    "exportSource": null,
+    "compendiumSource": null,
+    "duplicateSource": null
+  },
+  "sort": 0,
+  "_key": "!items!5jDpjFW3KZ4eszcL"
+}

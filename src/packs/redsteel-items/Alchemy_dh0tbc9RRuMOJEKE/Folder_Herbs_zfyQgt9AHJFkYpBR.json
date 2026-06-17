@@ -1,0 +1,23 @@
+{
+  "type": "Item",
+  "folder": "dh0tbc9RRuMOJEKE",
+  "name": "Herbs",
+  "color": null,
+  "sorting": "a",
+  "_id": "zfyQgt9AHJFkYpBR",
+  "description": "",
+  "sort": 0,
+  "flags": {},
+  "_stats": {
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.9.27",
+    "createdTime": 1781696094610,
+    "modifiedTime": 1781696094610,
+    "lastModifiedBy": "YjJDoOEWjGrKL8LV",
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null
+  },
+  "_key": "!folders!zfyQgt9AHJFkYpBR"
+}

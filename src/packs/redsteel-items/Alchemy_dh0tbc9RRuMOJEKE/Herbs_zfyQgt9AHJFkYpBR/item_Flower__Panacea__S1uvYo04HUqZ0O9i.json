@@ -1,0 +1,35 @@
+{
+  "name": "Flower (Panacea)",
+  "type": "item",
+  "img": "icons/commodities/flowers/cornflower-gold.webp",
+  "system": {
+    "localizationKey": "",
+    "description": "",
+    "quantity": 1
+  },
+  "effects": [],
+  "folder": "zfyQgt9AHJFkYpBR",
+  "ownership": {
+    "default": 0,
+    "YjJDoOEWjGrKL8LV": 3
+  },
+  "flags": {
+    "redsteel": {
+      "substance": "Panacea"
+    }
+  },
+  "_stats": {
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.9.27",
+    "createdTime": 1781696102064,
+    "modifiedTime": 1781696102092,
+    "lastModifiedBy": "YjJDoOEWjGrKL8LV",
+    "exportSource": null,
+    "compendiumSource": null,
+    "duplicateSource": null
+  },
+  "_id": "S1uvYo04HUqZ0O9i",
+  "sort": 100000,
+  "_key": "!items!S1uvYo04HUqZ0O9i"
+}

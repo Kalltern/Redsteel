@@ -21,7 +21,53 @@
     "option": "feature",
     "localizationKey": "REDSTEEL.Items.DwarvenToughness.name"
   },
-  "effects": [],
+  "effects": [
+    {
+      "name": "Dwarven toughness",
+      "origin": "Item.3jHniX6V4QheE4pn",
+      "img": "icons/environment/wilderness/terrain-rocks-brown.webp",
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "_id": "DwarvToughFatRes",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.fatigueResilience",
+            "value": true,
+            "priority": null,
+            "type": "override"
+          }
+        ]
+      },
+      "disabled": false,
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!3jHniX6V4QheE4pn.DwarvToughFatRes"
+    }
+  ],
   "flags": {
     "scene-packer": {
       "hash": "e33d8f22b75f497f64117308d2a609e2f0a62da0"

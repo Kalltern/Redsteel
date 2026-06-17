@@ -1,0 +1,35 @@
+{
+  "name": "Flower (Bezoardicum)",
+  "type": "item",
+  "img": "icons/commodities/flowers/cornflower-blue.webp",
+  "system": {
+    "localizationKey": "",
+    "description": "",
+    "quantity": 1
+  },
+  "effects": [],
+  "folder": "zfyQgt9AHJFkYpBR",
+  "ownership": {
+    "default": 0,
+    "YjJDoOEWjGrKL8LV": 3
+  },
+  "flags": {
+    "redsteel": {
+      "substance": "Bezoardicum"
+    }
+  },
+  "_stats": {
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.9.27",
+    "createdTime": 1781696100279,
+    "modifiedTime": 1781696100279,
+    "lastModifiedBy": "YjJDoOEWjGrKL8LV",
+    "exportSource": null,
+    "compendiumSource": null,
+    "duplicateSource": null
+  },
+  "_id": "rwjPSg5rXB2lg12s",
+  "sort": 0,
+  "_key": "!items!rwjPSg5rXB2lg12s"
+}
