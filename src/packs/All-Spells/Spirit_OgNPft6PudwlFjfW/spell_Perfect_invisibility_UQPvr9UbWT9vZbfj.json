@@ -3,6 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
+    "localizationKey": "",
     "description": "Makes the Target Invisible and conceals tracks, sounds, life and magical energies. Spellcasting or offensive actions temporarily interrupt it (restores at the end of the next round). Has Advantage on Attacks, which count as Surprised. Can be cast in group (Half cost per each additional Target, Concentration if not adjacent to caster).",
     "options": [
       "divine",
@@ -85,6 +86,7 @@
     "difficulty": -40,
     "cost": 15,
     "perRound": 4,
+    "variants": [],
     "option": "magic",
     "type": "spirit",
     "rank": "grandmaster",
@@ -126,14 +128,14 @@
     "systemId": "tos",
     "systemVersion": "0.8.0",
     "createdTime": 1780601587688,
-    "modifiedTime": 1780601587688,
-    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+    "modifiedTime": 1781793346454,
+    "lastModifiedBy": "YjJDoOEWjGrKL8LV"
   },
   "ownership": {
     "default": 0,
     "J03KIFAyMdNdBOUD": 3
   },
   "_id": "UQPvr9UbWT9vZbfj",
-  "sort": 0,
+  "sort": 4200000,
   "_key": "!items!UQPvr9UbWT9vZbfj"
 }

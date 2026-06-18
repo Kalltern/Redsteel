@@ -3,6 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
+    "localizationKey": "",
     "description": "Reduces Target's Initiative by -3 for {{math spellPower \"*\" 1}} rounds. Triggers a Will Test vs. Target's Will Test. On success, Target suffers Disadvantage on next Attack, Defense, Cover, or Dodge. Can be cast as a Reaction whenever an ally or enemy is attacked.",
     "options": [
       "divine",
@@ -85,6 +86,7 @@
     "difficulty": 25,
     "cost": 3,
     "perRound": 0,
+    "variants": [],
     "option": "magic",
     "type": "spirit",
     "rank": "apprentice",
@@ -126,14 +128,14 @@
     "systemId": "tos",
     "systemVersion": "0.8.0",
     "createdTime": 1780601587683,
-    "modifiedTime": 1780601587683,
-    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+    "modifiedTime": 1781793346454,
+    "lastModifiedBy": "YjJDoOEWjGrKL8LV"
   },
   "ownership": {
     "default": 0,
     "J03KIFAyMdNdBOUD": 3
   },
   "_id": "bDD618SBbdmjWbOU",
-  "sort": 0,
+  "sort": 5200000,
   "_key": "!items!bDD618SBbdmjWbOU"
 }

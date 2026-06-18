@@ -165,6 +165,7 @@ let overlay = null; // PIXI.Container on canvas.interface
 let arrowGfx = null; // per-frame redrawn lines / rings / badge backgrounds
 let badgeLayer = null; // PIXI.Text badges (positioned each frame)
 let buttonLayer = null; // interactive ALT buttons
+let infoLayer = null; // movement/armor info panels (shown while ALT held)
 let badges = new Map(); // sourceTokenId -> PIXI.Text
 let relationships = []; // { source, target, stacks, color }
 let phase = 0; // animation clock
@@ -173,6 +174,10 @@ let phase = 0; // animation clock
 let buttonsVisible = false;
 let currentAimer = null; // the token whose aim the buttons mutate
 let aimButtons = new Map(); // targetTokenId -> { container, gfx, label, target }
+
+// ALT info-panel state (movement + armor, shown for every token)
+let infoVisible = false;
+let infoPanels = new Map(); // tokenId -> { container }
 
 /**
  * Host layer for the overlay. `canvas.controls` (ControlsLayer) is rendered
@@ -209,11 +214,18 @@ function ensureOverlay() {
   buttonLayer.zIndex = 2;
   buttonLayer.visible = false;
 
-  overlay.addChild(arrowGfx, badgeLayer, buttonLayer);
+  infoLayer = new PIXI.Container();
+  infoLayer.eventMode = "none";
+  infoLayer.zIndex = 3;
+  infoLayer.visible = false;
+
+  overlay.addChild(arrowGfx, badgeLayer, buttonLayer, infoLayer);
 
   badges.clear();
   aimButtons.clear(); // text/graphics from a torn-down canvas died with it
+  infoPanels.clear();
   buttonsVisible = false;
+  infoVisible = false;
 
   const host = overlayHost();
   host.sortableChildren = true;
@@ -350,6 +362,19 @@ function animate(delta) {
         continue;
       }
       btn.container.position.set(t.center.x, t.center.y);
+    }
+  }
+
+  // Float info panels just above each token.
+  if (infoVisible) {
+    for (const [tid, p] of infoPanels) {
+      const t = canvas.tokens.get(tid);
+      if (!t || t.destroyed) {
+        p.container.destroy({ children: true });
+        infoPanels.delete(tid);
+        continue;
+      }
+      p.container.position.set(t.center.x, t.center.y - t.h / 2 - 6);
     }
   }
 }
@@ -503,11 +528,126 @@ function updateButtonStates() {
   }
 }
 
+/* -------------------------------------------- */
+/*  ALT info panels (movement + armor)          */
+/* -------------------------------------------- */
+
+// Font Awesome glyphs (FA6 solid). Foundry bundles the webfont, so PIXI text can
+// render them once it's loaded (always true by the time ALT is pressed).
+const FA_FAMILY = ["Font Awesome 6 Pro", "Font Awesome 6 Free", "FontAwesome"];
+const ICON_MOVE = ""; // fa-person-running
+const ICON_ARMOR = ""; // fa-shield-halved
+
+/** Movement + armor-total for a token, by actor type. */
+function getTokenStats(token) {
+  const sys = token?.actor?.system ?? {};
+  const armor = Math.round(sys.armor?.total ?? 0);
+  const sa = sys.secondaryAttributes ?? {};
+  const movement =
+    token?.actor?.type === "npc"
+      ? (sa.mov?.total ?? 0)
+      : (sa.spd?.total ?? sa.mov?.total ?? 0);
+  return { movement: Math.round(movement), armor };
+}
+
+/** A small dark, slightly translucent panel: [run icon] N  [shield icon] N. */
+function makeInfoPanel(token) {
+  const { movement, armor } = getTokenStats(token);
+
+  const container = new PIXI.Container();
+  container.eventMode = "none";
+
+  const bg = new PIXI.Graphics();
+  container.addChild(bg);
+
+  const fontSize = Math.round(Math.max(13, (canvas.grid?.size ?? 100) * 0.16));
+  const iconStyle = new PIXI.TextStyle({
+    fontFamily: FA_FAMILY,
+    fontWeight: "900",
+    fontSize,
+    fill: "#ffffff",
+  });
+  const numStyle = new PIXI.TextStyle({
+    fontFamily: "Signika, sans-serif",
+    fontWeight: "700",
+    fontSize,
+    fill: "#ffffff",
+    stroke: "#000000",
+    strokeThickness: 3,
+  });
+
+  const pad = Math.round(fontSize * 0.55);
+  const gapSmall = Math.round(fontSize * 0.25); // icon → its number
+  const gapLarge = Math.round(fontSize * 0.7); // pair → pair
+  const h = fontSize + pad * 2;
+  const cy = h / 2;
+  let x = pad;
+
+  const addPair = (glyph, value, iconColor) => {
+    const icon = new PIXI.Text(glyph, iconStyle.clone());
+    icon.style.fill = iconColor;
+    icon.anchor.set(0, 0.5);
+    icon.position.set(x, cy);
+    container.addChild(icon);
+    x += icon.width + gapSmall;
+
+    const num = new PIXI.Text(String(value), numStyle);
+    num.anchor.set(0, 0.5);
+    num.position.set(x, cy);
+    container.addChild(num);
+    x += num.width + gapLarge;
+  };
+
+  addPair(ICON_MOVE, movement, "#8fd0ff"); // movement — blue
+  addPair(ICON_ARMOR, armor, "#d7d7d7"); // armor — steel
+
+  const w = x - gapLarge + pad;
+  bg.beginFill(0x0c0c0a, 0.7);
+  bg.lineStyle(1, 0xffffff, 0.18);
+  bg.drawRoundedRect(0, 0, w, h, 6);
+  bg.endFill();
+
+  // Anchor bottom-centre so it floats just above the token.
+  container.pivot.set(w / 2, h);
+
+  return { container };
+}
+
+function buildInfoPanels() {
+  for (const p of infoPanels.values()) p.container.destroy({ children: true });
+  infoPanels.clear();
+
+  for (const t of canvas.tokens.placeables) {
+    if (!t.visible) continue;
+    const panel = makeInfoPanel(t);
+    infoLayer.addChild(panel.container);
+    infoPanels.set(t.id, panel);
+  }
+}
+
+function hideInfoPanels() {
+  infoVisible = false;
+  if (infoLayer) infoLayer.visible = false;
+  for (const p of infoPanels.values()) p.container.destroy({ children: true });
+  infoPanels.clear();
+}
+
+/* -------------------------------------------- */
+/*  Show / hide on ALT                          */
+/* -------------------------------------------- */
+
 export function showAimButtons() {
   if (!canvas?.ready) return;
+  ensureOverlay();
+
+  // Info panels show for every token, regardless of selection.
+  infoVisible = true;
+  infoLayer.visible = true;
+  buildInfoPanels();
+
+  // Aim buttons require a selected aimer token.
   const aimer = canvas.tokens.controlled[0];
   if (!aimer) return;
-  ensureOverlay();
   buttonsVisible = true;
   buttonLayer.visible = true;
   buildAimButtons(aimer);
@@ -519,6 +659,7 @@ function hideAimButtons() {
   for (const btn of aimButtons.values()) btn.container.destroy({ children: true });
   aimButtons.clear();
   currentAimer = null;
+  hideInfoPanels();
 }
 
 /* -------------------------------------------- */
@@ -536,6 +677,7 @@ export function registerAimOverlay() {
       const aimer = getCurrentAimer();
       if (aimer) buildAimButtons(aimer);
     }
+    if (infoVisible) buildInfoPanels();
   });
   Hooks.on("updateScene", refreshAimOverlay);
 

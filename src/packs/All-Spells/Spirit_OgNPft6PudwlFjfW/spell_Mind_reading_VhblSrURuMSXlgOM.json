@@ -3,6 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
+    "localizationKey": "",
     "description": "Every hour, triggers a Will Test vs. Will Test. On success, allows reading and browsing the Target's thoughts and memories. Fully exploring someone's mind—especially if they resist—is a difficult and time-consuming task.",
     "options": [
       "divine",
@@ -85,6 +86,7 @@
     "difficulty": -30,
     "cost": 15,
     "perRound": 0,
+    "variants": [],
     "option": "magic",
     "type": "spirit",
     "rank": "master",
@@ -126,14 +128,14 @@
     "systemId": "tos",
     "systemVersion": "0.8.0",
     "createdTime": 1780601587687,
-    "modifiedTime": 1780601587687,
-    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+    "modifiedTime": 1781793346454,
+    "lastModifiedBy": "YjJDoOEWjGrKL8LV"
   },
   "ownership": {
     "default": 0,
     "J03KIFAyMdNdBOUD": 3
   },
   "_id": "VhblSrURuMSXlgOM",
-  "sort": 0,
+  "sort": 4400000,
   "_key": "!items!VhblSrURuMSXlgOM"
 }

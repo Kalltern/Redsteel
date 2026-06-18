@@ -382,10 +382,11 @@
 
       {{#if entry.stackable}}
         <div class="inventory-cell-controls top">
-          <a class="inventory-ctrl" data-action="adjustNumericField" data-item-id="{{entry.item._id}}" data-path="system.quantity" data-delta="1" title="Increase">
+          <a class="inventory-ctrl" data-action="adjustNumericField" data-item-id="{{entry.item._id}}" data-path="system.quantity" data-delta="1" title="Increase (Shift +5)">
             <i class="fa-solid fa-plus"></i>
           </a>
-          <a class="inventory-ctrl" data-action="adjustNumericField" data-item-id="{{entry.item._id}}" data-path="system.quantity" data-delta="-1" title="Decrease">
+          <span class="inventory-ctrl-qty">{{entry.quantity}}</span>
+          <a class="inventory-ctrl" data-action="adjustNumericField" data-item-id="{{entry.item._id}}" data-path="system.quantity" data-delta="-1" title="Decrease (Shift -5)">
             <i class="fa-solid fa-minus"></i>
           </a>
         </div>

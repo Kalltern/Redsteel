@@ -3,6 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
+    "localizationKey": "",
     "description": "Triggers a Willpower Test vs. Target's Willpower Test. On failure, the Target is Disoriented for three rounds and takes Magical + Psychic damage {{math spellPower \"*\" 3}}. Ignores armor. This damage cannot kill, only incapacitate. On success, the Target is trapped in an impenetrable illusion and perceives no reality until released by the caster or freed (retest once every ten days). If the caster wishes, the trapped Target is sustained by magic and doesn't need food, drink, or sleep. The caster may communicate with the trapped Target.",
     "options": [
       "divine",
@@ -85,6 +86,7 @@
     "difficulty": -40,
     "cost": 20,
     "perRound": 0,
+    "variants": [],
     "option": "magic",
     "type": "spirit",
     "rank": "grandmaster",
@@ -126,14 +128,14 @@
     "systemId": "tos",
     "systemVersion": "0.8.0",
     "createdTime": 1780601587687,
-    "modifiedTime": 1780601587687,
-    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+    "modifiedTime": 1781793346455,
+    "lastModifiedBy": "YjJDoOEWjGrKL8LV"
   },
   "ownership": {
     "default": 0,
     "J03KIFAyMdNdBOUD": 3
   },
   "_id": "rxxTL0U0dCMIZshw",
-  "sort": 0,
+  "sort": 7500000,
   "_key": "!items!rxxTL0U0dCMIZshw"
 }

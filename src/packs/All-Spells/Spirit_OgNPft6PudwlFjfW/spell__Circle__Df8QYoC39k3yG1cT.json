@@ -3,6 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
+    "localizationKey": "",
     "description": "Links up to five wizards (Leader + 4 members) into a Circle. Circle members know each other's position. If a member moves more than 90 m away from their Leader for over 1 minute, they are removed from the Circle.",
     "options": [
       "divine",
@@ -85,6 +86,7 @@
     "difficulty": 0,
     "cost": 0,
     "perRound": 0,
+    "variants": [],
     "option": "magic",
     "type": "spirit",
     "rank": "expert",
@@ -126,14 +128,14 @@
     "systemId": "tos",
     "systemVersion": "0.8.0",
     "createdTime": 1780601587679,
-    "modifiedTime": 1780601587679,
-    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+    "modifiedTime": 1781793346453,
+    "lastModifiedBy": "YjJDoOEWjGrKL8LV"
   },
   "ownership": {
     "default": 0,
     "J03KIFAyMdNdBOUD": 3
   },
   "_id": "Df8QYoC39k3yG1cT",
-  "sort": 0,
+  "sort": 1700000,
   "_key": "!items!Df8QYoC39k3yG1cT"
 }

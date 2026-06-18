@@ -4,6 +4,7 @@
   "type": "gear",
   "img": "icons/equipment/chest/breastplate-banded-simple-leather-brown.webp",
   "system": {
+    "localizationKey": "REDSTEEL.Items.LeatherArmor.name",
     "description": "",
     "equipped": false,
     "layerOptions": [
@@ -15,6 +16,7 @@
     "armor": {
       "value": 2,
       "durability": 1,
+      "durabilityMax": 1,
       "acid": {
         "value": 0
       },
@@ -57,8 +59,25 @@
     "rangedCritDefense": 0,
     "archeryPenalty": 0,
     "perPenalty": 0,
-    "layer": "Middle",
-    "localizationKey": "REDSTEEL.Items.LeatherArmor.name"
+    "light": {
+      "dim": 0,
+      "bright": 0,
+      "angle": 360,
+      "color": "",
+      "alpha": 0.5,
+      "priority": 0,
+      "negative": false,
+      "luminosity": 0.5,
+      "attenuation": 0.5,
+      "coloration": 1,
+      "animation": {
+        "type": "",
+        "speed": 5,
+        "intensity": 5,
+        "reverse": false
+      }
+    },
+    "layer": "Middle"
   },
   "effects": [],
   "sort": 0,
@@ -72,12 +91,12 @@
     "compendiumSource": null,
     "duplicateSource": "Item.gcsh8mYqub16pgLj",
     "exportSource": null,
-    "coreVersion": "13.351",
+    "coreVersion": "14.363",
     "systemId": "redsteel",
-    "systemVersion": "0.8.1",
+    "systemVersion": "0.9.45",
     "createdTime": 1777294837982,
-    "modifiedTime": 1777294837982,
-    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+    "modifiedTime": 1781792673642,
+    "lastModifiedBy": "YjJDoOEWjGrKL8LV"
   },
   "_id": "VMbJDYebcSCqBQiA",
   "_key": "!items!VMbJDYebcSCqBQiA"

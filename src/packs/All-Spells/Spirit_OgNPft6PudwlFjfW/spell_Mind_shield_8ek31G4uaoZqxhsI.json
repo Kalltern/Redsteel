@@ -3,6 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
+    "localizationKey": "",
     "description": "Protects a chosen Target's mind for {{math spellPower \"*\" 10}} minutes. In mental combat, Target gains Attack Bonus +2d8. Reduces chance of mental combat initiation by 20%. Grants immunity to Disorientation. Cannot be cast on self if already engaged in mental combat.",
     "options": [
       "divine",
@@ -85,6 +86,7 @@
     "difficulty": 25,
     "cost": 4,
     "perRound": 0,
+    "variants": [],
     "option": "magic",
     "type": "spirit",
     "rank": "apprentice",
@@ -126,14 +128,14 @@
     "systemId": "tos",
     "systemVersion": "0.8.0",
     "createdTime": 1780601587687,
-    "modifiedTime": 1780601587687,
-    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+    "modifiedTime": 1781793346453,
+    "lastModifiedBy": "YjJDoOEWjGrKL8LV"
   },
   "ownership": {
     "default": 0,
     "J03KIFAyMdNdBOUD": 3
   },
   "_id": "8ek31G4uaoZqxhsI",
-  "sort": 0,
+  "sort": 900000,
   "_key": "!items!8ek31G4uaoZqxhsI"
 }

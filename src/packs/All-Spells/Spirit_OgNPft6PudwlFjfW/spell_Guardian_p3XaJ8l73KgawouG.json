@@ -3,6 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
+    "localizationKey": "",
     "description": "Caster must reserve 1 Mind point. Creates a combat illusion with 50 health and Speed 4. The illusion does not benefit from doctrines or weapons. Combat Tests are replaced by the caster's Channeling, and Strength/Dexterity Tests are replaced by the caster's Will Test. The illusion makes one attack per round dealing 3d6 + {{spellPower}} Magical+Psychic damage. Ignores armor.C",
     "options": [
       "divine",
@@ -85,6 +86,7 @@
     "difficulty": -35,
     "cost": 15,
     "perRound": 0,
+    "variants": [],
     "option": "magic",
     "type": "spirit",
     "rank": "master",
@@ -126,14 +128,14 @@
     "systemId": "tos",
     "systemVersion": "0.8.0",
     "createdTime": 1780601587683,
-    "modifiedTime": 1780601587683,
-    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+    "modifiedTime": 1781793346455,
+    "lastModifiedBy": "YjJDoOEWjGrKL8LV"
   },
   "ownership": {
     "default": 0,
     "J03KIFAyMdNdBOUD": 3
   },
   "_id": "p3XaJ8l73KgawouG",
-  "sort": 0,
+  "sort": 7100000,
   "_key": "!items!p3XaJ8l73KgawouG"
 }

@@ -3,6 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
+    "localizationKey": "",
     "description": "Deals Magical damage 3d20 + {{math spellPower \"*\" 25}} to shields and barriers and Stuns for two rounds. Ignores Magic Mirror. Penetration 40.",
     "options": [
       "divine",
@@ -85,6 +86,7 @@
     "difficulty": -50,
     "cost": 30,
     "perRound": 0,
+    "variants": [],
     "option": "magic",
     "type": "spirit",
     "rank": "grandmaster",
@@ -126,14 +128,14 @@
     "systemId": "tos",
     "systemVersion": "0.8.0",
     "createdTime": 1780601587684,
-    "modifiedTime": 1780601587684,
-    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+    "modifiedTime": 1781793346453,
+    "lastModifiedBy": "YjJDoOEWjGrKL8LV"
   },
   "ownership": {
     "default": 0,
     "J03KIFAyMdNdBOUD": 3
   },
   "_id": "D4xnvDGb2CLKPqwf",
-  "sort": 0,
+  "sort": 1500000,
   "_key": "!items!D4xnvDGb2CLKPqwf"
 }

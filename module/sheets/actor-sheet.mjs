@@ -1510,9 +1510,12 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     if (!doc) return;
 
     const path = target.dataset.path;
-    const delta = Number(target.dataset.delta ?? 1);
+    let delta = Number(target.dataset.delta ?? 1);
 
     if (!path) return;
+
+    // Hold Shift to adjust in steps of 5
+    if (event.shiftKey) delta *= 5;
 
     const current = Number(foundry.utils.getProperty(doc, path) ?? 0);
     let newValue = Math.max(0, current + delta);

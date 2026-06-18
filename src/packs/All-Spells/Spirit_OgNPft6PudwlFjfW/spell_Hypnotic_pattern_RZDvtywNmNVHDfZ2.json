@@ -3,6 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
+    "localizationKey": "",
     "description": "In a 6m area, triggers a Willpower Test vs. Target's Willpower Test. On success, the Target is dazed and takes no actions until disturbed. They may also answer simple questions or follow basic commands. Self-preservation overrides commands. On failure, the Target suffers a 5% penalty to Success for two rounds.",
     "options": [
       "divine",
@@ -85,6 +86,7 @@
     "difficulty": -70,
     "cost": 25,
     "perRound": 0,
+    "variants": [],
     "option": "magic",
     "type": "spirit",
     "rank": "grandmaster",
@@ -126,14 +128,14 @@
     "systemId": "tos",
     "systemVersion": "0.8.0",
     "createdTime": 1780601587683,
-    "modifiedTime": 1780601587683,
-    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+    "modifiedTime": 1781793346454,
+    "lastModifiedBy": "YjJDoOEWjGrKL8LV"
   },
   "ownership": {
     "default": 0,
     "J03KIFAyMdNdBOUD": 3
   },
   "_id": "RZDvtywNmNVHDfZ2",
-  "sort": 0,
+  "sort": 3700000,
   "_key": "!items!RZDvtywNmNVHDfZ2"
 }

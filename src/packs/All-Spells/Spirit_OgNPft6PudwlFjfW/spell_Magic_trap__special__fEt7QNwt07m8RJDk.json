@@ -3,6 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
+    "localizationKey": "",
     "description": "Creates a faintly visible trap on an unoccupied hex (cannot be adjacent to another trap) for 15 minutes, dealing Magic Damage 4d4 + {{spellPower}}. If triggered by a magical creature or a Source-bound caster, Target is Paralyzed for 2 rounds and takes an extra 2d4 damage. Penetration 12. Ignores Magic Defense.",
     "options": [
       "divine",
@@ -85,6 +86,7 @@
     "difficulty": -10,
     "cost": 10,
     "perRound": 0,
+    "variants": [],
     "option": "magic",
     "type": "spirit",
     "rank": "expert",
@@ -126,14 +128,14 @@
     "systemId": "tos",
     "systemVersion": "0.8.0",
     "createdTime": 1780601587686,
-    "modifiedTime": 1780601587686,
-    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+    "modifiedTime": 1781793346455,
+    "lastModifiedBy": "YjJDoOEWjGrKL8LV"
   },
   "ownership": {
     "default": 0,
     "J03KIFAyMdNdBOUD": 3
   },
   "_id": "fEt7QNwt07m8RJDk",
-  "sort": 0,
+  "sort": 5800000,
   "_key": "!items!fEt7QNwt07m8RJDk"
 }

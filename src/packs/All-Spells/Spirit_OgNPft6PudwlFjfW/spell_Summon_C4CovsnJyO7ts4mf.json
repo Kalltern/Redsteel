@@ -3,6 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
+    "localizationKey": "",
     "description": "Summons Spirit Marked Target. The marked Target can be summoned to the nearest unoccupied space. Summoning fails if no such space is reasonably available.",
     "options": [
       "divine",
@@ -85,6 +86,7 @@
     "difficulty": -30,
     "cost": 15,
     "perRound": 0,
+    "variants": [],
     "option": "magic",
     "type": "spirit",
     "rank": "master",
@@ -126,14 +128,14 @@
     "systemId": "tos",
     "systemVersion": "0.8.0",
     "createdTime": 1780601587690,
-    "modifiedTime": 1780601587690,
-    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+    "modifiedTime": 1781793346453,
+    "lastModifiedBy": "YjJDoOEWjGrKL8LV"
   },
   "ownership": {
     "default": 0,
     "J03KIFAyMdNdBOUD": 3
   },
   "_id": "C4CovsnJyO7ts4mf",
-  "sort": 0,
+  "sort": 1200000,
   "_key": "!items!C4CovsnJyO7ts4mf"
 }

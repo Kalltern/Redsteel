@@ -3,6 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
+    "localizationKey": "",
     "description": "Triggers Will Test vs. Target's Will Test. On success, Target becomes dazed and takes no actions unless disturbed. Will answer simple questions and follow simple commands. Self-preservation overrides commands. Daze lasts {{math spellPower \"*\" 1}} minutes or until attacked. On failure, Target suffers -5% Success for two rounds.",
     "options": [
       "divine",
@@ -85,6 +86,7 @@
     "difficulty": -20,
     "cost": 10,
     "perRound": 0,
+    "variants": [],
     "option": "magic",
     "type": "spirit",
     "rank": "expert",
@@ -126,14 +128,14 @@
     "systemId": "tos",
     "systemVersion": "0.8.0",
     "createdTime": 1780601587683,
-    "modifiedTime": 1780601587683,
-    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+    "modifiedTime": 1781793346453,
+    "lastModifiedBy": "YjJDoOEWjGrKL8LV"
   },
   "ownership": {
     "default": 0,
     "J03KIFAyMdNdBOUD": 3
   },
   "_id": "Bh2cGa7MZReP5jgS",
-  "sort": 0,
+  "sort": 1100000,
   "_key": "!items!Bh2cGa7MZReP5jgS"
 }

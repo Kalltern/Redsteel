@@ -3,6 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
+    "localizationKey": "",
     "description": "Modified magical defense. On successful defense, reflects the spell back to the caster. Reflected spells cannot be reflected again but can still be defended against. Magic Defense +5%. Can be cast as a Reaction only if the caster is attacked by a spell.",
     "options": [
       "divine",
@@ -85,6 +86,7 @@
     "difficulty": -50,
     "cost": 6,
     "perRound": 6,
+    "variants": [],
     "option": "magic",
     "type": "spirit",
     "rank": "grandmaster",
@@ -126,14 +128,14 @@
     "systemId": "tos",
     "systemVersion": "0.8.0",
     "createdTime": 1780601587685,
-    "modifiedTime": 1780601587685,
-    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+    "modifiedTime": 1781793346455,
+    "lastModifiedBy": "YjJDoOEWjGrKL8LV"
   },
   "ownership": {
     "default": 0,
     "J03KIFAyMdNdBOUD": 3
   },
   "_id": "nT545Hbtchn7JUh3",
-  "sort": 0,
+  "sort": 7000000,
   "_key": "!items!nT545Hbtchn7JUh3"
 }

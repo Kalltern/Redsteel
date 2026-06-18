@@ -3,6 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
+    "localizationKey": "",
     "description": "Creates up to three magical projectiles (cost per each), which the caster can keep readied. Can then be fired at any Target within 60m as a Free Action. Deals Magical damage 4d6 + {{spellPower}} to a single Target. Penetration 8. Only three such projectiles can be maintained; they disappear when not connected to a Source.",
     "options": [
       "divine",
@@ -85,6 +86,7 @@
     "difficulty": -25,
     "cost": 5,
     "perRound": 0,
+    "variants": [],
     "option": "magic",
     "type": "spirit",
     "rank": "master",
@@ -126,14 +128,14 @@
     "systemId": "tos",
     "systemVersion": "0.8.0",
     "createdTime": 1780601587684,
-    "modifiedTime": 1780601587684,
-    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+    "modifiedTime": 1781793346453,
+    "lastModifiedBy": "YjJDoOEWjGrKL8LV"
   },
   "ownership": {
     "default": 0,
     "J03KIFAyMdNdBOUD": 3
   },
   "_id": "HlfP2GdyjvqvGui3",
-  "sort": 0,
+  "sort": 2500000,
   "_key": "!items!HlfP2GdyjvqvGui3"
 }

@@ -3,6 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
+    "localizationKey": "",
     "description": "Teleports the caster and selected Targets within a 3m area in a straight line up to 15m. Cannot pass through creatures or obstacles. For each hex the caster fails to travel, they suffer 2d8 damage.",
     "options": [
       "divine",
@@ -85,6 +86,7 @@
     "difficulty": -30,
     "cost": 12,
     "perRound": 0,
+    "variants": [],
     "option": "magic",
     "type": "spirit",
     "rank": "master",
@@ -126,14 +128,14 @@
     "systemId": "tos",
     "systemVersion": "0.8.0",
     "createdTime": 1780601587686,
-    "modifiedTime": 1780601587686,
-    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+    "modifiedTime": 1781793346454,
+    "lastModifiedBy": "YjJDoOEWjGrKL8LV"
   },
   "ownership": {
     "default": 0,
     "J03KIFAyMdNdBOUD": 3
   },
   "_id": "HscsYeNlXclP9Upk",
-  "sort": 0,
+  "sort": 2800000,
   "_key": "!items!HscsYeNlXclP9Upk"
 }

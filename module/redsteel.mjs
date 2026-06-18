@@ -22,6 +22,11 @@ import { registerRollModifier } from "./utils/rollModifier.mjs";
 import { registerEndTurnButton } from "./utils/endTurnButton.mjs";
 import { applyTraitStatusEffects } from "./utils/traitStatusEffects.mjs";
 import { applyActorLight } from "./utils/itemLight.mjs";
+import {
+  registerAbilityGrants,
+  syncGrantedAbilities,
+  clearGrantSuppression,
+} from "./utils/abilityGrants.mjs";
 import { usePotion } from "./utils/usePotion.mjs";
 import { usePoison, clearWeaponCoating } from "./utils/usePoison.mjs";
 import { defenseRoll } from "./utils/defense.mjs";
@@ -279,6 +284,8 @@ Hooks.once("init", function () {
   game.redsteel.showAimButtons = showAimButtons; // debug: force-show buttons
   game.redsteel.refreshAimOverlay = refreshAimOverlay; // debug: redraw arrows
   game.redsteel.getAimStacks = getAimStacks;
+  game.redsteel.syncGrantedAbilities = syncGrantedAbilities;
+  game.redsteel.clearGrantSuppression = clearGrantSuppression;
   registerAimOverlay();
   registerDynamicInitiative();
   registerRollModifier();
@@ -288,6 +295,7 @@ Hooks.once("init", function () {
   registerCustomConditions();
   registerFirstAidHealing();
   registerMentalDuelSetting();
+  registerAbilityGrants();
 
   /**
    * Set an initiative formula for the system
@@ -1920,4 +1928,43 @@ Hooks.on("updateActor", (actor, changes, options, userId) => {
 Hooks.on("createToken", (tokenDoc, options, userId) => {
   if (game.user.id !== userId || !tokenDoc.actor) return;
   applyActorLight(tokenDoc.actor, { tokenDocs: [tokenDoc] });
+});
+
+/* -------------------------------------------- */
+/*  Default actor abilities                     */
+/* -------------------------------------------- */
+
+// Every Character and NPC starts with these baseline abilities (sourced from
+// the redsteel-items compendium).
+const DEFAULT_ACTOR_ABILITY_UUIDS = [
+  "Compendium.redsteel.redsteel-items.Item.Zkket4924S0MClYW", // Disengage
+  "Compendium.redsteel.redsteel-items.Item.Xc0SM3CwS9pnT5rY", // Sprint
+  "Compendium.redsteel.redsteel-items.Item.r0zKDZ0Zs2bMiUAu", // Rest
+];
+
+Hooks.on("createActor", async (actor, options, userId) => {
+  if (game.user.id !== userId) return;
+  if (!["character", "npc"].includes(actor.type)) return;
+
+  // Skip any that the actor already carries (e.g. duplicated/imported actors),
+  // matched by their compendium source so renames don't cause duplicates.
+  const existing = new Set(
+    actor.items.map((i) => i._stats?.compendiumSource).filter(Boolean),
+  );
+
+  const toAdd = [];
+  for (const uuid of DEFAULT_ACTOR_ABILITY_UUIDS) {
+    if (existing.has(uuid)) continue;
+    const source = await fromUuid(uuid);
+    if (!source) {
+      console.warn(`Redsteel | default ability not found: ${uuid}`);
+      continue;
+    }
+    const data = source.toObject();
+    delete data._id;
+    data._stats = { ...(data._stats ?? {}), compendiumSource: uuid };
+    toAdd.push(data);
+  }
+
+  if (toAdd.length) await actor.createEmbeddedDocuments("Item", toAdd);
 });
