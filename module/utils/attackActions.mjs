@@ -51,6 +51,8 @@ export async function attackActions() {
   const modifierAbilities = actor.items.filter(
     (i) => i.type === "ability" && i.system.modifiesAttack === true,
   );
+  // Pre-select the Aim radio from any stacks already aimed at the current target.
+  const preAim = game.redsteel.getAimStacks?.(token) ?? 0;
   const content = `
 <form>
   ${activeSetPreview}
@@ -63,7 +65,7 @@ export async function attackActions() {
       ${[0, 1, 2, 3, 4]
         .map(
           (n) => `
-          <input type="radio" name="aim" value="${n}" ${n === 0 ? "checked" : ""}>
+          <input type="radio" name="aim" value="${n}" ${n === preAim ? "checked" : ""}>
           <label class="aim-dot">${n === 0 ? "–" : n}</label>
         `,
         )

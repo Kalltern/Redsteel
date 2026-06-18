@@ -52,6 +52,16 @@ import {
   advanceCombatFirstAid,
 } from "./utils/otherActions.mjs";
 import {
+  addAimStack,
+  removeAimStack,
+  consumeAim,
+  registerAimOverlay,
+  ensureAimMacros,
+  showAimButtons,
+  refreshAimOverlay,
+  getAimStacks,
+} from "./utils/aim.mjs";
+import {
   handleApplyDamage,
   handleApplyEffects,
   applyDamageAsGM,
@@ -263,6 +273,13 @@ Hooks.once("init", function () {
   game.redsteel.resolveChannelingTick = resolveChannelingTick;
   game.redsteel.getDurabilityItems = getDurabilityItems;
   game.redsteel.getDurabilityReductionPerPoint = getDurabilityReductionPerPoint;
+  game.redsteel.addAimStack = addAimStack;
+  game.redsteel.removeAimStack = removeAimStack;
+  game.redsteel.consumeAim = consumeAim;
+  game.redsteel.showAimButtons = showAimButtons; // debug: force-show buttons
+  game.redsteel.refreshAimOverlay = refreshAimOverlay; // debug: redraw arrows
+  game.redsteel.getAimStacks = getAimStacks;
+  registerAimOverlay();
   registerDynamicInitiative();
   registerRollModifier();
   registerEndTurnButton();
@@ -776,6 +793,11 @@ Hooks.once("ready", async () => {
   });
   await macro?.update({ ownership: { default: 2 } }); // shared (observer)
 });
+
+// Ensure the three shared Aim macros exist in the Macros directory. Like the
+// Resume Duel macro above, they are not pinned to a hotbar slot — players drag
+// them where they like. Runs independently of the hotbar-init flag.
+Hooks.once("ready", () => ensureAimMacros());
 
 /* -------------------------------------------- */
 /*  Hooks for Dynamic initiative if enabled     */
