@@ -48,6 +48,15 @@ export class RedsteelCombat extends Combat {
       // -----------------------------------------
 
       const roll = new Roll(rollFormula, actor.getRollData());
+      // Mark as a d12 speed test so the roll-modifier layer can apply
+      // advantage/disadvantage (keeping the higher/lower d12). Tagged with the
+      // "spd" skill so speed-specific advantage buckets apply too.
+      roll.options ??= {};
+      roll.options.redsteel = {
+        ...(roll.options.redsteel ?? {}),
+        skill: "spd",
+        speedTest: true,
+      };
 
       await roll.evaluate();
 

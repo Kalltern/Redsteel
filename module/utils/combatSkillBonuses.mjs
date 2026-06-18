@@ -847,6 +847,12 @@ export async function getEffectRolls(
   const actorEffects = actor.system.effects || {};
   const actorMods = getActorCombatModifiers(actor, weapon);
 
+  // Poison coating applied to this weapon (see usePoison). Its authored combat
+  // effects fold into this attack the same way the weapon's own effects do:
+  // dedicated bleed/stagger below, custom slots via collectExtrasFromSource.
+  const coating = weapon?.getFlag?.("redsteel", "coating");
+  const coatingEffects = coating?.effects || {};
+
   const weaponSystem = ws || {};
   let abilityEffects = {};
   let abilitySystem = {};
@@ -892,15 +898,26 @@ export async function getEffectRolls(
     const modifier = actorEffects[effectName] || 0;
     const abilityBonus = abilityEffects[effectName] || 0;
     const offValue = offProps?.effects?.[effectName] || 0;
-    let totalBaseValue = baseValue + offValue + abilityBonus + modifierBonus;
+    const coatingValue = coatingEffects[effectName] || 0;
+    let totalBaseValue =
+      baseValue + offValue + abilityBonus + modifierBonus + coatingValue;
 
-    let isAuto = baseValue === -1 || offValue === -1 || abilityBonus === -1;
+    let isAuto =
+      baseValue === -1 ||
+      offValue === -1 ||
+      abilityBonus === -1 ||
+      coatingValue === -1;
 
     let shouldProcess = isAuto || totalBaseValue > 0;
 
     if (shouldProcess) {
       let modifiedEffectValue =
-        offValue + baseValue + modifier + abilityBonus + modifierBonus;
+        offValue +
+        baseValue +
+        modifier +
+        abilityBonus +
+        modifierBonus +
+        coatingValue;
 
       if (effectName === "stagger") {
         modifiedEffectValue =
@@ -963,6 +980,19 @@ export async function getEffectRolls(
     collectExtrasFromSource(
       ability.system,
       ability.system.effects,
+      effectContributions,
+    );
+  }
+  if (coating?.effects) {
+    // The coating stores effectType1..3 at the top level of the flag and the
+    // matching extra/effectName values inside `effects`, mirroring item.system.
+    collectExtrasFromSource(
+      {
+        effectType1: coating.effectType1,
+        effectType2: coating.effectType2,
+        effectType3: coating.effectType3,
+      },
+      coating.effects,
       effectContributions,
     );
   }
@@ -1030,19 +1060,20 @@ export async function getEffectRolls(
 
   // --- 4. Sharp Bleed Logic ---
 
-  if (ws.sharp && weaponEffects.bleed > 0) {
+  if (ws.sharp && (weaponEffects.bleed > 0 || (coatingEffects.bleed || 0) > 0)) {
     if (critScore > 1) {
       critBleeds += 1;
     }
     const abilityBleed = abilityEffects["bleed"] || 0;
     const modifier = actorEffects["bleed"] || 0;
     const modifiedBleedValue =
-      weaponEffects.bleed +
+      (weaponEffects.bleed || 0) +
       modifier +
       (abilityBleed || 0) +
       weaponSkillEffect +
       doctrineBleedBonus +
       (offProps?.effects?.bleed || 0) +
+      (coatingEffects.bleed || 0) +
       sneakEffect;
     const bleedChance = modifiedBleedValue % 100;
     const sharpBleedRoll = new Roll("1d100");
@@ -1060,12 +1091,14 @@ export async function getEffectRolls(
   const bleedBaseValue =
     (weaponEffects.bleed || 0) +
     (offProps?.effects?.bleed || 0) +
-    (abilityEffects["bleed"] || 0);
+    (abilityEffects["bleed"] || 0) +
+    (coatingEffects.bleed || 0);
 
   const bleedIsAuto =
     weaponEffects.bleed === -1 ||
     offProps?.effects?.bleed === -1 ||
-    abilityEffects["bleed"] === -1;
+    abilityEffects["bleed"] === -1 ||
+    coatingEffects.bleed === -1;
 
   // --- COMPUTE ONLY ---
   if (bleedIsAuto) {
@@ -1075,6 +1108,7 @@ export async function getEffectRolls(
     const abilityBleed = abilityEffects["bleed"] || 0;
     const actorBleed = actorEffects["bleed"] || 0;
     const offBleed = offProps?.effects?.bleed || 0;
+    const coatingBleed = coatingEffects.bleed || 0;
 
     totalBleedChance =
       (weaponEffects.bleed || 0) +
@@ -1084,6 +1118,7 @@ export async function getEffectRolls(
       weaponSkillEffect +
       sneakEffect +
       offBleed +
+      coatingBleed +
       doctrineBleedBonus;
 
     bleedChanceDisplay = totalBleedChance;

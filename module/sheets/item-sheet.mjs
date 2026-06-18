@@ -129,6 +129,11 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
       case "consumable":
         // Potions/poisons carry authored Active Effects (buffs) applied on use.
         options.parts.push("effects");
+        // Poisons can also carry combat effects (bleed/stagger/custom) that the
+        // coating contributes to the wielder's attack rolls (see usePoison).
+        if (this.item.system.option === "poison") {
+          options.parts.push("combatEffects");
+        }
         break;
       case "ability":
         options.parts.push("attributesAbility", "combatEffects");

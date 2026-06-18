@@ -639,10 +639,12 @@ export class RedsteelActor extends Actor {
     systemData.sneakDamage =
       calcRogueSneakDamage[systemData.doctrines.rogue.value] +
       systemData.sneakDamageBonus;
-    // Calculate initiative
+    // Calculate initiative — capped at 15 for characters.
     const calcIni = [0, 0, 0, 1, 2, 3, 4, 5, 5, 5, 5];
-    secAttribute.ini.total =
-      calcIni[per] + secAttribute.ini.value + secAttribute.ini.bonus;
+    secAttribute.ini.total = Math.min(
+      15,
+      calcIni[per] + secAttribute.ini.value + secAttribute.ini.bonus,
+    );
 
     // Calculate speed
     // Fatigue: degree 5+ sets speed to 1; degree 2+ applies a flat -1.

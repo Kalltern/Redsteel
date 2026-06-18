@@ -9,12 +9,19 @@
  * are never modified.
  *
  * Advantage rolls 2d100 and keeps the lower die (better, since the die is
- * subtracted); disadvantage keeps the higher die.
+ * subtracted); disadvantage keeps the higher die. Advantage/disadvantage also
+ * applies to d12 speed/initiative tests (tagged `options.redsteel.speedTest`),
+ * where the die is added — there advantage keeps the higher d12.
  */
 
 import { getRollBias } from "./rollAdvantage.mjs";
 
 const TEST_DIE_PATTERN = /-\s*1d100\b/i;
+// Speed/initiative tests ADD a d12 (higher is better) — the opposite keep
+// direction from a subtracted d100. Matches a plain 1d12 and the rogue 2d12kh1.
+// Only applied to rolls tagged `options.redsteel.speedTest` so d12 damage rolls
+// are never touched.
+const D12_DIE_PATTERN = /\b([12])d12(?:k(h|l)1)?\b/i;
 
 const state = {
   die: null, // "advantage" | "disadvantage" | null
@@ -107,11 +114,48 @@ function applyDesperateFatigueCost(roll) {
  * Bonus/penalty from the picker is a separate flat term. Called from the Roll
  * evaluation wrappers.
  */
+/**
+ * Apply advantage/disadvantage to a d12 speed/initiative test. The d12 is added
+ * (higher is better), so advantage keeps the higher die (2d12kh1) and
+ * disadvantage the lower (2d12kl1). Any keep already baked into the formula
+ * (e.g. the rogue 2d12kh1) is folded in, so sources combine and cancel like a
+ * signed bias. Flat bonus/penalty and Desperate Effort never apply here.
+ */
+function applyD12SpeedBias(roll, formula, bias, autoBias) {
+  // No advantage/disadvantage to apply — leave the roll and the picker alone
+  // (a flat/Desperate-only picker is meant for a later d100 test).
+  if (bias === 0) return;
+
+  const m = formula.match(D12_DIE_PATTERN);
+  if (!m) return;
+
+  const existing = m[2] === "h" ? 1 : m[2] === "l" ? -1 : 0;
+  const net = existing + bias;
+  const dieTerm = net > 0 ? "2d12kh1" : net < 0 ? "2d12kl1" : "1d12";
+
+  if (dieTerm !== m[0]) {
+    const modified = formula.replace(m[0], dieTerm);
+    roll.terms = roll.constructor.parse(modified, roll.data);
+    roll._formula = roll.constructor.getFormula(roll.terms);
+  }
+  roll._redsteelModifierApplied = true;
+
+  // The manual die selection is consumed (non-sticky) only when it was set;
+  // an actor-only bias applies every time and leaves the picker untouched.
+  let label = state.die;
+  if (!label && autoBias !== 0) label = autoBias > 0 ? "advantage" : "disadvantage";
+  if (state.die && !state.sticky) clearModifier({ silent: true });
+  if (label) ui.notifications.info(`Applied ${label} to speed roll.`);
+}
+
 function applyModifier(roll) {
   if (roll._redsteelModifierApplied) return;
 
   const formula = roll.formula;
-  if (!TEST_DIE_PATTERN.test(formula)) return;
+  const isD100 = TEST_DIE_PATTERN.test(formula);
+  const isD12Speed =
+    !isD100 && !!roll.options?.redsteel?.speedTest && D12_DIE_PATTERN.test(formula);
+  if (!isD100 && !isD12Speed) return;
 
   // Actor-driven bias: actor-wide `all` bucket plus, when the call site tagged
   // a skill, that skill's bucket.
@@ -123,6 +167,14 @@ function applyModifier(roll) {
   const manualActive = isActive();
   if (state.die === "advantage") bias += 1;
   else if (state.die === "disadvantage") bias -= 1;
+
+  // Speed/initiative d12 test: only advantage/disadvantage applies (higher die
+  // is better) — never the flat bonus/penalty or Desperate Effort.
+  if (isD12Speed) {
+    applyD12SpeedBias(roll, formula, bias, autoBias);
+    return;
+  }
+
   let flat = state.flat;
 
   // Desperate Effort: +20% success, ignores fatigue penalties (restore the
@@ -198,13 +250,14 @@ function openModifierDialog() {
         <p style="margin-top:0;">
           Set a modifier for your margin-of-success tests (rolls against 1d100).
           The flat bonus/penalty and advantage/disadvantage are independent — use
-          either or both.
+          either or both. Advantage/disadvantage also applies to d12
+          speed/initiative tests (flat bonus/penalty does not).
         </p>
         <fieldset>
           <legend>Advantage / Disadvantage</legend>
           <label><input type="radio" name="die-mode" value="" ${dieChecked(null)}> None</label><br>
-          <label><input type="radio" name="die-mode" value="advantage" ${dieChecked("advantage")}> Advantage — roll 2d100, keep the better</label><br>
-          <label><input type="radio" name="die-mode" value="disadvantage" ${dieChecked("disadvantage")}> Disadvantage — roll 2d100, keep the worse</label>
+          <label><input type="radio" name="die-mode" value="advantage" ${dieChecked("advantage")}> Advantage — keep the better die</label><br>
+          <label><input type="radio" name="die-mode" value="disadvantage" ${dieChecked("disadvantage")}> Disadvantage — keep the worse die</label>
         </fieldset>
         <div class="form-group">
           <label>Flat modifier (positive = bonus, negative = penalty, 0 = none)</label>

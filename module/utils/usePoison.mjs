@@ -3,13 +3,20 @@
  * The bonus-damage formula is taken from the poison's own roll (the same
  * `system.formula` prepared in RedsteelItem#prepareData, e.g. "2d6 +3").
  *
+ * The poison's combat effects (bleed/stagger/custom effect chances authored on
+ * the poison's combatEffects tab) are snapshotted alongside so the coating can
+ * fold them into the wielder's attack effect rolls (see getEffectRolls).
+ *
  * @param {Item} poison
- * @returns {{name:string, img:string, formula:string, damageType:string}}
+ * @returns {{name:string, img:string, formula:string, damageType:string,
+ *            effects:object, effectType1:string, effectType2:string,
+ *            effectType3:string}}
  */
 function buildCoating(poison) {
-  const roll = poison.system.roll ?? {};
+  const ps = poison.system ?? {};
+  const roll = ps.roll ?? {};
   const formula =
-    poison.system.formula?.trim() ||
+    ps.formula?.trim() ||
     `${roll.diceNum ?? 0}d${roll.diceSize ?? 0}${
       roll.diceBonus ? ` + ${roll.diceBonus}` : ""
     }`;
@@ -19,7 +26,30 @@ function buildCoating(poison) {
     img: poison.img,
     formula,
     damageType: "poison",
+    // Frozen snapshot: the coating keeps applying these even if the source
+    // poison is later edited or consumed.
+    effects: foundry.utils.deepClone(ps.effects ?? {}),
+    effectType1: ps.effectType1 ?? "",
+    effectType2: ps.effectType2 ?? "",
+    effectType3: ps.effectType3 ?? "",
   };
+}
+
+/**
+ * Whether a coating carries any non-damage combat effect worth showing.
+ * @param {object} coating
+ * @returns {boolean}
+ */
+function coatingHasEffects(coating) {
+  const e = coating?.effects;
+  if (!e) return false;
+  return [
+    e.bleed,
+    e.stagger,
+    e.extra1,
+    e.extra2,
+    e.extra3,
+  ].some((v) => Number(v) !== 0);
 }
 
 /** Consume one dose of a poison, deleting it when it runs out. */
@@ -38,6 +68,10 @@ async function coatWeapon(actor, poison, weapon) {
   await weapon.setFlag("redsteel", "coating", coating);
   await consumeOneDose(poison);
 
+  const effectsRow = coatingHasEffects(coating)
+    ? `<tr><td><p>Bonus effects: ${describeCoatingEffects(coating)}</p></td></tr>`
+    : "";
+
   await ChatMessage.create({
     speaker: ChatMessage.getSpeaker({ actor }),
     flavor: `
@@ -48,9 +82,37 @@ async function coatWeapon(actor, poison, weapon) {
       <table style="width: 100%; text-align: center; font-size: 15px;">
         <tr><th>Poison Coating</th></tr>
         <tr><td><b><p>${coating.name}</p><p>Bonus damage: ${coating.formula}</p></b></td></tr>
+        ${effectsRow}
       </table>
     `,
   });
+}
+
+/**
+ * Human-readable summary of a coating's combat effects, e.g. "Bleed +70%".
+ * Mirrors the effect-name resolution used by the attack effect rolls.
+ * @param {object} coating
+ * @returns {string}
+ */
+function describeCoatingEffects(coating) {
+  const e = coating.effects ?? {};
+  const parts = [];
+  const fmt = (label, value) => {
+    const v = Number(value) || 0;
+    if (v === 0) return;
+    parts.push(`${label} ${v === -1 ? "AUTO" : `+${v}%`}`);
+  };
+
+  fmt("Bleed", e.bleed);
+  fmt("Stagger", e.stagger);
+  for (let i = 1; i <= 3; i++) {
+    const type = coating[`effectType${i}`];
+    if (!type) continue;
+    const name = type === "custom" ? e[`effectName${i}`] || "Custom" : type;
+    const label = name.charAt(0).toUpperCase() + name.slice(1);
+    fmt(label, e[`extra${i}`]);
+  }
+  return parts.join(", ") || "—";
 }
 
 /**

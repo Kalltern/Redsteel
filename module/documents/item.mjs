@@ -115,7 +115,8 @@ export class RedsteelItem extends Item {
     if (
       this.type === "spell" ||
       this.type === "ability" ||
-      this.type === "weapon"
+      this.type === "weapon" ||
+      this.type === "consumable"
     ) {
       this.system.effectTypes = [
         "custom",
