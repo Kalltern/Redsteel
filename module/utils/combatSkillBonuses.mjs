@@ -462,9 +462,13 @@ export async function getAttackRolls(
   longReachPenalty = 0,
 ) {
   const ws = weapon?.system ?? {};
+  // Weapon quality (Zbraň column): attack + critical-hit chance bonuses.
+  const qualityAttack = Number(ws.qualityMods?.attack || 0);
+  const qualityCritChance = Number(ws.qualityMods?.critChance || 0);
   let totalWeaponAttack =
     Number(doctrineBonus || 0) +
     Number(ws.attack || 0) +
+    qualityAttack +
     Number(longReachPenalty || 0);
   let criticalSuccessThreshold = 0;
   let criticalFailureThreshold = 0;
@@ -496,7 +500,8 @@ export async function getAttackRolls(
     criticalSuccessThreshold =
       actor.system.combatSkills.archery.criticalSuccessThreshold +
       doctrineCritBonus +
-      (ws.critChance ?? 0);
+      (ws.critChance ?? 0) +
+      qualityCritChance;
     criticalFailureThreshold =
       actor.system.combatSkills.archery.criticalFailureThreshold -
       (ws.critFail ?? 0) -
@@ -511,6 +516,7 @@ export async function getAttackRolls(
     criticalSuccessThreshold =
       actor.system.combatSkills.combat.criticalSuccessThreshold +
       (ws.critChance ?? 0) +
+      qualityCritChance +
       knifeMasterCrit +
       doctrineCritBonus +
       (weaponSkillCrit ?? 0);
@@ -533,7 +539,10 @@ export async function getAttackRolls(
   } else {
     criticalSuccessThreshold =
       actor.system.combatSkills.combat.criticalSuccessThreshold +
-      ((ws.critChance ?? 0) + doctrineCritBonus + weaponSkillCrit || 0);
+      ((ws.critChance ?? 0) +
+        qualityCritChance +
+        doctrineCritBonus +
+        weaponSkillCrit || 0);
     criticalFailureThreshold =
       actor.system.combatSkills.combat.criticalFailureThreshold -
       (ws.critFail ?? 0) -
@@ -608,6 +617,13 @@ export async function getDamageRolls(
     cha: actor.system.attributes.cha.total,
     per: actor.system.attributes.per.total,
   };
+  // Surface each magic school's spell power so modifier-ability damage
+  // formulas can use @spellPowerFire, @spellPowerDarkness, etc. — matching
+  // the tokens the actor/item roll data expose.
+  for (const [key, school] of Object.entries(actor.system.schools ?? {})) {
+    const name = key.charAt(0).toUpperCase() + key.slice(1);
+    rollData[`spellPower${name}`] = school?.spellPower ?? 0;
+  }
   const offProps = getOffhandProps(weaponContext);
   const actorMods = getActorCombatModifiers(actor, weapon);
   const { sneakDamage } = await getSneakDamageFormula(
@@ -958,6 +974,12 @@ export async function getEffectRolls(
   }
 
   const effectContributions = [];
+  // Weapon quality (Ověření) contributes a precision extra effect that merges
+  // with any precision granted by specialisations/abilities below.
+  const qualityPrecision = Number(weaponSystem.qualityMods?.precision || 0);
+  if (qualityPrecision) {
+    effectContributions.push({ name: "precision", value: qualityPrecision });
+  }
   if (actorMods?.extraEffects) {
     for (const [name, value] of Object.entries(actorMods.extraEffects)) {
       if (value !== 0) {

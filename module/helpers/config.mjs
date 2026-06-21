@@ -780,6 +780,51 @@ REDSTEEL.effectDefinitions = {
   },
 
   // ==========================================================
+  // Physiological states driven by resource thresholds. These are
+  // auto-applied / removed by RedsteelActiveEffect._syncResourceStateEffects
+  // (effects.mjs) on every actor update — not toggled by hand.
+  // ==========================================================
+
+  // "Unavený" — occurs while Stamina (Výdrž) is at 0. The character loses one
+  // action (a minimum of one always remains) — surfaced via the roll pill,
+  // since the action economy is not data-modelled — takes −5% to every Success
+  // roll, and has Speed halved.
+  fatigued: {
+    name: "Fatigued",
+    img: "icons/svg/degen.svg",
+    statuses: ["fatigued"],
+    // Re-applying (e.g. spending the last stamina again) must not stack.
+    stackBehavior: "ignore",
+    changes: [
+      {
+        key: "system.globalBonus",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: -5,
+      },
+      {
+        key: "system.secondaryAttributes.spd.total",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.MULTIPLY,
+        value: 0.5,
+      },
+    ],
+  },
+
+  // "Toxický šok" — occurs the moment Toxicity exceeds its maximum. Each round
+  // the victim suffers 25 raw damage (bypassing armor) and tests Endurance
+  // (−40) or is Stunned (Ochromení = stun). See effects.mjs _handleToxicShock.
+  toxic_shock: {
+    name: "Toxic Shock",
+    img: "icons/svg/poison.svg",
+    statuses: ["toxic_shock"],
+    // Re-applying while still over the threshold must not re-stack.
+    stackBehavior: "ignore",
+    triggers: {
+      onApply: { custom: "toxicShock" },
+      onRoundStart: { custom: "toxicShock" },
+    },
+  },
+
+  // ==========================================================
   // Effects referenced by spells (Kniha kouzel) and the spell
   // sheet effectTypes vocabulary that previously had no
   // definition. Penalty values are provisional — tune to the
@@ -1168,11 +1213,11 @@ REDSTEEL.effectDefinitions = {
     stackBehavior: "ignore",
   },
 
-  // "Krvavá zbraň" — Bleeding chance +50%.
-  blood_weapon: {
-    name: "Blood Weapon",
+  // "Krvavá zbraň" / "Sanguine blade" — Bleeding chance +50%.
+  sanguine_blade: {
+    name: "Sanguine blade",
     img: "icons/skills/wounds/blood-drip-droplet-red.webp",
-    statuses: ["blood_weapon"],
+    statuses: ["sanguine_blade"],
 
     combatModifiers: {
       exclusiveGroup: "weaponEnchant",
@@ -1182,6 +1227,107 @@ REDSTEEL.effectDefinitions = {
       },
     },
     stackBehavior: "ignore",
+  },
+
+  // "Koagulace" / "Coagulation" — while active, Bleeding effects on the target
+  // last only one round. Duration (in rounds) scales with the caster's Blood
+  // Spell Power (SK) — baked in applyEffect's dynamic block. The per-round
+  // `clampBleeds` trigger caps every Bleeding effect to a single remaining
+  // round so the engine's own round decrement removes them.
+  coagulation: {
+    name: "Coagulation",
+    img: "icons/skills/wounds/blood-cells-disease-green.webp",
+    statuses: ["coagulation"],
+    defaultRounds: 1, // overwritten with SK at apply time
+    useDuration: true,
+    stackBehavior: "refresh",
+    triggers: {
+      onApply: { custom: "clampBleeds" },
+      onRoundStart: { custom: "clampBleeds" },
+    },
+  },
+
+  // "Otrávená krev" / "Poisoned blood" — Dark + Poison DoT equal to
+  // 1d6 + SK for four rounds, ignoring base armor. The SK term is baked into
+  // the damage formula in applyEffect's dynamic block.
+  poisoned_blood: {
+    name: "Poisoned blood",
+    img: "icons/magic/death/skull-poison-green.webp",
+    statuses: ["poisoned_blood"],
+    // 1 tick onApply + 3 onRoundStart ticks = four rounds of damage.
+    defaultRounds: 3,
+    useDuration: true,
+    stackBehavior: "refresh",
+    triggers: {
+      onApply: {
+        custom: "conditionDamage",
+        damage: "1d6", // SK appended at apply time → "1d6 + <SK>"
+        damageProfile: { expression: ["dark", "and", "poison"] },
+      },
+      onRoundStart: {
+        custom: "conditionDamage",
+        damage: "1d6",
+        damageProfile: { expression: ["dark", "and", "poison"] },
+      },
+    },
+  },
+
+  // "Spárů démona" / "Demonic grasp" — Dark + Blunt DoT equal to SK × 4 per
+  // round for up to four rounds, ignoring base armor; also applies two
+  // Bleeding effects each round and Roots the target for the duration.
+  // The SK × 4 damage is baked into the trigger in applyEffect's dynamic block;
+  // the Root portion is bundled into `changes` so it ends with the effect.
+  demonic_grasp: {
+    name: "Demonic grasp",
+    img: "icons/magic/unholy/strike-hand-glow-pink.webp",
+    statuses: ["demonic_grasp"],
+    // 1 tick onApply + 3 onRoundStart ticks = "up to four rounds" of damage
+    // and Bleeding application; Root lasts until the effect is removed.
+    defaultRounds: 3,
+    useDuration: true,
+    stackBehavior: "refresh",
+    triggers: {
+      onApply: {
+        custom: "demonicGrasp",
+        damage: "0", // overwritten with SK × 4 at apply time
+        bleedStacks: 2,
+        damageProfile: { expression: ["dark", "and", "blunt"] },
+      },
+      onRoundStart: {
+        custom: "demonicGrasp",
+        damage: "0",
+        bleedStacks: 2,
+        damageProfile: { expression: ["dark", "and", "blunt"] },
+      },
+    },
+    // Rooted: same penalties as the built-in `root` effect.
+    changes: [
+      {
+        key: "system.secondaryAttributes.spd.total",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.MULTIPLY,
+        value: 0.5,
+      },
+      {
+        key: "system.combatSkills.meleeDefense.bonus",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: -15,
+      },
+      {
+        key: "system.combatSkills.rangedDefense.bonus",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: -15,
+      },
+      {
+        key: "system.combatSkills.dodge.bonus",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: -15,
+      },
+      {
+        key: "system.combatSkills.combat.bonus",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: -15,
+      },
+    ],
   },
 
   // "Přízračná zbraň" — damage type becomes Magic.

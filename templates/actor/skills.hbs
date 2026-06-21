@@ -619,7 +619,9 @@
       {{#if (hasVisibleEntries system.schools)}}
       <h5>Schools <span>Rank</span></h5>
       {{#each system.schools as |skill key|}}
-          {{#if skill.visible}}
+          {{!-- Blood is no longer a progressable school: its progression comes
+                from the Blood School specialisation, so it is excluded here. --}}
+          {{#if (and skill.visible (not (eq key "blood")))}}
           <div class="skill-entry flexrow">
             <label class="skill-label flexlarge align-left skill-name" data-label="{{key}}">
               {{localize (concat 'REDSTEEL.Actor.Character.schools.' key '.label')}}
@@ -712,11 +714,12 @@
         {{/if}}
       {{/with}}
 
-      {{!-- Spell Power per school, only for schools with at least one level --}}
-      {{#if (hasLeveledEntries system.schools)}}
+      {{!-- Spell Power per school, for schools with at least one level, plus
+            Blood when its specialisation is active (Blood has no school rank). --}}
+      {{#if (or (hasLeveledEntries system.schools) system.specialisations.bloodSchool.active)}}
       <h5>{{localize "REDSTEEL.Actor.Character.schools.spellPower.label"}} <span>Rating</span></h5>
       {{#each system.schools as |school key|}}
-        {{#if (gt school.value 0)}}
+        {{#if (or (gt school.value 0) (and (eq key "blood") @root.system.specialisations.bloodSchool.active))}}
         <div class="skill-entry flexrow">
           <label class="skill-label flexlarge align-left skill-name" data-label="{{key}}-spellpower">
             {{localize (concat 'REDSTEEL.Actor.Character.schools.' key '.label')}}

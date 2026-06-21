@@ -167,6 +167,17 @@
               {{/each}}
             </select>
           </div>
+
+          <div class="grid-span-1">
+            <label for="weapon-quality">{{localize "REDSTEEL.Item.Weapon.FIELDS.quality.label"}}:</label>
+            <select name="system.quality" id="weapon-quality">
+              {{#each system.qualityChoices as |label key|}}
+                <option value="{{key}}" {{#if (eq ../system.quality key)}}selected{{/if}}>
+                  {{label}}
+                </option>
+              {{/each}}
+            </select>
+          </div>
         {{/if}}
 
         {{!-- Ability-only fields --}}
@@ -304,6 +315,17 @@
             </select>
           </div>
         {{/unless}}
+
+        <div class="grid-span-1">
+          <label for="gear-quality">{{localize "REDSTEEL.Item.Gear.FIELDS.quality.label"}}:</label>
+          <select name="system.quality" id="gear-quality">
+            {{#each system.qualityChoices as |label key|}}
+              <option value="{{key}}" {{#if (eq ../system.quality key)}}selected{{/if}}>
+                {{label}}
+              </option>
+            {{/each}}
+          </select>
+        </div>
 
       </div>
     {{/if}}

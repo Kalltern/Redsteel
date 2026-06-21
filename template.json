@@ -233,7 +233,7 @@
         "temporaryHealth": {
           "value": 0,
           "min": 0,
-          "max": 10,
+          "max": 50,
           "bonus": 0
         }
       },
@@ -1029,7 +1029,7 @@
         "temporaryHealth": {
           "value": 0,
           "min": 0,
-          "max": 10,
+          "max": 50,
           "bonus": 0
         }
       },

@@ -124,8 +124,50 @@ export class RedsteelActiveEffect extends ActiveEffect {
       }
     });
 
+    // Resource-threshold conditions (Fatigued / Toxic Shock) follow the
+    // actor's current Stamina and Toxicity. Re-synced by the active GM on
+    // every actor update.
+    Hooks.on("updateActor", async (actor) => {
+      if (!this._isAuthoritative()) return;
+      await this._syncResourceStateEffects(actor);
+    });
+
     this._hooksRegistered = true;
   }
+
+  /**
+   * Auto-apply / remove the resource-threshold conditions:
+   *   • "fatigued"    while Stamina (Výdrž) is at 0.
+   *   • "toxic_shock" while Toxicity exceeds its maximum.
+   * Only writes when the state actually changes, so it is safe to run on every
+   * actor update without looping.
+   */
+  static async _syncResourceStateEffects(actor) {
+    if (!actor?.system?.stats) return;
+
+    const sync = async (statusId, shouldHave) => {
+      const existing = actor.effects.find((e) => e.statuses?.has(statusId));
+      if (shouldHave && !existing) {
+        await this.applyEffect(actor, statusId);
+      } else if (!shouldHave && existing) {
+        await existing.delete();
+      }
+    };
+
+    const stamina = actor.system.stats.stamina;
+    if (stamina) {
+      await sync("fatigued", Number(stamina.value ?? 0) <= 0);
+    }
+
+    const toxicity = actor.system.stats.toxicity;
+    if (toxicity) {
+      await sync(
+        "toxic_shock",
+        Number(toxicity.value ?? 0) > Number(toxicity.max ?? Infinity),
+      );
+    }
+  }
+
   static _isAuthoritative() {
     if (!game.user.isGM) return false;
     if (!game.users.activeGM) return false;
@@ -313,6 +355,10 @@ export class RedsteelActiveEffect extends ActiveEffect {
     }
 
     let changes = def.changes ? foundry.utils.deepClone(def.changes) : [];
+    // Cloned so Spell Power-scaled effects can bake their caster's SK into the
+    // stored trigger (formula / damage) without mutating the shared CONFIG
+    // definition. Used for the NEW EFFECT path below.
+    let triggers = def.triggers ? foundry.utils.deepClone(def.triggers) : {};
 
     // ============================================
     // DYNAMIC EFFECTS
@@ -345,6 +391,37 @@ export class RedsteelActiveEffect extends ActiveEffect {
     // SK rounds of the casting school (full Spell Power).
     if (effectId === "flicker" && sourceCaster) {
       roundsDuration = getSpellPower(sourceCaster, school); // multiplier 1 → SK
+    }
+
+    // ============================================
+    // BLOOD-SCHOOL SK-SCALED EFFECTS
+    // ============================================
+    // Coagulation — lasts SK rounds (Blood Spell Power). While active its
+    // `clampBleeds` trigger keeps every Bleeding effect to one remaining round.
+    if (effectId === "coagulation" && sourceCaster) {
+      roundsDuration =
+        getSpellPower(sourceCaster, school ?? "blood") || roundsDuration;
+    }
+
+    // Poisoned blood — Dark + Poison DoT of 1d6 + SK per round; the SK term is
+    // appended to the stored damage formula so each tick re-rolls 1d6 + SK.
+    if (effectId === "poisoned_blood" && sourceCaster) {
+      const sk = getSpellPower(sourceCaster, school ?? "blood");
+      for (const key of ["onApply", "onRoundStart"]) {
+        if (triggers[key]) triggers[key].damage = `1d6 + ${sk}`;
+      }
+    }
+
+    // Demonic grasp — Dark + Blunt DoT of SK × 4 per round (baked as a flat
+    // number); the 2 Bleeding effects / round come from the trigger's
+    // bleedStacks, and the Root penalties travel in the definition's changes.
+    if (effectId === "demonic_grasp" && sourceCaster) {
+      const dmg = getSpellPower(sourceCaster, school ?? "blood", {
+        multiplier: 4,
+      });
+      for (const key of ["onApply", "onRoundStart"]) {
+        if (triggers[key]) triggers[key].damage = `${dmg}`;
+      }
     }
 
     // ============================================
@@ -464,7 +541,7 @@ export class RedsteelActiveEffect extends ActiveEffect {
     // NEW EFFECT
     // ============================================
     const redsteelFlags = {
-      triggers: def.triggers ?? {},
+      triggers,
     };
 
     if (def.stackBehavior === "stack" || def.stackBehavior === "reset") {
@@ -789,8 +866,20 @@ export class RedsteelActiveEffect extends ActiveEffect {
       return this._handleConditionDamage(trigger);
     }
 
+    if (trigger.custom === "toxicShock") {
+      return this._handleToxicShock();
+    }
+
     if (trigger.custom === "clearBleeds") {
       return this._handleClearBleeds();
+    }
+
+    if (trigger.custom === "clampBleeds") {
+      return this._handleClampBleeds();
+    }
+
+    if (trigger.custom === "demonicGrasp") {
+      return this._handleDemonicGrasp(trigger);
     }
 
     if (trigger.custom === "insectSwarm") {
@@ -948,6 +1037,35 @@ export class RedsteelActiveEffect extends ActiveEffect {
   }
 
   /**
+   * Toxic Shock tick (Toxický šok): 25 raw damage that bypasses all armor —
+   * written straight to health, like the other DoT ticks — plus an Endurance
+   * (−40) test; on a failure the victim is Stunned (Ochromení = stun).
+   */
+  async _handleToxicShock() {
+    const actor = this.parent;
+    if (!actor) return;
+
+    const current = Number(actor.system.stats.health?.value ?? 0);
+    await actor.update({ "system.stats.health.value": current - 25 });
+    await this._maybeApplyZeroHealthState();
+
+    // Endurance test: mod% − 40 − 1d100 ≥ 0 (same convention as the Downed
+    // Endurance/Will tests). Failure → Stun.
+    const mod = Number(actor.system.attributes?.end?.mod ?? 0);
+    const roll = await new Roll(`${mod} - 40 - 1d100`).evaluate();
+    const success = roll.total >= 0;
+
+    await roll.toMessage({
+      speaker: ChatMessage.getSpeaker({ actor }),
+      flavor: `${this.name} — 25 damage; Endurance (−40) vs Stun`,
+    });
+
+    if (!success) {
+      await game.redsteel.applyEffect(actor, "stun");
+    }
+  }
+
+  /**
    * Removes all bleed effects from the actor (e.g. Bleed Ward on apply).
    */
   async _handleClearBleeds() {
@@ -964,6 +1082,95 @@ export class RedsteelActiveEffect extends ActiveEffect {
 
     if (bleeds.length) {
       ui.notifications.info(`${actor.name}'s bleeding is stopped.`);
+    }
+  }
+
+  /**
+   * Coagulation tick: caps every Bleeding effect on the actor to a single
+   * remaining round, so the engine's own round decrement removes it after one
+   * tick — "all Bleeding effects last only one round" while Coagulation holds.
+   * Setting `flags.redsteel.rounds = 1` lets the standard decrementRound
+   * machinery (which runs right after this trigger) handle removal.
+   */
+  async _handleClampBleeds() {
+    const actor = this.parent;
+    if (!actor) return;
+
+    const bleeds = actor.effects.filter(
+      (e) => e.getFlag("core", "statusId") === "bleed",
+    );
+
+    for (const bleed of bleeds) {
+      const rounds = bleed.getFlag("redsteel", "rounds");
+      if (rounds == null || rounds > 1) {
+        await bleed.update({
+          "flags.redsteel.rounds": 1,
+          "flags.statuscounter.value": 1,
+        });
+      }
+    }
+  }
+
+  /**
+   * Demonic grasp tick: Dark + Blunt damage (SK × 4, baked into trigger.damage)
+   * ignoring base armor — mitigated only by specialized armor / resistances /
+   * vulnerabilities, like the other DoT ticks — then applies two Bleeding
+   * effects. The Root portion lives in the effect's `changes`.
+   */
+  async _handleDemonicGrasp(trigger) {
+    const actor = this.parent;
+    if (!actor) return;
+
+    const formula = String(trigger.damage ?? "").trim();
+    if (formula) {
+      let roll;
+      try {
+        roll = await new Roll(formula).evaluate();
+      } catch (err) {
+        console.error(
+          `Redsteel | Invalid Demonic grasp damage formula "${formula}"`,
+          err,
+        );
+        ui.notifications.warn(
+          `Demonic grasp has an invalid damage formula: ${formula}`,
+        );
+        return;
+      }
+
+      const result = evaluateDmgVsArmor({
+        damage: roll.total,
+        penetration: 0,
+        damageProfile: trigger.damageProfile ?? { expression: [] },
+        armor: actor.system.armor,
+        hp: actor.system.stats.health.value ?? 0,
+        tempHp: actor.system.stats.temporaryHealth.value ?? 0,
+        // "Ignores Armor": bypass base armor, keep specialized armor & resists.
+        ignoreBaseArmor: true,
+      });
+
+      await actor.update({
+        "system.stats.health.value": Number(result.newHp),
+        "system.stats.temporaryHealth.value": Number(result.newTempHp),
+      });
+
+      await this._maybeApplyZeroHealthState();
+
+      const types = (trigger.damageProfile?.expression ?? [])
+        .filter((t) => t !== "and" && t !== "or")
+        .join(", ");
+
+      await roll.toMessage({
+        speaker: ChatMessage.getSpeaker({ actor }),
+        flavor: `${this.name} – ${result.totalHpLoss} damage${
+          types ? ` (${types})` : ""
+        } after specialized armor & resistances`,
+      });
+    }
+
+    // Two Bleeding effects each round.
+    const bleedStacks = Number(trigger.bleedStacks ?? 0);
+    if (bleedStacks > 0) {
+      await game.redsteel.applyEffect(actor, "bleed", { stacks: bleedStacks });
     }
   }
 
@@ -1161,7 +1368,7 @@ export class RedsteelActiveEffect extends ActiveEffect {
   /* -------------------------------------------- */
 
   /**
-   * On Dying: blind GM-only roll of 2d4dh1 (drop the higher die). The lower
+   * On Dying: blind GM-only roll of 2d4dl1 (drop the lower die). The higher
    * die becomes the number of rounds until bleed-out, stored on the effect so
    * the per-round countdown can decrement it (into negatives) and First Aid
    * can read the worsening penalty.
@@ -1173,7 +1380,7 @@ export class RedsteelActiveEffect extends ActiveEffect {
     // Guard: only roll the countdown once per Dying instance.
     if (this.getFlag("redsteel", "roundsUntilDeath") != null) return;
 
-    const roll = await new Roll("2d4dh1").evaluate();
+    const roll = await new Roll("2d4dl1").evaluate();
     await this.setFlag("redsteel", "roundsUntilDeath", roll.total);
 
     await roll.toMessage({
@@ -1205,8 +1412,10 @@ export class RedsteelActiveEffect extends ActiveEffect {
 
     let suffix = "";
     if (rounds === 0) {
+      suffix = ` — at the <b>end of this round</b> the character will <b>die</b> unless actively being stabilised.`;
+    } else if (rounds === -1) {
       suffix = ` — now <b>dead</b> unless actively being stabilised.`;
-    } else if (rounds < 0) {
+    } else if (rounds < -1) {
       // −20% per negative round (Stabilise adds its own −10% base on top).
       const penalty = 20 * Math.abs(rounds);
       suffix = ` — <b>−${penalty}%</b> penalty to stabilisation attempts.`;

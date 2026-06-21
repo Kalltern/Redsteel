@@ -60,19 +60,33 @@
 
 
       {{!-- MAIN --}}
-      <div
-        class="weapon-slot main {{#if weaponSets.1.main}}filled{{else}}empty{{/if}}"
-        data-set="1"
-        data-slot="main"
-        {{#if weaponSets.1.main}}
-          data-drag="true"
-          data-item-id="{{weaponSets.1.main._id}}"
-        {{/if}}
-      >
-        {{#if weaponSets.1.main}}
-          <img src="{{weaponSets.1.main.img}}" class="item-icon" data-item-id="{{weaponSets.1.main._id}}" />
-        {{else}}
-          <span>Main</span>
+      <div class="weapon-slot-column">
+        <div
+          class="weapon-slot main {{#if weaponSets.1.main}}filled{{else}}empty{{/if}}"
+          data-set="1"
+          data-slot="main"
+          {{#if weaponSets.1.main}}
+            data-drag="true"
+            data-item-id="{{weaponSets.1.main._id}}"
+          {{/if}}
+        >
+          {{#if weaponSets.1.main}}
+            <img src="{{weaponSets.1.main.img}}" class="item-icon" data-item-id="{{weaponSets.1.main._id}}" />
+          {{else}}
+            <span>Main</span>
+          {{/if}}
+        </div>
+
+        {{!-- TWO-HAND GRIP TOGGLE --}}
+        {{#if weaponSets.1.main.system.twoHandGrip}}
+          <a
+            class="two-hand-grip-toggle {{#if (eq weaponSets.1.main.system.gripMode "two")}}active{{/if}}"
+            data-action="toggleTwoHandGrip"
+            data-item-id="{{weaponSets.1.main._id}}"
+            title="{{localize "REDSTEEL.Actor.Inventory.TwoHandGrip"}}"
+          >
+            <i class="fa-solid fa-hand-fist"></i>
+          </a>
         {{/if}}
       </div>
 
@@ -173,19 +187,33 @@
 
 
       {{!-- MAIN --}}
-      <div
-        class="weapon-slot main {{#if weaponSets.2.main}}filled{{else}}empty{{/if}}"
-        data-set="2"
-        data-slot="main"
-        {{#if weaponSets.2.main}}
-          data-drag="true"
-          data-item-id="{{weaponSets.2.main._id}}"
-        {{/if}}
-      >
-        {{#if weaponSets.2.main}}
-          <img src="{{weaponSets.2.main.img}}" class="item-icon" data-item-id="{{weaponSets.2.main._id}}" />
-        {{else}}
-          <span>Main</span>
+      <div class="weapon-slot-column">
+        <div
+          class="weapon-slot main {{#if weaponSets.2.main}}filled{{else}}empty{{/if}}"
+          data-set="2"
+          data-slot="main"
+          {{#if weaponSets.2.main}}
+            data-drag="true"
+            data-item-id="{{weaponSets.2.main._id}}"
+          {{/if}}
+        >
+          {{#if weaponSets.2.main}}
+            <img src="{{weaponSets.2.main.img}}" class="item-icon" data-item-id="{{weaponSets.2.main._id}}" />
+          {{else}}
+            <span>Main</span>
+          {{/if}}
+        </div>
+
+        {{!-- TWO-HAND GRIP TOGGLE --}}
+        {{#if weaponSets.2.main.system.twoHandGrip}}
+          <a
+            class="two-hand-grip-toggle {{#if (eq weaponSets.2.main.system.gripMode "two")}}active{{/if}}"
+            data-action="toggleTwoHandGrip"
+            data-item-id="{{weaponSets.2.main._id}}"
+            title="{{localize "REDSTEEL.Actor.Inventory.TwoHandGrip"}}"
+          >
+            <i class="fa-solid fa-hand-fist"></i>
+          </a>
         {{/if}}
       </div>
 
@@ -375,6 +403,30 @@
       <a class="inventory-cell-icon rollable" data-action="roll" data-roll-type="item" data-item-id="{{entry.item._id}}">
         <img src="{{entry.item.img}}" class="item-icon" data-item-id="{{entry.item._id}}" />
       </a>
+
+      {{!-- TWO-HAND GRIP TOGGLE (hover overlay) --}}
+      {{#if entry.item.system.twoHandGrip}}
+        <a
+          class="two-hand-grip-toggle overlay {{#if (eq entry.item.system.gripMode "two")}}active{{/if}}"
+          data-action="toggleTwoHandGrip"
+          data-item-id="{{entry.item._id}}"
+          title="{{localize "REDSTEEL.Actor.Inventory.TwoHandGrip"}}"
+        >
+          <i class="fa-solid fa-hand-fist"></i>
+        </a>
+      {{/if}}
+
+      {{!-- NPC OFF-HAND SELECTOR (hover overlay) --}}
+      {{#if (and (eq @root.actor.type "npc") entry.item.system.offhand)}}
+        <a
+          class="npc-offhand-toggle overlay {{#if entry.item.system.npcOffhand}}active{{/if}}"
+          data-action="toggleNpcOffhand"
+          data-item-id="{{entry.item._id}}"
+          title="{{localize "REDSTEEL.Actor.Inventory.OffHandGrip"}}"
+        >
+          <i class="fa-solid fa-hand"></i>
+        </a>
+      {{/if}}
 
       {{#if entry.showQty}}
         <span class="inventory-qty">{{entry.quantity}}</span>

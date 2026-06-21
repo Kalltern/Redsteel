@@ -477,7 +477,6 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     if (!item.system.twoHandGrip) return;
 
     const newMode = item.system.gripMode === "two" ? "one" : "two";
-    console.log("Grip toggle itemId:", itemId);
 
     await item.update({
       "system.gripMode": newMode,
@@ -1197,12 +1196,18 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
           tab.id = "spells";
           tab.label += "Spells";
 
-          // Check if magicPotential exists and is greater than 0
-          if (
-            !this.actor.system.magicPotential ||
-            this.actor.system.magicPotential <= 0
-          ) {
-            tab.cssClass += " hidden"; // Add 'hidden' class to tab
+          // Shown for mages (magicPotential) and for Blood mages — the Blood
+          // School specialisation is its own path to spellcasting, independent
+          // of magicPotential.
+          {
+            const hasMagic =
+              this.actor.system.magicPotential &&
+              this.actor.system.magicPotential > 0;
+            const bloodActive =
+              !!this.actor.system.specialisations?.bloodSchool?.active;
+            if (!hasMagic && !bloodActive) {
+              tab.cssClass += " hidden"; // Add 'hidden' class to tab
+            }
           }
           break;
         case "miracles":

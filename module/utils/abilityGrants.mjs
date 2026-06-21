@@ -62,6 +62,11 @@ export const ABILITY_GRANTS = [
     when: { kind: "doctrine", key: "swordsman", min: 6 },
     grant: ["Compendium.redsteel.redsteel-items.Item.zosOTl8qIL3DISsr"],
   },
+  {
+    label: "Swordsman 10 → Riposte",
+    when: { kind: "doctrine", key: "swordsman", min: 10 },
+    grant: ["Compendium.redsteel.redsteel-items.Item.WX6uJeqZAqeyykJa"],
+  },
 ];
 
 const GRANT_FLAG_SCOPE = "redsteel";

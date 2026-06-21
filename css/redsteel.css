@@ -751,7 +751,11 @@ table tr td:nth-child(3) {
 .redsteel .sheet-header {
   height: 390px; /* Adjust the height as needed */
   overflow: hidden; /* Ensures content does not exceed the height */
-  flex: 0 auto;
+  /* Never let the header shrink: with overflow:hidden its auto min-height
+     collapses to 0, so on short (e.g. 1080p) screens the tall Skills tab would
+     otherwise compress the header and ride up over it. flex-shrink:0 keeps the
+     header at its full 390px and forces the tab body to scroll instead. */
+  flex: 0 0 390px;
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
@@ -2631,6 +2635,99 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   width: 44px;
   height: 44px;
   filter: opacity(45%);
+}
+
+/* ============================= */
+/* TWO-HAND GRIP TOGGLE          */
+/* ============================= */
+
+.two-hand-grip-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  background: #2b2b2b;
+  border: 1px solid #444;
+  color: #aaa;
+  font-size: 0.8em;
+  cursor: pointer;
+  transition:
+    color 0.15s,
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+
+.two-hand-grip-toggle:hover {
+  color: #fff;
+  border-color: #666;
+}
+
+.two-hand-grip-toggle.active {
+  color: #ffd43b;
+  border-color: rgba(255, 212, 59, 0.6);
+  box-shadow: 0 0 5px rgba(255, 212, 59, 0.5);
+}
+
+/* Hover overlay variant for inventory-grid weapon cells (used by NPCs and
+   any unequipped weapon). Pinned to the top-left corner so it clears the
+   bottom edit/delete strip and the bottom-right quantity badge. */
+.two-hand-grip-toggle.overlay {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  z-index: 3;
+  width: 18px;
+  height: 18px;
+  font-size: 0.7em;
+  background: rgba(15, 14, 12, 0.88);
+  display: none;
+}
+
+.inventory-cell.item:hover .two-hand-grip-toggle.overlay,
+.two-hand-grip-toggle.overlay.active {
+  display: flex;
+}
+
+/* NPC off-hand selector overlay: same boxed look, pinned top-right so it
+   sits opposite the two-hand grip toggle and clears the quantity badge. */
+.npc-offhand-toggle.overlay {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  left: auto;
+  z-index: 3;
+  margin: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background: rgba(15, 14, 12, 0.88);
+  border: 1px solid #444;
+  color: #aaa;
+  font-size: 0.7em;
+  opacity: 1;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.npc-offhand-toggle.overlay:hover {
+  color: #fff;
+  border-color: #666;
+  opacity: 1;
+}
+
+.npc-offhand-toggle.overlay.active {
+  color: #ffd43b;
+  border-color: rgba(255, 212, 59, 0.6);
+  box-shadow: 0 0 5px rgba(255, 212, 59, 0.5);
+  filter: none;
+}
+
+.inventory-cell.item:hover .npc-offhand-toggle.overlay,
+.npc-offhand-toggle.overlay.active {
+  display: flex;
 }
 
 /* ============================= */

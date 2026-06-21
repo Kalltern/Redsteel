@@ -15,6 +15,59 @@ export const IMPROVISED_SHIELD_STATS = {
 };
 
 /**
+ * Item quality (Kvalita) modifiers, applied on top of an item's hand-entered
+ * base stats. The active column depends on how the item is used:
+ *   weapon  → main-hand weapon       (Zbraň)
+ *   offhand → weapon used off-hand   (Druhá ruka)
+ *   shield  → gear flagged as shield (Štít)
+ *   armor   → all other gear         (Zbroje)
+ * Stat keys map to: attack/defense/critChance/critDefense/critDodge/rangedDefense/
+ * rangedCritDefense (weapon system fields), precision (an attack extra effect),
+ * deflect (Odklonění, a defender effect) and ini (initiative, via iniPenalty).
+ */
+export const QUALITY_MODS = {
+  weapon: {
+    bad: { attack: -5, defense: -5 },
+    normal: {},
+    expert: { attack: 3, defense: 3 },
+    master: { attack: 5, defense: 5, precision: 5 },
+    legendary: { attack: 8, defense: 8, precision: 10, critChance: 3 },
+  },
+  offhand: {
+    bad: { defense: -3, rangedDefense: -5 },
+    normal: {},
+    expert: { critDefense: 1 },
+    master: { critDefense: 2, critDodge: 1 },
+    legendary: { critDefense: 3, critDodge: 3 },
+  },
+  shield: {
+    bad: { defense: -3, rangedDefense: -5 },
+    normal: {},
+    expert: { critDefense: 2, rangedCritDefense: 2 },
+    master: { critDefense: 3, rangedCritDefense: 3 },
+    legendary: { critDefense: 5, rangedCritDefense: 5 },
+  },
+  armor: {
+    bad: { ini: -1 },
+    normal: {},
+    expert: { rangedDefense: 3 },
+    master: { deflect: 3, rangedDefense: 5 },
+    legendary: { deflect: 5, rangedDefense: 5, defense: 3 },
+  },
+};
+
+const QUALITY_KEYS = ["bad", "normal", "expert", "master", "legendary"];
+
+/**
+ * Resolve the quality modifiers for an item slot, falling back to the empty
+ * `normal` block for unknown values so callers can always spread the result.
+ */
+function qualityModsFor(slot, quality) {
+  const column = QUALITY_MODS[slot] ?? {};
+  return column[quality] ?? column.normal ?? {};
+}
+
+/**
  * Extend the basic Item with some very simple modifications.
  * @extends {Item}
  */
@@ -56,11 +109,15 @@ export class RedsteelItem extends Item {
   getShieldStats() {
     if (this.isBrokenShield) return { ...IMPROVISED_SHIELD_STATS };
 
+    // Shield quality (Štít column) is layered on top of the base stat block.
+    const q = this.system.qualityMods ?? {};
+
     return {
-      defense: this.system.defense ?? 0,
-      rangedDefense: this.system.rangedDefense ?? 0,
-      critDefense: this.system.critDefense ?? 0,
-      rangedCritDefense: this.system.rangedCritDefense ?? 0,
+      defense: (this.system.defense ?? 0) + (q.defense ?? 0),
+      rangedDefense: (this.system.rangedDefense ?? 0) + (q.rangedDefense ?? 0),
+      critDefense: (this.system.critDefense ?? 0) + (q.critDefense ?? 0),
+      rangedCritDefense:
+        (this.system.rangedCritDefense ?? 0) + (q.rangedCritDefense ?? 0),
       dodgePenalty: this.system.dodgePenalty ?? 0,
       iniPenalty: this.system.iniPenalty ?? 0,
       maxSpeed: this.system.maxSpeed ?? 0,
@@ -72,6 +129,31 @@ export class RedsteelItem extends Item {
    */
   prepareData() {
     super.prepareData();
+
+    // Item quality (Kvalita): expose the option list + localized choices for the
+    // sheet dropdown, and derive the active modifier blocks. Stored separately
+    // from the base stat fields so sheet inputs keep showing/saving raw values.
+    if (this.type === "weapon" || this.type === "gear") {
+      this.system.quality ??= "normal";
+      this.system.qualityOptions = [...QUALITY_KEYS];
+      this.system.qualityChoices = Object.fromEntries(
+        QUALITY_KEYS.map((key) => [
+          key,
+          game.i18n.localize(`REDSTEEL.Quality.${key}`),
+        ]),
+      );
+
+      const q = this.system.quality;
+      if (this.type === "weapon") {
+        this.system.qualityMods = qualityModsFor("weapon", q);
+        this.system.offhandQualityMods = qualityModsFor("offhand", q);
+      } else {
+        this.system.qualityMods = qualityModsFor(
+          this.system.shield ? "shield" : "armor",
+          q,
+        );
+      }
+    }
 
     if (this.type === "ammunition") {
       this.system.options = [
@@ -335,6 +417,12 @@ export class RedsteelItem extends Item {
       // Include specific actor attributes in rollData
       rollData.str = this.actor.system.attributes.str.total;
       rollData.dex = this.actor.system.attributes.dex.total;
+
+      // Surface each school's spell power flat so ability formulas can use
+      // @spellPowerFire, @spellPowerDarkness, etc. directly.
+      for (const [key, value] of Object.entries(rollData.actor)) {
+        if (key.startsWith("spellPower")) rollData[key] = value;
+      }
     }
 
     return rollData;

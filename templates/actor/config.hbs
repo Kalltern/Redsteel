@@ -117,15 +117,18 @@
    {{/each}}
 
 {{#each system.schools as |skill key|}}
+      {{!-- Blood is gated by its specialisation, not a school-rank toggle. --}}
+      {{#unless (eq key "blood")}}
          <label class="toggle-label">
-          <input 
-            type="checkbox" 
+          <input
+            type="checkbox"
             name="system.schools.{{key}}.visible"
-            data-skill="{{key}}" 
+            data-skill="{{key}}"
             {{#if skill.visible}}checked{{/if}}>
              {{key}}
-        </label>       
-  {{/each}}     
+        </label>
+      {{/unless}}
+  {{/each}}
   
 {{#each system.skills as |skill key|}}
          <label class="toggle-label">

@@ -24,7 +24,15 @@
       "gearLayer": "Vrstva zbroje",
       "potionType": "Typ lektvaru",
       "school": "Škola",
-      "rank": "Stupeň"
+      "rank": "Stupeň",
+      "deflect": "Odklonění"
+    },
+    "Quality": {
+      "bad": "Špatná",
+      "normal": "Normální",
+      "expert": "Expertní",
+      "master": "Mistrovská",
+      "legendary": "Legendární"
     },
     "Config": {
       "Initiative": {
@@ -170,6 +178,8 @@
       },
       "Inventory": {
         "Ammo": "Munice",
+        "TwoHandGrip": "Obouruční úchop",
+        "OffHandGrip": "Použít v druhé ruce",
         "Currencies": "Měny",
         "CurrencyName": "Název",
         "AddCurrency": "Přidat měnu",
@@ -3843,6 +3853,9 @@
           "longReach": {
             "label": "Dlouhý dosah"
           },
+          "quality": {
+            "label": "Kvalita"
+          },
           "rollFormula": {
             "label": "Vzorec pro házení kostky"
           },
@@ -3969,6 +3982,9 @@
           },
           "shield": {
             "label": "Je štít"
+          },
+          "quality": {
+            "label": "Kvalita"
           },
           "durability": {
             "label": "Životy zbroje"

@@ -1501,8 +1501,13 @@ Hooks.on("preCreateToken", function (document, data) {
     });
   }
 
-  // Blood Pool bar, only for blood mages (at least one level in the school)
-  if (actor.system.schools?.blood?.value > 0) {
+  // Blood Pool bar, only for blood mages: characters who have acquired the
+  // Blood School specialisation's "apprentice" node, or NPCs with a blood
+  // school rank.
+  if (
+    actor.system.specialisations?.bloodSchool?.nodes?.apprentice ||
+    actor.system.schools?.blood?.value > 0
+  ) {
     document.updateSource({
       "flags.barbrawl.resourceBars": {
         bar6: {

@@ -24,7 +24,15 @@
       "gearLayer": "Gear layer",
       "potionType": "Potion type",
       "school": "School",
-      "rank": "Rank"
+      "rank": "Rank",
+      "deflect": "Deflect"
+    },
+    "Quality": {
+      "bad": "Bad",
+      "normal": "Normal",
+      "expert": "Expert",
+      "master": "Masterwork",
+      "legendary": "Legendary"
     },
     "Config": {
       "Initiative": {
@@ -170,6 +178,8 @@
       },
       "Inventory": {
         "Ammo": "Ammo",
+        "TwoHandGrip": "Two-handed grip",
+        "OffHandGrip": "Use in off-hand",
         "Currencies": "Currencies",
         "CurrencyName": "Name",
         "AddCurrency": "Add currency",
@@ -3854,6 +3864,9 @@
           "longReach": {
             "label": "Long reach"
           },
+          "quality": {
+            "label": "Quality"
+          },
           "rollFormula": {
             "label": "Roll Formula"
           },
@@ -3980,6 +3993,9 @@
           },
           "shield": {
             "label": "Is a shield"
+          },
+          "quality": {
+            "label": "Quality"
           },
           "durability": {
             "label": "Durability"

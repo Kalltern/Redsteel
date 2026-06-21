@@ -280,10 +280,19 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
       const weapon = context.weapon;
       const offProps = getOffhandProps(context);
       const rollName = `Defense with ${weapon.localizedName ?? weapon.name}`;
-      const mainDefense = Number(weapon.system.defense) || 0;
-      const offDefense = Number(offProps?.defense) || 0;
-      const mainCrit = Number(weapon.system.critDefense) || 0;
-      const offCrit = Number(offProps?.critDefense) || 0;
+      // Weapon quality: main hand uses the Zbraň column, off-hand the Druhá ruka column.
+      const mainQuality = weapon.system.qualityMods ?? {};
+      const offQuality = getOffhandQualityMods(context);
+      const mainDefense =
+        (Number(weapon.system.defense) || 0) + (Number(mainQuality.defense) || 0);
+      const offDefense =
+        (Number(offProps?.defense) || 0) + (Number(offQuality.defense) || 0);
+      const mainCrit =
+        (Number(weapon.system.critDefense) || 0) +
+        (Number(mainQuality.critDefense) || 0);
+      const offCrit =
+        (Number(offProps?.critDefense) || 0) +
+        (Number(offQuality.critDefense) || 0);
       const overwhelmPenalty = overwhelm * -5;
       console.log("DEFENSE CONTEXT:", context);
 
@@ -325,6 +334,7 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
         criticalSuccessThreshold,
         criticalFailureThreshold,
         overwhelm,
+        { deflectValue: Number(actor.system.defenseDeflect) || 0 },
       );
     };
 
@@ -473,9 +483,11 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
 
       const rollName = `Dodge with ${weapon.localizedName ?? weapon.name}`;
 
+      const offQuality = getOffhandQualityMods(context);
       const mainDodge = Number(weapon.system.dodge) || 0;
       const offDodge = Number(offProps?.dodge) || 0;
-      const offCritDodge = Number(offProps?.critDodge) || 0;
+      const offCritDodge =
+        (Number(offProps?.critDodge) || 0) + (Number(offQuality.critDodge) || 0);
 
       const dodge = actor.system.combatSkills.dodge;
       const abilityDefense = Number(ability?.system?.dodge) || 0;
@@ -526,7 +538,7 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
         criticalSuccessThreshold,
         criticalFailureThreshold,
         overwhelm,
-        { dodgeFailed },
+        { dodgeFailed, deflectValue: Number(actor.system.dodgeDeflect) || 0 },
       );
     };
 
@@ -686,9 +698,24 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
     criticalSuccessThreshold,
     criticalFailureThreshold,
     overwhelm,
-    { dodgeFailed = false } = {},
+    { dodgeFailed = false, deflectValue = 0 } = {},
   ) {
     const rollResult = roll.dice[0].total;
+
+    // Deflect (Odklonění): auto-roll the chance and surface it on the card,
+    // mirroring how attack "precision" is displayed. Manual beyond the roll.
+    let deflectHTML = "";
+    const deflectChance = Math.floor(Number(deflectValue) || 0);
+    if (deflectChance > 0) {
+      const deflectRoll = new Roll("1d100");
+      await deflectRoll.evaluate();
+      const deflectLabel = game.i18n.localize("REDSTEEL.UI.deflect");
+      const successText =
+        deflectRoll.total <= deflectChance
+          ? `<i class="fa-regular fa-star" style="--fa-primary-color: #c4c700; --fa-secondary-color: #5c5400;"></i> SUCCESS`
+          : ``;
+      deflectHTML = `<p style="text-align:center;"><b>${deflectLabel}:</b> ${deflectRoll.total} < ${deflectChance}% ${successText}</p>`;
+    }
 
     // Desperate Effort shifts the crit thresholds for this defense roll.
     const { successThreshold, failureThreshold } = applyDesperateCrit(
@@ -748,7 +775,8 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
           <div style="display:flex;justify-content:center;align-items:center;gap:8px;font-size:1.3em;font-weight:bold;">
             ${overwhelm > 0 ? `<p>Overwhelm: -${overwhelm * 5}</p>` : ""}
           </div>
-       ${armorTable}        
+       ${deflectHTML}
+       ${armorTable}
       `,
       flags: {
         redsteel: {
@@ -861,4 +889,15 @@ function getOffhandProps(weaponContext) {
     return null;
   }
   return weaponContext.offWeapon.system.offhandProperties ?? null;
+}
+
+/**
+ * Quality modifiers (Druhá ruka column) of the off-hand weapon, when dual
+ * wielding. Returns an empty object otherwise so callers can read keys safely.
+ */
+function getOffhandQualityMods(weaponContext) {
+  if (!weaponContext?.isDualWield || !weaponContext.offWeapon) {
+    return {};
+  }
+  return weaponContext.offWeapon.system.offhandQualityMods ?? {};
 }

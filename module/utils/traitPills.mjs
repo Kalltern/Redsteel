@@ -64,5 +64,15 @@ export function getTraitPills(actor, trigger) {
     });
   }
 
+  // Fatigued (Unavený) reminds on every roll, regardless of trigger: the
+  // character is down to a single action and rolls at −5%.
+  if (actor.statuses?.has("fatigued")) {
+    pills.push({
+      name: "Fatigued — 1 action",
+      description:
+        "Stamina at 0: loses one action (minimum one remains), −5% to every Success roll, and Speed is halved.",
+    });
+  }
+
   return pills;
 }

@@ -135,8 +135,11 @@
       </div>
       {{/if}}
 
-      {{!-- Blood Pool: only blood mages ever use it; max is freely editable --}}
-      {{#if (gt system.schools.blood.value 0)}}
+      {{!-- Blood Pool: appears for characters once the Blood School
+            specialisation's "apprentice" node is acquired (its max is derived
+            from the specialisation). NPCs still surface it via their blood
+            school rank, with a freely-editable max. --}}
+      {{#if (or system.specialisations.bloodSchool.nodes.apprentice (gt system.schools.blood.value 0))}}
       <div class="resource-bar bloodPool">
         <div class="resource-bar-track" title="{{localize 'REDSTEEL.Actor.Character.stats.bloodPool.value.label'}}">
           <div class="resource-bar-fill" style="width: {{percentOf system.stats.bloodPool.value system.stats.bloodPool.max}}%"></div>
@@ -155,6 +158,7 @@
               name="system.stats.bloodPool.max"
               value="{{system.stats.bloodPool.max}}"
               data-value="system.stats.bloodPool.max"
+              {{#if (eq actor.type "character")}}readonly{{/if}}
             />
           </div>
         </div>

@@ -118,10 +118,32 @@ export class RedsteelActor extends Actor {
       "holy",
     ];
 
+    // Deflect (Odklonění) accumulators. Numeric so armor quality and feature
+    // Active Effects (ADD-mode on system.defenseDeflect / system.dodgeDeflect)
+    // can stack. Armor counts for both defense and dodge; AE sources may target
+    // only one. Seed with any pre-existing (AE-applied) value.
+    systemData.defenseDeflect = Number(systemData.defenseDeflect) || 0;
+    systemData.dodgeDeflect = Number(systemData.dodgeDeflect) || 0;
+
+    // Veneficus channeling-penalty mitigation, applied per equipped armor
+    // piece below (never beyond removing that piece's penalty). The sources
+    // stack: the doctrine rank IV perk and the specialisation's "Armor
+    // Channeling penalty -5%" node (postihZbroje) each shave 5%.
+    let channelPenaltyMitigation = 0;
+    if ((systemData.doctrines?.veneficus?.value ?? 0) >= 4) {
+      channelPenaltyMitigation += 5;
+    }
+    if (systemData.specialisations?.veneficus?.nodes?.postihZbroje) {
+      channelPenaltyMitigation += 5;
+    }
+
     // possibly to return here in case armor bonuses stack inapropriately
     let totalArmor = 0;
     for (const item of this.items) {
       if (item.type === "gear" && item.system.equipped) {
+        // Armor quality (Zbroje column). Shields live in weapon-set slots, not
+        // here, so this only ever applies the armor column.
+        const q = item.system.qualityMods ?? {};
         for (const type of elementalTypes) {
           systemData.armor[type].bonus += item.system?.armor?.[type].value ?? 0;
         }
@@ -129,17 +151,33 @@ export class RedsteelActor extends Actor {
           skill.acrobacy.bonus += item.system.acroPenalty ?? 0;
           skill.athletics.swimming += item.system.swimPenalty ?? 0;
           skill.stealth.bonus += item.system.stealthPenalty ?? 0;
-          secondaryAttribute.ini.bonus += item.system.iniPenalty ?? 0;
+          secondaryAttribute.ini.bonus +=
+            (item.system.iniPenalty ?? 0) + (q.ini ?? 0);
           secondaryAttribute.spd.max += item.system.maxSpeed ?? 0;
+        } else {
+          secondaryAttribute.ini.bonus += q.ini ?? 0;
         }
         totalArmor += item.system.armor.value;
         combatSkill.meleeDefense.critbonus += item.system.critDefense ?? 0;
         combatSkill.rangedDefense.critbonus +=
           item.system.rangedCritDefense ?? 0;
         combatSkill.dodge.bonus += item.system.dodgePenalty ?? 0;
-        combatSkill.channeling.bonus += item.system.castPenalty ?? 0;
-        combatSkill.rangedDefense.bonus += item.system.rangedDefense ?? 0;
-        combatSkill.meleeDefense.bonus += item.system.defense ?? 0;
+        // Channeling (cast) penalty from this armor piece, reduced by the
+        // stacked Veneficus mitigation — never beyond removing it, so it
+        // can't turn into a bonus.
+        let castPenalty = item.system.castPenalty ?? 0;
+        if (castPenalty < 0 && channelPenaltyMitigation > 0) {
+          castPenalty = Math.min(0, castPenalty + channelPenaltyMitigation);
+        }
+        combatSkill.channeling.bonus += castPenalty;
+        combatSkill.rangedDefense.bonus +=
+          (item.system.rangedDefense ?? 0) + (q.rangedDefense ?? 0);
+        combatSkill.meleeDefense.bonus +=
+          (item.system.defense ?? 0) + (q.defense ?? 0);
+
+        // Odklonění from armor quality applies to both melee defense and dodge.
+        systemData.defenseDeflect += q.deflect ?? 0;
+        systemData.dodgeDeflect += q.deflect ?? 0;
 
         systemData.stats.health.bonus += item.system.healthBonus ?? 0;
       }
@@ -578,10 +616,27 @@ export class RedsteelActor extends Actor {
         }
       }
       if (combatSkill.type === 3) {
-        if (combatSkill.lindar) {
+        // The Veneficus doctrine channels through martial combat: the
+        // channeling rating derives from the Combat skill rank (via the
+        // channeling2 table) instead of a channeling rank of its own,
+        // keeping Intelligence as the parent attribute. The Lindar
+        // specialisation node then switches that parent to the higher of
+        // Strength/Dexterity.
+        const veneficusRank = systemData.doctrines?.veneficus?.value ?? 0;
+        const lindar =
+          combatSkill.lindar ||
+          !!systemData.specialisations?.veneficus?.nodes?.lindar;
+        combatSkill.lindar = lindar;
+        if (veneficusRank > 0) {
+          const attrBonus = lindar
+            ? Math.max(
+                attributeScore[0].total, // Strength
+                attributeScore[1].total, // Dexterity
+              )
+            : attributeScore[combatSkill.id].total; // Intelligence
           combatSkill.rating =
-            channeling2[combatSkill.value] +
-            attributeScore[combatSkill.id].total * 3 +
+            channeling2[melee] +
+            attrBonus * 3 +
             combatSkill.bonus +
             globalMod;
         } else {
@@ -648,7 +703,7 @@ export class RedsteelActor extends Actor {
 
     // Calculate speed
     // Fatigue: degree 5+ sets speed to 1; degree 2+ applies a flat -1.
-    const calcSpd = [0, 3, 3, 4, 4, 4, 5, 5, 6, 6, 6];
+    const calcSpd = [0, 3, 3, 4, 4, 4, 5, 6, 6, 6, 6];
     secAttribute.spd.total =
       fatigueDegree >= 5
         ? 1
@@ -751,7 +806,7 @@ export class RedsteelActor extends Actor {
     );
     // Calculate temporaryHealth
     systemData.stats.temporaryHealth.max =
-      10 + systemData.stats.temporaryHealth.bonus;
+      50 + systemData.stats.temporaryHealth.bonus;
 
     // Calculate mana
     if (systemData.magicPotential) {
@@ -906,6 +961,28 @@ export class RedsteelActor extends Actor {
       );
     }
 
+    // Blood magic is its own path: the Blood School specialisation grants
+    // access to Blood Spell Power independent of magicPotential. Blood is no
+    // longer a progressable school (no school rank), so its Spell Power comes
+    // from the specialisation's `schools.blood.bonus` passives plus INT/WIL.
+    // When magicPotential is set the loop above already computed it identically
+    // (spellPowerSchool[0] = 0), so only fill it in for the non-mage case here.
+    if (
+      systemData.specialisations?.bloodSchool?.active &&
+      !systemData.magicPotential
+    ) {
+      const blood = systemData.schools.blood;
+      blood.spellPower =
+        (blood.bonus || 0) +
+        Math.max(Math.floor(int / 2), Math.floor(wil / 2));
+    }
+
+    // Blood Pool capacity is granted entirely by the Blood School
+    // specialisation: the apprentice node and the bloodPool nodes add to
+    // `bloodPool.bonus`. A character with no Blood specialisation has no pool
+    // (max 0 → hidden). NPCs keep their own freely-editable max.
+    systemData.stats.bloodPool.max = systemData.stats.bloodPool.bonus || 0;
+
     // Prevent current stat exceed max
     systemData.stats.health.value = Math.min(
       systemData.stats.health.value,
@@ -915,10 +992,8 @@ export class RedsteelActor extends Actor {
       systemData.stats.stamina.value,
       systemData.stats.stamina.max,
     );
-    systemData.stats.toxicity.value = Math.min(
-      systemData.stats.toxicity.value,
-      systemData.stats.toxicity.max,
-    );
+    // Toxicity is intentionally NOT clamped to its max: exceeding the maximum
+    // is what triggers Toxic Shock (see _syncResourceStateEffects).
     systemData.stats.mana.value = Math.min(
       systemData.stats.mana.value,
       systemData.stats.mana.max,
@@ -926,6 +1001,10 @@ export class RedsteelActor extends Actor {
     systemData.stats.mind.value = Math.min(
       systemData.stats.mind.value,
       systemData.stats.mind.max,
+    );
+    systemData.stats.bloodPool.value = Math.min(
+      systemData.stats.bloodPool.value,
+      systemData.stats.bloodPool.max,
     );
 
     // Define critical thresholds influenced by luck
@@ -1067,10 +1146,8 @@ export class RedsteelActor extends Actor {
       systemData.stats.stamina.value,
       systemData.stats.stamina.max,
     );
-    systemData.stats.toxicity.value = Math.min(
-      systemData.stats.toxicity.value,
-      systemData.stats.toxicity.max,
-    );
+    // Toxicity is intentionally NOT clamped to its max: exceeding the maximum
+    // is what triggers Toxic Shock (see _syncResourceStateEffects).
     systemData.stats.mana.value = Math.min(
       systemData.stats.mana.value,
       systemData.stats.mana.max,
@@ -1091,6 +1168,17 @@ export class RedsteelActor extends Actor {
     // Prepare character roll data.
     this._getCharacterRollData(data);
     this._getNpcRollData(data);
+
+    // Expose each magic school's spell power as a flat roll token so item
+    // and ability formulas can reference it directly (e.g. @spellPowerFire,
+    // @spellPowerDarkness). There is no per-ability school selector, so we
+    // surface every school separately.
+    if (data.schools) {
+      for (const [key, school] of Object.entries(data.schools)) {
+        const name = key.charAt(0).toUpperCase() + key.slice(1);
+        data[`spellPower${name}`] = school?.spellPower ?? 0;
+      }
+    }
 
     return data;
   }
