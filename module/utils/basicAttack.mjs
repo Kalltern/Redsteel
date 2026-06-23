@@ -16,7 +16,11 @@ export async function universalAttackLogic({
 
   const { actor, token } = context;
 
-  const weapons = actor.items.filter(weaponFilter);
+  // Weapons assigned to the off hand (NPCs) are consumed automatically as the
+  // off-hand weapon and must not be offered as the attacking weapon.
+  const weapons = actor.items.filter(
+    (i) => weaponFilter(i) && !(actor.type === "npc" && i.system.npcOffhand),
+  );
 
   if (!weapons.length) {
     ui.notifications.warn(`This actor has no ${attackType} weapons.`);

@@ -739,22 +739,28 @@ export async function combatAbilities() {
 
     let weapons;
 
+    // Weapons assigned to the off hand (NPCs) should not be selectable as the
+    // attacking weapon — they are consumed automatically as the off-hand weapon.
+    const isNpcOffhand = (i) => actor.type === "npc" && i.system.npcOffhand;
+
     if (ability.system.type === "melee") {
       weapons = actor.items.filter(
         (i) =>
           i.type === "weapon" &&
           ["axe", "sword", "blunt", "polearm"].includes(i.system.class) &&
-          !i.system.thrown,
+          !i.system.thrown &&
+          !isNpcOffhand(i),
       );
     }
 
     if (ability.system.type === "ranged") {
       weapons = actor.items.filter(
         (i) =>
-          (i.type === "weapon" &&
+          ((i.type === "weapon" &&
             ["bow", "crossbow"].includes(i.system.class)) ||
-          (["axe", "sword", "blunt", "polearm"].includes(i.system.class) &&
-            i.system.thrown),
+            (["axe", "sword", "blunt", "polearm"].includes(i.system.class) &&
+              i.system.thrown)) &&
+          !isNpcOffhand(i),
       );
     }
     if (!weapons?.length)
