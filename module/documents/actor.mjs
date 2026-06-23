@@ -106,6 +106,24 @@ export class RedsteelActor extends Actor {
     let skill = systemData.skills;
     let combatSkill = systemData.combatSkills;
     let secondaryAttribute = systemData.secondaryAttributes;
+
+    // Blood Manipulation is a newer combat skill: seed it for actors created
+    // before it existed so its rating/visibility compute and the sheet shows it.
+    if (combatSkill && !combatSkill.bloodManipulation) {
+      combatSkill.bloodManipulation = {
+        value: 0,
+        rating: 0,
+        critbonus: 0,
+        critfailpenalty: 0,
+        id: 4,
+        type: 4,
+        visible: false,
+        bonus: 0,
+        attack: 0,
+        defense: 0,
+        isSkill: 1,
+      };
+    }
     // Iterate through gear
     const elementalTypes = [
       "acid",
@@ -164,7 +182,8 @@ export class RedsteelActor extends Actor {
         combatSkill.dodge.bonus += item.system.dodgePenalty ?? 0;
         // Channeling (cast) penalty from this armor piece, reduced by the
         // stacked Veneficus mitigation — never beyond removing it, so it
-        // can't turn into a bonus.
+        // can't turn into a bonus. Blood Manipulation is unaffected (it is not
+        // a focus-based cast), so the penalty only lands on channeling.
         let castPenalty = item.system.castPenalty ?? 0;
         if (castPenalty < 0 && channelPenaltyMitigation > 0) {
           castPenalty = Math.min(0, castPenalty + channelPenaltyMitigation);
@@ -246,6 +265,9 @@ export class RedsteelActor extends Actor {
     const combatset1 = [0, 15, 20, 30, 35, 45, 50, 60, 65, 75, 80]; // combat + archery
     const channeling1 = [0, 20, 25, 30, 35, 45, 50, 55, 65, 70, 80];
     const channeling2 = [0, 16, 22, 28, 34, 40, 46, 52, 58, 64, 70];
+    // Blood Manipulation (Manipulace s krví): the Willpower-based casting skill
+    // for Blood magic, ranks 1-10.
+    const bloodManipSet = [0, 25, 30, 35, 40, 50, 55, 60, 70, 75, 85];
     const throwing = [0, 20, 25, 30, 35, 40, 45, 50, 55, 65, 70];
     const dodge = [0, 20, 25, 35, 40, 50, 55, 60, 65, 75, 85];
     const rangedDefenseSet = [0, 10, 20, 25, 30, 35, 40, 45, 50, 55, 60];
@@ -623,11 +645,12 @@ export class RedsteelActor extends Actor {
         // specialisation node then switches that parent to the higher of
         // Strength/Dexterity.
         const veneficusRank = systemData.doctrines?.veneficus?.value ?? 0;
+        const martialChanneling = veneficusRank > 0;
         const lindar =
           combatSkill.lindar ||
           !!systemData.specialisations?.veneficus?.nodes?.lindar;
         combatSkill.lindar = lindar;
-        if (veneficusRank > 0) {
+        if (martialChanneling) {
           const attrBonus = lindar
             ? Math.max(
                 attributeScore[0].total, // Strength
@@ -646,6 +669,30 @@ export class RedsteelActor extends Actor {
             combatSkill.bonus +
             globalMod;
         }
+      }
+      if (combatSkill.type === 4) {
+        // Blood Manipulation (Manipulace s krví): a Willpower-based casting
+        // skill. Unlike channeling it is immune to the armor cast penalty (it
+        // channels through the body, not focus), so no castPenalty is applied.
+        const wilScore = attributeScore[4].total; // Willpower
+        let rating =
+          bloodManipSet[combatSkill.value] +
+          wilScore * 3 +
+          combatSkill.bonus +
+          globalMod;
+
+        // Cordinas (rank 1+) lets the caster channel blood magic through their
+        // martial prowess: the raw Combat-rank rating (combat table + Will×3)
+        // may stand in for the blood-manipulation rating when it is higher. The
+        // bonus comes from Blood Manipulation's own bonus, not the Combat skill.
+        const cordinasRank = systemData.doctrines?.cordinas?.value ?? 0;
+        if (cordinasRank > 0) {
+          const combatRating =
+            combatset1[melee] + wilScore * 3 + combatSkill.bonus + globalMod;
+          rating = Math.max(rating, combatRating);
+        }
+
+        combatSkill.rating = rating;
       }
     }
 
@@ -975,6 +1022,15 @@ export class RedsteelActor extends Actor {
       blood.spellPower =
         (blood.bonus || 0) +
         Math.max(Math.floor(int / 2), Math.floor(wil / 2));
+    }
+
+    // Surface the Blood Manipulation casting skill on the sheet only for Blood
+    // casters: a Blood School specialist, or a Cordinas doctrine holder who can
+    // channel blood magic through martial prowess.
+    if (systemData.combatSkills?.bloodManipulation) {
+      systemData.combatSkills.bloodManipulation.visible =
+        !!systemData.specialisations?.bloodSchool?.active ||
+        (systemData.doctrines?.cordinas?.value ?? 0) > 0;
     }
 
     // Blood Pool capacity is granted entirely by the Blood School

@@ -552,6 +552,24 @@
         </div>
         {{/if}}
       {{/with}}
+      {{#with (lookup system.combatSkills 'bloodManipulation') as |skill|}}
+        {{#if (or skill.visible (gt skill.value 0))}}
+        <div class="skill-entry flexrow">
+          <label class="skill-label flexlarge align-left skill-name" data-label="bloodManipulation">
+            {{localize 'REDSTEEL.Actor.Character.combatSkills.bloodManipulation.label'}}
+          </label>
+          {{#if @root.skillsEditMode}}
+          <div class="skill-rank-editor">
+            <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.combatSkills.bloodManipulation.value" data-delta="-1" data-min="0" data-max="10">-</button>
+            <span class="skill-rank-progress">{{skill.value}} / 10</span>
+            <button type="button" class="skill-rank-button" data-action="adjustActorNumber" data-path="system.combatSkills.bloodManipulation.value" data-delta="1" data-min="0" data-max="10">+</button>
+          </div>
+          {{else}}
+          <span class="skill-rank-label">{{romanRank skill.value}}</span>
+          {{/if}}
+        </div>
+        {{/if}}
+      {{/with}}
       {{#with (lookup system.combatSkills 'ranger') as |skill|}}
         {{#if skill.visible}}
         <div class="skill-entry flexrow">
@@ -704,12 +722,22 @@
         {{/if}}
       {{/with}}
       {{#with (lookup system.combatSkills 'channeling') as |skill|}}
-        {{#if skill}}
+        {{#if (or skill.visible (gt skill.value 0))}}
         <div class="skill-entry flexrow">
           <label class="skill-label flexlarge align-left skill-name" data-label="channeling-rating">
             {{localize 'REDSTEEL.Actor.Character.combatSkills.channeling.label'}}
           </label>
           <input type="text" class="skill-rating" data-dtype="Number" value="{{combatSkillRating skill 'channeling'}}" readonly />
+        </div>
+        {{/if}}
+      {{/with}}
+      {{#with (lookup system.combatSkills 'bloodManipulation') as |skill|}}
+        {{#if (or skill.visible (gt skill.value 0))}}
+        <div class="skill-entry flexrow">
+          <label class="skill-label flexlarge align-left skill-name" data-label="bloodManipulation-rating">
+            {{localize 'REDSTEEL.Actor.Character.combatSkills.bloodManipulation.label'}}
+          </label>
+          <input type="text" class="skill-rating" data-dtype="Number" value="{{combatSkillRating skill 'bloodManipulation'}}" readonly />
         </div>
         {{/if}}
       {{/with}}

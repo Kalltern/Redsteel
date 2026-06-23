@@ -3673,6 +3673,9 @@
           "channeling": {
             "label": "Channeling"
           },
+          "bloodManipulation": {
+            "label": "Blood Manipulation"
+          },
           "ranger": {
             "label": "Ranger"
           },

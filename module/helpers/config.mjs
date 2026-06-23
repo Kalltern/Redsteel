@@ -987,12 +987,19 @@ REDSTEEL.effectDefinitions = {
     stackBehavior: "refresh",
   },
 
-  // Marker only — the damage-amplification part must be resolved
-  // in the damage pipeline (see harder-to-implement list).
-  vulnerable: {
-    name: "Vulnerable",
+  // "Zranitelnost" / Hex — while active, every ORIGINAL instance of damage the
+  // target takes deals an extra 1d8 that ignores armor (Kz). Each distinct
+  // damage source counts separately (a hit + its Bleeding + its poison = three
+  // separate 1d8 riders, each rolled when that source actually deals damage);
+  // a single combined Bleeding tick is one instance, so "3 Krvácení = 1d8".
+  // The rider is applied at a single chokepoint in effects.mjs
+  // (preUpdateActor/updateActor → _applyHexRider). Lasts 3 rounds.
+  hex: {
+    name: "Hex",
     img: "icons/svg/target.svg",
-    statuses: ["vulnerable"],
+    statuses: ["hex"],
+    defaultRounds: 3,
+    useDuration: true,
     stackBehavior: "refresh",
   },
 

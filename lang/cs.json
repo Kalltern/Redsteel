@@ -3665,6 +3665,9 @@
           "channeling": {
             "label": "Usměrňování"
           },
+          "bloodManipulation": {
+            "label": "Manipulace s krví"
+          },
           "ranger": {
             "label": "Hraničář"
           },

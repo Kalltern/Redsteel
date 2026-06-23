@@ -547,13 +547,16 @@ async function performStabilise(actor, token, extraPenalty = 0) {
   const dying = targetActor.effects.find(
     (e) => e.getFlag("core", "statusId") === "dying",
   );
-  if (!dying) {
+  // A target at 0 health always warrants a stabilise attempt, even if it lacks
+  // the Dying effect (e.g. an NPC, or a character whose Dying was cleared).
+  const atZeroHealth = Number(targetActor.system.stats.health?.value ?? 0) <= 0;
+  if (!dying && !atZeroHealth) {
     ui.notifications.warn(`${targetActor.name} is not Dying.`);
     return false;
   }
 
   const { penalty } = getStabilisePenalty(
-    dying.getFlag("redsteel", "roundsUntilDeath"),
+    dying?.getFlag("redsteel", "roundsUntilDeath"),
   );
 
   const base =
@@ -838,7 +841,11 @@ async function startCombatFirstAid(actor, actionType, extraPenalty) {
     const dying = targetActor.effects.find(
       (e) => e.getFlag("core", "statusId") === "dying",
     );
-    if (!dying) {
+    // Allow the attempt on any 0-health target, not only those carrying the
+    // Dying effect (mirrors performStabilise).
+    const atZeroHealth =
+      Number(targetActor.system.stats.health?.value ?? 0) <= 0;
+    if (!dying && !atZeroHealth) {
       ui.notifications.warn(`${targetActor.name} is not Dying.`);
       return false;
     }

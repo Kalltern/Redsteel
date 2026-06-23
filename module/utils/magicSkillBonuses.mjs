@@ -938,8 +938,27 @@ function getEffectiveDifficulty(spell, focusSpent) {
  * @param {number} [focusSpent=0] - Focus points committed to the cast.
  * @returns {number} - Cast chance, clamped to the 0-100 range.
  */
+/**
+ * Resolve the cast rating used for a spell. Blood spells (school `blood`) cast
+ * off the higher of the Intelligence-based channeling rating and the
+ * Willpower-based Blood Manipulation rating (Manipulace s krví); every other
+ * school uses channeling.
+ * @param {object} actor - The casting actor.
+ * @param {object} spell - The spell item being cast.
+ * @returns {number} - The effective cast rating.
+ */
+export function getCastRating(actor, spell) {
+  const channeling = actor.system.combatSkills?.channeling?.rating ?? 0;
+  if (spell?.system?.type === "blood") {
+    const bloodManipulation =
+      actor.system.combatSkills?.bloodManipulation?.rating ?? 0;
+    return Math.max(channeling, bloodManipulation);
+  }
+  return channeling;
+}
+
 export function getCastChance(actor, spell, focusSpent = 0) {
-  const rating = actor.system.combatSkills?.channeling?.rating ?? 0;
+  const rating = getCastRating(actor, spell);
   const effectiveDifficulty = getEffectiveDifficulty(spell, focusSpent);
   const { attackBonus } = calculateAttackBonuses(actor, spell);
   const chance = rating + effectiveDifficulty + attackBonus;
@@ -960,7 +979,11 @@ export async function performAttackRoll(
   const critFailureThreshold =
     actor.system.combatSkills.channeling.criticalFailureThreshold;
 
-  const attackRollFormula = `@combatSkills.channeling.rating + @difficulty + ${bonus} - 1d100`;
+  // Blood spells cast off the higher of channeling and Blood Manipulation; all
+  // other schools use channeling. Resolve to a number so the chosen rating
+  // drives the roll.
+  const castRating = getCastRating(actor, spell);
+  const attackRollFormula = `${castRating} + @difficulty + ${bonus} - 1d100`;
 
   const rollData = {
     combatSkills: actor.system.combatSkills,

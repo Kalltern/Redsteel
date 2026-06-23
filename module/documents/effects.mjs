@@ -127,9 +127,46 @@ export class RedsteelActiveEffect extends ActiveEffect {
     // Resource-threshold conditions (Fatigued / Toxic Shock) follow the
     // actor's current Stamina and Toxicity. Re-synced by the active GM on
     // every actor update.
-    Hooks.on("updateActor", async (actor) => {
+    Hooks.on("updateActor", async (actor, changed, options) => {
       if (!this._isAuthoritative()) return;
       await this._syncResourceStateEffects(actor);
+
+      // Hex (Zranitelnost): an original instance of damage just hit a Hexed
+      // target — add the 1d8 armor-ignoring rider. The flag is set in the
+      // preUpdateActor hook below (which still has the pre-damage pool to
+      // compare against).
+      if (options?.redsteelDamageInstance) {
+        await this._applyHexRider(actor);
+      }
+    });
+
+    // Hex damage detection. preUpdate still sees the pre-damage HP pool, so we
+    // flag genuine decreases here and apply the rider in the updateActor hook
+    // above. `redsteelHex` guards our own rider update so it can never
+    // re-trigger itself.
+    Hooks.on("preUpdateActor", (actor, changed, options) => {
+      if (options?.redsteelHex) return;
+
+      const newHealth = foundry.utils.getProperty(
+        changed,
+        "system.stats.health.value",
+      );
+      const newTemp = foundry.utils.getProperty(
+        changed,
+        "system.stats.temporaryHealth.value",
+      );
+      if (newHealth == null && newTemp == null) return;
+
+      // Compare the combined HP pool (health + temporary health) so damage
+      // that only eats temporary health still counts as "taking damage".
+      const oldHealth = Number(actor.system.stats.health?.value ?? 0);
+      const oldTemp = Number(actor.system.stats.temporaryHealth?.value ?? 0);
+      const nextPool =
+        Number(newHealth ?? oldHealth) + Number(newTemp ?? oldTemp);
+
+      if (nextPool < oldHealth + oldTemp) {
+        options.redsteelDamageInstance = true;
+      }
     });
 
     this._hooksRegistered = true;
@@ -172,6 +209,41 @@ export class RedsteelActiveEffect extends ActiveEffect {
     if (!game.user.isGM) return false;
     if (!game.users.activeGM) return false;
     return game.user.id === game.users.activeGM.id;
+  }
+
+  /**
+   * Hex (Zranitelnost) rider: when a Hexed actor takes an original instance of
+   * damage, it suffers an extra 1d8 that ignores armor (Kz) — written straight
+   * to health, like the other armor-ignoring ticks. Each distinct damage
+   * source triggers its own call (one combined Bleeding tick is a single
+   * instance, so three Bleeds still only add one 1d8). The update is tagged
+   * `redsteelHex` so it never re-triggers itself.
+   */
+  static async _applyHexRider(actor) {
+    if (!actor) return;
+
+    const hex = actor.effects.find(
+      (e) => e.getFlag("core", "statusId") === "hex",
+    );
+    if (!hex) return;
+
+    const roll = await new Roll("1d8").evaluate();
+
+    const current = Number(actor.system.stats.health?.value ?? 0);
+    await actor.update(
+      { "system.stats.health.value": current - roll.total },
+      { redsteelHex: true },
+    );
+
+    await roll.toMessage({
+      speaker: ChatMessage.getSpeaker({ actor }),
+      flavor: `${hex.name} — +${roll.total} damage (ignores armor)`,
+    });
+
+    // The rider can itself drop the target to 0 → Dying/Downed (or death).
+    if (Number(actor.system.stats.health?.value ?? 0) <= 0) {
+      await game.redsteel.applyZeroHealthState?.(actor);
+    }
   }
   static async _onTurnStart(combat) {
     const actor = combat.combatant?.actor;

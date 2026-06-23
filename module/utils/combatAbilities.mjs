@@ -7,6 +7,9 @@ export async function combatAbilities() {
   // ====================================================================
   let lockedMultiAttackAbility = null;
   let multiAttackCount = 1;
+  // Tracks whether the one-time ability cost has been paid for the current
+  // multi-attack chain. Subsequent strikes only pay modifier costs.
+  let multiAttackFirstStrikePaid = false;
   const context = game.redsteel.selectToken({ notifyFallback: true });
   if (!context) return;
 
@@ -232,7 +235,13 @@ export async function combatAbilities() {
   // 3. EXECUTION HANDLER: _onAbilityChosen
   // ====================================================================
 
-  async function onAbilityChosen(ability, container, dialog, actor) {
+  async function onAbilityChosen(
+    ability,
+    container,
+    dialog,
+    actor,
+    { preselectedWeapon = null } = {},
+  ) {
     const html = $(container);
     const longReachPenalty = container.querySelector(
       '[name="longReachPenalty"]',
@@ -282,15 +291,44 @@ export async function combatAbilities() {
       // Turning ON → cost will be paid
     }
 
-    if (lockedMultiAttackAbility?.id === ability.id) {
-      // Already in multiattack mode → only pay modifiers
+    // Does this ability route through the weapon-selection flow, and can a weapon
+    // be auto-resolved (e.g. a character's active set)? When no weapon can be
+    // auto-resolved, the weapon must be picked manually.
+    const goesThroughWeaponFlow = isDefenseRoll || ability.system.weaponAbility;
+    const autoWeaponContext = goesThroughWeaponFlow
+      ? game.redsteel.resolveWeaponContext(actor, ability)
+      : null;
+
+    // Multi-attack that needs a manual weapon pick (e.g. NPCs): merge the weapon
+    // picker into THIS dialog instead of opening a second "Select Weapon" dialog.
+    // Defer cost + attack to the weapon-button click below.
+    if (
+      ability.system.multiAttack &&
+      (actor.type === "character" || actor.type === "npc") &&
+      !lockedMultiAttackAbility &&
+      !preselectedWeapon &&
+      goesThroughWeaponFlow &&
+      !autoWeaponContext
+    ) {
+      lockedMultiAttackAbility = ability;
+      multiAttackFirstStrikePaid = false;
+      transformDialogToMultiAttackMode(dialog, ability, actor);
+      return;
+    }
+
+    const isMultiStrike =
+      ability.system.multiAttack && lockedMultiAttackAbility?.id === ability.id;
+
+    if (isMultiStrike && multiAttackFirstStrikePaid) {
+      // Subsequent multi-attack strike → only pay modifiers
       paid = await game.redsteel.deductAbilityCost(actor, selectedModifiers);
     } else {
-      // First strike (or normal ability)
+      // First strike (or normal ability) → pay ability + modifiers once
       paid = await game.redsteel.deductAbilityCost(actor, [
         ability,
         ...selectedModifiers,
       ]);
+      if (isMultiStrike) multiAttackFirstStrikePaid = true;
     }
     if (!paid) return;
     if (ability.system.class === "stance") {
@@ -327,11 +365,11 @@ export async function combatAbilities() {
       );
     } else if (isDefenseRoll || ability.system.weaponAbility) {
       const mode = isDefenseRoll ? "defense" : "attack";
-      await weaponSelectionFlow(actor, ability, mode, intent);
+      await weaponSelectionFlow(actor, ability, mode, intent, preselectedWeapon);
     } else {
       await game.redsteel.getNonWeaponAbility(actor, ability);
     }
-    function transformDialogToMultiAttackMode(dialog, ability) {
+    function transformDialogToMultiAttackMode(dialog, ability, actor) {
       const html = dialog.element;
 
       // Remove ability list
@@ -339,36 +377,80 @@ export async function combatAbilities() {
       // Hide Keep Open checkbox
       html.find("#keep-open-container").hide();
 
+      // When a weapon auto-resolves (e.g. a character's active set), keep the
+      // single "Attack Again" button. Otherwise (e.g. NPCs) merge the weapon
+      // picker inline: one button per valid weapon, each one a strike.
+      const autoWeapon = goesThroughWeaponFlow
+        ? game.redsteel.resolveWeaponContext(actor, ability)
+        : null;
+
+      let promptHtml = "";
+      let controlsHtml;
+      if (autoWeapon) {
+        controlsHtml = `
+        <button type="button" id="continue-multiattack" class="multiattack-strike-btn">
+          Attack Again
+        </button>`;
+      } else {
+        const weapons = getAbilityWeapons(actor, ability);
+        if (weapons.length) {
+          promptHtml = `<p class="multiattack-prompt" style="margin:0 0 6px;">Choose a weapon to strike with:</p>`;
+          controlsHtml = weapons
+            .map(
+              (w) =>
+                `<button type="button" class="multiattack-weapon-btn multiattack-strike-btn" data-weapon-id="${w.id}">${w.localizedName ?? w.name}</button>`,
+            )
+            .join("");
+        } else {
+          controlsHtml = `<em>No valid weapons.</em>`;
+        }
+      }
+
       // Add header + buttons
       html.find(".ability-dialog-form").prepend(`
     <div class="multiattack-header">
-      <h3>Multi-Attack: ${ability.localizedName ?? ability.name} (Strike ${multiAttackCount})</h3>
-      <div style="display:flex; gap:8px; margin-bottom:8px;">
-        <button type="button" id="continue-multiattack">
-          Attack Again
-        </button>
+      <h3>Multi-Attack: ${ability.localizedName ?? ability.name} (Strike <span class="multiattack-strike-count">${multiAttackCount}</span>)</h3>
+      ${promptHtml}
+      <div class="multiattack-controls" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
+        ${controlsHtml}
       </div>
       <hr>
     </div>
   `);
-      // Continue attack
-      html.find("#continue-multiattack").click(async () => {
+
+      const formEl = html.find(".ability-dialog-form")[0];
+      const bumpStrikeCount = () => {
         multiAttackCount++;
-        await onAbilityChosen(
-          ability,
-          html.find(".ability-dialog-form")[0],
-          dialog,
-          ability.parent,
-        );
+        html.find(".multiattack-strike-count").text(multiAttackCount);
+      };
+
+      // Auto-resolve: re-run the whole ability (weapon resolves automatically)
+      html.find("#continue-multiattack").click(async () => {
+        bumpStrikeCount();
+        await onAbilityChosen(ability, formEl, dialog, actor);
+      });
+
+      // Manual: each weapon button performs one strike with that weapon
+      html.find(".multiattack-weapon-btn").click(async (event) => {
+        const weaponId = event.currentTarget.dataset.weaponId;
+        const weapon = actor.items.get(weaponId);
+        if (!weapon) return;
+        await onAbilityChosen(ability, formEl, dialog, actor, {
+          preselectedWeapon: weapon,
+        });
+        bumpStrikeCount();
       });
     }
 
     if (
       ability.system.multiAttack &&
-      actor.type === "character" &&
+      (actor.type === "character" || actor.type === "npc") &&
       !lockedMultiAttackAbility
     ) {
+      // The first strike already fired above using an auto-resolved weapon, so
+      // the ability cost has been paid for this chain.
       lockedMultiAttackAbility = ability;
+      multiAttackFirstStrikePaid = true;
       transformDialogToMultiAttackMode(abilityDialog, ability, actor);
 
       return;
@@ -682,19 +764,57 @@ export async function combatAbilities() {
   // ====================================================================
 
   /**
+   * Returns the weapons an actor may use for the given ability. Off-hand NPC
+   * weapons are excluded (they are consumed automatically as the off hand).
+   * @param {object} actor
+   * @param {object} ability
+   * @returns {object[]}
+   */
+  function getAbilityWeapons(actor, ability) {
+    const isNpcOffhand = (i) => actor.type === "npc" && i.system.npcOffhand;
+
+    if (ability.system.type === "melee") {
+      return actor.items.filter(
+        (i) =>
+          i.type === "weapon" &&
+          ["axe", "sword", "blunt", "polearm"].includes(i.system.class) &&
+          !i.system.thrown &&
+          !isNpcOffhand(i),
+      );
+    }
+
+    if (ability.system.type === "ranged") {
+      return actor.items.filter(
+        (i) =>
+          ((i.type === "weapon" &&
+            ["bow", "crossbow"].includes(i.system.class)) ||
+            (["axe", "sword", "blunt", "polearm"].includes(i.system.class) &&
+              i.system.thrown)) &&
+          !isNpcOffhand(i),
+      );
+    }
+
+    return [];
+  }
+
+  /**
    * Handles weapon selection and dispatches to the correct roll function.
    * * @param {object} actor
    * @param {object} ability
    * @param {'attack'|'defense'} mode
+   * @param {object} [preselectedWeapon] - skip the picker and roll with this weapon
    */
-  async function weaponSelectionFlow(actor, ability, mode, intent) {
-    // ==================================================
-    // 1. AUTO-RESOLVE VIA ACTIVE WEAPON SET
-    // ==================================================
+  async function weaponSelectionFlow(
+    actor,
+    ability,
+    mode,
+    intent,
+    preselectedWeapon = null,
+  ) {
+    // Roll an attack/defense once a weapon context is known.
+    const runWithWeaponContext = async (weaponContext) => {
+      if (!weaponContext) return;
 
-    const weaponContext = game.redsteel.resolveWeaponContext(actor, ability);
-
-    if (weaponContext) {
       await updateCombatFlags(actor, intent);
 
       if (mode === "defense") {
@@ -705,64 +825,47 @@ export async function combatAbilities() {
         });
       }
 
-      const abilityDamage = ability.system.roll.diceBonusFormula || 0;
-      const halfDamage = ability.system.roll.halfDamage;
-      const penCap = ability.system.roll.penCap;
-      const abilityAttack = ability.system.attack || 0;
-      const abilityBreakthrough = ability.system.breakthrough || 0;
-      const abilityPenetration = ability.system.penetration || 0;
-      const abilityAttributeTestName = ability.system.attributeTest || 0;
-      const abilityTestModifier = ability.system.testModifier || 0;
-      const abilityCritRange = ability.system.critRange || 0;
-      const abilityCritChance = ability.system.critChance || 0;
-      const abilityCritFail = ability.system.critFail || 0;
-
       return runAttackMacro(
         actor,
         weaponContext,
         ability,
         intent.modifiers,
-        abilityDamage,
-        abilityAttack,
-        abilityBreakthrough,
-        abilityPenetration,
-        abilityAttributeTestName,
-        abilityTestModifier,
-        abilityCritRange,
-        abilityCritChance,
-        abilityCritFail,
-        halfDamage,
-        penCap,
+        ability.system.roll.diceBonusFormula || 0,
+        ability.system.attack || 0,
+        ability.system.breakthrough || 0,
+        ability.system.penetration || 0,
+        ability.system.attributeTest || 0,
+        ability.system.testModifier || 0,
+        ability.system.critRange || 0,
+        ability.system.critChance || 0,
+        ability.system.critFail || 0,
+        ability.system.roll.halfDamage || false,
+        ability.system.roll.penCap || false,
         intent.longReachPenalty,
       );
-    }
+    };
 
-    let weapons;
-
-    // Weapons assigned to the off hand (NPCs) should not be selectable as the
-    // attacking weapon — they are consumed automatically as the off-hand weapon.
-    const isNpcOffhand = (i) => actor.type === "npc" && i.system.npcOffhand;
-
-    if (ability.system.type === "melee") {
-      weapons = actor.items.filter(
-        (i) =>
-          i.type === "weapon" &&
-          ["axe", "sword", "blunt", "polearm"].includes(i.system.class) &&
-          !i.system.thrown &&
-          !isNpcOffhand(i),
+    // ==================================================
+    // 0. PRESELECTED WEAPON (e.g. multi-attack inline picker)
+    // ==================================================
+    if (preselectedWeapon) {
+      return runWithWeaponContext(
+        game.redsteel.resolveWeaponContext(actor, ability, preselectedWeapon),
       );
     }
 
-    if (ability.system.type === "ranged") {
-      weapons = actor.items.filter(
-        (i) =>
-          ((i.type === "weapon" &&
-            ["bow", "crossbow"].includes(i.system.class)) ||
-            (["axe", "sword", "blunt", "polearm"].includes(i.system.class) &&
-              i.system.thrown)) &&
-          !isNpcOffhand(i),
-      );
+    // ==================================================
+    // 1. AUTO-RESOLVE VIA ACTIVE WEAPON SET
+    // ==================================================
+    const weaponContext = game.redsteel.resolveWeaponContext(actor, ability);
+    if (weaponContext) {
+      return runWithWeaponContext(weaponContext);
     }
+
+    // ==================================================
+    // 2. MANUAL WEAPON SELECTION DIALOG
+    // ==================================================
+    const weapons = getAbilityWeapons(actor, ability);
     if (!weapons?.length)
       return ui.notifications.warn("This actor has no valid weapons.");
     const weaponChoices = weapons.map((w, idx) => ({
@@ -772,54 +875,9 @@ export async function combatAbilities() {
 
     const handleWeaponSelection = async (weaponIndex) => {
       const weapon = weapons[weaponIndex];
-      const weaponContext = game.redsteel.resolveWeaponContext(
-        actor,
-        ability,
-        weapon,
+      return runWithWeaponContext(
+        game.redsteel.resolveWeaponContext(actor, ability, weapon),
       );
-      if (!weaponContext) return;
-
-      await updateCombatFlags(actor, intent);
-
-      if (mode === "defense") {
-        // defenseRoll function
-        await game.redsteel.defenseRoll({
-          actor,
-          weapon: weaponContext.weapon,
-          ability,
-        });
-      } else {
-        const abilityDamage = ability.system.roll.diceBonusFormula || 0;
-        const halfDamage = ability.system.roll.halfDamage;
-        const penCap = ability.system.roll.penCap;
-        const abilityAttack = ability.system.attack || 0;
-        const abilityBreakthrough = ability.system.breakthrough || 0;
-        const abilityPenetration = ability.system.penetration || 0;
-        const abilityAttributeTestName = ability.system.attributeTest || 0;
-        const abilityTestModifier = ability.system.testModifier || 0;
-        const abilityCritRange = ability.system.critRange || 0;
-        const abilityCritChance = ability.system.critChance || 0;
-        const abilityCritFail = ability.system.critFail || 0;
-
-        await runAttackMacro(
-          actor,
-          weaponContext,
-          ability,
-          intent.modifiers,
-          abilityDamage,
-          abilityAttack,
-          abilityBreakthrough,
-          abilityPenetration,
-          abilityAttributeTestName,
-          abilityTestModifier,
-          abilityCritRange,
-          abilityCritChance,
-          abilityCritFail,
-          halfDamage,
-          penCap,
-          intent.longReachPenalty,
-        );
-      }
     };
 
     const css = `
@@ -876,9 +934,6 @@ export async function combatAbilities() {
       render: (html) => {
         html.find(".weapon-choice").click(async (event) => {
           const selectedValue = $(event.currentTarget).data("value");
-
-          await updateCombatFlags(actor, html);
-
           await handleWeaponSelection(selectedValue);
         });
       },

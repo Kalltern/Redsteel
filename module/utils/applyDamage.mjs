@@ -81,9 +81,11 @@ function evaluateAttackDamage({
     armor: actor.system.armor,
     hp,
     tempHp,
-    // An explicit toggle (e.g. the spell half-damage checkbox in the Apply
-    // Damage dialog) overrides; otherwise fall back to the attack's own flag.
-    halfDamage: halfDamage ?? selectedAttack.halfDamage ?? false,
+    // Half damage applies if EITHER the Apply Damage dialog requested it (the
+    // spell half-damage checkbox) OR the attack itself is inherently half (e.g.
+    // Flurry's `@Half`). Must be `||`, not `??`: the dialog value is always a
+    // boolean, so `false ?? …` would short-circuit and drop the attack's flag.
+    halfDamage: Boolean(halfDamage) || Boolean(selectedAttack.halfDamage),
     penCap: selectedAttack.penCap ?? false,
   });
 
@@ -176,6 +178,49 @@ async function applyDamageToTargets(
   } else {
     game.socket.emit(SOCKET, data);
   }
+}
+
+/**
+ * Resolve how many Bleeding stacks an attack applies, from the stored bleed
+ * data (chance, the original attack roll, sharp-weapon extra stacks, crit
+ * stacks and the auto flag) and the target's own bleed modifiers. Shared by the
+ * Apply Damage preview and the GM apply so the count shown always matches the
+ * count applied — previously the preview omitted the sharp-weapon extra stacks.
+ */
+function resolveBleedStacks(effect, { targetMod = 0, stackMod = 0, mode } = {}) {
+  const crit = effect.critStacks ?? 0;
+  const normalStacks = effect.normalStacks ?? 0;
+
+  let stacks;
+  if (effect.auto) {
+    // Auto bleed is guaranteed — chance/resistance don't apply.
+    stacks = normalStacks;
+  } else {
+    // Each gathered bleed counts as 100% chance: the stored `chance` already
+    // encodes "full stacks ×100 + remainder" (e.g. 120%). Deduct the target's
+    // bleed resistance (targetMod, negative for resistance), then resolve
+    // against the original attack roll.
+    const baseChance = effect.chance ?? 0;
+    const roll = effect.roll ?? 100;
+
+    const resolve = (chancePct) => {
+      if (chancePct <= 0) return 0;
+      let s = Math.floor(chancePct / 100);
+      const remainder = chancePct % 100;
+      if (remainder > 0 && roll <= remainder) s += 1;
+      return s;
+    };
+
+    const resistedRegular = resolve(baseChance + targetMod);
+    // Extra stacks rolled separately (e.g. sharp-weapon bleed) that aren't
+    // represented in `chance`.
+    const extraStacks = Math.max(0, normalStacks - resolve(baseChance));
+    stacks = resistedRegular + extraStacks;
+  }
+
+  if (mode === "critical") stacks += crit;
+  stacks += stackMod;
+  return Math.max(0, stacks);
 }
 
 export async function applyDamageAsGM(data) {
@@ -321,50 +366,18 @@ export async function applyDamageAsGM(data) {
         continue;
       }
 
+      // Bleeding requires an actual wound: a hit fully absorbed by temporary
+      // health (no health damage) never bleeds.
+      if (name === "bleed" && result.hpLoss <= 0) continue;
+
       let stacks = 1;
 
       if (name === "bleed") {
-        const crit = effect.critStacks ?? 0;
-        const normalStacks = effect.normalStacks ?? 0;
-
-        if (effect.auto) {
-          // Auto bleed is guaranteed — chance/resistance don't apply.
-          stacks = normalStacks;
-        } else {
-          // Each gathered bleed counts as 100% chance: the stored `chance`
-          // already encodes "full stacks ×100 + remainder" (e.g. 120%).
-          // Deduct the target's bleed resistance (targetMod, negative for
-          // resistance), then resolve against the original attack roll.
-          //   120% attacker - 50% resist = 70% → 0 or 1 bleed (roll ≤ 70).
-          const baseChance = effect.chance ?? 0;
-          const roll = effect.roll ?? 100;
-
-          const resolveStacks = (chancePct) => {
-            if (chancePct <= 0) return 0;
-            let s = Math.floor(chancePct / 100);
-            const remainder = chancePct % 100;
-            if (remainder > 0 && roll <= remainder) s += 1;
-            return s;
-          };
-
-          const resistedRegular = resolveStacks(baseChance + targetMod);
-
-          // Preserve extra stacks rolled separately (e.g. sharp-weapon
-          // bleed) that aren't represented in `chance`.
-          const extraStacks = Math.max(
-            0,
-            normalStacks - resolveStacks(baseChance),
-          );
-
-          stacks = resistedRegular + extraStacks;
-        }
-
-        if (mode === "critical") {
-          stacks += crit;
-        }
+        stacks = resolveBleedStacks(effect, { targetMod, stackMod, mode });
+      } else {
+        stacks += stackMod;
       }
 
-      stacks += stackMod;
       if (stacks <= 0) continue;
       await applyEffectToActor(actor, name, stacks, castingContext);
     }
@@ -456,16 +469,23 @@ function openDamageSelectionDialog(message, targets) {
 
             const modifiedChance = effect.chance + targetMod;
 
-            let displayChance = modifiedChance;
+            const displayChance = modifiedChance;
             let extraInfo = "";
+            let success = effect.roll <= modifiedChance;
 
             if (name === "bleed") {
-              if (mode === "critical" && effect.critStacks > 0) {
-                extraInfo = ` + ${effect.critStacks} crit stack(s)`;
-              }
+              const stackMod =
+                t.actor.system.effectMods?.[name]?.stackMod || 0;
+              // No health damage (e.g. fully absorbed by temp HP) → no bleed.
+              const bleedDenied = result.hpLoss <= 0;
+              const predicted = bleedDenied
+                ? 0
+                : resolveBleedStacks(effect, { targetMod, stackMod, mode });
+              success = predicted > 0;
+              extraInfo = bleedDenied
+                ? " — no health damage, no bleed"
+                : ` → ${predicted} stack(s)`;
             }
-
-            const success = effect.roll <= modifiedChance;
 
             return `
       <div style="margin-left:15px;">

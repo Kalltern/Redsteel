@@ -837,6 +837,19 @@
           "defense": 0,
           "isSkill": 1
         },
+        "bloodManipulation": {
+          "value": 0,
+          "rating": 0,
+          "critbonus": 0,
+          "critfailpenalty": 0,
+          "id": 4,
+          "type": 4,
+          "visible": false,
+          "bonus": 0,
+          "attack": 0,
+          "defense": 0,
+          "isSkill": 1
+        },
         "ranger": {
           "value": 0,
           "rating": 0,
@@ -1144,6 +1157,13 @@
           "bonus": 0
         },
         "channeling": {
+          "rating": 0,
+          "critbonus": 0,
+          "critfailpenalty": 0,
+          "value": 0,
+          "bonus": 0
+        },
+        "bloodManipulation": {
           "rating": 0,
           "critbonus": 0,
           "critfailpenalty": 0,
