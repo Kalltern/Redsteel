@@ -164,7 +164,6 @@
     "Actor": {
       "Tabs": {
         "Biography": "Biography",
-        "TestTab": "TestTab",
         "Skills": "Skills",
         "Features": "Features",
         "Inventory": "Inventory",
@@ -233,7 +232,7 @@
             },
             "stealthAdvantage": {
               "label": "Stealth: Advantage",
-              "description": "5 SP; Plížení: Adept. Manual — resolved at the table."
+              "description": "5 SP; Plížení: Adept. Automated."
             },
             "stealthCritFail": {
               "label": "Stealth: Crit Failure -3%",
@@ -264,7 +263,7 @@
               "description": "20 CP; Tulák VII. Manual — resolved at the table."
             },
             "speedTests": {
-              "label": "Advantage on opposed Speed Tests",
+              "label": "Advantage on vs Speed Tests",
               "description": "10 CP; Tulák VII. Manual — resolved at the table."
             },
             "daggerDefense": {
@@ -2109,11 +2108,11 @@
             },
             "tanecVyhoda": {
               "label": "Dancing: Advantage",
-              "description": "5 SP; Tanec I. Manual — resolved at the table."
+              "description": "5 SP; Tanec I. Automated."
             },
             "umtvorbaVyhoda": {
               "label": "Art: Advantage",
-              "description": "5 SP; Umělecká tvorba: Adept. Manual — resolved at the table."
+              "description": "5 SP; Umělecká tvorba: Adept. Automated."
             },
             "umtvorbaKritNeuspech": {
               "label": "Art: Crit failure -3%",
@@ -2137,7 +2136,7 @@
             },
             "hudbaVyhoda": {
               "label": "Music: Advantage",
-              "description": "5 SP; Hudba: Adept. Manual — resolved at the table."
+              "description": "5 SP; Hudba: Adept. Automated."
             },
             "hudbaKritNeuspech": {
               "label": "Music: Crit failure -3%",
@@ -2145,7 +2144,7 @@
             },
             "herectviVyhoda": {
               "label": "Acting: Advantage",
-              "description": "5 SP; Herectví: Adept. Manual — resolved at the table."
+              "description": "5 SP; Herectví: Adept. Automated."
             },
             "herectviKritNeuspech": {
               "label": "Acting: Crit failure -3%",
@@ -2700,7 +2699,7 @@
             },
             "ranhojicstviVyhoda": {
               "label": "First Aid: Advantage",
-              "description": "5 SP; Ranhojičství: Adept. Manual — resolved at the table."
+              "description": "5 SP; Ranhojičství: Adept. Automated."
             },
             "ranhojicstviKritNeuspech": {
               "label": "First Aid: Crit failure -3%",
@@ -3092,7 +3091,7 @@
             },
             "ritualyVyhoda": {
               "label": "Rituals: Advantage",
-              "description": "5 SP. Manual — resolved at the table."
+              "description": "5 SP. Automated."
             },
             "ritualyKritNeuspech": {
               "label": "Rituals: Crit failure -3%",

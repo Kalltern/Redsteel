@@ -12,21 +12,21 @@
         <h3>{{localize "Rerolls"}}</h3>
       </header>
       <ul class="reroll-grid">
-        {{#each features as |item|}}
-          {{#if (gt item.system.reroll.value 0)}}
-            {{#each (range 1 item.system.reroll.value) as |n|}}
-            <li
-              class="reroll-box {{#if (array-lookup item.system.reroll.active n)}}active{{/if}}"
-              data-item-id="{{item.id}}"
-              data-index="{{n}}"
-              data-action="toggleReroll"
-              title="Click to toggle reroll"
-            >
-              <img class="reroll-box-icon" src="{{item.img}}" width="36" height="36" />
-              <span class="reroll-box-name">{{item.system.reroll.name}}</span>
-            </li>
-            {{/each}}
-          {{/if}}
+        {{#each rerollPools as |pool|}}
+        <li
+          class="reroll-box {{#unless pool.remaining}}depleted{{/unless}}"
+          data-item-id="{{pool.itemId}}"
+          data-pool-index="{{pool.poolIndex}}"
+          data-action="toggleReroll"
+          title="Click to spend or restore one reroll"
+        >
+          <img class="reroll-box-icon" src="{{pool.img}}" width="36" height="36" />
+          <span class="reroll-box-name">
+            {{pool.label}}
+            {{#if pool.universal}}<span class="reroll-box-tag">Universal</span>{{/if}}
+          </span>
+          <span class="reroll-count {{#if pool.remaining}}active{{/if}}">{{pool.remaining}}/{{pool.max}}</span>
+        </li>
         {{/each}}
       </ul>
     </section>

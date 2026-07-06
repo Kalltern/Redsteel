@@ -1,5 +1,6 @@
 import { getTraitPills } from "./traitPills.mjs";
 import { withRollBias, tagRollSkill } from "./rollAdvantage.mjs";
+import { AIMED_PARTS } from "./aimedStrike.mjs";
 
 export async function universalAttackLogic({
   attackType,
@@ -133,6 +134,7 @@ export async function universalAttackLogic({
     }
     for (const mod of selectedModifiers) {
       if (mod.system.description) {
+        if (concatDescription) concatDescription += "<br>";
         concatDescription += `<b>${mod.localizedName ?? mod.name}</b><br>${mod.system.description}`;
       }
     }
@@ -290,7 +292,13 @@ export async function universalAttackLogic({
       rollName,
       criticalSuccessThreshold,
       criticalFailureThreshold,
+      aimedPart,
     } = attackData;
+    const aimedPartDef = aimedPart ? AIMED_PARTS[aimedPart] : null;
+    if (aimedPartDef) {
+      if (concatDescription) concatDescription += "<br>";
+      concatDescription += `Aimed attack: ${aimedPartDef.label}`;
+    }
 
     // ─── Damage Roll ───
     const { damageRoll, damageTotal, breakthroughRollResult } =
@@ -329,6 +337,18 @@ export async function universalAttackLogic({
     } = critData;
 
     // ─── Effects Roll ───
+    // Head aimed attack injects stagger +20% and precision +10% as a synthetic
+    // modifier so both bonuses appear in the roll results and chat message.
+    const effectModifiers = aimedPart === "head"
+      ? [...selectedModifiers, {
+          system: {
+            effectType1: "stagger",
+            effectType2: "precision",
+            effects: { extra1: AIMED_PARTS.head.staggerBonus, extra2: AIMED_PARTS.head.precisionBonus },
+          },
+        }]
+      : selectedModifiers;
+
     const effects = await game.redsteel.getEffectRolls(
       actor,
       weapon,
@@ -339,7 +359,7 @@ export async function universalAttackLogic({
       critScore,
       critSuccess,
       null, // no ability
-      selectedModifiers,
+      effectModifiers,
     );
 
     const { allBleedRollResults, effectsRollResults, mechanicalEffects } =
@@ -413,10 +433,6 @@ ${
   <img src="${weapon.img}" width="36" height="36" style="margin-right:8px;">
   <strong style="font-size:20px;">${resolvedFlavor}${modifierLabel}</strong>
 </span>
-<div style="text-align:center; font-size:16px;">
-  ${concatDescription}
-  ${attributeTestHTML}
- </div>
  <hr>
 
 
@@ -425,6 +441,14 @@ ${
 </p>
  <hr>
 ${damageLine}
+<hr>
+<div style="text-align:center; font-size:16px;">
+<table style="width:100%; text-align:center; font-size:16px;">
+  <tr><th>Description</th></tr>
+  <tr><td>${concatDescription}</td></tr>
+  ${attributeTestHTML}
+</table>
+ </div>
 
 <table style="width:100%; text-align:center; font-size:15px;">
   <tr><th>Effects</th></tr>
@@ -445,6 +469,9 @@ ${damageLine}
           type: "attack",
           damageProfile,
           effects: mechanicalEffects,
+          aimedStrike: aimedPart
+            ? { part: aimedPart, su: attackRoll.total }
+            : null,
           normal: {
             damage: damageTotal,
             penetration: penetration,

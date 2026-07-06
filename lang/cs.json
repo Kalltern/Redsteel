@@ -164,7 +164,6 @@
     "Actor": {
       "Tabs": {
         "Biography": "Životopis",
-        "TestTab": "TestTab",
         "Skills": "Dovednosti",
         "Features": "Rysy",
         "Inventory": "Inventář",
@@ -233,7 +232,7 @@
             },
             "stealthAdvantage": {
               "label": "Plížení: Výhoda",
-              "description": "5 SP; Plížení: Adept. Ručně — řeší se u stolu."
+              "description": "5 SP; Plížení: Adept. Automatizováno."
             },
             "stealthCritFail": {
               "label": "Plížení: Krit. neúspěch -3%",
@@ -2109,11 +2108,11 @@
             },
             "tanecVyhoda": {
               "label": "Tanec: Výhoda",
-              "description": "5 SP; Tanec I. Ručně — řeší se u stolu."
+              "description": "5 SP; Tanec I. Automatizováno."
             },
             "umtvorbaVyhoda": {
               "label": "Umělecká tvorba: Výhoda",
-              "description": "5 SP; Umělecká tvorba: Adept. Ručně — řeší se u stolu."
+              "description": "5 SP; Umělecká tvorba: Adept. Automatizováno."
             },
             "umtvorbaKritNeuspech": {
               "label": "Umělecká tvorba: Krit. neúspěch -3%",
@@ -2137,7 +2136,7 @@
             },
             "hudbaVyhoda": {
               "label": "Hudba: Výhoda",
-              "description": "5 SP; Hudba: Adept. Ručně — řeší se u stolu."
+              "description": "5 SP; Hudba: Adept. Automatizováno."
             },
             "hudbaKritNeuspech": {
               "label": "Hudba: Krit. neúspěch -3%",
@@ -2145,7 +2144,7 @@
             },
             "herectviVyhoda": {
               "label": "Herectví: Výhoda",
-              "description": "5 SP; Herectví: Adept. Ručně — řeší se u stolu."
+              "description": "5 SP; Herectví: Adept. Automatizováno."
             },
             "herectviKritNeuspech": {
               "label": "Herectví: Krit. neúspěch -3%",
@@ -2700,7 +2699,7 @@
             },
             "ranhojicstviVyhoda": {
               "label": "Ranhojičství: Výhoda",
-              "description": "5 SP; Ranhojičství: Adept. Ručně — řeší se u stolu."
+              "description": "5 SP; Ranhojičství: Adept. Automatizováno."
             },
             "ranhojicstviKritNeuspech": {
               "label": "Ranhojičství: Krit. neúspěch -3%",
@@ -3092,7 +3091,7 @@
             },
             "ritualyVyhoda": {
               "label": "Rituály: Výhoda",
-              "description": "5 SP. Ručně — řeší se u stolu."
+              "description": "5 SP. Automatizováno."
             },
             "ritualyKritNeuspech": {
               "label": "Rituály: Krit. neúspěch -3%",

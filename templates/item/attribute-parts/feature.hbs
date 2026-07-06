@@ -5,26 +5,75 @@
   data-tab='attributes'
 >
   {{! As you add new fields, add them in here! }}
-  <h3>Reroll Settings</h3>
+  <div
+    class="flexrow"
+    style="align-items: center; justify-content: space-between; margin-bottom: 6px;"
+  >
+    <h3 style="margin: 0;">Reroll Pools</h3>
+    <a
+      class="reroll-pool-control"
+      data-action="addRerollPool"
+      title="Add reroll pool"
+      style="flex: 0 0 auto;"
+    >
+      <i class="fas fa-plus"></i> Add reroll pool
+    </a>
+  </div>
+  <p class="hint">
+    Each pool is an independent reroll source with its own count. Leave
+    <b>Skills</b> blank (or type <code>universal</code>) for a reroll usable on
+    any roll; otherwise list skill shortcuts, comma-separated
+    (e.g. <code>perception, archery</code>). One pool per skill that should be
+    consumed separately.
+  </p>
 
-  <!-- Static Input for Reroll Name -->
-  <label for="reroll-name">Reroll Name</label>
-  <input 
-    type="text" 
-    id="reroll-name" 
-    name="system.reroll.name" 
-    value="{{system.reroll.name}}" 
-    placeholder="Enter reroll name" />
-
-  <!-- Static Input for Reroll Value -->
-  <label for="reroll-value">Reroll Value</label>
-  <input 
-    type="number" 
-    id="reroll-value" 
-    name="system.reroll.value" 
-    value="{{system.reroll.value}}" 
-    min="0" 
-    placeholder="Enter number of rerolls" />
+  {{#each rerollPoolEntries as |pool|}}
+    <fieldset class="reroll-pool-row" style="margin-bottom: 8px;">
+      <div class="flexrow" style="align-items: center; gap: 6px;">
+        <input
+          type="text"
+          name="system.reroll.pools.{{pool.index}}.label"
+          value="{{pool.label}}"
+          placeholder="Pool label (optional)"
+          style="flex: 2;"
+        />
+        <input
+          type="number"
+          name="system.reroll.pools.{{pool.index}}.max"
+          value="{{pool.max}}"
+          min="0"
+          title="Number of rerolls"
+          data-dtype="Number"
+          style="flex: 0 0 64px;"
+        />
+        <a
+          class="reroll-pool-control"
+          data-action="removeRerollPool"
+          data-index="{{pool.index}}"
+          title="Remove pool"
+          style="flex: 0 0 auto;"
+        >
+          <i class="fas fa-trash"></i>
+        </a>
+      </div>
+      <input
+        type="text"
+        name="system.reroll.pools.{{pool.index}}.skillsRaw"
+        value="{{pool.skillsRaw}}"
+        placeholder="Skills (blank = universal), e.g. perception, archery"
+        style="margin-top: 4px;"
+      />
+      {{! Preserve spent state across sheet submits. }}
+      <input
+        type="hidden"
+        name="system.reroll.pools.{{pool.index}}.used"
+        value="{{pool.used}}"
+        data-dtype="Number"
+      />
+    </fieldset>
+  {{else}}
+    <p style="opacity: 0.7;">No reroll pools. Add one to grant rerolls.</p>
+  {{/each}}
 
 {{#if (or (eq system.option "trait") (eq system.option "feature"))}}
 <div class="form-group stacked">

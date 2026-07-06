@@ -1512,6 +1512,42 @@ REDSTEEL.effectDefinitions = {
     statuses: ["slow_movement"],
     stackBehavior: "ignore",
   },
+
+  // Aimed Strike — applied to the TARGET when an aimed hit lands on Hands.
+  // Grants disadvantage on all attacks made with a two-handed weapon grip.
+  maimed_hands: {
+    name: "Zranění rukou",
+    img: "icons/skills/wounds/injury-hand-blood-red.webp",
+    statuses: ["maimed_hands"],
+    defaultTurns: 2,
+    useDuration: true,
+    changes: [
+      {
+        key: "system.rollAdvantage.twoHanded",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: -1,
+      },
+    ],
+    stackBehavior: "refresh",
+  },
+
+  // Aimed Strike — applied to the TARGET when an aimed hit lands on Legs.
+  // Grants disadvantage on dodge rolls.
+  maimed_legs: {
+    name: "Zranění nohou",
+    img: "icons/skills/wounds/injury-foot-blood-red.webp",
+    statuses: ["maimed_legs"],
+    defaultTurns: 2,
+    useDuration: true,
+    changes: [
+      {
+        key: "system.rollAdvantage.dodge",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: -1,
+      },
+    ],
+    stackBehavior: "refresh",
+  },
 };
 
 REDSTEEL.statusEffects = Object.entries(REDSTEEL.effectDefinitions).map(

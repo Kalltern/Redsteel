@@ -4,7 +4,7 @@
  * ("animalhandling") while skill keys are camelCase ("animalHandling"),
  * so "firstAid", "first aid", "first-aid" and "firstaid" must all match.
  */
-function normalizeTrigger(value) {
+export function normalizeTrigger(value) {
   return String(value ?? "")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "");

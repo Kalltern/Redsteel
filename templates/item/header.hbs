@@ -394,6 +394,40 @@
             <label class="resource-label">{{localize "REDSTEEL.Item.Consumable.FIELDS.stagger.label"}}</label>
             <input type="text" name="system.stagger" value="{{system.stagger}}" data-dtype="Number" placeholder="0"/>
           </div>
+
+          <div class="grid-span-2">
+            <label class="resource-label">{{localize
+                "REDSTEEL.Item.Spell.FIELDS.headerType.label"
+              }}</label>
+            <div style="display:flex; gap:4px;">
+              <select name="system.dmgType1" id="dmg-type-1">
+                <option value="">-- Select a type --</option>
+                {{#each system.dmgTypes as |dmgType|}}
+                  <option value="{{dmgType}}" {{#if (eq ../system.dmgType1 dmgType)}}selected{{/if}}>
+                    {{dmgType}}
+                  </option>
+                {{/each}}
+              </select>
+
+              <select name="system.bool2" id="effect-bool-2">
+                <option value="">--</option>
+                {{#each system.effectOptions as |bool|}}
+                  <option value="{{bool}}" {{#if (eq ../system.bool2 bool)}}selected{{/if}}>
+                    {{bool}}
+                  </option>
+                {{/each}}
+              </select>
+
+              <select name="system.dmgType2" id="dmg-type-2">
+                <option value="">-- Select a type --</option>
+                {{#each system.dmgTypes as |dmgType|}}
+                  <option value="{{dmgType}}" {{#if (eq ../system.dmgType2 dmgType)}}selected{{/if}}>
+                    {{dmgType}}
+                  </option>
+                {{/each}}
+              </select>
+            </div>
+          </div>
         {{/if}}
 
         {{!-- Dice fields --}}

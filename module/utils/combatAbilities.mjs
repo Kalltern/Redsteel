@@ -1,5 +1,6 @@
 import { getTraitPills } from "./traitPills.mjs";
 import { withRollBias, tagRollSkill } from "./rollAdvantage.mjs";
+import { selectAimedPart, AIMED_PARTS } from "./aimedStrike.mjs";
 
 export async function combatAbilities() {
   // ====================================================================
@@ -253,6 +254,7 @@ export async function combatAbilities() {
 
     const useSneak = html.find('[name="sneakAttack"]').is(":checked");
     const useFlanking = html.find('[name="flanking"]').is(":checked");
+    const useAimedStrike = html.find('[name="aimedStrike"]').is(":checked");
     const selectedModifierIds = Array.from(
       container.querySelectorAll(".attack-modifier-checkbox:checked"),
     ).map((cb) => cb.dataset.abilityId);
@@ -260,10 +262,18 @@ export async function combatAbilities() {
     const selectedModifiers = modifierAbilities.filter((mod) =>
       selectedModifierIds.includes(mod.id),
     );
+
+    // Aimed Strike: resolve body part choice before proceeding.
+    let aimedStrikePart = null;
+    if (useAimedStrike) {
+      aimedStrikePart = await selectAimedPart();
+    }
+
     const intent = {
       aim: aimValue,
       sneak: useSneak,
       flanking: useFlanking,
+      aimedStrikePart,
       modifiers: selectedModifiers,
       longReachPenalty,
     };
@@ -539,6 +549,11 @@ export async function combatAbilities() {
   <label class="pill">
     <input type="checkbox" name="flanking" />
     <span>Flanking</span>
+  </label>
+
+  <label class="pill">
+    <input type="checkbox" name="aimedStrike" />
+    <span>Aimed Attack</span>
   </label>
 
   ${
@@ -966,6 +981,12 @@ export async function combatAbilities() {
     } else {
       await actor.unsetFlag("redsteel", "aimCount");
     }
+
+    if (intent.aimedStrikePart) {
+      await actor.setFlag("redsteel", "aimedPart", intent.aimedStrikePart);
+    } else {
+      await actor.unsetFlag("redsteel", "aimedPart");
+    }
   }
 
   async function postUniversalStyleAttackChat({
@@ -995,6 +1016,7 @@ export async function combatAbilities() {
     mechanicalEffects,
     damageProfile = [],
     attributeTestHTML = "",
+    aimedStrike = null,
   }) {
     let attackHTML = "";
     let damageHTML = "";
@@ -1111,6 +1133,7 @@ ${damageLine}
           type: "attack",
           damageProfile,
           effects: mechanicalEffects,
+          aimedStrike,
           normal: { damage: damageTotal, penetration, halfDamage, penCap },
           critical: {
             damage: critDamageTotal,
@@ -1340,6 +1363,7 @@ ${damageLine}
       critFailure,
       criticalSuccessThreshold,
       criticalFailureThreshold,
+      aimedPart,
     } = await game.redsteel.getAttackRolls(
       actor,
       weapon,
@@ -1380,6 +1404,21 @@ ${damageLine}
       doctrineSkillCritPen,
     );
 
+    // Head aimed attack injects stagger +20% and precision +10% as a synthetic
+    // modifier so both bonuses appear in the roll results and chat message.
+    const effectModifiers = aimedPart === "head"
+      ? [...selectedModifiers, {
+          system: {
+            effectType1: "stagger",
+            effectType2: "precision",
+            effects: {
+              extra1: AIMED_PARTS.head.staggerBonus,
+              extra2: AIMED_PARTS.head.precisionBonus,
+            },
+          },
+        }]
+      : selectedModifiers;
+
     const { allBleedRollResults, effectsRollResults, mechanicalEffects } =
       await game.redsteel.getEffectRolls(
         actor,
@@ -1391,7 +1430,7 @@ ${damageLine}
         critScore,
         critSuccess,
         ability,
-        selectedModifiers,
+        effectModifiers,
       );
 
     const attributeMap = {
@@ -1405,9 +1444,24 @@ ${damageLine}
 
     let concatRollAndDescription = ability.system.description || "";
 
+    for (const mod of selectedModifiers) {
+      if (mod.system.description) {
+        if (concatRollAndDescription) concatRollAndDescription += "<br>";
+        concatRollAndDescription += `<b>${mod.localizedName ?? mod.name}</b><br>${mod.system.description}`;
+      }
+    }
+
+    if (aimedPart) {
+      const aimedPartDef = AIMED_PARTS[aimedPart];
+      if (aimedPartDef) {
+        if (concatRollAndDescription) concatRollAndDescription += "<br>";
+        concatRollAndDescription += `Aimed attack: ${aimedPartDef.label}`;
+      }
+    }
+
     let attributeTestHTML = "";
 
-    // Append modifier descriptions
+    // Append modifier attribute tests
     for (const mod of selectedModifiers) {
       const testName = mod.system.attributeTest;
       const testModifier = Number(mod.system.testModifier) || 0;
@@ -1540,6 +1594,9 @@ ${damageLine}
       halfDamage: totalHalfDamage,
       penCap,
       attributeTestHTML,
+      aimedStrike: aimedPart
+        ? { part: aimedPart, su: attackRoll.total }
+        : null,
     });
     // ─── AMMO DEDUCTION ───
     if (ammo) {

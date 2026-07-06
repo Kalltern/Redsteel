@@ -51,7 +51,7 @@ const ROLL_GROUPS = [
  * @param {object} system  The actor's system data.
  */
 export function seedRollAdvantage(system) {
-  const adv = { all: 0 };
+  const adv = { all: 0, twoHanded: 0 };
   for (const group of ROLL_GROUPS) {
     for (const key of Object.keys(system?.[group] ?? {})) {
       // First writer wins; never clobber a real skill key with a later group.

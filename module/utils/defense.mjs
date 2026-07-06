@@ -1,5 +1,5 @@
 import { getTraitPills } from "./traitPills.mjs";
-import { withRollBias, applyDesperateCrit } from "./rollAdvantage.mjs";
+import { withRollBias, applyDesperateCrit, tagRollSkill } from "./rollAdvantage.mjs";
 
 export async function defenseRoll({ actor, weapon, ability = null } = {}) {
   if (!actor) {
@@ -523,7 +523,7 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
         "@dodgeRating + @weaponDodge + @abilityDefense + @overwhelmPenalty - 1d100",
         withRollBias(rollData, actor),
       );
-
+      tagRollSkill(roll, "dodge");
       await roll.evaluate();
       const d100 = roll.dice.find((d) => d.faces === 100);
       const d100Result = d100?.total;

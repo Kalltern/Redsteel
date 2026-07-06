@@ -26,6 +26,8 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
       addVariant: this._addVariant,
       removeVariant: this._removeVariant,
       openVariant: this._openVariant,
+      addRerollPool: this._addRerollPool,
+      removeRerollPool: this._removeRerollPool,
     },
     form: {
       submitOnChange: true,
@@ -183,6 +185,19 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
   async _preparePartContext(partId, context) {
     switch (partId) {
       case "attributesFeature":
+        context.tab = context.tabs[partId];
+        // One entry per reroll pool, normalized with its array index for the
+        // pool editor inputs (system.reroll.pools.<index>.*).
+        context.rerollPoolEntries = this._getRerollPoolArray().map(
+          (pool, index) => ({
+            index,
+            label: pool.label ?? "",
+            skillsRaw: pool.skillsRaw ?? "",
+            max: Number(pool.max) || 0,
+            used: Number(pool.used) || 0,
+          }),
+        );
+        break;
       case "attributesItem":
       case "attributesGear":
       case "attributesAmmunition":
@@ -470,6 +485,36 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
   }
 
   /**
+   * Append a new empty reroll pool to a feature.
+   *
+   * @this RedsteelItemSheet
+   * @param {PointerEvent} event   The originating click event
+   * @param {HTMLElement} target   The capturing HTML element which defined a [data-action]
+   * @protected
+   */
+  static async _addRerollPool(event, target) {
+    const pools = this._getRerollPoolArray();
+    pools.push({ label: "", skillsRaw: "", max: 1, used: 0 });
+    await this.item.update({ "system.reroll.pools": pools });
+  }
+
+  /**
+   * Remove a reroll pool from a feature by index.
+   *
+   * @this RedsteelItemSheet
+   * @param {PointerEvent} event   The originating click event
+   * @param {HTMLElement} target   The capturing HTML element which defined a [data-action]
+   * @protected
+   */
+  static async _removeRerollPool(event, target) {
+    const index = Number(target.dataset.index);
+    const pools = this._getRerollPoolArray();
+    if (Number.isNaN(index) || index < 0 || index >= pools.length) return;
+    pools.splice(index, 1);
+    await this.item.update({ "system.reroll.pools": pools });
+  }
+
+  /**
    * Opens the sheet of the world spell Item a variant ID points to
    *
    * @this RedsteelItemSheet
@@ -514,6 +559,22 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
     const raw = this.item.system.variants;
     const ids = Array.isArray(raw) ? raw : Object.values(raw ?? {});
     return ids.map((id) => (typeof id === "string" ? id : ""));
+  }
+
+  /**
+   * Reroll pools as a normalized array. Tolerates the array becoming an indexed
+   * object after a form submit (same quirk as {@link _getVariantArray}).
+   * @returns {{label:string, skillsRaw:string, max:number, used:number}[]}
+   */
+  _getRerollPoolArray() {
+    const raw = this.item.system?.reroll?.pools;
+    const pools = Array.isArray(raw) ? raw : Object.values(raw ?? {});
+    return pools.map((p) => ({
+      label: p?.label ?? "",
+      skillsRaw: p?.skillsRaw ?? "",
+      max: Number(p?.max) || 0,
+      used: Number(p?.used) || 0,
+    }));
   }
 
   /**

@@ -1,3 +1,5 @@
+import { selectAimedPart } from "./aimedStrike.mjs";
+
 export async function attackActions() {
   const context = game.redsteel.selectToken({ notifyFallback: true });
   if (!context) return;
@@ -85,6 +87,11 @@ export async function attackActions() {
     <span>Flanking</span>
   </label>
 
+  <label class="pill">
+    <input type="checkbox" name="aimedStrike" />
+    <span>Aimed Attack</span>
+  </label>
+
 ${
   hasLongReach
     ? `
@@ -168,6 +175,7 @@ ${
       callback: async (html) => {
         const useSneak = html.find('[name="sneakAttack"]').is(":checked");
         const useFlanking = html.find('[name="flanking"]').is(":checked");
+        const useAimedStrike = html.find('[name="aimedStrike"]').is(":checked");
         const longReachPenalty = html
           .find('[name="longReachPenalty"]')
           .is(":checked")
@@ -175,6 +183,18 @@ ${
           : 0;
         const aimValue =
           parseInt(html.find('input[name="aim"]:checked').val()) || 0;
+
+        // ─── Aimed Strike: ask body part before proceeding ───
+        if (useAimedStrike) {
+          const part = await selectAimedPart();
+          if (part) {
+            await actor.setFlag("redsteel", "aimedPart", part);
+          } else {
+            await actor.unsetFlag("redsteel", "aimedPart");
+          }
+        } else {
+          await actor.unsetFlag("redsteel", "aimedPart");
+        }
 
         // ─── Flags ───
         useSneak

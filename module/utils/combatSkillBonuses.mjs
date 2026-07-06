@@ -1,5 +1,6 @@
 import { getTraitPills } from "./traitPills.mjs";
-import { withRollBias, applyDesperateCrit } from "./rollAdvantage.mjs";
+import { withRollBias, applyDesperateCrit, tagRollSkill } from "./rollAdvantage.mjs";
+import { AIMED_PARTS } from "./aimedStrike.mjs";
 
 async function getSneakDamageFormula(actor, weapon, weaponContext = null) {
   const ws = weapon?.system ?? {};
@@ -494,6 +495,13 @@ export async function getAttackRolls(
     abilityAttack += aimValue * 10;
     await actor.unsetFlag("redsteel", "aimCount");
   }
+  // Aimed Strike: consume the part flag and apply the hit penalty.
+  const aimedPart = actor.getFlag("redsteel", "aimedPart") ?? null;
+  if (aimedPart) {
+    const partDef = AIMED_PARTS[aimedPart];
+    if (partDef) abilityAttack += partDef.attackPenalty;
+    await actor.unsetFlag("redsteel", "aimedPart");
+  }
 
   if (ws.class === "bow" || ws.class === "crossbow") {
     // Critical success and failure thresholds
@@ -566,6 +574,9 @@ export async function getAttackRolls(
   let rollName = weapon
     ? `${weapon.localizedName ?? weapon.name} Attack`
     : "Ability Attack";
+  if (aimedPart) {
+    rollName += ` → ${AIMED_PARTS[aimedPart]?.label ?? aimedPart}`;
+  }
   const rollData = {
     combatSkills: actor.system.combatSkills,
     weaponAttack: ws.attack || 0,
@@ -575,6 +586,7 @@ export async function getAttackRolls(
   };
 
   const attackRoll = new Roll(attackRollFormula, withRollBias(rollData, actor));
+  if (ws?.gripMode === "two") tagRollSkill(attackRoll, "twoHanded");
   await attackRoll.evaluate();
   const rollResult = attackRoll.dice[0].total;
 
@@ -595,6 +607,7 @@ export async function getAttackRolls(
     criticalSuccessThreshold: critSuccessThreshold,
     criticalFailureThreshold: critFailThreshold,
     rollName,
+    aimedPart,
   };
 }
 

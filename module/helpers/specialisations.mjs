@@ -76,7 +76,11 @@ const SPEC_DEFS = {
       calculation: { tier: 1, column: 3 },
       aimedAttack: { tier: 2, column: 3, requires: ["calculation"] },
       // Chain: stealth
-      stealthAdvantage: { tier: 1, column: 4 },
+      stealthAdvantage: {
+        tier: 1,
+        column: 4,
+        passive: ae(add("system.rollAdvantage.stealth", 1)),
+      },
       stealthCritFail: {
         tier: 2,
         column: 4,

@@ -1,3 +1,6 @@
+import { tagRollSkill } from "./rollAdvantage.mjs";
+import { resetActorRerolls } from "./rerolls.mjs";
+
 export async function delayTurn() {
   const combat = game.combat;
   if (!combat) {
@@ -228,6 +231,10 @@ export async function longRest() {
       "system.stats.mana.value": Math.min(maxMana, mana + newMana),
     };
     await actor.update(updates);
+
+    // ─── Rerolls ─── restore every feature reroll to ready.
+    const rerollsRestored = await resetActorRerolls(actor);
+
     // ─── Chat Message ───
     const iconUrl = "icons/magic/time/day-night-sunset-sunrise.webp";
 
@@ -250,6 +257,7 @@ export async function longRest() {
       Fatigue -1,
       Toxicity -${toxicityReduction}.
     </em>
+    ${rerollsRestored ? "<br><em>Rerolls restored.</em>" : ""}
   </div>
 </div>
 `;
@@ -811,12 +819,10 @@ async function faHandleAsGM(data) {
   switch (data.type) {
     case "faStart":
       return faStartAsGM(data);
-    case "faRoll":
-      return faRollAsGM(data);
+    case "faClearProgress":
+      return faClearProgressAsGM(data);
     case "faAbort":
       return abortCombatFirstAid(fromUuidSync(data.actorUuid), false);
-    case "faReroll":
-      return faResolveAndPost(fromUuidSync(data.actorUuid), data);
     case "faResume":
       return resumeBleeds(
         game.scenes.get(data.sceneId)?.tokens.get(data.targetId)?.actor,
@@ -955,13 +961,16 @@ async function abortCombatFirstAid(actor, timedOut) {
   await resumeBleeds(targetActor);
 }
 
-async function faRollAsGM(data) {
+// The roll itself now happens on the aider's client (so the hotbar roll
+// modifier and the actor's advantage bias apply, and the dice are shown). The
+// GM only clears the committed-progress flag so the attempt can't be re-rolled
+// or re-advanced. Validated against the attemptId to ignore stale cards.
+async function faClearProgressAsGM(data) {
   const actor = fromUuidSync(data.actorUuid);
   const prog = actor?.getFlag?.("redsteel", "firstAidProgress");
   if (!prog || prog.attemptId !== data.attemptId) return; // stale card
 
   await actor.unsetFlag("redsteel", "firstAidProgress");
-  await faResolveAndPost(actor, prog);
 }
 
 function computeFaTest(actor, targetActor, actionType, extraPenalty) {
@@ -1009,6 +1018,10 @@ async function computeFaHeal(actor, total) {
 }
 
 // Rolls the committed (or re-rolled) test and posts the success/fail card.
+// Runs on the aider's client: building the roll with the actor's roll data and
+// tagging it with the First Aid skill lets the global roll-modifier wrapper
+// apply the hotbar picker and the actor's advantage/disadvantage bias — exactly
+// like every other margin-of-success test — and the dice are shown in the card.
 async function faResolveAndPost(actor, ctx) {
   if (!actor) return;
   const targetActor = game.scenes
@@ -1024,7 +1037,10 @@ async function faResolveAndPost(actor, ctx) {
     extraPenalty,
   );
 
-  const roll = new Roll(`${base} - ${penalty} - 1d100`);
+  const roll = new Roll(`${base} - ${penalty} - 1d100`, actor.getRollData());
+  // Stop Bleeding tests off DEX/INT, not First Aid — leave it untagged so only
+  // the actor-wide bias applies; the rest are genuine First Aid rolls.
+  if (ctx.actionType !== "stopBleeding") tagRollSkill(roll, "firstAid");
   await roll.evaluate();
   const success = roll.total >= 0;
 
@@ -1051,11 +1067,16 @@ async function faResolveAndPost(actor, ctx) {
       <button type="button" data-action="faResume">Resume bleeds</button>`;
   }
 
+  // Custom content suppresses Foundry's automatic dice rendering, so embed the
+  // rendered roll ourselves to show the test (formula, total, expandable dice).
+  const rollHTML = await roll.render();
+
   await ChatMessage.create({
     speaker: ChatMessage.getSpeaker({ actor }),
     content: `
       <div class="redsteel-firstaid">
         ${body}
+        ${rollHTML}
         <p style="font-size:0.85em; opacity:0.8;">Penalty: −${penalty}%.</p>
         <div class="redsteel-action-buttons">${buttons}</div>
       </div>`,
@@ -1309,7 +1330,9 @@ export function registerFirstAidHealing() {
   });
 
   // Buttons on the in-combat First Aid counter / result cards. Only the aider
-  // (or GM) wires them; clicks just emit a socket — the GM does the work.
+  // (or GM) wires them. The actual test roll (Roll the test / Re-Roll) runs on
+  // this client so the roll modifier and advantage bias apply and the dice are
+  // shown; the other buttons just emit a socket for the GM to mutate state.
   Hooks.on("renderChatMessageHTML", (message, html) => {
     const counter = message.flags?.redsteel?.firstAidCounter;
     const result = message.flags?.redsteel?.firstAidResult;
@@ -1328,12 +1351,29 @@ export function registerFirstAidHealing() {
       });
     };
 
+    // Local handler for the buttons that roll the test on this client.
+    const wireRoll = (action, run) => {
+      html.querySelectorAll(`[data-action="${action}"]`).forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          btn.disabled = true;
+          await run();
+        });
+      });
+    };
+
     if (counter) {
-      wire("faRoll", () => ({
-        type: "faRoll",
-        actorUuid,
-        attemptId: counter.attemptId,
-      }));
+      // Roll the committed test here, then ask the GM to clear the progress flag
+      // so the attempt can't be re-rolled or re-advanced.
+      wireRoll("faRoll", async () => {
+        const prog = actor.getFlag("redsteel", "firstAidProgress");
+        if (!prog || prog.attemptId !== counter.attemptId) return; // stale card
+        await faRequest({
+          type: "faClearProgress",
+          actorUuid,
+          attemptId: prog.attemptId,
+        });
+        await faResolveAndPost(actor, prog);
+      });
       wire("faAbort", () => ({ type: "faAbort", actorUuid }));
     }
 
@@ -1349,14 +1389,15 @@ export function registerFirstAidHealing() {
     }
 
     if (result && !result.success) {
-      wire("faReroll", () => ({
-        type: "faReroll",
-        actorUuid,
-        actionType: result.actionType,
-        sceneId: result.sceneId,
-        targetId: result.targetId,
-        extraPenalty: result.extraPenalty,
-      }));
+      // Re-roll re-runs the whole test on this client (no progress flag left).
+      wireRoll("faReroll", () =>
+        faResolveAndPost(actor, {
+          actionType: result.actionType,
+          sceneId: result.sceneId,
+          targetId: result.targetId,
+          extraPenalty: result.extraPenalty,
+        }),
+      );
       wire("faResume", () => ({
         type: "faResume",
         sceneId: result.sceneId,

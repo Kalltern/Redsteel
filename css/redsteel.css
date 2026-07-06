@@ -3856,16 +3856,43 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 }
 
 .reroll-box-name {
+  flex: 1;
   font-weight: 700;
   text-align: left;
+}
+
+/* Small italic tag (e.g. "Universal") appended after the pool label. */
+.reroll-box-tag {
+  margin-left: 6px;
+  font-weight: 400;
+  font-style: italic;
+  font-size: 0.82em;
+  opacity: 0.7;
+}
+
+/* Remaining/max count badge on the right of the box. */
+.reroll-count {
+  flex: 0 0 auto;
+  min-width: 34px;
+  padding: 2px 6px;
+  border: 1px solid rgba(128, 128, 128, 0.45);
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.85em;
+  text-align: center;
+}
+
+.reroll-count.active {
+  border-color: rgba(181, 151, 80, 0.6);
+  color: #c9b26b;
 }
 
 .reroll-box:hover {
   border-color: rgba(181, 151, 80, 0.5);
 }
 
-/* ON state: dark gilded glow on the borders, icon in full color */
-.reroll-box.active {
+/* READY state (has charges remaining): gilded glow, icon in full color. */
+.reroll-box:not(.depleted) {
   border-color: #9c7b45;
   color: #c9b26b;
   box-shadow:
@@ -3874,7 +3901,7 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
     0 0 8px rgba(156, 123, 69, 0.55);
 }
 
-.reroll-box.active .reroll-box-icon {
+.reroll-box:not(.depleted) .reroll-box-icon {
   border-color: rgba(181, 151, 80, 0.6);
   filter: none;
 }

@@ -717,12 +717,20 @@ export class RedsteelItem extends Item {
     };
   }
   _getFeatureTooltipData(data) {
+    // Total rerolls = sum of pool maxima, falling back to the legacy value.
+    const rawPools = data.reroll?.pools;
+    const pools = Array.isArray(rawPools)
+      ? rawPools
+      : Object.values(rawPools ?? {});
+    const rerollTotal = pools.length
+      ? pools.reduce((sum, p) => sum + (Number(p?.max) || 0), 0)
+      : Number(data.reroll?.value) || 0;
     return {
       icon: this.img,
       title: this.localizedName,
       stats: [
         { label: "Type:", value: data.option },
-        { label: "Number of rerolls", value: data.reroll.value },
+        { label: "Number of rerolls", value: rerollTotal },
       ].filter(
         (stat) =>
           stat.value !== 0 && stat.value !== false && stat.value != null,

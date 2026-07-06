@@ -6,6 +6,10 @@ import {
 import { getTraitPills } from "../utils/traitPills.mjs";
 import { gatherHerbs, promptHerbMode } from "../utils/gatherHerbs.mjs";
 import { tagRollSkill, applyDesperateCrit } from "../utils/rollAdvantage.mjs";
+import {
+  getActorRerollPools,
+  toggleRerollCharge,
+} from "../utils/rerolls.mjs";
 
 const { api, sheets } = foundry.applications;
 
@@ -92,7 +96,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     },
   };
 
-  static _toggleReroll(event) {
+  static async _toggleReroll(event) {
     // Ensure we get the element with the correct data attributes
     const target = event.target.closest("[data-action='toggleReroll']");
 
@@ -101,54 +105,15 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       return;
     }
 
-    console.debug("Event Target:", target);
-
-    const itemId = target.dataset.itemId; // Get item ID
-    const index = parseInt(target.dataset.index); // Get icon index
-    const actor = this.actor;
-
-    console.debug("Item ID:", itemId);
-    console.debug("Index:", index);
-
-    if (!itemId || isNaN(index)) {
-      console.debug("Invalid itemId or index.");
+    const itemId = target.dataset.itemId;
+    const poolIndex = parseInt(target.dataset.poolIndex, 10);
+    if (!itemId || Number.isNaN(poolIndex)) {
+      console.debug("Invalid itemId or poolIndex.");
       return;
     }
 
-    // Find the item by its ID
-    const item = actor.items.get(itemId);
-    if (!item) {
-      console.debug("Item not found for ID:", itemId);
-      return;
-    }
-
-    console.debug("Item found:", item);
-
-    // Toggle the active state for the reroll
-    const rerollActive = item.system.reroll.active || [];
-    console.debug("Current rerollActive state:", rerollActive);
-
-    rerollActive[index] = !rerollActive[index]; // Toggle state
-    console.debug("Updated rerollActive state:", rerollActive);
-
-    // Save the updated reroll state to the item
-    item
-      .update({
-        "system.reroll.active": rerollActive,
-      })
-      .then(() => {
-        console.debug("Reroll state saved for item:", itemId);
-      })
-      .catch((error) => {
-        console.error("Failed to update reroll state:", error);
-      });
-
-    // Update the icon's visual state
-    target.classList.toggle("active", rerollActive[index]);
-    console.debug(
-      "Icon class toggled:",
-      rerollActive[index] ? "active" : "inactive",
-    );
+    // Spend/restore one charge of this pool (cycles full → spend → ... → full).
+    await toggleRerollCharge(this.actor, itemId, poolIndex);
   }
   /**
    * Toggle a specialisation talent-tree node. Unlocking requires all linked
@@ -801,9 +766,6 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       // Foundry-provided generic template
       template: "templates/generic/tab-navigation.hbs",
     },
-    testtab: {
-      template: "systems/redsteel/templates/actor/testtab.hbs",
-    },
     skills: {
       template: "systems/redsteel/templates/actor/skills.hbs",
     },
@@ -839,7 +801,6 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
   /** @override */
   _configureRenderOptions(options) {
     super._configureRenderOptions(options);
-    // Not all parts always render, add "testtab" for testing
     options.parts = ["header", "tabs"];
     // Don't show the other tabs if only limited view
     if (this.document.limited) {
@@ -1073,7 +1034,6 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
   async _preparePartContext(partId, context) {
     switch (partId) {
       case "features":
-      case "testtab":
       case "skills":
         context.activeSkillsSubtab = this.tabGroups["skills-subtabs"] ?? null;
         context.tab = context.tabs[partId];
@@ -1156,10 +1116,6 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
         case "biography":
           tab.id = "biography";
           tab.label += "Biography";
-          break;
-        case "testtab":
-          tab.id = "testtab";
-          tab.label += "TestTab";
           break;
         case "config":
           tab.id = "config";
@@ -1352,6 +1308,10 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     context.spells = spells.sort((a, b) => (a.sort || 0) - (b.sort || 0));
     context.supplies = supplies.sort((a, b) => (a.sort || 0) - (b.sort || 0));
     context.race = race.sort((a, b) => (a.sort || 0) - (b.sort || 0));
+
+    // Flattened reroll pools across all features, one entry per pool, for the
+    // merged reroll display on the Features tab.
+    context.rerollPools = getActorRerollPools(this.actor);
   }
 
   /**
@@ -1796,6 +1756,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
           flags: {
             redsteel: {
               rollName,
+              skill: skillKey, // Skill key so the chat reroll picker can match pools
               criticalSuccessThreshold, // Store critical success threshold
               criticalFailureThreshold, // Store critical failure threshold
               traitPills,

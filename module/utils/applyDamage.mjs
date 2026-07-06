@@ -3,6 +3,7 @@ import {
   resolveEffectDefinition,
   isImmuneToEffect,
 } from "./customConditions.mjs";
+import { AIMED_PARTS, getBodyPartOverrides } from "./aimedStrike.mjs";
 
 export const SOCKET = "system.redsteel";
 
@@ -352,6 +353,13 @@ export async function applyDamageAsGM(data) {
       });
     }
 
+    // NPC body-part overrides for the aimed location (e.g. extra bleed on exposed limbs).
+    const aimedStrikeForEffects = attack.aimedStrike;
+    const aimedHitForEffects = aimedStrikeForEffects?.su >= 0 && aimedStrikeForEffects?.part;
+    const npcOverrides = aimedHitForEffects
+      ? getBodyPartOverrides(actor, aimedStrikeForEffects.part)
+      : { armorMod: 0, staggerMod: 0, bleedMod: 0, precisionMod: 0 };
+
     const effects = message.flags.attack.effects || {};
     for (const [name, effect] of Object.entries(effects)) {
       const targetMod = actor.system.effectMods?.[name]?.applyChance || 0;
@@ -373,13 +381,25 @@ export async function applyDamageAsGM(data) {
       let stacks = 1;
 
       if (name === "bleed") {
-        stacks = resolveBleedStacks(effect, { targetMod, stackMod, mode });
+        const bleedMod = aimedHitForEffects ? npcOverrides.bleedMod : 0;
+        stacks = resolveBleedStacks(effect, { targetMod: targetMod + bleedMod, stackMod, mode });
       } else {
         stacks += stackMod;
       }
 
       if (stacks <= 0) continue;
       await applyEffectToActor(actor, name, stacks, castingContext);
+    }
+
+    // Aimed Strike — apply body part effect when the aimed location was hit (SU ≥ 0).
+    const aimedStrike = attack.aimedStrike;
+    if (aimedStrike?.part && aimedStrike.su >= 0) {
+      const partDef = AIMED_PARTS[aimedStrike.part];
+      if (partDef?.effectId) {
+        if (!isImmuneToEffect(actor, partDef.effectId)) {
+          await applyEffectToActor(actor, partDef.effectId, 1, castingContext);
+        }
+      }
     }
 
     const combatant = combat?.combatants.find((c) => c.tokenId === tokenDoc.id);
@@ -451,6 +471,12 @@ function openDamageSelectionDialog(message, targets) {
              </div>`
           : "";
 
+        // NPC body-part overrides adjust effect chances for the aimed location.
+        const aimedStrike = attack.aimedStrike;
+        const aimedHit = aimedStrike?.su >= 0 && aimedStrike?.part;
+        const aimedPart = aimedHit ? aimedStrike.part : null;
+        const npcOverrides = getBodyPartOverrides(t.actor, aimedPart);
+
         const effectPreview = Object.entries(effects)
           .map(([name, effect]) => {
             if (isImmuneToEffect(t.actor, name)) {
@@ -464,13 +490,20 @@ function openDamageSelectionDialog(message, targets) {
     `;
             }
 
-            const targetMod =
-              t.actor.system.effectMods?.[name]?.applyChance || 0;
+            const targetMod = t.actor.system.effectMods?.[name]?.applyChance || 0;
 
-            const modifiedChance = effect.chance + targetMod;
+            // NPC body-part overrides (e.g. exposed limb → extra bleed chance).
+            let npcBonus = 0;
+            if (aimedHit) {
+              if (name === "stagger") npcBonus += npcOverrides.staggerMod;
+              else if (name === "bleed") npcBonus += npcOverrides.bleedMod;
+              else if (name === "precision") npcBonus += npcOverrides.precisionMod;
+            }
+
+            const modifiedChance = effect.chance + targetMod + npcBonus;
 
             const displayChance = modifiedChance;
-            let extraInfo = "";
+            let extraInfo = npcBonus ? ` <em style="color:#c8a84b;">(+${npcBonus}% body part)</em>` : "";
             let success = effect.roll <= modifiedChance;
 
             if (name === "bleed") {
@@ -480,11 +513,14 @@ function openDamageSelectionDialog(message, targets) {
               const bleedDenied = result.hpLoss <= 0;
               const predicted = bleedDenied
                 ? 0
-                : resolveBleedStacks(effect, { targetMod, stackMod, mode });
+                : resolveBleedStacks(effect, { targetMod: targetMod + npcBonus, stackMod, mode });
               success = predicted > 0;
+              const bleedNote = npcBonus
+                ? ` <em style="color:#c8a84b;">(+${npcBonus}% body part)</em>`
+                : "";
               extraInfo = bleedDenied
                 ? " — no health damage, no bleed"
-                : ` → ${predicted} stack(s)`;
+                : ` → ${predicted} stack(s)${bleedNote}`;
             }
 
             return `
@@ -501,11 +537,22 @@ function openDamageSelectionDialog(message, targets) {
           })
           .join("");
 
+        const aimedStrikeLabel = (() => {
+          const as = attack.aimedStrike;
+          if (!as?.part) return "";
+          const partDef = AIMED_PARTS[as.part];
+          const hitLabel = as.su >= 0
+            ? `<b style="color:#8e8;">Hit — ${partDef.label}</b>`
+            : `<span style="color:#e88;">Torso (SU &lt; 0)</span>`;
+          return `<div style="margin-left:15px; font-size:12px; color:#c8a84b;">⚔️ Aimed Attack: ${hitLabel}</div>`;
+        })();
+
         return `
     <li>
       ${t.name} →
       <strong>${result.finalDamage} HP</strong>${durabilityNote}
       ${gmPreview}
+      ${aimedStrikeLabel}
       ${effectPreview}
     </li>
   `;

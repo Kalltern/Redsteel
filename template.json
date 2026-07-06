@@ -1435,7 +1435,8 @@
       "reroll": {
         "name": "",
         "active": [false, false],
-        "value": 0
+        "value": 0,
+        "pools": []
       }
     },
     "race": {
@@ -1496,7 +1497,34 @@
         "extra1": 0,
         "extra2": 0,
         "extra3": 0
-      }
+      },
+      "aimed": false,
+      "penetration": 0,
+      "burn": 0,
+      "freeze": 0,
+      "stagger": 0,
+      "dmgType1": "",
+      "bool2": "",
+      "dmgType2": "",
+      "bool3": "",
+      "dmgType3": "",
+      "bool4": "",
+      "dmgType4": "",
+      "effectOptions": ["and", "or"],
+      "dmgTypes": [
+        "fire",
+        "frost",
+        "lightning",
+        "acid",
+        "poison",
+        "magic",
+        "dark",
+        "physical",
+        "psychic",
+        "blunt",
+        "piercing",
+        "slash"
+      ]
     },
     "ability": {
       "templates": ["base"],

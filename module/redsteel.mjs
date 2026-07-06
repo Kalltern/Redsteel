@@ -110,6 +110,7 @@ import {
   finalizeRollsAndPostChat,
   resolveChannelingTick,
 } from "./utils/magicSkillBonuses.mjs";
+import { getEligibleRerolls, consumeReroll } from "./utils/rerolls.mjs";
 
 /* -------------------------------------------- */
 /*  Init Hook                                   */
@@ -1088,6 +1089,128 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
   html.classList.add(`spell-msg-${school}`);
 });
 
+/**
+ * Re-roll a skill-test chat message after spending one reroll charge. Reuses the
+ * original (post-advantage) formula so any advantage/disadvantage already applied
+ * is preserved, and re-applies the same crit thresholds, rollName and skill flag.
+ */
+async function executeReroll(message, sourceLabel) {
+  const rollFormula = message.rolls[0].formula;
+  const roll = new Roll(rollFormula);
+  await roll.evaluate();
+  const d100Result = roll.dice?.[0]?.total ?? roll.total; // works with 2d100kl/kh
+  const criticalSuccessThreshold =
+    message.flags?.redsteel?.criticalSuccessThreshold;
+  const criticalFailureThreshold =
+    message.flags?.redsteel?.criticalFailureThreshold;
+  const critSuccess = d100Result <= criticalSuccessThreshold;
+  const rollName = message.getFlag("redsteel", "rollName");
+  const skill = message.getFlag("redsteel", "skill");
+
+  let flavorText = "";
+  if (critSuccess) flavorText = "Critical Success!";
+  else if (d100Result >= criticalFailureThreshold) flavorText = "Critical Failure!";
+
+  const sourceNote = sourceLabel
+    ? `<p style="text-align:center; font-size:12px; opacity:0.8;"><i class="fa-light fa-rotate"></i> Reroll — ${sourceLabel}</p>`
+    : "";
+
+  await roll.toMessage({
+    speaker: message.speaker ?? ChatMessage.getSpeaker({ user: game.user }),
+    flavor: `<p style="text-align: center; font-size: 20px;"><b><i class="fa-light fa-dice-d20"></i> ${rollName} <i class="fa-light fa-dice-d20"></i><hr></b></p>
+          <p style="text-align: center; font-size: 20px;"><b>${flavorText}</b></p>${sourceNote}`,
+    flags: {
+      redsteel: {
+        rollName,
+        skill,
+        criticalSuccessThreshold,
+        criticalFailureThreshold,
+      },
+    },
+  });
+}
+
+/**
+ * Handle a click on a chat reroll button: resolve the rolling actor and the
+ * test's skill, gather eligible reroll pools, let the user pick one when there
+ * are several, then spend the charge and re-roll.
+ */
+async function handleRerollClick(message) {
+  const skillKey =
+    message.getFlag("redsteel", "skill") ??
+    message.rolls?.[0]?.options?.redsteel?.skill;
+  const actor = ChatMessage.getSpeakerActor(message.speaker);
+
+  if (!actor) {
+    ui.notifications.warn("No actor found for this roll — cannot reroll.");
+    return;
+  }
+
+  const eligible = getEligibleRerolls(actor, skillKey);
+  if (!eligible.length) {
+    ui.notifications.info("No eligible rerolls available.");
+    return;
+  }
+
+  let chosen = eligible[0];
+  if (eligible.length > 1) {
+    chosen = await pickReroll(eligible);
+    if (!chosen) return; // cancelled
+  }
+
+  const spent = await consumeReroll(actor, chosen.itemId, chosen.poolIndex);
+  if (!spent) {
+    ui.notifications.warn("That reroll is already spent.");
+    return;
+  }
+
+  await executeReroll(message, chosen.label);
+}
+
+/**
+ * Prompt the user to choose one of several eligible reroll pools.
+ * @returns {Promise<object|null>} the chosen pool descriptor, or null if cancelled.
+ */
+async function pickReroll(eligible) {
+  const rows = eligible
+    .map((pool, i) => {
+      const remaining = `${pool.remaining}/${pool.max}`;
+      const tag = pool.universal
+        ? "Universal"
+        : pool.skills.join(", ");
+      return `
+        <label class="reroll-pick-row" style="display:flex; align-items:center; gap:8px; padding:4px 2px; cursor:pointer;">
+          <input type="radio" name="reroll-pick" value="${i}" ${i === 0 ? "checked" : ""}>
+          <img src="${pool.img}" width="28" height="28" style="border:none; flex:0 0 auto;">
+          <span style="flex:1;"><b>${pool.label}</b> <span style="opacity:0.7;">(${tag})</span></span>
+          <span style="opacity:0.7;">${remaining}</span>
+        </label>`;
+    })
+    .join("");
+
+  const DialogV2 = foundry.applications.api.DialogV2;
+  const result = await DialogV2.wait({
+    window: { title: "Choose a Reroll" },
+    content: `<form><p>Select which reroll to spend:</p>${rows}</form>`,
+    buttons: [
+      {
+        action: "confirm",
+        label: "Reroll",
+        default: true,
+        callback: (event, button, dialog) => {
+          const root = dialog?.element ?? button.form;
+          return root.querySelector('input[name="reroll-pick"]:checked')?.value;
+        },
+      },
+      { action: "cancel", label: "Cancel" },
+    ],
+    rejectClose: false,
+  });
+
+  if (result === null || result === "cancel" || result === undefined) return null;
+  return eligible[Number(result)] ?? null;
+}
+
 Hooks.on("renderChatMessageHTML", (message, html, data) => {
   function updateButtonContainerLayout(container) {
     const buttonCount = container.querySelectorAll("button, a.button").length;
@@ -1124,41 +1247,14 @@ Hooks.on("renderChatMessageHTML", (message, html, data) => {
       updateButtonContainerLayout(buttonContainer);
       rerollButton.addEventListener("click", async (event) => {
         event.preventDefault();
-        console.log("Re-roll button clicked");
-
-        const rollFormula = message.rolls[0].formula;
-        const roll = new Roll(rollFormula);
-        await roll.evaluate();
-        const d100Result = roll.dice?.[0]?.total ?? roll.total; // Kept d100 result (works with 2d100kl/kh)
-        const criticalSuccessThreshold =
-          message.flags.redsteel.criticalSuccessThreshold;
-        const criticalFailureThreshold =
-          message.flags.redsteel.criticalFailureThreshold;
-        const critSuccess = d100Result <= criticalSuccessThreshold;
-        const rollName = message.getFlag("redsteel", "rollName");
-
-        let flavorText = "";
-
-        if (critSuccess) {
-          flavorText = "Critical Success!";
-        } else if (d100Result >= criticalFailureThreshold) {
-          flavorText = "Critical Failure!";
+        // Skill/attribute/combat-skill test cards carry a `skill` flag and go
+        // through the reroll-resource picker. Attack/defense/spell test cards
+        // don't set it and keep the existing free Re-Roll.
+        if (message.getFlag("redsteel", "skill")) {
+          await handleRerollClick(message);
         } else {
-          flavorText = "";
+          await executeReroll(message, null);
         }
-
-        roll.toMessage({
-          speaker: ChatMessage.getSpeaker({ user: game.user }),
-          flavor: `<p style="text-align: center; font-size: 20px;"><b><i class="fa-light fa-dice-d20"></i> ${rollName} <i class="fa-light fa-dice-d20"></i><hr></b></p>
-          <p style="text-align: center; font-size: 20px;"><b>${flavorText}</b></p>`,
-          flags: {
-            redsteel: {
-              rollName,
-              criticalSuccessThreshold, // Store critical success threshold
-              criticalFailureThreshold, // Store critical failure threshold
-            },
-          },
-        });
       });
     }
 
