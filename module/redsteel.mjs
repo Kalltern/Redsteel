@@ -27,6 +27,13 @@ import {
   syncGrantedAbilities,
   clearGrantSuppression,
 } from "./utils/abilityGrants.mjs";
+import {
+  registerCalendariaIntegration,
+  scheduleRerollRefresh,
+  processDueEntries,
+  diagnoseCalendaria,
+  getPendingCalendariaEntries,
+} from "./utils/calendariaIntegration.mjs";
 import { usePotion } from "./utils/usePotion.mjs";
 import { usePoison, clearWeaponCoating } from "./utils/usePoison.mjs";
 import { defenseRoll } from "./utils/defense.mjs";
@@ -136,6 +143,11 @@ globalThis.redsteel = {
   },
   utils: {
     rollItemMacro,
+    calendaria: {
+      diagnose: diagnoseCalendaria,
+      processDueEntries,
+      getPendingEntries: getPendingCalendariaEntries,
+    },
   },
 };
 
@@ -305,6 +317,7 @@ Hooks.once("init", function () {
   registerFirstAidHealing();
   registerMentalDuelSetting();
   registerAbilityGrants();
+  registerCalendariaIntegration();
 
   /**
    * Set an initiative formula for the system
@@ -1147,16 +1160,41 @@ async function handleRerollClick(message) {
   const skillKey =
     message.getFlag("redsteel", "skill") ??
     message.rolls?.[0]?.options?.redsteel?.skill;
-  const actor = ChatMessage.getSpeakerActor(message.speaker);
+
+  // Who spends the reroll: the actor who made the roll when the message
+  // carries one. Older/actorless messages fall back to the clicking user's
+  // controlled token (must be owned — this is how a GM picks the character),
+  // then to the user's assigned character.
+  const actor =
+    ChatMessage.getSpeakerActor(message.speaker) ??
+    canvas.tokens?.controlled
+      ?.map((t) => t.actor)
+      .find((a) => a?.isOwner) ??
+    game.user.character;
 
   if (!actor) {
-    ui.notifications.warn("No actor found for this roll — cannot reroll.");
+    ui.notifications.warn(
+      "No actor found for this roll — select the character's token and try again.",
+    );
     return;
   }
 
-  const eligible = getEligibleRerolls(actor, skillKey);
+  // A natural Critical Failure can only be rerolled by pools carrying the
+  // "critfail" trigger keyword (or legacy-shape pools like an un-resaved
+  // Lucky) — see getEligibleRerolls.
+  const d100 = message.rolls?.[0]?.dice?.[0]?.total ?? message.rolls?.[0]?.total;
+  const cft = Number(message.flags?.redsteel?.criticalFailureThreshold);
+  const wasCritFailure = Number.isFinite(cft) && d100 >= cft;
+
+  const eligible = getEligibleRerolls(actor, skillKey, {
+    critFailure: wasCritFailure,
+  });
   if (!eligible.length) {
-    ui.notifications.info("No eligible rerolls available.");
+    ui.notifications.info(
+      wasCritFailure
+        ? "No rerolls available that can reroll a Critical Failure."
+        : "No eligible rerolls available.",
+    );
     return;
   }
 
@@ -1172,6 +1210,12 @@ async function handleRerollClick(message) {
     return;
   }
 
+  try {
+    await scheduleRerollRefresh(actor, chosen, { critFailure: wasCritFailure });
+  } catch (err) {
+    console.warn("Redsteel | Calendaria scheduling failed", err);
+  }
+
   await executeReroll(message, chosen.label);
 }
 
@@ -1183,9 +1227,12 @@ async function pickReroll(eligible) {
   const rows = eligible
     .map((pool, i) => {
       const remaining = `${pool.remaining}/${pool.max}`;
-      const tag = pool.universal
-        ? "Universal"
-        : pool.skills.join(", ");
+      const tag = [
+        pool.universal ? "Universal" : pool.skills.join(", "),
+        pool.critFail ? "crit fail" : null,
+      ]
+        .filter(Boolean)
+        .join(" · ");
       return `
         <label class="reroll-pick-row" style="display:flex; align-items:center; gap:8px; padding:4px 2px; cursor:pointer;">
           <input type="radio" name="reroll-pick" value="${i}" ${i === 0 ? "checked" : ""}>

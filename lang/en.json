@@ -38,6 +38,25 @@
       "Initiative": {
         "name": "Dynamic Initiative",
         "label": "This enables Initiative to be reset and rolled again automatically when entering next round"
+      },
+      "Calendaria": {
+        "name": "Calendaria integration",
+        "label": "Track reroll refreshes and grave-wound healing on the Calendaria calendar. Requires the Calendaria module.",
+        "missing": "The Calendaria module is not installed or active — the integration cannot be enabled."
+      }
+    },
+    "Calendaria": {
+      "RerollNote": {
+        "name": "Reroll refreshes: {actor} ({label})",
+        "content": "{actor}'s reroll ({label}) becomes available again today."
+      },
+      "WoundNote": {
+        "name": "Wound heals: {actor}",
+        "content": "One of {actor}'s grave wounds finishes healing today."
+      },
+      "Chat": {
+        "rerollRefreshed": "{actor}'s reroll <b>{label}</b> has refreshed.",
+        "woundHealed": "{actor} recovers from a grave wound ({remaining} remaining)."
       }
     },
     "Help": {

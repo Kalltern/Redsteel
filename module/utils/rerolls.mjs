@@ -1,4 +1,8 @@
 import { normalizeTrigger } from "./traitPills.mjs";
+import {
+  isCalendariaEnabled,
+  getPendingCalendariaEntries,
+} from "./calendariaIntegration.mjs";
 
 /**
  * Reroll resource model.
@@ -11,6 +15,10 @@ import { normalizeTrigger } from "./traitPills.mjs";
  *   archery"), normalized the same way as roll triggers. A pool whose skill list
  *   is empty — or that explicitly lists a universal keyword ("universal", "any",
  *   "all") — is **universal**: usable to reroll any test.
+ * - A "critfail" keyword (also "crit fail" / "critical failure") in the list
+ *   marks the pool as able to reroll **Critical Failures** (e.g. Lucky:
+ *   "universal, critfail"). It is not a skill: "critfail" alone is still a
+ *   universal pool. Pools without it can only reroll non-crit-failure tests.
  * - `max` rerolls are available; `used` have been spent. A Long Rest resets
  *   `used` to 0 (see {@link resetActorRerolls}).
  *
@@ -21,12 +29,23 @@ import { normalizeTrigger } from "./traitPills.mjs";
 /** Skill tokens that mark a pool as usable on any roll. */
 const UNIVERSAL_KEYS = new Set(["universal", "any", "all"]);
 
-/** Parse a comma-separated skill string into normalized, non-universal keys. */
+/** Trigger tokens that mark a pool as able to reroll Critical Failures. */
+const CRITFAIL_KEYS = new Set(["critfail", "critfails", "criticalfailure"]);
+
+/** Parse a comma-separated skill string into normalized skill keys (keywords excluded). */
 function parseSkillList(raw) {
   return String(raw ?? "")
     .split(",")
     .map((s) => normalizeTrigger(s))
-    .filter((s) => s && !UNIVERSAL_KEYS.has(s));
+    .filter((s) => s && !UNIVERSAL_KEYS.has(s) && !CRITFAIL_KEYS.has(s));
+}
+
+/** Whether a comma-separated skill string contains a crit-failure keyword. */
+function hasCritFailKey(raw) {
+  return String(raw ?? "")
+    .split(",")
+    .map((s) => normalizeTrigger(s))
+    .some((s) => CRITFAIL_KEYS.has(s));
 }
 
 /**
@@ -66,6 +85,7 @@ export function getFeatureRerollPools(item) {
         img: item.img,
         skills,
         universal,
+        critFail: hasCritFailKey(pool?.skillsRaw),
         max,
         used,
         remaining: Math.max(0, max - used),
@@ -86,6 +106,10 @@ export function getFeatureRerollPools(item) {
       img: item.img,
       skills: [],
       universal: true,
+      // Legacy items predate the "critfail" keyword and could always reroll
+      // crit failures (Lucky is the archetype) — keep that until re-saved
+      // with pools, which opts into the explicit keyword.
+      critFail: true,
       max,
       used,
       remaining: Math.max(0, max - used),
@@ -111,13 +135,18 @@ export function getActorRerollPools(actor) {
 /**
  * Pools that can be spent to reroll a test of the given skill: any pool with
  * `remaining > 0` that is universal or lists the (normalized) skill key.
+ * Rerolling a Critical Failure additionally requires the pool's `critFail`
+ * capability (the "critfail" trigger keyword, or a legacy-shape pool).
  * @param {Actor} actor
  * @param {string} [skillKey]
+ * @param {{critFailure?: boolean}} [options]  Whether the test being rerolled
+ *   was a natural Critical Failure.
  */
-export function getEligibleRerolls(actor, skillKey) {
+export function getEligibleRerolls(actor, skillKey, { critFailure = false } = {}) {
   const normalized = normalizeTrigger(skillKey);
   return getActorRerollPools(actor).filter((pool) => {
     if (pool.remaining <= 0) return false;
+    if (critFailure && !pool.critFail) return false;
     if (pool.universal) return true;
     return normalized ? pool.skills.includes(normalized) : false;
   });
@@ -208,11 +237,29 @@ export async function toggleRerollCharge(actor, itemId, poolIndex) {
 
 /**
  * Restore every reroll the actor owns to ready (used = 0). Called on Long Rest.
+ *
+ * When the Calendaria integration is enabled, a pool under an active Lucky
+ * crit-failure lockout (spent rerolling a natural Critical Failure — 7 days,
+ * 5 with Untiring Luck) is skipped here: Lucky's crit-failure lockout
+ * survives Long Rest by design, and only clears when the scheduled Calendaria
+ * refresh fires. With the integration disabled, behavior is unchanged.
+ *
  * @param {Actor} actor
  * @returns {Promise<boolean>} true when any feature was changed.
  */
 export async function resetActorRerolls(actor) {
   if (!actor) return false;
+
+  const locked = new Set();
+  if (isCalendariaEnabled()) {
+    const now = game.time.worldTime;
+    for (const entry of getPendingCalendariaEntries(actor)) {
+      if (entry.type === "rerollRefresh" && entry.lockout && entry.due > now) {
+        locked.add(`${entry.itemId}:${entry.poolIndex}`);
+      }
+    }
+  }
+
   const updates = [];
   for (const item of actor.items) {
     if (item.type !== "feature") continue;
@@ -223,16 +270,21 @@ export async function resetActorRerolls(actor) {
     const rawPools = poolsArray(reroll);
     if (rawPools.length) {
       const pools = rawPools.map((p) => ({ ...p }));
-      for (const pool of pools) {
+      pools.forEach((pool, i) => {
+        if (locked.has(`${item.id}:${i}`)) return;
         if (Number(pool.used) > 0) {
           pool.used = 0;
           changed = true;
         }
-      }
+      });
       if (changed) update["system.reroll.pools"] = pools;
     }
 
-    if (Array.isArray(reroll.active) && reroll.active.some(Boolean)) {
+    if (
+      !locked.has(`${item.id}:-1`) &&
+      Array.isArray(reroll.active) &&
+      reroll.active.some(Boolean)
+    ) {
       update["system.reroll.active"] = reroll.active.map(() => false);
       changed = true;
     }

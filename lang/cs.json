@@ -38,6 +38,25 @@
       "Initiative": {
         "name": "Dynamická iniciativa",
         "label": "Toto umožní, že iniciativa se bude měnit během boje podle aktuální situace. Počet hodů pro iniciativu se bude odvíjet od rychlosti postavy a dalších faktorů, jako jsou efekty a vybavení. Tato možnost přidává do boje více dynamiky a nečekaných zvratů."
+      },
+      "Calendaria": {
+        "name": "Integrace Calendarie",
+        "label": "Sleduje obnovu přehození a hojení vážných zranění podle kalendáře modulu Calendaria. Vyžaduje modul Calendaria.",
+        "missing": "Modul Calendaria není nainstalován nebo aktivní — integraci nelze zapnout."
+      }
+    },
+    "Calendaria": {
+      "RerollNote": {
+        "name": "Obnova přehozu: {actor} ({label})",
+        "content": "Dnes se obnoví přehoz postavy {actor} ({label})."
+      },
+      "WoundNote": {
+        "name": "Zhojení zranění: {actor}",
+        "content": "Dnes se dohojí jedno z vážných zranění postavy {actor}."
+      },
+      "Chat": {
+        "rerollRefreshed": "{actor} má obnovený přehoz <b>{label}</b>.",
+        "woundHealed": "{actor} se zotavuje z vážného zranění (zbývá {remaining})."
       }
     },
     "Help": {

@@ -12,6 +12,7 @@ import {
   getEligibleRerolls,
   consumeReroll,
 } from "../utils/rerolls.mjs";
+import { scheduleRerollRefresh } from "../utils/calendariaIntegration.mjs";
 import {
   SUBSTANCES,
   STATIONS,
@@ -850,6 +851,12 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       eligible[0].poolIndex,
     );
     if (!spent) return;
+
+    try {
+      await scheduleRerollRefresh(this.actor, eligible[0], { critFailure: false });
+    } catch (err) {
+      console.warn("Redsteel | Calendaria scheduling failed", err);
+    }
 
     this._alchemyLastOutcome = await rerollCraft(this.actor, recipe, last, {
       stationKey: this._alchemyStation,
@@ -1948,6 +1955,10 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
 
         // Now, pass only the deconstructed values in the flags
         await roll.toMessage({
+          // Stamp the rolling actor so the chat reroll button can resolve who
+          // spends the charge — without this, a GM rolling with no token
+          // controlled produces a speaker with no actor.
+          speaker: ChatMessage.getSpeaker({ actor: this.actor }),
           flavor: `<p style="text-align: center; font-size: 20px;"><b>${label}</b></p>`,
           rollMode: game.settings.get("core", "rollMode"),
           flags: {
