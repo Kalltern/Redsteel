@@ -111,6 +111,11 @@ import {
   resolveChannelingTick,
 } from "./utils/magicSkillBonuses.mjs";
 import { getEligibleRerolls, consumeReroll } from "./utils/rerolls.mjs";
+import {
+  openRacePicker,
+  openRaceChoicesDialog,
+  initializeRaceChoices,
+} from "./utils/race.mjs";
 
 /* -------------------------------------------- */
 /*  Init Hook                                   */
@@ -287,6 +292,9 @@ Hooks.once("init", function () {
   game.redsteel.getAimStacks = getAimStacks;
   game.redsteel.syncGrantedAbilities = syncGrantedAbilities;
   game.redsteel.clearGrantSuppression = clearGrantSuppression;
+  game.redsteel.openRacePicker = openRacePicker;
+  game.redsteel.openRaceChoicesDialog = openRaceChoicesDialog;
+  game.redsteel.initializeRaceChoices = initializeRaceChoices;
   registerAimOverlay();
   registerDynamicInitiative();
   registerRollModifier();

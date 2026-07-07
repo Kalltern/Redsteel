@@ -161,12 +161,79 @@
         "focus": "Follows the Casting. Reduces the spell’s Difficulty by 10%. The action may be repeated. The spell’s Difficulty cannot be reduced into positive values. This bonus does not apply to Magical Attack. It does not reduce the penalty for insufficient School level. The spell may be cast immediately after resolving the Focus action."
       }
     },
+    "Alchemy": {
+      "Recipes": "Recipes",
+      "NoRecipes": "No recipes. Drag a recipe onto the character.",
+      "Crafting": "Crafting",
+      "StationLabel": "Alchemical station",
+      "Amount": "Amount",
+      "Craft": "Craft",
+      "Reroll": "Reroll",
+      "CraftHint": "Roll Alchemy and craft the chosen amount",
+      "RerollHint": "Reroll the last failed craft (spends a reroll)",
+      "AnnouncementPlaceholder": "Select a recipe and press Craft…",
+      "Station": {
+        "Cauldron": "Cauldron",
+        "Foldable": "Foldable alchemical station",
+        "Lab": "Alchemy lab"
+      },
+      "Base": {
+        "None": "No base",
+        "Fat": "Fat",
+        "Alcohol": "Alcohol",
+        "StrongAlcohol": "Strong alcohol",
+        "Distillate": "Distillate"
+      },
+      "OutputType": {
+        "Potion": "Potion",
+        "Ointment": "Ointment"
+      },
+      "Warn": {
+        "NoResult": "The recipe has no result item set — drag a potion onto the recipe sheet.",
+        "BadAmount": "Invalid amount (1 to {max}).",
+        "NotEnough": "Not enough ingredients",
+        "ResultMissing": "The recipe's result item could not be found (broken link).",
+        "NoRecipeSelected": "Select a recipe first.",
+        "NoRerolls": "No rerolls available for Alchemy."
+      },
+      "Chat": {
+        "Title": "Alchemical crafting",
+        "UsedStation": "Station used",
+        "Difficulty": "Difficulty",
+        "Margin": "Margin",
+        "CritSuccess": "Critical success!",
+        "CritFailure": "Critical failure!",
+        "Reroll": "Rerolled",
+        "Success": "Success",
+        "Failure": "Failure",
+        "Created": "created {count}× {name}",
+        "IngredientsWasted": "ingredients were wasted",
+        "Consumed": "Consumed",
+        "Uses": "uses"
+      },
+      "Recipe": {
+        "OutputType": "Output type",
+        "Base": "Alchemical base",
+        "Result": "Result item",
+        "Unlink": "Unlink",
+        "DropConsumableHint": "Drag a consumable item onto the recipe sheet — the potion this recipe produces.",
+        "Substances": "Substances",
+        "SubstancesHint": "Substance cost per crafted unit.",
+        "Special": "Special ingredient",
+        "SpecialPlaceholder": "e.g. Dragon root",
+        "SpecialHint": "One whole unit is consumed per craft action, regardless of the amount crafted. Drop an Item-type document onto the recipe sheet to link it.",
+        "ResultLinked": "Recipe result linked: {name}",
+        "SpecialLinked": "Special ingredient linked: {name}",
+        "DropRejected": "Only a consumable (result) or an item (special ingredient) can be dropped here."
+      }
+    },
     "Actor": {
       "Tabs": {
         "Biography": "Biography",
         "Skills": "Skills",
         "Features": "Features",
         "Inventory": "Inventory",
+        "Alchemy": "Alchemy",
         "Spells": "Spells",
         "Miracles": "Miracles",
         "Abilities": "Abilities",
@@ -4071,6 +4138,10 @@
           },
           "quantity": {
             "label": "Quantity"
+          },
+          "difficulty": {
+            "label": "Craft difficulty",
+            "hint": "Signed craft modifier applied when this item is made via a recipe. Negative = harder to craft, positive = easier."
           }
         }
       },
@@ -4171,6 +4242,26 @@
             "label": "Grandmaster"
           }
         }
+      }
+    },
+    "Race": {
+      "ChooseRace": "Choose a race",
+      "PickerTitle": "Race selection",
+      "EditTooltip": "Click to configure race",
+      "ReplaceTitle": "Replace race?",
+      "ReplaceContent": "This character already has {race}. Replace it? Racial bonuses of the old race will be removed.",
+      "Choices": {
+        "Title": "Racial choices: {race}",
+        "PickCount": "choose {count}",
+        "InvalidCount": "Group \"{label}\": choose exactly {count} different option(s).",
+        "Apply": "Confirm choices"
+      },
+      "Editor": {
+        "Heading": "Choice groups",
+        "AddChoice": "Add choice group",
+        "Label": "Label",
+        "Count": "Picks",
+        "NoEffects": "Create the options as Active Effects on the Effects tab first."
       }
     },
     "Effect": {
@@ -5370,7 +5461,8 @@
       "ammunition": "Ammunition",
       "feature": "Feature",
       "spell": "Spell",
-      "condition": "Condition"
+      "condition": "Condition",
+      "recipe": "Recipe"
     }
   }
 }

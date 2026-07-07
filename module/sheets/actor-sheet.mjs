@@ -9,7 +9,23 @@ import { tagRollSkill, applyDesperateCrit } from "../utils/rollAdvantage.mjs";
 import {
   getActorRerollPools,
   toggleRerollCharge,
+  getEligibleRerolls,
+  consumeReroll,
 } from "../utils/rerolls.mjs";
+import {
+  SUBSTANCES,
+  STATIONS,
+  MAX_BATCH,
+  getSubstanceCount,
+  craftRecipe,
+  rerollCraft,
+} from "../utils/alchemy.mjs";
+import {
+  getRaceChoiceGroups,
+  openRacePicker,
+  openRaceChoicesDialog,
+  initializeRaceChoices,
+} from "../utils/race.mjs";
 
 const { api, sheets } = foundry.applications;
 
@@ -56,6 +72,11 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     this._boundRightClick = this._onRightClick.bind(this);
     this._skillsEditMode = false;
     this._inventoryFilter = "all";
+    // Alchemy tab state — transient, never persisted on the actor.
+    this._alchemyStation = "foldable";
+    this._alchemySelectedRecipe = null;
+    this._alchemyAmount = 1;
+    this._alchemyLastOutcome = null;
   }
 
   /** @override */
@@ -88,6 +109,10 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       addCurrency: this._addCurrency,
       deleteCurrency: this._deleteCurrency,
       setInventoryFilter: this._setInventoryFilter,
+      selectRecipe: this._selectRecipe,
+      craftRecipe: this._craftRecipe,
+      rerollCraft: this._rerollCraft,
+      selectRace: this._selectRace,
     },
     // Custom property that's merged into `this.options`
     dragDrop: [{ dragSelector: "[data-drag]", dropSelector: null }],
@@ -757,6 +782,100 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     this.render();
   }
 
+  /** Select a recipe row in the Alchemy tab (transient sheet state). */
+  static _selectRecipe(event, target) {
+    const itemId = target.closest("[data-item-id]")?.dataset.itemId;
+    if (!itemId) return;
+    this._alchemySelectedRecipe =
+      this._alchemySelectedRecipe === itemId ? null : itemId;
+    this.render();
+  }
+
+  /** Read station + amount from the Alchemy tab controls into sheet state. */
+  #readAlchemyControls() {
+    const station = this.element.querySelector(".alch-station")?.value;
+    if (station) this._alchemyStation = station;
+    const amount = Number(this.element.querySelector(".alch-amount")?.value);
+    if (Number.isFinite(amount) && amount >= 1) {
+      this._alchemyAmount = Math.floor(amount);
+    }
+  }
+
+  /** Craft the selected recipe with the chosen station and amount. */
+  static async _craftRecipe(event, target) {
+    this.#readAlchemyControls();
+    const recipe = this.actor.items.get(this._alchemySelectedRecipe);
+    if (!recipe) {
+      ui.notifications.warn(
+        game.i18n.localize("REDSTEEL.Alchemy.Warn.NoRecipeSelected"),
+      );
+      return;
+    }
+    const maxBatch = MAX_BATCH[recipe.system.outputType ?? "potion"] ?? 5;
+    const amount = Math.min(this._alchemyAmount, maxBatch);
+
+    const outcome = await craftRecipe(this.actor, recipe, {
+      amount,
+      stationKey: this._alchemyStation,
+    });
+    if (!outcome.ok) {
+      ui.notifications.warn(outcome.reason);
+      return;
+    }
+    this._alchemyLastOutcome = outcome;
+    this.render();
+  }
+
+  /**
+   * Spend an alchemy/universal reroll to re-roll the last FAILED craft.
+   * Ingredients are not consumed again; a new success delivers the potions.
+   */
+  static async _rerollCraft(event, target) {
+    this.#readAlchemyControls();
+    const last = this._alchemyLastOutcome;
+    if (!last?.ok || last.success) return;
+    const recipe = this.actor.items.get(last.recipeId);
+    if (!recipe) return;
+
+    const eligible = getEligibleRerolls(this.actor, "alchemy");
+    if (!eligible.length) {
+      ui.notifications.info(
+        game.i18n.localize("REDSTEEL.Alchemy.Warn.NoRerolls"),
+      );
+      return;
+    }
+    const spent = await consumeReroll(
+      this.actor,
+      eligible[0].itemId,
+      eligible[0].poolIndex,
+    );
+    if (!spent) return;
+
+    this._alchemyLastOutcome = await rerollCraft(this.actor, recipe, last, {
+      stationKey: this._alchemyStation,
+    });
+    this.render();
+  }
+
+  /**
+   * Clicking the race field in the header. With no race yet, opens the race
+   * picker. With a race already present, opens its choice-resolution dialog
+   * if it has choice groups; otherwise re-opens the picker so a choice-less
+   * race can be swapped directly.
+   */
+  static async _selectRace(event, target) {
+    const raceItem = this.actor.items.find((i) => i.type === "race");
+    if (!raceItem) {
+      await openRacePicker(this.actor);
+      return;
+    }
+    if (getRaceChoiceGroups(raceItem).length) {
+      await openRaceChoicesDialog(raceItem);
+    } else {
+      await openRacePicker(this.actor);
+    }
+  }
+
   /** @override */
   static PARTS = {
     header: {
@@ -780,6 +899,9 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     },
     inventory: {
       template: "systems/redsteel/templates/actor/inventory.hbs",
+    },
+    alchemy: {
+      template: "systems/redsteel/templates/actor/alchemy.hbs",
     },
     abilities: {
       template: "systems/redsteel/templates/actor/abilities.hbs",
@@ -815,6 +937,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
           "features",
           "specialisations",
           "inventory",
+          "alchemy",
           "abilities",
           "spells",
           "miracles",
@@ -1044,6 +1167,72 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
         context.activeSpecSubtab =
           this.tabGroups["specialisations-subtabs"] ?? null;
         break;
+      case "alchemy": {
+        context.tab = context.tabs[partId];
+        // Substance strip: current stock of the six substances.
+        context.alchSubstances = SUBSTANCES.map((def) => ({
+          key: def.key,
+          label: def.name,
+          code: def.code,
+          icon: def.icon,
+          color: def.color,
+          qty: getSubstanceCount(this.actor, def.key),
+        }));
+        // Owned recipes, with the transient selection restored.
+        const recipes = [...(this.actor.itemTypes.recipe ?? [])].sort(
+          (a, b) => (a.sort || 0) - (b.sort || 0),
+        );
+        if (
+          this._alchemySelectedRecipe &&
+          !recipes.some((r) => r.id === this._alchemySelectedRecipe)
+        ) {
+          this._alchemySelectedRecipe = null;
+        }
+        context.alchRecipes = recipes.map((item) => ({
+          item,
+          selected: item.id === this._alchemySelectedRecipe,
+        }));
+        const selected =
+          recipes.find((r) => r.id === this._alchemySelectedRecipe) ?? null;
+        context.alchStations = STATIONS.map((s) => ({
+          key: s.key,
+          label: game.i18n.localize(s.labelKey),
+          modLabel: `${s.mod >= 0 ? "+" : ""}${s.mod}%`,
+          selected: s.key === this._alchemyStation,
+        }));
+        context.alchMaxAmount =
+          MAX_BATCH[selected?.system.outputType ?? "potion"] ?? 5;
+        context.alchAmount = Math.min(
+          Math.max(1, this._alchemyAmount),
+          context.alchMaxAmount,
+        );
+        context.alchCanCraft = !!selected && !!selected.system.resultUuid;
+        // Reroll only re-opens a FAILED craft, and only with an eligible pool.
+        const last = this._alchemyLastOutcome;
+        context.alchCanReroll =
+          !!last?.ok &&
+          !last.success &&
+          getEligibleRerolls(this.actor, "alchemy").length > 0;
+        if (last?.ok) {
+          context.alchAnnouncement = {
+            success: last.success,
+            text: last.success
+              ? `${game.i18n.localize("REDSTEEL.Alchemy.Chat.Success")} — ${game.i18n.format(
+                  "REDSTEEL.Alchemy.Chat.Created",
+                  { count: last.created, name: last.resultName },
+                )}`
+              : `${game.i18n.localize("REDSTEEL.Alchemy.Chat.Failure")} — ${game.i18n.localize(
+                  "REDSTEEL.Alchemy.Chat.IngredientsWasted",
+                )}`,
+            detail: `d100: ${last.d100} · ${game.i18n.localize(
+              "REDSTEEL.Alchemy.Chat.Margin",
+            )} ${last.margin >= 0 ? "+" : ""}${last.margin}`,
+          };
+        } else {
+          context.alchAnnouncement = null;
+        }
+        break;
+      }
       case "abilities":
       case "spells":
         context.tab = context.tabs[partId];
@@ -1147,6 +1336,14 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
         case "inventory":
           tab.id = "inventory";
           tab.label += "Inventory";
+          break;
+        case "alchemy":
+          tab.id = "alchemy";
+          tab.label += "Alchemy";
+          // Only characters trained in Alchemy see the tab.
+          if (!(Number(this.actor.system.skills?.alchemy?.value) > 0)) {
+            tab.cssClass += " hidden";
+          }
           break;
         case "spells":
           tab.id = "spells";
@@ -2056,6 +2253,20 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
           (existingItem.system.quantity || 1) + (item.system.quantity || 1);
         return existingItem.update({ "system.quantity": newQuantity });
       }
+    }
+
+    // Race drops: after creation, disable any choice-group effects until the
+    // player resolves them, then open the choices dialog if there are any.
+    if (item.type === "race") {
+      const created = await this._onDropItemCreate(item, event);
+      const createdRace = created.find((i) => i.type === "race") ?? created[0];
+      if (createdRace) {
+        await initializeRaceChoices(createdRace);
+        if (getRaceChoiceGroups(createdRace).length) {
+          await openRaceChoicesDialog(createdRace);
+        }
+      }
+      return created;
     }
 
     // Create the owned item

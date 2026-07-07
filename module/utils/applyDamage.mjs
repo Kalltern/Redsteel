@@ -422,7 +422,6 @@ function openDamageSelectionDialog(message, targets) {
   const effects = attack.effects || {};
   let mode = "normal";
   let halfDamage = false;
-  const allowHalfDamage = attack.isSpell === true;
   let criticalDegree = attack.critical?.degree ?? 0;
   const hasCritical = attack.critical !== "" && attack.critical !== undefined;
   const hasBreakthrough =
@@ -631,22 +630,53 @@ function openDamageSelectionDialog(message, targets) {
             )
             .join("")}
         </fieldset>
-        ${
-          allowHalfDamage
-            ? `<fieldset>
-                 <label>
-                   <input type="checkbox" name="halfDamage" ${halfDamage ? "checked" : ""}>
-                   ${game.i18n.localize("REDSTEEL.Item.Spell.FIELDS.halfDamage.label")}
-                 </label>
-               </fieldset>`
-            : ""
-        }
+        <div class="attack-options-row">
+          <label class="pill">
+            <input type="checkbox" name="halfDamage" ${halfDamage ? "checked" : ""}>
+            <span>${game.i18n.localize("REDSTEEL.Item.Spell.FIELDS.halfDamage.label")}</span>
+          </label>
+        </div>
         ${renderDurabilityControls()}
 
         <ul class="damage-preview">
           ${renderPreview()}
         </ul>
       </form>
+      <style>
+        .attack-options-row {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+          margin-bottom: 8px;
+        }
+        .pill input {
+          display: none;
+        }
+        .pill {
+          cursor: pointer;
+          flex: 0 0 auto;
+        }
+        .pill span {
+          display: inline-block;
+          padding: 3px 8px;
+          border: 1px solid #666;
+          border-radius: 999px;
+          background: #2b2b2b;
+          color: #ccc;
+          font-size: 12px;
+          cursor: pointer;
+          transition: all 0.15s ease;
+        }
+        .pill span:hover {
+          border-color: #999;
+          color: white;
+        }
+        .pill input:checked + span {
+          background: #4a6fa5;
+          border-color: #6ea8ff;
+          color: white;
+        }
+      </style>
     `,
       buttons: {
         apply: {

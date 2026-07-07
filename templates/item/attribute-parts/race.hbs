@@ -1,11 +1,65 @@
-{{! Attributes Tab }}
+{{! Attributes Tab — Race }}
 <section
   class='tab attributes {{tab.cssClass}}'
   data-group='primary'
   data-tab='attributes'
 >
-  {{! As you add new fields, add them in here! }}
-   <div class='grid grid-4col'>
-    
-   </div>
+
+  <h3 class="race-choices-heading">{{localize "REDSTEEL.Race.Editor.Heading"}}</h3>
+
+  {{#unless hasRaceEffects}}
+    <p class="hint">{{localize "REDSTEEL.Race.Editor.NoEffects"}}</p>
+  {{/unless}}
+
+  {{#each raceChoiceEntries as |group|}}
+    <fieldset class="race-choice-editor-group">
+      <div class="grid grid-3col">
+        <div class="grid-span-2">
+          <label>{{localize "REDSTEEL.Race.Editor.Label"}}</label>
+          <input
+            type="text"
+            name="system.choices.{{group.index}}.label"
+            value="{{group.label}}"
+          />
+        </div>
+        <div class="grid-span-1">
+          <label>{{localize "REDSTEEL.Race.Editor.Count"}}</label>
+          <input
+            type="number"
+            min="1"
+            name="system.choices.{{group.index}}.count"
+            value="{{group.count}}"
+            data-dtype="Number"
+          />
+        </div>
+      </div>
+
+      {{#if hasRaceEffects}}
+        <div class="race-choice-editor-effects">
+          {{#each group.effectRows as |row|}}
+            <label class="race-choice-effect-row">
+              <input
+                type="checkbox"
+                data-action="toggleRaceChoiceEffect"
+                data-group-index="{{group.index}}"
+                data-effect-id="{{row.effectId}}"
+                {{#if row.member}}checked{{/if}}
+              />
+              {{#if row.img}}<img src="{{row.img}}" width="16" height="16" />{{/if}}
+              <span>{{row.name}}</span>
+            </label>
+          {{/each}}
+        </div>
+      {{/if}}
+
+      <a data-action="removeRaceChoice" data-index="{{group.index}}" class="race-choice-remove">
+        <i class="fas fa-xmark"></i>
+      </a>
+    </fieldset>
+  {{/each}}
+
+  <a data-action="addRaceChoice" class="race-choice-add">
+    <i class="fas fa-plus"></i> {{localize "REDSTEEL.Race.Editor.AddChoice"}}
+  </a>
+
 </section>

@@ -1,0 +1,93 @@
+{{! Attributes Tab — Recipe }}
+<section
+  class='tab attributes {{tab.cssClass}}'
+  data-group='primary'
+  data-tab='attributes'
+>
+
+  <div class="grid grid-2col">
+    <div class="grid-span-1">
+      <label for="recipe-output-type">{{localize "REDSTEEL.Alchemy.Recipe.OutputType"}}:</label>
+      <select name="system.outputType" id="recipe-output-type">
+        {{#each outputTypeChoices as |choice|}}
+          <option value="{{choice.key}}" {{#if choice.selected}}selected{{/if}}>{{choice.label}}</option>
+        {{/each}}
+      </select>
+    </div>
+
+    <div class="grid-span-1">
+      <label for="recipe-base">{{localize "REDSTEEL.Alchemy.Recipe.Base"}}:</label>
+      <select name="system.base" id="recipe-base">
+        {{#each baseChoices as |choice|}}
+          <option value="{{choice.key}}" {{#if choice.selected}}selected{{/if}}>{{choice.label}}</option>
+        {{/each}}
+      </select>
+    </div>
+  </div>
+
+  {{! ===== Result item (drop a consumable onto the sheet) ===== }}
+  <div class="form-group stacked recipe-result">
+    <label>{{localize "REDSTEEL.Alchemy.Recipe.Result"}}</label>
+    {{#if resultItem}}
+      <div class="recipe-linked-item">
+        <img src="{{resultItem.img}}" width="28" height="28" />
+        <span>{{resultItem.name}}</span>
+        <span class="recipe-result-difficulty" title="{{localize 'REDSTEEL.Item.Consumable.FIELDS.difficulty.hint'}}">
+          {{localize "REDSTEEL.Alchemy.Chat.Difficulty"}}:
+          {{#if (gt resultItem.system.difficulty 0)}}+{{/if}}{{resultItem.system.difficulty}}
+        </span>
+        {{#if @root.editable}}
+          <a data-action="clearRecipeResult" title="{{localize 'REDSTEEL.Alchemy.Recipe.Unlink'}}">
+            <i class="fas fa-xmark"></i>
+          </a>
+        {{/if}}
+      </div>
+    {{else}}
+      <p class="hint">{{localize "REDSTEEL.Alchemy.Recipe.DropConsumableHint"}}</p>
+    {{/if}}
+  </div>
+
+  {{! ===== Substance costs per crafted unit ===== }}
+  <h3 class="recipe-section-title">{{localize "REDSTEEL.Alchemy.Recipe.Substances"}}</h3>
+  <p class="hint">{{localize "REDSTEEL.Alchemy.Recipe.SubstancesHint"}}</p>
+  <div class="grid grid-3col recipe-substances">
+    {{#each substanceRows as |row|}}
+      <div class="grid-span-1 recipe-substance-field">
+        <label class="resource-label">
+          <img src="{{row.icon}}" width="18" height="18" /> {{row.label}}
+        </label>
+        <input
+          type="number"
+          name="system.substances.{{row.key}}"
+          value="{{row.value}}"
+          min="0"
+          data-dtype="Number"
+        />
+      </div>
+    {{/each}}
+  </div>
+
+  {{! ===== Special ingredient ===== }}
+  <div class="form-group stacked recipe-special">
+    <label>{{localize "REDSTEEL.Alchemy.Recipe.Special"}}</label>
+    <input
+      type="text"
+      name="system.specialIngredient.name"
+      value="{{system.specialIngredient.name}}"
+      placeholder="{{localize 'REDSTEEL.Alchemy.Recipe.SpecialPlaceholder'}}"
+    />
+    {{#if system.specialIngredient.uuid}}
+      <div class="recipe-linked-item">
+        <i class="fas fa-link"></i>
+        <span>{{system.specialIngredient.name}}</span>
+        {{#if @root.editable}}
+          <a data-action="clearRecipeSpecial" title="{{localize 'REDSTEEL.Alchemy.Recipe.Unlink'}}">
+            <i class="fas fa-xmark"></i>
+          </a>
+        {{/if}}
+      </div>
+    {{/if}}
+    <p class="hint">{{localize "REDSTEEL.Alchemy.Recipe.SpecialHint"}}</p>
+  </div>
+
+</section>

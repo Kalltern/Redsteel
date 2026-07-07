@@ -1248,7 +1248,8 @@
       "ammunition",
       "item",
       "consumable",
-      "condition"
+      "condition",
+      "recipe"
     ],
     "htmlFields": ["description"],
     "templates": {
@@ -1440,7 +1441,8 @@
       }
     },
     "race": {
-      "templates": ["base"]
+      "templates": ["base"],
+      "choices": []
     },
     "condition": {
       "templates": ["base"],
@@ -1474,6 +1476,23 @@
       "templates": ["base"],
       "quantity": 1
     },
+    "recipe": {
+      "templates": ["base"],
+      "outputType": "potion",
+      "outputTypeOptions": ["potion", "ointment"],
+      "resultUuid": "",
+      "substances": {
+        "yliaster": 0,
+        "bezoardicum": 0,
+        "alkahest": 0,
+        "qudat": 0,
+        "panacea": 0,
+        "verdigris": 0
+      },
+      "specialIngredient": { "name": "", "uuid": "" },
+      "base": "none",
+      "baseOptions": ["none", "fat", "alcohol", "strongAlcohol", "distillate"]
+    },
     "ammunition": {
       "templates": ["base"],
       "quantity": 0,
@@ -1487,6 +1506,7 @@
       "options": ["potion", "explosive", "misc", "first aid", "poison"],
       "types": ["mana", "health", "stamina"],
       "quantity": 1,
+      "difficulty": 0,
       "effectType1": "",
       "effectType2": "",
       "effectType3": "",

@@ -2,7 +2,7 @@
   "folder": "rujgVKzoNA0iCeug",
   "name": "Panacea",
   "type": "item",
-  "img": "systems/tos/assets/icons/Panacea.png",
+  "img": "systems/redsteel/assets/icons/Panacea.png",
   "system": {
     "description": "<p>Effect - Creates the alchemical substance Panacea, needed for alchemical production.<br />Production Bonus - -10% -&gt; 1 dose<br />Composition - 5x ingredients containing Panacea</p>",
     "quantity": 1,
@@ -15,7 +15,11 @@
     "rs3mzx7WZdtEmvH2": 3,
     "UHjN0KQ8w8ZxibJg": 3
   },
-  "flags": {},
+  "flags": {
+    "redsteel": {
+      "alchSubstance": "panacea"
+    }
+  },
   "_stats": {
     "compendiumSource": null,
     "duplicateSource": "Item.EU2LRqnM83pyca5X",

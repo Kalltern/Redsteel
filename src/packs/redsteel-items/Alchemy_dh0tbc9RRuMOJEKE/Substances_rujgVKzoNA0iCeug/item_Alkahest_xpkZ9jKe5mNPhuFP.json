@@ -3,7 +3,7 @@
   "name": "Alkahest",
   "type": "item",
   "_id": "xpkZ9jKe5mNPhuFP",
-  "img": "systems/tos/assets/icons/Alkahest.png",
+  "img": "systems/redsteel/assets/icons/Alkahest.png",
   "system": {
     "description": "<p>Effect - Creates the alchemical substance Alkahest, needed for alchemical production.<br />Production Bonus - -10% -&gt; 1 dose<br />Composition - 5x ingredients containing Alkahest</p>",
     "quantity": 1,
@@ -16,7 +16,11 @@
     "rs3mzx7WZdtEmvH2": 3,
     "UHjN0KQ8w8ZxibJg": 3
   },
-  "flags": {},
+  "flags": {
+    "redsteel": {
+      "alchSubstance": "alkahest"
+    }
+  },
   "_stats": {
     "compendiumSource": null,
     "duplicateSource": null,

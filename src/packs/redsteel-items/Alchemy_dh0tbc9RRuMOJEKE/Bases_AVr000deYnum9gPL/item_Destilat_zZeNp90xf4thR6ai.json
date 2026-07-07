@@ -1,0 +1,32 @@
+{
+  "folder": "AVr000deYnum9gPL",
+  "name": "Destilát",
+  "type": "item",
+  "img": "icons/consumables/potions/bottle-conical-corked-cyan.webp",
+  "system": {
+    "description": "<p>Alchymický základ — destilát (čistý líh). Jedna láhev vystačí na 5 použití (5 vyrobených kusů).</p>",
+    "quantity": 1,
+    "localizationKey": ""
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {
+    "redsteel": {
+      "alchBase": "distillate"
+    }
+  },
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.9.51",
+    "lastModifiedBy": null
+  },
+  "_id": "zZeNp90xf4thR6ai",
+  "_key": "!items!zZeNp90xf4thR6ai"
+}

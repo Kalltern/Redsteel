@@ -44,7 +44,7 @@
       "thumbnail": "systems/redsteel/assets/start_screen.png"
     }
   ],
-  "version": "0.9.50",
+  "version": "0.9.51",
   "compatibility": {
     "minimum": "13",
     "verified": "14.362"

@@ -854,6 +854,31 @@ table tr td:nth-child(3) {
   outline: none;
 }
 
+/* Race field: same underline look as the name field, but a clickable div
+   (opens the race picker / choices dialog) rather than a text input. */
+.redsteel .sheet-header .actor .char-identity .race-select {
+  background: none;
+  border: none;
+  border-bottom: 1px solid #9a7d44;
+  border-radius: 0;
+  box-shadow: none;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 19px;
+  color: #d8cdb4;
+  text-align: center;
+  padding: 4px 4px 6px;
+  cursor: pointer;
+}
+
+.redsteel .sheet-header .actor .char-identity .race-select:hover {
+  border-bottom: 1px solid #c2a259;
+}
+
+.redsteel .sheet-header .actor .char-identity .race-select--empty {
+  color: #8a8072;
+  font-style: italic;
+}
+
 .redsteel .sheet-header .actor,
 .redsteel .sheet-npc-header {
   flex: 1;
@@ -3318,6 +3343,9 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 .window-app.dialog .potion-choice,
 .dialog.window-app .potion-choice,
 .application.dialog .potion-choice,
+.window-app.dialog .race-choice,
+.dialog.window-app .race-choice,
+.application.dialog .race-choice,
 .window-app.dialog .pill span,
 .dialog.window-app .pill span,
 .application.dialog .pill span,
@@ -3355,6 +3383,9 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 .window-app.dialog .potion-choice:hover,
 .dialog.window-app .potion-choice:hover,
 .application.dialog .potion-choice:hover,
+.window-app.dialog .race-choice:hover,
+.dialog.window-app .race-choice:hover,
+.application.dialog .race-choice:hover,
 .window-app.dialog .pill span:hover,
 .dialog.window-app .pill span:hover,
 .application.dialog .pill span:hover,
@@ -4866,4 +4897,274 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 .sheet-header .condition-group-boxes .stat-box {
   width: 72px;
   flex: 0 0 auto;
+}
+
+/* -------------------------------------------- */
+/*  Alchemy tab (character sheet)               */
+/*  Reuses the npc-trait card styling for the   */
+/*  recipe list; adds substance strip + craft   */
+/*  panel.                                      */
+/* -------------------------------------------- */
+
+.alchemy-box {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Substance stock strip: label / icon / amount, tinted per substance */
+.alchemy-substance-strip {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.alch-substance {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 84px;
+  padding: 6px 8px;
+  background: color-mix(in srgb, var(--alch-color) 10%, rgba(0, 0, 0, 0.55));
+  border: 1px solid color-mix(in srgb, var(--alch-color) 45%, transparent);
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.28);
+}
+
+.alch-substance-label {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: color-mix(in srgb, var(--alch-color) 60%, #d9cba8);
+  text-transform: uppercase;
+}
+
+.alch-substance-icon {
+  display: block;
+  width: 36px;
+  height: 36px;
+  border: 1px solid color-mix(in srgb, var(--alch-color) 45%, transparent);
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.alch-substance-qty {
+  font-size: 16px;
+  font-weight: 700;
+  color: #e8dcbc;
+}
+
+/* Two-column layout: recipes left, craft panel right */
+.alchemy-columns {
+  display: grid;
+  grid-template-columns: 55% 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+@media (max-width: 620px) {
+  .alchemy-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+.alchemy-columns .npc-traits {
+  margin-bottom: 0;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+/* Recipe list: single column of trait-style cards */
+.alchemy-recipe-list {
+  grid-template-columns: 1fr;
+}
+
+.tab.alchemy .alch-recipe {
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.tab.alchemy .alch-recipe:hover {
+  border-color: rgba(201, 178, 107, 0.65);
+}
+
+.tab.alchemy .alch-recipe.selected {
+  border-color: #c9b26b;
+  box-shadow:
+    0 0 8px rgba(201, 178, 107, 0.35),
+    inset 0 0 12px rgba(0, 0, 0, 0.28);
+}
+
+.alch-empty-hint {
+  list-style: none;
+  margin: 0;
+  padding: 10px;
+  opacity: 0.65;
+  font-style: italic;
+  text-align: center;
+}
+
+/* Craft panel */
+.alch-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.alch-control-label {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #c9b26b;
+  margin-top: 4px;
+}
+
+.alch-controls .alch-station,
+.alch-controls .alch-amount {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(181, 151, 80, 0.35);
+  color: #e8dcbc;
+}
+
+.alch-buttons {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.alch-buttons button {
+  flex: 1 1 50%;
+  padding: 6px 8px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(181, 151, 80, 0.5);
+  color: #e8dcbc;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.alch-buttons button:hover:not(:disabled) {
+  border-color: #c9b26b;
+  box-shadow: 0 0 8px rgba(201, 178, 107, 0.35);
+}
+
+.alch-buttons button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Announcement box under the buttons */
+.alch-announcement {
+  min-height: 72px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(181, 151, 80, 0.35);
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.28);
+}
+
+.alch-announcement-text {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.alch-announcement.success .alch-announcement-text {
+  color: #9fbf7e;
+}
+
+.alch-announcement.failure .alch-announcement-text {
+  color: #c0706a;
+}
+
+.alch-announcement-detail {
+  font-size: 12px;
+  opacity: 0.8;
+  color: #d9cba8;
+}
+
+.alch-announcement-placeholder {
+  opacity: 0.55;
+  font-style: italic;
+  color: #d9cba8;
+}
+
+/* Recipe item sheet bits */
+.recipe-linked-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(181, 151, 80, 0.35);
+}
+
+.recipe-linked-item a {
+  cursor: pointer;
+  color: #c0706a;
+}
+
+.recipe-section-title {
+  margin: 10px 0 2px;
+  color: #c9b26b;
+}
+
+.recipe-substance-field .resource-label img {
+  vertical-align: -3px;
+  border: none;
+}
+
+/* Race item sheet: choice-group editor */
+.race-choices-heading {
+  margin: 10px 0 2px;
+  color: #c9b26b;
+}
+
+.race-choice-editor-group {
+  position: relative;
+  margin: 0 0 10px;
+  padding: 8px 28px 8px 8px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(181, 151, 80, 0.35);
+}
+
+.race-choice-editor-effects {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-top: 6px;
+}
+
+.race-choice-effect-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.race-choice-effect-row img {
+  border: none;
+}
+
+.race-choice-remove {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  cursor: pointer;
+  color: #c0706a;
+}
+
+.race-choice-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  color: #c9b26b;
 }

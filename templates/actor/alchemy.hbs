@@ -1,0 +1,144 @@
+{{! Alchemy Tab }}
+<section
+  class="tab alchemy {{tab.cssClass}}"
+  data-group="primary"
+  data-tab="alchemy"
+>
+  <div class="alchemy-box">
+
+    {{! ===== Substance stock strip ===== }}
+    <div class="alchemy-substance-strip">
+      {{#each alchSubstances as |sub|}}
+        <div class="alch-substance" style="--alch-color: {{sub.color}};" title="{{sub.label}} ({{sub.code}})">
+          <span class="alch-substance-label">{{sub.label}}</span>
+          <img class="alch-substance-icon" src="{{sub.icon}}" width="36" height="36" />
+          <span class="alch-substance-qty">{{sub.qty}}</span>
+        </div>
+      {{/each}}
+    </div>
+
+    <div class="alchemy-columns">
+
+      {{! ===== Recipes (left) ===== }}
+      <section class="npc-traits alchemy-recipes">
+        <header class="npc-traits-header">
+          <h3>{{localize "REDSTEEL.Alchemy.Recipes"}}</h3>
+          {{#if @root.editable}}
+            <a
+              class="item-control item-create"
+              title="{{localize 'DOCUMENT.New' type='recipe'}}"
+              data-action="createDoc"
+              data-document-class="Item"
+              data-type="recipe"
+            >
+              <i class="fas fa-plus"></i>
+            </a>
+          {{/if}}
+        </header>
+
+        <ul class="npc-traits-grid alchemy-recipe-list">
+          {{#each alchRecipes as |entry|}}
+            <li
+              class="npc-trait alch-recipe {{#if entry.selected}}selected{{/if}}"
+              data-item-id="{{entry.item.id}}"
+              data-document-class="Item"
+              data-action="selectRecipe"
+              data-drag="true"
+            >
+              <span class="npc-trait-icon">
+                <img src="{{entry.item.img}}" width="48" height="48" />
+              </span>
+              <div class="npc-trait-main">
+                <div class="npc-trait-top">
+                  <span class="npc-trait-name">{{entry.item.localizedName}}</span>
+                  <span class="npc-trait-controls">
+                    <a
+                      class="item-control item-edit"
+                      title="{{localize 'DOCUMENT.Update' type='recipe'}}"
+                      data-action="viewDoc"
+                    >
+                      <i class="fas fa-edit"></i>
+                    </a>
+                    {{#if @root.editable}}
+                      <a
+                        class="item-control item-delete"
+                        title="{{localize 'DOCUMENT.Delete' type='recipe'}}"
+                        data-action="deleteDoc"
+                      >
+                        <i class="fas fa-trash"></i>
+                      </a>
+                    {{/if}}
+                  </span>
+                </div>
+                <div class="npc-trait-desc">{{{entry.item.system.description}}}</div>
+              </div>
+            </li>
+          {{else}}
+            <li class="alch-empty-hint">{{localize "REDSTEEL.Alchemy.NoRecipes"}}</li>
+          {{/each}}
+        </ul>
+      </section>
+
+      {{! ===== Crafting panel (right) ===== }}
+      <section class="npc-traits alchemy-craft-panel">
+        <header class="npc-traits-header">
+          <h3>{{localize "REDSTEEL.Alchemy.Crafting"}}</h3>
+        </header>
+
+        {{! Station + amount — deliberately unnamed inputs: read via JS, never
+            submitted to the actor (sheet is submitOnChange). }}
+        <div class="alch-controls">
+          <label class="alch-control-label">{{localize "REDSTEEL.Alchemy.StationLabel"}}</label>
+          <select class="alch-station">
+            {{#each alchStations as |station|}}
+              <option value="{{station.key}}" {{#if station.selected}}selected{{/if}}>
+                {{station.label}} ({{station.modLabel}})
+              </option>
+            {{/each}}
+          </select>
+
+          <label class="alch-control-label">{{localize "REDSTEEL.Alchemy.Amount"}} (max {{alchMaxAmount}})</label>
+          <input
+            type="number"
+            class="alch-amount"
+            min="1"
+            max="{{alchMaxAmount}}"
+            step="1"
+            value="{{alchAmount}}"
+          />
+        </div>
+
+        <div class="alch-buttons">
+          <button
+            type="button"
+            class="alch-craft-btn"
+            data-action="craftRecipe"
+            {{#unless alchCanCraft}}disabled{{/unless}}
+            title="{{localize 'REDSTEEL.Alchemy.CraftHint'}}"
+          >
+            <i class="fas fa-flask"></i> {{localize "REDSTEEL.Alchemy.Craft"}}
+          </button>
+          <button
+            type="button"
+            class="alch-reroll-btn"
+            data-action="rerollCraft"
+            {{#unless alchCanReroll}}disabled{{/unless}}
+            title="{{localize 'REDSTEEL.Alchemy.RerollHint'}}"
+          >
+            <i class="fas fa-rotate"></i> {{localize "REDSTEEL.Alchemy.Reroll"}}
+          </button>
+        </div>
+
+        <div class="alch-announcement {{#if alchAnnouncement}}{{#if alchAnnouncement.success}}success{{else}}failure{{/if}}{{/if}}">
+          {{#if alchAnnouncement}}
+            <div class="alch-announcement-text">{{alchAnnouncement.text}}</div>
+            <div class="alch-announcement-detail">{{alchAnnouncement.detail}}</div>
+          {{else}}
+            <div class="alch-announcement-placeholder">{{localize "REDSTEEL.Alchemy.AnnouncementPlaceholder"}}</div>
+          {{/if}}
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>

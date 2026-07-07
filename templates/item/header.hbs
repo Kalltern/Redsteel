@@ -345,6 +345,11 @@
           </select>
         </div>
 
+        <div class="grid-span-1">
+          <label class="resource-label" title="{{localize 'REDSTEEL.Item.Consumable.FIELDS.difficulty.hint'}}">{{localize "REDSTEEL.Item.Consumable.FIELDS.difficulty.label"}}</label>
+          <input type="number" name="system.difficulty" value="{{system.difficulty}}" data-dtype="Number" placeholder="0"/>
+        </div>
+
         {{!-- Potion --}}
         {{#if (eq item.system.option "potion")}}
           <div class="grid-span-1">

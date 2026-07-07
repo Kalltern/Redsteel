@@ -183,12 +183,22 @@
       <div class="grid-span-1">
         {{#if race.length}}
           {{#each race as |item id|}}
-          <div class="item-name">
-            <input type="text" value="{{item.name}}" readonly />
+          <div
+            class="item-name race-select"
+            data-action="selectRace"
+            title="{{localize 'REDSTEEL.Race.EditTooltip'}}"
+          >
+            {{item.localizedName}}
           </div>
           {{/each}}
         {{else}}
-          <input type="text" value="" placeholder="Choose a race" readonly />
+          <div
+            class="item-name race-select race-select--empty"
+            data-action="selectRace"
+            title="{{localize 'REDSTEEL.Race.EditTooltip'}}"
+          >
+            {{localize "REDSTEEL.Race.ChooseRace"}}
+          </div>
         {{/if}}
       </div>
     </div>

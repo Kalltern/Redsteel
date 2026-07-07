@@ -1,0 +1,21 @@
+{
+  "type": "Item",
+  "folder": "dh0tbc9RRuMOJEKE",
+  "name": "Bases",
+  "color": null,
+  "sorting": "a",
+  "_id": "AVr000deYnum9gPL",
+  "description": "",
+  "sort": 0,
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.9.51",
+    "lastModifiedBy": null
+  },
+  "_key": "!folders!AVr000deYnum9gPL"
+}

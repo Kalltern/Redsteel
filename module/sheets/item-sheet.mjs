@@ -1,4 +1,5 @@
 import { prepareActiveEffectCategories } from "../helpers/effects.mjs";
+import { SUBSTANCES, BASES } from "../utils/alchemy.mjs";
 
 const { api, sheets } = foundry.applications;
 
@@ -28,6 +29,11 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
       openVariant: this._openVariant,
       addRerollPool: this._addRerollPool,
       removeRerollPool: this._removeRerollPool,
+      clearRecipeResult: this._clearRecipeResult,
+      clearRecipeSpecial: this._clearRecipeSpecial,
+      addRaceChoice: this._addRaceChoice,
+      removeRaceChoice: this._removeRaceChoice,
+      toggleRaceChoiceEffect: this._toggleRaceChoiceEffect,
     },
     form: {
       submitOnChange: true,
@@ -97,6 +103,9 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
     attributesCondition: {
       template: "systems/redsteel/templates/item/attribute-parts/condition.hbs",
     },
+    attributesRecipe: {
+      template: "systems/redsteel/templates/item/attribute-parts/recipe.hbs",
+    },
     effects: {
       template: "systems/redsteel/templates/item/effects.hbs",
     },
@@ -153,6 +162,9 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
       case "condition":
         options.parts.push("attributesCondition", "effects");
         break;
+      case "recipe":
+        options.parts.push("attributesRecipe");
+        break;
     }
   }
 
@@ -198,10 +210,27 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
           }),
         );
         break;
+      case "attributesRace": {
+        context.tab = context.tabs[partId];
+        context.raceChoiceEntries = this._getRaceChoiceArray().map(
+          (group, index) => ({
+            index,
+            label: group.label,
+            count: group.count,
+            effectRows: this.item.effects.map((effect) => ({
+              effectId: effect.id,
+              name: effect.name,
+              img: effect.img,
+              member: group.effectIds.includes(effect.id),
+            })),
+          }),
+        );
+        context.hasRaceEffects = this.item.effects.size > 0;
+        break;
+      }
       case "attributesItem":
       case "attributesGear":
       case "attributesAmmunition":
-      case "attributesRace":
       case "attributesConsumable":
       case "attributesAbility":
       case "attributesCondition":
@@ -218,6 +247,40 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
         // Choices for the animation type select.
         context.lightAnimations = this._getLightAnimationChoices();
         break;
+      case "attributesRecipe": {
+        context.tab = context.tabs[partId];
+        // Resolve the linked result item for display (may live in a
+        // compendium, so the async lookup is required).
+        context.resultItem = this.item.system.resultUuid
+          ? await fromUuid(this.item.system.resultUuid)
+          : null;
+        context.substanceRows = SUBSTANCES.map((def) => ({
+          key: def.key,
+          label: def.name,
+          icon: def.icon,
+          value: Number(this.item.system.substances?.[def.key]) || 0,
+        }));
+        context.baseChoices = [
+          {
+            key: "none",
+            label: game.i18n.localize("REDSTEEL.Alchemy.Base.None"),
+            selected: (this.item.system.base ?? "none") === "none",
+          },
+          ...Object.entries(BASES).map(([key, def]) => ({
+            key,
+            label: game.i18n.localize(def.labelKey),
+            selected: this.item.system.base === key,
+          })),
+        ];
+        context.outputTypeChoices = ["potion", "ointment"].map((key) => ({
+          key,
+          label: game.i18n.localize(
+            `REDSTEEL.Alchemy.OutputType.${key.capitalize()}`,
+          ),
+          selected: (this.item.system.outputType ?? "potion") === key,
+        }));
+        break;
+      }
       case "attributesVariants": {
         context.tab = context.tabs[partId];
         // One entry per stored variant ID, with the resolved world Item (if any)
@@ -295,6 +358,7 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
         case "attributesAmmunition":
         case "attributesWeapon":
         case "attributesCondition":
+        case "attributesRecipe":
           tab.id = "attributes";
           tab.label += "Attributes";
           break;
@@ -533,6 +597,89 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
     item.sheet.render(true);
   }
 
+  /**
+   * Unlink the recipe's crafting result.
+   *
+   * @this RedsteelItemSheet
+   * @param {PointerEvent} event   The originating click event
+   * @param {HTMLElement} target   The capturing HTML element which defined a [data-action]
+   * @protected
+   */
+  static async _clearRecipeResult(event, target) {
+    await this.item.update({ "system.resultUuid": "" });
+  }
+
+  /**
+   * Unlink the recipe's special ingredient.
+   *
+   * @this RedsteelItemSheet
+   * @param {PointerEvent} event   The originating click event
+   * @param {HTMLElement} target   The capturing HTML element which defined a [data-action]
+   * @protected
+   */
+  static async _clearRecipeSpecial(event, target) {
+    await this.item.update({
+      "system.specialIngredient": { name: "", uuid: "" },
+    });
+  }
+
+  /**
+   * Append a new empty choice group to a race Item.
+   *
+   * @this RedsteelItemSheet
+   * @param {PointerEvent} event   The originating click event
+   * @param {HTMLElement} target   The capturing HTML element which defined a [data-action]
+   * @protected
+   */
+  static async _addRaceChoice(event, target) {
+    const groups = this._getRaceChoiceArray();
+    groups.push({ label: "", count: 1, effectIds: [] });
+    await this.item.update({ "system.choices": groups });
+  }
+
+  /**
+   * Remove a choice group from a race Item by index.
+   *
+   * @this RedsteelItemSheet
+   * @param {PointerEvent} event   The originating click event
+   * @param {HTMLElement} target   The capturing HTML element which defined a [data-action]
+   * @protected
+   */
+  static async _removeRaceChoice(event, target) {
+    const index = Number(target.dataset.index);
+    const groups = this._getRaceChoiceArray();
+    if (Number.isNaN(index) || index < 0 || index >= groups.length) return;
+    groups.splice(index, 1);
+    await this.item.update({ "system.choices": groups });
+  }
+
+  /**
+   * Toggle whether an Active Effect belongs to a choice group's effectIds.
+   *
+   * @this RedsteelItemSheet
+   * @param {PointerEvent} event   The originating click event
+   * @param {HTMLElement} target   The capturing HTML element which defined a [data-action]
+   * @protected
+   */
+  static async _toggleRaceChoiceEffect(event, target) {
+    const groupIndex = Number(target.dataset.groupIndex);
+    const effectId = target.dataset.effectId;
+    if (Number.isNaN(groupIndex) || !effectId) return;
+
+    const groups = this._getRaceChoiceArray();
+    const group = groups[groupIndex];
+    if (!group) return;
+
+    const memberIndex = group.effectIds.indexOf(effectId);
+    if (target.checked) {
+      if (memberIndex === -1) group.effectIds.push(effectId);
+    } else if (memberIndex !== -1) {
+      group.effectIds.splice(memberIndex, 1);
+    }
+
+    await this.item.update({ "system.choices": groups });
+  }
+
   /** Helper Functions */
 
   /**
@@ -575,6 +722,27 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
       max: Number(p?.max) || 0,
       used: Number(p?.used) || 0,
     }));
+  }
+
+  /**
+   * Race choice groups as a normalized array. Tolerates the array becoming an
+   * indexed object after a form submit (same quirk as {@link _getRerollPoolArray}).
+   * Unlike the runtime resolver in utils/race.mjs, empty groups are kept so the
+   * author can add a group before assigning any effects to it.
+   * @returns {{label:string, count:number, effectIds:string[]}[]}
+   */
+  _getRaceChoiceArray() {
+    const raw = this.item.system?.choices;
+    const groups = Array.isArray(raw) ? raw : Object.values(raw ?? {});
+    return groups.map((group) => {
+      const rawIds = group?.effectIds;
+      const ids = Array.isArray(rawIds) ? rawIds : Object.values(rawIds ?? {});
+      return {
+        label: group?.label ?? "",
+        count: Math.max(1, Number(group?.count) || 1),
+        effectIds: ids.filter((id) => typeof id === "string" && id),
+      };
+    });
   }
 
   /**
@@ -752,6 +920,36 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
    */
   async _onDropItem(event, data) {
     if (!this.item.isOwner) return false;
+    // Recipes accept drops: a consumable becomes the crafting result, an
+    // "item"-type document becomes the linked special ingredient.
+    if (this.item.type !== "recipe") return false;
+    const dropped = await Item.implementation.fromDropData(data);
+    if (!dropped) return false;
+
+    if (dropped.type === "consumable") {
+      await this.item.update({ "system.resultUuid": dropped.uuid });
+      ui.notifications.info(
+        game.i18n.format("REDSTEEL.Alchemy.Recipe.ResultLinked", {
+          name: dropped.name,
+        }),
+      );
+      return true;
+    }
+    if (dropped.type === "item") {
+      await this.item.update({
+        "system.specialIngredient": { name: dropped.name, uuid: dropped.uuid },
+      });
+      ui.notifications.info(
+        game.i18n.format("REDSTEEL.Alchemy.Recipe.SpecialLinked", {
+          name: dropped.name,
+        }),
+      );
+      return true;
+    }
+    ui.notifications.warn(
+      game.i18n.localize("REDSTEEL.Alchemy.Recipe.DropRejected"),
+    );
+    return false;
   }
 
   /* -------------------------------------------- */

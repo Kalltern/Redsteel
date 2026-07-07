@@ -2,7 +2,7 @@
   "folder": "rujgVKzoNA0iCeug",
   "name": "Yliaster",
   "type": "item",
-  "img": "systems/tos/assets/icons/Yliaster.png",
+  "img": "systems/redsteel/assets/icons/Yliaster.png",
   "system": {
     "description": "<p>Effect - Creates the alchemical substance Yliaster, needed for alchemical production.<br />Production Bonus - -10% -&gt; 1 dose<br />Composition - 5x ingredients containing Yliaster</p>",
     "quantity": 1,
@@ -15,7 +15,11 @@
     "rs3mzx7WZdtEmvH2": 3,
     "UHjN0KQ8w8ZxibJg": 3
   },
-  "flags": {},
+  "flags": {
+    "redsteel": {
+      "alchSubstance": "yliaster"
+    }
+  },
   "_stats": {
     "compendiumSource": null,
     "duplicateSource": "Item.Bit2qrjeO6MDaPUA",

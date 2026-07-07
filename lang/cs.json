@@ -161,12 +161,79 @@
         "focus": "Navazuje na akci Čarování. Snižuje Obtížnost kouzla o 10%. Akci lze opakovat. Nelze snižovat Obtížnost kouzla do kladných hodnot. Tento bonus se nepočítá na Magický útok. Nesnižuje postih za nedostatečný stupeň Školy. Kouzlo lze seslat ihned po vyhodnocení akce Soustředění."
       }
     },
+    "Alchemy": {
+      "Recipes": "Recepty",
+      "NoRecipes": "Žádné recepty. Přetáhni recept na postavu.",
+      "Crafting": "Výroba",
+      "StationLabel": "Alchymistická stanice",
+      "Amount": "Množství",
+      "Craft": "Vytvořit",
+      "Reroll": "Přehodit",
+      "CraftHint": "Hoď na Alchymii a vytvoř zvolené množství",
+      "RerollHint": "Přehoď poslední neúspěšnou výrobu (spotřebuje přehoz)",
+      "AnnouncementPlaceholder": "Zvol recept a stiskni Vytvořit…",
+      "Station": {
+        "Cauldron": "Kotlík",
+        "Foldable": "Skládací alchymistická stanice",
+        "Lab": "Alchymistická laboratoř"
+      },
+      "Base": {
+        "None": "Bez základu",
+        "Fat": "Tuk",
+        "Alcohol": "Alkohol",
+        "StrongAlcohol": "Silný alkohol",
+        "Distillate": "Destilát"
+      },
+      "OutputType": {
+        "Potion": "Lektvar",
+        "Ointment": "Mast"
+      },
+      "Warn": {
+        "NoResult": "Recept nemá nastavený výsledný předmět — přetáhni lektvar na list receptu.",
+        "BadAmount": "Neplatné množství (1 až {max}).",
+        "NotEnough": "Nedostatek surovin",
+        "ResultMissing": "Výsledný předmět receptu nebyl nalezen (odkaz je neplatný).",
+        "NoRecipeSelected": "Nejdříve vyber recept.",
+        "NoRerolls": "Žádné dostupné přehozy pro Alchymii."
+      },
+      "Chat": {
+        "Title": "Alchymistická výroba",
+        "UsedStation": "Použitá stanice",
+        "Difficulty": "Obtížnost",
+        "Margin": "Stupeň úspěchu",
+        "CritSuccess": "Kritický úspěch!",
+        "CritFailure": "Kritický neúspěch!",
+        "Reroll": "Přehozeno",
+        "Success": "Úspěch",
+        "Failure": "Neúspěch",
+        "Created": "vytvořeno {count}× {name}",
+        "IngredientsWasted": "suroviny byly zničeny",
+        "Consumed": "Spotřebováno",
+        "Uses": "použití"
+      },
+      "Recipe": {
+        "OutputType": "Typ výrobku",
+        "Base": "Alchymický základ",
+        "Result": "Výsledný předmět",
+        "Unlink": "Odebrat propojení",
+        "DropConsumableHint": "Přetáhni na list receptu konzumovatelný předmět — lektvar, který recept vyrábí.",
+        "Substances": "Substance",
+        "SubstancesHint": "Spotřeba substancí na jeden vyrobený kus.",
+        "Special": "Zvláštní přísada",
+        "SpecialPlaceholder": "např. Dračí kořen",
+        "SpecialHint": "Spotřebuje se celá 1× za výrobu bez ohledu na vyráběné množství. Přetažením předmětu typu Předmět na list receptu se přísada propojí.",
+        "ResultLinked": "Výsledek receptu propojen: {name}",
+        "SpecialLinked": "Zvláštní přísada propojena: {name}",
+        "DropRejected": "Sem lze přetáhnout jen konzumovatelný předmět (výsledek) nebo předmět (zvláštní přísada)."
+      }
+    },
     "Actor": {
       "Tabs": {
         "Biography": "Životopis",
         "Skills": "Dovednosti",
         "Features": "Rysy",
         "Inventory": "Inventář",
+        "Alchemy": "Alchymie",
         "Spells": "Kouzla",
         "Miracles": "Zázraky",
         "Abilities": "Schopnosti",
@@ -4060,6 +4127,10 @@
           },
           "quantity": {
             "label": "Množství"
+          },
+          "difficulty": {
+            "label": "Obtížnost výroby",
+            "hint": "Modifikátor výroby přičtený k hodu, když se předmět vyrábí podle receptu. Záporná hodnota = těžší výroba, kladná = snazší."
           }
         }
       },
@@ -4160,6 +4231,26 @@
             "label": "Velmistr"
           }
         }
+      }
+    },
+    "Race": {
+      "ChooseRace": "Vyber rasu",
+      "PickerTitle": "Výběr rasy",
+      "EditTooltip": "Klikni pro nastavení rasy",
+      "ReplaceTitle": "Nahradit rasu?",
+      "ReplaceContent": "Postava už má rasu {race}. Nahradit ji? Rasové bonusy původní rasy budou odstraněny.",
+      "Choices": {
+        "Title": "Rasové volby: {race}",
+        "PickCount": "vyber {count}",
+        "InvalidCount": "Skupina \"{label}\": vyber přesně {count} různých možností.",
+        "Apply": "Potvrdit volby"
+      },
+      "Editor": {
+        "Heading": "Skupiny voleb",
+        "AddChoice": "Přidat skupinu voleb",
+        "Label": "Název",
+        "Count": "Počet voleb",
+        "NoEffects": "Nejprve vytvoř možnosti jako aktivní efekty na záložce Efekty."
       }
     },
     "Effect": {
@@ -5359,7 +5450,8 @@
       "ammunition": "Munice",
       "feature": "Rys",
       "spell": "Kouzlo",
-      "condition": "Stav"
+      "condition": "Stav",
+      "recipe": "Recept"
     }
   }
 }
