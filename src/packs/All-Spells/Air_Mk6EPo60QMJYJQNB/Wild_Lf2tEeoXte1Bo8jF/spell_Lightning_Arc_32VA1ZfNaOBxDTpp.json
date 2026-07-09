@@ -3,6 +3,7 @@
   "type": "spell",
   "img": "icons/magic/lightning/bolt-strike-sparks-teal.webp",
   "system": {
+    "localizationKey": "",
     "description": "<p>Roll 2d4 manually and reduce your health. <br />Spell transfers a Lightning discharge to the target, dealing 3d6 + {{spellPower}} damage.</p>",
     "options": [
       "divine",
@@ -90,6 +91,11 @@
     "difficulty": 30,
     "cost": 3,
     "perRound": 0,
+    "variants": {
+      "0": "a2uMfzPNt44pR0JY",
+      "1": "qxOCwiPzcCrMZbSL",
+      "2": "qfGGbUXa00JzS3Um"
+    },
     "option": "magic",
     "type": "air",
     "rank": "wild",
@@ -130,7 +136,7 @@
   "folder": "Lf2tEeoXte1Bo8jF",
   "flags": {
     "scene-packer": {
-      "hash": "0b75ed03c5513f45caa190d46de1931336d0a847"
+      "hash": "6d84cbe8b7dff2257c09e5bc633e715e4c1a42af"
     }
   },
   "_stats": {

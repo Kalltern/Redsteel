@@ -4201,6 +4201,9 @@
           "sustained": {
             "label": "Udržovací"
           },
+          "isHealing": {
+            "label": "Léčení"
+          },
           "difficulty": {
             "label": "Obtížnost"
           },

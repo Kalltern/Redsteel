@@ -6,7 +6,7 @@
   "sorting": "a",
   "_id": "blFGkiJWlarbD2Qw",
   "description": "",
-  "sort": 200000,
+  "sort": 900000,
   "flags": {
     "scene-packer": {
       "hash": "7f6e308cb82c31789d8c38a3b3f4a532be29396b"
@@ -17,11 +17,11 @@
     "duplicateSource": null,
     "exportSource": null,
     "coreVersion": "14.363",
-    "systemId": "tos",
-    "systemVersion": "0.8.0",
-    "createdTime": 1780601580500,
-    "modifiedTime": 1780601580535,
-    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+    "systemId": "redsteel",
+    "systemVersion": "0.9.51",
+    "createdTime": 1783594221165,
+    "modifiedTime": 1783594221224,
+    "lastModifiedBy": "8dfHHkhjZcdpymGM"
   },
   "_key": "!folders!blFGkiJWlarbD2Qw"
 }

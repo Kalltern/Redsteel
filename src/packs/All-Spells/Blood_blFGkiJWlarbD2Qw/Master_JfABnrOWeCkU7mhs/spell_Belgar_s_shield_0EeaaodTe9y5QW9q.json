@@ -1,0 +1,142 @@
+{
+  "name": "Belgar's shield",
+  "type": "spell",
+  "img": "icons/magic/defensive/barrier-shield-dome-pink.webp",
+  "system": {
+    "localizationKey": "",
+    "description": "Creates an impassable barrier with a radius of up to 6 m for 2 rounds plus one additional round for every additional 10 HP burned. Roots the Caster, who cannot take any actions. Indirect spells can be cast through the barrier. The barrier ignores all damage. Lorik’s Hammer has a 70% chance to destroy the barrier. Can be cast as a Reaction only if the Caster or an ally is attacked.",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": [
+      {
+        "mode": "",
+        "amount": "",
+        "type": ""
+      }
+    ],
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": false,
+    "sustained": false,
+    "difficulty": -30,
+    "cost": 10,
+    "perRound": 0,
+    "variants": [],
+    "option": "magic",
+    "type": "blood",
+    "rank": "master",
+    "actionCost": "1 | C",
+    "range": "Caster",
+    "spellClass": "greater",
+    "roll": {
+      "diceNum": 0,
+      "diceSize": 0,
+      "diceBonus": ""
+    },
+    "penetration": 0,
+    "dmgType1": "",
+    "bool2": "",
+    "dmgType2": "",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "extra1": 0,
+      "extra2": 0,
+      "extra3": 0
+    }
+  },
+  "effects": [],
+  "folder": "JfABnrOWeCkU7mhs",
+  "flags": {
+    "scene-packer": {
+      "hash": "ce2af5c4001a94cef6e30737ab0f53f3beabff93"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.blood-spells.Item.m25UgJcqNb8XxgsO",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.9.51",
+    "createdTime": 1783594221199,
+    "modifiedTime": 1783594221209,
+    "lastModifiedBy": "8dfHHkhjZcdpymGM"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3,
+    "MXiQFt4waIv5RqBo": 3,
+    "8dfHHkhjZcdpymGM": 3
+  },
+  "_id": "0EeaaodTe9y5QW9q",
+  "sort": 200000,
+  "_key": "!items!0EeaaodTe9y5QW9q"
+}

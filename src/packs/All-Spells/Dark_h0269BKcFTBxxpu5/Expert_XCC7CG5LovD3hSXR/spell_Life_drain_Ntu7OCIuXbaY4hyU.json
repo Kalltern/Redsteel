@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/unholy/strike-body-life-soul-green.webp",
   "system": {
-    "description": "<p>Deals 2d6 + {{math spellPower \"/\" 2}} damage per round, which heals the caster for the damage dealt. Corruption +4. Ignores Armor.<br /><br />Not fully automated. Add the health manually</p>",
+    "description": "<p>Deals 2d6 + {{math spellPower \"/\" 2}} damage per round, which heals the caster for the damage dealt. Corruption +4. Ignores Armor.<br /><br />Damage ticks automatically each round while maintained. Add the drained health to the caster manually.</p>",
     "options": [
       "divine",
       "magic"
@@ -130,7 +130,7 @@
   "folder": "XCC7CG5LovD3hSXR",
   "flags": {
     "scene-packer": {
-      "hash": "d22c4cd670d60844430a8c4ae2438d8224500489"
+      "hash": "32c96c40a6c90e939a1450d25f2299b07eaac7a1"
     }
   },
   "_stats": {

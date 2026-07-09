@@ -141,7 +141,8 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "isHealing": true
   },
   "effects": [],
   "folder": "JBcANv6vENmYO1qP",

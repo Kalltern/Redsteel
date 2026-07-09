@@ -1,0 +1,155 @@
+{
+  "name": "Devil's protection",
+  "type": "spell",
+  "img": "icons/magic/death/skull-horned-goat-pentagram-red.webp",
+  "system": {
+    "localizationKey": "",
+    "description": "Marks one target for {{math spellPower \"*\" 10}} minutes. For the duration, the caster may activate the protection at any time as a Free Action to prevent damage to the target once. At the moment of activation, the caster has a 75% chance to suffer one Severe Injury. Cannot be cast on the caster. Can be cast as a Reaction only if an ally within range would suffer damage.",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": {
+      "0": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      },
+      "1": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      }
+    },
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": false,
+    "sustained": false,
+    "difficulty": -60,
+    "cost": 15,
+    "perRound": 0,
+    "variants": [],
+    "option": "magic",
+    "type": "blood",
+    "rank": "grandmaster",
+    "actionCost": "1 | Reaction",
+    "range": "6",
+    "spellClass": "greater",
+    "roll": {
+      "diceNum": 0,
+      "diceSize": "0",
+      "diceBonus": ""
+    },
+    "penetration": 0,
+    "dmgType1": "",
+    "bool2": "",
+    "dmgType2": "",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "extra1": 75,
+      "extra2": 0,
+      "extra3": 0,
+      "stagger": null,
+      "bleed": null,
+      "effectName1": "wound"
+    },
+    "attributeTest": "",
+    "testModifier": "",
+    "effectType1": "custom",
+    "effectType2": "",
+    "effectType3": ""
+  },
+  "effects": [],
+  "folder": "yeu4PMGgR3ArIXJN",
+  "flags": {
+    "scene-packer": {
+      "hash": "759c3d43a658a4611b98a8a9cdf1132d431f6771"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.blood-spells.Item.ZLexxejFLsIqOax2",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.9.51",
+    "createdTime": 1783594221200,
+    "modifiedTime": 1783594221210,
+    "lastModifiedBy": "8dfHHkhjZcdpymGM"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3,
+    "MXiQFt4waIv5RqBo": 3,
+    "8dfHHkhjZcdpymGM": 3
+  },
+  "_id": "2Dn4DkT0fUczswmY",
+  "sort": 200000,
+  "_key": "!items!2Dn4DkT0fUczswmY"
+}

@@ -1,0 +1,154 @@
+{
+  "name": "On the edge of death (WIP)",
+  "type": "spell",
+  "img": "icons/magic/death/skull-fire-white-yellow.webp",
+  "system": {
+    "localizationKey": "",
+    "description": "For six rounds, the target cannot die (with rare exceptions), but still loses HP and gains Severe Injuries (their penalties are ignored). If, after the spell ends, the target has more Severe Injuries than its limit allows, the Severe Injury limit is reduced by one, existing Severe Injuries are reduced to the new limit, and the target loses consciousness. The spell cannot be extended.",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": {
+      "0": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      },
+      "1": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      }
+    },
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": false,
+    "sustained": false,
+    "difficulty": -60,
+    "cost": 20,
+    "perRound": 0,
+    "variants": [],
+    "option": "magic",
+    "type": "blood",
+    "rank": "grandmaster",
+    "actionCost": "1 | C",
+    "range": "Caster",
+    "spellClass": "greater",
+    "roll": {
+      "diceNum": 0,
+      "diceSize": "0",
+      "diceBonus": ""
+    },
+    "penetration": 0,
+    "dmgType1": "",
+    "bool2": "",
+    "dmgType2": "",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "extra1": 0,
+      "extra2": 0,
+      "extra3": 0,
+      "stagger": null,
+      "bleed": null
+    },
+    "attributeTest": "",
+    "testModifier": "",
+    "effectType1": "",
+    "effectType2": "",
+    "effectType3": ""
+  },
+  "effects": [],
+  "folder": "yeu4PMGgR3ArIXJN",
+  "flags": {
+    "scene-packer": {
+      "hash": "68eb8239e80642bc7087cdc33647e2419a3ff28b"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.blood-spells.Item.sFEfa9e268u2KCUy",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.9.51",
+    "createdTime": 1783594221205,
+    "modifiedTime": 1783594221212,
+    "lastModifiedBy": "8dfHHkhjZcdpymGM"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3,
+    "MXiQFt4waIv5RqBo": 3,
+    "8dfHHkhjZcdpymGM": 3
+  },
+  "_id": "TIyJBWSPWHDbSxCy",
+  "sort": 125000,
+  "_key": "!items!TIyJBWSPWHDbSxCy"
+}

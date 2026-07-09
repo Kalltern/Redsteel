@@ -3,7 +3,8 @@
   "type": "spell",
   "img": "icons/magic/water/barrier-ice-wall-explosion.webp",
   "system": {
-    "description": "<p>No requirement. Deals 1d4 damage per turn to everyone in a 3m area around the caster. Ignores armor.<br /><br />Not fully automated. Resolve damage per turn manually</p>",
+    "localizationKey": "",
+    "description": "<p>No requirement. Deals 1d4 damage per turn to everyone in a 3m area around the caster. Ignores armor.</p>",
     "options": [
       "divine",
       "magic"
@@ -90,6 +91,11 @@
     "difficulty": 20,
     "cost": 3,
     "perRound": 1,
+    "variants": {
+      "0": "ymnzbDVyYT14monL",
+      "1": "P7QeIV8mDnUm2686",
+      "2": "dgsQ1dI5dY8at8I2"
+    },
     "option": "magic",
     "type": "water",
     "rank": "wild",
@@ -130,7 +136,7 @@
   "folder": "dKFK891TRCSJhcZW",
   "flags": {
     "scene-packer": {
-      "hash": "52a69e60af96e1d45a7e6937412f2e67f75dba0c"
+      "hash": "fc4d93a962fc231c1f2658a2233de000ed8d0b91"
     }
   },
   "_stats": {

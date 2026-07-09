@@ -1,0 +1,154 @@
+{
+  "name": "Demonic grasp (WIP)",
+  "type": "spell",
+  "img": "icons/magic/unholy/hand-claw-glow-orange.webp",
+  "system": {
+    "localizationKey": "",
+    "description": "Deals Dark + Blunt damage equal to {{math spellPower \"*\" 4}} per round to one target for up to four rounds and also applies two Bleeding effects each round. For the duration, the target is Rooted. Ignores Armor.",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": {
+      "0": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      },
+      "1": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      }
+    },
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": true,
+    "sustained": false,
+    "difficulty": -50,
+    "cost": 18,
+    "perRound": 0,
+    "variants": [],
+    "option": "magic",
+    "type": "blood",
+    "rank": "grandmaster",
+    "actionCost": "2 | C",
+    "range": "10",
+    "spellClass": "greater",
+    "roll": {
+      "diceNum": null,
+      "diceSize": "",
+      "diceBonus": ""
+    },
+    "penetration": 100,
+    "dmgType1": "dark",
+    "bool2": "and",
+    "dmgType2": "blunt",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "extra1": -1,
+      "extra2": 0,
+      "extra3": 0,
+      "stagger": null,
+      "bleed": null
+    },
+    "attributeTest": "",
+    "testModifier": "",
+    "effectType1": "demonic_grasp",
+    "effectType2": "",
+    "effectType3": ""
+  },
+  "effects": [],
+  "folder": "yeu4PMGgR3ArIXJN",
+  "flags": {
+    "scene-packer": {
+      "hash": "f0ca28ba1b6a17f4ea51d7fe358331b14a516085"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.blood-spells.Item.fMEjT6ICbpWx2tTw",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.9.51",
+    "createdTime": 1783594221209,
+    "modifiedTime": 1783594221214,
+    "lastModifiedBy": "8dfHHkhjZcdpymGM"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3,
+    "MXiQFt4waIv5RqBo": 3,
+    "8dfHHkhjZcdpymGM": 3
+  },
+  "_id": "woLLNWhIoa9v1QKS",
+  "sort": 100000,
+  "_key": "!items!woLLNWhIoa9v1QKS"
+}

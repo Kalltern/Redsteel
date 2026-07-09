@@ -76,8 +76,10 @@ import {
 import {
   handleApplyDamage,
   handleApplyEffects,
+  handleApplyHealing,
   applyDamageAsGM,
   applyEffectsAsGM,
+  applyHealingAsGM,
   applyZeroHealthState,
   getDurabilityItems,
   getDurabilityReductionPerPoint,
@@ -665,6 +667,11 @@ Hooks.once("ready", () => {
     if (data.type === "applyEffects") {
       if (!game.user.isGM) return;
       await applyEffectsAsGM(data);
+    }
+
+    if (data.type === "applyHealing") {
+      if (!game.user.isGM) return;
+      await applyHealingAsGM(data);
     }
 
     if (data.type === "mentalDuelApply") {
@@ -1334,6 +1341,27 @@ Hooks.on("renderChatMessageHTML", (message, html, data) => {
       applyDamageButton.addEventListener("click", async () => {
         console.log("Apply Damage clicked", message);
         await handleApplyDamage(message.id);
+      });
+    }
+    // --- Apply Healing (heal cards carry a `heal` flag, never an `attack`) ---
+    if (message.flags?.heal) {
+      let buttonContainer = html.querySelector(".button-container");
+      if (!buttonContainer) {
+        buttonContainer = document.createElement("div");
+        buttonContainer.className = "button-container";
+        html.querySelector(".message-content")?.appendChild(buttonContainer);
+      }
+
+      const applyHealingButton = document.createElement("button");
+      applyHealingButton.type = "button";
+      applyHealingButton.className = "redsteel-apply-healing";
+      applyHealingButton.dataset.messageId = message.id;
+      applyHealingButton.textContent = "Apply Healing";
+
+      buttonContainer.appendChild(applyHealingButton);
+      updateButtonContainerLayout(buttonContainer);
+      applyHealingButton.addEventListener("click", async () => {
+        await handleApplyHealing(message.id);
       });
     }
     // --- Apply Effects (ONLY if no attack but has effects) ---

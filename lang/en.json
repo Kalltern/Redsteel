@@ -4212,6 +4212,9 @@
           "sustained": {
             "label": "Sustained"
           },
+          "isHealing": {
+            "label": "Healing"
+          },
           "difficulty": {
             "label": "Difficulty"
           },

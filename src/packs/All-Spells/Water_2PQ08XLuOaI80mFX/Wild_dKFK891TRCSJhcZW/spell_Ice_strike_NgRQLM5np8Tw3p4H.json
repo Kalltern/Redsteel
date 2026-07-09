@@ -3,7 +3,8 @@
   "type": "spell",
   "img": "icons/magic/water/projectile-ice-teardrop.webp",
   "system": {
-    "description": "<p>No requirement. Deals 1d4 damage to a single target per turn. Ignores armor.<br /><br />Not fully automated. Resolve damage per turn manually</p>",
+    "localizationKey": "",
+    "description": "<p>No requirement. Deals 1d4 damage to a single target per turn. Ignores armor.</p>",
     "options": [
       "divine",
       "magic"
@@ -90,6 +91,11 @@
     "difficulty": 30,
     "cost": 2,
     "perRound": 1,
+    "variants": {
+      "0": "vNBZJWae3aQ24oVq",
+      "1": "ty3QzNAv3oVk3yv5",
+      "2": "tRAPtPLayRrk4YUZ"
+    },
     "option": "magic",
     "type": "water",
     "rank": "wild",
@@ -131,7 +137,7 @@
   "folder": "dKFK891TRCSJhcZW",
   "flags": {
     "scene-packer": {
-      "hash": "75783dd8c77ae0fe767073ad16ffdcfe4935546d"
+      "hash": "972054a22e2e22d3c6bca4a7445729d16f61d76a"
     }
   },
   "_stats": {

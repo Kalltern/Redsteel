@@ -124,13 +124,14 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "isHealing": true
   },
   "effects": [],
   "folder": "GaSIkEMI2Yi6RoKu",
   "flags": {
     "scene-packer": {
-      "hash": "1ee9c4498c5d026f33944c47afe66b6edd41a612"
+      "hash": "3faed373f5699fb5d4bf99f2c0c59f4235b25d9f"
     }
   },
   "_stats": {

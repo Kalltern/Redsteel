@@ -373,11 +373,6 @@ export function showSpellSelectionDialogs(actor) {
           <input type="checkbox" name="ignoreChanneling">
           No Channeling Evaluation
         </label>
-
-        <label>
-          <input type="checkbox" name="maintainChanneling">
-          Maintain spell
-        </label>
            </div>
        </div>
 
@@ -519,9 +514,6 @@ export function showSpellSelectionDialogs(actor) {
             const ignoreChanneling = html
               .find('input[name="ignoreChanneling"]')
               .is(":checked");
-            const maintainChanneling = html
-              .find('input[name="maintainChanneling"]')
-              .is(":checked");
             const focusSpent = Number(
               html.find('input[name="focus"]').val() || 0,
             );
@@ -532,7 +524,6 @@ export function showSpellSelectionDialogs(actor) {
               freeCast,
               focusSpent,
               ignoreChanneling,
-              maintainChanneling,
             });
           });
         },
@@ -585,12 +576,38 @@ export function showSpellSelectionDialogs(actor) {
 // --- 1.b Spell Variant Selection ---
 
 /**
- * Resolves a spell's variant IDs into valid spell Items.
- * Invalid IDs, missing Items, and non-spell Items are silently ignored.
- * @param {object} spell - The parent spell item.
- * @returns {object[]} - An array of valid variant spell Items (world Items).
+ * Resolves a single variant id into a spell Item. Compendiums are searched
+ * first (variant ids are stored as compendium document ids, e.g. the All-Spells
+ * pack), then world items as a fallback. Non-spell / missing ids resolve null.
+ * @param {string} id - A bare document id (no "Compendium.…Item." prefix).
+ * @returns {Promise<Item|null>}
  */
-export function getValidSpellVariants(spell) {
+async function resolveVariantItem(id) {
+  for (const pack of game.packs) {
+    if (pack.documentName !== "Item") continue;
+    // Indexes are normally built at world init; rebuild only if this pack's is
+    // empty so a cold pack still resolves.
+    let entry = pack.index.get(id);
+    if (!entry && pack.index.size === 0) {
+      await pack.getIndex();
+      entry = pack.index.get(id);
+    }
+    if (!entry) continue;
+    const doc = await pack.getDocument(id);
+    if (doc?.type === "spell") return doc;
+  }
+  const worldItem = game.items.get(id);
+  return worldItem?.type === "spell" ? worldItem : null;
+}
+
+/**
+ * Resolves a spell's variant IDs into valid spell Items. Each id is looked up
+ * in compendiums first, then world items. Invalid IDs, missing Items, and
+ * non-spell Items are silently ignored.
+ * @param {object} spell - The parent spell item.
+ * @returns {Promise<object[]>} - Valid variant spell Items (compendium or world).
+ */
+export async function getValidSpellVariants(spell) {
   const raw = spell.system?.variants;
   const ids = Array.isArray(raw) ? raw : Object.values(raw ?? {});
 
@@ -600,8 +617,8 @@ export function getValidSpellVariants(spell) {
     if (typeof id !== "string") continue;
     const trimmed = id.trim();
     if (!trimmed || trimmed === spell.id || seen.has(trimmed)) continue;
-    const item = game.items.get(trimmed);
-    if (!item || item.type !== "spell") continue;
+    const item = await resolveVariantItem(trimmed);
+    if (!item) continue;
     seen.add(trimmed);
     variants.push(item);
   }
@@ -615,9 +632,9 @@ export function getValidSpellVariants(spell) {
  * @param {object} spell - The parent spell item.
  * @returns {Promise<object | null>} - The spell Item to cast, or null if canceled.
  */
-export function showVariantSelectionDialog(spell) {
-  const variants = getValidSpellVariants(spell);
-  if (!variants.length) return Promise.resolve(spell);
+export async function showVariantSelectionDialog(spell) {
+  const variants = await getValidSpellVariants(spell);
+  if (!variants.length) return spell;
 
   _injectDialogCSS();
 
@@ -1034,7 +1051,6 @@ export async function finalizeRollsAndPostChat(
 ) {
   const {
     ignoreChanneling = false,
-    maintainChanneling = false,
     fromChanneling = false,
     focusSpent = 0,
   } = options;
@@ -1223,9 +1239,13 @@ export async function finalizeRollsAndPostChat(
     };
   }
 
-  // 1.a Handle Mana deduction effect
+  // 1.a Start channeling automatically for any spell with a per-round upkeep —
+  // that mana-per-round cost is what marks a spell as "kept going" after the
+  // initial cast (concentration/sustained). `sustained` then decides whether
+  // each round re-rolls the spell (resolveChannelingTick). No opt-in: the
+  // player cancels the Channeling effect whenever they want (even immediately).
   const costPerRound = Number(spell.system.perRound) || 0;
-  if (maintainChanneling && costPerRound > 0 && !fromChanneling) {
+  if (costPerRound > 0 && !fromChanneling) {
     const existing = actor.effects.find(
       (e) => e.getFlag("core", "statusId") === "channeling",
     );
@@ -1242,18 +1262,11 @@ export async function finalizeRollsAndPostChat(
         rollContext: {
           focusSpent,
         },
-        isSustained: spell.system.sustained, // ✅ ADD THIS
+        isSustained: spell.system.sustained,
       });
 
       await effect.setFlag("redsteel", "costPerRound", costPerRound);
     }
-  }
-
-  if (maintainChanneling && costPerRound <= 0) {
-    ui.notifications.warn(
-      `${spell.localizedName ?? spell.name} does not allow prolonged channeling.`,
-    );
-    return;
   }
   // --- CRITICAL SCORE ROLL ---
   const critScoreRoll = new Roll(`1d20`);
@@ -1293,10 +1306,13 @@ export async function finalizeRollsAndPostChat(
     : "";
 
   const hasDamage = typeof damageTotal === "number" && damageTotal > 0;
-  const hasCritDamage = effectiveCritSuccess === true;
+  // Healing spells reuse the damage roll as the heal amount but post a Heal
+  // card (Apply Healing button) instead of an attack card. No crit bonus.
+  const isHealing = !!spell.system.isHealing && hasDamage;
+  const hasCritDamage = effectiveCritSuccess === true && !isHealing;
   const showDamageTable = hasDamage;
   const damageHeaders = [
-    "<th>Damage</th>",
+    `<th>${isHealing ? "Healing" : "Damage"}</th>`,
     hasCritDamage && hasDamage ? "<th>Critical Damage</th>" : "",
   ].join("");
 
@@ -1368,7 +1384,7 @@ export async function finalizeRollsAndPostChat(
     hasDamage
       ? `
   <div class="roll-column">
-    <div class="roll-label">Damage Roll</div>
+    <div class="roll-label">${isHealing ? "Healing Roll" : "Damage Roll"}</div>
     ${damageHTML}
   </div>
   `
@@ -1379,6 +1395,7 @@ export async function finalizeRollsAndPostChat(
 `;
   let attackFlag = null;
   let effectsFlag = null;
+  let healFlag = null;
 
   const damageProfile = {
     expression: [
@@ -1394,7 +1411,7 @@ export async function finalizeRollsAndPostChat(
       .map((e) => e.toLowerCase()),
   };
 
-  if (hasDamage) {
+  if (hasDamage && !isHealing) {
     attackFlag = {
       type: "attack",
       // Lets the Apply Damage dialog offer the spell half-damage toggle.
@@ -1414,6 +1431,11 @@ export async function finalizeRollsAndPostChat(
         penetration: critBonusPenetration,
       };
     }
+  }
+  // Healing spells: the rolled amount is restored, not dealt. Posts a Heal
+  // card that renders an Apply Healing button (see redsteel.mjs render hook).
+  if (isHealing) {
+    healFlag = { total: damageTotal };
   }
   if (Object.keys(mechanicalEffects).length > 0) {
     effectsFlag = mechanicalEffects;
@@ -1470,6 +1492,7 @@ export async function finalizeRollsAndPostChat(
       },
       ...(attackFlag && { attack: attackFlag }),
       ...(effectsFlag && { effects: effectsFlag }),
+      ...(healFlag && { heal: healFlag }),
     },
   });
 
@@ -1505,8 +1528,12 @@ export async function resolveChannelingTick(actor, effect) {
   // ✅ behavior decision lives here
   if (!data.isSustained) return;
 
-  // Variant spells live in the world, not on the actor, so fall back there
-  const spell = actor.items.get(data.spellId) ?? game.items.get(data.spellId);
+  // Variant spells may live on the actor, in the world, or (when cast straight
+  // from a pack) in a compendium — resolve in that order.
+  const spell =
+    actor.items.get(data.spellId) ??
+    game.items.get(data.spellId) ??
+    (await resolveVariantItem(data.spellId));
   if (!spell) {
     await effect.delete();
     return;
@@ -1517,7 +1544,6 @@ export async function resolveChannelingTick(actor, effect) {
   const options = {
     freeCast: true,
     ignoreChanneling: true,
-    maintainChanneling: true,
     fromChanneling: true,
   };
 

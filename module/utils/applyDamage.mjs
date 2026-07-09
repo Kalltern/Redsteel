@@ -1137,3 +1137,107 @@ export async function applyEffectsAsGM(data) {
     }
   }
 }
+
+/* -------------------------------------------- */
+/*  Apply Healing                               */
+/* -------------------------------------------- */
+
+/**
+ * Entry point for the "Apply Healing" chat button. Mirrors handleApplyDamage:
+ * requires one or more targets, then opens a confirm dialog. The heal amount
+ * was rolled at cast time and lives in `message.flags.heal.total`.
+ */
+export async function handleApplyHealing(messageId) {
+  const message = game.messages.get(messageId);
+  if (!message?.flags?.heal) return;
+
+  const proceed = () => {
+    const targets = Array.from(game.user.targets);
+    if (!targets.length) {
+      ui.notifications.warn("Please select at least one target.");
+      return false;
+    }
+    openHealingDialog(message, targets);
+    return true;
+  };
+
+  if (!Array.from(game.user.targets).length) {
+    new Dialog({
+      title: "No Targets Selected",
+      content: "<p>Please select one or more targets, then press OK.</p>",
+      buttons: { ok: { label: "OK", callback: proceed } },
+      default: "ok",
+    }).render(true);
+    return;
+  }
+
+  proceed();
+}
+
+function openHealingDialog(message, targets) {
+  const total = Number(message.flags.heal?.total) || 0;
+  const list = targets
+    .map((t) => `<li><strong>${t.name}</strong> → +${total} HP</li>`)
+    .join("");
+
+  new Dialog({
+    title: "Apply Healing",
+    content: `<form><p>Restore <strong>${total}</strong> HP to:</p><ul>${list}</ul></form>`,
+    buttons: {
+      apply: {
+        label: "Apply",
+        callback: () => applyHealingToTargets(message, targets),
+      },
+      cancel: { label: "Cancel" },
+    },
+    default: "apply",
+  }).render(true);
+}
+
+async function applyHealingToTargets(message, targets) {
+  const data = {
+    type: "applyHealing",
+    messageId: message.id,
+    sceneId: canvas.scene.id,
+    targetIds: targets.map((t) => t.id),
+  };
+
+  if (game.user.isGM) {
+    await applyHealingAsGM(data);
+  } else {
+    game.socket.emit(SOCKET, data);
+    ui.notifications.info("Healing request sent to GM.");
+  }
+}
+
+export async function applyHealingAsGM(data) {
+  const { messageId, targetIds, sceneId } = data;
+  const message = game.messages.get(messageId);
+  const total = Number(message?.flags?.heal?.total) || 0;
+  if (total <= 0) return;
+
+  const scene = game.scenes.get(sceneId);
+  const path = "system.stats.health.value";
+
+  for (const tokenId of targetIds) {
+    const actor = scene?.tokens.get(tokenId)?.actor;
+    if (!actor) continue;
+
+    const current = foundry.utils.getProperty(actor, path) ?? 0;
+    const max = foundry.utils.getProperty(actor, "system.stats.health.max");
+    const next =
+      typeof max === "number" && max > 0
+        ? Math.min(max, current + total)
+        : current + total;
+    const healed = next - current;
+    if (healed <= 0) continue;
+
+    await actor.update({ [path]: next });
+
+    const cap = typeof max === "number" && max > 0 ? `/${max}` : "";
+    await ChatMessage.create({
+      speaker: ChatMessage.getSpeaker({ actor }),
+      content: `<p><b>${actor.name}</b> healed <b>+${healed}</b> HP (${next}${cap}).</p>`,
+    });
+  }
+}

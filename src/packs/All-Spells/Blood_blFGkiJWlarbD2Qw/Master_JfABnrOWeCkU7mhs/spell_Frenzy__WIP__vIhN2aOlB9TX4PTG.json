@@ -1,0 +1,154 @@
+{
+  "name": "Frenzy (WIP)",
+  "type": "spell",
+  "img": "icons/magic/control/fear-fright-monster-grin-red-orange.webp",
+  "system": {
+    "localizationKey": "",
+    "description": "Triggers a Will Test vs. target's Will Test against one target. On a success, the target loses control for {{math spellPower \"/\" 2}} + 1 turns and attacks everything nearby. All attacks are treated as Frenzied Attacks.",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": {
+      "0": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      },
+      "1": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      }
+    },
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": false,
+    "sustained": false,
+    "difficulty": -20,
+    "cost": 6,
+    "perRound": 0,
+    "variants": [],
+    "option": "magic",
+    "type": "blood",
+    "rank": "master",
+    "actionCost": "1",
+    "range": "8",
+    "spellClass": "lesser",
+    "roll": {
+      "diceNum": 0,
+      "diceSize": "0",
+      "diceBonus": ""
+    },
+    "penetration": 0,
+    "dmgType1": "",
+    "bool2": "",
+    "dmgType2": "",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "extra1": -1,
+      "extra2": 0,
+      "extra3": 0,
+      "stagger": null,
+      "bleed": null
+    },
+    "attributeTest": "will",
+    "testModifier": "",
+    "effectType1": "frenzy",
+    "effectType2": "",
+    "effectType3": ""
+  },
+  "effects": [],
+  "folder": "JfABnrOWeCkU7mhs",
+  "flags": {
+    "scene-packer": {
+      "hash": "4145b705f832c58f968939fee8d8ea522ed5fd7c"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.blood-spells.Item.zbZXJcbAcDo210WU",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.9.51",
+    "createdTime": 1783594221208,
+    "modifiedTime": 1783594221214,
+    "lastModifiedBy": "8dfHHkhjZcdpymGM"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3,
+    "MXiQFt4waIv5RqBo": 3,
+    "8dfHHkhjZcdpymGM": 3
+  },
+  "_id": "vIhN2aOlB9TX4PTG",
+  "sort": 100196,
+  "_key": "!items!vIhN2aOlB9TX4PTG"
+}

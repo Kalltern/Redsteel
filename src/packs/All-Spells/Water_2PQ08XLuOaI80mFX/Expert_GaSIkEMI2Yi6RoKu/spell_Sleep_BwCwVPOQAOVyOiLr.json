@@ -3,6 +3,7 @@
   "type": "spell",
   "img": "icons/magic/nature/symbol-moon-stars-white.webp",
   "system": {
+    "localizationKey": "",
     "description": "<p>Puts a calm Target (not frightened, not in combat, etc.) to sleep.<br /><br />Resolve this effect manually</p>",
     "options": [
       "divine",
@@ -90,6 +91,9 @@
     "difficulty": -10,
     "cost": 8,
     "perRound": 0,
+    "variants": {
+      "0": "R0TEjS8XG8msR9Fk"
+    },
     "option": "magic",
     "type": "water",
     "rank": "expert",
@@ -130,7 +134,7 @@
   "folder": "GaSIkEMI2Yi6RoKu",
   "flags": {
     "scene-packer": {
-      "hash": "7b208740664b43e2cd4a38c7b9dd625348c3ca1c"
+      "hash": "944be164b011f9e130b69e38c47159acc8ccaf1a"
     }
   },
   "_stats": {

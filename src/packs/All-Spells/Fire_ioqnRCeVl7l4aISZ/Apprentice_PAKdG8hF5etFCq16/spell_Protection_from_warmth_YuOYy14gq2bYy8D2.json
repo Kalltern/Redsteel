@@ -132,12 +132,12 @@
       "effect3": "0",
       "effect4": "0",
       "bleed": null,
-      "extra1": null,
+      "extra1": -1,
       "extra2": null,
       "extra3": null,
       "stagger": null
     },
-    "effectType1": "",
+    "effectType1": "protection_heat",
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
@@ -147,7 +147,7 @@
   "folder": "PAKdG8hF5etFCq16",
   "flags": {
     "scene-packer": {
-      "hash": "f360de7b81e1b61d9282c4e7b67baa6fd2f1162f"
+      "hash": "d77c089e8fe0c4823a3cd6b69ff4c6bcd5222370"
     }
   },
   "_stats": {

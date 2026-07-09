@@ -1,0 +1,154 @@
+{
+  "name": "Poisoned blood (WIP)",
+  "type": "spell",
+  "img": "icons/skills/wounds/blood-cells-disease-green.webp",
+  "system": {
+    "localizationKey": "",
+    "description": "Deals Dark + Poison damage equal to 1d6 + {{spellPower}} for four rounds. Ignores Armor.",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": {
+      "0": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      },
+      "1": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      }
+    },
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": true,
+    "sustained": false,
+    "difficulty": 25,
+    "cost": 2,
+    "perRound": 0,
+    "variants": [],
+    "option": "magic",
+    "type": "blood",
+    "rank": "apprentice",
+    "actionCost": "1",
+    "range": "15",
+    "spellClass": "lesser",
+    "roll": {
+      "diceNum": null,
+      "diceSize": "",
+      "diceBonus": ""
+    },
+    "penetration": 0,
+    "dmgType1": "",
+    "bool2": "",
+    "dmgType2": "",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "extra1": -1,
+      "extra2": 0,
+      "extra3": 0,
+      "stagger": null,
+      "bleed": null
+    },
+    "attributeTest": "",
+    "testModifier": "",
+    "effectType1": "poisoned_blood",
+    "effectType2": "",
+    "effectType3": ""
+  },
+  "effects": [],
+  "folder": "mHVIADT9vUTtTqPg",
+  "flags": {
+    "scene-packer": {
+      "hash": "00ee9a3830c45415951a28255be57729bf0633f8"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.blood-spells.Item.awl6X2VDt8Mnf8rp",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.9.51",
+    "createdTime": 1783594221208,
+    "modifiedTime": 1783594221213,
+    "lastModifiedBy": "8dfHHkhjZcdpymGM"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3,
+    "MXiQFt4waIv5RqBo": 3,
+    "8dfHHkhjZcdpymGM": 3
+  },
+  "_id": "ppjYLVTxwqdl3JpQ",
+  "sort": 112500,
+  "_key": "!items!ppjYLVTxwqdl3JpQ"
+}

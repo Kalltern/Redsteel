@@ -1,0 +1,154 @@
+{
+  "name": "Belgar's spear",
+  "type": "spell",
+  "img": "icons/skills/melee/strike-sword-dagger-runes-red.webp",
+  "system": {
+    "localizationKey": "",
+    "description": "A bloody spear erupts from the ground beneath the target and impales it. Deals Dark + Piercing damage equal to 3d8 + {{math spellPower \"*\" 4}}. Triggers a Will Test vs. target's Dexterity / Endurance Test. On a success, the target becomes Rooted. On a failure, or after breaking free, the target suffers one Bleeding.",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": {
+      "0": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      },
+      "1": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      }
+    },
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": true,
+    "sustained": false,
+    "difficulty": -25,
+    "cost": 7,
+    "perRound": 0,
+    "variants": [],
+    "option": "magic",
+    "type": "blood",
+    "rank": "master",
+    "actionCost": "1",
+    "range": "20",
+    "spellClass": "greater",
+    "roll": {
+      "diceNum": 3,
+      "diceSize": "8",
+      "diceBonus": "@spellPower*4"
+    },
+    "penetration": 18,
+    "dmgType1": "dark",
+    "bool2": "and",
+    "dmgType2": "piercing",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "extra1": -1,
+      "extra2": 0,
+      "extra3": 0,
+      "stagger": null,
+      "bleed": null
+    },
+    "attributeTest": "will",
+    "testModifier": "",
+    "effectType1": "root",
+    "effectType2": "",
+    "effectType3": ""
+  },
+  "effects": [],
+  "folder": "JfABnrOWeCkU7mhs",
+  "flags": {
+    "scene-packer": {
+      "hash": "26dba2d9583ae953a4f57f6f03753e2442f0e80b"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.blood-spells.Item.F1bVvTeZhgpW85gc",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.9.51",
+    "createdTime": 1783594221204,
+    "modifiedTime": 1783594221211,
+    "lastModifiedBy": "8dfHHkhjZcdpymGM"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3,
+    "MXiQFt4waIv5RqBo": 3,
+    "8dfHHkhjZcdpymGM": 3
+  },
+  "_id": "KLOfw1m3xcnxcHmK",
+  "sort": 125000,
+  "_key": "!items!KLOfw1m3xcnxcHmK"
+}

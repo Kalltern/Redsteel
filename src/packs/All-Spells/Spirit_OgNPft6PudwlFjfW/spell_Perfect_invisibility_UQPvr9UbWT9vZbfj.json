@@ -110,8 +110,10 @@
       "effect1": "0",
       "effect2": "0",
       "effect3": "0",
-      "effect4": "0"
-    }
+      "effect4": "0",
+      "extra1": -1
+    },
+    "effectType1": "invisible"
   },
   "effects": [],
   "folder": "OgNPft6PudwlFjfW",

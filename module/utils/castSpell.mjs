@@ -9,7 +9,7 @@ export async function castSpell() {
     return;
   }
 
-  const { freeCast, focusSpent, ignoreChanneling, maintainChanneling } = result;
+  const { freeCast, focusSpent, ignoreChanneling } = result;
 
   // If the spell has linked variants, let the player choose which version to
   // cast. Resolves with the parent spell itself when no valid variants exist.
@@ -42,7 +42,6 @@ export async function castSpell() {
     {
       focusSpent,
       ignoreChanneling,
-      maintainChanneling,
       freeCast,
     },
   );

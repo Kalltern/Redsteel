@@ -1,0 +1,154 @@
+{
+  "name": "Lightning charge (storm)",
+  "type": "spell",
+  "img": "icons/magic/fire/dagger-rune-enchant-blue-gray.webp",
+  "system": {
+    "description": "<p>Charges a weapon with lightning energy from surrounding storm. <br />The weapon deals +2d4 + {{spellPower}} additional damage on hit. <br />Changes damage type to Physical / Magical / Lightning. <br />When cast while inside a storm the bonus is additional +1d4 + {{math spellPower \"/\" 2}} damage. <br />If no target is hit by the end of the round (or the weapon is not dropped), the caster takes half the imbued damage.</p><hr /><p>Can be applied only to Melee and Throw.<br />This spell does not count to the limit of spells cast during this round.</p><hr /><p>Damage of the Spell not automated - WIP</p>",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": {
+      "0": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      },
+      "1": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      }
+    },
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": false,
+    "sustained": false,
+    "difficulty": 20,
+    "cost": 2,
+    "perRound": 0,
+    "option": "magic",
+    "type": "air",
+    "rank": "wild",
+    "actionCost": "Free action",
+    "range": "Caster",
+    "spellClass": "support",
+    "roll": {
+      "diceNum": 2,
+      "diceSize": "4",
+      "diceBonus": "@spellPower"
+    },
+    "penetration": 0,
+    "dmgType1": "physical",
+    "bool2": "or",
+    "dmgType2": "magic",
+    "bool3": "or",
+    "dmgType3": "lightning",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": "0",
+      "effect2": "0",
+      "effect3": "0",
+      "effect4": "0",
+      "bleed": null,
+      "extra1": null,
+      "extra2": null,
+      "extra3": null,
+      "stagger": null
+    },
+    "effectType1": "",
+    "effectType2": "",
+    "effectType3": "",
+    "attributeTest": "",
+    "testModifier": ""
+  },
+  "effects": [],
+  "folder": "Lf2tEeoXte1Bo8jF",
+  "flags": {
+    "scene-packer": {
+      "hash": "a7d08900cc0d0e576bf9c8b4c3c7d2a241d31f45"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.air-spells.Item.a1vQQ6aqZQRtWNF8",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "tos",
+    "systemVersion": "0.8.0",
+    "createdTime": 1780601577682,
+    "modifiedTime": 1780601577682,
+    "lastModifiedBy": "J03KIFAyMdNdBOUD"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3
+  },
+  "sort": 0,
+  "_id": "O4jATbK8LLSnyoO8",
+  "_key": "!items!O4jATbK8LLSnyoO8"
+}

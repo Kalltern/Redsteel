@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/water/barrier-ice-wall-explosion.webp",
   "system": {
-    "description": "<p>Requires a wet target and medium amount of ice nearby. <br />Deals 7d4 + {{spellPower}} damage per turn to everyone in a 2 hex (3m) radius around the caster. <br />+30% chance to Slow and +5% chance to Freeze.<br />Ignores armor.<br /><br />Not fully automated. Resolve damage per turn manually</p>",
+    "description": "<p>Requires a wet target and medium amount of ice nearby. <br />Deals 7d4 + {{spellPower}} damage per turn to everyone in a 2 hex (3m) radius around the caster. <br />+30% chance to Slow and +5% chance to Freeze.<br />Ignores armor.</p>",
     "options": [
       "divine",
       "magic"
@@ -130,7 +130,7 @@
   "folder": "dKFK891TRCSJhcZW",
   "flags": {
     "scene-packer": {
-      "hash": "26b8d72feb352fe31d891016693c88f71570d71a"
+      "hash": "d56974ccc4e0c2fa84ea26d055b85738d6a2d9ba"
     }
   },
   "_stats": {

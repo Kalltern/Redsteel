@@ -86,7 +86,7 @@
       ]
     },
     "isOffensive": true,
-    "sustained": false,
+    "sustained": true,
     "difficulty": -15,
     "cost": 6,
     "perRound": 1,
@@ -130,7 +130,7 @@
   "folder": "GaSIkEMI2Yi6RoKu",
   "flags": {
     "scene-packer": {
-      "hash": "a89c4f31146a68611a2e08e744298a9eeede1110"
+      "hash": "662217863b63cd9074e19d94de99ba0a4b80f124"
     }
   },
   "_stats": {

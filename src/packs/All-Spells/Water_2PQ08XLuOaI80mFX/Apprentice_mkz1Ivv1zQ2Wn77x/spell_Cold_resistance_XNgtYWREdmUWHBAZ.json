@@ -115,12 +115,12 @@
       "effect3": "0",
       "effect4": "0",
       "bleed": null,
-      "extra1": null,
+      "extra1": -1,
       "extra2": null,
       "extra3": null,
       "stagger": null
     },
-    "effectType1": "",
+    "effectType1": "protection_cold",
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
@@ -130,7 +130,7 @@
   "folder": "mkz1Ivv1zQ2Wn77x",
   "flags": {
     "scene-packer": {
-      "hash": "c8323393ed4088e48f4e96dee4af6fc222ad8fdd"
+      "hash": "19cb0250cbedc04740ff2717ba28960afaa1e5d9"
     }
   },
   "_stats": {

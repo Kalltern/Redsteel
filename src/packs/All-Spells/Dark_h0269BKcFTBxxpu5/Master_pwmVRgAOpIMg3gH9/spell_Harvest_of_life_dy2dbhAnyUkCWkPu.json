@@ -81,7 +81,7 @@
       ]
     },
     "isOffensive": true,
-    "sustained": false,
+    "sustained": true,
     "difficulty": -60,
     "cost": 20,
     "perRound": 8,

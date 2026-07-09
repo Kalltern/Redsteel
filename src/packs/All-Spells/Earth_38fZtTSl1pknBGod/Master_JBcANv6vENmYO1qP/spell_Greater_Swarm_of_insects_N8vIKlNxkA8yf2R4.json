@@ -127,12 +127,12 @@
       "effect3": "0",
       "effect4": "0",
       "bleed": null,
-      "extra1": null,
+      "extra1": -1,
       "extra2": null,
       "extra3": null,
       "stagger": null
     },
-    "effectType1": "",
+    "effectType1": "insect_swarm",
     "effectType2": "",
     "effectType3": ""
   },

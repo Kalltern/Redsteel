@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/water/projectile-ice-teardrop.webp",
   "system": {
-    "description": "<p>Requires a wet target and a medium amount of ice nearby. Deals 7d4 + {{spellPower}} damage to a single target per turn. <br />+30% chance to Slow and a +5% chance to Freeze. <br />Ignores armor.<br /><br />Not fully automated. Resolve damage per turn manually</p>",
+    "description": "<p>Requires a wet target and a medium amount of ice nearby. Deals 7d4 + {{spellPower}} damage to a single target per turn. <br />+30% chance to Slow and a +5% chance to Freeze. <br />Ignores armor.</p>",
     "options": [
       "divine",
       "magic"
@@ -131,7 +131,7 @@
   "folder": "dKFK891TRCSJhcZW",
   "flags": {
     "scene-packer": {
-      "hash": "db56aca95eeea22f90a68186a94eba73014fa6da"
+      "hash": "6296eeda0c68092e975df925d3ae3dd35d2a1477"
     }
   },
   "_stats": {

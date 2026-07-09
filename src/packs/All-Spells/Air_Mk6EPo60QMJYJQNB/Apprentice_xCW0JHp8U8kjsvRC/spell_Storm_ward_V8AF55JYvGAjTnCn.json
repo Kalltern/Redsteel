@@ -115,12 +115,12 @@
       "effect3": "0",
       "effect4": "0",
       "bleed": null,
-      "extra1": null,
+      "extra1": -1,
       "extra2": null,
       "extra3": null,
       "stagger": null
     },
-    "effectType1": "",
+    "effectType1": "protection_storm",
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
@@ -130,7 +130,7 @@
   "folder": "xCW0JHp8U8kjsvRC",
   "flags": {
     "scene-packer": {
-      "hash": "b2eaae74aa16a791516fb77b83c7c4516b910b5f"
+      "hash": "dcf15c084cb20abb912747a920c063a7469d2088"
     }
   },
   "_stats": {
