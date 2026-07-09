@@ -1,0 +1,43 @@
+{
+  "folder": "kBTvOEaKqi0Q4Q17",
+  "name": "Recipe: Duelist's slayer",
+  "type": "recipe",
+  "img": "icons/consumables/potions/potion-flask-corked-tied-necklace-teal.webp",
+  "system": {
+    "description": "<p>Effect - -10% penalty to Hit, Defense, Dodge and Ranged defense for three turns<br />Duration - 2 hours<br />Production bonus - +15% -&gt; 1 dose<br />Ingredients - Fat, Qu, Pa, Al<br />Level - 1<br />Info - Clear liquid, odorless. Cutting and stabbing weapons.</p>",
+    "outputType": "potion",
+    "resultUuid": "Compendium.redsteel.redsteel-items.Item.MeUxAG56v5Vo6afd",
+    "substances": {
+      "yliaster": 0,
+      "bezoardicum": 0,
+      "alkahest": 1,
+      "qudat": 1,
+      "panacea": 1,
+      "verdigris": 0
+    },
+    "specialIngredient": {
+      "name": "",
+      "uuid": ""
+    },
+    "base": "fat"
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1777294836937,
+    "modifiedTime": 1777294836937,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "_id": "5WHZpYd7jOaQfhdc",
+  "_key": "!items!5WHZpYd7jOaQfhdc"
+}

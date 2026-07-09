@@ -1,0 +1,43 @@
+{
+  "folder": "kBTvOEaKqi0Q4Q17",
+  "name": "Recipe: Corpse breath",
+  "type": "recipe",
+  "img": "icons/weapons/thrown/bomb-gas-grey-purple.webp",
+  "system": {
+    "description": "<p>Creates a cloud <br />Effect - One target/hex. <br />On hit/entry, target must roll a Strength Test (-25%), on failure, the target is Rooted, on success, it is Slowed for four turns<br />Duration - 1 day<br />Production Bonus - -10% -&gt; 1 batch<br />Ingredients - Quality fat, Container, Al, Al, Pa, Yl</p>",
+    "outputType": "potion",
+    "resultUuid": "Compendium.redsteel.redsteel-items.Item.dg5QhNmhrtytTqze",
+    "substances": {
+      "yliaster": 1,
+      "bezoardicum": 0,
+      "alkahest": 2,
+      "qudat": 0,
+      "panacea": 1,
+      "verdigris": 0
+    },
+    "specialIngredient": {
+      "name": "",
+      "uuid": ""
+    },
+    "base": "fat"
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1777294836937,
+    "modifiedTime": 1777294836937,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "_id": "McCXznC3T90aIJXn",
+  "_key": "!items!McCXznC3T90aIJXn"
+}

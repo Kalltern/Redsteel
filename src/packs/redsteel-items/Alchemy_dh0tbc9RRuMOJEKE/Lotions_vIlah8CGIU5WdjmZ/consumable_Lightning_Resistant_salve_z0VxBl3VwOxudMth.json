@@ -23,7 +23,8 @@
       "diceSize": "",
       "diceBonus": ""
     },
-    "localizationKey": "REDSTEEL.Items.LightningResistantSalve.name"
+    "localizationKey": "REDSTEEL.Items.LightningResistantSalve.name",
+    "difficulty": -15
   },
   "effects": [],
   "sort": 0,

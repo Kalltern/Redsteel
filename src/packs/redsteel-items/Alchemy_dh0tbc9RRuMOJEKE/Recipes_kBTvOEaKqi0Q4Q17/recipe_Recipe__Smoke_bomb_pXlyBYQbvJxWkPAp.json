@@ -1,0 +1,43 @@
+{
+  "folder": "kBTvOEaKqi0Q4Q17",
+  "name": "Recipe: Smoke bomb",
+  "type": "recipe",
+  "img": "icons/weapons/thrown/grenade-round.webp",
+  "system": {
+    "description": "<p>Effect - Opaque cloud of smoke in an area of ​​6m (When inhaled, Disorientation for 3 turns)<br />Duration - 10 rounds<br />Production bonus - 0% -&gt; 1 batch<br />Ingredients - Container, Ve, Yl, Be, Qu, (Shadow dust)</p>",
+    "outputType": "potion",
+    "resultUuid": "Compendium.redsteel.redsteel-items.Item.o82qzxcZUISF5Cfi",
+    "substances": {
+      "yliaster": 1,
+      "bezoardicum": 1,
+      "alkahest": 0,
+      "qudat": 1,
+      "panacea": 0,
+      "verdigris": 1
+    },
+    "specialIngredient": {
+      "name": "Shadow dust",
+      "uuid": ""
+    },
+    "base": "none"
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1777294836937,
+    "modifiedTime": 1777294836937,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "_id": "pXlyBYQbvJxWkPAp",
+  "_key": "!items!pXlyBYQbvJxWkPAp"
+}

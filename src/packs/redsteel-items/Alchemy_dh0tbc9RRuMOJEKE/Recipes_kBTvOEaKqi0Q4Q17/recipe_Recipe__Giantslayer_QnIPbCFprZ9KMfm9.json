@@ -1,0 +1,43 @@
+{
+  "folder": "kBTvOEaKqi0Q4Q17",
+  "name": "Recipe: Giantslayer",
+  "type": "recipe",
+  "img": "icons/consumables/potions/bottle-conical-corked-yellow.webp",
+  "system": {
+    "description": "<p>Effect - Penetration +5, Break through +2d6 for combat and throwing<br />Duration - 15 minutes<br />Toxicity - 22<br />Production bonus - -25% -&gt; 1 dose<br />Ingredients - Strong alcohol, Yl, Al, Pa, Dragon root</p>",
+    "outputType": "potion",
+    "resultUuid": "Compendium.redsteel.redsteel-items.Item.SBOEeDX7kg1f3viD",
+    "substances": {
+      "yliaster": 1,
+      "bezoardicum": 0,
+      "alkahest": 1,
+      "qudat": 0,
+      "panacea": 1,
+      "verdigris": 0
+    },
+    "specialIngredient": {
+      "name": "Dragon root",
+      "uuid": ""
+    },
+    "base": "strongAlcohol"
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1777294836937,
+    "modifiedTime": 1777294836937,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "_id": "QnIPbCFprZ9KMfm9",
+  "_key": "!items!QnIPbCFprZ9KMfm9"
+}

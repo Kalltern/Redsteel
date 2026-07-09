@@ -2315,7 +2315,18 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
    */
   async _onDropItemCreate(itemData, event) {
     itemData = itemData instanceof Array ? itemData : [itemData];
-    return this.actor.createEmbeddedDocuments("Item", itemData);
+    // Items dragged off another actor (e.g. an NPC's equipped armor/weapon)
+    // carry that source's `system.equipped` flag. On this actor that flag
+    // hides the item from the inventory grid while still contributing its
+    // armor value in prepareDerivedData — an invisible, stacking equipped
+    // item. A freshly dropped item is never legitimately pre-equipped, so
+    // strip the flag and let it land visibly in the inventory grid.
+    const sanitized = itemData.map((i) => {
+      const obj = typeof i?.toObject === "function" ? i.toObject() : i;
+      if (obj.system?.equipped) obj.system.equipped = false;
+      return obj;
+    });
+    return this.actor.createEmbeddedDocuments("Item", sanitized);
   }
 
   /**

@@ -22,7 +22,8 @@
       "diceSize": "",
       "diceBonus": ""
     },
-    "localizationKey": "REDSTEEL.Items.Posthumous.name"
+    "localizationKey": "REDSTEEL.Items.Posthumous.name",
+    "difficulty": 20
   },
   "effects": [],
   "sort": 0,

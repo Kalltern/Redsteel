@@ -27,7 +27,8 @@
     "burn": 100,
     "freeze": null,
     "stagger": null,
-    "localizationKey": "REDSTEEL.Items.Ignum.name"
+    "localizationKey": "REDSTEEL.Items.Ignum.name",
+    "difficulty": -10
   },
   "effects": [],
   "sort": 0,

@@ -1,0 +1,43 @@
+{
+  "folder": "kBTvOEaKqi0Q4Q17",
+  "name": "Recipe: Ignum",
+  "type": "recipe",
+  "img": "icons/weapons/thrown/bomb-metal-brown.webp",
+  "system": {
+    "description": "<p>Effect - Single target. Fire damage 3d6, causes Burning. Ignores Armor.<br />Duration - Instant<br />Production Bonus - -10% -&gt; 1 batch<br />Ingredients - Quality fat, Sulfur, Container, Pa, Be, Yl</p>",
+    "outputType": "potion",
+    "resultUuid": "Compendium.redsteel.redsteel-items.Item.xbxHdqTTNFFrc7eJ",
+    "substances": {
+      "yliaster": 1,
+      "bezoardicum": 1,
+      "alkahest": 0,
+      "qudat": 0,
+      "panacea": 1,
+      "verdigris": 0
+    },
+    "specialIngredient": {
+      "name": "Sulfur",
+      "uuid": ""
+    },
+    "base": "fat"
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1777294836937,
+    "modifiedTime": 1777294836937,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "_id": "P60lhhy9QjXvRVWu",
+  "_key": "!items!P60lhhy9QjXvRVWu"
+}

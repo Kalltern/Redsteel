@@ -1,0 +1,43 @@
+{
+  "folder": "kBTvOEaKqi0Q4Q17",
+  "name": "Recipe: Saint John",
+  "type": "recipe",
+  "img": "icons/consumables/potions/bottle-round-ring-teal.webp",
+  "system": {
+    "description": "<p>Effect - Cures diseases (may require multiple doses depending on severity)<br />Duration - Depending on disease<br />Toxicity - 8<br />Production bonus - 0% -&gt; 1 dose<br />Ingredients - Distillate, Be, Yl, Yl, Be</p>",
+    "outputType": "potion",
+    "resultUuid": "Compendium.redsteel.redsteel-items.Item.dFSlSs99NadnPUVv",
+    "substances": {
+      "yliaster": 2,
+      "bezoardicum": 2,
+      "alkahest": 0,
+      "qudat": 0,
+      "panacea": 0,
+      "verdigris": 0
+    },
+    "specialIngredient": {
+      "name": "",
+      "uuid": ""
+    },
+    "base": "distillate"
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1777294836937,
+    "modifiedTime": 1777294836937,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "_id": "Yhsw9npKWHFNXhH3",
+  "_key": "!items!Yhsw9npKWHFNXhH3"
+}

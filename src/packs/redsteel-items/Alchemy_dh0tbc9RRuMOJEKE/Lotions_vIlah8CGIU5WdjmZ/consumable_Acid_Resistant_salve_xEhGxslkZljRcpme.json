@@ -23,7 +23,8 @@
       "diceSize": "",
       "diceBonus": ""
     },
-    "localizationKey": "REDSTEEL.Items.AcidResistantSalve.name"
+    "localizationKey": "REDSTEEL.Items.AcidResistantSalve.name",
+    "difficulty": -15
   },
   "effects": [],
   "sort": 0,

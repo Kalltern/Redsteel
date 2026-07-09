@@ -22,7 +22,8 @@
       "diceSize": "6",
       "diceBonus": ""
     },
-    "localizationKey": "REDSTEEL.Items.CryophoricClay.name"
+    "localizationKey": "REDSTEEL.Items.CryophoricClay.name",
+    "difficulty": 10
   },
   "effects": [],
   "sort": 0,

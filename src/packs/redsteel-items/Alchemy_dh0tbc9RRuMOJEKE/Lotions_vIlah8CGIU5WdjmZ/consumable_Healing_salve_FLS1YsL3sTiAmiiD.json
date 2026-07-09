@@ -23,7 +23,8 @@
       "diceSize": "",
       "diceBonus": ""
     },
-    "localizationKey": "REDSTEEL.Items.HealingSalve.name"
+    "localizationKey": "REDSTEEL.Items.HealingSalve.name",
+    "difficulty": 30
   },
   "effects": [],
   "sort": 0,

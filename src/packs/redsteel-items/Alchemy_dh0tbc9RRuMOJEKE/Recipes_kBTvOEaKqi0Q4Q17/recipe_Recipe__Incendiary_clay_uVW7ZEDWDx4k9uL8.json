@@ -1,0 +1,43 @@
+{
+  "folder": "kBTvOEaKqi0Q4Q17",
+  "name": "Recipe: Incendiary clay",
+  "type": "recipe",
+  "img": "icons/commodities/materials/powder-grey.webp",
+  "system": {
+    "description": "<p>Effect - Single target. Fire damage 2d6, 5% chance to cause Burning. Penetration 5.<br />Duration - Instant<br />Production Bonus - 10% -&gt; 10 batches<br />Composition - Soil, Be, Ve</p>",
+    "outputType": "potion",
+    "resultUuid": "Compendium.redsteel.redsteel-items.Item.JcL0YtmzUMeXaYyz",
+    "substances": {
+      "yliaster": 0,
+      "bezoardicum": 1,
+      "alkahest": 0,
+      "qudat": 0,
+      "panacea": 0,
+      "verdigris": 1
+    },
+    "specialIngredient": {
+      "name": "",
+      "uuid": ""
+    },
+    "base": "none"
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1777294836937,
+    "modifiedTime": 1777294836937,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "_id": "uVW7ZEDWDx4k9uL8",
+  "_key": "!items!uVW7ZEDWDx4k9uL8"
+}

@@ -23,7 +23,8 @@
       "diceSize": "",
       "diceBonus": ""
     },
-    "localizationKey": "REDSTEEL.Items.FireResistantSalve.name"
+    "localizationKey": "REDSTEEL.Items.FireResistantSalve.name",
+    "difficulty": -15
   },
   "effects": [],
   "sort": 0,

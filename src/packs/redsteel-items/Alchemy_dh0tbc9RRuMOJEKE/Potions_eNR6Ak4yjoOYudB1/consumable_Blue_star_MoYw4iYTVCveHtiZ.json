@@ -25,7 +25,8 @@
     "type": "mana",
     "toxicity": 12,
     "bleed": 0,
-    "localizationKey": "REDSTEEL.Items.BlueStar.name"
+    "localizationKey": "REDSTEEL.Items.BlueStar.name",
+    "difficulty": 0
   },
   "effects": [],
   "sort": 0,

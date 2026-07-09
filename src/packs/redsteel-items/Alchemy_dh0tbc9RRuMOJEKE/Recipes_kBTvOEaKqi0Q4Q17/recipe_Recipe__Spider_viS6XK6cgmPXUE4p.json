@@ -1,0 +1,43 @@
+{
+  "folder": "kBTvOEaKqi0Q4Q17",
+  "name": "Recipe: Spider",
+  "type": "recipe",
+  "img": "icons/consumables/potions/bottle-round-corked-pink.webp",
+  "system": {
+    "description": "<p>Effect - Wall climbing, must not wear gloves<br />Duration - 20 minutes<br />Toxicity - 14<br />Production bonus - +10% -&gt; 1 dose<br />Ingredients - Strong alcohol, Pa, Qu, Pa</p>",
+    "outputType": "potion",
+    "resultUuid": "Compendium.redsteel.redsteel-items.Item.RyP2eTEikYTgOXRr",
+    "substances": {
+      "yliaster": 0,
+      "bezoardicum": 0,
+      "alkahest": 0,
+      "qudat": 1,
+      "panacea": 2,
+      "verdigris": 0
+    },
+    "specialIngredient": {
+      "name": "",
+      "uuid": ""
+    },
+    "base": "strongAlcohol"
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1777294836937,
+    "modifiedTime": 1777294836937,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "_id": "viS6XK6cgmPXUE4p",
+  "_key": "!items!viS6XK6cgmPXUE4p"
+}

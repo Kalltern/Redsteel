@@ -1,0 +1,43 @@
+{
+  "folder": "kBTvOEaKqi0Q4Q17",
+  "name": "Recipe: Blue star",
+  "type": "recipe",
+  "img": "icons/consumables/potions/bottle-corked-blue.webp",
+  "system": {
+    "description": "<p>Effect - Restores 8d8+12 Mana<br />Duration - Instant<br />Toxicity - 12<br />Production bonus - 0% -&gt; 1 dose<br />Ingredients - Distillate, Pa, Qu, Be, Yl, Sulca Zairita</p>",
+    "outputType": "potion",
+    "resultUuid": "Compendium.redsteel.redsteel-items.Item.MoYw4iYTVCveHtiZ",
+    "substances": {
+      "yliaster": 1,
+      "bezoardicum": 1,
+      "alkahest": 0,
+      "qudat": 1,
+      "panacea": 1,
+      "verdigris": 0
+    },
+    "specialIngredient": {
+      "name": "Sulca Zairita",
+      "uuid": ""
+    },
+    "base": "distillate"
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1777294836937,
+    "modifiedTime": 1777294836937,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "_id": "XyfT2WxHiOz5vPQd",
+  "_key": "!items!XyfT2WxHiOz5vPQd"
+}

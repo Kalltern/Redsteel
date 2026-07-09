@@ -12,7 +12,7 @@
       "priest"
     ],
     "rollTriggers": [],
-    "rollTriggersRaw": "",
+    "rollTriggersRaw": "res",
     "statusEffects": [],
     "statusEffectsRaw": "",
     "reroll": {
@@ -21,7 +21,8 @@
         false,
         false
       ],
-      "value": null
+      "value": null,
+      "pools": []
     },
     "option": "trait"
   },
@@ -35,16 +36,11 @@
       "system": {
         "changes": [
           {
-            "key": "system.secondaryAttributes.res.bonus",
-            "value": -1,
-            "priority": null,
-            "type": "add"
-          },
-          {
-            "key": "system.schools.earth.bonus",
+            "key": "system.schools.fire.bonus",
+            "type": "add",
             "value": 1,
-            "priority": null,
-            "type": "add"
+            "phase": "initial",
+            "priority": null
           }
         ]
       },
@@ -70,6 +66,10 @@
         },
         "tos": {
           "actorTurns": null
+        },
+        "redsteel": {
+          "rollTriggersRaw": "",
+          "actorTurns": null
         }
       },
       "_stats": {
@@ -78,10 +78,10 @@
         "exportSource": null,
         "coreVersion": "14.363",
         "systemId": "redsteel",
-        "systemVersion": "0.8.1",
-        "lastModifiedBy": null,
-        "createdTime": null,
-        "modifiedTime": null
+        "systemVersion": "0.9.51",
+        "lastModifiedBy": "8dfHHkhjZcdpymGM",
+        "createdTime": 1783628723739,
+        "modifiedTime": 1783628723739
       },
       "start": null,
       "showIcon": 1,
@@ -100,10 +100,10 @@
     "exportSource": null,
     "coreVersion": "14.363",
     "systemId": "redsteel",
-    "systemVersion": "0.8.1",
+    "systemVersion": "0.9.51",
     "createdTime": 1777294846698,
-    "modifiedTime": 1777294846698,
-    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+    "modifiedTime": 1783628717275,
+    "lastModifiedBy": "8dfHHkhjZcdpymGM"
   },
   "ownership": {
     "default": 0,

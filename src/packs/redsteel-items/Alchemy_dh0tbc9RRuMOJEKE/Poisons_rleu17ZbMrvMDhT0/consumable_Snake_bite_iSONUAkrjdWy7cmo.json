@@ -22,7 +22,8 @@
       "diceSize": "",
       "diceBonus": ""
     },
-    "localizationKey": "REDSTEEL.Items.SnakeBite.name"
+    "localizationKey": "REDSTEEL.Items.SnakeBite.name",
+    "difficulty": 20
   },
   "effects": [],
   "sort": 0,

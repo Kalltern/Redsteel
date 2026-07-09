@@ -1,0 +1,43 @@
+{
+  "folder": "kBTvOEaKqi0Q4Q17",
+  "name": "Recipe: Mithridat",
+  "type": "recipe",
+  "img": "icons/consumables/potions/bottle-circular-corked-labeled-green.webp",
+  "system": {
+    "description": "<p>Effect - Antidote and immunity to poisons of 1. and 2. degree<br />Duration - 2 hour<br />Toxicity - 12<br />Production bonus - +15% -&gt; 1 dose<br />Ingredients - <span style=\"color:rgb(239, 230, 216);font-family:Signika, 'Palatino Linotype', sans-serif;font-size:14px;font-style:normal;font-variant-ligatures:normal;font-variant-caps:normal;font-weight:400;letter-spacing:normal;orphans:2;text-align:start;text-indent:0px;text-transform:none;widows:2;word-spacing:0px;-webkit-text-stroke-width:0px;white-space:normal;background-color:rgba(12, 12, 12, 0.9);text-decoration-thickness:initial;text-decoration-style:initial;text-decoration-color:initial;display:inline !important;float:none\">Distillate</span>, Be, Be, Al, Ve</p>",
+    "outputType": "potion",
+    "resultUuid": "Compendium.redsteel.redsteel-items.Item.PcHngWeqqIJBOJ5D",
+    "substances": {
+      "yliaster": 0,
+      "bezoardicum": 2,
+      "alkahest": 1,
+      "qudat": 0,
+      "panacea": 0,
+      "verdigris": 1
+    },
+    "specialIngredient": {
+      "name": "",
+      "uuid": ""
+    },
+    "base": "distillate"
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1777294836937,
+    "modifiedTime": 1777294836937,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "_id": "kC1691ouNeX58fro",
+  "_key": "!items!kC1691ouNeX58fro"
+}

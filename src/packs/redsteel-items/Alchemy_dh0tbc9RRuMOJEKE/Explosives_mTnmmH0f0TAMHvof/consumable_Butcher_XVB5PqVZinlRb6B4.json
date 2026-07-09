@@ -27,7 +27,8 @@
     "burn": null,
     "freeze": null,
     "stagger": null,
-    "localizationKey": "REDSTEEL.Items.Butcher.name"
+    "localizationKey": "REDSTEEL.Items.Butcher.name",
+    "difficulty": 0
   },
   "effects": [],
   "sort": 0,

@@ -27,7 +27,8 @@
     "burn": null,
     "freeze": null,
     "stagger": null,
-    "localizationKey": "REDSTEEL.Items.CorpseBreath.name"
+    "localizationKey": "REDSTEEL.Items.CorpseBreath.name",
+    "difficulty": -10
   },
   "effects": [],
   "sort": 0,

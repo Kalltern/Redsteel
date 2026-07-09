@@ -1,0 +1,43 @@
+{
+  "folder": "kBTvOEaKqi0Q4Q17",
+  "name": "Recipe: Butcher",
+  "type": "recipe",
+  "img": "icons/weapons/thrown/bomb-spiked-purple.webp",
+  "system": {
+    "description": "<p>Effect - Inflicts 2d6+1 Physical+Slashing damage in a 3m area, Penetration 0. Causes 2d4+1 Bleeding. (Rolled manually)<br />Duration - Instant Effect<br />Production Bonus - 0% -&gt; 1 batch<br />Ingredients - Container, Ve, Be, Be, Yl, Qu, Shrapnel</p>",
+    "outputType": "potion",
+    "resultUuid": "Compendium.redsteel.redsteel-items.Item.XVB5PqVZinlRb6B4",
+    "substances": {
+      "yliaster": 1,
+      "bezoardicum": 2,
+      "alkahest": 0,
+      "qudat": 1,
+      "panacea": 0,
+      "verdigris": 1
+    },
+    "specialIngredient": {
+      "name": "Shrapnel",
+      "uuid": ""
+    },
+    "base": "none"
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1777294836937,
+    "modifiedTime": 1777294836937,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "_id": "wVZPu1Dbnmjt0Jsa",
+  "_key": "!items!wVZPu1Dbnmjt0Jsa"
+}

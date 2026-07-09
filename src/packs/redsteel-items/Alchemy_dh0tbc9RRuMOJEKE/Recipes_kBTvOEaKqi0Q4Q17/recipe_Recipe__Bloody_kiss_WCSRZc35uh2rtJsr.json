@@ -1,0 +1,43 @@
+{
+  "folder": "kBTvOEaKqi0Q4Q17",
+  "name": "Recipe: Bloody kiss",
+  "type": "recipe",
+  "img": "icons/consumables/potions/conical-mushroom-poison-red.webp",
+  "system": {
+    "description": "<p>Effect - +70% Chance to Bleed<br />Duration - 2 hours<br />Production bonus - -15% -&gt; 1 dose<br />Ingredients - Quality fat, Be, Be, Qu, Pa, Blood lily<br />Level - 2<br />Info - Thick brown liquid, slight odor. Cutting and stabbing weapons.</p>",
+    "outputType": "potion",
+    "resultUuid": "Compendium.redsteel.redsteel-items.Item.MTXlg86chA9VmgAz",
+    "substances": {
+      "yliaster": 0,
+      "bezoardicum": 2,
+      "alkahest": 0,
+      "qudat": 1,
+      "panacea": 1,
+      "verdigris": 0
+    },
+    "specialIngredient": {
+      "name": "Blood lily",
+      "uuid": ""
+    },
+    "base": "fat"
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1777294836937,
+    "modifiedTime": 1777294836937,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "_id": "WCSRZc35uh2rtJsr",
+  "_key": "!items!WCSRZc35uh2rtJsr"
+}

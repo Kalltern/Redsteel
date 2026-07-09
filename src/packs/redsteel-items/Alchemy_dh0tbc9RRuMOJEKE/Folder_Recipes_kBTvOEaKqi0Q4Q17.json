@@ -1,0 +1,21 @@
+{
+  "type": "Item",
+  "folder": "dh0tbc9RRuMOJEKE",
+  "name": "Recipes",
+  "color": null,
+  "sorting": "a",
+  "_id": "kBTvOEaKqi0Q4Q17",
+  "description": "",
+  "sort": 0,
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "lastModifiedBy": null
+  },
+  "_key": "!folders!kBTvOEaKqi0Q4Q17"
+}

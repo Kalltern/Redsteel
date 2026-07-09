@@ -25,7 +25,8 @@
     "type": "",
     "toxicity": 16,
     "bleed": 0,
-    "localizationKey": "REDSTEEL.Items.Falcon.name"
+    "localizationKey": "REDSTEEL.Items.Falcon.name",
+    "difficulty": -10
   },
   "effects": [],
   "sort": 0,

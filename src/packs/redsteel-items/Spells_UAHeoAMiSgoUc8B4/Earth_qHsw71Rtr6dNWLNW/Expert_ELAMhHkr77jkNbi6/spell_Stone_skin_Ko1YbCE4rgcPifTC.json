@@ -134,7 +134,7 @@
       "bleed": null,
       "extra1": null,
       "extra2": null,
-      "extra3": null,
+      "extra3": -1,
       "stagger": null,
       "effectName3": "stone_skin"
     },

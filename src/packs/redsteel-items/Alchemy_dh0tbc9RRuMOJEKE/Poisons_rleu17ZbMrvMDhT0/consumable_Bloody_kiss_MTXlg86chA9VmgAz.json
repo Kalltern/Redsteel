@@ -23,7 +23,8 @@
       "diceSize": "",
       "diceBonus": ""
     },
-    "localizationKey": "REDSTEEL.Items.BloodyKiss.name"
+    "localizationKey": "REDSTEEL.Items.BloodyKiss.name",
+    "difficulty": -15
   },
   "effects": [],
   "sort": 0,

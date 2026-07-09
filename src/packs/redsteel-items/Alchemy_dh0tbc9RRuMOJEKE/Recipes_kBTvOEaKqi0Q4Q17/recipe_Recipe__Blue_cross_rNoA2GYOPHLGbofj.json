@@ -1,0 +1,43 @@
+{
+  "folder": "kBTvOEaKqi0Q4Q17",
+  "name": "Recipe: Blue cross",
+  "type": "recipe",
+  "img": "icons/consumables/potions/vial-cork-blue.webp",
+  "system": {
+    "description": "<p>Effect - Restores 5d6+8 Mana<br />Duration - Instant<br />Toxicity - 8<br />Production bonus - +20% -&gt; 1 dose<br />Ingredients - Strong alcohol, Pa, Be, Yl, Mora Tapinella</p>",
+    "outputType": "potion",
+    "resultUuid": "Compendium.redsteel.redsteel-items.Item.tts2Fl6sBRgEvKTt",
+    "substances": {
+      "yliaster": 1,
+      "bezoardicum": 1,
+      "alkahest": 0,
+      "qudat": 0,
+      "panacea": 1,
+      "verdigris": 0
+    },
+    "specialIngredient": {
+      "name": "Mora Tapinella",
+      "uuid": ""
+    },
+    "base": "strongAlcohol"
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1777294836937,
+    "modifiedTime": 1777294836937,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "_id": "rNoA2GYOPHLGbofj",
+  "_key": "!items!rNoA2GYOPHLGbofj"
+}

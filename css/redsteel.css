@@ -4974,16 +4974,53 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   padding-bottom: 0;
 }
 
-/* Recipe list: single column of trait-style cards */
+/* Recipe list: single column of trait-style cards that scrolls when long */
 .alchemy-recipe-list {
   grid-template-columns: 1fr;
+  max-height: 460px;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  scrollbar-color: #665534 #0e0d0b;
+  scrollbar-width: thin;
+  /* Small offset so cards aren't flush against the scrollbar */
+  padding-right: 4px;
 }
 
 .tab.alchemy .alch-recipe {
   cursor: pointer;
+  /* Collapsed by default: only the icon + header row show */
+  align-items: center;
   transition:
     border-color 0.15s ease,
     box-shadow 0.15s ease;
+}
+
+/* Description is folded away until the recipe is selected (clicked) */
+.tab.alchemy .alch-recipe .npc-trait-desc {
+  display: none;
+}
+
+.tab.alchemy .alch-recipe.selected {
+  align-items: flex-start;
+}
+
+.tab.alchemy .alch-recipe.selected .npc-trait-desc {
+  display: block;
+  overflow: hidden;
+  /* Keyframe (not transition) so it replays on the re-render that selection
+     triggers — a transition wouldn't animate a freshly-mounted element */
+  animation: alch-recipe-rollout 0.25s ease;
+}
+
+@keyframes alch-recipe-rollout {
+  from {
+    max-height: 0;
+    opacity: 0;
+  }
+  to {
+    max-height: 480px;
+    opacity: 1;
+  }
 }
 
 .tab.alchemy .alch-recipe:hover {

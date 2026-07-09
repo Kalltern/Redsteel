@@ -27,7 +27,8 @@
     "burn": null,
     "freeze": null,
     "stagger": 10,
-    "localizationKey": "REDSTEEL.Items.CracklingClay.name"
+    "localizationKey": "REDSTEEL.Items.CracklingClay.name",
+    "difficulty": 10
   },
   "effects": [],
   "sort": 0,

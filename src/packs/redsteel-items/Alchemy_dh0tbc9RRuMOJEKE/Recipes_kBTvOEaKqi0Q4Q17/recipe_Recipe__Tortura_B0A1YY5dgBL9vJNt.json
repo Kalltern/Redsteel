@@ -1,0 +1,43 @@
+{
+  "folder": "kBTvOEaKqi0Q4Q17",
+  "name": "Recipe: Tortura",
+  "type": "recipe",
+  "img": "icons/consumables/potions/vial-ornet-silver-black.webp",
+  "system": {
+    "description": "<p>Effect - <br />On hit: Applies the effect for three turns. <br />At the beginning of each round target rolls an Endurance Test (-30%) <br />On failure: Target becomes Paralyzed with Pain. <br />On success: Penalty 10% to Success for two turns.<br />Duration - 2 hours<br />Production bonus - -20% -&gt; 1 dose<br />Ingredients - Fat, Pa, Al, Qu, Powdered pearl<br />Level - 2<br />Info - Clear liquid, strong odor. Cutting and stabbing weapons.</p>",
+    "outputType": "potion",
+    "resultUuid": "Compendium.redsteel.redsteel-items.Item.C1prrhx2Krf7fwQN",
+    "substances": {
+      "yliaster": 0,
+      "bezoardicum": 0,
+      "alkahest": 1,
+      "qudat": 1,
+      "panacea": 1,
+      "verdigris": 0
+    },
+    "specialIngredient": {
+      "name": "Powdered pearl",
+      "uuid": ""
+    },
+    "base": "fat"
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1777294836937,
+    "modifiedTime": 1777294836937,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "_id": "B0A1YY5dgBL9vJNt",
+  "_key": "!items!B0A1YY5dgBL9vJNt"
+}

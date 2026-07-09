@@ -25,7 +25,8 @@
     "type": "stamina",
     "toxicity": 6,
     "bleed": 0,
-    "localizationKey": "REDSTEEL.Items.SecondWind.name"
+    "localizationKey": "REDSTEEL.Items.SecondWind.name",
+    "difficulty": 20
   },
   "effects": [],
   "sort": 0,

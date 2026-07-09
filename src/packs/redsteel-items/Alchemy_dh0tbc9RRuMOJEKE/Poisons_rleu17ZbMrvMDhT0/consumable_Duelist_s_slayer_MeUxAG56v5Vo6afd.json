@@ -22,7 +22,8 @@
       "diceSize": "",
       "diceBonus": ""
     },
-    "localizationKey": "REDSTEEL.Items.DuelistsSlayer.name"
+    "localizationKey": "REDSTEEL.Items.DuelistsSlayer.name",
+    "difficulty": 15
   },
   "effects": [],
   "sort": 0,

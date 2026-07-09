@@ -1,0 +1,43 @@
+{
+  "folder": "kBTvOEaKqi0Q4Q17",
+  "name": "Recipe: Healing salve",
+  "type": "recipe",
+  "img": "icons/commodities/materials/bowl-powder-blue.webp",
+  "system": {
+    "description": "<p>Effect - 2x Health from resting<br />Duration - 12 hours<br />Production bonus - +30% -&gt; 3 doses<br />Ingredients - Fat, Be, Ve</p>",
+    "outputType": "ointment",
+    "resultUuid": "Compendium.redsteel.redsteel-items.Item.FLS1YsL3sTiAmiiD",
+    "substances": {
+      "yliaster": 0,
+      "bezoardicum": 1,
+      "alkahest": 0,
+      "qudat": 0,
+      "panacea": 0,
+      "verdigris": 1
+    },
+    "specialIngredient": {
+      "name": "",
+      "uuid": ""
+    },
+    "base": "fat"
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1777294836937,
+    "modifiedTime": 1777294836937,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "_id": "oObMTNiSMVbaQh5s",
+  "_key": "!items!oObMTNiSMVbaQh5s"
+}

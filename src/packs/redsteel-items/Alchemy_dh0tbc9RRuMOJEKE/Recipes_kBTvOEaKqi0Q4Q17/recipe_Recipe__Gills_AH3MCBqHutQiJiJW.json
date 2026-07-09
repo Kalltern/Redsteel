@@ -1,0 +1,43 @@
+{
+  "folder": "kBTvOEaKqi0Q4Q17",
+  "name": "Recipe: Gills",
+  "type": "recipe",
+  "img": "icons/consumables/potions/bottle-bulb-corked-labeled-blue.webp",
+  "system": {
+    "description": "<p>Effect - Walk on Water<br />Duration - 1 hour<br />Toxicity - 12<br />Production bonus - +15% -&gt; 1 dose<br />Ingredients - Strong alcohol, Yl, Ve, Qu</p>",
+    "outputType": "potion",
+    "resultUuid": "Compendium.redsteel.redsteel-items.Item.BpMK1n7tsUnV9OuR",
+    "substances": {
+      "yliaster": 1,
+      "bezoardicum": 0,
+      "alkahest": 0,
+      "qudat": 1,
+      "panacea": 0,
+      "verdigris": 1
+    },
+    "specialIngredient": {
+      "name": "",
+      "uuid": ""
+    },
+    "base": "strongAlcohol"
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1777294836937,
+    "modifiedTime": 1777294836937,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "_id": "AH3MCBqHutQiJiJW",
+  "_key": "!items!AH3MCBqHutQiJiJW"
+}

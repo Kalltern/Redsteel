@@ -1,0 +1,43 @@
+{
+  "folder": "kBTvOEaKqi0Q4Q17",
+  "name": "Recipe: Green cross",
+  "type": "recipe",
+  "img": "icons/consumables/potions/vial-cork-green.webp",
+  "system": {
+    "description": "<p>Effect - Antidote and immunity to 1st level poisons<br />Duration - 1 hour<br />Toxicity - 10<br />Production bonus - +20% -&gt; 1 dose<br />Ingredients - Strong alcohol, Be, Al, Ve</p>",
+    "outputType": "potion",
+    "resultUuid": "Compendium.redsteel.redsteel-items.Item.LG5NJZsI9reXiwXY",
+    "substances": {
+      "yliaster": 0,
+      "bezoardicum": 1,
+      "alkahest": 1,
+      "qudat": 0,
+      "panacea": 0,
+      "verdigris": 1
+    },
+    "specialIngredient": {
+      "name": "",
+      "uuid": ""
+    },
+    "base": "strongAlcohol"
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1777294836937,
+    "modifiedTime": 1777294836937,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "_id": "H9Gt2uSj1eDwvLwH",
+  "_key": "!items!H9Gt2uSj1eDwvLwH"
+}

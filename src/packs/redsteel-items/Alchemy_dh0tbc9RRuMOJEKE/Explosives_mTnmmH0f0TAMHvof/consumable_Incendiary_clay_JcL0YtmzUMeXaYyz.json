@@ -27,7 +27,8 @@
     "burn": 5,
     "freeze": null,
     "stagger": null,
-    "localizationKey": "REDSTEEL.Items.IncendiaryClay.name"
+    "localizationKey": "REDSTEEL.Items.IncendiaryClay.name",
+    "difficulty": 10
   },
   "effects": [],
   "sort": 0,

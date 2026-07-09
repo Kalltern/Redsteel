@@ -25,7 +25,8 @@
     "type": "",
     "toxicity": 12,
     "bleed": 0,
-    "localizationKey": "REDSTEEL.Items.Waterstrider.name"
+    "localizationKey": "REDSTEEL.Items.Waterstrider.name",
+    "difficulty": 15
   },
   "effects": [],
   "sort": 0,

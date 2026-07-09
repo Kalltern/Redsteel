@@ -25,7 +25,8 @@
     "type": "",
     "toxicity": 10,
     "bleed": 100,
-    "localizationKey": "REDSTEEL.Items.Oak.name"
+    "localizationKey": "REDSTEEL.Items.Oak.name",
+    "difficulty": 0
   },
   "effects": [],
   "sort": 0,

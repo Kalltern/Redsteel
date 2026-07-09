@@ -25,7 +25,8 @@
     "type": "",
     "toxicity": 10,
     "bleed": 0,
-    "localizationKey": "REDSTEEL.Items.GreenCross.name"
+    "localizationKey": "REDSTEEL.Items.GreenCross.name",
+    "difficulty": 20
   },
   "effects": [],
   "sort": 0,
