@@ -11,17 +11,25 @@
       "trait",
       "priest"
     ],
-    "rollTriggers": [],
-    "rollTriggersRaw": "",
+    "rollTriggers": [
+      "acrobacy",
+      "rangeddefense"
+    ],
+    "rollTriggersRaw": "acrobacy, rangedDefense",
     "statusEffects": [],
     "statusEffectsRaw": "",
     "reroll": {
-      "name": "Nimble",
-      "active": [
-        false,
-        false
-      ],
-      "value": 1
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": [
+        {
+          "label": "Dexterity-based skill",
+          "skillsRaw": "universal",
+          "max": 1,
+          "used": 0
+        }
+      ]
     },
     "option": "trait"
   },

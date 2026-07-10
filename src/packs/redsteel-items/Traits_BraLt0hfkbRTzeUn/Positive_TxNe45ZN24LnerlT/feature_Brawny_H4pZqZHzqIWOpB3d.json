@@ -11,17 +11,24 @@
       "trait",
       "priest"
     ],
-    "rollTriggers": [],
-    "rollTriggersRaw": "",
+    "rollTriggers": [
+      "athletics"
+    ],
+    "rollTriggersRaw": "athletics",
     "statusEffects": [],
     "statusEffectsRaw": "",
     "reroll": {
-      "name": "Brawny: Strength",
-      "active": [
-        false,
-        false
-      ],
-      "value": 1
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": [
+        {
+          "label": "Strength-based skill",
+          "skillsRaw": "universal",
+          "max": 1,
+          "used": 0
+        }
+      ]
     },
     "option": "trait"
   },

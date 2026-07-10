@@ -11,17 +11,25 @@
       "trait",
       "priest"
     ],
-    "rollTriggers": [],
-    "rollTriggersRaw": "",
+    "rollTriggers": [
+      "per",
+      "archery"
+    ],
+    "rollTriggersRaw": "per, archery",
     "statusEffects": [],
     "statusEffectsRaw": "",
     "reroll": {
-      "name": "Eagle Archer | Eagle Perception ",
-      "active": [
-        false,
-        false
-      ],
-      "value": 2
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": [
+        {
+          "label": "Any / Perception-based",
+          "skillsRaw": "universal",
+          "max": 2,
+          "used": 0
+        }
+      ]
     },
     "option": "trait"
   },

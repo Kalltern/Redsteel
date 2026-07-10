@@ -1519,6 +1519,28 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
   }
 
   /**
+   * Sheet height (px) used while the Specialisations tab is active. The
+   * constellation tree fills the panel better at a slightly shorter sheet than
+   * the default; every other primary tab restores DEFAULT_OPTIONS height.
+   */
+  static SPEC_TAB_HEIGHT = 1100;
+
+  /** Resize the sheet to suit the active primary tab. */
+  #syncPrimaryTabHeight(tab) {
+    const height =
+      tab === "specialisations"
+        ? this.constructor.SPEC_TAB_HEIGHT
+        : this.constructor.DEFAULT_OPTIONS.position.height;
+    if (this.position.height !== height) this.setPosition({ height });
+  }
+
+  /** @override */
+  changeTab(tab, group, options) {
+    super.changeTab(tab, group, options);
+    if (group === "primary") this.#syncPrimaryTabHeight(tab);
+  }
+
+  /**
    * Actions performed after any render of the Application.
    * Post-render steps are not awaited by the render process.
    * @param {ApplicationRenderContext} context      Prepared context data
@@ -1528,6 +1550,11 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
    */
   _onRender(context, options) {
     super._onRender?.(context, options);
+
+    // Keep the sheet height in step with the active tab across re-renders
+    // (e.g. reopening on, or toggling a node within, the Specialisations tab).
+    if (this.tabGroups?.primary)
+      this.#syncPrimaryTabHeight(this.tabGroups.primary);
 
     this.#dragDrop.forEach((d) => d.bind(this.element));
     this.#disableOverrides();

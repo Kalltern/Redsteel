@@ -74,5 +74,17 @@ export function getTraitPills(actor, trigger) {
     });
   }
 
+  // Corrupted (Zkažený): from Corruption degree 2 (61+) a character "counts as
+  // Corrupted" for miracles/magic, and degree 3 (91+) is also Light-vulnerable.
+  // Remind on every defense roll so the GM can apply Light / Miracle riders.
+  if (normalized === "defense" && actor.system?.isCorrupted) {
+    pills.push({
+      name: "Corrupted — Zkažený",
+      description: actor.system.corruptionLightVulnerable
+        ? "Counts as Corrupted for Miracles, magic and similar — and is more vulnerable to Light and selected Miracles."
+        : "Counts as Corrupted for the purposes of Miracles, magic and similar effects.",
+    });
+  }
+
   return pills;
 }

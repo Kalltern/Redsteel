@@ -11,15 +11,16 @@
       "priest"
     ],
     "reroll": {
-      "name": "Brave - Fear/Terror",
-      "active": [
-        false,
-        false
-      ],
-      "value": 2
+      "name": "",
+      "active": [],
+      "value": 0
     },
     "option": "trait",
-    "localizationKey": "REDSTEEL.Items.Brave.name"
+    "localizationKey": "REDSTEEL.Items.Brave.name",
+    "rollTriggersRaw": "res",
+    "rollTriggers": [
+      "res"
+    ]
   },
   "effects": [],
   "flags": {

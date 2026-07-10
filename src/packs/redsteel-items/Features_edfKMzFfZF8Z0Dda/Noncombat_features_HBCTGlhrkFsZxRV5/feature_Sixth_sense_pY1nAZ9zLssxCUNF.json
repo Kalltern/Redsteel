@@ -11,17 +11,24 @@
       "trait",
       "priest"
     ],
-    "rollTriggers": [],
-    "rollTriggersRaw": "",
+    "rollTriggers": [
+      "insight"
+    ],
+    "rollTriggersRaw": "insight",
     "statusEffects": [],
     "statusEffectsRaw": "",
     "reroll": {
-      "name": "Sixth sense",
-      "active": [
-        false,
-        false
-      ],
-      "value": 2
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": [
+        {
+          "label": "",
+          "skillsRaw": "insight",
+          "max": 2,
+          "used": 0
+        }
+      ]
     },
     "option": "feature"
   },

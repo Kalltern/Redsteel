@@ -11,12 +11,17 @@
       "priest"
     ],
     "reroll": {
-      "name": "Halfling reroll",
-      "active": [
-        false,
-        false
-      ],
-      "value": 1
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": [
+        {
+          "label": "Halfling reroll",
+          "skillsRaw": "universal",
+          "max": 1,
+          "used": 0
+        }
+      ]
     },
     "option": "feature",
     "localizationKey": "REDSTEEL.Items.HalflingReroll.name"

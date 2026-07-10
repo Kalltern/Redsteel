@@ -11,17 +11,24 @@
       "trait",
       "priest"
     ],
-    "rollTriggers": [],
-    "rollTriggersRaw": "",
+    "rollTriggers": [
+      "survival"
+    ],
+    "rollTriggersRaw": "survival",
     "statusEffects": [],
     "statusEffectsRaw": "",
     "reroll": {
-      "name": "Woodsman",
-      "active": [
-        false,
-        false
-      ],
-      "value": 2
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": [
+        {
+          "label": "",
+          "skillsRaw": "survival",
+          "max": 2,
+          "used": 0
+        }
+      ]
     },
     "option": "feature"
   },

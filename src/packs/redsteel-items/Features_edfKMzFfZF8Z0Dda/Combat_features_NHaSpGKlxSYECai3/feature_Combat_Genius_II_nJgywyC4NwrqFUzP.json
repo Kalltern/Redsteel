@@ -10,12 +10,20 @@
       "priest"
     ],
     "reroll": {
-      "name": "Combat Genius II: Combat",
-      "active": false,
-      "value": 1,
+      "name": "",
+      "active": [],
+      "value": 0,
       "options": [
         "feature",
         "priest"
+      ],
+      "pools": [
+        {
+          "label": "",
+          "skillsRaw": "combat, archery, throwing, critfail",
+          "max": 1,
+          "used": 0
+        }
       ]
     },
     "finesse": false,

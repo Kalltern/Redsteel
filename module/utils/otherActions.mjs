@@ -491,8 +491,11 @@ async function performStopBleeding(actor, token, extraPenalty = 0) {
 
   const bestAttribute = Math.max(dex, int);
 
+  // Hemophylia makes stopping the bleeding 20% harder.
+  const hemophiliaPenalty = actor.system?.hemophilia ? 20 : 0;
+
   const stopBleedingRoll = new Roll(
-    `30 + ${bestAttribute} - ${extraPenalty} - 1d100`,
+    `30 + ${bestAttribute} - ${extraPenalty} - ${hemophiliaPenalty} - 1d100`,
   );
 
   await stopBleedingRoll.evaluate({ async: true });
@@ -523,6 +526,17 @@ async function performStopBleeding(actor, token, extraPenalty = 0) {
     rolls: [stopBleedingRoll],
 
     type: CONST.CHAT_MESSAGE_STYLES.ROLL,
+
+    flags: {
+      redsteel: {
+        rollName: "stopBleeding",
+        // A successful test offers a "Remove Bleeding" button on the card
+        // (wired in registerFirstAidHealing).
+        ...(success
+          ? { stopBleedingResult: { success: true, actorUuid: actor.uuid } }
+          : {}),
+      },
+    },
   });
 
   return true;
@@ -675,6 +689,9 @@ async function applyStabiliseAsGM(data) {
     (e) => e.getFlag("core", "statusId") === "dying",
   );
   if (dying) await dying.delete();
+
+  // A successful Stabilise also stops all bleeding.
+  await clearBleedEffects(actor);
 }
 
 /**
@@ -984,7 +1001,9 @@ function computeFaTest(actor, targetActor, actionType, extraPenalty) {
       Number(actor.system.attributes.dex.mod ?? 0),
       Number(actor.system.attributes.int.mod ?? 0),
     );
-    return { base: 30 + best, penalty: extraPenalty };
+    // Hemophylia makes stopping the bleeding 20% harder.
+    const hemophiliaPenalty = actor.system?.hemophilia ? 20 : 0;
+    return { base: 30 + best, penalty: extraPenalty + hemophiliaPenalty };
   }
 
   if (actionType === "stabilise") {
@@ -1248,6 +1267,38 @@ export function registerFirstAidHealing() {
     });
   });
 
+  // "Remove Bleeding" button on a successful out-of-combat Stop Bleeding card.
+  // (In-combat Stop Bleeding already clears bleeds via its own faApply button.)
+  Hooks.on("renderChatMessageHTML", (message, html) => {
+    const result = message.flags?.redsteel?.stopBleedingResult;
+    if (!result?.success) return;
+    if (game.user.id !== message.author?.id && !game.user.isGM) return;
+
+    let buttonContainer = html.querySelector(".button-container");
+    if (!buttonContainer) {
+      buttonContainer = document.createElement("div");
+      buttonContainer.className = "button-container";
+      html.querySelector(".message-content")?.appendChild(buttonContainer);
+    }
+
+    const removeButton = document.createElement("button");
+    removeButton.type = "button";
+    removeButton.className = "redsteel-remove-bleeding";
+    removeButton.dataset.messageId = message.id;
+    removeButton.textContent = "Remove Bleeding";
+
+    buttonContainer.appendChild(removeButton);
+
+    const buttonCount = buttonContainer.querySelectorAll(
+      "button, a.button",
+    ).length;
+    buttonContainer.classList.toggle("single", buttonCount <= 1);
+
+    removeButton.addEventListener("click", () => {
+      handleRemoveBleeding(message.id);
+    });
+  });
+
   // Apply Injury button (First Aid critical failure → armor-ignoring damage).
   Hooks.on("renderChatMessageHTML", (message, html) => {
     const injury = message.flags?.redsteel?.firstAidInjury;
@@ -1323,6 +1374,8 @@ export function registerFirstAidHealing() {
         await applyStabiliseAsGM(data);
       } else if (data.type === "applyTreatWound") {
         await applyTreatWoundAsGM(data);
+      } else if (data.type === "applyRemoveBleeding") {
+        await applyRemoveBleedingAsGM(data);
       } else if (typeof data.type === "string" && data.type.startsWith("fa")) {
         await faHandleAsGM(data);
       }
@@ -1484,6 +1537,70 @@ function handleApplyHeal(messageId) {
   openHealDialog(message, targets[0]);
 }
 
+// Stop Bleeding — remove all Bleeding from the patient. The patient is the one
+// targeted token, or (with nothing targeted) the actor who made the test, so
+// self-bandaging works without having to target your own token.
+function handleRemoveBleeding(messageId) {
+  const message = game.messages.get(messageId);
+  const result = message?.flags?.redsteel?.stopBleedingResult;
+  if (!result?.success) return;
+
+  const targets = Array.from(game.user.targets);
+  if (targets.length > 1) {
+    ui.notifications.warn("Target at most one token to stop its bleeding.");
+    return;
+  }
+
+  const data =
+    targets.length === 1
+      ? {
+          type: "applyRemoveBleeding",
+          sceneId: canvas.scene.id,
+          targetId: targets[0].id,
+        }
+      : { type: "applyRemoveBleeding", actorUuid: result.actorUuid };
+
+  requestRemoveBleeding(data);
+}
+
+async function requestRemoveBleeding(data) {
+  if (game.user.isGM) {
+    await applyRemoveBleedingAsGM(data);
+  } else {
+    game.socket.emit(SOCKET, data);
+    ui.notifications.info("Stop-bleeding request sent to GM.");
+  }
+}
+
+// Delete every Bleeding effect on an actor; returns how many were removed.
+async function clearBleedEffects(actor) {
+  const bleeds = actor.effects.filter(
+    (e) => e.getFlag("core", "statusId") === "bleed",
+  );
+  for (const bleed of bleeds) await bleed.delete();
+  return bleeds.length;
+}
+
+async function applyRemoveBleedingAsGM(data) {
+  const actor = data.targetId
+    ? game.scenes.get(data.sceneId)?.tokens.get(data.targetId)?.actor
+    : data.actorUuid
+      ? fromUuidSync(data.actorUuid)
+      : null;
+  if (!actor) return;
+
+  const removed = await clearBleedEffects(actor);
+  if (!removed) {
+    ui.notifications.info(`${actor.name} has no bleeding to stop.`);
+    return;
+  }
+
+  await ChatMessage.create({
+    speaker: ChatMessage.getSpeaker({ actor }),
+    content: `<p><b>${actor.name}</b> — bleeding stopped.</p>`,
+  });
+}
+
 function openHealDialog(message, target) {
   const heal = message.flags.redsteel.firstAidHeal;
   const actor = target.actor;
@@ -1577,6 +1694,11 @@ async function applyFirstAidHealAsGM(data) {
     "system.stats.health.value": currentHp + applied,
   });
 
+  // A successful First Aid also stops all bleeding.
+  const bleedNote = (await clearBleedEffects(actor))
+    ? " Bleeding stopped."
+    : "";
+
   const capNote = force
     ? " <em>(force heal — cap bypassed)</em>"
     : hasCap && applied < amount
@@ -1594,7 +1716,7 @@ async function applyFirstAidHealAsGM(data) {
     <p style="color:green; font-size:1.2em;">
       <strong>First aid applied</strong>
     </p>
-    <strong>${actor.name}</strong> is healed for ${applied} HP${capNote}.
+    <strong>${actor.name}</strong> is healed for ${applied} HP${capNote}.${bleedNote}
   </div>
 </div>
 `,

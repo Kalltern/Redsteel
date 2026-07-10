@@ -11,8 +11,12 @@
       "trait",
       "priest"
     ],
-    "rollTriggers": [],
-    "rollTriggersRaw": "",
+    "rollTriggers": [
+      "persuasion",
+      "temptation",
+      "acting"
+    ],
+    "rollTriggersRaw": "persuasion, temptation, acting",
     "statusEffects": [],
     "statusEffectsRaw": "",
     "reroll": {

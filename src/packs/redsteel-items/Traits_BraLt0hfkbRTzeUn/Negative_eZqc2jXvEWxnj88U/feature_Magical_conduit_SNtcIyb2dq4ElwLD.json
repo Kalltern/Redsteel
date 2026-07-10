@@ -10,6 +10,10 @@
       "trait",
       "priest"
     ],
+    "rollTriggers": [
+      "defense"
+    ],
+    "rollTriggersRaw": "defense",
     "reroll": {
       "name": "",
       "active": [

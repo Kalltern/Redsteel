@@ -11,8 +11,10 @@
       "trait",
       "priest"
     ],
-    "rollTriggers": [],
-    "rollTriggersRaw": "",
+    "rollTriggers": [
+      "defense"
+    ],
+    "rollTriggersRaw": "defense",
     "statusEffects": [],
     "statusEffectsRaw": "",
     "reroll": {
@@ -33,7 +35,14 @@
       "_id": "dB0quGViMiOe5xVv",
       "type": "base",
       "system": {
-        "changes": []
+        "changes": [
+          {
+            "key": "system.hemophilia",
+            "value": true,
+            "priority": null,
+            "type": "override"
+          }
+        ]
       },
       "disabled": false,
       "duration": {

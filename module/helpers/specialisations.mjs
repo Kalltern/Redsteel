@@ -49,56 +49,71 @@ const SPEC_DEFS = {
   /* Stín (Shadow)                                                     */
   /* ----------------------------------------------------------------- */
   shadow: {
+    // Constellation layout (prototype): nodes carry x/y as PERCENTAGES of the
+    // canvas (0–100), so the figure stretches to fill whatever space the panel
+    // gives it; the `requires` chains become the connecting lines. tier/column
+    // are kept only as a grid fallback.
+    layout: "constellation",
     nodes: {
-      // Chain: sneak attack mastery
+      // Chain: sneak attack mastery (the central spine)
       sneakAttack: {
         tier: 1,
         column: 1,
+        x: 16,
+        y: 20,
         passive: ae(add("system.sneakDamageBonus", 1)),
       },
-      critAsSneak: { tier: 2, column: 1, requires: ["sneakAttack"] },
-      outnumberSneak: { tier: 3, column: 1, requires: ["critAsSneak"] },
-      // Chain: bleeding
-      bleed1: { tier: 1, column: 2, passive: cm({ extraEffects: { bleed: 10 } }) },
+      critAsSneak: { tier: 2, column: 1, x: 30, y: 33, requires: ["sneakAttack"] },
+      outnumberSneak: { tier: 3, column: 1, x: 43, y: 19, requires: ["critAsSneak"] },
+      // Chain: bleeding (left descending arm)
+      bleed1: { tier: 1, column: 2, x: 13, y: 45, passive: cm({ extraEffects: { bleed: 10 } }) },
       bleed2: {
         tier: 2,
         column: 2,
+        x: 25,
+        y: 59,
         requires: ["bleed1"],
         passive: cm({ extraEffects: { bleed: 10 } }),
       },
       bleed3: {
         tier: 3,
         column: 2,
+        x: 37,
+        y: 72,
         requires: ["bleed2"],
         passive: cm({ extraEffects: { bleed: 10 } }),
       },
-      // Chain: calculation
-      calculation: { tier: 1, column: 3 },
-      aimedAttack: { tier: 2, column: 3, requires: ["calculation"] },
-      // Chain: stealth
+      // Chain: calculation (upper-right arm)
+      calculation: { tier: 1, column: 3, x: 62, y: 25 },
+      aimedAttack: { tier: 2, column: 3, x: 77, y: 17, requires: ["calculation"] },
+      // Chain: stealth (center-right)
       stealthAdvantage: {
         tier: 1,
         column: 4,
+        x: 57,
+        y: 50,
         passive: ae(add("system.rollAdvantage.stealth", 1)),
       },
       stealthCritFail: {
         tier: 2,
         column: 4,
+        x: 71,
+        y: 46,
         requires: ["stealthAdvantage"],
         passive: ae(add("system.skills.stealth.critfailpenalty", -3)),
       },
-      // Chain: banes
-      bane1: { tier: 1, column: 5 },
-      bane2: { tier: 2, column: 5, requires: ["bane1"] },
-      bane3: { tier: 3, column: 5, requires: ["bane2"] },
-      // Unchained
-      quickFeet: { tier: 1, column: 6 },
-      backDodge: { tier: 2, column: 6 },
-      weakSpotMastery: { tier: 3, column: 6 },
-      speedTests: { tier: 4, column: 6 },
-      daggerDefense: { tier: 1, column: 7 },
-      skillDiscount1: { tier: 2, column: 7 },
-      skillDiscount2: { tier: 3, column: 7 },
+      // Chain: banes (lower-right arm)
+      bane1: { tier: 1, column: 5, x: 61, y: 73 },
+      bane2: { tier: 2, column: 5, x: 74, y: 67, requires: ["bane1"] },
+      bane3: { tier: 3, column: 5, x: 85, y: 80, requires: ["bane2"] },
+      // Unchained (scattered field stars)
+      quickFeet: { tier: 1, column: 6, x: 8, y: 31 },
+      backDodge: { tier: 2, column: 6, x: 47, y: 54 },
+      weakSpotMastery: { tier: 3, column: 6, x: 47, y: 83 },
+      speedTests: { tier: 4, column: 6, x: 88, y: 31 },
+      daggerDefense: { tier: 1, column: 7, x: 87, y: 54 },
+      skillDiscount1: { tier: 2, column: 7, x: 22, y: 83 },
+      skillDiscount2: { tier: 3, column: 7, x: 9, y: 66 },
     },
   },
 
@@ -403,6 +418,12 @@ export function prepareSpecialisationTrees(actor) {
     if (!owned[specId]?.active) continue;
     const unlockedNodes = owned[specId]?.nodes ?? {};
 
+    // A constellation tree positions nodes by x/y PERCENTAGES (0–100) so the
+    // figure stretches to fill the panel. A grid tree positions by the
+    // tier/column pixel grid. Any node missing coords falls back to its grid
+    // slot, so a half-authored tree still renders.
+    const constellation = def.layout === "constellation";
+
     let maxTier = 1;
     let maxColumn = 1;
     const nodes = [];
@@ -411,6 +432,15 @@ export function prepareSpecialisationTrees(actor) {
     for (const [nodeId, node] of Object.entries(def.nodes)) {
       maxTier = Math.max(maxTier, node.tier);
       maxColumn = Math.max(maxColumn, node.column);
+
+      // Constellation: x/y are already percentages, pass straight through.
+      // Grid: derive pixel centre from the tier/column slot.
+      const x = constellation
+        ? (node.x ?? 50)
+        : (node.column - 1) * NODE_CELL + NODE_CELL / 2;
+      const y = constellation
+        ? (node.y ?? 50)
+        : (node.tier - 1) * NODE_CELL + NODE_CELL / 2;
 
       const unlocked = !!unlockedNodes[nodeId];
       const available = (node.requires ?? []).every(
@@ -422,8 +452,8 @@ export function prepareSpecialisationTrees(actor) {
         description: node.description,
         icon: node.icon || "",
         automated: !!node.passive,
-        x: (node.column - 1) * NODE_CELL + NODE_CELL / 2,
-        y: (node.tier - 1) * NODE_CELL + NODE_CELL / 2,
+        x,
+        y,
         unlocked,
         state: unlocked ? "unlocked" : available ? "available" : "locked",
       };
@@ -452,8 +482,11 @@ export function prepareSpecialisationTrees(actor) {
       label: def.label,
       nodes,
       links,
-      width: maxColumn * NODE_CELL,
-      height: maxTier * NODE_CELL,
+      constellation,
+      // Grid trees size the canvas from their slot count; constellation trees
+      // fill the panel via CSS, so no fixed pixel size is emitted.
+      width: constellation ? null : maxColumn * NODE_CELL,
+      height: constellation ? null : maxTier * NODE_CELL,
     });
   }
   return trees;

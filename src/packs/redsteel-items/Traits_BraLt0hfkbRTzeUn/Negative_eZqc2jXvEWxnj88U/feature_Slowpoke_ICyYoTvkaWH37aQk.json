@@ -11,8 +11,10 @@
       "trait",
       "priest"
     ],
-    "rollTriggers": [],
-    "rollTriggersRaw": "",
+    "rollTriggers": [
+      "ini"
+    ],
+    "rollTriggersRaw": "ini",
     "statusEffects": [],
     "statusEffectsRaw": "",
     "reroll": {

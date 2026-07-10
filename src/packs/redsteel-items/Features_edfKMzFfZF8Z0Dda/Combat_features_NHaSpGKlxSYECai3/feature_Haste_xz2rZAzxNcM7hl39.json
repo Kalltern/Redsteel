@@ -19,7 +19,12 @@
       "value": 0
     },
     "option": "feature",
-    "localizationKey": "REDSTEEL.Items.Haste.name"
+    "localizationKey": "REDSTEEL.Items.Haste.name",
+    "rollTriggersRaw": "ini, spd",
+    "rollTriggers": [
+      "ini",
+      "spd"
+    ]
   },
   "effects": [],
   "sort": 800000,

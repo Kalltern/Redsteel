@@ -16,12 +16,17 @@
     "statusEffects": [],
     "statusEffectsRaw": "",
     "reroll": {
-      "name": "Specialization: Temptation",
-      "active": [
-        false,
-        false
-      ],
-      "value": 1
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": [
+        {
+          "label": "",
+          "skillsRaw": "temptation",
+          "max": 1,
+          "used": 0
+        }
+      ]
     },
     "option": "feature"
   },

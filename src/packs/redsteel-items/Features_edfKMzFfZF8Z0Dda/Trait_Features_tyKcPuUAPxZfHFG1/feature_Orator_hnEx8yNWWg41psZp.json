@@ -19,7 +19,14 @@
       "value": null
     },
     "option": "feature",
-    "localizationKey": "REDSTEEL.Items.Orator.name"
+    "localizationKey": "REDSTEEL.Items.Orator.name",
+    "rollTriggersRaw": "persuasion, deception, temptation, intimidation",
+    "rollTriggers": [
+      "persuasion",
+      "deception",
+      "temptation",
+      "intimidation"
+    ]
   },
   "effects": [],
   "sort": 100000,

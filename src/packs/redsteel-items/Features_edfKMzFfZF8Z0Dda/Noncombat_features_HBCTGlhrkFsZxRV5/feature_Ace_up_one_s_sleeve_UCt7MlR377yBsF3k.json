@@ -19,7 +19,12 @@
       "value": null
     },
     "option": "feature",
-    "localizationKey": "REDSTEEL.Items.AceUpOnesSleeve.name"
+    "localizationKey": "REDSTEEL.Items.AceUpOnesSleeve.name",
+    "rollTriggersRaw": "lck, pickpocketing",
+    "rollTriggers": [
+      "lck",
+      "pickpocketing"
+    ]
   },
   "effects": [],
   "flags": {

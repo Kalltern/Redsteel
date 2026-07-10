@@ -11,8 +11,11 @@
       "trait",
       "priest"
     ],
-    "rollTriggers": [],
-    "rollTriggersRaw": "",
+    "rollTriggers": [
+      "dodge",
+      "rangeddefense"
+    ],
+    "rollTriggersRaw": "dodge, rangedDefense",
     "statusEffects": [],
     "statusEffectsRaw": "",
     "reroll": {

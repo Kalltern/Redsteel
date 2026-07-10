@@ -11,17 +11,24 @@
       "trait",
       "priest"
     ],
-    "rollTriggers": [],
-    "rollTriggersRaw": "",
+    "rollTriggers": [
+      "res"
+    ],
+    "rollTriggersRaw": "res",
     "statusEffects": [],
     "statusEffectsRaw": "",
     "reroll": {
-      "name": "Resolve",
-      "active": [
-        false,
-        false
-      ],
-      "value": 2
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": [
+        {
+          "label": "",
+          "skillsRaw": "res",
+          "max": 2,
+          "used": 0
+        }
+      ]
     },
     "option": "feature"
   },

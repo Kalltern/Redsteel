@@ -16,12 +16,17 @@
     "statusEffects": [],
     "statusEffectsRaw": "",
     "reroll": {
-      "name": "Proficiency: Traps",
-      "active": [
-        false,
-        false
-      ],
-      "value": 1
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": [
+        {
+          "label": "",
+          "skillsRaw": "traps",
+          "max": 1,
+          "used": 0
+        }
+      ]
     },
     "option": "feature"
   },

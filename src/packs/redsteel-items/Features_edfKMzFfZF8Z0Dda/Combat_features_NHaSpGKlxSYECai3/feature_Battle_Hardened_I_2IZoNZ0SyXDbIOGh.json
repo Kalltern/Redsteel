@@ -11,8 +11,10 @@
       "trait",
       "priest"
     ],
-    "rollTriggers": [],
-    "rollTriggersRaw": "",
+    "rollTriggers": [
+      "end"
+    ],
+    "rollTriggersRaw": "end",
     "statusEffects": [],
     "statusEffectsRaw": "",
     "reroll": {

@@ -20,7 +20,11 @@
       "value": 0
     },
     "option": "feature",
-    "localizationKey": "REDSTEEL.Items.CalmBody.name"
+    "localizationKey": "REDSTEEL.Items.CalmBody.name",
+    "rollTriggersRaw": "res",
+    "rollTriggers": [
+      "res"
+    ]
   },
   "effects": [],
   "sort": 150000,

@@ -11,15 +11,24 @@
       "priest"
     ],
     "reroll": {
-      "name": "Feather footed: Stealth",
-      "active": [
-        false,
-        false
-      ],
-      "value": 1
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": [
+        {
+          "label": "",
+          "skillsRaw": "stealth",
+          "max": 1,
+          "used": 0
+        }
+      ]
     },
     "option": "feature",
-    "localizationKey": "REDSTEEL.Items.FeatherFooted.name"
+    "localizationKey": "REDSTEEL.Items.FeatherFooted.name",
+    "rollTriggersRaw": "stealth",
+    "rollTriggers": [
+      "stealth"
+    ]
   },
   "effects": [],
   "flags": {

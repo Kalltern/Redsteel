@@ -824,6 +824,19 @@ REDSTEEL.effectDefinitions = {
     },
   },
 
+  // "Zkažený" — a token marker synced to Corruption degree 2+ (61+). The
+  // numeric buffs (Magic Attack/Defense, Dark Spell Power) come from the derived
+  // corruptionDegree in actor.mjs, so this carries no `changes`; it exists so
+  // the corrupted state is visible on the token and readable by other systems.
+  // The defense-roll reminder pill is emitted directly in traitPills.mjs.
+  corrupted: {
+    name: "Corrupted (Zkažený)",
+    img: "icons/svg/blood.svg",
+    statuses: ["corrupted"],
+    stackBehavior: "ignore",
+    changes: [],
+  },
+
   // ==========================================================
   // Effects referenced by spells (Kniha kouzel) and the spell
   // sheet effectTypes vocabulary that previously had no

@@ -203,6 +203,43 @@ export class RedsteelActiveEffect extends ActiveEffect {
         Number(toxicity.value ?? 0) > Number(toxicity.max ?? Infinity),
       );
     }
+
+    // Corruption: keep the "corrupted" token marker in step with degree 2+, and
+    // fire the degree-4 mutation the moment corruption reaches its maximum.
+    const corruption = actor.system.stats.corruption;
+    if (corruption) {
+      await sync("corrupted", Number(actor.system.corruptionDegree ?? 0) >= 2);
+
+      const val = Number(corruption.value ?? 0);
+      const max = Number(corruption.max ?? Infinity);
+      if (Number.isFinite(max) && val >= max) {
+        await this._handleCorruptionMutation(actor, val, max);
+      }
+    }
+  }
+
+  /**
+   * Corruption degree 4: reaching maximum corruption causes an immediate
+   * mutation and drops corruption by 50. The mutation itself is GM-adjudicated,
+   * so we announce it on a chat card and apply the -50 automatically. Dropping
+   * the value below `max` means this never re-triggers on the follow-up update.
+   */
+  static async _handleCorruptionMutation(actor, val, max) {
+    const newVal = Math.max(0, val - 50);
+    await actor.update(
+      { "system.stats.corruption.value": newVal },
+      { redsteelCorruptionMutation: true },
+    );
+    await ChatMessage.create({
+      speaker: ChatMessage.getSpeaker({ actor }),
+      flavor: "Mutace / Mutation",
+      content:
+        `<div class="redsteel corruption-mutation">` +
+        `<p><strong>${actor.name}</strong> dosáhl(a) maximální Korupce (${max}) — ` +
+        `dochází k okamžité <strong>mutaci</strong>.</p>` +
+        `<p>Korupce klesá o 50: ${val} → ${newVal}.</p>` +
+        `<p><em>GM: adjudikujte mutaci.</em></p></div>`,
+    });
   }
 
   static _isAuthoritative() {
@@ -409,6 +446,13 @@ export class RedsteelActiveEffect extends ActiveEffect {
     // below) can override how long the effect lasts.
     let turnsDuration = turns ?? def.defaultTurns ?? 0;
     let roundsDuration = def.defaultRounds ?? 0;
+
+    // Hemophylia — "for each Bleeding gained, gains one additional Bleeding":
+    // incoming Bleeding stacks are doubled for the receiving actor (then clamped
+    // to maxStacks by the paths below, which both read `stacks`).
+    if (effectId === "bleed" && actor.system?.hemophilia) {
+      stacks = (Number(stacks) || 1) * 2;
+    }
 
     const initialStacks = effectId === "fear" ? 3 : Math.min(stacks, maxStacks);
 

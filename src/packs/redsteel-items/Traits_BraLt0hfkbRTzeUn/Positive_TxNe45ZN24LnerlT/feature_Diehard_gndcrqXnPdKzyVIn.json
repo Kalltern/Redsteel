@@ -16,12 +16,17 @@
     "statusEffects": [],
     "statusEffectsRaw": "",
     "reroll": {
-      "name": "Diehard",
-      "active": [
-        false,
-        false
-      ],
-      "value": 1
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": [
+        {
+          "label": "Endurance-based roll",
+          "skillsRaw": "universal",
+          "max": 2,
+          "used": 0
+        }
+      ]
     },
     "option": "trait"
   },

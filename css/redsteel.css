@@ -4055,6 +4055,220 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 }
 
 /* -------------------------------------------- */
+/*  Constellation layout (star-sign spec trees) */
+/* -------------------------------------------- */
+
+/* Warm night-sky canvas: a deep charcoal-brown void (matching the sheet's
+   dark tones) sprinkled with faint amber field stars. Fills the panel width
+   and most of its height so it never floats as a small box. Only trees
+   authored with `layout: "constellation"` get this look; grid trees keep
+   their original styling untouched. */
+.redsteel .spec-tree.constellation {
+  width: 100%;
+  height: 468px;
+  margin: 0.75rem 0 0.5rem;
+  border-radius: 10px;
+  border: 1px solid rgba(217, 161, 59, 0.18);
+  /* Heavy inset vignette: the edges fall to near-black, so the lit centre
+     reads bright against them. This is the main contrast driver. */
+  box-shadow:
+    inset 0 0 120px 34px rgba(0, 0, 0, 0.85),
+    inset 0 0 40px 4px rgba(0, 0, 0, 0.6);
+  background-color: #050409;
+  background-image:
+    /* --- bright feature stars: sharp and luminous, they pop from the dark --- */
+    radial-gradient(1.6px 1.6px at 30% 32%, rgba(248, 244, 230, 0.98), transparent),
+    radial-gradient(1.6px 1.6px at 60% 24%, rgba(248, 244, 230, 0.95), transparent),
+    radial-gradient(1.6px 1.6px at 55% 48%, rgba(248, 244, 230, 0.9), transparent),
+    radial-gradient(1.5px 1.5px at 40% 44%, rgba(248, 244, 230, 0.85), transparent),
+    radial-gradient(1.5px 1.5px at 47% 60%, rgba(248, 244, 230, 0.8), transparent),
+    /* --- mid stars scattered through the lit band --- */
+    radial-gradient(1px 1px at 22% 40%, rgba(230, 224, 208, 0.6), transparent),
+    radial-gradient(1px 1px at 66% 38%, rgba(230, 224, 208, 0.58), transparent),
+    radial-gradient(1px 1px at 50% 20%, rgba(230, 224, 208, 0.55), transparent),
+    radial-gradient(1px 1px at 36% 54%, rgba(230, 224, 208, 0.5), transparent),
+    radial-gradient(1px 1px at 70% 56%, rgba(230, 224, 208, 0.5), transparent),
+    radial-gradient(1px 1px at 44% 30%, rgba(230, 224, 208, 0.48), transparent),
+    /* --- faint dust: dim, so it sinks into shadow toward the edges --- */
+    radial-gradient(1px 1px at 14% 22%, rgba(210, 205, 192, 0.32), transparent),
+    radial-gradient(1px 1px at 82% 26%, rgba(210, 205, 192, 0.32), transparent),
+    radial-gradient(1px 1px at 78% 70%, rgba(210, 205, 192, 0.3), transparent),
+    radial-gradient(1px 1px at 28% 72%, rgba(210, 205, 192, 0.3), transparent),
+    radial-gradient(1px 1px at 60% 74%, rgba(210, 205, 192, 0.28), transparent),
+    /* --- fine sprinkle: lots of tiny stars filling the gaps --- */
+    radial-gradient(0.8px 0.8px at 10% 46%, rgba(214, 210, 198, 0.4), transparent),
+    radial-gradient(0.8px 0.8px at 19% 62%, rgba(214, 210, 198, 0.36), transparent),
+    radial-gradient(0.8px 0.8px at 26% 18%, rgba(214, 210, 198, 0.42), transparent),
+    radial-gradient(0.8px 0.8px at 34% 38%, rgba(214, 210, 198, 0.38), transparent),
+    radial-gradient(0.8px 0.8px at 38% 66%, rgba(214, 210, 198, 0.34), transparent),
+    radial-gradient(0.8px 0.8px at 43% 12%, rgba(214, 210, 198, 0.4), transparent),
+    radial-gradient(0.8px 0.8px at 48% 52%, rgba(214, 210, 198, 0.44), transparent),
+    radial-gradient(0.8px 0.8px at 53% 34%, rgba(214, 210, 198, 0.4), transparent),
+    radial-gradient(0.8px 0.8px at 58% 66%, rgba(214, 210, 198, 0.34), transparent),
+    radial-gradient(0.8px 0.8px at 63% 46%, rgba(214, 210, 198, 0.4), transparent),
+    radial-gradient(0.8px 0.8px at 68% 28%, rgba(214, 210, 198, 0.38), transparent),
+    radial-gradient(0.8px 0.8px at 72% 62%, rgba(214, 210, 198, 0.34), transparent),
+    radial-gradient(0.8px 0.8px at 76% 40%, rgba(214, 210, 198, 0.4), transparent),
+    radial-gradient(0.8px 0.8px at 81% 56%, rgba(214, 210, 198, 0.34), transparent),
+    radial-gradient(0.8px 0.8px at 86% 34%, rgba(214, 210, 198, 0.38), transparent),
+    radial-gradient(0.8px 0.8px at 90% 48%, rgba(214, 210, 198, 0.34), transparent),
+    radial-gradient(0.8px 0.8px at 33% 84%, rgba(214, 210, 198, 0.3), transparent),
+    radial-gradient(0.8px 0.8px at 54% 88%, rgba(214, 210, 198, 0.3), transparent),
+    radial-gradient(0.8px 0.8px at 70% 84%, rgba(214, 210, 198, 0.3), transparent),
+    radial-gradient(0.8px 0.8px at 16% 34%, rgba(214, 210, 198, 0.34), transparent),
+    /* --- second sprinkle: more tiny stars to thicken the field --- */
+    radial-gradient(0.8px 0.8px at 12% 14%, rgba(214, 210, 198, 0.36), transparent),
+    radial-gradient(0.8px 0.8px at 22% 50%, rgba(214, 210, 198, 0.34), transparent),
+    radial-gradient(0.8px 0.8px at 30% 60%, rgba(214, 210, 198, 0.32), transparent),
+    radial-gradient(0.8px 0.8px at 40% 22%, rgba(214, 210, 198, 0.4), transparent),
+    radial-gradient(0.8px 0.8px at 45% 42%, rgba(214, 210, 198, 0.42), transparent),
+    radial-gradient(0.8px 0.8px at 50% 70%, rgba(214, 210, 198, 0.3), transparent),
+    radial-gradient(0.8px 0.8px at 56% 20%, rgba(214, 210, 198, 0.38), transparent),
+    radial-gradient(0.8px 0.8px at 60% 54%, rgba(214, 210, 198, 0.36), transparent),
+    radial-gradient(0.8px 0.8px at 64% 36%, rgba(214, 210, 198, 0.4), transparent),
+    radial-gradient(0.8px 0.8px at 74% 22%, rgba(214, 210, 198, 0.36), transparent),
+    radial-gradient(0.8px 0.8px at 80% 66%, rgba(214, 210, 198, 0.3), transparent),
+    radial-gradient(0.8px 0.8px at 84% 44%, rgba(214, 210, 198, 0.36), transparent),
+    radial-gradient(0.8px 0.8px at 88% 60%, rgba(214, 210, 198, 0.3), transparent),
+    radial-gradient(0.8px 0.8px at 40% 80%, rgba(214, 210, 198, 0.28), transparent),
+    radial-gradient(0.8px 0.8px at 62% 82%, rgba(214, 210, 198, 0.28), transparent),
+    radial-gradient(0.8px 0.8px at 24% 42%, rgba(214, 210, 198, 0.34), transparent),
+    /* --- third sprinkle: even more tiny stars for a dense field --- */
+    radial-gradient(0.8px 0.8px at 7% 26%, rgba(214, 210, 198, 0.34), transparent),
+    radial-gradient(0.8px 0.8px at 17% 20%, rgba(214, 210, 198, 0.36), transparent),
+    radial-gradient(0.8px 0.8px at 27% 38%, rgba(214, 210, 198, 0.38), transparent),
+    radial-gradient(0.8px 0.8px at 33% 52%, rgba(214, 210, 198, 0.36), transparent),
+    radial-gradient(0.8px 0.8px at 43% 34%, rgba(214, 210, 198, 0.4), transparent),
+    radial-gradient(0.8px 0.8px at 47% 24%, rgba(214, 210, 198, 0.38), transparent),
+    radial-gradient(0.8px 0.8px at 52% 44%, rgba(214, 210, 198, 0.42), transparent),
+    radial-gradient(0.8px 0.8px at 58% 62%, rgba(214, 210, 198, 0.34), transparent),
+    radial-gradient(0.8px 0.8px at 66% 48%, rgba(214, 210, 198, 0.4), transparent),
+    radial-gradient(0.8px 0.8px at 71% 34%, rgba(214, 210, 198, 0.38), transparent),
+    radial-gradient(0.8px 0.8px at 77% 54%, rgba(214, 210, 198, 0.34), transparent),
+    radial-gradient(0.8px 0.8px at 83% 30%, rgba(214, 210, 198, 0.36), transparent),
+    radial-gradient(0.8px 0.8px at 89% 40%, rgba(214, 210, 198, 0.32), transparent),
+    radial-gradient(0.8px 0.8px at 35% 66%, rgba(214, 210, 198, 0.32), transparent),
+    radial-gradient(0.8px 0.8px at 55% 76%, rgba(214, 210, 198, 0.3), transparent),
+    radial-gradient(0.8px 0.8px at 68% 72%, rgba(214, 210, 198, 0.3), transparent),
+    radial-gradient(0.8px 0.8px at 20% 66%, rgba(214, 210, 198, 0.3), transparent),
+    radial-gradient(0.8px 0.8px at 44% 58%, rgba(214, 210, 198, 0.34), transparent),
+    /* --- LIGHT POOL: one faint warm glow, just a hint of depth --- */
+    radial-gradient(ellipse 28% 30% at 62% 60%, rgba(196, 168, 122, 0.015), transparent 68%),
+    /* --- base: a dim lit core dropping steeply into a black void --- */
+    radial-gradient(ellipse 62% 72% at 44% 40%, #141219 0%, #0e0c15 40%, #08060e 70%, #050409 100%);
+}
+
+/* Make the scroll wrapper give the constellation the full panel width. */
+.redsteel .spec-tree-tab:has(.spec-tree.constellation) .spec-tree-wrap {
+  width: 100%;
+}
+
+/* Constellation lines: thin warm strokes; bright gold when both ends are
+   unlocked. non-scaling-stroke keeps them crisp despite the stretched
+   viewBox. */
+.redsteel .spec-tree.constellation .spec-link {
+  stroke: #6f6a5e;
+  stroke-width: 1.4;
+  opacity: 0.7;
+  vector-effect: non-scaling-stroke;
+}
+
+.redsteel .spec-tree.constellation .spec-link.active {
+  stroke: #e8c35a;
+  stroke-width: 1.6;
+  opacity: 0.92;
+}
+
+/* Node hit-area stays generous (40px), but the visible mark is a star drawn
+   by ::before and centered on the coordinate. */
+.redsteel .spec-tree.constellation .spec-node {
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
+  border: none;
+  background: transparent;
+  border-radius: 50%;
+}
+
+.redsteel .spec-tree.constellation .spec-node::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 50%;
+  background: #6e6353; /* locked: dim warm star */
+  transition: all 0.15s ease;
+}
+
+/* Locked stars sit quiet */
+.redsteel .spec-tree.constellation .spec-node.locked {
+  opacity: 0.7;
+}
+
+/* Available: hollow gold ring with a soft pulse to draw the eye */
+.redsteel .spec-tree.constellation .spec-node.available::before {
+  background: #e8c35a;
+  width: 9px;
+  height: 9px;
+  margin: -4.5px 0 0 -4.5px;
+  box-shadow: 0 0 0 2px rgba(232, 195, 90, 0.45), 0 0 7px rgba(232, 195, 90, 0.6);
+  animation: spec-star-pulse 2.4s ease-in-out infinite;
+}
+
+.redsteel .spec-tree.constellation .spec-node.available:hover::before {
+  box-shadow: 0 0 0 2px rgba(240, 210, 122, 0.8), 0 0 12px rgba(240, 210, 122, 0.9);
+}
+
+/* Unlocked: bright gold star, glowing */
+.redsteel .spec-tree.constellation .spec-node.unlocked::before {
+  background: #fff6da;
+  box-shadow:
+    0 0 6px 2px rgba(244, 217, 126, 0.9),
+    0 0 16px 4px rgba(244, 217, 126, 0.55);
+}
+
+/* Constellation labels: dim warm starlight, brighten on hover / when taken */
+.redsteel .spec-tree.constellation .spec-node-label {
+  color: #9a9080;
+  opacity: 0.72;
+  font-size: 9.5px;
+}
+
+.redsteel .spec-tree.constellation .spec-node:hover .spec-node-label {
+  color: #f0d98a;
+  opacity: 1;
+}
+
+.redsteel .spec-tree.constellation .spec-node.unlocked .spec-node-label {
+  color: #e6c878;
+  opacity: 1;
+}
+
+/* Keep the "automated" marker close to the star, and mute its colour so it
+   reads as a quiet utility tag rather than a neon blue blob on the warm field */
+.redsteel .spec-tree.constellation .spec-node.automated::after {
+  top: 8px;
+  right: 8px;
+  width: 7px;
+  height: 7px;
+  background: #7d94ad;
+  border-color: #17110b;
+}
+
+@keyframes spec-star-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 2px rgba(232, 195, 90, 0.35), 0 0 5px rgba(232, 195, 90, 0.45);
+  }
+  50% {
+    box-shadow: 0 0 0 2px rgba(232, 195, 90, 0.6), 0 0 10px rgba(232, 195, 90, 0.8);
+  }
+}
+
+/* -------------------------------------------- */
 /*  Hotbar roll-modifier dice button            */
 /* -------------------------------------------- */
 

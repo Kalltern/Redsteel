@@ -11,17 +11,24 @@
       "trait",
       "priest"
     ],
-    "rollTriggers": [],
-    "rollTriggersRaw": "",
+    "rollTriggers": [
+      "herbalism"
+    ],
+    "rollTriggersRaw": "herbalism",
     "statusEffects": [],
     "statusEffectsRaw": "",
     "reroll": {
-      "name": "Master herbalist",
-      "active": [
-        false,
-        false
-      ],
-      "value": 2
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": [
+        {
+          "label": "",
+          "skillsRaw": "herbalism",
+          "max": 2,
+          "used": 0
+        }
+      ]
     },
     "option": "feature"
   },

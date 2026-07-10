@@ -16,12 +16,17 @@
     "statusEffects": [],
     "statusEffectsRaw": "",
     "reroll": {
-      "name": "Magic potential",
-      "active": [
-        false,
-        false
-      ],
-      "value": 1
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": [
+        {
+          "label": "",
+          "skillsRaw": "channeling",
+          "max": 1,
+          "used": 0
+        }
+      ]
     },
     "option": "trait"
   },

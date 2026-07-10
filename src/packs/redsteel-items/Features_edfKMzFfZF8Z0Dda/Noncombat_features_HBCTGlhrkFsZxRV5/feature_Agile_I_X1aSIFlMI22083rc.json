@@ -11,12 +11,17 @@
       "priest"
     ],
     "reroll": {
-      "name": "Agile",
-      "active": [
-        false,
-        false
-      ],
-      "value": 1
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": [
+        {
+          "label": "",
+          "skillsRaw": "dex",
+          "max": 1,
+          "used": 0
+        }
+      ]
     },
     "option": "feature",
     "localizationKey": "REDSTEEL.Items.AgileI.name"

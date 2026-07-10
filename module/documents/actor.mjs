@@ -93,6 +93,26 @@ export class RedsteelActor extends Actor {
     if (fatigueDegree >= 3) {
       system.globalMod -= 10;
     }
+
+    // Corruption — a permanent background tier read from the corruption stat.
+    //   Degree 0: 0-30 (nothing) · 1: 31-60 · 2: 61-90 · 3: 91+.
+    // Degree 2+ "counts as Corrupted" (miracles/magic); degree 3 is also
+    // Light-vulnerable. The numeric buffs (Magic Attack/Defense, Dark Spell
+    // Power) are applied in prepareDerivedData; the token status + defense pill
+    // are driven off these flags (effects.mjs sync + traitPills.mjs).
+    const corruptionValue = system.stats?.corruption?.value ?? 0;
+    const corruptionDegree =
+      corruptionValue >= 91
+        ? 3
+        : corruptionValue >= 61
+          ? 2
+          : corruptionValue >= 31
+            ? 1
+            : 0;
+    system.corruptionDegree = corruptionDegree;
+    system.isCorrupted = corruptionDegree >= 2;
+    system.corruptionLightVulnerable = corruptionDegree >= 3;
+
     system.globalMod += system.globalBonus ?? 0;
     system.globalMod -= system.globalPenalty ?? 0;
   }
@@ -862,6 +882,18 @@ export class RedsteelActor extends Actor {
       const calcSchool = [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1];
       let schoolBonus = 0;
       const spellPowerSchool = [0, 0, 1, 2, 3, 4, 4, 5, 5, 6, 8];
+
+      // Corruption grants bonus Dark Spell Power: +1 at degree 2, +3 at degree 3.
+      const corruptionDarkSP =
+        systemData.corruptionDegree >= 3
+          ? 3
+          : systemData.corruptionDegree >= 2
+            ? 1
+            : 0;
+      if (corruptionDarkSP && systemData.schools?.dark) {
+        systemData.schools.dark.bonus += corruptionDarkSP;
+      }
+
       for (const [key, school] of Object.entries(systemData.schools)) {
         if (key !== "blood") {
           schoolBonus += calcSchool[school.value]; // Add based on school value
@@ -1006,6 +1038,19 @@ export class RedsteelActor extends Actor {
         systemData.stats.mana.max,
         systemData.stats.mana.min,
       );
+    }
+
+    // Corruption raises Magic Attack & Defense by +5% per degree. Channeling is
+    // the magic combat skill (attack = spell rolls, defense = defending vs
+    // magic). Applied outside the magicPotential guard so a corrupted non-caster
+    // still gets the magic-defense bonus.
+    const corruptionMagicMod = 5 * (systemData.corruptionDegree ?? 0);
+    if (corruptionMagicMod) {
+      const ch = systemData.combatSkills?.channeling;
+      if (ch) {
+        ch.attack = (ch.attack ?? 0) + corruptionMagicMod;
+        ch.defense = (ch.defense ?? 0) + corruptionMagicMod;
+      }
     }
 
     // Blood magic is its own path: the Blood School specialisation grants

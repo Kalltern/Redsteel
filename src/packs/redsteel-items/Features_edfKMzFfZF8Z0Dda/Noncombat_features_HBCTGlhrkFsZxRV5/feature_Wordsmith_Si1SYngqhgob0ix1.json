@@ -12,17 +12,27 @@
       "trait",
       "priest"
     ],
-    "rollTriggers": [],
-    "rollTriggersRaw": "",
+    "rollTriggers": [
+      "deception",
+      "persuasion",
+      "temptation",
+      "intimidation"
+    ],
+    "rollTriggersRaw": "deception, persuasion, temptation, intimidation",
     "statusEffects": [],
     "statusEffectsRaw": "",
     "reroll": {
-      "name": "Orator",
-      "active": [
-        false,
-        false
-      ],
-      "value": 2
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": [
+        {
+          "label": "",
+          "skillsRaw": "deception, persuasion, temptation, intimidation",
+          "max": 2,
+          "used": 0
+        }
+      ]
     },
     "option": "feature"
   },

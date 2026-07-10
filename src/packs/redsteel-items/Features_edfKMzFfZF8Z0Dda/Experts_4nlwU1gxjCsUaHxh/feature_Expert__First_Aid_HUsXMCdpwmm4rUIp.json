@@ -11,12 +11,17 @@
       "priest"
     ],
     "reroll": {
-      "name": "Expert: First Aid",
-      "active": [
-        false,
-        false
-      ],
-      "value": 2
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": [
+        {
+          "label": "",
+          "skillsRaw": "firstAid",
+          "max": 2,
+          "used": 0
+        }
+      ]
     },
     "option": "feature",
     "localizationKey": "REDSTEEL.Items.ExpertFirstAid.name"

@@ -19,7 +19,11 @@
       "value": 0
     },
     "option": "feature",
-    "localizationKey": "REDSTEEL.Items.RapidAdaptationI.name"
+    "localizationKey": "REDSTEEL.Items.RapidAdaptationI.name",
+    "rollTriggersRaw": "attack",
+    "rollTriggers": [
+      "attack"
+    ]
   },
   "effects": [],
   "sort": 800000,

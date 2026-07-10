@@ -11,8 +11,12 @@
       "trait",
       "priest"
     ],
-    "rollTriggers": [],
-    "rollTriggersRaw": "",
+    "rollTriggers": [
+      "dodge",
+      "acrobacy",
+      "stealth"
+    ],
+    "rollTriggersRaw": "dodge, acrobacy, stealth",
     "statusEffects": [],
     "statusEffectsRaw": "",
     "reroll": {

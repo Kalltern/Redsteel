@@ -11,17 +11,30 @@
       "trait",
       "priest"
     ],
-    "rollTriggers": [],
-    "rollTriggersRaw": "",
+    "rollTriggers": [
+      "persuasion",
+      "music",
+      "acting",
+      "deception",
+      "intimidation",
+      "temptation",
+      "leadership"
+    ],
+    "rollTriggersRaw": "persuasion, music, acting, deception, intimidation, temptation, leadership",
     "statusEffects": [],
     "statusEffectsRaw": "",
     "reroll": {
-      "name": "Silver tongue",
-      "active": [
-        false,
-        false
-      ],
-      "value": 2
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": [
+        {
+          "label": "Charisma-based skill",
+          "skillsRaw": "universal",
+          "max": 1,
+          "used": 0
+        }
+      ]
     },
     "option": "trait"
   },

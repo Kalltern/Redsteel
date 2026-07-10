@@ -11,12 +11,17 @@
       "priest"
     ],
     "reroll": {
-      "name": "Muscular",
-      "active": [
-        false,
-        false
-      ],
-      "value": 1
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": [
+        {
+          "label": "",
+          "skillsRaw": "str",
+          "max": 1,
+          "used": 0
+        }
+      ]
     },
     "option": "feature",
     "localizationKey": "REDSTEEL.Items.MuscularI.name"

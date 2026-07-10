@@ -11,8 +11,14 @@
       "trait",
       "priest"
     ],
-    "rollTriggers": [],
-    "rollTriggersRaw": "",
+    "rollTriggers": [
+      "leadership",
+      "temptation",
+      "deception",
+      "persuasion",
+      "intimidation"
+    ],
+    "rollTriggersRaw": "leadership, temptation, deception, persuasion, intimidation",
     "statusEffects": [],
     "statusEffectsRaw": "",
     "reroll": {

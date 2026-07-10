@@ -16,12 +16,17 @@
     "statusEffects": [],
     "statusEffectsRaw": "",
     "reroll": {
-      "name": "Lucky",
-      "active": [
-        false,
-        false
-      ],
-      "value": 1
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": [
+        {
+          "label": "Lucky",
+          "skillsRaw": "universal, critfail",
+          "max": 1,
+          "used": 0
+        }
+      ]
     },
     "option": "trait"
   },

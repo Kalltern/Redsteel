@@ -11,8 +11,12 @@
       "trait",
       "priest"
     ],
-    "rollTriggers": [],
-    "rollTriggersRaw": "",
+    "rollTriggers": [
+      "lockpicking",
+      "traps",
+      "pickpocketing"
+    ],
+    "rollTriggersRaw": "lockpicking, traps, pickpocketing",
     "statusEffects": [],
     "statusEffectsRaw": "",
     "reroll": {
