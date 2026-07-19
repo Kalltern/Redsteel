@@ -4,6 +4,7 @@ import {
 } from "../utils/customConditions.mjs";
 import { evaluateDmgVsArmor } from "../utils/combatSkillBonuses.mjs";
 import { getSpellPower } from "../utils/spellPower.mjs";
+import { STATE_GATED_IMMUNITIES } from "../helpers/specialisations-generated.mjs";
 
 export class RedsteelActiveEffect extends ActiveEffect {
   /* -------------------------------------------- */
@@ -93,6 +94,30 @@ export class RedsteelActiveEffect extends ActiveEffect {
         );
         return false;
       }
+    }
+
+    // State-gated spec immunities: when this effect IS a "gate" status (e.g.
+    // Frenzy), bake the owning actor's node-granted immunities into THIS
+    // effect's own changes. They then live and die with the state — a
+    // Berserker is immune to Panic/Fear/Terror only while Frenzied, and only
+    // if the granting node is unlocked. Covers every apply path (ability,
+    // applyEffect, HUD toggle) since all creation funnels through _preCreate.
+    const gateChanges = [];
+    for (const entry of STATE_GATED_IMMUNITIES) {
+      if (!this.statuses?.has(entry.gate)) continue;
+      const spec = actor.system?.specialisations?.[entry.spec];
+      if (!spec?.active || !spec?.nodes?.[entry.node]) continue;
+      for (const status of entry.statuses) {
+        gateChanges.push({
+          key: `system.effectMods.${status}.immune`,
+          mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+          value: true,
+        });
+      }
+    }
+    if (gateChanges.length) {
+      const current = this.toObject().changes ?? [];
+      this.updateSource({ changes: [...current, ...gateChanges] });
     }
   }
 

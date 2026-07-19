@@ -1280,6 +1280,7 @@ export function getActorCombatModifiers(actor, weapon = null) {
     damageBonus: 0,
     damageRolls: [],
     penetrationBonus: 0,
+    critRangeBonus: 0,
     damageTypeMode: null,
     damageTypes: [],
     extraEffects: {},
@@ -1292,6 +1293,10 @@ export function getActorCombatModifiers(actor, weapon = null) {
     if (group.damageRoll) {
       result.damageRolls.push(group.damageRoll);
     }
+
+    // Weapon crit range (S2): universal, feeds getCriticalRolls' crit-range
+    // input alongside doctrine/ability contributions.
+    result.critRangeBonus += group.critRangeBonus ?? 0;
 
     // Universal penetration
     result.penetrationBonus += group.penetrationBonus ?? 0;

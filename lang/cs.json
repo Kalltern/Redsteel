@@ -286,7 +286,7 @@
           "nodes": {
             "sneakAttack": {
               "label": "Zákeřný útok +1d6",
-              "description": "15 CP; Tulák VII. Kritický rozsah +3 zatím není automatizován. Částečně automatizováno."
+              "description": "15 CP; Tulák VII. Automatizováno."
             },
             "critAsSneak": {
               "label": "Kritický zásah jako Zákeřný útok",
@@ -512,7 +512,7 @@
             },
             "critDefRange": {
               "label": "Krit. obrana +2% / Krit. rozsah +1",
-              "description": "5 CP. Kritický rozsah +1 zatím není automatizován. Částečně automatizováno."
+              "description": "5 CP. Automatizováno."
             },
             "precision": {
               "label": "Ověření +10%",
@@ -792,7 +792,7 @@
             },
             "imunitaPanika": {
               "label": "Zběsilost: Imunita na Paniku, Strach a Teror",
-              "description": "10 CP. Ručně — řeší se u stolu."
+              "description": "10 CP. Automatizováno."
             },
             "obnovaVydrze": {
               "label": "Zběsilost: Zabití obnovuje 4 Výdrže",
@@ -804,7 +804,7 @@
             },
             "mentalniOdolnost": {
               "label": "Zběsilost: Mentální odolnost",
-              "description": "5 CP. Mentální odolnost a imunita na Dezorientaci. Ručně — řeší se u stolu."
+              "description": "5 CP. Mentální odolnost a imunita na Dezorientaci. Částečně automatizováno."
             },
             "divokyVypad": {
               "label": "Divoký výpad",
@@ -1192,7 +1192,7 @@
             },
             "kritRozsah": {
               "label": "Kritický rozsah +2",
-              "description": "5 CP. Kritický rozsah zatím není automatizován. Ručně — řeší se u stolu."
+              "description": "5 CP. Automatizováno."
             },
             "kritKryt": {
               "label": "Kritický kryt +5%",
@@ -1459,7 +1459,7 @@
             },
             "kritRozsah": {
               "label": "Kritický rozsah +2",
-              "description": "5 CP. Kritický rozsah zatím není automatizován. Ručně — řeší se u stolu."
+              "description": "5 CP. Automatizováno."
             },
             "prubojnost2": {
               "label": "Průbojnost +2",
@@ -2291,7 +2291,7 @@
             },
             "imunitaZpomaleni": {
               "label": "Imunita na Zpomalení",
-              "description": "20 SP; Cryomancer: Mistr. Ručně — řeší se u stolu."
+              "description": "20 SP; Cryomancer: Mistr. Automatizováno."
             },
             "kritRozsah": {
               "label": "Škola Vody: Kritický rozsah +2",

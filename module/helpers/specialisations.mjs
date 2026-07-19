@@ -61,7 +61,10 @@ const SPEC_DEFS = {
         column: 1,
         x: 16,
         y: 20,
-        passive: ae(add("system.sneakDamageBonus", 1)),
+        passive: {
+          ...ae(add("system.sneakDamageBonus", 1)),
+          ...cm({ critRangeBonus: 3 }),
+        },
       },
       critAsSneak: { tier: 2, column: 1, x: 30, y: 33, requires: ["sneakAttack"] },
       outnumberSneak: { tier: 3, column: 1, x: 43, y: 19, requires: ["critAsSneak"] },
@@ -203,8 +206,10 @@ const SPEC_DEFS = {
       critDefRange: {
         tier: 2,
         column: 4,
-        // Crit range +1 is not automated yet — only the crit defense part
-        passive: ae(add("system.combatSkills.meleeDefense.critbonus", 2)),
+        passive: {
+          ...ae(add("system.combatSkills.meleeDefense.critbonus", 2)),
+          ...cm({ critRangeBonus: 1 }),
+        },
       },
       precision: {
         tier: 3,

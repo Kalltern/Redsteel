@@ -1355,6 +1355,9 @@ ${damageLine}
     const actorMods = game.redsteel.getActorCombatModifiers(actor, weapon);
     const penetration =
       mainPen + offPen + abilityPenetration + actorMods.penetrationBonus;
+    // S2: fold passive weapon crit-range bonuses (spec nodes) into the crit-range
+    // input that getCriticalRolls buckets into critScore.
+    doctrineCritRangeBonus += actorMods.critRangeBonus;
 
     let {
       attackRoll,

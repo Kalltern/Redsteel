@@ -353,8 +353,33 @@ event that whispers to the owner. Zero risk to state; high table-experience win.
       precision `extraEffects`, penetration, skill/advantage/crit-fail, mana/
       health/stamina/spellPower/bloodPool/holyEnergy/mind/wil — **DONE** (wired in
       `specialisations.mjs` + `specialisations-generated.mjs`).
-- [ ] S1 status-immunity passives
-- [ ] S2 crit range +X (weapon)
+- [x] S1 status-immunity passives — **DONE**, two flavours:
+      • **Permanent** (`imm:<statusId>` → permanent `system.effectMods.<id>.immune`
+        AE on the node): cryomancer `imunitaZpomaleni` (slow).
+      • **State-gated** (`stateimm:<gate>:<a,b,c>` → `STATE_GATED_IMMUNITIES`
+        table; the immunity is baked into the *gate effect's* own changes in
+        `documents/effects.mjs` `_preCreate`, so it lives and dies with the
+        state): berserk `imunitaPanika` (panic/fear/terror) and `mentalniOdolnost`
+        (disorientation) apply **only while the `frenzy` state is active** and the
+        node is unlocked. Covers ability / applyEffect / HUD-toggle paths (all
+        funnel through `_preCreate`). Blocks *new* applications only; existing
+        Fear-type effects ride out (deliberate — matches immunity semantics).
+      Countermage `magickaImunita`/`odolnostMagii` intentionally left out: they
+      are magic-resistance *percentages* with no matching status — belong to S9
+      magic-defense, not the status-immunity engine.
+- [x] S2 crit range +X (weapon) — **DONE**. `getActorCombatModifiers` now
+      aggregates a universal `critRangeBonus` from `activeCombatEffects`; both
+      weapon-attack crit paths fold it into the crit-range input to
+      `getCriticalRolls` (`basicAttack.mjs` `totalCritRangeBonus`,
+      `combatAbilities.mjs` `doctrineCritRangeBonus`). The `cm()` DSL gains a
+      `critRangeBonus` field (generator alias `cm:crange:<n>`). Wired the four
+      **weapon** nodes: skirmisher/sharpshooter `kritRozsah` (+2, via spec_data +
+      regen), shadow `sneakAttack` (+3, alongside its sneak-die AE), weaponMaster
+      `critDefRange` (+1, alongside its crit-defense AE). **Deferred to S9**
+      (cast crit range, needs the magic pipeline): astramancer/cryomancer/
+      geomancer/maleficarum/pyromancer/vitamancer/bloodSchool `kritRozsah(2)`,
+      incantator `ohniskovyPredmet`. **Deferred to S8** (bane-gated): ranger
+      `metlaKritRozsah`.
 - [ ] S3 on-crit-degree effects
 - [ ] S4 sneak-source resolution (pilot: critAsSneak)
 - [ ] S5 post-roll crit adjustment (Veteran)

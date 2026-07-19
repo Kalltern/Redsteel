@@ -286,7 +286,7 @@
           "nodes": {
             "sneakAttack": {
               "label": "Sneak Attack +1d6",
-              "description": "15 CP; Tulák VII. Critical range +3 is not automated yet. Partially automated."
+              "description": "15 CP; Tulák VII. Automated."
             },
             "critAsSneak": {
               "label": "Critical Hit counts as Sneak Attack",
@@ -512,7 +512,7 @@
             },
             "critDefRange": {
               "label": "Crit Defense +2% / Crit Range +1",
-              "description": "5 CP. Critical range +1 is not automated yet. Partially automated."
+              "description": "5 CP. Automated."
             },
             "precision": {
               "label": "Precision +10%",
@@ -792,7 +792,7 @@
             },
             "imunitaPanika": {
               "label": "Frenzy: Immune to Panic, Fear and Terror",
-              "description": "10 CP. Manual — resolved at the table."
+              "description": "10 CP. Automated."
             },
             "obnovaVydrze": {
               "label": "Frenzy: Kills restore 4 Stamina",
@@ -804,7 +804,7 @@
             },
             "mentalniOdolnost": {
               "label": "Frenzy: Mental resilience",
-              "description": "5 CP. Mental resilience and immunity to Disorientation. Manual — resolved at the table."
+              "description": "5 CP. Mental resilience and immunity to Disorientation. Partially automated."
             },
             "divokyVypad": {
               "label": "Wild Lunge",
@@ -1192,7 +1192,7 @@
             },
             "kritRozsah": {
               "label": "Critical Range +2",
-              "description": "5 CP. Critical range is not automated yet. Manual — resolved at the table."
+              "description": "5 CP. Automated."
             },
             "kritKryt": {
               "label": "Critical Cover +5%",
@@ -1459,7 +1459,7 @@
             },
             "kritRozsah": {
               "label": "Critical Range +2",
-              "description": "5 CP. Critical range is not automated yet. Manual — resolved at the table."
+              "description": "5 CP. Automated."
             },
             "prubojnost2": {
               "label": "Penetration +2",
@@ -2291,7 +2291,7 @@
             },
             "imunitaZpomaleni": {
               "label": "Immunity to Slow",
-              "description": "20 SP; Cryomancer: Mistr. Manual — resolved at the table."
+              "description": "20 SP; Cryomancer: Mistr. Automated."
             },
             "kritRozsah": {
               "label": "School of Water: Critical Range +2",

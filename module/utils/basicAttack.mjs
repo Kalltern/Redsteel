@@ -271,7 +271,7 @@ export async function universalAttackLogic({
     const totalDoctrineCritBonus =
       doctrine.doctrineCritBonus + customCritChance;
     const totalCritRangeBonus =
-      doctrine.doctrineCritRangeBonus + customCritRange;
+      doctrine.doctrineCritRangeBonus + customCritRange + actorMods.critRangeBonus;
     // ─── Attack Roll ───
     const attackData = await game.redsteel.getAttackRolls(
       actor,

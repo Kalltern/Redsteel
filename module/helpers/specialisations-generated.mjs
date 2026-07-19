@@ -123,7 +123,7 @@ export const GENERATED_SPECS = {
       presnyVystrel: { tier: 2, column: 5 },
       lehkaZbroj: { tier: 2, column: 6 },
       bleedStun: { tier: 3, column: 1, passive: { combatModifiers: {"extraEffects": {"bleed": 20, "stun": 15}} } },
-      kritRozsah: { tier: 3, column: 2 },
+      kritRozsah: { tier: 3, column: 2, passive: { combatModifiers: {"critRangeBonus": 2} } },
       kritKryt: { tier: 3, column: 3, passive: { changes: [add("system.combatSkills.rangedDefense.critbonus", 5)] } },
       zmrzacujiciVystrel: { tier: 3, column: 4 },
       vylZmrzacujici: { tier: 3, column: 5, requires: ["zmrzacujiciVystrel"] },
@@ -198,7 +198,7 @@ export const GENERATED_SPECS = {
       oddechMireni: { tier: 3, column: 6 },
       odvetnyVystrel: { tier: 4, column: 1 },
       tesnyZasah: { tier: 4, column: 2 },
-      kritRozsah: { tier: 4, column: 3 },
+      kritRozsah: { tier: 4, column: 3, passive: { combatModifiers: {"critRangeBonus": 2} } },
       prubojnost2: { tier: 4, column: 4, passive: { combatModifiers: {"rangedPenetrationBonus": 2} } },
       primarniZraneni: { tier: 4, column: 5 },
       kryt10: { tier: 4, column: 6, passive: { changes: [add("system.combatSkills.rangedDefense.bonus", 10)] } },
@@ -428,7 +428,7 @@ export const GENERATED_SPECS = {
       ledoveUlomky: { tier: 1, column: 5, requires: ["expert"] },
       ledoveKopi: { tier: 1, column: 6, requires: ["mistr"] },
       freezeResist: { tier: 2, column: 1, passive: { changes: [add("system.effectMods.freeze.applyChance", -15)] } },
-      imunitaZpomaleni: { tier: 2, column: 2, requires: ["mistr"] },
+      imunitaZpomaleni: { tier: 2, column: 2, requires: ["mistr"], passive: { changes: [add("system.effectMods.slow.immune", true)] } },
       kritRozsah: { tier: 2, column: 3 },
       overeni: { tier: 2, column: 4, requires: ["expert"], passive: { combatModifiers: {"extraEffects": {"precision": 10}} } },
       zmrazeniKrit: { tier: 2, column: 5, requires: ["hlubokyMraz1"] },
@@ -752,3 +752,8 @@ export const GENERATED_SPECS = {
     },
   },
 };
+
+export const STATE_GATED_IMMUNITIES = [
+  { spec: "berserk", node: "imunitaPanika", gate: "frenzy", statuses: ["panic", "fear", "terror"] },
+  { spec: "berserk", node: "mentalniOdolnost", gate: "frenzy", statuses: ["disorientation"] },
+];
