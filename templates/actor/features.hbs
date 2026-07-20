@@ -83,6 +83,20 @@
                   {{/if}}
                 </span>
               </div>
+              {{#if item.system.weaponSpec.tier}}
+                <a
+                  class="weapon-spec-badge {{#unless item.system.weaponSpec.tag}}needs-choice{{/unless}}"
+                  data-action="chooseWeaponSpec"
+                  data-item-id="{{item._id}}"
+                  title="Choose the weapon this specialization applies to"
+                >
+                  {{#if item.system.weaponSpec.tag}}
+                    <i class="fas fa-crosshairs"></i> {{item.system.weaponSpec.tag}}
+                  {{else}}
+                    <i class="fas fa-exclamation-triangle"></i> Choose weapon
+                  {{/if}}
+                </a>
+              {{/if}}
               <div class="npc-trait-desc">{{{item.system.description}}}</div>
             </div>
           </li>

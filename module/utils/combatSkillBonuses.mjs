@@ -1361,18 +1361,27 @@ export function getActorCombatModifiers(actor, weapon = null) {
 export function getWeaponSpecBonuses(actor, weapon) {
   const result = { attack: 0, critChance: 0, damageDice: 0, defense: 0, critDefense: 0 };
   if (!actor || !weapon) return result;
-  const weaponTags = String(weapon.system?.tags ?? "")
-    .split(",")
-    .map((t) => t.trim().toLowerCase())
-    .filter((t) => t.length > 0);
-  if (!weaponTags.length) return result;
+  const candidates = new Set();
+  const addCandidate = (raw) => {
+    const v = String(raw ?? "").trim().toLowerCase();
+    if (!v) return;
+    candidates.add(v);
+    // Thrown and melee versions of one weapon are separate items sharing a base
+    // name ("Javelin" / "Javelin melee"). Strip the " melee" suffix so a single
+    // specialization covers both modes.
+    if (v.endsWith(" melee")) candidates.add(v.slice(0, -6).trim());
+  };
+  String(weapon.system?.tags ?? "").split(",").forEach(addCandidate);
+  addCandidate(weapon.name);
+  addCandidate(weapon.localizedName);
+  if (!candidates.size) return result;
 
   for (const item of actor.items) {
     if (item.type !== "feature") continue;
     const spec = item.system?.weaponSpec;
     if (!spec) continue;
     const tag = String(spec.tag ?? "").trim().toLowerCase();
-    if (!tag || !weaponTags.includes(tag)) continue;
+    if (!tag || !candidates.has(tag)) continue;
     const tier = Number(spec.tier) || 0;
     if (tier === 1) {
       result.critDefense += 1;

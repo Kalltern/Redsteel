@@ -27,6 +27,7 @@ import {
   openRaceChoicesDialog,
   initializeRaceChoices,
 } from "../utils/race.mjs";
+import { openWeaponSpecDialog } from "../utils/weaponSpec.mjs";
 
 const { api, sheets } = foundry.applications;
 
@@ -114,6 +115,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       craftRecipe: this._craftRecipe,
       rerollCraft: this._rerollCraft,
       selectRace: this._selectRace,
+      chooseWeaponSpec: this._chooseWeaponSpec,
     },
     // Custom property that's merged into `this.options`
     dragDrop: [{ dragSelector: "[data-drag]", dropSelector: null }],
@@ -188,6 +190,15 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
 
     // Passive buffs are real ActiveEffects — create/remove alongside the node
     await syncSpecialisationPassive(this.actor, specId, nodeId, !unlocked);
+  }
+
+  static async _chooseWeaponSpec(event) {
+    const target = event.target.closest("[data-action='chooseWeaponSpec']");
+    if (!target || !this.isEditable) return;
+    const itemId = target.dataset.itemId;
+    const item = this.actor.items.get(itemId);
+    if (!item) return;
+    await openWeaponSpecDialog(item);
   }
 
   static _onBuildTooltip(event) {

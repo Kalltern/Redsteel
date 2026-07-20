@@ -5419,3 +5419,33 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   cursor: pointer;
   color: #c9b26b;
 }
+
+/* Weapon Specialization picker badge (feature rows) */
+.weapon-spec-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 2px 0 4px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.78em;
+  font-weight: 600;
+  cursor: pointer;
+  background: rgba(212, 175, 55, 0.18);
+  border: 1px solid rgba(212, 175, 55, 0.55);
+  color: #d4af37;
+  width: fit-content;
+}
+.weapon-spec-badge:hover {
+  background: rgba(212, 175, 55, 0.30);
+}
+.weapon-spec-badge.needs-choice {
+  background: rgba(200, 60, 40, 0.20);
+  border-color: rgba(200, 60, 40, 0.65);
+  color: #e07a5f;
+  animation: weaponSpecPulse 1.8s ease-in-out infinite;
+}
+@keyframes weaponSpecPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
