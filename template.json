@@ -1262,6 +1262,7 @@
     "weapon": {
       "templates": ["base"],
       "class": "",
+      "tags": "",
       "classOptions": [
         "axe",
         "blunt",
@@ -1438,7 +1439,8 @@
         "active": [false, false],
         "value": 0,
         "pools": []
-      }
+      },
+      "weaponSpec": { "tag": "", "tier": 0 }
     },
     "race": {
       "templates": ["base"],

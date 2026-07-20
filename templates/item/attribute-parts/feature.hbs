@@ -106,4 +106,25 @@
 </div>
 {{/if}}
 
+{{#if system.weaponSpec.tier}}
+<div class="form-group stacked">
+  <label>Weapon Specialization tag</label>
+  <input
+    type="text"
+    name="system.weaponSpec.tag"
+    value="{{system.weaponSpec.tag}}"
+    placeholder="e.g. sword, reach, axe"
+  />
+  <input
+    type="hidden"
+    name="system.weaponSpec.tier"
+    value="{{system.weaponSpec.tier}}"
+    data-dtype="Number"
+  />
+  <p class="hint">
+    This feature's Weapon Specialization bonuses (tier {{system.weaponSpec.tier}}) apply to any weapon whose Tags include this tag. Case-insensitive, exact tag match.
+  </p>
+</div>
+{{/if}}
+
 </section>

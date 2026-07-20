@@ -3973,6 +3973,9 @@
           "sharp": {
             "label": "Sharp"
           },
+          "tags": {
+            "label": "Tags"
+          },
           "thrown": {
             "label": "Thrown"
           },
@@ -4893,6 +4896,9 @@
       "Indestructible": {
         "name": "Indestructible"
       },
+      "WoundingImpale": {
+        "name": "Wounding Impale"
+      },
       "Intimidation": {
         "name": "Intimidation"
       },
@@ -5444,6 +5450,9 @@
       },
       "WeaponSpecializationI": {
         "name": "Weapon Specialization I"
+      },
+      "WeaponSpecializationII": {
+        "name": "Weapon Specialization II"
       },
       "WhiteDove": {
         "name": "White Dove"

@@ -82,7 +82,7 @@
     "effects": {
       "stagger": 0,
       "bleed": 0,
-      "extra1": 0,
+      "extra1": -1,
       "extra2": 0,
       "extra3": 0
     },
@@ -105,7 +105,7 @@
     "dmgType2": "",
     "bool3": "",
     "dmgType3": "",
-    "effectType1": "",
+    "effectType1": "root",
     "effectType2": "",
     "effectType3": "",
     "localizationKey": "REDSTEEL.Items.Impale.name"

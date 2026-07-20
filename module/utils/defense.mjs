@@ -296,6 +296,8 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
       const overwhelmPenalty = overwhelm * -5;
       console.log("DEFENSE CONTEXT:", context);
 
+      const weaponSpec = game.redsteel.getWeaponSpecBonuses(actor, weapon);
+
       const { doctrineCritDefenseBonus, doctrineDefenseBonus } =
         await game.redsteel.getDoctrineBonuses(actor, weapon);
 
@@ -307,7 +309,8 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
         defense.criticalSuccessThreshold +
         mainCrit +
         offCrit +
-        doctrineCritDefenseBonus;
+        doctrineCritDefenseBonus +
+        weaponSpec.critDefense;
 
       const criticalFailureThreshold = defense.criticalFailureThreshold;
 
@@ -318,10 +321,11 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
         abilityDefense,
         overwhelmPenalty,
         longReachPenalty,
+        specDefense: weaponSpec.defense,
       };
 
       const roll = new Roll(
-        "@defenseRating + @weaponDefense + @doctrineDefenseBonus + @abilityDefense + @overwhelmPenalty + @longReachPenalty - 1d100",
+        "@defenseRating + @weaponDefense + @doctrineDefenseBonus + @abilityDefense + @overwhelmPenalty + @longReachPenalty + @specDefense - 1d100",
         withRollBias(rollData, actor),
       );
 

@@ -1091,6 +1091,25 @@ export class RedsteelActiveEffect extends ActiveEffect {
 
     await RedsteelActiveEffect._removeCombatModifiers(actor, effectId);
 
+    // Wounding Impale: Impale applies the Rooted effect. When such a Root is
+    // torn free, the target takes the Bleeding stacks the applying attack
+    // stashed on it (2, or 3 with a Trident). A plain Root has no tag, so this
+    // is a no-op for every Root that did not come from a Wounding Impale.
+    if (effectId === "root" && game.user.id === userId) {
+      const bleeds = Number(this.getFlag("redsteel", "impaleBleeds")) || 0;
+      if (bleeds > 0) {
+        await game.redsteel.applyEffect(actor, "bleed", { stacks: bleeds });
+        await ChatMessage.create({
+          speaker: ChatMessage.getSpeaker({ actor }),
+          content: `
+            <div class="redsteel-downed">
+              <p><b>${actor.name}</b> is torn free of the impale.</p>
+              <p>Wounding Impale inflicts <b>${bleeds} Bleeding</b>.</p>
+            </div>`,
+        });
+      }
+    }
+
     // When Dying ends (e.g. stabilised by First Aid), the survivor must test
     // their resolve or take an Insanity point. Posted once, by the user who
     // removed the effect, with a chat button to roll the test.

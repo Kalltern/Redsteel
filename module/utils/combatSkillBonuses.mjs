@@ -482,6 +482,9 @@ export async function getAttackRolls(
     criticalFailureThreshold -= offProps?.critFail || 0;
   }
 
+  const specBonus = getWeaponSpecBonuses(actor, weapon);
+  totalWeaponAttack += specBonus.attack;
+
   const finesse = actor.system.combatSkills.combat.finesseRating;
   const normalCombat = actor.system.combatSkills.combat.rating;
   let attackRollFormula = 0;
@@ -569,6 +572,8 @@ export async function getAttackRolls(
     }
   }
 
+  criticalSuccessThreshold += specBonus.critChance;
+
   // Roll data setup
 
   let rollName = weapon
@@ -639,6 +644,7 @@ export async function getDamageRolls(
   }
   const offProps = getOffhandProps(weaponContext);
   const actorMods = getActorCombatModifiers(actor, weapon);
+  const specDamage = getWeaponSpecBonuses(actor, weapon);
   const { sneakDamage } = await getSneakDamageFormula(
     actor,
     weapon,
@@ -673,6 +679,7 @@ export async function getDamageRolls(
   if (coating?.formula) {
     damageFormula += ` + (${coating.formula})`;
   }
+  if (specDamage.damageDice > 0) damageFormula += ` + ${specDamage.damageDice}d4`;
   damageFormula += ")";
   damageFormula = damageFormula.replace(/\s*\+\s*$/, "");
   damageFormula = damageFormula.replace(/@([\w.]+)/g, (_, key) => {
@@ -1093,6 +1100,30 @@ export async function getEffectRolls(
     };
   }
 
+  // --- 3b. Wounding Impale ---
+  // Impale applies the ordinary Rooted effect. When the attacker has the
+  // Wounding Impale feature AND this attack actually used the Impale ability,
+  // tag that Root with how many Bleeding stacks to inflict when it is torn
+  // free: 2, or 3 with a Trident-tagged weapon. The tag rides on the Root via
+  // flags.redsteel.impaleBleeds (set in applyDamage) and fires in effects.mjs
+  // on removal. A plain Root (no Impale, or no feature) carries no tag and so
+  // never bleeds.
+  if (mechanicalEffects["root"] && actor.system.woundingImpale) {
+    const isImpale = (item) =>
+      item?.system?.localizationKey === "REDSTEEL.Items.Impale.name" ||
+      item?.name === "Impale";
+    const usedImpale =
+      isImpale(ability) || selectedModifiers.some((m) => isImpale(m));
+
+    if (usedImpale) {
+      const weaponTags = String(ws.tags ?? "")
+        .split(",")
+        .map((t) => t.trim().toLowerCase());
+      const bleeds = 2 + (weaponTags.includes("trident") ? 1 : 0);
+      mechanicalEffects["root"].bleedStacks = bleeds;
+    }
+  }
+
   // --- 4. Sharp Bleed Logic ---
 
   if (ws.sharp && (weaponEffects.bleed > 0 || (coatingEffects.bleed || 0) > 0)) {
@@ -1324,6 +1355,35 @@ export function getActorCombatModifiers(actor, weapon = null) {
     }
   }
 
+  return result;
+}
+
+export function getWeaponSpecBonuses(actor, weapon) {
+  const result = { attack: 0, critChance: 0, damageDice: 0, defense: 0, critDefense: 0 };
+  if (!actor || !weapon) return result;
+  const weaponTags = String(weapon.system?.tags ?? "")
+    .split(",")
+    .map((t) => t.trim().toLowerCase())
+    .filter((t) => t.length > 0);
+  if (!weaponTags.length) return result;
+
+  for (const item of actor.items) {
+    if (item.type !== "feature") continue;
+    const spec = item.system?.weaponSpec;
+    if (!spec) continue;
+    const tag = String(spec.tag ?? "").trim().toLowerCase();
+    if (!tag || !weaponTags.includes(tag)) continue;
+    const tier = Number(spec.tier) || 0;
+    if (tier === 1) {
+      result.critDefense += 1;
+      result.damageDice += 1;
+    } else if (tier === 2) {
+      result.attack += 5;
+      result.defense += 5;
+      result.critChance += 3;
+      result.damageDice += 1;
+    }
+  }
   return result;
 }
 

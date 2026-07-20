@@ -107,6 +107,7 @@ import {
   getCriticalRolls,
   evaluateDmgVsArmor,
   getActorCombatModifiers,
+  getWeaponSpecBonuses,
 } from "./utils/combatSkillBonuses.mjs";
 import {
   showSpellSelectionDialogs,
@@ -246,6 +247,7 @@ Hooks.once("init", function () {
   game.redsteel.selectToken = selectToken;
   game.redsteel.statusEffectManager = statusEffectManager;
   game.redsteel.getActorCombatModifiers = getActorCombatModifiers;
+  game.redsteel.getWeaponSpecBonuses = getWeaponSpecBonuses;
   game.redsteel.applyEffect =
     RedsteelActiveEffect.applyEffect.bind(RedsteelActiveEffect);
   game.redsteel.applyZeroHealthState = applyZeroHealthState;

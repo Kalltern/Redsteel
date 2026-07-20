@@ -3962,6 +3962,9 @@
           "sharp": {
             "label": "Ostrá"
           },
+          "tags": {
+            "label": "Štítky"
+          },
           "thrown": {
             "label": "Vrhací"
           },
@@ -4882,6 +4885,9 @@
       "Indestructible": {
         "name": "Nezničitelný"
       },
+      "WoundingImpale": {
+        "name": "Krvavé nabodnutí"
+      },
       "Intimidation": {
         "name": "Zastrašení"
       },
@@ -5433,6 +5439,9 @@
       },
       "WeaponSpecializationI": {
         "name": "Specializace na zbraň I"
+      },
+      "WeaponSpecializationII": {
+        "name": "Specializace na zbraň II"
       },
       "WhiteDove": {
         "name": "Bílá holubice"

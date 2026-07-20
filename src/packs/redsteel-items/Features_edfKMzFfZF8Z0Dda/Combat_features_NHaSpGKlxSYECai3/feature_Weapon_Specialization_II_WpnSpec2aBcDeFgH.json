@@ -1,10 +1,10 @@
 {
   "folder": "NHaSpGKlxSYECai3",
-  "name": "Weapon Specialization I",
+  "name": "Weapon Specialization II",
   "type": "feature",
   "img": "icons/magic/fire/dagger-rune-enchant-blue-gray.webp",
   "system": {
-    "description": "<p>Specialization in a specific weapon type. On acquiring, choose a weapon Tag (e.g. sword, axe, reach) in the feature's attributes tab. Bonuses apply automatically to any weapon whose Tags include your chosen tag.<br />Critical Defense +1%, Damage +1d4.<br />May reroll a Combat, Shooting, or Throw roll once per day.<br />Can be taken multiple times for different tags.</p>",
+    "description": "<p>Advanced specialization in a weapon type. On acquiring, choose a weapon Tag in the feature's attributes tab. Bonuses apply automatically to any weapon whose Tags include your chosen tag.<br />To Hit +5%, Melee Defense +5%, Critical Hit chance +3%, Damage +1d4.<br />May reroll a Combat, Shooting, or Throw roll once per day.<br />Can be taken multiple times for different tags.</p>",
     "options": [
       "feature",
       "trait",
@@ -23,12 +23,12 @@
         }
       ]
     },
-    "weaponSpec": { "tag": "", "tier": 1 },
+    "weaponSpec": { "tag": "", "tier": 2 },
     "option": "feature",
-    "localizationKey": "REDSTEEL.Items.WeaponSpecializationI.name"
+    "localizationKey": "REDSTEEL.Items.WeaponSpecializationII.name"
   },
   "effects": [],
-  "sort": 800000,
+  "sort": 810000,
   "ownership": {
     "default": 0,
     "rs3mzx7WZdtEmvH2": 3,
@@ -38,7 +38,7 @@
   "flags": {},
   "_stats": {
     "compendiumSource": null,
-    "duplicateSource": "Item.4EIRmQDb2QZrwRSG",
+    "duplicateSource": null,
     "exportSource": null,
     "coreVersion": "13.351",
     "systemId": "redsteel",
@@ -47,6 +47,6 @@
     "modifiedTime": 1777294839144,
     "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
   },
-  "_id": "V5hKMoxMIinNcMT7",
-  "_key": "!items!V5hKMoxMIinNcMT7"
+  "_id": "WpnSpec2aBcDeFgH",
+  "_key": "!items!WpnSpec2aBcDeFgH"
 }

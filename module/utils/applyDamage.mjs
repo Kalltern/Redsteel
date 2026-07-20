@@ -388,7 +388,23 @@ export async function applyDamageAsGM(data) {
       }
 
       if (stacks <= 0) continue;
-      await applyEffectToActor(actor, name, stacks, castingContext);
+      const applied = await applyEffectToActor(
+        actor,
+        name,
+        stacks,
+        castingContext,
+      );
+
+      // Wounding Impale: Impale applies the Rooted effect; carry the
+      // pre-computed Bleeding count (set in getEffectRolls) onto that Root so it
+      // fires when the Root is removed (see effects.mjs _onDelete). Only
+      // Impale-sourced Roots carry the tag.
+      if (name === "root" && applied) {
+        const bleeds = Number(effect.bleedStacks) || 0;
+        if (bleeds > 0) {
+          await applied.setFlag("redsteel", "impaleBleeds", bleeds);
+        }
+      }
     }
 
     // Aimed Strike — apply body part effect when the aimed location was hit (SU ≥ 0).
@@ -1133,7 +1149,22 @@ export async function applyEffectsAsGM(data) {
         stacks = effectData.stacks ?? 0;
       }
 
-      await applyEffectToActor(actor, effectId, stacks, castingContext);
+      const applied = await applyEffectToActor(
+        actor,
+        effectId,
+        stacks,
+        castingContext,
+      );
+
+      // Wounding Impale: Impale applies the Rooted effect; carry the pre-computed
+      // Bleeding count onto that Root so it fires when the Root is removed (see
+      // effects.mjs _onDelete). Only Impale-sourced Roots get the tag.
+      if (effectId === "root" && applied) {
+        const bleeds = Number(effectData.bleedStacks) || 0;
+        if (bleeds > 0) {
+          await applied.setFlag("redsteel", "impaleBleeds", bleeds);
+        }
+      }
     }
   }
 }
