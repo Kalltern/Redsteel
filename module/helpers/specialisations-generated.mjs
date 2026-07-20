@@ -152,7 +152,7 @@ export const GENERATED_SPECS = {
       bane2: { tier: 3, column: 2 },
       bane3: { tier: 3, column: 3 },
       vnimaniStopovani: { tier: 3, column: 4 },
-      dravciSmysly: { tier: 3, column: 5 },
+      dravciSmysly: { tier: 3, column: 5, passive: { changes: [add("system.predatorySenses", true)] } },
       pohybVPrirode: { tier: 3, column: 6 },
       slevaPlizeni: { tier: 4, column: 1 },
       slevaPreziti: { tier: 4, column: 2 },
@@ -223,7 +223,7 @@ export const GENERATED_SPECS = {
       bojoveTestySily: { tier: 3, column: 3 },
       opakovaniTestuSily: { tier: 3, column: 4 },
       zbrojeRychlost: { tier: 3, column: 5 },
-      ocelovyStisk: { tier: 4, column: 1 },
+      ocelovyStisk: { tier: 4, column: 1, passive: { changes: [add("system.steelGrip", true)] } },
     },
   },
   warden: {

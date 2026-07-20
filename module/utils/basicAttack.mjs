@@ -1,6 +1,7 @@
 import { getTraitPills } from "./traitPills.mjs";
 import { withRollBias, tagRollSkill } from "./rollAdvantage.mjs";
 import { AIMED_PARTS } from "./aimedStrike.mjs";
+import { getAttackRerollTokens } from "./rerolls.mjs";
 
 export async function universalAttackLogic({
   attackType,
@@ -464,6 +465,7 @@ ${damageLine}
           criticalSuccessThreshold,
           criticalFailureThreshold,
           traitPills: getTraitPills(actor, "attack"),
+          rerollTokens: getAttackRerollTokens(actor, weapon),
         },
         attack: {
           type: "attack",

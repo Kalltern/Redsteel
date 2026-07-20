@@ -1,6 +1,7 @@
 import { getTraitPills } from "./traitPills.mjs";
 import { withRollBias, tagRollSkill } from "./rollAdvantage.mjs";
 import { selectAimedPart, AIMED_PARTS } from "./aimedStrike.mjs";
+import { getAttackRerollTokens } from "./rerolls.mjs";
 
 export async function combatAbilities() {
   // ====================================================================
@@ -1128,6 +1129,10 @@ ${damageLine}
           criticalSuccessThreshold,
           criticalFailureThreshold,
           traitPills: getTraitPills(actor, "attack"),
+          // Reroll tokens for the chat reroll picker: "attack" + combat skill +
+          // governing attribute (finesse-aware), so e.g. Brawny (str) can reroll
+          // a strength melee attack and Nimble (dex) a finesse attack.
+          rerollTokens: getAttackRerollTokens(actor, weapon),
         },
         attack: {
           type: "attack",

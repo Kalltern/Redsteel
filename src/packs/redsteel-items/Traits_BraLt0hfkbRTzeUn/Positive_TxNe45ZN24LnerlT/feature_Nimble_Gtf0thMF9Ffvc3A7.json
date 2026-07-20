@@ -25,7 +25,7 @@
       "pools": [
         {
           "label": "Dexterity-based skill",
-          "skillsRaw": "universal",
+          "skillsRaw": "dex",
           "max": 1,
           "used": 0
         }

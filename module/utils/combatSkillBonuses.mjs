@@ -1,6 +1,7 @@
 import { getTraitPills } from "./traitPills.mjs";
 import { withRollBias, applyDesperateCrit, tagRollSkill } from "./rollAdvantage.mjs";
 import { AIMED_PARTS } from "./aimedStrike.mjs";
+import { getAttackRerollTokens } from "./rerolls.mjs";
 
 async function getSneakDamageFormula(actor, weapon, weaponContext = null) {
   const ws = weapon?.system ?? {};
@@ -184,6 +185,8 @@ export async function getNonWeaponAbility(actor, ability) {
       redsteel: {
         rollName,
         traitPills: getTraitPills(actor, "attack"),
+        // Non-weapon ability attack — generic "attack" token only.
+        rerollTokens: getAttackRerollTokens(actor, null),
       },
       attack: {
         type: "attack",

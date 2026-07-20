@@ -120,7 +120,11 @@ import {
   finalizeRollsAndPostChat,
   resolveChannelingTick,
 } from "./utils/magicSkillBonuses.mjs";
-import { getEligibleRerolls, consumeReroll } from "./utils/rerolls.mjs";
+import {
+  getEligibleRerolls,
+  consumeReroll,
+  getRerollTokensForSkill,
+} from "./utils/rerolls.mjs";
 import {
   openRacePicker,
   openRaceChoicesDialog,
@@ -1166,10 +1170,6 @@ async function executeReroll(message, sourceLabel) {
  * are several, then spend the charge and re-roll.
  */
 async function handleRerollClick(message) {
-  const skillKey =
-    message.getFlag("redsteel", "skill") ??
-    message.rolls?.[0]?.options?.redsteel?.skill;
-
   // Who spends the reroll: the actor who made the roll when the message
   // carries one. Older/actorless messages fall back to the clicking user's
   // controlled token (must be owned — this is how a GM picks the character),
@@ -1188,6 +1188,19 @@ async function handleRerollClick(message) {
     return;
   }
 
+  // Roll tokens this card can be rerolled against. Attack/defense cards carry a
+  // precomputed `rerollTokens` array (combat skill + governing attribute, worked
+  // out when the weapon/finesse state was known). Skill cards carry a `skill`
+  // flag, from which the skill key + its governing attribute are derived.
+  const stored = message.getFlag("redsteel", "rerollTokens");
+  const skillKey =
+    message.getFlag("redsteel", "skill") ??
+    message.rolls?.[0]?.options?.redsteel?.skill;
+  const tokens = Array.isArray(stored)
+    ? stored
+    : getRerollTokensForSkill(actor, skillKey);
+  const isCombat = tokens.some((t) => t === "attack" || t === "defense");
+
   // A natural Critical Failure can only be rerolled by pools carrying the
   // "critfail" trigger keyword (or legacy-shape pools like an un-resaved
   // Lucky) — see getEligibleRerolls.
@@ -1195,7 +1208,7 @@ async function handleRerollClick(message) {
   const cft = Number(message.flags?.redsteel?.criticalFailureThreshold);
   const wasCritFailure = Number.isFinite(cft) && d100 >= cft;
 
-  const eligible = getEligibleRerolls(actor, skillKey, {
+  const eligible = getEligibleRerolls(actor, tokens, {
     critFailure: wasCritFailure,
   });
   if (!eligible.length) {
@@ -1213,7 +1226,9 @@ async function handleRerollClick(message) {
     if (!chosen) return; // cancelled
   }
 
-  const spent = await consumeReroll(actor, chosen.itemId, chosen.poolIndex);
+  const spent = await consumeReroll(actor, chosen.itemId, chosen.poolIndex, {
+    combat: isCombat,
+  });
   if (!spent) {
     ui.notifications.warn("That reroll is already spent.");
     return;
@@ -1311,10 +1326,14 @@ Hooks.on("renderChatMessageHTML", (message, html, data) => {
       updateButtonContainerLayout(buttonContainer);
       rerollButton.addEventListener("click", async (event) => {
         event.preventDefault();
-        // Skill/attribute/combat-skill test cards carry a `skill` flag and go
-        // through the reroll-resource picker. Attack/defense/spell test cards
-        // don't set it and keep the existing free Re-Roll.
-        if (message.getFlag("redsteel", "skill")) {
+        // Skill/attribute/combat-skill test cards carry a `skill` flag; weapon
+        // attack and defense cards carry a `rerollTokens` array. Both go through
+        // the reroll-resource picker. Anything else (spell/magic defense cards)
+        // keeps the existing free Re-Roll.
+        if (
+          message.getFlag("redsteel", "skill") ||
+          message.getFlag("redsteel", "rerollTokens")
+        ) {
           await handleRerollClick(message);
         } else {
           await executeReroll(message, null);

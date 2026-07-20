@@ -24,8 +24,8 @@
       "value": 0,
       "pools": [
         {
-          "label": "Any / Perception-based",
-          "skillsRaw": "universal",
+          "label": "Perception-based skill",
+          "skillsRaw": "per, combatcap1",
           "max": 2,
           "used": 0
         }

@@ -24,7 +24,7 @@
       "pools": [
         {
           "label": "Strength-based skill",
-          "skillsRaw": "universal",
+          "skillsRaw": "str",
           "max": 1,
           "used": 0
         }

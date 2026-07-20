@@ -1,5 +1,6 @@
 import { getTraitPills } from "./traitPills.mjs";
 import { withRollBias, applyDesperateCrit, tagRollSkill } from "./rollAdvantage.mjs";
+import { getDefenseRerollTokens } from "./rerolls.mjs";
 
 export async function defenseRoll({ actor, weapon, ability = null } = {}) {
   if (!actor) {
@@ -338,7 +339,10 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
         criticalSuccessThreshold,
         criticalFailureThreshold,
         overwhelm,
-        { deflectValue: Number(actor.system.defenseDeflect) || 0 },
+        {
+          deflectValue: Number(actor.system.defenseDeflect) || 0,
+          defenseKey: "meleeDefense",
+        },
       );
     };
 
@@ -435,6 +439,7 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
         criticalSuccessThreshold,
         criticalFailureThreshold,
         overwhelm,
+        { defenseKey: "rangedDefense" },
       );
     };
 
@@ -542,7 +547,11 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
         criticalSuccessThreshold,
         criticalFailureThreshold,
         overwhelm,
-        { dodgeFailed, deflectValue: Number(actor.system.dodgeDeflect) || 0 },
+        {
+          dodgeFailed,
+          deflectValue: Number(actor.system.dodgeDeflect) || 0,
+          defenseKey: "dodge",
+        },
       );
     };
 
@@ -702,7 +711,7 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
     criticalSuccessThreshold,
     criticalFailureThreshold,
     overwhelm,
-    { dodgeFailed = false, deflectValue = 0 } = {},
+    { dodgeFailed = false, deflectValue = 0, defenseKey = "meleeDefense" } = {},
   ) {
     const rollResult = roll.dice[0].total;
 
@@ -788,6 +797,10 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
           criticalSuccessThreshold,
           criticalFailureThreshold,
           traitPills: getTraitPills(actor, "defense"),
+          // Reroll tokens for the chat reroll picker: "defense" + the defense
+          // skill + its governing attribute (dodge→dex, ranged→per, melee→dex
+          // unless steelGrip/predatorySenses flips it).
+          rerollTokens: getDefenseRerollTokens(actor, defenseKey),
         },
       },
     });

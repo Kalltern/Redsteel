@@ -4,6 +4,7 @@ import {
   tagRollSkill,
   applyDesperateCrit,
 } from "./rollAdvantage.mjs";
+import { getAttackRerollTokens } from "./rerolls.mjs";
 
 /** Local copy of the damage-profile builder used across the attack pipeline. */
 function buildDamageProfile(systemData) {
@@ -238,6 +239,9 @@ ${damageLine}
           criticalSuccessThreshold: critSuccessThreshold,
           criticalFailureThreshold: critFailThreshold,
           traitPills: getTraitPills(actor, "attack"),
+          // Thrown explosive is a consumable, not a weapon-skill attack — generic
+          // "attack" token only so attribute pools don't wrongly attach.
+          rerollTokens: getAttackRerollTokens(actor, null),
         },
 
         attack: {

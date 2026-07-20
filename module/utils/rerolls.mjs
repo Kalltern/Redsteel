@@ -32,12 +32,37 @@ const UNIVERSAL_KEYS = new Set(["universal", "any", "all"]);
 /** Trigger tokens that mark a pool as able to reroll Critical Failures. */
 const CRITFAIL_KEYS = new Set(["critfail", "critfails", "criticalfailure"]);
 
+/**
+ * Attribute short keys, in the order attributes are stored (Object.entries on
+ * system.attributes). This index is what every skill / combat skill carries as
+ * its `id` (its governing attribute), so `ATTR_BY_INDEX[skill.id]` is the
+ * attribute a roll is "based on". Attribute-group pools (e.g. Brawny scoped to
+ * "str") match any roll whose governing attribute is listed here.
+ */
+const ATTR_BY_INDEX = ["str", "dex", "end", "int", "wil", "cha", "per"];
+const ATTR_SET = new Set(ATTR_BY_INDEX);
+
+/** Reroll tokens every combat roll emits, used to detect combat rolls for the cap. */
+const COMBAT_TOKENS = new Set(["attack", "defense"]);
+
+/** Match a `combatcapN` keyword — a per-pool cap on combat (attack/defense) rerolls. */
+const COMBAT_CAP_RE = /^combatcap(\d+)$/;
+
+/** Whether a normalized token is a pool keyword rather than a real skill key. */
+function isPoolKeyword(token) {
+  return (
+    UNIVERSAL_KEYS.has(token) ||
+    CRITFAIL_KEYS.has(token) ||
+    COMBAT_CAP_RE.test(token)
+  );
+}
+
 /** Parse a comma-separated skill string into normalized skill keys (keywords excluded). */
 function parseSkillList(raw) {
   return String(raw ?? "")
     .split(",")
     .map((s) => normalizeTrigger(s))
-    .filter((s) => s && !UNIVERSAL_KEYS.has(s) && !CRITFAIL_KEYS.has(s));
+    .filter((s) => s && !isPoolKeyword(s));
 }
 
 /** Whether a comma-separated skill string contains a crit-failure keyword. */
@@ -46,6 +71,127 @@ function hasCritFailKey(raw) {
     .split(",")
     .map((s) => normalizeTrigger(s))
     .some((s) => CRITFAIL_KEYS.has(s));
+}
+
+/**
+ * The combat cap encoded in a `combatcapN` keyword: at most N of this pool's
+ * charges may be spent on combat (attack/defense) rerolls. Returns Infinity
+ * (no cap) when absent.
+ */
+function parseCombatMax(raw) {
+  for (const token of String(raw ?? "").split(",")) {
+    const m = COMBAT_CAP_RE.exec(normalizeTrigger(token));
+    if (m) return Math.max(0, Number(m[1]) || 0);
+  }
+  return Infinity;
+}
+
+/** Whether an actor owns the "Finesse" combat feature (enables dex-based melee). */
+function hasFinesseFeature(actor) {
+  return !!actor?.items?.some((i) => i.name?.toLowerCase() === "finesse");
+}
+
+/**
+ * The attribute a combat skill's roll is governed by, mirroring the rating
+ * logic in actor.mjs: finesse melee flips to dex, steelGrip melee defense to
+ * str, predatorySenses melee defense to per.
+ * @param {Actor} actor
+ * @param {string} combatKey  A combat-skill key (combat/archery/…).
+ * @param {Item|null} [weapon]  The weapon in hand, for the finesse check.
+ */
+function combatGoverningAttr(actor, combatKey, weapon = null) {
+  switch (combatKey) {
+    case "archery":
+    case "throwing":
+    case "rangedDefense":
+      return "per";
+    case "dodge":
+      return "dex";
+    case "meleeDefense":
+      if (actor?.system?.steelGrip) return "str";
+      if (actor?.system?.predatorySenses) return "per";
+      return "dex";
+    case "combat": {
+      const str = Number(actor?.system?.attributes?.str?.total) || 0;
+      const dex = Number(actor?.system?.attributes?.dex?.total) || 0;
+      if (weapon?.system?.finesse && hasFinesseFeature(actor) && str <= dex) {
+        return "dex";
+      }
+      return "str";
+    }
+    default:
+      return null;
+  }
+}
+
+/**
+ * The reroll tokens a plain skill/attribute/combat-skill test emits: the skill
+ * key itself plus its governing attribute (so attribute-group pools match).
+ * @param {Actor} actor
+ * @param {string} skillKey
+ * @returns {string[]}
+ */
+export function getRerollTokensForSkill(actor, skillKey) {
+  const key = String(skillKey ?? "");
+  const norm = normalizeTrigger(key);
+  const tokens = norm ? [norm] : [];
+  if (!norm) return tokens;
+
+  // Direct attribute test — the attribute is already the token.
+  if (ATTR_SET.has(norm)) return tokens;
+
+  let attr = null;
+  const skill = actor?.system?.skills?.[key];
+  if (skill && Number.isFinite(Number(skill.id))) {
+    attr = ATTR_BY_INDEX[Number(skill.id)] ?? null;
+  } else if (actor?.system?.combatSkills?.[key]) {
+    attr = combatGoverningAttr(actor, key);
+  }
+  if (attr && attr !== norm) tokens.push(attr);
+  return tokens;
+}
+
+/**
+ * The reroll tokens a weapon attack card emits: "attack", the combat skill it
+ * uses (combat/archery/throwing) and its governing attribute. With no weapon
+ * (e.g. standalone abilities) only the generic "attack" token is emitted so
+ * attribute-group pools don't match a non-weapon strike.
+ * @param {Actor} actor
+ * @param {Item|null} weapon
+ * @returns {string[]}
+ */
+export function getAttackRerollTokens(actor, weapon = null) {
+  if (!weapon) return ["attack"];
+  const cls = weapon.system?.class;
+  let combatKey = "combat";
+  if (cls === "bow" || cls === "crossbow") combatKey = "archery";
+  else if (weapon.system?.thrown === true) combatKey = "throwing";
+  const attr = combatGoverningAttr(actor, combatKey, weapon);
+  return attr ? ["attack", combatKey, attr] : ["attack", combatKey];
+}
+
+/**
+ * The regular skill a combat skill is derived from, so pools scoped to that
+ * skill also reroll the combat action. Dodge is rated off Acrobatics, so an
+ * "acrobacy"-tied reroll applies to a dodge.
+ */
+const COMBAT_BASE_SKILL = { dodge: "acrobacy" };
+
+/**
+ * The reroll tokens a defense card emits: "defense", the defense skill used
+ * (dodge/meleeDefense/rangedDefense), its governing attribute, and — for dodge —
+ * the Acrobatics skill it derives from.
+ * @param {Actor} actor
+ * @param {string} defenseKey
+ * @returns {string[]}
+ */
+export function getDefenseRerollTokens(actor, defenseKey) {
+  const tokens = ["defense", defenseKey];
+  const attr = combatGoverningAttr(actor, defenseKey);
+  if (attr) tokens.push(attr);
+  const baseSkill = COMBAT_BASE_SKILL[defenseKey];
+  if (baseSkill) tokens.push(baseSkill);
+  return tokens;
 }
 
 /**
@@ -78,6 +224,11 @@ export function getFeatureRerollPools(item) {
       const used = Math.min(max, Math.max(0, Number(pool?.used) || 0));
       const skills = parseSkillList(pool?.skillsRaw);
       const universal = skills.length === 0;
+      const combatMax = parseCombatMax(pool?.skillsRaw);
+      const combatUsed = Math.min(
+        used,
+        Math.max(0, Number(pool?.combatUsed) || 0),
+      );
       return {
         itemId: item.id,
         poolIndex,
@@ -89,6 +240,9 @@ export function getFeatureRerollPools(item) {
         max,
         used,
         remaining: Math.max(0, max - used),
+        combatMax,
+        combatUsed,
+        combatRemaining: Math.max(0, combatMax - combatUsed),
       };
     });
   }
@@ -113,6 +267,10 @@ export function getFeatureRerollPools(item) {
       max,
       used,
       remaining: Math.max(0, max - used),
+      // Legacy pools predate the combat cap — never restricted.
+      combatMax: Infinity,
+      combatUsed: 0,
+      combatRemaining: Infinity,
     },
   ];
 }
@@ -133,22 +291,35 @@ export function getActorRerollPools(actor) {
 }
 
 /**
- * Pools that can be spent to reroll a test of the given skill: any pool with
- * `remaining > 0` that is universal or lists the (normalized) skill key.
+ * Pools that can be spent to reroll a test emitting the given tokens: any pool
+ * with `remaining > 0` that is universal or lists one of the (normalized)
+ * tokens. A roll emits its skill key plus its governing attribute (see
+ * {@link getRerollTokensForSkill}); attacks and defenses also emit "attack" /
+ * "defense" and their combat-skill key.
+ *
  * Rerolling a Critical Failure additionally requires the pool's `critFail`
- * capability (the "critfail" trigger keyword, or a legacy-shape pool).
+ * capability. A combat roll (tokens include "attack"/"defense") additionally
+ * requires the pool to have combat-cap charges left (`combatRemaining > 0`) —
+ * this is how Eagle senses is limited to one archery/ranged-defense reroll.
+ *
  * @param {Actor} actor
- * @param {string} [skillKey]
+ * @param {string|string[]} [tokens]  One or more roll tokens (a bare skill key
+ *   is accepted for backward compatibility, e.g. "alchemy").
  * @param {{critFailure?: boolean}} [options]  Whether the test being rerolled
  *   was a natural Critical Failure.
  */
-export function getEligibleRerolls(actor, skillKey, { critFailure = false } = {}) {
-  const normalized = normalizeTrigger(skillKey);
+export function getEligibleRerolls(actor, tokens, { critFailure = false } = {}) {
+  const list = Array.isArray(tokens) ? tokens : [tokens];
+  const normalized = list.map((t) => normalizeTrigger(t)).filter(Boolean);
+  const tokenSet = new Set(normalized);
+  const isCombat = normalized.some((t) => COMBAT_TOKENS.has(t));
+
   return getActorRerollPools(actor).filter((pool) => {
     if (pool.remaining <= 0) return false;
     if (critFailure && !pool.critFail) return false;
+    if (isCombat && pool.combatRemaining <= 0) return false;
     if (pool.universal) return true;
-    return normalized ? pool.skills.includes(normalized) : false;
+    return pool.skills.some((s) => tokenSet.has(s));
   });
 }
 
@@ -157,9 +328,11 @@ export function getEligibleRerolls(actor, skillKey, { critFailure = false } = {}
  * @param {Actor} actor
  * @param {string} itemId
  * @param {number} poolIndex  Pool index, or -1 for a legacy `{value,active}` pool.
+ * @param {{combat?: boolean}} [options]  Whether this reroll is spent on a
+ *   combat (attack/defense) roll — counts against the pool's `combatcap`.
  * @returns {Promise<boolean>} true when a charge was consumed.
  */
-export async function consumeReroll(actor, itemId, poolIndex) {
+export async function consumeReroll(actor, itemId, poolIndex, { combat = false } = {}) {
   const item = actor?.items?.get(itemId);
   if (!item) return false;
   const reroll = item.system?.reroll ?? {};
@@ -186,6 +359,10 @@ export async function consumeReroll(actor, itemId, poolIndex) {
   const used = Math.max(0, Number(pool.used) || 0);
   if (used >= max) return false;
   pool.used = used + 1;
+  // Track combat-spent charges so the combatcap can gate future combat rerolls.
+  if (combat) {
+    pool.combatUsed = Math.max(0, Number(pool.combatUsed) || 0) + 1;
+  }
   await item.update({ "system.reroll.pools": pools });
   return true;
 }
@@ -274,6 +451,10 @@ export async function resetActorRerolls(actor) {
         if (locked.has(`${item.id}:${i}`)) return;
         if (Number(pool.used) > 0) {
           pool.used = 0;
+          changed = true;
+        }
+        if (Number(pool.combatUsed) > 0) {
+          pool.combatUsed = 0;
           changed = true;
         }
       });
