@@ -2053,7 +2053,7 @@
             },
             "omraceniKrit": {
               "label": "Omráčení +100% od 2. st. Krit. zásahu",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Automatizováno."
             },
             "padPirka": {
               "label": "Pád pírka: Rychlost pádu dle vůle",
@@ -2303,7 +2303,7 @@
             },
             "zmrazeniKrit": {
               "label": "Zmražení +100% od 4. st. Krit. zásahu",
-              "description": "5 CP; Hluboký mráz I. Ručně — řeší se u stolu."
+              "description": "5 CP; Hluboký mráz I. Automatizováno."
             },
             "hlubokyMraz1": {
               "label": "Hluboký mráz I",
@@ -2449,7 +2449,7 @@
             },
             "povaleni": {
               "label": "Garantuje Povalení od 3. st. Krit. zásahu",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Automatizováno."
             },
             "omracujiciRany1": {
               "label": "Omračující rány I",
@@ -3242,7 +3242,7 @@
             },
             "podpaleniKrit": {
               "label": "Podpálení +100% od 3. st. Krit. zásahu",
-              "description": "5 CP; Divoký oheň I. Ručně — řeší se u stolu."
+              "description": "5 CP; Divoký oheň I. Automatizováno."
             },
             "divokyOhen1": {
               "label": "Divoký oheň I",

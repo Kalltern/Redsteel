@@ -44,6 +44,37 @@ const ae = (...changes) => ({ changes });
 /** Passive backed by a combat-modifier group (system.activeCombatEffects). */
 const cm = (combatModifiers) => ({ combatModifiers });
 
+/**
+ * S3 — crit-degree effect triggers. When a caster owns one of these nodes and
+ * their spell scores a critical of degree ≥ minDegree, the named status is
+ * added to the attack card's mechanical effects:
+ *   mode "boost" — the spell must already cast `effect`; its chance gets +100
+ *                  (a rolled effect becomes guaranteed on a large enough crit).
+ *   mode "force" — the effect is injected at a guaranteed chance even when the
+ *                  spell did not carry it (e.g. geomancer knockdown).
+ * The four node ids are globally unique today, but we key by spec for safety.
+ * Consumed in utils/magicSkillBonuses.mjs (spell crit path).
+ */
+export const CRIT_DEGREE_TRIGGERS = [
+  { spec: "astramancer", node: "omraceniKrit", effect: "stun", minDegree: 2, mode: "boost" },
+  { spec: "cryomancer", node: "zmrazeniKrit", effect: "freeze", minDegree: 4, mode: "boost" },
+  { spec: "pyromancer", node: "podpaleniKrit", effect: "burn", minDegree: 3, mode: "boost" },
+  { spec: "geomancer", node: "povaleni", effect: "prone", minDegree: 3, mode: "force" },
+];
+
+/** True if the actor has `specId`'s tree active AND `nodeId` unlocked. */
+export function actorHasSpecNode(actor, specId, nodeId) {
+  const spec = actor.system?.specialisations?.[specId];
+  return !!(spec?.active && spec.nodes?.[nodeId]);
+}
+
+/** The subset of CRIT_DEGREE_TRIGGERS the actor actually owns. */
+export function getCritDegreeTriggers(actor) {
+  return CRIT_DEGREE_TRIGGERS.filter((t) =>
+    actorHasSpecNode(actor, t.spec, t.node),
+  );
+}
+
 const SPEC_DEFS = {
   /* ----------------------------------------------------------------- */
   /* Stín (Shadow)                                                     */

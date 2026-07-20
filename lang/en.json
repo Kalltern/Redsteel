@@ -2053,7 +2053,7 @@
             },
             "omraceniKrit": {
               "label": "Stun +100% from 2nd-degree Crit",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Automated."
             },
             "padPirka": {
               "label": "Feather Fall: control fall speed",
@@ -2303,7 +2303,7 @@
             },
             "zmrazeniKrit": {
               "label": "Freeze +100% from 4th-degree Crit",
-              "description": "5 CP; Hluboký mráz I. Manual — resolved at the table."
+              "description": "5 CP; Hluboký mráz I. Automated."
             },
             "hlubokyMraz1": {
               "label": "Deep Frost I",
@@ -2449,7 +2449,7 @@
             },
             "povaleni": {
               "label": "Guaranteed Knockdown from 3rd-degree Crit",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Automated."
             },
             "omracujiciRany1": {
               "label": "Stunning Wounds I",
@@ -3242,7 +3242,7 @@
             },
             "podpaleniKrit": {
               "label": "Ignite +100% from 3rd-degree Crit",
-              "description": "5 CP; Divoký oheň I. Manual — resolved at the table."
+              "description": "5 CP; Divoký oheň I. Automated."
             },
             "divokyOhen1": {
               "label": "Wildfire I",

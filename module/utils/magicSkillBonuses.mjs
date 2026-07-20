@@ -1,6 +1,7 @@
 import { getTraitPills } from "./traitPills.mjs";
 import { getSpellPower } from "./spellPower.mjs";
 import { withRollBias, applyDesperateCrit } from "./rollAdvantage.mjs";
+import { getCritDegreeTriggers } from "../helpers/specialisations.mjs";
 
 // --- Helper for Dialogs (CSS Injection) ---
 function _injectDialogCSS() {
@@ -1310,6 +1311,42 @@ export async function finalizeRollsAndPostChat(
   // card (Apply Healing button) instead of an attack card. No crit bonus.
   const isHealing = !!spell.system.isHealing && hasDamage;
   const hasCritDamage = effectiveCritSuccess === true && !isHealing;
+
+  // --- S3: crit-degree effect triggers (spec nodes) ---
+  // On a spell critical of sufficient degree, owned nodes either boost an
+  // effect the spell already casts (+100% chance) or force a new one onto the
+  // card. Runs before the flags/effects table are built so it flows through the
+  // normal Apply-Effects UI unchanged (only the trigger is new).
+  if (effectiveCritSuccess && critScore > 0 && !isHealing) {
+    for (const trig of getCritDegreeTriggers(actor)) {
+      if (critScore < trig.minDegree) continue;
+      const existing = mechanicalEffects[trig.effect];
+
+      if (trig.mode === "boost") {
+        // Boost only lifts an effect the spell already rolled.
+        if (!existing) continue;
+        const base = existing.chance < 0 ? 100 : existing.chance;
+        existing.chance = base + 100;
+        existing.roll = existing.roll ?? 1;
+        existing.auto = false;
+        existing.critBoosted = trig.node;
+      } else {
+        // Force: guarantee the effect even if the spell did not roll it.
+        mechanicalEffects[trig.effect] = {
+          chance: 100,
+          roll: 1,
+          critForced: trig.node,
+        };
+      }
+
+      effectsRollResults += `
+    <p><b>|${trig.effect}|</b> — critical ${critScore}° ${
+      trig.mode === "force" ? "guaranteed" : "+100%"
+    }</p>
+  `;
+    }
+  }
+
   const showDamageTable = hasDamage;
   const damageHeaders = [
     `<th>${isHealing ? "Healing" : "Damage"}</th>`,

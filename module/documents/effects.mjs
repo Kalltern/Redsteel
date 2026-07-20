@@ -1609,6 +1609,31 @@ export class RedsteelActiveEffect extends ActiveEffect {
       return;
     }
 
+    // Indestructible: the steadying test succeeds automatically, so skip the
+    // prompt entirely and post the success outcome directly.
+    const indestructible = actor.items.some(
+      (i) =>
+        i.system?.localizationKey === "REDSTEEL.Items.Indestructible.name" ||
+        i.name === "Indestructible",
+    );
+
+    if (indestructible) {
+      await ChatMessage.create({
+        speaker,
+        content: `
+          <div class="redsteel-downed">
+            <p><b>${actor.name} is Downed.</b></p>
+            <p>They lose <b>${lostLabel}</b> (Mind now <b>${newMind}</b>) but remain conscious.</p>
+            <p><b>Endurance Test — Automatic Success</b> (Indestructible).</p>
+            <p>${actor.name} may move only <b>1 hex</b> and has only <b>1 action</b>
+            per turn. They cannot stand up, defend themselves, nor attack. If they
+            move, they must move away from enemies (this does not provoke an Attack
+            of Opportunity).</p>
+          </div>`,
+      });
+      return;
+    }
+
     await ChatMessage.create({
       speaker,
       content: `

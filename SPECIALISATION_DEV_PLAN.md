@@ -380,7 +380,23 @@ event that whispers to the owner. Zero risk to state; high table-experience win.
       geomancer/maleficarum/pyromancer/vitamancer/bloodSchool `kritRozsah(2)`,
       incantator `ohniskovyPredmet`. **Deferred to S8** (bane-gated): ranger
       `metlaKritRozsah`.
-- [ ] S3 on-crit-degree effects
+- [x] S3 on-crit-degree effects — **DONE** (spell-crit path). These four nodes
+      are all **caster** specs, so the hook is the *magic* crit degree
+      (`magicSkillBonuses.mjs`, `critScore` from `critRangeCast`), not the weapon
+      path the plan first guessed. A node-keyed table `CRIT_DEGREE_TRIGGERS` +
+      `getCritDegreeTriggers(actor)` live in `helpers/specialisations.mjs`
+      (hand-written, durable). On a spell crit with `critScore >= minDegree`
+      (gated by `effectiveCritSuccess`, skipped for healing), the pass adjusts the
+      card's `mechanicalEffects` before flags are built, so it rides the existing
+      Apply-Effects dialog: **boost** (+100 chance on an effect the spell already
+      cast) or **force** (inject a guaranteed effect). Wired: astramancer
+      `omraceniKrit` (stun, ≥2, boost), cryomancer `zmrazeniKrit` (freeze, ≥4,
+      boost), pyromancer `podpaleniKrit` (burn, ≥3, boost), geomancer `povaleni`
+      (prone/knockdown, ≥3, force — the pilot). Generator gained a no-op `jsauto`
+      marker (like `stateimm`) so these passive-less nodes still read *Automated*
+      and survive regen. **Deferred:** geomancer `omracujiciRany1–3` ("Stunning
+      Wounds I–III") — no "+X% from Nth crit" phrasing; a different/progressive
+      mechanic that needs a rules read before wiring.
 - [ ] S4 sneak-source resolution (pilot: critAsSneak)
 - [ ] S5 post-roll crit adjustment (Veteran)
 - [ ] S6 maneuver-gated toggles (pilot: Charge)
