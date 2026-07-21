@@ -1,6 +1,7 @@
 import { getTraitPills } from "./traitPills.mjs";
 import { withRollBias, applyDesperateCrit, tagRollSkill } from "./rollAdvantage.mjs";
 import { getDefenseRerollTokens } from "./rerolls.mjs";
+import { getBaneProfile } from "./baneCombat.mjs";
 
 export async function defenseRoll({ actor, weapon, ability = null } = {}) {
   if (!actor) {
@@ -9,6 +10,8 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
 
     actor = context.actor;
   }
+
+  const baneProfile = getBaneProfile(actor);
 
   const hasGuard = actor.effects.some(
     (e) =>
@@ -116,8 +119,9 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
             .is(":checked")
             ? -5
             : 0;
+          const useBane = html.find('[name="baneDefense"]').is(":checked");
 
-          meleeDefense({ overwhelm, longReachPenalty });
+          meleeDefense({ overwhelm, longReachPenalty, useBane });
         },
       },
 
@@ -127,7 +131,8 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
           const overwhelm = Number(
             html.find('input[name="overwhelm"]:checked').val(),
           );
-          rangedDefense({ overwhelm });
+          const useBane = html.find('[name="baneDefense"]').is(":checked");
+          rangedDefense({ overwhelm, useBane });
         },
       },
     };
@@ -139,9 +144,11 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
           const overwhelm = Number(
             html.find('input[name="overwhelm"]:checked').val(),
           );
+          const useBane = html.find('[name="baneDefense"]').is(":checked");
 
           meleeDefense({
             overwhelm,
+            useBane,
             ability: { system: { defense: -10 } },
           });
         },
@@ -153,9 +160,11 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
           const overwhelm = Number(
             html.find('input[name="overwhelm"]:checked').val(),
           );
+          const useBane = html.find('[name="baneDefense"]').is(":checked");
 
           rangedDefense({
             overwhelm,
+            useBane,
             ability: { system: { rangedDefense: -10 } },
           });
         },
@@ -168,7 +177,8 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
         const overwhelm = Number(
           html.find('input[name="overwhelm"]:checked').val(),
         );
-        dodgeDefense({ overwhelm });
+        const useBane = html.find('[name="baneDefense"]').is(":checked");
+        dodgeDefense({ overwhelm, useBane });
       },
     };
     // Add spell defense if actor can use magic
@@ -210,6 +220,19 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
         <label>
           <input type="checkbox" name="longReachPenalty">
           Long Reach penalty (-5)
+        </label>
+      </div>
+    `
+            : ""
+        }
+
+        ${
+          baneProfile.active
+            ? `
+      <div style="margin-top:6px;">
+        <label>
+          <input type="checkbox" name="baneDefense">
+          ${game.i18n.localize("REDSTEEL.Banes.DefenseToggle")}
         </label>
       </div>
     `
@@ -276,6 +299,7 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
     weapon = null,
     overwhelm = 0,
     longReachPenalty = 0,
+    useBane = false,
   } = {}) {
     const resolveWithContext = async (context) => {
       const weapon = context.weapon;
@@ -311,7 +335,8 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
         mainCrit +
         offCrit +
         doctrineCritDefenseBonus +
-        weaponSpec.critDefense;
+        weaponSpec.critDefense +
+        (useBane ? baneProfile.critDefense : 0);
 
       const criticalFailureThreshold = defense.criticalFailureThreshold;
 
@@ -323,10 +348,11 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
         overwhelmPenalty,
         longReachPenalty,
         specDefense: weaponSpec.defense,
+        baneDefense: useBane ? baneProfile.defense : 0,
       };
 
       const roll = new Roll(
-        "@defenseRating + @weaponDefense + @doctrineDefenseBonus + @abilityDefense + @overwhelmPenalty + @longReachPenalty + @specDefense - 1d100",
+        "@defenseRating + @weaponDefense + @doctrineDefenseBonus + @abilityDefense + @overwhelmPenalty + @longReachPenalty + @specDefense + @baneDefense - 1d100",
         withRollBias(rollData, actor),
       );
 
@@ -342,6 +368,7 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
         {
           deflectValue: Number(actor.system.defenseDeflect) || 0,
           defenseKey: "meleeDefense",
+          useBane,
         },
       );
     };
@@ -399,6 +426,7 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
     ability = null,
     weapon = null,
     overwhelm = 0,
+    useBane = false,
   } = {}) {
     const resolveWithContext = async (context) => {
       const weapon = context.weapon;
@@ -414,7 +442,9 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
       const abilityDefense = Number(ability?.system?.rangedDefense) || 0;
 
       const criticalSuccessThreshold =
-        defense.criticalSuccessThreshold + doctrineCritDefenseBonus;
+        defense.criticalSuccessThreshold +
+        doctrineCritDefenseBonus +
+        (useBane ? baneProfile.critDefense : 0);
 
       const criticalFailureThreshold = defense.criticalFailureThreshold;
 
@@ -423,10 +453,11 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
         doctrineRangedDefenseBonus,
         abilityDefense,
         overwhelmPenalty,
+        baneDefense: useBane ? baneProfile.defense : 0,
       };
 
       const roll = new Roll(
-        "@defenseRating + @doctrineRangedDefenseBonus + @abilityDefense + @overwhelmPenalty - 1d100",
+        "@defenseRating + @doctrineRangedDefenseBonus + @abilityDefense + @overwhelmPenalty + @baneDefense - 1d100",
         withRollBias(rollData, actor),
       );
 
@@ -439,7 +470,7 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
         criticalSuccessThreshold,
         criticalFailureThreshold,
         overwhelm,
-        { defenseKey: "rangedDefense" },
+        { defenseKey: "rangedDefense", useBane },
       );
     };
 
@@ -485,6 +516,7 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
     ability = null,
     weapon = null,
     overwhelm = 0,
+    useBane = false,
   } = {}) {
     const resolveWithContext = async (context) => {
       const weapon = context.weapon;
@@ -505,7 +537,8 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
       const criticalSuccessThreshold =
         dodge.criticalSuccessThreshold +
         (Number(weapon.system.critDodge) || 0) +
-        offCritDodge;
+        offCritDodge +
+        (useBane ? baneProfile.critDefense : 0);
 
       const criticalFailureThreshold = dodge.criticalFailureThreshold;
 
@@ -526,10 +559,11 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
         weaponDodge: mainDodge + offDodge,
         abilityDefense,
         overwhelmPenalty,
+        baneDefense: useBane ? baneProfile.defense : 0,
       };
 
       const roll = new Roll(
-        "@dodgeRating + @weaponDodge + @abilityDefense + @overwhelmPenalty - 1d100",
+        "@dodgeRating + @weaponDodge + @abilityDefense + @overwhelmPenalty + @baneDefense - 1d100",
         withRollBias(rollData, actor),
       );
       tagRollSkill(roll, "dodge");
@@ -551,6 +585,7 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
           dodgeFailed,
           deflectValue: Number(actor.system.dodgeDeflect) || 0,
           defenseKey: "dodge",
+          useBane,
         },
       );
     };
@@ -711,7 +746,12 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
     criticalSuccessThreshold,
     criticalFailureThreshold,
     overwhelm,
-    { dodgeFailed = false, deflectValue = 0, defenseKey = "meleeDefense" } = {},
+    {
+      dodgeFailed = false,
+      deflectValue = 0,
+      defenseKey = "meleeDefense",
+      useBane = false,
+    } = {},
   ) {
     const rollResult = roll.dice[0].total;
 
@@ -764,6 +804,14 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
       </table>
     `;
 
+    const traitPills = getTraitPills(actor, "defense");
+    if (useBane) {
+      traitPills.push({
+        name: game.i18n.localize("REDSTEEL.Banes.Label"),
+        description: game.i18n.localize("REDSTEEL.Banes.DefenseToggle"),
+      });
+    }
+
     await ChatMessage.create({
       speaker: ChatMessage.getSpeaker({ actor }),
       rolls: [roll],
@@ -796,7 +844,7 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
           rollName,
           criticalSuccessThreshold,
           criticalFailureThreshold,
-          traitPills: getTraitPills(actor, "defense"),
+          traitPills,
           // Reroll tokens for the chat reroll picker: "defense" + the defense
           // skill + its governing attribute (dodge→dex, ranged→per, melee→dex
           // unless steelGrip/predatorySenses flips it).

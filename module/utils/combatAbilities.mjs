@@ -2,6 +2,7 @@ import { getTraitPills } from "./traitPills.mjs";
 import { withRollBias, tagRollSkill } from "./rollAdvantage.mjs";
 import { selectAimedPart, AIMED_PARTS } from "./aimedStrike.mjs";
 import { getAttackRerollTokens } from "./rerolls.mjs";
+import { buildBanePacket } from "./baneCombat.mjs";
 
 export async function combatAbilities() {
   // ====================================================================
@@ -1004,6 +1005,7 @@ export async function combatAbilities() {
     critBonusPenetration,
     critScore,
     critScoreResult,
+    criticalOptions,
     breakthroughRollResult,
     showBreakthrough,
     allBleedRollResults,
@@ -1018,6 +1020,8 @@ export async function combatAbilities() {
     damageProfile = [],
     attributeTestHTML = "",
     aimedStrike = null,
+    banePacket = null,
+    baneRoll = null,
   }) {
     let attackHTML = "";
     let damageHTML = "";
@@ -1094,7 +1098,7 @@ ${critHTML}
   </div>
 </div>
 `,
-      rolls: [attackRoll, damageRoll],
+      rolls: banePacket ? [attackRoll, damageRoll, baneRoll] : [attackRoll, damageRoll],
       flavor: `
 <span style="display:inline-flex; align-items:center;">
   <img src="${ability.img}" width="36" height="36" style="margin-right:8px;">
@@ -1107,7 +1111,7 @@ ${critHTML}
   <b>${critSuccess ? "Critical Success!" : critFailure ? "Critical Failure!" : ""}</b>
 </p>
 <hr>
-${damageLine}
+<div class="rs-attack-face" data-face-normal>${damageLine}</div>
 <hr>
 <div style="text-align:center; font-size:16px;">
 <table style="width:100%; text-align:center; font-size:16px;">
@@ -1145,6 +1149,8 @@ ${damageLine}
             penetration: critBonusPenetration,
             halfDamage,
             penCap,
+            degree: critScore,
+            options: criticalOptions,
           },
           breakthrough: {
             damage: breakthroughRollResult,
@@ -1152,6 +1158,7 @@ ${damageLine}
             halfDamage,
             penCap,
           },
+          bane: banePacket,
         },
       },
     });
@@ -1398,6 +1405,7 @@ ${damageLine}
       critScoreResult,
       critBonusPenetration,
       critDamageTotal,
+      criticalOptions,
     } = await game.redsteel.getCriticalRolls(
       actor,
       weapon,
@@ -1440,6 +1448,24 @@ ${damageLine}
         ability,
         effectModifiers,
       );
+
+    // ─── Bane ("Metla") packet ───
+    // A second reading of the same dice: never re-roll the attack or crit
+    // range roll, only re-bucket them under the attacker's Bane bonuses. The
+    // only new randomness is the bonus damage die, rolled exactly once.
+    const { packet: banePacket, roll: baneRoll } = await buildBanePacket({
+      actor,
+      attackRoll,
+      criticalSuccessThreshold,
+      critScoreResult,
+      criticalOptions,
+      damageTotal,
+      penetration,
+      breakthroughRollResult,
+      halfDamage: totalHalfDamage,
+      penCap,
+      baseCritSuccess: critSuccess,
+    });
 
     const attributeMap = {
       strength: "str",
@@ -1587,6 +1613,7 @@ ${damageLine}
       critBonusPenetration,
       critScore,
       critScoreResult,
+      criticalOptions,
       breakthroughRollResult,
       showBreakthrough: weapon
         ? weapon.system.breakthrough
@@ -1605,6 +1632,8 @@ ${damageLine}
       aimedStrike: aimedPart
         ? { part: aimedPart, su: attackRoll.total }
         : null,
+      banePacket,
+      baneRoll,
     });
     // ─── AMMO DEDUCTION ───
     if (ammo) {
@@ -1781,6 +1810,37 @@ ${mod.system.description}
     }
   }
 
+  // Utility (type: "other") abilities can define effects the same way attack
+  // abilities do (e.g. Odhalení slabiny's expose_weakness). Roll them here so
+  // they aren't silently dropped, and expose an Apply Effects button on the
+  // card via the flags.effects convention (no flags.attack, so the existing
+  // chat-button hook in redsteel.mjs skips the Apply Damage button).
+  const { allBleedRollResults, effectsRollResults, mechanicalEffects } =
+    await game.redsteel.getEffectRolls(
+      actor,
+      null,
+      null,
+      0,
+      0,
+      0,
+      0,
+      false,
+      ability,
+      modifiers,
+    );
+
+  const hasEffects = Object.keys(mechanicalEffects).length > 0;
+  const effectsTable = hasEffects
+    ? `
+<table style="width:100%; text-align:center; font-size:15px;">
+  <tr><th>Effects</th></tr>
+  <tr>
+    <td><b>${allBleedRollResults}</b> ${effectsRollResults}</td>
+  </tr>
+</table>
+`
+    : "";
+
   await ChatMessage.create({
     speaker: ChatMessage.getSpeaker({ actor }),
     flavor: `
@@ -1792,6 +1852,10 @@ ${mod.system.description}
 <div style="text-align:center; font-size:16px;">
 ${description}
 </div>
+${effectsTable}
 `,
+    flags: {
+      ...(hasEffects && { effects: mechanicalEffects }),
+    },
   });
 }

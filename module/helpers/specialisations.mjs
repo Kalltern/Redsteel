@@ -137,9 +137,9 @@ const SPEC_DEFS = {
         passive: ae(add("system.skills.stealth.critfailpenalty", -3)),
       },
       // Chain: banes (lower-right arm)
-      bane1: { tier: 1, column: 5, x: 61, y: 73 },
-      bane2: { tier: 2, column: 5, x: 74, y: 67, requires: ["bane1"] },
-      bane3: { tier: 3, column: 5, x: 85, y: 80, requires: ["bane2"] },
+      bane1: { tier: 1, column: 5, x: 61, y: 73, bane: 1 },
+      bane2: { tier: 2, column: 5, x: 74, y: 67, requires: ["bane1"], bane: 1 },
+      bane3: { tier: 3, column: 5, x: 85, y: 80, requires: ["bane2"], bane: 1 },
       // Unchained (scattered field stars)
       quickFeet: { tier: 1, column: 6, x: 8, y: 31 },
       backDodge: { tier: 2, column: 6, x: 47, y: 54 },

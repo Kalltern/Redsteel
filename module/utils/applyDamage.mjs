@@ -4,6 +4,8 @@ import {
   isImmuneToEffect,
 } from "./customConditions.mjs";
 import { AIMED_PARTS, getBodyPartOverrides } from "./aimedStrike.mjs";
+import { resolveBaneVariant } from "./baneCombat.mjs";
+import { BANE_TYPES } from "../helpers/banes.mjs";
 
 export const SOCKET = "system.redsteel";
 
@@ -115,6 +117,38 @@ function evaluateAttackDamage({
   };
 }
 
+/**
+ * Pick the attack packet that applies to one target: the Bane variant that
+ * applies to it (its own Bane match, or the strongest Odhalení slabiny mark
+ * placed on it — see `resolveBaneVariant`), otherwise the normal one. This is
+ * what lets a single roll hit a mixed group correctly (e.g. a cleave into an
+ * undead and a human) without a second roll or a second chat card.
+ */
+function resolveAttackForTarget(attack, actor) {
+  const variant = resolveBaneVariant(attack, actor);
+  if (variant) return { ...attack, ...variant };
+  return attack;
+}
+
+/**
+ * The critical degree to use for one target. A Bane target crits on its own
+ * shifted degree, because its crit-range bonus was already applied to the same
+ * d20 at roll time. An explicit GM override of the degree selector outranks
+ * that and applies to every target.
+ *
+ * The override signal is explicit (`overridden`, set by the dialog the moment
+ * the GM touches the degree radio group), not inferred by comparing the
+ * selected degree against the base packet's degree — that inference broke on
+ * cards whose base packet carries no `degree` at all.
+ *
+ * Both the preview dialog and the GM apply call this, so the number shown can
+ * never disagree with the number applied.
+ */
+function resolveDegreeForTarget(effAttack, selectedDegree, overridden) {
+  if (overridden) return selectedDegree;
+  return effAttack.critical?.degree ?? selectedDegree;
+}
+
 /* -------------------------------------------- */
 /*  Apply Damage                                */
 /* -------------------------------------------- */
@@ -161,6 +195,7 @@ async function applyDamageToTargets(
   criticalDegree = null,
   durabilitySpend = {},
   halfDamage = false,
+  degreeOverridden = false,
 ) {
   const data = {
     type: "applyDamage",
@@ -172,6 +207,7 @@ async function applyDamageToTargets(
     selectedEffects: selectedEffects,
     durabilitySpend,
     halfDamage,
+    degreeOverridden,
   };
 
   if (game.user.isGM) {
@@ -228,6 +264,7 @@ export async function applyDamageAsGM(data) {
   const { messageId, mode, targetIds, sceneId, selectedEffects } = data;
   const durabilitySpend = data.durabilitySpend ?? {};
   const halfDamage = data.halfDamage ?? false;
+  const degreeOverridden = data.degreeOverridden ?? false;
   const message = game.messages.get(messageId);
 
   const attack = message.flags.attack;
@@ -240,10 +277,6 @@ export async function applyDamageAsGM(data) {
   )
     ? Number(attack.critical.degree)
     : selectedCriticalDegree;
-  const selectedAttack =
-    mode === "critical"
-      ? getCriticalAttackData(attack, selectedCriticalDegree)
-      : attack[mode];
 
   const scene = game.scenes.get(sceneId);
   const combat = game.combat;
@@ -257,6 +290,22 @@ export async function applyDamageAsGM(data) {
 
     const actor = tokenDoc.actor;
     if (!actor) continue;
+
+    // Bane-aware packet: a target matching the attacker's Bane uses the
+    // Bane variant of normal/critical/breakthrough instead of the base one.
+    // If the GM did not explicitly override the suggested critical degree,
+    // a Bane target crits on its own (shifted) degree rather than the
+    // suggested one.
+    const effAttack = resolveAttackForTarget(attack, actor);
+    const degreeForTarget = resolveDegreeForTarget(
+      effAttack,
+      selectedCriticalDegree,
+      degreeOverridden,
+    );
+    const selectedAttack =
+      mode === "critical"
+        ? getCriticalAttackData(effAttack, degreeForTarget)
+        : effAttack[mode];
 
     // Resolve the requested durability sacrifice against the live item
     // state — the dialog preview may be stale by the time this runs.
@@ -294,18 +343,18 @@ export async function applyDamageAsGM(data) {
       selectedCriticalDegree !== suggestedCriticalDegree
     ) {
       const suggestedAttack = getCriticalAttackData(
-        attack,
+        effAttack,
         suggestedCriticalDegree,
       );
       const suggestedResult = evaluateAttackDamage({
-        attack,
+        attack: effAttack,
         selectedAttack: suggestedAttack,
         actor,
         halfDamage,
       });
       // Compare without durability so both columns measure the same thing
       const selectedBaseResult = evaluateAttackDamage({
-        attack,
+        attack: effAttack,
         selectedAttack,
         actor,
         halfDamage,
@@ -439,6 +488,7 @@ function openDamageSelectionDialog(message, targets) {
   let mode = "normal";
   let halfDamage = false;
   let criticalDegree = attack.critical?.degree ?? 0;
+  let degreeTouched = false;
   const hasCritical = attack.critical !== "" && attack.critical !== undefined;
   const hasBreakthrough =
     attack.breakthrough?.damage !== "" &&
@@ -451,23 +501,49 @@ function openDamageSelectionDialog(message, targets) {
     .map((t) => ({ token: t, actor: t.actor, items: getDurabilityItems(t.actor) }))
     .filter((entry) => entry.items.length > 0);
 
-  const getSelectedAttack = () =>
-    mode === "critical"
-      ? getCriticalAttackData(attack, criticalDegree)
-      : attack[mode];
+  const getSelectedAttack = (targetActor) => {
+    const effAttack = resolveAttackForTarget(attack, targetActor);
+    return mode === "critical"
+      ? getCriticalAttackData(
+          effAttack,
+          resolveDegreeForTarget(effAttack, criticalDegree, degreeTouched),
+        )
+      : effAttack[mode];
+  };
 
   const renderPreview = () =>
     targets
       .map((t) => {
-        const selectedAttack = getSelectedAttack();
+        const effAttack = resolveAttackForTarget(attack, t.actor);
+        const selectedAttack = getSelectedAttack(t.actor);
         console.log("attack[mode]:", selectedAttack);
+
+        const baneVariant = resolveBaneVariant(attack, t.actor);
+        const matchedBaneLabels = baneVariant
+          ? baneVariant.viaMark
+            ? [game.i18n.localize("REDSTEEL.Banes.ExposedLabel")]
+            : (baneVariant.keys ?? []).map((k) =>
+                game.i18n.localize(BANE_TYPES[k]?.label ?? k),
+              )
+          : [];
+        const baneMarker = matchedBaneLabels.length
+          ? ` <span style="color:#c8a84b; font-size:12px;">(${game.i18n.localize("REDSTEEL.Banes.Label")}: ${matchedBaneLabels.join(", ")})</span>`
+          : "";
+        const baneCritNote =
+          baneVariant && baneVariant.critSuccess !== attack.bane?.baseCritSuccess
+            ? ` <span style="color:#c8a84b; font-size:12px;">(${game.i18n.localize(
+                baneVariant.critSuccess
+                  ? "REDSTEEL.Banes.CritOnlyWithBane"
+                  : "REDSTEEL.Banes.CritLostWithBane",
+              )})</span>`
+            : "";
 
         const spend = durabilityState[t.id];
         const perPoint = spend?.itemId
           ? getDurabilityReductionPerPoint(t.actor, t.actor.items.get(spend.itemId))
           : 0;
         const result = evaluateAttackDamage({
-          attack,
+          attack: effAttack,
           selectedAttack,
           actor: t.actor,
           durabilityPoints: spend?.points ?? 0,
@@ -564,7 +640,7 @@ function openDamageSelectionDialog(message, targets) {
 
         return `
     <li>
-      ${t.name} →
+      ${t.name}${baneMarker}${baneCritNote} →
       <strong>${result.finalDamage} HP</strong>${durabilityNote}
       ${gmPreview}
       ${aimedStrikeLabel}
@@ -735,6 +811,7 @@ function openDamageSelectionDialog(message, targets) {
               mode === "critical" ? criticalDegree : null,
               durabilitySpend,
               halfDamage,
+              degreeTouched,
             );
           },
         },
@@ -762,6 +839,7 @@ function openDamageSelectionDialog(message, targets) {
         });
         html.find('input[name="criticalDegree"]').on("change", (ev) => {
           criticalDegree = Number(ev.target.value);
+          degreeTouched = true;
           refreshPreview();
         });
         html.find('input[name="halfDamage"]').on("change", (ev) => {

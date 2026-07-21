@@ -2,6 +2,8 @@ import { getTraitPills } from "./traitPills.mjs";
 import { withRollBias, tagRollSkill } from "./rollAdvantage.mjs";
 import { AIMED_PARTS } from "./aimedStrike.mjs";
 import { getAttackRerollTokens } from "./rerolls.mjs";
+import { buildBanePacket } from "./baneCombat.mjs";
+import { renderDamageLine } from "./damageLine.mjs";
 
 export async function universalAttackLogic({
   attackType,
@@ -310,10 +312,6 @@ export async function universalAttackLogic({
         customDamage,
         customBreakthrough,
       );
-    const hasBreakthrough =
-      showBreakthrough &&
-      typeof breakthroughRollResult === "string" &&
-      breakthroughRollResult.trim() !== "";
     // ─── Critical Roll ───
     const critData = await game.redsteel.getCriticalRolls(
       actor,
@@ -365,55 +363,43 @@ export async function universalAttackLogic({
 
     const { allBleedRollResults, effectsRollResults, mechanicalEffects } =
       effects;
+
+    // ─── Bane ("Metla") packet ───
+    // A second reading of the same dice: never re-roll the attack or crit
+    // range roll, only re-bucket them under the attacker's Bane bonuses. The
+    // only new randomness is the bonus damage die, rolled exactly once.
+    const { packet: banePacket, roll: baneDamageRoll } = await buildBanePacket({
+      actor,
+      attackRoll,
+      criticalSuccessThreshold,
+      critScoreResult,
+      criticalOptions,
+      damageTotal,
+      penetration,
+      breakthroughRollResult,
+      halfDamage,
+      penCap,
+      baseCritSuccess: critSuccess,
+    });
+
     // ─── Damage Line ───
-    const damageLine = `
-<div style="
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  column-gap: 24px;
-  font-size:16px;
-  max-width: fit-content;
-  margin: 0 auto;
-" class="combat-grid">
-
-  <div style="display:grid; grid-template-columns:auto 1fr; column-gap:8px;">
-    <div>Damage:</div><div style="text-align:center;">${damageTotal}</div>
-    <div>Penetration:</div><div style="text-align:center;">${penetration}</div>
-${
-  hasBreakthrough
-    ? `
-      <div>Breakthrough:</div>
-      <div style="text-align:center;">
-        ${breakthroughRollResult}
-      </div>
-    `
-    : `
-      <div>&nbsp;</div>
-      <div>&nbsp;</div>
-    `
-}
-  </div>
-
-  <div style="display:grid; grid-template-columns:auto 1fr; column-gap:8px;">
-    <div>Crit Dmg:</div><div style="text-align:center;">${critDamageTotal}</div>
-    <div>Crit Pen:</div><div style="text-align:center;">${critBonusPenetration}</div>
-    <div>Crit score:</div>
-    <div style="text-align:center;">
-      <span title="Crit range result ${critScoreResult}"
-        style="text-decoration:underline dotted; cursor:help;">
-        [ ${critScore} ]
-      </span>
-    </div>
-  </div>
-</div>
-<hr>
-`;
+    const damageLine = renderDamageLine({
+      damage: damageTotal,
+      penetration,
+      breakthrough: breakthroughRollResult,
+      critDamage: critDamageTotal,
+      critPenetration: critBonusPenetration,
+      critScore,
+      critScoreResult,
+      showBreakthrough,
+    });
 
     const attackHTML = await attackRoll.render();
     const damageHTML = await damageRoll.render();
     const modifierLabel = selectedModifiers.length
       ? ` + ${selectedModifiers.map((m) => m.localizedName ?? m.name).join(", ")}`
       : "";
+
     await ChatMessage.create({
       speaker: ChatMessage.getSpeaker(),
       content: `
@@ -428,7 +414,7 @@ ${
   </div>
 </div>
 `,
-      rolls: [attackRoll, damageRoll],
+      rolls: banePacket ? [attackRoll, damageRoll, baneDamageRoll] : [attackRoll, damageRoll],
       flavor: `
 <span style="display:inline-flex; align-items:center;">
   <img src="${weapon.img}" width="36" height="36" style="margin-right:8px;">
@@ -441,7 +427,7 @@ ${
   <b>${critSuccess ? "Critical Success!" : critFailure ? "Critical Failure!" : ""}</b>
 </p>
  <hr>
-${damageLine}
+<div class="rs-attack-face" data-face-normal>${damageLine}</div>
 <hr>
 <div style="text-align:center; font-size:16px;">
 <table style="width:100%; text-align:center; font-size:16px;">
@@ -496,6 +482,7 @@ ${damageLine}
             halfDamage: halfDamage,
             penCap: penCap,
           },
+          bane: banePacket,
         },
       },
     });

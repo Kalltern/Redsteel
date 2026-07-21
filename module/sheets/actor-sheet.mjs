@@ -28,6 +28,7 @@ import {
   initializeRaceChoices,
 } from "../utils/race.mjs";
 import { openWeaponSpecDialog } from "../utils/weaponSpec.mjs";
+import { openBanePicker, clearBaneChoice } from "../helpers/banes.mjs";
 
 const { api, sheets } = foundry.applications;
 
@@ -184,12 +185,38 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       }
     }
 
+    const baneCount = Number(nodeDef.bane) || 0;
+
+    // An already-unlocked bane node with no stored pick means the player
+    // unlocked it, then cancelled the picker. Clicking it again should
+    // re-open the picker, not lock the node back in — this is the "you
+    // cancelled the picker, click the node again" recovery path.
+    if (unlocked && baneCount) {
+      const stored =
+        this.actor.system.specialisations?.[specId]?.baneChoices?.[nodeId] ?? [];
+      if (!stored.length) {
+        await openBanePicker(this.actor, specId, nodeId, baneCount);
+        return;
+      }
+    }
+
     await this.actor.update({
       [`system.specialisations.${specId}.nodes.${nodeId}`]: !unlocked,
     });
 
     // Passive buffs are real ActiveEffects — create/remove alongside the node
     await syncSpecialisationPassive(this.actor, specId, nodeId, !unlocked);
+
+    if (baneCount) {
+      if (!unlocked) {
+        const applied = await openBanePicker(this.actor, specId, nodeId, baneCount);
+        if (!applied) {
+          ui.notifications.info(game.i18n.localize("REDSTEEL.Banes.PickLater"));
+        }
+      } else {
+        await clearBaneChoice(this.actor, specId, nodeId);
+      }
+    }
   }
 
   static async _chooseWeaponSpec(event) {

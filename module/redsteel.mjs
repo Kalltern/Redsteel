@@ -98,6 +98,13 @@ import {
 } from "./utils/mentalDuel.mjs";
 import { getSpellPower } from "./utils/spellPower.mjs";
 import {
+  getBaneProfile,
+  actorMatchesBane,
+  clearMarksBy,
+  getDisplayBaneVariants,
+} from "./utils/baneCombat.mjs";
+import { renderDamageLine } from "./utils/damageLine.mjs";
+import {
   getNonWeaponAbility,
   getDoctrineBonuses,
   getWeaponSkillBonuses,
@@ -307,6 +314,9 @@ Hooks.once("init", function () {
   game.redsteel.addAimStack = addAimStack;
   game.redsteel.removeAimStack = removeAimStack;
   game.redsteel.consumeAim = consumeAim;
+  game.redsteel.getBaneProfile = getBaneProfile;
+  game.redsteel.actorMatchesBane = actorMatchesBane;
+  game.redsteel.clearMarksBy = clearMarksBy;
   game.redsteel.showAimButtons = showAimButtons; // debug: force-show buttons
   game.redsteel.refreshAimOverlay = refreshAimOverlay; // debug: redraw arrows
   game.redsteel.getAimStacks = getAimStacks;
@@ -2069,6 +2079,137 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
 
   const rollCard = html.querySelector(".dice-roll");
   if (rollCard) rollCard.prepend(container);
+});
+
+// Bane ("Metla") pill: attack chat cards that carry flags.attack.bane get a
+// single accent pill next to the trait pills. Clicking it flips the card's
+// damage block in place between the stored "normal" face and one face per
+// Bane variant that could apply — no pop-up window, so the card never shows
+// numbers that don't come from the same shared renderer as the normal face.
+//
+// Since Phase 4 the stored packet no longer carries a finished result for the
+// attacker alone — a target may also benefit from an ally Ranger's Odhalení
+// slabiny mark, granting that Ranger's Bane bonuses to whoever lands the hit.
+// Since Phase 5 the pill therefore cycles through every variant that COULD
+// apply (`getDisplayBaneVariants`) — the attacker's own Bane, if any, plus one
+// entry per Ranger who currently has some target Exposed — since the card
+// cannot know in advance which target will be picked.
+//
+// Bane values are computed at render time (not stored on the message) because
+// they depend on which Expose Weakness marks exist right now, so both the
+// normal and Bane faces are built from the same `renderDamageLine` helper to
+// keep the flip visually seamless.
+Hooks.on("renderChatMessageHTML", (message, html) => {
+  const bane = message.flags?.attack?.bane;
+  if (!bane) return;
+
+  const variants = getDisplayBaneVariants(bane);
+  if (!variants.length) return;
+
+  const pill = document.createElement("span");
+  pill.classList.add("trait-pill", "bane-pill");
+  pill.textContent = game.i18n.localize("REDSTEEL.Banes.Label");
+  pill.dataset.tooltip = `${game.i18n.localize("REDSTEEL.Banes.PillTooltip")} ${variants.map((v) => v.label).join("; ")}`;
+
+  // Cards created before this change have no `.rs-attack-face` wrapper to
+  // swap — leave the pill inert (no cursor, no handler) rather than error.
+  const faceEl = html.querySelector(".rs-attack-face");
+  const alreadyWired = faceEl?.dataset.baneWired === "true";
+
+  if (faceEl && !alreadyWired) {
+    faceEl.dataset.baneWired = "true";
+    pill.style.cursor = "pointer";
+
+    // Face 0 is the stored normal markup, captured before any swap so a
+    // later flip back is always byte-identical to what the card opened with.
+    const normalFaceHTML = faceEl.innerHTML;
+
+    const normalBreakthrough = message.flags?.attack?.breakthrough?.damage;
+    const showBreakthrough =
+      typeof normalBreakthrough === "string" &&
+      normalBreakthrough.trim() !== "";
+
+    const baneFaces = variants.map(({ label, variant: v }) => {
+      const grid = renderDamageLine({
+        damage: v.normal.damage,
+        penetration: v.normal.penetration,
+        breakthrough: v.breakthrough.damage,
+        critDamage: v.critical.damage,
+        critPenetration: v.critical.penetration,
+        critScore: v.critical.degree,
+        critScoreResult: v.critical.result,
+        showBreakthrough,
+      });
+
+      const critChanged = v.critSuccess !== bane.baseCritSuccess;
+      const critNote = critChanged
+        ? `<div style="text-align:center; font-style:italic; margin-top:6px;">
+             ${game.i18n.localize(
+               v.critSuccess
+                 ? "REDSTEEL.Banes.CritOnlyWithBane"
+                 : "REDSTEEL.Banes.CritLostWithBane",
+             )}
+           </div>`
+        : "";
+
+      // The crit roll succeeds when the die lands at or under the threshold,
+      // so state the outcome outright rather than leaving the reader to work
+      // out which direction the comparison runs.
+      const critHit = v.critSuccess
+        ? ` <strong style="color:#c8a84b;">${game.i18n.localize("REDSTEEL.Banes.CritHit")}</strong>`
+        : "";
+
+      return `
+${grid}
+<div style="text-align:center; font-weight:bold; margin-top:-4px;">
+  ${label}
+</div>
+<div style="text-align:center; font-size:14px;">
+  ${game.i18n.localize("REDSTEEL.Banes.DetailCritChance")}:
+  ${game.i18n.format("REDSTEEL.Banes.CritRoll", { die: bane.dice.die, threshold: v.critThreshold })}${critHit}
+</div>
+${critNote}
+`;
+    });
+
+    const faces = [normalFaceHTML, ...baneFaces];
+    let currentIndex = 0;
+
+    pill.addEventListener("click", () => {
+      currentIndex = (currentIndex + 1) % faces.length;
+      faceEl.innerHTML = faces[currentIndex];
+      pill.classList.toggle("is-active", currentIndex !== 0);
+    });
+  }
+
+  const existingContainer = html.querySelector(".trait-pills");
+  if (existingContainer) {
+    existingContainer.appendChild(pill);
+    return;
+  }
+
+  const container = document.createElement("div");
+  container.classList.add("trait-pills");
+  container.appendChild(pill);
+
+  const flavor = html.querySelector(".flavor-text");
+  if (flavor) {
+    const header = flavor.firstElementChild;
+    if (header) header.after(container);
+    else flavor.prepend(container);
+    return;
+  }
+
+  const rollCard = html.querySelector(".dice-roll");
+  if (rollCard) rollCard.prepend(container);
+});
+
+// Odhalení slabiny marks end with the combat, not just the marking Ranger's
+// next mark. Only the active GM's client performs the deletions, since most
+// players are not GM.
+Hooks.on("deleteCombat", async () => {
+  if (!game.user.isGM) return;
+  await clearMarksBy(null);
 });
 
 // Make "Margin of Success" lines clickable → follow-up attribute test

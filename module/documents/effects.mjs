@@ -460,7 +460,7 @@ export class RedsteelActiveEffect extends ActiveEffect {
     // ============================================
     if (isImmuneToEffect(actor, effectId)) {
       ui.notifications.info(
-        `${actor.name} is immune to ${def.name ?? effectId}.`,
+        `${actor.name} is immune to ${def.name ? game.i18n.localize(def.name) : effectId}.`,
       );
       return null;
     }
@@ -481,7 +481,10 @@ export class RedsteelActiveEffect extends ActiveEffect {
 
     const initialStacks = effectId === "fear" ? 3 : Math.min(stacks, maxStacks);
 
-    const existing = actor.effects.find((e) => e.statuses?.has(effectId));
+    // `let`, not `const`: the expose_weakness gate below can delete this very
+    // document (a Ranger re-marking the target they already marked), so it has
+    // to be re-resolved afterwards or the refresh path updates a deleted doc.
+    let existing = actor.effects.find((e) => e.statuses?.has(effectId));
     // ============================================
     // Effect Override Rules
     // ============================================
@@ -509,6 +512,33 @@ export class RedsteelActiveEffect extends ActiveEffect {
     // is applied outside a spell cast (e.g. a manual toggle).
     const sourceCaster =
       caster ?? canvas.tokens.controlled[0]?.actor ?? game.user.character;
+
+    // Odhalení slabiny ("Expose Weakness") — marking is driven by the status
+    // effect itself so it works no matter how it arrives (ability effect
+    // list, status effect manager, manual toggle). Namespace indirection
+    // (game.redsteel.*) is used instead of importing from baneCombat.mjs to
+    // avoid a circular import through combatSkillBonuses.mjs.
+    if (effectId === "expose_weakness") {
+      if (!sourceCaster) {
+        ui.notifications.warn(game.i18n.localize("REDSTEEL.Banes.ExposeNoCaster"));
+        return null;
+      }
+      const profile = game.redsteel.getBaneProfile(sourceCaster);
+      if (!profile.canMark) {
+        ui.notifications.warn(game.i18n.localize("REDSTEEL.Banes.ExposeNotUnlocked"));
+        return null;
+      }
+      if (!game.redsteel.actorMatchesBane(actor, profile.keys)) {
+        ui.notifications.warn(game.i18n.localize("REDSTEEL.Banes.ExposeNeedsBaneTarget"));
+        return null;
+      }
+      // One mark per Ranger: marking a new target releases the previous one.
+      await game.redsteel.clearMarksBy(sourceCaster.id);
+      // That delete may have removed the effect captured in `existing` above,
+      // when the Ranger re-marks a target they had already marked. Re-resolve
+      // so the paths below never touch a deleted document.
+      existing = actor.effects.find((e) => e.statuses?.has(effectId));
+    }
 
     if (effectId === "sleep") {
       if (!sourceCaster) {
@@ -626,6 +656,13 @@ export class RedsteelActiveEffect extends ActiveEffect {
 
         await existing.update(updates);
 
+        // The mark moves to whoever most recently placed it — the gate above
+        // already released the marking Ranger's own previous mark, so this
+        // simply reassigns ownership of the (possibly re-used) effect doc.
+        if (effectId === "expose_weakness" && sourceCaster) {
+          await existing.setFlag("redsteel", "baneMarkedBy", sourceCaster.id);
+        }
+
         return existing;
       }
 
@@ -701,7 +738,7 @@ export class RedsteelActiveEffect extends ActiveEffect {
 
     const created = actor.effects.find((e) => e.statuses?.has(effectId));
     await created.update({
-      name: def.name,
+      name: game.i18n.localize(def.name),
       img: def.img,
       changes,
 
@@ -733,6 +770,9 @@ export class RedsteelActiveEffect extends ActiveEffect {
     // --------------------------------------------
     if (def.combatModifiers) {
       await this._applyCombatModifiers(actor, def.combatModifiers);
+    }
+    if (effectId === "expose_weakness" && sourceCaster) {
+      await created.setFlag("redsteel", "baneMarkedBy", sourceCaster.id);
     }
     return created;
   }

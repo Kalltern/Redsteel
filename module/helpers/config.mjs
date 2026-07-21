@@ -1561,6 +1561,18 @@ REDSTEEL.effectDefinitions = {
     ],
     stackBehavior: "refresh",
   },
+
+  // Ranger's Odhalení slabiny ("Expose Weakness"): marks one target as a Bane
+  // shared by every ally attacking it, using the marking Ranger's own Bane
+  // profile. Carries no changes of its own — the bonuses are resolved
+  // per-target live in baneCombat.mjs. Cleared when that Ranger marks someone
+  // else or when combat ends.
+  expose_weakness: {
+    name: "REDSTEEL.Banes.ExposeEffect",
+    img: "icons/svg/target.svg",
+    statuses: ["expose_weakness"],
+    stackBehavior: "refresh",
+  },
 };
 
 REDSTEEL.statusEffects = Object.entries(REDSTEEL.effectDefinitions).map(

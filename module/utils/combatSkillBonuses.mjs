@@ -721,6 +721,22 @@ export async function getDamageRolls(
   };
 }
 
+/**
+ * Bucket a crit-range roll total (critRange + 1d20) into a crit degree 0-4.
+ * Exported so the Bane packet can re-bucket the same d20 under a shifted
+ * crit range without re-rolling.
+ */
+export function critScoreToDegree(critScoreResult) {
+  let critScore = 0;
+  if (critScoreResult >= 1) {
+    if (critScoreResult <= 6) critScore = 1;
+    else if (critScoreResult <= 12) critScore = 2;
+    else if (critScoreResult <= 18) critScore = 3;
+    else critScore = 4;
+  }
+  return critScore;
+}
+
 export async function getCriticalRolls(
   actor,
   weapon,
@@ -759,13 +775,7 @@ export async function getCriticalRolls(
   const critScoreRoll = new Roll(critScoreRollFormula);
   await critScoreRoll.evaluate();
   const critScoreResult = critScoreRoll.total;
-  let critScore = 0;
-  if (critScoreResult >= 1) {
-    if (critScoreResult <= 6) critScore = 1;
-    else if (critScoreResult <= 12) critScore = 2;
-    else if (critScoreResult <= 18) critScore = 3;
-    else critScore = 4;
-  }
+  const critScore = critScoreToDegree(critScoreResult);
 
   // Crit Damage Calculation:
   // Mapping crit scores to bonus damage: 0 → 0, 1 → 5, 2 → 5, 3 → 10, 4 → 20

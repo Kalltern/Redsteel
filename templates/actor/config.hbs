@@ -80,8 +80,21 @@
   </div>
 
 </div>
+<div class="grid grid-10col configstats">
+  <div class="grid-span-10">
+        <label class="resource-label">{{localize
+            "REDSTEEL.Banes.TagField"
+          }}</label>
+        <input
+          type="text"
+          name="system.baneTypes"
+          value="{{system.baneTypes}}"
+          data-tooltip="{{localize 'REDSTEEL.Banes.TagFieldHint'}}"
+        />
+  </div>
+</div>
 <hr>
-  <section class="config-container grid grid-3col"> 
+  <section class="config-container grid grid-3col">
     
 {{#each system.combatSkills as |skill key|}}
          <label class="toggle-label">

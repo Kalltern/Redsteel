@@ -149,6 +149,7 @@
       "critRangeMelee": 0,
       "critRangeRanged": 0,
       "critRangeCast": 0,
+      "baneTypes": "",
       "templates": ["base"],
       "stats": {
         "health": {
@@ -945,7 +946,7 @@
         }
       },
       "specialisations": {
-        "shadow": { "active": false, "nodes": {} },
+        "shadow": { "active": false, "nodes": {}, "baneChoices": {} },
         "swordServant": { "active": false, "nodes": {} },
         "weaponMaster": { "active": false, "nodes": {} },
         "hoplite": { "active": false, "nodes": {} },
@@ -956,7 +957,7 @@
         "elementalist": { "active": false, "nodes": {} },
         "elymas": { "active": false, "nodes": {} },
         "skirmisher": { "active": false, "nodes": {} },
-        "ranger": { "active": false, "nodes": {} },
+        "ranger": { "active": false, "nodes": {}, "baneChoices": {} },
         "incantator": { "active": false, "nodes": {} },
         "sharpshooter": { "active": false, "nodes": {} },
         "vanguard": { "active": false, "nodes": {} },
@@ -970,13 +971,13 @@
         "entomancer": { "active": false, "nodes": {} },
         "geomancer": { "active": false, "nodes": {} },
         "gnostic": { "active": false, "nodes": {} },
-        "grimm": { "active": false, "nodes": {} },
+        "grimm": { "active": false, "nodes": {}, "baneChoices": {} },
         "illusionist": { "active": false, "nodes": {} },
         "priest": { "active": false, "nodes": {} },
-        "countermage": { "active": false, "nodes": {} },
+        "countermage": { "active": false, "nodes": {}, "baneChoices": {} },
         "maleficarum": { "active": false, "nodes": {} },
         "mentalist": { "active": false, "nodes": {} },
-        "mystic": { "active": false, "nodes": {} },
+        "mystic": { "active": false, "nodes": {}, "baneChoices": {} },
         "pyromancer": { "active": false, "nodes": {} },
         "runeWarrior": { "active": false, "nodes": {} },
         "vitamancer": { "active": false, "nodes": {} }
@@ -984,6 +985,7 @@
     },
     "npc": {
       "templates": ["base"],
+      "baneTypes": "",
       "cr": 0,
       "critRangeMelee": 0,
       "critRangeRanged": 0,

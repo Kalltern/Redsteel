@@ -8,7 +8,7 @@ export async function statusEffectManager() {
     CONFIG.REDSTEEL.effectDefinitions,
   ).map(([id, def]) => ({
     id,
-    name: def.name,
+    name: game.i18n.localize(def.name),
     icon: def.img,
   }));
 

@@ -3691,6 +3691,52 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   background: #4a2020;
 }
 
+.bane-pill {
+  background: #2b2410;
+  color: #c8a84b;
+  border: 1px solid #c8a84b;
+}
+
+.bane-pill:hover {
+  border-color: #e0c165;
+  background: #3a3016;
+}
+
+/* Currently showing a Bane face (in-card flip) instead of the normal one. */
+.bane-pill.is-active {
+  background: #c8a84b;
+  color: #2b2410;
+}
+
+/* Bane attack result dialog (opened from the .bane-pill).
+   Two label/value columns whose row counts differ — the normal block has 3-4
+   rows, the critical block 5. As plain grid items each column stretched to the
+   shared row height and distributed its own rows across it, so the shorter
+   column showed large uneven gaps. `align-content: start` on each column stops
+   that distribution, and the columns then align row-for-row from the top. */
+.rs-bane-detail {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: start;
+  column-gap: 28px;
+  font-size: 15px;
+  width: 100%;
+}
+
+.rs-bane-detail .rs-bane-col {
+  display: grid;
+  grid-template-columns: max-content auto;
+  align-content: start;
+  column-gap: 10px;
+  row-gap: 6px;
+}
+
+/* Values are short numbers; never let them wrap onto a second line. */
+.rs-bane-detail .rs-bane-value {
+  text-align: right;
+  white-space: nowrap;
+}
+
 /* Clickable "Margin of Success" follow-up trigger in chat */
 .chat-message .mos-followup {
   color: var(--rs-chat-text-strong, #cdd0d2);
