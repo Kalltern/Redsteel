@@ -1,0 +1,160 @@
+{
+  "name": "Mind Bending",
+  "type": "spell",
+  "img": "icons/magic/perception/third-eye-blue-red.webp",
+  "system": {
+    "localizationKey": "",
+    "description": "<p>Applies the Mental Strain effect to the target and has a 35% chance to initiate a Mental Duel (Can be accepted voluntarily). In the case of a Critical Success, the chance to initiate is 100%. The caster cannot cast this spell again on the same target for the next hour. The caster is forced to Slow Movement and has a -20% penalty to Success for the duration (Except Mental Duel and Will Tests)</p>",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": {
+      "0": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      },
+      "1": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      }
+    },
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": false,
+    "sustained": false,
+    "difficulty": -25,
+    "cost": 4,
+    "perRound": 0,
+    "variants": [],
+    "option": "magic",
+    "type": "spirit",
+    "rank": "apprentice",
+    "actionCost": "1 | C",
+    "range": "25",
+    "spellClass": "lesser",
+    "roll": {
+      "diceNum": 0,
+      "diceSize": "0",
+      "diceBonus": ""
+    },
+    "penetration": 0,
+    "dmgType1": "",
+    "bool2": "",
+    "dmgType2": "",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": "65",
+      "effect2": "0",
+      "effect3": "0",
+      "effect4": "0",
+      "stagger": null,
+      "bleed": null,
+      "extra1": -1,
+      "extra2": null,
+      "extra3": null
+    },
+    "attributeTest": "",
+    "testModifier": "",
+    "effectType1": "mental_strain",
+    "effectType2": "",
+    "effectType3": ""
+  },
+  "effects": [],
+  "folder": "Fxz9y7e2dSJqjeq0",
+  "flags": {
+    "scene-packer": {
+      "hash": "a1c3722a3dc16cdd910d46e820d480a20cba214d"
+    },
+    "redsteel": {
+      "casterEffects": ["mind_bending_caster", "slow_movement"]
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.spirit-spells.Item.u1XHfXKX2KOim5ql",
+    "duplicateSource": "Item.XsMSuA2dnS62MsPk",
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.9.0",
+    "createdTime": 1784581202160,
+    "modifiedTime": 1784581202160,
+    "lastModifiedBy": "MXiQFt4waIv5RqBo"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3,
+    "MXiQFt4waIv5RqBo": 3
+  },
+  "_id": "XsMSuA2dnS62MsPk",
+  "sort": 112500,
+  "_key": "!items!XsMSuA2dnS62MsPk"
+}

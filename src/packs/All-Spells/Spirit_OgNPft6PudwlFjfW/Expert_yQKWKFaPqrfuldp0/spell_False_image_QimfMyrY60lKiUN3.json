@@ -1,0 +1,157 @@
+{
+  "name": "False image",
+  "type": "spell",
+  "img": "icons/magic/perception/silhouette-stealth-shadow.webp",
+  "system": {
+    "localizationKey": "",
+    "description": "Guaranteed Reaction (no Speed Test), triggers Will Test (Bonus {{math spellPower \"*\" 2}}) vs. Target's Perception Test. On failure, caster takes only half damage. On success, fully avoids the attack. Can only be used against the same opponent once every five rounds. Can only be cast when the caster is attacked.",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": {
+      "0": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      },
+      "1": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      }
+    },
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": false,
+    "sustained": false,
+    "difficulty": -25,
+    "cost": 10,
+    "perRound": 0,
+    "variants": [],
+    "option": "magic",
+    "type": "spirit",
+    "rank": "expert",
+    "actionCost": "Reaction",
+    "range": "Caster",
+    "spellClass": "support",
+    "roll": {
+      "diceNum": 0,
+      "diceSize": "0",
+      "diceBonus": ""
+    },
+    "penetration": 0,
+    "dmgType1": "",
+    "bool2": "",
+    "dmgType2": "",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": "0",
+      "effect2": "0",
+      "effect3": "0",
+      "effect4": "0",
+      "stagger": null,
+      "bleed": null,
+      "extra1": null,
+      "extra2": null,
+      "extra3": null
+    },
+    "attributeTest": "will",
+    "testModifier": "@spellPower*2",
+    "effectType1": "",
+    "effectType2": "",
+    "effectType3": ""
+  },
+  "effects": [],
+  "folder": "yQKWKFaPqrfuldp0",
+  "flags": {
+    "scene-packer": {
+      "hash": "3d2947ae105b00ea6b670e50af8ffae0b8476c4e"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.spirit-spells.Item.bw7IUN2lwCnmSEc3",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.9.0",
+    "createdTime": 1784581202173,
+    "modifiedTime": 1784581202173,
+    "lastModifiedBy": "MXiQFt4waIv5RqBo"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3,
+    "MXiQFt4waIv5RqBo": 3
+  },
+  "_id": "QimfMyrY60lKiUN3",
+  "sort": 1300000,
+  "_key": "!items!QimfMyrY60lKiUN3"
+}

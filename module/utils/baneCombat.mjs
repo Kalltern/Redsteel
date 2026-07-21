@@ -207,9 +207,15 @@ const normalize = (s) =>
     .replace(/[̀-ͯ]/g, "");
 
 /**
- * Every Bane key that matches the target's manually-tagged `system.baneTypes`
- * field, compared against the registry key alone. Tags are English registry
- * keys only (normalized for case/diacritics) — not localized labels.
+ * Every Bane key that matches the target, compared against the registry key
+ * alone. Tags are English registry keys only (normalized for case/
+ * diacritics) — not localized labels. Tokens are gathered from the union of
+ * two sources: the target's own manually-tagged `system.baneTypes` field,
+ * and the `system.baneTypes` field of any race Item on the actor (so tagging
+ * a race once — e.g. "Zombie" — makes every actor of that race a valid
+ * target without per-actor tagging). Either source alone is enough to match;
+ * the race tag is purely additive and never removes a match the actor field
+ * would have produced on its own.
  * @param {Actor|null} targetActor
  * @param {string[]} baneKeys
  * @returns {string[]}
@@ -217,12 +223,25 @@ const normalize = (s) =>
 function matchedBaneKeys(targetActor, baneKeys) {
   if (!targetActor || !Array.isArray(baneKeys) || !baneKeys.length) return [];
 
-  const raw = targetActor?.system?.baneTypes;
-  if (!raw) return [];
+  const rawSources = [targetActor?.system?.baneTypes];
 
-  const tokens = String(raw)
-    .split(",")
-    .map((t) => normalize(t))
+  // `.contents`, not the Item Collection itself — iterating a Foundry
+  // Collection directly with for...of has silently yielded nothing before
+  // in this feature (see markedCandidates above).
+  const raceItems = (targetActor.items?.contents ?? []).filter(
+    (i) => i.type === "race",
+  );
+  for (const raceItem of raceItems) {
+    rawSources.push(raceItem.system?.baneTypes);
+  }
+
+  const tokens = rawSources
+    .filter((raw) => raw)
+    .flatMap((raw) =>
+      String(raw)
+        .split(",")
+        .map((t) => normalize(t)),
+    )
     .filter((t) => t.length);
 
   if (!tokens.length) return [];
@@ -236,9 +255,10 @@ function matchedBaneKeys(targetActor, baneKeys) {
 }
 
 /**
- * True if `targetActor` belongs to any category in `baneKeys`, based solely
- * on the manual `system.baneTypes` tag field (English registry keys only, no
- * race-Item or actor-name inference).
+ * True if `targetActor` belongs to any category in `baneKeys`. Matches
+ * against the union of the actor's own manual `system.baneTypes` tag field
+ * and the `system.baneTypes` field of any race Item on the actor (English
+ * registry keys only — no actor-name inference).
  * @param {Actor|null} targetActor
  * @param {string[]} baneKeys
  * @returns {boolean}
@@ -282,6 +302,7 @@ export function computeBaneVariant(profile, bane) {
     su: baneSu,
     critSuccess: baneCritSuccess,
     critThreshold: dice.critThreshold + profile.critChance,
+    precision: profile.precision,
     normal: {
       damage: base.damageTotal + bane.damageBonus,
       penetration: base.penetration + profile.penetration,

@@ -1,0 +1,158 @@
+{
+  "name": "Counterspell (WIP)",
+  "type": "spell",
+  "img": "icons/magic/fire/explosion-flame-blue.webp",
+  "system": {
+    "localizationKey": "",
+    "description": "Cancels any spell (except a few, such as Magic Shield), with chance based on tier (90/70/40/15%). Can be cast to disrupt target's channeling, increasing Difficulty by -40% and Critical Failure chance by -1%. Always destabilizes portals. If the disrupted spell would result in a Critical Failure, caster may reduce the severity of the failure to any lower tier. Can be cast as a Reaction on any spell Channeling in range.",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": {
+      "0": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      },
+      "1": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      }
+    },
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": false,
+    "sustained": false,
+    "difficulty": -15,
+    "cost": 10,
+    "perRound": 0,
+    "variants": [],
+    "option": "magic",
+    "type": "spirit",
+    "rank": "expert",
+    "actionCost": "1 | Reaction",
+    "range": "15",
+    "spellClass": "support",
+    "roll": {
+      "diceNum": 0,
+      "diceSize": "0",
+      "diceBonus": ""
+    },
+    "penetration": 0,
+    "dmgType1": "",
+    "bool2": "",
+    "dmgType2": "",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": "90",
+      "effect2": "0",
+      "effect3": "0",
+      "effect4": "0",
+      "stagger": null,
+      "bleed": null,
+      "extra1": 90,
+      "extra2": null,
+      "extra3": null,
+      "effectName1": "Counterspell"
+    },
+    "attributeTest": "",
+    "testModifier": "",
+    "effectType1": "custom",
+    "effectType2": "",
+    "effectType3": ""
+  },
+  "effects": [],
+  "folder": "yQKWKFaPqrfuldp0",
+  "flags": {
+    "scene-packer": {
+      "hash": "8bce4740f5d870135c06ad350a0c067fae88f14f"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.spirit-spells.Item.E4iwM91RmSGhsnlj",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.9.0",
+    "createdTime": 1784581202168,
+    "modifiedTime": 1784581202168,
+    "lastModifiedBy": "MXiQFt4waIv5RqBo"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3,
+    "MXiQFt4waIv5RqBo": 3
+  },
+  "_id": "fhOt3lVr8HpsmymU",
+  "sort": 1900000,
+  "_key": "!items!fhOt3lVr8HpsmymU"
+}

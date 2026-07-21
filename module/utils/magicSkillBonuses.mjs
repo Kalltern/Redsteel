@@ -1066,6 +1066,10 @@ export async function finalizeRollsAndPostChat(
   const showCrit = ignoreChanneling
     ? displayCritSuccess || displayCritFailure
     : critSuccess || critFailure;
+  // The cast landed when the margin of success is ≥ 0. Everything the cast
+  // imposes on the *caster* (channeling upkeep, caster effects, Mental Duel)
+  // hangs off this — a botched cast must not sustain or self-debuff.
+  const castSucceeded = spellCastSucceeded(attackResults);
 
   // --- Roll Data Setup (needed for Damage/Description) ---
   const rollData = {
@@ -1240,34 +1244,12 @@ export async function finalizeRollsAndPostChat(
     };
   }
 
-  // 1.a Start channeling automatically for any spell with a per-round upkeep —
-  // that mana-per-round cost is what marks a spell as "kept going" after the
-  // initial cast (concentration/sustained). `sustained` then decides whether
-  // each round re-rolls the spell (resolveChannelingTick). No opt-in: the
-  // player cancels the Channeling effect whenever they want (even immediately).
-  const costPerRound = Number(spell.system.perRound) || 0;
-  if (costPerRound > 0 && !fromChanneling) {
-    const existing = actor.effects.find(
-      (e) => e.getFlag("core", "statusId") === "channeling",
-    );
-
-    if (existing) {
-      await existing.delete();
-    }
-
-    const effect = await game.redsteel.applyEffect(actor, "channeling");
-
-    if (effect) {
-      await effect.setFlag("redsteel", "channelingData", {
-        spellId: spell.id,
-        rollContext: {
-          focusSpent,
-        },
-        isSustained: spell.system.sustained,
-      });
-
-      await effect.setFlag("redsteel", "costPerRound", costPerRound);
-    }
+  // 1.a Start channeling automatically for any spell with a per-round upkeep,
+  // but only when the cast actually landed — a failed cast has nothing to
+  // sustain. A reroll that turns the failure into a success starts it late
+  // (see applyPostCastEffects in castSpell.mjs).
+  if (castSucceeded && !fromChanneling) {
+    await startChannelingForSpell(actor, spell, { focusSpent });
   }
   // --- CRITICAL SCORE ROLL ---
   const critScoreRoll = new Roll(`1d20`);
@@ -1526,6 +1508,20 @@ export async function finalizeRollsAndPostChat(
         criticalFailureThreshold:
           actor.system.combatSkills.channeling.criticalFailureThreshold,
         traitPills: getTraitPills(actor, "attack"),
+        // A failed cast applied nothing to the caster. Carry enough context to
+        // redo that side if a reroll turns the margin positive — the reroll
+        // re-evaluates this card's own margin formula, so the new total is
+        // directly comparable (see executeReroll).
+        ...(!castSucceeded &&
+          !fromChanneling && {
+            pendingCast: {
+              spellUuid: spell.uuid,
+              spellId: spell.id,
+              casterUuid: actor.uuid,
+              focusSpent,
+              ignoreChanneling,
+            },
+          }),
       },
       ...(attackFlag && { attack: attackFlag }),
       ...(effectsFlag && { effects: effectsFlag }),
@@ -1556,6 +1552,71 @@ export async function finalizeRollsAndPostChat(
     });
   }
   //tables -> Flag: "redsteel.critTable: fire"
+}
+
+/**
+ * Whether a spell cast landed: the margin-of-success roll
+ * (`rating + difficulty + bonus - 1d100`) came out at 0 or better.
+ *
+ * Shared by the cast pipeline and the chat reroll handler so "did it work?"
+ * is answered the same way in both, including for a reroll whose margin is
+ * re-derived from the same formula.
+ *
+ * @param {object} attackResults - Result of performAttackRoll (or a reroll
+ *   shaped the same way).
+ * @returns {boolean}
+ */
+export function spellCastSucceeded(attackResults) {
+  // A margin of exactly 0 is a success, so this must not lean on falsiness.
+  const total = Number(attackResults?.attackRoll?.total);
+  return Number.isFinite(total) && total >= 0;
+}
+
+/**
+ * Start (or restart) the Channeling effect that carries a spell's per-round
+ * upkeep. That mana-per-round cost is what marks a spell as "kept going" after
+ * the initial cast (concentration/sustained); `sustained` then decides whether
+ * each round re-rolls the spell (see {@link resolveChannelingTick}). No opt-in:
+ * the player cancels the Channeling effect whenever they want.
+ *
+ * Spells without an upkeep are a no-op, so callers don't need to pre-check.
+ *
+ * @param {Actor} actor - The casting actor.
+ * @param {Item} spell - The spell being sustained.
+ * @param {{focusSpent?: number}} [options]
+ * @returns {Promise<ActiveEffect|null>} The channeling effect, if one started.
+ */
+export async function startChannelingForSpell(
+  actor,
+  spell,
+  { focusSpent = 0 } = {},
+) {
+  const costPerRound = Number(spell.system.perRound) || 0;
+  if (costPerRound <= 0) return null;
+
+  const existing = actor.effects.find(
+    (e) => e.getFlag("core", "statusId") === "channeling",
+  );
+
+  if (existing) {
+    await existing.delete();
+  }
+
+  const effect = await game.redsteel.applyEffect(actor, "channeling");
+
+  if (effect) {
+    await effect.setFlag("redsteel", "channelingData", {
+      spellId: spell.id,
+      rollContext: {
+        focusSpent,
+      },
+      isSustained: spell.system.sustained,
+    });
+
+    await effect.setFlag("redsteel", "costPerRound", costPerRound);
+  }
+
+  return effect;
 }
 
 export async function resolveChannelingTick(actor, effect) {

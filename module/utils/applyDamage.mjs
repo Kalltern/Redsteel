@@ -411,6 +411,14 @@ export async function applyDamageAsGM(data) {
 
     const effects = message.flags.attack.effects || {};
     for (const [name, effect] of Object.entries(effects)) {
+      // NOTE: the Bane ("Metla") Ověření bonus is deliberately NOT applied
+      // here. Below, `targetMod` is only read again inside the `bleed` branch;
+      // every other effect is gated purely on `allowedEffectsForTarget`, the
+      // checkbox state the GM submitted. Success for precision is therefore
+      // decided in openDamageSelectionDialog's preview (which is where the
+      // bonus is added, and which sets each checkbox's default), not here.
+      // Adding it to `targetMod` again would be a no-op that reads as though
+      // this path enforced the chance.
       const targetMod = actor.system.effectMods?.[name]?.applyChance || 0;
       const stackMod = actor.system.effectMods?.[name]?.stackMod || 0;
 
@@ -591,7 +599,12 @@ function openDamageSelectionDialog(message, targets) {
               else if (name === "precision") npcBonus += npcOverrides.precisionMod;
             }
 
-            const modifiedChance = effect.chance + targetMod + npcBonus;
+            // Bane ("Metla") Ověření bonus: applies only to the precision
+            // effect, only when a Bane variant applies to this target.
+            const baneBonus =
+              name === "precision" && baneVariant ? baneVariant.precision : 0;
+
+            const modifiedChance = effect.chance + targetMod + npcBonus + baneBonus;
 
             const displayChance = modifiedChance;
             let extraInfo = npcBonus ? ` <em style="color:#c8a84b;">(+${npcBonus}% body part)</em>` : "";

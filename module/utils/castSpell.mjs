@@ -1,3 +1,8 @@
+import {
+  spellCastSucceeded,
+  startChannelingForSpell,
+} from "./magicSkillBonuses.mjs";
+
 export async function castSpell() {
   const context = game.redsteel.selectToken({ notifyFallback: true });
   if (!context) return;
@@ -46,13 +51,45 @@ export async function castSpell() {
     },
   );
 
-  // Spells flagged with `flags.redsteel.casterEffects` (an array of effect ids
-  // from REDSTEEL.effectDefinitions) apply those effects to the *caster* after
-  // a normal cast — e.g. Mind Bending's self-imposed Slow Movement + −20%
-  // Success debuff. Generic so future "self-debuffing" spells reuse it.
-  await applyCasterEffects(actor, spell);
+  // Everything the cast imposes on the caster only happens when it landed.
+  // A failed cast leaves the caster clean; the chat card carries a
+  // `pendingCast` flag so a successful reroll can apply this side late.
+  await applyPostCastEffects(actor, spell, attackResults, {
+    token,
+    focusSpent,
+  });
+}
 
-  // Mind Bending also rolls to open the Mental Duel window vs the target.
+/**
+ * The caster-side consequences of a successful cast, in the order the cast
+ * pipeline has always applied them:
+ *
+ *   1. Channeling upkeep for spells with a per-round mana cost (this is what
+ *      makes a spell sustained/concentration).
+ *   2. `flags.redsteel.casterEffects` — status effects the spell imposes on
+ *      its own caster, e.g. Mind Bending's Slow Movement + −20% Success.
+ *   3. Mind Bending's Mental Duel kick-off.
+ *
+ * Returns early unless the cast actually landed, so this is safe to call
+ * unconditionally. Exported because the chat reroll handler calls it when a
+ * reroll turns a failed cast into a successful one.
+ *
+ * @param {Actor} actor - The casting actor.
+ * @param {Item} spell - The spell that was cast.
+ * @param {object} attackResults - Result of performAttackRoll, or a reroll
+ *   shaped the same way.
+ * @param {{token?: Token|null, focusSpent?: number}} [options]
+ */
+export async function applyPostCastEffects(
+  actor,
+  spell,
+  attackResults,
+  { token = null, focusSpent = 0 } = {},
+) {
+  if (!spellCastSucceeded(attackResults)) return;
+
+  await startChannelingForSpell(actor, spell, { focusSpent });
+  await applyCasterEffects(actor, spell);
   await maybeStartMentalDuel(actor, token, spell, attackResults);
 }
 
@@ -101,8 +138,7 @@ async function maybeStartMentalDuel(actor, token, spell, attackResults) {
   if (!triggers) return;
 
   // The spell has to land to seed the duel (margin of success ≥ 0).
-  const hit = (attackResults?.attackRoll?.total ?? -1) >= 0;
-  if (!hit) return;
+  if (!spellCastSucceeded(attackResults)) return;
 
   const casterToken = token ?? actor.getActiveTokens()[0] ?? null;
   const targetToken = [...(game.user.targets ?? [])][0] ?? null;

@@ -38,7 +38,7 @@ import { usePotion } from "./utils/usePotion.mjs";
 import { usePoison, clearWeaponCoating } from "./utils/usePoison.mjs";
 import { defenseRoll } from "./utils/defense.mjs";
 import { throwExplosive } from "./utils/throwExplosive.mjs";
-import { castSpell } from "./utils/castSpell.mjs";
+import { castSpell, applyPostCastEffects } from "./utils/castSpell.mjs";
 import { spellDefense } from "./utils/spellDefense.mjs";
 import {
   combatAbilities,
@@ -126,6 +126,7 @@ import {
   performAttackRoll,
   finalizeRollsAndPostChat,
   resolveChannelingTick,
+  spellCastSucceeded,
 } from "./utils/magicSkillBonuses.mjs";
 import {
   getEligibleRerolls,
@@ -1151,6 +1152,15 @@ async function executeReroll(message, sourceLabel) {
   const rollName = message.getFlag("redsteel", "rollName");
   const skill = message.getFlag("redsteel", "skill");
 
+  // A spell card whose cast failed carries `pendingCast`: nothing was applied
+  // to the caster, so a reroll that lands has to apply it late. The reroll
+  // reuses the card's own margin formula, so this roll's total is the new
+  // margin of success.
+  const pendingCast = message.getFlag("redsteel", "pendingCast");
+  const rescued = pendingCast
+    ? await applyPendingCast(pendingCast, roll, critSuccess)
+    : false;
+
   let flavorText = "";
   if (critSuccess) flavorText = "Critical Success!";
   else if (d100Result >= criticalFailureThreshold) flavorText = "Critical Failure!";
@@ -1158,20 +1168,69 @@ async function executeReroll(message, sourceLabel) {
   const sourceNote = sourceLabel
     ? `<p style="text-align:center; font-size:12px; opacity:0.8;"><i class="fa-light fa-rotate"></i> Reroll — ${sourceLabel}</p>`
     : "";
+  const rescuedNote = rescued
+    ? `<p style="text-align:center; font-size:12px; opacity:0.8;"><i class="fa-light fa-sparkles"></i> Cast succeeded on the reroll — caster effects applied.</p>`
+    : "";
 
   await roll.toMessage({
     speaker: message.speaker ?? ChatMessage.getSpeaker({ user: game.user }),
     flavor: `<p style="text-align: center; font-size: 20px;"><b><i class="fa-light fa-dice-d20"></i> ${rollName} <i class="fa-light fa-dice-d20"></i><hr></b></p>
-          <p style="text-align: center; font-size: 20px;"><b>${flavorText}</b></p>${sourceNote}`,
+          <p style="text-align: center; font-size: 20px;"><b>${flavorText}</b></p>${sourceNote}${rescuedNote}`,
     flags: {
       redsteel: {
         rollName,
         skill,
         criticalSuccessThreshold,
         criticalFailureThreshold,
+        // Still failed? Keep the context alive so the next reroll can rescue
+        // it too. Once applied, drop it so nothing double-applies.
+        ...(pendingCast && !rescued && { pendingCast }),
       },
     },
   });
+}
+
+/**
+ * Apply the caster side of a spell whose original cast failed, now that a
+ * reroll has landed. No-op when the reroll still missed.
+ *
+ * @param {object} pendingCast - `flags.redsteel.pendingCast` from the card.
+ * @param {Roll} roll - The evaluated reroll (its total is the new margin).
+ * @param {boolean} critSuccess - Whether the reroll was a Critical Success.
+ * @returns {Promise<boolean>} true when the caster side was applied.
+ */
+async function applyPendingCast(pendingCast, roll, critSuccess) {
+  if (!spellCastSucceeded({ attackRoll: roll })) return false;
+
+  const actor = await fromUuid(pendingCast.casterUuid);
+  if (!actor) return false;
+
+  // Variant spells may live on the actor, in the world, or in a compendium —
+  // the uuid covers all three, with the id as a fallback for older cards.
+  const spell =
+    (pendingCast.spellUuid ? await fromUuid(pendingCast.spellUuid) : null) ??
+    actor.items.get(pendingCast.spellId) ??
+    game.items.get(pendingCast.spellId);
+  if (!spell) {
+    ui.notifications.warn(
+      "Reroll succeeded, but the spell could not be found to apply its caster effects.",
+    );
+    return false;
+  }
+
+  // `ignoreChanneling` suppresses crit evaluation exactly as it does on the
+  // original cast (see performAttackRoll).
+  await applyPostCastEffects(
+    actor,
+    spell,
+    {
+      attackRoll: roll,
+      critSuccess: pendingCast.ignoreChanneling ? false : critSuccess,
+      displayCritSuccess: critSuccess,
+    },
+    { focusSpent: pendingCast.focusSpent ?? 0 },
+  );
+  return true;
 }
 
 /**
@@ -2159,6 +2218,28 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
         ? ` <strong style="color:#c8a84b;">${game.i18n.localize("REDSTEEL.Banes.CritHit")}</strong>`
         : "";
 
+      // Ověření (precision) sits directly under the crit roll because that is
+      // all a procced precision does: announce eligibility for a critical
+      // strike. Threshold is the attacker-side chance plus this profile's
+      // metlaOvereni bonus — the target's own effect mods and any aimed-hit
+      // body-part modifier are not known here, so the Apply Damage dialog
+      // remains the authority on what actually lands.
+      const precisionEffect = message.flags?.attack?.effects?.precision;
+      let precisionLine = "";
+      if (precisionEffect) {
+        const threshold =
+          (Number(precisionEffect.chance) || 0) + (v.precision || 0);
+        const procced = Number(precisionEffect.roll) <= threshold;
+        const proc = procced
+          ? ` <strong style="color:#c8a84b;">${game.i18n.localize("REDSTEEL.Banes.PrecisionProc")}</strong>`
+          : "";
+        precisionLine = `
+<div style="text-align:center; font-size:14px;">
+  ${game.i18n.localize("REDSTEEL.Banes.DetailPrecision")}:
+  ${game.i18n.format("REDSTEEL.Banes.CritRoll", { die: precisionEffect.roll, threshold })}${proc}
+</div>`;
+      }
+
       return `
 ${grid}
 <div style="text-align:center; font-weight:bold; margin-top:-4px;">
@@ -2168,6 +2249,7 @@ ${grid}
   ${game.i18n.localize("REDSTEEL.Banes.DetailCritChance")}:
   ${game.i18n.format("REDSTEEL.Banes.CritRoll", { die: bane.dice.die, threshold: v.critThreshold })}${critHit}
 </div>
+${precisionLine}
 ${critNote}
 `;
     });

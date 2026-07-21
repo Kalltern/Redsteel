@@ -326,15 +326,15 @@
             },
             "bane1": {
               "label": "Odemyká jednu Metlu",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Automatizováno."
             },
             "bane2": {
               "label": "Odemyká jednu Metlu",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Automatizováno."
             },
             "bane3": {
               "label": "Odemyká jednu Metlu",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Automatizováno."
             },
             "quickFeet": {
               "label": "Rychlé nohy",
@@ -1253,43 +1253,43 @@
             },
             "metlaPrubojnost": {
               "label": "Metla: Průbojnost +3",
-              "description": "5 CP; Hraničář IV. Situační (proti Metle) — zatím ručně. Ručně — řeší se u stolu."
+              "description": "5 CP; Hraničář IV. Automatizováno."
             },
             "metlaKritRozsah": {
               "label": "Metla: Kritický rozsah +2",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Automatizováno."
             },
             "odhaleniSlabiny": {
               "label": "Odhalení slabiny",
-              "description": "15 CP; Přežití III. Ručně — řeší se u stolu."
+              "description": "15 CP; Přežití III. Automatizováno."
             },
             "metlaKritObrana": {
               "label": "Metla: Kritická obrana +3%",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Automatizováno."
             },
             "metlaKritZasah": {
               "label": "Metla: Kritický zásah +3%",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Automatizováno."
             },
             "metlaOvereni": {
               "label": "Metla: Ověření +10%",
-              "description": "10 CP. Ručně — řeší se u stolu."
+              "description": "10 CP. Automatizováno."
             },
             "metlaKritZraneni": {
               "label": "Metla: Kritické zranění/Průbojnost +5",
-              "description": "10 CP. Ručně — řeší se u stolu."
+              "description": "10 CP. Automatizováno."
             },
             "bane1": {
               "label": "Odemyká jednu Metlu",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Automatizováno."
             },
             "bane2": {
               "label": "Odemyká jednu Metlu",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Automatizováno."
             },
             "bane3": {
               "label": "Odemyká jednu Metlu",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Automatizováno."
             },
             "vnimaniStopovani": {
               "label": "Vnímání a Stopování +15%",
@@ -2555,31 +2555,31 @@
           "nodes": {
             "bane1": {
               "label": "Odemyká jednu Metlu",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Automatizováno."
             },
             "bane2": {
               "label": "Odemyká jednu Metlu",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Automatizováno."
             },
             "bane3": {
               "label": "Odemyká jednu Metlu",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Automatizováno."
             },
             "bane4": {
               "label": "Odemyká jednu Metlu",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Automatizováno."
             },
             "bane5": {
               "label": "Odemyká jednu Metlu",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Automatizováno."
             },
             "bane6": {
               "label": "Odemyká jednu Metlu",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Automatizováno."
             },
             "bane7": {
               "label": "Odemyká jednu Metlu",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Automatizováno."
             },
             "metlaVnimani": {
               "label": "Metla: Vnímání a Stopování +10%",
@@ -2862,7 +2862,7 @@
             },
             "bane1": {
               "label": "Odemkne jednu Metlu",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Automatizováno."
             },
             "magickyKryt": {
               "label": "Magický kryt",
@@ -2870,7 +2870,7 @@
             },
             "bane2": {
               "label": "Odemkne dvě Metly",
-              "description": "10 CP. Ručně — řeší se u stolu."
+              "description": "10 CP. Automatizováno."
             },
             "magickaImunita": {
               "label": "Šance na Magickou imunitu +25%",
@@ -3173,7 +3173,7 @@
             },
             "bane1": {
               "label": "Odemkne jednu Metlu",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Automatizováno."
             },
             "ritualyVyhoda": {
               "label": "Rituály: Výhoda",
@@ -4337,7 +4337,9 @@
         "orcoid": "Orkovití"
       },
       "Close": "Zavřít",
-      "CritHit": "Kritický zásah!"
+      "CritHit": "Kritický zásah!",
+      "DetailPrecision": "Ověření",
+      "PrecisionProc": "Ověření!"
     },
     "Effect": {
       "Source": "Zdroj",

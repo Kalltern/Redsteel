@@ -487,7 +487,11 @@ export function prepareSpecialisationTrees(actor) {
         label: node.label,
         description: node.description,
         icon: node.icon || "",
-        automated: !!node.passive,
+        // The blue "automated" dot. `passive` covers nodes whose buff is a real
+        // Active Effect; `bane` covers Bane slot nodes (their effect is the
+        // picker plus the combat maths in baneCombat.mjs); `automated: true` is
+        // the explicit opt-in for nodes wired in code with neither of those.
+        automated: !!node.passive || !!node.bane || node.automated === true,
         x,
         y,
         unlocked,

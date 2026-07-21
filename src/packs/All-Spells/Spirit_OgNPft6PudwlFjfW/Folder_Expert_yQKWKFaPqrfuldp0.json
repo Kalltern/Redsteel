@@ -1,0 +1,23 @@
+{
+  "type": "Item",
+  "folder": "OgNPft6PudwlFjfW",
+  "name": "Expert",
+  "color": null,
+  "sorting": "a",
+  "_id": "yQKWKFaPqrfuldp0",
+  "description": "",
+  "sort": 0,
+  "flags": {},
+  "_stats": {
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.9.0",
+    "createdTime": 1784581202085,
+    "modifiedTime": 1784581202085,
+    "lastModifiedBy": "MXiQFt4waIv5RqBo",
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null
+  },
+  "_key": "!folders!yQKWKFaPqrfuldp0"
+}

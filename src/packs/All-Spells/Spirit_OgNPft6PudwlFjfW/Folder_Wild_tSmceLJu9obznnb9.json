@@ -1,0 +1,23 @@
+{
+  "type": "Item",
+  "folder": "OgNPft6PudwlFjfW",
+  "name": "Wild",
+  "color": null,
+  "sorting": "a",
+  "_id": "tSmceLJu9obznnb9",
+  "description": "",
+  "sort": 0,
+  "flags": {},
+  "_stats": {
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.9.0",
+    "createdTime": 1784581202086,
+    "modifiedTime": 1784581202086,
+    "lastModifiedBy": "MXiQFt4waIv5RqBo",
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null
+  },
+  "_key": "!folders!tSmceLJu9obznnb9"
+}

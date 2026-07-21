@@ -1446,7 +1446,8 @@
     },
     "race": {
       "templates": ["base"],
-      "choices": []
+      "choices": [],
+      "baneTypes": ""
     },
     "condition": {
       "templates": ["base"],

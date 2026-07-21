@@ -326,15 +326,15 @@
             },
             "bane1": {
               "label": "Unlocks one Bane",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Automated."
             },
             "bane2": {
               "label": "Unlocks one Bane",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Automated."
             },
             "bane3": {
               "label": "Unlocks one Bane",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Automated."
             },
             "quickFeet": {
               "label": "Quick Feet",
@@ -1253,43 +1253,43 @@
             },
             "metlaPrubojnost": {
               "label": "Bane: Penetration +3",
-              "description": "5 CP; Hraničář IV. Situational (vs. the Bane) — manual for now. Manual — resolved at the table."
+              "description": "5 CP; Hraničář IV. Automated."
             },
             "metlaKritRozsah": {
               "label": "Bane: Critical Range +2",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Automated."
             },
             "odhaleniSlabiny": {
               "label": "Expose Weakness",
-              "description": "15 CP; Přežití III. Manual — resolved at the table."
+              "description": "15 CP; Přežití III. Automated."
             },
             "metlaKritObrana": {
               "label": "Bane: Critical Defense +3%",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Automated."
             },
             "metlaKritZasah": {
               "label": "Bane: Critical Hit +3%",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Automated."
             },
             "metlaOvereni": {
               "label": "Bane: Precision +10%",
-              "description": "10 CP. Manual — resolved at the table."
+              "description": "10 CP. Automated."
             },
             "metlaKritZraneni": {
               "label": "Bane: Crit damage/Penetration +5",
-              "description": "10 CP. Manual — resolved at the table."
+              "description": "10 CP. Automated."
             },
             "bane1": {
               "label": "Unlocks one Bane",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Automated."
             },
             "bane2": {
               "label": "Unlocks one Bane",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Automated."
             },
             "bane3": {
               "label": "Unlocks one Bane",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Automated."
             },
             "vnimaniStopovani": {
               "label": "Perception and Tracking +15%",
@@ -2555,31 +2555,31 @@
           "nodes": {
             "bane1": {
               "label": "Unlocks one Bane",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Automated."
             },
             "bane2": {
               "label": "Unlocks one Bane",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Automated."
             },
             "bane3": {
               "label": "Unlocks one Bane",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Automated."
             },
             "bane4": {
               "label": "Unlocks one Bane",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Automated."
             },
             "bane5": {
               "label": "Unlocks one Bane",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Automated."
             },
             "bane6": {
               "label": "Unlocks one Bane",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Automated."
             },
             "bane7": {
               "label": "Unlocks one Bane",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Automated."
             },
             "metlaVnimani": {
               "label": "Bane: Perception and Tracking +10%",
@@ -2862,7 +2862,7 @@
             },
             "bane1": {
               "label": "Unlocks one Bane",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Automated."
             },
             "magickyKryt": {
               "label": "Magic Cover",
@@ -2870,7 +2870,7 @@
             },
             "bane2": {
               "label": "Unlocks two Banes",
-              "description": "10 CP. Manual — resolved at the table."
+              "description": "10 CP. Automated."
             },
             "magickaImunita": {
               "label": "Magic Immunity chance +25%",
@@ -3173,7 +3173,7 @@
             },
             "bane1": {
               "label": "Unlocks one Bane",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Automated."
             },
             "ritualyVyhoda": {
               "label": "Rituals: Advantage",
@@ -4348,7 +4348,9 @@
         "orcoid": "Orcoid"
       },
       "Close": "Close",
-      "CritHit": "Critical hit!"
+      "CritHit": "Critical hit!",
+      "DetailPrecision": "Precision",
+      "PrecisionProc": "Precision!"
     },
     "Effect": {
       "Source": "Source",
