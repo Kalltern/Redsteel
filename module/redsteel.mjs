@@ -19,6 +19,7 @@ import {
 } from "./utils/customConditions.mjs";
 import { wireAttributeFollowups } from "./utils/attributeFollowup.mjs";
 import { registerRollModifier } from "./utils/rollModifier.mjs";
+import { registerFormulaDisplay } from "./utils/formulaDisplay.mjs";
 import { registerEndTurnButton } from "./utils/endTurnButton.mjs";
 import { applyTraitStatusEffects } from "./utils/traitStatusEffects.mjs";
 import { applyActorLight } from "./utils/itemLight.mjs";
@@ -329,6 +330,7 @@ Hooks.once("init", function () {
   registerAimOverlay();
   registerDynamicInitiative();
   registerRollModifier();
+  registerFormulaDisplay();
   registerEndTurnButton();
   registerEffectSheetExtensions();
   registerKeepDialogOpen();

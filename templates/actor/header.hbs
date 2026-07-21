@@ -464,7 +464,7 @@
 
   <div class="header-fields">
 
-    <div class="grid grid-2col">
+    <div class="grid grid-2col npc-identity">
       <div class="document-name grid-span-1">
         <input
           name="name"
@@ -475,14 +475,25 @@
       </div>
 
       <div class="grid-span-1">
-        <div class="item-name">
-          <input
-            type="text"
-            name="system.raceName"
-            value="{{system.raceName}}"
-            placeholder="Choose a race"
-          />
-        </div>
+        {{#if race.length}}
+          {{#each race as |item id|}}
+          <div
+            class="item-name race-select"
+            data-action="selectRace"
+            title="{{localize 'REDSTEEL.Race.EditTooltip'}}"
+          >
+            {{item.localizedName}}
+          </div>
+          {{/each}}
+        {{else}}
+          <div
+            class="item-name race-select race-select--empty"
+            data-action="selectRace"
+            title="{{localize 'REDSTEEL.Race.EditTooltip'}}"
+          >
+            {{localize "REDSTEEL.Race.ChooseRace"}}
+          </div>
+        {{/if}}
       </div>
     </div>
 

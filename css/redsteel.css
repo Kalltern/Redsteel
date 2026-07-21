@@ -301,6 +301,21 @@ body.theme-dark.application {
   box-shadow: 0 0 4px rgb(0 0 0) inset
 }
 
+/* Roll formulas stay on one line with an ellipsis; click to reveal the rest. */
+.dice-roll .dice-formula.rs-formula-clamp {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.dice-roll .dice-formula.rs-formula-clamp.rs-formula-expanded {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+}
+
 #chat-form textarea,
 #chat-form .editor-content.ProseMirror,
 #sidebar .chat-sidebar .editor-content.ProseMirror {
@@ -825,9 +840,13 @@ table tr td:nth-child(3) {
 }
 
 /* Character-only: centre the name/race row in the gap between the top edge
-   and the primary stats (this auto + primary's margin-top:auto split 50/50). */
+   and the primary stats (this auto + primary's margin-top:auto split 50/50).
+   `align-items: end` bottom-aligns the two cells so the name input's underline
+   and the race div's underline sit on the same line despite the input and the
+   div resolving different content heights. */
 .sheet-header .char-identity {
   margin-top: auto;
+  align-items: end;
 }
 
 /* Name & race: no box — a gilded underline and a larger serif title.
@@ -875,6 +894,51 @@ table tr td:nth-child(3) {
 }
 
 .redsteel .sheet-header .actor .char-identity .race-select--empty {
+  color: #8a8072;
+  font-style: italic;
+}
+
+/* NPC name/race row: stretch both cells' contents so the race div ends up
+   exactly as tall and wide as the name input beside it. The input keeps
+   governing the row height (the race div is the shorter of the two). */
+.redsteel .sheet-npc-header .npc-identity > div {
+  display: flex;
+}
+
+.redsteel .sheet-npc-header .npc-identity > div > * {
+  flex: 1;
+  min-width: 0;
+}
+
+/* NPC header race field: same clickable race picker as the character sheet,
+   but skinned like the dark inset inputs it sits next to. */
+.redsteel .sheet-npc-header .race-select {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #292c2b;
+  border-radius: 3px;
+  background: radial-gradient(
+    circle at 30% 30%,
+    #181717,
+    #0b0c0c 65%,
+    #121212 100%
+  );
+  box-shadow:
+    inset 0 -2px 3px #292929,
+    inset 0 3px 5px rgb(0 0 0 / 70%),
+    0 1px 2px rgb(0 0 0);
+  color: #d8cdb4;
+  text-align: center;
+  padding: 0 6px;
+  cursor: pointer;
+}
+
+.redsteel .sheet-npc-header .race-select:hover {
+  border-color: #9a7d44;
+}
+
+.redsteel .sheet-npc-header .race-select--empty {
   color: #8a8072;
   font-style: italic;
 }
@@ -2389,6 +2453,9 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 
 .dual-roll .roll-column {
   text-align: center;
+  /* Grid items default to min-width:auto, which would let a nowrap formula
+     push the card wider instead of clamping. */
+  min-width: 0;
 }
 
 .single-roll .roll-label {
