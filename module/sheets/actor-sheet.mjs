@@ -2410,6 +2410,22 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     // Handle item sorting within the same Actor
     if (this.actor.uuid === item.parent?.uuid)
       return this._onSortItem(event, item);
+
+    // Only one Starsign (Hvězda) per character. Checked after the sort branch
+    // so re-ordering the one already owned still works.
+    if (item.type === "feature" && item.system?.starsign) {
+      const existing = this.actor.items.find(
+        (i) => i.type === "feature" && i.system?.starsign,
+      );
+      if (existing) {
+        ui.notifications.warn(
+          game.i18n.format("REDSTEEL.Starsign.OnlyOne", {
+            starsign: existing.localizedName ?? existing.name,
+          }),
+        );
+        return false;
+      }
+    }
     // Check if the item is a consumable
     if (item.type === "consumable") {
       // Look for an existing stackable consumable with the same name

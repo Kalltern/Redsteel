@@ -1,0 +1,94 @@
+{
+  "folder": "StarSign00Folder",
+  "name": "Starsign: Dice",
+  "type": "feature",
+  "img": "icons/magic/symbols/runes-star-pentagon-blue.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.StarsignDice.name",
+    "description": "<p>Luck -1, Gambling -15%, the urge to gamble triggers a Resolve Test (Easy); on a failure they are compelled to play until they beat an Advanced Resolve Test or are forced to stop.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [
+      "res"
+    ],
+    "rollTriggersRaw": "res",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "trait",
+    "starsign": true
+  },
+  "effects": [
+    {
+      "name": "Starsign: Dice",
+      "origin": null,
+      "img": "icons/magic/symbols/runes-star-pentagon-blue.webp",
+      "_id": "1HGAj10Po0EGIHwl",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.secondaryAttributes.lck.bonus",
+            "value": -1,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
+      "disabled": false,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!SZQJfF7yUekrLsk7.1HGAj10Po0EGIHwl"
+    }
+  ],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "lastModifiedBy": null,
+    "createdTime": null,
+    "modifiedTime": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 320000,
+  "_id": "SZQJfF7yUekrLsk7",
+  "_key": "!items!SZQJfF7yUekrLsk7"
+}

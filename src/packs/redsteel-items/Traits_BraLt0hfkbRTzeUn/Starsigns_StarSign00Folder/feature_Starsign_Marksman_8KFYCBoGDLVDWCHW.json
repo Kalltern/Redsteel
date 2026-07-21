@@ -1,0 +1,100 @@
+{
+  "folder": "StarSign00Folder",
+  "name": "Starsign: Marksman",
+  "type": "feature",
+  "img": "icons/magic/symbols/runes-star-pentagon-blue.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.StarsignMarksman.name",
+    "description": "<p>Archery +3% and Damage +1</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [
+      "attack"
+    ],
+    "rollTriggersRaw": "attack",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "trait",
+    "starsign": true
+  },
+  "effects": [
+    {
+      "name": "Starsign: Marksman",
+      "origin": null,
+      "img": "icons/magic/symbols/runes-star-pentagon-blue.webp",
+      "_id": "hVubHEx3IXvimGok",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.combatSkills.archery.bonus",
+            "value": 3,
+            "priority": null,
+            "type": "add"
+          },
+          {
+            "key": "system.activeCombatEffects.starsignMarksman.rangedDamageBonus",
+            "value": 1,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
+      "disabled": false,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!8KFYCBoGDLVDWCHW.hVubHEx3IXvimGok"
+    }
+  ],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "lastModifiedBy": null,
+    "createdTime": null,
+    "modifiedTime": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 130000,
+  "_id": "8KFYCBoGDLVDWCHW",
+  "_key": "!items!8KFYCBoGDLVDWCHW"
+}

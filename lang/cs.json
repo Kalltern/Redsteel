@@ -133,9 +133,10 @@
             "DifficultyText1": "Velmi lehká: +30%",
             "DifficultyText2": "Lehká: +20%",
             "DifficultyText3": "Normální: 0%",
-            "DifficultyText4": "Těžká: -20%",
-            "DifficultyText5": "Velmi těžká: -30%",
-            "DifficultyText6": "Legendární: -60%"
+            "DifficultyText4": "Pokročilá: -10%",
+            "DifficultyText5": "Těžká: -20%",
+            "DifficultyText6": "Velmi těžká: -30%",
+            "DifficultyText7": "Legendární: -60%"
           },
           "VersusTests": {
             "VersusTitle": "Versus testy",
@@ -4258,6 +4259,9 @@
         }
       }
     },
+    "Starsign": {
+      "OnlyOne": "Postava už má Hvězdu ({starsign}). Můžeš mít jen jednu."
+    },
     "Race": {
       "ChooseRace": "Vyber rasu",
       "PickerTitle": "Výběr rasy",
@@ -5586,6 +5590,150 @@
       },
       "Yormun": {
         "name": "Yormuni"
+      },
+      "StarsignAdventurer": {
+        "name": "Hvězda: Dobrodruh",
+        "description": "<p>Pasti +5%, Výhoda na záchranné hody proti pastím a na Vnímání proti přepadům.</p>"
+      },
+      "StarsignMage": {
+        "name": "Hvězda: Mág",
+        "description": "<p>Pokud nemá žádný magický potenciál, získá Omezený magický potenciál. Pokud má Omezený magický potenciál, získá Magický potenciál. Základ many +1 a Usměrňování +5%</p><hr><p>Nemůže-li mít magický potenciál, hází si znovu.</p>"
+      },
+      "StarsignScholar": {
+        "name": "Hvězda: Učenec",
+        "description": "<p>Logika +10%, může 1x za den opakovat hod na Logiku. Zkracuje učení se o 1 nebo 5 dní.</p><hr><p>Pokud má rys Negramot, hází si znovu.</p>"
+      },
+      "StarsignDruid": {
+        "name": "Hvězda: Druid",
+        "description": "<p>Zacházení se zvířaty +10%, může 1x za den opakovat hod na Zacházení se zvířaty. Může jednou za den zdarma seslat kouzlo Mluvení se zvířaty.</p><hr><p>Nemůže-li mít magický potenciál, hází si znovu.</p>"
+      },
+      "StarsignHearth": {
+        "name": "Hvězda: Ohniště",
+        "description": "<p>Odolnost proti ohni +25%, Může jednou za den zdarma seslat kouzlo Jiskry.</p><hr><p>Nemůže-li mít magický potenciál, hází si znovu.</p>"
+      },
+      "StarsignCat": {
+        "name": "Hvězda: Kočka",
+        "description": "<p>Akrobacie +5%, Může jednou za den zdarma seslat kouzlo Pád pírka.</p><hr><p>Nemůže-li mít magický potenciál, hází si znovu.</p>"
+      },
+      "StarsignTower": {
+        "name": "Hvězda: Věž",
+        "description": "<p>Vhled +5%, Může jednou za den zdarma seslat kouzlo Telepatie.</p><hr><p>Nemůže-li mít magický potenciál, hází si znovu.</p>"
+      },
+      "StarsignTrickster": {
+        "name": "Hvězda: Podvodník",
+        "description": "<p>Štěstí +1, Úspěch u hazardních her +10%</p>"
+      },
+      "StarsignAlchemist": {
+        "name": "Hvězda: Alchemista",
+        "description": "<p>Alchemie +5%, šance na Kritické selhání v Alchemii -1%</p>"
+      },
+      "StarsignLovers": {
+        "name": "Hvězda: Milenci",
+        "description": "<p>Vzhled +1, může 1x za den opakovat hod na Pokoušení</p>"
+      },
+      "StarsignRock": {
+        "name": "Hvězda: Skála",
+        "description": "<p>Životy +5. Dlouhý odpočinek obnovuje o 2 životy více.</p>"
+      },
+      "StarsignWarrior": {
+        "name": "Hvězda: Válečník",
+        "description": "<p>Souboj +3% a Zranění v Souboji +1</p>"
+      },
+      "StarsignMarksman": {
+        "name": "Hvězda: Ostrostřelec",
+        "description": "<p>Střelba +3% a Zranění +1</p>"
+      },
+      "StarsignSmith": {
+        "name": "Hvězda: Kovář",
+        "description": "<p>Kovářství +5%, může 1x za den opakovat hod na Kovářství.</p>"
+      },
+      "StarsignShadow": {
+        "name": "Hvězda: Stín",
+        "description": "<p>Může se jednou za den zneviditelnit na jednu minutu. Nevztahuje se na vybavení ani oblečení. Plížení +5%</p>"
+      },
+      "StarsignNorthStar": {
+        "name": "Hvězda: Severka",
+        "description": "<p>Vždy vycítí, kde je sever a dokáže přibližně určit část dne, nehledě na lokaci. Může využít 10 akcí k tomu, aby se své Hvězdy zeptal na správný směr, šance 25%</p>"
+      },
+      "StarsignOwl": {
+        "name": "Hvězda: Sova",
+        "description": "<p>Lepší zrak ve tmě. V absolutní tmě vidí na vzdálenost 3m jako by bylo šero, ve tmě vidí jako by bylo šero a v šeru vidí bez postihu.</p><hr><p>Nesčítá se s rysem Dítě noci ani s Runovým válečníkem.</p>"
+      },
+      "StarsignAcrobat": {
+        "name": "Hvězda: Akrobat",
+        "description": "<p>Akrobacie +5%, může 1x za den opakovat hod na Akrobacii</p>"
+      },
+      "StarsignBull": {
+        "name": "Hvězda: Býk",
+        "description": "<p>Toxicita +5, redukce toxicity zvýšena na 100%, Pijáctví +5%</p>"
+      },
+      "StarsignPriest": {
+        "name": "Hvězda: Kněz",
+        "description": "<p>Síla zázraku +1, Ranhojičství +5%</p>"
+      },
+      "StarsignHorse": {
+        "name": "Hvězda: Kůň",
+        "description": "<p>Zacházení s koňmi +25%, omezená schopnost komunikace s koňmi.</p>"
+      },
+      "StarsignFish": {
+        "name": "Hvězda: Ryba",
+        "description": "<p>Plavání +20%, Zadržení dechu +3 kola.</p>"
+      },
+      "StarsignDog": {
+        "name": "Hvězda: Pes",
+        "description": "<p>Vždy pozná, zda-li je něco otrávené přírodním nebo alchemistickým jedem. U magických jedů šance 50%</p>"
+      },
+      "StarsignHeart": {
+        "name": "Hvězda: Srdce",
+        "description": "<p>Může se jednou za den proměnit na své zvíře. Vybírá se kostkou. Zvíře nemůže mluvit, vybavení zůstává na místě. Šance na proměnu 90%, šance na proměnu zpět 75%, jeden pokus na den.</p><hr><p>Kritický neúspěch znamená automatické selhání na další dva dny.</p><ol><li>Prase</li><li>Žába</li><li>Veverka</li><li>Pes</li><li>Vrána</li><li>Kočka</li><li>Jelen</li><li>Had</li><li>Vlk</li><li>Kůň</li><li>Jestřáb</li><li>Medvěd</li></ol>"
+      },
+      "StarsignMirror": {
+        "name": "Hvězda: Zrcadlo",
+        "description": "<p>Šance 20% na odražení kouzla náhodným směrem.</p><hr><p>Týká se pouze cílených zásahů, včetně léčení a podobných \"ne-projektilových\". Ohnivá koule, která vybuchne vedle nebude ovlivněna.</p>"
+      },
+      "StarsignDevil": {
+        "name": "Hvězda: Ďábel",
+        "description": "<p>Může v sobě udržovat až 3 duše. Šance 25%, že do sebe polapí duši nedaleko zemřelého, což vyvolá Test Nervů na získání bodu šílenství. Hranice šílenství -1. Je-li kapacita plná, duše se nahradí.</p>"
+      },
+      "StarsignThief": {
+        "name": "Hvězda: Zloděj",
+        "description": "<p>Hříšnost +1, Zámky, Kapsářství a Plížení +5%</p>"
+      },
+      "StarsignAtronach": {
+        "name": "Hvězda: Atronach",
+        "description": "<p>Ignoruje 50% magického zranění a převádí ho na manu. Přebytečná mana se na konci příštího tahu spálí a způsobí 2 zranění za každý spálený mag v okolí 1,5m. Zranění způsobuje rovněž sobě. Základ many +5. Regenerace many -50%</p><hr><p>Nemá-li Omezený magický potenciál nebo Magický potenciál, hází si znovu.</p>"
+      },
+      "StarsignHen": {
+        "name": "Hvězda: Slepice",
+        "description": "<p>Tendence se ztrácet a vždy zabloudit.</p>"
+      },
+      "StarsignButterfly": {
+        "name": "Hvězda: Motýl",
+        "description": "<p>Šance 20% na Ochromení, když je zasažen magií.</p>"
+      },
+      "StarsignBat": {
+        "name": "Hvězda: Netopýr",
+        "description": "<p>Zranitelnost ohněm, utrpí o 50% větší zranění. Je-li vystaven slunečnímu světlu, získává postih na Úspěch -5%</p>"
+      },
+      "StarsignDice": {
+        "name": "Hvězda: Kostky",
+        "description": "<p>Štěstí -1, Hazard -15%, nutkání hrát hazardní hry vyvolává Test Nervů (Lehký), při selhání je nucen hrát dokud nepřekoná Pokročilý Test Nervů nebo není přinucen.</p>"
+      },
+      "StarsignFairy": {
+        "name": "Hvězda: Víla",
+        "description": "<p>Cítí magii v okolí 50m. Při blízkém kontaktu s magií má postih na Úspěch -5% po dobu 1 hodiny. Čaroděj má Nevýhodu na Usměrňování.</p>"
+      },
+      "StarsignDeadEye": {
+        "name": "Hvězda: Mrtvé oko",
+        "description": "<p>Získá jedno Šílenství. Hranice šílenství -1. Efekt této Hvězdy se nedá změnit.</p>"
+      },
+      "StarsignSnake": {
+        "name": "Hvězda: Had",
+        "description": "<p>Získá jedno Prokletí. Efekt této Hvězdy se nedá změnit.</p>"
+      },
+      "StarsignFireEye": {
+        "name": "Hvězda: Ohnivé oko",
+        "description": "<p>Duše je označena Sheolem. V momentě smrti, není-li tomu přímo zabráněno, se duše odebírá do Sheolu, což znemožňuje oživení. Efekt této Hvězdy se nedá změnit.</p>"
       }
     }
   },

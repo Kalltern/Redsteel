@@ -79,6 +79,22 @@ export class RedsteelItem extends Item {
   }
 
   /**
+   * The description in the active language. Mirrors {@link localizedName}: the
+   * pack stores the English prose in `system.description` (that is what the
+   * item sheet edits) and the translation lives under the item's localization
+   * key with `.name` swapped for `.description`. Items with no translation —
+   * which is most of them — fall back to the stored text unchanged.
+   */
+  get localizedDescription() {
+    const raw = this.system.description ?? "";
+    const key = this.system.localizationKey?.trim();
+    if (!key) return raw;
+    const descriptionKey = key.replace(/\.name$/, ".description");
+    if (!game.i18n.has(descriptionKey)) return raw;
+    return game.i18n.localize(descriptionKey);
+  }
+
+  /**
    * Active Effects authored on a consumable (potion / poison) are *blueprints*:
    * they only take hold when the item is actually used — at which point they
    * are copied onto the drinker (see usePotion). Suppress Foundry's default

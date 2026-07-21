@@ -1,0 +1,46 @@
+{
+  "folder": "StarSign00Folder",
+  "name": "Starsign: Heart",
+  "type": "feature",
+  "img": "icons/magic/symbols/runes-star-pentagon-blue.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.StarsignHeart.name",
+    "description": "<p>May transform into their animal once per day. The animal is chosen by a die roll. The animal cannot speak, equipment stays behind. 90% chance to transform, 75% chance to transform back, one attempt per day.</p><hr><p>A Critical Failure means an automatic failure for the next two days.</p><ol><li>Pig</li><li>Frog</li><li>Squirrel</li><li>Dog</li><li>Crow</li><li>Cat</li><li>Stag</li><li>Snake</li><li>Wolf</li><li>Horse</li><li>Hawk</li><li>Bear</li></ol>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "trait",
+    "starsign": true
+  },
+  "effects": [],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "lastModifiedBy": null,
+    "createdTime": null,
+    "modifiedTime": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 240000,
+  "_id": "KZXVvP57ycNuK84V",
+  "_key": "!items!KZXVvP57ycNuK84V"
+}

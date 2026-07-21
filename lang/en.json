@@ -133,9 +133,10 @@
             "DifficultyText1": "Very easy: +30%",
             "DifficultyText2": "Easy: +20%",
             "DifficultyText3": "Normal: 0%",
-            "DifficultyText4": "Hard: -20%",
-            "DifficultyText5": "Very hard: -30%",
-            "DifficultyText6": "Legendary: -60%"
+            "DifficultyText4": "Advanced: -10%",
+            "DifficultyText5": "Hard: -20%",
+            "DifficultyText6": "Very hard: -30%",
+            "DifficultyText7": "Legendary: -60%"
           },
           "VersusTests": {
             "VersusTitle": "Versus Tests",
@@ -4269,6 +4270,9 @@
         }
       }
     },
+    "Starsign": {
+      "OnlyOne": "This character already has a Starsign ({starsign}). Only one is allowed."
+    },
     "Race": {
       "ChooseRace": "Choose a race",
       "PickerTitle": "Race selection",
@@ -5597,6 +5601,150 @@
       },
       "Yormun": {
         "name": "Yormun"
+      },
+      "StarsignAdventurer": {
+        "name": "Starsign: Adventurer",
+        "description": "<p>Traps +5%, Advantage on saving throws against traps and on Perception against ambushes.</p>"
+      },
+      "StarsignMage": {
+        "name": "Starsign: Mage",
+        "description": "<p>If they have no magic potential, they gain Limited magic potential. If they have Limited magic potential, they gain Magic potential. Mana base +1 and Channeling +5%</p><hr><p>If they cannot have magic potential, they reroll.</p>"
+      },
+      "StarsignScholar": {
+        "name": "Starsign: Scholar",
+        "description": "<p>Logic +10%, may reroll a Logic roll once per day. Shortens learning by 1 or 5 days.</p><hr><p>If they have the Illiterate trait, they reroll.</p>"
+      },
+      "StarsignDruid": {
+        "name": "Starsign: Druid",
+        "description": "<p>Animal handling +10%, may reroll an Animal handling roll once per day. May cast the spell Speak with Animals once per day for free.</p><hr><p>If they cannot have magic potential, they reroll.</p>"
+      },
+      "StarsignHearth": {
+        "name": "Starsign: Hearth",
+        "description": "<p>Fire resistance +25%, may cast the spell Sparks once per day for free.</p><hr><p>If they cannot have magic potential, they reroll.</p>"
+      },
+      "StarsignCat": {
+        "name": "Starsign: Cat",
+        "description": "<p>Acrobatics +5%, may cast the spell Feather Fall once per day for free.</p><hr><p>If they cannot have magic potential, they reroll.</p>"
+      },
+      "StarsignTower": {
+        "name": "Starsign: Tower",
+        "description": "<p>Insight +5%, may cast the spell Telepathy once per day for free.</p><hr><p>If they cannot have magic potential, they reroll.</p>"
+      },
+      "StarsignTrickster": {
+        "name": "Starsign: Trickster",
+        "description": "<p>Luck +1, success at games of chance +10%</p>"
+      },
+      "StarsignAlchemist": {
+        "name": "Starsign: Alchemist",
+        "description": "<p>Alchemy +5%, chance of a Critical Failure in Alchemy -1%</p>"
+      },
+      "StarsignLovers": {
+        "name": "Starsign: Lovers",
+        "description": "<p>Appearance +1, may reroll a Temptation roll once per day</p>"
+      },
+      "StarsignRock": {
+        "name": "Starsign: Rock",
+        "description": "<p>Health +5. A Long Rest restores 2 more health.</p>"
+      },
+      "StarsignWarrior": {
+        "name": "Starsign: Warrior",
+        "description": "<p>Combat +3% and Damage in Combat +1</p>"
+      },
+      "StarsignMarksman": {
+        "name": "Starsign: Marksman",
+        "description": "<p>Archery +3% and Damage +1</p>"
+      },
+      "StarsignSmith": {
+        "name": "Starsign: Smith",
+        "description": "<p>Smithing +5%, may reroll a Smithing roll once per day.</p>"
+      },
+      "StarsignShadow": {
+        "name": "Starsign: Shadow",
+        "description": "<p>May turn invisible once per day for one minute. Does not extend to equipment or clothing. Stealth +5%</p>"
+      },
+      "StarsignNorthStar": {
+        "name": "Starsign: North Star",
+        "description": "<p>Always senses where north is and can roughly tell the part of the day, regardless of location. May spend 10 actions asking their Star for the right direction, 25% chance</p>"
+      },
+      "StarsignOwl": {
+        "name": "Starsign: Owl",
+        "description": "<p>Better eyesight in the dark. In absolute darkness sees up to 3m as if in dim light, in darkness sees as if in dim light, and in dim light sees without penalty.</p><hr><p>Does not stack with the Child of the Night trait or with the Rune Warrior.</p>"
+      },
+      "StarsignAcrobat": {
+        "name": "Starsign: Acrobat",
+        "description": "<p>Acrobatics +5%, may reroll an Acrobatics roll once per day</p>"
+      },
+      "StarsignBull": {
+        "name": "Starsign: Bull",
+        "description": "<p>Toxicity +5, toxicity reduction raised to 100%, Drinking +5%</p>"
+      },
+      "StarsignPriest": {
+        "name": "Starsign: Priest",
+        "description": "<p>Miracle power +1, First aid +5%</p>"
+      },
+      "StarsignHorse": {
+        "name": "Starsign: Horse",
+        "description": "<p>Horse handling +25%, limited ability to communicate with horses.</p>"
+      },
+      "StarsignFish": {
+        "name": "Starsign: Fish",
+        "description": "<p>Swimming +20%, Breath holding +3 rounds.</p>"
+      },
+      "StarsignDog": {
+        "name": "Starsign: Dog",
+        "description": "<p>Always knows whether something is poisoned with a natural or alchemical poison. For magical poisons, 50% chance</p>"
+      },
+      "StarsignHeart": {
+        "name": "Starsign: Heart",
+        "description": "<p>May transform into their animal once per day. The animal is chosen by a die roll. The animal cannot speak, equipment stays behind. 90% chance to transform, 75% chance to transform back, one attempt per day.</p><hr><p>A Critical Failure means an automatic failure for the next two days.</p><ol><li>Pig</li><li>Frog</li><li>Squirrel</li><li>Dog</li><li>Crow</li><li>Cat</li><li>Stag</li><li>Snake</li><li>Wolf</li><li>Horse</li><li>Hawk</li><li>Bear</li></ol>"
+      },
+      "StarsignMirror": {
+        "name": "Starsign: Mirror",
+        "description": "<p>20% chance to deflect a spell in a random direction.</p><hr><p>Applies only to targeted hits, including healing and similar \"non-projectile\" effects. A fireball that explodes nearby is not affected.</p>"
+      },
+      "StarsignDevil": {
+        "name": "Starsign: Devil",
+        "description": "<p>May hold up to 3 souls within. 25% chance to trap the soul of someone who died nearby, which triggers a Resolve Test to gain a point of insanity. Insanity threshold -1. If capacity is full, the soul is replaced.</p>"
+      },
+      "StarsignThief": {
+        "name": "Starsign: Thief",
+        "description": "<p>Sinfulness +1, Lockpicking, Pickpocketing and Stealth +5%</p>"
+      },
+      "StarsignAtronach": {
+        "name": "Starsign: Atronach",
+        "description": "<p>Ignores 50% of magic damage and converts it into mana. Excess mana burns off at the end of the next turn and deals 2 damage for every mage burned within 1.5m. The damage is dealt to itself as well. Mana base +5. Mana regeneration -50%</p><hr><p>If they have neither Limited magic potential nor Magic potential, they reroll.</p>"
+      },
+      "StarsignHen": {
+        "name": "Starsign: Hen",
+        "description": "<p>A tendency to get lost and always stray off course.</p>"
+      },
+      "StarsignButterfly": {
+        "name": "Starsign: Butterfly",
+        "description": "<p>20% chance to be Stunned when hit by magic.</p>"
+      },
+      "StarsignBat": {
+        "name": "Starsign: Bat",
+        "description": "<p>Vulnerability to fire, takes 50% more damage. When exposed to sunlight, takes a -5% penalty to Success</p>"
+      },
+      "StarsignDice": {
+        "name": "Starsign: Dice",
+        "description": "<p>Luck -1, Gambling -15%, the urge to gamble triggers a Resolve Test (Easy); on a failure they are compelled to play until they beat an Advanced Resolve Test or are forced to stop.</p>"
+      },
+      "StarsignFairy": {
+        "name": "Starsign: Fairy",
+        "description": "<p>Senses magic within 50m. On close contact with magic, takes a -5% penalty to Success for 1 hour. A spellcaster has Disadvantage on Channeling.</p>"
+      },
+      "StarsignDeadEye": {
+        "name": "Starsign: Dead Eye",
+        "description": "<p>Gains one Insanity. Insanity threshold -1. The effect of this Star cannot be changed.</p>"
+      },
+      "StarsignSnake": {
+        "name": "Starsign: Snake",
+        "description": "<p>Gains one Curse. The effect of this Star cannot be changed.</p>"
+      },
+      "StarsignFireEye": {
+        "name": "Starsign: Fire Eye",
+        "description": "<p>The soul is marked by Sheol. At the moment of death, unless directly prevented, the soul is taken to Sheol, which makes resurrection impossible. The effect of this Star cannot be changed.</p>"
       }
     }
   },

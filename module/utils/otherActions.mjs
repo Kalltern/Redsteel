@@ -174,9 +174,14 @@ export async function longRest() {
     const newStamina = Math.max(0, stamina + system.stats.stamina.max);
 
     // ─── Health ───
+    // `longRestHealthBonus` is a flat extra set by Active Effects — Starsign:
+    // Rock grants +2. It is added after the Nourishing Rest multiplier, so the
+    // starsign is worth the same 2 health whether or not the rest was nourishing.
     const health = system.stats.health.value ?? 0;
+    const longRestHealthBonus = Number(system.longRestHealthBonus) || 0;
     const healthRegen =
-      (10 + system.attributes.end.total * 2) * regenMultiplier;
+      (10 + system.attributes.end.total * 2) * regenMultiplier +
+      longRestHealthBonus;
 
     const newHealth = Math.max(0, health + healthRegen);
 

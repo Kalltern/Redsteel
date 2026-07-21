@@ -1,0 +1,92 @@
+{
+  "folder": "StarSign00Folder",
+  "name": "Starsign: Trickster",
+  "type": "feature",
+  "img": "icons/magic/symbols/runes-star-pentagon-blue.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.StarsignTrickster.name",
+    "description": "<p>Luck +1, success at games of chance +10%</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "trait",
+    "starsign": true
+  },
+  "effects": [
+    {
+      "name": "Starsign: Trickster",
+      "origin": null,
+      "img": "icons/magic/symbols/runes-star-pentagon-blue.webp",
+      "_id": "B7B3dIG7sfzPUEAl",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.secondaryAttributes.lck.bonus",
+            "value": 1,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
+      "disabled": false,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!trLSvRh4UkC6SCHl.B7B3dIG7sfzPUEAl"
+    }
+  ],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "lastModifiedBy": null,
+    "createdTime": null,
+    "modifiedTime": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 80000,
+  "_id": "trLSvRh4UkC6SCHl",
+  "_key": "!items!trLSvRh4UkC6SCHl"
+}

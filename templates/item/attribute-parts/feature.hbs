@@ -91,6 +91,17 @@
 {{/if}}
 
 {{#if (eq system.option "trait")}}
+<div class="form-group">
+  <label>Starsign</label>
+  <input type="checkbox" name="system.starsign" {{checked system.starsign}} />
+  <p class="hint">
+    Marks this trait as a Starsign (Hvězda). A character may own only one —
+    dropping a second one on a sheet is refused.
+  </p>
+</div>
+{{/if}}
+
+{{#if (eq system.option "trait")}}
 <div class="form-group stacked">
   <label>Status Effects</label>
   <input

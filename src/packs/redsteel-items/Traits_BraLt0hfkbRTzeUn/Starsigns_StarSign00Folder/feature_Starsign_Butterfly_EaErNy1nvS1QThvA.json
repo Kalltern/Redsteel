@@ -1,0 +1,48 @@
+{
+  "folder": "StarSign00Folder",
+  "name": "Starsign: Butterfly",
+  "type": "feature",
+  "img": "icons/magic/symbols/runes-star-pentagon-blue.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.StarsignButterfly.name",
+    "description": "<p>20% chance to be Stunned when hit by magic.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [
+      "defense"
+    ],
+    "rollTriggersRaw": "defense",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "trait",
+    "starsign": true
+  },
+  "effects": [],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "lastModifiedBy": null,
+    "createdTime": null,
+    "modifiedTime": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 300000,
+  "_id": "EaErNy1nvS1QThvA",
+  "_key": "!items!EaErNy1nvS1QThvA"
+}

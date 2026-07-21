@@ -240,6 +240,7 @@ export class HelpOverlay {
       <li>${t("Rules.Difficulties.DifficultyText4")}</li>
       <li>${t("Rules.Difficulties.DifficultyText5")}</li>
       <li>${t("Rules.Difficulties.DifficultyText6")}</li>
+      <li>${t("Rules.Difficulties.DifficultyText7")}</li>
     </ul>
   </div>
 </div>

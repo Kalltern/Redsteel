@@ -1,0 +1,94 @@
+{
+  "folder": "StarSign00Folder",
+  "name": "Starsign: Devil",
+  "type": "feature",
+  "img": "icons/magic/symbols/runes-star-pentagon-blue.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.StarsignDevil.name",
+    "description": "<p>May hold up to 3 souls within. 25% chance to trap the soul of someone who died nearby, which triggers a Resolve Test to gain a point of insanity. Insanity threshold -1. If capacity is full, the soul is replaced.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [
+      "res"
+    ],
+    "rollTriggersRaw": "res",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "trait",
+    "starsign": true
+  },
+  "effects": [
+    {
+      "name": "Starsign: Devil",
+      "origin": null,
+      "img": "icons/magic/symbols/runes-star-pentagon-blue.webp",
+      "_id": "oCFuECFF8VQzWS5m",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.stats.insanity.bonus",
+            "value": -1,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
+      "disabled": false,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!CdD7jfHJd7uh8JmM.oCFuECFF8VQzWS5m"
+    }
+  ],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "lastModifiedBy": null,
+    "createdTime": null,
+    "modifiedTime": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 260000,
+  "_id": "CdD7jfHJd7uh8JmM",
+  "_key": "!items!CdD7jfHJd7uh8JmM"
+}

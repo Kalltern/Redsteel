@@ -1,0 +1,46 @@
+{
+  "folder": "StarSign00Folder",
+  "name": "Starsign: Fire Eye",
+  "type": "feature",
+  "img": "icons/magic/symbols/runes-star-pentagon-blue.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.StarsignFireEye.name",
+    "description": "<p>The soul is marked by Sheol. At the moment of death, unless directly prevented, the soul is taken to Sheol, which makes resurrection impossible. The effect of this Star cannot be changed.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "trait",
+    "starsign": true
+  },
+  "effects": [],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "lastModifiedBy": null,
+    "createdTime": null,
+    "modifiedTime": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 360000,
+  "_id": "dSNyQ41b2ARAyt95",
+  "_key": "!items!dSNyQ41b2ARAyt95"
+}

@@ -1,0 +1,48 @@
+{
+  "folder": "StarSign00Folder",
+  "name": "Starsign: North Star",
+  "type": "feature",
+  "img": "icons/magic/symbols/runes-star-pentagon-blue.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.StarsignNorthStar.name",
+    "description": "<p>Always senses where north is and can roughly tell the part of the day, regardless of location. May spend 10 actions asking their Star for the right direction, 25% chance</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [
+      "survival"
+    ],
+    "rollTriggersRaw": "survival",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "trait",
+    "starsign": true
+  },
+  "effects": [],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "lastModifiedBy": null,
+    "createdTime": null,
+    "modifiedTime": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 160000,
+  "_id": "9GCGN1Qpd8CrY5VY",
+  "_key": "!items!9GCGN1Qpd8CrY5VY"
+}

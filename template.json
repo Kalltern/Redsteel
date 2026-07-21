@@ -1464,7 +1464,8 @@
         "value": 0,
         "pools": []
       },
-      "weaponSpec": { "tag": "", "tier": 0 }
+      "weaponSpec": { "tag": "", "tier": 0 },
+      "starsign": false
     },
     "race": {
       "templates": ["base"],

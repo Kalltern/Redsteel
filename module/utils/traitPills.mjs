@@ -46,8 +46,8 @@ export function getTraitPills(actor, trigger) {
         ),
     )
     .map((item) => ({
-      name: item.name,
-      description: item.system.description ?? "",
+      name: item.localizedName ?? item.name,
+      description: item.localizedDescription ?? "",
     }));
 
   // appliedEffects includes transferred item effects and already excludes

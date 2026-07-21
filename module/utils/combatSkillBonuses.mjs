@@ -1474,6 +1474,14 @@ export function getActorCombatModifiers(actor, weapon = null) {
     if (!group) continue;
 
     result.damageBonus += group.damageBonus ?? 0;
+
+    // Melee-only / ranged-only flat damage, mirroring the penetration split
+    // below. Starsign: Warrior grants melee damage, Starsign: Marksman ranged.
+    // "Melee" here means anything that is not a bow or crossbow, so a thrown
+    // weapon counts as melee — the same convention the penetration split uses.
+    if (isMelee) result.damageBonus += group.meleeDamageBonus ?? 0;
+    if (isArchery) result.damageBonus += group.rangedDamageBonus ?? 0;
+
     if (group.damageRoll) {
       result.damageRolls.push(group.damageRoll);
     }
