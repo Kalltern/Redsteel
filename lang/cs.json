@@ -4444,6 +4444,9 @@
       "AreaDefense": {
         "name": "Plošná obrana"
       },
+      "Argos": {
+        "name": "Argosové"
+      },
       "ArmorTrainingI": {
         "name": "Výcvik se zbrojí I"
       },
@@ -4459,6 +4462,9 @@
       "Attack": {
         "name": "Útok"
       },
+      "Avesan": {
+        "name": "Avésani"
+      },
       "Bardiche": {
         "name": "Berdyš"
       },
@@ -4470,6 +4476,9 @@
       },
       "BattleHardenedI": {
         "name": "Zocelený bojem I"
+      },
+      "Beast": {
+        "name": "Zvířata"
       },
       "BecDeCorbin": {
         "name": "Havraní zobák"
@@ -4510,6 +4519,9 @@
       "CalmBody": {
         "name": "Klidné tělo"
       },
+      "Cambion": {
+        "name": "Cambioni"
+      },
       "Casting": {
         "name": "Čarování"
       },
@@ -4527,6 +4539,9 @@
       },
       "CorpseBreath": {
         "name": "Mrtvolný dech"
+      },
+      "Corrupt": {
+        "name": "Zkažení"
       },
       "Counterattack": {
         "name": "Protiútok"
@@ -4567,6 +4582,9 @@
       "DefensiveStance": {
         "name": "Obranný postoj"
       },
+      "Demon": {
+        "name": "Démoni"
+      },
       "Determination": {
         "name": "Odhodlání"
       },
@@ -4587,6 +4605,9 @@
       },
       "Dodge": {
         "name": "Úhyb"
+      },
+      "Draconic": {
+        "name": "Drakovití"
       },
       "Drinker": {
         "name": "Pijan"
@@ -4948,6 +4969,9 @@
       "Indestructible": {
         "name": "Nezničitelný"
       },
+      "Insectoid": {
+        "name": "Hmyzovití"
+      },
       "WoundingImpale": {
         "name": "Krvavé nabodnutí"
       },
@@ -5029,11 +5053,17 @@
       "Lucky": {
         "name": "Šťastlivec"
       },
+      "Lycanthrope": {
+        "name": "Lykantropové"
+      },
       "Mace": {
         "name": "Palcát"
       },
       "MagicalConduit": {
         "name": "Magický vodič"
+      },
+      "MagicalCreature": {
+        "name": "Magičtí tvorové"
       },
       "MagicalReserve": {
         "name": "Magická rezerva"
@@ -5083,6 +5113,9 @@
       "MuscularII": {
         "name": "Svalnatý II"
       },
+      "Necrophage": {
+        "name": "Nekrofágové"
+      },
       "Nimble": {
         "name": "Mrštný"
       },
@@ -5092,11 +5125,17 @@
       "Oak": {
         "name": "Dub"
       },
+      "Ogroid": {
+        "name": "Zlobrovití"
+      },
       "OpportunityAttack": {
         "name": "Příležitostný útok"
       },
       "Orator": {
         "name": "Řečník"
+      },
+      "Orcoid": {
+        "name": "Orkovití"
       },
       "Overwatch": {
         "name": "Připravená střelba"
@@ -5218,6 +5257,9 @@
       "ReflexBow": {
         "name": "Reflexní luk"
       },
+      "Relict": {
+        "name": "Relikty"
+      },
       "Reload": {
         "name": "Přebít"
       },
@@ -5253,6 +5295,9 @@
       },
       "SecondWind": {
         "name": "Druhý dech"
+      },
+      "Seraphar": {
+        "name": "Seraphaři"
       },
       "ShieldBash": {
         "name": "Úder štítem"
@@ -5371,6 +5416,9 @@
       "SpecializationTraps": {
         "name": "Specializace: Pasti"
       },
+      "Specter": {
+        "name": "Přeludy"
+      },
       "SpeedyAdvantage": {
         "name": "Výhoda rychlosti"
       },
@@ -5412,6 +5460,9 @@
       },
       "SwiftRetaliation": {
         "name": "Rychlá odveta"
+      },
+      "Sylvan": {
+        "name": "Sylvani"
       },
       "TalentedIArcana": {
         "name": "Talentovaný I: Arcana"
@@ -5482,8 +5533,14 @@
       "Ugly": {
         "name": "Ošklivý"
       },
+      "Undead": {
+        "name": "Nemrtví"
+      },
       "UntiringLuck": {
         "name": "Neúnavné štěstí"
+      },
+      "Vampire": {
+        "name": "Upíři"
       },
       "Verdigris": {
         "name": "Měděnka"
@@ -5526,6 +5583,9 @@
       },
       "Yliaster": {
         "name": "Yliaster"
+      },
+      "Yormun": {
+        "name": "Yormuni"
       }
     }
   },

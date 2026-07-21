@@ -1,0 +1,32 @@
+{
+  "name": "Specter",
+  "type": "race",
+  "img": "icons/svg/aura.svg",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.Specter.name",
+    "description": "",
+    "baneTypes": "specter"
+  },
+  "effects": [],
+  "folder": "wOKrFdqBttqY6s3O",
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.9.54",
+    "createdTime": 1784642168553,
+    "modifiedTime": 1784642168553,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "ownership": {
+    "default": 0,
+    "rs3mzx7WZdtEmvH2": 3,
+    "UHjN0KQ8w8ZxibJg": 3
+  },
+  "_id": "U0nTIaODr3oxSaNb",
+  "sort": 270000,
+  "_key": "!items!U0nTIaODr3oxSaNb"
+}

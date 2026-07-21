@@ -120,11 +120,12 @@
       "extra1": -1,
       "extra2": null,
       "extra3": null,
-      "stagger": null
+      "stagger": null,
+      "effectName1": "disorientation"
     },
     "attributeTest": "",
     "testModifier": "",
-    "effectType1": "disorientation",
+    "effectType1": "custom",
     "effectType2": "",
     "effectType3": ""
   },

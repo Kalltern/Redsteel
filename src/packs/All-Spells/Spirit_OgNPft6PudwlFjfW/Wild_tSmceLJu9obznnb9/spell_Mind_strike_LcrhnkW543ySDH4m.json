@@ -1,10 +1,10 @@
 {
-  "name": "Phantom weapon (WIP)",
+  "name": "Mind strike",
   "type": "spell",
-  "img": "icons/magic/fire/dagger-rune-enchant-flame-strong-teal-purple.webp",
+  "img": "icons/magic/perception/eye-ringed-glow-angry-small-teal.webp",
   "system": {
     "localizationKey": "",
-    "description": "Enchants an existing weapon (or quiver) for {{math spellPower \"*\" 5}} minutes. The weapon now deals Physical/Magic damage. Can be cast on a group (cost per Target). The weapon can only be enchanted by one such effect. Max Paralysis chance 0%.",
+    "description": "No requirements. Drains 1 Mind point from the caster. Targets an intelligent creature. Deals Magic + Psychic Damage 3d6 + {{spellPower}}, 20% chance to Stun. Ignores Armor. ",
     "options": [
       "divine",
       "magic"
@@ -67,9 +67,9 @@
     ],
     "resources": {
       "0": {
-        "type": "",
-        "mode": "",
-        "amount": null
+        "type": "Mind",
+        "mode": "drain",
+        "amount": 1
       },
       "1": {
         "type": "",
@@ -88,62 +88,63 @@
     },
     "isOffensive": true,
     "sustained": false,
-    "difficulty": -10,
-    "cost": 1,
+    "difficulty": 20,
+    "cost": 3,
     "perRound": 0,
     "variants": [],
     "option": "magic",
     "type": "spirit",
-    "rank": "expert",
+    "rank": "wild",
     "actionCost": "1",
-    "range": "5",
+    "range": "10",
     "spellClass": "support",
     "roll": {
-      "diceNum": 0,
-      "diceSize": "0",
-      "diceBonus": ""
+      "diceNum": 3,
+      "diceSize": "6",
+      "diceBonus": "@spellPower"
     },
-    "penetration": 0,
-    "dmgType1": "physical",
-    "bool2": "or",
-    "dmgType2": "magic",
+    "penetration": 100,
+    "dmgType1": "magic",
+    "bool2": "and",
+    "dmgType2": "psychic",
     "bool3": "",
     "dmgType3": "",
     "bool4": "",
     "dmgType4": "",
     "effects": {
-      "effect1": "0",
+      "effect1": "20",
       "effect2": "0",
       "effect3": "0",
       "effect4": "0",
       "stagger": null,
       "bleed": null,
-      "extra1": null,
+      "extra1": 20,
       "extra2": null,
-      "extra3": null
+      "extra3": null,
+      "effectName1": "stun"
     },
     "attributeTest": "",
     "testModifier": "",
-    "effectType1": "",
+    "effectType1": "custom",
     "effectType2": "",
     "effectType3": ""
   },
   "effects": [],
-  "folder": "yQKWKFaPqrfuldp0",
+  "folder": "tSmceLJu9obznnb9",
   "flags": {
     "scene-packer": {
-      "hash": "c5d60c29b0d4d84fdb91439c11c0a343d0b680d9"
+      "hash": "0295013fb85321843f078e737b82b2fabfc2c079"
     }
   },
   "_stats": {
-    "compendiumSource": "Compendium.world.spirit-spells.Item.86EsXQqR5cKQmYHP",
-    "duplicateSource": "Item.RuAqbue0hy4sMnYb",
+    "compendiumSource": "Compendium.world.spirit-spells.Item.Hepw3zdQ24FgKmJg",
+    "duplicateSource": "Item.LcrhnkW543ySDH4m",
     "exportSource": null,
     "coreVersion": "14.363",
     "systemId": "redsteel",
     "systemVersion": "0.9.0",
-    "createdTime": 1784581202179,
-    "modifiedTime": 1784581202179,
+    "createdTime": 1784581202207,
+    "modifiedTime": 1784581202207,
     "lastModifiedBy": "MXiQFt4waIv5RqBo"
   },
   "ownership": {
@@ -151,7 +152,7 @@
     "J03KIFAyMdNdBOUD": 3,
     "MXiQFt4waIv5RqBo": 3
   },
-  "_id": "RuAqbue0hy4sMnYb",
-  "sort": 150000,
-  "_key": "!items!RuAqbue0hy4sMnYb"
+  "_id": "LcrhnkW543ySDH4m",
+  "sort": 200000,
+  "_key": "!items!LcrhnkW543ySDH4m"
 }

@@ -5,6 +5,7 @@
   "system": {
     "localizationKey": "REDSTEEL.Items.Human.name",
     "description": "",
+    "baneTypes": "human",
     "choices": [
       {
         "label": "Univerzální atributová volba",

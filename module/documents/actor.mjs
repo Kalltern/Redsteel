@@ -871,9 +871,17 @@ export class RedsteelActor extends Actor {
         2 * systemData.skills.athletics.value -
         5 * fatigueDegree,
     );
-    // Calculate temporaryHealth
+    // Calculate temporaryHealth. Two independent pools: `temporaryHealth` is
+    // the PHYSICAL one (kept under the original key so existing actor data and
+    // token bar bindings survive), `temporaryHealthMagic` the magical one.
+    // Which pool a hit drains is decided by classifyDamagePacket().
     systemData.stats.temporaryHealth.max =
       50 + systemData.stats.temporaryHealth.bonus;
+
+    if (systemData.stats.temporaryHealthMagic) {
+      systemData.stats.temporaryHealthMagic.max =
+        50 + systemData.stats.temporaryHealthMagic.bonus;
+    }
 
     // Calculate mana
     if (systemData.magicPotential) {

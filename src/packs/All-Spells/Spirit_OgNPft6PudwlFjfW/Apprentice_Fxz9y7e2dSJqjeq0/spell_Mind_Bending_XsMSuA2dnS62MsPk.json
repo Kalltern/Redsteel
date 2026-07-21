@@ -120,11 +120,12 @@
       "bleed": null,
       "extra1": -1,
       "extra2": null,
-      "extra3": null
+      "extra3": null,
+      "effectName1": "mental_strain"
     },
     "attributeTest": "",
     "testModifier": "",
-    "effectType1": "mental_strain",
+    "effectType1": "custom",
     "effectType2": "",
     "effectType3": ""
   },
@@ -135,7 +136,10 @@
       "hash": "a1c3722a3dc16cdd910d46e820d480a20cba214d"
     },
     "redsteel": {
-      "casterEffects": ["mind_bending_caster", "slow_movement"]
+      "casterEffects": [
+        "mind_bending_caster",
+        "slow_movement"
+      ]
     }
   },
   "_stats": {

@@ -1080,6 +1080,7 @@ const TOKEN_BAR_RESOURCE_PATHS = [
   "system.stats.stamina",
   "system.stats.mana",
   "system.stats.temporaryHealth",
+  "system.stats.temporaryHealthMagic",
   "system.stats.toxicity",
 ];
 

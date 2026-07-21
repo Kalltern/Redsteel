@@ -1257,19 +1257,159 @@ In total :(${totalBleeds}) due to Crit score: ${critScore}">
   };
 }
 
-export function applyToHp(damage, hp, tempHp) {
-  const tempHpLoss = Math.min(tempHp, damage);
-  damage -= tempHpLoss;
+/**
+ * Which temporary-HP pool a damage packet drains.
+ *
+ * **A packet is physical only if EVERY OR branch of its expression contains
+ * the `physical` token.** If any branch lacks it the packet is magical and
+ * bypasses physical temporary HP entirely.
+ *
+ * An OR branch is an *alternative* the attack can route through, so a ward
+ * that only stops physical damage can be walked around; an AND chain is one
+ * packet that must include `physical` to be stopped. This needs no damage-type
+ * table: every weapon carries `physical AND <type>`, spells carry no
+ * `physical` token, and an enchanted weapon is flattened to an OR chain by
+ * basicAttack.mjs before it reaches here.
+ *
+ *   physical AND slash          → "physical"  (any weapon)
+ *   magic AND fire              → "magical"   (fireball)
+ *   physical OR slash OR magic  → "magical"   (enchanted weapon, bypasses)
+ *
+ * An empty/unknown expression is treated as physical: untyped damage should
+ * still be stopped by the ordinary ward rather than silently bypassing it.
+ *
+ * @param {string[]} expression - damageProfile.expression tokens.
+ * @returns {"physical"|"magical"}
+ */
+export function classifyDamagePacket(expression) {
+  const tokens = Array.isArray(expression) ? expression : [];
+  if (!tokens.length) return "physical";
+
+  // Split on "or" into AND-branches, mirroring evaluateDmgVsArmor step 6.
+  const branches = [];
+  let current = [];
+  for (const token of tokens) {
+    if (token === "or") {
+      if (current.length) branches.push(current);
+      current = [];
+    } else if (token !== "and") {
+      current.push(token);
+    }
+  }
+  if (current.length) branches.push(current);
+  if (!branches.length) return "physical";
+
+  return branches.every((b) => b.includes("physical")) ? "physical" : "magical";
+}
+
+/**
+ * The actor's active absorb pool, or null. Shields override one another
+ * (EFFECT_OVERRIDES), so there is normally at most one; if a GM force-applies
+ * several, the most specific wins — a typed pool (Elementární štít) before a
+ * plain class pool, so the narrow one is not left unused.
+ *
+ * @param {Actor} actor
+ * @returns {{effect: ActiveEffect, value: number, config: object}|null}
+ */
+export function getActiveShield(actor) {
+  const found = [];
+  for (const effect of actor?.effects ?? []) {
+    const config = effect.getFlag?.("redsteel", "shield");
+    if (!config) continue;
+    const value = Number(effect.getFlag("redsteel", "stacks")) || 0;
+    if (value <= 0) continue;
+    found.push({ effect, value, config });
+  }
+  if (!found.length) return null;
+  found.sort(
+    (a, b) => (b.config.matchTypes?.length ?? 0) - (a.config.matchTypes?.length ?? 0),
+  );
+  return found[0];
+}
+
+/**
+ * Whether a shield soaks this packet: its class matches, OR the packet carries
+ * one of the shield's damage types regardless of class. The OR is what lets
+ * Elementární štít stop both `physical AND fire` and `magic AND fire`
+ * ("funguje proti magické i nemagické formě vybraného poškození").
+ *
+ * @param {object} config - flags.redsteel.shield
+ * @param {"physical"|"magical"} damageClass
+ * @param {string[]} expression - damageProfile.expression
+ */
+export function shieldAbsorbs(config, damageClass, expression) {
+  if (!config) return false;
+  if (config.matchClass && config.matchClass === damageClass) return true;
+  const types = config.matchTypes ?? [];
+  if (!types.length) return false;
+  const tokens = Array.isArray(expression) ? expression : [];
+  return types.some((t) => tokens.includes(t));
+}
+
+/**
+ * How much of a hit a shield eats, and how much pool that costs.
+ *
+ * These differ only for `absorbFullHit` (Magický štít, "pohltí jednorázově i
+ * větší zranění"): an oversized hit is absorbed **in full** and the shield
+ * breaks, rather than spilling the excess through. The other two shields
+ * absorb only what they have left.
+ *
+ * @returns {{damageAbsorbed: number, poolSpent: number}}
+ */
+export function resolveShieldAbsorb(config, pool, damage) {
+  const available = Math.max(0, Number(pool) || 0);
+  const incoming = Math.max(0, Number(damage) || 0);
+  const poolSpent = Math.min(available, incoming);
+  const damageAbsorbed = config?.absorbFullHit ? incoming : poolSpent;
+  return { damageAbsorbed, poolSpent };
+}
+
+/**
+ * Spend temporary HP then health.
+ *
+ * Temporary HP is two independent pools. `tempHp` is the PHYSICAL pool
+ * (`system.stats.temporaryHealth`), `tempHpMagic` the magical one
+ * (`system.stats.temporaryHealthMagic`); `damageClass` picks which one this
+ * packet is allowed to touch. A packet never falls through from one pool to
+ * the other — bypassing the physical ward is the whole point of magical
+ * damage.
+ *
+ * @param {number} damage - Fully mitigated damage.
+ * @param {number} hp
+ * @param {number} tempHp - Physical temporary HP.
+ * @param {number} [tempHpMagic] - Magical temporary HP.
+ * @param {"physical"|"magical"} [damageClass]
+ */
+export function applyToHp(
+  damage,
+  hp,
+  tempHp,
+  tempHpMagic = 0,
+  damageClass = "physical",
+) {
+  const magical = damageClass === "magical";
+  const pool = magical ? Number(tempHpMagic) || 0 : Number(tempHp) || 0;
+
+  const poolLoss = Math.min(pool, damage);
+  damage -= poolLoss;
 
   const hpLoss = Math.min(hp, damage);
+
+  // `tempHpLoss` stays the physical figure so existing callers and chat
+  // output keep their meaning; the magical pool reports separately.
+  const tempHpLoss = magical ? 0 : poolLoss;
+  const tempHpMagicLoss = magical ? poolLoss : 0;
 
   return {
     finalDamage: damage,
     hpLoss,
     tempHpLoss,
-    totalHpLoss: hpLoss + tempHpLoss,
+    tempHpMagicLoss,
+    damageClass,
+    totalHpLoss: hpLoss + poolLoss,
     newHp: Math.max(hp - hpLoss, 0),
-    newTempHp: tempHp - tempHpLoss,
+    newTempHp: (Number(tempHp) || 0) - tempHpLoss,
+    newTempHpMagic: (Number(tempHpMagic) || 0) - tempHpMagicLoss,
   };
 }
 
@@ -1478,6 +1618,7 @@ export function evaluateDmgVsArmor({
   armor,
   hp,
   tempHp,
+  tempHpMagic = 0,
   halfDamage = false,
   shield = 0,
   penCap = false,
@@ -1485,11 +1626,31 @@ export function evaluateDmgVsArmor({
 }) {
   const { expression } = damageProfile;
   const armorTable = armor ?? {};
+  const damageClass = classifyDamagePacket(expression);
 
-  /* 1️. Shields */
+  /* 1️. Shields — spent before armor, on raw damage.
+     `shield` is either a plain number (legacy/manual) or
+     {value, config} from getActiveShield. A typed shield only soaks packets
+     it matches; a non-matching shield is left untouched. */
   let baseDamage = damage;
-  const shieldLoss = Math.min(shield, baseDamage);
-  baseDamage -= shieldLoss;
+  const shieldPool =
+    typeof shield === "number" ? shield : (Number(shield?.value) || 0);
+  const shieldConfig = typeof shield === "number" ? null : (shield?.config ?? null);
+  const shieldApplies =
+    shieldPool > 0 &&
+    (!shieldConfig || shieldAbsorbs(shieldConfig, damageClass, expression));
+
+  const { damageAbsorbed, poolSpent } = shieldApplies
+    ? resolveShieldAbsorb(shieldConfig, shieldPool, baseDamage)
+    : { damageAbsorbed: 0, poolSpent: 0 };
+
+  baseDamage -= damageAbsorbed;
+  // `shieldLoss` keeps its original meaning (damage removed) for existing
+  // callers and chat output; `shieldPoolSpent` is what the effect loses.
+  const shieldLoss = damageAbsorbed;
+  // What the shield let through. The penetration floor is capped by this so it
+  // cannot restore absorbed damage (step 3).
+  const damageAfterShield = Math.max(0, baseDamage);
 
   /* 2. Normal Armor (skipped e.g. for condition damage ticks, which are
      only mitigated by specialized armor / resistances / vulnerabilities) */
@@ -1498,8 +1659,13 @@ export function evaluateDmgVsArmor({
     baseDamage = Math.max(baseDamage - normalArmor, 0);
   }
 
-  /* 3. Penetration Floor */
-  const effectivePenetration = Math.min(penetration ?? 0, damage);
+  /* 3. Penetration Floor
+     Capped by what actually survived the shield, not the raw damage.
+     Penetration bypasses ARMOR, not an absorb pool — flooring against the
+     original number would resurrect damage a shield had already eaten (a
+     30-damage pen-12 bolt fully absorbed by a Magic Shield still dealt 12).
+     With no shield `damageAfterShield === damage`, so this is unchanged. */
+  const effectivePenetration = Math.min(penetration ?? 0, damageAfterShield);
   if (penCap) {
     baseDamage = Math.min(baseDamage, effectivePenetration);
   } else {
@@ -1581,9 +1747,11 @@ export function evaluateDmgVsArmor({
     finalDamage = Math.floor(finalDamage * 0.5);
   }
 
-  /* 11. Apply to HP */
+  /* 11. Apply to HP — physical or magical temporary HP per the expression */
   return {
     shieldLoss,
-    ...applyToHp(finalDamage, hp, tempHp),
+    shieldPoolSpent: poolSpent,
+    shieldBroke: shieldApplies && poolSpent >= shieldPool,
+    ...applyToHp(finalDamage, hp, tempHp, tempHpMagic, damageClass),
   };
 }

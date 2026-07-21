@@ -1,4 +1,8 @@
-import { evaluateDmgVsArmor, applyToHp } from "./combatSkillBonuses.mjs";
+import {
+  evaluateDmgVsArmor,
+  applyToHp,
+  getActiveShield,
+} from "./combatSkillBonuses.mjs";
 import {
   resolveEffectDefinition,
   isImmuneToEffect,
@@ -76,6 +80,10 @@ function evaluateAttackDamage({
   const damageProfile = attack.damageProfile ?? { expression: [] };
   const hp = actor.system.stats.health.value;
   const tempHp = actor.system.stats.temporaryHealth.value;
+  const tempHpMagic = actor.system.stats.temporaryHealthMagic?.value ?? 0;
+  // Absorb pool spent before armor. Null when the target has no shield, or
+  // when the one it has does not match this packet (checked downstream).
+  const activeShield = getActiveShield(actor);
 
   const base = evaluateDmgVsArmor({
     damage: selectedAttack.damage,
@@ -84,6 +92,8 @@ function evaluateAttackDamage({
     armor: actor.system.armor,
     hp,
     tempHp,
+    tempHpMagic,
+    shield: activeShield,
     // Half damage applies if EITHER the Apply Damage dialog requested it (the
     // spell half-damage checkbox) OR the attack itself is inherently half (e.g.
     // Flurry's `@Half`). Must be `||`, not `??`: the dialog value is always a
@@ -92,8 +102,12 @@ function evaluateAttackDamage({
     penCap: selectedAttack.penCap ?? false,
   });
 
-  // Fully mitigated damage, before it is split into temp HP / HP pools.
-  const damageBeforePools = base.tempHpLoss + base.finalDamage;
+  // Fully mitigated damage, before it is split into temp HP / HP pools. Only
+  // one of the two temp pools can have absorbed anything (a packet never falls
+  // through from one to the other), but both are summed so the figure is right
+  // whichever class this packet was.
+  const damageBeforePools =
+    base.tempHpLoss + (base.tempHpMagicLoss ?? 0) + base.finalDamage;
 
   const requestedPoints = Math.max(0, Math.floor(durabilityPoints));
   const pointsUsed =
@@ -106,14 +120,30 @@ function evaluateAttackDamage({
   );
 
   if (!durabilityReduction) {
-    return { ...base, durabilityReduction: 0, durabilityPointsUsed: 0 };
+    return {
+      ...base,
+      activeShield,
+      durabilityReduction: 0,
+      durabilityPointsUsed: 0,
+    };
   }
 
   return {
     shieldLoss: base.shieldLoss,
+    shieldPoolSpent: base.shieldPoolSpent,
+    shieldBroke: base.shieldBroke,
+    activeShield,
     durabilityReduction,
     durabilityPointsUsed: pointsUsed,
-    ...applyToHp(damageBeforePools - durabilityReduction, hp, tempHp),
+    // Re-split the reduced damage into the same pool the first pass chose, so
+    // a durability sacrifice cannot move a magical hit onto the physical ward.
+    ...applyToHp(
+      damageBeforePools - durabilityReduction,
+      hp,
+      tempHp,
+      tempHpMagic,
+      base.damageClass,
+    ),
   };
 }
 
@@ -390,8 +420,30 @@ export async function applyDamageAsGM(data) {
 
     await actor.update({
       "system.stats.temporaryHealth.value": Number(result.newTempHp),
+      "system.stats.temporaryHealthMagic.value": Number(
+        result.newTempHpMagic ?? actor.system.stats.temporaryHealthMagic?.value ?? 0,
+      ),
       "system.stats.health.value": Number(result.newHp),
     });
+
+    // Drain the absorb pool, and delete the shield once it is spent. The pool
+    // lives in `stacks`, mirrored to the token counter.
+    if (result.activeShield && result.shieldPoolSpent > 0) {
+      const shieldEffect = result.activeShield.effect;
+      const remaining = Math.max(
+        0,
+        result.activeShield.value - result.shieldPoolSpent,
+      );
+      if (remaining <= 0) {
+        await shieldEffect.delete();
+        ui.notifications.info(`${actor.name}: ${shieldEffect.name} broke.`);
+      } else {
+        await shieldEffect.update({
+          "flags.redsteel.stacks": remaining,
+          "flags.statuscounter.value": remaining,
+        });
+      }
+    }
 
     if (durabilityItem && result.durabilityPointsUsed > 0) {
       const remaining =
@@ -428,6 +480,20 @@ export async function applyDamageAsGM(data) {
 
       if (isImmuneToEffect(actor, name)) {
         console.log(`GM: ${actor.name} is immune to ${name} — skipped`);
+        continue;
+      }
+
+      // Magický štít "chrání před některými magickými efekty": while it holds,
+      // effects riding a magical-class packet do not land. Read from the
+      // shield resolved before the pool was drained, so a shield that broke on
+      // this very hit still blocks its rider.
+      if (
+        result.activeShield?.config?.blocksMagicEffects &&
+        result.damageClass === "magical"
+      ) {
+        console.log(
+          `GM: ${actor.name}'s Magic Shield blocked ${name} (magical source)`,
+        );
         continue;
       }
 

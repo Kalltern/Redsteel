@@ -266,6 +266,11 @@ export class RedsteelItem extends Item {
             "Health",
             "Stamina",
             "Mana",
+            // Spirit spells reserve or drain Mind points. The consumption code
+            // resolves `type.toLowerCase()` against `system.stats`, and
+            // `stats.mind` already exists on both actor types, so listing it
+            // here is all that is needed.
+            "Mind",
             "Toxicity",
             "Corruption",
             "TemporaryHealth",

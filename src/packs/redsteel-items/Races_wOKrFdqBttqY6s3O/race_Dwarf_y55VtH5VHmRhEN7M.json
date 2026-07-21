@@ -4,7 +4,8 @@
   "img": "icons/svg/aura.svg",
   "system": {
     "localizationKey": "REDSTEEL.Items.Dwarf.name",
-    "description": ""
+    "description": "",
+    "baneTypes": "dwarf"
   },
   "effects": [
     {

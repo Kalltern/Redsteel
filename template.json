@@ -102,6 +102,16 @@
             "applyChance": 0,
             "stackMod": 0,
             "immune": false
+          },
+          "bleed": {
+            "applyChance": 0,
+            "stackMod": 0,
+            "immune": false
+          },
+          "poison": {
+            "applyChance": 0,
+            "stackMod": 0,
+            "immune": false
           }
         }
       }
@@ -232,6 +242,12 @@
           "bonus": 0
         },
         "temporaryHealth": {
+          "value": 0,
+          "min": 0,
+          "max": 50,
+          "bonus": 0
+        },
+        "temporaryHealthMagic": {
           "value": 0,
           "min": 0,
           "max": 50,
@@ -1042,6 +1058,12 @@
           "bonus": 0
         },
         "temporaryHealth": {
+          "value": 0,
+          "min": 0,
+          "max": 50,
+          "bonus": 0
+        },
+        "temporaryHealthMagic": {
           "value": 0,
           "min": 0,
           "max": 50,

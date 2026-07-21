@@ -1048,6 +1048,30 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
 
     // Offloading context prep to a helper function
     this._prepareItems(context);
+
+    // Absorb pools for the Config tab. Read straight off the effects so the
+    // rows always reflect the live pool (`flags.redsteel.stacks`).
+    context.shields = this.actor.effects
+      .filter((e) => e.getFlag("redsteel", "shield"))
+      .map((e) => {
+        const cfg = e.getFlag("redsteel", "shield");
+        return {
+          id: e.id,
+          name: e.name,
+          img: e.img,
+          value: Number(e.getFlag("redsteel", "stacks")) || 0,
+          max: Number(cfg.max) || 0,
+          matchClass: cfg.matchClass ?? "",
+          matchTypes: (cfg.matchTypes ?? []).join(", "),
+          // Only Elementární štít offers a swap; the picker is hidden otherwise.
+          elementChoices: (cfg.elementChoices ?? []).map((types) => ({
+            value: types.join(","),
+            label: types.join(" / "),
+            selected:
+              types.join(",") === (cfg.matchTypes ?? []).join(","),
+          })),
+        };
+      });
     context.weaponSets = {};
     // Resolve weapon sets -> Item documents (VIEW DATA ONLY)
     if (this.actor.type === "character") {
@@ -1586,6 +1610,75 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
    * @protected
    * @override
    */
+  /**
+   * Config-tab shield rows. These cannot be declarative `name="system…"`
+   * inputs or ApplicationV2 click actions: the pool lives on an Active Effect
+   * flag, and the controls are `change` events on a number input and two
+   * selects. Everything writes through the effect document.
+   */
+  #bindShieldControls(root) {
+    const effectFor = (el) =>
+      this.actor.effects.get(el.dataset.effectId ?? "");
+
+    // Absorb remaining. Mirrored to the status counter so the token matches.
+    root
+      .querySelectorAll('[data-action="shieldValue"]')
+      .forEach((el) =>
+        el.addEventListener("change", async (event) => {
+          const effect = effectFor(event.currentTarget);
+          if (!effect) return;
+          const value = Math.max(0, Number(event.currentTarget.value) || 0);
+          if (value <= 0) return effect.delete();
+          await effect.update({
+            "flags.redsteel.stacks": value,
+            "flags.statuscounter.value": value,
+          });
+        }),
+      );
+
+    // Elementární štít: Free Action element swap.
+    root
+      .querySelectorAll('[data-action="shieldElement"]')
+      .forEach((el) =>
+        el.addEventListener("change", async (event) => {
+          const effect = effectFor(event.currentTarget);
+          if (!effect) return;
+          const types = String(event.currentTarget.value)
+            .split(",")
+            .filter(Boolean);
+          const config = effect.getFlag("redsteel", "shield") ?? {};
+          await effect.setFlag("redsteel", "shield", {
+            ...config,
+            matchTypes: types,
+          });
+        }),
+      );
+
+    root
+      .querySelectorAll('[data-action="shieldRemove"]')
+      .forEach((el) =>
+        el.addEventListener("click", async (event) => {
+          event.preventDefault();
+          await effectFor(event.currentTarget)?.delete();
+        }),
+      );
+
+    // Grant one by hand. Goes through applyEffect so the pool is still baked
+    // from Spell Power and the shields still override one another.
+    root
+      .querySelectorAll('[data-action="shieldAdd"]')
+      .forEach((el) =>
+        el.addEventListener("change", async (event) => {
+          const id = event.currentTarget.value;
+          event.currentTarget.value = "";
+          if (!id) return;
+          await game.redsteel.applyEffect(this.actor, id, {
+            caster: this.actor,
+          });
+        }),
+      );
+  }
+
   _onRender(context, options) {
     super._onRender?.(context, options);
 
@@ -1602,6 +1695,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     if (root) {
       root.removeEventListener("contextmenu", this._boundRightClick);
       root.addEventListener("contextmenu", this._boundRightClick);
+      this.#bindShieldControls(root);
     }
 
     this._activateItemTooltips();

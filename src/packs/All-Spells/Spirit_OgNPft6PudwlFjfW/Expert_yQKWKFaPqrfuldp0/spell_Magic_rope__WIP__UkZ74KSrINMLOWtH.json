@@ -120,12 +120,14 @@
       "bleed": null,
       "extra1": -1,
       "extra2": -1,
-      "extra3": null
+      "extra3": null,
+      "effectName1": "root",
+      "effectName2": "stun"
     },
     "attributeTest": "will",
     "testModifier": "@spellPower",
-    "effectType1": "root",
-    "effectType2": "paralyze",
+    "effectType1": "custom",
+    "effectType2": "custom",
     "effectType3": ""
   },
   "effects": [],

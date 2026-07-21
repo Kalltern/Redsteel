@@ -1573,7 +1573,97 @@ REDSTEEL.effectDefinitions = {
     statuses: ["expose_weakness"],
     stackBehavior: "refresh",
   },
+
+  // ==========================================================
+  // SHIELDS — absorb pools spent before armor.
+  // ----------------------------------------------------------
+  // The remaining pool lives in `flags.redsteel.stacks`, so the
+  // token counter shows it for free and the GM can edit it the
+  // same way as any other stacking effect. `shield` holds the
+  // matching rules; the pool size is baked from the caster's SK
+  // at apply time (see the dynamic block in effects.mjs).
+  //
+  // Matching (SPELL_EFFECTS_DEV_PLAN.md B.4): a packet is soaked
+  // when its class equals `matchClass` OR its damage expression
+  // contains one of `matchTypes`. The OR is what lets Elementární
+  // štít stop both `physical AND fire` and `magic AND fire`.
+  //
+  // All three are "Není slučitelný s dalšími Štíty" → they
+  // override each other (see EFFECT_OVERRIDES in effects.mjs),
+  // so at most one is ever active.
+  // ==========================================================
+
+  // "Štít" — absorbs physical damage, can be dispelled.
+  shield_physical: {
+    name: "Shield",
+    img: "icons/svg/shield.svg",
+    statuses: ["shield_physical"],
+    stackBehavior: "reset", // recasting replaces the pool, never adds
+    maxStacks: 9999,
+    shield: {
+      matchClass: "physical",
+      matchTypes: [],
+      absorbFullHit: false,
+      blocksMagicEffects: false,
+      dispellable: true,
+      pool: { base: 15, perSpellPower: 4 },
+    },
+  },
+
+  // "Magický štít" — absorbs magical damage, eats an oversized hit
+  // whole ("pohltí jednorázově i větší zranění"), blocks magical
+  // effects while up, immune to Protikouzlo.
+  shield_magic: {
+    name: "Magic Shield",
+    img: "icons/magic/defensive/shield-hex-blue.webp",
+    statuses: ["shield_magic"],
+    stackBehavior: "reset",
+    maxStacks: 9999,
+    shield: {
+      matchClass: "magical",
+      matchTypes: [],
+      absorbFullHit: true,
+      blocksMagicEffects: true,
+      dispellable: false,
+      pool: { base: 15, perSpellPower: 4 },
+    },
+  },
+
+  // "Elementární štít" — absorbs physical damage AND one chosen
+  // element, in both its magical and non-magical form. The element
+  // is swappable as a Free Action for 3 mana (edit the row on the
+  // Config tab); the mana is NOT deducted automatically. Note the
+  // spell's "25 / 3" cost is 25 to cast plus 3 per switch — it has
+  // no per-round upkeep, so it never starts Channeling.
+  shield_elemental: {
+    name: "Elemental Shield",
+    img: "icons/svg/daze.svg",
+    statuses: ["shield_elemental"],
+    stackBehavior: "reset",
+    maxStacks: 9999,
+    shield: {
+      matchClass: "physical",
+      matchTypes: ["fire"], // default pick; swapped per cast
+      absorbFullHit: false,
+      blocksMagicEffects: false,
+      dispellable: false,
+      pool: { base: 20, perSpellPower: 5 },
+      // Offered in the Config-tab element picker. Acid and poison are one
+      // choice per the rules ("Kyselinové/Jedovaté").
+      elementChoices: [
+        ["fire"],
+        ["frost"],
+        ["lightning"],
+        ["acid", "poison"],
+      ],
+    },
+  },
 };
+
+/** Effect ids that carry an absorb pool, in the order they are drained. */
+REDSTEEL.shieldEffectIds = Object.entries(REDSTEEL.effectDefinitions)
+  .filter(([, def]) => def.shield)
+  .map(([id]) => id);
 
 REDSTEEL.statusEffects = Object.entries(REDSTEEL.effectDefinitions).map(
   ([id, def]) => ({

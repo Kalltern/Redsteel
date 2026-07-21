@@ -4,7 +4,8 @@
   "img": "icons/svg/aura.svg",
   "system": {
     "localizationKey": "REDSTEEL.Items.Eldarai.name",
-    "description": ""
+    "description": "",
+    "baneTypes": "elf"
   },
   "effects": [
     {

@@ -4,7 +4,8 @@
   "img": "icons/svg/aura.svg",
   "system": {
     "localizationKey": "REDSTEEL.Items.Halfling.name",
-    "description": ""
+    "description": "",
+    "baneTypes": "halfling"
   },
   "effects": [
     {

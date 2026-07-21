@@ -1,10 +1,10 @@
 {
-  "name": "Mind strike (WIP - add mind cost)",
+  "name": "Spectral weapon",
   "type": "spell",
-  "img": "icons/magic/perception/eye-ringed-glow-angry-small-teal.webp",
+  "img": "icons/magic/fire/dagger-rune-enchant-flame-strong-teal-purple.webp",
   "system": {
     "localizationKey": "",
-    "description": "No requirements. Drains 1 Mind point from the caster. Targets an intelligent creature. Deals Magic + Psychic Damage 3d6 + {{spellPower}}, 20% chance to Stun. Ignores Armor. ",
+    "description": "Enchants an existing weapon (or quiver) for {{math spellPower \"*\" 5}} minutes. The weapon now deals Physical/Magic damage. Can be cast on a group (cost per Target). The weapon can only be enchanted by one such effect. Max Paralysis chance 0%.",
     "options": [
       "divine",
       "magic"
@@ -88,62 +88,63 @@
     },
     "isOffensive": true,
     "sustained": false,
-    "difficulty": 20,
-    "cost": 3,
+    "difficulty": -10,
+    "cost": 1,
     "perRound": 0,
     "variants": [],
     "option": "magic",
     "type": "spirit",
-    "rank": "wild",
+    "rank": "expert",
     "actionCost": "1",
-    "range": "10",
+    "range": "5",
     "spellClass": "support",
     "roll": {
-      "diceNum": 3,
-      "diceSize": "6",
-      "diceBonus": "@spellPower"
+      "diceNum": 0,
+      "diceSize": "0",
+      "diceBonus": ""
     },
-    "penetration": 100,
-    "dmgType1": "magic",
-    "bool2": "and",
-    "dmgType2": "psychic",
+    "penetration": 0,
+    "dmgType1": "physical",
+    "bool2": "or",
+    "dmgType2": "magic",
     "bool3": "",
     "dmgType3": "",
     "bool4": "",
     "dmgType4": "",
     "effects": {
-      "effect1": "20",
+      "effect1": "0",
       "effect2": "0",
       "effect3": "0",
       "effect4": "0",
       "stagger": null,
       "bleed": null,
-      "extra1": null,
+      "extra1": -1,
       "extra2": null,
-      "extra3": null
+      "extra3": null,
+      "effectName1": "spectral_weapon"
     },
     "attributeTest": "",
     "testModifier": "",
-    "effectType1": "",
+    "effectType1": "custom",
     "effectType2": "",
     "effectType3": ""
   },
   "effects": [],
-  "folder": "tSmceLJu9obznnb9",
+  "folder": "yQKWKFaPqrfuldp0",
   "flags": {
     "scene-packer": {
-      "hash": "0295013fb85321843f078e737b82b2fabfc2c079"
+      "hash": "c5d60c29b0d4d84fdb91439c11c0a343d0b680d9"
     }
   },
   "_stats": {
-    "compendiumSource": "Compendium.world.spirit-spells.Item.Hepw3zdQ24FgKmJg",
-    "duplicateSource": "Item.LcrhnkW543ySDH4m",
+    "compendiumSource": "Compendium.world.spirit-spells.Item.86EsXQqR5cKQmYHP",
+    "duplicateSource": "Item.RuAqbue0hy4sMnYb",
     "exportSource": null,
     "coreVersion": "14.363",
     "systemId": "redsteel",
     "systemVersion": "0.9.0",
-    "createdTime": 1784581202207,
-    "modifiedTime": 1784581202207,
+    "createdTime": 1784581202179,
+    "modifiedTime": 1784581202179,
     "lastModifiedBy": "MXiQFt4waIv5RqBo"
   },
   "ownership": {
@@ -151,7 +152,7 @@
     "J03KIFAyMdNdBOUD": 3,
     "MXiQFt4waIv5RqBo": 3
   },
-  "_id": "LcrhnkW543ySDH4m",
-  "sort": 200000,
-  "_key": "!items!LcrhnkW543ySDH4m"
+  "_id": "RuAqbue0hy4sMnYb",
+  "sort": 150000,
+  "_key": "!items!RuAqbue0hy4sMnYb"
 }

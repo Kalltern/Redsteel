@@ -1,0 +1,32 @@
+{
+  "name": "Argos",
+  "type": "race",
+  "img": "icons/svg/aura.svg",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.Argos.name",
+    "description": "",
+    "baneTypes": "argos"
+  },
+  "effects": [],
+  "folder": "wOKrFdqBttqY6s3O",
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.9.54",
+    "createdTime": 1784642168553,
+    "modifiedTime": 1784642168553,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "ownership": {
+    "default": 0,
+    "rs3mzx7WZdtEmvH2": 3,
+    "UHjN0KQ8w8ZxibJg": 3
+  },
+  "_id": "TocJU9rh6hXy67NL",
+  "sort": 285000,
+  "_key": "!items!TocJU9rh6hXy67NL"
+}

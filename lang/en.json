@@ -4455,6 +4455,9 @@
       "AreaDefense": {
         "name": "Area Defense"
       },
+      "Argos": {
+        "name": "Argos"
+      },
       "ArmorTrainingI": {
         "name": "Armor Training I"
       },
@@ -4470,6 +4473,9 @@
       "Attack": {
         "name": "Attack"
       },
+      "Avesan": {
+        "name": "Avesan"
+      },
       "Bardiche": {
         "name": "Bardiche"
       },
@@ -4481,6 +4487,9 @@
       },
       "BattleHardenedI": {
         "name": "Battle Hardened I"
+      },
+      "Beast": {
+        "name": "Beast"
       },
       "BecDeCorbin": {
         "name": "Bec de Corbin"
@@ -4521,6 +4530,9 @@
       "CalmBody": {
         "name": "Calm Body"
       },
+      "Cambion": {
+        "name": "Cambion"
+      },
       "Casting": {
         "name": "Casting"
       },
@@ -4538,6 +4550,9 @@
       },
       "CorpseBreath": {
         "name": "Corpse Breath"
+      },
+      "Corrupt": {
+        "name": "Corrupt"
       },
       "Counterattack": {
         "name": "Counterattack"
@@ -4578,6 +4593,9 @@
       "DefensiveStance": {
         "name": "Defensive Stance"
       },
+      "Demon": {
+        "name": "Demon"
+      },
       "Determination": {
         "name": "Determination"
       },
@@ -4598,6 +4616,9 @@
       },
       "Dodge": {
         "name": "Dodge"
+      },
+      "Draconic": {
+        "name": "Draconic"
       },
       "Drinker": {
         "name": "Drinker"
@@ -4959,6 +4980,9 @@
       "Indestructible": {
         "name": "Indestructible"
       },
+      "Insectoid": {
+        "name": "Insectoid"
+      },
       "WoundingImpale": {
         "name": "Wounding Impale"
       },
@@ -5040,11 +5064,17 @@
       "Lucky": {
         "name": "Lucky"
       },
+      "Lycanthrope": {
+        "name": "Lycanthrope"
+      },
       "Mace": {
         "name": "Mace"
       },
       "MagicalConduit": {
         "name": "Magical Conduit"
+      },
+      "MagicalCreature": {
+        "name": "Magical Creature"
       },
       "MagicalReserve": {
         "name": "Magical Reserve"
@@ -5094,6 +5124,9 @@
       "MuscularII": {
         "name": "Muscular II"
       },
+      "Necrophage": {
+        "name": "Necrophage"
+      },
       "Nimble": {
         "name": "Nimble"
       },
@@ -5103,11 +5136,17 @@
       "Oak": {
         "name": "Oak"
       },
+      "Ogroid": {
+        "name": "Ogroid"
+      },
       "OpportunityAttack": {
         "name": "Opportunity Attack"
       },
       "Orator": {
         "name": "Orator"
+      },
+      "Orcoid": {
+        "name": "Orcoid"
       },
       "Overwatch": {
         "name": "Overwatch"
@@ -5229,6 +5268,9 @@
       "ReflexBow": {
         "name": "Reflex Bow"
       },
+      "Relict": {
+        "name": "Relict"
+      },
       "Reload": {
         "name": "Reload"
       },
@@ -5264,6 +5306,9 @@
       },
       "SecondWind": {
         "name": "Second Wind"
+      },
+      "Seraphar": {
+        "name": "Seraphar"
       },
       "ShieldBash": {
         "name": "Shield Bash"
@@ -5382,6 +5427,9 @@
       "SpecializationTraps": {
         "name": "Specialization: Traps"
       },
+      "Specter": {
+        "name": "Specter"
+      },
       "SpeedyAdvantage": {
         "name": "Speedy Advantage"
       },
@@ -5423,6 +5471,9 @@
       },
       "SwiftRetaliation": {
         "name": "Swift Retaliation"
+      },
+      "Sylvan": {
+        "name": "Sylvan"
       },
       "TalentedIArcana": {
         "name": "Talented I: Arcana"
@@ -5493,8 +5544,14 @@
       "Ugly": {
         "name": "Ugly"
       },
+      "Undead": {
+        "name": "Undead"
+      },
       "UntiringLuck": {
         "name": "Untiring Luck"
+      },
+      "Vampire": {
+        "name": "Vampire"
       },
       "Verdigris": {
         "name": "Verdigris"
@@ -5537,6 +5594,9 @@
       },
       "Yliaster": {
         "name": "Yliaster"
+      },
+      "Yormun": {
+        "name": "Yormun"
       }
     }
   },

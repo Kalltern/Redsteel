@@ -1650,6 +1650,7 @@ export async function deductAbilityCost(actor, abilities = []) {
   const updates = {};
   function resolveStatKey(stat) {
     if (stat === "temporaryhealth") return "temporaryHealth";
+    if (stat === "temporaryhealthmagic") return "temporaryHealthMagic";
     return stat;
   }
   // ---------------------------------

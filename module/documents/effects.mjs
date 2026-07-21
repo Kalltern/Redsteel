@@ -15,6 +15,11 @@ export class RedsteelActiveEffect extends ActiveEffect {
     paralyze: ["stun", "stagger"],
     terror: ["fear"],
     guard: ["defensive_stance"],
+    // "Není slučitelný s dalšími Štíty (ani podobnými)" — the three shields
+    // replace one another, so at most one absorb pool is ever active.
+    shield_physical: ["shield_magic", "shield_elemental"],
+    shield_magic: ["shield_physical", "shield_elemental"],
+    shield_elemental: ["shield_physical", "shield_magic"],
   };
   static registerStatusCounterIntegration() {
     if (!game.user.isGM) {
@@ -33,7 +38,10 @@ export class RedsteelActiveEffect extends ActiveEffect {
       const def = resolveEffectDefinition(statusId)?.def;
       if (!def) return;
 
-      const hasStacks = def.stackBehavior === "stack";
+      // Shields keep their remaining absorb in `stacks` (stackBehavior
+      // "reset", since recasting replaces the pool rather than adding to it),
+      // so they need the counter just as much as a stacking effect.
+      const hasStacks = def.stackBehavior === "stack" || !!def.shield;
 
       const hasRounds = !!def.defaultRounds;
       const hasTurns = !!def.defaultTurns;
@@ -48,7 +56,7 @@ export class RedsteelActiveEffect extends ActiveEffect {
         return;
       }
 
-      const useStacks = def.stackBehavior === "stack";
+      const useStacks = def.stackBehavior === "stack" || !!def.shield;
 
       const stackValue = effect.getFlag("redsteel", "stacks");
 
@@ -180,16 +188,25 @@ export class RedsteelActiveEffect extends ActiveEffect {
         changed,
         "system.stats.temporaryHealth.value",
       );
-      if (newHealth == null && newTemp == null) return;
+      const newTempMagic = foundry.utils.getProperty(
+        changed,
+        "system.stats.temporaryHealthMagic.value",
+      );
+      if (newHealth == null && newTemp == null && newTempMagic == null) return;
 
-      // Compare the combined HP pool (health + temporary health) so damage
-      // that only eats temporary health still counts as "taking damage".
+      // Compare the combined HP pool (health + both temporary health pools) so
+      // damage that only eats a ward still counts as "taking damage".
       const oldHealth = Number(actor.system.stats.health?.value ?? 0);
       const oldTemp = Number(actor.system.stats.temporaryHealth?.value ?? 0);
+      const oldTempMagic = Number(
+        actor.system.stats.temporaryHealthMagic?.value ?? 0,
+      );
       const nextPool =
-        Number(newHealth ?? oldHealth) + Number(newTemp ?? oldTemp);
+        Number(newHealth ?? oldHealth) +
+        Number(newTemp ?? oldTemp) +
+        Number(newTempMagic ?? oldTempMagic);
 
-      if (nextPool < oldHealth + oldTemp) {
+      if (nextPool < oldHealth + oldTemp + oldTempMagic) {
         options.redsteelDamageInstance = true;
       }
     });
@@ -479,7 +496,13 @@ export class RedsteelActiveEffect extends ActiveEffect {
       stacks = (Number(stacks) || 1) * 2;
     }
 
-    const initialStacks = effectId === "fear" ? 3 : Math.min(stacks, maxStacks);
+    // `let`, not `const`: a shield's pool is baked from the caster's Spell
+    // Power in the dynamic block below and overrides the passed-in stacks.
+    let initialStacks =
+      effectId === "fear" ? 3 : Math.min(stacks, maxStacks);
+
+    // Shield config baked at apply time, stored alongside the pool.
+    let shieldConfig = null;
 
     // `let`, not `const`: the expose_weakness gate below can delete this very
     // document (a Ranger re-marking the target they already marked), so it has
@@ -538,6 +561,25 @@ export class RedsteelActiveEffect extends ActiveEffect {
       // when the Ranger re-marks a target they had already marked. Re-resolve
       // so the paths below never touch a deleted document.
       existing = actor.effects.find((e) => e.statuses?.has(effectId));
+    }
+
+    // Shields — bake the absorb pool from the caster's Spell Power and stash
+    // the matching config on the effect. The pool lives in `stacks` so the
+    // token counter renders it and the GM can edit it like any other stack.
+    if (def.shield) {
+      shieldConfig = foundry.utils.deepClone(def.shield);
+      const { base = 0, perSpellPower = 0 } = shieldConfig.pool ?? {};
+      // An explicit `stacks` (GM granting a pool by hand, or a spell passing a
+      // fixed size) wins over the SK formula.
+      const scaled =
+        stacks > 1
+          ? stacks
+          : base +
+            perSpellPower *
+              (sourceCaster
+                ? getSpellPower(sourceCaster, school ?? "spirit")
+                : 0);
+      initialStacks = Math.max(0, Math.min(Math.floor(scaled), maxStacks));
     }
 
     if (effectId === "sleep") {
@@ -673,6 +715,17 @@ export class RedsteelActiveEffect extends ActiveEffect {
         await existing.update({
           "flags.redsteel.stacks": initialStacks,
           "flags.statuscounter.value": initialStacks,
+          // Also set on re-cast so a shield created before the counter was
+          // wired up starts displaying without needing to be removed first.
+          ...(def.shield && { "flags.statuscounter.visible": true }),
+          // Recasting a shield replaces its config too, so a new element pick
+          // or a different caster's SK takes effect.
+          ...(shieldConfig && {
+            "flags.redsteel.shield": {
+              ...shieldConfig,
+              max: initialStacks,
+            },
+          }),
         });
 
         return existing;
@@ -726,6 +779,12 @@ export class RedsteelActiveEffect extends ActiveEffect {
       redsteelFlags.stacks = initialStacks;
     }
 
+    // Shields carry their matching rules and starting pool alongside `stacks`,
+    // which holds the remaining absorb.
+    if (shieldConfig) {
+      redsteelFlags.shield = { ...shieldConfig, max: initialStacks };
+    }
+
     if (turnsDuration > 0) {
       redsteelFlags.actorTurns = turnsDuration;
     }
@@ -750,13 +809,17 @@ export class RedsteelActiveEffect extends ActiveEffect {
         redsteel: redsteelFlags,
 
         statuscounter: {
+          // Shields keep their absorb pool in `stacks` under stackBehavior
+          // "reset" (recasting replaces the pool), so they need the counter
+          // just as much as a "stack" effect does.
           visible:
             def.stackBehavior === "stack" ||
+            !!def.shield ||
             !!def.defaultRounds ||
             !!def.defaultTurns,
 
           value:
-            def.stackBehavior === "stack"
+            def.stackBehavior === "stack" || def.shield
               ? initialStacks
               : roundsDuration || turnsDuration || 0,
         },
@@ -1212,6 +1275,7 @@ export class RedsteelActiveEffect extends ActiveEffect {
       armor: actor.system.armor,
       hp: actor.system.stats.health.value ?? 0,
       tempHp: actor.system.stats.temporaryHealth.value ?? 0,
+      tempHpMagic: actor.system.stats.temporaryHealthMagic?.value ?? 0,
       // Condition ticks bypass base armor — only specialized armor,
       // resistances, vulnerabilities and immunities mitigate them.
       ignoreBaseArmor: true,
@@ -1220,6 +1284,9 @@ export class RedsteelActiveEffect extends ActiveEffect {
     await actor.update({
       "system.stats.health.value": Number(result.newHp),
       "system.stats.temporaryHealth.value": Number(result.newTempHp),
+      "system.stats.temporaryHealthMagic.value": Number(
+        result.newTempHpMagic ?? 0,
+      ),
     });
 
     await this._maybeApplyZeroHealthState();
@@ -1344,6 +1411,7 @@ export class RedsteelActiveEffect extends ActiveEffect {
         armor: actor.system.armor,
         hp: actor.system.stats.health.value ?? 0,
         tempHp: actor.system.stats.temporaryHealth.value ?? 0,
+        tempHpMagic: actor.system.stats.temporaryHealthMagic?.value ?? 0,
         // "Ignores Armor": bypass base armor, keep specialized armor & resists.
         ignoreBaseArmor: true,
       });
@@ -1351,6 +1419,9 @@ export class RedsteelActiveEffect extends ActiveEffect {
       await actor.update({
         "system.stats.health.value": Number(result.newHp),
         "system.stats.temporaryHealth.value": Number(result.newTempHp),
+        "system.stats.temporaryHealthMagic.value": Number(
+          result.newTempHpMagic ?? 0,
+        ),
       });
 
       await this._maybeApplyZeroHealthState();

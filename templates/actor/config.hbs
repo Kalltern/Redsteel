@@ -80,6 +80,103 @@
   </div>
 
 </div>
+{{!-- Absorb pools. Two independent wards: physical damage can only be
+      soaked by the physical pool, magical damage only by the magical one
+      (see classifyDamagePacket in combatSkillBonuses.mjs). --}}
+<div class="grid grid-10col configstats">
+      <div class="grid-span-4"></div>
+  <div class="grid-span-1">
+        <label class="resource-label">{{localize
+            "Temp HP (Physical)"
+          }}</label>
+        <input
+          type="number"
+          min="0"
+          max="{{system.stats.temporaryHealth.max}}"
+          name="system.stats.temporaryHealth.value"
+          value="{{system.stats.temporaryHealth.value}}"
+          data-dtype="Number"
+          data-class="stat-input"
+        />
+  </div>
+  <div class="grid-span-1">
+        <label class="resource-label">{{localize
+            "Temp HP (Magical)"
+          }}</label>
+        <input
+          type="number"
+          min="0"
+          max="{{system.stats.temporaryHealthMagic.max}}"
+          name="system.stats.temporaryHealthMagic.value"
+          value="{{system.stats.temporaryHealthMagic.value}}"
+          data-dtype="Number"
+          data-class="stat-input"
+        />
+  </div>
+
+</div>
+{{!-- Shields. The pool lives on the effect (flags.redsteel.stacks), not in
+      system.stats, so these cannot be declarative `name="system…"` inputs —
+      they write back through the shield-* actions in actor-sheet.mjs. --}}
+<div class="grid grid-10col configstats">
+  <div class="grid-span-10">
+    <label class="resource-label">{{localize "Shields"}}</label>
+  </div>
+  {{#each shields as |shield|}}
+    <div class="grid-span-3">
+      <label class="resource-label">
+        <img src="{{shield.img}}" width="16" height="16"> {{shield.name}}
+      </label>
+    </div>
+    <div class="grid-span-2">
+      <input
+        type="number"
+        min="0"
+        value="{{shield.value}}"
+        data-dtype="Number"
+        data-class="stat-input"
+        data-action="shieldValue"
+        data-effect-id="{{shield.id}}"
+        data-tooltip="Absorb remaining (max {{shield.max}})"
+      />
+    </div>
+    <div class="grid-span-3">
+      {{#if shield.elementChoices.length}}
+        <select
+          data-action="shieldElement"
+          data-effect-id="{{shield.id}}"
+          data-tooltip="Free Action: change absorbed element (costs 3 mana, deduct manually)"
+        >
+          {{#each shield.elementChoices as |choice|}}
+            <option value="{{choice.value}}" {{#if choice.selected}}selected{{/if}}>
+              {{choice.label}}
+            </option>
+          {{/each}}
+        </select>
+      {{else}}
+        <span class="resource-label">{{shield.matchClass}}</span>
+      {{/if}}
+    </div>
+    <div class="grid-span-2">
+      <a data-action="shieldRemove" data-effect-id="{{shield.id}}"
+         data-tooltip="Remove shield">
+        <i class="fas fa-trash"></i>
+      </a>
+    </div>
+  {{else}}
+    <div class="grid-span-7">
+      <span class="resource-label">{{localize "No active shield"}}</span>
+    </div>
+  {{/each}}
+  <div class="grid-span-3">
+    <select data-action="shieldAdd" data-tooltip="Grant a shield by hand">
+      <option value="">{{localize "Add shield…"}}</option>
+      {{#each config.shieldEffectIds as |id|}}
+        <option value="{{id}}">{{id}}</option>
+      {{/each}}
+    </select>
+  </div>
+</div>
 <div class="grid grid-10col configstats">
   <div class="grid-span-10">
         <label class="resource-label">{{localize
