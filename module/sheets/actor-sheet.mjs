@@ -35,6 +35,21 @@ const { api, sheets } = foundry.applications;
 // Maps the gear "layer" select values to armor slot keys on the actor
 const ARMOR_LAYER_SLOTS = { Bottom: "bottom", Middle: "middle", Top: "top" };
 
+// Accessory slots are generic and interchangeable: any gear whose layer marks
+// it as an accessory fits any of the ten slots.
+const ACCESSORY_SLOT_KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
+// "Not Armor" is the pre-rename value; accept it so live worlds keep working.
+const ACCESSORY_LAYERS = new Set(["Accessory", "Not Armor"]);
+
+/** @returns {boolean} whether this item can occupy an accessory slot. */
+function isAccessory(item) {
+  return (
+    item?.type === "gear" &&
+    !item.system?.shield &&
+    ACCESSORY_LAYERS.has(item.system?.layer)
+  );
+}
+
 // Inventory grid category filters. `all` shows everything; the rest map a
 // display category to the underlying item types (ammunition rides with the
 // alchemy/supplies bucket, matching the old "supplies" grouping).
@@ -629,8 +644,20 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       return;
     }
 
+    /* ------------------------------------- */
+    /* 3️⃣ ACCESSORY SLOT RIGHT-CLICK (CLEAR) */
+    /* ------------------------------------- */
+    const accessorySlot = event.target.closest(".accessory-slot");
+    if (accessorySlot) {
+      event.preventDefault();
+      const slotKey = accessorySlot.dataset.slotKey;
+      if (!slotKey) return;
+      this._clearAccessorySlot(slotKey);
+      return;
+    }
+
     /* ---------------------------------- */
-    /* 3️⃣ AMMO SLOT RIGHT-CLICK (CLEAR)   */
+    /* 4️⃣ AMMO SLOT RIGHT-CLICK (CLEAR)   */
     /* ---------------------------------- */
     const ammoSlot = event.target.closest(".ammo-slot[data-item-id]");
     if (ammoSlot) {
@@ -641,7 +668,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     }
 
     /* ---------------------------------- */
-    /* 4️⃣ INVENTORY ITEM RIGHT-CLICK      */
+    /* 5️⃣ INVENTORY ITEM RIGHT-CLICK      */
     /* ---------------------------------- */
     const itemRow = event.target.closest(".item[data-item-id]");
     if (!itemRow) return;
@@ -667,6 +694,18 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
 
     // Layered armor equips straight into its slot; right-click toggles it
     if (item.type === "gear" && !item.system.shield) {
+      if (isAccessory(item)) {
+        const slots = this.actor.system.combat.accessorySlots ?? {};
+        const held = ACCESSORY_SLOT_KEYS.find((key) => slots[key] === itemId);
+        if (held) this._clearAccessorySlot(held);
+        else {
+          const free = this._firstFreeAccessorySlot();
+          if (free) this._assignAccessoryDirect(itemId, free);
+          else ui.notifications.warn(game.i18n.localize("REDSTEEL.Actor.Inventory.AccessorySlotsFull"));
+        }
+        return;
+      }
+
       const layer = ARMOR_LAYER_SLOTS[item.system.layer];
       if (!layer) return;
 
@@ -736,6 +775,52 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     return this.actor.update({
       [`system.combat.armorSlots.${layer}`]: null,
     });
+  }
+
+  async _assignAccessoryDirect(itemId, slotKey) {
+    if (this.actor.type !== "character") return;
+    if (!itemId || !ACCESSORY_SLOT_KEYS.includes(slotKey)) return;
+
+    const item = this.actor.items.get(itemId);
+    if (!isAccessory(item)) return;
+
+    const slots = this.actor.system.combat.accessorySlots ?? {};
+    if (slots[slotKey] === itemId) return;
+
+    const update = {};
+
+    // Slots are interchangeable, so the same item could otherwise sit in two of
+    // them at once — vacate whichever slot already holds it.
+    for (const key of ACCESSORY_SLOT_KEYS) {
+      if (slots[key] === itemId) update[`system.combat.accessorySlots.${key}`] = null;
+    }
+
+    // Whatever occupied the target slot goes back to the inventory grid.
+    const current = slots[slotKey] ? this.actor.items.get(slots[slotKey]) : null;
+    if (current) await this._setArmorEquipped(current, false);
+    await this._setArmorEquipped(item, true);
+
+    update[`system.combat.accessorySlots.${slotKey}`] = itemId;
+    return this.actor.update(update);
+  }
+
+  async _clearAccessorySlot(slotKey) {
+    if (this.actor.type !== "character") return;
+    if (!ACCESSORY_SLOT_KEYS.includes(slotKey)) return;
+
+    const slots = this.actor.system.combat.accessorySlots ?? {};
+    const item = slots[slotKey] ? this.actor.items.get(slots[slotKey]) : null;
+    if (item) await this._setArmorEquipped(item, false);
+
+    return this.actor.update({
+      [`system.combat.accessorySlots.${slotKey}`]: null,
+    });
+  }
+
+  /** First empty accessory slot, or null when all ten are full. */
+  _firstFreeAccessorySlot() {
+    const slots = this.actor.system.combat.accessorySlots ?? {};
+    return ACCESSORY_SLOT_KEYS.find((key) => !slots[key]) ?? null;
   }
 
   /**
@@ -1143,6 +1228,16 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
           hasDurability: !!item && durabilityMax > 0,
         };
       }
+    }
+
+    // Resolve accessory slots -> Item documents (VIEW DATA ONLY)
+    context.accessorySlots = [];
+    if (this.actor.type === "character") {
+      const slots = this.actor.system.combat.accessorySlots ?? {};
+      context.accessorySlots = ACCESSORY_SLOT_KEYS.map((key) => ({
+        key,
+        item: slots[key] ? (this.actor.items.get(slots[key]) ?? null) : null,
+      }));
     }
 
     // Inventory grid: everything carried that isn't currently equipped.
@@ -2223,7 +2318,21 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       return;
     }
 
-    // 🔹 CASE 2: Equipped ammo slot (a <div>, not an <li>)
+    // 🔹 CASE 2: Accessory slot (a <div>, not an <li>). Plain Item drag data is
+    // enough: dropping on another slot routes to _assignAccessoryDirect, which
+    // vacates the slot the item came from.
+    const accessoryEl = event.currentTarget.closest(
+      ".accessory-slot[data-item-id]",
+    );
+    if (accessoryEl) {
+      const accessory = this.actor.items.get(accessoryEl.dataset.itemId);
+      const dragData = accessory?.toDragData();
+      if (dragData)
+        event.dataTransfer.setData("text/plain", JSON.stringify(dragData));
+      return;
+    }
+
+    // 🔹 CASE 3: Equipped ammo slot (a <div>, not an <li>)
     const ammoEl = event.currentTarget.closest(".ammo-slot[data-item-id]");
     if (ammoEl) {
       const ammo = this.actor.items.get(ammoEl.dataset.itemId);
@@ -2233,7 +2342,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       return;
     }
 
-    // 🔹 CASE 3: Normal inventory item drag (existing behavior)
+    // 🔹 CASE 4: Normal inventory item drag (existing behavior)
     const docRow = event.currentTarget.closest("li");
     if (!docRow) return;
 
@@ -2250,7 +2359,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
    */
   _onDragOver(event) {
     const slot = event.target.closest(
-      ".weapon-slot, .armor-slot, .ammo-loadout",
+      ".weapon-slot, .armor-slot, .accessory-slot, .ammo-loadout",
     );
     if (!slot) return;
 
@@ -2276,6 +2385,11 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     if (armorTarget) {
       armorTarget.classList.remove("drop-hover");
       return this._onDropArmorSlot(event, armorTarget);
+    }
+    const accessoryTarget = event.target.closest(".accessory-slot");
+    if (accessoryTarget) {
+      accessoryTarget.classList.remove("drop-hover");
+      return this._onDropAccessorySlot(event, accessoryTarget);
     }
     const ammoTarget = event.target.closest(".ammo-loadout");
     if (ammoTarget) {
@@ -2581,6 +2695,29 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     if (!item?.isOwned) return;
 
     return this._assignArmorDirect(item.id, layer);
+  }
+
+  /**
+   * Handle dropping an owned accessory (gear) item onto one of the ten
+   * generic, interchangeable accessory slots.
+   * @param {DragEvent} event       The concluding DragEvent
+   * @param {HTMLElement} slotEl    The accessory slot element dropped on
+   * @private
+   */
+  async _onDropAccessorySlot(event, slotEl) {
+    if (this.actor.type !== "character") return;
+    event.preventDefault();
+
+    const data = TextEditor.getDragEventData(event);
+    if (data?.type !== "Item") return;
+
+    const slotKey = slotEl.dataset.slotKey;
+    if (!slotKey) return;
+
+    const item = await Item.implementation.fromDropData(data);
+    if (!item?.isOwned) return;
+
+    return this._assignAccessoryDirect(item.id, slotKey);
   }
 
   /**

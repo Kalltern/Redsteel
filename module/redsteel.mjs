@@ -2349,6 +2349,7 @@ Hooks.on("updateActor", (actor, changes, options, userId) => {
     !combat ||
     (!("weaponSets" in combat) &&
       !("armorSlots" in combat) &&
+      !("accessorySlots" in combat) &&
       !("activeWeaponSet" in combat))
   )
     return;

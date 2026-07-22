@@ -264,6 +264,10 @@
       },
       "Inventory": {
         "Ammo": "Munice",
+        "Accessories": "Doplňky",
+        "AccessorySlotsFull": "Všechny sloty pro doplňky jsou plné.",
+        "Armor": "Zbroj",
+        "WeaponSets": "Sady zbraní",
         "TwoHandGrip": "Obouruční úchop",
         "OffHandGrip": "Použít v druhé ruce",
         "Currencies": "Měny",

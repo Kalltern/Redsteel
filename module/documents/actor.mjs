@@ -17,8 +17,9 @@ export class RedsteelActor extends Actor {
   /**
    * Collect the ids of every item that is currently "equipped" and therefore
    * occupies a slot rather than the inventory grid: weapons in weapon sets,
-   * armor in layer slots, and any item flagged `system.equipped` (covers NPC
-   * weapons/armor, equipped shields, and equipped ammunition).
+   * armor in layer slots, accessories in accessory slots, and any item
+   * flagged `system.equipped` (covers NPC weapons/armor, equipped shields,
+   * and equipped ammunition).
    * @returns {Set<string>}
    */
   getEquippedItemIds() {
@@ -30,6 +31,9 @@ export class RedsteelActor extends Actor {
       if (set?.off) equipped.add(set.off);
     }
     for (const id of Object.values(combat.armorSlots ?? {})) {
+      if (id) equipped.add(id);
+    }
+    for (const id of Object.values(combat.accessorySlots ?? {})) {
       if (id) equipped.add(id);
     }
     for (const i of this.items) {

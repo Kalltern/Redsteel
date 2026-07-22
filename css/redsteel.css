@@ -2584,7 +2584,7 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 
 .weapon-loadouts {
   display: flex;
-  gap: 2rem;
+  gap: 1.25rem;
   margin-top: 15px;
   margin-bottom: 15px;
 }
@@ -2667,9 +2667,11 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   border-color: rgba(255, 164, 79, 0.6);
   box-shadow: 0 0 6px rgba(255, 243, 136, 0.6);
 }
+/* Size now signals which set is inactive, so the old 45% dimming is no longer
+   doing the work alone — keep a light knock-back that stays legible at 50%. */
 .weapon-loadouts.active-set-1 .weapon-slot[data-set="2"],
 .weapon-loadouts.active-set-2 .weapon-slot[data-set="1"] {
-  filter: opacity(45%);
+  filter: opacity(75%);
 }
 
 .weapon-slot.empty {
@@ -2826,11 +2828,45 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 /* SET SWITCHER                  */
 /* ============================= */
 
-.weapon-set-switcher {
+/* The active set renders full size in normal flow; the inactive set is shrunk
+   and absolutely tucked diagonally up-right of it, with the switcher beneath.
+   Padding reserves the space those two absolute children occupy. */
+.weapon-sets-stack {
+  position: relative;
   display: flex;
-  flex-direction: row;
-  gap: 1rem;
+  align-items: flex-end;
   flex: 0 0 auto;
+  padding: 26px 66px 0 0;
+}
+
+/* Whichever set is NOT active becomes the mini one. */
+.weapon-loadouts.active-set-1 .weapon-set-block[data-set-block="2"],
+.weapon-loadouts.active-set-2 .weapon-set-block[data-set-block="1"] {
+  position: absolute;
+  top: 0;
+  right: 0;
+  transform: scale(0.5);
+  transform-origin: top right;
+}
+
+/* Its label would be illegible at half scale, so bump it back up. */
+.weapon-loadouts.active-set-1
+  .weapon-set-block[data-set-block="2"]
+  .weapon-loadout-label,
+.weapon-loadouts.active-set-2
+  .weapon-set-block[data-set-block="1"]
+  .weapon-loadout-label {
+  font-size: 1.6em;
+  white-space: nowrap;
+}
+
+.weapon-set-switcher {
+  position: absolute;
+  top: 52px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .weapon-set-toggle {
@@ -2935,6 +2971,156 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 }
 
 .armor-slot.drop-hover {
+  outline: 2px dashed var(--color-border-highlight);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* ============================= */
+/* EQUIPMENT GROUPING            */
+/* ============================= */
+
+/* Armor and weapon sets sit side by side; wraps to stacked rows on a narrow
+   sheet. Accessories are their own full-width group below this container. */
+.equipment-groups {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  /* Stretch so every group is the full row height: headers stay level with
+     each other at the top while the slots below them centre independently. */
+  align-items: stretch;
+  justify-content: center;
+  gap: 1rem 3rem;
+  /* Taller than the content needs: the groups stretch to fill it and their
+     bottom-aligned slots drop away from the headers. */
+  min-height: 160px;
+  /* Room for the absolutely-positioned durability pips to hang into. */
+  padding-bottom: 22px;
+}
+
+.loadout-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Slots take the leftover height under the header and sit at the bottom of it.
+   The weapon stack reserves headroom for the mini inactive set, so bottom
+   alignment is what puts armor, the active set, and ammo on one baseline. */
+.loadout-group > .armor-loadout,
+.loadout-group > .weapon-loadouts {
+  flex: 1 1 auto;
+  align-items: flex-end;
+}
+
+/* Nudge armor off the shared baseline so the row reads as its own group. */
+.loadout-group > .armor-loadout {
+  margin-bottom: 15px;
+}
+
+/* Durability pips hang below their slot without adding to the block's height.
+   The armor row is always rendered (min-height 18px) while the shield row only
+   appears for shields, so counting them would drop armor and weapons onto
+   different baselines depending on what happens to be equipped. */
+.armor-slot-block,
+.weapon-slot-column {
+  position: relative;
+}
+
+.armor-slot-block > .armor-durability-row,
+.weapon-slot-column > .armor-durability-row {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 2px;
+}
+
+/* Same for the two-hand grip toggle, which otherwise lifts the main-hand slot
+   by its own height. Scoped to the loadout column so the inventory-grid
+   hover-overlay variant of this class keeps its own positioning. */
+.weapon-slot-column > .two-hand-grip-toggle {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 2px;
+}
+
+/* Shared header for the Armor / Weapon sets / Accessories groups. Sits one
+   step above the per-slot labels (BOTTOM, Set 1, ...) in the hierarchy. */
+.loadout-group-label {
+  font-size: 0.8em;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  opacity: 0.85;
+  color: #c9b47a;
+}
+
+/* The group wrapper owns the spacing now. */
+.loadout-group .armor-loadout,
+.loadout-group .weapon-loadouts {
+  margin-top: 0;
+}
+
+/* ============================= */
+/* ACCESSORY LOADOUT (10 SLOTS)  */
+/* ============================= */
+
+.accessory-loadout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+/* Fixed 48px tracks with auto-fit: all ten sit on one line on a roomy sheet
+   and wrap to 5+5 (then 4+4+2, etc.) as it narrows, instead of overflowing. */
+.accessory-slot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, 48px);
+  gap: 14px 18px;
+  justify-content: center;
+  max-width: 100%;
+}
+
+.accessory-slot {
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
+  background: #2b2b2b;
+  border: 2px solid #444;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.accessory-slot[data-item-id] {
+  cursor: context-menu;
+}
+
+.accessory-slot img {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border: none;
+}
+
+.accessory-slot.filled {
+  border-color: rgba(255, 212, 59, 0.5);
+  box-shadow: 0 0 6px rgba(255, 243, 136, 0.4);
+}
+
+.accessory-slot.empty {
+  opacity: 0.5;
+}
+
+.accessory-slot.drop-hover {
   outline: 2px dashed var(--color-border-highlight);
   background: rgba(255, 255, 255, 0.05);
 }

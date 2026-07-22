@@ -7,6 +7,12 @@
 <div class="inventory-box">
 {{#if (eq actor.type "character")}}
 
+{{!-- EQUIPMENT: armor and weapon sets share one row, accessories span below --}}
+<div class="equipment-groups">
+
+<div class="loadout-group">
+  <div class="loadout-group-label">{{localize "REDSTEEL.Actor.Inventory.Armor"}}</div>
+
 {{!-- ARMOR SLOTS (layered: Bottom / Middle / Top) --}}
 <section class="armor-loadout">
   {{#each armorSlots as |slot layer|}}
@@ -46,10 +52,20 @@
   {{/each}}
 </section>
 
+</div>
+
+<div class="loadout-group">
+  <div class="loadout-group-label">{{localize "REDSTEEL.Actor.Inventory.WeaponSets"}}</div>
+
 <section class="weapon-loadouts horizontal active-set-{{system.combat.activeWeaponSet}}">
 
-  {{!-- LEFT: SET 1 --}}
-  <div class="weapon-set-block">
+  {{!-- The active set renders full size; the inactive one shrinks and tucks
+        diagonally up-right of it, with the switcher below. Which is which is
+        decided in CSS from the .active-set-N class on .weapon-loadouts. --}}
+  <div class="weapon-sets-stack">
+
+  {{!-- SET 1 --}}
+  <div class="weapon-set-block" data-set-block="1">
     <div class="weapon-loadout-label">Set 1</div>
 
     <div class="weapon-slot-row" data-action="weaponSlot"
@@ -163,20 +179,8 @@
     </div>
   </div>
 
-  {{!-- CENTER: SWITCH --}}
-  <div class="weapon-set-switcher">
-<button
-  type="button"
-  class="weapon-set-toggle {{#if (eq system.combat.activeWeaponSet 2)}}set-2{{else}}set-1{{/if}}"
-  data-action="setActiveWeaponSet"
-  title="Switch Weapon Set"
->
-  <i class="fa-sharp fa-regular fa-arrows-repeat" style="color: #FFD43B;"></i>
-</button>
-  </div>
-
-  {{!-- RIGHT: SET 2 --}}
-  <div class="weapon-set-block">
+  {{!-- SET 2 --}}
+  <div class="weapon-set-block" data-set-block="2">
     <div class="weapon-loadout-label">Set 2</div>
 
     <div class="weapon-slot-row" data-action="weaponSlot"
@@ -290,6 +294,20 @@
     </div>
   </div>
 
+  {{!-- SET SWITCH, tucked under the mini inactive set --}}
+  <div class="weapon-set-switcher">
+<button
+  type="button"
+  class="weapon-set-toggle {{#if (eq system.combat.activeWeaponSet 2)}}set-2{{else}}set-1{{/if}}"
+  data-action="setActiveWeaponSet"
+  title="Switch Weapon Set"
+>
+  <i class="fa-sharp fa-regular fa-arrows-repeat" style="color: #FFD43B;"></i>
+</button>
+  </div>
+
+  </div>{{!-- /.weapon-sets-stack --}}
+
   {{!-- EQUIPPED AMMO SLOT --}}
   <div class="ammo-loadout">
     <div class="weapon-loadout-label">{{localize "REDSTEEL.Actor.Inventory.Ammo"}}</div>
@@ -315,6 +333,31 @@
     </div>
   </div>
 
+</section>
+</div>
+
+</div>
+
+{{!-- ACCESSORY SLOTS (10 generic, interchangeable) --}}
+<section class="accessory-loadout">
+  <div class="loadout-group-label">{{localize "REDSTEEL.Actor.Inventory.Accessories"}}</div>
+  <div class="accessory-slot-grid">
+    {{#each accessorySlots as |slot|}}
+      <div
+        class="accessory-slot {{#if slot.item}}filled{{else}}empty{{/if}}"
+        data-slot-key="{{slot.key}}"
+        {{#if slot.item}}
+          data-drag="true"
+          data-item-id="{{slot.item._id}}"
+        {{/if}}
+        title="{{#if slot.item}}{{slot.item.name}}{{/if}}"
+      >
+        {{#if slot.item}}
+          <img src="{{slot.item.img}}" class="item-icon" data-item-id="{{slot.item._id}}" />
+        {{/if}}
+      </div>
+    {{/each}}
+  </div>
 </section>
 
 {{/if}}

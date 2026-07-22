@@ -264,6 +264,10 @@
       },
       "Inventory": {
         "Ammo": "Ammo",
+        "Accessories": "Accessories",
+        "AccessorySlotsFull": "All accessory slots are full.",
+        "Armor": "Armor",
+        "WeaponSets": "Weapon sets",
         "TwoHandGrip": "Two-handed grip",
         "OffHandGrip": "Use in off-hand",
         "Currencies": "Currencies",

@@ -60,8 +60,8 @@ function itemLightToTokenLight(light) {
  * Item ids whose light is allowed to shine. This is stricter than the actor's
  * general "equipped" set: a weapon only counts while it sits in the *active*
  * weapon set (a sheathed weapon in the inactive set stays dark). Armor slots,
- * and anything explicitly flagged `system.equipped` (NPC weapons/armor,
- * shields, etc.), count as usual.
+ * accessory slots, and anything explicitly flagged `system.equipped` (NPC
+ * weapons/armor, shields, etc.), count as usual.
  * @param {Actor} actor
  * @returns {Set<string>}
  */
@@ -76,6 +76,9 @@ function getLightEligibleIds(actor) {
   if (set?.off) ids.add(set.off);
 
   for (const id of Object.values(combat.armorSlots ?? {})) {
+    if (id) ids.add(id);
+  }
+  for (const id of Object.values(combat.accessorySlots ?? {})) {
     if (id) ids.add(id);
   }
   for (const i of actor.items) {
