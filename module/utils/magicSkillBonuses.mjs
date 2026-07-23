@@ -83,9 +83,9 @@ function _injectDialogCSS() {
 
         /* General Dialog styling */
         .spell-dialog .window-content {
-            max-width: 520px;
             max-height: 620px;
             width: 100%;
+            box-sizing: border-box;
             overflow: hidden;
             background: #1d1d1d;
             color: #d0d0d0;
@@ -386,7 +386,8 @@ export function showSpellSelectionDialogs(actor) {
   </form>
             `;
 
-      const spellDialog = new Dialog({
+      const spellDialog = new Dialog(
+        {
         title: `Select ${schoolName} Spell`,
         content: dialogContent,
         buttons: {},
@@ -532,7 +533,9 @@ export function showSpellSelectionDialogs(actor) {
           // If the user closes the dialog, resolve with null
           if (!spellDialog.rendered) resolve(null);
         },
-      });
+        },
+        { classes: ["dialog", "spell-dialog"], width: 480 },
+      );
       spellDialog.render(true);
     };
 

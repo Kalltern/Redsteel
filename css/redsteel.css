@@ -5748,3 +5748,264 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.55; }
 }
+
+/* -------------------------------------------- */
+/*  Spell / Miracle / Ability cards             */
+/*  (Spells, Miracles, Abilities tabs)          */
+/*  Reuses the .npc-trait card look; adds a     */
+/*  pill strip + a hover-revealed detail panel  */
+/* -------------------------------------------- */
+
+.spell-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.spell-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0;
+  padding: 8px 10px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(181, 151, 80, 0.35);
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.28);
+}
+
+.spell-card-icon {
+  flex: 0 0 auto;
+}
+
+.spell-card-icon img {
+  display: block;
+  width: 48px;
+  height: 48px;
+  border: 1px solid rgba(181, 151, 80, 0.35);
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.spell-card-main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.spell-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.spell-card-name {
+  font-weight: 700;
+  color: #c9b26b;
+}
+
+.spell-card-controls {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 6px;
+}
+
+.spell-card-controls .item-control {
+  color: rgb(219 199 169);
+  cursor: pointer;
+}
+
+.spell-card-controls .item-control:hover {
+  color: #f0d7aa;
+}
+
+.spell-card-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.spell-pill {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(181, 151, 80, 0.25);
+  line-height: 1.15;
+}
+
+.spell-pill-label {
+  font-size: 0.62em;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--redsteel-c-tan);
+  opacity: 0.7;
+}
+
+.spell-pill-value {
+  font-size: 0.8em;
+  font-weight: 600;
+  color: #e6dcc3;
+}
+
+/* Gold treatment for the Concentration pill when its value is "Yes" — the
+   view-model sets pill.positive so this doesn't depend on localized text. */
+.spell-pill[data-pill="concentration"][data-positive="true"] {
+  background: rgba(255, 212, 59, 0.14);
+  border-color: rgba(255, 212, 59, 0.55);
+}
+.spell-pill[data-pill="concentration"][data-positive="true"] .spell-pill-value {
+  color: #ffd43b;
+}
+
+/* Rank filter bar — subordinate to the school <nav class="tabs"> above it,
+   so the visual hierarchy reads school > rank. */
+.rank-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0 10px;
+}
+
+.rank-filter-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(181, 151, 80, 0.35);
+  color: rgb(219 199 169);
+  font-size: 0.78em;
+  cursor: pointer;
+}
+
+.rank-filter-pill:hover {
+  border-color: #d9a13b;
+  color: #e6c878;
+}
+
+.rank-filter-pill.active {
+  border-color: #d9a13b;
+  color: #e6c878;
+  background: rgba(217, 161, 59, 0.15);
+}
+
+/* Single column on narrow sheets, matching .npc-traits-grid */
+@media (max-width: 620px) {
+  .spell-card-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Floating chat-card inspector shown beside the actor sheet on card hover.
+   Body-level (like #item-tooltip) so the sheet's overflow never clips it. */
+#spell-inspector {
+  position: fixed;
+  z-index: 9999;
+  width: 300px;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  /* Copied verbatim from .inventory-box — sheet texture + olive border. */
+  background:
+    linear-gradient(rgba(12, 12, 11, 0.5), rgba(12, 12, 11, 0.5)),
+    url(../ui/headertexture.jpg);
+  border: 2px solid #514226;
+  box-shadow:
+    inset 0 0 25px rgba(0, 0, 0, 0.65),
+    0 0 14px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+}
+
+#spell-inspector.hidden {
+  display: none;
+}
+
+.spell-inspector-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid rgba(181, 151, 80, 0.4);
+  padding-bottom: 8px;
+}
+
+.spell-inspector-icon {
+  width: 56px;
+  height: 56px;
+  flex: 0 0 auto;
+  border: 1px solid rgba(181, 151, 80, 0.5);
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.spell-inspector-title {
+  font-size: 1.15em;
+  font-weight: 700;
+  color: #f0d7aa;
+  line-height: 1.2;
+}
+
+/* Square stat boxes under the header. */
+.spell-inspector-boxes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.spell-inspector-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 6px 4px;
+  min-height: 46px;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(181, 151, 80, 0.3);
+}
+
+.spell-inspector-box-label {
+  font-size: 0.6em;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--redsteel-c-tan);
+  opacity: 0.75;
+}
+
+.spell-inspector-box-value {
+  font-size: 0.95em;
+  font-weight: 700;
+  color: #e6dcc3;
+}
+
+.spell-inspector-box.is-positive {
+  background: rgba(255, 212, 59, 0.14);
+  border-color: rgba(255, 212, 59, 0.55);
+}
+
+.spell-inspector-box.is-positive .spell-inspector-box-value {
+  color: #ffd43b;
+}
+
+/* Description in its own bordered rectangle. */
+.spell-inspector-desc {
+  padding: 8px 10px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(181, 151, 80, 0.3);
+  font-size: 0.85em;
+  line-height: 1.35;
+  color: var(--redsteel-c-tan);
+}
+
+.spell-inspector-desc p {
+  margin: 0 0 4px;
+}

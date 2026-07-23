@@ -698,6 +698,11 @@ Hooks.once("ready", () => {
       await applyMentalDuelLossAsGM(data);
     }
 
+    if (data.type === "bindingStrike") {
+      if (!game.user.isGM) return;
+      await _resolveBindingStrikeAsGM(data);
+    }
+
     // Not GM-gated: every client decides for itself whether to show the duel.
     if (data.type === "openMentalDuel") {
       handleRemoteMentalDuel(data);
@@ -1077,6 +1082,142 @@ Hooks.on("createChatMessage", async (message) => {
     console.error("redsteel rollName hook error", err);
   }
 });
+
+/* -------------------------------------------- */
+/*  Strike spells — consume on the next attack  */
+/* -------------------------------------------- */
+
+/** Resolve the acting actor from a chat message's speaker. */
+function _redsteelSpeakerActor(message) {
+  const s = message.speaker ?? {};
+  if (s.scene && s.token) {
+    const tok = game.scenes?.get(s.scene)?.tokens?.get(s.token);
+    if (tok?.actor) return tok.actor;
+  }
+  if (s.token) {
+    const tok = canvas.tokens?.get(s.token);
+    if (tok?.actor) return tok.actor;
+  }
+  return s.actor ? game.actors.get(s.actor) : null;
+}
+
+/**
+ * Binding Strike, resolved on the GM client (the only one that may Root a
+ * target the attacker does not own). Runs the caster's baked Will + SK*2 test
+ * against each target's better Strength/Endurance test; on the caster's success
+ * (ties go to the caster) the target is Rooted. Target token ids + the caster's
+ * test value are captured on the attacking client and relayed here.
+ */
+async function _resolveBindingStrikeAsGM({
+  actorUuid,
+  targetIds = [],
+  sceneId,
+  testValue,
+}) {
+  const scene = sceneId ? game.scenes.get(sceneId) : canvas.scene;
+  if (!scene) return;
+  const caster = actorUuid ? await fromUuid(actorUuid) : null;
+  const casterTest = Number(testValue ?? 0);
+
+  for (const tokenId of targetIds) {
+    const target = scene.tokens.get(tokenId)?.actor;
+    if (!target) continue;
+
+    const isNpc = target.type === "npc";
+    const attr = (key) =>
+      Number(
+        (isNpc
+          ? target.system.attributes?.[key]?.value
+          : target.system.attributes?.[key]?.mod) ?? 0,
+      );
+    const targetMod = Math.max(attr("str"), attr("end"));
+
+    const casterRoll = await new Roll(`${casterTest} - 1d100`).evaluate();
+    const targetRoll = await new Roll(`${targetMod} - 1d100`).evaluate();
+    const casterWins = casterRoll.total >= targetRoll.total;
+
+    if (casterWins) {
+      await game.redsteel.applyEffect(target, "root", { caster });
+    }
+
+    const casterHTML = await casterRoll.render();
+    const targetHTML = await targetRoll.render();
+
+    await ChatMessage.create({
+      speaker: caster ? ChatMessage.getSpeaker({ actor: caster }) : undefined,
+      flavor: `<b>Binding Strike — ${target.name}</b>`,
+      rolls: [casterRoll, targetRoll],
+      content: `
+        <div class="dual-roll">
+          <div class="roll-column">
+            <div class="roll-label">Caster — Will + SK×2 (${casterTest}%)</div>
+            ${casterHTML}
+          </div>
+          <div class="roll-column">
+            <div class="roll-label">${target.name} — Str/End (${targetMod}%)</div>
+            ${targetHTML}
+          </div>
+        </div>
+        <p style="text-align:center; font-size:16px;">
+          <b>${casterWins ? `${target.name} is Rooted!` : `${target.name} resists.`}</b>
+        </p>`,
+    });
+  }
+}
+
+Hooks.on("createChatMessage", async (message) => {
+  try {
+    // Only weapon/throw attacks consume a strike — spell attacks carry
+    // isSpell, defense/effect cards carry no attack flag at all.
+    const atk = message.flags?.attack;
+    if (atk?.type !== "attack" || atk.isSpell) return;
+
+    // One client resolves this: the one that authored the attack card. It owns
+    // the acting actor (player's own PC, or GM's NPC), so it may delete the
+    // strike effect and read the attacker's current targets.
+    const authorId = message.author?.id ?? message.user?.id;
+    if (authorId !== game.user.id) return;
+
+    const actor = _redsteelSpeakerActor(message);
+    if (!actor) return;
+
+    const strike = actor.effects.find((e) =>
+      e.getFlag("redsteel", "consumeOnAttack"),
+    );
+    if (!strike) return;
+
+    const binding = strike.getFlag("redsteel", "strikeBinding");
+    // Delete first so the strike is spent even on a miss (or if the test path
+    // throws). Read the flag beforehand so its value survives the delete.
+    await strike.delete();
+    if (!binding) return;
+
+    const targetIds = [...(game.user.targets ?? [])]
+      .map((t) => t.id)
+      .filter(Boolean);
+    if (!targetIds.length) {
+      ui.notifications.warn(
+        "Binding Strike: target the struck creature to resolve the Rooted test.",
+      );
+      return;
+    }
+
+    const payload = {
+      type: "bindingStrike",
+      actorUuid: actor.uuid,
+      targetIds,
+      sceneId: canvas.scene?.id,
+      testValue: binding.testValue,
+    };
+    // Only the GM may Root a target the attacker does not own; relay when the
+    // attacking client isn't already the GM.
+    if (game.user.isGM) await _resolveBindingStrikeAsGM(payload);
+    else game.socket.emit(SOCKET, payload);
+  } catch (err) {
+    console.error("redsteel strike-consume hook error", err);
+  }
+});
+
 const TOKEN_BAR_RESOURCE_PATHS = [
   "system.stats.health",
   "system.stats.stamina",
@@ -1592,6 +1733,15 @@ Hooks.once("ready", () => {
     tooltip.id = "item-tooltip";
     tooltip.classList.add("item-tooltip", "hidden");
     document.body.appendChild(tooltip);
+  }
+});
+
+Hooks.once("ready", () => {
+  if (!document.getElementById("spell-inspector")) {
+    const el = document.createElement("div");
+    el.id = "spell-inspector";
+    el.classList.add("spell-inspector", "hidden");
+    document.body.appendChild(el);
   }
 });
 

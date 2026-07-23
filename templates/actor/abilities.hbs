@@ -5,87 +5,49 @@
   data-tab="abilities"
 >
   <div class="abilities-box">
-  <ol class="items-list">
-    <li class="item flexrow items-header">
-      <div class="ability-name">{{localize "Ability"}}</div>
-      <div class="ability-type">{{localize
-          "REDSTEEL.Item.Ability.FIELDS.costType.label"
-        }}</div>
-      <div class="ability-cost">{{localize
-          "REDSTEEL.Item.Ability.FIELDS.cost.label"
-        }}</div>
-      <div class="ability-cost">{{localize
-          "REDSTEEL.Item.Ability.FIELDS.actionCost.label"
-        }}</div>
-      <div class="ability-damage">{{localize
-          "REDSTEEL.Item.Ability.FIELDS.damage.label"
-        }}</div>
-      <div class="ability-test">{{localize
-          "REDSTEEL.Item.Ability.FIELDS.attributeTest.label"
-        }}</div>
-      <div class="item-controls">
-        {{#if @root.editable}}
-          <a
-            class="item-control item-create"
-            title="{{localize 'DOCUMENT.Create' type="Item"}}"
-            data-action="createDoc"
-            data-document-class="Item"
-            data-type="ability"
-          >
-            <i class="fas fa-plus"></i>
-            {{localize "DOCUMENT.New" type="item"}}
-          </a>
-        {{/if}}
-      </div>
-    </li>
+    <header class="npc-traits-header">
+      <h3>{{localize "REDSTEEL.Actor.Tabs.Abilities"}}</h3>
+      {{#if @root.editable}}
+        <a
+          class="item-control item-create"
+          title="{{localize 'DOCUMENT.New' type='ability'}}"
+          data-action="createDoc"
+          data-document-class="Item"
+          data-type="ability"
+        >
+          <i class="fas fa-plus"></i>
+        </a>
+      {{/if}}
+    </header>
 
-    {{#each ability as |item id|}}
-      <li
-        class="item flexrow"
-        data-item-id="{{item.id}}"
-        data-drag="true"
-        data-document-class="Item"
-      >
-        <div class="item-name">
-          <div class="item-image">
-            <a class="rollable" data-roll-type="item" data-action="roll">
-              <img
-                src="{{item.img}}"
-                class="item-icon"
-                data-item-id="{{item.id}}"
-                width="24"
-                height="24"
-              />
-            </a>
-          </div>
-          <div>{{item.localizedName}}</div>
-        </div>
-        <div class="item-formula item-prop">{{item.system.costType}}</div>
-        <div class="item-formula item-prop">{{item.system.cost}}</div>
-        <div class="item-formula item-prop">{{item.system.actionCost}}</div>
-        <div class="item-formula item-prop">{{item.system.roll.diceBonus}}</div>
-        <div class="item-formula item-prop">{{item.system.attributeTest}}</div>
-        <div class="item-controls">
-          <a
-            class="item-control item-edit"
-            title="{{localize 'DOCUMENT.Update' type="Ability"}}"
-            data-action="viewDoc"
-          >
-            <i class="fas fa-edit"></i>
+    <ul class="spell-card-grid">
+      {{#each abilityCards as |card|}}
+        <li class="spell-card" data-item-id="{{card.id}}" data-card-kind="ability" data-drag="true" data-document-class="Item">
+          <a class="spell-card-icon rollable" data-action="roll" data-roll-type="item">
+            <img src="{{card.img}}" data-item-id="{{card.id}}" width="48" height="48" />
           </a>
-          {{#if @root.editable}}
-            <a
-              class="item-control item-delete"
-              title="{{localize 'DOCUMENT.Delete' type="Ability"}}"
-              data-action="deleteDoc"
-            >
-              <i class="fas fa-trash"></i>
-            </a>
-          {{/if}}
-        </div>
-      </li>
-    {{/each}}
-  </ol>
+          <div class="spell-card-main">
+            <div class="spell-card-top">
+              <span class="spell-card-name">{{card.name}}</span>
+              <span class="spell-card-controls">
+                <a class="item-control item-edit" data-action="viewDoc" title="{{localize 'DOCUMENT.Update' type='Ability'}}"><i class="fas fa-edit"></i></a>
+                {{#if @root.editable}}
+                  <a class="item-control item-delete" data-action="deleteDoc" title="{{localize 'DOCUMENT.Delete' type='Ability'}}"><i class="fas fa-trash"></i></a>
+                {{/if}}
+              </span>
+            </div>
+            <div class="spell-card-pills">
+              {{#each card.pills as |pill|}}
+                <span class="spell-pill" data-pill="{{pill.key}}" data-positive="{{pill.positive}}">
+                  <span class="spell-pill-label">{{pill.label}}</span>
+                  <span class="spell-pill-value">{{pill.value}}</span>
+                </span>
+              {{/each}}
+            </div>
+          </div>
+        </li>
+      {{/each}}
+    </ul>
 
   </div>
 </section>

@@ -2,6 +2,34 @@ import {
   spellCastSucceeded,
   startChannelingForSpell,
 } from "./magicSkillBonuses.mjs";
+import { getSpellPower } from "./spellPower.mjs";
+
+/**
+ * Strike spells → the caster status effect they impose on a successful cast.
+ * Keyed on the item's raw (English) name so this resolves on spell copies that
+ * are already owned by live actors, without needing a re-import to pick up a
+ * flag. A `flags.redsteel.strike` override wins when present.
+ */
+const STRIKE_SPELLS = {
+  "Lightning strike": "lightning_strike",
+  "Fire strike": "fire_strike",
+  "Frost strike": "frost_strike",
+  "Venomous strike": "venomous_strike",
+  "Enchanted strike": "enchanted_strike",
+  "Enchanted strike (WIP)": "enchanted_strike",
+  "Dark strike": "dark_strike",
+  "Binding strike": "binding_strike",
+};
+
+/**
+ * @param {Item} spell
+ * @returns {string|null} the strike effect id this spell applies, or null.
+ */
+export function getStrikeId(spell) {
+  const flag = spell?.getFlag?.("redsteel", "strike");
+  if (flag) return flag;
+  return STRIKE_SPELLS[String(spell?.name ?? "").trim()] ?? null;
+}
 
 export async function castSpell() {
   const context = game.redsteel.selectToken({ notifyFallback: true });
@@ -14,7 +42,8 @@ export async function castSpell() {
     return;
   }
 
-  const { freeCast, focusSpent, ignoreChanneling } = result;
+  const { freeCast, focusSpent } = result;
+  let { ignoreChanneling } = result;
 
   // If the spell has linked variants, let the player choose which version to
   // cast. Resolves with the parent spell itself when no valid variants exist.
@@ -22,6 +51,16 @@ export async function castSpell() {
   if (!spell) {
     ui.notifications.info("Spell casting canceled.");
     return;
+  }
+
+  // Lindar's Strikes (veneficus tree): while unlocked, strike spells never
+  // trigger channeling evaluation — cast as though "No Channeling Evaluation"
+  // were ticked, so a fumbled channeling roll can't crit-fail the strike.
+  if (
+    getStrikeId(spell) &&
+    actor.system.specialisations?.veneficus?.nodes?.lindarovyUdery === true
+  ) {
+    ignoreChanneling = true;
   }
 
   if (!freeCast) {
@@ -57,6 +96,7 @@ export async function castSpell() {
   await applyPostCastEffects(actor, spell, attackResults, {
     token,
     focusSpent,
+    ignoreChanneling,
   });
 }
 
@@ -78,19 +118,123 @@ export async function castSpell() {
  * @param {Item} spell - The spell that was cast.
  * @param {object} attackResults - Result of performAttackRoll, or a reroll
  *   shaped the same way.
- * @param {{token?: Token|null, focusSpent?: number}} [options]
+ * @param {{token?: Token|null, focusSpent?: number, ignoreChanneling?: boolean}}
+ *   [options]
  */
 export async function applyPostCastEffects(
   actor,
   spell,
   attackResults,
-  { token = null, focusSpent = 0 } = {},
+  { token = null, focusSpent = 0, ignoreChanneling = false } = {},
 ) {
-  if (!spellCastSucceeded(attackResults)) return;
+  const succeeded = spellCastSucceeded(attackResults);
+
+  // A strike cast with "No Channeling Evaluation" (Lindar's Strikes forces this)
+  // isn't gated on the channeling margin — the strike applies whatever the roll,
+  // so a negative Margin of Success can't stop it. applyStrikeEffect is
+  // idempotent, so a later reroll re-running this is a no-op.
+  if (getStrikeId(spell) && (succeeded || ignoreChanneling)) {
+    await applyStrikeEffect(actor, spell);
+  }
+
+  if (!succeeded) return;
 
   await startChannelingForSpell(actor, spell, { focusSpent });
   await applyCasterEffects(actor, spell);
   await maybeStartMentalDuel(actor, token, spell, attackResults);
+}
+
+/**
+ * Strike spells (Lindarovy údery) apply a same-name status effect to the caster
+ * that enhances their next weapon attack. Reached through applyPostCastEffects,
+ * so it is already gated on a successful cast and re-runs when a reroll rescues
+ * a failed one. The effect is consumed by the next attack (see the
+ * consumeOnAttack hook in redsteel.mjs).
+ *
+ * The static enhancement lives in the effect definition (config.mjs). Two
+ * strikes need caster-specific values baked at cast time:
+ *   - dark_strike:  +1d4 + SK/2 bonus damage, and Corruption +2 on the caster.
+ *   - binding_strike: the Will + SK*2 test value for the on-hit contested root.
+ *
+ * A new strike replaces any enhancement already in the weaponEnchant group
+ * ("cannot be combined with other attack enhancement"): the old effect document
+ * is deleted and the group is (re)written here as the final, authoritative step.
+ * Writing the group explicitly last sidesteps a race where the replaced
+ * effect's own delete cleanup could otherwise wipe the freshly-applied group.
+ *
+ * @param {Actor} actor - The casting actor.
+ * @param {Item} spell - The spell that was cast.
+ */
+async function applyStrikeEffect(actor, spell) {
+  const strikeId = getStrikeId(spell);
+  if (!strikeId) return;
+
+  // Idempotent: a reroll re-runs applyPostCastEffects. If this exact strike is
+  // already held, do nothing — never re-bake Corruption / damage.
+  if (actor.effects.some((e) => e.statuses?.has(strikeId))) return;
+
+  const def = CONFIG.REDSTEEL.effectDefinitions[strikeId];
+  const groupKey = def?.combatModifiers?.exclusiveGroup ?? "weaponEnchant";
+  const school = spell.system?.type ?? null;
+
+  // Remove any other enhancement in the same exclusive group (a previous strike
+  // or a weapon enchant), document and all, so nothing stacks.
+  const stale = actor.effects.filter((e) => {
+    const sid = e.getFlag("core", "statusId");
+    if (!sid || sid === strikeId) return false;
+    return (
+      CONFIG.REDSTEEL.effectDefinitions[sid]?.combatModifiers?.exclusiveGroup ===
+      groupKey
+    );
+  });
+  for (const e of stale) await e.delete();
+
+  await game.redsteel.applyEffect(actor, strikeId, { caster: actor, school });
+
+  const applied = actor.effects.find((e) => e.statuses?.has(strikeId));
+  if (!applied) return;
+
+  // Build this cast's combat-modifier group from the definition, folding in any
+  // caster-specific values.
+  const group = foundry.utils.deepClone(def?.combatModifiers ?? {});
+
+  // Show the spell's own (localized) name on the token, and tag the effect so
+  // the post-attack hook knows to consume it.
+  const updates = {
+    name: spell.localizedName ?? spell.name ?? applied.name,
+    "flags.redsteel.consumeOnAttack": true,
+  };
+
+  if (strikeId === "dark_strike") {
+    // SK/2 rounds down (getSpellPower floors multiplied results).
+    const halfSk = getSpellPower(actor, school, { multiplier: 0.5 });
+    group.damageRoll = `1d4 + ${halfSk}`;
+
+    const corruption = actor.system.stats?.corruption;
+    if (corruption) {
+      const max = Number(corruption.max ?? Infinity);
+      const next = Math.min(Number(corruption.value ?? 0) + 2, max);
+      await actor.update({ "system.stats.corruption.value": next });
+    }
+  }
+
+  if (strikeId === "binding_strike") {
+    const wil =
+      actor.type === "npc"
+        ? actor.system.attributes?.wil?.value
+        : actor.system.attributes?.wil?.mod;
+    const testValue =
+      Number(wil ?? 0) + getSpellPower(actor, school, { multiplier: 2 });
+    updates["flags.redsteel.strikeBinding"] = { testValue, school };
+  }
+
+  await applied.update(updates);
+
+  // Authoritative final write of the group — wins over any in-flight delete
+  // cleanup from the replaced enhancement above.
+  await actor.update({
+    [`system.activeCombatEffects.${groupKey}`]: group,
+  });
 }
 
 /**

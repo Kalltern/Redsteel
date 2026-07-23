@@ -283,6 +283,13 @@
           "Items": "Items"
         }
       },
+      "Spells": {
+        "Concentration": {
+          "Label": "Concentration",
+          "Yes": "Yes",
+          "No": "No"
+        }
+      },
       "Specialisations": {
         "warnLocked": "Unlock the connected previous node first.",
         "warnDependents": "Another unlocked node depends on this one — lock that one first.",
@@ -4241,6 +4248,9 @@
           "headerActions": {
             "label": "Action cost | C"
           },
+          "actionCost": {
+            "label": "Action cost"
+          },
           "headerRange": {
             "label": "Range"
           },
@@ -4270,6 +4280,15 @@
           },
           "grandmaster": {
             "label": "Grandmaster"
+          },
+          "novice": {
+            "label": "Novice"
+          },
+          "acolyte": {
+            "label": "Acolyte"
+          },
+          "cleric": {
+            "label": "Cleric"
           }
         }
       }

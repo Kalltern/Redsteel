@@ -575,6 +575,130 @@ REDSTEEL.effectDefinitions = {
     },
     stackBehavior: "ignore",
   },
+
+  /* -------------------------------------------- */
+  /*  Strike spells (Lindarovy údery)             */
+  /*                                              */
+  /*  Free-action caster buffs that ride the next */
+  /*  weapon attack. They share the weaponEnchant */
+  /*  exclusive group (so a new strike overwrites */
+  /*  the previous one, and none stacks with a    */
+  /*  weapon enchant), and carry consumeOnAttack  */
+  /*  so the createChatMessage hook in redsteel.  */
+  /*  mjs removes them after one attack lands or   */
+  /*  misses. Unlike the *_weapon enchants these   */
+  /*  REPLACE the damage type (damageTypeMode      */
+  /*  "override"), matching each spell's           */
+  /*  "changes its damage type to ..." wording.    */
+  /*  dark_strike / binding_strike carry SK-scaled */
+  /*  values baked at cast time in                 */
+  /*  applyStrikeEffect (castSpell.mjs).           */
+  /* -------------------------------------------- */
+  lightning_strike: {
+    name: "Lightning Strike",
+    img: "icons/magic/lightning/fist-unarmed-strike-blue-green.webp",
+    statuses: ["lightning_strike"],
+    combatModifiers: {
+      exclusiveGroup: "weaponEnchant",
+      consumeOnAttack: true,
+      damageTypeMode: "override",
+      damageTypes: ["magic", "lightning"],
+      extraEffects: {
+        chain: 30,
+      },
+    },
+    stackBehavior: "ignore",
+  },
+  fire_strike: {
+    name: "Fire Strike",
+    img: "icons/magic/fire/projectile-smoke-swirl-red.webp",
+    statuses: ["fire_strike"],
+    combatModifiers: {
+      exclusiveGroup: "weaponEnchant",
+      consumeOnAttack: true,
+      damageTypeMode: "override",
+      damageTypes: ["magic", "fire"],
+      extraEffects: {
+        burn: 25,
+      },
+    },
+    stackBehavior: "ignore",
+  },
+  frost_strike: {
+    name: "Frost Strike",
+    img: "icons/magic/water/strike-weapon-blade-ice-blue.webp",
+    statuses: ["frost_strike"],
+    combatModifiers: {
+      exclusiveGroup: "weaponEnchant",
+      consumeOnAttack: true,
+      damageTypeMode: "override",
+      damageTypes: ["magic", "frost"],
+      extraEffects: {
+        freeze: 30,
+      },
+    },
+    stackBehavior: "ignore",
+  },
+  venomous_strike: {
+    name: "Venomous Strike",
+    img: "icons/magic/acid/projectile-stream-bubbles.webp",
+    statuses: ["venomous_strike"],
+    combatModifiers: {
+      exclusiveGroup: "weaponEnchant",
+      consumeOnAttack: true,
+      damageTypeMode: "override",
+      damageTypes: ["magic", "poison"],
+      extraEffects: {
+        poison: 25,
+      },
+    },
+    stackBehavior: "ignore",
+  },
+  enchanted_strike: {
+    name: "Enchanted Strike",
+    img: "icons/magic/fire/dagger-rune-enchant-blue-gray.webp",
+    statuses: ["enchanted_strike"],
+    combatModifiers: {
+      exclusiveGroup: "weaponEnchant",
+      consumeOnAttack: true,
+      damageTypeMode: "override",
+      damageTypes: ["magic"],
+      extraEffects: {
+        paralyze: 15,
+      },
+    },
+    stackBehavior: "ignore",
+  },
+  dark_strike: {
+    name: "Dark Strike",
+    img: "icons/magic/death/weapon-sword-skull-purple.webp",
+    statuses: ["dark_strike"],
+    // damageRoll (1d4 + SK/2) is baked per-cast in applyStrikeEffect; the caster
+    // also takes Corruption +2 there. Only the static parts live here.
+    combatModifiers: {
+      exclusiveGroup: "weaponEnchant",
+      consumeOnAttack: true,
+      penetrationBonus: 2,
+      damageTypeMode: "override",
+      damageTypes: ["magic", "dark"],
+    },
+    stackBehavior: "ignore",
+  },
+  binding_strike: {
+    name: "Binding Strike",
+    img: "icons/magic/nature/root-vine-hand-strike.webp",
+    statuses: ["binding_strike"],
+    // Binding Strike has no passive attack modifier — its whole effect is a
+    // contested Will+SK*2 vs Str/End test resolved when the attack is consumed
+    // (see resolveBindingStrike in redsteel.mjs). It still occupies the
+    // weaponEnchant slot so it can't stack with other enhancements.
+    combatModifiers: {
+      exclusiveGroup: "weaponEnchant",
+      consumeOnAttack: true,
+    },
+    stackBehavior: "ignore",
+  },
+
   defensive_stance: {
     name: "Defensive stance",
     img: "icons/skills/melee/shield-block-gray-yellow.webp",

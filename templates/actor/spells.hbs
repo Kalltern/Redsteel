@@ -31,7 +31,7 @@
 
   <!-- Sub-tab navigation -->
 <nav class="tabs" data-group="spells-subtabs" data-action="tab">
-  {{#each (groupBySchool spells) as |group index|}}
+  {{#each spellSchools as |group index|}}
     <a
       class="item
         {{#if (or
@@ -41,13 +41,13 @@
       data-group="spells-subtabs"
       data-tab="{{group.school}}"
     >
-      {{localize (concat "REDSTEEL.Actor.Character.schools." group.school ".label")}}
+      {{group.label}}
     </a>
   {{/each}}
 </nav>
 
 
-{{#each (groupBySchool spells) as |group index|}}
+{{#each spellSchools as |group index|}}
 <section
   class="tab {{group.school}}
     {{#if (or
@@ -58,50 +58,43 @@
   data-tab="{{group.school}}"
 >
 
-    {{!-- Group spells by rank within this school --}}
-    {{#each (groupByRank group.spells) as |rankGroup|}}
-      {{!-- Skip empty rank groups --}}
-      {{#if rankGroup.spells.length}}
-        <ol class="items-list" data-rank="{{rankGroup.rank}}">
-          <li class="item flexrow items-header" data-action="toggleSchool">
-            <div class="item-name">{{localize (concat "REDSTEEL.Item.Spell.FIELDS." rankGroup.rank ".label")}}</div>
-            <div class="item-name spellDifficulty">{{localize "REDSTEEL.Item.Spell.FIELDS.difficulty.label"}}</div>
-            <div class="item-name spellCost">{{localize "REDSTEEL.Item.Spell.FIELDS.headerCost.label"}}</div>
-            <div class="item-name">{{localize "REDSTEEL.Item.Spell.FIELDS.headerActions.label"}}</div>
-            <div class="item-name">{{localize "REDSTEEL.Item.Spell.FIELDS.headerRange.label"}}</div>
-          </li>
+    <nav class="rank-filter">
+      {{#each group.rankGroups as |rg|}}
+        <a class="rank-filter-pill {{#if (eq rg.rank ../activeRank)}}active{{/if}}"
+           data-action="setSpellRank" data-rank="{{rg.rank}}">{{rg.label}}</a>
+      {{/each}}
+    </nav>
 
-          {{#each rankGroup.spells as |item|}}
-            <li class="item flexrow" data-item-id="{{item.id}}" data-drag="true" data-document-class="Item">
-              <div class="item-name flexrow">
-                <div class="item-image">
-                  <a class="rollable" data-roll-type="item" data-action="roll">
-                    <img src="{{item.img}}" class="item-icon" data-item-id="{{item.id}}" width="24" height="24"/>
-                  </a>
+    {{#each group.rankGroups as |rg|}}
+      {{#if (eq rg.rank ../activeRank)}}
+        <ul class="spell-card-grid">
+          {{#each rg.cards as |card|}}
+            <li class="spell-card" data-item-id="{{card.id}}" data-card-kind="spell" data-drag="true" data-document-class="Item">
+              <a class="spell-card-icon rollable" data-action="roll" data-roll-type="item">
+                <img src="{{card.img}}" data-item-id="{{card.id}}" width="48" height="48" />
+              </a>
+              <div class="spell-card-main">
+                <div class="spell-card-top">
+                  <span class="spell-card-name">{{card.name}}</span>
+                  <span class="spell-card-controls">
+                    <a class="item-control item-edit" data-action="viewDoc" title="{{localize 'DOCUMENT.Update' type='spell'}}"><i class="fas fa-edit"></i></a>
+                    {{#if @root.editable}}
+                      <a class="item-control item-delete" data-action="deleteDoc" title="{{localize 'DOCUMENT.Delete' type='spell'}}"><i class="fas fa-trash"></i></a>
+                    {{/if}}
+                  </span>
                 </div>
-                <div>{{item.localizedName}}</div>
-              </div>
-
-              <div class="item-formula item-prop-dificulty">{{item.system.difficulty}}</div>
-              <div class="item-formula item-prop-spell">
-                {{item.system.cost}}{{#if item.system.perRound}} / {{item.system.perRound}}{{/if}}
-              </div>
-              <div class="item-formula item-prop-spell">{{item.system.actionCost}}</div>
-              <div class="item-formula item-prop-spell">{{item.system.range}}</div>
-
-              <div class="item-controls">
-                <a class="item-control item-edit" title="{{localize 'DOCUMENT.Update' type="spell"}}" data-action="viewDoc">
-                  <i class="fas fa-edit"></i>
-                </a>
-                {{#if @root.editable}}
-                  <a class="item-control item-delete" title="{{localize 'DOCUMENT.Delete' type="spell"}}" data-action="deleteDoc">
-                    <i class="fas fa-trash"></i>
-                  </a>
-                {{/if}}
+                <div class="spell-card-pills">
+                  {{#each card.pills as |pill|}}
+                    <span class="spell-pill" data-pill="{{pill.key}}" data-positive="{{pill.positive}}">
+                      <span class="spell-pill-label">{{pill.label}}</span>
+                      <span class="spell-pill-value">{{pill.value}}</span>
+                    </span>
+                  {{/each}}
+                </div>
               </div>
             </li>
           {{/each}}
-        </ol>
+        </ul>
       {{/if}}
     {{/each}}
   </section>

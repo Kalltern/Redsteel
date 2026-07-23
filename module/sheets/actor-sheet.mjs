@@ -29,6 +29,11 @@ import {
 } from "../utils/race.mjs";
 import { openWeaponSpecDialog } from "../utils/weaponSpec.mjs";
 import { openBanePicker, clearBaneChoice } from "../helpers/banes.mjs";
+import {
+  buildSpellCard,
+  buildRankGroups,
+  renderInspectorCard,
+} from "../utils/spellCards.mjs";
 
 const { api, sheets } = foundry.applications;
 
@@ -90,6 +95,10 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     this._boundRightClick = this._onRightClick.bind(this);
     this._skillsEditMode = false;
     this._inventoryFilter = "all";
+    // Spells/Miracles tab rank filters — transient, never persisted on the
+    // actor. null means "use the first available rank for the active school".
+    this._spellRankFilter = null;
+    this._miracleRankFilter = null;
     // Alchemy tab state — transient, never persisted on the actor.
     this._alchemyStation = "foldable";
     this._alchemySelectedRecipe = null;
@@ -127,6 +136,8 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       addCurrency: this._addCurrency,
       deleteCurrency: this._deleteCurrency,
       setInventoryFilter: this._setInventoryFilter,
+      setSpellRank: this._setSpellRank,
+      setMiracleRank: this._setMiracleRank,
       selectRecipe: this._selectRecipe,
       craftRecipe: this._craftRecipe,
       rerollCraft: this._rerollCraft,
@@ -906,6 +917,22 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     this.render();
   }
 
+  /** Set the active rank filter pill on the Spells tab and re-render. */
+  static _setSpellRank(event, target) {
+    const rank = target.dataset.rank;
+    if (!rank) return;
+    this._spellRankFilter = rank;
+    this.render();
+  }
+
+  /** Set the active rank filter pill on the Miracles tab and re-render. */
+  static _setMiracleRank(event, target) {
+    const rank = target.dataset.rank;
+    if (!rank) return;
+    this._miracleRankFilter = rank;
+    this.render();
+  }
+
   /** Select a recipe row in the Alchemy tab (transient sheet state). */
   static _selectRecipe(event, target) {
     const itemId = target.closest("[data-item-id]")?.dataset.itemId;
@@ -1398,10 +1425,84 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
         break;
       }
       case "abilities":
-      case "spells":
+        context.tab = context.tabs[partId];
+        context.abilityCards = context.ability.map((i) =>
+          buildSpellCard(i, "ability"),
+        );
+        break;
+      case "spells": {
         context.tab = context.tabs[partId];
         context.activeSpellSubtab = this.tabGroups["spells-subtabs"] ?? null;
-      case "miracles":
+
+        const SPELL_RANKS = [
+          "wild",
+          "apprentice",
+          "expert",
+          "master",
+          "grandmaster",
+        ];
+        const bySchool = {};
+        for (const spell of context.spells) {
+          const school = spell.system?.type;
+          if (!school) continue;
+          (bySchool[school] ??= []).push(spell);
+        }
+        // Note: switching between school sub-tabs only toggles DOM classes
+        // (ApplicationV2#changeTab does not re-render — verified against the
+        // V14 API docs), so every school section must carry its own correct
+        // default active rank rather than relying on a single value computed
+        // only for whichever school happened to be active at render time.
+        context.spellSchools = Object.entries(bySchool)
+          .map(([school, spellsInSchool]) => {
+            const rankGroups = buildRankGroups(
+              spellsInSchool,
+              SPELL_RANKS,
+              "spell",
+            );
+            const activeRank = rankGroups.some(
+              (rg) => rg.rank === this._spellRankFilter,
+            )
+              ? this._spellRankFilter
+              : (rankGroups[0]?.rank ?? null);
+            return {
+              school,
+              label: game.i18n.localize(
+                `REDSTEEL.Actor.Character.schools.${school}.label`,
+              ),
+              rankGroups,
+              activeRank,
+            };
+          })
+          .filter((entry) => entry.rankGroups.length > 0);
+
+        const activeSchool =
+          context.spellSchools.find(
+            (s) => s.school === context.activeSpellSubtab,
+          ) ?? context.spellSchools[0];
+        context.activeSpellRank = activeSchool?.activeRank ?? null;
+        break;
+      }
+      case "miracles": {
+        context.tab = context.tabs[partId];
+
+        const MIRACLE_RANKS = ["novice", "acolyte", "cleric"];
+        const miracleSpells = context.spells.filter(
+          (s) => s.system?.option === "divine",
+        );
+        context.miracleRankGroups = buildRankGroups(
+          miracleSpells,
+          MIRACLE_RANKS,
+          "miracle",
+        );
+        context.activeMiracleRank = context.miracleRankGroups.length
+          ? (context.miracleRankGroups.some(
+              (rg) => rg.rank === this._miracleRankFilter,
+            )
+              ? this._miracleRankFilter
+              : context.miracleRankGroups[0].rank)
+          : null;
+        break;
+      }
       case "inventory":
       case "config":
         context.tab = context.tabs[partId];
@@ -1794,6 +1895,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     }
 
     this._activateItemTooltips();
+    this._activateSpellInspector();
     // You may want to add other special handling here
     // Foundry comes with a large number of utility classes, e.g. SearchFilter
     // That you may want to implement yourself.
@@ -1862,6 +1964,59 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
 
       icon.addEventListener("mouseleave", () => {
         tooltip.classList.add("hidden");
+      });
+    }
+  }
+
+  // Render the floating spell/miracle/ability inspector panel beside the sheet
+  _activateSpellInspector() {
+    const root =
+      this.element instanceof HTMLElement ? this.element : this.element?.[0];
+    if (!root) return;
+
+    const inspector = document.getElementById("spell-inspector");
+    if (!inspector) return;
+
+    for (const cardEl of root.querySelectorAll(".spell-card")) {
+      if (cardEl.dataset.inspectorBound) continue;
+      cardEl.dataset.inspectorBound = "true";
+
+      cardEl.addEventListener("mouseenter", (ev) => {
+        const el = ev.currentTarget;
+        const item = this.actor.items.get(el.dataset.itemId);
+        if (!item) return;
+
+        inspector.innerHTML = renderInspectorCard(
+          buildSpellCard(item, el.dataset.cardKind || "spell"),
+        );
+        inspector.classList.remove("hidden");
+
+        // Position beside the whole sheet — right if it fits, else left.
+        const sheetRect = root.getBoundingClientRect();
+        const gap = 10;
+        const panelRect = inspector.getBoundingClientRect();
+
+        let left = sheetRect.right + gap;
+        if (left + panelRect.width > window.innerWidth) {
+          left = sheetRect.left - panelRect.width - gap;
+        }
+        // Last resort if neither side fits (very narrow viewport): clamp on-screen.
+        if (left < 0) left = Math.max(0, window.innerWidth - panelRect.width);
+
+        // Vertically align to the hovered card, clamped into the viewport.
+        const cardRect = el.getBoundingClientRect();
+        let top = cardRect.top;
+        if (top + panelRect.height > window.innerHeight) {
+          top = window.innerHeight - panelRect.height - 10;
+        }
+        if (top < 10) top = 10;
+
+        inspector.style.left = `${left}px`;
+        inspector.style.top = `${top}px`;
+      });
+
+      cardEl.addEventListener("mouseleave", () => {
+        inspector.classList.add("hidden");
       });
     }
   }

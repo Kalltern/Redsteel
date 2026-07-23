@@ -283,6 +283,13 @@
           "Items": "Předměty"
         }
       },
+      "Spells": {
+        "Concentration": {
+          "Label": "Koncentrace",
+          "Yes": "Ano",
+          "No": "Ne"
+        }
+      },
       "Specialisations": {
         "warnLocked": "Nejdříve odemkni propojený předchozí uzel.",
         "warnDependents": "Na tomto uzlu závisí jiný odemčený uzel — nejdříve zamkni ten.",
@@ -4230,6 +4237,9 @@
           "headerActions": {
             "label": "Akční náklady | K"
           },
+          "actionCost": {
+            "label": "Akční cena"
+          },
           "headerRange": {
             "label": "Dosah"
           },
@@ -4259,6 +4269,15 @@
           },
           "grandmaster": {
             "label": "Velmistr"
+          },
+          "novice": {
+            "label": "Novic"
+          },
+          "acolyte": {
+            "label": "Akolyta"
+          },
+          "cleric": {
+            "label": "Klerik"
           }
         }
       }
