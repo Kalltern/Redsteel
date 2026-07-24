@@ -4100,6 +4100,17 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   display: flex;
   flex: 0 0 auto;
   gap: 6px;
+  /* Hidden until the card is hovered/focused; opacity (not display) keeps the
+     space reserved so the name doesn't shift when the icons appear. */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+}
+
+.npc-trait:hover .npc-trait-controls,
+.npc-trait:focus-within .npc-trait-controls {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .npc-trait-controls .item-control {
@@ -5810,6 +5821,17 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   display: flex;
   flex: 0 0 auto;
   gap: 6px;
+  /* Hidden until the card is hovered/focused; opacity (not display) keeps the
+     space reserved so the name doesn't shift when the icons appear. */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+}
+
+.spell-card:hover .spell-card-controls,
+.spell-card:focus-within .spell-card-controls {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .spell-card-controls .item-control {
@@ -5869,30 +5891,44 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 .rank-filter {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 6px;
-  margin: 6px 0 10px;
+  margin: 8px 0 12px;
 }
 
+/* Boxy toggle blocks modelled on the casting-dialog option buttons (e.g. the
+   sneak-attack toggle): flat dark fill, olive border, square-ish corners, and
+   enough height to read as a button rather than a chip. */
 .rank-filter-pill {
   display: inline-flex;
   align-items: center;
-  padding: 2px 10px;
-  border-radius: 10px;
-  border: 1px solid rgba(181, 151, 80, 0.35);
-  color: rgb(219 199 169);
-  font-size: 0.78em;
+  justify-content: center;
+  min-height: 30px;
+  padding: 4px 14px;
+  border-radius: 3px;
+  background: #15130f;
+  border: 1px solid #4f422b;
+  color: #c8bea8;
+  font-size: 0.8em;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   cursor: pointer;
+  transition:
+    border-color 0.12s ease,
+    color 0.12s ease,
+    box-shadow 0.12s ease;
 }
 
 .rank-filter-pill:hover {
-  border-color: #d9a13b;
-  color: #e6c878;
+  border-color: #665534;
+  color: #d7c697;
 }
 
 .rank-filter-pill.active {
+  background: #241d10;
   border-color: #d9a13b;
   color: #e6c878;
-  background: rgba(217, 161, 59, 0.15);
+  box-shadow: 0 0 7px rgba(217, 161, 59, 0.45);
 }
 
 /* Single column on narrow sheets, matching .npc-traits-grid */

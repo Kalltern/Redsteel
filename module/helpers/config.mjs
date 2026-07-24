@@ -698,6 +698,21 @@ REDSTEEL.effectDefinitions = {
     },
     stackBehavior: "ignore",
   },
+  empower_strike: {
+    name: "Empower Strike",
+    img: "icons/magic/control/buff-strength-muscle-damage-orange.webp",
+    statuses: ["empower_strike"],
+    // No damage-type change — keeps the weapon's own type. damageRoll (1d4 +
+    // Body SK/2) is baked per-cast in applyStrikeEffect.
+    combatModifiers: {
+      exclusiveGroup: "weaponEnchant",
+      consumeOnAttack: true,
+      extraEffects: {
+        stun: 15,
+      },
+    },
+    stackBehavior: "ignore",
+  },
 
   defensive_stance: {
     name: "Defensive stance",
@@ -957,6 +972,20 @@ REDSTEEL.effectDefinitions = {
     name: "Corrupted (Zkažený)",
     img: "icons/svg/blood.svg",
     statuses: ["corrupted"],
+    stackBehavior: "ignore",
+    changes: [],
+  },
+
+  // "Posednutí" — the losing side of a Mental Duel (Mind Bending) is possessed
+  // by the winner. This is purely a visible token marker with no numeric
+  // changes: the actual mechanic is an ownership grant recorded in
+  // flags.redsteel.possession on the possessed actor (see mentalDuel.mjs).
+  // Removing this status is the canonical way to END possession — the effect's
+  // _onDelete (documents/effects.mjs) restores the original ownership.
+  possessed: {
+    name: "Possessed (Posednutí)",
+    img: "icons/svg/terror.svg",
+    statuses: ["possessed"],
     stackBehavior: "ignore",
     changes: [],
   },
@@ -1780,6 +1809,30 @@ REDSTEEL.effectDefinitions = {
         ["lightning"],
         ["acid", "poison"],
       ],
+    },
+  },
+
+  // "Krvavý štít" (Blood Shield) — the Blood School talent-tree perk. Every time
+  // its bearer loses Life to a hit, they gain a physical-absorbing shield worth
+  // half the Life lost, lasting until the end of the round. It is applied
+  // reactively from the damage pipeline (see applyDamage.mjs) with an explicit
+  // pool via `poolOverride`, so the SK formula below is never used. Unlike the
+  // three cast shields it is NOT in EFFECT_OVERRIDES, so it coexists with them,
+  // and it stacks: repeated hits in the same round build one growing pool.
+  blood_shield: {
+    name: "Krvavý štít",
+    img: "icons/magic/defensive/shield-barrier-glowing-triangle-red.webp",
+    statuses: ["blood_shield"],
+    stackBehavior: "stack", // repeated hits in a round add to the same pool
+    maxStacks: 9999,
+    defaultRounds: 1, // "do konce kola" — cleared at the start of the next round
+    shield: {
+      matchClass: "physical",
+      matchTypes: [],
+      absorbFullHit: false,
+      blocksMagicEffects: false,
+      dispellable: false,
+      pool: { base: 0, perSpellPower: 0 },
     },
   },
 };

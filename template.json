@@ -251,7 +251,8 @@
           "value": 0,
           "min": 0,
           "max": 10,
-          "bonus": 0
+          "bonus": 0,
+          "transfer": 0
         },
         "temporaryHealth": {
           "value": 0,
@@ -1067,7 +1068,8 @@
           "value": 900,
           "min": 0,
           "max": 900,
-          "bonus": 0
+          "bonus": 0,
+          "transfer": 25
         },
         "temporaryHealth": {
           "value": 0,

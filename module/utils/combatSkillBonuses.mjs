@@ -1167,11 +1167,16 @@ export async function getEffectRolls(
 
   let bleedChanceDisplay = 0;
 
+  // Gate only: the actual chance is summed independently below. Actor-level
+  // bleed (doctrines such as Dimakerus, or Active Effects on system.effects)
+  // has to count here too, otherwise it is silently dropped whenever the
+  // weapon itself carries no intrinsic bleed.
   const bleedBaseValue =
     (weaponEffects.bleed || 0) +
     (offProps?.effects?.bleed || 0) +
     (abilityEffects["bleed"] || 0) +
-    (coatingEffects.bleed || 0);
+    (coatingEffects.bleed || 0) +
+    (actorEffects["bleed"] || 0);
 
   const bleedIsAuto =
     weaponEffects.bleed === -1 ||
@@ -1281,6 +1286,18 @@ In total :(${totalBleeds}) due to Crit score: ${critScore}">
  * @param {string[]} expression - damageProfile.expression tokens.
  * @returns {"physical"|"magical"}
  */
+// Kinetic damage types that count as "physical" for shield matching and the
+// physical/magical temporary-HP split. The `physical` keyword plus its three
+// weapon sub-types — a mace (blunt), an arrow (piercing) and a sword (slash)
+// are all physical, so a physical ward must stop them even when the expression
+// names only the sub-type (e.g. "piercing", or "physical OR slash").
+const PHYSICAL_DAMAGE_TYPES = new Set([
+  "physical",
+  "blunt",
+  "piercing",
+  "slash",
+]);
+
 export function classifyDamagePacket(expression) {
   const tokens = Array.isArray(expression) ? expression : [];
   if (!tokens.length) return "physical";
@@ -1299,7 +1316,11 @@ export function classifyDamagePacket(expression) {
   if (current.length) branches.push(current);
   if (!branches.length) return "physical";
 
-  return branches.every((b) => b.includes("physical")) ? "physical" : "magical";
+  // Physical only when every OR-alternative is physical: a branch that carries
+  // any kinetic type is physical, so "physical AND fire" stays physical while
+  // "physical OR magic" (an alternative that is purely magical) bypasses.
+  const branchIsPhysical = (b) => b.some((t) => PHYSICAL_DAMAGE_TYPES.has(t));
+  return branches.every(branchIsPhysical) ? "physical" : "magical";
 }
 
 /**

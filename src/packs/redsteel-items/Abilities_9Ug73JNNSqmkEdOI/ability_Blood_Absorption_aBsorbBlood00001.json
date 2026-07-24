@@ -1,10 +1,11 @@
 {
-  "name": "Magic Ward",
+  "name": "Blood Absorption",
   "type": "ability",
-  "img": "icons/magic/symbols/rune-sigil-horned-blue.webp",
+  "img": "icons/svg/blood.svg",
   "system": {
-    "description": "<p>You gain 10 temporary hit points. <br />Protects only against magical damage.<br />Temporary hit points gained this way cannot exceed 10. <br />Can be used together with shield spells.</p>",
-    "type": "",
+    "description": "<p>Cancel your entire Blood Reserve and heal Life equal to your Maximum Transfer. You cannot heal more Life than you cancelled from the Reserve.</p>",
+    "type": "other",
+    "key": "absorbBlood",
     "weaponAbility": false,
     "standalone": false,
     "modifiesAttack": false,
@@ -25,9 +26,9 @@
     ],
     "resources": {
       "0": {
-        "type": "TemporaryHealthMagic",
-        "mode": "add",
-        "amount": 10
+        "type": "",
+        "mode": "",
+        "amount": null
       },
       "1": {
         "type": "",
@@ -76,8 +77,8 @@
       "inspiration",
       "holy energy"
     ],
-    "costType": "mana",
-    "cost": 4,
+    "costType": "",
+    "cost": 0,
     "perRound": 0,
     "effects": {
       "stagger": 0,
@@ -108,17 +109,13 @@
     "effectType1": "",
     "effectType2": "",
     "effectType3": "",
-    "localizationKey": "REDSTEEL.Items.MagicWard.name"
+    "localizationKey": "REDSTEEL.Items.AbsorbBlood.name"
   },
   "effects": [],
   "folder": "9Ug73JNNSqmkEdOI",
-  "flags": {
-    "scene-packer": {
-      "hash": "0a7dc2090c558b3924377ba74dc13b2647c4edf9"
-    }
-  },
+  "flags": {},
   "_stats": {
-    "compendiumSource": "Compendium.dilnamodulimport.pack-1.Item.CY8Jnz7qwSp2WL72",
+    "compendiumSource": null,
     "duplicateSource": null,
     "exportSource": null,
     "coreVersion": "13.351",
@@ -129,11 +126,9 @@
     "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
   },
   "ownership": {
-    "default": 0,
-    "rs3mzx7WZdtEmvH2": 3,
-    "UHjN0KQ8w8ZxibJg": 3
+    "default": 0
   },
-  "_id": "jb3WkQ7CKe0E3hW8",
-  "sort": 2600000,
-  "_key": "!items!jb3WkQ7CKe0E3hW8"
+  "_id": "aBsorbBlood00001",
+  "sort": 2900001,
+  "_key": "!items!aBsorbBlood00001"
 }

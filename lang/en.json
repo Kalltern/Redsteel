@@ -787,7 +787,7 @@
             },
             "krvavyStit": {
               "label": "Blood Shield",
-              "description": "15 CP; Škola Krve - Expert. Manual — resolved at the table."
+              "description": "15 CP; Škola Krve - Expert. Every hit that costs Life raises a physical shield worth half the Life lost, until the end of the round. Automated."
             },
             "darKrve": {
               "label": "Gift of Blood",
@@ -3557,6 +3557,9 @@
             },
             "max": {
               "label": "Maximum Blood Pool"
+            },
+            "transfer": {
+              "label": "Max Transfer"
             }
           }
         },
@@ -4395,6 +4398,12 @@
       "type3": "Extra Effect Type 3"
     },
     "Items": {
+      "AbsorbBlood": {
+        "name": "Blood Absorption",
+        "description": "<p>Cancel your entire Blood Reserve and heal Life equal to your Maximum Transfer. You cannot heal more Life than you cancelled from the Reserve.</p>",
+        "result": "Burned {discarded} from the Blood Reserve and healed {healed} Life.",
+        "noReserve": "No Blood Reserve to absorb."
+      },
       "AccurateShot": {
         "name": "Accurate Shot"
       },

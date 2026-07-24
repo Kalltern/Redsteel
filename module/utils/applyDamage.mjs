@@ -14,6 +14,34 @@ import { BANE_TYPES } from "../helpers/banes.mjs";
 export const SOCKET = "system.redsteel";
 
 /* -------------------------------------------- */
+/*  Krvavý štít (Blood Shield perk)             */
+/* -------------------------------------------- */
+
+/**
+ * Raise the Blood Shield if this actor has the perk and just lost Life. The
+ * shield is a physical-absorbing pool worth half the Life lost (floored). It
+ * stacks: several hits in one round add to the same pool. While a combat is
+ * running its "until end of round" expiry is driven by the round-start hook;
+ * out of combat it simply persists until rounds advance or it is cleared.
+ * No-ops unless the perk node is unlocked and the loss halves to a non-zero
+ * shield.
+ *
+ * @param {Actor} actor
+ * @param {number} hpLost  Life removed by the hit (before − after).
+ */
+async function maybeApplyBloodShield(actor, hpLost) {
+  if (!actor?.system?.specialisations?.bloodSchool?.nodes?.krvavyStit) return;
+
+  const amount = Math.floor((Number(hpLost) || 0) / 2);
+  if (amount <= 0) return;
+
+  await game.redsteel.applyEffect(actor, "blood_shield", {
+    stacks: amount,
+    poolOverride: amount,
+  });
+}
+
+/* -------------------------------------------- */
 /*  Durability sacrifice                        */
 /* -------------------------------------------- */
 
@@ -418,6 +446,8 @@ export async function applyDamageAsGM(data) {
       `GM: Applying ${result.totalHpLoss} damage to ${actor.name}. New HP: ${result.newHp}${durabilityNote}`,
     );
 
+    const hpBeforeDamage = Number(actor.system.stats.health.value) || 0;
+
     await actor.update({
       "system.stats.temporaryHealth.value": Number(result.newTempHp),
       "system.stats.temporaryHealthMagic.value": Number(
@@ -444,6 +474,11 @@ export async function applyDamageAsGM(data) {
         });
       }
     }
+
+    // Krvavý štít (Blood Shield perk): losing Life to a hit raises a physical
+    // shield worth half the Life just lost, until the end of the round. Applied
+    // after the drain above so it never touches the shield that soaked this hit.
+    await maybeApplyBloodShield(actor, hpBeforeDamage - Number(result.newHp));
 
     if (durabilityItem && result.durabilityPointsUsed > 0) {
       const remaining =

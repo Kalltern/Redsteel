@@ -19,6 +19,7 @@ const STRIKE_SPELLS = {
   "Enchanted strike (WIP)": "enchanted_strike",
   "Dark strike": "dark_strike",
   "Binding strike": "binding_strike",
+  "Empower strike": "empower_strike",
 };
 
 /**
@@ -205,11 +206,16 @@ async function applyStrikeEffect(actor, spell) {
     "flags.redsteel.consumeOnAttack": true,
   };
 
-  if (strikeId === "dark_strike") {
+  // Strikes that add 1d4 + SK/2 bonus damage, baked from this caster's SK in the
+  // spell's school (Dark for Dark Strike, Body for Empower Strike).
+  if (strikeId === "dark_strike" || strikeId === "empower_strike") {
     // SK/2 rounds down (getSpellPower floors multiplied results).
     const halfSk = getSpellPower(actor, school, { multiplier: 0.5 });
     group.damageRoll = `1d4 + ${halfSk}`;
+  }
 
+  // Dark Strike additionally corrupts the caster.
+  if (strikeId === "dark_strike") {
     const corruption = actor.system.stats?.corruption;
     if (corruption) {
       const max = Number(corruption.max ?? Infinity);

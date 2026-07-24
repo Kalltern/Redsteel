@@ -141,7 +141,7 @@
             school rank, with a freely-editable max. --}}
       {{#if (or system.specialisations.bloodSchool.nodes.apprentice (gt system.schools.blood.value 0))}}
       <div class="resource-bar bloodPool">
-        <div class="resource-bar-track" title="{{localize 'REDSTEEL.Actor.Character.stats.bloodPool.value.label'}}">
+        <div class="resource-bar-track" title="{{localize 'REDSTEEL.Actor.Character.stats.bloodPool.value.label'}} · {{localize 'REDSTEEL.Actor.Character.stats.bloodPool.transfer.label'}}: {{system.stats.bloodPool.transfer}}">
           <div class="resource-bar-fill" style="width: {{percentOf system.stats.bloodPool.value system.stats.bloodPool.max}}%"></div>
           <div class="resource-bar-values">
             <input

@@ -321,9 +321,47 @@ export class RedsteelActor extends Actor {
     const activeSetId = combatData?.activeWeaponSet;
     if (activeSetId) {
       const activeSet = combatData.weaponSets?.[activeSetId];
-      if (activeSet?.off) {
-        const offHand = actorData.items.get(activeSet.off);
-        const mainHand = actorData.items.get(activeSet.main);
+      // An empty off hand is a valid loadout (a two-hander, or one weapon and a
+      // free hand) and still counts as "no shield" for the doctrine logic
+      // below, so gate on the set existing rather than on the off slot being
+      // filled. Both slots default to null, so resolve them defensively.
+      if (activeSet) {
+        const offHand = activeSet.off
+          ? actorData.items.get(activeSet.off)
+          : null;
+        const mainHand = activeSet.main
+          ? actorData.items.get(activeSet.main)
+          : null;
+
+        // Weapon defense (Zbraň value + its quality mod) used to be added only
+        // at roll time, which left the sheet stat lower than the number the
+        // roll actually used. It is a static property of the active set, so
+        // fold it into the stat here and drop it from the defense formula.
+        // Mirrors defense.mjs: the off hand contributes through
+        // offhandProperties, and only while genuinely dual wielding (a
+        // two-handed main hand or a shield off hand disables it).
+        const mainIsTwoHanded = mainHand
+          ? mainHand.system.type === "heavy" ||
+            ["crossbow", "box"].includes(mainHand.system.class) ||
+            mainHand.system.gripMode === "two"
+          : false;
+        const isDualWield =
+          !!mainHand &&
+          !!offHand &&
+          !mainIsTwoHanded &&
+          !offHand?.system?.shield;
+
+        const mainQuality = mainHand?.system?.qualityMods ?? {};
+        let weaponDefense =
+          (Number(mainHand?.system?.defense) || 0) +
+          (Number(mainQuality.defense) || 0);
+        if (isDualWield) {
+          const offProps = offHand.system.offhandProperties ?? {};
+          const offQuality = offHand.system.offhandQualityMods ?? {};
+          weaponDefense +=
+            (Number(offProps.defense) || 0) + (Number(offQuality.defense) || 0);
+        }
+        combatSkills.meleeDefense.bonus += weaponDefense;
 
         if (offHand?.system?.shield) {
           // Broken shields (0 durability) grant improvised shield stats instead
@@ -341,29 +379,46 @@ export class RedsteelActor extends Actor {
           // Initiative / speed penalties
           secondary.ini.bonus += shield.iniPenalty;
           secondary.spd.bonus += shield.maxSpeed;
-        }
-        if (!offHand?.system?.shield) {
-          const weaponClass = mainHand?.system?.weapon?.class;
-          if (systemData.doctrines.dimakerus.value >= 1) {
-            if (weaponClass === "axe") {
-              combatSkills.combat.bonus += 5;
+        } else {
+          // Weapon class lives at system.class; there is no system.weapon object.
+          const weaponClass = mainHand?.system?.class;
+          // The whole doctrine interaction here is about dual wielding: a −10
+          // penalty for fighting with a weapon in each hand without training,
+          // which Dimakerus removes (and turns into a bonus on flagged
+          // weapons). A single weapon or a free off hand is unaffected.
+          if (isDualWield) {
+            // Rank 1 only rewards weapons flagged for the doctrine, matching
+            // the rank 2+ gate in combatSkillBonuses (which keys off
+            // ws.doctrines.dimakerus). A class alone (e.g. a Rapier) is not
+            // enough.
+            const weaponIsDimakerus =
+              mainHand?.system?.doctrines?.dimakerus === true;
+            if (systemData.doctrines.dimakerus.value >= 1) {
+              // Dimakerus negates the dual-wield penalty for its user, and adds
+              // a class bonus when the weapon qualifies.
+              if (weaponIsDimakerus) {
+                if (weaponClass === "axe") {
+                  combatSkills.combat.bonus += 5;
+                }
+                if (weaponClass === "blunt") {
+                  combatSkills.combat.bonus += 8;
+                }
+                if (weaponClass === "sword") {
+                  combatSkills.combat.bonus += 5;
+                  systemData.effects.bleed += 3;
+                }
+              }
+            } else if (
+              systemData.doctrines.duelist.value >= 1 &&
+              weaponClass === "sword"
+            ) {
+              // Duelist also lets a swordsman dual wield without the penalty.
+            } else {
+              combatSkills.combat.bonus -= 10;
+              combatSkills.dodge.bonus -= 10;
+              combatSkills.rangedDefense.bonus -= 10;
+              combatSkills.meleeDefense.bonus -= 10;
             }
-            if (weaponClass === "blunt") {
-              combatSkills.combat.bonus += 8;
-            }
-            if (weaponClass === "sword") {
-              combatSkills.combat.bonus += 5;
-              systemData.effects.bleed += 3;
-            }
-          } else if (systemData.doctrines.duelist.value >= 1) {
-            if (weaponClass === "sword") {
-              // no penalty
-            }
-          } else {
-            combatSkills.combat.bonus -= 10;
-            combatSkills.dodge.bonus -= 10;
-            combatSkills.rangedDefense.bonus -= 10;
-            combatSkills.meleeDefense.bonus -= 10;
           }
         }
       }
@@ -518,7 +573,7 @@ export class RedsteelActor extends Actor {
             combat.finesseRating =
               rangerGroup[ranger] +
               attributeScore[1].total * 3 +
-              combatSkill.bonus +
+              combat.bonus +
               globalMod;
           } else if (
             archery.value > 0 &&
@@ -527,13 +582,13 @@ export class RedsteelActor extends Actor {
             combat.finesseRating =
               rangedDefenseSet[archery.value] +
               attributeScore[1].total * 3 +
-              combatSkill.bonus +
+              combat.bonus +
               globalMod;
           } else {
             combat.finesseRating =
               combatset1[melee] +
               attributeScore[1].total * 3 +
-              combatSkill.bonus +
+              combat.bonus +
               globalMod;
           }
         }
@@ -1095,6 +1150,22 @@ export class RedsteelActor extends Actor {
     // `bloodPool.bonus`. A character with no Blood specialisation has no pool
     // (max 0 → hidden). NPCs keep their own freely-editable max.
     systemData.stats.bloodPool.max = systemData.stats.bloodPool.bonus || 0;
+
+    // Maximální převod (Max Blood Transfer): the ceiling on how much can be
+    // moved between blood and life in a single conversion (e.g. the Vstřebání
+    // krve ability). It is set by the Blood School rank, which is encoded by the
+    // highest unlocked rank node — 5 / 10 / 15 / 25 for Apprentice / Expert /
+    // Master / Grandmaster. NPCs keep their own freely-editable transfer value.
+    const bloodNodes = systemData.specialisations?.bloodSchool?.nodes ?? {};
+    systemData.stats.bloodPool.transfer = bloodNodes.grandmaster
+      ? 25
+      : bloodNodes.master
+        ? 15
+        : bloodNodes.expert
+          ? 10
+          : bloodNodes.apprentice
+            ? 5
+            : 0;
 
     // Prevent current stat exceed max
     systemData.stats.health.value = Math.min(

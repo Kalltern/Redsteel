@@ -1,4 +1,13 @@
 import { SOCKET } from "./applyDamage.mjs";
+import { actorHasSpecNode } from "../helpers/specialisations.mjs";
+
+// Only a winner who can Dominate may seize control: any NPC, or a player
+// character who has unlocked the Mentalist "Domination" (ovladnuti) perk.
+function canDominate(actor) {
+  return (
+    actor?.type === "npc" || actorHasSpecNode(actor, "mentalist", "ovladnuti")
+  );
+}
 
 /**
  * Mentální souboj (Mind Bending) — an interactive duel window.
@@ -166,6 +175,52 @@ const MENTAL_DUEL_CSS = `
   border: 1px solid #8b6914;
   border-radius: 6px;
   background: radial-gradient(circle, #2c2410, #161208);
+}
+.rs-md-possess {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 7px 14px;
+  font-weight: bold;
+  border-radius: 6px;
+  border: 1px solid #8b6914;
+  background: linear-gradient(#3a2a4a, #1e1626);
+  color: #f0d8ff;
+  cursor: pointer;
+}
+.rs-md-possess:hover {
+  background: linear-gradient(#4a366a, #251a30);
+  box-shadow: 0 0 8px -2px #a06be0;
+}
+.rs-md-possess-note {
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: normal;
+  color: #d8c6ec;
+  opacity: 0.9;
+}
+.rs-md-start-wrap {
+  margin-top: 10px;
+  text-align: center;
+}
+.rs-md-start-duel {
+  padding: 9px 18px;
+  font-weight: bold;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 1px solid #8b6914;
+  background: linear-gradient(#3a3320, #221d10);
+  color: #ffe9a8;
+  cursor: pointer;
+}
+.rs-md-start-duel:hover {
+  background: linear-gradient(#4a4029, #2a2416);
+  box-shadow: 0 0 8px -2px #c9a94b;
+}
+.rs-md-start-note {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #c9b26b;
+  opacity: 0.9;
 }
 .rs-md-rps {
   margin-top: 12px;
@@ -431,14 +486,37 @@ export class MentalDuelApp extends ApplicationV2 {
     const bPct = 100 - aPct;
 
     const ended = a.mindValue <= 0 || b.mindValue <= 0;
+    // The GM must officially start the Mind Bending before either side may
+    // attack. Until then the arena shows but the attack buttons stay locked.
+    const started = this._isStarted();
     let banner = "";
     if (ended) {
       const winner = a.mindValue > 0 ? a : b.mindValue > 0 ? b : null;
       const loser = winner === a ? b : a;
-      banner = winner
-        ? `<div class="rs-md-banner"><i class="fas fa-crown"></i>
-             ${winner.name} may now seize control over ${loser.name}.</div>`
-        : `<div class="rs-md-banner">Both minds collapse — a draw.</div>`;
+      if (!winner) {
+        banner = `<div class="rs-md-banner">Both minds collapse — a draw.</div>`;
+      } else {
+        const possessed = !!loser.actor.getFlag("redsteel", "possession");
+        let action = "";
+        if (possessed) {
+          action = `<div class="rs-md-possess-note">
+            <i class="fas fa-hand-sparkles"></i> ${loser.name} is possessed by ${winner.name}.
+            Remove the “Possessed” token status to release them.</div>`;
+        } else if (game.user.isGM) {
+          // Seizing control is a GM-only action, and only for a winner who can
+          // Dominate (any NPC, or a PC with the Domination perk).
+          action = canDominate(winner.actor)
+            ? `<button type="button" class="rs-md-possess"
+                data-winner-uuid="${winner.tokenDoc.uuid}"
+                data-loser-uuid="${loser.tokenDoc.uuid}">
+                <i class="fas fa-hand-sparkles"></i> Seize control</button>`
+            : `<div class="rs-md-possess-note">
+                ${winner.name} lacks the Domination perk and cannot seize control.</div>`;
+        }
+        banner = `<div class="rs-md-banner"><i class="fas fa-crown"></i>
+             ${winner.name} breaks ${loser.name}'s will.
+             ${action}</div>`;
+      }
     }
 
     const sideHtml = (s) => `
@@ -452,14 +530,16 @@ export class MentalDuelApp extends ApplicationV2 {
     const attackBtn = (s, role) => {
       const canControl = s.actor.isOwner || game.user.isGM;
       const ready = this._canAttack(s);
-      const disabled = ended || !canControl || !ready;
+      const disabled = ended || !started || !canControl || !ready;
       const reason = !canControl
         ? "You don't control this combatant"
         : ended
           ? "The duel is over"
-          : !ready
-            ? "Already attacked this round"
-            : "Spend a Free Action to attack";
+          : !started
+            ? "The GM has not started the Mind Bending yet"
+            : !ready
+              ? "Already attacked this round"
+              : "Spend a Free Action to attack";
       return `<button type="button" class="rs-md-attack" data-role="${role}"
         ${disabled ? "disabled" : ""} title="${reason}"
         style="--rs-md-color:${s.color}">
@@ -482,12 +562,14 @@ export class MentalDuelApp extends ApplicationV2 {
         </div>
       </div>
 
+      ${!ended && !started ? this._buildStartHTML() : ""}
+
       <div class="rs-md-actions">
         ${attackBtn(a, "a")}
         ${attackBtn(b, "b")}
       </div>
 
-      ${ended ? "" : this._buildRpsHTML(a, b)}
+      ${ended || !started ? "" : this._buildRpsHTML(a, b)}
 
       ${banner}
 
@@ -500,6 +582,49 @@ export class MentalDuelApp extends ApplicationV2 {
               : "You do not posses the power to end the duel prematurely"
           }">End duel</button>
       </div>`;
+  }
+
+  /**
+   * True once the GM has officially started this duel. The marker lives on the
+   * anchor (attacker) token as the pair key, so a stale flag from a previous
+   * pairing never counts as started for a different duel.
+   */
+  _isStarted() {
+    const anchor = this._token(this._aUuid)?.document;
+    return (
+      anchor?.getFlag("redsteel", "mdStarted") ===
+      rpsPairKey(this._aUuid, this._bUuid)
+    );
+  }
+
+  /** Pre-start panel: a GM start button, or a waiting note for players. */
+  _buildStartHTML() {
+    if (game.user.isGM) {
+      return `<div class="rs-md-start-wrap">
+        <button type="button" class="rs-md-start-duel">
+          <i class="fas fa-play"></i> Start Mind Bending
+        </button>
+        <div class="rs-md-start-note">Neither side can attack until you start.</div>
+      </div>`;
+    }
+    return `<div class="rs-md-start-wrap">
+      <div class="rs-md-start-note"><i class="fas fa-hourglass-half"></i>
+        Waiting for the GM to start the Mind Bending…</div>
+    </div>`;
+  }
+
+  /** GM-only: mark the duel started (unlocks attacks + kicks off the coin toss). */
+  async _onStartDuel() {
+    if (!game.user.isGM) return;
+    const anchor = this._token(this._aUuid)?.document;
+    if (!anchor) return;
+    await anchor.setFlag(
+      "redsteel",
+      "mdStarted",
+      rpsPairKey(this._aUuid, this._bUuid),
+    );
+    // Now that the duel is live, roll the opening coin toss.
+    this._maybeAutoCoinToss();
   }
 
   /** Reads + validates the RPS state stored on the anchor (attacker) token. */
@@ -625,11 +750,20 @@ export class MentalDuelApp extends ApplicationV2 {
       }),
     );
     content
+      .querySelector(".rs-md-start-duel")
+      ?.addEventListener("click", () => this._onStartDuel());
+    content
       .querySelector(".rs-md-end-duel")
       ?.addEventListener("click", () => this._onEndDuel());
     content
       .querySelector(".rs-md-close")
       ?.addEventListener("click", () => this.close());
+
+    // Seize control: the winner (or GM) claims ownership of the broken mind.
+    content.querySelector(".rs-md-possess")?.addEventListener("click", (ev) => {
+      const { winnerUuid, loserUuid } = ev.currentTarget.dataset;
+      requestPossession(loserUuid, winnerUuid);
+    });
 
     // --- RPS gamble controls (coin toss auto-rolls; no manual trigger) ---
     const anchorUuid = this._aUuid;
@@ -654,8 +788,10 @@ export class MentalDuelApp extends ApplicationV2 {
   /** GM-only: terminate the duel for everyone (broadcast + local close). */
   _onEndDuel() {
     if (!game.user.isGM) return; // button is disabled for players; guard anyway
-    // Clear any lingering RPS gamble state on the anchor token.
-    this._token(this._aUuid)?.document?.unsetFlag("redsteel", "mdRps");
+    // Clear any lingering RPS gamble + started state on the anchor token.
+    const anchorDoc = this._token(this._aUuid)?.document;
+    anchorDoc?.unsetFlag("redsteel", "mdRps");
+    anchorDoc?.unsetFlag("redsteel", "mdStarted");
     // Clear the persisted "active duel" marker so it won't resume.
     game.settings.set("redsteel", "mentalDuelActive", null);
     game.socket.emit(SOCKET, { type: "closeMentalDuel" });
@@ -767,6 +903,8 @@ export class MentalDuelApp extends ApplicationV2 {
    */
   _maybeAutoCoinToss() {
     if (game.user.id !== game.users.activeGM?.id) return;
+    // The gamble does not begin until the GM has started the duel.
+    if (!this._isStarted()) return;
     const round = game.combat?.round ?? 0;
     const state = this._rpsState();
     if (state?.round === round) return;
@@ -1207,4 +1345,158 @@ export async function handleVoluntaryMentalDuel(data) {
   if (!aTok || !bTok) return;
 
   openMentalDuel(aTok, bTok);
+}
+
+/* -------------------------------------------- */
+/*  Possession (seize control after the duel)   */
+/* -------------------------------------------- */
+
+/**
+ * The winner claims control of the loser's token. Ownership changes require GM
+ * authority, so this routes to the active GM (locally if we are the GM,
+ * otherwise over the system socket). Both arguments are TOKEN document uuids.
+ * @param {string} loserUuid  - token uuid of the mind that broke.
+ * @param {string} winnerUuid - token uuid of the victor.
+ */
+function requestPossession(loserUuid, winnerUuid) {
+  const gm = game.users.activeGM;
+  if (!gm) {
+    ui.notifications.warn("A GM must be connected to seize control.");
+    return;
+  }
+  const data = { loserUuid, winnerUuid };
+  if (game.user.id === gm.id) applyPossessionAsGM(data);
+  else game.socket.emit(SOCKET, { type: "mentalDuelPossess", ...data });
+}
+
+/** Socket entry point: only the active GM (single authority) applies it. */
+export async function handleMentalDuelPossess(data) {
+  if (game.user.id !== game.users.activeGM?.id) return;
+  await applyPossessionAsGM(data);
+}
+
+/**
+ * Authoritative possession grant. Runs on the active GM.
+ *
+ * Grants every non-GM owner of the WINNER actor OWNER permission on the LOSER
+ * actor (shared control — the loser's own owners keep their access), records
+ * the exact prior levels so removal can restore them, and applies the
+ * "possessed" token marker. Removing that status effect ends the possession and
+ * restores ownership (see documents/effects.mjs `_onDelete`).
+ * @param {{loserUuid: string, winnerUuid: string}} data - TOKEN document uuids.
+ */
+async function applyPossessionAsGM({ loserUuid, winnerUuid }) {
+  const loserTok = fromUuidSync(loserUuid);
+  const winnerTok = fromUuidSync(winnerUuid);
+  const loserActor = loserTok?.actor;
+  const winnerActor = winnerTok?.actor;
+  if (!loserActor || !winnerActor) return;
+
+  // Idempotent — don't stack a second possession on an already-possessed mind.
+  if (loserActor.getFlag("redsteel", "possession")) {
+    ui.notifications.info(`${loserActor.name} is already possessed.`);
+    return;
+  }
+
+  // Enforce the seize rule server-side too: only a winner who can Dominate.
+  if (!canDominate(winnerActor)) {
+    ui.notifications.warn(
+      `${winnerActor.name} lacks the Domination perk to seize control.`,
+    );
+    return;
+  }
+
+  const OWNER = CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER;
+
+  // Every non-GM player who owns the winner becomes an owner of the loser.
+  const userIds = game.users
+    .filter((u) => !u.isGM && winnerActor.testUserPermission(u, "OWNER"))
+    .map((u) => u.id);
+
+  // Snapshot the exact prior level per granted user (null = key was absent), so
+  // ending possession restores it precisely without disturbing other owners.
+  // A partial merge is fine when adding keys (Foundry merges ownership); the
+  // wholesale replace is only needed on release, where keys must be deleted.
+  const ownership = loserActor.ownership ?? {};
+  const grants = {};
+  const update = {};
+  for (const id of userIds) {
+    grants[id] = id in ownership ? ownership[id] : null;
+    update[`ownership.${id}`] = OWNER;
+  }
+
+  await loserActor.setFlag("redsteel", "possession", {
+    possessorActorUuid: winnerActor.uuid,
+    possessorName: winnerActor.name,
+    grants,
+  });
+
+  // Apply the visible token marker BEFORE the ownership change so that the
+  // ownership update lands last: the updateActor→redraw hook (redsteel.mjs)
+  // then rebuilds the newly-owned token's mesh with the effect icon already in
+  // place, avoiding a broken sprite on the possessing player's client.
+  await game.redsteel.applyEffect(loserActor, "possessed");
+
+  if (userIds.length) await loserActor.update(update);
+
+  // Force every client to rebuild the possessed token's sprite. On the client
+  // that just gained ownership the mesh can be left unrendered (the placeable
+  // is still there — moving/selecting it redraws it); the reactive updateActor
+  // hook does not always catch it, so broadcast an explicit redraw that runs
+  // after all the possession updates have propagated.
+  broadcastPossessionRender(loserActor.uuid);
+
+  const controlNote = userIds.length
+    ? `<p style="opacity:.85;font-size:12px;">Control of <b>${loserActor.name}</b> passes to ${winnerActor.name}'s player(s) until the “Possessed” status is removed.</p>`
+    : `<p style="opacity:.85;font-size:12px;">No player owns ${winnerActor.name}; the marker is applied for the GM to puppet.</p>`;
+
+  await ChatMessage.create({
+    speaker: ChatMessage.getSpeaker({ actor: winnerActor }),
+    content: `
+      <div style="text-align:center;">
+        <p><i class="fas fa-hand-sparkles"></i> <b>${winnerActor.name}</b> seizes control of <b>${loserActor.name}</b>.</p>
+        ${controlNote}
+      </div>`,
+  });
+}
+
+/**
+ * Un-stick the rendering of a token whose ownership just changed on this client.
+ * A token you have just gained ownership of (especially an UNLINKED one, whose
+ * synthetic actor is rebuilt from its ActorDelta on the change) can be left
+ * invisible until the next canvas interaction — a plain
+ * `CanvasVisibility#restrictVisibility` / `perception.update` does NOT fix it;
+ * only re-controlling the token does (verified in play). So imitate the click:
+ * synchronously control then release each owned token (net-zero on the player's
+ * selection, no visible flicker) which kicks the vision-source machinery. Run a
+ * few times so a pass lands after the delta rebuild that re-hides it settles.
+ * @param {string} actorUuid
+ */
+export function refreshPossessedActorTokens(actorUuid) {
+  const kick = () => {
+    if (!canvas?.ready) return;
+    canvas.perception?.update({ initializeVision: true, refreshVision: true });
+    canvas.visibility?.restrictVisibility?.();
+    const actor = fromUuidSync(actorUuid);
+    for (const token of actor?.getActiveTokens?.() ?? []) {
+      if (!token.document?.isOwner) continue; // only owners can control it
+      const wasControlled = token.controlled;
+      token.control({ releaseOthers: false });
+      if (!wasControlled) token.release();
+    }
+  };
+  kick();
+  setTimeout(kick, 250);
+  setTimeout(kick, 700);
+}
+
+/** GM helper: tell every other client to redraw the tokens, and do it locally. */
+function broadcastPossessionRender(actorUuid) {
+  game.socket.emit(SOCKET, { type: "possessionRender", actorUuid });
+  refreshPossessedActorTokens(actorUuid);
+}
+
+/** Socket receiver: rebuild the possessed actor's token sprites on this client. */
+export function handlePossessionRender(data) {
+  refreshPossessedActorTokens(data.actorUuid);
 }

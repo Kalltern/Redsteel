@@ -787,7 +787,7 @@
             },
             "krvavyStit": {
               "label": "Krvavý štít",
-              "description": "15 CP; Škola Krve - Expert. Ručně — řeší se u stolu."
+              "description": "15 CP; Škola Krve - Expert. Každé utržené zranění vytvoří do konce kola fyzický štít o síle poloviny utržených Životů. Automatizováno."
             },
             "darKrve": {
               "label": "Dar krve",
@@ -4384,6 +4384,12 @@
       "type3": "Extra Efekt typ 3"
     },
     "Items": {
+      "AbsorbBlood": {
+        "name": "Vstřebání krve",
+        "description": "<p>Zruší celou svou Zásobu krve a vyléčí si Životy rovné svému Maximálnímu převodu. Nemůže vyléčit více Životů, než kolik jich zrušil ze Zásoby.</p>",
+        "result": "Spálil {discarded} ze Zásoby krve a vyléčil si {healed} Životů.",
+        "noReserve": "Žádná Zásoba krve ke vstřebání."
+      },
       "AccurateShot": {
         "name": "Přesná střela"
       },

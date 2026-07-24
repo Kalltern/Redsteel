@@ -95,6 +95,9 @@ import {
   requestVoluntaryMentalDuel,
   handleVoluntaryMentalDuel,
   handleMentalDuelRps,
+  handleMentalDuelPossess,
+  handlePossessionRender,
+  refreshPossessedActorTokens,
   resumeMentalDuel,
 } from "./utils/mentalDuel.mjs";
 import { getSpellPower } from "./utils/spellPower.mjs";
@@ -669,6 +672,18 @@ Hooks.once("ready", () => {
 });
 
 Hooks.once("ready", () => {
+  // When a token's actor ownership changes (e.g. a Mind Bending possession
+  // grant/release), a client that just gained ownership can be left with the
+  // token invisible until the next canvas interaction. Re-control the token to
+  // un-stick it (see refreshPossessedActorTokens). Fires on every client; only
+  // the one that owns the token acts, so the GM is unaffected.
+  Hooks.on("updateActor", (actor, changed) => {
+    if (!("ownership" in changed) || !canvas?.ready) return;
+    refreshPossessedActorTokens(actor.uuid);
+  });
+});
+
+Hooks.once("ready", () => {
   console.log("REDSTEEL | Socket Listener Registered");
 
   game.socket.on(SOCKET, async (data) => {
@@ -721,6 +736,16 @@ Hooks.once("ready", () => {
     // RPS gamble — only the active GM (single authority) mutates the state.
     if (data.type === "mentalDuelRps") {
       await handleMentalDuelRps(data);
+    }
+
+    // Seize control — only the active GM applies the ownership grant + marker.
+    if (data.type === "mentalDuelPossess") {
+      await handleMentalDuelPossess(data);
+    }
+
+    // Not GM-gated: every client rebuilds the possessed token's sprite locally.
+    if (data.type === "possessionRender") {
+      handlePossessionRender(data);
     }
 
     // ------------------------
@@ -1044,7 +1069,7 @@ function rollItemMacro(itemUuid) {
 Hooks.on("createChatMessage", async (message) => {
   try {
     if (!message.isRoll) return;
-    if (!game.user.isGM && message.user.id !== game.user.id) return;
+    if (!game.user.isGM && message.author?.id !== game.user.id) return;
     const flavor = message.flavor ?? "";
 
     // Read existing rollName from flags.redsteel (macro or previous messages)

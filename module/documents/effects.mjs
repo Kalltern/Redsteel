@@ -460,7 +460,7 @@ export class RedsteelActiveEffect extends ActiveEffect {
   static async applyEffect(
     actor,
     effectId,
-    { stacks = 1, turns, caster = null, school = null } = {},
+    { stacks = 1, turns, caster = null, school = null, poolOverride = null } = {},
   ) {
     const resolved = resolveEffectDefinition(effectId);
     if (!resolved) {
@@ -569,16 +569,21 @@ export class RedsteelActiveEffect extends ActiveEffect {
     if (def.shield) {
       shieldConfig = foundry.utils.deepClone(def.shield);
       const { base = 0, perSpellPower = 0 } = shieldConfig.pool ?? {};
-      // An explicit `stacks` (GM granting a pool by hand, or a spell passing a
-      // fixed size) wins over the SK formula.
+      // `poolOverride` sets the pool directly (used by Krvavý štít, whose size is
+      // half the Life just lost — including 1, which the `stacks > 1` branch
+      // below would otherwise read as "no explicit pool" and collapse to the SK
+      // formula). Otherwise an explicit `stacks` (a GM granting a pool by hand,
+      // or a spell passing a fixed size) wins over that formula.
       const scaled =
-        stacks > 1
-          ? stacks
-          : base +
-            perSpellPower *
-              (sourceCaster
-                ? getSpellPower(sourceCaster, school ?? "spirit")
-                : 0);
+        poolOverride != null
+          ? poolOverride
+          : stacks > 1
+            ? stacks
+            : base +
+              perSpellPower *
+                (sourceCaster
+                  ? getSpellPower(sourceCaster, school ?? "spirit")
+                  : 0);
       initialStacks = Math.max(0, Math.min(Math.floor(scaled), maxStacks));
     }
 
@@ -756,6 +761,14 @@ export class RedsteelActiveEffect extends ActiveEffect {
         await existing.update({
           "flags.redsteel.stacks": newStacks,
           "flags.statuscounter.value": newStacks,
+          // A shield that stacks (Krvavý štít) must keep its absorb config in
+          // sync, and (re)writes it here so an effect that was created without
+          // one — e.g. toggled straight from the token HUD — still soaks damage
+          // rather than just growing an inert counter. `max` tracks the peak.
+          ...(shieldConfig && {
+            "flags.redsteel.shield": { ...shieldConfig, max: newStacks },
+            "flags.statuscounter.visible": true,
+          }),
         });
 
         await existing.updateCorrosionChange();
@@ -1193,6 +1206,33 @@ export class RedsteelActiveEffect extends ActiveEffect {
     if (!effectId) return;
 
     await RedsteelActiveEffect._removeCombatModifiers(actor, effectId);
+
+    // Possession ends when the "Possessed" marker is removed. Ownership changes
+    // need GM authority, so only the active GM restores — regardless of who
+    // cleared the status. Restore the exact prior levels recorded at seize time
+    // (removing keys that were absent before) and drop the tracking flag.
+    if (effectId === "possessed" && game.user.id === game.users.activeGM?.id) {
+      const possession = actor.getFlag("redsteel", "possession");
+      if (possession) {
+        // Rebuild the full ownership map and replace it wholesale. Foundry
+        // merges partial ownership updates, so `-=` key removal is unreliable;
+        // {diff:false, recursive:false} forces a deterministic replace.
+        const ownership = foundry.utils.deepClone(actor.ownership ?? {});
+        for (const [userId, prior] of Object.entries(possession.grants ?? {})) {
+          if (prior === null || prior === undefined) delete ownership[userId];
+          else ownership[userId] = prior;
+        }
+        await actor.update({ ownership }, { diff: false, recursive: false });
+        await actor.unsetFlag("redsteel", "possession");
+        await ChatMessage.create({
+          speaker: ChatMessage.getSpeaker({ actor }),
+          content: `<p style="text-align:center;">
+            <b>${actor.name}</b> is released from possession${
+              possession.possessorName ? ` by ${possession.possessorName}` : ""
+            }; control returns to normal.</p>`,
+        });
+      }
+    }
 
     // Wounding Impale: Impale applies the Rooted effect. When such a Root is
     // torn free, the target takes the Bleeding stacks the applying attack

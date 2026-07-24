@@ -312,6 +312,12 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
         (Number(weapon.system.defense) || 0) + (Number(mainQuality.defense) || 0);
       const offDefense =
         (Number(offProps?.defense) || 0) + (Number(offQuality.defense) || 0);
+      // Characters fold weapon defense into meleeDefense.bonus during
+      // prepareDerivedData so the sheet shows the real number, which means it
+      // already sits inside defenseRating here. NPCs have no weapon sets, so
+      // they still pick it up at roll time.
+      const weaponDefense =
+        actor.type === "character" ? 0 : mainDefense + offDefense;
       const mainCrit =
         (Number(weapon.system.critDefense) || 0) +
         (Number(mainQuality.critDefense) || 0);
@@ -342,7 +348,7 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
 
       const rollData = {
         defenseRating,
-        weaponDefense: mainDefense + offDefense,
+        weaponDefense,
         doctrineDefenseBonus,
         abilityDefense,
         overwhelmPenalty,

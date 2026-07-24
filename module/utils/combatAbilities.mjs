@@ -1799,6 +1799,15 @@ function renderWeaponLoadoutsDialog(actor) {
 // non attack ability resolution
 
 async function runUtilityAbility(actor, ability, modifiers = []) {
+  // Vstřebání krve (Blood Absorption): cancel the entire Blood Reserve and heal
+  // Life equal to the Blood School's Maximum Transfer, but never more Life than
+  // was cancelled from the Reserve. Keyed off `system.key` the same way stances
+  // are, so a single pack item drives the whole action.
+  if (ability.system.key === "absorbBlood") {
+    await runAbsorbBlood(actor, ability);
+    return;
+  }
+
   let description = ability.system.description || "";
 
   for (const mod of modifiers) {
@@ -1858,5 +1867,52 @@ ${effectsTable}
     flags: {
       ...(hasEffects && { effects: mechanicalEffects }),
     },
+  });
+}
+
+// Vstřebání krve — discard the caster's whole Blood Reserve and heal Life equal
+// to the Maximum Transfer, capped by both the amount discarded and missing Life.
+async function runAbsorbBlood(actor, ability) {
+  const reserve = Number(actor.system.stats.bloodPool?.value) || 0;
+  if (reserve <= 0) {
+    ui.notifications.warn(
+      game.i18n.localize("REDSTEEL.Items.AbsorbBlood.noReserve"),
+    );
+    return;
+  }
+
+  const transfer = Number(actor.system.stats.bloodPool?.transfer) || 0;
+  const health = Number(actor.system.stats.health?.value) || 0;
+  const healthMax = Number(actor.system.stats.health?.max) || 0;
+
+  // Heal the Max Transfer, but never more than what was cancelled from the
+  // Reserve, and never past the Life ceiling.
+  const wanted = Math.min(reserve, transfer);
+  const newHealth = Math.min(healthMax, health + wanted);
+  const healed = newHealth - health;
+
+  await actor.update({
+    "system.stats.bloodPool.value": 0,
+    "system.stats.health.value": newHealth,
+  });
+
+  const label = ability.localizedName ?? ability.name;
+  const summary = game.i18n.format("REDSTEEL.Items.AbsorbBlood.result", {
+    discarded: reserve,
+    healed,
+  });
+
+  await ChatMessage.create({
+    speaker: ChatMessage.getSpeaker({ actor }),
+    flavor: `
+<span style="display:inline-flex; align-items:center;">
+  <img src="${ability.img}" width="36" height="36" style="margin-right:8px;">
+  <strong style="font-size:20px;">${label}</strong>
+</span>
+<hr>
+<div style="text-align:center; font-size:16px; color:#a01818;">
+  ${summary}
+</div>
+`,
   });
 }

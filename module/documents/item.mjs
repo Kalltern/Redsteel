@@ -290,6 +290,7 @@ export class RedsteelItem extends Item {
             "Toxicity",
             "Corruption",
             "TemporaryHealth",
+            "TemporaryHealthMagic",
           ],
         };
       }
