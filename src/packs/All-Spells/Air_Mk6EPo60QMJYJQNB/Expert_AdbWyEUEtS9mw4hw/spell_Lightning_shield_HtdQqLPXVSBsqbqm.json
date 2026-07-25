@@ -115,12 +115,13 @@
       "effect3": "0",
       "effect4": "0",
       "bleed": null,
-      "extra1": null,
+      "extra1": -1,
       "extra2": null,
       "extra3": null,
-      "stagger": null
+      "stagger": null,
+      "effectName1": "lightning_shield"
     },
-    "effectType1": "",
+    "effectType1": "custom",
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",

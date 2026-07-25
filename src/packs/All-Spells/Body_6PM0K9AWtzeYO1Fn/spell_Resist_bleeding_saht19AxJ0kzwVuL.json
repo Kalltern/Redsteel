@@ -109,9 +109,10 @@
       "effect2": "0",
       "effect3": "0",
       "effect4": "0",
-      "extra1": -1
+      "extra1": -1,
+      "effectName1": "resist_bleed"
     },
-    "effectType1": "resist_bleed"
+    "effectType1": "custom"
   },
   "effects": [],
   "folder": "6PM0K9AWtzeYO1Fn",

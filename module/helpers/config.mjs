@@ -1344,10 +1344,10 @@ REDSTEEL.effectDefinitions = {
   },
 
   // "Ochrana před teplem / chladem / bouří" — +2 elemental Az.
-  protection_heat: {
-    name: "Protection from Heat",
+  protection_warmth: {
+    name: "Protection from Warmth",
     img: "icons/magic/defensive/shield-barrier-glowing-triangle-orange.webp",
-    statuses: ["protection_heat"],
+    statuses: ["protection_warmth"],
     changes: [
       {
         key: "system.armor.fire.bonus",
@@ -1383,6 +1383,134 @@ REDSTEEL.effectDefinitions = {
         value: 2,
       },
     ],
+    stackBehavior: "ignore",
+  },
+
+  // "Ochrana před žárem" (Protection from Heat) — the Expert-rank upgrade of
+  // Protection from Warmth: +10 Fire armor and outright immunity to Burning.
+  // The two never coexist ("Není slučitelné s Ochranou před teplem"), which is
+  // enforced by EFFECT_OVERRIDES in effects.mjs.
+  protection_heat: {
+    name: "Protection from Heat",
+    img: "icons/magic/defensive/shield-barrier-glowing-triangle-orange.webp",
+    statuses: ["protection_heat"],
+    changes: [
+      {
+        key: "system.armor.fire.bonus",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: 10,
+      },
+      {
+        key: "system.effectMods.burn.immune",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.OVERRIDE,
+        value: true,
+      },
+    ],
+    stackBehavior: "ignore",
+  },
+
+  // "Voděodolnost" (Waterproofing) — cast on a creature it grants immunity to
+  // the Wet effect for SK × 5 minutes. Out-of-combat duration, so no rounds.
+  waterproof: {
+    name: "Waterproof",
+    img: "icons/magic/water/water-drop-swirl-blue.webp",
+    statuses: ["waterproof"],
+    changes: [
+      {
+        key: "system.effectMods.wet.immune",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.OVERRIDE,
+        value: true,
+      },
+    ],
+    stackBehavior: "ignore",
+  },
+
+  // "Odkamenění" (Depetrification) — after reverting the target it grants
+  // immunity to Petrification for SK turns. The duration is baked from the
+  // caster's Earth Spell Power in applyEffect's dynamic block.
+  petrify_ward: {
+    name: "Petrification Ward",
+    img: "icons/commodities/stone/paver-cobble-white.webp",
+    statuses: ["petrify_ward"],
+    useDuration: true,
+    defaultTurns: 1, // fallback only — overwritten with SK at apply time
+    changes: [
+      {
+        key: "system.effectMods.petrify.immune",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.OVERRIDE,
+        value: true,
+      },
+    ],
+    stackBehavior: "refresh",
+  },
+
+  // "Ochrana mysli" (Mind ward) — immunity to Disorientation, plus +20 % to
+  // Mind Bending while DEFENDING a Mental Duel. The defence bonus is read off
+  // this status in mentalDuel.mjs (it must not help the warded actor when they
+  // attack, so it cannot live in `changes`). The −20 % to an enemy's chance of
+  // starting a Mental combat stays manual.
+  mind_ward: {
+    name: "Mind Ward",
+    img: "icons/magic/control/hypnosis-mesmerism-eye.webp",
+    statuses: ["mind_ward"],
+    changes: [
+      {
+        key: "system.effectMods.disorientation.immune",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.OVERRIDE,
+        value: true,
+      },
+    ],
+    stackBehavior: "ignore",
+  },
+
+  // "Čistý vzduch" (Clean air) — protection from poisonous and intoxicating
+  // gases for SK hours. Environmental, with no combat numbers of its own, so
+  // the status is purely a marker the GM adjudicates against. Deliberately NOT
+  // full Poison immunity — the spell wards gases, not venom.
+  clean_air: {
+    name: "Clean Air",
+    img: "icons/magic/air/wind-tornado-cyclone-white.webp",
+    statuses: ["clean_air"],
+    stackBehavior: "ignore",
+  },
+
+  // "Odpuzovač" (Repellent) — repels insects for SK hours. Marker only; what
+  // it turns away is a GM call, and it carries no combat modifier.
+  insect_repellent: {
+    name: "Insect Repellent",
+    img: "icons/svg/aura.svg",
+    statuses: ["insect_repellent"],
+    stackBehavior: "ignore",
+  },
+
+  // "Ohnivý štít" (Flame Shield) — the aura hurts anyone attacking its bearer
+  // for 1d4 + SK/2. The retaliation is rolled manually (recast the spell for
+  // 0 mana when the bearer is attacked), so this is a marker that makes the
+  // aura visible and locks out the other shields.
+  flame_shield: {
+    name: "Flame Shield",
+    img: "icons/svg/fire.svg",
+    statuses: ["flame_shield"],
+    stackBehavior: "ignore",
+  },
+
+  // "Bleskový štít" (Lightning shield) — anyone who hits the bearer is
+  // Staggered (100 %, applied by hand from the Stagger status). Marker +
+  // shield exclusivity, same as Flame Shield.
+  lightning_shield: {
+    name: "Lightning Shield",
+    img: "icons/magic/lightning/orb-ball-spiral-blue.webp",
+    statuses: ["lightning_shield"],
+    stackBehavior: "ignore",
+  },
+
+  // "Vzdušný štít" (Air shield) — 30 + SK % to deflect projectiles and half
+  // damage from Ranged/Thrown attacks. Both are rolled manually when the
+  // bearer is shot at; the rules do not make it exclusive with the shields.
+  air_shield: {
+    name: "Air Shield",
+    img: "icons/magic/air/wind-tornado-cyclone-white.webp",
+    statuses: ["air_shield"],
     stackBehavior: "ignore",
   },
 

@@ -825,6 +825,12 @@ export class MentalDuelApp extends ApplicationV2 {
     const attacker = buildSide(role === "a" ? aTok : bTok);
     const defender = buildSide(role === "a" ? bTok : aTok);
 
+    // "Ochrana mysli" (Mind ward) — +20 % to Mind Bending, but only when
+    // defending. Applied here rather than as an Active Effect change on
+    // system.skills.mindBending.bonus, which would also boost the warded
+    // actor's own attacks.
+    if (defender.actor.statuses?.has("mind_ward")) defender.rating += 20;
+
     if (!this._canAttack(attacker)) {
       ui.notifications.warn(`${attacker.name} has already attacked this round.`);
       return;

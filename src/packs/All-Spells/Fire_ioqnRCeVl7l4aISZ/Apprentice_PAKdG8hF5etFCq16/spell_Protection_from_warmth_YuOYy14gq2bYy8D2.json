@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/flame-burning-yellow-orange.webp",
   "system": {
-    "description": "<p>Protects against high temperatures for {{spellPower}} hours. <br />Can be cast on a group (cost per target).<br />Increases Fire Armor by +2. <br />Not compatible with Protection from Heat.<br /><br />Not fully automated. Resolve this effect manually</p>",
+    "description": "<p>Protects against high temperatures for {{spellPower}} hours. <br />Can be cast on a group (cost per target).<br />Increases Fire Armor by +2. <br />Not compatible with Protection from Heat.</p>",
     "options": [
       "divine",
       "magic"
@@ -135,9 +135,10 @@
       "extra1": -1,
       "extra2": null,
       "extra3": null,
-      "stagger": null
+      "stagger": null,
+      "effectName1": "protection_warmth"
     },
-    "effectType1": "protection_heat",
+    "effectType1": "custom",
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",

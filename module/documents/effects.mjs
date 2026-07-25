@@ -15,11 +15,43 @@ export class RedsteelActiveEffect extends ActiveEffect {
     paralyze: ["stun", "stagger"],
     terror: ["fear"],
     guard: ["defensive_stance"],
-    // "Není slučitelný s dalšími Štíty (ani podobnými)" — the three shields
-    // replace one another, so at most one absorb pool is ever active.
-    shield_physical: ["shield_magic", "shield_elemental"],
-    shield_magic: ["shield_physical", "shield_elemental"],
-    shield_elemental: ["shield_physical", "shield_magic"],
+    // "Není slučitelný s dalšími Štíty (ani podobnými)" — the three absorb
+    // shields plus the two retaliation auras (Flame / Lightning shield) all
+    // replace one another, so a target is only ever under one of them.
+    shield_physical: [
+      "shield_magic",
+      "shield_elemental",
+      "flame_shield",
+      "lightning_shield",
+    ],
+    shield_magic: [
+      "shield_physical",
+      "shield_elemental",
+      "flame_shield",
+      "lightning_shield",
+    ],
+    shield_elemental: [
+      "shield_physical",
+      "shield_magic",
+      "flame_shield",
+      "lightning_shield",
+    ],
+    flame_shield: [
+      "shield_physical",
+      "shield_magic",
+      "shield_elemental",
+      "lightning_shield",
+    ],
+    lightning_shield: [
+      "shield_physical",
+      "shield_magic",
+      "shield_elemental",
+      "flame_shield",
+    ],
+    // "Ochrana před teplem" vs "Ochrana před žárem" — the apprentice and expert
+    // heat wards are explicitly not compatible, so casting one clears the other.
+    protection_warmth: ["protection_heat"],
+    protection_heat: ["protection_warmth"],
   };
   static registerStatusCounterIntegration() {
     if (!game.user.isGM) {
@@ -619,6 +651,13 @@ export class RedsteelActiveEffect extends ActiveEffect {
         mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
         value: -penalty,
       });
+    }
+
+    // Depetrification — the Petrification ward it leaves behind lasts SK turns
+    // of the target's own turns (Earth Spell Power).
+    if (effectId === "petrify_ward" && sourceCaster) {
+      turnsDuration =
+        getSpellPower(sourceCaster, school ?? "earth") || turnsDuration;
     }
 
     // Flicker — fixed −3 Initiative (in the definition's changes); lasts

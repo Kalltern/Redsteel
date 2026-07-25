@@ -116,11 +116,12 @@
       "extra2": 0,
       "extra3": 0,
       "stagger": null,
-      "bleed": null
+      "bleed": null,
+      "effectName1": "frenzy"
     },
     "attributeTest": "will",
     "testModifier": "",
-    "effectType1": "frenzy",
+    "effectType1": "custom",
     "effectType2": "",
     "effectType3": ""
   },

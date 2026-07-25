@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/water/snowflake-ice-blue.webp",
   "system": {
-    "description": "<p>Protects against low temperatures for {{math spellPower \"*\" 1}} hours, can be cast on a group (cost per Target). <br />Increases Frost armor by +2.<br /><br />Not fully automated. Resolve this effect manually</p>",
+    "description": "<p>Protects against low temperatures for {{math spellPower \"*\" 1}} hours, can be cast on a group (cost per Target). <br />Increases Frost armor by +2.</p>",
     "options": [
       "divine",
       "magic"
@@ -115,12 +115,13 @@
       "effect3": "0",
       "effect4": "0",
       "bleed": null,
-      "extra1": null,
+      "extra1": -1,
       "extra2": null,
       "extra3": null,
-      "stagger": null
+      "stagger": null,
+      "effectName1": "protection_cold"
     },
-    "effectType1": "",
+    "effectType1": "custom",
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
