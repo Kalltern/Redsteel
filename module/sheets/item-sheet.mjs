@@ -1,5 +1,11 @@
 import { prepareActiveEffectCategories } from "../helpers/effects.mjs";
 import { SUBSTANCES, BASES } from "../utils/alchemy.mjs";
+import {
+  canResyncItem,
+  getResyncBackup,
+  resyncItemFromSource,
+  undoItemResync,
+} from "../utils/itemResync.mjs";
 
 const { api, sheets } = foundry.applications;
 
@@ -34,6 +40,8 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
       addRaceChoice: this._addRaceChoice,
       removeRaceChoice: this._removeRaceChoice,
       toggleRaceChoiceEffect: this._toggleRaceChoiceEffect,
+      resyncItem: this._resyncItem,
+      undoResync: this._undoResync,
     },
     form: {
       submitOnChange: true,
@@ -41,6 +49,52 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
     // Custom property that's merged into `this.options`
     dragDrop: [{ dragSelector: "[data-drag]", dropSelector: null }],
   };
+
+  /* -------------------------------------------- */
+
+  /**
+   * Add the ruleset-resync entries to the header menu (the one holding "Configure
+   * Sheet" and "Configure Ownership").
+   *
+   * `super` may hand back the array stored on the application's options, so it
+   * is copied before pushing — mutating it directly would append a duplicate
+   * entry on every re-render. Both entries are decided fresh here on each
+   * render, which is what makes "Undo re-sync" appear only while a snapshot
+   * exists and vanish again once it is used.
+   *
+   * @override
+   */
+  _getHeaderControls() {
+    const controls = [...super._getHeaderControls()];
+
+    if (canResyncItem(this.document)) {
+      controls.push({
+        icon: "fa-solid fa-rotate",
+        label: game.i18n.localize("REDSTEEL.Resync.Action"),
+        action: "resyncItem",
+      });
+    }
+
+    if (this.document?.isOwner && getResyncBackup(this.document)) {
+      controls.push({
+        icon: "fa-solid fa-rotate-left",
+        label: game.i18n.localize("REDSTEEL.Resync.Undo"),
+        action: "undoResync",
+      });
+    }
+
+    return controls;
+  }
+
+  static async _resyncItem() {
+    await resyncItemFromSource(this.document);
+    this.render();
+  }
+
+  static async _undoResync() {
+    await undoItemResync(this.document);
+    this.render();
+  }
 
   /* -------------------------------------------- */
 

@@ -351,6 +351,22 @@ export class RedsteelActiveEffect extends ActiveEffect {
 
     console.log("Redsteel | Processing round:", combat.round);
 
+    // Krvavý štít is strictly "until the end of the round". Clear every Blood
+    // Shield in the scene at the top of each round so it can never carry into
+    // the next one — this catches bearers who are not combatants (whose effects
+    // the per-combatant loop below never decrements) and any that were created
+    // without a rounds counter. A shield raised later this round is untouched
+    // and expires at the next round start.
+    const roundScene = combat.scene ?? canvas.scene;
+    for (const token of roundScene?.tokens ?? []) {
+      const actor = token.actor;
+      if (!actor) continue;
+      const bloodShields = actor.effects.filter((e) =>
+        e.statuses?.has("blood_shield"),
+      );
+      for (const bloodShield of bloodShields) await bloodShield.delete();
+    }
+
     for (const combatant of combat.combatants.values()) {
       const actor = combatant.actor;
       if (!actor) continue;

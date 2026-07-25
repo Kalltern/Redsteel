@@ -35,12 +35,6 @@
       "system": {
         "changes": [
           {
-            "key": "system.secondaryAttributes.res.bonus",
-            "value": -1,
-            "priority": null,
-            "type": "add"
-          },
-          {
             "key": "system.schools.earth.bonus",
             "value": 1,
             "priority": null,

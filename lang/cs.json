@@ -4383,6 +4383,27 @@
       "type2": "Extra Efekt typ 2",
       "type3": "Extra Efekt typ 3"
     },
+    "Resync": {
+      "Action": "Sesynchronizovat s pravidly",
+      "Undo": "Vrátit sesynchronizování",
+      "ConfirmTitle": "Sesynchronizovat s pravidly",
+      "ConfirmBody": "Nahradit <strong>{item}</strong> čerstvou kopií <strong>{source}</strong> z {pack}? Přepíše to na této kopii úplně vše, včetně utracených přehozů, odolnosti a množství. Akci lze poté vrátit zpět.",
+      "NotFound": "Verze předmětu „{item}“ nebyla nalezena v žádném kompendiu předmětů. Mohl být přejmenován, nebo v kompendiu vůbec není.",
+      "PickTitle": "Vyber zdroj z pravidel",
+      "PickBody": "Předmět s názvem <strong>{item}</strong> obsahuje více kompendií. Ze kterého se má sesynchronizovat?",
+      "PickConfirm": "Sesynchronizovat",
+      "PickCancel": "Zrušit",
+      "UndoTitle": "Vrátit sesynchronizování",
+      "UndoBody": "Obnovit <strong>{item}</strong> do stavu před sesynchronizováním z {when}?",
+      "Done": "{item} byl sesynchronizován s pravidly.",
+      "UndoDone": "{item} byl obnoven do stavu před sesynchronizováním.",
+      "NoSource": "Tento předmět nemá zaznamenaný zdroj v kompendiu, nelze jej sesynchronizovat.",
+      "SourceMissing": "Zdrojový předmět se nepodařilo najít ({uuid}). Mohl být přesunut, přejmenován nebo smazán.",
+      "TypeMismatch": "Zdroj je typu {from}, ale tento předmět je typu {to}, sesynchronizování bylo zrušeno.",
+      "NoBackup": "U tohoto předmětu není co vracet zpět.",
+      "NoPermission": "Nemáš oprávnění upravovat tento předmět.",
+      "UnknownTime": "dřívějšího data"
+    },
     "Items": {
       "AbsorbBlood": {
         "name": "Vstřebání krve",

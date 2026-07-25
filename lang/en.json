@@ -426,11 +426,11 @@
               "description": "5 CP. Aim is reduced after a hit. Sneak Attack: adds Aim. Manual — resolved at the table."
             },
             "draciSpanek": {
-              "label": "Dragon's Sleep",
+              "label": "Dragon Sleep",
               "description": "10 CP; Šermíř IV. Manual — resolved at the table."
             },
             "draciStraz": {
-              "label": "Dragon's Guard",
+              "label": "Dragon Guard",
               "description": "10 CP; Šermíř V. Manual — resolved at the table."
             },
             "chargeDamage": {
@@ -1875,7 +1875,7 @@
               "description": "5 SP. Manual — resolved at the table."
             },
             "petTrvani": {
-              "label": "Firecrackers: Duration +50%",
+              "label": "Explosives: Duration +50%",
               "description": "5 SP. Manual — resolved at the table."
             },
             "traskavice": {
@@ -1903,23 +1903,23 @@
               "description": "20 SP. Manual — resolved at the table."
             },
             "petDuplikace1": {
-              "label": "Firecrackers: Duplication +10%",
+              "label": "Explosives: Duplication +10%",
               "description": "10 SP; Alchemie: Expert. Manual — resolved at the table."
             },
             "petDuplikace2": {
-              "label": "Firecrackers: Duplication +5%",
+              "label": "Explosives: Duplication +5%",
               "description": "5 SP. Manual — resolved at the table."
             },
             "petDuplikace3": {
-              "label": "Firecrackers: Duplication +10%",
+              "label": "Explosives: Duplication +10%",
               "description": "10 SP. Manual — resolved at the table."
             },
             "petVyhoda": {
-              "label": "Firecrackers: Advantage on crafting",
+              "label": "Explosives: Advantage on crafting",
               "description": "5 SP. Manual — resolved at the table."
             },
             "petKritNeuspech": {
-              "label": "Firecrackers: Crit failure -3%",
+              "label": "Explosives: Crit failure -3%",
               "description": "5 SP. Manual — resolved at the table."
             },
             "olejDuplikace1": {
@@ -4396,6 +4396,27 @@
       "type1": "Extra Effect Type 1",
       "type2": "Extra Effect Type 2",
       "type3": "Extra Effect Type 3"
+    },
+    "Resync": {
+      "Action": "Resync with ruleset",
+      "Undo": "Undo re-sync",
+      "ConfirmTitle": "Resync with ruleset",
+      "ConfirmBody": "Replace <strong>{item}</strong> with a fresh copy of <strong>{source}</strong> from {pack}? This overwrites everything on this copy, including spent rerolls, durability and quantity. You can undo it afterwards.",
+      "NotFound": "No ruleset version of \"{item}\" was found in any item compendium. It may have been renamed, or it may not exist in a compendium at all.",
+      "PickTitle": "Choose ruleset source",
+      "PickBody": "Several compendia contain an item called <strong>{item}</strong>. Which one should it be resynced from?",
+      "PickConfirm": "Resync",
+      "PickCancel": "Cancel",
+      "UndoTitle": "Undo re-sync",
+      "UndoBody": "Restore <strong>{item}</strong> to how it was before the re-sync on {when}?",
+      "Done": "{item} was resynced with the ruleset.",
+      "UndoDone": "{item} was restored to its pre-resync state.",
+      "NoSource": "This item has no compendium source recorded, so it cannot be resynced.",
+      "SourceMissing": "The source item could not be found ({uuid}). It may have been moved, renamed or deleted.",
+      "TypeMismatch": "The source is a {from} but this item is a {to}, so it was not resynced.",
+      "NoBackup": "There is no re-sync to undo for this item.",
+      "NoPermission": "You do not have permission to modify this item.",
+      "UnknownTime": "an earlier date"
     },
     "Items": {
       "AbsorbBlood": {

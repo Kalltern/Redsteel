@@ -94,7 +94,7 @@
     "variants": [],
     "option": "magic",
     "type": "spirit",
-    "rank": "expert",
+    "rank": "apprentice",
     "actionCost": "2",
     "range": "5",
     "spellClass": "support",
@@ -129,7 +129,7 @@
     "effectType3": ""
   },
   "effects": [],
-  "folder": "yQKWKFaPqrfuldp0",
+  "folder": "Fxz9y7e2dSJqjeq0",
   "flags": {
     "scene-packer": {
       "hash": "f2d6b7b117b0cc013974a4b2310f6da0cc9cd253"
