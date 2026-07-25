@@ -155,12 +155,32 @@ const SPEC_DEFS = {
   /* Služebník meče (Servant of the Sword)                             */
   /* ----------------------------------------------------------------- */
   swordServant: {
+    // Constellation layout: a sword lying point-right across the panel. The
+    // panel is roughly 2.2:1 wide, so an upright blade would waste most of the
+    // width and crowd the labels; laid flat it fills the space. The figure is
+    // drawn entirely by the real `requires` chains — no prerequisite was
+    // invented to make the picture work:
+    //   grip + pommel  the riposte chain, running left off the guard
+    //   crossguard     prosmyknuti -> dexTests as a tall vertical bar, with
+    //                  three unchained nodes sitting on it
+    //   blade spine    the five-node blade-mastery chain out to the tip
+    //   blade edges    the aim / charge / movement-attack pairs, converging
+    // tier/column stay only as a grid fallback.
+    layout: "constellation",
     nodes: {
-      // Chain: blade mastery
-      bleedA: { tier: 1, column: 1, passive: cm({ extraEffects: { bleed: 10 } }) },
+      // Chain: blade mastery — the blade spine, hilt to point
+      bleedA: {
+        tier: 1,
+        column: 1,
+        x: 41,
+        y: 50,
+        passive: cm({ extraEffects: { bleed: 10 } }),
+      },
       critHitDef: {
         tier: 2,
         column: 1,
+        x: 52,
+        y: 50,
         requires: ["bleedA"],
         passive: ae(
           add("system.combatSkills.combat.critbonus", 3),
@@ -170,44 +190,63 @@ const SPEC_DEFS = {
       bleedB: {
         tier: 3,
         column: 1,
+        x: 63,
+        y: 50,
         requires: ["critHitDef"],
         passive: cm({ extraEffects: { bleed: 10 } }),
       },
       initiative: {
         tier: 4,
         column: 1,
+        x: 74,
+        y: 50,
         requires: ["bleedB"],
         passive: ae(add("system.secondaryAttributes.ini.bonus", 2)),
       },
+      // The point of the sword
       hitBonus: {
         tier: 5,
         column: 1,
+        x: 92,
+        y: 50,
         requires: ["initiative"],
         passive: ae(add("system.combatSkills.combat.bonus", 5)),
       },
-      // Chain: riposte
-      ripostaFree: { tier: 1, column: 2 },
-      ripostaStamina: { tier: 2, column: 2, requires: ["ripostaFree"] },
-      ripostaCrit: { tier: 3, column: 2, requires: ["ripostaStamina"] },
-      odvetnyUder: { tier: 4, column: 2 },
-      // Chain: aiming
-      improvedAim: { tier: 1, column: 3 },
-      aimReduction: { tier: 2, column: 3, requires: ["improvedAim"] },
-      draciSpanek: { tier: 3, column: 3 },
-      draciStraz: { tier: 4, column: 3 },
-      // Chain: charge
-      chargeDamage: { tier: 1, column: 4 },
-      chargeDistance: { tier: 2, column: 4, requires: ["chargeDamage"] },
-      priskok: { tier: 3, column: 4 },
-      draciVypad: { tier: 4, column: 4 },
-      // Chain: slip through
-      prosmyknuti: { tier: 1, column: 5 },
-      dexTests: { tier: 2, column: 5, requires: ["prosmyknuti"] },
-      presneRozseknuti: { tier: 3, column: 5 },
-      vyhodnyManevr: { tier: 4, column: 5 },
-      // Chain: movement attack
-      utokSPohybem: { tier: 1, column: 6 },
-      vylUtokSPohybem: { tier: 2, column: 6, requires: ["utokSPohybem"] },
+      // Chain: riposte — the grip, ending in the pommel
+      ripostaFree: { tier: 1, column: 2, x: 24, y: 50 },
+      ripostaStamina: { tier: 2, column: 2, x: 15, y: 50, requires: ["ripostaFree"] },
+      ripostaCrit: { tier: 3, column: 2, x: 6, y: 50, requires: ["ripostaStamina"] },
+      // Sits on the crossguard bar
+      odvetnyUder: { tier: 4, column: 2, x: 32, y: 30 },
+      // Chain: aiming — lower blade edge
+      improvedAim: { tier: 1, column: 3, x: 43, y: 69 },
+      aimReduction: { tier: 2, column: 3, x: 52, y: 71, requires: ["improvedAim"] },
+      // Upper blade edge
+      draciSpanek: { tier: 3, column: 3, x: 70, y: 31 },
+      draciStraz: { tier: 4, column: 3, x: 61, y: 29 },
+      // Chain: charge — lower blade edge
+      chargeDamage: { tier: 1, column: 4, x: 61, y: 71 },
+      chargeDistance: { tier: 2, column: 4, x: 70, y: 69, requires: ["chargeDamage"] },
+      // Upper edge, nearest the point
+      priskok: { tier: 3, column: 4, x: 82, y: 40 },
+      // Sits on the crossguard bar, where the blade meets the hilt
+      draciVypad: { tier: 4, column: 4, x: 32, y: 50 },
+      // Chain: slip through — draws the crossguard bar itself
+      prosmyknuti: { tier: 1, column: 5, x: 32, y: 16 },
+      dexTests: { tier: 2, column: 5, x: 32, y: 84, requires: ["prosmyknuti"] },
+      // Lower edge, nearest the point
+      presneRozseknuti: { tier: 3, column: 5, x: 82, y: 60 },
+      // Sits on the crossguard bar
+      vyhodnyManevr: { tier: 4, column: 5, x: 32, y: 70 },
+      // Chain: movement attack — upper blade edge, nearest the hilt
+      utokSPohybem: { tier: 1, column: 6, x: 43, y: 31 },
+      vylUtokSPohybem: {
+        tier: 2,
+        column: 6,
+        x: 52,
+        y: 29,
+        requires: ["utokSPohybem"],
+      },
     },
   },
 
@@ -215,28 +254,53 @@ const SPEC_DEFS = {
   /* Mistr zbraní (Weapon Master)                                      */
   /* ----------------------------------------------------------------- */
   weaponMaster: {
+    // Constellation layout: two crossed weapons (a saltire). Only two short
+    // `requires` chains exist here, so the figure rests almost entirely on
+    // placement — which is how a real star sign works anyway. Four arms of
+    // four stars radiate from a single rivet star at the centre, and the
+    // crossing itself is left empty so the two weapons read as separate
+    // rather than as one blob:
+    //   NW + SE  one weapon, hilt upper-left (Mistr zbraní at the pommel),
+    //            point lower-right (Útok na slabinu at the tip)
+    //   SW + NE  the other, butt lower-left, head upper-right (Průbojnost)
+    // The two chains each lie along an arm so their links reinforce a
+    // diagonal: zbrojnoš on the NW arm, veterán on the NE arm.
+    //
+    // The arms are symmetric about y=50 (24/76, 30/70, 36/64, 42/58). The two
+    // innermost upper stars sit 16 y-units above their lower counterparts at
+    // the same x, which is the tightest gap in the tree — keep one-line labels
+    // on `odrazeni` and `presileni` if these ever get renamed.
+    layout: "constellation",
     nodes: {
-      mistrZbrani: { tier: 1, column: 1 },
-      vytrvalyValecnik: { tier: 2, column: 1 },
-      vycvikSeZbrani: { tier: 3, column: 1 },
-      bdelyOchrance: { tier: 4, column: 1 },
-      // Chain: armiger
-      zbrojnos1: { tier: 1, column: 2 },
-      zbrojnos2: { tier: 2, column: 2, requires: ["zbrojnos1"] },
-      odrazeni: { tier: 3, column: 2 },
-      // Chain: veteran
-      veteran1: { tier: 1, column: 3 },
-      veteran2: { tier: 2, column: 3, requires: ["veteran1"] },
-      vylZbranoveDovednosti: { tier: 3, column: 3 },
-      // Unchained passives
+      // NW arm, outermost first — the hilt of the first weapon
+      mistrZbrani: { tier: 1, column: 1, x: 13, y: 24 },
+      // SW arm — the butt of the second weapon
+      vytrvalyValecnik: { tier: 2, column: 1, x: 22, y: 70 },
+      vycvikSeZbrani: { tier: 3, column: 1, x: 31, y: 64 },
+      bdelyOchrance: { tier: 4, column: 1, x: 13, y: 76 },
+      // Chain: armiger — draws the NW arm
+      zbrojnos1: { tier: 1, column: 2, x: 22, y: 30 },
+      zbrojnos2: { tier: 2, column: 2, x: 31, y: 36, requires: ["zbrojnos1"] },
+      // Innermost NW star (one-line label: it sits above vylZbranoveDovednosti)
+      odrazeni: { tier: 3, column: 2, x: 40, y: 42 },
+      // Chain: veteran — draws the NE arm
+      veteran1: { tier: 1, column: 3, x: 78, y: 30 },
+      veteran2: { tier: 2, column: 3, x: 69, y: 36, requires: ["veteran1"] },
+      // Innermost SW star
+      vylZbranoveDovednosti: { tier: 3, column: 3, x: 40, y: 58 },
+      // Unchained passives — the SE arm, running out to the point
       bleedStun: {
         tier: 1,
         column: 4,
+        x: 60,
+        y: 58,
         passive: cm({ extraEffects: { bleed: 10, stun: 6 } }),
       },
       critDefRange: {
         tier: 2,
         column: 4,
+        x: 69,
+        y: 64,
         passive: {
           ...ae(add("system.combatSkills.meleeDefense.critbonus", 2)),
           ...cm({ critRangeBonus: 1 }),
@@ -245,13 +309,26 @@ const SPEC_DEFS = {
       precision: {
         tier: 3,
         column: 4,
+        x: 78,
+        y: 70,
         passive: cm({ extraEffects: { precision: 10 } }),
       },
-      penetration: { tier: 1, column: 5, passive: cm({ penetrationBonus: 2 }) },
-      presileni: { tier: 2, column: 5 },
-      rychlaReakce: { tier: 3, column: 5 },
-      weakSpotPen: { tier: 1, column: 6 },
-      primaryDamage: { tier: 2, column: 6 },
+      // Outermost NE star — the head of the second weapon
+      penetration: {
+        tier: 1,
+        column: 5,
+        x: 87,
+        y: 24,
+        passive: cm({ penetrationBonus: 2 }),
+      },
+      // Innermost NE star (one-line label: it sits above bleedStun)
+      presileni: { tier: 2, column: 5, x: 60, y: 42 },
+      // The rivet where the two weapons cross
+      rychlaReakce: { tier: 3, column: 5, x: 50, y: 50 },
+      // The point of the first weapon
+      weakSpotPen: { tier: 1, column: 6, x: 87, y: 76 },
+      // Fills the upper wedge between the arms
+      primaryDamage: { tier: 2, column: 6, x: 50, y: 26 },
     },
   },
 
@@ -259,6 +336,31 @@ const SPEC_DEFS = {
   /* Hoplita (Hoplite)                                                 */
   /* ----------------------------------------------------------------- */
   hoplite: {
+    // Constellation layout: a round shield with a spear laid across it. The
+    // shield rim is walked by the brutality / advance / onslaught chains so the
+    // rim itself lights up as they are taken; the five-node impale chain is the
+    // spear shaft, with the daring throw sitting at the tip.
+    layout: "constellation",
+    coords: {
+      bleedStun: [43, 50],
+      kritZasah: [38, 26],
+      momentum: [26, 16],
+      postup: [14, 26],
+      raznyPostup: [9, 50],
+      napor1: [14, 74],
+      napor2: [26, 84],
+      hoplitaStance: [38, 74],
+      nabodnuti: [48, 12],
+      velkeTvory: [57.2, 20.8],
+      prilezitostnyUtok: [66.4, 29.6],
+      pripravnyPostoj: [75.6, 38.4],
+      obranaProtiZteci: [84.8, 47.2],
+      troufalyVrh: [94, 56],
+      damage1d6: [52, 74],
+      penetration2: [66, 79],
+      hexAttack: [80, 84],
+      silaObratnost: [92, 74],
+    },
     nodes: {
       // Chain: impale line
       nabodnuti: { tier: 1, column: 1 },
@@ -299,6 +401,26 @@ const SPEC_DEFS = {
   /* Mečový tanečník (Sword Dancer)                                    */
   /* ----------------------------------------------------------------- */
   swordDancer: {
+    // Constellation layout: a dancer's fan — two nested sweeping arcs with two
+    // stars held above them. The seven-node duellist chain draws the outer hem,
+    // so the sweep itself is the line that lights up.
+    layout: "constellation",
+    coords: {
+      duelistuvPostoj: [12.4, 62.3],
+      krvaveBodnuti: [20.9, 74.7],
+      mireniRedukce: [34.2, 83.1],
+      vyhodnyManevr: [50, 86],
+      posileniObrany: [65.8, 83.1],
+      postojMireni: [79.1, 74.7],
+      precision10: [87.6, 62.3],
+      oddechMireni: [25.6, 56.8],
+      akrobatickeOdpoutani: [35.1, 66.4],
+      vylUtokSPohybem: [50, 70],
+      rafinovanyManevr: [64.9, 66.4],
+      posledniVypad: [74.4, 56.8],
+      vylDuelistuvKrok: [28, 28],
+      brilantniProtiutok: [72, 28],
+    },
     nodes: {
       // Chain: the duelist's path (full tier-1 row of the sheet)
       duelistuvPostoj: { tier: 1, column: 1 },
@@ -328,6 +450,40 @@ const SPEC_DEFS = {
   /* Škola Krve (School of Blood)                                      */
   /* ----------------------------------------------------------------- */
   bloodSchool: {
+    // Constellation layout: a blood drop with straight edges (a kite) — apex at
+    // the top, widest across the middle, point at the bottom. Straight edges are
+    // deliberate: a curved outline eats label clearance in both axes at once and
+    // would not close at this node count. The eight-node rank chain walks the
+    // whole left edge, both magic attack/defense chains run down the right edge,
+    // three rows fill the inside, and two field stars sit off to the left.
+    layout: "constellation",
+coords: {
+      apprentice: [50, 6],
+      spellPower1: [41.5, 17],
+      expert: [33, 28],
+      spellPower2: [24.5, 39],
+      master: [16, 50],
+      spellPower3: [24.5, 60],
+      grandmaster: [33, 70],
+      spellPower4: [41.5, 80],
+      darKrve: [50, 90],
+      magicAttack1: [58.5, 17],
+      magicAttack2: [67, 28],
+      magicAttack3: [75.5, 39],
+      magicDefense1: [84, 50],
+      magicDefense2: [75.5, 60],
+      magicDefense3: [67, 70],
+      krvavyStit: [58.5, 80],
+      magickaKrev: [42, 30],
+      krvavyPakt: [58, 30],
+      bloodPool1: [38, 50],
+      bloodPool2: [50, 50],
+      precision15: [62, 50],
+      hnevKrve: [42, 70],
+      krvavaPlatba: [58, 70],
+      kritRozsah2: [8, 30],
+      oslabeniTrvani: [8, 70],
+    },
     nodes: {
       // Chain: ranks alternating with spell power. Each rank also grows the
       // blood pool capacity (+10/+10/+20/+50).
@@ -427,6 +583,16 @@ for (const [specId, spec] of Object.entries(SPEC_DEFS)) {
   for (const [nodeId, node] of Object.entries(spec.nodes)) {
     node.label = `REDSTEEL.Actor.Specialisations.${specId}.nodes.${nodeId}.label`;
     node.description = `REDSTEEL.Actor.Specialisations.${specId}.nodes.${nodeId}.description`;
+    // Constellation coordinates may be written either inline on the node
+    // (`x`/`y`, as shadow / swordServant / weaponMaster do) or collected in a
+    // `coords: { nodeId: [x, y] }` map on the spec. The map keeps big trees
+    // readable — the node objects stay about mechanics, the figure lives in
+    // one block. Inline coords win if a node somehow has both.
+    const coords = spec.coords?.[nodeId];
+    if (coords) {
+      node.x ??= coords[0];
+      node.y ??= coords[1];
+    }
     node.requires ??= [];
     node.icon ??= "";
     node.passive ??= null;

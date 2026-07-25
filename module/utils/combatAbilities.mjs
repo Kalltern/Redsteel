@@ -3,6 +3,12 @@ import { withRollBias, tagRollSkill } from "./rollAdvantage.mjs";
 import { selectAimedPart, AIMED_PARTS } from "./aimedStrike.mjs";
 import { getAttackRerollTokens } from "./rerolls.mjs";
 import { buildBanePacket } from "./baneCombat.mjs";
+import { hasHtmlContent } from "./chatBlocks.mjs";
+import {
+  isSpeedTest,
+  rollSpeedTest,
+  renderSpeedTestLine,
+} from "./speedTest.mjs";
 
 export async function combatAbilities() {
   // ====================================================================
@@ -1084,6 +1090,33 @@ ${critHTML}
 </div>
 `;
 
+    // Crit banner carries its own trailing separator, so an ordinary hit doesn't
+    // leave an empty paragraph sandwiched between two rules.
+    const critLabel = critSuccess
+      ? "Critical Success!"
+      : critFailure
+        ? "Critical Failure!"
+        : "";
+    const critBanner = critLabel
+      ? `<p style="text-align:center; font-size:20px;"><b>${critLabel}</b></p>
+<hr>`
+      : "";
+
+    // Skip the Description table entirely when there is nothing to put in it —
+    // an attack with no description and no test rolls shouldn't show an empty
+    // header with a blank row under it.
+    const hasDescription = hasHtmlContent(concatRollAndDescription);
+    const descriptionTable =
+      hasDescription || attributeTestHTML.trim()
+        ? `
+<div style="text-align:center; font-size:16px;">
+<table style="width:100%; text-align:center; font-size:16px;">
+  ${hasDescription ? `<tr><th>Description</th></tr>\n  <tr><td>${concatRollAndDescription}</td></tr>` : ""}
+  ${attributeTestHTML}
+</table>
+ </div>`
+        : "";
+
     await ChatMessage.create({
       speaker: ChatMessage.getSpeaker(),
       content: `
@@ -1107,19 +1140,10 @@ ${critHTML}
   </strong>
 </span>
 <hr>
-<p style="text-align:center; font-size:20px;">
-  <b>${critSuccess ? "Critical Success!" : critFailure ? "Critical Failure!" : ""}</b>
-</p>
-<hr>
+${critBanner}
 <div class="rs-attack-face" data-face-normal>${damageLine}</div>
 <hr>
-<div style="text-align:center; font-size:16px;">
-<table style="width:100%; text-align:center; font-size:16px;">
-  <tr><th>Description</th></tr>
-  <tr><td>${concatRollAndDescription}</td></tr>
-  ${attributeTestHTML}
-</table>
- </div>
+${descriptionTable}
 <table style="width:100%; text-align:center; font-size:15px;">
   <tr><th>Effects</th></tr>
   <tr>
@@ -1502,6 +1526,27 @@ ${critHTML}
 
       if (!testName || testName === "-- Select a Type --") continue;
 
+      // Speed test: d12 + Initiative (+ Speed), higher is better.
+      if (isSpeedTest(testName)) {
+        const speedRoll = await rollSpeedTest(actor, { modifier: testModifier });
+        attributeTestHTML += `
+<tr>
+<td>
+<span>
+<b>${mod.localizedName ?? mod.name}</b><br>
+${renderSpeedTestLine({
+  actor,
+  roll: speedRoll,
+  source: ability.localizedName ?? ability.name,
+  modifier: testModifier,
+})}
+</span>
+</td>
+</tr>
+`;
+        continue;
+      }
+
       const attributeMap = {
         strength: "str",
         endurance: "end",
@@ -1541,15 +1586,32 @@ ${critHTML}
     }
 
     // Ability test
-    if (
+    if (isSpeedTest(abilityAttributeTestName)) {
+      // Speed test: d12 + Initiative (+ Speed), higher is better.
+      const speedRoll = await rollSpeedTest(actor, {
+        modifier: abilityTestModifier,
+      });
+
+      concatRollAndDescription += `
+
+${renderSpeedTestLine({
+  actor,
+  roll: speedRoll,
+  source: ability.localizedName ?? ability.name,
+  modifier: abilityTestModifier,
+})}
+`;
+    } else if (
       abilityAttributeTestName &&
       abilityAttributeTestName !== "-- Select a Type --"
     ) {
       const lowerTestName = abilityAttributeTestName.trim().toLowerCase();
       let baseValue = 0;
+      let testSkillKey = null;
 
       // 1️⃣ Leadership special case FIRST
       if (lowerTestName === "leadership") {
+        testSkillKey = "leadership";
         baseValue =
           actor.type === "npc"
             ? (actor.system.attributes.cha?.value ?? 0)
@@ -1558,17 +1620,20 @@ ${critHTML}
 
       // 2️⃣ Combat skills
       else if (actor.system.combatSkills?.[lowerTestName]) {
+        testSkillKey = lowerTestName;
         baseValue = actor.system.combatSkills[lowerTestName]?.rating ?? 0;
       }
 
       // 3️⃣ Other skills
       else if (actor.system.skills?.[lowerTestName]) {
+        testSkillKey = lowerTestName;
         baseValue = actor.system.skills[lowerTestName]?.rating ?? 0;
       }
 
       // 4️⃣ Attributes LAST (keep .mod for characters!)
       else if (attributeMap[lowerTestName]) {
         const shortKey = attributeMap[lowerTestName];
+        testSkillKey = shortKey;
 
         baseValue =
           actor.type === "npc"
@@ -1582,7 +1647,9 @@ ${critHTML}
         `(${totalModifier}) - 1d100`,
         withRollBias({}, actor),
       );
-      tagRollSkill(attributeRoll, shortKey);
+      // Tag whichever bucket the test resolved against so per-skill advantage
+      // applies; null (unresolved test name) falls back to the actor-wide bucket.
+      tagRollSkill(attributeRoll, testSkillKey);
 
       await attributeRoll.evaluate({ async: true });
 
@@ -1798,6 +1865,95 @@ function renderWeaponLoadoutsDialog(actor) {
 
 // non attack ability resolution
 
+/**
+ * Resolve the rating a Test Type resolves against, using the same precedence as
+ * the attack paths: leadership → combat skills → skills → attributes.
+ * @returns {{value: number, skillKey: string|null}}
+ */
+function resolveTestRating(actor, testName) {
+  const lower = String(testName ?? "").trim().toLowerCase();
+
+  const attributeMap = {
+    strength: "str",
+    dexterity: "dex",
+    endurance: "end",
+    intelligence: "int",
+    will: "wil",
+    charisma: "cha",
+    perception: "per",
+  };
+
+  if (lower === "leadership") {
+    return {
+      value:
+        actor.type === "npc"
+          ? (actor.system.attributes.cha?.value ?? 0)
+          : (actor.system.skills?.leadership?.rating ?? 0),
+      skillKey: "leadership",
+    };
+  }
+  if (actor.system.combatSkills?.[lower]) {
+    return {
+      value: actor.system.combatSkills[lower]?.rating ?? 0,
+      skillKey: lower,
+    };
+  }
+  if (actor.system.skills?.[lower]) {
+    return { value: actor.system.skills[lower]?.rating ?? 0, skillKey: lower };
+  }
+  if (attributeMap[lower]) {
+    const shortKey = attributeMap[lower];
+    return {
+      value:
+        actor.type === "npc"
+          ? (actor.system.attributes[shortKey]?.value ?? 0)
+          : (actor.system.attributes[shortKey]?.mod ?? 0),
+      skillKey: shortKey,
+    };
+  }
+  return { value: 0, skillKey: null };
+}
+
+/**
+ * Roll the Test Type of a utility (type: "other") ability or one of its
+ * modifiers. Handles both the d12 speed test and the standard d100 margin of
+ * success, and returns the clickable chat line for it.
+ * @returns {Promise<{roll: Roll, html: string, label: string}|null>} null when
+ *   the item has no Test Type selected.
+ */
+async function rollUtilityTest(actor, item) {
+  const testName = item.system.attributeTest;
+  const testModifier = Number(item.system.testModifier) || 0;
+  const source = item.localizedName ?? item.name;
+
+  if (isSpeedTest(testName)) {
+    const roll = await rollSpeedTest(actor, { modifier: testModifier });
+    // No bold heading here: the rendered line and the roll column both already
+    // say "Speed Test".
+    return {
+      roll,
+      label: "Speed Test",
+      html: renderSpeedTestLine({ actor, roll, source, modifier: testModifier }),
+    };
+  }
+
+  if (!testName || testName === "-- Select a Type --") return null;
+
+  const { value, skillKey } = resolveTestRating(actor, testName);
+  const total = value + testModifier;
+
+  const roll = new Roll(`(${total}) - 1d100`, withRollBias({}, actor));
+  tagRollSkill(roll, skillKey);
+  await roll.evaluate();
+
+  return {
+    roll,
+    label: "Margin of Success",
+    html: `<b>${testName} Test ${total}%</b><br>
+<span class="mos-followup" data-margin="${roll.total}" data-source="${source}" data-tooltip="Test chance ${total}%<br>Rolled: ${roll.result}<br>Click to roll an attribute against this margin" style="cursor:pointer; text-decoration:underline dotted;">Margin of Success: [${roll.total}]</span>`,
+  };
+}
+
 async function runUtilityAbility(actor, ability, modifiers = []) {
   // Vstřebání krve (Blood Absorption): cancel the entire Blood Reserve and heal
   // Life equal to the Blood School's Maximum Transfer, but never more Life than
@@ -1810,13 +1966,28 @@ async function runUtilityAbility(actor, ability, modifiers = []) {
 
   let description = ability.system.description || "";
 
+  // Utility abilities honour the Test Type field the same way attack abilities
+  // do — both the ability's own test and any selected modifier's test.
+  const testRolls = [];
+
+  const abilityTest = await rollUtilityTest(actor, ability);
+  if (abilityTest) {
+    description += `<hr>${abilityTest.html}`;
+    testRolls.push(abilityTest);
+  }
+
   for (const mod of modifiers) {
-    if (mod.system.description) {
-      description += `
+    const modTest = await rollUtilityTest(actor, mod);
+    if (!mod.system.description && !modTest) continue;
+
+    description += `
 <hr>
 <b>${mod.localizedName ?? mod.name}</b><br>
-${mod.system.description}
+${mod.system.description ?? ""}
 `;
+    if (modTest) {
+      description += `${modTest.html}`;
+      testRolls.push(modTest);
     }
   }
 
@@ -1851,17 +2022,38 @@ ${mod.system.description}
 `
     : "";
 
+  // Render the test rolls into the message body so the dice are visible (and
+  // animated), the same way the non-weapon ability card does.
+  const columns = [];
+  for (const test of testRolls) {
+    columns.push(`
+    <div class="roll-column">
+      <div class="roll-label">${test.label}</div>
+      ${await test.roll.render()}
+    </div>
+  `);
+  }
+  const content = columns.length
+    ? `<div class="dual-roll">${columns.join("")}</div>`
+    : "";
+
   await ChatMessage.create({
     speaker: ChatMessage.getSpeaker({ actor }),
+    content,
+    rolls: testRolls.map((t) => t.roll),
     flavor: `
 <span style="display:inline-flex; align-items:center;">
   <img src="${ability.img}" width="36" height="36" style="margin-right:8px;">
   <strong style="font-size:20px;">${ability.localizedName ?? ability.name}</strong>
 </span>
 <hr>
-<div style="text-align:center; font-size:16px;">
+${
+  hasHtmlContent(description)
+    ? `<div style="text-align:center; font-size:16px;">
 ${description}
-</div>
+</div>`
+    : ""
+}
 ${effectsTable}
 `,
     flags: {

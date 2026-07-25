@@ -162,6 +162,24 @@ export const GENERATED_SPECS = {
     },
   },
   incantator: {
+    // Constellation layout: a radiant sigil — the focus object at the centre,
+    // eight rays around it, two more stars on the horizontal. This spec has no
+    // `requires` chains at all, so no lines are ever drawn: the figure is pure
+    // star placement, which is why it is laid out as a symmetric burst.
+    layout: "constellation",
+    coords: {
+      ohniskovyPredmet: [50, 50],
+      soustredeni: [88, 50],
+      rychleSoustredeni: [76.9, 26],
+      precizniInkantace: [50, 16],
+      moudraKniha: [23.1, 26],
+      vlnaEnergie: [9, 50],
+      dvojnasobnaMana: [23.1, 74],
+      stabilizaceZdroje: [50, 84],
+      katalyzator: [76.9, 74],
+      dlouhyOdpocinek: [32, 50],
+      modifikatorMany: [68, 50],
+    },
     nodes: {
       ohniskovyPredmet: { tier: 1, column: 1 },
       soustredeni: { tier: 1, column: 2 },
@@ -227,6 +245,29 @@ export const GENERATED_SPECS = {
     },
   },
   warden: {
+    // Constellation layout: a heater shield — flat top, sides curving down to a
+    // point, one boss at the centre. The six-node shield-bash chain draws the
+    // top edge and the five-node cover chain draws the left flank.
+    layout: "constellation",
+    coords: {
+      uderZraneniA: [16, 14],
+      uderZraneniSila: [29, 14],
+      bonusZaStit: [42, 14],
+      uderZraneniB: [55, 14],
+      uderSila10: [68, 14],
+      dvojityUder: [81, 14],
+      kritObranaKryt: [15, 32],
+      redukceBoku: [17, 50],
+      zatizeniStitu: [23, 66],
+      spolehlivyStit1: [33, 78],
+      spolehlivyStit2: [44, 86],
+      obrannyPostojSpojenci: [85, 32],
+      vylObrannyPostoj: [83, 50],
+      ochranaVolna: [77, 66],
+      protiutokZasah: [67, 78],
+      vylObrneni: [56, 86],
+      uderStitemOdveta: [50, 48],
+    },
     nodes: {
       kritObranaKryt: { tier: 1, column: 1, passive: { changes: [add("system.combatSkills.meleeDefense.critbonus", 2), add("system.combatSkills.rangedDefense.critbonus", 2)] } },
       redukceBoku: { tier: 1, column: 2, requires: ["kritObranaKryt"] },
@@ -248,6 +289,27 @@ export const GENERATED_SPECS = {
     },
   },
   champion: {
+    // Constellation layout: a crown — a zigzag of peaks and valleys over a
+    // straight circlet. The four-node second-weapon chain lies along the band
+    // so its links draw the circlet.
+    layout: "constellation",
+    coords: {
+      smrstUtoku: [10, 40],
+      uhyb5: [20, 22],
+      zatlaceni: [30, 40],
+      utokPoZteci: [40, 22],
+      presilaPostih: [50, 40],
+      vylUtokSPohybem: [60, 22],
+      vetrnyPostoj: [70, 40],
+      ztecSRozseknutim: [80, 22],
+      odvetnyUder: [90, 40],
+      klamavyUtok: [12, 70],
+      stredniZbran: [28, 70],
+      bonusDruhaZbran1: [44, 70],
+      bonusDruhaZbran2: [60, 70],
+      bonusDruhaZbran3: [76, 70],
+      riposta: [92, 70],
+    },
     nodes: {
       stredniZbran: { tier: 1, column: 1 },
       bonusDruhaZbran1: { tier: 1, column: 2, requires: ["stredniZbran"] },
@@ -288,6 +350,78 @@ export const GENERATED_SPECS = {
     },
   },
   alchemist: {
+    // Constellation layout: 63 nodes is far past the point where a figure can
+    // close inside the shared panel, so this is an honest dense field instead of
+    // a forced picture — 13 columns of 5, filled family by family (lek, jed,
+    // pet, olej, mast, droga, misc) so each potion line reads as one vertical
+    // block and its chain draws that block's spine. Labels are narrowed to 72px
+    // in the CSS to buy the horizontal room; every other spec keeps 92px.
+    layout: "constellation",
+    coords: {
+      lecZastaveni1: [6, 8],
+      lecZivoty1: [6, 25],
+      lecZastaveni2: [6, 42],
+      lecZivoty2: [6, 59],
+      lekToxicita: [6, 76],
+      kombinaceLektvaru: [13.3, 8],
+      lekTrvani: [13.3, 25],
+      lekDuplikace1: [13.3, 42],
+      lekDuplikace2: [13.3, 59],
+      lekDuplikace3: [13.3, 76],
+      lekVyhoda: [20.7, 8],
+      lekKritNeuspech: [20.7, 25],
+      jedSance1: [20.7, 42],
+      jedZraneni1: [20.7, 59],
+      jedSance2: [20.7, 76],
+      jedZraneni2: [28, 8],
+      jedSance3: [28, 25],
+      kombinaceJedu: [28, 42],
+      jedTrvani: [28, 59],
+      jedDuplikace1: [28, 76],
+      jedDuplikace2: [35.3, 8],
+      jedDuplikace3: [35.3, 25],
+      jedVyhoda: [35.3, 42],
+      jedKritNeuspech: [35.3, 59],
+      petTrvani: [35.3, 76],
+      traskavice: [42.7, 8],
+      acidum: [42.7, 25],
+      ignum: [42.7, 42],
+      draciSen: [42.7, 59],
+      pavouciObjeti: [42.7, 76],
+      dablovaPecka: [50, 8],
+      petDuplikace1: [50, 25],
+      petDuplikace2: [50, 42],
+      petDuplikace3: [50, 59],
+      petVyhoda: [50, 76],
+      petKritNeuspech: [57.3, 8],
+      olejDuplikace1: [57.3, 25],
+      olejDuplikace2: [57.3, 42],
+      olejDuplikace3: [57.3, 59],
+      olejZraneni1: [57.3, 76],
+      olejZranitelnost: [64.7, 8],
+      olejZraneni2: [64.7, 25],
+      olejVyhoda: [64.7, 42],
+      olejKritNeuspech: [64.7, 59],
+      mastTrvani: [64.7, 76],
+      mastDuplikace1: [72, 8],
+      mastDuplikace2: [72, 25],
+      mastDuplikace3: [72, 42],
+      mastVyhoda: [72, 59],
+      mastKritNeuspech: [72, 76],
+      drogaDuplikace1: [79.3, 8],
+      drogaDuplikace2: [79.3, 25],
+      drogaDuplikace3: [79.3, 42],
+      drogaNavykovostPlus: [79.3, 59],
+      drogaNavykovostMinus: [79.3, 76],
+      drogaVyhoda: [86.7, 8],
+      drogaKritNeuspech: [86.7, 25],
+      sleva1: [86.7, 42],
+      sleva2: [86.7, 59],
+      garantovanyUspech: [86.7, 76],
+      meneIngredienci: [94, 8],
+      meneTkane: [94, 25],
+      vedeniMutace: [94, 42],
+    },
     nodes: {
       lecZastaveni1: { tier: 1, column: 1 },
       lecZivoty1: { tier: 1, column: 2 },
@@ -504,6 +638,24 @@ export const GENERATED_SPECS = {
     },
   },
   grimm: {
+    // Constellation layout: a scourge (Metla) — a short handle lower-left and
+    // the seven-node bane chain arcing over as the lash, with the three Metla
+    // stars beneath it. The bane chain literally draws the lash.
+    layout: "constellation",
+    coords: {
+      tkane1: [7, 86],
+      tkane2: [19, 74],
+      bane1: [29.5, 68.4],
+      bane2: [35.5, 49.7],
+      bane3: [47.2, 36.7],
+      bane4: [62, 32],
+      bane5: [76.8, 36.7],
+      bane6: [88.5, 49.7],
+      bane7: [94.5, 68.4],
+      metlaVnimani: [42, 72],
+      metlaIniciativa: [62, 72],
+      metlaOpakovani: [82, 72],
+    },
     nodes: {
       bane1: { tier: 1, column: 1, bane: 1 },
       bane2: { tier: 1, column: 2, bane: 1, requires: ["bane1"] },
@@ -520,6 +672,35 @@ export const GENERATED_SPECS = {
     },
   },
   illusionist: {
+    // Constellation layout: this tree is hub-and-spoke (most nodes require
+    // expert / mistr / velmistr), so the figure follows the chain structure
+    // rather than a pictogram — a fan opening left to right. Each rank hub sits
+    // on the spine with its dependents in the next column, so the links radiate
+    // outward in four widening sprays.
+    layout: "constellation",
+    coords: {
+      obtiznostPopreni1: [8, 22],
+      ucednik: [8, 50],
+      prohlednutiIluzi: [8, 78],
+      expert: [26, 50],
+      kapesniIluze: [44, 10],
+      mysterinoOko: [44, 25],
+      mistr: [44, 40],
+      dokonalaIluze1: [44, 55],
+      malaIluzeZvuky: [44, 70],
+      mysterinKrok: [44, 85],
+      dokonalaIluze2: [62, 10],
+      udrzovaneIluze: [62, 25],
+      velmistr: [62, 40],
+      duplikaceKouzla: [62, 55],
+      mzitky: [62, 70],
+      skrytaMagie1: [62, 85],
+      obtiznostPopreni2: [80, 18],
+      dvojnik: [80, 34],
+      dokonalaIluze3: [80, 50],
+      skrytaMagie2: [80, 66],
+      mysterinStrazce: [80, 82],
+    },
     nodes: {
       ucednik: { tier: 1, column: 1 },
       expert: { tier: 1, column: 2, requires: ["ucednik"] },
@@ -626,6 +807,49 @@ export const GENERATED_SPECS = {
     },
   },
   mentalist: {
+    // Constellation layout: four rank bands. Each rank hub sits on the left
+    // spine and its dependents run right along that hub's own band, so the rank
+    // chain draws a vertical line down the left edge while every rank fans out
+    // as a horizontal ray. Like illusionist this follows the chain structure
+    // rather than a pictogram — the tree is hub-and-spoke, and forcing a picture
+    // onto it would scatter each hub's children away from their parent.
+    layout: "constellation",
+    coords: {
+      ucednik: [8, 10],
+      vytrvalaSnaha: [22, 10],
+      mentalniZtec: [36, 10],
+      mentalistuvUprk: [50, 10],
+      vytizeniKoncentrace: [64, 10],
+      vysati: [78, 10],
+      expert: [8, 29],
+      soubojZahajeni2: [17.5, 29],
+      vybojMysli: [27, 29],
+      soubojUdrzovani: [36.5, 29],
+      soubojMZ1: [46, 29],
+      telepat1: [55.5, 29],
+      vytizeniReakce: [65, 29],
+      ovladnuti: [74.5, 29],
+      mzMeditace: [84, 29],
+      mistr: [8, 48],
+      soubojZahajeni3: [22, 48],
+      soubojPostih: [36, 48],
+      telepat2: [50, 48],
+      vytizeniAkce: [64, 48],
+      cteniMysli: [78, 48],
+      velmistr: [8, 67],
+      mentalniUder: [24, 67],
+      soubojZahajeni4: [40, 67],
+      zoufalyVzdor: [56, 67],
+      soubojMZ2: [72, 67],
+      pokrocileCteni: [8, 86],
+      mentalniSouboj10a: [20, 86],
+      mentalniSouboj10b: [32, 86],
+      meditace2: [44, 86],
+      meditace3: [56, 86],
+      soubojDotek: [68, 86],
+      soubojZahajeni1: [80, 86],
+      vytizeniZakerne: [92, 86],
+    },
     nodes: {
       ucednik: { tier: 1, column: 1 },
       expert: { tier: 1, column: 2, requires: ["ucednik"] },
@@ -664,6 +888,27 @@ export const GENERATED_SPECS = {
     },
   },
   mystic: {
+    // Constellation layout: a crescent moon — outer limb, inner limb, and four
+    // stars in the hollow. The moon-well chain draws the inner limb.
+    layout: "constellation",
+    coords: {
+      ucednik: [61.6, 12.9],
+      expert: [74.5, 22.3],
+      mistr: [83, 35.2],
+      kapacitaOvladani: [86, 50],
+      podmineneRitualy: [83, 64.8],
+      sleva1: [74.5, 77.7],
+      sleva2: [61.6, 87.1],
+      mesicniStudna: [52.2, 28.8],
+      studna15a: [62.3, 37.6],
+      studna15b: [66, 50],
+      podmaneni1: [62.3, 62.4],
+      podmaneni2: [52.2, 71.2],
+      mystickaObet: [12, 26],
+      bane1: [28, 50],
+      ritualyVyhoda: [12, 50],
+      ritualyKritNeuspech: [12, 74],
+    },
     nodes: {
       ucednik: { tier: 1, column: 1 },
       expert: { tier: 1, column: 2, requires: ["ucednik"] },

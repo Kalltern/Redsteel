@@ -273,6 +273,9 @@ export class RedsteelItem extends Item {
         "perception",
         "leadership",
         "channeling",
+        // Rolls d12 + Initiative (+ Speed for characters) instead of a d100
+        // margin of success — see module/utils/speedTest.mjs.
+        "speed",
       ];
 
       if (this.type === "spell" || this.type === "ability") {

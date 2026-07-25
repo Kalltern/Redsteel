@@ -2,6 +2,12 @@ import { getTraitPills } from "./traitPills.mjs";
 import { getSpellPower } from "./spellPower.mjs";
 import { withRollBias, applyDesperateCrit } from "./rollAdvantage.mjs";
 import { getCritDegreeTriggers } from "../helpers/specialisations.mjs";
+import { hasHtmlContent } from "./chatBlocks.mjs";
+import {
+  isSpeedTest,
+  rollSpeedTest,
+  renderSpeedTestLine,
+} from "./speedTest.mjs";
 
 // --- Helper for Dialogs (CSS Injection) ---
 function _injectDialogCSS() {
@@ -1106,7 +1112,26 @@ export async function finalizeRollsAndPostChat(
   let concatRollAndDescription = spell.system.description;
   console.log(`Spell Description:`, concatRollAndDescription);
   let attributeTestRoll = null;
-  if (
+  if (isSpeedTest(spellAttributeTestName)) {
+    // Speed test: d12 + Initiative (+ Speed), higher is better.
+    const speedRoll = await rollSpeedTest(actor, {
+      modifier: spellTestModifier,
+    });
+
+    // Only separate from the description when there is one to separate from.
+    if (hasHtmlContent(concatRollAndDescription)) concatRollAndDescription += "<hr>";
+    concatRollAndDescription += `
+  <span style="display:inline-block;">
+    ${renderSpeedTestLine({
+      actor,
+      roll: speedRoll,
+      source: spell.localizedName ?? spell.name,
+      modifier: spellTestModifier,
+    })}
+  </span>
+`;
+    attributeTestRoll = speedRoll;
+  } else if (
     spellAttributeTestName &&
     spellAttributeTestName !== "-- Select a Type --"
   ) {
@@ -1464,6 +1489,25 @@ export async function finalizeRollsAndPostChat(
   }
 
   console.log("Attack Flag:", attackFlag);
+
+  // Crit banner carries its own trailing separator, so a non-crit cast doesn't
+  // leave an empty paragraph between two rules.
+  const critLabel = ignoreChanneling
+    ? displayCritSuccess
+      ? "Critical Success!"
+      : displayCritFailure
+        ? "Critical Failure!"
+        : ""
+    : critSuccess
+      ? "Critical Success!"
+      : critFailure
+        ? "Critical Failure!"
+        : "";
+  const critBanner = critLabel
+    ? `<p style="text-align: center; font-size: 20px;"><b>${critLabel}</b></p>
+        <hr>`
+    : "";
+
   await ChatMessage.create({
     speaker: ChatMessage.getSpeaker({ actor }),
     content,
@@ -1477,26 +1521,15 @@ export async function finalizeRollsAndPostChat(
         </div>
         ${tags}
         <hr>
-        <p style="text-align: center; font-size: 20px;"><b>
+        ${critBanner}
         ${
-          ignoreChanneling
-            ? displayCritSuccess
-              ? "Critical Success!"
-              : displayCritFailure
-                ? "Critical Failure!"
-                : ""
-            : critSuccess
-              ? "Critical Success!"
-              : critFailure
-                ? "Critical Failure!"
-                : ""
-        }
-        </b></p>
-        <hr>
-        <table style="width: 100%; text-align: center;font-size: 15px;">
+          hasHtmlContent(renderedDescription)
+            ? `<table style="width: 100%; text-align: center;font-size: 15px;">
             <tr><th>Description:</th></tr>
             <tr><td>${renderedDescription}</td></tr>
-        </table>
+        </table>`
+            : ""
+        }
         ${damageTable}
         ${critPenTable}
         ${effectsTable}

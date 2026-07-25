@@ -18,6 +18,7 @@ import {
   resolveEffectDefinition,
 } from "./utils/customConditions.mjs";
 import { wireAttributeFollowups } from "./utils/attributeFollowup.mjs";
+import { wireSpeedFollowups } from "./utils/speedTest.mjs";
 import { registerRollModifier } from "./utils/rollModifier.mjs";
 import { registerFormulaDisplay } from "./utils/formulaDisplay.mjs";
 import { registerEndTurnButton } from "./utils/endTurnButton.mjs";
@@ -2472,9 +2473,11 @@ Hooks.on("deleteCombat", async () => {
   await clearMarksBy(null);
 });
 
-// Make "Margin of Success" lines clickable → follow-up attribute test
+// Make "Margin of Success" lines clickable → follow-up attribute test, and
+// "Speed Test" lines clickable → contested speed test.
 Hooks.on("renderChatMessageHTML", (message, html) => {
   wireAttributeFollowups(html);
+  wireSpeedFollowups(html);
 });
 
 // On token deploy, apply status effects granted by the actor's trait features.

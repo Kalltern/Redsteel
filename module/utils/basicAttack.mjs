@@ -4,6 +4,12 @@ import { AIMED_PARTS } from "./aimedStrike.mjs";
 import { getAttackRerollTokens } from "./rerolls.mjs";
 import { buildBanePacket } from "./baneCombat.mjs";
 import { renderDamageLine } from "./damageLine.mjs";
+import { hasHtmlContent } from "./chatBlocks.mjs";
+import {
+  isSpeedTest,
+  rollSpeedTest,
+  renderSpeedTestLine,
+} from "./speedTest.mjs";
 
 export async function universalAttackLogic({
   attackType,
@@ -150,6 +156,27 @@ export async function universalAttackLogic({
 
       if (!testName || testName === "-- Select a Type --") continue;
 
+      // Speed test: d12 + Initiative (+ Speed), higher is better.
+      if (isSpeedTest(testName)) {
+        const speedRoll = await rollSpeedTest(actor, { modifier: testModifier });
+        attributeTestHTML += `
+    <tr>
+    <td>
+    <span style="display:inline-block;">
+    <b>${mod.localizedName ?? mod.name}</b><br>
+    ${renderSpeedTestLine({
+      actor,
+      roll: speedRoll,
+      source: mod.localizedName ?? mod.name,
+      modifier: testModifier,
+    })}
+    </span>
+    </td>
+    </tr>
+  `;
+        continue;
+      }
+
       const attributeMap = {
         strength: "str",
         endurance: "end",
@@ -176,9 +203,8 @@ export async function universalAttackLogic({
       await attributeRoll.evaluate({ async: true });
 
       attributeTestHTML += `
-    
+
     <tr>
-    <hr>
     <td>
     <span
     title="Test chance ${attributeTotalValue}%&#10;Rolled: ${attributeRoll.result}"
@@ -400,6 +426,31 @@ export async function universalAttackLogic({
       ? ` + ${selectedModifiers.map((m) => m.localizedName ?? m.name).join(", ")}`
       : "";
 
+    // Crit banner carries its own trailing separator, so an ordinary hit doesn't
+    // leave an empty paragraph sandwiched between two rules.
+    const critLabel = critSuccess
+      ? "Critical Success!"
+      : critFailure
+        ? "Critical Failure!"
+        : "";
+    const critBanner = critLabel
+      ? `<p style="text-align:center; font-size:20px;"><b>${critLabel}</b></p>
+ <hr>`
+      : "";
+
+    // Skip the Description table entirely when there is nothing to put in it.
+    const hasDescription = hasHtmlContent(concatDescription);
+    const descriptionTable =
+      hasDescription || attributeTestHTML.trim()
+        ? `
+<div style="text-align:center; font-size:16px;">
+<table style="width:100%; text-align:center; font-size:16px;">
+  ${hasDescription ? `<tr><th>Description</th></tr>\n  <tr><td>${concatDescription}</td></tr>` : ""}
+  ${attributeTestHTML}
+</table>
+ </div>`
+        : "";
+
     await ChatMessage.create({
       speaker: ChatMessage.getSpeaker(),
       content: `
@@ -421,21 +472,10 @@ export async function universalAttackLogic({
   <strong style="font-size:20px;">${resolvedFlavor}${modifierLabel}</strong>
 </span>
  <hr>
-
-
-<p style="text-align:center; font-size:20px;">
-  <b>${critSuccess ? "Critical Success!" : critFailure ? "Critical Failure!" : ""}</b>
-</p>
- <hr>
+${critBanner}
 <div class="rs-attack-face" data-face-normal>${damageLine}</div>
 <hr>
-<div style="text-align:center; font-size:16px;">
-<table style="width:100%; text-align:center; font-size:16px;">
-  <tr><th>Description</th></tr>
-  <tr><td>${concatDescription}</td></tr>
-  ${attributeTestHTML}
-</table>
- </div>
+${descriptionTable}
 
 <table style="width:100%; text-align:center; font-size:15px;">
   <tr><th>Effects</th></tr>

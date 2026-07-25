@@ -2,6 +2,12 @@ import { getTraitPills } from "./traitPills.mjs";
 import { withRollBias, applyDesperateCrit, tagRollSkill } from "./rollAdvantage.mjs";
 import { AIMED_PARTS } from "./aimedStrike.mjs";
 import { getAttackRerollTokens } from "./rerolls.mjs";
+import { hasHtmlContent } from "./chatBlocks.mjs";
+import {
+  isSpeedTest,
+  rollSpeedTest,
+  renderSpeedTestLine,
+} from "./speedTest.mjs";
 
 async function getSneakDamageFormula(actor, weapon, weaponContext = null) {
   const ws = weapon?.system ?? {};
@@ -59,10 +65,22 @@ export async function getNonWeaponAbility(actor, ability) {
 
   let concatRollAndDescription = ability.system.description;
   let attributeTestRoll = null;
+  let speedTestRoll = null;
 
   const testName = ability.system.attributeTest?.trim();
 
-  if (testName && testName !== "-- Select a Type --") {
+  if (isSpeedTest(testName)) {
+    // d12 + Initiative (+ Speed) — rolled high, contested from the chat card.
+    speedTestRoll = await rollSpeedTest(actor, { modifier: abilityTestModifier });
+    // Only separate from the description when there is one to separate from.
+    if (hasHtmlContent(concatRollAndDescription)) concatRollAndDescription += "<hr>";
+    concatRollAndDescription += `${renderSpeedTestLine({
+      actor,
+      roll: speedTestRoll,
+      source: ability.localizedName ?? ability.name,
+      modifier: abilityTestModifier,
+    })}`;
+  } else if (testName && testName !== "-- Select a Type --") {
     const lowerTestName = testName.toLowerCase();
     let baseValue = 0;
 
@@ -141,6 +159,10 @@ export async function getNonWeaponAbility(actor, ability) {
     validRolls.push(attributeTestRoll);
   }
 
+  if (speedTestRoll instanceof Roll && speedTestRoll._evaluated) {
+    validRolls.push(speedTestRoll);
+  }
+
   if (damageRoll instanceof Roll && damageRoll._evaluated) {
     validRolls.push(damageRoll);
   }
@@ -155,6 +177,18 @@ export async function getNonWeaponAbility(actor, ability) {
     <div class="roll-column">
       <div class="roll-label">Margin of Success</div>
       ${attackHTML}
+    </div>
+  `);
+  }
+
+  // Speed test column (d12 + Initiative + Speed, higher is better)
+  if (speedTestRoll instanceof Roll && speedTestRoll._evaluated) {
+    const speedHTML = await speedTestRoll.render();
+
+    columns.push(`
+    <div class="roll-column">
+      <div class="roll-label">Speed Test</div>
+      ${speedHTML}
     </div>
   `);
   }
@@ -207,8 +241,12 @@ export async function getNonWeaponAbility(actor, ability) {
 </div>
 <hr>
 <table style="width: 100%; text-align: center; font-size: 15px;">
-  <tr>    <th>Description:</th>  </tr>
-  <tr>    <td>${concatRollAndDescription}</td>  </tr>
+  ${
+    hasHtmlContent(concatRollAndDescription)
+      ? `<tr>    <th>Description:</th>  </tr>
+  <tr>    <td>${concatRollAndDescription}</td>  </tr>`
+      : ""
+  }
 
   <tr>    <th>Effects:</th>  </tr>
 

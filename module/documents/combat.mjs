@@ -1,3 +1,8 @@
+import {
+  buildSpeedTestFormula,
+  tagSpeedTest,
+} from "../utils/speedTest.mjs";
+
 /**
  * Extend the basic Combat with custom initiative handling.
  * @extends {Combat}
@@ -24,24 +29,12 @@ export class RedsteelCombat extends Combat {
       if (!combatant?.isOwner || !actor) continue;
 
       // -----------------------------------------
-      // Prone initiative override
-      // -----------------------------------------
-
-      const isProne = actor.effects.some(
-        (e) => e.getFlag("core", "statusId") === "prone",
-      );
-
-      // -----------------------------------------
       // Initiative formula
       // -----------------------------------------
+      // Shared with ability "speed" tests (prone override, NPCs without Speed,
+      // the rogue doctrine-7 two-die upgrade) so the two can never drift apart.
 
-      const rollFormula = isProne
-        ? "1"
-        : actor.type === "npc"
-          ? "1d12 + @secondaryAttributes.ini.total"
-          : actor.system.doctrines.rogue.value >= 7
-            ? "2d12kh1 + @secondaryAttributes.ini.total + @secondaryAttributes.spd.total"
-            : "1d12 + @secondaryAttributes.ini.total + @secondaryAttributes.spd.total";
+      const rollFormula = buildSpeedTestFormula(actor);
 
       // -----------------------------------------
       // Roll initiative
@@ -51,12 +44,7 @@ export class RedsteelCombat extends Combat {
       // Mark as a d12 speed test so the roll-modifier layer can apply
       // advantage/disadvantage (keeping the higher/lower d12). Tagged with the
       // "spd" skill so speed-specific advantage buckets apply too.
-      roll.options ??= {};
-      roll.options.redsteel = {
-        ...(roll.options.redsteel ?? {}),
-        skill: "spd",
-        speedTest: true,
-      };
+      tagSpeedTest(roll);
 
       await roll.evaluate();
 

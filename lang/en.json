@@ -3465,7 +3465,9 @@
           "Defense": "Defense"
         },
         "Condition": {
-          "max": "max"
+          "max": "max",
+          "armor": "Armor",
+          "detection": "Trap Detection"
         },
         "stats": {
           "health": {

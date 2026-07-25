@@ -6,6 +6,9 @@
  * redsteel.mjs long after the message was created, and any divergence between
  * two copies of this markup would show up as the card visibly changing shape
  * when flipped.
+ *
+ * The block ends at the grid — the separating rule belongs to the card template
+ * that places this, so it isn't doubled up when a card adds its own.
  */
 export function renderDamageLine({
   damage,
@@ -62,6 +65,5 @@ ${
     </div>
   </div>
 </div>
-<hr>
 `;
 }

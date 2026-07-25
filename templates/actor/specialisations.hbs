@@ -34,7 +34,7 @@
       >
         <div class="spec-tree-wrap">
           <div
-            class="spec-tree{{#if tree.constellation}} constellation{{/if}}"
+            class="spec-tree{{#if tree.constellation}} constellation constellation-{{tree.id}}{{/if}}"
             {{#unless tree.constellation}}style="width: {{tree.width}}px; height: {{tree.height}}px;"{{/unless}}
           >
             {{#if tree.constellation}}
