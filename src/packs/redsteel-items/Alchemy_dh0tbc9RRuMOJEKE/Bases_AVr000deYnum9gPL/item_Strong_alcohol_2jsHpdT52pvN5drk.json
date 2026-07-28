@@ -1,0 +1,32 @@
+{
+  "folder": "AVr000deYnum9gPL",
+  "name": "Strong alcohol",
+  "type": "item",
+  "img": "icons/consumables/drinks/alcohol-spirits-bottle-green.webp",
+  "system": {
+    "description": "<p>An alchemical base. One bottle is enough for 5 uses (5 crafted units).</p>",
+    "quantity": 1,
+    "localizationKey": "REDSTEEL.Items.StrongAlcohol.name"
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {
+    "redsteel": {
+      "alchBase": "strongAlcohol"
+    }
+  },
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.9.51",
+    "lastModifiedBy": null
+  },
+  "_id": "2jsHpdT52pvN5drk",
+  "_key": "!items!2jsHpdT52pvN5drk"
+}

@@ -132,6 +132,20 @@
           />
         </div>
 
+        {{#if (eq item.type "ability")}}
+          <div class="grid-span-1">
+            <label class="resource-label">{{localize "REDSTEEL.Item.Ability.FIELDS.heavyDamage.label"}}</label>
+            <input
+              type="text"
+              name="system.roll.heavyDiceBonus"
+              value="{{system.roll.heavyDiceBonus}}"
+              data-dtype="String"
+              placeholder="e.g. +2d4"
+              title="{{localize "REDSTEEL.Item.Ability.FIELDS.heavyDamage.hint"}}"
+            />
+          </div>
+        {{/if}}
+
         <div class="grid-span-1">
           <label class="resource-label">{{localize "REDSTEEL.Item.Weapon.FIELDS.penetration.label"}}</label>
           <input

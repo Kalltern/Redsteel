@@ -1,0 +1,158 @@
+{
+  "name": "Magic shield",
+  "type": "spell",
+  "img": "icons/magic/defensive/shield-hex-blue.webp",
+  "system": {
+    "localizationKey": "",
+    "description": "Creates a shield with 15 + {{math spellPower \"*\" 4}} HP that absorbs magical damage. Can absorb larger hits in a single instance. Cannot be dispelled by Counterspell and protects against some magical effects (Charm, etc). Not compatible with other Shields or similar effects.",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": {
+      "0": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      },
+      "1": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      }
+    },
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": false,
+    "sustained": false,
+    "difficulty": -30,
+    "cost": 18,
+    "perRound": 0,
+    "variants": [],
+    "option": "magic",
+    "type": "spirit",
+    "rank": "expert",
+    "actionCost": "2 | C",
+    "range": "8",
+    "spellClass": "lesser",
+    "roll": {
+      "diceNum": 0,
+      "diceSize": "0",
+      "diceBonus": ""
+    },
+    "penetration": 0,
+    "dmgType1": "",
+    "bool2": "",
+    "dmgType2": "",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": "0",
+      "effect2": "0",
+      "effect3": "0",
+      "effect4": "0",
+      "stagger": null,
+      "bleed": null,
+      "extra1": -1,
+      "extra2": null,
+      "extra3": null,
+      "effectName1": "shield_magic"
+    },
+    "attributeTest": "",
+    "testModifier": "",
+    "effectType1": "custom",
+    "effectType2": "",
+    "effectType3": ""
+  },
+  "effects": [],
+  "folder": "yQKWKFaPqrfuldp0",
+  "flags": {
+    "scene-packer": {
+      "hash": "6bb0b4766da10057c78ba23066c1b766d9e2bc48"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.spirit-spells.Item.5QdwfzFY8XfZ6PYq",
+    "duplicateSource": "Item.Huo34FE730q5pMeh",
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.9.0",
+    "createdTime": 1784581202176,
+    "modifiedTime": 1784581202176,
+    "lastModifiedBy": "MXiQFt4waIv5RqBo"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3,
+    "MXiQFt4waIv5RqBo": 3
+  },
+  "_id": "Huo34FE730q5pMeh",
+  "sort": 700000,
+  "_key": "!items!Huo34FE730q5pMeh"
+}

@@ -1,3 +1,29 @@
+/**
+ * Fold in the extra damage an ability only deals with a Heavy weapon.
+ *
+ * The rules write Zteč as one action ("Damage +2d4; additional +2d4 if using a
+ * Heavy weapon") rather than two, so the ability carries the conditional dice
+ * in `system.roll.heavyDiceBonus` and we resolve it here, once the weapon that
+ * will actually swing is known. Non-heavy weapons and abilities without the
+ * field are left untouched.
+ *
+ * @param {string} formula  damage formula assembled so far ("" if none yet)
+ * @param {Item|null} weapon  the resolved weapon, or null for a weaponless attack
+ * @param {Item[]} sources  ability and/or modifiers that may carry heavy dice
+ * @returns {string} the formula, with any heavy bonuses appended
+ */
+export function appendHeavyWeaponDamage(formula, weapon, sources = []) {
+  if (weapon?.system?.type !== "heavy") return formula;
+
+  let out = formula;
+  for (const source of sources) {
+    const bonus = source?.system?.roll?.heavyDiceBonusFormula;
+    if (!bonus) continue;
+    out = out ? `(${out}) + (${bonus})` : bonus;
+  }
+  return out;
+}
+
 export function resolveWeaponContext(
   actor,
   ability = null,

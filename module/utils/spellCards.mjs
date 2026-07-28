@@ -20,7 +20,8 @@ const SPELL_POWER_TOKEN = /\{\{\s*(?:math\s+)?spellPower\b([^}]*)\}\}/gi;
  *
  * Multiplication and division floor their result: the rulebook always rounds
  * SK fractions down (the same rule `getSpellPower` documents), so SK 7 with
- * `"/" 2` reads 3, not 3.5.
+ * `"/" 2` reads 3, not 3.5. The `"/up"` operator is the opt-out, for the few
+ * rules that spell out "rounded up" — SK 7 with `"/up" 2` reads 4.
  *
  * @param {string} rawArgs  Everything between `spellPower` and the closing `}}`.
  * @param {number} spellPower
@@ -39,7 +40,11 @@ function evaluateSpellPowerArgs(rawArgs, spellPower) {
 
   if (!args) return spellPower;
 
-  const parsed = args.match(/^["']?([*/+-])["']?\s*(-?\d+(?:\.\d+)?)(.*)$/);
+  // `/up` is matched before the single-character operators so the "/" branch
+  // cannot claim it and leave "up" stranded in the operand.
+  const parsed = args.match(
+    /^["']?(\/up|[*/+-])["']?\s*(-?\d+(?:\.\d+)?)(.*)$/,
+  );
   // No usable operator — a handful of packs store `"" 2`, where the intended
   // operation was never recorded. Fall back to plain SK rather than inventing.
   if (!parsed) return spellPower;
@@ -53,6 +58,10 @@ function evaluateSpellPowerArgs(rawArgs, spellPower) {
       break;
     case "/":
       value = operand === 0 ? 0 : Math.floor(spellPower / operand);
+      break;
+    // Opt-in round-up, for the rules that say so explicitly.
+    case "/up":
+      value = operand === 0 ? 0 : Math.ceil(spellPower / operand);
       break;
     case "+":
       value = spellPower + operand;

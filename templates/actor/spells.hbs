@@ -69,7 +69,7 @@
       {{#if (eq rg.rank ../activeRank)}}
         <ul class="spell-card-grid">
           {{#each rg.cards as |card|}}
-            <li class="spell-card" data-item-id="{{card.id}}" data-card-kind="spell" data-drag="true" data-document-class="Item">
+            <li class="spell-card" data-item-id="{{card.id}}" data-card-kind="spell" data-tt-kind="spellCard" data-tt-id="{{card.id}}" data-drag="true" data-document-class="Item">
               <a class="spell-card-icon rollable" data-action="roll" data-roll-type="item">
                 <img src="{{card.img}}" data-item-id="{{card.id}}" width="48" height="48" />
               </a>

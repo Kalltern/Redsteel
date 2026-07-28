@@ -22,7 +22,7 @@
 
     <ul class="spell-card-grid">
       {{#each abilityCards as |card|}}
-        <li class="spell-card" data-item-id="{{card.id}}" data-card-kind="ability" data-drag="true" data-document-class="Item">
+        <li class="spell-card" data-item-id="{{card.id}}" data-card-kind="ability" data-tt-kind="spellCard" data-tt-id="{{card.id}}" data-drag="true" data-document-class="Item">
           <a class="spell-card-icon rollable" data-action="roll" data-roll-type="item">
             <img src="{{card.img}}" data-item-id="{{card.id}}" width="48" height="48" />
           </a>

@@ -1521,7 +1521,7 @@
     "recipe": {
       "templates": ["base"],
       "outputType": "potion",
-      "outputTypeOptions": ["potion", "ointment"],
+      "outputTypeOptions": ["potion", "ointment", "poison", "oil", "explosive", "drug"],
       "resultUuid": "",
       "substances": {
         "yliaster": 0,

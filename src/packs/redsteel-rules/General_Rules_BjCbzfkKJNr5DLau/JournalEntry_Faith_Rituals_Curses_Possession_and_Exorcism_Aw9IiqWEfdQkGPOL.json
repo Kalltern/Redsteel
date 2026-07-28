@@ -1,0 +1,68 @@
+{
+ "name": "Faith, Rituals, Curses, Possession and Exorcism",
+ "pages": [
+  {
+   "sort": 0,
+   "name": "Faith, Rituals, Curses, Possession and Exorcism",
+   "type": "text",
+   "_id": "W6oIffdr2eAQYVOR",
+   "title": {
+    "show": false,
+    "level": 1
+   },
+   "image": {},
+   "src": null,
+   "system": {},
+   "text": {
+    "format": 1,
+    "content": "<h3>Víra</h3>\n<p>Šance na úspěch se určuje jako Víra*8. Víra může sloužit mnohým účelům. Věřící se často obrací na své bohy a patrony s prosbou o pomoc či radu. Víra má své místo i při exorcismu. U víry je důležité rovněž zmínit, že bohové častěji vyslyší prosby zasvěcených nežli prosby těch, kteří si na bohy vzpomenou jen v případě nouze a obecně prosby spíše nevyslyší vůbec. Jak je tedy nastíněno, modifikace za Obtížnost je u Testů Víry velmi častá a různorodá. Kritická selhání rovněž mohou vést k trestu. Ačkoliv se dá modlit za mnohé, některé věci zkrátka nebudou nikdy vyslyšeny. Rovněž je vhodné zmínit, že různí bohové reagují různě a s jinou ochotou.</p>\n<h3>Rituály</h3>\n<p>Šance na úspěch se určuje jako Vůle*3 + Dovednost + Rysy + Odbornosti. Rituály se dělí na následující skupiny: Obecné rituály, Nekromancii, Démonologii, Okultismus, Krvavé rituály a Kněžské rituály. Rituály obecně zvládají vyvolávání elementálů, nemrtvých a démonů, kletby a jejich rušení, Exorcismus a rozličné další rituály týkající se počasí a jiných věcí. Co se ingrediencí týče, dělí se podle typu a stupně. Stupeň určuje sílu ingredience, existují tři stupně, přičemž stupeň třetí je ten nejsilnější. Typ pak určuje jakási elementární spojitost, dělí se tedy na Oheň, Vodu, Zemi, Vzduch, Život a Smrt. Nakonec mohou existovat ještě ingredience speciální. U rituálů existuje možnost nahradit ingredience prvního stupně magií (5 many za jednu surovinu).</p>\n<h3>Kletby</h3>\n<p>Kletby jsou jednou z možností Rituálů. Nejčastěji se kletby řadí do skupiny Okultismus, mohou však existovat i v jiných oborech, jako je Nekromancie a Démonologie. Přijít ke kletbě se dá poměrně snadno rozličnými způsoby. Zlomit kletbu už však tak snadné není. Kletby obvykle dělíme do tří kategorií podle jejich síly. <br>Kletby Prvního stupně bývají mnohdy spíše zlomyslné žerty, než-li život ohrožující tragédie. Zlomit takovou kletbu bývá často poměrně snadné, jelikož to vyžaduje jen nikterak složitý Rituál, který nebývá náročný svými požadavky na místo ani suroviny. Populárními příklady je například kletba Psí podstaty nebo Pravdomluvné facky.<br>Kletby Druhého stupně už však žádné žerty nejsou. Jedná se často o život ohrožující nebo život zásadně znesnadňující kletby. Zlomit tento stupeň kletby bývá mnohdy náročné, jelikož to často vyžaduje specifické nebo velmi svaté místo společně s řadou ingrediencí. Příkladem může být například kletba Poslušnosti nebo Mučedníka.<br>Kletby Třetího stupně jsou často hrozivé svým rozsahem či materií. Bývá takřka nemožné je zlomit, obvykle je zapotřebí rozplést řadu hádanek a vystopovat zdroj takové kletby. I v takovém případě je pak zapotřebí zkušeného ritualisty a řady mocných ingrediencí. Příkladem je například kletba Rudé hvězdy, Černého slunce nebo Černého srdce.</p>\n<h3>Posednutí</h3>\n<p>Způsobů posednutí je mnoho. Prokletý předmět, mentální souboj, návštěva Úniku, souhlas. Rozlišujeme rovněž dva druhy posednutí, Aktivní a Pasivní. <br>Aktivní posednutí je agresivní a obvykle probíhá formou mentálního souboje. Výsledkem je pak ztráta kontroly ve prospěch démona, který obvykle započne pomalou konzumaci (posednutý ztrácí mentální životy), zatímco se toulá světem. Silnější stupně démonů však tento krok často přeskočí a posednutý se stává Ohavností.<br>Pasivní posednutí bývá mnohdy zákeřné. Probíhá obvykle skrze sny a prokleté předměty. Pasivní démon bude ovlivňovat chování jedince, mnohdy bude našeptávat a může se pokusit jedince i ovládnout. Pasivní posednutí může trvat celé roky a někdy může být velmi pozvolné. Neznámé nejsou případy, kdy démon roky skrze sny ovlivňoval mysl nic netušící oběti, jen aby jí později plně posedl.</p>\n<h3>Exorcismus</h3>\n<p>Provádí se na jedincích, které posedl démon nebo zlý duch. Exorcismus nelze úspěšně provádět na Ohavnostech nebo posedlých, kteří jsou již za hranou záchrany. Kroky jsou následující. Nejprve je potřeba spacifikovat oběť, poté úspěšně provést Rituál zvaný Exorcismus (Nebo stejnojmenný zázrak Domény Světla) a nakonec provést Test Víry. Poté si oběť Testuje Vůli, při úspěchu získává jeden nebo dva Úspěchy, kterých obvykle potřebuje více, nebo v případě neúspěchu ztratí Mentální život či dva. Pak se celý postup opakuje. Na Exorcismu se můžou podílet maximálně tři exorcisté. Za každý úspěšný Test Víry získává oběť bonus na svůj Test Vůle. Naopak síla démona udává značné postihy.<br><br>Modifikátory obtížnosti<br>Kritický neúspěch Testu Víry - Postih -10%<br>Neúspěšný Test Víry - Bonus +0%<br>Úspěšný Test Víry - Bonus +10%<br>Test Víry o síle úspěchu +25 - Bonus +20%<br>Test Víry o síle Kritického úspěchu - Bonus +40%<br>Pasivní démon - Postih -0%<br>Aktivní démon - Postih -30%<br>Démon 1. stupně - Postih -20%<br>Démon 2. stupně - Postih -30%<br>Démon 3. stupně - Postih -50%<br>Démon 4. stupně - Postih -80%<br>Démon 5. stupně - Postih -?#&amp;%</p>",
+    "markdown": null
+   },
+   "video": {
+    "controls": true,
+    "volume": 0.5
+   },
+   "category": null,
+   "ownership": {
+    "default": -1
+   },
+   "flags": {},
+   "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785239603752,
+    "modifiedTime": 1785239603752,
+    "lastModifiedBy": null
+   },
+   "_key": "!journal.pages!Aw9IiqWEfdQkGPOL.W6oIffdr2eAQYVOR"
+  }
+ ],
+ "folder": "BjCbzfkKJNr5DLau",
+ "flags": {
+  "redsteel": {
+   "sourceSheet": "Víra, Rituály, Kletby, Posednutí a Exorcismus"
+  }
+ },
+ "categories": [],
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603752,
+  "modifiedTime": 1785239603752,
+  "lastModifiedBy": null
+ },
+ "ownership": {
+  "default": 0
+ },
+ "_id": "Aw9IiqWEfdQkGPOL",
+ "sort": 25000,
+ "_key": "!journal!Aw9IiqWEfdQkGPOL"
+}

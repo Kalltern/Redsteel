@@ -1,0 +1,68 @@
+{
+ "name": "Bard, Music, Songs, Melodies and Artistic Creation",
+ "pages": [
+  {
+   "sort": 0,
+   "name": "Bard, Music, Songs, Melodies and Artistic Creation",
+   "type": "text",
+   "_id": "mXfVLv91p1L262qN",
+   "title": {
+    "show": false,
+    "level": 1
+   },
+   "image": {},
+   "src": null,
+   "system": {},
+   "text": {
+    "format": 1,
+    "content": "<h3>Bard</h3>\n<p>Bard má skrze Krev Sylvanů nebo Zvláštní příležitost (Pakt s Vyšším Sylvanem) možnost sesílat Písně. Jedná se o typ magie specifický pro Sylvany, který nečerpá ze Zdroje skrze sféry, nýbrž manipuluje přímo s energií nacházející se v materiální sféře, zejména pak s tou v živých tvorech. Bardovi Písně zpravidla fungují pouze na živé tvory schopné slyšet Melodii. Kontramágové zvládají Melodii potlačovat stejně jako magii, Kněz se může obrátit na svou Víru pro účely Magické obrany a Čaroděj se zvládá bránit stejně, jako by se bránil jiné magie, tedy Testem Usměrňování.</p>\n<h3>Hudba</h3>\n<p>Šance na úspěch je určena jako Charisma*3 + Rysy + Odbornosti + Dovednost. Obvykle nemá žádné obtížnosti. Kvalita se pak vyhodnocuje tradičně na základě síly úspěchu. Důležitými milníky je opět úspěch o síle 25 a úspěch o síle 60, rovněž znám jako úspěch kritický. Hudba jako dovednost se používá skupinově pro všechny naučené hudební nástroje nebo zpěv. Nový hudební nástroj, nebo schopnost zpěvu, se získává skrze patřičnou Znalost, která má dva stupně. První stupeň umožňuje využít 1/2 Hudby, druhý stupeň pak benefituje z dovednosti v plném rozsahu.</p>\n<h3>Melodie</h3>\n<p>Šance na úspěch je určena jako Charisma*3 + Rysy + Dovednost. Šance se odvozují z dovednosti Hudba. Na Testy Melodie lze uplatnit opakování hodu z dovednosti Hudba, avšak Výhoda na Testy Hudby se netýká Testů Melodie.<br>Test Melodie používá Bard na sesílání svých Písní, případně na Magickou obranu proti Písním jiného Barda či Sylvana nebo proti magii. Magický útok jeTestován v rámci sesílání Písně a získává bonusy ze Specializace. Kritické selhání nastává při neúspěchu o síle -25 nebo v případě naturálního Kritického neúspěchu, a vede k negativním efektům, viz Kniha kouzel.</p>\n<h3>Písně a Balady</h3>\n<p>Písně jsou manifestací magie, krátkou melodií, kterou je Bard schopen sesílat skrze Testy Melodie. Seslání Písně vyžaduje Inspiraci a v některých případech i vyčerpá Mentální život. Balady jsou specifickým druhem Písní a obvykle slouží k obnově Inspirace, jejich seslání je tedy zdarma. Písně lze libovolně kombinovat s jinými Písněmi nebo útočnými akcemi, ale v jednom kole lze seslat pouze jednu Baladu. Písně se dělí do čtyř Kolejí, naučit se dají postupem specializací nebo od vhodných učitelů. Všechny Písně se dělí podle typu na Hudební (H) nebo Vokální (V). Hudební Písně je nutné sesílat skrze hudební nástroj a mohou vyvolávat Příležitostné útoky. Vokální Písně je nutné sesílat skrze hlas a Příležitostné útoky nevyvolávají. Pokud Bard nemůže mluvit, nemůže sesílat Vokálně, pokud nemůže hrát na nástroj, nemůže sesílat Hudebně.<br><br>Spříznění<br>Každá naučená Píseň může být Bardem hlouběji pochopena, což zefektivňuje její sesílání. Takovému stavu říkáme Spříznění. Spřízněná Píseň stojí o 1 akci méně na seslání. Skrze specializaci dostává Bard možnost vybrat si jednu Kolej, jejíž Písně se vždy považují za Spřízněné. Ostatní Písně lze Spříznit skrze Uměleckou tvorbu. V takovém případě musí být výsledek Umělecké tvorby alespoň Mistrovská kvalita. Aby se však Bard o Spříznění mohl pokusit, měl by disponovat svolením od DM. Mělo by se jednat o pomyslnou inspiraci, svědectví velkého činu, pokoření statného nepřítele, o moment velké radosti či naopak neodpustitelné zrady.</p>\n<h3>Učení Písní</h3>\n<p>Naučit se bardské Písně lze několika způsoby. První varianta je při tvorbě postavy. Pro takový účel funguje Znalost Paměť.<br>Druhá varianta je pak učení se Písní během hraní. V takovém případě musí rovněž použít Znalost Paměť a splňovat její specifické podmínky. Písně se lze učit z různých zdrojů: od ostatních Bardů, Sylvanů, skrze Snění nebo skrze unikátní místa či předměty. Písně se dají učit hromadně, maximálně však Charisma/2 Písní najednou. Doba učení je jeden až čtyři dny podle nejvyššího stupně. Dobu učení lze zkrátit Testem Umělecké tvorby, za každý zkrácený den se zvyšuje Obtížnost o 20%, minimální doba je vždy jeden den.</p>\n<h3>Umělecká tvorba</h3>\n<p>Šance na úspěch je určena jako Inteligence*3 + Rysy + Odbornosti + Dovednost. Pro Uměleckou tvorbu platí výjimka pro opakování hodů, a to sice, že je může opakovat tak dlouho, dokud je má k dispozici, nebo nedojde na Kritický neúspěch. Obvykle nemá žádné obtížnosti. Dělí se na Poezii, Hudební kompozici, Divadelní hry a Psaní knih. Každá tvorba vyžaduje předem určený čas a při svém dokončení i specifický počet Testů, které následně rozhodnou o kvalitě díla. Dalším faktorem je inspirace. Za inspiraci postačuje reálná zkušenost nebo vhodný námět.<br>Kvalita díla se odvozuje od všech výsledných úspěchů/neúspěchů. Každý úspěch a neúspěch zvyšuje či snižuje výslednou kvalitu díla. Některé kvality mají navíc další specifické požadavky.<br><br>Legendární - Všechny hody musí být Kritické úspěchy, přičemž alespoň třetina musí být tzv. Přirozené Kritické úspěchy; Kvalita 3 a více<br>Mistrovská - Alespoň jeden hod musí být Kritický úspěch; Kvalita 3 a více<br>Dobrá - Žádné požadavky; Kvalita 2<br>Ucházející - Žádné požadavky; Kvalita 1 až -1<br>Špatná - Žádné požadavky; Kvalita -2<br>Příšerná - Žádné požadavky; Kvalita -3 a méně<br><br>Typ tvorby a náročnost<br>Poezie - Jeden den a jeden hod<br>Hudební kompozice - Tři dny a tři hody<br>Divadelní hra - Osm dní a pět hodů<br>Kniha - Třicet dní a šest hodů<br>Bez inspirace - Prodlužuje tvorbu o polovinu, Postih -30%, nemůže kriticky uspět<br>Spěch - Zkracuje tvorbu o libolný počet dnů, Postih -10% za každý zkrácený den<br><br>Úspěch a jeho dopad na Kvalitu<br>Kritický úspěch - Kvalita +3<br>Úspěch o síle +25 - Kvalita +2<br>Úspěch - Kvalita +1<br>Neúspěch - Kvalita -1<br>Neúspěch o síle -25 - Kvalita -2<br>Kritický neúspěch - Kvalita -3</p>",
+    "markdown": null
+   },
+   "video": {
+    "controls": true,
+    "volume": 0.5
+   },
+   "category": null,
+   "ownership": {
+    "default": -1
+   },
+   "flags": {},
+   "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785239603749,
+    "modifiedTime": 1785239603749,
+    "lastModifiedBy": null
+   },
+   "_key": "!journal.pages!9st2qLHQb5EJff45.mXfVLv91p1L262qN"
+  }
+ ],
+ "folder": "BjCbzfkKJNr5DLau",
+ "flags": {
+  "redsteel": {
+   "sourceSheet": "Bard, Hudba, Písně, Melodie a Umělecká tvorba"
+  }
+ },
+ "categories": [],
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603749,
+  "modifiedTime": 1785239603749,
+  "lastModifiedBy": null
+ },
+ "ownership": {
+  "default": 0
+ },
+ "_id": "9st2qLHQb5EJff45",
+ "sort": 20000,
+ "_key": "!journal!9st2qLHQb5EJff45"
+}

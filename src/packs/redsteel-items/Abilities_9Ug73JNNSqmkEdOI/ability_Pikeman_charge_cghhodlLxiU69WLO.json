@@ -93,7 +93,8 @@
     "dodge": 0,
     "attack": 10,
     "roll": {
-      "diceBonus": " +2d4"
+      "diceBonus": " +2d4",
+      "heavyDiceBonus": " +2d4"
     },
     "breakthrough": "",
     "penetration": 5,

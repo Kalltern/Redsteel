@@ -1,0 +1,68 @@
+{
+ "name": "Desperate Effort and Fatigue",
+ "pages": [
+  {
+   "sort": 0,
+   "name": "Desperate Effort and Fatigue",
+   "type": "text",
+   "_id": "0QzL98TxWXsmeHEz",
+   "title": {
+    "show": false,
+    "level": 1
+   },
+   "image": {},
+   "src": null,
+   "system": {},
+   "text": {
+    "format": 1,
+    "content": "<h3>S vypětím všech sil</h3>\n<p>Jedná se o mechaniku využívanou pouze v nejvyšší nouzi. Rozhoduje DM, zda-li využití schválí. Může se jednat například o situace týkající se smrti, Hříšnosti nebo podobně závažných témat. Lze využívat i na Testy Vlastností. V případě dovedností, a tedy i v případě Souboje a Střelby, poskytuje S vypětím všech sil následující bonusy: Šance na Úspěch zvýšena o +20%, Šance na Kritický úspěch zvýšena o +5% a Šance na Kritický neúspěch snížena o -5%, rovněž však uděluje jeden stupeň Únavy. Testy S vypětím všech sil rovněž ignorují postihy způsobované Únavou.</p>\n<h3>Obnovení Výdrže a Many skrze Únavu</h3>\n<p>Hráč si může kdykoliv během souboje obnovit 20 Výdrže výměnou za jeden stupeň Únavy. <br>Pokud by se hráč pokoušel seslat kouzlo, na které mu nezbývá dostatek Many, automaticky získává 15 Many za jeden stupeň Únavy. Hráč vždy získá tolik stupňů Únavy, aby to pokrylo náklady na vyčarování kouzla. Přebytečná Mana hráči zůstává.</p>\n<h3>Únava</h3>\n<p>Únava reprezentuje fyzický stav našich hrdinů a břímě, které se na sebe rozhodli naložit. Únava sebou přináší různé postihy, které se skrze stupně sčítají. Mezi způsoby získávání Únavy patří: Akce prováděné S vypětím všech sil, dlouhá doba beze spánku, cestování s nepřiměřeně velkým břemenem, fyzicky velmi náročná práce nebo obnovení Výdrže či Many v souboji. Dlouhý odpočinek ve vhodných podmínkách snižuje Únavu o 1 stupeň.<br><br>Stupně Únavy<br>1. Stupeň - Šance na Kritický neúspěch +1%, Výdrž -5, Mana -3<br>2. Stupeň - Šance na Kritický neúspěch +1%, Výdrž -5, Mana -3, Rychlost -1<br>3. Stupeň - Šance na Kritický neúspěch +1%, Výdrž -5, Mana -3, Šance na Úspěch -10%, Test Odolnosti/Vůle (Těžký) na ztrátu vědomí.<br>4. Stupeň - Šance na Kritický neúspěch +1%, Výdrž -5, Mana -3, Nevýhoda na vše, Test Odolnosti/Vůle (Velmi těžký) na ztrátu vědomí.<br>5. Stupeň - Šance na Kritický neúspěch +1%, Výdrž -5, Mana -3, Rychlost na 1, Test Odolnosti/Vůle (Legendární) na ztrátu vědomí.<br>6 Stupeň - Po dosažení tohoto stupně následuje smrt vyčerpáním.</p>",
+    "markdown": null
+   },
+   "video": {
+    "controls": true,
+    "volume": 0.5
+   },
+   "category": null,
+   "ownership": {
+    "default": -1
+   },
+   "flags": {},
+   "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785239603751,
+    "modifiedTime": 1785239603751,
+    "lastModifiedBy": null
+   },
+   "_key": "!journal.pages!dffAuj5NeJNEOOVV.0QzL98TxWXsmeHEz"
+  }
+ ],
+ "folder": "BjCbzfkKJNr5DLau",
+ "flags": {
+  "redsteel": {
+   "sourceSheet": "S vypětím všech sil a Únava"
+  }
+ },
+ "categories": [],
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603751,
+  "modifiedTime": 1785239603751,
+  "lastModifiedBy": null
+ },
+ "ownership": {
+  "default": 0
+ },
+ "_id": "dffAuj5NeJNEOOVV",
+ "sort": 24000,
+ "_key": "!journal!dffAuj5NeJNEOOVV"
+}

@@ -1,0 +1,68 @@
+{
+ "name": "Critical Hits",
+ "pages": [
+  {
+   "sort": 0,
+   "name": "Critical Hits",
+   "type": "text",
+   "_id": "M7I6l3OoV2lOotKA",
+   "title": {
+    "show": false,
+    "level": 1
+   },
+   "image": {},
+   "src": null,
+   "system": {},
+   "text": {
+    "format": 1,
+    "content": "<p>Základní šance je 5% (Ovlivňuje zbraň, Štěstí, dovednost, odbornost). Úspěšný zásah, který je o 60 silnější než protivníkova obrana je rovněž kritickým zásahem. Kritický neúspěch během Úhybu rovněž vede ke kritickému zásahu. Kritický zásah lze proměnit na obyčejný zásah skrze kritickou obranou a silnější kritická obrana neguje zásah zcela.<br>Kritické zásahy 4. stupně jsou rozděleny podle místa, na které bylo útočeno skrze \"Cílený útok\".<br>Ztráta ruky - Postih 30% na akce vyžadující obě ruce. Další možná omezení vyplývající z okolností situace a logiky.<br>Ztráta nohy - Nemůže používat akci Úhyb. Postih 30% na pohybové akce. Pohyb snížen na polovinu. Další možná omezení vyplývající z okolností situace a logiky.<br>Ztráta oka - Postih 30% na Střelbu a Vrh. Postih 10% na Kryt, Obranu a Zásah v Souboji. Postih 20% na zrakově založené Vnímání.<br>Ztráta ucha - Postih na sluchově založené Vnímání -20%. Vzhled -1<br>Ztráta nosu - Postih na čichově založené Vnímání -20%. Vzhled -2, minimálně 0</p>\n<table><thead><tr><th>Stupeň</th><th>Rozsah</th><th>Popis</th></tr></thead><tbody><tr><td>Stupeň 0</td><td>&lt;1</td><td>Způsobí o Vnímání*1 větší zranění. Průbojnost +5+Vnímání*1</td></tr><tr><td>Stupeň 1</td><td>1 - 6</td><td>Způsobí o 5+Vnímání*1 větší zranění. Průbojnost +5+Vnímání*1</td></tr><tr><td>Stupeň 2</td><td>7 - 12</td><td>Způsobí o 5+Vnímání*1 větší zranění. Šance na Krvácení/Omráčení +100%. Průbojnost +10+Vnímání*1</td></tr><tr><td>Stupeň 3</td><td>13 - 18</td><td>Způsobí o 10+Vnímání*1 větší zranění. Šance na Krvácení/Omráčení +100%. Průbojnost +10+Vnímání*1</td></tr><tr><td>Stupeň 4</td><td>19 - 20</td><td>Zásah do trupu. Způsobí navíc 20+Vnímání*1 zranění. Šance na Krvácení/Omráčení +100%. Má šanci 25% na zničení lektvaru umístěného na šerpě. Průbojnost +15+Vnímání*1</td></tr><tr><td>Stupeň 4</td><td>19 - 20</td><td>Zásah do nohy (lichá je levá, sudá je pravá). Způsobí navíc 20+Vnímání*1 zranění. Šance na Krvácení/Omráčení +100%. Dokud si nedoplní životy na 100%, nemůže používat Úhyb a pohyb je snížen na polovinu. Kritický zásah do stejné končetiny vyústí ve ztrátu končetiny. Není-li během jednoho dne úspěšně ošeřen (Ranhojičství Velmi těžký test; Mistrovské léčení; Rafard Bílý), ztrácí končetinu. Průbojnost +15+Vnímání*1</td></tr><tr><td>Stupeň 4</td><td>19 - 20</td><td>Zásah do ruky (lichá je levá, sudá je pravá). Způsobí navíc 20+Vnímání*1 zranění. Šance na Krvácení/Omráčení +100%. Dokud si nedoplní životy na 100%, nemůže používat ruku a upustí držený předmět. Kritický zásah do stejné končetiny vyústí ve ztrátu končetiny. Není-li během jednoho dne úspěšně ošeřen (Ranhojičství Velmi těžký test; Mistrovské léčení; Rafard Bílý), ztrácí končetinu. Průbojnost +15+Vnímání*1</td></tr><tr><td>Stupeň 4</td><td>19 - 20</td><td>Zásah do hlavy. Způsobí navíc 20+Vnímání*1 zranění. Šance na Krvácení/Omráčení +100%. Dokud si nedoplní životy na 100%, získává postih 20% na vše a Testuje Odolnost (Legendární), při neúspěchu upadá do bezvědomí. Další kritický zásah do hlavy vyústí ve ztrátu oka, ucha nebo nosu. Není-li během jednoho dne úspěšně ošeřen (Ranhojičství Velmi těžký test; Mistrovské léčení; Rafard Bílý), tak ztrácí oko, ucho nebo nos. Průbojnost +15+Vnímání*1</td></tr></tbody></table>",
+    "markdown": null
+   },
+   "video": {
+    "controls": true,
+    "volume": 0.5
+   },
+   "category": null,
+   "ownership": {
+    "default": -1
+   },
+   "flags": {},
+   "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785239603742,
+    "modifiedTime": 1785239603742,
+    "lastModifiedBy": null
+   },
+   "_key": "!journal.pages!38JFyImWV6BjIgFZ.M7I6l3OoV2lOotKA"
+  }
+ ],
+ "folder": "BjCbzfkKJNr5DLau",
+ "flags": {
+  "redsteel": {
+   "sourceSheet": "Kritické zásahy"
+  }
+ },
+ "categories": [],
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603742,
+  "modifiedTime": 1785239603742,
+  "lastModifiedBy": null
+ },
+ "ownership": {
+  "default": 0
+ },
+ "_id": "38JFyImWV6BjIgFZ",
+ "sort": 4000,
+ "_key": "!journal!38JFyImWV6BjIgFZ"
+}

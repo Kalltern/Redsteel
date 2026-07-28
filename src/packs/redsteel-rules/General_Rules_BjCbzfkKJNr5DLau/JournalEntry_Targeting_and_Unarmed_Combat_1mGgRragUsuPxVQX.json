@@ -1,0 +1,68 @@
+{
+ "name": "Targeting and Unarmed Combat",
+ "pages": [
+  {
+   "sort": 0,
+   "name": "Targeting and Unarmed Combat",
+   "type": "text",
+   "_id": "EOuv23iQ3N6oHiFX",
+   "title": {
+    "show": false,
+    "level": 1
+   },
+   "image": {},
+   "src": null,
+   "system": {},
+   "text": {
+    "format": 1,
+    "content": "<h3>Směřování</h3>\n<p>Směr, kterým je hráč otočen, může být určen řadou důvodů či situací. V základu platí, že se hráč vždy může během svého tahu otočit libovolným směrem za Volnou akci. Toto pravidlo však nelze používat během používání jiných akcí, nemůže se tedy například otáčet dle libosti zatímco vykonává akci Pohyb, otočit se může až poté, co Pohyb dokončí. Druhým obecným pravidlem je, že pokud hráč nesousedí s žádným nepřítelem, může se okamžitě otočit na prvního nepřítele, který k němu přistoupí. K tomuto pravidlu se nepřihlíží, pokud si nepřítel nebyl vědom, a to ani tehdy, kdy takový nepřítel zaútočí.<br><br>Směřování a útoky<br>Útočné akce (Útok, Smršť útoků, Příležitostný útok etc) vždy otáčí ve směru útoku. Odvetné akce (Příležitostný útok, Odvetný úder) však směřování neovlivňují. V případě Rozseknutí se otáčí na libovolný ze svých cílů.<br><br>Směřování a pohyb<br>V rámci pohybu platí následující pravidla: Při pohybu okolo oponenta se vždy udržuje směřování tak, aby zůstal otočen k oponentovi. Běh a Pohyb určují směřování ve směru pohybu. Pomalý pohyb (Odpoutání, Duelistův krok) dává na výběr buď ve směru pohybu nebo zachovává původní směřování.</p>\n<h3>Souboj beze zbraně</h3>\n<p>Šance na úspěch se počítá jako Síla*3 + Odbornosti + dovednost Souboj (Rváč) nebo dovednost Rváč (Nesčítají se, aplikuje se pouze vyšší hodnota).<br>Souboj beze zbraně probíhá v kolech formou versus Testů Rváče. Během svého tahu vyvolá každá strana jeden versus Test Rváče s cílem v dosahu. Vítěz versus Testu snižuje oponentovi Stínové životy. Jakmile klesnou Stínové životy na 0, je oponent vyřazen.<br>V případě, kdy bojuje jeden rváč proti více oponentům, má možnost vyvolat Test pouze proti jednomu oponentovi. Oponenti mohou vyvolat Test všichni. V případě boje proti více oponentům se uplatňují pravidla Přesily.<br>Způsobené zranění je základ (pěst) 1; +1 za úspěch o síle +60; +1 za Drápy (Argos) / Cestus; +1 za odbornost \"Zkušený rváč\"; +1 za akci \"Podpásovka\"</p>",
+    "markdown": null
+   },
+   "video": {
+    "controls": true,
+    "volume": 0.5
+   },
+   "category": null,
+   "ownership": {
+    "default": -1
+   },
+   "flags": {},
+   "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785239603743,
+    "modifiedTime": 1785239603743,
+    "lastModifiedBy": null
+   },
+   "_key": "!journal.pages!1mGgRragUsuPxVQX.EOuv23iQ3N6oHiFX"
+  }
+ ],
+ "folder": "BjCbzfkKJNr5DLau",
+ "flags": {
+  "redsteel": {
+   "sourceSheet": "Směřování a Souboj beze zbraně"
+  }
+ },
+ "categories": [],
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603743,
+  "modifiedTime": 1785239603743,
+  "lastModifiedBy": null
+ },
+ "ownership": {
+  "default": 0
+ },
+ "_id": "1mGgRragUsuPxVQX",
+ "sort": 7000,
+ "_key": "!journal!1mGgRragUsuPxVQX"
+}

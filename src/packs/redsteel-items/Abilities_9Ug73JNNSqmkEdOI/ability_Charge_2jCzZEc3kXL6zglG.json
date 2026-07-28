@@ -3,7 +3,7 @@
   "type": "ability",
   "img": "icons/skills/melee/hand-grip-sword-strike-orange.webp",
   "system": {
-    "description": "<p>A combination of movement and attack. <br />Hit chance +10% and Damage +2d4.<br />You must be at least 2 hexes away from the target.</p>",
+    "description": "<p>A combination of movement and attack. <br />Hit chance +10% and Damage +2d4.<br />Additional +2d4 damage if using a Heavy weapon. <br />You must be at least 2 hexes away from the target.</p>",
     "type": "melee",
     "weaponAbility": true,
     "standalone": false,
@@ -93,7 +93,8 @@
     "dodge": 0,
     "attack": 10,
     "roll": {
-      "diceBonus": " +2d4"
+      "diceBonus": " +2d4",
+      "heavyDiceBonus": " +2d4"
     },
     "breakthrough": "",
     "penetration": 0,

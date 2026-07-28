@@ -1,0 +1,68 @@
+{
+ "name": "Animal Doctrines, Animal Training and Jousting",
+ "pages": [
+  {
+   "sort": 0,
+   "name": "Animal Doctrines, Animal Training and Jousting",
+   "type": "text",
+   "_id": "F0gUY5qKHNZiFoYy",
+   "title": {
+    "show": false,
+    "level": 1
+   },
+   "image": {},
+   "src": null,
+   "system": {},
+   "text": {
+    "format": 1,
+    "content": "<h3>Zvířecí doktríny</h3>\n<p>Pro účely boje ve zvířecí podobě existuje několik pravidel. Zásah, Obrana a Kryt se počítají podle stupně Souboje nebo Usměrňování. Akce Úhyb není povolena, místo toho se každá Obrana zároveň považuje za Úhyb (Ignoruje tedy Průraznost). Stupeň Zvířecí doktríny (Medvědovité šelmy, Kočkovité šelmy a Psovité šelmy) se určí podle stupně libovolné vlastněné doktríny. Konkrétní zvíře pak ovlivňuje bonus do Životů, šance na Krvácení/Omráčení a také Zranění, Průbojnost a Průraznost. Atletika je rovněž určena zvířetem.</p>\n<h3>Výcvik zvířat</h3>\n<p>Vlastněná zvířata mohou být použita pro účely boje. Každé zvíře se řadí do jedné ze tří Zvířecích doktrín. Tyto doktríny se odemykají skrze Výcvik. Maximální stupeň doktríny, který je možno zvíře naučit, se rovná stupni dovednosti Zacházení se zvířaty. Zvýšení stupně doktríny vyžaduje pravidelný výcvik, Test Zacházení se zvířaty za 10 dní. Obtížnost Testu je -10+(-5*Stupeň učené doktríny), dále případné modifikace za Inteligenci zvířete (Pouto snižuje Obtížnost o 20%)</p>\n<h3>Jezdecká klání</h3>\n<p>Šance na úspěch je určena jako Obratnost*3 + Jezdectví + Rysy + Odbornosti + Doktrína: Jezdec*5. Jedná se zpravidla o versus Test. Výsledek záleží na rozdílu v hodech obou jezdců. Jezdec, jehož Test vyústí v neúspěch minul. Pokud je rozdíl v hodech méně než 30, jsou zasaženi oba jezdci a Testují Odolnost (Těžkou) na pád ze sedla. Pokud je rozdíl více než 30, ale méně než 60, zasáhl pouze lepší jezdec a druhý Testuje Odolnost (Velmi těžkou) na pád ze sedla. Pokud je rozdíl více než 60, zasáhl opět pouze lepší jezdec a druhý Testuje Odolnost (Legendární) na pád ze sedla.<br>Před hodem lze ještě učinit rozhodnutí cílit na hlavu. Takový manévr uděluje postih -20% na Klání, ale zároveň zvyšuje oponentovi Obtížnost Testu Odolnosti o 20%</p>",
+    "markdown": null
+   },
+   "video": {
+    "controls": true,
+    "volume": 0.5
+   },
+   "category": null,
+   "ownership": {
+    "default": -1
+   },
+   "flags": {},
+   "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785239603753,
+    "modifiedTime": 1785239603753,
+    "lastModifiedBy": null
+   },
+   "_key": "!journal.pages!dTQfoErn54fYeFif.F0gUY5qKHNZiFoYy"
+  }
+ ],
+ "folder": "BjCbzfkKJNr5DLau",
+ "flags": {
+  "redsteel": {
+   "sourceSheet": "Zvířecí doktríny, výcvik zvířat a jezdecká klání"
+  }
+ },
+ "categories": [],
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603753,
+  "modifiedTime": 1785239603753,
+  "lastModifiedBy": null
+ },
+ "ownership": {
+  "default": 0
+ },
+ "_id": "dTQfoErn54fYeFif",
+ "sort": 28000,
+ "_key": "!journal!dTQfoErn54fYeFif"
+}

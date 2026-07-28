@@ -1,0 +1,29 @@
+{
+  "folder": "m8UQAwTzZhszzoq0",
+  "name": "First aid kit",
+  "type": "consumable",
+  "img": "icons/tools/medical/bandages-gauze.webp",
+  "system": {
+    "description": "<p>Bandages, needle, thread and herbal dressings. Used with the First Aid skill.</p>",
+    "quantity": 1,
+    "localizationKey": "REDSTEEL.Items.FirstAidKit.name",
+    "option": "first aid"
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.9.55",
+    "lastModifiedBy": null
+  },
+  "_id": "0JjVgoU5PrM2Xkpp",
+  "_key": "!items!0JjVgoU5PrM2Xkpp"
+}

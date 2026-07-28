@@ -1,0 +1,32 @@
+{
+  "folder": "m8UQAwTzZhszzoq0",
+  "name": "Container",
+  "type": "item",
+  "img": "icons/containers/kitchenware/jug-wrapped-red.webp",
+  "system": {
+    "description": "<p>A sturdy container for explosives. One container is needed for every explosive crafted.</p>",
+    "quantity": 1,
+    "localizationKey": "REDSTEEL.Items.Container.name"
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {
+    "redsteel": {
+      "alchVessel": "container"
+    }
+  },
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.9.55",
+    "lastModifiedBy": null
+  },
+  "_id": "TfK0rc5rGDopu1eF",
+  "_key": "!items!TfK0rc5rGDopu1eF"
+}

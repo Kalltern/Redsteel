@@ -1,0 +1,68 @@
+{
+ "name": "Command",
+ "pages": [
+  {
+   "sort": 0,
+   "name": "Command",
+   "type": "text",
+   "_id": "u8sanwh9MUQAYMfM",
+   "title": {
+    "show": false,
+    "level": 1
+   },
+   "image": {},
+   "src": null,
+   "system": {},
+   "text": {
+    "format": 1,
+    "content": "<h3>Velení</h3>\n<p>Šance na úspěch je určena jako Charisma*3 + dovednost Velení + Rysy + Odbornosti. Velení slouží k zlepšování bojové efektivity spolubojovníků. Bez patřičné odbornosti se velitelské bonusy nevztahují na velitele samotného. Vždy může být aktivní pouze jeden velitel. Pro úspěšné velení je rovněž klíčovou podmínkou alespoň jeden spolubojovník. Velitelské schopnosti se rozlišují na dvě kategorie: Pasivní a Aktivní. Každý stupeň dovednosti odemyká nové pasivní nebo aktivní schopnosti.</p>\n<h3>Pasivní velení</h3>\n<p>Pasivní velení je formou aury. Uplatňuje se na všechny spolubojovníky, kteří jsou v dosahu velení (tedy na doslech) a dá se použít pouze během souboje. Trvá, dokud velitel nepadne nebo dokud souboj neskončí. Pasivní velení stojí zpravidla 1 akci.<br><br>Typy pasivního velení<br>1. stupeň Velení - Nervy +1, Normální Test<br>2. stupeň Velení - Rychlost +1, Normální Test<br>3. stupeň Velení - Zásah +5%, Normální Test<br>4. stupeň Velení - Obrana +5%, Normální Test<br>5. stupeň Velení - Kryt +10%, Normální Test</p>\n<h3>Aktivní velení</h3>\n<p>Aktivní velení jsou akce používané během samotného souboje, které obvykle poskytují silné bonusy na krátký okamžik jen omezenému počtu spolubojovníků. Aktivní velení stojí zpravidla 1 akci.<br><br>Typy aktivního velení<br>6. stupeň Velení - Vybraný spojenec získá Výhodu na příští Obranu, Pokročilý Test<br>7. stupeň Velení - Vybraný spojenec získá Výhodu na příští Útok, Pokročilý Test<br>8. stupeň Velení - Vybraný spojenec může ihned použít Reakci na Odpoutání, Těžký Test<br>9. stupeň Velení - Vybraný spojenec může ihned použít Reakci na Příležitostný útok, Těžký Test<br>10. stupeň Velení - Označí jednoho nepřítele na jeden tah Velitele. Všechny útoky na označený cíl mají větší šanci na Zásah o +10% a větší šanci na Kritický zásah o +3%, Velmi těžký Test</p>",
+    "markdown": null
+   },
+   "video": {
+    "controls": true,
+    "volume": 0.5
+   },
+   "category": null,
+   "ownership": {
+    "default": -1
+   },
+   "flags": {},
+   "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785239603749,
+    "modifiedTime": 1785239603749,
+    "lastModifiedBy": null
+   },
+   "_key": "!journal.pages!Wy4JmQ7A55z830AB.u8sanwh9MUQAYMfM"
+  }
+ ],
+ "folder": "BjCbzfkKJNr5DLau",
+ "flags": {
+  "redsteel": {
+   "sourceSheet": "Velení"
+  }
+ },
+ "categories": [],
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603749,
+  "modifiedTime": 1785239603749,
+  "lastModifiedBy": null
+ },
+ "ownership": {
+  "default": 0
+ },
+ "_id": "Wy4JmQ7A55z830AB",
+ "sort": 19000,
+ "_key": "!journal!Wy4JmQ7A55z830AB"
+}

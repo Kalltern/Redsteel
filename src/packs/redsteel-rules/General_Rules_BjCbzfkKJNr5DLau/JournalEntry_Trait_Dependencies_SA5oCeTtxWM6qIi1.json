@@ -1,0 +1,68 @@
+{
+ "name": "Trait Dependencies",
+ "pages": [
+  {
+   "sort": 0,
+   "name": "Trait Dependencies",
+   "type": "text",
+   "_id": "fbhgw29KZeWGErUi",
+   "title": {
+    "show": false,
+    "level": 1
+   },
+   "image": {},
+   "src": null,
+   "system": {},
+   "text": {
+    "format": 1,
+    "content": "<p>Týká se případů, kdy je závislost vzána coby negativní rys. Tabulka níže obsahuje mimo jiné ceny jednotlivých závislostí pro potřeby tvorby postavy. Každá závislost má pak určené podmínky, které je potřeba splnit pro vyhnutí se abstinenci. Abstinence nastavá po uplynutí napsané doby (V případě alkoholu tedy po uplynutí tři dnů bez dosažení Lehké opilosti). Příznaky pak popisují obtíže, kterým se abstinující hráč vystavuje.<br>Některé závislosti se dají léčit, jiné nikoliv. Proces léčby je však zdlouhavý, vyžaduje dlouhodobou abstinenci a řadu úspěchů na Test Vůle. K těmto Testům Vůle dochází vždy jednou za pět dnů abstinování. Nutno podotknout, že přerušení abstinence vyruší i veškerý pokrok léčby.<br>V případě úspěšně vyléčené závislosti však stále přetrvávají určitá rizika. Je-li hráč vystaven blízkosti objektu své vyléčené závislosti, podsupuje Testy Nervů. Při selhání má pak velmi silné nutkání opět zakusit objekt své závislosti. Kdykoliv by se měl hráč vyléčený ze závislosti dostat k objektu své závislosti, je šance na obnovení značně zvýšena. Hodnota uvedená v kolonce Návykovost pak nahrazuje návykovost původní.</p>\n<table><thead><tr><th>Závislost</th><th>Cena</th><th>Popis</th><th>Abstinence</th><th>Příznaky</th><th>Léčba</th><th>Obtížnost</th><th>Návykovost</th></tr></thead><tbody><tr><td>Alkohol</td><td>-2</td><td>Závislost na alkoholu. Pro splnění podmínek je třeba mít efekt Opilost.</td><td>3 dny</td><td>Úspěch -5%; Nervy -2 / 5 dnů</td><td>8 úspěchů</td><td>Test Vůle (-15%)</td><td>Vůle (40%)</td></tr><tr><td>Tabák</td><td>-1</td><td>Závislost na tabáku. Pro splnění podmínek je potřeba vykouřit jednu dávku tabáku.</td><td>3 dny</td><td>Úspěch -5%; Nervy -1</td><td>6 úspěchů</td><td>Test Vůle (-10%)</td><td>Vůle (40%)</td></tr><tr><td>Líčení</td><td>-1</td><td>Závislost na zkrášlování. Pro splnění podmínek je potřeba aktivní snaha a 8 hodin nosit líčení.</td><td>1 den</td><td>Úspěch -5%; Nervy -1</td><td>Neléčitelná</td><td>X</td><td>X</td></tr><tr><td>Magie</td><td>-2</td><td>Závislost na magii. Pro splnění podmínek je potřeba dlouhodobé napojení na Zdroj (8 hodin).</td><td>1 den</td><td>Nervy -3</td><td>Neléčitelná</td><td>X</td><td>X</td></tr><tr><td>Cukr</td><td>-1</td><td>Závislost na cukru. Pro splnění podmínek je potřeba konzumace alespoň třetího stupně jídla.</td><td>1 den</td><td>Úspěch -5%; Nervy -1</td><td>Neléčitelná</td><td>X</td><td>X</td></tr><tr><td>Hazard</td><td>-2</td><td>Závislot na hazardu. Pro splnění podmínek je potřeba hazardovat (Dostatečný obnos, služby etc)</td><td>3 dny</td><td>Úspěch -5%; Nervy -2</td><td>Neléčitelná</td><td>X</td><td>X</td></tr><tr><td>Lektvary</td><td>-2</td><td>Závislost na rozličných lektvarech. Pro splnění podmínek je třeba vypít jeden lektvar.</td><td>1 den</td><td>Nervy -1 / 5 dnů</td><td>Neléčitelná</td><td>X</td><td>X</td></tr><tr><td>Dračí dým</td><td>-2</td><td>Závislost na droze známé jako \"Dračí dým\". Pro splnění podmínek je potřeba vzít si jednu dávku.</td><td>3 dny</td><td>Úspěch -5%; Nervy -1</td><td>6 úspěchy</td><td>Test Vůle (-10%)</td><td>Vůle (30%)</td></tr><tr><td>Snížek</td><td>-3</td><td>Závislost na droze známé jako \"Snížek\". Pro splnění podmínek je potřeba vzít si jednu dávku.</td><td>2 dny</td><td>Úspěch -5%; Nervy -1 / 5 dnů</td><td>6 úspěchy</td><td>Test Vůle (-15%)</td><td>Vůle (40%)</td></tr><tr><td>Mantikora</td><td>-3</td><td>Závislost na droze známé jako \"Mantikora\". Pro splnění podmínek je potřeba vzít si jednu dávku.</td><td>3 dny</td><td>Síla a Odolnost -1; Úspěch -5%</td><td>10 úspěchů</td><td>Test Vůle (-25%)</td><td>Odolnost (40%)</td></tr><tr><td>Golhyrr</td><td>-3</td><td>Závislost na droze známé jako \"Golhyrr\". Pro splnění podmínek je potřeba vzít si jednu dávku.</td><td>4 dny</td><td>Usměrňování -10%; Nervy -1 / 5 dnů</td><td>8 úspěchy</td><td>Test Vůle (-20%)</td><td>Odolnost (30%)</td></tr><tr><td>Krvavé oči</td><td>-3</td><td>Závislost na droze známé jako \"Krvavé oči\". Pro splnění podmínek je potřeba vzít si jednu dávku.</td><td>3 dny</td><td>Obratnost -1; Úspěch -5%</td><td>10 úspěchů</td><td>Test Vůle (-25%)</td><td>Odolnost (40%)</td></tr><tr><td>Ďáblův kořen</td><td>-4</td><td>Závislost na droze známé jako \"Ďáblův kořen\". Pro splnění podmínek je potřeba vzít si jednu dávku.</td><td>4d6 hodin</td><td>Vůle -2; Úspěch -10%</td><td>12 úspěchů</td><td>Test Vůle (-30%)</td><td>Vůle (60%)</td></tr><tr><td>Upíří polibek</td><td>-3</td><td>Závislost na droze známé jako \"Upíří polibek\". Pro splnění podmínek je potřeba vzít si jednu dávku.</td><td>2 dny</td><td>Nervy -2; Úspěch -5%</td><td>6 úspěchy</td><td>Test Vůle (-20%)</td><td>Vůle (30%)</td></tr><tr><td>Volání sirény</td><td>-2</td><td>Závislost na droze známé jako \"Volání sirény\". Pro splnění podmínek je potřeba vzít si jednu dávku.</td><td>3 dny</td><td>Úspěch -5%; Nervy -1</td><td>6 úspěchy</td><td>Test Vůle (-15%)</td><td>Vůle (40%)</td></tr><tr><td>Dar zapomnění</td><td>-1</td><td>Závislost na droze známé jako \"Dar zapomnění\". Pro splnění podmínek je potřeba vzít si jednu dávku.</td><td>3 dny</td><td>Úspěch -5%; Nervy -1</td><td>6 úspěchy</td><td>Test Vůle (-10%)</td><td>Vůle (30%)</td></tr><tr><td>Med poznání</td><td>-1</td><td>Závislost na droze známé jako \"Med poznání\". Pro splnění podmínek je potřeba vzít si jednu dávku.</td><td>3 dny</td><td>Úspěch -5%; Nervy -2</td><td>6 úspěchy</td><td>Test Vůle (-10%)</td><td>Vůle (0%)</td></tr><tr><td>Býk</td><td>-4</td><td>Závislost na droze známé jako \"Býk\". Pro splnění podmínek je potřeba vzít si jednu dávku.</td><td>3 dny</td><td>Nervy -1 / 5 dnů</td><td>8 úspěchy</td><td>Test Vůle (-20%)</td><td>Odolnost (15%)</td></tr><tr><td>Verden</td><td>-2</td><td>Závislost na droze známé jako \"Verden\". Pro splnění podmínek je potřeba vzít si jednu dávku.</td><td>3 dny</td><td>Vůle -2; Úspěch -5%</td><td>8 úspěchy</td><td>Test Vůle (-20%)</td><td>Odolnost (30%)</td></tr></tbody></table>",
+    "markdown": null
+   },
+   "video": {
+    "controls": true,
+    "volume": 0.5
+   },
+   "category": null,
+   "ownership": {
+    "default": -1
+   },
+   "flags": {},
+   "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785239603756,
+    "modifiedTime": 1785239603756,
+    "lastModifiedBy": null
+   },
+   "_key": "!journal.pages!SA5oCeTtxWM6qIi1.fbhgw29KZeWGErUi"
+  }
+ ],
+ "folder": "BjCbzfkKJNr5DLau",
+ "flags": {
+  "redsteel": {
+   "sourceSheet": "Rysové závislosti"
+  }
+ },
+ "categories": [],
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603756,
+  "modifiedTime": 1785239603756,
+  "lastModifiedBy": null
+ },
+ "ownership": {
+  "default": 0
+ },
+ "_id": "SA5oCeTtxWM6qIi1",
+ "sort": 34000,
+ "_key": "!journal!SA5oCeTtxWM6qIi1"
+}

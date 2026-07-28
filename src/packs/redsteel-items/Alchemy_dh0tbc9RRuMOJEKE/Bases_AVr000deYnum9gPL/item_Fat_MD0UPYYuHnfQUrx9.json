@@ -1,0 +1,32 @@
+{
+  "folder": "AVr000deYnum9gPL",
+  "name": "Fat",
+  "type": "item",
+  "img": "icons/commodities/materials/slime-white.webp",
+  "system": {
+    "description": "<p>An alchemical base. One unit is enough for 3 uses (3 crafted units).</p>",
+    "quantity": 1,
+    "localizationKey": "REDSTEEL.Items.Fat.name"
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {
+    "redsteel": {
+      "alchBase": "fat"
+    }
+  },
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.9.51",
+    "lastModifiedBy": null
+  },
+  "_id": "MD0UPYYuHnfQUrx9",
+  "_key": "!items!MD0UPYYuHnfQUrx9"
+}

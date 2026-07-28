@@ -1573,6 +1573,27 @@ REDSTEEL.effectDefinitions = {
     },
   },
 
+  // "Praskání kůže" / "Skin cracking" — applies SK/4 (rounded up) Bleeding
+  // effects each round for three rounds. Bleeding caps at 6 stacks; every stack
+  // that could not be applied because of that cap deals 1d8 damage instead.
+  // The per-round stack count is baked from the caster's Blood SK in
+  // applyEffect's dynamic block. Recasting only refreshes the duration
+  // ("multiple castings do not stack"), which is what stackBehavior "refresh"
+  // does — the tick count never grows.
+  skin_cracking: {
+    name: "Skin cracking",
+    img: "icons/skills/wounds/injury-triple-slash-bleed.webp",
+    statuses: ["skin_cracking"],
+    // 1 tick onApply + 2 onRoundStart ticks = three rounds of Bleeding.
+    defaultRounds: 2,
+    useDuration: true,
+    stackBehavior: "refresh",
+    triggers: {
+      onApply: { custom: "skinCracking", bleedStacks: 1 },
+      onRoundStart: { custom: "skinCracking", bleedStacks: 1 },
+    },
+  },
+
   // "Spárů démona" / "Demonic grasp" — Dark + Blunt DoT equal to SK × 4 per
   // round for up to four rounds, ignoring base armor; also applies two
   // Bleeding effects each round and Roots the target for the duration.
@@ -1646,6 +1667,18 @@ REDSTEEL.effectDefinitions = {
     stackBehavior: "ignore",
   },
 
+  // "Magické lano" / "Magic rope" — the summoned rope, held by the caster.
+  // Purely a marker: it says the rope exists and carries the caster's baked
+  // Will + SK test value, so the "Send the rope" card can be re-rolled at the
+  // start of each round. Losing the contested test destroys the rope, which is
+  // this effect being deleted. Duration (SK hours) is narrative, so no timer.
+  magic_rope: {
+    name: "Magic rope",
+    img: "icons/sundries/survival/rope-coiled-tan.webp",
+    statuses: ["magic_rope"],
+    stackBehavior: "ignore",
+  },
+
   // "Roj hmyzu" / "Hejno hmyzu" — DoT + per-round panic test.
   // -1 Reaction / no Aim / Perception penalty are not automated.
   insect_swarm: {
@@ -1678,6 +1711,31 @@ REDSTEEL.effectDefinitions = {
         value: -50,
       },
     ],
+  },
+
+  // "Temná kletba" / "Dark curse" — Magic + Dark DoT equal to 1d6 + SK for
+  // two rounds, ignoring base armor. The SK term is baked into the damage
+  // formula in applyEffect's dynamic block (Darkness Spell Power).
+  dark_curse: {
+    name: "Dark curse",
+    img: "icons/magic/unholy/orb-stone-pink.webp",
+    statuses: ["dark_curse"],
+    // 1 tick onApply + 1 onRoundStart tick = two rounds of damage.
+    defaultRounds: 1,
+    useDuration: true,
+    stackBehavior: "refresh",
+    triggers: {
+      onApply: {
+        custom: "conditionDamage",
+        damage: "1d6", // SK appended at apply time → "1d6 + <SK>"
+        damageProfile: { expression: ["magic", "and", "dark"] },
+      },
+      onRoundStart: {
+        custom: "conditionDamage",
+        damage: "1d6",
+        damageProfile: { expression: ["magic", "and", "dark"] },
+      },
+    },
   },
 
   // "Entropie" — the "1 damage per reduced Az" part is manual.
@@ -1717,7 +1775,7 @@ REDSTEEL.effectDefinitions = {
   // lives here; the SK-scaled duration is set in effects.mjs.
   flicker: {
     name: "Flicker",
-    img: "icons/magic/lightning/bolt-strike-blue.webp",
+    img: "icons/magic/light/explosion-star-glow-purple.webp",
     statuses: ["flicker"],
     useDuration: true,
     defaultRounds: 1, // fallback only — real duration = SK rounds
@@ -1931,12 +1989,7 @@ REDSTEEL.effectDefinitions = {
       pool: { base: 20, perSpellPower: 5 },
       // Offered in the Config-tab element picker. Acid and poison are one
       // choice per the rules ("Kyselinové/Jedovaté").
-      elementChoices: [
-        ["fire"],
-        ["frost"],
-        ["lightning"],
-        ["acid", "poison"],
-      ],
+      elementChoices: [["fire"], ["frost"], ["lightning"], ["acid", "poison"]],
     },
   },
 

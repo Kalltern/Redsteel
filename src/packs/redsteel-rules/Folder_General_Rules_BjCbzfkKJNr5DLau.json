@@ -1,0 +1,23 @@
+{
+ "name": "General Rules",
+ "sorting": "a",
+ "folder": null,
+ "type": "JournalEntry",
+ "_id": "BjCbzfkKJNr5DLau",
+ "description": "",
+ "sort": 100000,
+ "color": null,
+ "flags": {},
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603738,
+  "modifiedTime": 1785239603738,
+  "lastModifiedBy": null
+ },
+ "_key": "!folders!BjCbzfkKJNr5DLau"
+}

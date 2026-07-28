@@ -2249,41 +2249,6 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   margin-bottom: 3px;
 }
 
-#item-tooltip {
-  position: fixed;
-  z-index: 9999;
-  max-width: 300px;
-
-  background: rgba(20, 20, 20, 0.95);
-  color: white;
-  padding: 8px 12px;
-  border-radius: 6px;
-  border: 1px solid #7a7332;
-  font-size: 13px;
-  line-height: 1.4;
-
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-
-  pointer-events: none;
-}
-.tooltip-header {
-  display: flex; /* ðŸ‘ˆ makes children sit next to each other */
-  align-items: center; /* ðŸ‘ˆ vertical alignment */
-  gap: 8px; /* ðŸ‘ˆ space between icon and title */
-}
-.tooltip-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 4px;
-  object-fit: cover;
-}
-.tooltip-title {
-  font-size: 20px;
-}
-#item-tooltip.hidden {
-  display: none;
-}
-
 .action-tags {
   display: flex;
   gap: 0.25rem;
@@ -6802,6 +6767,19 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   background: color-mix(in srgb, var(--alch-color) 10%, rgba(0, 0, 0, 0.55));
   border: 1px solid color-mix(in srgb, var(--alch-color) 45%, transparent);
   box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.28);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.alch-substance:hover {
+  background: color-mix(in srgb, var(--alch-color) 20%, rgba(0, 0, 0, 0.55));
+  border-color: color-mix(in srgb, var(--alch-color) 75%, transparent);
+  box-shadow:
+    inset 0 0 12px rgba(0, 0, 0, 0.28),
+    0 0 8px color-mix(in srgb, var(--alch-color) 40%, transparent);
 }
 
 .alch-substance-label {
@@ -6824,6 +6802,17 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   font-size: 16px;
   font-weight: 700;
   color: #e8dcbc;
+}
+
+/* Herbs on hand / herbs per dose — dim until a whole dose is affordable. */
+.alch-substance-herbs {
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: rgba(217, 203, 168, 0.45);
+}
+
+.alch-substance.brewable .alch-substance-herbs {
+  color: color-mix(in srgb, var(--alch-color) 55%, #d9cba8);
 }
 
 /* Two-column layout: recipes left, craft panel right */
@@ -6937,6 +6926,30 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   background: rgba(0, 0, 0, 0.45);
   border: 1px solid rgba(181, 151, 80, 0.35);
   color: #e8dcbc;
+}
+
+/* Alchemist specialisation boons active on the selected recipe's family. */
+.alch-boons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 8px;
+  font-size: 11px;
+}
+
+.alch-boons-label {
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(217, 203, 168, 0.6);
+}
+
+.alch-boon {
+  padding: 1px 7px;
+  border: 1px solid rgba(200, 164, 74, 0.45);
+  border-radius: 9px;
+  background: rgba(200, 164, 74, 0.12);
+  color: #e0cf9d;
 }
 
 .alch-buttons {
@@ -7286,33 +7299,7 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   }
 }
 
-/* Floating chat-card inspector shown beside the actor sheet on card hover.
-   Body-level (like #item-tooltip) so the sheet's overflow never clips it. */
-#spell-inspector {
-  position: fixed;
-  z-index: 9999;
-  width: 300px;
-  max-height: 90vh;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 12px;
-  /* Copied verbatim from .inventory-box — sheet texture + olive border. */
-  background:
-    linear-gradient(rgba(12, 12, 11, 0.5), rgba(12, 12, 11, 0.5)),
-    url(../ui/headertexture.jpg);
-  border: 2px solid #514226;
-  box-shadow:
-    inset 0 0 25px rgba(0, 0, 0, 0.65),
-    0 0 14px rgba(0, 0, 0, 0.6);
-  pointer-events: none;
-}
-
-#spell-inspector.hidden {
-  display: none;
-}
-
+/* Card inspector panel, rendered as the body of a `spellCard` tooltip. */
 .spell-inspector-header {
   display: flex;
   align-items: center;
@@ -7392,4 +7379,156 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 
 .spell-inspector-desc p {
   margin: 0 0 4px;
+}
+
+/* ============================================================
+   Stacked CK3-style tooltips (module/utils/tooltips.mjs)
+   ============================================================ */
+
+#rs-tooltip-root {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  pointer-events: none;
+}
+
+.rs-tooltip {
+  position: fixed;
+  width: max-content;
+  max-width: 340px;
+  max-height: 70vh;
+  overflow: hidden;
+
+  background: rgba(18, 18, 18, 0.97);
+  color: #e6e2d3;
+  border: 1px solid #7a7332;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+  line-height: 1.45;
+
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+}
+
+/* Frozen: the tooltip has been held open and now accepts the cursor. */
+.rs-tooltip.frozen {
+  pointer-events: auto;
+  overflow-y: auto;
+  border-color: #c9a94a;
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(201, 169, 74, 0.25);
+}
+
+.rs-tooltip.frozen::after {
+  content: "\f08d"; /* thumbtack */
+  font-family: "Font Awesome 6 Pro", "Font Awesome 5 Pro", "Font Awesome 6 Free";
+  font-weight: 900;
+  position: absolute;
+  top: 5px;
+  right: 7px;
+  font-size: 9px;
+  color: #c9a94a;
+  opacity: 0.65;
+}
+
+/* Each nested level sits slightly brighter so the chain reads as a stack. */
+.rs-tooltip[data-depth="1"] { background: rgba(26, 26, 26, 0.97); }
+.rs-tooltip[data-depth="2"] { background: rgba(34, 34, 34, 0.97); }
+.rs-tooltip[data-depth="3"] { background: rgba(42, 42, 42, 0.97); }
+
+.rs-tooltip .tt-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rs-tooltip .tt-icon {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  border-radius: 4px;
+  object-fit: cover;
+  border: 1px solid #4a4636;
+}
+
+.rs-tooltip .tt-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #d9c98a;
+  line-height: 1.2;
+}
+
+.rs-tooltip .tt-subtitle {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #8f8a76;
+}
+
+.rs-tooltip .tt-stats {
+  margin-top: 6px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 10px;
+  row-gap: 2px;
+}
+
+.rs-tooltip .tt-stat {
+  display: contents;
+}
+
+.rs-tooltip .tt-stat-label {
+  color: #9a947e;
+}
+
+.rs-tooltip .tt-stat-value {
+  text-align: right;
+  color: #e6e2d3;
+}
+
+.rs-tooltip .tt-section {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(122, 115, 50, 0.35);
+}
+
+.rs-tooltip .tt-section-label {
+  color: #b3a869;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 2px;
+}
+
+.rs-tooltip .tt-desc {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(122, 115, 50, 0.35);
+  color: #cfcabb;
+}
+
+.rs-tooltip .tt-desc p {
+  margin: 0 0 4px;
+}
+
+.rs-tooltip .tt-footer {
+  margin-top: 6px;
+  font-size: 11px;
+  color: #8f8a76;
+}
+
+/* Links inside a tooltip that open the next tooltip in the chain. */
+.rs-tooltip .tt-link,
+.tt-link {
+  color: #d9c98a;
+  border-bottom: 1px dotted #a8983f;
+  cursor: help;
+}
+
+.rs-tooltip.frozen .tt-link:hover {
+  color: #f2e3a8;
+  border-bottom-color: #f2e3a8;
+  background: rgba(201, 169, 74, 0.12);
 }

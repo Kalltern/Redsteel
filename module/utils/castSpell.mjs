@@ -3,12 +3,16 @@ import {
   startChannelingForSpell,
 } from "./magicSkillBonuses.mjs";
 import { getSpellPower } from "./spellPower.mjs";
+import { resolveSpellAutomation } from "./spellAutomation.mjs";
 
 /**
  * Strike spells → the caster status effect they impose on a successful cast.
  * Keyed on the item's raw (English) name so this resolves on spell copies that
  * are already owned by live actors, without needing a re-import to pick up a
  * flag. A `flags.redsteel.strike` override wins when present.
+ *
+ * Enchanted strike is listed under both its final and its old "(WIP)" name —
+ * the pack was renamed, but copies already on live actors keep the old one.
  */
 const STRIKE_SPELLS = {
   "Lightning strike": "lightning_strike",
@@ -136,6 +140,16 @@ export async function applyPostCastEffects(
   // idempotent, so a later reroll re-running this is a no-op.
   if (getStrikeId(spell) && (succeeded || ignoreChanneling)) {
     await applyStrikeEffect(actor, spell);
+  }
+
+  // Spells whose whole effect is a script (Wound exchange, Blood gift, Magic
+  // rope) rather than a status the chat card hands out. Gated exactly like the
+  // strikes above, and for the same reason: with "No Channeling Evaluation" the
+  // cast is not judged on its margin, so a negative Margin of Success must not
+  // swallow the spell's entire effect. Everything the chat card applies already
+  // behaves this way — only the scripted side needs saying out loud.
+  if (succeeded || ignoreChanneling) {
+    await resolveSpellAutomation(actor, spell);
   }
 
   if (!succeeded) return;

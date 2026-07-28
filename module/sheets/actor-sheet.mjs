@@ -17,7 +17,16 @@ import {
   SUBSTANCES,
   STATIONS,
   MAX_BATCH,
+  SUBSTANCE_HERB_COST,
+  SUBSTANCE_CRAFT_MOD,
+  SUBSTANCE_BATCH_MOD,
   getSubstanceCount,
+  getHerbCount,
+  getMaxSubstanceBatch,
+  getAlchemistSubstanceModifiers,
+  getAlchemistCraftModifiers,
+  describeCraftBoons,
+  brewSubstance,
   craftRecipe,
   rerollCraft,
 } from "../utils/alchemy.mjs";
@@ -29,11 +38,7 @@ import {
 } from "../utils/race.mjs";
 import { openWeaponSpecDialog } from "../utils/weaponSpec.mjs";
 import { openBanePicker, clearBaneChoice } from "../helpers/banes.mjs";
-import {
-  buildSpellCard,
-  buildRankGroups,
-  renderInspectorCard,
-} from "../utils/spellCards.mjs";
+import { buildSpellCard, buildRankGroups } from "../utils/spellCards.mjs";
 
 const { api, sheets } = foundry.applications;
 
@@ -126,7 +131,6 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       toggleEquipped: this._toggleEquipped,
       toggleReroll: this._toggleReroll,
       toggleSchool: this._toggleSchool,
-      buildTooltip: this._buildTooltip,
       setActiveWeaponSet: this._setActiveWeaponSet,
       toggleTwoHandGrip: this._toggleTwoHandGrip,
       toggleNpcOffhand: this._toggleNpcOffhand,
@@ -139,6 +143,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       setSpellRank: this._setSpellRank,
       setMiracleRank: this._setMiracleRank,
       selectRecipe: this._selectRecipe,
+      brewSubstance: this._brewSubstance,
       craftRecipe: this._craftRecipe,
       rerollCraft: this._rerollCraft,
       selectRace: this._selectRace,
@@ -252,71 +257,6 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     const item = this.actor.items.get(itemId);
     if (!item) return;
     await openWeaponSpecDialog(item);
-  }
-
-  static _onBuildTooltip(event) {
-    const target = event.target.closest("[data-item-id]");
-    if (!target) return;
-
-    const itemId = target.dataset.itemId;
-    if (!itemId) return;
-
-    const item = this.actor.items.get(itemId);
-    if (!item) return;
-
-    console.log("Tooltip triggered for:", item.name);
-
-    const html = this.buildTooltipForItem(item);
-
-    const tooltip = document.getElementById("item-tooltip");
-    tooltip.innerHTML = html;
-    tooltip.classList.remove("hidden");
-  }
-
-  static _buildTooltip(data) {
-    const sectionHTML = (data.sections || [])
-      .filter((section) => section.lines?.length)
-      .map(
-        (section) => `
-      <hr>
-      <tr><td>${section.label}:</td></tr>
-      <tr><td>
-        ${section.lines.join("<br>")}
-      </td></tr>
-    `,
-      )
-      .join("");
-
-    const statsHTML = (data.stats || [])
-      .filter(
-        (stat) =>
-          stat.value !== undefined && stat.value !== null && stat.value !== "",
-      )
-      .map(
-        (stat) => `
-      <div><b>${stat.label}:</b> ${stat.value}</div>
-    `,
-      )
-      .join("");
-
-    const icon = data.icon ?? data.img ?? "";
-
-    return `
-  <div class="tooltip-header">
-  <img src="${icon}" class="tooltip-icon">
-  <div class="tooltip-title"><strong>${data.title}</strong></div>
-  </div>
-    ${sectionHTML}
-    <hr>
-    ${statsHTML}
-    ${data.description ? `<hr>${data.description}` : ""}
-  `;
-  }
-
-  static buildTooltipForItem(item) {
-    console.log("Building tooltip for:", item.name);
-    const data = item.getTooltipData(); // universal method
-    return this._buildTooltip(data);
   }
 
   static async _toggleNpcOffhand(event, target) {
@@ -942,6 +882,93 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     this.render();
   }
 
+  /**
+   * Boil herbs down into a substance. Opens a small dialog showing the herbs
+   * on hand and how many doses they buy, then rolls once for the whole batch.
+   */
+  static async _brewSubstance(event, target) {
+    this.#readAlchemyControls();
+    const key = target.closest("[data-substance]")?.dataset.substance;
+    const def = SUBSTANCES.find((s) => s.key === key);
+    if (!def) return;
+
+    const i18n = game.i18n;
+    const mods = getAlchemistSubstanceModifiers(this.actor, key);
+    const herbCost = Math.max(
+      1,
+      SUBSTANCE_HERB_COST - (Number(mods.herbDiscount) || 0),
+    );
+    const herbs = getHerbCount(this.actor, key);
+    const max = getMaxSubstanceBatch(this.actor, key, herbCost);
+    if (max < 1) {
+      ui.notifications.warn(
+        i18n.format("REDSTEEL.Alchemy.Substance.NoHerbs", {
+          name: def.name,
+          cost: herbCost,
+          have: herbs,
+        }),
+      );
+      return;
+    }
+
+    const station = STATIONS.find((s) => s.key === this._alchemyStation);
+    const stationName = i18n.localize(station?.labelKey ?? "");
+    const stationMod = station?.mod ?? 0;
+    const fmt = (n) => (n >= 0 ? `+${n}` : `${n}`);
+
+    const DialogV2 = foundry.applications.api.DialogV2;
+    const amount = await DialogV2.wait({
+      window: { title: i18n.format("REDSTEEL.Alchemy.Substance.DialogTitle", { name: def.name }) },
+      content: `
+        <form>
+          <p style="display:flex; align-items:center; gap:8px;">
+            <img src="${def.icon}" width="36" height="36" style="border:none; flex:0 0 auto;">
+            <span>${i18n.format("REDSTEEL.Alchemy.Substance.Have", { count: herbs, cost: herbCost })}</span>
+          </p>
+          <label style="display:flex; align-items:center; gap:8px;">
+            <span style="flex:1;">${i18n.localize("REDSTEEL.Alchemy.Substance.Doses")} (max ${max})</span>
+            <input type="number" name="brew-amount" value="1" min="1" max="${max}" step="1" style="width:70px;">
+          </label>
+          <p style="font-size:12px; opacity:0.8; margin-top:6px;">
+            ${i18n.localize("REDSTEEL.Alchemy.Chat.UsedStation")}: ${stationName} (${fmt(stationMod)}%)<br>
+            ${i18n.localize("REDSTEEL.Alchemy.Chat.Difficulty")}: ${fmt(SUBSTANCE_CRAFT_MOD)}%
+            (${fmt(SUBSTANCE_BATCH_MOD)}% ${i18n.localize("REDSTEEL.Alchemy.Substance.BatchNote")})
+          </p>
+          <p style="font-size:12px; opacity:0.8;">${
+            mods.guaranteed
+              ? i18n.localize("REDSTEEL.Alchemy.Chat.Boon.Guaranteed")
+              : i18n.localize("REDSTEEL.Alchemy.Substance.WasteWarning")
+          }</p>
+        </form>`,
+      buttons: [
+        {
+          action: "brew",
+          label: i18n.localize("REDSTEEL.Alchemy.Substance.Brew"),
+          icon: "fas fa-mortar-pestle",
+          default: true,
+          callback: (ev, button, dialog) => {
+            const root = dialog?.element ?? button.form;
+            return root.querySelector('input[name="brew-amount"]')?.value ?? "1";
+          },
+        },
+        { action: "cancel", label: i18n.localize("Cancel") },
+      ],
+      rejectClose: false,
+    });
+    if (!amount || amount === "cancel") return;
+
+    const outcome = await brewSubstance(this.actor, key, {
+      amount: Math.min(Number(amount) || 1, max),
+      stationKey: this._alchemyStation,
+    });
+    if (!outcome.ok) {
+      ui.notifications.warn(outcome.reason);
+      return;
+    }
+    this._alchemyLastOutcome = outcome;
+    this.render();
+  }
+
   /** Read station + amount from the Alchemy tab controls into sheet state. */
   #readAlchemyControls() {
     const station = this.element.querySelector(".alch-station")?.value;
@@ -1360,7 +1387,13 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
         break;
       case "alchemy": {
         context.tab = context.tabs[partId];
-        // Substance strip: current stock of the six substances.
+        // Substance strip: current stock of the six substances, plus the herbs
+        // held for each — the tile doubles as the "boil herbs down" button.
+        const subMods = getAlchemistSubstanceModifiers(this.actor, null);
+        const herbCost = Math.max(
+          1,
+          SUBSTANCE_HERB_COST - (Number(subMods.herbDiscount) || 0),
+        );
         context.alchSubstances = SUBSTANCES.map((def) => ({
           key: def.key,
           label: def.name,
@@ -1368,6 +1401,9 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
           icon: def.icon,
           color: def.color,
           qty: getSubstanceCount(this.actor, def.key),
+          herbs: getHerbCount(this.actor, def.key),
+          herbCost,
+          canBrew: getMaxSubstanceBatch(this.actor, def.key, herbCost) > 0,
         }));
         // Owned recipes, with the transient selection restored.
         const recipes = [...(this.actor.itemTypes.recipe ?? [])].sort(
@@ -1398,11 +1434,17 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
           context.alchMaxAmount,
         );
         context.alchCanCraft = !!selected && !!selected.system.resultUuid;
+        // Alchemist boons for the selected recipe's family, shown before the
+        // roll so the player can see what the tree is actually contributing.
+        context.alchBoons = selected
+          ? describeCraftBoons(getAlchemistCraftModifiers(this.actor, selected))
+          : [];
         // Reroll only re-opens a FAILED craft, and only with an eligible pool.
         const last = this._alchemyLastOutcome;
         context.alchCanReroll =
           !!last?.ok &&
           !last.success &&
+          !last.isSubstance &&
           getEligibleRerolls(this.actor, "alchemy").length > 0;
         if (last?.ok) {
           context.alchAnnouncement = {
@@ -1892,10 +1934,11 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       root.removeEventListener("contextmenu", this._boundRightClick);
       root.addEventListener("contextmenu", this._boundRightClick);
       this.#bindShieldControls(root);
+      // Lets the delegated tooltip engine resolve the owning actor without
+      // reaching into application-registry internals.
+      root.dataset.ttActorUuid = this.actor.uuid;
     }
 
-    this._activateItemTooltips();
-    this._activateSpellInspector();
     // You may want to add other special handling here
     // Foundry comes with a large number of utility classes, e.g. SearchFilter
     // That you may want to implement yourself.
@@ -1913,113 +1956,6 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
    *   ACTIONS
    *
    **************/
-
-  // Render spell tooltips
-  _activateItemTooltips() {
-    const root =
-      this.element instanceof HTMLElement ? this.element : this.element?.[0];
-
-    if (!root) return;
-
-    const tooltip = document.getElementById("item-tooltip");
-    if (!tooltip) return;
-
-    for (const icon of root.querySelectorAll(".item-icon")) {
-      if (icon.dataset.tooltipBound) continue;
-      icon.dataset.tooltipBound = "true";
-
-      icon.addEventListener("mouseenter", (ev) => {
-        const itemId = ev.currentTarget.dataset.itemId;
-        const item = this.actor.items.get(itemId);
-        if (!item) return;
-
-        tooltip.innerHTML = this.constructor.buildTooltipForItem(item);
-        tooltip.classList.remove("hidden");
-
-        const rect = ev.currentTarget.getBoundingClientRect();
-
-        let left = rect.right + 12;
-        let top = rect.top;
-
-        tooltip.style.left = `${left}px`;
-        tooltip.style.top = `${top}px`;
-
-        const tipRect = tooltip.getBoundingClientRect();
-
-        if (tipRect.right > window.innerWidth) {
-          left = rect.left - tipRect.width - 12;
-        }
-
-        if (tipRect.bottom > window.innerHeight) {
-          top = window.innerHeight - tipRect.height - 10;
-        }
-
-        if (top < 10) {
-          top = 10;
-        }
-
-        tooltip.style.left = `${left}px`;
-        tooltip.style.top = `${top}px`;
-      });
-
-      icon.addEventListener("mouseleave", () => {
-        tooltip.classList.add("hidden");
-      });
-    }
-  }
-
-  // Render the floating spell/miracle/ability inspector panel beside the sheet
-  _activateSpellInspector() {
-    const root =
-      this.element instanceof HTMLElement ? this.element : this.element?.[0];
-    if (!root) return;
-
-    const inspector = document.getElementById("spell-inspector");
-    if (!inspector) return;
-
-    for (const cardEl of root.querySelectorAll(".spell-card")) {
-      if (cardEl.dataset.inspectorBound) continue;
-      cardEl.dataset.inspectorBound = "true";
-
-      cardEl.addEventListener("mouseenter", (ev) => {
-        const el = ev.currentTarget;
-        const item = this.actor.items.get(el.dataset.itemId);
-        if (!item) return;
-
-        inspector.innerHTML = renderInspectorCard(
-          buildSpellCard(item, el.dataset.cardKind || "spell"),
-        );
-        inspector.classList.remove("hidden");
-
-        // Position beside the whole sheet — right if it fits, else left.
-        const sheetRect = root.getBoundingClientRect();
-        const gap = 10;
-        const panelRect = inspector.getBoundingClientRect();
-
-        let left = sheetRect.right + gap;
-        if (left + panelRect.width > window.innerWidth) {
-          left = sheetRect.left - panelRect.width - gap;
-        }
-        // Last resort if neither side fits (very narrow viewport): clamp on-screen.
-        if (left < 0) left = Math.max(0, window.innerWidth - panelRect.width);
-
-        // Vertically align to the hovered card, clamped into the viewport.
-        const cardRect = el.getBoundingClientRect();
-        let top = cardRect.top;
-        if (top + panelRect.height > window.innerHeight) {
-          top = window.innerHeight - panelRect.height - 10;
-        }
-        if (top < 10) top = 10;
-
-        inspector.style.left = `${left}px`;
-        inspector.style.top = `${top}px`;
-      });
-
-      cardEl.addEventListener("mouseleave", () => {
-        inspector.classList.add("hidden");
-      });
-    }
-  }
 
   /**
    * Handle changing a Document's image.

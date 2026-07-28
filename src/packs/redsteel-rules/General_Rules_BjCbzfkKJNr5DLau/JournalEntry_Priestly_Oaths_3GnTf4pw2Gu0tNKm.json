@@ -1,0 +1,68 @@
+{
+ "name": "Priestly Oaths",
+ "pages": [
+  {
+   "sort": 0,
+   "name": "Priestly Oaths",
+   "type": "text",
+   "_id": "4gDSuMVkozvr86z7",
+   "title": {
+    "show": false,
+    "level": 1
+   },
+   "image": {},
+   "src": null,
+   "system": {},
+   "text": {
+    "format": 1,
+    "content": "<p>Přísahy jsou dobrovolné závazky, sliby a úmluvy, které uzavírá kněz zcela dobrovolně a na základě svého rozhodnutí. Někdy se stává, že je některá z přísah vyžadována jako forma trestu či pokání. Přísahy se skládají vždy na jeden rok a pouze za specifických příležitostí, které se odvíjí od konkrétního boha. Vyjímku tvoří Přísaha Mlčení, která se skládá coby forma pokání za porušení jiné Přísahy a je ji tedy možné složit kdykoliv a trvá maximálně po dobu trvání původní Přísahy. Stejnou Přísahu lze složit pouze jednou za rok.</p>\n<table><thead><tr><th>Přísaha</th><th>Podmínka</th><th>Účinek</th><th>Postih při porušení</th></tr></thead><tbody><tr><td>Přísaha Mlčení</td><td>Mlčet a za žádných okolností nepromluvit (vrčení, bručení a mručení je do jisté míry přijatelné)</td><td>Ruší postihy za porušení Přísahy.</td><td>Porušení přísahy ruší Účinek.</td></tr><tr><td>Přísaha Pravdomluvnosti</td><td>Vždy mluvit (nebo jakkoliv jinak vyjadřovat) pravdu.</td><td>Svatá energie +5, Vhled +5%</td><td>Ruší účinek Přísahy. Postih na Testy Víry a Přesvědčování -10%</td></tr><tr><td>Přísaha Chudoby</td><td>Žije ve skromných podmínkách a rozdává svůj majetek a finance potřebnějším.</td><td>Může jednou za den opakovat hod na Test Víry nebo Vůle</td><td>Ruší účinek Přísahy. Postih na Testy Víry -10%</td></tr><tr><td>Přísaha Odříkání</td><td>Nepozře maso, alkohol ani drogy. Nesmí mít Hříšnost více než 4.</td><td>Svatá energie +5</td><td>Ruší účinek Přísahy. Postih na Testy Víry -10%. Úspěšné Testy Víry obnovují jen polovinu Svaté energie.</td></tr><tr><td>Přísaha Čistoty</td><td>Zkrátka celibát v plném rozsahu. Nesmí mít Hříšnost více než 4.</td><td>Svatá energie +5</td><td>Ruší účinek Přísahy. Postih na Testy Víry -10%. Úspěšné Testy Víry obnovují jen polovinu Svaté energie.</td></tr><tr><td>Přísaha Svaté ochrany</td><td>Nošení určeného oděvu, nesmí nosit žádnou formu zbroje.</td><td>Svatá energie +5; Svaté Kz +5<br>Obnova Svaté energie +50%</td><td>Ruší účinek Přísahy. Postih na Testy Víry -15%. Postih -5% na Obranu a Úhyb.</td></tr><tr><td>Přísaha Míru</td><td>Nesmí vědomně zranit či zabít jiného tvora zbraní.</td><td>Svatá energie +5<br>Obnova Svaté energie +50%</td><td>Ruší účinek Přísahy. Postih na Testy Víry -15%. Postih -5% na Zásah.</td></tr></tbody></table>",
+    "markdown": null
+   },
+   "video": {
+    "controls": true,
+    "volume": 0.5
+   },
+   "category": null,
+   "ownership": {
+    "default": -1
+   },
+   "flags": {},
+   "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785239603754,
+    "modifiedTime": 1785239603754,
+    "lastModifiedBy": null
+   },
+   "_key": "!journal.pages!3GnTf4pw2Gu0tNKm.4gDSuMVkozvr86z7"
+  }
+ ],
+ "folder": "BjCbzfkKJNr5DLau",
+ "flags": {
+  "redsteel": {
+   "sourceSheet": "Kněžské přísahy"
+  }
+ },
+ "categories": [],
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603754,
+  "modifiedTime": 1785239603754,
+  "lastModifiedBy": null
+ },
+ "ownership": {
+  "default": 0
+ },
+ "_id": "3GnTf4pw2Gu0tNKm",
+ "sort": 31000,
+ "_key": "!journal!3GnTf4pw2Gu0tNKm"
+}

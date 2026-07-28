@@ -1,0 +1,68 @@
+{
+ "name": "Materials: Armor and Shields",
+ "pages": [
+  {
+   "sort": 0,
+   "name": "Materials: Armor and Shields",
+   "type": "text",
+   "_id": "hQIj7Li5UobUE7fZ",
+   "title": {
+    "show": false,
+    "level": 1
+   },
+   "image": {},
+   "src": null,
+   "system": {},
+   "text": {
+    "format": 1,
+    "content": "<table><thead><tr><th>Materiál</th><th>Zbroje</th></tr></thead><tbody><tr><td>Obyčejná látka</td><td>Nic</td></tr><tr><td>Alamit</td><td>Kz +1</td></tr><tr><td>Yensil</td><td>Základ many +1; Bleskové Kz +5; Snížená Obtížnost kouzel Školy Vzduchu o 2%</td></tr><tr><td>Tamiš</td><td>Základ many +1; Mrazivé Kz +5; Snížená Obtížnost kouzel Školy Vody o 2%</td></tr><tr><td>Wentril</td><td>Základ many +1; Kyselinové Kz +5; Snížená Obtížnost kouzel Školy Země o 2%</td></tr><tr><td>Šamtal</td><td>Základ many +1; Ohnivé Kz +5; Snížená Obtížnost kouzel Školy Ohně o 2%</td></tr><tr><td>Sanctir</td><td>Svatá energie +1; Svaté Kz +5</td></tr><tr><td>Obyčejná kůže</td><td>Nic</td></tr><tr><td>Tuhá kůže</td><td>Kz +1</td></tr><tr><td>Ještěr</td><td>Kritický úhyb +2%; Iniciativa +1; Plížení +5%</td></tr><tr><td>Trol</td><td>Kz +2; Regenerace zbroje</td></tr><tr><td>Chitin</td><td>Kz +1; Šance být Omráčen -10%; Kyselinové Kz +5; Kyselina nesnižuje Kz</td></tr><tr><td>Menší drakovitý</td><td>Kz +1; Ohnivé, Ledové nebo Bleskové Kz +5; Iniciativa +1</td></tr><tr><td>Salamandr</td><td>Kz +2; Ohnivé Kz +10; Regenerace zbroje; Imunita na Podpálení; Ochrana před vysokými teplotami</td></tr><tr><td>Boreas</td><td>Kz +2; Mrazivé Kz +10; Regenerace zbroje; Imunita na Zmražení a Zpomalení; Ochrana před nízkými teplotami</td></tr><tr><td>Fulgor</td><td>Kz +2; Bleskové Kz +14; Regenerace zbroje; Hromosvod</td></tr><tr><td>Bazilišek</td><td>Kz +2; Kyselinové Kz +10; Regenerace zbroje; Šance 35% na neutralizaci jedu po zásahu</td></tr><tr><td>Hydra</td><td>Kz +2; Život zbroje +1; Regenerace zbroje; Kyselinové Kz +12; Každé kolo získá 5 Dočasných životů</td></tr><tr><td>Ohnivý drak</td><td>Kz +3; Život zbroje +1; Regenerace zbroje; Ohnivé Kz +12; Imunita na Podpálení, Ochrana před vysokými teplotami</td></tr><tr><td>Ledový drak</td><td>Kz +3; Život zbroje +1; Regenerace zbroje; Mrazivé Kz +12; Imunita na Zmražení a Zpomalení, Ochrana před nízkými teplotami</td></tr><tr><td>Bleskový drak</td><td>Kz +3; Život zbroje +1; Bleskové Kz +16; Regenerace zbroje; Hromosvod; Získává 5 Dočasných životů vždy, když utrží Bleskové zranění</td></tr><tr><td>Behemoth</td><td>Kz +4; Život zbroje +1; Magické, Ohnivé, Mrazivé, Bleskové a Kyselinové Kz +10</td></tr><tr><td>Ocel</td><td>Nic</td></tr><tr><td>Argentia</td><td>Kontakt se zbrojí zraňuje Něpřátele Světla, Upíry a Lykantropy za 2d4; Získává -2 Korupce z vnějších zdrojů. Kz se považuje za Magické proti Přeludům</td></tr><tr><td>Bílá ocel</td><td>Kz +1</td></tr><tr><td>Verdinium</td><td>Kz +1; Magické Kz +15</td></tr><tr><td>Talavit</td><td>Snižuje postih na Usměrňování za zbroj o 10%; Základ many +3</td></tr><tr><td>Rudá ocel</td><td>Kz +2</td></tr><tr><td>Skardin</td><td>Kz +2; Izolace; Imunita na Podpálení; Akce Oddech: Výdrž +2; Iniciativa -1</td></tr><tr><td>Astranium</td><td>Kz +2; Izolace; Šance být Omráčen +15%, Pokud je zasažen, šance 30% na Omráčení útočníka; Iniciativa +1</td></tr><tr><td>Obsidium</td><td>Kz +1; Snižuje postih na Akrobacii, Plavání a Plížení za zbroj o 10%; Iniciativa +1</td></tr><tr><td>Falmit</td><td>Kz +1; Nezdolnost; Nervy -5%</td></tr><tr><td>Ignit</td><td>Kz +2; Izolace; Imunita na Zpomalení, Zmražení a Mokrý; Kyselina nesnižuje Kz; Výdrž -5</td></tr><tr><td>Eldarin</td><td>Kz +3; Život zbroje +1; Snižuje postih na Usměrňování za zbroj o 5%; Základ many +2</td></tr><tr><td>Zelený eldarin</td><td>Kz +2; Regenerace zbroje; Snižuje postihy na Plížení a Akrobacii za zbroj o 20% a postih do Iniciativy o 1</td></tr><tr><td>Temný eldarin</td><td>Kz +3; Život zbroje +1; Každé Krvácení vždy způsobuje jen 1 zranění; Životy +2</td></tr><tr><td>Ardinium</td><td>Kz +4; Svaté Kz +5; Život zbroje +1; Kritická obrana +2%; Kontakt zraňuje Něpřátele Světla, Upíry a Lykantropy za 3d4; Získává -3 Korupce z vnějších zdrojů.</td></tr><tr><td>Hvězdný kov</td><td>Kz +4; Život zbroje +1; Životy +5; Výdrž +5</td></tr><tr><td>Daemonit</td><td>Kz +4; Život zbroje +1; Při zabití humanoida šance 10% na obnovení Života zbroje; Duševní msta; Mentální životy -1</td></tr><tr><td>Gnomská ocel</td><td>Kz +4; Život zbroje +1; Rušit postihy na Iniciativu a Hranici Rychlosti a snižuje postih na Akrobacii a Plavání o 20% a postih na Úhyb o 10%</td></tr><tr><td>Dračí kost</td><td>Nelze použít</td></tr></tbody></table>",
+    "markdown": null
+   },
+   "video": {
+    "controls": true,
+    "volume": 0.5
+   },
+   "category": null,
+   "ownership": {
+    "default": -1
+   },
+   "flags": {},
+   "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785239603758,
+    "modifiedTime": 1785239603758,
+    "lastModifiedBy": null
+   },
+   "_key": "!journal.pages!kYujUcqfEg74l5EF.hQIj7Li5UobUE7fZ"
+  }
+ ],
+ "folder": "sOmxm1q9LSplvn68",
+ "flags": {
+  "redsteel": {
+   "sourceSheet": "Materiály - Zbroje a Štíty"
+  }
+ },
+ "categories": [],
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603758,
+  "modifiedTime": 1785239603758,
+  "lastModifiedBy": null
+ },
+ "ownership": {
+  "default": 0
+ },
+ "_id": "kYujUcqfEg74l5EF",
+ "sort": 2000,
+ "_key": "!journal!kYujUcqfEg74l5EF"
+}

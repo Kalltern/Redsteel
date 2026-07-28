@@ -21,6 +21,11 @@
  * toggles that recompute totals from the already-rolled values, so the player
  * can rearrange without re-rolling.
  *
+ * The two are a single trade and are never separable: ↑ cannot be picked
+ * before ✗, clearing ✗ clears ↑, and while only one of them is set the Roll
+ * button is disabled. Otherwise a boost could be taken for free, or a
+ * sacrifice paid for nothing.
+ *
  * The six "Flower (…)" items live in the `redsteel-items` compendium, each
  * flagged with `flags.redsteel.substance`. Gathering adds owned copies of those
  * flowers to the actor. The GM is whispered every skill re-roll (anti-cheat)
@@ -146,6 +151,7 @@ export async function gatherHerbs(actor, skillKey, skillData) {
     extraRoll: 0, // the single additional roll (for the boosted herb)
     sacrificeFrom: null, // substance crossed out (✗)
     sacrificeTo: null, // substance boosted (↑)
+    notice: null, // inline explanation for a rejected toggle
   };
 
   const resetResults = () => {
@@ -154,6 +160,7 @@ export async function gatherHerbs(actor, skillKey, skillData) {
     state.extraRoll = 0;
     state.sacrificeFrom = null;
     state.sacrificeTo = null;
+    state.notice = null;
   };
 
   const rollSkill = async () => {
@@ -178,6 +185,13 @@ export async function gatherHerbs(actor, skillKey, skillData) {
     state.sacrificeFrom &&
     state.sacrificeTo &&
     state.sacrificeFrom !== state.sacrificeTo;
+
+  /**
+   * A half-made trade: one of ✗ / ↑ chosen without the other. The herbs may
+   * not be rolled in this state — a sacrifice with nothing to feed is wasted,
+   * and a boost with nothing behind it is free.
+   */
+  const tradeIncomplete = () => !!state.sacrificeFrom !== !!state.sacrificeTo;
 
   const totalFor = (sub) => {
     if (!state.rolled) return 0;
@@ -221,6 +235,7 @@ export async function gatherHerbs(actor, skillKey, skillData) {
       <div style="font-size:11px;opacity:.75;text-align:center;margin:4px 0;">
         <i class="fas fa-xmark" style="color:#e74c3c;"></i> sacrifice a herb&nbsp;·&nbsp;
         <i class="fas fa-arrow-up" style="color:#f1c40f;"></i> boost another (+½ of an extra roll)
+        <br>the two always travel together: no boost without a sacrifice
       </div>
       <hr>`;
 
@@ -264,11 +279,27 @@ export async function gatherHerbs(actor, skillKey, skillData) {
       })
       .join("");
 
+    const blocked = !state.rolled && tradeIncomplete();
+    // The reminder stays up after the roll too, so a half-made trade never
+    // sits there silently costing the player a herb for nothing.
+    const message =
+      state.notice ??
+      (tradeIncomplete()
+        ? state.sacrificeFrom
+          ? "Pick a herb to boost (↑), or clear the sacrifice."
+          : "Pick a herb to sacrifice (✗), or clear the boost."
+        : null);
+
     const rollBtn = `
       <div style="text-align:center;margin-top:8px;">
-        <button type="button" class="rs-roll-all" style="width:auto;" ${state.rolled ? "disabled" : ""}>
+        <button type="button" class="rs-roll-all" style="width:auto;" ${state.rolled || blocked ? "disabled" : ""}>
           <i class="fas fa-dice"></i> ${state.rolled ? "Rolled" : "Roll"}
         </button>
+        ${
+          message
+            ? `<div style="font-size:11px;color:#f1c40f;margin-top:4px;">${message}</div>`
+            : ""
+        }
       </div>`;
 
     return `<div class="rs-gather">${header}${hint}${rows}${rollBtn}</div>`;
@@ -302,7 +333,7 @@ export async function gatherHerbs(actor, skillKey, skillData) {
 
     $root.find(".rs-roll-all").on("click", async (ev) => {
       ev.preventDefault();
-      if (state.formula == null || state.rolled) return;
+      if (state.formula == null || state.rolled || tradeIncomplete()) return;
       for (const f of state.flowers) {
         const r = await new Roll(state.formula).evaluate();
         state.results[f.substance] = Math.max(0, r.total);
@@ -316,16 +347,36 @@ export async function gatherHerbs(actor, skillKey, skillData) {
     $root.find(".rs-sac-cross").on("click", (ev) => {
       ev.preventDefault();
       const sub = ev.currentTarget.dataset.sub;
-      state.sacrificeFrom = state.sacrificeFrom === sub ? null : sub;
-      if (state.sacrificeTo === sub) state.sacrificeTo = null;
+      const clearing = state.sacrificeFrom === sub;
+      state.sacrificeFrom = clearing ? null : sub;
+      // Dropping the sacrifice drops the boost with it — the boost is what the
+      // sacrifice pays for, it can never stand on its own.
+      if (clearing || state.sacrificeTo === sub) state.sacrificeTo = null;
+      state.notice = null;
       refresh();
     });
 
     $root.find(".rs-sac-boost").on("click", (ev) => {
       ev.preventDefault();
       const sub = ev.currentTarget.dataset.sub;
-      state.sacrificeTo = state.sacrificeTo === sub ? null : sub;
-      if (state.sacrificeFrom === sub) state.sacrificeFrom = null;
+      if (state.sacrificeTo === sub) {
+        state.sacrificeTo = null;
+        state.notice = null;
+        refresh();
+        return;
+      }
+      if (!state.sacrificeFrom) {
+        state.notice = "Sacrifice a herb first — the boost is paid for with it.";
+        refresh();
+        return;
+      }
+      if (state.sacrificeFrom === sub) {
+        state.notice = "A sacrificed herb cannot boost itself.";
+        refresh();
+        return;
+      }
+      state.sacrificeTo = sub;
+      state.notice = null;
       refresh();
     });
   };

@@ -1,0 +1,68 @@
+{
+ "name": "Health, Stamina, Mana, Holy Power, Spell Power, Grave Wounds and Fate",
+ "pages": [
+  {
+   "sort": 0,
+   "name": "Health, Stamina, Mana, Holy Power, Spell Power, Grave Wounds and Fate",
+   "type": "text",
+   "_id": "ZfVyD2E9hMCMamUL",
+   "title": {
+    "show": false,
+    "level": 1
+   },
+   "image": {},
+   "src": null,
+   "system": {},
+   "text": {
+    "format": 1,
+    "content": "<h3>Životy</h3>\n<p>Životy jsou určeny Rasou, Rysy, Odbornostmi, Silou*1, Odolností*X (X=2/3/4), podle Úrovně postavy) a Mutacemi. Klesnou-li životy na 0, hráč je Vyřazen a dostává se na Pokraj smrti. Není-li do 2d4d1 kol stabilizován (skrytý hod), umírá (Smrt přichází počátkem kola, kdy odpočet klesne na -1). Pokud je zachráněn, získává Vážné zranění. Pokud zásah způsobují více zranění, než kolik má postava Životů, snižují se Životy do záporných čísel. Pokud nemá žádné životy, dostává Vážné zranění pokaždé, kdy dostane dohromady 50 poškození (-50 Životů, -100 Životů etc). Utrží-li zranění za 100% maximálních životů (Avšak minimálně 50), utrží 1 VZ navíc.<br>Regenerace životů je v základu pouze za dlouhý odpočinek, a to sice 10+Odolnost*2 za den.<br>Pokud klesnou životy na 0, nastávají efekty Vyřazený a Pokraj smrti.</p>\n<h3>Stínové životy</h3>\n<p>Stínové životy jsou rovny Odolnosti a používají se během souboje beze zbraně. Klesnou-li Stínové životy na 0, hráč je vyřazen nebo ztrácí vědomí, nenachází se však na Pokraji smrti. Krátký odpočinek obnovuje veškeré Stínové životy.</p>\n<h3>Dočasné životy</h3>\n<p>Dočasné životy se obvykle získávají z různých soubojových akcí, jako je například Obrnění nebo Triumf, a obvykle chrání pouze před fyzickým zraněním, které vždy ubírá nejdříve Dočasné životy, a poté až Životy normální. Dočasné životy s různých zdrojů se sčítají, avšak nikdy nemohou překročit hranici stanovenou jednotlivými zdroji. Triumf tedy nemůže nikdy zvýšit dočasné životy, pokud již má 10 dočasných životů z libovolného zdroje. Pro účely zjištění, zda-li bylo způsobeno Krvácení nebo Vážné zranění, se dočasné životy nepočítají jako způsobené zranění.</p>\n<h3>Vážná zranění</h3>\n<p>Vážná zranění (VZ) jsou určena Rasou, Odbornostmi a Odolností (1 až 2 za Odolnost 4 a 7). V momentě, kdy postava překročí svou maximální hranici VZ, umírá. Každé získané VZ sebou nese postihy, šance na Úspěch -5% (Dá se snížit skrze Test Ranhojičství, viz sekce Ranhojičství). Vážné zranění se léčí 30 dní. Doba na léčení se překrývá s dalšími VZ, tzv. se všechna VZ léčí zároveň. Kouzlo Školy Těla \"Náprava kostí\" sníží dobu léčení o 15 dnů. Dobu léčení Vážných zranění lze maximálně zkrátit na 5 dnů. Elixír Rafarda Bílého a některá kouzla a zázraky mohou ihned léčit VZ. Vážná zranění mají Absolutní hranici 5, kterou nelze překročit. Avésané mají Absolutní hranici 4 a Trpaslíci, Argosové a Yormuni mají Absolutní hranici 6.</p>\n<h3>Toxicita</h3>\n<p>Toxicita se určuje Rasou, Rysy, Odbornostmi, Odolností*2 a Mutacemi. Toxicita určuje, kolik alkoholu a lektvarů je hráč schopen pozřít. V tomto ohledu pomáhá dovednost Pijáctví (Úspěšný hod zapříčiní získání jen 50% původní toxicity). Překročí-li hráč svou maximální toxicitu, dostává se ihned do stavu \"Toxický šok\". Redukce toxicity je 5+Odolnost*2 za den.</p>\n<h3>Výdrž</h3>\n<p>Výdrž se určuje Odbornostmi, Odolností*5, Mutacemi, Atletikou*2 a Rysy. Výdrž slouží pro soubojové akce. Regeneruje se akcí Oddech. Každý stupeň Únavy snižuje maximální Výdrž o -5.<br>Hráč si může kdykoliv během souboje obnovit 50% maximální Výdrže výměnou za jeden stupeň Únavy.</p>\n<h3>Mana</h3>\n<p>Slouží na sesílání kouzel. Mana je určena jako Základ many*Modifikátor. Základ many je určen jako Rasa + Rysy + Odbornosti + Inteligence*1 + Vůle*1 + Dovednost. Modifikátor je určený Magickým potenciálem nebo Doktrínou magie, jinak je 0. Regenerace many je rovněž určena Doktrínou.</p>\n<h3>Svatá energie</h3>\n<p>Svatá energie je určena specializací Kněz, Vírou*5 a Kněžskými přísahami. Úspěšný Test Víry obnoví 100% Svaté energie (Lze modifikovat Kněžskými přísahami) v příslušnou dobu podle boha, pouze jednou za den. Obnova Svaté energie rovněž vyžaduje jednu Časovou jednotku (JČ) z Táboření.</p>\n<h3>Inspirace</h3>\n<p>Inspirace je určena Charismou*1, Rysy a Specializací. Obnovuje se pomocí Balad, Zásahem v boji (1 Inspirace. Maximálně jednou za kolo), Krátkým odpočinkem a Specializací Bard určenými situacemi.</p>\n<p>Síla kouzla / Síla zázraku / Síla vůle / Síla Melodie<br>Síla kouzla je určena dovedností, rysy a Vlastností (Inteligence/2 - Čaroděj; Víra - Kněz; Vůle - Kontramág; Charisma/2 - Bard; Inteligence/2 nebo Vůle/2 - Škola Krve) a modifikuje Sílu a dobu trvání kouzel.</p>\n<h3>Koncentrace</h3>\n<p>Určena základem 1, doktrínou Incantator a odbornostmi. Koncentrace určuje, kolik kouzel či zázraků vyžadujících Koncentraci lze naráz udržovat.</p>\n<h3>Obelstění smrti</h3>\n<p>Určuje se jako Rys + Odbornost + Odolnost*5 + Štěstí*2 + základ 25%. Jedná se o šanci, jak obelstít jednou za 10 dní smrt. Hází se tedy v momentě, kdy má nastat smrt. Vyhnutí se smrti však stále má své následky: ztráta jednoho maximálního Vážného zranění a dodatečně může mít i další drastické následky (15% za každé VZ, které bylo Obelstěním sníženo, aby se dosáhlo hranice VZ), jako například ztrátu končetiny. Za žádných okolností rovněž negarantuje následné přežití. Pokud se tedy na \"padlého\" druha vrhne vlk s úmyslem ho pozřít, smrti se dostane co jí právem náleží. Pokud klesnou maximální VZ pod jedno, nastává smrt bez jakýchkoliv možností další záchrany. Pokud má však tolik VZ, kolik je jeho maximum, k Obelstění smrti nedochází, neboť by po snížení maximálních VZ přetrvávala podmínka pro úmrtí.</p>\n<h3>Mentální životy</h3>\n<p>Obecně se počítají jako Vůle*1 + Odbornosti + Specializace + Přísahy Kontramágů. Mentální životy do určité míry reprezentují duši. Mentální životy mohou být zničeny/spáleny (Maledictum), rezervovány (Některé rituály, kouzla, lapení části duše) nebo vyčerpány (Chodec ve snu, Mentální souboj nebo na pokraji smrti). Zničené Mentální životy lze obnovit (Nejčastěji lektvar Vitalita, ale mohou existovat i jiné metody). Rezervované Mentální životy nelze obnovit, dokud se z nich nestanou životy zničené/spálené nebo vyčerpané. Vyčerpané Mentální životy se obnovují za každý dlouhý odpočinek, jejich regenerace je 1 + Odbornosti. Pokud má 0 Mentálních životů, obnoví mu Krátký odpočinek 1 Mentální Život. Jednou za den může skrze Test Meditace obnovit jeden Mentální život. Efekt Vyřazený vyčerpá polovinu stávajících Mentálních životů.<br>Klesnou-li Mentální životy na 0, ztrácí vědomí do té doby, než si je obnoví.</p>",
+    "markdown": null
+   },
+   "video": {
+    "controls": true,
+    "volume": 0.5
+   },
+   "category": null,
+   "ownership": {
+    "default": -1
+   },
+   "flags": {},
+   "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785239603744,
+    "modifiedTime": 1785239603744,
+    "lastModifiedBy": null
+   },
+   "_key": "!journal.pages!5SMf4Yv0h4mMO4P8.ZfVyD2E9hMCMamUL"
+  }
+ ],
+ "folder": "BjCbzfkKJNr5DLau",
+ "flags": {
+  "redsteel": {
+   "sourceSheet": "Životy, Stínové životy, Dočasné životy, Vážná zranění, Toxicita, Výdrž, Mana, Svatá energie, Energie, Síla kouzla, Obelstění smrti a Osud"
+  }
+ },
+ "categories": [],
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603744,
+  "modifiedTime": 1785239603744,
+  "lastModifiedBy": null
+ },
+ "ownership": {
+  "default": 0
+ },
+ "_id": "5SMf4Yv0h4mMO4P8",
+ "sort": 8000,
+ "_key": "!journal!5SMf4Yv0h4mMO4P8"
+}

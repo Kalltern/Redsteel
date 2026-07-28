@@ -1,0 +1,68 @@
+{
+ "name": "Combat Actions",
+ "pages": [
+  {
+   "sort": 0,
+   "name": "Combat Actions",
+   "type": "text",
+   "_id": "GjcixRwz4Keq0jY9",
+   "title": {
+    "show": false,
+    "level": 1
+   },
+   "image": {},
+   "src": null,
+   "system": {},
+   "text": {
+    "format": 1,
+    "content": "<p>V základu má každý 2 Akce, 1 Reakci a několik Volných akcí. Získat více lze jen velmi vzácně (+1 Reakce za odbornost \"Bleskové reflexy\", +1 akce za kouzlo Rychlost etc). Zároveň platí, že Reakce lze využívat vždy jen mimo svůj tah a nelze je použít proti jiným Reakcím. Reakce vždy reagují na jeden útok, nikoliv celou Akci. Během tahu lze obvykle použít jen jednu útočnou akci nebo seslat jen jedno kouzlo.<br>Výjimky tvoří Veneficus (Doktrína V umožňuje útočit i sesílat kouzla ve stejném tahu), Cordinas (Doktrína II umožňuje útočit i sesílat kouzla ve stejném tahu), odbornosti Rychlé Kouzlo I, II, III a IV (umožňují sesílat více kouzel v jednom tahu), odbornost Kouzelné zvíře (Při proměně na zvíře umožňuje útočit i sesílat kouzla ve stejném tahu), Elementalista (Dotkrína IX umožňuje seslat dodatečné kouzlo Divoké magie jako Volnou akci), Runový válečník (Může seslat více run za tah nebo je kombinovat s útoky), Bard (Může seslat více Písní za tah, nebo je kombinovat s útoky. Maximálně však může seslat jen jednu Baladu za tah), Kněz (Může seslat zázrak a zaútočit ve stejném tahu) a Kontramág (Může seslat schopnost a zaútočit ve stejném tahu)<br>Pořadí, ve kterém účastníci souboje v tahu konají, se rozhoduje podle Pořadí tahu, které se určuje za pomoci Testu Rychlosti (1d12+Rychlost+Iniciativa)</p>\n<table><thead><tr><th>Název</th><th>Cena</th><th>Výdrž Mana</th><th>Popis</th></tr></thead><tbody><tr><td>Akce</td><td>1 akce</td><td>0</td><td>Tasit zbraň, vytáhnout něco z kapsy, vypít lektvar, vstát ze země, vysednout na koně, zkrátka podobné věci. Některé akce mohou vyvolat Příležitostný útok. Pití lektvaru nevyvolá Příležitostný útok pokud byl \"po ruce\"</td></tr><tr><td>Běh</td><td>2 akce</td><td>1</td><td>Běh o vzdálenosti Rychlost*2 hex. Zvyšuje Kryt o 15%, snižuje Obranu o -25%. Maximální vzdálenost běhu je 12 hex. Výsledný pohyb může být ovlivněn terénem. Při Příležitostném útoku vyvolaném pohybem od oponenta nemá právo na Obranu.</td></tr><tr><td>Cílený útok</td><td>Volná akce</td><td>0</td><td>Modifikuje útok tak, aby byl veden na hlavu či končetinu. Pokud je výsledná Síla Úspěchu menší než 0, útok je veden do torsa. Hlava: zvýšená šance na Omráčení o +20% a Ověření +10%. Postih na zásah -15%; Ruce: Nevýhoda na Útoky na dva tahy. Postih na zásah -10%; Nohy: Nevýhoda na Úhyb na dva tahy. Postih na zásah -10%</td></tr><tr><td>Čarování</td><td>X akcí</td><td>X</td><td>Sešle kouzlo. Nelze kombinovat s Útočnými akcemi. Čarování v kontaktní vzdálenosti může vyvolat Příležitostný útok.</td></tr><tr><td>Míření</td><td>1 akce</td><td>0</td><td>Zvyšuje šanci na Zásah/Střelbu/Vrh/Palbu o +10% na příští útok. Na cíli lze mít maximálně 4 Míření a bonus +40%. V případě luků se uplatňují speciální pravidla (viz Zbrojnice). Mířit lze pouze na cíl v dosahu.</td></tr><tr><td>Obranný postoj</td><td>2 akce</td><td>3; 1 / kolo</td><td>Plně se soustředí na obranu. Kryt +10%, Obrana +20% a redukuje oba boky, dokud postoj trvá. Udržování postoje vyžaduje dvě akce. (Doktrína - Ignoruje Průraznost)</td></tr><tr><td>Oddech</td><td>1 akce</td><td>0</td><td>Obnovuje 5 Výdrže. Tuto akci lze použít vícekrát za kolo.</td></tr><tr><td>Odpoutání</td><td>2 akce</td><td>0</td><td>Odpoutá se od souboje, nevyprovokuje příležitostný útok a pohne se o Rychlost/2 (zaokrouhleno dolů) hex od nepřítele. Tímto pohybem se nelze pohybovat okolo nepřítele ani u jiného nepřítele skončit.</td></tr><tr><td>Ovládání</td><td>1 / 0 akce</td><td>0 / 4</td><td>Umožňuje použít až dvě akce jezdeckého zvířete.</td></tr><tr><td>Pohyb</td><td>1 akce</td><td>0</td><td>Pohne se maximálně o tolik hex, kolik je Rychlost. Pohyb okolo nepřítele je vždy jedna a může být přerušen úspěšným Příležitostným útokem. Pohyb může vyvolat Reakci. Výsledný pohyb může být ovlivněn terénem. Při Příležitostném útoku vyvolaném pohybem od oponenta nemá právo na Obranu.</td></tr><tr><td>Pomalý pohyb</td><td>1 akce</td><td>0</td><td>Pohne se až o tolik hex, kolik je Rychlost/2, zaokrouhlujeme dolů. Pohyb okolo nepřítele je vždy jedna a může být přerušen úspěšným Příležitostným útokem. Pohyb může vyvolat Reakci. Při Příležitostném útoku vyvolaném pohybem od oponenta má právo na Obranu. Pomalý pohyb má směřování ve směru pohybu nebo zachovává směřování původní.</td></tr><tr><td>Přebíjení</td><td>1 - 4 akce</td><td>0</td><td>Přebije zbraň s \"bonusem\" Rychlé / Dlouhé / Velmi dlouhé přebíjení. Počet akcí nutných k přebití záleží na zbrani. (1, 2, 4 akce). Vyvolává Příležitostný útok.</td></tr><tr><td>Přezbrojení</td><td>1 / Volná akce</td><td>0 / 12</td><td>Přezbrojí z právě držené zbraně na jinou zbraň.</td></tr><tr><td>Příležitostný útok</td><td>1 reakce</td><td>0</td><td>Útok, který vyvolá specifická akce sousedícího nepřítele, zejména pohyb, čarování, přebíjení nebo střelba.</td></tr><tr><td>Příprava</td><td>1 akce</td><td>0</td><td>Vyhledá a připraví si kouzlo v grimoáru. Požadavek, pokud čaruje kouzla, která nemá zapamatovaná.</td></tr><tr><td>Puštění</td><td>1 reakce</td><td>0</td><td>Umožní jednomu spojenci projít skrze svou hexu. Lze uplatnit pouze v případech akcí Pohyb, Běh, Pomalý pohyb, Odpoutání nebo Duelistův krok.</td></tr><tr><td>Rychlá reakce</td><td>1 akce</td><td>0</td><td>Na jeden tah získává bonus +4 do Iniciativy.</td></tr><tr><td>Úhyb</td><td>Volná akce</td><td>4</td><td>Alternativní forma obrany, versus Test Úhybu proti Zásahu oponenta. Při úspěchu ignoruje Průraznost. V základu je hranice úspěchu 50. Šance na úspěch se počítá jako Úhyb + Obratnost*3 + Rysy + Odbornosti - Štít - Zbroj.</td></tr><tr><td>Usilovná koncetrace</td><td>1 akce</td><td>0</td><td>Získává bonus +10% na Mentální souboj na jeden tah.</td></tr><tr><td>Útok</td><td>1 akce</td><td>0</td><td>Provede útok na cíl v dosahu. Tuto akci nelze provést vícekrát za kolo, ani v kombinaci s jinou útočnou akcí. V případě Střelby a Vrhu z kontaktní vzdálenosti vyvolává Příležitostný útok zdarma.</td></tr><tr><td>Vícenásobný útok</td><td>2 akce</td><td>2</td><td>Provede tolik útoků, kolik je schopen. Útoky může vést na jeden nebo více cílů.</td></tr><tr><td>Vyrušení</td><td>1 reakce</td><td>0</td><td>Možnost využít rychlé kouzlo na přerušení čarování / útoku / pohybu. Musí proběhnout hod na Rychlost, zda-li stíhá, při neúspěchu provede svou reakci až poté.</td></tr><tr><td>Zalehnutí</td><td>1 reakce</td><td>2</td><td>Zalehne k zemi ve snaze vyhnout se Střelbě, Vrhu nebo některým kouzlům. Minimální vzdálenost 6 hex. Test Rychlosti (Normální) proti Střelbě a Vrhu, Test Rychlosti (Velmi těžký) proti magii. Aplikuje efekt Povalení.</td></tr><tr><td>Zastavení krvácení</td><td>4 akce</td><td>0</td><td>Vyvolá Test Ranhojičství (+30%) nebo Test Zastavení krvácení (30% + Obratnost*3 / Inteligence*3), při úspěchu zastaví všechna Krvácení. Během zastavování Krvácení se čeká na vyhodnocení Testu, při selhání se dodatečně vyhodnotí zranění za Krvácení. Vyvolává Příležitostný útok. Použití Bílé myrty dává +30% bonus na Test.</td></tr><tr><td>Zastrašování</td><td>1 akce</td><td>0</td><td>Vybere jeden cíl. Následně Testuje Zastrašování. Při úspěchu vyvolá u cíle Strach na tři kola. Obtížnost obou Testů je závislá na situaci.</td></tr><tr><td>Zákeřný útok</td><td>Volná akce</td><td>0</td><td>Modifikace útoku. Zranění +1d6. Uplatňuje se na překvapení, nebránící se cíle nebo na doktrínou stanovené situace. Efekty viz Zbrojnice či Doktrína. Lze aplikovat vícekrát za kolo, na stejného soupeře lze však uplatnit pouze jednou za kolo.</td></tr></tbody></table>",
+    "markdown": null
+   },
+   "video": {
+    "controls": true,
+    "volume": 0.5
+   },
+   "category": null,
+   "ownership": {
+    "default": -1
+   },
+   "flags": {},
+   "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785239603739,
+    "modifiedTime": 1785239603739,
+    "lastModifiedBy": null
+   },
+   "_key": "!journal.pages!4R2Zm8QIe4yzB2ZQ.GjcixRwz4Keq0jY9"
+  }
+ ],
+ "folder": "BjCbzfkKJNr5DLau",
+ "flags": {
+  "redsteel": {
+   "sourceSheet": "Soubojové akce"
+  }
+ },
+ "categories": [],
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603739,
+  "modifiedTime": 1785239603739,
+  "lastModifiedBy": null
+ },
+ "ownership": {
+  "default": 0
+ },
+ "_id": "4R2Zm8QIe4yzB2ZQ",
+ "sort": 1000,
+ "_key": "!journal!4R2Zm8QIe4yzB2ZQ"
+}

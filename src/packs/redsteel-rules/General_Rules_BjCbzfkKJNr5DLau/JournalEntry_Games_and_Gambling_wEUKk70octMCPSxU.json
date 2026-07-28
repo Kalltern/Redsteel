@@ -1,0 +1,68 @@
+{
+ "name": "Games and Gambling",
+ "pages": [
+  {
+   "sort": 0,
+   "name": "Games and Gambling",
+   "type": "text",
+   "_id": "AtSrLKuymZn5htLz",
+   "title": {
+    "show": false,
+    "level": 1
+   },
+   "image": {},
+   "src": null,
+   "system": {},
+   "text": {
+    "format": 1,
+    "content": "<h3>Šance a modifikace</h3>\n<p>Většina her se rozhoduje sadou versus testů, obvykle tří. Aplikovatelné jsou převážně dovednosti jako Logika a Taktika. Dostatečný počet zkušeností ve zvolené hře zvyšuje šance a dává možnosti opravných hodů. Můžeme na to nahlížet podobně jako na Metly.<br><br>Hry založené na šanci (Kostky, některé druhy karet) se zpravidla rozhodují jako versus Test Štěstí. Tedy 50% v základu a 5% za každý pozitivní bod Štěstí nebo -5% za každý bod negativního Štěstí. U věštiny hazardních her je rovněž možno podvádět. Různé formy podvodu mohou poskytovat buď malé nebo zásadní bonusy do výherních šancí.</p>",
+    "markdown": null
+   },
+   "video": {
+    "controls": true,
+    "volume": 0.5
+   },
+   "category": null,
+   "ownership": {
+    "default": -1
+   },
+   "flags": {},
+   "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785239603750,
+    "modifiedTime": 1785239603750,
+    "lastModifiedBy": null
+   },
+   "_key": "!journal.pages!wEUKk70octMCPSxU.AtSrLKuymZn5htLz"
+  }
+ ],
+ "folder": "BjCbzfkKJNr5DLau",
+ "flags": {
+  "redsteel": {
+   "sourceSheet": "Hry a Hazard"
+  }
+ },
+ "categories": [],
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603750,
+  "modifiedTime": 1785239603750,
+  "lastModifiedBy": null
+ },
+ "ownership": {
+  "default": 0
+ },
+ "_id": "wEUKk70octMCPSxU",
+ "sort": 21000,
+ "_key": "!journal!wEUKk70octMCPSxU"
+}

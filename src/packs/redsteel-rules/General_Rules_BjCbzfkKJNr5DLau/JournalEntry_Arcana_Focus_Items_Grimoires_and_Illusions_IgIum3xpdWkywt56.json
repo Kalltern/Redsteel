@@ -1,0 +1,68 @@
+{
+ "name": "Arcana, Focus Items, Grimoires and Illusions",
+ "pages": [
+  {
+   "sort": 0,
+   "name": "Arcana, Focus Items, Grimoires and Illusions",
+   "type": "text",
+   "_id": "ecUNL4QLzaqVs5XN",
+   "title": {
+    "show": false,
+    "level": 1
+   },
+   "image": {},
+   "src": null,
+   "system": {},
+   "text": {
+    "format": 1,
+    "content": "<h3>Arcana</h3>\n<p>Šance na úspěch je určena jako Inteligence*3 + dovednost Arcana + Rysy + Odbornosti. Arcana zahrnuje chápání magie, magických anomálií, používání magických předmětů a popírání iluzí. Zároveň umožňuje čarodějům a kontramágům rozeznávat magický potenciál v jedincích, rozpoznat čarování v oblasti, identifikovat magické předměty a jejich účel. Čarodějům zároveň umožňuje kalibraci s ohniskovými předměty.</p>\n<h3>Ohniskové předměty</h3>\n<p>Jedná se o předměty skrze které může čaroděj bezpečněji usměrňovat magii. Čaroděj může mít zkalibrovaný vždy jen jeden ohniskový předmět (Vyjímku tvoří později Incantator). Kalibrace ohniskového předmětu vyžaduje Test Arcany a dvě kola. Jako ohniskový předmět může sloužit pouze takový předmět, který je specificky očarován nebo se jedná o nemagický předmět disponující nepoškozeným drahokamem. Kvalitnější a čistší drahokami mohou sami o sobě snižovat Obtížnost kouzel. Ohniskový předmět je pak možné obětovat, aby se čaroděj vyhnul důsledkům Kritického neúspěchu. Obětovaný předmět je zničen (pokud není specificky očarován) a čaroděj je zraněn za 2d4 životů.</p>\n<h3>Grimoáry</h3>\n<p>Jelikož se kouzla zapisují ve speciálním jazyce, je jejich zápis do obyčejné knihy krajně nevhodný a nebezpečný. Pokud by se totiž zapsaného kouzla dotkla magie, mohlo by dojít k magické erupci, která může mít rozličné podoby a efekty, ale zpravidla se jedná o jev, kterému je záhodno se vyhnout. Proto se kouzla zapisují do Grimoárů. Grimoár je magicky upravená kniha, která chrání zapsaná kouzla a brání magickým nehodám spojeným se zápisem kouzel. Každý správný čaroděj má svůj grimoár vždy po ruce.</p>\n<h3>Iluze</h3>\n<p>Iluze šálí smysly a zpravidla bývá nesmírně těžké, někdy až nemožné, je prohlédnout. Iluzi lze však vždy (až na vzácné vyjímky) překonat skrze fyzickou interakci. Iluze stěny tedy může být pouhým okem nerozeznatelná od stěny skutečné, nicméně snaze skrze ni projít nezabrání. Ani v takovém případě se však iluze nerozplyne. Výše zmíněnou vyjímku pak tvoří takzvané \"Dokonalé iluze\", které dokáží šálit i hmat a mohou tak zabránit snaze projít skrze iluzi stěny. V jiných případech jsou schopné vlastní modifikace (Hozený kámen proletí stěnou, ale iluze se adaptuje a vytvoří iluzi odraženého kamene). V případě fyzické interakce s Dokonalou iluzí pak dochází na mechaniku Popření iluze.<br><br>Popření iluze<br>Dochází k němu při fyzické interakci s Dokonalou iluzí. Počítá se jako Test Arcany modifikovaný sesilatelovou Silou kouzla*3 a Specializací. Bonus může naopak poskytnout Důkaz nebo některá kouzla či zázraky. Při úspěšném Popření může iluzi ignorovat (Projít stěnou, nebýt zraňován etc).<br><br>Důkaz<br>Slabý důkaz (Například Přesvědčování) - Arcana +10%<br>Silný důkaz (Například přímé popření iluze - Družiník projde iluzí zdi) - Arcana +30% a šance na Kritický úspěch +15%</p>",
+    "markdown": null
+   },
+   "video": {
+    "controls": true,
+    "volume": 0.5
+   },
+   "category": null,
+   "ownership": {
+    "default": -1
+   },
+   "flags": {},
+   "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785239603748,
+    "modifiedTime": 1785239603748,
+    "lastModifiedBy": null
+   },
+   "_key": "!journal.pages!IgIum3xpdWkywt56.ecUNL4QLzaqVs5XN"
+  }
+ ],
+ "folder": "BjCbzfkKJNr5DLau",
+ "flags": {
+  "redsteel": {
+   "sourceSheet": "Arcana, Ohniskové předměty, Grimoáry a Iluze"
+  }
+ },
+ "categories": [],
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603748,
+  "modifiedTime": 1785239603748,
+  "lastModifiedBy": null
+ },
+ "ownership": {
+  "default": 0
+ },
+ "_id": "IgIum3xpdWkywt56",
+ "sort": 16000,
+ "_key": "!journal!IgIum3xpdWkywt56"
+}

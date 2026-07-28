@@ -1,0 +1,155 @@
+{
+  "name": "Sanguine blade",
+  "type": "spell",
+  "img": "icons/magic/fire/dagger-rune-enchant-red.webp",
+  "system": {
+    "localizationKey": "",
+    "description": "<p>Enchants an existing slashing or piercing weapon (or a quiver) for {{math spellPower \"*\" 5}} minutes. Bleeding chance +50%. Recasting the spell cancels or replaces the previous Sanguine blade. A weapon can be affected by only one similar enchantment.</p>",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": {
+      "0": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      },
+      "1": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      }
+    },
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": false,
+    "sustained": false,
+    "difficulty": -10,
+    "cost": 5,
+    "perRound": 0,
+    "variants": [],
+    "option": "magic",
+    "type": "blood",
+    "rank": "expert",
+    "actionCost": "1",
+    "range": "5",
+    "spellClass": "support",
+    "roll": {
+      "diceNum": 0,
+      "diceSize": "0",
+      "diceBonus": ""
+    },
+    "penetration": 0,
+    "dmgType1": "",
+    "bool2": "",
+    "dmgType2": "",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "extra1": -1,
+      "extra2": 0,
+      "extra3": 0,
+      "stagger": null,
+      "bleed": null,
+      "effectName1": "sanguine_blade"
+    },
+    "attributeTest": "",
+    "testModifier": "",
+    "effectType1": "custom",
+    "effectType2": "",
+    "effectType3": ""
+  },
+  "effects": [],
+  "folder": "eMzp06fwqCc3BfiN",
+  "flags": {
+    "scene-packer": {
+      "hash": "71348e383708fa4dc69acd8d2c23a18031d2a447"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.blood-spells.Item.kD3KPV6SGZo4BKV1",
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.9.51",
+    "createdTime": 1783594221207,
+    "modifiedTime": 1783594221213,
+    "lastModifiedBy": "8dfHHkhjZcdpymGM"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3,
+    "MXiQFt4waIv5RqBo": 3,
+    "8dfHHkhjZcdpymGM": 3
+  },
+  "_id": "muymlgcBfTVpgnCq",
+  "sort": 106250,
+  "_key": "!items!muymlgcBfTVpgnCq"
+}

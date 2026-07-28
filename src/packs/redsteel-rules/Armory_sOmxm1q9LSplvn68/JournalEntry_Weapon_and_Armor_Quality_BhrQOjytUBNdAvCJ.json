@@ -1,0 +1,68 @@
+{
+ "name": "Weapon and Armor Quality",
+ "pages": [
+  {
+   "sort": 0,
+   "name": "Weapon and Armor Quality",
+   "type": "text",
+   "_id": "yG1ytRXL6oSSdmJm",
+   "title": {
+    "show": false,
+    "level": 1
+   },
+   "image": {},
+   "src": null,
+   "system": {},
+   "text": {
+    "format": 1,
+    "content": "<p>Některé zbraně a zbroje nemohou disponovat lepší kvalitou, než je Normální. Jedná se o Prak, Dřevec, Provizorní zbraň, Róbu, Aketon a Gambeson.</p>\n<table><thead><tr><th>Kvalita</th><th>Zbraň</th></tr></thead><tbody><tr><td>Špatná</td><td>Zásah a Obrana -5%</td></tr><tr><td>Normální</td><td>Nic</td></tr><tr><td>Expertní</td><td>Zásah a Obrana +3%</td></tr><tr><td>Mistrovská</td><td>Zásah a Obrana +5%; Ověření +5%</td></tr><tr><td>Legendární</td><td>Zásah a Obrana +8%; Ověření +10%; Kritický zásah +3%</td></tr><tr><td>Požehnaná</td><td>Průbojnost +1 a Zranění +1d6 proti Nepřátelům Světla, Upírům a Lykantropům</td></tr><tr><td>Posvěcená</td><td>Průbojnost +2 a Zranění +2d6 proti Nepřátelům Světla, Upírům a Lykantropům</td></tr></tbody></table>",
+    "markdown": null
+   },
+   "video": {
+    "controls": true,
+    "volume": 0.5
+   },
+   "category": null,
+   "ownership": {
+    "default": -1
+   },
+   "flags": {},
+   "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785239603759,
+    "modifiedTime": 1785239603759,
+    "lastModifiedBy": null
+   },
+   "_key": "!journal.pages!BhrQOjytUBNdAvCJ.yG1ytRXL6oSSdmJm"
+  }
+ ],
+ "folder": "sOmxm1q9LSplvn68",
+ "flags": {
+  "redsteel": {
+   "sourceSheet": "Kvalita zbraní a zbrojí"
+  }
+ },
+ "categories": [],
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603759,
+  "modifiedTime": 1785239603759,
+  "lastModifiedBy": null
+ },
+ "ownership": {
+  "default": 0
+ },
+ "_id": "BhrQOjytUBNdAvCJ",
+ "sort": 3000,
+ "_key": "!journal!BhrQOjytUBNdAvCJ"
+}

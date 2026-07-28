@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/unholy/orb-stone-pink.webp",
   "system": {
-    "description": "<p>Deals 1d6 + {{spellPower}} damage to a single target for two rounds. Ignores Armor. Corruption +2.</p><p></p><p>Not fully automated. Resolve this effect manually</p>",
+    "description": "<p>Deals Magic + Dark damage equal to 1d6 + {{spellPower}} to a single target for two rounds. Ignores Armor. Corruption +2.</p>",
     "options": [
       "divine",
       "magic"
@@ -97,32 +97,29 @@
     "range": "15",
     "spellClass": "lesser",
     "roll": {
-      "diceNum": 1,
-      "diceSize": "6",
-      "diceBonus": "@spellPower"
+      "diceNum": 0,
+      "diceSize": "0",
+      "diceBonus": ""
     },
-    "penetration": 100,
-    "dmgType1": "magic",
-    "bool2": "and",
-    "dmgType2": "dark",
+    "penetration": 0,
+    "dmgType1": "",
+    "bool2": "",
+    "dmgType2": "",
     "bool3": "",
     "dmgType3": "",
     "bool4": "",
     "dmgType4": "",
     "effects": {
-      "effect1": "0",
-      "effect2": "0",
-      "effect3": "0",
-      "effect4": "0",
+      "extra1": -1,
+      "extra2": 0,
+      "extra3": 0,
       "stagger": null,
       "bleed": null,
-      "extra1": null,
-      "extra2": null,
-      "extra3": null
+      "effectName1": "dark_curse"
     },
     "attributeTest": "",
     "testModifier": "",
-    "effectType1": "",
+    "effectType1": "custom",
     "effectType2": "",
     "effectType3": ""
   },

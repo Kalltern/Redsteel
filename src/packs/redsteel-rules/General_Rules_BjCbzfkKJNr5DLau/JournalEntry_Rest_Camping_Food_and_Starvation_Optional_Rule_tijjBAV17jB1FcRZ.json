@@ -1,0 +1,68 @@
+{
+ "name": "Rest, Camping, Food and Starvation (Optional Rule)",
+ "pages": [
+  {
+   "sort": 0,
+   "name": "Rest, Camping, Food and Starvation (Optional Rule)",
+   "type": "text",
+   "_id": "I9KERlVQBHWPx3mo",
+   "title": {
+    "show": false,
+    "level": 1
+   },
+   "image": {},
+   "src": null,
+   "system": {},
+   "text": {
+    "format": 1,
+    "content": "<h3>Dlouhý odpočinek</h3>\n<p>Dlouhý odpočinek značí odpočinek, který trvá alespoň šest hodin a zahrnuje spánek. Lze ho podniknout maximálně jednou za den. Dlouhý odpočinek obnovuje 10+Odolnost*2 Životů, redukuje 5+Odolnost*2 Toxicity, obnovuje 1 Mentální život, snižuje Únavu o jeden stupeň a případně obnovuje manu dle Doktríny. Zároveň také obnovuje možná opakování hodů. Dlouhý odpočinek se rovněž považuje i za Krátký odpočinek pro účely obnovy Výdrže, Inspirace a dalších.<br>U Dlouhého odpočinku je třeba rovněž brát v potaz podmínky, za jakých k němu dochází. Nedostatečné pohodlí (spaní ve zbroji) nebo ochrana před živly (špatné počasí bez přístřešku) či nedostatek jídla mohou vést k odepření některých benefitů Dlouhého odpočinku, zejména pak v oblasti Únavy. Pokud se sejde více takových nepřízní, může naopak i docházet k Testům Odolnosti na získání dalšího stupně Únavy.</p>\n<h3>Krátký odpočinek</h3>\n<p>Krátký odpočinek by měl trvat alespoň pár minut a lze ho podniknout vícekrát za den, nelze ho však dělat vícekrát za sebou bez rozumného rozestupu (Souboj, cestování etc). Krátký odpočinek obnovuje veškerou Výdrž, Inspiraci, Stínové životy a v případě Doktríny Veneficus i veškerou Manu.</p>\n<p>Každá družina na cestách či v divočině na konci dne táboří aby se připravila na Dlouhý odpočinek. Během Táboření má každý člen družiny k dispozici tři Jednotky času (JČ). Ve vzácných případech může být JČ méně (Dlouhé pochody) nebo více (Odbornost Snílka: Blahodárné snění). Každý člen družiny obvykle tráví Táboření každý večer stejným způsobem. Tuto skutečnost nazýváme Rutina a slouží pro zjednodušení problematik cestování a táboření. Rutina by měla být stanovena jednou za čas a znázorněna na pro všechny hráče dostupném a viditelném místě. Táboření je zároveň důležité pro Kněze, který za účelem obnovy Svaté energie musí věnovat jednu JČ modlitbám či jiným nábožensky laděným činnostem.<br>Jednotky času mohou být využívány na řadu různých akcí, z nichž většina bude blíže popsána a vysvětlena níže. Jedná se například o Přípravu tábora, Rekreaci, Přípravu jídla, Sběr jídla, Rybaření, Lov, Sběr bylinek, Výrobu, Opravy, Uměleckou tvorbu, Výzkum, Učení a další.<br><br>Pro účely splnění podmínek \"Dnů\" se v případě Učení, Výzkumu, Umělecké tvorby a dalších počítají za jeden den tři JČ strávené danou činností během jednoho či více Táboření, které na sebe nutně nemusí navazovat.</p>\n<h3>Příprava tábora</h3>\n<p>Během Táboření je důležité založit tábor samotný. K tomu slouží akce Příprava tábora, na které se může podílet celá družina a která vyžaduje počet JČ rovný velikosti družiny děleno dvěma, zaokrouhleno nahoru. Pokud má tedy družina pět členů, příprava tábora vyžaduje tři JČ. Příprava tábora je důležitá pro některé navazující akce, jako je například Příprava jídla, Výroba nebo Oprava. Příprava tábora rovněž umožňuje dosáhnout vyšších stupňů životních podmínek za ubytování, dle dostupného vybavení. Pokud nebyl tábor připraven, životní podmínky se počítají jako 1. stupeň.</p>\n<h3>Rekreace</h3>\n<p>Táboření lze trávit i Rekreací, která po delší době udává šance na zbavení se bodu šílenství (Dle uvážení DM). Některé typy Rekreace mohou být skupinově prospěšné (Například Hudba).<br>Postavy, které mají negativní rys Pohodlný nebo Rozmazlený získávají postih, pokud nevěnují dostatek času Rekreaci. Za každou JČ se jedná o postih Nervy -1 na jeden den. Při dlouhodobějším ignorování svých potřeb lze přikročit k Testu Nervů na získání bodu šílenství (Dle uvážení DM).</p>\n<h3>Jídlo</h3>\n<p>Za normálních okolností lze nést 24 až 30 jednotek jídla. Normální jedinec konzumuje 3 jednotky jídla za den. Asketik konzumuje 2 jednotky jídla za den. Obžera, Labužník a Yormun konzumují 4 jednotky jídla za den. Obstarávat si jídlo na cestách lze pomocí dovedností Přežití, a to sice během Táboření. Počet nalezeného jídla se odvíjí podle stupně dovednosti a lokace.</p>\n<h3>Příprava jídla</h3>\n<p>Jedná se o jednu z Táborových akcí. Příprava jídla vyžaduje jednu JČ. Dovednost Vaření pak odemyká možnost připravovat jídla vyšších stupňů kvality za předpokladu, že družina disponuje vhodným zázemím (Příprava tábora), vybavením (Hrnec, pánev) a surovinami (Jídlo, koření etc).</p>\n<h3>Hladovění</h3>\n<p>K Hladovění dochází v případech nedostatečného přísunu jídla po delší dobu. Konkrétní situace a postihy jsou v rukách DM. Za vhodné postihy za považují zejména Testy Nervů na získání bodů šílenství, snižování Nervů, zvyšování Únavy, udržování minimálního stupně Únavy a snižování Odolnosti či jiných Primárních vlastností. V případech Hladovění by rovněž mělo být pamatováno na rysy Asketik nebo Obžera.</p>\n<h3>Sběr jídla, Rybaření a Lov</h3>\n<p>Ve snaze získat jídlo lze během Táboření vymezit dvě JČ na Sběr jídla, Rybaření nebo Lov. Zisk jednotek jídla je dán podle oblasti a stupně dovednosti Přežití, viz tabulka níže. Nutno podotknout, že Sběr, Rybaření a Lov nemusí být vždy dostupny a záleží tedy velmi na situaci a oblasti, ve které se družina právě nachází.<br><br>Sběr jídla<br>Přísun jídla za Sběr je znázorněn prvním číslem v tabulce. Sběrem lze obvykle získávat pouze jídlo 1. stupně, které nicméně obvykle není potřeba dále připravovat.<br><br>Rybaření<br>Přísun jídla za Rybaření je znázorněno druhým číslem v tabulce. Rybařením lze získat jídlo, které lze následně zpracovat do libovolného stupně skrze Vaření (Může vyžadovat další suroviny). Rybaření však vyžaduje jednak vhodné vybavení (Pasti, rybářský prut etc) a také vhodnou příležitost, tedy řeku nebo jezero.<br><br>Lov<br>Přísun jídla za Lov je znázorněn třetím číslem v tabulce. Lovem lze získat jídlo, které lze následně zpracovat do libovolného stupně skrze Vaření (Může vyžadovat další suroviny). Lov však vyžaduje vhodné vybavení (Pasti, luk etc).</p>\n<table><thead><tr><th>Přežití</th><th>Les a Džungle</th><th>Louka</th><th>Bažina</th><th>Tundra</th><th>Hory</th><th>Step</th><th>Poušť a polopoušť</th><th>Podzemí</th></tr></thead><tbody><tr><td>Přežití I</td><td>3 / 3 / 6</td><td>2 / 3 / 6</td><td>0 / 3 / 2</td><td>2 / 3 / 6</td><td>0 / 3 / 6</td><td>2 / 3 / 6</td><td>0 / 3 / 0</td><td>0 / 3 / 2</td></tr><tr><td>Přežití II</td><td>4 / 6 / 9</td><td>2 / 6 / 8</td><td>0 / 6 / 3</td><td>2 / 6 / 8</td><td>0 / 6 / 8</td><td>2 / 6 / 8</td><td>0 / 6 / 2</td><td>2 / 6 / 3</td></tr><tr><td>Přežití III</td><td>6 / 9 / 12</td><td>3 / 9 / 10</td><td>0 / 9 / 6</td><td>3 / 9 / 10</td><td>0 / 9 / 10</td><td>3 / 9 / 10</td><td>0 / 9 / 3</td><td>3 / 9 / 6</td></tr><tr><td>Přežití IV</td><td>7 / 12 / 15</td><td>4 / 12 / 13</td><td>2 / 12 / 8</td><td>4 / 12 / 13</td><td>2 / 12 / 13</td><td>4 / 12 / 13</td><td>0 / 12 / 5</td><td>4 / 12 / 8</td></tr><tr><td>Přežití V</td><td>9 / 15 / 18</td><td>6 / 15 / 16</td><td>3 / 15 / 10</td><td>6 / 15 / 16</td><td>3 / 15 / 16</td><td>5 / 15 / 16</td><td>2 / 15 / 7</td><td>5 / 15 / 10</td></tr></tbody></table>\n<h3>Táboření a Alchemie</h3>\n<p>Během Táboření lze akcí Výroba vyrábět skrze dovednost Alchemie výrobky typu SMLOJPMaD. Během jedné JČ lze vyrobit až tři výrobky či várky (Viz Alchemie) nebo až šest typů substancí. Pro Výrobu je zapotřebí vhodné zázemí (Příprava tábora) a vhodné vybavení (Kotlík, alchemistická souprava).</p>\n<h3>Táboření a Kovářství</h3>\n<p>Během Táboření lze akcí Oprava využít dovednost Kovářství k opravě zbrojí. Pro Opravu je zapotřebí vhodné zázemí (Příprava tábora) a vhodné vybavení (Opravárenská sada). Akce Oprava vyžaduje alespoň jednu JČ. Počet opravených životů zbroje záleží na stupni dovednosti Kovářství a zaokrouhluje se vždy dolů za celou dobu Táboření dohromady.<br>Kovářství IV - Půl životu zbroje za JČ<br>Kovářství VII - Jeden život zbroje za JČ<br>Kovářství X - Jeden a půl životu zbroje za JČ</p>\n<h3>Čarostřelec</h3>\n<p>Čarostřelci mohou během Táboření použít akci Příprava Magických projektilů za jednu JČ. Během této doby jsou vždy schopni připravit svůj maximální počet Magických projektilů. Příprava Magických projektilů mistrovské úrovně vyžaduje speciální suroviny.</p>",
+    "markdown": null
+   },
+   "video": {
+    "controls": true,
+    "volume": 0.5
+   },
+   "category": null,
+   "ownership": {
+    "default": -1
+   },
+   "flags": {},
+   "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785239603747,
+    "modifiedTime": 1785239603747,
+    "lastModifiedBy": null
+   },
+   "_key": "!journal.pages!tijjBAV17jB1FcRZ.I9KERlVQBHWPx3mo"
+  }
+ ],
+ "folder": "BjCbzfkKJNr5DLau",
+ "flags": {
+  "redsteel": {
+   "sourceSheet": "Odpočinek, Táboření, Jídlo a Hladovění - Volitelné pravidlo"
+  }
+ },
+ "categories": [],
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603747,
+  "modifiedTime": 1785239603747,
+  "lastModifiedBy": null
+ },
+ "ownership": {
+  "default": 0
+ },
+ "_id": "tijjBAV17jB1FcRZ",
+ "sort": 14000,
+ "_key": "!journal!tijjBAV17jB1FcRZ"
+}

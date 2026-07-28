@@ -1,10 +1,11 @@
 /**
  * Data-driven ability grants.
  *
- * Owning a particular feature / trait / item — or having a skill at or above a
- * threshold — can grant one or more abilities to a Character or NPC. Granted
- * abilities are copied from a compendium, tagged so we own them, and removed
- * again automatically when the triggering item/skill goes away.
+ * Owning a particular feature / trait / item, having a skill, weapon skill or
+ * doctrine at or above a threshold, or having unlocked a specialisation node
+ * can grant one or more abilities to a Character or NPC. Granted abilities are
+ * copied from a compendium, tagged so we own them, and removed again
+ * automatically when the trigger goes away.
  *
  * To add a new grant, append an object to ABILITY_GRANTS below. Each rule has:
  *
@@ -14,12 +15,28 @@
  *            { kind: "item", uuid: "...", type: "feature" } // ...optionally constrained by type
  *            { kind: "skill", key: "athletics", min: 1 }    // skill value >= min (default 1)
  *            { kind: "doctrine", key: "swordsman", min: 1 } // doctrine value >= min (default 1)
+ *            { kind: "weaponSkill", key: "swords", min: 1 } // weapon skill value >= min
+ *            { kind: "specNode", spec: "hoplite", node: "nabodnuti" } // node unlocked
  *          For an "item" trigger you must give `name` and/or `uuid`. `type` and
  *          `name` may be combined for extra safety against name collisions.
+ *          Feature triggers below match on name + type on purpose: a feature
+ *          dragged in from the compendium is identified reliably by its (unique,
+ *          always-English) name, while `_stats.compendiumSource` depends on how
+ *          the item got onto the actor.
  *
  *   grant: array of ability compendium UUIDs to add while the trigger holds.
  *
+ *   replaces: optional array of ability UUIDs this grant supersedes. While the
+ *          rule is active those abilities are never granted, and any copy we
+ *          previously auto-granted is removed — that is how ability upgrades
+ *          work (Reaver 4 turns Reckless strike into Reckless strike (Reaver)).
+ *          A copy the player added by hand is left alone and only logged.
+ *
  *   label: optional human-readable note (only used for console warnings).
+ *
+ * Several sources grant the same ability (Cleave comes from Swordsman 2, Reaver 1
+ * and the Cleaver Cleave feature). Just write one rule per source — duplicates
+ * collapse, and the ability survives as long as any one source still holds.
  *
  * Ability UUIDs look like:
  *   "Compendium.redsteel.redsteel-items.Item.<itemId>"
@@ -33,39 +50,591 @@
  *     whole system off for it (existing abilities are left exactly as they are):
  *       actor.setFlag("redsteel", "disableAbilityGrants", true)
  *
- * @type {Array<{label?: string, when: object, grant: string[]}>}
+ * Source of truth for the table: "Pravidla pro ToS V12.1 (WIP).xlsx", sheets
+ * "Dovednosti" (doctrine + weapon skill ranks), "Odbornosti" (features),
+ * "Specializace (WIP)" (spec nodes) and "Různé info" (the Bojové akce table,
+ * which is what each ability was matched against — several Czech action names
+ * do not translate literally to the English item names).
+ */
+
+/** Ability compendium UUID from a bare item id. */
+const A = (id) => `Compendium.redsteel.redsteel-items.Item.${id}`;
+
+/* --------------------------------------------------------------------------
+ * Ability ids. Named after the compendium item, with the rules-Czech action
+ * they implement in the comment where the two names do not line up.
+ * ----------------------------------------------------------------------- */
+const ABILITY = {
+  ACCURATE_SHOT: A("buuxxJT0wA3vKJNg"), // Přesný výstřel
+  ANTI_LARGE: A("yx2pLONxkiwDfWpo"), // Bonus proti velkým tvorům
+  CHARGE: A("2jCzZEc3kXL6zglG"), // Zteč — carries its own Heavy-weapon bonus dice
+  CLEAVE: A("52NJ0ZhgGrHmrQ8z"), // Rozseknutí
+  COUNTERATTACK: A("JltGA0Wsv6ttCUT6"), // Protiútok
+  CRIPPLING_SHOT: A("9WR4lbdssYQVdLoH"), // Zmrzačující výstřel
+  DEFENSIVE_STANCE: A("KprSydD2eARqm2QS"), // Obranný postoj
+  DISTRACTION_DEX: A("yoaHzPcADWincgO4"), // Rozptýlení
+  DISTRACTION_PER: A("gC4G0bkqy7tXghxX"), // Rozptýlení
+  DUELISTS_ADVANCE: A("sbgSHiDt2hyptsxy"), // Duelistův krok
+  EXPLOIT_WEAKNESS: A("VK73lWQNsMotICbn"), // Útok na slabinu
+  EXPLOIT_WEAKNESS_THROW: A("WjPXKjMG7790bZfX"), // Vrh na slabinu
+  EXTENDED_LUNGE: A("menifXsjGJIzCUqt"), // Daleký výpad
+  FEINT_DEX: A("pt6OeaIFk0cAvxla"), // Finta
+  FEINT_PER: A("IVNZXVkihp5CK9JV"), // Finta
+  FLAMBERGE_CLEAVE: A("LVAgDFzBKadXMU4A"), // Rozseknutí flambergem
+  FLURRY: A("zosOTl8qIL3DISsr"), // Smršť útoků
+  FLURRY_OF_THROWS: A("rWVInSjYveJyVonf"), // Vícenásobný vrh
+  FRENZIED_THROW: A("RUMZLtefyxVDNA74"), // Zběsilý vrh
+  GUARD_STANCE: A("n6cK9hKnV52nwOzh"), // Ochrana
+  HALF_PIROUETTE: A("fF5ZDZZ8r1XSGjmP"), // Půlpirueta
+  IMBROCCATA_EXPLOIT_WEAKNESS: A("q8A63eX3waqHl4KX"), // Útok na slabinu, rapír
+  IMPALE: A("1xrf1lG6yXNgqXRC"), // Nabodnutí
+  IMPALE_FOLLOWUP: A("FoRwhcpTYnmuCfQF"), // Nabodnutí: Navazující útok
+  IMPROVED_AIMING: A("5t73FrRCJ0N6hdFe"), // Vylepšené míření
+  KNOCKDOWN: A("8soGfxXTgjjWZlMq"), // Povalení
+  LEG_SWEEP_DEX: A("Z4ZES1CFCCd82YMn"), // Nastrčená noha
+  LEG_SWEEP_STR: A("GvpBIkl7tAxx5xrX"), // Nastrčená noha
+  MAGIC_WARD: A("jb3WkQ7CKe0E3hW8"), // Magické obrnění
+  OVERWATCH: A("9YQu2LgtpfCW0TWk"), // Stráž
+  PASSING_STRIKE: A("HrGzgwOiif01bpDi"), // Útok s pohybem
+  PERFECT_OPENING: A("6W5C7JvpFUpAbj8l"), // Rafinovaný manévr, 2 akce
+  PERFECT_OPENING_HASTENED: A("hIK2uTDXUvO9TeuV"), // Rafinovaný manévr, 1 akce
+  PIKEMAN_CHARGE: A("cghhodlLxiU69WLO"), // Zteč: Průbojnost +5 — also carries Heavy dice
+  POLEARM_CLEAVE: A("PPV4asgA1ESKgD26"), // Daleké rozseknutí
+  RECKLESS_STRIKE: A("CKSRdqAvrm7SOqCs"), // Zběsilý útok
+  RECKLESS_STRIKE_REAVER: A("0YDsI6HYQ31hAWHp"), // Zběsilý útok, Plenitel
+  RETALIATORY_STRIKE: A("qaPermZFuHuTg5ni"), // Odvetný úder
+  RIPOSTE: A("WX6uJeqZAqeyykJa"), // Riposta
+  RUNNING_THROW: A("wNvzvMB5p69CON5c"), // Vrh s rozběhem
+  SHIELD_BASH: A("6Q935yGVq7NpUIbE"), // Úder štítem
+  SHIELD_BASH_SMALL: A("8lz1hQM7U6yFtmY4"), // Úder štítem, malý štít
+  SHIELD_CHARGE: A("rkM1ONas7GM6M97p"), // Zteč štítem
+  SHIELD_CHARGE_SMALL: A("lL6kkZUPwQem7PJX"), // Zteč štítem, malý štít
+  SHIELDBEARER_DEFENSIVE_STANCE: A("Z5uFEQqLBQXvsjDq"), // Obranný postoj: Ignoruje Průraznost
+  SHOVE_DEX: A("eM1CMfrwZeMl1X8O"), // Odstrčení
+  SHOVE_STR: A("quN6stREoJF84H84"), // Odstrčení
+  SPLINTERING_STRIKE: A("HxHXxA3Mq03dD7ku"), // Rozštěpení
+  STAGGERING_BLOW: A("DFnAqroELNHfbweO"), // Omračující úder
+  TRIP_DEX: A("kkHN2VhkuN0wIePo"), // Podseknutí
+  TRIP_STR: A("lceDlymn87I1aDNX"), // Podseknutí
+};
+
+/* Shorthand trigger builders — the table is long enough without the noise. */
+const doctrine = (key, min) => ({ kind: "doctrine", key, min });
+const weaponSkill = (key, min) => ({ kind: "weaponSkill", key, min });
+const specNode = (spec, node) => ({ kind: "specNode", spec, node });
+const feature = (name) => ({ kind: "item", name, type: "feature" });
+
+/** Every weapon skill grants the same actions at ranks 1-3. */
+const WEAPON_SKILLS = ["swords", "axes", "blunt", "polearms"];
+
+/**
+ * @type {Array<{label?: string, when: object, grant: string[], replaces?: string[]}>}
  */
 export const ABILITY_GRANTS = [
-  // --- Swordsman doctrine (cumulative: each level keeps the lower ones) -------
+  /* ======================================================================
+   * Weapon skills — Meče / Sekery / Tupé / Dřevcové
+   * Ranks 1-3 are identical across all four; rank 6 is the skill's own action.
+   * ==================================================================== */
+  ...WEAPON_SKILLS.flatMap((key) => [
+    {
+      label: `${key} 1 → Charge`,
+      when: weaponSkill(key, 1),
+      grant: [ABILITY.CHARGE],
+    },
+    {
+      label: `${key} 2 → Reckless strike`,
+      when: weaponSkill(key, 2),
+      grant: [ABILITY.RECKLESS_STRIKE],
+    },
+    {
+      label: `${key} 3 → Exploit Weakness`,
+      when: weaponSkill(key, 3),
+      grant: [ABILITY.EXPLOIT_WEAKNESS],
+    },
+  ]),
+  {
+    label: "Swords 6 → Feint",
+    when: weaponSkill("swords", 6),
+    grant: [ABILITY.FEINT_DEX, ABILITY.FEINT_PER],
+  },
+  {
+    label: "Axes 6 → Splintering strike",
+    when: weaponSkill("axes", 6),
+    grant: [ABILITY.SPLINTERING_STRIKE],
+  },
+  {
+    label: "Blunt 6 → Staggering blow",
+    when: weaponSkill("blunt", 6),
+    grant: [ABILITY.STAGGERING_BLOW],
+  },
+  {
+    label: "Polearms 6 → Trip",
+    when: weaponSkill("polearms", 6),
+    grant: [ABILITY.TRIP_STR, ABILITY.TRIP_DEX],
+  },
+
+  /* ======================================================================
+   * Pikenýr (pikeman)
+   * ==================================================================== */
+  {
+    label: "Pikeman 1 → Impale",
+    when: doctrine("pikeman", 1),
+    grant: [ABILITY.IMPALE],
+  },
+  {
+    label: "Pikeman 2 → Anti-Large, Impale: Follow-up Attack",
+    when: doctrine("pikeman", 2),
+    grant: [ABILITY.ANTI_LARGE, ABILITY.IMPALE_FOLLOWUP],
+  },
+  {
+    label: "Pikeman 4 → Polearm Cleave",
+    when: doctrine("pikeman", 4),
+    grant: [ABILITY.POLEARM_CLEAVE],
+  },
+  {
+    label: "Pikeman 5 → Shove; Charge upgrades to Pikeman charge",
+    when: doctrine("pikeman", 5),
+    grant: [
+      ABILITY.SHOVE_STR,
+      ABILITY.SHOVE_DEX,
+      ABILITY.PIKEMAN_CHARGE,
+    ],
+    replaces: [ABILITY.CHARGE],
+  },
+
+  /* ======================================================================
+   * Šermíř (swordsman)
+   * ==================================================================== */
   {
     label: "Swordsman 1 → Extended Lunge",
-    when: { kind: "doctrine", key: "swordsman", min: 1 },
-    grant: ["Compendium.redsteel.redsteel-items.Item.menifXsjGJIzCUqt"],
+    when: doctrine("swordsman", 1),
+    grant: [ABILITY.EXTENDED_LUNGE],
   },
   {
     label: "Swordsman 2 → Cleave",
-    when: { kind: "doctrine", key: "swordsman", min: 2 },
-    grant: ["Compendium.redsteel.redsteel-items.Item.52NJ0ZhgGrHmrQ8z"],
+    when: doctrine("swordsman", 2),
+    grant: [ABILITY.CLEAVE],
   },
   {
     label: "Swordsman 4 → Half Pirouette",
-    when: { kind: "doctrine", key: "swordsman", min: 4 },
-    grant: ["Compendium.redsteel.redsteel-items.Item.fF5ZDZZ8r1XSGjmP"],
+    when: doctrine("swordsman", 4),
+    grant: [ABILITY.HALF_PIROUETTE],
   },
   {
     label: "Swordsman 5 → Counterattack",
-    when: { kind: "doctrine", key: "swordsman", min: 5 },
-    grant: ["Compendium.redsteel.redsteel-items.Item.JltGA0Wsv6ttCUT6"],
+    when: doctrine("swordsman", 5),
+    grant: [ABILITY.COUNTERATTACK],
   },
   {
     label: "Swordsman 6 → Flurry",
-    when: { kind: "doctrine", key: "swordsman", min: 6 },
-    grant: ["Compendium.redsteel.redsteel-items.Item.zosOTl8qIL3DISsr"],
+    when: doctrine("swordsman", 6),
+    grant: [ABILITY.FLURRY],
   },
   {
     label: "Swordsman 10 → Riposte",
-    when: { kind: "doctrine", key: "swordsman", min: 10 },
-    grant: ["Compendium.redsteel.redsteel-items.Item.WX6uJeqZAqeyykJa"],
+    when: doctrine("swordsman", 10),
+    grant: [ABILITY.RIPOSTE],
+  },
+
+  /* ======================================================================
+   * Plenitel (reaver)
+   * ==================================================================== */
+  {
+    label: "Reaver 1 → Cleave",
+    when: doctrine("reaver", 1),
+    grant: [ABILITY.CLEAVE],
+  },
+  {
+    label: "Reaver 3 → Extended Lunge",
+    when: doctrine("reaver", 3),
+    grant: [ABILITY.EXTENDED_LUNGE],
+  },
+  {
+    label: "Reaver 4 → Reckless strike upgrades to Reckless strike (Reaver)",
+    when: doctrine("reaver", 4),
+    grant: [ABILITY.RECKLESS_STRIKE_REAVER],
+    replaces: [ABILITY.RECKLESS_STRIKE],
+  },
+  {
+    label: "Reaver 5 → Knockdown",
+    when: doctrine("reaver", 5),
+    grant: [ABILITY.KNOCKDOWN],
+  },
+
+  /* ======================================================================
+   * Štítonoš (shieldbearer)
+   * ==================================================================== */
+  {
+    label: "Shieldbearer 1 → Shield Bash",
+    when: doctrine("shieldbearer", 1),
+    grant: [ABILITY.SHIELD_BASH, ABILITY.SHIELD_BASH_SMALL],
+  },
+  {
+    label: "Shieldbearer 2 → Guard (Stance)",
+    when: doctrine("shieldbearer", 2),
+    grant: [ABILITY.GUARD_STANCE],
+  },
+  {
+    label: "Shieldbearer 4 → Counterattack",
+    when: doctrine("shieldbearer", 4),
+    grant: [ABILITY.COUNTERATTACK],
+  },
+  {
+    label: "Shieldbearer 5 → Shield Charge",
+    when: doctrine("shieldbearer", 5),
+    grant: [ABILITY.SHIELD_CHARGE, ABILITY.SHIELD_CHARGE_SMALL],
+  },
+  {
+    label: "Shieldbearer 6 → Defensive Stance upgrades (ignores Breakthrough)",
+    when: doctrine("shieldbearer", 6),
+    grant: [ABILITY.SHIELDBEARER_DEFENSIVE_STANCE],
+    replaces: [ABILITY.DEFENSIVE_STANCE],
+  },
+
+  /* ======================================================================
+   * Dimakerus
+   * ==================================================================== */
+  {
+    label: "Dimakerus 2 → Flurry",
+    when: doctrine("dimakerus", 2),
+    grant: [ABILITY.FLURRY],
+  },
+  {
+    label: "Dimakerus 3 → Retaliatory strike",
+    when: doctrine("dimakerus", 3),
+    grant: [ABILITY.RETALIATORY_STRIKE],
+  },
+  {
+    label: "Dimakerus 6 → Counterattack, Half Pirouette",
+    when: doctrine("dimakerus", 6),
+    grant: [ABILITY.COUNTERATTACK, ABILITY.HALF_PIROUETTE],
+  },
+  {
+    label: "Dimakerus 9 → Passing Strike",
+    when: doctrine("dimakerus", 9),
+    grant: [ABILITY.PASSING_STRIKE],
+  },
+
+  /* ======================================================================
+   * Duelista (duelist)
+   * ==================================================================== */
+  {
+    label: "Duelist 1 → Improved Aiming",
+    when: doctrine("duelist", 1),
+    grant: [ABILITY.IMPROVED_AIMING],
+  },
+  {
+    label: "Duelist 3 → Duelist's Advance",
+    when: doctrine("duelist", 3),
+    grant: [ABILITY.DUELISTS_ADVANCE],
+  },
+  {
+    label: "Duelist 5 → Passing Strike",
+    when: doctrine("duelist", 5),
+    grant: [ABILITY.PASSING_STRIKE],
+  },
+  {
+    label: "Duelist 6 → Perfect Opening (both action costs)",
+    when: doctrine("duelist", 6),
+    grant: [ABILITY.PERFECT_OPENING, ABILITY.PERFECT_OPENING_HASTENED],
+  },
+  {
+    label: "Duelist 8 → Counterattack",
+    when: doctrine("duelist", 8),
+    grant: [ABILITY.COUNTERATTACK],
+  },
+  {
+    label: "Duelist 9 → Half Pirouette",
+    when: doctrine("duelist", 9),
+    grant: [ABILITY.HALF_PIROUETTE],
+  },
+
+  /* ======================================================================
+   * Mnich (monk)
+   * ==================================================================== */
+  {
+    label: "Monk 2 → Feint",
+    when: doctrine("monk", 2),
+    grant: [ABILITY.FEINT_DEX, ABILITY.FEINT_PER],
+  },
+  {
+    label: "Monk 3 → Flurry",
+    when: doctrine("monk", 3),
+    grant: [ABILITY.FLURRY],
+  },
+  {
+    label: "Monk 4 → Staggering blow",
+    when: doctrine("monk", 4),
+    grant: [ABILITY.STAGGERING_BLOW],
+  },
+  {
+    label: "Monk 5 → Counterattack",
+    when: doctrine("monk", 5),
+    grant: [ABILITY.COUNTERATTACK],
+  },
+  {
+    label: "Monk 8 → Passing Strike",
+    when: doctrine("monk", 8),
+    grant: [ABILITY.PASSING_STRIKE],
+  },
+  {
+    label: "Monk 9 → Half Pirouette",
+    when: doctrine("monk", 9),
+    grant: [ABILITY.HALF_PIROUETTE],
+  },
+
+  /* ======================================================================
+   * Tulák (rogue)
+   * Rank 1 only raises Sneak Attack damage — Sneak Attack itself is a base
+   * action every character has, so there is nothing to grant there.
+   * ==================================================================== */
+  {
+    label: "Rogue 4 → Distraction",
+    when: doctrine("rogue", 4),
+    grant: [ABILITY.DISTRACTION_DEX, ABILITY.DISTRACTION_PER],
+  },
+
+  /* ======================================================================
+   * Lukostřelec (archer)
+   * ==================================================================== */
+  {
+    label: "Archer 2 → Crippling Shot",
+    when: doctrine("archer", 2),
+    grant: [ABILITY.CRIPPLING_SHOT],
+  },
+  {
+    label: "Archer 3 → Exploit Weakness",
+    when: doctrine("archer", 3),
+    grant: [ABILITY.EXPLOIT_WEAKNESS],
+  },
+  {
+    label: "Archer 5 → Accurate Shot",
+    when: doctrine("archer", 5),
+    grant: [ABILITY.ACCURATE_SHOT],
+  },
+  {
+    label: "Archer 7 → Overwatch",
+    when: doctrine("archer", 7),
+    grant: [ABILITY.OVERWATCH],
+  },
+
+  /* ======================================================================
+   * Kušník (arbalest)
+   * ==================================================================== */
+  {
+    label: "Arbalest 2 → Exploit Weakness",
+    when: doctrine("arbalest", 2),
+    grant: [ABILITY.EXPLOIT_WEAKNESS],
+  },
+  {
+    label: "Arbalest 3 → Crippling Shot",
+    when: doctrine("arbalest", 3),
+    grant: [ABILITY.CRIPPLING_SHOT],
+  },
+  {
+    label: "Arbalest 4 → Overwatch",
+    when: doctrine("arbalest", 4),
+    grant: [ABILITY.OVERWATCH],
+  },
+  {
+    label: "Arbalest 7 → Accurate Shot",
+    when: doctrine("arbalest", 7),
+    grant: [ABILITY.ACCURATE_SHOT],
+  },
+
+  /* ======================================================================
+   * Peltast
+   * ==================================================================== */
+  {
+    label: "Peltast 2 → Running Throw",
+    when: doctrine("peltast", 2),
+    grant: [ABILITY.RUNNING_THROW],
+  },
+  {
+    label: "Peltast 3 → Exploit Weakness",
+    when: doctrine("peltast", 3),
+    grant: [ABILITY.EXPLOIT_WEAKNESS],
+  },
+  {
+    label: "Peltast 4 → Frenzied Throw",
+    when: doctrine("peltast", 4),
+    grant: [ABILITY.FRENZIED_THROW],
+  },
+  {
+    label: "Peltast 5 → Crippling Shot",
+    when: doctrine("peltast", 5),
+    grant: [ABILITY.CRIPPLING_SHOT],
+  },
+  {
+    label: "Peltast 7 → Accurate Shot",
+    when: doctrine("peltast", 7),
+    grant: [ABILITY.ACCURATE_SHOT],
+  },
+  {
+    label: "Peltast 8 → Overwatch",
+    when: doctrine("peltast", 8),
+    grant: [ABILITY.OVERWATCH],
+  },
+
+  /* ======================================================================
+   * Kejklíř (juggler)
+   * ==================================================================== */
+  {
+    label: "Juggler 3 → Exploit Weakness, Exploit Weakness (Throw)",
+    when: doctrine("juggler", 3),
+    grant: [ABILITY.EXPLOIT_WEAKNESS, ABILITY.EXPLOIT_WEAKNESS_THROW],
+  },
+  {
+    label: "Juggler 5 → Overwatch",
+    when: doctrine("juggler", 5),
+    grant: [ABILITY.OVERWATCH],
+  },
+  {
+    label: "Juggler 7 → Crippling Shot",
+    when: doctrine("juggler", 7),
+    grant: [ABILITY.CRIPPLING_SHOT],
+  },
+  {
+    label: "Juggler 9 → Flurry of Throws",
+    when: doctrine("juggler", 9),
+    grant: [ABILITY.FLURRY_OF_THROWS],
+  },
+
+  /* ======================================================================
+   * Mušketýr (musketeer)
+   * ==================================================================== */
+  {
+    label: "Musketeer 2 → Extended Lunge",
+    when: doctrine("musketeer", 2),
+    grant: [ABILITY.EXTENDED_LUNGE],
+  },
+  {
+    label: "Musketeer 4 → Overwatch",
+    when: doctrine("musketeer", 4),
+    grant: [ABILITY.OVERWATCH],
+  },
+  {
+    label: "Musketeer 6 → Staggering blow",
+    when: doctrine("musketeer", 6),
+    grant: [ABILITY.STAGGERING_BLOW],
+  },
+  {
+    label: "Musketeer 8 → Shove",
+    when: doctrine("musketeer", 8),
+    grant: [ABILITY.SHOVE_STR, ABILITY.SHOVE_DEX],
+  },
+
+  /* ======================================================================
+   * Magic doctrines — Magické obrnění / Magic Ward
+   * ==================================================================== */
+  {
+    label: "Elymas 2 → Magic Ward",
+    when: doctrine("elymas", 2),
+    grant: [ABILITY.MAGIC_WARD],
+  },
+  {
+    label: "Incantator 2 → Magic Ward",
+    when: doctrine("incantator", 2),
+    grant: [ABILITY.MAGIC_WARD],
+  },
+  {
+    label: "Elementalist 3 → Magic Ward",
+    when: doctrine("elementalist", 3),
+    grant: [ABILITY.MAGIC_WARD],
+  },
+  {
+    label: "Veneficus 6 → Magic Ward",
+    when: doctrine("veneficus", 6),
+    grant: [ABILITY.MAGIC_WARD],
+  },
+
+  /* ======================================================================
+   * Odbornosti (features)
+   * Weapon-restricted feats grant unconditionally; the ability's own text
+   * names the weapon it requires.
+   * ==================================================================== */
+  {
+    label: "Swift Retaliation (Rychlá odveta) → Retaliatory strike",
+    when: feature("Swift Retaliation"),
+    grant: [ABILITY.RETALIATORY_STRIKE],
+  },
+  {
+    label: "Cleaver Cleave (Rozseknutí sekáčkem) → Cleave",
+    when: feature("Cleaver Cleave"),
+    grant: [ABILITY.CLEAVE],
+  },
+  {
+    label: "Polearm master (Dřevcový mistr) → Feint, Splintering strike, Staggering blow",
+    when: feature("Polearm master"),
+    grant: [
+      ABILITY.FEINT_DEX,
+      ABILITY.FEINT_PER,
+      ABILITY.SPLINTERING_STRIKE,
+      ABILITY.STAGGERING_BLOW,
+    ],
+  },
+  {
+    label: "Leg Sweep (Nastrčená noha) → Leg Sweep",
+    when: feature("Leg Sweep"),
+    grant: [ABILITY.LEG_SWEEP_STR, ABILITY.LEG_SWEEP_DEX],
+  },
+  {
+    label: "Flamberge Cleave → Cleave upgrades to Flamberge Cleave",
+    when: feature("Flamberge Cleave"),
+    grant: [ABILITY.FLAMBERGE_CLEAVE],
+    replaces: [ABILITY.CLEAVE],
+  },
+  {
+    label: "Imbroccata → Exploit Weakness upgrades to Imbroccata",
+    when: feature("Imbroccata"),
+    grant: [ABILITY.IMBROCCATA_EXPLOIT_WEAKNESS],
+    replaces: [ABILITY.EXPLOIT_WEAKNESS],
+  },
+
+  /* ======================================================================
+   * Specializace (specialisation nodes)
+   * Only nodes that unlock a whole action are listed. Nodes that merely tune
+   * an action ("Riposta: Výdrž -4", "Ochrana jako Volná akce") are not grants.
+   * ==================================================================== */
+  {
+    label: "Servant of the Sword: Odvetný úder → Retaliatory strike",
+    when: specNode("swordServant", "odvetnyUder"),
+    grant: [ABILITY.RETALIATORY_STRIKE],
+  },
+  {
+    label: "Servant of the Sword: Vylepšené míření → Improved Aiming",
+    when: specNode("swordServant", "improvedAim"),
+    grant: [ABILITY.IMPROVED_AIMING],
+  },
+  {
+    label: "Servant of the Sword: Útok s pohybem → Passing Strike",
+    when: specNode("swordServant", "utokSPohybem"),
+    grant: [ABILITY.PASSING_STRIKE],
+  },
+  {
+    label: "Hoplite: Nabodnutí → Impale",
+    when: specNode("hoplite", "nabodnuti"),
+    grant: [ABILITY.IMPALE],
+  },
+  {
+    label: "Hoplite: Bonus proti velkým tvorům → Anti-Large, Impale: Follow-up",
+    when: specNode("hoplite", "velkeTvory"),
+    grant: [ABILITY.ANTI_LARGE, ABILITY.IMPALE_FOLLOWUP],
+  },
+  {
+    label: "Champion: Odvetný úder → Retaliatory strike",
+    when: specNode("champion", "odvetnyUder"),
+    grant: [ABILITY.RETALIATORY_STRIKE],
+  },
+  {
+    label: "Champion: Riposta → Riposte",
+    when: specNode("champion", "riposta"),
+    grant: [ABILITY.RIPOSTE],
+  },
+  {
+    label: "Skirmisher: Útok s pohybem → Passing Strike",
+    when: specNode("skirmisher", "utokSPohybem"),
+    grant: [ABILITY.PASSING_STRIKE],
   },
 ];
 
@@ -102,9 +671,20 @@ function ruleActive(actor, rule) {
   }
 
   if (w.kind === "doctrine") {
-    const doctrine = actor.system?.doctrines?.[w.key];
-    if (!doctrine) return false;
-    return Number(doctrine.value ?? 0) >= Number(w.min ?? 1);
+    const doc = actor.system?.doctrines?.[w.key];
+    if (!doc) return false;
+    return Number(doc.value ?? 0) >= Number(w.min ?? 1);
+  }
+
+  if (w.kind === "weaponSkill") {
+    const ws = actor.system?.weaponSkills?.[w.key];
+    if (!ws) return false;
+    return Number(ws.value ?? 0) >= Number(w.min ?? 1);
+  }
+
+  if (w.kind === "specNode") {
+    const spec = actor.system?.specialisations?.[w.spec];
+    return !!(spec?.active && spec.nodes?.[w.node]);
   }
 
   if (w.kind === "item") {
@@ -122,8 +702,9 @@ function ruleActive(actor, rule) {
 
 /**
  * Reconcile an actor's auto-granted abilities against ABILITY_GRANTS.
- * Adds abilities whose trigger is now satisfied and removes previously-granted
- * abilities whose trigger no longer holds. Manually-added items are untouched.
+ * Adds abilities whose trigger is now satisfied, removes previously-granted
+ * abilities whose trigger no longer holds, and removes granted abilities that
+ * an active upgrade supersedes. Manually-added items are untouched.
  * @param {Actor} actor
  */
 export async function syncGrantedAbilities(actor) {
@@ -139,15 +720,19 @@ export async function syncGrantedAbilities(actor) {
       actor.getFlag(GRANT_FLAG_SCOPE, SUPPRESSED_FLAG) ?? [],
     );
 
-    // Every ability UUID that should currently be granted.
+    // Every ability UUID that should currently be granted, and every ability
+    // an active upgrade supersedes.
     const desired = new Set();
+    const replaced = new Set();
     for (const rule of ABILITY_GRANTS) {
-      if (ruleActive(actor, rule)) {
-        for (const uuid of rule.grant ?? []) {
-          if (!suppressed.has(uuid)) desired.add(uuid);
-        }
+      if (!ruleActive(actor, rule)) continue;
+      for (const uuid of rule.grant ?? []) {
+        if (!suppressed.has(uuid)) desired.add(uuid);
       }
+      for (const uuid of rule.replaces ?? []) replaced.add(uuid);
     }
+    // An upgrade wins over its base even when another source still grants it.
+    for (const uuid of replaced) desired.delete(uuid);
 
     // Abilities we previously auto-granted, keyed by their source UUID.
     const granted = actor.items.filter((i) =>
@@ -163,7 +748,18 @@ export async function syncGrantedAbilities(actor) {
       actor.items.map((i) => i._stats?.compendiumSource).filter(Boolean),
     );
 
-    // Remove granted abilities whose trigger is gone.
+    // A hand-added base ability is the player's to keep — say so rather than
+    // silently leaving a superseded ability on the sheet.
+    for (const uuid of replaced) {
+      if (grantedByUuid.has(uuid)) continue;
+      if (ownedSources.has(uuid)) {
+        console.warn(
+          `Redsteel | ${actor.name} owns a manual copy of a superseded ability (${uuid}); leaving it in place.`,
+        );
+      }
+    }
+
+    // Remove granted abilities whose trigger is gone or that an upgrade replaced.
     const toDelete = granted
       .filter((i) => !desired.has(i.getFlag(GRANT_FLAG_SCOPE, GRANT_SOURCE_FLAG)))
       .map((i) => i.id);
@@ -258,10 +854,16 @@ export function registerAbilityGrants() {
     syncGrantedAbilities(parent);
   });
 
-  // Skill / doctrine values changing can cross a threshold.
+  // Skill / weapon skill / doctrine values changing can cross a threshold, and
+  // unlocking a specialisation node can satisfy a specNode trigger.
   Hooks.on("updateActor", (actor, changes, options, userId) => {
     if (game.user.id !== userId) return;
-    if (changes.system?.skills || changes.system?.doctrines)
+    if (
+      changes.system?.skills ||
+      changes.system?.doctrines ||
+      changes.system?.weaponSkills ||
+      changes.system?.specialisations
+    )
       syncGrantedAbilities(actor);
   });
 }

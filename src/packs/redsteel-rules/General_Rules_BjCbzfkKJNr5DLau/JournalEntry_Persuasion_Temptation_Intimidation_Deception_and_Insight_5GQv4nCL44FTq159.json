@@ -1,0 +1,68 @@
+{
+ "name": "Persuasion, Temptation, Intimidation, Deception and Insight",
+ "pages": [
+  {
+   "sort": 0,
+   "name": "Persuasion, Temptation, Intimidation, Deception and Insight",
+   "type": "text",
+   "_id": "gXgp65EpDvDEyVqd",
+   "title": {
+    "show": false,
+    "level": 1
+   },
+   "image": {},
+   "src": null,
+   "system": {},
+   "text": {
+    "format": 1,
+    "content": "<p>V rámci těchto dovedností je rovněž kladen velký důraz na Okolnosti, za kterých se využívání těchto dovedností koná. O některých věcech nelze přesvědčit, některé lidi nelze svést etc.</p>\n<h3>Přesvědčování</h3>\n<p>Šance na úspěch se počítá jako Charisma*5 + Vůle*3 + Vzhled*1 + dovednost Přesvědčování + Rysy + Odbornosti + Argument.<br>Jako Argument se považuje cokoliv co řekne hráč ve snaze přesvědčit druhou stranu. DM pak posoudí kvalitu argumentu a upraví Obtížnost testu jak uzná za vhodné. Argument tedy může Obtížnost i zvýšit.<br>Přesvědčováním lze například: Smlouvat o ceně, získat přízeň davu, vyjednávat o odměně. Znakem Přesvědčování je upřímnost.</p>\n<h3>Pokoušení</h3>\n<p>Šance na úspěch se počítá jako Charisma*5 + Vnímání/Vzhled*3 + Hříšnost*1 + dovednost Pokoušení + Rysy + Odbornosti.<br>Klíčovou roli hraje rovněž Hříšnost či preference druhé strany, které znatelně modifikují Obtížnost testu.<br>Pokoušením lze různě ponoukat ke hříchům. Například tedy: Zlákání strážného na hazard (Chamtivost) nebo alkohol (Obžérství), ponoukání k násilí (Hněv či Závist), smilstvo (Touha) etc. Znakem Pokoušení je využívání Hříšnosti.</p>\n<h3>Zastrašování</h3>\n<p>Šance na úspěch se počítá jako Charisma*5 + Síla*3 + dovednost Zastrašování + Rysy + Odbornosti + Negativní Vzhled*2.<br>Rovněž se dají najít různé okolnosti, které upraví Obtížnost testu (Cíl ví, že je mnohem mocnější, má u sebe mnoho spojenců etc).<br>Zastrašováním lze například: Přinutít ke spolupráci či vyzrazení tajemství. Znakem Zastrašování je hrozba, ať už násilím či jinou formou následků.</p>\n<h3>Klamání</h3>\n<p>Šance na úspěch se počítá jako Charisma*5 + Inteligence*3 + Vzhled*1 + dovednost Klamání + Rysy + Odbornosti + Argument.<br>Jako Argument se považuje cokoliv co řekne hráč ve snaze přesvědčit druhou stranu. DM pak posoudí kvalitu argumentu a upraví Obtížnost testu jak uzná za vhodné. Argument tedy může Obtížnost i zvýšit.<br>Klamání využívá lži a klam ve snaze ovlivnit okolí a přesvědčit je. Je zpravidla neupřímné a neopírá se o pravdu, ale o domněnky, lži a polopravdy.</p>\n<h3>Vhled</h3>\n<p>Šance na úspěch se počítá jako Vnímání*5 + Charisma*4 + dovednost Vhled + Rysy + Odbornosti.<br>Vhled napomáhá odhalit záměry a pohnutky, zda-li někdo klame. Rovněž může sloužit k odhadnutí lidské povahy.</p>",
+    "markdown": null
+   },
+   "video": {
+    "controls": true,
+    "volume": 0.5
+   },
+   "category": null,
+   "ownership": {
+    "default": -1
+   },
+   "flags": {},
+   "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785239603746,
+    "modifiedTime": 1785239603746,
+    "lastModifiedBy": null
+   },
+   "_key": "!journal.pages!5GQv4nCL44FTq159.gXgp65EpDvDEyVqd"
+  }
+ ],
+ "folder": "BjCbzfkKJNr5DLau",
+ "flags": {
+  "redsteel": {
+   "sourceSheet": "Přesvědčování, Pokoušení, Zastrašování, Klamání a Vhled"
+  }
+ },
+ "categories": [],
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603746,
+  "modifiedTime": 1785239603746,
+  "lastModifiedBy": null
+ },
+ "ownership": {
+  "default": 0
+ },
+ "_id": "5GQv4nCL44FTq159",
+ "sort": 12000,
+ "_key": "!journal!5GQv4nCL44FTq159"
+}

@@ -1,0 +1,68 @@
+{
+ "name": "Teaching",
+ "pages": [
+  {
+   "sort": 0,
+   "name": "Teaching",
+   "type": "text",
+   "_id": "5g6X1fNvvQGbJaFH",
+   "title": {
+    "show": false,
+    "level": 1
+   },
+   "image": {},
+   "src": null,
+   "system": {},
+   "text": {
+    "format": 1,
+    "content": "<p>Spousta dovednosti vyžaduje mentora či učitele, aby bylo možné nadále zdokonalovat své schopnosti. Stupně učitelství odemykají vyšší stupně dovedností. Pochopitelně však platí, že učitel musí vyučovanou látku sám zvládat. Učení se některých dovedností by mělo být časově a materiálně podmíněno (Čtení a Psaní, Jazyky etc). Odbornost Mentor uděluje žákovi slevu na učené dovednosti. Učitele je mnohdy možné nahradit učebnicemi, Výzkumem nebo alternativními metodami (Posednutí etc). V případě takzvaného nultého učitele (Snížení požadavku na učitele skrze odbornosti) je učitel stále vyžadován, stačí však pasivní učení formou pozorování.<br>Učení obvykle trvá několik dní, minimálně však vždy alespoň jeden den a v případě Čtení, psaní a jazyků alespoň 5 dní. Je možné podstoupit několik lekcí za den, nesmí se však jednat o stejnou látku. Nelze přeskakovat milníky. Příklad: Alchemista druhého stupně vyhledá Učitele kvůli odemknutí požadavku na třetí stupeň (milník). Dokud však nedosáhne třetího stupně, nemůže si nechat odemknout požadavek na pátý stupeň (další milník).<br>Učitel N - 4 dny; -2 dny za rys Génius, -1 den za odbornost Učenlivý, -2 dny je-li učitel Mentor, -1 den za Hvězdu Učence, -1 den za Lidskou učenlivost<br>Učitel I - 5 dní; -2 dny za rys Génius, -1 den za odbornost Učenlivý, -2 dny je-li učitel Mentor, -1 den za Hvězdu Učence, -1 den za Lidskou učenlivost<br>Učitel II - 6 dní; -2 dny za rys Génius, -1 den za odbornost Učenlivý, -2 dny je-li učitel Mentor, -1 den za Hvězdu Učence, -1 den za Lidskou učenlivost<br>Učitel III - 8 dní; -2 dny za rys Génius, -1 den za odbornost Učenlivý, -2 dny je-li učitel Mentor, -1 den za Hvězdu Učence, -1 den za Lidskou učenlivost<br>Čtení a psaní - 60 dní; -10 dní za rys Génius, -5 dní za odbornost Učenlivý, -5 dní je-li učitel Mentor, -5 dní za Hvězdu Učence; -5 dní za Lidskou učenlivost<br>Jazyk - 60 dní; -10 dní za rys Génius, -30 dní za rys Lingvista, -5 dní za odbornost Učenlivý, -5 dní je-li učitel Mentor, -5 dní za Hvězdu Učence, -5 dní za Lidskou učenlivost</p>",
+    "markdown": null
+   },
+   "video": {
+    "controls": true,
+    "volume": 0.5
+   },
+   "category": null,
+   "ownership": {
+    "default": -1
+   },
+   "flags": {},
+   "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785239603755,
+    "modifiedTime": 1785239603755,
+    "lastModifiedBy": null
+   },
+   "_key": "!journal.pages!la51xyyafnof9YRa.5g6X1fNvvQGbJaFH"
+  }
+ ],
+ "folder": "BjCbzfkKJNr5DLau",
+ "flags": {
+  "redsteel": {
+   "sourceSheet": "Učitelství"
+  }
+ },
+ "categories": [],
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603755,
+  "modifiedTime": 1785239603755,
+  "lastModifiedBy": null
+ },
+ "ownership": {
+  "default": 0
+ },
+ "_id": "la51xyyafnof9YRa",
+ "sort": 32000,
+ "_key": "!journal!la51xyyafnof9YRa"
+}

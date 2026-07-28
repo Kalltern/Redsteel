@@ -1,9 +1,11 @@
 import { getTraitPills } from "./traitPills.mjs";
 import { withRollBias, tagRollSkill } from "./rollAdvantage.mjs";
 import { selectAimedPart, AIMED_PARTS } from "./aimedStrike.mjs";
+import { getImprovedAimPenetration } from "./aim.mjs";
 import { getAttackRerollTokens } from "./rerolls.mjs";
 import { buildBanePacket } from "./baneCombat.mjs";
 import { hasHtmlContent } from "./chatBlocks.mjs";
+import { appendHeavyWeaponDamage } from "./weaponResolver.mjs";
 import {
   isSpeedTest,
   rollSpeedTest,
@@ -207,6 +209,7 @@ export async function combatAbilities() {
         
         .tooltip-popup .tooltip-title {
           color: #c9b26b;
+          font-size: 16px;
           font-weight: bold;
           margin-bottom: 4px;
           border-bottom: 1px solid #8b6914;
@@ -1352,6 +1355,11 @@ ${descriptionTable}
           : modDamage;
       }
     }
+    // Conditional dice that only land with a Heavy weapon (Charge's extra 2d4).
+    abilityDamage = appendHeavyWeaponDamage(abilityDamage, weapon, [
+      ability,
+      ...selectedModifiers,
+    ]);
     if (weapon) {
       ({
         doctrineBonus,
@@ -1389,8 +1397,18 @@ ${descriptionTable}
         ) || 0
       : 0;
     const actorMods = game.redsteel.getActorCombatModifiers(actor, weapon);
+    // Improved Aim: read before getAttackRolls consumes the aim flag.
+    const improvedAimPen = getImprovedAimPenetration(
+      actor,
+      weapon,
+      weaponContext,
+    );
     const penetration =
-      mainPen + offPen + abilityPenetration + actorMods.penetrationBonus;
+      mainPen +
+      offPen +
+      abilityPenetration +
+      actorMods.penetrationBonus +
+      improvedAimPen;
     // S2: fold passive weapon crit-range bonuses (spec nodes) into the crit-range
     // input that getCriticalRolls buckets into critScore.
     doctrineCritRangeBonus += actorMods.critRangeBonus;

@@ -1,0 +1,23 @@
+{
+ "name": "Armory",
+ "sorting": "a",
+ "folder": null,
+ "type": "JournalEntry",
+ "_id": "sOmxm1q9LSplvn68",
+ "description": "",
+ "sort": 200000,
+ "color": null,
+ "flags": {},
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603757,
+  "modifiedTime": 1785239603757,
+  "lastModifiedBy": null
+ },
+ "_key": "!folders!sOmxm1q9LSplvn68"
+}

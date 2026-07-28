@@ -934,6 +934,16 @@ export async function getEffectRolls(
   const actorEffects = actor.system.effects || {};
   const actorMods = getActorCombatModifiers(actor, weapon);
 
+  // Bleed and stagger have dedicated accumulators further down, unlike the
+  // free-form extra effects. Pull them out of the combat-modifier groups
+  // (weapon enchants such as Sanguine Blade or Whetstone, specialisation
+  // passives) here so they raise those one chances. Left in the generic
+  // extra-effect path they roll as a separate effect of the same name and the
+  // chances never add up.
+  const actorModExtras = actorMods?.extraEffects ?? {};
+  const actorModBleed = Number(actorModExtras.bleed) || 0;
+  const actorModStagger = Number(actorModExtras.stagger) || 0;
+
   // Poison coating applied to this weapon (see usePoison). Its authored combat
   // effects fold into this attack the same way the weapon's own effects do:
   // dedicated bleed/stagger below, custom slots via collectExtrasFromSource.
@@ -986,8 +996,14 @@ export async function getEffectRolls(
     const abilityBonus = abilityEffects[effectName] || 0;
     const offValue = offProps?.effects?.[effectName] || 0;
     const coatingValue = coatingEffects[effectName] || 0;
+    const actorModValue = effectName === "stagger" ? actorModStagger : 0;
     let totalBaseValue =
-      baseValue + offValue + abilityBonus + modifierBonus + coatingValue;
+      baseValue +
+      offValue +
+      abilityBonus +
+      modifierBonus +
+      coatingValue +
+      actorModValue;
 
     let isAuto =
       baseValue === -1 ||
@@ -1004,7 +1020,8 @@ export async function getEffectRolls(
         modifier +
         abilityBonus +
         modifierBonus +
-        coatingValue;
+        coatingValue +
+        actorModValue;
 
       if (effectName === "stagger") {
         modifiedEffectValue =
@@ -1053,6 +1070,8 @@ export async function getEffectRolls(
   }
   if (actorMods?.extraEffects) {
     for (const [name, value] of Object.entries(actorMods.extraEffects)) {
+      // bleed/stagger were folded into their own totals above.
+      if (name === "bleed" || name === "stagger") continue;
       if (value !== 0) {
         effectContributions.push({ name, value });
       }
@@ -1186,6 +1205,7 @@ export async function getEffectRolls(
     const modifiedBleedValue =
       (weaponEffects.bleed || 0) +
       modifier +
+      actorModBleed +
       (abilityBleed || 0) +
       weaponSkillEffect +
       doctrineBleedBonus +
@@ -1208,13 +1228,15 @@ export async function getEffectRolls(
   // Gate only: the actual chance is summed independently below. Actor-level
   // bleed (doctrines such as Dimakerus, or Active Effects on system.effects)
   // has to count here too, otherwise it is silently dropped whenever the
-  // weapon itself carries no intrinsic bleed.
+  // weapon itself carries no intrinsic bleed. Combat-modifier bleed (Sanguine
+  // Blade, Whetstone) opens the gate for the same reason.
   const bleedBaseValue =
     (weaponEffects.bleed || 0) +
     (offProps?.effects?.bleed || 0) +
     (abilityEffects["bleed"] || 0) +
     (coatingEffects.bleed || 0) +
-    (actorEffects["bleed"] || 0);
+    (actorEffects["bleed"] || 0) +
+    actorModBleed;
 
   const bleedIsAuto =
     weaponEffects.bleed === -1 ||
@@ -1236,6 +1258,7 @@ export async function getEffectRolls(
       (weaponEffects.bleed || 0) +
       deepSlash +
       actorBleed +
+      actorModBleed +
       abilityBleed +
       weaponSkillEffect +
       sneakEffect +

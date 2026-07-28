@@ -1,0 +1,68 @@
+{
+ "name": "Retreating from Combat and Pursuit",
+ "pages": [
+  {
+   "sort": 0,
+   "name": "Retreating from Combat and Pursuit",
+   "type": "text",
+   "_id": "DFAim3VbZlZeUm6W",
+   "title": {
+    "show": false,
+    "level": 1
+   },
+   "image": {},
+   "src": null,
+   "system": {},
+   "text": {
+    "format": 1,
+    "content": "<p>Mechanika aplikovaná na Ústup z boje a na Pronásledování. V obou případech se jedna strana snaží utéci a ta druhá se jí snaží chytit. Každý člen družiny háže sám za sebe. Nepřátelé budou obvykle házet jako skupina. Na úspěšný útěk/pronásledování je potřeba 3 Úspěchů, 3 Neúspěchy naopak znamenají selhání. Hází se versus Testy Atletiky. Jedná se o skupinové rozhodnutí, které je nutno učinit na začátku hráčského kola. Pokud má tedy nepřítel lepší iniciativu než všichni hráči, může si jí odehrát. Každý nepřítel v dosahu, který se zaměřuje na konkrétního hráče má šanci 25% na způsobení zásahu nebo 15%, pokud je to střelec. Nikdy se nemůže jednat o Kritický zásah.<br>Výhody a terén<br>Náskok garantuje úspěchy. Pokud tedy hráč začal utíkat dříve, než se vyhlásí Ústup, získává 1 až 3 úspěchy podle počtu kol, jenž mezi těmito akcemi uplynuly.<br>Lehký terén (Step, louka) - Lehký terén je problémový pro ty, jenž se snaží uniknout a dává jim tak jeden garantovaný Neúspěch.<br>Těžký terén (Ulice města, Les) - Těžký terén je problémový pro ty, jenž se snaží pronásledovat a dává jim tak jeden garantovaný Neúspěch.<br>Každý bod Rychlosti přidává bonus +20%</p>",
+    "markdown": null
+   },
+   "video": {
+    "controls": true,
+    "volume": 0.5
+   },
+   "category": null,
+   "ownership": {
+    "default": -1
+   },
+   "flags": {},
+   "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785239603752,
+    "modifiedTime": 1785239603752,
+    "lastModifiedBy": null
+   },
+   "_key": "!journal.pages!gisyBNIUcIb7sjrW.DFAim3VbZlZeUm6W"
+  }
+ ],
+ "folder": "BjCbzfkKJNr5DLau",
+ "flags": {
+  "redsteel": {
+   "sourceSheet": "Ústup z boje a Pronásledování"
+  }
+ },
+ "categories": [],
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603752,
+  "modifiedTime": 1785239603752,
+  "lastModifiedBy": null
+ },
+ "ownership": {
+  "default": 0
+ },
+ "_id": "gisyBNIUcIb7sjrW",
+ "sort": 26000,
+ "_key": "!journal!gisyBNIUcIb7sjrW"
+}

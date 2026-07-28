@@ -167,7 +167,7 @@
         "slowMove": "Pohne se až o tolik hex, kolik je Rychlost/2, zaokrouhlujeme dolů. Pohyb okolo nepřítele je vždy jedna a může být přerušen úspěšným Příležitostným útokem. Pohyb může vyvolat Reakci. Při Příležitostném útoku vyvolaném pohybem od oponenta má právo na Obranu.",
         "disengage": "Odpoutá se od souboje, nevyprovokuje příležitostný útok a pohne se o Rychlost/2 (zaokrouhleno dolů) hex od nepřítele. Tímto pohybem se nelze pohybovat okolo nepřítele ani u jiného nepřítele skončit.",
         "aim": "Zvyšuje šanci na Zásah (Střelba i Souboj) o +10% na příští útok. Na cíli lze mít maximálně 4 Míření a bonus +40%. V případě luků se uplatňují speciální pravidla (viz Zbrojnice). Mířit lze pouze na cíl v dosahu.",
-        "improvedAim": "Zvyšuje šanci na Zásah o +10% na příští útok. Akci lze opakovat a navyšovat tak bonus, hranice +40%. Mířit lze na cíle v libovolné vzdálenosti. Pokud má na cíli čtyři Míření, získává Průbojnost +10. (Doktrína II - Zásah redukuje míření pouze o jeden stupeň; Kritický zásah zachová všechna míření)",
+        "improvedAim": "Zvyšuje šanci na Zásah o +10% na příští útok. Akci lze opakovat a navyšovat tak bonus, hranice +40%. Mířit lze na cíle v libovolné vzdálenosti. Pokud má na cíli čtyři Míření, získává útok jednoručním mečem Průbojnost +10 (druhá ruka musí být volná, nebo v ní musí být šermířská dýka). (Doktrína II - Zásah redukuje míření pouze o jeden stupeň; Kritický zásah zachová všechna míření)",
         "attack": "Provede útok na cíl v dosahu. Tuto akci nelze provést vícekrát za kolo, ani v kombinaci s jinou útočnou akcí. V případě Střelby a Vrhu z kontaktní vzdálenosti vyvolává Příležitostný útok zdarma.",
         "sneakAttack": "Modifikace útoku. Zranění +1d6. Uplatňuje se na překvapení, nebránící se cíle nebo na doktrínou stanovené situace. Efekty viz Zbrojnice či Doktrína. Lze aplikovat vícekrát za kolo, na stejného soupeře lze však uplatnit pouze jednou za kolo.",
         "multiAttack": "Provede tolik útoků, kolik je schopen. Útoky může vést na jeden nebo více cílů.",
@@ -197,6 +197,10 @@
         "Foldable": "Skládací alchymistická stanice",
         "Lab": "Alchymistická laboratoř"
       },
+      "Vessel": {
+        "Vial": "Flakónek",
+        "Container": "Nádoba"
+      },
       "Base": {
         "None": "Bez základu",
         "Fat": "Tuk",
@@ -206,7 +210,22 @@
       },
       "OutputType": {
         "Potion": "Lektvar",
-        "Ointment": "Mast"
+        "Ointment": "Mast",
+        "Poison": "Jed",
+        "Oil": "Olej",
+        "Explosive": "Petarda",
+        "Drug": "Droga"
+      },
+      "Substance": {
+        "TileHint": "klikni pro převaření rostlin na tuto substanci",
+        "DialogTitle": "Převaření: {name}",
+        "Have": "{count} rostlin v zásobě, {cost} na jednu dávku",
+        "Doses": "Dávky",
+        "BatchNote": "při více než jedné dávce",
+        "WasteWarning": "Rostliny se spotřebují i při neúspěšném hodu.",
+        "Brew": "Převařit",
+        "ChatTitle": "Výroba substance",
+        "NoHerbs": "Nedostatek rostlin pro substanci {name} — v zásobě {have}, na jednu dávku je potřeba {cost}."
       },
       "Warn": {
         "NoResult": "Recept nemá nastavený výsledný předmět — přetáhni lektvar na list receptu.",
@@ -229,7 +248,20 @@
         "Created": "vytvořeno {count}× {name}",
         "IngredientsWasted": "suroviny byly zničeny",
         "Consumed": "Spotřebováno",
-        "Uses": "použití"
+        "Uses": "použití",
+        "Duplicated": "+{count} díky duplikaci na {chance}%",
+        "Boons": "Specializace",
+        "Boon": {
+          "Advantage": "výhoda na výrobu",
+          "CritFailure": "kritický neúspěch o {value}% méně pravděpodobný",
+          "Duplication": "duplikace {chance}%",
+          "Guaranteed": "garantovaný úspěch",
+          "ToxicityMod": "toxicita {value}",
+          "BleedMod": "zastavení krvácení +{value}%",
+          "Toxicity": "toxicita {from} → {to}",
+          "Healing": "léčení +{count}d6",
+          "Bleed": "šance na zastavení krvácení: {value}%"
+        }
       },
       "Recipe": {
         "OutputType": "Typ výrobku",
@@ -419,7 +451,7 @@
             },
             "improvedAim": {
               "label": "Vylepšené míření",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Při čtyřech Mířeních na cíli získává útok mečem drženým obouruč Průbojnost +10. Automatizováno."
             },
             "aimReduction": {
               "label": "Redukce Míření po zásahu",
@@ -4187,6 +4219,10 @@
           "damage": {
             "label": "Poškození"
           },
+          "heavyDamage": {
+            "label": "Zranění těžkou zbraní",
+            "hint": "Dodatečné kostky zranění, které se přičtou pouze při použití této akce s Těžkou zbraní."
+          },
           "attributeTest": {
             "label": "Test vlastnosti"
           },
@@ -4287,6 +4323,9 @@
     "Starsign": {
       "OnlyOne": "Postava už má Hvězdu ({starsign}). Můžeš mít jen jednu."
     },
+    "Feature": {
+      "NpcTraitOnly": "NPC může mít pouze rysy, ne schopnosti ({name})."
+    },
     "Race": {
       "ChooseRace": "Vyber rasu",
       "PickerTitle": "Výběr rasy",
@@ -4369,6 +4408,89 @@
       "CritHit": "Kritický zásah!",
       "DetailPrecision": "Ověření",
       "PrecisionProc": "Ověření!"
+    },
+    "Tooltip": {
+      "rating": "Hodnota",
+      "attribute": "Vlastnost",
+      "current": "Aktuálně"
+    },
+    "Keyword": {
+      "stun": {
+        "label": "Ochromení",
+        "desc": "Ochromená postava má -25 % na všechny testy po dobu 2 tahů. Opětovné uvalení Ochromení jen obnoví jeho trvání, nesčítá se."
+      },
+      "stagger": {
+        "label": "Omráčení",
+        "desc": "Omráčená postava má -10 % na všechny testy po dobu 2 tahů."
+      },
+      "prone": {
+        "label": "Na zemi",
+        "desc": "Postava na zemi útočí a brání se s -20 % a uhýbá s -25 %. Pád na zem ji zároveň srazí na iniciativu 1."
+      },
+      "dying": {
+        "label": "Umírající",
+        "desc": "Uvaluje se při 0 životech. Na začátku se hodí skrytý odpočet kol, který tiká na začátku každého kola; když vyprší, postava vykrvácí, pokud ji předtím nestabilizuje První pomoc."
+      },
+      "downed": {
+        "label": "Zhroucený",
+        "desc": "Uvaluje se spolu s Umírající, když postava klesne na 0 životů. Postava spadne na iniciativu 1 a ztrácí polovinu zbývající Mysli; pokud Mysl klesne na 0, stává se navíc Vyřazenou."
+      },
+      "bleeding": {
+        "label": "Krvácení",
+        "desc": "Každý stupeň Krvácení způsobí 1d4 zranění při uvalení a znovu na začátku každého kola. Krvácení se sčítá až do 6 stupňů."
+      },
+      "rooted": {
+        "label": "Zakořeněný",
+        "desc": "Zakořeněné postavě klesne Rychlost na polovinu a má -15 % k útoku, obraně i uhýbání, dokud efekt trvá."
+      },
+      "fatigue": {
+        "label": "Únava",
+        "desc": "Únava se počítá ve stupních a každý stupeň snižuje maximální výdrž o 5. Od 2. stupně klesá Rychlost o 1, 3. stupeň dává -10 % na všechny testy, 4. stupeň přidává nevýhodu na každý hod a 5. stupeň sráží Rychlost na 1."
+      },
+      "corruption": {
+        "label": "Zkaženost",
+        "desc": "Zkaženost je trvalý stupeň odvozený ze statistiky Zkaženosti: 31 a více je 1. stupeň, 61 a více 2. stupeň, 91 a více 3. stupeň. Od 2. stupně se postava počítá jako Zkažená a na 3. stupni je navíc zranitelná Světlem."
+      },
+      "aim": {
+        "label": "Míření",
+        "desc": "Každá akce Míření dává +10 % k zásahu zvoleného cíle, až do 4 stupňů. Změna cíle spálí všechny stupně a útok na zamířený cíl je spotřebuje."
+      },
+      "spellPower": {
+        "label": "Síla kouzla",
+        "desc": "Síla kouzla (SK) se počítá zvlášť pro každou školu magie a určuje účinek sesílaných kouzel. Zlomky SK se vždy zaokrouhlují dolů."
+      },
+      "bane": {
+        "label": "Metla",
+        "desc": "Metla je zvolená kategorie tvorů. Proti cíli z této kategorie má útok +5 % k zásahu, +1 k šanci na kritický zásah a +1 k průrazu; bonusy se uplatní až ve chvíli, kdy se potvrdí, že cíl do kategorie patří."
+      },
+      "desperateEffort": {
+        "label": "Zoufalé úsilí",
+        "desc": "Přepínač pro jediný hod: +20 % k úspěchu, hranice kritického úspěchu +5 % a hranice kritického neúspěchu -5 %, a postihy z Únavy se pro tento hod ignorují. Stojí to jeden stupeň Únavy."
+      },
+      "advantage": {
+        "label": "Výhoda",
+        "desc": "Výhoda hází 2d100 a bere lepší kostku. Výhoda a nevýhoda z různých zdrojů se navzájem ruší, hází se tedy jen výsledný rozdíl."
+      },
+      "disadvantage": {
+        "label": "Nevýhoda",
+        "desc": "Nevýhoda hází 2d100 a bere horší kostku. Výhoda a nevýhoda z různých zdrojů se navzájem ruší, hází se tedy jen výsledný rozdíl."
+      },
+      "deflect": {
+        "label": "Odklonění",
+        "desc": "Procentní šance, která se automaticky hází na každé kartě obrany a uhýbání. Při úspěchu je příchozí rána odkloněna stranou."
+      },
+      "precision": {
+        "label": "Ověření",
+        "desc": "Procentní šance, která se hází při zásahu. Když projde, může se tento zásah stát kritickým."
+      },
+      "sustained": {
+        "label": "Udržované",
+        "desc": "Kouzlo s cenou za kolo pokračuje po seslání jako efekt Kanálování. Udržované kouzlo si každé kolo znovu hází svůj účinek a sesilatel ho může kdykoli ukončit zrušením Kanálování."
+      },
+      "graveWound": {
+        "label": "Těžké zranění",
+        "desc": "Každé neošetřené těžké zranění dává -5 % na všechny testy. Ošetření vrátí 3 % z tohoto postihu a samotné zranění zmizí až po řádném léčení."
+      }
     },
     "Effect": {
       "Source": "Zdroj",
@@ -4803,6 +4925,27 @@
       "ExtendedLunge": {
         "name": "Dlouhý výpad"
       },
+      "Vial": {
+        "name": "Flakónek"
+      },
+      "Container": {
+        "name": "Nádoba"
+      },
+      "FirstAidKit": {
+        "name": "Ranhojičská sada"
+      },
+      "Alcohol": {
+        "name": "Alkohol"
+      },
+      "Distillate": {
+        "name": "Destilát"
+      },
+      "Fat": {
+        "name": "Tuk"
+      },
+      "StrongAlcohol": {
+        "name": "Silný alkohol"
+      },
       "Falcon": {
         "name": "Sokol"
       },
@@ -4961,9 +5104,6 @@
       },
       "HeavyCrossbow": {
         "name": "Těžká kuše"
-      },
-      "HeavyCharge": {
-        "name": "Těžká zteč"
       },
       "Hemophobia": {
         "name": "Hemofobie"
@@ -5216,9 +5356,6 @@
       },
       "Phlegmatic": {
         "name": "Flegmatik"
-      },
-      "PikemanHeavyCharge": {
-        "name": "Těžká zteč kopiníka"
       },
       "PikemanCharge": {
         "name": "Zteč kopiníka"

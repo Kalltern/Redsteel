@@ -685,6 +685,17 @@ export class RedsteelActiveEffect extends ActiveEffect {
       }
     }
 
+    // Skin cracking — SK/4 Bleeding effects per round, rounded UP (so even a
+    // low Blood SK still inflicts one). getSpellPower floors its multiplied
+    // results, so the division is done here on the full SK instead.
+    if (effectId === "skin_cracking" && sourceCaster) {
+      const sk = getSpellPower(sourceCaster, school ?? "blood");
+      const perRound = Math.max(1, Math.ceil(sk / 4));
+      for (const key of ["onApply", "onRoundStart"]) {
+        if (triggers[key]) triggers[key].bleedStacks = perRound;
+      }
+    }
+
     // Demonic grasp — Dark + Blunt DoT of SK × 4 per round (baked as a flat
     // number); the 2 Bleeding effects / round come from the trigger's
     // bleedStacks, and the Root penalties travel in the definition's changes.
@@ -694,6 +705,18 @@ export class RedsteelActiveEffect extends ActiveEffect {
       });
       for (const key of ["onApply", "onRoundStart"]) {
         if (triggers[key]) triggers[key].damage = `${dmg}`;
+      }
+    }
+
+    // ============================================
+    // DARK-SCHOOL SK-SCALED EFFECTS
+    // ============================================
+    // Dark curse — Magic + Dark DoT of 1d6 + SK per round for two rounds; the
+    // SK term is appended to the stored damage formula so each tick re-rolls.
+    if (effectId === "dark_curse" && sourceCaster) {
+      const sk = getSpellPower(sourceCaster, school ?? "darkness");
+      for (const key of ["onApply", "onRoundStart"]) {
+        if (triggers[key]) triggers[key].damage = `1d6 + ${sk}`;
       }
     }
 
@@ -1194,6 +1217,10 @@ export class RedsteelActiveEffect extends ActiveEffect {
       return this._handleDemonicGrasp(trigger);
     }
 
+    if (trigger.custom === "skinCracking") {
+      return this._handleSkinCracking(trigger);
+    }
+
     if (trigger.custom === "insectSwarm") {
       return this._handleInsectSwarm(trigger);
     }
@@ -1538,6 +1565,50 @@ export class RedsteelActiveEffect extends ActiveEffect {
     if (bleedStacks > 0) {
       await game.redsteel.applyEffect(actor, "bleed", { stacks: bleedStacks });
     }
+  }
+
+  /**
+   * Skin cracking tick: applies `trigger.bleedStacks` (SK/4 rounded up, baked at
+   * apply time) Bleeding effects. Bleeding caps at 6 stacks, so any stack the
+   * target had no room for deals 1d8 damage instead — measured by how far the
+   * stack counter actually moved rather than by predicting the cap, so
+   * Hemophylia's doubling counts as stacks that landed.
+   */
+  async _handleSkinCracking(trigger) {
+    const actor = this.parent;
+    if (!actor) return;
+
+    const wanted = Number(trigger.bleedStacks ?? 0);
+    if (wanted <= 0) return;
+
+    const bleedStacksOn = () => {
+      const bleed = actor.effects.find(
+        (e) => e.getFlag("core", "statusId") === "bleed",
+      );
+      return bleed ? Number(bleed.getFlag("redsteel", "stacks") ?? 1) : 0;
+    };
+
+    const before = bleedStacksOn();
+    await game.redsteel.applyEffect(actor, "bleed", { stacks: wanted });
+    const applied = Math.max(0, bleedStacksOn() - before);
+    const refused = Math.max(0, wanted - applied);
+
+    if (refused <= 0) return;
+
+    // Every Bleeding the target had no room for becomes 1d8 damage. Untyped
+    // health loss, exactly like a Bleeding tick itself.
+    const roll = await new Roll(`${refused}d8`).evaluate();
+    const current = Number(actor.system.stats.health.value ?? 0);
+    await actor.update({
+      "system.stats.health.value": current - roll.total,
+    });
+
+    await roll.toMessage({
+      speaker: ChatMessage.getSpeaker({ actor }),
+      flavor: `${this.name} – ${refused} Bleeding refused (at the cap) → ${refused}d8 damage`,
+    });
+
+    await this._maybeApplyZeroHealthState();
   }
 
   /**

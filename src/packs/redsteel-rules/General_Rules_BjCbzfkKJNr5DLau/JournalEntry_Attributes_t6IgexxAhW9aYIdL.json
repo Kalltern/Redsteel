@@ -1,0 +1,68 @@
+{
+ "name": "Attributes",
+ "pages": [
+  {
+   "sort": 0,
+   "name": "Attributes",
+   "type": "text",
+   "_id": "mBZO1xfoi7frRbxd",
+   "title": {
+    "show": false,
+    "level": 1
+   },
+   "image": {},
+   "src": null,
+   "system": {},
+   "text": {
+    "format": 1,
+    "content": "<h3>Fyzická hranice</h3>\n<p>Fyzická hranice je určena Rasou, Podrasou a Rysy. Jedná se o hranici, kterou nelze při tvorbě postavy nebo postupu na vyšší úroveň překročit. Některé vyšší úrovně umožňují zvýšit Fyzickou hranici. Fyzickou hranici lze překročit pomocí Rituálů a Alchemie.<br><br>Absolutní hranice<br>Absolutní hranice Vlastnosti je určena rasou. Jedná se o hranici, kterou nelze až na velmi vzácné výjimky (božský zásah) nikdy překročit.</p>\n<h3>Síla</h3>\n<p>Primární vlastnost určující fyzickou sílu postavy. Každý bod Síly zvyšuje zranění způsobené zbraněmi skrze Souboj nebo Vrh (Pokud je vyšší než Vnímání) o 1 a rovněž zvyšuje šance na zásah (Souboj) o 3%. Každý bod Síly zvyšuje životy o 1 a přispívá do odvozených dovedností 3% na Úspěch. Některé stupně Síly zvyšují Kritický rozsah pro Souboj (Viz Tvorba postavy). Síla rovněž zvyšuje šance na Úspěch pro Zastrašování. Pokud Síla klesne na 0, nastává smrt. Absolutní hranice Síly je 10. Pulčická Absolutní hranice Síly je 6.<br><br>Test Síly<br>Test Síly se často objevuje v bojových scénářích, kdy napomáhá odolat některým kouzlům (Kořeny) nebo akcím (Úder štítem). Mimo soubojové scénaře se však Síla netestuje a je nahrazena Testem Atletiky.<br>Test Síly se určuje jako Síla*10 + 15 + dovednost Svaly + Rysy + Odbornosti.</p>\n<h3>Obratnost</h3>\n<p>Primární vlastnost určující hbitost postavy. Každý bod Obratnosti zvyšuje šance na Obranu (Souboj) a Úhyb o 3%. Každý bod Obratnosti přispívá do odvozených dovedností 3% na Úspěch. Některé stupně Obratnosti zvyšují Rychlost (Viz Tvorba postavy). Pokud Obratnost klesne na 0, nastává smrt. Absolutní hranice Obratnosti je 10. Yormunská Absolutní hranice Obratnosti je 8.<br><br>Test Obratnosti<br>Test Obratnosti se často objevuje v bojových scénářích, kdy napomáhá odolat některým kouzlům (Trhání půdy) nebo akcím (Podseknutí). Obratnost lze Testovat i na uhašení Podpálení. Mimo soubojové scénaře se však Obratnost netestuje a je nahrazena Testem Akrobacie.<br>Test Obratnosti se určuje jako Obratnost*10 + 15 + dovednost Hbitost + Rysy + Odbornosti.</p>\n<h3>Odolnost</h3>\n<p>Primární vlastnost určující fyzickou odolnost postavy. Každý bod Odolnosti zvyšuje Výdrž o 5, Toxicitu o 2, Životy o 2 až 4 (Podle Úrovně postavy) a Stínové životy o 1. Rovněž pomáhá určovat regeneraci Životů a redukci Toxicity za Dlouhý odpočinek. Některé stupně Odolnosti zvyšují Vážná zranění a Nervy (Viz Tvorba postavy). Každý bod Odolnosti přispívá do odvozených dovedností 3% na Úspěch. Pokud Odolnost klesne na 0, nastává smrt. Absolutní hranice Odolnosti je 10. Avésanská Absolutní hranice Odolnosti je 8.<br><br>Test Odolnosti<br>Test Odolnosti se často objevuje v bojových scénářích, kdy napomáhá odolat některým kouzlům (Agónie). Rovněž se používá na odolávání bolesti nebo proti jedům. Testovat Odolnost lze i při Vyřazení, Toxickém šoku nebo na ukončení Podpálení.<br>Test Odolnosti se určuje jako Odolnost*10 + 15 + Rysy + Odbornosti.</p>\n<h3>Inteligence</h3>\n<p>Primární vlastnost určující intelekt postavy. Každý bod Inteligence zvyšuje Základ many o 1. Některé stupně Inteligence zvyšují Kritický rozsah pro Magii (Viz Tvorba postavy). Každé dva body Inteligence zvyšují Sílu kouzla. Každý bod Inteligence přispívá do odvozených dovedností a Usměrňování 3% na Úspěch. Inteligence rovněž zvyšuje šance na Úspěch pro Klamání. Pokud Inteligence klesne na 0, nastává smrt. Absolutní hranice Inteligence je 10.<br><br>Test Inteligence<br>Test Inteligence se vyskytuje jen zřídka, obvykle je vhodnější Testovat Logiku.<br>Test Inteligence se určuje jako Inteligence*10 + 15 + Rysy + Odbornosti.</p>\n<h3>Vůle</h3>\n<p>Primární vlastnost určující mentální odolnost postavy. Každý bod Vůle zvyšuje Mentální životy, Základ many a Sílu Vůle o 1. Vůle rovněž zvyšuje útok v Mentálním souboji o 1. Některé stupně Vůle zvyšují Nervy (Viz Tvorba postavy). Každý bod Vůle přispívá do odvozených dovedností 3% na Úspěch. Vůle rovněž zvyšuje šance na Úspěch pro Přesvědčování. Pokud Vůle klesne na 0, nastává smrt. Absolutní hranice Vůle je 10.<br><br>Test Vůle<br>Test Vůle se občas objevuje v bojových scénářích, kdy napomáhá odolat některým kouzlům (Hypnóza). Vůle bývá často Testována při odolávání mysl ovlivňujícím efektům.<br>Test Vůle se určuje jako Vůle*10 + 15 + Rysy + Odbornosti.</p>\n<h3>Charisma</h3>\n<p>Primární vlastnost určující sociální inteligenci postavy. Každý bod Charismy zvyšuje Inspiraci o 1. Každé dva body Charismy zvyšují Sílu Umění o 1. Každý bod Charismy přispívá do odvozených dovedností 3% na Úspěch. Charisma rovněž zvyšuje šance na Úspěch pro Přesvědčování, Klamání, Zastrašování, Pokoušení a Vhled. Pokud Charisma klesne na 0, nastává smrt. Absolutní hranice Charismy je 10. Argoská Absolutní hranice Charismy je 8.<br><br>Test Charismy<br>Test Charismy se aplikuje na určení prvního dojmu nebo sběr drbů a informací ve městě.<br>Test Charismy se určuje jako Charisma*10 + 15 + Rysy + Odbornosti + (Vzhled*3 - Pouze nebojové Testy)</p>\n<h3>Vnímání</h3>\n<p>Primární vlastnost určující vnímavost postavy. Každý bod Vnímání zvyšuje zranění způsobené zbraněmi skrze Střelbu nebo Vrh (Pokud je vyšší než Síla) o 1 a rovněž zvyšuje šance na zásah (Střelba a Vrh) o 3%. Každý bod Vnímání zvyšuje Kritické zranění o 1 a Kritickou Průbojnost o 1. Některé stupně Vnímání zvyšují Iniciativu a Kritický rozsah pro Souboj a Střelbu (Viz Tvorba postavy). Každý bod Vnímání přispívá do odvozených dovedností 3% na Úspěch. Vnímání rovněž zvyšuje šance na Úspěch pro Vhled a Pokoušení (Pokud je vyšší než Vzhled). Vnímání je rovněž klíčovou vlastností pro sběr rostlin (Viz Táboření). Vnímání také určuje pasivní detekci pastí. Pokud Vnímání klesne na 0, nastává smrt. Absolutní hranice Vnímání je 10.<br><br>Test Vnímání<br>Test Vnímání může varovat před přepadením, pomoci zaslechnout zvuk či rozhovor nebo třeba odhalit skrytý spínač. Pro účely stopování je však záhodno odkazovat se na Test Přežití.<br>Test Vnímání se určuje jako Vnímání*10 + 15 + Rysy + Odbornosti</p>\n<h3>Rychlost</h3>\n<p>Sekundární vlastnost určující rychlost postavy. Každý bod Rychlosti zvyšuje pohyb o 1. Absolutní hranice Rychlosti je 6. Trpasličí Absolutní hranice Rychlosti je 5.<br><br>Test Rychlosti<br>Test Rychlosti se používá primárně na určení Pořadí tahu. Rovněž se aplikuje v momentech, kdy je potřeba určit, kdo koná první v rámci některých Reakcí nebo jen pro určení, zda někdo stihne zareagovat na probíhající událost. Tyto Testy neznají Přirozený kritický (ne)úspěch, podstatná je pouze Síla (ne)úspěchu.<br>Test Rychlosti se určuje jako Rychlost*1 + Iniciativa*1 + 1d12 + Odbornosti</p>\n<h3>Štěstí</h3>\n<p>Sekundární vlastnost. Každý bod Štěstí zvyšuje šance na Kritický úspěch dovedností a vlastností (vyjma Víry) o 1%. Každý negativní bod Štěstí zvyšuje šance na Kritický neúspěch dovedností a vlastností (vyjma Víry) o 1%. Absolutní hranice Štěstí je 10.<br><br>Test Štěstí<br>Test Štěstí se používá primárně na vyhodnocování situací, kdy je zapotřebí štěstí. Jedná se tedy o hazardní hry, vrhy mincí, nález extra předmětů nebo také vyhnutí se nehodám (Padající strom, zbloudilá střela etc).<br>Test Štěstí se určuje jako Štěstí*5 + 50 + Rysy + Odbornosti</p>\n<h3>Nervy</h3>\n<p>Sekundární vlastnost. Nervy slouží pouze k Testování. Absolutní hranice Nervů je 10. Yormunská, Pulčická a Trpasličí Absolutní hranice Nervů je 11.<br><br>Test Nervů<br>Test Nervů je jedním z nejčastějších Testů. Vyskytuje se hojně v soubojích i mimo ně. Testy Nervů slouží k odolávání proti strachu, panice a šílenství. Nervy se rovněž Testují při vypjatých situacích, kdy může dojít k ovlivnění chování. K Testu Nervů dochází i při Vyřazení a na Pokraji smrti.<br>Test Nervů se určuje jako Nervy*10 + Rysy + Odbornosti - (Hříšnost*1/Hříšnost*3 pro Testy spojené s Hříšností). Nervy nezískávají větší šance na Kritický (ne)úspěch ze Štěstí.</p>\n<h3>Víra</h3>\n<p>Sekundární vlastnost určující zbožnost postavy. Každý bod Víry zvyšuje Sílu zázraku o 1 a Svatou energii o 5. Absolutní hranice Víry je 10. Serapharská Absolutní hranice Víry je 11.<br><br>Test Víry<br>Test Víry podstupuje Kněz při obnově své Svaté energie. Víru lze Testovat i v případech, kdy se postava domáhá boží intervence, na což obvykle musí vyčlenit 2 kola.<br>Test Víry se určuje jako Víra*8 + Rysy + Odbornosti</p>\n<h3>Hříšnost</h3>\n<p>Sekundární vlastnost určující tendenci podlehnout svým pudům a hříchům. Každý bod Hříšnosti zvyšuje šance na Úspěch Pokoušení o 1%. Postava si zvolí minimálně tolik Hříchů, kolik požaduje Hříšnost (Hříšnost 3, 5, 7, 9, 11, 13, 15), které jsou jeho slabinou. Jednotlivými Hříchy jsou: Hněv, Chamtivost, Obžérství, Lenost, Pýcha, Touha a Závist. Různé Hříchy ovlivňují jiné Testy a jiné Testy vyvolávají. Každý bod Hříšnosti snižuje šanci na Testy Nervů týkajícího se libovolného z Hříchů o -1% a nebo o -3% v případě Hříchu zvoleného jako slabina. Poddá-li se dobrovolně svému Hříchu (Po úspěšném Testu Nervů), dostává šanci na zbavení se bodu šílenství (Šance podle situace a stávající Hříšnosti). V určitých vzácných situacích se může Hřích vyvinout v Posedlost. V případě Cambiona je jeho první Hřích vždy určen jeho Podrasou. Hříšnost nemá žádné Testy, pouze za určitých okolností vyvolává Testy Nervů. Absolutní hranice Hříšnosti je 15.</p>\n<h3>Vzhled</h3>\n<p>Sekundární vlastnost určující relativní krásu postavy. Vzhled zvyšuje šance na Úspěch pro Přesvědčování, Klamání, Pokoušení (Pokud je vyšší než Vnímání) a Zastrašování (Pokud je negativní). Vzhled nemá vlastní Testy, určitý stupeň Vzhledu však může být brán jako požadavek pro umožnění některých Testů Pokoušení. Absolutní hranice Vzhledu je 10.</p>\n<h3>Iniciativa</h3>\n<p>Sekundární vlastnost. Iniciativa se vždy aplikuje pouze jako bonus do Testů Rychlosti a nikdy není sama Testována. Iniciativa nemá žádnou Absolutní hranici.</p>\n<h3>Osud</h3>\n<p>Jedná se o sekundární vlastnost, která svým spálením umožňuje stabilizovat umírajícího nebo předejít zranění, které by snížilo životy na 0. Použití Osudu zároveň odstraňuje negativní efekty, jako je Krvácení, Omráčení, Ochromení, Podpálení, Oslepení a podobně. Takto však lze Osud využít pouze jednou za den. Osud se může časem zvýšit, obvykle po vykonání velkých činů, dle uvážení DM. Absolutní hranice Osudu je 5.</p>",
+    "markdown": null
+   },
+   "video": {
+    "controls": true,
+    "volume": 0.5
+   },
+   "category": null,
+   "ownership": {
+    "default": -1
+   },
+   "flags": {},
+   "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785239603744,
+    "modifiedTime": 1785239603744,
+    "lastModifiedBy": null
+   },
+   "_key": "!journal.pages!t6IgexxAhW9aYIdL.mBZO1xfoi7frRbxd"
+  }
+ ],
+ "folder": "BjCbzfkKJNr5DLau",
+ "flags": {
+  "redsteel": {
+   "sourceSheet": "Vlastnosti"
+  }
+ },
+ "categories": [],
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603744,
+  "modifiedTime": 1785239603744,
+  "lastModifiedBy": null
+ },
+ "ownership": {
+  "default": 0
+ },
+ "_id": "t6IgexxAhW9aYIdL",
+ "sort": 9000,
+ "_key": "!journal!t6IgexxAhW9aYIdL"
+}

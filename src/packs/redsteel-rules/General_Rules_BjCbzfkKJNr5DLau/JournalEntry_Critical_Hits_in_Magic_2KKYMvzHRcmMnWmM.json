@@ -1,0 +1,68 @@
+{
+ "name": "Critical Hits in Magic",
+ "pages": [
+  {
+   "sort": 0,
+   "name": "Critical Hits in Magic",
+   "type": "text",
+   "_id": "jKIVkDa17y73a1S4",
+   "title": {
+    "show": false,
+    "level": 1
+   },
+   "image": {},
+   "src": null,
+   "system": {},
+   "text": {
+    "format": 1,
+    "content": "<p>Narozdíl od Souboje a Střelby, v Magii dochází ke Kritickému zásahu pouze skrze šanci na Kritický úspěch.<br>Efekt Kritického zásahu záleží na typu kouzla. Kouzla způsobující poškození obvykle získávají dodatečné poškození, pokud se jedná o udržované koulo (Ohnivé ruce), benefituje z Kritického zásahu pouze první kolo. Pokud se jedná o kouzla, která způsobují poškození po více kol (Temná kletba), získávají místo dodatečného poškození dodatečné kolo trvání. Kouzla, která zahrnují Test, získávají do Testu bonus, a pokud zároveň způsobují jednorázové poškození, zvyšují si i poškození a Průbojnost. Ostatní kouzla (Léčení) místo toho jako jediná získávají jednorázovou slevu na seslání.</p>\n<table><tbody><tr><td>Stupeň 1</td></tr><tr><td>Stupeň 2</td></tr><tr><td>Stupeň 3</td></tr><tr><td>Stupeň 4</td></tr><tr><td>1 - 6</td><td>Způsobí o 5 větší zranění s Průbojností zvýšenou o 5. Bonus/Obtížnost Testu +5%. Doba trvání +0 kol. Snížení ceny kouzla o 25%</td></tr><tr><td>7 - 12</td><td>Způsobí o 5 větší zranění s Průbojností zvýšenou o 5. Bonus/Obtížnost Testu +10%. Doba trvání +1 kolo. Snížení ceny kouzla o 25%</td></tr><tr><td>13 - 18</td><td>Způsobí o 10 větší zranění s Průbojností zvýšenou o 10. Bonus/Obtížnost Testu +15%. Doba trvání +1 kolo. Snížení ceny kouzla o 50%</td></tr><tr><td>19 - 20</td><td>Způsobí o 20 větší zranění s Průbojností zvýšenou o 20. Bonus/Obtížnost Testu +20%. Doba trvání +2 kola. Snížení ceny kouzla o 50%.</td></tr></tbody></table>",
+    "markdown": null
+   },
+   "video": {
+    "controls": true,
+    "volume": 0.5
+   },
+   "category": null,
+   "ownership": {
+    "default": -1
+   },
+   "flags": {},
+   "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785239603742,
+    "modifiedTime": 1785239603742,
+    "lastModifiedBy": null
+   },
+   "_key": "!journal.pages!2KKYMvzHRcmMnWmM.jKIVkDa17y73a1S4"
+  }
+ ],
+ "folder": "BjCbzfkKJNr5DLau",
+ "flags": {
+  "redsteel": {
+   "sourceSheet": "Kritické zásahy v magii"
+  }
+ },
+ "categories": [],
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603742,
+  "modifiedTime": 1785239603742,
+  "lastModifiedBy": null
+ },
+ "ownership": {
+  "default": 0
+ },
+ "_id": "2KKYMvzHRcmMnWmM",
+ "sort": 5000,
+ "_key": "!journal!2KKYMvzHRcmMnWmM"
+}

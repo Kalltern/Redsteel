@@ -1,0 +1,68 @@
+{
+ "name": "Banes",
+ "pages": [
+  {
+   "sort": 0,
+   "name": "Banes",
+   "type": "text",
+   "_id": "z5j1uKj9FogPlJF5",
+   "title": {
+    "show": false,
+    "level": 1
+   },
+   "image": {},
+   "src": null,
+   "system": {},
+   "text": {
+    "format": 1,
+    "content": "<p>Metla je typem bonusu, kterou si hráč odemyká skrze některé Specializace. Metla zvyšuje šanci na Kritický zásah o 1%, šance na Zásah, Střelbu, Vrh, Obranu, Úhyb a Kryt o 5%, zranění o 1d6! a Průbojnost o +1 proti patřičnému typu nepřátel.<br>Před výběrem Metly je nutná konzultace s DM.</p>\n<table><thead><tr><th>Metla</th><th>Specializace</th><th>Příklady</th></tr></thead><tbody><tr><td>Drakovití</td><td>Hraničář a Grimm</td><td>Zahrnuje například různé druhy wyvern, bazilišků a draků.</td></tr><tr><td>Zlobrovití</td><td>Hraničář a Grimm</td><td>Zahrnuje například nekkery, troly a podobné.</td></tr><tr><td>Lykantropové</td><td>Grimm</td><td>Zahrnuje například vlkodlaky, krysodlaky nebo prasodlaky.</td></tr><tr><td>Sylvani</td><td>Grimm a Kontramág</td><td>Zahrnuje například archespory, běsy a dryády.</td></tr><tr><td>Upíři</td><td>Grimm</td><td>Zahrnuje například fleddery, ekimary a bruxy.</td></tr><tr><td>Nemrtví</td><td>Hraničář</td><td>Zahrnuje například zombie, kostlivce, draugiry a liche.</td></tr><tr><td>Zvířata</td><td>Hraničář</td><td>Zahrnuje například vlky, medvědy, divočáky a gryfy.</td></tr><tr><td>Zkažení</td><td>Hraničář</td><td>Zahrnuje například saharase a stinné děsy.</td></tr><tr><td>Elfové</td><td>Stín</td><td>Zahrnuje celou rasu Elfů a všechny jejich podrasy.</td></tr><tr><td>Yormuni</td><td>Stín</td><td>Zahrnuje celou rasu Yormunů.</td></tr><tr><td>Avésani</td><td>Stín</td><td>Zahrnuje celou rasu Avésanů a všechny jejich podrasy.</td></tr><tr><td>Hmyzovití</td><td>Hraničář a Grimm</td><td>Zahrnuje například kikimory, endriagy a chiméry.</td></tr><tr><td>Relikty</td><td>Hraničář a Mystik</td><td>Zahrnuje například prastaré horory, gorgony a krakeny.</td></tr><tr><td>Nekrofágové</td><td>Hraničář a Grimm</td><td>Zahrnuje například utopenci, ghůlové a mlhavci.</td></tr><tr><td>Přeludy</td><td>Grimm</td><td>Zahrnuje například přízraky, barghesty a kajícníky.</td></tr><tr><td>Magičtí tvorové</td><td>Kontramág</td><td>Zahrnuje například elementály a gargoyly.</td></tr><tr><td>Démoni</td><td>Hraničář a Kontramág</td><td>Zahrnuje například impy, pekelné ohaře a sukuby.</td></tr><tr><td>Lidé</td><td>Stín</td><td>Zahrnuje celou rasu Lidí a všechny jejich podrasy.</td></tr><tr><td>Trpaslíci</td><td>Stín</td><td>Zahrnuje celou rasu Trpaslíků a všechny jejich podrasy.</td></tr><tr><td>Pulčíci</td><td>Stín</td><td>Zahrnuje celou rasu Půlčíků.</td></tr><tr><td>Argosové</td><td>Stín</td><td>Zahrnuje celou rasu Argosů a všechny jejich podrasy.</td></tr><tr><td>Orkovití</td><td>Hraničář</td><td>Zahrnuje například gobliny, skřety a orky.</td></tr></tbody></table>",
+    "markdown": null
+   },
+   "video": {
+    "controls": true,
+    "volume": 0.5
+   },
+   "category": null,
+   "ownership": {
+    "default": -1
+   },
+   "flags": {},
+   "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785239603756,
+    "modifiedTime": 1785239603756,
+    "lastModifiedBy": null
+   },
+   "_key": "!journal.pages!2qSS1ZuC1N3j9YXW.z5j1uKj9FogPlJF5"
+  }
+ ],
+ "folder": "BjCbzfkKJNr5DLau",
+ "flags": {
+  "redsteel": {
+   "sourceSheet": "Metly"
+  }
+ },
+ "categories": [],
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603756,
+  "modifiedTime": 1785239603756,
+  "lastModifiedBy": null
+ },
+ "ownership": {
+  "default": 0
+ },
+ "_id": "2qSS1ZuC1N3j9YXW",
+ "sort": 35000,
+ "_key": "!journal!2qSS1ZuC1N3j9YXW"
+}

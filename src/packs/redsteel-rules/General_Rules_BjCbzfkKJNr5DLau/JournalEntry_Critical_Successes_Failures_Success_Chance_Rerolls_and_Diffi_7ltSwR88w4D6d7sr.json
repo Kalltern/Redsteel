@@ -1,0 +1,68 @@
+{
+ "name": "Critical Successes, Failures, Success Chance, Rerolls and Difficulty",
+ "pages": [
+  {
+   "sort": 0,
+   "name": "Critical Successes, Failures, Success Chance, Rerolls and Difficulty",
+   "type": "text",
+   "_id": "ZbwpiNK9UjRNx6YU",
+   "title": {
+    "show": false,
+    "level": 1
+   },
+   "image": {},
+   "src": null,
+   "system": {},
+   "text": {
+    "format": 1,
+    "content": "<h3>Kritický úspěch a selhání</h3>\n<p>Kritický úspěch a selhání je možné u všech Testů (vyjma Víry, Rychlosti a Mentálního souboje), ne vždy má však nutně odlišný efekt. Ve většině případů je to základ 5% (01 - 05 pro úspěch a 100 - 96 pro neúspěch) + Štěstí (Kladné štěstí zvyšuje šance na úspěch o 1%, záporné zvyšuje šance na kritické selhání o 1%), v případě dovedností může šance zvyšovat i dovednost nebo odbornost. Šance na Kritický (ne)úspěch Testu Nervů nejsou upravovány Štěstím. <br><br>U všech Testů Kritický úspěch rovněž nastává, je-li výsledný hod úspěch o síle +60 a více. Rovněž platí, že pokud je skrze Obtížnost šance na úspěch snížena do záporných hodnot, kritický úspěch vyústí pouze v Úspěch o síle úspěchu 0. Vyjímku tvoří výsledek hodu kostky 1, který je vždy a za všech okolností brán jako Kritický úspěch.<br><br>Kritický neúspěch rovněž nastává u všech Testů, je-li výsledný hod neúspěch o síle -60 a více (Vyjma versus Testů). V případě magie se jedná o Kritický neúspěch už v případě neúspěchu o síle -25 a více. Naturální kritický neúspěch (V základu 96 až 100) nezná opravných prostředků (Výhoda a rysy nebudou mít možnost opravného hodu, v případě Šťastlivce možnost existuje, nicméně se tím na 7 dnů vzdává možnosti opakovat tímto rysem libovolný hod. Odbornosti rovněž mohou nabídnout řešení). Výsledek hodu kostky 100 je vždy a za všech okolností brán jako Kritický neúspěch.</p>\n<h3>Šance na úspěch</h3>\n<p>Šance na úspěch je primárně dána Dovedností, rysy, odbornostmi a klíčovou vlastností*3. Pokud v dané dovednosti nemá žádný stupeň, počítá se stále stejně. U většiny dovedností (většina nebojových, zpravidla takové, které se netestují jako Versus hod) platí, že je maximální hranice úspěchu stanovena na 90%. Pokud je po odečtení modifikátorů šance na Úspěch záporná a padne kritický úspěch, počítá se pouze jako úspěch o síle 0.<br>Pokud je Test dovednosti prováděn Pečlivě, tak získává Bonus +10% na Úspěch výměnou za delší čas.<br>Pokud je naopak čas vzácný, lze Test dovednosti provádět Spěšně výměnou za Postih -15%.<br>Bonus či postih na Úspěch se nepočítá na Testy Víry, Nervů a Štěstí.</p>\n<h3>Test vlastností</h3>\n<p>U testu vlastností se šance na úspěch určuje jako Základ 15 + Vlastnost*10 (Síla, Obratnost etc). Vyjímku tvoří Rychlost (1d12+Rychlost+Iniciativa), Víra (8%) a Štěstí (Základ 50%, velký důraz na obtížnost, +5% za bod kladného Štěstí a -5% za bod negativního Štěstí)</p>\n<h3>Opakování hodu</h3>\n<p>Skrze některé rysy a odbornosti se dá většina Testů opakovat, platí však několik omezení. V prvé řadě nelze, až na výjimky, opakovat hod, který již opakován byl. Stejně tak, až na výjimky, nelze opakovat hod na Test, který byl vyhodnocen jako tzv. \"přirozený\" Kritický neúspěch. Výjimku tvoří v obou případech ty rysy a odbornosti, které stanovují možnost opakovat hod i po Kritickém neúspěchu, jako je například Šťastlivec nebo Akrobacie: Mistr.<br>Poslední výjimku tvoří Umělecká tvorba, u které je možnost opakovat hody zcela bez omezení.</p>\n<h3>Obtížnost</h3>\n<p>Obtížnost je nejčastější modifikátor šance na úspěch. Níže uvedené hodnoty jsou spíše orientační, ale pokud se některé pravidlo odvolává na konkrétní stupeň obtížnosti, měla by to být uvedená hodnota.<br>Velmi lehká: +30%<br>Lehká: +20%<br>Normální: 0%<br>Pokročilá: -10%<br>Těžká: -20%<br>Velmi těžká: -30%<br>Legendární: -60%<br><br>Obtížnost Testů Rychlosti<br>V některých situacích je potřeba testovat Rychlost, aby se zjistilo, zda-li je možné vůbec zareagovat. U Testu Rychlosti záleží pouze na tom, zda-li je výsledek úspěch (pozitivní) nebo neúspěch (negativní).<br>Normální: -10<br>Pokročilá: -12<br>Těžká: -16<br>Velmi těžká: -18<br>Legendární: -20</p>",
+    "markdown": null
+   },
+   "video": {
+    "controls": true,
+    "volume": 0.5
+   },
+   "category": null,
+   "ownership": {
+    "default": -1
+   },
+   "flags": {},
+   "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785239603742,
+    "modifiedTime": 1785239603742,
+    "lastModifiedBy": null
+   },
+   "_key": "!journal.pages!7ltSwR88w4D6d7sr.ZbwpiNK9UjRNx6YU"
+  }
+ ],
+ "folder": "BjCbzfkKJNr5DLau",
+ "flags": {
+  "redsteel": {
+   "sourceSheet": "Kritické úspěchy, Kritická selhání, Šance na úspěch, Opakování hodu a Obtížnost"
+  }
+ },
+ "categories": [],
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603742,
+  "modifiedTime": 1785239603742,
+  "lastModifiedBy": null
+ },
+ "ownership": {
+  "default": 0
+ },
+ "_id": "7ltSwR88w4D6d7sr",
+ "sort": 6000,
+ "_key": "!journal!7ltSwR88w4D6d7sr"
+}

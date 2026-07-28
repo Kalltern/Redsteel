@@ -1,0 +1,68 @@
+{
+ "name": "Materials: Weapons",
+ "pages": [
+  {
+   "sort": 0,
+   "name": "Materials: Weapons",
+   "type": "text",
+   "_id": "414xhiUrhmOFcZtN",
+   "title": {
+    "show": false,
+    "level": 1
+   },
+   "image": {},
+   "src": null,
+   "system": {},
+   "text": {
+    "format": 1,
+    "content": "<table><thead><tr><th>Materiál</th><th>Zbraně</th></tr></thead><tbody><tr><td>Ocel</td><td>Nic</td></tr><tr><td>Argentia</td><td>Zranění: Fyzické/Magické; Zranění +2d6 a Průbojnost +4 proti Nepřátelům Světla, Upírům a Lykantropům</td></tr><tr><td>Bílá ocel</td><td>Zranění +1d6; Krvácení +5%</td></tr><tr><td>Verdinium</td><td>Zranění +1d4; Zranění +1d6 a Průbojnost +4 proti Magickým tvorům, Čarodějům a Přeludům; Magický kryt +15%; Zásah ruší většinu magických efektů</td></tr><tr><td>Talavit</td><td>Zranění +1d4; Zranění: Fyzické/Magické; Síla kouzla +1; Základ many +1</td></tr><tr><td>Rudá ocel</td><td>Zranění +2d4; Průbojnost +1; Krvácení +10% nebo Omráčení +5%</td></tr><tr><td>Skardin</td><td>Zranění +2d4; Zpomalení +45%; Krvácení -15%; Síla kouzla Vody +1; Kritický zásah: -1 Reakce</td></tr><tr><td>Astranium</td><td>Zranění +1d4; Průbojnost +6; Omráčení +15%*; Síla kouzla Vzduchu +1; Průraznost +2d6</td></tr><tr><td>Obsidium</td><td>Zranění +1d4; Průbojnost +1; Krvácení +15%; Zákeřný útok +2d6</td></tr><tr><td>Falmit</td><td>Zranění +1d4; Průbojnost +3; Zásah obnovuje až 5 životů/výdrže a Kritický zásah obnoví až 10 životů/výdrže</td></tr><tr><td>Dračí zub</td><td>Zranění +1d4; Zásah způsobuje dvě dodatečná Krvácení; Lehká zbraň: Zákeřný útok +1d6</td></tr><tr><td>Ignit</td><td>Zranění +2d4; Podpálení +20%; Kritický zásah: Podpálení +50%; Kritický zásah alespoň prvního stupně garantuje Podpálení; Kritický rozsah -10</td></tr><tr><td>Eldarin</td><td>Zranění +3d4; Průbojnost +2; Síla kouzla +1; Základ many +1; Krvácení +10%</td></tr><tr><td>Zelený eldarin</td><td>Zranění +1d4; Průbojnost +1; Otrávení +80%; Síla kouzla Země +1</td></tr><tr><td>Temný eldarin</td><td>Zranění +3d4; Průbojnost +3; Krvácení +15%; Kritický zásah +2%</td></tr><tr><td>Ardinium</td><td>Zranění +2d4; Zranění: Fyzické/Svaté; Zranění +2d6, Průbojnost +4 a Podpálení +25% proti Nepřátelům Světla, Upírům a Lykantropům; Ignoruje odolnosti</td></tr><tr><td>Hvězdný kov</td><td>Zranění +3d4; Průbojnost +5; Krvácení +15% nebo Omráčení +10%; Kritický zásah +2%; Akce: -2 Výdrž</td></tr><tr><td>Daemonit</td><td>Zranění +3d4; Průbojnost +4; Krvácení +20% nebo Omráčení +10%; Oslabení +70%</td></tr><tr><td>Gnomská ocel</td><td>Zranění +2d4; Průbojnost +1; Kritická obrana +2%; Krvácení nebo Omráčení +5%</td></tr><tr><td>Obyčejné dřevo</td><td>Nic</td></tr><tr><td>Bílé dřevo</td><td>Zranění +1d4; Průbojnost +1</td></tr><tr><td>Rudé dřevo</td><td>Zranění +2d4; Průbojnost +1; Iniciativa +2</td></tr><tr><td>Černé dřevo</td><td>Zranění +2d4; Průbojnost +2; Zákeřný útok +2d6</td></tr><tr><td>Ilsa Taulë</td><td>Zranění +3d4; Průbojnost +2; Akce: -3 Výdrž; Kritický zásah +3%; Iniciativa +2</td></tr><tr><td>Dračí kost</td><td>Zranění +3d4; Průbojnost +6; Každý projektil se počítá jako očarovaný (Viz Čarostřelec) podle draka - Salamander/Žabák/Jiskra/Termit</td></tr></tbody></table>",
+    "markdown": null
+   },
+   "video": {
+    "controls": true,
+    "volume": 0.5
+   },
+   "category": null,
+   "ownership": {
+    "default": -1
+   },
+   "flags": {},
+   "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785239603758,
+    "modifiedTime": 1785239603758,
+    "lastModifiedBy": null
+   },
+   "_key": "!journal.pages!CqTOwQ8E06JBTYmy.414xhiUrhmOFcZtN"
+  }
+ ],
+ "folder": "sOmxm1q9LSplvn68",
+ "flags": {
+  "redsteel": {
+   "sourceSheet": "Materiály - Zbraně"
+  }
+ },
+ "categories": [],
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603758,
+  "modifiedTime": 1785239603758,
+  "lastModifiedBy": null
+ },
+ "ownership": {
+  "default": 0
+ },
+ "_id": "CqTOwQ8E06JBTYmy",
+ "sort": 1000,
+ "_key": "!journal!CqTOwQ8E06JBTYmy"
+}

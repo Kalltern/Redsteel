@@ -1,5 +1,5 @@
 import { prepareActiveEffectCategories } from "../helpers/effects.mjs";
-import { SUBSTANCES, BASES } from "../utils/alchemy.mjs";
+import { SUBSTANCES, BASES, MAX_BATCH } from "../utils/alchemy.mjs";
 import {
   canResyncItem,
   getResyncBackup,
@@ -326,7 +326,8 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
             selected: this.item.system.base === key,
           })),
         ];
-        context.outputTypeChoices = ["potion", "ointment"].map((key) => ({
+        // Order matches the Alchemist tree's node families (see ALCHEMIST_FAMILIES).
+        context.outputTypeChoices = Object.keys(MAX_BATCH).map((key) => ({
           key,
           label: game.i18n.localize(
             `REDSTEEL.Alchemy.OutputType.${key.capitalize()}`,

@@ -1,0 +1,68 @@
+{
+ "name": "Falling and Acrobatics",
+ "pages": [
+  {
+   "sort": 0,
+   "name": "Falling and Acrobatics",
+   "type": "text",
+   "_id": "PVu3La89OnEfeq02",
+   "title": {
+    "show": false,
+    "level": 1
+   },
+   "image": {},
+   "src": null,
+   "system": {},
+   "text": {
+    "format": 1,
+    "content": "<p>Jedním ze způsobů, jak se dočkat smrti, je pád z dostatečné výšky. Od určité výšky způsobují pády zranění. Zranění způsobené pádem může jít do záporných hodnot a ihned udělit jedno či více Vážných zranění. Při každém pádu se rovněž testuje Akrobacie. Při úspěšném testu se utrží normální zranění, při kritickém úspěchu jen poloviční zranění, při neúspěchu o polovinu zranění více a při kritickém neúspěchu  zranění dvojnásobně vyšší. Pád ze 3m uděluje zranění. Za každých dalších 1,5m se zvyšuje zranění o 1d8. Obtížnost testu je rovněž určena výškou pádu. Uzná-li DM za vhodné, může mít Vážné zranění dodatečný efekt (viz Kritické zásahy).<br>Zranění a Obtížnost<br>Výška 3m - Zranění 2d8; Lehký Test<br>Výška 6m - Zranění 4d8; Normální Test<br>Výška 9m - Zranění 6d8; Těžký Test<br>Výška 12m - Zranění 8d8; Velmi Těžký Test<br>Výška 15m - Zranění 10d8; Legendární Test</p>",
+    "markdown": null
+   },
+   "video": {
+    "controls": true,
+    "volume": 0.5
+   },
+   "category": null,
+   "ownership": {
+    "default": -1
+   },
+   "flags": {},
+   "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785239603751,
+    "modifiedTime": 1785239603751,
+    "lastModifiedBy": null
+   },
+   "_key": "!journal.pages!w4Rn1jN7GpDkCElq.PVu3La89OnEfeq02"
+  }
+ ],
+ "folder": "BjCbzfkKJNr5DLau",
+ "flags": {
+  "redsteel": {
+   "sourceSheet": "Pády a Akrobacie"
+  }
+ },
+ "categories": [],
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603751,
+  "modifiedTime": 1785239603751,
+  "lastModifiedBy": null
+ },
+ "ownership": {
+  "default": 0
+ },
+ "_id": "w4Rn1jN7GpDkCElq",
+ "sort": 23000,
+ "_key": "!journal!w4Rn1jN7GpDkCElq"
+}

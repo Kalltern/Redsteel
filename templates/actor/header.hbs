@@ -256,7 +256,7 @@
 
             {{!-- Wounds --}}
             <div class="stat-box stat-box--editable">
-              <div class="stat-box-label condition-icon" data-tooltip="{{localize 'REDSTEEL.Actor.Character.stats.graveWounds.value.label'}}"><i class="fa-light fa-bone-break" style="color: rgb(102, 32, 29);"></i></div>
+              <div class="stat-box-label condition-icon" data-tt-kind="stat" data-tt-id="graveWounds"><i class="fa-light fa-bone-break" style="color: rgb(102, 32, 29);"></i></div>
               <div class="stat-box-value stat-box-value--ratio">
                 <input type="text" class="stat-box-value-input" name="system.stats.graveWounds.value" value="{{system.stats.graveWounds.value}}" />
                 <span class="stat-box-max">/ {{system.stats.graveWounds.max}}</span>
@@ -265,7 +265,7 @@
 
             {{!-- Mind --}}
             <div class="stat-box stat-box--editable">
-              <div class="stat-box-label condition-icon" data-tooltip="{{localize 'REDSTEEL.Actor.Character.stats.mind.value.label'}}"><i class="fa-light fa-head-side-brain" style="color: rgb(116, 119, 126);"></i></div>
+              <div class="stat-box-label condition-icon" data-tt-kind="stat" data-tt-id="mind"><i class="fa-light fa-head-side-brain" style="color: rgb(116, 119, 126);"></i></div>
               <div class="stat-box-value stat-box-value--ratio">
                 <input type="text" class="stat-box-value-input" name="system.stats.mind.value" value="{{system.stats.mind.value}}" />
                 <span class="stat-box-max">/ {{system.stats.mind.max}}</span>
@@ -280,7 +280,7 @@
 
             {{!-- Insanity --}}
             <div class="stat-box stat-box--editable">
-              <div class="stat-box-label condition-icon" data-tooltip="{{localize 'REDSTEEL.Actor.Character.stats.insanity.value.label'}}"><i class="fa-light fa-hurricane" style="color: rgb(104, 40, 73);"></i></div>
+              <div class="stat-box-label condition-icon" data-tt-kind="stat" data-tt-id="insanity"><i class="fa-light fa-hurricane" style="color: rgb(104, 40, 73);"></i></div>
               <div class="stat-box-value stat-box-value--ratio">
                 <input type="text" class="stat-box-value-input" name="system.stats.insanity.value" value="{{system.stats.insanity.value}}" />
                 <span class="stat-box-max">/ {{system.stats.insanity.max}}</span>
@@ -289,7 +289,7 @@
 
             {{!-- Corruption (warning tier) --}}
             <div class="stat-box stat-box--editable stat-box--warn">
-              <div class="stat-box-label condition-icon" data-tooltip="{{localize 'REDSTEEL.Actor.Character.stats.corruption.value.label'}}"><i class="fa-sharp fa-thin fa-galaxy" style="color: rgb(70, 35, 118);"></i></div>
+              <div class="stat-box-label condition-icon" data-tt-kind="stat" data-tt-id="corruption"><i class="fa-sharp fa-thin fa-galaxy" style="color: rgb(70, 35, 118);"></i></div>
               <div class="stat-box-value stat-box-value--ratio">
                 <input type="text" class="stat-box-value-input" name="system.stats.corruption.value" value="{{system.stats.corruption.value}}" />
                 <span class="stat-box-max">/ {{system.stats.corruption.max}}</span>
@@ -298,7 +298,7 @@
 
             {{!-- Fatigue --}}
             <div class="stat-box stat-box--editable">
-              <div class="stat-box-label condition-icon" data-tooltip="{{localize 'REDSTEEL.Actor.Character.stats.fatigue.value.label'}}"><i class="fa-light fa-tent" style="color: rgb(58, 68, 84);"></i></div>
+              <div class="stat-box-label condition-icon" data-tt-kind="stat" data-tt-id="fatigue"><i class="fa-light fa-tent" style="color: rgb(58, 68, 84);"></i></div>
               <div class="stat-box-value stat-box-value--ratio">
                 <input type="text" class="stat-box-value-input" name="system.stats.fatigue.value" value="{{system.stats.fatigue.value}}" />
                 <span class="stat-box-max">/ {{system.stats.fatigue.max}}</span>
@@ -313,12 +313,12 @@
 
             {{!-- Armor (derived, no max) --}}
             <div class="stat-box stat-box--armor">
-              <div class="stat-box-label condition-icon" data-tooltip="{{localize 'REDSTEEL.Actor.Character.Condition.armor'}}"><i class="fa-light fa-shield-quartered" style="color: rgb(96, 74, 48);"></i></div>
+              <div class="stat-box-label condition-icon" data-tt-kind="stat" data-tt-id="armor"><i class="fa-light fa-shield-quartered" style="color: rgb(96, 74, 48);"></i></div>
               <div class="stat-box-value">{{system.armor.total}}</div>            </div>
 
             {{!-- Detection (derived, no max) --}}
             <div class="stat-box">
-              <div class="stat-box-label condition-icon" data-tooltip="{{localize 'REDSTEEL.Actor.Character.Condition.detection'}}"><i class="fa-light fa-eye" style="color: rgb(116, 119, 126);"></i></div>
+              <div class="stat-box-label condition-icon" data-tt-kind="stat" data-tt-id="detection"><i class="fa-light fa-eye" style="color: rgb(116, 119, 126);"></i></div>
               <div class="stat-box-value">{{system.detection}}</div>            </div>
 
           </div>

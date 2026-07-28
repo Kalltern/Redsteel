@@ -1,0 +1,430 @@
+/**
+ * Content providers for the stacked tooltip system.
+ *
+ * Each provider turns a `data-tt-kind` / `data-tt-id` pair into tooltip HTML.
+ * Anything they emit gets keyword-linkified automatically, and any element
+ * they emit carrying `data-tt-kind` becomes a link to the next tooltip.
+ */
+
+import { registerTooltip, ttFrame, ttEscape } from "./tooltips.mjs";
+import { TOOLTIP_KEYWORDS } from "./tooltipKeywords.mjs";
+import { buildSpellCard, renderInspectorCard } from "./spellCards.mjs";
+import { REDSTEEL } from "../helpers/config.mjs";
+
+/* -------------------------------------------- */
+/*  Shared rendering                            */
+/* -------------------------------------------- */
+
+function statsBlock(stats = []) {
+  const rows = stats
+    .filter((s) => s.value !== undefined && s.value !== null && s.value !== "")
+    .map(
+      (s) =>
+        `<div class="tt-stat"><span class="tt-stat-label">${ttEscape(s.label)}</span><span class="tt-stat-value">${ttEscape(s.value)}</span></div>`,
+    );
+  return rows.length ? `<div class="tt-stats">${rows.join("")}</div>` : "";
+}
+
+function sectionsBlock(sections = []) {
+  return sections
+    .filter((s) => s.lines?.length)
+    .map(
+      (s) =>
+        `<div class="tt-section"><div class="tt-section-label">${ttEscape(s.label)}</div><div class="tt-section-lines">${s.lines.join("<br>")}</div></div>`,
+    )
+    .join("");
+}
+
+/* -------------------------------------------- */
+/*  item                                        */
+/* -------------------------------------------- */
+
+/**
+ * Resolve an item from either an explicit uuid or an id plus the owning actor.
+ * Falls back to the world item collection so compendium-free chat cards work.
+ */
+function resolveItem({ id, dataset, actor }) {
+  if (dataset.ttUuid) {
+    try {
+      const doc = fromUuidSync(dataset.ttUuid);
+      if (doc) return doc;
+    } catch (err) {
+      /* fall through to id lookup */
+    }
+  }
+  if (!id) return null;
+  return actor?.items?.get(id) ?? game.items?.get(id) ?? null;
+}
+
+registerTooltip("item", (ctx) => {
+  const item = resolveItem(ctx);
+  if (!item) return null;
+
+  const data = item.getTooltipData?.() ?? {};
+  const body = [
+    statsBlock(data.stats),
+    sectionsBlock(data.sections),
+    data.description ? `<div class="tt-desc">${data.description}</div>` : "",
+  ].join("");
+
+  return ttFrame({
+    title: data.title ?? item.name,
+    img: data.icon ?? data.img ?? item.img,
+    subtitle: data.subtitle ?? null,
+    body,
+  });
+});
+
+/* -------------------------------------------- */
+/*  effect                                      */
+/* -------------------------------------------- */
+
+registerTooltip("effect", (ctx) => {
+  const { id, dataset, actor } = ctx;
+  let effect = null;
+  if (dataset.ttUuid) {
+    try {
+      effect = fromUuidSync(dataset.ttUuid);
+    } catch (err) {
+      effect = null;
+    }
+  }
+  if (!effect && id) {
+    effect = actor?.effects?.get(id) ?? null;
+    // Effects transferred from items live on the item, not the actor collection.
+    if (!effect && actor) {
+      for (const item of actor.items ?? []) {
+        const hit = item.effects?.get(id);
+        if (hit) {
+          effect = hit;
+          break;
+        }
+      }
+    }
+  }
+  if (!effect) return null;
+
+  const stats = [];
+  if (effect.duration?.label) {
+    stats.push({
+      label: game.i18n.localize("EFFECT.TabDuration"),
+      value: effect.duration.label,
+    });
+  }
+  if (effect.sourceName) {
+    stats.push({
+      label: game.i18n.localize("REDSTEEL.Effect.Source"),
+      value: effect.sourceName,
+    });
+  }
+  if (effect.disabled) {
+    stats.push({
+      label: game.i18n.localize("REDSTEEL.Effect.Toggle"),
+      value: game.i18n.localize("EFFECT.Disabled") || "—",
+    });
+  }
+
+  // Each change is shown as a raw stat line; these are GM-facing details.
+  const changes = (effect.changes ?? []).map(
+    (c) => `${ttEscape(c.key)} ${ttEscape(modeSymbol(c.mode))} ${ttEscape(c.value)}`,
+  );
+
+  const body = [
+    statsBlock(stats),
+    changes.length
+      ? sectionsBlock([
+          { label: game.i18n.localize("EFFECT.Changes") || "Changes", lines: changes },
+        ])
+      : "",
+    effect.description ? `<div class="tt-desc">${effect.description}</div>` : "",
+  ].join("");
+
+  return ttFrame({ title: effect.name, img: effect.img, body });
+});
+
+function modeSymbol(mode) {
+  const M = CONST.ACTIVE_EFFECT_MODES;
+  switch (mode) {
+    case M.ADD:
+      return "+";
+    case M.MULTIPLY:
+      return "×";
+    case M.OVERRIDE:
+      return "=";
+    case M.UPGRADE:
+      return "↑";
+    case M.DOWNGRADE:
+      return "↓";
+    default:
+      return ":";
+  }
+}
+
+/* -------------------------------------------- */
+/*  keyword                                     */
+/* -------------------------------------------- */
+
+registerTooltip("keyword", ({ id }) => {
+  const def = TOOLTIP_KEYWORDS[id];
+  if (!def) return null;
+
+  const title = game.i18n.localize(def.labelKey);
+  const desc = game.i18n.localize(def.descKey);
+  // An unlocalized key means the glossary entry has no lang text yet.
+  if (desc === def.descKey) return null;
+
+  return ttFrame({
+    title: title === def.labelKey ? id : title,
+    body: `<div class="tt-desc">${desc}</div>`,
+  });
+});
+
+/* -------------------------------------------- */
+/*  text — plain localized string, no lookup    */
+/* -------------------------------------------- */
+
+registerTooltip("text", ({ dataset }) => {
+  const raw = dataset.ttText;
+  if (!raw) return null;
+  const text = game.i18n.localize(raw);
+  const title = dataset.ttTitle ? game.i18n.localize(dataset.ttTitle) : null;
+  return title
+    ? ttFrame({ title, body: `<div class="tt-desc">${ttEscape(text)}</div>` })
+    : `<div class="tt-desc">${ttEscape(text)}</div>`;
+});
+
+/* -------------------------------------------- */
+/*  Shared localization helper                  */
+/* -------------------------------------------- */
+
+/**
+ * Localize `key`, or return null when the lang files carry no entry for it
+ * (Foundry hands back the key itself in that case).
+ * @param {string} key
+ * @returns {string|null}
+ */
+function localizeOrNull(key) {
+  if (!key) return null;
+  const text = game.i18n.localize(key);
+  return text === key ? null : text;
+}
+
+/** The glossary description for a keyword id, or null when it has no lang text. */
+function keywordDesc(keywordId) {
+  const def = TOOLTIP_KEYWORDS[keywordId];
+  return def ? localizeOrNull(def.descKey) : null;
+}
+
+/* -------------------------------------------- */
+/*  spellCard — spells / miracles / abilities   */
+/* -------------------------------------------- */
+
+/**
+ * The card grid on the Spells / Miracles / Abilities tabs. Reuses the very
+ * same view-model and renderer the old floating inspector used, so the panel
+ * a player sees on hover is unchanged; only the delivery moved.
+ */
+registerTooltip("spellCard", (ctx) => {
+  const item = resolveItem(ctx);
+  if (!item) return null;
+  const kind = ctx.dataset.cardKind || "spell";
+  return renderInspectorCard(buildSpellCard(item, kind));
+});
+
+/* -------------------------------------------- */
+/*  skill                                       */
+/* -------------------------------------------- */
+
+/**
+ * Where a skill key may live under `actor.system`, in lookup order, with the
+ * lang key pattern each group uses for its labels.
+ */
+const SKILL_GROUPS = [
+  { path: "skills", lang: "skills" },
+  { path: "combatSkills", lang: "combatSkills" },
+  { path: "weaponSkills", lang: "weaponSkills" },
+  { path: "doctrines", lang: "doctrines" },
+  { path: "schools", lang: "schools" },
+];
+
+/**
+ * Sub-skills are plain numbers stored on their parent skill (athletics.swimming,
+ * acting.blend), not skill objects, so they need their parent for rank and
+ * governing attribute.
+ */
+const SUB_SKILLS = {
+  swimming: { parent: "athletics" },
+  blend: { parent: "acting" },
+};
+
+/** Attribute label for a skill's `id`, which indexes system.attributes. */
+function attributeLabelFor(system, index) {
+  if (!Number.isInteger(index)) return null;
+  const key = Object.keys(system.attributes ?? {})[index];
+  if (!key) return null;
+  const capitalized = key.charAt(0).toUpperCase() + key.slice(1);
+  return (
+    localizeOrNull(`REDSTEEL.Actor.Character.Attribute.${capitalized}.long`) ?? key
+  );
+}
+
+registerTooltip("skill", ({ id, actor }) => {
+  if (!id || !actor?.system) return null;
+  const system = actor.system;
+
+  const rankLabel = game.i18n.localize("REDSTEEL.UI.rank");
+  const ratingLabel = game.i18n.localize("REDSTEEL.Tooltip.rating");
+  const attributeLabel = game.i18n.localize("REDSTEEL.Tooltip.attribute");
+
+  // Sub-skill: its own rating number, its parent's rank and attribute.
+  const sub = SUB_SKILLS[id];
+  if (sub) {
+    const parent = system.skills?.[sub.parent];
+    if (!parent) return null;
+    const title =
+      localizeOrNull(`REDSTEEL.Actor.Character.skills.${id}.label`) ?? id;
+    const stats = [
+      { label: ratingLabel, value: parent[id] },
+      { label: rankLabel, value: parent.value },
+    ];
+    if (parent.type !== 2) {
+      const attr = attributeLabelFor(system, parent.id);
+      if (attr) stats.push({ label: attributeLabel, value: attr });
+    }
+    return ttFrame({ title, body: statsBlock(stats) });
+  }
+
+  for (const group of SKILL_GROUPS) {
+    const skill = system[group.path]?.[id];
+    if (!skill || typeof skill !== "object") continue;
+
+    const title =
+      localizeOrNull(`REDSTEEL.Actor.Character.${group.lang}.${id}.label`) ?? id;
+
+    const stats = [
+      { label: ratingLabel, value: skill.rating },
+      { label: rankLabel, value: skill.value },
+    ];
+    if (group.path === "schools") {
+      stats.push({
+        label: game.i18n.localize(
+          "REDSTEEL.Actor.Character.schools.spellPower.label",
+        ),
+        value: skill.spellPower,
+      });
+    }
+    // Skill type 2 (muscles, nimbleness) derives purely from its rank, so it
+    // has no governing attribute to show.
+    if (group.path === "skills" && skill.type !== 2) {
+      const attr = attributeLabelFor(system, skill.id);
+      if (attr) stats.push({ label: attributeLabel, value: attr });
+    }
+
+    return ttFrame({ title, body: statsBlock(stats) });
+  }
+
+  return null;
+});
+
+/* -------------------------------------------- */
+/*  stat — the header condition icons           */
+/* -------------------------------------------- */
+
+/**
+ * The seven condition boxes in the character header. `stat` reads a
+ * value/max pair off system.stats; `read` is for the derived, max-less ones.
+ * `keyword` links the box to its glossary entry.
+ */
+const CONDITION_STATS = {
+  graveWounds: {
+    labelKey: "REDSTEEL.Actor.Character.stats.graveWounds.value.label",
+    stat: "graveWounds",
+    keyword: "graveWound",
+  },
+  mind: {
+    labelKey: "REDSTEEL.Actor.Character.stats.mind.value.label",
+    stat: "mind",
+  },
+  insanity: {
+    labelKey: "REDSTEEL.Actor.Character.stats.insanity.value.label",
+    stat: "insanity",
+  },
+  corruption: {
+    labelKey: "REDSTEEL.Actor.Character.stats.corruption.value.label",
+    stat: "corruption",
+    keyword: "corruption",
+  },
+  fatigue: {
+    labelKey: "REDSTEEL.Actor.Character.stats.fatigue.value.label",
+    stat: "fatigue",
+    keyword: "fatigue",
+  },
+  armor: {
+    labelKey: "REDSTEEL.Actor.Character.Condition.armor",
+    read: (system) => system.armor?.total,
+  },
+  detection: {
+    labelKey: "REDSTEEL.Actor.Character.Condition.detection",
+    read: (system) => system.detection,
+  },
+};
+
+registerTooltip("stat", ({ id, actor }) => {
+  const def = CONDITION_STATS[id];
+  if (!def || !actor?.system) return null;
+  const system = actor.system;
+
+  let value = null;
+  if (def.stat) {
+    const stat = system.stats?.[def.stat];
+    if (stat) {
+      value =
+        stat.max === undefined || stat.max === null
+          ? stat.value
+          : `${stat.value ?? 0} / ${stat.max}`;
+    }
+  } else if (def.read) {
+    value = def.read(system);
+  }
+
+  const desc = def.keyword ? keywordDesc(def.keyword) : null;
+  const body = [
+    statsBlock([
+      { label: game.i18n.localize("REDSTEEL.Tooltip.current"), value },
+    ]),
+    desc ? `<div class="tt-desc">${desc}</div>` : "",
+  ].join("");
+
+  return ttFrame({
+    title: localizeOrNull(def.labelKey) ?? id,
+    body,
+  });
+});
+
+/* -------------------------------------------- */
+/*  specNode — specialisation tree nodes        */
+/* -------------------------------------------- */
+
+registerTooltip("specNode", ({ id, dataset }) => {
+  const specId = dataset.ttSpec;
+  const node = REDSTEEL.specialisations?.[specId]?.nodes?.[id];
+  if (!node) return null;
+
+  const title = localizeOrNull(node.label) ?? id;
+  const desc = localizeOrNull(node.description);
+  const specLabel = localizeOrNull(
+    REDSTEEL.specialisations[specId]?.label ?? "",
+  );
+
+  return ttFrame({
+    title,
+    img: node.icon || null,
+    subtitle: specLabel,
+    body: desc ? `<div class="tt-desc">${desc}</div>` : "",
+  });
+});
+
+export function registerCoreTooltipProviders() {
+  // Import side effects do the registration; this exists so redsteel.mjs has
+  // an explicit, greppable call site.
+}

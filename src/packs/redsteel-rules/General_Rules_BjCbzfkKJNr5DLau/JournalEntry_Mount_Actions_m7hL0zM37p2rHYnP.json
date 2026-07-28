@@ -1,0 +1,68 @@
+{
+ "name": "Mount Actions",
+ "pages": [
+  {
+   "sort": 0,
+   "name": "Mount Actions",
+   "type": "text",
+   "_id": "TjpucCw4D02ltYWp",
+   "title": {
+    "show": false,
+    "level": 1
+   },
+   "image": {},
+   "src": null,
+   "system": {},
+   "text": {
+    "format": 1,
+    "content": "<table><thead><tr><th>Název</th><th>Cena</th><th>Výdrž Mana</th><th>Popis</th></tr></thead><tbody><tr><td>Cval</td><td>2 akce</td><td>X</td><td>Pohne se minimálně o 6 hex a maximálně o 6 + Bonus za zvíře hex. Pohyb skrz nepřítele vyvolá Test Atletiky (Velmi těžká) na Povalení. Pohyb může vyvolat Reakci. Při tomto pohybu musí vždy urazit alespoň jednu hexu než může změnit směr o jednu hexu. Kryt +15%, Obrana +5% a Střelba -20% na jedno kolo.</td></tr></tbody></table>\n<h3>Dračí dech</h3>\n<table><thead><tr><th>Název</th><th>Cena</th><th>Výdrž Mana</th><th>Popis</th></tr></thead><tbody><tr><td>Kopání</td><td>2 akce</td><td>X</td><td>Jezdecké zvíře provede útok kopyty na nepřítele, který se nachází před nebo za zvířetem. Útok má šance na zásah podle zvířete a způsobuje zranění podle zvířete. Šance na Omráčení na jedno kolo 20%, Průraznost 3d6. Test Atletiky (-40%) na Povalení.</td></tr></tbody></table>\n<h3>Kousnutí</h3>\n<h3>Podrápání</h3>\n<table><thead><tr><th>Název</th><th>Cena</th><th>Výdrž Mana</th><th>Popis</th></tr></thead><tbody><tr><td>Podupání</td><td>Volná akce</td><td>X</td><td>Pokud jezdecké zvíře narazí ve Cvalu či Trysku do oponenta, způsobí mu 12 zranění. Pokud by se však jednalo o Povalený cíl, způsobí zranění podle tabulky, které ignoruje Kz a Omráčení na dva tahy.</td></tr><tr><td>Pomalý pohyb</td><td>1 akce</td><td>X</td><td>Pohne se maximálně o 6 hex. Pohyb okolo nepřítele je vždy jedna a může být přerušen úspěšným Příležitostným útokem. Pohyb může vyvolat Reakci.</td></tr><tr><td>Trysk</td><td>2 akce</td><td>X</td><td>Pohne se minimálně o 12 hex a maximálně o 12 + Bonus za zvíře hex. Pohyb skrz nepřítele vyvolá Test Atletiky (Legendární) na Povalení. Při tomto pohybu musí vždy urazit alespoň 5 hex než může změnit směr o jednu hexu. Kryt +25%, Obrana +10% a Střelba -40% na jedno kolo. Trysku musí předcházet Cval a musí ho následovat Cval či Trysk.</td></tr></tbody></table>\n<h3>Útok kly</h3>",
+    "markdown": null
+   },
+   "video": {
+    "controls": true,
+    "volume": 0.5
+   },
+   "category": null,
+   "ownership": {
+    "default": -1
+   },
+   "flags": {},
+   "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785239603741,
+    "modifiedTime": 1785239603741,
+    "lastModifiedBy": null
+   },
+   "_key": "!journal.pages!m7hL0zM37p2rHYnP.TjpucCw4D02ltYWp"
+  }
+ ],
+ "folder": "BjCbzfkKJNr5DLau",
+ "flags": {
+  "redsteel": {
+   "sourceSheet": "Akce jezdeckých zvířat"
+  }
+ },
+ "categories": [],
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603741,
+  "modifiedTime": 1785239603741,
+  "lastModifiedBy": null
+ },
+ "ownership": {
+  "default": 0
+ },
+ "_id": "m7hL0zM37p2rHYnP",
+ "sort": 3000,
+ "_key": "!journal!m7hL0zM37p2rHYnP"
+}

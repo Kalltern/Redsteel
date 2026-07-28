@@ -1,10 +1,12 @@
 import { getTraitPills } from "./traitPills.mjs";
 import { withRollBias, tagRollSkill } from "./rollAdvantage.mjs";
 import { AIMED_PARTS } from "./aimedStrike.mjs";
+import { getImprovedAimPenetration } from "./aim.mjs";
 import { getAttackRerollTokens } from "./rerolls.mjs";
 import { buildBanePacket } from "./baneCombat.mjs";
 import { renderDamageLine } from "./damageLine.mjs";
 import { hasHtmlContent } from "./chatBlocks.mjs";
+import { appendHeavyWeaponDamage } from "./weaponResolver.mjs";
 import {
   isSpeedTest,
   rollSpeedTest,
@@ -233,6 +235,12 @@ export async function universalAttackLogic({
       }
     }
     const weapon = weapons[weaponIndex];
+    // Conditional dice that only land with a Heavy weapon.
+    customDamage = appendHeavyWeaponDamage(
+      customDamage,
+      weapon,
+      selectedModifiers,
+    );
     // ─── AMMO CHECK ───
     const ammoOption = actor.getRequiredAmmoOption(weapon);
     let ammo = null;
@@ -294,8 +302,18 @@ export async function universalAttackLogic({
         ) || 0
       : 0;
     const actorMods = game.redsteel.getActorCombatModifiers(actor, weapon);
+    // Improved Aim: read before getAttackRolls consumes the aim flag.
+    const improvedAimPen = getImprovedAimPenetration(
+      actor,
+      weapon,
+      resolvedContext,
+    );
     const penetration =
-      mainPen + offPen + customPenetration + actorMods.penetrationBonus;
+      mainPen +
+      offPen +
+      customPenetration +
+      actorMods.penetrationBonus +
+      improvedAimPen;
     const totalDoctrineBonus = doctrine.doctrineBonus;
     const totalDoctrineCritBonus =
       doctrine.doctrineCritBonus + customCritChance;

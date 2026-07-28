@@ -671,7 +671,7 @@ export class MentalDuelApp extends ApplicationV2 {
              <span>You were chosen — accept the gamble?</span>
              <div class="rs-md-rps-buttons">
                <button type="button" class="rs-md-rps-accept" ${tooLow ? "disabled" : ""}
-                 title="${tooLow ? "You need more than 1 Mind to stake the gamble" : "Accept and pay 1 Mind"}">Accept (pay 1 Mind)</button>
+                 title="${tooLow ? "You need more than 1 Mind to stake the gamble" : "Accept and pay 1 Mind — losing costs a second point"}">Accept (pay 1 Mind)</button>
                <button type="button" class="rs-md-rps-decline">Decline</button>
              </div>
            </div>`
@@ -714,7 +714,7 @@ export class MentalDuelApp extends ApplicationV2 {
         </div>`;
       };
       return `<div class="rs-md-rps">
-        <div class="rs-md-rps-title"><b>${initiator.name}</b> staked 1 Mind — pick once, you can't change it</div>
+        <div class="rs-md-rps-title"><b>${initiator.name}</b> staked 1 Mind (2 lost if they lose) — pick once, you can't change it</div>
         <div class="rs-md-rps-arena">${pick("a")}${pick("b")}</div>
       </div>`;
     }
@@ -737,7 +737,7 @@ export class MentalDuelApp extends ApplicationV2 {
       verdict =
         winner === rps.initiator
           ? `${w.name} wins — regains the staked Mind; ${l.name} loses 1 Mind.`
-          : `${w.name} wins — ${l.name} (initiator) forfeits the staked Mind.`;
+          : `${w.name} wins — ${l.name} (initiator) loses 2 Mind: the stake and the loss.`;
     }
     return `<div class="rs-md-rps-result"><div>${picks}</div><div><b>${verdict}</b></div></div>`;
   }
@@ -1203,8 +1203,8 @@ async function applyRpsAction({ anchorUuid, action }) {
 /**
  * Resolve a completed RPS round and apply the stake economics:
  *   • Initiator wins → regains the staked Mind, opponent loses 1.
- *   • Initiator loses → already paid the stake (no refund).
- *   • Draw → no Mind lost, but the stake is not refunded.
+ *   • Initiator loses → forfeits the stake and loses 1 more (2 Mind total).
+ *   • Draw → no extra loss, but the stake is not refunded.
  * @returns {object} the resolved state (phase "resolved", with result).
  */
 async function resolveRps(state) {
@@ -1214,14 +1214,23 @@ async function resolveRps(state) {
 
   let refund = 0;
   let drain = 0;
+  let penalty = 0;
   if (winner === initiator) {
     refund = 1;
     drain = 1;
     await adjustMind(rpsSideActor(state, initiator), +1); // refund stake
     await adjustMind(rpsSideActor(state, opponent), -1); // opponent loses
+  } else if (winner === opponent) {
+    // Losing the gamble costs a second point on top of the forfeit stake.
+    penalty = 1;
+    await adjustMind(rpsSideActor(state, initiator), -1);
   }
 
-  const resolved = { ...state, phase: "resolved", result: { winner, refund, drain } };
+  const resolved = {
+    ...state,
+    phase: "resolved",
+    result: { winner, refund, drain, penalty },
+  };
 
   const aName = rpsSideActor(state, "a")?.name ?? "A";
   const bName = rpsSideActor(state, "b")?.name ?? "B";
@@ -1233,7 +1242,7 @@ async function resolveRps(state) {
     verdict =
       winner === initiator
         ? `${wName} wins the gamble — regains the stake; ${lName} loses 1 Mind.`
-        : `${wName} wins the gamble — ${lName} forfeits the staked Mind.`;
+        : `${wName} wins the gamble — ${lName} (initiator) loses 2 Mind: the staked point and the loss.`;
   }
 
   await ChatMessage.create({

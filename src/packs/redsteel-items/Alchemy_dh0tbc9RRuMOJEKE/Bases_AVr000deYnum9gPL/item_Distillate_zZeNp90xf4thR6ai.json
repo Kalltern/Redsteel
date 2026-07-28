@@ -1,0 +1,32 @@
+{
+  "folder": "AVr000deYnum9gPL",
+  "name": "Distillate",
+  "type": "item",
+  "img": "icons/consumables/drinks/alcohol-jar-spirits-gray.webp",
+  "system": {
+    "description": "<p>An alchemical base, pure spirit. One bottle is enough for 5 uses (5 crafted units).</p>",
+    "quantity": 1,
+    "localizationKey": "REDSTEEL.Items.Distillate.name"
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {
+    "redsteel": {
+      "alchBase": "distillate"
+    }
+  },
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.9.51",
+    "lastModifiedBy": null
+  },
+  "_id": "zZeNp90xf4thR6ai",
+  "_key": "!items!zZeNp90xf4thR6ai"
+}

@@ -1,0 +1,68 @@
+{
+ "name": "Counter-Mage Oaths",
+ "pages": [
+  {
+   "sort": 0,
+   "name": "Counter-Mage Oaths",
+   "type": "text",
+   "_id": "sjqqzd8BhMb4jlyN",
+   "title": {
+    "show": false,
+    "level": 1
+   },
+   "image": {},
+   "src": null,
+   "system": {},
+   "text": {
+    "format": 1,
+    "content": "<p>Jedná se o dobrovolné Přísahy, které může Kontramág skládat na své cestě za sebekázní ve snaze dosáhnout větší vnitřní vyrovnanosti a klidu.<br>Přísahy se skládají vždy na jeden rok a pouze pokud je měsíc v Novu. Vyjímku tvoří Přísaha Mlčení, která se skládá coby forma pokání za porušení jiné Přísahy a je ji tedy možné složit kdykoliv a trvá maximálně po dobu trvání původní Přísahy. Stejnou Přísahu lze složit pouze jednou za rok.</p>\n<table><thead><tr><th>Přísaha</th><th>Podmínka</th><th>Účinek</th><th>Postih při porušení</th></tr></thead><tbody><tr><td>Přísaha Mlčení</td><td>Mlčet a za žádných okolností nepromluvit (vrčení, bručení a mručení je do jisté míry přijatelné)</td><td>Ruší postihy za porušení Přísahy.</td><td>Porušení přísahy ruší Účinek.</td></tr><tr><td>Přísaha Odříkání</td><td>Nepozře maso, alkohol ani drogy. Nesmí mít Hříšnost více než 4.</td><td>Mentální životy +1</td><td>Porušení přísahy ruší Účinek a o jeden snižuje Mentální životy.</td></tr><tr><td>Přísaha Čistoty</td><td>Zkrátka celibát v plném rozsahu. Nesmí mít Hříšnost více než 4.</td><td>Mentální životy +1</td><td>Porušení přísahy ruší Účinek a o jeden snižuje Mentální životy.</td></tr></tbody></table>",
+    "markdown": null
+   },
+   "video": {
+    "controls": true,
+    "volume": 0.5
+   },
+   "category": null,
+   "ownership": {
+    "default": -1
+   },
+   "flags": {},
+   "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785239603754,
+    "modifiedTime": 1785239603754,
+    "lastModifiedBy": null
+   },
+   "_key": "!journal.pages!JS5IeFgMH8Ht0enW.sjqqzd8BhMb4jlyN"
+  }
+ ],
+ "folder": "BjCbzfkKJNr5DLau",
+ "flags": {
+  "redsteel": {
+   "sourceSheet": "Přísahy kontramágů"
+  }
+ },
+ "categories": [],
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603754,
+  "modifiedTime": 1785239603754,
+  "lastModifiedBy": null
+ },
+ "ownership": {
+  "default": 0
+ },
+ "_id": "JS5IeFgMH8Ht0enW",
+ "sort": 30000,
+ "_key": "!journal!JS5IeFgMH8Ht0enW"
+}

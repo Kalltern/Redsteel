@@ -1,0 +1,68 @@
+{
+ "name": "Madness",
+ "pages": [
+  {
+   "sort": 0,
+   "name": "Madness",
+   "type": "text",
+   "_id": "KkxdEMpZwDmGpA3N",
+   "title": {
+    "show": false,
+    "level": 1
+   },
+   "image": {},
+   "src": null,
+   "system": {},
+   "text": {
+    "format": 1,
+    "content": "<h3>Šílenství</h3>\n<p>Šílenství se měří pomocí bodů šílenství (IP). Získání bodu šílenství samo o sobě obvykle nic neznamená. Zlomovým je moment, kdy se překročí tzv. Hranice šílenství. V takovém případě nastává Test Nervů (Těžký), při úspěchu se nic neděje, při kritickém úspěchu se sníží body šílenství o jeden. Při selhání se hází na Vadu dle příslušné tabulky Šílenství (List ŠOFKHaV), při kritickém selhání se hází hned dvakrát. V obou případech selhání si hráč rovněž ubírá pět bodů šílenství. Pokud hráč uspěl, tak si hází znovu Test Nervů (Těžký) při získání dalšího bodu šílenství, tentokrát však se zvýšenou obtížnosti o 10%, zvyšování obtížnosti nadále pokračuje. <br>Hranice šílenství je určena následovně: Základ 4 + Vůle + Rysy</p>\n<h3>Získávání bodů Šílenství</h3>\n<p>Možností jak získat body šílenství je mnoho. Mezi nejčastější patří: Kritický neúspěch při Testu Nervů na Strach. Neúspěch při Testu Nervů na Teror. Neúspěch u Testu Nervů způsobeného rozličnými důvody, jako například svědectví ohavných činů, Pokraj smrti (Klesnou-li životy na nulu) etc. Obvykle se bavíme o Obtížnosti Normální nebo Těžké (Vážně ohavný čin etc). V případě Pokraje smrti je Obtížnost modifikována počtem VZ, tedy 10% za každé. Některé události mohou přidávat přímo body šílenství, například smrt milované osoby, mučení, pohřbení zaživa etc. Další častou metodou jak získat body šílenství je Sebezapření. Mluvíme o takové situaci, kdy hráč selže například v Testu na Hříšnost, Strach nebo Cholerika či je terčem úspěšného pokusu o Pokoušení a rozhodne se negovat výsledek hodu tím, že si raději dobrovolně vezme bod šílenství.</p>\n<h3>Zbavování se bodů Šílenství</h3>\n<p>Způsobů zbavování se šílenství je rovněž několik. Mezi základní patří například alkohol, který po získání vyšších stupňů Opilosti dává šanci 10%, nebo \"rekreační drogy\", tedy Dračí dým, Snížek, Volání sirény, Upíří polibek a Ďáblův kořen. Tyto drogy mají šanci 5/16/20/35/65% na zbavení se bodu Šílenství. Pokud alkohol nebo droga úspěšně zruší bod Šílenství, Testuje na získání závislosti. <br>Další možnost představují lektvary Bláznova zkouška a Bláznovo odpuštění. <br>Další metodou jsou odbornosti Sobecký altruista, Hluboká nenávist, Klidná mysl a Vnitřní mír.<br>Další metodou je dlouhodobější dopřávání si lepších životních podmínek.<br>Další možnost představují různé metody rekreace, jako například rybaření, hudba, knihy. Obvykle se jedná o dlouhodobější záležitost, frekvence hodů a šance na zbavení bodů šílenství je na uvážení DM.<br>Další možností je Duševní léčitel. Ten má jednou za pět dní 75% šanci převést bod šílenství na sebe skrze specifický \"rituál\". Duševní léčitel má rovněž šanci 65% na potlačení již získaného šílenství na dobu pěti dní. Tyto dva rituály se však nedají kombinovat.<br>Jednou z posledních metod je pohlavní styk s vyhovujícím partnerem. V takovém případě lze jednou za den využít šance Vzhled+4% na zbavení se bodu Šílenství. Záporný Vzhled*2 naopak udává šanci získat bod Šílenství. Pokud se úspěšně zbaví bodu Šílenství, může se dalšího bodu touto metodou zbavit nejdříve za 10 dní.<br>Poslední metodou je složitý chirurgický zákrok, který lze podniknout jednou za měsíc. Jedná se o test Ranhojičství nebo Transmutace (Legendární), kritické neúspěchy jsou neúspěchy se silou -25. V případě úspěchu zbaví 1d4 bodů Šílenství, v případě neúspěchu naopak přidá 1d4 bodů Šílenství. Kritický úspěch zbaví 2d4 bodů Šílenství a navíc zruší jedno již získané Šílenství. V případě kritického neúspěchu získává 1d4 bodů Šílenství a nastává jedna z následujích možnosti:<br>1 až 40 - Získá jedno z vybranných Šílenství<br>41 až 50 - Trvale ztrácí 1 bod Obratnosti<br>51 až 60 - Trvale ztrácí 1 bod Inteligence<br>61 až 70 - Trvale ztrácí 1 bod Vůle<br>71 až 80 - Trvale ztrácí 1 bod Charismy<br>81 až 90 - Trvale ztrácí 1 bod Vnímání<br>91 až 100 - Získá 5 Vážných zranění</p>",
+    "markdown": null
+   },
+   "video": {
+    "controls": true,
+    "volume": 0.5
+   },
+   "category": null,
+   "ownership": {
+    "default": -1
+   },
+   "flags": {},
+   "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785239603755,
+    "modifiedTime": 1785239603755,
+    "lastModifiedBy": null
+   },
+   "_key": "!journal.pages!Y3k8x9hnG2KFM7aK.KkxdEMpZwDmGpA3N"
+  }
+ ],
+ "folder": "BjCbzfkKJNr5DLau",
+ "flags": {
+  "redsteel": {
+   "sourceSheet": "Šílenství"
+  }
+ },
+ "categories": [],
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603755,
+  "modifiedTime": 1785239603755,
+  "lastModifiedBy": null
+ },
+ "ownership": {
+  "default": 0
+ },
+ "_id": "Y3k8x9hnG2KFM7aK",
+ "sort": 33000,
+ "_key": "!journal!Y3k8x9hnG2KFM7aK"
+}

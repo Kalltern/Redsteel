@@ -1,0 +1,68 @@
+{
+ "name": "Locks, Traps and Pickpocketing",
+ "pages": [
+  {
+   "sort": 0,
+   "name": "Locks, Traps and Pickpocketing",
+   "type": "text",
+   "_id": "XvXyp7hnsDnjE1q9",
+   "title": {
+    "show": false,
+    "level": 1
+   },
+   "image": {},
+   "src": null,
+   "system": {},
+   "text": {
+    "format": 1,
+    "content": "<h3>Zámky</h3>\n<p>Šance na úspěch je určena jako Obratnost*3 + Rysy + Odbornosti + Dovednost. Při odemykání zámků je obtížnost klíčovým faktorem. Síla úspěchu má vliv na rychlost odemykání. Síla neúspěchu pak rozhoduje o tom, zda-li se zámek zasekne. V tomto případě se jedná o neúspěchy o síle -30 a více.</p>\n<h3>Pasti</h3>\n<p>Šance na úspěch je určena jako Vnímání*3 + Rysy + Odbornosti + Dovednost. U zneškodnění pastí hraje klíčovou roli obtížnost, která je určena typem pasti a jejím zpracováním. Velmi důležitou součástí v boji proti pastím je však Detekce pastí. Detekce je pasivní schopnost. Detekce se určuje jako Dovednost Pasti + Odbornosti + Vnímání + Postihy za světlo a spěch. Detekce potřebná k nalezení pastí se pohybuje přibližně od 6 do 26. Pro spuštěné pasti takřka vždy platí, že má cíl právo na záchranný hod na Akrobacii, tedy za předpokladu, že nejdříve uspěje v Testu Rychlosti.<br><br>Postihy na Detekci<br>Šero - Postih -6<br>Tma - Postih -16<br>Spěch - Postih -12</p>\n<h3>Kapsářství</h3>\n<p>Šance na úspěch je určena jako Obratnost*3 + Rysy + Odbornosti + Dovednost + Příležitost. Příležitost je klíčovým faktorem při určování obtížnosti Kapsářství. Pokud žádná není, bude Test značně obtížný. Příležitost může existovat (dav sledující představení) nebo se dá uměle vytvořit, například skrze Pokoušení, odlákání pozornosti etc. Kvalitní příležitost může poskytnout i bonus. Po Testu Kapsářství obvykle dochází k Testu Vnímání ze strany oběti, obtížnost tohoto Testu je určena silou úspěchu či neúspěchu Kapsářství. <br><br>Výsledek Kapsářství a následky<br>Kritický úspěch - Úspěšné kapsářství, Test Vnímání není, oběť si ničeho nevšimla<br>Úspěch o síle +25 - Úspěšné kapsářství, Test Vnímání (-40%)<br>Úspěch - Úspěšné kapsářství, Test Vnímání (-20%)<br>Neúspěch - Neúspěšné kapsářství, Test Vnímání (-20%)<br>Neúspěch o síle -25 - Neúspěšné kapsářství, Test Vnímání (+10%)<br>Kritický neúspěch - Neúspěšné kapsářství, Test Vnímání není, oběť si všimla</p>",
+    "markdown": null
+   },
+   "video": {
+    "controls": true,
+    "volume": 0.5
+   },
+   "category": null,
+   "ownership": {
+    "default": -1
+   },
+   "flags": {},
+   "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785239603750,
+    "modifiedTime": 1785239603750,
+    "lastModifiedBy": null
+   },
+   "_key": "!journal.pages!c0Menerns8O9dVIu.XvXyp7hnsDnjE1q9"
+  }
+ ],
+ "folder": "BjCbzfkKJNr5DLau",
+ "flags": {
+  "redsteel": {
+   "sourceSheet": "Zámky, Pasti a Kapsářství"
+  }
+ },
+ "categories": [],
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603750,
+  "modifiedTime": 1785239603750,
+  "lastModifiedBy": null
+ },
+ "ownership": {
+  "default": 0
+ },
+ "_id": "c0Menerns8O9dVIu",
+ "sort": 22000,
+ "_key": "!journal!c0Menerns8O9dVIu"
+}

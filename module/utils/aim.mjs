@@ -17,10 +17,13 @@
  * A PIXI overlay on `canvas.interface` visualises the current state.
  */
 
+import { actorHasSpecNode } from "../helpers/specialisations.mjs";
+
 const SYSTEM_ID = "redsteel";
 const FLAG = "aim";
 const MAX_STACKS = 4;
 const PER_STACK = 10; // % hit chance per stack
+const IMPROVED_AIM_PEN = 10; // Improved Aim: penetration at full aim
 
 const COLOR_AMBER = 0xffb300; // stacks 1–3
 const COLOR_RED = 0xff3030; // stack 4 (capped)
@@ -74,6 +77,72 @@ export function getAimStacks(token, target = game.user?.targets?.first?.() ?? nu
   // Only suppress when an explicit reticle target differs from the aimed token.
   if (target && aim.targetId !== target.id) return 0;
   return Math.min(MAX_STACKS, Math.max(0, aim.stacks ?? 0));
+}
+
+/**
+ * A one-handed sword: sword class, not a heavy blade (longsword, flamberge) and
+ * not currently gripped in two hands. Mirrors buildWeaponSetView's two-hander
+ * test, so flipping the grip toggle on the sheet flips eligibility live.
+ */
+function isOneHandedSword(weapon) {
+  const ws = weapon?.system ?? {};
+  return ws.class === "sword" && ws.type !== "heavy" && ws.gripMode !== "two";
+}
+
+/**
+ * A broadsword-type blade actually gripped in two hands: sword class, not a
+ * light blade (dagger, sabre, shortsword), and either heavy — longswords and
+ * flamberges are two-handed whatever the toggle says, same as
+ * buildWeaponSetView reads them — or switched to the two-hand grip.
+ */
+function isTwoHandedSword(weapon) {
+  const ws = weapon?.system ?? {};
+  if (ws.class !== "sword" || ws.type === "light") return false;
+  return ws.type === "heavy" || ws.gripMode === "two";
+}
+
+/**
+ * The duelling stance: the off hand is free, or holds an off-hand weapon whose
+ * off-hand profile is duelist-flagged (`offhandProperties.doctrines.duelist`).
+ * Today that is the fencing dagger; a one-handed crossbow or pistol qualifies
+ * the day it is added with that flag set, no code change needed. A shield never
+ * qualifies.
+ */
+function hasDuelistOffHand(context) {
+  if (context?.hasShield) return false;
+  const off = context?.offWeapon;
+  if (!off) return true; // empty hand
+  return off.system?.offhandProperties?.doctrines?.duelist === true;
+}
+
+/**
+ * Improved Aim — armour penetration granted at full (4-stack) aim.
+ *
+ * Two independent sources, both worth +10 and NOT cumulative with each other:
+ *   • Duelist I — any one-handed sword, provided the off hand is free or holds
+ *     a duelist off-hand weapon (fencing dagger).
+ *   • Servant of the Sword, "Improved Aiming" node — a broadsword-type sword
+ *     gripped in two hands.
+ *
+ * Reads the actor `aimCount` flag — the stack count the attack dialog actually
+ * committed to this roll, i.e. the same number that pays the +40% hit bonus.
+ * That flag is consumed later, inside getAttackRolls, so callers must fold this
+ * in while assembling penetration (which happens before the attack roll).
+ */
+export function getImprovedAimPenetration(actor, weapon, context = null) {
+  if (!actor || !weapon) return 0;
+  const stacks = Number(actor.getFlag(SYSTEM_ID, "aimCount")) || 0;
+  if (stacks < MAX_STACKS) return 0;
+
+  const duelist =
+    Number(actor.system?.doctrines?.duelist?.value ?? 0) >= 1 &&
+    isOneHandedSword(weapon) &&
+    hasDuelistOffHand(context);
+  const swordServant =
+    isTwoHandedSword(weapon) &&
+    actorHasSpecNode(actor, "swordServant", "improvedAim");
+
+  return duelist || swordServant ? IMPROVED_AIM_PEN : 0;
 }
 
 /* -------------------------------------------- */

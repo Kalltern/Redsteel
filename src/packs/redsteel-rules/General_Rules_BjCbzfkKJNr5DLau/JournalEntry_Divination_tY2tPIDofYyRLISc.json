@@ -1,0 +1,68 @@
+{
+ "name": "Divination",
+ "pages": [
+  {
+   "sort": 0,
+   "name": "Divination",
+   "type": "text",
+   "_id": "2fzJemHiEtpNTPs8",
+   "title": {
+    "show": false,
+    "level": 1
+   },
+   "image": {},
+   "src": null,
+   "system": {},
+   "text": {
+    "format": 1,
+    "content": "<p>Šance na úspěch je určena jako Vůle*3 + Rysy + Odbornosti + Dovednost. Věštec dokáže primárně několik věcí. Může určit, pod jakou Hvězdou se jedinec narodil nebo teprve narodí. Rovněž se může pokoušet určit přibližnou lokaci či směr k požadovanému cíli. Nicméně nejčastějším využitím pro věštce je určení Věštby. Každý věštec by si měl zvolit metodu, jakou používá (Kosti, lehce očarovaná skleněná sféra, ohniště a rozemleté kosti, karty etc)<br>Věštby<br>Jednou za měsíc se může věštec pokusit konkrétnímu jedinci určit jeho Věštbu. Následuje tedy Test Věštění (Těžký), který nehledě na svůj výsledek přinese Věštbu. Háže se tedy 1d100 (nebo 2d100 v případě kritických (ne)úspěchů) na určení konkrétní Věštby a 1d100 na určení Podmínky (Viz ŠOFNKHaV). Podmínka stanovuje, co musí být vykonáno pro to, aby se pozitivní Věštba aktivovala, nebo aby se zabránilo negativní Věštbě. Po (ne)splnění Podmínky se Věštba aktivuje na následujích 30 dní, nebo má jednorázový efekt. Vždy se hází skrytě.<br><br>Výsledky věštění<br>Kritický neúspěch - Nezná Věštbu ani Podmínku, DM si hází 2d100 a vybírá si.<br>Neúspěch - Nezná Věštbu ani Podmínku.<br>Úspěch - Nezná Věštbu, ví pouze, zda-li je pozitivní nebo negativní. Zná Podmínku.<br>Úspěch o síle +25 - Zná Věštbu i Podmínku.<br>Kritický úspěch - Zná Věštbu i Podmínku, hází si 2d100 a vybírá si sám.</p>",
+    "markdown": null
+   },
+   "video": {
+    "controls": true,
+    "volume": 0.5
+   },
+   "category": null,
+   "ownership": {
+    "default": -1
+   },
+   "flags": {},
+   "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785239603753,
+    "modifiedTime": 1785239603753,
+    "lastModifiedBy": null
+   },
+   "_key": "!journal.pages!tY2tPIDofYyRLISc.2fzJemHiEtpNTPs8"
+  }
+ ],
+ "folder": "BjCbzfkKJNr5DLau",
+ "flags": {
+  "redsteel": {
+   "sourceSheet": "Věštění"
+  }
+ },
+ "categories": [],
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603753,
+  "modifiedTime": 1785239603753,
+  "lastModifiedBy": null
+ },
+ "ownership": {
+  "default": 0
+ },
+ "_id": "tY2tPIDofYyRLISc",
+ "sort": 27000,
+ "_key": "!journal!tY2tPIDofYyRLISc"
+}

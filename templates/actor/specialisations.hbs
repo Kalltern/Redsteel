@@ -76,7 +76,9 @@
                 data-action="toggleSpecNode"
                 data-spec="{{tree.id}}"
                 data-node="{{node.id}}"
-                data-tooltip="{{localize node.description}}"
+                data-tt-kind="specNode"
+                data-tt-id="{{node.id}}"
+                data-tt-spec="{{tree.id}}"
               >
                 {{#if node.icon}}
                   <img src="{{node.icon}}" alt="" />

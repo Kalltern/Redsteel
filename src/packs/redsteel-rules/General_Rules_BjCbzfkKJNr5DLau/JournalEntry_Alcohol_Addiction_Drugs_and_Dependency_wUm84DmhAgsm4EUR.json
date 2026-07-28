@@ -1,0 +1,68 @@
+{
+ "name": "Alcohol, Addiction, Drugs and Dependency",
+ "pages": [
+  {
+   "sort": 0,
+   "name": "Alcohol, Addiction, Drugs and Dependency",
+   "type": "text",
+   "_id": "S88twNyGc1Tt4B6Q",
+   "title": {
+    "show": false,
+    "level": 1
+   },
+   "image": {},
+   "src": null,
+   "system": {},
+   "text": {
+    "format": 1,
+    "content": "<p>Pitím alkoholu lze po selhání Testu Pijáctví dosáhnout Opilosti. Tento efekt lze získat vícekrát. Pokud by se měl zbavit bodu šílenství skrze alkohol, Testuje Vůli (Pokročilou) na získání závislosti. Aby se zabránilo abstinenčním příznakům, je třeba dosáhnout alespoň jednoho stupně Opilosti.<br>Závislost na alkoholu - Abstinence 3 dny, Úspěch -5%; Nervy -2 / 5 dnů; Léčení Test Vůle -5% každých 5 dnů; 4 úspěchy</p>\n<h3>Drogy</h3>\n<p>Při úspěšném zbavení se bodu šílenství skrze drogy dochází k Testu Vůle (Obtížnost podle drogy) na získání Závislosti.<br>V případě tzv. bojových drog (Drogy u kterých se na Závislost Testuje Odolnost) Testují Odolnost (Obtížnost podle drogy) při každém použití.</p>",
+    "markdown": null
+   },
+   "video": {
+    "controls": true,
+    "volume": 0.5
+   },
+   "category": null,
+   "ownership": {
+    "default": -1
+   },
+   "flags": {},
+   "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785239603745,
+    "modifiedTime": 1785239603745,
+    "lastModifiedBy": null
+   },
+   "_key": "!journal.pages!wUm84DmhAgsm4EUR.S88twNyGc1Tt4B6Q"
+  }
+ ],
+ "folder": "BjCbzfkKJNr5DLau",
+ "flags": {
+  "redsteel": {
+   "sourceSheet": "Alkohol, Závislost, Drogy a Návykovost"
+  }
+ },
+ "categories": [],
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603745,
+  "modifiedTime": 1785239603745,
+  "lastModifiedBy": null
+ },
+ "ownership": {
+  "default": 0
+ },
+ "_id": "wUm84DmhAgsm4EUR",
+ "sort": 11000,
+ "_key": "!journal!wUm84DmhAgsm4EUR"
+}

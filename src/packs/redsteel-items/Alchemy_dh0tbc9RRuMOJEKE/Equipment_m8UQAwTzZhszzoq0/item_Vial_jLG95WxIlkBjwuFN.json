@@ -1,0 +1,32 @@
+{
+  "folder": "m8UQAwTzZhszzoq0",
+  "name": "Vial",
+  "type": "item",
+  "img": "icons/tools/laboratory/vials-blue-pink.webp",
+  "system": {
+    "description": "<p>A glass vial. One vial is needed for every potion or poison crafted.</p>",
+    "quantity": 1,
+    "localizationKey": "REDSTEEL.Items.Vial.name"
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {
+    "redsteel": {
+      "alchVessel": "vial"
+    }
+  },
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.9.55",
+    "lastModifiedBy": null
+  },
+  "_id": "jLG95WxIlkBjwuFN",
+  "_key": "!items!jLG95WxIlkBjwuFN"
+}

@@ -27,7 +27,7 @@
         {{/if}}
       >
         {{#if slot.item}}
-          <img src="{{slot.item.img}}" class="item-icon" data-item-id="{{slot.item._id}}" />
+          <img src="{{slot.item.img}}" class="item-icon" data-item-id="{{slot.item._id}}" data-tt-kind="item" data-tt-id="{{slot.item._id}}" />
         {{else}}
           <span>{{slot.label}}</span>
         {{/if}}
@@ -87,7 +87,7 @@
           {{/if}}
         >
           {{#if weaponSets.1.main}}
-            <img src="{{weaponSets.1.main.img}}" class="item-icon" data-item-id="{{weaponSets.1.main._id}}" />
+            <img src="{{weaponSets.1.main.img}}" class="item-icon" data-item-id="{{weaponSets.1.main._id}}" data-tt-kind="item" data-tt-id="{{weaponSets.1.main._id}}" />
           {{else}}
             <span>Main</span>
           {{/if}}
@@ -138,7 +138,9 @@
     <img
       src="{{weaponSets.1.off.img}}"
       class="item-icon"
-      data-item-id="{{weaponSets.1.off._id}}"      width="44"
+      data-item-id="{{weaponSets.1.off._id}}"
+      data-tt-kind="item"
+      data-tt-id="{{weaponSets.1.off._id}}"      width="44"
       height="44"
     />
 
@@ -147,7 +149,9 @@
     <img
       src="{{weaponSets.1.off.img}}"
       class="item-icon"
-      data-item-id="{{weaponSets.1.off._id}}"      width="44"
+      data-item-id="{{weaponSets.1.off._id}}"
+      data-tt-kind="item"
+      data-tt-id="{{weaponSets.1.off._id}}"      width="44"
       height="44"
     />
 
@@ -202,7 +206,7 @@
           {{/if}}
         >
           {{#if weaponSets.2.main}}
-            <img src="{{weaponSets.2.main.img}}" class="item-icon" data-item-id="{{weaponSets.2.main._id}}" />
+            <img src="{{weaponSets.2.main.img}}" class="item-icon" data-item-id="{{weaponSets.2.main._id}}" data-tt-kind="item" data-tt-id="{{weaponSets.2.main._id}}" />
           {{else}}
             <span>Main</span>
           {{/if}}
@@ -253,7 +257,9 @@
     <img
       src="{{weaponSets.2.off.img}}"
       class="item-icon"
-      data-item-id="{{weaponSets.2.off._id}}"      width="44"
+      data-item-id="{{weaponSets.2.off._id}}"
+      data-tt-kind="item"
+      data-tt-id="{{weaponSets.2.off._id}}"      width="44"
       height="44"
     />
 
@@ -262,7 +268,9 @@
     <img
       src="{{weaponSets.2.off.img}}"
       class="item-icon"
-      data-item-id="{{weaponSets.2.off._id}}"      width="44"
+      data-item-id="{{weaponSets.2.off._id}}"
+      data-tt-kind="item"
+      data-tt-id="{{weaponSets.2.off._id}}"      width="44"
       height="44"
     />
 
@@ -320,7 +328,7 @@
           data-document-class="Item"
         >
           <a class="rollable" data-action="roll" data-roll-type="item" data-item-id="{{ammo._id}}">
-            <img src="{{ammo.img}}" class="item-icon" data-item-id="{{ammo._id}}" />
+            <img src="{{ammo.img}}" class="item-icon" data-item-id="{{ammo._id}}" data-tt-kind="item" data-tt-id="{{ammo._id}}" />
           </a>
           <span class="ammo-qty">{{ammo.system.quantity}}</span>
         </div>
@@ -353,7 +361,7 @@
         title="{{#if slot.item}}{{slot.item.name}}{{/if}}"
       >
         {{#if slot.item}}
-          <img src="{{slot.item.img}}" class="item-icon" data-item-id="{{slot.item._id}}" />
+          <img src="{{slot.item.img}}" class="item-icon" data-item-id="{{slot.item._id}}" data-tt-kind="item" data-tt-id="{{slot.item._id}}" />
         {{/if}}
       </div>
     {{/each}}
@@ -444,7 +452,7 @@
       data-drag="true"
     >
       <a class="inventory-cell-icon rollable" data-action="roll" data-roll-type="item" data-item-id="{{entry.item._id}}">
-        <img src="{{entry.item.img}}" class="item-icon" data-item-id="{{entry.item._id}}" />
+        <img src="{{entry.item.img}}" class="item-icon" data-item-id="{{entry.item._id}}" data-tt-kind="item" data-tt-id="{{entry.item._id}}" />
       </a>
 
       {{!-- TWO-HAND GRIP TOGGLE (hover overlay) --}}

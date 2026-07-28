@@ -1,0 +1,68 @@
+{
+ "name": "Mounts (WIP)",
+ "pages": [
+  {
+   "sort": 0,
+   "name": "Mounts (WIP)",
+   "type": "text",
+   "_id": "AWVdCOk0VFrljftt",
+   "title": {
+    "show": false,
+    "level": 1
+   },
+   "image": {},
+   "src": null,
+   "system": {},
+   "text": {
+    "format": 1,
+    "content": "<p>Při boji v sedle nelze využívat Těžkých zbraní, vyjímku tvoří pouze Glaiva a Dlouhý meč.<br>Při boji proti opěšelému soupeři (neplatí na některé větší tvory) získává bonus 5% na Zásah a Obranu. Rovněž získává bonus na zranění +2d4<br>Nemůže útočit na nohy, ale snížený postih na zásah hlavy o 10%. Jezdec nemá boky. Útočit do zad mu lze pouze zbraní s Dlouhým dosahem.</p>\n<table><thead><tr><th>Zvíře</th><th>Životy</th><th>Obrana</th><th>Cval</th><th>Trysk</th></tr></thead><tbody><tr><td>Kůň</td><td>60</td><td>0.1</td><td>5</td><td>6</td></tr><tr><td>Válečný kůň</td><td>80</td><td>0.15</td><td>5</td><td>6</td></tr></tbody></table>\n<h3>Velbloud</h3>\n<h3>Slon</h3>\n<h3>Not-pštros</h3>\n<h3>Nějaký vlk</h3>\n<h3>Rekkar</h3>\n<h3>Gryf/Demigryf</h3>\n<h3>Bůvolbronto</h3>\n<h3>Malý drak</h3>",
+    "markdown": null
+   },
+   "video": {
+    "controls": true,
+    "volume": 0.5
+   },
+   "category": null,
+   "ownership": {
+    "default": -1
+   },
+   "flags": {},
+   "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785239603759,
+    "modifiedTime": 1785239603759,
+    "lastModifiedBy": null
+   },
+   "_key": "!journal.pages!p7fJK0v7f1r6PuPX.AWVdCOk0VFrljftt"
+  }
+ ],
+ "folder": "sOmxm1q9LSplvn68",
+ "flags": {
+  "redsteel": {
+   "sourceSheet": "Jezdecká zvířata (WIP)"
+  }
+ },
+ "categories": [],
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603759,
+  "modifiedTime": 1785239603759,
+  "lastModifiedBy": null
+ },
+ "ownership": {
+  "default": 0
+ },
+ "_id": "p7fJK0v7f1r6PuPX",
+ "sort": 4000,
+ "_key": "!journal!p7fJK0v7f1r6PuPX"
+}

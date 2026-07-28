@@ -95,6 +95,56 @@ export class RedsteelItem extends Item {
   }
 
   /**
+   * NPCs may only ever carry *trait* features. Plain features and priest
+   * features are character progression items — the NPC sheet never offers a
+   * button to create them, but a drag from the sidebar or a compendium would
+   * otherwise slip one in. Guarding here catches every route: sheet drop,
+   * folder drop, the create buttons, and API calls.
+   * @param {Actor|null} actor   The prospective owner
+   * @param {Item} item          The feature being placed / retyped
+   * @param {string} option      The `system.option` it would end up with
+   * @returns {boolean}          True when this actor may not hold it
+   */
+  static #rejectsFeature(actor, item, option) {
+    if (actor?.type !== "npc") return false;
+    if (item.type !== "feature") return false;
+    return option !== "trait";
+  }
+
+  /** @override */
+  async _preCreate(data, options, user) {
+    const allowed = await super._preCreate(data, options, user);
+    if (allowed === false) return false;
+
+    if (
+      RedsteelItem.#rejectsFeature(this.parent, this, this.system?.option)
+    ) {
+      ui.notifications?.warn(
+        game.i18n.format("REDSTEEL.Feature.NpcTraitOnly", { name: this.name }),
+      );
+      return false;
+    }
+  }
+
+  /** @override */
+  async _preUpdate(changed, options, user) {
+    const allowed = await super._preUpdate(changed, options, user);
+    if (allowed === false) return false;
+
+    // Flat (`{"system.option": ...}`) and expanded (sheet submit) update shapes.
+    const nextOption = changed["system.option"] ?? changed.system?.option;
+    if (
+      nextOption !== undefined &&
+      RedsteelItem.#rejectsFeature(this.parent, this, nextOption)
+    ) {
+      ui.notifications?.warn(
+        game.i18n.format("REDSTEEL.Feature.NpcTraitOnly", { name: this.name }),
+      );
+      return false;
+    }
+  }
+
+  /**
    * Active Effects authored on a consumable (potion / poison) are *blueprints*:
    * they only take hold when the item is actually used — at which point they
    * are copied onto the drinker (see usePotion). Suppress Foundry's default
@@ -305,7 +355,12 @@ export class RedsteelItem extends Item {
     }
 
     if (this.system.roll) {
-      const { diceNum, diceSize } = this.system.roll;
+      // A spell that deals no direct damage (Poisoned blood, Coagulation …) can
+      // have these left null/empty by the sheet. Coerce to 0 so the formula is
+      // always a valid one — "nulld" reaches Roll as an unresolvable term and
+      // throws on evaluate, taking the whole cast down with it.
+      const diceNum = Number(this.system.roll.diceNum) || 0;
+      const diceSize = Number(this.system.roll.diceSize) || 0;
       const diceBonus = this.system.roll.diceBonus ?? 0;
 
       let formula = "";
@@ -393,6 +448,13 @@ export class RedsteelItem extends Item {
     // Semantic flags
     this.system.roll.halfDamage = parsed.half;
     this.system.roll.penCap = parsed.penCap;
+
+    // Extra damage that only applies when the attack is made with a Heavy
+    // weapon (Zteč: "Dodatečné zranění +2d4, pokud používá Těžkou zbraň").
+    // Applied in runAttackMacro / basicAttack once the weapon is resolved.
+    this.system.roll.heavyDiceBonusFormula = this._parseAbilityDiceBonus(
+      this.system.roll?.heavyDiceBonus,
+    ).formula;
   }
 
   _parseAbilityDiceBonus(input) {
@@ -584,7 +646,12 @@ export class RedsteelItem extends Item {
       stats: [
         { label: "Difficulty", value: data.difficulty },
         { label: "Cost", value: `${data.cost} ${data.costType}` },
-        { label: "Damage", value: data.roll.diceBonus },
+        {
+          label: "Damage",
+          value: data.roll.heavyDiceBonus
+            ? `${data.roll.diceBonus} (${data.roll.heavyDiceBonus} heavy)`
+            : data.roll.diceBonus,
+        },
         { label: "Test Type", value: data.attributeTest },
         { label: "Actions", value: data.actionCost },
         { label: "Range", value: data.range },

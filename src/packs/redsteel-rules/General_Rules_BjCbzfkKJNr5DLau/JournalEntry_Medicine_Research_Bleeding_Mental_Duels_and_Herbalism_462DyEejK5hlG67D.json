@@ -1,0 +1,68 @@
+{
+ "name": "Medicine, Research, Bleeding, Mental Duels and Herbalism",
+ "pages": [
+  {
+   "sort": 0,
+   "name": "Medicine, Research, Bleeding, Mental Duels and Herbalism",
+   "type": "text",
+   "_id": "SGvZM8cxdcjC52bJ",
+   "title": {
+    "show": false,
+    "level": 1
+   },
+   "image": {},
+   "src": null,
+   "system": {},
+   "text": {
+    "format": 1,
+    "content": "<h3>Ranhojičství</h3>\n<p>Ranhojičství léčí zranění po boji. Za každý souboj může být jednou použito k léčení životů, zároveň zastavuje krvácení. Nemůže vyléčit více životů, než za kolik byl hráč v daném souboji zraněn. Léči za 3d6+3 životů za úspěšný hod (Kritický úspěch: +100% vyléčených životů, Úspěch o síle +25: +50% vyléčených životů), při selhání nic, při kritickém neúspěchu zraní za 2d4 životů. Test Ranhojičství (Těžký) může rovněž snížit postihy na Úspěch za jedno Vážné zranění o 3% a v případě specializace Kněz a odbornosti Felčar II může stejně snížit postih dohromady až za další čtyři VZ. Ranhojičství praktikované na sobě má zvýšenou obtížnost o -30% (Nevztahuje se na krvácení) a v některých případech není vůbec možné.<br>Pro ranhojičství je vhodné disponovat vhodným vybavením. Ranhojičství bez ranhojičské sady dostává postih -30%</p>\n<h3>Pokraj smrti a Ranhojičství</h3>\n<p>Ranhojičstvím lze zachránit padlého druha, který je na Pokraji smrti. Tento Test Ranhojičství (Pokročilý) při úspěchu vždy stabilizuje cíl na 1 život a ukončí tak stav na Pokraji smrti. Za každé kolo, během kterého by měl být cíl mrtvý, se zvyšuje obtížnost Testu o 20%. Pokud by během ranhojičství došlo k vyléčení cíle do pozitivních životů, dojde k vyhodnocení Testu okamžitě.</p>\n<h3>Výzkum</h3>\n<p>Výzkum nových lektvarů / věcí podle dovednosti Výzkum. Úspěšný Výzkum může rovněž nahradit požadavek na Učitele pro dovednosti. Vyžaduje tři (v základu, někdy více nebo méně) úspěchy, každých deset dní jeden hod (musí se tomu aktivně věnovat), obtížnost různá, kritický úspěch = 2 úspěchy, kritický neúspěch = -1 úspěch. Obtížnost dle uvážení DM.<br>Výzkum kouzel<br>Výzkum kouzel je specifická, nesmírně obtížná oblast Výzkumu, která pochopitelně vyžaduje znalosti Usměrňování a stupeň Školy (podle zamýšleného stupně kouzla). Je důležité míti na paměti, že vymýšlení zcela nových kouzel je takřka nemožné a spadá pod přísný dohled DM, který má výsostné právo projekt již zpočátku odsoudit k nezdaru. Existuje tu však možnost, aby Výzkum umožňoval zkoumání již existujících kouzel, která čaroděj sice nezná, ale má ponětí o jejich existenci. Pro tento účel však potřebuje Odbornost \"Replikace kouzel\", která mu umožní začít zkoumat takové kouzlo, které úspěšně skrze Test Arcany (Normální; Pokročilý; Těžký; Velmi těžký - podle stupně kouzla) poznal. Počet úspěchů a obtížnost je stanovena stupněm kouzla. Může zkoumat jen takové kouzlo, na které má dostačující stupeň Školy. Počet úspěchů a obtížnosti jsou vypsány níže.<br>Učedník - Tři úspěchy, Test Výzkumu (Normální)<br>Expert - Čtyři úspěchy, Test Výzkumu (Pokročilý)<br>Mistr - Pět úspěchů, Test Výzkumu (Těžký)<br>Velmistr - Šest úspěchů, Test Výzkumu (Velmi těžký)</p>\n<h3>Krvácení</h3>\n<p>Zastavit Krvácení lze lektvary, magií, ranhojičstvím (Velmi lehký test) nebo jednoduchým obvázáním (30% + Obratnost*3 / Inteligence*3), pokud se použije správná květina (Bílá myrta), ziskává se dodatečný bonus +30% na zastavení Krvácení. Během zastavování Krvácení se čeká na vyhodnocení Testu, při selhání se dodatečně vyhodnotí zranění za Krvácení. Pokud by během snažení o zastavení Krvácení bylo Krvácení zastaveno jiným způsobem (Lektvar, kouzlo...), dojde k vyhodnocení Testu ihned.</p>\n<h3>Mentální souboj</h3>\n<p>Mentální souboj nejčastěji vyvolávají Kontramágové, Mentalisté, démoni nebo některá monstra. Mentální souboj vyvolává efekt Mentální vytížení. Mentální souboj probíhá v kolech. Během svého tahu může jak útočník, tak i obránce za Volnou akci vyvolat versus Test Mentálního souboje. Úspěch ve versus Testu vyčerpává oponentovi jeden Mentální život, pokud se jednalo o Kritický úspěch nebo o Úspěch o síle +60, vyčerpá dodatečný Mentální život. Pokud by došlo na shodu, vítězí útočník. Interakce Kritických (ne)úspěchů se vyhodnocuje stejně, jako v Souboji.<br>Útok v mentálním souboji se počítá jako Vůle*3 + Dovednost + Odbornosti + Specializace.<br>Útočník může po úspěšném Testu vyvolat Test Vůle versus Test Vůle na ústup z Mentálního souboje. Pokud během kola ani jedna strana nevyvolala Test, Mentální souboj je na konci téhož kola ukončen.</p>\n<h3>Sběr rostlin</h3>\n<p>Sběr alchemistických, lékařských a rituálních rostlin probíhá na vhodném místě (určuje DM) za pomoci Testu Bylinkářství (Dovednost + Vnímání*3 + Odbornosti) nebo Testu Přežití (Dovednost + Vnímání*3 + Odbornosti). Síla (ne)úspěchu určuje jaký hod do každé ze šesti základních substancí (Aether, Quebrith, Vitriol, Vermilion, Hydragenum, Rebis) a lékařských/rituálních rostlin následně sběreč postoupí, viz tabulka níže. Obtížnost Testu určuje DM podle uvážení (Blízkost k civilizaci, hojnost oblasti). Na jednotlivé hody do každé z kategorií lze uplatnit opakování hodu z dovednosti Bylinkářství či Přežití. Sběrač si rovněž může zvolit jednu kategorii substancí, do které si výsledek hodu nepřičte a místo toho si polovinu hodu přičte do jiné zvolené substance. V Případě Lékařských a rituálncíh rostlin si hráč sám vybírá, které rostliny stupně T0 našel, v rámci svého hozeného limitu.<br>Co se vzácných rostlin týče (Speciální ingredience a sekundární substance Rubedo, Nigredo a Albedo), ty přerozděluje DM dle svého uvážení.<br>Pokud si tedy sběrač v Testu Bylinkářství hodí například úspěch o síle 13, tak dle tabulky spadá do kategorie \"Úspěch\" a náleží mu tedy hod 2d6+2 do každé základní substance (Vyhodnotí se šesti hody) a navíc 1d6 do kategorie lékařských a rituálních rostlin T0, které si následně může sám vybrat podle daného biomu (Viz list Alchemie).</p>\n<table><tbody><tr><td>Kategorie</td></tr><tr><td>Substance</td></tr><tr><td>Lékařské a rituální rostliny</td></tr><tr><td>Kritický neúspěch<br>(Úspěch o síle -60)</td><td>Neúspěch o síle -25</td><td>Neúspěch</td><td>Úspěch</td><td>Úspěch o síle +25</td><td>Kritický úspěch<br>(Úspěch o síle +60)</td></tr><tr><td>Nic</td><td>1d6-1</td><td>1d6+3</td><td>2d6+2</td><td>4d6+1</td><td>8d6</td></tr><tr><td>Nic</td><td>1d6-4</td><td>1d6-2</td><td>1d6</td><td>2d6+1</td><td>4d6</td></tr></tbody></table>",
+    "markdown": null
+   },
+   "video": {
+    "controls": true,
+    "volume": 0.5
+   },
+   "category": null,
+   "ownership": {
+    "default": -1
+   },
+   "flags": {},
+   "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785239603746,
+    "modifiedTime": 1785239603746,
+    "lastModifiedBy": null
+   },
+   "_key": "!journal.pages!462DyEejK5hlG67D.SGvZM8cxdcjC52bJ"
+  }
+ ],
+ "folder": "BjCbzfkKJNr5DLau",
+ "flags": {
+  "redsteel": {
+   "sourceSheet": "Ranhojičství, Výzkum, Krvácení, Mentální souboje a Bylinkářství"
+  }
+ },
+ "categories": [],
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603746,
+  "modifiedTime": 1785239603746,
+  "lastModifiedBy": null
+ },
+ "ownership": {
+  "default": 0
+ },
+ "_id": "462DyEejK5hlG67D",
+ "sort": 13000,
+ "_key": "!journal!462DyEejK5hlG67D"
+}

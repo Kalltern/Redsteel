@@ -81,6 +81,12 @@
       "label": "All-Spells",
       "type": "Item",
       "system": "redsteel"
+    },
+    {
+      "name": "redsteel-rules",
+      "label": "Redsteel-rules",
+      "type": "JournalEntry",
+      "system": "redsteel"
     }
   ],
   "packFolders": [
@@ -89,7 +95,8 @@
       "packs": [
         "redsteel-items",
         "redsteel-magic-crit-fails",
-        "All-Spells"
+        "All-Spells",
+        "redsteel-rules"
       ]
     }
   ],

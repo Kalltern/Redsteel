@@ -20,6 +20,8 @@ import {
 import { wireAttributeFollowups } from "./utils/attributeFollowup.mjs";
 import { wireSpeedFollowups } from "./utils/speedTest.mjs";
 import { registerRollModifier } from "./utils/rollModifier.mjs";
+import { initTooltips } from "./utils/tooltips.mjs";
+import { registerCoreTooltipProviders } from "./utils/tooltipProviders.mjs";
 import { registerFormulaDisplay } from "./utils/formulaDisplay.mjs";
 import { registerEndTurnButton } from "./utils/endTurnButton.mjs";
 import { applyTraitStatusEffects } from "./utils/traitStatusEffects.mjs";
@@ -41,6 +43,12 @@ import { usePoison, clearWeaponCoating } from "./utils/usePoison.mjs";
 import { defenseRoll } from "./utils/defense.mjs";
 import { throwExplosive } from "./utils/throwExplosive.mjs";
 import { castSpell, applyPostCastEffects } from "./utils/castSpell.mjs";
+import {
+  resolveWoundExchangeAsGM,
+  resolveBloodGiftAsGM,
+  resolveMagicRopeAsGM,
+  sendMagicRope,
+} from "./utils/spellAutomation.mjs";
 import { spellDefense } from "./utils/spellDefense.mjs";
 import {
   combatAbilities,
@@ -579,6 +587,10 @@ Handlebars.registerHelper("math", function (left, operator, right) {
       return left * right;
     case "/":
       return right !== 0 ? left / right : 0;
+    // Division that rounds UP. SK fractions round down everywhere by default,
+    // so a rule that says "rounded up" (Skin cracking) has to ask for it.
+    case "/up":
+      return right !== 0 ? Math.ceil(left / right) : 0;
     case "%":
       return left % right;
     default:
@@ -717,6 +729,22 @@ Hooks.once("ready", () => {
     if (data.type === "bindingStrike") {
       if (!game.user.isGM) return;
       await _resolveBindingStrikeAsGM(data);
+    }
+
+    // Scripted spells that touch actors the caster may not own.
+    if (data.type === "woundExchange") {
+      if (!game.user.isGM) return;
+      await resolveWoundExchangeAsGM(data);
+    }
+
+    if (data.type === "bloodGift") {
+      if (!game.user.isGM) return;
+      await resolveBloodGiftAsGM(data);
+    }
+
+    if (data.type === "magicRope") {
+      if (!game.user.isGM) return;
+      await resolveMagicRopeAsGM(data);
     }
 
     // Not GM-gated: every client decides for itself whether to show the duel.
@@ -1754,21 +1782,8 @@ Hooks.once("ready", async () => {
 });
 
 Hooks.once("ready", () => {
-  if (!document.getElementById("item-tooltip")) {
-    const tooltip = document.createElement("div");
-    tooltip.id = "item-tooltip";
-    tooltip.classList.add("item-tooltip", "hidden");
-    document.body.appendChild(tooltip);
-  }
-});
-
-Hooks.once("ready", () => {
-  if (!document.getElementById("spell-inspector")) {
-    const el = document.createElement("div");
-    el.id = "spell-inspector";
-    el.classList.add("spell-inspector", "hidden");
-    document.body.appendChild(el);
-  }
+  registerCoreTooltipProviders();
+  initTooltips();
 });
 
 Hooks.once("ready", () => {
@@ -2181,6 +2196,13 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
       });
     });
   };
+
+  // Magic rope → send the summoned rope at the current target. The card is
+  // re-posted after each resolution the rope survives, so the start-of-round
+  // retest is the same button on the newest card.
+  wire("magicRopeSend", async (actor) => {
+    await sendMagicRope(actor);
+  });
 
   // Downed → choose Endurance or Will test.
   wire("downedTest", async (actor, target) => {

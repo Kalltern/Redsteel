@@ -75,7 +75,7 @@
               data-action="roll"
               data-roll="{{skill.rating}}-1d100"
               data-roll-type="skill"
-              data-label="{{key}}"
+              data-label="{{key}}" data-tt-kind="skill" data-tt-id="{{key}}"
             >
               {{localize (concat 'REDSTEEL.Actor.Character.skills.' key '.label')}}
             </label>
@@ -114,7 +114,7 @@
             data-action="roll"
             data-roll="{{@root.system.skills.athletics.swimming}}-1d100"
             data-roll-type="skill"
-            data-label="blend"
+            data-label="blend" data-tt-kind="skill" data-tt-id="swimming"
           >
                       {{localize "REDSTEEL.Actor.Character.skills.swimming.label"}}
           </label>
@@ -158,7 +158,7 @@
               data-action="roll"
               data-roll="{{skill.rating}}-1d100"
               data-roll-type="skill"
-              data-label="{{key}}"
+              data-label="{{key}}" data-tt-kind="skill" data-tt-id="{{key}}"
             >
               {{localize (concat 'REDSTEEL.Actor.Character.skills.' key '.label')}}
             </label>
@@ -209,7 +209,7 @@
               data-action="roll"
               data-roll="{{skill.rating}}-1d100"
               data-roll-type="skill"
-              data-label="{{key}}"
+              data-label="{{key}}" data-tt-kind="skill" data-tt-id="{{key}}"
             >
               {{localize (concat 'REDSTEEL.Actor.Character.skills.' key '.label')}}
             </label>
@@ -260,7 +260,7 @@
               data-action="roll"
               data-roll="{{skill.rating}}-1d100"
               data-roll-type="skill"
-              data-label="{{key}}"
+              data-label="{{key}}" data-tt-kind="skill" data-tt-id="{{key}}"
             >
               {{localize (concat 'REDSTEEL.Actor.Character.skills.' key '.label')}}
             </label>
@@ -311,7 +311,7 @@
                 data-action="roll"
                 data-roll="{{skill.rating}}-1d100"
                 data-roll-type="skill"
-                data-label="{{key}}"
+                data-label="{{key}}" data-tt-kind="skill" data-tt-id="{{key}}"
               >
                 {{localize (concat 'REDSTEEL.Actor.Character.skills.' key '.label')}}
               </label>
@@ -360,7 +360,7 @@
                 data-action="roll"
                 data-roll="{{skill.rating}}-1d100"
                 data-roll-type="skill"
-                data-label="{{key}}"
+                data-label="{{key}}" data-tt-kind="skill" data-tt-id="{{key}}"
               >
                 {{localize (concat 'REDSTEEL.Actor.Character.skills.' key '.label')}}
               </label>
@@ -391,7 +391,7 @@
             data-action="roll"
             data-roll="{{@root.system.skills.acting.blend}}-1d100"
             data-roll-type="skill"
-            data-label="blend"
+            data-label="blend" data-tt-kind="skill" data-tt-id="blend"
           >
           
             {{localize "REDSTEEL.Actor.Character.skills.blend.label"}}
@@ -433,7 +433,7 @@
           data-action="roll"
           data-roll="{{skill.rating}}-1d100"
           data-roll-type="skill"
-          data-label="{{key}}"
+          data-label="{{key}}" data-tt-kind="skill" data-tt-id="{{key}}"
         >
           {{localize (concat 'REDSTEEL.Actor.Character.skills.' key '.label')}}
         </label>
@@ -501,7 +501,7 @@
       {{#with (lookup system.combatSkills 'combat') as |skill|}}
         {{#if skill.visible}}
         <div class="skill-entry flexrow">
-          <label class="skill-label flexlarge align-left skill-name" data-label="combat">
+          <label class="skill-label flexlarge align-left skill-name" data-label="combat" data-tt-kind="skill" data-tt-id="combat">
             {{localize 'REDSTEEL.Actor.Character.combatSkills.combat.label'}}
           </label>
           {{#if @root.skillsEditMode}}
@@ -519,7 +519,7 @@
       {{#with (lookup system.combatSkills 'archery') as |skill|}}
         {{#if skill.visible}}
         <div class="skill-entry flexrow">
-          <label class="skill-label flexlarge align-left skill-name" data-label="archery">
+          <label class="skill-label flexlarge align-left skill-name" data-label="archery" data-tt-kind="skill" data-tt-id="archery">
             {{localize 'REDSTEEL.Actor.Character.combatSkills.archery.label'}}
           </label>
           {{#if @root.skillsEditMode}}
@@ -537,7 +537,7 @@
       {{#with (lookup system.combatSkills 'channeling') as |skill|}}
         {{#if skill.visible}}
         <div class="skill-entry flexrow">
-          <label class="skill-label flexlarge align-left skill-name" data-label="channeling">
+          <label class="skill-label flexlarge align-left skill-name" data-label="channeling" data-tt-kind="skill" data-tt-id="channeling">
             {{localize 'REDSTEEL.Actor.Character.combatSkills.channeling.label'}}
           </label>
           {{#if @root.skillsEditMode}}
@@ -555,7 +555,7 @@
       {{#with (lookup system.combatSkills 'bloodManipulation') as |skill|}}
         {{#if (or skill.visible (gt skill.value 0))}}
         <div class="skill-entry flexrow">
-          <label class="skill-label flexlarge align-left skill-name" data-label="bloodManipulation">
+          <label class="skill-label flexlarge align-left skill-name" data-label="bloodManipulation" data-tt-kind="skill" data-tt-id="bloodManipulation">
             {{localize 'REDSTEEL.Actor.Character.combatSkills.bloodManipulation.label'}}
           </label>
           {{#if @root.skillsEditMode}}
@@ -573,7 +573,7 @@
       {{#with (lookup system.combatSkills 'ranger') as |skill|}}
         {{#if skill.visible}}
         <div class="skill-entry flexrow">
-          <label class="skill-label flexlarge align-left skill-name" data-label="ranger">
+          <label class="skill-label flexlarge align-left skill-name" data-label="ranger" data-tt-kind="skill" data-tt-id="ranger">
             {{localize 'REDSTEEL.Actor.Character.combatSkills.ranger.label'}}
           </label>
           {{#if @root.skillsEditMode}}
@@ -595,7 +595,7 @@
       {{#each system.weaponSkills as |skill key|}}
         {{#if skill.visible}}
         <div class="skill-entry flexrow">
-          <label class="skill-label flexlarge align-left skill-name" data-label="{{key}}">
+          <label class="skill-label flexlarge align-left skill-name" data-label="{{key}}" data-tt-kind="skill" data-tt-id="{{key}}">
             {{localize (concat 'REDSTEEL.Actor.Character.weaponSkills.' key '.label')}}
           </label>
           {{#if @root.skillsEditMode}}
@@ -617,7 +617,7 @@
       {{#each system.doctrines as |skill key|}}
           {{#if skill.visible}}
           <div class="skill-entry flexrow">
-            <label class="skill-label flexlarge align-left skill-name" data-label="{{key}}">
+            <label class="skill-label flexlarge align-left skill-name" data-label="{{key}}" data-tt-kind="skill" data-tt-id="{{key}}">
               {{localize (concat 'REDSTEEL.Actor.Character.doctrines.' key '.label')}}
             </label>
             {{#if @root.skillsEditMode}}
@@ -641,7 +641,7 @@
                 from the Blood School specialisation, so it is excluded here. --}}
           {{#if (and skill.visible (not (eq key "blood")))}}
           <div class="skill-entry flexrow">
-            <label class="skill-label flexlarge align-left skill-name" data-label="{{key}}">
+            <label class="skill-label flexlarge align-left skill-name" data-label="{{key}}" data-tt-kind="skill" data-tt-id="{{key}}">
               {{localize (concat 'REDSTEEL.Actor.Character.schools.' key '.label')}}
             </label>
             {{#if @root.skillsEditMode}}
@@ -664,7 +664,7 @@
       {{#with (lookup system.combatSkills 'throwing') as |skill|}}
         {{#if skill}}
         <div class="skill-entry flexrow">
-          <label class="skill-label flexlarge align-left skill-name" data-label="throwing">
+          <label class="skill-label flexlarge align-left skill-name" data-label="throwing" data-tt-kind="skill" data-tt-id="throwing">
             {{localize 'REDSTEEL.Actor.Character.combatSkills.throwing.label'}}
           </label>
           <input type="text" class="skill-rating" data-dtype="Number" value="{{combatSkillRating skill 'throwing'}}" readonly />
@@ -674,7 +674,7 @@
       {{#with (lookup system.combatSkills 'meleeDefense') as |skill|}}
         {{#if skill}}
         <div class="skill-entry flexrow">
-          <label class="skill-label flexlarge align-left skill-name" data-label="meleeDefense">
+          <label class="skill-label flexlarge align-left skill-name" data-label="meleeDefense" data-tt-kind="skill" data-tt-id="meleeDefense">
             {{localize 'REDSTEEL.Actor.Character.combatSkills.meleeDefense.label'}}
           </label>
           <input type="text" class="skill-rating" data-dtype="Number" value="{{combatSkillRating skill 'meleeDefense'}}" readonly />
@@ -684,7 +684,7 @@
       {{#with (lookup system.combatSkills 'rangedDefense') as |skill|}}
         {{#if skill}}
         <div class="skill-entry flexrow">
-          <label class="skill-label flexlarge align-left skill-name" data-label="rangedDefense">
+          <label class="skill-label flexlarge align-left skill-name" data-label="rangedDefense" data-tt-kind="skill" data-tt-id="rangedDefense">
             {{localize 'REDSTEEL.Actor.Character.combatSkills.rangedDefense.label'}}
           </label>
           <input type="text" class="skill-rating" data-dtype="Number" value="{{combatSkillRating skill 'rangedDefense'}}" readonly />
@@ -694,7 +694,7 @@
       {{#with (lookup system.combatSkills 'dodge') as |skill|}}
         {{#if skill}}
         <div class="skill-entry flexrow">
-          <label class="skill-label flexlarge align-left skill-name" data-label="dodge">
+          <label class="skill-label flexlarge align-left skill-name" data-label="dodge" data-tt-kind="skill" data-tt-id="dodge">
             {{localize 'REDSTEEL.Actor.Character.combatSkills.dodge.label'}}
           </label>
           <input type="text" class="skill-rating" data-dtype="Number" value="{{combatSkillRating skill 'dodge'}}" readonly />
@@ -704,7 +704,7 @@
       {{#with (lookup system.combatSkills 'combat') as |skill|}}
         {{#if skill}}
         <div class="skill-entry flexrow">
-          <label class="skill-label flexlarge align-left skill-name" data-label="combat-rating">
+          <label class="skill-label flexlarge align-left skill-name" data-label="combat-rating" data-tt-kind="skill" data-tt-id="combat">
             {{localize 'REDSTEEL.Actor.Character.combatSkills.combat.label'}}
           </label>
           <input type="text" class="skill-rating" data-dtype="Number" value="{{combatSkillRating skill 'combat'}}" readonly />
@@ -714,7 +714,7 @@
       {{#with (lookup system.combatSkills 'archery') as |skill|}}
         {{#if skill}}
         <div class="skill-entry flexrow">
-          <label class="skill-label flexlarge align-left skill-name" data-label="archery-rating">
+          <label class="skill-label flexlarge align-left skill-name" data-label="archery-rating" data-tt-kind="skill" data-tt-id="archery">
             {{localize 'REDSTEEL.Actor.Character.combatSkills.archery.label'}}
           </label>
           <input type="text" class="skill-rating" data-dtype="Number" value="{{combatSkillRating skill 'archery'}}" readonly />
@@ -724,7 +724,7 @@
       {{#with (lookup system.combatSkills 'channeling') as |skill|}}
         {{#if (or skill.visible (gt skill.value 0))}}
         <div class="skill-entry flexrow">
-          <label class="skill-label flexlarge align-left skill-name" data-label="channeling-rating">
+          <label class="skill-label flexlarge align-left skill-name" data-label="channeling-rating" data-tt-kind="skill" data-tt-id="channeling">
             {{localize 'REDSTEEL.Actor.Character.combatSkills.channeling.label'}}
           </label>
           <input type="text" class="skill-rating" data-dtype="Number" value="{{combatSkillRating skill 'channeling'}}" readonly />
@@ -734,7 +734,7 @@
       {{#with (lookup system.combatSkills 'bloodManipulation') as |skill|}}
         {{#if (or skill.visible (gt skill.value 0))}}
         <div class="skill-entry flexrow">
-          <label class="skill-label flexlarge align-left skill-name" data-label="bloodManipulation-rating">
+          <label class="skill-label flexlarge align-left skill-name" data-label="bloodManipulation-rating" data-tt-kind="skill" data-tt-id="bloodManipulation">
             {{localize 'REDSTEEL.Actor.Character.combatSkills.bloodManipulation.label'}}
           </label>
           <input type="text" class="skill-rating" data-dtype="Number" value="{{combatSkillRating skill 'bloodManipulation'}}" readonly />
@@ -749,7 +749,7 @@
       {{#each system.schools as |school key|}}
         {{#if (or (gt school.value 0) (and (eq key "blood") @root.system.specialisations.bloodSchool.active))}}
         <div class="skill-entry flexrow">
-          <label class="skill-label flexlarge align-left skill-name" data-label="{{key}}-spellpower">
+          <label class="skill-label flexlarge align-left skill-name" data-label="{{key}}-spellpower" data-tt-kind="skill" data-tt-id="{{key}}">
             {{localize (concat 'REDSTEEL.Actor.Character.schools.' key '.label')}}
           </label>
           <input type="text" class="skill-rating" data-dtype="Number" value="{{school.spellPower}}" readonly />

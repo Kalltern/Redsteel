@@ -1,0 +1,68 @@
+{
+ "name": "Weapon and Armor Crafting",
+ "pages": [
+  {
+   "sort": 0,
+   "name": "Weapon and Armor Crafting",
+   "type": "text",
+   "_id": "OSziwn3mJkRPn81q",
+   "title": {
+    "show": false,
+    "level": 1
+   },
+   "image": {},
+   "src": null,
+   "system": {},
+   "text": {
+    "format": 1,
+    "content": "<p>Šance na úspěch je stanovena patřičným Řemeslem (Šípař, Kovář etc), korespondující Vlastností*3 a Rysy. Obtížnost je stanovena typem předmětu a materiálem. Výsledná kvalita je pak určena Silou úspěchu. Kategorie se sčítají a vytváří finální Obtížnost. Velice podstatnou odlišností od ostatních dovedností je též fakt, že Kritické úspěchy nemají žádný speciální efekt, považují se tedy za normální úspěchy (Vyjímku tvoří pouze snaha o Epickou a Legendární kvalitu). Některé výrobky rovněž vyžadují značné časové investice a proto vyžadují více hodů. Výsledná kvalita se pak v takovém případě průměruje podle dílčích kvalit hodů.<br>Obtížnosti jsou stanoveny níže.</p>\n<h3>Zbroj</h3>\n<p>Batvat - Čtvrt dne; Jeden Test<br>Gambeson - Dva dny; Jeden Test<br>Kožená zbroj / čapka - Dva dny + Měsíc na přípravu kůže; Jeden Test<br>Kroužková kapuce - Dva dny; Jeden Test<br>Hauberk / Byrnie - Deset dní; Dva Testy<br>Přilba / Plná helma - Tři dny; Dva Testy<br>Destičková - Šest dní; Dva Testy<br>Plátová - Třicet dní; Tři Testy</p>\n<h3>Štíty</h3>\n<p>Malý štít - Půl dne; Jeden Test<br>Střední štít - Jeden den; Jeden Test<br>Velký štít - Dva dny; Jeden Test</p>\n<h3>Typ zbraně</h3>\n<p>Lehké a Střední Dřevcová / Tupá / Sekera - Půl dne; Jeden Test<br>Těžká Dřevcová / Tupá / Sekera - Dva dny; Jeden Test<br>Lehký Meč - Dva dny; Jeden Test<br>Střední Meč - Tři dny; Jeden Test<br>Rapír - Pět dní; Dva Testy<br>Těžký Meč - Šest dní; Dva Testy<br>Luk - Jeden až dva dny; Jeden Test<br>Kuše - Dva dny; Jeden Test</p>\n<h3>Materiál</h3>\n<p>Varan / Bílá ocel / Bílé dřevo - Postih -20%<br>Bazilišek / Rudá ocel / Verdinium / Rudé dřevo - Postih -30%<br>Dračí kůže / Eldarin / Černé dřevo - Postih -40%<br>Dračí šupiny / Mithril / Gnomská ocel / Dračí kost / Ilsa Taulë - Postih -50%<br>Daemonit / Ardinium / Hvězdný kov - Postih -60%</p>\n<h3>Výsledná Kvalita</h3>\n<p>Nepoužitelné - Neúspěch o síle -26 a více<br>Špatná - Neúspěch o síle -1 až -25<br>Normální - Úspěch o síle 0 až 29<br>Expertní - Úspěch o síle 30 až 44<br>Mistrovská - Úspěch o síle 45 a více<br>Epická - Kritický úspěch o síle alespoň 50</p>",
+    "markdown": null
+   },
+   "video": {
+    "controls": true,
+    "volume": 0.5
+   },
+   "category": null,
+   "ownership": {
+    "default": -1
+   },
+   "flags": {},
+   "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785239603748,
+    "modifiedTime": 1785239603748,
+    "lastModifiedBy": null
+   },
+   "_key": "!journal.pages!mwjEyd7ktH58ixi7.OSziwn3mJkRPn81q"
+  }
+ ],
+ "folder": "BjCbzfkKJNr5DLau",
+ "flags": {
+  "redsteel": {
+   "sourceSheet": "Výroba zbraní a zbrojí"
+  }
+ },
+ "categories": [],
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603748,
+  "modifiedTime": 1785239603748,
+  "lastModifiedBy": null
+ },
+ "ownership": {
+  "default": 0
+ },
+ "_id": "mwjEyd7ktH58ixi7",
+ "sort": 18000,
+ "_key": "!journal!mwjEyd7ktH58ixi7"
+}

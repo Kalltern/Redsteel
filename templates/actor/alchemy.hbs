@@ -9,10 +9,19 @@
     {{! ===== Substance stock strip ===== }}
     <div class="alchemy-substance-strip">
       {{#each alchSubstances as |sub|}}
-        <div class="alch-substance" style="--alch-color: {{sub.color}};" title="{{sub.label}} ({{sub.code}})">
+        <div
+          class="alch-substance {{#if sub.canBrew}}brewable{{/if}}"
+          style="--alch-color: {{sub.color}};"
+          data-action="brewSubstance"
+          data-substance="{{sub.key}}"
+          title="{{sub.label}} ({{sub.code}}) — {{localize 'REDSTEEL.Alchemy.Substance.TileHint'}}"
+        >
           <span class="alch-substance-label">{{sub.label}}</span>
           <img class="alch-substance-icon" src="{{sub.icon}}" width="36" height="36" />
           <span class="alch-substance-qty">{{sub.qty}}</span>
+          <span class="alch-substance-herbs">
+            <i class="fas fa-seedling"></i> {{sub.herbs}}/{{sub.herbCost}}
+          </span>
         </div>
       {{/each}}
     </div>
@@ -107,6 +116,15 @@
             value="{{alchAmount}}"
           />
         </div>
+
+        {{#if alchBoons.length}}
+          <div class="alch-boons">
+            <span class="alch-boons-label">{{localize "REDSTEEL.Alchemy.Chat.Boons"}}:</span>
+            {{#each alchBoons as |boon|}}
+              <span class="alch-boon">{{boon}}</span>
+            {{/each}}
+          </div>
+        {{/if}}
 
         <div class="alch-buttons">
           <button

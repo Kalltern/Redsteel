@@ -1,0 +1,68 @@
+{
+ "name": "Alchemy",
+ "pages": [
+  {
+   "sort": 0,
+   "name": "Alchemy",
+   "type": "text",
+   "_id": "4PbKxj2Muv2xPoVh",
+   "title": {
+    "show": false,
+    "level": 1
+   },
+   "image": {},
+   "src": null,
+   "system": {},
+   "text": {
+    "format": 1,
+    "content": "<h3>Alchemie</h3>\n<p>Šance na úspěch je určena jako Inteligence*3 + dovednost Alchemie + Rysy + Odbornosti. Alchemie je tajemné umění přípravy lektvarů, jedů, petard a dalších výrobků. K přípravě alchemistických produktů je zapotřebí vhodné vybavení a suroviny. Základními suroviny bývá nejčastěji Silný alkohol (Vodka etc), Destilát (Čistý líh) nebo Tuk (Někdy je vyžadován Kvalitní tuk). Jedna lahev Silného alkoholu nebo Destilátu vystačí na výrobu až pěti lektvarů. Jedna nádoba Tuku rovněž vystačí na výrobu až pěti mastí, jedů či olejů. Vyrobenou Mast lze aplikovat pětkrát. Oleje a Jedy lze aplikovat dvakrát na Střední či Lehkou zbraň nebo jednou na Těžkou zbraň, Toulec šípů/šipek či Balík vrhacích zbraní.<br><br>Vybavení<br>Rozlišujeme tři typy vybavení, které mají vlastní postihy a bonusy. Provizorním vybavením může být například obyčejný kotlík. Pokročilým vybavením myslíme specializované alchemistické vybavení na cesty nebo špatně zařízenou alchemistickou kolonu. Profesionálním vybavením je pak řádně vybavená alchemistická laboratoř.<br>Provizorní vybavení - Postih -30% na výrobu<br>Pokročilé vybavení - Postih -10% na výrobu<br>Profesionální vybavení - Snížená šance na Kritický neúspěch o 5%<br><br>Hromadná příprava<br>Alchemistické výrobky lze vyrábět hromadně. Najednou lze připravovat libovolné množství stejného produktu, ale pokud má alchemista šanci na duplikaci produktu, vyhodnocuje se pro každý produkt samostatně.<br><br>Speciální ingredience<br>Speciální ingredience mohou být části monster, rostliny či minerály. V některých případech se jedná o dobrovolnou ingredienci, která posiluje efekt produktu, obvykle se však jedná o vzácnou přísadu pro výrobu silných alchemistických produktů.<br>Některé speciální ingredience (Bleskový/Mechový/Ledový/Ohnivý/Živý kámen a Kámen z Ys) lze použít na hromadnou přípravu až pěti identických Lektvarů či Mastí, vždy se však spotřebují během první přípravy. Na jiné alchemistické výrobky se toto pravidlo neaplikuje.<br><br>Substance<br>K výrobě každého alchemistického produktu je zapotřebí Primárních substancí, kterých je šest. Jsou jimi: __________________. Substance se vyrábí alchemistickým zpracováním rostlin obsahujících stopové množství substancí nebo specifických orgánů extrahovaných z monster (Test Ranhojičství nebo Přežití).<br>Kromě základních šesti Primárních substancí existují rovněž čtyři Sekundární substance, Albedo, Rubedo, Citrinitas a Nigredo. Tyto poměrně vzácné SS (Sekundární substance) lze brát jako Speciální ingredience, které dokáží určitým způsobem posílit lektvary, oleje, jedy a petardy. Vždy lze přidat pouze jednu SS. Obvykle se musí extrahovat z některých monster.</p>\n<h3>Vliv SS na Lektvary</h3>\n<p>Albedo - Garantuje úspěch na Test Pijáctví, Bílý med zbavuje o 25 toxicity více.<br>Rubedo - Lektvar získává Obnovu, která po tři kola léči 3d6 životů a zastavuje krvácení.<br>Nigredo - Prodlužuje dobu trvání lektvarů o 100%, pokud má lektvar okamžitý účinek, přidává šanci 20% (Nebo 3% v případě Pramene mládí, Daru Kikimory etc) na dvojitý Účinek.<br><br>Vliv SS na Oleje<br>Rubedo - Zvyšuje způsobované poškození o +2d6, ale zároveň zkracuje dobu trvání na půl hodiny.<br>Albedo - Prodlužuje trvání všech olejů na 12 hodin.<br><br>Vliv SS na Jedy<br>Albedo - Zesiluje účinky jedů Jed oběšenců, Potkaní sen, Kletio, Owahe, Krylea, Xereth(ar), Utrejch a Veritas.<br>Rubedo - Zesiluje účinky jedů Tortura, Abuiil, Faethil, Quare, Ledroe, Mágova zhouba, Polibek Sheolu a Lasitum.<br>Nigredo - Zesiluje účinky jedů Hnědý olej, Černý jazyk, Duelistův kat, Hadí kousnutí, Pakryn, Darka, Srdcebol a Černá ruka.<br><br>Vliv SS na Petardy<br>Nigredo - Zesiluje petardy Severní vítr, Dračí sen, Ďáblova pecka a Pavoučí objetí.<br>Rubedo - Zesiluje petardy Dýmovnice, Samum, Slunce a Acidum.<br>Albedo - Zesiluje petardy Luminosa, Ignum, Stříbrosvit a Třaskavice.</p>\n<h3>Alchemistické mutace</h3>\n<p>Jedná se o riskantní mutace prováděné alchemistickou metodou. Je na ně zapotřebí vhodných mutagenů a znalost správného postupu. Tyto mutační procesy rovněž vyžadují specializované vybavení a mohou být velice nebezpečné. Šance na úspěch je určena jako Odolnost*5 + 20%, při úspěchu utrpí 2 Vážná zranění, při neúspěchu utrpí 5 VZ a při kritickém neúspěchu utrpí 10 VZ. Počet mutací, kterými může někdo projít je omezen Rasou a Odolností. Rasa udává základ, ke kterému se přičítá jedna mutace za každý bod Odolnosti. Rys Flexibilní genom odstraňuje limitaci počtu mutací a garantuje úspěch. Průběh mutace jako takové je nesmírně bolestivý a bez podání patřičných tlumičů bolesti vyvolává Test Nervů (Legendární) na získání 1d4+1 bodů šílenství.</p>\n<h3>Petardy</h3>\n<p>Používání většiny petard vyžaduje Test Vrhu. Vyjímku tvoří petardy s plošným efektem. Oponent se brání Testem Úhybu či Krytu (Štítem). Úspěšný Kryt/Úhyb vedou k polovičnímu efektu petardy. Kritický neúspěch Vrhu nebo Kritický úspěch v Úhybu vyústí v nulový efekt.</p>",
+    "markdown": null
+   },
+   "video": {
+    "controls": true,
+    "volume": 0.5
+   },
+   "category": null,
+   "ownership": {
+    "default": -1
+   },
+   "flags": {},
+   "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785239603748,
+    "modifiedTime": 1785239603748,
+    "lastModifiedBy": null
+   },
+   "_key": "!journal.pages!UpYmLERt0bA0fLbp.4PbKxj2Muv2xPoVh"
+  }
+ ],
+ "folder": "BjCbzfkKJNr5DLau",
+ "flags": {
+  "redsteel": {
+   "sourceSheet": "Alchemie"
+  }
+ },
+ "categories": [],
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603748,
+  "modifiedTime": 1785239603748,
+  "lastModifiedBy": null
+ },
+ "ownership": {
+  "default": 0
+ },
+ "_id": "UpYmLERt0bA0fLbp",
+ "sort": 17000,
+ "_key": "!journal!UpYmLERt0bA0fLbp"
+}

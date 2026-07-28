@@ -1,0 +1,68 @@
+{
+ "name": "Selected Armory Rules",
+ "pages": [
+  {
+   "sort": 0,
+   "name": "Selected Armory Rules",
+   "type": "text",
+   "_id": "8hef50CheIWvbBa0",
+   "title": {
+    "show": false,
+    "level": 1
+   },
+   "image": {},
+   "src": null,
+   "system": {},
+   "text": {
+    "format": 1,
+    "content": "<h3>Bonusy při útoku</h3>\n<p>Pokud se cíl nebrání nebo je Paralyzován, vyhodnotí se jako Kritický neúspěch v Obraně.<br>Při útoku do zad se počítá, že se obránce nebrání.<br>Překvapení má bonus +20% na Zásah, Střelbu, Vrh a Magický útok.<br>Útok do boku má bonus +10% na Zásah, Střelbu, Vrh a Magický útok.</p>\n<h3>Přesila</h3>\n<p>Pokud provádí Obrannou akci proti druhému oponentovi v rámci jednoho kola, získává postih -5% na Obranné akce. Za každého dodatečného oponenta získává dalších 5% postih, a to až do maxima -20%. Přesila se resetuje na začátku kola.<br>Za Obrannou akci se považuje Obrana, Úhyb, Kryt, Riposta, Dračí výpad a Magická obrana a její ekvivalenty.</p>\n<h3>Postup při zásahu</h3>\n<p>1) Vypočte se zranění, případě se nahradí Průrazností za neúspěšný útok, případně se připočte bonus za Kritický zásah. <br>2) Odečtou se životy z Magického štítu nebo obdobných ochran. <br>3) Následně se od zranění odečte hodnota rovná Kz. <br>4) Následně se určí, zda je zbylé zranění vyšší než Průbojnost (Přičítáme bonus za Kritický zásah). Pokud není, aplikuje se Průbojnost. <br>5) Nyní se aplikuje speciální Kz, jako je Ohnivé Kz, Magické Kz etc. <br>6) Nyní se provedou libovolné procentuální úpravy, například za Odolnost, Zranitelnost nebo některé akce. Úpravy se aplikují postupně a nikdy se nesčítají. <br>7) Odečtení Dočasných životů. <br>8) Odečtení Životů.</p>\n<h3>Jedenapůlruční zbraně</h3>\n<p>Obouručně držené Lehké a Střední zbraně na blízko získávají bonus +1d6 ke Zranění. <br>Tyto zbraně nelze držet obouručně: Rapír, Katar, Dýka, Šermířská dýka a Vrhací nůž.</p>\n<h3>Postihy za nedodržení požadavků</h3>\n<p>Nedodržení požadavku u zbraní a zbrojí na vlastnost/výcvik uděluje postih 10% na Úspěch. Tento efekt se sčítá.<br>Při držení Těžké zbraně pouze v jedné ruce získává postih 15% na Zásah a 10% na Obranu a zároveň nemůže používat Doktrinální a Specializační akce.<br>Při držení zbraně jinou než dominantní rukou (Určeno při tvorbě postavy) získává postih 10% na Zásah, Obranu, Vrh, Střelbu a Palbu.</p>\n<h3>Interakce Kritických úspěchů a selhání</h3>\n<p>Kritický neúspěch v Obraně vyústí v garantovaný kritický zásah. Kritický neúspěch v Útoku vyústí v garantovanou kritickou Obranu. Kritický zásah do Kriticky selhané Obrany je garantovaný 4. stupeň. Kritický neúspěch v Obraně a Kritický neúspěch v Útoku vyústí v normální zásah. Kritický úspěch v Útoku a slabší Kritický úspěch v Obraně vyústí v normální zásah. Neúspěšný útok do Kriticky selhané Obrany vyústí v Kritický zásah s Kritickým rozsahem -5. Kritický úspěch v Obraně a slabší Kritický úspěch v Útoku vyústí v normální Obranu.</p>\n<h3>Speciální vlastnosti zbraní</h3>\n<p>Dlouhý dosah - Dosah zbraně je zvýšený o jednu hexu. Efekt z více zdrojů se sčítá.<br>Dostřel - Vzdálenost, na kterou lze zbraní útočit<br>Efektivní dostřel - Vzdálenost, na kterou lze útočit bez postihu. Útok na vzdálenější cíle má postih -20% na Vrh.<br>Kritický rozsah - Při Kritickém zásahu získává k hodu 1d20 bonus na určení Stupně Kritického zásahu<br>Krvácení - Šance způsobit efekt Krvácení<br>Odklonění - Šance snížit zranění po neúspěšné Obraně, Krytu či Úhybu o polovinu<br>Omráčení - Šance způsobit efekt Omráčení na dva tahy<br>Ostrá - Dvě kostky na způsobení Krvácení místo jedné<br>Průbojnost - Určuje hranici, pod kterou nemůže být zranění sníženo skrze Kz. Nevztahuje se na speciální Kz.<br>Průraznost - Způsobuje zranění i přes úspěšnou Obranu (neplatí pro Úhyb a Kritickou Obranu). Útok samotný nesmí být neúspěch. Počítá s Průbojností. Neaplikuje efekty (Krvácení, Omráčení...)<br>Rychlá - Lze provést akci (Vícenásobný) Útok i pokud není zbraň tasená, za předpokladu, že má volnou ruku nebo drží obouruční zbraň<br>Rychlé přebíjení - Akce \"Přebíjení\" stojí jednu Akci<br>Dlouhé přebíjení - Akce \"Přebíjení\" stojí dvě Akce<br>Velmi dlouhé přebíjení - Akce \"Přebíjení\" stojí šest Akcí<br>Roztříštění - Snižuje životy štítu o 1 při úspěšném Krytu<br>Rváč - Zbraň nelze použít na Útok či Obranu proti zbraním, postih -30% na Úhyb proti zbraním<br>Vytříbená - Počítá Obratnost místo Síly/Vnímání pro Zásah a Zranění. Vyžaduje odbornost Finesa<br>Zatížení štítu - Šance při úspěšném Krytu. Zatížený štít ztrácí veškeré bonusy. Efekt lze zrušit za dvě akce (Vyvolává Příležitostné útoky)<br>Zásobník - Na každou akci Přebíjení má dva výstřely</p>\n<h3>Pravidla o nošení zbraní</h3>\n<p>Každý má čtyři místa na zbraň. Většina zbraní zabírá jedno místo. Některých zbraní lze mít více za jedno místo (Vrhací nože, vrhací sekery, oštěpy, křesadlové pistole).<br>Těžké Meče, Sekery, Dřevcové a Tupé zbraně zabírají dvě místa. Mušketa, Luky a Kuše (kromě Jednoruční kuše) zabírají rovněž dvě místa.<br>Vrhací nože, vrhací sekery a oštěpy zabírají jedno místo, lze jimi však maximálně obsadit pouze dvě místa.<br>Štíty, petardy a alchemistická hlína zabírají jedno místo, lze jimi však maximálně obsadit pouze jedno místo.<br>Toulec nezabírá žádné místo, ale vždy lze mít pouze jeden na zbraň.</p>\n<h3>Životy zbroje a štítu</h3>\n<p>Většina zbrojí a štíty mají Životy zbroje/štítu. Životy zbroje/štítu lze jednou za zásah obětovat a snížit zranění o 15 (Po odečtení Kz, lze zvýšit skrze odbornosti a specializace). Padnou-li Životy štítu na 0, stává se Provizorním štítem, u zbroje nemá snížení Životů žádný efekt. V rámci magie nelze redukovat \"nepřímá\" kouzla (Mentální úder, Temná kletba etc). Nelze obětovat více než 1 život za zásah. Provizorním štítem se nelze Krýt proti Palným zbraním.</p>\n<h3>Směry útoků</h3>\n<p>Důležitou součástí souboje je vhodné rozmístění. V souboji platí, že směr, kterým je dotyčný natočen je určen jeho posledním útokem, pohybem nebo volnou akcí, kterou může použít během svého tahu. Pokud se jedinec nenachází v kontaktním souboji (Dlouhý dosah se počítá), může se volně otočit na přicházející hrozbu. Také je důležité rozeznávat z jakého typu směru útok přichází, viz obrázek níže.<br>Číslo 1 je obránce. <br>Číslo 2 je nepřítel, na kterého obránce naposledy útočil. Rovněž je to tedy směr, kterým se obránce momentálně dívá. <br>Čísla 3 jsou nepřátelé, kteří útočí zepředu. Tento směr neskýtá žádné speciální bonusy.<br>Čísla 4 už jsou nepřátelé, kteří útočí do boku, což jim vynáší určité výhody (Zásah +10%). <br>Číslo 5 je pak nepřítel útočící do zad, což přináší značné výhody (Obránce se nemůže bránit, může být vyhodnoceno jako Překvapení, tedy +20% na Zásah).</p>",
+    "markdown": null
+   },
+   "video": {
+    "controls": true,
+    "volume": 0.5
+   },
+   "category": null,
+   "ownership": {
+    "default": -1
+   },
+   "flags": {},
+   "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785239603759,
+    "modifiedTime": 1785239603759,
+    "lastModifiedBy": null
+   },
+   "_key": "!journal.pages!Pjtk6KX91JdE1Ddo.8hef50CheIWvbBa0"
+  }
+ ],
+ "folder": "sOmxm1q9LSplvn68",
+ "flags": {
+  "redsteel": {
+   "sourceSheet": "Některá vybraná pravidla"
+  }
+ },
+ "categories": [],
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603759,
+  "modifiedTime": 1785239603759,
+  "lastModifiedBy": null
+ },
+ "ownership": {
+  "default": 0
+ },
+ "_id": "Pjtk6KX91JdE1Ddo",
+ "sort": 5000,
+ "_key": "!journal!Pjtk6KX91JdE1Ddo"
+}

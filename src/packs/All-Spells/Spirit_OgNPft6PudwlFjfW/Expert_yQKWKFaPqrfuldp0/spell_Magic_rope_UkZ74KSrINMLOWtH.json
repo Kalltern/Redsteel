@@ -1,0 +1,159 @@
+{
+  "name": "Magic rope",
+  "type": "spell",
+  "img": "icons/sundries/survival/rope-coiled-tan.webp",
+  "system": {
+    "localizationKey": "",
+    "description": "<p>Summons a durable rope for {{math spellPower \"*\" 1}} hours, up to {{math spellPower \"*\" 3}} m long, obeys caster's will, moves on command, and is easy to grab up to its full length. Resummoning replaces the old rope. In combat, can be sent toward a Target up to 15 m away. Triggers Will Test (Bonus {{math spellPower \"*\" 1}}) vs. Target's Strength/Dexterity Test. On success, Roots the Target for 2 turns. If success is 50+, the Target is Paralyzed for 2 turns and takes 2d6 damage. On failure, the rope is destroyed. Test repeats at the start of each round or until dismissed.</p>",
+    "options": [
+      "divine",
+      "magic"
+    ],
+    "spellRanks": [
+      "wild",
+      "apprentice",
+      "expert",
+      "master",
+      "grandmaster"
+    ],
+    "miracleRanks": [
+      "novice",
+      "acolyte",
+      "cleric"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "support",
+      "lesser",
+      "greater"
+    ],
+    "spellTypes": [
+      "fire",
+      "water",
+      "air",
+      "earth",
+      "spirit",
+      "body",
+      "darkness",
+      "blood",
+      "gnosis"
+    ],
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "resources": {
+      "0": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      },
+      "1": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      }
+    },
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "burn"
+      ],
+      "types": [
+        ""
+      ]
+    },
+    "isOffensive": false,
+    "sustained": false,
+    "difficulty": -10,
+    "cost": 5,
+    "perRound": 0,
+    "variants": [],
+    "option": "magic",
+    "type": "spirit",
+    "rank": "expert",
+    "actionCost": "1",
+    "range": "Caster",
+    "spellClass": "support",
+    "roll": {
+      "diceNum": 2,
+      "diceSize": "6",
+      "diceBonus": ""
+    },
+    "penetration": 0,
+    "dmgType1": "",
+    "bool2": "",
+    "dmgType2": "",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effects": {
+      "effect1": "0",
+      "effect2": "0",
+      "effect3": "0",
+      "effect4": "0",
+      "stagger": null,
+      "bleed": null,
+      "extra1": 0,
+      "extra2": 0,
+      "extra3": null,
+      "effectName1": "",
+      "effectName2": ""
+    },
+    "attributeTest": "will",
+    "testModifier": "@spellPower",
+    "effectType1": "",
+    "effectType2": "",
+    "effectType3": ""
+  },
+  "effects": [],
+  "folder": "yQKWKFaPqrfuldp0",
+  "flags": {
+    "scene-packer": {
+      "hash": "3ed3230239f6a3981ae35d26290b9f32e63db4ae"
+    }
+  },
+  "_stats": {
+    "compendiumSource": "Compendium.world.spirit-spells.Item.zoJZCi6H8Qt9T8lW",
+    "duplicateSource": "Item.UkZ74KSrINMLOWtH",
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.9.0",
+    "createdTime": 1784581202176,
+    "modifiedTime": 1784581202176,
+    "lastModifiedBy": "MXiQFt4waIv5RqBo"
+  },
+  "ownership": {
+    "default": 0,
+    "J03KIFAyMdNdBOUD": 3,
+    "MXiQFt4waIv5RqBo": 3
+  },
+  "_id": "UkZ74KSrINMLOWtH",
+  "sort": 800000,
+  "_key": "!items!UkZ74KSrINMLOWtH"
+}

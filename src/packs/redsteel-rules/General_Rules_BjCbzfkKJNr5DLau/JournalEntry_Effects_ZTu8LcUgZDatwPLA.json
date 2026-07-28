@@ -1,0 +1,68 @@
+{
+ "name": "Effects",
+ "pages": [
+  {
+   "sort": 0,
+   "name": "Effects",
+   "type": "text",
+   "_id": "WAvKYaaWvpBN14uX",
+   "title": {
+    "show": false,
+    "level": 1
+   },
+   "image": {},
+   "src": null,
+   "system": {},
+   "text": {
+    "format": 1,
+    "content": "<p>Většina efektů je způsobena zásahem, kouzlem či situací nehledě na to, zda je způsobeno zranění. Výjimkou jsou například Krvácení a jedy aplikované na zbrani, které vyžadují způsobení zranění alespoň v hodnotě jednoho životu. Efekty mohou mít různé doby trvání. V některých případech trvají kola nebo tahy, v jiných případech nemají dobu trvání nebo se vážou na podmínku.<br>Trvání na počet kol.<br>Nejčastěji se týká plošných kouzel, jako je například Ohnivé tornádo nebo kouzel a efektů, které způsobují zranění každé kolo. Odpočet se posouvá vždy na začátku kola, tedy dříve, než se způsobí efekt kouzla nebo než jakýkoliv účastník boje zahájí svůj tah.<br><br>Trvání na počet tahů.<br>Týká se většiny Efektů. Odpočet se posouvá vždy na začátku tahu ovlivněné entity. Tedy dříve, než stihne vykonat libovolnou akci, ale zároveň až poté, co se entita rozhodne zahájit svůj tah. Pokud by se entita rozhodla odložit své Pořadí tahu, posune se odpočet reálným zahájením tahu.</p>\n<h3>Dezorientace</h3>\n<p>Obvykle je vyvolána magií, zázraky či obdobným. Reakce -1. Pohybové akce vynucují náhodný směr pohybu. Trvání obvykle dokud neskončí příčina vyvolání.</p>\n<h3>Hořlavý</h3>\n<p>Efekt vyvolaný kontaktem s větším množstvím oleje nebo podobné látky. Šance na Podpálení při kontaktu s ohněm zvýšena o +25%</p>\n<h3>Hypnóza</h3>\n<p>Cíl je omámen a nebude nic dělat, dokud není vyrušen. Rovněž bude odpovídat na jednoduché otázky a poslouchat jednoduché příkazy zdroje Hypnózy. Pud sebezáchovy přebíjí příkazy. Pokud není řečeno jinak, efekt trvá do vyrušení nebo po dobu 10 minut.</p>\n<h3>Chvat</h3>\n<p>Musí být pod efektem Popadnutí. Pokud do konce kola neuspěje ve versus Testu Rváče, okamžitě ztrácí 10 Stínových životů.</p>\n<h3>Infarkt</h3>\n<p>Test Odolnosti (Velmi těžký), při úspěchu zruší efekt, při selhání ztrácí kontrolu, získává jedno Vážné zranění a efekt pokračuje. Každé kolo pak další Test Odolnosti (Těžký), při neúspěchu získává jedno VZ, při úspěchu se neděje nic. Efekt lze zrušit pomocí Rafarda Bílého, Mantikory, magického léčení (mistr) nebo skrze Ranhojičství (Těžké), které dává 25% na záchranu, při neúspěchu může opakovat.</p>\n<h3>Kocovina</h3>\n<p>Nastává v momentě, kdy skončí Opilost. Vyvolá Test Pijáctví, při úspěchu zruší efekt Kocovina. Při neúspěchu získá na 3d4 hodin postih -10% na Úspěch a Nervy -1. Efekt je zrušen, pokud získá Opilost.</p>\n<h3>Krvácení</h3>\n<p>Krvácení udává šanci způsobit přetrvávající zranění, pokud byl cíl zraněn alespoň za 1 život. Není-li řečeno jinak, způsobuje Krvácení každé kolo zranění za 1d4 životů a trvá, dokud není zrušeno. Maximálně lze na sobě mít Krvácení šestkrát.</p>\n<h3>Mentální vytížení</h3>\n<p>Obvykle doprovází Mentální souboj. Úspěch -20% (Vyjma Mentálního souboje a Testů Vůle).</p>\n<h3>Mokrý</h3>\n<p>Efekt vyvolaný kontaktem s větším množstvím vody. Šance na Zpomalení (Škola Vody) zvýšena o +40%, šance na Zmražení zvýšena o +25% a šance na Podpálení snížena o -40%. Šance být terčem Řetězení zvýšena o 35%</p>\n<h3>Nervové zhroucení</h3>\n<p>Nastává v momentě, kdy klesnou Nervy na 0. Není schopen jednat po dobu 5d4 tahů a získává 1d4-1 (Minimálně však alespoň 1) bodů Šílenství a snižuje Mentální životy na polovinu. Po skončení Nervového zhroucení se Nervy obnovují o 1 za každou hodinu, a to až do svého maxima. Nervové zhroucení může přivodit body Šílenství maximálně jednou za den.</p>\n<h3>Neviditelnost</h3>\n<p>Nelze určit, kde se nachází, pokud tomu nenapomáhá situace (Otisky v písku, Testy Vnímání). Pokud útočí, má Výhodu na Útok a jedná se o Překvapení. Útok na Neviditelný cíl je veden s Nevýhodou.</p>\n<h3>Odklonění</h3>\n<p>Při neúspěšné Obraně, Krytu či Úhybu má šanci zredukovat zranění o polovinu.</p>\n<h3>Ochromení</h3>\n<p>Ztrácí dvě akce a jednu reakci, postih -20% na Úspěch. Rychlost snížena na třetinu (zaokrouhlujeme dolů). Šance na další Ochromení -25%. Ruší efekt Omráčení. Není-li určeno jinak, trvá dva tahy.</p>\n<h3>Omráčení</h3>\n<p>Ztrácí jednu akci (Minimálně však zůstává alespoň jedna), postih na Úspěch -10% (Včetně Souboje), Rychlost snížena na polovinu (zaokrouhlujeme dolů), -1 Reakce. Šance na další Omráčení -20%. Není-li určeno jinak, trvá dva tahy.</p>\n<h3>Opilost</h3>\n<p>Postih -5% na Úspěch. Bonus +10% na Testy Odolnosti (Bolest) a Testy Nervů (Strach / Teror). Vyvolá Test Odolnosti (Bonus Pijáctví*3 a postih Opilost*10), při neúspěchu ztrácí vědomí do 5 minut. Opakované selhání na Test Odolnosti (Ztráta vědomí) vyústí v okamžitou ztrátu vědomí. Efekt trvá několik hodin a lze ho mít vícekrát, postihy a bonusy se počítají maximálně čtyřikrát. Jakmile Opilost odezní, získává efekt Kocovina.</p>\n<h3>Oslabení</h3>\n<p>Snižuje šanci na Úspěch o -10%, Rychlost -1</p>\n<h3>Oslepení</h3>\n<p>Postih -15% na Zásah, Obranu, Kryt, Úhyb, Střelbu, Vrh, Palbu, Usměrňování a většinu dovedností. -1 Reakce. Postih -40% na Testy Vnímání založené na zraku. Není-li určeno jinak, trvá dva tahy. Imunita na efekt Oslepení.</p>\n<h3>Otrávení</h3>\n<p>Otrávení způsobuje 2d6 zranění za kolo, postih -5% na Úspěch a považuje se za jed 2. stupně. Není-li určeno jinak, trvá tři kola.</p>\n<h3>Ověření</h3>\n<p>Při úspěšném zásahu, má dodatečnou šanci na převod zásahu na Kritický zásah.</p>\n<h3>Panika</h3>\n<p>Může nastat například z Podpálení, Strachu nebo Teroru. Zcela ztrácí kontrolu. Panika má různou dobu trvání, podle okolností. Může trvat pevně danou dobu (Strach a Teror - 2 tahy) nebo dokud není překonán Test Nervů (Podpálení - Každý tah, maximálně však jednou za kolo). Šance 95% na zrušení Koncentrace. Postih -10% na Úspěch.</p>\n<h3>Paralýza</h3>\n<p>Ztrácí veškeré Akce a Reakce. Nemůže mluvit ani jakkoliv konat. Útok na Paralyzovaný cíl se vždy vyhodnotí jako Kriticky neúspěšná obrana. Pokud není řečeno jinak, efekt trvá tři tahy. Ruší efekty Omráčení a Ochromení.</p>\n<h3>Podpálení</h3>\n<p>Způsobuje 3d6 zranění za kolo. Jakmile poprvé způsobí zranění, Testuje Nervy na vyvolání Paniky. V případě úspěchu už totožné Podpálení další Test Nervů nevyvolává. Test Obratnosti nebo Odolnosti na uhašení (1 akce, může Testovat vícekrát za kolo).</p>\n<h3>Pokraj smrti</h3>\n<p>Nastává v momentě, kdy klesnou životy na 0 a méně. Není-li do 2d4d1 kol (Skrytý hod) ošetřen, umírá (Smrt přichází počátkem kola, kdy odpočet klesne na -1). Pokud je zachráněn, získává Vážné zranění a jednou za den Testuje Nervy (-10*VZ) na získání bodu šílenství. Efekt je zrušen, pokud životy stoupnou na 1 nebo skrze úspěšný Test Ranhojičství (Pokročilý; -20% za každé záporné kolo odpočtu). Tento Test Ranhojičství nelze praktikovat sám na sobě. Některá kouzla či zázraky mohou rovněž rušit tento efekt. Pokud je cíl vyléčen do kladných životů v momentě, kdy je Ranhojičován a má být dle odpočtu mrtvý, dojde k okamžitému vyhodnocení Testu Ranhojičství a při neúspěchu nastává smrt.</p>\n<h3>Popadnutí</h3>\n<p>Získává postih -20% na Testy Rváče a způsobuje v nich o 1 menší zranění. Efekt končí jakmile uspěje ve versus Testu Rváče.</p>\n<h3>Povalení</h3>\n<p>Pořadí tahu dočasně sníženo na 1, Pohyb snížen na třetinu, -1 akce (Minimálně však zůstává alespoň jedna), Zásah a Obrana v Souboji -20%, Úhyb -25%. Může použít jednu akci aby vstal. Zranění způsobené plošnými kouzly a petardami sníženo o 50%. Bonus 25% na Testy Obratnosti/Odolnosti na zrušení Podpálení.</p>\n<h3>Překvapení</h3>\n<p>Jedná se o situace, kdy je cíl zaskočen, například přepadením nebo útokem z neviditelnosti. Útočník, který vede útok na Překvapený cíl má bonus +20% na zásah a může aplikovat Zákeřný útok.</p>\n<h3>Řetězení</h3>\n<p>Bleskové zranění zasáhne dodatečný cíl. Pokud není řečeno jinak, jedná se o cíl v dosahu až 4,5m, zranění je poloviční a Průbojnost stejná. Pokud je v dosahu cíl pod efektem Mokrý, je šance na Řetězení zvýšena o 35%. Řetězení je garantované pro cíle v přímém kontaktu nebo pro cíle, které se nachází v zasažené vodivé kapalině. V rámci Řetězení se cíle nemohou opakovat a původní cíl rovněž nemůže být zasažen.</p>\n<h3>Slepota a Temnota</h3>\n<p>Postih -40% na Zásah, Obranu, Kryt, Úhyb, Střelbu, Vrh, Palbu a většinu ostatních akcí. Pohyb a Běh mohou vyústit v zakopnutí, šance podle kontextu. Test Vnímání na zrak má postih -100%</p>\n<h3>Strach</h3>\n<p>Každé kolo Testuje Nervy na získání efektu Panika na dva tahy. Lze se Sebezapřít. Kritické selhání Testu Nervů prodlouží trvání efektu Strach o jedno kolo. Kritický úspěch Testu Nervů zkrátí trvání efektu Strach o jedno kolo. Není-li určeno jinak, trvá tři kola.</p>\n<h3>Šero</h3>\n<p>Postih -10% na Zásah, Obranu, Kryt, Úhyb, Střelbu, Vrh, Palbu a většinu dovedností. Postih -30% na Testy Vnímání založené na zraku. Jedná se ku příkladu o jasnou noc bez zdroje světla nebo špatně osvětlenou místnost (svíčky).</p>\n<h3>Terén: Neprůchodný</h3>\n<p>Klasický pohyb není vůbec možný.</p>\n<h3>Terén: Normální</h3>\n<p>Každé pole stojí jeden pohyb.</p>\n<h3>Terén: Těžký</h3>\n<p>Každé pole stojí dva pohyby.</p>\n<h3>Terén: Velmi těžký</h3>\n<p>Každé pole stojí tři pohyby.</p>\n<h3>Teror</h3>\n<p>Postih -5% na Úspěch. Každé kolo Testuje Nervy na získání efektu Panika na dva tahy. Lze se Sebezapřít. Kritické selhání Testu Nervů vede k získání bodu Šílenství. Teror trvá, dokud nezanikne jeho zdroj.</p>\n<h3>Toxický šok</h3>\n<p>Nastává v momentě, kdy je překročena hranice Toxicity. Každé kolo utrpí 25 zranění a Testuje Odolnost (-40) na Ochromení.</p>\n<h3>Unavený</h3>\n<p>Nastává, pokud klesne Výdrž na 0. Ztrácí jednu akci (Minimálně však zůstává alespoň jedna), Úspěch -5% a Rychlost snížena na polovinu.</p>\n<h3>Vyřazený</h3>\n<p>Nastává v momentě, kdy klesnou životy na 0 a méně. Vyčerpá polovinu stávajících Mentálních životů. Testuje Odolnost/Vůli, tento Test lze opakovat za bod šílenství. Při úspěchu je Rychlost snížena na 1 a má jen 1 akci. Nemůže vstát, bránit se ani útočit. Pohyb musí být veden od nepřítele, ale nevyvolává Příležitostné útoky. Efekt končí, pokud má více než 0 životů. Při neúspěchu ztrácí vědomí a nemůže nijak konat. Efekt končí až po Krátkém odpočinku nebo pokud má 100% životů.</p>\n<h3>Zadržení dechu</h3>\n<p>Zadržet dech lze na 1d6 + Odolnost/2 (nahoru) kol. Po vypršení ztrácí vědomí, následují Testy Odolnosti na smrt, postupně se zvyšuje obtížnost.</p>\n<h3>Zakletí</h3>\n<p>Kdykoliv dostane cíl poškození, obdrží dodatečné zranění 1d8, které ignoruje Kz. Není-li řečeno jinak, trvá tři kola.</p>\n<h3>Zakořenění</h3>\n<p>Zahrnuje i řetězy a přimražení. Pohyb snížen na 0, postih -15% na Zásah a Obranu, nemůže používat Úhyb. Jednou za kolo může použít 1 akci aby se osvobodil (Stejná obtížnost Testu nebo opakuje Versus Test). Kouzla Přemístění a Přitáhnutí mají šanci Síla kouzla*3% na vyrušení efektu a následný poloviční pohyb.</p>\n<h3>Zkamenění</h3>\n<p>Cíl je proměněn v kamenou sochu, jsou ukončena všechna Krvácení, Otrávení a podobné efekty. Sochu nelze Kriticky zasáhnout. Socha má 150 životů, pokud je ztratí, následuje roztříštění a smrt. Socha má Imunitu na Bodné, Sečné a Psychické zranění a Odolnost na všechny ostatní typy zranění vyjma Drtivého.</p>\n<h3>Zmražení</h3>\n<p>Cíl je uzavřen do ledové sochy, ztrácí všechny akce a dochází k Zadržení dechu. Způsobuje 4d6 zranění za kolo. Každé kolo Test Síly/Odolnosti (Pokročilý), při úspěchu způsobí soše 40 zranění. Socha má 80 životů, pokud je ztratí, tak se rozpadne a propustí svého vězně. Sochu nelze Kriticky zasáhnout. Socha má Imunitu na Bodné, Mrazivé a Psychické zranění a Odolnost na všechny ostatní typy zranění vyjma Drtivého a Ohnivého. Na cíl lapené v soše lze nadále sesílat některá Nepřímá kouzla.</p>\n<h3>Zpomalení</h3>\n<p>Rychlost snížena na polovinu, Obrana a Zásah -5%, Úhyb -30%. Není-li určeno jinak, trvá tři tahy.</p>",
+    "markdown": null
+   },
+   "video": {
+    "controls": true,
+    "volume": 0.5
+   },
+   "category": null,
+   "ownership": {
+    "default": -1
+   },
+   "flags": {},
+   "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785239603753,
+    "modifiedTime": 1785239603753,
+    "lastModifiedBy": null
+   },
+   "_key": "!journal.pages!ZTu8LcUgZDatwPLA.WAvKYaaWvpBN14uX"
+  }
+ ],
+ "folder": "BjCbzfkKJNr5DLau",
+ "flags": {
+  "redsteel": {
+   "sourceSheet": "Efekty"
+  }
+ },
+ "categories": [],
+ "_stats": {
+  "compendiumSource": null,
+  "duplicateSource": null,
+  "exportSource": null,
+  "coreVersion": "14.363",
+  "systemId": "redsteel",
+  "systemVersion": "0.8.1",
+  "createdTime": 1785239603753,
+  "modifiedTime": 1785239603753,
+  "lastModifiedBy": null
+ },
+ "ownership": {
+  "default": 0
+ },
+ "_id": "ZTu8LcUgZDatwPLA",
+ "sort": 29000,
+ "_key": "!journal!ZTu8LcUgZDatwPLA"
+}

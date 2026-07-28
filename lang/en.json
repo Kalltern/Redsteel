@@ -167,7 +167,7 @@
         "slowMove": "Move up to a number of hexes equal to Speed/2, rounded down. Moving around an enemy always costs 1 hex and may be interrupted by a successful Opportunity Attack. Movement may trigger a Reaction. When an Opportunity Attack is triggered by movement, the character has the right to Defense.",
         "disengage": "Break free from enemy without provoking an Opportunity Attack and move Speed/2 (rounded down) hexes away from the enemy. This movement cannot be used to move around an enemy or to end adjacent to another enemy.",
         "aim": "Increases Hit chance (Ranged and Melee) by +10% for the next attack. The action may be repeated to stack the bonus; a maximum of 4 Aiming stacks can be applied to a target. Special rules apply for bows (see Armory). Aiming can only be performed on a target within range.",
-        "improvedAim": "Increases Hit chance by +10% for the next attack. The action may be repeated to stack the bonus, up to a maximum of +40%. A target can be aimed at any distance. If the attacker has four Aiming stacks on a target, they gain Armor Penetration +10. (Duelist II – A hit reduces Aiming by only one level; a Critical Hit preserves all Aiming stacks.)",
+        "improvedAim": "Increases Hit chance by +10% for the next attack. The action may be repeated to stack the bonus, up to a maximum of +40%. A target can be aimed at any distance. If the attacker has four Aiming stacks on a target, an attack with a one-handed sword gains Armor Penetration +10 (the off hand must be free or hold a fencing dagger). (Duelist II – A hit reduces Aiming by only one level; a Critical Hit preserves all Aiming stacks.)",
         "attack": "Makes an attack against a target within reach. This action cannot be performed more than once per round, nor combined with another offensive action. When Shooting or Throwing from contact range, it triggers a free Opportunity Attack.",
         "sneakAttack": "Attack modification. Damage +1d6. Applies against surprised or undefending targets, or in doctrine-defined situations. For effect upgrades see Armory or Doctrine. Can be applied multiple times per round; however, it can only be applied once per round against the same opponent.",
         "multiAttack": "Perform as many attacks as you are capable of. The attacks can be directed at one or multiple targets.",
@@ -197,6 +197,10 @@
         "Foldable": "Foldable alchemical station",
         "Lab": "Alchemy lab"
       },
+      "Vessel": {
+        "Vial": "Vial",
+        "Container": "Container"
+      },
       "Base": {
         "None": "No base",
         "Fat": "Fat",
@@ -206,7 +210,22 @@
       },
       "OutputType": {
         "Potion": "Potion",
-        "Ointment": "Ointment"
+        "Ointment": "Ointment",
+        "Poison": "Poison",
+        "Oil": "Oil",
+        "Explosive": "Explosive",
+        "Drug": "Drug"
+      },
+      "Substance": {
+        "TileHint": "click to boil herbs down into this substance",
+        "DialogTitle": "Boil down: {name}",
+        "Have": "{count} herbs on hand, {cost} per dose",
+        "Doses": "Doses",
+        "BatchNote": "for more than one dose",
+        "WasteWarning": "The herbs are used up even if the roll fails.",
+        "Brew": "Boil down",
+        "ChatTitle": "Boiling a substance",
+        "NoHerbs": "Not enough herbs for {name} — {have} on hand, {cost} needed per dose."
       },
       "Warn": {
         "NoResult": "The recipe has no result item set — drag a potion onto the recipe sheet.",
@@ -229,7 +248,20 @@
         "Created": "created {count}× {name}",
         "IngredientsWasted": "ingredients were wasted",
         "Consumed": "Consumed",
-        "Uses": "uses"
+        "Uses": "uses",
+        "Duplicated": "+{count} duplicated at {chance}%",
+        "Boons": "Specialisation",
+        "Boon": {
+          "Advantage": "advantage on the craft",
+          "CritFailure": "critical failure {value}% less likely",
+          "Duplication": "duplication {chance}%",
+          "Guaranteed": "guaranteed success",
+          "ToxicityMod": "toxicity {value}",
+          "BleedMod": "stop bleeding +{value}%",
+          "Toxicity": "toxicity {from} → {to}",
+          "Healing": "healing +{count}d6",
+          "Bleed": "stop bleeding chance: {value}%"
+        }
       },
       "Recipe": {
         "OutputType": "Output type",
@@ -419,7 +451,7 @@
             },
             "improvedAim": {
               "label": "Improved Aiming",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. At four Aiming stacks on the target, an attack with a two-handed sword gains Armor Penetration +10. Automated."
             },
             "aimReduction": {
               "label": "Aim reduction after a hit",
@@ -4201,6 +4233,10 @@
           "damage": {
             "label": "Damage"
           },
+          "heavyDamage": {
+            "label": "Heavy weapon damage",
+            "hint": "Extra damage dice added only when this ability is used with a Heavy weapon."
+          },
           "attributeTest": {
             "label": "Test"
           },
@@ -4301,6 +4337,9 @@
     "Starsign": {
       "OnlyOne": "This character already has a Starsign ({starsign}). Only one is allowed."
     },
+    "Feature": {
+      "NpcTraitOnly": "NPCs can only have traits, not features ({name})."
+    },
     "Race": {
       "ChooseRace": "Choose a race",
       "PickerTitle": "Race selection",
@@ -4383,6 +4422,89 @@
       "CritHit": "Critical hit!",
       "DetailPrecision": "Precision",
       "PrecisionProc": "Precision!"
+    },
+    "Tooltip": {
+      "rating": "Rating",
+      "attribute": "Attribute",
+      "current": "Current"
+    },
+    "Keyword": {
+      "stun": {
+        "label": "Stun",
+        "desc": "A stunned character suffers -25% on every test for 2 turns. Re-applying Stun refreshes its duration instead of stacking."
+      },
+      "stagger": {
+        "label": "Stagger",
+        "desc": "A staggered character suffers -10% on every test for 2 turns."
+      },
+      "prone": {
+        "label": "Prone",
+        "desc": "A prone character attacks and defends at -20% and dodges at -25%. Going prone also drops the character to initiative 1."
+      },
+      "dying": {
+        "label": "Dying",
+        "desc": "Applied at 0 health. A hidden countdown of rounds is rolled when Dying starts and ticks down at the start of every round; when it runs out the character bleeds out unless First Aid stabilises them first."
+      },
+      "downed": {
+        "label": "Downed",
+        "desc": "Applied together with Dying when a character drops to 0 health. The character falls to initiative 1 and loses half of their remaining Mind; if Mind reaches 0 they also become Incapacitated."
+      },
+      "bleeding": {
+        "label": "Bleeding",
+        "desc": "Each stack of Bleeding deals 1d4 damage when it is applied and again at the start of every round. Bleeding stacks up to 6 times."
+      },
+      "rooted": {
+        "label": "Rooted",
+        "desc": "A rooted character has their Speed halved and suffers -15% to attacks, defense and dodge until the effect ends."
+      },
+      "fatigue": {
+        "label": "Fatigue",
+        "desc": "Fatigue is counted in degrees and every degree cuts maximum stamina by 5. From degree 2 Speed drops by 1, degree 3 gives -10% on all tests, degree 4 adds disadvantage to every roll, and degree 5 reduces Speed to 1."
+      },
+      "corruption": {
+        "label": "Corruption",
+        "desc": "Corruption is a permanent tier read from the Corruption stat: 31 or more is degree 1, 61 or more degree 2, 91 or more degree 3. From degree 2 the character counts as Corrupted, and at degree 3 they are also vulnerable to Light."
+      },
+      "aim": {
+        "label": "Aim",
+        "desc": "Each Aim action grants +10% to hit against the aimed target, up to 4 stacks. Switching targets burns every stack, and attacking the aimed target consumes them."
+      },
+      "spellPower": {
+        "label": "Spell Power",
+        "desc": "Spell Power (SK) is calculated separately for each magic school and scales what the caster's spells do. Fractions of SK always round down."
+      },
+      "bane": {
+        "label": "Bane",
+        "desc": "A Bane is a chosen category of creature. Against a target of that category the attack gains +5% to hit, +1 critical chance and +1 penetration; the bonuses apply only once the target is confirmed to belong to the category."
+      },
+      "desperateEffort": {
+        "label": "Desperate Effort",
+        "desc": "A toggle for a single roll: +20% to succeed, critical success threshold +5% and critical failure threshold -5%, and fatigue penalties are ignored for that roll. It costs one degree of Fatigue."
+      },
+      "advantage": {
+        "label": "Advantage",
+        "desc": "Advantage rolls 2d100 and keeps the better die. Advantage and disadvantage from different sources cancel each other out, so only the net result is rolled."
+      },
+      "disadvantage": {
+        "label": "Disadvantage",
+        "desc": "Disadvantage rolls 2d100 and keeps the worse die. Advantage and disadvantage from different sources cancel each other out, so only the net result is rolled."
+      },
+      "deflect": {
+        "label": "Deflect",
+        "desc": "A percentage chance rolled automatically on every defense and dodge card. On a success the incoming blow is deflected aside."
+      },
+      "precision": {
+        "label": "Precision",
+        "desc": "A percentage chance rolled when an attack hits. When it procs, that strike becomes eligible for a critical hit."
+      },
+      "sustained": {
+        "label": "Sustained",
+        "desc": "A spell with a cost per round keeps running as a Channeling effect after the initial cast. A sustained spell rolls its effect again every round, and the caster can drop it at any time by cancelling Channeling."
+      },
+      "graveWound": {
+        "label": "Grave Wound",
+        "desc": "Every untreated grave wound applies -5% to all tests. Treating a wound gives 3% of that penalty back, and only proper healing removes the wound itself."
+      }
     },
     "Effect": {
       "Source": "Source",
@@ -4817,6 +4939,27 @@
       "ExtendedLunge": {
         "name": "Extended Lunge"
       },
+      "Vial": {
+        "name": "Vial"
+      },
+      "Container": {
+        "name": "Container"
+      },
+      "FirstAidKit": {
+        "name": "First aid kit"
+      },
+      "Alcohol": {
+        "name": "Alcohol"
+      },
+      "Distillate": {
+        "name": "Distillate"
+      },
+      "Fat": {
+        "name": "Fat"
+      },
+      "StrongAlcohol": {
+        "name": "Strong alcohol"
+      },
       "Falcon": {
         "name": "Falcon"
       },
@@ -4975,9 +5118,6 @@
       },
       "HeavyCrossbow": {
         "name": "Heavy Crossbow"
-      },
-      "HeavyCharge": {
-        "name": "Heavy Charge"
       },
       "Hemophobia": {
         "name": "Hemophobia"
@@ -5230,9 +5370,6 @@
       },
       "Phlegmatic": {
         "name": "Phlegmatic"
-      },
-      "PikemanHeavyCharge": {
-        "name": "Pikeman Heavy Charge"
       },
       "PikemanCharge": {
         "name": "Pikeman Charge"

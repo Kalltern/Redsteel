@@ -174,6 +174,7 @@ function _injectDialogCSS() {
         
         .tooltip-popup .tooltip-title {
           color: #c9b26b;
+          font-size: 16px;
           font-weight: bold;
           margin-bottom: 4px;
           border-bottom: 1px solid #8b6914;
