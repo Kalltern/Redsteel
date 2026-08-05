@@ -22,7 +22,7 @@
       "pools": [
         {
           "label": "Intelligence-based skill",
-          "skillsRaw": "universal",
+          "skillsRaw": "int",
           "max": 1,
           "used": 0
         }

@@ -311,14 +311,8 @@ export class RedsteelToken extends Token {
   #getMovementAllowance() {
     const actor = this.actor;
     if (!actor) return 0;
-    switch (actor.type) {
-      case "character":
-        return actor.system.secondaryAttributes.spd.total ?? 0;
-      case "npc":
-        return actor.system.secondaryAttributes.mov.total ?? 0;
-      default:
-        return 0;
-    }
+    // Characters and NPCs both carry `spd`; movement is its total.
+    return actor.system.secondaryAttributes?.spd?.total ?? 0;
   }
 
   #isActiveCombatant() {
@@ -344,24 +338,22 @@ export class RedsteelToken extends Token {
 // when available to only touch tokens present in the scene.
 Hooks.on("updateCombat", async (combat, changed) => {
   if (!changed || !("round" in changed)) return;
+  // This hook fires on every connected client, but only the GM may update
+  // tokens they do not own. Let a single authoritative GM do the writing.
+  if (!game.user.isGM || game.users.activeGM?.id !== game.user.id) return;
   try {
-    for (const c of combat.combatants) {
+    const scene = combat.scene ?? game.scenes.get(combat.sceneId);
+    if (!scene) return;
+    const updates = [];
+    for (const c of combat.combatants.contents) {
       const tokenId = c.tokenId ?? c.token?.id;
       if (!tokenId) continue;
-      const canvasToken = canvas.tokens.get(tokenId);
-      if (canvasToken) {
-        await canvasToken.document.setFlag("redsteel", "movementSpent", 0);
-      } else {
-        // If token not on canvas, try to clear on the Combatant's actor token docs
-        // (best-effort; skip if unavailable)
-        try {
-          const scene = game.scenes.get(combat.sceneId);
-          if (!scene) continue;
-          const tokenDoc = scene.tokens.get(tokenId);
-          if (tokenDoc) await tokenDoc.setFlag("redsteel", "movementSpent", 0);
-        } catch (err) {}
-      }
+      const tokenDoc = scene.tokens.get(tokenId);
+      if (!tokenDoc) continue;
+      if (!(tokenDoc.getFlag("redsteel", "movementSpent") ?? 0)) continue;
+      updates.push({ _id: tokenId, "flags.redsteel.movementSpent": 0 });
     }
+    if (updates.length) await scene.updateEmbeddedDocuments("Token", updates);
   } catch (err) {
     console.error(
       "REDSTEEL: Failed to reset movementSpent on round change",

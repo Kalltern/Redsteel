@@ -795,7 +795,7 @@
             },
             "krvavyPakt": {
               "label": "Blood Pact",
-              "description": "5 CP; Škola Krve - Učedník. Manual — resolved at the table."
+              "description": "5 CP; Škola Krve - Učedník. Once per round, as a Free Action, burn one Mind point to gain Life into your Blood Reserve equal to your Maximum Transfer. Automated — grants the Blood Pact action."
             },
             "precision15": {
               "label": "School of Blood: Precision +15%",
@@ -1812,23 +1812,23 @@
           "nodes": {
             "lecZastaveni1": {
               "label": "Healing potions: Stop bleeding +25%",
-              "description": "5 SP. Manual — resolved at the table."
+              "description": "5 SP. Automated. Baked into healing potions you craft: stop-bleed chance +25%."
             },
             "lecZivoty1": {
               "label": "Healing potions: +1d6 health",
-              "description": "5 SP. Manual — resolved at the table."
+              "description": "5 SP. Automated. Baked into healing potions you craft: +1d6 health."
             },
             "lecZastaveni2": {
               "label": "Healing potions: Stop bleeding +25%",
-              "description": "10 SP; Alchemie: Expert. Manual — resolved at the table."
+              "description": "10 SP; Alchemie: Expert. Automated. Baked into healing potions you craft: stop-bleed chance +25%."
             },
             "lecZivoty2": {
               "label": "Healing potions: +1d6 health",
-              "description": "10 SP. Manual — resolved at the table."
+              "description": "10 SP. Automated. Baked into healing potions you craft: +1d6 health."
             },
             "lekToxicita": {
               "label": "Potions: Toxicity -2",
-              "description": "10 SP. Manual — resolved at the table."
+              "description": "10 SP. Automated. Baked into potions you craft: toxicity -2."
             },
             "kombinaceLektvaru": {
               "label": "Potion Combination",
@@ -1840,23 +1840,23 @@
             },
             "lekDuplikace1": {
               "label": "Potions: Duplication +10%",
-              "description": "10 SP; Alchemie: Expert. Manual — resolved at the table."
+              "description": "10 SP; Alchemie: Expert. Automated. Adds to the chance of a bonus unit, rolled once per crafted unit."
             },
             "lekDuplikace2": {
               "label": "Potions: Duplication +5%",
-              "description": "5 SP. Manual — resolved at the table."
+              "description": "5 SP. Automated. Adds to the chance of a bonus unit, rolled once per crafted unit."
             },
             "lekDuplikace3": {
               "label": "Potions: Duplication +10%",
-              "description": "10 SP. Manual — resolved at the table."
+              "description": "10 SP. Automated. Adds to the chance of a bonus unit, rolled once per crafted unit."
             },
             "lekVyhoda": {
               "label": "Potions: Advantage on crafting",
-              "description": "5 SP. Manual — resolved at the table."
+              "description": "5 SP. Automated. Advantage on the craft roll."
             },
             "lekKritNeuspech": {
               "label": "Potions: Crit failure -3%",
-              "description": "5 SP. Manual — resolved at the table."
+              "description": "5 SP. Automated. Critical failure on the craft roll is 3% less likely."
             },
             "jedSance1": {
               "label": "Poisons: Chance and Difficulty +5%",
@@ -1888,23 +1888,23 @@
             },
             "jedDuplikace1": {
               "label": "Poisons: Duplication +10%",
-              "description": "5 SP; Alchemie: Expert. Manual — resolved at the table."
+              "description": "5 SP; Alchemie: Expert. Automated. Adds to the chance of a bonus unit, rolled once per crafted unit."
             },
             "jedDuplikace2": {
               "label": "Poisons: Duplication +5%",
-              "description": "5 SP. Manual — resolved at the table."
+              "description": "5 SP. Automated. Adds to the chance of a bonus unit, rolled once per crafted unit."
             },
             "jedDuplikace3": {
               "label": "Poisons: Duplication +10%",
-              "description": "5 SP. Manual — resolved at the table."
+              "description": "5 SP. Automated. Adds to the chance of a bonus unit, rolled once per crafted unit."
             },
             "jedVyhoda": {
               "label": "Poisons: Advantage on crafting",
-              "description": "5 SP. Manual — resolved at the table."
+              "description": "5 SP. Automated. Advantage on the craft roll."
             },
             "jedKritNeuspech": {
               "label": "Poisons: Crit failure -3%",
-              "description": "5 SP. Manual — resolved at the table."
+              "description": "5 SP. Automated. Critical failure on the craft roll is 3% less likely."
             },
             "petTrvani": {
               "label": "Explosives: Duration +50%",
@@ -1936,35 +1936,35 @@
             },
             "petDuplikace1": {
               "label": "Explosives: Duplication +10%",
-              "description": "10 SP; Alchemie: Expert. Manual — resolved at the table."
+              "description": "10 SP; Alchemie: Expert. Automated. Adds to the chance of a bonus unit, rolled once per crafted unit."
             },
             "petDuplikace2": {
               "label": "Explosives: Duplication +5%",
-              "description": "5 SP. Manual — resolved at the table."
+              "description": "5 SP. Automated. Adds to the chance of a bonus unit, rolled once per crafted unit."
             },
             "petDuplikace3": {
               "label": "Explosives: Duplication +10%",
-              "description": "10 SP. Manual — resolved at the table."
+              "description": "10 SP. Automated. Adds to the chance of a bonus unit, rolled once per crafted unit."
             },
             "petVyhoda": {
               "label": "Explosives: Advantage on crafting",
-              "description": "5 SP. Manual — resolved at the table."
+              "description": "5 SP. Automated. Advantage on the craft roll."
             },
             "petKritNeuspech": {
               "label": "Explosives: Crit failure -3%",
-              "description": "5 SP. Manual — resolved at the table."
+              "description": "5 SP. Automated. Critical failure on the craft roll is 3% less likely."
             },
             "olejDuplikace1": {
               "label": "Oils: Duplication +10%",
-              "description": "5 SP; Alchemie: Expert. Manual — resolved at the table."
+              "description": "5 SP; Alchemie: Expert. Automated. Adds to the chance of a bonus unit, rolled once per crafted unit."
             },
             "olejDuplikace2": {
               "label": "Oils: Duplication +5%",
-              "description": "5 SP. Manual — resolved at the table."
+              "description": "5 SP. Automated. Adds to the chance of a bonus unit, rolled once per crafted unit."
             },
             "olejDuplikace3": {
               "label": "Oils: Duplication +10%",
-              "description": "5 SP. Manual — resolved at the table."
+              "description": "5 SP. Automated. Adds to the chance of a bonus unit, rolled once per crafted unit."
             },
             "olejZraneni1": {
               "label": "Oils: Damage +1d6",
@@ -1980,11 +1980,11 @@
             },
             "olejVyhoda": {
               "label": "Oils: Advantage on crafting",
-              "description": "5 SP. Manual — resolved at the table."
+              "description": "5 SP. Automated. Advantage on the craft roll."
             },
             "olejKritNeuspech": {
               "label": "Oils: Crit failure -3%",
-              "description": "5 SP. Manual — resolved at the table."
+              "description": "5 SP. Automated. Critical failure on the craft roll is 3% less likely."
             },
             "sleva1": {
               "label": "3 SP discount on a skill",
@@ -2000,35 +2000,35 @@
             },
             "mastDuplikace1": {
               "label": "Salves: Duplication +10%",
-              "description": "5 SP. Manual — resolved at the table."
+              "description": "5 SP. Automated. Adds to the chance of a bonus unit, rolled once per crafted unit."
             },
             "mastDuplikace2": {
               "label": "Salves: Duplication +5%",
-              "description": "5 SP. Manual — resolved at the table."
+              "description": "5 SP. Automated. Adds to the chance of a bonus unit, rolled once per crafted unit."
             },
             "mastDuplikace3": {
               "label": "Salves: Duplication +10%",
-              "description": "5 SP. Manual — resolved at the table."
+              "description": "5 SP. Automated. Adds to the chance of a bonus unit, rolled once per crafted unit."
             },
             "mastVyhoda": {
               "label": "Salves: Advantage on crafting",
-              "description": "5 SP. Manual — resolved at the table."
+              "description": "5 SP. Automated. Advantage on the craft roll."
             },
             "mastKritNeuspech": {
               "label": "Salves: Crit failure -3%",
-              "description": "5 SP. Manual — resolved at the table."
+              "description": "5 SP. Automated. Critical failure on the craft roll is 3% less likely."
             },
             "drogaDuplikace1": {
               "label": "Drugs: Duplication +10%",
-              "description": "5 SP; Alchemie: Expert. Manual — resolved at the table."
+              "description": "5 SP; Alchemie: Expert. Automated. Adds to the chance of a bonus unit, rolled once per crafted unit."
             },
             "drogaDuplikace2": {
               "label": "Drugs: Duplication +10%",
-              "description": "5 SP. Manual — resolved at the table."
+              "description": "5 SP. Automated. Adds to the chance of a bonus unit, rolled once per crafted unit."
             },
             "drogaDuplikace3": {
               "label": "Drugs: Duplication +10%",
-              "description": "5 SP. Manual — resolved at the table."
+              "description": "5 SP. Automated. Adds to the chance of a bonus unit, rolled once per crafted unit."
             },
             "drogaNavykovostPlus": {
               "label": "Drugs: Addictiveness up to +10%",
@@ -2040,11 +2040,11 @@
             },
             "garantovanyUspech": {
               "label": "Substance crafting: guaranteed success",
-              "description": "10 SP. Manual — resolved at the table."
+              "description": "10 SP. Automated. Boiling herbs into a substance always succeeds."
             },
             "meneIngredienci": {
               "label": "Crafting: 1 fewer ingredient",
-              "description": "15 SP; Alchemie: Expert. Manual — resolved at the table."
+              "description": "15 SP; Alchemie: Expert. Automated. Boiling herbs into a substance needs one ingredient less."
             },
             "meneTkane": {
               "label": "Mutagens: 5 less tissue",
@@ -2056,11 +2056,11 @@
             },
             "drogaVyhoda": {
               "label": "Drugs: Advantage on crafting",
-              "description": "5 SP. Manual — resolved at the table."
+              "description": "5 SP. Automated. Advantage on the craft roll."
             },
             "drogaKritNeuspech": {
               "label": "Drugs: Crit failure -3%",
-              "description": "5 SP. Manual — resolved at the table."
+              "description": "5 SP. Automated. Critical failure on the craft roll is 3% less likely."
             }
           }
         },
@@ -3551,6 +3551,14 @@
             },
             "max": {
               "label": "Maximum Mind"
+            },
+            "bonus": {
+              "label": "Mind bonus",
+              "hint": "Added to the Maximum Mind on top of Will."
+            },
+            "burned": {
+              "label": "Burned Mind",
+              "hint": "Mind points burned away permanently. Each one lowers the Maximum Mind by 1. Lower this by hand when a ritual or a potion restores one."
             }
           },
           "insanity": {
@@ -3931,9 +3939,6 @@
           "cr": {
             "label": "CR"
           },
-          "mov": {
-            "label": "Movement"
-          },
           "mage": {
             "label": "Mage"
           },
@@ -4259,8 +4264,15 @@
       },
       "Spell": {
         "FIELDS": {
+          "propertiesHeader": {
+            "label": "Spell properties"
+          },
           "isOffensive": {
             "label": "Offensive"
+          },
+          "uncontested": {
+            "label": "Uncontested",
+            "hint": "Nothing rolls against this cast: no defense, no attribute test, no damage aimed at a target. Hides Magic ATK, and skips the channeling roll entirely when No Channeling Evaluation is used."
           },
           "halfDamage": {
             "label": "Half Damage"
@@ -4426,7 +4438,8 @@
     "Tooltip": {
       "rating": "Rating",
       "attribute": "Attribute",
-      "current": "Current"
+      "current": "Current",
+      "noteMissing": "Could not open the rules note."
     },
     "Keyword": {
       "stun": {
@@ -4463,7 +4476,7 @@
       },
       "corruption": {
         "label": "Corruption",
-        "desc": "Corruption is a permanent tier read from the Corruption stat: 31 or more is degree 1, 61 or more degree 2, 91 or more degree 3. From degree 2 the character counts as Corrupted, and at degree 3 they are also vulnerable to Light."
+        "desc": "A permanent tier read from the Corruption stat. 0-30 is degree 0; 31-60 degree 1 (Magic Attack and Defense +5%); 61-90 degree 2 (+10%, Dark Spell Power +1, the character counts as Corrupted); 91-100 degree 3 (+15%, Dark Spell Power +3, plus vulnerability to Light). At 101 or more an immediate mutation strikes and Corruption drops by 50."
       },
       "aim": {
         "label": "Aim",
@@ -4506,8 +4519,86 @@
         "desc": "Every untreated grave wound applies -5% to all tests. Treating a wound gives 3% of that penalty back, and only proper healing removes the wound itself."
       }
     },
+    "Note": {
+      "attributes": "Attributes",
+      "vitals": "Health, Stamina and Mana",
+      "madness": "Madness",
+      "fatigue": "Desperate Effort and Fatigue",
+      "damageTypes": "Damage Types",
+      "traps": "Locks, Traps and Pickpocketing",
+      "channeling": "Channeling and Blood Magic",
+      "effects": "Effects",
+      "banes": "Banes",
+      "criticals": "Critical Successes and Failures",
+      "combatActions": "Combat Actions",
+      "corruption": "Corruption",
+      "medicine": "Medicine and Bleeding",
+      "armoryRules": "Selected Armory Rules",
+      "weaponQuality": "Weapon and Armor Quality",
+      "weaponMaterials": "Weapon Materials",
+      "criticalHits": "Critical Hits",
+      "specialActions": "Special Actions"
+    },
+    "StatInfo": {
+      "str": "Physical power. Each point adds +1 weapon damage in Combat and Throwing (when Strength beats Perception), +3% to hit in Combat, +1 Health and +3% to derived skills. It also helps Intimidation. Dropping to 0 means death.",
+      "dex": "Agility. Each point adds +3% to melee Defense and to Dodge, and +3% to derived skills. Certain Dexterity thresholds raise Speed. Dropping to 0 means death.",
+      "end": "Physical resilience. Each point adds +5 Stamina, +2 Toxicity, +2 to +4 Health (by Level) and +1 Shadow Health. It also drives Health regeneration and Toxicity reduction on a Long Rest. Dropping to 0 means death.",
+      "int": "Intellect. Each point adds +1 Mana Base and +3% to derived skills and Channeling; every two points add +1 Spell Power. Certain thresholds widen the critical range for Magic. Dropping to 0 means death.",
+      "wil": "Mental resilience. Each point adds +1 Mental Health, +1 Mana Base, +1 Willpower, +1 mental-duel attack and +3% to derived skills. It also helps Persuasion. Dropping to 0 means death.",
+      "cha": "Social intelligence. Each point adds +1 Inspiration and +3% to derived skills; every two points add +1 Art Power. It improves Persuasion, Deception, Intimidation, Temptation and Insight. Dropping to 0 means death.",
+      "per": "Awareness. Each point adds +1 weapon damage in Archery and Throwing (when Perception beats Strength), +3% to hit, +1 critical damage and +1 critical penetration. It also sets passive trap detection and herb gathering. Dropping to 0 means death.",
+      "spd": "Each point adds 1 to movement. A Speed Test (Speed + Initiative + 1d12) sets turn order and decides who acts first on Reactions; it knows no natural critical success or failure. The absolute cap is 6.",
+      "lck": "Each positive point adds +1% critical success chance on skills and attributes (Faith excluded); each negative point adds +1% critical failure chance. Tested for gambling, lucky finds and dodging accidents.",
+      "res": "Resolve is only ever tested, and it is one of the most common Tests. It resists fear, panic and madness. Each point of Sinfulness lowers the Test by -1%, or -3% for a chosen Sin. Luck does not improve its criticals.",
+      "fth": "Piety. Each point adds +1 Miracle Power and +5 Holy Energy. A priest tests Faith to restore Holy Energy, or when begging for divine intervention (usually costing 2 rounds).",
+      "sin": "The pull of instinct and vice. Each point adds +1% to Temptation. The character picks Sins as weaknesses (Sinfulness 3, 5, 7, …). Each point lowers Resolve Tests tied to a Sin by -1%, or -3% for a chosen weakness.",
+      "vis": "The character's relative beauty. It improves Persuasion, Deception and Temptation (when higher than Perception), and Intimidation when negative. Visage has no Tests of its own, but can gate certain Temptation Tests.",
+      "ini": "Initiative only ever applies as a bonus to Speed Tests and is never tested on its own. It has no absolute cap.",
+      "health": "Set by Race, Traits, Specializations, Strength and Endurance. At 0 the character is Downed and on the Brink of Death; without stabilisation they die, and surviving costs a Grave Wound. A Long Rest restores 10 + Endurance*2.",
+      "stamina": "Fuel for combat actions. Set by Endurance*5, Athletics*2, Traits and Specializations. Restored by the Catch Breath action. Each Fatigue degree lowers the maximum by 5, and you may restore 50% of the maximum at any time for one degree of Fatigue.",
+      "toxicity": "How much alcohol and how many potions the body tolerates. Set by Endurance*2, Race, Traits and Specializations. Exceeding the maximum triggers Toxic Shock immediately. Reduction is 5 + Endurance*2 per day.",
+      "mana": "Fuel for spells. The Mana Base (Race + Traits + Specializations + Intelligence + Will + skill) multiplied by the modifier from Magic Potential or a magic Doctrine. Regeneration is set by the Doctrine.",
+      "holyEnergy": "Fuel for miracles. Set by the Priest specialization, Faith*5 and priestly oaths. A successful Faith Test fully restores it once per day, at the hour the god demands, and costs one Camping time unit.",
+      "bloodPool": "The blood reserve the Blood School spends instead of Mana. Blood Transfer is how much Health converts to blood at once, and follows the Blood School rank (5 / 10 / 15 / 25).",
+      "mind": "Mental Health broadly represents the soul. Set by Will, Specializations and Counter-Mage oaths. It can be burned, reserved or drained; drained points return on a Long Rest (1 + Specializations). At 0 the character falls unconscious.",
+      "insanity": "Insanity points. Crossing the Madness Threshold (base 4 + Will + Traits) forces a Hard Resolve Test; failing rolls a Flaw and costs five points. Each further point past the threshold raises the difficulty by 10%.",
+      "armor": "Total damage reduction from worn armor, natural armor and effects. Every damage type keeps its own value, and Vulnerability, Resistance and Immunity are resolved against the attack's damage types.",
+      "detection": "Passive trap detection, calculated as Perception + Traps skill*2. Finding a trap usually needs 6 to 26. Penalties: dim light -6, darkness -16, hurrying -12."
+    },
+    "WeaponInfo": {
+      "attack": "The weapon's bonus to hit. Quality shifts it further: Poor -5%, Expert +3%, Master +5%, Legendary +8%. Holding a weapon in the non-dominant hand costs 10%, and a Heavy weapon one-handed costs 15%.",
+      "defense": "The weapon's bonus to Defense. Each additional opponent defended against in the same round costs -5%, up to a maximum of -20% (Being Outnumbered). It resets at the start of the round.",
+      "dodge": "The weapon's modifier to Dodge. Dodge counts as a Defensive action, so the Outnumbered penalty applies. Brawler weapons take a further -30% to Dodge against armed opponents.",
+      "critRange": "A bonus to the 1d20 that decides the degree of a critical hit. 1-6 is degree 1, 7-12 degree 2, 13-18 degree 3 and 19-20 degree 4. Effects from several sources stack.",
+      "critChance": "The weapon's critical hit chance. The base is 5%, modified further by Luck, skill and Specializations. A successful hit that beats the opponent's Defense by 60 is also a critical hit.",
+      "critFail": "The weapon's critical failure chance. A critical failure on an attack hands the opponent a guaranteed critical Defense.",
+      "critDefense": "The weapon's critical Defense chance. A critical Defense turns a critical hit into an ordinary one, and a stronger critical Defense negates the hit entirely.",
+      "critDodge": "The weapon's critical Dodge chance. Conversely, a critical failure while Dodging leads to a critical hit against you.",
+      "critPenetration": "Extra Penetration on a critical hit. Degrees 0 and 1 add 5 + Perception, degrees 2 and 3 add 10 + Perception, and degree 4 adds 15 + Perception.",
+      "critDamage": "Extra damage on a critical hit. Each point of Perception adds 1, and the higher critical degrees add a further 5 to 20 damage.",
+      "penetration": "The floor below which damage cannot be reduced by Armor. It does not apply to special Armor such as Fire or Magic Armor.",
+      "breakthrough": "Deals damage even through a successful Defense. It does not apply to Dodge or a critical Defense, and the attack itself must not be a failure. It respects Penetration and applies no effects such as Bleeding or Stagger.",
+      "sneakDamage": "Extra damage on a Sneak Attack. Some materials raise it further, for example Obsidium by 2d6 and Dragon Tooth by 1d6 on light weapons.",
+      "tags": "A free-form list of the weapon's properties, for example Long Reach, Quick, Brawler or Magazine. It feeds Specializations and Banes; the note describes each property.",
+      "finesse": "A Refined weapon uses Dexterity instead of Strength or Perception for hitting and damage. It requires the Finesse specialization.",
+      "twoHandGrip": "Light and Medium melee weapons held in two hands gain +1d6 damage. The Rapier, Katar, Dagger, Fencing Dagger and Throwing Knife cannot be held this way.",
+      "longReach": "The weapon's reach is increased by one hex. Effects from several sources stack.",
+      "sharp": "The weapon rolls two dice to cause Bleeding instead of one.",
+      "thrown": "The weapon can be thrown. Attacking a target beyond its effective range costs -20% to Throwing.",
+      "offhand": "The weapon can be held in the off hand. Using a hand other than the dominant one costs 10% to hitting, Defense, Throwing, Archery and Firearms.",
+      "stagger": "The weapon's chance to cause Stagger for two turns. A critical hit of degree 2 or higher adds +100% to that chance.",
+      "bleed": "The weapon's chance to cause Bleeding. The Sharp property rolls two dice instead of one, and a critical hit of degree 2 or higher adds +100%.",
+      "diceNum": "How many dice of base damage the weapon deals. On a hit, damage resolves in a fixed order: Armor first, then Penetration, special Armor, percentage adjustments, and finally Temporary Health and Health.",
+      "dieSize": "The size of the weapon's base damage dice. Light and Medium melee weapons held in two hands gain a further +1d6.",
+      "rollMod": "A flat damage adjustment on top of the dice. A weapon's material usually adds its bonus here, for example Red Steel +2d4 or Eldarin +3d4.",
+      "quality": "Weapon quality: Poor -5% to hitting and Defense, Normal nothing, Expert +3%, Master +5% and Precision +5%, Legendary +8%, Precision +10% and critical hit +3%. The Sling, Lance and Improvised Weapon cannot exceed Normal quality.",
+      "weaponClass": "The weapon's class decides which Specializations and Doctrine actions it can be used with. Failing a weapon's attribute or training requirement costs 10% to success, and that penalty stacks.",
+      "weaponType": "The weapon's weight category. Light and Medium melee weapons can be held in two hands for +1d6 damage. A Heavy weapon held one-handed costs 15% to hitting and 10% to Defense, and blocks Doctrine and Specialization actions.",
+      "dmgType": "The damage types the attack uses. A \"+\" listing means the attack uses every type at once; a \"/\" listing favours the attacker. Vulnerability, Resistance and Immunity are resolved against these types."
+    },
     "Effect": {
       "Source": "Source",
+      "BloodFromBleed": "{name} draws {amount} spilled Life into the Blood Reserve.",
       "Toggle": "Toggle Effect",
       "Temporary": "Temporary Effects",
       "Passive": "Passive Effects",
@@ -4677,6 +4768,14 @@
       },
       "Bezoardicum": {
         "name": "Bezoardicum"
+      },
+      "BloodPact": {
+        "name": "Blood Pact",
+        "description": "<p>Once per round you may burn one of your Mind points to immediately gain Life into your Blood Reserve equal to your Maximum Transfer.</p><p>A burned Mind point is lost permanently: both your current Mind and your maximum Mind drop by one. Only a ritual or a potion can restore it.</p>",
+        "result": "Burned a Mind point ({mindValue}/{mindMax} left) and gained {gained} into the Blood Reserve.",
+        "alreadyUsed": "Blood Pact has already been used this round.",
+        "noMind": "No Mind point left to burn.",
+        "reserveFull": "The Blood Reserve has no room left."
       },
       "BloodyKiss": {
         "name": "Bloody Kiss"
@@ -5937,6 +6036,138 @@
       "StarsignFireEye": {
         "name": "Starsign: Fire Eye",
         "description": "<p>The soul is marked by Sheol. At the moment of death, unless directly prevented, the soul is taken to Sheol, which makes resurrection impossible. The effect of this Star cannot be changed.</p>"
+      },
+      "AdeptSmithing": {
+        "name": "Adept: Smithing"
+      },
+      "ExpertSmithing": {
+        "name": "Expert: Smithing"
+      },
+      "AdeptCraft": {
+        "name": "Adept: Craft"
+      },
+      "ExpertCraft": {
+        "name": "Expert: Craft"
+      },
+      "AdeptRiding": {
+        "name": "Adept: Riding"
+      },
+      "ExpertRiding": {
+        "name": "Expert: Riding"
+      },
+      "AdeptDrinking": {
+        "name": "Adept: Drinking"
+      },
+      "ExpertDrinking": {
+        "name": "Expert: Drinking"
+      },
+      "AdeptArt": {
+        "name": "Adept: Art"
+      },
+      "ExpertArt": {
+        "name": "Expert: Art"
+      },
+      "AdeptEngineering": {
+        "name": "Adept: Engineering"
+      },
+      "ExpertEngineering": {
+        "name": "Expert: Engineering"
+      },
+      "AdeptLogic": {
+        "name": "Adept: Logic"
+      },
+      "ExpertLogic": {
+        "name": "Expert: Logic"
+      },
+      "AdeptTactics": {
+        "name": "Adept: Tactics"
+      },
+      "ExpertTactics": {
+        "name": "Expert: Tactics"
+      },
+      "AdeptAugury": {
+        "name": "Adept: Augury"
+      },
+      "ExpertAugury": {
+        "name": "Expert: Augury"
+      },
+      "AdeptDreamwalker": {
+        "name": "Adept: Dreamwalker"
+      },
+      "ExpertDreamwalker": {
+        "name": "Expert: Dreamwalker"
+      },
+      "AdeptRituals": {
+        "name": "Adept: Rituals"
+      },
+      "ExpertRituals": {
+        "name": "Expert: Rituals"
+      },
+      "AdeptActing": {
+        "name": "Adept: Acting"
+      },
+      "ExpertActing": {
+        "name": "Expert: Acting"
+      },
+      "AdeptDeception": {
+        "name": "Adept: Deception"
+      },
+      "ExpertDeception": {
+        "name": "Expert: Deception"
+      },
+      "AdeptIntimidation": {
+        "name": "Adept: Intimidation"
+      },
+      "ExpertIntimidation": {
+        "name": "Expert: Intimidation"
+      },
+      "AdeptMusic": {
+        "name": "Adept: Music"
+      },
+      "ExpertMusic": {
+        "name": "Expert: Music"
+      },
+      "AdeptPainting": {
+        "name": "Adept: Painting"
+      },
+      "ExpertPainting": {
+        "name": "Expert: Painting"
+      },
+      "AdeptPersuasion": {
+        "name": "Adept: Persuasion"
+      },
+      "ExpertPersuasion": {
+        "name": "Expert: Persuasion"
+      },
+      "AdeptTemptation": {
+        "name": "Adept: Temptation"
+      },
+      "ExpertTemptation": {
+        "name": "Expert: Temptation"
+      },
+      "AdeptBlend": {
+        "name": "Adept: Blend"
+      },
+      "ExpertBlend": {
+        "name": "Expert: Blend"
+      },
+      "AdeptHerbalism": {
+        "name": "Adept: Herbalism"
+      },
+      "ExpertHerbalism": {
+        "name": "Expert: Herbalism"
+      },
+      "AdeptInsight": {
+        "name": "Adept: Insight"
+      },
+      "ExpertInsight": {
+        "name": "Expert: Insight"
+      },
+      "AdeptSurvival": {
+        "name": "Adept: Survival"
+      },
+      "ExpertSurvival": {
+        "name": "Expert: Survival"
       }
     }
   },

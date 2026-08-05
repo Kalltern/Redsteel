@@ -31,8 +31,10 @@ export class RedsteelCombat extends Combat {
       // -----------------------------------------
       // Initiative formula
       // -----------------------------------------
-      // Shared with ability "speed" tests (prone override, NPCs without Speed,
-      // the rogue doctrine-7 two-die upgrade) so the two can never drift apart.
+      // Turn order IS the Speed Test: 1d12 + Speed + Initiative, for characters
+      // and NPCs alike. Shared with ability "speed" tests (prone override, the
+      // rogue doctrine-7 two-die upgrade) so the two can never drift apart, and
+      // so a plain Speed debuff lowers turn order with no extra wiring.
 
       const rollFormula = buildSpeedTestFormula(actor);
 

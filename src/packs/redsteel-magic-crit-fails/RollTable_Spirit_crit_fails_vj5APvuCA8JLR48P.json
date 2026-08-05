@@ -1,0 +1,260 @@
+{
+  "name": "Spirit crit fails",
+  "img": "icons/commodities/biological/organ-brain-pink-purple.webp",
+  "description": "",
+  "results": [
+    {
+      "type": "text",
+      "weight": 1,
+      "range": [
+        1,
+        1
+      ],
+      "_id": "P59PeiwtJqawMiif",
+      "name": "Degree 0",
+      "img": "icons/commodities/biological/organ-brain-pink-purple.webp",
+      "description": "<p>Instability +1.</p>",
+      "drawn": false,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.351",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null
+      },
+      "documentUuid": null,
+      "_key": "!tables.results!vj5APvuCA8JLR48P.P59PeiwtJqawMiif"
+    },
+    {
+      "type": "text",
+      "weight": 4,
+      "range": [
+        2,
+        5
+      ],
+      "_id": "Cz2P7k7rXl3hqdrM",
+      "name": "Degree 1",
+      "img": "icons/commodities/biological/organ-brain-pink-purple.webp",
+      "description": "<p>Instability +2.</p>",
+      "drawn": false,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.351",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null
+      },
+      "documentUuid": null,
+      "_key": "!tables.results!vj5APvuCA8JLR48P.Cz2P7k7rXl3hqdrM"
+    },
+    {
+      "type": "text",
+      "weight": 4,
+      "range": [
+        6,
+        9
+      ],
+      "_id": "OoW6eaCV2NpsZKqZ",
+      "name": "Degree 2",
+      "img": "icons/commodities/biological/organ-brain-pink-purple.webp",
+      "description": "<p>Burns additional mana equal to the spell’s cost. Strange illusions appear in the surrounding area.</p>",
+      "drawn": false,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.351",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null
+      },
+      "documentUuid": null,
+      "_key": "!tables.results!vj5APvuCA8JLR48P.OoW6eaCV2NpsZKqZ"
+    },
+    {
+      "type": "text",
+      "weight": 3,
+      "range": [
+        10,
+        12
+      ],
+      "_id": "sVNma7PAzigfVyXW",
+      "name": "Degree 3",
+      "img": "icons/commodities/biological/organ-brain-pink-purple.webp",
+      "description": "<p>Burns additional mana equal to the spell’s cost. Casts Relocation on the caster in a random direction, up to 1d12 hexes. They take 1d8 damage for each hex they could not be moved.</p>",
+      "drawn": false,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.351",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null
+      },
+      "documentUuid": null,
+      "_key": "!tables.results!vj5APvuCA8JLR48P.sVNma7PAzigfVyXW"
+    },
+    {
+      "type": "text",
+      "weight": 3,
+      "range": [
+        13,
+        15
+      ],
+      "_id": "uleQqxlbi71tLTxr",
+      "name": "Degree 4",
+      "img": "icons/commodities/biological/organ-brain-pink-purple.webp",
+      "description": "<p>Burns additional mana equal to the spell’s cost. Deals 3d6 damage.</p>",
+      "drawn": false,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.351",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null
+      },
+      "documentUuid": null,
+      "_key": "!tables.results!vj5APvuCA8JLR48P.uleQqxlbi71tLTxr"
+    },
+    {
+      "type": "text",
+      "weight": 3,
+      "range": [
+        16,
+        18
+      ],
+      "_id": "bFtLFoOUCbbSCEYE",
+      "name": "Degree 5",
+      "img": "icons/commodities/biological/organ-brain-pink-purple.webp",
+      "description": "<p>Burns additional mana equal to the spell’s cost. Deals 4d6 damage and prevents casting of the affected school for 1d4+1 rounds. Cancels all Concentration.</p>",
+      "drawn": false,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.351",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null
+      },
+      "documentUuid": null,
+      "_key": "!tables.results!vj5APvuCA8JLR48P.bFtLFoOUCbbSCEYE"
+    },
+    {
+      "type": "text",
+      "weight": 2,
+      "range": [
+        19,
+        20
+      ],
+      "_id": "hD9fo6NIJ2tQVRFP",
+      "name": "Degree 6",
+      "img": "icons/commodities/biological/organ-brain-pink-purple.webp",
+      "description": "<p>Burns additional mana equal to the spell’s cost. Stuns the caster for 2 rounds.</p>",
+      "drawn": false,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.351",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null
+      },
+      "documentUuid": null,
+      "_key": "!tables.results!vj5APvuCA8JLR48P.hD9fo6NIJ2tQVRFP"
+    },
+    {
+      "type": "text",
+      "weight": 2,
+      "range": [
+        21,
+        22
+      ],
+      "_id": "CW6tMzIFnwtUQFrR",
+      "name": "Degree 7",
+      "img": "icons/commodities/biological/organ-brain-pink-purple.webp",
+      "description": "<p>Burns additional mana equal to double the spell’s cost. The caster and five random targets within 9m are attacked by a Magic Rope.</p>",
+      "drawn": false,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.351",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null
+      },
+      "documentUuid": null,
+      "_key": "!tables.results!vj5APvuCA8JLR48P.CW6tMzIFnwtUQFrR"
+    },
+    {
+      "type": "text",
+      "weight": 1,
+      "range": [
+        23,
+        23
+      ],
+      "_id": "kI3xFkXmAB6bUYEF",
+      "name": "Degree 8",
+      "img": "icons/commodities/biological/organ-brain-pink-purple.webp",
+      "description": "<p>Burns additional mana equal to double the spell’s cost. Deals 5d6 damage and prevents casting of the affected school for 2d6 rounds. Cancels all Concentration.</p>",
+      "drawn": false,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.351",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null
+      },
+      "documentUuid": null,
+      "_key": "!tables.results!vj5APvuCA8JLR48P.kI3xFkXmAB6bUYEF"
+    }
+  ],
+  "replacement": true,
+  "displayRoll": true,
+  "folder": null,
+  "flags": {
+    "redsteel": {
+      "critTable": "spirit"
+    }
+  },
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785245361691,
+    "modifiedTime": 1785245361691,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "formula": "1d20",
+  "ownership": {
+    "default": 0,
+    "rs3mzx7WZdtEmvH2": 3,
+    "UHjN0KQ8w8ZxibJg": 3
+  },
+  "_id": "vj5APvuCA8JLR48P",
+  "sort": 500000,
+  "_key": "!tables!vj5APvuCA8JLR48P"
+}

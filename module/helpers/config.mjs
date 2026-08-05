@@ -1159,12 +1159,12 @@ REDSTEEL.effectDefinitions = {
   // separate 1d8 riders, each rolled when that source actually deals damage);
   // a single combined Bleeding tick is one instance, so "3 Krvácení = 1d8".
   // The rider is applied at a single chokepoint in effects.mjs
-  // (preUpdateActor/updateActor → _applyHexRider). Lasts 3 rounds.
+  // (preUpdateActor/updateActor → _applyHexRider). Lasts 4 rounds.
   hex: {
     name: "Hex",
     img: "icons/svg/target.svg",
     statuses: ["hex"],
-    defaultRounds: 3,
+    defaultRounds: 4,
     useDuration: true,
     stackBehavior: "refresh",
   },
@@ -1193,12 +1193,19 @@ REDSTEEL.effectDefinitions = {
     stackBehavior: "ignore",
   },
 
-  // "Vyřazen" — knocked out / out of the fight.
+  // "Vyřazen" — knocked out / out of the fight. Unconsciousness supersedes
+  // Downed (see EFFECT_OVERRIDES in effects.mjs) and marks the combatant
+  // defeated so they drop out of the turn order. They stay listed in the
+  // tracker, which is what keeps the Dying countdown and any bleed/burn ticks
+  // running — those are driven by the per-combatant round loop.
   incapacitated: {
     name: "Incapacitated",
     img: "icons/svg/unconscious.svg",
     statuses: ["incapacitated"],
     stackBehavior: "ignore",
+    triggers: {
+      onApply: { custom: "incapacitatedStart" },
+    },
   },
 
   // "Utišení", "Morganin bič" — school/spellcasting disabled.

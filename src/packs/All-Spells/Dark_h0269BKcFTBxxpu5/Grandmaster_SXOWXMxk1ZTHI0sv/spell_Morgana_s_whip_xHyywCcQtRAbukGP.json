@@ -81,6 +81,7 @@
       ]
     },
     "isOffensive": true,
+    "uncontested": false,
     "sustained": false,
     "difficulty": -40,
     "cost": 20,

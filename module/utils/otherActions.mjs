@@ -1,5 +1,6 @@
 import { tagRollSkill } from "./rollAdvantage.mjs";
 import { resetActorRerolls } from "./rerolls.mjs";
+import { gainBloodFromBleed, bloodGainNote } from "./bloodPool.mjs";
 
 export async function delayTurn() {
   const combat = game.combat;
@@ -1140,9 +1141,15 @@ async function resumeBleeds(targetActor) {
     await targetActor.update({
       "system.stats.health.value": current - roll.total,
     });
+    // Held bleed damage is still Life lost to Bleeding, so it feeds a Blood
+    // caster's Reserve exactly like a normal tick.
+    const gained = await gainBloodFromBleed(targetActor, roll.total);
     await roll.toMessage({
       speaker: ChatMessage.getSpeaker({ actor: targetActor }),
-      flavor: `Collected bleeding resumes (${dice}d4)`,
+      flavor: `Collected bleeding resumes (${dice}d4)${bloodGainNote(
+        targetActor,
+        gained,
+      )}`,
     });
     await game.redsteel.applyZeroHealthState?.(targetActor);
   }
@@ -1578,7 +1585,7 @@ async function requestRemoveBleeding(data) {
 }
 
 // Delete every Bleeding effect on an actor; returns how many were removed.
-async function clearBleedEffects(actor) {
+export async function clearBleedEffects(actor) {
   const bleeds = actor.effects.filter(
     (e) => e.getFlag("core", "statusId") === "bleed",
   );

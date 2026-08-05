@@ -461,6 +461,13 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
    */
   _onRender(context, options) {
     this.#dragDrop.forEach((d) => d.bind(this.element));
+
+    // Marks the window box for the tooltip engine, which parks its panels in
+    // the free margin beside this rectangle instead of over the sheet.
+    const root =
+      this.element instanceof HTMLElement ? this.element : this.element?.[0];
+    if (root) root.dataset.ttWindow = "";
+
     // You may want to add other special handling here
     // Foundry comes with a large number of utility classes, e.g. SearchFilter
     // That you may want to implement yourself.

@@ -1,0 +1,68 @@
+{
+  "name": "Corruption",
+  "pages": [
+    {
+      "sort": 0,
+      "name": "Corruption",
+      "type": "text",
+      "_id": "Hm8sPd4YuT6QnJrE",
+      "title": {
+        "show": false,
+        "level": 1
+      },
+      "image": {},
+      "src": null,
+      "system": {},
+      "text": {
+        "format": 1,
+        "content": "<h3>Korupce</h3>\n<p>Korupce je trvalá zkaženost těla i duše, kterou si na sebe přivolává ten, kdo sahá po magii Školy Temnoty. Buduje se především sesíláním temných kouzel, kdy každé kouzlo přidává pevnou hodnotu uvedenou ve svém popisu. Kouzla, která Korupci generují sesláním a která se zároveň udržují, generují od dalšího kola po seslání vždy jen 1 Korupci za kolo.</p>\n<p>Cenu kouzla může nahradit Duše. Takto seslané kouzlo nebuduje Korupci vůbec a lze jej seslat i na místech bez přístupu ke Zdroji. Učednická a Expertní kouzla stojí 1 duši, Mistrovská 2 duše a Velmistrovská 3 duše.</p>\n<p>Kouzlo Školy Temnoty \"Odstranění korupce\" odstraní z těla 20 Korupce za cenu 2d4 životů. Tyto Životy nelze léčit magií ani zázraky.</p>\n<h3>Stupně Korupce</h3>\n<p>Stupeň Korupce je trvalý a odvozuje se přímo z aktuální hodnoty Korupce.</p>\n<ul>\n<li><strong>Stupeň 0</strong> (Korupce 0-30) &mdash; vizuálně se neprojevuje, žádné další efekty.</li>\n<li><strong>Stupeň 1</strong> (Korupce 31-60) &mdash; lehké černání žil. Magický útok a obrana +5 %.</li>\n<li><strong>Stupeň 2</strong> (Korupce 61-90) &mdash; viditelné černání žil, černá duhovka. Magický útok a obrana +10 %, Síla kouzla Temnoty +1. Pro účely Zázraků, magie a dalších se postava považuje za Zkaženou.</li>\n<li><strong>Stupeň 3</strong> (Korupce 91-100) &mdash; výrazné černání žil, černé bělmo, bledá pleť. Magický útok a obrana +15 %, Síla kouzla Temnoty +3. Postava se považuje za Zkaženou a je navíc zranitelnější Světlem a vybranými Zázraky.</li>\n<li><strong>Stupeň 4</strong> (Korupce 101 a více) &mdash; dochází k okamžité mutaci a snížení Korupce o 50.</li>\n</ul>",
+        "markdown": null
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "category": null,
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.9.55",
+        "createdTime": 1785326400000,
+        "modifiedTime": 1785326400000,
+        "lastModifiedBy": null
+      },
+      "_key": "!journal.pages!Cq3RtVn7ZbK2wLxP.Hm8sPd4YuT6QnJrE"
+    }
+  ],
+  "folder": "BjCbzfkKJNr5DLau",
+  "flags": {
+    "redsteel": {
+      "sourceSheet": "Temnota (Kniha kouzel)"
+    }
+  },
+  "categories": [],
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.9.55",
+    "createdTime": 1785326400000,
+    "modifiedTime": 1785326400000,
+    "lastModifiedBy": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "_id": "Cq3RtVn7ZbK2wLxP",
+  "sort": 36000,
+  "_key": "!journal!Cq3RtVn7ZbK2wLxP"
+}

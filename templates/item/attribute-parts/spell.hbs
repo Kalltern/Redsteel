@@ -75,27 +75,8 @@
           data-dtype="Number"
         />
          </div>
-         <div class="grid-span-1 flexcol" style="align-items: center;">
-  <label class="resource-label">
-    {{localize "REDSTEEL.Item.Spell.FIELDS.sustained.label"}}
-  </label>
-  <input
-    type="checkbox"
-    name="system.sustained"
-    {{#if system.sustained}}checked{{/if}}
-  />
-</div>
-<div class="grid-span-1 flexcol" style="align-items: center;">
-  <label class="resource-label">
-    {{localize "REDSTEEL.Item.Spell.FIELDS.isHealing.label"}}
-  </label>
-  <input
-    type="checkbox"
-    name="system.isHealing"
-    {{#if system.isHealing}}checked{{/if}}
-  />
-</div>
-
+         {{!-- Sustained / Healing live under "Spell properties" on the
+               Variants tab. --}}
 
 <div class="grid-span-4">
 <label class="resource-label">{{localize

@@ -16,7 +16,7 @@
       "firearm"
     ],
     "equipped": false,
-    "twoHandGrip": false,
+    "twoHandGrip": true,
     "longReach": false,
     "gripMode": "one",
     "offhand": true,

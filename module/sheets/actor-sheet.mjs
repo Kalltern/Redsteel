@@ -37,6 +37,8 @@ import {
   initializeRaceChoices,
 } from "../utils/race.mjs";
 import { openWeaponSpecDialog } from "../utils/weaponSpec.mjs";
+import { postSpeedTest } from "../utils/speedTest.mjs";
+import { renderMarginFollowupLine } from "../utils/attributeFollowup.mjs";
 import { openBanePicker, clearBaneChoice } from "../helpers/banes.mjs";
 import { buildSpellCard, buildRankGroups } from "../utils/spellCards.mjs";
 
@@ -128,6 +130,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       toggleSkillsEdit: this._toggleSkillsEdit,
       toggleEffect: this._toggleEffect,
       roll: this._onRoll,
+      rollSpeed: this._onRollSpeed,
       toggleEquipped: this._toggleEquipped,
       toggleReroll: this._toggleReroll,
       toggleSchool: this._toggleSchool,
@@ -1937,6 +1940,9 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       // Lets the delegated tooltip engine resolve the owning actor without
       // reaching into application-registry internals.
       root.dataset.ttActorUuid = this.actor.uuid;
+      // Marks the window box for the tooltip engine, which parks its panels in
+      // the free margin beside this rectangle instead of over the sheet.
+      root.dataset.ttWindow = "";
     }
 
     // You may want to add other special handling here
@@ -2130,6 +2136,24 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
   }
 
   /**
+   * Handle a click on the Speed stat (both sheets).
+   *
+   * Speed tests are not d100 margin-of-success rolls, so they never went
+   * through the generic roll path: they use the shared d12 + Initiative +
+   * Speed formula (prone, rogue doctrine and advantage included) and post a
+   * contestable card. See module/utils/speedTest.mjs.
+   *
+   * @this RedsteelActorSheet
+   * @param {PointerEvent} event   The originating click event
+   * @param {HTMLElement} target   The capturing HTML element which defined a [data-action]
+   * @protected
+   */
+  static async _onRollSpeed(event, target) {
+    event.preventDefault();
+    await postSpeedTest(this.actor);
+  }
+
+  /**
    * Handle clickable rolls.
    *
    * @this RedsteelActorSheet
@@ -2298,13 +2322,29 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
 
         const traitPills = getTraitPills(this.actor, skillKey);
 
+        // Attribute rolls are the ones routinely made as versus Tests, so the
+        // posted margin is clickable: the opponent selects a token, picks an
+        // attribute (often a different one — "Test Síly versus Test
+        // Síly/Odolnosti") and rolls against this number. Same mechanism the
+        // ability and spell cards already use.
+        const isVersusTest = dataset.rollType === "attribute";
+        let flavorBody = `<p style="text-align: center; font-size: 20px;"><b>${label}</b></p>`;
+        if (isVersusTest) {
+          flavorBody += `<p style="text-align:center;">${renderMarginFollowupLine({
+            margin: roll.total,
+            source: rollName.trim(),
+            chance: skillData.mod,
+            result: roll.result,
+          })}</p>`;
+        }
+
         // Now, pass only the deconstructed values in the flags
         await roll.toMessage({
           // Stamp the rolling actor so the chat reroll button can resolve who
           // spends the charge — without this, a GM rolling with no token
           // controlled produces a speaker with no actor.
           speaker: ChatMessage.getSpeaker({ actor: this.actor }),
-          flavor: `<p style="text-align: center; font-size: 20px;"><b>${label}</b></p>`,
+          flavor: flavorBody,
           rollMode: game.settings.get("core", "rollMode"),
           flags: {
             redsteel: {
@@ -2313,6 +2353,12 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
               criticalSuccessThreshold, // Store critical success threshold
               criticalFailureThreshold, // Store critical failure threshold
               traitPills,
+              // Lets a reroll rebuild the clickable versus-Test line for the
+              // new margin instead of dropping it (see executeReroll).
+              ...(isVersusTest && {
+                versusTest: true,
+                versusChance: skillData.mod,
+              }),
             },
           },
         });
@@ -2753,7 +2799,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
         const mainItem = this.actor.items.get(mainId);
         const mainIsTwoHanded =
           mainItem?.system.type === "heavy" ||
-          ["crossbow", "box"].includes(mainItem?.system.class);
+          ["crossbow", "bow"].includes(mainItem?.system.class);
 
         if (mainIsTwoHanded) return;
       }

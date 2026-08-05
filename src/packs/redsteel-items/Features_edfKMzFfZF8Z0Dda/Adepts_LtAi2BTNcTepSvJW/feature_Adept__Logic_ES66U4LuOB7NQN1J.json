@@ -1,0 +1,109 @@
+{
+  "folder": "LtAi2BTNcTepSvJW",
+  "name": "Adept: Logic",
+  "type": "feature",
+  "img": "icons/commodities/treasure/medal-ribbon-striped-gold-red.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.AdeptLogic.name",
+    "description": "<p>Once per day you may reroll this ability. Adds 5% to tests of this ability.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": [
+        {
+          "label": "",
+          "skillsRaw": "logic",
+          "max": 1,
+          "used": 0
+        }
+      ]
+    },
+    "option": "feature"
+  },
+  "effects": [
+    {
+      "name": "Adept: Logic",
+      "origin": "Item.ES66U4LuOB7NQN1J",
+      "img": "icons/svg/daze.svg",
+      "_id": "LvHlRZVI6CGWCPgx",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.skills.logic.bonus",
+            "value": 5,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
+      "disabled": false,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {
+        "statuscounter": {
+          "value": 1,
+          "config": {
+            "type": "default"
+          },
+          "visible": false
+        },
+        "tos": {
+          "actorTurns": null
+        }
+      },
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.9.55",
+        "createdTime": 1785801600000,
+        "modifiedTime": 1785801600000,
+        "lastModifiedBy": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!ES66U4LuOB7NQN1J.LvHlRZVI6CGWCPgx"
+    }
+  ],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.9.55",
+    "createdTime": 1785801600000,
+    "modifiedTime": 1785801600000,
+    "lastModifiedBy": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 100000,
+  "_id": "ES66U4LuOB7NQN1J",
+  "_key": "!items!ES66U4LuOB7NQN1J"
+}

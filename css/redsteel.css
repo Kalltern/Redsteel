@@ -2103,6 +2103,94 @@ table tr td:nth-child(3) {
   margin-right: 5px; /* Space between label and checkbox */
 }
 
+/* ── Toggle buttons ───────────────────────────────────────────────────────
+   Replaces bare <input type="checkbox"> + <label> pairs on the sheets. Same
+   interaction as the attack-dialog option pills (Sneak Attack, Flanking),
+   restyled into the sheet's dark/gold palette.
+
+   Markup:
+     <div class="rs-toggle-row">
+       <label class="rs-toggle">
+         <input type="checkbox" name="system.finesse" {{checked system.finesse}} />
+         <span>Label text</span>
+       </label>
+     </div>
+
+   The checkbox stays in the form (only visually hidden), so ApplicationV2
+   submitOnChange still picks it up exactly like before. Add `penalty` to the
+   label for a red active state on negative options. */
+.rs-toggle-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0;
+}
+
+.rs-toggle {
+  display: inline-flex;
+  flex: 0 0 auto;
+  margin: 0;
+  cursor: pointer;
+}
+
+.rs-toggle > input[type="checkbox"] {
+  display: none;
+}
+
+.rs-toggle > span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 24px;
+  padding: 3px 10px;
+  border: 1px solid #4f422b;
+  border-radius: 999px;
+  background: #15130f;
+  color: #c8bea8;
+  font-size: 0.8em;
+  line-height: 1.2;
+  text-align: center;
+  white-space: nowrap;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease,
+    color 0.12s ease,
+    box-shadow 0.12s ease;
+}
+
+.rs-toggle > span > img {
+  border: none;
+  margin-right: 4px;
+  flex: 0 0 auto;
+}
+
+.rs-toggle:hover > span {
+  border-color: #665534;
+  color: #d7c697;
+}
+
+.rs-toggle > input:checked + span {
+  background: #241d10;
+  border-color: #d9a13b;
+  color: #e6c878;
+  box-shadow: 0 0 7px rgba(217, 161, 59, 0.45);
+}
+
+.rs-toggle.penalty > input:checked + span {
+  background: #2a1414;
+  border-color: #a54a4a;
+  color: #e6a0a0;
+  box-shadow: 0 0 7px rgba(165, 74, 74, 0.45);
+}
+
+/* Toggles dropped straight into a .grid cell shouldn't stretch vertically. */
+.grid > .rs-toggle,
+.grid-2col > .rs-toggle {
+  align-self: center;
+}
+
 /* Container for stats row */
 .stat-row {
   display: flex;
@@ -7433,10 +7521,8 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   opacity: 0.65;
 }
 
-/* Each nested level sits slightly brighter so the chain reads as a stack. */
-.rs-tooltip[data-depth="1"] { background: rgba(26, 26, 26, 0.97); }
-.rs-tooltip[data-depth="2"] { background: rgba(34, 34, 34, 0.97); }
-.rs-tooltip[data-depth="3"] { background: rgba(42, 42, 42, 0.97); }
+/* Every level keeps the same background; depth reads from the offset and the
+   border, not from the fill. */
 
 .rs-tooltip .tt-head {
   display: flex;
@@ -7532,3 +7618,41 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   border-bottom-color: #f2e3a8;
   background: rgba(201, 169, 74, 0.12);
 }
+
+/* Footer link out to the full rules note. Only clickable once frozen. */
+.rs-tooltip .tt-footer:has(.tt-journal) {
+  padding-top: 6px;
+  border-top: 1px solid rgba(122, 115, 50, 0.35);
+}
+
+.rs-tooltip a.tt-journal {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 100%;
+  color: #b3a869;
+  text-decoration: none;
+  cursor: default;
+}
+
+.rs-tooltip a.tt-journal > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rs-tooltip a.tt-journal > i {
+  font-size: 10px;
+  flex: 0 0 auto;
+}
+
+.rs-tooltip.frozen a.tt-journal {
+  cursor: pointer;
+  color: #d9c98a;
+}
+
+.rs-tooltip.frozen a.tt-journal:hover {
+  color: #f2e3a8;
+  text-decoration: underline;
+}
+

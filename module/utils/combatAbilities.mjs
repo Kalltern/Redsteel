@@ -11,6 +11,8 @@ import {
   rollSpeedTest,
   renderSpeedTestLine,
 } from "./speedTest.mjs";
+import { mindBurnUpdates } from "./mindPoints.mjs";
+import { resolveTestRating } from "./testRating.mjs";
 
 export async function combatAbilities() {
   // ====================================================================
@@ -1509,15 +1511,6 @@ ${descriptionTable}
       baseCritSuccess: critSuccess,
     });
 
-    const attributeMap = {
-      strength: "str",
-      endurance: "end",
-      dexterity: "dex",
-      intelligence: "int",
-      wisdom: "wis",
-      charisma: "cha",
-    };
-
     let concatRollAndDescription = ability.system.description || "";
 
     for (const mod of selectedModifiers) {
@@ -1544,7 +1537,7 @@ ${descriptionTable}
 
       if (!testName || testName === "-- Select a Type --") continue;
 
-      // Speed test: d12 + Initiative (+ Speed), higher is better.
+      // Speed test: d12 + Initiative + Speed, higher is better.
       if (isSpeedTest(testName)) {
         const speedRoll = await rollSpeedTest(actor, { modifier: testModifier });
         attributeTestHTML += `
@@ -1565,22 +1558,10 @@ ${renderSpeedTestLine({
         continue;
       }
 
-      const attributeMap = {
-        strength: "str",
-        endurance: "end",
-        dexterity: "dex",
-        intelligence: "int",
-        wisdom: "wis",
-        charisma: "cha",
-      };
-
-      const shortKey = attributeMap[testName.toLowerCase()] ?? testName;
-
-      let attributeValue = actor.system.attributes[shortKey]?.mod ?? 0;
-
-      if (actor.type === "npc") {
-        attributeValue = actor.system.attributes[shortKey]?.value ?? 0;
-      }
+      const { value: attributeValue, skillKey } = resolveTestRating(
+        actor,
+        testName,
+      );
 
       const attributeTotalValue = attributeValue + testModifier;
 
@@ -1588,7 +1569,7 @@ ${renderSpeedTestLine({
         `(${attributeTotalValue}) - 1d100`,
         withRollBias({}, actor),
       );
-      tagRollSkill(attributeRoll, shortKey);
+      tagRollSkill(attributeRoll, skillKey);
       await attributeRoll.evaluate({ async: true });
 
       attributeTestHTML += `
@@ -1605,7 +1586,7 @@ ${renderSpeedTestLine({
 
     // Ability test
     if (isSpeedTest(abilityAttributeTestName)) {
-      // Speed test: d12 + Initiative (+ Speed), higher is better.
+      // Speed test: d12 + Initiative + Speed, higher is better.
       const speedRoll = await rollSpeedTest(actor, {
         modifier: abilityTestModifier,
       });
@@ -1623,41 +1604,11 @@ ${renderSpeedTestLine({
       abilityAttributeTestName &&
       abilityAttributeTestName !== "-- Select a Type --"
     ) {
-      const lowerTestName = abilityAttributeTestName.trim().toLowerCase();
-      let baseValue = 0;
-      let testSkillKey = null;
-
-      // 1️⃣ Leadership special case FIRST
-      if (lowerTestName === "leadership") {
-        testSkillKey = "leadership";
-        baseValue =
-          actor.type === "npc"
-            ? (actor.system.attributes.cha?.value ?? 0)
-            : (actor.system.skills?.leadership?.rating ?? 0);
-      }
-
-      // 2️⃣ Combat skills
-      else if (actor.system.combatSkills?.[lowerTestName]) {
-        testSkillKey = lowerTestName;
-        baseValue = actor.system.combatSkills[lowerTestName]?.rating ?? 0;
-      }
-
-      // 3️⃣ Other skills
-      else if (actor.system.skills?.[lowerTestName]) {
-        testSkillKey = lowerTestName;
-        baseValue = actor.system.skills[lowerTestName]?.rating ?? 0;
-      }
-
-      // 4️⃣ Attributes LAST (keep .mod for characters!)
-      else if (attributeMap[lowerTestName]) {
-        const shortKey = attributeMap[lowerTestName];
-        testSkillKey = shortKey;
-
-        baseValue =
-          actor.type === "npc"
-            ? (actor.system.attributes[shortKey]?.value ?? 0)
-            : (actor.system.attributes[shortKey]?.mod ?? 0); // ✅ .mod preserved
-      }
+      // Leadership → combat skills → skills → attributes (keeps .mod for characters).
+      const { value: baseValue, skillKey: testSkillKey } = resolveTestRating(
+        actor,
+        abilityAttributeTestName,
+      );
 
       const totalModifier = Number(baseValue) + Number(abilityTestModifier);
 
@@ -1884,55 +1835,6 @@ function renderWeaponLoadoutsDialog(actor) {
 // non attack ability resolution
 
 /**
- * Resolve the rating a Test Type resolves against, using the same precedence as
- * the attack paths: leadership → combat skills → skills → attributes.
- * @returns {{value: number, skillKey: string|null}}
- */
-function resolveTestRating(actor, testName) {
-  const lower = String(testName ?? "").trim().toLowerCase();
-
-  const attributeMap = {
-    strength: "str",
-    dexterity: "dex",
-    endurance: "end",
-    intelligence: "int",
-    will: "wil",
-    charisma: "cha",
-    perception: "per",
-  };
-
-  if (lower === "leadership") {
-    return {
-      value:
-        actor.type === "npc"
-          ? (actor.system.attributes.cha?.value ?? 0)
-          : (actor.system.skills?.leadership?.rating ?? 0),
-      skillKey: "leadership",
-    };
-  }
-  if (actor.system.combatSkills?.[lower]) {
-    return {
-      value: actor.system.combatSkills[lower]?.rating ?? 0,
-      skillKey: lower,
-    };
-  }
-  if (actor.system.skills?.[lower]) {
-    return { value: actor.system.skills[lower]?.rating ?? 0, skillKey: lower };
-  }
-  if (attributeMap[lower]) {
-    const shortKey = attributeMap[lower];
-    return {
-      value:
-        actor.type === "npc"
-          ? (actor.system.attributes[shortKey]?.value ?? 0)
-          : (actor.system.attributes[shortKey]?.mod ?? 0),
-      skillKey: shortKey,
-    };
-  }
-  return { value: 0, skillKey: null };
-}
-
-/**
  * Roll the Test Type of a utility (type: "other") ability or one of its
  * modifiers. Handles both the d12 speed test and the standard d100 margin of
  * success, and returns the clickable chat line for it.
@@ -1979,6 +1881,13 @@ async function runUtilityAbility(actor, ability, modifiers = []) {
   // are, so a single pack item drives the whole action.
   if (ability.system.key === "absorbBlood") {
     await runAbsorbBlood(actor, ability);
+    return;
+  }
+
+  // Krvavý pakt (Blood Pact): burn a Mind point to fill the Blood Reserve by
+  // the Maximum Transfer. Once per round, Free Action.
+  if (ability.system.key === "bloodPact") {
+    await runBloodPact(actor, ability);
     return;
   }
 
@@ -2110,6 +2019,76 @@ async function runAbsorbBlood(actor, ability) {
   const summary = game.i18n.format("REDSTEEL.Items.AbsorbBlood.result", {
     discarded: reserve,
     healed,
+  });
+
+  await ChatMessage.create({
+    speaker: ChatMessage.getSpeaker({ actor }),
+    flavor: `
+<span style="display:inline-flex; align-items:center;">
+  <img src="${ability.img}" width="36" height="36" style="margin-right:8px;">
+  <strong style="font-size:20px;">${label}</strong>
+</span>
+<hr>
+<div style="text-align:center; font-size:16px; color:#a01818;">
+  ${summary}
+</div>
+`,
+  });
+}
+
+// Krvavý pakt — the mirror image of Blood Absorption: burn one Mind point (the
+// point is spent AND the Mind maximum permanently shrinks, see mindPoints.mjs)
+// to fill the Blood Reserve by the Maximum Transfer. Free Action, once a round.
+async function runBloodPact(actor, ability) {
+  const combat = game.combat;
+  const roundKey = combat ? `${combat.id}:${combat.round}` : null;
+
+  // "Jednou za kolo" only bites inside combat — out of combat there are no
+  // rounds to limit, so the check is skipped entirely.
+  if (
+    roundKey &&
+    actor.getFlag("redsteel", "bloodPactLastRound") === roundKey
+  ) {
+    ui.notifications.warn(
+      game.i18n.localize("REDSTEEL.Items.BloodPact.alreadyUsed"),
+    );
+    return;
+  }
+
+  const pool = actor.system.stats.bloodPool ?? {};
+  const poolMax = Number(pool.max) || 0;
+  const poolValue = Number(pool.value) || 0;
+  if (poolMax <= 0 || poolValue >= poolMax) {
+    ui.notifications.warn(
+      game.i18n.localize("REDSTEEL.Items.BloodPact.reserveFull"),
+    );
+    return;
+  }
+
+  const { burnt, updates } = mindBurnUpdates(actor, 1);
+  if (burnt <= 0) {
+    ui.notifications.warn(
+      game.i18n.localize("REDSTEEL.Items.BloodPact.noMind"),
+    );
+    return;
+  }
+
+  const transfer = Number(pool.transfer) || 0;
+  const newPool = Math.min(poolMax, poolValue + transfer);
+  const gained = newPool - poolValue;
+
+  // One update so the burn and the blood it bought land together.
+  await actor.update({
+    ...updates,
+    "system.stats.bloodPool.value": newPool,
+  });
+  if (roundKey) await actor.setFlag("redsteel", "bloodPactLastRound", roundKey);
+
+  const label = ability.localizedName ?? ability.name;
+  const summary = game.i18n.format("REDSTEEL.Items.BloodPact.result", {
+    gained,
+    mindValue: Number(actor.system.stats.mind.value) || 0,
+    mindMax: Number(actor.system.stats.mind.max) || 0,
   });
 
   await ChatMessage.create({

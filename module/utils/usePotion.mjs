@@ -1,4 +1,5 @@
 import { applyPoisonToWeapon } from "./usePoison.mjs";
+import { clearBleedEffects } from "./otherActions.mjs";
 
 /**
  * Copy the buff Active Effects authored on a consumable onto an actor as
@@ -49,7 +50,9 @@ export async function usePotion() {
 
   const applyConsumableEffects = async (consumable, roll, drinkingRoll) => {
     let effectResults = "";
-    const toxicityIncrease = consumable.system.toxicity || 0;
+    // Number() on both sides: a hand-typed sheet value can be a string, and
+    // "8" + 8 silently produces 88 instead of 16.
+    const toxicityIncrease = Number(consumable.system.toxicity) || 0;
     const finalToxicity =
       drinkingRoll.total >= 0
         ? Math.floor(toxicityIncrease / 2)
@@ -57,15 +60,15 @@ export async function usePotion() {
 
     await actor.update({
       "system.stats.toxicity.value":
-        (actor.system.stats.toxicity.value || 0) + finalToxicity,
+        (Number(actor.system.stats.toxicity.value) || 0) + finalToxicity,
     });
     effectResults += `<p><b>Toxicity:</b> Increased by ${finalToxicity}</p>`;
 
     const applyStat = async (statKey, label) => {
-      const amount = roll.total || 0;
+      const amount = Number(roll.total) || 0;
       await actor.update({
         [`system.stats.${statKey}.value`]:
-          (actor.system.stats[statKey].value || 0) + amount,
+          (Number(actor.system.stats[statKey].value) || 0) + amount,
       });
       effectResults += `<p><b>${label}:</b> Increased by ${amount}</p>`;
     };
@@ -78,8 +81,19 @@ export async function usePotion() {
 
     if (consumable.system.bleed) {
       const bleedRoll = await new Roll("1d100").evaluate();
-      const result = consumable.system.bleed > bleedRoll.total ? "SUCCESS" : "";
-      effectResults += `<p><b>Stop bleed:</b> ${consumable.system.bleed} > ${bleedRoll.total} ${result}</p>`;
+      // System-wide percentage convention: a chance of N succeeds on 1..N
+      // (see resolveBleedStacks in applyDamage.mjs), so 100% is guaranteed.
+      const success = bleedRoll.total <= consumable.system.bleed;
+      let result = "";
+
+      if (success) {
+        // Same rule as First Aid / the Stop Bleeding action: a success clears
+        // every Bleeding effect, it does not peel off a single stack.
+        const removed = await clearBleedEffects(actor);
+        result = removed ? "SUCCESS" : "SUCCESS (no bleeding)";
+      }
+
+      effectResults += `<p><b>Stop bleed:</b> ${bleedRoll.total} / ${consumable.system.bleed}% ${result}</p>`;
     }
 
     // Apply any buff Active Effects authored on the potion (must run before the

@@ -67,6 +67,7 @@ const A = (id) => `Compendium.redsteel.redsteel-items.Item.${id}`;
 const ABILITY = {
   ACCURATE_SHOT: A("buuxxJT0wA3vKJNg"), // Přesný výstřel
   ANTI_LARGE: A("yx2pLONxkiwDfWpo"), // Bonus proti velkým tvorům
+  BLOOD_PACT: A("blOodPact0000001"), // Krvavý pakt
   CHARGE: A("2jCzZEc3kXL6zglG"), // Zteč — carries its own Heavy-weapon bonus dice
   CLEAVE: A("52NJ0ZhgGrHmrQ8z"), // Rozseknutí
   COUNTERATTACK: A("JltGA0Wsv6ttCUT6"), // Protiútok
@@ -635,6 +636,11 @@ export const ABILITY_GRANTS = [
     label: "Skirmisher: Útok s pohybem → Passing Strike",
     when: specNode("skirmisher", "utokSPohybem"),
     grant: [ABILITY.PASSING_STRIKE],
+  },
+  {
+    label: "School of Blood: Krvavý pakt → Blood Pact",
+    when: specNode("bloodSchool", "krvavyPakt"),
+    grant: [ABILITY.BLOOD_PACT],
   },
 ];
 

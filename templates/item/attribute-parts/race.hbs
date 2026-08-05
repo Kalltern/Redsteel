@@ -47,9 +47,9 @@
       </div>
 
       {{#if hasRaceEffects}}
-        <div class="race-choice-editor-effects">
+        <div class="race-choice-editor-effects rs-toggle-row">
           {{#each group.effectRows as |row|}}
-            <label class="race-choice-effect-row">
+            <label class="rs-toggle">
               <input
                 type="checkbox"
                 data-action="toggleRaceChoiceEffect"
@@ -57,8 +57,10 @@
                 data-effect-id="{{row.effectId}}"
                 {{#if row.member}}checked{{/if}}
               />
-              {{#if row.img}}<img src="{{row.img}}" width="16" height="16" />{{/if}}
-              <span>{{row.name}}</span>
+              <span>
+                {{#if row.img}}<img src="{{row.img}}" width="16" height="16" />{{/if}}
+                {{row.name}}
+              </span>
             </label>
           {{/each}}
         </div>

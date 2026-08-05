@@ -3,9 +3,14 @@
  *
  * Hovering any element carrying `data-tt-kind` shows a tooltip after a short
  * delay. Keep the cursor on it and the tooltip *freezes*: it becomes
- * interactive, so you can move into it and hover the links inside, each of
- * which opens its own tooltip one level deeper. Leaving the whole stack (or
- * pressing Escape, or clicking outside) tears it down.
+ * interactive, so you can move into it and hover a keyword inside, which opens
+ * a second tooltip one level deeper — and you can walk into that one too, and
+ * so on down the chain. Leaving the whole chain (or pressing Escape, or
+ * clicking outside) tears it down; nothing sticks around once you look away.
+ *
+ * The chain lives in the free margin beside the sheet so it never covers what
+ * you are reading. Each link cascades sideways from its parent while there is
+ * room, then steps *down* instead, so every tooltip in the chain stays visible.
  *
  * Markup contract:
  *   data-tt-kind   required, selects the registered content provider
@@ -30,12 +35,18 @@ const TT = {
   nestedShowDelay: 120,
   /** Slower open when a frozen stack is up, so crossing icons doesn't steal it. */
   guardedShowDelay: 450,
-  /** Grace period for crossing the gap between a tooltip and its parent. */
-  closeGrace: 220,
+  /** Grace period for crossing from a tooltip to the one it opened. */
+  closeGrace: 500,
+  /** Slack around a tooltip that still counts as "heading for it". */
+  bridge: 18,
   /** Non-frozen tooltips die almost immediately. */
   closeFast: 60,
   /** Gap between a tooltip and whatever it is anchored to. */
   gap: 10,
+  /** Never shrink a tooltip below this to fit a margin; overlap instead. */
+  minWidth: 220,
+  /** Downward offset when a link opens with no sideways room left. */
+  cascadeStep: 26,
   /** Safety rail on runaway link chains. */
   maxDepth: 5,
 };
@@ -44,13 +55,25 @@ const providers = new Map();
 
 /** @type {HTMLElement|null} */
 let root = null;
-/** @type {Array<{el: HTMLElement, source: Element, depth: number, kind: string, frozen: boolean}>} */
+
+/**
+ * The one open chain: root at index 0, each keyword you walk into one deeper.
+ * @type {Array<{el: HTMLElement, source: Element, depth: number, kind: string, frozen: boolean}>}
+ */
 let stack = [];
+
+/** Window box and margin side the current chain lives in, set by its root. */
+let chainHost = null;
+/** @type {"left"|"right"|null} */
+let chainSide = null;
 
 let showTimer = null;
 let freezeTimer = null;
 let closeTimer = null;
 let pendingSource = null;
+/** Last cursor position, so we can tell "in the gap" from "gone". */
+let pointerX = -1;
+let pointerY = -1;
 /** Bumped whenever a pending show is abandoned, so async providers can't land late. */
 let showToken = 0;
 
@@ -87,8 +110,13 @@ export function initTooltips() {
     document.body.appendChild(root);
   }
 
+  // `#rs-tooltip-root` ignores the pointer, but a frozen `.rs-tooltip` child
+  // accepts it, so clicks inside a frozen layer bubble up to here.
+  root.addEventListener("click", onTooltipClick);
+
   document.addEventListener("mouseover", onOver, false);
   document.addEventListener("mouseout", onOut, false);
+  document.addEventListener("mousemove", onMove, { passive: true });
   document.addEventListener("mousedown", onMouseDown, true);
   document.addEventListener("keydown", onKeyDown, true);
   // Any scroll or resize invalidates every anchor we measured.
@@ -104,6 +132,8 @@ export function closeAllTooltips() {
   freezeTimer = null;
   for (const layer of stack) layer.el.remove();
   stack = [];
+  chainHost = null;
+  chainSide = null;
 }
 
 /* -------------------------------------------- */
@@ -121,7 +151,7 @@ function onOver(ev) {
   const layerEl = target.closest(".rs-tooltip");
   const layerIdx = layerEl ? stack.findIndex((l) => l.el === layerEl) : -1;
 
-  // Any movement inside the stack keeps the stack alive.
+  // Any movement inside the chain keeps the chain alive.
   if (layerIdx >= 0) cancelClose();
 
   // Back onto the source that owns an open layer: keep it, drop its children.
@@ -135,11 +165,14 @@ function onOver(ev) {
     }
   }
 
-  // Over tooltip chrome but not over a link: close anything deeper.
+  // Over tooltip chrome but not over a link. The child is *not* dropped on the
+  // spot: a keyword sits wherever the sentence puts it, so the walk from that
+  // word to the tooltip it opened usually crosses this very panel. Hand it to
+  // the close timer instead, which keeps the child if the cursor reaches it.
   if (!src) {
     if (layerIdx >= 0) {
       cancelShow();
-      pruneDeeperThan(layerIdx);
+      scheduleClose();
     }
     return;
   }
@@ -167,6 +200,11 @@ function onOut(ev) {
   if (src && src === pendingSource) cancelShow();
   if (!stack.length) return;
   scheduleClose();
+}
+
+function onMove(ev) {
+  pointerX = ev.clientX;
+  pointerY = ev.clientY;
 }
 
 function onMouseDown(ev) {
@@ -273,10 +311,22 @@ function cancelClose() {
   closeTimer = null;
 }
 
+/** Is the cursor on this rect, or in the slack just around it? */
+function pointerNear(rect) {
+  return (
+    pointerX >= rect.left - TT.bridge &&
+    pointerX <= rect.right + TT.bridge &&
+    pointerY >= rect.top - TT.bridge &&
+    pointerY <= rect.bottom + TT.bridge
+  );
+}
+
 /**
- * Keep the stack up to the deepest layer the cursor is actually touching —
- * either the tooltip itself (frozen ones accept the pointer) or its source.
- * Everything past that is stale.
+ * Keep the chain up to the deepest layer the cursor is actually touching —
+ * the tooltip itself (frozen ones accept the pointer), its source, or the
+ * slack around the panel. That last one matters: the gap between a tooltip and
+ * the next is dead space belonging to no element, and without it a deliberate
+ * hand crossing that gap would drop the very panel it is reaching for.
  */
 function closeStaleLayers() {
   closeTimer = null;
@@ -284,7 +334,13 @@ function closeStaleLayers() {
   for (let i = 0; i < stack.length; i++) {
     const l = stack[i];
     if (!l.source.isConnected) break;
-    if (l.el.matches(":hover") || l.source.matches(":hover")) deepestAlive = i;
+    if (
+      l.el.matches(":hover") ||
+      l.source.matches(":hover") ||
+      pointerNear(l.el.getBoundingClientRect())
+    ) {
+      deepestAlive = i;
+    }
   }
   pruneDeeperThan(deepestAlive);
 }
@@ -292,48 +348,185 @@ function closeStaleLayers() {
 /** Remove every layer with an index greater than `idx`. */
 function pruneDeeperThan(idx) {
   while (stack.length - 1 > idx) {
-    const layer = stack.pop();
-    layer.el.remove();
-    if (!stack.length) {
-      clearTimeout(freezeTimer);
-      freezeTimer = null;
-    }
+    stack.pop().el.remove();
   }
+  if (!stack.length) {
+    clearTimeout(freezeTimer);
+    freezeTimer = null;
+    chainHost = null;
+    chainSide = null;
+  }
+}
+
+/* -------------------------------------------- */
+/*  Opening documents from a tooltip            */
+/* -------------------------------------------- */
+
+/**
+ * Any element inside a tooltip carrying `data-tt-open-uuid` opens that
+ * document. Journal pages turn their parent sheet to the right page rather
+ * than opening a page sheet of their own.
+ */
+async function onTooltipClick(ev) {
+  if (!(ev.target instanceof Element)) return;
+  const link = ev.target.closest("[data-tt-open-uuid]");
+  if (!link) return;
+  ev.preventDefault();
+  ev.stopPropagation();
+  const uuid = link.dataset.ttOpenUuid;
+  // The stack is torn down first: the journal sheet takes focus anyway, and a
+  // leftover frozen tooltip would sit on top of it.
+  closeAllTooltips();
+  await openTooltipDocument(uuid);
+}
+
+/**
+ * Resolve a uuid and show it. Compendium lookups are async, hence `fromUuid`
+ * rather than the sync variant used elsewhere in this file.
+ */
+async function openTooltipDocument(uuid) {
+  let doc = null;
+  try {
+    doc = await fromUuid(uuid);
+  } catch (err) {
+    doc = null;
+  }
+  if (!doc) {
+    ui.notifications?.warn(game.i18n.localize("REDSTEEL.Tooltip.noteMissing"));
+    return;
+  }
+  if (doc.documentName === "JournalEntryPage") {
+    const sheet = doc.parent?.sheet;
+    if (!sheet) return;
+    await sheet.render(true);
+    sheet.goToPage?.(doc.id);
+    return;
+  }
+  doc.sheet?.render(true);
 }
 
 /* -------------------------------------------- */
 /*  Positioning                                 */
 /* -------------------------------------------- */
 
+/** Breathing room between a tooltip and the viewport edge. */
+const EDGE_PAD = 4;
+
 /**
- * Depth 0 sits beside its source. Deeper layers sit beside the *parent
- * tooltip* so the chain cascades sideways instead of covering what spawned it,
- * while still lining up vertically with the link that opened them.
+ * The window box a tooltip source lives in, or null when it has none (canvas
+ * HUD, token controls).
+ *
+ * Our own sheets stamp `data-tt-window` on their root in `_onRender`, which is
+ * the only anchor we can rely on. `.application` is a documented-by-convention
+ * fallback that catches other windows (chat sidebar, dialogs) and costs
+ * nothing when it misses, since a null host just restores the old behaviour.
+ */
+function hostWindowRect(el) {
+  const host =
+    el.closest?.("[data-tt-window]") ?? el.closest?.(".application") ?? null;
+  return host ? host.getBoundingClientRect() : null;
+}
+
+/**
+ * Which free margin beside the window the whole chain should occupy. Prefer
+ * the side that actually fits; when neither does, take the roomier one and let
+ * the caller clamp.
+ */
+function chooseSide(host, width) {
+  const right = window.innerWidth - host.right - TT.gap - EDGE_PAD;
+  const left = host.left - TT.gap - EDGE_PAD;
+  if (width <= right) return "right";
+  if (width <= left) return "left";
+  return right >= left ? "right" : "left";
+}
+
+/**
+ * Tooltips live in the free margin *beside* the sheet, never on top of it: a
+ * frozen panel that covered the stat block next to the one you are reading
+ * would defeat the point. The first layer picks a side and the rest of the
+ * chain follows it, cascading away from the window.
+ *
+ * Vertically each layer still lines up with whatever opened it, which is what
+ * ties the panel to the hovered row. Sources with no owning window fall back to
+ * the old "sit beside the source" behaviour.
  */
 function positionLayer(layer) {
-  const pad = 4;
   const srcRect = layer.source.getBoundingClientRect();
-  const anchor =
-    layer.depth === 0
-      ? srcRect
-      : stack[layer.depth - 1]?.el.getBoundingClientRect() ?? srcRect;
-
   const el = layer.el;
   el.style.left = "0px";
   el.style.top = "0px";
-  const rect = el.getBoundingClientRect();
+  let rect = el.getBoundingClientRect();
 
-  let left = anchor.right + TT.gap;
-  if (left + rect.width > window.innerWidth - pad) {
-    left = anchor.left - rect.width - TT.gap;
+  // The side is decided once per chain, by the root that opened it.
+  if (layer.depth === 0) {
+    chainHost = hostWindowRect(layer.source);
+    chainSide = chainHost ? chooseSide(chainHost, rect.width) : null;
   }
-  left = Math.max(pad, Math.min(left, window.innerWidth - rect.width - pad));
 
-  let top = srcRect.top;
-  if (top + rect.height > window.innerHeight - pad) {
-    top = window.innerHeight - rect.height - pad;
+  // On a narrow margin, giving up some width keeps the sheet fully visible.
+  // Below `minWidth` the panel would be unreadable, so we stop shrinking and
+  // accept an overlap instead.
+  if (chainHost) {
+    const room =
+      chainSide === "right"
+        ? window.innerWidth - chainHost.right - TT.gap - EDGE_PAD
+        : chainHost.left - TT.gap - EDGE_PAD;
+    if (rect.width > room && room >= TT.minWidth) {
+      el.style.maxWidth = `${Math.floor(room)}px`;
+      rect = el.getBoundingClientRect();
+    }
   }
-  top = Math.max(pad, top);
+
+  const parent = stack[layer.depth - 1]?.el.getBoundingClientRect() ?? null;
+  let left = null;
+  let top = null;
+
+  if (chainHost) {
+    // Cascade sideways from the parent, staying clear of the sheet.
+    if (chainSide === "right") {
+      const wanted = Math.max(chainHost.right, parent?.right ?? -Infinity) + TT.gap;
+      if (wanted + rect.width <= window.innerWidth - EDGE_PAD) left = wanted;
+    } else {
+      const wanted =
+        Math.min(chainHost.left, parent?.left ?? Infinity) - rect.width - TT.gap;
+      if (wanted >= EDGE_PAD) left = wanted;
+    }
+
+    // Out of sideways room: step *down* from the parent in the same column
+    // instead, so the parent stays readable rather than being covered.
+    if (left === null && parent) {
+      left = parent.left;
+      top = parent.top + TT.cascadeStep;
+    }
+
+    if (left === null) {
+      // Root with a margin too narrow for it: overlapping the sheet beats
+      // running off the screen.
+      left =
+        chainSide === "right"
+          ? window.innerWidth - rect.width - EDGE_PAD
+          : EDGE_PAD;
+    }
+  } else {
+    // No owning window (canvas HUD, token controls): sit beside the source.
+    const anchor = layer.depth === 0 ? srcRect : parent ?? srcRect;
+    left = anchor.right + TT.gap;
+    if (left + rect.width > window.innerWidth - EDGE_PAD) {
+      left = anchor.left - rect.width - TT.gap;
+    }
+  }
+
+  left = Math.max(
+    EDGE_PAD,
+    Math.min(left, window.innerWidth - rect.width - EDGE_PAD),
+  );
+
+  // Default: line up with whatever opened this layer.
+  if (top === null) top = srcRect.top;
+  if (top + rect.height > window.innerHeight - EDGE_PAD) {
+    top = window.innerHeight - rect.height - EDGE_PAD;
+  }
+  top = Math.max(EDGE_PAD, top);
 
   el.style.left = `${Math.round(left)}px`;
   el.style.top = `${Math.round(top)}px`;

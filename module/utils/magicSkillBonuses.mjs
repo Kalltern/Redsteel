@@ -3,11 +3,13 @@ import { getSpellPower } from "./spellPower.mjs";
 import { withRollBias, applyDesperateCrit } from "./rollAdvantage.mjs";
 import { getCritDegreeTriggers } from "../helpers/specialisations.mjs";
 import { hasHtmlContent } from "./chatBlocks.mjs";
+import { getStrikeId } from "./strikes.mjs";
 import {
   isSpeedTest,
   rollSpeedTest,
   renderSpeedTestLine,
 } from "./speedTest.mjs";
+import { resolveTestRating } from "./testRating.mjs";
 
 // --- Helper for Dialogs (CSS Injection) ---
 function _injectDialogCSS() {
@@ -806,6 +808,37 @@ export async function deductMana(actor, spell) {
  * @param {object} spell - The selected spell item object. (NEW)
  * @returns {object} - An object containing aggregated bonus values.
  */
+/**
+ * Maleficarum's Hexing (Zakletí): every offensive Darkness spell gets a chance
+ * to Hex its target, scaling with the spell's rank. Wild-rank spells are not on
+ * the table and so grant nothing, matching the other school-trait tables.
+ */
+export const DARK_HEX_RANK_CHANCES = {
+  apprentice: 30,
+  expert: 50,
+  master: 75,
+  grandmaster: 100,
+};
+
+/**
+ * The Hex chance this caster's Hexing perk adds to this spell, or 0 when the
+ * perk is not unlocked / the spell does not qualify. Shared by the cast path
+ * (applySchoolTraitBonus, below) and the strike path (applyStrikeEffect in
+ * castSpell.mjs) so both read one rule.
+ *
+ * @param {Actor} actor - The casting actor.
+ * @param {Item} spell - The spell being cast.
+ * @returns {number} Hex chance in percent, 0 when it does not apply.
+ */
+export function getDarkHexChance(actor, spell) {
+  const unlocked =
+    actor?.system?.specialisations?.maleficarum?.nodes?.zakleti === true;
+  if (!unlocked) return 0;
+  if (spell?.system?.type !== "darkness") return 0;
+  if (!spell?.system?.isOffensive) return 0;
+  return DARK_HEX_RANK_CHANCES[spell.system.rank] ?? 0;
+}
+
 export function calculateAttackBonuses(actor, spell) {
   let attackBonus = 0;
   let damageBonus = 0;
@@ -858,11 +891,14 @@ export function calculateAttackBonuses(actor, spell) {
       master: 20,
       grandmaster: 25,
     },
+
+    darkness: DARK_HEX_RANK_CHANCES,
   };
   const schoolEffects = {
     fire: "burn",
     water: "slow",
     air: "stagger",
+    darkness: "hex",
   };
 
   function applyEffect(effectModifiers, effect, value) {
@@ -903,6 +939,16 @@ export function calculateAttackBonuses(actor, spell) {
         const bonus = rankBonusTables.air[rank];
         if (bonus) applyEffect(effectModifiers, schoolEffects.air, bonus);
       }
+    }
+
+    // DARK — Maleficarum's Hexing (Zakletí). Unlike the three school traits
+    // above this comes from a specialisation node, and it rides EVERY offensive
+    // Darkness spell rather than only those of a matching damage type.
+    // Strike spells are the one exclusion: they buff the caster and hit nobody,
+    // so their Hex is baked into the weapon enchant instead (applyStrikeEffect).
+    if (school === "darkness" && !getStrikeId(spell)) {
+      const bonus = getDarkHexChance(actor, spell);
+      if (bonus) applyEffect(effectModifiers, schoolEffects.darkness, bonus);
     }
   }
 
@@ -993,6 +1039,32 @@ export function getCastChance(actor, spell, focusSpent = 0) {
   return Math.max(0, Math.min(100, chance));
 }
 
+/**
+ * An *uncontested* spell is one where nothing on the other side resolves
+ * against the cast: no defense roll, no attribute test, no damage packet aimed
+ * at anyone. Silence and Relocation qualify without being buffs; Dark Strike
+ * qualifies because the harm it enables is delivered later by the weapon
+ * attack, which rolls its own attack against its own defender.
+ *
+ * Two consequences, both of which follow from that one sentence:
+ *   - Magic ATK is only ever a defender's target number, so an uncontested
+ *     cast must not print one.
+ *   - With "No Channeling Evaluation" the margin already gates nothing (crits
+ *     are suppressed, effects apply regardless), so the d100 is pure noise and
+ *     is skipped outright.
+ *
+ * Authored per spell (`system.uncontested`). Strike spells are always
+ * uncontested by definition, so they qualify without needing the flag ticked
+ * on every copy already sitting on a live actor.
+ *
+ * @param {Item} spell
+ * @returns {boolean}
+ */
+export function isUncontestedSpell(spell) {
+  if (spell?.system?.uncontested === true) return true;
+  return !!getStrikeId(spell);
+}
+
 export async function performAttackRoll(
   actor,
   spell,
@@ -1002,6 +1074,22 @@ export async function performAttackRoll(
 ) {
   const effectiveDifficulty = getEffectiveDifficulty(spell, focusSpent);
   const { ignoreChanneling = false } = options;
+
+  // Uncontested + "No Channeling Evaluation": there is nothing left for the
+  // roll to decide, so don't roll at all. `skipped` marks the cast as landed
+  // for spellCastSucceeded, which keeps the four effect-delivery paths
+  // (casterEffects, strikes, automation, the card's Apply button) in agreement.
+  if (ignoreChanneling && isUncontestedSpell(spell)) {
+    return {
+      attackRoll: null,
+      skipped: true,
+      critSuccess: false,
+      critFailure: false,
+      displayCritSuccess: false,
+      displayCritFailure: false,
+    };
+  }
+
   const critSuccessThreshold =
     actor.system.combatSkills.channeling.criticalSuccessThreshold;
   const critFailureThreshold =
@@ -1101,20 +1189,11 @@ export async function finalizeRollsAndPostChat(
     : spellAttributeTestName.charAt(0).toUpperCase() +
       spellAttributeTestName.slice(1);
 
-  const attributeMap = {
-    strength: "str",
-    dexterity: "dex",
-    endurance: "end",
-    intelligence: "int",
-    will: "wil",
-    charisma: "cha",
-    perception: "per",
-  };
   let concatRollAndDescription = spell.system.description;
   console.log(`Spell Description:`, concatRollAndDescription);
   let attributeTestRoll = null;
   if (isSpeedTest(spellAttributeTestName)) {
-    // Speed test: d12 + Initiative (+ Speed), higher is better.
+    // Speed test: d12 + Initiative + Speed, higher is better.
     const speedRoll = await rollSpeedTest(actor, {
       modifier: spellTestModifier,
     });
@@ -1136,14 +1215,12 @@ export async function finalizeRollsAndPostChat(
     spellAttributeTestName &&
     spellAttributeTestName !== "-- Select a Type --"
   ) {
-    const shortKey =
-      attributeMap[spellAttributeTestName.toLowerCase()] ??
-      spellAttributeTestName;
-
-    let selectedAttributeModifier = actor.system.attributes[shortKey]?.mod ?? 0;
-    if (actor.type === "npc") {
-      selectedAttributeModifier = actor.system.attributes[shortKey]?.value ?? 0;
-    }
+    // Resolves skills and combat skills too, not just attributes — the Test Type
+    // dropdown offers Leadership and Channeling alongside the seven attributes.
+    const { value: selectedAttributeModifier } = resolveTestRating(
+      actor,
+      spellAttributeTestName,
+    );
 
     const attributeRoll = new Roll(
       `(${selectedAttributeModifier} + ${spellTestModifier}) - 1d100`,
@@ -1208,7 +1285,11 @@ export async function finalizeRollsAndPostChat(
   for (const [key, effectValue] of Object.entries(spellEffects)) {
     let finalEffectName = "";
 
-    const builtinEffects = ["burn", "slow", "stagger", "bleed"];
+    // Names a perk can inject without the spell authoring an extraN slot for
+    // them. Anything not listed here only survives when the spell itself
+    // declares it (effectTypeN / effectNameN), so a perk-only effect would be
+    // silently dropped — that is why "hex" (Maleficarum's Hexing) is here.
+    const builtinEffects = ["burn", "slow", "stagger", "bleed", "hex"];
 
     if (builtinEffects.includes(key)) {
       finalEffectName = key.toLowerCase();
@@ -1302,8 +1383,14 @@ export async function finalizeRollsAndPostChat(
   const critDamageTotal = critBonusDamage + actorCritBonus + damageTotal;
 
   // --- CHAT MESSAGE CONSTRUCTION ---
-  const attack =
-    attackRoll.total + (actor.system.combatSkills.channeling.attack || 0);
+  // Magic ATK is the number a defender rolls against. Uncontested spells have
+  // no defender, and nobody defends against a heal either, so in both cases the
+  // tag would be a number that never gets compared to anything.
+  const showMagicAttack =
+    !isUncontestedSpell(spell) && !spell.system.isHealing;
+  const attack = attackRoll
+    ? attackRoll.total + (actor.system.combatSkills.channeling.attack || 0)
+    : null;
   const rawTemplate = concatRollAndDescription;
   const compiled = Handlebars.compile(rawTemplate);
   const renderedDescription = compiled(rollData);
@@ -1312,7 +1399,11 @@ export async function finalizeRollsAndPostChat(
       <span class="action-tag range ">Range ${spell.system.range} </span>
       <span class="action-tag spellClass ">${spell.system.spellClass} Spell</span>
       <span class="action-tag rank ">${spell.system.rank} rank</span>
-      <span class="action-tag magicAttack ">Magic ATK ${attack}</span>
+      ${
+        showMagicAttack && attack !== null
+          ? `<span class="action-tag magicAttack ">Magic ATK ${attack}</span>`
+          : ""
+      }
       <span class="action-tag actionCost ">Actions:${spell.system.actionCost}</span>
       `
     : "";
@@ -1412,20 +1503,27 @@ export async function finalizeRollsAndPostChat(
 `
     : "";
 
-  const rolls = [attackRoll];
+  // An uncontested cast under "No Channeling Evaluation" never rolled, so there
+  // is no margin to attach or render (see performAttackRoll).
+  const rolls = attackRoll ? [attackRoll] : [];
 
   if (hasDamage && damageRoll instanceof Roll) {
     rolls.push(damageRoll);
   }
 
-  const attackHTML = await attackRoll.render();
+  const attackHTML = attackRoll ? await attackRoll.render() : "";
   const damageHTML = hasDamage ? await damageRoll.render() : "";
   const content = `
 <div class="${hasDamage ? "dual-roll" : "single-roll"}">
 
   <div class="roll-column">
-    <div class="roll-label">Margin of Success</div>
-    ${attackHTML}
+    ${
+      attackRoll
+        ? `<div class="roll-label">Margin of Success</div>
+    ${attackHTML}`
+        : `<div class="roll-label">Uncontested</div>
+    <div style="text-align:center; opacity:.8;">No channeling evaluation</div>`
+    }
   </div>
 
   ${
@@ -1604,6 +1702,9 @@ export async function finalizeRollsAndPostChat(
  * @returns {boolean}
  */
 export function spellCastSucceeded(attackResults) {
+  // An uncontested cast that skipped its channeling roll has nothing to judge:
+  // it landed by definition (see isUncontestedSpell).
+  if (attackResults?.skipped === true) return true;
   // A margin of exactly 0 is a success, so this must not lean on falsiness.
   const total = Number(attackResults?.attackRoll?.total);
   return Number.isFinite(total) && total >= 0;

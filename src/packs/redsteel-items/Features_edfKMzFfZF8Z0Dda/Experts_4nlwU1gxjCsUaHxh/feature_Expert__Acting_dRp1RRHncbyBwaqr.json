@@ -1,0 +1,52 @@
+{
+  "folder": "4nlwU1gxjCsUaHxh",
+  "name": "Expert: Acting",
+  "type": "feature",
+  "img": "icons/commodities/treasure/medal-ribbon-striped-gold-red.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.ExpertActing.name",
+    "description": "<p>Twice per day you may reroll this ability.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": [
+        {
+          "label": "",
+          "skillsRaw": "acting",
+          "max": 2,
+          "used": 0
+        }
+      ]
+    },
+    "option": "feature"
+  },
+  "effects": [],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.9.55",
+    "createdTime": 1785801600000,
+    "modifiedTime": 1785801600000,
+    "lastModifiedBy": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 100000,
+  "_id": "dRp1RRHncbyBwaqr",
+  "_key": "!items!dRp1RRHncbyBwaqr"
+}

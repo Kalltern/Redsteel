@@ -80,6 +80,47 @@
   </div>
 
 </div>
+{{!-- Maximum Mind. The ceiling is derived (Will + bonus − burned), so it is
+      steered by these two knobs rather than typed directly. Burned points are
+      the permanent loss from Blood Pact and friends; restoring one (ritual or
+      potion, both resolved at the table) means lowering the counter here. --}}
+<div class="grid grid-10col configstats">
+      <div class="grid-span-4"></div>
+  <div class="grid-span-1">
+        <label class="resource-label">{{localize
+            "REDSTEEL.Actor.Character.stats.mind.bonus.label"
+          }}</label>
+        <input
+          type="number"
+          name="system.stats.mind.bonus"
+          value="{{system.stats.mind.bonus}}"
+          data-dtype="Number"
+          data-class="stat-input"
+          data-tooltip="{{localize 'REDSTEEL.Actor.Character.stats.mind.bonus.hint'}}"
+        />
+  </div>
+  <div class="grid-span-1">
+        <label class="resource-label">{{localize
+            "REDSTEEL.Actor.Character.stats.mind.burned.label"
+          }}</label>
+        <input
+          type="number"
+          min="0"
+          name="system.stats.mind.burned"
+          value="{{system.stats.mind.burned}}"
+          data-dtype="Number"
+          data-class="stat-input"
+          data-tooltip="{{localize 'REDSTEEL.Actor.Character.stats.mind.burned.hint'}}"
+        />
+  </div>
+  <div class="grid-span-2">
+        <label class="resource-label">{{localize
+            "REDSTEEL.Actor.Character.stats.mind.max.label"
+          }}</label>
+        <span class="resource-label">{{system.stats.mind.value}} / {{system.stats.mind.max}}</span>
+  </div>
+
+</div>
 {{!-- Absorb pools. Two independent wards: physical damage can only be
       soaked by the physical pool, magical damage only by the magical one
       (see classifyDamagePacket in combatSkillBonuses.mjs). --}}
@@ -191,73 +232,73 @@
   </div>
 </div>
 <hr>
-  <section class="config-container grid grid-3col">
-    
+  <section class="config-container rs-toggle-row">
+
 {{#each system.combatSkills as |skill key|}}
-         <label class="toggle-label">
-          <input 
-            type="checkbox" 
+        <label class="rs-toggle">
+          <input
+            type="checkbox"
             name="system.combatSkills.{{key}}.visible"
-            data-skill="{{key}}" 
+            data-skill="{{key}}"
             {{#if skill.visible}}checked{{/if}}>
-             {{key}}
-        </label>       
+          <span>{{key}}</span>
+        </label>
 {{/each}}
 
 {{#each system.weaponSkills as |skill key|}}
-         <label class="toggle-label">
-          <input 
-            type="checkbox" 
+        <label class="rs-toggle">
+          <input
+            type="checkbox"
             name="system.weaponSkills.{{key}}.visible"
-            data-skill="{{key}}" 
+            data-skill="{{key}}"
             {{#if skill.visible}}checked{{/if}}>
-             {{key}}
-        </label>       
+          <span>{{key}}</span>
+        </label>
   {{/each}}
 
 {{#each system.doctrines as |skill key|}}
-         <label class="toggle-label">
-          <input 
-            type="checkbox" 
+        <label class="rs-toggle">
+          <input
+            type="checkbox"
             name="system.doctrines.{{key}}.visible"
-            data-skill="{{key}}" 
+            data-skill="{{key}}"
             {{#if skill.visible}}checked{{/if}}>
-             {{key}}
-        </label>       
+          <span>{{key}}</span>
+        </label>
    {{/each}}
 
 {{#each system.schools as |skill key|}}
       {{!-- Blood is gated by its specialisation, not a school-rank toggle. --}}
       {{#unless (eq key "blood")}}
-         <label class="toggle-label">
+        <label class="rs-toggle">
           <input
             type="checkbox"
             name="system.schools.{{key}}.visible"
             data-skill="{{key}}"
             {{#if skill.visible}}checked{{/if}}>
-             {{key}}
+          <span>{{key}}</span>
         </label>
       {{/unless}}
   {{/each}}
-  
+
 {{#each system.skills as |skill key|}}
-         <label class="toggle-label">
+        <label class="rs-toggle">
           <input
             type="checkbox"
             name="system.skills.{{key}}.visible"
             data-skill="{{key}}"
             {{#if skill.visible}}checked{{/if}}>
-             {{key}}
+          <span>{{key}}</span>
         </label>
    {{/each}}
 
 {{#each @root.config.specialisations as |spec key|}}
-         <label class="toggle-label">
+        <label class="rs-toggle">
           <input
             type="checkbox"
             name="system.specialisations.{{key}}.active"
             {{#if (lookup (lookup @root.system.specialisations key) "active")}}checked{{/if}}>
-             {{localize spec.label}}
+          <span>{{localize spec.label}}</span>
         </label>
    {{/each}}
 </section>

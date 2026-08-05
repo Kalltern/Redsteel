@@ -2,6 +2,7 @@
 import { RedsteelActor } from "./documents/actor.mjs";
 import { RedsteelItem } from "./documents/item.mjs";
 import { RedsteelCombat } from "./documents/combat.mjs";
+import { RedsteelCombatant } from "./documents/combatant.mjs";
 import { RedsteelActiveEffect } from "./documents/effects.mjs";
 import { HelpOverlay } from "./documents/helpOverlay.mjs";
 // Import sheet classes.
@@ -17,7 +18,10 @@ import {
   registerCustomConditions,
   resolveEffectDefinition,
 } from "./utils/customConditions.mjs";
-import { wireAttributeFollowups } from "./utils/attributeFollowup.mjs";
+import {
+  wireAttributeFollowups,
+  renderMarginFollowupLine,
+} from "./utils/attributeFollowup.mjs";
 import { wireSpeedFollowups } from "./utils/speedTest.mjs";
 import { registerRollModifier } from "./utils/rollModifier.mjs";
 import { initTooltips } from "./utils/tooltips.mjs";
@@ -362,6 +366,9 @@ Hooks.once("init", function () {
   CONFIG.Token.objectClass = RedsteelToken;
   CONFIG.Item.documentClass = RedsteelItem;
   CONFIG.Combat.documentClass = RedsteelCombat;
+  // Turn order is the Speed Test — see documents/combatant.mjs for why the
+  // formula is pinned on the Combatant as well as in RedsteelCombat.
+  CONFIG.Combatant.documentClass = RedsteelCombatant;
   CONFIG.ActiveEffect.documentClass = RedsteelActiveEffect;
   CONFIG.ui.items = RedsteelItemDirectory;
   CONFIG.statusEffects = REDSTEEL.statusEffects;
@@ -1370,16 +1377,31 @@ async function executeReroll(message, sourceLabel) {
     ? `<p style="text-align:center; font-size:12px; opacity:0.8;"><i class="fa-light fa-sparkles"></i> Cast succeeded on the reroll — caster effects applied.</p>`
     : "";
 
+  // An attribute card posts a clickable versus-Test line. The reroll builds a
+  // fresh flavor, so rebuild that line against the new margin — otherwise the
+  // only clickable number left in chat is the one that was just rerolled away.
+  const versusTest = message.getFlag("redsteel", "versusTest");
+  const versusChance = message.getFlag("redsteel", "versusChance");
+  const versusNote = versusTest
+    ? `<p style="text-align:center;">${renderMarginFollowupLine({
+        margin: roll.total,
+        source: rollName ?? "",
+        chance: versusChance ?? null,
+        result: roll.result,
+      })}</p>`
+    : "";
+
   await roll.toMessage({
     speaker: message.speaker ?? ChatMessage.getSpeaker({ user: game.user }),
     flavor: `<p style="text-align: center; font-size: 20px;"><b><i class="fa-light fa-dice-d20"></i> ${rollName} <i class="fa-light fa-dice-d20"></i><hr></b></p>
-          <p style="text-align: center; font-size: 20px;"><b>${flavorText}</b></p>${sourceNote}${rescuedNote}`,
+          <p style="text-align: center; font-size: 20px;"><b>${flavorText}</b></p>${versusNote}${sourceNote}${rescuedNote}`,
     flags: {
       redsteel: {
         rollName,
         skill,
         criticalSuccessThreshold,
         criticalFailureThreshold,
+        ...(versusTest && { versusTest, versusChance }),
         // Still failed? Keep the context alive so the next reroll can rescue
         // it too. Once applied, drop it so nothing double-applies.
         ...(pendingCast && !rescued && { pendingCast }),
@@ -2310,6 +2332,54 @@ Hooks.once("ready", async () => {
   }
 
   console.log("Redsteel | Migration complete");
+});
+
+/**
+ * NPC movement (`secondaryAttributes.mov`) was folded into the same Speed
+ * attribute characters use (`secondaryAttributes.spd`), so speed debuffs and
+ * the d12 speed test work on NPCs with no extra wiring. Carry the stored value
+ * across and drop the old key. Idempotent: once `mov` is gone this no-ops.
+ */
+Hooks.once("ready", async () => {
+  if (!game.user.isGM) return;
+
+  /** @returns {object|null} Update payload, or null when nothing to migrate. */
+  const buildUpdate = (system) => {
+    const mov = system?.secondaryAttributes?.mov;
+    if (!mov) return null;
+    return {
+      "system.secondaryAttributes.spd.value": Number(mov.value) || 0,
+      "system.secondaryAttributes.spd.bonus": Number(mov.bonus) || 0,
+      "system.secondaryAttributes.-=mov": null,
+    };
+  };
+
+  let migrated = 0;
+
+  for (const actor of game.actors) {
+    if (actor.type !== "npc") continue;
+    const update = buildUpdate(actor.system);
+    if (!update) continue;
+    await actor.update(update);
+    migrated++;
+  }
+
+  // Unlinked tokens keep their own copy of the data in the actor delta.
+  for (const scene of game.scenes) {
+    for (const token of scene.tokens.contents) {
+      if (token.actorLink) continue;
+      const update = buildUpdate(token.delta?.system);
+      if (!update) continue;
+      await token.actor?.update(update);
+      migrated++;
+    }
+  }
+
+  if (migrated) {
+    console.log(
+      `Redsteel | Migrated NPC movement → Speed on ${migrated} actors`,
+    );
+  }
 });
 
 Hooks.on("renderChatMessageHTML", (message, html) => {

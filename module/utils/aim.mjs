@@ -607,15 +607,11 @@ const FA_FAMILY = ["Font Awesome 6 Pro", "Font Awesome 6 Free", "FontAwesome"];
 const ICON_MOVE = ""; // fa-person-running
 const ICON_ARMOR = ""; // fa-shield-halved
 
-/** Movement + armor-total for a token, by actor type. */
+/** Movement + armor-total for a token. Movement is Speed for every actor type. */
 function getTokenStats(token) {
   const sys = token?.actor?.system ?? {};
   const armor = Math.round(sys.armor?.total ?? 0);
-  const sa = sys.secondaryAttributes ?? {};
-  const movement =
-    token?.actor?.type === "npc"
-      ? (sa.mov?.total ?? 0)
-      : (sa.spd?.total ?? sa.mov?.total ?? 0);
+  const movement = sys.secondaryAttributes?.spd?.total ?? 0;
   return { movement: Math.round(movement), armor };
 }
 

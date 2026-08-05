@@ -16,7 +16,7 @@
 
       
         <div class="grid-span-1">
-          <label class="resource-label">{{localize "REDSTEEL.Item.Weapon.FIELDS.rollMod.label"}}</label>
+          <label class="resource-label" data-tt-kind="weaponField" data-tt-id="rollMod">{{localize "REDSTEEL.Item.Weapon.FIELDS.rollMod.label"}}</label>
           <input
             type="text"
             name="system.offhandProperties.diceBonus"
@@ -27,7 +27,7 @@
         </div>
 
         <div class="grid-span-1">
-          <label class="resource-label">{{localize "REDSTEEL.Item.Weapon.FIELDS.penetration.label"}}</label>
+          <label class="resource-label" data-tt-kind="weaponField" data-tt-id="penetration">{{localize "REDSTEEL.Item.Weapon.FIELDS.penetration.label"}}</label>
           <input
             type="number"
             name="system.offhandProperties.penetration"
@@ -37,7 +37,7 @@
           />
         </div>
         <div class="grid-span-1">
-        <label class="resource-label">{{localize
+        <label class="resource-label" data-tt-kind="weaponField" data-tt-id="attack">{{localize
             "REDSTEEL.Item.Weapon.FIELDS.attack.label"
           }}</label>
         <input
@@ -48,7 +48,7 @@
         />
       </div>
       <div class="grid-span-1">
-        <label class="resource-label">{{localize
+        <label class="resource-label" data-tt-kind="weaponField" data-tt-id="defense">{{localize
             "REDSTEEL.Item.Weapon.FIELDS.defense.label"
           }}</label>
         <input
@@ -60,7 +60,7 @@
       </div>
 
       <div class="grid-span-1">
-        <label class="resource-label">{{localize
+        <label class="resource-label" data-tt-kind="weaponField" data-tt-id="critRange">{{localize
             "REDSTEEL.Item.Weapon.FIELDS.critRange.label"
           }}</label>
         <input
@@ -72,7 +72,7 @@
       </div>
 
       <div class="grid-span-1">
-        <label class="resource-label">{{localize
+        <label class="resource-label" data-tt-kind="weaponField" data-tt-id="critChance">{{localize
             "REDSTEEL.Item.Weapon.FIELDS.critChance.label"
           }}</label>
         <input
@@ -84,7 +84,7 @@
       </div>
 
       <div class="grid-span-1">
-        <label class="resource-label">{{localize
+        <label class="resource-label" data-tt-kind="weaponField" data-tt-id="critFail">{{localize
             "REDSTEEL.Item.Weapon.FIELDS.critFail.label"
           }}</label>
         <input
@@ -96,7 +96,7 @@
       </div>
 
       <div class="grid-span-1">
-        <label class="resource-label">{{localize
+        <label class="resource-label" data-tt-kind="weaponField" data-tt-id="critDefense">{{localize
             "REDSTEEL.Item.Weapon.FIELDS.critDefense.label"
           }}</label>
         <input
@@ -107,7 +107,7 @@
         />
       </div>
       <div class="grid-span-1">
-        <label class="resource-label">{{localize
+        <label class="resource-label" data-tt-kind="weaponField" data-tt-id="critDodge">{{localize
             "REDSTEEL.Item.Weapon.FIELDS.critDodge.label"
           }}</label>
         <input
@@ -119,7 +119,7 @@
       </div>
 
       <div class="grid-span-1">
-        <label class="resource-label">{{localize
+        <label class="resource-label" data-tt-kind="weaponField" data-tt-id="dodge">{{localize
             "REDSTEEL.Item.Weapon.FIELDS.dodge.label"
           }}</label>
         <input
@@ -131,7 +131,7 @@
       </div>
 
       <div class="grid-span-1">
-        <label class="resource-label">{{localize
+        <label class="resource-label" data-tt-kind="weaponField" data-tt-id="breakthrough">{{localize
             "REDSTEEL.Item.Weapon.FIELDS.breakthrough.label"
           }}</label>
         <input
@@ -143,7 +143,7 @@
         />
       </div>
       <div class="grid-span-1">
-        <label class="resource-label">{{localize
+        <label class="resource-label" data-tt-kind="weaponField" data-tt-id="sneakDamage">{{localize
             "REDSTEEL.Item.Weapon.FIELDS.sneakDamage.label"
           }}</label>
         <input
@@ -159,20 +159,27 @@
     </div>
 
   </div>
- <div class="grid grid-4col">
+ <div class="rs-toggle-row">
 
-  <label class="resource-label">{{localize "dimakerus"}}</label>
-  <input type="checkbox" name="system.offhandProperties.doctrines.dimakerus" {{checked system.offhandProperties.doctrines.dimakerus}} />
+  <label class="rs-toggle">
+    <input type="checkbox" name="system.offhandProperties.doctrines.dimakerus" {{checked system.offhandProperties.doctrines.dimakerus}} />
+    <span>{{localize "dimakerus"}}</span>
+  </label>
 
-  <label class="resource-label">{{localize "duelist"}}</label>
-  <input type="checkbox" name="system.offhandProperties.doctrines.duelist" {{checked system.offhandProperties.doctrines.duelist}} />
+  <label class="rs-toggle">
+    <input type="checkbox" name="system.offhandProperties.doctrines.duelist" {{checked system.offhandProperties.doctrines.duelist}} />
+    <span>{{localize "duelist"}}</span>
+  </label>
 
-  <label class="resource-label">{{localize "monk"}}</label>
-  <input type="checkbox" name="system.offhandProperties.doctrines.monk" {{checked system.offhandProperties.doctrines.monk}} />
+  <label class="rs-toggle">
+    <input type="checkbox" name="system.offhandProperties.doctrines.monk" {{checked system.offhandProperties.doctrines.monk}} />
+    <span>{{localize "monk"}}</span>
+  </label>
 
-     <label class="resource-label">{{localize "rogue"}}</label>
-  <input type="checkbox" name="system.offhandProperties.doctrines.rogue" {{checked system.offhandProperties.doctrines.rogue}} />
-<br>
+  <label class="rs-toggle">
+    <input type="checkbox" name="system.offhandProperties.doctrines.rogue" {{checked system.offhandProperties.doctrines.rogue}} />
+    <span>{{localize "rogue"}}</span>
+  </label>
 </div>
 <div class="grid grid-3col">
 
@@ -181,7 +188,7 @@
     -------------------------- --}}
 
     <div class="grid-span-1 effect-row">
-      <label class="resource-label">
+      <label class="resource-label" data-tt-kind="weaponField" data-tt-id="stagger">
         {{localize "REDSTEEL.Item.Weapon.FIELDS.stagger.label"}}
       </label>
       <input
@@ -193,7 +200,7 @@
     </div>
 
     <div class="grid-span-1 effect-row">
-      <label class="resource-label">
+      <label class="resource-label" data-tt-kind="weaponField" data-tt-id="bleed">
         {{localize "REDSTEEL.Item.Weapon.FIELDS.bleed.label"}}
       </label>
       <input

@@ -58,4 +58,45 @@
       </p>
     {{/each}}
   </div>
+
+  <hr />
+
+  <h3>{{localize "REDSTEEL.Item.Spell.FIELDS.propertiesHeader.label"}}</h3>
+  <div class='rs-toggle-row'>
+    <label class='rs-toggle'>
+      <input
+        type='checkbox'
+        name='system.isOffensive'
+        {{#if system.isOffensive}}checked{{/if}}
+      />
+      <span>{{localize "REDSTEEL.Item.Spell.FIELDS.isOffensive.label"}}</span>
+    </label>
+    <label
+      class='rs-toggle'
+      data-tooltip='{{localize "REDSTEEL.Item.Spell.FIELDS.uncontested.hint"}}'
+    >
+      <input
+        type='checkbox'
+        name='system.uncontested'
+        {{#if system.uncontested}}checked{{/if}}
+      />
+      <span>{{localize "REDSTEEL.Item.Spell.FIELDS.uncontested.label"}}</span>
+    </label>
+    <label class='rs-toggle'>
+      <input
+        type='checkbox'
+        name='system.sustained'
+        {{#if system.sustained}}checked{{/if}}
+      />
+      <span>{{localize "REDSTEEL.Item.Spell.FIELDS.sustained.label"}}</span>
+    </label>
+    <label class='rs-toggle'>
+      <input
+        type='checkbox'
+        name='system.isHealing'
+        {{#if system.isHealing}}checked{{/if}}
+      />
+      <span>{{localize "REDSTEEL.Item.Spell.FIELDS.isHealing.label"}}</span>
+    </label>
+  </div>
 </section>

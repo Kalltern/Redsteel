@@ -17,13 +17,13 @@
     <div class="resource-bars">
 
       <div class="resource-bar health">
-        <div class="resource-bar-track" title="{{localize 'REDSTEEL.Actor.Character.stats.health.value.label'}}">
+        <div class="resource-bar-track" data-tt-kind="stat" data-tt-id="health">
           <div class="resource-bar-fill" style="width: {{percentOf system.stats.health.value system.stats.health.max}}%"></div>
           <div class="resource-bar-values">
             <input
               type="text"
               class="resource-bar-current"
-              name="system.stats.health.value"
+              name="system.stats.health.value" data-dtype="Number"
               value="{{system.stats.health.value}}"
               data-value="system.stats.health.value"
             />
@@ -40,13 +40,13 @@
       </div>
 
       <div class="resource-bar stamina">
-        <div class="resource-bar-track" title="{{localize 'REDSTEEL.Actor.Character.stats.stamina.value.label'}}">
+        <div class="resource-bar-track" data-tt-kind="stat" data-tt-id="stamina">
           <div class="resource-bar-fill" style="width: {{percentOf system.stats.stamina.value system.stats.stamina.max}}%"></div>
           <div class="resource-bar-values">
             <input
               type="text"
               class="resource-bar-current"
-              name="system.stats.stamina.value"
+              name="system.stats.stamina.value" data-dtype="Number"
               value="{{system.stats.stamina.value}}"
               data-value="system.stats.stamina.value"
             />
@@ -63,13 +63,13 @@
       </div>
 
       <div class="resource-bar toxicity">
-        <div class="resource-bar-track" title="{{localize 'REDSTEEL.Actor.Character.stats.toxicity.value.label'}}">
+        <div class="resource-bar-track" data-tt-kind="stat" data-tt-id="toxicity">
           <div class="resource-bar-fill" style="width: {{percentOf system.stats.toxicity.value system.stats.toxicity.max}}%"></div>
           <div class="resource-bar-values">
             <input
               type="text"
               class="resource-bar-current"
-              name="system.stats.toxicity.value"
+              name="system.stats.toxicity.value" data-dtype="Number"
               value="{{system.stats.toxicity.value}}"
               data-value="system.stats.toxicity.value"
             />
@@ -87,13 +87,13 @@
 
       {{#if system.magicPotential}}
       <div class="resource-bar mana">
-        <div class="resource-bar-track" title="{{localize 'REDSTEEL.Actor.Character.stats.mana.value.label'}}">
+        <div class="resource-bar-track" data-tt-kind="stat" data-tt-id="mana">
           <div class="resource-bar-fill" style="width: {{percentOf system.stats.mana.value system.stats.mana.max}}%"></div>
           <div class="resource-bar-values">
             <input
               type="text"
               class="resource-bar-current"
-              name="system.stats.mana.value"
+              name="system.stats.mana.value" data-dtype="Number"
               value="{{system.stats.mana.value}}"
               data-value="system.stats.mana.value"
             />
@@ -112,13 +112,13 @@
 
       {{#if system.priest}}
       <div class="resource-bar holyEnergy">
-        <div class="resource-bar-track" title="{{localize 'REDSTEEL.Actor.Character.stats.holyEnergy.value.label'}}">
+        <div class="resource-bar-track" data-tt-kind="stat" data-tt-id="holyEnergy">
           <div class="resource-bar-fill" style="width: {{percentOf system.stats.holyEnergy.value system.stats.holyEnergy.max}}%"></div>
           <div class="resource-bar-values">
             <input
               type="text"
               class="resource-bar-current"
-              name="system.stats.holyEnergy.value"
+              name="system.stats.holyEnergy.value" data-dtype="Number"
               value="{{system.stats.holyEnergy.value}}"
               data-value="system.stats.holyEnergy.value"
             />
@@ -141,13 +141,13 @@
             school rank, with a freely-editable max. --}}
       {{#if (or system.specialisations.bloodSchool.nodes.apprentice (gt system.schools.blood.value 0))}}
       <div class="resource-bar bloodPool">
-        <div class="resource-bar-track" title="{{localize 'REDSTEEL.Actor.Character.stats.bloodPool.value.label'}} · {{localize 'REDSTEEL.Actor.Character.stats.bloodPool.transfer.label'}}: {{system.stats.bloodPool.transfer}}">
+        <div class="resource-bar-track" data-tt-kind="stat" data-tt-id="bloodPool">
           <div class="resource-bar-fill" style="width: {{percentOf system.stats.bloodPool.value system.stats.bloodPool.max}}%"></div>
           <div class="resource-bar-values">
             <input
               type="text"
               class="resource-bar-current"
-              name="system.stats.bloodPool.value"
+              name="system.stats.bloodPool.value" data-dtype="Number"
               value="{{system.stats.bloodPool.value}}"
               data-value="system.stats.bloodPool.value"
             />
@@ -155,7 +155,7 @@
             <input
               type="text"
               class="resource-bar-max"
-              name="system.stats.bloodPool.max"
+              name="system.stats.bloodPool.max" data-dtype="Number"
               value="{{system.stats.bloodPool.max}}"
               data-value="system.stats.bloodPool.max"
               {{#if (eq actor.type "character")}}readonly{{/if}}
@@ -209,7 +209,7 @@
       <div class="stat-box-grid">
         {{#each system.attributes as |attribute key|}}
         <div
-          class="stat-box rollable"
+          class="stat-box rollable" data-tt-kind="attribute" data-tt-id="{{key}}"
           data-action="roll"
           data-roll="(@attributes.{{key}}.mod)-1d100"
           data-roll-type="attribute"
@@ -228,17 +228,17 @@
       <div class="stat-box-grid">
         {{#each system.secondaryAttributes as |attribute key|}}
         {{#if (eq key "spd")}}
-        <div class="stat-box rollable" data-action="roll" data-roll-type="secondaryAttribute" data-roll="(@secondaryAttributes.{{key}}.total)+(@secondaryAttributes.ini.total)+1d12" data-label="{{key}}">
+        <div class="stat-box rollable" data-tt-kind="secondaryAttribute" data-tt-id="{{key}}" data-action="rollSpeed" data-label="{{key}}">
         {{else if (eq key "lck")}}
-        <div class="stat-box rollable" data-action="roll" data-roll-type="secondaryAttribute" data-roll="(@secondaryAttributes.{{key}}.total*5)+50-1d100" data-label="{{key}}">
+        <div class="stat-box rollable" data-tt-kind="secondaryAttribute" data-tt-id="{{key}}" data-action="roll" data-roll-type="secondaryAttribute" data-roll="(@secondaryAttributes.{{key}}.total*5)+50-1d100" data-label="{{key}}">
         {{else if (eq key "res")}}
-        <div class="stat-box rollable" data-action="roll" data-roll-type="secondaryAttribute" data-roll="(@secondaryAttributes.{{key}}.total*10)-1d100" data-label="{{key}}">
+        <div class="stat-box rollable" data-tt-kind="secondaryAttribute" data-tt-id="{{key}}" data-action="roll" data-roll-type="secondaryAttribute" data-roll="(@secondaryAttributes.{{key}}.total*10)-1d100" data-label="{{key}}">
         {{else if (eq key "fth")}}
-        <div class="stat-box rollable" data-action="roll" data-roll-type="secondaryAttribute" data-roll="(@secondaryAttributes.{{key}}.total*8)-1d100" data-label="{{key}}">
+        <div class="stat-box rollable" data-tt-kind="secondaryAttribute" data-tt-id="{{key}}" data-action="roll" data-roll-type="secondaryAttribute" data-roll="(@secondaryAttributes.{{key}}.total*8)-1d100" data-label="{{key}}">
         {{else if (eq key "sin")}}
-        <div class="stat-box rollable" data-action="roll" data-roll-type="secondaryAttribute" data-roll="(@secondaryAttributes.res.total*10)-(@secondaryAttributes.{{key}}.total*3)-1d100" data-label="{{key}}">
+        <div class="stat-box rollable" data-tt-kind="secondaryAttribute" data-tt-id="{{key}}" data-action="roll" data-roll-type="secondaryAttribute" data-roll="(@secondaryAttributes.res.total*10)-(@secondaryAttributes.{{key}}.total*3)-1d100" data-label="{{key}}">
         {{else}}
-        <div class="stat-box">
+        <div class="stat-box" data-tt-kind="secondaryAttribute" data-tt-id="{{key}}">
         {{/if}}
           <div class="stat-box-label">{{localize (lookup @root.config.secondaryAttributes key)}}</div>
           <div class="stat-box-value">{{attribute.total}}</div>
@@ -258,7 +258,7 @@
             <div class="stat-box stat-box--editable">
               <div class="stat-box-label condition-icon" data-tt-kind="stat" data-tt-id="graveWounds"><i class="fa-light fa-bone-break" style="color: rgb(102, 32, 29);"></i></div>
               <div class="stat-box-value stat-box-value--ratio">
-                <input type="text" class="stat-box-value-input" name="system.stats.graveWounds.value" value="{{system.stats.graveWounds.value}}" />
+                <input type="text" class="stat-box-value-input" name="system.stats.graveWounds.value" data-dtype="Number" value="{{system.stats.graveWounds.value}}" />
                 <span class="stat-box-max">/ {{system.stats.graveWounds.max}}</span>
               </div>
             </div>
@@ -267,7 +267,7 @@
             <div class="stat-box stat-box--editable">
               <div class="stat-box-label condition-icon" data-tt-kind="stat" data-tt-id="mind"><i class="fa-light fa-head-side-brain" style="color: rgb(116, 119, 126);"></i></div>
               <div class="stat-box-value stat-box-value--ratio">
-                <input type="text" class="stat-box-value-input" name="system.stats.mind.value" value="{{system.stats.mind.value}}" />
+                <input type="text" class="stat-box-value-input" name="system.stats.mind.value" data-dtype="Number" value="{{system.stats.mind.value}}" />
                 <span class="stat-box-max">/ {{system.stats.mind.max}}</span>
               </div>
             </div>
@@ -282,7 +282,7 @@
             <div class="stat-box stat-box--editable">
               <div class="stat-box-label condition-icon" data-tt-kind="stat" data-tt-id="insanity"><i class="fa-light fa-hurricane" style="color: rgb(104, 40, 73);"></i></div>
               <div class="stat-box-value stat-box-value--ratio">
-                <input type="text" class="stat-box-value-input" name="system.stats.insanity.value" value="{{system.stats.insanity.value}}" />
+                <input type="text" class="stat-box-value-input" name="system.stats.insanity.value" data-dtype="Number" value="{{system.stats.insanity.value}}" />
                 <span class="stat-box-max">/ {{system.stats.insanity.max}}</span>
               </div>
             </div>
@@ -291,7 +291,7 @@
             <div class="stat-box stat-box--editable stat-box--warn">
               <div class="stat-box-label condition-icon" data-tt-kind="stat" data-tt-id="corruption"><i class="fa-sharp fa-thin fa-galaxy" style="color: rgb(70, 35, 118);"></i></div>
               <div class="stat-box-value stat-box-value--ratio">
-                <input type="text" class="stat-box-value-input" name="system.stats.corruption.value" value="{{system.stats.corruption.value}}" />
+                <input type="text" class="stat-box-value-input" name="system.stats.corruption.value" data-dtype="Number" value="{{system.stats.corruption.value}}" />
                 <span class="stat-box-max">/ {{system.stats.corruption.max}}</span>
               </div>
             </div>
@@ -300,7 +300,7 @@
             <div class="stat-box stat-box--editable">
               <div class="stat-box-label condition-icon" data-tt-kind="stat" data-tt-id="fatigue"><i class="fa-light fa-tent" style="color: rgb(58, 68, 84);"></i></div>
               <div class="stat-box-value stat-box-value--ratio">
-                <input type="text" class="stat-box-value-input" name="system.stats.fatigue.value" value="{{system.stats.fatigue.value}}" />
+                <input type="text" class="stat-box-value-input" name="system.stats.fatigue.value" data-dtype="Number" value="{{system.stats.fatigue.value}}" />
                 <span class="stat-box-max">/ {{system.stats.fatigue.max}}</span>
               </div>
             </div>
@@ -348,19 +348,19 @@
 <div class="grid {{#if (or system.magicPotential system.priest)}}grid-4col{{else}}grid-3col{{/if}}">
 
       <div class="grid-span-1">
-        <label class="stats-resource-label">{{localize (concat 'REDSTEEL.Actor.Character.stats.health.value.label')}}</label>
+        <label class="stats-resource-label" data-tt-kind="stat" data-tt-id="health">{{localize (concat 'REDSTEEL.Actor.Character.stats.health.value.label')}}</label>
         <div class="stat-values">
           <input
             type="text"
             class="stat-input stat-current resource health"
-            name="system.stats.health.value"
+            name="system.stats.health.value" data-dtype="Number"
             value="{{system.stats.health.value}}"
             data-value="system.stats.health.value"
           />
           <input
             type="text"
             class="stat-input stat-max resource health"
-            name="system.stats.health.max"
+            name="system.stats.health.max" data-dtype="Number"
             value="{{system.stats.health.max}}"
             data-value="system.stats.health.max"
           />
@@ -368,19 +368,19 @@
       </div>
 
       <div class="grid-span-1">
-        <label class="stats-resource-label">{{localize (concat 'REDSTEEL.Actor.Character.stats.stamina.value.label')}}</label>
+        <label class="stats-resource-label" data-tt-kind="stat" data-tt-id="stamina">{{localize (concat 'REDSTEEL.Actor.Character.stats.stamina.value.label')}}</label>
         <div class="stat-values">
           <input
             type="text"
             class="stat-input stat-current resource stamina"
-            name="system.stats.stamina.value"
+            name="system.stats.stamina.value" data-dtype="Number"
             value="{{system.stats.stamina.value}}"
             data-value="system.stats.stamina.value"
           />
           <input
             type="text"
             class="stat-input stat-max resource stamina"
-            name="system.stats.stamina.max"
+            name="system.stats.stamina.max" data-dtype="Number"
             value="{{system.stats.stamina.max}}"
             data-value="system.stats.stamina.max"
           />
@@ -388,19 +388,19 @@
       </div>
 
       <div class="grid-span-1">
-        <label class="stats-resource-label">{{localize (concat 'REDSTEEL.Actor.Character.stats.toxicity.value.label')}}</label>
+        <label class="stats-resource-label" data-tt-kind="stat" data-tt-id="toxicity">{{localize (concat 'REDSTEEL.Actor.Character.stats.toxicity.value.label')}}</label>
         <div class="stat-values">
           <input
             type="text"
             class="stat-input stat-current resource toxicity"
-            name="system.stats.toxicity.value"
+            name="system.stats.toxicity.value" data-dtype="Number"
             value="{{system.stats.toxicity.value}}"
             data-value="system.stats.toxicity.value"
           />
           <input
             type="text"
             class="stat-input stat-max resource toxicity"
-            name="system.stats.toxicity.max"
+            name="system.stats.toxicity.max" data-dtype="Number"
             value="{{system.stats.toxicity.max}}"
             data-value="system.stats.toxicity.max"
           />
@@ -409,19 +409,19 @@
 
       {{#if system.magicPotential}}
       <div class="grid-span-1">
-        <label class="stats-resource-label">{{localize (concat 'REDSTEEL.Actor.Character.stats.mana.value.label')}}</label>
+        <label class="stats-resource-label" data-tt-kind="stat" data-tt-id="mana">{{localize (concat 'REDSTEEL.Actor.Character.stats.mana.value.label')}}</label>
         <div class="stat-values">
           <input
             type="text"
             class="stat-input stat-current resource mana"
-            name="system.stats.mana.value"
+            name="system.stats.mana.value" data-dtype="Number"
             value="{{system.stats.mana.value}}"
             data-value="system.stats.mana.value"
           />
           <input
             type="text"
             class="stat-input stat-max resource mana"
-            name="system.stats.mana.max"
+            name="system.stats.mana.max" data-dtype="Number"
             value="{{system.stats.mana.max}}"
             data-value="system.stats.mana.max"
           />
@@ -431,19 +431,19 @@
 
       {{#if system.priest}}
       <div class="grid-span-1">
-        <label class="stats-resource-label">{{localize (concat 'REDSTEEL.Actor.Character.stats.holyEnergy.value.label')}}</label>
+        <label class="stats-resource-label" data-tt-kind="stat" data-tt-id="holyEnergy">{{localize (concat 'REDSTEEL.Actor.Character.stats.holyEnergy.value.label')}}</label>
         <div class="stat-values">
           <input
             type="text"
             class="stat-input stat-current resource holyEnergy"
-            name="system.stats.holyEnergy.value"
+            name="system.stats.holyEnergy.value" data-dtype="Number"
             value="{{system.stats.holyEnergy.value}}"
             data-value="system.stats.holyEnergy.value"
           />
           <input
             type="text"
             class="stat-input stat-max resource holyEnergy"
-            name="system.stats.holyEnergy.max"
+            name="system.stats.holyEnergy.max" data-dtype="Number"
             value="{{system.stats.holyEnergy.max}}"
             data-value="system.stats.holyEnergy.max"
             />
@@ -453,12 +453,16 @@
 
     </div>
 
-          <div class="checkbox-row">
-        <label class="resource-label">{{localize "REDSTEEL.Actor.NPC.FIELDS.mage.label"}}</label>
-        <input type="checkbox" name="system.magicPotential" {{checked system.magicPotential}} />
+          <div class="rs-toggle-row">
+        <label class="rs-toggle">
+          <input type="checkbox" name="system.magicPotential" {{checked system.magicPotential}} />
+          <span>{{localize "REDSTEEL.Actor.NPC.FIELDS.mage.label"}}</span>
+        </label>
 
-        <label class="resource-label">{{localize "REDSTEEL.Actor.NPC.FIELDS.priest.label"}}</label>
-        <input type="checkbox" name="system.priest" {{checked system.priest}} />
+        <label class="rs-toggle">
+          <input type="checkbox" name="system.priest" {{checked system.priest}} />
+          <span>{{localize "REDSTEEL.Actor.NPC.FIELDS.priest.label"}}</span>
+        </label>
       </div>
   </div>
 
@@ -503,7 +507,7 @@
       {{#each system.attributes as |attribute key|}}
       <div class="attribute flexcolumn flex-group-center">
         <label
-          class="resource-label rollable"
+          class="resource-label rollable" data-tt-kind="attribute" data-tt-id="{{key}}"
           data-action="roll"
           data-roll="(@attributes.{{key}}.mod)-1d100"
           data-roll-type="attribute"
@@ -705,62 +709,62 @@
       <div class="npc-combat-grid">
 
         <div class="attribute-armor">
-          <label class="resource-label">{{localize "REDSTEEL.Actor.Character.combatSkills.combat.label"}}</label>
+          <label class="resource-label" data-tt-kind="skill" data-tt-id="combat">{{localize "REDSTEEL.Actor.Character.combatSkills.combat.label"}}</label>
           <input type="text" name="system.combatSkills.combat.value" value="{{system.combatSkills.combat.value}}" class="attribute-score" data-dtype="Number" />
         </div>
 
         <div class="attribute-armor">
-          <label class="resource-label">{{localize "REDSTEEL.Actor.Character.combatSkills.archery.label"}}</label>
+          <label class="resource-label" data-tt-kind="skill" data-tt-id="archery">{{localize "REDSTEEL.Actor.Character.combatSkills.archery.label"}}</label>
           <input type="text" name="system.combatSkills.archery.value" value="{{system.combatSkills.archery.value}}" class="attribute-score" data-dtype="Number" />
         </div>
 
         <div class="attribute-armor">
-          <label class="resource-label">{{localize "REDSTEEL.Actor.Character.combatSkills.throwing.label"}}</label>
+          <label class="resource-label" data-tt-kind="skill" data-tt-id="throwing">{{localize "REDSTEEL.Actor.Character.combatSkills.throwing.label"}}</label>
           <input type="text" name="system.combatSkills.throwing.value" value="{{system.combatSkills.throwing.value}}" class="attribute-score" data-dtype="Number" />
         </div>
 
         <div class="attribute-armor">
-          <label class="resource-label">{{localize "REDSTEEL.Actor.Character.combatSkills.meleeDefense.label"}}</label>
+          <label class="resource-label" data-tt-kind="skill" data-tt-id="meleeDefense">{{localize "REDSTEEL.Actor.Character.combatSkills.meleeDefense.label"}}</label>
           <input type="text" name="system.combatSkills.meleeDefense.value" value="{{system.combatSkills.meleeDefense.value}}" class="attribute-score" data-dtype="Number" />
         </div>
 
         <div class="attribute-armor">
-          <label class="resource-label">{{localize "REDSTEEL.Actor.Character.combatSkills.rangedDefense.label"}}</label>
+          <label class="resource-label" data-tt-kind="skill" data-tt-id="rangedDefense">{{localize "REDSTEEL.Actor.Character.combatSkills.rangedDefense.label"}}</label>
           <input type="text" name="system.combatSkills.rangedDefense.value" value="{{system.combatSkills.rangedDefense.value}}" class="attribute-score" data-dtype="Number" />
         </div>
 
         <div class="attribute-armor">
-          <label class="resource-label">{{localize "REDSTEEL.Actor.Character.combatSkills.dodge.label"}}</label>
+          <label class="resource-label" data-tt-kind="skill" data-tt-id="dodge">{{localize "REDSTEEL.Actor.Character.combatSkills.dodge.label"}}</label>
           <input type="text" name="system.combatSkills.dodge.value" value="{{system.combatSkills.dodge.value}}" class="attribute-score" data-dtype="Number" />
         </div>
 
         <div class="attribute-armor">
-          <label class="resource-label">{{localize "REDSTEEL.Actor.Character.combatSkills.damageBonus.label"}}</label>
+          <label class="resource-label" data-tt-kind="skill" data-tt-id="damageBonus">{{localize "REDSTEEL.Actor.Character.combatSkills.damageBonus.label"}}</label>
           <input type="text" name="system.combatSkills.damageBonus.value" value="{{system.combatSkills.damageBonus.value}}" class="attribute-score" data-dtype="Number" />
         </div>
 
         <div class="attribute-armor">
-          <label class="resource-label">{{localize "REDSTEEL.Actor.Character.combatSkills.channeling.label"}}</label>
+          <label class="resource-label" data-tt-kind="skill" data-tt-id="channeling">{{localize "REDSTEEL.Actor.Character.combatSkills.channeling.label"}}</label>
           <input type="text" name="system.combatSkills.channeling.value" value="{{system.combatSkills.channeling.value}}" class="attribute-score" data-dtype="Number" />
         </div>
 
         <div class="attribute-armor">
-          <label class="resource-label">{{localize "REDSTEEL.Actor.Character.combatSkills.bloodManipulation.label"}}</label>
+          <label class="resource-label" data-tt-kind="skill" data-tt-id="bloodManipulation">{{localize "REDSTEEL.Actor.Character.combatSkills.bloodManipulation.label"}}</label>
           <input type="text" name="system.combatSkills.bloodManipulation.value" value="{{system.combatSkills.bloodManipulation.value}}" class="attribute-score" data-dtype="Number" />
         </div>
 
         <div class="attribute-armor">
-          <label class="resource-label">{{localize "REDSTEEL.Actor.Character.stats.mind.value.label"}}</label>
+          <label class="resource-label" data-tt-kind="stat" data-tt-id="mind">{{localize "REDSTEEL.Actor.Character.stats.mind.value.label"}}</label>
           <input type="text" name="system.stats.mind.value" value="{{system.stats.mind.value}}" class="attribute-score" data-dtype="Number" />
         </div>
 
         <div class="attribute-armor">
-          <label class="resource-label">{{localize "REDSTEEL.Actor.NPC.FIELDS.mov.label"}}</label>
-          <input type="text" name="system.secondaryAttributes.mov.value" value="{{system.secondaryAttributes.mov.value}}" class="attribute-score" data-dtype="Number" />
+          <label class="resource-label rollable" data-action="rollSpeed" data-tt-kind="secondaryAttribute" data-tt-id="spd">{{localize "REDSTEEL.Actor.Character.SecondaryAttribute.Spd.long"}}</label>
+          <input type="text" name="system.secondaryAttributes.spd.value" value="{{system.secondaryAttributes.spd.value}}" class="attribute-score" data-dtype="Number" />
         </div>
 
         <div class="attribute-armor">
-          <label class="resource-label">{{localize "REDSTEEL.Actor.Character.SecondaryAttribute.Ini.long"}}</label>
+          <label class="resource-label" data-tt-kind="secondaryAttribute" data-tt-id="ini">{{localize "REDSTEEL.Actor.Character.SecondaryAttribute.Ini.long"}}</label>
           <input type="text" name="system.secondaryAttributes.ini.value" value="{{system.secondaryAttributes.ini.value}}" class="attribute-score" data-dtype="Number" />
         </div>
       </div>

@@ -8,6 +8,7 @@
 
 import { registerTooltip, ttFrame, ttEscape } from "./tooltips.mjs";
 import { TOOLTIP_KEYWORDS } from "./tooltipKeywords.mjs";
+import { ruleNoteFooter } from "./tooltipJournals.mjs";
 import { buildSpellCard, renderInspectorCard } from "./spellCards.mjs";
 import { REDSTEEL } from "../helpers/config.mjs";
 
@@ -176,6 +177,7 @@ registerTooltip("keyword", ({ id }) => {
   return ttFrame({
     title: title === def.labelKey ? id : title,
     body: `<div class="tt-desc">${desc}</div>`,
+    footer: ruleNoteFooter(def.note),
   });
 });
 
@@ -327,77 +329,244 @@ registerTooltip("skill", ({ id, actor }) => {
 });
 
 /* -------------------------------------------- */
-/*  stat — the header condition icons           */
+/*  attribute — the seven primary attributes    */
+/* -------------------------------------------- */
+
+/** `id` with its first letter upper-cased, the casing the lang files use. */
+function capitalize(id) {
+  return id.charAt(0).toUpperCase() + id.slice(1);
+}
+
+/**
+ * The primary attribute boxes in the character header.
+ *
+ * The box the player is hovering already prints the total and the modifier, so
+ * the tooltip deliberately carries no numbers: only the plain-language
+ * description and the link out to the Attributes note. Nothing to say means no
+ * tooltip at all, rather than an empty frame.
+ */
+registerTooltip("attribute", ({ id, actor }) => {
+  if (!id || !actor?.system?.attributes?.[id]) return null;
+
+  const desc = localizeOrNull(`REDSTEEL.StatInfo.${id}`);
+  if (!desc) return null;
+
+  return ttFrame({
+    title:
+      localizeOrNull(
+        `REDSTEEL.Actor.Character.Attribute.${capitalize(id)}.long`,
+      ) ?? id,
+    body: `<div class="tt-desc">${desc}</div>`,
+    footer: ruleNoteFooter("attributes"),
+  });
+});
+
+/* -------------------------------------------- */
+/*  secondaryAttribute — speed, luck, faith, …  */
 /* -------------------------------------------- */
 
 /**
- * The seven condition boxes in the character header. `stat` reads a
- * value/max pair off system.stats; `read` is for the derived, max-less ones.
- * `keyword` links the box to its glossary entry.
+ * Same deal as `attribute`, one level down. NPC-only keys have no
+ * SecondaryAttribute lang entry, so their label comes from the NPC field list.
  */
-const CONDITION_STATS = {
+registerTooltip("secondaryAttribute", ({ id, actor }) => {
+  if (!id || !actor?.system?.secondaryAttributes?.[id]) return null;
+
+  const desc = localizeOrNull(`REDSTEEL.StatInfo.${id}`);
+  if (!desc) return null;
+
+  return ttFrame({
+    title:
+      localizeOrNull(
+        `REDSTEEL.Actor.Character.SecondaryAttribute.${capitalize(id)}.long`,
+      ) ??
+      localizeOrNull(`REDSTEEL.Actor.NPC.FIELDS.${id}.label`) ??
+      id,
+    body: `<div class="tt-desc">${desc}</div>`,
+    footer: ruleNoteFooter("attributes"),
+  });
+});
+
+/* -------------------------------------------- */
+/*  stat — header resource bars + condition     */
+/* -------------------------------------------- */
+
+/**
+ * The resource bars and the condition boxes in the header.
+ *
+ * `stat` / `read` record where the number on screen comes from; the tooltip
+ * itself no longer prints it, because the very box being hovered already does.
+ * `keyword` reuses an existing glossary description instead of duplicating the
+ * Czech text, `note` names the rules note to link out to, and `extraRows` is
+ * for the rare number the header has no room for.
+ */
+const HEADER_STATS = {
+  health: {
+    labelKey: "REDSTEEL.Actor.Character.stats.health.value.label",
+    stat: "health",
+    note: "vitals",
+  },
+  stamina: {
+    labelKey: "REDSTEEL.Actor.Character.stats.stamina.value.label",
+    stat: "stamina",
+    note: "vitals",
+  },
+  toxicity: {
+    labelKey: "REDSTEEL.Actor.Character.stats.toxicity.value.label",
+    stat: "toxicity",
+    note: "vitals",
+  },
+  mana: {
+    labelKey: "REDSTEEL.Actor.Character.stats.mana.value.label",
+    stat: "mana",
+    note: "vitals",
+  },
+  holyEnergy: {
+    labelKey: "REDSTEEL.Actor.Character.stats.holyEnergy.value.label",
+    stat: "holyEnergy",
+    note: "vitals",
+  },
+  bloodPool: {
+    labelKey: "REDSTEEL.Actor.Character.stats.bloodPool.value.label",
+    stat: "bloodPool",
+    note: "channeling",
+    // Transfer is the one blood-pool number the bar has nowhere to print.
+    extraRows: (system) => [
+      {
+        label: game.i18n.localize(
+          "REDSTEEL.Actor.Character.stats.bloodPool.transfer.label",
+        ),
+        value: system.stats?.bloodPool?.transfer,
+      },
+    ],
+  },
   graveWounds: {
     labelKey: "REDSTEEL.Actor.Character.stats.graveWounds.value.label",
     stat: "graveWounds",
     keyword: "graveWound",
+    note: "vitals",
   },
   mind: {
     labelKey: "REDSTEEL.Actor.Character.stats.mind.value.label",
     stat: "mind",
+    note: "vitals",
   },
   insanity: {
     labelKey: "REDSTEEL.Actor.Character.stats.insanity.value.label",
     stat: "insanity",
+    note: "madness",
   },
   corruption: {
     labelKey: "REDSTEEL.Actor.Character.stats.corruption.value.label",
     stat: "corruption",
     keyword: "corruption",
+    note: "corruption",
   },
   fatigue: {
     labelKey: "REDSTEEL.Actor.Character.stats.fatigue.value.label",
     stat: "fatigue",
     keyword: "fatigue",
+    note: "fatigue",
   },
   armor: {
     labelKey: "REDSTEEL.Actor.Character.Condition.armor",
     read: (system) => system.armor?.total,
+    note: "damageTypes",
   },
   detection: {
     labelKey: "REDSTEEL.Actor.Character.Condition.detection",
     read: (system) => system.detection,
+    note: "traps",
   },
 };
 
 registerTooltip("stat", ({ id, actor }) => {
-  const def = CONDITION_STATS[id];
+  const def = HEADER_STATS[id];
   if (!def || !actor?.system) return null;
   const system = actor.system;
 
-  let value = null;
-  if (def.stat) {
-    const stat = system.stats?.[def.stat];
-    if (stat) {
-      value =
-        stat.max === undefined || stat.max === null
-          ? stat.value
-          : `${stat.value ?? 0} / ${stat.max}`;
-    }
-  } else if (def.read) {
-    value = def.read(system);
-  }
+  // A dedicated StatInfo string wins; otherwise fall back to the glossary text
+  // the keyword tooltip already uses, so the Czech is written down once.
+  const desc =
+    localizeOrNull(`REDSTEEL.StatInfo.${id}`) ??
+    (def.keyword ? keywordDesc(def.keyword) : null);
+  const extra = statsBlock(def.extraRows?.(system) ?? []);
 
-  const desc = def.keyword ? keywordDesc(def.keyword) : null;
-  const body = [
-    statsBlock([
-      { label: game.i18n.localize("REDSTEEL.Tooltip.current"), value },
-    ]),
-    desc ? `<div class="tt-desc">${desc}</div>` : "",
-  ].join("");
+  // Title plus a bare link is not worth a frame.
+  if (!desc && !extra) return null;
+
+  const body = [extra, desc ? `<div class="tt-desc">${desc}</div>` : ""].join("");
 
   return ttFrame({
     title: localizeOrNull(def.labelKey) ?? id,
     body,
+    footer: ruleNoteFooter(def.note),
+  });
+});
+
+/* -------------------------------------------- */
+/*  weaponField — weapon sheet fields           */
+/* -------------------------------------------- */
+
+/**
+ * The editable fields of the weapon item sheet.
+ *
+ * `labelKey` is the same string the sheet prints above the field, so the panel
+ * is unmistakably about the thing being hovered, and `note` names the rules
+ * note to link out to. The description is not stored here: it always lives at
+ * `REDSTEEL.WeaponInfo.<id>`, one entry per id, written down once per language.
+ */
+const WEAPON_FIELDS = {
+  attack: { labelKey: "REDSTEEL.Item.Weapon.FIELDS.attack.label", note: "armoryRules" },
+  defense: { labelKey: "REDSTEEL.Item.Weapon.FIELDS.defense.label", note: "armoryRules" },
+  dodge: { labelKey: "REDSTEEL.Item.Weapon.FIELDS.dodge.label", note: "armoryRules" },
+  critRange: { labelKey: "REDSTEEL.Item.Weapon.FIELDS.critRange.label", note: "criticalHits" },
+  critChance: { labelKey: "REDSTEEL.Item.Weapon.FIELDS.critChance.label", note: "criticalHits" },
+  critFail: { labelKey: "REDSTEEL.Item.Weapon.FIELDS.critFail.label", note: "criticals" },
+  critDefense: { labelKey: "REDSTEEL.Item.Weapon.FIELDS.critDefense.label", note: "armoryRules" },
+  critDodge: { labelKey: "REDSTEEL.Item.Weapon.FIELDS.critDodge.label", note: "armoryRules" },
+  critPenetration: { labelKey: "REDSTEEL.Item.Weapon.FIELDS.critPenetration.label", note: "criticalHits" },
+  critDamage: { labelKey: "REDSTEEL.Item.Weapon.FIELDS.critDamage.label", note: "criticalHits" },
+  penetration: { labelKey: "REDSTEEL.Item.Weapon.FIELDS.penetration.label", note: "armoryRules" },
+  breakthrough: { labelKey: "REDSTEEL.Item.Weapon.FIELDS.breakthrough.label", note: "armoryRules" },
+  sneakDamage: { labelKey: "REDSTEEL.Item.Weapon.FIELDS.sneakDamage.label", note: "specialActions" },
+  tags: { labelKey: "REDSTEEL.Item.Weapon.FIELDS.tags.label", note: "armoryRules" },
+  finesse: { labelKey: "REDSTEEL.Item.Weapon.FIELDS.finesse.label", note: "armoryRules" },
+  twoHandGrip: { labelKey: "REDSTEEL.Item.Weapon.FIELDS.twoHandGrip.label", note: "armoryRules" },
+  longReach: { labelKey: "REDSTEEL.Item.Weapon.FIELDS.longReach.label", note: "armoryRules" },
+  sharp: { labelKey: "REDSTEEL.Item.Weapon.FIELDS.sharp.label", note: "armoryRules" },
+  thrown: { labelKey: "REDSTEEL.Item.Weapon.FIELDS.thrown.label", note: "armoryRules" },
+  offhand: { labelKey: "REDSTEEL.Item.Weapon.FIELDS.offhand.label", note: "armoryRules" },
+  stagger: { labelKey: "REDSTEEL.Item.Weapon.FIELDS.stagger.label", note: "effects" },
+  bleed: { labelKey: "REDSTEEL.Item.Weapon.FIELDS.bleed.label", note: "medicine" },
+  diceNum: { labelKey: "REDSTEEL.Item.Weapon.FIELDS.diceNum.label", note: "armoryRules" },
+  dieSize: { labelKey: "REDSTEEL.Item.Weapon.FIELDS.dieSize.label", note: "armoryRules" },
+  rollMod: { labelKey: "REDSTEEL.Item.Weapon.FIELDS.rollMod.label", note: "weaponMaterials" },
+  quality: { labelKey: "REDSTEEL.Item.Weapon.FIELDS.quality.label", note: "weaponQuality" },
+  weaponClass: { labelKey: "REDSTEEL.UI.weaponClass", note: "armoryRules" },
+  weaponType: { labelKey: "REDSTEEL.UI.weaponType", note: "armoryRules" },
+  dmgType: { labelKey: "REDSTEEL.Item.Spell.FIELDS.headerType.label", note: "damageTypes" },
+};
+
+/**
+ * The fields of the weapon item sheet, hovered on their label.
+ *
+ * Like the header stats, this reads no values and takes no actor: the field's
+ * own input sits right beside the label and already shows the number, so the
+ * panel only explains what the field does and where the rule is written down.
+ * Nothing to say means no tooltip at all, rather than an empty frame.
+ */
+registerTooltip("weaponField", ({ id }) => {
+  const def = WEAPON_FIELDS[id];
+  if (!def) return null;
+
+  const desc = localizeOrNull(`REDSTEEL.WeaponInfo.${id}`);
+  if (!desc) return null;
+
+  return ttFrame({
+    title: localizeOrNull(def.labelKey) ?? id,
+    body: `<div class="tt-desc">${desc}</div>`,
+    footer: ruleNoteFooter(def.note),
   });
 });
 

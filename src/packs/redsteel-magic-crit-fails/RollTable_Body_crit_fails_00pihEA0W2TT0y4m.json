@@ -1,0 +1,260 @@
+{
+  "name": "Body crit fails",
+  "img": "icons/magic/life/heart-cross-green.webp",
+  "description": "",
+  "results": [
+    {
+      "type": "text",
+      "weight": 1,
+      "range": [
+        1,
+        1
+      ],
+      "_id": "ZVCTbpitV1HGRzP5",
+      "name": "Degree 0",
+      "img": "icons/magic/life/heart-cross-green.webp",
+      "description": "<p>Instability +1.</p>",
+      "drawn": false,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.351",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null
+      },
+      "documentUuid": null,
+      "_key": "!tables.results!00pihEA0W2TT0y4m.ZVCTbpitV1HGRzP5"
+    },
+    {
+      "type": "text",
+      "weight": 4,
+      "range": [
+        2,
+        5
+      ],
+      "_id": "Lu0KlxB9rWiKB0bf",
+      "name": "Degree 1",
+      "img": "icons/magic/life/heart-cross-green.webp",
+      "description": "<p>Instability +2.</p>",
+      "drawn": false,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.351",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null
+      },
+      "documentUuid": null,
+      "_key": "!tables.results!00pihEA0W2TT0y4m.Lu0KlxB9rWiKB0bf"
+    },
+    {
+      "type": "text",
+      "weight": 4,
+      "range": [
+        6,
+        9
+      ],
+      "_id": "fXKFGl4gJupEm0Gx",
+      "name": "Degree 2",
+      "img": "icons/magic/life/heart-cross-green.webp",
+      "description": "<p>Burns additional mana equal to the spell’s cost. Staggers the caster for three turns.</p>",
+      "drawn": false,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.351",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null
+      },
+      "documentUuid": null,
+      "_key": "!tables.results!00pihEA0W2TT0y4m.fXKFGl4gJupEm0Gx"
+    },
+    {
+      "type": "text",
+      "weight": 3,
+      "range": [
+        10,
+        12
+      ],
+      "_id": "Kkepkv13Tm2rhquG",
+      "name": "Degree 3",
+      "img": "icons/magic/life/heart-cross-green.webp",
+      "description": "<p>Burns additional mana equal to the spell’s cost. Dispels all positive effects (Empowerment, Resist Stuns, Lightning Weapon etc.) within 6m of the caster.</p>",
+      "drawn": false,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.351",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null
+      },
+      "documentUuid": null,
+      "_key": "!tables.results!00pihEA0W2TT0y4m.Kkepkv13Tm2rhquG"
+    },
+    {
+      "type": "text",
+      "weight": 3,
+      "range": [
+        13,
+        15
+      ],
+      "_id": "CTT0xPrd94lcHDA8",
+      "name": "Degree 4",
+      "img": "icons/magic/life/heart-cross-green.webp",
+      "description": "<p>Burns additional mana equal to the spell’s cost. Deals 3d6 damage.</p>",
+      "drawn": false,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.351",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null
+      },
+      "documentUuid": null,
+      "_key": "!tables.results!00pihEA0W2TT0y4m.CTT0xPrd94lcHDA8"
+    },
+    {
+      "type": "text",
+      "weight": 3,
+      "range": [
+        16,
+        18
+      ],
+      "_id": "KwYmpjWXwfotTfYD",
+      "name": "Degree 5",
+      "img": "icons/magic/life/heart-cross-green.webp",
+      "description": "<p>Burns additional mana equal to the spell’s cost. Deals 4d6 damage and prevents casting of the affected school for 1d4+1 rounds. Cancels all Concentration.</p>",
+      "drawn": false,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.351",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null
+      },
+      "documentUuid": null,
+      "_key": "!tables.results!00pihEA0W2TT0y4m.KwYmpjWXwfotTfYD"
+    },
+    {
+      "type": "text",
+      "weight": 2,
+      "range": [
+        19,
+        20
+      ],
+      "_id": "z0DoTmE4uY9eELwi",
+      "name": "Degree 6",
+      "img": "icons/magic/life/heart-cross-green.webp",
+      "description": "<p>Burns additional mana equal to the spell’s cost. Stuns the caster for three turns.</p>",
+      "drawn": false,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.351",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null
+      },
+      "documentUuid": null,
+      "_key": "!tables.results!00pihEA0W2TT0y4m.z0DoTmE4uY9eELwi"
+    },
+    {
+      "type": "text",
+      "weight": 2,
+      "range": [
+        21,
+        22
+      ],
+      "_id": "ru5SX6YGEfRqLvhO",
+      "name": "Degree 7",
+      "img": "icons/magic/life/heart-cross-green.webp",
+      "description": "<p>Burns additional mana equal to double the spell’s cost. The caster gains 2 degrees of Fatigue and loses all Stamina. Everyone within 6m of the caster loses Stamina equal to half their maximum Stamina.</p>",
+      "drawn": false,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.351",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null
+      },
+      "documentUuid": null,
+      "_key": "!tables.results!00pihEA0W2TT0y4m.ru5SX6YGEfRqLvhO"
+    },
+    {
+      "type": "text",
+      "weight": 1,
+      "range": [
+        23,
+        23
+      ],
+      "_id": "SLKql7sqW4VXhhQ4",
+      "name": "Degree 8",
+      "img": "icons/magic/life/heart-cross-green.webp",
+      "description": "<p>Burns additional mana equal to double the spell’s cost. Deals 5d6 damage and prevents casting of the affected school for 2d6 rounds. Cancels all Concentration.</p>",
+      "drawn": false,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.351",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null
+      },
+      "documentUuid": null,
+      "_key": "!tables.results!00pihEA0W2TT0y4m.SLKql7sqW4VXhhQ4"
+    }
+  ],
+  "replacement": true,
+  "displayRoll": true,
+  "folder": null,
+  "flags": {
+    "redsteel": {
+      "critTable": "body"
+    }
+  },
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785245361691,
+    "modifiedTime": 1785245361691,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "formula": "1d20",
+  "ownership": {
+    "default": 0,
+    "rs3mzx7WZdtEmvH2": 3,
+    "UHjN0KQ8w8ZxibJg": 3
+  },
+  "_id": "00pihEA0W2TT0y4m",
+  "sort": 600000,
+  "_key": "!tables!00pihEA0W2TT0y4m"
+}

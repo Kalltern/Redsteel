@@ -4,6 +4,7 @@ import {
 } from "../utils/customConditions.mjs";
 import { evaluateDmgVsArmor } from "../utils/combatSkillBonuses.mjs";
 import { getSpellPower } from "../utils/spellPower.mjs";
+import { gainBloodFromBleed, bloodGainNote } from "../utils/bloodPool.mjs";
 import { STATE_GATED_IMMUNITIES } from "../helpers/specialisations-generated.mjs";
 
 export class RedsteelActiveEffect extends ActiveEffect {
@@ -15,6 +16,10 @@ export class RedsteelActiveEffect extends ActiveEffect {
     paralyze: ["stun", "stagger"],
     terror: ["fear"],
     guard: ["defensive_stance"],
+    // Falling unconscious supersedes being Downed: a Downed character is still
+    // marginally acting (1 hex, 1 action), an unconscious one is not. Dying is
+    // deliberately NOT listed — the death countdown runs independently of both.
+    incapacitated: ["downed"],
     // "Není slučitelný s dalšími Štíty (ani podobnými)" — the three absorb
     // shields plus the two retaliation auras (Flame / Lightning shield) all
     // replace one another, so a target is only ever under one of them.
@@ -1197,6 +1202,10 @@ export class RedsteelActiveEffect extends ActiveEffect {
       return this._handleDownedStart();
     }
 
+    if (trigger.custom === "incapacitatedStart") {
+      return this._handleIncapacitatedStart();
+    }
+
     if (trigger.custom === "conditionDamage") {
       return this._handleConditionDamage(trigger);
     }
@@ -1249,12 +1258,24 @@ export class RedsteelActiveEffect extends ActiveEffect {
 
     const roll = await new Roll(formula).evaluate();
 
+    // Life lost to Bleeding feeds a Blood caster's Reserve (see bloodPool.mjs).
+    // Banked before the zero-health handling so the transfer still happens on
+    // the tick that drops the actor.
+    let bloodGained = 0;
+
     if (trigger.target) {
       const current = foundry.utils.getProperty(actor, trigger.target) ?? 0;
 
       await actor.update({
         [trigger.target]: current - roll.total,
       });
+
+      if (
+        this.getFlag("core", "statusId") === "bleed" &&
+        trigger.target === "system.stats.health.value"
+      ) {
+        bloodGained = await gainBloodFromBleed(actor, roll.total);
+      }
 
       // A DoT (bleed, burn, …) that drops the actor to 0 health triggers the
       // same Dying/Downed (or death) handling as taking a hit.
@@ -1265,7 +1286,7 @@ export class RedsteelActiveEffect extends ActiveEffect {
 
     await roll.toMessage({
       speaker: ChatMessage.getSpeaker({ actor }),
-      flavor: `${this.name} – ${type}`,
+      flavor: `${this.name} – ${type}${bloodGainNote(actor, bloodGained)}`,
       create: true,
     });
 
@@ -1332,6 +1353,21 @@ export class RedsteelActiveEffect extends ActiveEffect {
               <p>Wounding Impale inflicts <b>${bleeds} Bleeding</b>.</p>
             </div>`,
         });
+      }
+    }
+
+    // Coming round clears the `defeated` mark that Incapacitated set, putting
+    // the character back in the turn order. Updating a Combatant needs GM
+    // authority, so the active GM does it no matter who cleared the status.
+    if (
+      effectId === "incapacitated" &&
+      game.user.id === game.users.activeGM?.id
+    ) {
+      const combatant = game.combat?.combatants.find(
+        (c) => c.actorId === actor.id,
+      );
+      if (combatant?.defeated) {
+        await combatant.update({ defeated: false });
       }
     }
 
@@ -1944,6 +1980,38 @@ export class RedsteelActiveEffect extends ActiveEffect {
         </div>`,
       flags: { redsteel: { type: "downedChoice", actorUuid: actor.uuid } },
     });
+  }
+
+  /**
+   * On Incapacitated ("Vyřazen"): the character is unconscious and out of the
+   * fight. Downed is already gone by this point — EFFECT_OVERRIDES deletes it
+   * before this effect is created — so all that is left is to take them out of
+   * the turn order.
+   *
+   * They are marked `defeated` rather than deleted from the tracker on purpose:
+   * the per-combatant round loop in `_onRoundStart` is what drives the Dying
+   * countdown and any bleed/burn ticks, and an unconscious character still
+   * bleeds out on schedule. Turn `Skip Defeated` on in the tracker to stop the
+   * turn from landing on them.
+   */
+  async _handleIncapacitatedStart() {
+    const actor = this.parent;
+    if (!actor) return;
+
+    // Also drops them to initiative 1 — harmless when Downed already did it,
+    // and needed when unconsciousness arrives on its own (a head crit's failed
+    // Endurance test, Mind hitting 0 outside the Downed flow).
+    await this._dropToInitiativeOne({
+      actedMsg: `${actor.name} is unconscious and will not act next round.`,
+      droppedMsg: `${actor.name} falls unconscious and drops out of the turn order.`,
+    });
+
+    const combatant = game.combat?.combatants.find(
+      (c) => c.actorId === actor.id,
+    );
+    if (combatant && !combatant.defeated) {
+      await combatant.update({ defeated: true });
+    }
   }
 
   /**

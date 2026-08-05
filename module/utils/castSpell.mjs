@@ -1,40 +1,13 @@
 import {
+  getDarkHexChance,
   spellCastSucceeded,
   startChannelingForSpell,
 } from "./magicSkillBonuses.mjs";
 import { getSpellPower } from "./spellPower.mjs";
 import { resolveSpellAutomation } from "./spellAutomation.mjs";
+import { getStrikeId } from "./strikes.mjs";
 
-/**
- * Strike spells → the caster status effect they impose on a successful cast.
- * Keyed on the item's raw (English) name so this resolves on spell copies that
- * are already owned by live actors, without needing a re-import to pick up a
- * flag. A `flags.redsteel.strike` override wins when present.
- *
- * Enchanted strike is listed under both its final and its old "(WIP)" name —
- * the pack was renamed, but copies already on live actors keep the old one.
- */
-const STRIKE_SPELLS = {
-  "Lightning strike": "lightning_strike",
-  "Fire strike": "fire_strike",
-  "Frost strike": "frost_strike",
-  "Venomous strike": "venomous_strike",
-  "Enchanted strike": "enchanted_strike",
-  "Enchanted strike (WIP)": "enchanted_strike",
-  "Dark strike": "dark_strike",
-  "Binding strike": "binding_strike",
-  "Empower strike": "empower_strike",
-};
-
-/**
- * @param {Item} spell
- * @returns {string|null} the strike effect id this spell applies, or null.
- */
-export function getStrikeId(spell) {
-  const flag = spell?.getFlag?.("redsteel", "strike");
-  if (flag) return flag;
-  return STRIKE_SPELLS[String(spell?.name ?? "").trim()] ?? null;
-}
+export { getStrikeId };
 
 export async function castSpell() {
   const context = game.redsteel.selectToken({ notifyFallback: true });
@@ -226,6 +199,17 @@ async function applyStrikeEffect(actor, spell) {
     // SK/2 rounds down (getSpellPower floors multiplied results).
     const halfSk = getSpellPower(actor, school, { multiplier: 0.5 });
     group.damageRoll = `1d4 + ${halfSk}`;
+  }
+
+  // Maleficarum's Hexing (Zakletí) rides a Darkness strike too: the imbued
+  // weapon attack carries the same rank-scaled Hex chance the caster's other
+  // offensive Darkness spells get. It has to be baked into the enchant group
+  // here rather than rolled on the cast card, because a strike targets nobody —
+  // the Hex must land on whoever the imbued attack hits. The cast side skips
+  // strikes for the same reason (see applySchoolTraitBonus).
+  const hexChance = getDarkHexChance(actor, spell);
+  if (hexChance) {
+    group.extraEffects = { ...(group.extraEffects ?? {}), hex: hexChance };
   }
 
   // Dark Strike additionally corrupts the caster.

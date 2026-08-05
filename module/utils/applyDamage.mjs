@@ -1111,7 +1111,13 @@ export async function applyZeroHealthState(actor, { combatant } = {}) {
     if (!actor.statuses.has("dying")) {
       await game.redsteel.applyEffect(actor, "dying");
     }
-    if (!actor.statuses.has("downed")) {
+    // Unconsciousness supersedes Downed and deletes it, so a later tick at 0
+    // health (bleed, burn) must not put Downed back on an unconscious
+    // character — that would re-run the Mind loss prompt every round.
+    if (
+      !actor.statuses.has("downed") &&
+      !actor.statuses.has("incapacitated")
+    ) {
       await game.redsteel.applyEffect(actor, "downed");
     }
     return;

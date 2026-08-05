@@ -4,9 +4,12 @@
  * A "speed" Test Type on an ability/spell/weapon/modifier rolls the same dice as
  * initiative instead of a d100 margin of success:
  *
- *   Character : 1d12 + ini.total + spd.total   (rogue doctrine 7+ → 2d12kh1)
- *   NPC       : 1d12 + ini.total               (NPCs have no Speed)
- *   Prone     : flat 1
+ *   Any actor      : 1d12 + ini.total + spd.total  (rogue doctrine 7+ → 2d12kh1)
+ *   Prone / Downed : flat 1
+ *
+ * NPCs carry the same `spd` secondary attribute as characters (it used to be a
+ * separate `mov`), so a plain Speed debuff lands on their tests with no extra
+ * wiring.
  *
  * Higher is better. The posted result is clickable: another player selects their
  * token, rolls the same kind of test, and the two totals are compared. The
@@ -28,20 +31,38 @@ export function isSpeedTest(testName) {
 }
 
 /**
+ * Whether a status that flattens the speed test is on the actor.
+ *
+ * `Actor#statuses` is the canonical set, so this also catches a status toggled
+ * straight from the Token HUD, which never stamps the legacy `core.statusId`
+ * flag the system writes on its own effects.
+ * @param {Actor}  actor
+ * @param {string} statusId
+ * @returns {boolean}
+ */
+function hasFloorStatus(actor, statusId) {
+  return (
+    !!actor.statuses?.has(statusId) ||
+    actor.effects.some((e) => e.getFlag("core", "statusId") === statusId)
+  );
+}
+
+/**
  * Build the initiative-style d12 formula for an actor. Kept in one place so
  * initiative rolls and ability speed tests can never drift apart.
  * @param {Actor} actor
  * @returns {string} A formula for `actor.getRollData()`.
  */
 export function buildSpeedTestFormula(actor) {
-  const isProne = actor.effects.some(
-    (e) => e.getFlag("core", "statusId") === "prone",
-  );
-  if (isProne) return "1";
+  // "Povalení: Pořadí tahu dočasně sníženo na 1." Downed (0 health) is on the
+  // floor too, so it takes the same flat 1 — and it does so independently of
+  // Prone, since Downed can be applied on its own.
+  if (hasFloorStatus(actor, "prone") || hasFloorStatus(actor, "downed")) {
+    return "1";
+  }
 
-  if (actor.type === "npc") return "1d12 + @secondaryAttributes.ini.total";
-
-  // Rogue doctrine 7+ rolls two d12 and keeps the higher.
+  // Rogue doctrine 7+ rolls two d12 and keeps the higher. NPCs have no
+  // doctrines, so they always roll the single die.
   const die = actor.system.doctrines?.rogue?.value >= 7 ? "2d12kh1" : "1d12";
   return `${die} + @secondaryAttributes.ini.total + @secondaryAttributes.spd.total`;
 }
@@ -87,8 +108,10 @@ export async function rollSpeedTest(actor, { modifier = 0 } = {}) {
  */
 function describeSpeedParts(actor, modifier = 0) {
   const sec = actor.system.secondaryAttributes ?? {};
-  const parts = [`Initiative ${sec.ini?.total ?? 0}`];
-  if (actor.type !== "npc") parts.push(`Speed ${sec.spd?.total ?? 0}`);
+  const parts = [
+    `Initiative ${sec.ini?.total ?? 0}`,
+    `Speed ${sec.spd?.total ?? 0}`,
+  ];
   const mod = Number(modifier) || 0;
   if (mod) parts.push(`Modifier ${mod > 0 ? `+${mod}` : mod}`);
   return parts.join(" + ");
@@ -112,6 +135,28 @@ export function renderSpeedTestLine({ actor, roll, source, modifier = 0 }) {
   ].join("<br>");
 
   return `<span class="speed-followup" data-speed="${roll.total}" data-source="${source ?? ""}" data-tooltip="${tooltip}" style="cursor:pointer; text-decoration:underline dotted;">Speed Test: [${roll.total}]</span>`;
+}
+
+/**
+ * Roll a speed test straight from a sheet and post it as a contestable card.
+ * Used by the Speed stat click on both the character and the NPC sheet so the
+ * two never drift apart — same formula, same tag, same clickable result.
+ * @param {Actor}  actor
+ * @param {object} [options]
+ * @param {number} [options.modifier]
+ * @returns {Promise<Roll>} The evaluated roll.
+ */
+export async function postSpeedTest(actor, { modifier = 0 } = {}) {
+  const roll = await rollSpeedTest(actor, { modifier });
+
+  await roll.toMessage({
+    speaker: ChatMessage.getSpeaker({ actor }),
+    flavor: `<p style="text-align:center; font-size:18px;"><b>Speed Test</b></p>
+<p style="text-align:center;">${renderSpeedTestLine({ actor, roll, source: "", modifier })}</p>`,
+    rollMode: game.settings.get("core", "rollMode"),
+  });
+
+  return roll;
 }
 
 /**

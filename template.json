@@ -215,7 +215,8 @@
           "min": 0,
           "base": 0,
           "max": 1,
-          "bonus": 0
+          "bonus": 0,
+          "burned": 0
         },
         "insanity": {
           "value": 0,
@@ -1054,7 +1055,8 @@
           "min": 0,
           "base": 0,
           "max": 0,
-          "bonus": 0
+          "bonus": 0,
+          "burned": 0
         },
         "holyEnergy": {
           "value": 900,
@@ -1129,7 +1131,7 @@
         }
       },
       "secondaryAttributes": {
-        "mov": {
+        "spd": {
           "value": 0,
           "bonus": 0,
           "total": 0
@@ -1688,6 +1690,7 @@
         "types": [""]
       },
       "isOffensive": true,
+      "uncontested": false,
       "sustained": false,
       "difficulty": 0,
       "cost": 0,

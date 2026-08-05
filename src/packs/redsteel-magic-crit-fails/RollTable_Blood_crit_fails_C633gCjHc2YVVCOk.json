@@ -1,0 +1,260 @@
+{
+  "name": "Blood crit fails",
+  "img": "icons/skills/wounds/blood-cells-vessel-red.webp",
+  "description": "",
+  "results": [
+    {
+      "type": "text",
+      "weight": 1,
+      "range": [
+        1,
+        1
+      ],
+      "_id": "zO7rFTjeLobzdFvQ",
+      "name": "Degree 0",
+      "img": "icons/skills/wounds/blood-cells-vessel-red.webp",
+      "description": "<p>Instability +1.</p>",
+      "drawn": false,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.351",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null
+      },
+      "documentUuid": null,
+      "_key": "!tables.results!C633gCjHc2YVVCOk.zO7rFTjeLobzdFvQ"
+    },
+    {
+      "type": "text",
+      "weight": 4,
+      "range": [
+        2,
+        5
+      ],
+      "_id": "SRXx5C8Xgf55ODle",
+      "name": "Degree 1",
+      "img": "icons/skills/wounds/blood-cells-vessel-red.webp",
+      "description": "<p>Instability +2.</p>",
+      "drawn": false,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.351",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null
+      },
+      "documentUuid": null,
+      "_key": "!tables.results!C633gCjHc2YVVCOk.SRXx5C8Xgf55ODle"
+    },
+    {
+      "type": "text",
+      "weight": 4,
+      "range": [
+        6,
+        9
+      ],
+      "_id": "9pihYe8Dy0iD1Mpm",
+      "name": "Degree 2",
+      "img": "icons/skills/wounds/blood-cells-vessel-red.webp",
+      "description": "<p>Burns 2d4 health from the Blood Pool. The caster and everyone within 6m gain one Bleeding.</p>",
+      "drawn": false,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.351",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null
+      },
+      "documentUuid": null,
+      "_key": "!tables.results!C633gCjHc2YVVCOk.9pihYe8Dy0iD1Mpm"
+    },
+    {
+      "type": "text",
+      "weight": 3,
+      "range": [
+        10,
+        12
+      ],
+      "_id": "g7AdADtK63ufhrnJ",
+      "name": "Degree 3",
+      "img": "icons/skills/wounds/blood-cells-vessel-red.webp",
+      "description": "<p>Burns 2d4 health from the Blood Pool. The caster gains 2/3/4/5 Bleeding (by the spell’s rank).</p>",
+      "drawn": false,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.351",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null
+      },
+      "documentUuid": null,
+      "_key": "!tables.results!C633gCjHc2YVVCOk.g7AdADtK63ufhrnJ"
+    },
+    {
+      "type": "text",
+      "weight": 3,
+      "range": [
+        13,
+        15
+      ],
+      "_id": "ds4yIsi8rCmD1qhl",
+      "name": "Degree 4",
+      "img": "icons/skills/wounds/blood-cells-vessel-red.webp",
+      "description": "<p>Burns 2d4 health from the Blood Pool. The caster is trapped in a Seal of Imprisonment.</p>",
+      "drawn": false,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.351",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null
+      },
+      "documentUuid": null,
+      "_key": "!tables.results!C633gCjHc2YVVCOk.ds4yIsi8rCmD1qhl"
+    },
+    {
+      "type": "text",
+      "weight": 3,
+      "range": [
+        16,
+        18
+      ],
+      "_id": "AWswmqpCK97zHtPH",
+      "name": "Degree 5",
+      "img": "icons/skills/wounds/blood-cells-vessel-red.webp",
+      "description": "<p>Burns 6d6 health from the Blood Pool and prevents casting of the affected school for 1d4+1 rounds. Cancels all Concentration.</p>",
+      "drawn": false,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.351",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null
+      },
+      "documentUuid": null,
+      "_key": "!tables.results!C633gCjHc2YVVCOk.AWswmqpCK97zHtPH"
+    },
+    {
+      "type": "text",
+      "weight": 2,
+      "range": [
+        19,
+        20
+      ],
+      "_id": "y0McjZe8gllXI8oa",
+      "name": "Degree 6",
+      "img": "icons/skills/wounds/blood-cells-vessel-red.webp",
+      "description": "<p>Burns 2d4 health from the Blood Pool. Destroys 1d4 of the caster’s beating hearts. If they carry none, they are Stunned for three turns instead.</p>",
+      "drawn": false,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.351",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null
+      },
+      "documentUuid": null,
+      "_key": "!tables.results!C633gCjHc2YVVCOk.y0McjZe8gllXI8oa"
+    },
+    {
+      "type": "text",
+      "weight": 2,
+      "range": [
+        21,
+        22
+      ],
+      "_id": "iKJkcdj3LBmwYHJn",
+      "name": "Degree 7",
+      "img": "icons/skills/wounds/blood-cells-vessel-red.webp",
+      "description": "<p>Burns 4d6 health from the Blood Pool. The caster and two random targets within 9m are targeted by Frenzy; the caster fails automatically.</p>",
+      "drawn": false,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.351",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null
+      },
+      "documentUuid": null,
+      "_key": "!tables.results!C633gCjHc2YVVCOk.iKJkcdj3LBmwYHJn"
+    },
+    {
+      "type": "text",
+      "weight": 1,
+      "range": [
+        23,
+        23
+      ],
+      "_id": "9DaJ3RGzz1NZakyb",
+      "name": "Degree 8",
+      "img": "icons/skills/wounds/blood-cells-vessel-red.webp",
+      "description": "<p>Burns 10d6 health from the Blood Pool and prevents casting of the affected school for 2d6 rounds. Cancels all Concentration.</p>",
+      "drawn": false,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.351",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null
+      },
+      "documentUuid": null,
+      "_key": "!tables.results!C633gCjHc2YVVCOk.9DaJ3RGzz1NZakyb"
+    }
+  ],
+  "replacement": true,
+  "displayRoll": true,
+  "folder": null,
+  "flags": {
+    "redsteel": {
+      "critTable": "blood"
+    }
+  },
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1785245361691,
+    "modifiedTime": 1785245361691,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "formula": "1d20",
+  "ownership": {
+    "default": 0,
+    "rs3mzx7WZdtEmvH2": 3,
+    "UHjN0KQ8w8ZxibJg": 3
+  },
+  "_id": "C633gCjHc2YVVCOk",
+  "sort": 700000,
+  "_key": "!tables!C633gCjHc2YVVCOk"
+}

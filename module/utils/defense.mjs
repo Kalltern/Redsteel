@@ -872,7 +872,7 @@ function buildWeaponSetView(actor) {
 
     const mainIsTwoHanded = main
       ? main.system.type === "heavy" ||
-        ["crossbow", "box"].includes(main.system.class) ||
+        ["crossbow", "bow"].includes(main.system.class) ||
         main.system.gripMode === "two"
       : false;
 

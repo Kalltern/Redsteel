@@ -795,7 +795,7 @@
             },
             "krvavyPakt": {
               "label": "Krvavý pakt",
-              "description": "5 CP; Škola Krve - Učedník. Ručně — řeší se u stolu."
+              "description": "5 CP; Škola Krve - Učedník. Jednou za kolo může jako Volnou akci spálit jeden svůj Mentální život, aby ihned získal životy do Zásoby krve rovné svému Maximálnímu převodu. Automatizováno — uděluje akci Krvavý pakt."
             },
             "precision15": {
               "label": "Škola Krve: Ověření +15%",
@@ -1812,23 +1812,23 @@
           "nodes": {
             "lecZastaveni1": {
               "label": "Léčivé lektvary: Zastavení krvácení +25%",
-              "description": "5 SP. Ručně — řeší se u stolu."
+              "description": "5 SP. Automatizováno. Zapeče se do léčivých lektvarů, které vyrobíš: zastavení krvácení +25%."
             },
             "lecZivoty1": {
               "label": "Léčivé lektvary: +1d6 životů",
-              "description": "5 SP. Ručně — řeší se u stolu."
+              "description": "5 SP. Automatizováno. Zapeče se do léčivých lektvarů, které vyrobíš: +1d6 životů."
             },
             "lecZastaveni2": {
               "label": "Léčivé lektvary: Zastavení krvácení +25%",
-              "description": "10 SP; Alchemie: Expert. Ručně — řeší se u stolu."
+              "description": "10 SP; Alchemie: Expert. Automatizováno. Zapeče se do léčivých lektvarů, které vyrobíš: zastavení krvácení +25%."
             },
             "lecZivoty2": {
               "label": "Léčivé lektvary: +1d6 životů",
-              "description": "10 SP. Ručně — řeší se u stolu."
+              "description": "10 SP. Automatizováno. Zapeče se do léčivých lektvarů, které vyrobíš: +1d6 životů."
             },
             "lekToxicita": {
               "label": "Lektvary: Toxicita -2",
-              "description": "10 SP. Ručně — řeší se u stolu."
+              "description": "10 SP. Automatizováno. Zapeče se do lektvarů, které vyrobíš: toxicita -2."
             },
             "kombinaceLektvaru": {
               "label": "Kombinace lektvarů",
@@ -1840,23 +1840,23 @@
             },
             "lekDuplikace1": {
               "label": "Lektvary: Duplikace +10%",
-              "description": "10 SP; Alchemie: Expert. Ručně — řeší se u stolu."
+              "description": "10 SP; Alchemie: Expert. Automatizováno. Zvyšuje šanci na bonusový kus, hází se za každý vyrobený kus."
             },
             "lekDuplikace2": {
               "label": "Lektvary: Duplikace +5%",
-              "description": "5 SP. Ručně — řeší se u stolu."
+              "description": "5 SP. Automatizováno. Zvyšuje šanci na bonusový kus, hází se za každý vyrobený kus."
             },
             "lekDuplikace3": {
               "label": "Lektvary: Duplikace +10%",
-              "description": "10 SP. Ručně — řeší se u stolu."
+              "description": "10 SP. Automatizováno. Zvyšuje šanci na bonusový kus, hází se za každý vyrobený kus."
             },
             "lekVyhoda": {
               "label": "Lektvary: Výhoda na výrobu",
-              "description": "5 SP. Ručně — řeší se u stolu."
+              "description": "5 SP. Automatizováno. Výhoda na hod při výrobě."
             },
             "lekKritNeuspech": {
               "label": "Lektvary: Krit. neúspěch -3%",
-              "description": "5 SP. Ručně — řeší se u stolu."
+              "description": "5 SP. Automatizováno. Kritický neúspěch při výrobě je o 3 % méně pravděpodobný."
             },
             "jedSance1": {
               "label": "Jedy: Šance a Obtížnost +5%",
@@ -1888,23 +1888,23 @@
             },
             "jedDuplikace1": {
               "label": "Jedy: Duplikace +10%",
-              "description": "5 SP; Alchemie: Expert. Ručně — řeší se u stolu."
+              "description": "5 SP; Alchemie: Expert. Automatizováno. Zvyšuje šanci na bonusový kus, hází se za každý vyrobený kus."
             },
             "jedDuplikace2": {
               "label": "Jedy: Duplikace +5%",
-              "description": "5 SP. Ručně — řeší se u stolu."
+              "description": "5 SP. Automatizováno. Zvyšuje šanci na bonusový kus, hází se za každý vyrobený kus."
             },
             "jedDuplikace3": {
               "label": "Jedy: Duplikace +10%",
-              "description": "5 SP. Ručně — řeší se u stolu."
+              "description": "5 SP. Automatizováno. Zvyšuje šanci na bonusový kus, hází se za každý vyrobený kus."
             },
             "jedVyhoda": {
               "label": "Jedy: Výhoda na výrobu",
-              "description": "5 SP. Ručně — řeší se u stolu."
+              "description": "5 SP. Automatizováno. Výhoda na hod při výrobě."
             },
             "jedKritNeuspech": {
               "label": "Jedy: Krit. neúspěch -3%",
-              "description": "5 SP. Ručně — řeší se u stolu."
+              "description": "5 SP. Automatizováno. Kritický neúspěch při výrobě je o 3 % méně pravděpodobný."
             },
             "petTrvani": {
               "label": "Petardy: Trvání +50%",
@@ -1936,35 +1936,35 @@
             },
             "petDuplikace1": {
               "label": "Petardy: Duplikace +10%",
-              "description": "10 SP; Alchemie: Expert. Ručně — řeší se u stolu."
+              "description": "10 SP; Alchemie: Expert. Automatizováno. Zvyšuje šanci na bonusový kus, hází se za každý vyrobený kus."
             },
             "petDuplikace2": {
               "label": "Petardy: Duplikace +5%",
-              "description": "5 SP. Ručně — řeší se u stolu."
+              "description": "5 SP. Automatizováno. Zvyšuje šanci na bonusový kus, hází se za každý vyrobený kus."
             },
             "petDuplikace3": {
               "label": "Petardy: Duplikace +10%",
-              "description": "10 SP. Ručně — řeší se u stolu."
+              "description": "10 SP. Automatizováno. Zvyšuje šanci na bonusový kus, hází se za každý vyrobený kus."
             },
             "petVyhoda": {
               "label": "Petardy: Výhoda na výrobu",
-              "description": "5 SP. Ručně — řeší se u stolu."
+              "description": "5 SP. Automatizováno. Výhoda na hod při výrobě."
             },
             "petKritNeuspech": {
               "label": "Petardy: Krit. neúspěch -3%",
-              "description": "5 SP. Ručně — řeší se u stolu."
+              "description": "5 SP. Automatizováno. Kritický neúspěch při výrobě je o 3 % méně pravděpodobný."
             },
             "olejDuplikace1": {
               "label": "Oleje: Duplikace +10%",
-              "description": "5 SP; Alchemie: Expert. Ručně — řeší se u stolu."
+              "description": "5 SP; Alchemie: Expert. Automatizováno. Zvyšuje šanci na bonusový kus, hází se za každý vyrobený kus."
             },
             "olejDuplikace2": {
               "label": "Oleje: Duplikace +5%",
-              "description": "5 SP. Ručně — řeší se u stolu."
+              "description": "5 SP. Automatizováno. Zvyšuje šanci na bonusový kus, hází se za každý vyrobený kus."
             },
             "olejDuplikace3": {
               "label": "Oleje: Duplikace +10%",
-              "description": "5 SP. Ručně — řeší se u stolu."
+              "description": "5 SP. Automatizováno. Zvyšuje šanci na bonusový kus, hází se za každý vyrobený kus."
             },
             "olejZraneni1": {
               "label": "Oleje: Zranění +1d6",
@@ -1980,11 +1980,11 @@
             },
             "olejVyhoda": {
               "label": "Oleje: Výhoda na výrobu",
-              "description": "5 SP. Ručně — řeší se u stolu."
+              "description": "5 SP. Automatizováno. Výhoda na hod při výrobě."
             },
             "olejKritNeuspech": {
               "label": "Oleje: Krit. neúspěch -3%",
-              "description": "5 SP. Ručně — řeší se u stolu."
+              "description": "5 SP. Automatizováno. Kritický neúspěch při výrobě je o 3 % méně pravděpodobný."
             },
             "sleva1": {
               "label": "Sleva 3 SP na dovednost",
@@ -2000,35 +2000,35 @@
             },
             "mastDuplikace1": {
               "label": "Masti: Duplikace +10%",
-              "description": "5 SP. Ručně — řeší se u stolu."
+              "description": "5 SP. Automatizováno. Zvyšuje šanci na bonusový kus, hází se za každý vyrobený kus."
             },
             "mastDuplikace2": {
               "label": "Masti: Duplikace +5%",
-              "description": "5 SP. Ručně — řeší se u stolu."
+              "description": "5 SP. Automatizováno. Zvyšuje šanci na bonusový kus, hází se za každý vyrobený kus."
             },
             "mastDuplikace3": {
               "label": "Masti: Duplikace +10%",
-              "description": "5 SP. Ručně — řeší se u stolu."
+              "description": "5 SP. Automatizováno. Zvyšuje šanci na bonusový kus, hází se za každý vyrobený kus."
             },
             "mastVyhoda": {
               "label": "Masti: Výhoda na výrobu",
-              "description": "5 SP. Ručně — řeší se u stolu."
+              "description": "5 SP. Automatizováno. Výhoda na hod při výrobě."
             },
             "mastKritNeuspech": {
               "label": "Masti: Krit. neúspěch -3%",
-              "description": "5 SP. Ručně — řeší se u stolu."
+              "description": "5 SP. Automatizováno. Kritický neúspěch při výrobě je o 3 % méně pravděpodobný."
             },
             "drogaDuplikace1": {
               "label": "Drogy: Duplikace +10%",
-              "description": "5 SP; Alchemie: Expert. Ručně — řeší se u stolu."
+              "description": "5 SP; Alchemie: Expert. Automatizováno. Zvyšuje šanci na bonusový kus, hází se za každý vyrobený kus."
             },
             "drogaDuplikace2": {
               "label": "Drogy: Duplikace +10%",
-              "description": "5 SP. Ručně — řeší se u stolu."
+              "description": "5 SP. Automatizováno. Zvyšuje šanci na bonusový kus, hází se za každý vyrobený kus."
             },
             "drogaDuplikace3": {
               "label": "Drogy: Duplikace +10%",
-              "description": "5 SP. Ručně — řeší se u stolu."
+              "description": "5 SP. Automatizováno. Zvyšuje šanci na bonusový kus, hází se za každý vyrobený kus."
             },
             "drogaNavykovostPlus": {
               "label": "Drogy: Návykovost až +10%",
@@ -2040,11 +2040,11 @@
             },
             "garantovanyUspech": {
               "label": "Výroba substancí: garantovaný úspěch",
-              "description": "10 SP. Ručně — řeší se u stolu."
+              "description": "10 SP. Automatizováno. Vaření bylin na substanci vždy uspěje."
             },
             "meneIngredienci": {
               "label": "Výroba: o 1 ingredienci méně",
-              "description": "15 SP; Alchemie: Expert. Ručně — řeší se u stolu."
+              "description": "15 SP; Alchemie: Expert. Automatizováno. Vaření bylin na substanci potřebuje o jednu ingredienci méně."
             },
             "meneTkane": {
               "label": "Mutageny: o 5 tkáně méně",
@@ -2056,11 +2056,11 @@
             },
             "drogaVyhoda": {
               "label": "Drogy: Výhoda na výrobu",
-              "description": "5 SP. Ručně — řeší se u stolu."
+              "description": "5 SP. Automatizováno. Výhoda na hod při výrobě."
             },
             "drogaKritNeuspech": {
               "label": "Drogy: Krit. neúspěch -3%",
-              "description": "5 SP. Ručně — řeší se u stolu."
+              "description": "5 SP. Automatizováno. Kritický neúspěch při výrobě je o 3 % méně pravděpodobný."
             }
           }
         },
@@ -3551,6 +3551,14 @@
             },
             "max": {
               "label": "Maximální mentální životy"
+            },
+            "bonus": {
+              "label": "Bonus mentálních životů",
+              "hint": "Přičítá se k maximálním Mentálním životům nad rámec Vůle."
+            },
+            "burned": {
+              "label": "Spálené mentální životy",
+              "hint": "Mentální životy spálené natrvalo. Každý z nich snižuje maximum o 1. Sniž tuto hodnotu ručně, když jeden vrátí rituál nebo lektvar."
             }
           },
           "insanity": {
@@ -3583,6 +3591,17 @@
             },
             "max": {
               "label": "Maximální svatá energie"
+            }
+          },
+          "bloodPool": {
+            "value": {
+              "label": "Zásoba krve"
+            },
+            "max": {
+              "label": "Maximální zásoba krve"
+            },
+            "transfer": {
+              "label": "Převod krve"
             }
           }
         },
@@ -3917,9 +3936,6 @@
           "cr": {
             "label": "CR"
           },
-          "mov": {
-            "label": "Pohyb"
-          },
           "mage": {
             "label": "Čaroděj"
           },
@@ -4245,8 +4261,15 @@
       },
       "Spell": {
         "FIELDS": {
+          "propertiesHeader": {
+            "label": "Vlastnosti kouzla"
+          },
           "isOffensive": {
             "label": "Útočné"
+          },
+          "uncontested": {
+            "label": "Bez obrany",
+            "hint": "Proti tomuto seslání se nic nehází: žádná obrana, žádný test vlastnosti, žádné zranění mířené na cíl. Skryje Magic ATK a při volbě Bez vyhodnocení kanálování zcela vynechá hod na kanálování."
           },
           "halfDamage": {
             "label": "Poloviční zranění"
@@ -4412,7 +4435,8 @@
     "Tooltip": {
       "rating": "Hodnota",
       "attribute": "Vlastnost",
-      "current": "Aktuálně"
+      "current": "Aktuálně",
+      "noteMissing": "Poznámku s pravidly se nepodařilo otevřít."
     },
     "Keyword": {
       "stun": {
@@ -4449,7 +4473,7 @@
       },
       "corruption": {
         "label": "Zkaženost",
-        "desc": "Zkaženost je trvalý stupeň odvozený ze statistiky Zkaženosti: 31 a více je 1. stupeň, 61 a více 2. stupeň, 91 a více 3. stupeň. Od 2. stupně se postava počítá jako Zkažená a na 3. stupni je navíc zranitelná Světlem."
+        "desc": "Trvalý stupeň odvozený ze statistiky Korupce. 0-30 je stupeň 0; 31-60 stupeň 1 (Magický útok a obrana +5 %); 61-90 stupeň 2 (+10 %, Síla kouzla Temnoty +1, postava se počítá jako Zkažená); 91-100 stupeň 3 (+15 %, Síla kouzla Temnoty +3, navíc zranitelnost Světlem). Při 101 a více dochází k okamžité mutaci a snížení Korupce o 50."
       },
       "aim": {
         "label": "Míření",
@@ -4492,8 +4516,86 @@
         "desc": "Každé neošetřené těžké zranění dává -5 % na všechny testy. Ošetření vrátí 3 % z tohoto postihu a samotné zranění zmizí až po řádném léčení."
       }
     },
+    "Note": {
+      "attributes": "Vlastnosti",
+      "vitals": "Životy, Výdrž a Mana",
+      "madness": "Šílenství",
+      "fatigue": "Zoufalé úsilí a Únava",
+      "damageTypes": "Typy zranění",
+      "traps": "Zámky, pasti a kapsářství",
+      "channeling": "Usměrňování a Magie krve",
+      "effects": "Efekty",
+      "banes": "Metly",
+      "criticals": "Kritické úspěchy a neúspěchy",
+      "combatActions": "Soubojové akce",
+      "corruption": "Korupce",
+      "medicine": "Ranhojičství a Krvácení",
+      "armoryRules": "Vybraná pravidla zbrojnice",
+      "weaponQuality": "Kvalita zbraní a zbrojí",
+      "weaponMaterials": "Materiály zbraní",
+      "criticalHits": "Kritické zásahy",
+      "specialActions": "Speciální akce"
+    },
+    "StatInfo": {
+      "str": "Fyzická síla. Každý bod přidává +1 zranění zbraní v Souboji a Vrhu (je-li Síla vyšší než Vnímání), +3 % na zásah v Souboji, +1 Život a +3 % do odvozených dovedností. Pomáhá i Zastrašování. Klesne-li na 0, nastává smrt.",
+      "dex": "Hbitost. Každý bod přidává +3 % na Obranu v Souboji a na Úhyb a +3 % do odvozených dovedností. Některé stupně Obratnosti zvyšují Rychlost. Klesne-li na 0, nastává smrt.",
+      "end": "Fyzická odolnost. Každý bod přidává +5 Výdrže, +2 Toxicity, +2 až +4 Životy (podle Úrovně) a +1 Stínový život. Určuje také regeneraci Životů a redukci Toxicity za Dlouhý odpočinek. Klesne-li na 0, nastává smrt.",
+      "int": "Intelekt. Každý bod přidává +1 Základ many a +3 % do odvozených dovedností a Usměrňování, každé dva body +1 Sílu kouzla. Některé stupně rozšiřují Kritický rozsah pro Magii. Klesne-li na 0, nastává smrt.",
+      "wil": "Mentální odolnost. Každý bod přidává +1 Mentální život, +1 Základ many, +1 Sílu vůle, +1 útok v Mentálním souboji a +3 % do odvozených dovedností. Pomáhá i Přesvědčování. Klesne-li na 0, nastává smrt.",
+      "cha": "Sociální inteligence. Každý bod přidává +1 Inspiraci a +3 % do odvozených dovedností, každé dva body +1 Sílu Umění. Zvyšuje šance na Přesvědčování, Klamání, Zastrašování, Pokoušení a Vhled. Klesne-li na 0, nastává smrt.",
+      "per": "Vnímavost. Každý bod přidává +1 zranění ve Střelbě a Vrhu (je-li Vnímání vyšší než Síla), +3 % na zásah, +1 Kritické zranění a +1 Kritickou průbojnost. Určuje pasivní detekci pastí a sběr rostlin. Klesne-li na 0, nastává smrt.",
+      "spd": "Každý bod zvyšuje pohyb o 1. Test Rychlosti (Rychlost + Iniciativa + 1d12) určuje Pořadí tahu a kdo koná první u Reakcí; nezná Přirozený kritický (ne)úspěch. Absolutní hranice je 6.",
+      "lck": "Každý kladný bod zvyšuje šanci na Kritický úspěch dovedností a vlastností (vyjma Víry) o 1 %, každý záporný bod zvyšuje o 1 % šanci na Kritický neúspěch. Testuje se u hazardu, náhodných nálezů a vyhýbání se nehodám.",
+      "res": "Nervy slouží pouze k Testování a patří k nejčastějším Testům. Odolávají strachu, panice a šílenství. Každý bod Hříšnosti Test snižuje o -1 %, u zvoleného Hříchu o -3 %. Štěstí jim nezvyšuje šance na Kritický (ne)úspěch.",
+      "fth": "Zbožnost. Každý bod přidává +1 Sílu zázraku a +5 Svaté energie. Kněz Testuje Víru při obnově Svaté energie, případně když se domáhá boží intervence (obvykle si na to musí vyčlenit 2 kola).",
+      "sin": "Sklon podlehnout pudům a hříchům. Každý bod přidává +1 % na Pokoušení. Postava si volí Hříchy jako slabiny (Hříšnost 3, 5, 7, …). Každý bod snižuje Testy Nervů spojené s Hříchem o -1 %, u zvolené slabiny o -3 %.",
+      "vis": "Relativní krása postavy. Zvyšuje šance na Přesvědčování, Klamání a Pokoušení (je-li vyšší než Vnímání) a na Zastrašování (je-li záporný). Vzhled nemá vlastní Testy, může však být podmínkou některých Testů Pokoušení.",
+      "ini": "Iniciativa se vždy uplatňuje pouze jako bonus do Testů Rychlosti a nikdy se netestuje sama. Nemá žádnou Absolutní hranici.",
+      "health": "Určeny Rasou, Rysy, Odbornostmi, Silou a Odolností. Klesnou-li na 0, postava je Vyřazena a ocitá se na Pokraji smrti; bez stabilizace umírá a při záchraně získává Vážné zranění. Dlouhý odpočinek obnovuje 10 + Odolnost*2.",
+      "stamina": "Palivo pro soubojové akce. Určena Odolností*5, Atletikou*2, Rysy a Odbornostmi. Obnovuje se akcí Oddech. Každý stupeň Únavy snižuje maximum o 5; kdykoliv lze obnovit 50 % maxima výměnou za jeden stupeň Únavy.",
+      "toxicity": "Kolik alkoholu a lektvarů tělo snese. Určena Odolností*2, Rasou, Rysy a Odbornostmi. Překročení maxima okamžitě způsobí Toxický šok. Redukce je 5 + Odolnost*2 za den.",
+      "mana": "Palivo pro kouzla. Základ many (Rasa + Rysy + Odbornosti + Inteligence + Vůle + dovednost) násobený Modifikátorem z Magického potenciálu nebo Doktríny magie. Regeneraci many určuje Doktrína.",
+      "holyEnergy": "Palivo pro zázraky. Určena specializací Kněz, Vírou*5 a Kněžskými přísahami. Úspěšný Test Víry ji jednou za den plně obnoví v příslušnou dobu podle boha a stojí jednu Časovou jednotku Táboření.",
+      "bloodPool": "Zásoba krve, ze které Škola Krve platí svá kouzla místo Many. Převod krve udává, kolik Životů lze naráz proměnit v krev, a řídí se hodností Školy Krve (5 / 10 / 15 / 25).",
+      "mind": "Mentální životy do jisté míry reprezentují duši. Určeny Vůlí, Odbornostmi, Specializacemi a Přísahami Kontramágů. Mohou být spáleny, rezervovány nebo vyčerpány; vyčerpané se obnovují za Dlouhý odpočinek (1 + Odbornosti). Při 0 postava ztrácí vědomí.",
+      "insanity": "Body šílenství. Překročení Hranice šílenství (základ 4 + Vůle + Rysy) vyvolá Test Nervů (Těžký); při selhání se hází na Vadu a ubírá se pět bodů. Každý další bod nad hranicí zvyšuje obtížnost o 10 %.",
+      "armor": "Celková redukce zranění ze zbroje, přirozené zbroje a efektů. Pro každý typ zranění se vede vlastní hodnota a Zranitelnost, Odolnost i Imunita se vyhodnocují podle typů zranění útoku.",
+      "detection": "Pasivní detekce pastí, počítá se jako Vnímání + dovednost Pasti*2. K nalezení pasti je obvykle potřeba 6 až 26. Postihy: Šero -6, Tma -16, Spěch -12."
+    },
+    "WeaponInfo": {
+      "attack": "Bonus zbraně k Zásahu. Kvalita jej dále upravuje: Špatná -5 %, Expertní +3 %, Mistrovská +5 %, Legendární +8 %. Držení zbraně nedominantní rukou dává postih 10 % a Těžká zbraň v jedné ruce postih 15 %.",
+      "defense": "Bonus zbraně k Obraně. Za každého dalšího protivníka, proti kterému se postava v jednom kole brání, dostává -5 % až do maxima -20 % (Přesila). Přesila se resetuje na začátku kola.",
+      "dodge": "Úprava Úhybu od zbraně. Úhyb se počítá jako Obranná akce, takže se na něj vztahuje postih za Přesilu. Zbraně s vlastností Rváč mají navíc -30 % na Úhyb proti zbraním.",
+      "critRange": "Bonus k hodu 1d20, kterým se určuje Stupeň kritického zásahu. Rozsah 1-6 je 1. stupeň, 7-12 druhý, 13-18 třetí a 19-20 čtvrtý. Efekt z více zdrojů se sčítá.",
+      "critChance": "Šance zbraně na Kritický zásah. Základ je 5 % a dále jej ovlivňuje Štěstí, dovednost a odbornosti. Kritickým zásahem je i úspěšný zásah o 60 silnější než protivníkova Obrana.",
+      "critFail": "Šance zbraně na Kritický neúspěch. Kritický neúspěch v Útoku vyústí v garantovanou Kritickou obranu protivníka.",
+      "critDefense": "Šance zbraně na Kritickou obranu. Kritická obrana mění Kritický zásah na obyčejný a silnější Kritická obrana zásah zcela neguje.",
+      "critDodge": "Šance zbraně na Kritický úhyb. Naopak Kritický neúspěch během Úhybu vede ke Kritickému zásahu.",
+      "critPenetration": "Průbojnost navíc při Kritickém zásahu. Stupně 0 a 1 přidávají 5+Vnímání, stupně 2 a 3 přidávají 10+Vnímání a stupeň 4 přidává 15+Vnímání.",
+      "critDamage": "Zranění navíc při Kritickém zásahu. Každý bod Vnímání jej zvyšuje o 1 a vyšší stupně kritického zásahu přidávají dalších 5 až 20 zranění.",
+      "penetration": "Určuje hranici, pod kterou nemůže být zranění sníženo skrze Kz. Nevztahuje se na speciální Kz, jako je Ohnivé nebo Magické.",
+      "breakthrough": "Způsobuje zranění i přes úspěšnou Obranu. Neplatí pro Úhyb ani Kritickou obranu a samotný útok nesmí být neúspěch. Počítá s Průbojností a neaplikuje efekty jako Krvácení či Omráčení.",
+      "sneakDamage": "Zranění navíc při Zákeřném útoku. Některé materiály jej dále zvyšují, například Obsidium o 2d6 a Dračí zub o 1d6 u lehkých zbraní.",
+      "tags": "Volný seznam vlastností zbraně, například Dlouhý dosah, Rychlá, Rváč nebo Zásobník. Slouží jako podklad pro Odbornosti a Metly; jednotlivé vlastnosti popisuje poznámka.",
+      "finesse": "Zbraň s vlastností Vytříbená počítá pro Zásah a Zranění Obratnost místo Síly nebo Vnímání. Vyžaduje odbornost Finesa.",
+      "twoHandGrip": "Obouručně držené Lehké a Střední zbraně na blízko získávají +1d6 ke Zranění. Takto nelze držet Rapír, Katar, Dýku, Šermířskou dýku ani Vrhací nůž.",
+      "longReach": "Dosah zbraně je zvýšený o jednu hexu. Efekt z více zdrojů se sčítá.",
+      "sharp": "Zbraň hází na způsobení Krvácení dvě kostky místo jedné.",
+      "thrown": "Zbraní lze házet. Útok na cíl za hranicí Efektivního dostřelu má postih -20 % na Vrh.",
+      "offhand": "Zbraň lze držet v druhé ruce. Držení zbraně jinou než dominantní rukou dává postih 10 % na Zásah, Obranu, Vrh, Střelbu a Palbu.",
+      "stagger": "Šance zbraně způsobit efekt Omráčení na dva tahy. Kritický zásah 2. stupně a vyšší dává k této šanci +100 %.",
+      "bleed": "Šance zbraně způsobit efekt Krvácení. Vlastnost Ostrá hází dvě kostky místo jedné a Kritický zásah 2. stupně a vyšší dává +100 %.",
+      "diceNum": "Počet kostek základního zranění zbraně. Při zásahu se zranění vyhodnocuje v pevném pořadí: nejdříve Kz, poté Průbojnost, speciální Kz, procentuální úpravy a nakonec Dočasné životy a Životy.",
+      "dieSize": "Velikost kostek základního zranění zbraně. Obouručně držené Lehké a Střední zbraně na blízko získávají navíc +1d6.",
+      "rollMod": "Pevná úprava zranění nad rámec kostek. Materiál zbraně sem obvykle přidává svůj bonus, například Rudá ocel +2d4 nebo Eldarin +3d4.",
+      "quality": "Kvalita zbraně: Špatná -5 % na Zásah a Obranu, Normální nic, Expertní +3 %, Mistrovská +5 % a Ověření +5 %, Legendární +8 %, Ověření +10 % a Kritický zásah +3 %. Prak, Dřevec a Provizorní zbraň nemohou mít lepší kvalitu než Normální.",
+      "weaponClass": "Třída zbraně určuje, které Odbornosti a Doktrinální akce lze se zbraní použít. Nedodržení požadavku zbraně na vlastnost či výcvik dává postih 10 % na Úspěch a tento postih se sčítá.",
+      "weaponType": "Váhová kategorie zbraně. Lehké a Střední zbraně na blízko lze držet obouručně za +1d6 ke Zranění. Těžká zbraň držená v jedné ruce dává postih 15 % na Zásah, 10 % na Obranu a znemožňuje Doktrinální a Specializační akce.",
+      "dmgType": "Typy zranění, které útok používá. Zápis \"+\" znamená, že útok využívá všechny typy zároveň, zápis \"/\" dává výhodu útočníkovi. Podle typů se vyhodnocuje Zranitelnost, Odolnost a Imunita cíle."
+    },
     "Effect": {
       "Source": "Zdroj",
+      "BloodFromBleed": "{name} vtahuje {amount} ztracených Životů do Zásoby krve.",
       "Toggle": "Spustit efekt",
       "Temporary": "Dočasný efekt",
       "Passive": "Pasivní efekt",
@@ -4663,6 +4765,14 @@
       },
       "Bezoardicum": {
         "name": "Bezoardikum"
+      },
+      "BloodPact": {
+        "name": "Krvavý pakt",
+        "description": "<p>Jednou za kolo může spálit jeden svůj Mentální život, aby ihned získal životy do Zásoby krve rovné svému Maximálnímu převodu.</p><p>Spálený Mentální život je ztracen natrvalo: sníží se jak aktuální, tak maximální počet Mentálních životů o jeden. Vrátit jej lze pouze rituálem nebo lektvarem.</p>",
+        "result": "Spálil Mentální život ({mindValue}/{mindMax} zbývá) a získal {gained} do Zásoby krve.",
+        "alreadyUsed": "Krvavý pakt už byl v tomto kole použit.",
+        "noMind": "Není žádný Mentální život ke spálení.",
+        "reserveFull": "Zásoba krve už je plná."
       },
       "BloodyKiss": {
         "name": "Krvavý polibek"
@@ -5923,6 +6033,138 @@
       "StarsignFireEye": {
         "name": "Hvězda: Ohnivé oko",
         "description": "<p>Duše je označena Sheolem. V momentě smrti, není-li tomu přímo zabráněno, se duše odebírá do Sheolu, což znemožňuje oživení. Efekt této Hvězdy se nedá změnit.</p>"
+      },
+      "AdeptSmithing": {
+        "name": "Adept: Kovářství"
+      },
+      "ExpertSmithing": {
+        "name": "Expert: Kovářství"
+      },
+      "AdeptCraft": {
+        "name": "Adept: Řemeslo"
+      },
+      "ExpertCraft": {
+        "name": "Expert: Řemeslo"
+      },
+      "AdeptRiding": {
+        "name": "Adept: Jezdectví"
+      },
+      "ExpertRiding": {
+        "name": "Expert: Jezdectví"
+      },
+      "AdeptDrinking": {
+        "name": "Adept: Pijáctví"
+      },
+      "ExpertDrinking": {
+        "name": "Expert: Pijáctví"
+      },
+      "AdeptArt": {
+        "name": "Adept: Umělecká tvorba"
+      },
+      "ExpertArt": {
+        "name": "Expert: Umělecká tvorba"
+      },
+      "AdeptEngineering": {
+        "name": "Adept: Inženýrství"
+      },
+      "ExpertEngineering": {
+        "name": "Expert: Inženýrství"
+      },
+      "AdeptLogic": {
+        "name": "Adept: Logika"
+      },
+      "ExpertLogic": {
+        "name": "Expert: Logika"
+      },
+      "AdeptTactics": {
+        "name": "Adept: Taktika"
+      },
+      "ExpertTactics": {
+        "name": "Expert: Taktika"
+      },
+      "AdeptAugury": {
+        "name": "Adept: Věštění"
+      },
+      "ExpertAugury": {
+        "name": "Expert: Věštění"
+      },
+      "AdeptDreamwalker": {
+        "name": "Adept: Chodec ve snu"
+      },
+      "ExpertDreamwalker": {
+        "name": "Expert: Chodec ve snu"
+      },
+      "AdeptRituals": {
+        "name": "Adept: Rituály"
+      },
+      "ExpertRituals": {
+        "name": "Expert: Rituály"
+      },
+      "AdeptActing": {
+        "name": "Adept: Herectví"
+      },
+      "ExpertActing": {
+        "name": "Expert: Herectví"
+      },
+      "AdeptDeception": {
+        "name": "Adept: Klamání"
+      },
+      "ExpertDeception": {
+        "name": "Expert: Klamání"
+      },
+      "AdeptIntimidation": {
+        "name": "Adept: Zastrašování"
+      },
+      "ExpertIntimidation": {
+        "name": "Expert: Zastrašování"
+      },
+      "AdeptMusic": {
+        "name": "Adept: Hudba"
+      },
+      "ExpertMusic": {
+        "name": "Expert: Hudba"
+      },
+      "AdeptPainting": {
+        "name": "Adept: Malování"
+      },
+      "ExpertPainting": {
+        "name": "Expert: Malování"
+      },
+      "AdeptPersuasion": {
+        "name": "Adept: Přesvědčování"
+      },
+      "ExpertPersuasion": {
+        "name": "Expert: Přesvědčování"
+      },
+      "AdeptTemptation": {
+        "name": "Adept: Pokoušení"
+      },
+      "ExpertTemptation": {
+        "name": "Expert: Pokoušení"
+      },
+      "AdeptBlend": {
+        "name": "Adept: Splývání v davu"
+      },
+      "ExpertBlend": {
+        "name": "Expert: Splývání v davu"
+      },
+      "AdeptHerbalism": {
+        "name": "Adept: Bylinářství"
+      },
+      "ExpertHerbalism": {
+        "name": "Expert: Bylinářství"
+      },
+      "AdeptInsight": {
+        "name": "Adept: Vhled"
+      },
+      "ExpertInsight": {
+        "name": "Expert: Vhled"
+      },
+      "AdeptSurvival": {
+        "name": "Adept: Přežití"
+      },
+      "ExpertSurvival": {
+        "name": "Expert: Přežití"
       }
     }
   },

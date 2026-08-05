@@ -12,6 +12,7 @@ import {
   rollSpeedTest,
   renderSpeedTestLine,
 } from "./speedTest.mjs";
+import { resolveTestRating } from "./testRating.mjs";
 
 export async function universalAttackLogic({
   attackType,
@@ -158,7 +159,7 @@ export async function universalAttackLogic({
 
       if (!testName || testName === "-- Select a Type --") continue;
 
-      // Speed test: d12 + Initiative (+ Speed), higher is better.
+      // Speed test: d12 + Initiative + Speed, higher is better.
       if (isSpeedTest(testName)) {
         const speedRoll = await rollSpeedTest(actor, { modifier: testModifier });
         attributeTestHTML += `
@@ -179,28 +180,17 @@ export async function universalAttackLogic({
         continue;
       }
 
-      const attributeMap = {
-        strength: "str",
-        endurance: "end",
-        dexterity: "dex",
-        intelligence: "int",
-        wisdom: "wis",
-        charisma: "cha",
-      };
+      const { value: attributeValue, skillKey } = resolveTestRating(
+        actor,
+        testName,
+      );
 
-      const shortKey = attributeMap[testName.toLowerCase()] ?? testName;
-
-      let attributeValue = actor.system.attributes[shortKey]?.mod ?? 0;
-
-      if (actor.type === "npc") {
-        attributeValue = actor.system.attributes[shortKey]?.value ?? 0;
-      }
       const attributeTotalValue = attributeValue + testModifier;
       const attributeRoll = new Roll(
         `(${attributeTotalValue}) - 1d100`,
         withRollBias({}, actor),
       );
-      tagRollSkill(attributeRoll, shortKey);
+      tagRollSkill(attributeRoll, skillKey);
 
       await attributeRoll.evaluate({ async: true });
 

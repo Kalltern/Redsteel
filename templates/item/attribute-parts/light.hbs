@@ -98,13 +98,15 @@
       </div>
     </div>
 
-    <div class="checkbox-row">
-      <label class="resource-label">{{localize "REDSTEEL.Item.Light.negative"}}</label>
-      <input
-        type="checkbox"
-        name="system.light.negative"
-        {{checked system.light.negative}}
-      />
+    <div class="rs-toggle-row">
+      <label class="rs-toggle">
+        <input
+          type="checkbox"
+          name="system.light.negative"
+          {{checked system.light.negative}}
+        />
+        <span>{{localize "REDSTEEL.Item.Light.negative"}}</span>
+      </label>
     </div>
 
     <hr />
@@ -151,13 +153,15 @@
       </div>
     </div>
 
-    <div class="checkbox-row">
-      <label class="resource-label">{{localize "REDSTEEL.Item.Light.animationReverse"}}</label>
-      <input
-        type="checkbox"
-        name="system.light.animation.reverse"
-        {{checked system.light.animation.reverse}}
-      />
+    <div class="rs-toggle-row">
+      <label class="rs-toggle">
+        <input
+          type="checkbox"
+          name="system.light.animation.reverse"
+          {{checked system.light.animation.reverse}}
+        />
+        <span>{{localize "REDSTEEL.Item.Light.animationReverse"}}</span>
+      </label>
     </div>
   </div>
 </section>

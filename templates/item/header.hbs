@@ -100,7 +100,7 @@
         {{!-- Weapon dice fields --}}
         {{#if (eq item.type "weapon")}}
           <div class="grid-span-1">
-            <label for="damage-dice">{{localize "REDSTEEL.Item.Weapon.FIELDS.diceNum.label"}}:</label>
+            <label for="damage-dice" data-tt-kind="weaponField" data-tt-id="diceNum">{{localize "REDSTEEL.Item.Weapon.FIELDS.diceNum.label"}}:</label>
             <input
               type="text"
               name="system.roll.diceNum"
@@ -110,7 +110,7 @@
           </div>
 
           <div class="grid-span-1">
-            <label class="resource-label">{{localize "REDSTEEL.Item.Weapon.FIELDS.dieSize.label"}}</label>
+            <label class="resource-label" data-tt-kind="weaponField" data-tt-id="dieSize">{{localize "REDSTEEL.Item.Weapon.FIELDS.dieSize.label"}}</label>
             <input
               type="text"
               name="system.roll.diceSize"
@@ -122,7 +122,7 @@
 
         {{!-- Shared fields --}}
         <div class="grid-span-1">
-          <label class="resource-label">{{localize "REDSTEEL.Item.Weapon.FIELDS.rollMod.label"}}</label>
+          <label class="resource-label" data-tt-kind="weaponField" data-tt-id="rollMod">{{localize "REDSTEEL.Item.Weapon.FIELDS.rollMod.label"}}</label>
           <input
             type="text"
             name="system.roll.diceBonus"
@@ -147,7 +147,7 @@
         {{/if}}
 
         <div class="grid-span-1">
-          <label class="resource-label">{{localize "REDSTEEL.Item.Weapon.FIELDS.penetration.label"}}</label>
+          <label class="resource-label" data-tt-kind="weaponField" data-tt-id="penetration">{{localize "REDSTEEL.Item.Weapon.FIELDS.penetration.label"}}</label>
           <input
             type="number"
             name="system.penetration"
@@ -159,7 +159,7 @@
         {{!-- Weapon-only fields --}}
         {{#if (eq item.type "weapon")}}
           <div class="grid-span-1">
-            <label for="weapon-class">{{localize "REDSTEEL.UI.weaponClass"}}:</label>
+            <label for="weapon-class" data-tt-kind="weaponField" data-tt-id="weaponClass">{{localize "REDSTEEL.UI.weaponClass"}}:</label>
             <select name="system.class" id="weapon-class">
               <option value="">{{localize "REDSTEEL.UI.selectClass"}}</option>
               {{#each system.classOptions as |classOption|}}
@@ -171,7 +171,7 @@
           </div>
 
           <div class="grid-span-1">
-            <label for="weapon-type">{{localize "REDSTEEL.UI.weaponType"}}:</label>
+            <label for="weapon-type" data-tt-kind="weaponField" data-tt-id="weaponType">{{localize "REDSTEEL.UI.weaponType"}}:</label>
             <select name="system.type" id="weapon-type">
               <option value="">{{localize "REDSTEEL.UI.selectType"}}</option>
               {{#each system.typeOptions as |typeOption|}}
@@ -183,7 +183,7 @@
           </div>
 
           <div class="grid-span-1">
-            <label for="weapon-quality">{{localize "REDSTEEL.Item.Weapon.FIELDS.quality.label"}}:</label>
+            <label for="weapon-quality" data-tt-kind="weaponField" data-tt-id="quality">{{localize "REDSTEEL.Item.Weapon.FIELDS.quality.label"}}:</label>
             <select name="system.quality" id="weapon-quality">
               {{#each system.qualityChoices as |label key|}}
                 <option value="{{key}}" {{#if (eq ../system.quality key)}}selected{{/if}}>
@@ -254,24 +254,26 @@
             <input type="text" name="system.testModifier" value="{{system.testModifier}}" data-dtype="Number"/>
           </div>
 
-          <div class="grid-span-1">
-            <label class="resource-label">{{localize "REDSTEEL.Item.Ability.FIELDS.weaponAbility.label"}}</label>
-            <input type="checkbox" name="system.weaponAbility" {{#if system.weaponAbility}}checked{{/if}} />
-          </div>
+          <div class="grid-span-2 rs-toggle-row">
+            <label class="rs-toggle">
+              <input type="checkbox" name="system.weaponAbility" {{#if system.weaponAbility}}checked{{/if}} />
+              <span>{{localize "REDSTEEL.Item.Ability.FIELDS.weaponAbility.label"}}</span>
+            </label>
 
-            <div class="grid-span-1">
-            <label class="resource-label">{{localize "REDSTEEL.Item.Ability.FIELDS.standalone.label"}}</label>
-            <input type="checkbox" name="system.standalone" {{#if system.standalone}}checked{{/if}} />
-          </div>
+            <label class="rs-toggle">
+              <input type="checkbox" name="system.standalone" {{#if system.standalone}}checked{{/if}} />
+              <span>{{localize "REDSTEEL.Item.Ability.FIELDS.standalone.label"}}</span>
+            </label>
 
-          
-            <div class="grid-span-1">
-            <label class="resource-label">{{localize "REDSTEEL.Item.Ability.FIELDS.modifiesAttack.label"}}</label>
-            <input type="checkbox" name="system.modifiesAttack" {{#if system.modifiesAttack}}checked{{/if}} />
-          </div>
-                   <div class="grid-span-1">
-            <label class="resource-label">{{localize "REDSTEEL.Item.Ability.FIELDS.multiAttack.label"}}</label>
-            <input type="checkbox" name="system.multiAttack" {{#if system.multiAttack}}checked{{/if}} />
+            <label class="rs-toggle">
+              <input type="checkbox" name="system.modifiesAttack" {{#if system.modifiesAttack}}checked{{/if}} />
+              <span>{{localize "REDSTEEL.Item.Ability.FIELDS.modifiesAttack.label"}}</span>
+            </label>
+
+            <label class="rs-toggle">
+              <input type="checkbox" name="system.multiAttack" {{#if system.multiAttack}}checked{{/if}} />
+              <span>{{localize "REDSTEEL.Item.Ability.FIELDS.multiAttack.label"}}</span>
+            </label>
           </div>
         {{/if}}
 
@@ -284,21 +286,19 @@
     {{#if (eq item.type "gear")}}
       <div class="grid grid-2col">
 
-        <div class="grid-span-1">
-          <label class="resource-label">{{localize "REDSTEEL.Item.Gear.FIELDS.shield.label"}}</label>
-          <input type="checkbox" name="system.shield" {{#if system.shield}}checked{{/if}} />
+        <div class="grid-span-2 rs-toggle-row">
+          <label class="rs-toggle">
+            <input type="checkbox" name="system.shield" {{#if system.shield}}checked{{/if}} />
+            <span>{{localize "REDSTEEL.Item.Gear.FIELDS.shield.label"}}</span>
+          </label>
+
+          {{#unless system.shield}}
+            <label class="rs-toggle">
+              <input type="checkbox" name="system.helmet" {{#if system.helmet}}checked{{/if}} />
+              <span>{{localize "REDSTEEL.Item.Gear.FIELDS.helmet.label"}}</span>
+            </label>
+          {{/unless}}
         </div>
-
-        {{#if system.shield}}
-          <div class="grid-span-1"></div>
-        {{/if}}
-
-        {{#unless system.shield}}
-          <div class="grid-span-1">
-            <label class="resource-label">{{localize "REDSTEEL.Item.Gear.FIELDS.helmet.label"}}</label>
-            <input type="checkbox" name="system.helmet" {{#if system.helmet}}checked{{/if}} />
-          </div>
-        {{/unless}}
 
         <div class="grid-span-1">
           <label class="resource-label">{{localize "REDSTEEL.Item.Gear.FIELDS.armor.label"}}</label>
@@ -389,9 +389,11 @@
 
         {{!-- Explosive --}}
         {{#if (eq item.system.option "explosive")}}
-          <div class="grid-span-1">
-            <label>{{localize "REDSTEEL.Item.Consumable.FIELDS.aimed.label"}}</label>
-            <input type="checkbox" name="system.aimed" {{#if system.aimed}}checked{{/if}} />
+          <div class="grid-span-1 rs-toggle-row">
+            <label class="rs-toggle">
+              <input type="checkbox" name="system.aimed" {{#if system.aimed}}checked{{/if}} />
+              <span>{{localize "REDSTEEL.Item.Consumable.FIELDS.aimed.label"}}</span>
+            </label>
           </div>
 
           <div class="grid-span-1">
@@ -567,12 +569,8 @@
           <input type="text" name="system.cost" value="{{system.cost}}" data-dtype="Number"/>
         </div>
 
-        <div class="grid-span-1">
-          <label>{{localize "REDSTEEL.Item.Spell.FIELDS.isOffensive.label"}}</label>
-          <input type="checkbox" name="system.isOffensive" {{#if system.isOffensive}}checked{{/if}} />
-        </div>
-
-
+        {{!-- Offensive / Uncontested / Sustained / Healing live under
+              "Spell properties" on the Variants tab. --}}
 
       </div>
     {{/if}}

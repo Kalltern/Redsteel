@@ -51,6 +51,19 @@ export class RedsteelActor extends Actor {
     // documents or derived data.
     const system = this.system;
 
+    // Sheet inputs are plain text and template.json has no DataModel to coerce
+    // them, so a hand-typed resource value is stored as a string ("8"). Any
+    // code doing `value + amount` then concatenates ("8" + 8 === "88"). Coerce
+    // every stat leaf back to a number before Active Effects or derived data
+    // touch it — this also repairs actors whose stored value is already a
+    // string, since the next write persists the number.
+    for (const stat of Object.values(system.stats ?? {})) {
+      if (!stat || typeof stat !== "object") continue;
+      for (const [key, value] of Object.entries(stat)) {
+        if (typeof value === "string") stat[key] = Number(value) || 0;
+      }
+    }
+
     system.globalBonus ??= 0;
     system.globalPenalty ??= 0;
 
@@ -84,7 +97,10 @@ export class RedsteelActor extends Actor {
     // (system.fatigueResilience) makes fatigue count one degree lower, so the
     // first point becomes degree 0 (no penalties) and death moves to 7 points.
     const rawFatigue = system.stats?.fatigue?.value ?? 0;
-    const fatigueDegree = Math.max(0, rawFatigue - (system.fatigueResilience ? 1 : 0));
+    const fatigueDegree = Math.max(
+      0,
+      rawFatigue - (system.fatigueResilience ? 1 : 0),
+    );
     system.fatigueDegree = fatigueDegree;
     // Degree 4+: disadvantage on every test. Folded into the actor-wide
     // advantage bucket (seeded in prepareBaseData, already carries any
@@ -254,6 +270,65 @@ export class RedsteelActor extends Actor {
   }
 
   /**
+   * Re-apply the Active Effect changes that target a *derived* field.
+   *
+   * Foundry applies effects in prepareEmbeddedDocuments(), which runs before
+   * prepareDerivedData() recomputes `secondaryAttributes.spd.total` from
+   * Dexterity, value, bonus and Fatigue — so anything an effect wrote to
+   * `.total` was silently thrown away. Speed effects (Slow, Root, Fatigued,
+   * Haste, Flight, Demonic Grasp) all have to target `.total`, because
+   * halving or overriding a speed cannot be expressed as a flat bonus.
+   * Replaying them on top of the derived number is what makes a plain speed
+   * debuff work with no per-effect wiring.
+   *
+   * @param {string} key   Full change key, e.g. "system.secondaryAttributes.spd.total".
+   * @param {number} base  The freshly derived value to apply the changes to.
+   * @returns {number}
+   */
+  _replayEffectChanges(key, base) {
+    const changes = [];
+    for (const effect of this.appliedEffects ?? []) {
+      for (const change of effect.changes ?? []) {
+        if (change.key !== key) continue;
+        // Foundry's own default when a change carries no explicit priority.
+        changes.push({
+          ...change,
+          priority: change.priority ?? change.mode * 10,
+        });
+      }
+    }
+    if (!changes.length) return base;
+    changes.sort((a, b) => a.priority - b.priority);
+
+    const MODES = CONST.ACTIVE_EFFECT_CHANGE_TYPES;
+    let value = Number(base) || 0;
+    for (const change of changes) {
+      const delta = Number(change.value) || 0;
+      switch (change.mode) {
+        case MODES.ADD:
+          value += delta;
+          break;
+        case MODES.MULTIPLY:
+          value *= delta;
+          break;
+        case MODES.OVERRIDE:
+          value = delta;
+          break;
+        case MODES.UPGRADE:
+          value = Math.max(value, delta);
+          break;
+        case MODES.DOWNGRADE:
+          value = Math.min(value, delta);
+          break;
+        default:
+          // CUSTOM has no meaning for a plain number; leave the value alone.
+          break;
+      }
+    }
+    return value;
+  }
+
+  /**
    * Prepare Character type specific data
    */
   _prepareCharacterData(actorData) {
@@ -342,7 +417,7 @@ export class RedsteelActor extends Actor {
         // two-handed main hand or a shield off hand disables it).
         const mainIsTwoHanded = mainHand
           ? mainHand.system.type === "heavy" ||
-            ["crossbow", "box"].includes(mainHand.system.class) ||
+            ["crossbow", "bow"].includes(mainHand.system.class) ||
             mainHand.system.gripMode === "two"
           : false;
         const isDualWield =
@@ -405,7 +480,11 @@ export class RedsteelActor extends Actor {
                 }
                 if (weaponClass === "sword") {
                   combatSkills.combat.bonus += 5;
-                  systemData.effects.bleed += 3;
+                  // The +3 bleed that used to sit here lives in
+                  // getDoctrineBonuses (combatSkillBonuses.mjs) as
+                  // dimakerusDualWieldBleed. system.effects.bleed is actor-wide
+                  // and opens the bleed gate for *every* attack, so writing it
+                  // here bled maces, bows and weaponless abilities too.
                 }
               }
             } else if (
@@ -830,14 +909,24 @@ export class RedsteelActor extends Actor {
     // Calculate speed
     // Fatigue: degree 5+ sets speed to 1; degree 2+ applies a flat -1.
     const calcSpd = [0, 3, 3, 4, 4, 4, 5, 6, 6, 6, 6];
-    secAttribute.spd.total =
+    const baseSpd =
       fatigueDegree >= 5
         ? 1
         : calcSpd[dex] +
           secAttribute.spd.value +
           secAttribute.spd.bonus -
           (fatigueDegree >= 2 ? 1 : 0);
-    Math.floor(secAttribute.spd.total);
+    // Speed effects (Slow/Root halve it, Haste adds, Flight overrides) target
+    // spd.total, which this calculation has just overwritten — replay them.
+    secAttribute.spd.total = Math.max(
+      0,
+      Math.floor(
+        this._replayEffectChanges(
+          "system.secondaryAttributes.spd.total",
+          baseSpd,
+        ),
+      ),
+    );
 
     // Calculate resolve from endurance and will
     const calcResEnd = [0, 0, 0, 1, 1, 2, 2, 3, 3, 3, 3];
@@ -901,7 +990,14 @@ export class RedsteelActor extends Actor {
       }
     }
 
-    stat.mind.max = wil + stat.mind.bonus + stat.mind.base;
+    // Burned Mind points (Spálené Mentální životy) are gone permanently: a
+    // burn spends the point AND shrinks the ceiling (2/5 → 1/4). Only a ritual
+    // or a potion puts one back, which is done by lowering `burned` by hand on
+    // the Config tab — hence the subtraction here rather than a write to `base`.
+    stat.mind.max = Math.max(
+      0,
+      wil + stat.mind.bonus + stat.mind.base - (Number(stat.mind.burned) || 0),
+    );
     stat.insanity.max = wil + stat.insanity.bonus + stat.insanity.base;
 
     // Calculate trap detection skill
@@ -1268,6 +1364,18 @@ export class RedsteelActor extends Actor {
     }
     const initiative = systemData.secondaryAttributes.ini;
     initiative.total = initiative.value + initiative.bonus;
+    // Same Speed as a character: movement allowance and the d12 speed test both
+    // read spd.total, so Slow/Root/Haste/Flight land on NPCs unchanged.
+    const speed = systemData.secondaryAttributes.spd;
+    speed.total = Math.max(
+      0,
+      Math.floor(
+        this._replayEffectChanges(
+          "system.secondaryAttributes.spd.total",
+          (Number(speed.value) || 0) + (Number(speed.bonus) || 0),
+        ),
+      ),
+    );
     const hp = systemData.stats.health;
     const stamina = systemData.stats.stamina;
     const holyEnergy = systemData.stats.holyEnergy;
@@ -1288,6 +1396,16 @@ export class RedsteelActor extends Actor {
 
     hp.value = Number(hp.value) || 0;
     hp.max = Number(hp.max) || 0;
+
+    // NPC Mind max is authored directly rather than derived from Will, but
+    // burning still eats the ceiling the same way it does for characters.
+    const mind = systemData.stats.mind;
+    mind.max = Math.max(
+      0,
+      (Number(mind.max) || 0) - (Number(mind.burned) || 0),
+    );
+    mind.value = Math.min(Number(mind.value) || 0, mind.max);
+
     systemData.xp = systemData.cr * systemData.cr * 100;
 
     const baseCriticalSuccess = 5; // Base critical success threshold

@@ -8,6 +8,31 @@ import {
   rollSpeedTest,
   renderSpeedTestLine,
 } from "./speedTest.mjs";
+import { ATTRIBUTE_KEYS } from "./testRating.mjs";
+
+const BLEEDING_DAMAGE_TYPES = new Set(["slash", "piercing"]);
+
+/**
+ * Can this attack open a bleeding wound at all? An edge or a point swung in
+ * melee can; a mace, an arrow, a spell or a bare fist cannot.
+ *
+ * "Melee" follows the convention getActorCombatModifiers already uses: bows and
+ * crossbows are ranged, everything else (thrown weapons included) counts as
+ * melee. A weaponless attack — ability, spell, unarmed — never qualifies.
+ *
+ * This gates actor-wide bleed bonuses (racial traits, the Dimakerus dual-wield
+ * sword bonus, any Active Effect on system.effects.bleed) so they cannot leak
+ * into attacks that have no business bleeding.
+ */
+export function canWeaponBleed(weapon) {
+  const ws = weapon?.system;
+  if (!ws) return false;
+  if (ws.class === "bow" || ws.class === "crossbow") return false;
+  if (ws.sharp) return true;
+  return [ws.dmgType1, ws.dmgType2, ws.dmgType3, ws.dmgType4].some((t) =>
+    BLEEDING_DAMAGE_TYPES.has(String(t ?? "").toLowerCase()),
+  );
+}
 
 async function getSneakDamageFormula(actor, weapon, weaponContext = null) {
   const ws = weapon?.system ?? {};
@@ -53,15 +78,8 @@ export async function getNonWeaponAbility(actor, ability) {
   const abilityAttributeTestName = ability.system.attributeTest || 0;
   const abilityTestModifier = ability.system.testModifier || 0;
 
-  const attributeMap = {
-    strength: "str",
-    dexterity: "dex",
-    endurance: "end",
-    intelligence: "int",
-    will: "wil",
-    charisma: "cha",
-    perception: "per",
-  };
+  // Shared with every other Test Type site — see module/utils/testRating.mjs.
+  const attributeMap = ATTRIBUTE_KEYS;
 
   let concatRollAndDescription = ability.system.description;
   let attributeTestRoll = null;
@@ -70,7 +88,7 @@ export async function getNonWeaponAbility(actor, ability) {
   const testName = ability.system.attributeTest?.trim();
 
   if (isSpeedTest(testName)) {
-    // d12 + Initiative (+ Speed) — rolled high, contested from the chat card.
+    // d12 + Initiative + Speed — rolled high, contested from the chat card.
     speedTestRoll = await rollSpeedTest(actor, { modifier: abilityTestModifier });
     // Only separate from the description when there is one to separate from.
     if (hasHtmlContent(concatRollAndDescription)) concatRollAndDescription += "<hr>";
@@ -259,10 +277,42 @@ export async function getNonWeaponAbility(actor, ability) {
   });
 }
 
+/**
+ * Is `weapon` the main hand of the actor's active weapon set, with a second
+ * weapon (not a shield) in the off hand? Mirrors the dual-wield test in
+ * actor.mjs's _prepareCharacterData, which holds the sheet-stat half of the
+ * Dimakerus dual-wield bonus.
+ */
+function isDualWieldingMainHand(actor, weapon) {
+  if (!weapon) return false;
+  const combat = actor.system?.combat ?? {};
+  const set = combat.activeWeaponSet
+    ? combat.weaponSets?.[combat.activeWeaponSet]
+    : null;
+  if (!set?.main || !set.off) return false;
+  if (set.main !== weapon.id) return false;
+
+  const mainHand = actor.items.get(set.main);
+  const offHand = actor.items.get(set.off);
+  if (!mainHand || !offHand) return false;
+  if (offHand.system?.shield) return false;
+
+  const mainIsTwoHanded =
+    mainHand.system?.type === "heavy" ||
+    ["crossbow", "bow"].includes(mainHand.system?.class) ||
+    mainHand.system?.gripMode === "two";
+  return !mainIsTwoHanded;
+}
+
 export async function getDoctrineBonuses(actor, weapon) {
   // Doctrine bonuses
   const doctrine = actor.system.doctrines;
   const ws = weapon?.system ?? {};
+  // Kept apart from doctrineBleedBonus, which the branches below assign rather
+  // than accumulate: this one stacks on top of whatever rank the doctrine has
+  // reached, and must not depend on the order Object.entries walks the weapon's
+  // doctrine flags.
+  let dimakerusDualWieldBleed = 0;
   let doctrineBonus = 0;
   let doctrineCritBonus = 0;
   let doctrineCritRangeBonus = 0;
@@ -336,6 +386,21 @@ export async function getDoctrineBonuses(actor, weapon) {
         if (doctrine.dimakerus.value >= 9) {
           doctrineBonus = 5;
         }
+      }
+
+      // Rank 1: dual wielding a flagged sword opens wounds a little wider. The
+      // matching +5 combat bonus stays in actor.mjs because it is a sheet stat,
+      // but the bleed belongs here with every other doctrine bleed bonus —
+      // parked on system.effects.bleed it was actor-wide, and so leaked onto
+      // maces, bows, spells and every weaponless ability the character used.
+      // Reaching this branch already means ws.doctrines.dimakerus === true.
+      if (
+        doctrineName === "dimakerus" &&
+        doctrine.dimakerus.value >= 1 &&
+        ws.class === "sword" &&
+        isDualWieldingMainHand(actor, weapon)
+      ) {
+        dimakerusDualWieldBleed = 3;
       }
 
       if (doctrineName === "duelist" && doctrine.duelist.value >= 4) {
@@ -434,7 +499,7 @@ export async function getDoctrineBonuses(actor, weapon) {
     doctrineCritBonus,
     doctrineCritRangeBonus,
     doctrineStaggerBonus,
-    doctrineBleedBonus,
+    doctrineBleedBonus: doctrineBleedBonus + dimakerusDualWieldBleed,
     doctrineRangedDefenseBonus,
     doctrineDefenseBonus,
     doctrineCritDefenseBonus,
@@ -565,13 +630,14 @@ export async function getAttackRolls(
     }
   } else if (ws.thrown) {
     const knifeMasterCrit = knifeMasterCheck(actor, weapon) ? 2 : 0;
+    // No weapon-skill VII crit here: thrown crit chance comes from the
+    // Peltast / Juggler doctrines, so adding it would double-dip.
     criticalSuccessThreshold =
       actor.system.combatSkills.combat.criticalSuccessThreshold +
       (ws.critChance ?? 0) +
       qualityCritChance +
       knifeMasterCrit +
-      doctrineCritBonus +
-      (weaponSkillCrit ?? 0);
+      doctrineCritBonus;
     criticalFailureThreshold =
       actor.system.combatSkills.combat.criticalFailureThreshold -
       (ws.critFail ?? 0) -
@@ -944,6 +1010,15 @@ export async function getEffectRolls(
   const actorModBleed = Number(actorModExtras.bleed) || 0;
   const actorModStagger = Number(actorModExtras.stagger) || 0;
 
+  // Actor-wide bleed — anything an Active Effect writes to system.effects.bleed
+  // — is a *bonus*, the same kind of thing the doctrine and weapon-skill bleed
+  // bonuses are: it deepens a wound the blade was already going to open. It
+  // must never make an attack bleed on its own, or a few percent of it turns up
+  // on maces, bows and every weaponless ability the actor uses.
+  const actorBleedBonus = canWeaponBleed(weapon)
+    ? Number(actorEffects.bleed) || 0
+    : 0;
+
   // Poison coating applied to this weapon (see usePoison). Its authored combat
   // effects fold into this attack the same way the weapon's own effects do:
   // dedicated bleed/stagger below, custom slots via collectExtrasFromSource.
@@ -1201,10 +1276,9 @@ export async function getEffectRolls(
       critBleeds += 1;
     }
     const abilityBleed = abilityEffects["bleed"] || 0;
-    const modifier = actorEffects["bleed"] || 0;
     const modifiedBleedValue =
       (weaponEffects.bleed || 0) +
-      modifier +
+      actorBleedBonus +
       actorModBleed +
       (abilityBleed || 0) +
       weaponSkillEffect +
@@ -1225,17 +1299,17 @@ export async function getEffectRolls(
 
   let bleedChanceDisplay = 0;
 
-  // Gate only: the actual chance is summed independently below. Actor-level
-  // bleed (doctrines such as Dimakerus, or Active Effects on system.effects)
-  // has to count here too, otherwise it is silently dropped whenever the
-  // weapon itself carries no intrinsic bleed. Combat-modifier bleed (Sanguine
-  // Blade, Whetstone) opens the gate for the same reason.
+  // Gate only: the actual chance is summed independently below. Everything
+  // here is a source that can draw blood by itself — the weapon's own edge, an
+  // ability, a poison coating, or combat-modifier bleed from a deliberate
+  // enchant (Sanguine Blade, Whetstone). Actor-wide bleed is deliberately
+  // absent: like the doctrine and weapon-skill bonuses it only sweetens a bleed
+  // roll something else has already earned.
   const bleedBaseValue =
     (weaponEffects.bleed || 0) +
     (offProps?.effects?.bleed || 0) +
     (abilityEffects["bleed"] || 0) +
     (coatingEffects.bleed || 0) +
-    (actorEffects["bleed"] || 0) +
     actorModBleed;
 
   const bleedIsAuto =
@@ -1250,14 +1324,13 @@ export async function getEffectRolls(
     bleedChanceDisplay = "AUTO";
   } else if (bleedBaseValue > 0) {
     const abilityBleed = abilityEffects["bleed"] || 0;
-    const actorBleed = actorEffects["bleed"] || 0;
     const offBleed = offProps?.effects?.bleed || 0;
     const coatingBleed = coatingEffects.bleed || 0;
 
     totalBleedChance =
       (weaponEffects.bleed || 0) +
       deepSlash +
-      actorBleed +
+      actorBleedBonus +
       actorModBleed +
       abilityBleed +
       weaponSkillEffect +
