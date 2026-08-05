@@ -43,6 +43,10 @@
         "name": "Integrace Calendarie",
         "label": "Sleduje obnovu přehození a hojení vážných zranění podle kalendáře modulu Calendaria. Vyžaduje modul Calendaria.",
         "missing": "Modul Calendaria není nainstalován nebo aktivní — integraci nelze zapnout."
+      },
+      "ZoomOut": {
+        "name": "Oddálení navíc (%)",
+        "label": "O kolik dál než obvykle lze plátno oddálit. 100 znamená dvakrát širší pohled, než dovoluje výchozí limit Foundry, 300 znamená čtyřikrát širší. 0 vrátí výchozí chování."
       }
     },
     "Calendaria": {

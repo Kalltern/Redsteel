@@ -43,6 +43,10 @@
         "name": "Calendaria integration",
         "label": "Track reroll refreshes and grave-wound healing on the Calendaria calendar. Requires the Calendaria module.",
         "missing": "The Calendaria module is not installed or active — the integration cannot be enabled."
+      },
+      "ZoomOut": {
+        "name": "Extra zoom out (%)",
+        "label": "How much further than normal you can zoom out on the canvas. 100 means twice as wide a view as Foundry's default limit, 300 means four times as wide. 0 restores the default."
       }
     },
     "Calendaria": {

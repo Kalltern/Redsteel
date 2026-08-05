@@ -63,6 +63,7 @@ import {
   buildWeaponSetView,
 } from "./utils/weaponResolver.mjs";
 import { attackActions, autoAttack } from "./utils/attackActions.mjs";
+import { registerCanvasZoom } from "./utils/canvasZoom.mjs";
 import {
   universalAttackLogic,
   rangedAttack,
@@ -355,6 +356,7 @@ Hooks.once("init", function () {
   registerMentalDuelSetting();
   registerAbilityGrants();
   registerCalendariaIntegration();
+  registerCanvasZoom();
 
   /**
    * Set an initiative formula for the system
