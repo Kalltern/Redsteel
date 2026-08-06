@@ -47,7 +47,57 @@
       "ZoomOut": {
         "name": "Oddálení navíc (%)",
         "label": "O kolik dál než obvykle lze plátno oddálit. 100 znamená dvakrát širší pohled, než dovoluje výchozí limit Foundry, 300 znamená čtyřikrát širší. 0 vrátí výchozí chování."
+      },
+      "Bg3TeamHealth": {
+        "name": "Hráči vidí prstence zdraví spoluhráčů",
+        "label": "Umožní hráčům vyčíst zdraví ostatních z portrétů na Redsteel panelu. Ve výchozím stavu vypnuto a měnit to může jen vypravěč nebo pomocný vypravěč. Vypravěči vidí zdraví družiny vždy, bez ohledu na toto nastavení."
+      },
+      "Bg3Hotbar": {
+        "name": "Redsteel panel",
+        "label": "Vlastní panel systému: portrét s prstencem zdraví, ukazatele zdrojů, stavy, hody na vlastnosti a dovednosti a tlačítka akcí. Vypnutím se vrátíš ke standardnímu panelu Foundry. Vyžaduje restart."
+      },
+      "Bg3Capacity": {
+        "name": "Zobrazit kapacitu řady družiny (ladění)",
+        "label": "Vypíše, kolik dalších portrétů družiny se ještě vejde vedle Redsteel panelu. Měří se za běhu. Užitečné při rozhodování, kolik společníků a mazlíčků řada unese."
+      },
+      "Bg3SlimChat": {
+        "name": "Zúžit pole chatu, dokud se nepoužívá",
+        "label": "Foundry drží pole pro zprávu v plné šířce na každé záložce postranního panelu, což tísní pravou stranu Redsteel panelu. Toto ho zmenší na proužek a šířku vrátí, jakmile do něj klikneš. Vyžaduje restart."
       }
+    },
+    "Bg3Hotbar": {
+      "Attributes": "Vlastnosti",
+      "Skills": "Testy dovedností",
+      "Action": {
+        "attack": "Útočné akce",
+        "defense": "Obranné akce",
+        "ability": "Bojové schopnosti",
+        "channeling": "Sesílání",
+        "rest": "Dlouhý odpočinek",
+        "potion": "Lektvary",
+        "firstAid": "První pomoc",
+        "effects": "Správce efektů"
+      },
+      "Fold": "Sbalit: zobrazit jen aktuální hodnoty",
+      "Unfold": "Rozbalit: zobrazit i maxima",
+      "SettingsTitle": "Nastavení panelu",
+      "SettingsTooltip": "Nastavení panelu: kolik řad dovedností a maker zobrazit.",
+      "SettingsSave": "Uložit",
+      "SkillRows": "Řady dovedností",
+      "MacroRows": "Řady maker",
+      "PickSkill": "Vybrat dovednost",
+      "ClearSkill": "Pravým tlačítkem vymažeš",
+      "NoActor": "Žádná postava",
+      "OpenSheet": "Dvojklikem otevřeš deník postavy.",
+      "PickerTitle": "Vyber dovednost",
+      "PickerSearch": "Hledat dovednost...",
+      "NoEffects": "Žádné stavy",
+      "EffectView": "Aktivní stav.",
+      "EffectManage": "Kliknutím upravíš, pravým tlačítkem odebereš.",
+      "Modifier": "Modifikátor hodu připravený na tvůj další test.",
+      "WeaponSets": "Sady zbraní. Přehození stojí akci.",
+      "PlayersCollapse": "Sbalit seznam hráčů",
+      "PlayersExpand": "Zobrazit hráče, odezvu a FPS"
     },
     "Calendaria": {
       "RerollNote": {
@@ -3945,10 +3995,18 @@
           },
           "priest": {
             "label": "Kněz"
+          },
+          "bloodMage": {
+            "label": "Krvavý mág"
           }
         },
         "xp": {
           "label": "Zkušenosti"
+        }
+      },
+      "FIELDS": {
+        "partyMember": {
+          "label": "Člen družiny"
         }
       }
     },

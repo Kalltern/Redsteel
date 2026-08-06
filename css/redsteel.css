@@ -1,4 +1,4 @@
-﻿@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap");
 :root {
   --redsteel-c-dark: #191813;
   --redsteel-c-faint: #c9c7b8;
@@ -7595,6 +7595,14 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   color: #cfcabb;
 }
 
+/* The rule above is a separator between a head and its description. When the
+   description is the whole tooltip, as with a plain label, there is nothing
+   above it to separate and the border reads as a stray line. */
+.rs-tooltip .rs-tooltip-inner > .tt-desc:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
 .rs-tooltip .tt-desc p {
   margin: 0 0 4px;
 }
@@ -7656,3 +7664,1789 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   text-decoration: underline;
 }
 
+/* -------------------------------------------- */
+/*  BG3-style hotbar panel (experimental, opt-in) */
+/* -------------------------------------------- */
+
+/* The core hotbar stays instantiated so the 1..0 macro keys keep working; it
+   is only hidden from view while the panel is active. */
+body.redsteel-bg3-hotbar #hotbar {
+  display: none;
+}
+
+#redsteel-bg3-hotbar {
+  --rs-bg3-portrait: 126px;
+  --rs-bg3-portrait-team: 84px;
+  /* Party portraits per row before the next row stacks on top. The media
+     queries at the end of this file step it with the viewport. */
+  --rs-bg3-team-cols: 7;
+  --rs-bg3-slot: 46px;
+  --rs-bg3-lift: 14px;
+  --rs-bg3-name-fs: 12px;
+  --rs-bg3-attr-w: 44px;
+  --rs-bg3-attr-h: 36px;
+  --rs-bg3-skill-w: 92px;
+  --rs-bg3-skill-h: 30px;
+  --rs-bg3-border: #4a4436;
+  --rs-bg3-accent: #c8a24a;
+  --rs-bg3-text: #ded4bc;
+  --rs-bg3-bright: #f0d9a0;
+
+  /* Neutralise any generic .application chrome: all visible styling for
+     the panel lives on .rs-bg3-inner. */
+  display: block;
+  padding: 0;
+  background: none;
+  border: none;
+  box-shadow: none;
+
+  /* Positioning context for the floating End Turn / Delay Turn buttons. */
+  position: relative;
+  width: 100%;
+  margin: 0 0 var(--rs-bg3-lift);
+  z-index: 60;
+
+  /* #ui-bottom is pointer-events: none and every bar inside it has to opt
+     back in, otherwise the whole panel is inert to the mouse. */
+  pointer-events: auto;
+  color: var(--rs-bg3-text);
+}
+
+/* Only the bar is in flow, so only the bar decides where the panel sits. */
+#redsteel-bg3-hotbar .rs-bg3-outer {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+/* The anchor is exactly the bar. Everything else hangs off its edges, so a
+   teammate joining or a mana pool appearing cannot shift it sideways. */
+#redsteel-bg3-hotbar .rs-bg3-anchor {
+  position: relative;
+  max-width: 96vw;
+}
+
+/* The left wing: teammates, portrait, resource columns. Absolutely placed
+   against the bar's left edge and growing outward from it. */
+#redsteel-bg3-hotbar .rs-bg3-left {
+  position: absolute;
+  right: 100%;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding-right: 8px;
+  pointer-events: none;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-left > * {
+  pointer-events: auto;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-inner {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  padding: 6px 10px 8px;
+  background: linear-gradient(
+    180deg,
+    rgba(9, 9, 10, 0.9) 0%,
+    rgba(4, 4, 5, 0.97) 100%
+  );
+  border: 1px solid var(--rs-bg3-border);
+  border-radius: 8px;
+  box-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.55),
+    inset 0 0 18px rgba(0, 0, 0, 0.5);
+}
+
+/* --- Portrait + HP ring ---------------------- */
+
+/* Its own round frame, detached from the bar, BG3 style. Sized by the ring
+   plus padding, so the viewport-height rules below shrink it for free. */
+#redsteel-bg3-hotbar .rs-bg3-portrait-frame {
+  flex: 0 0 auto;
+  position: relative;
+  /* Double-click opens the sheet, so no text selection on the second click. */
+  cursor: pointer;
+  user-select: none;
+  display: inline-flex;
+  padding: 6px;
+  margin-bottom: 10px;
+  border-radius: 50%;
+  /* The ring band is the player's own colour, knocked back so it reads as
+     dyed metal rather than a swatch; the rim is a lighter cut of the same,
+     which is what makes it look raised.
+
+     Two layers over that colour give it age: the same mottle the resource bars
+     use, tiled small so it reads as pitting, and a conic sweep of uneven light
+     and dark wedges, which is how a spun metal band catches the light. */
+  background-color: color-mix(in srgb, var(--rs-bg3-player, #8a8272) 55%, #0a0a09);
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='28'%3E%3Cfilter id='mottle'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.015 0.12' numOctaves='3' seed='13' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.7 0.7 0.7 0 -0.65'/%3E%3C/filter%3E%3Crect width='220' height='28' filter='url(%23mottle)'/%3E%3C/svg%3E"),
+    conic-gradient(
+      from 208deg,
+      rgba(255, 255, 255, 0.08) 0deg,
+      rgba(0, 0, 0, 0.26) 38deg,
+      rgba(255, 255, 255, 0.05) 92deg,
+      rgba(0, 0, 0, 0.2) 147deg,
+      rgba(255, 255, 255, 0.09) 203deg,
+      rgba(0, 0, 0, 0.28) 258deg,
+      rgba(255, 255, 255, 0.04) 310deg,
+      rgba(0, 0, 0, 0.22) 360deg
+    );
+  background-size:
+    46px 22px,
+    auto;
+  border: 1px solid color-mix(in srgb, var(--rs-bg3-player, #8a8272) 72%, #ffffff);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.7),
+    0 3px 12px rgba(0, 0, 0, 0.65),
+    inset 0 0 10px rgba(0, 0, 0, 0.6);
+}
+
+/* Same palette and band gradient as the sheet's health resource bar (see
+   .redsteel .resource-bar.health). On a bar the gradient runs across its
+   thickness; on a ring that thickness is radial, so the stops sit in the outer
+   slice of the disc, which is the only part the portrait does not cover.
+   The arc itself is a conic mask over that band rather than a flat colour. */
+#redsteel-bg3-hotbar .rs-bg3-portrait-ring {
+  --rs-hp-pct: 0;
+  --bar-hi: #a8150e;
+  --bar-mid: #5e0a06;
+  --bar-lo: #1e0302;
+  --bar-track: #140201;
+  position: relative;
+  width: var(--rs-bg3-portrait);
+  height: var(--rs-bg3-portrait);
+  padding: 5px;
+  border-radius: 50%;
+  background-color: var(--bar-track);
+  box-shadow:
+    0 0 0 1px var(--rs-bg3-border),
+    0 2px 6px rgba(0, 0, 0, 0.6),
+    inset 0 0 4px rgba(0, 0, 0, 0.55);
+}
+
+#redsteel-bg3-hotbar .rs-bg3-portrait-ring::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='28'%3E%3Cfilter id='mottle'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.015 0.12' numOctaves='3' seed='13' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.7 0.7 0.7 0 -0.65'/%3E%3C/filter%3E%3Crect width='220' height='28' filter='url(%23mottle)'/%3E%3C/svg%3E"),
+    radial-gradient(
+      closest-side,
+      var(--bar-lo) 89%,
+      var(--bar-mid) 92%,
+      var(--bar-hi) 95%,
+      var(--bar-mid) 98%,
+      var(--bar-lo) 100%
+    );
+  /* Two masks intersected: the conic cuts the arc, the radial cuts the band.
+     Without the radial the layer paints the whole disc and only looks like a
+     ring because the portrait happens to sit on top of the middle, which reads
+     as a pie the moment anything shows through. */
+  -webkit-mask-image:
+    conic-gradient(#000 calc(var(--rs-hp-pct) * 1%), transparent 0),
+    radial-gradient(closest-side, transparent 88%, #000 90%);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    conic-gradient(#000 calc(var(--rs-hp-pct) * 1%), transparent 0),
+    radial-gradient(closest-side, transparent 88%, #000 90%);
+  mask-composite: intersect;
+}
+
+/* The face sits above the health band, which covers the whole disc, and clips
+   the toxicity flood to the portrait's edge. */
+#redsteel-bg3-hotbar .rs-bg3-portrait-face {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 50%;
+}
+
+/* Toxicity floods the portrait bottom to top, a full face at the ceiling.
+   `color` blending recolours the image rather than washing it out, so the
+   features stay readable however deep the water gets. */
+#redsteel-bg3-hotbar .rs-bg3-tox-flood {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #4f9c2f;
+  mix-blend-mode: color;
+  transition: height 0.4s ease;
+}
+
+/* A brighter waterline, so the level reads as a surface rather than an edge. */
+#redsteel-bg3-hotbar .rs-bg3-tox-flood::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 2px;
+  background: rgba(150, 226, 110, 0.85);
+}
+
+#redsteel-bg3-hotbar .rs-bg3-portrait-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-portrait-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 2px solid #17171a;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #0c0c0e;
+}
+
+/* Sits on the rim of the circle rather than under it, so the frame stays
+   perfectly round. */
+#redsteel-bg3-hotbar .rs-bg3-hp-text {
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  transform: translateX(-50%);
+  padding: 1px 7px;
+  border-radius: 9px;
+  white-space: nowrap;
+  background: rgba(10, 10, 12, 0.95);
+  border: 1px solid var(--rs-bg3-border);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--rs-bg3-bright);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+/* Mirrors the health pill at the opposite rim, so the two readouts never
+   crowd each other. */
+#redsteel-bg3-hotbar .rs-bg3-tox-text {
+  position: absolute;
+  left: 50%;
+  top: -7px;
+  transform: translateX(-50%);
+  padding: 1px 7px;
+  border-radius: 9px;
+  white-space: nowrap;
+  background: rgba(10, 10, 12, 0.95);
+  border: 1px solid #35502a;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: #96e26e;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+#redsteel-bg3-hotbar .rs-bg3-hp-text--empty {
+  font-size: 10px;
+  font-weight: 400;
+  color: #8a8272;
+}
+
+/* --- Slim chat input ------------------------- */
+
+/* Narrowed to a stub so the docked message box stops holding the bottom right
+   hostage, and given its width back the moment it takes focus.
+
+   The class sits on the input itself, never on a wrapper: the popped-out
+   message column shares a container with it, so capping the parent shrank the
+   messages too. `:focus` does the expanding, which needs no listeners. */
+/* A cap alone is not enough: as a flex child the input still shrinks toward
+   nothing, which left a sliver too thin to click. Pin the width instead, and
+   stop it shrinking below it. */
+.rs-slim-chat {
+  flex: 0 0 auto;
+  width: 220px;
+  min-width: 220px;
+  max-width: 220px;
+  margin-left: auto;
+  transition:
+    width 0.18s ease,
+    max-width 0.18s ease;
+}
+
+.rs-slim-chat:focus {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* --- Collapsible player list ----------------- */
+
+/* Collapsed, the list is simply gone and the button stands on its own. Trying
+   to shrink #players into a puck meant fighting core for the box's size, which
+   left a sliver rather than a button. */
+#players.rs-players-tucked {
+  display: none;
+}
+
+/* The list is the positioning context for the button in both states. */
+#players {
+  position: relative;
+}
+
+/* Top-right corner, out of the way of the names and the latency line. Taken
+   out of flow so it never pushes core's own layout around. */
+#players .rs-players-peek,
+.rs-players-peek {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  padding: 0;
+  font-size: 11px;
+  color: #9a9078;
+  background: #0a0a09;
+  border: 1px solid #2b2822;
+  border-radius: 3px;
+  cursor: pointer;
+  pointer-events: auto;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+#players .rs-players-peek:hover,
+.rs-players-peek:hover {
+  border-color: #c8a24a;
+}
+
+/* Collapsed: the button leaves the list and sits in the bottom-left corner of
+   the screen on its own. The icon colour is set in JS from core's latency
+   readout, so it follows the ping code and nothing here may override it. */
+.rs-players-peek.standalone {
+  position: fixed;
+  left: 10px;
+  bottom: 10px;
+  top: auto;
+  right: auto;
+  z-index: 60;
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  font-size: 15px;
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+}
+/* --- Portrait auras -------------------------- */
+
+/* The shield ring sits just outside the frame. A second colour, when the ward
+   is elemental, becomes an outer band so the pair reads as one banded ring. */
+#redsteel-bg3-hotbar .rs-bg3-shield-aura {
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  pointer-events: none;
+  box-shadow:
+    0 0 0 2px var(--rs-aura-a),
+    0 0 0 4px var(--rs-aura-b, transparent),
+    0 0 9px 1px var(--rs-aura-a),
+    inset 0 0 12px var(--rs-aura-a);
+}
+
+/* The glow proper, on its own layer so the pulse animates opacity rather than
+   a box-shadow, which the compositor can do without repainting the ring. */
+#redsteel-bg3-hotbar .rs-bg3-shield-aura::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  box-shadow:
+    0 0 16px 5px var(--rs-aura-b, var(--rs-aura-a)),
+    0 0 30px 10px color-mix(in srgb, var(--rs-aura-a) 45%, transparent);
+  animation: rs-bg3-aura-pulse 2.6s ease-in-out infinite;
+}
+
+@keyframes rs-bg3-aura-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Blood Shield: the health palette, so it reads as blood rather than as
+   another ward. Rings further out, since it can be up alongside one. */
+#redsteel-bg3-hotbar .rs-bg3-shield-aura--blood {
+  --rs-aura-a: #a8150e;
+  inset: -8px;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-shield-aura--blood::after {
+  animation-delay: 0.8s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #redsteel-bg3-hotbar .rs-bg3-shield-aura::after {
+    animation: none;
+    opacity: 0.85;
+  }
+}
+
+/* Corruption bleeds in from the rim, deepening toward the edges so the
+   features stay readable in the middle.
+
+   `multiply` rather than a translucent film over the top: a film greys the
+   portrait out evenly, while multiplying drives the darks to near black and
+   leaves the highlights, which is what makes it read as consumed rather than
+   merely tinted. */
+#redsteel-bg3-hotbar .rs-bg3-corruption {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  background: radial-gradient(
+    circle at 50% 45%,
+    rgba(120, 84, 170, 0.35) 0%,
+    rgba(58, 24, 104, 0.8) 42%,
+    rgba(24, 6, 48, 0.97) 78%,
+    rgba(8, 1, 18, 1) 100%
+  );
+  transition: opacity 0.4s ease;
+}
+
+/* Temporary health, sitting inside the portrait just above the health pill.
+   One row, so a character carrying both physical and magical reads them
+   side by side rather than at opposite corners. */
+#redsteel-bg3-hotbar .rs-bg3-temps {
+  position: absolute;
+  left: 50%;
+  bottom: 11px;
+  transform: translateX(-50%);
+  z-index: 2;
+  display: flex;
+  gap: 4px;
+  pointer-events: none;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-temp {
+  min-width: 20px;
+  padding: 1px 5px;
+  border-radius: 9px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.25;
+  background: rgba(8, 8, 9, 0.92);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.95);
+}
+
+#redsteel-bg3-hotbar .rs-bg3-temp--physical {
+  color: #f2f2ee;
+  border: 1px solid #6d6a63;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-temp--magic {
+  color: #8fd0f0;
+  border: 1px solid #2f5a72;
+}
+
+/* --- Portrait resource editor ---------------- */
+
+/* Rises above the portrait on right-click, the panel's answer to the token
+   HUD. Same skin as the weapon set popover. */
+#redsteel-bg3-hotbar .rs-bg3-resedit {
+  display: none;
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 6px);
+  transform: translateX(-50%);
+  z-index: 6;
+  flex-direction: column;
+  gap: 3px;
+  padding: 7px;
+  min-width: 172px;
+  cursor: default;
+  background: linear-gradient(
+    180deg,
+    rgba(9, 9, 10, 0.97) 0%,
+    rgba(4, 4, 5, 0.99) 100%
+  );
+  border: 1px solid var(--rs-bg3-border);
+  border-radius: 4px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.7);
+}
+
+#redsteel-bg3-hotbar .rs-bg3-resedit.open {
+  display: flex;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-resedit-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-resedit-label {
+  flex: 1 1 auto;
+  font-size: 11px;
+  color: #9a9078;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-resedit-input {
+  flex: 0 0 52px;
+  width: 52px;
+  height: 20px;
+  padding: 0 4px;
+  text-align: right;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--rs-bg3-bright);
+  background: #060605;
+  border: 1px solid #2b2822;
+  border-radius: 0;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-resedit-input:focus {
+  border-color: var(--rs-bg3-accent);
+  outline: none;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-resedit-max {
+  flex: 0 0 34px;
+  font-size: 11px;
+  color: #6c6455;
+}
+
+/* Party capacity readout: a measuring aid, sitting above the bar so it never
+   changes the layout it is measuring. */
+#redsteel-bg3-hotbar .rs-bg3-capacity {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 4px);
+  z-index: 8;
+  padding: 2px 7px;
+  white-space: nowrap;
+  font-size: 11px;
+  font-family: monospace;
+  color: #8fd0f0;
+  background: rgba(6, 6, 7, 0.94);
+  border: 1px solid #2f5a72;
+  pointer-events: none;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-capacity.tight {
+  color: #e0a05a;
+  border-color: #6d4a24;
+}
+
+/* --- Teammate portraits ---------------------- */
+
+
+/* Five abreast, then the next row stacks on top. `wrap-reverse` puts the first
+   line at the bottom, so the party grows up into free canvas rather than
+   further left into the player list.
+
+   The width is the column count times one portrait frame, which is the ring
+   plus the frame's 6px padding and 1px border either side, plus the gaps
+   between. Since it is expressed in the same variable that sizes the
+   portraits, the narrow-screen breakpoints shrink the row without ever
+   changing how many fit on a line. */
+#redsteel-bg3-hotbar .rs-bg3-team {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap-reverse;
+  justify-content: flex-end;
+  align-items: flex-end;
+  align-content: flex-end;
+  gap: 6px;
+  /* Hug the portraits. Without this a wrapping flex box inside a shrink-to-fit
+     parent can take its full cap as its width, which pads empty space onto the
+     left of the row and drags the whole wing outward across the player list.
+     The right edge stays glued to your own portrait either way. */
+  width: max-content;
+  max-width: calc(
+    (var(--rs-bg3-portrait-team) + 14px) * var(--rs-bg3-team-cols) + 6px *
+      (var(--rs-bg3-team-cols) - 1)
+  );
+}
+
+/* Same frame as your own portrait, at the size yours used to be. The rim takes
+   the player's own colour, so you can tell who is who at a glance. */
+#redsteel-bg3-hotbar .rs-bg3-portrait-frame--team {
+  margin-bottom: 6px;
+}
+
+
+#redsteel-bg3-hotbar .rs-bg3-portrait-frame--team .rs-bg3-portrait-ring {
+  width: var(--rs-bg3-portrait-team);
+  height: var(--rs-bg3-portrait-team);
+  padding: 4px;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-portrait-frame--team .rs-bg3-hp-text {
+  font-size: 11px;
+  padding: 0 5px;
+}
+
+/* Health ring off: the track stays as a plain rim so the portrait keeps its
+   shape, but nothing reports how hurt anyone is. */
+/* Ring hidden: the band goes, and so does the empty track behind it. Leaving
+   the track would still read as a health ring sitting at zero. The portrait
+   takes the whole circle and the frame's player-colour rim is all that is left
+   around it. */
+#redsteel-bg3-hotbar .rs-bg3-portrait-frame .rs-bg3-portrait-ring--flat {
+  padding: 0;
+  background-color: transparent;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6);
+}
+
+#redsteel-bg3-hotbar .rs-bg3-portrait-frame .rs-bg3-portrait-ring--flat::before {
+  display: none;
+}
+
+/* --- Resource bars --------------------------- */
+
+
+/* Same skin as the bar frame, tucked under its left edge so it reads as an
+   extension of the panel rather than a second box beside it. */
+#redsteel-bg3-hotbar .rs-bg3-res-strip {
+  flex: 0 0 auto;
+  align-self: stretch;
+  display: flex;
+  align-items: stretch;
+  gap: 5px;
+  /* Little right padding: that edge is tucked under the bar frame, so any
+     more just reads as a gap between the last column and the panel. */
+  padding: 8px 6px 8px 8px;
+  /* Tucks just under the bar's rounded corner, enough to close the seam
+     without burrowing into the frame. The -8px cancels the wing's own padding,
+     so the remainder is the actual overlap. Vertical margins inset it a little
+     from the bar's top and bottom edges. */
+  margin: 5px -12px 5px 0;
+  background: linear-gradient(
+    180deg,
+    rgba(9, 9, 10, 0.9) 0%,
+    rgba(4, 4, 5, 0.97) 100%
+  );
+  border: 1px solid var(--rs-bg3-border);
+  border-radius: 8px;
+  box-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.55),
+    inset 0 0 18px rgba(0, 0, 0, 0.5);
+}
+
+/* A full-height column, so one resource fills the strip on its own and more
+   resources simply add columns beside it. Narrow, because nothing is printed
+   inside: a readout would set the width for it. */
+#redsteel-bg3-hotbar .rs-bg3-res-bar {
+  position: relative;
+  flex: 0 0 auto;
+  width: 12px;
+  overflow: hidden;
+  border-radius: 2px;
+  background-color: var(--bar-track);
+  box-shadow:
+    0 0 0 1px var(--rs-bg3-border),
+    inset 0 0 6px rgba(0, 0, 0, 0.7);
+}
+
+/* Rises from the bottom in the sheet's palette. No mottle here: the noise was
+   cut for a 220px-wide bar and turns to grain on a 12px column. */
+#redsteel-bg3-hotbar .rs-bg3-res-fill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: linear-gradient(
+    180deg,
+    var(--bar-hi) 0%,
+    var(--bar-mid) 55%,
+    var(--bar-lo) 100%
+  );
+  transition: height 0.4s ease;
+}
+/* The palettes the sheet's resource bars already define, reused verbatim.
+   Not scoped to the panel: the resource tooltip renders outside it and wants
+   the same colours, and defining them once beats a second copy. */
+[data-rs-res="stamina"] {
+  --bar-hi: #b09a23;
+  --bar-mid: #645612;
+  --bar-lo: #262005;
+  --bar-track: #181403;
+}
+[data-rs-res="mana"] {
+  --bar-hi: #2c5cc0;
+  --bar-mid: #1a3672;
+  --bar-lo: #091430;
+  --bar-track: #060d1f;
+}
+[data-rs-res="holyEnergy"] {
+  --bar-hi: #9b79c0;
+  --bar-mid: #5a4374;
+  --bar-lo: #251a33;
+  --bar-track: #170f20;
+}
+[data-rs-res="bloodPool"] {
+  --bar-hi: #8c1f3a;
+  --bar-mid: #541122;
+  --bar-lo: #1d040b;
+  --bar-track: #130206;
+}
+/* Resource tooltip: name and value only, tinted with the pool's own colour.
+   Mixed toward cream so the darker palettes stay legible on a black panel. */
+.rs-tooltip .rs-bg3-tip {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  white-space: nowrap;
+}
+
+.rs-tooltip .rs-bg3-tip-name {
+  font-weight: 700;
+  /* Conditions have no resource palette, so they fall back to plain cream. */
+  color: color-mix(in srgb, var(--bar-hi, #f2e9d6) 65%, #f2e9d6);
+}
+
+.rs-tooltip .rs-bg3-tip-value {
+  margin-left: auto;
+  font-weight: 700;
+  color: #e6e2d3;
+}
+
+/* --- Stacked rows ---------------------------- */
+
+#redsteel-bg3-hotbar .rs-bg3-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+/* Horizontal counterpart of .rs-bg3-attr-divider: rules off the three
+   sections of the stack (attributes / skills / macro rows) from each other. */
+#redsteel-bg3-hotbar .rs-bg3-section-divider {
+  flex: 0 0 auto;
+  height: 1px;
+  margin: 2px 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--rs-bg3-accent) 50%,
+    transparent 100%
+  );
+  opacity: 0.5;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-row {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-wrap: nowrap;
+}
+
+/* --- Status row (effects + roll modifier) ---- */
+
+#redsteel-bg3-hotbar .rs-bg3-row--status {
+  gap: 8px;
+  justify-content: space-between;
+}
+
+/* A tray cut into the panel: the recess belongs to the container, so the
+   condition icons read as things sitting in it rather than as buttons. */
+#redsteel-bg3-hotbar .rs-bg3-effects {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 3px;
+  min-height: 26px;
+  padding: 2px 5px;
+  background: #060605;
+  border: 1px solid #211e19;
+  box-shadow:
+    inset 0 2px 5px rgba(0, 0, 0, 0.95),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.025),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.6);
+}
+
+/* Flat tokens in the tray: the depth is the tray's, not theirs. */
+#redsteel-bg3-hotbar .rs-bg3-effect {
+  width: 20px;
+  height: 20px;
+  border: 1px solid #34302794;
+  background: #0c0c0a;
+  transition: border-color 0.15s ease;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-effect img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: none;
+  object-fit: cover;
+}
+
+/* A suppressed effect is still listed, just visibly not doing anything. */
+#redsteel-bg3-hotbar .rs-bg3-effect.disabled img {
+  opacity: 0.35;
+  filter: grayscale(1);
+}
+
+#redsteel-bg3-hotbar .rs-bg3-effect.manageable {
+  cursor: pointer;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-effect.manageable:hover {
+  border-color: var(--rs-bg3-accent);
+}
+
+#redsteel-bg3-hotbar .rs-bg3-effects-empty {
+  /* The tray is stretched, so an empty message centres in it. */
+  flex: 1 1 auto;
+  text-align: center;
+  font-size: 11px;
+  color: #5f594c;
+}
+
+/* The armed roll modifier, in its own inset window at the end of the row, and
+   the way in to the picker. */
+#redsteel-bg3-hotbar .rs-bg3-modifier {
+  flex: 0 0 auto;
+  min-width: 74px;
+  height: 22px;
+  padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+  text-align: center;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #8a8272;
+  background: #0c0c0a;
+  border: 1px solid #2b2822;
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.95),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.55);
+}
+
+#redsteel-bg3-hotbar .rs-bg3-modifier--good {
+  color: #7fc08a;
+  border-color: #35502a;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-modifier--bad {
+  color: #c07f7f;
+  border-color: #50302a;
+}
+
+/* Nothing armed: the die reads as an invitation rather than a reading. */
+#redsteel-bg3-hotbar .rs-bg3-modifier--none i {
+  font-size: 14px;
+  color: #6c6455;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-modifier:hover {
+  color: var(--rs-bg3-bright);
+  border-color: var(--rs-bg3-accent);
+}
+
+#redsteel-bg3-hotbar .rs-bg3-modifier:hover i {
+  color: var(--rs-bg3-bright);
+}
+
+/* --- Weapon set swap ------------------------- */
+
+#redsteel-bg3-hotbar .rs-bg3-weaponsets-wrap {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+/* Matches the modifier window beside it. */
+#redsteel-bg3-hotbar .rs-bg3-weaponsets-toggle {
+  /* The crossed swords glyph is wider than the d10, so it needs a smaller
+     point size to read at the same weight, and a tighter box to match. */
+  width: 25px;
+  height: 22px;
+  min-width: 25px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: #8a8272;
+  background: #0c0c0a;
+  border: 1px solid #2b2822;
+  border-radius: 0;
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.95),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.55);
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-weaponsets-toggle:hover {
+  color: var(--rs-bg3-bright);
+  border-color: var(--rs-bg3-accent);
+}
+
+/* Rises above the panel rather than pushing it around. */
+#redsteel-bg3-hotbar .rs-bg3-weaponsets {
+  display: none;
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 7px);
+  z-index: 5;
+  flex-direction: column;
+  gap: 4px;
+  padding: 7px;
+  min-width: 148px;
+  background: linear-gradient(
+    180deg,
+    rgba(9, 9, 10, 0.97) 0%,
+    rgba(4, 4, 5, 0.99) 100%
+  );
+  border: 1px solid var(--rs-bg3-border);
+  border-radius: 4px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.7);
+}
+
+#redsteel-bg3-hotbar .rs-bg3-weaponsets.open {
+  display: flex;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-weaponset {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  /* Core sets a fixed button height, which the icons would burst out of. */
+  height: auto;
+  min-height: 46px;
+  padding: 5px 9px;
+  background: #0c0c0a;
+  border: 1px solid #2b2822;
+  border-radius: 0;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-weaponset:hover {
+  border-color: var(--rs-bg3-accent);
+}
+
+/* The set already in hand: lit, and clicking it is a no-op. */
+#redsteel-bg3-hotbar .rs-bg3-weaponset.active {
+  border-color: var(--rs-bg3-accent);
+  box-shadow: inset 0 0 10px rgba(200, 162, 74, 0.14);
+  cursor: default;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-weaponset-id {
+  width: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #8a8272;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-weaponset-slots {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+/* The main weapon ghosted into the off slot, at the same 45% the character
+   sheet's weapon sets use (see .two-handed-ghost). */
+#redsteel-bg3-hotbar .rs-bg3-weaponset-ghost {
+  filter: opacity(45%);
+}
+
+#redsteel-bg3-hotbar .rs-bg3-weaponset-slots img,
+#redsteel-bg3-hotbar .rs-bg3-weaponset-empty {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  object-fit: cover;
+  background: #060605;
+  border: 1px solid #241f19;
+  font-size: 12px;
+  color: #4b4640;
+}
+
+/* --- Attribute cells ------------------------- */
+
+#redsteel-bg3-hotbar .rs-bg3-attr-group {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* The five rollable secondaries are a different tier of stat, so they read as
+   a separate cluster rather than a continuation of the seven primaries. */
+#redsteel-bg3-hotbar .rs-bg3-attr-divider {
+  flex: 0 0 auto;
+  width: 1px;
+  align-self: stretch;
+  margin: 2px 7px;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    var(--rs-bg3-accent) 50%,
+    transparent 100%
+  );
+  opacity: 0.55;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-attr-cell {
+  flex: 0 0 auto;
+  width: var(--rs-bg3-attr-w);
+  height: var(--rs-bg3-attr-h);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 5px 0 0;
+  line-height: 1;
+  background: #0d0d0b;
+  border: 1px solid #2b2822;
+  border-radius: 0;
+  /* Recessed, not raised. A lit top-left edge is what makes a button look
+     moulded and toylike; this is a socket cut into the panel instead, so the
+     depth comes entirely from shadow. */
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.95),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.55);
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-attr-label {
+  line-height: 0.85;
+  font-size: var(--rs-bg3-name-fs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #9a9078;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-attr-value {
+  margin-top: -2px;
+  line-height: 1;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--rs-bg3-bright);
+}
+
+#redsteel-bg3-hotbar .rs-bg3-attr-cell--secondary {
+  width: calc(var(--rs-bg3-attr-w) - 4px);
+  height: calc(var(--rs-bg3-attr-h) - 3px);
+  background: #080807;
+  border-color: #24221c;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-attr-cell:hover {
+  border-color: var(--rs-bg3-accent);
+  box-shadow: 0 0 6px rgba(200, 162, 74, 0.35);
+}
+
+/* --- Favourite skill slots ------------------- */
+
+#redsteel-bg3-hotbar .rs-bg3-skill-slot {
+  flex: 0 0 auto;
+  width: var(--rs-bg3-skill-w);
+  height: var(--rs-bg3-skill-h);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 4px 3px 0;
+  line-height: 1;
+  background: #0c0c0a;
+  border: 1px solid #2b2822;
+  border-radius: 0;
+  /* Recessed, not raised. A lit top-left edge is what makes a button look
+     moulded and toylike; this is a socket cut into the panel instead, so the
+     depth comes entirely from shadow. */
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.95),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.55);
+  color: var(--rs-bg3-text);
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-skill-slot:hover {
+  border-color: var(--rs-bg3-accent);
+  box-shadow: 0 0 6px rgba(200, 162, 74, 0.35);
+}
+
+#redsteel-bg3-hotbar .rs-bg3-skill-name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1;
+  font-size: var(--rs-bg3-name-fs);
+  color: #9a9078;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-skill-rating {
+  margin-top: -2px;
+  line-height: 1;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--rs-bg3-bright);
+}
+
+#redsteel-bg3-hotbar .rs-bg3-skill-slot.empty {
+  border-style: dashed;
+  border-color: #3a362c;
+  color: #6c6455;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-skill-slot.empty.locked {
+  cursor: default;
+  opacity: 0.4;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-skill-plus {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* --- Action row ------------------------------ */
+
+#redsteel-bg3-hotbar .rs-bg3-row--actions {
+  gap: 5px;
+  justify-content: center;
+}
+
+/* Rectangular plates: a gold outline over the panel itself, no fill of their
+   own, so the icon is the only thing with weight in the cell. */
+#redsteel-bg3-hotbar .rs-bg3-action {
+  flex: 0 0 auto;
+  width: 58px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: 18px;
+  line-height: 1;
+  /* Cut into the panel like the stat cells, rather than an outlined plate
+     sitting on it. The rim stays warmer and a shade brighter than theirs, so
+     the row still reads as the primary one without going shiny. */
+  --rs-act: #d8bd7a;
+  color: #93783f;
+  background: #0c0c0a;
+  border: 1px solid #4a4130;
+  border-radius: 0;
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.95),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.55);
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+
+/* Sets the GM tools apart from the actions everyone has. */
+#redsteel-bg3-hotbar .rs-bg3-action--group {
+  margin-left: 16px;
+}
+
+/* Each action lights in its own colour on hover. Gold is the default, so only
+   the ones that differ need naming. */
+#redsteel-bg3-hotbar .rs-bg3-action[data-act="attack"],
+#redsteel-bg3-hotbar .rs-bg3-action[data-act="firstAid"] {
+  --rs-act: #c4514a;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-action[data-act="defense"],
+#redsteel-bg3-hotbar .rs-bg3-action[data-act="rest"] {
+  --rs-act: #c3c9d1;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-action[data-act="channeling"] {
+  --rs-act: #5aa8e0;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-action[data-act="potion"] {
+  --rs-act: #d47fa8;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-action:hover {
+  color: var(--rs-act);
+  border-color: color-mix(in srgb, var(--rs-act) 60%, #080807);
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.95),
+    inset 0 0 9px color-mix(in srgb, var(--rs-act) 16%, transparent);
+}
+
+/* Pressed sinks further in; nothing lights up. */
+#redsteel-bg3-hotbar .rs-bg3-action:active {
+  color: #93783f;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.98);
+}
+
+/* --- Macro rows ------------------------------ */
+
+#redsteel-bg3-hotbar .rs-bg3-row--macros {
+  gap: 6px;
+}
+
+/* The attribute row is the widest, so the shorter rows centre under it rather
+   than all hugging the left edge and leaving a gap down the right. */
+#redsteel-bg3-hotbar .rs-bg3-row--skills,
+#redsteel-bg3-hotbar .rs-bg3-row--macros {
+  justify-content: center;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-macro-slots {
+  display: flex;
+  gap: 4px;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-macro-slot {
+  position: relative;
+  flex: 0 0 auto;
+  width: var(--rs-bg3-slot);
+  height: var(--rs-bg3-slot);
+  border: 1px solid var(--rs-bg3-border);
+  border-radius: 4px;
+  background: linear-gradient(
+    180deg,
+    rgba(36, 36, 31, 0.9) 0%,
+    rgba(14, 14, 16, 0.95) 100%
+  );
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-macro-slot.filled:hover {
+  border-color: var(--rs-bg3-accent);
+  box-shadow:
+    inset 0 0 8px rgba(0, 0, 0, 0.6),
+    0 0 8px rgba(200, 162, 74, 0.4);
+}
+
+#redsteel-bg3-hotbar .rs-bg3-macro-slot.empty {
+  cursor: default;
+  border-style: dashed;
+  border-color: #3a362c;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-macro-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: none;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-macro-key {
+  position: absolute;
+  right: 3px;
+  bottom: 1px;
+  font-size: 10px;
+  line-height: 1;
+  color: #7c7360;
+  pointer-events: none;
+}
+
+/* --- Condition extension (right wing) -------- */
+
+/* The right wing: condition strip and the wrench, flowing left to right from
+   the bar's right edge. Mirror of .rs-bg3-left, and absolute for the same
+   reason: nothing out here may shift the bar. */
+#redsteel-bg3-hotbar .rs-bg3-right {
+  position: absolute;
+  left: 100%;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding-left: 8px;
+  pointer-events: none;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-right > * {
+  pointer-events: auto;
+}
+
+/* Mirror of the resource strip: same skin, tucked under the bar's right edge
+   instead of its left. A single stacked column; the icons grow when it is
+   unfolded, since that is when there is room for them. */
+#redsteel-bg3-hotbar .rs-bg3-cond-strip {
+  --rs-cond-icon: 18px;
+  flex: 0 0 auto;
+  align-self: center;
+  margin-left: -12px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding: 7px 10px 7px 9px;
+  background: linear-gradient(
+    180deg,
+    rgba(9, 9, 10, 0.9) 0%,
+    rgba(4, 4, 5, 0.97) 100%
+  );
+  border: 1px solid var(--rs-bg3-border);
+  border-radius: 8px;
+  box-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.55),
+    inset 0 0 18px rgba(0, 0, 0, 0.5);
+}
+
+#redsteel-bg3-hotbar .rs-bg3-cond-strip.folded {
+  --rs-cond-icon: 14px;
+}
+
+/* Icon first, number beside it rather than under it. */
+#redsteel-bg3-hotbar .rs-bg3-cond-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-cond-icon {
+  flex: 0 0 var(--rs-cond-icon);
+  width: var(--rs-cond-icon);
+  font-size: var(--rs-cond-icon);
+  text-align: center;
+  transition: filter 0.2s ease;
+}
+
+/* A live state reads brighter and more saturated, in its own colour. No glow
+   and no dimming of the rest: the sheet's colours are the default look and
+   should stay exactly that. */
+#redsteel-bg3-hotbar .rs-bg3-cond-row.relevant .rs-bg3-cond-icon {
+  filter: brightness(2.1) saturate(1.25) contrast(1.1);
+}
+
+/* Three fixed columns, icon then value then max, so every number lines up down
+   the strip instead of drifting with the width of its own maximum. Tabular
+   figures keep the digits themselves on the same tracks. */
+#redsteel-bg3-hotbar .rs-bg3-cond-value {
+  flex: 0 0 auto;
+  min-width: 24px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--rs-bg3-bright);
+}
+
+#redsteel-bg3-hotbar .rs-bg3-cond-max {
+  flex: 0 0 auto;
+  min-width: 30px;
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+  font-weight: 400;
+  font-size: 11px;
+  color: #8a8272;
+}
+
+/* Keeps the sheet's three groups readable in one column. */
+#redsteel-bg3-hotbar .rs-bg3-cond-divider {
+  height: 1px;
+  margin: 2px 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--rs-bg3-accent) 50%,
+    transparent 100%
+  );
+  opacity: 0.45;
+}
+/* A chip straddling the middle of the strip's outer border, with the same skin
+   and border as the wrench, rather than an arrow floating loose inside. */
+#redsteel-bg3-hotbar .rs-bg3-cond-toggle {
+  position: absolute;
+  top: 50%;
+  right: -9px;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  padding: 0;
+  font-size: 9px;
+  line-height: 1;
+  color: #9a9078;
+  background: linear-gradient(180deg, #24241f 0%, #141412 100%);
+  border: 1px solid var(--rs-bg3-border);
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-cond-toggle:hover {
+  color: var(--rs-bg3-bright);
+  border-color: var(--rs-bg3-accent);
+  box-shadow: 0 0 6px rgba(200, 162, 74, 0.35);
+}
+/* Last item in the right wing, sitting at the bar's bottom corner. */
+#redsteel-bg3-hotbar .rs-bg3-side-controls {
+  flex: 0 0 auto;
+  align-self: flex-end;
+  margin-bottom: 8px;
+  display: flex;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-settings-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  padding: 0;
+  font-size: 12px;
+  color: #9a9078;
+  background: linear-gradient(180deg, #24241f 0%, #141412 100%);
+  border: 1px solid var(--rs-bg3-border);
+  border-radius: 4px;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-settings-button:hover {
+  color: var(--rs-bg3-bright);
+  border-color: var(--rs-bg3-accent);
+  box-shadow: 0 0 6px rgba(200, 162, 74, 0.35);
+}
+
+#redsteel-bg3-hotbar .rs-bg3-row-button {
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  padding: 0;
+  line-height: 1;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--rs-bg3-bright);
+  background: linear-gradient(180deg, #24241f 0%, #141412 100%);
+  border: 1px solid var(--rs-bg3-border);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-row-button:hover {
+  border-color: var(--rs-bg3-accent);
+  box-shadow: 0 0 5px rgba(200, 162, 74, 0.35);
+}
+
+/* --- Per-attribute tint ---------------------- */
+
+/* The same seven colours the sheet already uses for its skill section headings
+   (see .skill-section.attribute-* above). Attribute cells take their own
+   colour; a skill slot takes its governing attribute's, so a glance down the
+   row groups them the way the sheet does. */
+#redsteel-bg3-hotbar [data-attr="str"] {
+  --rs-bg3-tint: #b31e2b;
+}
+#redsteel-bg3-hotbar [data-attr="dex"] {
+  --rs-bg3-tint: #22904e;
+}
+#redsteel-bg3-hotbar [data-attr="end"] {
+  --rs-bg3-tint: #b46f36;
+}
+#redsteel-bg3-hotbar [data-attr="int"] {
+  --rs-bg3-tint: #2a5eaa;
+}
+#redsteel-bg3-hotbar [data-attr="wil"] {
+  --rs-bg3-tint: #7d3fa7;
+}
+#redsteel-bg3-hotbar [data-attr="cha"] {
+  --rs-bg3-tint: #d19934;
+}
+#redsteel-bg3-hotbar [data-attr="per"] {
+  --rs-bg3-tint: #8fbcc4;
+}
+
+/* A wash off the top edge and a tinted rim, not a solid block: the numbers
+   still have to be the thing you read. */
+#redsteel-bg3-hotbar .rs-bg3-attr-cell[data-attr],
+#redsteel-bg3-hotbar .rs-bg3-skill-slot[data-attr] {
+  border-color: color-mix(in srgb, var(--rs-bg3-tint) 26%, #080807);
+  background: color-mix(in srgb, var(--rs-bg3-tint) 6%, #0c0c0a);
+}
+
+#redsteel-bg3-hotbar .rs-bg3-attr-cell[data-attr] .rs-bg3-attr-label,
+#redsteel-bg3-hotbar .rs-bg3-skill-slot[data-attr] .rs-bg3-skill-name {
+  color: color-mix(in srgb, var(--rs-bg3-tint) 34%, #b8ad94);
+}
+
+/* Secondaries carry a borrowed tint, so they keep their recessive look through
+   a weaker wash and a darker base rather than through being colourless. */
+#redsteel-bg3-hotbar .rs-bg3-attr-cell--secondary[data-attr] {
+  border-color: color-mix(in srgb, var(--rs-bg3-tint) 18%, #080807);
+  background: color-mix(in srgb, var(--rs-bg3-tint) 4%, #080807);
+}
+#redsteel-bg3-hotbar .rs-bg3-attr-cell[data-attr]:hover,
+#redsteel-bg3-hotbar .rs-bg3-skill-slot[data-attr]:hover {
+  border-color: color-mix(in srgb, var(--rs-bg3-tint) 55%, #080807);
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.95),
+    inset 0 0 8px color-mix(in srgb, var(--rs-bg3-tint) 22%, transparent);
+}
+/* --- Skill picker ---------------------------- */
+
+/* Clicking a row picks and submits, and the window close button cancels, so
+   the footer only duplicates what is already there. The submit button stays in
+   the DOM because the row click drives it. */
+.rs-bg3-skill-picker .form-footer,
+.rs-bg3-skill-picker .dialog-buttons {
+  display: none;
+}
+
+/* --- Bar settings dialog --------------------- */
+
+.rs-bg3-bar-settings .rs-bg3-set-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.rs-bg3-bar-settings .rs-bg3-set-row label {
+  flex: 1 1 auto;
+}
+
+.rs-bg3-bar-settings .rs-bg3-stepper {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.rs-bg3-bar-settings .rs-bg3-step-value {
+  min-width: 24px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.rs-bg3-bar-settings .rs-bg3-step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  padding: 0;
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.rs-bg3-bar-settings .rs-bg3-step:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* Narrow displays squeeze the wings, not the bar: the player list holds the
+   bottom left and the chat input the bottom right, so 1920 has far less room
+   either side than its width suggests. These come after the height rules so
+   they win where both apply. */
+@media (max-width: 1750px) {
+  #redsteel-bg3-hotbar {
+    --rs-bg3-portrait: 108px;
+    --rs-bg3-portrait-team: 68px;
+    --rs-bg3-slot: 42px;
+    --rs-bg3-skill-w: 84px;
+  }
+}
+
+@media (max-width: 1500px) {
+  #redsteel-bg3-hotbar {
+    --rs-bg3-portrait: 92px;
+    --rs-bg3-portrait-team: 56px;
+    --rs-bg3-slot: 38px;
+    --rs-bg3-attr-w: 40px;
+    --rs-bg3-skill-w: 74px;
+    --rs-bg3-name-fs: 11px;
+  }
+
+}
+
+/* Column count, derived rather than guessed. Anchored on a measurement: at
+   2560 wide with five columns the leftmost portrait sat 330px from the screen
+   edge, which puts the bar's left edge at 999px and the wing at 669px, of
+   which 149px is the resource strip, your own portrait and the gaps, and 104px
+   is each further column.
+
+   With the player list collapsed to its puck the leftmost portrait only has to
+   clear ~52px instead of ~215px, which is worth two more columns. Solving
+   `(W - 562)/2 - 149 - 104n >= 52` gives a step every 208px. The thresholds sit
+   one pixel inside each boundary so the count changes below it, not on it.
+
+   The two anchors this has to hit: 2560 gives 7, 1920 gives 4. */
+@media (min-width: 2628px) {
+  #redsteel-bg3-hotbar {
+    --rs-bg3-team-cols: 8;
+  }
+}
+
+@media (min-width: 2836px) {
+  #redsteel-bg3-hotbar {
+    --rs-bg3-team-cols: 9;
+  }
+}
+
+@media (min-width: 3044px) {
+  #redsteel-bg3-hotbar {
+    --rs-bg3-team-cols: 10;
+  }
+}
+
+@media (min-width: 3252px) {
+  #redsteel-bg3-hotbar {
+    --rs-bg3-team-cols: 11;
+  }
+}
+
+@media (max-width: 2419px) {
+  #redsteel-bg3-hotbar {
+    --rs-bg3-team-cols: 6;
+  }
+}
+
+@media (max-width: 2211px) {
+  #redsteel-bg3-hotbar {
+    --rs-bg3-team-cols: 5;
+  }
+}
+
+@media (max-width: 2003px) {
+  #redsteel-bg3-hotbar {
+    --rs-bg3-team-cols: 4;
+  }
+}
+
+@media (max-width: 1795px) {
+  #redsteel-bg3-hotbar {
+    --rs-bg3-team-cols: 3;
+  }
+}
+
+@media (max-width: 1587px) {
+  #redsteel-bg3-hotbar {
+    --rs-bg3-team-cols: 2;
+  }
+}
+
+@media (max-width: 1100px) {
+  #redsteel-bg3-hotbar {
+    --rs-bg3-portrait: 84px;
+    --rs-bg3-portrait-team: 48px;
+  }
+}
+/* Keep the whole stack on screen on shorter displays: shrink the cells
+   instead of letting the panel grow past the viewport. */
+@media (max-height: 900px) {
+  #redsteel-bg3-hotbar {
+    --rs-bg3-portrait: 108px;
+    --rs-bg3-portrait-team: 72px;
+    --rs-bg3-slot: 40px;
+    --rs-bg3-name-fs: 11px;
+    --rs-bg3-attr-h: 32px;
+    --rs-bg3-skill-h: 28px;
+  }
+}
+
+@media (max-height: 760px) {
+  #redsteel-bg3-hotbar {
+    --rs-bg3-portrait: 96px;
+    --rs-bg3-portrait-team: 64px;
+    --rs-bg3-slot: 36px;
+    --rs-bg3-attr-w: 40px;
+    --rs-bg3-attr-h: 30px;
+    --rs-bg3-name-fs: 10px;
+    --rs-bg3-skill-w: 80px;
+    --rs-bg3-skill-h: 26px;
+  }
+}
+
+/* --- Skill picker dialog --------------------- */
+
+body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-list {
+  max-height: 320px;
+  overflow-y: auto;
+  margin-top: 6px;
+}
+
+body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 4px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-row:hover {
+  background: rgba(200, 162, 74, 0.14);
+}
+
+body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-row.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-row.hidden {
+  display: none;
+}
+
+body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-name {
+  flex: 1;
+}
+
+body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
+  font-weight: 700;
+  opacity: 0.75;
+}

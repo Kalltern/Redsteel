@@ -55,6 +55,10 @@ function badgeText() {
 }
 
 function refreshButton(root = ui.hotbar?.element) {
+  // Announced before the early return: the core hotbar can be hidden, and
+  // other surfaces still need to know the picker changed.
+  Hooks.callAll("redsteelRollModifier", { ...state });
+
   const button = root?.querySelector(".redsteel-roll-modifier");
   if (!button) return;
 
@@ -69,6 +73,16 @@ function refreshButton(root = ui.hotbar?.element) {
     badge.textContent = badgeText();
     badge.style.display = active ? "" : "none";
   }
+}
+
+/**
+ * A read-only snapshot of the picker, for any other surface that wants to show
+ * what is currently armed. `refreshButton` is the one choke point every state
+ * change already runs through, so it is also where the change is announced.
+ * @returns {{die: string|null, flat: number, desperate: boolean, sticky: boolean}}
+ */
+export function getRollModifierState() {
+  return { ...state };
 }
 
 function clearModifier({ silent = false } = {}) {
@@ -240,7 +254,8 @@ function wrapRollEvaluation() {
   }
 }
 
-function openModifierDialog() {
+/** The picker dialog. Exported so other surfaces can offer the same control. */
+export function openModifierDialog() {
   const dieChecked = (mode) => (state.die === mode ? "checked" : "");
 
   new Dialog({

@@ -28,6 +28,7 @@ import { initTooltips } from "./utils/tooltips.mjs";
 import { registerCoreTooltipProviders } from "./utils/tooltipProviders.mjs";
 import { registerFormulaDisplay } from "./utils/formulaDisplay.mjs";
 import { registerEndTurnButton } from "./utils/endTurnButton.mjs";
+import { registerRedsteelHotbar } from "./utils/redsteelHotbar.mjs";
 import { applyTraitStatusEffects } from "./utils/traitStatusEffects.mjs";
 import { applyActorLight } from "./utils/itemLight.mjs";
 import {
@@ -357,6 +358,7 @@ Hooks.once("init", function () {
   registerAbilityGrants();
   registerCalendariaIntegration();
   registerCanvasZoom();
+  registerRedsteelHotbar();
 
   /**
    * Set an initiative formula for the system

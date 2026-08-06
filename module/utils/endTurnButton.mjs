@@ -18,8 +18,12 @@ function canEndCurrentTurn(combat) {
   return !!combatant && combatant.players?.some((u) => u.id === game.user.id);
 }
 
-function refreshButton(root = ui.hotbar?.element) {
-  const container = root?.querySelector(".redsteel-end-turn-controls");
+/**
+ * The experimental BG3 hotbar hides the core `#hotbar`, so when it is active
+ * the buttons live on that panel instead. Either container may be absent.
+ */
+function refreshButton(root = ui.redsteelHotbar?.element ?? ui.hotbar?.element) {
+  const container = root?.querySelector?.(".redsteel-end-turn-controls");
   if (!container) return;
   container.classList.toggle("hidden", !canEndCurrentTurn(game.combat));
 }
@@ -75,6 +79,8 @@ function injectButton(element) {
 
 export function registerEndTurnButton() {
   Hooks.on("renderHotbar", (_app, element) => injectButton(element));
+  // ApplicationV2 emits render<ClassName>; the panel class is named Bg3Hotbar.
+  Hooks.on("renderBg3Hotbar", (_app, element) => injectButton(element));
 
   // Refresh visibility whenever combat state that affects the active turn
   // or this user's permission to advance it can change.

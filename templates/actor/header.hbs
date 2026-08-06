@@ -463,6 +463,17 @@
           <input type="checkbox" name="system.priest" {{checked system.priest}} />
           <span>{{localize "REDSTEEL.Actor.NPC.FIELDS.priest.label"}}</span>
         </label>
+
+        <label class="rs-toggle">
+          <input type="checkbox" name="system.bloodMage" {{checked system.bloodMage}} />
+          <span>{{localize "REDSTEEL.Actor.NPC.FIELDS.bloodMage.label"}}</span>
+        </label>
+
+        {{!-- Puts this NPC in the party row on the Redsteel hotbar --}}
+        <label class="rs-toggle">
+          <input type="checkbox" name="system.partyMember" {{checked system.partyMember}} />
+          <span>{{localize "REDSTEEL.Actor.FIELDS.partyMember.label"}}</span>
+        </label>
       </div>
   </div>
 

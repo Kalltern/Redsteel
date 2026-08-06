@@ -232,6 +232,12 @@ function scheduleShow(src, depth) {
   if (depth > 0) delay = TT.nestedShowDelay;
   else if (stack.some((l) => l.frozen)) delay = TT.guardedShowDelay;
 
+  // data-tt-delay anywhere up the tree overrides the dwell for a whole
+  // surface. Dense grids of small cells want a longer hold than prose does,
+  // so the tooltip does not fire every time the cursor crosses one.
+  const override = Number(src.closest("[data-tt-delay]")?.dataset.ttDelay);
+  if (depth === 0 && Number.isFinite(override) && override > 0) delay = override;
+
   const token = showToken;
   showTimer = setTimeout(() => showTooltip(src, depth, token), delay);
 }
@@ -290,7 +296,13 @@ async function showTooltip(src, depth, token) {
 
   clearTimeout(freezeTimer);
   freezeTimer = null;
-  if (!frozen) freezeTimer = setTimeout(() => freezeLayer(layer), TT.freezeDelay);
+  // data-tt-nofreeze opts a surface out of ever becoming interactive: no pin,
+  // no walking into the tooltip. Right for plain label tooltips, which hold
+  // nothing you could click through to.
+  const canFreeze = !src.closest("[data-tt-nofreeze]");
+  if (!frozen && canFreeze) {
+    freezeTimer = setTimeout(() => freezeLayer(layer), TT.freezeDelay);
+  }
 }
 
 function freezeLayer(layer) {
@@ -461,6 +473,28 @@ function positionLayer(layer) {
   if (layer.depth === 0) {
     chainHost = hostWindowRect(layer.source);
     chainSide = chainHost ? chooseSide(chainHost, rect.width) : null;
+  }
+
+  // data-tt-above opts a surface out of the margin flow: its tooltips sit
+  // centred above the element carrying the attribute. Right for a bar pinned to
+  // the bottom edge, where the margin beside it is canvas the player is reading.
+  const aboveHost =
+    layer.depth === 0 ? layer.source.closest("[data-tt-above]") : null;
+  if (aboveHost) {
+    chainHost = null;
+    chainSide = null;
+    const host = aboveHost.getBoundingClientRect();
+    const x = Math.max(
+      EDGE_PAD,
+      Math.min(
+        host.left + (host.width - rect.width) / 2,
+        window.innerWidth - rect.width - EDGE_PAD,
+      ),
+    );
+    const y = Math.max(EDGE_PAD, host.top - rect.height - TT.gap);
+    el.style.left = `${Math.round(x)}px`;
+    el.style.top = `${Math.round(y)}px`;
+    return;
   }
 
   // On a narrow margin, giving up some width keeps the sheet fully visible.

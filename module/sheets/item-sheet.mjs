@@ -196,7 +196,9 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
         options.parts.push("effects");
         // Poisons can also carry combat effects (bleed/stagger/custom) that the
         // coating contributes to the wielder's attack rolls (see usePoison).
-        if (this.item.system.option === "poison") {
+        // Explosives use the same tab for anything the header's burn/freeze/
+        // stagger fields cannot express — Stun, Slow, Root … (see throwExplosive).
+        if (["poison", "explosive"].includes(this.item.system.option)) {
           options.parts.push("combatEffects");
         }
         break;

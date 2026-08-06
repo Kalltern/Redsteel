@@ -232,6 +232,21 @@
   </div>
 </div>
 <hr>
+{{!--
+  Shows this character's portrait in the party row on the Redsteel hotbar, even
+  with nobody logged in as them. Connected players are listed automatically.
+--}}
+<section class="config-container rs-toggle-row">
+  <label class="rs-toggle">
+    <input
+      type="checkbox"
+      name="system.partyMember"
+      {{#if system.partyMember}}checked{{/if}}
+    />
+    <span>{{localize "REDSTEEL.Actor.FIELDS.partyMember.label"}}</span>
+  </label>
+</section>
+<hr>
   <section class="config-container rs-toggle-row">
 
 {{#each system.combatSkills as |skill key|}}

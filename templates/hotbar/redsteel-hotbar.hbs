@@ -1,0 +1,475 @@
+{{!--
+  Experimental BG3-style hotbar panel. Single root element: HandlebarsApplicationMixin
+  keeps only the first element of a part template.
+
+  Stack order (top to bottom in the DOM): attributes, favourite skills, macro
+  rows from the highest page down to page 1, so page 1 sits at the bottom.
+
+  The portrait is its own round frame, a sibling of the rows box rather than a
+  child of it, so the two read as separate panels sitting side by side.
+--}}
+{{!--
+  The bar is the anchor: it alone sits in flow and is centred on screen.
+  Portraits, resource columns and the wrench hang off its edges absolutely, so
+  gaining a teammate or a mana pool never shifts the bar under your cursor.
+
+  data-tt-delay / data-tt-nofreeze / data-tt-above ride on the anchor and so
+  apply to every tooltip source in the panel: a longer dwell than the sheet
+  uses, because the cells are small and packed; no freezing, so none of them
+  sprout a pin or steal the cursor; and all of them park centred above the bar
+  instead of beside the cell, which would otherwise cover the neighbouring row.
+--}}
+<div class="rs-bg3-outer">
+<div
+  class="rs-bg3-anchor"
+  data-tt-actor-uuid="{{actorUuid}}"
+  data-tt-delay="700"
+  data-tt-nofreeze
+  data-tt-above
+>
+
+  {{!-- A measuring aid, off by default: how many more portraits still fit --}}
+  {{#if showCapacity}}
+  <div class="rs-bg3-capacity"></div>
+  {{/if}}
+
+  {{!-- Everything left of the bar, hung off its left edge --}}
+  <div class="rs-bg3-left">
+
+  {{!-- Connected players' characters, small, to the left of yours --}}
+  {{#if teammates.length}}
+  <div class="rs-bg3-team">
+    {{#each teammates as |mate|}}
+    <div
+      class="rs-bg3-portrait-frame rs-bg3-portrait-frame--team"
+      data-actor-uuid="{{mate.uuid}}"
+      style="--rs-bg3-player: {{mate.colour}};"
+    >
+      <div
+        class="rs-bg3-portrait-ring{{#unless mate.showRing}} rs-bg3-portrait-ring--flat{{/unless}}"
+        style="--rs-hp-pct: {{mate.hp.pct}};"
+      >
+        <img
+          class="rs-bg3-portrait-img"
+          src="{{mate.img}}"
+          alt="{{mate.name}}"
+          data-tt-kind="text"
+          data-tt-title="{{mate.name}}"
+          data-tt-text="{{mate.tip}}"
+        />
+      </div>
+      {{#if mate.showRing}}
+      <div class="rs-bg3-hp-text">{{mate.hp.value}}/{{mate.hp.max}}</div>
+      {{/if}}
+    </div>
+    {{/each}}
+  </div>
+  {{/if}}
+
+  {{!-- Portrait: its own circular frame, adjacent to the bar --}}
+  <div class="rs-bg3-portrait-frame" style="--rs-bg3-player: {{playerColour}};">
+    <div class="rs-bg3-portrait-ring" style="--rs-hp-pct: {{hp.pct}};">
+      {{!--
+        The face is its own clipping circle so the toxicity flood can be cut to
+        the portrait's edge without touching the health band around it.
+      --}}
+      <div class="rs-bg3-portrait-face">
+        <img
+          class="rs-bg3-portrait-img"
+          src="{{portraitImg}}"
+          alt="{{portraitName}}"
+          data-tt-kind="text"
+          data-tt-title="{{portraitName}}"
+          data-tt-text="REDSTEEL.Bg3Hotbar.OpenSheet"
+        />
+        {{#if toxicity.any}}
+        <span class="rs-bg3-tox-flood" style="height: {{toxicity.fill}}%;"></span>
+        {{/if}}
+
+        {{!-- Corruption bleeds inward from the rim, deepening by degree --}}
+        {{#if aura.corruption}}
+        <span
+          class="rs-bg3-corruption"
+          style="opacity: {{aura.corruption.opacity}};"
+        ></span>
+        {{/if}}
+      </div>
+
+      {{!--
+        Absorb shield or retaliation aura, ringing the portrait. Blood Shield
+        is not exclusive with the rest, so it rings further out and the two can
+        show at once.
+      --}}
+      {{#if aura.shield}}
+      <span
+        class="rs-bg3-shield-aura"
+        style="--rs-aura-a: {{aura.shield.a}};{{#if aura.shield.b}} --rs-aura-b: {{aura.shield.b}};{{/if}}"
+      ></span>
+      {{/if}}
+      {{#if aura.bloodShield}}
+      <span class="rs-bg3-shield-aura rs-bg3-shield-aura--blood"></span>
+      {{/if}}
+    </div>
+
+    {{!--
+      Temporary health, sitting just above the health pill inside the portrait:
+      white physical, azure magical.
+    --}}
+    {{#if (or aura.temp aura.tempMagic)}}
+    <div class="rs-bg3-temps">
+      {{#if aura.temp}}
+      <span class="rs-bg3-temp rs-bg3-temp--physical">{{aura.temp}}</span>
+      {{/if}}
+      {{#if aura.tempMagic}}
+      <span class="rs-bg3-temp rs-bg3-temp--magic">{{aura.tempMagic}}</span>
+      {{/if}}
+    </div>
+    {{/if}}
+    {{#if toxicity.any}}
+    <div class="rs-bg3-tox-text" data-tt-kind="stat" data-tt-id="toxicity">
+      {{toxicity.value}}/{{toxicity.max}}
+    </div>
+    {{/if}}
+    {{!--
+      Right-click resource editor, the panel's answer to the token HUD. Only
+      rendered for owners, and only for pools this character actually has.
+    --}}
+    {{#if editableResources.length}}
+    <div class="rs-bg3-resedit">
+      {{#each editableResources as |res|}}
+      <label class="rs-bg3-resedit-row">
+        <span class="rs-bg3-resedit-label">{{res.label}}</span>
+        <input
+          class="rs-bg3-resedit-input"
+          type="number"
+          data-stat="{{res.key}}"
+          value="{{res.value}}"
+          step="1"
+        />
+        <span class="rs-bg3-resedit-max">/ {{res.max}}</span>
+      </label>
+      {{/each}}
+    </div>
+    {{/if}}
+
+    {{#if hasActor}}
+    <div class="rs-bg3-hp-text">{{hp.value}}/{{hp.max}}</div>
+    {{else}}
+    <div class="rs-bg3-hp-text rs-bg3-hp-text--empty">{{localize "REDSTEEL.Bg3Hotbar.NoActor"}}</div>
+    {{/if}}
+  </div>
+
+    {{!--
+      Resource bars: every pool except health, which owns the ring. Full-height
+      columns in a narrow box tucked under the bar's left edge, reading as an
+      extension of the frame. One bar fills the box on its own; more resources
+      add columns. No readout on the bar: a number would set the column's width
+      for it, so the tooltip carries the value instead.
+    --}}
+    {{#if resourceBars.length}}
+    <div class="rs-bg3-res-strip">
+      {{#each resourceBars as |res|}}
+      <div
+        class="rs-bg3-res-bar"
+        data-rs-res="{{res.key}}"
+        data-tt-kind="bg3Stat"
+        data-tt-id="{{res.key}}"
+        data-tt-current="{{res.value}}/{{res.max}}"
+      >
+        <span class="rs-bg3-res-fill" style="height: {{res.fill}}%;"></span>
+      </div>
+      {{/each}}
+    </div>
+    {{/if}}
+
+  </div>
+
+  {{!-- The bar itself: the only thing in flow, and so the only thing centred --}}
+  <div class="rs-bg3-inner">
+    <div class="rs-bg3-stack">
+
+    {{!--
+      STATUS ROW: the character's conditions on the left, the armed roll
+      modifier on the right. GMs can edit a condition by clicking it and remove
+      it by right-clicking; there is deliberately no way to add one from here.
+    --}}
+    {{#if hasActor}}
+    <div class="rs-bg3-row rs-bg3-row--status">
+      <div class="rs-bg3-effects">
+        {{#each statuses as |eff|}}
+        <div
+          class="rs-bg3-effect{{#if eff.disabled}} disabled{{/if}}{{#if eff.canManage}} manageable{{/if}}"
+          data-uuid="{{eff.uuid}}"
+          {{#if eff.canManage}}data-action="editEffect"{{/if}}
+          data-tt-kind="text"
+          data-tt-title="{{eff.name}}"
+          data-tt-text="{{#if eff.canManage}}REDSTEEL.Bg3Hotbar.EffectManage{{else}}REDSTEEL.Bg3Hotbar.EffectView{{/if}}"
+        >
+          <img src="{{eff.img}}" alt="{{eff.name}}" />
+        </div>
+        {{else}}
+        <span class="rs-bg3-effects-empty">{{localize "REDSTEEL.Bg3Hotbar.NoEffects"}}</span>
+        {{/each}}
+      </div>
+
+      <button
+        type="button"
+        class="rs-bg3-modifier rs-bg3-modifier--{{modifier.tone}}"
+        data-action="openRollModifier"
+        data-tt-kind="text"
+        data-tt-text="REDSTEEL.Bg3Hotbar.Modifier"
+        aria-label="{{localize 'REDSTEEL.Bg3Hotbar.Modifier'}}"
+      >{{#if modifier.empty}}<i class="fa-light fa-dice-d10"></i>{{else}}{{modifier.text}}{{/if}}</button>
+
+      {{!-- Weapon set swap, with its popover rising above the panel --}}
+      {{#if weaponSets}}
+      <div class="rs-bg3-weaponsets-wrap">
+        <button
+          type="button"
+          class="rs-bg3-weaponsets-toggle"
+          data-action="toggleWeaponSets"
+          data-tt-kind="text"
+          data-tt-text="REDSTEEL.Bg3Hotbar.WeaponSets"
+          aria-label="{{localize 'REDSTEEL.Bg3Hotbar.WeaponSets'}}"
+        ><i class="fa-light fa-swords"></i></button>
+
+        <div class="rs-bg3-weaponsets">
+          {{#each weaponSets.sets as |set|}}
+          <button
+            type="button"
+            class="rs-bg3-weaponset{{#if set.active}} active{{/if}}"
+            data-action="pickWeaponSet"
+            data-set="{{set.id}}"
+          >
+            <span class="rs-bg3-weaponset-id">{{set.id}}</span>
+            <span class="rs-bg3-weaponset-slots">
+              {{#if set.main.img}}
+              <img src="{{set.main.img}}" alt="{{set.main.name}}" title="{{set.main.name}}" />
+              {{else}}
+              <span class="rs-bg3-weaponset-empty"><i class="fa-light fa-hand-fist"></i></span>
+              {{/if}}
+
+              {{!--
+                A two-hander occupies the off hand, so it ghosts into that slot
+                the same way the character sheet's weapon sets show it.
+              --}}
+              {{#if set.twoHanded}}
+              <img
+                class="rs-bg3-weaponset-ghost"
+                src="{{set.main.img}}"
+                alt="{{set.main.name}}"
+                title="{{set.main.name}}"
+              />
+              {{else if set.off.img}}
+              <img src="{{set.off.img}}" alt="{{set.off.name}}" title="{{set.off.name}}" />
+              {{else}}
+              <span class="rs-bg3-weaponset-empty"><i class="fa-light fa-hand"></i></span>
+              {{/if}}
+            </span>
+          </button>
+          {{/each}}
+        </div>
+      </div>
+      {{/if}}
+    </div>
+    <div class="rs-bg3-section-divider" role="separator"></div>
+    {{/if}}
+
+    {{!-- ATTRIBUTES: 7 primaries, a divider, then the 5 rollable secondaries --}}
+    {{#if hasAttributes}}
+    <div class="rs-bg3-row rs-bg3-row--attributes" aria-label="{{localize 'REDSTEEL.Bg3Hotbar.Attributes'}}">
+      <div class="rs-bg3-attr-group">
+        {{#each attributes.primary as |attr|}}
+        <button
+          type="button"
+          class="rs-bg3-attr-cell"
+          {{#if attr.tint}}data-attr="{{attr.tint}}"{{/if}}
+          data-action="rollAttribute"
+          data-roll-type="{{attr.rollType}}"
+          data-label="{{attr.key}}"
+          {{#if attr.roll}}data-roll="{{attr.roll}}"{{/if}}
+        >
+          <span class="rs-bg3-attr-label">{{attr.label}}</span>
+          <span class="rs-bg3-attr-value">{{attr.display}}</span>
+        </button>
+        {{/each}}
+      </div>
+
+      {{#if attributes.secondary.length}}
+      <div class="rs-bg3-attr-divider" role="separator"></div>
+      <div class="rs-bg3-attr-group rs-bg3-attr-group--secondary">
+        {{#each attributes.secondary as |attr|}}
+        <button
+          type="button"
+          class="rs-bg3-attr-cell rs-bg3-attr-cell--secondary"
+          {{#if attr.tint}}data-attr="{{attr.tint}}"{{/if}}
+          data-action="rollAttribute"
+          data-roll-type="{{attr.rollType}}"
+          data-label="{{attr.key}}"
+          {{#if attr.roll}}data-roll="{{attr.roll}}"{{/if}}
+        >
+          <span class="rs-bg3-attr-label">{{attr.label}}</span>
+          <span class="rs-bg3-attr-value">{{attr.display}}</span>
+        </button>
+        {{/each}}
+      </div>
+      {{/if}}
+    </div>
+    <div class="rs-bg3-section-divider" role="separator"></div>
+    {{/if}}
+
+    {{!-- SKILL CHECKS: 10 favourite slots, laid out as two rows of five --}}
+    {{#if hasSkills}}
+    {{#each skillRows as |skillRow|}}
+    <div class="rs-bg3-row rs-bg3-row--skills" aria-label="{{localize 'REDSTEEL.Bg3Hotbar.Skills'}}">
+      {{#each skillRow as |slot|}}
+        {{#if slot.filled}}
+        <button
+          type="button"
+          class="rs-bg3-skill-slot filled"
+          {{#if slot.tint}}data-attr="{{slot.tint}}"{{/if}}
+          data-action="rollSkill"
+          data-index="{{slot.index}}"
+          data-roll-type="skill"
+          data-label="{{slot.key}}"
+          data-roll="{{slot.roll}}"
+          data-tt-kind="skill"
+          data-tt-id="{{slot.key}}"
+        >
+          <span class="rs-bg3-skill-name">{{slot.label}}</span>
+          <span class="rs-bg3-skill-rating">{{slot.rating}}</span>
+        </button>
+        {{else if slot.canPick}}
+        <button
+          type="button"
+          class="rs-bg3-skill-slot empty"
+          data-action="pickSkill"
+          data-index="{{slot.index}}"
+          data-tt-kind="text"
+          data-tt-text="REDSTEEL.Bg3Hotbar.PickSkill"
+        >
+          <span class="rs-bg3-skill-plus">+</span>
+        </button>
+        {{else}}
+        <div class="rs-bg3-skill-slot empty locked" data-index="{{slot.index}}"></div>
+        {{/if}}
+      {{/each}}
+    </div>
+    {{/each}}
+    <div class="rs-bg3-section-divider" role="separator"></div>
+    {{/if}}
+
+    {{!--
+      ACTION ROW: the preset hotbar macros as buttons. Same `game.redsteel`
+      entry points the macros call, so the macro rows can stay at zero.
+    --}}
+    {{#if actions.length}}
+    <div class="rs-bg3-row rs-bg3-row--actions">
+      {{#each actions as |act|}}
+      <button
+        type="button"
+        class="rs-bg3-action{{#if act.groupStart}} rs-bg3-action--group{{/if}}"
+        data-action="runAction"
+        data-act="{{act.key}}"
+        data-tt-kind="text"
+        data-tt-text="REDSTEEL.Bg3Hotbar.Action.{{act.key}}"
+        aria-label="{{act.label}}"
+      ><i class="{{act.icon}}"></i></button>
+      {{/each}}
+    </div>
+    <div class="rs-bg3-section-divider" role="separator"></div>
+    {{/if}}
+
+    {{!-- MACRO ROWS: one per hotbar page, page 1 last so it renders lowest --}}
+    {{#each macroRows as |row|}}
+    <div class="rs-bg3-row rs-bg3-row--macros" data-page="{{row.page}}">
+      <div class="rs-bg3-macro-slots">
+        {{#each row.slots as |slot|}}
+          {{#if slot.filled}}
+          <div
+            class="rs-bg3-macro-slot filled"
+            draggable="true"
+            data-action="executeMacro"
+            data-slot="{{slot.slot}}"
+            data-macro-id="{{slot.macroId}}"
+            data-tt-kind="text"
+            data-tt-text="{{slot.name}}"
+            role="button"
+          >
+            <img class="rs-bg3-macro-img" src="{{slot.img}}" alt="{{slot.name}}" />
+          </div>
+          {{else}}
+          <div class="rs-bg3-macro-slot empty" data-slot="{{slot.slot}}">
+            {{#if slot.keyLabel}}<span class="rs-bg3-macro-key">{{slot.keyLabel}}</span>{{/if}}
+          </div>
+          {{/if}}
+        {{/each}}
+      </div>
+    </div>
+    {{/each}}
+
+    </div>
+  </div>
+
+  {{!--
+    The right wing: the character sheet's condition row, stacked. Same tucked
+    extension as the resource columns on the left, mirrored. Icon first, value
+    beside it.
+  --}}
+  <div class="rs-bg3-right">
+
+  {{#if conditions.length}}
+  <div class="rs-bg3-cond-strip{{#if condFolded}} folded{{/if}}">
+    {{#each conditions as |cond|}}
+    {{#if cond.divider}}
+    <div class="rs-bg3-cond-divider" role="separator"></div>
+    {{else}}
+    <div
+      class="rs-bg3-cond-row{{#if cond.relevant}} relevant{{/if}}"
+      data-tt-kind="bg3Stat"
+      data-tt-id="{{cond.key}}"
+      data-tt-current="{{cond.value}}{{#if cond.ratio}}/{{cond.max}}{{/if}}"
+    >
+      <i class="rs-bg3-cond-icon {{cond.icon}}" style="color: {{cond.colour}};"></i>
+      {{#unless @root.condFolded}}
+      <span class="rs-bg3-cond-value">{{cond.value}}</span>
+      {{#if cond.ratio}}<span class="rs-bg3-cond-max">/{{cond.max}}</span>{{/if}}
+      {{/unless}}
+    </div>
+    {{/if}}
+    {{/each}}
+
+    {{!--
+      A chip straddling the middle of the outer border. The strip grows
+      rightward when it opens, so the arrow points the way the panel is about
+      to move.
+    --}}
+    <button
+      type="button"
+      class="rs-bg3-cond-toggle"
+      data-action="toggleConditions"
+      data-tt-kind="text"
+      data-tt-text="REDSTEEL.Bg3Hotbar.{{#if condFolded}}Unfold{{else}}Fold{{/if}}"
+    ><i class="fas fa-chevron-{{#if condFolded}}right{{else}}left{{/if}}"></i></button>
+  </div>
+  {{/if}}
+
+  {{!--
+    Bar settings: outside the frame, bottom right corner. Everything about the
+    shape of the panel is set from here rather than from controls along its edge.
+  --}}
+  <div class="rs-bg3-side-controls">
+    <button
+      type="button"
+      class="rs-bg3-settings-button"
+      data-action="openSettings"
+      data-tt-kind="text"
+      data-tt-text="REDSTEEL.Bg3Hotbar.SettingsTooltip"
+      aria-label="{{localize 'REDSTEEL.Bg3Hotbar.SettingsTitle'}}"
+    ><i class="fas fa-wrench"></i></button>
+  </div>
+
+  </div>
+
+</div>
+</div>

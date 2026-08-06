@@ -47,7 +47,57 @@
       "ZoomOut": {
         "name": "Extra zoom out (%)",
         "label": "How much further than normal you can zoom out on the canvas. 100 means twice as wide a view as Foundry's default limit, 300 means four times as wide. 0 restores the default."
+      },
+      "Bg3TeamHealth": {
+        "name": "Players see teammates' health rings",
+        "label": "Let players read each other's health from the portraits on the Redsteel hotbar. Off by default, and only a Gamemaster or Assistant Gamemaster can change it. Gamemasters always see the party's health regardless of this setting."
+      },
+      "Bg3Hotbar": {
+        "name": "Redsteel hotbar",
+        "label": "The system's own bar: your portrait and health ring, resource gauges, conditions, attribute and skill rolls, and the action buttons. Turn this off to go back to Foundry's standard hotbar. Reload required."
+      },
+      "Bg3Capacity": {
+        "name": "Show party row capacity (debug)",
+        "label": "Print how many more party portraits still fit beside the Redsteel hotbar, measured live. Useful when deciding how many companions and pets the party row can carry."
+      },
+      "Bg3SlimChat": {
+        "name": "Narrow the chat input until used",
+        "label": "Foundry keeps the message box docked at full width on every sidebar tab, which crowds the Redsteel hotbar's right side. This shrinks it to a stub and gives the width back when you click into it. Reload required."
       }
+    },
+    "Bg3Hotbar": {
+      "Attributes": "Attributes",
+      "Skills": "Skill checks",
+      "Action": {
+        "attack": "Attack actions",
+        "defense": "Defense actions",
+        "ability": "Combat abilities",
+        "channeling": "Channeling",
+        "rest": "Long Rest",
+        "potion": "Potions",
+        "firstAid": "First aid",
+        "effects": "Effect manager"
+      },
+      "Fold": "Fold: show current values only",
+      "Unfold": "Unfold: show maximums too",
+      "SettingsTitle": "Bar settings",
+      "SettingsTooltip": "Bar settings: how many skill and macro rows to show.",
+      "SettingsSave": "Save",
+      "SkillRows": "Skill rows",
+      "MacroRows": "Macro rows",
+      "PickSkill": "Choose a skill",
+      "ClearSkill": "Right-click to clear",
+      "NoActor": "No character",
+      "OpenSheet": "Double-click to open the character sheet.",
+      "PickerTitle": "Choose a skill",
+      "PickerSearch": "Search skills...",
+      "NoEffects": "No conditions",
+      "EffectView": "Active condition.",
+      "EffectManage": "Click to edit, right-click to remove.",
+      "Modifier": "Roll modifier armed for your next test.",
+      "WeaponSets": "Weapon sets. Switching costs an action.",
+      "PlayersCollapse": "Collapse the player list",
+      "PlayersExpand": "Show players, latency and FPS"
     },
     "Calendaria": {
       "RerollNote": {
@@ -3948,10 +3998,18 @@
           },
           "priest": {
             "label": "Priest"
+          },
+          "bloodMage": {
+            "label": "Blood Mage"
           }
         },
         "xp": {
           "label": "XP"
+        }
+      },
+      "FIELDS": {
+        "partyMember": {
+          "label": "Party member"
         }
       }
     },
