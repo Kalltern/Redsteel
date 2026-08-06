@@ -1,0 +1,44 @@
+{
+  "folder": "1GLMg0h4TGwFqiLx",
+  "name": "Elemental Dread",
+  "type": "feature",
+  "img": "icons/svg/terror.svg",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.ElementalDread.name",
+    "description": "<p>When hit by its chosen element, it suffers disadvantage on everything until the end of the round.</p>",
+    "options": [
+      "feature",
+      "trait"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "trait"
+  },
+  "effects": [],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": null,
+    "modifiedTime": null,
+    "lastModifiedBy": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 0,
+  "_id": "hz5NHiBO1mSwqPmL",
+  "_key": "!items!hz5NHiBO1mSwqPmL"
+}

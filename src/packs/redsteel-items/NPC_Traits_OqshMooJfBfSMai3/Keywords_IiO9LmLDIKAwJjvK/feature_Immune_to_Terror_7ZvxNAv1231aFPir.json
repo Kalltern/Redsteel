@@ -1,0 +1,90 @@
+{
+  "folder": "IiO9LmLDIKAwJjvK",
+  "name": "Immune to Terror",
+  "type": "feature",
+  "img": "icons/svg/terror.svg",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.ImmuneToTerror.name",
+    "description": "<p>Cannot be affected by terror.</p>",
+    "options": [
+      "feature",
+      "trait"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "trait"
+  },
+  "effects": [
+    {
+      "name": "Immune to Terror",
+      "origin": null,
+      "img": "icons/svg/terror.svg",
+      "_id": "VtH5b4UquwwmCLTx",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.effectMods.terror.immune",
+            "value": true,
+            "priority": null,
+            "type": "override"
+          }
+        ]
+      },
+      "disabled": false,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "createdTime": null,
+        "modifiedTime": null,
+        "lastModifiedBy": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!7ZvxNAv1231aFPir.VtH5b4UquwwmCLTx"
+    }
+  ],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": null,
+    "modifiedTime": null,
+    "lastModifiedBy": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 0,
+  "_id": "7ZvxNAv1231aFPir",
+  "_key": "!items!7ZvxNAv1231aFPir"
+}

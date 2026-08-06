@@ -1,0 +1,90 @@
+{
+  "folder": "IiO9LmLDIKAwJjvK",
+  "name": "Immune: Dark",
+  "type": "feature",
+  "img": "icons/svg/cowled.svg",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.ImmuneDark.name",
+    "description": "<p>Takes no dark damage.</p>",
+    "options": [
+      "feature",
+      "trait"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "trait"
+  },
+  "effects": [
+    {
+      "name": "Immune: Dark",
+      "origin": null,
+      "img": "icons/svg/cowled.svg",
+      "_id": "8RsHFOzs2hIHQ3Xy",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.armor.dark.immunity",
+            "value": true,
+            "priority": null,
+            "type": "override"
+          }
+        ]
+      },
+      "disabled": false,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "createdTime": null,
+        "modifiedTime": null,
+        "lastModifiedBy": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!FasIO3tqlUhCTiOE.8RsHFOzs2hIHQ3Xy"
+    }
+  ],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": null,
+    "modifiedTime": null,
+    "lastModifiedBy": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 0,
+  "_id": "FasIO3tqlUhCTiOE",
+  "_key": "!items!FasIO3tqlUhCTiOE"
+}

@@ -1,0 +1,96 @@
+{
+  "folder": "1GLMg0h4TGwFqiLx",
+  "name": "Elemental (Frost)",
+  "type": "feature",
+  "img": "icons/svg/ice-aura.svg",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.ElementalFrost.name",
+    "description": "<p>Immune to frost. Vulnerable to fire.</p>",
+    "options": [
+      "feature",
+      "trait"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "trait"
+  },
+  "effects": [
+    {
+      "name": "Elemental (Frost)",
+      "origin": null,
+      "img": "icons/svg/ice-aura.svg",
+      "_id": "NMmzs6hA4q4oDBFT",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.armor.frost.immunity",
+            "value": true,
+            "priority": null,
+            "type": "override"
+          },
+          {
+            "key": "system.armor.fire.vulnerability",
+            "value": true,
+            "priority": null,
+            "type": "override"
+          }
+        ]
+      },
+      "disabled": false,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "createdTime": null,
+        "modifiedTime": null,
+        "lastModifiedBy": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!xOY5evlDrtZm7Gnx.NMmzs6hA4q4oDBFT"
+    }
+  ],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": null,
+    "modifiedTime": null,
+    "lastModifiedBy": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 0,
+  "_id": "xOY5evlDrtZm7Gnx",
+  "_key": "!items!xOY5evlDrtZm7Gnx"
+}

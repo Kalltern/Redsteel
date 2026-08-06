@@ -1,0 +1,44 @@
+{
+  "folder": "1GLMg0h4TGwFqiLx",
+  "name": "Thick-Blooded",
+  "type": "feature",
+  "img": "icons/skills/wounds/blood-drip-droplet-red.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.ThickBlooded.name",
+    "description": "<p>Loses all accumulated bleeding at the end of the round.</p>",
+    "options": [
+      "feature",
+      "trait"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "trait"
+  },
+  "effects": [],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": null,
+    "modifiedTime": null,
+    "lastModifiedBy": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 0,
+  "_id": "1NYTP558bRcYOLAi",
+  "_key": "!items!1NYTP558bRcYOLAi"
+}

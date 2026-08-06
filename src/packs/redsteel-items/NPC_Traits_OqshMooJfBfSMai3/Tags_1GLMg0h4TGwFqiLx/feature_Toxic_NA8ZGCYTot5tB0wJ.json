@@ -1,0 +1,44 @@
+{
+  "folder": "1GLMg0h4TGwFqiLx",
+  "name": "Toxic",
+  "type": "feature",
+  "img": "icons/svg/poison.svg",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.Toxic.name",
+    "description": "<p>On death it leaves a poison cloud on its hex.</p>",
+    "options": [
+      "feature",
+      "trait"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "trait"
+  },
+  "effects": [],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": null,
+    "modifiedTime": null,
+    "lastModifiedBy": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 0,
+  "_id": "NA8ZGCYTot5tB0wJ",
+  "_key": "!items!NA8ZGCYTot5tB0wJ"
+}

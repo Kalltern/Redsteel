@@ -1,0 +1,44 @@
+{
+  "folder": "1GLMg0h4TGwFqiLx",
+  "name": "Death Burst",
+  "type": "feature",
+  "img": "icons/svg/explosion.svg",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.DeathBurst.name",
+    "description": "<p>On death it explodes and damages adjacent hexes.</p>",
+    "options": [
+      "feature",
+      "trait"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "trait"
+  },
+  "effects": [],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": null,
+    "modifiedTime": null,
+    "lastModifiedBy": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 0,
+  "_id": "OyKqWGuYiA3GeMkO",
+  "_key": "!items!OyKqWGuYiA3GeMkO"
+}

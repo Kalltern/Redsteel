@@ -346,6 +346,7 @@ Hooks.once("init", function () {
   game.redsteel.openRacePicker = openRacePicker;
   game.redsteel.openRaceChoicesDialog = openRaceChoicesDialog;
   game.redsteel.initializeRaceChoices = initializeRaceChoices;
+  game.redsteel.convertNpcMovement = convertNpcMovement;
   registerAimOverlay();
   registerDynamicInitiative();
   registerRollModifier();
@@ -2446,46 +2447,151 @@ Hooks.once("ready", async () => {
  * the d12 speed test work on NPCs with no extra wiring. Carry the stored value
  * across and drop the old key. Idempotent: once `mov` is gone this no-ops.
  */
-Hooks.once("ready", async () => {
-  if (!game.user.isGM) return;
+/**
+ * Build the mov → spd update for one stored system object.
+ *
+ * Reads `_source` data, never prepared data: `prepareDerivedData` rebuilds
+ * `secondaryAttributes` totals and a converter that trusts the prepared object
+ * can end up copying a recomputed value instead of the stored one.
+ *
+ * A stored Speed the user has already typed in wins over the legacy value, so
+ * re-running this can never walk a real number back to an old one. `mov` is
+ * only dropped in the same update that carries its value across, so a failed
+ * write leaves the old key intact for the next attempt.
+ *
+ * @param {object} source - Raw `_source.system` of an NPC (or a token delta).
+ * @returns {object|null} Update payload, or null when there is nothing to do.
+ */
+function buildSpeedConversion(source) {
+  const mov = source?.secondaryAttributes?.mov;
+  if (!mov) return null;
 
-  /** @returns {object|null} Update payload, or null when nothing to migrate. */
-  const buildUpdate = (system) => {
-    const mov = system?.secondaryAttributes?.mov;
-    if (!mov) return null;
-    return {
-      "system.secondaryAttributes.spd.value": Number(mov.value) || 0,
-      "system.secondaryAttributes.spd.bonus": Number(mov.bonus) || 0,
-      "system.secondaryAttributes.-=mov": null,
-    };
+  const update = { "system.secondaryAttributes.-=mov": null };
+
+  // A token delta only stores what differs from its base actor, so a missing
+  // sub-key there means "inherited", not "zero" — leave those alone.
+  const spd = source?.secondaryAttributes?.spd;
+  const movValue = Number(mov.value) || 0;
+  const movBonus = Number(mov.bonus) || 0;
+
+  if (movValue && !(Number(spd?.value) || 0)) {
+    update["system.secondaryAttributes.spd.value"] = movValue;
+  }
+  if (movBonus && !(Number(spd?.bonus) || 0)) {
+    update["system.secondaryAttributes.spd.bonus"] = movBonus;
+  }
+
+  return update;
+}
+
+/**
+ * Same conversion for a document that has not been created yet.
+ *
+ * `updateSource` merges rather than replaces, so the `-=` deletion syntax that
+ * `Document#update` understands cannot be relied on to drop the stale key here.
+ * Write the values through the API and delete the key on the source object,
+ * which is still plain, unsaved data at this point.
+ *
+ * @param {Actor} actor - The pending document from a preCreate hook.
+ * @param {object} source - Its `_source.system`.
+ * @returns {boolean} Whether anything was converted.
+ */
+function applySpeedConversionToSource(actor, source) {
+  const update = buildSpeedConversion(source);
+  if (!update) return false;
+
+  delete update["system.secondaryAttributes.-=mov"];
+  if (Object.keys(update).length) actor.updateSource(update);
+  delete actor._source?.system?.secondaryAttributes?.mov;
+
+  return true;
+}
+
+/**
+ * Fold legacy NPC movement (`secondaryAttributes.mov`) into the Speed attribute
+ * characters already use (`secondaryAttributes.spd`), so speed debuffs and the
+ * d12 speed test work on NPCs with no extra wiring.
+ *
+ * Covers world actors, unlinked token deltas, and — with `packs: true` —
+ * unlocked Actor compendiums, which is where an NPC imported from an older
+ * world shows up. Idempotent: once `mov` is gone every pass is a no-op.
+ *
+ * @param {object} [options]
+ * @param {boolean} [options.dryRun=false] - Report what would change, write nothing.
+ * @param {boolean} [options.packs=false]  - Also convert unlocked Actor compendiums.
+ * @returns {Promise<object[]>} One row per converted actor.
+ */
+async function convertNpcMovement({ dryRun = false, packs = false } = {}) {
+  if (!game.user.isGM) {
+    ui.notifications.warn("Only the GM can convert NPC movement.");
+    return [];
+  }
+
+  const converted = [];
+
+  /** @param {Actor} actor @param {object} source @param {string} where */
+  const convert = async (actor, source, where) => {
+    const update = buildSpeedConversion(source);
+    if (!update) return;
+
+    converted.push({
+      name: actor?.name ?? "(unknown)",
+      where,
+      speed: update["system.secondaryAttributes.spd.value"] ?? "unchanged",
+    });
+
+    if (!dryRun) await actor?.update(update);
   };
 
-  let migrated = 0;
-
-  for (const actor of game.actors) {
+  for (const actor of game.actors.contents) {
     if (actor.type !== "npc") continue;
-    const update = buildUpdate(actor.system);
-    if (!update) continue;
-    await actor.update(update);
-    migrated++;
+    await convert(actor, actor._source.system, "world");
   }
 
   // Unlinked tokens keep their own copy of the data in the actor delta.
-  for (const scene of game.scenes) {
+  for (const scene of game.scenes.contents) {
     for (const token of scene.tokens.contents) {
-      if (token.actorLink) continue;
-      const update = buildUpdate(token.delta?.system);
-      if (!update) continue;
-      await token.actor?.update(update);
-      migrated++;
+      if (token.actorLink || token.actor?.type !== "npc") continue;
+      await convert(token.actor, token.delta?._source?.system, scene.name);
     }
   }
 
-  if (migrated) {
-    console.log(
-      `Redsteel | Migrated NPC movement → Speed on ${migrated} actors`,
+  if (packs) {
+    for (const pack of game.packs) {
+      if (pack.documentName !== "Actor" || pack.locked) continue;
+      for (const actor of await pack.getDocuments()) {
+        if (actor.type !== "npc") continue;
+        await convert(actor, actor._source.system, pack.collection);
+      }
+    }
+  }
+
+  const label = dryRun ? "would convert" : "converted";
+  console.log(
+    `Redsteel | NPC movement → Speed: ${label} ${converted.length} actors`,
+    converted,
+  );
+  if (converted.length && !dryRun) {
+    ui.notifications.info(
+      `Converted movement → Speed on ${converted.length} NPCs.`,
     );
   }
+
+  return converted;
+}
+
+Hooks.once("ready", async () => {
+  if (!game.user.isGM) return;
+  await convertNpcMovement();
+});
+
+// An NPC imported or dragged in from an older world arrives after the startup
+// pass, so fold its movement in before the document is ever stored.
+Hooks.on("preCreateActor", (actor) => {
+  if (actor.type !== "npc") return;
+  if (!applySpeedConversionToSource(actor, actor._source?.system)) return;
+
+  console.log(`Redsteel | Converted movement → Speed on import: ${actor.name}`);
 });
 
 Hooks.on("renderChatMessageHTML", (message, html) => {

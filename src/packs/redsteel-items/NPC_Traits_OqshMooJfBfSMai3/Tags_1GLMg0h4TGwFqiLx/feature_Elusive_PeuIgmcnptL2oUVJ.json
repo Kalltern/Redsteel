@@ -1,0 +1,44 @@
+{
+  "folder": "1GLMg0h4TGwFqiLx",
+  "name": "Elusive",
+  "type": "feature",
+  "img": "icons/svg/jump.svg",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.Elusive.name",
+    "description": "<p>After a successful dodge it must move one hex away from the attacker.</p>",
+    "options": [
+      "feature",
+      "trait"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "trait"
+  },
+  "effects": [],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": null,
+    "modifiedTime": null,
+    "lastModifiedBy": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 0,
+  "_id": "PeuIgmcnptL2oUVJ",
+  "_key": "!items!PeuIgmcnptL2oUVJ"
+}

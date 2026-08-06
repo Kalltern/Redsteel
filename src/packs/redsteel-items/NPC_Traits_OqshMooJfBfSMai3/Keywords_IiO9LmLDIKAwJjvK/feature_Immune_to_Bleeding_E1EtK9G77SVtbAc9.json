@@ -1,0 +1,90 @@
+{
+  "folder": "IiO9LmLDIKAwJjvK",
+  "name": "Immune to Bleeding",
+  "type": "feature",
+  "img": "icons/skills/wounds/blood-drip-droplet-red.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.ImmuneToBleeding.name",
+    "description": "<p>Cannot be affected by bleeding.</p>",
+    "options": [
+      "feature",
+      "trait"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "trait"
+  },
+  "effects": [
+    {
+      "name": "Immune to Bleeding",
+      "origin": null,
+      "img": "icons/skills/wounds/blood-drip-droplet-red.webp",
+      "_id": "vT7rEFr91Ev3Y3Uy",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.effectMods.bleed.immune",
+            "value": true,
+            "priority": null,
+            "type": "override"
+          }
+        ]
+      },
+      "disabled": false,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "createdTime": null,
+        "modifiedTime": null,
+        "lastModifiedBy": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!E1EtK9G77SVtbAc9.vT7rEFr91Ev3Y3Uy"
+    }
+  ],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": null,
+    "modifiedTime": null,
+    "lastModifiedBy": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 0,
+  "_id": "E1EtK9G77SVtbAc9",
+  "_key": "!items!E1EtK9G77SVtbAc9"
+}

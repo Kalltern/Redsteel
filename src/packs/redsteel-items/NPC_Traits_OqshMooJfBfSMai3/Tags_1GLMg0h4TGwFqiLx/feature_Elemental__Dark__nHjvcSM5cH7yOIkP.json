@@ -1,0 +1,96 @@
+{
+  "folder": "1GLMg0h4TGwFqiLx",
+  "name": "Elemental (Dark)",
+  "type": "feature",
+  "img": "icons/svg/cowled.svg",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.ElementalDark.name",
+    "description": "<p>Immune to dark. Vulnerable to holy.</p>",
+    "options": [
+      "feature",
+      "trait"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "trait"
+  },
+  "effects": [
+    {
+      "name": "Elemental (Dark)",
+      "origin": null,
+      "img": "icons/svg/cowled.svg",
+      "_id": "liYHo3WBz4w8nQ6r",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.armor.dark.immunity",
+            "value": true,
+            "priority": null,
+            "type": "override"
+          },
+          {
+            "key": "system.armor.holy.vulnerability",
+            "value": true,
+            "priority": null,
+            "type": "override"
+          }
+        ]
+      },
+      "disabled": false,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "createdTime": null,
+        "modifiedTime": null,
+        "lastModifiedBy": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!nHjvcSM5cH7yOIkP.liYHo3WBz4w8nQ6r"
+    }
+  ],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": null,
+    "modifiedTime": null,
+    "lastModifiedBy": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 0,
+  "_id": "nHjvcSM5cH7yOIkP",
+  "_key": "!items!nHjvcSM5cH7yOIkP"
+}

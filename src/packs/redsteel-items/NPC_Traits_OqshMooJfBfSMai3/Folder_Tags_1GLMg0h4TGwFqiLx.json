@@ -1,0 +1,21 @@
+{
+  "type": "Item",
+  "folder": "OqshMooJfBfSMai3",
+  "name": "Tags",
+  "color": null,
+  "sorting": "a",
+  "_id": "1GLMg0h4TGwFqiLx",
+  "description": "",
+  "sort": 0,
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "lastModifiedBy": null
+  },
+  "_key": "!folders!1GLMg0h4TGwFqiLx"
+}

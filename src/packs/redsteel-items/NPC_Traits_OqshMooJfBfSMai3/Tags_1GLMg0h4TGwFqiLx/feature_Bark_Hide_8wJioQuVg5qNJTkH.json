@@ -1,0 +1,102 @@
+{
+  "folder": "1GLMg0h4TGwFqiLx",
+  "name": "Bark Hide",
+  "type": "feature",
+  "img": "icons/svg/oak.svg",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.BarkHide.name",
+    "description": "<p>Vulnerable to slashing damage. Resistant to piercing and blunt damage.</p>",
+    "options": [
+      "feature",
+      "trait"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "trait"
+  },
+  "effects": [
+    {
+      "name": "Bark Hide",
+      "origin": null,
+      "img": "icons/svg/oak.svg",
+      "_id": "5OGQmGm21b5V6wEo",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.armor.slash.vulnerability",
+            "value": true,
+            "priority": null,
+            "type": "override"
+          },
+          {
+            "key": "system.armor.pierce.resistance",
+            "value": true,
+            "priority": null,
+            "type": "override"
+          },
+          {
+            "key": "system.armor.blunt.resistance",
+            "value": true,
+            "priority": null,
+            "type": "override"
+          }
+        ]
+      },
+      "disabled": false,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "createdTime": null,
+        "modifiedTime": null,
+        "lastModifiedBy": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!8wJioQuVg5qNJTkH.5OGQmGm21b5V6wEo"
+    }
+  ],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": null,
+    "modifiedTime": null,
+    "lastModifiedBy": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 0,
+  "_id": "8wJioQuVg5qNJTkH",
+  "_key": "!items!8wJioQuVg5qNJTkH"
+}

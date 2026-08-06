@@ -1,0 +1,90 @@
+{
+  "folder": "IiO9LmLDIKAwJjvK",
+  "name": "Immune: Magic",
+  "type": "feature",
+  "img": "icons/svg/aura.svg",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.ImmuneMagic.name",
+    "description": "<p>Takes no magic damage.</p>",
+    "options": [
+      "feature",
+      "trait"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "trait"
+  },
+  "effects": [
+    {
+      "name": "Immune: Magic",
+      "origin": null,
+      "img": "icons/svg/aura.svg",
+      "_id": "MtbXotMd82DZfbNn",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.armor.magic.immunity",
+            "value": true,
+            "priority": null,
+            "type": "override"
+          }
+        ]
+      },
+      "disabled": false,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "createdTime": null,
+        "modifiedTime": null,
+        "lastModifiedBy": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!Hb2yMEAVLhqTfIv7.MtbXotMd82DZfbNn"
+    }
+  ],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": null,
+    "modifiedTime": null,
+    "lastModifiedBy": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 0,
+  "_id": "Hb2yMEAVLhqTfIv7",
+  "_key": "!items!Hb2yMEAVLhqTfIv7"
+}

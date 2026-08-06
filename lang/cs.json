@@ -6262,6 +6262,279 @@
       },
       "ExpertSurvival": {
         "name": "Expert: Přežití"
+      },
+      "Lethargic": {
+        "name": "Letargický"
+      },
+      "RegenerationI": {
+        "name": "Regenerace I"
+      },
+      "Unliving": {
+        "name": "Neživý"
+      },
+      "MagicSaturated": {
+        "name": "Nasycen magií"
+      },
+      "ElementalFire": {
+        "name": "Elementární (Oheň)"
+      },
+      "ElementalFrost": {
+        "name": "Elementární (Mráz)"
+      },
+      "ElementalDark": {
+        "name": "Elementární (Temnota)"
+      },
+      "ElementalHoly": {
+        "name": "Elementární (Světlo)"
+      },
+      "Combustible": {
+        "name": "Hořlavý"
+      },
+      "ThickHide": {
+        "name": "Tlustokožec"
+      },
+      "StoneHide": {
+        "name": "Kamenná kůže"
+      },
+      "BarkHide": {
+        "name": "Dřevěná kůže"
+      },
+      "FleetFooted": {
+        "name": "Hbitý"
+      },
+      "Soft": {
+        "name": "Měkký"
+      },
+      "Ethereal": {
+        "name": "Éterický"
+      },
+      "Watchful": {
+        "name": "Všímavý"
+      },
+      "Furious": {
+        "name": "Zuřivý"
+      },
+      "Elusive": {
+        "name": "Úskočný"
+      },
+      "ThickBlooded": {
+        "name": "Hustokrevný"
+      },
+      "Photophobic": {
+        "name": "Světloplachý"
+      },
+      "VenomousBlood": {
+        "name": "Jedovatá krev"
+      },
+      "ArmorGap": {
+        "name": "Slabina ve zbroji"
+      },
+      "Rash": {
+        "name": "Zbrklý"
+      },
+      "Avenger": {
+        "name": "Mstitel"
+      },
+      "Charger": {
+        "name": "Ztečující"
+      },
+      "Cowardly": {
+        "name": "Zbabělý"
+      },
+      "QuickToReact": {
+        "name": "Pohotový"
+      },
+      "Merciless": {
+        "name": "Nemilosrdný"
+      },
+      "Bloodthirsty": {
+        "name": "Krvežíznivý"
+      },
+      "Wretch": {
+        "name": "Odpad"
+      },
+      "Armored": {
+        "name": "Obrněný"
+      },
+      "Stout": {
+        "name": "Zavalitý"
+      },
+      "ForestSProtection": {
+        "name": "Ochrana lesa"
+      },
+      "Deadly": {
+        "name": "Smrtící"
+      },
+      "ElementalDread": {
+        "name": "Strach z elementu"
+      },
+      "Bloated": {
+        "name": "Nabubřelý"
+      },
+      "Hysterical": {
+        "name": "Hysterický"
+      },
+      "Crumbling": {
+        "name": "Rozpadající se"
+      },
+      "Feathered": {
+        "name": "Opeřenec"
+      },
+      "DeathBurst": {
+        "name": "Posmrtný výbuch"
+      },
+      "Toxic": {
+        "name": "Toxický"
+      },
+      "Horde": {
+        "name": "Horda"
+      },
+      "ImmunePhysical": {
+        "name": "Imunita: Fyzické"
+      },
+      "ResistantPhysical": {
+        "name": "Odolnost: Fyzické"
+      },
+      "VulnerablePhysical": {
+        "name": "Zranitelnost: Fyzické"
+      },
+      "ImmuneSlashing": {
+        "name": "Imunita: Sečné"
+      },
+      "ResistantSlashing": {
+        "name": "Odolnost: Sečné"
+      },
+      "VulnerableSlashing": {
+        "name": "Zranitelnost: Sečné"
+      },
+      "ImmunePiercing": {
+        "name": "Imunita: Bodné"
+      },
+      "ResistantPiercing": {
+        "name": "Odolnost: Bodné"
+      },
+      "VulnerablePiercing": {
+        "name": "Zranitelnost: Bodné"
+      },
+      "ImmuneBlunt": {
+        "name": "Imunita: Tupé"
+      },
+      "ResistantBlunt": {
+        "name": "Odolnost: Tupé"
+      },
+      "VulnerableBlunt": {
+        "name": "Zranitelnost: Tupé"
+      },
+      "ImmuneAcid": {
+        "name": "Imunita: Kyselina"
+      },
+      "ResistantAcid": {
+        "name": "Odolnost: Kyselina"
+      },
+      "VulnerableAcid": {
+        "name": "Zranitelnost: Kyselina"
+      },
+      "ImmuneFire": {
+        "name": "Imunita: Oheň"
+      },
+      "ResistantFire": {
+        "name": "Odolnost: Oheň"
+      },
+      "VulnerableFire": {
+        "name": "Zranitelnost: Oheň"
+      },
+      "ImmuneFrost": {
+        "name": "Imunita: Mráz"
+      },
+      "ResistantFrost": {
+        "name": "Odolnost: Mráz"
+      },
+      "VulnerableFrost": {
+        "name": "Zranitelnost: Mráz"
+      },
+      "ImmuneLightning": {
+        "name": "Imunita: Blesk"
+      },
+      "ResistantLightning": {
+        "name": "Odolnost: Blesk"
+      },
+      "VulnerableLightning": {
+        "name": "Zranitelnost: Blesk"
+      },
+      "ImmuneMagic": {
+        "name": "Imunita: Magie"
+      },
+      "ResistantMagic": {
+        "name": "Odolnost: Magie"
+      },
+      "VulnerableMagic": {
+        "name": "Zranitelnost: Magie"
+      },
+      "ImmuneDark": {
+        "name": "Imunita: Temnota"
+      },
+      "ResistantDark": {
+        "name": "Odolnost: Temnota"
+      },
+      "VulnerableDark": {
+        "name": "Zranitelnost: Temnota"
+      },
+      "ImmunePoison": {
+        "name": "Imunita: Jed"
+      },
+      "ResistantPoison": {
+        "name": "Odolnost: Jed"
+      },
+      "VulnerablePoison": {
+        "name": "Zranitelnost: Jed"
+      },
+      "ImmuneHoly": {
+        "name": "Imunita: Světlo"
+      },
+      "ResistantHoly": {
+        "name": "Odolnost: Světlo"
+      },
+      "VulnerableHoly": {
+        "name": "Zranitelnost: Světlo"
+      },
+      "ImmuneToBleeding": {
+        "name": "Imunní vůči: Krvácení"
+      },
+      "ImmuneToStagger": {
+        "name": "Imunní vůči: Omráčení"
+      },
+      "ImmuneToPoison": {
+        "name": "Imunní vůči: Otrava"
+      },
+      "ImmuneToBurning": {
+        "name": "Imunní vůči: Hoření"
+      },
+      "ImmuneToFear": {
+        "name": "Imunní vůči: Strach"
+      },
+      "ImmuneToPanic": {
+        "name": "Imunní vůči: Panika"
+      },
+      "ImmuneToTerror": {
+        "name": "Imunní vůči: Hrůza"
+      },
+      "ImmuneToStun": {
+        "name": "Imunní vůči: Ochromení"
+      },
+      "ImmuneToRoot": {
+        "name": "Imunní vůči: Zakořenění"
+      },
+      "ImmuneToProne": {
+        "name": "Imunní vůči: Povalení"
+      },
+      "ImmuneToCharm": {
+        "name": "Imunní vůči: Okouzlení"
+      },
+      "ImmuneToSleep": {
+        "name": "Imunní vůči: Spánek"
+      },
+      "ImmuneToBlind": {
+        "name": "Imunní vůči: Oslepení"
       }
     }
   },

@@ -1,0 +1,90 @@
+{
+  "folder": "IiO9LmLDIKAwJjvK",
+  "name": "Immune to Sleep",
+  "type": "feature",
+  "img": "icons/magic/control/sleep-bubble-purple.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.ImmuneToSleep.name",
+    "description": "<p>Cannot be affected by sleep.</p>",
+    "options": [
+      "feature",
+      "trait"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "trait"
+  },
+  "effects": [
+    {
+      "name": "Immune to Sleep",
+      "origin": null,
+      "img": "icons/magic/control/sleep-bubble-purple.webp",
+      "_id": "2pKQfZZNLQlUxFvp",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.effectMods.sleep.immune",
+            "value": true,
+            "priority": null,
+            "type": "override"
+          }
+        ]
+      },
+      "disabled": false,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "createdTime": null,
+        "modifiedTime": null,
+        "lastModifiedBy": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!linpL8g7yXTsteqY.2pKQfZZNLQlUxFvp"
+    }
+  ],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": null,
+    "modifiedTime": null,
+    "lastModifiedBy": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 0,
+  "_id": "linpL8g7yXTsteqY",
+  "_key": "!items!linpL8g7yXTsteqY"
+}

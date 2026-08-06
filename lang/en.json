@@ -6265,6 +6265,279 @@
       },
       "ExpertSurvival": {
         "name": "Expert: Survival"
+      },
+      "Lethargic": {
+        "name": "Lethargic"
+      },
+      "RegenerationI": {
+        "name": "Regeneration I"
+      },
+      "Unliving": {
+        "name": "Unliving"
+      },
+      "MagicSaturated": {
+        "name": "Magic-Saturated"
+      },
+      "ElementalFire": {
+        "name": "Elemental (Fire)"
+      },
+      "ElementalFrost": {
+        "name": "Elemental (Frost)"
+      },
+      "ElementalDark": {
+        "name": "Elemental (Dark)"
+      },
+      "ElementalHoly": {
+        "name": "Elemental (Holy)"
+      },
+      "Combustible": {
+        "name": "Combustible"
+      },
+      "ThickHide": {
+        "name": "Thick Hide"
+      },
+      "StoneHide": {
+        "name": "Stone Hide"
+      },
+      "BarkHide": {
+        "name": "Bark Hide"
+      },
+      "FleetFooted": {
+        "name": "Fleet-Footed"
+      },
+      "Soft": {
+        "name": "Soft"
+      },
+      "Ethereal": {
+        "name": "Ethereal"
+      },
+      "Watchful": {
+        "name": "Watchful"
+      },
+      "Furious": {
+        "name": "Furious"
+      },
+      "Elusive": {
+        "name": "Elusive"
+      },
+      "ThickBlooded": {
+        "name": "Thick-Blooded"
+      },
+      "Photophobic": {
+        "name": "Photophobic"
+      },
+      "VenomousBlood": {
+        "name": "Venomous Blood"
+      },
+      "ArmorGap": {
+        "name": "Armor Gap"
+      },
+      "Rash": {
+        "name": "Rash"
+      },
+      "Avenger": {
+        "name": "Avenger"
+      },
+      "Charger": {
+        "name": "Charger"
+      },
+      "Cowardly": {
+        "name": "Cowardly"
+      },
+      "QuickToReact": {
+        "name": "Quick to React"
+      },
+      "Merciless": {
+        "name": "Merciless"
+      },
+      "Bloodthirsty": {
+        "name": "Bloodthirsty"
+      },
+      "Wretch": {
+        "name": "Wretch"
+      },
+      "Armored": {
+        "name": "Armored"
+      },
+      "Stout": {
+        "name": "Stout"
+      },
+      "ForestSProtection": {
+        "name": "Forest's Protection"
+      },
+      "Deadly": {
+        "name": "Deadly"
+      },
+      "ElementalDread": {
+        "name": "Elemental Dread"
+      },
+      "Bloated": {
+        "name": "Bloated"
+      },
+      "Hysterical": {
+        "name": "Hysterical"
+      },
+      "Crumbling": {
+        "name": "Crumbling"
+      },
+      "Feathered": {
+        "name": "Feathered"
+      },
+      "DeathBurst": {
+        "name": "Death Burst"
+      },
+      "Toxic": {
+        "name": "Toxic"
+      },
+      "Horde": {
+        "name": "Horde"
+      },
+      "ImmunePhysical": {
+        "name": "Immune: Physical"
+      },
+      "ResistantPhysical": {
+        "name": "Resistant: Physical"
+      },
+      "VulnerablePhysical": {
+        "name": "Vulnerable: Physical"
+      },
+      "ImmuneSlashing": {
+        "name": "Immune: Slashing"
+      },
+      "ResistantSlashing": {
+        "name": "Resistant: Slashing"
+      },
+      "VulnerableSlashing": {
+        "name": "Vulnerable: Slashing"
+      },
+      "ImmunePiercing": {
+        "name": "Immune: Piercing"
+      },
+      "ResistantPiercing": {
+        "name": "Resistant: Piercing"
+      },
+      "VulnerablePiercing": {
+        "name": "Vulnerable: Piercing"
+      },
+      "ImmuneBlunt": {
+        "name": "Immune: Blunt"
+      },
+      "ResistantBlunt": {
+        "name": "Resistant: Blunt"
+      },
+      "VulnerableBlunt": {
+        "name": "Vulnerable: Blunt"
+      },
+      "ImmuneAcid": {
+        "name": "Immune: Acid"
+      },
+      "ResistantAcid": {
+        "name": "Resistant: Acid"
+      },
+      "VulnerableAcid": {
+        "name": "Vulnerable: Acid"
+      },
+      "ImmuneFire": {
+        "name": "Immune: Fire"
+      },
+      "ResistantFire": {
+        "name": "Resistant: Fire"
+      },
+      "VulnerableFire": {
+        "name": "Vulnerable: Fire"
+      },
+      "ImmuneFrost": {
+        "name": "Immune: Frost"
+      },
+      "ResistantFrost": {
+        "name": "Resistant: Frost"
+      },
+      "VulnerableFrost": {
+        "name": "Vulnerable: Frost"
+      },
+      "ImmuneLightning": {
+        "name": "Immune: Lightning"
+      },
+      "ResistantLightning": {
+        "name": "Resistant: Lightning"
+      },
+      "VulnerableLightning": {
+        "name": "Vulnerable: Lightning"
+      },
+      "ImmuneMagic": {
+        "name": "Immune: Magic"
+      },
+      "ResistantMagic": {
+        "name": "Resistant: Magic"
+      },
+      "VulnerableMagic": {
+        "name": "Vulnerable: Magic"
+      },
+      "ImmuneDark": {
+        "name": "Immune: Dark"
+      },
+      "ResistantDark": {
+        "name": "Resistant: Dark"
+      },
+      "VulnerableDark": {
+        "name": "Vulnerable: Dark"
+      },
+      "ImmunePoison": {
+        "name": "Immune: Poison"
+      },
+      "ResistantPoison": {
+        "name": "Resistant: Poison"
+      },
+      "VulnerablePoison": {
+        "name": "Vulnerable: Poison"
+      },
+      "ImmuneHoly": {
+        "name": "Immune: Holy"
+      },
+      "ResistantHoly": {
+        "name": "Resistant: Holy"
+      },
+      "VulnerableHoly": {
+        "name": "Vulnerable: Holy"
+      },
+      "ImmuneToBleeding": {
+        "name": "Immune to Bleeding"
+      },
+      "ImmuneToStagger": {
+        "name": "Immune to Stagger"
+      },
+      "ImmuneToPoison": {
+        "name": "Immune to Poison"
+      },
+      "ImmuneToBurning": {
+        "name": "Immune to Burning"
+      },
+      "ImmuneToFear": {
+        "name": "Immune to Fear"
+      },
+      "ImmuneToPanic": {
+        "name": "Immune to Panic"
+      },
+      "ImmuneToTerror": {
+        "name": "Immune to Terror"
+      },
+      "ImmuneToStun": {
+        "name": "Immune to Stun"
+      },
+      "ImmuneToRoot": {
+        "name": "Immune to Root"
+      },
+      "ImmuneToProne": {
+        "name": "Immune to Prone"
+      },
+      "ImmuneToCharm": {
+        "name": "Immune to Charm"
+      },
+      "ImmuneToSleep": {
+        "name": "Immune to Sleep"
+      },
+      "ImmuneToBlind": {
+        "name": "Immune to Blind"
       }
     }
   },

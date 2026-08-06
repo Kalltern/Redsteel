@@ -1,0 +1,46 @@
+{
+  "folder": "1GLMg0h4TGwFqiLx",
+  "name": "Regeneration I",
+  "type": "feature",
+  "img": "icons/magic/life/heart-cross-green.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.RegenerationI.name",
+    "description": "<p>Regains health at the end of each round.</p>",
+    "options": [
+      "feature",
+      "trait"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [
+      "regeneration"
+    ],
+    "statusEffectsRaw": "regeneration",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "trait"
+  },
+  "effects": [],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": null,
+    "modifiedTime": null,
+    "lastModifiedBy": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 0,
+  "_id": "7OVX1TqqNrVwr8Gh",
+  "_key": "!items!7OVX1TqqNrVwr8Gh"
+}

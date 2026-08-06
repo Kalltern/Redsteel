@@ -1,0 +1,102 @@
+{
+  "folder": "1GLMg0h4TGwFqiLx",
+  "name": "Lethargic",
+  "type": "feature",
+  "img": "icons/svg/unconscious.svg",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.Lethargic.name",
+    "description": "<p>Immune to fear.</p>",
+    "options": [
+      "feature",
+      "trait"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "trait"
+  },
+  "effects": [
+    {
+      "name": "Lethargic",
+      "origin": null,
+      "img": "icons/svg/unconscious.svg",
+      "_id": "EOYrayNKQiaTKRNx",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.effectMods.fear.immune",
+            "value": true,
+            "priority": null,
+            "type": "override"
+          },
+          {
+            "key": "system.effectMods.panic.immune",
+            "value": true,
+            "priority": null,
+            "type": "override"
+          },
+          {
+            "key": "system.effectMods.terror.immune",
+            "value": true,
+            "priority": null,
+            "type": "override"
+          }
+        ]
+      },
+      "disabled": false,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "createdTime": null,
+        "modifiedTime": null,
+        "lastModifiedBy": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!9rQ3EXlKYobimDpB.EOYrayNKQiaTKRNx"
+    }
+  ],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": null,
+    "modifiedTime": null,
+    "lastModifiedBy": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 0,
+  "_id": "9rQ3EXlKYobimDpB",
+  "_key": "!items!9rQ3EXlKYobimDpB"
+}
