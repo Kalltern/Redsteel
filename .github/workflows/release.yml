@@ -9,6 +9,11 @@ on:
     tags:
       - "release-*"
 
+# Required for softprops/action-gh-release to create the release and upload the
+# zip. Without it the job runs green and only fails with a 403 on the last step.
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
