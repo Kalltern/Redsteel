@@ -24,6 +24,7 @@
  */
 
 import { RedsteelActorSheet } from "../sheets/actor-sheet.mjs";
+import { getActorBaneTags } from "./baneCombat.mjs";
 import { postSpeedTest } from "./speedTest.mjs";
 import { registerTooltip, ttEscape } from "./tooltips.mjs";
 import {
@@ -139,7 +140,6 @@ const ACTION_BUTTONS = [
   // A fist: martial and unmistakably not the sword or the shield beside it.
   { key: "ability", api: "combatAbilities", icon: "fa-light fa-hand-fist" },
   { key: "channeling", api: "castSpell", icon: "fa-light fa-sparkles" },
-  { key: "potion", api: "usePotion", icon: "fa-light fa-flask-round-potion" },
   { key: "firstAid", api: "firstAid", icon: "fa-light fa-staff-snake" },
   // GM tools last, and set apart in the row.
   { key: "rest", api: "longRest", icon: "fa-light fa-moon", gmOnly: true },
@@ -300,16 +300,84 @@ const ELEMENT_COLOURS = {
   poison: "#6faa3a",
 };
 
-/** Neutral band for an actor no player has claimed. */
+/** Neutral band for an actor with no player and no creature-type tag. */
 const NO_PLAYER_COLOUR = "#8a8272";
 
 /**
- * The colour of the player this actor belongs to, for the portrait's ring.
+ * The metal band's colour by creature type, for an actor no player has
+ * claimed — which in practice means every NPC on the party row.
  *
- * Keyed off who has the actor assigned, not off who is looking at it: a GM
- * selecting a player's token should see that player's colour, not their own.
- * A non-GM owner wins, so an actor a GM also has assigned still bands in the
- * player's colour. Unclaimed actors get no colour rather than borrowing one.
+ * Keyed off the Bane tag registry (`BANE_TYPES`), so anything already tagged
+ * for Bane purposes is coloured with no extra bookkeeping. Most tags get
+ * their own colour; only the mortal ancestries share one.
+ *
+ * **Order is precedence.** A zombie wolf carries both `undead` and `beast`;
+ * the more supernatural read wins, so the list runs from most to least.
+ *
+ * The mortal ancestries (human, dwarf, halfling, elf, argos, avesan, yormun,
+ * seraphar, cambion — every tag on the `shadow` Bane tree) are deliberately
+ * absent: they fall through to `NO_PLAYER_COLOUR`, the tarnished steel the
+ * panel has always used, so a person looks like a person.
+ *
+ * These are inputs, not painted values. The frame mixes each one 55% into
+ * `#0a0a09` (see `.rs-bg3-portrait-frame` in css/redsteel.css), so what you
+ * pick is not what you see. Saturating one to make it "pop" only turns it to
+ * mud after the mix, and two colours that look distinct in a picker can land
+ * on top of each other once darkened. **Check a replacement by computing the
+ * mix, not by eye** — an early draft put corrupt and draconic close enough to
+ * be one colour at band size.
+ *
+ * Sixteen bands is a lot for a dark, low-saturation ring, and five of them
+ * are reds. The set below was searched for the widest minimum separation
+ * (redmean distance 38.6, necrophage against draconic) rather than picked
+ * hue by hue, so **changing one value in isolation will usually collide with
+ * a neighbour.** Re-run the search instead. Painted bands land between #10
+ * and #76 per channel.
+ */
+const RACE_BANDS = [
+  { colour: "#7FA8B5", tags: ["specter"] }, //         pale cold grey-blue
+  { colour: "#141118", tags: ["undead"] }, //                  near-black
+  { colour: "#6B4E8C", tags: ["vampire"] }, //                     violet
+  { colour: "#7E2A2E", tags: ["necrophage"] }, //         dark blood red
+  { colour: "#CE5820", tags: ["demon"] }, //                        ember
+  { colour: "#A83A2E", tags: ["draconic"] }, //                     brick
+  { colour: "#B4527E", tags: ["corrupt"] }, //                    bruised
+  { colour: "#B08A8E", tags: ["lycanthrope"] }, //           silvered red
+  { colour: "#4E8578", tags: ["relict"] }, //                   verdigris
+  { colour: "#4A6FA5", tags: ["magical"] }, //                arcane blue
+  { colour: "#4A9E4A", tags: ["sylvan"] }, //                vivid green
+  { colour: "#3E6B4A", tags: ["orcoid"] }, //               forest green
+  { colour: "#9A8028", tags: ["insectoid"] }, //         chitinous olive
+  { colour: "#84582E", tags: ["ogroid"] }, //                     brown
+  { colour: "#7A6A55", tags: ["beast"] }, //                      taupe
+];
+
+/**
+ * The band colour for an actor's creature type, or null for an untagged
+ * actor or a mortal ancestry. Tags in `RACE_BANDS` are written in the same
+ * normalized form `getActorBaneTags` returns (lowercase, no diacritics).
+ */
+function raceColourFor(actor) {
+  const tags = getActorBaneTags(actor);
+  if (!tags.size) return null;
+  for (const band of RACE_BANDS) {
+    if (band.tags.some((tag) => tags.has(tag))) return band.colour;
+  }
+  return null;
+}
+
+/**
+ * The colour of the portrait's metal band: whose character it is, or failing
+ * that, what it is.
+ *
+ * The player colour is keyed off who has the actor assigned, not off who is
+ * looking at it: a GM selecting a player's token should see that player's
+ * colour, not their own. A non-GM owner wins, so an actor a GM also has
+ * assigned still bands in the player's colour.
+ *
+ * Only when nobody has claimed the actor does creature type get a say, so a
+ * PC never loses their own colour to their ancestry. An unclaimed actor with
+ * no creature-type tag keeps the neutral steel rather than borrowing one.
  */
 function playerColourFor(actor) {
   if (!actor) return NO_PLAYER_COLOUR;
@@ -317,7 +385,8 @@ function playerColourFor(actor) {
     (user) => user.character?.id === actor.id,
   );
   const owner = owners.find((user) => !user.isGM) ?? owners[0];
-  return owner?.color?.css ?? owner?.color ?? NO_PLAYER_COLOUR;
+  if (owner) return owner.color?.css ?? owner.color ?? NO_PLAYER_COLOUR;
+  return raceColourFor(actor) ?? NO_PLAYER_COLOUR;
 }
 
 /**
@@ -665,6 +734,8 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       editEffect: this._onEditEffect,
       openRollModifier: this._onOpenRollModifier,
       toggleWeaponSets: this._onToggleWeaponSets,
+      togglePotions: this._onTogglePotions,
+      usePotionItem: this._onUsePotionItem,
       pickWeaponSet: this._onPickWeaponSet,
       toggleConditions: this._onToggleConditions,
     },
@@ -778,6 +849,7 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       statuses: this.#prepareStatuses(actor),
       modifier: this.#prepareModifier(actor),
       weaponSets: this.#prepareWeaponSets(actor),
+      potions: this.#preparePotions(actor),
       editableResources: this.#prepareEditableResources(actor),
       hp: this.#prepareHealth(actor),
       toxicity: this.#prepareToxicity(actor),
@@ -1060,6 +1132,31 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
   }
 
   /**
+   * The character's potions, for the grid popover. Same filter the potion
+   * dialog uses (`consumable` with option `potion`), so the two always agree
+   * on what counts.
+   *
+   * Four to a column; more than sixteen and it grows sideways rather than
+   * becoming a tall list.
+   */
+  #preparePotions(actor) {
+    const items = (actor?.items ?? []).filter(
+      (item) => item.type === "consumable" && item.system?.option === "potion",
+    );
+    if (!items.length) return null;
+
+    return {
+      cols: Math.max(4, Math.ceil(items.length / 4)),
+      items: items.map((item) => ({
+        id: item.id,
+        name: item.localizedName ?? item.name,
+        img: item.img,
+        qty: Number(item.system?.quantity ?? 1),
+      })),
+    };
+  }
+
+  /**
    * The character's two weapon sets, for the swap popover. Only characters
    * have them, so an NPC or an empty panel gets nothing and the button hides.
    */
@@ -1339,6 +1436,11 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     const isDrawn = (actor) => {
       if (!actor) return false;
       if (actor === this.actor) return true;
+      // Mirror #prepareTeammates exactly: the row is connected players'
+      // characters *plus* anything flagged into the party. Without the flag
+      // test a companion's HP, tags or effects changed while it is on screen
+      // leave a stale portrait behind.
+      if (actor.system?.partyMember) return true;
       return game.users.contents.some(
         (user) => user.active && user.character?.id === actor.id,
       );
@@ -1364,6 +1466,16 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
 
     // Players joining or leaving add and remove teammate portraits.
     add("userConnected", () => this.#rerender());
+
+    // A race Item carries creature-type tags, which pick the portrait's band
+    // colour. Gaining, losing or retagging one repaints it.
+    for (const hook of ["createItem", "deleteItem", "updateItem"]) {
+      add(hook, (item) => {
+        if (item?.type !== "race") return;
+        const parent = item.parent;
+        if (parent instanceof Actor && isDrawn(parent)) this.#rerender();
+      });
+    }
 
     // The Roll Modifier picker being armed, changed or cleared.
     add("redsteelRollModifier", () => this.#rerender());
@@ -1486,9 +1598,37 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
    */
   static _onToggleWeaponSets(event) {
     if (isRightClick(event)) return;
+    this.element?.querySelector(".rs-bg3-potions")?.classList.remove("open");
     this.element
       ?.querySelector(".rs-bg3-weaponsets")
       ?.classList.toggle("open");
+  }
+
+  /**
+   * Show or hide the potion grid. Toggled by class for the same reason the
+   * weapon sets are, and it closes the other popover so the two cannot overlap.
+   *
+   * @this {Bg3Hotbar}
+   */
+  static _onTogglePotions(event) {
+    if (isRightClick(event)) return;
+    this.element?.querySelector(".rs-bg3-weaponsets")?.classList.remove("open");
+    this.element?.querySelector(".rs-bg3-potions")?.classList.toggle("open");
+  }
+
+  /**
+   * Drink the potion that was clicked. `usePotion` does the drinking, including
+   * toxicity, effects and the chat card; passing the item only skips its
+   * picker, so nothing about consumption is duplicated here.
+   *
+   * @this {Bg3Hotbar}
+   */
+  static async _onUsePotionItem(event, target) {
+    if (isRightClick(event)) return;
+    const item = this.actor?.items?.get(target.dataset.itemId);
+    if (!item) return;
+    this.element?.querySelector(".rs-bg3-potions")?.classList.remove("open");
+    return game.redsteel?.usePotion?.(item);
   }
 
   /**
@@ -1798,6 +1938,30 @@ function registerSlimChat() {
  * keeps tracking it if those thresholds ever change.
  */
 /**
+ * Lift the player list above the bar.
+ *
+ * A z-index on `#players` alone does nothing if an ancestor creates its own
+ * stacking context: the whole subtree is then painted at the ancestor's level,
+ * however high the child goes. Which ancestor that is depends on core's markup,
+ * so rather than guess a selector, walk up and raise every element on the way
+ * that establishes a context, stopping at the interface root.
+ */
+function raisePlayersAbovePanel(players) {
+  for (let el = players; el && el !== document.body; el = el.parentElement) {
+    const styles = getComputedStyle(el);
+    const establishesContext =
+      (styles.position !== "static" && styles.zIndex !== "auto") ||
+      styles.transform !== "none" ||
+      styles.filter !== "none" ||
+      styles.isolation === "isolate" ||
+      styles.willChange.includes("transform");
+
+    if (establishesContext) el.style.zIndex = "200";
+    if (el.id === "interface" || el.id === "ui-left") break;
+  }
+}
+
+/**
  * The element that actually paints the player panel, which is not `#players`
  * itself: that is a larger transparent container, so anything prepended to it
  * lands above the visible box. The latency line is inside the panel, so the
@@ -1891,6 +2055,7 @@ function placePeek(players, peek, tucked) {
   });
 
   if (!tucked && panel !== players) panel.style.position = "relative";
+  if (!tucked) raisePlayersAbovePanel(players);
   syncPeek(players, peek);
 }
 

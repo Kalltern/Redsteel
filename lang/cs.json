@@ -74,7 +74,6 @@
         "ability": "Bojové schopnosti",
         "channeling": "Sesílání",
         "rest": "Dlouhý odpočinek",
-        "potion": "Lektvary",
         "firstAid": "První pomoc",
         "effects": "Správce efektů"
       },
@@ -97,7 +96,8 @@
       "Modifier": "Modifikátor hodu připravený na tvůj další test.",
       "WeaponSets": "Sady zbraní. Přehození stojí akci.",
       "PlayersCollapse": "Sbalit seznam hráčů",
-      "PlayersExpand": "Zobrazit hráče, odezvu a FPS"
+      "PlayersExpand": "Zobrazit hráče, odezvu a FPS",
+      "Potions": "Lektvary"
     },
     "Calendaria": {
       "RerollNote": {

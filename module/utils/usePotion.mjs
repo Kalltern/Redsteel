@@ -42,7 +42,11 @@ export async function applyItemBuffsToActor(actor, consumable) {
   return `<p><b>Buff:</b> ${names}</p>`;
 }
 
-export async function usePotion() {
+/**
+ * @param {Item|null} [preselected]  Skip the picker and drink this one. It must
+ *                                   belong to the actor the token resolves to.
+ */
+export async function usePotion(preselected = null) {
   const context = game.redsteel.selectToken({ notifyFallback: true });
   if (!context) return;
 
@@ -223,6 +227,19 @@ export async function usePotion() {
 
     dialog.render(true);
   };
+
+  // A caller that already knows which potion is wanted skips the picker. The
+  // consumption path is the same either way; only the choosing differs.
+  if (preselected) {
+    if (preselected.parent !== actor) {
+      ui.notifications.warn(
+        "That potion belongs to a different character than the one selected.",
+      );
+      return;
+    }
+    await handlePotionSelection(preselected);
+    return;
+  }
 
   renderPotionDialog();
 }

@@ -7991,9 +7991,12 @@ body.redsteel-bg3-hotbar #hotbar {
   display: none;
 }
 
-/* The list is the positioning context for the button in both states. */
+/* The positioning context for the button in both states, and stacked above the
+   bar: expanded, the party portraits grow across exactly this corner, and the
+   list is no use if it opens underneath them. The panel sits at 60. */
 #players {
   position: relative;
+  z-index: 100;
 }
 
 /* Top-right corner, out of the way of the names and the latency line. Taken
@@ -8574,13 +8577,14 @@ body.redsteel-bg3-hotbar #hotbar {
 
 /* --- Weapon set swap ------------------------- */
 
+#redsteel-bg3-hotbar .rs-bg3-potions-wrap,
 #redsteel-bg3-hotbar .rs-bg3-weaponsets-wrap {
   position: relative;
   flex: 0 0 auto;
 }
 
 /* Matches the modifier window beside it. */
-#redsteel-bg3-hotbar .rs-bg3-weaponsets-toggle {
+#redsteel-bg3-hotbar .rs-bg3-tray-toggle {
   /* The crossed swords glyph is wider than the d10, so it needs a smaller
      point size to read at the same weight, and a tighter box to match. */
   width: 25px;
@@ -8604,7 +8608,7 @@ body.redsteel-bg3-hotbar #hotbar {
     border-color 0.15s ease;
 }
 
-#redsteel-bg3-hotbar .rs-bg3-weaponsets-toggle:hover {
+#redsteel-bg3-hotbar .rs-bg3-tray-toggle:hover {
   color: var(--rs-bg3-bright);
   border-color: var(--rs-bg3-accent);
 }
@@ -8691,6 +8695,79 @@ body.redsteel-bg3-hotbar #hotbar {
   border: 1px solid #241f19;
   font-size: 12px;
   color: #4b4640;
+}
+
+/* --- Potion tray ----------------------------- */
+
+/* Same popover skin as the weapon sets. Four to a column, growing sideways
+   rather than downward, so a well-stocked alchemist gets a wider grid instead
+   of one that runs off the top of the screen. */
+#redsteel-bg3-hotbar .rs-bg3-potions {
+  display: none;
+  position: absolute;
+  /* Anchored by its left edge, level with the roll modifier's left border, and
+     growing rightward. Right-aligning it made a four-wide grid reach back past
+     the modifier into the middle of the bar, where the Delay Turn button
+     floats. The offset is the modifier's width plus the row gap. */
+  left: calc(-1 * (74px + 8px));
+  right: auto;
+  bottom: calc(100% + 7px);
+  z-index: 5;
+  grid-template-columns: repeat(var(--rs-potion-cols, 4), 40px);
+  gap: 4px;
+  padding: 7px;
+  background: linear-gradient(
+    180deg,
+    rgba(9, 9, 10, 0.97) 0%,
+    rgba(4, 4, 5, 0.99) 100%
+  );
+  border: 1px solid var(--rs-bg3-border);
+  border-radius: 4px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.7);
+}
+
+#redsteel-bg3-hotbar .rs-bg3-potions.open {
+  display: grid;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-potion {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  padding: 0;
+  overflow: hidden;
+  background: #0c0c0a;
+  border: 1px solid #2b2822;
+  border-radius: 0;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-potion:hover {
+  border-color: var(--rs-bg3-accent);
+}
+
+#redsteel-bg3-hotbar .rs-bg3-potion img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: none;
+  object-fit: cover;
+}
+
+/* Quantity in the corner, the way a stack reads in an inventory. */
+#redsteel-bg3-hotbar .rs-bg3-potion-qty {
+  position: absolute;
+  right: 1px;
+  bottom: 0;
+  padding: 0 3px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #f4ece0;
+  background: rgba(6, 6, 7, 0.85);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.95);
 }
 
 /* --- Attribute cells ------------------------- */

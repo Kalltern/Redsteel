@@ -74,7 +74,6 @@
         "ability": "Combat abilities",
         "channeling": "Channeling",
         "rest": "Long Rest",
-        "potion": "Potions",
         "firstAid": "First aid",
         "effects": "Effect manager"
       },
@@ -97,7 +96,8 @@
       "Modifier": "Roll modifier armed for your next test.",
       "WeaponSets": "Weapon sets. Switching costs an action.",
       "PlayersCollapse": "Collapse the player list",
-      "PlayersExpand": "Show players, latency and FPS"
+      "PlayersExpand": "Show players, latency and FPS",
+      "Potions": "Potions"
     },
     "Calendaria": {
       "RerollNote": {

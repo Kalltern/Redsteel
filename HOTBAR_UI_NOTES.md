@@ -116,6 +116,15 @@ that 1920 only ever fits two — which is what made it trustworthy.
   `.skill-section.attribute-*`, resource palettes are the `--bar-hi/mid/lo` sets
   from `.resource-bar.*`, condition icons and colours are copied verbatim from
   `header.hbs`. Never pick a new colour when the sheet already has one.
+- **The portrait's metal band is the one place with its own palette.** It is
+  the player's colour where there is a player, and otherwise the creature-type
+  colour from `RACE_BANDS` in `redsteelHotbar.mjs`. No sheet palette covers
+  creature types, so those ten are picked here rather than borrowed. They are
+  *inputs*: the frame mixes each 55% into `#0a0a09`, so verify a replacement by
+  computing the mix. Sixteen bands is a lot for a dark low-saturation ring and
+  five of them are reds, so the set was searched for the widest minimum
+  separation rather than picked hue by hue. **Changing one value alone will
+  usually collide with a neighbour** — re-run the search.
 - **Filling a circle: map percentage to *area*, not height.** A circle filled to
   a quarter of its height covers about 19.6% of it. `circleFillHeight()` inverts
   the circular-segment area with Newton. Rectangles need no correction — the

@@ -207,15 +207,47 @@ const normalize = (s) =>
     .replace(/[̀-ͯ]/g, "");
 
 /**
+ * Every creature-type tag on an actor, normalized for case and diacritics.
+ *
+ * Tags are gathered from the union of two sources: the actor's own manually
+ * tagged `system.baneTypes` field, and the `system.baneTypes` field of any
+ * race Item it carries (so tagging a race once — e.g. "Zombie" — tags every
+ * actor of that race without per-actor work). The race tag is purely
+ * additive and never removes a tag the actor field supplied on its own.
+ *
+ * Exported because the tag set is the system's creature-type taxonomy, not
+ * just Bane input: the Redsteel hotbar reads it to colour a portrait band.
+ * @param {Actor|null} actor
+ * @returns {Set<string>}
+ */
+export function getActorBaneTags(actor) {
+  const rawSources = [actor?.system?.baneTypes];
+
+  // `.contents`, not the Item Collection itself — iterating a Foundry
+  // Collection directly with for...of has silently yielded nothing before
+  // in this feature (see markedCandidates above).
+  const raceItems = (actor?.items?.contents ?? []).filter(
+    (i) => i.type === "race",
+  );
+  for (const raceItem of raceItems) {
+    rawSources.push(raceItem.system?.baneTypes);
+  }
+
+  return new Set(
+    rawSources
+      .filter((raw) => raw)
+      .flatMap((raw) =>
+        String(raw)
+          .split(",")
+          .map((t) => normalize(t)),
+      )
+      .filter((t) => t.length),
+  );
+}
+
+/**
  * Every Bane key that matches the target, compared against the registry key
- * alone. Tags are English registry keys only (normalized for case/
- * diacritics) — not localized labels. Tokens are gathered from the union of
- * two sources: the target's own manually-tagged `system.baneTypes` field,
- * and the `system.baneTypes` field of any race Item on the actor (so tagging
- * a race once — e.g. "Zombie" — makes every actor of that race a valid
- * target without per-actor tagging). Either source alone is enough to match;
- * the race tag is purely additive and never removes a match the actor field
- * would have produced on its own.
+ * alone. Tags are English registry keys only — not localized labels.
  * @param {Actor|null} targetActor
  * @param {string[]} baneKeys
  * @returns {string[]}
@@ -223,34 +255,13 @@ const normalize = (s) =>
 function matchedBaneKeys(targetActor, baneKeys) {
   if (!targetActor || !Array.isArray(baneKeys) || !baneKeys.length) return [];
 
-  const rawSources = [targetActor?.system?.baneTypes];
-
-  // `.contents`, not the Item Collection itself — iterating a Foundry
-  // Collection directly with for...of has silently yielded nothing before
-  // in this feature (see markedCandidates above).
-  const raceItems = (targetActor.items?.contents ?? []).filter(
-    (i) => i.type === "race",
-  );
-  for (const raceItem of raceItems) {
-    rawSources.push(raceItem.system?.baneTypes);
-  }
-
-  const tokens = rawSources
-    .filter((raw) => raw)
-    .flatMap((raw) =>
-      String(raw)
-        .split(",")
-        .map((t) => normalize(t)),
-    )
-    .filter((t) => t.length);
-
-  if (!tokens.length) return [];
+  const tokens = getActorBaneTags(targetActor);
+  if (!tokens.size) return [];
 
   return baneKeys.filter((key) => {
     const def = BANE_TYPES[key];
     if (!def) return false;
-    const normalizedKey = normalize(key);
-    return tokens.some((t) => t === normalizedKey);
+    return tokens.has(normalize(key));
   });
 }
 

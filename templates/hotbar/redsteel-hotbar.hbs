@@ -221,12 +221,43 @@
         aria-label="{{localize 'REDSTEEL.Bg3Hotbar.Modifier'}}"
       >{{#if modifier.empty}}<i class="fa-light fa-dice-d10"></i>{{else}}{{modifier.text}}{{/if}}</button>
 
+      {{!-- Potions, as a grid of what is actually in the pack --}}
+      {{#if potions}}
+      <div class="rs-bg3-potions-wrap">
+        <button
+          type="button"
+          class="rs-bg3-tray-toggle"
+          data-action="togglePotions"
+          data-tt-kind="text"
+          data-tt-text="REDSTEEL.Bg3Hotbar.Potions"
+          aria-label="{{localize 'REDSTEEL.Bg3Hotbar.Potions'}}"
+        ><i class="fa-light fa-flask-round-potion"></i></button>
+
+        <div class="rs-bg3-potions" style="--rs-potion-cols: {{potions.cols}};">
+          {{#each potions.items as |potion|}}
+          <button
+            type="button"
+            class="rs-bg3-potion"
+            data-action="usePotionItem"
+            data-item-id="{{potion.id}}"
+            data-tt-kind="text"
+            data-tt-text="{{potion.name}}"
+            aria-label="{{potion.name}}"
+          >
+            <img src="{{potion.img}}" alt="{{potion.name}}" />
+            <span class="rs-bg3-potion-qty">{{potion.qty}}</span>
+          </button>
+          {{/each}}
+        </div>
+      </div>
+      {{/if}}
+
       {{!-- Weapon set swap, with its popover rising above the panel --}}
       {{#if weaponSets}}
       <div class="rs-bg3-weaponsets-wrap">
         <button
           type="button"
-          class="rs-bg3-weaponsets-toggle"
+          class="rs-bg3-tray-toggle"
           data-action="toggleWeaponSets"
           data-tt-kind="text"
           data-tt-text="REDSTEEL.Bg3Hotbar.WeaponSets"
@@ -377,7 +408,11 @@
       ><i class="{{act.icon}}"></i></button>
       {{/each}}
     </div>
+    {{!-- Macro rows default to none, and a rule with nothing under it is just
+         a line along the bottom of the panel. --}}
+    {{#if macroRows.length}}
     <div class="rs-bg3-section-divider" role="separator"></div>
+    {{/if}}
     {{/if}}
 
     {{!-- MACRO ROWS: one per hotbar page, page 1 last so it renders lowest --}}
