@@ -22,6 +22,22 @@
       "diceSize": "6",
       "diceBonus": ""
     },
+    "aimed": true,
+    "penetration": 20,
+    "burn": 0,
+    "freeze": 0,
+    "stagger": 0,
+    "dmgType1": "physical",
+    "bool2": "and",
+    "dmgType2": "blunt",
+    "effectType1": "stun",
+    "effects": {
+      "stagger": 0,
+      "bleed": 0,
+      "extra1": 50,
+      "extra2": 0,
+      "extra3": 0
+    },
     "localizationKey": "REDSTEEL.Items.Cracker.name",
     "difficulty": 0
   },

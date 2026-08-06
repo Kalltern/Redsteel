@@ -23,6 +23,22 @@
       "diceSize": "",
       "diceBonus": ""
     },
+    "aimed": false,
+    "penetration": 0,
+    "burn": 0,
+    "freeze": 0,
+    "stagger": 0,
+    "dmgType1": "",
+    "bool2": "",
+    "dmgType2": "",
+    "effectType1": "disorientation",
+    "effects": {
+      "stagger": 0,
+      "bleed": 0,
+      "extra1": -1,
+      "extra2": 0,
+      "extra3": 0
+    },
     "localizationKey": "REDSTEEL.Items.SmokeBomb.name",
     "difficulty": 0
   },

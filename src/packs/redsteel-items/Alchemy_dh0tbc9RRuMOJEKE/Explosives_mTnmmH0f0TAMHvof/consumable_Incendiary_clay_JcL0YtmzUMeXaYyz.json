@@ -25,8 +25,11 @@
     "aimed": true,
     "penetration": 5,
     "burn": 5,
-    "freeze": null,
-    "stagger": null,
+    "freeze": 0,
+    "stagger": 0,
+    "dmgType1": "physical",
+    "bool2": "and",
+    "dmgType2": "fire",
     "localizationKey": "REDSTEEL.Items.IncendiaryClay.name",
     "difficulty": 10
   },

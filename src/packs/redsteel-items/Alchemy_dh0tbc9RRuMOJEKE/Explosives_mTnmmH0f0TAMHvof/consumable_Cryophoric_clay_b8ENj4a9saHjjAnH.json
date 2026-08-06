@@ -16,11 +16,27 @@
       "stamina"
     ],
     "quantity": 1,
-    "option": "",
+    "option": "explosive",
     "roll": {
       "diceNum": 2,
       "diceSize": "6",
       "diceBonus": ""
+    },
+    "aimed": true,
+    "penetration": 5,
+    "burn": 0,
+    "freeze": 0,
+    "stagger": 0,
+    "dmgType1": "physical",
+    "bool2": "and",
+    "dmgType2": "frost",
+    "effectType1": "slow",
+    "effects": {
+      "stagger": 0,
+      "bleed": 0,
+      "extra1": 15,
+      "extra2": 0,
+      "extra3": 0
     },
     "localizationKey": "REDSTEEL.Items.CryophoricClay.name",
     "difficulty": 10

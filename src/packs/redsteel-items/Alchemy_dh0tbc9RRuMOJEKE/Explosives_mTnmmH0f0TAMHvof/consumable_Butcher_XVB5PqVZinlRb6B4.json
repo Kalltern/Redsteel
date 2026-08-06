@@ -23,10 +23,13 @@
       "diceBonus": "1"
     },
     "aimed": false,
-    "penetration": null,
-    "burn": null,
-    "freeze": null,
-    "stagger": null,
+    "penetration": 0,
+    "burn": 0,
+    "freeze": 0,
+    "stagger": 0,
+    "dmgType1": "physical",
+    "bool2": "and",
+    "dmgType2": "slash",
     "localizationKey": "REDSTEEL.Items.Butcher.name",
     "difficulty": 0
   },

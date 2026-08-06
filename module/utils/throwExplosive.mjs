@@ -114,21 +114,51 @@ export async function throwExplosive(options = {}) {
     await damageRoll.evaluate();
     const damageTotal = Math.floor(damageRoll.total);
 
-    // ─── Mechanical effects (burn / freeze / stagger) ───
+    // ─── Mechanical effects ───
+    // Two authoring surfaces feed the same pool, and they add up per effect:
+    //   • the header's quick fields (system.burn / freeze / stagger) — the
+    //     original explosive fields, kept so existing items keep working;
+    //   • the Combat Effects tab (system.effects.stagger / bleed and the three
+    //     effectTypeN + effects.extraN slots), which is the only way to author
+    //     anything else — Stun, Slow, Root, Disorientation …
+    // Names must be effectDefinitions ids: applyDamage feeds each key straight
+    // to applyEffectToActor. -1 means guaranteed and beats any summed chance.
+    const chances = {};
+    const addChance = (name, value) => {
+      const v = Math.floor(Number(value) || 0);
+      if (!v) return;
+      if (v === -1 || chances[name] === -1) chances[name] = -1;
+      else chances[name] = (chances[name] || 0) + v;
+    };
+
+    addChance("burn", s.burn);
+    addChance("freeze", s.freeze);
+    addChance("stagger", s.stagger);
+
+    const authoredEffects = s.effects ?? {};
+    addChance("stagger", authoredEffects.stagger);
+    addChance("bleed", authoredEffects.bleed);
+
+    for (let i = 1; i <= 3; i++) {
+      const type = (s[`effectType${i}`] || "").toLowerCase();
+      if (!type) continue;
+      const name =
+        type === "custom"
+          ? (authoredEffects[`effectName${i}`] || "").toLowerCase()
+          : type;
+      if (!name) continue;
+      addChance(name, authoredEffects[`extra${i}`]);
+    }
+
     const mechanicalEffects = {};
     let effectResults = "";
 
-    const effectLabels = {
-      burn: "Burn",
-      freeze: "Freeze",
-      stagger: "Stagger",
-    };
+    for (const [name, value] of Object.entries(chances)) {
+      const label = CONFIG.REDSTEEL.effectDefinitions?.[name]?.name ?? name;
 
-    for (const name of ["burn", "freeze", "stagger"]) {
-      const value = Number(s[name]) || 0;
       if (value === -1) {
         mechanicalEffects[name] = { chance: null, roll: null, auto: true };
-        effectResults += `<p><b>|${effectLabels[name]}|</b></p>`;
+        effectResults += `<p><b>|${label}|</b></p>`;
         continue;
       }
 
@@ -137,19 +167,18 @@ export async function throwExplosive(options = {}) {
       const d100Roll = new Roll("1d100");
       await d100Roll.evaluate();
 
-      const roundedValue = Math.floor(value);
-      const success = d100Roll.total <= roundedValue;
+      const success = d100Roll.total <= value;
       const successText = success
         ? `<i class="fa-regular fa-star" style="--fa-primary-color: #c4c700; --fa-secondary-color: #5c5400;"></i> SUCCESS`
         : "";
 
       mechanicalEffects[name] = {
-        chance: roundedValue,
+        chance: value,
         roll: d100Roll.total,
         auto: false,
       };
 
-      effectResults += `<p><b>| ${effectLabels[name]}: </b>${d100Roll.total} | < ${roundedValue}% ${successText}</p>`;
+      effectResults += `<p><b>| ${label}: </b>${d100Roll.total} | < ${value}% ${successText}</p>`;
     }
 
     // ─── Damage profile from the explosive's damage-type fields ───
