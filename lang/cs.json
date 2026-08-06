@@ -97,7 +97,32 @@
       "WeaponSets": "Sady zbraní. Přehození stojí akci.",
       "PlayersCollapse": "Sbalit seznam hráčů",
       "PlayersExpand": "Zobrazit hráče, odezvu a FPS",
-      "Potions": "Lektvary"
+      "Potions": "Lektvary",
+      "Traits": "Vlastnosti",
+      "Resistances": "Odolnost vůči",
+      "Immunities": "Imunita vůči",
+      "DamageType": {
+        "physical": "Fyzické",
+        "slash": "Sečné",
+        "pierce": "Bodné",
+        "blunt": "Drtivé",
+        "acid": "Kyselina",
+        "fire": "Oheň",
+        "frost": "Mráz",
+        "lightning": "Blesk",
+        "magic": "Magie",
+        "dark": "Temnota",
+        "poison": "Jed",
+        "holy": "Svaté"
+      },
+      "EffectMod": {
+        "stagger": "Omráčení",
+        "bleed": "Krvácení",
+        "poison": "Otrava"
+      },
+      "NoTags": "Nic zvláštního",
+      "Race": "Rasa",
+      "Armor": "Zbroj"
     },
     "Calendaria": {
       "RerollNote": {
@@ -4429,6 +4454,16 @@
         "Label": "Název",
         "Count": "Počet voleb",
         "NoEffects": "Nejprve vytvoř možnosti jako aktivní efekty na záložce Efekty."
+      },
+      "Grants": {
+        "Heading": "Udělené vlastnosti",
+        "Hint": "Sem přetáhni předměty typu Rys. Každá postava s touto rasou dostane vlastní kopii.",
+        "Empty": "Žádné udělené vlastnosti.",
+        "Remove": "Odebrat",
+        "Added": "{name} bude nově udělena touto rasou.",
+        "DropRejected": "Rasa může udělit pouze předměty typu Rys.",
+        "DropNotGlobal": "Přetáhni Rys z postranního panelu nebo z kompendia, ne z postavy.",
+        "DropDuplicate": "{name} už tato rasa uděluje."
       }
     },
     "Banes": {

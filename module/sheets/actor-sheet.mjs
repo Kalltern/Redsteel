@@ -556,13 +556,22 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
   }
 
   _onRightClick(event) {
-    // NPCs have no equipment slots — right-clicking gear or a shield just
-    // toggles its equipped state (and effects), lighting it up in the grid.
+    // NPCs have no equipment slots — right-clicking gear, a shield or ammo
+    // just toggles its equipped state (and effects), lighting it up in the
+    // grid. Equipped ammo is what getEquippedAmmo() feeds to ranged attacks.
     if (this.actor.type !== "character") {
       const itemRow = event.target.closest(".item[data-item-id]");
       if (!itemRow) return;
       const item = this.actor.items.get(itemRow.dataset.itemId);
-      if (!item || item.type !== "gear") return;
+      if (!item) return;
+
+      if (item.type === "ammunition") {
+        event.preventDefault();
+        this._equipAmmo(item, !item.system.equipped);
+        return;
+      }
+
+      if (item.type !== "gear") return;
       event.preventDefault();
       this._setArmorEquipped(item, !item.system.equipped);
       return;

@@ -97,7 +97,32 @@
       "WeaponSets": "Weapon sets. Switching costs an action.",
       "PlayersCollapse": "Collapse the player list",
       "PlayersExpand": "Show players, latency and FPS",
-      "Potions": "Potions"
+      "Potions": "Potions",
+      "Traits": "Traits",
+      "Resistances": "Resistant to",
+      "Immunities": "Immune to",
+      "DamageType": {
+        "physical": "Physical",
+        "slash": "Slashing",
+        "pierce": "Piercing",
+        "blunt": "Blunt",
+        "acid": "Acid",
+        "fire": "Fire",
+        "frost": "Frost",
+        "lightning": "Lightning",
+        "magic": "Magic",
+        "dark": "Dark",
+        "poison": "Poison",
+        "holy": "Holy"
+      },
+      "EffectMod": {
+        "stagger": "Stagger",
+        "bleed": "Bleeding",
+        "poison": "Poisoning"
+      },
+      "NoTags": "Nothing of note",
+      "Race": "Race",
+      "Armor": "Armor"
     },
     "Calendaria": {
       "RerollNote": {
@@ -4432,6 +4457,16 @@
         "Label": "Label",
         "Count": "Picks",
         "NoEffects": "Create the options as Active Effects on the Effects tab first."
+      },
+      "Grants": {
+        "Heading": "Granted traits",
+        "Hint": "Drag feature Items here. Every actor with this race receives its own copy.",
+        "Empty": "No traits granted.",
+        "Remove": "Remove",
+        "Added": "{name} will now be granted by this race.",
+        "DropRejected": "Only feature Items can be granted by a race.",
+        "DropNotGlobal": "Drag the feature from the sidebar or a compendium, not off an actor.",
+        "DropDuplicate": "{name} is already granted by this race."
       }
     },
     "Banes": {

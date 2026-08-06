@@ -1486,6 +1486,7 @@
     "race": {
       "templates": ["base"],
       "choices": [],
+      "grants": [],
       "baneTypes": ""
     },
     "condition": {

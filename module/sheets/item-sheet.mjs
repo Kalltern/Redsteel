@@ -40,6 +40,7 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
       addRaceChoice: this._addRaceChoice,
       removeRaceChoice: this._removeRaceChoice,
       toggleRaceChoiceEffect: this._toggleRaceChoiceEffect,
+      removeRaceGrant: this._removeRaceGrant,
       resyncItem: this._resyncItem,
       undoResync: this._undoResync,
     },
@@ -282,6 +283,14 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
           }),
         );
         context.hasRaceEffects = this.item.effects.size > 0;
+        context.raceGrantEntries = this._getRaceGrantArray().map(
+          (entry, index) => ({
+            index,
+            uuid: entry.uuid,
+            name: entry.name,
+            img: entry.img,
+          }),
+        );
         break;
       }
       case "attributesItem":
@@ -744,6 +753,22 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
     await this.item.update({ "system.choices": groups });
   }
 
+  /**
+   * Remove a granted feature from a race Item by index.
+   *
+   * @this RedsteelItemSheet
+   * @param {PointerEvent} event   The originating click event
+   * @param {HTMLElement} target   The capturing HTML element which defined a [data-action]
+   * @protected
+   */
+  static async _removeRaceGrant(event, target) {
+    const index = Number(target.dataset.index);
+    const groups = this._getRaceGrantArray();
+    if (Number.isNaN(index) || index < 0 || index >= groups.length) return;
+    groups.splice(index, 1);
+    await this.item.update({ "system.grants": groups });
+  }
+
   /** Helper Functions */
 
   /**
@@ -807,6 +832,23 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
         effectIds: ids.filter((id) => typeof id === "string" && id),
       };
     });
+  }
+
+  /**
+   * Race grant entries as a normalized array. Tolerates the array becoming an
+   * indexed object after a form submit (same quirk as {@link _getRerollPoolArray}).
+   * @returns {{uuid: string, name: string, img: string}[]}
+   */
+  _getRaceGrantArray() {
+    const raw = this.item.system?.grants;
+    const entries = Array.isArray(raw) ? raw : Object.values(raw ?? {});
+    return entries
+      .map((entry) => ({
+        uuid: entry?.uuid ?? "",
+        name: entry?.name ?? "",
+        img: entry?.img ?? "",
+      }))
+      .filter((entry) => typeof entry.uuid === "string" && entry.uuid);
   }
 
   /**
@@ -984,6 +1026,46 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
    */
   async _onDropItem(event, data) {
     if (!this.item.isOwner) return false;
+
+    // Races accept feature drops: the feature is listed in system.grants and
+    // copied onto every actor owning the race (see utils/raceGrants.mjs).
+    if (this.item.type === "race") {
+      const dropped = await Item.implementation.fromDropData(data);
+      if (!dropped) return false;
+
+      if (dropped.type !== "feature") {
+        ui.notifications.warn(
+          game.i18n.localize("REDSTEEL.Race.Grants.DropRejected"),
+        );
+        return false;
+      }
+      // A grant must resolve on every actor, so it has to point at a world or
+      // compendium Item — an actor-owned copy's UUID is meaningless elsewhere.
+      if (dropped.parent?.documentName === "Actor") {
+        ui.notifications.warn(
+          game.i18n.localize("REDSTEEL.Race.Grants.DropNotGlobal"),
+        );
+        return false;
+      }
+
+      const next = this._getRaceGrantArray();
+      if (next.some((entry) => entry.uuid === dropped.uuid)) {
+        ui.notifications.info(
+          game.i18n.format("REDSTEEL.Race.Grants.DropDuplicate", {
+            name: dropped.name,
+          }),
+        );
+        return false;
+      }
+
+      next.push({ uuid: dropped.uuid, name: dropped.name, img: dropped.img });
+      await this.item.update({ "system.grants": next });
+      ui.notifications.info(
+        game.i18n.format("REDSTEEL.Race.Grants.Added", { name: dropped.name }),
+      );
+      return true;
+    }
+
     // Recipes accept drops: a consumable becomes the crafting result, an
     // "item"-type document becomes the linked special ingredient.
     if (this.item.type !== "recipe") return false;

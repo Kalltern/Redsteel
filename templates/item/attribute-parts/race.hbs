@@ -5,6 +5,25 @@
   data-tab='attributes'
 >
 
+  <h3 class="race-grants-heading">{{localize "REDSTEEL.Race.Grants.Heading"}}</h3>
+  <p class="hint">{{localize "REDSTEEL.Race.Grants.Hint"}}</p>
+
+  <div class="race-grant-list">
+    {{#each raceGrantEntries as |entry|}}
+      <div class="race-grant-row">
+        {{#if entry.img}}<img src="{{entry.img}}" width="20" height="20" />{{/if}}
+        <span>{{entry.name}}</span>
+        {{#if @root.editable}}
+          <a data-action="removeRaceGrant" data-index="{{entry.index}}" title="{{localize 'REDSTEEL.Race.Grants.Remove'}}">
+            <i class="fas fa-xmark"></i>
+          </a>
+        {{/if}}
+      </div>
+    {{else}}
+      <p class="hint">{{localize "REDSTEEL.Race.Grants.Empty"}}</p>
+    {{/each}}
+  </div>
+
   <h3 class="race-choices-heading">{{localize "REDSTEEL.Race.Editor.Heading"}}</h3>
 
   <div class="grid grid-10col">

@@ -166,6 +166,11 @@
       add columns. No readout on the bar: a number would set the column's width
       for it, so the tooltip carries the value instead.
     --}}
+    {{!-- The berth is always rendered, the strip only when there is something to
+         put in it. That is what keeps the portrait in one place across a
+         one-pool character, a three-pool one, and an empty panel with no actor
+         at all. --}}
+    <div class="rs-bg3-res-slot">
     {{#if resourceBars.length}}
     <div class="rs-bg3-res-strip">
       {{#each resourceBars as |res|}}
@@ -181,6 +186,7 @@
       {{/each}}
     </div>
     {{/if}}
+    </div>
 
   </div>
 
@@ -235,6 +241,10 @@
 
         <div class="rs-bg3-potions" style="--rs-potion-cols: {{potions.cols}};">
           {{#each potions.items as |potion|}}
+          {{#if potion.empty}}
+          {{!-- A socket with nothing in it: not a button, nothing to click --}}
+          <span class="rs-bg3-potion empty" aria-hidden="true"></span>
+          {{else}}
           <button
             type="button"
             class="rs-bg3-potion"
@@ -247,14 +257,18 @@
             <img src="{{potion.img}}" alt="{{potion.name}}" />
             <span class="rs-bg3-potion-qty">{{potion.qty}}</span>
           </button>
+          {{/if}}
           {{/each}}
         </div>
       </div>
       {{/if}}
 
-      {{!-- Weapon set swap, with its popover rising above the panel --}}
-      {{#if weaponSets}}
+      {{!-- Weapon set swap, with its popover rising above the panel. Only
+           characters have sets, but the button is rendered either way and
+           merely hidden on an NPC: removing it would shorten the status row and
+           slide the roll modifier and the potion tray along with it. --}}
       <div class="rs-bg3-weaponsets-wrap">
+        {{#if weaponSets}}
         <button
           type="button"
           class="rs-bg3-tray-toggle"
@@ -263,7 +277,14 @@
           data-tt-text="REDSTEEL.Bg3Hotbar.WeaponSets"
           aria-label="{{localize 'REDSTEEL.Bg3Hotbar.WeaponSets'}}"
         ><i class="fa-light fa-swords"></i></button>
+        {{else}}
+        <span
+          class="rs-bg3-tray-toggle rs-bg3-cell--spacer"
+          aria-hidden="true"
+        ><i class="fa-light fa-swords"></i></span>
+        {{/if}}
 
+        {{#if weaponSets}}
         <div class="rs-bg3-weaponsets">
           {{#each weaponSets.sets as |set|}}
           <button
@@ -300,8 +321,8 @@
           </button>
           {{/each}}
         </div>
+        {{/if}}
       </div>
-      {{/if}}
     </div>
     <div class="rs-bg3-section-divider" role="separator"></div>
     {{/if}}
@@ -326,10 +347,20 @@
         {{/each}}
       </div>
 
+      {{!-- The divider and the secondary group always render: #prepareAttributes
+           emits a spacer for every secondary the actor lacks, so this run is
+           the same width for a character and an NPC and nothing below it
+           shifts. --}}
       {{#if attributes.secondary.length}}
       <div class="rs-bg3-attr-divider" role="separator"></div>
       <div class="rs-bg3-attr-group rs-bg3-attr-group--secondary">
         {{#each attributes.secondary as |attr|}}
+        {{#if attr.spacer}}
+        <span
+          class="rs-bg3-attr-cell rs-bg3-attr-cell--secondary rs-bg3-cell--spacer"
+          aria-hidden="true"
+        ></span>
+        {{else}}
         <button
           type="button"
           class="rs-bg3-attr-cell rs-bg3-attr-cell--secondary"
@@ -342,9 +373,35 @@
           <span class="rs-bg3-attr-label">{{attr.label}}</span>
           <span class="rs-bg3-attr-value">{{attr.display}}</span>
         </button>
+        {{/if}}
         {{/each}}
       </div>
       {{/if}}
+    </div>
+    <div class="rs-bg3-section-divider" role="separator"></div>
+    {{/if}}
+
+    {{!-- NPC TAGS: traits, resistances and immunities. NPC only, but always
+         present for one, so the rows below do not shift as you click between
+         tokens. A creature with none of the three says so. --}}
+    {{#if npcTags}}
+    <div class="rs-bg3-row rs-bg3-row--npctags">
+      {{#if npcTags.empty}}
+      <span class="rs-bg3-npctag-label rs-bg3-npctag-label--empty"
+        >{{localize "REDSTEEL.Bg3Hotbar.NoTags"}}</span>
+      {{/if}}
+      {{#each npcTags.groups as |group|}}
+      <span class="rs-bg3-npctag-label">{{localize group.label}}</span>
+      {{#each group.tags as |tag|}}
+      <span
+        class="rs-bg3-npctag"
+        {{!-- `group`, not `../group`: it is a block param, so it stays in
+             lexical scope inside this inner each. --}}
+        data-kind="{{group.kind}}"
+        {{#if tag.tip}}data-tt-kind="text" data-tt-text="{{tag.tip}}"{{/if}}
+      >{{tag.name}}</span>
+      {{/each}}
+      {{/each}}
     </div>
     <div class="rs-bg3-section-divider" role="separator"></div>
     {{/if}}
@@ -454,7 +511,7 @@
   <div class="rs-bg3-right">
 
   {{#if conditions.length}}
-  <div class="rs-bg3-cond-strip{{#if condFolded}} folded{{/if}}">
+  <div class="rs-bg3-cond-strip{{#if condStacked}} stacked{{else}}{{#if condFolded}} folded{{/if}}{{/if}}">
     {{#each conditions as |cond|}}
     {{#if cond.divider}}
     <div class="rs-bg3-cond-divider" role="separator"></div>
@@ -466,10 +523,15 @@
       data-tt-current="{{cond.value}}{{#if cond.ratio}}/{{cond.max}}{{/if}}"
     >
       <i class="rs-bg3-cond-icon {{cond.icon}}" style="color: {{cond.colour}};"></i>
-      {{#unless @root.condFolded}}
+      {{#if @root.condShowValues}}
       <span class="rs-bg3-cond-value">{{cond.value}}</span>
+      {{!-- No max when stacked: "/24" under the icon is what widened the strip,
+           and the current value is the number you actually read off an NPC.
+           The tooltip still carries the ratio. --}}
+      {{#unless @root.condStacked}}
       {{#if cond.ratio}}<span class="rs-bg3-cond-max">/{{cond.max}}</span>{{/if}}
       {{/unless}}
+      {{/if}}
     </div>
     {{/if}}
     {{/each}}
@@ -477,8 +539,10 @@
     {{!--
       A chip straddling the middle of the outer border. The strip grows
       rightward when it opens, so the arrow points the way the panel is about
-      to move.
+      to move. Absent on an NPC: the strip is already showing everything it
+      has, so there is nothing behind the chevron.
     --}}
+    {{#unless condStacked}}
     <button
       type="button"
       class="rs-bg3-cond-toggle"
@@ -486,6 +550,7 @@
       data-tt-kind="text"
       data-tt-text="REDSTEEL.Bg3Hotbar.{{#if condFolded}}Unfold{{else}}Fold{{/if}}"
     ><i class="fas fa-chevron-{{#if condFolded}}right{{else}}left{{/if}}"></i></button>
+    {{/unless}}
   </div>
   {{/if}}
 

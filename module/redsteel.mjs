@@ -36,6 +36,7 @@ import {
   syncGrantedAbilities,
   clearGrantSuppression,
 } from "./utils/abilityGrants.mjs";
+import { registerRaceGrants } from "./utils/raceGrants.mjs";
 import {
   registerCalendariaIntegration,
   scheduleRerollRefresh,
@@ -356,6 +357,7 @@ Hooks.once("init", function () {
   registerFirstAidHealing();
   registerMentalDuelSetting();
   registerAbilityGrants();
+  registerRaceGrants();
   registerCalendariaIntegration();
   registerCanvasZoom();
   registerRedsteelHotbar();
@@ -1924,34 +1926,8 @@ Hooks.on("preCreateToken", function (document, data) {
         bgImage: "",
         opacity: null,
       },
-      bar4: {
-        order: 3,
-        id: "bar4",
-        attribute: "stats.temporaryHealth",
-        mincolor: "#C8C8C8",
-        maxcolor: "#C8C8C8",
-        position: "top-inner",
-        otherVisibility: 0,
-        ownerVisibility: 50,
-        gmVisibility: -1,
-        hideFull: false,
-        hideEmpty: true,
-        hideCombat: false,
-        hideNoCombat: false,
-        hideHud: false,
-        indentLeft: 25,
-        indentRight: 25,
-        shareHeight: true,
-        style: "user",
-        label: "",
-        invert: false,
-        invertDirection: false,
-        subdivisions: null,
-        subdivisionsOwner: false,
-        fgImage: "",
-        bgImage: "",
-        opacity: null,
-      },
+      // No temporary-health bar: temp HP is read off the sheet and the hotbar
+      // portrait band instead, and it never survives the end of a fight.
     },
   });
 
@@ -2032,6 +2008,39 @@ Hooks.on("preCreateToken", function (document, data) {
   }
 });
 
+// The temporary-health bar (barbrawl `bar4`) is gone for good, but tokens and
+// prototype tokens created before that still carry its config. Strip it so old
+// tokens stop drawing it. GM-only, and a no-op once every token is clean.
+Hooks.once("ready", async () => {
+  if (!game.user.isGM) return;
+
+  const hasTempBar = (doc) =>
+    !!doc?.flags?.barbrawl?.resourceBars?.bar4 ||
+    !!doc?.getFlag?.("barbrawl", "resourceBars")?.bar4;
+
+  const actorUpdates = game.actors.contents
+    .filter((actor) => hasTempBar(actor.prototypeToken))
+    .map((actor) => ({
+      _id: actor.id,
+      "prototypeToken.flags.barbrawl.resourceBars.-=bar4": null,
+    }));
+
+  if (actorUpdates.length) await Actor.updateDocuments(actorUpdates);
+
+  for (const scene of game.scenes.contents) {
+    const tokenUpdates = scene.tokens.contents
+      .filter((token) => hasTempBar(token))
+      .map((token) => ({
+        _id: token.id,
+        "flags.barbrawl.resourceBars.-=bar4": null,
+      }));
+
+    if (tokenUpdates.length) {
+      await scene.updateEmbeddedDocuments("Token", tokenUpdates);
+    }
+  }
+});
+
 // seduction to temptation conversion and removal of seduction
 Hooks.once("ready", async () => {
   for (let actor of game.actors) {
@@ -2097,6 +2106,78 @@ Hooks.once("ready", async () => {
 
   console.log("Stun → Stagger migration complete");
 });
+/** Spell school keys that can own a crit-fail table (mirrors template.json). */
+const MAGIC_SCHOOLS = [
+  "fire",
+  "water",
+  "air",
+  "earth",
+  "spirit",
+  "body",
+  "darkness",
+  "blood",
+  "gnosis",
+];
+
+/** Name a school's crit-fail table carries in the compendium, e.g. "Blood crit fails". */
+function _critTableName(school) {
+  return `${school.charAt(0).toUpperCase()}${school.slice(1)} crit fails`;
+}
+
+/**
+ * Find the crit-fail RollTable for a magic school.
+ *
+ * The tables ship in the `redsteel-magic-crit-fails` compendium and are meant
+ * to be imported into the world, where they are found by the
+ * `redsteel.critTable` flag. World copies imported before that flag existed —
+ * or rebuilt by hand — carry no flag at all, which turned the Accept Critical
+ * Failure button into a silent no-op for those schools. Fall back to the legacy
+ * `tos` namespace, then to the table's name, then to the compendium itself, and
+ * stamp the flag on whatever world table answered so the next lookup is a
+ * straight flag hit.
+ *
+ * @param {string} school - Spell school key, e.g. "blood".
+ * @returns {Promise<RollTable|null>}
+ */
+async function _resolveCritFailTable(school) {
+  if (!school) return null;
+
+  const byFlag =
+    game.tables.find((t) => t.getFlag("redsteel", "critTable") === school) ??
+    game.tables.find((t) => t.getFlag("tos", "critTable") === school);
+
+  if (byFlag) {
+    if (game.user.isGM && byFlag.getFlag("redsteel", "critTable") !== school) {
+      await byFlag.setFlag("redsteel", "critTable", school);
+    }
+    return byFlag;
+  }
+
+  const expected = _critTableName(school).toLowerCase();
+  const byName = game.tables.find((t) => t.name?.toLowerCase() === expected);
+
+  if (byName) {
+    if (game.user.isGM) await byName.setFlag("redsteel", "critTable", school);
+    return byName;
+  }
+
+  // Nothing in the world: draw straight from the compendium rather than
+  // leaving the button dead. Every shipped table has `replacement: true`, so a
+  // draw never writes back to the pack document.
+  const pack = game.packs.get("redsteel.redsteel-magic-crit-fails");
+  if (!pack) return null;
+
+  const index = await pack.getIndex({
+    fields: ["flags.redsteel.critTable", "flags.tos.critTable"],
+  });
+  const entry =
+    index.find((e) => e.flags?.redsteel?.critTable === school) ??
+    index.find((e) => e.flags?.tos?.critTable === school) ??
+    index.find((e) => e.name?.toLowerCase() === expected);
+
+  return entry ? await pack.getDocument(entry._id) : null;
+}
+
 // Magic crit fails evaluation
 Hooks.on("renderChatMessageHTML", (message, html) => {
   html.querySelectorAll(".crit-fail-accept").forEach((button) => {
@@ -2113,12 +2194,14 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
       const spellType = data.spellType;
       const spellRank = data.spellRank;
 
-      // --- EXISTING LOGIC ---
-      const table = game.tables.find(
-        (t) => t.getFlag("redsteel", "critTable") === spellType,
-      );
+      const table = await _resolveCritFailTable(spellType);
 
-      if (!table) return;
+      if (!table) {
+        ui.notifications.warn(
+          `No critical failure table found for the "${spellType}" school. Import it from the Redsteel magic crit fails compendium.`,
+        );
+        return;
+      }
 
       const rankModifier = {
         wild: -10,
@@ -2313,6 +2396,8 @@ export function selectToken({ warn = true, notifyFallback = false } = {}) {
 }
 
 Hooks.once("ready", async () => {
+  if (!game.user.isGM) return;
+
   console.log("Redsteel | Migrating crit table flags");
 
   for (const table of game.tables) {
@@ -2333,6 +2418,23 @@ Hooks.once("ready", async () => {
     });
 
     console.log(`Migrated ${table.name}: ${oldValue}`);
+  }
+
+  // Blood, Spirit and Body were added after the flag convention was settled and
+  // their world copies can be missing it entirely, which left their Accept
+  // Critical Failure button dead. Match those by name and stamp the flag.
+  for (const school of MAGIC_SCHOOLS) {
+    const flagged = game.tables.find(
+      (t) => t.getFlag("redsteel", "critTable") === school,
+    );
+    if (flagged) continue;
+
+    const expected = _critTableName(school).toLowerCase();
+    const table = game.tables.find((t) => t.name?.toLowerCase() === expected);
+    if (!table) continue;
+
+    await table.setFlag("redsteel", "critTable", school);
+    console.log(`Flagged ${table.name}: ${school}`);
   }
 
   console.log("Redsteel | Migration complete");
@@ -2567,6 +2669,51 @@ ${critNote}
 Hooks.on("deleteCombat", async () => {
   if (!game.user.isGM) return;
   await clearMarksBy(null);
+});
+
+/* -------------------------------------------- */
+/*  Temporary health fizzles out of combat      */
+/* -------------------------------------------- */
+
+// Both pools are combat-only: whatever is left when the encounter ends is lost
+// rather than carried into the next fight.
+async function clearTemporaryHealth(actors) {
+  const seen = new Set();
+
+  for (const actor of actors) {
+    if (!actor || seen.has(actor.uuid)) continue;
+    seen.add(actor.uuid);
+
+    const temp = Number(actor.system?.stats?.temporaryHealth?.value ?? 0);
+    const tempMagic = Number(
+      actor.system?.stats?.temporaryHealthMagic?.value ?? 0,
+    );
+    if (!temp && !tempMagic) continue;
+
+    const update = {};
+    if (temp) update["system.stats.temporaryHealth.value"] = 0;
+    if (tempMagic) update["system.stats.temporaryHealthMagic.value"] = 0;
+
+    try {
+      await actor.update(update);
+    } catch (err) {
+      console.error("redsteel | failed to clear temporary health", actor, err);
+    }
+  }
+}
+
+// Only the GM clears, since players cannot update other actors. Combatants of
+// the ending encounter always drop their temp HP; when that was the world's
+// last encounter, sweep every other actor too so nothing hangs on to a pool it
+// picked up while someone else was fighting.
+Hooks.on("deleteCombat", async (combat) => {
+  if (!game.user.isGM) return;
+
+  const actors = combat.combatants.contents.map((c) => c.actor);
+  const otherCombats = game.combats.contents.some((c) => c.id !== combat.id);
+  if (!otherCombats) actors.push(...game.actors.contents);
+
+  await clearTemporaryHealth(actors);
 });
 
 // Make "Margin of Success" lines clickable → follow-up attribute test, and

@@ -5991,83 +5991,132 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 }
 
 /* -------------------------------------------- */
-/*  Hotbar End-Turn button (combat only)        */
+/*  End Turn / Delay Turn (combat only)         */
 /* -------------------------------------------- */
 
-/* Positioning context so the button can float above the hotbar centre */
+/* Positioning context: on the core hotbar the pair hangs above the bar rather
+   than sitting in it, and nothing may clip it. */
 #hotbar {
   position: relative;
   overflow: visible;
 }
 
-.redsteel-end-turn-controls {
-  position: absolute;
-  left: 50%;
-  bottom: 100%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 8px;
-  margin-bottom: 8px;
-  z-index: 70;
+/* Everything below is written against an id. Core styles every `button` inside
+   an application, and `.application button` (0,1,1) outranks a bare class, so
+   class-only rules here got handed back core's box: its padding, its height and
+   its rounded rectangle. Same trap as the rest of this panel. */
+
+/* The pair closes the action row, set off from the last ability by the same gap
+   the GM tools use at the near end. In flow, so the centred row balances them
+   against those tools on its own: whatever air the folder has on the left,
+   these have on the right. */
+#redsteel-bg3-hotbar .redsteel-turn-group,
+#hotbar .redsteel-turn-group {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 16px;
   pointer-events: none;
 }
 
-.redsteel-end-turn-controls.hidden {
+/* The core hotbar has no action row to lead, so there the pair floats above the
+   bar's left corner instead. */
+#hotbar .redsteel-turn-group--floating {
+  position: absolute;
+  left: 0;
+  bottom: 100%;
+  margin: 0 0 8px;
+  z-index: 70;
+}
+
+/* Both buttons come and go with the turn. */
+.redsteel-turn-control.hidden {
   display: none;
 }
 
-.redsteel-end-turn-controls button {
+/* Cells in the same recipe as the actions beside them: flat dark fill, inner
+   shadow from the top, no radius. Same 58x32 plate as .rs-bg3-action further
+   down, so the row reads as one run of cells rather than two sizes; each keeps
+   its own tone dimmed at rest and lights to it on hover. Keep the two widths
+   in step if either moves. */
+#redsteel-bg3-hotbar .redsteel-turn-button,
+#hotbar .redsteel-turn-button {
+  flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 18px;
+  justify-content: center;
+  width: 58px;
+  height: 32px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
   pointer-events: auto;
-  white-space: nowrap;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: #f0d9a0;
-  border-radius: 6px;
+  font-size: 18px;
+  line-height: 1;
+  color: color-mix(in srgb, var(--rs-turn) 55%, #4a4438);
+  background: #0c0c0a;
+  border: 1px solid color-mix(in srgb, var(--rs-turn) 22%, #2c2820);
+  border-radius: 0;
   box-shadow:
-    inset 0 0 10px rgba(0, 0, 0, 0.4),
-    0 2px 6px rgba(0, 0, 0, 0.5);
+    inset 0 1px 3px rgba(0, 0, 0, 0.95),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.55);
   cursor: pointer;
   transition:
-    border-color 0.15s ease,
     color 0.15s ease,
+    border-color 0.15s ease,
     box-shadow 0.15s ease;
 }
 
-.redsteel-end-turn-controls button i {
-  font-size: 1.05em;
+/* End Turn takes the attack red, Delay the panel's gold. Both are the action
+   row's own tones rather than new colours. */
+#redsteel-bg3-hotbar .redsteel-end-turn,
+#hotbar .redsteel-end-turn {
+  --rs-turn: #c4514a;
 }
 
-/* End Turn — red/steel tone */
-.redsteel-end-turn-controls .redsteel-end-turn {
-  background: linear-gradient(180deg, #4a2020 0%, #2a1212 100%);
-  border: 1px solid #7a2f2f;
+#redsteel-bg3-hotbar .redsteel-delay-turn,
+#hotbar .redsteel-delay-turn {
+  --rs-turn: #d8bd7a;
 }
 
-.redsteel-end-turn-controls .redsteel-end-turn:hover {
-  color: #ffe9b8;
-  border-color: #a04040;
+#redsteel-bg3-hotbar .redsteel-turn-button:hover,
+#hotbar .redsteel-turn-button:hover {
+  color: var(--rs-turn);
+  border-color: color-mix(in srgb, var(--rs-turn) 60%, #080807);
   box-shadow:
-    inset 0 0 10px rgba(0, 0, 0, 0.4),
-    0 0 10px rgba(160, 60, 60, 0.7);
+    inset 0 1px 3px rgba(0, 0, 0, 0.95),
+    inset 0 0 9px color-mix(in srgb, var(--rs-turn) 16%, transparent);
 }
 
-/* Delay Turn — gilded tone */
-.redsteel-end-turn-controls .redsteel-delay-turn {
-  background: linear-gradient(180deg, #3a3320 0%, #221d10 100%);
-  border: 1px solid #9c7b45;
+/* Pressed sinks further in; nothing lights up. */
+#redsteel-bg3-hotbar .redsteel-turn-button:active,
+#hotbar .redsteel-turn-button:active {
+  color: color-mix(in srgb, var(--rs-turn) 55%, #4a4438);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.98);
 }
 
-.redsteel-end-turn-controls .redsteel-delay-turn:hover {
-  color: #ffe9b8;
-  border-color: #c9b26b;
+/* Clicking leaves the button focused, and core rings a focused button, so that
+   ring would sit there for the rest of the turn. */
+#redsteel-bg3-hotbar .redsteel-turn-button:focus,
+#hotbar .redsteel-turn-button:focus {
+  outline: none;
+}
+
+/* Restored only once the pointer has moved on, so this never eats the hover or
+   pressed shadow. */
+#redsteel-bg3-hotbar .redsteel-turn-button:focus:not(:hover):not(:active),
+#hotbar .redsteel-turn-button:focus:not(:hover):not(:active) {
   box-shadow:
-    inset 0 0 10px rgba(0, 0, 0, 0.4),
-    0 0 10px rgba(181, 151, 80, 0.7);
+    inset 0 1px 3px rgba(0, 0, 0, 0.95),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.55);
+}
+
+/* Keyboard focus still has to be legible, so it lights in its own tone. */
+#redsteel-bg3-hotbar .redsteel-turn-button:focus-visible,
+#hotbar .redsteel-turn-button:focus-visible {
+  color: var(--rs-turn);
+  border-color: color-mix(in srgb, var(--rs-turn) 60%, #080807);
 }
 
 /* ============================= */
@@ -7131,6 +7180,40 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   border: none;
 }
 
+/* Race item sheet: granted traits */
+.race-grants-heading {
+  margin: 10px 0 2px;
+  color: #c9b26b;
+}
+
+.race-grant-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.race-grant-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+
+.race-grant-row img {
+  border: none;
+  flex: 0 0 auto;
+}
+
+.race-grant-row a {
+  margin-left: auto;
+  cursor: pointer;
+  color: #c0706a;
+}
+
 /* Race item sheet: choice-group editor */
 .race-choices-heading {
   margin: 10px 0 2px;
@@ -7681,6 +7764,11 @@ body.redsteel-bg3-hotbar #hotbar {
      queries at the end of this file step it with the viewport. */
   --rs-bg3-team-cols: 7;
   --rs-bg3-slot: 46px;
+  /* Outer height of the resource strip, bars included. Fixed rather than
+     stretched to the bar, so toggling a row does not resize the bars. Deliberately
+     not stepped by the media queries below: if it ever overhangs a short panel
+     at a small viewport, step it there rather than restoring the stretch. */
+  --rs-bg3-res-h: 168px;
   --rs-bg3-lift: 14px;
   --rs-bg3-name-fs: 12px;
   --rs-bg3-attr-w: 44px;
@@ -7736,7 +7824,11 @@ body.redsteel-bg3-hotbar #hotbar {
   display: flex;
   align-items: flex-end;
   gap: 8px;
-  padding-right: 8px;
+  /* No bottom inset. The strips centre themselves against the panel via
+     `align-self: center`, and any padding here would shift the box they centre
+     in, putting them half of it off true centre. The portrait keeps its own
+     `margin-bottom` and stays on the panel's foot. */
+  padding: 0 8px 0 0;
   pointer-events: none;
 }
 
@@ -8321,22 +8413,69 @@ body.redsteel-bg3-hotbar #hotbar {
 /* --- Resource bars --------------------------- */
 
 
+/* A fixed berth for the resource strip, always present in the wing even when
+   there is no strip to put in it.
+
+   The wing is anchored by its right edge, so its width decides where the
+   portrait sits. Sizing that off the strip meant the portrait moved with the
+   number of pools, and worse, an unbound panel — no actor, so no bars and no
+   strip at all — lost the whole thing and pulled the portrait and its rings
+   right up against the bar.
+
+   Width is three columns' worth: 3 bars at 12px, 2 gaps at 5px, the strip's
+   8px + 6px padding and 1px border each side. A min rather than a fixed width,
+   so a fourth pool still widens it. The strip inside hugs its own columns and
+   right-aligns, which keeps the columns welded to the bar frame and opens the
+   spare room between the portrait and the first column. */
+#redsteel-bg3-hotbar .rs-bg3-res-slot {
+  flex: 0 0 auto;
+  align-self: stretch;
+  min-width: calc(3 * 12px + 2 * 5px + 8px + 6px + 2px);
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
 /* Same skin as the bar frame, tucked under its left edge so it reads as an
    extension of the panel rather than a second box beside it. */
 #redsteel-bg3-hotbar .rs-bg3-res-strip {
   flex: 0 0 auto;
-  align-self: stretch;
+  /* Fixed, not stretched to the bar. Stretching tied the strip's height to
+     however many rows the panel happened to be showing, so expanding a macro
+     or skill row grew the bars with it and a resource read differently from
+     one moment to the next. The wing is `align-items: flex-end`, so with the
+     stretch gone it hangs from the bottom alongside the portrait.
+     `align-items: stretch` below stays: that is how the columns inherit this
+     height rather than collapsing. */
+  height: var(--rs-bg3-res-h);
+  box-sizing: border-box;
+  /* Centred against the panel rather than sat on its foot, so the gap above the
+     strip matches the gap below it. The wing spans the panel exactly (top: 0 /
+     bottom: 0 on .rs-bg3-anchor, which shrink-wraps the painted box), so this
+     stays symmetric on its own as rows are toggled and the panel changes
+     height. Vertical margins are zero for the same reason: either one would
+     offset the centring by half itself. */
+  align-self: center;
   display: flex;
   align-items: stretch;
   gap: 5px;
   /* Little right padding: that edge is tucked under the bar frame, so any
      more just reads as a gap between the last column and the panel. */
   padding: 8px 6px 8px 8px;
-  /* Tucks just under the bar's rounded corner, enough to close the seam
-     without burrowing into the frame. The -8px cancels the wing's own padding,
-     so the remainder is the actual overlap. Vertical margins inset it a little
-     from the bar's top and bottom edges. */
-  margin: 5px -12px 5px 0;
+  /* Tucks just under the bar's rounded corner, enough to close the seam without
+     burrowing into the frame. The -8px cancels the wing's own padding, so the
+     remainder is the actual overlap.
+
+     Vertical margins are zero: `align-self: center` above does the placing, and
+     an uneven top or bottom margin would push the strip off centre by half the
+     difference.
+
+     Left is zero too: the reservation that holds the portrait still now lives
+     on .rs-bg3-res-slot, which is always in the wing whether or not there is a
+     strip inside it. A margin here could only reserve space when the strip
+     existed, which left the unbound panel — no actor, no bars, no strip — with
+     nothing holding the portrait out. */
+  margin: 0 -12px 0 0;
   background: linear-gradient(
     180deg,
     rgba(9, 9, 10, 0.9) 0%,
@@ -8748,6 +8887,21 @@ body.redsteel-bg3-hotbar #hotbar {
   border-color: var(--rs-bg3-accent);
 }
 
+/* An empty belt slot, styled like the empty macro slot above so the panel has
+   one idea of "nothing here": dashed rule, no pointer. It is a span rather
+   than a button, so the box has to be laid out explicitly — an inline element
+   ignores the width and height on .rs-bg3-potion. */
+#redsteel-bg3-hotbar .rs-bg3-potion.empty {
+  display: block;
+  cursor: default;
+  border-style: dashed;
+  border-color: #3a362c;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-potion.empty:hover {
+  border-color: #3a362c;
+}
+
 #redsteel-bg3-hotbar .rs-bg3-potion img {
   display: block;
   width: 100%;
@@ -8770,7 +8924,126 @@ body.redsteel-bg3-hotbar #hotbar {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.95);
 }
 
+/* A cell that holds its place and draws nothing. `visibility: hidden` rather
+   than `display: none` or opacity: the box still takes its full size in the
+   row, so an NPC missing three of the five secondary attributes, or lacking
+   weapon sets entirely, produces a panel exactly as wide as a character's.
+   Nothing may move as you click from one token to another, because the panel's
+   width sets where both wings hang.
+
+   It carries no data-action, so it is inert; aria-hidden and the absence of a
+   tabindex keep it out of the accessibility tree and the tab order too. */
+#redsteel-bg3-hotbar .rs-bg3-cell--spacer {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* --- NPC tag row (traits / resistances / immunities) --- */
+
+/* Centred like the attributes above it, and allowed to wrap: a creature with a
+   long trait list would otherwise stretch the panel wider than every other row
+   and drag both wings outward with it.
+
+   The height is the skill slot's, not the tags' own. NPCs have no
+   `system.skills`, so their panel drops the skills row and gains this one; both
+   stacks are otherwise the same sequence of row + divider at the same 4px gap,
+   so matching this row to one skills row makes the whole panel the same height
+   as a player's. Without it the panel changed height as you clicked from a PC
+   to an NPC, taking both wings with it. A min rather than a fixed height, so a
+   creature with enough tags to wrap still gets its second line. */
+#redsteel-bg3-hotbar .rs-bg3-row--npctags {
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-height: var(--rs-bg3-skill-h);
+  max-width: 640px;
+}
+
+/* The group name, in the panel's dim label voice. Not a tag itself: it names
+   the run of tags after it, so it stays quieter than they are. */
+#redsteel-bg3-hotbar .rs-bg3-npctag-label {
+  flex: 0 0 auto;
+  margin-left: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6f6858;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-npctag-label:first-child {
+  margin-left: 0;
+}
+
+/* The nothing-to-report case. Quieter still than a group name, since it is the
+   absence of information rather than a heading for some. */
+#redsteel-bg3-hotbar .rs-bg3-npctag-label--empty {
+  color: #565043;
+  font-style: italic;
+  text-transform: none;
+  letter-spacing: 0.03em;
+}
+
+/* Square and sharp, not a pill: same socket recipe as the cells in the rows
+   above (flat dark fill, inner shadow from the top, no radius, 1px rim), only
+   sized to its text. The tone comes from data-kind below; this rule carries
+   everything the three share. */
+#redsteel-bg3-hotbar .rs-bg3-npctag {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+  color: color-mix(in srgb, var(--rs-tag) 62%, #4a4438);
+  background: #0c0c0a;
+  border: 1px solid color-mix(in srgb, var(--rs-tag) 26%, #2c2820);
+  border-radius: 0;
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.95),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.55);
+}
+
+/* Five tones, borrowed rather than invented: race is the panel's own text
+   colour, trait its accent gold, armor the armor condition's brown lifted to a
+   workable lightness, resist the channeling action's blue, immune the defense
+   action's grey-white.
+
+   Only neighbouring groups can really be confused, since each run carries its
+   own label and the order is fixed. Adjacent pairs sit at redmean 69 or better
+   after the 62% mix this rule applies; race is the brightest of the five
+   because "what is it" is the first thing you want off this row. */
+#redsteel-bg3-hotbar .rs-bg3-npctag[data-kind="race"] {
+  --rs-tag: #ded4bc;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-npctag[data-kind="trait"] {
+  --rs-tag: #d8bd7a;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-npctag[data-kind="armor"] {
+  --rs-tag: #b98f5e;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-npctag[data-kind="resist"] {
+  --rs-tag: #5aa8e0;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-npctag[data-kind="immune"] {
+  --rs-tag: #c3c9d1;
+}
+
 /* --- Attribute cells ------------------------- */
+
+/* Centred, like the action row below it. The base .rs-bg3-row is flex-start, so
+   a character carrying fewer cells than the widest row in the panel used to
+   leave all the slack on the right and sit off to one side of everything else.
+   NPCs, which have the primaries but not every secondary, showed this most. */
+#redsteel-bg3-hotbar .rs-bg3-row--attributes {
+  justify-content: center;
+}
 
 #redsteel-bg3-hotbar .rs-bg3-attr-group {
   display: flex;
@@ -9074,7 +9347,8 @@ body.redsteel-bg3-hotbar #hotbar {
   display: flex;
   align-items: flex-end;
   gap: 8px;
-  padding-left: 8px;
+  /* Mirrors .rs-bg3-left: no vertical inset, for the same reason. */
+  padding: 0 0 0 8px;
   pointer-events: none;
 }
 
@@ -9083,12 +9357,24 @@ body.redsteel-bg3-hotbar #hotbar {
 }
 
 /* Mirror of the resource strip: same skin, tucked under the bar's right edge
-   instead of its left. A single stacked column; the icons grow when it is
-   unfolded, since that is when there is room for them. */
+   instead of its left. A single stacked column. Unfolded rows carry a value and
+   a max beside the icon, so they run tighter vertically; the folded rule below
+   trades that width back for a bigger glyph and more air. */
 #redsteel-bg3-hotbar .rs-bg3-cond-strip {
   --rs-cond-icon: 18px;
   flex: 0 0 auto;
+  /* Centred against the panel, matching .rs-bg3-res-strip in the other wing.
+     This is safe now only because the height below is fixed: centring used to
+     float the strip at a height that depended on how many conditions were up,
+     which is what made it drift as they came and went. */
   align-self: center;
+  /* The same box as the resource strip in the other wing, so the two read as a
+     matched pair rather than two boxes that happen to be beside the same panel.
+     Safe as a hard height: seven conditions is the whole registry, and at the
+     18px icon that column is 154px, inside the 168px with room to spare.
+     `justify-content: center` below floats however few are up in the middle. */
+  height: var(--rs-bg3-res-h);
+  box-sizing: border-box;
   margin-left: -12px;
   position: relative;
   display: flex;
@@ -9108,8 +9394,43 @@ body.redsteel-bg3-hotbar #hotbar {
     inset 0 0 18px rgba(0, 0, 0, 0.5);
 }
 
+/* Folded is icons only, so the row is just the glyph and can carry a larger one
+   than when a value and a max sit beside it. The gap is deliberately NOT
+   overridden: it stays on the base rule's 2px so folded and unfolded space
+   their icons identically and switching between them only changes the glyph.
+
+   Bounded by the fixed height: the content box is 152px (168 less 7px padding
+   each side and 1px border each side) and the registry tops out at seven
+   conditions, so 7 icons + 6 gaps must fit. 17px at the 2px gap is 131px. */
 #redsteel-bg3-hotbar .rs-bg3-cond-strip.folded {
-  --rs-cond-icon: 14px;
+  --rs-cond-icon: 17px;
+}
+
+/* NPC: number under the icon, and no chevron. An NPC carries only mind and
+   armor, so there is nothing to fold away and both fit stacked.
+
+   A column, NOT `flex-wrap`. Wrapping looked equivalent and was not: a wrapping
+   flex container's intrinsic width is computed as though every item sat on one
+   line, so the strip sized itself to icon + gap + number and came out half as
+   wide again as it needed to be. A column has no such trap — its intrinsic
+   width is simply the widest child, which is the 18px icon.
+
+   This works only because the template drops the max when stacked, leaving two
+   children. Put "/24" back and the column would stack it under the value. */
+#redsteel-bg3-hotbar .rs-bg3-cond-strip.stacked .rs-bg3-cond-row {
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+/* The fixed number column exists to line digits up down a tall strip. Under an
+   icon there is nothing to line up with, and keeping it would set the strip's
+   width from the column rather than from the icons. A shade larger than in the
+   row layout, since here the number is on its own line with room for it. */
+#redsteel-bg3-hotbar .rs-bg3-cond-strip.stacked .rs-bg3-cond-value {
+  min-width: 0;
+  text-align: center;
+  font-size: 13px;
 }
 
 /* Icon first, number beside it rather than under it. */

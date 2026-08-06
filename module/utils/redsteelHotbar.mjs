@@ -55,6 +55,13 @@ const DEFAULT_SKILL_ROWS = 1;
  */
 const FAVOURITE_SLOTS = MAX_SKILL_ROWS * FAVOURITES_PER_ROW;
 
+/**
+ * How many sockets an empty potion belt draws. One full row of the four-wide
+ * grid: enough for the tray to have a shape, few enough that it does not read
+ * as a promise of sixteen slots the character does not have.
+ */
+const EMPTY_POTION_SLOTS = 4;
+
 const SLOTS_PER_ROW = 10;
 // Zero is a real setting: the action row covers what the preset macros did, so
 // the macro pages stay out of the way until someone asks for them.
@@ -135,13 +142,9 @@ function secondaryChance(actor, key) {
  * these and the macros cannot drift apart.
  */
 const ACTION_BUTTONS = [
-  { key: "attack", api: "attackActions", icon: "fa-light fa-sword" },
-  { key: "defense", api: "defenseRoll", icon: "fa-light fa-shield" },
-  // A fist: martial and unmistakably not the sword or the shield beside it.
-  { key: "ability", api: "combatAbilities", icon: "fa-light fa-hand-fist" },
-  { key: "channeling", api: "castSpell", icon: "fa-light fa-sparkles" },
-  { key: "firstAid", api: "firstAid", icon: "fa-light fa-staff-snake" },
-  // GM tools last, and set apart in the row.
+  // GM tools first, and set apart in the row. They lead rather than close it so
+  // that the far end belongs to Delay and End Turn, which is where the turn
+  // controls read best and where they are hardest to hit by accident.
   { key: "rest", api: "longRest", icon: "fa-light fa-moon", gmOnly: true },
   {
     key: "effects",
@@ -149,6 +152,56 @@ const ACTION_BUTTONS = [
     icon: "fa-light fa-folder-bookmark",
     gmOnly: true,
   },
+  { key: "attack", api: "attackActions", icon: "fa-light fa-sword" },
+  { key: "defense", api: "defenseRoll", icon: "fa-light fa-shield" },
+  // A fist: martial and unmistakably not the sword or the shield beside it.
+  { key: "ability", api: "combatAbilities", icon: "fa-light fa-hand-fist" },
+  { key: "channeling", api: "castSpell", icon: "fa-light fa-sparkles" },
+  { key: "firstAid", api: "firstAid", icon: "fa-light fa-staff-snake" },
+];
+
+/**
+ * The damage types carrying resistance / vulnerability / immunity booleans in
+ * `system.armor`, in the order template.json declares them. Read for the NPC
+ * tag row; the same table combatSkillBonuses applies damage against.
+ */
+const DAMAGE_TYPES = [
+  "physical",
+  "slash",
+  "pierce",
+  "blunt",
+  "acid",
+  "fire",
+  "frost",
+  "lightning",
+  "magic",
+  "dark",
+  "poison",
+  "holy",
+];
+
+/**
+ * `system.effectMods` immunities: effects rather than damage types, but they
+ * belong in the same "cannot be" group on the tag row.
+ */
+const EFFECT_MOD_TYPES = ["stagger", "bleed", "poison"];
+
+/**
+ * The damage types that also carry an armor value (`value`/`bonus`/`total`) as
+ * well as the booleans. The other four — physical, slash, pierce, blunt — are
+ * flags only, so there is no number to show for them. `natural` is left out on
+ * purpose: it feeds `armor.total`, which the condition strip already reports,
+ * and this group is for the typed armor that is easy to miss.
+ */
+const ARMOR_VALUE_TYPES = [
+  "acid",
+  "fire",
+  "frost",
+  "lightning",
+  "magic",
+  "dark",
+  "poison",
+  "holy",
 ];
 
 /**
@@ -159,9 +212,13 @@ const ACTION_BUTTONS = [
  * deliberately no "show it if it has a maximum" fallback: NPC pools ship with a
  * max of 900 whether the creature casts or not, so that rule handed every NPC a
  * full set of bars.
+ *
+ * Array order is left-to-right in the strip, so **stamina goes last**: it is
+ * the one pool every character has, and putting it at the tail pins it to the
+ * same column against the bar frame no matter which of the conditional pools
+ * are present. The rest have no meaningful order between them.
  */
 const STRIP_RESOURCES = [
-  { key: "stamina" },
   { key: "mana", when: (sys) => !!sys.magicPotential },
   { key: "holyEnergy", when: (sys) => !!sys.priest },
   {
@@ -173,6 +230,7 @@ const STRIP_RESOURCES = [
       !!sys.specialisations?.bloodSchool?.nodes?.apprentice ||
       (sys.schools?.blood?.value ?? 0) > 0,
   },
+  { key: "stamina" },
 ];
 
 /**
@@ -844,7 +902,11 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       // The colour of whoever owns this character, so a GM following a token
       // sees that player's band rather than their own.
       playerColour: playerColourFor(actor),
-      portraitImg: actor?.img ?? "icons/svg/mystery-man.svg",
+      // A die rather than a silhouette: with nothing bound, the panel is not
+      // showing an anonymous character, it is showing no character at all.
+      // Teammate portraits keep the silhouette, where it does mean "this
+      // actor has no art".
+      portraitImg: actor?.img ?? "icons/svg/d20-black.svg",
       portraitName: actor?.name ?? game.i18n.localize("REDSTEEL.Bg3Hotbar.NoActor"),
       statuses: this.#prepareStatuses(actor),
       modifier: this.#prepareModifier(actor),
@@ -858,16 +920,27 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
         (a, i, all) => ({
           ...a,
           label: game.i18n.localize(`REDSTEEL.Bg3Hotbar.Action.${a.key}`),
-          // A gap before the first GM tool, so the two sets read apart.
-          groupStart: a.gmOnly && !all[i - 1]?.gmOnly,
+          // A gap at the boundary between the GM tools and the abilities, so
+          // the two sets read apart. Written as a boundary test rather than
+          // "before the first GM tool" so it survives the order changing, and
+          // so a player, who sees no GM tools at all, gets no stray gap.
+          groupStart: i > 0 && !!a.gmOnly !== !!all[i - 1].gmOnly,
         }),
       ),
       resourceBars: this.#prepareResourceBars(actor),
       conditions: this.#prepareConditions(actor),
       condFolded: this.condFolded,
+      // An NPC carries only mind and armor, so there is nothing worth folding
+      // away: the strip is static and stacks each value under its icon instead.
+      // The fold flag is per user rather than per actor, so it is ignored here
+      // rather than cleared — a GM who folded the strip on their own character
+      // should find it folded again when they go back to it.
+      condStacked: actor?.type === "npc",
+      condShowValues: actor?.type === "npc" || !this.condFolded,
       teammates: this.#prepareTeammates(actor),
       attributes,
       hasAttributes: !!(attributes.primary.length || attributes.secondary.length),
+      npcTags: this.#prepareNpcTags(actor),
       skillRows: this.#prepareSkills(actor),
       hasSkills: !!actor && !!actor.system?.skills,
       macroRows: this.#prepareMacroRows(),
@@ -1138,21 +1211,34 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
    *
    * Four to a column; more than sixteen and it grows sideways rather than
    * becoming a tall list.
+   *
+   * Every actor gets the tray, carrying potions or not. A belt you can see is
+   * empty is worth knowing, and a button that appears and disappears as the
+   * last flask is drunk shifts everything sitting beside it in the row. Only
+   * an unbound panel, with no actor at all, has no tray.
    */
   #preparePotions(actor) {
-    const items = (actor?.items ?? []).filter(
+    if (!actor) return null;
+
+    const items = (actor.items ?? []).filter(
       (item) => item.type === "consumable" && item.system?.option === "potion",
     );
-    if (!items.length) return null;
+
+    const slots = items.map((item) => ({
+      id: item.id,
+      name: item.localizedName ?? item.name,
+      img: item.img,
+      qty: Number(item.system?.quantity ?? 1),
+    }));
+
+    // With nothing in it the grid would collapse to a sliver of padding, so an
+    // empty belt is drawn as a row of sockets instead.
+    while (slots.length < EMPTY_POTION_SLOTS) slots.push({ empty: true });
 
     return {
+      // Off the real potions, not the padding: four empties are still one row.
       cols: Math.max(4, Math.ceil(items.length / 4)),
-      items: items.map((item) => ({
-        id: item.id,
-        name: item.localizedName ?? item.name,
-        img: item.img,
-        qty: Number(item.system?.quantity ?? 1),
-      })),
+      items: slots,
     };
   }
 
@@ -1181,6 +1267,91 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
         twoHanded: !!view[id]?.mainIsTwoHanded,
       })),
     };
+  }
+
+  /**
+   * Traits, resistances and immunities, as tags for the NPC-only row under the
+   * attributes.
+   *
+   * Characters get nothing: this is the "what am I fighting" line, and a PC's
+   * own traits are on their sheet in front of them. Every NPC gets the row
+   * though, empty or not — "this creature has no resistances" is an answer, and
+   * a row that comes and goes would move everything under it as you click
+   * between tokens.
+   *
+   * Resistance and immunity are the same twelve booleans from `system.armor`
+   * that combatSkillBonuses reads when it applies damage, so the row cannot
+   * disagree with what the maths actually does. Immunity wins where both are
+   * set on one type, matching that code: immunity short-circuits to x0 and the
+   * x0.5 never runs, so showing both would claim a reduction that never
+   * happens. Vulnerability is deliberately not shown — it is the same shape and
+   * a one-line addition, but it was not asked for.
+   *
+   * `effectMods` immunities are folded into the same immunity group. They are a
+   * different table (stagger, bleed, poison as *effects* rather than damage
+   * types) but they say the same thing to whoever is reading the row.
+   */
+  #prepareNpcTags(actor) {
+    if (actor?.type !== "npc") return null;
+
+    const sys = actor.system ?? {};
+    const label = (key) => game.i18n.localize(`REDSTEEL.Bg3Hotbar.DamageType.${key}`);
+
+    // `.contents`, not the Collection: iterating one directly with for...of has
+    // silently yielded nothing in this codebase before.
+    const raceItem = actor.items.contents.find((item) => item.type === "race");
+    const race = raceItem
+      ? [{ name: raceItem.localizedName ?? raceItem.name }]
+      : [];
+
+    const traits = actor.items.contents
+      .filter((item) => item.type === "feature" && item.system?.option === "trait")
+      .map((item) => ({
+        name: item.localizedName ?? item.name,
+        tip: item.name,
+      }));
+
+    // Typed armor, value included, and only where there is one. A zero here is
+    // the default for every NPC, so showing it would bury the two that matter
+    // under six that do not.
+    const armor = [];
+    for (const key of ARMOR_VALUE_TYPES) {
+      const total = Number(actor.system?.armor?.[key]?.total ?? 0);
+      if (total) armor.push({ name: `${label(key)} ${total}` });
+    }
+
+    const resistances = [];
+    const immunities = [];
+
+    for (const key of DAMAGE_TYPES) {
+      const row = sys.armor?.[key];
+      if (!row) continue;
+      if (row.immunity) immunities.push({ name: label(key) });
+      else if (row.resistance) resistances.push({ name: label(key) });
+    }
+
+    for (const key of EFFECT_MOD_TYPES) {
+      if (sys.effectMods?.[key]?.immune) {
+        immunities.push({
+          name: game.i18n.localize(`REDSTEEL.Bg3Hotbar.EffectMod.${key}`),
+        });
+      }
+    }
+
+    // Groups are dropped rather than rendered empty, so a creature with only
+    // immunities shows one label and not three. If all three drop, the row
+    // still renders and the template says so.
+    // Order runs from what the creature IS to how it takes damage: race, then
+    // traits, then the armor numbers, then the two damage modifiers.
+    const groups = [
+      { kind: "race", label: "REDSTEEL.Bg3Hotbar.Race", tags: race },
+      { kind: "trait", label: "REDSTEEL.Bg3Hotbar.Traits", tags: traits },
+      { kind: "armor", label: "REDSTEEL.Bg3Hotbar.Armor", tags: armor },
+      { kind: "resist", label: "REDSTEEL.Bg3Hotbar.Resistances", tags: resistances },
+      { kind: "immune", label: "REDSTEEL.Bg3Hotbar.Immunities", tags: immunities },
+    ].filter((group) => group.tags.length);
+
+    return { groups, empty: !groups.length };
   }
 
   /**
@@ -1253,7 +1424,15 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
 
     for (const key of SECONDARY_ATTRIBUTES) {
       const attr = actor.system?.secondaryAttributes?.[key];
-      if (!attr) continue;
+      // A spacer, not a skip. NPCs carry only spd, res and ini, so three of the
+      // five are missing on them; dropping the cells would pull every cell
+      // after them leftward and change the row's width, which sets the panel's
+      // width, which moves both wings. The panel must not move as you click
+      // from a character to a creature.
+      if (!attr) {
+        groups.secondary.push({ key, spacer: true });
+        continue;
+      }
       const chance = secondaryChance(actor, key);
       groups.secondary.push({
         key,
@@ -1467,11 +1646,15 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     // Players joining or leaving add and remove teammate portraits.
     add("userConnected", () => this.#rerender());
 
-    // A race Item carries creature-type tags, which pick the portrait's band
-    // colour. Gaining, losing or retagging one repaints it.
+    // A race Item carries the creature-type tags that pick the portrait's band
+    // colour; a consumable may be a potion on the belt. The potion tray is on
+    // screen whether or not it holds anything, so a quantity going stale now
+    // shows. `#rerender` is debounced, so looting a pile is one render.
+    // `feature` joins them for the NPC tag row: a trait is a feature Item.
+    const ITEM_TYPES = new Set(["race", "consumable", "feature"]);
     for (const hook of ["createItem", "deleteItem", "updateItem"]) {
       add(hook, (item) => {
-        if (item?.type !== "race") return;
+        if (!ITEM_TYPES.has(item?.type)) return;
         const parent = item.parent;
         if (parent instanceof Actor && isDrawn(parent)) this.#rerender();
       });
