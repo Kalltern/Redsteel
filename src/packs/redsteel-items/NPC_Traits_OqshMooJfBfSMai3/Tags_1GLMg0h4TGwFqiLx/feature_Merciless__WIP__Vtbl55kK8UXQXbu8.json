@@ -1,11 +1,11 @@
 {
   "folder": "1GLMg0h4TGwFqiLx",
-  "name": "Elusive",
+  "name": "Merciless (WIP)",
   "type": "feature",
-  "img": "icons/svg/jump.svg",
+  "img": "icons/svg/sword.svg",
   "system": {
-    "localizationKey": "REDSTEEL.Items.Elusive.name",
-    "description": "<p>After a successful dodge it must move one hex away from the attacker.</p>",
+    "localizationKey": "REDSTEEL.Items.Merciless.name",
+    "description": "<p>Advantage on attack and defense while it acts before its opponent in the turn order.</p>",
     "options": [
       "feature",
       "trait"
@@ -39,6 +39,6 @@
     "default": 0
   },
   "sort": 0,
-  "_id": "PeuIgmcnptL2oUVJ",
-  "_key": "!items!PeuIgmcnptL2oUVJ"
+  "_id": "Vtbl55kK8UXQXbu8",
+  "_key": "!items!Vtbl55kK8UXQXbu8"
 }

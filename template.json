@@ -1054,7 +1054,7 @@
           "value": 3,
           "min": 0,
           "base": 0,
-          "max": 0,
+          "max": 3,
           "bonus": 0,
           "burned": 0
         },

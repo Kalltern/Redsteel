@@ -1,11 +1,11 @@
 {
   "folder": "1GLMg0h4TGwFqiLx",
-  "name": "Furious",
+  "name": "Venomous Blood (WIP)",
   "type": "feature",
-  "img": "icons/svg/explosion.svg",
+  "img": "icons/svg/poison.svg",
   "system": {
-    "localizationKey": "REDSTEEL.Items.Furious.name",
-    "description": "<p>All of its attacks are reckless attacks.</p>",
+    "localizationKey": "REDSTEEL.Items.VenomousBlood.name",
+    "description": "<p>When hit, it deals 1d4 damage to the attacker.</p>",
     "options": [
       "feature",
       "trait"
@@ -39,6 +39,6 @@
     "default": 0
   },
   "sort": 0,
-  "_id": "R8ggDFIpbRBf9sSF",
-  "_key": "!items!R8ggDFIpbRBf9sSF"
+  "_id": "vWkDLZCq0YvsprVW",
+  "_key": "!items!vWkDLZCq0YvsprVW"
 }

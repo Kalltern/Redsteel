@@ -1,11 +1,11 @@
 {
   "folder": "1GLMg0h4TGwFqiLx",
-  "name": "Stout",
+  "name": "Death Burst (WIP)",
   "type": "feature",
-  "img": "icons/svg/falling.svg",
+  "img": "icons/svg/explosion.svg",
   "system": {
-    "localizationKey": "REDSTEEL.Items.Stout.name",
-    "description": "<p>When it becomes prone, it loses its next turn.</p>",
+    "localizationKey": "REDSTEEL.Items.DeathBurst.name",
+    "description": "<p>On death it explodes and damages adjacent hexes.</p>",
     "options": [
       "feature",
       "trait"
@@ -39,6 +39,6 @@
     "default": 0
   },
   "sort": 0,
-  "_id": "wc28194Dkjp9wtC5",
-  "_key": "!items!wc28194Dkjp9wtC5"
+  "_id": "OyKqWGuYiA3GeMkO",
+  "_key": "!items!OyKqWGuYiA3GeMkO"
 }

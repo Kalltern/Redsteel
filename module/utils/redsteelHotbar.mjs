@@ -962,12 +962,17 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
 
     // Connected players first, then anything flagged into the party: a
     // companion, a mount, a combat pet, or a PC whose player is not logged in.
-    // The Set stops a flagged PC appearing twice when their player is on.
+    //
+    // Keyed on uuid, not id. An unlinked token's actor is synthetic and borrows
+    // the base actor's id, so two zombies dragged from the same sheet would
+    // collapse into one entry, and selecting either would hide both. Their
+    // uuids differ (Scene.x.Token.y.Actor.z), and a linked token's actor *is*
+    // the world actor, so uuid still dedupes that case correctly.
     const members = [];
     const seen = new Set();
     const add = (mate, sortKey) => {
-      if (!mate || mate.id === actor?.id || seen.has(mate.id)) return;
-      seen.add(mate.id);
+      if (!mate || mate.uuid === actor?.uuid || seen.has(mate.uuid)) return;
+      seen.add(mate.uuid);
       members.push({ mate, sortKey });
     };
 
@@ -976,6 +981,21 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     }
     for (const candidate of game.actors.contents) {
       if (candidate.system?.partyMember) add(candidate, `1${candidate.name}`);
+    }
+
+    // Tokens on the scene as well as the world directory. An NPC dragged onto a
+    // scene is normally *unlinked*, so ticking "party member" on the token's
+    // sheet writes to the token's ActorDelta and never touches the world actor
+    // — which is why flagged NPCs were not turning up here at all.
+    //
+    // `.contents`, not the Collection: iterating one directly with for...of has
+    // silently yielded nothing in this codebase before.
+    for (const tokenDoc of canvas?.scene?.tokens?.contents ?? []) {
+      // A hidden token is off the canvas for players; listing it in the roster
+      // would announce a companion the GM has deliberately not revealed.
+      if (tokenDoc.hidden && !game.user.isGM) continue;
+      const candidate = tokenDoc.actor;
+      if (candidate?.system?.partyMember) add(candidate, `1${candidate.name}`);
     }
 
     return members
@@ -1645,6 +1665,32 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
 
     // Players joining or leaving add and remove teammate portraits.
     add("userConnected", () => this.#rerender());
+
+    // The roster reads the scene's tokens as well as the world directory, so a
+    // party-member token arriving, leaving or being hidden changes it.
+    for (const hook of ["createToken", "deleteToken"]) {
+      add(hook, () => this.#rerender());
+    }
+
+    add("updateToken", (_tokenDoc, changed) => {
+      // Dragging a token fires this continuously. Only these can alter the
+      // roster; everything else is movement and appearance.
+      if (!("hidden" in changed) && !("delta" in changed) && !("actorLink" in changed)) {
+        return;
+      }
+      this.#rerender();
+    });
+
+    // Ticking "party member" on an *unlinked* token's sheet writes to its
+    // ActorDelta, not to the world actor, so `updateActor` alone can miss it.
+    add("updateActorDelta", (delta) => {
+      if (delta?.parent?.actor?.system?.partyMember || isDrawn(delta?.parent?.actor)) {
+        this.#rerender();
+      }
+    });
+
+    // A different scene means a different set of tokens to read.
+    add("canvasReady", () => this.#rerender());
 
     // A race Item carries the creature-type tags that pick the portrait's band
     // colour; a consumable may be a potion on the belt. The potion tray is on

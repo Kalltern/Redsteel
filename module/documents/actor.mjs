@@ -1399,11 +1399,21 @@ export class RedsteelActor extends Actor {
 
     // NPC Mind max is authored directly rather than derived from Will, but
     // burning still eats the ceiling the same way it does for characters.
+    //
+    // NPCs predating the authored ceiling stored max 0, which would clamp Mind
+    // to 0 on every prepare and make the field impossible to edit. Fall back to
+    // the current value so an unauthored ceiling never eats the stat; the
+    // startup migration below writes a real max so this only covers imports
+    // from locked packs and older worlds.
     const mind = systemData.stats.mind;
-    mind.max = Math.max(
-      0,
-      (Number(mind.max) || 0) - (Number(mind.burned) || 0),
-    );
+    const authoredMindMax = Number(mind.max) || 0;
+    const mindBase = authoredMindMax || Number(mind.value) || 0;
+    // The sheet's ceiling input binds to `sourceMax`, not `max`: `max` is the
+    // post-burn number every consumer reads, and rendering that into a field
+    // named `system.stats.mind.max` would persist it and burn the ceiling down
+    // again on the next prepare.
+    mind.sourceMax = mindBase;
+    mind.max = Math.max(0, mindBase - (Number(mind.burned) || 0));
     mind.value = Math.min(Number(mind.value) || 0, mind.max);
 
     systemData.xp = systemData.cr * systemData.cr * 100;

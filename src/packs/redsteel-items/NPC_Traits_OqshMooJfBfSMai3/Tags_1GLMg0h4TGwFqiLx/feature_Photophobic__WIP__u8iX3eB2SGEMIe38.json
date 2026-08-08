@@ -1,11 +1,11 @@
 {
   "folder": "1GLMg0h4TGwFqiLx",
-  "name": "Bloodthirsty",
+  "name": "Photophobic (WIP)",
   "type": "feature",
-  "img": "icons/svg/blood.svg",
+  "img": "icons/svg/blind.svg",
   "system": {
-    "localizationKey": "REDSTEEL.Items.Bloodthirsty.name",
-    "description": "<p>+1 attack against bleeding targets.</p>",
+    "localizationKey": "REDSTEEL.Items.Photophobic.name",
+    "description": "<p>Suffers dim-light penalties while in bright light.</p>",
     "options": [
       "feature",
       "trait"
@@ -39,6 +39,6 @@
     "default": 0
   },
   "sort": 0,
-  "_id": "MmHftTDbrB7ssQXE",
-  "_key": "!items!MmHftTDbrB7ssQXE"
+  "_id": "u8iX3eB2SGEMIe38",
+  "_key": "!items!u8iX3eB2SGEMIe38"
 }

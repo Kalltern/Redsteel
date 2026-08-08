@@ -1,11 +1,11 @@
 {
   "folder": "1GLMg0h4TGwFqiLx",
-  "name": "Armor Gap",
+  "name": "Bloodthirsty (WIP)",
   "type": "feature",
-  "img": "icons/svg/shield.svg",
+  "img": "icons/svg/blood.svg",
   "system": {
-    "localizationKey": "REDSTEEL.Items.ArmorGap.name",
-    "description": "<p>While it is staggered, an attacker's penetration is doubled.</p>",
+    "localizationKey": "REDSTEEL.Items.Bloodthirsty.name",
+    "description": "<p>+1 attack against bleeding targets.</p>",
     "options": [
       "feature",
       "trait"
@@ -39,6 +39,6 @@
     "default": 0
   },
   "sort": 0,
-  "_id": "4y9YSqnJ5VV4IVDv",
-  "_key": "!items!4y9YSqnJ5VV4IVDv"
+  "_id": "MmHftTDbrB7ssQXE",
+  "_key": "!items!MmHftTDbrB7ssQXE"
 }

@@ -1,11 +1,11 @@
 {
   "folder": "1GLMg0h4TGwFqiLx",
-  "name": "Merciless",
+  "name": "Crumbling (WIP)",
   "type": "feature",
-  "img": "icons/svg/sword.svg",
+  "img": "icons/svg/degen.svg",
   "system": {
-    "localizationKey": "REDSTEEL.Items.Merciless.name",
-    "description": "<p>Advantage on attack and defense while it acts before its opponent in the turn order.</p>",
+    "localizationKey": "REDSTEEL.Items.Crumbling.name",
+    "description": "<p>Every hit it takes lowers its armor by 2.</p>",
     "options": [
       "feature",
       "trait"
@@ -39,6 +39,6 @@
     "default": 0
   },
   "sort": 0,
-  "_id": "Vtbl55kK8UXQXbu8",
-  "_key": "!items!Vtbl55kK8UXQXbu8"
+  "_id": "PPpfnC5k7GrYHigk",
+  "_key": "!items!PPpfnC5k7GrYHigk"
 }

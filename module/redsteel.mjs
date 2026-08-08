@@ -2580,16 +2580,124 @@ async function convertNpcMovement({ dryRun = false, packs = false } = {}) {
   return converted;
 }
 
+/**
+ * NPC Mind used to have no authored ceiling — `stats.mind.max` sat at 0 while
+ * only `value` was filled in. Once the burn rules started clamping Mind to its
+ * maximum, that 0 pinned every NPC's Mind at 0 and made the field impossible to
+ * edit. Seed a real ceiling from the stored current value.
+ *
+ * Reads `_source` data, never prepared data: `prepareDerivedData` now falls back
+ * to the current value when the ceiling is unauthored, so a converter that
+ * trusted the prepared object could never tell a real max from the fallback.
+ *
+ * An authored max always wins, so re-running this can never walk a hand-typed
+ * ceiling back down.
+ *
+ * @param {object} source - Raw `_source.system` of an NPC (or a token delta).
+ * @param {boolean} isDelta - True for token deltas, where a missing sub-key
+ *   means "inherited from the base actor" rather than "zero".
+ * @returns {object|null} Update payload, or null when there is nothing to do.
+ */
+function buildMindMaxSeed(source, isDelta = false) {
+  const mind = source?.stats?.mind;
+  if (!mind) return null;
+  if (Number(mind.max) || 0) return null;
+
+  // A delta that never stored a ceiling inherits the base actor's, which the
+  // world pass fixes. Only an explicitly stored 0 needs overriding here.
+  if (isDelta && mind.max === undefined) return null;
+
+  // A sheet submit made while Mind was pinned could have persisted value 0, so
+  // fall back to the template default rather than seeding another 0.
+  const seed = Number(mind.value) || 3;
+  return { "system.stats.mind.max": seed };
+}
+
+/**
+ * Give every legacy NPC a real Mind ceiling so the stat stops being clamped to
+ * 0 and becomes editable again.
+ *
+ * Covers world actors, unlinked token deltas, and — with `packs: true` —
+ * unlocked Actor compendiums. Idempotent: once a non-zero max is stored every
+ * pass is a no-op.
+ *
+ * @param {object} [options]
+ * @param {boolean} [options.dryRun=false] - Report what would change, write nothing.
+ * @param {boolean} [options.packs=false]  - Also convert unlocked Actor compendiums.
+ * @returns {Promise<object[]>} One row per seeded actor.
+ */
+async function seedNpcMindMax({ dryRun = false, packs = false } = {}) {
+  if (!game.user.isGM) {
+    ui.notifications.warn("Only the GM can repair NPC Mind.");
+    return [];
+  }
+
+  const seeded = [];
+
+  /** @param {Actor} actor @param {object} source @param {string} where */
+  const seed = async (actor, source, where, isDelta = false) => {
+    const update = buildMindMaxSeed(source, isDelta);
+    if (!update) return;
+
+    seeded.push({
+      name: actor?.name ?? "(unknown)",
+      where,
+      mindMax: update["system.stats.mind.max"],
+    });
+
+    if (!dryRun) await actor?.update(update);
+  };
+
+  for (const actor of game.actors.contents) {
+    if (actor.type !== "npc") continue;
+    await seed(actor, actor._source.system, "world");
+  }
+
+  for (const scene of game.scenes.contents) {
+    for (const token of scene.tokens.contents) {
+      if (token.actorLink || token.actor?.type !== "npc") continue;
+      await seed(token.actor, token.delta?._source?.system, scene.name, true);
+    }
+  }
+
+  if (packs) {
+    for (const pack of game.packs) {
+      if (pack.documentName !== "Actor" || pack.locked) continue;
+      for (const actor of await pack.getDocuments()) {
+        if (actor.type !== "npc") continue;
+        await seed(actor, actor._source.system, pack.collection);
+      }
+    }
+  }
+
+  const label = dryRun ? "would seed" : "seeded";
+  console.log(
+    `Redsteel | NPC Mind maximum: ${label} ${seeded.length} actors`,
+    seeded,
+  );
+  if (seeded.length && !dryRun) {
+    ui.notifications.info(`Restored the Mind maximum on ${seeded.length} NPCs.`);
+  }
+
+  return seeded;
+}
+
 Hooks.once("ready", async () => {
   if (!game.user.isGM) return;
   await convertNpcMovement();
+  await seedNpcMindMax();
 });
 
 // An NPC imported or dragged in from an older world arrives after the startup
 // pass, so fold its movement in before the document is ever stored.
 Hooks.on("preCreateActor", (actor) => {
   if (actor.type !== "npc") return;
-  if (!applySpeedConversionToSource(actor, actor._source?.system)) return;
+
+  const source = actor._source?.system;
+  const mindSeed = buildMindMaxSeed(source);
+  if (mindSeed) actor.updateSource(mindSeed);
+
+  if (!applySpeedConversionToSource(actor, source)) return;
 
   console.log(`Redsteel | Converted movement → Speed on import: ${actor.name}`);
 });

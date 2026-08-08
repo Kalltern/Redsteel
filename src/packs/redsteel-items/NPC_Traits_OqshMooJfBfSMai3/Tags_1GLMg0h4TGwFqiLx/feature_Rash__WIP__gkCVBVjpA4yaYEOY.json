@@ -1,11 +1,11 @@
 {
   "folder": "1GLMg0h4TGwFqiLx",
-  "name": "Feathered",
+  "name": "Rash (WIP)",
   "type": "feature",
-  "img": "icons/svg/wing.svg",
+  "img": "icons/svg/hazard.svg",
   "system": {
-    "localizationKey": "REDSTEEL.Items.Feathered.name",
-    "description": "<p>Cannot fly while wet.</p>",
+    "localizationKey": "REDSTEEL.Items.Rash.name",
+    "description": "<p>Counterattacks against this target have a much higher chance to apply their effect.</p>",
     "options": [
       "feature",
       "trait"
@@ -39,6 +39,6 @@
     "default": 0
   },
   "sort": 0,
-  "_id": "rWzQsQyDb06h1ko6",
-  "_key": "!items!rWzQsQyDb06h1ko6"
+  "_id": "gkCVBVjpA4yaYEOY",
+  "_key": "!items!gkCVBVjpA4yaYEOY"
 }

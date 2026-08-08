@@ -1,11 +1,11 @@
 {
   "folder": "1GLMg0h4TGwFqiLx",
-  "name": "Photophobic",
+  "name": "Avenger (WIP)",
   "type": "feature",
-  "img": "icons/svg/blind.svg",
+  "img": "icons/svg/sword.svg",
   "system": {
-    "localizationKey": "REDSTEEL.Items.Photophobic.name",
-    "description": "<p>Suffers dim-light penalties while in bright light.</p>",
+    "localizationKey": "REDSTEEL.Items.Avenger.name",
+    "description": "<p>When an adjacent ally is hit, it may spend a reaction to strike back at the attacker.</p>",
     "options": [
       "feature",
       "trait"
@@ -39,6 +39,6 @@
     "default": 0
   },
   "sort": 0,
-  "_id": "u8iX3eB2SGEMIe38",
-  "_key": "!items!u8iX3eB2SGEMIe38"
+  "_id": "clIT41g7qDR1Okzv",
+  "_key": "!items!clIT41g7qDR1Okzv"
 }

@@ -1,11 +1,11 @@
 {
   "folder": "1GLMg0h4TGwFqiLx",
-  "name": "Death Burst",
+  "name": "Forest's Protection (WIP)",
   "type": "feature",
-  "img": "icons/svg/explosion.svg",
+  "img": "icons/svg/oak.svg",
   "system": {
-    "localizationKey": "REDSTEEL.Items.DeathBurst.name",
-    "description": "<p>On death it explodes and damages adjacent hexes.</p>",
+    "localizationKey": "REDSTEEL.Items.ForestSProtection.name",
+    "description": "<p>Has 30 temporary health, lost immediately if it catches fire.</p>",
     "options": [
       "feature",
       "trait"
@@ -39,6 +39,6 @@
     "default": 0
   },
   "sort": 0,
-  "_id": "OyKqWGuYiA3GeMkO",
-  "_key": "!items!OyKqWGuYiA3GeMkO"
+  "_id": "KeAmctrl7lUdL3I6",
+  "_key": "!items!KeAmctrl7lUdL3I6"
 }

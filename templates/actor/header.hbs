@@ -767,6 +767,15 @@
         <div class="attribute-armor">
           <label class="resource-label" data-tt-kind="stat" data-tt-id="mind">{{localize "REDSTEEL.Actor.Character.stats.mind.value.label"}}</label>
           <input type="text" name="system.stats.mind.value" value="{{system.stats.mind.value}}" class="attribute-score" data-dtype="Number" />
+          <input
+            type="text"
+            name="system.stats.mind.max"
+            value="{{system.stats.mind.sourceMax}}"
+            class="attribute-total"
+            data-dtype="Number"
+            data-class="stat-input"
+            data-tooltip="{{localize 'REDSTEEL.Actor.Character.stats.mind.max.label'}}"
+          />
         </div>
 
         <div class="attribute-armor">

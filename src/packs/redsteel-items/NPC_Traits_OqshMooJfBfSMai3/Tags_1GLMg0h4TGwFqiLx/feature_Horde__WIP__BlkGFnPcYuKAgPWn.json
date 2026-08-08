@@ -1,11 +1,11 @@
 {
   "folder": "1GLMg0h4TGwFqiLx",
-  "name": "Quick to React",
+  "name": "Horde (WIP)",
   "type": "feature",
-  "img": "icons/svg/upgrade.svg",
+  "img": "icons/svg/pawprint.svg",
   "system": {
-    "localizationKey": "REDSTEEL.Items.QuickToReact.name",
-    "description": "<p>After being hit, it gains advantage on one defense until the end of the round.</p>",
+    "localizationKey": "REDSTEEL.Items.Horde.name",
+    "description": "<p>+1 attack while adjacent to another ally with the Horde tag.</p>",
     "options": [
       "feature",
       "trait"
@@ -39,6 +39,6 @@
     "default": 0
   },
   "sort": 0,
-  "_id": "jvMKZr2Lpd4WP3v3",
-  "_key": "!items!jvMKZr2Lpd4WP3v3"
+  "_id": "BlkGFnPcYuKAgPWn",
+  "_key": "!items!BlkGFnPcYuKAgPWn"
 }

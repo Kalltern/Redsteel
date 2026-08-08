@@ -1,11 +1,11 @@
 {
   "folder": "1GLMg0h4TGwFqiLx",
-  "name": "Horde",
+  "name": "Charger (WIP)",
   "type": "feature",
-  "img": "icons/svg/pawprint.svg",
+  "img": "icons/svg/jump.svg",
   "system": {
-    "localizationKey": "REDSTEEL.Items.Horde.name",
-    "description": "<p>+1 attack while adjacent to another ally with the Horde tag.</p>",
+    "localizationKey": "REDSTEEL.Items.Charger.name",
+    "description": "<p>All of its attacks count as a charge.</p>",
     "options": [
       "feature",
       "trait"
@@ -39,6 +39,6 @@
     "default": 0
   },
   "sort": 0,
-  "_id": "BlkGFnPcYuKAgPWn",
-  "_key": "!items!BlkGFnPcYuKAgPWn"
+  "_id": "IQTdncYZW8O5QGCJ",
+  "_key": "!items!IQTdncYZW8O5QGCJ"
 }

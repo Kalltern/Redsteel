@@ -1,11 +1,11 @@
 {
   "folder": "1GLMg0h4TGwFqiLx",
-  "name": "Charger",
+  "name": "Deadly (WIP)",
   "type": "feature",
-  "img": "icons/svg/jump.svg",
+  "img": "icons/svg/sword.svg",
   "system": {
-    "localizationKey": "REDSTEEL.Items.Charger.name",
-    "description": "<p>All of its attacks count as a charge.</p>",
+    "localizationKey": "REDSTEEL.Items.Deadly.name",
+    "description": "<p>+2 attack if it did not move this round.</p>",
     "options": [
       "feature",
       "trait"
@@ -39,6 +39,6 @@
     "default": 0
   },
   "sort": 0,
-  "_id": "IQTdncYZW8O5QGCJ",
-  "_key": "!items!IQTdncYZW8O5QGCJ"
+  "_id": "BpqYJYVQzj44f1K4",
+  "_key": "!items!BpqYJYVQzj44f1K4"
 }

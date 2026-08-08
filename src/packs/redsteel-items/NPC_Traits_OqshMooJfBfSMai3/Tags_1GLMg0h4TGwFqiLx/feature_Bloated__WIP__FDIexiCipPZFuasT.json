@@ -1,11 +1,11 @@
 {
   "folder": "1GLMg0h4TGwFqiLx",
-  "name": "Watchful",
+  "name": "Bloated (WIP)",
   "type": "feature",
-  "img": "icons/svg/eye.svg",
+  "img": "icons/svg/pill.svg",
   "system": {
-    "localizationKey": "REDSTEEL.Items.Watchful.name",
-    "description": "<p>Can defend against attacks from behind.</p>",
+    "localizationKey": "REDSTEEL.Items.Bloated.name",
+    "description": "<p>Successful sneak attacks against it are always critical.</p>",
     "options": [
       "feature",
       "trait"
@@ -39,6 +39,6 @@
     "default": 0
   },
   "sort": 0,
-  "_id": "xQAql1KL9PIKTS5k",
-  "_key": "!items!xQAql1KL9PIKTS5k"
+  "_id": "FDIexiCipPZFuasT",
+  "_key": "!items!FDIexiCipPZFuasT"
 }

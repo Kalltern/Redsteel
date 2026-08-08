@@ -1,11 +1,11 @@
 {
   "folder": "1GLMg0h4TGwFqiLx",
-  "name": "Thick-Blooded",
+  "name": "Cowardly (WIP)",
   "type": "feature",
-  "img": "icons/skills/wounds/blood-drip-droplet-red.webp",
+  "img": "icons/svg/terror.svg",
   "system": {
-    "localizationKey": "REDSTEEL.Items.ThickBlooded.name",
-    "description": "<p>Loses all accumulated bleeding at the end of the round.</p>",
+    "localizationKey": "REDSTEEL.Items.Cowardly.name",
+    "description": "<p>Disadvantage on nerve tests unless a Leader is in the fight.</p>",
     "options": [
       "feature",
       "trait"
@@ -39,6 +39,6 @@
     "default": 0
   },
   "sort": 0,
-  "_id": "1NYTP558bRcYOLAi",
-  "_key": "!items!1NYTP558bRcYOLAi"
+  "_id": "vIQjP4WJXFV3E1pL",
+  "_key": "!items!vIQjP4WJXFV3E1pL"
 }

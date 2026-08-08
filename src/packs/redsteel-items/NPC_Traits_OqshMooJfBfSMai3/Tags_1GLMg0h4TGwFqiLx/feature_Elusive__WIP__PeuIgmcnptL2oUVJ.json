@@ -1,11 +1,11 @@
 {
   "folder": "1GLMg0h4TGwFqiLx",
-  "name": "Hysterical",
+  "name": "Elusive (WIP)",
   "type": "feature",
-  "img": "icons/svg/falling.svg",
+  "img": "icons/svg/jump.svg",
   "system": {
-    "localizationKey": "REDSTEEL.Items.Hysterical.name",
-    "description": "<p>When hit, it is pushed one hex in the direction of the attack.</p>",
+    "localizationKey": "REDSTEEL.Items.Elusive.name",
+    "description": "<p>After a successful dodge it must move one hex away from the attacker.</p>",
     "options": [
       "feature",
       "trait"
@@ -39,6 +39,6 @@
     "default": 0
   },
   "sort": 0,
-  "_id": "kBRg8V1YNobq2f2D",
-  "_key": "!items!kBRg8V1YNobq2f2D"
+  "_id": "PeuIgmcnptL2oUVJ",
+  "_key": "!items!PeuIgmcnptL2oUVJ"
 }

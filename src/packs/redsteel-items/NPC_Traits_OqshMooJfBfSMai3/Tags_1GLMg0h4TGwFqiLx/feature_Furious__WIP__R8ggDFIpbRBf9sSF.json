@@ -1,11 +1,11 @@
 {
   "folder": "1GLMg0h4TGwFqiLx",
-  "name": "Rash",
+  "name": "Furious (WIP)",
   "type": "feature",
-  "img": "icons/svg/hazard.svg",
+  "img": "icons/svg/explosion.svg",
   "system": {
-    "localizationKey": "REDSTEEL.Items.Rash.name",
-    "description": "<p>Counterattacks against this target have a much higher chance to apply their effect.</p>",
+    "localizationKey": "REDSTEEL.Items.Furious.name",
+    "description": "<p>All of its attacks are reckless attacks.</p>",
     "options": [
       "feature",
       "trait"
@@ -39,6 +39,6 @@
     "default": 0
   },
   "sort": 0,
-  "_id": "gkCVBVjpA4yaYEOY",
-  "_key": "!items!gkCVBVjpA4yaYEOY"
+  "_id": "R8ggDFIpbRBf9sSF",
+  "_key": "!items!R8ggDFIpbRBf9sSF"
 }

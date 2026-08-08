@@ -1,11 +1,11 @@
 {
   "folder": "1GLMg0h4TGwFqiLx",
-  "name": "Crumbling",
+  "name": "Thick-Blooded (WIP)",
   "type": "feature",
-  "img": "icons/svg/degen.svg",
+  "img": "icons/skills/wounds/blood-drip-droplet-red.webp",
   "system": {
-    "localizationKey": "REDSTEEL.Items.Crumbling.name",
-    "description": "<p>Every hit it takes lowers its armor by 2.</p>",
+    "localizationKey": "REDSTEEL.Items.ThickBlooded.name",
+    "description": "<p>Loses all accumulated bleeding at the end of the round.</p>",
     "options": [
       "feature",
       "trait"
@@ -39,6 +39,6 @@
     "default": 0
   },
   "sort": 0,
-  "_id": "PPpfnC5k7GrYHigk",
-  "_key": "!items!PPpfnC5k7GrYHigk"
+  "_id": "1NYTP558bRcYOLAi",
+  "_key": "!items!1NYTP558bRcYOLAi"
 }

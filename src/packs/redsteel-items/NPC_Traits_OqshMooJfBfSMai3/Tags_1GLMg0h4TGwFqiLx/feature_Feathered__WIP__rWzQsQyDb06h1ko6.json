@@ -1,11 +1,11 @@
 {
   "folder": "1GLMg0h4TGwFqiLx",
-  "name": "Venomous Blood",
+  "name": "Feathered (WIP)",
   "type": "feature",
-  "img": "icons/svg/poison.svg",
+  "img": "icons/svg/wing.svg",
   "system": {
-    "localizationKey": "REDSTEEL.Items.VenomousBlood.name",
-    "description": "<p>When hit, it deals 1d4 damage to the attacker.</p>",
+    "localizationKey": "REDSTEEL.Items.Feathered.name",
+    "description": "<p>Cannot fly while wet.</p>",
     "options": [
       "feature",
       "trait"
@@ -39,6 +39,6 @@
     "default": 0
   },
   "sort": 0,
-  "_id": "vWkDLZCq0YvsprVW",
-  "_key": "!items!vWkDLZCq0YvsprVW"
+  "_id": "rWzQsQyDb06h1ko6",
+  "_key": "!items!rWzQsQyDb06h1ko6"
 }
