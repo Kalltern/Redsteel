@@ -714,6 +714,21 @@ REDSTEEL.effectDefinitions = {
     stackBehavior: "ignore",
   },
 
+  // "Krvavý úder" (Cordinas IV) — armed by killing a Bleeding target with an
+  // attack, spent by the next attack whether it hits or misses. While it is
+  // held, getEffectRolls adds one guaranteed Bleeding to the attack packet
+  // (bonusStacks), and the createChatMessage consume hook in redsteel.mjs
+  // deletes it once the attack card is posted. Deliberately NOT part of the
+  // weaponEnchant exclusiveGroup and without the consumeOnAttack flag: those
+  // belong to the spell strike family, which is consumed one-per-attack by a
+  // different path and must not compete with this charge.
+  blood_strike: {
+    name: "Blood Strike",
+    img: "icons/skills/wounds/blood-spurt-spray-red.webp",
+    statuses: ["blood_strike"],
+    stackBehavior: "ignore",
+  },
+
   defensive_stance: {
     name: "Defensive stance",
     img: "icons/skills/melee/shield-block-gray-yellow.webp",
@@ -1741,6 +1756,139 @@ REDSTEEL.effectDefinitions = {
         custom: "conditionDamage",
         damage: "1d6",
         damageProfile: { expression: ["magic", "and", "dark"] },
+      },
+    },
+  },
+
+  // "Vypálené znamení" / "Burning Mark" — Magic + Fire DoT of 2d6 + SK/2 per
+  // round for three rounds, ignoring base armor. The SK term is baked into
+  // the damage formula in applyEffect's dynamic block (Fire Spell Power).
+  // Also nudges the target's chance to catch Burning from other sources.
+  burning_mark: {
+    name: "Burning Mark",
+    img: "icons/magic/fire/orb-vortex.webp",
+    statuses: ["burning_mark"],
+    // 1 tick onApply + 2 onRoundStart ticks = three rounds of damage.
+    defaultRounds: 2,
+    useDuration: true,
+    stackBehavior: "refresh",
+    triggers: {
+      onApply: {
+        custom: "conditionDamage",
+        damage: "2d6", // SK/2 appended at apply time → "2d6 + <SK/2>"
+        damageProfile: { expression: ["magic", "and", "fire"] },
+      },
+      onRoundStart: {
+        custom: "conditionDamage",
+        damage: "2d6",
+        damageProfile: { expression: ["magic", "and", "fire"] },
+      },
+    },
+    // "+10% chance to catch Burning from other sources" — the same ADD-mode
+    // applyChance target resist_stun uses, with the sign flipped.
+    changes: [
+      {
+        key: "system.effectMods.burn.applyChance",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: 10,
+      },
+    ],
+  },
+
+  // "Podchlazení" / "Hypothermia" — Magic + Frost DoT of 1d6 + SK/2 per round
+  // for three rounds, ignoring base armor. The SK term is baked into the
+  // damage formula in applyEffect's dynamic block (Water Spell Power).
+  hypothermia: {
+    name: "Hypothermia",
+    img: "icons/magic/water/barrier-ice-water-cube.webp",
+    statuses: ["hypothermia"],
+    defaultRounds: 2, // three rounds of damage
+    useDuration: true,
+    stackBehavior: "refresh",
+    triggers: {
+      onApply: {
+        custom: "conditionDamage",
+        damage: "1d6", // SK/2 appended at apply time → "1d6 + <SK/2>"
+        damageProfile: { expression: ["magic", "and", "frost"] },
+      },
+      onRoundStart: {
+        custom: "conditionDamage",
+        damage: "1d6",
+        damageProfile: { expression: ["magic", "and", "frost"] },
+      },
+    },
+  },
+
+  // "Černý svrab" / "Black Itch" — Magic + Dark DoT of 1d4 per round; only
+  // the duration scales with SK (Dark Spell Power / 2, rounded down), the
+  // damage stays flat. Each tick's damage is also gained as Corruption.
+  black_itch: {
+    name: "Black Itch",
+    img: "icons/skills/wounds/illness-disease-glowing-green.webp",
+    statuses: ["black_itch"],
+    defaultRounds: 1, // overwritten with SK/2 at apply time
+    useDuration: true,
+    stackBehavior: "refresh",
+    triggers: {
+      onApply: {
+        custom: "conditionDamage",
+        damage: "1d4",
+        damageProfile: { expression: ["magic", "and", "dark"] },
+        corruptionFromDamage: true,
+      },
+      onRoundStart: {
+        custom: "conditionDamage",
+        damage: "1d4",
+        damageProfile: { expression: ["magic", "and", "dark"] },
+        corruptionFromDamage: true,
+      },
+    },
+  },
+
+  // "Nákaza rozkladu (WIP)" / "Blight bomb" — Dark + Poison DoT of 3d6 + SK/2
+  // per round for six rounds, ignoring base armor. The SK term is baked into
+  // the damage formula in applyEffect's dynamic block (Blood Spell Power).
+  // The on-death explosion is not automated — it waits on P11's on-death
+  // triggers and is resolved manually at the table.
+  blight_bomb: {
+    name: "Blight bomb",
+    img: "icons/magic/death/skull-poison-green.webp",
+    statuses: ["blight_bomb"],
+    defaultRounds: 5, // six rounds of damage
+    useDuration: true,
+    stackBehavior: "refresh",
+    triggers: {
+      onApply: {
+        custom: "conditionDamage",
+        damage: "3d6", // SK/2 appended at apply time → "3d6 + <SK/2>"
+        damageProfile: { expression: ["dark", "and", "poison"] },
+      },
+      onRoundStart: {
+        custom: "conditionDamage",
+        damage: "3d6",
+        damageProfile: { expression: ["dark", "and", "poison"] },
+      },
+    },
+  },
+
+  // "Dotek Eluviel" / "Eluviel's touch" — heals 2 + SK per round for as long
+  // as it stays on the target; the SK term is baked into the stored heal
+  // formula in applyEffect's dynamic block (Body Spell Power). Indefinite by
+  // design (no defaultRounds/useDuration, like `restoration`'s cousin
+  // `regeneration`) — it only ends when someone removes it.
+  eluviels_touch: {
+    name: "Eluviel's touch",
+    img: "icons/magic/life/heart-cross-green.webp",
+    statuses: ["eluviels_touch"],
+    stackBehavior: "refresh",
+    triggers: {
+      onApply: {
+        custom: "regenerationHeal",
+        formula: "2", // SK appended at apply time → "2 + <SK>"
+      },
+      onRoundStart: {
+        custom: "regenerationHeal",
+        formula: "2",
       },
     },
   },

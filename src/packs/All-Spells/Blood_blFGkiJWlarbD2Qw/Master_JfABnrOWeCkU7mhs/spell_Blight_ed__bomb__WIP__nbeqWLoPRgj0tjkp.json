@@ -4,7 +4,7 @@
   "img": "icons/magic/acid/orb-bubble-smoke-drip.webp",
   "system": {
     "localizationKey": "",
-    "description": "Deals Dark + Poison damage equal to 3d6 + {{math spellPower \"/\" 2}} per round for six rounds. If the target dies while the spell is active, it explodes, dealing Dark + Acid damage equal to 4d6 + {{math spellPower \"*\" 3}} to all creatures in a 3 m area. Affected targets are also infected, and the spell remains on them for 1 + the remaining rounds. Ignores Armor.",
+    "description": "<p>Deals Dark + Poison damage equal to 3d6 + {{math spellPower \"/\" 2}} per round for six rounds. Ignores Armor.<br /><br />Not yet automated: if the target dies while the spell is active it explodes for 4d6 + {{math spellPower \"*\" 3}} Dark + Acid damage to everything within 3 m, infecting them for 1 + the remaining rounds. Resolve the explosion manually.</p>",
     "options": [
       "divine",
       "magic"
@@ -100,28 +100,29 @@
     "range": "12",
     "spellClass": "greater",
     "roll": {
-      "diceNum": 3,
-      "diceSize": "6",
-      "diceBonus": "@spellPower/2"
+      "diceNum": 0,
+      "diceSize": "0",
+      "diceBonus": ""
     },
-    "penetration": 100,
-    "dmgType1": "dark",
-    "bool2": "and",
-    "dmgType2": "poison",
+    "penetration": 0,
+    "dmgType1": "",
+    "bool2": "",
+    "dmgType2": "",
     "bool3": "",
     "dmgType3": "",
     "bool4": "",
     "dmgType4": "",
     "effects": {
-      "extra1": 0,
+      "extra1": -1,
       "extra2": 0,
       "extra3": 0,
       "stagger": null,
-      "bleed": null
+      "bleed": null,
+      "effectName1": "blight_bomb"
     },
     "attributeTest": "",
     "testModifier": "",
-    "effectType1": "",
+    "effectType1": "custom",
     "effectType2": "",
     "effectType3": ""
   },

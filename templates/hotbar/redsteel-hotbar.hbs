@@ -195,27 +195,55 @@
     <div class="rs-bg3-stack">
 
     {{!--
-      STATUS ROW: the character's conditions on the left, the armed roll
-      modifier on the right. GMs can edit a condition by clicking it and remove
-      it by right-clicking; there is deliberately no way to add one from here.
+      STATUS ROW: one tray of readouts, centred, with the armed roll modifier
+      and the two trays at the end. On a character the tray reads either the
+      sheet's condition row or its armor by damage type, whichever the chip at
+      its end last chose; on an NPC it carries both at once and drops the chip.
+      Either way it arrives as `trayRows` in one shape, so there is one loop
+      here rather than two nearly-identical ones.
+
+      Icons and colours are the sheet's own, and a state worth attention
+      brightens rather than the rest dimming. Whichever readouts have nothing
+      to report are dropped upstream, so what is here is what is going on.
+
+      No max beside the value: "/24" on seven readouts is what would push this
+      row past the width the attribute rows set, and the current number is the
+      one you read mid-combat. The tooltip still carries the ratio.
     --}}
     {{#if hasActor}}
     <div class="rs-bg3-row rs-bg3-row--status">
-      <div class="rs-bg3-effects">
-        {{#each statuses as |eff|}}
-        <div
-          class="rs-bg3-effect{{#if eff.disabled}} disabled{{/if}}{{#if eff.canManage}} manageable{{/if}}"
-          data-uuid="{{eff.uuid}}"
-          {{#if eff.canManage}}data-action="editEffect"{{/if}}
-          data-tt-kind="text"
-          data-tt-title="{{eff.name}}"
-          data-tt-text="{{#if eff.canManage}}REDSTEEL.Bg3Hotbar.EffectManage{{else}}REDSTEEL.Bg3Hotbar.EffectView{{/if}}"
-        >
-          <img src="{{eff.img}}" alt="{{eff.name}}" />
-        </div>
+      <div class="rs-bg3-stats-tray">
+        {{#each trayRows as |cond|}}
+        {{#if cond.divider}}
+        <div class="rs-bg3-cond-divider" role="separator"></div>
         {{else}}
-        <span class="rs-bg3-effects-empty">{{localize "REDSTEEL.Bg3Hotbar.NoEffects"}}</span>
+        <div
+          class="rs-bg3-cond-row{{#if cond.relevant}} relevant{{/if}}"
+          data-tt-kind="bg3Stat"
+          data-tt-id="{{cond.key}}"
+          data-tt-current="{{cond.value}}{{#if cond.ratio}}/{{cond.max}}{{/if}}"
+        >
+          <i class="rs-bg3-cond-icon {{cond.icon}}" style="color: {{cond.colour}};"></i>
+          <span class="rs-bg3-cond-value">{{cond.value}}</span>
+        </div>
+        {{/if}}
         {{/each}}
+
+        {{!--
+          The view chip, parked in the tray's right-hand pad and out of flow so
+          it takes no part in the centring. The arrow points the way the tray
+          is about to turn, and back again once it has. Absent on an NPC, whose
+          tray already carries both readings.
+        --}}
+        {{#if showTrayToggle}}
+        <button
+          type="button"
+          class="rs-bg3-cond-toggle"
+          data-action="toggleTrayView"
+          data-tt-kind="text"
+          data-tt-text="REDSTEEL.Bg3Hotbar.{{#if armorView}}ShowConditions{{else}}ShowArmor{{/if}}"
+        ><i class="fas fa-chevron-{{#if armorView}}left{{else}}right{{/if}}"></i></button>
+        {{/if}}
       </div>
 
       <button
@@ -398,7 +426,10 @@
         {{!-- `group`, not `../group`: it is a block param, so it stays in
              lexical scope inside this inner each. --}}
         data-kind="{{group.kind}}"
-        {{#if tag.tip}}data-tt-kind="text" data-tt-text="{{tag.tip}}"{{/if}}
+        {{!-- Race and feature tags stand for an Item, so they get its
+             description; the armor and damage-modifier tags are just numbers
+             and carry neither. --}}
+        {{#if tag.uuid}}data-tt-kind="bg3NpcTag" data-tt-uuid="{{tag.uuid}}"{{/if}}
       >{{tag.name}}</span>
       {{/each}}
       {{/each}}
@@ -504,53 +535,38 @@
   </div>
 
   {{!--
-    The right wing: the character sheet's condition row, stacked. Same tucked
-    extension as the resource columns on the left, mirrored. Icon first, value
-    beside it.
+    The right wing: the token conditions the character is carrying, as a column
+    of icons. Same tucked extension as the resource columns on the left,
+    mirrored. GMs can edit one by clicking it and remove it by right-clicking;
+    there is deliberately no way to add one from here.
+
+    The box is rendered for any actor, carrying conditions or not, so the
+    wrench below it keeps its place as effects come and go.
   --}}
   <div class="rs-bg3-right">
 
-  {{#if conditions.length}}
-  <div class="rs-bg3-cond-strip{{#if condStacked}} stacked{{else}}{{#if condFolded}} folded{{/if}}{{/if}}">
-    {{#each conditions as |cond|}}
-    {{#if cond.divider}}
-    <div class="rs-bg3-cond-divider" role="separator"></div>
-    {{else}}
+  {{#if hasActor}}
+  {{!--
+    Frame outside, tray inside, the same two layers the bar itself has: the
+    sockets are cut into the panel rather than being boxes stood on it. The
+    icons fill the tray from the top, so the first condition on a character is
+    always in the same place and the column grows downward as more land.
+  --}}
+  <div class="rs-bg3-status-strip" style="--rs-status-cols: {{statusCols}};">
+    <div class="rs-bg3-status-tray">
+    {{#each statuses as |eff|}}
     <div
-      class="rs-bg3-cond-row{{#if cond.relevant}} relevant{{/if}}"
-      data-tt-kind="bg3Stat"
-      data-tt-id="{{cond.key}}"
-      data-tt-current="{{cond.value}}{{#if cond.ratio}}/{{cond.max}}{{/if}}"
-    >
-      <i class="rs-bg3-cond-icon {{cond.icon}}" style="color: {{cond.colour}};"></i>
-      {{#if @root.condShowValues}}
-      <span class="rs-bg3-cond-value">{{cond.value}}</span>
-      {{!-- No max when stacked: "/24" under the icon is what widened the strip,
-           and the current value is the number you actually read off an NPC.
-           The tooltip still carries the ratio. --}}
-      {{#unless @root.condStacked}}
-      {{#if cond.ratio}}<span class="rs-bg3-cond-max">/{{cond.max}}</span>{{/if}}
-      {{/unless}}
-      {{/if}}
-    </div>
-    {{/if}}
-    {{/each}}
-
-    {{!--
-      A chip straddling the middle of the outer border. The strip grows
-      rightward when it opens, so the arrow points the way the panel is about
-      to move. Absent on an NPC: the strip is already showing everything it
-      has, so there is nothing behind the chevron.
-    --}}
-    {{#unless condStacked}}
-    <button
-      type="button"
-      class="rs-bg3-cond-toggle"
-      data-action="toggleConditions"
+      class="rs-bg3-effect{{#if eff.disabled}} disabled{{/if}}{{#if eff.canManage}} manageable{{/if}}"
+      data-uuid="{{eff.uuid}}"
+      {{#if eff.canManage}}data-action="editEffect"{{/if}}
       data-tt-kind="text"
-      data-tt-text="REDSTEEL.Bg3Hotbar.{{#if condFolded}}Unfold{{else}}Fold{{/if}}"
-    ><i class="fas fa-chevron-{{#if condFolded}}right{{else}}left{{/if}}"></i></button>
-    {{/unless}}
+      data-tt-title="{{eff.name}}"
+      data-tt-text="{{#if eff.canManage}}REDSTEEL.Bg3Hotbar.EffectManage{{else}}REDSTEEL.Bg3Hotbar.EffectView{{/if}}"
+    >
+      <img src="{{eff.img}}" alt="{{eff.name}}" />
+    </div>
+    {{/each}}
+    </div>
   </div>
   {{/if}}
 

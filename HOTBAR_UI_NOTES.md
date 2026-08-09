@@ -9,13 +9,20 @@ trip to discover. Read before touching layout.
 
 The files and the user-facing setting say **Redsteel**. Everything internal
 still says `bg3`: the setting key `redsteel.bg3Hotbar`, the user flags
-(`bg3HotbarRows`, `bg3HotbarSkillRows`, `bg3HotbarCondFolded`,
+(`bg3HotbarRows`, `bg3HotbarSkillRows`, `bg3HotbarArmorView`,
 `bg3PlayersTucked`), the `Bg3Hotbar` class, the `rs-bg3-` CSS prefix and the
 `REDSTEEL.Bg3Hotbar.*` lang block.
 
 **Do not rename those.** The setting key and the flags are stored per user, so a
 rename silently orphans everyone's choices. The class name generates the
 `renderBg3Hotbar` hook that `endTurnButton.mjs` listens for.
+
+The one flag that was replaced rather than kept is `bg3HotbarCondFolded`, whose
+chip now switches the stat tray between conditions and armor instead of folding
+it. A new key (`bg3HotbarArmorView`) rather than a reused one, because a stored
+`true` used to mean "folded" and would have put its owner in the armor view for
+no reason they could see. Orphaning a flag is the right move only when its
+meaning changes under it; otherwise the rule above stands.
 
 ## Architecture, and why
 
@@ -68,8 +75,14 @@ added to its root.
 - **A wrapping flex box inside a shrink-to-fit parent** can resolve to its full
   cap rather than its contents, padding empty space onto the far side and
   dragging the whole wing outward. Add `width: max-content` alongside the cap.
+- **A wrapping flex container cannot size itself.** Its intrinsic width is
+  computed as though every item sat on one line, so a column-wrap box in a wing
+  comes out as wide as all its contents in a row. State the width instead: the
+  condition strip takes a column count from the template (`statusCols`, six
+  icons per column) and computes its own width from it. The count lives in both
+  `redsteelHotbar.mjs` and the CSS comment, and the two must agree.
 - **Only the bar is in flow.** `.rs-bg3-anchor` is the bar; the left wing
-  (portraits, resource strip), the right wing (conditions, wrench) and the
+  (portraits, resource strip), the right wing (condition icons, wrench) and the
   capacity readout are all absolutely positioned off its edges. Nothing in the
   wings may take layout space, or gaining a teammate shifts the bar under the
   user's cursor.

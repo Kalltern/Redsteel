@@ -26,7 +26,7 @@
 import { RedsteelActorSheet } from "../sheets/actor-sheet.mjs";
 import { getActorBaneTags } from "./baneCombat.mjs";
 import { postSpeedTest } from "./speedTest.mjs";
-import { registerTooltip, ttEscape } from "./tooltips.mjs";
+import { registerTooltip, ttEscape, ttFrame } from "./tooltips.mjs";
 import {
   getRollModifierState,
   openModifierDialog,
@@ -37,7 +37,12 @@ const TEAM_HEALTH_SETTING = "bg3HotbarTeamHealth";
 const BODY_CLASS = "redsteel-bg3-hotbar";
 const ROWS_FLAG = "bg3HotbarRows";
 const SKILL_ROWS_FLAG = "bg3HotbarSkillRows";
-const COND_FOLDED_FLAG = "bg3HotbarCondFolded";
+/* Replaces the old bg3HotbarCondFolded, which is dead: the tray always carries
+   its numbers now, and the chip beside them switches what is being counted
+   rather than whether it is spelled out. A new key rather than a reused one,
+   since a stored `true` meant "folded" and would land its owner in the armor
+   view for no reason they could see. */
+const ARMOR_VIEW_FLAG = "bg3HotbarArmorView";
 const CAPACITY_SETTING = "bg3HotbarCapacity";
 const SLIM_CHAT_SETTING = "bg3SlimChat";
 const TUCK_PLAYERS_FLAG = "bg3PlayersTucked";
@@ -61,6 +66,19 @@ const FAVOURITE_SLOTS = MAX_SKILL_ROWS * FAVOURITES_PER_ROW;
  * as a promise of sixteen slots the character does not have.
  */
 const EMPTY_POTION_SLOTS = 4;
+
+/**
+ * How many condition icons fit in one column of the right-wing tray, which is
+ * what the template counts columns off. Stated rather than measured, and it has
+ * to agree with the CSS: the tray's content box is 144px tall (--rs-bg3-res-h
+ * less the frame's padding and border and the tray's own), and six 20px icons
+ * at the 3px gap is 135px. A seventh would be 158px and spill.
+ *
+ * The count exists because a wrapping flex container's intrinsic width is
+ * computed as though every item sat on one line, so the strip cannot size
+ * itself — see the note on .rs-bg3-status-strip.
+ */
+const STATUS_PER_COLUMN = 6;
 
 const SLOTS_PER_ROW = 10;
 // Zero is a real setting: the action row covers what the preset macros did, so
@@ -234,64 +252,108 @@ const STRIP_RESOURCES = [
 ];
 
 /**
- * The character sheet's condition row, mirrored into the panel's right-hand
- * extension. Icons and colours are copied verbatim from templates/actor/
- * header.hbs so the two read as the same set of stats, and the sheet's three
- * groups (resources, status, defense) become the three columns.
+ * The character sheet's condition row, mirrored into the panel's status row.
+ * Icons and colours are copied verbatim from templates/actor/header.hbs so the
+ * two read as the same set of stats, in the sheet's own order.
  *
  * `relevant` is what makes an icon glow: the state is worth your attention
  * right now. Armor and detection have none, they are steady numbers rather
  * than conditions. `derived` entries read straight off system and have no max.
+ *
+ * `hide` drops a readout the character has nothing to say about — an unwounded,
+ * unfatigued, uncorrupted character carries five zeroes, and five zeroes in a
+ * row are five things to look past to reach the two numbers that matter. What
+ * is left is what is actually going on. Armor and detection have no `hide`:
+ * they are always worth reading, and without them the tray could empty out
+ * entirely and collapse the row.
  */
-const CONDITION_GROUPS = [
-  [
-    {
-      key: "graveWounds",
-      icon: "fa-light fa-bone-break",
-      colour: "rgb(102, 32, 29)",
-      relevant: (s) => s.value > 0,
-    },
-    {
-      key: "mind",
-      icon: "fa-light fa-head-side-brain",
-      colour: "rgb(116, 119, 126)",
-      relevant: (s) => s.value < s.max,
-    },
-  ],
-  [
-    {
-      key: "insanity",
-      icon: "fa-light fa-hurricane",
-      colour: "rgb(104, 40, 73)",
-      relevant: (s) => s.max > 0 && s.value > s.max / 2,
-    },
-    {
-      key: "corruption",
-      icon: "fa-sharp fa-thin fa-galaxy",
-      colour: "rgb(70, 35, 118)",
-      relevant: (s) => s.value > 0,
-    },
-    {
-      key: "fatigue",
-      icon: "fa-light fa-tent",
-      colour: "rgb(58, 68, 84)",
-      relevant: (s) => s.value > 0,
-    },
-  ],
-  [
-    {
-      key: "armor",
-      icon: "fa-light fa-shield-quartered",
-      colour: "rgb(96, 74, 48)",
-      derived: (sys) => sys.armor?.total,
-    },
-    {
-      key: "detection",
-      icon: "fa-light fa-eye",
-      colour: "rgb(116, 119, 126)",
-      derived: (sys) => sys.detection,
-    },
-  ],
+const CONDITIONS = [
+  {
+    key: "graveWounds",
+    icon: "fa-light fa-bone-break",
+    colour: "rgb(102, 32, 29)",
+    relevant: (s) => s.value > 0,
+    hide: (s) => s.value <= 0,
+  },
+  {
+    key: "mind",
+    icon: "fa-light fa-head-side-brain",
+    colour: "rgb(116, 119, 126)",
+    relevant: (s) => s.value < s.max,
+    // Mind counts down rather than up, so a full one is the quiet state.
+    hide: (s) => s.value >= s.max,
+  },
+  {
+    key: "insanity",
+    icon: "fa-light fa-hurricane",
+    colour: "rgb(104, 40, 73)",
+    relevant: (s) => s.max > 0 && s.value > s.max / 2,
+    hide: (s) => s.value <= 0,
+  },
+  {
+    key: "corruption",
+    icon: "fa-sharp fa-thin fa-galaxy",
+    colour: "rgb(70, 35, 118)",
+    relevant: (s) => s.value > 0,
+    hide: (s) => s.value <= 0,
+  },
+  {
+    key: "fatigue",
+    icon: "fa-light fa-tent",
+    colour: "rgb(58, 68, 84)",
+    relevant: (s) => s.value > 0,
+    hide: (s) => s.value <= 0,
+  },
+  {
+    key: "detection",
+    icon: "fa-light fa-eye",
+    colour: "rgb(116, 119, 126)",
+    derived: (sys) => sys.detection,
+  },
+];
+
+/**
+ * The plain armor total. It heads the armor view rather than sitting among the
+ * conditions, where it was the one steady number in a row of things that had
+ * just changed. Always rendered, so the armor view has something to say about
+ * a character with no elemental armor at all.
+ */
+const ARMOR_BASE = {
+  key: "armor",
+  icon: "fa-light fa-shield-quartered",
+  colour: "rgb(96, 74, 48)",
+};
+
+/**
+ * The other reading of the same tray: armor by damage type. Icons and colours
+ * are the NPC sheet's armor row from templates/actor/header.hbs, so a creature
+ * reads the same on the panel as it does on its own sheet.
+ *
+ * Totals, not the sheet's editable `value`: gear counts, and the total is the
+ * number a hit is actually measured against. A type the character has no armor
+ * against is dropped, so what is left is what a hit of that kind runs into.
+ *
+ * The acid flask is duotone on the sheet, with a dark body and a lighter
+ * liquid; here it takes the liquid's colour, since a single flat colour at
+ * 17px is all the tray has room to say.
+ */
+const ARMOR_TYPES = [
+  { key: "acid", icon: "fa-duotone fa-light fa-flask", colour: "rgb(80, 107, 41)" },
+  { key: "fire", icon: "fa-sharp fa-light fa-fire", colour: "rgb(123, 83, 30)" },
+  { key: "frost", icon: "fa-solid fa-snowflake", colour: "rgb(46, 70, 92)" },
+  {
+    key: "lightning",
+    icon: "fa-light fa-bolt-lightning",
+    colour: "rgb(109, 93, 38)",
+  },
+  {
+    key: "poison",
+    icon: "fa-solid fa-skull-crossbones",
+    colour: "rgb(61, 89, 86)",
+  },
+  { key: "dark", icon: "fa-sharp fa-thin fa-galaxy", colour: "rgb(44, 0, 172)" },
+  { key: "holy", icon: "fa-regular fa-sun", colour: "rgb(105, 105, 105)" },
+  { key: "magic", icon: "fa-sharp fa-light fa-sparkle", colour: "rgb(0, 68, 124)" },
 ];
 
 /**
@@ -491,18 +553,65 @@ function registerPanelStatTooltip() {
   registerTooltip("bg3Stat", ({ id, dataset }) => {
     if (!id) return null;
 
-    // The two key shapes the sheet uses: pools live under `stats`, armor and
-    // detection under `Condition`. Foundry hands back the key itself when it
-    // has no entry, which is what makes the fallback detectable.
+    // The three key shapes: pools live under `stats`, armor and detection
+    // under `Condition`, and the tray's armor view asks for damage types,
+    // which the panel already names for the NPC tag row. Foundry hands back
+    // the key itself when it has no entry, which is what makes the fallback
+    // detectable. Damage types come last so nothing that already had a name
+    // can be shadowed by one.
     const name = localizeFirst(
       `REDSTEEL.Actor.Character.stats.${id}.value.label`,
       `REDSTEEL.Actor.Character.Condition.${id}`,
+      `REDSTEEL.Bg3Hotbar.DamageType.${id}`,
     );
 
     return `<div class="rs-bg3-tip" data-rs-res="${ttEscape(id)}">
       <span class="rs-bg3-tip-name">${ttEscape(name ?? id)}</span>
       <span class="rs-bg3-tip-value">${ttEscape(dataset.ttCurrent ?? "")}</span>
     </div>`;
+  });
+}
+
+/**
+ * The NPC tag row's race and feature tags: hovering one reads out what it
+ * actually does.
+ *
+ * A tag carries the item's uuid rather than its id, so this resolves without
+ * the panel having to hand the provider an actor. `localizedDescription` and
+ * not `system.description`, because the packs store the English prose on the
+ * document and the Czech under the localization key — the same rule the tag's
+ * name already follows. The prose is HTML from the editor, so it goes in
+ * unescaped exactly as the shared `item` provider does; only the fallback,
+ * which is plain text, is escaped.
+ */
+function registerNpcTagTooltip() {
+  registerTooltip("bg3NpcTag", ({ dataset }) => {
+    if (!dataset.ttUuid) return null;
+
+    let item = null;
+    try {
+      item = fromUuidSync(dataset.ttUuid);
+    } catch (err) {
+      item = null;
+    }
+    if (!item) return null;
+
+    // An emptied editor leaves "<p></p>" behind rather than "", so the test for
+    // "has a description" has to be on the text, not on the markup.
+    const desc = String(item.localizedDescription ?? "");
+    const hasText = !!desc
+      .replace(/<[^>]*>/g, "")
+      .replace(/&nbsp;/g, " ")
+      .trim();
+    const body = hasText
+      ? desc
+      : ttEscape(game.i18n.localize("REDSTEEL.Bg3Hotbar.NoDescription"));
+
+    return ttFrame({
+      title: item.localizedName ?? item.name,
+      img: item.img,
+      body: `<div class="tt-desc">${body}</div>`,
+    });
   });
 }
 
@@ -795,7 +904,7 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       togglePotions: this._onTogglePotions,
       usePotionItem: this._onUsePotionItem,
       pickWeaponSet: this._onPickWeaponSet,
-      toggleConditions: this._onToggleConditions,
+      toggleTrayView: this._onToggleTrayView,
     },
   };
 
@@ -837,13 +946,13 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
   }
 
   /**
-   * Whether the condition extension is folded down to bare icons. Folded by
-   * default: the glow already says which states want attention, and the exact
-   * numbers are a click or a hover away.
+   * Whether the status-row tray is showing armor by damage type rather than
+   * the character's conditions. Conditions by default: that is the reading you
+   * want every round, where the armor breakdown is something you check once
+   * when you meet a creature and then remember.
    */
-  get condFolded() {
-    const raw = game.user.getFlag("redsteel", COND_FOLDED_FLAG);
-    return raw === undefined ? true : !!raw;
+  get armorView() {
+    return !!game.user.getFlag("redsteel", ARMOR_VIEW_FLAG);
   }
 
   /** How many favourite-skill rows are on show (1..4). */
@@ -890,6 +999,7 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     const attributes = this.#prepareAttributes(actor);
     // NPCs carry only spd, ini and res, so the secondary group can come back
     // shorter than the character list. hasAttributes covers an empty pair.
+    const statuses = this.#prepareStatuses(actor);
 
     return Object.assign(context, {
       hasActor: !!actor,
@@ -908,7 +1018,11 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       // actor has no art".
       portraitImg: actor?.img ?? "icons/svg/d20-black.svg",
       portraitName: actor?.name ?? game.i18n.localize("REDSTEEL.Bg3Hotbar.NoActor"),
-      statuses: this.#prepareStatuses(actor),
+      statuses,
+      // The width of the right-wing strip, in columns. Never zero: with no
+      // conditions up the box still draws, one column wide, holding the empty
+      // glyph.
+      statusCols: Math.max(1, Math.ceil(statuses.length / STATUS_PER_COLUMN)),
       modifier: this.#prepareModifier(actor),
       weaponSets: this.#prepareWeaponSets(actor),
       potions: this.#preparePotions(actor),
@@ -928,15 +1042,14 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
         }),
       ),
       resourceBars: this.#prepareResourceBars(actor),
-      conditions: this.#prepareConditions(actor),
-      condFolded: this.condFolded,
-      // An NPC carries only mind and armor, so there is nothing worth folding
-      // away: the strip is static and stacks each value under its icon instead.
-      // The fold flag is per user rather than per actor, so it is ignored here
-      // rather than cleared — a GM who folded the strip on their own character
-      // should find it folded again when they go back to it.
-      condStacked: actor?.type === "npc",
-      condShowValues: actor?.type === "npc" || !this.condFolded,
+      // One tray, two readings on a character and both at once on an NPC. The
+      // flag is per user rather than per actor, so a player who switched to
+      // armor stays there as the panel rebinds.
+      trayRows: this.#prepareTrayRows(actor),
+      armorView: this.armorView,
+      // No chip on an NPC: with both readings already in the tray there is
+      // nothing behind it.
+      showTrayToggle: !!actor && actor.type !== "npc",
       teammates: this.#prepareTeammates(actor),
       attributes,
       hasAttributes: !!(attributes.primary.length || attributes.secondary.length),
@@ -1121,43 +1234,96 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
   }
 
   /**
-   * The sheet's condition row as a single stacked column, with a rule between
-   * each of the sheet's three groups. Anything the actor does not carry is
-   * skipped, and a group left with nothing in it takes its divider with it: an
-   * NPC has mind and armor but none of the status group.
+   * The sheet's condition row as a run of readouts for the status-row tray,
+   * with a rule between every two of them rather than only at the sheet's group
+   * boundaries: once the quiet ones drop out, whichever are left are a set of
+   * unrelated numbers and each wants its own compartment.
+   *
+   * Skipped: anything the actor does not carry (an NPC has mind and detection
+   * but none of the status group) and anything its own `hide` calls quiet.
    */
   #prepareConditions(actor) {
     const sys = actor?.system;
     if (!sys) return [];
 
     const out = [];
-    for (const group of CONDITION_GROUPS) {
-      const rows = [];
-      for (const entry of group) {
-        if (entry.derived) {
-          const value = entry.derived(sys);
-          if (value === undefined || value === null) continue;
-          rows.push({ ...entry, value: Number(value) || 0, ratio: false });
-          continue;
-        }
+    for (const entry of CONDITIONS) {
+      let row;
 
+      if (entry.derived) {
+        const value = entry.derived(sys);
+        if (value === undefined || value === null) continue;
+        row = { ...entry, value: Number(value) || 0, ratio: false };
+      } else {
         const stat = sys.stats?.[entry.key];
         if (!stat) continue;
         const value = Number(stat.value ?? 0);
         const max = Number(stat.max ?? 0);
-        rows.push({
+        if (entry.hide?.({ value, max })) continue;
+        row = {
           ...entry,
           value,
           max,
           ratio: true,
           relevant: !!entry.relevant?.({ value, max }),
-        });
+        };
       }
-      if (!rows.length) continue;
+
       if (out.length) out.push({ divider: true });
-      out.push(...rows);
+      out.push(row);
     }
     return out;
+  }
+
+  /**
+   * The tray's other reading: armor by damage type, in the same row shape the
+   * conditions use so the two are interchangeable in the template.
+   *
+   * The plain total leads, then the eight types, each only if it has something
+   * to say. Nothing here is `relevant`: armor is a steady number, and a glow
+   * would be claiming a threshold the rules do not have.
+   */
+  #prepareArmorRows(actor) {
+    const armor = actor?.system?.armor;
+    if (!armor) return [];
+
+    const out = [{ ...ARMOR_BASE, value: Number(armor.total) || 0, ratio: false }];
+
+    for (const entry of ARMOR_TYPES) {
+      const total = Number(armor[entry.key]?.total ?? 0);
+      if (!total) continue;
+      out.push({ divider: true });
+      out.push({ ...entry, value: total, ratio: false });
+    }
+    return out;
+  }
+
+  /**
+   * What the status-row tray is showing, for whichever kind of actor is bound.
+   *
+   * A character gets one reading at a time, because a player is watching their
+   * own conditions change round by round and the armor breakdown is something
+   * they already know; the chip switches between the two.
+   *
+   * An NPC gets both at once and no chip. A GM reads an NPC to answer one
+   * question — what happens if I hit it with this — and the answer is spread
+   * across both halves. There is no round-by-round watching to protect, most
+   * of the condition half is missing on an NPC anyway, and a per-user switch
+   * would be at odds with clicking through a dozen tokens in a turn.
+   */
+  #prepareTrayRows(actor) {
+    if (!actor) return [];
+    if (actor.type !== "npc") {
+      return this.armorView
+        ? this.#prepareArmorRows(actor)
+        : this.#prepareConditions(actor);
+    }
+
+    const conditions = this.#prepareConditions(actor);
+    const armor = this.#prepareArmorRows(actor);
+    if (!conditions.length) return armor;
+    if (!armor.length) return conditions;
+    return [...conditions, { divider: true }, ...armor];
   }
 
   /**
@@ -1321,14 +1487,19 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     // silently yielded nothing in this codebase before.
     const raceItem = actor.items.contents.find((item) => item.type === "race");
     const race = raceItem
-      ? [{ name: raceItem.localizedName ?? raceItem.name }]
+      ? [{ name: raceItem.localizedName ?? raceItem.name, uuid: raceItem.uuid }]
       : [];
 
+    // Every feature, not just `option === "trait"`. New NPCs can only be given
+    // traits (Item#_preCreate rejects the rest), but NPCs built before that
+    // guard can still be carrying a plain "special feature", and one that is on
+    // the creature should be on the row that says what the creature is.
     const traits = actor.items.contents
-      .filter((item) => item.type === "feature" && item.system?.option === "trait")
+      .filter((item) => item.type === "feature")
       .map((item) => ({
         name: item.localizedName ?? item.name,
-        tip: item.name,
+        // The uuid, not the name: the tooltip shows the item's description.
+        uuid: item.uuid,
       }));
 
     // Typed armor, value included, and only where there is one. A zero here is
@@ -1905,14 +2076,16 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
   }
 
   /**
-   * Fold the condition extension down to bare values, or open it back up to
-   * value and max.
+   * Swap the status-row tray between the character's conditions and its armor
+   * by damage type. Two readings of the same strip of numbers, and which one
+   * you want depends on whether you are about to take a hit or about to spend
+   * a turn recovering.
    *
    * @this {Bg3Hotbar}
    */
-  static async _onToggleConditions(event) {
+  static async _onToggleTrayView(event) {
     if (isRightClick(event)) return;
-    await game.user.setFlag("redsteel", COND_FOLDED_FLAG, !this.condFolded);
+    await game.user.setFlag("redsteel", ARMOR_VIEW_FLAG, !this.armorView);
     this.render();
   }
 
@@ -2381,6 +2554,7 @@ export function registerRedsteelHotbar() {
   if (!game.settings.get("redsteel", SETTING)) return;
 
   registerPanelStatTooltip();
+  registerNpcTagTooltip();
 
   Hooks.once("ready", () => {
     document.body.classList.add(BODY_CLASS);

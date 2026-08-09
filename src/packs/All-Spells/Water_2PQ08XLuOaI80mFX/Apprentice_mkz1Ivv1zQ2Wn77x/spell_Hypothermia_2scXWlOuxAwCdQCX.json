@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/water/barrier-ice-water-cube.webp",
   "system": {
-    "description": "<p>60% chance to Slow the Target while also dealing 1d6 + {{math spellPower \"/\" 2}} damage over three turns. <br>Ignores armor.</p>",
+    "description": "<p>60% chance to Slow the target. Deals Magic + Frost damage equal to 1d6 + {{math spellPower \"/\" 2}} per round for three rounds. Ignores armor.</p>",
     "options": [
       "divine",
       "magic"
@@ -98,14 +98,14 @@
     "range": "15",
     "spellClass": "lesser",
     "roll": {
-      "diceNum": 1,
-      "diceSize": "6",
-      "diceBonus": "@spellPower/2"
+      "diceNum": 0,
+      "diceSize": "0",
+      "diceBonus": ""
     },
-    "penetration": 100,
-    "dmgType1": "magic",
-    "bool2": "and",
-    "dmgType2": "frost",
+    "penetration": 0,
+    "dmgType1": "",
+    "bool2": "",
+    "dmgType2": "",
     "bool3": "",
     "dmgType3": "",
     "bool4": "",
@@ -117,12 +117,13 @@
       "effect4": "0",
       "bleed": null,
       "extra1": 60,
-      "extra2": null,
+      "extra2": -1,
       "extra3": null,
-      "stagger": null
+      "stagger": null,
+      "effectName2": "hypothermia"
     },
     "effectType1": "slow",
-    "effectType2": "",
+    "effectType2": "custom",
     "effectType3": "",
     "attributeTest": "",
     "testModifier": ""

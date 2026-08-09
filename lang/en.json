@@ -77,8 +77,8 @@
         "firstAid": "First aid",
         "effects": "Effect manager"
       },
-      "Fold": "Fold: show current values only",
-      "Unfold": "Unfold: show maximums too",
+      "ShowArmor": "Show armor by damage type",
+      "ShowConditions": "Show conditions",
       "SettingsTitle": "Bar settings",
       "SettingsTooltip": "Bar settings: how many skill and macro rows to show.",
       "SettingsSave": "Save",
@@ -122,7 +122,8 @@
       },
       "NoTags": "Nothing of note",
       "Race": "Race",
-      "Armor": "Armor"
+      "Armor": "Armor",
+      "NoDescription": "No description provided"
     },
     "Calendaria": {
       "RerollNote": {
@@ -4468,6 +4469,13 @@
         "DropNotGlobal": "Drag the feature from the sidebar or a compendium, not off an actor.",
         "DropDuplicate": "{name} is already granted by this race."
       }
+    },
+    "BloodStrike": {
+      "OpenWoundOption": "Open Wound — spend {cost} Life from the Blood Reserve for 1 Bleeding",
+      "ReserveStatus": "Blood Reserve ({name}): {spent} committed of {reserve}",
+      "ReserveTooLow": "{name} needs {cost} Life in the Blood Reserve, but has {reserve}.",
+      "OpenWoundApplied": "{name} tears the wound open on {targets} — {cost} Life from the Blood Reserve, 1 Bleeding.",
+      "ChargeEarned": "{name} cuts down a bleeding foe. The next attack causes one extra Bleeding (Blood Strike)."
     },
     "Banes": {
       "PickerTitle": "Choose a Bane ({count})",

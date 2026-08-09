@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/skills/wounds/illness-disease-glowing-green.webp",
   "system": {
-    "description": "The target is afflicted by microscopic parasites for {{math spellPower \"/\" 2}} + 1 rounds, suffering 1d4 damage each round. The Damage dealt is also gained as Corruption. Causes unbearable itching: the target loses 1 Action and 1 Reaction each round. Corruption +6. Ignores Armor.",
+    "description": "<p>The target is afflicted by microscopic parasites for {{math spellPower \"/\" 2}} + 1 rounds, suffering 1d4 Magic + Dark damage each round. The damage dealt is also gained as Corruption. Ignores Armor. Corruption +6.<br /><br />The unbearable itching also costs the target 1 Action and 1 Reaction each round — resolve that at the table.</p>",
     "options": [
       "divine",
       "magic"
@@ -66,9 +66,9 @@
     ],
     "resources": [
       {
-        "mode": "",
-        "amount": "",
-        "type": ""
+        "mode": "add",
+        "amount": 6,
+        "type": "Corruption"
       }
     ],
     "resourceOptions": {
@@ -93,14 +93,14 @@
     "range": "8",
     "spellClass": "lesser",
     "roll": {
-      "diceNum": 1,
-      "diceSize": 4,
+      "diceNum": 0,
+      "diceSize": "0",
       "diceBonus": ""
     },
-    "penetration": 100,
-    "dmgType1": "magic",
-    "bool2": "and",
-    "dmgType2": "dark",
+    "penetration": 0,
+    "dmgType1": "",
+    "bool2": "",
+    "dmgType2": "",
     "bool3": "",
     "dmgType3": "",
     "bool4": "",
@@ -109,8 +109,11 @@
       "effect1": "0",
       "effect2": "0",
       "effect3": "0",
-      "effect4": "0"
-    }
+      "effect4": "0",
+      "extra1": -1,
+      "effectName1": "black_itch"
+    },
+    "effectType1": "custom"
   },
   "effects": [],
   "folder": "pwmVRgAOpIMg3gH9",

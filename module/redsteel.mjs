@@ -1249,6 +1249,21 @@ Hooks.on("createChatMessage", async (message) => {
     const actor = _redsteelSpeakerActor(message);
     if (!actor) return;
 
+    // Krvavý úder (Cordinas IV): the charge is spent by the next attack whether
+    // it lands or not, so it goes the moment the card is posted — the packet is
+    // built at roll time, so a miss burns it too. Gated on the card actually
+    // carrying the bonus rather than on "any attack card": paths that build
+    // their own effects without getEffectRolls (a thrown explosive) never got
+    // the extra Bleeding, and must not eat the charge. Kept separate from the
+    // strike lookup below — an actor can hold both, each spent on its own
+    // terms.
+    if (Number(atk.effects?.bleed?.bonusStacks) > 0) {
+      const bloodStrike = actor.effects.find((e) =>
+        e.statuses?.has("blood_strike"),
+      );
+      if (bloodStrike) await bloodStrike.delete();
+    }
+
     const strike = actor.effects.find((e) =>
       e.getFlag("redsteel", "consumeOnAttack"),
     );

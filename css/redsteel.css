@@ -8597,23 +8597,46 @@ body.redsteel-bg3-hotbar #hotbar {
   flex-wrap: nowrap;
 }
 
-/* --- Status row (effects + roll modifier) ---- */
+/* --- Status row (stat tray + roll modifier) -- */
 
 #redsteel-bg3-hotbar .rs-bg3-row--status {
   gap: 8px;
   justify-content: space-between;
 }
 
-/* A tray cut into the panel: the recess belongs to the container, so the
-   condition icons read as things sitting in it rather than as buttons. */
-#redsteel-bg3-hotbar .rs-bg3-effects {
+/* A tray cut into the panel: the recess belongs to the container, so the stat
+   readouts read as things sitting in it rather than as buttons.
+
+   Centred, not packed left: the readouts come and go as a character takes
+   wounds and shakes them off, and a run that grows outward from the middle
+   keeps its shape while one that grows rightward reads as a list being filled
+   in. The horizontal padding is symmetric for the same reason — the fold chip
+   is taken out of flow and parked in the right-hand pad, so it cannot drag the
+   centring off by half its own width.
+
+   nowrap, deliberately, and the common cases fit by arithmetic rather than by
+   hope. The attribute row sets the bar's width: twelve 44px cells at the 3px
+   group gap, plus the divider and the row's own gaps, is about 566px. Take off
+   the modifier (74), the two tray toggles (26 each) and three 8px gaps and
+   this tray has roughly 415px. A character carrying every condition at once is
+   about 330px, so the condition view always fits.
+
+   Two cases can exceed it: a character in the armor view warded against most
+   of the eight damage types, and an NPC, whose tray carries both readings at
+   once. The panel then grows wider and stays centred, which is the accepted
+   failure. Wrapping would grow it upward instead, which is worse, and clipping
+   would quietly hide a number someone is reading the tray to find. In practice
+   armor against more than two or three types is already unusual. */
+#redsteel-bg3-hotbar .rs-bg3-stats-tray {
   flex: 1 1 auto;
+  position: relative;
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 3px;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: 6px;
   min-height: 26px;
-  padding: 2px 5px;
+  padding: 2px 24px;
   background: #060605;
   border: 1px solid #211e19;
   box-shadow:
@@ -8622,43 +8645,91 @@ body.redsteel-bg3-hotbar #hotbar {
     inset 0 0 0 1px rgba(0, 0, 0, 0.6);
 }
 
-/* Flat tokens in the tray: the depth is the tray's, not theirs. */
-#redsteel-bg3-hotbar .rs-bg3-effect {
-  width: 20px;
-  height: 20px;
-  border: 1px solid #34302794;
-  background: #0c0c0a;
-  transition: border-color 0.15s ease;
+/* Icon first, number beside it, reading left to right along the tray. */
+#redsteel-bg3-hotbar .rs-bg3-cond-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  line-height: 1;
 }
 
-#redsteel-bg3-hotbar .rs-bg3-effect img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  border: none;
-  object-fit: cover;
-}
-
-/* A suppressed effect is still listed, just visibly not doing anything. */
-#redsteel-bg3-hotbar .rs-bg3-effect.disabled img {
-  opacity: 0.35;
-  filter: grayscale(1);
-}
-
-#redsteel-bg3-hotbar .rs-bg3-effect.manageable {
-  cursor: pointer;
-}
-
-#redsteel-bg3-hotbar .rs-bg3-effect.manageable:hover {
-  border-color: var(--rs-bg3-accent);
-}
-
-#redsteel-bg3-hotbar .rs-bg3-effects-empty {
-  /* The tray is stretched, so an empty message centres in it. */
-  flex: 1 1 auto;
+#redsteel-bg3-hotbar .rs-bg3-cond-icon {
+  flex: 0 0 auto;
+  font-size: 17px;
   text-align: center;
-  font-size: 11px;
-  color: #5f594c;
+  transition: filter 0.2s ease;
+}
+
+/* A live state reads brighter and more saturated, in its own colour. No glow
+   and no dimming of the rest: the sheet's colours are the default look and
+   should stay exactly that. */
+#redsteel-bg3-hotbar .rs-bg3-cond-row.relevant .rs-bg3-cond-icon {
+  filter: brightness(2.1) saturate(1.25) contrast(1.1);
+}
+
+/* No fixed width: the numbers sit beside their own icon along a row, so there
+   is no column for them to line up with, and reserving one would push the tray
+   past the width the attribute rows set. Tabular figures still keep a value
+   from jittering as it ticks between 9 and 10. */
+#redsteel-bg3-hotbar .rs-bg3-cond-value {
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--rs-bg3-bright);
+}
+
+/* Rules off the sheet's three groups from each other along the tray. Vertical,
+   unlike the horizontal .rs-bg3-section-divider that separates the rows. */
+#redsteel-bg3-hotbar .rs-bg3-cond-divider {
+  flex: 0 0 auto;
+  width: 1px;
+  height: 16px;
+  margin: 0 1px;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    var(--rs-bg3-accent) 50%,
+    transparent 100%
+  );
+  opacity: 0.45;
+}
+
+/* A chip in the tray's right-hand pad, with the same skin and border as the
+   wrench, rather than an arrow floating loose inside. Out of flow on purpose:
+   in flow it would count toward the run being centred and push it left by half
+   its own width, and it would slide as readouts came and went. */
+#redsteel-bg3-hotbar .rs-bg3-cond-toggle {
+  position: absolute;
+  top: 50%;
+  right: 3px;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  padding: 0;
+  font-size: 9px;
+  line-height: 1;
+  color: #9a9078;
+  background: linear-gradient(180deg, #24241f 0%, #141412 100%);
+  border: 1px solid var(--rs-bg3-border);
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-cond-toggle:hover {
+  color: var(--rs-bg3-bright);
+  border-color: var(--rs-bg3-accent);
+  box-shadow: 0 0 6px rgba(200, 162, 74, 0.35);
 }
 
 /* The armed roll modifier, in its own inset window at the end of the row, and
@@ -9336,8 +9407,8 @@ body.redsteel-bg3-hotbar #hotbar {
 
 /* --- Condition extension (right wing) -------- */
 
-/* The right wing: condition strip and the wrench, flowing left to right from
-   the bar's right edge. Mirror of .rs-bg3-left, and absolute for the same
+/* The right wing: the condition strip and the wrench, flowing left to right
+   from the bar's right edge. Mirror of .rs-bg3-left, and absolute for the same
    reason: nothing out here may shift the bar. */
 #redsteel-bg3-hotbar .rs-bg3-right {
   position: absolute;
@@ -9357,31 +9428,38 @@ body.redsteel-bg3-hotbar #hotbar {
 }
 
 /* Mirror of the resource strip: same skin, tucked under the bar's right edge
-   instead of its left. A single stacked column. Unfolded rows carry a value and
-   a max beside the icon, so they run tighter vertically; the folded rule below
-   trades that width back for a bigger glyph and more air. */
-#redsteel-bg3-hotbar .rs-bg3-cond-strip {
-  --rs-cond-icon: 18px;
+   instead of its left. The frame only — the icons live in a tray cut into it,
+   below, the same way the stat readouts sit in a tray cut into the bar.
+
+   The width is stated, not measured. A wrapping flex container's intrinsic
+   width is computed as though every item sat on one line, so left to itself
+   this box would size to every condition in a single row and swallow half the
+   screen. --rs-status-cols is the column count, from the template; the 26px is
+   everything around the icons — 8px of frame padding and 3px of tray padding
+   each side, plus the frame's and the tray's borders — since both boxes are
+   border-box. */
+#redsteel-bg3-hotbar .rs-bg3-status-strip {
+  --rs-status-icon: 20px;
+  --rs-status-gap: 3px;
   flex: 0 0 auto;
   /* Centred against the panel, matching .rs-bg3-res-strip in the other wing.
-     This is safe now only because the height below is fixed: centring used to
-     float the strip at a height that depended on how many conditions were up,
-     which is what made it drift as they came and went. */
+     Safe only because the height below is fixed: centring a strip whose height
+     followed its contents is what used to make it drift as conditions came and
+     went. Note this centres the *frame*; the icons inside it stack from its
+     top, so the first one lands in the same place every time. */
   align-self: center;
   /* The same box as the resource strip in the other wing, so the two read as a
-     matched pair rather than two boxes that happen to be beside the same panel.
-     Safe as a hard height: seven conditions is the whole registry, and at the
-     18px icon that column is 154px, inside the 168px with room to spare.
-     `justify-content: center` below floats however few are up in the middle. */
+     matched pair rather than two boxes that happen to be beside the same
+     panel. */
   height: var(--rs-bg3-res-h);
+  width: calc(
+    var(--rs-status-cols, 1) * var(--rs-status-icon) +
+    (var(--rs-status-cols, 1) - 1) * var(--rs-status-gap) + 26px
+  );
   box-sizing: border-box;
   margin-left: -12px;
-  position: relative;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 2px;
-  padding: 7px 10px 7px 9px;
+  padding: 7px 8px;
   background: linear-gradient(
     180deg,
     rgba(9, 9, 10, 0.9) 0%,
@@ -9394,137 +9472,74 @@ body.redsteel-bg3-hotbar #hotbar {
     inset 0 0 18px rgba(0, 0, 0, 0.5);
 }
 
-/* Folded is icons only, so the row is just the glyph and can carry a larger one
-   than when a value and a max sit beside it. The gap is deliberately NOT
-   overridden: it stays on the base rule's 2px so folded and unfolded space
-   their icons identically and switching between them only changes the glyph.
+/* The socket inside the frame, with the same recess as the stat tray in the
+   bar, so the two read as the same kind of thing seen edge-on.
 
-   Bounded by the fixed height: the content box is 152px (168 less 7px padding
-   each side and 1px border each side) and the registry tops out at seven
-   conditions, so 7 icons + 6 gaps must fit. 17px at the 2px gap is 131px. */
-#redsteel-bg3-hotbar .rs-bg3-cond-strip.folded {
-  --rs-cond-icon: 17px;
-}
-
-/* NPC: number under the icon, and no chevron. An NPC carries only mind and
-   armor, so there is nothing to fold away and both fit stacked.
-
-   A column, NOT `flex-wrap`. Wrapping looked equivalent and was not: a wrapping
-   flex container's intrinsic width is computed as though every item sat on one
-   line, so the strip sized itself to icon + gap + number and came out half as
-   wide again as it needed to be. A column has no such trap — its intrinsic
-   width is simply the widest child, which is the 18px icon.
-
-   This works only because the template drops the max when stacked, leaving two
-   children. Put "/24" back and the column would stack it under the value. */
-#redsteel-bg3-hotbar .rs-bg3-cond-strip.stacked .rs-bg3-cond-row {
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-}
-
-/* The fixed number column exists to line digits up down a tall strip. Under an
-   icon there is nothing to line up with, and keeping it would set the strip's
-   width from the column rather than from the icons. A shade larger than in the
-   row layout, since here the number is on its own line with room for it. */
-#redsteel-bg3-hotbar .rs-bg3-cond-strip.stacked .rs-bg3-cond-value {
-  min-width: 0;
-  text-align: center;
-  font-size: 13px;
-}
-
-/* Icon first, number beside it rather than under it. */
-#redsteel-bg3-hotbar .rs-bg3-cond-row {
+   Filled from the top and wrapping into a second column once six are up: a
+   heavily-afflicted character grows the strip sideways rather than off the top
+   of the screen. Six is the arithmetic behind STATUS_PER_COLUMN in
+   redsteelHotbar.mjs — the tray's content box is 144px tall (168 less the
+   frame's 7px padding and 1px border each side, less its own 3px padding and
+   1px border each side) and 6 * 20px + 5 * 3px is 135px. A seventh would be
+   158px and spill, which is why the count is stated in both places. */
+#redsteel-bg3-hotbar .rs-bg3-status-tray {
+  flex: 1 1 auto;
   display: flex;
-  align-items: center;
-  gap: 7px;
-  white-space: nowrap;
-  line-height: 1;
+  flex-direction: column;
+  flex-wrap: wrap;
+  /* Down the column and then across the columns: both from the start edge, so
+     the stack hangs from the top of the tray. */
+  justify-content: flex-start;
+  align-content: flex-start;
+  gap: var(--rs-status-gap);
+  padding: 3px;
+  background: #060605;
+  border: 1px solid #211e19;
+  box-shadow:
+    inset 0 2px 5px rgba(0, 0, 0, 0.95),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.025),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.6);
 }
 
-#redsteel-bg3-hotbar .rs-bg3-cond-icon {
-  flex: 0 0 var(--rs-cond-icon);
-  width: var(--rs-cond-icon);
-  font-size: var(--rs-cond-icon);
-  text-align: center;
-  transition: filter 0.2s ease;
-}
-
-/* A live state reads brighter and more saturated, in its own colour. No glow
-   and no dimming of the rest: the sheet's colours are the default look and
-   should stay exactly that. */
-#redsteel-bg3-hotbar .rs-bg3-cond-row.relevant .rs-bg3-cond-icon {
-  filter: brightness(2.1) saturate(1.25) contrast(1.1);
-}
-
-/* Three fixed columns, icon then value then max, so every number lines up down
-   the strip instead of drifting with the width of its own maximum. Tabular
-   figures keep the digits themselves on the same tracks. */
-#redsteel-bg3-hotbar .rs-bg3-cond-value {
+/* Flat tokens in the strip: the depth is the strip's, not theirs. */
+#redsteel-bg3-hotbar .rs-bg3-effect {
+  /* The strip is a column, so height is the main size and the default
+     flex-shrink would squeeze the icons as the column fills. */
   flex: 0 0 auto;
-  min-width: 24px;
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--rs-bg3-bright);
+  width: 20px;
+  height: 20px;
+  border: 1px solid #34302794;
+  background: #0c0c0a;
+  transition: border-color 0.15s ease;
 }
 
-#redsteel-bg3-hotbar .rs-bg3-cond-max {
-  flex: 0 0 auto;
-  min-width: 30px;
-  text-align: left;
-  font-variant-numeric: tabular-nums;
-  font-weight: 400;
-  font-size: 11px;
-  color: #8a8272;
+#redsteel-bg3-hotbar .rs-bg3-effect img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: none;
+  object-fit: cover;
 }
 
-/* Keeps the sheet's three groups readable in one column. */
-#redsteel-bg3-hotbar .rs-bg3-cond-divider {
-  height: 1px;
-  margin: 2px 0;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    var(--rs-bg3-accent) 50%,
-    transparent 100%
-  );
-  opacity: 0.45;
+/* A suppressed effect is still listed, just visibly not doing anything. */
+#redsteel-bg3-hotbar .rs-bg3-effect.disabled img {
+  opacity: 0.35;
+  filter: grayscale(1);
 }
-/* A chip straddling the middle of the strip's outer border, with the same skin
-   and border as the wrench, rather than an arrow floating loose inside. */
-#redsteel-bg3-hotbar .rs-bg3-cond-toggle {
-  position: absolute;
-  top: 50%;
-  right: -9px;
-  transform: translateY(-50%);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  min-width: 18px;
-  padding: 0;
-  font-size: 9px;
-  line-height: 1;
-  color: #9a9078;
-  background: linear-gradient(180deg, #24241f 0%, #141412 100%);
-  border: 1px solid var(--rs-bg3-border);
-  border-radius: 4px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+
+#redsteel-bg3-hotbar .rs-bg3-effect.manageable {
   cursor: pointer;
-  transition:
-    color 0.15s ease,
-    border-color 0.15s ease,
-    box-shadow 0.15s ease;
 }
 
-#redsteel-bg3-hotbar .rs-bg3-cond-toggle:hover {
-  color: var(--rs-bg3-bright);
+#redsteel-bg3-hotbar .rs-bg3-effect.manageable:hover {
   border-color: var(--rs-bg3-accent);
-  box-shadow: 0 0 6px rgba(200, 162, 74, 0.35);
 }
+
+/* Nothing on the character: the tray draws empty. No label, no placeholder —
+   an empty socket beside a character reads as "nothing here" without being
+   told, and the box being there at all is what keeps the wrench below it from
+   hopping as the first condition lands. */
+
 /* Last item in the right wing, sitting at the bar's bottom corner. */
 #redsteel-bg3-hotbar .rs-bg3-side-controls {
   flex: 0 0 auto;

@@ -1356,16 +1356,28 @@ export async function getEffectRolls(
     normalBleeds += regularStacks;
   }
 
+  // Blood Strike (Krvavý úder, Cordinas IV): a charge earned by killing a
+  // Bleeding target adds one *guaranteed* Bleeding to this attack — it rides
+  // past the chance roll and past the target's bleed resistance, so it is kept
+  // apart from normalStacks as `bonusStacks` and only re-added in
+  // resolveBleedStacks. Read here, deleted by the consume hook in redsteel.mjs
+  // once the attack card is posted, so it is spent on a miss too.
+  const bloodStrikeBonus = actor.statuses?.has("blood_strike") ? 1 : 0;
+
   // --- FINAL RESULT (single source of truth) ---
-  totalBleeds = critBleeds + normalBleeds;
+  totalBleeds = critBleeds + normalBleeds + bloodStrikeBonus;
 
   // --- ASSIGN ONCE ---
-  if (bleedIsAuto || bleedBaseValue > 0) {
+  // The charge alone is enough to make this a bleeding attack: a weapon with no
+  // bleed chance at all (a mace, a stun-only ability) still carries the packet.
+  if (bleedIsAuto || bleedBaseValue > 0 || bloodStrikeBonus > 0) {
+    const rolledBleed = !bleedIsAuto && bleedBaseValue > 0;
     mechanicalEffects["bleed"] = {
       critStacks: critBleeds,
       normalStacks: normalBleeds,
-      chance: bleedIsAuto ? null : totalBleedChance,
-      roll: bleedIsAuto ? null : bleedRollResult,
+      bonusStacks: bloodStrikeBonus,
+      chance: rolledBleed ? totalBleedChance : null,
+      roll: rolledBleed ? bleedRollResult : null,
       rolls: {
         regular: regularBleedRolls,
         sharp: sharpBleedRolls,
@@ -1377,10 +1389,19 @@ export async function getEffectRolls(
   // --- DISPLAY (unchanged logic, now consistent) ---
   let allBleedRollResults = "";
   if (mechanicalEffects["bleed"] || bleedChanceDisplay === "AUTO") {
-    allBleedRollResults = `|Bleed: ${[
-      ...regularBleedRolls,
-      ...sharpBleedRolls,
-    ].join("| |Sharp: ")}| < ${bleedChanceDisplay}% 
+    const rollList = [...regularBleedRolls, ...sharpBleedRolls].join(
+      "| |Sharp: ",
+    );
+    // No rolls at all (charge-only bleed) — showing "| < 0%" would read as a
+    // failed roll that never happened.
+    const rollLine = rollList
+      ? `|Bleed: ${rollList}| < ${bleedChanceDisplay}%`
+      : `|Bleed:`;
+    const bloodStrikeNote = bloodStrikeBonus
+      ? ` <span title="Blood Strike: guaranteed Bleeding from killing a bleeding target">+${bloodStrikeBonus} Blood Strike</span>`
+      : "";
+
+    allBleedRollResults = `${rollLine}${bloodStrikeNote}
   <span title="Normal Bleed Applied: ${normalBleeds}
 In total :(${totalBleeds}) due to Crit score: ${critScore}">
     ${normalBleeds}

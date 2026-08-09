@@ -754,15 +754,24 @@
           <input type="text" name="system.combatSkills.damageBonus.value" value="{{system.combatSkills.damageBonus.value}}" class="attribute-score" data-dtype="Number" />
         </div>
 
+        {{!-- The two casting skills follow the same flags as the Mana and
+              Blood Pool bars above: a creature that cannot cast has no use for
+              a Channeling box, and one that is not a blood mage has no use for
+              Blood Manipulation. Ticking Mage / Blood Mage brings them back
+              with whatever value was already stored. --}}
+        {{#if system.magicPotential}}
         <div class="attribute-armor">
           <label class="resource-label" data-tt-kind="skill" data-tt-id="channeling">{{localize "REDSTEEL.Actor.Character.combatSkills.channeling.label"}}</label>
           <input type="text" name="system.combatSkills.channeling.value" value="{{system.combatSkills.channeling.value}}" class="attribute-score" data-dtype="Number" />
         </div>
+        {{/if}}
 
+        {{#if system.bloodMage}}
         <div class="attribute-armor">
           <label class="resource-label" data-tt-kind="skill" data-tt-id="bloodManipulation">{{localize "REDSTEEL.Actor.Character.combatSkills.bloodManipulation.label"}}</label>
           <input type="text" name="system.combatSkills.bloodManipulation.value" value="{{system.combatSkills.bloodManipulation.value}}" class="attribute-score" data-dtype="Number" />
         </div>
+        {{/if}}
 
         <div class="attribute-armor">
           <label class="resource-label" data-tt-kind="stat" data-tt-id="mind">{{localize "REDSTEEL.Actor.Character.stats.mind.value.label"}}</label>

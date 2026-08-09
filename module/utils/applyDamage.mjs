@@ -208,6 +208,33 @@ function resolveDegreeForTarget(effAttack, selectedDegree, overridden) {
 }
 
 /* -------------------------------------------- */
+/*  Krvavý úder (Cordinas IV)                   */
+/* -------------------------------------------- */
+
+/** Doctrine rank at which both Blood Strike features come online. */
+const CORDINAS_BLOOD_STRIKE_RANK = 4;
+
+/** Life drawn from the Blood Reserve to force a wound open. */
+export const OPEN_WOUND_BLOOD_COST = 3;
+
+/**
+ * The actor who made this attack — whose Blood Reserve pays for Open Wound and
+ * who earns the Blood Strike charge on a kill. Resolved from the card's speaker
+ * (token first, then actor), which every attack path fills in.
+ */
+function getAttackingActor(message) {
+  return ChatMessage.getSpeakerActor(message?.speaker ?? {}) ?? null;
+}
+
+/** Does this actor hold Cordinas at the rank the Blood Strike features need? */
+function hasBloodStrikeDoctrine(actor) {
+  return (
+    Number(actor?.system?.doctrines?.cordinas?.value ?? 0) >=
+    CORDINAS_BLOOD_STRIKE_RANK
+  );
+}
+
+/* -------------------------------------------- */
 /*  Apply Damage                                */
 /* -------------------------------------------- */
 
@@ -254,6 +281,7 @@ async function applyDamageToTargets(
   durabilitySpend = {},
   halfDamage = false,
   degreeOverridden = false,
+  openWound = {},
 ) {
   const data = {
     type: "applyDamage",
@@ -266,6 +294,7 @@ async function applyDamageToTargets(
     durabilitySpend,
     halfDamage,
     degreeOverridden,
+    openWound,
   };
 
   if (game.user.isGM) {
@@ -315,6 +344,11 @@ function resolveBleedStacks(effect, { targetMod = 0, stackMod = 0, mode } = {}) 
 
   if (mode === "critical") stacks += crit;
   stacks += stackMod;
+  // Guaranteed stacks from a Blood Strike charge (Krvavý úder): added after the
+  // chance resolution and outside `targetMod`, so neither a failed roll nor the
+  // target's bleed resistance can take them away. Outright immunity still does —
+  // that is gated one level up, before this is ever called.
+  stacks += Number(effect.bonusStacks) || 0;
   return Math.max(0, stacks);
 }
 
@@ -323,6 +357,7 @@ export async function applyDamageAsGM(data) {
   const durabilitySpend = data.durabilitySpend ?? {};
   const halfDamage = data.halfDamage ?? false;
   const degreeOverridden = data.degreeOverridden ?? false;
+  const openWound = data.openWound ?? {};
   const message = game.messages.get(messageId);
 
   const attack = message.flags.attack;
@@ -339,6 +374,14 @@ export async function applyDamageAsGM(data) {
   const scene = game.scenes.get(sceneId);
   const combat = game.combat;
   const criticalOverrideRows = [];
+  // Krvavý úder (Cordinas IV) — the attacker pays for Open Wound out of their
+  // Blood Reserve and earns the Blood Strike charge if this attack kills a
+  // bleeding target. Both are re-checked here rather than trusted from the
+  // dialog: the payload comes off the socket from another client.
+  const attacker = getAttackingActor(message);
+  const attackerHasBloodStrike = hasBloodStrikeDoctrine(attacker);
+  let bloodStrikeEarned = false;
+  const openWoundVictims = [];
   for (const tokenId of targetIds) {
     const tokenDoc = scene.tokens.get(tokenId);
     if (!tokenDoc) {
@@ -447,6 +490,10 @@ export async function applyDamageAsGM(data) {
     );
 
     const hpBeforeDamage = Number(actor.system.stats.health.value) || 0;
+    // Read before the hit lands: the Blood Strike charge is earned for killing
+    // someone who was *already* bleeding, not someone this very attack made
+    // bleed a moment later in the effects loop below.
+    const wasBleedingBeforeHit = actor.statuses.has("bleed");
 
     await actor.update({
       "system.stats.temporaryHealth.value": Number(result.newTempHp),
@@ -497,6 +544,9 @@ export async function applyDamageAsGM(data) {
       : { armorMod: 0, staggerMod: 0, bleedMod: 0, precisionMod: 0 };
 
     const effects = message.flags.attack.effects || {};
+    // Whether this hit drew blood on its own — Open Wound below only pays out
+    // when it did not.
+    let bleedLanded = false;
     for (const [name, effect] of Object.entries(effects)) {
       // NOTE: the Bane ("Metla") Ověření bonus is deliberately NOT applied
       // here. Below, `targetMod` is only read again inside the `bleed` branch;
@@ -546,6 +596,7 @@ export async function applyDamageAsGM(data) {
       }
 
       if (stacks <= 0) continue;
+      if (name === "bleed") bleedLanded = true;
       const applied = await applyEffectToActor(
         actor,
         name,
@@ -576,8 +627,82 @@ export async function applyDamageAsGM(data) {
       }
     }
 
+    // Otevřená rána (Open Wound) — the attacker tears the wound open by hand,
+    // paying OPEN_WOUND_BLOOD_COST Life out of their Blood Reserve for one
+    // Bleeding. Only on a hit that failed to draw blood by itself, and only on
+    // a hit that actually reached Life: a blow soaked entirely by temporary
+    // health leaves nothing to open, same rule the bleed effect follows above.
+    if (openWound?.[tokenId] && attackerHasBloodStrike) {
+      const reserve = Number(attacker?.system?.stats?.bloodPool?.value) || 0;
+
+      if (bleedLanded) {
+        ui.notifications.warn(
+          `Open Wound: ${actor.name} is already bleeding from this hit — no blood spent.`,
+        );
+      } else if (result.hpLoss <= 0) {
+        ui.notifications.warn(
+          `Open Wound: the hit on ${actor.name} did no Life damage — no wound to open, no blood spent.`,
+        );
+      } else if (isImmuneToEffect(actor, "bleed")) {
+        ui.notifications.warn(
+          `Open Wound: ${actor.name} is immune to Bleeding — no blood spent.`,
+        );
+      } else if (reserve < OPEN_WOUND_BLOOD_COST) {
+        ui.notifications.warn(
+          `Open Wound: ${attacker.name} has only ${reserve} in the Blood Reserve — ${OPEN_WOUND_BLOOD_COST} needed.`,
+        );
+      } else {
+        await attacker.update({
+          "system.stats.bloodPool.value": reserve - OPEN_WOUND_BLOOD_COST,
+        });
+        await applyEffectToActor(actor, "bleed", 1, castingContext);
+        openWoundVictims.push(actor.name);
+      }
+    }
+
+    // Krvavý úder — killing a target that was already bleeding arms one
+    // guaranteed Bleeding on the attacker's next attack. "Killed" is the drop
+    // to 0 Life: an NPC dies, a character starts Dying. Damage from the bleed
+    // itself never reaches here — this is the attack path only, as the rule
+    // requires (Zásah).
+    if (
+      attackerHasBloodStrike &&
+      wasBleedingBeforeHit &&
+      hpBeforeDamage > 0 &&
+      Number(result.newHp) <= 0
+    ) {
+      bloodStrikeEarned = true;
+    }
+
     const combatant = combat?.combatants.find((c) => c.tokenId === tokenDoc.id);
     await handlePostDamageStatus({ actor, combatant });
+  }
+
+  if (openWoundVictims.length) {
+    await ChatMessage.create({
+      speaker: ChatMessage.getSpeaker({ actor: attacker }),
+      content: `<div style="text-align:center; color:#a01818;">${game.i18n.format(
+        "REDSTEEL.BloodStrike.OpenWoundApplied",
+        {
+          name: attacker.name,
+          targets: openWoundVictims.join(", "),
+          cost: OPEN_WOUND_BLOOD_COST * openWoundVictims.length,
+        },
+      )}</div>`,
+    });
+  }
+
+  // Applied once even when several bleeding targets went down: the charge is a
+  // single guaranteed Bleeding on the next attack, not one per corpse.
+  if (bloodStrikeEarned && !attacker.statuses.has("blood_strike")) {
+    await game.redsteel.applyEffect(attacker, "blood_strike");
+    await ChatMessage.create({
+      speaker: ChatMessage.getSpeaker({ actor: attacker }),
+      content: `<div style="text-align:center; color:#a01818;">${game.i18n.format(
+        "REDSTEEL.BloodStrike.ChargeEarned",
+        { name: attacker.name },
+      )}</div>`,
+    });
   }
 
   if (criticalOverrideRows.length) {
@@ -609,6 +734,22 @@ function openDamageSelectionDialog(message, targets) {
   const durabilityTargets = targets
     .map((t) => ({ token: t, actor: t.actor, items: getDurabilityItems(t.actor) }))
     .filter((entry) => entry.items.length > 0);
+
+  // Otevřená rána (Open Wound, Cordinas IV) — offered per target to whoever is
+  // applying the attack, but paid for out of the attacker's Blood Reserve, so
+  // it is only offered to someone who owns that actor. The option shows up for
+  // any hit that failed to draw blood, including attacks that never had a bleed
+  // chance to begin with (a mace, a stun-only ability).
+  const openWoundActor = getAttackingActor(message);
+  const canOpenWounds =
+    hasBloodStrikeDoctrine(openWoundActor) && openWoundActor.isOwner;
+  // tokenId -> true for targets the attacker is paying to open up
+  const openWoundState = {};
+  const openWoundReserve = () =>
+    Number(openWoundActor?.system?.stats?.bloodPool?.value) || 0;
+  const openWoundSpent = () =>
+    Object.values(openWoundState).filter(Boolean).length *
+    OPEN_WOUND_BLOOD_COST;
 
   const getSelectedAttack = (targetActor) => {
     const effAttack = resolveAttackForTarget(attack, targetActor);
@@ -677,6 +818,10 @@ function openDamageSelectionDialog(message, targets) {
         const aimedPart = aimedHit ? aimedStrike.part : null;
         const npcOverrides = getBodyPartOverrides(t.actor, aimedPart);
 
+        // Set by the bleed branch below; stays false when the packet carries no
+        // bleed at all, which is exactly when Open Wound is most wanted.
+        let bleedLanded = false;
+
         const effectPreview = Object.entries(effects)
           .map(([name, effect]) => {
             if (isImmuneToEffect(t.actor, name)) {
@@ -720,13 +865,25 @@ function openDamageSelectionDialog(message, targets) {
                 ? 0
                 : resolveBleedStacks(effect, { targetMod: targetMod + npcBonus, stackMod, mode });
               success = predicted > 0;
+              bleedLanded = success;
               const bleedNote = npcBonus
                 ? ` <em style="color:#c8a84b;">(+${npcBonus}% body part)</em>`
                 : "";
+              const bonusNote = effect.bonusStacks
+                ? ` <em style="color:#a01818;">(+${effect.bonusStacks} Blood Strike)</em>`
+                : "";
               extraInfo = bleedDenied
                 ? " — no health damage, no bleed"
-                : ` → ${predicted} stack(s)${bleedNote}`;
+                : ` → ${predicted} stack(s)${bleedNote}${bonusNote}`;
             }
+
+            // An auto effect, or a bleed packet carried purely by a Blood
+            // Strike charge, has no roll to show — "null < null%" reads as a
+            // failed roll that was never made.
+            const rollLine =
+              effect.auto || effect.roll == null
+                ? "AUTO"
+                : `${effect.roll} < ${displayChance}%`;
 
             return `
       <div style="margin-left:15px;">
@@ -735,12 +892,42 @@ function openDamageSelectionDialog(message, targets) {
                  name="effect-${t.id}-${name}"
                  ${success ? "checked" : ""}>
           ${name.toUpperCase()} →
-          ${effect.roll} < ${displayChance}%${extraInfo}
+          ${rollLine}${extraInfo}
         </label>
       </div>
     `;
           })
           .join("");
+
+        // Open Wound: only when this hit drew no blood on its own. A hit fully
+        // soaked by temporary health leaves no wound to open, and a target
+        // immune to Bleeding cannot be opened at all.
+        const openWoundBlocked = isImmuneToEffect(t.actor, "bleed")
+          ? "immune to Bleeding"
+          : result.hpLoss <= 0
+            ? "no Life damage"
+            : "";
+        // Switching to a critical (or sacrificing durability) can make the
+        // bleed land, or stop the hit reaching Life, after the box was already
+        // ticked — drop the tick with the row so no blood is charged for an
+        // option that is no longer on offer.
+        if (bleedLanded || openWoundBlocked) delete openWoundState[t.id];
+        const openWoundRow =
+          canOpenWounds && !bleedLanded
+            ? `
+      <div style="margin-left:15px;">
+        <label style="${openWoundBlocked ? "opacity:0.5;" : "color:#c86a6a;"}">
+          <input type="checkbox"
+                 name="openwound-${t.id}"
+                 ${openWoundState[t.id] ? "checked" : ""}
+                 ${openWoundBlocked ? "disabled" : ""}>
+          ${game.i18n.format("REDSTEEL.BloodStrike.OpenWoundOption", {
+            cost: OPEN_WOUND_BLOOD_COST,
+          })}${openWoundBlocked ? ` — ${openWoundBlocked}` : ""}
+        </label>
+      </div>
+    `
+            : "";
 
         const aimedStrikeLabel = (() => {
           const as = attack.aimedStrike;
@@ -759,10 +946,26 @@ function openDamageSelectionDialog(message, targets) {
       ${gmPreview}
       ${aimedStrikeLabel}
       ${effectPreview}
+      ${openWoundRow}
     </li>
   `;
       })
       .join("");
+
+  const renderOpenWoundStatus = () => {
+    if (!canOpenWounds) return "";
+    const reserve = openWoundReserve();
+    const spent = openWoundSpent();
+    return `
+      <div style="margin:4px 0; font-size:12px; color:#c86a6a;">
+        ${game.i18n.format("REDSTEEL.BloodStrike.ReserveStatus", {
+          name: openWoundActor.name,
+          spent,
+          reserve,
+        })}
+      </div>
+    `;
+  };
 
   const renderDurabilityControls = () => {
     if (!durabilityTargets.length) return "";
@@ -843,6 +1046,7 @@ function openDamageSelectionDialog(message, targets) {
           </label>
         </div>
         ${renderDurabilityControls()}
+        <div class="open-wound-status">${renderOpenWoundStatus()}</div>
 
         <ul class="damage-preview">
           ${renderPreview()}
@@ -892,7 +1096,9 @@ function openDamageSelectionDialog(message, targets) {
 
             html.find('input[type="checkbox"]').each((_, el) => {
               if (!el.checked) return;
-              // Only effect checkboxes are named "effect-<tokenId>-<name>".
+              // Only effect checkboxes are named "effect-<tokenId>-<name>";
+              // Open Wound rides its own "openwound-<tokenId>" name so it never
+              // lands in the effect list.
               if (!el.name.startsWith("effect-")) return;
 
               const parts = el.name.split("-");
@@ -917,6 +1123,11 @@ function openDamageSelectionDialog(message, targets) {
               }
             }
 
+            const openWound = {};
+            for (const [tokenId, on] of Object.entries(openWoundState)) {
+              if (on) openWound[tokenId] = true;
+            }
+
             applyDamageToTargets(
               message,
               targets,
@@ -926,14 +1137,48 @@ function openDamageSelectionDialog(message, targets) {
               durabilitySpend,
               halfDamage,
               degreeTouched,
+              openWound,
             );
           },
         },
         cancel: { label: "Cancel" },
       },
       render: (html) => {
-        const refreshPreview = () =>
+        // Open Wound checkboxes live inside .damage-preview, so re-rendering it
+        // rebuilds them; bindOpenWound re-attaches the handler each time and
+        // openWoundState carries the ticks across the rebuild.
+        const bindOpenWound = () => {
+          html.find('input[name^="openwound-"]').on("change", (ev) => {
+            const tokenId = ev.target.name.slice("openwound-".length);
+            if (ev.target.checked) {
+              // Never let the dialog promise more blood than the attacker has —
+              // the GM re-checks on apply, but failing here is clearer.
+              if (openWoundSpent() + OPEN_WOUND_BLOOD_COST > openWoundReserve()) {
+                ev.target.checked = false;
+                ui.notifications.warn(
+                  game.i18n.format("REDSTEEL.BloodStrike.ReserveTooLow", {
+                    name: openWoundActor.name,
+                    cost: OPEN_WOUND_BLOOD_COST,
+                    reserve: openWoundReserve(),
+                  }),
+                );
+                return;
+              }
+              openWoundState[tokenId] = true;
+            } else {
+              delete openWoundState[tokenId];
+            }
+            html.find(".open-wound-status").html(renderOpenWoundStatus());
+          });
+        };
+
+        const refreshPreview = () => {
           html.find(".damage-preview").html(renderPreview());
+          bindOpenWound();
+          html.find(".open-wound-status").html(renderOpenWoundStatus());
+        };
+
+        bindOpenWound();
 
         const updateCriticalDegreeVisibility = () => {
           html

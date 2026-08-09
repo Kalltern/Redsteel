@@ -93,9 +93,9 @@
     "range": "8",
     "spellClass": "lesser",
     "roll": {
-      "diceNum": 2,
-      "diceSize": 6,
-      "diceBonus": "1"
+      "diceNum": 0,
+      "diceSize": "0",
+      "diceBonus": ""
     },
     "penetration": 0,
     "dmgType1": "",

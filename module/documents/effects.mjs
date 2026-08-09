@@ -713,6 +713,17 @@ export class RedsteelActiveEffect extends ActiveEffect {
       }
     }
 
+    // Blight bomb — Dark + Poison DoT of 3d6 + SK/2 per round for six rounds.
+    // The on-death explosion is NOT built (it waits on P11 on-death triggers).
+    if (effectId === "blight_bomb" && sourceCaster) {
+      const sk = getSpellPower(sourceCaster, school ?? "blood", {
+        multiplier: 0.5,
+      });
+      for (const key of ["onApply", "onRoundStart"]) {
+        if (triggers[key]) triggers[key].damage = `3d6 + ${sk}`;
+      }
+    }
+
     // ============================================
     // DARK-SCHOOL SK-SCALED EFFECTS
     // ============================================
@@ -722,6 +733,60 @@ export class RedsteelActiveEffect extends ActiveEffect {
       const sk = getSpellPower(sourceCaster, school ?? "darkness");
       for (const key of ["onApply", "onRoundStart"]) {
         if (triggers[key]) triggers[key].damage = `1d6 + ${sk}`;
+      }
+    }
+
+    // Black Itch — 1d4/round for SK/2 + 1 rounds. Only the duration scales;
+    // the damage is flat. defaultRounds is "ticks - 1", so SK/2 + 1 ticks
+    // means a roundsDuration of SK/2.
+    // Floored at 1, not 0: a roundsDuration of 0 never writes
+    // flags.redsteel.rounds (see the `roundsDuration > 0` guards below), so
+    // nothing would count the effect down and a Darkness SK under 2 would
+    // leave a permanent DoT on the target. One extra tick beats forever.
+    if (effectId === "black_itch" && sourceCaster) {
+      roundsDuration = Math.max(
+        1,
+        getSpellPower(sourceCaster, school ?? "darkness", { multiplier: 0.5 }),
+      );
+    }
+
+    // ============================================
+    // FIRE-SCHOOL SK-SCALED EFFECTS
+    // ============================================
+    // Burning Mark — Magic + Fire DoT of 2d6 + SK/2 per round for three
+    // rounds; the SK term is appended to the stored damage formula.
+    if (effectId === "burning_mark" && sourceCaster) {
+      const sk = getSpellPower(sourceCaster, school ?? "fire", {
+        multiplier: 0.5,
+      });
+      for (const key of ["onApply", "onRoundStart"]) {
+        if (triggers[key]) triggers[key].damage = `2d6 + ${sk}`;
+      }
+    }
+
+    // ============================================
+    // WATER-SCHOOL SK-SCALED EFFECTS
+    // ============================================
+    // Hypothermia — Magic + Frost DoT of 1d6 + SK/2 per round for three
+    // rounds; the SK term is appended to the stored damage formula.
+    if (effectId === "hypothermia" && sourceCaster) {
+      const sk = getSpellPower(sourceCaster, school ?? "water", {
+        multiplier: 0.5,
+      });
+      for (const key of ["onApply", "onRoundStart"]) {
+        if (triggers[key]) triggers[key].damage = `1d6 + ${sk}`;
+      }
+    }
+
+    // ============================================
+    // BODY-SCHOOL SK-SCALED EFFECTS
+    // ============================================
+    // Eluviel's touch — heals 2 + SK per round for as long as it is left on
+    // the target; regenerationHeal reads `formula`, not `damage`.
+    if (effectId === "eluviels_touch" && sourceCaster) {
+      const sk = getSpellPower(sourceCaster, school ?? "body");
+      for (const key of ["onApply", "onRoundStart"]) {
+        if (triggers[key]) triggers[key].formula = `2 + ${sk}`;
       }
     }
 
@@ -1439,13 +1504,28 @@ export class RedsteelActiveEffect extends ActiveEffect {
       ignoreBaseArmor: true,
     });
 
-    await actor.update({
+    const updateData = {
       "system.stats.health.value": Number(result.newHp),
       "system.stats.temporaryHealth.value": Number(result.newTempHp),
       "system.stats.temporaryHealthMagic.value": Number(
         result.newTempHpMagic ?? 0,
       ),
-    });
+    };
+
+    // Some conditions (e.g. Black Itch) convert their own damage into
+    // Corruption. Corruption is deliberately left unclamped elsewhere in the
+    // system, so it isn't clamped here either.
+    const gainsCorruption =
+      trigger.corruptionFromDamage === true && result.totalHpLoss > 0;
+    if (gainsCorruption) {
+      const currentCorruption = Number(
+        actor.system.stats.corruption?.value ?? 0,
+      );
+      updateData["system.stats.corruption.value"] =
+        currentCorruption + result.totalHpLoss;
+    }
+
+    await actor.update(updateData);
 
     await this._maybeApplyZeroHealthState();
 
@@ -1457,7 +1537,9 @@ export class RedsteelActiveEffect extends ActiveEffect {
       speaker: ChatMessage.getSpeaker({ actor }),
       flavor: `${this.name} – ${result.totalHpLoss} damage${
         types ? ` (${types})` : ""
-      } after specialized armor & resistances`,
+      } after specialized armor & resistances${
+        gainsCorruption ? ` (+${result.totalHpLoss} Corruption)` : ""
+      }`,
     });
   }
 
@@ -1693,9 +1775,14 @@ export class RedsteelActiveEffect extends ActiveEffect {
 
     const path = "system.stats.health.value";
     const current = foundry.utils.getProperty(actor, path) ?? 0;
+    const max = foundry.utils.getProperty(actor, "system.stats.health.max");
+    const next =
+      typeof max === "number" && max > 0
+        ? Math.min(max, current + roll.total)
+        : current + roll.total;
 
     await actor.update({
-      [path]: current + roll.total,
+      [path]: next,
     });
 
     await roll.toMessage({

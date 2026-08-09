@@ -77,8 +77,8 @@
         "firstAid": "První pomoc",
         "effects": "Správce efektů"
       },
-      "Fold": "Sbalit: zobrazit jen aktuální hodnoty",
-      "Unfold": "Rozbalit: zobrazit i maxima",
+      "ShowArmor": "Zobrazit zbroj podle typu poškození",
+      "ShowConditions": "Zobrazit stavy",
       "SettingsTitle": "Nastavení panelu",
       "SettingsTooltip": "Nastavení panelu: kolik řad dovedností a maker zobrazit.",
       "SettingsSave": "Uložit",
@@ -122,7 +122,8 @@
       },
       "NoTags": "Nic zvláštního",
       "Race": "Rasa",
-      "Armor": "Zbroj"
+      "Armor": "Zbroj",
+      "NoDescription": "Popis nebyl zadán"
     },
     "Calendaria": {
       "RerollNote": {
@@ -4465,6 +4466,13 @@
         "DropNotGlobal": "Přetáhni Rys z postranního panelu nebo z kompendia, ne z postavy.",
         "DropDuplicate": "{name} už tato rasa uděluje."
       }
+    },
+    "BloodStrike": {
+      "OpenWoundOption": "Otevřená rána — obětovat {cost} životy ze Zásoby krve za 1 Krvácení",
+      "ReserveStatus": "Zásoba krve ({name}): vyhrazeno {spent} z {reserve}",
+      "ReserveTooLow": "{name} potřebuje {cost} životy v Zásobě krve, ale má jen {reserve}.",
+      "OpenWoundApplied": "{name} otevírá ránu na cíli {targets} — {cost} životů ze Zásoby krve, 1 Krvácení.",
+      "ChargeEarned": "{name} zabíjí krvácející cíl. Příští útok způsobí jedno Krvácení navíc (Krvavý úder)."
     },
     "Banes": {
       "PickerTitle": "Vyber Metlu ({count})",
