@@ -1,0 +1,44 @@
+{
+  "folder": "kBTvOEaKqi0Q4Q17",
+  "name": "Recipe: Devil's Root",
+  "type": "recipe",
+  "img": "icons/consumables/potions/potion-tube-corked-red.webp",
+  "system": {
+    "description": "<p>Effect - Numbness, brings on pleasant thoughts, -1 action, +50% bonus against pain, fear and madness; lasts 4d6 hours. 65% chance to remove one point of Madness<br />Toxicity - 6<br />Production Bonus - -20% -&gt; 10 doses<br />Ingredients - Distillate, Pa, Pa, Al, Yl, Mandrake<br />Addictiveness - Will Test (Very hard), rolled only when the drug actually removes a point of Madness. Once the taker has been cured of this addiction before, the Test is at -60% instead<br />Withdrawal - 4d6 hours; Will -2; Success -10%<br />Treatment - Will Test -20% every 5 days; 6 successes</p>",
+    "outputType": "drug",
+    "purpose": "unique",
+    "resultUuid": "Compendium.redsteel.redsteel-items.Item.p0FS4OloWxw1IT3l",
+    "substances": {
+      "yliaster": 1,
+      "bezoardicum": 0,
+      "alkahest": 1,
+      "qudat": 0,
+      "panacea": 2,
+      "verdigris": 0
+    },
+    "specialIngredient": {
+      "name": "Mandrake",
+      "uuid": ""
+    },
+    "base": "distillate"
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "redsteel",
+    "systemVersion": "0.10.2",
+    "createdTime": 1786367217424,
+    "modifiedTime": 1786367217424,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "_id": "X0qnRseT2ylAttnR",
+  "_key": "!items!X0qnRseT2ylAttnR"
+}

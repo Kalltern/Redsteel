@@ -6,6 +6,7 @@
   "system": {
     "description": "",
     "class": "axe",
+    "tags": "hatchet",
     "classOptions": [
       "axe",
       "blunt",

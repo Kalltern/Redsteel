@@ -1525,6 +1525,8 @@
       "templates": ["base"],
       "outputType": "potion",
       "outputTypeOptions": ["potion", "ointment", "poison", "oil", "explosive", "drug"],
+      "purpose": "",
+      "purposeOptions": ["poison", "mana", "healing", "buff", "unique", "explosive"],
       "resultUuid": "",
       "substances": {
         "yliaster": 0,
@@ -1536,7 +1538,7 @@
       },
       "specialIngredient": { "name": "", "uuid": "" },
       "base": "none",
-      "baseOptions": ["none", "fat", "alcohol", "strongAlcohol", "distillate"]
+      "baseOptions": ["none", "fat", "strongAlcohol", "distillate"]
     },
     "ammunition": {
       "templates": ["base"],
@@ -1544,7 +1546,8 @@
       "option": "",
       "options": [],
       "bleed": 0,
-      "penetration": 0
+      "penetration": 0,
+      "sharp": false
     },
     "consumable": {
       "templates": ["base"],
@@ -1598,6 +1601,10 @@
       "standalone": false,
       "modifiesAttack": false,
       "multiAttack": false,
+      "requiredWeaponTag": "",
+      "opportunityAttack": false,
+      "rangedSkill": "",
+      "rangedSkillOptions": ["archery", "throwing"],
       "typeOptions": ["melee", "ranged", "other"],
       "effectOptions": ["and", "or"],
       "effectTypes": [],

@@ -6,6 +6,7 @@
   "system": {
     "description": "",
     "class": "polearm",
+    "tags": "bac-de-corbin",
     "classOptions": [
       "axe",
       "blunt",

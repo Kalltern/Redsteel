@@ -6,6 +6,7 @@
   "system": {
     "description": "",
     "class": "blunt",
+    "tags": "baton",
     "classOptions": [
       "axe",
       "blunt",

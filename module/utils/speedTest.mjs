@@ -4,8 +4,8 @@
  * A "speed" Test Type on an ability/spell/weapon/modifier rolls the same dice as
  * initiative instead of a d100 margin of success:
  *
- *   Any actor      : 1d12 + ini.total + spd.total  (rogue doctrine 7+ → 2d12kh1)
- *   Prone / Downed : flat 1
+ *   Any actor       : 1d12 + ini.total + spd.total (rogue doctrine 7+ → 2d12kh1)
+ *   On the floor    : flat 1 (Prone / Downed / Incapacitated)
  *
  * NPCs carry the same `spd` secondary attribute as characters (it used to be a
  * separate `mov`), so a plain Speed debuff lands on their tests with no extra
@@ -17,6 +17,7 @@
  */
 
 import { withRollBias } from "./rollAdvantage.mjs";
+import { FLOOR_STATUSES } from "./floorInitiative.mjs";
 
 /** The Test Type dropdown value that selects a speed test. */
 export const SPEED_TEST_NAME = "speed";
@@ -54,10 +55,12 @@ function hasFloorStatus(actor, statusId) {
  * @returns {string} A formula for `actor.getRollData()`.
  */
 export function buildSpeedTestFormula(actor) {
-  // "Povalení: Pořadí tahu dočasně sníženo na 1." Downed (0 health) is on the
-  // floor too, so it takes the same flat 1 — and it does so independently of
-  // Prone, since Downed can be applied on its own.
-  if (hasFloorStatus(actor, "prone") || hasFloorStatus(actor, "downed")) {
+  // "Povalení: Pořadí tahu dočasně sníženo na 1." Downed (0 health) and
+  // Incapacitated (unconscious) are on the floor too, so they take the same
+  // flat 1 — each independently, since either can be applied on its own. Same
+  // list the turn-order clamp in floorInitiative.mjs enforces, so a re-roll and
+  // the tracker can never disagree.
+  if (FLOOR_STATUSES.some((s) => hasFloorStatus(actor, s))) {
     return "1";
   }
 

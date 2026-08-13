@@ -1,7 +1,7 @@
 {
   "name": "Blood Absorption",
   "type": "ability",
-  "img": "icons/svg/blood.svg",
+  "img": "icons/skills/wounds/blood-cells-vessel-red.webp",
   "system": {
     "description": "<p>Cancel your entire Blood Reserve and heal Life equal to your Maximum Transfer. You cannot heal more Life than you cancelled from the Reserve.</p>",
     "type": "other",

@@ -6,6 +6,7 @@
   "system": {
     "description": "",
     "class": "sword",
+    "tags": "flamberge",
     "classOptions": [
       "axe",
       "blunt",

@@ -2050,7 +2050,8 @@ table tr td:nth-child(3) {
 .redsteel .tab.spells.active,
 .redsteel .tab.effects.active,
 .redsteel .tab.config.active,
-.redsteel .tab.specialisations.active {
+.redsteel .tab.specialisations.active,
+.redsteel .tab.alchemy.active {
   display: flex;
 }
 .redsteel .tab.features,
@@ -2061,7 +2062,8 @@ table tr td:nth-child(3) {
 .redsteel .tab.spells,
 .redsteel .tab.effects,
 .redsteel .tab.config,
-.redsteel .tab.specialisations {
+.redsteel .tab.specialisations,
+.redsteel .tab.alchemy {
   flex-direction: column;
   flex-grow: 1;
   overflow-y: auto; /* Scrollbar for long content */
@@ -2091,6 +2093,64 @@ table tr td:nth-child(3) {
 
 .button-container.single {
   grid-template-columns: 1fr;
+}
+
+/* ── Temporary Health grant button (defense cards) ────────────────────────
+   Weapon Skill 4+ / Swordsman 3+ let a defender claim Temporary Health off a
+   defense roll. Gold rather than the chat panel's red, because it is the only
+   button on a defense card that *gives* something. One-shot: once spent it
+   stays on the card, dimmed, as the record that it was used. The colour is
+   forced past `.button-container button` above, which paints every button in
+   the container grey. */
+.button-container button.rs-temp-hp-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-weight: bold;
+  color: #c8a84b;
+  background: #2b2410;
+  border: 1px solid #c8a84b;
+}
+
+.button-container button.rs-temp-hp-button i {
+  font-size: 1.15em;
+  line-height: 1;
+}
+
+.button-container button.rs-temp-hp-button:hover:not(:disabled) {
+  color: #f0d7aa;
+  background: #3a3016;
+  border-color: #e0c165;
+  text-shadow: 0 0 6px rgba(200, 168, 75, 0.7);
+}
+
+/* Spent: still legible, clearly inert. `!important` because Foundry's own
+   `button:disabled` rule is more specific than a plain class here. */
+.button-container button.rs-temp-hp-button.is-consumed,
+.button-container button.rs-temp-hp-button:disabled {
+  color: #6b5c31 !important;
+  background: #1a1710;
+  border-color: #4a3f21;
+  opacity: 1;
+  cursor: default;
+  text-shadow: none;
+}
+
+/* The public "gained Temporary Health" line, posted so a misclick is visible
+   to the whole table rather than only to the defender. */
+.rs-temp-hp-notice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #c8a84b;
+  font-weight: bold;
+  text-align: center;
+}
+
+.rs-temp-hp-notice i {
+  font-size: 1.3em;
 }
 
 .checkbox-row {
@@ -2654,25 +2714,93 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   justify-content: center;
 }
 
-.equip-dialog {
-  display: grid;
-  grid-template-columns: auto 1fr 1fr;
-  gap: 0.5rem;
+/* ============================= */
+/* EQUIP PICKER DIALOG           */
+/* ============================= */
+/* Scoped to the dialog and tag-qualified on the cells: core's dialog button
+   rules are element-qualified, so a bare .rs-equip-cell loses to them. */
+
+.rs-equip-picker .rs-equip-item {
+  display: flex;
   align-items: center;
-}
-
-.equip-header {
-  display: contents;
+  gap: 6px;
   font-weight: bold;
-  text-align: center;
+  font-size: 13px;
+  margin-bottom: 6px;
 }
 
-.equip-row {
+.rs-equip-picker .rs-equip-item img {
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 3px;
+  flex: 0 0 auto;
+}
+
+/* Columns come from the markup: a row per weapon set, a column per hand the
+   item can use. */
+.rs-equip-picker .rs-equip-grid {
+  display: grid;
+  gap: 4px;
+  align-items: stretch;
+}
+
+.rs-equip-picker .rs-equip-row {
   display: contents;
 }
 
-.equip-dialog button {
+.rs-equip-picker .rs-equip-rowlabel {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* Toggle cell. Two states only: unlit, or lit green because the item goes
+   there on Confirm. */
+.rs-equip-picker button.rs-equip-cell {
   width: 100%;
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 2px 10px;
+  font-size: 12px;
+  line-height: 20px;
+  border-radius: 4px;
+  border: 1px solid #444;
+  background: #2b2b2b;
+  color: inherit;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    border-color 100ms ease,
+    box-shadow 100ms ease,
+    background 100ms ease;
+}
+
+/* Core styles dialog buttons on focus and active, which left the last cell
+   clicked looking like a third state. Only .is-on may colour a cell. */
+.rs-equip-picker button.rs-equip-cell:hover,
+.rs-equip-picker button.rs-equip-cell:focus,
+.rs-equip-picker button.rs-equip-cell:focus-visible,
+.rs-equip-picker button.rs-equip-cell:active {
+  outline: none;
+  box-shadow: none;
+  border-color: #666;
+  background: #333;
+  color: inherit;
+}
+
+.rs-equip-picker button.rs-equip-cell.is-on,
+.rs-equip-picker button.rs-equip-cell.is-on:hover,
+.rs-equip-picker button.rs-equip-cell.is-on:focus,
+.rs-equip-picker button.rs-equip-cell.is-on:focus-visible,
+.rs-equip-picker button.rs-equip-cell.is-on:active {
+  border-color: #6fc23f !important;
+  background: rgba(111, 194, 63, 0.24) !important;
+  box-shadow: 0 0 6px rgba(79, 160, 255, 0.7) !important;
 }
 
 .weapon-slot {
@@ -4014,6 +4142,21 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   background: #3a3016;
 }
 
+/* Opportunity Attack tag chip on attack chat cards. */
+.rs-attack-tag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border: 1px solid #8b6914;
+  border-radius: 999px;
+  background: #2b2517;
+  color: #d9b64a;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  vertical-align: middle;
+}
+
 /* Currently showing a Bane face (in-card flip) instead of the normal one. */
 .bane-pill.is-active {
   background: #c8a84b;
@@ -4410,8 +4553,9 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   color: #e6c878;
 }
 
-/* Small marker on nodes whose passive buff is automated */
-.redsteel .spec-node.automated::after {
+/* Automation status marker, on every node: red by default (a table ruling —
+   the sheet only tracks the node), blue when the effect is automated */
+.redsteel .spec-node::after {
   content: "";
   position: absolute;
   top: -3px;
@@ -4419,8 +4563,12 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #6fa8dc;
+  background: #b04a3c;
   border: 1px solid #1d1a16;
+}
+
+.redsteel .spec-node.automated::after {
+  background: #6fa8dc;
 }
 
 /* -------------------------------------------- */
@@ -4616,15 +4764,19 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   opacity: 1;
 }
 
-/* Keep the "automated" marker close to the star, and mute its colour so it
-   reads as a quiet utility tag rather than a neon blue blob on the warm field */
-.redsteel .spec-tree.constellation .spec-node.automated::after {
+/* Keep the status marker close to the star, and mute both colours so they read
+   as quiet utility tags rather than neon blobs on the warm field */
+.redsteel .spec-tree.constellation .spec-node::after {
   top: 8px;
   right: 8px;
   width: 7px;
   height: 7px;
-  background: #7d94ad;
+  background: #9c6058;
   border-color: #17110b;
+}
+
+.redsteel .spec-tree.constellation .spec-node.automated::after {
+  background: #7d94ad;
 }
 
 @keyframes spec-star-pulse {
@@ -6884,6 +7036,12 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  /* Fill the tab: the sheet is authored at 1200px tall but Foundry clamps the
+     window to the viewport, so on a 1080p screen the body is several hundred
+     pixels shorter. The recipe list (below) absorbs that difference instead of
+     the craft panel falling off the bottom. */
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 /* Substance stock strip: label / icon / amount, tinted per substance */
@@ -6892,14 +7050,22 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   justify-content: center;
   gap: 10px;
   flex-wrap: wrap;
+  padding-top: 5px;
 }
 
+/* Every tile is the same box regardless of label length or digit count, so the
+   strip reads as one symmetrical row. Icon sits left, quantity and herb stock
+   stack to its right. */
 .alch-substance {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
-  min-width: 84px;
+  justify-content: center;
+  gap: 4px;
+  box-sizing: border-box;
+  width: 122px;
+  height: 76px;
+  flex: 0 0 auto;
   padding: 6px 8px;
   background: color-mix(in srgb, var(--alch-color) 10%, rgba(0, 0, 0, 0.55));
   border: 1px solid color-mix(in srgb, var(--alch-color) 45%, transparent);
@@ -6921,13 +7087,35 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 
 .alch-substance-label {
   font-size: 11px;
+  line-height: 1;
   letter-spacing: 0.06em;
   color: color-mix(in srgb, var(--alch-color) 60%, #d9cba8);
   text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.alch-substance-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+.alch-substance-stats {
+  display: flex;
+  flex-direction: column;
+  /* Herb line is the wider of the two, so centring parks the quantity above
+     its middle instead of hard against the icon. */
+  align-items: center;
+  gap: 3px;
 }
 
 .alch-substance-icon {
   display: block;
+  flex: 0 0 auto;
   width: 36px;
   height: 36px;
   border: 1px solid color-mix(in srgb, var(--alch-color) 45%, transparent);
@@ -6938,13 +7126,16 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 .alch-substance-qty {
   font-size: 16px;
   font-weight: 700;
+  line-height: 1;
   color: #e8dcbc;
 }
 
 /* Herbs on hand / herbs per dose — dim until a whole dose is affordable. */
 .alch-substance-herbs {
   font-size: 10px;
+  line-height: 1;
   letter-spacing: 0.04em;
+  white-space: nowrap;
   color: rgba(217, 203, 168, 0.45);
 }
 
@@ -6957,7 +7148,10 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   display: grid;
   grid-template-columns: 55% 1fr;
   gap: 14px;
+  /* Craft panel hugs its content; the recipe column stretches (below). */
   align-items: start;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 @media (max-width: 620px) {
@@ -6966,16 +7160,37 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   }
 }
 
+/* Recipe column owns the leftover height and hands it to its list. */
+.alchemy-recipes {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.alchemy-recipes .npc-traits-header {
+  flex: 0 0 auto;
+}
+
 .alchemy-columns .npc-traits {
   margin-bottom: 0;
   border-bottom: none;
   padding-bottom: 0;
 }
 
-/* Recipe list: single column of trait-style cards that scrolls when long */
+/* Recipe list: two columns of trait-style cards that scrolls when long */
 .alchemy-recipe-list {
-  grid-template-columns: 1fr;
-  max-height: 460px;
+  grid-template-columns: 1fr 1fr;
+  /* Tighter than the 10px trait grid; the rows themselves are slim now */
+  gap: 8px;
+  /* The list is a flex child that owns the whole column height, and a grid
+     defaults to align-content:stretch — which would hand every spare pixel to
+     the auto rows and blow the slim cards back up to 180px tall. */
+  align-content: start;
+  /* Height comes from the column, not a hard 460px that overflowed short
+     windows. Never collapse past roughly three cards. */
+  flex: 1 1 auto;
+  min-height: 168px;
   overflow-y: auto;
   scrollbar-gutter: stable;
   scrollbar-color: #665534 #0e0d0b;
@@ -6984,49 +7199,60 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   padding-right: 4px;
 }
 
+/* Narrow sheets: back to one card per row, matching .npc-traits-grid */
+@media (max-width: 620px) {
+  .alchemy-recipe-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Slim rows: the card carries icon + name only, so it needs about a third of
+   the height a trait card does. Everything else is in the hover panel. */
 .tab.alchemy .alch-recipe {
   cursor: pointer;
-  /* Collapsed by default: only the icon + header row show */
   align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  /* --alch-purpose is set inline from the recipe's purpose (getPurposeColor),
+     so the tint can never drift from the substance strip. Untagged recipes
+     never get the variable and fall back to the default gold. */
+  --alch-tint: var(--alch-purpose, #b59750);
+  border-color: color-mix(in srgb, var(--alch-tint) 45%, transparent);
   transition:
     border-color 0.15s ease,
     box-shadow 0.15s ease;
 }
 
-/* Description is folded away until the recipe is selected (clicked) */
-.tab.alchemy .alch-recipe .npc-trait-desc {
-  display: none;
+.tab.alchemy .alch-recipe .npc-trait-icon img {
+  width: 38px;
+  height: 38px;
+  border-radius: 3px;
 }
 
-.tab.alchemy .alch-recipe.selected {
-  align-items: flex-start;
+.tab.alchemy .alch-recipe .npc-trait-controls {
+  gap: 5px;
+  font-size: 0.9em;
 }
 
-.tab.alchemy .alch-recipe.selected .npc-trait-desc {
-  display: block;
+/* Long recipe names truncate rather than wrap the card taller than its row;
+   the full name is repeated at the top of the tooltip */
+.tab.alchemy .alch-recipe .npc-trait-name {
+  /* Flex items default to min-width:auto, which blocks the ellipsis */
+  min-width: 0;
+  font-size: 0.95em;
   overflow: hidden;
-  /* Keyframe (not transition) so it replays on the re-render that selection
-     triggers — a transition wouldn't animate a freshly-mounted element */
-  animation: alch-recipe-rollout 0.25s ease;
-}
-
-@keyframes alch-recipe-rollout {
-  from {
-    max-height: 0;
-    opacity: 0;
-  }
-  to {
-    max-height: 480px;
-    opacity: 1;
-  }
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .tab.alchemy .alch-recipe:hover {
-  border-color: rgba(201, 178, 107, 0.65);
+  border-color: color-mix(in srgb, var(--alch-tint) 75%, transparent);
 }
 
+/* Selection keeps its gold glow so it still reads as "picked" on a card whose
+   border is already coloured by purpose. */
 .tab.alchemy .alch-recipe.selected {
-  border-color: #c9b26b;
+  border-color: var(--alch-tint);
   box-shadow:
     0 0 8px rgba(201, 178, 107, 0.35),
     inset 0 0 12px rgba(0, 0, 0, 0.28);
@@ -7034,6 +7260,8 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 
 .alch-empty-hint {
   list-style: none;
+  /* Span both recipe columns */
+  grid-column: 1 / -1;
   margin: 0;
   padding: 10px;
   opacity: 0.65;
@@ -7057,12 +7285,281 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   margin-top: 4px;
 }
 
-.alch-controls .alch-station,
 .alch-controls .alch-amount {
   width: 100%;
   background: rgba(0, 0, 0, 0.45);
   border: 1px solid rgba(181, 151, 80, 0.35);
   color: #e8dcbc;
+}
+
+/* Batch size and its ingredient cost read as one control: stepper on the left,
+   tiles filling the rest of the row. */
+.alch-batch {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 6px;
+  padding: 6px 8px;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(181, 151, 80, 0.28);
+}
+
+.alch-amount-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  flex: 0 0 auto;
+}
+
+.alch-amount-box .alch-control-label {
+  margin-top: 0;
+}
+
+.alch-amount-field {
+  display: flex;
+  align-items: stretch;
+  height: 34px;
+}
+
+.alch-controls .alch-amount-field .alch-amount {
+  width: 42px;
+  height: 100%;
+  padding: 0 4px;
+  font-size: 16px;
+  font-weight: 700;
+  text-align: center;
+  border-right: none;
+  /* Native spinners are OS chrome and far too small; ours sit alongside. */
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.alch-controls .alch-amount-field .alch-amount::-webkit-outer-spin-button,
+.alch-controls .alch-amount-field .alch-amount::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.alch-amount-steps {
+  display: flex;
+  flex-direction: column;
+  width: 18px;
+}
+
+.alch-amount-step {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 50%;
+  width: 100%;
+  min-height: 0;
+  padding: 0;
+  line-height: 1;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(181, 151, 80, 0.35);
+  border-radius: 0;
+  color: #c9b26b;
+  cursor: pointer;
+}
+
+.alch-amount-step:first-child {
+  border-bottom: none;
+}
+
+.alch-amount-step:hover {
+  background: rgba(201, 178, 107, 0.2);
+  box-shadow: none;
+}
+
+.alch-amount-step i {
+  font-size: 11px;
+}
+
+/* Ingredient tiles under the amount box: artwork over held/needed. Colours are
+   deliberately loud — this is the "can I craft it" answer at a glance. */
+.alch-stock {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 6px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.alch-stock-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 5px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.alch-stock-item img {
+  display: block;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 3px;
+  object-fit: cover;
+}
+
+.alch-stock-count {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.alch-stock-item.ok {
+  border-color: rgba(0, 255, 102, 0.35);
+}
+
+.alch-stock-item.ok .alch-stock-count {
+  color: #00ff66;
+}
+
+.alch-stock-item.short {
+  border-color: rgba(255, 26, 26, 0.35);
+}
+
+.alch-stock-item.short .alch-stock-count {
+  color: #ff1a1a;
+}
+
+.alch-stock-item.short img {
+  filter: grayscale(0.65) brightness(0.8);
+}
+
+/* Custom dropdown replacing <select> on the Alchemy tab. A native option list
+   is drawn by the OS, so its light background and blue selection bar cannot be
+   restyled; this is markup we own end to end. */
+.rs-select {
+  position: relative;
+}
+
+.rs-select-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
+  height: 24px;
+  padding: 0 8px;
+  font-size: 11px;
+  line-height: 1;
+  text-align: left;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(181, 151, 80, 0.35);
+  border-radius: 0;
+  color: #e8dcbc;
+  cursor: pointer;
+}
+
+.rs-select-trigger:hover {
+  border-color: #c9b26b;
+  box-shadow: none;
+}
+
+.rs-select-value {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.rs-select-trigger i {
+  flex: 0 0 auto;
+  font-size: 10px;
+  color: #c9b26b;
+}
+
+.rs-select-menu {
+  display: none;
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 2px);
+  left: 0;
+  min-width: 100%;
+  width: max-content;
+  max-width: 260px;
+  margin: 0;
+  padding: 2px;
+  list-style: none;
+  background: #14110d;
+  border: 1px solid rgba(181, 151, 80, 0.55);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.65);
+}
+
+.rs-select.open .rs-select-menu {
+  display: block;
+}
+
+.rs-select-option {
+  padding: 4px 8px;
+  font-size: 11px;
+  line-height: 1.3;
+  white-space: nowrap;
+  color: #d9cba8;
+  cursor: pointer;
+}
+
+.rs-select-option:hover {
+  background: rgba(201, 178, 107, 0.16);
+  color: #f0e2ba;
+}
+
+.rs-select-option.selected {
+  background: rgba(201, 178, 107, 0.26);
+  color: #e9d79a;
+}
+
+/* Recipe list filters, directly under the Recipes header. */
+.alch-recipe-filters {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  padding: 6px 0;
+}
+
+.alch-recipe-filters .alch-type-filter {
+  /* Narrow enough that the toggle always clears the column edge. */
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 52%;
+}
+
+.alch-craftable-filter {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex: 0 0 auto;
+  width: auto;
+  height: 24px;
+  padding: 0 8px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(181, 151, 80, 0.35);
+  color: rgba(232, 220, 188, 0.75);
+  cursor: pointer;
+}
+
+.alch-craftable-filter:hover {
+  border-color: #c9b26b;
+  color: #e8dcbc;
+}
+
+.alch-craftable-filter.active {
+  border-color: rgba(0, 255, 102, 0.6);
+  color: #00ff66;
+  text-shadow: 0 0 6px rgba(0, 255, 102, 0.5);
 }
 
 /* Alchemist specialisation boons active on the selected recipe's family. */
@@ -7373,6 +7870,16 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 
 .spell-card-controls .item-control:hover {
   color: #f0d7aa;
+}
+
+/* The star is the odd one out in that row: edit and delete act on the spell,
+   this one acts on your hotbar. Gold marks it as the additive action. */
+.spell-card-controls .item-hotbar {
+  color: #c9b26b;
+}
+
+.spell-card-controls .item-hotbar:hover {
+  color: #f5d98a;
 }
 
 .spell-card-pills {
@@ -8618,8 +9125,9 @@ body.redsteel-bg3-hotbar #hotbar {
    hope. The attribute row sets the bar's width: twelve 44px cells at the 3px
    group gap, plus the divider and the row's own gaps, is about 566px. Take off
    the modifier (74), the two tray toggles (26 each) and three 8px gaps and
-   this tray has roughly 415px. A character carrying every condition at once is
-   about 330px, so the condition view always fits.
+   this tray has roughly 415px. A character carrying every condition at once,
+   on top of the two steady readouts (detection, movement), is about 380px, so
+   the condition view always fits.
 
    Two cases can exceed it: a character in the armor view warded against most
    of the eight damage types, and an NPC, whose tray carries both readings at
@@ -9862,4 +10370,247 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-name {
 body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   font-weight: 700;
   opacity: 0.75;
+}
+
+/* --- Long Rest roster dialog ------------------ */
+
+/* A tall narrow checklist: the party is short, so the whole roster should be
+   readable without scrolling and unticking the one on watch is a single click. */
+.rs-longrest-dialog .rs-rest-list {
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.rs-longrest-dialog .rs-rest-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 4px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.rs-longrest-dialog .rs-rest-row:hover {
+  background: rgba(200, 162, 74, 0.14);
+}
+
+.rs-longrest-dialog .rs-rest-row img {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  object-fit: cover;
+  border: 1px solid rgba(200, 162, 74, 0.35);
+  border-radius: 3px;
+}
+
+.rs-longrest-dialog .rs-rest-name {
+  flex: 1;
+}
+
+.rs-longrest-dialog .rs-rest-hp {
+  font-weight: 700;
+  opacity: 0.75;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The master row sits outside the scrolling list so it stays reachable. */
+.rs-longrest-dialog .rs-rest-all {
+  font-weight: 600;
+  padding-bottom: 6px;
+  margin-bottom: 2px;
+  border-bottom: 1px solid rgba(200, 162, 74, 0.25);
+}
+
+.rs-longrest-dialog .rs-rest-group {
+  margin-top: 8px;
+  padding-bottom: 2px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.6;
+  border-bottom: 1px solid rgba(200, 162, 74, 0.2);
+}
+
+.rs-longrest-dialog .rs-rest-list > .rs-rest-group:first-child {
+  margin-top: 0;
+}
+
+/* ── Overwhelm (Přesila) ──────────────────────────────────────────────────
+   Defense dialog control. The −/+ counter moves this roll only. The chips
+   under it are the attackers on record, so taking one out edits the round
+   rather than the roll. Chips list who has swung at *this* token, never the
+   encounter roster, so a twenty-token battle still shows a handful of names. */
+.rs-overwhelm {
+  margin-bottom: 8px;
+}
+
+.rs-overwhelm-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rs-overwhelm-row > label {
+  font-weight: bold;
+  margin-right: 2px;
+}
+
+/* Fixed square steppers: Foundry's dialog rules stretch bare buttons to fill. */
+.rs-overwhelm .rs-overwhelm-step {
+  flex: 0 0 auto;
+  width: 24px;
+  min-width: 0;
+  height: 24px;
+  padding: 0;
+  line-height: 1;
+  font-weight: bold;
+}
+
+.rs-overwhelm-value {
+  min-width: 1.4em;
+  text-align: center;
+  font-size: 1.1em;
+  font-weight: bold;
+}
+
+.rs-overwhelm-penalty {
+  color: #c8a84b;
+  font-weight: bold;
+}
+
+.rs-overwhelm-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.rs-overwhelm-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 6px;
+  border: 1px solid rgba(200, 168, 75, 0.5);
+  border-radius: 10px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.rs-overwhelm-remove {
+  cursor: pointer;
+  font-weight: bold;
+  opacity: 0.65;
+}
+
+.rs-overwhelm-remove:hover {
+  color: #d05c5c;
+  opacity: 1;
+  text-shadow: 0 0 5px rgba(208, 92, 92, 0.6);
+}
+
+/* ── Versus the attack ────────────────────────────────────────────────────
+   Defense answered from an attack card knows what margin it is up against, so
+   the card reports the contest instead of leaving two people to compare
+   numbers by eye. Advisory: the attack card keeps its damage buttons. */
+.rs-versus {
+  margin: 6px 0;
+  padding: 4px 0;
+  text-align: center;
+  border-top: 1px solid rgba(200, 168, 75, 0.25);
+  border-bottom: 1px solid rgba(200, 168, 75, 0.25);
+}
+
+.rs-versus-outcome {
+  font-size: 18px;
+  font-weight: bold;
+  letter-spacing: 0.04em;
+}
+
+/* Success / failure pair already used by the alchemy announcements. */
+.rs-versus.is-blocked .rs-versus-outcome {
+  color: #9fbf7e;
+}
+
+.rs-versus.is-hit .rs-versus-outcome {
+  color: #c0706a;
+}
+
+/* Coloured from the defender's side, since this is the defender's card. Gold is
+   a reward and only their own critical earns it; a critical landing *on* them
+   stays red and just burns brighter than an ordinary hit. */
+.rs-versus.is-critical-defense .rs-versus-outcome {
+  color: #c8a84b;
+  text-shadow: 0 0 6px rgba(200, 168, 75, 0.5);
+}
+
+.rs-versus.is-critical-defense {
+  border-color: rgba(200, 168, 75, 0.55);
+}
+
+.rs-versus.is-critical-hit .rs-versus-outcome {
+  color: #d05c5c;
+  text-shadow: 0 0 6px rgba(208, 92, 92, 0.55);
+}
+
+.rs-versus.is-critical-hit {
+  border-color: rgba(208, 92, 92, 0.5);
+}
+
+.rs-versus-detail {
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.rs-versus-note {
+  margin-top: 2px;
+  font-size: 11px;
+  font-style: italic;
+  opacity: 0.7;
+}
+
+/* Dialog header: what this defense is being rolled against. */
+.rs-versus-target {
+  margin-bottom: 6px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.6;
+}
+
+.rs-overwhelm-sources-label {
+  margin-top: 6px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.6;
+}
+
+/* Defend: answers an attack card, carrying the attacker's identity into the
+   defense roll so Overwhelm never has to guess who swung.
+
+   Spans the whole button grid and centres in it, so the button reads as the
+   card's own action instead of sitting in one of the two damage-button cells. */
+.button-container button.rs-defend-button {
+  grid-column: 1 / -1;
+  justify-self: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-weight: bold;
+  color: #c8a84b;
+  background: #2b2410;
+  border: 1px solid #c8a84b;
+}
+
+.button-container button.rs-defend-button i {
+  font-size: 1.15em;
+  line-height: 1;
+}
+
+.button-container button.rs-defend-button:hover {
+  color: #f0d7aa;
+  background: #3a3016;
+  border-color: #e0c165;
+  text-shadow: 0 0 6px rgba(200, 168, 75, 0.7);
 }

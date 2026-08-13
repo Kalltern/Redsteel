@@ -2,10 +2,11 @@
   "folder": "kBTvOEaKqi0Q4Q17",
   "name": "Recipe: Calendula Alba",
   "type": "recipe",
-  "img": "icons/consumables/potions/vial-ornet-silver-black.webp",
+  "img": "icons/consumables/potions/bottle-corked-empty.webp",
   "system": {
     "description": "<p>Effect - Reduces Toxicity<br />Duration - Instant Effect<br />Toxicity - -25<br />Production bonus - +20% -&gt; 1 dose<br />Ingredients - Strong alcohol, Qu, Al, Al</p>",
     "outputType": "potion",
+    "purpose": "buff",
     "resultUuid": "Compendium.redsteel.redsteel-items.Item.QTvjRW6OdJPYX0tc",
     "substances": {
       "yliaster": 0,

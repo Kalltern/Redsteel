@@ -6,6 +6,7 @@
   "system": {
     "description": "",
     "class": "axe",
+    "tags": "throwing axe",
     "classOptions": [
       "axe",
       "blunt",

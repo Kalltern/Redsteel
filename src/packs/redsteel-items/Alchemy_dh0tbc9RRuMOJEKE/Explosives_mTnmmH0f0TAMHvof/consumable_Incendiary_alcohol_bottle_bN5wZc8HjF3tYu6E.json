@@ -1,0 +1,58 @@
+{
+  "folder": "mTnmmH0f0TAMHvof",
+  "name": "Incendiary alcohol bottle",
+  "type": "consumable",
+  "img": "icons/consumables/drinks/alcohol-spirits-bottle-green.webp",
+  "system": {
+    "description": "<p>Effect - Single target. Fire damage 2d6, 15% chance to cause Burning. Penetration 0.<br />The spirit burns off fast and leaves nothing behind - no burning hex.<br />Duration - Instant<br />Production Bonus - 20% -&gt; 10 batches</p>",
+    "options": [
+      "potion",
+      "explosive",
+      "misc",
+      "first aid",
+      "poison"
+    ],
+    "types": [
+      "mana",
+      "health",
+      "stamina"
+    ],
+    "quantity": 1,
+    "option": "explosive",
+    "roll": {
+      "diceNum": 2,
+      "diceSize": "6",
+      "diceBonus": ""
+    },
+    "aimed": true,
+    "penetration": 0,
+    "burn": 15,
+    "freeze": 0,
+    "stagger": 0,
+    "dmgType1": "fire",
+    "localizationKey": "REDSTEEL.Items.IncendiaryAlcoholBottle.name",
+    "difficulty": 20
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0,
+    "exQfSubzwCCs5h8v": 3,
+    "rs3mzx7WZdtEmvH2": 3,
+    "UHjN0KQ8w8ZxibJg": 3
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "redsteel",
+    "systemVersion": "0.10.2",
+    "createdTime": 1777294836937,
+    "modifiedTime": 1777294836937,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "_id": "bN5wZc8HjF3tYu6E",
+  "_key": "!items!bN5wZc8HjF3tYu6E"
+}

@@ -10,6 +10,8 @@ import {
 import { AIMED_PARTS, getBodyPartOverrides } from "./aimedStrike.mjs";
 import { resolveBaneVariant } from "./baneCombat.mjs";
 import { BANE_TYPES } from "../helpers/banes.mjs";
+import { resolveAimOnDamage } from "./aim.mjs";
+import { gainBlood } from "./bloodPool.mjs";
 
 export const SOCKET = "system.redsteel";
 
@@ -235,6 +237,43 @@ function hasBloodStrikeDoctrine(actor) {
 }
 
 /* -------------------------------------------- */
+/*  Blood harvest (Cordinas I)                  */
+/* -------------------------------------------- */
+
+/** Doctrine rank at which wounds start feeding the attacker's Reserve. */
+const CORDINAS_BLOOD_HARVEST_RANK = 1;
+
+/** Life into the Reserve per wounded target, and again per target killed. */
+const BLOOD_HARVEST_PER_TARGET = 1;
+
+/** Only an edge or a point spills blood the doctrine can gather. */
+const BLOOD_HARVEST_DAMAGE_TYPES = new Set(["slash", "piercing"]);
+
+/** Does this actor hold Cordinas at all? */
+function hasBloodHarvestDoctrine(actor) {
+  return (
+    Number(actor?.system?.doctrines?.cordinas?.value ?? 0) >=
+    CORDINAS_BLOOD_HARVEST_RANK
+  );
+}
+
+/**
+ * Can this card's damage feed the Reserve? It must cut or pierce, and it must
+ * be a weapon or ability attack — a spell is blood the doctrine cannot claim,
+ * so a spell card is excluded even on the (rare) chance it carries a kinetic
+ * damage type. Read from the base packet's own damageProfile, the same
+ * expression evaluateAttackDamage resolves the hit with; a Bane variant swaps
+ * damage and penetration, never the damage types.
+ */
+function isBloodHarvestAttack(message, attack) {
+  if (message?.flags?.redsteel?.spellSchool) return false;
+  const expression = attack?.damageProfile?.expression ?? [];
+  return expression.some((token) =>
+    BLOOD_HARVEST_DAMAGE_TYPES.has(String(token ?? "").toLowerCase()),
+  );
+}
+
+/* -------------------------------------------- */
 /*  Apply Damage                                */
 /* -------------------------------------------- */
 
@@ -382,6 +421,12 @@ export async function applyDamageAsGM(data) {
   const attackerHasBloodStrike = hasBloodStrikeDoctrine(attacker);
   let bloodStrikeEarned = false;
   const openWoundVictims = [];
+  // Cordinas I — every wounded target feeds the attacker's Blood Reserve, and
+  // a target that dies feeds it once more. Counted per target here, banked
+  // once after the loop.
+  const bloodHarvestActive =
+    hasBloodHarvestDoctrine(attacker) && isBloodHarvestAttack(message, attack);
+  let bloodHarvest = 0;
   for (const tokenId of targetIds) {
     const tokenDoc = scene.tokens.get(tokenId);
     if (!tokenDoc) {
@@ -674,6 +719,15 @@ export async function applyDamageAsGM(data) {
       bloodStrikeEarned = true;
     }
 
+    // Cordinas I — the wound has to reach Life: a blow soaked entirely by
+    // temporary health or a shield spills no blood, the same line Bleeding and
+    // Open Wound draw. Killing the target (the drop to 0 Life) pays once more,
+    // per target, since `hpLoss` is already 0 for anyone hit at 0 Life.
+    if (bloodHarvestActive && result.hpLoss > 0) {
+      bloodHarvest += BLOOD_HARVEST_PER_TARGET;
+      if (Number(result.newHp) <= 0) bloodHarvest += BLOOD_HARVEST_PER_TARGET;
+    }
+
     const combatant = combat?.combatants.find((c) => c.tokenId === tokenDoc.id);
     await handlePostDamageStatus({ actor, combatant });
   }
@@ -690,6 +744,22 @@ export async function applyDamageAsGM(data) {
         },
       )}</div>`,
     });
+  }
+
+  // Cordinas I — banked after the loop so the Open Wound spends above are
+  // already settled, and clamped to the Reserve's capacity by gainBlood (a
+  // full Reserve, or an actor with none at all, simply gains nothing).
+  if (bloodHarvest > 0) {
+    const gained = await gainBlood(attacker, bloodHarvest);
+    if (gained > 0) {
+      await ChatMessage.create({
+        speaker: ChatMessage.getSpeaker({ actor: attacker }),
+        content: `<div style="text-align:center; color:#a01818;">${game.i18n.format(
+          "REDSTEEL.BloodHarvest.Gained",
+          { name: attacker.name, amount: gained },
+        )}</div>`,
+      });
+    }
   }
 
   // Applied once even when several bleeding targets went down: the charge is a
@@ -714,6 +784,12 @@ export async function applyDamageAsGM(data) {
       rows: criticalOverrideRows,
     });
   }
+
+  // Damage landing is the only reliable "the attack hit" signal in the system,
+  // so this is where an aim-reduction attack finds out what it cost: one stack
+  // normally, none on a critical. Attacks that never get here are settled as
+  // misses by the end-of-turn sweep in utils/aim.mjs.
+  await resolveAimOnDamage(attacker, targetIds, mode);
 }
 
 function openDamageSelectionDialog(message, targets) {
@@ -985,14 +1061,11 @@ function openDamageSelectionDialog(message, targets) {
         return `
           <div style="margin-bottom:4px;">
             <strong>${token.name}</strong>
-            <span style="font-size:0.9em;">(−${perPoint} damage per point)</span><br>
+            <span style="font-size:0.9em;">(−${perPoint} damage for 1 point)</span><br>
             <select name="durability-item-${token.id}" style="max-width:60%;">
               <option value="">— no item —</option>
               ${options}
             </select>
-            <input type="number" name="durability-points-${token.id}"
-                   value="0" min="0" max="0" step="1"
-                   style="width:55px;" disabled>
           </div>
         `;
       })
@@ -1039,7 +1112,14 @@ function openDamageSelectionDialog(message, targets) {
             )
             .join("")}
         </fieldset>
-        <div class="attack-options-row">
+        <!-- Manual half-damage toggle hidden 2026-08-10: attacks that halve
+             damage already carry system.roll.halfDamage, so the GM no longer
+             needs to set it here. The control and its wiring are kept intact
+             (just not displayed) until we are sure nothing relies on the
+             manual override. Delete this block and the "halfDamage" handler
+             below to remove it for good, or drop the inline display:none to
+             bring it back. -->
+        <div class="attack-options-row" style="display:none;">
           <label class="pill">
             <input type="checkbox" name="halfDamage" ${halfDamage ? "checked" : ""}>
             <span>${game.i18n.localize("REDSTEEL.Item.Spell.FIELDS.halfDamage.label")}</span>
@@ -1201,6 +1281,8 @@ function openDamageSelectionDialog(message, targets) {
           degreeTouched = true;
           refreshPreview();
         });
+        // Kept wired while the checkbox itself is hidden (see the note in the
+        // dialog content). It simply never fires as long as the row is hidden.
         html.find('input[name="halfDamage"]').on("change", (ev) => {
           halfDamage = ev.target.checked;
           refreshPreview();
@@ -1208,38 +1290,13 @@ function openDamageSelectionDialog(message, targets) {
 
         for (const { token, items } of durabilityTargets) {
           const select = html.find(`select[name="durability-item-${token.id}"]`);
-          const input = html.find(`input[name="durability-points-${token.id}"]`);
 
           select.on("change", () => {
             const itemId = select.val();
             const item = items.find((i) => i.id === itemId) ?? null;
-            const max = Number(item?.system.armor?.durability ?? 0);
 
-            input.prop("disabled", !item);
-            input.attr("max", max);
-
-            const points = item
-              ? Math.min(Number(input.val()) || 0, max)
-              : 0;
-            input.val(points);
-
-            durabilityState[token.id] = item ? { itemId, points } : null;
-            refreshPreview();
-          });
-
-          input.on("change input", () => {
-            const state = durabilityState[token.id];
-            if (!state) return;
-
-            const item = items.find((i) => i.id === state.itemId);
-            const max = Number(item?.system.armor?.durability ?? 0);
-            let points = Math.max(0, Math.floor(Number(input.val()) || 0));
-            if (points > max) {
-              points = max;
-              input.val(points);
-            }
-
-            state.points = points;
+            // Picking an item always sacrifices exactly one durability point.
+            durabilityState[token.id] = item ? { itemId, points: 1 } : null;
             refreshPreview();
           });
         }

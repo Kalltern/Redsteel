@@ -1,0 +1,67 @@
+{
+  "folder": "p1P1ernROIKkE0Kd",
+  "name": "Devil's Root",
+  "type": "consumable",
+  "img": "icons/consumables/potions/potion-tube-corked-red.webp",
+  "system": {
+    "description": "<p>Effect - Numbness, brings on pleasant thoughts, -1 action, +50% bonus against pain, fear and madness; lasts 4d6 hours. 65% chance to remove one point of Madness<br />Toxicity - 6<br />Production Bonus - -20% -&gt; 10 doses<br />Ingredients - Distillate, Pa, Pa, Al, Yl, Mandrake<br />Addictiveness - Will Test (Very hard), rolled only when the drug actually removes a point of Madness. Once the taker has been cured of this addiction before, the Test is at -60% instead<br />Withdrawal - 4d6 hours; Will -2; Success -10%<br />Treatment - Will Test -20% every 5 days; 6 successes</p>",
+    "options": [
+      "potion",
+      "explosive",
+      "misc",
+      "first aid",
+      "poison"
+    ],
+    "types": [
+      "mana",
+      "health",
+      "stamina"
+    ],
+    "quantity": 1,
+    "option": "potion",
+    "roll": {
+      "diceNum": 0,
+      "diceSize": "0",
+      "diceBonus": "0"
+    },
+    "type": "",
+    "toxicity": 6,
+    "bleed": 0,
+    "localizationKey": "REDSTEEL.Items.DevilsRoot.name",
+    "difficulty": -20
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {
+    "redsteel": {
+      "statusEffects": [
+        "devils_root"
+      ],
+      "drug": {
+        "key": "devils_root",
+        "combat": false,
+        "attribute": "wil",
+        "difficulty": -30,
+        "relapseDifficulty": -60,
+        "insanityChance": 65,
+        "addictionEffect": "addiction_devils_root"
+      }
+    }
+  },
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "redsteel",
+    "systemVersion": "0.10.2",
+    "createdTime": 1786367217424,
+    "modifiedTime": 1786367217424,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "_id": "p0FS4OloWxw1IT3l",
+  "_key": "!items!p0FS4OloWxw1IT3l"
+}

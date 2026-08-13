@@ -23,11 +23,13 @@ import {
   renderMarginFollowupLine,
 } from "./utils/attributeFollowup.mjs";
 import { wireSpeedFollowups } from "./utils/speedTest.mjs";
+import { registerDrugHooks } from "./utils/drugs.mjs";
 import { registerRollModifier } from "./utils/rollModifier.mjs";
 import { initTooltips } from "./utils/tooltips.mjs";
 import { registerCoreTooltipProviders } from "./utils/tooltipProviders.mjs";
 import { registerFormulaDisplay } from "./utils/formulaDisplay.mjs";
 import { registerEndTurnButton } from "./utils/endTurnButton.mjs";
+import { registerTempHealthGrant } from "./utils/tempHealthGrant.mjs";
 import { registerRedsteelHotbar } from "./utils/redsteelHotbar.mjs";
 import { applyTraitStatusEffects } from "./utils/traitStatusEffects.mjs";
 import { applyActorLight } from "./utils/itemLight.mjs";
@@ -46,9 +48,16 @@ import {
 } from "./utils/calendariaIntegration.mjs";
 import { usePotion } from "./utils/usePotion.mjs";
 import { usePoison, clearWeaponCoating } from "./utils/usePoison.mjs";
-import { defenseRoll } from "./utils/defense.mjs";
+import { defenseRoll, registerDefendButton } from "./utils/defense.mjs";
+import { registerOverwhelmHooks } from "./utils/overwhelm.mjs";
 import { throwExplosive } from "./utils/throwExplosive.mjs";
-import { castSpell, applyPostCastEffects } from "./utils/castSpell.mjs";
+import {
+  castSpell,
+  quickCastSpell,
+  applyPostCastEffects,
+} from "./utils/castSpell.mjs";
+import { ensureSystemMacros } from "./utils/macroFolders.mjs";
+import { buildItemHotbarMacro } from "./utils/hotbarMacros.mjs";
 import {
   resolveWoundExchangeAsGM,
   resolveBloodGiftAsGM,
@@ -111,6 +120,7 @@ import {
   requestVoluntaryMentalDuel,
   handleVoluntaryMentalDuel,
   handleMentalDuelRps,
+  handleMentalDuelRound,
   handleMentalDuelPossess,
   handlePossessionRender,
   refreshPossessedActorTokens,
@@ -152,6 +162,7 @@ import {
   getEligibleRerolls,
   consumeReroll,
   getRerollTokensForSkill,
+  pickRerollPool,
 } from "./utils/rerolls.mjs";
 import {
   openRacePicker,
@@ -282,6 +293,8 @@ Hooks.once("init", function () {
   game.redsteel.getWeaponSpecBonuses = getWeaponSpecBonuses;
   game.redsteel.applyEffect =
     RedsteelActiveEffect.applyEffect.bind(RedsteelActiveEffect);
+  game.redsteel.adjustEffectAmount =
+    RedsteelActiveEffect.adjustEffectAmount.bind(RedsteelActiveEffect);
   game.redsteel.applyZeroHealthState = applyZeroHealthState;
   game.redsteel.advanceCombatFirstAid = advanceCombatFirstAid;
   game.redsteel.resolveEffectDefinition = resolveEffectDefinition;
@@ -303,6 +316,7 @@ Hooks.once("init", function () {
   game.redsteel.rangedAttack = rangedAttack;
   game.redsteel.throwingAttack = throwingAttack;
   game.redsteel.castSpell = castSpell;
+  game.redsteel.quickCastSpell = quickCastSpell;
   game.redsteel.throwExplosive = throwExplosive;
   game.redsteel.usePotion = usePotion;
   game.redsteel.usePoison = usePoison;
@@ -352,6 +366,9 @@ Hooks.once("init", function () {
   registerRollModifier();
   registerFormulaDisplay();
   registerEndTurnButton();
+  registerTempHealthGrant();
+  registerDefendButton();
+  registerOverwhelmHooks();
   registerEffectSheetExtensions();
   registerKeepDialogOpen();
   registerCustomConditions();
@@ -597,10 +614,14 @@ Handlebars.registerHelper("math", function (left, operator, right) {
       return left + right;
     case "-":
       return left - right;
+    // Multiplication and division floor their result: the rulebook always
+    // rounds SK fractions down, so SK 7 with "/" 2 reads 3, not 3.5. Kept in
+    // step with evaluateSpellPowerArgs in utils/spellCards.mjs, the other
+    // renderer of the same stored placeholders.
     case "*":
-      return left * right;
+      return Math.floor(left * right);
     case "/":
-      return right !== 0 ? left / right : 0;
+      return right !== 0 ? Math.floor(left / right) : 0;
     // Division that rounds UP. SK fractions round down everywhere by default,
     // so a rule that says "rounded up" (Skin cracking) has to ask for it.
     case "/up":
@@ -687,10 +708,24 @@ Hooks.once("ready", () => {
 
 Hooks.once("ready", function () {
   // Wait to register hotbar drop hook on ready so that modules could register earlier if they want to
-  Hooks.on("hotbarDrop", (bar, data, slot) => createDocMacro(data, slot));
+  // Returning false has to happen synchronously — createDocMacro is async, so
+  // awaiting it here would let the core hotbar carry on and try to build a
+  // Macro out of Item drop data (which throws). We take ownership of Item
+  // drops and leave everything else (Macro drops, other systems) alone.
+  Hooks.on("hotbarDrop", (bar, data, slot) => {
+    if (data?.type !== "Item") return true;
+    createDocMacro(data, slot);
+    return false;
+  });
 });
 Hooks.once("ready", () => {
   RedsteelActiveEffect.registerHooks();
+});
+
+Hooks.once("ready", () => {
+  // Records a cure when an addiction effect is removed, so a later relapse
+  // rolls at the harder difficulty.
+  registerDrugHooks();
 });
 
 Hooks.once("ready", () => {
@@ -781,6 +816,11 @@ Hooks.once("ready", () => {
       await handleMentalDuelRps(data);
     }
 
+    // Pending exchange (rerolls) — only the active GM mutates + resolves it.
+    if (data.type === "mentalDuelRound") {
+      await handleMentalDuelRound(data);
+    }
+
     // Seize control — only the active GM applies the ownership grant + marker.
     if (data.type === "mentalDuelPossess") {
       await handleMentalDuelPossess(data);
@@ -813,119 +853,80 @@ Hooks.once("ready", () => {
   });
 });
 
-Hooks.once("ready", async () => {
-  // Prevent re-adding macros every load
-  if (game.user.getFlag("redsteel", "hotbarInitialized")) return;
-
-  // Define preset macros
-  const macroData = [
-    {
-      name: "Attack actions",
-      command: `game.redsteel.attackActions();`,
-      img: "icons/skills/melee/hand-grip-sword-white-brown.webp",
-      slot: 1,
-      shared: true,
-    },
-    {
-      name: "Defense actions",
-      command: `game.redsteel.defenseRoll();`,
-      img: "icons/equipment/shield/shield-round-boss-wood-brown.webp",
-      slot: 2,
-      shared: true,
-    },
-    {
-      name: "Combat abilities",
-      command: `game.redsteel.combatAbilities();`,
-      img: "icons/skills/melee/weapons-crossed-swords-yellow.webp",
-      slot: 3,
-      shared: true,
-    },
-    {
-      name: "Channeling",
-      command: `game.redsteel.castSpell();`,
-      img: "icons/magic/lightning/orb-ball-spiral-blue.webp",
-      slot: 4,
-      shared: true,
-    },
-    {
-      name: "First aid",
-      command: `game.redsteel.firstAid();`,
-      img: "icons/magic/life/cross-yellow-green.webp",
-      slot: 9,
-      shared: true,
-    },
-    {
-      name: "Potions",
-      command: `game.redsteel.usePotion();`,
-      img: "icons/consumables/potions/bottle-round-label-cork-red.webp",
-      slot: 10,
-      shared: true,
-    },
-    // "Delay turn" is now a floating hotbar button (see endTurnButton.mjs), so
-    // it no longer needs a pre-generated macro in hotbar slot 10 ("0" key).
-  ];
-
-  // GM-only macro
-  if (game.user.isGM) {
-    macroData.push({
-      name: "Long Rest",
-      scope: "global",
-      command: `game.redsteel.longRest();`,
-      img: "icons/magic/time/day-night-sunset-sunrise.webp",
-      slot: 7,
-      shared: false,
-    });
-    macroData.push({
-      name: "Effect manager",
-      command: `await game.redsteel.statusEffectManager();`,
-      img: "icons/sundries/documents/document-sealed-signatures-red.webp",
-      slot: 8,
-      shared: false,
-    });
-  }
-
-  for (const data of macroData) {
-    let macro = game.macros.getName(data.name);
-
-    if (!macro) {
-      macro = await Macro.create({
-        name: data.name,
-        type: "script",
-        command: data.command,
-        img: data.img,
-      });
-    }
-    if (game.user.isGM && data.shared) {
-      await macro.update({
-        ownership: { default: 2 },
-      });
-    }
-    await game.user.assignHotbarMacro(macro, data.slot);
-  }
-
-  await game.user.setFlag("redsteel", "hotbarInitialized", true);
-});
-
-// Ensure a single shared "Mind Bending — Resume Duel" macro exists in the
-// Macros directory (not on any hotbar). It's an ultra-niche tool, so it lives
-// in the directory for the one player who needs it to drag onto their own bar.
-// Runs independently of the hotbar-init flag so it appears on existing worlds.
-Hooks.once("ready", async () => {
-  if (!game.user.isGM) return;
-  const name = "Mind Bending — Resume Duel";
-  if (game.macros.getName(name)) return;
-  const macro = await Macro.create({
-    name,
-    type: "script",
+/**
+ * The system's macros. These are generated in the "Redsteel Macros" folder but
+ * are never pinned to a hotbar slot — the bar is the player's to fill, and the
+ * Redsteel panel's action row already drives the same `game.redsteel` entry
+ * points these call. They exist as the failsafe: when a panel button misbehaves
+ * mid-session there is always a plain macro to click, and players can drag the
+ * ones they use onto their own bar.
+ *
+ * `shared` (default true) makes a macro readable by every player. Long Rest and
+ * the Effect manager stay GM-only.
+ */
+const SYSTEM_MACROS = [
+  {
+    name: "Attack actions",
+    command: `game.redsteel.attackActions();`,
+    img: "icons/skills/melee/hand-grip-sword-white-brown.webp",
+  },
+  {
+    name: "Defense actions",
+    command: `game.redsteel.defenseRoll();`,
+    img: "icons/equipment/shield/shield-round-boss-wood-brown.webp",
+  },
+  {
+    name: "Combat abilities",
+    command: `game.redsteel.combatAbilities();`,
+    img: "icons/skills/melee/weapons-crossed-swords-yellow.webp",
+  },
+  {
+    name: "Channeling",
+    command: `game.redsteel.castSpell();`,
+    img: "icons/magic/lightning/orb-ball-spiral-blue.webp",
+  },
+  {
+    name: "First aid",
+    command: `game.redsteel.firstAid();`,
+    img: "icons/magic/life/cross-yellow-green.webp",
+  },
+  {
+    name: "Potions",
+    command: `game.redsteel.usePotion();`,
+    img: "icons/consumables/potions/bottle-round-label-cork-red.webp",
+  },
+  // Delay turn is a floating button on the bar rather than an action-row entry,
+  // which makes it the one action with no second way in — so it earns a macro
+  // here more than most.
+  {
+    name: "Delay turn",
+    command: `game.redsteel.delayTurn();`,
+    img: "icons/magic/time/clock-stopwatch-white-blue.webp",
+  },
+  // Ultra-niche: only the one player mid-duel ever needs it, but losing a duel
+  // to a reload with no way back is exactly what a failsafe is for.
+  {
+    name: "Mind Bending — Resume Duel",
     command: `game.redsteel.resumeMentalDuel();`,
     img: "icons/magic/control/hypnosis-mesmerism-eye.webp",
-  });
-  await macro?.update({ ownership: { default: 2 } }); // shared (observer)
-});
+  },
+  {
+    name: "Long Rest",
+    command: `game.redsteel.longRest();`,
+    img: "icons/magic/time/day-night-sunset-sunrise.webp",
+    shared: false,
+  },
+  {
+    name: "Effect manager",
+    command: `await game.redsteel.statusEffectManager();`,
+    img: "icons/sundries/documents/document-sealed-signatures-red.webp",
+    shared: false,
+  },
+];
 
-// Ensure the three shared Aim macros exist in the Macros directory. Like the
-// Resume Duel macro above, they are not pinned to a hotbar slot — players drag
-// them where they like. Runs independently of the hotbar-init flag.
+Hooks.once("ready", () => ensureSystemMacros(SYSTEM_MACROS));
+
+// The three Aim macros are generated the same way, from aim.mjs where they live.
 Hooks.once("ready", () => ensureAimMacros());
 
 /* -------------------------------------------- */
@@ -1057,28 +1058,21 @@ Hooks.on("ready", () => {
 async function createDocMacro(data, slot) {
   // First, determine if this is a valid owned item.
   if (data.type !== "Item") return;
-  if (!data.uuid.includes("Actor.") && !data.uuid.includes("Token.")) {
+  if (!data.uuid?.includes("Actor.") && !data.uuid?.includes("Token.")) {
     return ui.notifications.warn(
       "You can only create macro buttons for owned Items",
     );
   }
   // If it is, retrieve it based on the uuid.
   const item = await Item.fromDropData(data);
+  if (!item) return;
 
-  // Create the macro command using the uuid.
-  const command = `game.redsteel.rollItemMacro("${data.uuid}");`;
-  let macro = game.macros.find(
-    (m) => m.name === item.name && m.command === command,
-  );
-  if (!macro) {
-    macro = await Macro.create({
-      name: item.name,
-      type: "script",
-      img: item.img,
-      command: command,
-      flags: { "redsteel.itemMacro": true },
-    });
-  }
+  // Spells get a quick-cast macro instead of the generic item roll, and both
+  // land in the actor's own macro folder — see utils/hotbarMacros.mjs, which
+  // the sheet's star button shares so either route produces the same macro.
+  const macro = await buildItemHotbarMacro(item, data.uuid);
+  if (!macro) return false;
+
   game.user.assignHotbarMacro(macro, slot);
   return false;
 }
@@ -1533,7 +1527,7 @@ async function handleRerollClick(message) {
 
   let chosen = eligible[0];
   if (eligible.length > 1) {
-    chosen = await pickReroll(eligible);
+    chosen = await pickRerollPool(eligible);
     if (!chosen) return; // cancelled
   }
 
@@ -1554,53 +1548,6 @@ async function handleRerollClick(message) {
   await executeReroll(message, chosen.label);
 }
 
-/**
- * Prompt the user to choose one of several eligible reroll pools.
- * @returns {Promise<object|null>} the chosen pool descriptor, or null if cancelled.
- */
-async function pickReroll(eligible) {
-  const rows = eligible
-    .map((pool, i) => {
-      const remaining = `${pool.remaining}/${pool.max}`;
-      const tag = [
-        pool.universal ? "Universal" : pool.skills.join(", "),
-        pool.critFail ? "crit fail" : null,
-      ]
-        .filter(Boolean)
-        .join(" · ");
-      return `
-        <label class="reroll-pick-row" style="display:flex; align-items:center; gap:8px; padding:4px 2px; cursor:pointer;">
-          <input type="radio" name="reroll-pick" value="${i}" ${i === 0 ? "checked" : ""}>
-          <img src="${pool.img}" width="28" height="28" style="border:none; flex:0 0 auto;">
-          <span style="flex:1;"><b>${pool.label}</b> <span style="opacity:0.7;">(${tag})</span></span>
-          <span style="opacity:0.7;">${remaining}</span>
-        </label>`;
-    })
-    .join("");
-
-  const DialogV2 = foundry.applications.api.DialogV2;
-  const result = await DialogV2.wait({
-    window: { title: "Choose a Reroll" },
-    content: `<form><p>Select which reroll to spend:</p>${rows}</form>`,
-    buttons: [
-      {
-        action: "confirm",
-        label: "Reroll",
-        default: true,
-        callback: (event, button, dialog) => {
-          const root = dialog?.element ?? button.form;
-          return root.querySelector('input[name="reroll-pick"]:checked')?.value;
-        },
-      },
-      { action: "cancel", label: "Cancel" },
-    ],
-    rejectClose: false,
-  });
-
-  if (result === null || result === "cancel" || result === undefined) return null;
-  return eligible[Number(result)] ?? null;
-}
-
 Hooks.on("renderChatMessageHTML", (message, html, data) => {
   function updateButtonContainerLayout(container) {
     const buttonCount = container.querySelectorAll("button, a.button").length;
@@ -1619,8 +1566,14 @@ Hooks.on("renderChatMessageHTML", (message, html, data) => {
     const hasTestRoll = message.rolls?.some((r) => /\d+d100/i.test(r.formula));
 
     // Stabilise messages carry their own Re-Roll button (which re-applies the
-    // outcome); the generic one can't, so skip it for those.
-    if (hasTestRoll && !message.getFlag("redsteel", "stabilise")) {
+    // outcome); the generic one can't, so skip it for those. Mental Duel cards
+    // are posted only after both sides locked their dice in — the reroll step
+    // lives in the duel window, so the generic button would be a lie here.
+    if (
+      hasTestRoll &&
+      !message.getFlag("redsteel", "stabilise") &&
+      !message.getFlag("redsteel", "mentalDuel")
+    ) {
       const rerollButton = document.createElement("button");
       rerollButton.className = "reroll-button";
       rerollButton.type = "button";
@@ -3016,37 +2969,8 @@ Hooks.on("createToken", (tokenDoc, options, userId) => {
 /*  Default actor abilities                     */
 /* -------------------------------------------- */
 
-// Every Character and NPC starts with these baseline abilities (sourced from
-// the redsteel-items compendium).
-const DEFAULT_ACTOR_ABILITY_UUIDS = [
-  "Compendium.redsteel.redsteel-items.Item.Zkket4924S0MClYW", // Disengage
-  "Compendium.redsteel.redsteel-items.Item.Xc0SM3CwS9pnT5rY", // Sprint
-  "Compendium.redsteel.redsteel-items.Item.r0zKDZ0Zs2bMiUAu", // Rest
-];
-
-Hooks.on("createActor", async (actor, options, userId) => {
-  if (game.user.id !== userId) return;
-  if (!["character", "npc"].includes(actor.type)) return;
-
-  // Skip any that the actor already carries (e.g. duplicated/imported actors),
-  // matched by their compendium source so renames don't cause duplicates.
-  const existing = new Set(
-    actor.items.map((i) => i._stats?.compendiumSource).filter(Boolean),
-  );
-
-  const toAdd = [];
-  for (const uuid of DEFAULT_ACTOR_ABILITY_UUIDS) {
-    if (existing.has(uuid)) continue;
-    const source = await fromUuid(uuid);
-    if (!source) {
-      console.warn(`Redsteel | default ability not found: ${uuid}`);
-      continue;
-    }
-    const data = source.toObject();
-    delete data._id;
-    data._stats = { ...(data._stats ?? {}), compendiumSource: uuid };
-    toAdd.push(data);
-  }
-
-  if (toAdd.length) await actor.createEmbeddedDocuments("Item", toAdd);
-});
+// Baseline abilities (Disengage, Sprint, Rest, Defensive Stance) are no longer
+// copied here. They are the `kind: "always"` rule at the top of ABILITY_GRANTS
+// in utils/abilityGrants.mjs, so the grant system owns every ability an actor
+// gets for free — including letting Shieldbearer 6 replace the base Defensive
+// Stance with its upgrade rather than leaving both on the sheet.

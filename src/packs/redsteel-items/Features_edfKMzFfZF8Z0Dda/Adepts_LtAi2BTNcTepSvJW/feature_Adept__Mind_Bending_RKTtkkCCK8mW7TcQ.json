@@ -1,0 +1,112 @@
+{
+  "folder": "LtAi2BTNcTepSvJW",
+  "name": "Adept: Mind Bending",
+  "type": "feature",
+  "img": "icons/commodities/treasure/medal-ribbon-striped-gold-red.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.AdeptMindBending.name",
+    "description": "<p>Once per day you may reroll this ability. Adds 5% to tests of this ability.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": [
+        {
+          "label": "",
+          "skillsRaw": "mindBending",
+          "max": 1,
+          "used": 0
+        }
+      ]
+    },
+    "option": "feature"
+  },
+  "effects": [
+    {
+      "name": "Adept: Mind Bending",
+      "origin": "Item.RKTtkkCCK8mW7TcQ",
+      "img": "icons/svg/daze.svg",
+      "_id": "r8GmCwGiHxWwDuCS",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.skills.mindBending.bonus",
+            "value": 5,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
+      "disabled": false,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {
+        "statuscounter": {
+          "value": 1,
+          "config": {
+            "type": "default"
+          },
+          "visible": false
+        },
+        "tos": {
+          "actorTurns": null
+        }
+      },
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!RKTtkkCCK8mW7TcQ.r8GmCwGiHxWwDuCS"
+    }
+  ],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1777294839144,
+    "modifiedTime": 1777294839144,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "ownership": {
+    "default": 0,
+    "rs3mzx7WZdtEmvH2": 3,
+    "exQfSubzwCCs5h8v": 3,
+    "UHjN0KQ8w8ZxibJg": 3
+  },
+  "sort": 100000,
+  "_id": "RKTtkkCCK8mW7TcQ",
+  "_key": "!items!RKTtkkCCK8mW7TcQ"
+}

@@ -6,6 +6,7 @@
   "system": {
     "description": "",
     "class": "bow",
+    "tags": "hunting bow",
     "classOptions": [
       "axe",
       "blunt",

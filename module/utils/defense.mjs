@@ -2,14 +2,235 @@ import { getTraitPills } from "./traitPills.mjs";
 import { withRollBias, applyDesperateCrit, tagRollSkill } from "./rollAdvantage.mjs";
 import { getDefenseRerollTokens } from "./rerolls.mjs";
 import { getBaneProfile } from "./baneCombat.mjs";
+import { buildTempHealthGrantFlag } from "./tempHealthGrant.mjs";
+import {
+  OVERWHELM_MAX_STACKS,
+  OVERWHELM_PENALTY_PER_STACK,
+  attackerTokenIdFromMessage,
+  getOverwhelmSources,
+  inferAttackerTokenId,
+  isOverwhelmTracked,
+  overwhelmSourceName,
+  forgetOverwhelmSource,
+  recordOverwhelmDefense,
+  resolveDefenderToken,
+  stacksFromSources,
+} from "./overwhelm.mjs";
 
-export async function defenseRoll({ actor, weapon, ability = null } = {}) {
+export async function defenseRoll({
+  actor,
+  weapon,
+  ability = null,
+  attackerTokenId = null,
+  attack = null,
+} = {}) {
+  let defenderToken = null;
+
   if (!actor) {
     const context = game.redsteel.selectToken();
     if (!context) return;
 
     actor = context.actor;
+    defenderToken = context.token ?? null;
   }
+
+  defenderToken = resolveDefenderToken(actor, defenderToken);
+
+  /* -------------------------------------------- */
+  /*  OVERWHELM                                   */
+  /* -------------------------------------------- */
+
+  // Who is swinging. An explicit id from a Defend button is a fact; the
+  // newest-attack-card guess is a fallback for hotbar-launched defenses and is
+  // the reason the dialog lets you take a name back out again.
+  let pendingAttackerId = isOverwhelmTracked()
+    ? (attackerTokenId ?? inferAttackerTokenId(defenderToken?.id))
+    : null;
+
+  // Answering your own attack card (a GM holding both sides) must not put the
+  // defender in their own set, or show them as a chip they cannot remove.
+  if (pendingAttackerId && pendingAttackerId === defenderToken?.id) {
+    pendingAttackerId = null;
+  }
+
+  /** Recorded attackers plus the one about to be recorded by this defense. */
+  const projectedSources = () => {
+    const sources = getOverwhelmSources(defenderToken);
+    if (pendingAttackerId && !sources.includes(pendingAttackerId)) {
+      sources.push(pendingAttackerId);
+    }
+    return sources;
+  };
+
+  /**
+   * Write the attacker into the record and settle the number this roll uses.
+   *
+   * Called at roll time, never when the dialog opens, so cancelling out leaves
+   * no phantom attacker behind. `override` is the value the GM dialled on the
+   * counter: it changes this roll only and deliberately does not rewrite the
+   * record, because the record is corrected by removing a chip instead.
+   */
+  const commitOverwhelm = async (override = null) => {
+    if (!isOverwhelmTracked()) return Number(override) || 0;
+
+    const stacks = await recordOverwhelmDefense(
+      defenderToken,
+      pendingAttackerId,
+    );
+    return override === null ? stacks : Number(override) || 0;
+  };
+
+  /* -------------------------------------------- */
+  /*  VERSUS THE ATTACK                           */
+  /* -------------------------------------------- */
+
+  /** "Úspěšný zásah, který je o 60 silnější než protivníkova obrana." */
+  const CRITICAL_GAP = 60;
+
+  // `== null` catches both null and undefined before the cast, because
+  // Number(null) is 0 and a hotbar defense would otherwise contest a phantom
+  // attack of margin zero.
+  const parsedAttackMargin =
+    attack?.margin == null ? NaN : Number(attack.margin);
+  const knownAttackMargin = Number.isFinite(parsedAttackMargin)
+    ? parsedAttackMargin
+    : null;
+
+  /**
+   * Resolve this defense against the attack it is answering.
+   *
+   * Defense is a versus Test ("Alternativní forma obrany, versus Test Úhybu
+   * proti Zásahu oponenta"), so the two margins are compared directly and the
+   * gap between them is the number the rules read. Two things outrank that plain
+   * comparison, in this order:
+   *
+   * 1. A *natural* critical roll is absolute. It settles the contest on its own
+   *    and the margins stop mattering, so a natural 1 on defense is a Critical
+   *    Defense even against an attack that was 69 ahead. A natural critical
+   *    failure on defense reads the same way from the other end: the guard came
+   *    apart, so the blow lands critically whatever the margins said.
+   *    Only the *other side's* natural critical can deny one. A 60-clear margin
+   *    cannot, which is the whole point of calling the natural roll absolute.
+   *    Denied criticals fall back to whoever rolled closer to 1 on the d100,
+   *    with a tie going to the attacker as every versus Test does.
+   * 2. Failing any natural critical, a side that is 60 clear on margin is
+   *    critical ("Úspěšný zásah, který je o 60 silnější než protivníkova
+   *    obrana"), and below that the plain margin comparison decides.
+   *
+   * Advisory only: the attack card keeps its Apply Damage buttons, because
+   * whether a blow lands is still the GM's call.
+   *
+   * @param {object} params
+   * @param {number} params.defenseTotal   this defense's own margin
+   * @param {number|null} params.defenseD100 the raw die, for the crit tiebreak
+   * @param {boolean} params.defenseCrit   natural critical success on defense
+   * @param {boolean} params.defenseCritFailure natural critical failure on defense
+   * @returns {{html: string, versus: object|null}}
+   */
+  const resolveVersusAttack = ({
+    defenseTotal,
+    defenseD100 = null,
+    defenseCrit = false,
+    defenseCritFailure = false,
+  }) => {
+    if (knownAttackMargin === null) return { html: "", versus: null };
+
+    const attackCrit = attack?.criticalSuccess === true;
+    const attackCritFailure = attack?.criticalFailure === true;
+    const attackD100 = attack?.d100 ?? null;
+
+    const gap = defenseTotal - knownAttackMargin;
+
+    // Which side each natural critical favours. A fumble helps the other guy.
+    const naturalForDefense = defenseCrit || attackCritFailure;
+    const naturalForAttack = defenseCritFailure || attackCrit;
+
+    let blocked;
+    let critical = null; // "defense" | "hit" | null
+    let onDice = false;
+
+    if (naturalForDefense && naturalForAttack) {
+      // Two natural criticals pulling opposite ways deny each other, and the
+      // margins are ignored entirely: whoever rolled closer to 1 takes it.
+      if (attackD100 != null && defenseD100 != null) {
+        blocked = defenseD100 < attackD100;
+        onDice = true;
+      } else {
+        blocked = gap > 0;
+      }
+    } else if (naturalForDefense) {
+      blocked = true;
+      critical = "defense";
+    } else if (naturalForAttack) {
+      blocked = false;
+      critical = "hit";
+    } else if (gap >= CRITICAL_GAP) {
+      blocked = true;
+      critical = "defense";
+    } else if (-gap >= CRITICAL_GAP) {
+      blocked = false;
+      critical = "hit";
+    } else {
+      blocked = gap > 0;
+    }
+
+    const outcome = critical
+      ? game.i18n.localize(
+          critical === "defense"
+            ? "REDSTEEL.Versus.CriticalDefense"
+            : "REDSTEEL.Versus.CriticalHit",
+        )
+      : !onDice && gap === 0
+        ? game.i18n.localize("REDSTEEL.Versus.Tie")
+        : game.i18n.localize(
+            blocked ? "REDSTEEL.Versus.Blocked" : "REDSTEEL.Versus.Hit",
+          );
+
+    const detail = game.i18n.format("REDSTEEL.Versus.Detail", {
+      attack: knownAttackMargin,
+      defense: defenseTotal,
+      gap: gap > 0 ? `+${gap}` : gap,
+    });
+
+    // The margin line is actively misleading when the dice decided it, so say
+    // so rather than leaving a +53 sitting under a "Hit".
+    const diceNote = onDice
+      ? `<div class="rs-versus-note">${game.i18n.format(
+          "REDSTEEL.Versus.DeniedOnDice",
+          { attack: attackD100, defense: defenseD100 },
+        )}</div>`
+      : "";
+
+    // Coloured from the defender's point of view, because this is the
+    // defender's card: gold only for their own critical, red for a critical
+    // landing on them.
+    const state =
+      critical === "defense"
+        ? "is-critical-defense"
+        : critical === "hit"
+          ? "is-critical-hit"
+          : blocked
+            ? "is-blocked"
+            : "is-hit";
+
+    const html = `
+      <div class="rs-versus ${state}">
+        <div class="rs-versus-outcome">${outcome}</div>
+        <div class="rs-versus-detail">${detail}</div>
+        ${diceNote}
+      </div>`;
+
+    return {
+      html,
+      versus: {
+        attackMargin: knownAttackMargin,
+        gap,
+        blocked,
+        critical,
+        onDice,
+      },
+    };
+  };
 
   const baneProfile = getBaneProfile(actor);
 
@@ -107,13 +328,15 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
   }
 
   if (!ability) {
+    /** The counter's current value: what this one roll is taken at. */
+    const readOverwhelm = (html) =>
+      Number(html.find('input[name="overwhelm"]').val()) || 0;
+
     const buttons = {
       melee: {
         label: "Melee Defense",
         callback: (html) => {
-          const overwhelm = Number(
-            html.find('input[name="overwhelm"]:checked').val(),
-          );
+          const overwhelm = readOverwhelm(html);
           const longReachPenalty = html
             .find('[name="longReachPenalty"]')
             .is(":checked")
@@ -128,9 +351,7 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
       ranged: {
         label: "Ranged Defense",
         callback: (html) => {
-          const overwhelm = Number(
-            html.find('input[name="overwhelm"]:checked').val(),
-          );
+          const overwhelm = readOverwhelm(html);
           const useBane = html.find('[name="baneDefense"]').is(":checked");
           rangedDefense({ overwhelm, useBane });
         },
@@ -141,9 +362,7 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
       buttons.guardMelee = {
         label: "Melee Guard",
         callback: (html) => {
-          const overwhelm = Number(
-            html.find('input[name="overwhelm"]:checked').val(),
-          );
+          const overwhelm = readOverwhelm(html);
           const useBane = html.find('[name="baneDefense"]').is(":checked");
 
           meleeDefense({
@@ -157,9 +376,7 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
       buttons.guardRanged = {
         label: "Ranged Guard",
         callback: (html) => {
-          const overwhelm = Number(
-            html.find('input[name="overwhelm"]:checked').val(),
-          );
+          const overwhelm = readOverwhelm(html);
           const useBane = html.find('[name="baneDefense"]').is(":checked");
 
           rangedDefense({
@@ -174,9 +391,7 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
     buttons.dodge = {
       label: "Dodge",
       callback: (html) => {
-        const overwhelm = Number(
-          html.find('input[name="overwhelm"]:checked').val(),
-        );
+        const overwhelm = readOverwhelm(html);
         const useBane = html.find('[name="baneDefense"]').is(":checked");
         dodgeDefense({ overwhelm, useBane });
       },
@@ -186,9 +401,7 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
       buttons.spell = {
         label: "Magic defense",
         callback: (html) => {
-          const overwhelm = Number(
-            html.find('input[name="overwhelm"]:checked').val(),
-          );
+          const overwhelm = readOverwhelm(html);
           spellDefense({ overwhelm });
         },
       };
@@ -199,19 +412,15 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
       content: `
       ${activeSetPreview}
       <hr>
-      <div style="margin-bottom:8px;">
-        <label style="font-weight:bold;margin-right:6px;">Overwhelm:</label>
-        ${[0, 1, 2, 3, 4]
-          .map(
-            (i) => `
-          <label style="margin-right:6px;">
-            <input type="radio" name="overwhelm" value="${i}" ${i === 0 ? "checked" : ""}>
-            ${i}
-          </label>
-        `,
-          )
-          .join("")}
-      </div>
+      ${
+        knownAttackMargin === null
+          ? ""
+          : `<div class="rs-versus-target">${game.i18n.format(
+              "REDSTEEL.Versus.DialogAttackMargin",
+              { margin: knownAttackMargin },
+            )}</div>`
+      }
+      <div class="rs-overwhelm"></div>
 
         ${
           hasLongReach
@@ -246,12 +455,109 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
           await game.redsteel.switchWeaponSet(actor);
 
           dialog.close();
-          defenseRoll({ actor }); // 🔁 reopen with updated preview
+          defenseRoll({ actor, attackerTokenId, attack }); // 🔁 reopen with updated preview
         });
+
+        renderOverwhelmBlock(html);
       },
     });
 
     dialog.render(true);
+  }
+
+  /* -------------------------------------------- */
+  /*  OVERWHELM BLOCK                             */
+  /* -------------------------------------------- */
+
+  /**
+   * Counter plus one removable chip per attacker.
+   *
+   * The two controls have deliberately different reach. The −/+ counter moves
+   * the number this roll is taken at and stores nothing, which is also the only
+   * control shown out of combat where there is nothing to track. Taking a chip
+   * out edits the record itself, so it fixes every remaining defense this round
+   * rather than just the roll in front of you.
+   *
+   * Chips are the recorded attackers, never the encounter roster: the list is
+   * bounded by how many things have swung at *this* token, so a twenty-token
+   * battle still shows at most a handful of names.
+   */
+  function renderOverwhelmBlock(html) {
+    const container = html.find(".rs-overwhelm");
+    if (!container.length) return;
+
+    const tracked = isOverwhelmTracked();
+    const sources = tracked ? projectedSources() : [];
+    const auto = stacksFromSources(sources);
+
+    // A value the user already dialled survives a chip removal; only the
+    // untouched counter follows the record.
+    const input = container.find('input[name="overwhelm"]');
+    const dirty = input.data("dirty") === true;
+    const current = dirty
+      ? Math.min(Number(input.val()) || 0, OVERWHELM_MAX_STACKS)
+      : auto;
+
+    const penalty = current * OVERWHELM_PENALTY_PER_STACK;
+    const label = game.i18n.localize("REDSTEEL.Overwhelm.Label");
+
+    const chips = sources
+      .map(
+        (id) => `
+        <span class="rs-overwhelm-chip" data-attacker-id="${id}">
+          ${overwhelmSourceName(id)}
+          <a class="rs-overwhelm-remove" data-attacker-id="${id}"
+             data-tooltip="${game.i18n.localize("REDSTEEL.Overwhelm.RemoveTooltip")}">×</a>
+        </span>`,
+      )
+      .join("");
+
+    container.html(`
+      <div class="rs-overwhelm-row">
+        <label>${label}</label>
+        <button type="button" class="rs-overwhelm-step" data-step="-1">−</button>
+        <span class="rs-overwhelm-value">${current}</span>
+        <button type="button" class="rs-overwhelm-step" data-step="1">+</button>
+        <span class="rs-overwhelm-penalty">${penalty === 0 ? "" : penalty}</span>
+        <input type="hidden" name="overwhelm" value="${current}">
+      </div>
+      ${
+        chips
+          ? `<div class="rs-overwhelm-sources-label">${game.i18n.localize(
+              "REDSTEEL.Overwhelm.SourcesLabel",
+            )}</div>
+             <div class="rs-overwhelm-chips">${chips}</div>`
+          : ""
+      }
+    `);
+
+    container.find('input[name="overwhelm"]').data("dirty", dirty);
+
+    container.find(".rs-overwhelm-step").on("click", (event) => {
+      const step = Number(event.currentTarget.dataset.step);
+      const field = container.find('input[name="overwhelm"]');
+      const next = Math.max(
+        0,
+        Math.min((Number(field.val()) || 0) + step, OVERWHELM_MAX_STACKS),
+      );
+
+      field.val(next).data("dirty", true);
+      container.find(".rs-overwhelm-value").text(next);
+      container
+        .find(".rs-overwhelm-penalty")
+        .text(next === 0 ? "" : next * OVERWHELM_PENALTY_PER_STACK);
+    });
+
+    container.find(".rs-overwhelm-remove").on("click", async (event) => {
+      const id = event.currentTarget.dataset.attackerId;
+
+      // The attacker this defense is about to add is not in the record yet, so
+      // dropping it is just a matter of not adding it.
+      if (id === pendingAttackerId) pendingAttackerId = null;
+      else await forgetOverwhelmSource(defenderToken, id);
+
+      renderOverwhelmBlock(html);
+    });
   }
 
   /* -------------------------------------------- */
@@ -297,7 +603,7 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
   async function meleeDefense({
     ability = null,
     weapon = null,
-    overwhelm = 0,
+    overwhelm = null,
     longReachPenalty = 0,
     useBane = false,
   } = {}) {
@@ -324,7 +630,11 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
       const offCrit =
         (Number(offProps?.critDefense) || 0) +
         (Number(offQuality.critDefense) || 0);
-      const overwhelmPenalty = overwhelm * -5;
+      // Records the attacker and settles the number in one step. Null means the
+      // caller passed no override (an ability-driven defense that never showed
+      // the dialog), so the tracked value stands.
+      const overwhelmStacks = await commitOverwhelm(overwhelm);
+      const overwhelmPenalty = overwhelmStacks * OVERWHELM_PENALTY_PER_STACK;
       console.log("DEFENSE CONTEXT:", context);
 
       const weaponSpec = game.redsteel.getWeaponSpecBonuses(actor, weapon);
@@ -370,7 +680,7 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
         rollName,
         criticalSuccessThreshold,
         criticalFailureThreshold,
-        overwhelm,
+        overwhelmStacks,
         {
           deflectValue: Number(actor.system.defenseDeflect) || 0,
           defenseKey: "meleeDefense",
@@ -431,7 +741,7 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
   async function rangedDefense({
     ability = null,
     weapon = null,
-    overwhelm = 0,
+    overwhelm = null,
     useBane = false,
   } = {}) {
     const resolveWithContext = async (context) => {
@@ -444,7 +754,11 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
         await game.redsteel.getDoctrineBonuses(actor, weapon);
 
       const defense = actor.system.combatSkills.rangedDefense;
-      const overwhelmPenalty = overwhelm * -5;
+      // Records the attacker and settles the number in one step. Null means the
+      // caller passed no override (an ability-driven defense that never showed
+      // the dialog), so the tracked value stands.
+      const overwhelmStacks = await commitOverwhelm(overwhelm);
+      const overwhelmPenalty = overwhelmStacks * OVERWHELM_PENALTY_PER_STACK;
       const abilityDefense = Number(ability?.system?.rangedDefense) || 0;
 
       const criticalSuccessThreshold =
@@ -475,7 +789,7 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
         rollName,
         criticalSuccessThreshold,
         criticalFailureThreshold,
-        overwhelm,
+        overwhelmStacks,
         { defenseKey: "rangedDefense", useBane },
       );
     };
@@ -521,7 +835,7 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
   async function dodgeDefense({
     ability = null,
     weapon = null,
-    overwhelm = 0,
+    overwhelm = null,
     useBane = false,
   } = {}) {
     const resolveWithContext = async (context) => {
@@ -538,7 +852,11 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
 
       const dodge = actor.system.combatSkills.dodge;
       const abilityDefense = Number(ability?.system?.dodge) || 0;
-      const overwhelmPenalty = overwhelm * -5;
+      // Records the attacker and settles the number in one step. Null means the
+      // caller passed no override (an ability-driven defense that never showed
+      // the dialog), so the tracked value stands.
+      const overwhelmStacks = await commitOverwhelm(overwhelm);
+      const overwhelmPenalty = overwhelmStacks * OVERWHELM_PENALTY_PER_STACK;
 
       const criticalSuccessThreshold =
         dodge.criticalSuccessThreshold +
@@ -586,7 +904,7 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
         rollName,
         criticalSuccessThreshold,
         criticalFailureThreshold,
-        overwhelm,
+        overwhelmStacks,
         {
           dodgeFailed,
           deflectValue: Number(actor.system.dodgeDeflect) || 0,
@@ -630,8 +948,18 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
     });
   }
 
-  async function spellDefense({ overwhelm = 0 } = {}) {
-    const overwhelmPenalty = overwhelm * -5;
+  async function spellDefense({ overwhelm = null } = {}) {
+    // Settled only once the defense has actually paid its resource cost. Both
+    // branches below can bail out on "not enough Holy Energy / Mana", and a
+    // defense that never rolled must not leave a phantom attacker in the set.
+    let overwhelmStacks = 0;
+    let overwhelmPenalty = 0;
+
+    const settleOverwhelm = async () => {
+      overwhelmStacks = await commitOverwhelm(overwhelm);
+      overwhelmPenalty = overwhelmStacks * OVERWHELM_PENALTY_PER_STACK;
+    };
+
     // ─────────────────────────────
     // Priest: Holy Defense
     // ─────────────────────────────
@@ -647,6 +975,8 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
       await actor.update({
         "system.stats.holyEnergy.value": holyEnergy - 1,
       });
+
+      await settleOverwhelm();
 
       const faith = actor.system.secondaryAttributes.fth.total ?? 0;
 
@@ -664,11 +994,22 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
 
       await roll.evaluate();
 
+      // Faith tests know no critical success or failure ("vyjma Víry, Rychlosti
+      // a Mentálního souboje"), so this contest is decided on margins alone.
+      const versus = resolveVersusAttack({
+        defenseTotal: roll.total,
+        defenseD100: roll.dice.find((d) => d.faces === 100)?.total ?? null,
+        defenseCrit: false,
+      });
+
       await roll.toMessage({
         speaker: ChatMessage.getSpeaker({ actor }),
-        flavor: `<strong>Holy Defense</strong>`,
+        flavor: `<strong>Holy Defense</strong>${versus.html}`,
         flags: {
-          redsteel: { traitPills: getTraitPills(actor, "defense") },
+          redsteel: {
+            traitPills: getTraitPills(actor, "defense"),
+            versus: versus.versus,
+          },
         },
       });
 
@@ -706,6 +1047,8 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
                 "system.stats.mana.value": mana - cost,
               });
 
+              await settleOverwhelm();
+
               const rating =
                 actor.system.combatSkills.channeling.rating +
                 actor.system.combatSkills.channeling.defense;
@@ -717,6 +1060,15 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
 
               await roll.evaluate();
 
+              // Channeling defense posts no crit thresholds of its own, so the
+              // contest rests on margins here too.
+              const versus = resolveVersusAttack({
+                defenseTotal: roll.total,
+                defenseD100:
+                  roll.dice.find((d) => d.faces === 100)?.total ?? null,
+                defenseCrit: false,
+              });
+
               await roll.toMessage({
                 speaker: ChatMessage.getSpeaker({ actor }),
                 flavor: `
@@ -725,10 +1077,14 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
                   <span>Magic Defense (${level})</span>
                 </div>
 
-                ${overwhelm > 0 ? `<p style="text-align:center">Overwhelm: -${overwhelm * 5}</p>` : ""}
+                ${overwhelmStacks > 0 ? `<p style="text-align:center">${game.i18n.localize("REDSTEEL.Overwhelm.Label")}: ${overwhelmPenalty}</p>` : ""}
+                ${versus.html}
                 `,
                 flags: {
-                  redsteel: { traitPills: getTraitPills(actor, "defense") },
+                  redsteel: {
+                    traitPills: getTraitPills(actor, "defense"),
+                    versus: versus.versus,
+                  },
                 },
               });
             },
@@ -818,6 +1174,20 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
       });
     }
 
+    // Weapon Skill 4+ / Swordsman 3+ let the defender claim temporary HP off
+    // this defense. Null on every card that has no claim, which is the signal
+    // for the button not to render.
+    const tempHealthGrant = buildTempHealthGrantFlag(actor, weapon, defenseKey);
+
+    // Nothing when the defense was launched from the hotbar: the margin only
+    // arrives when a Defend button names the attack being answered.
+    const versus = resolveVersusAttack({
+      defenseTotal: roll.total,
+      defenseD100: rollResult,
+      defenseCrit: critSuccess,
+      defenseCritFailure: critFailure,
+    });
+
     await ChatMessage.create({
       speaker: ChatMessage.getSpeaker({ actor }),
       rolls: [roll],
@@ -840,8 +1210,9 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
 
         </b></p>
           <div style="display:flex;justify-content:center;align-items:center;gap:8px;font-size:1.3em;font-weight:bold;">
-            ${overwhelm > 0 ? `<p>Overwhelm: -${overwhelm * 5}</p>` : ""}
+            ${overwhelm > 0 ? `<p>${game.i18n.localize("REDSTEEL.Overwhelm.Label")}: ${overwhelm * OVERWHELM_PENALTY_PER_STACK}</p>` : ""}
           </div>
+       ${versus.html}
        ${deflectHTML}
        ${armorTable}
       `,
@@ -855,10 +1226,72 @@ export async function defenseRoll({ actor, weapon, ability = null } = {}) {
           // skill + its governing attribute (dodge→dex, ranged→per, melee→dex
           // unless steelGrip/predatorySenses flips it).
           rerollTokens: getDefenseRerollTokens(actor, defenseKey),
+          ...(versus.versus ? { versus: versus.versus } : {}),
+          ...(tempHealthGrant ? { tempHealthGrant } : {}),
         },
       },
     });
   }
+}
+
+/**
+ * Put a Defend button on every attack card.
+ *
+ * This is the binding that makes Overwhelm exact. The card already knows who
+ * swung (its speaker), so answering the card carries the attacker's identity
+ * into the defense roll as a fact, where a defense launched from the hotbar can
+ * only fall back to guessing from the newest attack card.
+ *
+ * Shown to everyone except the attacker's own player. The GM keeps it on their
+ * own cards because NPC-versus-NPC is a normal thing to have to roll.
+ */
+export function registerDefendButton() {
+  Hooks.on("renderChatMessageHTML", (message, html) => {
+    if (message.flags?.attack?.type !== "attack") return;
+
+    const attackerTokenId = attackerTokenIdFromMessage(message);
+    if (!attackerTokenId) return;
+
+    // `rolls[0]` is the fallback for cards posted before the margin was stored
+    // on the flag, so older chat history stays answerable. Those cards carry no
+    // crit flag or raw die, which degrades to a plain margin contest.
+    const attack = {
+      margin: message.flags.attack.margin ?? message.rolls?.[0]?.total ?? null,
+      criticalSuccess: message.flags.attack.criticalSuccess === true,
+      d100: message.flags.attack.d100 ?? null,
+    };
+
+    const isAuthor = game.user.id === message.author?.id;
+    if (isAuthor && !game.user.isGM) return;
+
+    let buttonContainer = html.querySelector(".button-container");
+    if (!buttonContainer) {
+      buttonContainer = document.createElement("div");
+      buttonContainer.className = "button-container";
+      html.querySelector(".message-content")?.appendChild(buttonContainer);
+    }
+
+    // The hook can fire more than once against the same element.
+    if (buttonContainer.querySelector(".rs-defend-button")) return;
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "rs-defend-button";
+    button.innerHTML = `<i class="fa-light fa-shield"></i><span>${game.i18n.localize(
+      "REDSTEEL.Overwhelm.Defend",
+    )}</span>`;
+    button.dataset.tooltip = game.i18n.localize(
+      "REDSTEEL.Overwhelm.DefendTooltip",
+    );
+
+    // The defender is resolved at click time, not render time: which token you
+    // control changes long after the card was drawn.
+    button.addEventListener("click", () =>
+      defenseRoll({ attackerTokenId, attack }),
+    );
+
+    buttonContainer.appendChild(button);
+  });
 }
 
 function buildWeaponSetView(actor) {

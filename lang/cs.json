@@ -25,7 +25,10 @@
       "potionType": "Typ lektvaru",
       "school": "Škola",
       "rank": "Stupeň",
-      "deflect": "Odklonění"
+      "deflect": "Odklonění",
+      "addToHotbar": "Přidat na lištu (rychlé seslání)",
+      "hotbarSlotTaken": "Lišta je plná — nejdřív uvolni místo.",
+      "addedToHotbar": "{name} přidáno na lištu, pozice {slot}."
     },
     "Quality": {
       "bad": "Špatná",
@@ -87,7 +90,7 @@
       "PickSkill": "Vybrat dovednost",
       "ClearSkill": "Pravým tlačítkem vymažeš",
       "NoActor": "Žádná postava",
-      "OpenSheet": "Dvojklikem otevřeš deník postavy.",
+      "OpenSheet": "Kliknutím vybereš token, dvojklikem otevřeš deník postavy.",
       "PickerTitle": "Vyber dovednost",
       "PickerSearch": "Hledat dovednost...",
       "NoEffects": "Žádné stavy",
@@ -267,6 +270,13 @@
       "Crafting": "Výroba",
       "StationLabel": "Alchymistická stanice",
       "Amount": "Množství",
+      "Ingredients": "Ingredience po ruce:",
+      "Filter": {
+        "AllTypes": "Všechny typy",
+        "Craftable": "Mám ingredience",
+        "CraftableHint": "Zobrazit jen recepty, které teď dokážeš vyrobit",
+        "NoMatches": "Filtru neodpovídá žádný recept."
+      },
       "Craft": "Vytvořit",
       "Reroll": "Přehodit",
       "CraftHint": "Hoď na Alchymii a vytvoř zvolené množství",
@@ -284,7 +294,6 @@
       "Base": {
         "None": "Bez základu",
         "Fat": "Tuk",
-        "Alcohol": "Alkohol",
         "StrongAlcohol": "Silný alkohol",
         "Distillate": "Destilát"
       },
@@ -295,6 +304,15 @@
         "Oil": "Olej",
         "Explosive": "Petarda",
         "Drug": "Droga"
+      },
+      "Purpose": {
+        "None": "Bez určení",
+        "Poison": "Jed",
+        "Mana": "Manový lektvar",
+        "Healing": "Léčivý lektvar",
+        "Buff": "Posilující lektvar",
+        "Unique": "Unikátní lektvar",
+        "Explosive": "Petarda"
       },
       "Substance": {
         "TileHint": "klikni pro převaření rostlin na tuto substanci",
@@ -340,11 +358,14 @@
           "BleedMod": "zastavení krvácení +{value}%",
           "Toxicity": "toxicita {from} → {to}",
           "Healing": "léčení +{count}d6",
+          "Damage": "zranění +{count}d6",
           "Bleed": "šance na zastavení krvácení: {value}%"
         }
       },
       "Recipe": {
         "OutputType": "Typ výrobku",
+        "Purpose": "Určení",
+        "PurposeHint": "Obarví kartu receptu na záložce Alchymie.",
         "Base": "Alchymický základ",
         "Result": "Výsledný předmět",
         "Unlink": "Odebrat propojení",
@@ -380,6 +401,16 @@
         "AccessorySlotsFull": "Všechny sloty pro doplňky jsou plné.",
         "Armor": "Zbroj",
         "WeaponSets": "Sady zbraní",
+        "Equip": {
+          "TitleWeapon": "Vybavit zbraň",
+          "TitleShield": "Vybavit štít",
+          "Set1": "Sada 1",
+          "Set2": "Sada 2",
+          "Main": "Hlavní",
+          "Off": "Druhá",
+          "Confirm": "Potvrdit",
+          "Displaced": "Odloženo pro uvolnění ruky: {names}"
+        },
         "TwoHandGrip": "Obouruční úchop",
         "OffHandGrip": "Použít v druhé ruce",
         "Currencies": "Měny",
@@ -535,7 +566,7 @@
             },
             "aimReduction": {
               "label": "Redukce Míření po zásahu",
-              "description": "5 CP. Redukce Míření po zásahu. Zákeřný útok: Přidává Míření. Ručně — řeší se u stolu."
+              "description": "5 CP. Zásah cíle míření stojí jen jeden stupeň Míření místo celého bonusu, při kritickém zásahu neztrácí žádný. Po Zákeřném útoku získává jedno Míření na zasažený cíl. Automatizováno."
             },
             "draciSpanek": {
               "label": "Dračí spánek",
@@ -754,7 +785,7 @@
             },
             "mireniRedukce": {
               "label": "Redukce Míření",
-              "description": "10 CP; Duelista V. Redukce Míření po neúspěchu a Zákeřném útoku. Ručně — řeší se u stolu."
+              "description": "10 CP; Duelista V. Zásah cíle míření stojí jen jeden stupeň Míření místo celého bonusu, při kritickém zásahu neztrácí žádný. Mine-li cíl svého míření, ztrácí pouze nahoru zaokrouhlenou polovinu svých Míření. Zasáhne-li cíl Zákeřným útokem, neztrácí žádná Míření. Automatizováno."
             },
             "vyhodnyManevr": {
               "label": "Výhodný manévr",
@@ -766,7 +797,7 @@
             },
             "postojMireni": {
               "label": "Duelistův postoj: Neztrácí Míření",
-              "description": "10 CP; Duelista IX. Ručně — řeší se u stolu."
+              "description": "10 CP; Duelista IX. Při přesunu Míření na nový cíl se všechny stupně kromě jednoho přenášejí místo toho, aby se ztratily. Automatizováno."
             },
             "precision10": {
               "label": "Ověření +10%",
@@ -1991,8 +2022,8 @@
               "description": "5 SP. Ručně — řeší se u stolu."
             },
             "traskavice": {
-              "label": "Třaskavice: Zranění +4d6",
-              "description": "5 SP; Alchemie: Expert. Ručně — řeší se u stolu."
+              "label": "Petarda: Zranění +4d6",
+              "description": "5 SP; Alchemie: Expert. Automatizováno. Vyrobené Petardy dávají o 4d6 zranění více."
             },
             "acidum": {
               "label": "Acidum: Kz -2",
@@ -3579,7 +3610,8 @@
         "Condition": {
           "max": "max",
           "armor": "Zbroj",
-          "detection": "Odhalení pastí"
+          "detection": "Odhalení pastí",
+          "movement": "Pohyb"
         },
         "stats": {
           "health": {
@@ -4077,6 +4109,13 @@
         "dmgTypesHint": "Typy poškození, jako které se poškození za kolo počítá. Uplatní se specializovaná zbroj, odolnosti, zranitelnosti a imunity cíle — základní zbroj se zcela ignoruje.",
         "usageHint": "Změny statistik přidej na záložce Efekty. Na tento stav se odkazuje jeho jménem v sekci efektů zbraně, kouzla nebo schopnosti — při zásahu se nabídne v dialogu Apply Effects a aplikuje se na cíl jako status efekt. Zobrazuje se i v Token HUD."
       },
+      "Ammunition": {
+        "FIELDS": {
+          "sharp": {
+            "label": "Ostré"
+          }
+        }
+      },
       "Weapon": {
         "FIELDS": {
           "offhand": {
@@ -4339,8 +4378,20 @@
           "standalone": {
             "label": "Samostatná akce"
           },
+          "rangedSkill": {
+            "label": "Dovednost na dálku",
+            "hint": "Kterou bojovou dovedností se hází samostatný útok na dálku. Nech prázdné, pokud nejde o skutečný útok na dálku."
+          },
           "multiAttack": {
             "label": "Více útoků"
+          },
+          "requiredWeaponTag": {
+            "label": "Vyžadovaný štítek zbraně",
+            "hint": "Štítek zbraně, který akce vyžaduje, např. trident. Prázdné = libovolná zbraň."
+          },
+          "opportunityAttack": {
+            "label": "Příležitostný útok",
+            "hint": "Tuto akci lze použít jako příležitostný útok, tedy mimo vlastní tah postavy."
           },
           "resourceCost": {
             "label": "Spotřeba munice"
@@ -4467,12 +4518,58 @@
         "DropDuplicate": "{name} už tato rasa uděluje."
       }
     },
+    "Aim": {
+      "Swept": "Útok na cíl {target} nezasáhl: {actor} klesá z {before} Míření na {after}.",
+      "UnknownTarget": "cíl"
+    },
     "BloodStrike": {
       "OpenWoundOption": "Otevřená rána — obětovat {cost} životy ze Zásoby krve za 1 Krvácení",
       "ReserveStatus": "Zásoba krve ({name}): vyhrazeno {spent} z {reserve}",
       "ReserveTooLow": "{name} potřebuje {cost} životy v Zásobě krve, ale má jen {reserve}.",
       "OpenWoundApplied": "{name} otevírá ránu na cíli {targets} — {cost} životů ze Zásoby krve, 1 Krvácení.",
       "ChargeEarned": "{name} zabíjí krvácející cíl. Příští útok způsobí jedno Krvácení navíc (Krvavý úder)."
+    },
+    "BloodHarvest": {
+      "Gained": "{name} vtahuje {amount} prolité krve do Zásoby krve (Cordinas I)."
+    },
+    "Overwhelm": {
+      "Label": "Přesila",
+      "MarkerName": "Přesila ({penalty}%)",
+      "SourcesLabel": "Bráněno proti:",
+      "RemoveTooltip": "Tento útočník ne. Odebere ho do konce kola.",
+      "UnknownAttacker": "Neznámý útočník",
+      "Defend": "Bránit se",
+      "DefendTooltip": "Hodit obranu proti tomuto útoku."
+    },
+    "Versus": {
+      "Blocked": "Ubráněno",
+      "Hit": "Zásah",
+      "Tie": "Shoda, útok prochází",
+      "Detail": "Útok {attack} vs Obrana {defense} ({gap})",
+      "CriticalDefense": "Kritická obrana",
+      "CriticalHit": "Kritický zásah",
+      "DeniedOnDice": "Oba kritické, síla úspěchu se ignoruje. Útok hodil {attack}, obrana {defense}.",
+      "DialogAttackMargin": "Obrana proti útoku o síle {margin}"
+    },
+    "TempHealth": {
+      "ButtonTooltip": "Získat Dočasné životy z této obrany. Lze použít jen jednou, obranou celkem nejvýše 10.",
+      "SourceSkill": "Zbraňová dovednost 4+ pro tuto třídu zbraně (+5)",
+      "SourceSwordsman": "Šermíř 3+ se šermířskou zbraní (+5)",
+      "Granted": "{name} získává {amount} Dočasných životů.",
+      "AlreadyClaimed": "Dočasné životy už byly z této obrany získány.",
+      "Capped": "Obranou lze získat Dočasné životy jen do {max}.",
+      "AtCap": "Už máš {max} Dočasných životů — obranou další nezískáš.",
+      "ActorMissing": "Bránící se postava už neexistuje."
+    },
+    "LongRest": {
+      "Title": "Dlouhý odpočinek",
+      "SelectAll": "Všichni",
+      "Confirm": "Dlouhý odpočinek",
+      "GroupPlayers": "Postavy hráčů",
+      "GroupParty": "Družina",
+      "GroupSelected": "Označené figurky",
+      "NoCandidates": "Není koho nechat odpočívat — žádné postavy hráčů, členové družiny ani označené figurky.",
+      "NoneChosen": "Pro dlouhý odpočinek nebyl nikdo vybrán."
     },
     "Banes": {
       "PickerTitle": "Vyber Metlu ({count})",
@@ -4582,7 +4679,7 @@
       },
       "aim": {
         "label": "Míření",
-        "desc": "Každá akce Míření dává +10 % k zásahu zvoleného cíle, až do 4 stupňů. Změna cíle spálí všechny stupně a útok na zamířený cíl je spotřebuje."
+        "desc": "Každá akce Míření dává +10 % k zásahu zvoleného cíle, až do 4 stupňů. Změna cíle spálí všechny stupně. Útok na zamířený cíl je spotřebuje všechny, útok na kohokoli jiného Míření rovnou ruší. Vylepšené míření (Duelista I, nebo Služebník meče) Míření při útoku na jiný cíl zachová a při 4 stupních přidává +10 prūrazného účinku. Redukce Míření (Duelista II, nebo kterýkoli uzel Redukce Míření) stojí při zásahu jen jeden stupeň a při kritickém zásahu žádný, neúspěšný útok ale stále bere všechny. Služebník meče navíc po Zákeřném útoku jedno Míření přidává; Mečový tanečník místo toho při úspěšném Zákeřném útoku neztrácí nic a při neúspěchu jen nahoru zaokrouhlenou polovinu. Každá duelistická výhoda vyžaduje odpovídající meč v ruce. Protiútok, Odvetný úder, Prosek, Prosek ratištěm, Dvojitý vrh a Vypočítavý útok nemají s Mířením žádnou interakci."
       },
       "spellPower": {
         "label": "Síla kouzla",
@@ -4751,6 +4848,9 @@
       "AcidResistantSalve": {
         "name": "Mast proti kyselině"
       },
+      "Acidum": {
+        "name": "Acidum"
+      },
       "AcrobaticDefense": {
         "name": "Akrobatická obrana"
       },
@@ -4918,6 +5018,9 @@
       "Casting": {
         "name": "Čarování"
       },
+      "Cat": {
+        "name": "Kočka"
+      },
       "Cleave": {
         "name": "Prosek"
       },
@@ -4960,6 +5063,9 @@
       "CryophoricClay": {
         "name": "Mrazonosná hlína"
       },
+      "CunningStrike": {
+        "name": "Vypočítavý útok"
+      },
       "Dagger": {
         "name": "Dýka"
       },
@@ -4981,6 +5087,15 @@
       "Determination": {
         "name": "Odhodlání"
       },
+      "DevilsRoot": {
+        "name": "Ďáblův kořen"
+      },
+      "DevilsRootAddiction": {
+        "name": "Závislost: Ďáblův kořen"
+      },
+      "DevilsRootWithdrawal": {
+        "name": "Abstinence: Ďáblův kořen"
+      },
       "Diehard": {
         "name": "Tuhý kořínek"
       },
@@ -4998,6 +5113,9 @@
       },
       "Dodge": {
         "name": "Úhyb"
+      },
+      "DoubleThrow": {
+        "name": "Dvojitý vrh"
       },
       "Draconic": {
         "name": "Drakovití"
@@ -5140,6 +5258,15 @@
       "ExtendedLunge": {
         "name": "Dlouhý výpad"
       },
+      "Mountain": {
+        "name": "Hora"
+      },
+      "Shapeshifter": {
+        "name": "Měnič"
+      },
+      "SpidersEmbrace": {
+        "name": "Pavoučí objetí"
+      },
       "Vial": {
         "name": "Flakónek"
       },
@@ -5235,6 +5362,14 @@
       },
       "FrostResistantSalve": {
         "name": "Mast proti mrazu"
+      },
+      "FuscinaIctus": {
+        "name": "Fuscina Ictus",
+        "description": "<p>Modifikuje akce Útok, Protiútok, Příležitostný útok, Vícenásobný útok, Útok na slabinu, Zběsilý útok a Zteč. Cena za každý útok.</p><p>Zvyšuje šanci na Krvácení o 120 %.</p><p>Nelze kombinovat s Podseknutím. Pouze pro trojzubec.</p>"
+      },
+      "FuscinaIctusFeature": {
+        "name": "Fuscina Ictus",
+        "description": "<p>Uděluje akci Fuscina Ictus. Při útoku trojzubcem můžeš za 3 výdrže za každý útok zvýšit šanci na Krvácení o 120 %.</p>"
       },
       "Gambeson": {
         "name": "Gambeson"
@@ -5371,8 +5506,14 @@
       "ImprovisedShield": {
         "name": "Improvizovaný štít"
       },
+      "IncendiaryAlcoholBottle": {
+        "name": "Zápalná láhev s lihem"
+      },
       "IncendiaryClay": {
         "name": "Zápalná hlína"
+      },
+      "IncendiaryOilBottle": {
+        "name": "Zápalná láhev s olejem"
       },
       "Inconspicuous": {
         "name": "Nenápadný"
@@ -6204,6 +6345,12 @@
       },
       "ExpertRituals": {
         "name": "Expert: Rituály"
+      },
+      "AdeptMindBending": {
+        "name": "Adept: Mentální souboj"
+      },
+      "ExpertMindBending": {
+        "name": "Expert: Mentální souboj"
       },
       "AdeptActing": {
         "name": "Adept: Herectví"

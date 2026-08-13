@@ -5,7 +5,8 @@
   "img": "icons/consumables/potions/conical-mushroom-poison-red.webp",
   "system": {
     "description": "<p>Effect - +70% Chance to Bleed<br />Duration - 2 hours<br />Production bonus - -15% -&gt; 1 dose<br />Ingredients - Quality fat, Be, Be, Qu, Pa, Blood lily<br />Level - 2<br />Info - Thick brown liquid, slight odor. Cutting and stabbing weapons.</p>",
-    "outputType": "potion",
+    "outputType": "poison",
+    "purpose": "poison",
     "resultUuid": "Compendium.redsteel.redsteel-items.Item.MTXlg86chA9VmgAz",
     "substances": {
       "yliaster": 0,

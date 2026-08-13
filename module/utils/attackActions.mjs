@@ -1,4 +1,6 @@
 import { selectAimedPart } from "./aimedStrike.mjs";
+import { filterModifiersByWeapon } from "./weaponResolver.mjs";
+import { isOwnTurn } from "./opportunityAttacks.mjs";
 
 export async function attackActions() {
   const context = game.redsteel.selectToken({ notifyFallback: true });
@@ -50,11 +52,20 @@ export async function attackActions() {
       (i) => i.type === "weapon" && i.system?.longReach,
     );
   }
-  const modifierAbilities = actor.items.filter(
-    (i) => i.type === "ability" && i.system.modifiesAttack === true,
+  // Weapon-locked modifiers (Fuscina Ictus → trident) only show when the
+  // weapon that will actually swing can carry them.
+  const modifierAbilities = filterModifiersByWeapon(
+    actor.items.filter(
+      (i) => i.type === "ability" && i.system.modifiesAttack === true,
+    ),
+    actor,
+    activeWeapon ?? null,
   );
   // Pre-select the Aim radio from any stacks already aimed at the current target.
   const preAim = game.redsteel.getAimStacks?.(token) ?? 0;
+  // Opportunity Attack is never pre-ticked, and it is hidden entirely while the
+  // actor is taking its own turn — an attack on your turn can't be one.
+  const showOpportunity = !isOwnTurn(actor, token);
   const content = `
 <form>
   ${activeSetPreview}
@@ -91,6 +102,17 @@ export async function attackActions() {
     <input type="checkbox" name="aimedStrike" />
     <span>Aimed Attack</span>
   </label>
+
+  ${
+    showOpportunity
+      ? `
+  <label class="pill" title="Attack made outside your own turn, triggered by an adjacent enemy's movement, casting or shooting.">
+    <input type="checkbox" name="opportunityAttack" />
+    <span>Opportunity Attack</span>
+  </label>
+`
+      : ""
+  }
 
 ${
   hasLongReach
@@ -176,6 +198,9 @@ ${
         const useSneak = html.find('[name="sneakAttack"]').is(":checked");
         const useFlanking = html.find('[name="flanking"]').is(":checked");
         const useAimedStrike = html.find('[name="aimedStrike"]').is(":checked");
+        const useOpportunity = html
+          .find('[name="opportunityAttack"]')
+          .is(":checked");
         const longReachPenalty = html
           .find('[name="longReachPenalty"]')
           .is(":checked")
@@ -204,6 +229,10 @@ ${
         useFlanking
           ? await actor.setFlag("redsteel", "useFlankingAttack", true)
           : await actor.unsetFlag("redsteel", "useFlankingAttack");
+
+        useOpportunity
+          ? await actor.setFlag("redsteel", "useOpportunityAttack", true)
+          : await actor.unsetFlag("redsteel", "useOpportunityAttack");
 
         aimValue > 0
           ? await actor.setFlag("redsteel", "aimCount", aimValue)

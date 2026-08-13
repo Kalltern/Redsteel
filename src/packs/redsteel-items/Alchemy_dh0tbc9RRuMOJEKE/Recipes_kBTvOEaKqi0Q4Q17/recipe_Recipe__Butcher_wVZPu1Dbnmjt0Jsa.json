@@ -5,7 +5,8 @@
   "img": "icons/weapons/thrown/bomb-spiked-purple.webp",
   "system": {
     "description": "<p>Effect - Inflicts 2d6+1 Physical+Slashing damage in a 3m area, Penetration 0. Causes 2d4+1 Bleeding. (Rolled manually)<br />Duration - Instant Effect<br />Production Bonus - 0% -&gt; 1 batch<br />Ingredients - Container, Ve, Be, Be, Yl, Qu, Shrapnel</p>",
-    "outputType": "potion",
+    "outputType": "explosive",
+    "purpose": "explosive",
     "resultUuid": "Compendium.redsteel.redsteel-items.Item.XVB5PqVZinlRb6B4",
     "substances": {
       "yliaster": 1,

@@ -6,6 +6,7 @@
   "system": {
     "description": "<p>Effect - Penetration +5, Break through +2d6 for combat and throwing<br />Duration - 15 minutes<br />Toxicity - 22<br />Production bonus - -25% -&gt; 1 dose<br />Ingredients - Strong alcohol, Yl, Al, Pa, Dragon root</p>",
     "outputType": "potion",
+    "purpose": "buff",
     "resultUuid": "Compendium.redsteel.redsteel-items.Item.SBOEeDX7kg1f3viD",
     "substances": {
       "yliaster": 1,

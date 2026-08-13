@@ -5,7 +5,8 @@
   "img": "icons/commodities/materials/powder-teal.webp",
   "system": {
     "description": "<p>Effect - Single target. 2d6 freezing damage, 15% chance to Slow. Penetration 5.<br />Duration - Instant<br />Production Bonus - 10% -&gt; 10 batches<br />Ingredients- Soil, Qu, Yl</p>",
-    "outputType": "potion",
+    "outputType": "explosive",
+    "purpose": "explosive",
     "resultUuid": "Compendium.redsteel.redsteel-items.Item.b8ENj4a9saHjjAnH",
     "substances": {
       "yliaster": 1,

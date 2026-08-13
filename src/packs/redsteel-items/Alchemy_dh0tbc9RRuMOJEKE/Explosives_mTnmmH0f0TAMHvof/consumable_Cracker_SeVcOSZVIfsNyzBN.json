@@ -4,11 +4,13 @@
   "type": "consumable",
   "img": "icons/weapons/thrown/bomb-fuse-brown.webp",
   "system": {
-    "description": "<p>Effect - Single target. Physical/Crushing damage 8d6, Penetration 20, 50% chance to Stun. 75% shield damage<br />Duration - 1 round<br />Production bonus - 0% -&gt; 1 batch<br />Ingredients - Container, Pa, Qu, Qu</p>",
+    "description": "<p>Effect - Single target. Physical/Crushing damage 12d6, Penetration 20, 50% chance to Stun. 75% shield damage<br />Duration - 1 round<br />Production bonus - 0% -&gt; 1 batch<br />Ingredients - Container, Pa, Qu, Qu</p>",
     "options": [
       "potion",
       "explosive",
-      "misc"
+      "misc",
+      "first aid",
+      "poison"
     ],
     "types": [
       "mana",
@@ -18,7 +20,7 @@
     "quantity": 1,
     "option": "explosive",
     "roll": {
-      "diceNum": 8,
+      "diceNum": 12,
       "diceSize": "6",
       "diceBonus": ""
     },

@@ -3,12 +3,13 @@
   "type": "ability",
   "img": "icons/skills/melee/strike-polearm-light-orange.webp",
   "system": {
-    "description": "<p>Modifies Attack, Multiattack, Charge, Reckless strike and Exploit weakness. <br />On hit, triggers a Strength vs Test against target's Strength/Endurance.</p><hr /><p>On attacker's success, the target becomes Rooted <br />The target must spend 1 action to repeat the vs Test to escape.<br />Impale must be maintained; it ends if the attacker moves, attacks or defends. <br />Cannot be used through an occupied hex. Cannot be combined with Stunning blow or Trip. <br /><br />While maintaining Impale you may use 1 action to repeat the vs Test to push the target 1 hex sideways. <br />You may also move together with the target 1 hex forward or sideways. <br /></p>",
+    "description": "<p>Modifies Attack, Multiattack, Charge, Reckless strike and Exploit weakness. <br />On hit, triggers a Strength vs Test against target's Strength/Endurance.</p><hr /><p>On attacker's success, the target becomes Rooted <br />The target must spend 1 action to repeat the vs Test to escape.<br />Impale must be maintained; it ends if the attacker moves, attacks or defends. <br />Cannot be used through an occupied hex. Cannot be combined with Stunning blow or Trip. Polearm only. <br /><br />While maintaining Impale you may use 1 action to repeat the vs Test to push the target 1 hex sideways. <br />You may also move together with the target 1 hex forward or sideways. <br /></p>",
     "type": "melee",
     "weaponAbility": false,
     "standalone": false,
     "modifiesAttack": true,
     "multiAttack": false,
+    "requiredWeaponTag": "polearm",
     "typeOptions": [
       "melee",
       "ranged"

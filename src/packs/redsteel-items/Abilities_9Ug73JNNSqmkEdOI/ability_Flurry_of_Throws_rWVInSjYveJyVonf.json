@@ -4,7 +4,7 @@
   "img": "icons/skills/ranged/daggers-thrown-salvo-green.webp",
   "system": {
     "description": "<p>You may throw up to three throwing axes or up to six throwing knives with -5% to Hit at one or more targets up to a maximum range of 5 hexes.</p><p></p>",
-    "type": "",
+    "type": "ranged",
     "weaponAbility": true,
     "standalone": false,
     "modifiesAttack": false,
@@ -76,8 +76,8 @@
       "inspiration",
       "holy energy"
     ],
-    "costType": "",
-    "cost": 0,
+    "costType": "stamina",
+    "cost": 12,
     "perRound": 0,
     "effects": {
       "stagger": 0,
@@ -86,7 +86,7 @@
       "extra2": 0,
       "extra3": 0
     },
-    "class": "",
+    "class": "attack",
     "actionCost": "2 Actions",
     "defense": 0,
     "rangedDefense": 0,

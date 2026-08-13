@@ -208,7 +208,14 @@ export function buildSpellCard(item, kind) {
       pill("cost", "REDSTEEL.Item.Ability.FIELDS.cost.label", system.cost),
       pill("perRound", "REDSTEEL.Item.Spell.FIELDS.perRound.label", system.perRound),
       pill("actionCost", "REDSTEEL.Item.Ability.FIELDS.actionCost.label", display),
-      pill("damage", "REDSTEEL.Item.Ability.FIELDS.damage.label", system.roll?.diceBonus),
+      // diceBonusFormula, not diceBonus: the raw field carries the @Half /
+      // @penCap markers, which are rules flags and not something to print as
+      // a damage value.
+      pill(
+        "damage",
+        "REDSTEEL.Item.Ability.FIELDS.damage.label",
+        system.roll?.diceBonusFormula ?? system.roll?.diceBonus,
+      ),
       pill("attributeTest", "REDSTEEL.Item.Ability.FIELDS.attributeTest.label", system.attributeTest),
     );
   }

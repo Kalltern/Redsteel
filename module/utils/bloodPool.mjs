@@ -8,17 +8,17 @@
  */
 
 /**
- * Move Life lost to Bleeding into the actor's Blood Reserve.
+ * Add Life to an actor's Blood Reserve, whatever the source.
  *
  * A no-op for anyone without a Reserve (capacity 0 — i.e. no Blood School
  * specialisation, and no manually set max on an NPC). The gain is clamped to
  * the remaining capacity, so a full Reserve simply absorbs nothing.
  *
- * @param {Actor} actor   The bleeding actor.
- * @param {number} amount Life lost to the Bleeding tick.
+ * @param {Actor} actor   The actor whose Reserve fills.
+ * @param {number} amount Life to add.
  * @returns {Promise<number>} How much actually entered the Reserve.
  */
-export async function gainBloodFromBleed(actor, amount) {
+export async function gainBlood(actor, amount) {
   const lost = Number(amount) || 0;
   if (!actor || lost <= 0) return 0;
 
@@ -33,6 +33,17 @@ export async function gainBloodFromBleed(actor, amount) {
 
   await actor.update({ "system.stats.bloodPool.value": next });
   return gained;
+}
+
+/**
+ * Move Life lost to Bleeding into the actor's Blood Reserve.
+ *
+ * @param {Actor} actor   The bleeding actor.
+ * @param {number} amount Life lost to the Bleeding tick.
+ * @returns {Promise<number>} How much actually entered the Reserve.
+ */
+export async function gainBloodFromBleed(actor, amount) {
+  return gainBlood(actor, amount);
 }
 
 /**

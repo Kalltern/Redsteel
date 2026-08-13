@@ -82,9 +82,10 @@
     "effects": {
       "stagger": 20,
       "bleed": 0,
-      "extra1": 0,
+      "extra1": -1,
       "extra2": 0,
-      "extra3": 0
+      "extra3": 0,
+      "effectName1": "prone"
     },
     "class": "attack",
     "actionCost": "1 Action",
@@ -96,7 +97,7 @@
       "diceBonus": " +2d4"
     },
     "breakthrough": "",
-    "penetration": 0,
+    "penetration": 100,
     "critRange": 0,
     "critChance": 0,
     "critFail": 0,
@@ -105,7 +106,7 @@
     "dmgType2": "blunt",
     "bool3": "",
     "dmgType3": "",
-    "effectType1": "",
+    "effectType1": "custom",
     "effectType2": "",
     "effectType3": "",
     "localizationKey": "REDSTEEL.Items.ShieldBash.name"

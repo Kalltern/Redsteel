@@ -1,5 +1,6 @@
 import { applyPoisonToWeapon } from "./usePoison.mjs";
 import { clearBleedEffects } from "./otherActions.mjs";
+import { resolveDrug } from "./drugs.mjs";
 
 /**
  * Copy the buff Active Effects authored on a consumable onto an actor as
@@ -43,6 +44,38 @@ export async function applyItemBuffsToActor(actor, consumable) {
 }
 
 /**
+ * Apply the status effects a consumable grants on use.
+ *
+ * The ids are effect-definition keys (CONFIG.REDSTEEL.effectDefinitions) listed
+ * in `flags.redsteel.statusEffects` on the item — e.g. ["giantslayer"]. This is
+ * the only route a potion has to a combat-modifier buff: those live on the
+ * drinker as `system.activeCombatEffects` groups, written by applyEffect, and
+ * cannot be expressed as Active Effect `changes` the way a flat stat buff can.
+ *
+ * @param {Actor} actor
+ * @param {Item}  consumable
+ * @returns {Promise<string>}  Chat summary fragment ("" if the item grants none).
+ */
+async function applyConsumableStatusEffects(actor, consumable) {
+  // Tolerate both array and object-map storage, the same way readCasterEffects
+  // does in castSpell.mjs — Foundry hands a flag back as an object once it has
+  // been through a merged update.
+  const raw = consumable.getFlag?.("redsteel", "statusEffects");
+  const ids = Array.isArray(raw) ? raw : raw ? Object.values(raw) : [];
+
+  const applied = [];
+  for (const id of ids) {
+    if (typeof id !== "string" || !id.trim()) continue;
+    // applyEffect notifies on an unknown id, and returns null when the actor is
+    // immune — either way there is nothing to announce for that one.
+    const effect = await game.redsteel.applyEffect(actor, id.trim());
+    if (effect) applied.push(effect.name);
+  }
+
+  return applied.length ? `<p><b>Effect:</b> ${applied.join(", ")}</p>` : "";
+}
+
+/**
  * @param {Item|null} [preselected]  Skip the picker and drink this one. It must
  *                                   belong to the actor the token resolves to.
  */
@@ -69,7 +102,7 @@ export async function usePotion(preselected = null) {
     effectResults += `<p><b>Toxicity:</b> Increased by ${finalToxicity}</p>`;
 
     const applyStat = async (statKey, label) => {
-      const amount = Number(roll.total) || 0;
+      const amount = Number(roll?.total) || 0;
       await actor.update({
         [`system.stats.${statKey}.value`]:
           (Number(actor.system.stats[statKey].value) || 0) + amount,
@@ -104,6 +137,15 @@ export async function usePotion(preselected = null) {
     // item is consumed/deleted below).
     effectResults += await applyItemBuffsToActor(actor, consumable);
 
+    // Status effects the potion grants by id — same ordering constraint, the
+    // flag is read off the item before it can be deleted.
+    effectResults += await applyConsumableStatusEffects(actor, consumable);
+
+    // Drugs resolve their Madness relief and addiction Test last, so the
+    // Test sees the buff the dose just applied. No-op for anything without
+    // `flags.redsteel.drug`, which is every potion in the pack.
+    effectResults += await resolveDrug(actor, consumable);
+
     if (consumable.system.quantity > 0) {
       const newQty = consumable.system.quantity - 1;
       newQty > 0
@@ -116,7 +158,18 @@ export async function usePotion(preselected = null) {
 
   const handlePotionSelection = async (consumable) => {
     const rollData = actor.getRollData();
-    const roll = await new Roll(consumable.system.formula, rollData).evaluate();
+    // The potion's own dice only mean something when it restores a stat: that
+    // roll IS the amount restored. A buff potion (Giantslayer) has nothing to
+    // spend them on, and rolling anyway put a number on the card that did not
+    // do anything. No stat to restore, no roll — and none posted with the card.
+    const restoresStat = ["health", "stamina", "mana"].includes(
+      consumable.system.type,
+    );
+    const formula = String(consumable.system.formula ?? "").trim();
+    const roll =
+      restoresStat && formula
+        ? await new Roll(formula, rollData).evaluate()
+        : null;
     const drinkingRoll = await new Roll(
       "@skills.drinking.rating - 1d100",
       rollData,
@@ -130,7 +183,7 @@ export async function usePotion(preselected = null) {
 
     await ChatMessage.create({
       speaker: ChatMessage.getSpeaker(),
-      rolls: [roll, drinkingRoll],
+      rolls: roll ? [roll, drinkingRoll] : [drinkingRoll],
       flavor: `
     <span style="display:inline-flex; align-items:center;">
       <img src="${consumable.img}" title="${consumable.localizedName ?? consumable.name}" width="36" height="36" style="margin-right:8px;">

@@ -5,7 +5,8 @@
   "img": "icons/commodities/materials/powder-grey.webp",
   "system": {
     "description": "<p>Effect - Single target. Fire damage 2d6, 5% chance to cause Burning. Penetration 5.<br />Duration - Instant<br />Production Bonus - 10% -&gt; 10 batches<br />Composition - Soil, Be, Ve</p>",
-    "outputType": "potion",
+    "outputType": "explosive",
+    "purpose": "explosive",
     "resultUuid": "Compendium.redsteel.redsteel-items.Item.JcL0YtmzUMeXaYyz",
     "substances": {
       "yliaster": 0,

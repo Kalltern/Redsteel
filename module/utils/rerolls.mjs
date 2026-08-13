@@ -413,6 +413,58 @@ export async function toggleRerollCharge(actor, itemId, poolIndex) {
 }
 
 /**
+ * Prompt the user to choose one of several eligible reroll pools.
+ *
+ * Shared by every reroll entry point (chat cards, the Alchemy panel, the Mental
+ * Duel) so a pool always looks the same wherever it is spent.
+ *
+ * @param {object[]} eligible  Pool descriptors from {@link getEligibleRerolls}.
+ * @returns {Promise<object|null>} the chosen pool descriptor, or null if cancelled.
+ */
+export async function pickRerollPool(eligible) {
+  const rows = eligible
+    .map((pool, i) => {
+      const remaining = `${pool.remaining}/${pool.max}`;
+      const tag = [
+        pool.universal ? "Universal" : pool.skills.join(", "),
+        pool.critFail ? "crit fail" : null,
+      ]
+        .filter(Boolean)
+        .join(" · ");
+      return `
+        <label class="reroll-pick-row" style="display:flex; align-items:center; gap:8px; padding:4px 2px; cursor:pointer;">
+          <input type="radio" name="reroll-pick" value="${i}" ${i === 0 ? "checked" : ""}>
+          <img src="${pool.img}" width="28" height="28" style="border:none; flex:0 0 auto;">
+          <span style="flex:1;"><b>${pool.label}</b> <span style="opacity:0.7;">(${tag})</span></span>
+          <span style="opacity:0.7;">${remaining}</span>
+        </label>`;
+    })
+    .join("");
+
+  const DialogV2 = foundry.applications.api.DialogV2;
+  const result = await DialogV2.wait({
+    window: { title: "Choose a Reroll" },
+    content: `<form><p>Select which reroll to spend:</p>${rows}</form>`,
+    buttons: [
+      {
+        action: "confirm",
+        label: "Reroll",
+        default: true,
+        callback: (event, button, dialog) => {
+          const root = dialog?.element ?? button.form;
+          return root.querySelector('input[name="reroll-pick"]:checked')?.value;
+        },
+      },
+      { action: "cancel", label: "Cancel" },
+    ],
+    rejectClose: false,
+  });
+
+  if (result === null || result === "cancel" || result === undefined) return null;
+  return eligible[Number(result)] ?? null;
+}
+
+/**
  * Restore every reroll the actor owns to ready (used = 0). Called on Long Rest.
  *
  * When the Calendaria integration is enabled, a pool under an active Lucky

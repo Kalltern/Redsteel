@@ -3,12 +3,31 @@
  *
  * A token can "aim" at a single target, stacking up to 4 times for a cumulative
  * +10% hit chance per stack (+10 / +20 / +30 / +40 %). State lives entirely on a
- * token flag — `flags.redsteel.aim = { targetId, stacks }` — so the flags are the
- * single source of truth. "Who is aiming at whom" is answered by iterating the
- * scene's tokens and filtering on that flag; no lookup table is kept.
+ * token flag — `flags.redsteel.aim = { targetId, stacks, stamp }` — so the flags
+ * are the single source of truth. "Who is aiming at whom" is answered by
+ * iterating the scene's tokens and filtering on that flag; no lookup table is
+ * kept. `stamp` counts mutations, and exists so the end-of-turn sweep below can
+ * tell "nobody has touched this since the attack" from "the player already
+ * re-aimed".
  *
- * Two ways to drive it, both manual (aim is never granted or burned on roll
- * hooks):
+ * How an attack spends it (resolveAimOnAttack, below):
+ *   • Attacking the aimed target burns every stack, hit or miss. That is the
+ *     default, and for a character with no duellist perk it is the whole story —
+ *     the outcome cannot change the answer, so nothing needs deferring.
+ *   • Attacking anybody else breaks the aim outright, unless Advanced Aim is
+ *     live, in which case the aim is neither spent nor depleted.
+ *   • A handful of abilities (Counterattack, Cleave, Cunning Strike…) have no
+ *     interaction with Aiming at all and skip the whole thing.
+ *   • Aim reduction (Duelist II, and the two spec nodes) is the one case the
+ *     attack cannot settle on its own: a hit costs one stack, a critical hit
+ *     none, a miss the lot. Those attacks park a pending record instead, which
+ *     Apply Damage settles as a hit, and the end-of-turn sweep settles as a miss.
+ *
+ * Every one of those perks is weapon-gated: the duellist's blade has to be in
+ * hand for any of them to be live. See aimPerks().
+ *
+ * Two ways to drive the aim itself, both manual (aim is never granted or burned
+ * on roll hooks):
  *   1. Hold ALT with your aimer token selected — a square button appears over
  *      every other token. Left-click adds a stack toward it, right-click removes
  *      one. The aimer is the currently controlled token.
@@ -18,9 +37,12 @@
  */
 
 import { actorHasSpecNode } from "../helpers/specialisations.mjs";
+import { ensureSystemMacros } from "./macroFolders.mjs";
 
 const SYSTEM_ID = "redsteel";
 const FLAG = "aim";
+/** Actor flag: attacks whose aim cost is not known until damage is applied. */
+const PENDING_FLAG = "aimPending";
 const MAX_STACKS = 4;
 const PER_STACK = 10; // % hit chance per stack
 const IMPROVED_AIM_PEN = 10; // Improved Aim: penetration at full aim
@@ -116,13 +138,84 @@ function hasDuelistOffHand(context) {
 }
 
 /**
- * Improved Aim — armour penetration granted at full (4-stack) aim.
+ * Aim-reduction profiles. All three share the same base — a hit on the aimed
+ * target costs one stack instead of the whole bonus, a critical hit costs none —
+ * and differ only in what they add on top. `missLoss` is what a failed attack
+ * costs: "all" burns the lot, "half" takes half the stacks rounded up (4 → 2).
+ */
+const REDUCTION_BASE = {
+  hitLoss: 1,
+  critLoss: 0,
+  sneakHitLoss: 1,
+  missLoss: "all",
+  sneakGrant: false,
+};
+/** Servant of the Sword: a Sneak Attack grants one Aim on the token that took it. */
+const REDUCTION_SERVANT = { ...REDUCTION_BASE, sneakGrant: true };
+/** Sword Dancer: a miss costs only half, and a Sneak Attack that lands costs nothing. */
+const REDUCTION_DANCER = { ...REDUCTION_BASE, sneakHitLoss: 0, missLoss: "half" };
+
+/**
+ * Fold several live profiles into one, taking the most generous clause of each.
+ * In practice the blade tests below are mutually exclusive, so at most one node
+ * profile can be live at a time — this only ever merges a node with the bare
+ * doctrine rank, and exists so stacking sources can never come out worse than
+ * either source alone.
+ */
+function mergeReduction(profiles) {
+  if (!profiles.length) return null;
+  return profiles.reduce((a, b) => ({
+    hitLoss: Math.min(a.hitLoss, b.hitLoss),
+    critLoss: Math.min(a.critLoss, b.critLoss),
+    sneakHitLoss: Math.min(a.sneakHitLoss, b.sneakHitLoss),
+    missLoss: a.missLoss === "half" || b.missLoss === "half" ? "half" : "all",
+    sneakGrant: a.sneakGrant || b.sneakGrant,
+  }));
+}
+
+/**
+ * Which Aim perks are live for this actor with this weapon in hand, right now.
  *
- * Two independent sources, both worth +10 and NOT cumulative with each other:
- *   • Duelist I — any one-handed sword, provided the off hand is free or holds
- *     a duelist off-hand weapon (fencing dagger).
- *   • Servant of the Sword, "Improved Aiming" node — a broadsword-type sword
- *     gripped in two hands.
+ * Every duellist Aim perk is weapon-gated, and each source gates on its own
+ * blade: the Duelist doctrine and the Sword Dancer chain want a one-handed sword
+ * with the off hand free (or holding a fencing dagger), while Servant of the
+ * Sword works uniquely off a two-handed broadsword. Sheathe the blade and every
+ * one of these switches off, which is why they are recomputed per attack rather
+ * than cached.
+ *
+ *   improved  — Improved Aim. Worth +10 armour penetration at full aim, and
+ *               Advanced Aim: attacking a different target neither spends nor
+ *               depletes the aim.
+ *   reduction — the profile above, or null when no source is live.
+ *   keepsAim  — Duelist's Stance. Moving the aim to a new target carries all but
+ *               one of the old stacks across instead of burning them.
+ */
+function aimPerks(actor, weapon, context = null) {
+  if (!actor || !weapon) return {};
+
+  // The duellist's blade: a one-handed sword with a free or duelist off hand.
+  const blade = isOneHandedSword(weapon) && hasDuelistOffHand(context);
+  const broadsword = isTwoHandedSword(weapon);
+  const rank = Number(actor.system?.doctrines?.duelist?.value ?? 0);
+  const node = (spec, id) => actorHasSpecNode(actor, spec, id);
+
+  const profiles = [];
+  if (blade && rank >= 2) profiles.push(REDUCTION_BASE);
+  if (broadsword && node("swordServant", "aimReduction"))
+    profiles.push(REDUCTION_SERVANT);
+  if (blade && node("swordDancer", "mireniRedukce"))
+    profiles.push(REDUCTION_DANCER);
+
+  return {
+    improved:
+      (blade && rank >= 1) || (broadsword && node("swordServant", "improvedAim")),
+    reduction: mergeReduction(profiles),
+    keepsAim: blade && node("swordDancer", "postojMireni"),
+  };
+}
+
+/**
+ * Improved Aim — armour penetration granted at full (4-stack) aim.
  *
  * Reads the actor `aimCount` flag — the stack count the attack dialog actually
  * committed to this roll, i.e. the same number that pays the +40% hit bonus.
@@ -130,19 +223,9 @@ function hasDuelistOffHand(context) {
  * in while assembling penetration (which happens before the attack roll).
  */
 export function getImprovedAimPenetration(actor, weapon, context = null) {
-  if (!actor || !weapon) return 0;
-  const stacks = Number(actor.getFlag(SYSTEM_ID, "aimCount")) || 0;
+  const stacks = Number(actor?.getFlag(SYSTEM_ID, "aimCount")) || 0;
   if (stacks < MAX_STACKS) return 0;
-
-  const duelist =
-    Number(actor.system?.doctrines?.duelist?.value ?? 0) >= 1 &&
-    isOneHandedSword(weapon) &&
-    hasDuelistOffHand(context);
-  const swordServant =
-    isTwoHandedSword(weapon) &&
-    actorHasSpecNode(actor, "swordServant", "improvedAim");
-
-  return duelist || swordServant ? IMPROVED_AIM_PEN : 0;
+  return aimPerks(actor, weapon, context).improved ? IMPROVED_AIM_PEN : 0;
 }
 
 /* -------------------------------------------- */
@@ -150,28 +233,65 @@ export function getImprovedAimPenetration(actor, weapon, context = null) {
 /* -------------------------------------------- */
 
 /**
+ * The TokenDocument behind either a Token placeable or a TokenDocument, so the
+ * aim helpers work off-canvas too: Apply Damage and the end-of-turn sweep run on
+ * the GM, who may well be looking at a different scene than the fight.
+ */
+function tokenDoc(token) {
+  return token?.document ?? token ?? null;
+}
+
+/** The live aim record on a token, or null. */
+function readAim(token) {
+  return tokenDoc(token)?.getFlag(SYSTEM_ID, FLAG) ?? null;
+}
+
+/**
+ * Write an aim of `stacks` toward `targetId`, capped at MAX_STACKS, clearing the
+ * flag instead when nothing is left. Every write bumps `stamp` so the end-of-turn
+ * sweep can recognise an aim that has been touched since an attack was rolled.
+ */
+async function setAim(token, targetId, stacks) {
+  const doc = tokenDoc(token);
+  if (!doc || !targetId) return;
+
+  const capped = Math.min(MAX_STACKS, Math.max(0, Math.round(stacks)));
+  if (capped <= 0) return clearAim(token);
+
+  const stamp = (doc.getFlag(SYSTEM_ID, FLAG)?.stamp ?? 0) + 1;
+  await doc.setFlag(SYSTEM_ID, FLAG, { targetId, stacks: capped, stamp });
+}
+
+/** Drop the aim entirely. */
+async function clearAim(token) {
+  const doc = tokenDoc(token);
+  if (!doc?.getFlag(SYSTEM_ID, FLAG)) return;
+  await doc.unsetFlag(SYSTEM_ID, FLAG);
+}
+
+/**
  * Add one Aim stack from `token` toward `target`.
  * - No existing aim → set at 1 stack.
- * - Same target → increment (max 4, warn at cap).
- * - Different target → switching burns all prior stacks; reset to 1.
+ * - Same target → increment (max 4).
+ * - Different target → switching burns all prior stacks; reset to 1. Duelist's
+ *   Stance carries all but one across instead, so a switch costs a single stack.
  */
-async function addAimStackOn(token, target) {
+async function addAimStackOn(token, target, perks = null) {
   if (!token || !target) return;
   if (target.id === token.id) return; // a token cannot aim at itself
 
-  const aim = token.document.getFlag(SYSTEM_ID, FLAG);
+  const aim = readAim(token);
 
   if (aim?.targetId === target.id) {
     if (aim.stacks >= MAX_STACKS) return; // already capped
-    await token.document.setFlag(SYSTEM_ID, FLAG, {
-      targetId: target.id,
-      stacks: aim.stacks + 1,
-    });
+    await setAim(token, target.id, aim.stacks + 1);
     return;
   }
 
-  // New aim, or switching targets (switching burns all prior stacks → reset to 1).
-  await token.document.setFlag(SYSTEM_ID, FLAG, { targetId: target.id, stacks: 1 });
+  // Switching targets: 1 fresh stack, plus whatever Duelist's Stance carries.
+  const carried =
+    aim?.targetId && perks?.keepsAim ? Math.max(0, (aim.stacks ?? 0) - 1) : 0;
+  await setAim(token, target.id, 1 + carried);
 }
 
 /**
@@ -180,18 +300,269 @@ async function addAimStackOn(token, target) {
  * aiming at that target. When null (macro), decrements the current aim.
  */
 async function removeAimStackOn(token, target = null) {
-  if (!token) return;
-
-  const aim = token.document.getFlag(SYSTEM_ID, FLAG);
+  const aim = readAim(token);
   if (!aim) return;
   if (target && aim.targetId !== target.id) return;
 
-  const stacks = aim.stacks - 1;
-  if (stacks <= 0) {
-    await token.document.unsetFlag(SYSTEM_ID, FLAG);
+  await setAim(token, aim.targetId, aim.stacks - 1);
+}
+
+/* -------------------------------------------- */
+/*  Attack interaction                          */
+/* -------------------------------------------- */
+
+/**
+ * Abilities with no interaction with Aiming whatsoever: using one neither spends
+ * the aim nor breaks it, whoever it is pointed at. Matched on localizationKey,
+ * which is stable across renames and identical in both languages, with the
+ * English name as a fallback for hand-made copies that never got a key.
+ */
+const AIM_NEUTRAL_ABILITIES = new Map([
+  ["REDSTEEL.Items.Counterattack.name", "Counterattack"],
+  ["REDSTEEL.Items.RetaliatoryStrike.name", "Retaliatory strike"],
+  ["REDSTEEL.Items.Cleave.name", "Cleave"],
+  ["REDSTEEL.Items.PolearmCleave.name", "Polearm Cleave"],
+  ["REDSTEEL.Items.FlambergeCleaveAbility.name", "Flamberge Cleave (Ability)"],
+  ["REDSTEEL.Items.DoubleThrow.name", "Double Throw"],
+  ["REDSTEEL.Items.CunningStrike.name", "Cunning Strike"],
+]);
+
+/** True when this ability is one the rules exempt from Aiming entirely. */
+export function abilityIgnoresAim(ability) {
+  if (!ability) return false;
+  const key = ability.system?.localizationKey;
+  if (key && AIM_NEUTRAL_ABILITIES.has(key)) return true;
+  for (const name of AIM_NEUTRAL_ABILITIES.values()) {
+    if (ability.name === name) return true;
+  }
+  return false;
+}
+
+/**
+ * The token doing the aiming. Prefers a controlled token belonging to the actor
+ * — the one the player is actually acting with — and falls back to the actor's
+ * first token on the canvas for macro and socket paths where nothing is selected.
+ */
+function getAimerToken(actor) {
+  if (!actor) return null;
+  const controlled = canvas?.tokens?.controlled?.find(
+    (t) => t.actor?.id === actor.id,
+  );
+  if (controlled) return controlled;
+  return actor.getActiveTokens?.()?.[0] ?? null;
+}
+
+/** Perks for whatever the actor currently has in hand (manual/macro paths). */
+function livePerks(actor) {
+  const context = game.redsteel?.resolveWeaponContext?.(actor) ?? null;
+  return aimPerks(actor, context?.weapon ?? null, context);
+}
+
+/**
+ * Pending aim resolutions parked on the actor, oldest first. Copied out of the
+ * flag rather than handed over live, so callers can splice their entry out
+ * without editing the stored document data underneath themselves.
+ */
+function readPending(actor) {
+  const queue = actor?.getFlag(SYSTEM_ID, PENDING_FLAG);
+  return Array.isArray(queue) ? [...queue] : [];
+}
+
+/**
+ * The aimer's TokenDocument for a parked entry, resolved through the scene it
+ * was recorded on rather than the canvas — the GM settling this may be looking
+ * at a different scene entirely.
+ */
+function pendingToken(entry) {
+  return game.scenes?.get(entry?.sceneId)?.tokens?.get(entry?.tokenId) ?? null;
+}
+
+/** The aimed-at token for a parked entry, for naming it in chat. */
+function pendingTarget(entry) {
+  return game.scenes?.get(entry?.sceneId)?.tokens?.get(entry?.targetId) ?? null;
+}
+
+async function writePending(actor, queue) {
+  if (!actor) return;
+  if (queue.length) await actor.setFlag(SYSTEM_ID, PENDING_FLAG, queue);
+  else if (actor.getFlag(SYSTEM_ID, PENDING_FLAG))
+    await actor.unsetFlag(SYSTEM_ID, PENDING_FLAG);
+}
+
+/**
+ * Spend, break or park the aim for an attack that is about to be rolled.
+ *
+ * Called from getAttackRolls — the one choke point every weapon attack and
+ * combat ability passes through — and from the explosive throw, which builds its
+ * own roll. Defense rolls never reach it.
+ *
+ * Which token is being attacked comes from the user's target reticle. Attacks in
+ * this system roll without requiring a target, so an empty reticle is read as
+ * "the one I was aiming at": that is overwhelmingly the common case, and the
+ * alternative reading (attacking someone else) burns the aim anyway for anyone
+ * without Advanced Aim.
+ *
+ * @param {object}  opts
+ * @param {Actor}   opts.actor    the attacker
+ * @param {Item}    [opts.weapon] weapon in hand — gates every duellist perk
+ * @param {object}  [opts.context] resolved weapon context (grip, off hand)
+ * @param {Item}    [opts.ability] the combat ability used, if any
+ * @param {boolean} [opts.sneak]  whether this attack is a Sneak Attack
+ */
+export async function resolveAimOnAttack({
+  actor,
+  weapon = null,
+  context = null,
+  ability = null,
+  sneak = false,
+} = {}) {
+  if (!actor) return;
+  if (abilityIgnoresAim(ability)) return;
+
+  const aimer = getAimerToken(actor);
+  if (!aimer) return;
+
+  const aim = readAim(aimer);
+  const perks = aimPerks(actor, weapon, context);
+
+  const targetIds = [...(game.user?.targets ?? [])]
+    .map((t) => t.id)
+    .filter(Boolean);
+  // An empty reticle counts as attacking the aimed target (see above).
+  const struckAimed =
+    !!aim?.targetId &&
+    (targetIds.length === 0 || targetIds.includes(aim.targetId));
+  // A Sneak Attack grant lands on whoever actually took the hit.
+  const sneakTargetId = struckAimed ? aim.targetId : (targetIds[0] ?? null);
+
+  let pending = null;
+
+  if (aim?.targetId) {
+    if (!struckAimed) {
+      // Attacking somebody else: Advanced Aim holds the aim intact and unspent,
+      // otherwise it is broken outright.
+      if (!perks.improved) await clearAim(aimer);
+    } else if (perks.reduction) {
+      // Aim reduction — what this costs depends on whether the attack lands, and
+      // on whether it lands as a critical, so park it and settle later. The live
+      // profile travels with the record: by the time Apply Damage runs there is
+      // no weapon context left to re-derive it from, and the blade may well have
+      // been swapped since.
+      pending = {
+        sceneId: aimer.document?.parent?.id ?? canvas?.scene?.id ?? null,
+        tokenId: aimer.id,
+        targetId: aim.targetId,
+        stamp: aim.stamp ?? 0,
+        sneak: !!sneak,
+        reduction: perks.reduction,
+      };
+    } else {
+      await clearAim(aimer);
+    }
+  }
+
+  if (pending) {
+    await writePending(actor, [...readPending(actor), pending]);
     return;
   }
-  await token.document.setFlag(SYSTEM_ID, FLAG, { targetId: aim.targetId, stacks });
+
+  // Sneak Attack grants one Aim on the token that took it. When that is not the
+  // token already aimed at, this moves the aim — and Duelist's Stance carries
+  // all but one of the old stacks across with it.
+  if (sneak && perks.reduction?.sneakGrant && sneakTargetId) {
+    const target = canvas?.tokens?.get(sneakTargetId);
+    if (target) await addAimStackOn(aimer, target, perks);
+  }
+}
+
+/**
+ * Settle a parked aim as a HIT, from Apply Damage: a normal hit costs one stack,
+ * a critical none, and a landed Sneak Attack costs nothing at all under the Sword
+ * Dancer profile. Servant of the Sword's grant lands on top of whichever it was.
+ *
+ * Runs on the GM, since that is where applyDamageAsGM executes.
+ *
+ * @param {Actor}    actor        the attacker
+ * @param {string[]} targetIds    tokens the damage was applied to
+ * @param {string}   mode         "normal" | "critical" | "breakthrough"
+ */
+export async function resolveAimOnDamage(actor, targetIds = [], mode = "normal") {
+  const queue = readPending(actor);
+  if (!queue.length) return;
+
+  const index = queue.findIndex((p) => targetIds.includes(p.targetId));
+  if (index < 0) return;
+
+  const [entry] = queue.splice(index, 1);
+  await writePending(actor, queue);
+
+  const aimer = pendingToken(entry);
+  const aim = readAim(aimer);
+
+  // The aim has moved on since the attack (re-aimed, or consumed by hand) —
+  // whatever the player did by hand wins.
+  if (!aim || aim.targetId !== entry.targetId || (aim.stamp ?? 0) !== entry.stamp) {
+    return;
+  }
+
+  const profile = entry.reduction ?? REDUCTION_BASE;
+  let loss = profile.hitLoss;
+  if (mode === "critical") loss = profile.critLoss;
+  else if (entry.sneak) loss = profile.sneakHitLoss;
+
+  const grant = entry.sneak && profile.sneakGrant ? 1 : 0;
+  await setAim(aimer, entry.targetId, aim.stacks - loss + grant);
+}
+
+/**
+ * Settle whatever is still parked as a MISS, at the end of the turn: no damage
+ * was ever applied, so the attack failed. That costs the whole aim, or half of it
+ * rounded up under the Sword Dancer profile.
+ *
+ * This is the one inferred branch in the system — a hit the GM narrated without
+ * pressing Apply Damage looks identical to a miss from here — so it reports the
+ * before and after in chat rather than silently changing the number on the token.
+ */
+async function sweepPendingAim(actor) {
+  const queue = readPending(actor);
+  if (!queue.length) return;
+  await writePending(actor, []);
+
+  for (const entry of queue) {
+    const aimer = pendingToken(entry);
+    const aim = readAim(aimer);
+    // Untouched since the attack? Then the miss stands. Otherwise the player has
+    // already re-aimed and that new aim is left exactly as it is.
+    if (
+      !aim ||
+      aim.targetId !== entry.targetId ||
+      (aim.stamp ?? 0) !== entry.stamp
+    ) {
+      continue;
+    }
+
+    const profile = entry.reduction ?? REDUCTION_BASE;
+    const before = aim.stacks ?? 0;
+    const loss =
+      profile.missLoss === "half" ? Math.ceil(before / 2) : before;
+    // A missed Sneak Attack still earns Servant of the Sword its stack.
+    const grant = entry.sneak && profile.sneakGrant ? 1 : 0;
+    const after = Math.min(MAX_STACKS, Math.max(0, before - loss + grant));
+
+    await setAim(aimer, entry.targetId, after);
+
+    const target = pendingTarget(entry);
+    await ChatMessage.create({
+      speaker: ChatMessage.getSpeaker({ actor }),
+      content: `<p>${game.i18n.format("REDSTEEL.Aim.Swept", {
+        actor: actor.name,
+        target: target?.name ?? game.i18n.localize("REDSTEEL.Aim.UnknownTarget"),
+        before,
+        after,
+      })}</p>`,
+      whisper: ChatMessage.getWhisperRecipients("GM").map((u) => u.id),
+    });
+  }
 }
 
 /* -------------------------------------------- */
@@ -204,7 +575,7 @@ export async function addAimStack() {
   if (!token) return;
   const target = game.user.targets.first();
   if (!target) return;
-  await addAimStackOn(token, target);
+  await addAimStackOn(token, target, livePerks(token.actor));
 }
 
 /** Remove a stack from the acting token's current aim. */
@@ -221,8 +592,9 @@ export async function removeAimStack() {
 export async function consumeAim() {
   const token = getActingToken();
   if (!token) return;
-  if (!token.document.getFlag(SYSTEM_ID, FLAG)) return;
-  await token.document.unsetFlag(SYSTEM_ID, FLAG);
+  await clearAim(token);
+  // Doing it by hand settles anything the attack parked for later.
+  await writePending(token.actor, []);
 }
 
 /* -------------------------------------------- */
@@ -548,7 +920,7 @@ function makeAimButton(target) {
     if (event.button === 2) {
       await removeAimStackOn(aimer, target);
     } else if (event.button === 0) {
-      await addAimStackOn(aimer, target);
+      await addAimStackOn(aimer, target, livePerks(aimer.actor));
     }
     // setFlag fires updateToken → refreshAimOverlay → updateButtonStates().
     // Update immediately too so the label responds without waiting on the hook.
@@ -754,6 +1126,19 @@ export function registerAimOverlay() {
     else hideAimButtons();
   });
 
+  // End of turn settles any attack still parked as a miss. Sweeping every
+  // combatant rather than working out who just finished keeps this independent
+  // of turn bookkeeping: a pending record only exists for a few seconds, and
+  // only for a duellist who rolled an aim-reduction attack this turn.
+  // Active-GM only, so it happens once however many clients are connected.
+  Hooks.on("updateCombat", async (combat, changed) => {
+    if (!game.user.isGM || game.user.id !== game.users.activeGM?.id) return;
+    if (!("turn" in changed) && !("round" in changed)) return;
+    for (const combatant of combat.combatants) {
+      await sweepPendingAim(combatant.actor);
+    }
+  });
+
   // Piggyback on Foundry's core "Highlight Objects" keybinding (ALT by default).
   // It fires `highlightObjects(active)` on press/release and already handles
   // key-repeat, focus-in-text-field, and window-blur for us.
@@ -764,9 +1149,11 @@ export function registerAimOverlay() {
 }
 
 /**
- * Ensure the three shared Aim macros exist in the Macros directory (GM only).
- * Not pinned to a hotbar slot — players drag them where they like, mirroring the
- * "Resume Duel" niche-macro pattern.
+ * Ensure the three shared Aim macros exist in the "Redsteel Macros" folder.
+ * They live here rather than in redsteel.mjs's SYSTEM_MACROS list so the Aim
+ * feature stays self-contained, but they are made the same way and share its
+ * rules: GM-only creation, never pinned to a hotbar slot, filed on the way past
+ * if an older version left them loose in the root.
  */
 export async function ensureAimMacros() {
   if (!game.user.isGM) return;
@@ -789,14 +1176,5 @@ export async function ensureAimMacros() {
     },
   ];
 
-  for (const data of macros) {
-    if (game.macros.getName(data.name)) continue;
-    const macro = await Macro.create({
-      name: data.name,
-      type: "script",
-      command: data.command,
-      img: data.img,
-    });
-    await macro?.update({ ownership: { default: 2 } }); // shared (observer)
-  }
+  return ensureSystemMacros(macros);
 }

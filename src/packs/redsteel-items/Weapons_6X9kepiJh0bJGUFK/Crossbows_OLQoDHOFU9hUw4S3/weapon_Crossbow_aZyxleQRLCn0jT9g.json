@@ -7,6 +7,7 @@
   "system": {
     "description": "",
     "class": "crossbow",
+    "tags": "crossbow",
     "classOptions": [
       "axe",
       "blunt",
@@ -84,7 +85,7 @@
     },
     "effects": {
       "stagger": 0,
-      "bleed": 0,
+      "bleed": 15,
       "extra1": 0,
       "extra2": 0,
       "extra3": 0

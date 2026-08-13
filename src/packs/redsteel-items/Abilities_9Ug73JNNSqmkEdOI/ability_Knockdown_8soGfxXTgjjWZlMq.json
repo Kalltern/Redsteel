@@ -3,7 +3,7 @@
   "type": "ability",
   "img": "icons/skills/melee/strike-hammer-destructive-blue.webp",
   "system": {
-    "description": "<p>Attack with -10% to Hit. <br />On hit, deals weapon damage and triggers a Strength+5 vs Test against target's Strength/Endurance. <br />On a critical hit, add additional +10 to Strength Test MoS.<br />On attacker's success, knocks the target down. <br /></p>",
+    "description": "<p>An attack with -10% to Hit that deals weapon damage.<br />On hit, triggers a vs Test of Strength +5 against the target's Strength/Endurance.<br />On a Critical Hit, Test bonus +10%.<br />On attacker's success, knocks the target down.</p>",
     "type": "melee",
     "weaponAbility": true,
     "standalone": false,
@@ -87,7 +87,7 @@
       "extra3": 0
     },
     "class": "attack",
-    "actionCost": "Free action",
+    "actionCost": "1 Action",
     "defense": 0,
     "rangedDefense": 0,
     "dodge": 0,

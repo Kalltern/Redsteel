@@ -1,0 +1,58 @@
+{
+  "folder": "eNR6Ak4yjoOYudB1",
+  "name": "Cat",
+  "type": "consumable",
+  "img": "icons/consumables/potions/potion-flask-corked-cyan.webp",
+  "system": {
+    "description": "<p>Effect - Sight in the dark up to 15 m, immunity to Blinding. Cancels the penalties for Darkness.<br />Duration - 6 hours<br />Toxicity - 16<br />Production Bonus - +10% -&gt; 1 dose<br />Ingredients - Strong alcohol, Qu, Qu, Al</p>",
+    "options": [
+      "potion",
+      "explosive",
+      "misc",
+      "first aid",
+      "poison"
+    ],
+    "types": [
+      "mana",
+      "health",
+      "stamina"
+    ],
+    "quantity": 1,
+    "option": "potion",
+    "roll": {
+      "diceNum": 0,
+      "diceSize": "0",
+      "diceBonus": "0"
+    },
+    "type": "",
+    "toxicity": 16,
+    "bleed": 0,
+    "localizationKey": "REDSTEEL.Items.Cat.name",
+    "difficulty": 10
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {
+    "redsteel": {
+      "statusEffects": [
+        "cat"
+      ]
+    }
+  },
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "redsteel",
+    "systemVersion": "0.10.2",
+    "createdTime": 1786367217424,
+    "modifiedTime": 1786367217424,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "_id": "lxyROk4osEpNJ5vM",
+  "_key": "!items!lxyROk4osEpNJ5vM"
+}

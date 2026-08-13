@@ -5,7 +5,8 @@
   "img": "icons/commodities/materials/bowl-powder-grey.webp",
   "system": {
     "description": "<p>Effect - Puts the target into a deep slumber for several hours outside of combat. (Hard Resistance Test to sleep even in combat)<br />Duration - Forever, 1 hour on weapon<br />Production bonus - +20% -&gt; 1 dose<br />Ingredients - Fat, Al, Yl, Al, (Dream orchid)<br />Level - 1<br />Info - White powder, odorless. Easily soluble.</p>",
-    "outputType": "potion",
+    "outputType": "poison",
+    "purpose": "poison",
     "resultUuid": "Compendium.redsteel.redsteel-items.Item.zAC1hDUP8DCX9D1j",
     "substances": {
       "yliaster": 1,

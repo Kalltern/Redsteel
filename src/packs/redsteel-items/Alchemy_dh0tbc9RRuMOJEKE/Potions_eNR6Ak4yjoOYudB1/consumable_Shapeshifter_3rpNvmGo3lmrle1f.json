@@ -1,0 +1,52 @@
+{
+  "folder": "eNR6Ak4yjoOYudB1",
+  "name": "Shapeshifter",
+  "type": "consumable",
+  "img": "icons/consumables/potions/bottle-pear-corked-labeled-ornamental-purple.webp",
+  "system": {
+    "description": "<p>Effect - Turns the drinker into an animal (or into a humanoid)<br />Duration - 1 hour<br />Toxicity - 24<br />Production Bonus - -25% -&gt; 1 dose<br />Ingredients - Distillate, Be, Ve, Be, Pa, Mandrake, part of a creature, (Moss stone, for turning into a humanoid)</p>",
+    "options": [
+      "potion",
+      "explosive",
+      "misc",
+      "first aid",
+      "poison"
+    ],
+    "types": [
+      "mana",
+      "health",
+      "stamina"
+    ],
+    "quantity": 1,
+    "option": "potion",
+    "roll": {
+      "diceNum": 0,
+      "diceSize": "0",
+      "diceBonus": "0"
+    },
+    "type": "",
+    "toxicity": 24,
+    "bleed": 0,
+    "localizationKey": "REDSTEEL.Items.Shapeshifter.name",
+    "difficulty": -25
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "redsteel",
+    "systemVersion": "0.10.2",
+    "createdTime": 1786367217424,
+    "modifiedTime": 1786367217424,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "_id": "3rpNvmGo3lmrle1f",
+  "_key": "!items!3rpNvmGo3lmrle1f"
+}

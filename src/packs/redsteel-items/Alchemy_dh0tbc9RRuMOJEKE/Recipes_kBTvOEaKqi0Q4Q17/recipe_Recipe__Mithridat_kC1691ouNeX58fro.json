@@ -6,6 +6,7 @@
   "system": {
     "description": "<p>Effect - Antidote and immunity to poisons of 1. and 2. degree<br />Duration - 2 hour<br />Toxicity - 12<br />Production bonus - +15% -&gt; 1 dose<br />Ingredients - <span style=\"color:rgb(239, 230, 216);font-family:Signika, 'Palatino Linotype', sans-serif;font-size:14px;font-style:normal;font-variant-ligatures:normal;font-variant-caps:normal;font-weight:400;letter-spacing:normal;orphans:2;text-align:start;text-indent:0px;text-transform:none;widows:2;word-spacing:0px;-webkit-text-stroke-width:0px;white-space:normal;background-color:rgba(12, 12, 12, 0.9);text-decoration-thickness:initial;text-decoration-style:initial;text-decoration-color:initial;display:inline !important;float:none\">Distillate</span>, Be, Be, Al, Ve</p>",
     "outputType": "potion",
+    "purpose": "buff",
     "resultUuid": "Compendium.redsteel.redsteel-items.Item.PcHngWeqqIJBOJ5D",
     "substances": {
       "yliaster": 0,

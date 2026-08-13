@@ -9,7 +9,9 @@
     "options": [
       "potion",
       "explosive",
-      "misc"
+      "misc",
+      "first aid",
+      "poison"
     ],
     "types": [
       "mana",
@@ -17,7 +19,7 @@
       "stamina"
     ],
     "quantity": 1,
-    "option": "",
+    "option": "poison",
     "roll": {
       "diceNum": null,
       "diceSize": "",

@@ -6,6 +6,7 @@
   "system": {
     "description": "<p>Effect - Restores 5d6+8 Stamina<br />Duration - Instant<br />Toxicity - 6<br />Production Bonus - +20% -&gt; 1 dose<br />Ingredients - Strong alcohol, Al, Yl</p>",
     "outputType": "potion",
+    "purpose": "healing",
     "resultUuid": "Compendium.redsteel.redsteel-items.Item.IrPNykstE8roWjqE",
     "substances": {
       "yliaster": 1,

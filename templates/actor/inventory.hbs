@@ -94,7 +94,7 @@
         </div>
 
         {{!-- TWO-HAND GRIP TOGGLE --}}
-        {{#if weaponSets.1.main.system.twoHandGrip}}
+        {{#if (and weaponSets.1.main.system.twoHandGrip (not (eq weaponSets.1.main.system.type "heavy")))}}
           <a
             class="two-hand-grip-toggle {{#if (eq weaponSets.1.main.system.gripMode "two")}}active{{/if}}"
             data-action="toggleTwoHandGrip"
@@ -213,7 +213,7 @@
         </div>
 
         {{!-- TWO-HAND GRIP TOGGLE --}}
-        {{#if weaponSets.2.main.system.twoHandGrip}}
+        {{#if (and weaponSets.2.main.system.twoHandGrip (not (eq weaponSets.2.main.system.type "heavy")))}}
           <a
             class="two-hand-grip-toggle {{#if (eq weaponSets.2.main.system.gripMode "two")}}active{{/if}}"
             data-action="toggleTwoHandGrip"
@@ -456,7 +456,7 @@
       </a>
 
       {{!-- TWO-HAND GRIP TOGGLE (hover overlay) --}}
-      {{#if entry.item.system.twoHandGrip}}
+      {{#if (and entry.item.system.twoHandGrip (not (eq entry.item.system.type "heavy")))}}
         <a
           class="two-hand-grip-toggle overlay {{#if (eq entry.item.system.gripMode "two")}}active{{/if}}"
           data-action="toggleTwoHandGrip"

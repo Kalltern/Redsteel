@@ -23,6 +23,16 @@
         {{/each}}
       </select>
     </div>
+
+    <div class="grid-span-1">
+      <label for="recipe-purpose">{{localize "REDSTEEL.Alchemy.Recipe.Purpose"}}:</label>
+      <select name="system.purpose" id="recipe-purpose">
+        {{#each purposeChoices as |choice|}}
+          <option value="{{choice.key}}" {{#if choice.selected}}selected{{/if}}>{{choice.label}}</option>
+        {{/each}}
+      </select>
+      <p class="hint">{{localize "REDSTEEL.Alchemy.Recipe.PurposeHint"}}</p>
+    </div>
   </div>
 
   {{! ===== Result item (drop a consumable onto the sheet) ===== }}

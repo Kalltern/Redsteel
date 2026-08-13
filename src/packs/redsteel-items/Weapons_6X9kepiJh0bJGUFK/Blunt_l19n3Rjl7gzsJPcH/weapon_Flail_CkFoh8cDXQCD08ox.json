@@ -6,6 +6,7 @@
   "system": {
     "description": "",
     "class": "blunt",
+    "tags": "flail",
     "classOptions": [
       "axe",
       "blunt",

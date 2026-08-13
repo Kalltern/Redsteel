@@ -44,31 +44,62 @@ export const SUBSTANCES = [
 ];
 
 /**
+ * What a recipe is for, and the colour that stands for it on the recipe cards.
+ * Purpose is authored per recipe (`system.purpose`): nothing in the substance
+ * cost implies it, since most recipes mix two or three of them. An untagged
+ * recipe keeps the default gold border.
+ *
+ * Five purposes borrow their tint from the substance that defines them, so the
+ * cards and the substance strip can never drift apart. Explosives answer to no
+ * substance and carry their own orange.
+ */
+export const RECIPE_PURPOSES = [
+  { key: "poison",    labelKey: "REDSTEEL.Alchemy.Purpose.Poison",    substance: "verdigris" },
+  { key: "mana",      labelKey: "REDSTEEL.Alchemy.Purpose.Mana",      substance: "yliaster" },
+  { key: "healing",   labelKey: "REDSTEEL.Alchemy.Purpose.Healing",   substance: "qudat" },
+  { key: "buff",      labelKey: "REDSTEEL.Alchemy.Purpose.Buff",      substance: "panacea" },
+  { key: "unique",    labelKey: "REDSTEEL.Alchemy.Purpose.Unique",    substance: "alkahest" },
+  { key: "explosive", labelKey: "REDSTEEL.Alchemy.Purpose.Explosive", color: "#ef7d1a" },
+];
+
+/**
+ * Accent colour for a recipe purpose, or null when the recipe carries none.
+ * @param {string} purpose
+ * @returns {string|null}
+ */
+export function getPurposeColor(purpose) {
+  const def = RECIPE_PURPOSES.find((p) => p.key === purpose);
+  if (!def) return null;
+  if (def.color) return def.color;
+  return SUBSTANCES.find((s) => s.key === def.substance)?.color ?? null;
+}
+
+/**
  * Alchemical bases. One crafted unit consumes one base use; a base item unit
  * holds `usesPerUnit` uses (partially-spent units tracked via
  * `flags.redsteel.baseUsesSpent` on the owned stack).
  * strongAlcohol/distillate uses are placeholders — tune when the rules settle.
  * `names` lists accepted item names (flag `flags.redsteel.alchBase` wins).
+ * Plain alcohol is deliberately absent: no recipe brews on it, only on the
+ * strong variant.
  */
 export const BASES = {
   fat: {
     usesPerUnit: 3,
     labelKey: "REDSTEEL.Alchemy.Base.Fat",
+    icon: "icons/commodities/materials/slime-white.webp",
     names: ["fat", "tuk"],
-  },
-  alcohol: {
-    usesPerUnit: 5,
-    labelKey: "REDSTEEL.Alchemy.Base.Alcohol",
-    names: ["alcohol", "alkohol"],
   },
   strongAlcohol: {
     usesPerUnit: 5,
     labelKey: "REDSTEEL.Alchemy.Base.StrongAlcohol",
+    icon: "icons/consumables/drinks/alcohol-spirits-bottle-green.webp",
     names: ["strong alcohol", "silný alkohol", "silny alkohol"],
   },
   distillate: {
     usesPerUnit: 5,
     labelKey: "REDSTEEL.Alchemy.Base.Distillate",
+    icon: "icons/consumables/drinks/alcohol-jar-spirits-gray.webp",
     names: ["distillate", "destilát", "destilat"],
   },
 };
@@ -82,10 +113,12 @@ export const BASES = {
 export const VESSELS = {
   vial: {
     labelKey: "REDSTEEL.Alchemy.Vessel.Vial",
+    icon: "icons/tools/laboratory/vials-blue-pink.webp",
     names: ["vial", "vials", "flakónek", "flakonek", "lahvička", "lahvicka"],
   },
   container: {
     labelKey: "REDSTEEL.Alchemy.Vessel.Container",
+    icon: "icons/containers/kitchenware/jug-wrapped-red.webp",
     names: ["container", "nádoba", "nadoba", "nádobka", "nadobka"],
   },
 };
@@ -143,9 +176,33 @@ export const ALCHEMIST_FAMILIES = {
   ointment:  { node: "mast",  duplication: [10, 5, 10] },
   poison:    { node: "jed",   duplication: [10, 5, 10] },
   oil:       { node: "olej",  duplication: [10, 5, 10] },
-  explosive: { node: "pet",   duplication: [10, 5, 10] },
+  explosive: {
+    node: "pet",
+    duplication: [10, 5, 10],
+    // Unlike the potion nodes, this one names a single explosive: only the
+    // Cracker gains the dice (see PRODUCT_BOON_ITEMS).
+    product: { damageDice: [["traskavice", 4]] },
+  },
   drug:      { node: "droga", duplication: [10, 10, 10] },
 };
+
+/**
+ * Product boons that belong to one specific item rather than a whole family,
+ * by the item's `system.localizationKey` — that survives renames and is the
+ * same in every language, unlike the item's name.
+ */
+const PRODUCT_BOON_ITEMS = {
+  damageDice: "REDSTEEL.Items.Cracker.name",
+};
+
+/** Whether a product boon may land on this item at all. */
+function productTakesBoon(stat, product) {
+  const required = PRODUCT_BOON_ITEMS[stat];
+  if (!required) return true;
+  // Without product data (the generic panel listing) assume it may apply.
+  if (!product) return true;
+  return product.localizationKey === required;
+}
 
 /** Critical-failure threshold relief granted by a `{fam}KritNeuspech` node. */
 const CRIT_FAILURE_RELIEF = 3;
@@ -369,9 +426,45 @@ export function applyProductBoons(data, product) {
   const notes = [];
   const applied = {};
   const sys = data?.system;
-  if (!sys || !product || sys.option !== "potion") return { notes, applied };
+  if (!sys || !product) return { notes, applied };
   const i18n = game.i18n;
   const set = (path, value) => foundry.utils.setProperty(data, path, value);
+
+  // Add Nd6 to a roll that is already d6-based; anything else takes the dice
+  // as a bonus term so a node can never silently change the die size.
+  const addD6 = (path, roll, dice) => {
+    if (String(roll?.diceSize) === "6") {
+      set(`${path}.diceNum`, (Number(roll.diceNum) || 0) + dice);
+    } else {
+      const bonus = String(roll?.diceBonus ?? "").trim();
+      set(`${path}.diceBonus`, `${bonus ? `${bonus} + ` : ""}${dice}d6`);
+    }
+  };
+
+  // The Cracker's damage node — the one product boon outside the potions.
+  const damage = Number(product.damageDice) || 0;
+  if (
+    damage > 0 &&
+    sys.option === "explosive" &&
+    productTakesBoon("damageDice", productBoonTarget(data))
+  ) {
+    addD6("system.roll", sys.roll ?? {}, damage);
+    applied.damageDice = damage;
+    notes.push(
+      i18n.format("REDSTEEL.Alchemy.Chat.Boon.Damage", { count: damage }),
+    );
+  }
+
+  if (sys.option !== "potion") {
+    if (notes.length) {
+      const label = i18n.localize("REDSTEEL.Alchemy.Chat.Boons");
+      set(
+        "system.description",
+        `${sys.description ?? ""}<p><em>${label}: ${notes.join(", ")}</em></p>`,
+      );
+    }
+    return { notes, applied };
+  }
 
   const toxicity = Number(sys.toxicity) || 0;
   if (product.toxicity && toxicity > 0) {
@@ -390,13 +483,7 @@ export function applyProductBoons(data, product) {
 
   const dice = Number(product.healingDice) || 0;
   if (dice > 0 && sys.type === "health") {
-    const roll = sys.roll ?? {};
-    if (String(roll.diceSize) === "6") {
-      set("system.roll.diceNum", (Number(roll.diceNum) || 0) + dice);
-    } else {
-      const bonus = String(roll.diceBonus ?? "").trim();
-      set("system.roll.diceBonus", `${bonus ? `${bonus} + ` : ""}${dice}d6`);
-    }
+    addD6("system.roll", sys.roll ?? {}, dice);
     applied.healingDice = dice;
     notes.push(
       i18n.format("REDSTEEL.Alchemy.Chat.Boon.Healing", { count: dice }),
@@ -443,6 +530,109 @@ export function getAlchemistSubstanceModifiers(actor, substanceKey) {
 /* -------------------------------------------- */
 /*  Requirements                                 */
 /* -------------------------------------------- */
+
+/** Shown for an ingredient with no artwork of its own (special ingredients). */
+const FALLBACK_INGREDIENT_ICON = "icons/sundries/misc/bowl-clay-brown.webp";
+
+/**
+ * Artwork for special ingredients. A recipe names these in plain text and no
+ * compendium item exists for any of them, so without this table the craft
+ * panel has nothing to draw. Keys are lower-cased names. An owned item of the
+ * same name still wins: that carries whatever art the GM gave it.
+ */
+const SPECIAL_INGREDIENT_ICONS = {
+  "blood lily": "icons/commodities/flowers/lily-water-pink.webp",
+  bluebell: "icons/consumables/mushrooms/ovate-blue.webp",
+  "dragon root": "icons/consumables/plants/thorned-dried-stem-red.webp",
+  "dream orchid": "icons/commodities/flowers/iris-blue.webp",
+  "fire stone": "icons/commodities/gems/gem-rough-square-red.webp",
+  "ice stone": "icons/commodities/gems/gem-rough-rose-teal.webp",
+  "lightning stone": "icons/commodities/gems/gem-rough-square-orange-red.webp",
+  mandrake: "icons/consumables/vegetable/root-ginger-brown.webp",
+  "moss stone": "icons/commodities/gems/gem-rough-trapeze-yellow-green.webp",
+  "powdered pearl": "icons/commodities/gems/powder-raw-white.webp",
+  "shadow dust": "icons/consumables/food/salt-seasoning-spice-pink.webp",
+  shrapnel: "icons/commodities/metal/fragments-steel-barbed.webp",
+  "sulca zairita": "icons/commodities/flowers/lotus-violet.webp",
+  sulfur: "icons/commodities/stone/ore-pile-nuggets-gold.webp",
+};
+
+/**
+ * Every ingredient a craft of `amount` units consumes, next to what the actor
+ * actually holds. Same accounting as {@link checkCraftRequirements}, but it
+ * reports the full list instead of only the shortfalls, so the craft panel can
+ * show stock before the player commits to a roll.
+ *
+ * The totals count each line capped at its own requirement: `have === need`
+ * therefore means "nothing missing", not "stock happens to add up" — a drawer
+ * full of vials must not paper over a missing substance.
+ *
+ * @returns {{lines: {label:string, need:number, have:number, ok:boolean}[],
+ *            have:number, need:number, ok:boolean}}
+ */
+export function getCraftIngredients(actor, recipe, amount = 1) {
+  const sys = recipe?.system ?? {};
+  const lines = [];
+
+  for (const def of SUBSTANCES) {
+    const need = (Number(sys.substances?.[def.key]) || 0) * amount;
+    if (need <= 0) continue;
+    lines.push({
+      key: def.key,
+      label: def.name,
+      icon: def.icon,
+      color: def.color,
+      need,
+      have: getSubstanceCount(actor, def.key),
+    });
+  }
+
+  const baseKey = sys.base && sys.base !== "none" ? sys.base : null;
+  if (baseKey) {
+    lines.push({
+      key: `base-${baseKey}`,
+      label: game.i18n.localize(BASES[baseKey]?.labelKey ?? baseKey),
+      icon: BASES[baseKey]?.icon ?? FALLBACK_INGREDIENT_ICON,
+      need: amount,
+      have: getBaseUses(actor, baseKey),
+    });
+  }
+
+  const vesselKey = getRecipeVessel(recipe);
+  if (vesselKey) {
+    lines.push({
+      key: `vessel-${vesselKey}`,
+      label: game.i18n.localize(VESSELS[vesselKey].labelKey),
+      icon: VESSELS[vesselKey].icon ?? FALLBACK_INGREDIENT_ICON,
+      need: amount,
+      have: getVesselCount(actor, vesselKey),
+    });
+  }
+
+  // One whole unit per craft ACTION, never per crafted unit.
+  const specialName = sys.specialIngredient?.name?.trim();
+  if (specialName) {
+    const special = findSpecialIngredient(actor, specialName);
+    lines.push({
+      key: "special",
+      label: specialName,
+      icon:
+        special?.img ||
+        SPECIAL_INGREDIENT_ICONS[norm(specialName)] ||
+        FALLBACK_INGREDIENT_ICON,
+      need: 1,
+      have: Number(special?.system?.quantity) || 0,
+    });
+  }
+
+  for (const line of lines) line.ok = line.have >= line.need;
+  return {
+    lines,
+    have: lines.reduce((sum, l) => sum + Math.min(l.have, l.need), 0),
+    need: lines.reduce((sum, l) => sum + l.need, 0),
+    ok: lines.every((l) => l.ok),
+  };
+}
 
 /**
  * Check that a craft of `amount` units is possible with the actor's stocks.
@@ -637,9 +827,18 @@ async function deliverResult(actor, recipe, amount, mods) {
       (i.getFlag("redsteel", "craftBoons") ?? null) === signature,
   );
   if (existing) {
-    await existing.update({
+    const update = {
       "system.quantity": (Number(existing.system.quantity) || 0) + amount,
-    });
+    };
+    // A merge keeps the OLD document, so a stack crafted before the result item
+    // gained its automation would swallow the new units and leave them inert.
+    // Carry the source's status-effect ids over (see the flag read in
+    // applyConsumableStatusEffects, usePotion.mjs) so drinking from that stack
+    // still applies the buff.
+    const sourceEffects = source.getFlag?.("redsteel", "statusEffects");
+    if (sourceEffects) update["flags.redsteel.statusEffects"] = sourceEffects;
+
+    await existing.update(update);
     return existing;
   }
 
@@ -734,7 +933,24 @@ const fmtMargin = (m) => (m >= 0 ? `+${m}` : `${m}`);
  * @param {object} mods
  * @returns {string[]}
  */
-export function describeCraftBoons(mods) {
+/**
+ * The output fields that decide which product boons may land on a crafted
+ * item, in the shape {@link describeCraftBoons} expects. Kept next to
+ * {@link applyProductBoons} so the two can never drift on what "a healing
+ * potion" means.
+ * @param {Item|null} doc  The item a recipe produces.
+ */
+export function productBoonTarget(doc) {
+  if (!doc) return null;
+  return {
+    option: doc.system?.option ?? "",
+    type: doc.system?.type ?? "",
+    toxicity: Number(doc.system?.toxicity) || 0,
+    localizationKey: doc.system?.localizationKey ?? "",
+  };
+}
+
+export function describeCraftBoons(mods, product = null) {
   const i18n = game.i18n;
   const out = [];
   if (Number(mods?.advantage) > 0) {
@@ -760,24 +976,42 @@ export function describeCraftBoons(mods) {
 
   // Product boons: stated as the modifier, since the exact before/after
   // depends on the potion and is written into the crafted item's description.
-  const product = mods?.product ?? {};
-  if (Number(product.toxicity)) {
+  // With the crafted item's data in hand, only the boons that would actually
+  // land on THAT item are listed — the healing nodes must not be advertised on
+  // a mana or stamina potion that applyProductBoons will refuse to touch.
+  const boons = mods?.product ?? {};
+  const canTakeProductBoons = !product || product.option === "potion";
+  const restoresHealth = !product || product.type === "health";
+  const hasToxicityCost = !product || Number(product.toxicity) > 0;
+
+  if (Number(boons.toxicity) && canTakeProductBoons && hasToxicityCost) {
     out.push(
       i18n.format("REDSTEEL.Alchemy.Chat.Boon.ToxicityMod", {
-        value: fmtMargin(product.toxicity),
+        value: fmtMargin(boons.toxicity),
       }),
     );
   }
-  if (Number(product.healingDice) > 0) {
+  if (Number(boons.healingDice) > 0 && canTakeProductBoons && restoresHealth) {
     out.push(
       i18n.format("REDSTEEL.Alchemy.Chat.Boon.Healing", {
-        count: product.healingDice,
+        count: boons.healingDice,
       }),
     );
   }
-  if (Number(product.bleed) > 0) {
+  if (Number(boons.bleed) > 0 && canTakeProductBoons && restoresHealth) {
     out.push(
-      i18n.format("REDSTEEL.Alchemy.Chat.Boon.BleedMod", { value: product.bleed }),
+      i18n.format("REDSTEEL.Alchemy.Chat.Boon.BleedMod", { value: boons.bleed }),
+    );
+  }
+  if (
+    Number(boons.damageDice) > 0 &&
+    (!product || product.option === "explosive") &&
+    productTakesBoon("damageDice", product)
+  ) {
+    out.push(
+      i18n.format("REDSTEEL.Alchemy.Chat.Boon.Damage", {
+        count: boons.damageDice,
+      }),
     );
   }
   return out;
@@ -816,7 +1050,9 @@ async function sendCraftMessage(actor, subject, outcome, spentLines, { isReroll 
     : `<p style="text-align:center;font-size:16px;"><b>${i18n.localize("REDSTEEL.Alchemy.Chat.Failure")}</b> — ${i18n.localize("REDSTEEL.Alchemy.Chat.IngredientsWasted")}</p>`;
 
   // Which specialisation boons were in play, so the table can audit the roll.
-  const boons = describeCraftBoons(outcome);
+  // Filtered by the item actually made: a mana potion's card must not claim
+  // healing dice that applyProductBoons never granted it.
+  const boons = describeCraftBoons(outcome, outcome.productItem ?? null);
   const boonBlock = boons.length
     ? `<p style="font-size:12px;opacity:0.85;"><b>${i18n.localize("REDSTEEL.Alchemy.Chat.Boons")}:</b> ${boons.join(" · ")}</p>`
     : "";
@@ -894,6 +1130,7 @@ export async function craftRecipe(actor, recipe, { amount, stationKey }) {
     duplication: mods.duplication,
     duplicated: 0,
     product: mods.product,
+    productItem: productBoonTarget(source),
     created: 0,
   };
 
@@ -935,6 +1172,7 @@ export async function rerollCraft(actor, recipe, lastOutcome, { stationKey }) {
     duplication: mods.duplication,
     duplicated: 0,
     product: mods.product,
+    productItem: productBoonTarget(source),
     created: 0,
   };
 

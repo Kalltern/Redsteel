@@ -6,6 +6,7 @@
   "system": {
     "description": "",
     "class": "bow",
+    "tags": "longbow",
     "classOptions": [
       "axe",
       "blunt",

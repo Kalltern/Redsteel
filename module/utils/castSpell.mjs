@@ -20,8 +20,7 @@ export async function castSpell() {
     return;
   }
 
-  const { freeCast, focusSpent } = result;
-  let { ignoreChanneling } = result;
+  const { freeCast, focusSpent, ignoreChanneling } = result;
 
   // If the spell has linked variants, let the player choose which version to
   // cast. Resolves with the parent spell itself when no valid variants exist.
@@ -31,6 +30,38 @@ export async function castSpell() {
     return;
   }
 
+  await performCast(actor, spell, {
+    token,
+    freeCast,
+    focusSpent,
+    ignoreChanneling,
+  });
+}
+
+/**
+ * Runs the cast pipeline for an already-chosen spell: mana, attack roll, chat
+ * card, caster-side consequences. Everything upstream of this (which token,
+ * which spell, which variant, focus/free-cast options) is the caller's job, so
+ * the dialog-driven `castSpell` and the dialog-free `quickCastSpell` share one
+ * body and cannot drift apart.
+ *
+ * @param {Actor} actor - The casting actor.
+ * @param {Item} spell - The spell to cast (already variant-resolved).
+ * @param {{token?: Token|null, freeCast?: boolean, focusSpent?: number,
+ *   ignoreChanneling?: boolean}} [options]
+ * @returns {Promise<boolean>} False when the cast never happened (not enough
+ *   mana/blood), true otherwise.
+ */
+export async function performCast(
+  actor,
+  spell,
+  {
+    token = null,
+    freeCast = false,
+    focusSpent = 0,
+    ignoreChanneling = false,
+  } = {},
+) {
   // Lindar's Strikes (veneficus tree): while unlocked, strike spells never
   // trigger channeling evaluation — cast as though "No Channeling Evaluation"
   // were ticked, so a fumbled channeling roll can't crit-fail the strike.
@@ -43,7 +74,7 @@ export async function castSpell() {
 
   if (!freeCast) {
     const ok = await game.redsteel.deductMana(actor, spell);
-    if (!ok) return;
+    if (!ok) return false;
   }
 
   const bonuses = game.redsteel.calculateAttackBonuses(actor, spell);
@@ -76,6 +107,86 @@ export async function castSpell() {
     focusSpent,
     ignoreChanneling,
   });
+
+  return true;
+}
+
+/**
+ * Quick cast — the entry point behind a spell dragged onto the hotbar.
+ *
+ * Casts the spell exactly as it sits on the sheet: no school/spell picker, no
+ * variant prompt (the parent spell is what gets cast), no Focus, no free cast,
+ * no "ignore channeling". Mana/blood is still paid and every downstream rule
+ * (channeling, caster effects, strikes, Mental Duel) runs as usual, because
+ * this shares `performCast` with the normal dialog route.
+ *
+ * @param {string} spellUuid - UUID of the embedded spell the macro was made from.
+ * @param {string} [spellName] - Name recorded at drop time, used to re-find the
+ *   spell if the UUID no longer resolves (re-imported sheet, new copy of the
+ *   character).
+ */
+export async function quickCastSpell(spellUuid, spellName = "") {
+  const spell = await resolveMacroSpell(spellUuid, spellName);
+  if (!spell) {
+    ui.notifications.warn(
+      `Quick cast: could not find the spell ${spellName || spellUuid}. Drag it onto the hotbar again.`,
+    );
+    return;
+  }
+
+  const actor = spell.actor;
+  if (!actor) {
+    ui.notifications.warn(
+      "Quick cast: this spell is not owned by an actor — cast it from the character sheet.",
+    );
+    return;
+  }
+  if (!actor.isOwner) {
+    ui.notifications.warn(`You do not own ${actor.name}.`);
+    return;
+  }
+
+  // Prefer the token the player actually has selected (that is the one the rest
+  // of the pipeline treats as the caster), but only when it belongs to the
+  // casting actor. Otherwise fall back to the actor's token on the scene.
+  const controlled = canvas?.tokens?.controlled?.[0] ?? null;
+  const token =
+    controlled?.actor?.id === actor.id
+      ? controlled
+      : (actor.getActiveTokens()[0] ?? null);
+
+  return performCast(actor, spell, { token });
+}
+
+/**
+ * Resolves the spell a quick-cast macro points at. The UUID is authoritative;
+ * the name is only a rescue path for when the original item is gone.
+ * @param {string} uuid
+ * @param {string} name
+ * @returns {Promise<Item|null>}
+ */
+async function resolveMacroSpell(uuid, name) {
+  let spell = null;
+  try {
+    spell = await fromUuid(uuid);
+  } catch (_err) {
+    spell = null;
+  }
+  if (spell?.type === "spell") return spell;
+
+  if (!name) return null;
+  const actor =
+    game.redsteel.selectToken?.({ warn: false })?.actor ??
+    game.user.character ??
+    null;
+  if (!actor) return null;
+
+  return (
+    actor.items.find(
+      (i) =>
+        i.type === "spell" && (i.name === name || i.localizedName === name),
+    ) ?? null
+  );
 }
 
 /**

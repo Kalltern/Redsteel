@@ -5,7 +5,8 @@
   "img": "icons/weapons/thrown/grenade-round.webp",
   "system": {
     "description": "<p>Effect - Opaque cloud of smoke in an area of ​​6m (When inhaled, Disorientation for 3 turns)<br />Duration - 10 rounds<br />Production bonus - 0% -&gt; 1 batch<br />Ingredients - Container, Ve, Yl, Be, Qu, (Shadow dust)</p>",
-    "outputType": "potion",
+    "outputType": "explosive",
+    "purpose": "explosive",
     "resultUuid": "Compendium.redsteel.redsteel-items.Item.o82qzxcZUISF5Cfi",
     "substances": {
       "yliaster": 1,

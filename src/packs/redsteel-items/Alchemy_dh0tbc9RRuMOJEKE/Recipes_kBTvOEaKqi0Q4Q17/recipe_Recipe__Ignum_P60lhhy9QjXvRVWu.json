@@ -5,7 +5,8 @@
   "img": "icons/weapons/thrown/bomb-metal-brown.webp",
   "system": {
     "description": "<p>Effect - Single target. Fire damage 3d6, causes Burning. Ignores Armor.<br />Duration - Instant<br />Production Bonus - -10% -&gt; 1 batch<br />Ingredients - Quality fat, Sulfur, Container, Pa, Be, Yl</p>",
-    "outputType": "potion",
+    "outputType": "explosive",
+    "purpose": "explosive",
     "resultUuid": "Compendium.redsteel.redsteel-items.Item.xbxHdqTTNFFrc7eJ",
     "substances": {
       "yliaster": 1,

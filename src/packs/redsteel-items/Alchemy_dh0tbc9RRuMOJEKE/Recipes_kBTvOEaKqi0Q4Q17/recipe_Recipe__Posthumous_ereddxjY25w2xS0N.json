@@ -5,7 +5,8 @@
   "img": "icons/consumables/potions/potion-flask-corked-green.webp",
   "system": {
     "description": "<p>Effect - Deals 1d8 Poison damage per round. Resting twice in the same round cancels the effect. Ignores Armor.<br />Duration - 2 hours<br />Production bonus - +20% -&gt; 1 dose<br />Ingredients - Fat, Qu, Be<br />Level - 1<br />Info - Green liquid, strong odor. Slashing and stabbing weapons.</p>",
-    "outputType": "potion",
+    "outputType": "poison",
+    "purpose": "poison",
     "resultUuid": "Compendium.redsteel.redsteel-items.Item.63gQkenTKJlKSVob",
     "substances": {
       "yliaster": 0,

@@ -6,6 +6,7 @@
   "system": {
     "description": "<p>Suffers no penalties from Long reach</p>",
     "class": "polearm",
+    "tags": "staff",
     "classOptions": [
       "axe",
       "blunt",

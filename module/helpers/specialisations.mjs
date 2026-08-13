@@ -1,5 +1,8 @@
 import { REDSTEEL } from "./config.mjs";
-import { GENERATED_SPECS } from "./specialisations-generated.mjs";
+import {
+  GENERATED_SPECS,
+  STATE_GATED_IMMUNITIES,
+} from "./specialisations-generated.mjs";
 
 /* ===========================================================================
  * Specialisation talent-tree definitions
@@ -73,6 +76,71 @@ export function getCritDegreeTriggers(actor) {
   return CRIT_DEGREE_TRIGGERS.filter((t) =>
     actorHasSpecNode(actor, t.spec, t.node),
   );
+}
+
+/**
+ * Nodes that ARE automated but carry no `passive` block of their own, because
+ * the code implementing them lives somewhere else entirely. The tree paints a
+ * node's status dot from this plus `passive` / `bane` / `automated: true`;
+ * anything left over is a table ruling — the sheet tracks the node, the GM
+ * applies the rule at the table.
+ *
+ * Each entry names the file that does the work, so the list can be checked.
+ * Wiring a node up in code means adding it here.
+ */
+const CODE_AUTOMATED_NODES = {
+  // utils/alchemy.mjs — the craft roll (advantage, critical-failure relief,
+  // duplication, guaranteed success, ingredient discount) and the crafted
+  // potion's stored numbers (toxicity, healing dice, stop-bleed chance).
+  alchemist: [
+    ...["lek", "jed", "pet", "olej", "mast", "droga"].flatMap((fam) => [
+      `${fam}Duplikace1`,
+      `${fam}Duplikace2`,
+      `${fam}Duplikace3`,
+      `${fam}Vyhoda`,
+      `${fam}KritNeuspech`,
+    ]),
+    "lekToxicita",
+    "lecZivoty1",
+    "lecZivoty2",
+    "lecZastaveni1",
+    "lecZastaveni2",
+    "garantovanyUspech",
+    "meneIngredienci",
+  ],
+  // utils/abilityGrants.mjs — unlocking the node grants an ability item.
+  // (improvedAim and aimReduction are also read by utils/aim.mjs: the first for
+  // the +10 penetration and Advanced Aim, the second for aim reduction on a hit
+  // plus the Sneak Attack grant.)
+  swordServant: ["odvetnyUder", "improvedAim", "aimReduction", "utokSPohybem"],
+  hoplite: ["nabodnuti", "velkeTvory"],
+  champion: ["odvetnyUder", "riposta"],
+  skirmisher: ["utokSPohybem"],
+  // utils/aim.mjs — mireniRedukce is Sword Servant's aimReduction on the
+  // duellist's blade; postojMireni carries stacks across a target switch.
+  swordDancer: ["mireniRedukce", "postojMireni"],
+  // utils/mentalDuel.mjs — opens the mental duel to the node's owner.
+  mentalist: ["ovladnuti"],
+  // documents/actor.mjs (armour penalty, Lindar) + utils/castSpell.mjs
+  // (Lindar's strikes).
+  veneficus: ["postihZbroje", "lindar", "lindarovyUdery"],
+  // utils/magicSkillBonuses.mjs — the curse path.
+  maleficarum: ["zakleti"],
+  // utils/abilityGrants.mjs (Blood Pact) + utils/applyDamage.mjs (Blood Shield).
+  // The rank nodes carry passives, so they are already covered.
+  bloodSchool: ["krvavyPakt", "krvavyStit"],
+};
+
+// Crit-degree triggers and state-gated immunities are already declared as data
+// elsewhere in the system, so read their node ids straight off those tables
+// instead of repeating them here where they could drift.
+for (const t of [...CRIT_DEGREE_TRIGGERS, ...STATE_GATED_IMMUNITIES]) {
+  (CODE_AUTOMATED_NODES[t.spec] ??= []).push(t.node);
+}
+
+/** True if the node is automated by code outside its own definition. */
+function isCodeAutomated(specId, nodeId) {
+  return !!CODE_AUTOMATED_NODES[specId]?.includes(nodeId);
 }
 
 const SPEC_DEFS = {
@@ -653,11 +721,17 @@ export function prepareSpecialisationTrees(actor) {
         label: node.label,
         description: node.description,
         icon: node.icon || "",
-        // The blue "automated" dot. `passive` covers nodes whose buff is a real
-        // Active Effect; `bane` covers Bane slot nodes (their effect is the
-        // picker plus the combat maths in baneCombat.mjs); `automated: true` is
-        // the explicit opt-in for nodes wired in code with neither of those.
-        automated: !!node.passive || !!node.bane || node.automated === true,
+        // Status dot: blue when the node's effect is automated, red when it is
+        // a table ruling. `passive` covers nodes whose buff is a real Active
+        // Effect; `bane` covers Bane slot nodes (their effect is the picker
+        // plus the combat maths in baneCombat.mjs); `automated: true` is the
+        // explicit opt-in on the definition; CODE_AUTOMATED_NODES lists the
+        // ones implemented in code somewhere else.
+        automated:
+          !!node.passive ||
+          !!node.bane ||
+          node.automated === true ||
+          isCodeAutomated(specId, nodeId),
         x,
         y,
         unlocked,

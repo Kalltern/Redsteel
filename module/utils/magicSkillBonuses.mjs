@@ -10,6 +10,7 @@ import {
   renderSpeedTestLine,
 } from "./speedTest.mjs";
 import { resolveTestRating } from "./testRating.mjs";
+import { resolveSpellPowerTokens } from "./spellCards.mjs";
 
 // --- Helper for Dialogs (CSS Injection) ---
 function _injectDialogCSS() {
@@ -1391,7 +1392,16 @@ export async function finalizeRollsAndPostChat(
   const attack = attackRoll
     ? attackRoll.total + (actor.system.combatSkills.channeling.attack || 0)
     : null;
-  const rawTemplate = concatRollAndDescription;
+  // Resolve the `{{…spellPower…}}` placeholders with the same evaluator the
+  // sheet cards use, BEFORE Handlebars sees the string. Two reasons: it floors
+  // SK divisions the way the rulebook does (the `math` helper alone does not),
+  // and it is the only thing that can read the trailing-term forms the packs
+  // store — `{{math spellPower "/" 2 + 1}}` is a Handlebars parse error,
+  // because `+` is not a legal identifier character in a helper argument.
+  const rawTemplate = resolveSpellPowerTokens(
+    concatRollAndDescription,
+    rollData.spellPower,
+  );
   const compiled = Handlebars.compile(rawTemplate);
   const renderedDescription = compiled(rollData);
   const tags = rollData.difficulty

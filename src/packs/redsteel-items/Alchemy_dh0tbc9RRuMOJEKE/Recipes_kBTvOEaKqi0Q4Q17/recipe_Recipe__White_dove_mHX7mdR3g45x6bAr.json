@@ -6,6 +6,7 @@
   "system": {
     "description": "<p>Effect - Heals 6d6+6 Hit Points, 25% to Stop Bleeding<br />Threshold - 1<br />(After drinking a White dove that exceeds the threshold, its effectiveness is reduced by 50%. Another White dove drunk has no effect.)<br />Duration - Instant Effect<br />Toxicity - 12<br />Production bonus - +10% -&gt; 1 dose<br />Ingredients - Distillate, Be, Yl, Ve</p>",
     "outputType": "potion",
+    "purpose": "healing",
     "resultUuid": "Compendium.redsteel.redsteel-items.Item.VgE1Lc5RyqMXoXej",
     "substances": {
       "yliaster": 1,

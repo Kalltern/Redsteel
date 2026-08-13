@@ -25,7 +25,10 @@
       "potionType": "Potion type",
       "school": "School",
       "rank": "Rank",
-      "deflect": "Deflect"
+      "deflect": "Deflect",
+      "addToHotbar": "Add to hotbar (quick cast)",
+      "hotbarSlotTaken": "Your hotbar is full — free a slot first.",
+      "addedToHotbar": "{name} added to hotbar slot {slot}."
     },
     "Quality": {
       "bad": "Bad",
@@ -87,7 +90,7 @@
       "PickSkill": "Choose a skill",
       "ClearSkill": "Right-click to clear",
       "NoActor": "No character",
-      "OpenSheet": "Double-click to open the character sheet.",
+      "OpenSheet": "Click to select the token, double-click to open the character sheet.",
       "PickerTitle": "Choose a skill",
       "PickerSearch": "Search skills...",
       "NoEffects": "No conditions",
@@ -267,6 +270,13 @@
       "Crafting": "Crafting",
       "StationLabel": "Alchemical station",
       "Amount": "Amount",
+      "Ingredients": "Ingredients on hand:",
+      "Filter": {
+        "AllTypes": "All types",
+        "Craftable": "Have ingredients",
+        "CraftableHint": "Show only recipes you can craft right now",
+        "NoMatches": "No recipe matches the filter."
+      },
       "Craft": "Craft",
       "Reroll": "Reroll",
       "CraftHint": "Roll Alchemy and craft the chosen amount",
@@ -284,7 +294,6 @@
       "Base": {
         "None": "No base",
         "Fat": "Fat",
-        "Alcohol": "Alcohol",
         "StrongAlcohol": "Strong alcohol",
         "Distillate": "Distillate"
       },
@@ -295,6 +304,15 @@
         "Oil": "Oil",
         "Explosive": "Explosive",
         "Drug": "Drug"
+      },
+      "Purpose": {
+        "None": "No purpose",
+        "Poison": "Poison",
+        "Mana": "Mana potion",
+        "Healing": "Healing potion",
+        "Buff": "Buff potion",
+        "Unique": "Unique potion",
+        "Explosive": "Explosive"
       },
       "Substance": {
         "TileHint": "click to boil herbs down into this substance",
@@ -340,11 +358,14 @@
           "BleedMod": "stop bleeding +{value}%",
           "Toxicity": "toxicity {from} → {to}",
           "Healing": "healing +{count}d6",
+          "Damage": "damage +{count}d6",
           "Bleed": "stop bleeding chance: {value}%"
         }
       },
       "Recipe": {
         "OutputType": "Output type",
+        "Purpose": "Purpose",
+        "PurposeHint": "Colours the recipe card on the Alchemy tab.",
         "Base": "Alchemical base",
         "Result": "Result item",
         "Unlink": "Unlink",
@@ -380,6 +401,16 @@
         "AccessorySlotsFull": "All accessory slots are full.",
         "Armor": "Armor",
         "WeaponSets": "Weapon sets",
+        "Equip": {
+          "TitleWeapon": "Equip Weapon",
+          "TitleShield": "Equip Shield",
+          "Set1": "Set 1",
+          "Set2": "Set 2",
+          "Main": "Main",
+          "Off": "Off",
+          "Confirm": "Confirm",
+          "Displaced": "Unequipped to free a hand: {names}"
+        },
         "TwoHandGrip": "Two-handed grip",
         "OffHandGrip": "Use in off-hand",
         "Currencies": "Currencies",
@@ -535,7 +566,7 @@
             },
             "aimReduction": {
               "label": "Aim reduction after a hit",
-              "description": "5 CP. Aim is reduced after a hit. Sneak Attack: adds Aim. Manual — resolved at the table."
+              "description": "5 CP. A hit on the aimed target costs one Aim stack instead of all of them, and a critical hit costs none. A Sneak Attack grants one Aim on the token that took it. Automated."
             },
             "draciSpanek": {
               "label": "Dragon Sleep",
@@ -754,7 +785,7 @@
             },
             "mireniRedukce": {
               "label": "Aim Reduction",
-              "description": "10 CP; Duelista V. Aim reduction after a failure and a Sneak Attack. Manual — resolved at the table."
+              "description": "10 CP; Duelista V. A hit on the aimed target costs one Aim stack instead of all of them, and a critical hit costs none. A missed attack costs only half the stacks, rounded up. A Sneak Attack that lands costs no Aim at all. Automated."
             },
             "vyhodnyManevr": {
               "label": "Advantageous Maneuver",
@@ -766,7 +797,7 @@
             },
             "postojMireni": {
               "label": "Duelist's Stance: keeps Aim",
-              "description": "10 CP; Duelista IX. Manual — resolved at the table."
+              "description": "10 CP; Duelista IX. Moving the Aim to a new target carries all but one stack across instead of burning them. Automated."
             },
             "precision10": {
               "label": "Precision +10%",
@@ -1991,8 +2022,8 @@
               "description": "5 SP. Manual — resolved at the table."
             },
             "traskavice": {
-              "label": "Blasting charge: Damage +4d6",
-              "description": "5 SP; Alchemie: Expert. Manual — resolved at the table."
+              "label": "Cracker: Damage +4d6",
+              "description": "5 SP; Alchemie: Expert. Automated. Crafted Crackers deal 4d6 more damage."
             },
             "acidum": {
               "label": "Acidum: Armor -2",
@@ -3579,7 +3610,8 @@
         "Condition": {
           "max": "max",
           "armor": "Armor",
-          "detection": "Trap Detection"
+          "detection": "Trap Detection",
+          "movement": "Movement"
         },
         "stats": {
           "health": {
@@ -4080,6 +4112,13 @@
         "dmgTypesHint": "Damage types the per-round damage counts as. The target's specialized armor, resistances, vulnerabilities and immunities apply — base armor is ignored entirely.",
         "usageHint": "Add the stat changes on the Effects tab. Reference this condition by its name in a weapon, spell or ability effects section — when the attack hits, it is offered in the Apply Effects dialog and applied to the target as a status effect. It also appears in the Token HUD."
       },
+      "Ammunition": {
+        "FIELDS": {
+          "sharp": {
+            "label": "Sharp"
+          }
+        }
+      },
       "Weapon": {
         "FIELDS": {
           "offhand": {
@@ -4342,8 +4381,20 @@
           "standalone": {
             "label": "Standalone"
           },
+          "rangedSkill": {
+            "label": "Ranged skill",
+            "hint": "Which combat skill a standalone ranged attack rolls against. Leave blank if it is not a true ranged attack."
+          },
           "multiAttack": {
             "label": "Multiattack"
+          },
+          "requiredWeaponTag": {
+            "label": "Required weapon tag",
+            "hint": "Weapon tag this ability needs, e.g. trident. Leave empty for any weapon."
+          },
+          "opportunityAttack": {
+            "label": "Opportunity attack",
+            "hint": "This ability may be used as an opportunity attack, outside the character's own turn."
           },
           "resourceCost": {
             "label": "Resource Cost"
@@ -4470,12 +4521,58 @@
         "DropDuplicate": "{name} is already granted by this race."
       }
     },
+    "Aim": {
+      "Swept": "The attack on {target} did not land: {actor} drops from {before} Aim to {after}.",
+      "UnknownTarget": "the target"
+    },
     "BloodStrike": {
       "OpenWoundOption": "Open Wound — spend {cost} Life from the Blood Reserve for 1 Bleeding",
       "ReserveStatus": "Blood Reserve ({name}): {spent} committed of {reserve}",
       "ReserveTooLow": "{name} needs {cost} Life in the Blood Reserve, but has {reserve}.",
       "OpenWoundApplied": "{name} tears the wound open on {targets} — {cost} Life from the Blood Reserve, 1 Bleeding.",
       "ChargeEarned": "{name} cuts down a bleeding foe. The next attack causes one extra Bleeding (Blood Strike)."
+    },
+    "BloodHarvest": {
+      "Gained": "{name} draws {amount} spilled Life into the Blood Reserve (Cordinas I)."
+    },
+    "Overwhelm": {
+      "Label": "Overwhelm",
+      "MarkerName": "Overwhelm ({penalty}%)",
+      "SourcesLabel": "Opponents defended against:",
+      "RemoveTooltip": "Not this attacker. Removes them for the rest of the round.",
+      "UnknownAttacker": "Unknown attacker",
+      "Defend": "Defend",
+      "DefendTooltip": "Roll a defense against this attack."
+    },
+    "Versus": {
+      "Blocked": "Defended",
+      "Hit": "Hit",
+      "Tie": "Tie, the attack lands",
+      "Detail": "Attack {attack} vs Defense {defense} ({gap})",
+      "CriticalDefense": "Critical Defense",
+      "CriticalHit": "Critical Hit",
+      "DeniedOnDice": "Both critical, so margins are ignored. Attack rolled {attack}, defense rolled {defense}.",
+      "DialogAttackMargin": "Answering an attack of margin {margin}"
+    },
+    "TempHealth": {
+      "ButtonTooltip": "Claim Temporary Health from this defense. Usable once, up to 10 total from defending.",
+      "SourceSkill": "Weapon Skill 4+ with this weapon class (+5)",
+      "SourceSwordsman": "Swordsman 3+ with a swordsman weapon (+5)",
+      "Granted": "{name} gains {amount} Temporary Health.",
+      "AlreadyClaimed": "Temporary Health already claimed from this defense.",
+      "Capped": "Defending grants Temporary Health only up to {max}.",
+      "AtCap": "Already at {max} Temporary Health — defending grants no more.",
+      "ActorMissing": "The defending actor no longer exists."
+    },
+    "LongRest": {
+      "Title": "Long Rest",
+      "SelectAll": "Everyone",
+      "Confirm": "Long Rest",
+      "GroupPlayers": "Player characters",
+      "GroupParty": "Party",
+      "GroupSelected": "Selected tokens",
+      "NoCandidates": "No player characters, party members or selected tokens to rest.",
+      "NoneChosen": "Nobody was chosen for the Long Rest."
     },
     "Banes": {
       "PickerTitle": "Choose a Bane ({count})",
@@ -4585,7 +4682,7 @@
       },
       "aim": {
         "label": "Aim",
-        "desc": "Each Aim action grants +10% to hit against the aimed target, up to 4 stacks. Switching targets burns every stack, and attacking the aimed target consumes them."
+        "desc": "Each Aim action grants +10% to hit against the aimed target, up to 4 stacks. Switching targets burns every stack. Attacking the aimed target spends them all, and attacking anybody else breaks the aim outright. Improved Aim (Duelist I, or Servant of the Sword) keeps the aim intact when you attack somebody else, and adds +10 armour penetration at 4 stacks. Aim reduction (Duelist II, or either Aim-reduction node) costs a single stack on a hit and none on a critical hit, while a miss still costs the lot. Servant of the Sword adds one Aim after a Sneak Attack; Sword Dancer instead costs nothing on a Sneak Attack that lands, and only half the stacks (rounded up) on a miss. Every duellist perk needs the qualifying sword in hand. Counterattack, Retaliatory strike, Cleave, Polearm Cleave, Double Throw and Cunning Strike have no interaction with Aiming at all."
       },
       "spellPower": {
         "label": "Spell Power",
@@ -4754,6 +4851,9 @@
       "AcidResistantSalve": {
         "name": "Acid-Resistant Salve"
       },
+      "Acidum": {
+        "name": "Acidum"
+      },
       "AcrobaticDefense": {
         "name": "Acrobatic Defense"
       },
@@ -4921,6 +5021,9 @@
       "Casting": {
         "name": "Casting"
       },
+      "Cat": {
+        "name": "Cat"
+      },
       "Cleave": {
         "name": "Cleave"
       },
@@ -4963,6 +5066,9 @@
       "CryophoricClay": {
         "name": "Cryophoric Clay"
       },
+      "CunningStrike": {
+        "name": "Cunning Strike"
+      },
       "Dagger": {
         "name": "Dagger"
       },
@@ -4984,6 +5090,15 @@
       "Determination": {
         "name": "Determination"
       },
+      "DevilsRoot": {
+        "name": "Devil's Root"
+      },
+      "DevilsRootAddiction": {
+        "name": "Devil's Root Addiction"
+      },
+      "DevilsRootWithdrawal": {
+        "name": "Devil's Root Withdrawal"
+      },
       "Diehard": {
         "name": "Diehard"
       },
@@ -5001,6 +5116,9 @@
       },
       "Dodge": {
         "name": "Dodge"
+      },
+      "DoubleThrow": {
+        "name": "Double Throw"
       },
       "Draconic": {
         "name": "Draconic"
@@ -5143,6 +5261,15 @@
       "ExtendedLunge": {
         "name": "Extended Lunge"
       },
+      "Mountain": {
+        "name": "Mountain"
+      },
+      "Shapeshifter": {
+        "name": "Shapeshifter"
+      },
+      "SpidersEmbrace": {
+        "name": "Spider's Embrace"
+      },
       "Vial": {
         "name": "Vial"
       },
@@ -5238,6 +5365,14 @@
       },
       "FrostResistantSalve": {
         "name": "Frost-Resistant Salve"
+      },
+      "FuscinaIctus": {
+        "name": "Fuscina Ictus",
+        "description": "<p>Modifies Attack, Counterattack, Opportunity Attack, Multiattack, Exploit Weakness, Reckless strike and Charge. Cost applies to each attack.</p><p>Bleeding chance +120%.</p><p>Cannot be combined with Trip. Trident only.</p>"
+      },
+      "FuscinaIctusFeature": {
+        "name": "Fuscina Ictus",
+        "description": "<p>Grants the Fuscina Ictus action. While attacking with a trident you may spend 3 Stamina per attack to raise the Bleeding chance by 120%.</p>"
       },
       "Gambeson": {
         "name": "Gambeson"
@@ -5374,8 +5509,14 @@
       "ImprovisedShield": {
         "name": "Improvised Shield"
       },
+      "IncendiaryAlcoholBottle": {
+        "name": "Incendiary Alcohol Bottle"
+      },
       "IncendiaryClay": {
         "name": "Incendiary Clay"
+      },
+      "IncendiaryOilBottle": {
+        "name": "Incendiary Oil Bottle"
       },
       "Inconspicuous": {
         "name": "Inconspicuous"
@@ -6207,6 +6348,12 @@
       },
       "ExpertRituals": {
         "name": "Expert: Rituals"
+      },
+      "AdeptMindBending": {
+        "name": "Adept: Mind Bending"
+      },
+      "ExpertMindBending": {
+        "name": "Expert: Mind Bending"
       },
       "AdeptActing": {
         "name": "Adept: Acting"

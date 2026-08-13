@@ -1,7 +1,7 @@
 {
   "name": "Blood Pact",
   "type": "ability",
-  "img": "icons/svg/blood.svg",
+  "img": "icons/magic/unholy/orb-swirling-pink.webp",
   "system": {
     "description": "<p>Once per round you may burn one of your Mind points to immediately gain Life into your Blood Reserve equal to your Maximum Transfer.</p><p>A burned Mind point is lost permanently: both your current Mind and your maximum Mind drop by one. Only a ritual or a potion can restore it.</p>",
     "type": "other",

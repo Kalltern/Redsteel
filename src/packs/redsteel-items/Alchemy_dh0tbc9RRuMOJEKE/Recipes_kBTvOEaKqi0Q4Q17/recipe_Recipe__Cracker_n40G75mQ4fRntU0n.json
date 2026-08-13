@@ -5,7 +5,8 @@
   "img": "icons/weapons/thrown/bomb-fuse-brown.webp",
   "system": {
     "description": "<p>Effect - Single target. Physical/Crushing damage 8d6, Penetration 20, 50% chance to Stun. 75% shield damage<br />Duration - 1 round<br />Production bonus - 0% -&gt; 1 batch<br />Ingredients - Container, Pa, Qu, Qu</p>",
-    "outputType": "potion",
+    "outputType": "explosive",
+    "purpose": "explosive",
     "resultUuid": "Compendium.redsteel.redsteel-items.Item.SeVcOSZVIfsNyzBN",
     "substances": {
       "yliaster": 0,

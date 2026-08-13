@@ -1,0 +1,44 @@
+{
+  "folder": "kBTvOEaKqi0Q4Q17",
+  "name": "Recipe: Acidum",
+  "type": "recipe",
+  "img": "icons/consumables/potions/potion-bottle-skull-label-poison-teal.webp",
+  "system": {
+    "description": "<p>Effect - Single target. Destroys 8 Armor points, Acid damage 4d6 + 1d6 for every Armor point it failed to destroy. Penetration 0. 50% chance to damage a shield. (The armor destruction and the extra dice are rolled manually)<br />Duration - Instant Effect<br />Production Bonus - -10% -&gt; 1 dose<br />Ingredients - Quality fat, Vial, Be, Al, Pa, Yl, Qu</p>",
+    "outputType": "explosive",
+    "purpose": "explosive",
+    "resultUuid": "Compendium.redsteel.redsteel-items.Item.ZKwml24YKwFGZ9kA",
+    "substances": {
+      "yliaster": 1,
+      "bezoardicum": 1,
+      "alkahest": 1,
+      "qudat": 1,
+      "panacea": 1,
+      "verdigris": 0
+    },
+    "specialIngredient": {
+      "name": "",
+      "uuid": ""
+    },
+    "base": "fat"
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "redsteel",
+    "systemVersion": "0.10.2",
+    "createdTime": 1786367217424,
+    "modifiedTime": 1786367217424,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "_id": "Q3LXA4cOyc6mNCgK",
+  "_key": "!items!Q3LXA4cOyc6mNCgK"
+}

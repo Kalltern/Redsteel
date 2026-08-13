@@ -6,6 +6,7 @@
   "system": {
     "description": "<p>Effect - Restores 8d8+12 Mana<br />Duration - Instant<br />Toxicity - 12<br />Production bonus - 0% -&gt; 1 dose<br />Ingredients - Distillate, Pa, Qu, Be, Yl, Sulca Zairita</p>",
     "outputType": "potion",
+    "purpose": "mana",
     "resultUuid": "Compendium.redsteel.redsteel-items.Item.MoYw4iYTVCveHtiZ",
     "substances": {
       "yliaster": 1,

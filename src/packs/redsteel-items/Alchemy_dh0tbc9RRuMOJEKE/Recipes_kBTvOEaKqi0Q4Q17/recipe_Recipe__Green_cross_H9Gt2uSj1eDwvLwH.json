@@ -6,6 +6,7 @@
   "system": {
     "description": "<p>Effect - Antidote and immunity to 1st level poisons<br />Duration - 1 hour<br />Toxicity - 10<br />Production bonus - +20% -&gt; 1 dose<br />Ingredients - Strong alcohol, Be, Al, Ve</p>",
     "outputType": "potion",
+    "purpose": "buff",
     "resultUuid": "Compendium.redsteel.redsteel-items.Item.LG5NJZsI9reXiwXY",
     "substances": {
       "yliaster": 0,

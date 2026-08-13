@@ -4,8 +4,9 @@
   "type": "recipe",
   "img": "icons/consumables/potions/vial-cork-blue.webp",
   "system": {
-    "description": "<p>Effect - Restores 5d6+8 Mana<br />Duration - Instant<br />Toxicity - 8<br />Production bonus - +20% -&gt; 1 dose<br />Ingredients - Strong alcohol, Pa, Be, Yl, Mora Tapinella</p>",
+    "description": "<p>Effect - Restores 5d6+8 Mana<br />Duration - Instant<br />Toxicity - 8<br />Production bonus - +20% -&gt; 1 dose<br />Ingredients - Strong alcohol, Pa, Be, Yl, Bluebell</p>",
     "outputType": "potion",
+    "purpose": "mana",
     "resultUuid": "Compendium.redsteel.redsteel-items.Item.tts2Fl6sBRgEvKTt",
     "substances": {
       "yliaster": 1,
@@ -16,7 +17,7 @@
       "verdigris": 0
     },
     "specialIngredient": {
-      "name": "Mora Tapinella",
+      "name": "Bluebell",
       "uuid": ""
     },
     "base": "strongAlcohol"

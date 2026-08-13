@@ -9,6 +9,10 @@ import {
   renderSpeedTestLine,
 } from "./speedTest.mjs";
 import { ATTRIBUTE_KEYS } from "./testRating.mjs";
+import { renderMarginFollowupLine } from "./attributeFollowup.mjs";
+import { abilityAllowedForWeapon } from "./weaponResolver.mjs";
+import { resolveAimOnAttack } from "./aim.mjs";
+import { consumeOpportunityFlag } from "./opportunityAttacks.mjs";
 
 const BLEEDING_DAMAGE_TYPES = new Set(["slash", "piercing"]);
 
@@ -23,10 +27,20 @@ const BLEEDING_DAMAGE_TYPES = new Set(["slash", "piercing"]);
  * This gates actor-wide bleed bonuses (racial traits, the Dimakerus dual-wield
  * sword bonus, any Active Effect on system.effects.bleed) so they cannot leak
  * into attacks that have no business bleeding.
+ *
+ * Ammunition overrides the archery exclusion: a bow is a launcher, but a
+ * broadhead or a Sharp arrowhead is an edge, so bleeding ammunition makes the
+ * shot bleed-capable and the actor's bleed bonuses count. Plain ammunition
+ * leaves bows where they were.
+ *
+ * @param {Item|null} weapon
+ * @param {Item|null} ammo  the equipped ammunition this attack spends, if any
  */
-export function canWeaponBleed(weapon) {
+export function canWeaponBleed(weapon, ammo = null) {
   const ws = weapon?.system;
   if (!ws) return false;
+  const as = ammo?.system;
+  if (as && (Number(as.bleed) > 0 || as.sharp)) return true;
   if (ws.class === "bow" || ws.class === "crossbow") return false;
   if (ws.sharp) return true;
   return [ws.dmgType1, ws.dmgType2, ws.dmgType3, ws.dmgType4].some((t) =>
@@ -137,8 +151,22 @@ export async function getNonWeaponAbility(actor, ability) {
     );
     await attributeRoll.evaluate();
 
-    const attributeRollTotal = attributeRoll.total;
     attributeTestRoll = attributeRoll;
+
+    // The contested half of a "vs Test": the posted margin is clickable so the
+    // defender can roll their own attribute against it (Shield Bash, Knockdown,
+    // any ability whose Test Type names an opposed roll). Same line the spell
+    // and weapon-ability paths post — see utils/attributeFollowup.mjs.
+    if (hasHtmlContent(concatRollAndDescription)) concatRollAndDescription += "<hr>";
+    const testLabel = testName.charAt(0).toUpperCase() + testName.slice(1);
+    concatRollAndDescription += `<b>${testLabel} Test ${totalModifier}%</b><br>${renderMarginFollowupLine(
+      {
+        margin: attributeRoll.total,
+        source: ability.localizedName ?? ability.name,
+        chance: totalModifier,
+        result: attributeRoll.result,
+      },
+    )}`;
   }
 
   // --- Custom Effects ---
@@ -161,8 +189,12 @@ export async function getNonWeaponAbility(actor, ability) {
   // DAMAGE ROLL
   let damageRoll = null;
   const rollData = actor.getRollData();
-  if (system.roll.diceBonus) {
-    damageRoll = new Roll(system.roll.diceBonus, rollData);
+  // The parsed formula, never the raw field: a diceBonus of "@penCap" is a
+  // flag, and reaches Roll as an unresolvable term that throws on evaluate.
+  const abilityDamageFormula =
+    system.roll.diceBonusFormula ?? system.roll.diceBonus;
+  if (abilityDamageFormula) {
+    damageRoll = new Roll(abilityDamageFormula, rollData);
     await damageRoll.evaluate();
   }
   const damageProfile = buildDamageProfile(system);
@@ -228,6 +260,10 @@ export async function getNonWeaponAbility(actor, ability) {
     ? `<div class="dual-roll">${columns.join("")}</div>`
     : "";
 
+  // This path never touches getAttackRolls, so the declared opportunity attack
+  // has to be consumed here instead.
+  const attackTags = (await consumeOpportunityFlag(actor)) ? ["opportunity"] : [];
+
   // Send the combined chat message
   await ChatMessage.create({
     speaker: ChatMessage.getSpeaker(),
@@ -237,6 +273,7 @@ export async function getNonWeaponAbility(actor, ability) {
       redsteel: {
         rollName,
         traitPills: getTraitPills(actor, "attack"),
+        attackTags,
         // Non-weapon ability attack — generic "attack" token only.
         rerollTokens: getAttackRerollTokens(actor, null),
       },
@@ -258,21 +295,30 @@ export async function getNonWeaponAbility(actor, ability) {
   <span>${ability.localizedName ?? ability.name}</span>
 </div>
 <hr>
-<table style="width: 100%; text-align: center; font-size: 15px;">
+${
+  hasHtmlContent(concatRollAndDescription) || hasHtmlContent(effectsRollResults)
+    ? `<table style="width: 100%; text-align: center; font-size: 15px;">
   ${
     hasHtmlContent(concatRollAndDescription)
       ? `<tr>    <th>Description:</th>  </tr>
   <tr>    <td>${concatRollAndDescription}</td>  </tr>`
       : ""
   }
+  ${
+    // Abilities without any rolled effect (e.g. Duelist's Advance) would
+    // otherwise show an empty bordered Effects row.
+    hasHtmlContent(effectsRollResults)
+      ? `<tr>    <th>Effects:</th>  </tr>
 
-  <tr>    <th>Effects:</th>  </tr>
-
-  <tr>    <td>${effectsRollResults}</td>  </tr>
+  <tr>    <td>${effectsRollResults}</td>  </tr>`
+      : ""
+  }
 
   <tr>    <td><hr></td>  </tr>
 
-</table>
+</table>`
+    : ""
+}
 `,
   });
 }
@@ -567,6 +613,7 @@ export async function getAttackRolls(
   weaponContext = null,
   customCritFail = 0,
   longReachPenalty = 0,
+  ability = null,
 ) {
   const ws = weapon?.system ?? {};
   // Weapon quality (Zbraň column): attack + critical-hit chance bonuses.
@@ -599,11 +646,24 @@ export async function getAttackRolls(
     abilityAttack += 10;
     await actor.unsetFlag("redsteel", "useFlankingAttack");
   }
+  // Declared opportunity attack: consumed here, the one choke point every weapon
+  // attack passes through, and reported back so the card can carry the tag.
+  const opportunityAttack = await consumeOpportunityFlag(actor);
   const aimValue = actor.getFlag("redsteel", "aimCount");
   if (aimValue > 0) {
     abilityAttack += aimValue * 10;
     await actor.unsetFlag("redsteel", "aimCount");
   }
+  // Now that the bonus is banked, settle what the attack does to the Aim itself:
+  // spend it, break it, or park it for Apply Damage. Reads useSneakAttack rather
+  // than consuming it — getSneakDamageFormula owns that counter.
+  await resolveAimOnAttack({
+    actor,
+    weapon,
+    context: weaponContext,
+    ability,
+    sneak: !!actor.getFlag("redsteel", "useSneakAttack"),
+  });
   // Aimed Strike: consume the part flag and apply the hit penalty.
   const aimedPart = actor.getFlag("redsteel", "aimedPart") ?? null;
   if (aimedPart) {
@@ -612,7 +672,18 @@ export async function getAttackRolls(
     await actor.unsetFlag("redsteel", "aimedPart");
   }
 
-  if (ws.class === "bow" || ws.class === "crossbow") {
+  // A standalone ranged ability has no weapon to read the skill off, so the
+  // ability itself names which ranged skill the attack rolls against. Blank
+  // keeps the old behaviour (plain combat skill).
+  const abilityRangedSkill = weapon
+    ? ""
+    : String(ability?.system?.rangedSkill ?? "");
+
+  if (
+    ws.class === "bow" ||
+    ws.class === "crossbow" ||
+    abilityRangedSkill === "archery"
+  ) {
     // Critical success and failure thresholds
     criticalSuccessThreshold =
       actor.system.combatSkills.archery.criticalSuccessThreshold +
@@ -628,7 +699,7 @@ export async function getAttackRolls(
     if (abilityAttack) {
       attackRollFormula = `@combatSkills.archery.rating + ${totalWeaponAttack} + ${abilityAttack} - 1d100`;
     }
-  } else if (ws.thrown) {
+  } else if (ws.thrown || abilityRangedSkill === "throwing") {
     const knifeMasterCrit = knifeMasterCheck(actor, weapon) ? 2 : 0;
     // No weapon-skill VII crit here: thrown crit chance comes from the
     // Peltast / Juggler doctrines, so adding it would double-dip.
@@ -698,7 +769,7 @@ export async function getAttackRolls(
   };
 
   const attackRoll = new Roll(attackRollFormula, withRollBias(rollData, actor));
-  if (ws?.gripMode === "two") tagRollSkill(attackRoll, "twoHanded");
+  if (ws?.gripMode === "two" && ws?.type !== "heavy") tagRollSkill(attackRoll, "twoHanded");
   await attackRoll.evaluate();
   const rollResult = attackRoll.dice[0].total;
 
@@ -720,6 +791,7 @@ export async function getAttackRolls(
     criticalFailureThreshold: critFailThreshold,
     rollName,
     aimedPart,
+    opportunityAttack,
   };
 }
 
@@ -774,7 +846,9 @@ export async function getDamageRolls(
   if (knifeMasterCheck(actor, weapon)) {
     damageFormula += ` + (1d4 + 1)`;
   }
-  if (ws.gripMode === "two") {
+  // Heavy weapons have no grip switch, so a leftover "two" on one is stale data
+  // and must not pay out the grip die.
+  if (ws.gripMode === "two" && ws.type !== "heavy") {
     damageFormula += ` + ${ws.twoHandDice ?? "1d6"}`;
   }
   for (const roll of actorMods.damageRolls) {
@@ -799,14 +873,22 @@ export async function getDamageRolls(
   //console.log("enchant damage", actorMods.damageBonus);
   const damageTotal = Math.floor(damageRoll.total ?? 0);
 
-  // If the weapon has breakthrough, roll it
+  // If the weapon has breakthrough — or the character was granted some — roll
+  // it. Character-granted dice (Giantslayer) do not need the weapon to carry a
+  // Breakthrough value of its own, so they can open the formula by themselves;
+  // the ability and offhand contributions still only ride along on a formula
+  // that already exists.
   let breakthroughRollResult = "";
-  if (ws.breakthrough) {
-    let breakthroughFormula = `${ws.breakthrough}`;
-    if (abilityBreakthrough) breakthroughFormula += ` + ${abilityBreakthrough}`;
+  const breakthroughParts = [];
+  if (ws.breakthrough) breakthroughParts.push(`${ws.breakthrough}`);
+  breakthroughParts.push(...(actorMods.breakthroughRolls ?? []));
+
+  if (breakthroughParts.length) {
+    if (abilityBreakthrough) breakthroughParts.push(`${abilityBreakthrough}`);
     if (offProps?.breakthrough) {
-      breakthroughFormula += ` + ${offProps.breakthrough}`;
+      breakthroughParts.push(`${offProps.breakthrough}`);
     }
+    let breakthroughFormula = breakthroughParts.join(" + ");
     breakthroughFormula = breakthroughFormula.replace(/\s*\+\s*$/, "");
     breakthroughFormula = breakthroughFormula.replace(
       /@([\w.]+)/g,
@@ -979,6 +1061,18 @@ export async function getEffectRolls(
 
   let bleedRollResult = null;
   const ws = weapon?.system ?? {};
+
+  // Equipped ammunition. Its bleed chance stacks with the weapon's own — a bow
+  // has no edge, the arrowhead does — and its Sharp flag lends this attack the
+  // Sharp property just as if the weapon carried it (the two are OR'd, so
+  // Sharp ammo on a Sharp thrown weapon is still one extra roll, not two).
+  // Resolved here rather than passed in, so every attack path gets it without
+  // new plumbing; the attack paths already refuse to fire without this ammo.
+  const ammoOption = weapon ? actor.getRequiredAmmoOption?.(weapon) : null;
+  const ammo = ammoOption ? actor.getEquippedAmmo?.(ammoOption) : null;
+  const ammoBleed = Number(ammo?.system?.bleed) || 0;
+  const isSharp = !!ws.sharp || !!ammo?.system?.sharp;
+
   let deepSlash =
     critSuccess &&
     actor.system.deepSlash &&
@@ -1015,7 +1109,7 @@ export async function getEffectRolls(
   // bonuses are: it deepens a wound the blade was already going to open. It
   // must never make an attack bleed on its own, or a few percent of it turns up
   // on maces, bows and every weaponless ability the actor uses.
-  const actorBleedBonus = canWeaponBleed(weapon)
+  const actorBleedBonus = canWeaponBleed(weapon, ammo)
     ? Number(actorEffects.bleed) || 0
     : 0;
 
@@ -1032,6 +1126,23 @@ export async function getEffectRolls(
     abilityEffects = ability.system.effects || {};
     abilitySystem = ability.system || {};
   }
+
+  // Attack modifiers (Fuscina Ictus) raise the Bleeding chance the same way the
+  // ability they modify does — their `effects.bleed` is a source in its own
+  // right, not a mere bonus, because the player deliberately paid for it. A
+  // modifier that names a required weapon tag only counts when the weapon
+  // actually carries it: the attack dialogs already hide the pill, this is the
+  // backstop for the paths where the weapon is picked after the dialog (NPCs,
+  // the manual weapon picker) and for weaponless attacks.
+  let modifierBleedBonus = 0;
+  let modifierBleedIsAuto = false;
+  for (const mod of selectedModifiers) {
+    if (!abilityAllowedForWeapon(mod, weapon)) continue;
+    const value = Number(mod?.system?.effects?.bleed) || 0;
+    if (value === -1) modifierBleedIsAuto = true;
+    else modifierBleedBonus += value;
+  }
+
   let critBleeds = 0;
   let normalBleeds = 0;
   let totalBleeds = 0;
@@ -1270,14 +1381,23 @@ export async function getEffectRolls(
   }
 
   // --- 4. Sharp Bleed Logic ---
+  // The second, edge-only bleed roll. Modifier bleed is deliberately absent:
+  // "increases the Bleeding chance by 120%" is one chance, and feeding it to
+  // both rolls would hand a sharp weapon two guaranteed stacks for one cost.
 
-  if (ws.sharp && (weaponEffects.bleed > 0 || (coatingEffects.bleed || 0) > 0)) {
+  if (
+    isSharp &&
+    (weaponEffects.bleed > 0 ||
+      (coatingEffects.bleed || 0) > 0 ||
+      ammoBleed > 0)
+  ) {
     if (critScore > 1) {
       critBleeds += 1;
     }
     const abilityBleed = abilityEffects["bleed"] || 0;
     const modifiedBleedValue =
       (weaponEffects.bleed || 0) +
+      ammoBleed +
       actorBleedBonus +
       actorModBleed +
       (abilityBleed || 0) +
@@ -1304,19 +1424,23 @@ export async function getEffectRolls(
   // ability, a poison coating, or combat-modifier bleed from a deliberate
   // enchant (Sanguine Blade, Whetstone). Actor-wide bleed is deliberately
   // absent: like the doctrine and weapon-skill bonuses it only sweetens a bleed
-  // roll something else has already earned.
+  // roll something else has already earned. Ammunition is a source: the
+  // arrowhead is the edge the bow does not have.
   const bleedBaseValue =
     (weaponEffects.bleed || 0) +
+    ammoBleed +
     (offProps?.effects?.bleed || 0) +
     (abilityEffects["bleed"] || 0) +
     (coatingEffects.bleed || 0) +
+    modifierBleedBonus +
     actorModBleed;
 
   const bleedIsAuto =
     weaponEffects.bleed === -1 ||
     offProps?.effects?.bleed === -1 ||
     abilityEffects["bleed"] === -1 ||
-    coatingEffects.bleed === -1;
+    coatingEffects.bleed === -1 ||
+    modifierBleedIsAuto;
 
   // --- COMPUTE ONLY ---
   if (bleedIsAuto) {
@@ -1329,10 +1453,12 @@ export async function getEffectRolls(
 
     totalBleedChance =
       (weaponEffects.bleed || 0) +
+      ammoBleed +
       deepSlash +
       actorBleedBonus +
       actorModBleed +
       abilityBleed +
+      modifierBleedBonus +
       weaponSkillEffect +
       sneakEffect +
       offBleed +
@@ -1640,6 +1766,7 @@ export function getActorCombatModifiers(actor, weapon = null) {
     damageBonus: 0,
     damageRolls: [],
     penetrationBonus: 0,
+    breakthroughRolls: [],
     critRangeBonus: 0,
     damageTypeMode: null,
     damageTypes: [],
@@ -1677,6 +1804,21 @@ export function getActorCombatModifiers(actor, weapon = null) {
     // Ranged-only penetration
     if (isArchery) {
       result.penetrationBonus += group.rangedPenetrationBonus ?? 0;
+    }
+
+    // Breakthrough dice granted by the character rather than by the weapon
+    // (Giantslayer). Split exactly like penetration above, so "melee" here
+    // means everything that is not a bow or crossbow — thrown weapons included.
+    // getDamageRolls rolls these even when the weapon has no Breakthrough of
+    // its own: the bonus sits on the fighter, not on the blade.
+    if (group.breakthroughRoll) {
+      result.breakthroughRolls.push(group.breakthroughRoll);
+    }
+    if (isMelee && group.meleeBreakthroughRoll) {
+      result.breakthroughRolls.push(group.meleeBreakthroughRoll);
+    }
+    if (isArchery && group.rangedBreakthroughRoll) {
+      result.breakthroughRolls.push(group.rangedBreakthroughRoll);
     }
 
     if (group.damageTypes?.length) {
@@ -1850,10 +1992,15 @@ export function evaluateDmgVsArmor({
      30-damage pen-12 bolt fully absorbed by a Magic Shield still dealt 12).
      With no shield `damageAfterShield === damage`, so this is unchanged. */
   const effectivePenetration = Math.min(penetration ?? 0, damageAfterShield);
+  // The floor applies to every attack, `penCap` or not: Penetration is what
+  // gets through normal armor no matter how thick it is. `penCap` (Exploit
+  // Weakness) turns it into a ceiling as well, so the strike lands for exactly
+  // its Penetration. Capping without flooring zeroed the action against the
+  // heavy armor it exists to defeat — 20 damage / 13 pen vs armor 30 came out
+  // at 0 instead of 13.
+  baseDamage = Math.max(baseDamage, effectivePenetration);
   if (penCap) {
     baseDamage = Math.min(baseDamage, effectivePenetration);
-  } else {
-    baseDamage = Math.max(baseDamage, effectivePenetration);
   }
 
   /* 4. Specialized Armor Reduction */

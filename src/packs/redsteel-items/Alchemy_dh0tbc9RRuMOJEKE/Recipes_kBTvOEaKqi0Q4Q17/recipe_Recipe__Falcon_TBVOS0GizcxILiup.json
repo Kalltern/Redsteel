@@ -6,6 +6,7 @@
   "system": {
     "description": "<p>Effect - Initiative +4, Perception +2, Shooting +5%<br />Duration - 30 minutes<br />Toxicity - 16<br />Production bonus - -10% -&gt; 1 dose<br />Ingredients - Distillate, Yl, Qu, Yl, Qu</p>",
     "outputType": "potion",
+    "purpose": "buff",
     "resultUuid": "Compendium.redsteel.redsteel-items.Item.eJUwaM0hxrrWDPmb",
     "substances": {
       "yliaster": 2,

@@ -24,6 +24,87 @@ export function appendHeavyWeaponDamage(formula, weapon, sources = []) {
   return out;
 }
 
+/**
+ * The freeform tags a weapon carries, lower-cased. `system.tags` is a
+ * comma-separated field the GM fills in ("trident, spear") — the same list
+ * weapon specialisations and Wounding Impale read.
+ * @param {Item|null} weapon
+ * @returns {string[]}
+ */
+export function getWeaponTags(weapon) {
+  return String(weapon?.system?.tags ?? "")
+    .split(",")
+    .map((t) => t.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+/**
+ * Does this weapon carry the given tag? The weapon's `system.class` counts as a
+ * tag too, so a whole weapon class ("polearm" → Impale) can gate an ability
+ * without the GM having to retype it into every weapon's freeform tag field.
+ * @param {Item|null} weapon
+ * @param {string} tag
+ * @returns {boolean}
+ */
+export function weaponHasTag(weapon, tag) {
+  const wanted = String(tag ?? "").trim().toLowerCase();
+  if (!wanted) return true;
+  const weaponClass = String(weapon?.system?.class ?? "").trim().toLowerCase();
+  if (weaponClass && weaponClass === wanted) return true;
+  return getWeaponTags(weapon).includes(wanted);
+}
+
+/**
+ * May this ability be used with this weapon? Only abilities that declare a
+ * `system.requiredWeaponTag` are restricted (Fuscina Ictus → "trident");
+ * everything else is allowed, which is every ability that existed before the
+ * field did. A restricted ability fails against a null weapon: a weaponless
+ * attack is not a trident.
+ * @param {Item|null} ability
+ * @param {Item|null} weapon
+ * @returns {boolean}
+ */
+export function abilityAllowedForWeapon(ability, weapon) {
+  const required = String(ability?.system?.requiredWeaponTag ?? "").trim();
+  if (!required) return true;
+  return weaponHasTag(weapon, required);
+}
+
+/**
+ * Drop the items this actor cannot use right now because of the weapon tag
+ * they name (Fuscina Ictus → "trident", Imbroccata → "rapier"). With a weapon
+ * already resolved (a character's active set) the check is against that weapon.
+ * Without one — an NPC, or a character with no active set, who picks the weapon
+ * after this dialog — the entry survives if the actor owns any weapon with the
+ * tag, so it isn't hidden on a technicality; the roll path makes the final call
+ * once the weapon is known.
+ * @param {Item[]} items  abilities and/or attack modifiers
+ * @param {Actor} actor
+ * @param {Item|null} weapon  the resolved weapon, or null when unknown
+ * @returns {Item[]}
+ */
+export function filterByRequiredWeaponTag(items, actor, weapon = null) {
+  return items.filter((item) => {
+    const required = String(item?.system?.requiredWeaponTag ?? "").trim();
+    if (!required) return true;
+    if (weapon) return weaponHasTag(weapon, required);
+    return actor.items.some(
+      (i) => i.type === "weapon" && weaponHasTag(i, required),
+    );
+  });
+}
+
+/**
+ * @see filterByRequiredWeaponTag — the modifier-pill call sites' name for it.
+ * @param {Item[]} modifiers  the actor's modifiesAttack abilities
+ * @param {Actor} actor
+ * @param {Item|null} weapon
+ * @returns {Item[]}
+ */
+export function filterModifiersByWeapon(modifiers, actor, weapon = null) {
+  return filterByRequiredWeaponTag(modifiers, actor, weapon);
+}
+
 export function resolveWeaponContext(
   actor,
   ability = null,

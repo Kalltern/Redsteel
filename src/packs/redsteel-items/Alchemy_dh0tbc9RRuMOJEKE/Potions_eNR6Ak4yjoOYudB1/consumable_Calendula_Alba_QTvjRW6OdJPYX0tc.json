@@ -2,13 +2,15 @@
   "folder": "eNR6Ak4yjoOYudB1",
   "name": "Calendula Alba",
   "type": "consumable",
-  "img": "icons/consumables/potions/vial-ornet-silver-black.webp",
+  "img": "icons/consumables/potions/bottle-corked-empty.webp",
   "system": {
     "description": "<p>Effect - Reduces Toxicity<br />Duration - Instant Effect<br />Toxicity - -25<br />Production bonus - +20% -&gt; 1 dose<br />Ingredients - Strong alcohol, Qu, Al, Al</p>",
     "options": [
       "potion",
       "explosive",
-      "misc"
+      "misc",
+      "first aid",
+      "poison"
     ],
     "types": [
       "mana",

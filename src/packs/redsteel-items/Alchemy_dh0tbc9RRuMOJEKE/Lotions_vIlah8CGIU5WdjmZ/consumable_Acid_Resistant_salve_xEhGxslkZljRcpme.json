@@ -9,7 +9,9 @@
     "options": [
       "potion",
       "explosive",
-      "misc"
+      "misc",
+      "first aid",
+      "poison"
     ],
     "types": [
       "mana",

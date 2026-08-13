@@ -6,6 +6,7 @@
   "system": {
     "description": "<p>Effect - Walk on Water<br />Duration - 1 hour<br />Toxicity - 12<br />Production bonus - +15% -&gt; 1 dose<br />Ingredients - Strong alcohol, Yl, Ve, Qu</p>",
     "outputType": "potion",
+    "purpose": "buff",
     "resultUuid": "Compendium.redsteel.redsteel-items.Item.BpMK1n7tsUnV9OuR",
     "substances": {
       "yliaster": 1,

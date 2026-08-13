@@ -61,6 +61,13 @@ const DEFAULT_SKILL_ROWS = 1;
 const FAVOURITE_SLOTS = MAX_SKILL_ROWS * FAVOURITES_PER_ROW;
 
 /**
+ * How long the panel holds its redraw after a teammate portrait is clicked.
+ * Windows' own double-click threshold is 500ms, so anything shorter would let a
+ * deliberate double-click reshuffle the row before its second click arrives.
+ */
+const PORTRAIT_HOLD_MS = 500;
+
+/**
  * How many sockets an empty potion belt draws. One full row of the four-wide
  * grid: enough for the tray to have a shape, few enough that it does not read
  * as a promise of sixteen slots the character does not have.
@@ -143,6 +150,19 @@ function secondaryChance(actor, key) {
     default:
       return null;
   }
+}
+
+/**
+ * The flat half of a speed test: Speed + Initiative, the part of
+ * `1d12 + ini + spd` that does not depend on the die (see utils/speedTest.mjs).
+ * This is what the panel's Speed cell prints, since that cell is the button
+ * that rolls the test. Prone / Downed flatten the test to 1, but that is a
+ * property of the roll rather than of the character, so it is not folded in
+ * here — the status strip already says the creature is on the floor.
+ */
+function speedTestBonus(actor) {
+  const sec = actor?.system?.secondaryAttributes ?? {};
+  return Number(sec.spd?.total ?? 0) + Number(sec.ini?.total ?? 0);
 }
 
 /**
@@ -309,6 +329,16 @@ const CONDITIONS = [
     icon: "fa-light fa-eye",
     colour: "rgb(116, 119, 126)",
     derived: (sys) => sys.detection,
+  },
+  // Movement allowance, 1:1 with Speed, and the reason the Speed cell in the
+  // attribute row is free to print the speed-test total instead. Read off
+  // `spd.total`, so Slow / Root / Haste / Flight are already in the number.
+  // No `hide`: a creature that cannot move is exactly when you want to see 0.
+  {
+    key: "movement",
+    icon: "fa-sharp fa-thin fa-foot-wing",
+    colour: "rgb(86, 121, 149)",
+    derived: (sys) => sys.secondaryAttributes?.spd?.total,
   },
 ];
 
@@ -628,6 +658,19 @@ function isRightClick(event) {
   return event?.type === "contextmenu" || event?.button === 2;
 }
 
+/**
+ * The placeable token an actor is standing on in the current scene, or null.
+ *
+ * An unlinked token's actor is synthetic and owns exactly one token, which
+ * `getActiveTokens` does not reliably speak for, so that case is read off the
+ * actor's own TokenDocument instead.
+ */
+function tokenForActor(actor) {
+  if (!actor) return null;
+  if (actor.isToken) return actor.token?.object ?? null;
+  return actor.getActiveTokens(false, false)?.[0] ?? null;
+}
+
 /** Localize a key through one of the CONFIG.REDSTEEL label maps. */
 function fromMap(map, key, fallback = key.toUpperCase()) {
   const path = map?.[key];
@@ -875,15 +918,17 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
 ) {
   constructor(options = {}) {
     super(options);
-    this.#rerender = foundry.utils.debounce(() => this.render(), 100);
+    this.#rerender = foundry.utils.debounce(() => this.#renderUnheld(), 100);
     // Bound copies so the delegated listeners can be removed again on re-render
     // (private methods themselves are not writable).
     this.#boundContextMenu = this.#onContextMenu.bind(this);
+    this.#boundClick = this.#onClick.bind(this);
     this.#boundDblClick = this.#onDblClick.bind(this);
     this.#boundResourceEdit = this.#onResourceEdit.bind(this);
     this.#boundDragStart = this.#onDragStart.bind(this);
     this.#boundDragOver = this.#onDragOver.bind(this);
     this.#boundDrop = this.#onDrop.bind(this);
+    this.#boundCanvasPointerUp = this.#onCanvasPointerUp.bind(this);
   }
 
   static DEFAULT_OPTIONS = {
@@ -920,22 +965,88 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
 
   /** Bound delegated DOM listeners. */
   #boundContextMenu;
+  #boundClick;
   #boundDblClick;
   #boundResourceEdit;
   #boundDragStart;
   #boundDragOver;
   #boundDrop;
+  #boundCanvasPointerUp;
+
+  /** The board element the deselect listener is on, so `_onClose` can undo it. */
+  #board = null;
+
+  /** The actor whose portrait was last clicked, for `#onDblClick` to fall back on. */
+  #lastPortraitUuid = null;
+
+  /**
+   * While this is in the future the panel does not redraw. Clicking a teammate
+   * promotes them to the main portrait, which reshuffles the row — and if that
+   * happens between the two clicks of a double-click, the second one lands on
+   * empty air where the portrait used to be. The browser then never pairs them
+   * (no sheet) and the click falls through to the canvas (lost selection).
+   *
+   * So the redraw waits out the double-click window. Controlling the token is
+   * not held back, so the canvas still answers the first click at once.
+   */
+  #portraitHoldUntil = 0;
+
+  /** The pending held redraw, so a second click does not queue a second one. */
+  #heldRenderTimer = null;
+
+  /**
+   * The actor picked by clicking a portrait, which outranks the usual binding
+   * until the canvas selection moves elsewhere. Not persisted: a reload should
+   * put everyone back on their own character.
+   */
+  #pinnedUuid = null;
 
   /* -------------------------------------------- */
 
   /**
-   * The actor the attribute and skill rows describe: the user's assigned
-   * character, otherwise whatever token they have selected, otherwise null.
+   * The actor the attribute and skill rows describe: a portrait the user
+   * clicked, otherwise their assigned character, otherwise whatever token they
+   * have selected, otherwise null.
+   *
+   * The pin comes first because it is the only one of the three the user states
+   * outright. It is dropped as soon as it stops resolving — a pinned actor can
+   * be deleted, and a token actor's uuid is scene-bound, so it dies when the
+   * scene changes.
    */
   get actor() {
+    if (this.#pinnedUuid) {
+      const pinned = fromUuidSync(this.#pinnedUuid);
+      if (pinned?.isOwner) return pinned;
+      this.#pinnedUuid = null;
+    }
     return (
       game.user.character ?? canvas.tokens?.controlled?.[0]?.actor ?? null
     );
+  }
+
+  /**
+   * Render, unless a portrait double-click window is still open, in which case
+   * the whole redraw waits for it. Every hook in this class renders through
+   * `#rerender`, so holding it here holds all of them.
+   */
+  #renderUnheld() {
+    const wait = this.#portraitHoldUntil - Date.now();
+    clearTimeout(this.#heldRenderTimer);
+    if (wait > 0) {
+      this.#heldRenderTimer = setTimeout(() => this.render(), wait + 10);
+      return;
+    }
+    this.render();
+  }
+
+  /**
+   * Bind the panel to a clicked portrait. Ownership is required: driving the
+   * bar means rolling and spending resources, which a non-owner cannot do.
+   */
+  #pinActor(actor) {
+    if (!actor?.isOwner) return false;
+    this.#pinnedUuid = actor.uuid;
+    return true;
   }
 
   /** How many macro rows this user wants (1..5). One until they press `+`. */
@@ -1092,6 +1203,10 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     for (const user of game.users.contents) {
       if (user.active && user.id !== game.user.id) add(user.character, `0${user.name}`);
     }
+    // Your own character, but only while the panel is bound to something else:
+    // `add` drops it when it is the bound actor. Without this, clicking a
+    // companion's portrait would strand you there with nothing to click back to.
+    add(game.user.character, `0${game.user.name}`);
     for (const candidate of game.actors.contents) {
       if (candidate.system?.partyMember) add(candidate, `1${candidate.name}`);
     }
@@ -1629,9 +1744,14 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
         key,
         tint: SECONDARY_TINTS[key] ?? null,
         label: fromMap(CONFIG.REDSTEEL?.secondaryAttributeAbbreviations, key),
-        // Speed has no percentage to show, so it keeps printing its total:
-        // that number is the movement allowance and is worth seeing anyway.
-        display: chance ?? Number(attr.total ?? 0),
+        // Speed has no percentage, but the cell is still the speed-test button,
+        // so it prints what that test is rolled against: Speed + Initiative,
+        // the constant half of `1d12 + ini + spd`. The plain movement allowance
+        // is the winged-foot readout in the status tray.
+        display:
+          key === "spd"
+            ? speedTestBonus(actor)
+            : (chance ?? Number(attr.total ?? 0)),
         rollType: "secondaryAttribute",
         roll: SECONDARY_ROLLS[key] ?? null,
       });
@@ -1717,6 +1837,8 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     // delegated listeners are removed first to avoid stacking duplicates.
     root.removeEventListener("contextmenu", this.#boundContextMenu);
     root.addEventListener("contextmenu", this.#boundContextMenu);
+    root.removeEventListener("click", this.#boundClick);
+    root.addEventListener("click", this.#boundClick);
     root.removeEventListener("dblclick", this.#boundDblClick);
     root.addEventListener("dblclick", this.#boundDblClick);
     root.removeEventListener("change", this.#boundResourceEdit);
@@ -1727,6 +1849,10 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     root.addEventListener("dragover", this.#boundDragOver);
     root.removeEventListener("drop", this.#boundDrop);
     root.addEventListener("drop", this.#boundDrop);
+
+    // Deselecting on the canvas clears a pinned portrait; the board is outside
+    // this element, so it is attached separately and idempotently.
+    this.#attachCanvasListener();
 
     this.#measureCapacity(root);
 
@@ -1860,8 +1986,12 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       }
     });
 
-    // A different scene means a different set of tokens to read.
-    add("canvasReady", () => this.#rerender());
+    // A different scene means a different set of tokens to read, and a board
+    // element that may have been rebuilt under the deselect listener.
+    add("canvasReady", () => {
+      this.#attachCanvasListener();
+      this.#rerender();
+    });
 
     // A race Item carries the creature-type tags that pick the portrait's band
     // colour; a consumable may be a potion on the belt. The potion tray is on
@@ -1890,10 +2020,18 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       });
     }
 
-    // GM token-following mode only: with an assigned character the panel is
-    // pinned to it and selection changes are irrelevant.
-    add("controlToken", () => {
-      if (!game.user.character) this.#rerender();
+    // Selecting a different token on the canvas outranks a clicked portrait:
+    // the canvas is the more direct statement of "this one now". Selecting the
+    // pinned actor's own token leaves the pin alone, which is what lets the
+    // click below control a token without immediately undoing itself.
+    add("controlToken", (token, controlled) => {
+      const hadPin = !!this.#pinnedUuid;
+      if (controlled && hadPin && token?.actor?.uuid !== this.#pinnedUuid) {
+        this.#pinnedUuid = null;
+      }
+      // With an assigned character and no pin either way, selection is
+      // irrelevant; losing the pin is a rebind and always needs the redraw.
+      if (!game.user.character || hadPin !== !!this.#pinnedUuid) this.#rerender();
     });
   }
 
@@ -1901,6 +2039,8 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
   _onClose(options) {
     for (const [hook, id] of this.#hooks) Hooks.off(hook, id);
     this.#hooks = [];
+    this.#board?.removeEventListener("pointerup", this.#boundCanvasPointerUp);
+    this.#board = null;
     super._onClose?.(options);
   }
 
@@ -2171,16 +2311,112 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
   }
 
   /**
+   * Left-clicking a portrait selects that character's token on the canvas, the
+   * way clicking a party member in a CRPG switches to them: the portrait
+   * becomes the main one and the whole bar rebinds to it.
+   *
+   * The bind is a pin on this panel, not a side effect of controlling the
+   * token, because a party member may have no token on this scene at all and
+   * the click still has to do something. Where there is a token it is selected
+   * as well, with shift adding to the selection as it would on the canvas.
+   *
+   * The way back out is on the canvas rather than here: deselecting everything
+   * clears the pin (see `#onCanvasPointerUp`). Double-click still belongs to
+   * the sheet, and is left to `#onDblClick` — which is why a teammate click
+   * defers the redraw (`#portraitHoldUntil`) instead of reshuffling the row out
+   * from under a second click that has not arrived yet.
+   */
+  #onClick(event) {
+    if (isRightClick(event)) return;
+    const frame = event.target.closest?.(".rs-bg3-portrait-frame");
+    if (!frame) return;
+    // The resource editor lives inside the frame and owns its own clicks.
+    if (event.target.closest?.(".rs-bg3-resedit")) return;
+    // The second click of a double-click belongs to the sheet, not to selection.
+    if (event.detail > 1) return;
+    event.preventDefault();
+
+    // Teammate portraits name their actor; the main one is whoever is bound.
+    const teamUuid = frame.dataset.actorUuid ?? null;
+    const uuid = teamUuid ?? this.actor?.uuid ?? null;
+    const actor = uuid ? fromUuidSync(uuid) : null;
+    // Remembered for `#onDblClick`, which cannot always see the frame itself.
+    this.#lastPortraitUuid = actor?.uuid ?? null;
+    // Only a teammate click moves the row, so only that one needs the hold.
+    // Clicking the main portrait redraws to the same layout and stays instant.
+    if (teamUuid) this.#portraitHoldUntil = Date.now() + PORTRAIT_HOLD_MS;
+    // Binding the panel is the point of the click and must not depend on the
+    // canvas: a party member with no token on this scene still becomes the
+    // character the bar is driving.
+    if (!this.#pinActor(actor)) return;
+
+    // Selecting the token as well, where there is one, so the click does what
+    // clicking the token would have. Shift keeps the existing selection, the
+    // same as on the canvas.
+    const token = tokenForActor(actor);
+    if (token?.isOwner) token.control({ releaseOthers: !event.shiftKey });
+
+    this.#rerender();
+  }
+
+  /**
+   * Clearing a portrait is done on the canvas, not on the panel: a left-click
+   * or a drag-select that lands on empty ground deselects everything, and the
+   * bar goes back to its default with it. That is the gesture the canvas
+   * already has for "nothing selected", so the panel borrows it rather than
+   * inventing a second one.
+   *
+   * Read after the event settles, because Foundry resolves the marquee inside
+   * its own handler for the same pointerup, and `controlToken` alone cannot
+   * speak for a pinned character with no token on the scene: nothing is ever
+   * released, so nothing would fire.
+   */
+  #onCanvasPointerUp(event) {
+    if (event.button !== 0 || !this.#pinnedUuid) return;
+    // A double-click on a portrait whose row has already moved can put its
+    // second click on the canvas. That is the panel's gesture misfiring, not a
+    // deselect, so the window a portrait click opens is ignored here.
+    if (Date.now() < this.#portraitHoldUntil) return;
+    setTimeout(() => {
+      if (!this.#pinnedUuid) return;
+      if (canvas.tokens?.controlled?.length) return;
+      this.#pinnedUuid = null;
+      this.#rerender();
+    }, 0);
+  }
+
+  /**
+   * The board is not part of this application, and it outlives a re-render, so
+   * the listener is attached idempotently rather than in `_onRender` alone.
+   */
+  #attachCanvasListener() {
+    const board = canvas?.app?.view ?? document.getElementById("board");
+    if (!(board instanceof HTMLElement)) return;
+    board.removeEventListener("pointerup", this.#boundCanvasPointerUp);
+    board.addEventListener("pointerup", this.#boundCanvasPointerUp);
+    this.#board = board;
+  }
+
+  /**
    * Double-clicking the portrait opens the character sheet, the same gesture
    * that opens an actor from a token. ApplicationV2's `actions` map only routes
    * clicks, so this is delegated by hand.
+   *
+   * The first click selects, which re-renders and replaces the node it landed
+   * on, so the browser has no common element for the pair and targets the event
+   * at the panel root instead. That is the one case where the frame cannot be
+   * read off the event, and the portrait the first click acted on stands in for
+   * it — the cursor is no help, since the row has reshuffled underneath it.
    */
   #onDblClick(event) {
     const frame = event.target.closest?.(".rs-bg3-portrait-frame");
-    if (!frame) return;
+    if (!frame && event.target !== this.element) return;
     event.preventDefault();
+    // The gesture is resolved, so the redraw the first click deferred can run.
+    this.#portraitHoldUntil = 0;
+    this.#rerender();
     // Teammate portraits name their actor; yours falls back to the bound one.
-    const uuid = frame.dataset.actorUuid;
+    const uuid = frame ? frame.dataset.actorUuid : this.#lastPortraitUuid;
     const actor = uuid ? fromUuidSync(uuid) : this.actor;
     // Foundry hides the sheet from users below LIMITED anyway; bailing here
     // keeps a GM-selected token from throwing a permission warning at a player.
@@ -2499,6 +2735,42 @@ function registerPlayerListToggle() {
     const peek = document.querySelector(".rs-players-peek");
     if (players && peek) refreshPeekColour(players, peek);
   }, 5000);
+}
+
+/* -------------------------------------------- */
+/*  Slot visibility                             */
+/* -------------------------------------------- */
+
+/**
+ * Bring a hotbar slot into view, whichever bar the player is using.
+ *
+ * The panel starts with zero macro rows, so a macro dropped into slot 1 lands
+ * somewhere the player cannot see. Raising the row count to cover the slot's
+ * page is the panel's equivalent of the core bar's page switch — and it is
+ * exactly what the `+` control does, so nothing new is being taught here.
+ *
+ * The row count is only ever raised, never lowered: a player who has expanded
+ * their bar keeps the rows they chose.
+ *
+ * @param {number} slot - Hotbar slot, 1-50.
+ */
+export async function revealHotbarSlot(slot) {
+  const page = Math.ceil(Number(slot) / SLOTS_PER_ROW);
+  if (!Number.isInteger(page) || page < 1 || page > MAX_ROWS) return;
+
+  const panel = ui.redsteelHotbar;
+  if (panel) {
+    if (panel.rowCount < page) {
+      await game.user.setFlag("redsteel", ROWS_FLAG, page);
+    }
+    // The updateUser hook re-renders on `hotbar` changes but not on flags, so
+    // the row-count change needs saying out loud.
+    panel.render();
+    return;
+  }
+
+  // Core hotbar: show the page the slot lives on.
+  await ui.hotbar?.changePage?.(page);
 }
 
 /* -------------------------------------------- */

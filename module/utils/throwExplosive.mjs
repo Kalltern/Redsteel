@@ -5,6 +5,7 @@ import {
   applyDesperateCrit,
 } from "./rollAdvantage.mjs";
 import { getAttackRerollTokens } from "./rerolls.mjs";
+import { resolveAimOnAttack } from "./aim.mjs";
 
 /** Local copy of the damage-profile builder used across the attack pipeline. */
 function buildDamageProfile(systemData) {
@@ -69,6 +70,9 @@ export async function throwExplosive(options = {}) {
       attackBonus += aimValue * 10;
       await actor.unsetFlag("redsteel", "aimCount");
     }
+    // No weapon in hand, so no duellist perk is live: the throw burns the aim
+    // outright, whether it went at the aimed target or somebody else.
+    await resolveAimOnAttack({ actor });
 
     if (actor.getFlag("redsteel", "useFlankingAttack")) {
       attackBonus += 10;

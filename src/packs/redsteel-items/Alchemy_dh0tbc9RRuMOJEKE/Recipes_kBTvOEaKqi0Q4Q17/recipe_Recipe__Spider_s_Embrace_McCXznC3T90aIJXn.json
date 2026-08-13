@@ -1,11 +1,12 @@
 {
   "folder": "kBTvOEaKqi0Q4Q17",
-  "name": "Recipe: Corpse breath",
+  "name": "Recipe: Spider's Embrace",
   "type": "recipe",
   "img": "icons/weapons/thrown/bomb-gas-grey-purple.webp",
   "system": {
-    "description": "<p>Creates a cloud <br />Effect - One target/hex. <br />On hit/entry, target must roll a Strength Test (-25%), on failure, the target is Rooted, on success, it is Slowed for four turns<br />Duration - 1 day<br />Production Bonus - -10% -&gt; 1 batch<br />Ingredients - Quality fat, Container, Al, Al, Pa, Yl</p>",
-    "outputType": "potion",
+    "description": "<p>Effect - One target/hex. <br />On hit/entry, target must roll a Strength Test (-25%), on failure, the target is Rooted, on success, it is Slowed for four turns<br />Duration - 1 day<br />Production Bonus - -10% -&gt; 1 batch<br />Ingredients - Quality fat, Container, Al, Al, Pa, Yl</p>",
+    "outputType": "explosive",
+    "purpose": "explosive",
     "resultUuid": "Compendium.redsteel.redsteel-items.Item.dg5QhNmhrtytTqze",
     "substances": {
       "yliaster": 1,
@@ -35,7 +36,7 @@
     "systemId": "redsteel",
     "systemVersion": "0.8.1",
     "createdTime": 1777294836937,
-    "modifiedTime": 1777294836937,
+    "modifiedTime": 1786367217424,
     "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
   },
   "_id": "McCXznC3T90aIJXn",

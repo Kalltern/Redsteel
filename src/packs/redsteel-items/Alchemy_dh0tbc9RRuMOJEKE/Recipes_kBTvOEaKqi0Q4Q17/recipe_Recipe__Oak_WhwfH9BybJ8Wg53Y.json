@@ -6,6 +6,7 @@
   "system": {
     "description": "<p>Effect - Stops Bleeding, immunity to further Bleeding<br />Duration - 1 hour<br />Toxicity - 10<br />Production bonus - 0% -&gt; 1 dose<br />Ingredients - Strong alcohol, Al, Al, Be</p>",
     "outputType": "potion",
+    "purpose": "buff",
     "resultUuid": "Compendium.redsteel.redsteel-items.Item.6fzyDlMAonjlo3Lq",
     "substances": {
       "yliaster": 0,

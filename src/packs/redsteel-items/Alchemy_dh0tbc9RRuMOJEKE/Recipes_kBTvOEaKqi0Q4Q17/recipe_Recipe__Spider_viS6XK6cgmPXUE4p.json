@@ -6,6 +6,7 @@
   "system": {
     "description": "<p>Effect - Wall climbing, must not wear gloves<br />Duration - 20 minutes<br />Toxicity - 14<br />Production bonus - +10% -&gt; 1 dose<br />Ingredients - Strong alcohol, Pa, Qu, Pa</p>",
     "outputType": "potion",
+    "purpose": "buff",
     "resultUuid": "Compendium.redsteel.redsteel-items.Item.RyP2eTEikYTgOXRr",
     "substances": {
       "yliaster": 0,

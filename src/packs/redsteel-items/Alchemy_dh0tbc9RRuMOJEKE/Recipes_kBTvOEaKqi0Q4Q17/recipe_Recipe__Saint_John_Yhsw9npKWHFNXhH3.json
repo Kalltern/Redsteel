@@ -6,6 +6,7 @@
   "system": {
     "description": "<p>Effect - Cures diseases (may require multiple doses depending on severity)<br />Duration - Depending on disease<br />Toxicity - 8<br />Production bonus - 0% -&gt; 1 dose<br />Ingredients - Distillate, Be, Yl, Yl, Be</p>",
     "outputType": "potion",
+    "purpose": "buff",
     "resultUuid": "Compendium.redsteel.redsteel-items.Item.dFSlSs99NadnPUVv",
     "substances": {
       "yliaster": 2,

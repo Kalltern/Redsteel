@@ -5,7 +5,14 @@ import { getImprovedAimPenetration } from "./aim.mjs";
 import { getAttackRerollTokens } from "./rerolls.mjs";
 import { buildBanePacket } from "./baneCombat.mjs";
 import { hasHtmlContent } from "./chatBlocks.mjs";
-import { appendHeavyWeaponDamage } from "./weaponResolver.mjs";
+import {
+  appendHeavyWeaponDamage,
+  filterModifiersByWeapon,
+  filterByRequiredWeaponTag,
+  abilityAllowedForWeapon,
+  weaponHasTag,
+  resolveWeaponContext,
+} from "./weaponResolver.mjs";
 import {
   isSpeedTest,
   rollSpeedTest,
@@ -13,6 +20,11 @@ import {
 } from "./speedTest.mjs";
 import { mindBurnUpdates } from "./mindPoints.mjs";
 import { resolveTestRating } from "./testRating.mjs";
+import {
+  isOwnTurn,
+  abilityUsageFit,
+  renderAttackTagsHtml,
+} from "./opportunityAttacks.mjs";
 
 export async function combatAbilities() {
   // ====================================================================
@@ -35,11 +47,21 @@ export async function combatAbilities() {
     (a) => a.system.modifiesAttack === true,
   );
 
-  const abilities = allAbilities.filter(
-    (a) =>
-      !a.system.modifiesAttack &&
-      (["melee", "ranged", "other"].includes(a.system.type) ||
-        a.system.class === "defense"),
+  // An ability that names a required weapon tag (Imbroccata → "rapier") is
+  // only listed when the weapon in hand can actually perform it. Checked
+  // against the active set's main hand; with no active set (NPCs, or a weapon
+  // picked later in the flow) owning any weapon with the tag is enough, and
+  // runWithWeaponContext makes the final call.
+  const activeMainWeapon = resolveWeaponContext(actor)?.weapon ?? null;
+  const abilities = filterByRequiredWeaponTag(
+    allAbilities.filter(
+      (a) =>
+        !a.system.modifiesAttack &&
+        (["melee", "ranged", "other"].includes(a.system.type) ||
+          a.system.class === "defense"),
+    ),
+    actor,
+    activeMainWeapon,
   );
 
   const ABILITY_TABS = [
@@ -96,8 +118,14 @@ export async function combatAbilities() {
           resourceCosts = `${cost} ${costType}`;
         }
 
+        // Timing guidance only: the row is dimmed, never disabled.
+        const usage = abilityUsageFit(actor, ability, token);
+        const dimmed = usage && usage.fit !== "ok" ? " ability-inappropriate" : "";
+        const usageTitle =
+          usage && usage.fit !== "ok" ? ` title="${usage.reason}"` : "";
+
         return `
-        <tr class="spell-choice ability-choice table-row" data-ability-id="${ability.id}">
+        <tr class="spell-choice ability-choice table-row${dimmed}" data-ability-id="${ability.id}"${usageTitle}>
           <td class="icon-cell"><img src="${ability.img}" class="ability-icon" title="${ability.localizedName ?? ability.name}"></td>
           <td>${ability.localizedName ?? ability.name}</td>
           <td style="text-align: center;">${actionCost}</td>
@@ -232,6 +260,10 @@ export async function combatAbilities() {
         .ability-choice.table-row {
           display: table-row;
         }
+
+        /* Timing guidance: dimmed rows are still fully clickable — the table rules. */
+        .ability-tabs tr.ability-inappropriate { opacity: 0.38; }
+        .ability-tabs tr.ability-inappropriate:hover { opacity: 0.8; }
     `;
     const styleSheet = document.createElement("style");
     styleSheet.id = "redsteel-ability-dialog-styles";
@@ -268,6 +300,9 @@ export async function combatAbilities() {
     const useSneak = html.find('[name="sneakAttack"]').is(":checked");
     const useFlanking = html.find('[name="flanking"]').is(":checked");
     const useAimedStrike = html.find('[name="aimedStrike"]').is(":checked");
+    const useOpportunity = html
+      .find('[name="opportunityAttack"]')
+      .is(":checked");
     const selectedModifierIds = Array.from(
       container.querySelectorAll(".attack-modifier-checkbox:checked"),
     ).map((cb) => cb.dataset.abilityId);
@@ -286,6 +321,7 @@ export async function combatAbilities() {
       aim: aimValue,
       sneak: useSneak,
       flanking: useFlanking,
+      opportunity: useOpportunity,
       aimedStrikePart,
       modifiers: selectedModifiers,
       longReachPenalty,
@@ -507,7 +543,14 @@ export async function combatAbilities() {
       (i) => i.type === "weapon" && i.system?.longReach,
     );
   }
-  const modifierCheckboxHtml = modifierAbilities
+  // Weapon-locked modifiers (Fuscina Ictus → trident) only show when the weapon
+  // that will actually swing can carry them. modifierAbilities itself stays
+  // whole: it is only used to look selections back up by id.
+  const modifierCheckboxHtml = filterModifiersByWeapon(
+    modifierAbilities,
+    actor,
+    activeWeapon ?? null,
+  )
     .map(
       (mod) => `
 <label class="pill">
@@ -522,6 +565,9 @@ export async function combatAbilities() {
   const keepOpen = game.settings.get("redsteel", "keepAbilityDialogOpen");
   // Pre-select the Aim radio from any stacks already aimed at the current target.
   const preAim = game.redsteel.getAimStacks?.(token) ?? 0;
+  // Opportunity Attack is never pre-ticked, and it is hidden entirely while the
+  // actor is taking its own turn — an attack on your turn can't be one.
+  const showOpportunity = !isOwnTurn(actor, token);
 
   let abilityDialog = new Dialog({
     title: `Choose Combat or Defense Ability`,
@@ -568,6 +614,17 @@ export async function combatAbilities() {
     <input type="checkbox" name="aimedStrike" />
     <span>Aimed Attack</span>
   </label>
+
+  ${
+    showOpportunity
+      ? `
+  <label class="pill" title="Attack made outside your own turn, triggered by an adjacent enemy's movement, casting or shooting.">
+    <input type="checkbox" name="opportunityAttack" />
+    <span>Opportunity Attack</span>
+  </label>
+`
+      : ""
+  }
 
   ${
     hasLongReach
@@ -741,6 +798,11 @@ export async function combatAbilities() {
           tooltipHtml += `<div class="tooltip-section"><strong>Action Cost:</strong> ${actionCost}</div>`;
           tooltipHtml += `<div class="tooltip-section"><strong>Resource Cost:</strong> ${resourceCosts}</div>`;
 
+          const usage = abilityUsageFit(actor, ability, token);
+          if (usage && usage.fit !== "ok") {
+            tooltipHtml += `<div class="tooltip-section" style="color:#c9a227;"><strong>Timing:</strong> ${usage.reason}</div>`;
+          }
+
           if (tooltipData) {
             if (tooltipData.sections) {
               tooltipData.sections.forEach((section) => {
@@ -800,25 +862,35 @@ export async function combatAbilities() {
    */
   function getAbilityWeapons(actor, ability) {
     const isNpcOffhand = (i) => actor.type === "npc" && i.system.npcOffhand;
+    // Don't offer a weapon the ability's required tag would reject on confirm.
+    const requiredTag = String(
+      ability.system?.requiredWeaponTag ?? "",
+    ).trim();
+    const tagged = (list) =>
+      requiredTag ? list.filter((i) => weaponHasTag(i, requiredTag)) : list;
 
     if (ability.system.type === "melee") {
-      return actor.items.filter(
-        (i) =>
-          i.type === "weapon" &&
-          ["axe", "sword", "blunt", "polearm"].includes(i.system.class) &&
-          !i.system.thrown &&
-          !isNpcOffhand(i),
+      return tagged(
+        actor.items.filter(
+          (i) =>
+            i.type === "weapon" &&
+            ["axe", "sword", "blunt", "polearm"].includes(i.system.class) &&
+            !i.system.thrown &&
+            !isNpcOffhand(i),
+        ),
       );
     }
 
     if (ability.system.type === "ranged") {
-      return actor.items.filter(
-        (i) =>
-          ((i.type === "weapon" &&
-            ["bow", "crossbow"].includes(i.system.class)) ||
-            (["axe", "sword", "blunt", "polearm"].includes(i.system.class) &&
-              i.system.thrown)) &&
-          !isNpcOffhand(i),
+      return tagged(
+        actor.items.filter(
+          (i) =>
+            ((i.type === "weapon" &&
+              ["bow", "crossbow"].includes(i.system.class)) ||
+              (["axe", "sword", "blunt", "polearm"].includes(i.system.class) &&
+                i.system.thrown)) &&
+            !isNpcOffhand(i),
+        ),
       );
     }
 
@@ -842,6 +914,14 @@ export async function combatAbilities() {
     // Roll an attack/defense once a weapon context is known.
     const runWithWeaponContext = async (weaponContext) => {
       if (!weaponContext) return;
+
+      // Last gate before any resource is spent: the weapon that will actually
+      // swing has to carry the tag the ability requires.
+      if (!abilityAllowedForWeapon(ability, weaponContext.weapon)) {
+        return ui.notifications.warn(
+          `${ability.localizedName ?? ability.name} requires a ${ability.system.requiredWeaponTag} in hand.`,
+        );
+      }
 
       await updateCombatFlags(actor, intent);
 
@@ -989,6 +1069,12 @@ export async function combatAbilities() {
       await actor.unsetFlag("redsteel", "useFlankingAttack");
     }
 
+    if (intent.opportunity) {
+      await actor.setFlag("redsteel", "useOpportunityAttack", true);
+    } else {
+      await actor.unsetFlag("redsteel", "useOpportunityAttack");
+    }
+
     if (intent.aim > 0) {
       await actor.setFlag("redsteel", "aimCount", intent.aim);
     } else {
@@ -1031,6 +1117,7 @@ export async function combatAbilities() {
     damageProfile = [],
     attributeTestHTML = "",
     aimedStrike = null,
+    attackTags = [],
     banePacket = null,
     baneRoll = null,
   }) {
@@ -1123,7 +1210,10 @@ ${critHTML}
         : "";
 
     await ChatMessage.create({
-      speaker: ChatMessage.getSpeaker(),
+      // Resolved from the attacking actor rather than the bare getSpeaker(),
+      // which reads the client's *selected* token. Overwhelm files attackers by
+      // the token id on this speaker, so it has to name the one that attacked.
+      speaker: ChatMessage.getSpeaker({ actor }),
       content: `
 <div class="dual-roll">
   <div class="roll-column">
@@ -1142,19 +1232,23 @@ ${critHTML}
   <img src="${ability.img}" width="36" height="36" style="margin-right:8px;">
   <strong style="font-size:20px;">
     ${rollName}
-  </strong>
+  </strong>${renderAttackTagsHtml(attackTags)}
 </span>
 <hr>
 ${critBanner}
 <div class="rs-attack-face" data-face-normal>${damageLine}</div>
 <hr>
 ${descriptionTable}
-<table style="width:100%; text-align:center; font-size:15px;">
+${
+  hasHtmlContent(`${allBleedRollResults}${effectsRollResults}`)
+    ? `<table style="width:100%; text-align:center; font-size:15px;">
   <tr><th>Effects</th></tr>
   <tr>
     <td><b>${allBleedRollResults}</b> ${effectsRollResults}</td>
   </tr>
-</table>
+</table>`
+    : ""
+}
 `,
       flags: {
         redsteel: {
@@ -1162,6 +1256,7 @@ ${descriptionTable}
           criticalSuccessThreshold,
           criticalFailureThreshold,
           traitPills: getTraitPills(actor, "attack"),
+          attackTags,
           // Reroll tokens for the chat reroll picker: "attack" + combat skill +
           // governing attribute (finesse-aware), so e.g. Brawny (str) can reroll
           // a strength melee attack and Nimble (dex) a finesse attack.
@@ -1169,6 +1264,14 @@ ${descriptionTable}
         },
         attack: {
           type: "attack",
+          // What a defender contests. The margin is stored explicitly rather
+          // than read back off `rolls[0]`, which only happens to be the attack
+          // roll; the crit flag and raw die matter because two natural
+          // criticals are settled on the dice, not on the margins.
+          margin: attackRoll.total,
+          criticalSuccess: critSuccess,
+          criticalFailure: critFailure,
+          d100: attackRoll.dice.find((d) => d.faces === 100)?.total ?? null,
           damageProfile,
           effects: mechanicalEffects,
           aimedStrike,
@@ -1405,9 +1508,13 @@ ${descriptionTable}
       weapon,
       weaponContext,
     );
+    // The arrowhead's own penetration, on top of the bow's (see the ammo check
+    // above — a weapon that needs ammo never gets here without it).
+    const ammoPen = Number(ammo?.system?.penetration) || 0;
     const penetration =
       mainPen +
       offPen +
+      ammoPen +
       abilityPenetration +
       actorMods.penetrationBonus +
       improvedAimPen;
@@ -1423,6 +1530,7 @@ ${descriptionTable}
       criticalSuccessThreshold,
       criticalFailureThreshold,
       aimedPart,
+      opportunityAttack,
     } = await game.redsteel.getAttackRolls(
       actor,
       weapon,
@@ -1433,6 +1541,7 @@ ${descriptionTable}
       weaponContext,
       abilityCritFail,
       longReachPenalty,
+      ability,
     );
 
     const { damageRoll, damageTotal, breakthroughRollResult } =
@@ -1651,9 +1760,13 @@ ${renderSpeedTestLine({
       critScoreResult,
       criticalOptions,
       breakthroughRollResult,
-      showBreakthrough: weapon
-        ? weapon.system.breakthrough
-        : abilityBreakthrough,
+      // A character-granted Breakthrough (Giantslayer) has to show on the card
+      // too, otherwise the roll exists in the flags — and the Breakthrough radio
+      // appears in the apply dialog — while the card itself hides the number.
+      showBreakthrough: Boolean(
+        (weapon ? weapon.system.breakthrough : abilityBreakthrough) ||
+          actorMods.breakthroughRolls.length,
+      ),
       allBleedRollResults,
       effectsRollResults,
       rollName,
@@ -1668,6 +1781,7 @@ ${renderSpeedTestLine({
       aimedStrike: aimedPart
         ? { part: aimedPart, su: attackRoll.total }
         : null,
+      attackTags: opportunityAttack ? ["opportunity"] : [],
       banePacket,
       baneRoll,
     });

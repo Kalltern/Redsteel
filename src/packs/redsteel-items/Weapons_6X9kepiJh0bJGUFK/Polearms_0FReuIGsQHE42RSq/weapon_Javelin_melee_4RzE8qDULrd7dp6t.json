@@ -6,6 +6,7 @@
   "system": {
     "description": "",
     "class": "polearm",
+    "tags": "javelin",
     "classOptions": [
       "axe",
       "blunt",

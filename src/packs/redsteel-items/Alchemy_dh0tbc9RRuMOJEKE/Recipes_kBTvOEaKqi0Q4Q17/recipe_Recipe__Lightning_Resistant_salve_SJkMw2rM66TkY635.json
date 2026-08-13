@@ -6,6 +6,7 @@
   "system": {
     "description": "<p>Effect - Protects from lightning (50% resistance), prevents Stun<br />Duration - 1 day<br />Production bonus - -15% -&gt; 2 doses<br />Ingredients - Quality fat, Be, Ve, Yl, Lightning stone</p>",
     "outputType": "ointment",
+    "purpose": "buff",
     "resultUuid": "Compendium.redsteel.redsteel-items.Item.z0VxBl3VwOxudMth",
     "substances": {
       "yliaster": 1,

@@ -6,6 +6,7 @@
   "system": {
     "description": "",
     "class": "blunt",
+    "tags": "two handed flail",
     "classOptions": [
       "axe",
       "blunt",
@@ -16,7 +17,7 @@
       "firearm"
     ],
     "equipped": false,
-    "twoHandGrip": true,
+    "twoHandGrip": false,
     "longReach": false,
     "gripMode": "one",
     "offhand": false,

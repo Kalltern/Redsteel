@@ -5,7 +5,8 @@
   "img": "icons/consumables/potions/vial-ornet-silver-black.webp",
   "system": {
     "description": "<p>Effect - <br />On hit: Applies the effect for three turns. <br />At the beginning of each round target rolls an Endurance Test (-30%) <br />On failure: Target becomes Paralyzed with Pain. <br />On success: Penalty 10% to Success for two turns.<br />Duration - 2 hours<br />Production bonus - -20% -&gt; 1 dose<br />Ingredients - Fat, Pa, Al, Qu, Powdered pearl<br />Level - 2<br />Info - Clear liquid, strong odor. Cutting and stabbing weapons.</p>",
-    "outputType": "potion",
+    "outputType": "poison",
+    "purpose": "poison",
     "resultUuid": "Compendium.redsteel.redsteel-items.Item.C1prrhx2Krf7fwQN",
     "substances": {
       "yliaster": 0,

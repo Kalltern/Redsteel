@@ -25,7 +25,10 @@ import {
   getMaxSubstanceBatch,
   getAlchemistSubstanceModifiers,
   getAlchemistCraftModifiers,
+  getCraftIngredients,
   describeCraftBoons,
+  productBoonTarget,
+  getPurposeColor,
   brewSubstance,
   craftRecipe,
   rerollCraft,
@@ -39,6 +42,7 @@ import {
 import { openWeaponSpecDialog } from "../utils/weaponSpec.mjs";
 import { postSpeedTest } from "../utils/speedTest.mjs";
 import { renderMarginFollowupLine } from "../utils/attributeFollowup.mjs";
+import { addItemToHotbar } from "../utils/hotbarMacros.mjs";
 import { openBanePicker, clearBaneChoice } from "../helpers/banes.mjs";
 import { buildSpellCard, buildRankGroups } from "../utils/spellCards.mjs";
 
@@ -52,6 +56,11 @@ const ARMOR_LAYER_SLOTS = { Bottom: "bottom", Middle: "middle", Top: "top" };
 const ACCESSORY_SLOT_KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
 // "Not Armor" is the pre-rename value; accept it so live worlds keep working.
 const ACCESSORY_LAYERS = new Set(["Accessory", "Not Armor"]);
+
+// Every card on the Alchemy tab is a recipe, so the "Recipe:" prefix the item
+// names carry is dead width on a card that truncates. Stripped for display
+// only: the document keeps its name, and the hover panel still shows it in full.
+const RECIPE_NAME_PREFIX = /^\s*(recipe|recept)\s*:\s*/i;
 
 /** @returns {boolean} whether this item can occupy an accessory slot. */
 function isAccessory(item) {
@@ -106,11 +115,16 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     // actor. null means "use the first available rank for the active school".
     this._spellRankFilter = null;
     this._miracleRankFilter = null;
-    // Alchemy tab state — transient, never persisted on the actor.
-    this._alchemyStation = "foldable";
+    // Alchemy tab state — transient, never persisted on the actor. The station
+    // is the exception: it is the player's workshop, not the character's, so it
+    // is remembered on the user and restored on every sheet they open.
+    this._alchemyStation = RedsteelActorSheet.#restoreAlchemyStation();
     this._alchemySelectedRecipe = null;
     this._alchemyAmount = 1;
     this._alchemyLastOutcome = null;
+    // Recipe list filters: output type, and "only what I can make right now".
+    this._alchemyTypeFilter = "all";
+    this._alchemyCraftableOnly = false;
   }
 
   /** @override */
@@ -125,6 +139,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       viewDoc: this._viewDoc,
       createDoc: this._createDoc,
       deleteDoc: this._deleteDoc,
+      addToHotbar: this._addToHotbar,
       adjustNumericField: this._adjustNumericField,
       adjustActorNumber: this._adjustActorNumber,
       toggleSkillsEdit: this._toggleSkillsEdit,
@@ -146,6 +161,8 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       setSpellRank: this._setSpellRank,
       setMiracleRank: this._setMiracleRank,
       selectRecipe: this._selectRecipe,
+      toggleCraftableFilter: this._toggleCraftableFilter,
+      stepCraftAmount: this._stepCraftAmount,
       brewSubstance: this._brewSubstance,
       craftRecipe: this._craftRecipe,
       rerollCraft: this._rerollCraft,
@@ -471,8 +488,10 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     const item = actor.items.get(itemId);
     if (!item) return;
 
-    // Capability guard
+    // Capability guard. Heavy weapons are always two-handed, so a grip switch
+    // is meaningless on them even if an older item still carries the flag.
     if (!item.system.twoHandGrip) return;
+    if (item.system.type === "heavy") return;
 
     const newMode = item.system.gripMode === "two" ? "one" : "two";
 
@@ -489,70 +508,207 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     return false;
   }
 
-  _openWeaponEquipMenuFromItem(itemId) {
+  /**
+   * Weapon / shield equip picker.
+   *
+   * Every legal placement is a toggle rather than an immediate action: a cell
+   * lit blue means the item sits in that slot. Selections are free-form (the
+   * same weapon or shield may occupy both sets at once) and nothing is written
+   * until Confirm. Within a single set the item can only hold one hand, since
+   * one physical object cannot be in both, so lighting a hand releases the
+   * other one of that set.
+   */
+  async _openWeaponEquipMenuFromItem(itemId) {
     const item = this.actor.items.get(itemId);
     if (!item) return;
+
+    const i18n = game.i18n;
+    const L = (key) => i18n.localize(`REDSTEEL.Actor.Inventory.Equip.${key}`);
 
     const isShield = item.system?.shield === true;
     const isTwoHanded = this._isEffectivelyTwoHanded(item);
 
-    // Determine availability
+    // Shields are off-hand only; two-handed weapons are main-hand only.
     const allowMain = !isShield;
     const allowOff = !isTwoHanded;
-
-    // Safety check
     if (!allowMain && !allowOff) return;
 
+    const esc = (str) =>
+      String(str ?? "").replace(
+        /[&<>"']/g,
+        (c) =>
+          ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;",
+          })[c],
+      );
+
+    const sets = this.actor.system.combat?.weaponSets ?? {};
+
+    // One column per hand this item can actually use, so a shield gets a
+    // single narrow column rather than a dead half-grid.
+    const hands = [...(allowMain ? ["main"] : []), ...(allowOff ? ["off"] : [])];
+
+    const cell = (set, hand) => {
+      const current = sets?.[set]?.[hand] ?? null;
+      const mine = current === itemId;
+      const other = !mine && current ? this.actor.items.get(current) : null;
+      return `
+        <button type="button" class="rs-equip-cell${mine ? " is-on" : ""}"
+                data-set="${set}" data-hand="${hand}"
+                ${other ? `title="${esc(other.name)}"` : ""}
+                aria-pressed="${mine ? "true" : "false"}"
+          >${L(hand === "main" ? "Main" : "Off")}</button>`;
+    };
+
+    const row = (set) => `
+      <div class="rs-equip-row">
+        <div class="rs-equip-rowlabel">${L(`Set${set}`)}</div>
+        ${hands.map((hand) => cell(set, hand)).join("")}
+      </div>`;
+
     const content = `
-  <div class="equip-dialog">
-    <div class="equip-header">
-      <div></div>
-      <div>Set 1</div>
-      <div>Set 2</div>
-    </div>
+      <div class="rs-equip-dialog">
+        <div class="rs-equip-item">
+          <img src="${esc(item.img)}" alt="">
+          <span>${esc(item.name)}</span>
+        </div>
+        <div class="rs-equip-grid"
+             style="grid-template-columns: auto repeat(${hands.length}, 1fr);">
+          ${row(1)}
+          ${row(2)}
+        </div>
+      </div>`;
 
-    ${
-      allowMain
-        ? `
-    <div class="equip-row">
-      <div>Main hand</div>
-      <button data-action="equip" data-set="1" data-hand="main">Main</button>
-      <button data-action="equip" data-set="2" data-hand="main">Main</button>
-    </div>
-    `
-        : ""
-    }
-
-    ${
-      allowOff
-        ? `
-    <div class="equip-row">
-      <div>Off hand</div>
-      <button data-action="equip" data-set="1" data-hand="off">Off</button>
-      <button data-action="equip" data-set="2" data-hand="off">Off</button>
-    </div>
-    `
-        : ""
-    }
-  </div>
-  `;
-
-    new Dialog({
-      title: isShield ? "Equip Shield" : "Equip Weapon",
+    const DialogV2 = foundry.applications.api.DialogV2;
+    const picked = await DialogV2.wait({
+      window: { title: L(isShield ? "TitleShield" : "TitleWeapon") },
+      classes: ["redsteel", "rs-equip-picker"],
       content,
-      buttons: {}, // IMPORTANT: no default buttons
-      render: (html) => {
-        html[0].addEventListener("click", (event) => {
-          const button = event.target.closest("button[data-action='equip']");
-          if (!button) return;
+      buttons: [
+        {
+          action: "confirm",
+          label: L("Confirm"),
+          icon: "fas fa-check",
+          default: true,
+          callback: (ev, button, dialog) => {
+            const root = dialog?.element ?? button?.form;
+            const lit = root?.querySelectorAll(".rs-equip-cell.is-on") ?? [];
+            return Array.from(lit).map((b) => ({
+              set: b.dataset.set,
+              hand: b.dataset.hand,
+            }));
+          },
+        },
+        { action: "cancel", label: i18n.localize("Cancel") },
+      ],
+      render: (_event, target) => {
+        const raw = target?.element ?? target;
+        const root = raw instanceof HTMLElement ? raw : raw?.[0];
+        if (!root) return;
 
-          const set = Number(button.dataset.set);
-          const hand = button.dataset.hand;
+        root.addEventListener("click", (event) => {
+          const btn = event.target?.closest?.(".rs-equip-cell");
+          if (!btn || !root.contains(btn)) return;
+          event.preventDefault();
 
-          this._assignWeaponDirect(itemId, set, hand);
+          const on = !btn.classList.contains("is-on");
+          btn.classList.toggle("is-on", on);
+          btn.setAttribute("aria-pressed", on ? "true" : "false");
+          // Lit or unlit is the only state worth seeing; a lingering focus ring
+          // on the last cell clicked reads as a third one.
+          btn.blur();
+
+          if (!on) return;
+          const sibling = root.querySelector(
+            `.rs-equip-cell[data-set="${btn.dataset.set}"]:not([data-hand="${btn.dataset.hand}"])`,
+          );
+          if (sibling) {
+            sibling.classList.remove("is-on");
+            sibling.setAttribute("aria-pressed", "false");
+          }
         });
       },
-    }).render(true);
+      rejectClose: false,
+    });
+
+    if (!Array.isArray(picked)) return;
+    await this._applyWeaponEquipSelection(itemId, picked);
+  }
+
+  /**
+   * Commit an equip-dialog selection. The lit cells are the whole truth for
+   * this item, so it is first pulled out of every slot it held and then placed
+   * back wherever the player lit up.
+   * @param {string} itemId
+   * @param {Array<{set: string, hand: string}>} picks
+   */
+  async _applyWeaponEquipSelection(itemId, picks) {
+    if (this.actor.type !== "character") return;
+    const item = this.actor.items.get(itemId);
+    if (!item) return;
+
+    const sets = this.actor.system.combat?.weaponSets ?? {};
+    const next = {
+      1: { main: sets?.[1]?.main ?? null, off: sets?.[1]?.off ?? null },
+      2: { main: sets?.[2]?.main ?? null, off: sets?.[2]?.off ?? null },
+    };
+
+    for (const set of ["1", "2"])
+      for (const hand of ["main", "off"])
+        if (next[set][hand] === itemId) next[set][hand] = null;
+
+    const isShield = item.system?.shield === true;
+    const isTwoHanded = this._isEffectivelyTwoHanded(item);
+    const displaced = [];
+
+    for (const pick of picks ?? []) {
+      const set = String(pick?.set ?? "");
+      const hand = pick?.hand;
+      if (!next[set] || !["main", "off"].includes(hand)) continue;
+      if (isShield && hand !== "off") continue;
+      if (isTwoHanded && hand !== "main") continue;
+
+      const otherHand = hand === "main" ? "off" : "main";
+      const blocker = next[set][otherHand]
+        ? this.actor.items.get(next[set][otherHand])
+        : null;
+
+      // A two-handed grip leaves no second hand: whichever side the player
+      // just chose wins, and the weapon it pushes out gets reported.
+      const clashes =
+        next[set][otherHand] === itemId ||
+        (hand === "off" && this._isEffectivelyTwoHanded(blocker)) ||
+        (hand === "main" && isTwoHanded && !!next[set][otherHand]);
+
+      if (clashes) {
+        if (blocker && blocker.id !== itemId) displaced.push(blocker.name);
+        next[set][otherHand] = null;
+      }
+
+      next[set][hand] = itemId;
+    }
+
+    const updates = {};
+    for (const set of ["1", "2"])
+      for (const hand of ["main", "off"]) {
+        const before = sets?.[set]?.[hand] ?? null;
+        if (before !== next[set][hand])
+          updates[`system.combat.weaponSets.${set}.${hand}`] = next[set][hand];
+      }
+
+    if (foundry.utils.isEmpty(updates)) return;
+    await this.actor.update(updates);
+
+    if (displaced.length)
+      ui.notifications.info(
+        game.i18n.format("REDSTEEL.Actor.Inventory.Equip.Displaced", {
+          names: [...new Set(displaced)].join(", "),
+        }),
+      );
   }
 
   _onRightClick(event) {
@@ -645,6 +801,13 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     if (!item) return;
 
     if (item.type === "weapon") {
+      this._openWeaponEquipMenuFromItem(itemId);
+      return;
+    }
+
+    // Shields hold a weapon set's off hand, so they get the same picker as a
+    // weapon — only the off-hand row is offered.
+    if (item.type === "gear" && item.system.shield) {
       this._openWeaponEquipMenuFromItem(itemId);
       return;
     }
@@ -894,6 +1057,20 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     this.render();
   }
 
+  /** Nudge the craft batch size by one, clamped to the recipe's own limits. */
+  static _stepCraftAmount(event, target) {
+    this.#readAlchemyControls();
+    const step = Number(target.dataset.step) || 0;
+    this._alchemyAmount = this.#clampCraftAmount(this._alchemyAmount + step);
+    this.render({ parts: ["alchemy"] });
+  }
+
+  /** Show only recipes whose ingredients are all on hand (transient). */
+  static _toggleCraftableFilter(event, target) {
+    this._alchemyCraftableOnly = !this._alchemyCraftableOnly;
+    this.render({ parts: ["alchemy"] });
+  }
+
   /**
    * Boil herbs down into a substance. Opens a small dialog showing the herbs
    * on hand and how many doses they buy, then rolls once for the whole batch.
@@ -981,14 +1158,137 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     this.render();
   }
 
+  /**
+   * The station this player last crafted at, off the user flag. Falls back to
+   * the foldable kit when unset or when the stored key no longer exists.
+   */
+  static #restoreAlchemyStation() {
+    const stored = game.user?.getFlag("redsteel", "alchemyStation");
+    return STATIONS.some((s) => s.key === stored) ? stored : "foldable";
+  }
+
   /** Read station + amount from the Alchemy tab controls into sheet state. */
   #readAlchemyControls() {
-    const station = this.element.querySelector(".alch-station")?.value;
-    if (station) this._alchemyStation = station;
-    const amount = Number(this.element.querySelector(".alch-amount")?.value);
-    if (Number.isFinite(amount) && amount >= 1) {
-      this._alchemyAmount = Math.floor(amount);
+    // .alch-station is the custom dropdown (see #bindAlchemyControls), so the
+    // current key lives on the element, not on a select's value.
+    const station = this.element.querySelector(".alch-station")?.dataset.value;
+    if (station && station !== this._alchemyStation) {
+      this._alchemyStation = station;
+      // Fire and forget: a failed flag write only costs the next session's
+      // default, never the craft in progress.
+      game.user
+        ?.setFlag("redsteel", "alchemyStation", station)
+        ?.catch((err) => console.warn("Redsteel | station flag write failed", err));
     }
+    const amount = Number(this.element.querySelector(".alch-amount")?.value);
+    // Typing out of range snaps back to the nearest legal batch rather than
+    // failing later at craft time.
+    if (Number.isFinite(amount)) {
+      this._alchemyAmount = this.#clampCraftAmount(amount);
+    }
+  }
+
+  /**
+   * The fields of a recipe's output that decide which product boons can land
+   * on it. Resolving the compendium document is a pack read, so the answer is
+   * cached per uuid for the life of the sheet; recipes never change output.
+   * @returns {Promise<{option: string, type: string, toxicity: number}|null>}
+   */
+  async #getRecipeProduct(recipe) {
+    const uuid = recipe?.system?.resultUuid;
+    if (!uuid) return null;
+    this._alchProductCache ??= new Map();
+    if (this._alchProductCache.has(uuid)) {
+      return this._alchProductCache.get(uuid);
+    }
+    let product = null;
+    try {
+      product = productBoonTarget(await fromUuid(uuid));
+    } catch (err) {
+      console.warn("Redsteel | could not resolve recipe output", uuid, err);
+    }
+    this._alchProductCache.set(uuid, product);
+    return product;
+  }
+
+  /** Clamp a batch size to 1..max for the recipe currently selected. */
+  #clampCraftAmount(value) {
+    const recipe = this.actor.items.get(this._alchemySelectedRecipe);
+    const max = MAX_BATCH[recipe?.system.outputType ?? "potion"] ?? 5;
+    return Math.min(max, Math.max(1, Math.floor(Number(value) || 1)));
+  }
+
+  /**
+   * Keep the craft panel honest while the player fiddles with the controls:
+   * the station is remembered immediately, and a changed amount re-renders the
+   * tab so the ingredient readout re-costs the batch.
+   */
+  #bindAlchemyControls(root) {
+    // Dismissal lives on the sheet root, which survives part re-renders, so it
+    // is bound once instead of once per rebuilt dropdown.
+    if (!root.dataset.rsSelectDismiss) {
+      root.dataset.rsSelectDismiss = "1";
+      root.addEventListener("click", (ev) => {
+        if (ev.target.closest(".rs-select")) return;
+        for (const open of root.querySelectorAll(".rs-select.open")) {
+          open.classList.remove("open");
+        }
+      });
+    }
+    this.#bindCustomSelect(root.querySelector(".alch-station"), () =>
+      this.#readAlchemyControls(),
+    );
+    this.#bindCustomSelect(root.querySelector(".alch-type-filter"), (value) => {
+      this._alchemyTypeFilter = value || "all";
+      this.render({ parts: ["alchemy"] });
+    });
+    const amount = root.querySelector(".alch-amount");
+    if (amount && !amount.dataset.rsBound) {
+      amount.dataset.rsBound = "1";
+      amount.addEventListener("change", () => {
+        this.#readAlchemyControls();
+        this.render({ parts: ["alchemy"] });
+      });
+    }
+  }
+
+  /**
+   * Wire one `.rs-select` dropdown: trigger opens the menu, picking an option
+   * writes the key back to `data-value` and calls `onPick`. A plain <select>
+   * would be less code, but its option list is OS chrome — dark styling and the
+   * selection bar's colour are simply not reachable from CSS.
+   */
+  #bindCustomSelect(el, onPick) {
+    if (!el || el.dataset.rsBound) return;
+    el.dataset.rsBound = "1";
+
+    const close = () => el.classList.remove("open");
+    el.querySelector(".rs-select-trigger")?.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      // Only one menu open at a time, including the other dropdown.
+      for (const other of this.element.querySelectorAll(".rs-select.open")) {
+        if (other !== el) other.classList.remove("open");
+      }
+      el.classList.toggle("open");
+    });
+
+    el.querySelector(".rs-select-menu")?.addEventListener("click", (ev) => {
+      const option = ev.target.closest(".rs-select-option");
+      if (!option) return;
+      ev.preventDefault();
+      ev.stopPropagation();
+      close();
+      if (option.dataset.value === el.dataset.value) return;
+      el.dataset.value = option.dataset.value;
+      el.querySelector(".rs-select-value").textContent =
+        option.textContent.trim();
+      for (const sibling of el.querySelectorAll(".rs-select-option")) {
+        sibling.classList.toggle("selected", sibling === option);
+      }
+      onPick(option.dataset.value);
+    });
+
   }
 
   /** Craft the selected recipe with the chosen station and amount. */
@@ -1417,28 +1717,105 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
           herbCost,
           canBrew: getMaxSubstanceBatch(this.actor, def.key, herbCost) > 0,
         }));
-        // Owned recipes, with the transient selection restored.
-        const recipes = [...(this.actor.itemTypes.recipe ?? [])].sort(
-          (a, b) => (a.sort || 0) - (b.sort || 0),
-        );
+        // Owned recipes, alphabetical by the name actually shown on the card
+        // (localised, "Recipe:" prefix stripped) rather than by drop order.
+        const collator = new Intl.Collator(game.i18n.lang, {
+          sensitivity: "base",
+        });
+        const recipes = [...(this.actor.itemTypes.recipe ?? [])]
+          .map((item) => ({
+            item,
+            displayName: String(item.localizedName ?? item.name ?? "").replace(
+              RECIPE_NAME_PREFIX,
+              "",
+            ),
+          }))
+          .sort((a, b) => collator.compare(a.displayName, b.displayName));
         if (
           this._alchemySelectedRecipe &&
-          !recipes.some((r) => r.id === this._alchemySelectedRecipe)
+          !recipes.some((r) => r.item.id === this._alchemySelectedRecipe)
         ) {
           this._alchemySelectedRecipe = null;
         }
-        context.alchRecipes = recipes.map((item) => ({
-          item,
-          selected: item.id === this._alchemySelectedRecipe,
-        }));
+        // One craftable check per recipe, at a batch of one: the filter asks
+        // "could I make this at all", not "could I make the batch I typed".
+        // Every check walks the actor's items, so it is only paid for when the
+        // filter is actually on.
+        const craftable = this._alchemyCraftableOnly
+          ? new Map(
+              recipes.map(({ item }) => [
+                item.id,
+                !!item.system.resultUuid &&
+                  getCraftIngredients(this.actor, item, 1).ok,
+              ]),
+            )
+          : null;
+        // Type filter offers only the types the character actually owns.
+        const ownedTypes = [
+          ...new Set(recipes.map(({ item }) => item.system.outputType || "potion")),
+        ];
+        if (
+          this._alchemyTypeFilter !== "all" &&
+          !ownedTypes.includes(this._alchemyTypeFilter)
+        ) {
+          this._alchemyTypeFilter = "all";
+        }
+        context.alchTypeFilters = [
+          {
+            key: "all",
+            label: game.i18n.localize("REDSTEEL.Alchemy.Filter.AllTypes"),
+            selected: this._alchemyTypeFilter === "all",
+          },
+          ...Object.keys(MAX_BATCH)
+            .filter((key) => ownedTypes.includes(key))
+            .map((key) => ({
+              key,
+              label: game.i18n.localize(
+                `REDSTEEL.Alchemy.OutputType.${key.capitalize()}`,
+              ),
+              selected: this._alchemyTypeFilter === key,
+            })),
+        ];
+        context.alchCraftableOnly = this._alchemyCraftableOnly;
+        context.alchTypeFilter = this._alchemyTypeFilter;
+        context.alchTypeFilterLabel =
+          context.alchTypeFilters.find((f) => f.selected)?.label ?? "";
+        context.alchRecipes = recipes
+          .filter(({ item }) => {
+            if (
+              this._alchemyTypeFilter !== "all" &&
+              (item.system.outputType || "potion") !== this._alchemyTypeFilter
+            ) {
+              return false;
+            }
+            return !craftable || craftable.get(item.id);
+          })
+          .map(({ item, displayName }) => ({
+            item,
+            displayName,
+            purpose: item.system.purpose ?? "",
+            // null for an untagged recipe, which leaves the card its gold border.
+            purposeColor: getPurposeColor(item.system.purpose),
+            selected: item.id === this._alchemySelectedRecipe,
+          }));
+        // A filter that hides everything is easy to mistake for an empty
+        // recipe list, so the template says which of the two it is.
+        context.alchFiltered =
+          !context.alchRecipes.length && recipes.length > 0;
         const selected =
-          recipes.find((r) => r.id === this._alchemySelectedRecipe) ?? null;
+          recipes.find((r) => r.item.id === this._alchemySelectedRecipe)?.item ??
+          null;
         context.alchStations = STATIONS.map((s) => ({
           key: s.key,
           label: game.i18n.localize(s.labelKey),
           modLabel: `${s.mod >= 0 ? "+" : ""}${s.mod}%`,
           selected: s.key === this._alchemyStation,
         }));
+        context.alchStation = this._alchemyStation;
+        const activeStation = context.alchStations.find((s) => s.selected);
+        context.alchStationLabel = activeStation
+          ? `${activeStation.label} (${activeStation.modLabel})`
+          : "";
         context.alchMaxAmount =
           MAX_BATCH[selected?.system.outputType ?? "potion"] ?? 5;
         context.alchAmount = Math.min(
@@ -1446,10 +1823,21 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
           context.alchMaxAmount,
         );
         context.alchCanCraft = !!selected && !!selected.system.resultUuid;
+        // Stock readout under the amount box: one tile per ingredient this
+        // batch consumes, each showing held/needed.
+        context.alchStock = selected
+          ? getCraftIngredients(this.actor, selected, context.alchAmount)
+          : null;
         // Alchemist boons for the selected recipe's family, shown before the
         // roll so the player can see what the tree is actually contributing.
+        // Boons are listed against the item this recipe actually produces, so
+        // the healing nodes stay off mana and stamina potions instead of being
+        // advertised and then silently skipped at craft time.
         context.alchBoons = selected
-          ? describeCraftBoons(getAlchemistCraftModifiers(this.actor, selected))
+          ? describeCraftBoons(
+              getAlchemistCraftModifiers(this.actor, selected),
+              await this.#getRecipeProduct(selected),
+            )
           : [];
         // Reroll only re-opens a FAILED craft, and only with an eligible pool.
         const last = this._alchemyLastOutcome;
@@ -1946,6 +2334,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       root.removeEventListener("contextmenu", this._boundRightClick);
       root.addEventListener("contextmenu", this._boundRightClick);
       this.#bindShieldControls(root);
+      this.#bindAlchemyControls(root);
       // Lets the delegated tooltip engine resolve the owning actor without
       // reaching into application-registry internals.
       root.dataset.ttActorUuid = this.actor.uuid;
@@ -2011,6 +2400,25 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
   static async _viewDoc(event, target) {
     const doc = this._getEmbeddedDocument(target);
     doc.sheet.render(true);
+  }
+
+  /**
+   * Star on a spell card: put this item on the hotbar in the first free slot,
+   * then make that slot visible. Same macro dragging it there would produce.
+   *
+   * @this RedsteelActorSheet
+   * @param {PointerEvent} event   The originating click event
+   * @param {HTMLElement} target   The capturing HTML element which defined a [data-action]
+   * @protected
+   */
+  static async _addToHotbar(event, target) {
+    // The card itself is draggable and rollable; neither should fire from this.
+    event.preventDefault();
+    event.stopPropagation();
+
+    const doc = this._getEmbeddedDocument(target);
+    if (!doc) return;
+    await addItemToHotbar(doc);
   }
 
   /**

@@ -1,0 +1,46 @@
+{
+  "folder": "NHaSpGKlxSYECai3",
+  "name": "Fuscina Ictus",
+  "type": "feature",
+  "img": "icons/skills/melee/blood-slash-foam-red.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.FuscinaIctusFeature.name",
+    "description": "<p>Grants the Fuscina Ictus action. While attacking with a trident you may spend 3 Stamina per attack to raise the Bleeding chance by 120%.</p>",
+    "options": [
+      "feature",
+      "trait"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [
+        false,
+        false
+      ],
+      "value": null
+    },
+    "option": "feature"
+  },
+  "effects": [],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": null,
+    "modifiedTime": null,
+    "lastModifiedBy": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 210000,
+  "_id": "fUsCinaFeature01",
+  "_key": "!items!fUsCinaFeature01"
+}

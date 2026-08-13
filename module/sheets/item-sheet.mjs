@@ -1,5 +1,10 @@
 import { prepareActiveEffectCategories } from "../helpers/effects.mjs";
-import { SUBSTANCES, BASES, MAX_BATCH } from "../utils/alchemy.mjs";
+import {
+  SUBSTANCES,
+  BASES,
+  MAX_BATCH,
+  RECIPE_PURPOSES,
+} from "../utils/alchemy.mjs";
 import {
   canResyncItem,
   getResyncBackup,
@@ -345,6 +350,20 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
           ),
           selected: (this.item.system.outputType ?? "potion") === key,
         }));
+        // Purpose drives the recipe card's border tint on the Alchemy tab.
+        // "" is a real choice: an untagged recipe keeps the default border.
+        context.purposeChoices = [
+          {
+            key: "",
+            label: game.i18n.localize("REDSTEEL.Alchemy.Purpose.None"),
+            selected: !this.item.system.purpose,
+          },
+          ...RECIPE_PURPOSES.map((def) => ({
+            key: def.key,
+            label: game.i18n.localize(def.labelKey),
+            selected: this.item.system.purpose === def.key,
+          })),
+        ];
         break;
       }
       case "attributesVariants": {

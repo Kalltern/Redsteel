@@ -6,6 +6,7 @@
   "system": {
     "description": "",
     "class": "polearm",
+    "tags": "spear",
     "classOptions": [
       "axe",
       "blunt",

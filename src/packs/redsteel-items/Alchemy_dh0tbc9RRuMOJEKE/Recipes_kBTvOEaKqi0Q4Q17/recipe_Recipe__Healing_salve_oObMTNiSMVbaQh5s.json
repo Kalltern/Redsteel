@@ -4,8 +4,9 @@
   "type": "recipe",
   "img": "icons/commodities/materials/bowl-powder-blue.webp",
   "system": {
-    "description": "<p>Effect - 2x Health from resting<br />Duration - 12 hours<br />Production bonus - +30% -&gt; 3 doses<br />Ingredients - Fat, Be, Ve</p>",
+    "description": "<p>Effect - 2x Health from resting<br />Duration - 12 hours<br />Production bonus - +30% -&gt; 3 doses<br />Ingredients - Fat, Be, Ve</p><p>A dose may instead be spent on a First Aid attempt for +1d6 healing.</p>",
     "outputType": "ointment",
+    "purpose": "healing",
     "resultUuid": "Compendium.redsteel.redsteel-items.Item.FLS1YsL3sTiAmiiD",
     "substances": {
       "yliaster": 0,

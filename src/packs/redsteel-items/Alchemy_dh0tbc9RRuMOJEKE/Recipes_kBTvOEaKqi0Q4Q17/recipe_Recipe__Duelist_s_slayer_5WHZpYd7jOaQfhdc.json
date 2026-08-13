@@ -5,7 +5,8 @@
   "img": "icons/consumables/potions/potion-flask-corked-tied-necklace-teal.webp",
   "system": {
     "description": "<p>Effect - -10% penalty to Hit, Defense, Dodge and Ranged defense for three turns<br />Duration - 2 hours<br />Production bonus - +15% -&gt; 1 dose<br />Ingredients - Fat, Qu, Pa, Al<br />Level - 1<br />Info - Clear liquid, odorless. Cutting and stabbing weapons.</p>",
-    "outputType": "potion",
+    "outputType": "poison",
+    "purpose": "poison",
     "resultUuid": "Compendium.redsteel.redsteel-items.Item.MeUxAG56v5Vo6afd",
     "substances": {
       "yliaster": 0,

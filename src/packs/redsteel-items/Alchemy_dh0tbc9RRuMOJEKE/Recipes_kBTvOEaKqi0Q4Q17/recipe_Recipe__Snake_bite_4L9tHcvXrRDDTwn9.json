@@ -5,7 +5,8 @@
   "img": "icons/skills/melee/strike-dagger-poison-green.webp",
   "system": {
     "description": "<p>Effect - Deals 2d4 Poison damage to target. Target can only take this damage once per round. Ignores Armor.<br />Duration - 2 hours<br />Production bonus - +20% -&gt; 1 dose<br />Ingredients - Fat, Ve, Ve<br />Level - 1<br />Info - Green liquid, strong odor. Slashing and stabbing weapons.</p>",
-    "outputType": "potion",
+    "outputType": "poison",
+    "purpose": "poison",
     "resultUuid": "Compendium.redsteel.redsteel-items.Item.iSONUAkrjdWy7cmo",
     "substances": {
       "yliaster": 0,

@@ -73,6 +73,16 @@
       </div>
        {{/if}}
       </div>
+      {{!-- Sharp ammunition lends the attack the weapon Sharp property: a
+            second Bleeding roll on the same chance. Offered for every ammo
+            type; on thrown stock the weapon usually carries Sharp already and
+            the two simply agree. --}}
+      <div class="grid-span-1">
+        <label class="rs-toggle" data-tt-kind="weaponField" data-tt-id="sharp">
+          <input type="checkbox" name="system.sharp" {{checked system.sharp}} />
+          <span>{{localize "REDSTEEL.Item.Ammunition.FIELDS.sharp.label"}}</span>
+        </label>
+      </div>
     {{/if}}
     {{!-- =====================
          FEATURE
@@ -220,6 +230,22 @@
             </select>
           </div>
 
+          {{#if system.standalone}}
+            {{#if (eq system.type "ranged")}}
+              <div class="grid-span-1">
+                <label for="ability-ranged-skill" title="{{localize "REDSTEEL.Item.Ability.FIELDS.rangedSkill.hint"}}">{{localize "REDSTEEL.Item.Ability.FIELDS.rangedSkill.label"}}:</label>
+                <select name="system.rangedSkill" id="ability-ranged-skill">
+                  <option value="">{{localize "REDSTEEL.UI.selectType"}}</option>
+                  {{#each system.rangedSkillOptions as |skillOption|}}
+                    <option value="{{skillOption}}" {{#if (eq ../system.rangedSkill skillOption)}}selected{{/if}}>
+                      {{skillOption}}
+                    </option>
+                  {{/each}}
+                </select>
+              </div>
+            {{/if}}
+          {{/if}}
+
           <div class="grid-span-1">
             <label for="cost-type">{{localize "REDSTEEL.UI.costType"}}:</label>
             <select name="system.costType" id="cost-type">
@@ -274,6 +300,19 @@
               <input type="checkbox" name="system.multiAttack" {{#if system.multiAttack}}checked{{/if}} />
               <span>{{localize "REDSTEEL.Item.Ability.FIELDS.multiAttack.label"}}</span>
             </label>
+
+            <label class="rs-toggle" title="{{localize "REDSTEEL.Item.Ability.FIELDS.opportunityAttack.hint"}}">
+              <input type="checkbox" name="system.opportunityAttack" {{#if system.opportunityAttack}}checked{{/if}} />
+              <span>{{localize "REDSTEEL.Item.Ability.FIELDS.opportunityAttack.label"}}</span>
+            </label>
+          </div>
+
+          <div class="grid-span-2">
+            <label class="resource-label" title="{{localize "REDSTEEL.Item.Ability.FIELDS.requiredWeaponTag.hint"}}">
+              {{localize "REDSTEEL.Item.Ability.FIELDS.requiredWeaponTag.label"}}
+            </label>
+            <input type="text" name="system.requiredWeaponTag" value="{{system.requiredWeaponTag}}"
+              placeholder="{{localize "REDSTEEL.Item.Ability.FIELDS.requiredWeaponTag.hint"}}" />
           </div>
         {{/if}}
 

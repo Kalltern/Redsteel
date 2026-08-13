@@ -1,0 +1,58 @@
+{
+  "folder": "mTnmmH0f0TAMHvof",
+  "name": "Incendiary oil bottle",
+  "type": "consumable",
+  "img": "icons/consumables/potions/bottle-conical-corked-yellow.webp",
+  "system": {
+    "description": "<p>Effect - Area. Fire damage 3d6, 50% chance to cause Burning. Penetration 5.<br />The hex it shatters in becomes a burning hex: anyone who enters it, and anyone standing in it at the start of each round, has a 50% chance to catch fire.<br />Duration - Instant damage. The burning hex lasts until the spilled oil burns out (GM's call).<br />Production Bonus - 10% -&gt; 10 batches</p>",
+    "options": [
+      "potion",
+      "explosive",
+      "misc",
+      "first aid",
+      "poison"
+    ],
+    "types": [
+      "mana",
+      "health",
+      "stamina"
+    ],
+    "quantity": 1,
+    "option": "explosive",
+    "roll": {
+      "diceNum": 3,
+      "diceSize": "6",
+      "diceBonus": ""
+    },
+    "aimed": false,
+    "penetration": 5,
+    "burn": 50,
+    "freeze": 0,
+    "stagger": 0,
+    "dmgType1": "fire",
+    "localizationKey": "REDSTEEL.Items.IncendiaryOilBottle.name",
+    "difficulty": 10
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0,
+    "exQfSubzwCCs5h8v": 3,
+    "rs3mzx7WZdtEmvH2": 3,
+    "UHjN0KQ8w8ZxibJg": 3
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "redsteel",
+    "systemVersion": "0.10.2",
+    "createdTime": 1777294836937,
+    "modifiedTime": 1777294836937,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "_id": "aQ7mVx2LpR9dKs4T",
+  "_key": "!items!aQ7mVx2LpR9dKs4T"
+}

@@ -1,0 +1,58 @@
+{
+  "folder": "eNR6Ak4yjoOYudB1",
+  "name": "Mountain",
+  "type": "consumable",
+  "img": "icons/consumables/potions/potion-bottle-corked-fancy-blue.webp",
+  "system": {
+    "description": "<p>Effect - Immunity to Staggering<br />Duration - 2 hours<br />Toxicity - 12<br />Production Bonus - 0% -&gt; 1 dose<br />Ingredients - Strong alcohol, Be, Ve, Ve</p>",
+    "options": [
+      "potion",
+      "explosive",
+      "misc",
+      "first aid",
+      "poison"
+    ],
+    "types": [
+      "mana",
+      "health",
+      "stamina"
+    ],
+    "quantity": 1,
+    "option": "potion",
+    "roll": {
+      "diceNum": 0,
+      "diceSize": "0",
+      "diceBonus": "0"
+    },
+    "type": "",
+    "toxicity": 12,
+    "bleed": 0,
+    "localizationKey": "REDSTEEL.Items.Mountain.name",
+    "difficulty": 0
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {
+    "redsteel": {
+      "statusEffects": [
+        "mountain"
+      ]
+    }
+  },
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "redsteel",
+    "systemVersion": "0.10.2",
+    "createdTime": 1786367217424,
+    "modifiedTime": 1786367217424,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "_id": "uPI3uub7CU3HK3Ks",
+  "_key": "!items!uPI3uub7CU3HK3Ks"
+}

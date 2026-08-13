@@ -6,6 +6,7 @@
   "system": {
     "description": "",
     "class": "axe",
+    "tags": "war axe",
     "classOptions": [
       "axe",
       "blunt",

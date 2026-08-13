@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/death/skull-horned-worn-fire-blue.webp",
   "system": {
-    "description": "Marks a target for {{math spellPower \"/\" 2}} rounds. During this time, their Armor is reduced by 10, and they suffer 1 Damage for each point of Armor reduced. Corruption +2.",
+    "description": "Marks a target for {{math spellPower \"/\" 2 + 1}} rounds. During this time, their Armor is reduced by 10, and they suffer 1 Damage for each point of Armor reduced. Corruption +2.",
     "options": [
       "divine",
       "magic"

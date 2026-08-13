@@ -6,6 +6,12 @@ import { evaluateDmgVsArmor } from "../utils/combatSkillBonuses.mjs";
 import { getSpellPower } from "../utils/spellPower.mjs";
 import { gainBloodFromBleed, bloodGainNote } from "../utils/bloodPool.mjs";
 import { STATE_GATED_IMMUNITIES } from "../helpers/specialisations-generated.mjs";
+import {
+  isFloorEffect,
+  syncFloorInitiative,
+  syncCombatFloorInitiative,
+  registerFloorInitiativeClamp,
+} from "../utils/floorInitiative.mjs";
 
 export class RedsteelActiveEffect extends ActiveEffect {
   /* -------------------------------------------- */
@@ -58,6 +64,45 @@ export class RedsteelActiveEffect extends ActiveEffect {
     protection_warmth: ["protection_heat"],
     protection_heat: ["protection_warmth"],
   };
+  /**
+   * What re-applying an effect does when its definition does not say.
+   *
+   * The creation path and the re-application path have to derive this the same
+   * way. They used to disagree: creation only stored a `stacks` flag for a
+   * definition that spelled out `stackBehavior: "stack"`, while a second apply
+   * defaulted to `"stack"` for *anything* that left the field out. An effect
+   * like Slow was therefore created with no stack count and then re-applied
+   * down the stacking branch, which invented one and wrote it over the
+   * countdown the token counter was showing — the number went 3 → 2 and looked
+   * like the timer had jumped a turn.
+   *
+   * Only an effect that declares a ceiling counts stacks (a shield too: its
+   * remaining absorb lives in `stacks`). Everything else is binary and simply
+   * refreshes its duration.
+   *
+   * @param {object} def - An entry of CONFIG.REDSTEEL.effectDefinitions.
+   * @returns {"stack"|"refresh"|"reset"|"ignore"}
+   */
+  static stackBehaviorOf(def) {
+    if (def?.stackBehavior) return def.stackBehavior;
+    return def?.maxStacks || def?.shield ? "stack" : "refresh";
+  }
+
+  /**
+   * Whether the token counter on this kind of effect shows a stack count.
+   *
+   * A duration always wins: an effect that both stacks and expires (Poison)
+   * shows the rounds it has left, because that is the number the GM has to act
+   * on. Stacks are only shown when there is no countdown to show instead.
+   *
+   * @param {object} def - An entry of CONFIG.REDSTEEL.effectDefinitions.
+   * @returns {boolean}
+   */
+  static countsStacks(def) {
+    const behavior = this.stackBehaviorOf(def);
+    return behavior === "stack" || behavior === "reset" || !!def?.shield;
+  }
+
   static registerStatusCounterIntegration() {
     if (!game.user.isGM) {
       console.log(
@@ -78,7 +123,7 @@ export class RedsteelActiveEffect extends ActiveEffect {
       // Shields keep their remaining absorb in `stacks` (stackBehavior
       // "reset", since recasting replaces the pool rather than adding to it),
       // so they need the counter just as much as a stacking effect.
-      const hasStacks = def.stackBehavior === "stack" || !!def.shield;
+      const hasStacks = RedsteelActiveEffect.countsStacks(def);
 
       const hasRounds = !!def.defaultRounds;
       const hasTurns = !!def.defaultTurns;
@@ -93,22 +138,25 @@ export class RedsteelActiveEffect extends ActiveEffect {
         return;
       }
 
-      const useStacks = def.stackBehavior === "stack" || !!def.shield;
-
-      const stackValue = effect.getFlag("redsteel", "stacks");
+      // Duration first, stacks only when there is no countdown — the same
+      // precedence the counter keeps for the rest of the effect's life.
+      const duration =
+        (effect.getFlag("redsteel", "rounds") ?? 0) ||
+        (effect.getFlag("redsteel", "actorTurns") ?? 0);
 
       effect.updateSource({
         "flags.statuscounter.visible": true,
 
-        "flags.statuscounter.value": useStacks
-          ? stackValue
-          : def.defaultRounds
-            ? (effect.getFlag("redsteel", "rounds") ?? 0)
-            : (effect.getFlag("redsteel", "actorTurns") ?? 0),
+        "flags.statuscounter.value":
+          duration || (hasStacks ? (effect.getFlag("redsteel", "stacks") ?? 1) : 0),
       });
     });
 
-    Hooks.on("updateActiveEffect", async (effect) => {
+    // Clamp runs on the client that made the update only: the hook fires on
+    // every client, and a non-owner writing the flag back would just raise a
+    // permission error toast.
+    Hooks.on("updateActiveEffect", async (effect, changed, options, userId) => {
+      if (game.user.id !== userId) return;
       const statusId = effect.getFlag("core", "statusId");
       const def = resolveEffectDefinition(statusId)?.def;
       if (!def?.maxStacks) return;
@@ -138,6 +186,24 @@ export class RedsteelActiveEffect extends ActiveEffect {
           `${actor.name} is immune to "${statusId}" — effect not applied.`,
         );
         return false;
+      }
+    }
+
+    // Backfill the definition's own changes when the document arrives without
+    // any. `applyEffect` writes them in an update straight after creation, so
+    // for that path this is a no-op that the update then overwrites with the
+    // identical (possibly SK-scaled) array. What it rescues is every other
+    // path — clicking the status icon in the core Token HUD creates a bare
+    // effect, and a Slow with no changes is a pure icon: the speed halving,
+    // and the defense and dodge penalties, silently never happen.
+    if (!this.toObject().changes?.length) {
+      const defChanges = [];
+      for (const statusId of this.statuses ?? []) {
+        const def = resolveEffectDefinition(statusId)?.def;
+        if (def?.changes?.length) defChanges.push(...def.changes);
+      }
+      if (defChanges.length) {
+        this.updateSource({ changes: foundry.utils.deepClone(defChanges) });
       }
     }
 
@@ -247,6 +313,28 @@ export class RedsteelActiveEffect extends ActiveEffect {
         options.redsteelDamageInstance = true;
       }
     });
+
+    // Prone / Downed pin turn order to 1 for as long as they are on the actor.
+    // Driven from the effect collection rather than from the apply path, so a
+    // status toggled straight from the Token HUD counts too.
+    Hooks.on("createActiveEffect", async (effect) => {
+      if (!this._isAuthoritative()) return;
+      if (!isFloorEffect(effect)) return;
+      if (!(effect.parent instanceof Actor)) return;
+      await syncFloorInitiative(effect.parent);
+    });
+
+    Hooks.on("deleteActiveEffect", async (effect, options) => {
+      if (!this._isAuthoritative()) return;
+      if (options?.redsteelOverrideSwap) return;
+      if (!isFloorEffect(effect)) return;
+      if (!(effect.parent instanceof Actor)) return;
+      // The actor's derived status set may not have been rebuilt yet, so tell
+      // the check to treat this effect as already gone.
+      await syncFloorInitiative(effect.parent, { ignoreId: effect.id });
+    });
+
+    registerFloorInitiativeClamp();
 
     this._hooksRegistered = true;
   }
@@ -407,13 +495,6 @@ export class RedsteelActiveEffect extends ActiveEffect {
     for (const combatant of combat.combatants.values()) {
       const actor = combatant.actor;
       if (!actor) continue;
-      const prone = actor.effects.find(
-        (e) =>
-          e.getFlag("core", "statusId") === "prone" &&
-          e.getFlag("redsteel", "proneDelayInit"),
-      );
-      if (!actor) continue;
-
       // -------------------------
       // 1. Run ROUND effects
       // -------------------------
@@ -438,17 +519,16 @@ export class RedsteelActiveEffect extends ActiveEffect {
           await bleed.delete();
         }
       }
-
-      if (prone) {
-        await combatant.setFlag("redsteel", "proneInitiativePending", true);
-
-        await prone.unsetFlag("redsteel", "proneDelayInit");
-
-        ui.notifications.info(
-          `${actor.name} drops to initiative 1 from Prone.`,
-        );
-      }
     }
+
+    // -------------------------
+    // 3. Floor statuses (Prone / Downed) pin turn order to 1
+    // -------------------------
+    // Runs after the effect countdowns above, so a Prone that expired this
+    // round hands the actor their old order back instead of pinning them for
+    // another round. Also catches anyone who fell after already acting last
+    // round — that drop is deferred to here to avoid granting a second turn.
+    await syncCombatFloorInitiative(combat);
   }
 
   static async _applyCombatModifiers(actor, combatModifiers) {
@@ -513,7 +593,14 @@ export class RedsteelActiveEffect extends ActiveEffect {
   static async applyEffect(
     actor,
     effectId,
-    { stacks = 1, turns, caster = null, school = null, poolOverride = null } = {},
+    {
+      stacks = 1,
+      turns,
+      rounds,
+      caster = null,
+      school = null,
+      poolOverride = null,
+    } = {},
   ) {
     const resolved = resolveEffectDefinition(effectId);
     if (!resolved) {
@@ -540,7 +627,7 @@ export class RedsteelActiveEffect extends ActiveEffect {
     // `let`, not `const`: Spell Power-scaled effects (see the dynamic block
     // below) can override how long the effect lasts.
     let turnsDuration = turns ?? def.defaultTurns ?? 0;
-    let roundsDuration = def.defaultRounds ?? 0;
+    let roundsDuration = rounds ?? def.defaultRounds ?? 0;
 
     // Hemophylia — "for each Bleeding gained, gains one additional Bleeding":
     // incoming Bleeding stacks are doubled for the receiving actor (then clamped
@@ -569,7 +656,10 @@ export class RedsteelActiveEffect extends ActiveEffect {
       for (const overrideId of overrides) {
         const existing = actor.effects.find((e) => e.statuses?.has(overrideId));
         if (existing) {
-          await existing.delete();
+          // Tagged as a swap: the replacement is created a few lines below, so
+          // teardown that reacts to a status ending (floor initiative giving
+          // the actor their turn order back) must sit this one out.
+          await existing.delete({ redsteelOverrideSwap: true });
         }
       }
     }
@@ -750,6 +840,16 @@ export class RedsteelActiveEffect extends ActiveEffect {
       );
     }
 
+    // Entropy — the −10 Armor is fixed (in the definition's changes); the mark
+    // lasts SK/2 + 1 rounds of Darkness Spell Power. getSpellPower floors the
+    // multiplied result, so the +1 is added after the division rounds down —
+    // the same order the description's `{{math spellPower "/" 2 + 1}}` reads.
+    if (effectId === "entropy" && sourceCaster) {
+      roundsDuration =
+        getSpellPower(sourceCaster, school ?? "darkness", { multiplier: 0.5 }) +
+        1;
+    }
+
     // ============================================
     // FIRE-SCHOOL SK-SCALED EFFECTS
     // ============================================
@@ -826,7 +926,7 @@ export class RedsteelActiveEffect extends ActiveEffect {
     // EXISTING EFFECT
     // ============================================
     if (existing) {
-      const stackBehavior = def.stackBehavior ?? "stack";
+      const stackBehavior = RedsteelActiveEffect.stackBehaviorOf(def);
 
       // =========================================
       // IGNORE
@@ -847,6 +947,15 @@ export class RedsteelActiveEffect extends ActiveEffect {
 
         if (roundsDuration > 0) {
           updates["flags.redsteel.rounds"] = roundsDuration;
+        }
+
+        // The token counter is a separate flag that decrementRound/Turn keeps in
+        // step — refreshing the duration without rewriting it leaves the token
+        // counting down from the *old* value while the effect actually runs on
+        // the new one. Mirror the new-effect path's precedence (rounds first).
+        if (roundsDuration > 0 || turnsDuration > 0) {
+          updates["flags.statuscounter.value"] =
+            roundsDuration || turnsDuration;
         }
 
         await existing.update(updates);
@@ -896,34 +1005,65 @@ export class RedsteelActiveEffect extends ActiveEffect {
 
         // Always refresh the duration on re-application — even when already at
         // max stacks (so e.g. poison's timer resets to its full duration).
+        // Counter included: a duration written without its counter leaves the
+        // token counting down from the old number while the effect actually
+        // runs on the new one, which reads as "the timer did not refresh".
+        const updates = {};
+
         if (turnsDuration > 0) {
-          await existing.setFlag("redsteel", "actorTurns", turnsDuration);
+          updates["flags.redsteel.actorTurns"] = turnsDuration;
         }
 
         if (roundsDuration > 0) {
-          await existing.setFlag("redsteel", "rounds", roundsDuration);
+          updates["flags.redsteel.rounds"] = roundsDuration;
         }
 
-        if (appliedStacks <= 0) return existing;
+        // Only claim the counter when there is no countdown on this effect.
+        // Poison stacks *and* expires; the rounds left is the number the GM
+        // acts on, and writing the stack count there would look like the timer
+        // had jumped (and be undone by the next decrementRound anyway).
+        updates["flags.statuscounter.value"] =
+          (turnsDuration > 0 ? turnsDuration : 0) ||
+          (roundsDuration > 0 ? roundsDuration : 0) ||
+          (existing.getFlag("redsteel", "rounds") ?? 0) ||
+          (existing.getFlag("redsteel", "actorTurns") ?? 0) ||
+          newStacks;
 
-        await existing.update({
-          "flags.redsteel.stacks": newStacks,
-          "flags.statuscounter.value": newStacks,
+        // Stack-side bookkeeping only when a stack was actually gained — at the
+        // cap the re-apply is a pure duration refresh.
+        if (appliedStacks > 0) {
+          updates["flags.redsteel.stacks"] = newStacks;
+
           // A shield that stacks (Krvavý štít) must keep its absorb config in
           // sync, and (re)writes it here so an effect that was created without
           // one — e.g. toggled straight from the token HUD — still soaks damage
           // rather than just growing an inert counter. `max` tracks the peak.
-          ...(shieldConfig && {
-            "flags.redsteel.shield": { ...shieldConfig, max: newStacks },
-            "flags.statuscounter.visible": true,
-          }),
-        });
+          if (shieldConfig) {
+            updates["flags.redsteel.shield"] = {
+              ...shieldConfig,
+              max: newStacks,
+            };
+            updates["flags.statuscounter.visible"] = true;
+          }
+        }
+
+        await existing.update(updates);
+
+        if (appliedStacks <= 0) return existing;
 
         await existing.updateCorrosionChange();
 
-        await existing.executeTrigger("onApply", {
-          appliedStacks,
-        });
+        // `onlyOnCreate` marks an onApply that belongs to *contracting* the
+        // condition rather than to the dose that re-applied it — Poison's flat
+        // 2d6. Re-applying such an effect refreshes its clock and its stacks
+        // and nothing else; the damage after that comes from onRoundStart.
+        // Triggers that are about the new stacks (Bleeding's {appliedStacks}d4)
+        // or that re-test the target (Fear) leave the flag off and still fire.
+        if (!def.triggers?.onApply?.onlyOnCreate) {
+          await existing.executeTrigger("onApply", {
+            appliedStacks,
+          });
+        }
 
         return existing;
       }
@@ -936,7 +1076,10 @@ export class RedsteelActiveEffect extends ActiveEffect {
       triggers,
     };
 
-    if (def.stackBehavior === "stack" || def.stackBehavior === "reset") {
+    // Derived, not a literal check on the definition: an effect the
+    // re-application path will treat as stacking has to be *created* with a
+    // stack count, or the second apply invents one. See stackBehaviorOf().
+    if (RedsteelActiveEffect.countsStacks(def)) {
       redsteelFlags.stacks = initialStacks;
     }
 
@@ -957,6 +1100,22 @@ export class RedsteelActiveEffect extends ActiveEffect {
     await actor.toggleStatusEffect(effectId, { active: true });
 
     const created = actor.effects.find((e) => e.statuses?.has(effectId));
+    // Without this the next line throws a TypeError and leaves behind exactly
+    // the failure that is hardest to read at the table: the icon is on the
+    // token, but the document never received its `changes`, so the effect is
+    // inert. Say so instead.
+    if (!created) {
+      ui.notifications.error(
+        `Could not apply "${effectId}" to ${actor.name} — the status was toggled but no effect document came back.`,
+      );
+      console.error("REDSTEEL | applyEffect: effect missing after toggle", {
+        actor: actor.uuid,
+        effectId,
+      });
+      return null;
+    }
+
+    const counterValue = roundsDuration || turnsDuration || 0;
     await created.update({
       name: game.i18n.localize(def.name),
       img: def.img,
@@ -972,17 +1131,12 @@ export class RedsteelActiveEffect extends ActiveEffect {
         statuscounter: {
           // Shields keep their absorb pool in `stacks` under stackBehavior
           // "reset" (recasting replaces the pool), so they need the counter
-          // just as much as a "stack" effect does.
-          visible:
-            def.stackBehavior === "stack" ||
-            !!def.shield ||
-            !!def.defaultRounds ||
-            !!def.defaultTurns,
+          // just as much as a "stack" effect does. Durations are read from the
+          // resolved numbers rather than the definition's defaults, so a
+          // hand-set duration (the GM's effect manager) still gets a counter.
+          visible: RedsteelActiveEffect.countsStacks(def) || counterValue > 0,
 
-          value:
-            def.stackBehavior === "stack" || def.shield
-              ? initialStacks
-              : roundsDuration || turnsDuration || 0,
+          value: counterValue || initialStacks,
         },
       },
     });
@@ -999,6 +1153,141 @@ export class RedsteelActiveEffect extends ActiveEffect {
       await created.setFlag("redsteel", "baneMarkedBy", sourceCaster.id);
     }
     return created;
+  }
+
+  /**
+   * Turn a single GM-facing amount into the right `applyEffect` option.
+   *
+   * One number per effect, and it always means the same thing: what the token
+   * counter will read. A countdown wins over a stack count for the same reason
+   * the counter shows it — Slow "5" is five turns, Bleeding "5" is five
+   * stacks, Poison "5" is five rounds (its stacks still climb by one per
+   * re-apply, capped by its own maxStacks).
+   *
+   * @param {object} def - An entry of CONFIG.REDSTEEL.effectDefinitions.
+   * @param {number} amount
+   * @returns {object} Options for applyEffect.
+   */
+  static amountOption(def, amount) {
+    if (def?.defaultRounds) return { rounds: amount };
+    if (def?.defaultTurns || def?.useDuration) return { turns: amount };
+    if (this.countsStacks(def)) return { stacks: amount };
+    return {};
+  }
+
+  /**
+   * Where a live effect keeps the number its counter is showing.
+   *
+   * @param {ActiveEffect} effect
+   * @param {object} def
+   * @returns {{path: string, value: number, kind: "rounds"|"turns"|"stacks"}|null}
+   *   null for a marker that counts nothing at all (Prone, Dead, …).
+   */
+  static trackedAmount(effect, def) {
+    const rounds = effect.getFlag("redsteel", "rounds") ?? 0;
+    if (rounds > 0) {
+      return { path: "flags.redsteel.rounds", value: rounds, kind: "rounds" };
+    }
+
+    const turns = effect.getFlag("redsteel", "actorTurns") ?? 0;
+    if (turns > 0) {
+      return {
+        path: "flags.redsteel.actorTurns",
+        value: turns,
+        kind: "turns",
+      };
+    }
+
+    if (this.countsStacks(def)) {
+      return {
+        path: "flags.redsteel.stacks",
+        value: effect.getFlag("redsteel", "stacks") ?? 1,
+        kind: "stacks",
+      };
+    }
+
+    // No flag yet, but the definition says this effect runs on a clock — an
+    // effect toggled from the Token HUD arrives with nothing set. Report the
+    // slot at zero so the GM can still give it a duration from the manager.
+    if (def?.defaultRounds) {
+      return { path: "flags.redsteel.rounds", value: 0, kind: "rounds" };
+    }
+    if (def?.defaultTurns || def?.useDuration) {
+      return { path: "flags.redsteel.actorTurns", value: 0, kind: "turns" };
+    }
+
+    return null;
+  }
+
+  /**
+   * Nudge an effect's counter up or down without going through a re-apply.
+   *
+   * A re-apply is the wrong tool for "give it one more turn": it re-runs
+   * onApply (another Poison tick, another Burning panic test) and resets the
+   * duration to the definition's default instead of adding to what is left.
+   * This walks the stored number directly, and removes the effect when it
+   * reaches zero.
+   *
+   * @param {Actor} actor
+   * @param {string} effectId
+   * @param {number} delta - Signed. Bumping an effect the actor does not have
+   *   applies it at `delta`.
+   * @param {object} [options]
+   * @param {number} [options.max=99] - Ceiling for durations; stacks use the
+   *   definition's own maxStacks when it has one.
+   * @returns {Promise<ActiveEffect|null>}
+   */
+  static async adjustEffectAmount(actor, effectId, delta, { max = 99 } = {}) {
+    const resolved = resolveEffectDefinition(effectId);
+    if (!resolved) return null;
+
+    const { id, def } = resolved;
+    const existing = actor.effects.find((e) => e.statuses?.has(id));
+
+    if (!existing) {
+      if (delta <= 0) return null;
+      return this.applyEffect(
+        actor,
+        id,
+        this.amountOption(def, Math.min(delta, max)),
+      );
+    }
+
+    const tracked = this.trackedAmount(existing, def);
+
+    // Nothing to count: down removes the marker, up has nothing to raise.
+    if (!tracked) {
+      if (delta < 0) await existing.delete();
+      return null;
+    }
+
+    const ceiling = tracked.kind === "stacks" ? (def.maxStacks ?? max) : max;
+    const next = Math.min(Math.max(0, tracked.value + delta), ceiling);
+
+    if (next <= 0) {
+      await existing.delete();
+      return null;
+    }
+    if (next === tracked.value) return existing;
+
+    const updates = {
+      [tracked.path]: next,
+      "flags.statuscounter.value": next,
+      "flags.statuscounter.visible": true,
+    };
+
+    // A shield's absorb pool lives in `stacks`; `max` is its high-water mark,
+    // which the bar reads to draw how much is left.
+    const shield = existing.getFlag("redsteel", "shield");
+    if (tracked.kind === "stacks" && shield) {
+      updates["flags.redsteel.shield"] = {
+        ...shield,
+        max: Math.max(Number(shield.max) || 0, next),
+      };
+    }
+
+    await existing.update(updates);
+    return existing;
   }
 
   getChangesByKey(key) {
@@ -1373,7 +1662,15 @@ export class RedsteelActiveEffect extends ActiveEffect {
     const effectId = this.getFlag("core", "statusId");
     if (!effectId) return;
 
-    await RedsteelActiveEffect._removeCombatModifiers(actor, effectId);
+    // Combat-modifier groups live on the actor, so clearing one is an actor
+    // write. _onDelete runs on EVERY connected client, and the ones that do not
+    // own the actor fail that write with a "lacks permission to update Actor"
+    // toast (every strike replaced or consumed spammed the whole table). The
+    // user who deleted the effect necessarily owns the parent actor — deleting
+    // an embedded document requires it — so let only that client clean up.
+    if (game.user.id === userId) {
+      await RedsteelActiveEffect._removeCombatModifiers(actor, effectId);
+    }
 
     // Possession ends when the "Possessed" marker is removed. Ownership changes
     // need GM authority, so only the active GM restores — regardless of who
@@ -1874,53 +2171,14 @@ export class RedsteelActiveEffect extends ActiveEffect {
     });
   }
 
-  async _handleProneInitiative() {
-    return this._dropToInitiativeOne({
-      actedMsg: `${this.parent?.name} will act last next round due to being prone.`,
-      droppedMsg: `${this.parent?.name} falls prone and drops to initiative 1.`,
-    });
-  }
-
   /**
-   * Drops the parent actor's combatant to initiative 1. If they have already
-   * acted this round, they instead act last next round (the engine's natural
-   * ordering at initiative 1). Shared by Prone and Downed.
+   * Prone's onApply trigger. The real enforcement lives in the floor-initiative
+   * layer (which also covers Downed, HUD toggles, round starts and any direct
+   * initiative write); this just nudges it on the apply path. Idempotent, so it
+   * costs nothing when the createActiveEffect hook has already run.
    */
-  async _dropToInitiativeOne({ actedMsg, droppedMsg } = {}) {
-    const actor = this.parent;
-    if (!actor) return;
-
-    const combat = game.combat;
-    if (!combat) return;
-
-    const combatant = combat.combatants.find((c) => c.actorId === actor.id);
-
-    if (!combatant) return;
-
-    const currentTurn = combat.turn;
-
-    const combatantTurn = combat.turns.findIndex((t) => t.id === combatant.id);
-
-    const alreadyActed = combatantTurn < currentTurn;
-
-    // -----------------------------------
-    // Already acted
-    // -----------------------------------
-
-    if (alreadyActed) {
-      if (actedMsg) ui.notifications.info(actedMsg);
-      return;
-    }
-
-    // -----------------------------------
-    // Has not acted yet
-    // -----------------------------------
-
-    await combatant.update({
-      initiative: 1,
-    });
-
-    if (droppedMsg) ui.notifications.info(droppedMsg);
+  async _handleProneInitiative() {
+    return syncFloorInitiative(this.parent);
   }
 
   /* -------------------------------------------- */
@@ -1998,11 +2256,8 @@ export class RedsteelActiveEffect extends ActiveEffect {
     const actor = this.parent;
     if (!actor) return;
 
-    // Being Downed drops the character to initiative 1, like Prone.
-    await this._dropToInitiativeOne({
-      actedMsg: `${actor.name} will act last next round (Downed).`,
-      droppedMsg: `${actor.name} is Downed and drops to initiative 1.`,
-    });
+    // Being Downed pins turn order to 1, like Prone.
+    await syncFloorInitiative(actor);
 
     const current = Number(actor.system.stats.mind?.value ?? 0);
     const loss = Math.ceil(current / 2);
@@ -2085,13 +2340,10 @@ export class RedsteelActiveEffect extends ActiveEffect {
     const actor = this.parent;
     if (!actor) return;
 
-    // Also drops them to initiative 1 — harmless when Downed already did it,
-    // and needed when unconsciousness arrives on its own (a head crit's failed
+    // Also pins them at initiative 1 — harmless when Downed already did it, and
+    // needed when unconsciousness arrives on its own (a head crit's failed
     // Endurance test, Mind hitting 0 outside the Downed flow).
-    await this._dropToInitiativeOne({
-      actedMsg: `${actor.name} is unconscious and will not act next round.`,
-      droppedMsg: `${actor.name} falls unconscious and drops out of the turn order.`,
-    });
+    await syncFloorInitiative(actor);
 
     const combatant = game.combat?.combatants.find(
       (c) => c.actorId === actor.id,

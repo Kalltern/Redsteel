@@ -150,101 +150,262 @@ export async function restAndRecover() {
   });
 }
 
-export async function longRest() {
-  const controlled = canvas.tokens.controlled;
+/**
+ * Everyone a Long Rest could plausibly cover, in the order they are offered:
+ * the characters assigned to real players, then anything flagged into the party
+ * (companions, mounts, hirelings), then whatever tokens happen to be selected.
+ *
+ * Keyed on uuid rather than id, the same way the hotbar's party row is: an
+ * unlinked token's actor is synthetic and borrows the base actor's id, so two
+ * copies dragged from one sheet would otherwise collapse into a single row.
+ *
+ * @returns {{actor: Actor, group: string}[]}
+ */
+function collectLongRestCandidates() {
+  const rows = [];
+  const seen = new Set();
+  const add = (actor, group, sortKey) => {
+    // Only what this user can actually write to. A GM owns everything, so this
+    // only bites when a player runs the macro: they get themselves and their
+    // companions rather than a roster whose updates would be refused.
+    if (!actor?.isOwner || seen.has(actor.uuid)) return;
+    seen.add(actor.uuid);
+    rows.push({ actor, group, sortKey: `${group}${sortKey}` });
+  };
 
-  if (!controlled.length) {
-    ui.notifications.warn("Select at least one token.");
+  // Players who are not logged in still count: a Long Rest is downtime the
+  // whole party takes, and their character rests whether or not they are here.
+  for (const user of game.users.contents) {
+    if (user.isGM) continue;
+    add(user.character, "0", user.name);
+  }
+
+  for (const candidate of game.actors.contents) {
+    if (candidate.system?.partyMember) add(candidate, "1", candidate.name);
+  }
+
+  // Ticking "party member" on an *unlinked* token writes to its ActorDelta and
+  // never touches the world actor, so the scene has to be swept as well.
+  for (const tokenDoc of canvas?.scene?.tokens?.contents ?? []) {
+    const candidate = tokenDoc.actor;
+    if (candidate?.system?.partyMember) add(candidate, "1", candidate.name);
+  }
+
+  // Selected tokens last, so resting an arbitrary NPC still works the old way.
+  for (const token of canvas?.tokens?.controlled ?? []) {
+    add(token.actor, "2", token.actor?.name ?? "");
+  }
+
+  return rows
+    .sort((a, b) => a.sortKey.localeCompare(b.sortKey, game.i18n.lang))
+    .map(({ actor, group }) => ({ actor, group }));
+}
+
+/**
+ * Vertical roster with a checkbox per actor, everyone ticked to start with —
+ * a Long Rest normally covers the whole party, and dropping the one person
+ * standing watch should be a single click rather than a re-selection.
+ *
+ * @param {{actor: Actor, group: string}[]} candidates
+ * @returns {Promise<Actor[]|null>} The chosen actors, or null if cancelled.
+ */
+async function promptForLongRestActors(candidates) {
+  const label = (key) => game.i18n.localize(`REDSTEEL.LongRest.${key}`);
+  const groupLabel = {
+    0: label("GroupPlayers"),
+    1: label("GroupParty"),
+    2: label("GroupSelected"),
+  };
+
+  let lastGroup = null;
+  const rows = candidates
+    .map(({ actor, group }) => {
+      const heading =
+        group === lastGroup
+          ? ""
+          : `<div class="rs-rest-group">${groupLabel[group]}</div>`;
+      lastGroup = group;
+
+      const hp = actor.system?.stats?.health ?? {};
+      const hpText =
+        hp.value === undefined ? "" : `${hp.value}/${hp.max ?? "?"}`;
+
+      return `
+        ${heading}
+        <label class="rs-rest-row">
+          <input type="checkbox" name="rs-rest-actor" value="${actor.uuid}" checked>
+          <img src="${actor.img ?? "icons/svg/mystery-man.svg"}" alt="">
+          <span class="rs-rest-name">${foundry.utils.escapeHTML(actor.name)}</span>
+          <span class="rs-rest-hp">${hpText}</span>
+        </label>`;
+    })
+    .join("");
+
+  const DialogV2 = foundry.applications.api.DialogV2;
+  const chosen = await DialogV2.wait({
+    window: { title: label("Title"), icon: "fa-light fa-moon" },
+    classes: ["redsteel", "rs-longrest-dialog"],
+    position: { width: 340 },
+    content: `
+      <form>
+        <label class="rs-rest-row rs-rest-all">
+          <input type="checkbox" name="rs-rest-all" checked>
+          <span class="rs-rest-name">${label("SelectAll")}</span>
+        </label>
+        <div class="rs-rest-list">${rows}</div>
+      </form>`,
+    buttons: [
+      {
+        action: "rest",
+        label: label("Confirm"),
+        icon: "fa-light fa-moon",
+        default: true,
+        callback: (event, button, dialog) => {
+          const root = dialog?.element ?? button.form;
+          return Array.from(
+            root.querySelectorAll('input[name="rs-rest-actor"]:checked'),
+          ).map((input) => input.value);
+        },
+      },
+    ],
+    render: (_event, dialog) => {
+      const root = dialog instanceof HTMLElement ? dialog : dialog?.element;
+      if (!root) return;
+
+      const master = root.querySelector('input[name="rs-rest-all"]');
+      const boxes = Array.from(
+        root.querySelectorAll('input[name="rs-rest-actor"]'),
+      );
+
+      master?.addEventListener("change", () => {
+        for (const box of boxes) box.checked = master.checked;
+      });
+      // The master reads as "everyone", so it has to follow the rows back:
+      // leaving it ticked after one is cleared would be a standing lie.
+      for (const box of boxes) {
+        box.addEventListener("change", () => {
+          if (!master) return;
+          master.checked = boxes.every((b) => b.checked);
+          master.indeterminate = !master.checked && boxes.some((b) => b.checked);
+        });
+      }
+    },
+    rejectClose: false,
+  });
+
+  if (!Array.isArray(chosen)) return null; // cancelled or closed
+  return chosen.map((uuid) => fromUuidSync(uuid)).filter((a) => a);
+}
+
+export async function longRest() {
+  const candidates = collectLongRestCandidates();
+
+  if (!candidates.length) {
+    ui.notifications.warn(game.i18n.localize("REDSTEEL.LongRest.NoCandidates"));
     return;
   }
 
-  for (const token of controlled) {
-    const actor = token.actor;
-    if (!actor) continue;
+  const actors = await promptForLongRestActors(candidates);
+  if (actors === null) return; // cancelled
 
-    const system = actor.system;
+  if (!actors.length) {
+    ui.notifications.warn(game.i18n.localize("REDSTEEL.LongRest.NoneChosen"));
+    return;
+  }
 
-    const nourishingEffect = actor.effects.find((e) =>
-      e.statuses?.has("nourishing_rest"),
-    );
+  for (const actor of actors) {
+    await applyLongRest(actor);
+  }
+}
 
-    const regenMultiplier = nourishingEffect ? 2 : 1;
+/**
+ * The Long Rest itself for a single actor: regeneration, one Mind, one fatigue
+ * degree off, rerolls back to ready, and a card saying so.
+ */
+async function applyLongRest(actor) {
+  const system = actor.system;
 
-    // ─── Stamina ───
-    const stamina = system.stats.stamina.value ?? 0;
-    const newStamina = Math.max(0, stamina + system.stats.stamina.max);
+  const nourishingEffect = actor.effects.find((e) =>
+    e.statuses?.has("nourishing_rest"),
+  );
 
-    // ─── Health ───
-    // `longRestHealthBonus` is a flat extra set by Active Effects — Starsign:
-    // Rock grants +2. It is added after the Nourishing Rest multiplier, so the
-    // starsign is worth the same 2 health whether or not the rest was nourishing.
-    const health = system.stats.health.value ?? 0;
-    const longRestHealthBonus = Number(system.longRestHealthBonus) || 0;
-    const healthRegen =
-      (10 + system.attributes.end.total * 2) * regenMultiplier +
-      longRestHealthBonus;
+  const regenMultiplier = nourishingEffect ? 2 : 1;
 
-    const newHealth = Math.max(0, health + healthRegen);
+  // ─── Stamina ───
+  const stamina = system.stats.stamina.value ?? 0;
+  const newStamina = Math.max(0, stamina + system.stats.stamina.max);
 
-    // ─── Toxicity ───
-    const toxicity = system.stats.toxicity.value ?? 0;
+  // ─── Health ───
+  // `longRestHealthBonus` is a flat extra set by Active Effects — Starsign:
+  // Rock grants +2. It is added after the Nourishing Rest multiplier, so the
+  // starsign is worth the same 2 health whether or not the rest was nourishing.
+  const health = system.stats.health.value ?? 0;
+  const longRestHealthBonus = Number(system.longRestHealthBonus) || 0;
+  const healthRegen =
+    (10 + system.attributes.end.total * 2) * regenMultiplier +
+    longRestHealthBonus;
 
-    const toxicityReduction =
-      (5 + system.attributes.end.total * 2) * regenMultiplier;
+  const newHealth = Math.max(0, health + healthRegen);
 
-    const newToxicity = Math.max(0, toxicity - toxicityReduction);
+  // ─── Toxicity ───
+  const toxicity = system.stats.toxicity.value ?? 0;
 
-    // ─── Fatigue ───
-    const fatigue = system.stats.fatigue.value ?? 0;
-    const newFatigue = Math.max(0, fatigue - 1);
+  const toxicityReduction =
+    (5 + system.attributes.end.total * 2) * regenMultiplier;
 
-    // ─── Mind ───
-    const mind = Number(system.stats.mind.value ?? 0);
-    const newMind = Math.max(0, mind + 1);
-    // ─── Mana ───
-    const mana = system.stats.mana.value ?? 0;
-    const maxMana = system.stats.mana.max ?? 0;
+  const newToxicity = Math.max(0, toxicity - toxicityReduction);
 
-    const elementalistRank = system.doctrines.elementalist.value ?? 0;
-    const elymasRank = system.doctrines.elymas.value ?? 0;
-    const incantatorRank = system.doctrines.incantator.value ?? 0;
-    const veneficusRank = system.doctrines.veneficus.value ?? 0;
+  // ─── Fatigue ───
+  const fatigue = system.stats.fatigue.value ?? 0;
+  const newFatigue = Math.max(0, fatigue - 1);
 
-    let newMana = 0;
+  // ─── Mind ───
+  const mind = Number(system.stats.mind.value ?? 0);
+  const newMind = Math.max(0, mind + 1);
+  // ─── Mana ───
+  const mana = system.stats.mana.value ?? 0;
+  const maxMana = system.stats.mana.max ?? 0;
 
-    if (elementalistRank > 0) {
-      newMana = elementalistRank >= 7 ? 50 : elementalistRank >= 5 ? 35 : 25;
-    } else if (elymasRank > 0) {
-      newMana = elymasRank >= 5 ? maxMana : Math.floor(maxMana / 2);
-    } else if (incantatorRank > 0) {
-      newMana = incantatorRank >= 9 ? 40 : incantatorRank >= 5 ? 30 : 20;
-    } else if (veneficusRank > 0) {
-      newMana = maxMana;
-    }
+  const elementalistRank = system.doctrines.elementalist.value ?? 0;
+  const elymasRank = system.doctrines.elymas.value ?? 0;
+  const incantatorRank = system.doctrines.incantator.value ?? 0;
+  const veneficusRank = system.doctrines.veneficus.value ?? 0;
 
-    const manaText = newMana > 0 ? `, Mana +${newMana}` : "";
+  let newMana = 0;
 
-    if (nourishingEffect) {
-      await nourishingEffect.delete();
-    }
+  if (elementalistRank > 0) {
+    newMana = elementalistRank >= 7 ? 50 : elementalistRank >= 5 ? 35 : 25;
+  } else if (elymasRank > 0) {
+    newMana = elymasRank >= 5 ? maxMana : Math.floor(maxMana / 2);
+  } else if (incantatorRank > 0) {
+    newMana = incantatorRank >= 9 ? 40 : incantatorRank >= 5 ? 30 : 20;
+  } else if (veneficusRank > 0) {
+    newMana = maxMana;
+  }
 
-    const updates = {
-      "system.stats.stamina.value": newStamina,
-      "system.stats.health.value": newHealth,
-      "system.stats.toxicity.value": newToxicity,
-      "system.stats.fatigue.value": newFatigue,
-      "system.stats.mind.value": newMind,
-      "system.stats.mana.value": Math.min(maxMana, mana + newMana),
-    };
-    await actor.update(updates);
+  const manaText = newMana > 0 ? `, Mana +${newMana}` : "";
 
-    // ─── Rerolls ─── restore every feature reroll to ready.
-    const rerollsRestored = await resetActorRerolls(actor);
+  if (nourishingEffect) {
+    await nourishingEffect.delete();
+  }
 
-    // ─── Chat Message ───
-    const iconUrl = "icons/magic/time/day-night-sunset-sunrise.webp";
+  const updates = {
+    "system.stats.stamina.value": newStamina,
+    "system.stats.health.value": newHealth,
+    "system.stats.toxicity.value": newToxicity,
+    "system.stats.fatigue.value": newFatigue,
+    "system.stats.mind.value": newMind,
+    "system.stats.mana.value": Math.min(maxMana, mana + newMana),
+  };
+  await actor.update(updates);
 
-    const chatMessage = `
+  // ─── Rerolls ─── restore every feature reroll to ready.
+  const rerollsRestored = await resetActorRerolls(actor);
+
+  // ─── Chat Message ───
+  const iconUrl = "icons/magic/time/day-night-sunset-sunrise.webp";
+
+  const chatMessage = `
 <div style="display:flex; align-items:center; gap:10px;">
   <img src="${iconUrl}" width="36" height="36"
        style="border-radius:50%;" />
@@ -268,11 +429,10 @@ export async function longRest() {
 </div>
 `;
 
-    await ChatMessage.create({
-      content: chatMessage,
-      speaker: ChatMessage.getSpeaker({ actor }),
-    });
-  }
+  await ChatMessage.create({
+    content: chatMessage,
+    speaker: ChatMessage.getSpeaker({ actor }),
+  });
 }
 
 // Spend one charge of the actor's first aid kit (a "first aid" consumable),
@@ -294,22 +454,88 @@ async function consumeFirstAidKit(actor) {
   }
 }
 
+// A Healing salve spent on a First Aid attempt adds +1d6 to the heal. Crafted
+// copies come from the compendium item via the recipe's resultUuid, so they
+// carry the same localizationKey — the name check only catches hand-made ones.
+const SALVE_LOC_KEY = "REDSTEEL.Items.HealingSalve.name";
+
+function findHealingSalve(actor) {
+  return actor.items.find(
+    (i) =>
+      i.type === "consumable" &&
+      Number(i.system?.quantity ?? 1) > 0 &&
+      (i.system?.localizationKey === SALVE_LOC_KEY ||
+        /^\s*(healing salve|hojivá mast)\s*$/i.test(i.name ?? "")),
+  );
+}
+
+// Spend one dose of the actor's Healing salve — same stack pattern as the kit.
+async function consumeHealingSalve(actor) {
+  const salve = findHealingSalve(actor);
+  if (!salve) return;
+
+  const newQty = Number(salve.system.quantity ?? 1) - 1;
+  if (newQty > 0) {
+    await salve.update({ "system.quantity": newQty });
+  } else {
+    await salve.delete();
+  }
+}
+
+/**
+ * First Aid heal formula. Margin tiers add flat dice on top of the base heal
+ * (they used to multiply the whole roll); Feldsher and a spent Healing salve
+ * stack their own dice on top.
+ */
+function buildFirstAidHealFormula(actor, total, { useSalve = false, critSuccess = false } = {}) {
+  const parts = ["3d6+3"];
+
+  if (critSuccess || total >= 60) parts.push("2d6");
+  else if (total >= 25) parts.push("1d6");
+
+  if (actor.system.feldsher2) parts.push("2d6");
+  else if (actor.system.feldsher1) parts.push("1d6");
+
+  if (useSalve) parts.push("1d6");
+
+  return parts.join(" + ");
+}
+
 // Builds the Medical Action dialog buttons. In combat every action requires a
 // target and starts the 4-action commit process (Treat Wound is unavailable);
 // out of combat the actions roll immediately (and Treat Wound is offered).
-function buildMedicalButtons({ actor, token, getExtraPenalty, consumeKitIfUsed }) {
-  const immediate = (perform) => async (html) => {
-    const done = await perform(actor, token, getExtraPenalty(html));
-    if (done) await consumeKitIfUsed(html);
+// The salve is only ever spent on First Aid — it does nothing for the others.
+function buildMedicalButtons({
+  actor,
+  token,
+  getExtraPenalty,
+  getUseSalve,
+  consumeKitIfUsed,
+  consumeSalveIfUsed,
+}) {
+  const immediate = (actionType, perform, { salve = false } = {}) => async (html) => {
+    const useSalve = salve && getUseSalve(html);
+    const done = await perform(actor, token, getExtraPenalty(html, actionType), {
+      useSalve,
+    });
+    if (done) {
+      await consumeKitIfUsed(html);
+      if (useSalve) await consumeSalveIfUsed();
+    }
   };
 
   const combatStart = (actionType) => async (html) => {
+    const useSalve = actionType === "firstAid" && getUseSalve(html);
     const started = await startCombatFirstAid(
       actor,
       actionType,
-      getExtraPenalty(html),
+      getExtraPenalty(html, actionType),
+      useSalve,
     );
-    if (started) await consumeKitIfUsed(html);
+    if (started) {
+      await consumeKitIfUsed(html);
+      if (useSalve) await consumeSalveIfUsed();
+    }
   };
 
   if (isCombatActive(actor)) {
@@ -324,13 +550,22 @@ function buildMedicalButtons({ actor, token, getExtraPenalty, consumeKitIfUsed }
   }
 
   return {
-    firstAid: { label: "First Aid", callback: immediate(performFirstAid) },
+    firstAid: {
+      label: "First Aid",
+      callback: immediate("firstAid", performFirstAid, { salve: true }),
+    },
     stopBleeding: {
       label: "Stop Bleeding",
-      callback: immediate(performStopBleeding),
+      callback: immediate("stopBleeding", performStopBleeding),
     },
-    stabilise: { label: "Stabilise", callback: immediate(performStabilise) },
-    treatWound: { label: "Treat Wound", callback: immediate(performTreatWound) },
+    stabilise: {
+      label: "Stabilise",
+      callback: immediate("stabilise", performStabilise),
+    },
+    treatWound: {
+      label: "Treat Wound",
+      callback: immediate("treatWound", performTreatWound),
+    },
   };
 }
 
@@ -348,12 +583,23 @@ export async function firstAid() {
       Number(i.system?.quantity ?? 1) > 0,
   );
 
-  // −30% per ticked modifier, shared by every medical action below.
-  const getExtraPenalty = (html) => {
-    const selfHeal = html.find('[name="selfHeal"]').is(":checked");
+  // A Healing salve may be spent to boost a First Aid heal by +1d6.
+  const salve = findHealingSalve(actor);
+  const salveQty = Number(salve?.system?.quantity ?? 0);
+
+  // −30% per ticked modifier, shared by every medical action below. Stop
+  // Bleeding is the exception: binding your own wound is no harder than
+  // binding someone else's, so it never takes the self-heal penalty.
+  const getExtraPenalty = (html, actionType) => {
+    const selfHeal =
+      actionType !== "stopBleeding" &&
+      html.find('[name="selfHeal"]').is(":checked");
     const noKit = html.find('[name="noKit"]').is(":checked");
     return (selfHeal ? 30 : 0) + (noKit ? 30 : 0);
   };
+
+  const getUseSalve = (html) =>
+    !!salve && html.find('[name="useSalve"]').is(":checked");
 
   // Spend one kit charge — but only when a kit is actually used (the player
   // has one and didn't tick "No first aid kit").
@@ -363,6 +609,11 @@ export async function firstAid() {
     await consumeFirstAidKit(actor);
   };
 
+  const consumeSalveIfUsed = async () => {
+    if (!salve) return;
+    await consumeHealingSalve(actor);
+  };
+
   new Dialog(
     {
       title: "Medical Action",
@@ -370,10 +621,19 @@ export async function firstAid() {
       content: `
       <p>Select medical action:</p>
       <div class="redsteel-medical-options">
-        <label><input type="checkbox" name="selfHeal"> Self heal (−30%)</label>
+        <label>
+          <input type="checkbox" name="selfHeal">
+          Self heal (−30%, not applied to Stop Bleeding)
+        </label>
         <label>
           <input type="checkbox" name="noKit" ${hasKit ? "" : "checked disabled"}>
           No first aid kit (−30%)${hasKit ? "" : " — none in inventory"}
+        </label>
+        <label>
+          <input type="checkbox" name="useSalve" ${salve ? "" : "disabled"}>
+          Use healing salve (+1d6 heal, First Aid only)${
+            salve ? ` — ${salveQty} left` : " — none in inventory"
+          }
         </label>
       </div>
     `,
@@ -382,7 +642,9 @@ export async function firstAid() {
         actor,
         token,
         getExtraPenalty,
+        getUseSalve,
         consumeKitIfUsed,
+        consumeSalveIfUsed,
       }),
 
       default: "firstAid",
@@ -391,7 +653,7 @@ export async function firstAid() {
   ).render(true);
 }
 
-async function performFirstAid(actor, token, extraPenalty = 0) {
+async function performFirstAid(actor, token, extraPenalty = 0, { useSalve = false } = {}) {
   let firstAidData =
     actor.type === "npc"
       ? actor.system.attributes.int.mod
@@ -426,22 +688,27 @@ async function performFirstAid(actor, token, extraPenalty = 0) {
   let healRoll = null;
 
   const isCritFail = d100 >= criticalFailureThreshold;
+  const isCritSuccess = d100 <= criticalSuccessThreshold;
 
   if (isCritFail) {
     critStatus =
       "<br><strong style='color: red;'>Critical Failure! Injury caused!</strong>";
 
+    // The injury never benefits from a salve — only from the botcher's reach.
     healRoll = new Roll(`2d4${bonus}`);
   } else if (firstAidRoll.total <= 0) {
     healRoll = null;
-  } else if (d100 <= criticalSuccessThreshold || firstAidRoll.total >= 60) {
-    critStatus = "<br><strong style='color: green;'>Critical Success!</strong>";
-
-    healRoll = new Roll(`(3d6+3${bonus})*2`);
-  } else if (firstAidRoll.total >= 25) {
-    healRoll = new Roll(`(3d6+3${bonus})*1.5`);
   } else {
-    healRoll = new Roll(`3d6+3${bonus}`);
+    if (isCritSuccess || firstAidRoll.total >= 60) {
+      critStatus = "<br><strong style='color: green;'>Critical Success!</strong>";
+    }
+
+    healRoll = new Roll(
+      buildFirstAidHealFormula(actor, firstAidRoll.total, {
+        useSalve,
+        critSuccess: isCritSuccess,
+      }),
+    );
   }
 
   if (healRoll) {
@@ -464,6 +731,11 @@ async function performFirstAid(actor, token, extraPenalty = 0) {
       <strong>Used first aid action</strong>
       ${critStatus}
     </p>
+    ${
+      useSalve
+        ? `<p style="font-size:0.85em; opacity:0.8;">Healing salve spent (+1d6).</p>`
+        : ""
+    }
   </div>
 </div>
     `,
@@ -492,16 +764,18 @@ async function performFirstAid(actor, token, extraPenalty = 0) {
   return true;
 }
 async function performStopBleeding(actor, token, extraPenalty = 0) {
-  const dex = actor.system.attributes.dex.mod;
-  const int = actor.system.attributes.int.mod;
-
-  const bestAttribute = Math.max(dex, int);
+  // A First Aid test at +30%. The self-heal penalty never reaches here — the
+  // dialog strips it for this action (see getExtraPenalty).
+  const skillBase =
+    actor.type === "npc"
+      ? Number(actor.system.attributes.int.mod ?? 0)
+      : Number(actor.system.skills.firstAid.rating ?? 0);
 
   // Hemophylia makes stopping the bleeding 20% harder.
   const hemophiliaPenalty = actor.system?.hemophilia ? 20 : 0;
 
   const stopBleedingRoll = new Roll(
-    `30 + ${bestAttribute} - ${extraPenalty} - ${hemophiliaPenalty} - 1d100`,
+    `${skillBase + 30} - ${extraPenalty} - ${hemophiliaPenalty} - 1d100`,
   );
 
   await stopBleedingRoll.evaluate({ async: true });
@@ -856,7 +1130,7 @@ async function faHandleAsGM(data) {
 }
 
 // Client-side: validate the target, then ask the GM to begin the attempt.
-async function startCombatFirstAid(actor, actionType, extraPenalty) {
+async function startCombatFirstAid(actor, actionType, extraPenalty, useSalve = false) {
   const targets = Array.from(game.user.targets);
   if (targets.length !== 1) {
     ui.notifications.warn("Target exactly one token first.");
@@ -892,6 +1166,7 @@ async function startCombatFirstAid(actor, actionType, extraPenalty) {
     sceneId: canvas.scene.id,
     targetId: targets[0].id,
     extraPenalty,
+    useSalve,
   });
   return true;
 }
@@ -910,6 +1185,9 @@ async function faStartAsGM(data) {
     sceneId: data.sceneId,
     targetId: data.targetId,
     extraPenalty: Number(data.extraPenalty) || 0,
+    // The dose is already spent at start — it boosts the heal whenever the
+    // committed attempt finally resolves, re-rolls included.
+    useSalve: !!data.useSalve,
     step: 1,
   });
 
@@ -1003,13 +1281,10 @@ function computeFaTest(actor, targetActor, actionType, extraPenalty) {
       : Number(actor.system.skills.firstAid.rating ?? 0);
 
   if (actionType === "stopBleeding") {
-    const best = Math.max(
-      Number(actor.system.attributes.dex.mod ?? 0),
-      Number(actor.system.attributes.int.mod ?? 0),
-    );
+    // First Aid at +30%. extraPenalty already excludes the self-heal −30%.
     // Hemophylia makes stopping the bleeding 20% harder.
     const hemophiliaPenalty = actor.system?.hemophilia ? 20 : 0;
-    return { base: 30 + best, penalty: extraPenalty + hemophiliaPenalty };
+    return { base: skillBase + 30, penalty: extraPenalty + hemophiliaPenalty };
   }
 
   if (actionType === "stabilise") {
@@ -1025,19 +1300,8 @@ function computeFaTest(actor, targetActor, actionType, extraPenalty) {
   return { base: skillBase, penalty: extraPenalty }; // firstAid
 }
 
-async function computeFaHeal(actor, total) {
-  let bonus = "";
-  if (actor.system.feldsher2) bonus = "+2d6";
-  else if (actor.system.feldsher1) bonus = "+1d6";
-
-  const formula =
-    total >= 60
-      ? `(3d6+3${bonus})*2`
-      : total >= 25
-        ? `(3d6+3${bonus})*1.5`
-        : `3d6+3${bonus}`;
-
-  const roll = new Roll(formula);
+async function computeFaHeal(actor, total, useSalve = false) {
+  const roll = new Roll(buildFirstAidHealFormula(actor, total, { useSalve }));
   await roll.evaluate();
   return Math.floor(roll.total);
 }
@@ -1063,15 +1327,16 @@ async function faResolveAndPost(actor, ctx) {
   );
 
   const roll = new Roll(`${base} - ${penalty} - 1d100`, actor.getRollData());
-  // Stop Bleeding tests off DEX/INT, not First Aid — leave it untagged so only
-  // the actor-wide bias applies; the rest are genuine First Aid rolls.
-  if (ctx.actionType !== "stopBleeding") tagRollSkill(roll, "firstAid");
+  // Every medical action, Stop Bleeding included, is a First Aid test.
+  tagRollSkill(roll, "firstAid");
   await roll.evaluate();
   const success = roll.total >= 0;
 
+  const useSalve = !!ctx.useSalve && ctx.actionType === "firstAid";
+
   let healAmount = 0;
   if (success && ctx.actionType === "firstAid") {
-    healAmount = await computeFaHeal(actor, roll.total);
+    healAmount = await computeFaHeal(actor, roll.total, useSalve);
   }
 
   const label = FA_LABELS[ctx.actionType];
@@ -1102,7 +1367,9 @@ async function faResolveAndPost(actor, ctx) {
       <div class="redsteel-firstaid">
         ${body}
         ${rollHTML}
-        <p style="font-size:0.85em; opacity:0.8;">Penalty: −${penalty}%.</p>
+        <p style="font-size:0.85em; opacity:0.8;">Penalty: −${penalty}%.${
+          useSalve ? " Healing salve spent (+1d6)." : ""
+        }</p>
         <div class="redsteel-action-buttons">${buttons}</div>
       </div>`,
     rolls: [roll],
@@ -1116,6 +1383,7 @@ async function faResolveAndPost(actor, ctx) {
           sceneId: ctx.sceneId,
           targetId: ctx.targetId,
           extraPenalty,
+          useSalve,
           success,
           healAmount,
         },
@@ -1461,6 +1729,7 @@ export function registerFirstAidHealing() {
           sceneId: result.sceneId,
           targetId: result.targetId,
           extraPenalty: result.extraPenalty,
+          useSalve: result.useSalve,
         }),
       );
       wire("faResume", () => ({

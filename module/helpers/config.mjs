@@ -298,6 +298,12 @@ REDSTEEL.effectDefinitions = {
       onApply: {
         formula: "2d6",
         target: "system.stats.health.value",
+        // The 2d6 belongs to being poisoned, not to each dose: re-applying
+        // Poison refreshes the 3 rounds (and tops up the stack) without
+        // dealing another immediate tick. Damage after that comes from
+        // onRoundStart only. Contrast Bleeding, whose onApply is explicitly
+        // about the stacks just gained.
+        onlyOnCreate: true,
       },
       onRoundStart: {
         formula: "2d6",
@@ -573,6 +579,135 @@ REDSTEEL.effectDefinitions = {
         bleed: 10,
       },
     },
+    stackBehavior: "ignore",
+  },
+
+  // "Obrobijce" (Giantslayer potion) — an alchemical buff on the DRINKER, not on
+  // their weapon: +5 Penetration and +2d6 Breakthrough on Combat and Throwing
+  // attacks, including with a weapon that has no Breakthrough of its own. The
+  // melee-prefixed keys are what excludes archery: getActorCombatModifiers
+  // counts everything that is not a bow or crossbow as melee, so thrown weapons
+  // are covered by the same split. It gets its own exclusiveGroup so it neither
+  // displaces a weapon enchant (Fire Weapon, a Strike spell) nor is displaced by
+  // one — the potion is in the fighter, the enchant is on the blade. No duration
+  // flag: the 15-minute clock is fiction the GM tracks, and the effect is
+  // removed by hand (see applyItemBuffsToActor, same convention).
+  giantslayer: {
+    name: "REDSTEEL.Items.Giantslayer.name",
+    img: "icons/consumables/potions/bottle-conical-corked-yellow.webp",
+    statuses: ["giantslayer"],
+
+    combatModifiers: {
+      exclusiveGroup: "giantslayer",
+      meleePenetrationBonus: 5,
+      meleeBreakthroughRoll: "2d6",
+    },
+    stackBehavior: "ignore",
+  },
+
+  // "Hora" (Mountain potion) — two hours of outright immunity to Omráčení, not
+  // a resist_stun-style reduction of the chance: the rules say immunity, so it
+  // writes the boolean isImmuneToEffect checks before the status can ever be
+  // applied. No duration flag — the two-hour clock is fiction the GM tracks and
+  // the effect is removed by hand, same convention as giantslayer above.
+  mountain: {
+    name: "REDSTEEL.Items.Mountain.name",
+    img: "icons/commodities/stone/boulder-black.webp",
+    statuses: ["mountain"],
+    changes: [
+      {
+        key: "system.effectMods.stagger.immune",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.OVERRIDE,
+        value: true,
+      },
+    ],
+    stackBehavior: "ignore",
+  },
+
+  // "Kočka" (Cat potion) — six hours of immunity to Oslepení. The 15 m of sight
+  // in the dark and the cancelled Darkness penalties have nowhere to live in
+  // the data model (vision is a token setting, Darkness is a modifier the GM
+  // applies), so those two stay on the item text.
+  cat: {
+    name: "REDSTEEL.Items.Cat.name",
+    img: "icons/magic/perception/eye-slit-pink.webp",
+    statuses: ["cat"],
+    changes: [
+      {
+        key: "system.effectMods.blind.immune",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.OVERRIDE,
+        value: true,
+      },
+    ],
+    stackBehavior: "ignore",
+  },
+
+  /* -------------------------------------------- */
+  /*  Drugs (Drogy)                               */
+  /*                                              */
+  /*  The dose itself is resolved in              */
+  /*  utils/drugs.mjs, off the item's             */
+  /*  flags.redsteel.drug. What lives here is the */
+  /*  three states a drug can leave behind: the   */
+  /*  high, the addiction, and the withdrawal.    */
+  /*  An addiction effect MUST be named           */
+  /*  `addiction_<drug key>` — registerDrugHooks  */
+  /*  derives the key from the status id to       */
+  /*  record a cure, and a mismatch silently      */
+  /*  loses the relapse difficulty.               */
+  /* -------------------------------------------- */
+
+  // "Ďáblův kořen" — the high. The +50 % against pain, fear and madness is a
+  // Nerves bonus: a character Tests Nervy as (res.value + res.bonus) × 10, so
+  // res.bonus counts in whole 10 % steps and +5 is the +50 % the rules ask for.
+  // (An NPC derives res from Willpower and reads res.bonus as raw percent —
+  // drugs are taken by player characters, so the character scale wins.) The −1
+  // action and the numbness are table fiction, and 4d6 hours is not a round
+  // counter, so the effect is removed by hand.
+  devils_root: {
+    name: "REDSTEEL.Items.DevilsRoot.name",
+    img: "icons/magic/nature/root-vine-beanstalk-moon.webp",
+    statuses: ["devils_root"],
+    changes: [
+      {
+        key: "system.secondaryAttributes.res.bonus",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: 5,
+      },
+    ],
+    stackBehavior: "ignore",
+  },
+
+  // "Závislost: Ďáblův kořen" — the addiction carries no penalties of its own.
+  // It is the marker that stops the drug rolling to addict an addict, that
+  // gates the withdrawal below, and whose removal (the cure) is what teaches
+  // the actor's curedAddictions flag to make the next relapse harder.
+  addiction_devils_root: {
+    name: "REDSTEEL.Items.DevilsRootAddiction.name",
+    img: "icons/magic/control/debuff-chains-purple.webp",
+    statuses: ["addiction_devils_root"],
+    stackBehavior: "ignore",
+  },
+
+  // "Abstinence: Ďáblův kořen" — what the addict suffers once 4d6 hours have
+  // passed without a dose: Vůle −2 and Úspěch −10 %. Applied and lifted by the
+  // GM, because the clock it runs on is calendar time, not rounds.
+  withdrawal_devils_root: {
+    name: "REDSTEEL.Items.DevilsRootWithdrawal.name",
+    img: "icons/svg/daze.svg",
+    statuses: ["withdrawal_devils_root"],
+    changes: [
+      {
+        key: "system.attributes.wil.bonus",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: -2,
+      },
+      {
+        key: "system.globalBonus",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: -10,
+      },
+    ],
     stackBehavior: "ignore",
   },
 
@@ -1893,12 +2028,15 @@ REDSTEEL.effectDefinitions = {
     },
   },
 
-  // "Entropie" — the "1 damage per reduced Az" part is manual.
+  // "Entropie" — marks the target for SK/2 + 1 rounds (Darkness Spell Power,
+  // the division rounded down); the SK-scaled duration is set in effects.mjs.
+  // The −10 Armor is fixed, so it lives here. The "1 damage per point of Armor
+  // actually reduced" part is manual.
   entropy: {
     name: "Entropy",
-    img: "icons/svg/degen.svg",
+    img: "icons/magic/death/skull-horned-worn-fire-blue.webp",
     statuses: ["entropy"],
-    defaultRounds: 3,
+    defaultRounds: 1, // fallback only — real duration = SK/2 + 1 rounds
     useDuration: true,
     changes: [
       {

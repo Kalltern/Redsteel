@@ -5,7 +5,8 @@
   "img": "icons/commodities/materials/powder-black.webp",
   "system": {
     "description": "<p>Effect - Single target. Lightning damage 2d6, 10% chance to Stagger. Penetration 5.<br />Duration - Instant<br />Production bonus - 10% -&gt; 10 batches<br />Ingredients - Soil, Pa, Al</p>",
-    "outputType": "potion",
+    "outputType": "explosive",
+    "purpose": "explosive",
     "resultUuid": "Compendium.redsteel.redsteel-items.Item.FNvzL1OvP9nIVR4k",
     "substances": {
       "yliaster": 0,

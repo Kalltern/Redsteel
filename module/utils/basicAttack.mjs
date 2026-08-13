@@ -13,6 +13,8 @@ import {
   renderSpeedTestLine,
 } from "./speedTest.mjs";
 import { resolveTestRating } from "./testRating.mjs";
+import { renderMarginFollowupLine } from "./attributeFollowup.mjs";
+import { renderAttackTagsHtml } from "./opportunityAttacks.mjs";
 
 export async function universalAttackLogic({
   attackType,
@@ -198,11 +200,14 @@ export async function universalAttackLogic({
 
     <tr>
     <td>
-    <span
-    title="Test chance ${attributeTotalValue}%&#10;Rolled: ${attributeRoll.result}"
-    style="display:inline-block;">
+    <span style="display:inline-block;">
     <b>${mod.localizedName ?? mod.name} — ${testName} Test ${attributeTotalValue}%</b><br>
-    Margin of Success: [${attributeRoll.total}]<br>
+    ${renderMarginFollowupLine({
+      margin: attributeRoll.total,
+      source: mod.localizedName ?? mod.name,
+      chance: attributeTotalValue,
+      result: attributeRoll.result,
+    })}<br>
       </span>
     </td>
     </tr>
@@ -298,9 +303,13 @@ export async function universalAttackLogic({
       weapon,
       resolvedContext,
     );
+    // The arrowhead's own penetration, on top of the bow's (see the ammo check
+    // above — a weapon that needs ammo never gets here without it).
+    const ammoPen = Number(ammo?.system?.penetration) || 0;
     const penetration =
       mainPen +
       offPen +
+      ammoPen +
       customPenetration +
       actorMods.penetrationBonus +
       improvedAimPen;
@@ -330,7 +339,10 @@ export async function universalAttackLogic({
       criticalSuccessThreshold,
       criticalFailureThreshold,
       aimedPart,
+      opportunityAttack,
     } = attackData;
+    // Runtime tag only — no bonus attached, it just travels to the chat card.
+    const attackTags = opportunityAttack ? ["opportunity"] : [];
     const aimedPartDef = aimedPart ? AIMED_PARTS[aimedPart] : null;
     if (aimedPartDef) {
       if (concatDescription) concatDescription += "<br>";
@@ -460,7 +472,14 @@ export async function universalAttackLogic({
         : "";
 
     await ChatMessage.create({
-      speaker: ChatMessage.getSpeaker(),
+      // Named explicitly rather than left to the bare getSpeaker(), which
+      // resolves from whatever token the *client* has selected. Overwhelm keys
+      // its attacker set off this token id, so a GM attacking with Goblin 3
+      // while Goblin 1 is highlighted must not file the blow under Goblin 1.
+      speaker: ChatMessage.getSpeaker({
+        actor,
+        token: token?.document ?? token,
+      }),
       content: `
 <div class="dual-roll">
   <div class="roll-column">
@@ -477,7 +496,7 @@ export async function universalAttackLogic({
       flavor: `
 <span style="display:inline-flex; align-items:center;">
   <img src="${weapon.img}" width="36" height="36" style="margin-right:8px;">
-  <strong style="font-size:20px;">${resolvedFlavor}${modifierLabel}</strong>
+  <strong style="font-size:20px;">${resolvedFlavor}${modifierLabel}</strong>${renderAttackTagsHtml(attackTags)}
 </span>
  <hr>
 ${critBanner}
@@ -485,12 +504,16 @@ ${critBanner}
 <hr>
 ${descriptionTable}
 
-<table style="width:100%; text-align:center; font-size:15px;">
+${
+  hasHtmlContent(`${allBleedRollResults}${effectsRollResults}`)
+    ? `<table style="width:100%; text-align:center; font-size:15px;">
   <tr><th>Effects</th></tr>
   <tr>
     <td><b>${allBleedRollResults}</b> ${effectsRollResults}</td>
   </tr>
-</table>
+</table>`
+    : ""
+}
 
 `,
       flags: {
@@ -499,10 +522,19 @@ ${descriptionTable}
           criticalSuccessThreshold,
           criticalFailureThreshold,
           traitPills: getTraitPills(actor, "attack"),
+          attackTags,
           rerollTokens: getAttackRerollTokens(actor, weapon),
         },
         attack: {
           type: "attack",
+          // What a defender contests. The margin is stored explicitly rather
+          // than read back off `rolls[0]`, which only happens to be the attack
+          // roll; the crit flag and raw die matter because two natural
+          // criticals are settled on the dice, not on the margins.
+          margin: attackRoll.total,
+          criticalSuccess: critSuccess,
+          criticalFailure: critFailure,
+          d100: attackRoll.dice.find((d) => d.faces === 100)?.total ?? null,
           damageProfile,
           effects: mechanicalEffects,
           aimedStrike: aimedPart

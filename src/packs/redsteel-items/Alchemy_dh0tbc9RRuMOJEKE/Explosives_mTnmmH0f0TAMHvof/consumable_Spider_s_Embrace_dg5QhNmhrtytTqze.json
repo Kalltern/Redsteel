@@ -1,14 +1,16 @@
 {
   "folder": "mTnmmH0f0TAMHvof",
-  "name": "Corpse breath",
+  "name": "Spider's Embrace",
   "type": "consumable",
   "img": "icons/weapons/thrown/bomb-gas-grey-purple.webp",
   "system": {
-    "description": "<p>Creates a cloud <br />Effect - One target/hex. <br />On hit/entry, target must roll a Strength Test (-25%), on failure, the target is Rooted, on success, it is Slowed for four turns<br />Duration - 1 day<br />Production Bonus - -10% -&gt; 1 batch<br />Ingredients - Quality fat, Container, Al, Al, Pa, Yl</p>",
+    "description": "<p>Effect - One target/hex. <br />On hit/entry, target must roll a Strength Test (-25%), on failure, the target is Rooted, on success, it is Slowed for four turns<br />Duration - 1 day<br />Production Bonus - -10% -&gt; 1 batch<br />Ingredients - Quality fat, Container, Al, Al, Pa, Yl</p>",
     "options": [
       "potion",
       "explosive",
-      "misc"
+      "misc",
+      "first aid",
+      "poison"
     ],
     "types": [
       "mana",
@@ -30,7 +32,7 @@
     "dmgType1": "",
     "bool2": "",
     "dmgType2": "",
-    "localizationKey": "REDSTEEL.Items.CorpseBreath.name",
+    "localizationKey": "REDSTEEL.Items.SpidersEmbrace.name",
     "difficulty": -10
   },
   "effects": [],
@@ -50,7 +52,7 @@
     "systemId": "redsteel",
     "systemVersion": "0.8.1",
     "createdTime": 1777294836937,
-    "modifiedTime": 1777294836937,
+    "modifiedTime": 1786367217424,
     "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
   },
   "_id": "dg5QhNmhrtytTqze",

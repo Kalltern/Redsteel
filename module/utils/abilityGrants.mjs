@@ -10,6 +10,7 @@
  * To add a new grant, append an object to ABILITY_GRANTS below. Each rule has:
  *
  *   when:  the trigger. One of:
+ *            { kind: "always" }                             // baseline: everyone
  *            { kind: "item", name: "Berserker" }            // owns an item with this name
  *            { kind: "item", uuid: "Compendium..." }        // owns an item from this source
  *            { kind: "item", uuid: "...", type: "feature" } // ...optionally constrained by type
@@ -72,9 +73,12 @@ const ABILITY = {
   CLEAVE: A("52NJ0ZhgGrHmrQ8z"), // Rozseknutí
   COUNTERATTACK: A("JltGA0Wsv6ttCUT6"), // Protiútok
   CRIPPLING_SHOT: A("9WR4lbdssYQVdLoH"), // Zmrzačující výstřel
+  CUNNING_STRIKE: A("cUnningStrike001"), // Vypočítavý útok
   DEFENSIVE_STANCE: A("KprSydD2eARqm2QS"), // Obranný postoj
+  DISENGAGE: A("Zkket4924S0MClYW"), // Odpoutání
   DISTRACTION_DEX: A("yoaHzPcADWincgO4"), // Rozptýlení
   DISTRACTION_PER: A("gC4G0bkqy7tXghxX"), // Rozptýlení
+  DOUBLE_THROW: A("dOubleThrow00001"), // Dvojitý vrh
   DUELISTS_ADVANCE: A("sbgSHiDt2hyptsxy"), // Duelistův krok
   EXPLOIT_WEAKNESS: A("VK73lWQNsMotICbn"), // Útok na slabinu
   EXPLOIT_WEAKNESS_THROW: A("WjPXKjMG7790bZfX"), // Vrh na slabinu
@@ -83,6 +87,7 @@ const ABILITY = {
   FEINT_PER: A("IVNZXVkihp5CK9JV"), // Finta
   FLAMBERGE_CLEAVE: A("LVAgDFzBKadXMU4A"), // Rozseknutí flambergem
   FLURRY: A("zosOTl8qIL3DISsr"), // Smršť útoků
+  FUSCINA_ICTUS: A("fUsCinaIctus0001"), // Fuscina Ictus, trojzubec
   FLURRY_OF_THROWS: A("rWVInSjYveJyVonf"), // Vícenásobný vrh
   FRENZIED_THROW: A("RUMZLtefyxVDNA74"), // Zběsilý vrh
   GUARD_STANCE: A("n6cK9hKnV52nwOzh"), // Ochrana
@@ -103,6 +108,7 @@ const ABILITY = {
   POLEARM_CLEAVE: A("PPV4asgA1ESKgD26"), // Daleké rozseknutí
   RECKLESS_STRIKE: A("CKSRdqAvrm7SOqCs"), // Zběsilý útok
   RECKLESS_STRIKE_REAVER: A("0YDsI6HYQ31hAWHp"), // Zběsilý útok, Plenitel
+  REST: A("r0zKDZ0Zs2bMiUAu"), // Odpočinek
   RETALIATORY_STRIKE: A("qaPermZFuHuTg5ni"), // Odvetný úder
   RIPOSTE: A("WX6uJeqZAqeyykJa"), // Riposta
   RUNNING_THROW: A("wNvzvMB5p69CON5c"), // Vrh s rozběhem
@@ -114,12 +120,14 @@ const ABILITY = {
   SHOVE_DEX: A("eM1CMfrwZeMl1X8O"), // Odstrčení
   SHOVE_STR: A("quN6stREoJF84H84"), // Odstrčení
   SPLINTERING_STRIKE: A("HxHXxA3Mq03dD7ku"), // Rozštěpení
+  SPRINT: A("Xc0SM3CwS9pnT5rY"), // Sprint
   STAGGERING_BLOW: A("DFnAqroELNHfbweO"), // Omračující úder
   TRIP_DEX: A("kkHN2VhkuN0wIePo"), // Podseknutí
   TRIP_STR: A("lceDlymn87I1aDNX"), // Podseknutí
 };
 
 /* Shorthand trigger builders — the table is long enough without the noise. */
+const always = () => ({ kind: "always" });
 const doctrine = (key, min) => ({ kind: "doctrine", key, min });
 const weaponSkill = (key, min) => ({ kind: "weaponSkill", key, min });
 const specNode = (spec, node) => ({ kind: "specNode", spec, node });
@@ -132,6 +140,25 @@ const WEAPON_SKILLS = ["swords", "axes", "blunt", "polearms"];
  * @type {Array<{label?: string, when: object, grant: string[], replaces?: string[]}>}
  */
 export const ABILITY_GRANTS = [
+  /* ======================================================================
+   * Baseline — every Character and NPC has these, no trigger required.
+   * These used to be copied by a separate createActor hook in redsteel.mjs.
+   * They live here instead so one mechanism owns baseline abilities: it
+   * dedupes against copies the actor already has, respects a manual delete,
+   * and — the reason it matters for Defensive Stance — lets Shieldbearer 6
+   * actually replace the base stance with its upgrade.
+   * ==================================================================== */
+  {
+    label: "Baseline actions every character has",
+    when: always(),
+    grant: [
+      ABILITY.DISENGAGE,
+      ABILITY.SPRINT,
+      ABILITY.REST,
+      ABILITY.DEFENSIVE_STANCE,
+    ],
+  },
+
   /* ======================================================================
    * Weapon skills — Meče / Sekery / Tupé / Dřevcové
    * Ranks 1-3 are identical across all four; rank 6 is the skill's own action.
@@ -394,6 +421,11 @@ export const ABILITY_GRANTS = [
     when: doctrine("rogue", 4),
     grant: [ABILITY.DISTRACTION_DEX, ABILITY.DISTRACTION_PER],
   },
+  {
+    label: "Rogue 10 → Cunning Strike",
+    when: doctrine("rogue", 10),
+    grant: [ABILITY.CUNNING_STRIKE],
+  },
 
   /* ======================================================================
    * Lukostřelec (archer)
@@ -475,6 +507,11 @@ export const ABILITY_GRANTS = [
     label: "Peltast 8 → Overwatch",
     when: doctrine("peltast", 8),
     grant: [ABILITY.OVERWATCH],
+  },
+  {
+    label: "Peltast 10 → Double Throw",
+    when: doctrine("peltast", 10),
+    grant: [ABILITY.DOUBLE_THROW],
   },
 
   /* ======================================================================
@@ -586,10 +623,17 @@ export const ABILITY_GRANTS = [
     replaces: [ABILITY.CLEAVE],
   },
   {
-    label: "Imbroccata → Exploit Weakness upgrades to Imbroccata",
+    // Additive, not a replacement: Imbroccata only works with a rapier in hand
+    // (system.requiredWeaponTag), so the fencer still needs the ordinary
+    // Exploit Weakness for every other weapon.
+    label: "Imbroccata → Imbroccata: Exploit Weakness (rapier only)",
     when: feature("Imbroccata"),
     grant: [ABILITY.IMBROCCATA_EXPLOIT_WEAKNESS],
-    replaces: [ABILITY.EXPLOIT_WEAKNESS],
+  },
+  {
+    label: "Fuscina Ictus → Fuscina Ictus (trident-only attack modifier)",
+    when: feature("Fuscina Ictus"),
+    grant: [ABILITY.FUSCINA_ICTUS],
   },
 
   /* ======================================================================
@@ -662,13 +706,17 @@ const _syncing = new Set();
 
 /**
  * Does the actor currently satisfy a rule's trigger?
+ * Exported because opportunityAttacks.mjs reuses this trigger evaluator for its
+ * own permission table.
  * @param {Actor} actor
  * @param {object} rule
  * @returns {boolean}
  */
-function ruleActive(actor, rule) {
+export function ruleActive(actor, rule) {
   const w = rule?.when;
   if (!w) return false;
+
+  if (w.kind === "always") return true;
 
   if (w.kind === "skill") {
     const skill = actor.system?.skills?.[w.key];

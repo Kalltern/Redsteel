@@ -1,5 +1,12 @@
 import { SOCKET } from "./applyDamage.mjs";
 import { actorHasSpecNode } from "../helpers/specialisations.mjs";
+import {
+  getEligibleRerolls,
+  getRerollTokensForSkill,
+  consumeReroll,
+  pickRerollPool,
+} from "./rerolls.mjs";
+import { scheduleRerollRefresh } from "./calendariaIntegration.mjs";
 
 // Only a winner who can Dominate may seize control: any NPC, or a player
 // character who has unlocked the Mentalist "Domination" (ovladnuti) perk.
@@ -20,6 +27,8 @@ function canDominate(actor) {
  * Attack rating = Will×3 + Skill + Expertise + Specialization, which the
  * system already aggregates into `system.skills.mindBending.rating`. Crit
  * thresholds come from the same skill (luck/fatigue-adjusted in actor.mjs).
+ * Only NPCs, which have no skills and so no Mind Bending, roll their Will
+ * (`attributes.wil.mod`) instead; see `duelSkill`.
  */
 
 const { ApplicationV2 } = foundry.applications.api;
@@ -304,6 +313,77 @@ const MENTAL_DUEL_CSS = `
   padding-bottom: 6px;
   border-bottom: 1px solid #3a3528;
 }
+.rs-md-pending {
+  margin-top: 12px;
+  padding: 8px 10px;
+  border: 1px solid #6b5a2c;
+  border-radius: 6px;
+  background: #17150f;
+}
+.rs-md-pending-title {
+  text-align: center;
+  font-size: 12px;
+  color: #c9b26b;
+  margin-bottom: 8px;
+}
+.rs-md-pending-rows {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.rs-md-pending-row {
+  text-align: center;
+  padding: 6px;
+  border: 1px solid var(--rs-md-color, #444);
+  border-radius: 6px;
+  background: #0e0d0a;
+}
+.rs-md-pending-who { font-size: 12px; color: #d8d8d8; }
+.rs-md-pending-roll { font-size: 13px; color: #f0e4b8; margin-top: 2px; }
+.rs-md-pending-note {
+  font-size: 11px;
+  opacity: 0.8;
+  margin-top: 4px;
+}
+.rs-md-pending-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+.rs-md-pending-reroll, .rs-md-pending-accept {
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 5px;
+  border: 1px solid #8b6914;
+  background: #211e18;
+  color: #f0e4b8;
+  cursor: pointer;
+}
+.rs-md-pending-reroll:hover, .rs-md-pending-accept:hover {
+  background: #322d22;
+  box-shadow: 0 0 6px -1px #8b6914;
+}
+.rs-md-pending-verdict {
+  margin-top: 8px;
+  text-align: center;
+  font-size: 12px;
+  color: #d8cfae;
+  opacity: 0.9;
+}
+.rs-md-pending-gm { margin-top: 8px; text-align: center; }
+.rs-md-pending-resolve {
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 5px;
+  border: 1px solid #8b6914;
+  background: linear-gradient(#3a3320, #221d10);
+  color: #ffe9a8;
+  cursor: pointer;
+}
+.rs-md-pending-resolve:hover { background: linear-gradient(#4a4029, #2a2416); }
 .rs-md-footer {
   margin-top: 10px;
   display: flex;
@@ -351,10 +431,37 @@ function getOwnerColor(token) {
   return "#8b6914";
 }
 
+/**
+ * The rating + crit thresholds one side rolls the duel with.
+ *
+ * The source is decided by actor TYPE, not by what data happens to be present:
+ *
+ *  • Characters ALWAYS roll the Mind Bending skill (Will×3 + skill + expertise
+ *    + spec, already aggregated into `system.skills.mindBending.rating`) — an
+ *    untrained PC duels at their bad or negative rating, never on Will.
+ *  • NPCs have no skills block at all — reading it gave them a flat 0 rating —
+ *    so they roll their Will. `attributes.wil.mod` is the exact number an NPC
+ *    sheet uses for a Will Test (value + modBonus + globalMod), which also
+ *    keeps the Mind Bending caster debuff netting to zero on an NPC caster: the
+ *    −20 globalBonus is cancelled by the +20 wil.modBonus the same effect adds.
+ */
+function duelSkill(actor) {
+  const isWill = actor.type === "npc";
+  const source =
+    (isWill ? actor.system.attributes?.wil : actor.system.skills?.mindBending) ??
+    {};
+  return {
+    isWill,
+    rating: Number(isWill ? source.mod : source.rating) || 0,
+    critSuccess: Number(source.criticalSuccessThreshold) || 5,
+    critFailure: Number(source.criticalFailureThreshold) || 96,
+  };
+}
+
 /** Snapshot the live duel-relevant data for one side. */
 function buildSide(token) {
   const actor = token.actor;
-  const skill = actor.system.skills?.mindBending ?? {};
+  const skill = duelSkill(actor);
   const mind = actor.system.stats?.mind ?? { value: 0, max: 0 };
   return {
     token,
@@ -367,24 +474,83 @@ function buildSide(token) {
     color: getOwnerColor(token),
     mindValue: Math.max(0, Number(mind.value) || 0),
     mindMax: Math.max(0, Number(mind.max) || 0),
-    rating: Number(skill.rating) || 0,
-    critSuccess: Number(skill.criticalSuccessThreshold) || 5,
-    critFailure: Number(skill.criticalFailureThreshold) || 96,
+    rating: skill.rating,
+    critSuccess: skill.critSuccess,
+    critFailure: skill.critFailure,
+    // NPCs roll Will, not the skill — label it so the arena doesn't claim a
+    // Mind Bending rating they don't have.
+    ratingLabel: skill.isWill ? "Will" : "Duel",
   };
 }
 
-/** Roll one side's Mental Duel test: rating − 1d100. */
-async function rollSide(side) {
-  const roll = new Roll("@rating - 1d100", { rating: side.rating });
+/**
+ * Roll one side's Mental Duel test: rating − 1d100. Takes anything carrying
+ * `rating` plus the two crit thresholds, so a reroll can be made from the
+ * numbers stored in the pending-round state rather than a live side snapshot.
+ */
+async function rollSide({ rating, critSuccess, critFailure }) {
+  const roll = new Roll("@rating - 1d100", { rating });
   await roll.evaluate();
   const raw = roll.dice[0].total;
   return {
     roll,
     raw,
     margin: roll.total,
-    critSuccess: raw <= side.critSuccess,
-    critFailure: raw >= side.critFailure,
+    critSuccess: raw <= critSuccess,
+    critFailure: raw >= critFailure,
   };
+}
+
+/**
+ * Flatten an evaluated duel roll for storage in a token flag / socket payload.
+ * A Roll can't cross either boundary, so it travels as its own JSON.
+ */
+function packRoll(result) {
+  return {
+    raw: result.raw,
+    margin: result.margin,
+    critSuccess: result.critSuccess,
+    critFailure: result.critFailure,
+    rollJson: JSON.stringify(result.roll.toJSON()),
+  };
+}
+
+/**
+ * Rebuild the Roll packed by {@link packRoll} so the result card can carry the
+ * real dice. Returns null when it can't be revived — the card then posts with
+ * the numbers only rather than failing outright.
+ */
+function unpackRoll(rollJson) {
+  if (!rollJson) return null;
+  try {
+    return Roll.fromJSON(rollJson);
+  } catch (err) {
+    console.warn("Redsteel | Mental duel: could not rebuild a stored roll", err);
+    return null;
+  }
+}
+
+/**
+ * The reroll tokens a Mental Duel test emits, so feature pools can match it:
+ * the skill it was rolled with plus its governing attribute. Characters roll
+ * Mind Bending (→ "mindbending" + "wil", so Adept/Expert: Mind Bending and any
+ * Will-scoped or universal pool such as Iron Will apply); NPCs roll Will
+ * directly (→ "wil").
+ */
+function duelRerollTokens(actor) {
+  return getRerollTokensForSkill(
+    actor,
+    actor?.type === "npc" ? "wil" : "mindBending",
+  );
+}
+
+/** Whether this actor has any pool that could reroll the duel test it just made. */
+function hasDuelReroll(actor, critFailure) {
+  if (!actor) return false;
+  return (
+    getEligibleRerolls(actor, duelRerollTokens(actor), { critFailure }).length >
+    0
+  );
 }
 
 /**
@@ -489,6 +655,8 @@ export class MentalDuelApp extends ApplicationV2 {
     // The GM must officially start the Mind Bending before either side may
     // attack. Until then the arena shows but the attack buttons stay locked.
     const started = this._isStarted();
+    // An exchange waiting on rerolls locks both attack buttons until it settles.
+    const pending = ended ? null : this._pendingState();
     let banner = "";
     if (ended) {
       const winner = a.mindValue > 0 ? a : b.mindValue > 0 ? b : null;
@@ -524,22 +692,24 @@ export class MentalDuelApp extends ApplicationV2 {
         <img class="rs-md-portrait" src="${s.img}" alt="${s.name}">
         <div class="rs-md-name" title="${s.name}">${s.name}</div>
         <div class="rs-md-mind">Mind <b>${s.mindValue}</b> / ${s.mindMax}</div>
-        <div class="rs-md-rating">Duel ${s.rating >= 0 ? "+" : ""}${s.rating}%</div>
+        <div class="rs-md-rating">${s.ratingLabel} ${s.rating >= 0 ? "+" : ""}${s.rating}%</div>
       </div>`;
 
     const attackBtn = (s, role) => {
       const canControl = s.actor.isOwner || game.user.isGM;
       const ready = this._canAttack(s);
-      const disabled = ended || !started || !canControl || !ready;
+      const disabled = ended || !started || !canControl || !ready || !!pending;
       const reason = !canControl
         ? "You don't control this combatant"
         : ended
           ? "The duel is over"
           : !started
             ? "The GM has not started the Mind Bending yet"
-            : !ready
-              ? "Already attacked this round"
-              : "Spend a Free Action to attack";
+            : pending
+              ? "An exchange is still open"
+              : !ready
+                ? "Already attacked this round"
+                : "Spend a Free Action to attack";
       return `<button type="button" class="rs-md-attack" data-role="${role}"
         ${disabled ? "disabled" : ""} title="${reason}"
         style="--rs-md-color:${s.color}">
@@ -569,7 +739,9 @@ export class MentalDuelApp extends ApplicationV2 {
         ${attackBtn(b, "b")}
       </div>
 
-      ${ended || !started ? "" : this._buildRpsHTML(a, b)}
+      ${pending ? this._buildPendingHTML(a, b, pending) : ""}
+
+      ${ended || !started || pending ? "" : this._buildRpsHTML(a, b)}
 
       ${banner}
 
@@ -765,8 +937,28 @@ export class MentalDuelApp extends ApplicationV2 {
       requestPossession(loserUuid, winnerUuid);
     });
 
-    // --- RPS gamble controls (coin toss auto-rolls; no manual trigger) ---
+    // --- Pending exchange: reroll / accept / GM resolve ---
     const anchorUuid = this._aUuid;
+    content.querySelectorAll(".rs-md-pending-reroll").forEach((btn) =>
+      btn.addEventListener("click", (ev) =>
+        this._onPendingReroll(ev.currentTarget.dataset.side),
+      ),
+    );
+    content.querySelectorAll(".rs-md-pending-accept").forEach((btn) =>
+      btn.addEventListener("click", (ev) =>
+        dispatchRound(anchorUuid, {
+          kind: "accept",
+          side: ev.currentTarget.dataset.side,
+        }),
+      ),
+    );
+    content
+      .querySelector(".rs-md-pending-resolve")
+      ?.addEventListener("click", () =>
+        dispatchRound(anchorUuid, { kind: "resolveNow" }),
+      );
+
+    // --- RPS gamble controls (coin toss auto-rolls; no manual trigger) ---
     content
       .querySelector(".rs-md-rps-accept")
       ?.addEventListener("click", () =>
@@ -788,9 +980,10 @@ export class MentalDuelApp extends ApplicationV2 {
   /** GM-only: terminate the duel for everyone (broadcast + local close). */
   _onEndDuel() {
     if (!game.user.isGM) return; // button is disabled for players; guard anyway
-    // Clear any lingering RPS gamble + started state on the anchor token.
+    // Clear any lingering RPS gamble, pending exchange + started state.
     const anchorDoc = this._token(this._aUuid)?.document;
     anchorDoc?.unsetFlag("redsteel", "mdRps");
+    anchorDoc?.unsetFlag("redsteel", "mdPending");
     anchorDoc?.unsetFlag("redsteel", "mdStarted");
     // Clear the persisted "active duel" marker so it won't resume.
     game.settings.set("redsteel", "mentalDuelActive", null);
@@ -822,6 +1015,15 @@ export class MentalDuelApp extends ApplicationV2 {
     const bTok = this._token(this._bUuid);
     if (!aTok?.actor || !bTok?.actor) return this.render();
 
+    // A round already on the table must be settled (rerolled or accepted)
+    // before another one can be thrown.
+    if (this._pendingState()) {
+      ui.notifications.warn(
+        "The last exchange is still open — resolve it before attacking again.",
+      );
+      return;
+    }
+
     const attacker = buildSide(role === "a" ? aTok : bTok);
     const defender = buildSide(role === "a" ? bTok : aTok);
 
@@ -842,43 +1044,184 @@ export class MentalDuelApp extends ApplicationV2 {
 
     const attRoll = await rollSide(attacker);
     const defRoll = await rollSide(defender);
-    const { attackerWins, critical } = resolveVersus(attRoll, defRoll);
 
-    const drain = attackerWins ? (critical ? 2 : 1) : 0;
+    // The exchange is spent the moment the dice hit the table, win or lose —
+    // a reroll replaces a die, it does not buy a second attack.
     await this._consumeAttack(attacker);
-    if (drain > 0) await applyMindLoss(defender.actorUuid, drain);
 
-    await this._postResult(attacker, defender, attRoll, defRoll, {
-      attackerWins,
-      critical,
-      drain,
+    // Nothing is applied yet: the round goes to the GM as a *pending* exchange
+    // so either side can still spend a reroll (see applyRoundAction).
+    const pack = (side, result) => ({
+      rating: side.rating,
+      critSuccessAt: side.critSuccess,
+      critFailureAt: side.critFailure,
+      ...packRoll(result),
+    });
+    const defenderRole = role === "a" ? "b" : "a";
+
+    await dispatchRound(this._aUuid, {
+      kind: "open",
+      bUuid: this._bUuid,
+      attacker: role,
+      round: game.combat?.round ?? 0,
+      sides: {
+        [role]: pack(attacker, attRoll),
+        [defenderRole]: pack(defender, defRoll),
+      },
     });
 
-    // updateActor/updateToken hooks re-render, but render now for snappiness.
+    // updateToken hooks re-render, but render now for snappiness.
     this.render();
   }
 
-  async _postResult(attacker, defender, attRoll, defRoll, outcome) {
-    const { attackerWins, critical, drain } = outcome;
-    const label = (s, r) =>
-      `${s.name}: <b>${r.margin}</b>` +
-      (r.critSuccess ? " ⚡crit" : r.critFailure ? " ✖fumble" : "");
+  /* ---- Pending exchange (the reroll window) ---- */
 
-    const verdict = attackerWins
-      ? `${attacker.name} prevails — ${defender.name} loses <b>${drain}</b> Mind${critical ? " (decisive!)" : ""}.`
-      : `${attacker.name} fails to break through.`;
+  /** Reads + validates the pending exchange stored on the anchor token. */
+  _pendingState() {
+    const anchor = this._token(this._aUuid)?.document;
+    const state = anchor?.getFlag("redsteel", "mdPending") ?? null;
+    if (!state) return null;
+    return state.pairKey === rpsPairKey(this._aUuid, this._bUuid) ? state : null;
+  }
 
-    await ChatMessage.create({
-      speaker: ChatMessage.getSpeaker({ actor: attacker.actor }),
-      flavor: `<b>Mentální souboj</b> — ${attacker.name} vs ${defender.name}`,
-      rolls: [attRoll.roll, defRoll.roll],
-      content: `
-        <div style="font-size:13px;line-height:1.5;">
-          <div>${label(attacker, attRoll)}</div>
-          <div>${label(defender, defRoll)}</div>
-          <hr>
-          <div style="text-align:center;">${verdict}</div>
-        </div>`,
+  /**
+   * The reroll panel: both rolls face-up, the provisional verdict, and per-side
+   * Reroll / Accept controls. Nothing has been applied at this point — the
+   * winner is only declared once both sides are locked in.
+   */
+  _buildPendingHTML(a, b, pending) {
+    const sides = { a, b };
+    const attackerName = sides[pending.attacker].name;
+
+    const row = (key) => {
+      const s = sides[key];
+      const entry = pending.sides[key];
+      const role = key === pending.attacker ? "attacker" : "defender";
+      const crit = entry.critSuccess
+        ? ` <span style="color:#8fd08f;">⚡crit</span>`
+        : entry.critFailure
+          ? ` <span style="color:#e08b8b;">✖fumble</span>`
+          : "";
+      const rerolled = entry.rerollLabel
+        ? `<div class="rs-md-pending-note"><i class="fa-light fa-rotate"></i> Rerolled — ${entry.rerollLabel}</div>`
+        : "";
+
+      const mine = s.actor.isOwner || game.user.isGM;
+      let controls;
+      if (entry.done) {
+        controls = `<div class="rs-md-pending-note">
+          <i class="fas fa-check"></i> ${entry.rerollLabel ? "reroll stands" : "locked in"}</div>`;
+      } else if (!mine) {
+        controls = `<div class="rs-md-pending-note">waiting for ${s.name}…</div>`;
+      } else {
+        controls = `<div class="rs-md-pending-buttons">
+          ${
+            entry.canReroll
+              ? `<button type="button" class="rs-md-pending-reroll" data-side="${key}"
+                   title="Spend a reroll on this test">
+                   <i class="fa-light fa-rotate"></i> Reroll</button>`
+              : ""
+          }
+          <button type="button" class="rs-md-pending-accept" data-side="${key}"
+            title="Keep this roll">Accept</button>
+        </div>`;
+      }
+
+      return `<div class="rs-md-pending-row" style="--rs-md-color:${s.color}">
+        <div class="rs-md-pending-who"><b>${s.name}</b>
+          <span style="opacity:.6;">(${role})</span></div>
+        <div class="rs-md-pending-roll">d100 <b>${entry.raw}</b> → margin
+          <b>${entry.margin}</b>${crit}</div>
+        ${rerolled}
+        ${controls}
+      </div>`;
+    };
+
+    // Provisional only — it is recomputed from the final dice on resolution.
+    const att = pending.sides[pending.attacker];
+    const def = pending.sides[pending.attacker === "a" ? "b" : "a"];
+    const { attackerWins, critical } = resolveVersus(att, def);
+    const provisional = attackerWins
+      ? `${attackerName} would prevail — <b>${critical ? 2 : 1}</b> Mind.`
+      : `${attackerName} would fail to break through.`;
+
+    const resolveBtn = game.user.isGM
+      ? `<button type="button" class="rs-md-pending-resolve"
+           title="Lock in both rolls and apply the result">
+           <i class="fas fa-gavel"></i> Resolve now</button>`
+      : "";
+
+    return `<div class="rs-md-pending">
+      <div class="rs-md-pending-title">
+        <i class="fa-light fa-hourglass-half"></i> Exchange thrown — reroll or accept
+      </div>
+      <div class="rs-md-pending-rows">${row("a")}${row("b")}</div>
+      <div class="rs-md-pending-verdict">Provisional: ${provisional}</div>
+      ${resolveBtn ? `<div class="rs-md-pending-gm">${resolveBtn}</div>` : ""}
+    </div>`;
+  }
+
+  /**
+   * Spend a reroll on one side of the pending exchange. The charge is consumed
+   * on the spender's own client (they own the actor; the GM may act for either
+   * side), then the fresh roll is handed to the GM to record.
+   */
+  async _onPendingReroll(key) {
+    const pending = this._pendingState();
+    const entry = pending?.sides?.[key];
+    if (!entry || entry.done) return;
+
+    const tok = this._token(key === "a" ? this._aUuid : this._bUuid);
+    const actor = tok?.actor;
+    if (!actor) return;
+    if (!(actor.isOwner || game.user.isGM)) {
+      ui.notifications.warn(`You don't control ${tok.document.name}.`);
+      return;
+    }
+
+    // A natural fumble may only be rerolled by a pool carrying the "critfail"
+    // keyword — the same rule the chat reroll button enforces.
+    const eligible = getEligibleRerolls(actor, duelRerollTokens(actor), {
+      critFailure: entry.critFailure,
+    });
+    if (!eligible.length) {
+      ui.notifications.info(
+        entry.critFailure
+          ? "No rerolls available that can reroll a Critical Failure."
+          : "No eligible rerolls available.",
+      );
+      return;
+    }
+
+    const chosen =
+      eligible.length === 1 ? eligible[0] : await pickRerollPool(eligible);
+    if (!chosen) return; // cancelled
+
+    const spent = await consumeReroll(actor, chosen.itemId, chosen.poolIndex);
+    if (!spent) {
+      ui.notifications.warn("That reroll is already spent.");
+      return;
+    }
+    try {
+      await scheduleRerollRefresh(actor, chosen, {
+        critFailure: entry.critFailure,
+      });
+    } catch (err) {
+      console.warn("Redsteel | Calendaria scheduling failed", err);
+    }
+
+    // Same rating as the original test, mind ward and all — only the die changes.
+    const result = await rollSide({
+      rating: entry.rating,
+      critSuccess: entry.critSuccessAt,
+      critFailure: entry.critFailureAt,
+    });
+
+    await dispatchRound(this._aUuid, {
+      kind: "reroll",
+      side: key,
+      label: chosen.label,
+      ...packRoll(result),
     });
   }
 
@@ -1078,6 +1421,235 @@ export async function resumeMentalDuel({ notify = true } = {}) {
  */
 export function closeMentalDuel() {
   if (activeDuel?.rendered) activeDuel.close();
+}
+
+/* -------------------------------------------- */
+/*  Pending exchange (GM-authoritative rerolls)  */
+/* -------------------------------------------- */
+
+/**
+ * Route a pending-exchange action to the single authority (the active GM), who
+ * owns `flags.redsteel.mdPending` on the anchor (attacker) token. Every client
+ * re-renders off the resulting token-flag update — same shape as the RPS
+ * gamble, so both duel state machines behave identically.
+ * @param {string} anchorUuid - The anchor token's uuid (state lives here).
+ * @param {object} action - { kind, ... }
+ */
+async function dispatchRound(anchorUuid, action) {
+  const gm = game.users.activeGM;
+  if (!gm) {
+    ui.notifications.warn("A GM must be connected to resolve the exchange.");
+    return;
+  }
+  const data = { anchorUuid, action };
+  if (game.user.id === gm.id) await applyRoundAction(data);
+  else game.socket.emit(SOCKET, { type: "mentalDuelRound", ...data });
+}
+
+/** Socket entry point for a pending exchange — only the active GM applies it. */
+export async function handleMentalDuelRound(data) {
+  if (game.user.id !== game.users.activeGM?.id) return;
+  await applyRoundAction(data);
+}
+
+/**
+ * Serialize every action for one duel behind the previous one. Two clients can
+ * fire at the same moment (both sides clicking Accept, a double-clicked attack)
+ * and each socket callback would otherwise read the flag before the other's
+ * write landed — opening two exchanges, or resolving one twice.
+ */
+const roundQueues = new Map();
+function queueRoundAction(anchorUuid, task) {
+  const prev = roundQueues.get(anchorUuid) ?? Promise.resolve();
+  const next = prev.then(task, task).catch((err) => {
+    console.error("Redsteel | Mental duel exchange failed", err);
+  });
+  roundQueues.set(anchorUuid, next);
+  return next;
+}
+
+/**
+ * Authoritative pending-exchange state machine. Runs on the active GM.
+ *
+ * The whole point is that NOTHING is applied when the dice are thrown: the
+ * rolls are parked here, each side gets a chance to spend a reroll, and only
+ * when both are locked in does {@link resolveRound} declare a winner and drain
+ * Mind. A side with no eligible reroll pool is locked in immediately, so a duel
+ * where nobody can reroll (every NPC, most characters) resolves in one step
+ * exactly as it did before.
+ */
+function applyRoundAction({ anchorUuid, action }) {
+  return queueRoundAction(anchorUuid, () => runRoundAction(anchorUuid, action));
+}
+
+async function runRoundAction(anchorUuid, action) {
+  const anchor = fromUuidSync(anchorUuid);
+  if (!anchor) return;
+
+  const get = () => anchor.getFlag("redsteel", "mdPending") ?? null;
+  let state = get();
+
+  switch (action.kind) {
+    case "open": {
+      if (state) return; // an exchange is already open — ignore the duplicate
+
+      const uuids = { a: anchorUuid, b: action.bUuid };
+      const sides = {};
+      for (const key of ["a", "b"]) {
+        const incoming = action.sides?.[key];
+        if (!incoming) return;
+        const actor = fromUuidSync(uuids[key])?.actor;
+        const canReroll = hasDuelReroll(actor, incoming.critFailure);
+        sides[key] = {
+          ...incoming,
+          canReroll,
+          done: !canReroll, // nothing to spend → already locked in
+          rerollLabel: null,
+        };
+      }
+
+      state = {
+        pairKey: rpsPairKey(anchorUuid, action.bUuid),
+        aUuid: anchorUuid,
+        bUuid: action.bUuid,
+        round: action.round ?? (game.combat?.round ?? 0),
+        attacker: action.attacker,
+        sides,
+      };
+      // Nobody can reroll (the usual case, and always for NPC-vs-NPC): settle
+      // it right here rather than writing a pending flag every client would
+      // paint for one frame before it clears again.
+      if (sides.a.done && sides.b.done) {
+        await resolveRound(anchor, state);
+        return;
+      }
+      await anchor.setFlag("redsteel", "mdPending", state);
+      return;
+    }
+
+    case "reroll": {
+      const entry = state?.sides?.[action.side];
+      if (!entry || entry.done) return; // stale click / already locked in
+      // The charge was already spent on the clicking client; record the new
+      // die and lock that side in — one reroll per side per exchange.
+      const sides = {
+        ...state.sides,
+        [action.side]: {
+          ...entry,
+          raw: action.raw,
+          margin: action.margin,
+          critSuccess: action.critSuccess,
+          critFailure: action.critFailure,
+          rollJson: action.rollJson,
+          rerollLabel: action.label ?? "Reroll",
+          canReroll: false,
+          done: true,
+        },
+      };
+      state = { ...state, sides };
+      await anchor.setFlag("redsteel", "mdPending", state);
+      await maybeResolveRound(anchor, state);
+      return;
+    }
+
+    case "accept": {
+      const entry = state?.sides?.[action.side];
+      if (!entry || entry.done) return;
+      state = {
+        ...state,
+        sides: { ...state.sides, [action.side]: { ...entry, done: true } },
+      };
+      await anchor.setFlag("redsteel", "mdPending", state);
+      await maybeResolveRound(anchor, state);
+      return;
+    }
+
+    // GM override: settle the exchange without waiting on an absent player.
+    case "resolveNow": {
+      if (!state) return;
+      state = {
+        ...state,
+        sides: {
+          a: { ...state.sides.a, done: true },
+          b: { ...state.sides.b, done: true },
+        },
+      };
+      await maybeResolveRound(anchor, state);
+      return;
+    }
+  }
+}
+
+/**
+ * Resolve the exchange once both sides are locked in. GM only, and always
+ * reached from inside the per-duel queue, so it can't overlap another action.
+ */
+async function maybeResolveRound(anchor, state) {
+  if (!state?.sides?.a?.done || !state?.sides?.b?.done) return;
+  await resolveRound(anchor, state);
+}
+
+/**
+ * Declare the winner of a settled exchange: recompute the versus test from the
+ * final dice, drain the loser's Mind and post the result card.
+ *
+ * The pending flag is cleared FIRST so the Mind update's re-render can't paint
+ * a stale reroll panel over an exchange that is already decided.
+ */
+async function resolveRound(anchor, state) {
+  if (anchor.getFlag("redsteel", "mdPending")) {
+    await anchor.unsetFlag("redsteel", "mdPending");
+  }
+
+  const attackerKey = state.attacker;
+  const defenderKey = attackerKey === "a" ? "b" : "a";
+  const att = state.sides[attackerKey];
+  const def = state.sides[defenderKey];
+
+  const uuidFor = (key) => (key === "a" ? state.aUuid : state.bUuid);
+  const attackerTok = fromUuidSync(uuidFor(attackerKey));
+  const defenderTok = fromUuidSync(uuidFor(defenderKey));
+  const attackerActor = attackerTok?.actor;
+  const defenderActor = defenderTok?.actor;
+  if (!attackerActor || !defenderActor) return;
+
+  const attackerName = attackerTok.name ?? attackerActor.name;
+  const defenderName = defenderTok.name ?? defenderActor.name;
+
+  const { attackerWins, critical } = resolveVersus(att, def);
+  const drain = attackerWins ? (critical ? 2 : 1) : 0;
+  if (drain > 0) await applyMindLoss(defenderActor.uuid, drain);
+
+  const label = (name, entry) =>
+    `${name}: <b>${entry.margin}</b>` +
+    (entry.critSuccess ? " ⚡crit" : entry.critFailure ? " ✖fumble" : "") +
+    (entry.rerollLabel
+      ? ` <span style="opacity:.75;font-size:12px;">(reroll — ${entry.rerollLabel})</span>`
+      : "");
+
+  const verdict = attackerWins
+    ? `${attackerName} prevails — ${defenderName} loses <b>${drain}</b> Mind${critical ? " (decisive!)" : ""}.`
+    : `${attackerName} fails to break through.`;
+
+  const rolls = [unpackRoll(att.rollJson), unpackRoll(def.rollJson)].filter(
+    Boolean,
+  );
+
+  await ChatMessage.create({
+    speaker: ChatMessage.getSpeaker({ actor: attackerActor }),
+    flavor: `<b>Mentální souboj</b> — ${attackerName} vs ${defenderName}`,
+    ...(rolls.length ? { rolls } : {}),
+    // Marks the card so the generic chat Re-Roll button skips it: rerolling a
+    // decided exchange from chat would change nothing that was applied.
+    flags: { redsteel: { mentalDuel: true } },
+    content: `
+      <div style="font-size:13px;line-height:1.5;">
+        <div>${label(attackerName, att)}</div>
+        <div>${label(defenderName, def)}</div>
+        <hr>
+        <div style="text-align:center;">${verdict}</div>
+      </div>`,
+  });
 }
 
 /* -------------------------------------------- */
