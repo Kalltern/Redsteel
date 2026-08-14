@@ -50,6 +50,10 @@ import { usePotion } from "./utils/usePotion.mjs";
 import { usePoison, clearWeaponCoating } from "./utils/usePoison.mjs";
 import { defenseRoll, registerDefendButton } from "./utils/defense.mjs";
 import { registerOverwhelmHooks } from "./utils/overwhelm.mjs";
+import {
+  registerRoundDigest,
+  openRoundDigest,
+} from "./utils/roundDigest.mjs";
 import { throwExplosive } from "./utils/throwExplosive.mjs";
 import {
   castSpell,
@@ -369,6 +373,7 @@ Hooks.once("init", function () {
   registerTempHealthGrant();
   registerDefendButton();
   registerOverwhelmHooks();
+  registerRoundDigest();
   registerEffectSheetExtensions();
   registerKeepDialogOpen();
   registerCustomConditions();
@@ -969,6 +974,11 @@ Hooks.on("ready", () => {
           return;
         } else {
           const combat = this;
+
+          // Open the round card before the reroll so every initiative roll is
+          // collected into it. The round has not advanced yet, hence the +1 —
+          // the round-start handler corrects it once it knows the real value.
+          openRoundDigest(combat.round + 1);
 
           const combatantUpdates = combat.combatants.map((c) => ({
             _id: c.id,

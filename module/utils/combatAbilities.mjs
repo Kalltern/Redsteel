@@ -25,6 +25,7 @@ import {
   abilityUsageFit,
   renderAttackTagsHtml,
 } from "./opportunityAttacks.mjs";
+import { setupDialogTabs } from "./dialogTabMemory.mjs";
 
 export async function combatAbilities() {
   // ====================================================================
@@ -741,21 +742,8 @@ export async function combatAbilities() {
         );
       });
 
-      // Activate first tab
-      const firstTab = html.find(".tab-item").first();
-      firstTab.addClass("active");
-      html
-        .find(`.tab-pane[data-tab="${firstTab.data("tab")}"]`)
-        .addClass("active");
-
-      // Switch tabs
-      html.find(".tab-item").click(function () {
-        const tab = $(this).data("tab");
-        html.find(".tab-item").removeClass("active");
-        $(this).addClass("active");
-        html.find(".tab-pane").removeClass("active");
-        html.find(`.tab-pane[data-tab="${tab}"]`).addClass("active");
-      });
+      // Open the tab this player last used, and remember every switch
+      setupDialogTabs(html, "combat-abilities");
 
       // Ability selection
       html.find(".ability-choice").click(async (event) => {

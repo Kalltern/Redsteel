@@ -12,6 +12,12 @@ import {
   syncCombatFloorInitiative,
   registerFloorInitiativeClamp,
 } from "../utils/floorInitiative.mjs";
+import {
+  openRoundDigest,
+  setRoundDigestRound,
+  finishRoundDigest,
+  postRoundEntry,
+} from "../utils/roundDigest.mjs";
 
 export class RedsteelActiveEffect extends ActiveEffect {
   /* -------------------------------------------- */
@@ -258,6 +264,12 @@ export class RedsteelActiveEffect extends ActiveEffect {
         await combat.setFlag("redsteel", "lastTurnKey", turnKey);
         await this._onTurnStart(combat);
       }
+
+      // Both handlers have finished their await-chains, so nothing more will be
+      // rolled for this rollover. Signalled here rather than at the end of
+      // _onRoundStart because _onTurnStart runs after it and ticks the first
+      // combatant's turn-start effects — those belong on the same card.
+      if ("round" in changed) finishRoundDigest();
     });
 
     // Resource-threshold conditions (Fatigued / Toxic Shock) follow the
@@ -439,8 +451,13 @@ export class RedsteelActiveEffect extends ActiveEffect {
       { redsteelHex: true },
     );
 
-    await roll.toMessage({
-      speaker: ChatMessage.getSpeaker({ actor }),
+    // A round-start bleed tick is itself an instance of damage, so the Hex
+    // rider it triggers belongs on the same round card.
+    await postRoundEntry(actor, {
+      kind: "damage",
+      label: hex.name,
+      roll,
+      note: "ignores armor",
       flavor: `${hex.name} — +${roll.total} damage (ignores armor)`,
     });
 
@@ -475,6 +492,14 @@ export class RedsteelActiveEffect extends ActiveEffect {
     await combat.setFlag("redsteel", "lastProcessedRound", combat.round);
 
     console.log("Redsteel | Processing round:", combat.round);
+
+    // Everything this method rolls goes into one Announcer card. Already open
+    // when dynamic initiative is on (the nextRound wrapper opens it before
+    // rerolling), so this covers the case where it is off and the round's only
+    // rolls are the effect ticks below. Either way `setRoundDigestRound` fixes
+    // up the round number, which the wrapper could only guess at.
+    openRoundDigest(combat.round);
+    setRoundDigestRound(combat.round);
 
     // Krvavý štít is strictly "until the end of the round". Clear every Blood
     // Shield in the scene at the top of each round so it can never carry into
@@ -1357,9 +1382,10 @@ export class RedsteelActiveEffect extends ActiveEffect {
 
     const roll = await new Roll(`${resolve * 10} - 1d100`).roll();
 
-    await roll.toMessage({
-      speaker: ChatMessage.getSpeaker({ actor }),
-      flavor: "Burning – Panic Test",
+    await postRoundEntry(actor, {
+      kind: "test",
+      label: "Burning – Panic Test",
+      roll,
     });
 
     if (roll.total >= 0) {
@@ -1383,9 +1409,10 @@ export class RedsteelActiveEffect extends ActiveEffect {
 
     const roll = await new Roll(`${resolve * 10} - 1d100`).roll();
 
-    await roll.toMessage({
-      speaker: ChatMessage.getSpeaker({ actor }),
-      flavor: "Fear – Resolve Test",
+    await postRoundEntry(actor, {
+      kind: "test",
+      label: "Fear – Resolve Test",
+      roll,
     });
 
     const total = roll.total;
@@ -1638,10 +1665,15 @@ export class RedsteelActiveEffect extends ActiveEffect {
       }
     }
 
-    await roll.toMessage({
-      speaker: ChatMessage.getSpeaker({ actor }),
-      flavor: `${this.name} – ${type}${bloodGainNote(actor, bloodGained)}`,
-      create: true,
+    const bloodNote = bloodGainNote(actor, bloodGained);
+
+    await postRoundEntry(actor, {
+      kind: trigger.target === "system.stats.health.value" ? "damage" : "note",
+      label: this.name,
+      roll,
+      note: bloodNote,
+      flavor: `${this.name} – ${type}${bloodNote}`,
+      messageData: { create: true },
     });
 
     // Burning panic logic
@@ -1830,13 +1862,18 @@ export class RedsteelActiveEffect extends ActiveEffect {
       .filter((t) => t !== "and" && t !== "or")
       .join(", ");
 
-    await roll.toMessage({
-      speaker: ChatMessage.getSpeaker({ actor }),
-      flavor: `${this.name} – ${result.totalHpLoss} damage${
-        types ? ` (${types})` : ""
-      } after specialized armor & resistances${
-        gainsCorruption ? ` (+${result.totalHpLoss} Corruption)` : ""
-      }`,
+    const detail = `${result.totalHpLoss} damage${
+      types ? ` (${types})` : ""
+    } after specialized armor & resistances${
+      gainsCorruption ? ` (+${result.totalHpLoss} Corruption)` : ""
+    }`;
+
+    await postRoundEntry(actor, {
+      kind: "damage",
+      label: this.name,
+      roll,
+      note: detail,
+      flavor: `${this.name} – ${detail}`,
     });
   }
 
@@ -1859,8 +1896,11 @@ export class RedsteelActiveEffect extends ActiveEffect {
     const roll = await new Roll(`${mod} - 40 - 1d100`).evaluate();
     const success = roll.total >= 0;
 
-    await roll.toMessage({
-      speaker: ChatMessage.getSpeaker({ actor }),
+    await postRoundEntry(actor, {
+      kind: "damage",
+      label: this.name,
+      roll,
+      note: "25 damage; Endurance (−40) vs Stun",
       flavor: `${this.name} — 25 damage; Endurance (−40) vs Stun`,
     });
 
@@ -1967,11 +2007,16 @@ export class RedsteelActiveEffect extends ActiveEffect {
         .filter((t) => t !== "and" && t !== "or")
         .join(", ");
 
-      await roll.toMessage({
-        speaker: ChatMessage.getSpeaker({ actor }),
-        flavor: `${this.name} – ${result.totalHpLoss} damage${
-          types ? ` (${types})` : ""
-        } after specialized armor & resistances`,
+      const detail = `${result.totalHpLoss} damage${
+        types ? ` (${types})` : ""
+      } after specialized armor & resistances`;
+
+      await postRoundEntry(actor, {
+        kind: "damage",
+        label: this.name,
+        roll,
+        note: detail,
+        flavor: `${this.name} – ${detail}`,
       });
     }
 
@@ -2018,8 +2063,11 @@ export class RedsteelActiveEffect extends ActiveEffect {
       "system.stats.health.value": current - roll.total,
     });
 
-    await roll.toMessage({
-      speaker: ChatMessage.getSpeaker({ actor }),
+    await postRoundEntry(actor, {
+      kind: "damage",
+      label: this.name,
+      roll,
+      note: `${refused} Bleeding refused (at the cap) → ${refused}d8 damage`,
       flavor: `${this.name} – ${refused} Bleeding refused (at the cap) → ${refused}d8 damage`,
     });
 
@@ -2045,18 +2093,20 @@ export class RedsteelActiveEffect extends ActiveEffect {
 
     await this._maybeApplyZeroHealthState();
 
-    await roll.toMessage({
-      speaker: ChatMessage.getSpeaker({ actor }),
-      flavor: `${this.name} – Damage`,
+    await postRoundEntry(actor, {
+      kind: "damage",
+      label: `${this.name} – Damage`,
+      roll,
     });
 
     const resolve = actor.system.secondaryAttributes.res?.total ?? 0;
 
     const test = await new Roll(`${resolve * 10} - 1d100`).roll();
 
-    await test.toMessage({
-      speaker: ChatMessage.getSpeaker({ actor }),
-      flavor: `${this.name} – Panic Test`,
+    await postRoundEntry(actor, {
+      kind: "test",
+      label: `${this.name} – Panic Test`,
+      roll: test,
     });
 
     if (test.total < 0) {
@@ -2082,9 +2132,10 @@ export class RedsteelActiveEffect extends ActiveEffect {
       [path]: next,
     });
 
-    await roll.toMessage({
-      speaker: ChatMessage.getSpeaker({ actor }),
-      flavor: `${this.name} – Healing`,
+    await postRoundEntry(actor, {
+      kind: "healing",
+      label: `${this.name} – Healing`,
+      roll,
     });
   }
   async _handleStaminaDrain(trigger) {
@@ -2201,11 +2252,16 @@ export class RedsteelActiveEffect extends ActiveEffect {
     const roll = await new Roll("2d4dl1").evaluate();
     await this.setFlag("redsteel", "roundsUntilDeath", roll.total);
 
-    await roll.toMessage({
-      speaker: ChatMessage.getSpeaker({ actor }),
+    await postRoundEntry(actor, {
+      kind: "test",
+      label: "Dying — rounds until bleed-out",
+      roll,
+      gm: true,
       flavor: `${actor.name} is Dying — rounds until bleed-out`,
-      whisper: ChatMessage.getWhisperRecipients("GM"),
-      blind: true,
+      messageData: {
+        whisper: ChatMessage.getWhisperRecipients("GM"),
+        blind: true,
+      },
     });
   }
 
@@ -2239,11 +2295,18 @@ export class RedsteelActiveEffect extends ActiveEffect {
       suffix = ` — <b>−${penalty}%</b> penalty to stabilisation attempts.`;
     }
 
-    await ChatMessage.create({
-      speaker: ChatMessage.getSpeaker({ actor }),
+    await postRoundEntry(actor, {
+      kind: "note",
+      label: "Dying",
+      note: `Rounds until death: <b>${rounds}</b>${suffix}`,
+      gm: true,
+      // Standalone fallback reproduces the old whisper exactly — no flavor line.
+      flavor: "",
       content: `<p><b>${actor.name}</b> — Rounds until death: <b>${rounds}</b>${suffix}</p>`,
-      whisper: ChatMessage.getWhisperRecipients("GM"),
-      blind: true,
+      messageData: {
+        whisper: ChatMessage.getWhisperRecipients("GM"),
+        blind: true,
+      },
     });
   }
 

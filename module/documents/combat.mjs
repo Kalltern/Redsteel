@@ -2,6 +2,11 @@ import {
   buildSpeedTestFormula,
   tagSpeedTest,
 } from "../utils/speedTest.mjs";
+import {
+  collectRoundEntry,
+  openRoundDigest,
+  finishRoundDigest,
+} from "../utils/roundDigest.mjs";
 
 /**
  * Extend the basic Combat with custom initiative handling.
@@ -21,6 +26,16 @@ export class RedsteelCombat extends Combat {
 
     const updates = [];
     const messages = [];
+
+    // Rolling for the whole tracker at once — "Roll All" at combat start, or
+    // the dynamic-initiative reroll — is exactly the burst the round card
+    // exists to absorb, so open one if the rollover has not already. Rolling a
+    // single combatant from the tracker mid-round is left alone: that is one
+    // message, and it should read as its own.
+    // GM-gated: the round card speaks for the table, so a player who happens to
+    // own two PCs must not be the one posting it.
+    const openedDigest =
+      game.user.isGM && ids.length > 1 && openRoundDigest(this.round || 1);
 
     for (let [i, id] of ids.entries()) {
       const combatant = this.combatants.get(id);
@@ -60,6 +75,41 @@ export class RedsteelCombat extends Combat {
       });
 
       // -----------------------------------------
+      // Round digest
+      // -----------------------------------------
+      // During a round rollover the digest swallows every initiative roll and
+      // posts them as one card. Turn order is public: only a combatant hidden
+      // in the tracker goes to the card's GM-only section, since showing it
+      // would announce an enemy the table has not seen yet. The GM's chat roll
+      // mode deliberately does NOT route this — leaving that dropdown on
+      // "Private GM Roll" would otherwise hide the whole turn order from the
+      // players. Outside a rollover (a single combatant rerolled from the
+      // tracker) the digest is closed and the message below is posted as
+      // before, roll mode and all.
+
+      const rollMode =
+        "rollMode" in messageOptions
+          ? messageOptions.rollMode
+          : combatant.hidden
+            ? CONST.DICE_ROLL_MODES.PRIVATE
+            : chatRollMode;
+
+      const collected = collectRoundEntry(actor, {
+        kind: "initiative",
+        label: game.i18n.localize("REDSTEEL.RoundDigest.Initiative"),
+        roll,
+        initiative: roll.total,
+        // `img`/`name` are schema fields that may sit empty on a combatant the
+        // tracker fills in from the token — fall through rather than render a
+        // broken portrait.
+        name: combatant.name || combatant.token?.name || actor.name,
+        img: combatant.img || combatant.token?.texture?.src || actor.img,
+        gm: !!combatant.hidden,
+      });
+
+      if (collected) continue;
+
+      // -----------------------------------------
       // Chat message data
       // -----------------------------------------
 
@@ -94,12 +144,7 @@ export class RedsteelCombat extends Combat {
       // Roll mode
       // -----------------------------------------
 
-      chatData.rollMode =
-        "rollMode" in messageOptions
-          ? messageOptions.rollMode
-          : combatant.hidden
-            ? CONST.DICE_ROLL_MODES.PRIVATE
-            : chatRollMode;
+      chatData.rollMode = rollMode;
 
       // -----------------------------------------
       // Only first roll makes sound
@@ -112,7 +157,10 @@ export class RedsteelCombat extends Combat {
       messages.push(chatData);
     }
 
-    if (!updates.length) return this;
+    if (!updates.length) {
+      if (openedDigest) finishRoundDigest();
+      return this;
+    }
 
     // -----------------------------------------
     // Apply initiative updates
@@ -134,7 +182,12 @@ export class RedsteelCombat extends Combat {
     // Create chat messages
     // -----------------------------------------
 
-    await ChatMessage.implementation.create(messages);
+    // Empty whenever the digest took every roll.
+    if (messages.length) await ChatMessage.implementation.create(messages);
+
+    // Only close what this call opened. When the rollover opened it, the
+    // round-start handler still has its effect ticks to add.
+    if (openedDigest) finishRoundDigest();
 
     return this;
   }

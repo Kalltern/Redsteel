@@ -11,6 +11,7 @@ import {
 } from "./speedTest.mjs";
 import { resolveTestRating } from "./testRating.mjs";
 import { resolveSpellPowerTokens } from "./spellCards.mjs";
+import { setupDialogTabs } from "./dialogTabMemory.mjs";
 
 // --- Helper for Dialogs (CSS Injection) ---
 function _injectDialogCSS() {
@@ -405,21 +406,9 @@ export function showSpellSelectionDialogs(actor) {
           const app = spellDialog.element[0];
           app.style.height = "auto";
           app.style.minHeight = "360px";
-          // 1. Activate initial tab
-          const firstTab = html.find(".tab-item").first();
-          firstTab.addClass("active");
-          html
-            .find(`.tab-pane[data-tab="${firstTab.data("tab")}"]`)
-            .addClass("active");
-
-          // 2. Handle tab switching
-          html.find(".tab-item").click(function () {
-            const tab = $(this).data("tab");
-            html.find(".tab-item").removeClass("active");
-            $(this).addClass("active");
-            html.find(".tab-pane").removeClass("active");
-            html.find(`.tab-pane[data-tab="${tab}"]`).addClass("active");
-          });
+          // 1./2. Open the rank tab this player last used in this school and
+          // remember every switch (ranks differ per school, so key by school).
+          setupDialogTabs(html, `spell-rank:${schoolName}`);
 
           // 2.b Recalculate the Cast Chance column whenever Focus changes, so
           // it always reflects the value that will go into the roll.

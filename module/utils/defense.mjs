@@ -1188,6 +1188,14 @@ export async function defenseRoll({
       defenseCritFailure: critFailure,
     });
 
+    // Whether the guard actually held. The contested result is the truth when
+    // this defense answered an attack card; otherwise the roll's own margin is
+    // all there is to go on. Only ever dims the Temporary Health claim, never
+    // blocks it: the rule is the GM's to apply, not the card's to enforce.
+    const defenseFailed = versus.versus
+      ? !versus.versus.blocked
+      : roll.total < 0;
+
     await ChatMessage.create({
       speaker: ChatMessage.getSpeaker({ actor }),
       rolls: [roll],
@@ -1227,7 +1235,9 @@ export async function defenseRoll({
           // unless steelGrip/predatorySenses flips it).
           rerollTokens: getDefenseRerollTokens(actor, defenseKey),
           ...(versus.versus ? { versus: versus.versus } : {}),
-          ...(tempHealthGrant ? { tempHealthGrant } : {}),
+          ...(tempHealthGrant
+            ? { tempHealthGrant: { ...tempHealthGrant, defenseFailed } }
+            : {}),
         },
       },
     });

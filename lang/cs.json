@@ -4541,6 +4541,18 @@
       "Defend": "Bránit se",
       "DefendTooltip": "Hodit obranu proti tomuto útoku."
     },
+    "RoundDigest": {
+      "Announcer": "Hlasatel",
+      "Round": "Kolo",
+      "Initiative": "Iniciativa",
+      "CombatantsOne": "1 aktivní bojovník",
+      "CombatantsFew": "{count} aktivní bojovníci",
+      "CombatantsMany": "{count} aktivních bojovníků",
+      "Details": "Podrobnosti kola",
+      "GmOnly": "Jen pro GM",
+      "Quiet": "Nic se neházelo.",
+      "Other": "Ostatní"
+    },
     "Versus": {
       "Blocked": "Ubráněno",
       "Hit": "Zásah",

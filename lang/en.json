@@ -4544,6 +4544,18 @@
       "Defend": "Defend",
       "DefendTooltip": "Roll a defense against this attack."
     },
+    "RoundDigest": {
+      "Announcer": "Announcer",
+      "Round": "Round",
+      "Initiative": "Initiative",
+      "CombatantsOne": "1 active combatant",
+      "CombatantsFew": "{count} active combatants",
+      "CombatantsMany": "{count} active combatants",
+      "Details": "Round details",
+      "GmOnly": "GM only",
+      "Quiet": "Nothing was rolled.",
+      "Other": "Other"
+    },
     "Versus": {
       "Blocked": "Defended",
       "Hit": "Hit",

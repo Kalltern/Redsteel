@@ -205,6 +205,10 @@ export function registerTempHealthGrant() {
       ...(grant.sources ?? []),
     ].join("<br>");
 
+    // The defense did not hold, so the claim is almost certainly not owed.
+    // Dimmed rather than disabled: the table may still rule that it applies.
+    if (grant.defenseFailed) button.classList.add("is-inert");
+
     if (grant.consumed) {
       button.disabled = true;
       button.classList.add("is-consumed");

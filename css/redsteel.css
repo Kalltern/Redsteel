@@ -2109,8 +2109,23 @@ table tr td:nth-child(3) {
   gap: 6px;
   font-weight: bold;
   color: #c8a84b;
-  background: #2b2410;
+  background: #0d0d0d;
   border: 1px solid #c8a84b;
+}
+
+/* The defense did not hold, so the claim is very likely not owed. Still fully
+   clickable, because that call belongs to the table, but stripped of every
+   colour that would invite the player to take it. */
+.button-container button.rs-temp-hp-button.is-inert {
+  color: #6f6a5f;
+  border-color: #555555;
+}
+
+.button-container button.rs-temp-hp-button.is-inert:hover:not(:disabled) {
+  color: #8a8577;
+  background: #161616;
+  border-color: #6f6a5f;
+  text-shadow: none;
 }
 
 .button-container button.rs-temp-hp-button i {
@@ -7981,59 +7996,68 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 .spell-inspector-header {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 9px;
+  padding-bottom: 7px;
   border-bottom: 1px solid rgba(181, 151, 80, 0.4);
-  padding-bottom: 8px;
+}
+
+/* Nothing below the header means nothing for its rule to separate. */
+.spell-inspector-header:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
 }
 
 .spell-inspector-icon {
-  width: 56px;
-  height: 56px;
-  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
   border: 1px solid rgba(181, 151, 80, 0.5);
   border-radius: 4px;
   object-fit: cover;
 }
 
 .spell-inspector-title {
-  font-size: 1.15em;
+  font-size: 15px;
   font-weight: 700;
   color: #f0d7aa;
   line-height: 1.2;
 }
 
-/* Square stat boxes under the header. */
+/* Stat chips, one line each. A 3-column grid of squares spent three tall rows
+   on six short values and squeezed the label down to an unreadable size; these
+   wrap to fill the tooltip width and are as tall as their text. */
 .spell-inspector-boxes {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 7px;
 }
 
 .spell-inspector-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  padding: 6px 4px;
-  min-height: 46px;
-  text-align: center;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 2px 7px;
+  border-radius: 3px;
   background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(181, 151, 80, 0.3);
+  border: 1px solid rgba(181, 151, 80, 0.28);
+  line-height: 1.35;
+  white-space: nowrap;
 }
 
+/* Same size and colour as .tt-section-label. The label is what tells the reader
+   which number they are looking at, so it has to survive being read at speed. */
 .spell-inspector-box-label {
-  font-size: 0.6em;
+  font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--redsteel-c-tan);
-  opacity: 0.75;
+  letter-spacing: 0.04em;
+  color: #b3a869;
 }
 
 .spell-inspector-box-value {
-  font-size: 0.95em;
+  font-size: 12.5px;
   font-weight: 700;
-  color: #e6dcc3;
+  color: #f0e4c6;
 }
 
 .spell-inspector-box.is-positive {
@@ -8045,18 +8069,23 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   color: #ffd43b;
 }
 
-/* Description in its own bordered rectangle. */
+/* Description sits under a hairline rule like every other tooltip body, rather
+   than in a second bordered box nested inside the panel. */
 .spell-inspector-desc {
-  padding: 8px 10px;
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(181, 151, 80, 0.3);
-  font-size: 0.85em;
-  line-height: 1.35;
-  color: var(--redsteel-c-tan);
+  margin-top: 8px;
+  padding-top: 7px;
+  border-top: 1px solid rgba(122, 115, 50, 0.35);
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: #cfcabb;
 }
 
 .spell-inspector-desc p {
   margin: 0 0 4px;
+}
+
+.spell-inspector-desc p:last-child {
+  margin-bottom: 0;
 }
 
 /* ============================================================
@@ -10599,7 +10628,7 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   gap: 6px;
   font-weight: bold;
   color: #c8a84b;
-  background: #2b2410;
+  background: #0d0d0d;
   border: 1px solid #c8a84b;
 }
 
@@ -10610,7 +10639,208 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
 
 .button-container button.rs-defend-button:hover {
   color: #f0d7aa;
-  background: #3a3016;
+  background: #1a1a1a;
   border-color: #e0c165;
   text-shadow: 0 0 6px rgba(200, 168, 75, 0.7);
+}
+
+/* -------------------------------------------- */
+/*  Round digest — the Announcer round card        */
+/* -------------------------------------------- */
+/* One card per round replacing the per-combatant initiative messages and the
+   per-effect DoT rolls. Core renders a full .dice-roll box for every roll on
+   the message; roundDigest.mjs relocates each one into .rd-roll, so the rules
+   below are what keep two dozen of them readable inside one card. */
+
+.redsteel-round-digest {
+  color: var(--rs-chat-text);
+}
+
+.redsteel-round-digest .rd-banner {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+  padding-bottom: 2px;
+  border-bottom: 1px solid var(--rs-chat-divider);
+}
+
+.redsteel-round-digest .rd-round-label {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--rs-chat-text-dim);
+}
+
+.redsteel-round-digest .rd-round-number {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--rs-chat-text-strong);
+  text-shadow: 0 0 8px var(--rs-chat-glow);
+}
+
+.redsteel-round-digest .rd-gm-tag {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--rs-chat-text-dim);
+  border: 1px solid var(--rs-chat-border-dim);
+  border-radius: 2px;
+  padding: 0 4px;
+}
+
+.redsteel-round-digest .rd-tally {
+  padding: 3px 0;
+  font-size: 12px;
+  text-align: center;
+  color: var(--rs-chat-text-dim);
+}
+
+.redsteel-round-digest .rd-tally--empty {
+  font-style: italic;
+}
+
+.redsteel-round-digest .rd-summary {
+  cursor: pointer;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rs-chat-text-dim);
+  padding: 2px 0;
+}
+
+.redsteel-round-digest .rd-summary:hover {
+  color: var(--rs-chat-text-strong);
+}
+
+.redsteel-round-digest .rd-actors {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.redsteel-round-digest .rd-actor {
+  padding: 4px 0;
+  border-top: 1px solid var(--rs-chat-divider);
+}
+
+.redsteel-round-digest .rd-actor-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.redsteel-round-digest .rd-portrait {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  object-fit: cover;
+  border: 1px solid var(--rs-chat-border-dim);
+  border-radius: 2px;
+}
+
+.redsteel-round-digest .rd-name {
+  font-weight: 600;
+  color: var(--rs-chat-text-strong);
+}
+
+.redsteel-round-digest .rd-init-badge {
+  margin-left: auto;
+  min-width: 24px;
+  padding: 0 5px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--rs-chat-text-strong);
+  background: var(--rs-chat-bg-alt);
+  border: 1px solid var(--rs-chat-border);
+  border-radius: 2px;
+}
+
+.redsteel-round-digest .rd-lines {
+  list-style: none;
+  margin: 3px 0 0 30px;
+  padding: 0;
+}
+
+.redsteel-round-digest .rd-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 1px 0;
+}
+
+.redsteel-round-digest .rd-label {
+  flex: 0 0 auto;
+  font-size: 12px;
+}
+
+.redsteel-round-digest .rd-line--damage .rd-label {
+  color: #c98b8b;
+}
+
+.redsteel-round-digest .rd-line--healing .rd-label {
+  color: #8bc9a2;
+}
+
+.redsteel-round-digest .rd-note {
+  flex: 1 1 100%;
+  font-size: 11px;
+  font-style: italic;
+  color: var(--rs-chat-text-dim);
+}
+
+/* The relocated core roll box. Compacted hard: at a dozen combatants the card
+   is otherwise taller than the chat log. The tooltip still expands on click. */
+.redsteel-round-digest .rd-roll {
+  flex: 1 1 130px;
+  min-width: 130px;
+}
+
+.redsteel-round-digest .rd-roll .dice-roll {
+  margin: 0;
+}
+
+.redsteel-round-digest .rd-roll .dice-result {
+  margin: 0;
+}
+
+.redsteel-round-digest .rd-roll .dice-formula {
+  margin: 0;
+  padding: 0 3px;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.redsteel-round-digest .rd-roll .dice-total {
+  margin: 0;
+  padding: 0 4px;
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 700;
+}
+
+.redsteel-round-digest .rd-fallback {
+  font-size: 12px;
+  color: var(--rs-chat-text-strong);
+}
+
+/* GM-only rows inside the shared round card. The render hook deletes them for
+   players; the accent is so the GM can see at a glance what the table cannot.
+   Note this is presentation, not secrecy — the content still reaches every
+   client. Anything that must not leak needs its own whispered message. */
+.redsteel-round-digest .rd-gm-only {
+  position: relative;
+}
+
+.redsteel-round-digest .rd-actor.rd-gm-only,
+.redsteel-round-digest .rd-line.rd-gm-only {
+  padding-left: 6px;
+  border-left: 2px solid var(--rs-chat-whisper-border);
+  background: var(--rs-chat-whisper-bg);
+}
+
+.redsteel-round-digest .rd-tally-gm {
+  color: var(--rs-chat-text-dim);
 }

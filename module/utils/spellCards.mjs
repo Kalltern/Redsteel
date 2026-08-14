@@ -241,13 +241,22 @@ export function renderInspectorCard(card) {
     )
     .join("");
 
+  // The chip row and the description both carry their own separator rule, so an
+  // empty one would draw a stray line under the header. Omit them instead.
+  // An editor-authored "empty" description is usually `<p></p>`, so test the
+  // text it would actually render, keeping anything with an image in it.
+  const desc = String(card.description ?? "").trim();
+  const hasDesc =
+    /<img\b/i.test(desc) ||
+    desc.replace(/<[^>]*>/g, "").replace(/&nbsp;/gi, " ").trim() !== "";
+
   return `
     <div class="spell-inspector-header">
       <img class="spell-inspector-icon" src="${card.img}" />
       <div class="spell-inspector-title">${card.name}</div>
     </div>
-    <div class="spell-inspector-boxes">${boxes}</div>
-    <div class="spell-inspector-desc">${card.description ?? ""}</div>
+    ${boxes ? `<div class="spell-inspector-boxes">${boxes}</div>` : ""}
+    ${hasDesc ? `<div class="spell-inspector-desc">${desc}</div>` : ""}
   `;
 }
 
