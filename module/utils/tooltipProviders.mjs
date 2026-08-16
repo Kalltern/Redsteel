@@ -11,6 +11,7 @@ import { TOOLTIP_KEYWORDS } from "./tooltipKeywords.mjs";
 import { ruleNoteFooter } from "./tooltipJournals.mjs";
 import { buildSpellCard, renderInspectorCard } from "./spellCards.mjs";
 import { REDSTEEL } from "../helpers/config.mjs";
+import { effectiveCombatRating } from "./testRating.mjs";
 
 /* -------------------------------------------- */
 /*  Shared rendering                            */
@@ -304,9 +305,29 @@ registerTooltip("skill", ({ id, actor }) => {
       localizeOrNull(`REDSTEEL.Actor.Character.${group.lang}.${id}.label`) ?? id;
 
     const stats = [
-      { label: ratingLabel, value: skill.rating },
+      {
+        label: ratingLabel,
+        value:
+          group.path === "combatSkills"
+            ? effectiveCombatRating(skill, id)
+            : skill.rating,
+      },
       { label: rankLabel, value: skill.value },
     ];
+    // How much of that rating the weapon in hand is responsible for (its attack
+    // value, quality, the doctrine it unlocks, a specialisation, the off hand).
+    const weaponAttack = Number(skill.weaponAttack) || 0;
+    if (weaponAttack) {
+      // statsBlock escapes for us — no ttEscape here or the weapon name comes
+      // out double-escaped.
+      const source = skill.weaponAttackSource
+        ? ` (${skill.weaponAttackSource})`
+        : "";
+      stats.push({
+        label: game.i18n.localize("REDSTEEL.Tooltip.weaponAttack"),
+        value: `${weaponAttack > 0 ? "+" : ""}${weaponAttack}${source}`,
+      });
+    }
     if (group.path === "schools") {
       stats.push({
         label: game.i18n.localize(

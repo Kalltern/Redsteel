@@ -1,5 +1,5 @@
 import { getTraitPills } from "./traitPills.mjs";
-import { withRollBias, applyDesperateCrit, tagRollSkill } from "./rollAdvantage.mjs";
+import { withRollBias, applyDesperateCrit, tagRollBuckets } from "./rollAdvantage.mjs";
 import { AIMED_PARTS } from "./aimedStrike.mjs";
 import { getAttackRerollTokens } from "./rerolls.mjs";
 import { hasHtmlContent } from "./chatBlocks.mjs";
@@ -11,7 +11,7 @@ import {
 import { ATTRIBUTE_KEYS } from "./testRating.mjs";
 import { renderMarginFollowupLine } from "./attributeFollowup.mjs";
 import { abilityAllowedForWeapon } from "./weaponResolver.mjs";
-import { resolveAimOnAttack } from "./aim.mjs";
+import { resolveAimOnAttack, markAimCritFail } from "./aim.mjs";
 import { consumeOpportunityFlag } from "./opportunityAttacks.mjs";
 
 const BLEEDING_DAMAGE_TYPES = new Set(["slash", "piercing"]);
@@ -350,7 +350,22 @@ function isDualWieldingMainHand(actor, weapon) {
   return !mainIsTwoHanded;
 }
 
+/**
+ * The roll-time entry point. Kept async because every attack path already
+ * awaits it; all the work happens in the synchronous core below, which
+ * prepareDerivedData can call for the sheet stat.
+ */
 export async function getDoctrineBonuses(actor, weapon) {
+  return computeDoctrineBonuses(actor, weapon);
+}
+
+/**
+ * Which bonuses the actor's doctrines grant *with this weapon in hand*.
+ * Synchronous on purpose: actor.mjs needs the attack half of it during
+ * prepareDerivedData, and a stat the sheet cannot compute is a stat that drifts
+ * away from the dice.
+ */
+export function computeDoctrineBonuses(actor, weapon) {
   // Doctrine bonuses
   const doctrine = actor.system.doctrines;
   const ws = weapon?.system ?? {};
@@ -552,6 +567,57 @@ export async function getDoctrineBonuses(actor, weapon) {
     doctrineSkillCritPen,
     doctrineCritDmg,
   };
+}
+
+/**
+ * The attack-chance bonus the current loadout always contributes: exactly the
+ * static half of the `totalWeaponAttack` getAttackRolls builds below. The sheet
+ * stat calls this so the Statistics column shows the number the dice actually
+ * use, the same way weapon defense is folded into the defense stat in actor.mjs.
+ *
+ * Situational modifiers are deliberately absent — long reach, Aim stacks,
+ * flanking, Aimed Strike, ability bonuses. Those belong to one swing, not to a
+ * standing statistic.
+ *
+ * `skill` names the combat skill this weapon rolls against, following the same
+ * branch order getAttackRolls uses: bows and crossbows are archery, thrown
+ * weapons are throwing, everything else is combat.
+ *
+ * @param {Actor} actor
+ * @param {Item|null} weapon     main-hand weapon
+ * @param {Item|null} offWeapon  off hand, only while genuinely dual wielding
+ */
+export function getWeaponAttackBonus(actor, weapon, offWeapon = null) {
+  const ws = weapon?.system ?? {};
+  const skill =
+    ws.class === "bow" || ws.class === "crossbow"
+      ? "archery"
+      : ws.thrown
+        ? "throwing"
+        : "combat";
+
+  const parts = {
+    skill,
+    weapon: 0,
+    quality: 0,
+    doctrine: 0,
+    spec: 0,
+    offhand: 0,
+    total: 0,
+  };
+  if (!actor || !weapon) return parts;
+
+  parts.weapon = Number(ws.attack) || 0;
+  parts.quality = Number(ws.qualityMods?.attack) || 0;
+  parts.doctrine =
+    Number(computeDoctrineBonuses(actor, weapon).doctrineBonus) || 0;
+  parts.spec = Number(getWeaponSpecBonuses(actor, weapon).attack) || 0;
+  // Only offhandProperties.attack, matching getOffhandProps at roll time — the
+  // off hand's quality mods feed defense, not attack.
+  parts.offhand = Number(offWeapon?.system?.offhandProperties?.attack) || 0;
+  parts.total =
+    parts.weapon + parts.quality + parts.doctrine + parts.spec + parts.offhand;
+  return parts;
 }
 
 export async function getWeaponSkillBonuses(actor, weapon) {
@@ -769,7 +835,13 @@ export async function getAttackRolls(
   };
 
   const attackRoll = new Roll(attackRollFormula, withRollBias(rollData, actor));
-  if (ws?.gripMode === "two" && ws?.type !== "heavy") tagRollSkill(attackRoll, "twoHanded");
+  // Every branch above lands here, so this is the one place that marks a roll
+  // as an attack — that is the bucket a maimed-hands wound (and anything else
+  // that hampers attacking as such) hangs off.
+  tagRollBuckets(attackRoll, "attack");
+  if (ws?.gripMode === "two" && ws?.type !== "heavy") {
+    tagRollBuckets(attackRoll, "twoHanded");
+  }
   await attackRoll.evaluate();
   const rollResult = attackRoll.dice[0].total;
 
@@ -782,6 +854,10 @@ export async function getAttackRolls(
     );
   const critSuccess = rollResult <= critSuccessThreshold;
   const critFailure = rollResult >= critFailThreshold;
+
+  // A fumble burns the whole aim even under Sword Dancer's half-loss. The aim
+  // was parked before the dice existed, so tag that record now.
+  if (critFailure) await markAimCritFail(actor);
 
   return {
     attackRoll,

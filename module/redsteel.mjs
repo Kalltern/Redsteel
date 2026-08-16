@@ -30,6 +30,7 @@ import { registerCoreTooltipProviders } from "./utils/tooltipProviders.mjs";
 import { registerFormulaDisplay } from "./utils/formulaDisplay.mjs";
 import { registerEndTurnButton } from "./utils/endTurnButton.mjs";
 import { registerTempHealthGrant } from "./utils/tempHealthGrant.mjs";
+import { registerAdvantageousManeuver } from "./utils/advantageousManeuver.mjs";
 import { registerRedsteelHotbar } from "./utils/redsteelHotbar.mjs";
 import { applyTraitStatusEffects } from "./utils/traitStatusEffects.mjs";
 import { applyActorLight } from "./utils/itemLight.mjs";
@@ -48,8 +49,19 @@ import {
 } from "./utils/calendariaIntegration.mjs";
 import { usePotion } from "./utils/usePotion.mjs";
 import { usePoison, clearWeaponCoating } from "./utils/usePoison.mjs";
-import { defenseRoll, registerDefendButton } from "./utils/defense.mjs";
+import {
+  defenseRoll,
+  registerDefendButton,
+  renderArmorTable,
+  renderVersusBlock,
+} from "./utils/defense.mjs";
 import { registerOverwhelmHooks } from "./utils/overwhelm.mjs";
+import { registerWrathOfBlood, syncWrathOfBlood } from "./utils/wrathOfBlood.mjs";
+import {
+  registerCommandHooks,
+  applyCommandAsGM,
+  clearCommandsBy,
+} from "./utils/commands.mjs";
 import {
   registerRoundDigest,
   openRoundDigest,
@@ -126,6 +138,7 @@ import {
   handleMentalDuelRps,
   handleMentalDuelRound,
   handleMentalDuelPossess,
+  handleMentalDuelDrain,
   handlePossessionRender,
   refreshPossessedActorTokens,
   resumeMentalDuel,
@@ -173,6 +186,7 @@ import {
   openRaceChoicesDialog,
   initializeRaceChoices,
 } from "./utils/race.mjs";
+import { effectiveCombatRating } from "./utils/testRating.mjs";
 
 /* -------------------------------------------- */
 /*  Init Hook                                   */
@@ -356,6 +370,10 @@ Hooks.once("init", function () {
   game.redsteel.getBaneProfile = getBaneProfile;
   game.redsteel.actorMatchesBane = actorMatchesBane;
   game.redsteel.clearMarksBy = clearMarksBy;
+  // Velení: manual sweep, e.g. when a fight ends without deleting the combat.
+  game.redsteel.clearCommands = clearCommandsBy;
+  // Hněv krve: manual resync, e.g. after a bleed was edited around the hooks.
+  game.redsteel.syncWrathOfBlood = syncWrathOfBlood;
   game.redsteel.showAimButtons = showAimButtons; // debug: force-show buttons
   game.redsteel.refreshAimOverlay = refreshAimOverlay; // debug: redraw arrows
   game.redsteel.getAimStacks = getAimStacks;
@@ -371,8 +389,11 @@ Hooks.once("init", function () {
   registerFormulaDisplay();
   registerEndTurnButton();
   registerTempHealthGrant();
+  registerAdvantageousManeuver();
   registerDefendButton();
   registerOverwhelmHooks();
+  registerWrathOfBlood();
+  registerCommandHooks();
   registerRoundDigest();
   registerEffectSheetExtensions();
   registerKeepDialogOpen();
@@ -584,14 +605,7 @@ Handlebars.registerHelper("romanRank", function (value) {
 });
 
 Handlebars.registerHelper("combatSkillRating", function (skill, key) {
-  if (!skill) return 0;
-  if (key === "combat" || key === "throwing") {
-    return Math.max(
-      Number(skill.rating) || 0,
-      Number(skill.finesseRating) || 0,
-    );
-  }
-  return skill.rating ?? 0;
+  return effectiveCombatRating(skill, key);
 });
 
 Handlebars.registerHelper("hasVisibleEntries", function (entries) {
@@ -770,6 +784,12 @@ Hooks.once("ready", () => {
       await applyEffectsAsGM(data);
     }
 
+    // Velení: a Commander buffing allies they do not own.
+    if (data.type === "commandApply") {
+      if (!game.user.isGM) return;
+      await applyCommandAsGM(data);
+    }
+
     if (data.type === "applyHealing") {
       if (!game.user.isGM) return;
       await applyHealingAsGM(data);
@@ -829,6 +849,11 @@ Hooks.once("ready", () => {
     // Seize control — only the active GM applies the ownership grant + marker.
     if (data.type === "mentalDuelPossess") {
       await handleMentalDuelPossess(data);
+    }
+
+    // Drain — only the active GM restores the Mind and ends the duel.
+    if (data.type === "mentalDuelDrain") {
+      await handleMentalDuelDrain(data);
     }
 
     // Not GM-gated: every client rebuilds the possessed token's sprite locally.
@@ -1366,9 +1391,160 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
 });
 
 /**
+ * Flags that describe the card rather than the roll — who swung, what it was
+ * called, what the picker may spend on it. A reroll replaces the dice, not the
+ * card, so these are carried over verbatim.
+ */
+const REROLL_CARRIED_FLAGS = [
+  "traitPills",
+  "attackTags",
+  "rerollTokens",
+  "abilityKey",
+  "abilityName",
+  // Who cast it and from which school: the Apply Effects dialog scales durations
+  // off these, and the school also tints the card.
+  "casterUuid",
+  "spellSchool",
+];
+
+/**
+ * Rebuild an attack card's stored packet for a rerolled attack roll.
+ *
+ * Only the attack roll is rerolled: the damage, the crit-range roll and the
+ * Bane bonus die all stand. What changes is every number read off the dice that
+ * were just thrown away — the contested margin, the crit flags and the raw die
+ * — so the new card contests, applies damage and flips its Bane face exactly
+ * like the card it replaces.
+ *
+ * The card itself stays a plain reroll card — margin and dice, nothing else.
+ * The damage was never rerolled, so it belongs to the attack card it was rolled
+ * on; repeating it here would only invite the table to read it twice.
+ *
+ * @returns {object|null} the packet for `flags.attack`.
+ */
+function buildAttackRerollFlag(message, roll, { critSuccess, critFailure }) {
+  const source = message.flags?.attack;
+  if (!source) return null;
+
+  const d100 = roll.dice.find((d) => d.faces === 100)?.total ?? null;
+
+  const attack = foundry.utils.deepClone(source);
+  attack.margin = roll.total;
+  attack.criticalSuccess = critSuccess;
+  attack.criticalFailure = critFailure;
+  attack.d100 = d100;
+
+  if (attack.aimedStrike) {
+    attack.aimedStrike = { ...attack.aimedStrike, su: roll.total };
+  }
+
+  // The Bane packet is a second reading of the same dice, so it re-reads the
+  // new ones. `critScoreResult` and the base damage stay: those dice were not
+  // rerolled.
+  if (attack.bane?.dice) {
+    attack.bane = {
+      ...attack.bane,
+      baseCritSuccess: critSuccess,
+      dice: {
+        ...attack.bane.dice,
+        su: roll.total,
+        ...(d100 != null ? { die: d100 } : {}),
+      },
+    };
+  }
+
+  // A spell card stores a crit face only when the cast actually crit, so the
+  // face has to go when the reroll does not. The other direction cannot be
+  // rebuilt — the crit damage was never rolled — and is left to the GM rather
+  // than invented here.
+  if (attack.isSpell && !critSuccess) delete attack.critical;
+
+  return attack;
+}
+
+/**
+ * Rebuild a defense card's contested outcome for a rerolled defense roll.
+ *
+ * The attack being answered has not changed, so it is contested again from the
+ * new die — which is also what decides whether the defender may still claim
+ * Temporary Health or buy an Advantageous Maneuver off this card.
+ *
+ * @returns {{flags: object, html: string}}
+ */
+function buildDefenseRerollParts(
+  message,
+  roll,
+  { critSuccess, critFailure, d100 },
+) {
+  const flags = message.flags?.redsteel ?? {};
+  const isDefense =
+    Array.isArray(flags.rerollTokens) && flags.rerollTokens.includes("defense");
+  if (!isDefense) return { flags: {}, html: "" };
+
+  const versus = renderVersusBlock(flags.versusAttack ?? null, {
+    defenseTotal: roll.total,
+    defenseD100: d100,
+    defenseCrit: critSuccess,
+    defenseCritFailure: critFailure,
+  });
+
+  // Same rule the original card used: the contest when this defense answered an
+  // attack card, the roll's own margin when it was launched from the hotbar.
+  const defenseFailed = versus.versus ? !versus.versus.blocked : roll.total < 0;
+
+  const out = {};
+  if (flags.versusAttack) out.versusAttack = flags.versusAttack;
+  if (versus.versus) out.versus = versus.versus;
+  // `consumed` rides along untouched: a claim already spent on the old card
+  // stays spent, since rerolling the die does not hand the points back.
+  if (flags.tempHealthGrant) {
+    out.tempHealthGrant = { ...flags.tempHealthGrant, defenseFailed };
+  }
+  if (flags.advantageousManeuver) {
+    out.advantageousManeuver = { ...flags.advantageousManeuver, defenseFailed };
+  }
+
+  // The armor block belongs to the defender, not to the die, so it is redrawn
+  // live. The deflect roll deliberately is not: it was its own chance roll and
+  // rerolling the defense test does not buy a second one.
+  const defender = ChatMessage.getSpeakerActor(message.speaker ?? {});
+  const armor = defender ? renderArmorTable(defender) : "";
+
+  return { flags: out, html: `${versus.html}${armor}` };
+}
+
+/**
+ * Retire the card a reroll replaced: its margin is no longer the one in play,
+ * so its Defend / Apply Damage / claim buttons would resolve a roll that has
+ * been thrown away. Rendering-side only — the card and its dice stay in the log.
+ */
+async function markRerolledAway(source, replacement) {
+  // Only cards that carry buttons are worth retiring; a plain skill test has
+  // nothing to mislead anyone with.
+  const carriesButtons =
+    !!source.flags?.attack ||
+    !!source.flags?.heal ||
+    !!source.flags?.effects ||
+    Array.isArray(source.flags?.redsteel?.rerollTokens);
+  if (!carriesButtons) return;
+  const isAuthor = source.isAuthor ?? source.author?.id === game.user.id;
+  if (!isAuthor && !game.user.isGM) return;
+
+  try {
+    await source.setFlag("redsteel", "rerolledAway", replacement?.id ?? true);
+  } catch (err) {
+    console.warn("Redsteel | Could not retire the rerolled card", err);
+  }
+}
+
+/**
  * Re-roll a skill-test chat message after spending one reroll charge. Reuses the
  * original (post-advantage) formula so any advantage/disadvantage already applied
  * is preserved, and re-applies the same crit thresholds, rollName and skill flag.
+ *
+ * Attack and defense cards are rebuilt rather than reduced to a bare test: the
+ * new card carries the same attack packet / defense claims, so it is answerable,
+ * appliable and rerollable exactly like the card it replaces.
  */
 async function executeReroll(message, sourceLabel) {
   const rollFormula = message.rolls[0].formula;
@@ -1380,6 +1556,7 @@ async function executeReroll(message, sourceLabel) {
   const criticalFailureThreshold =
     message.flags?.redsteel?.criticalFailureThreshold;
   const critSuccess = d100Result <= criticalSuccessThreshold;
+  const critFailure = d100Result >= criticalFailureThreshold;
   const rollName = message.getFlag("redsteel", "rollName");
   const skill = message.getFlag("redsteel", "skill");
 
@@ -1394,7 +1571,25 @@ async function executeReroll(message, sourceLabel) {
 
   let flavorText = "";
   if (critSuccess) flavorText = "Critical Success!";
-  else if (d100Result >= criticalFailureThreshold) flavorText = "Critical Failure!";
+  else if (critFailure) flavorText = "Critical Failure!";
+
+  // Combat cards keep being combat cards after a reroll: the attack packet and
+  // the defense claims move across with the numbers the new die changed.
+  const attackFlag = buildAttackRerollFlag(message, roll, {
+    critSuccess,
+    critFailure,
+  });
+  const defenseParts = buildDefenseRerollParts(message, roll, {
+    critSuccess,
+    critFailure,
+    d100: d100Result,
+  });
+
+  const carried = {};
+  for (const key of REROLL_CARRIED_FLAGS) {
+    const value = message.flags?.redsteel?.[key];
+    if (value !== undefined) carried[key] = value;
+  }
 
   const sourceNote = sourceLabel
     ? `<p style="text-align:center; font-size:12px; opacity:0.8;"><i class="fa-light fa-rotate"></i> Reroll — ${sourceLabel}</p>`
@@ -1417,23 +1612,33 @@ async function executeReroll(message, sourceLabel) {
       })}</p>`
     : "";
 
-  await roll.toMessage({
+  const created = await roll.toMessage({
     speaker: message.speaker ?? ChatMessage.getSpeaker({ user: game.user }),
     flavor: `<p style="text-align: center; font-size: 20px;"><b><i class="fa-light fa-dice-d20"></i> ${rollName} <i class="fa-light fa-dice-d20"></i><hr></b></p>
-          <p style="text-align: center; font-size: 20px;"><b>${flavorText}</b></p>${versusNote}${sourceNote}${rescuedNote}`,
+          <p style="text-align: center; font-size: 20px;"><b>${flavorText}</b></p>${defenseParts.html}${versusNote}${sourceNote}${rescuedNote}`,
     flags: {
       redsteel: {
         rollName,
         skill,
         criticalSuccessThreshold,
         criticalFailureThreshold,
+        ...carried,
+        ...defenseParts.flags,
         ...(versusTest && { versusTest, versusChance }),
         // Still failed? Keep the context alive so the next reroll can rescue
         // it too. Once applied, drop it so nothing double-applies.
         ...(pendingCast && !rescued && { pendingCast }),
       },
+      ...(attackFlag && { attack: attackFlag }),
+      // Neither the healed amount nor the effect chances were rerolled — only
+      // the test in front of them — so a heal / Apply Effects card keeps its
+      // button on the card that now holds the live result.
+      ...(message.flags?.heal && { heal: message.flags.heal }),
+      ...(message.flags?.effects && { effects: message.flags.effects }),
     },
   });
+
+  await markRerolledAway(message, created);
 }
 
 /**
@@ -1557,6 +1762,33 @@ async function handleRerollClick(message) {
 
   await executeReroll(message, chosen.label);
 }
+
+// A card that has been rerolled away keeps its dice in the log but loses its
+// controls: answering, applying or re-rerolling it would resolve a margin that
+// is no longer the one in play. Registered at `ready` on purpose — this has to
+// run after every hook that *adds* a button, whichever file registered it.
+Hooks.once("ready", () => {
+  Hooks.on("renderChatMessageHTML", (message, html) => {
+    if (!message.getFlag("redsteel", "rerolledAway")) return;
+
+    html.classList.add("rs-rerolled-away");
+
+    for (const button of html.querySelectorAll(
+      ".button-container button, .button-container a.button",
+    )) {
+      button.remove();
+    }
+    const container = html.querySelector(".button-container");
+    if (container && !container.childElementCount) container.remove();
+
+    // The hook can fire more than once against the same element.
+    if (html.querySelector(".rs-rerolled-note")) return;
+    const note = document.createElement("div");
+    note.className = "rs-rerolled-note";
+    note.textContent = game.i18n.localize("REDSTEEL.Reroll.Superseded");
+    html.querySelector(".message-content")?.appendChild(note);
+  });
+});
 
 Hooks.on("renderChatMessageHTML", (message, html, data) => {
   function updateButtonContainerLayout(container) {
@@ -2106,20 +2338,40 @@ function _critTableName(school) {
 /**
  * Find the crit-fail RollTable for a magic school.
  *
- * The tables ship in the `redsteel-magic-crit-fails` compendium and are meant
- * to be imported into the world, where they are found by the
- * `redsteel.critTable` flag. World copies imported before that flag existed —
- * or rebuilt by hand — carry no flag at all, which turned the Accept Critical
- * Failure button into a silent no-op for those schools. Fall back to the legacy
- * `tos` namespace, then to the table's name, then to the compendium itself, and
- * stamp the flag on whatever world table answered so the next lookup is a
- * straight flag hit.
+ * The tables ship in the `redsteel-magic-crit-fails` compendium and that is the
+ * authoritative copy, so it is searched first: a stale or hand-edited world
+ * import can no longer shadow the shipped table. Every shipped table has
+ * `replacement: true`, so drawing from the pack document never writes back.
+ *
+ * Only if the pack is missing the school do we fall back to the world, matched
+ * by the `redsteel.critTable` flag, then the legacy `tos` namespace, then the
+ * table's name. World copies imported before the flag existed carry no flag at
+ * all, so the flag is stamped on whatever world table answered and the next
+ * lookup is a straight flag hit.
  *
  * @param {string} school - Spell school key, e.g. "blood".
  * @returns {Promise<RollTable|null>}
  */
 async function _resolveCritFailTable(school) {
   if (!school) return null;
+
+  const expected = _critTableName(school).toLowerCase();
+
+  const pack = game.packs.get("redsteel.redsteel-magic-crit-fails");
+  if (pack) {
+    const index = await pack.getIndex({
+      fields: ["flags.redsteel.critTable", "flags.tos.critTable"],
+    });
+    const entry =
+      index.find((e) => e.flags?.redsteel?.critTable === school) ??
+      index.find((e) => e.flags?.tos?.critTable === school) ??
+      index.find((e) => e.name?.toLowerCase() === expected);
+
+    if (entry) {
+      const doc = await pack.getDocument(entry._id);
+      if (doc) return doc;
+    }
+  }
 
   const byFlag =
     game.tables.find((t) => t.getFlag("redsteel", "critTable") === school) ??
@@ -2132,7 +2384,6 @@ async function _resolveCritFailTable(school) {
     return byFlag;
   }
 
-  const expected = _critTableName(school).toLowerCase();
   const byName = game.tables.find((t) => t.name?.toLowerCase() === expected);
 
   if (byName) {
@@ -2140,21 +2391,7 @@ async function _resolveCritFailTable(school) {
     return byName;
   }
 
-  // Nothing in the world: draw straight from the compendium rather than
-  // leaving the button dead. Every shipped table has `replacement: true`, so a
-  // draw never writes back to the pack document.
-  const pack = game.packs.get("redsteel.redsteel-magic-crit-fails");
-  if (!pack) return null;
-
-  const index = await pack.getIndex({
-    fields: ["flags.redsteel.critTable", "flags.tos.critTable"],
-  });
-  const entry =
-    index.find((e) => e.flags?.redsteel?.critTable === school) ??
-    index.find((e) => e.flags?.tos?.critTable === school) ??
-    index.find((e) => e.name?.toLowerCase() === expected);
-
-  return entry ? await pack.getDocument(entry._id) : null;
+  return null;
 }
 
 // Magic crit fails evaluation
@@ -2177,7 +2414,7 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
 
       if (!table) {
         ui.notifications.warn(
-          `No critical failure table found for the "${spellType}" school. Import it from the Redsteel magic crit fails compendium.`,
+          `No critical failure table found for the "${spellType}" school, in the Redsteel magic crit fails compendium or in the world.`,
         );
         return;
       }

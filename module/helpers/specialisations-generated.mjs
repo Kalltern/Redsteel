@@ -807,84 +807,110 @@ export const GENERATED_SPECS = {
     },
   },
   mentalist: {
-    // Constellation layout: four rank bands. Each rank hub sits on the left
-    // spine and its dependents run right along that hub's own band, so the rank
-    // chain draws a vertical line down the left edge while every rank fans out
-    // as a horizontal ray. Like illusionist this follows the chain structure
-    // rather than a pictogram — the tree is hub-and-spoke, and forcing a picture
-    // onto it would scatter each hub's children away from their parent.
+    // Constellation layout: the same left-to-right fan illusionist uses. Nodes
+    // are placed in columns by DEPTH — a node sits one column right of its
+    // deepest prerequisite — so a rank hub's dependents all land in the very
+    // next column and its links radiate from one point as a single spray
+    // instead of reaching across the panel. Families keep their row where they
+    // can (meditation top, duel-initiation next, ranks mid, strain / escape /
+    // domination below), so a chain reads as a near-horizontal run.
+    //
+    // The one place this can't be clean: the duel-initiation tail runs six deep
+    // while every other chain stops at four, so its Expert / Mistr / Velmistr
+    // tethers are long by construction. Those three are the only long lines
+    // left. Columns sit at x = 7 / 21 / 35 / 49 / 63 / 77 / 91.
     layout: "constellation",
     coords: {
-      ucednik: [8, 10],
-      vytrvalaSnaha: [22, 10],
-      mentalniZtec: [36, 10],
-      mentalistuvUprk: [50, 10],
-      vytizeniKoncentrace: [64, 10],
-      vysati: [78, 10],
-      expert: [8, 29],
-      soubojZahajeni2: [17.5, 29],
-      vybojMysli: [27, 29],
-      soubojUdrzovani: [36.5, 29],
-      soubojMZ1: [46, 29],
-      telepat1: [55.5, 29],
-      vytizeniReakce: [65, 29],
-      ovladnuti: [74.5, 29],
-      mzMeditace: [84, 29],
-      mistr: [8, 48],
-      soubojZahajeni3: [22, 48],
-      soubojPostih: [36, 48],
-      telepat2: [50, 48],
-      vytizeniAkce: [64, 48],
-      cteniMysli: [78, 48],
-      velmistr: [8, 67],
-      mentalniUder: [24, 67],
-      soubojZahajeni4: [40, 67],
-      zoufalyVzdor: [56, 67],
-      soubojMZ2: [72, 67],
-      pokrocileCteni: [8, 86],
-      mentalniSouboj10a: [20, 86],
-      mentalniSouboj10b: [32, 86],
-      meditace2: [44, 86],
-      meditace3: [56, 86],
-      soubojDotek: [68, 86],
-      soubojZahajeni1: [80, 86],
-      vytizeniZakerne: [92, 86],
+      // column 0 — the root and the two rank-free chains' openers
+      meditace2: [7, 14],
+      ucednik: [7, 50],
+      mentalniSouboj10a: [7, 86],
+      // column 1 — Učedník's spray, with Expert sitting in the middle of it
+      meditace3: [21, 8],
+      mentalniZtec: [21, 19],
+      vytrvalaSnaha: [21, 30],
+      expert: [21, 41],
+      vytizeniKoncentrace: [21, 52],
+      mentalistuvUprk: [21, 63],
+      vysati: [21, 74],
+      mentalniSouboj10b: [21, 85],
+      // column 2 — Expert's spray, with Mistr in the middle
+      mzMeditace: [35, 8],
+      soubojDotek: [35, 19],
+      telepat1: [35, 30],
+      mistr: [35, 41],
+      vytizeniReakce: [35, 52],
+      soubojUdrzovani: [35, 63],
+      vybojMysli: [35, 74],
+      ovladnuti: [35, 85],
+      // column 3 — Mistr's spray, with Velmistr in the middle
+      soubojZahajeni1: [49, 8],
+      telepat2: [49, 21],
+      velmistr: [49, 34],
+      vytizeniZakerne: [49, 47],
+      soubojPostih: [49, 60],
+      soubojMZ1: [49, 73],
+      cteniMysli: [49, 86],
+      // column 4 — Velmistr's spray and the chain tails
+      soubojZahajeni2: [63, 8],
+      mentalniUder: [63, 20],
+      zoufalyVzdor: [63, 36],
+      vytizeniAkce: [63, 52],
+      pokrocileCteni: [63, 68],
+      soubojMZ2: [63, 88],
+      // columns 5–6 — the duel-initiation tail runs on past everything else
+      soubojZahajeni3: [77, 8],
+      soubojZahajeni4: [91, 8],
     },
     nodes: {
+      // rank spine
       ucednik: { tier: 1, column: 1 },
       expert: { tier: 1, column: 2, requires: ["ucednik"] },
       mistr: { tier: 1, column: 3, requires: ["expert"] },
       velmistr: { tier: 1, column: 4, requires: ["mistr"] },
-      vytrvalaSnaha: { tier: 1, column: 5, requires: ["ucednik"] },
-      mentalniUder: { tier: 1, column: 6, requires: ["velmistr"] },
-      mentalniZtec: { tier: 2, column: 1, requires: ["ucednik"] },
-      soubojDotek: { tier: 2, column: 2 },
-      soubojZahajeni1: { tier: 2, column: 3 },
-      soubojZahajeni2: { tier: 2, column: 4, requires: ["expert"] },
-      soubojZahajeni3: { tier: 2, column: 5, requires: ["mistr"] },
-      soubojZahajeni4: { tier: 2, column: 6, requires: ["velmistr"] },
+      mentalniUder: { tier: 1, column: 5, requires: ["velmistr"] },
+      vytrvalaSnaha: { tier: 2, column: 1, requires: ["ucednik"] },
+      // duel-initiation chain — each step also gates on the next rank up
+      mentalniZtec: { tier: 2, column: 2, requires: ["ucednik"] },
+      soubojDotek: { tier: 2, column: 3, requires: ["mentalniZtec"] },
+      soubojZahajeni1: { tier: 2, column: 4, requires: ["soubojDotek"] },
+      // The rank gates on this tail sit two to three columns back, so drawing
+      // them would drag three lines across the whole panel. They stay enforced;
+      // each node's description names the rank it needs.
+      soubojZahajeni2: { tier: 2, column: 5, requires: ["soubojZahajeni1", "expert"], hiddenLinks: ["expert"] },
+      soubojZahajeni3: { tier: 2, column: 6, requires: ["soubojZahajeni2", "mistr"], hiddenLinks: ["mistr"] },
+      soubojZahajeni4: { tier: 2, column: 7, requires: ["soubojZahajeni3", "velmistr"], hiddenLinks: ["velmistr"] },
+      // escape chain
       mentalistuvUprk: { tier: 3, column: 1, requires: ["ucednik"] },
-      vybojMysli: { tier: 3, column: 2, requires: ["expert"] },
-      zoufalyVzdor: { tier: 3, column: 3, requires: ["velmistr"] },
-      soubojUdrzovani: { tier: 3, column: 4, requires: ["expert"] },
-      soubojPostih: { tier: 3, column: 5, requires: ["mistr"] },
-      mentalniSouboj10a: { tier: 4, column: 1 },
-      soubojMZ1: { tier: 4, column: 2, requires: ["expert"] },
-      mentalniSouboj10b: { tier: 4, column: 3, requires: ["mentalniSouboj10a"] },
-      soubojMZ2: { tier: 4, column: 4, requires: ["velmistr", "soubojMZ1"] },
-      telepat1: { tier: 4, column: 5, requires: ["expert"] },
-      telepat2: { tier: 4, column: 6, requires: ["mistr", "telepat1"] },
-      vytizeniKoncentrace: { tier: 5, column: 1, requires: ["ucednik"] },
-      vytizeniReakce: { tier: 5, column: 2, requires: ["expert"] },
-      vytizeniZakerne: { tier: 5, column: 3 },
-      vytizeniAkce: { tier: 5, column: 4, requires: ["mistr"] },
-      vysati: { tier: 6, column: 1, requires: ["ucednik"] },
-      ovladnuti: { tier: 6, column: 2, requires: ["expert"] },
-      cteniMysli: { tier: 6, column: 3, requires: ["mistr"] },
-      pokrocileCteni: { tier: 6, column: 4, requires: ["cteniMysli"] },
-      meditace2: { tier: 7, column: 1 },
-      meditace3: { tier: 7, column: 2, requires: ["meditace2"] },
-      mzMeditace: { tier: 7, column: 3, requires: ["expert"], passive: { changes: [add("system.stats.mind.bonus", 1), add("system.skills.meditation.bonus", 5)] } },
+      vybojMysli: { tier: 3, column: 2, requires: ["mentalistuvUprk", "expert"] },
+      zoufalyVzdor: { tier: 3, column: 3, requires: ["vybojMysli", "velmistr"] },
+      // mental-strain chain
+      vytizeniKoncentrace: { tier: 4, column: 1, requires: ["ucednik"] },
+      vytizeniReakce: { tier: 4, column: 2, requires: ["vytizeniKoncentrace", "expert"] },
+      vytizeniZakerne: { tier: 4, column: 3, requires: ["vytizeniReakce"] },
+      // Mistr is almost collinear with Zákeřné here, so its line would look
+      // like it sprouts from Zákeřné rather than from the rank hub.
+      vytizeniAkce: { tier: 4, column: 4, requires: ["vytizeniZakerne", "mistr"], hiddenLinks: ["mistr"] },
+      // domination chain
+      vysati: { tier: 5, column: 1, requires: ["ucednik"] },
+      ovladnuti: { tier: 5, column: 2, requires: ["vysati", "expert"] },
+      cteniMysli: { tier: 5, column: 3, requires: ["ovladnuti", "mistr"] },
+      pokrocileCteni: { tier: 5, column: 4, requires: ["cteniMysli"] },
+      // meditation chain
+      meditace2: { tier: 6, column: 1 },
+      meditace3: { tier: 6, column: 2, requires: ["meditace2"] },
+      mzMeditace: { tier: 6, column: 3, requires: ["meditace3", "expert"], passive: { changes: [add("system.stats.mind.bonus", 1), add("system.skills.meditation.bonus", 5)] } },
+      // duel-upkeep chain, off Expert
+      soubojUdrzovani: { tier: 7, column: 1, requires: ["expert"] },
+      soubojPostih: { tier: 7, column: 2, requires: ["soubojUdrzovani", "mistr"] },
+      // telepath chain, off Expert
+      telepat1: { tier: 8, column: 1, requires: ["expert"] },
+      telepat2: { tier: 8, column: 2, requires: ["telepat1", "mistr"] },
+      // free-standing duel bonuses
+      mentalniSouboj10a: { tier: 9, column: 1 },
+      mentalniSouboj10b: { tier: 9, column: 2, requires: ["mentalniSouboj10a"] },
+      soubojMZ1: { tier: 9, column: 3, requires: ["expert"] },
+      soubojMZ2: { tier: 9, column: 4, requires: ["soubojMZ1", "velmistr"] },
     },
   },
   mystic: {

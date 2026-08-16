@@ -2159,7 +2159,11 @@ REDSTEEL.effectDefinitions = {
   },
 
   // Aimed Strike — applied to the TARGET when an aimed hit lands on Hands.
-  // Grants disadvantage on all attacks made with a two-handed weapon grip.
+  // Disadvantage on every attack roll (weapon, ability, thrown explosive) for
+  // as long as it lasts. The `attack` bucket is tagged onto attack rolls in
+  // combatSkillBonuses.mjs / throwExplosive.mjs; spell attack rolls are
+  // deliberately not in it. The narrower `twoHanded` bucket is still tagged and
+  // stays free for a two-handed-only wound.
   maimed_hands: {
     name: "Zranění rukou",
     img: "icons/skills/wounds/injury-hand-blood-red.webp",
@@ -2168,7 +2172,7 @@ REDSTEEL.effectDefinitions = {
     useDuration: true,
     changes: [
       {
-        key: "system.rollAdvantage.twoHanded",
+        key: "system.rollAdvantage.attack",
         mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
         value: -1,
       },
@@ -2203,6 +2207,105 @@ REDSTEEL.effectDefinitions = {
     name: "REDSTEEL.Banes.ExposeEffect",
     img: "icons/svg/target.svg",
     statuses: ["expose_weakness"],
+    stackBehavior: "refresh",
+  },
+
+  // ==========================================================
+  // COMMANDS ("Velení") — the Passive Command auras.
+  // ----------------------------------------------------------
+  // One per rank 1-5 of the Leadership skill. They are placed
+  // on the commanded allies by module/utils/commands.mjs, which
+  // also tags each one with `flags.redsteel.command` — that flag,
+  // not the status id, is what ends an aura when a new Command
+  // replaces it, when the Commander falls, or when combat ends.
+  // A target only ever wears one of these at a time, so they are
+  // deliberately NOT listed in EFFECT_OVERRIDES: the override is
+  // by flag, so it also catches a Command re-issued by someone
+  // else at the same rank.
+  //
+  // "Obrana" is the Melee Defense combat skill and "Kryt" the
+  // Ranged Defense one; "Zásah" is the chance to hit with any of
+  // the three attack skills, which is why the Hit aura carries
+  // three changes.
+  // ==========================================================
+
+  command_nerve: {
+    name: "REDSTEEL.Command.Effects.Nerve",
+    img: "icons/creatures/abilities/lion-roar-yellow.webp",
+    statuses: ["command_nerve"],
+    changes: [
+      {
+        key: "system.secondaryAttributes.res.bonus",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: 1,
+      },
+    ],
+    stackBehavior: "refresh",
+  },
+
+  command_speed: {
+    name: "REDSTEEL.Command.Effects.Speed",
+    img: "icons/skills/movement/feet-winged-sandals-tan.webp",
+    statuses: ["command_speed"],
+    changes: [
+      {
+        key: "system.secondaryAttributes.spd.bonus",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: 1,
+      },
+    ],
+    stackBehavior: "refresh",
+  },
+
+  command_hit: {
+    name: "REDSTEEL.Command.Effects.Hit",
+    img: "icons/skills/ranged/target-bullseye-arrow-glowing.webp",
+    statuses: ["command_hit"],
+    changes: [
+      {
+        key: "system.combatSkills.combat.bonus",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: 5,
+      },
+      {
+        key: "system.combatSkills.archery.bonus",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: 5,
+      },
+      {
+        key: "system.combatSkills.throwing.bonus",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: 5,
+      },
+    ],
+    stackBehavior: "refresh",
+  },
+
+  command_defense: {
+    name: "REDSTEEL.Command.Effects.Defense",
+    img: "icons/equipment/head/helm-barbute-steel.webp",
+    statuses: ["command_defense"],
+    changes: [
+      {
+        key: "system.combatSkills.meleeDefense.bonus",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: 5,
+      },
+    ],
+    stackBehavior: "refresh",
+  },
+
+  command_cover: {
+    name: "REDSTEEL.Command.Effects.Cover",
+    img: "icons/skills/melee/shield-block-gray-yellow.webp",
+    statuses: ["command_cover"],
+    changes: [
+      {
+        key: "system.combatSkills.rangedDefense.bonus",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: 10,
+      },
+    ],
     stackBehavior: "refresh",
   },
 

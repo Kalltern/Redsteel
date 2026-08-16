@@ -2168,6 +2168,61 @@ table tr td:nth-child(3) {
   font-size: 1.3em;
 }
 
+/* ── Advantageous Maneuver (Sword Dancer) ─────────────────────────────────
+   Buys one Aim on the attacker off a defense that held. Amber rather than the
+   gold of the Temporary Health claim, matching the aim overlay's own colour:
+   the two buttons sit side by side on the same card and must not read as one
+   pair of twins. */
+.button-container button.rs-aim-maneuver-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-weight: bold;
+  color: #ffb300;
+  background: #0d0d0d;
+  border: 1px solid #a87300;
+}
+
+.button-container button.rs-aim-maneuver-button i {
+  font-size: 1.15em;
+  line-height: 1;
+}
+
+.button-container button.rs-aim-maneuver-button:hover:not(:disabled) {
+  color: #ffd280;
+  background: #3a2a06;
+  border-color: #ffb300;
+  text-shadow: 0 0 6px rgba(255, 179, 0, 0.7);
+}
+
+/* Spent: still legible, clearly inert. `!important` because Foundry's own
+   `button:disabled` rule is more specific than a plain class here. */
+.button-container button.rs-aim-maneuver-button.is-consumed,
+.button-container button.rs-aim-maneuver-button:disabled {
+  color: #7a5a18 !important;
+  background: #1a1508;
+  border-color: #4a3a12;
+  opacity: 1;
+  cursor: default;
+  text-shadow: none;
+}
+
+/* The public "bought an opening" line. */
+.rs-aim-maneuver-notice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #ffb300;
+  font-weight: bold;
+  text-align: center;
+}
+
+.rs-aim-maneuver-notice i {
+  font-size: 1.3em;
+}
+
 .checkbox-row {
   display: flex;
   align-items: center;
@@ -2647,6 +2702,8 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 .ability-tabs .tab-headers,
 .spell-tabs .tab-headers {
   display: flex;
+  /* Four tabs (Melee / Ranged / Other / Commands) outgrow a narrow dialog. */
+  flex-wrap: wrap;
   border-bottom: 1px solid #555;
   margin-bottom: 6px;
 }
@@ -10843,4 +10900,14 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
 
 .redsteel-round-digest .rd-tally-gm {
   color: var(--rs-chat-text-dim);
+}
+
+/* A chat card whose roll was rerolled away: the dice stay in the log and keep
+   their normal weight, only the controls go. The note below says why. */
+.rs-rerolled-note {
+  margin-top: 4px;
+  text-align: center;
+  font-size: 11px;
+  font-style: italic;
+  opacity: 0.8;
 }

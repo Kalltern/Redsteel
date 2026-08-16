@@ -1,4 +1,5 @@
 import { seedRollAdvantage } from "../utils/rollAdvantage.mjs";
+import { getWeaponAttackBonus } from "../utils/combatSkillBonuses.mjs";
 
 /**
  * Extend the base Actor document by defining a custom roll data structure which is ideal for the Simple system.
@@ -393,6 +394,16 @@ export class RedsteelActor extends Actor {
     const combatSkills = systemData.combatSkills;
     const secondary = systemData.secondaryAttributes;
 
+    // Attack chance the active loadout contributes, filled in below. Zeroed
+    // first so an empty set, or a swap from a bow to a sword, cannot leave the
+    // previous weapon's bonus sitting on a skill that no longer earns it.
+    for (const key of ["combat", "archery", "throwing"]) {
+      if (combatSkills[key]) {
+        combatSkills[key].weaponAttack = 0;
+        combatSkills[key].weaponAttackSource = "";
+      }
+    }
+
     const activeSetId = combatData?.activeWeaponSet;
     if (activeSetId) {
       const activeSet = combatData.weaponSets?.[activeSetId];
@@ -437,6 +448,30 @@ export class RedsteelActor extends Actor {
             (Number(offProps.defense) || 0) + (Number(offQuality.defense) || 0);
         }
         combatSkills.meleeDefense.bonus += weaponDefense;
+
+        // The attack half of the same story: the weapon's own attack value, its
+        // quality mod, the doctrine bonus this weapon unlocks, a weapon
+        // specialisation and the off hand's contribution are all applied by the
+        // attack roll, so the Statistics column has to show them too.
+        //
+        // Parked beside the rating rather than added to `bonus`: a combat
+        // rating is also what a weaponless test rolls against (ability Test
+        // Types, grapples, brawling), and a longsword's +5 has no business
+        // there. The sheet adds the two together for display — see the
+        // `combatSkillRating` helper — and the roll formula is untouched.
+        if (mainHand) {
+          const loadoutAttack = getWeaponAttackBonus(
+            actorData,
+            mainHand,
+            isDualWield ? offHand : null,
+          );
+          const attackSkill = combatSkills[loadoutAttack.skill];
+          if (attackSkill) {
+            attackSkill.weaponAttack = loadoutAttack.total;
+            attackSkill.weaponAttackSource =
+              mainHand.localizedName ?? mainHand.name ?? "";
+          }
+        }
 
         if (offHand?.system?.shield) {
           // Broken shields (0 durability) grant improvised shield stats instead

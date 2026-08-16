@@ -1608,7 +1608,7 @@
       "typeOptions": ["melee", "ranged", "other"],
       "effectOptions": ["and", "or"],
       "effectTypes": [],
-      "classOptions": ["movement", "attack", "defense", "stance"],
+      "classOptions": ["movement", "attack", "defense", "stance", "command"],
       "resources": [
         {
           "mode": "",

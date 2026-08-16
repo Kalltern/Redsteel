@@ -53,6 +53,19 @@ const WATCHDOG_MS = 15000;
  */
 let digest = null;
 
+/**
+ * Live while the card is being written to chat. `digest` is already null by
+ * then, so this is what tells "no card coming" apart from "card in flight".
+ * @type {Promise|null}
+ */
+let flushInFlight = null;
+
+/**
+ * Work parked until the round card has landed.
+ * @type {Function[]}
+ */
+let afterFlush = [];
+
 /* -------------------------------------------- */
 /*  Buffer lifecycle                            */
 /* -------------------------------------------- */
@@ -114,6 +127,45 @@ function _arm(ms) {
   if (!digest) return;
   if (digest.timer) clearTimeout(digest.timer);
   digest.timer = setTimeout(() => flushRoundDigest(), ms);
+}
+
+/**
+ * Run `fn` once the round card has been posted, or straight away when no card
+ * is buffering or in flight.
+ *
+ * For round-start work that posts its own chat message instead of a digest
+ * line: a sustained spell re-rolls at the top of the round and needs a full
+ * spell card, and posting that from inside round processing lands it above the
+ * Announcer, which is still collecting its lines at the time.
+ *
+ * Callbacks run in the order they were queued, and their errors are logged
+ * rather than rethrown — by then the flush has no caller left to catch them.
+ *
+ * @param {Function} fn
+ */
+export function afterRoundDigest(fn) {
+  if (typeof fn !== "function") return;
+  if (digest || flushInFlight) {
+    afterFlush.push(fn);
+    return;
+  }
+  _runQueued(fn);
+}
+
+async function _runQueued(fn) {
+  try {
+    await fn();
+  } catch (err) {
+    console.error("Redsteel | Post-digest callback failed", err);
+  }
+}
+
+async function _drainAfterFlush() {
+  while (afterFlush.length) {
+    const queued = afterFlush;
+    afterFlush = [];
+    for (const fn of queued) await _runQueued(fn);
+  }
 }
 
 /* -------------------------------------------- */
@@ -227,12 +279,21 @@ export async function flushRoundDigest() {
   if (buffer.watchdog) clearTimeout(buffer.watchdog);
   digest = null;
 
+  // Assigned with no await in between, so `afterRoundDigest` can never see a
+  // gap where neither a buffer nor a flush is live and fire its callback early.
+  // Posts even when empty: the round banner is the point.
+  flushInFlight = _postCard(buffer.round, buffer.entries);
+
   try {
-    // Posts even when empty: the round banner is the point.
-    await _postCard(buffer.round, buffer.entries);
+    await flushInFlight;
   } catch (err) {
     console.error("Redsteel | Failed to post the round digest", err);
+  } finally {
+    flushInFlight = null;
   }
+
+  // Even after a failed card: the queued work is the round's, not the card's.
+  await _drainAfterFlush();
 }
 
 async function _postCard(round, entries) {

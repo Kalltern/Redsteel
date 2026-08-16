@@ -2,6 +2,7 @@ import { getTraitPills } from "./traitPills.mjs";
 import {
   withRollBias,
   tagRollSkill,
+  tagRollBuckets,
   applyDesperateCrit,
 } from "./rollAdvantage.mjs";
 import { getAttackRerollTokens } from "./rerolls.mjs";
@@ -96,6 +97,7 @@ export async function throwExplosive(options = {}) {
       withRollBias({ combatSkills: actor.system.combatSkills }, actor),
     );
     tagRollSkill(attackRoll, "throwing");
+    tagRollBuckets(attackRoll, "attack");
     await attackRoll.evaluate();
     const rollResult = attackRoll.dice[0].total;
 

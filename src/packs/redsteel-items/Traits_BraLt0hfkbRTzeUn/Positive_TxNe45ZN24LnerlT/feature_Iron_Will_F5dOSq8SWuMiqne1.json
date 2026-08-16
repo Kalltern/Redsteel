@@ -5,7 +5,7 @@
   "img": "icons/tools/smithing/anvil.webp",
   "system": {
     "localizationKey": "REDSTEEL.Items.IronWill.name",
-    "description": "<p>Willpower attribute cap +1, Resolve +1.<br data-start=\"1385\" data-end=\"1388\" />May reroll a will based skill once per day.</p>",
+    "description": "<p>Willpower attribute cap +1, Resolve +1, maximum Mind points +1.<br data-start=\"1385\" data-end=\"1388\" />May reroll a will based skill once per day.</p>",
     "options": [
       "feature",
       "trait",
@@ -41,6 +41,12 @@
         "changes": [
           {
             "key": "system.secondaryAttributes.res.bonus",
+            "value": 1,
+            "priority": null,
+            "type": "add"
+          },
+          {
+            "key": "system.stats.mind.bonus",
             "value": 1,
             "priority": null,
             "type": "add"

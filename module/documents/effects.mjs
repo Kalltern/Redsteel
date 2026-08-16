@@ -17,6 +17,7 @@ import {
   setRoundDigestRound,
   finishRoundDigest,
   postRoundEntry,
+  afterRoundDigest,
 } from "../utils/roundDigest.mjs";
 
 export class RedsteelActiveEffect extends ActiveEffect {
@@ -2215,10 +2216,20 @@ export class RedsteelActiveEffect extends ActiveEffect {
     }
 
     // ✅ Now resolve (even if mana is now 0)
-    game.socket.emit("system.redsteel", {
-      type: "sustainSpell",
-      actorId: actor.id,
-      effectId: this.id,
+    //
+    // The re-roll posts a full spell card of its own rather than a digest line.
+    // This handler runs inside round processing, while the Announcer is still
+    // buffering, so the card would land above it. Hand the emit to the digest
+    // instead: it fires once the round card is in chat (and immediately when no
+    // round card is coming, which is every path outside a round rollover).
+    const actorId = actor.id;
+    const effectId = this.id;
+    afterRoundDigest(() => {
+      game.socket.emit("system.redsteel", {
+        type: "sustainSpell",
+        actorId,
+        effectId,
+      });
     });
   }
 

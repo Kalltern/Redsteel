@@ -171,10 +171,11 @@ function applyModifier(roll) {
     !isD100 && !!roll.options?.redsteel?.speedTest && D12_DIE_PATTERN.test(formula);
   if (!isD100 && !isD12Speed) return;
 
-  // Actor-driven bias: actor-wide `all` bucket plus, when the call site tagged
-  // a skill, that skill's bucket.
-  const skillKey = roll.options?.redsteel?.skill;
-  let bias = getRollBias(roll.data, skillKey);
+  // Actor-driven bias: actor-wide `all` bucket, plus the skill bucket when the
+  // call site tagged a skill, plus any category bucket it opted into (attack,
+  // two-handed grip).
+  const tags = roll.options?.redsteel ?? {};
+  let bias = getRollBias(roll.data, tags.skill, tags.advBuckets);
   const autoBias = bias; // for messaging: was anything contributed by the actor?
 
   // Manual picker contribution — die mode and flat modifier are independent.

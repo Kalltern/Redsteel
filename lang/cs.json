@@ -250,7 +250,7 @@
         "slowMove": "Pohne se až o tolik hex, kolik je Rychlost/2, zaokrouhlujeme dolů. Pohyb okolo nepřítele je vždy jedna a může být přerušen úspěšným Příležitostným útokem. Pohyb může vyvolat Reakci. Při Příležitostném útoku vyvolaném pohybem od oponenta má právo na Obranu.",
         "disengage": "Odpoutá se od souboje, nevyprovokuje příležitostný útok a pohne se o Rychlost/2 (zaokrouhleno dolů) hex od nepřítele. Tímto pohybem se nelze pohybovat okolo nepřítele ani u jiného nepřítele skončit.",
         "aim": "Zvyšuje šanci na Zásah (Střelba i Souboj) o +10% na příští útok. Na cíli lze mít maximálně 4 Míření a bonus +40%. V případě luků se uplatňují speciální pravidla (viz Zbrojnice). Mířit lze pouze na cíl v dosahu.",
-        "improvedAim": "Zvyšuje šanci na Zásah o +10% na příští útok. Akci lze opakovat a navyšovat tak bonus, hranice +40%. Mířit lze na cíle v libovolné vzdálenosti. Pokud má na cíli čtyři Míření, získává útok jednoručním mečem Průbojnost +10 (druhá ruka musí být volná, nebo v ní musí být šermířská dýka). (Doktrína II - Zásah redukuje míření pouze o jeden stupeň; Kritický zásah zachová všechna míření)",
+        "improvedAim": "Zvyšuje šanci na Zásah o +10% na příští útok. Akci lze opakovat a navyšovat tak bonus, hranice +40%. Mířit lze na cíle v libovolné vzdálenosti. Pokud má na cíli čtyři Míření, získává útok jednoručním mečem Průbojnost +10 (druhá ruka musí být volná, nebo v ní musí být šermířská dýka). (Doktrína II - Zásah redukuje míření pouze o jeden stupeň; Kritický zásah zachová všechna míření. Doktrína VII - Obrana proti zamířenému cíli získává +5 % za každý stupeň Míření a žádné Míření nestojí.)",
         "attack": "Provede útok na cíl v dosahu. Tuto akci nelze provést vícekrát za kolo, ani v kombinaci s jinou útočnou akcí. V případě Střelby a Vrhu z kontaktní vzdálenosti vyvolává Příležitostný útok zdarma.",
         "sneakAttack": "Modifikace útoku. Zranění +1d6. Uplatňuje se na překvapení, nebránící se cíle nebo na doktrínou stanovené situace. Efekty viz Zbrojnice či Doktrína. Lze aplikovat vícekrát za kolo, na stejného soupeře lze však uplatnit pouze jednou za kolo.",
         "multiAttack": "Provede tolik útoků, kolik je schopen. Útoky může vést na jeden nebo více cílů.",
@@ -777,19 +777,19 @@
           "nodes": {
             "duelistuvPostoj": {
               "label": "Duelistův postoj",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Duelistův postoj: jednoruční meč s volnou druhou rukou nebo s dýkou. Všechny výhody Míření v tomto stromě z něj vycházejí. Automatizováno."
             },
             "krvaveBodnuti": {
-              "label": "Krvavé bodnutí",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "label": "Tržná rána",
+              "description": "5 CP. Po zásahu může obětovat libovolný počet Míření a za každé cíli způsobit Krvácení. Pokud obětoval alespoň jedno Míření a jednalo se o Zákeřný útok, způsobí dvě Krvácení navíc. Pokud obětoval alespoň jedno Míření, neztrácí žádná další Míření za zásah. Stojí 2 výdrže za každé obětované Míření. Nabízí se v okně Apply Damage. Automatizováno."
             },
             "mireniRedukce": {
               "label": "Redukce Míření",
-              "description": "10 CP; Duelista V. Zásah cíle míření stojí jen jeden stupeň Míření místo celého bonusu, při kritickém zásahu neztrácí žádný. Mine-li cíl svého míření, ztrácí pouze nahoru zaokrouhlenou polovinu svých Míření. Zasáhne-li cíl Zákeřným útokem, neztrácí žádná Míření. Automatizováno."
+              "description": "10 CP; Duelista V. Rozšiřuje redukci Míření z Duelisty II. Mine-li cíl svého míření, ztrácí pouze nahoru zaokrouhlenou polovinu svých Míření; při Kritickém neúspěchu stále ztrácí veškerá Míření. Zasáhne-li cíl Zákeřným útokem, neztrácí žádná Míření. Automatizováno."
             },
             "vyhodnyManevr": {
               "label": "Výhodný manévr",
-              "description": "15 CP; Duelista VII. Ručně — řeší se u stolu."
+              "description": "15 CP; Duelista VII. Za úspěšnou Obranu duelistovým mečem může za 3 výdrže získat 1 Míření na útočníka. Nabízí se jako tlačítko na kartě obrany. Automatizováno."
             },
             "posileniObrany": {
               "label": "Posílení obrany",
@@ -914,7 +914,7 @@
             },
             "hnevKrve": {
               "label": "Hněv krve",
-              "description": "10 CP; Škola Krve - Expert. Ručně — řeší se u stolu."
+              "description": "10 CP; Škola Krve - Expert. Za druhé, třetí a čtvrté Krvácení na tobě získáváš Sílu kouzla +1 do Školy Krve a kapacitu Zásoby krve +10 (až +3 a +30). Automatizováno."
             },
             "krvavaPlatba": {
               "label": "Krvavá platba",
@@ -3162,7 +3162,7 @@
               "description": "5 CP; Mentalista: Učedník. Ručně — řeší se u stolu."
             },
             "mentalniUder": {
-              "label": "Mentální úder: Zabití obnoví 1 MŽ",
+              "label": "Úder: zabití = +1 MŽ",
               "description": "10 CP; Mentalista: Velmistr. Ručně — řeší se u stolu."
             },
             "mentalniZtec": {
@@ -3170,24 +3170,24 @@
               "description": "0 CP; Mentalista: Učedník. Ručně — řeší se u stolu."
             },
             "soubojDotek": {
-              "label": "Mentální souboj: Dotek +30% na zahájení",
-              "description": "5 SP. Ručně — řeší se u stolu."
+              "label": "Dotek: +30% na zahájení",
+              "description": "5 SP; Mentální zteč. Ručně — řeší se u stolu."
             },
             "soubojZahajeni1": {
-              "label": "Mentální souboj: Zahájení +10%",
-              "description": "5 CP; Mentální souboj IV. Ručně — řeší se u stolu."
+              "label": "Zahájení +10% I",
+              "description": "5 CP; Dotek: +30% na zahájení. Ručně — řeší se u stolu."
             },
             "soubojZahajeni2": {
-              "label": "Mentální souboj: Zahájení +10%",
-              "description": "5 CP; Mentalista: Expert. Ručně — řeší se u stolu."
+              "label": "Zahájení +10% II",
+              "description": "5 CP; Zahájení +10% I + Mentalista: Expert. Ručně — řeší se u stolu."
             },
             "soubojZahajeni3": {
-              "label": "Mentální souboj: Zahájení +10%",
-              "description": "5 CP; Mentalista: Mistr. Ručně — řeší se u stolu."
+              "label": "Zahájení +10% III",
+              "description": "5 CP; Zahájení +10% II + Mentalista: Mistr. Ručně — řeší se u stolu."
             },
             "soubojZahajeni4": {
-              "label": "Mentální souboj: Zahájení +10%",
-              "description": "5 CP; Mentalista: Velmistr. Ručně — řeší se u stolu."
+              "label": "Zahájení +10% IV",
+              "description": "5 CP; Zahájení +10% III + Mentalista: Velmistr. Ručně — řeší se u stolu."
             },
             "mentalistuvUprk": {
               "label": "Mentalistův úprk",
@@ -3195,35 +3195,35 @@
             },
             "vybojMysli": {
               "label": "Výboj mysli",
-              "description": "5 CP; Mentalista: Expert. Ručně — řeší se u stolu."
+              "description": "5 CP; Mentalistův úprk + Mentalista: Expert. Ručně — řeší se u stolu."
             },
             "zoufalyVzdor": {
               "label": "Zoufalý vzdor",
-              "description": "10 CP; Mentalista: Velmistr. Ručně — řeší se u stolu."
+              "description": "10 CP; Výboj mysli + Mentalista: Velmistr. Ručně — řeší se u stolu."
             },
             "soubojUdrzovani": {
-              "label": "Mentální souboj: Udržování -1 Akce",
+              "label": "Udržování: -1 Akce",
               "description": "10 CP; Mentalista: Expert. Ručně — řeší se u stolu."
             },
             "soubojPostih": {
-              "label": "Mentální souboj: Postih na Úspěch -10%",
-              "description": "10 CP; Mentalista: Mistr. Ručně — řeší se u stolu."
+              "label": "Postih na Úspěch -10%",
+              "description": "10 CP; Udržování: -1 Akce + Mentalista: Mistr. Ručně — řeší se u stolu."
             },
             "mentalniSouboj10a": {
-              "label": "Mentální souboj +10%",
+              "label": "Souboj +10% I",
               "description": "15 SP. Ručně — řeší se u stolu."
             },
             "soubojMZ1": {
-              "label": "Mentální souboj: Úspěch -1 MŽ navíc",
+              "label": "Úspěch: -1 MŽ navíc I",
               "description": "10 CP; Mentalista: Expert. Ručně — řeší se u stolu."
             },
             "mentalniSouboj10b": {
-              "label": "Mentální souboj +10%",
-              "description": "15 SP. Ručně — řeší se u stolu."
+              "label": "Souboj +10% II",
+              "description": "15 SP; Souboj +10% I. Ručně — řeší se u stolu."
             },
             "soubojMZ2": {
-              "label": "Mentální souboj: Úspěch -1 MŽ navíc",
-              "description": "10 CP; Mentalista: Velmistr. Ručně — řeší se u stolu."
+              "label": "Úspěch: -1 MŽ navíc II",
+              "description": "10 CP; Úspěch: -1 MŽ navíc I + Mentalista: Velmistr. Ručně — řeší se u stolu."
             },
             "telepat1": {
               "label": "Telepat I",
@@ -3231,51 +3231,51 @@
             },
             "telepat2": {
               "label": "Telepat II",
-              "description": "5 SP; Mentalista: Mistr. Ručně — řeší se u stolu."
+              "description": "5 SP; Telepat I + Mentalista: Mistr. Ručně — řeší se u stolu."
             },
             "vytizeniKoncentrace": {
-              "label": "Mentální vytížení: Ruší Koncentrace",
+              "label": "Vytížení: ruší Konc.",
               "description": "5 CP; Mentalista: Učedník. Ručně — řeší se u stolu."
             },
             "vytizeniReakce": {
-              "label": "Mentální vytížení: -1 Reakce",
-              "description": "5 CP; Mentalista: Expert. Ručně — řeší se u stolu."
+              "label": "Vytížení: -1 Reakce",
+              "description": "5 CP; Vytížení: ruší Konc. + Mentalista: Expert. Ručně — řeší se u stolu."
             },
             "vytizeniZakerne": {
-              "label": "Mentální vytížení: Útoky Zákeřné",
-              "description": "5 CP; Mentální souboj VI. Ručně — řeší se u stolu."
+              "label": "Vytížení: útoky Zákeřné",
+              "description": "5 CP; Vytížení: -1 Reakce. Ručně — řeší se u stolu."
             },
             "vytizeniAkce": {
-              "label": "Mentální vytížení: -1 Akce",
-              "description": "5 CP; Mentalista: Mistr. Ručně — řeší se u stolu."
+              "label": "Vytížení: -1 Akce",
+              "description": "5 CP; Vytížení: útoky Zákeřné + Mentalista: Mistr. Ručně — řeší se u stolu."
             },
             "vysati": {
               "label": "Vysátí",
-              "description": "5 CP; Mentalista: Učedník. Ručně — řeší se u stolu."
+              "description": "5 CP; Mentalista: Učedník. Po zlomení mysli v mentálním souboji můžeš poraženého vysát: obnovíš si 2 body Mysli a souboj končí."
             },
             "ovladnuti": {
               "label": "Ovládnutí",
-              "description": "10 CP; Mentalista: Expert. Ručně — řeší se u stolu."
+              "description": "10 CP; Vysátí + Mentalista: Expert. Ručně — řeší se u stolu."
             },
             "cteniMysli": {
               "label": "Čtení mysli",
-              "description": "15 SP; Mentalista: Mistr. Ručně — řeší se u stolu."
+              "description": "15 SP; Ovládnutí + Mentalista: Mistr. Ručně — řeší se u stolu."
             },
             "pokrocileCteni": {
               "label": "Pokročilé čtení mysli",
-              "description": "10 SP; Mentální souboj X. Ručně — řeší se u stolu."
+              "description": "10 SP; Čtení mysli. Ručně — řeší se u stolu."
             },
             "meditace2": {
-              "label": "Meditace obnovuje 2 Mentální životy",
+              "label": "Meditace +2 MŽ",
               "description": "5 SP; Meditace I. Ručně — řeší se u stolu."
             },
             "meditace3": {
-              "label": "Meditace obnovuje 3 Mentální životy",
-              "description": "15 SP. Ručně — řeší se u stolu."
+              "label": "Meditace +3 MŽ",
+              "description": "15 SP; Meditace +2 MŽ. Ručně — řeší se u stolu."
             },
             "mzMeditace": {
-              "label": "Mentální životy +1 / Meditace +5%",
-              "description": "15 SP; Mentalista: Expert. Automatizováno."
+              "label": "+1 MŽ / Meditace +5%",
+              "description": "15 SP; Meditace +3 MŽ + Mentalista: Expert. Automatizováno."
             }
           }
         },
@@ -4520,7 +4520,40 @@
     },
     "Aim": {
       "Swept": "Útok na cíl {target} nezasáhl: {actor} klesá z {before} Míření na {after}.",
-      "UnknownTarget": "cíl"
+      "Granted": "Otevřená příležitost: {actor} získává {stacks} Míření na cíl {target} (celkem {after}).",
+      "UnknownTarget": "cíl",
+      "DefenseBonus": "Míření ({stacks}): +{bonus}",
+      "DefenseHint": "Míříš na útočníka ({stacks}): +{bonus} k Obraně.",
+      "DefenseMismatch": "Míříš na cíl {target}, ale tato obrana odpovídá na útok, který vede {attacker}. Bonus za Míření se neuplatní.",
+      "ManeuverButton": "Výhodný manévr",
+      "ManeuverTooltip": "Výhodný manévr: za {cost} výdrže získáš 1 Míření na cíl {target}.",
+      "ManeuverBought": "Kryt otevřel cíl {target}: {name} platí {cost} výdrže za 1 Míření (celkem {after}).",
+      "ManeuverAlreadyUsed": "Tento manévr už byl proveden.",
+      "ManeuverNoStamina": "Nedostatek výdrže — manévr stojí {cost}.",
+      "ManeuverCapped": "Na tohoto útočníka už máš plné Míření.",
+      "ManeuverSwitched": "Přesun Míření na útočníka stál stupně: {before} → {after}.",
+      "ManeuverTokenMissing": "Tokeny pro tento manévr už na scéně nejsou."
+    },
+    "Command": {
+      "Passive": "Trvalé velení",
+      "Active": "Okamžité velení",
+      "Commanded": "Pod velením",
+      "Success": "Rozkaz je uposlechnut.",
+      "Failure": "Rozkaz zapadne bez odezvy.",
+      "NoTargets": "Nejprve zaměř spojence, kterým velíš.",
+      "NoTest": "Toto Velení nemá nastavený typ testu — má testovat dovednost Velení.",
+      "Unknown": "Neznámé velení: {key}",
+      "Relayed": "Rozkaz odeslán GM.",
+      "Replaced": "{name} už byl pod velením — bylo nahrazeno.",
+      "CommanderDown": "{name} padá — jeho velení končí.",
+      "AuraName": "{command} ({commander})",
+      "Effects": {
+        "Nerve": "Velení: Statečnost",
+        "Speed": "Velení: Vpřed",
+        "Hit": "Velení: Prolomte řadu",
+        "Defense": "Velení: Držte řadu",
+        "Cover": "Velení: Štíty vzhůru"
+      }
     },
     "BloodStrike": {
       "OpenWoundOption": "Otevřená rána — obětovat {cost} životy ze Zásoby krve za 1 Krvácení",
@@ -4532,6 +4565,11 @@
     "BloodHarvest": {
       "Gained": "{name} vtahuje {amount} prolité krve do Zásoby krve (Cordinas I)."
     },
+    "Laceration": {
+      "Option": "Tržná rána — obětovat Míření ({cost} výdrže za každé):",
+      "StaminaTooLow": "{name} má {stamina} výdrže — na každé obětované Míření jsou potřeba {cost}.",
+      "Applied": "{name} rozšiřuje ránu na cíli {targets}, obětuje {aim} Míření za {stamina} výdrže."
+    },
     "Overwhelm": {
       "Label": "Přesila",
       "MarkerName": "Přesila ({penalty}%)",
@@ -4540,6 +4578,9 @@
       "UnknownAttacker": "Neznámý útočník",
       "Defend": "Bránit se",
       "DefendTooltip": "Hodit obranu proti tomuto útoku."
+    },
+    "Reroll": {
+      "Superseded": "Přehozeno — tento výsledek už neplatí."
     },
     "RoundDigest": {
       "Announcer": "Hlasatel",
@@ -4649,6 +4690,7 @@
     "Tooltip": {
       "rating": "Hodnota",
       "attribute": "Vlastnost",
+      "weaponAttack": "Zbraň",
       "current": "Aktuálně",
       "noteMissing": "Poznámku s pravidly se nepodařilo otevřít."
     },
@@ -4691,7 +4733,7 @@
       },
       "aim": {
         "label": "Míření",
-        "desc": "Každá akce Míření dává +10 % k zásahu zvoleného cíle, až do 4 stupňů. Změna cíle spálí všechny stupně. Útok na zamířený cíl je spotřebuje všechny, útok na kohokoli jiného Míření rovnou ruší. Vylepšené míření (Duelista I, nebo Služebník meče) Míření při útoku na jiný cíl zachová a při 4 stupních přidává +10 prūrazného účinku. Redukce Míření (Duelista II, nebo kterýkoli uzel Redukce Míření) stojí při zásahu jen jeden stupeň a při kritickém zásahu žádný, neúspěšný útok ale stále bere všechny. Služebník meče navíc po Zákeřném útoku jedno Míření přidává; Mečový tanečník místo toho při úspěšném Zákeřném útoku neztrácí nic a při neúspěchu jen nahoru zaokrouhlenou polovinu. Každá duelistická výhoda vyžaduje odpovídající meč v ruce. Protiútok, Odvetný úder, Prosek, Prosek ratištěm, Dvojitý vrh a Vypočítavý útok nemají s Mířením žádnou interakci."
+        "desc": "Každá akce Míření dává +10 % k zásahu zvoleného cíle, až do 4 stupňů. Změna cíle spálí všechny stupně. Útok na zamířený cíl je spotřebuje všechny, útok na kohokoli jiného Míření rovnou ruší. Vylepšené míření (Duelista I, nebo Služebník meče) Míření při útoku na jiný cíl zachová a při 4 stupních přidává +10 prūrazného účinku. Redukce Míření (Duelista II, nebo kterýkoli uzel Redukce Míření) stojí při zásahu jen jeden stupeň a při kritickém zásahu žádný, neúspěšný útok ale stále bere všechny. Služebník meče navíc po Zákeřném útoku jedno Míření přidává; Mečový tanečník místo toho při úspěšném Zákeřném útoku neztrácí nic a při neúspěchu jen nahoru zaokrouhlenou polovinu. Duelista VII obrací Míření i do obrany: Obrana proti protivníkovi, na kterého míříš, získává +5 % za každý stupeň a obrana žádné Míření nestojí. Každá duelistická výhoda vyžaduje odpovídající meč v ruce. Protiútok, Odvetný úder, Prosek, Prosek ratištěm, Dvojitý vrh a Vypočítavý útok nemají s Mířením žádnou interakci."
       },
       "spellPower": {
         "label": "Síla kouzla",
@@ -5044,6 +5086,36 @@
       },
       "CombatGeniusII": {
         "name": "Bojový génius II"
+      },
+      "CommandAdvance": {
+        "name": "Velení: Vpřed"
+      },
+      "CommandAssault": {
+        "name": "Velení: Přepad"
+      },
+      "CommandBrace": {
+        "name": "Velení: Zapřete se"
+      },
+      "CommandBravery": {
+        "name": "Velení: Statečnost"
+      },
+      "CommandBreakTheLine": {
+        "name": "Velení: Prolomte řadu"
+      },
+      "CommandHeadHunt": {
+        "name": "Velení: Lov hlav"
+      },
+      "CommandHeroicStrike": {
+        "name": "Velení: Hrdinský úder"
+      },
+      "CommandHoldTheLine": {
+        "name": "Velení: Držte řadu"
+      },
+      "CommandShieldsUp": {
+        "name": "Velení: Štíty vzhůru"
+      },
+      "CommandVigilance": {
+        "name": "Velení: Ostražitost"
       },
       "CorpseBreath": {
         "name": "Mrtvolný dech"

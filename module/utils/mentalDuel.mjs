@@ -16,6 +16,16 @@ function canDominate(actor) {
   );
 }
 
+// Only a winner who has learned Drain may feed on the broken mind: any NPC, or
+// a player character with the Mentalist "Drain" (vysati) perk. Same convention
+// as canDominate — NPCs have no spec trees, so they are assumed capable.
+function canDrain(actor) {
+  return actor?.type === "npc" || actorHasSpecNode(actor, "mentalist", "vysati");
+}
+
+// Mind restored to the victor by Drain.
+const DRAIN_MIND_GAIN = 2;
+
 /**
  * Mentální souboj (Mind Bending) — an interactive duel window.
  *
@@ -199,6 +209,22 @@ const MENTAL_DUEL_CSS = `
 .rs-md-possess:hover {
   background: linear-gradient(#4a366a, #251a30);
   box-shadow: 0 0 8px -2px #a06be0;
+}
+.rs-md-drain {
+  display: inline-block;
+  margin-top: 10px;
+  margin-left: 6px;
+  padding: 7px 14px;
+  font-weight: bold;
+  border-radius: 6px;
+  border: 1px solid #8b6914;
+  background: linear-gradient(#1d3a34, #101f1c);
+  color: #cdf3e6;
+  cursor: pointer;
+}
+.rs-md-drain:hover {
+  background: linear-gradient(#265046, #142925);
+  box-shadow: 0 0 8px -2px #4fd3ac;
 }
 .rs-md-possess-note {
   margin-top: 8px;
@@ -558,6 +584,9 @@ function hasDuelReroll(actor, critFailure) {
  * interaction mirrors Combat: a Critical success outranks a normal result, a
  * Critical failure is outranked by any non-crit-failure, ties go to the
  * attacker, and otherwise the higher margin wins.
+ *
+ * The exchange is symmetric: whoever loses the round pays the Mind, so the
+ * decisive check is read from the winner's side whichever side that is.
  * @returns {{attackerWins: boolean, critical: boolean}}
  */
 function resolveVersus(att, def) {
@@ -567,10 +596,14 @@ function resolveVersus(att, def) {
 
   const attackerWins = at !== dt ? at > dt : att.margin >= def.margin;
 
+  const winner = attackerWins ? att : def;
+  const loser = attackerWins ? def : att;
+
   // Decisive win → drains an extra Mind point.
   const critical =
-    attackerWins &&
-    (att.critSuccess || def.critFailure || att.margin - def.margin >= CRITICAL_MARGIN);
+    winner.critSuccess ||
+    loser.critFailure ||
+    winner.margin - loser.margin >= CRITICAL_MARGIN;
 
   return { attackerWins, critical };
 }
@@ -681,9 +714,22 @@ export class MentalDuelApp extends ApplicationV2 {
             : `<div class="rs-md-possess-note">
                 ${winner.name} lacks the Domination perk and cannot seize control.</div>`;
         }
+        // Drain (Vysátí) — the victor feeds on the broken mind, recovering
+        // Mind and ending the duel. Offered to the winner's own players as
+        // well as the GM, since it only heals the winner.
+        const drain =
+          (winner.actor.isOwner || game.user.isGM) && canDrain(winner.actor)
+            ? `<button type="button" class="rs-md-drain"
+                data-winner-uuid="${winner.tokenDoc.uuid}"
+                data-loser-uuid="${loser.tokenDoc.uuid}"
+                data-anchor-uuid="${this._aUuid}">
+                <i class="fas fa-brain"></i> Drain ${loser.name}
+                (+${DRAIN_MIND_GAIN} Mind)</button>`
+            : "";
+
         banner = `<div class="rs-md-banner"><i class="fas fa-crown"></i>
              ${winner.name} breaks ${loser.name}'s will.
-             ${action}</div>`;
+             ${action}${drain}</div>`;
       }
     }
 
@@ -698,7 +744,9 @@ export class MentalDuelApp extends ApplicationV2 {
     const attackBtn = (s, role) => {
       const canControl = s.actor.isOwner || game.user.isGM;
       const ready = this._canAttack(s);
-      const disabled = ended || !started || !canControl || !ready || !!pending;
+      const turnReached = this._turnReached(s);
+      const disabled =
+        ended || !started || !canControl || !ready || !turnReached || !!pending;
       const reason = !canControl
         ? "You don't control this combatant"
         : ended
@@ -709,7 +757,9 @@ export class MentalDuelApp extends ApplicationV2 {
               ? "An exchange is still open"
               : !ready
                 ? "Already attacked this round"
-                : "Spend a Free Action to attack";
+                : !turnReached
+                  ? "Wait for your turn this round"
+                  : "Spend a Free Action to attack";
       return `<button type="button" class="rs-md-attack" data-role="${role}"
         ${disabled ? "disabled" : ""} title="${reason}"
         style="--rs-md-color:${s.color}">
@@ -937,6 +987,14 @@ export class MentalDuelApp extends ApplicationV2 {
       requestPossession(loserUuid, winnerUuid);
     });
 
+    // Drain: the winner feeds on the broken mind and the duel ends.
+    content.querySelector(".rs-md-drain")?.addEventListener("click", (ev) => {
+      const btn = ev.currentTarget;
+      btn.disabled = true; // one drain per duel — no double-click double-heal
+      const { winnerUuid, loserUuid, anchorUuid } = btn.dataset;
+      requestDrain(winnerUuid, loserUuid, anchorUuid);
+    });
+
     // --- Pending exchange: reroll / accept / GM resolve ---
     const anchorUuid = this._aUuid;
     content.querySelectorAll(".rs-md-pending-reroll").forEach((btn) =>
@@ -980,14 +1038,7 @@ export class MentalDuelApp extends ApplicationV2 {
   /** GM-only: terminate the duel for everyone (broadcast + local close). */
   _onEndDuel() {
     if (!game.user.isGM) return; // button is disabled for players; guard anyway
-    // Clear any lingering RPS gamble, pending exchange + started state.
-    const anchorDoc = this._token(this._aUuid)?.document;
-    anchorDoc?.unsetFlag("redsteel", "mdRps");
-    anchorDoc?.unsetFlag("redsteel", "mdPending");
-    anchorDoc?.unsetFlag("redsteel", "mdStarted");
-    // Clear the persisted "active duel" marker so it won't resume.
-    game.settings.set("redsteel", "mentalDuelActive", null);
-    game.socket.emit(SOCKET, { type: "closeMentalDuel" });
+    endDuelEverywhere(this._aUuid);
     this.close();
   }
 
@@ -998,6 +1049,21 @@ export class MentalDuelApp extends ApplicationV2 {
     const combat = game.combat;
     if (!combat) return true;
     return side.tokenDoc.getFlag("redsteel", "mentalDuelLastRound") !== combat.round;
+  }
+
+  /**
+   * True once this combatant's initiative has come up in the current round.
+   * The attack is a Free Action spent on your own turn, but a duel that opens
+   * (or an exchange that settles) after you have already acted must still let
+   * you spend it, so anything at or before the current turn counts. Only
+   * combatants still waiting for their initiative are locked out.
+   */
+  _turnReached(side) {
+    const combat = game.combat;
+    if (!combat?.started || combat.turn === null || combat.turn === undefined) return true;
+    const idx = combat.turns.findIndex((c) => c.token?.uuid === side.tokenDoc.uuid);
+    if (idx < 0) return true; // not in the encounter — don't lock them out
+    return idx <= combat.turn;
   }
 
   async _consumeAttack(side) {
@@ -1035,6 +1101,10 @@ export class MentalDuelApp extends ApplicationV2 {
 
     if (!this._canAttack(attacker)) {
       ui.notifications.warn(`${attacker.name} has already attacked this round.`);
+      return;
+    }
+    if (!this._turnReached(attacker)) {
+      ui.notifications.warn(`${attacker.name} has not acted yet this round.`);
       return;
     }
     if (!(attacker.actor.isOwner || game.user.isGM)) {
@@ -1092,6 +1162,7 @@ export class MentalDuelApp extends ApplicationV2 {
   _buildPendingHTML(a, b, pending) {
     const sides = { a, b };
     const attackerName = sides[pending.attacker].name;
+    const defenderName = sides[pending.attacker === "a" ? "b" : "a"].name;
 
     const row = (key) => {
       const s = sides[key];
@@ -1141,9 +1212,8 @@ export class MentalDuelApp extends ApplicationV2 {
     const att = pending.sides[pending.attacker];
     const def = pending.sides[pending.attacker === "a" ? "b" : "a"];
     const { attackerWins, critical } = resolveVersus(att, def);
-    const provisional = attackerWins
-      ? `${attackerName} would prevail — <b>${critical ? 2 : 1}</b> Mind.`
-      : `${attackerName} would fail to break through.`;
+    const provLoser = attackerWins ? defenderName : attackerName;
+    const provisional = `${attackerWins ? attackerName : defenderName} would prevail — ${provLoser} loses <b>${critical ? 2 : 1}</b> Mind.`;
 
     const resolveBtn = game.user.isGM
       ? `<button type="button" class="rs-md-pending-resolve"
@@ -1423,6 +1493,24 @@ export function closeMentalDuel() {
   if (activeDuel?.rendered) activeDuel.close();
 }
 
+/**
+ * Tear the duel down for everyone: clear the world state it parked on the
+ * anchor token, drop the resume marker, and close every client's window.
+ * World settings are GM-only, so this must run on a GM client.
+ * @param {string} anchorUuid - TOKEN document uuid of the duel anchor (side a).
+ */
+function endDuelEverywhere(anchorUuid) {
+  // Clear any lingering RPS gamble, pending exchange + started state.
+  const anchorDoc = anchorUuid ? fromUuidSync(anchorUuid) : null;
+  anchorDoc?.unsetFlag("redsteel", "mdRps");
+  anchorDoc?.unsetFlag("redsteel", "mdPending");
+  anchorDoc?.unsetFlag("redsteel", "mdStarted");
+  // Clear the persisted "active duel" marker so it won't resume.
+  game.settings.set("redsteel", "mentalDuelActive", null);
+  game.socket.emit(SOCKET, { type: "closeMentalDuel" });
+  closeMentalDuel();
+}
+
 /* -------------------------------------------- */
 /*  Pending exchange (GM-authoritative rerolls)  */
 /* -------------------------------------------- */
@@ -1617,8 +1705,14 @@ async function resolveRound(anchor, state) {
   const defenderName = defenderTok.name ?? defenderActor.name;
 
   const { attackerWins, critical } = resolveVersus(att, def);
-  const drain = attackerWins ? (critical ? 2 : 1) : 0;
-  if (drain > 0) await applyMindLoss(defenderActor.uuid, drain);
+
+  // Every exchange costs the loser Mind — a failed attack drains the attacker
+  // exactly as a failed defense drains the defender.
+  const winnerName = attackerWins ? attackerName : defenderName;
+  const loserName = attackerWins ? defenderName : attackerName;
+  const loserActor = attackerWins ? defenderActor : attackerActor;
+  const drain = critical ? 2 : 1;
+  await applyMindLoss(loserActor.uuid, drain);
 
   const label = (name, entry) =>
     `${name}: <b>${entry.margin}</b>` +
@@ -1627,9 +1721,9 @@ async function resolveRound(anchor, state) {
       ? ` <span style="opacity:.75;font-size:12px;">(reroll — ${entry.rerollLabel})</span>`
       : "");
 
-  const verdict = attackerWins
-    ? `${attackerName} prevails — ${defenderName} loses <b>${drain}</b> Mind${critical ? " (decisive!)" : ""}.`
-    : `${attackerName} fails to break through.`;
+  const verdict =
+    `${winnerName} ${attackerWins ? "prevails" : "holds"} — ` +
+    `${loserName} loses <b>${drain}</b> Mind${critical ? " (decisive!)" : ""}.`;
 
   const rolls = [unpackRoll(att.rollJson), unpackRoll(def.rollJson)].filter(
     Boolean,
@@ -1954,6 +2048,68 @@ function requestPossession(loserUuid, winnerUuid) {
   const data = { loserUuid, winnerUuid };
   if (game.user.id === gm.id) applyPossessionAsGM(data);
   else game.socket.emit(SOCKET, { type: "mentalDuelPossess", ...data });
+}
+
+/**
+ * Drain (Vysátí) — the victor feeds on the broken mind, recovering Mind and
+ * ending the duel. Ending the duel touches a world setting and the anchor
+ * token's flags, so it routes to the active GM exactly like possession does.
+ * @param {string} winnerUuid - token uuid of the victor.
+ * @param {string} loserUuid  - token uuid of the mind that broke.
+ * @param {string} anchorUuid - token uuid of the duel anchor (side a).
+ */
+function requestDrain(winnerUuid, loserUuid, anchorUuid) {
+  const gm = game.users.activeGM;
+  if (!gm) {
+    ui.notifications.warn("A GM must be connected to drain the broken mind.");
+    return;
+  }
+  const data = { winnerUuid, loserUuid, anchorUuid };
+  if (game.user.id === gm.id) applyDrainAsGM(data);
+  else game.socket.emit(SOCKET, { type: "mentalDuelDrain", ...data });
+}
+
+/** Socket entry point: only the active GM (single authority) applies it. */
+export async function handleMentalDuelDrain(data) {
+  if (game.user.id !== game.users.activeGM?.id) return;
+  await applyDrainAsGM(data);
+}
+
+/**
+ * Authoritative drain. Runs on the active GM: restores the winner's Mind
+ * (clamped to their maximum), announces it, then ends the duel for everyone.
+ * @param {{winnerUuid: string, loserUuid: string, anchorUuid: string}} data
+ */
+async function applyDrainAsGM({ winnerUuid, loserUuid, anchorUuid }) {
+  const winnerActor = fromUuidSync(winnerUuid)?.actor;
+  const loserActor = fromUuidSync(loserUuid)?.actor;
+  if (!winnerActor) return;
+
+  // Enforce the perk gate server-side too, not just by hiding the button.
+  if (!canDrain(winnerActor)) {
+    ui.notifications.warn(`${winnerActor.name} has not learned Drain.`);
+    return;
+  }
+
+  const before = Number(winnerActor.system.stats?.mind?.value) || 0;
+  await adjustMind(winnerActor, DRAIN_MIND_GAIN);
+  const gained = (Number(winnerActor.system.stats?.mind?.value) || 0) - before;
+
+  const loserName = loserActor?.name ?? "the broken mind";
+  await ChatMessage.create({
+    speaker: ChatMessage.getSpeaker({ actor: winnerActor }),
+    content: `
+      <div style="text-align:center;">
+        <p><i class="fas fa-brain"></i> <b>${winnerActor.name}</b> drains
+        <b>${loserName}</b> — ${
+          gained > 0
+            ? `<b>+${gained}</b> Mind restored.`
+            : `already at full Mind, nothing is gained.`
+        }</p>
+      </div>`,
+  });
+
+  endDuelEverywhere(anchorUuid);
 }
 
 /** Socket entry point: only the active GM (single authority) applies it. */

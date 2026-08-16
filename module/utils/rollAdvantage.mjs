@@ -13,16 +13,24 @@
  * flat map of signed integers:
  *   {
  *     all: 0,          // applies to every test this actor makes
+ *     attack: 0,       // applies to every attack roll (see CATEGORY_BUCKETS)
+ *     twoHanded: 0,    // applies only to attacks made with a two-handed grip
  *     stealth: 0,      // applies only to that skill / attribute / combat-skill
  *     athletics: 0,
  *     ...one key per rollable skill/attribute...
  *   }
+ *
+ * `attack` and `twoHanded` are **category buckets**: they are not skills, they
+ * describe a kind of roll. A call site opts a roll into them with
+ * {@link tagRollBuckets}, which is additive — an attack made two-handed carries
+ * both, on top of whatever skill it was tagged with.
  *
  * ## How to grant advantage/disadvantage from a feature or buff
  * Add an **Active Effect** change in ADD mode (mode 2) — see
  * `feature-flag-active-effects` in memory for the JSON shape:
  *   - All rolls, advantage:        key `system.rollAdvantage.all`        value `1`
  *   - All rolls, disadvantage:     key `system.rollAdvantage.all`        value `-1`
+ *   - Every attack, disadvantage:  key `system.rollAdvantage.attack`     value `-1`
  *   - One skill, advantage:        key `system.rollAdvantage.stealth`    value `1`
  *   - One skill, disadvantage:     key `system.rollAdvantage.athletics`  value `-1`
  * The leaf is pre-seeded to 0, so ADD-mode effects accumulate cleanly.
@@ -33,7 +41,8 @@
  * reads it with no per-call-site wiring. That covers the actor-wide `all` bias
  * automatically (this is what fatigue degree 4 uses). The per-skill bias needs
  * the skill key, which only the call site knows: tag it with {@link tagRollSkill}
- * before evaluating. Sites that don't tag a skill simply get the `all` bias.
+ * before evaluating. Category buckets are tagged the same way, with
+ * {@link tagRollBuckets}. Sites that tag nothing simply get the `all` bias.
  */
 
 /** Rollable groups whose keys each get their own advantage bucket. */
@@ -45,13 +54,23 @@ const ROLL_GROUPS = [
 ];
 
 /**
+ * Buckets that describe a *kind* of roll rather than a skill, seeded alongside
+ * `all` so ADD-mode effects have a numeric leaf. Seeded first, so a real skill
+ * key can never collide with one of them.
+ *   - `attack`    every attack roll (weapon, ability, thrown explosive)
+ *   - `twoHanded` attacks made with a two-handed grip on a non-heavy weapon
+ */
+const CATEGORY_BUCKETS = ["attack", "twoHanded"];
+
+/**
  * Initialise `system.rollAdvantage` with a 0 bucket for `all` and for every
  * rollable skill/attribute key, so ADD-mode Active Effects have a numeric leaf
  * to accumulate onto. Call from Actor#prepareBaseData (before effects apply).
  * @param {object} system  The actor's system data.
  */
 export function seedRollAdvantage(system) {
-  const adv = { all: 0, twoHanded: 0 };
+  const adv = { all: 0 };
+  for (const bucket of CATEGORY_BUCKETS) adv[bucket] = 0;
   for (const group of ROLL_GROUPS) {
     for (const key of Object.keys(system?.[group] ?? {})) {
       // First writer wins; never clobber a real skill key with a later group.
@@ -62,17 +81,23 @@ export function seedRollAdvantage(system) {
 }
 
 /**
- * Net advantage bias for a given roll, combining the actor-wide `all` bucket
- * with the skill-specific bucket when a skill key is known.
- * @param {object} rollData   The Roll's data (a copy of actor system data).
- * @param {string} [skillKey] The skill/attribute key this roll represents.
+ * Net advantage bias for a given roll: the actor-wide `all` bucket, plus the
+ * skill-specific bucket when a skill key is known, plus every category bucket
+ * the call site tagged. Each key counts once, so a roll tagged with the same
+ * bucket twice is not double-charged.
+ * @param {object} rollData       The Roll's data (a copy of actor system data).
+ * @param {string} [skillKey]     The skill/attribute key this roll represents.
+ * @param {string[]} [extraKeys]  Category buckets this roll opted into.
  * @returns {number} >0 advantage, <0 disadvantage, 0 none.
  */
-export function getRollBias(rollData, skillKey) {
+export function getRollBias(rollData, skillKey, extraKeys = []) {
   const adv = rollData?.rollAdvantage;
   if (!adv) return 0;
   let bias = Number(adv.all) || 0;
-  if (skillKey && Number.isFinite(adv[skillKey])) bias += adv[skillKey];
+  const keys = new Set([skillKey, ...(Array.isArray(extraKeys) ? extraKeys : [extraKeys])]);
+  for (const key of keys) {
+    if (key && Number.isFinite(adv[key])) bias += adv[key];
+  }
   return bias;
 }
 
@@ -86,6 +111,26 @@ export function tagRollSkill(roll, skillKey) {
   if (!roll || !skillKey) return;
   roll.options ??= {};
   roll.options.redsteel = { ...(roll.options.redsteel ?? {}), skill: skillKey };
+}
+
+/**
+ * Opt a not-yet-evaluated Roll into one or more category buckets
+ * ({@link CATEGORY_BUCKETS}) so effects keyed to a *kind* of roll apply to it.
+ * Additive and de-duplicating: it never disturbs `options.redsteel.skill`, which
+ * the reroll logic reads, so an attack can carry a skill and both category
+ * buckets at once.
+ * @param {Roll} roll
+ * @param {...(string|string[])} keys
+ */
+export function tagRollBuckets(roll, ...keys) {
+  const list = keys.flat().filter(Boolean);
+  if (!roll || !list.length) return;
+  roll.options ??= {};
+  const previous = roll.options.redsteel?.advBuckets ?? [];
+  roll.options.redsteel = {
+    ...(roll.options.redsteel ?? {}),
+    advBuckets: [...new Set([...previous, ...list])],
+  };
 }
 
 /**

@@ -71,6 +71,16 @@ const ABILITY = {
   BLOOD_PACT: A("blOodPact0000001"), // Krvavý pakt
   CHARGE: A("2jCzZEc3kXL6zglG"), // Zteč — carries its own Heavy-weapon bonus dice
   CLEAVE: A("52NJ0ZhgGrHmrQ8z"), // Rozseknutí
+  COMMAND_NERVE: A("cOmmandNerve0001"), // Velení: Nervy +1
+  COMMAND_SPEED: A("cOmmandSpeed0001"), // Velení: Rychlost +1
+  COMMAND_HIT: A("cOmmandHit000001"), // Velení: Útok +5 %
+  COMMAND_DEFENSE: A("cOmmandDefense01"), // Velení: Obrana +5 %
+  COMMAND_COVER: A("cOmmandCover0001"), // Velení: Krytí +10 %
+  COMMAND_BRACE: A("cOmmandBrace0001"), // Velení: Výhoda na obranu
+  COMMAND_STRIKE_NOW: A("cOmmandStrike001"), // Velení: Výhoda na útok
+  COMMAND_FALL_BACK: A("cOmmandFallBack1"), // Velení: Odpoutání reakcí
+  COMMAND_OPENING: A("cOmmandOpening01"), // Velení: Příležitostný útok reakcí
+  COMMAND_MARK: A("cOmmandMark00001"), // Velení: Označení cíle
   COUNTERATTACK: A("JltGA0Wsv6ttCUT6"), // Protiútok
   CRIPPLING_SHOT: A("9WR4lbdssYQVdLoH"), // Zmrzačující výstřel
   CUNNING_STRIKE: A("cUnningStrike001"), // Vypočítavý útok
@@ -128,6 +138,7 @@ const ABILITY = {
 
 /* Shorthand trigger builders — the table is long enough without the noise. */
 const always = () => ({ kind: "always" });
+const skill = (key, min) => ({ kind: "skill", key, min });
 const doctrine = (key, min) => ({ kind: "doctrine", key, min });
 const weaponSkill = (key, min) => ({ kind: "weaponSkill", key, min });
 const specNode = (spec, node) => ({ kind: "specNode", spec, node });
@@ -686,6 +697,30 @@ export const ABILITY_GRANTS = [
     when: specNode("bloodSchool", "krvavyPakt"),
     grant: [ABILITY.BLOOD_PACT],
   },
+
+  /* ======================================================================
+   * Velení (Leadership) — the Commands
+   * The Leadership skill is the only trigger: every rank unlocks the next
+   * Command, and a commander keeps every Command they have already earned.
+   * Ranks 1-5 are the Passive Commands (the aura the commander sustains),
+   * ranks 6-10 the Active ones (a single order shouted at one ally).
+   * ==================================================================== */
+  ...[
+    [1, ABILITY.COMMAND_NERVE],
+    [2, ABILITY.COMMAND_SPEED],
+    [3, ABILITY.COMMAND_HIT],
+    [4, ABILITY.COMMAND_DEFENSE],
+    [5, ABILITY.COMMAND_COVER],
+    [6, ABILITY.COMMAND_BRACE],
+    [7, ABILITY.COMMAND_STRIKE_NOW],
+    [8, ABILITY.COMMAND_FALL_BACK],
+    [9, ABILITY.COMMAND_OPENING],
+    [10, ABILITY.COMMAND_MARK],
+  ].map(([rank, id]) => ({
+    label: `Leadership ${rank} → Command`,
+    when: skill("leadership", rank),
+    grant: [id],
+  })),
 ];
 
 const GRANT_FLAG_SCOPE = "redsteel";

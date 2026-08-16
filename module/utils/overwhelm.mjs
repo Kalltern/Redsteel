@@ -301,9 +301,30 @@ export function resolveDefenderToken(actor, token = null) {
 /**
  * The attacking token id carried by an attack card. Token first: four unlinked
  * goblins share one actor, so an actor id cannot tell them apart.
+ *
+ * The speaker only carries a token id when the card was posted with one, and an
+ * actor on its own supplies one only when it *is* a token actor — true of every
+ * unlinked NPC, false of every linked player character. So a PC attack card can
+ * name its actor and nothing else, which is why the actor is worth a second look
+ * rather than being treated as a dead end: it is resolved back to a token
+ * through the scene the card was spoken on.
+ *
+ * That fallback is deliberately refused when the actor has more than one token
+ * in that scene. Ambiguity here is exactly the four-goblins case above, and
+ * picking whichever one the scene happens to list first would file the blow
+ * under the wrong attacker — worse than admitting we do not know.
  */
 export function attackerTokenIdFromMessage(message) {
-  return message?.speaker?.token ?? null;
+  const speaker = message?.speaker;
+  if (speaker?.token) return speaker.token;
+  if (!speaker?.actor) return null;
+
+  const scene = game.scenes?.get(speaker.scene) ?? game.scenes?.current ?? null;
+  const actor = game.actors?.get(speaker.actor);
+  if (!scene || !actor) return null;
+
+  const tokens = scene.tokens.contents.filter((t) => t.actorId === actor.id);
+  return tokens.length === 1 ? tokens[0].id : null;
 }
 
 /**

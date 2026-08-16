@@ -250,7 +250,7 @@
         "slowMove": "Move up to a number of hexes equal to Speed/2, rounded down. Moving around an enemy always costs 1 hex and may be interrupted by a successful Opportunity Attack. Movement may trigger a Reaction. When an Opportunity Attack is triggered by movement, the character has the right to Defense.",
         "disengage": "Break free from enemy without provoking an Opportunity Attack and move Speed/2 (rounded down) hexes away from the enemy. This movement cannot be used to move around an enemy or to end adjacent to another enemy.",
         "aim": "Increases Hit chance (Ranged and Melee) by +10% for the next attack. The action may be repeated to stack the bonus; a maximum of 4 Aiming stacks can be applied to a target. Special rules apply for bows (see Armory). Aiming can only be performed on a target within range.",
-        "improvedAim": "Increases Hit chance by +10% for the next attack. The action may be repeated to stack the bonus, up to a maximum of +40%. A target can be aimed at any distance. If the attacker has four Aiming stacks on a target, an attack with a one-handed sword gains Armor Penetration +10 (the off hand must be free or hold a fencing dagger). (Duelist II – A hit reduces Aiming by only one level; a Critical Hit preserves all Aiming stacks.)",
+        "improvedAim": "Increases Hit chance by +10% for the next attack. The action may be repeated to stack the bonus, up to a maximum of +40%. A target can be aimed at any distance. If the attacker has four Aiming stacks on a target, an attack with a one-handed sword gains Armor Penetration +10 (the off hand must be free or hold a fencing dagger). (Duelist II – A hit reduces Aiming by only one level; a Critical Hit preserves all Aiming stacks. Duelist VII – Melee defense against the aimed target gains +5% per Aiming stack, and costs no Aiming.)",
         "attack": "Makes an attack against a target within reach. This action cannot be performed more than once per round, nor combined with another offensive action. When Shooting or Throwing from contact range, it triggers a free Opportunity Attack.",
         "sneakAttack": "Attack modification. Damage +1d6. Applies against surprised or undefending targets, or in doctrine-defined situations. For effect upgrades see Armory or Doctrine. Can be applied multiple times per round; however, it can only be applied once per round against the same opponent.",
         "multiAttack": "Perform as many attacks as you are capable of. The attacks can be directed at one or multiple targets.",
@@ -777,19 +777,19 @@
           "nodes": {
             "duelistuvPostoj": {
               "label": "Duelist's Stance",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. The duellist's stance: a one-handed sword with the off hand free or holding a fencing dagger. Every Aim perk on this tree reads it. Automated."
             },
             "krvaveBodnuti": {
-              "label": "Bloody Thrust",
-              "description": "5 CP. Manual — resolved at the table."
+              "label": "Laceration",
+              "description": "5 CP. After a hit, sacrifice any number of Aim to cause one Bleeding each. Sacrificing at least one on a Sneak Attack causes two more, and costs no further Aim for the hit. Costs 2 Stamina per Aim sacrificed. Offered in the Apply Damage dialog. Automated."
             },
             "mireniRedukce": {
               "label": "Aim Reduction",
-              "description": "10 CP; Duelista V. A hit on the aimed target costs one Aim stack instead of all of them, and a critical hit costs none. A missed attack costs only half the stacks, rounded up. A Sneak Attack that lands costs no Aim at all. Automated."
+              "description": "10 CP; Duelista V. Upgrades the Aim reduction granted at Duelist II. A missed attack costs only half the stacks, rounded up; a critical failure still burns all of them. A Sneak Attack that lands costs no Aim at all. Automated."
             },
             "vyhodnyManevr": {
               "label": "Advantageous Maneuver",
-              "description": "15 CP; Duelista VII. Manual — resolved at the table."
+              "description": "15 CP; Duelista VII. A successful Melee Defense with the duellist's blade may be spent on 1 Aim against the attacker, for 3 Stamina. Offered as a button on the defense card. Automated."
             },
             "posileniObrany": {
               "label": "Defense Reinforcement",
@@ -914,7 +914,7 @@
             },
             "hnevKrve": {
               "label": "Wrath of Blood",
-              "description": "10 CP; Škola Krve - Expert. Manual — resolved at the table."
+              "description": "10 CP; Škola Krve - Expert. The second, third and fourth Bleeding on you each grant Blood Spell Power +1 and Blood Reserve capacity +10 (up to +3 and +30). Automated."
             },
             "krvavaPlatba": {
               "label": "Blood Payment",
@@ -3159,123 +3159,123 @@
             },
             "vytrvalaSnaha": {
               "label": "Persistent Effort",
-              "description": "5 CP; Mentalista: Učedník. Manual — resolved at the table."
+              "description": "5 CP; Mentalist: Apprentice. Manual — resolved at the table."
             },
             "mentalniUder": {
-              "label": "Mental Strike: kill restores 1 MH",
-              "description": "10 CP; Mentalista: Velmistr. Manual — resolved at the table."
+              "label": "Strike: kill = +1 MH",
+              "description": "10 CP; Mentalist: Grandmaster. Manual — resolved at the table."
             },
             "mentalniZtec": {
               "label": "Mental Charge",
-              "description": "0 CP; Mentalista: Učedník. Manual — resolved at the table."
+              "description": "0 CP; Mentalist: Apprentice. Manual — resolved at the table."
             },
             "soubojDotek": {
-              "label": "Mental Duel: Touch +30% to initiate",
-              "description": "5 SP. Manual — resolved at the table."
+              "label": "Touch: +30% to initiate",
+              "description": "5 SP; Mental Charge. Manual — resolved at the table."
             },
             "soubojZahajeni1": {
-              "label": "Mental Duel: Initiation +10%",
-              "description": "5 CP; Mentální souboj IV. Manual — resolved at the table."
+              "label": "Initiation +10% I",
+              "description": "5 CP; Touch: +30% to initiate. Manual — resolved at the table."
             },
             "soubojZahajeni2": {
-              "label": "Mental Duel: Initiation +10%",
-              "description": "5 CP; Mentalista: Expert. Manual — resolved at the table."
+              "label": "Initiation +10% II",
+              "description": "5 CP; Initiation +10% I + Mentalist: Expert. Manual — resolved at the table."
             },
             "soubojZahajeni3": {
-              "label": "Mental Duel: Initiation +10%",
-              "description": "5 CP; Mentalista: Mistr. Manual — resolved at the table."
+              "label": "Initiation +10% III",
+              "description": "5 CP; Initiation +10% II + Mentalist: Master. Manual — resolved at the table."
             },
             "soubojZahajeni4": {
-              "label": "Mental Duel: Initiation +10%",
-              "description": "5 CP; Mentalista: Velmistr. Manual — resolved at the table."
+              "label": "Initiation +10% IV",
+              "description": "5 CP; Initiation +10% III + Mentalist: Grandmaster. Manual — resolved at the table."
             },
             "mentalistuvUprk": {
               "label": "Mentalist's Escape",
-              "description": "5 CP; Mentalista: Učedník. Manual — resolved at the table."
+              "description": "5 CP; Mentalist: Apprentice. Manual — resolved at the table."
             },
             "vybojMysli": {
               "label": "Mind Burst",
-              "description": "5 CP; Mentalista: Expert. Manual — resolved at the table."
+              "description": "5 CP; Mentalist's Escape + Mentalist: Expert. Manual — resolved at the table."
             },
             "zoufalyVzdor": {
               "label": "Desperate Defiance",
-              "description": "10 CP; Mentalista: Velmistr. Manual — resolved at the table."
+              "description": "10 CP; Mind Burst + Mentalist: Grandmaster. Manual — resolved at the table."
             },
             "soubojUdrzovani": {
-              "label": "Mental Duel: Upkeep -1 Action",
-              "description": "10 CP; Mentalista: Expert. Manual — resolved at the table."
+              "label": "Upkeep: -1 Action",
+              "description": "10 CP; Mentalist: Expert. Manual — resolved at the table."
             },
             "soubojPostih": {
-              "label": "Mental Duel: Success penalty -10%",
-              "description": "10 CP; Mentalista: Mistr. Manual — resolved at the table."
+              "label": "Success penalty -10%",
+              "description": "10 CP; Upkeep: -1 Action + Mentalist: Master. Manual — resolved at the table."
             },
             "mentalniSouboj10a": {
-              "label": "Mental Duel +10%",
+              "label": "Duel +10% I",
               "description": "15 SP. Manual — resolved at the table."
             },
             "soubojMZ1": {
-              "label": "Mental Duel: success drains +1 MH",
-              "description": "10 CP; Mentalista: Expert. Manual — resolved at the table."
+              "label": "Success drains +1 MH I",
+              "description": "10 CP; Mentalist: Expert. Manual — resolved at the table."
             },
             "mentalniSouboj10b": {
-              "label": "Mental Duel +10%",
-              "description": "15 SP. Manual — resolved at the table."
+              "label": "Duel +10% II",
+              "description": "15 SP; Duel +10% I. Manual — resolved at the table."
             },
             "soubojMZ2": {
-              "label": "Mental Duel: success drains +1 MH",
-              "description": "10 CP; Mentalista: Velmistr. Manual — resolved at the table."
+              "label": "Success drains +1 MH II",
+              "description": "10 CP; Success drains +1 MH I + Mentalist: Grandmaster. Manual — resolved at the table."
             },
             "telepat1": {
               "label": "Telepath I",
-              "description": "15 SP; Mentalista: Expert. Manual — resolved at the table."
+              "description": "15 SP; Mentalist: Expert. Manual — resolved at the table."
             },
             "telepat2": {
               "label": "Telepath II",
-              "description": "5 SP; Mentalista: Mistr. Manual — resolved at the table."
+              "description": "5 SP; Telepath I + Mentalist: Master. Manual — resolved at the table."
             },
             "vytizeniKoncentrace": {
-              "label": "Mental Strain: cancels Concentrations",
-              "description": "5 CP; Mentalista: Učedník. Manual — resolved at the table."
+              "label": "Strain: cancels Conc.",
+              "description": "5 CP; Mentalist: Apprentice. Manual — resolved at the table."
             },
             "vytizeniReakce": {
-              "label": "Mental Strain: -1 Reaction",
-              "description": "5 CP; Mentalista: Expert. Manual — resolved at the table."
+              "label": "Strain: -1 Reaction",
+              "description": "5 CP; Strain: cancels Conc. + Mentalist: Expert. Manual — resolved at the table."
             },
             "vytizeniZakerne": {
-              "label": "Mental Strain: attacks count as Sneak",
-              "description": "5 CP; Mentální souboj VI. Manual — resolved at the table."
+              "label": "Strain: attacks are Sneak",
+              "description": "5 CP; Strain: -1 Reaction. Manual — resolved at the table."
             },
             "vytizeniAkce": {
-              "label": "Mental Strain: -1 Action",
-              "description": "5 CP; Mentalista: Mistr. Manual — resolved at the table."
+              "label": "Strain: -1 Action",
+              "description": "5 CP; Strain: attacks are Sneak + Mentalist: Master. Manual — resolved at the table."
             },
             "vysati": {
               "label": "Drain",
-              "description": "5 CP; Mentalista: Učedník. Manual — resolved at the table."
+              "description": "5 CP; Mentalist: Apprentice. After breaking a mind in a Mental Duel, drain the loser to restore 2 Mind and end the duel."
             },
             "ovladnuti": {
               "label": "Domination",
-              "description": "10 CP; Mentalista: Expert. Manual — resolved at the table."
+              "description": "10 CP; Drain + Mentalist: Expert. Manual — resolved at the table."
             },
             "cteniMysli": {
               "label": "Mind Reading",
-              "description": "15 SP; Mentalista: Mistr. Manual — resolved at the table."
+              "description": "15 SP; Domination + Mentalist: Master. Manual — resolved at the table."
             },
             "pokrocileCteni": {
               "label": "Advanced Mind Reading",
-              "description": "10 SP; Mentální souboj X. Manual — resolved at the table."
+              "description": "10 SP; Mind Reading. Manual — resolved at the table."
             },
             "meditace2": {
-              "label": "Meditation restores 2 Mental health",
-              "description": "5 SP; Meditace I. Manual — resolved at the table."
+              "label": "Meditation +2 MH",
+              "description": "5 SP; Meditation I. Manual — resolved at the table."
             },
             "meditace3": {
-              "label": "Meditation restores 3 Mental health",
-              "description": "15 SP. Manual — resolved at the table."
+              "label": "Meditation +3 MH",
+              "description": "15 SP; Meditation +2 MH. Manual — resolved at the table."
             },
             "mzMeditace": {
-              "label": "Mental health +1 / Meditation +5%",
-              "description": "15 SP; Mentalista: Expert. Automated."
+              "label": "+1 MH / Meditation +5%",
+              "description": "15 SP; Meditation +3 MH + Mentalist: Expert. Automated."
             }
           }
         },
@@ -4523,7 +4523,40 @@
     },
     "Aim": {
       "Swept": "The attack on {target} did not land: {actor} drops from {before} Aim to {after}.",
-      "UnknownTarget": "the target"
+      "Granted": "The opening stands: {actor} gains {stacks} Aim on {target} ({after} in total).",
+      "UnknownTarget": "the target",
+      "DefenseBonus": "Aim ({stacks}): +{bonus}",
+      "DefenseHint": "Aiming at your attacker ({stacks}): +{bonus} to Melee Defense.",
+      "DefenseMismatch": "Aiming at {target}, but this defense answers {attacker}. No Aim bonus.",
+      "ManeuverButton": "Advantageous Maneuver",
+      "ManeuverTooltip": "Advantageous Maneuver: spend {cost} Stamina for 1 Aim on {target}.",
+      "ManeuverBought": "The parry opens {target} up: {name} spends {cost} Stamina for 1 Aim ({after} in total).",
+      "ManeuverAlreadyUsed": "This maneuver has already been made.",
+      "ManeuverNoStamina": "Not enough Stamina — the maneuver costs {cost}.",
+      "ManeuverCapped": "Already at full Aim on this attacker.",
+      "ManeuverSwitched": "Moving the Aim onto the attacker cost stacks: {before} → {after}.",
+      "ManeuverTokenMissing": "The tokens for this maneuver are no longer on the scene."
+    },
+    "Command": {
+      "Passive": "Passive Command",
+      "Active": "Active Command",
+      "Commanded": "Commanded",
+      "Success": "The order is obeyed.",
+      "Failure": "The order goes unheeded.",
+      "NoTargets": "Target the allies you are commanding first.",
+      "NoTest": "This Command has no Test Type set — it should test Leadership.",
+      "Unknown": "Unknown Command: {key}",
+      "Relayed": "Command sent to the GM.",
+      "Replaced": "{name} was already under a Command — it has been replaced.",
+      "CommanderDown": "{name} falls — their Commands end.",
+      "AuraName": "{command} ({commander})",
+      "Effects": {
+        "Nerve": "Command: Bravery",
+        "Speed": "Command: Advance",
+        "Hit": "Command: Break the Line",
+        "Defense": "Command: Hold the Line",
+        "Cover": "Command: Shields Up"
+      }
     },
     "BloodStrike": {
       "OpenWoundOption": "Open Wound — spend {cost} Life from the Blood Reserve for 1 Bleeding",
@@ -4535,6 +4568,11 @@
     "BloodHarvest": {
       "Gained": "{name} draws {amount} spilled Life into the Blood Reserve (Cordinas I)."
     },
+    "Laceration": {
+      "Option": "Laceration — sacrifice Aim ({cost} Stamina each):",
+      "StaminaTooLow": "{name} has {stamina} Stamina — {cost} is needed per Aim sacrificed.",
+      "Applied": "{name} tears the wound wide on {targets}, sacrificing {aim} Aim for {stamina} Stamina."
+    },
     "Overwhelm": {
       "Label": "Overwhelm",
       "MarkerName": "Overwhelm ({penalty}%)",
@@ -4543,6 +4581,9 @@
       "UnknownAttacker": "Unknown attacker",
       "Defend": "Defend",
       "DefendTooltip": "Roll a defense against this attack."
+    },
+    "Reroll": {
+      "Superseded": "Rerolled — this result no longer applies."
     },
     "RoundDigest": {
       "Announcer": "Announcer",
@@ -4652,6 +4693,7 @@
     "Tooltip": {
       "rating": "Rating",
       "attribute": "Attribute",
+      "weaponAttack": "Weapon",
       "current": "Current",
       "noteMissing": "Could not open the rules note."
     },
@@ -4694,7 +4736,7 @@
       },
       "aim": {
         "label": "Aim",
-        "desc": "Each Aim action grants +10% to hit against the aimed target, up to 4 stacks. Switching targets burns every stack. Attacking the aimed target spends them all, and attacking anybody else breaks the aim outright. Improved Aim (Duelist I, or Servant of the Sword) keeps the aim intact when you attack somebody else, and adds +10 armour penetration at 4 stacks. Aim reduction (Duelist II, or either Aim-reduction node) costs a single stack on a hit and none on a critical hit, while a miss still costs the lot. Servant of the Sword adds one Aim after a Sneak Attack; Sword Dancer instead costs nothing on a Sneak Attack that lands, and only half the stacks (rounded up) on a miss. Every duellist perk needs the qualifying sword in hand. Counterattack, Retaliatory strike, Cleave, Polearm Cleave, Double Throw and Cunning Strike have no interaction with Aiming at all."
+        "desc": "Each Aim action grants +10% to hit against the aimed target, up to 4 stacks. Switching targets burns every stack. Attacking the aimed target spends them all, and attacking anybody else breaks the aim outright. Improved Aim (Duelist I, or Servant of the Sword) keeps the aim intact when you attack somebody else, and adds +10 armour penetration at 4 stacks. Aim reduction (Duelist II, or either Aim-reduction node) costs a single stack on a hit and none on a critical hit, while a miss still costs the lot. Servant of the Sword adds one Aim after a Sneak Attack; Sword Dancer instead costs nothing on a Sneak Attack that lands, and only half the stacks (rounded up) on a miss. Duelist VII turns Aim to defense as well: melee defense against the opponent you are aiming at gains +5% per stack, and defending costs no Aim. Every duellist perk needs the qualifying sword in hand. Counterattack, Retaliatory strike, Cleave, Polearm Cleave, Double Throw and Cunning Strike have no interaction with Aiming at all."
       },
       "spellPower": {
         "label": "Spell Power",
@@ -5047,6 +5089,36 @@
       },
       "CombatGeniusII": {
         "name": "Combat Genius II"
+      },
+      "CommandAdvance": {
+        "name": "Command: Advance"
+      },
+      "CommandAssault": {
+        "name": "Command: Assault"
+      },
+      "CommandBrace": {
+        "name": "Command: Brace"
+      },
+      "CommandBravery": {
+        "name": "Command: Bravery"
+      },
+      "CommandBreakTheLine": {
+        "name": "Command: Break the Line"
+      },
+      "CommandHeadHunt": {
+        "name": "Command: Head Hunt"
+      },
+      "CommandHeroicStrike": {
+        "name": "Command: Heroic Strike"
+      },
+      "CommandHoldTheLine": {
+        "name": "Command: Hold the Line"
+      },
+      "CommandShieldsUp": {
+        "name": "Command: Shields Up"
+      },
+      "CommandVigilance": {
+        "name": "Command: Vigilance"
       },
       "CorpseBreath": {
         "name": "Corpse Breath"

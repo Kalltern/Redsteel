@@ -7,8 +7,12 @@
  * If SU < 0 the attack still lands but in the torso — no special effect.
  *
  * Head:  -15% hit, +20% stagger chance, +10% precision chance on hit
- * Hands: -10% hit, applies maimed_hands (disadvantage on two-handed attacks, 2t)
+ * Hands: -10% hit, applies maimed_hands (disadvantage on every attack, 2t)
  * Legs:  -10% hit, applies maimed_legs  (disadvantage on dodge, 2t)
+ *
+ * Both wounds work through the advantage buckets in utils/rollAdvantage.mjs:
+ * maimed_hands adds -1 to `attack` (tagged on every attack roll), maimed_legs
+ * adds -1 to `dodge` (tagged on the dodge defense roll).
  *
  * NPC body-part overrides live as actor flags:
  *   flags.redsteel.bodyParts = {
@@ -90,7 +94,7 @@ export function selectAimedPart() {
         <li data-part="hands">
           <b>Hands</b>
           <span class="penalty">−10% hit</span>
-          <span class="bonus"> | Disadv. two-handed attacks (2t)</span>
+          <span class="bonus"> | Disadv. on all attacks (2t)</span>
         </li>
         <li data-part="legs">
           <b>Legs</b>

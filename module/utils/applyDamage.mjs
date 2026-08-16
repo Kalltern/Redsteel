@@ -10,7 +10,12 @@ import {
 import { AIMED_PARTS, getBodyPartOverrides } from "./aimedStrike.mjs";
 import { resolveBaneVariant } from "./baneCombat.mjs";
 import { BANE_TYPES } from "../helpers/banes.mjs";
-import { resolveAimOnDamage } from "./aim.mjs";
+import {
+  resolveAimOnDamage,
+  grantAimOnDamage,
+  getLacerationOffer,
+} from "./aim.mjs";
+import { attackerTokenIdFromMessage } from "./overwhelm.mjs";
 import { gainBlood } from "./bloodPool.mjs";
 
 export const SOCKET = "system.redsteel";
@@ -219,6 +224,15 @@ const CORDINAS_BLOOD_STRIKE_RANK = 4;
 /** Life drawn from the Blood Reserve to force a wound open. */
 export const OPEN_WOUND_BLOOD_COST = 3;
 
+/* -------------------------------------------- */
+/*  Tržná rána (Laceration, Sword Dancer)       */
+/* -------------------------------------------- */
+
+/** Stamina burned per Aim stack sacrificed into the wound. */
+export const LACERATION_STAMINA_PER_AIM = 2;
+/** Extra Bleeding when the sacrificing blow was a Sneak Attack. */
+export const LACERATION_SNEAK_BLEEDS = 2;
+
 /**
  * The actor who made this attack — whose Blood Reserve pays for Open Wound and
  * who earns the Blood Strike charge on a kill. Resolved from the card's speaker
@@ -321,6 +335,7 @@ async function applyDamageToTargets(
   halfDamage = false,
   degreeOverridden = false,
   openWound = {},
+  laceration = {},
 ) {
   const data = {
     type: "applyDamage",
@@ -334,6 +349,7 @@ async function applyDamageToTargets(
     halfDamage,
     degreeOverridden,
     openWound,
+    laceration,
   };
 
   if (game.user.isGM) {
@@ -397,6 +413,7 @@ export async function applyDamageAsGM(data) {
   const halfDamage = data.halfDamage ?? false;
   const degreeOverridden = data.degreeOverridden ?? false;
   const openWound = data.openWound ?? {};
+  const lacerationRequest = data.laceration ?? {};
   const message = game.messages.get(messageId);
 
   const attack = message.flags.attack;
@@ -421,6 +438,10 @@ export async function applyDamageAsGM(data) {
   const attackerHasBloodStrike = hasBloodStrikeDoctrine(attacker);
   let bloodStrikeEarned = false;
   const openWoundVictims = [];
+  // Tržná rána — tokenId → Aim actually sacrificed, handed to resolveAimOnDamage
+  // once the loop is done so it can charge the hit nothing further.
+  const lacerationSpent = {};
+  const lacerationVictims = [];
   // Cordinas I — every wounded target feeds the attacker's Blood Reserve, and
   // a target that dies feeds it once more. Counted per target here, banked
   // once after the loop.
@@ -672,6 +693,52 @@ export async function applyDamageAsGM(data) {
       }
     }
 
+    // Tržná rána (Laceration, Sword Dancer) — the duellist wrenches the wound
+    // wider by giving up the aim the blow was lined up with: one Bleeding per
+    // Aim sacrificed, two more when it was a Sneak Attack, at
+    // LACERATION_STAMINA_PER_AIM Stamina a stack. Everything is re-checked here
+    // rather than trusted: the payload arrived over the socket from whichever
+    // client opened the dialog.
+    const lacerationAsked = Math.max(
+      0,
+      Math.round(Number(lacerationRequest?.[tokenId]) || 0),
+    );
+    if (lacerationAsked > 0) {
+      const offer = getLacerationOffer(attacker, tokenId);
+      const stamina = Number(attacker?.system?.stats?.stamina?.value) || 0;
+      const affordable = Math.floor(stamina / LACERATION_STAMINA_PER_AIM);
+      const spend = Math.min(lacerationAsked, offer.stacks, affordable);
+
+      if (!offer.available) {
+        ui.notifications.warn(
+          `Laceration: ${attacker?.name ?? "the attacker"} no longer holds the Aim this attack was lined up with — nothing sacrificed.`,
+        );
+      } else if (result.hpLoss <= 0) {
+        ui.notifications.warn(
+          `Laceration: the hit on ${actor.name} did no Life damage — no wound to tear open, no Aim sacrificed.`,
+        );
+      } else if (isImmuneToEffect(actor, "bleed")) {
+        ui.notifications.warn(
+          `Laceration: ${actor.name} is immune to Bleeding — no Aim sacrificed.`,
+        );
+      } else if (spend <= 0) {
+        ui.notifications.warn(
+          `Laceration: ${attacker.name} has ${stamina} Stamina — ${LACERATION_STAMINA_PER_AIM} is needed per Aim sacrificed.`,
+        );
+      } else {
+        // The Sneak Attack bonus rides on having sacrificed at all, not on how
+        // much: one stack given up buys it just as well as four.
+        const stacks = spend + (offer.sneak ? LACERATION_SNEAK_BLEEDS : 0);
+        await attacker.update({
+          "system.stats.stamina.value":
+            stamina - spend * LACERATION_STAMINA_PER_AIM,
+        });
+        await applyEffectToActor(actor, "bleed", stacks, castingContext);
+        lacerationSpent[tokenId] = spend;
+        lacerationVictims.push({ name: actor.name, spend, stacks });
+      }
+    }
+
     // Otevřená rána (Open Wound) — the attacker tears the wound open by hand,
     // paying OPEN_WOUND_BLOOD_COST Life out of their Blood Reserve for one
     // Bleeding. Only on a hit that failed to draw blood by itself, and only on
@@ -732,6 +799,24 @@ export async function applyDamageAsGM(data) {
     await handlePostDamageStatus({ actor, combatant });
   }
 
+  if (lacerationVictims.length) {
+    const totalAim = lacerationVictims.reduce((sum, v) => sum + v.spend, 0);
+    await ChatMessage.create({
+      speaker: ChatMessage.getSpeaker({ actor: attacker }),
+      content: `<div style="text-align:center; color:#a01818;">${game.i18n.format(
+        "REDSTEEL.Laceration.Applied",
+        {
+          name: attacker.name,
+          targets: lacerationVictims
+            .map((v) => `${v.name} (${v.stacks})`)
+            .join(", "),
+          aim: totalAim,
+          stamina: totalAim * LACERATION_STAMINA_PER_AIM,
+        },
+      )}</div>`,
+    });
+  }
+
   if (openWoundVictims.length) {
     await ChatMessage.create({
       speaker: ChatMessage.getSpeaker({ actor: attacker }),
@@ -789,7 +874,26 @@ export async function applyDamageAsGM(data) {
   // so this is where an aim-reduction attack finds out what it cost: one stack
   // normally, none on a critical. Attacks that never get here are settled as
   // misses by the end-of-turn sweep in utils/aim.mjs.
-  await resolveAimOnDamage(attacker, targetIds, mode);
+  // Aim sacrificed to Laceration above is the whole price of the hit, so it
+  // travels along and stops the usual stack being taken on top of it.
+  await resolveAimOnDamage(attacker, targetIds, mode, {
+    laceration: lacerationSpent,
+  });
+
+  // …and the same signal pays Perfect Opening, which hands Aim back instead of
+  // spending it: two on a hit, three on a critical. Runs second so the line
+  // above has already settled whatever the attack cost, and this stacks on top
+  // of the remainder rather than being overwritten by it.
+  await grantAimOnDamage({
+    actor: attacker,
+    tokenId: attackerTokenIdFromMessage(message),
+    sceneId,
+    targetIds,
+    mode,
+    abilityKey: message.flags?.redsteel?.abilityKey ?? null,
+    abilityName: message.flags?.redsteel?.abilityName ?? null,
+    message,
+  });
 }
 
 function openDamageSelectionDialog(message, targets) {
@@ -826,6 +930,17 @@ function openDamageSelectionDialog(message, targets) {
   const openWoundSpent = () =>
     Object.values(openWoundState).filter(Boolean).length *
     OPEN_WOUND_BLOOD_COST;
+
+  // Tržná rána (Laceration) — offered only on the target this attack was aimed
+  // at, and only to someone who owns the attacker: it is their Aim and their
+  // Stamina being spent. tokenId -> Aim stacks to sacrifice.
+  const lacerationActor = getAttackingActor(message);
+  const canLacerate = !!lacerationActor?.isOwner;
+  const lacerationState = {};
+  const lacerationStamina = () =>
+    Number(lacerationActor?.system?.stats?.stamina?.value) || 0;
+  const lacerationAimSpent = () =>
+    Object.values(lacerationState).reduce((sum, n) => sum + n, 0);
 
   const getSelectedAttack = (targetActor) => {
     const effAttack = resolveAttackForTarget(attack, targetActor);
@@ -1005,6 +1120,53 @@ function openDamageSelectionDialog(message, targets) {
     `
             : "";
 
+        // Tržná rána: the Aim this attack was lined up with, sold for Bleeding.
+        // Same two gates the bleed effect and Open Wound draw — a blow that
+        // never reached Life opens no wound, and a target immune to Bleeding
+        // cannot be made to bleed however much Aim is thrown at it.
+        const lacerationOffer = canLacerate
+          ? getLacerationOffer(lacerationActor, t.id)
+          : { available: false, stacks: 0, sneak: false };
+        const lacerationBlocked = isImmuneToEffect(t.actor, "bleed")
+          ? "immune to Bleeding"
+          : result.hpLoss <= 0
+            ? "no Life damage"
+            : "";
+        // Switching to a critical or sacrificing durability can move the hit
+        // off Life after the Aim was already committed — drop the choice with
+        // the row, exactly as Open Wound drops its tick.
+        if (lacerationBlocked) delete lacerationState[t.id];
+        const lacerationRow = (() => {
+          if (!lacerationOffer.available) return "";
+          const chosen = Math.min(
+            lacerationState[t.id] ?? 0,
+            lacerationOffer.stacks,
+          );
+          const options = Array.from(
+            { length: lacerationOffer.stacks + 1 },
+            (_, n) =>
+              `<option value="${n}" ${n === chosen ? "selected" : ""}>${n}</option>`,
+          ).join("");
+          const sneakNote = lacerationOffer.sneak
+            ? ` (incl. +${LACERATION_SNEAK_BLEEDS} Sneak Attack)`
+            : "";
+          const preview = chosen
+            ? ` → ${chosen + (lacerationOffer.sneak ? LACERATION_SNEAK_BLEEDS : 0)} Bleeding${sneakNote}, ${chosen * LACERATION_STAMINA_PER_AIM} Stamina`
+            : "";
+          return `
+      <div style="margin-left:15px;">
+        <label style="${lacerationBlocked ? "opacity:0.5;" : "color:#c86a6a;"}">
+          ${game.i18n.format("REDSTEEL.Laceration.Option", {
+            cost: LACERATION_STAMINA_PER_AIM,
+          })}
+          <select name="laceration-${t.id}" ${lacerationBlocked ? "disabled" : ""}>
+            ${options}
+          </select>${lacerationBlocked ? ` — ${lacerationBlocked}` : preview}
+        </label>
+      </div>
+    `;
+        })();
+
         const aimedStrikeLabel = (() => {
           const as = attack.aimedStrike;
           if (!as?.part) return "";
@@ -1022,6 +1184,7 @@ function openDamageSelectionDialog(message, targets) {
       ${gmPreview}
       ${aimedStrikeLabel}
       ${effectPreview}
+      ${lacerationRow}
       ${openWoundRow}
     </li>
   `;
@@ -1208,6 +1371,11 @@ function openDamageSelectionDialog(message, targets) {
               if (on) openWound[tokenId] = true;
             }
 
+            const laceration = {};
+            for (const [tokenId, n] of Object.entries(lacerationState)) {
+              if (n > 0) laceration[tokenId] = n;
+            }
+
             applyDamageToTargets(
               message,
               targets,
@@ -1218,6 +1386,7 @@ function openDamageSelectionDialog(message, targets) {
               halfDamage,
               degreeTouched,
               openWound,
+              laceration,
             );
           },
         },
@@ -1252,13 +1421,45 @@ function openDamageSelectionDialog(message, targets) {
           });
         };
 
+        // Laceration's selects live in the same rebuilt preview, so they rebind
+        // alongside the Open Wound ticks and read their value back out of
+        // lacerationState.
+        const bindLaceration = () => {
+          html.find('select[name^="laceration-"]').on("change", (ev) => {
+            const tokenId = ev.target.name.slice("laceration-".length);
+            const want = Math.max(0, Number(ev.target.value) || 0);
+            // Stamina already promised to other targets is off the table. The
+            // GM re-checks on apply, but refusing here says why.
+            const committed = lacerationAimSpent() - (lacerationState[tokenId] ?? 0);
+            const affordable =
+              Math.floor(lacerationStamina() / LACERATION_STAMINA_PER_AIM) -
+              committed;
+            if (want > affordable) {
+              ev.target.value = String(lacerationState[tokenId] ?? 0);
+              ui.notifications.warn(
+                game.i18n.format("REDSTEEL.Laceration.StaminaTooLow", {
+                  name: lacerationActor.name,
+                  stamina: lacerationStamina(),
+                  cost: LACERATION_STAMINA_PER_AIM,
+                }),
+              );
+              return;
+            }
+            if (want > 0) lacerationState[tokenId] = want;
+            else delete lacerationState[tokenId];
+            refreshPreview();
+          });
+        };
+
         const refreshPreview = () => {
           html.find(".damage-preview").html(renderPreview());
           bindOpenWound();
+          bindLaceration();
           html.find(".open-wound-status").html(renderOpenWoundStatus());
         };
 
         bindOpenWound();
+        bindLaceration();
 
         const updateCriticalDegreeVisibility = () => {
           html

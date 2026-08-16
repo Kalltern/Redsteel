@@ -26,6 +26,7 @@ import {
   renderAttackTagsHtml,
 } from "./opportunityAttacks.mjs";
 import { setupDialogTabs } from "./dialogTabMemory.mjs";
+import { getCommandTargets, runCommand } from "./commands.mjs";
 
 export async function combatAbilities() {
   // ====================================================================
@@ -69,9 +70,14 @@ export async function combatAbilities() {
     { id: "melee", label: "Melee" },
     { id: "ranged", label: "Ranged" },
     { id: "other", label: "Other" },
+    { id: "command", label: "Commands" },
   ];
 
   function getAbilityCategory(ability) {
+    // Commands (Velení) are utility actions — type "other" — but there are ten
+    // of them and more to come, so they get their own tab rather than burying
+    // the Other tab. Checked first, since the type would otherwise claim them.
+    if (ability.system.class === "command") return "command";
     if (ability.system.type === "ranged") return "ranged";
     if (ability.system.type === "other") return "other";
     if (ability.system.type === "melee" || ability.system.class === "defense") {
@@ -84,6 +90,7 @@ export async function combatAbilities() {
     melee: [],
     ranged: [],
     other: [],
+    command: [],
   };
 
   for (const ability of abilities) {
@@ -330,6 +337,14 @@ export async function combatAbilities() {
     const isDefenseRoll = ability.system.class === "defense";
     const keepOpen = container.querySelector("#keep-open")?.checked;
 
+    // A Command lands on the targeted tokens, so the allies have to be picked
+    // before anything is spent — resolved up here, ahead of the cost.
+    let commandTargets = null;
+    if (ability.system.class === "command") {
+      commandTargets = getCommandTargets();
+      if (!commandTargets) return;
+    }
+
     let paid;
 
     if (ability.system.class === "stance") {
@@ -395,6 +410,19 @@ export async function combatAbilities() {
       await game.redsteel.applyEffect(actor, ability.system.key);
       return;
     }
+    // Commands are type "other" as well, so they are intercepted first.
+    if (ability.system.class === "command") {
+      await runCommand(
+        actor,
+        ability,
+        commandTargets,
+        await rollUtilityTest(actor, ability),
+      );
+
+      if (!keepOpen) dialog.close();
+      return;
+    }
+
     const isStandalone = ability.system.standalone;
     if (ability.system.type === "other") {
       await runUtilityAbility(actor, ability, selectedModifiers);
@@ -1201,7 +1229,13 @@ ${critHTML}
       // Resolved from the attacking actor rather than the bare getSpeaker(),
       // which reads the client's *selected* token. Overwhelm files attackers by
       // the token id on this speaker, so it has to name the one that attacked.
-      speaker: ChatMessage.getSpeaker({ actor }),
+      // The token goes in explicitly: an actor alone only carries a token id
+      // through when it *is* a token actor, so leaving it out published PC
+      // attack cards (linked actors) with no attacker on them at all.
+      speaker: ChatMessage.getSpeaker({
+        actor,
+        token: token?.document ?? token,
+      }),
       content: `
 <div class="dual-roll">
   <div class="roll-column">
@@ -1245,6 +1279,12 @@ ${
           criticalFailureThreshold,
           traitPills: getTraitPills(actor, "attack"),
           attackTags,
+          // Which ability swung, for anything that only finds out the outcome
+          // later — Perfect Opening's Aim grant reads these in Apply Damage.
+          // The localisation key identifies the ability across languages; the
+          // raw name is the fallback for a hand-made copy that has no key.
+          abilityKey: ability?.system?.localizationKey ?? null,
+          abilityName: ability?.name ?? null,
           // Reroll tokens for the chat reroll picker: "attack" + combat skill +
           // governing attribute (finesse-aware), so e.g. Brawny (str) can reroll
           // a strength melee attack and Nimble (dex) a finesse attack.

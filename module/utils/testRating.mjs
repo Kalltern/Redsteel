@@ -81,3 +81,29 @@ export function resolveTestRating(actor, testName) {
   }
   return { value: 0, skillKey: null };
 }
+
+/**
+ * The number the Statistics column prints for a combat skill: its rating (the
+ * better of rating and finesse rating where a finesse variant exists) plus the
+ * attack bonus the active loadout contributes.
+ *
+ * `weaponAttack` is written by actor.mjs during prepareDerivedData and is only
+ * ever set on combat / archery / throwing, so this is safe to call for defense,
+ * dodge, channeling and blood manipulation as well. Shared by the
+ * `combatSkillRating` Handlebars helper and the skill tooltip so the two can
+ * never print different numbers.
+ *
+ * @param {object} skill  entry from `system.combatSkills`
+ * @param {string} key    its key
+ */
+export function effectiveCombatRating(skill, key) {
+  if (!skill) return 0;
+  const weaponAttack = Number(skill.weaponAttack) || 0;
+  if (key === "combat" || key === "throwing") {
+    return (
+      Math.max(Number(skill.rating) || 0, Number(skill.finesseRating) || 0) +
+      weaponAttack
+    );
+  }
+  return (Number(skill.rating) || 0) + weaponAttack;
+}

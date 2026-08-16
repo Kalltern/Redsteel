@@ -22,6 +22,14 @@
  *     attack cannot settle on its own: a hit costs one stack, a critical hit
  *     none, a miss the lot. Those attacks park a pending record instead, which
  *     Apply Damage settles as a hit, and the end-of-turn sweep settles as a miss.
+ *   • A landed attack can also hand Aim back: Perfect Opening grants two on a
+ *     hit and three on a critical (grantAimOnDamage, below), read off the
+ *     ability recorded on the attack card once damage is actually applied.
+ *
+ * Aim also answers back on defense (Duelist VII): when the token swinging at you
+ * is the one you are aiming at, every stack is worth +5% melee defense. That is
+ * purely passive — the stacks are neither spent nor reduced by defending — and it
+ * only reads the aim you already hold, so it never fights the attack path above.
  *
  * Every one of those perks is weapon-gated: the duellist's blade has to be in
  * hand for any of them to be live. See aimPerks().
@@ -46,6 +54,7 @@ const PENDING_FLAG = "aimPending";
 const MAX_STACKS = 4;
 const PER_STACK = 10; // % hit chance per stack
 const IMPROVED_AIM_PEN = 10; // Improved Aim: penetration at full aim
+const DEFENSE_PER_STACK = 5; // Duelist VII: % melee defense per stack held
 
 const COLOR_AMBER = 0xffb300; // stacks 1–3
 const COLOR_RED = 0xff3030; // stack 4 (capped)
@@ -189,6 +198,13 @@ function mergeReduction(profiles) {
  *   reduction — the profile above, or null when no source is live.
  *   keepsAim  — Duelist's Stance. Moving the aim to a new target carries all but
  *               one of the old stacks across instead of burning them.
+ *   defense   — Duelist VII. Melee defense against the aimed target is worth
+ *               +5% per stack held.
+ *   laceration— Laceration. A landed hit can sacrifice Aim for Bleeding, offered
+ *               in the Apply Damage dialog. See getLacerationOffer().
+ *   maneuver  — Advantageous Maneuver. A successful melee defense can buy one Aim
+ *               on the attacker for Stamina, offered on the defense card. See
+ *               utils/advantageousManeuver.mjs.
  */
 function aimPerks(actor, weapon, context = null) {
   if (!actor || !weapon) return {};
@@ -211,6 +227,72 @@ function aimPerks(actor, weapon, context = null) {
       (blade && rank >= 1) || (broadsword && node("swordServant", "improvedAim")),
     reduction: mergeReduction(profiles),
     keepsAim: blade && node("swordDancer", "postojMireni"),
+    defense: blade && rank >= 7,
+    laceration: blade && node("swordDancer", "krvaveBodnuti"),
+    maneuver: blade && node("swordDancer", "vyhodnyManevr"),
+  };
+}
+
+/**
+ * Advantageous Maneuver (Sword Dancer) — is the perk live for this defense?
+ *
+ * Weapon-gated like every other Aim perk on the tree: the duellist's blade has to
+ * be the thing that turned the blow aside. Character-only, as spec nodes are.
+ */
+export function hasAdvantageousManeuver(actor, weapon = null, context = null) {
+  if (actor?.type !== "character") return false;
+  return !!aimPerks(actor, weapon, context).maneuver;
+}
+
+/**
+ * Duelist VII — the defensive half of Aiming: parrying the very opponent you are
+ * aiming at is worth +5% melee defense per stack you hold.
+ *
+ * Passive. Nothing here writes a flag, so the stacks survive the defense intact
+ * and are still there for the attack that follows.
+ *
+ * `attackerTokenId` is the token actually swinging, which the defense roll takes
+ * from the Defend button (a fact) or from the attacker it inferred for Overwhelm.
+ * With no attacker to name, there is nothing to compare the aim against and the
+ * bonus is simply zero — a defense cannot claim it on the strength of an aim
+ * pointed somewhere else entirely.
+ *
+ * @param {object} opts
+ * @param {Actor}  opts.actor            the defender
+ * @param {TokenDocument|Token|null} opts.token  the defender's token (holds the aim)
+ * @param {Item}   [opts.weapon]         weapon in hand — gates the perk
+ * @param {object} [opts.context]        resolved weapon context (grip, off hand)
+ * @param {string} [opts.attackerTokenId] the token being defended against
+ * @returns {{stacks: number, bonus: number}}
+ */
+export function getAimDefenseBonus({
+  actor,
+  token,
+  weapon = null,
+  context = null,
+  attackerTokenId = null,
+} = {}) {
+  const perk = actor ? !!aimPerks(actor, weapon, context).defense : false;
+
+  const aim = readAim(token);
+  const aimTargetId = aim?.targetId ?? null;
+  const held = Math.min(MAX_STACKS, Math.max(0, aim?.stacks ?? 0));
+
+  // Both halves are reported even when they disagree, so the dialog can say
+  // *why* there is no bonus instead of going quiet. A silent zero here is
+  // indistinguishable from the perk not existing, and reads at the table as
+  // "the automation is broken" when the real answer is usually that the
+  // defense is answering somebody other than the one being aimed at.
+  const matched = !!attackerTokenId && aimTargetId === attackerTokenId;
+  const stacks = perk && matched ? held : 0;
+
+  return {
+    perk,
+    aimTargetId,
+    held,
+    attackerTokenId,
+    stacks,
+    bonus: stacks * DEFENSE_PER_STACK,
   };
 }
 
@@ -307,6 +389,54 @@ async function removeAimStackOn(token, target = null) {
   await setAim(token, aim.targetId, aim.stacks - 1);
 }
 
+/**
+ * Advantageous Maneuver — where the aim stands before the button is pressed, so
+ * the defense card can dress the button and refuse to charge for nothing.
+ *
+ * `held` counts only stacks already pointed at this attacker: an aim aimed
+ * somewhere else is worth zero here, because pressing the button would burn it.
+ *
+ * @param {TokenDocument|Token} aimerToken   the defender
+ * @param {TokenDocument|Token} targetToken  the attacker being aimed at
+ * @returns {{held: number, capped: boolean, switching: boolean}}
+ */
+export function previewManeuverAim(aimerToken, targetToken) {
+  const aim = readAim(aimerToken);
+  const targetId = tokenDoc(targetToken)?.id ?? null;
+  const onTarget = !!targetId && aim?.targetId === targetId;
+  const held = Math.min(MAX_STACKS, Math.max(0, aim?.stacks ?? 0));
+
+  return {
+    held: onTarget ? held : 0,
+    capped: onTarget && held >= MAX_STACKS,
+    switching: !!aim?.targetId && !onTarget,
+  };
+}
+
+/**
+ * Add the maneuver's single stack toward the attacker, reporting what the
+ * defender held before and after.
+ *
+ * Deliberately routed through addAimStackOn rather than writing the flag
+ * directly: switching an aim onto a new target costs stacks, and Duelist's Stance
+ * changes what a switch costs. The maneuver has no business having its own
+ * opinion about either — it buys one stack, on the same terms as any other.
+ *
+ * @param {TokenDocument|Token} aimerToken
+ * @param {TokenDocument|Token} targetToken
+ * @returns {Promise<{before: number, after: number}>}
+ */
+export async function grantManeuverAim(aimerToken, targetToken) {
+  const aimer = tokenDoc(aimerToken);
+  const target = tokenDoc(targetToken);
+  if (!aimer || !target) return { before: 0, after: 0 };
+
+  const { held } = previewManeuverAim(aimer, target);
+  await addAimStackOn(aimer, target, livePerks(aimer.actor));
+
+  return { before: held, after: readAim(aimer)?.stacks ?? 0 };
+}
+
 /* -------------------------------------------- */
 /*  Attack interaction                          */
 /* -------------------------------------------- */
@@ -336,6 +466,37 @@ export function abilityIgnoresAim(ability) {
     if (ability.name === name) return true;
   }
   return false;
+}
+
+/**
+ * Abilities that GRANT Aim when their attack lands, keyed exactly like
+ * AIM_NEUTRAL_ABILITIES above: the localisation key first, the English name as a
+ * fallback for a hand-made copy that never got one.
+ *
+ * Perfect Opening (Rafinovaný manévr, in both its action costs) is the whole
+ * list. The blow is a set-up rather than a finisher, so landing it leaves the
+ * duellist better aimed than they started: two Aim on the target for an ordinary
+ * hit, three when it lands as a critical.
+ */
+const AIM_GRANT_ABILITIES = new Map([
+  [
+    "REDSTEEL.Items.PerfectOpening.name",
+    { name: "Perfect Opening", normal: 2, critical: 3 },
+  ],
+  [
+    "REDSTEEL.Items.PerfectOpeningHastened.name",
+    { name: "Perfect Opening (Hastened)", normal: 2, critical: 3 },
+  ],
+]);
+
+/** What an ability grants for a landed hit, or null when it grants nothing. */
+function aimGrantForAbility(key = null, name = null) {
+  if (key && AIM_GRANT_ABILITIES.has(key)) return AIM_GRANT_ABILITIES.get(key);
+  if (!name) return null;
+  for (const grant of AIM_GRANT_ABILITIES.values()) {
+    if (grant.name === name) return grant;
+  }
+  return null;
 }
 
 /**
@@ -442,19 +603,25 @@ export async function resolveAimOnAttack({
       // Attacking somebody else: Advanced Aim holds the aim intact and unspent,
       // otherwise it is broken outright.
       if (!perks.improved) await clearAim(aimer);
-    } else if (perks.reduction) {
+    } else if (perks.reduction || perks.laceration) {
       // Aim reduction — what this costs depends on whether the attack lands, and
       // on whether it lands as a critical, so park it and settle later. The live
       // profile travels with the record: by the time Apply Damage runs there is
       // no weapon context left to re-derive it from, and the blade may well have
       // been swapped since.
+      //
+      // Laceration parks on the same record even with no reduction profile
+      // behind it, because it too is an offer that only exists once the attack
+      // is known to have landed. `reduction: null` then says exactly that: this
+      // hit costs the whole aim unless Laceration buys it back.
       pending = {
         sceneId: aimer.document?.parent?.id ?? canvas?.scene?.id ?? null,
         tokenId: aimer.id,
         targetId: aim.targetId,
         stamp: aim.stamp ?? 0,
         sneak: !!sneak,
-        reduction: perks.reduction,
+        reduction: perks.reduction ?? null,
+        laceration: !!perks.laceration,
       };
     } else {
       await clearAim(aimer);
@@ -476,17 +643,84 @@ export async function resolveAimOnAttack({
 }
 
 /**
+ * Laceration (Sword Dancer) — what this landed attack may still sacrifice.
+ *
+ * The rule fires after the hit, so the offer only exists while the attack is
+ * parked: the entry proves the blow went at the aimed target with the blade in
+ * hand, and the aim on the token is what there is left to spend. Both halves
+ * are checked, since the player may have re-aimed by hand between rolling and
+ * applying, in which case the parked attack no longer owns those stacks.
+ *
+ * Read by the Apply Damage dialog to build the control and by the GM apply to
+ * re-check it — the payload arrives over the socket, so nothing in it is
+ * trusted.
+ *
+ * @param {Actor}  actor          the attacker
+ * @param {string} targetTokenId  the token the damage is being applied to
+ * @returns {{available: boolean, stacks: number, sneak: boolean}}
+ */
+export function getLacerationOffer(actor, targetTokenId) {
+  const none = { available: false, stacks: 0, sneak: false };
+  if (!actor || !targetTokenId) return none;
+
+  const entry = readPending(actor).find(
+    (p) => p.laceration && p.targetId === targetTokenId,
+  );
+  if (!entry) return none;
+
+  const aim = readAim(pendingToken(entry));
+  // Re-aimed or already spent by hand since the attack: those stacks are not
+  // this attack's to sacrifice.
+  if (!aim || aim.targetId !== entry.targetId || (aim.stamp ?? 0) !== entry.stamp) {
+    return none;
+  }
+
+  const stacks = Math.min(MAX_STACKS, Math.max(0, aim.stacks ?? 0));
+  return { available: stacks > 0, stacks, sneak: !!entry.sneak };
+}
+
+/**
+ * Tag the attack just parked as a critical failure.
+ *
+ * Sword Dancer halves what a miss costs, but a fumble is explicitly carved out:
+ * a critical failure still burns every stack. The attack roll does not exist yet
+ * when resolveAimOnAttack parks the record, so getAttackRolls calls back here
+ * once the dice have landed and marks the entry it just created — the newest one
+ * on the queue, since nothing else can have been pushed in between.
+ *
+ * Silent when nothing is parked: no perk was live, so the aim was already spent
+ * outright and there is nothing left to reduce.
+ */
+export async function markAimCritFail(actor) {
+  const queue = readPending(actor);
+  if (!queue.length) return;
+  queue[queue.length - 1] = { ...queue[queue.length - 1], critFail: true };
+  await writePending(actor, queue);
+}
+
+/**
  * Settle a parked aim as a HIT, from Apply Damage: a normal hit costs one stack,
  * a critical none, and a landed Sneak Attack costs nothing at all under the Sword
  * Dancer profile. Servant of the Sword's grant lands on top of whichever it was.
  *
  * Runs on the GM, since that is where applyDamageAsGM executes.
  *
+ * Laceration is settled here too: Aim sacrificed into the wound is the entire
+ * cost of the hit, so sacrificing even one stack means nothing further is taken
+ * on top.
+ *
  * @param {Actor}    actor        the attacker
  * @param {string[]} targetIds    tokens the damage was applied to
  * @param {string}   mode         "normal" | "critical" | "breakthrough"
+ * @param {object}   [opts]
+ * @param {Record<string, number>} [opts.laceration] targetId → stacks sacrificed
  */
-export async function resolveAimOnDamage(actor, targetIds = [], mode = "normal") {
+export async function resolveAimOnDamage(
+  actor,
+  targetIds = [],
+  mode = "normal",
+  { laceration = {} } = {},
+) {
   const queue = readPending(actor);
   if (!queue.length) return;
 
@@ -505,19 +739,112 @@ export async function resolveAimOnDamage(actor, targetIds = [], mode = "normal")
     return;
   }
 
-  const profile = entry.reduction ?? REDUCTION_BASE;
-  let loss = profile.hitLoss;
-  if (mode === "critical") loss = profile.critLoss;
-  else if (entry.sneak) loss = profile.sneakHitLoss;
+  // No profile at all means the attack was only parked so Laceration could be
+  // offered: with nothing sacrificed, the hit spends the aim outright, exactly
+  // as it would have at attack time.
+  const profile = entry.reduction ?? null;
+  const before = aim.stacks ?? 0;
+  const spent = Math.min(before, Math.max(0, Math.round(laceration[entry.targetId] ?? 0)));
 
-  const grant = entry.sneak && profile.sneakGrant ? 1 : 0;
-  await setAim(aimer, entry.targetId, aim.stacks - loss + grant);
+  let loss;
+  if (spent > 0) loss = spent;
+  else if (!profile) loss = before;
+  else if (mode === "critical") loss = profile.critLoss;
+  else if (entry.sneak) loss = profile.sneakHitLoss;
+  else loss = profile.hitLoss;
+
+  const grant = entry.sneak && profile?.sneakGrant ? 1 : 0;
+  await setAim(aimer, entry.targetId, before - loss + grant);
+}
+
+/**
+ * Grant the Aim an ability owes for a landed hit — Perfect Opening, today.
+ *
+ * Called from Apply Damage right after resolveAimOnDamage, so a duellist's
+ * leftover stacks are settled first and this piles on top of whatever survived
+ * (still capped at 4). Damage landing is the only "the attack hit" signal in the
+ * system, which is what makes this the right place: an attack that never gets
+ * here missed, and the rules give a miss a different, smaller grant that the GM
+ * hands out by hand.
+ *
+ * Only a critical is worth the larger grant. Breakthrough damage is a hit like
+ * any other and pays the ordinary amount.
+ *
+ * The aim moves to whichever token took the damage: an aim already pointing
+ * somewhere else is burned by the switch, exactly as adding a stack by hand
+ * would burn it.
+ *
+ * Runs on the GM, since that is where applyDamageAsGM executes.
+ *
+ * @param {object}   opts
+ * @param {Actor}    opts.actor        the attacker
+ * @param {string}   [opts.tokenId]    the attacking token (aim lives on tokens)
+ * @param {string}   [opts.sceneId]    scene that token is on
+ * @param {string[]} [opts.targetIds]  tokens the damage was applied to
+ * @param {string}   [opts.mode]       "normal" | "critical" | "breakthrough"
+ * @param {string}   [opts.abilityKey] localisation key off the attack card
+ * @param {string}   [opts.abilityName] raw ability name off the attack card
+ * @param {ChatMessage} [opts.message] the attack card, to stamp as already paid
+ */
+export async function grantAimOnDamage({
+  actor,
+  tokenId = null,
+  sceneId = null,
+  targetIds = [],
+  mode = "normal",
+  abilityKey = null,
+  abilityName = null,
+  message = null,
+} = {}) {
+  if (!actor) return;
+  const grant = aimGrantForAbility(abilityKey, abilityName);
+  if (!grant) return;
+
+  const stacks = mode === "critical" ? grant.critical : grant.normal;
+  if (!(stacks > 0)) return;
+
+  const aimer =
+    game.scenes?.get(sceneId)?.tokens?.get(tokenId) ?? getAimerToken(actor);
+  if (!aimer) return;
+
+  const targetId = targetIds.find((id) => id && id !== aimer.id) ?? null;
+  if (!targetId) return;
+
+  // Applying the same card twice must not pay twice — the GM re-opening Apply
+  // Damage to correct a target is routine, and without this the second press
+  // would walk the aim straight to the cap.
+  const paid = message?.getFlag(SYSTEM_ID, "aimGranted") ?? [];
+  if (paid.includes(targetId)) return;
+
+  const aim = readAim(aimer);
+  const before = aim?.targetId === targetId ? (aim.stacks ?? 0) : 0;
+  const after = Math.min(MAX_STACKS, before + stacks);
+
+  await setAim(aimer, targetId, after);
+  if (message) {
+    await message.setFlag(SYSTEM_ID, "aimGranted", [...paid, targetId]);
+  }
+
+  const target = game.scenes?.get(sceneId)?.tokens?.get(targetId) ?? null;
+  await ChatMessage.create({
+    speaker: ChatMessage.getSpeaker({ actor }),
+    content: `<div style="text-align:center;">${game.i18n.format(
+      "REDSTEEL.Aim.Granted",
+      {
+        actor: actor.name,
+        stacks: after - before,
+        target: target?.name ?? game.i18n.localize("REDSTEEL.Aim.UnknownTarget"),
+        after,
+      },
+    )}</div>`,
+  });
 }
 
 /**
  * Settle whatever is still parked as a MISS, at the end of the turn: no damage
  * was ever applied, so the attack failed. That costs the whole aim, or half of it
- * rounded up under the Sword Dancer profile.
+ * rounded up under the Sword Dancer profile — unless the roll was a critical
+ * failure, which costs the whole aim under every profile.
  *
  * This is the one inferred branch in the system — a hit the GM narrated without
  * pressing Apply Damage looks identical to a miss from here — so it reports the
@@ -541,12 +868,17 @@ async function sweepPendingAim(actor) {
       continue;
     }
 
-    const profile = entry.reduction ?? REDUCTION_BASE;
+    const profile = entry.reduction ?? null;
     const before = aim.stacks ?? 0;
+    // Half on an ordinary miss under Sword Dancer, but a critical failure burns
+    // the lot whatever the profile says — as does a miss with no profile behind
+    // it (a Laceration-only park).
     const loss =
-      profile.missLoss === "half" ? Math.ceil(before / 2) : before;
+      profile?.missLoss === "half" && !entry.critFail
+        ? Math.ceil(before / 2)
+        : before;
     // A missed Sneak Attack still earns Servant of the Sword its stack.
-    const grant = entry.sneak && profile.sneakGrant ? 1 : 0;
+    const grant = entry.sneak && profile?.sneakGrant ? 1 : 0;
     const after = Math.min(MAX_STACKS, Math.max(0, before - loss + grant));
 
     await setAim(aimer, entry.targetId, after);

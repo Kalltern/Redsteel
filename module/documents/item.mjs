@@ -350,7 +350,15 @@ export class RedsteelItem extends Item {
 
       if (this.type === "ability") {
         this.system.typeOptions = ["melee", "ranged", "other"];
-        this.system.classOptions = ["movement", "attack", "defense", "stance"];
+        this.system.classOptions = [
+          "movement",
+          "attack",
+          "defense",
+          "stance",
+          // Velení — see module/utils/commands.mjs. Rebuilt here every
+          // prepare, so template.json alone would never reach the sheet.
+          "command",
+        ];
       }
     }
 

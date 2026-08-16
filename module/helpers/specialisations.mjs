@@ -18,6 +18,14 @@ import {
  *  column   – column in the tree (may be fractional for centering)
  *  requires – ids of nodes that must ALL be unlocked before this one;
  *             every entry is also drawn as a connecting line
+ *  hiddenLinks – subset of `requires` that is enforced but NOT drawn. Rank
+ *             hubs gate half a tree at once, so on a long chain the tether back
+ *             to the hub can cross the whole panel and cut through unrelated
+ *             stars. Listing it here keeps the requirement real (unlock, relock
+ *             and the description text are all unaffected — they read
+ *             `requires`) while letting the figure stay legible. Use sparingly:
+ *             a hidden gate is only honest when the node's own description
+ *             names it.
  *  icon     – optional image path for future node graphics ("" for now)
  *  passive  – null for manual ("shine up only") nodes, or:
  *               changes         – ActiveEffect changes ({key, mode, value}),
@@ -116,19 +124,33 @@ const CODE_AUTOMATED_NODES = {
   hoplite: ["nabodnuti", "velkeTvory"],
   champion: ["odvetnyUder", "riposta"],
   skirmisher: ["utokSPohybem"],
-  // utils/aim.mjs — mireniRedukce is Sword Servant's aimReduction on the
-  // duellist's blade; postojMireni carries stacks across a target switch.
-  swordDancer: ["mireniRedukce", "postojMireni"],
-  // utils/mentalDuel.mjs — opens the mental duel to the node's owner.
-  mentalist: ["ovladnuti"],
+  // utils/aim.mjs — duelistuvPostoj is the stance itself (one-handed sword,
+  // off hand free or holding a fencing dagger), which aimPerks tests as `blade`
+  // and every perk below gates on; mireniRedukce upgrades the Duelist II aim
+  // reduction; krvaveBodnuti is Laceration, offered in the Apply Damage dialog
+  // (utils/applyDamage.mjs); postojMireni carries stacks across a target switch;
+  // vyhodnyManevr buys an Aim off a defense that held, offered as a button on
+  // the defense card (utils/advantageousManeuver.mjs).
+  swordDancer: [
+    "duelistuvPostoj",
+    "krvaveBodnuti",
+    "mireniRedukce",
+    "postojMireni",
+    "vyhodnyManevr",
+  ],
+  // utils/mentalDuel.mjs — ovladnuti unlocks "Seize control" on the winner's
+  // banner; vysati unlocks "Drain" (+2 Mind to the victor, ends the duel).
+  mentalist: ["ovladnuti", "vysati"],
   // documents/actor.mjs (armour penalty, Lindar) + utils/castSpell.mjs
   // (Lindar's strikes).
   veneficus: ["postihZbroje", "lindar", "lindarovyUdery"],
   // utils/magicSkillBonuses.mjs — the curse path.
   maleficarum: ["zakleti"],
-  // utils/abilityGrants.mjs (Blood Pact) + utils/applyDamage.mjs (Blood Shield).
+  // utils/abilityGrants.mjs (Blood Pact) + utils/applyDamage.mjs (Blood Shield)
+  // + utils/wrathOfBlood.mjs (Wrath of Blood — Spell Power and pool capacity
+  // that follow the caster's own Bleeding stacks).
   // The rank nodes carry passives, so they are already covered.
-  bloodSchool: ["krvavyPakt", "krvavyStit"],
+  bloodSchool: ["krvavyPakt", "krvavyStit", "hnevKrve"],
 };
 
 // Crit-degree triggers and state-gated immunities are already declared as data
@@ -662,6 +684,7 @@ for (const [specId, spec] of Object.entries(SPEC_DEFS)) {
       node.y ??= coords[1];
     }
     node.requires ??= [];
+    node.hiddenLinks ??= [];
     node.icon ??= "";
     node.passive ??= null;
   }
@@ -744,6 +767,9 @@ export function prepareSpecialisationTrees(actor) {
     const links = [];
     for (const [nodeId, node] of Object.entries(def.nodes)) {
       for (const reqId of node.requires ?? []) {
+        // Enforced but deliberately undrawn — see `hiddenLinks` in the node
+        // format notes at the top of this file.
+        if ((node.hiddenLinks ?? []).includes(reqId)) continue;
         const from = byId[reqId];
         const to = byId[nodeId];
         if (!from || !to) continue;

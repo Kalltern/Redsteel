@@ -3,6 +3,8 @@ import { withRollBias, applyDesperateCrit, tagRollSkill } from "./rollAdvantage.
 import { getDefenseRerollTokens } from "./rerolls.mjs";
 import { getBaneProfile } from "./baneCombat.mjs";
 import { buildTempHealthGrantFlag } from "./tempHealthGrant.mjs";
+import { buildManeuverFlag } from "./advantageousManeuver.mjs";
+import { getAimDefenseBonus } from "./aim.mjs";
 import {
   OVERWHELM_MAX_STACKS,
   OVERWHELM_PENALTY_PER_STACK,
@@ -16,6 +18,196 @@ import {
   resolveDefenderToken,
   stacksFromSources,
 } from "./overwhelm.mjs";
+
+/** "Úspěšný zásah, který je o 60 silnější než protivníkova obrana." */
+const CRITICAL_GAP = 60;
+
+/**
+ * The defender's armor, as the block every defense card ends with. Typed armor
+ * is listed only where it exists, so a plain leather jerkin shows one row.
+ *
+ * Exported because a rerolled defense card has to redraw it — the numbers are
+ * read live off the actor, which is where they were read from the first time.
+ *
+ * @param {Actor} actor
+ * @returns {string} HTML, or "" when the actor carries no armor block.
+ */
+export function renderArmorTable(actor) {
+  const armor = actor?.system?.armor;
+  if (!armor) return "";
+
+  const armorRows = [
+    ["Armor", armor.total],
+    ["Acid Armor", armor.acid?.total],
+    ["Fire Armor", armor.fire?.total],
+    ["Frost Armor", armor.frost?.total],
+    ["Lightning Armor", armor.lightning?.total],
+    ["Magic Armor", armor.magic?.total],
+  ].filter(([label, value]) => {
+    if (label === "Armor") return true;
+    return value > 0;
+  });
+
+  return `
+      <table style="width:100%;text-align:center;font-size:15px;">
+        <tr><th>Type</th><th>Value</th></tr>
+        ${armorRows
+          .map(([label, value]) => `<tr><td>${label}</td><td>${value}</td></tr>`)
+          .join("")}
+      </table>
+    `;
+}
+
+/**
+ * Resolve a defense against the attack it is answering.
+ *
+ * Defense is a versus Test ("Alternativní forma obrany, versus Test Úhybu
+ * proti Zásahu oponenta"), so the two margins are compared directly and the
+ * gap between them is the number the rules read. Two things outrank that plain
+ * comparison, in this order:
+ *
+ * 1. A *natural* critical roll is absolute. It settles the contest on its own
+ *    and the margins stop mattering, so a natural 1 on defense is a Critical
+ *    Defense even against an attack that was 69 ahead. A natural critical
+ *    failure on defense reads the same way from the other end: the guard came
+ *    apart, so the blow lands critically whatever the margins said.
+ *    Only the *other side's* natural critical can deny one. A 60-clear margin
+ *    cannot, which is the whole point of calling the natural roll absolute.
+ *    Denied criticals fall back to whoever rolled closer to 1 on the d100,
+ *    with a tie going to the attacker as every versus Test does.
+ * 2. Failing any natural critical, a side that is 60 clear on margin is
+ *    critical ("Úspěšný zásah, který je o 60 silnější než protivníkova
+ *    obrana"), and below that the plain margin comparison decides.
+ *
+ * Advisory only: the attack card keeps its Apply Damage buttons, because
+ * whether a blow lands is still the GM's call.
+ *
+ * Module-level (rather than a closure inside `defenseRoll`) because a rerolled
+ * defense card has to redraw this block from the answered attack stored on the
+ * card it was rerolled from — see `flags.redsteel.versusAttack`.
+ *
+ * @param {object|null} attack  the answered attack: `{margin, criticalSuccess,
+ *   criticalFailure, d100}`. A null/absent margin means "not answering a card",
+ *   and yields an empty block.
+ * @param {object} params
+ * @param {number} params.defenseTotal   this defense's own margin
+ * @param {number|null} params.defenseD100 the raw die, for the crit tiebreak
+ * @param {boolean} params.defenseCrit   natural critical success on defense
+ * @param {boolean} params.defenseCritFailure natural critical failure on defense
+ * @returns {{html: string, versus: object|null}}
+ */
+export function renderVersusBlock(
+  attack,
+  {
+    defenseTotal,
+    defenseD100 = null,
+    defenseCrit = false,
+    defenseCritFailure = false,
+  } = {},
+) {
+  // `== null` catches both null and undefined before the cast, because
+  // Number(null) is 0 and a hotbar defense would otherwise contest a phantom
+  // attack of margin zero.
+  const parsedMargin = attack?.margin == null ? NaN : Number(attack.margin);
+  if (!Number.isFinite(parsedMargin)) return { html: "", versus: null };
+  const knownAttackMargin = parsedMargin;
+
+  const attackCrit = attack?.criticalSuccess === true;
+  const attackCritFailure = attack?.criticalFailure === true;
+  const attackD100 = attack?.d100 ?? null;
+
+  const gap = defenseTotal - knownAttackMargin;
+
+  // Which side each natural critical favours. A fumble helps the other guy.
+  const naturalForDefense = defenseCrit || attackCritFailure;
+  const naturalForAttack = defenseCritFailure || attackCrit;
+
+  let blocked;
+  let critical = null; // "defense" | "hit" | null
+  let onDice = false;
+
+  if (naturalForDefense && naturalForAttack) {
+    // Two natural criticals pulling opposite ways deny each other, and the
+    // margins are ignored entirely: whoever rolled closer to 1 takes it.
+    if (attackD100 != null && defenseD100 != null) {
+      blocked = defenseD100 < attackD100;
+      onDice = true;
+    } else {
+      blocked = gap > 0;
+    }
+  } else if (naturalForDefense) {
+    blocked = true;
+    critical = "defense";
+  } else if (naturalForAttack) {
+    blocked = false;
+    critical = "hit";
+  } else if (gap >= CRITICAL_GAP) {
+    blocked = true;
+    critical = "defense";
+  } else if (-gap >= CRITICAL_GAP) {
+    blocked = false;
+    critical = "hit";
+  } else {
+    blocked = gap > 0;
+  }
+
+  const outcome = critical
+    ? game.i18n.localize(
+        critical === "defense"
+          ? "REDSTEEL.Versus.CriticalDefense"
+          : "REDSTEEL.Versus.CriticalHit",
+      )
+    : !onDice && gap === 0
+      ? game.i18n.localize("REDSTEEL.Versus.Tie")
+      : game.i18n.localize(
+          blocked ? "REDSTEEL.Versus.Blocked" : "REDSTEEL.Versus.Hit",
+        );
+
+  const detail = game.i18n.format("REDSTEEL.Versus.Detail", {
+    attack: knownAttackMargin,
+    defense: defenseTotal,
+    gap: gap > 0 ? `+${gap}` : gap,
+  });
+
+  // The margin line is actively misleading when the dice decided it, so say
+  // so rather than leaving a +53 sitting under a "Hit".
+  const diceNote = onDice
+    ? `<div class="rs-versus-note">${game.i18n.format(
+        "REDSTEEL.Versus.DeniedOnDice",
+        { attack: attackD100, defense: defenseD100 },
+      )}</div>`
+    : "";
+
+  // Coloured from the defender's point of view, because this is the
+  // defender's card: gold only for their own critical, red for a critical
+  // landing on them.
+  const state =
+    critical === "defense"
+      ? "is-critical-defense"
+      : critical === "hit"
+        ? "is-critical-hit"
+        : blocked
+          ? "is-blocked"
+          : "is-hit";
+
+  const html = `
+      <div class="rs-versus ${state}">
+        <div class="rs-versus-outcome">${outcome}</div>
+        <div class="rs-versus-detail">${detail}</div>
+        ${diceNote}
+      </div>`;
+
+  return {
+    html,
+    versus: {
+      attackMargin: knownAttackMargin,
+      gap,
+      blocked,
+      critical,
+      onDice,
+    },
+  };
+}
 
 export async function defenseRoll({
   actor,
@@ -80,12 +272,31 @@ export async function defenseRoll({
     return override === null ? stacks : Number(override) || 0;
   };
 
+  /**
+   * The token this defense is answering, for perks that care who is swinging
+   * (today: the Duelist VII aim bonus). Read at roll time, not dialog time.
+   *
+   * Deliberately independent of combat state. `pendingAttackerId` is only ever
+   * populated while Overwhelm is tracking, which means a started encounter — so
+   * borrowing it wholesale silently switched the perk off outside combat, and
+   * off for anyone the tracker was not following. Who is swinging at you is a
+   * fact about the attack, not about the initiative order, so the last branch
+   * asks the chat log directly rather than giving up.
+   *
+   * Order is strongest evidence first: an id handed over by a Defend button is
+   * the card naming its own author. Failing that, and only while the chips are
+   * live to override it, the attacker the Overwhelm block settled on — which
+   * respects a chip the GM took back out, their way of saying "not that one".
+   */
+  const defendingAgainstId = () => {
+    if (attackerTokenId) return attackerTokenId;
+    if (isOverwhelmTracked()) return pendingAttackerId;
+    return inferAttackerTokenId(defenderToken?.id);
+  };
+
   /* -------------------------------------------- */
   /*  VERSUS THE ATTACK                           */
   /* -------------------------------------------- */
-
-  /** "Úspěšný zásah, který je o 60 silnější než protivníkova obrana." */
-  const CRITICAL_GAP = 60;
 
   // `== null` catches both null and undefined before the cast, because
   // Number(null) is 0 and a hotbar defense would otherwise contest a phantom
@@ -96,141 +307,8 @@ export async function defenseRoll({
     ? parsedAttackMargin
     : null;
 
-  /**
-   * Resolve this defense against the attack it is answering.
-   *
-   * Defense is a versus Test ("Alternativní forma obrany, versus Test Úhybu
-   * proti Zásahu oponenta"), so the two margins are compared directly and the
-   * gap between them is the number the rules read. Two things outrank that plain
-   * comparison, in this order:
-   *
-   * 1. A *natural* critical roll is absolute. It settles the contest on its own
-   *    and the margins stop mattering, so a natural 1 on defense is a Critical
-   *    Defense even against an attack that was 69 ahead. A natural critical
-   *    failure on defense reads the same way from the other end: the guard came
-   *    apart, so the blow lands critically whatever the margins said.
-   *    Only the *other side's* natural critical can deny one. A 60-clear margin
-   *    cannot, which is the whole point of calling the natural roll absolute.
-   *    Denied criticals fall back to whoever rolled closer to 1 on the d100,
-   *    with a tie going to the attacker as every versus Test does.
-   * 2. Failing any natural critical, a side that is 60 clear on margin is
-   *    critical ("Úspěšný zásah, který je o 60 silnější než protivníkova
-   *    obrana"), and below that the plain margin comparison decides.
-   *
-   * Advisory only: the attack card keeps its Apply Damage buttons, because
-   * whether a blow lands is still the GM's call.
-   *
-   * @param {object} params
-   * @param {number} params.defenseTotal   this defense's own margin
-   * @param {number|null} params.defenseD100 the raw die, for the crit tiebreak
-   * @param {boolean} params.defenseCrit   natural critical success on defense
-   * @param {boolean} params.defenseCritFailure natural critical failure on defense
-   * @returns {{html: string, versus: object|null}}
-   */
-  const resolveVersusAttack = ({
-    defenseTotal,
-    defenseD100 = null,
-    defenseCrit = false,
-    defenseCritFailure = false,
-  }) => {
-    if (knownAttackMargin === null) return { html: "", versus: null };
-
-    const attackCrit = attack?.criticalSuccess === true;
-    const attackCritFailure = attack?.criticalFailure === true;
-    const attackD100 = attack?.d100 ?? null;
-
-    const gap = defenseTotal - knownAttackMargin;
-
-    // Which side each natural critical favours. A fumble helps the other guy.
-    const naturalForDefense = defenseCrit || attackCritFailure;
-    const naturalForAttack = defenseCritFailure || attackCrit;
-
-    let blocked;
-    let critical = null; // "defense" | "hit" | null
-    let onDice = false;
-
-    if (naturalForDefense && naturalForAttack) {
-      // Two natural criticals pulling opposite ways deny each other, and the
-      // margins are ignored entirely: whoever rolled closer to 1 takes it.
-      if (attackD100 != null && defenseD100 != null) {
-        blocked = defenseD100 < attackD100;
-        onDice = true;
-      } else {
-        blocked = gap > 0;
-      }
-    } else if (naturalForDefense) {
-      blocked = true;
-      critical = "defense";
-    } else if (naturalForAttack) {
-      blocked = false;
-      critical = "hit";
-    } else if (gap >= CRITICAL_GAP) {
-      blocked = true;
-      critical = "defense";
-    } else if (-gap >= CRITICAL_GAP) {
-      blocked = false;
-      critical = "hit";
-    } else {
-      blocked = gap > 0;
-    }
-
-    const outcome = critical
-      ? game.i18n.localize(
-          critical === "defense"
-            ? "REDSTEEL.Versus.CriticalDefense"
-            : "REDSTEEL.Versus.CriticalHit",
-        )
-      : !onDice && gap === 0
-        ? game.i18n.localize("REDSTEEL.Versus.Tie")
-        : game.i18n.localize(
-            blocked ? "REDSTEEL.Versus.Blocked" : "REDSTEEL.Versus.Hit",
-          );
-
-    const detail = game.i18n.format("REDSTEEL.Versus.Detail", {
-      attack: knownAttackMargin,
-      defense: defenseTotal,
-      gap: gap > 0 ? `+${gap}` : gap,
-    });
-
-    // The margin line is actively misleading when the dice decided it, so say
-    // so rather than leaving a +53 sitting under a "Hit".
-    const diceNote = onDice
-      ? `<div class="rs-versus-note">${game.i18n.format(
-          "REDSTEEL.Versus.DeniedOnDice",
-          { attack: attackD100, defense: defenseD100 },
-        )}</div>`
-      : "";
-
-    // Coloured from the defender's point of view, because this is the
-    // defender's card: gold only for their own critical, red for a critical
-    // landing on them.
-    const state =
-      critical === "defense"
-        ? "is-critical-defense"
-        : critical === "hit"
-          ? "is-critical-hit"
-          : blocked
-            ? "is-blocked"
-            : "is-hit";
-
-    const html = `
-      <div class="rs-versus ${state}">
-        <div class="rs-versus-outcome">${outcome}</div>
-        <div class="rs-versus-detail">${detail}</div>
-        ${diceNote}
-      </div>`;
-
-    return {
-      html,
-      versus: {
-        attackMargin: knownAttackMargin,
-        gap,
-        blocked,
-        critical,
-        onDice,
-      },
-    };
-  };
+  /** This defense against the attack it is answering. See {@link renderVersusBlock}. */
+  const resolveVersusAttack = (defense) => renderVersusBlock(attack, defense);
 
   const baneProfile = getBaneProfile(actor);
 
@@ -421,6 +499,7 @@ export async function defenseRoll({
             )}</div>`
       }
       <div class="rs-overwhelm"></div>
+      <div class="rs-aim-defense"></div>
 
         ${
           hasLongReach
@@ -558,6 +637,57 @@ export async function defenseRoll({
 
       renderOverwhelmBlock(html);
     });
+
+    // Taking a chip out can change who this defense believes it is answering,
+    // which is the one thing the Aim hint below is keyed on — so it is redrawn
+    // from here rather than once when the dialog opens, and never claims a
+    // bonus the roll will not actually take.
+    renderAimDefenseHint(html);
+  }
+
+  /**
+   * Duelist VII, announced before the player picks a defense type: the bonus is
+   * melee-only, so knowing it is live is exactly what decides parry over dodge.
+   * Silent whenever there is nothing to claim.
+   */
+  function renderAimDefenseHint(html) {
+    const container = html.find(".rs-aim-defense");
+    if (!container.length) return;
+
+    const { perk, aimTargetId, held, attackerTokenId: against, stacks, bonus } =
+      getAimDefenseBonus({
+        actor,
+        token: defenderToken,
+        weapon: activeWeapon,
+        context,
+        attackerTokenId: defendingAgainstId(),
+      });
+
+    // Nothing to report for a defender who has no aim out, or no perk to spend
+    // it on. Everyone else gets a straight answer either way.
+    if (!perk || !aimTargetId || !held) return container.html("");
+
+    const name = (id) =>
+      (id ? tokenName(id) : null) ??
+      game.i18n.localize("REDSTEEL.Aim.UnknownTarget");
+
+    container.html(
+      bonus > 0
+        ? `<div class="rs-versus-target">${game.i18n.format(
+            "REDSTEEL.Aim.DefenseHint",
+            { stacks, bonus },
+          )}</div>`
+        : `<div class="rs-versus-target rs-aim-mismatch">${game.i18n.format(
+            "REDSTEEL.Aim.DefenseMismatch",
+            { target: name(aimTargetId), attacker: name(against) },
+          )}</div>`,
+    );
+  }
+
+  /** A token's name, looked up in the scene this defense is happening on. */
+  function tokenName(tokenId) {
+    const scene = defenderToken?.parent ?? canvas?.scene ?? null;
+    return scene?.tokens?.get(tokenId)?.name ?? null;
   }
 
   /* -------------------------------------------- */
@@ -646,6 +776,30 @@ export async function defenseRoll({
       const defenseRating = defense.rating;
       const abilityDefense = Number(ability?.system?.defense) || 0;
 
+      // Duelist VII: parrying the opponent you are aiming at is worth +5% per
+      // stack. Passive — the aim is not spent, so it is still there to attack
+      // with on the duellist's own turn.
+      const aimDefense = getAimDefenseBonus({
+        actor,
+        token: defenderToken,
+        weapon,
+        context,
+        attackerTokenId: defendingAgainstId(),
+      });
+
+      // Advantageous Maneuver: a parry that holds may be turned into an Aim on
+      // the attacker for Stamina. Built here rather than in the card, because
+      // this is the only scope that knows both the weapon context that gates it
+      // and the attacker it would point at.
+      const maneuver = buildManeuverFlag({
+        actor,
+        token: defenderToken,
+        weapon,
+        context,
+        attackerTokenId: defendingAgainstId(),
+        defenseKey: "meleeDefense",
+      });
+
       const criticalSuccessThreshold =
         defense.criticalSuccessThreshold +
         mainCrit +
@@ -665,10 +819,11 @@ export async function defenseRoll({
         longReachPenalty,
         specDefense: weaponSpec.defense,
         baneDefense: useBane ? baneProfile.defense : 0,
+        aimDefense: aimDefense.bonus,
       };
 
       const roll = new Roll(
-        "@defenseRating + @weaponDefense + @doctrineDefenseBonus + @abilityDefense + @overwhelmPenalty + @longReachPenalty + @specDefense + @baneDefense - 1d100",
+        "@defenseRating + @weaponDefense + @doctrineDefenseBonus + @abilityDefense + @overwhelmPenalty + @longReachPenalty + @specDefense + @baneDefense + @aimDefense - 1d100",
         withRollBias(rollData, actor),
       );
 
@@ -685,6 +840,8 @@ export async function defenseRoll({
           deflectValue: Number(actor.system.defenseDeflect) || 0,
           defenseKey: "meleeDefense",
           useBane,
+          aimDefense,
+          maneuver,
         },
       );
     };
@@ -1113,6 +1270,8 @@ export async function defenseRoll({
       deflectValue = 0,
       defenseKey = "meleeDefense",
       useBane = false,
+      aimDefense = null,
+      maneuver = null,
     } = {},
   ) {
     const rollResult = roll.dice[0].total;
@@ -1141,30 +1300,7 @@ export async function defenseRoll({
     const critSuccess = rollResult <= successThreshold;
     const critFailure = rollResult >= failureThreshold;
 
-    const armor = actor.system.armor;
-
-    const armorRows = [
-      ["Armor", armor.total],
-      ["Acid Armor", armor.acid.total],
-      ["Fire Armor", armor.fire.total],
-      ["Frost Armor", armor.frost.total],
-      ["Lightning Armor", armor.lightning.total],
-      ["Magic Armor", armor.magic.total],
-    ].filter(([label, value]) => {
-      if (label === "Armor") return true;
-      return value > 0;
-    });
-
-    const armorTable = `
-      <table style="width:100%;text-align:center;font-size:15px;">
-        <tr><th>Type</th><th>Value</th></tr>
-        ${armorRows
-          .map(
-            ([label, value]) => `<tr><td>${label}</td><td>${value}</td></tr>`,
-          )
-          .join("")}
-      </table>
-    `;
+    const armorTable = renderArmorTable(actor);
 
     const traitPills = getTraitPills(actor, "defense");
     if (useBane) {
@@ -1219,6 +1355,14 @@ export async function defenseRoll({
         </b></p>
           <div style="display:flex;justify-content:center;align-items:center;gap:8px;font-size:1.3em;font-weight:bold;">
             ${overwhelm > 0 ? `<p>${game.i18n.localize("REDSTEEL.Overwhelm.Label")}: ${overwhelm * OVERWHELM_PENALTY_PER_STACK}</p>` : ""}
+            ${
+              aimDefense?.bonus > 0
+                ? `<p>${game.i18n.format("REDSTEEL.Aim.DefenseBonus", {
+                    stacks: aimDefense.stacks,
+                    bonus: aimDefense.bonus,
+                  })}</p>`
+                : ""
+            }
           </div>
        ${versus.html}
        ${deflectHTML}
@@ -1234,9 +1378,20 @@ export async function defenseRoll({
           // skill + its governing attribute (dodge→dex, ranged→per, melee→dex
           // unless steelGrip/predatorySenses flips it).
           rerollTokens: getDefenseRerollTokens(actor, defenseKey),
+          // The attack this card answered, kept whole rather than only as the
+          // resolved `versus` below: a reroll of this defense has to contest
+          // the same attack again from a different die, and the crit flags and
+          // raw die are part of that contest.
+          ...(versus.versus ? { versusAttack: attack ?? null } : {}),
           ...(versus.versus ? { versus: versus.versus } : {}),
           ...(tempHealthGrant
             ? { tempHealthGrant: { ...tempHealthGrant, defenseFailed } }
+            : {}),
+          // Carries `defenseFailed` for the same reason the grant above does:
+          // the card is the only place that knows whether the guard held, and
+          // the button hook has nothing else to read it from.
+          ...(maneuver
+            ? { advantageousManeuver: { ...maneuver, defenseFailed } }
             : {}),
         },
       },
