@@ -124,8 +124,8 @@
     "effectType1": "",
     "effectType2": "",
     "effectType3": "",
-    "attributeTest": "",
-    "testModifier": ""
+    "attributeTest": "will",
+    "testModifier": "@spellPower*2"
   },
   "effects": [],
   "folder": "GaSIkEMI2Yi6RoKu",

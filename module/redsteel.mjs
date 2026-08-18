@@ -24,6 +24,17 @@ import {
 } from "./utils/attributeFollowup.mjs";
 import { wireSpeedFollowups } from "./utils/speedTest.mjs";
 import { registerDrugHooks } from "./utils/drugs.mjs";
+import {
+  registerCurrency,
+  getRoster,
+  getPrices,
+  getPrice,
+  purseTotal,
+  canAfford,
+  chargeActor,
+  creditActor,
+  formatPrice,
+} from "./utils/currency.mjs";
 import { registerRollModifier } from "./utils/rollModifier.mjs";
 import { initTooltips } from "./utils/tooltips.mjs";
 import { registerCoreTooltipProviders } from "./utils/tooltipProviders.mjs";
@@ -38,6 +49,7 @@ import {
   registerAbilityGrants,
   syncGrantedAbilities,
   clearGrantSuppression,
+  resyncGrantedAbilities,
 } from "./utils/abilityGrants.mjs";
 import { registerRaceGrants } from "./utils/raceGrants.mjs";
 import {
@@ -56,6 +68,7 @@ import {
   renderVersusBlock,
 } from "./utils/defense.mjs";
 import { registerOverwhelmHooks } from "./utils/overwhelm.mjs";
+import { registerAutoDefense } from "./utils/autoDefense.mjs";
 import { registerWrathOfBlood, syncWrathOfBlood } from "./utils/wrathOfBlood.mjs";
 import {
   registerCommandHooks,
@@ -91,6 +104,7 @@ import {
 } from "./utils/weaponResolver.mjs";
 import { attackActions, autoAttack } from "./utils/attackActions.mjs";
 import { registerCanvasZoom } from "./utils/canvasZoom.mjs";
+import { registerDeadTokenAppearance } from "./utils/deadTokens.mjs";
 import {
   universalAttackLogic,
   rangedAttack,
@@ -123,6 +137,7 @@ import {
   applyEffectsAsGM,
   applyHealingAsGM,
   applyZeroHealthState,
+  endDyingIfHealed,
   getDurabilityItems,
   getDurabilityReductionPerPoint,
   SOCKET,
@@ -314,6 +329,7 @@ Hooks.once("init", function () {
   game.redsteel.adjustEffectAmount =
     RedsteelActiveEffect.adjustEffectAmount.bind(RedsteelActiveEffect);
   game.redsteel.applyZeroHealthState = applyZeroHealthState;
+  game.redsteel.endDyingIfHealed = endDyingIfHealed;
   game.redsteel.advanceCombatFirstAid = advanceCombatFirstAid;
   game.redsteel.resolveEffectDefinition = resolveEffectDefinition;
   game.redsteel.resolveWeaponContext = resolveWeaponContext;
@@ -379,10 +395,22 @@ Hooks.once("init", function () {
   game.redsteel.getAimStacks = getAimStacks;
   game.redsteel.syncGrantedAbilities = syncGrantedAbilities;
   game.redsteel.clearGrantSuppression = clearGrantSuppression;
+  game.redsteel.resyncGrantedAbilities = resyncGrantedAbilities;
   game.redsteel.openRacePicker = openRacePicker;
   game.redsteel.openRaceChoicesDialog = openRaceChoicesDialog;
   game.redsteel.initializeRaceChoices = initializeRaceChoices;
   game.redsteel.convertNpcMovement = convertNpcMovement;
+  // Coinage: the roster is the GM's, and these are how anything charges it.
+  game.redsteel.currency = {
+    roster: getRoster,
+    prices: getPrices,
+    price: getPrice,
+    total: purseTotal,
+    afford: canAfford,
+    charge: chargeActor,
+    credit: creditActor,
+    format: formatPrice,
+  };
   registerAimOverlay();
   registerDynamicInitiative();
   registerRollModifier();
@@ -392,6 +420,7 @@ Hooks.once("init", function () {
   registerAdvantageousManeuver();
   registerDefendButton();
   registerOverwhelmHooks();
+  registerAutoDefense();
   registerWrathOfBlood();
   registerCommandHooks();
   registerRoundDigest();
@@ -400,10 +429,13 @@ Hooks.once("init", function () {
   registerCustomConditions();
   registerFirstAidHealing();
   registerMentalDuelSetting();
+  registerLongRestRations();
+  registerCurrency();
   registerAbilityGrants();
   registerRaceGrants();
   registerCalendariaIntegration();
   registerCanvasZoom();
+  registerDeadTokenAppearance();
   registerRedsteelHotbar();
 
   /**
@@ -492,6 +524,18 @@ function registerKeepDialogOpen() {
   game.settings.register("redsteel", "keepAbilityDialogOpen", {
     name: "Keep Ability Dialog Open",
     scope: "client", // per user
+    config: false,
+    type: Boolean,
+    default: false,
+  });
+}
+
+function registerLongRestRations() {
+  // Sticky state for the Long Rest dialog's "eat rations" box. Client-scoped
+  // because whoever runs the rest is the one who knows whether the party is
+  // camping; a stretch of travel then keeps it ticked without re-checking.
+  game.settings.register("redsteel", "longRestEatRations", {
+    scope: "client",
     config: false,
     type: Boolean,
     default: false,
@@ -1433,6 +1477,10 @@ function buildAttackRerollFlag(message, roll, { critSuccess, critFailure }) {
   attack.criticalSuccess = critSuccess;
   attack.criticalFailure = critFailure;
   attack.d100 = d100;
+  // Same blow, new die: the defense that already answered it is rerolled from
+  // its own card. Without this an auto-defending NPC would roll a second, fresh
+  // defense against one attack (see autoDefense.mjs).
+  attack.suppressAutoDefense = true;
 
   if (attack.aimedStrike) {
     attack.aimedStrike = { ...attack.aimedStrike, su: roll.total };

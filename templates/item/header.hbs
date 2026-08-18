@@ -102,6 +102,32 @@
     {{/if}}
 
     {{!-- =====================
+         PLAIN ITEM
+    ====================== --}}
+    {{#if (eq item.type "item")}}
+      <div class="grid grid-2col">
+        <div class="grid-span-1">
+          <label class="resource-label">{{localize "REDSTEEL.Item.Consumable.FIELDS.quantity.label"}}</label>
+          <input
+            type="number"
+            name="system.quantity"
+            value="{{system.quantity}}"
+            data-dtype="Number"
+          />
+        </div>
+        {{!-- Any stack ticked here counts as food units for the Long Rest:
+              bread, dried meat, a hunter's catch. One item = one unit, so a
+              stack of 12 feeds one normal character for four days. --}}
+        <div class="grid-span-1">
+          <label class="rs-toggle">
+            <input type="checkbox" name="system.rations" {{checked system.rations}} />
+            <span>{{localize "REDSTEEL.Item.Item.FIELDS.rations.label"}}</span>
+          </label>
+        </div>
+      </div>
+    {{/if}}
+
+    {{!-- =====================
          WEAPON & ABILITY
     ====================== --}}
     {{#if (or (eq item.type "weapon") (eq item.type "ability"))}}

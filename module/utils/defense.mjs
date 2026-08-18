@@ -211,12 +211,17 @@ export function renderVersusBlock(
 
 export async function defenseRoll({
   actor,
+  token = null,
   weapon,
   ability = null,
   attackerTokenId = null,
   attack = null,
+  auto = null,
 } = {}) {
-  let defenderToken = null;
+  // Named by the caller whenever it knows which token is defending. Auto-defense
+  // does: it was told by the attack card, and four goblins off one base actor
+  // must not be collapsed into whichever one the scene lists first.
+  let defenderToken = token;
 
   if (!actor) {
     const context = game.redsteel.selectToken();
@@ -403,6 +408,21 @@ export async function defenseRoll({
     hasLongReach = actor.items.some(
       (i) => i.type === "weapon" && i.system?.longReach,
     );
+  }
+
+  /* -------------------------------------------- */
+  /*  AUTO-DEFENSE                                */
+  /* -------------------------------------------- */
+
+  // An NPC answering an attack card on its own (see autoDefense.mjs). The
+  // defense and the weapon are already chosen, so this skips the dialog and
+  // nothing else:
+  // Overwhelm still records the attacker, the versus block still contests the
+  // attack, and the card comes out identical bar the auto marker.
+  if (auto) {
+    if (auto === "ranged") return rangedDefense({ weapon });
+    if (auto === "dodge") return dodgeDefense({ weapon });
+    return meleeDefense({ weapon });
   }
 
   if (!ability) {
@@ -743,9 +763,13 @@ export async function defenseRoll({
       const rollName = `Defense with ${weapon.localizedName ?? weapon.name}`;
       // Weapon quality: main hand uses the Zbraň column, off-hand the Druhá ruka column.
       const mainQuality = weapon.system.qualityMods ?? {};
+      // Enchantments applied to the main-hand weapon, read beside its quality.
+      const mainEnchant = weapon.system.enchantMods ?? {};
       const offQuality = getOffhandQualityMods(context);
       const mainDefense =
-        (Number(weapon.system.defense) || 0) + (Number(mainQuality.defense) || 0);
+        (Number(weapon.system.defense) || 0) +
+        (Number(mainQuality.defense) || 0) +
+        (Number(mainEnchant.defense) || 0);
       const offDefense =
         (Number(offProps?.defense) || 0) + (Number(offQuality.defense) || 0);
       // Characters fold weapon defense into meleeDefense.bonus during
@@ -1353,6 +1377,13 @@ export async function defenseRoll({
           }
 
         </b></p>
+          ${
+            auto
+              ? `<p class="rs-auto-defense-note"><i class="fa-light fa-bolt-auto"></i> ${game.i18n.localize(
+                  "REDSTEEL.AutoDefense.CardNote",
+                )}</p>`
+              : ""
+          }
           <div style="display:flex;justify-content:center;align-items:center;gap:8px;font-size:1.3em;font-weight:bold;">
             ${overwhelm > 0 ? `<p>${game.i18n.localize("REDSTEEL.Overwhelm.Label")}: ${overwhelm * OVERWHELM_PENALTY_PER_STACK}</p>` : ""}
             ${
@@ -1413,6 +1444,10 @@ export async function defenseRoll({
 export function registerDefendButton() {
   Hooks.on("renderChatMessageHTML", (message, html) => {
     if (message.flags?.attack?.type !== "attack") return;
+    // A versus Test card (Shield Bash, Shield Charge, Knockdown …) is answered
+    // by clicking its margin, not by rolling a defense. Offering a Defend
+    // button there would burn a defense on a contest it cannot resolve.
+    if (message.flags.attack.contested) return;
 
     const attackerTokenId = attackerTokenIdFromMessage(message);
     if (!attackerTokenId) return;
@@ -1423,6 +1458,10 @@ export function registerDefendButton() {
     const attack = {
       margin: message.flags.attack.margin ?? message.rolls?.[0]?.total ?? null,
       criticalSuccess: message.flags.attack.criticalSuccess === true,
+      // A fumbled attack is a natural critical for the defender, so it belongs
+      // in the packet the versus block reads — without it the defense contests
+      // the fumble on margins alone.
+      criticalFailure: message.flags.attack.criticalFailure === true,
       d100: message.flags.attack.d100 ?? null,
     };
 

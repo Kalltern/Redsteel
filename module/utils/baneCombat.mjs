@@ -1,6 +1,10 @@
 import { BANE_TYPES, getActorBanes } from "../helpers/banes.mjs";
 import { actorHasSpecNode } from "../helpers/specialisations.mjs";
-import { critScoreToDegree } from "./combatSkillBonuses.mjs";
+import {
+  critScoreToDegree,
+  getMaxCritDegree,
+  MAX_CRIT_DEGREE,
+} from "./combatSkillBonuses.mjs";
 
 /**
  * Bane ("Metla") attack bonuses — Phase 4.
@@ -298,7 +302,12 @@ export function computeBaneVariant(profile, bane) {
   const failedRecovery = dice.su < 0 && baneSu >= 0 ? 5 : 0;
   const baneCritScoreResult =
     dice.critScoreResult + profile.critRange + failedRecovery;
-  const baneDegree = critScoreToDegree(baneCritScoreResult);
+  // Same ceiling the base attack was held to (Wimp and friends) — the Bane
+  // re-read shifts the crit range, never the attacker's own limit.
+  const baneDegree = critScoreToDegree(
+    baneCritScoreResult,
+    bane.maxCritDegree ?? MAX_CRIT_DEGREE,
+  );
 
   const baneCritOptions = base.criticalOptions.map((o) => ({
     degree: o.degree,
@@ -508,6 +517,7 @@ export async function buildBanePacket({
   const packet = {
     attackerId: actor.id,
     damageBonus: baneDamageExtra,
+    maxCritDegree: getMaxCritDegree(actor),
     baseCritSuccess: Boolean(baseCritSuccess),
     dice: {
       su: attackRoll.total,

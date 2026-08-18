@@ -1,0 +1,23 @@
+{
+  "type": "Item",
+  "folder": null,
+  "name": "Goods",
+  "color": null,
+  "sorting": "a",
+  "_id": "GoodsFolder0001A",
+  "description": "",
+  "sort": 900000,
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1786000000000,
+    "modifiedTime": 1786000000000,
+    "lastModifiedBy": null
+  },
+  "_key": "!folders!GoodsFolder0001A"
+}

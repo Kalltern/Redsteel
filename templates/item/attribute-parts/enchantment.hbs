@@ -1,0 +1,360 @@
+{{! Attributes Tab — Enchantment }}
+<section
+  class="tab attributes {{tab.cssClass}}"
+  data-group="primary"
+  data-tab="attributes"
+>
+
+  <div class="resource">
+
+    <p class="hint">{{localize "REDSTEEL.Enchantment.EditorHint"}}</p>
+
+    <div class="grid grid-3col">
+      <div class="grid-span-1">
+        <label for="enchantment-slot">{{localize
+            "REDSTEEL.Enchantment.FIELDS.slot.label"
+          }}</label>
+        <select name="system.slot" id="enchantment-slot">
+          {{#each system.slotOptions as |slotOption|}}
+            <option value="{{slotOption}}"
+              {{#if (eq ../system.slot slotOption)}}selected{{/if}}>
+              {{localize (concat "REDSTEEL.Enchantment.Slot." slotOption)}}
+            </option>
+          {{/each}}
+        </select>
+      </div>
+
+      <div class="grid-span-1">
+        <label class="resource-label">{{localize
+            "REDSTEEL.Enchantment.FIELDS.tier.label"
+          }}</label>
+        <input
+          type="number"
+          name="system.tier"
+          value="{{system.tier}}"
+          data-dtype="Number"
+        />
+      </div>
+
+      {{#if (eq system.slot "weapon")}}
+        <div class="grid-span-1">
+          <label for="enchantment-required-class" title="{{localize
+              'REDSTEEL.Enchantment.FIELDS.requiredClass.hint'
+            }}">{{localize
+              "REDSTEEL.Enchantment.FIELDS.requiredClass.label"
+            }}</label>
+          <select name="system.requiredClass" id="enchantment-required-class">
+            <option value="" {{#unless system.requiredClass}}selected{{/unless}}>
+              {{localize "REDSTEEL.Enchantment.AnyClass"}}
+            </option>
+            {{#each system.classOptions as |classOption|}}
+              <option value="{{classOption}}"
+                {{#if (eq ../system.requiredClass classOption)}}selected{{/if}}>
+                {{classOption}}
+              </option>
+            {{/each}}
+          </select>
+        </div>
+      {{/if}}
+    </div>
+
+    {{!-- =====================
+         WEAPON MODIFIERS
+    ====================== --}}
+    {{#if (eq system.slot "weapon")}}
+      <h3 class="enchantment-heading">{{localize
+          "REDSTEEL.Enchantment.WeaponMods"
+        }}</h3>
+
+      <div class="grid grid-4col">
+        <div class="grid-span-1">
+          <label class="resource-label">{{localize
+              "REDSTEEL.Item.Weapon.FIELDS.attack.label"
+            }}</label>
+          <input
+            type="number"
+            name="system.weaponMods.attack"
+            value="{{system.weaponMods.attack}}"
+            data-dtype="Number"
+          />
+        </div>
+
+        <div class="grid-span-1">
+          <label class="resource-label">{{localize
+              "REDSTEEL.Item.Weapon.FIELDS.defense.label"
+            }}</label>
+          <input
+            type="number"
+            name="system.weaponMods.defense"
+            value="{{system.weaponMods.defense}}"
+            data-dtype="Number"
+          />
+        </div>
+
+        <div class="grid-span-1">
+          <label class="resource-label">{{localize
+              "REDSTEEL.Item.Weapon.FIELDS.dodge.label"
+            }}</label>
+          <input
+            type="number"
+            name="system.weaponMods.dodge"
+            value="{{system.weaponMods.dodge}}"
+            data-dtype="Number"
+          />
+        </div>
+
+        <div class="grid-span-1">
+          <label class="resource-label">{{localize
+              "REDSTEEL.Item.Weapon.FIELDS.penetration.label"
+            }}</label>
+          <input
+            type="number"
+            name="system.weaponMods.penetration"
+            value="{{system.weaponMods.penetration}}"
+            data-dtype="Number"
+          />
+        </div>
+
+        <div class="grid-span-1">
+          <label class="resource-label">{{localize
+              "REDSTEEL.Enchantment.FIELDS.damageBonus.label"
+            }}</label>
+          <input
+            type="number"
+            name="system.weaponMods.damageBonus"
+            value="{{system.weaponMods.damageBonus}}"
+            data-dtype="Number"
+          />
+        </div>
+
+        <div class="grid-span-1">
+          <label class="resource-label" title="{{localize
+              'REDSTEEL.Enchantment.FIELDS.damageRoll.hint'
+            }}">{{localize
+              "REDSTEEL.Enchantment.FIELDS.damageRoll.label"
+            }}</label>
+          <input
+            type="text"
+            name="system.weaponMods.damageRoll"
+            value="{{system.weaponMods.damageRoll}}"
+            data-dtype="String"
+            placeholder="e.g. 1d4"
+          />
+        </div>
+
+        <div class="grid-span-1">
+          <label class="resource-label" title="{{localize
+              'REDSTEEL.Enchantment.FIELDS.breakthroughRoll.hint'
+            }}">{{localize
+              "REDSTEEL.Enchantment.FIELDS.breakthroughRoll.label"
+            }}</label>
+          <input
+            type="text"
+            name="system.weaponMods.breakthroughRoll"
+            value="{{system.weaponMods.breakthroughRoll}}"
+            data-dtype="String"
+            placeholder="e.g. 2d6"
+          />
+        </div>
+
+        <div class="grid-span-1">
+          <label class="resource-label">{{localize
+              "REDSTEEL.Item.Weapon.FIELDS.critRange.label"
+            }}</label>
+          <input
+            type="number"
+            name="system.weaponMods.critRange"
+            value="{{system.weaponMods.critRange}}"
+            data-dtype="Number"
+          />
+        </div>
+
+        <div class="grid-span-1">
+          <label class="resource-label">{{localize
+              "REDSTEEL.Item.Weapon.FIELDS.critChance.label"
+            }}</label>
+          <input
+            type="number"
+            name="system.weaponMods.critChance"
+            value="{{system.weaponMods.critChance}}"
+            data-dtype="Number"
+          />
+        </div>
+
+        <div class="grid-span-1">
+          <label class="resource-label">{{localize
+              "REDSTEEL.Item.Weapon.FIELDS.critDefense.label"
+            }}</label>
+          <input
+            type="number"
+            name="system.weaponMods.critDefense"
+            value="{{system.weaponMods.critDefense}}"
+            data-dtype="Number"
+          />
+        </div>
+
+        <div class="grid-span-1">
+          <label class="resource-label">{{localize
+              "REDSTEEL.Item.Weapon.FIELDS.critDamage.label"
+            }}</label>
+          <input
+            type="number"
+            name="system.weaponMods.critDamage"
+            value="{{system.weaponMods.critDamage}}"
+            data-dtype="Number"
+          />
+        </div>
+
+        <div class="grid-span-1">
+          <label for="enchantment-damage-type-mode" title="{{localize
+              'REDSTEEL.Enchantment.FIELDS.damageTypeMode.hint'
+            }}">{{localize
+              "REDSTEEL.Enchantment.FIELDS.damageTypeMode.label"
+            }}</label>
+          <select
+            name="system.weaponMods.damageTypeMode"
+            id="enchantment-damage-type-mode"
+          >
+            {{#each system.damageTypeModeOptions as |mode|}}
+              <option value="{{mode}}"
+                {{#if (eq ../system.weaponMods.damageTypeMode mode)}}selected{{/if}}>
+                {{#if mode}}
+                  {{localize (concat "REDSTEEL.Enchantment.DamageTypeMode." mode)}}
+                {{else}}
+                  {{localize "REDSTEEL.Enchantment.DamageTypeMode.none"}}
+                {{/if}}
+              </option>
+            {{/each}}
+          </select>
+        </div>
+      </div>
+
+      <h3 class="enchantment-heading">{{localize
+          "REDSTEEL.Enchantment.FIELDS.damageTypes.label"
+        }}</h3>
+      <p class="hint">{{localize
+          "REDSTEEL.Enchantment.FIELDS.damageTypes.hint"
+        }}</p>
+
+      <div class="grid grid-3col">
+        {{#each enchantDamageTypeSlots as |slot|}}
+          <div class="grid-span-1">
+            <select name="system.weaponMods.damageTypes.{{slot.index}}">
+              <option value="">{{localize "REDSTEEL.UI.selectType"}}</option>
+              {{#each @root.system.dmgTypes as |dmgType|}}
+                <option value="{{dmgType}}"
+                  {{#if (eq slot.value dmgType)}}selected{{/if}}>
+                  {{dmgType}}
+                </option>
+              {{/each}}
+            </select>
+          </div>
+        {{/each}}
+      </div>
+    {{/if}}
+
+    {{!-- =====================
+         GEAR MODIFIERS
+    ====================== --}}
+    {{#if (eq system.slot "gear")}}
+      <h3 class="enchantment-heading">{{localize
+          "REDSTEEL.Enchantment.GearMods"
+        }}</h3>
+
+      <div class="grid grid-4col">
+        <div class="grid-span-1">
+          <label class="resource-label">{{localize
+              "REDSTEEL.Enchantment.FIELDS.armorValue.label"
+            }}</label>
+          <input
+            type="number"
+            name="system.gearMods.armorValue"
+            value="{{system.gearMods.armorValue}}"
+            data-dtype="Number"
+          />
+        </div>
+
+        <div class="grid-span-1">
+          <label class="resource-label">{{localize
+              "REDSTEEL.Item.Gear.FIELDS.defense.label"
+            }}</label>
+          <input
+            type="number"
+            name="system.gearMods.defense"
+            value="{{system.gearMods.defense}}"
+            data-dtype="Number"
+          />
+        </div>
+
+        <div class="grid-span-1">
+          <label class="resource-label">{{localize
+              "REDSTEEL.Item.Gear.FIELDS.rangedDefense.label"
+            }}</label>
+          <input
+            type="number"
+            name="system.gearMods.rangedDefense"
+            value="{{system.gearMods.rangedDefense}}"
+            data-dtype="Number"
+          />
+        </div>
+
+        <div class="grid-span-1">
+          <label class="resource-label">{{localize
+              "REDSTEEL.Item.Gear.FIELDS.healthBonus.label"
+            }}</label>
+          <input
+            type="number"
+            name="system.gearMods.healthBonus"
+            value="{{system.gearMods.healthBonus}}"
+            data-dtype="Number"
+          />
+        </div>
+
+        <div class="grid-span-1">
+          <label class="resource-label">{{localize
+              "REDSTEEL.Item.Gear.FIELDS.critDefense.label"
+            }}</label>
+          <input
+            type="number"
+            name="system.gearMods.critDefense"
+            value="{{system.gearMods.critDefense}}"
+            data-dtype="Number"
+          />
+        </div>
+
+        <div class="grid-span-1">
+          <label class="resource-label">{{localize
+              "REDSTEEL.Item.Gear.FIELDS.rangedCritDefense.label"
+            }}</label>
+          <input
+            type="number"
+            name="system.gearMods.rangedCritDefense"
+            value="{{system.gearMods.rangedCritDefense}}"
+            data-dtype="Number"
+          />
+        </div>
+      </div>
+
+      <h3 class="enchantment-heading">{{localize
+          "REDSTEEL.Enchantment.FIELDS.resist.label"
+        }}</h3>
+
+      <div class="grid grid-8col">
+        {{#each system.gearMods.resist as |value key|}}
+          <div class="grid-span-1">
+            <label>
+              {{localize (concat "REDSTEEL.Item.Gear.FIELDS." key ".label")}}
+            </label>
+            <input
+              type="number"
+              name="system.gearMods.resist.{{key}}"
+              value="{{value}}"
+              data-dtype="Number"
+            />
+          </div>
+        {{/each}}
+      </div>
+    {{/if}}
+
+  </div>
+</section>

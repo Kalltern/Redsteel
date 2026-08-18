@@ -150,6 +150,90 @@ export async function restAndRecover() {
   });
 }
 
+/* -------------------------------------------- */
+/*  Rations                                     */
+/* -------------------------------------------- */
+
+/** Food units a normal character eats per day, before traits. */
+const BASE_FOOD_PER_DAY = 3;
+
+/**
+ * How many food units this actor eats over a Long Rest, or 0 for anyone the
+ * ration rules do not cover.
+ *
+ * Only characters eat out of the party's packs. Mounts, companions and hirelings
+ * ride along in the rest roster, and billing them 3 units each would report a
+ * famine every single night; their upkeep is a separate line at the stable.
+ *
+ * `foodPerDayBonus` is a flat extra set by Active Effects, the same shape as
+ * `longRestHealthBonus`: Voracious / Gourmand / Yormun add +1, Ascetic −1.
+ * Floored at zero so a stack of reducing traits can never feed anyone.
+ */
+export function foodPerDay(actor) {
+  if (actor?.type !== "character") return 0;
+  const bonus = Number(actor?.system?.foodPerDayBonus) || 0;
+  return Math.max(0, BASE_FOOD_PER_DAY + bonus);
+}
+
+/**
+ * Every stack the actor carries that is ticked as food. Plain "item"-type
+ * documents, so the GM can hand out Bread, Dried Meat or a hunter's catch and
+ * have them all count — one document quantity = one food unit.
+ */
+function rationStacks(actor) {
+  return actor.items
+    .filter((i) => i.type === "item" && i.system?.rations)
+    .sort((a, b) => (a.sort || 0) - (b.sort || 0));
+}
+
+/** Total food units carried. */
+function rationTotal(actor) {
+  return rationStacks(actor).reduce(
+    (sum, i) => sum + Math.max(0, Number(i.system.quantity ?? 0)),
+    0,
+  );
+}
+
+/**
+ * Eat `needed` food units, draining the actor's ration stacks in sheet order
+ * and deleting whatever empties out — the same consume-then-delete shape the
+ * first aid kit uses.
+ *
+ * Going hungry is deliberately not punished here: the rules leave the penalty
+ * for missed meals to the GM, so a short rest reports the shortfall on the card
+ * and the table decides what it costs.
+ *
+ * @returns {{needed: number, eaten: number, short: number, left: number}}
+ */
+async function consumeRations(actor, needed) {
+  let remaining = needed;
+  const deletions = [];
+  const updates = [];
+
+  for (const stack of rationStacks(actor)) {
+    if (remaining <= 0) break;
+    const have = Math.max(0, Number(stack.system.quantity ?? 0));
+    if (have <= 0) continue;
+
+    const take = Math.min(have, remaining);
+    remaining -= take;
+
+    if (have - take <= 0) deletions.push(stack.id);
+    else updates.push({ _id: stack.id, "system.quantity": have - take });
+  }
+
+  if (updates.length) await actor.updateEmbeddedDocuments("Item", updates);
+  if (deletions.length)
+    await actor.deleteEmbeddedDocuments("Item", deletions);
+
+  return {
+    needed,
+    eaten: needed - remaining,
+    short: remaining,
+    left: rationTotal(actor),
+  };
+}
+
 /**
  * Everyone a Long Rest could plausibly cover, in the order they are offered:
  * the characters assigned to real players, then anything flagged into the party
@@ -207,7 +291,9 @@ function collectLongRestCandidates() {
  * standing watch should be a single click rather than a re-selection.
  *
  * @param {{actor: Actor, group: string}[]} candidates
- * @returns {Promise<Actor[]|null>} The chosen actors, or null if cancelled.
+ * @returns {Promise<{actors: Actor[], eatRations: boolean}|null>} The chosen
+ *   actors and whether the meal is being paid for out of packs, or null if
+ *   cancelled.
  */
 async function promptForLongRestActors(candidates) {
   const label = (key) => game.i18n.localize(`REDSTEEL.LongRest.${key}`);
@@ -230,16 +316,33 @@ async function promptForLongRestActors(candidates) {
       const hpText =
         hp.value === undefined ? "" : `${hp.value}/${hp.max ?? "?"}`;
 
+      // Appetite vs. pack, so whoever is running the rest can see who goes
+      // hungry before ticking the box rather than after reading the cards.
+      // Nothing shown for anyone the ration rules skip (mounts, companions).
+      const need = foodPerDay(actor);
+      const have = rationTotal(actor);
+      const foodChip = !need
+        ? ""
+        : `<span class="rs-rest-food${have < need ? " short" : ""}"
+             title="${label("FoodTooltip")}">
+             <i class="fa-light fa-drumstick-bite"></i>${have}/${need}
+           </span>`;
+
       return `
         ${heading}
         <label class="rs-rest-row">
           <input type="checkbox" name="rs-rest-actor" value="${actor.uuid}" checked>
           <img src="${actor.img ?? "icons/svg/mystery-man.svg"}" alt="">
           <span class="rs-rest-name">${foundry.utils.escapeHTML(actor.name)}</span>
+          ${foodChip}
           <span class="rs-rest-hp">${hpText}</span>
         </label>`;
     })
     .join("");
+
+  // Camping in the wild runs for days at a time, so the box remembers where it
+  // was left: once travel starts it stays ticked until the party reaches a bed.
+  const eatDefault = game.settings.get("redsteel", "longRestEatRations");
 
   const DialogV2 = foundry.applications.api.DialogV2;
   const chosen = await DialogV2.wait({
@@ -253,6 +356,10 @@ async function promptForLongRestActors(candidates) {
           <span class="rs-rest-name">${label("SelectAll")}</span>
         </label>
         <div class="rs-rest-list">${rows}</div>
+        <label class="rs-rest-row rs-rest-rations">
+          <input type="checkbox" name="rs-rest-eat" ${eatDefault ? "checked" : ""}>
+          <span class="rs-rest-name">${label("EatRations")}</span>
+        </label>
       </form>`,
     buttons: [
       {
@@ -262,9 +369,13 @@ async function promptForLongRestActors(candidates) {
         default: true,
         callback: (event, button, dialog) => {
           const root = dialog?.element ?? button.form;
-          return Array.from(
-            root.querySelectorAll('input[name="rs-rest-actor"]:checked'),
-          ).map((input) => input.value);
+          return {
+            uuids: Array.from(
+              root.querySelectorAll('input[name="rs-rest-actor"]:checked'),
+            ).map((input) => input.value),
+            eatRations: !!root.querySelector('input[name="rs-rest-eat"]')
+              ?.checked,
+          };
         },
       },
     ],
@@ -293,8 +404,18 @@ async function promptForLongRestActors(candidates) {
     rejectClose: false,
   });
 
-  if (!Array.isArray(chosen)) return null; // cancelled or closed
-  return chosen.map((uuid) => fromUuidSync(uuid)).filter((a) => a);
+  if (!chosen?.uuids) return null; // cancelled or closed
+
+  await game.settings.set(
+    "redsteel",
+    "longRestEatRations",
+    chosen.eatRations,
+  );
+
+  return {
+    actors: chosen.uuids.map((uuid) => fromUuidSync(uuid)).filter((a) => a),
+    eatRations: chosen.eatRations,
+  };
 }
 
 export async function longRest() {
@@ -305,8 +426,10 @@ export async function longRest() {
     return;
   }
 
-  const actors = await promptForLongRestActors(candidates);
-  if (actors === null) return; // cancelled
+  const choice = await promptForLongRestActors(candidates);
+  if (choice === null) return; // cancelled
+
+  const { actors, eatRations } = choice;
 
   if (!actors.length) {
     ui.notifications.warn(game.i18n.localize("REDSTEEL.LongRest.NoneChosen"));
@@ -314,15 +437,18 @@ export async function longRest() {
   }
 
   for (const actor of actors) {
-    await applyLongRest(actor);
+    await applyLongRest(actor, { eatRations });
   }
 }
 
 /**
  * The Long Rest itself for a single actor: regeneration, one Mind, one fatigue
  * degree off, rerolls back to ready, and a card saying so.
+ *
+ * @param {Actor} actor
+ * @param {{eatRations?: boolean}} [options]
  */
-async function applyLongRest(actor) {
+async function applyLongRest(actor, { eatRations = false } = {}) {
   const system = actor.system;
 
   const nourishingEffect = actor.effects.find((e) =>
@@ -402,6 +528,22 @@ async function applyLongRest(actor) {
   // ─── Rerolls ─── restore every feature reroll to ready.
   const rerollsRestored = await resetActorRerolls(actor);
 
+  // ─── Food ─── only when the party is camping rather than paying an innkeeper.
+  const appetite = foodPerDay(actor);
+  const meal =
+    eatRations && appetite > 0 ? await consumeRations(actor, appetite) : null;
+  const mealText = !meal
+    ? ""
+    : meal.short
+      ? `<br><em style="color:#b34a4a;">${game.i18n.format(
+          "REDSTEEL.LongRest.WentHungry",
+          { eaten: meal.eaten, needed: meal.needed },
+        )}</em>`
+      : `<br><em>${game.i18n.format("REDSTEEL.LongRest.AteRations", {
+          eaten: meal.eaten,
+          left: meal.left,
+        })}</em>`;
+
   // ─── Chat Message ───
   const iconUrl = "icons/magic/time/day-night-sunset-sunrise.webp";
 
@@ -425,6 +567,7 @@ async function applyLongRest(actor) {
       Toxicity -${toxicityReduction}.
     </em>
     ${rerollsRestored ? "<br><em>Rerolls restored.</em>" : ""}
+    ${mealText}
   </div>
 </div>
 `;
@@ -963,12 +1106,13 @@ async function applyStabiliseAsGM(data) {
 
   // Back to 1 health, then drop Dying (its _onDelete handles +1 Wound and the
   // resolve test). Downed is intentionally left in place.
+  //
+  // The removal goes through the shared helper rather than a local find/delete:
+  // the GM's updateActor hook reacts to this very health write with the same
+  // deletion, and two unguarded deletes race into one failing on an
+  // already-deleted document.
   await actor.update({ "system.stats.health.value": 1 });
-
-  const dying = actor.effects.find(
-    (e) => e.getFlag("core", "statusId") === "dying",
-  );
-  if (dying) await dying.delete();
+  await game.redsteel.endDyingIfHealed?.(actor);
 
   // A successful Stabilise also stops all bleeding.
   await clearBleedEffects(actor);
@@ -1445,10 +1589,9 @@ async function faApplyAsGM(data) {
 
   if (data.actionType === "stabilise") {
     await targetActor.update({ "system.stats.health.value": 1 });
-    const dying = targetActor.effects.find(
-      (e) => e.getFlag("core", "statusId") === "dying",
-    );
-    if (dying) await dying.delete();
+    // Shared guarded removal — see applyStabiliseAsGM for why this must not be
+    // a local find/delete.
+    await game.redsteel.endDyingIfHealed?.(targetActor);
     note = "stabilised (1 HP) and bleeding stopped";
   } else if (data.actionType === "firstAid") {
     const heal = Math.floor(Number(data.healAmount) || 0);

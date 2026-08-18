@@ -91,6 +91,7 @@ const ABILITY = {
   DOUBLE_THROW: A("dOubleThrow00001"), // Dvojitý vrh
   DUELISTS_ADVANCE: A("sbgSHiDt2hyptsxy"), // Duelistův krok
   EXPLOIT_WEAKNESS: A("VK73lWQNsMotICbn"), // Útok na slabinu
+  EXPLOIT_WEAKNESS_RANGED: A("eXploitWeakRang1"), // Střelba na slabinu
   EXPLOIT_WEAKNESS_THROW: A("WjPXKjMG7790bZfX"), // Vrh na slabinu
   EXTENDED_LUNGE: A("menifXsjGJIzCUqt"), // Daleký výpad
   FEINT_DEX: A("pt6OeaIFk0cAvxla"), // Finta
@@ -447,9 +448,9 @@ export const ABILITY_GRANTS = [
     grant: [ABILITY.CRIPPLING_SHOT],
   },
   {
-    label: "Archer 3 → Exploit Weakness",
+    label: "Archer 3 → Exploit Weakness (Ranged)",
     when: doctrine("archer", 3),
-    grant: [ABILITY.EXPLOIT_WEAKNESS],
+    grant: [ABILITY.EXPLOIT_WEAKNESS_RANGED],
   },
   {
     label: "Archer 5 → Accurate Shot",
@@ -466,9 +467,9 @@ export const ABILITY_GRANTS = [
    * Kušník (arbalest)
    * ==================================================================== */
   {
-    label: "Arbalest 2 → Exploit Weakness",
+    label: "Arbalest 2 → Exploit Weakness (Ranged)",
     when: doctrine("arbalest", 2),
-    grant: [ABILITY.EXPLOIT_WEAKNESS],
+    grant: [ABILITY.EXPLOIT_WEAKNESS_RANGED],
   },
   {
     label: "Arbalest 3 → Crippling Shot",
@@ -880,6 +881,58 @@ export async function syncGrantedAbilities(actor) {
   } finally {
     _syncing.delete(actor.id);
   }
+}
+
+/**
+ * Re-read every auto-granted ability from its compendium source and write the
+ * current stats back onto the actor's copy.
+ *
+ * A grant is a snapshot: syncGrantedAbilities only ever adds or removes items,
+ * so an ability edited in the pack after it was handed out keeps its old
+ * numbers on every sheet that already had it (Shield Bash sat at penetration 0
+ * for exactly this reason). Deleting the stale copy is not the fix — the
+ * deleteItem hook reads a manual delete as an opt-out and suppresses the grant
+ * for good.
+ *
+ * Every `system` field the pack entry defines is written back, so hand-tuning
+ * of a granted ability on the sheet is intentionally overwritten. This is a
+ * merge, so a field the pack entry no longer defines keeps its old value —
+ * fine for refreshing numbers, which is all this is for. Flags, ownership and
+ * the item id are left alone, so the grant bookkeeping survives.
+ *
+ * @param {Actor} actor
+ * @returns {Promise<number>} How many abilities were refreshed.
+ */
+export async function resyncGrantedAbilities(actor) {
+  if (!actor?.items) return 0;
+
+  const updates = [];
+  // `.contents` — iterating a Collection directly is the bug that keeps
+  // costing us silent empty loops.
+  for (const item of actor.items.contents) {
+    if (!item.getFlag(GRANT_FLAG_SCOPE, GRANTED_FLAG)) continue;
+    const uuid = item.getFlag(GRANT_FLAG_SCOPE, GRANT_SOURCE_FLAG);
+    if (!uuid) continue;
+
+    const source = await fromUuid(uuid);
+    if (!source) {
+      console.warn(
+        `Redsteel | resync: source missing for "${item.name}" (${uuid})`,
+      );
+      continue;
+    }
+
+    const data = source.toObject();
+    updates.push({
+      _id: item.id,
+      name: data.name,
+      img: data.img,
+      system: data.system,
+    });
+  }
+
+  if (updates.length) await actor.updateEmbeddedDocuments("Item", updates);
+  return updates.length;
 }
 
 /**

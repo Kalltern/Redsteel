@@ -138,7 +138,7 @@
       "extra3": null,
       "stagger": null
     },
-    "attributeTest": "Will",
+    "attributeTest": "will",
     "testModifier": "@spellPower*2",
     "effectType1": "",
     "effectType2": "",

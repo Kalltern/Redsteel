@@ -1,0 +1,90 @@
+{
+  "folder": "1GLMg0h4TGwFqiLx",
+  "name": "Wimp",
+  "type": "feature",
+  "img": "icons/svg/downgrade.svg",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.Wimp.name",
+    "description": "<p>However the dice fall, this creature can never land a critical hit above the second degree. Its crit range is rolled in full &mdash; only the degree it buckets into is capped.</p>",
+    "options": [
+      "feature",
+      "trait"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "trait"
+  },
+  "effects": [
+    {
+      "name": "Wimp",
+      "origin": null,
+      "img": "icons/svg/downgrade.svg",
+      "_id": "wimpNpcTraitAE01",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.maxCritDegree",
+            "value": 2,
+            "priority": null,
+            "type": "override"
+          }
+        ]
+      },
+      "disabled": false,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "createdTime": null,
+        "modifiedTime": null,
+        "lastModifiedBy": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!wimpNpcTrait0001.wimpNpcTraitAE01"
+    }
+  ],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": null,
+    "modifiedTime": null,
+    "lastModifiedBy": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 0,
+  "_id": "wimpNpcTrait0001",
+  "_key": "!items!wimpNpcTrait0001"
+}

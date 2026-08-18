@@ -246,6 +246,29 @@
         {{/if}}
       </div>
 
+      {{!-- Auto-defense, immediately left of the modifier. Only an NPC answers
+           its own attack cards, and only someone who can edit it may flip the
+           switch, but the box is held open either way: without the spacer the
+           modifier and both trays would slide 33px sideways every time the GM
+           picked a token of the other kind. --}}
+      {{#if autoDefense.available}}
+      <button
+        type="button"
+        class="rs-bg3-tray-toggle rs-bg3-autodef{{#if autoDefense.active}} active{{/if}}"
+        data-action="toggleAutoDefense"
+        data-tt-kind="text"
+        data-tt-title="REDSTEEL.AutoDefense.Label"
+        data-tt-text="REDSTEEL.AutoDefense.Tooltip"
+        aria-label="{{localize 'REDSTEEL.AutoDefense.Label'}}"
+        aria-pressed="{{#if autoDefense.active}}true{{else}}false{{/if}}"
+      ><i class="fa-light fa-shield-halved"></i></button>
+      {{else}}
+      <span
+        class="rs-bg3-tray-toggle rs-bg3-autodef rs-bg3-cell--spacer"
+        aria-hidden="true"
+      ><i class="fa-light fa-shield-halved"></i></span>
+      {{/if}}
+
       <button
         type="button"
         class="rs-bg3-modifier rs-bg3-modifier--{{modifier.tone}}"

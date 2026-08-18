@@ -9,7 +9,10 @@ import {
   renderSpeedTestLine,
 } from "./speedTest.mjs";
 import { ATTRIBUTE_KEYS } from "./testRating.mjs";
-import { renderMarginFollowupLine } from "./attributeFollowup.mjs";
+import {
+  renderMarginFollowupLine,
+  renderVersusTestBlock,
+} from "./attributeFollowup.mjs";
 import { abilityAllowedForWeapon } from "./weaponResolver.mjs";
 import { resolveAimOnAttack, markAimCritFail } from "./aim.mjs";
 import { consumeOpportunityFlag } from "./opportunityAttacks.mjs";
@@ -98,20 +101,24 @@ export async function getNonWeaponAbility(actor, ability) {
   let concatRollAndDescription = ability.system.description;
   let attributeTestRoll = null;
   let speedTestRoll = null;
+  // The gilded contest panel, appended last so it always closes the
+  // description — see renderVersusTestBlock.
+  let versusTestBlock = "";
 
   const testName = ability.system.attributeTest?.trim();
 
   if (isSpeedTest(testName)) {
     // d12 + Initiative + Speed — rolled high, contested from the chat card.
     speedTestRoll = await rollSpeedTest(actor, { modifier: abilityTestModifier });
-    // Only separate from the description when there is one to separate from.
-    if (hasHtmlContent(concatRollAndDescription)) concatRollAndDescription += "<hr>";
-    concatRollAndDescription += `${renderSpeedTestLine({
-      actor,
-      roll: speedTestRoll,
-      source: ability.localizedName ?? ability.name,
-      modifier: abilityTestModifier,
-    })}`;
+    versusTestBlock = renderVersusTestBlock({
+      heading: "",
+      line: renderSpeedTestLine({
+        actor,
+        roll: speedTestRoll,
+        source: ability.localizedName ?? ability.name,
+        modifier: abilityTestModifier,
+      }),
+    });
   } else if (testName && testName !== "-- Select a Type --") {
     const lowerTestName = testName.toLowerCase();
     let baseValue = 0;
@@ -157,16 +164,24 @@ export async function getNonWeaponAbility(actor, ability) {
     // defender can roll their own attribute against it (Shield Bash, Knockdown,
     // any ability whose Test Type names an opposed roll). Same line the spell
     // and weapon-ability paths post — see utils/attributeFollowup.mjs.
-    if (hasHtmlContent(concatRollAndDescription)) concatRollAndDescription += "<hr>";
     const testLabel = testName.charAt(0).toUpperCase() + testName.slice(1);
-    concatRollAndDescription += `<b>${testLabel} Test ${totalModifier}%</b><br>${renderMarginFollowupLine(
-      {
+    versusTestBlock = renderVersusTestBlock({
+      heading: `${testLabel} Test ${totalModifier}%`,
+      line: renderMarginFollowupLine({
         margin: attributeRoll.total,
         source: ability.localizedName ?? ability.name,
         chance: totalModifier,
         result: attributeRoll.result,
-      },
-    )}`;
+      }),
+    });
+  }
+
+  // Detached at the very bottom of the description, after the prose and after
+  // any <hr> the prose brought with it.
+  if (versusTestBlock) {
+    if (hasHtmlContent(concatRollAndDescription))
+      concatRollAndDescription += "<hr>";
+    concatRollAndDescription += versusTestBlock;
   }
 
   // --- Custom Effects ---
@@ -219,29 +234,11 @@ export async function getNonWeaponAbility(actor, ability) {
 
   const columns = [];
 
-  // Margin of Success column
-  if (attributeTestRoll instanceof Roll && attributeTestRoll._evaluated) {
-    const attackHTML = await attributeTestRoll.render();
-
-    columns.push(`
-    <div class="roll-column">
-      <div class="roll-label">Margin of Success</div>
-      ${attackHTML}
-    </div>
-  `);
-  }
-
-  // Speed test column (d12 + Initiative + Speed, higher is better)
-  if (speedTestRoll instanceof Roll && speedTestRoll._evaluated) {
-    const speedHTML = await speedTestRoll.render();
-
-    columns.push(`
-    <div class="roll-column">
-      <div class="roll-label">Speed Test</div>
-      ${speedHTML}
-    </div>
-  `);
-  }
+  // No column for the contest roll itself. Its result is the gilded versus-Test
+  // block in the description, and rendering it here as well printed the margin
+  // twice on every Shield Bash / Knockdown card. The roll still rides along in
+  // `rolls` below, so rerolls and the round digest are unaffected, and the dice
+  // breakdown stays on the margin line's tooltip.
 
   // Damage column
   if (damageRoll instanceof Roll && damageRoll._evaluated) {
@@ -255,10 +252,14 @@ export async function getNonWeaponAbility(actor, ability) {
   `);
   }
 
-  // Final content
-  const content = columns.length
-    ? `<div class="dual-roll">${columns.join("")}</div>`
-    : "";
+  // Final content. A contest with no damage roll (Knockdown and friends) now
+  // has no columns left, but it still carries its test roll in `rolls` — the
+  // wrapper is emitted empty rather than as "" so core never falls back to
+  // printing those rolls itself and puts the margin back on the card twice.
+  const content =
+    columns.length || validRolls.length
+      ? `<div class="dual-roll">${columns.join("")}</div>`
+      : "";
 
   // This path never touches getAttackRolls, so the declared opportunity attack
   // has to be consumed here instead.
@@ -281,6 +282,11 @@ export async function getNonWeaponAbility(actor, ability) {
         type: "attack",
         damageProfile,
         effects: mechanicalEffects,
+        // A versus Test is already the defender's roll: they answer the margin
+        // on the card, not with a Defense/Dodge. Suppresses the Defend button
+        // so nobody spends a defense on a Shield Bash that cannot take one.
+        // Apply Damage is unaffected.
+        contested: Boolean(attributeTestRoll || speedTestRoll),
         normal: {
           damage: damageTotal,
           penetration: penetration,
@@ -600,6 +606,7 @@ export function getWeaponAttackBonus(actor, weapon, offWeapon = null) {
     skill,
     weapon: 0,
     quality: 0,
+    enchant: 0,
     doctrine: 0,
     spec: 0,
     offhand: 0,
@@ -609,6 +616,8 @@ export function getWeaponAttackBonus(actor, weapon, offWeapon = null) {
 
   parts.weapon = Number(ws.attack) || 0;
   parts.quality = Number(ws.qualityMods?.attack) || 0;
+  // Applied enchantments, the second derived modifier block on the weapon.
+  parts.enchant = Number(ws.enchantMods?.attack) || 0;
   parts.doctrine =
     Number(computeDoctrineBonuses(actor, weapon).doctrineBonus) || 0;
   parts.spec = Number(getWeaponSpecBonuses(actor, weapon).attack) || 0;
@@ -616,7 +625,12 @@ export function getWeaponAttackBonus(actor, weapon, offWeapon = null) {
   // off hand's quality mods feed defense, not attack.
   parts.offhand = Number(offWeapon?.system?.offhandProperties?.attack) || 0;
   parts.total =
-    parts.weapon + parts.quality + parts.doctrine + parts.spec + parts.offhand;
+    parts.weapon +
+    parts.quality +
+    parts.enchant +
+    parts.doctrine +
+    parts.spec +
+    parts.offhand;
   return parts;
 }
 
@@ -685,10 +699,14 @@ export async function getAttackRolls(
   // Weapon quality (Zbraň column): attack + critical-hit chance bonuses.
   const qualityAttack = Number(ws.qualityMods?.attack || 0);
   const qualityCritChance = Number(ws.qualityMods?.critChance || 0);
+  // Applied enchantments, added everywhere the quality mods are.
+  const enchantAttack = Number(ws.enchantMods?.attack || 0);
+  const enchantCritChance = Number(ws.enchantMods?.critChance || 0);
   let totalWeaponAttack =
     Number(doctrineBonus || 0) +
     Number(ws.attack || 0) +
     qualityAttack +
+    enchantAttack +
     Number(longReachPenalty || 0);
   let criticalSuccessThreshold = 0;
   let criticalFailureThreshold = 0;
@@ -755,7 +773,8 @@ export async function getAttackRolls(
       actor.system.combatSkills.archery.criticalSuccessThreshold +
       doctrineCritBonus +
       (ws.critChance ?? 0) +
-      qualityCritChance;
+      qualityCritChance +
+      enchantCritChance;
     criticalFailureThreshold =
       actor.system.combatSkills.archery.criticalFailureThreshold -
       (ws.critFail ?? 0) -
@@ -773,6 +792,7 @@ export async function getAttackRolls(
       actor.system.combatSkills.combat.criticalSuccessThreshold +
       (ws.critChance ?? 0) +
       qualityCritChance +
+      enchantCritChance +
       knifeMasterCrit +
       doctrineCritBonus;
     criticalFailureThreshold =
@@ -796,6 +816,7 @@ export async function getAttackRolls(
       actor.system.combatSkills.combat.criticalSuccessThreshold +
       ((ws.critChance ?? 0) +
         qualityCritChance +
+        enchantCritChance +
         doctrineCritBonus +
         weaponSkillCrit || 0);
     criticalFailureThreshold =
@@ -930,6 +951,16 @@ export async function getDamageRolls(
   for (const roll of actorMods.damageRolls) {
     damageFormula += ` + ${roll}`;
   }
+  // Enchantments applied to this specific weapon. Same shape as the actor-wide
+  // combat modifiers just above — dice expressions each ride as their own term,
+  // the flat bonus as one more addend.
+  const weaponEnchant = ws.enchantMods ?? {};
+  for (const roll of weaponEnchant.damageRolls ?? []) {
+    damageFormula += ` + ${roll}`;
+  }
+  if (weaponEnchant.damageBonus) {
+    damageFormula += ` + ${weaponEnchant.damageBonus}`;
+  }
   // Poison/coating applied to this specific weapon (see usePoison). It adds a
   // flat bonus to this weapon's damage and persists until removed.
   const coating = weapon?.getFlag?.("redsteel", "coating");
@@ -958,6 +989,10 @@ export async function getDamageRolls(
   const breakthroughParts = [];
   if (ws.breakthrough) breakthroughParts.push(`${ws.breakthrough}`);
   breakthroughParts.push(...(actorMods.breakthroughRolls ?? []));
+  // Breakthrough dice granted by an enchantment on this weapon. Like the
+  // character-granted dice above they can open the formula on their own: the
+  // enchantment is what gives the blade the property in the first place.
+  breakthroughParts.push(...(weaponEnchant.breakthroughRolls ?? []));
 
   if (breakthroughParts.length) {
     if (abilityBreakthrough) breakthroughParts.push(`${abilityBreakthrough}`);
@@ -983,12 +1018,30 @@ export async function getDamageRolls(
   };
 }
 
+/** The highest crit degree the tables go up to. */
+export const MAX_CRIT_DEGREE = 4;
+
+/**
+ * The best critical this actor is allowed to land, whatever the dice say.
+ * NPC traits such as Wimp write `system.maxCritDegree` through an Active
+ * Effect: the crit-range roll still happens and may run well over the
+ * bracket, only the degree it buckets into is clamped on the way out.
+ * Anyone without the field keeps the full 0-4 range.
+ */
+export function getMaxCritDegree(actor) {
+  const cap = Number(actor?.system?.maxCritDegree);
+  if (!Number.isFinite(cap)) return MAX_CRIT_DEGREE;
+  return Math.min(Math.max(Math.floor(cap), 0), MAX_CRIT_DEGREE);
+}
+
 /**
  * Bucket a crit-range roll total (critRange + 1d20) into a crit degree 0-4.
  * Exported so the Bane packet can re-bucket the same d20 under a shifted
  * crit range without re-rolling.
+ * @param {number} critScoreResult
+ * @param {number} [maxDegree] ceiling from the roller's own cap (Wimp)
  */
-export function critScoreToDegree(critScoreResult) {
+export function critScoreToDegree(critScoreResult, maxDegree = MAX_CRIT_DEGREE) {
   let critScore = 0;
   if (critScoreResult >= 1) {
     if (critScoreResult <= 6) critScore = 1;
@@ -996,7 +1049,7 @@ export function critScoreToDegree(critScoreResult) {
     else if (critScoreResult <= 18) critScore = 3;
     else critScore = 4;
   }
-  return critScore;
+  return Math.min(critScore, maxDegree);
 }
 
 export async function getCriticalRolls(
@@ -1037,7 +1090,8 @@ export async function getCriticalRolls(
   const critScoreRoll = new Roll(critScoreRollFormula);
   await critScoreRoll.evaluate();
   const critScoreResult = critScoreRoll.total;
-  const critScore = critScoreToDegree(critScoreResult);
+  const maxCritDegree = getMaxCritDegree(actor);
+  const critScore = critScoreToDegree(critScoreResult, maxCritDegree);
 
   // Crit Damage Calculation:
   // Mapping crit scores to bonus damage: 0 → 0, 1 → 5, 2 → 5, 3 → 10, 4 → 20
@@ -1087,7 +1141,11 @@ export async function getCriticalRolls(
     };
   };
 
-  const criticalOptions = [0, 1, 2, 3, 4].map(buildCriticalTotals);
+  // Degrees above the cap are not offered at all, so the Apply Damage dialog
+  // cannot hand back a critical the attacker was never able to score.
+  const criticalOptions = [0, 1, 2, 3, 4]
+    .filter((degree) => degree <= maxCritDegree)
+    .map(buildCriticalTotals);
   const selectedCritical = criticalOptions[critScore] ?? criticalOptions[0];
   const critBonusPenetration = selectedCritical.penetration;
 
@@ -1180,6 +1238,14 @@ export async function getEffectRolls(
   const actorModBleed = Number(actorModExtras.bleed) || 0;
   const actorModStagger = Number(actorModExtras.stagger) || 0;
 
+  // Enchantments applied to this weapon, for exactly the same reason: their
+  // bleed/stagger chances have to reach the dedicated accumulators, not the
+  // generic extra-effect path, or a "bleed 25%" enchantment would roll as a
+  // second Bleeding effect beside the weapon's own instead of raising it.
+  const enchantEffects = ws.enchantMods?.effects ?? {};
+  const enchantBleed = Number(enchantEffects.bleed) || 0;
+  const enchantStagger = Number(enchantEffects.stagger) || 0;
+
   // Actor-wide bleed — anything an Active Effect writes to system.effects.bleed
   // — is a *bonus*, the same kind of thing the doctrine and weapon-skill bleed
   // bonuses are: it deepens a wound the blade was already going to open. It
@@ -1259,13 +1325,15 @@ export async function getEffectRolls(
     const offValue = offProps?.effects?.[effectName] || 0;
     const coatingValue = coatingEffects[effectName] || 0;
     const actorModValue = effectName === "stagger" ? actorModStagger : 0;
+    const enchantValue = effectName === "stagger" ? enchantStagger : 0;
     let totalBaseValue =
       baseValue +
       offValue +
       abilityBonus +
       modifierBonus +
       coatingValue +
-      actorModValue;
+      actorModValue +
+      enchantValue;
 
     let isAuto =
       baseValue === -1 ||
@@ -1283,7 +1351,8 @@ export async function getEffectRolls(
         abilityBonus +
         modifierBonus +
         coatingValue +
-        actorModValue;
+        actorModValue +
+        enchantValue;
 
       if (effectName === "stagger") {
         modifiedEffectValue =
@@ -1367,6 +1436,20 @@ export async function getEffectRolls(
         effectType3: coating.effectType3,
       },
       coating.effects,
+      effectContributions,
+    );
+  }
+  // Custom effect slots from each applied enchantment, resolved one snapshot at
+  // a time: the slot names live on the enchantment that granted them, so a
+  // merged block would mis-name effect 1 as soon as two enchantments use it.
+  for (const extra of ws.enchantMods?.extras ?? []) {
+    collectExtrasFromSource(
+      {
+        effectType1: extra.effectType1,
+        effectType2: extra.effectType2,
+        effectType3: extra.effectType3,
+      },
+      extra.effects,
       effectContributions,
     );
   }
@@ -1476,6 +1559,7 @@ export async function getEffectRolls(
       ammoBleed +
       actorBleedBonus +
       actorModBleed +
+      enchantBleed +
       (abilityBleed || 0) +
       weaponSkillEffect +
       doctrineBleedBonus +
@@ -1509,7 +1593,8 @@ export async function getEffectRolls(
     (abilityEffects["bleed"] || 0) +
     (coatingEffects.bleed || 0) +
     modifierBleedBonus +
-    actorModBleed;
+    actorModBleed +
+    enchantBleed;
 
   const bleedIsAuto =
     weaponEffects.bleed === -1 ||
@@ -1533,6 +1618,7 @@ export async function getEffectRolls(
       deepSlash +
       actorBleedBonus +
       actorModBleed +
+      enchantBleed +
       abilityBleed +
       modifierBleedBonus +
       weaponSkillEffect +

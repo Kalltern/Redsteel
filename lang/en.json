@@ -414,10 +414,6 @@
         "TwoHandGrip": "Two-handed grip",
         "OffHandGrip": "Use in off-hand",
         "Currencies": "Currencies",
-        "CurrencyName": "Name",
-        "AddCurrency": "Add currency",
-        "RemoveCurrency": "Remove currency",
-        "CurrencyColor": "Text color",
         "Filter": {
           "All": "All",
           "Weapons": "Weapons",
@@ -4078,6 +4074,7 @@
         "Doctrines": "Doctrines",
         "Effects": "Effects",
         "combatEffects": "Combat Effects",
+        "Enchantments": "Enchantments",
         "OffHand": "Offhand",
         "Variants": "Variants",
         "Light": "Light"
@@ -4483,6 +4480,13 @@
             "label": "Cleric"
           }
         }
+      },
+      "Item": {
+        "FIELDS": {
+          "rations": {
+            "label": "Counts as rations"
+          }
+        }
       }
     },
     "Starsign": {
@@ -4519,6 +4523,69 @@
         "DropRejected": "Only feature Items can be granted by a race.",
         "DropNotGlobal": "Drag the feature from the sidebar or a compendium, not off an actor.",
         "DropDuplicate": "{name} is already granted by this race."
+      }
+    },
+    "Enchantment": {
+      "AppliedHeading": "Applied enchantments",
+      "TotalHeading": "Total",
+      "DropHint": "Drag an Enchantment Item here. Its bonuses are added to this item permanently.",
+      "EditorHint": "Set what this enchantment grants to the item it is applied to. Combat effects (Bleeding, Stagger, custom) are configured on the Combat Effects tab.",
+      "WeaponMods": "Weapon bonuses",
+      "GearMods": "Gear bonuses",
+      "AnyClass": "Any",
+      "Empty": "No enchantments applied.",
+      "Remove": "Remove",
+      "Added": "{name} was applied to {target}.",
+      "Removed": "{name} was removed.",
+      "DropRejected": "Only Enchantment Items can be applied here.",
+      "WrongSlot": "{name} cannot be applied to this kind of item.",
+      "WrongClass": "{name} requires a weapon of class {class}.",
+      "Duplicate": "{name} is already applied to this item.",
+      "Slot": {
+        "weapon": "Weapon",
+        "gear": "Gear"
+      },
+      "DamageTypeMode": {
+        "none": "No change",
+        "expand": "Expand",
+        "override": "Override"
+      },
+      "FIELDS": {
+        "slot": {
+          "label": "Applies to"
+        },
+        "tier": {
+          "label": "Tier"
+        },
+        "requiredClass": {
+          "label": "Required weapon class",
+          "hint": "Leave empty to allow any weapon."
+        },
+        "damageBonus": {
+          "label": "Damage bonus"
+        },
+        "damageRoll": {
+          "label": "Damage dice",
+          "hint": "Dice added to this weapon's damage, e.g. 1d4."
+        },
+        "breakthroughRoll": {
+          "label": "Breakthrough dice",
+          "hint": "Dice added to this weapon's Breakthrough, e.g. 2d6."
+        },
+        "damageTypeMode": {
+          "label": "Damage type mode",
+          "hint": "Expand adds the types below to the weapon's own; Override replaces them."
+        },
+        "damageTypes": {
+          "label": "Damage types",
+          "hint": "Up to three types, applied according to the mode above."
+        },
+        "armorValue": {
+          "label": "Armor"
+        },
+        "resist": {
+          "label": "Resistances"
+        }
       }
     },
     "Aim": {
@@ -4582,6 +4649,12 @@
       "Defend": "Defend",
       "DefendTooltip": "Roll a defense against this attack."
     },
+    "AutoDefense": {
+      "Label": "Auto-defense",
+      "Tooltip": "When this NPC is targeted by an attack, it rolls its best defense on its own: parry or dodge against a melee attack, ranged defense or dodge against a shot, a thrown weapon or direct magic. Turn it off to defend by hand.",
+      "CardNote": "Automatic defense",
+      "NoOption": "{name} has no defense it can take automatically: no usable weapon, or not enough stamina to dodge. Roll it by hand."
+    },
     "Reroll": {
       "Superseded": "Rerolled — this result no longer applies."
     },
@@ -4625,7 +4698,11 @@
       "GroupParty": "Party",
       "GroupSelected": "Selected tokens",
       "NoCandidates": "No player characters, party members or selected tokens to rest.",
-      "NoneChosen": "Nobody was chosen for the Long Rest."
+      "NoneChosen": "Nobody was chosen for the Long Rest.",
+      "EatRations": "Eat rations (camping)",
+      "FoodTooltip": "Food carried / eaten per day",
+      "AteRations": "Ate {eaten} rations ({left} left).",
+      "WentHungry": "Went hungry — only {eaten} of {needed} rations available."
     },
     "Banes": {
       "PickerTitle": "Choose a Bane ({count})",
@@ -5338,6 +5415,9 @@
       },
       "ExploitWeakness": {
         "name": "Exploit Weakness"
+      },
+      "ExploitWeaknessRanged": {
+        "name": "Exploit Weakness (Ranged)"
       },
       "ExploitWeaknessThrow": {
         "name": "Exploit Weakness (Throw)"
@@ -6592,6 +6672,10 @@
       "Bloodthirsty": {
         "name": "Bloodthirsty (WIP)"
       },
+      "Wimp": {
+        "name": "Wimp",
+        "description": "<p>However the dice fall, this creature can never land a critical hit above the second degree. Its crit range is rolled in full — only the degree it buckets into is capped.</p>"
+      },
       "Wretch": {
         "name": "Wretch (WIP)"
       },
@@ -6777,7 +6861,38 @@
       },
       "ImmuneToBlind": {
         "name": "Immune to Blind"
+      },
+      "Voracious": {
+        "name": "Voracious"
+      },
+      "Rations": {
+        "name": "Rations",
+        "description": "<p>A day's worth of trail food: hard bread, dried meat, whatever the pot gave up. One unit feeds one mouth for a third of a day. A normal character eats 3 units per Long Rest.</p>"
       }
+    },
+    "Currency": {
+      "Title": "Currency roster",
+      "MenuName": "Currency",
+      "MenuLabel": "Configure currency",
+      "MenuHint": "Define the coin denominations and the standard prices every character sheet uses.",
+      "Denominations": "Denominations",
+      "DenominationsHint": "Keys are internal and never shown to players (c1, c2, s1...). Rename the labels freely; renaming never touches anyone's purse. Value is in base units and the lowest rung must be 1.",
+      "Prices": "Prices",
+      "PricesHint": "Standard costs in base units. The readout shows what that comes to in coins.",
+      "ColKey": "Key",
+      "ColLabel": "Name",
+      "ColValue": "Worth",
+      "AddDenomination": "Add denomination",
+      "AddPrice": "Add price",
+      "Remove": "Remove",
+      "LabelPlaceholder": "Name shown on sheets",
+      "BaseWarning": "The lowest denomination is not worth 1. Prices that fall below it cannot be represented and will be rounded away.",
+      "Save": "Save",
+      "Reset": "Reset to defaults",
+      "Saved": "Currency roster saved.",
+      "PurseTotal": "Total carried",
+      "NumericKey": "Denomination keys cannot be numbers ({keys}). Use a short word like c1 or copper.",
+      "DuplicateKey": "Two denominations share the key \"{key}\". Each one needs its own."
     }
   },
   "TYPES": {
@@ -6796,7 +6911,8 @@
       "feature": "Feature",
       "spell": "Spell",
       "condition": "Condition",
-      "recipe": "Recipe"
+      "recipe": "Recipe",
+      "enchantment": "Enchantment"
     }
   }
 }

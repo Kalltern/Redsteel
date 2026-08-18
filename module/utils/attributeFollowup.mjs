@@ -58,6 +58,30 @@ export function renderMarginFollowupLine({
 }
 
 /**
+ * The gilded "versus Test" panel that closes out a contested ability's
+ * description.
+ *
+ * A versus Test ability is decided by this one number, so it gets its own
+ * block at the very bottom of the description rather than a line of prose in
+ * the middle of it: the margin is what the defender has to beat, and it is the
+ * only thing on the card anyone clicks. Takes either margin line (the attribute
+ * `.mos-followup` or the speed `.speed-followup`), so both kinds of contest
+ * read the same on a card.
+ *
+ * @param {object} data
+ * @param {string} data.heading  e.g. "Strength Test 45%".
+ * @param {string} data.line     The rendered clickable contest line.
+ * @returns {string} HTML.
+ */
+export function renderVersusTestBlock({ heading, line }) {
+  return `<div class="rs-vs-test">
+  <div class="rs-vs-test__eyebrow">Versus Test</div>
+  ${heading ? `<div class="rs-vs-test__heading">${heading}</div>` : ""}
+  <div class="rs-vs-test__line">${line}</div>
+</div>`;
+}
+
+/**
  * Attach click handlers to any margin-of-success follow-up triggers found in a
  * rendered chat message.
  *

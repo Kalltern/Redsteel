@@ -22,7 +22,7 @@
       "pools": [
         {
           "label": "Endurance-based roll",
-          "skillsRaw": "universal",
+          "skillsRaw": "end",
           "max": 2,
           "used": 0
         }

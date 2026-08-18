@@ -119,8 +119,8 @@
       "stagger": null,
       "bleed": null
     },
-    "attributeTest": "",
-    "testModifier": "",
+    "attributeTest": "will",
+    "testModifier": "@spellPower",
     "effectType1": "",
     "effectType2": "",
     "effectType3": ""

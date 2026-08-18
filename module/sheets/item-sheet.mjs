@@ -11,6 +11,7 @@ import {
   resyncItemFromSource,
   undoItemResync,
 } from "../utils/itemResync.mjs";
+import { readEnchantments } from "../documents/item.mjs";
 
 const { api, sheets } = foundry.applications;
 
@@ -46,6 +47,7 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
       removeRaceChoice: this._removeRaceChoice,
       toggleRaceChoiceEffect: this._toggleRaceChoiceEffect,
       removeRaceGrant: this._removeRaceGrant,
+      removeEnchantment: this._removeEnchantment,
       resyncItem: this._resyncItem,
       undoResync: this._undoResync,
     },
@@ -166,6 +168,13 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
     attributesRecipe: {
       template: "systems/redsteel/templates/item/attribute-parts/recipe.hbs",
     },
+    attributesEnchantment: {
+      template:
+        "systems/redsteel/templates/item/attribute-parts/enchantment.hbs",
+    },
+    enchantments: {
+      template: "systems/redsteel/templates/item/enchantments.hbs",
+    },
     effects: {
       template: "systems/redsteel/templates/item/effects.hbs",
     },
@@ -189,7 +198,12 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
         options.parts.push("attributesFeature", "effects");
         break;
       case "gear":
-        options.parts.push("attributesGear", "attributesLight", "effects");
+        options.parts.push(
+          "attributesGear",
+          "attributesLight",
+          "enchantments",
+          "effects",
+        );
         break;
       case "ammunition":
         options.parts.push("attributesAmmunition", "effects");
@@ -216,7 +230,10 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
         if (this.item.system.offhand) {
           options.parts.push("attributesOffhand");
         }
-        options.parts.push("attributesLight");
+        options.parts.push("attributesLight", "enchantments");
+        break;
+      case "enchantment":
+        options.parts.push("attributesEnchantment", "combatEffects");
         break;
       case "spell":
         options.parts.push("attributesSpell", "combatEffects", "attributesVariants");
@@ -311,6 +328,27 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
       case "attributesSpell":
         // Necessary for preserving active tab on re-render
         context.tab = context.tabs[partId];
+        break;
+      case "attributesEnchantment": {
+        context.tab = context.tabs[partId];
+        // Three fixed damage-type slots. Stored as an array, but a sheet submit
+        // can hand it back as an index-keyed object, so it is normalized here
+        // (and again when the mods are summed in documents/item.mjs).
+        const raw = this.item.system.weaponMods?.damageTypes;
+        const stored = Array.isArray(raw) ? raw : Object.values(raw ?? {});
+        context.enchantDamageTypeSlots = [0, 1, 2].map((index) => ({
+          index,
+          value: stored[index] ?? "",
+        }));
+        break;
+      }
+      case "enchantments":
+        context.tab = context.tabs[partId];
+        // The applied snapshots, plus the derived total the combat math reads,
+        // so the tab can show both the list and what it all adds up to.
+        context.enchantmentEntries = this._getEnchantmentArray();
+        context.enchantMods = this.item.system.enchantMods ?? {};
+        context.enchantSlot = this.item.type === "weapon" ? "weapon" : "gear";
         break;
       case "attributesLight":
         context.tab = context.tabs[partId];
@@ -444,8 +482,13 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
         case "attributesWeapon":
         case "attributesCondition":
         case "attributesRecipe":
+        case "attributesEnchantment":
           tab.id = "attributes";
           tab.label += "Attributes";
+          break;
+        case "enchantments":
+          tab.id = "enchantments";
+          tab.label += "Enchantments";
           break;
         case "attributesOffhand":
           tab.id = "offhand";
@@ -788,6 +831,31 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
     await this.item.update({ "system.grants": groups });
   }
 
+  /**
+   * Strip one applied enchantment off this weapon / gear item. Identified by
+   * the random id stored with the snapshot, not by index, so removing one row
+   * cannot shift another out from under the click.
+   *
+   * @this RedsteelItemSheet
+   * @param {PointerEvent} event   The originating click event
+   * @param {HTMLElement} target   The capturing HTML element which defined a [data-action]
+   * @protected
+   */
+  static async _removeEnchantment(event, target) {
+    const id = target.dataset.enchantmentId;
+    if (!id) return;
+    const entries = readEnchantments(this.item);
+    const next = entries.filter((entry) => entry?.id !== id);
+    if (next.length === entries.length) return;
+    const removed = entries.find((entry) => entry?.id === id);
+    await this.item.setFlag("redsteel", "enchantments", next);
+    ui.notifications.info(
+      game.i18n.format("REDSTEEL.Enchantment.Removed", {
+        name: removed?.name ?? "",
+      }),
+    );
+  }
+
   /** Helper Functions */
 
   /**
@@ -851,6 +919,101 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
         effectIds: ids.filter((id) => typeof id === "string" && id),
       };
     });
+  }
+
+  /**
+   * The enchantments applied to this weapon / gear item, each with a short
+   * human-readable summary of what it grants, for the Enchantments tab. Reads
+   * the stored snapshots — nothing here resolves the source Item, which is the
+   * whole point of snapshotting them at drop time.
+   * @returns {{id: string, name: string, img: string, tier: number, summary: string}[]}
+   */
+  _getEnchantmentArray() {
+    return readEnchantments(this.item).map((entry) => ({
+      id: entry?.id ?? "",
+      name: entry?.name ?? "",
+      img: entry?.img ?? "",
+      tier: Number(entry?.tier) || 0,
+      summary: this._summarizeEnchantment(entry),
+    }));
+  }
+
+  /**
+   * Compact "+5 Attack, +1d4 fire, Bleed 25%" line for one applied
+   * enchantment. Display only — the real numbers come from system.enchantMods.
+   * @param {object} entry
+   * @returns {string}
+   */
+  _summarizeEnchantment(entry) {
+    const mods = entry?.mods ?? {};
+    const effects = entry?.effects ?? {};
+    const parts = [];
+    const signed = (value) => (value > 0 ? `+${value}` : `${value}`);
+    const numeric = (key, labelKey) => {
+      const value = Number(mods[key]) || 0;
+      if (value) parts.push(`${signed(value)} ${game.i18n.localize(labelKey)}`);
+    };
+
+    // Weapon side
+    numeric("attack", "REDSTEEL.Item.Weapon.FIELDS.attack.label");
+    numeric("damageBonus", "REDSTEEL.Enchantment.FIELDS.damageBonus.label");
+    if (mods.damageRoll) parts.push(`+${mods.damageRoll}`);
+    numeric("penetration", "REDSTEEL.Item.Weapon.FIELDS.penetration.label");
+    numeric("critRange", "REDSTEEL.Item.Weapon.FIELDS.critRange.label");
+    numeric("critChance", "REDSTEEL.Item.Weapon.FIELDS.critChance.label");
+    numeric("critDamage", "REDSTEEL.Item.Weapon.FIELDS.critDamage.label");
+    numeric("dodge", "REDSTEEL.Item.Weapon.FIELDS.dodge.label");
+    if (mods.breakthroughRoll) {
+      parts.push(
+        `${game.i18n.localize("REDSTEEL.Item.Weapon.FIELDS.breakthrough.label")} ${mods.breakthroughRoll}`,
+      );
+    }
+    const damageTypes = Array.isArray(mods.damageTypes) ? mods.damageTypes : [];
+    if (damageTypes.length) parts.push(damageTypes.join(" / "));
+
+    // Gear side
+    numeric("armorValue", "REDSTEEL.Enchantment.FIELDS.armorValue.label");
+    numeric("defense", "REDSTEEL.Item.Weapon.FIELDS.defense.label");
+    numeric("rangedDefense", "REDSTEEL.Item.Gear.FIELDS.rangedDefense.label");
+    numeric("critDefense", "REDSTEEL.Item.Weapon.FIELDS.critDefense.label");
+    numeric(
+      "rangedCritDefense",
+      "REDSTEEL.Item.Gear.FIELDS.rangedCritDefense.label",
+    );
+    numeric("healthBonus", "REDSTEEL.Item.Gear.FIELDS.healthBonus.label");
+    for (const [type, value] of Object.entries(mods.resist ?? {})) {
+      const amount = Number(value) || 0;
+      if (!amount) continue;
+      parts.push(
+        `${signed(amount)} ${game.i18n.localize(
+          `REDSTEEL.Item.Gear.FIELDS.${type}.label`,
+        )}`,
+      );
+    }
+
+    // Combat effects, named the same way the attack card names them.
+    const chance = (value) => (Number(value) === -1 ? "AUTO" : `${value}%`);
+    if (Number(effects.stagger)) {
+      parts.push(
+        `${game.i18n.localize("REDSTEEL.Item.Weapon.FIELDS.stagger.label")} ${chance(effects.stagger)}`,
+      );
+    }
+    if (Number(effects.bleed)) {
+      parts.push(
+        `${game.i18n.localize("REDSTEEL.Item.Weapon.FIELDS.bleed.label")} ${chance(effects.bleed)}`,
+      );
+    }
+    for (let i = 1; i <= 3; i++) {
+      const value = Number(effects[`extra${i}`]) || 0;
+      if (!value) continue;
+      const type = entry?.[`effectType${i}`] ?? "";
+      const name =
+        type === "custom" ? (effects[`effectName${i}`] ?? "") : type;
+      if (!name) continue;
+      parts.push(`${name} ${chance(value)}`);
+    }
+
+    return parts.join(", ");
   }
 
   /**
@@ -1081,6 +1244,85 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
       await this.item.update({ "system.grants": next });
       ui.notifications.info(
         game.i18n.format("REDSTEEL.Race.Grants.Added", { name: dropped.name }),
+      );
+      return true;
+    }
+
+    // Weapons and gear accept enchantment drops: the enchantment is copied
+    // onto the item as a frozen snapshot (see the comment on the push below)
+    // and summed into system.enchantMods by documents/item.mjs.
+    if (this.item.type === "weapon" || this.item.type === "gear") {
+      const dropped = await Item.implementation.fromDropData(data);
+      if (!dropped) return false;
+
+      if (dropped.type !== "enchantment") {
+        ui.notifications.warn(
+          game.i18n.localize("REDSTEEL.Enchantment.DropRejected"),
+        );
+        return false;
+      }
+
+      // A weapon enchantment cannot be hammered into a breastplate.
+      const slot = dropped.system.slot === "gear" ? "gear" : "weapon";
+      if (slot !== this.item.type) {
+        ui.notifications.warn(
+          game.i18n.format("REDSTEEL.Enchantment.WrongSlot", {
+            name: dropped.localizedName ?? dropped.name,
+          }),
+        );
+        return false;
+      }
+
+      // Optional weapon-class gate (axe / bow / …). Blank means any.
+      const requiredClass = String(dropped.system.requiredClass ?? "").trim();
+      if (requiredClass && requiredClass !== this.item.system.class) {
+        ui.notifications.warn(
+          game.i18n.format("REDSTEEL.Enchantment.WrongClass", {
+            name: dropped.localizedName ?? dropped.name,
+            class: requiredClass,
+          }),
+        );
+        return false;
+      }
+
+      // Cloned before pushing: mutating the stored flag array in place would
+      // leave nothing for the update to diff against, and the write would be
+      // silently dropped.
+      const entries = foundry.utils.deepClone(readEnchantments(this.item));
+      if (entries.some((entry) => entry?.uuid === dropped.uuid)) {
+        ui.notifications.info(
+          game.i18n.format("REDSTEEL.Enchantment.Duplicate", {
+            name: dropped.localizedName ?? dropped.name,
+          }),
+        );
+        return false;
+      }
+
+      // Frozen snapshot, never a live link: the sword stays enchanted even if
+      // the source enchantment is later edited, deleted, or its pack goes
+      // missing. Mirrors the poison coating in utils/usePoison.mjs.
+      entries.push({
+        id: foundry.utils.randomID(),
+        name: dropped.localizedName ?? dropped.name,
+        img: dropped.img,
+        uuid: dropped.uuid,
+        tier: Number(dropped.system.tier) || 0,
+        mods: foundry.utils.deepClone(
+          (slot === "gear"
+            ? dropped.system.gearMods
+            : dropped.system.weaponMods) ?? {},
+        ),
+        effects: foundry.utils.deepClone(dropped.system.effects ?? {}),
+        effectType1: dropped.system.effectType1 ?? "",
+        effectType2: dropped.system.effectType2 ?? "",
+        effectType3: dropped.system.effectType3 ?? "",
+      });
+      await this.item.setFlag("redsteel", "enchantments", entries);
+      ui.notifications.info(
+        game.i18n.format("REDSTEEL.Enchantment.Added", {
+          name: dropped.localizedName ?? dropped.name,
+          target: this.item.localizedName ?? this.item.name,
+        }),
       );
       return true;
     }

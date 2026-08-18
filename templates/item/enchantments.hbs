@@ -1,0 +1,185 @@
+{{! Enchantments Tab — applied magic-item enchantments (weapon / gear) }}
+<section
+  class="tab enchantments {{tab.cssClass}}"
+  data-group="primary"
+  data-tab="enchantments"
+>
+
+  <h3 class="enchantment-heading">{{localize
+      "REDSTEEL.Enchantment.AppliedHeading"
+    }}</h3>
+  <p class="hint">{{localize "REDSTEEL.Enchantment.DropHint"}}</p>
+
+  <div class="enchantment-list">
+    {{#each enchantmentEntries as |entry|}}
+      <div class="enchantment-row">
+        {{#if entry.img}}
+          <img src="{{entry.img}}" width="24" height="24" alt="{{entry.name}}" />
+        {{/if}}
+        <div class="enchantment-row-body">
+          <span class="enchantment-row-name">
+            {{entry.name}}
+            {{#if entry.tier}}
+              <span class="enchantment-tier">{{localize
+                  "REDSTEEL.Enchantment.FIELDS.tier.label"
+                }}
+                {{entry.tier}}</span>
+            {{/if}}
+          </span>
+          {{#if entry.summary}}
+            <span class="enchantment-row-summary">{{entry.summary}}</span>
+          {{/if}}
+        </div>
+        {{#if @root.editable}}
+          <a
+            data-action="removeEnchantment"
+            data-enchantment-id="{{entry.id}}"
+            title="{{localize 'REDSTEEL.Enchantment.Remove'}}"
+          >
+            <i class="fas fa-xmark"></i>
+          </a>
+        {{/if}}
+      </div>
+    {{else}}
+      <p class="hint">{{localize "REDSTEEL.Enchantment.Empty"}}</p>
+    {{/each}}
+  </div>
+
+  {{#if enchantmentEntries.length}}
+    <h3 class="enchantment-heading">{{localize
+        "REDSTEEL.Enchantment.TotalHeading"
+      }}</h3>
+
+    <div class="enchantment-totals">
+      {{#if (eq enchantSlot "weapon")}}
+        {{#if enchantMods.attack}}
+          <span class="enchantment-total-pill">{{localize
+              "REDSTEEL.Item.Weapon.FIELDS.attack.label"
+            }}
+            {{enchantMods.attack}}</span>
+        {{/if}}
+        {{#if enchantMods.defense}}
+          <span class="enchantment-total-pill">{{localize
+              "REDSTEEL.Item.Weapon.FIELDS.defense.label"
+            }}
+            {{enchantMods.defense}}</span>
+        {{/if}}
+        {{#if enchantMods.damageBonus}}
+          <span class="enchantment-total-pill">{{localize
+              "REDSTEEL.Enchantment.FIELDS.damageBonus.label"
+            }}
+            {{enchantMods.damageBonus}}</span>
+        {{/if}}
+        {{#each enchantMods.damageRolls as |roll|}}
+          <span class="enchantment-total-pill">{{localize
+              "REDSTEEL.Enchantment.FIELDS.damageRoll.label"
+            }}
+            {{roll}}</span>
+        {{/each}}
+        {{#if enchantMods.penetration}}
+          <span class="enchantment-total-pill">{{localize
+              "REDSTEEL.Item.Weapon.FIELDS.penetration.label"
+            }}
+            {{enchantMods.penetration}}</span>
+        {{/if}}
+        {{#if enchantMods.critRange}}
+          <span class="enchantment-total-pill">{{localize
+              "REDSTEEL.Item.Weapon.FIELDS.critRange.label"
+            }}
+            {{enchantMods.critRange}}</span>
+        {{/if}}
+        {{#if enchantMods.critChance}}
+          <span class="enchantment-total-pill">{{localize
+              "REDSTEEL.Item.Weapon.FIELDS.critChance.label"
+            }}
+            {{enchantMods.critChance}}</span>
+        {{/if}}
+        {{#if enchantMods.critDefense}}
+          <span class="enchantment-total-pill">{{localize
+              "REDSTEEL.Item.Weapon.FIELDS.critDefense.label"
+            }}
+            {{enchantMods.critDefense}}</span>
+        {{/if}}
+        {{#if enchantMods.critDamage}}
+          <span class="enchantment-total-pill">{{localize
+              "REDSTEEL.Item.Weapon.FIELDS.critDamage.label"
+            }}
+            {{enchantMods.critDamage}}</span>
+        {{/if}}
+        {{#if enchantMods.dodge}}
+          <span class="enchantment-total-pill">{{localize
+              "REDSTEEL.Item.Weapon.FIELDS.dodge.label"
+            }}
+            {{enchantMods.dodge}}</span>
+        {{/if}}
+        {{#each enchantMods.breakthroughRolls as |roll|}}
+          <span class="enchantment-total-pill">{{localize
+              "REDSTEEL.Item.Weapon.FIELDS.breakthrough.label"
+            }}
+            {{roll}}</span>
+        {{/each}}
+        {{#each enchantMods.damageTypes as |type|}}
+          <span class="enchantment-total-pill">{{type}}</span>
+        {{/each}}
+        {{#if enchantMods.effects.stagger}}
+          <span class="enchantment-total-pill">{{localize
+              "REDSTEEL.Item.Weapon.FIELDS.stagger.label"
+            }}
+            {{enchantMods.effects.stagger}}%</span>
+        {{/if}}
+        {{#if enchantMods.effects.bleed}}
+          <span class="enchantment-total-pill">{{localize
+              "REDSTEEL.Item.Weapon.FIELDS.bleed.label"
+            }}
+            {{enchantMods.effects.bleed}}%</span>
+        {{/if}}
+      {{else}}
+        {{#if enchantMods.armorValue}}
+          <span class="enchantment-total-pill">{{localize
+              "REDSTEEL.Enchantment.FIELDS.armorValue.label"
+            }}
+            {{enchantMods.armorValue}}</span>
+        {{/if}}
+        {{#if enchantMods.defense}}
+          <span class="enchantment-total-pill">{{localize
+              "REDSTEEL.Item.Gear.FIELDS.defense.label"
+            }}
+            {{enchantMods.defense}}</span>
+        {{/if}}
+        {{#if enchantMods.rangedDefense}}
+          <span class="enchantment-total-pill">{{localize
+              "REDSTEEL.Item.Gear.FIELDS.rangedDefense.label"
+            }}
+            {{enchantMods.rangedDefense}}</span>
+        {{/if}}
+        {{#if enchantMods.critDefense}}
+          <span class="enchantment-total-pill">{{localize
+              "REDSTEEL.Item.Gear.FIELDS.critDefense.label"
+            }}
+            {{enchantMods.critDefense}}</span>
+        {{/if}}
+        {{#if enchantMods.rangedCritDefense}}
+          <span class="enchantment-total-pill">{{localize
+              "REDSTEEL.Item.Gear.FIELDS.rangedCritDefense.label"
+            }}
+            {{enchantMods.rangedCritDefense}}</span>
+        {{/if}}
+        {{#if enchantMods.healthBonus}}
+          <span class="enchantment-total-pill">{{localize
+              "REDSTEEL.Item.Gear.FIELDS.healthBonus.label"
+            }}
+            {{enchantMods.healthBonus}}</span>
+        {{/if}}
+        {{#each enchantMods.resist as |value key|}}
+          {{#if value}}
+            <span class="enchantment-total-pill">{{localize
+                (concat "REDSTEEL.Item.Gear.FIELDS." key ".label")
+              }}
+              {{value}}</span>
+          {{/if}}
+        {{/each}}
+      {{/if}}
+    </div>
+  {{/if}}
+
+</section>

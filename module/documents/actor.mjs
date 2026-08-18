@@ -203,8 +203,13 @@ export class RedsteelActor extends Actor {
         // Armor quality (Zbroje column). Shields live in weapon-set slots, not
         // here, so this only ever applies the armor column.
         const q = item.system.qualityMods ?? {};
+        // Enchantments applied to this piece (see documents/item.mjs). Read
+        // alongside quality, never folded into the base fields.
+        const ench = item.system.enchantMods ?? {};
         for (const type of elementalTypes) {
-          systemData.armor[type].bonus += item.system?.armor?.[type].value ?? 0;
+          systemData.armor[type].bonus +=
+            (item.system?.armor?.[type].value ?? 0) +
+            (Number(ench.resist?.[type]) || 0);
         }
         if (actorData.type === "character") {
           skill.acrobacy.bonus += item.system.acroPenalty ?? 0;
@@ -216,10 +221,11 @@ export class RedsteelActor extends Actor {
         } else {
           secondaryAttribute.ini.bonus += q.ini ?? 0;
         }
-        totalArmor += item.system.armor.value;
-        combatSkill.meleeDefense.critbonus += item.system.critDefense ?? 0;
+        totalArmor += (item.system.armor.value ?? 0) + (ench.armorValue ?? 0);
+        combatSkill.meleeDefense.critbonus +=
+          (item.system.critDefense ?? 0) + (ench.critDefense ?? 0);
         combatSkill.rangedDefense.critbonus +=
-          item.system.rangedCritDefense ?? 0;
+          (item.system.rangedCritDefense ?? 0) + (ench.rangedCritDefense ?? 0);
         combatSkill.dodge.bonus += item.system.dodgePenalty ?? 0;
         // Channeling (cast) penalty from this armor piece, reduced by the
         // stacked Veneficus mitigation — never beyond removing it, so it
@@ -231,15 +237,18 @@ export class RedsteelActor extends Actor {
         }
         combatSkill.channeling.bonus += castPenalty;
         combatSkill.rangedDefense.bonus +=
-          (item.system.rangedDefense ?? 0) + (q.rangedDefense ?? 0);
+          (item.system.rangedDefense ?? 0) +
+          (q.rangedDefense ?? 0) +
+          (ench.rangedDefense ?? 0);
         combatSkill.meleeDefense.bonus +=
-          (item.system.defense ?? 0) + (q.defense ?? 0);
+          (item.system.defense ?? 0) + (q.defense ?? 0) + (ench.defense ?? 0);
 
         // Odklonění from armor quality applies to both melee defense and dodge.
         systemData.defenseDeflect += q.deflect ?? 0;
         systemData.dodgeDeflect += q.deflect ?? 0;
 
-        systemData.stats.health.bonus += item.system.healthBonus ?? 0;
+        systemData.stats.health.bonus +=
+          (item.system.healthBonus ?? 0) + (ench.healthBonus ?? 0);
       }
     }
 
@@ -438,9 +447,15 @@ export class RedsteelActor extends Actor {
           !offHand?.system?.shield;
 
         const mainQuality = mainHand?.system?.qualityMods ?? {};
+        // Enchantments on the wielded weapon, read beside its quality. NPCs
+        // pick this up at roll time in defense.mjs instead; characters fold
+        // weapon defense into the stat here, so it has to be added here too or
+        // an enchanted blade would defend for NPCs and not for PCs.
+        const mainEnchant = mainHand?.system?.enchantMods ?? {};
         let weaponDefense =
           (Number(mainHand?.system?.defense) || 0) +
-          (Number(mainQuality.defense) || 0);
+          (Number(mainQuality.defense) || 0) +
+          (Number(mainEnchant.defense) || 0);
         if (isDualWield) {
           const offProps = offHand.system.offhandProperties ?? {};
           const offQuality = offHand.system.offhandQualityMods ?? {};

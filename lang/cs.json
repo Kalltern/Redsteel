@@ -414,10 +414,6 @@
         "TwoHandGrip": "Obouruční úchop",
         "OffHandGrip": "Použít v druhé ruce",
         "Currencies": "Měny",
-        "CurrencyName": "Název",
-        "AddCurrency": "Přidat měnu",
-        "RemoveCurrency": "Odebrat měnu",
-        "CurrencyColor": "Barva textu",
         "Filter": {
           "All": "Vše",
           "Weapons": "Zbraně",
@@ -4075,6 +4071,7 @@
         "Doctrines": "Doktríny",
         "Effects": "Efekty",
         "combatEffects": "Bojové efekty",
+        "Enchantments": "Očarování",
         "OffHand": "Druhá ruka",
         "Variants": "Varianty",
         "Light": "Světlo"
@@ -4480,6 +4477,13 @@
             "label": "Klerik"
           }
         }
+      },
+      "Item": {
+        "FIELDS": {
+          "rations": {
+            "label": "Počítá se jako jídlo"
+          }
+        }
       }
     },
     "Starsign": {
@@ -4516,6 +4520,69 @@
         "DropRejected": "Rasa může udělit pouze předměty typu Rys.",
         "DropNotGlobal": "Přetáhni Rys z postranního panelu nebo z kompendia, ne z postavy.",
         "DropDuplicate": "{name} už tato rasa uděluje."
+      }
+    },
+    "Enchantment": {
+      "AppliedHeading": "Použitá očarování",
+      "TotalHeading": "Celkem",
+      "DropHint": "Sem přetáhni předmět typu Očarování. Jeho bonusy se k tomuto předmětu připočtou natrvalo.",
+      "EditorHint": "Nastav, co toto očarování přidá předmětu, na který bude použito. Bojové efekty (Krvácení, Omráčení, vlastní) se nastavují na záložce Bojové efekty.",
+      "WeaponMods": "Bonusy zbraně",
+      "GearMods": "Bonusy výbavy",
+      "AnyClass": "Jakákoli",
+      "Empty": "Žádná očarování.",
+      "Remove": "Odstranit",
+      "Added": "{name} bylo použito na předmět {target}.",
+      "Removed": "{name} bylo odstraněno.",
+      "DropRejected": "Sem lze přetáhnout pouze předměty typu Očarování.",
+      "WrongSlot": "{name} nelze použít na tento druh předmětu.",
+      "WrongClass": "{name} vyžaduje zbraň třídy {class}.",
+      "Duplicate": "{name} už je na tomto předmětu použito.",
+      "Slot": {
+        "weapon": "Zbraň",
+        "gear": "Výbava"
+      },
+      "DamageTypeMode": {
+        "none": "Beze změny",
+        "expand": "Rozšířit",
+        "override": "Nahradit"
+      },
+      "FIELDS": {
+        "slot": {
+          "label": "Určeno pro"
+        },
+        "tier": {
+          "label": "Stupeň"
+        },
+        "requiredClass": {
+          "label": "Vyžadovaná třída zbraně",
+          "hint": "Ponech prázdné, pokud lze očarovat jakoukoli zbraň."
+        },
+        "damageBonus": {
+          "label": "Bonus k poškození"
+        },
+        "damageRoll": {
+          "label": "Kostky poškození",
+          "hint": "Kostky přidané k poškození této zbraně, např. 1d4."
+        },
+        "breakthroughRoll": {
+          "label": "Kostky průrazu",
+          "hint": "Kostky přidané k Průrazu této zbraně, např. 2d6."
+        },
+        "damageTypeMode": {
+          "label": "Režim typu poškození",
+          "hint": "Rozšířit přidá typy níže k vlastním typům zbraně, Nahradit je zcela nahradí."
+        },
+        "damageTypes": {
+          "label": "Typy poškození",
+          "hint": "Až tři typy, použijí se podle režimu výše."
+        },
+        "armorValue": {
+          "label": "Zbroj"
+        },
+        "resist": {
+          "label": "Odolnosti"
+        }
       }
     },
     "Aim": {
@@ -4579,6 +4646,12 @@
       "Defend": "Bránit se",
       "DefendTooltip": "Hodit obranu proti tomuto útoku."
     },
+    "AutoDefense": {
+      "Label": "Automatická obrana",
+      "Tooltip": "Když se tento NPC stane cílem útoku, hodí si sám svou nejlepší obranu: kryt nebo úhyb proti útoku na blízko, obranu na dálku nebo úhyb proti střelbě, vrhu a přímé magii. Vypni, pokud chceš házet obranu ručně.",
+      "CardNote": "Automatická obrana",
+      "NoOption": "{name} nemá žádnou obranu, kterou by mohl použít automaticky: žádná použitelná zbraň, nebo nedostatek výdrže na úhyb. Hoď ji ručně."
+    },
     "Reroll": {
       "Superseded": "Přehozeno — tento výsledek už neplatí."
     },
@@ -4622,7 +4695,11 @@
       "GroupParty": "Družina",
       "GroupSelected": "Označené figurky",
       "NoCandidates": "Není koho nechat odpočívat — žádné postavy hráčů, členové družiny ani označené figurky.",
-      "NoneChosen": "Pro dlouhý odpočinek nebyl nikdo vybrán."
+      "NoneChosen": "Pro dlouhý odpočinek nebyl nikdo vybrán.",
+      "EatRations": "Spotřebovat jídlo (táboření)",
+      "FoodTooltip": "Nesené jídlo / spotřeba za den",
+      "AteRations": "Snědeno {eaten} jednotek jídla (zbývá {left}).",
+      "WentHungry": "Hladověl — k dispozici bylo jen {eaten} z {needed} jednotek jídla."
     },
     "Banes": {
       "PickerTitle": "Vyber Metlu ({count})",
@@ -5335,6 +5412,9 @@
       },
       "ExploitWeakness": {
         "name": "Využití slabiny"
+      },
+      "ExploitWeaknessRanged": {
+        "name": "Využití slabiny (střelba)"
       },
       "ExploitWeaknessThrow": {
         "name": "Využití slabiny (vrh)"
@@ -6589,6 +6669,10 @@
       "Bloodthirsty": {
         "name": "Krvežíznivý (WIP)"
       },
+      "Wimp": {
+        "name": "Slaboch",
+        "description": "<p>Ať kostky padnou jakkoli, tento tvor nikdy neudělí kritický zásah vyššího než druhého stupně. Kritický rozsah se háže celý, zastropuje se jen stupeň, do kterého spadne.</p>"
+      },
       "Wretch": {
         "name": "Odpad (WIP)"
       },
@@ -6774,7 +6858,38 @@
       },
       "ImmuneToBlind": {
         "name": "Imunní vůči: Oslepení"
+      },
+      "Voracious": {
+        "name": "Obžera"
+      },
+      "Rations": {
+        "name": "Zásoby jídla",
+        "description": "<p>Jídlo na cesty: tvrdý chléb, sušené maso, co zbylo v kotlíku. Jedna jednotka nasytí jedny ústa na třetinu dne. Normální jedinec spotřebuje 3 jednotky za Dlouhý odpočinek.</p>"
       }
+    },
+    "Currency": {
+      "Title": "Seznam měn",
+      "MenuName": "Měny",
+      "MenuLabel": "Nastavit měny",
+      "MenuHint": "Určete nominální hodnoty mincí a standardní ceny, které používají všechny listy postav.",
+      "Denominations": "Nominální hodnoty",
+      "DenominationsHint": "Klíče jsou interní a hráči je nikdy nevidí (c1, c2, s1...). Názvy můžete libovolně měnit, přejmenování se nikdy nedotkne ničího měšce. Hodnota je v základních jednotkách a nejnižší stupeň musí být 1.",
+      "Prices": "Ceny",
+      "PricesHint": "Standardní ceny v základních jednotkách. Napravo se ukazuje, kolik to dělá v mincích.",
+      "ColKey": "Klíč",
+      "ColLabel": "Název",
+      "ColValue": "Hodnota",
+      "AddDenomination": "Přidat nominální hodnotu",
+      "AddPrice": "Přidat cenu",
+      "Remove": "Odebrat",
+      "LabelPlaceholder": "Název na listech postav",
+      "BaseWarning": "Nejnižší nominální hodnota není 1. Ceny pod ní nelze zobrazit a budou zaokrouhleny pryč.",
+      "Save": "Uložit",
+      "Reset": "Obnovit výchozí",
+      "Saved": "Seznam měn uložen.",
+      "PurseTotal": "Celkem neseno",
+      "NumericKey": "Klíč nominální hodnoty nemůže být číslo ({keys}). Použijte krátké slovo, například c1 nebo med.",
+      "DuplicateKey": "Dvě nominální hodnoty sdílejí klíč \"{key}\". Každá potřebuje vlastní."
     }
   },
   "TYPES": {
@@ -6793,7 +6908,8 @@
       "feature": "Rys",
       "spell": "Kouzlo",
       "condition": "Stav",
-      "recipe": "Recept"
+      "recipe": "Recept",
+      "enchantment": "Očarování"
     }
   }
 }

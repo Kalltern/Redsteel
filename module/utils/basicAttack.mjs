@@ -15,6 +15,7 @@ import {
 import { resolveTestRating } from "./testRating.mjs";
 import { renderMarginFollowupLine } from "./attributeFollowup.mjs";
 import { renderAttackTagsHtml } from "./opportunityAttacks.mjs";
+import { captureAttackTargets } from "./autoDefense.mjs";
 
 export async function universalAttackLogic({
   attackType,
@@ -81,39 +82,54 @@ export async function universalAttackLogic({
       }
     }
 
-    // ACTOR ENCHANT OVERRIDE
-    if (actor) {
-      const actorMods = game.redsteel.getActorCombatModifiers(actor);
-      console.log("Actor enchant mods:", actorMods);
-      if (actorMods?.damageTypes?.length) {
-        const baseExpression = weaponProfile.expression ?? [];
+    // ACTOR ENCHANT + WEAPON ENCHANT OVERRIDE
+    // Two layers that can rewrite the damage types: a cast weapon-enchant spell
+    // (Fire Weapon) on the actor, and permanent enchantments applied to the
+    // weapon itself. They never cancel each other — a frost-enchanted blade
+    // under Fire Weapon deals both — so their types are always unioned. Only
+    // the *weapon's own* base types are dropped, and only when one of the two
+    // layers asks for "override".
+    const actorMods = actor
+      ? game.redsteel.getActorCombatModifiers(actor)
+      : null;
+    const actorTypes = (actorMods?.damageTypes ?? []).map((t) =>
+      String(t).toLowerCase(),
+    );
+    const weaponEnchant = weapon?.system?.enchantMods ?? {};
+    const weaponEnchantTypes = (weaponEnchant.damageTypes ?? []).map((t) =>
+      String(t).toLowerCase(),
+    );
 
-        const baseTypes = baseExpression.filter(
-          (t) => t !== "and" && t !== "or",
-        );
-        const enchantTypes = actorMods.damageTypes.map((t) => t.toLowerCase());
-        let finalTypes;
-        if (actorMods.damageTypeMode === "override") {
-          finalTypes = enchantTypes;
-        } else {
-          // default to expand
-          finalTypes = [...baseTypes];
-          for (const type of enchantTypes) {
-            if (!finalTypes.includes(type)) {
-              finalTypes.push(type);
-            }
-          }
-        }
+    if (actorTypes.length || weaponEnchantTypes.length) {
+      // What the enchant layers build on. An ability that names its own damage
+      // types outranks the weapon's (that is the "Ability authority" fallback
+      // below), so it has to stay the base here too — otherwise enchanting a
+      // blade would silently revert every ability swung with it to the blade's
+      // own types.
+      const baseProfile = abilityProfile.expression.length
+        ? abilityProfile
+        : weaponProfile;
+      const baseTypes = (baseProfile.expression ?? []).filter(
+        (t) => t !== "and" && t !== "or",
+      );
+      const overrides =
+        actorMods?.damageTypeMode === "override" ||
+        weaponEnchant.damageTypeMode === "override";
 
-        // Always convert to OR chain
-        const newExpression = [];
-        finalTypes.forEach((type, index) => {
-          if (index > 0) newExpression.push("or");
-          newExpression.push(type);
-        });
-
-        return { expression: newExpression };
+      // default to expand
+      const finalTypes = overrides ? [] : [...baseTypes];
+      for (const type of [...actorTypes, ...weaponEnchantTypes]) {
+        if (type && !finalTypes.includes(type)) finalTypes.push(type);
       }
+
+      // Always convert to OR chain
+      const newExpression = [];
+      finalTypes.forEach((type, index) => {
+        if (index > 0) newExpression.push("or");
+        newExpression.push(type);
+      });
+
+      return { expression: newExpression };
     }
 
     // Ability authority
@@ -306,18 +322,27 @@ export async function universalAttackLogic({
     // The arrowhead's own penetration, on top of the bow's (see the ammo check
     // above — a weapon that needs ammo never gets here without it).
     const ammoPen = Number(ammo?.system?.penetration) || 0;
+    // Enchantments applied to this weapon, read next to its base stats the same
+    // way the quality mods are.
+    const enchantMods = weapon.system.enchantMods ?? {};
+    const enchantPen = Number(enchantMods.penetration) || 0;
+    const enchantCritRange = Number(enchantMods.critRange) || 0;
     const penetration =
       mainPen +
       offPen +
       ammoPen +
       customPenetration +
       actorMods.penetrationBonus +
+      enchantPen +
       improvedAimPen;
     const totalDoctrineBonus = doctrine.doctrineBonus;
     const totalDoctrineCritBonus =
       doctrine.doctrineCritBonus + customCritChance;
     const totalCritRangeBonus =
-      doctrine.doctrineCritRangeBonus + customCritRange + actorMods.critRangeBonus;
+      doctrine.doctrineCritRangeBonus +
+      customCritRange +
+      actorMods.critRangeBonus +
+      enchantCritRange;
     // ─── Attack Roll ───
     const attackData = await game.redsteel.getAttackRolls(
       actor,
@@ -527,6 +552,12 @@ ${
         },
         attack: {
           type: "attack",
+          // Which defense answers this: melee is parried, ranged and thrown are
+          // not. Read by NPC auto-defense (autoDefense.mjs).
+          attackType,
+          // Who was swung at, captured from the attacker's targets while they
+          // still exist — targets are per-user and live, the card is not.
+          targets: captureAttackTargets(),
           // What a defender contests. The margin is stored explicitly rather
           // than read back off `rolls[0]`, which only happens to be the attack
           // roll; the crit flag and raw die matter because two natural

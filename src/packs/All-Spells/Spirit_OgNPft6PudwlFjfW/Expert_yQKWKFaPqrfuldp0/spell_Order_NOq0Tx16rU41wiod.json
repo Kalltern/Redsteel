@@ -124,7 +124,7 @@
       "extra3": null
     },
     "attributeTest": "will",
-    "testModifier": "",
+    "testModifier": "@spellPower",
     "effectType1": "",
     "effectType2": "",
     "effectType3": ""

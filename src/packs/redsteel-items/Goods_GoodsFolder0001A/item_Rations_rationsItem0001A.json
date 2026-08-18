@@ -1,0 +1,31 @@
+{
+  "folder": "GoodsFolder0001A",
+  "name": "Rations",
+  "type": "item",
+  "img": "icons/consumables/food/cooked-drumstick-turkey-brown.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.Rations.name",
+    "description": "<p>A day's worth of trail food: hard bread, dried meat, whatever the pot gave up. One unit feeds one mouth for a third of a day. A normal character eats 3 units per Long Rest.</p>",
+    "quantity": 1,
+    "rations": true
+  },
+  "effects": [],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1786000000000,
+    "modifiedTime": 1786000000000,
+    "lastModifiedBy": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "_id": "rationsItem0001A",
+  "sort": 100000,
+  "_key": "!items!rationsItem0001A"
+}

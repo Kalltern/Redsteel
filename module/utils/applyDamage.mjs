@@ -1645,6 +1645,51 @@ async function handlePostDamageStatus({ actor, combatant }) {
   await applyZeroHealthState(actor, { combatant });
 }
 
+// Guards against two health writes landing close enough together that both
+// callers read the Dying effect before either of them has deleted it — which
+// ends with one delete request failing on a document that is already gone.
+const dyingHealInFlight = new Set();
+
+/**
+ * Counterpart to applyZeroHealthState: a character healed back above 0 health
+ * is no longer Dying.
+ *
+ * Deleting the Dying effect is what grants the +1 Wound and posts the resolve
+ * test (RedsteelActiveEffect#_onDelete), so this is the only thing that makes
+ * surviving the brink cost the same however it happened. Only Stabilise and
+ * First Aid used to remove Dying, so a character drinking a health potion from
+ * negative health stood back up at full health with the effect — and the death
+ * countdown — still running, and never received the Wound.
+ *
+ * Called from the authoritative GM's `updateActor` hook (see
+ * RedsteelActiveEffect#_syncDyingOnHeal) rather than from each heal call site,
+ * so every route into positive health counts: potions, healing spells, First
+ * Aid, Regeneration ticks, Absorb Blood, a long rest, a hand-edited health
+ * field, a dragged token bar. Safe to call directly and repeatedly.
+ *
+ * Downed is deliberately left in place, exactly as performStabilise leaves it —
+ * getting back on your feet is its own action.
+ *
+ * @param {Actor} actor
+ * @returns {Promise<boolean>} Whether this call removed the Dying effect.
+ */
+export async function endDyingIfHealed(actor) {
+  if (!actor?.system?.stats?.health) return false;
+  if (!(Number(actor.system.stats.health.value) > 0)) return false;
+
+  const dying = actor.effects.find((e) => e.statuses?.has("dying"));
+  if (!dying) return false;
+
+  if (dyingHealInFlight.has(actor.id)) return false;
+  dyingHealInFlight.add(actor.id);
+  try {
+    await dying.delete();
+    return true;
+  } finally {
+    dyingHealInFlight.delete(actor.id);
+  }
+}
+
 async function applyEffectToActor(
   actor,
   effectId,

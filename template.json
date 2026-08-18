@@ -153,7 +153,7 @@
           "10": null
         }
       },
-      "currencies": [],
+      "purse": {},
       "shepherdsWill": {
         "shepherdOptions": [
           "persuasion",
@@ -1016,6 +1016,7 @@
     "npc": {
       "templates": ["base"],
       "baneTypes": "",
+      "autoDefense": true,
       "cr": 0,
       "critRangeMelee": 0,
       "critRangeRanged": 0,
@@ -1289,7 +1290,8 @@
       "item",
       "consumable",
       "condition",
-      "recipe"
+      "recipe",
+      "enchantment"
     ],
     "htmlFields": ["description"],
     "templates": {
@@ -1467,6 +1469,59 @@
         }
       }
     },
+    "enchantment": {
+      "templates": ["base"],
+      "slot": "weapon",
+      "slotOptions": ["weapon", "gear"],
+      "tier": 1,
+      "requiredClass": "",
+      "weaponMods": {
+        "attack": 0,
+        "defense": 0,
+        "damageBonus": 0,
+        "damageRoll": "",
+        "penetration": 0,
+        "critRange": 0,
+        "critChance": 0,
+        "critDefense": 0,
+        "critDamage": 0,
+        "dodge": 0,
+        "breakthroughRoll": "",
+        "damageTypeMode": "",
+        "damageTypes": []
+      },
+      "damageTypeModeOptions": ["", "expand", "override"],
+      "gearMods": {
+        "armorValue": 0,
+        "defense": 0,
+        "rangedDefense": 0,
+        "critDefense": 0,
+        "rangedCritDefense": 0,
+        "healthBonus": 0,
+        "resist": {
+          "acid": 0,
+          "fire": 0,
+          "frost": 0,
+          "lightning": 0,
+          "magic": 0,
+          "dark": 0,
+          "poison": 0,
+          "holy": 0
+        }
+      },
+      "effects": {
+        "stagger": 0,
+        "bleed": 0,
+        "extra1": 0,
+        "extra2": 0,
+        "extra3": 0
+      },
+      "effectType1": "",
+      "effectType2": "",
+      "effectType3": "",
+      "effectOptions": ["and", "or"],
+      "effectTypes": []
+    },
     "feature": {
       "templates": ["base"],
       "options": ["feature", "trait", "priest"],
@@ -1519,7 +1574,8 @@
     },
     "item": {
       "templates": ["base"],
-      "quantity": 1
+      "quantity": 1,
+      "rations": false
     },
     "recipe": {
       "templates": ["base"],

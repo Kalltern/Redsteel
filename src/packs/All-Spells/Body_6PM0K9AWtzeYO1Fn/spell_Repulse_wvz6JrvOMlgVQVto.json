@@ -110,7 +110,9 @@
       "effect2": "0",
       "effect3": "0",
       "effect4": "0"
-    }
+    },
+    "attributeTest": "will",
+    "testModifier": ""
   },
   "effects": [],
   "folder": "6PM0K9AWtzeYO1Fn",

@@ -19,6 +19,7 @@ import {
   renderSpeedTestLine,
 } from "./speedTest.mjs";
 import { mindBurnUpdates } from "./mindPoints.mjs";
+import { captureAttackTargets } from "./autoDefense.mjs";
 import { resolveTestRating } from "./testRating.mjs";
 import {
   isOwnTurn,
@@ -1292,6 +1293,12 @@ ${
         },
         attack: {
           type: "attack",
+          // Which defense answers this. An ability that is neither melee nor
+          // ranged ("other") is still swung at arm's length, so it reads melee.
+          attackType: ability?.system?.type === "ranged" ? "ranged" : "melee",
+          // Who was swung at, captured from the attacker's targets while they
+          // still exist — targets are per-user and live, the card is not.
+          targets: captureAttackTargets(),
           // What a defender contests. The margin is stored explicitly rather
           // than read back off `rolls[0]`, which only happens to be the attack
           // roll; the crit flag and raw die matter because two natural

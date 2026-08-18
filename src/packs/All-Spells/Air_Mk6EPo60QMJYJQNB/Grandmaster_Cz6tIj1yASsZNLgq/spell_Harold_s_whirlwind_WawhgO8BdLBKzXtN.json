@@ -124,8 +124,8 @@
     "effectType1": "",
     "effectType2": "",
     "effectType3": "",
-    "attributeTest": "",
-    "testModifier": ""
+    "attributeTest": "will",
+    "testModifier": "@spellPower*4"
   },
   "effects": [],
   "folder": "Cz6tIj1yASsZNLgq",

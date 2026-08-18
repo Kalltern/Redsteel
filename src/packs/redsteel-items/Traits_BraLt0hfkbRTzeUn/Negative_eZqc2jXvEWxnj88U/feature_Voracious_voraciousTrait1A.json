@@ -1,0 +1,101 @@
+{
+  "folder": "eZqc2jXvEWxnj88U",
+  "name": "Voracious",
+  "type": "feature",
+  "img": "icons/consumables/meat/hock-leg-pink-brown.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.Voracious.name",
+    "description": "<p>Eats 4 units of food per day instead of 3.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [
+        false,
+        false
+      ],
+      "value": 0
+    },
+    "option": "trait"
+  },
+  "effects": [
+    {
+      "name": "Voracious",
+      "origin": null,
+      "img": "icons/consumables/meat/hock-leg-pink-brown.webp",
+      "_id": "voraciousAE0001A",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.foodPerDayBonus",
+            "value": 1,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
+      "disabled": false,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {
+        "statuscounter": {
+          "value": 1,
+          "config": {
+            "type": "default"
+          },
+          "visible": false
+        }
+      },
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "createdTime": 1786000000000,
+        "modifiedTime": 1786000000000,
+        "lastModifiedBy": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!voraciousTrait1A.voraciousAE0001A"
+    }
+  ],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1786000000000,
+    "modifiedTime": 1786000000000,
+    "lastModifiedBy": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "_id": "voraciousTrait1A",
+  "sort": 120000,
+  "_key": "!items!voraciousTrait1A"
+}

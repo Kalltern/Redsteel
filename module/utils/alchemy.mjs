@@ -115,11 +115,16 @@ export const VESSELS = {
     labelKey: "REDSTEEL.Alchemy.Vessel.Vial",
     icon: "icons/tools/laboratory/vials-blue-pink.webp",
     names: ["vial", "vials", "flakónek", "flakonek", "lahvička", "lahvicka"],
+    // Only used by deliverVessel's fallback, when the pack item is missing.
+    fallbackName: "Vial",
+    localizationKey: "REDSTEEL.Items.Vial.name",
   },
   container: {
     labelKey: "REDSTEEL.Alchemy.Vessel.Container",
     icon: "icons/containers/kitchenware/jug-wrapped-red.webp",
     names: ["container", "nádoba", "nadoba", "nádobka", "nadobka"],
+    fallbackName: "Container",
+    localizationKey: "REDSTEEL.Items.Container.name",
   },
 };
 
@@ -847,6 +852,58 @@ async function deliverResult(actor, recipe, amount, mods) {
   if (signature) {
     foundry.utils.setProperty(data, "flags.redsteel.craftBoons", signature);
   }
+  const [created] = await actor.createEmbeddedDocuments("Item", [data]);
+  return created;
+}
+
+/**
+ * Put `amount` empty vessels back into the actor's inventory, stacking onto an
+ * owned stack when there is one.
+ *
+ * The glass survives what was in it: a drunk potion leaves its vial behind, and
+ * that vial is worth exactly as much to the next craft as a bought one, so it
+ * is written with the same `flags.redsteel.alchVessel` the craft lookup reads.
+ * The pack item is the preferred source (name, art, localisation key); the
+ * fabricated fallback only matters in a world without the compendium.
+ *
+ * @param {Actor}  actor
+ * @param {string} vesselKey     A VESSELS key.
+ * @param {number} [amount=1]    How many empties to hand back.
+ * @returns {Promise<Item|null>} The stack they landed in, null if nothing was given.
+ */
+export async function deliverVessel(actor, vesselKey, amount = 1) {
+  const def = VESSELS[vesselKey];
+  if (!actor || !def || !(amount > 0)) return null;
+
+  const existing = findVesselItems(actor, vesselKey)[0];
+  if (existing) {
+    await existing.update({
+      "system.quantity": (Number(existing.system.quantity) || 0) + amount,
+    });
+    return existing;
+  }
+
+  const pack = game.packs.get(ITEM_PACK_ID);
+  let source = null;
+  if (pack) {
+    const docs = await pack.getDocuments();
+    source =
+      docs.find((d) => d.getFlag("redsteel", "alchVessel") === vesselKey) ??
+      docs.find((d) => d.type === "item" && def.names.includes(norm(d.name))) ??
+      null;
+  }
+
+  const data = source
+    ? source.toObject()
+    : {
+        name: def.fallbackName,
+        type: "item",
+        img: def.icon,
+        system: { localizationKey: def.localizationKey },
+      };
+  delete data._id;
+  foundry.utils.setProperty(data, "system.quantity", amount);
+  foundry.utils.setProperty(data, "flags.redsteel.alchVessel", vesselKey);
   const [created] = await actor.createEmbeddedDocuments("Item", [data]);
   return created;
 }

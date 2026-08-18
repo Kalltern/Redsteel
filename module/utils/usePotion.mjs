@@ -1,6 +1,7 @@
 import { applyPoisonToWeapon } from "./usePoison.mjs";
 import { clearBleedEffects } from "./otherActions.mjs";
 import { resolveDrug } from "./drugs.mjs";
+import { deliverVessel, VESSELS } from "./alchemy.mjs";
 
 /**
  * Copy the buff Active Effects authored on a consumable onto an actor as
@@ -76,6 +77,30 @@ async function applyConsumableStatusEffects(actor, consumable) {
 }
 
 /**
+ * Hand back the empty vessel a consumable was stored in.
+ *
+ * Crafting a potion spends a vial (OUTPUT_VESSEL in alchemy.mjs) and drinking
+ * it does not break the glass — the empty goes back in the pack for the next
+ * brew. Drugs are the exception: they are stored in their fat base, never in a
+ * vial, so a dose that never cost a vial must not conjure one.
+ *
+ * @param {Actor} actor
+ * @param {Item}  consumable
+ * @returns {Promise<string>}  Chat summary fragment ("" when nothing comes back).
+ */
+async function returnEmptyVessel(actor, consumable) {
+  if (consumable.system.option !== "potion") return "";
+  if (consumable.getFlag?.("redsteel", "drug")) return "";
+
+  const vesselKey = "vial";
+  const delivered = await deliverVessel(actor, vesselKey, 1);
+  if (!delivered) return "";
+
+  const label = game.i18n.localize(VESSELS[vesselKey].labelKey);
+  return `<p><b>Empty:</b> +1× ${label}</p>`;
+}
+
+/**
  * @param {Item|null} [preselected]  Skip the picker and drink this one. It must
  *                                   belong to the actor the token resolves to.
  */
@@ -146,12 +171,17 @@ export async function usePotion(preselected = null) {
     // `flags.redsteel.drug`, which is every potion in the pack.
     effectResults += await resolveDrug(actor, consumable);
 
+    // Read the vessel off the item before the stack below can delete it.
+    const vesselResult = await returnEmptyVessel(actor, consumable);
+
     if (consumable.system.quantity > 0) {
       const newQty = consumable.system.quantity - 1;
       newQty > 0
         ? await consumable.update({ "system.quantity": newQty })
         : await consumable.delete();
     }
+
+    effectResults += vesselResult;
 
     return effectResults;
   };

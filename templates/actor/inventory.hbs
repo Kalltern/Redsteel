@@ -374,48 +374,32 @@
 {{!-- CURRENCY DIVIDER --}}
 {{#if (eq actor.type "character")}}
 <div class="currency-bar">
-  <span class="currency-label">{{localize "REDSTEEL.Actor.Inventory.Currencies"}}</span>
+  <span class="currency-label">
+    {{localize "REDSTEEL.Actor.Inventory.Currencies"}}
+    {{#if @root.isGM}}
+      <a class="currency-config" data-action="openCurrencyConfig" title="{{localize "REDSTEEL.Currency.MenuLabel"}}">
+        <i class="fa-solid fa-gear"></i>
+      </a>
+    {{/if}}
+  </span>
   <div class="currency-list">
-    {{#each currencies as |coin index|}}
-      <div class="currency-chip">
-        <input
-          type="text"
-          class="currency-name"
-          name="system.currencies.{{index}}.label"
-          value="{{coin.label}}"
-          placeholder="{{localize "REDSTEEL.Actor.Inventory.CurrencyName"}}"
-          style="color: {{coin.color}};"
-        />
+    {{#each purse as |coin|}}
+      <div class="currency-chip" title="{{coin.label}}">
+        <span class="currency-name" style="color: {{coin.color}};">{{coin.label}}</span>
         <input
           type="number"
           class="currency-value"
-          name="system.currencies.{{index}}.value"
-          value="{{coin.value}}"
+          name="system.purse.{{coin.key}}"
+          value="{{coin.count}}"
+          min="0"
+          step="1"
+          data-dtype="Number"
           style="color: {{coin.color}};"
         />
-        {{#if @root.editable}}
-          <input
-            type="color"
-            class="currency-color"
-            name="system.currencies.{{index}}.color"
-            value="{{coin.color}}"
-            title="{{localize "REDSTEEL.Actor.Inventory.CurrencyColor"}}"
-          />
-          <a
-            class="currency-delete"
-            data-action="deleteCurrency"
-            data-index="{{index}}"
-            title="{{localize "REDSTEEL.Actor.Inventory.RemoveCurrency"}}"
-          >
-            <i class="fa-solid fa-xmark"></i>
-          </a>
-        {{/if}}
       </div>
     {{/each}}
-    {{#if @root.editable}}
-      <a class="currency-add" data-action="addCurrency" title="{{localize "REDSTEEL.Actor.Inventory.AddCurrency"}}">
-        <i class="fa-solid fa-plus"></i>
-      </a>
+    {{#if purse.length}}
+      <span class="currency-total" title="{{localize "REDSTEEL.Currency.PurseTotal"}}">{{purseTotal}}</span>
     {{/if}}
   </div>
 </div>

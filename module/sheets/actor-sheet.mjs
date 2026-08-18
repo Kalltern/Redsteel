@@ -14,6 +14,12 @@ import {
 } from "../utils/rerolls.mjs";
 import { scheduleRerollRefresh } from "../utils/calendariaIntegration.mjs";
 import {
+  CurrencyConfig,
+  getRoster,
+  purseTotal,
+  formatPrice,
+} from "../utils/currency.mjs";
+import {
   SUBSTANCES,
   STATIONS,
   MAX_BATCH,
@@ -155,8 +161,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       toggleAmmoEquipped: this._toggleAmmoEquipped,
       toggleArmorDurability: this._toggleArmorDurability,
       toggleSpecNode: this._toggleSpecNode,
-      addCurrency: this._addCurrency,
-      deleteCurrency: this._deleteCurrency,
+      openCurrencyConfig: this._openCurrencyConfig,
       setInventoryFilter: this._setInventoryFilter,
       setSpellRank: this._setSpellRank,
       setMiracleRank: this._setMiracleRank,
@@ -974,51 +979,18 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
   }
 
   /* -------------------------------------------- */
-  /*  Currencies (free-form list on the divider)  */
+  /*  Currencies                                  */
   /* -------------------------------------------- */
-
-  /** Default text color applied to a currency when none is set. */
-  static DEFAULT_CURRENCY_COLOR = "#e6c878";
-
-  /**
-   * Coerce the stored currencies into a real array. Foundry's form submission
-   * expands the `system.currencies.<index>.<field>` inputs into an indexed
-   * object ({0:…, 1:…}), so the persisted value may not be an array.
+  /*
+   * The purse is one chip per denomination on the GM's roster, so every sheet
+   * in the world agrees on what a coin is worth. Players type counts; the
+   * names, colours and values are the GM's, edited in the currency config.
    */
-  static _normalizeCurrencies(raw) {
-    let list;
-    if (Array.isArray(raw)) list = raw;
-    else if (raw && typeof raw === "object") list = Object.values(raw);
-    else list = [];
-    // Backfill the text color so older rows (and the template) always have one.
-    return list.map((c) => ({ color: RedsteelActorSheet.DEFAULT_CURRENCY_COLOR, ...c }));
-  }
 
-  /** Append a new, empty currency row to the actor. */
-  static async _addCurrency(event, target) {
-    if (!this.isEditable) return;
-    const currencies = RedsteelActorSheet._normalizeCurrencies(
-      foundry.utils.deepClone(this.actor.system.currencies ?? []),
-    );
-    currencies.push({
-      label: "",
-      value: 0,
-      color: RedsteelActorSheet.DEFAULT_CURRENCY_COLOR,
-    });
-    await this.actor.update({ "system.currencies": currencies });
-  }
-
-  /** Remove the currency row at data-index. */
-  static async _deleteCurrency(event, target) {
-    if (!this.isEditable) return;
-    const index = Number(target.dataset.index);
-    if (!Number.isInteger(index)) return;
-    const currencies = RedsteelActorSheet._normalizeCurrencies(
-      foundry.utils.deepClone(this.actor.system.currencies ?? []),
-    );
-    if (index < 0 || index >= currencies.length) return;
-    currencies.splice(index, 1);
-    await this.actor.update({ "system.currencies": currencies });
+  /** Open the GM's currency roster / price list. */
+  static async _openCurrencyConfig() {
+    if (!game.user.isGM) return;
+    new CurrencyConfig().render(true);
   }
 
   /**
@@ -1457,27 +1429,6 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
 
   /* -------------------------------------------- */
 
-  /**
-   * @override
-   * Foundry expands the `system.currencies.<index>.<field>` inputs into an
-   * indexed object on submit. Coerce it back to an array so the stored value
-   * stays array-shaped (otherwise add/delete via splice/push break).
-   */
-  _prepareSubmitData(event, form, formData, updateData) {
-    const submitData = super._prepareSubmitData(
-      event,
-      form,
-      formData,
-      updateData,
-    );
-    const currencies = submitData?.system?.currencies;
-    if (currencies && !Array.isArray(currencies)) {
-      submitData.system.currencies =
-        RedsteelActorSheet._normalizeCurrencies(currencies);
-    }
-    return submitData;
-  }
-
   /** @override */
   async _prepareContext(options) {
     // Output initialization
@@ -1664,10 +1615,15 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       .filter((i) => i.type === "ammunition" && i.system.equipped)
       .sort((a, b) => (a.sort || 0) - (b.sort || 0));
 
-    // Free-form currency list shown on the equipment / inventory divider.
-    context.currencies = RedsteelActorSheet._normalizeCurrencies(
-      this.actor.system.currencies,
-    );
+    // The purse: one chip per denomination the GM has defined, largest first.
+    // Players only ever type counts — labels, colours and worth are the GM's.
+    const purse = this.actor.system.purse ?? {};
+    context.purse = getRoster().map((denom) => ({
+      ...denom,
+      count: Math.max(0, Math.floor(Number(purse[denom.key]) || 0)),
+    }));
+    context.purseTotal = formatPrice(purseTotal(this.actor));
+    context.isGM = game.user.isGM;
 
     return context;
   }

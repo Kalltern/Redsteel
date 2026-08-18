@@ -68,6 +68,141 @@ function qualityModsFor(slot, quality) {
 }
 
 /**
+ * The enchantments applied to a weapon / gear item, as stored by the item
+ * sheet's drop handler. Each entry is a frozen snapshot of the enchantment
+ * Item taken at drop time (see `_onDropItem`), never a live link, so the sword
+ * stays enchanted even if the source item is edited or its pack goes missing.
+ * @param {Item} item
+ * @returns {object[]}   Always an array, empty when nothing is applied.
+ */
+export function readEnchantments(item) {
+  const raw = item?.getFlag?.("redsteel", "enchantments");
+  return Array.isArray(raw) ? raw : [];
+}
+
+/**
+ * Sum the applied enchantments of a *weapon* into one modifier block, mirroring
+ * `qualityModsFor`: the result is always fully shaped (zeros, empty arrays) so
+ * every read site can spread or add it without guarding. Kept apart from the
+ * base stat fields, exactly like `qualityMods`, so the sheet inputs keep
+ * showing and saving the weapon's own hand-entered values.
+ *
+ * Numbers add. Dice expressions (`damageRoll` / `breakthroughRoll`) collect
+ * into arrays so each one rolls as its own term. Damage types concatenate
+ * deduped, and `override` beats `expand` no matter which enchantment was
+ * applied last — an enchantment that *replaces* the damage type is the stronger
+ * claim. `extras` keeps one entry per enchantment so the custom effect slots
+ * can still be resolved against the effectType1..3 of the source they came from.
+ * @param {object[]} entries
+ */
+function weaponEnchantMods(entries) {
+  const mods = {
+    attack: 0,
+    defense: 0,
+    damageBonus: 0,
+    damageRolls: [],
+    penetration: 0,
+    critRange: 0,
+    critChance: 0,
+    critDefense: 0,
+    critDamage: 0,
+    dodge: 0,
+    breakthroughRolls: [],
+    damageTypeMode: "",
+    damageTypes: [],
+    effects: { stagger: 0, bleed: 0, extra1: 0, extra2: 0, extra3: 0 },
+    extras: [],
+  };
+
+  for (const entry of entries) {
+    const m = entry?.mods ?? {};
+    mods.attack += Number(m.attack) || 0;
+    mods.defense += Number(m.defense) || 0;
+    mods.damageBonus += Number(m.damageBonus) || 0;
+    mods.penetration += Number(m.penetration) || 0;
+    mods.critRange += Number(m.critRange) || 0;
+    mods.critChance += Number(m.critChance) || 0;
+    mods.critDefense += Number(m.critDefense) || 0;
+    mods.critDamage += Number(m.critDamage) || 0;
+    mods.dodge += Number(m.dodge) || 0;
+
+    const damageRoll = String(m.damageRoll ?? "").trim();
+    if (damageRoll) mods.damageRolls.push(damageRoll);
+    const breakthroughRoll = String(m.breakthroughRoll ?? "").trim();
+    if (breakthroughRoll) mods.breakthroughRolls.push(breakthroughRoll);
+
+    // Tolerates the array having become an index-keyed object after a sheet
+    // submit — the same quirk the race/reroll editors guard against.
+    const types = Array.isArray(m.damageTypes)
+      ? m.damageTypes
+      : Object.values(m.damageTypes ?? {});
+    for (const type of types) {
+      const key = String(type ?? "").trim().toLowerCase();
+      if (key && !mods.damageTypes.includes(key)) mods.damageTypes.push(key);
+    }
+    const mode = String(m.damageTypeMode ?? "").trim();
+    if (mode && mods.damageTypeMode !== "override") mods.damageTypeMode = mode;
+
+    const effects = entry?.effects ?? {};
+    for (const key of Object.keys(mods.effects)) {
+      mods.effects[key] += Number(effects[key]) || 0;
+    }
+
+    mods.extras.push({
+      name: entry?.name ?? "",
+      effectType1: entry?.effectType1 ?? "",
+      effectType2: entry?.effectType2 ?? "",
+      effectType3: entry?.effectType3 ?? "",
+      effects: { ...effects },
+    });
+  }
+
+  return mods;
+}
+
+/**
+ * The gear counterpart of {@link weaponEnchantMods}: everything an enchanted
+ * armour piece or shield adds. Same contract — always fully shaped.
+ * @param {object[]} entries
+ */
+function gearEnchantMods(entries) {
+  const resistTypes = [
+    "acid",
+    "fire",
+    "frost",
+    "lightning",
+    "magic",
+    "dark",
+    "poison",
+    "holy",
+  ];
+  const mods = {
+    armorValue: 0,
+    defense: 0,
+    rangedDefense: 0,
+    critDefense: 0,
+    rangedCritDefense: 0,
+    healthBonus: 0,
+    resist: Object.fromEntries(resistTypes.map((type) => [type, 0])),
+  };
+
+  for (const entry of entries) {
+    const m = entry?.mods ?? {};
+    mods.armorValue += Number(m.armorValue) || 0;
+    mods.defense += Number(m.defense) || 0;
+    mods.rangedDefense += Number(m.rangedDefense) || 0;
+    mods.critDefense += Number(m.critDefense) || 0;
+    mods.rangedCritDefense += Number(m.rangedCritDefense) || 0;
+    mods.healthBonus += Number(m.healthBonus) || 0;
+    for (const type of resistTypes) {
+      mods.resist[type] += Number(m.resist?.[type]) || 0;
+    }
+  }
+
+  return mods;
+}
+
+/**
  * Extend the basic Item with some very simple modifications.
  * @extends {Item}
  */
@@ -175,15 +310,25 @@ export class RedsteelItem extends Item {
   getShieldStats() {
     if (this.isBrokenShield) return { ...IMPROVISED_SHIELD_STATS };
 
-    // Shield quality (Štít column) is layered on top of the base stat block.
+    // Shield quality (Štít column) is layered on top of the base stat block,
+    // and enchantments on top of that.
     const q = this.system.qualityMods ?? {};
+    const e = this.system.enchantMods ?? {};
 
     return {
-      defense: (this.system.defense ?? 0) + (q.defense ?? 0),
-      rangedDefense: (this.system.rangedDefense ?? 0) + (q.rangedDefense ?? 0),
-      critDefense: (this.system.critDefense ?? 0) + (q.critDefense ?? 0),
+      defense: (this.system.defense ?? 0) + (q.defense ?? 0) + (e.defense ?? 0),
+      rangedDefense:
+        (this.system.rangedDefense ?? 0) +
+        (q.rangedDefense ?? 0) +
+        (e.rangedDefense ?? 0),
+      critDefense:
+        (this.system.critDefense ?? 0) +
+        (q.critDefense ?? 0) +
+        (e.critDefense ?? 0),
       rangedCritDefense:
-        (this.system.rangedCritDefense ?? 0) + (q.rangedCritDefense ?? 0),
+        (this.system.rangedCritDefense ?? 0) +
+        (q.rangedCritDefense ?? 0) +
+        (e.rangedCritDefense ?? 0),
       dodgePenalty: this.system.dodgePenalty ?? 0,
       iniPenalty: this.system.iniPenalty ?? 0,
       maxSpeed: this.system.maxSpeed ?? 0,
@@ -219,6 +364,31 @@ export class RedsteelItem extends Item {
           q,
         );
       }
+
+      // Enchantments (magic items): the same idea as quality one level up —
+      // a second derived modifier block, summed from the snapshots the drop
+      // handler stored on this item, and read next to `qualityMods` at every
+      // combat-math site. Base fields stay untouched.
+      const enchantments = readEnchantments(this);
+      this.system.enchantMods =
+        this.type === "weapon"
+          ? weaponEnchantMods(enchantments)
+          : gearEnchantMods(enchantments);
+    }
+
+    // The enchantment editor's "required weapon class" dropdown. Same list the
+    // weapon sheet uses; rebuilt here every prepare, like every other option
+    // list in this file, because template.json alone never reaches the sheet.
+    if (this.type === "enchantment") {
+      this.system.classOptions = [
+        "axe",
+        "blunt",
+        "sword",
+        "polearm",
+        "bow",
+        "crossbow",
+        "firearm",
+      ];
     }
 
     if (this.type === "ammunition") {
@@ -264,7 +434,11 @@ export class RedsteelItem extends Item {
       this.type === "spell" ||
       this.type === "ability" ||
       this.type === "weapon" ||
-      this.type === "consumable"
+      this.type === "consumable" ||
+      // Enchantments reuse the shared combatEffects tab, whose dropdowns read
+      // this list. It is rebuilt on every prepare, so template.json alone would
+      // never reach the sheet.
+      this.type === "enchantment"
     ) {
       this.system.effectTypes = [
         "custom",

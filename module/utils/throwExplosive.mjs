@@ -7,6 +7,7 @@ import {
 } from "./rollAdvantage.mjs";
 import { getAttackRerollTokens } from "./rerolls.mjs";
 import { resolveAimOnAttack } from "./aim.mjs";
+import { captureAttackTargets } from "./autoDefense.mjs";
 
 /** Local copy of the damage-profile builder used across the attack pipeline. */
 function buildDamageProfile(systemData) {
@@ -281,6 +282,11 @@ ${damageLine}
 
         attack: {
           type: "attack",
+          // Thrown: answered by Ranged Defense or a dodge, never a parry.
+          attackType: "throwing",
+          // Who it was thrown at, captured from the thrower's targets while they
+          // still exist — targets are per-user and live, the card is not.
+          targets: captureAttackTargets(),
           damageProfile,
           effects: mechanicalEffects,
           normal: {

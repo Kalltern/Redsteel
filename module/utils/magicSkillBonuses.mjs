@@ -4,6 +4,7 @@ import { withRollBias, applyDesperateCrit } from "./rollAdvantage.mjs";
 import { getCritDegreeTriggers } from "../helpers/specialisations.mjs";
 import { hasHtmlContent } from "./chatBlocks.mjs";
 import { getStrikeId } from "./strikes.mjs";
+import { getMaxCritDegree } from "./combatSkillBonuses.mjs";
 import {
   isSpeedTest,
   rollSpeedTest,
@@ -12,6 +13,7 @@ import {
 import { resolveTestRating } from "./testRating.mjs";
 import { resolveSpellPowerTokens } from "./spellCards.mjs";
 import { setupDialogTabs } from "./dialogTabMemory.mjs";
+import { captureAttackTargets } from "./autoDefense.mjs";
 
 // --- Helper for Dialogs (CSS Injection) ---
 function _injectDialogCSS() {
@@ -1364,6 +1366,9 @@ export async function finalizeRollsAndPostChat(
     else if (critScoreResult <= 18) critScore = 3;
     else critScore = 4;
   }
+  // A capped caster (Wimp) rolls the same crit range, it just cannot
+  // bucket above their ceiling.
+  critScore = Math.min(critScore, getMaxCritDegree(actor));
 
   const critDamageMapping = [0, 5, 5, 10, 20];
   const critBonusDamage = critDamageMapping[critScore] || 0;
@@ -1561,6 +1566,15 @@ export async function finalizeRollsAndPostChat(
       type: "attack",
       // Lets the Apply Damage dialog offer the spell half-damage toggle.
       isSpell: true,
+      // Direct magic is answered by Ranged Defense or a dodge, never a parry.
+      attackType: "magic",
+      // What a defender contests. Explicitly null for an uncontested cast that
+      // never rolled: readers otherwise fall back to `rolls[0]`, which in that
+      // case is the damage roll and would be read as a wildly good attack.
+      margin: attackRoll ? attackRoll.total : null,
+      // Who it was aimed at, captured from the caster's targets while they still
+      // exist — targets are per-user and live, the card is not.
+      targets: captureAttackTargets(),
       damageProfile,
       normal: {
         damage: damageTotal,

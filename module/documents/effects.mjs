@@ -279,6 +279,7 @@ export class RedsteelActiveEffect extends ActiveEffect {
     Hooks.on("updateActor", async (actor, changed, options) => {
       if (!this._isAuthoritative()) return;
       await this._syncResourceStateEffects(actor);
+      await this._syncDyingOnHeal(actor, changed);
 
       // Hex (Zranitelnost): an original instance of damage just hit a Hexed
       // target — add the 1d8 armor-ignoring rider. The flag is set in the
@@ -396,6 +397,25 @@ export class RedsteelActiveEffect extends ActiveEffect {
         await this._handleCorruptionMutation(actor, val, max);
       }
     }
+  }
+
+  /**
+   * Healing a character back above 0 health ends Dying, exactly as a successful
+   * Stabilise does — see `endDyingIfHealed` in applyDamage.mjs for the rule and
+   * why it is driven off the actor update instead of from each heal call site.
+   */
+  static async _syncDyingOnHeal(actor, changed) {
+    // Only a health write can end Dying. Gating on it also stops the +1 Wound
+    // update inside `_onDelete` from re-entering this handler, and narrows the
+    // window the shared in-flight guard has to cover (drinking a potion writes
+    // toxicity and health as two separate updates).
+    const healthWrite = foundry.utils.getProperty(
+      changed ?? {},
+      "system.stats.health.value",
+    );
+    if (healthWrite == null) return;
+
+    await game.redsteel.endDyingIfHealed?.(actor);
   }
 
   /**

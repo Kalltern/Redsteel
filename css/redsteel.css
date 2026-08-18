@@ -4273,6 +4273,56 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   text-shadow: 0 0 6px rgba(160, 60, 60, 0.8);
 }
 
+/* Versus Test panel — the gilded block that closes a contested ability's
+   description (Shield Bash, Shield Charge, Knockdown). The margin is the only
+   number anyone acts on, so it is deliberately loud and set apart from the
+   prose above it rather than reading as another sentence. */
+.rs-vs-test {
+  margin: 10px 0 2px;
+  padding: 8px 10px;
+  border: 1px solid #8b6914;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #2b2410 0%, #1d1a0e 100%);
+  text-align: center;
+  line-height: 1.35;
+}
+
+.rs-vs-test__eyebrow {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: #8b6914;
+}
+
+.rs-vs-test__heading {
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #c8a84b;
+}
+
+.rs-vs-test__line {
+  margin-top: 4px;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+/* The clickable margin itself. Overrides the muted steel the follow-up lines
+   use elsewhere on a card — inside this panel it is the headline. */
+.chat-message .rs-vs-test .mos-followup,
+.chat-message .rs-vs-test .speed-followup {
+  color: #e0c165;
+  text-shadow: 0 0 6px rgba(200, 168, 75, 0.35);
+  text-decoration: underline dotted rgba(224, 193, 101, 0.6);
+}
+
+.chat-message .rs-vs-test .mos-followup:hover,
+.chat-message .rs-vs-test .speed-followup:hover {
+  color: #f7e3b0;
+  text-shadow: 0 0 10px rgba(224, 193, 101, 0.8);
+}
+
 /* Attribute follow-up dialog: stack the choices as a vertical list */
 .attribute-followup-dialog .dialog-buttons {
   display: flex;
@@ -6442,28 +6492,27 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   flex: 1 1 auto;
 }
 
+/* One chip per denomination on the GM's roster. The name is plain text, not an
+   input: a player edits how many coins they hold, never what a coin is called. */
 .currency-chip {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 2px 4px 2px 8px;
+  padding: 2px 6px;
   border-radius: 6px;
   background: #2b2b2b;
   border: 1px solid #444;
 }
 
-.currency-chip input.currency-name {
-  width: 64px;
-  background: transparent;
-  border: none;
-  border-bottom: 1px dotted #555;
-  color: #e6c878;
-  font-size: 12px;
-  padding: 0 2px;
+.currency-chip .currency-name {
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  opacity: 0.85;
 }
 
 .currency-chip input.currency-value {
-  width: 48px;
+  width: 56px;
   background: transparent;
   border: none;
   color: #f1efe8;
@@ -6473,59 +6522,127 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   padding: 0 2px;
 }
 
-.currency-chip input::placeholder {
-  color: #6e655a;
+/* Everything the purse is worth, in the largest coins that fit. */
+.currency-total {
+  margin-left: auto;
+  padding-left: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #e6c878;
+  opacity: 0.8;
+  white-space: nowrap;
 }
 
-.currency-chip input.currency-color {
-  width: 16px;
-  height: 16px;
-  padding: 0;
-  border: 1px solid #555;
-  border-radius: 3px;
-  background: transparent;
-  cursor: pointer;
-  flex: 0 0 auto;
-}
-
-.currency-chip input.currency-color::-webkit-color-swatch-wrapper {
-  padding: 0;
-}
-
-.currency-chip input.currency-color::-webkit-color-swatch {
-  border: none;
-  border-radius: 2px;
-}
-
-.currency-delete {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 16px;
-  height: 16px;
+.currency-config {
+  margin-left: 6px;
   color: #9a9388;
   cursor: pointer;
 }
 
-.currency-delete:hover {
-  color: #e2706e;
+.currency-config:hover {
+  color: #d9a13b;
 }
 
-.currency-add {
-  display: inline-flex;
+/* ============================= */
+/* CURRENCY CONFIG (GM)          */
+/* ============================= */
+
+.rs-currency-config .rs-currency-body {
+  padding: 8px 12px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.rs-currency-config h3 {
+  margin: 14px 0 2px;
+  border-bottom: 1px solid rgba(217, 161, 59, 0.35);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.rs-currency-config .rs-currency-hint {
+  margin: 0 0 6px;
+  font-size: 11px;
+  opacity: 0.65;
+}
+
+.rs-currency-config .rs-currency-warn {
+  margin: 0 0 8px;
+  padding: 6px 8px;
+  border: 1px solid #8b5a2b;
+  border-radius: 4px;
+  background: rgba(179, 74, 74, 0.12);
+  font-size: 11px;
+  color: #e0b070;
+}
+
+.rs-currency-config .rs-currency-list,
+.rs-currency-config .rs-currency-head {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.rs-currency-config .rs-currency-head li,
+.rs-currency-config .rs-currency-row {
+  display: grid;
+  grid-template-columns: 70px 1fr 110px 28px 20px;
   align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
-  border: 1px dashed #6e655a;
+  gap: 6px;
+  padding: 2px 0;
+}
+
+.rs-currency-config .rs-currency-head li {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.55;
+}
+
+/* Prices trade the colour swatch for a live "what does that buy" readout. */
+.rs-currency-config .rs-price-row {
+  grid-template-columns: 110px 1fr 90px 1fr 20px;
+}
+
+.rs-currency-config .rs-price-readout {
+  font-size: 11px;
+  color: #e6c878;
+  opacity: 0.8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rs-currency-config .rs-cur-add {
+  display: inline-block;
+  margin: 6px 0 2px;
+  font-size: 11px;
   color: #d9a13b;
   cursor: pointer;
 }
 
-.currency-add:hover {
-  border-color: #d9a13b;
-  background: rgba(217, 161, 59, 0.12);
+.rs-currency-config .rs-cur-del {
+  color: #9a9388;
+  cursor: pointer;
+  text-align: center;
+}
+
+.rs-currency-config .rs-cur-del:hover {
+  color: #e2706e;
+}
+
+.rs-currency-config .rs-currency-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 8px 12px;
+  border-top: 1px solid rgba(217, 161, 59, 0.35);
+}
+
+.rs-currency-config .rs-currency-footer button {
+  width: auto;
+  flex: 0 0 auto;
 }
 
 /* ============================= */
@@ -7781,6 +7898,79 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   margin-left: auto;
   cursor: pointer;
   color: #c0706a;
+}
+
+/* Enchantment system: applied list on weapon/gear sheets + the editor tab */
+.enchantment-heading {
+  margin: 10px 0 2px;
+  color: #c9b26b;
+}
+
+.enchantment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.enchantment-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(181, 151, 80, 0.35);
+  border-radius: 4px;
+}
+
+.enchantment-row img {
+  border: none;
+  flex: 0 0 auto;
+}
+
+.enchantment-row-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.enchantment-row-name {
+  color: #e0d6bd;
+  font-weight: bold;
+}
+
+.enchantment-tier {
+  margin-left: 4px;
+  font-size: 0.85em;
+  font-weight: normal;
+  color: #9c8f74;
+}
+
+.enchantment-row-summary {
+  font-size: 0.85em;
+  color: #c9b26b;
+}
+
+.enchantment-row a {
+  margin-left: auto;
+  cursor: pointer;
+  color: #c0706a;
+}
+
+.enchantment-totals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.enchantment-total-pill {
+  padding: 1px 6px;
+  font-size: 0.85em;
+  color: #e0d6bd;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(181, 151, 80, 0.45);
+  border-radius: 8px;
 }
 
 /* Race item sheet: choice-group editor */
@@ -9210,10 +9400,13 @@ body.redsteel-bg3-hotbar #hotbar {
    nowrap, deliberately, and the common cases fit by arithmetic rather than by
    hope. The attribute row sets the bar's width: twelve 44px cells at the 3px
    group gap, plus the divider and the row's own gaps, is about 566px. Take off
-   the modifier (74), the two tray toggles (26 each) and three 8px gaps and
-   this tray has roughly 415px. A character carrying every condition at once,
-   on top of the two steady readouts (detection, movement), is about 380px, so
-   the condition view always fits.
+   the modifier (74), the three tray toggles (26 each: auto-defense, potions,
+   weapon sets) and four 8px gaps and this tray has roughly 381px. A character
+   carrying every condition at once, on top of the two steady readouts
+   (detection, movement), is about 380px — so the condition view still fits, but
+   only just. It used to clear by 35px; the auto-defense chip spent that margin.
+   Anything further added to this row has to widen the panel or come out of the
+   tray's own padding.
 
    Two cases can exceed it: a character in the armor view warded against most
    of the eight damage types, and an NPC, whose tray carries both readings at
@@ -9415,6 +9608,26 @@ body.redsteel-bg3-hotbar #hotbar {
 #redsteel-bg3-hotbar .rs-bg3-tray-toggle:hover {
   color: var(--rs-bg3-bright);
   border-color: var(--rs-bg3-accent);
+}
+
+/* Unlike the potion and weapon-set toggles, this one sits straight in the row
+   rather than inside a positioned wrap, so it has to refuse to shrink on its
+   own account: a bare flex child with only a width still collapses. */
+#redsteel-bg3-hotbar .rs-bg3-autodef {
+  flex: 0 0 auto;
+}
+
+/* Auto-defense: a switch, not a tray, so it has an armed state the trays do
+   not. Lit uses the same accent-plus-inner-glow recipe as the active weapon
+   set, which is this panel's existing "this one is on" reading. Off is the
+   plain toggle skin above, untouched — the state is shown by the on state
+   brightening, never by the off state being dimmed. */
+#redsteel-bg3-hotbar .rs-bg3-autodef.active {
+  color: var(--rs-bg3-bright);
+  border-color: var(--rs-bg3-accent);
+  box-shadow:
+    inset 0 0 10px rgba(200, 162, 74, 0.16),
+    inset 0 1px 3px rgba(0, 0, 0, 0.8);
 }
 
 /* Rises above the panel rather than pushing it around. */
@@ -10499,6 +10712,22 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   font-variant-numeric: tabular-nums;
 }
 
+/* Food carried / eaten per day. Turns red the moment the pack cannot cover
+   tonight's meal, so the shortfall is visible before the box is ticked. */
+.rs-longrest-dialog .rs-rest-food {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  opacity: 0.7;
+  font-variant-numeric: tabular-nums;
+}
+
+.rs-longrest-dialog .rs-rest-food.short {
+  color: #b34a4a;
+  opacity: 1;
+}
+
 /* The master row sits outside the scrolling list so it stays reachable. */
 .rs-longrest-dialog .rs-rest-all {
   font-weight: 600;
@@ -10519,6 +10748,15 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
 
 .rs-longrest-dialog .rs-rest-list > .rs-rest-group:first-child {
   margin-top: 0;
+}
+
+/* Camping toggle, below the roster: it applies to the whole rest, not to any
+   one name in the list. */
+.rs-longrest-dialog .rs-rest-rations {
+  margin-top: 6px;
+  padding-top: 6px;
+  font-weight: 600;
+  border-top: 1px solid rgba(200, 162, 74, 0.25);
 }
 
 /* ── Overwhelm (Přesila) ──────────────────────────────────────────────────
@@ -10649,6 +10887,15 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
 
 .rs-versus-note {
   margin-top: 2px;
+  font-size: 11px;
+  font-style: italic;
+  opacity: 0.7;
+}
+
+/* NPC auto-defense: this card rolled itself, nobody clicked Defend. */
+.rs-auto-defense-note {
+  margin: 2px 0;
+  text-align: center;
   font-size: 11px;
   font-style: italic;
   opacity: 0.7;

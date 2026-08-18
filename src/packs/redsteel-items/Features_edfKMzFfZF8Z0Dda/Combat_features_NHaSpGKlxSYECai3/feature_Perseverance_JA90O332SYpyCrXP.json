@@ -5,7 +5,7 @@
   "img": "icons/magic/control/buff-strength-muscle-damage-orange.webp",
   "system": {
     "localizationKey": "REDSTEEL.Items.Perseverance.name",
-    "description": "<p>Hit Points +5, Stamina +10.<br data-start=\"364\" data-end=\"367\" />May reroll a combat vs Test of Stonce per day.</p>",
+    "description": "<p>Hit Points +5, Stamina +10.<br />May reroll a Strength or Endurance test once per day.</p>",
     "options": [
       "feature",
       "trait",
@@ -22,7 +22,7 @@
       "pools": [
         {
           "label": "",
-          "skillsRaw": "combat",
+          "skillsRaw": "str, end, combatcap0",
           "max": 1,
           "used": 0
         }

@@ -474,6 +474,19 @@
           <input type="checkbox" name="system.partyMember" {{checked system.partyMember}} />
           <span>{{localize "REDSTEEL.Actor.FIELDS.partyMember.label"}}</span>
         </label>
+
+        {{!-- Rolls this NPC's best defense on its own when it is attacked. On
+             by default, so the box is ticked unless it was explicitly cleared:
+             an NPC predating this field stores no value and still defends, and
+             `{{checked system.autoDefense}}` would show that as unticked. --}}
+        <label class="rs-toggle" data-tooltip="{{localize 'REDSTEEL.AutoDefense.Tooltip'}}">
+          <input
+            type="checkbox"
+            name="system.autoDefense"
+            {{#unless (eq system.autoDefense false)}}checked{{/unless}}
+          />
+          <span>{{localize "REDSTEEL.AutoDefense.Label"}}</span>
+        </label>
       </div>
   </div>
 

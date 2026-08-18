@@ -136,7 +136,9 @@
     },
     "effectType1": "custom",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "attributeTest": "will",
+    "testModifier": ""
   },
   "effects": [],
   "folder": "4ZlNvWGr8HLJA8SI",

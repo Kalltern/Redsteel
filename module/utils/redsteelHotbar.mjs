@@ -61,11 +61,18 @@ const DEFAULT_SKILL_ROWS = 1;
 const FAVOURITE_SLOTS = MAX_SKILL_ROWS * FAVOURITES_PER_ROW;
 
 /**
- * How long the panel holds its redraw after a teammate portrait is clicked.
- * Windows' own double-click threshold is 500ms, so anything shorter would let a
- * deliberate double-click reshuffle the row before its second click arrives.
+ * How long the panel holds its redraw after any portrait is clicked. Windows'
+ * own double-click threshold is 500ms, so anything shorter would let a
+ * deliberate double-click redraw the panel before its second click arrives.
  */
 const PORTRAIT_HOLD_MS = 500;
+
+/**
+ * How long a portrait's sheet stays claimed after it has been opened. Both
+ * halves of a double-click can reach `#openPortraitSheet`, and this is what
+ * keeps the pair from rendering the same sheet twice in one gesture.
+ */
+const SHEET_OPEN_DEDUPE_MS = 400;
 
 /**
  * How many sockets an empty potion belt draws. One full row of the four-wide
@@ -671,6 +678,21 @@ function tokenForActor(actor) {
   return actor.getActiveTokens(false, false)?.[0] ?? null;
 }
 
+/**
+ * The key codes that target a hovered portrait: whatever core's Target keybind
+ * is set to, so rebinding it on the canvas rebinds it here too. Bindings that
+ * carry a modifier are dropped, since shift here already means "add to targets",
+ * and T stands in if core has nothing to say.
+ */
+function targetKeyCodes() {
+  const bound = game.keybindings?.get?.("core", "target") ?? [];
+  const keys = bound
+    .filter((binding) => !binding?.modifiers?.length)
+    .map((binding) => binding?.key)
+    .filter(Boolean);
+  return keys.length ? keys : ["KeyT"];
+}
+
 /** Localize a key through one of the CONFIG.REDSTEEL label maps. */
 function fromMap(map, key, fallback = key.toUpperCase()) {
   const path = map?.[key];
@@ -929,6 +951,9 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     this.#boundDragOver = this.#onDragOver.bind(this);
     this.#boundDrop = this.#onDrop.bind(this);
     this.#boundCanvasPointerUp = this.#onCanvasPointerUp.bind(this);
+    this.#boundPointerOver = this.#onPointerOver.bind(this);
+    this.#boundPointerLeave = this.#onPointerLeave.bind(this);
+    this.#boundKeyDown = this.#onKeyDown.bind(this);
   }
 
   static DEFAULT_OPTIONS = {
@@ -950,6 +975,7 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       usePotionItem: this._onUsePotionItem,
       pickWeaponSet: this._onPickWeaponSet,
       toggleTrayView: this._onToggleTrayView,
+      toggleAutoDefense: this._onToggleAutoDefense,
     },
   };
 
@@ -972,19 +998,38 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
   #boundDragOver;
   #boundDrop;
   #boundCanvasPointerUp;
+  #boundPointerOver;
+  #boundPointerLeave;
+  #boundKeyDown;
 
   /** The board element the deselect listener is on, so `_onClose` can undo it. */
   #board = null;
 
-  /** The actor whose portrait was last clicked, for `#onDblClick` to fall back on. */
-  #lastPortraitUuid = null;
+  /**
+   * The character whose portrait the cursor is over, for the target key. Kept as
+   * a uuid rather than the element so it survives a re-render replacing the
+   * node the cursor happens to be resting on.
+   */
+  #hoveredPortraitUuid = null;
 
   /**
-   * While this is in the future the panel does not redraw. Clicking a teammate
-   * promotes them to the main portrait, which reshuffles the row — and if that
-   * happens between the two clicks of a double-click, the second one lands on
-   * empty air where the portrait used to be. The browser then never pairs them
-   * (no sheet) and the click falls through to the canvas (lost selection).
+   * The actor whose portrait the current gesture started on. Whichever half of
+   * a double-click gets through names this actor rather than whatever frame the
+   * cursor ended up over, which may belong to somebody else once the row has
+   * reshuffled.
+   */
+  #lastPortraitUuid = null;
+
+  /** The sheet opened by the gesture in progress, and until when it counts. */
+  #lastSheetOpen = { uuid: null, until: 0 };
+
+  /**
+   * While this is in the future the panel does not redraw. Any redraw between
+   * the two clicks of a double-click replaces the frame the first one landed
+   * on: the browser is then pairing clicks made on two different nodes, which
+   * it may report against the panel root or decline to pair at all (no sheet),
+   * and clicking a teammate reshuffles the row on top of that, so the second
+   * click can fall through to the canvas as well (lost selection).
    *
    * So the redraw waits out the double-click window. Controlling the token is
    * not held back, so the canvas still answers the first click at once.
@@ -1135,6 +1180,15 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       // glyph.
       statusCols: Math.max(1, Math.ceil(statuses.length / STATUS_PER_COLUMN)),
       modifier: this.#prepareModifier(actor),
+      // NPC-only, and only for whoever can write to it: `autoDefends` in
+      // autoDefense.mjs refuses anything that is not an NPC, so offering the
+      // switch on a character would be a button that does nothing.
+      autoDefense: {
+        available: actor?.type === "npc" && !!actor.isOwner,
+        // "On unless switched off", matching `autoDefends` in autoDefense.mjs.
+        // An NPC predating the field has no key stored, and it still defends.
+        active: actor?.system?.autoDefense !== false,
+      },
       weaponSets: this.#prepareWeaponSets(actor),
       potions: this.#preparePotions(actor),
       editableResources: this.#prepareEditableResources(actor),
@@ -1849,6 +1903,17 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     root.addEventListener("dragover", this.#boundDragOver);
     root.removeEventListener("drop", this.#boundDrop);
     root.addEventListener("drop", this.#boundDrop);
+    root.removeEventListener("pointerover", this.#boundPointerOver);
+    root.addEventListener("pointerover", this.#boundPointerOver);
+    root.removeEventListener("pointerleave", this.#boundPointerLeave);
+    root.addEventListener("pointerleave", this.#boundPointerLeave);
+
+    // The target key is pressed with the cursor on a portrait, so nothing inside
+    // the panel has focus and the event never reaches this element: it has to be
+    // caught on the document. Removed first, since the document outlives a
+    // re-render, and again in `_onClose`.
+    document.removeEventListener("keydown", this.#boundKeyDown);
+    document.addEventListener("keydown", this.#boundKeyDown);
 
     // Deselecting on the canvas clears a pinned portrait; the board is outside
     // this element, so it is attached separately and idempotently.
@@ -2041,6 +2106,8 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     this.#hooks = [];
     this.#board?.removeEventListener("pointerup", this.#boundCanvasPointerUp);
     this.#board = null;
+    document.removeEventListener("keydown", this.#boundKeyDown);
+    this.#hoveredPortraitUuid = null;
     super._onClose?.(options);
   }
 
@@ -2230,6 +2297,31 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
   }
 
   /**
+   * Flip whether this NPC answers attack cards on its own.
+   *
+   * The same switch as the one on the NPC sheet, put where the GM already is
+   * mid-fight: the exceptions it exists for — a creature that surrenders, gets
+   * bound, or is being finished off — all turn up in the middle of a round,
+   * when opening a sheet to find a checkbox is the whole cost being avoided.
+   *
+   * No re-render here: writing to the actor fires `updateActor`, which the
+   * panel already redraws on.
+   *
+   * @this {Bg3Hotbar}
+   */
+  static async _onToggleAutoDefense(event) {
+    if (isRightClick(event)) return;
+
+    const actor = this.actor;
+    if (actor?.type !== "npc" || !actor.isOwner) return;
+
+    // Read the current state the way everything else does — an NPC with no key
+    // stored is on, so the first click on one has to write `false`, not `true`.
+    const on = actor.system?.autoDefense !== false;
+    await actor.update({ "system.autoDefense": !on });
+  }
+
+  /**
    * The wrench in the corner. Both row counts are set in one dialog, written in
    * one user update so the panel redraws once rather than twice.
    *
@@ -2321,10 +2413,10 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
    * as well, with shift adding to the selection as it would on the canvas.
    *
    * The way back out is on the canvas rather than here: deselecting everything
-   * clears the pin (see `#onCanvasPointerUp`). Double-click still belongs to
-   * the sheet, and is left to `#onDblClick` — which is why a teammate click
-   * defers the redraw (`#portraitHoldUntil`) instead of reshuffling the row out
-   * from under a second click that has not arrived yet.
+   * clears the pin (see `#onCanvasPointerUp`). Double-click belongs to the
+   * sheet — which is why every portrait click defers the redraw
+   * (`#portraitHoldUntil`) instead of pulling the frame out from under a second
+   * click that has not arrived yet.
    */
   #onClick(event) {
     if (isRightClick(event)) return;
@@ -2332,19 +2424,30 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     if (!frame) return;
     // The resource editor lives inside the frame and owns its own clicks.
     if (event.target.closest?.(".rs-bg3-resedit")) return;
-    // The second click of a double-click belongs to the sheet, not to selection.
-    if (event.detail > 1) return;
     event.preventDefault();
+    // The second click of a double-click belongs to the sheet, not to selection.
+    // It is answered here as well as in `#onDblClick` because either one can be
+    // the only half that survives: a `dblclick` needs both clicks to pair,
+    // while `detail` is counted off the pointer and holds up whatever the DOM
+    // did in between.
+    if (event.detail > 1) {
+      // The gesture is resolved, so the redraw the first click deferred can run.
+      this.#portraitHoldUntil = 0;
+      this.#rerender();
+      this.#openPortraitSheet(this.#lastPortraitUuid);
+      return;
+    }
 
     // Teammate portraits name their actor; the main one is whoever is bound.
     const teamUuid = frame.dataset.actorUuid ?? null;
     const uuid = teamUuid ?? this.actor?.uuid ?? null;
     const actor = uuid ? fromUuidSync(uuid) : null;
-    // Remembered for `#onDblClick`, which cannot always see the frame itself.
+    // Remembered for the second click, which cannot always see the frame itself.
     this.#lastPortraitUuid = actor?.uuid ?? null;
-    // Only a teammate click moves the row, so only that one needs the hold.
-    // Clicking the main portrait redraws to the same layout and stays instant.
-    if (teamUuid) this.#portraitHoldUntil = Date.now() + PORTRAIT_HOLD_MS;
+    // Every portrait holds the redraw, including your own: a teammate click
+    // moves the row, but even a redraw to an identical layout swaps out the
+    // frame this click landed on, which is enough to cost the double-click.
+    this.#portraitHoldUntil = Date.now() + PORTRAIT_HOLD_MS;
     // Binding the panel is the point of the click and must not depend on the
     // canvas: a party member with no token on this scene still becomes the
     // character the bar is driving.
@@ -2357,6 +2460,62 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     if (token?.isOwner) token.control({ releaseOthers: !event.shiftKey });
 
     this.#rerender();
+  }
+
+  /**
+   * Track which portrait the cursor is on, so the target key knows who it means.
+   * Moving onto anything else in the panel clears it, the same as leaving.
+   */
+  #onPointerOver(event) {
+    const frame = event.target.closest?.(".rs-bg3-portrait-frame");
+    // Teammate portraits name their actor; the main one is whoever is bound.
+    this.#hoveredPortraitUuid = frame
+      ? (frame.dataset.actorUuid ?? this.actor?.uuid ?? null)
+      : null;
+  }
+
+  /** The cursor left the panel entirely, so no portrait is under it. */
+  #onPointerLeave() {
+    this.#hoveredPortraitUuid = null;
+  }
+
+  /**
+   * Pressing the target key over a portrait targets that character's token, the
+   * same gesture as pressing it over the token on the canvas: toggle, and shift
+   * adds to the existing targets instead of replacing them.
+   *
+   * Core's own handler cannot fire here — it reads the token the cursor is over,
+   * and the cursor is on the panel — so the two never fight over the keypress.
+   *
+   * The portrait is read from the live `:hover` where the DOM can still answer,
+   * and from the last pointer event otherwise: a re-render replaces the node the
+   * cursor is resting on, and the browser only recomputes `:hover` once the
+   * mouse moves again.
+   */
+  #onKeyDown(event) {
+    if (event.ctrlKey || event.altKey || event.metaKey || event.repeat) return;
+    if (!targetKeyCodes().includes(event.code)) return;
+    // Typing a resource into the portrait's right-click panel is not a keybind.
+    if (event.target?.closest?.("input, textarea, select, [contenteditable]")) return;
+
+    const root = this.element;
+    if (!(root instanceof HTMLElement)) return;
+    const hovered = root.querySelector(".rs-bg3-portrait-frame:hover");
+    const uuid = hovered
+      ? (hovered.dataset.actorUuid ?? this.actor?.uuid ?? null)
+      : this.#hoveredPortraitUuid;
+    if (!uuid) return;
+
+    // A party member with no token on this scene has nothing to target, and a
+    // token the user cannot see is one the GM has not revealed.
+    const token = tokenForActor(fromUuidSync(uuid));
+    if (!token || (!token.visible && !game.user.isGM)) return;
+
+    event.preventDefault();
+    const targeted = token.isTargeted;
+    token.setTarget(!targeted, {
+      releaseOthers: !targeted && !event.shiftKey,
+    });
   }
 
   /**
@@ -2402,11 +2561,12 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
    * that opens an actor from a token. ApplicationV2's `actions` map only routes
    * clicks, so this is delegated by hand.
    *
-   * The first click selects, which re-renders and replaces the node it landed
-   * on, so the browser has no common element for the pair and targets the event
-   * at the panel root instead. That is the one case where the frame cannot be
-   * read off the event, and the portrait the first click acted on stands in for
-   * it — the cursor is no help, since the row has reshuffled underneath it.
+   * This is the second half of a pair: the `click` handler answers the same
+   * gesture off `event.detail`, and `#openPortraitSheet` keeps them from both
+   * opening the sheet. It is worth having both, because a redraw slipping
+   * between the two clicks leaves the browser with no common element for the
+   * pair, and it then reports the `dblclick` against the panel root or drops
+   * it entirely. The root is accepted here for exactly that reason.
    */
   #onDblClick(event) {
     const frame = event.target.closest?.(".rs-bg3-portrait-frame");
@@ -2415,12 +2575,27 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     // The gesture is resolved, so the redraw the first click deferred can run.
     this.#portraitHoldUntil = 0;
     this.#rerender();
-    // Teammate portraits name their actor; yours falls back to the bound one.
-    const uuid = frame ? frame.dataset.actorUuid : this.#lastPortraitUuid;
-    const actor = uuid ? fromUuidSync(uuid) : this.actor;
+    this.#openPortraitSheet(this.#lastPortraitUuid);
+  }
+
+  /**
+   * Open a portrait's sheet, once per gesture. Both halves of a double-click
+   * route here, since either may be the only one to arrive, so the pair is
+   * deduplicated on the way in instead of trusting exactly one of them.
+   *
+   * The actor is named by the click that started the gesture, never by the
+   * frame under the cursor: if the row did reshuffle, the frame there now
+   * belongs to a different teammate.
+   */
+  #openPortraitSheet(uuid) {
+    const actor = (uuid ? fromUuidSync(uuid) : null) ?? this.actor;
     // Foundry hides the sheet from users below LIMITED anyway; bailing here
     // keeps a GM-selected token from throwing a permission warning at a player.
     if (!actor?.testUserPermission(game.user, "LIMITED")) return;
+    const now = Date.now();
+    const open = this.#lastSheetOpen;
+    if (open.uuid === actor.uuid && now < open.until) return;
+    this.#lastSheetOpen = { uuid: actor.uuid, until: now + SHEET_OPEN_DEDUPE_MS };
     actor.sheet.render(true);
   }
 
