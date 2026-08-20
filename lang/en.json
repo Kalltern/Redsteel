@@ -5199,9 +5199,6 @@
       "Casting": {
         "name": "Casting"
       },
-      "Cat": {
-        "name": "Cat"
-      },
       "Cleave": {
         "name": "Cleave"
       },
@@ -5915,6 +5912,9 @@
       },
       "Overwatch": {
         "name": "Overwatch"
+      },
+      "Owl": {
+        "name": "Owl"
       },
       "Panacea": {
         "name": "Panacea"

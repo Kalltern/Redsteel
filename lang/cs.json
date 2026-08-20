@@ -5196,9 +5196,6 @@
       "Casting": {
         "name": "Čarování"
       },
-      "Cat": {
-        "name": "Kočka"
-      },
       "Cleave": {
         "name": "Rozseknutí"
       },
@@ -5912,6 +5909,9 @@
       },
       "Overwatch": {
         "name": "Připravená střelba"
+      },
+      "Owl": {
+        "name": "Sova"
       },
       "Panacea": {
         "name": "Panacea"

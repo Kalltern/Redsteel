@@ -624,14 +624,14 @@ REDSTEEL.effectDefinitions = {
     stackBehavior: "ignore",
   },
 
-  // "Kočka" (Cat potion) — six hours of immunity to Oslepení. The 15 m of sight
+  // "Sova" (Owl potion) — six hours of immunity to Oslepení. The 15 m of sight
   // in the dark and the cancelled Darkness penalties have nowhere to live in
   // the data model (vision is a token setting, Darkness is a modifier the GM
   // applies), so those two stay on the item text.
-  cat: {
-    name: "REDSTEEL.Items.Cat.name",
+  owl: {
+    name: "REDSTEEL.Items.Owl.name",
     img: "icons/magic/perception/eye-slit-pink.webp",
-    statuses: ["cat"],
+    statuses: ["owl"],
     changes: [
       {
         key: "system.effectMods.blind.immune",

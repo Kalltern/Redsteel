@@ -1,33 +1,47 @@
 {
-  "folder": "kBTvOEaKqi0Q4Q17",
-  "name": "Recipe: Cat",
-  "type": "recipe",
+  "folder": "eNR6Ak4yjoOYudB1",
+  "name": "Owl",
+  "type": "consumable",
   "img": "icons/consumables/potions/potion-flask-corked-cyan.webp",
   "system": {
     "description": "<p>Effect - Sight in the dark up to 15 m, immunity to Blinding. Cancels the penalties for Darkness.<br />Duration - 6 hours<br />Toxicity - 16<br />Production Bonus - +10% -&gt; 1 dose<br />Ingredients - Strong alcohol, Qu, Qu, Al</p>",
-    "outputType": "potion",
-    "purpose": "buff",
-    "resultUuid": "Compendium.redsteel.redsteel-items.Item.lxyROk4osEpNJ5vM",
-    "substances": {
-      "yliaster": 0,
-      "bezoardicum": 0,
-      "alkahest": 1,
-      "qudat": 2,
-      "panacea": 0,
-      "verdigris": 0
+    "options": [
+      "potion",
+      "explosive",
+      "misc",
+      "first aid",
+      "poison"
+    ],
+    "types": [
+      "mana",
+      "health",
+      "stamina"
+    ],
+    "quantity": 1,
+    "option": "potion",
+    "roll": {
+      "diceNum": 0,
+      "diceSize": "0",
+      "diceBonus": "0"
     },
-    "specialIngredient": {
-      "name": "",
-      "uuid": ""
-    },
-    "base": "strongAlcohol"
+    "type": "",
+    "toxicity": 16,
+    "bleed": 0,
+    "localizationKey": "REDSTEEL.Items.Owl.name",
+    "difficulty": 10
   },
   "effects": [],
   "sort": 0,
   "ownership": {
     "default": 0
   },
-  "flags": {},
+  "flags": {
+    "redsteel": {
+      "statusEffects": [
+        "owl"
+      ]
+    }
+  },
   "_stats": {
     "compendiumSource": null,
     "duplicateSource": null,
@@ -39,6 +53,6 @@
     "modifiedTime": 1786367217424,
     "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
   },
-  "_id": "IRwf7S0xNzhGnIck",
-  "_key": "!items!IRwf7S0xNzhGnIck"
+  "_id": "lxyROk4osEpNJ5vM",
+  "_key": "!items!lxyROk4osEpNJ5vM"
 }
