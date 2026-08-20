@@ -3735,31 +3735,31 @@
         "Attribute": {
           "Str": {
             "long": "Strength",
-            "abbr": "str"
+            "abbr": "STR"
           },
           "End": {
             "long": "Endurance",
-            "abbr": "end"
+            "abbr": "END"
           },
           "Dex": {
             "long": "Dexterity",
-            "abbr": "dex"
+            "abbr": "DEX"
           },
           "Int": {
             "long": "Intelligence",
-            "abbr": "int"
+            "abbr": "INT"
           },
           "Wil": {
             "long": "Will",
-            "abbr": "wil"
+            "abbr": "WIL"
           },
           "Cha": {
             "long": "Charisma",
-            "abbr": "cha"
+            "abbr": "CHA"
           },
           "Per": {
             "long": "Perception",
-            "abbr": "per"
+            "abbr": "PER"
           }
         },
         "SecondaryAttribute": {
@@ -4787,6 +4787,7 @@
       "PrecisionProc": "Precision!"
     },
     "Tooltip": {
+      "successChance": "Success chance",
       "rating": "Rating",
       "attribute": "Attribute",
       "weaponAttack": "Weapon",

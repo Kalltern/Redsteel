@@ -3735,31 +3735,31 @@
         "Attribute": {
           "Str": {
             "long": "Síla",
-            "abbr": "str"
+            "abbr": "SÍLA"
           },
           "End": {
             "long": "Odolnost",
-            "abbr": "end"
+            "abbr": "ODO"
           },
           "Dex": {
             "long": "Obratnost",
-            "abbr": "dex"
+            "abbr": "OBR"
           },
           "Int": {
             "long": "Inteligence",
-            "abbr": "int"
+            "abbr": "INT"
           },
           "Wil": {
             "long": "Vůle",
-            "abbr": "wil"
+            "abbr": "VŮLE"
           },
           "Cha": {
             "long": "Charisma",
-            "abbr": "cha"
+            "abbr": "CHA"
           },
           "Per": {
             "long": "Vnímání",
-            "abbr": "per"
+            "abbr": "VNÍ"
           }
         },
         "SecondaryAttribute": {
@@ -4784,6 +4784,7 @@
       "PrecisionProc": "Ověření!"
     },
     "Tooltip": {
+      "successChance": "Šance na úspěch",
       "rating": "Hodnota",
       "attribute": "Vlastnost",
       "weaponAttack": "Zbraň",

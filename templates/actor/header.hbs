@@ -204,126 +204,132 @@
     </div>
 
 
-    {{!-- PRIMARY ATTRIBUTES (tier 1 — dominant, 24px values) --}}
-    <div class="stat-section stat-section--primary">
-      <div class="stat-box-grid">
-        {{#each system.attributes as |attribute key|}}
-        <div
-          class="stat-box rollable" data-tt-kind="attribute" data-tt-id="{{key}}"
-          data-action="roll"
-          data-roll="(@attributes.{{key}}.mod)-1d100"
-          data-roll-type="attribute"
-          data-label="{{key}}"
-        >
-          <div class="stat-box-label">{{localize (lookup @root.config.attributes key)}}</div>
-          <div class="stat-box-value">{{attribute.total}}</div>
-          <div class="stat-box-sub">{{numberFormat attribute.mod decimals=0}}</div>
+    {{!-- All three stat tiers share one recessed well: the dark panel runs
+         from the name/race underline down to the bottom edge of the header.
+         Styling lives on .stat-well; the tiers only own their own rows. --}}
+    <div class="stat-well">
+      {{!-- PRIMARY ATTRIBUTES (tier 1 — dominant, 24px values) --}}
+      <div class="stat-section stat-section--primary">
+        <div class="stat-box-grid">
+          {{#each system.attributes as |attribute key|}}
+          <div
+            class="stat-box rollable" data-tt-kind="attribute" data-tt-id="{{key}}"
+            data-action="roll"
+            data-roll="(@attributes.{{key}}.mod)-1d100"
+            data-roll-type="attribute"
+            data-label="{{key}}"
+          >
+            {{!-- Abbreviated: the full names crowd seven boxes across, and
+                  the tooltip already spells the attribute out in full. --}}
+            <div class="stat-box-label">{{localize (lookup @root.config.attributeAbbreviations key)}}</div>
+            <div class="stat-box-value">{{attribute.total}}</div>
+          </div>
+          {{/each}}
         </div>
-        {{/each}}
       </div>
-    </div>
 
-    {{!-- SECONDARY ATTRIBUTES (tier 2 — recessive, 17px, name + value only) --}}
-    <div class="stat-section stat-section--secondary">
-      <div class="stat-box-grid">
-        {{#each system.secondaryAttributes as |attribute key|}}
-        {{#if (eq key "spd")}}
-        <div class="stat-box rollable" data-tt-kind="secondaryAttribute" data-tt-id="{{key}}" data-action="rollSpeed" data-label="{{key}}">
-        {{else if (eq key "lck")}}
-        <div class="stat-box rollable" data-tt-kind="secondaryAttribute" data-tt-id="{{key}}" data-action="roll" data-roll-type="secondaryAttribute" data-roll="(@secondaryAttributes.{{key}}.total*5)+50-1d100" data-label="{{key}}">
-        {{else if (eq key "res")}}
-        <div class="stat-box rollable" data-tt-kind="secondaryAttribute" data-tt-id="{{key}}" data-action="roll" data-roll-type="secondaryAttribute" data-roll="(@secondaryAttributes.{{key}}.total*10)-1d100" data-label="{{key}}">
-        {{else if (eq key "fth")}}
-        <div class="stat-box rollable" data-tt-kind="secondaryAttribute" data-tt-id="{{key}}" data-action="roll" data-roll-type="secondaryAttribute" data-roll="(@secondaryAttributes.{{key}}.total*8)-1d100" data-label="{{key}}">
-        {{else if (eq key "sin")}}
-        <div class="stat-box rollable" data-tt-kind="secondaryAttribute" data-tt-id="{{key}}" data-action="roll" data-roll-type="secondaryAttribute" data-roll="(@secondaryAttributes.res.total*10)-(@secondaryAttributes.{{key}}.total*3)-1d100" data-label="{{key}}">
-        {{else}}
-        <div class="stat-box" data-tt-kind="secondaryAttribute" data-tt-id="{{key}}">
-        {{/if}}
-          <div class="stat-box-label">{{localize (lookup @root.config.secondaryAttributes key)}}</div>
-          <div class="stat-box-value">{{attribute.total}}</div>
+      {{!-- SECONDARY ATTRIBUTES (tier 2 — recessive, 17px, name + value only) --}}
+      <div class="stat-section stat-section--secondary">
+        <div class="stat-box-grid">
+          {{#each system.secondaryAttributes as |attribute key|}}
+          {{#if (eq key "spd")}}
+          <div class="stat-box rollable" data-tt-kind="secondaryAttribute" data-tt-id="{{key}}" data-action="rollSpeed" data-label="{{key}}">
+          {{else if (eq key "lck")}}
+          <div class="stat-box rollable" data-tt-kind="secondaryAttribute" data-tt-id="{{key}}" data-action="roll" data-roll-type="secondaryAttribute" data-roll="(@secondaryAttributes.{{key}}.total*5)+50-1d100" data-label="{{key}}">
+          {{else if (eq key "res")}}
+          <div class="stat-box rollable" data-tt-kind="secondaryAttribute" data-tt-id="{{key}}" data-action="roll" data-roll-type="secondaryAttribute" data-roll="(@secondaryAttributes.{{key}}.total*10)-1d100" data-label="{{key}}">
+          {{else if (eq key "fth")}}
+          <div class="stat-box rollable" data-tt-kind="secondaryAttribute" data-tt-id="{{key}}" data-action="roll" data-roll-type="secondaryAttribute" data-roll="(@secondaryAttributes.{{key}}.total*8)-1d100" data-label="{{key}}">
+          {{else if (eq key "sin")}}
+          <div class="stat-box rollable" data-tt-kind="secondaryAttribute" data-tt-id="{{key}}" data-action="roll" data-roll-type="secondaryAttribute" data-roll="(@secondaryAttributes.res.total*10)-(@secondaryAttributes.{{key}}.total*3)-1d100" data-label="{{key}}">
+          {{else}}
+          <div class="stat-box" data-tt-kind="secondaryAttribute" data-tt-id="{{key}}">
+          {{/if}}
+            <div class="stat-box-label">{{localize (lookup @root.config.secondaryAttributes key)}}</div>
+            <div class="stat-box-value">{{attribute.total}}</div>
+          </div>
+          {{/each}}
         </div>
-        {{/each}}
       </div>
-    </div>
 
-    {{!-- CONDITION (tier 3 — compact, grouped by function) --}}
-    <div class="stat-section stat-section--condition">
-      <div class="condition-row">
+      {{!-- CONDITION (tier 3 — compact, grouped by function) --}}
+      <div class="stat-section stat-section--condition">
+        <div class="condition-row">
 
-        {{!-- RESOURCES --}}
-        <div class="condition-group">          <div class="condition-group-boxes">
+          {{!-- RESOURCES --}}
+          <div class="condition-group">          <div class="condition-group-boxes">
 
-            {{!-- Wounds --}}
-            <div class="stat-box stat-box--editable">
-              <div class="stat-box-label condition-icon" data-tt-kind="stat" data-tt-id="graveWounds"><i class="fa-light fa-bone-break" style="color: rgb(102, 32, 29);"></i></div>
-              <div class="stat-box-value stat-box-value--ratio">
-                <input type="text" class="stat-box-value-input" name="system.stats.graveWounds.value" data-dtype="Number" value="{{system.stats.graveWounds.value}}" />
-                <span class="stat-box-max">/ {{system.stats.graveWounds.max}}</span>
+              {{!-- Wounds --}}
+              <div class="stat-box stat-box--editable">
+                <div class="stat-box-label condition-icon" data-tt-kind="stat" data-tt-id="graveWounds"><i class="fa-light fa-bone-break" style="color: rgb(102, 32, 29);"></i></div>
+                <div class="stat-box-value stat-box-value--ratio">
+                  <input type="text" class="stat-box-value-input" name="system.stats.graveWounds.value" data-dtype="Number" value="{{system.stats.graveWounds.value}}" />
+                  <span class="stat-box-max">/ {{system.stats.graveWounds.max}}</span>
+                </div>
               </div>
-            </div>
 
-            {{!-- Mind --}}
-            <div class="stat-box stat-box--editable">
-              <div class="stat-box-label condition-icon" data-tt-kind="stat" data-tt-id="mind"><i class="fa-light fa-head-side-brain" style="color: rgb(116, 119, 126);"></i></div>
-              <div class="stat-box-value stat-box-value--ratio">
-                <input type="text" class="stat-box-value-input" name="system.stats.mind.value" data-dtype="Number" value="{{system.stats.mind.value}}" />
-                <span class="stat-box-max">/ {{system.stats.mind.max}}</span>
+              {{!-- Mind --}}
+              <div class="stat-box stat-box--editable">
+                <div class="stat-box-label condition-icon" data-tt-kind="stat" data-tt-id="mind"><i class="fa-light fa-head-side-brain" style="color: rgb(116, 119, 126);"></i></div>
+                <div class="stat-box-value stat-box-value--ratio">
+                  <input type="text" class="stat-box-value-input" name="system.stats.mind.value" data-dtype="Number" value="{{system.stats.mind.value}}" />
+                  <span class="stat-box-max">/ {{system.stats.mind.max}}</span>
+                </div>
               </div>
-            </div>
 
+            </div>
           </div>
-        </div>
 
-        {{!-- STATUS --}}
-        <div class="condition-group">          <div class="condition-group-boxes">
+          {{!-- STATUS --}}
+          <div class="condition-group">          <div class="condition-group-boxes">
 
-            {{!-- Insanity --}}
-            <div class="stat-box stat-box--editable">
-              <div class="stat-box-label condition-icon" data-tt-kind="stat" data-tt-id="insanity"><i class="fa-light fa-hurricane" style="color: rgb(104, 40, 73);"></i></div>
-              <div class="stat-box-value stat-box-value--ratio">
-                <input type="text" class="stat-box-value-input" name="system.stats.insanity.value" data-dtype="Number" value="{{system.stats.insanity.value}}" />
-                <span class="stat-box-max">/ {{system.stats.insanity.max}}</span>
+              {{!-- Insanity --}}
+              <div class="stat-box stat-box--editable">
+                <div class="stat-box-label condition-icon" data-tt-kind="stat" data-tt-id="insanity"><i class="fa-light fa-hurricane" style="color: rgb(104, 40, 73);"></i></div>
+                <div class="stat-box-value stat-box-value--ratio">
+                  <input type="text" class="stat-box-value-input" name="system.stats.insanity.value" data-dtype="Number" value="{{system.stats.insanity.value}}" />
+                  <span class="stat-box-max">/ {{system.stats.insanity.max}}</span>
+                </div>
               </div>
-            </div>
 
-            {{!-- Corruption (warning tier) --}}
-            <div class="stat-box stat-box--editable stat-box--warn">
-              <div class="stat-box-label condition-icon" data-tt-kind="stat" data-tt-id="corruption"><i class="fa-sharp fa-thin fa-galaxy" style="color: rgb(70, 35, 118);"></i></div>
-              <div class="stat-box-value stat-box-value--ratio">
-                <input type="text" class="stat-box-value-input" name="system.stats.corruption.value" data-dtype="Number" value="{{system.stats.corruption.value}}" />
-                <span class="stat-box-max">/ {{system.stats.corruption.max}}</span>
+              {{!-- Corruption (warning tier) --}}
+              <div class="stat-box stat-box--editable stat-box--warn">
+                <div class="stat-box-label condition-icon" data-tt-kind="stat" data-tt-id="corruption"><i class="fa-sharp fa-thin fa-galaxy" style="color: rgb(116, 66, 184);"></i></div>
+                <div class="stat-box-value stat-box-value--ratio">
+                  <input type="text" class="stat-box-value-input" name="system.stats.corruption.value" data-dtype="Number" value="{{system.stats.corruption.value}}" />
+                  <span class="stat-box-max">/ {{system.stats.corruption.max}}</span>
+                </div>
               </div>
-            </div>
 
-            {{!-- Fatigue --}}
-            <div class="stat-box stat-box--editable">
-              <div class="stat-box-label condition-icon" data-tt-kind="stat" data-tt-id="fatigue"><i class="fa-light fa-tent" style="color: rgb(58, 68, 84);"></i></div>
-              <div class="stat-box-value stat-box-value--ratio">
-                <input type="text" class="stat-box-value-input" name="system.stats.fatigue.value" data-dtype="Number" value="{{system.stats.fatigue.value}}" />
-                <span class="stat-box-max">/ {{system.stats.fatigue.max}}</span>
+              {{!-- Fatigue --}}
+              <div class="stat-box stat-box--editable">
+                <div class="stat-box-label condition-icon" data-tt-kind="stat" data-tt-id="fatigue"><i class="fa-light fa-tent" style="color: rgb(96, 110, 134);"></i></div>
+                <div class="stat-box-value stat-box-value--ratio">
+                  <input type="text" class="stat-box-value-input" name="system.stats.fatigue.value" data-dtype="Number" value="{{system.stats.fatigue.value}}" />
+                  <span class="stat-box-max">/ {{system.stats.fatigue.max}}</span>
+                </div>
               </div>
-            </div>
 
+            </div>
           </div>
-        </div>
 
-        {{!-- DEFENSE --}}
-        <div class="condition-group">          <div class="condition-group-boxes">
+          {{!-- DEFENSE --}}
+          <div class="condition-group">          <div class="condition-group-boxes">
 
-            {{!-- Armor (derived, no max) --}}
-            <div class="stat-box stat-box--armor">
-              <div class="stat-box-label condition-icon" data-tt-kind="stat" data-tt-id="armor"><i class="fa-light fa-shield-quartered" style="color: rgb(96, 74, 48);"></i></div>
-              <div class="stat-box-value">{{system.armor.total}}</div>            </div>
+              {{!-- Armor (derived, no max) --}}
+              <div class="stat-box stat-box--armor">
+                <div class="stat-box-label condition-icon" data-tt-kind="stat" data-tt-id="armor"><i class="fa-light fa-shield-quartered" style="color: rgb(96, 74, 48);"></i></div>
+                <div class="stat-box-value">{{system.armor.total}}</div>            </div>
 
-            {{!-- Detection (derived, no max) --}}
-            <div class="stat-box">
-              <div class="stat-box-label condition-icon" data-tt-kind="stat" data-tt-id="detection"><i class="fa-light fa-eye" style="color: rgb(116, 119, 126);"></i></div>
-              <div class="stat-box-value">{{system.detection}}</div>            </div>
+              {{!-- Detection (derived, no max) --}}
+              <div class="stat-box">
+                <div class="stat-box-label condition-icon" data-tt-kind="stat" data-tt-id="detection"><i class="fa-light fa-eye" style="color: rgb(116, 119, 126);"></i></div>
+                <div class="stat-box-value">{{system.detection}}</div>            </div>
 
+            </div>
           </div>
-        </div>
 
+        </div>
       </div>
     </div>
 

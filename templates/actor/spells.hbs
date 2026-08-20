@@ -7,6 +7,7 @@
   {{! Spell Power: characters see it under Statistics on the Combat sub-tab;
       NPCs keep it here since they have no skills tab }}
   {{#if (eq actor.type "npc")}}
+  <section class="spell-power-panel">
   <h2 class="flex-group-center">
     {{localize "REDSTEEL.Actor.Character.schools.spellPower.label"}}
   </h2>
@@ -27,6 +28,7 @@
       </div>
     {{/each}}
   </div>
+  </section>
   {{/if}}
 
   <!-- Sub-tab navigation -->
@@ -49,7 +51,7 @@
 
 {{#each spellSchools as |group index|}}
 <section
-  class="tab {{group.school}}
+  class="tab spells-subtab {{group.school}}
     {{#if (or
       (eq group.school ../activeSpellSubtab)
       (and (eq index 0) (not ../activeSpellSubtab))

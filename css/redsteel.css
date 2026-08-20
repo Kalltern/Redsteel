@@ -827,25 +827,30 @@ table tr td:nth-child(3) {
   border: 3px solid #5f5843; /* gold border */
 }
 
-/* Keep name/race at the top, then centre the three stat rows in the space
-   below so leftover space splits above/below them instead of one big gap. */
+/* Name/race sits at the top; everything under it is the well, which takes all
+   the remaining height. The leftover space therefore lands inside the well,
+   above the primary row (see .stat-section--primary below). */
 .redsteel .sheet-header .actor {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
 }
 
+/* Absorbs the well's slack, so the three tiers stay bottom-anchored above the
+   well's 48px foot and the empty height opens up under the name instead. */
 .sheet-header .stat-section--primary {
   margin-top: auto;
 }
 
-/* Character-only: centre the name/race row in the gap between the top edge
-   and the primary stats (this auto + primary's margin-top:auto split 50/50).
+/* Character-only. The row is pinned to the top of the header (the well below
+   claims the rest), with just enough margin that the title is not hard against
+   the frame — and none underneath, so the well starts on the underline itself.
    `align-items: end` bottom-aligns the two cells so the name input's underline
    and the race div's underline sit on the same line despite the input and the
    div resolving different content heights. */
 .sheet-header .char-identity {
-  margin-top: auto;
+  margin-top: 12px;
+  margin-bottom: 0;
   align-items: end;
 }
 
@@ -7070,6 +7075,27 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   background: #2a2740;
 }
 
+/* --- The stat well --------------------------------------------------- */
+/* One recessed panel holding all three tiers. It starts under the name/race
+   underline and bleeds through `.actor`'s side and bottom padding so it meets
+   the header frame: the negative margins mirror that padding exactly (5px on
+   the sides, 48px at the foot) and the padding puts the same space back on the
+   inside, so nothing in the tiers moves. Keep the -48px in step with
+   `.redsteel .sheet-header .actor { padding-bottom }` if that ever changes. */
+.sheet-header .stat-well {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  margin: 0 -5px -48px;
+  padding: 0 5px 48px;
+  background: rgba(0, 0, 0, 0.32);
+  box-shadow:
+    inset 0 3px 7px rgba(0, 0, 0, 0.6),
+    inset 0 1px 2px rgba(0, 0, 0, 0.7),
+    inset 0 -1px 0 rgba(150, 138, 112, 0.07);
+}
+
 /* --- Shared box shell (flat, neutral) --- */
 .sheet-header .stat-box-grid {
   display: grid;
@@ -7122,7 +7148,13 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 /* Static value and editable input share metrics so they align exactly */
 .sheet-header .stat-box-value,
 .sheet-header .stat-box .stat-box-value-input {
-  font-family: Georgia, "Times New Roman", serif;
+  /* NOT Georgia (which the labels and the rest of the header use): Georgia's
+     digits are old-style figures, so 3/4/5/7/9 are drawn below the baseline
+     and 6/8 above it. A row of single-digit attributes then looks like the
+     numbers are bouncing. Cambria is the closest warm serif that draws lining
+     figures by default; lining-nums covers a fallback that has both sets. */
+  font-family: Cambria, "Times New Roman", Times, serif;
+  font-variant-numeric: lining-nums;
   font-weight: 400;
   /* Engraved into the plate: dark recess above, a hairline catch-light below */
   color: #a39b89;
@@ -7170,61 +7202,81 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 }
 
 /* === Tier 1 — Primary attributes (dominant, 24px) === */
+/* The padding is deliberately lopsided against the 7/6 the other tiers use:
+   it stands in for the modifier line this box used to carry, so the plate
+   keeps the height (and the presence) it had when it held three rows. */
 .sheet-header .stat-section--primary .stat-box {
-  padding: 7px 3px 6px;
+  padding: 15px 3px 14px;
   gap: 2px;
+  /* Tier 1 drops the shared black veil so the header texture reads through the
+     plate. The colour wash below is all that sits over it. */
+  background-color: transparent;
+  /* Deeper cast from the top wall than the other tiers get: the plate is sunk
+     further in, so the light from above falls off harder inside it. Bottom
+     catch-light unchanged. */
+  box-shadow:
+    inset 0 7px 11px -2px rgba(0, 0, 0, 0.5),
+    inset 0 2px 3px rgba(0, 0, 0, 0.4),
+    inset 0 -1px 0 rgba(170, 154, 122, 0.06);
+}
+
+/* The shared rollable:hover outranks the rule above, so tier 1 restates its
+   own shadow here or the top cast would flatten out on hover. */
+.sheet-header .stat-section--primary .stat-box.rollable:hover {
+  box-shadow:
+    inset 0 7px 11px -2px rgba(0, 0, 0, 0.58),
+    inset 0 2px 3px rgba(0, 0, 0, 0.47),
+    inset 0 -1px 0 rgba(198, 180, 142, 0.12);
 }
 
 .sheet-header .stat-section--primary .stat-box-value {
   font-size: 24px;
 }
 
-.sheet-header .stat-section--primary .stat-box-sub {
-  font-size: 14px;
-}
-
-/* Each primary attribute carries a faint wash of its skills-tab colour,
-   layered over the recess (depth radial preserved underneath). */
+/* Each primary attribute carries a wash of its skills-tab colour. Both this
+   and the depth radial under it stay thin on purpose: the header texture has
+   to survive both layers, so the plate reads as tinted stone rather than a
+   painted panel. */
 .sheet-header .stat-section--primary .stat-box[data-label="str"] {
   background-image:
-    linear-gradient(rgba(179, 30, 43, 0.06), rgba(179, 30, 43, 0.06)),
-    radial-gradient(ellipse at 50% 42%, rgba(60, 54, 42, 0.1), rgba(6, 5, 4, 0.22));
+    linear-gradient(rgba(179, 30, 43, 0.16), rgba(179, 30, 43, 0.16)),
+    radial-gradient(ellipse at 50% 42%, rgba(60, 54, 42, 0.05), rgba(6, 5, 4, 0.1));
 }
 
 .sheet-header .stat-section--primary .stat-box[data-label="dex"] {
   background-image:
-    linear-gradient(rgba(34, 144, 78, 0.06), rgba(34, 144, 78, 0.06)),
-    radial-gradient(ellipse at 50% 42%, rgba(60, 54, 42, 0.1), rgba(6, 5, 4, 0.22));
+    linear-gradient(rgba(34, 144, 78, 0.16), rgba(34, 144, 78, 0.16)),
+    radial-gradient(ellipse at 50% 42%, rgba(60, 54, 42, 0.05), rgba(6, 5, 4, 0.1));
 }
 
 .sheet-header .stat-section--primary .stat-box[data-label="end"] {
   background-image:
-    linear-gradient(rgba(180, 111, 54, 0.06), rgba(180, 111, 54, 0.06)),
-    radial-gradient(ellipse at 50% 42%, rgba(60, 54, 42, 0.1), rgba(6, 5, 4, 0.22));
+    linear-gradient(rgba(180, 111, 54, 0.16), rgba(180, 111, 54, 0.16)),
+    radial-gradient(ellipse at 50% 42%, rgba(60, 54, 42, 0.05), rgba(6, 5, 4, 0.1));
 }
 
 .sheet-header .stat-section--primary .stat-box[data-label="int"] {
   background-image:
-    linear-gradient(rgba(42, 94, 170, 0.06), rgba(42, 94, 170, 0.06)),
-    radial-gradient(ellipse at 50% 42%, rgba(60, 54, 42, 0.1), rgba(6, 5, 4, 0.22));
+    linear-gradient(rgba(42, 94, 170, 0.16), rgba(42, 94, 170, 0.16)),
+    radial-gradient(ellipse at 50% 42%, rgba(60, 54, 42, 0.05), rgba(6, 5, 4, 0.1));
 }
 
 .sheet-header .stat-section--primary .stat-box[data-label="wil"] {
   background-image:
-    linear-gradient(rgba(125, 63, 167, 0.06), rgba(125, 63, 167, 0.06)),
-    radial-gradient(ellipse at 50% 42%, rgba(60, 54, 42, 0.1), rgba(6, 5, 4, 0.22));
+    linear-gradient(rgba(125, 63, 167, 0.16), rgba(125, 63, 167, 0.16)),
+    radial-gradient(ellipse at 50% 42%, rgba(60, 54, 42, 0.05), rgba(6, 5, 4, 0.1));
 }
 
 .sheet-header .stat-section--primary .stat-box[data-label="cha"] {
   background-image:
-    linear-gradient(rgba(209, 153, 52, 0.06), rgba(209, 153, 52, 0.06)),
-    radial-gradient(ellipse at 50% 42%, rgba(60, 54, 42, 0.1), rgba(6, 5, 4, 0.22));
+    linear-gradient(rgba(209, 153, 52, 0.16), rgba(209, 153, 52, 0.16)),
+    radial-gradient(ellipse at 50% 42%, rgba(60, 54, 42, 0.05), rgba(6, 5, 4, 0.1));
 }
 
 .sheet-header .stat-section--primary .stat-box[data-label="per"] {
   background-image:
-    linear-gradient(rgba(143, 188, 196, 0.06), rgba(143, 188, 196, 0.06)),
-    radial-gradient(ellipse at 50% 42%, rgba(60, 54, 42, 0.1), rgba(6, 5, 4, 0.22));
+    linear-gradient(rgba(143, 188, 196, 0.16), rgba(143, 188, 196, 0.16)),
+    radial-gradient(ellipse at 50% 42%, rgba(60, 54, 42, 0.05), rgba(6, 5, 4, 0.1));
 }
 
 /* === Tier 2 — Secondary attributes (recessive, 17px, no sub) === */
@@ -7250,17 +7302,12 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   color: #978f7e;
 }
 
-/* Sink the whole secondary zone (including the padding above/below the row)
-   into a recessed channel so it reads as embedded deeper than the sheet. */
+/* The recess this zone used to own now belongs to .stat-well and runs the
+   whole height of the header; all that is left here is the hairline that
+   separates the secondary row from the condition row below it. */
 .sheet-header .stat-section--secondary {
-  background: rgba(0, 0, 0, 0.32);
-  border-radius: 4px;
   padding-bottom: 10px;
   border-bottom: 1px solid #2a2821;
-  box-shadow:
-    inset 0 3px 7px rgba(0, 0, 0, 0.6),
-    inset 0 1px 2px rgba(0, 0, 0, 0.7),
-    inset 0 -1px 0 rgba(150, 138, 112, 0.07);
 }
 
 .sheet-header .stat-section--secondary .stat-box-grid {
@@ -8349,12 +8396,35 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 
 /* Rank filter bar — subordinate to the school <nav class="tabs"> above it,
    so the visual hierarchy reads school > rank. */
+/* The active school's body is a panel, the same inset container the Features
+   and Abilities sections use: rank filter on top, cards below, filling the
+   box however few spells the school holds. */
+.spells-box .spells-subtab.active,
+.spells-box .spell-power-panel {
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.38);
+  border: 1px solid rgba(181, 151, 80, 0.35);
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.45);
+}
+
+.spells-box .spells-subtab.active {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* The panel's own padding is the spacing now. */
+.spells-box .spell-power-panel h2 {
+  margin-top: 0;
+}
+
 .rank-filter {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 6px;
-  margin: 8px 0 12px;
+  margin: 0 0 12px;
 }
 
 /* Boxy toggle blocks modelled on the casting-dialog option buttons (e.g. the

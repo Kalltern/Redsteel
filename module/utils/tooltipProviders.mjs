@@ -507,23 +507,34 @@ function capitalize(id) {
 /**
  * The primary attribute boxes in the character header.
  *
- * The box the player is hovering already prints the total and the modifier, so
- * the tooltip deliberately carries no numbers: only the plain-language
- * description and the link out to the Attributes note. Nothing to say means no
- * tooltip at all, rather than an empty frame.
+ * The box prints the score only, so the roll modifier — which is the flat
+ * percentage chance of passing a test on this attribute — lives here, above
+ * the plain-language description and the link out to the Attributes note. No
+ * description means no tooltip at all, rather than an empty frame.
  */
 registerTooltip("attribute", ({ id, actor }) => {
-  if (!id || !actor?.system?.attributes?.[id]) return null;
+  const attribute = actor?.system?.attributes?.[id];
+  if (!id || !attribute) return null;
 
   const desc = localizeOrNull(`REDSTEEL.StatInfo.${id}`);
   if (!desc) return null;
+
+  const mod = Number(attribute.mod);
+  const stats = Number.isFinite(mod)
+    ? statsBlock([
+        {
+          label: game.i18n.localize("REDSTEEL.Tooltip.successChance"),
+          value: `${mod}%`,
+        },
+      ])
+    : "";
 
   return ttFrame({
     title:
       localizeOrNull(
         `REDSTEEL.Actor.Character.Attribute.${capitalize(id)}.long`,
       ) ?? id,
-    body: `<div class="tt-desc">${desc}</div>`,
+    body: `${stats}<div class="tt-desc">${desc}</div>`,
     footer: ruleNoteFooter("attributes"),
   });
 });
