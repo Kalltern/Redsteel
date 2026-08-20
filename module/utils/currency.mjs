@@ -220,6 +220,50 @@ export function formatPrice(baseUnits) {
   return parts.length ? parts.join(" ") : `0 ${roster.at(-1).label}`;
 }
 
+/**
+ * The rungs the purse summary is expressed in: tier 1 of each metal, i.e.
+ * c1 / s1 / g1 on the shipped ladder. Ascending.
+ *
+ * A summary in every rung is unreadable at six denominations, and it is also
+ * redundant: on a x10 ladder each tier-1 rung is worth a hundred of the one
+ * below, so a total broken down over tier 1 alone never shows more than 99 of
+ * any coin and never needs more than three figures.
+ *
+ * Keys are generic and fixed (see the file header), so the tier is read off
+ * the key. The index fallback covers a GM who invented their own keys: on a
+ * paired ladder every other rung from the bottom is tier 1.
+ */
+function summaryRungs() {
+  const ascending = getRoster().slice().reverse();
+  const tier1 = ascending.filter((d) => /1$/.test(d.key));
+  return tier1.length ? tier1 : ascending.filter((_, i) => i % 2 === 0);
+}
+
+/**
+ * Break base units down over the tier-1 rungs only, largest first, for the
+ * purse total on the sheet. Rungs that come to zero are dropped; a purse worth
+ * nothing still reports one row so the strip is never blank.
+ *
+ * Returns the denomination records (label and colour included) rather than a
+ * string, so the sheet can colour each figure by its own coin.
+ *
+ * @param {number} baseUnits
+ * @returns {Array<{key: string, label: string, color: string, count: number}>}
+ */
+export function summarisePurse(baseUnits) {
+  const rungs = summaryRungs();
+  if (!rungs.length) return [];
+
+  let left = Math.max(0, Math.floor(Number(baseUnits) || 0));
+  const parts = [];
+  for (const d of [...rungs].reverse()) {
+    const count = Math.floor(left / d.value);
+    left -= count * d.value;
+    if (count > 0) parts.push({ ...d, count });
+  }
+  return parts.length ? parts : [{ ...rungs[0], count: 0 }];
+}
+
 /* -------------------------------------------- */
 /*  GM config app                               */
 /* -------------------------------------------- */

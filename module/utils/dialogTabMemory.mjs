@@ -9,11 +9,21 @@
 const FLAG_SCOPE = "redsteel";
 const FLAG_KEY = "lastDialogTabs";
 
-function getRememberedTab(key) {
+/**
+ * The tab this user last opened for `key`, or null when nothing is stored.
+ * @param {string} key
+ * @returns {string|null}
+ */
+export function getRememberedTab(key) {
   return game.user?.getFlag(FLAG_SCOPE, FLAG_KEY)?.[key] ?? null;
 }
 
-function rememberTab(key, tabId) {
+/**
+ * Record `tabId` as the tab this user last opened for `key`. Fire-and-forget.
+ * @param {string} key
+ * @param {string} tabId
+ */
+export function rememberTab(key, tabId) {
   if (!game.user || !tabId) return;
   const stored = game.user.getFlag(FLAG_SCOPE, FLAG_KEY) ?? {};
   if (stored[key] === tabId) return;

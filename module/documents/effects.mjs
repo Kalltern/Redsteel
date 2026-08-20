@@ -608,22 +608,40 @@ export class RedsteelActiveEffect extends ActiveEffect {
       [`system.activeCombatEffects.-=${group}`]: null,
     });
   }
-  static CORROSION_PENALTIES = {
-    corrosion: -4,
-    corrosion_severe: -8,
+  /**
+   * Effects whose change is worth a fixed amount *per stack*.
+   *
+   * Their definition in config.mjs carries the single-stack value, which is
+   * what a first application writes. This rewrites that one change to
+   * `perStack * stacks` so the number the sheet reads always matches the stack
+   * count. Run from both apply paths (freshly created, and re-stacked), which
+   * is the only reason a stacking effect can carry a real Active Effect change
+   * at all.
+   *
+   * Keyed by status id → the change key it owns. Any other change on the same
+   * effect is left alone.
+   */
+  static STACK_SCALED_CHANGES = {
+    corrosion: { key: "system.armor.natural.bonus", perStack: -4 },
+    corrosion_severe: { key: "system.armor.natural.bonus", perStack: -8 },
+    // "Rychlá reakce" — +4 Initiative per action spent on it.
+    fast_reaction: {
+      key: "system.secondaryAttributes.ini.bonus",
+      perStack: 4,
+    },
   };
 
-  async updateCorrosionChange() {
+  async updateStackScaledChanges() {
     const statusId = this.getFlag("core", "statusId");
-    const perStack = RedsteelActiveEffect.CORROSION_PENALTIES[statusId];
-    if (perStack == null) return;
+    const scaled = RedsteelActiveEffect.STACK_SCALED_CHANGES[statusId];
+    if (!scaled) return;
 
     const stacks = this.getFlag("redsteel", "stacks") ?? 1;
-    const penalty = perStack * stacks;
+    const value = scaled.perStack * stacks;
 
     const changes = this.changes.map((c) => {
-      if (c.key === "system.armor.natural.bonus") {
-        return { ...c, value: penalty };
+      if (c.key === scaled.key) {
+        return { ...c, value };
       }
       return c;
     });
@@ -1097,7 +1115,7 @@ export class RedsteelActiveEffect extends ActiveEffect {
 
         if (appliedStacks <= 0) return existing;
 
-        await existing.updateCorrosionChange();
+        await existing.updateStackScaledChanges();
 
         // `onlyOnCreate` marks an onApply that belongs to *contracting* the
         // condition rather than to the dose that re-applied it — Poison's flat
@@ -1187,8 +1205,8 @@ export class RedsteelActiveEffect extends ActiveEffect {
       },
     });
     await created.executeTrigger("onApply", { appliedStacks: initialStacks });
-    // Corrosion armor update
-    await created.updateCorrosionChange();
+    // Per-stack change value (Corrosion armor, Fast Reaction initiative).
+    await created.updateStackScaledChanges();
     // --------------------------------------------
     // COMBAT MODIFIER INTEGRATION
     // --------------------------------------------

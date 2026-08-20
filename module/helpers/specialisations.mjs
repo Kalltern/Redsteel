@@ -139,8 +139,23 @@ const CODE_AUTOMATED_NODES = {
     "vyhodnyManevr",
   ],
   // utils/mentalDuel.mjs — ovladnuti unlocks "Seize control" on the winner's
-  // banner; vysati unlocks "Drain" (+2 Mind to the victor, ends the duel).
-  mentalist: ["ovladnuti", "vysati"],
+  // banner; vysati unlocks "Drain" (+2 Mind to the victor, ends the duel);
+  // soubojMZ1 puts the "Nápor" button beside the attack button and soubojMZ2
+  // upgrades what a landed Nápor drains.
+  // The soubojZahajeni chain feeds the initiation chance rolled in
+  // utils/castSpell.mjs, and mentalniZtec is the Mind-burning prompt that runs
+  // just before that roll.
+  mentalist: [
+    "ovladnuti",
+    "vysati",
+    "mentalniZtec",
+    "soubojZahajeni1",
+    "soubojZahajeni2",
+    "soubojZahajeni3",
+    "soubojZahajeni4",
+    "soubojMZ1",
+    "soubojMZ2",
+  ],
   // documents/actor.mjs (armour penalty, Lindar) + utils/castSpell.mjs
   // (Lindar's strikes).
   veneficus: ["postihZbroje", "lindar", "lindarovyUdery"],

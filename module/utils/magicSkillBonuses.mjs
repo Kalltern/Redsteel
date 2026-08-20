@@ -1660,8 +1660,13 @@ export async function finalizeRollsAndPostChat(
         // redo that side if a reroll turns the margin positive — the reroll
         // re-evaluates this card's own margin formula, so the new total is
         // directly comparable (see executeReroll).
+        //
+        // Not with "No Channeling Evaluation": that cast is not judged on its
+        // margin, so applyPostCastEffects already applied everything, and
+        // replaying it on a reroll would roll a second Mind Bending initiation.
         ...(!castSucceeded &&
-          !fromChanneling && {
+          !fromChanneling &&
+          !ignoreChanneling && {
             pendingCast: {
               spellUuid: spell.uuid,
               spellId: spell.id,

@@ -361,6 +361,7 @@ export async function combatAbilities() {
       // Turning OFF → free
       if (existing) {
         await existing.delete();
+        await postStanceCard(actor, ability, false);
         return;
       }
 
@@ -408,7 +409,11 @@ export async function combatAbilities() {
     }
     if (!paid) return;
     if (ability.system.class === "stance") {
-      await game.redsteel.applyEffect(actor, ability.system.key);
+      const applied = await game.redsteel.applyEffect(
+        actor,
+        ability.system.key,
+      );
+      if (applied) await postStanceCard(actor, ability, true);
       return;
     }
     // Commands are type "other" as well, so they are intercepted first.
@@ -2040,6 +2045,13 @@ async function runUtilityAbility(actor, ability, modifiers = []) {
     return;
   }
 
+  // Rychlá reakce (Fast Reaction): buy +4 Initiative for the next turn-order
+  // reroll. Cumulative — spend the action twice and it is +8.
+  if (ability.system.key === "fastReaction") {
+    await runFastReaction(actor, ability);
+    return;
+  }
+
   let description = ability.system.description || "";
 
   // Utility abilities honour the Test Type field the same way attack abilities
@@ -2250,6 +2262,111 @@ async function runBloodPact(actor, ability) {
 <hr>
 <div style="text-align:center; font-size:16px; color:#a01818;">
   ${summary}
+</div>
+`,
+  });
+}
+
+/**
+ * Rychlá reakce (Fast Reaction) — spend an action and 3 Stamina for +4
+ * Initiative on the next turn-order reroll.
+ *
+ * Turn order is rerolled at the top of every round by the `nextRound` wrapper
+ * in redsteel.mjs (Dynamic Initiative, on by default), and that wrapper runs
+ * *before* the round advances. The effect carries a one-turn duration, which
+ * ticks down at the start of the actor's own next turn — so an action spent in
+ * round N is still on the sheet when round N+1 rerolls, and gone by the time
+ * that turn comes up. One action bought, exactly one reroll improved.
+ *
+ * Cumulative: a second action spent in the same round is a second stack, and
+ * the per-stack +4 is written onto the Active Effect change by
+ * updateStackScaledChanges() in effects.mjs.
+ *
+ * The bonus lands on `ini.bonus`, which for a Character is folded into a total
+ * clamped at 15 (NPCs are uncapped). The card therefore reports the Initiative
+ * the actor actually ends up with, and says so when the clamp swallowed part
+ * of the purchase — otherwise the player pays 3 Stamina for nothing and has no
+ * way to see it.
+ */
+async function runFastReaction(actor, ability) {
+  const iniOf = (a) => Number(a.system.secondaryAttributes?.ini?.total) || 0;
+
+  const before = iniOf(actor);
+  const effect = await game.redsteel.applyEffect(actor, "fast_reaction");
+  if (!effect) return;
+
+  const after = iniOf(actor);
+  const stacks = effect.getFlag("redsteel", "stacks") ?? 1;
+  const gained = after - before;
+
+  const label = ability.localizedName ?? ability.name;
+  const summary = game.i18n.format("REDSTEEL.Items.FastReaction.result", {
+    gained: gained > 0 ? `+${gained}` : `${gained}`,
+    total: after,
+    stacks,
+  });
+  // Wasted purchase (or a partial one): only worth saying when the clamp bit.
+  const capped =
+    gained < 4
+      ? `<div style="font-size:14px; opacity:0.8;">${game.i18n.localize(
+          "REDSTEEL.Items.FastReaction.capped",
+        )}</div>`
+      : "";
+
+  await ChatMessage.create({
+    speaker: ChatMessage.getSpeaker({ actor }),
+    flavor: `
+<span style="display:inline-flex; align-items:center;">
+  <img src="${ability.img}" width="36" height="36" style="margin-right:8px;">
+  <strong style="font-size:20px;">${label}</strong>
+</span>
+<hr>
+<div style="text-align:center; font-size:16px;">
+  ${summary}
+  ${capped}
+</div>
+`,
+  });
+}
+
+/**
+ * Stances are the one ability class that resolves with no roll and no card of
+ * its own: the effect simply appears on the token. At the table that reads as
+ * nothing having happened, so nobody sees the fighter lock into Defensive
+ * Stance, and nobody sees it dropped three rounds later either. Both edges of
+ * the toggle therefore post a short card.
+ *
+ * Taking the stance carries its description, because that is where the bonuses
+ * it grants are written and the rest of the table has no other way to read
+ * them. Dropping it is a single line: the stance is already off the sheet, all
+ * that is left to do is say so.
+ *
+ * @param {Actor} actor      Whose stance changed.
+ * @param {Item} ability     The stance ability being toggled.
+ * @param {boolean} active   true when it was taken up, false when dropped.
+ */
+async function postStanceCard(actor, ability, active) {
+  const label = ability.localizedName ?? ability.name;
+  const status = game.i18n.localize(
+    active ? "REDSTEEL.Items.Stance.taken" : "REDSTEEL.Items.Stance.dropped",
+  );
+  const description = active ? (ability.localizedDescription ?? "") : "";
+
+  await ChatMessage.create({
+    speaker: ChatMessage.getSpeaker({ actor }),
+    flavor: `
+<span style="display:inline-flex; align-items:center;">
+  <img src="${ability.img}" width="36" height="36" style="margin-right:8px;">
+  <strong style="font-size:20px;">${label}</strong>
+</span>
+<hr>
+<div style="text-align:center; font-size:16px;">
+  <strong>${status}</strong>
+  ${
+    hasHtmlContent(description)
+      ? `<div style="font-size:14px; opacity:0.8;">${description}</div>`
+      : ""
+  }
 </div>
 `,
   });

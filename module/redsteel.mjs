@@ -40,6 +40,7 @@ import { initTooltips } from "./utils/tooltips.mjs";
 import { registerCoreTooltipProviders } from "./utils/tooltipProviders.mjs";
 import { registerFormulaDisplay } from "./utils/formulaDisplay.mjs";
 import { registerEndTurnButton } from "./utils/endTurnButton.mjs";
+import { registerCombatAutoSelect } from "./utils/combatAutoSelect.mjs";
 import { registerTempHealthGrant } from "./utils/tempHealthGrant.mjs";
 import { registerAdvantageousManeuver } from "./utils/advantageousManeuver.mjs";
 import { registerRedsteelHotbar } from "./utils/redsteelHotbar.mjs";
@@ -416,6 +417,7 @@ Hooks.once("init", function () {
   registerRollModifier();
   registerFormulaDisplay();
   registerEndTurnButton();
+  registerCombatAutoSelect();
   registerTempHealthGrant();
   registerAdvantageousManeuver();
   registerDefendButton();

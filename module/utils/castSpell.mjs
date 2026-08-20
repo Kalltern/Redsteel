@@ -6,6 +6,12 @@ import {
 import { getSpellPower } from "./spellPower.mjs";
 import { resolveSpellAutomation } from "./spellAutomation.mjs";
 import { getStrikeId } from "./strikes.mjs";
+import {
+  MD_BASE_INITIATION,
+  applyMentalCharge,
+  getInitiationBonus,
+  promptMentalCharge,
+} from "./mentalDuel.mjs";
 
 export { getStrikeId };
 
@@ -76,6 +82,11 @@ export async function performCast(
     const ok = await game.redsteel.deductMana(actor, spell);
     if (!ok) return false;
   }
+
+  // Mentální zteč is declared "při seslání" — before the cast is rolled, not
+  // after it lands. The Mind is burned here and parked on the caster; the
+  // initiation roll picks it up (see maybeStartMentalDuel).
+  await offerMentalCharge(actor, spell);
 
   const bonuses = game.redsteel.calculateAttackBonuses(actor, spell);
 
@@ -236,11 +247,22 @@ export async function applyPostCastEffects(
     await resolveSpellAutomation(actor, spell);
   }
 
-  if (!succeeded) return;
+  // Channeling upkeep is the one thing still bound to the margin: a cast that
+  // never landed has nothing to sustain, and skipping the channeling
+  // evaluation says nothing about whether upkeep should start.
+  if (succeeded) await startChannelingForSpell(actor, spell, { focusSpent });
 
-  await startChannelingForSpell(actor, spell, { focusSpent });
-  await applyCasterEffects(actor, spell);
-  await maybeStartMentalDuel(actor, token, spell, attackResults);
+  // Caster effects and the Mind Bending duel ride the same gate as the strikes
+  // and the automation above. With "No Channeling Evaluation" there is no
+  // margin to judge, so Mind Bending goes straight to the initiation roll —
+  // and takes its own caster effect with it, whose ±20 the duel ratings on both
+  // sides already assume.
+  if (succeeded || ignoreChanneling) {
+    await applyCasterEffects(actor, spell);
+    await maybeStartMentalDuel(actor, token, spell, attackResults, {
+      ignoreChanneling,
+    });
+  }
 }
 
 /**
@@ -377,27 +399,69 @@ async function applyCasterEffects(actor, spell) {
 }
 
 /**
+ * True for a spell that opens a Mental Duel: it carries the
+ * `mind_bending_caster` caster effect (so the same Flag Setter setup enables
+ * it) or the explicit `flags.redsteel.startsMentalDuel` override.
+ * @param {Item} spell
+ */
+function startsMentalDuel(spell) {
+  return (
+    spell?.getFlag?.("redsteel", "startsMentalDuel") === true ||
+    readCasterEffects(spell).includes("mind_bending_caster")
+  );
+}
+
+/**
+ * Offer Mentální zteč before the cast is rolled and park what was paid on the
+ * caster, where the initiation roll will find it — including on the reroll
+ * path, which re-enters applyPostCastEffects with no memory of this dialog.
+ *
+ * The flag is rewritten on every duel cast, stale value and all, so a charge
+ * paid for a cast that never reached its initiation roll (no target, a failed
+ * cast nobody rerolled) can't quietly discount the next one.
+ * @param {Actor} actor
+ * @param {Item} spell
+ */
+async function offerMentalCharge(actor, spell) {
+  if (!startsMentalDuel(spell)) return;
+  // No target means no duel and so nothing to buy — don't burn Mind for it.
+  if (![...(game.user.targets ?? [])][0]) return;
+
+  const { spent } = await promptMentalCharge(
+    actor,
+    MD_BASE_INITIATION + getInitiationBonus(actor),
+  );
+  await actor.setFlag("redsteel", "mentalCharge", spent);
+}
+
+/**
  * Mind Bending duel kick-off. Triggered when the spell carries the
  * `mind_bending_caster` caster effect (so the same Flag Setter setup enables
  * it) or an explicit `flags.redsteel.startsMentalDuel` override.
  *
- * On a successful cast, rolls the initiation chance (35%, or 100% on a
- * Critical success). On success the Mental Duel window opens between caster
- * and target; on failure the caster is offered the rule's voluntary
- * acceptance before opening it anyway.
+ * On a successful cast, rolls the initiation chance (35% plus the Mentalist
+ * initiation perks, or 100% on a Critical success). On success the Mental Duel
+ * window opens between caster and target; on failure the caster is offered the
+ * rule's voluntary acceptance before opening it anyway.
  * @param {Actor} actor - The casting actor.
  * @param {Token|null} token - The caster's token (from selectToken).
  * @param {Item} spell - The spell that was cast.
  * @param {object} attackResults - Result of performAttackRoll.
+ * @param {{ignoreChanneling?: boolean}} [options]
  */
-async function maybeStartMentalDuel(actor, token, spell, attackResults) {
-  const triggers =
-    spell.getFlag?.("redsteel", "startsMentalDuel") === true ||
-    readCasterEffects(spell).includes("mind_bending_caster");
-  if (!triggers) return;
+async function maybeStartMentalDuel(
+  actor,
+  token,
+  spell,
+  attackResults,
+  { ignoreChanneling = false } = {},
+) {
+  if (!startsMentalDuel(spell)) return;
 
-  // The spell has to land to seed the duel (margin of success ≥ 0).
-  if (!spellCastSucceeded(attackResults)) return;
+  // The spell has to land to seed the duel (margin of success ≥ 0) — unless
+  // channeling evaluation was skipped, in which case there is no margin to
+  // gate on and the cast goes straight to the initiation roll.
+  if (!spellCastSucceeded(attackResults) && !ignoreChanneling) return;
 
   const casterToken = token ?? actor.getActiveTokens()[0] ?? null;
   const targetToken = [...(game.user.targets ?? [])][0] ?? null;
@@ -409,10 +473,37 @@ async function maybeStartMentalDuel(actor, token, spell, attackResults) {
     return;
   }
 
-  // 35% to initiate; a Critical success forces it (100%).
+  // 35% to initiate, plus the Mentalist "Zahájení +10%" chain; a Critical
+  // success forces it (100%) and needs no help from either perk or Mind.
   const crit =
     attackResults?.critSuccess || attackResults?.displayCritSuccess;
-  const chance = crit ? 100 : 35;
+  const perkBonus = crit ? 0 : getInitiationBonus(actor);
+  const perkChance = crit ? 100 : MD_BASE_INITIATION + perkBonus;
+
+  // Mentální zteč was paid before the roll (see offerMentalCharge). Spend the
+  // parked value here, whichever route reached this point, and clear it so the
+  // same Mind can't buy a second initiation.
+  const charged = Number(actor.getFlag("redsteel", "mentalCharge")) || 0;
+  if (actor.getFlag("redsteel", "mentalCharge") !== undefined) {
+    await actor.unsetFlag("redsteel", "mentalCharge");
+  }
+  const chance = crit ? 100 : applyMentalCharge(perkChance, charged);
+
+  const breakdown = crit
+    ? "Critical success — the duel cannot be refused." +
+      (charged
+        ? ` (${charged} Mind burned on Mentální zteč, bought before the roll)`
+        : "")
+    : [
+        `${MD_BASE_INITIATION}% base`,
+        perkBonus ? `+${perkBonus}% perks` : null,
+        charged
+          ? `+${chance - perkChance}% Mentální zteč (${charged} Mind burned)`
+          : null,
+      ]
+        .filter(Boolean)
+        .join(" · ");
+
   const roll = await new Roll("1d100").evaluate();
   const initiated = roll.total <= chance;
 
@@ -425,6 +516,7 @@ async function maybeStartMentalDuel(actor, token, spell, attackResults) {
         Chance to start: <b>${chance}%</b> — rolled ${roll.total} →
         <b>${initiated ? "Duel begins!" : "Not triggered"}</b>
       </p>
+      <p style="text-align:center;font-size:11px;opacity:.8;">${breakdown}</p>
       ${
         initiated
           ? ""

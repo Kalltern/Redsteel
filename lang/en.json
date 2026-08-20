@@ -63,6 +63,10 @@
         "name": "Show party row capacity (debug)",
         "label": "Print how many more party portraits still fit beside the Redsteel hotbar, measured live. Useful when deciding how many companions and pets the party row can carry."
       },
+      "CombatAutoSelect": {
+        "name": "Select the active combatant's token",
+        "label": "When the turn changes, select the token of whoever is up, if you are allowed to control it. The Gamemaster always has the active combatant preselected, and a player running several tokens is switched to the one whose turn it is. You can change the selection again straight afterwards."
+      },
       "Bg3SlimChat": {
         "name": "Narrow the chat input until used",
         "label": "Foundry keeps the message box docked at full width on every sidebar tab, which crowds the Redsteel hotbar's right side. This shrinks it to a stub and gives the width back when you click into it. Reload required."
@@ -400,6 +404,13 @@
         "Accessories": "Accessories",
         "AccessorySlotsFull": "All accessory slots are full.",
         "Armor": "Armor",
+        "HelmetOn": "Helmet on. Click to take it off.",
+        "HelmetOff": "Helmet off. Click to put it on.",
+        "ArmorLayer": {
+          "bottom": "Bottom",
+          "middle": "Middle",
+          "top": "Top"
+        },
         "WeaponSets": "Weapon sets",
         "Equip": {
           "TitleWeapon": "Equip Weapon",
@@ -3163,7 +3174,7 @@
             },
             "mentalniZtec": {
               "label": "Mental Charge",
-              "description": "0 CP; Mentalist: Apprentice. Manual — resolved at the table."
+              "description": "0 CP; Mentalist: Apprentice. A Free Action when casting Mind Bending: burn any amount of Mind, each point raising the chance to start the duel by 10%, to a maximum of 75%."
             },
             "soubojDotek": {
               "label": "Touch: +30% to initiate",
@@ -3171,19 +3182,19 @@
             },
             "soubojZahajeni1": {
               "label": "Initiation +10% I",
-              "description": "5 CP; Touch: +30% to initiate. Manual — resolved at the table."
+              "description": "5 CP; Touch: +30% to initiate. +10% chance to start a Mental Duel. Stacks with the rest of the chain."
             },
             "soubojZahajeni2": {
               "label": "Initiation +10% II",
-              "description": "5 CP; Initiation +10% I + Mentalist: Expert. Manual — resolved at the table."
+              "description": "5 CP; Initiation +10% I + Mentalist: Expert. A further +10% chance to start a Mental Duel."
             },
             "soubojZahajeni3": {
               "label": "Initiation +10% III",
-              "description": "5 CP; Initiation +10% II + Mentalist: Master. Manual — resolved at the table."
+              "description": "5 CP; Initiation +10% II + Mentalist: Master. A further +10% chance to start a Mental Duel."
             },
             "soubojZahajeni4": {
               "label": "Initiation +10% IV",
-              "description": "5 CP; Initiation +10% III + Mentalist: Grandmaster. Manual — resolved at the table."
+              "description": "5 CP; Initiation +10% III + Mentalist: Grandmaster. A further +10% chance to start a Mental Duel."
             },
             "mentalistuvUprk": {
               "label": "Mentalist's Escape",
@@ -3206,20 +3217,20 @@
               "description": "10 CP; Upkeep: -1 Action + Mentalist: Master. Manual — resolved at the table."
             },
             "mentalniSouboj10a": {
-              "label": "Duel +10% I",
-              "description": "15 SP. Manual — resolved at the table."
+              "label": "Mental Duel +10% I",
+              "description": "15 SP. +10% to the Mind Bending skill."
             },
             "soubojMZ1": {
-              "label": "Success drains +1 MH I",
-              "description": "10 CP; Mentalist: Expert. Manual — resolved at the table."
+              "label": "Mental Assault",
+              "description": "10 CP; Mental Duel +10% I + Mentalist: Expert. An attack option in the duel window: the Mental Duel test takes -40%, and on a win the opponent loses 1 extra Mind. Once per round."
             },
             "mentalniSouboj10b": {
-              "label": "Duel +10% II",
-              "description": "15 SP; Duel +10% I. Manual — resolved at the table."
+              "label": "Mental Duel +10% II",
+              "description": "15 SP; Mental Assault. A further +10% to the Mind Bending skill."
             },
             "soubojMZ2": {
-              "label": "Success drains +1 MH II",
-              "description": "10 CP; Success drains +1 MH I + Mentalist: Grandmaster. Manual — resolved at the table."
+              "label": "Assault: drains 1 more Mind",
+              "description": "10 CP; Mental Duel +10% II + Mentalist: Grandmaster. A landed Mental Assault drains 2 extra Mind instead of 1."
             },
             "telepat1": {
               "label": "Telepath I",
@@ -3601,7 +3612,15 @@
           "Condition": "Condition",
           "Resources": "Resources",
           "Status": "Status",
-          "Defense": "Defense"
+          "Defense": "Defense",
+          "General": "General",
+          "Combat": "Combat",
+          "WeaponSkills": "Weapon Skills",
+          "Doctrines": "Doctrines",
+          "Statistics": "Statistics",
+          "Features": "Features",
+          "Traits": "Traits",
+          "Rerolls": "Rerolls"
         },
         "Condition": {
           "max": "max",
@@ -4772,7 +4791,27 @@
       "attribute": "Attribute",
       "weaponAttack": "Weapon",
       "current": "Current",
-      "noteMissing": "Could not open the rules note."
+      "noteMissing": "Could not open the rules note.",
+      "Calculation": "Calculation",
+      "WhenDefending": "When defending",
+      "Part": {
+        "rank": "Rank {rank}",
+        "base": "Base",
+        "bonus": "Bonus",
+        "global": "Global modifier",
+        "other": "Other",
+        "total": "Total",
+        "visageFear": "Fearsome looks",
+        "shepherdsWill": "Shepherd's will",
+        "quality": "Quality",
+        "enchant": "Enchantment",
+        "doctrine": "Doctrine",
+        "weaponSpec": "Weapon specialisation",
+        "offhand": "Off hand",
+        "weaponDefense": "Weapon defense",
+        "shield": "Shield",
+        "dualWield": "Dual wielding"
+      }
     },
     "Keyword": {
       "stun": {
@@ -5460,6 +5499,16 @@
       },
       "FastSpells": {
         "name": "Fast Spells"
+      },
+      "FastReaction": {
+        "name": "Fast Reaction",
+        "description": "<p>You throw yourself into the next exchange a beat ahead of everyone else. Gain +4 Initiative until the start of your next turn, which means the bonus is still with you when turn order is rolled again at the top of the next round.</p><p>Cumulative: spend the action twice in the same round and the bonus is +8. Your Initiative is still capped at 15.</p>",
+        "result": "Initiative {gained}, now at {total}. Stacks: {stacks}.",
+        "capped": "Initiative is already at its cap, so part of the bonus was lost."
+      },
+      "Stance": {
+        "taken": "Takes up the stance.",
+        "dropped": "Drops the stance."
       },
       "Fatso": {
         "name": "Fatso"

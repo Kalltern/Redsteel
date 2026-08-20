@@ -319,9 +319,6 @@ ${
   <tr>    <td>${effectsRollResults}</td>  </tr>`
       : ""
   }
-
-  <tr>    <td><hr></td>  </tr>
-
 </table>`
     : ""
 }
@@ -390,6 +387,10 @@ export function computeDoctrineBonuses(actor, weapon) {
   let doctrineRangedDefenseBonus = 0;
   let doctrineCritDmg = 0;
   let doctrineSkillCritPen = 0;
+  // Which doctrine each bonus came from, so the sheet tooltip can name it
+  // instead of printing an anonymous number. Purely informational: nothing in
+  // the roll path reads it.
+  const doctrineSource = { attack: null, defense: null, rangedDefense: null };
   if (actor.type === "npc") {
     return {
       doctrineBonus: 0,
@@ -402,12 +403,22 @@ export function computeDoctrineBonuses(actor, weapon) {
       doctrineRangedDefenseBonus: 0,
       doctrineCritDmg: 0,
       doctrineSkillCritPen: 0,
+      doctrineSource,
     };
   }
   for (const [doctrineName, doctrineValue] of Object.entries(
     ws.doctrines ?? 0,
   )) {
     if (doctrineValue === true) {
+      // The branches below assign rather than accumulate, so "this value
+      // changed while walking this doctrine" is exactly "this doctrine set
+      // it". Two doctrines landing on the same number leaves the first one
+      // named, which is still a true statement about where the bonus is from.
+      const before = {
+        attack: doctrineBonus,
+        defense: doctrineDefenseBonus,
+        rangedDefense: doctrineRangedDefenseBonus,
+      };
       if (doctrineName === "pikeman" && doctrine.pikeman.value >= 3) {
         doctrineBonus = 10;
         if (doctrine.pikeman.value >= 7) {
@@ -555,6 +566,14 @@ export function computeDoctrineBonuses(actor, weapon) {
           doctrineCritDmg = 10;
         }
       }
+
+      if (doctrineBonus !== before.attack) doctrineSource.attack = doctrineName;
+      if (doctrineDefenseBonus !== before.defense) {
+        doctrineSource.defense = doctrineName;
+      }
+      if (doctrineRangedDefenseBonus !== before.rangedDefense) {
+        doctrineSource.rangedDefense = doctrineName;
+      }
     }
   }
   /* console.log(
@@ -572,6 +591,7 @@ export function computeDoctrineBonuses(actor, weapon) {
     doctrineCritDefenseBonus,
     doctrineSkillCritPen,
     doctrineCritDmg,
+    doctrineSource,
   };
 }
 
@@ -608,6 +628,9 @@ export function getWeaponAttackBonus(actor, weapon, offWeapon = null) {
     quality: 0,
     enchant: 0,
     doctrine: 0,
+    // Which doctrine granted `doctrine`, for the sheet tooltip. Null when none
+    // did, or when the grant could not be traced to a single doctrine.
+    doctrineSource: null,
     spec: 0,
     offhand: 0,
     total: 0,
@@ -618,8 +641,9 @@ export function getWeaponAttackBonus(actor, weapon, offWeapon = null) {
   parts.quality = Number(ws.qualityMods?.attack) || 0;
   // Applied enchantments, the second derived modifier block on the weapon.
   parts.enchant = Number(ws.enchantMods?.attack) || 0;
-  parts.doctrine =
-    Number(computeDoctrineBonuses(actor, weapon).doctrineBonus) || 0;
+  const doctrineBonuses = computeDoctrineBonuses(actor, weapon);
+  parts.doctrine = Number(doctrineBonuses.doctrineBonus) || 0;
+  parts.doctrineSource = doctrineBonuses.doctrineSource?.attack ?? null;
   parts.spec = Number(getWeaponSpecBonuses(actor, weapon).attack) || 0;
   // Only offhandProperties.attack, matching getOffhandProps at roll time — the
   // off hand's quality mods feed defense, not attack.

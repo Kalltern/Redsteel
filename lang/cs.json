@@ -63,6 +63,10 @@
         "name": "Zobrazit kapacitu řady družiny (ladění)",
         "label": "Vypíše, kolik dalších portrétů družiny se ještě vejde vedle Redsteel panelu. Měří se za běhu. Užitečné při rozhodování, kolik společníků a mazlíčků řada unese."
       },
+      "CombatAutoSelect": {
+        "name": "Vybrat token postavy na tahu",
+        "label": "Při změně tahu automaticky vybere token toho, kdo je na řadě, pokud ho smíš ovládat. Vypravěč tak má vždy předvybraného aktivního tvora a hráč s více tokeny se přepne na ten, který je na tahu. Výběr si můžeš hned poté změnit."
+      },
       "Bg3SlimChat": {
         "name": "Zúžit pole chatu, dokud se nepoužívá",
         "label": "Foundry drží pole pro zprávu v plné šířce na každé záložce postranního panelu, což tísní pravou stranu Redsteel panelu. Toto ho zmenší na proužek a šířku vrátí, jakmile do něj klikneš. Vyžaduje restart."
@@ -159,7 +163,7 @@
       },
       "Action": {
         "move": "Pohyb",
-        "sprint": "Sprint",
+        "sprint": "Běh",
         "slowMove": "Pomalý pohyb",
         "disengage": "Odpoutání",
         "aim": "Míření",
@@ -170,8 +174,8 @@
         "opportunityAttack": "Příležitostný útok",
         "action": "Akce",
         "dodge": "Úhyb",
-        "rest": "Odpočinek",
-        "reload": "Přebít",
+        "rest": "Oddech",
+        "reload": "Přebíjení",
         "castSpell": "Čarování",
         "reactionSpell": "Vyrušení",
         "focus": "Soustředění"
@@ -400,6 +404,13 @@
         "Accessories": "Doplňky",
         "AccessorySlotsFull": "Všechny sloty pro doplňky jsou plné.",
         "Armor": "Zbroj",
+        "HelmetOn": "Helma nasazena. Kliknutím ji sundáš.",
+        "HelmetOff": "Helma sundána. Kliknutím ji nasadíš.",
+        "ArmorLayer": {
+          "bottom": "Spodní",
+          "middle": "Střední",
+          "top": "Vrchní"
+        },
         "WeaponSets": "Sady zbraní",
         "Equip": {
           "TitleWeapon": "Vybavit zbraň",
@@ -3163,7 +3174,7 @@
             },
             "mentalniZtec": {
               "label": "Mentální zteč",
-              "description": "0 CP; Mentalista: Učedník. Ručně — řeší se u stolu."
+              "description": "0 CP; Mentalista: Učedník. Volná akce při seslání Mentálního souboje: můžeš vyčerpat libovolný počet Mentálních životů a za každý zvýšit šanci na zahájení souboje o 10 %, nejvýše však na 75 %."
             },
             "soubojDotek": {
               "label": "Dotek: +30% na zahájení",
@@ -3171,19 +3182,19 @@
             },
             "soubojZahajeni1": {
               "label": "Zahájení +10% I",
-              "description": "5 CP; Dotek: +30% na zahájení. Ručně — řeší se u stolu."
+              "description": "5 CP; Dotek: +30% na zahájení. Šance na zahájení Mentálního souboje +10 %. Sčítá se se zbytkem řetězce."
             },
             "soubojZahajeni2": {
               "label": "Zahájení +10% II",
-              "description": "5 CP; Zahájení +10% I + Mentalista: Expert. Ručně — řeší se u stolu."
+              "description": "5 CP; Zahájení +10% I + Mentalista: Expert. Šance na zahájení Mentálního souboje o dalších +10 %."
             },
             "soubojZahajeni3": {
               "label": "Zahájení +10% III",
-              "description": "5 CP; Zahájení +10% II + Mentalista: Mistr. Ručně — řeší se u stolu."
+              "description": "5 CP; Zahájení +10% II + Mentalista: Mistr. Šance na zahájení Mentálního souboje o dalších +10 %."
             },
             "soubojZahajeni4": {
               "label": "Zahájení +10% IV",
-              "description": "5 CP; Zahájení +10% III + Mentalista: Velmistr. Ručně — řeší se u stolu."
+              "description": "5 CP; Zahájení +10% III + Mentalista: Velmistr. Šance na zahájení Mentálního souboje o dalších +10 %."
             },
             "mentalistuvUprk": {
               "label": "Mentalistův úprk",
@@ -3206,20 +3217,20 @@
               "description": "10 CP; Udržování: -1 Akce + Mentalista: Mistr. Ručně — řeší se u stolu."
             },
             "mentalniSouboj10a": {
-              "label": "Souboj +10% I",
-              "description": "15 SP. Ručně — řeší se u stolu."
+              "label": "Mentální souboj +10% I",
+              "description": "15 SP. +10 % k dovednosti Mentální souboj."
             },
             "soubojMZ1": {
-              "label": "Úspěch: -1 MŽ navíc I",
-              "description": "10 CP; Mentalista: Expert. Ručně — řeší se u stolu."
+              "label": "Mentální nápor",
+              "description": "10 CP; Mentální souboj +10% I + Mentalista: Expert. Útočná volba v okně souboje: Test Mentálního souboje s postihem -40 %, při úspěchu vyčerpá oponentovi jeden dodatečný MŽ. Jen jednou za kolo."
             },
             "mentalniSouboj10b": {
-              "label": "Souboj +10% II",
-              "description": "15 SP; Souboj +10% I. Ručně — řeší se u stolu."
+              "label": "Mentální souboj +10% II",
+              "description": "15 SP; Mentální nápor. Dalších +10 % k dovednosti Mentální souboj."
             },
             "soubojMZ2": {
-              "label": "Úspěch: -1 MŽ navíc II",
-              "description": "10 CP; Úspěch: -1 MŽ navíc I + Mentalista: Velmistr. Ručně — řeší se u stolu."
+              "label": "Nápor: ubírá o 1 MŽ více",
+              "description": "10 CP; Mentální souboj +10% II + Mentalista: Velmistr. Úspěšný Mentální nápor vyčerpá 2 dodatečné MŽ místo jednoho."
             },
             "telepat1": {
               "label": "Telepat I",
@@ -3601,7 +3612,15 @@
           "Condition": "Stav",
           "Resources": "Zdroje",
           "Status": "Stav",
-          "Defense": "Obrana"
+          "Defense": "Obrana",
+          "General": "Obecné",
+          "Combat": "Souboj",
+          "WeaponSkills": "Zbraňové dovednosti",
+          "Doctrines": "Doktríny",
+          "Statistics": "Statistiky",
+          "Features": "Rysy",
+          "Traits": "Vlastnosti",
+          "Rerolls": "Opakování hodů"
         },
         "Condition": {
           "max": "max",
@@ -3799,7 +3818,7 @@
             "label": "Řemeslo"
           },
           "dancing": {
-            "label": "Taneční"
+            "label": "Tanec"
           },
           "lockpicking": {
             "label": "Odemykání zámků"
@@ -3889,7 +3908,7 @@
             "label": "Pokoušení"
           },
           "herbalism": {
-            "label": "Bylinářství"
+            "label": "Bylinkářství"
           },
           "insight": {
             "label": "Vhled"
@@ -4769,7 +4788,27 @@
       "attribute": "Vlastnost",
       "weaponAttack": "Zbraň",
       "current": "Aktuálně",
-      "noteMissing": "Poznámku s pravidly se nepodařilo otevřít."
+      "noteMissing": "Poznámku s pravidly se nepodařilo otevřít.",
+      "Calculation": "Výpočet",
+      "WhenDefending": "Při obraně",
+      "Part": {
+        "rank": "Stupeň {rank}",
+        "base": "Základ",
+        "bonus": "Bonus",
+        "global": "Globální modifikátor",
+        "other": "Ostatní",
+        "total": "Celkem",
+        "visageFear": "Děsivý vzhled",
+        "shepherdsWill": "Pastýřova vůle",
+        "quality": "Kvalita",
+        "enchant": "Očarování",
+        "doctrine": "Doktrína",
+        "weaponSpec": "Zbraňová specializace",
+        "offhand": "Druhá ruka",
+        "weaponDefense": "Obrana zbraní",
+        "shield": "Štít",
+        "dualWield": "Boj dvěma zbraněmi"
+      }
     },
     "Keyword": {
       "stun": {
@@ -4810,7 +4849,7 @@
       },
       "aim": {
         "label": "Míření",
-        "desc": "Každá akce Míření dává +10 % k zásahu zvoleného cíle, až do 4 stupňů. Změna cíle spálí všechny stupně. Útok na zamířený cíl je spotřebuje všechny, útok na kohokoli jiného Míření rovnou ruší. Vylepšené míření (Duelista I, nebo Služebník meče) Míření při útoku na jiný cíl zachová a při 4 stupních přidává +10 prūrazného účinku. Redukce Míření (Duelista II, nebo kterýkoli uzel Redukce Míření) stojí při zásahu jen jeden stupeň a při kritickém zásahu žádný, neúspěšný útok ale stále bere všechny. Služebník meče navíc po Zákeřném útoku jedno Míření přidává; Mečový tanečník místo toho při úspěšném Zákeřném útoku neztrácí nic a při neúspěchu jen nahoru zaokrouhlenou polovinu. Duelista VII obrací Míření i do obrany: Obrana proti protivníkovi, na kterého míříš, získává +5 % za každý stupeň a obrana žádné Míření nestojí. Každá duelistická výhoda vyžaduje odpovídající meč v ruce. Protiútok, Odvetný úder, Prosek, Prosek ratištěm, Dvojitý vrh a Vypočítavý útok nemají s Mířením žádnou interakci."
+        "desc": "Každá akce Míření dává +10 % k zásahu zvoleného cíle, až do 4 stupňů. Změna cíle spálí všechny stupně. Útok na zamířený cíl je spotřebuje všechny, útok na kohokoli jiného Míření rovnou ruší. Vylepšené míření (Duelista I, nebo Služebník meče) Míření při útoku na jiný cíl zachová a při 4 stupních přidává +10 prūrazného účinku. Redukce Míření (Duelista II, nebo kterýkoli uzel Redukce Míření) stojí při zásahu jen jeden stupeň a při kritickém zásahu žádný, neúspěšný útok ale stále bere všechny. Služebník meče navíc po Zákeřném útoku jedno Míření přidává; Mečový tanečník místo toho při úspěšném Zákeřném útoku neztrácí nic a při neúspěchu jen nahoru zaokrouhlenou polovinu. Duelista VII obrací Míření i do obrany: Obrana proti protivníkovi, na kterého míříš, získává +5 % za každý stupeň a obrana žádné Míření nestojí. Každá duelistická výhoda vyžaduje odpovídající meč v ruce. Protiútok, Odvetný úder, Rozseknutí, Daleké rozseknutí, Dvojitý vrh a Vypočítavý útok nemají s Mířením žádnou interakci."
       },
       "spellPower": {
         "label": "Síla kouzla",
@@ -4971,7 +5010,7 @@
         "noReserve": "Žádná Zásoba krve ke vstřebání."
       },
       "AccurateShot": {
-        "name": "Přesná střela"
+        "name": "Přesný výstřel"
       },
       "AceUpOnesSleeve": {
         "name": "Eso v rukávu"
@@ -5034,7 +5073,7 @@
         "name": "Hbitý II"
       },
       "AimedStrike": {
-        "name": "Mířený úder"
+        "name": "Cílený útok"
       },
       "AimingMelee": {
         "name": "Míření - na blízko"
@@ -5153,10 +5192,10 @@
         "name": "Kočka"
       },
       "Cleave": {
-        "name": "Prosek"
+        "name": "Rozseknutí"
       },
       "CleaverCleave": {
-        "name": "Prosek tesákem"
+        "name": "Rozseknutí sekáčkem"
       },
       "CombatGenius": {
         "name": "Bojový génius"
@@ -5216,7 +5255,7 @@
         "name": "Plazení"
       },
       "CripplingShot": {
-        "name": "Mrzačící střela"
+        "name": "Zmrzačující výstřel"
       },
       "Crossbow": {
         "name": "Kuše"
@@ -5234,7 +5273,7 @@
         "name": "Smrtící výpad"
       },
       "DeepFocus": {
-        "name": "Hluboké soustředění"
+        "name": "Usilovná koncentrace"
       },
       "DeepSlash": {
         "name": "Hluboký sek"
@@ -5288,7 +5327,7 @@
         "name": "Zalehnutí"
       },
       "DuelistsAdvance": {
-        "name": "Duelistův postup"
+        "name": "Duelistův krok"
       },
       "DuelistsSlayer": {
         "name": "Zhouba duelistů"
@@ -5411,16 +5450,16 @@
         "name": "Expert: Pasti"
       },
       "ExploitWeakness": {
-        "name": "Využití slabiny"
+        "name": "Útok na slabinu"
       },
       "ExploitWeaknessRanged": {
-        "name": "Využití slabiny (střelba)"
+        "name": "Výstřel na slabinu"
       },
       "ExploitWeaknessThrow": {
-        "name": "Využití slabiny (vrh)"
+        "name": "Vrh na slabinu"
       },
       "ExtendedLunge": {
-        "name": "Dlouhý výpad"
+        "name": "Daleký výpad"
       },
       "Mountain": {
         "name": "Hora"
@@ -5458,6 +5497,16 @@
       "FastSpells": {
         "name": "Rychlá kouzla"
       },
+      "FastReaction": {
+        "name": "Rychlá reakce",
+        "description": "<p>Vrháte se do dalšího střetu o kus dřív než ostatní. Získáváte +4 k Iniciativě až do začátku svého příštího tahu, takže vám bonus zůstává i ve chvíli, kdy se na začátku dalšího kola znovu určuje pořadí tahů.</p><p>Kumulativní: vydáte-li akci ve stejném kole dvakrát, je bonus +8. Iniciativa je i tak omezena na 15.</p>",
+        "result": "Iniciativa {gained}, nyní {total}. Stupňů: {stacks}.",
+        "capped": "Iniciativa je již na svém stropu, část bonusu se tedy ztratila."
+      },
+      "Stance": {
+        "taken": "Zaujímá postoj.",
+        "dropped": "Opouští postoj."
+      },
       "Fatso": {
         "name": "Tlouštík"
       },
@@ -5492,16 +5541,16 @@
         "name": "Flamberg"
       },
       "FlambergeCleave": {
-        "name": "Prosek flambergem"
+        "name": "Rozseknutí flambergem"
       },
       "FlambergeCleaveAbility": {
-        "name": "Prosek flambergem (schopnost)"
+        "name": "Rozseknutí flambergem (schopnost)"
       },
       "FleshRending": {
-        "name": "Drásání masa"
+        "name": "Drásání"
       },
       "Flurry": {
-        "name": "Smršť"
+        "name": "Smršť útoků"
       },
       "FlurryOfThrows": {
         "name": "Smršť vrhů"
@@ -5566,7 +5615,7 @@
         "name": "Zelený kříž"
       },
       "GuardStance": {
-        "name": "Střeh (postoj)"
+        "name": "Ochrana"
       },
       "Halberd": {
         "name": "Halapartna"
@@ -5584,7 +5633,7 @@
         "name": "Půlčičí přehoz"
       },
       "HalfPirouette": {
-        "name": "Poloviční pirueta"
+        "name": "Půlpirueta"
       },
       "HamFisted": {
         "name": "Nemotora"
@@ -5599,7 +5648,7 @@
         "name": "Zrychlení"
       },
       "HastenedCast": {
-        "name": "Zrychlené sesílání"
+        "name": "Zrychlené čarování"
       },
       "Hasty": {
         "name": "Ukvapený"
@@ -5647,16 +5696,16 @@
         "name": "Imbroccata"
       },
       "ImbroccataExploitWeakness": {
-        "name": "Imbroccata: Využití slabiny"
+        "name": "Imbroccata: Útok na slabinu"
       },
       "Imp": {
         "name": "Prcek"
       },
       "Impale": {
-        "name": "Probodnutí"
+        "name": "Nabodnutí"
       },
       "ImpaleFollowUpAttack": {
-        "name": "Probodnutí: následný útok"
+        "name": "Nabodnutí: Navazující útok"
       },
       "ImprovedAiming": {
         "name": "Vylepšené míření"
@@ -5692,7 +5741,7 @@
         "name": "Krvavé nabodnutí"
       },
       "Intimidation": {
-        "name": "Zastrašení"
+        "name": "Zastrašování"
       },
       "IronMuscles": {
         "name": "Železné svaly"
@@ -5722,7 +5771,7 @@
         "name": "Nože"
       },
       "Knockdown": {
-        "name": "Sražení k zemi"
+        "name": "Povalení"
       },
       "LamellarArmor": {
         "name": "Lamelová zbroj"
@@ -5731,13 +5780,13 @@
         "name": "Kožená zbroj"
       },
       "LegSweep": {
-        "name": "Podmetení"
+        "name": "Podkopnutí"
       },
       "LegSweepDexterity": {
-        "name": "Podmetení (Obratnost)"
+        "name": "Podkopnutí (Obratnost)"
       },
       "LegSweepStrength": {
-        "name": "Podmetení (Síla)"
+        "name": "Podkopnutí (Síla)"
       },
       "LightningReflexes": {
         "name": "Bleskové reflexy"
@@ -5812,7 +5861,7 @@
         "name": "Melancholik"
       },
       "MilitaryCleaver": {
-        "name": "Tesák"
+        "name": "Vojenský sekáček"
       },
       "Mithridat": {
         "name": "Mithridat"
@@ -5860,16 +5909,16 @@
         "name": "Panacea"
       },
       "PassingStrike": {
-        "name": "Letmý úder"
+        "name": "Útok s pohybem"
       },
       "Patron": {
         "name": "Patron"
       },
       "PerfectOpening": {
-        "name": "Dokonalá příležitost"
+        "name": "Rafinovaný manévr"
       },
       "PerfectOpeningHastened": {
-        "name": "Dokonalá příležitost (zrychlená)"
+        "name": "Rafinovaný manévr (zrychlený)"
       },
       "Perseverance": {
         "name": "Vytrvalost"
@@ -5884,7 +5933,7 @@
         "name": "Plátová zbroj"
       },
       "PolearmCleave": {
-        "name": "Prosek ratištěm"
+        "name": "Daleké rozseknutí"
       },
       "PolearmMaster": {
         "name": "Mistr ratišťových zbraní"
@@ -5962,10 +6011,10 @@
         "name": "Vyrušení"
       },
       "RecklessStrike": {
-        "name": "Riskantní úder"
+        "name": "Zběsilý útok"
       },
       "RecklessStrikeReaver": {
-        "name": "Riskantní úder (Plenitel)"
+        "name": "Zběsilý útok (Plenitel)"
       },
       "ReflexBow": {
         "name": "Reflexní luk"
@@ -5974,10 +6023,10 @@
         "name": "Relikty"
       },
       "Reload": {
-        "name": "Přebít"
+        "name": "Přebíjení"
       },
       "Rest": {
-        "name": "Odpočinek"
+        "name": "Oddech"
       },
       "RetaliatoryStrike": {
         "name": "Odvetný úder"
@@ -6022,10 +6071,10 @@
         "name": "Obranný postoj štítonoše"
       },
       "ShieldCharge": {
-        "name": "Zteč se štítem"
+        "name": "Zteč štítem"
       },
       "ShieldChargeSmallShield": {
-        "name": "Zteč se štítem (malý štít)"
+        "name": "Zteč štítem (malý štít)"
       },
       "ShortSword": {
         "name": "Krátký meč"
@@ -6097,7 +6146,7 @@
         "name": "Specializace: Ranhojičství"
       },
       "SpecializationHerbalism": {
-        "name": "Specializace: Bylinářství"
+        "name": "Specializace: Bylinkářství"
       },
       "SpecializationInsight": {
         "name": "Specializace: Vhled"
@@ -6139,10 +6188,10 @@
         "name": "Pavouk"
       },
       "SplinteringStrike": {
-        "name": "Tříštivý úder"
+        "name": "Rozštěpení"
       },
       "Sprint": {
-        "name": "Sprint"
+        "name": "Běh"
       },
       "StabilisingTouch": {
         "name": "Stabilizující dotek"
@@ -6235,10 +6284,10 @@
         "name": "Pavéza"
       },
       "TripDexterity": {
-        "name": "Podražení (Obratnost)"
+        "name": "Podseknutí (Obratnost)"
       },
       "TripStrength": {
-        "name": "Podražení (Síla)"
+        "name": "Podseknutí (Síla)"
       },
       "TwoHandedFlail": {
         "name": "Bojový cep"
@@ -6565,10 +6614,10 @@
         "name": "Expert: Splývání v davu"
       },
       "AdeptHerbalism": {
-        "name": "Adept: Bylinářství"
+        "name": "Adept: Bylinkářství"
       },
       "ExpertHerbalism": {
-        "name": "Expert: Bylinářství"
+        "name": "Expert: Bylinkářství"
       },
       "AdeptInsight": {
         "name": "Adept: Vhled"

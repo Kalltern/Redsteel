@@ -18,6 +18,7 @@ import {
   getRoster,
   purseTotal,
   formatPrice,
+  summarisePurse,
 } from "../utils/currency.mjs";
 import {
   SUBSTANCES,
@@ -51,8 +52,20 @@ import { renderMarginFollowupLine } from "../utils/attributeFollowup.mjs";
 import { addItemToHotbar } from "../utils/hotbarMacros.mjs";
 import { openBanePicker, clearBaneChoice } from "../helpers/banes.mjs";
 import { buildSpellCard, buildRankGroups } from "../utils/spellCards.mjs";
+import {
+  getRememberedTab,
+  rememberTab,
+} from "../utils/dialogTabMemory.mjs";
 
 const { api, sheets } = foundry.applications;
+
+// Features tab sub-tabs. The choice is stored per user so the sheet reopens
+// where they left it; the id list also rejects values left over from an
+// earlier layout, which would otherwise leave every sub-tab hidden.
+const FEATURES_TAB_GROUP = "features-subtabs";
+const FEATURES_TAB_MEMORY_KEY = "actor-features";
+const FEATURES_TAB_IDS = ["featureList", "traitList", "rerolls"];
+const FEATURES_TAB_DEFAULT = "rerolls";
 
 // Maps the gear "layer" select values to armor slot keys on the actor
 const ARMOR_LAYER_SLOTS = { Bottom: "bottom", Middle: "middle", Top: "top" };
@@ -156,6 +169,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       toggleReroll: this._toggleReroll,
       toggleSchool: this._toggleSchool,
       setActiveWeaponSet: this._setActiveWeaponSet,
+      toggleHelmet: this._toggleHelmet,
       toggleTwoHandGrip: this._toggleTwoHandGrip,
       toggleNpcOffhand: this._toggleNpcOffhand,
       toggleAmmoEquipped: this._toggleAmmoEquipped,
@@ -424,6 +438,17 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     if (this.actor.type !== "character") return;
 
     await game.redsteel.switchWeaponSet(this.actor);
+  }
+
+  /**
+   * Take the helmet off / put it back on without unequipping the armor it
+   * belongs to. Stored as flags.redsteel.helmetOff (absent = worn), read by
+   * prepareDerivedData in documents/actor.mjs, which drops the helmet's
+   * archery and perception penalties while it is off.
+   */
+  static async _toggleHelmet(event, target) {
+    const off = this.actor.flags?.redsteel?.helmetOff === true;
+    await this.actor.setFlag("redsteel", "helmetOff", !off);
   }
 
   _assignWeaponDirect(itemId, set, slot) {
@@ -1522,7 +1547,10 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     context.armorSlots = {};
     if (this.actor.type === "character") {
       const slots = this.actor.system.combat.armorSlots ?? {};
-      for (const [label, layer] of Object.entries(ARMOR_LAYER_SLOTS)) {
+      for (const layer of Object.values(ARMOR_LAYER_SLOTS)) {
+        const label = game.i18n.localize(
+          `REDSTEEL.Actor.Inventory.ArmorLayer.${layer}`,
+        );
         const item = slots[layer]
           ? (this.actor.items.get(slots[layer]) ?? null)
           : null;
@@ -1622,7 +1650,12 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       ...denom,
       count: Math.max(0, Math.floor(Number(purse[denom.key]) || 0)),
     }));
-    context.purseTotal = formatPrice(purseTotal(this.actor));
+    // The total reads in tier-1 coins only (c1/s1/g1), so it is at most three
+    // figures however the purse is stacked. The full breakdown over every rung
+    // stays on the hover title.
+    const worth = purseTotal(this.actor);
+    context.purseSummary = summarisePurse(worth);
+    context.purseTotal = formatPrice(worth);
     context.isGM = game.user.isGM;
 
     return context;
@@ -1642,7 +1675,19 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
   /** @override */
   async _preparePartContext(partId, context) {
     switch (partId) {
-      case "features":
+      case "features": {
+        // Features / Traits / Rerolls sub-tabs. Reopen on whichever the user
+        // last used; new users land on Rerolls, the panel wanted mid-session.
+        const stored =
+          this.tabGroups[FEATURES_TAB_GROUP] ??
+          getRememberedTab(FEATURES_TAB_MEMORY_KEY);
+        this.tabGroups[FEATURES_TAB_GROUP] = FEATURES_TAB_IDS.includes(stored)
+          ? stored
+          : FEATURES_TAB_DEFAULT;
+        context.activeFeaturesSubtab = this.tabGroups[FEATURES_TAB_GROUP];
+        context.tab = context.tabs[partId];
+        break;
+      }
       case "skills":
         context.activeSkillsSubtab = this.tabGroups["skills-subtabs"] ?? null;
         context.tab = context.tabs[partId];
@@ -1902,6 +1947,15 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
         break;
       }
       case "inventory":
+        context.tab = context.tabs[partId];
+        // Helmet toggle on the Armor panel. `hasHelmet` only dims the icon:
+        // the state is kept either way, so equipping a helmeted piece later
+        // honours the choice already made.
+        context.helmetOff = this.actor.flags?.redsteel?.helmetOff === true;
+        context.hasHelmet = this.actor.items.some(
+          (i) => i.type === "gear" && i.system.equipped && i.system.helmet,
+        );
+        break;
       case "config":
         context.tab = context.tabs[partId];
         break;
@@ -2194,6 +2248,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
   changeTab(tab, group, options) {
     super.changeTab(tab, group, options);
     if (group === "primary") this.#syncPrimaryTabHeight(tab);
+    if (group === FEATURES_TAB_GROUP) rememberTab(FEATURES_TAB_MEMORY_KEY, tab);
   }
 
   /**

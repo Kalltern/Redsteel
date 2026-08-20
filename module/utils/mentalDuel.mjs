@@ -26,6 +26,171 @@ function canDrain(actor) {
 // Mind restored to the victor by Drain.
 const DRAIN_MIND_GAIN = 2;
 
+/* -------------------------------------------- */
+/*  Initiation chance (perks + Mentální zteč)   */
+/* -------------------------------------------- */
+
+/** Base chance to force a Mental Duel on a successful Mind Bending cast. */
+export const MD_BASE_INITIATION = 35;
+
+/**
+ * Mentální zteč can push the initiation chance no higher than this, however
+ * much Mind is burned. The perk chain is NOT bound by it — the ceiling is on
+ * what the charge itself may buy.
+ */
+export const MD_CHARGE_CAP = 75;
+
+/** Each step of the "Zahájení +10%" chain, and each Mind burned, is worth this. */
+const MD_INITIATION_STEP = 10;
+
+const MD_INITIATION_NODES = [
+  "soubojZahajeni1",
+  "soubojZahajeni2",
+  "soubojZahajeni3",
+  "soubojZahajeni4",
+];
+
+/**
+ * Sum of the Mentalist "Mentální souboj: Šance na zahájení +10%" chain, which
+ * stacks cumulatively. NPCs have no spec trees and get nothing here — an NPC
+ * mentalist's initiation chance is whatever the GM's own numbers say.
+ * @param {Actor} actor
+ * @returns {number} percentage points added to the initiation chance.
+ */
+export function getInitiationBonus(actor) {
+  if (!actor) return 0;
+  return MD_INITIATION_NODES.reduce(
+    (sum, node) =>
+      sum + (actorHasSpecNode(actor, "mentalist", node) ? MD_INITIATION_STEP : 0),
+    0,
+  );
+}
+
+// Mentální zteč (Mental Charge) — a Free Action open to any NPC or to a
+// character holding the node, the same NPC convention as canDominate/canDrain.
+function canMentalCharge(actor) {
+  return (
+    actor?.type === "npc" || actorHasSpecNode(actor, "mentalist", "mentalniZtec")
+  );
+}
+
+/**
+ * Fold a paid Mentální zteč into an initiation chance. The ceiling is on the
+ * total, so a charge bought before the cast can never push past it however the
+ * perks add up by the time the die is thrown.
+ * @param {number} chance - the chance before the charge.
+ * @param {number} spent - Mind burned.
+ * @returns {number}
+ */
+export function applyMentalCharge(chance, spent) {
+  const points = Math.max(0, Number(spent) || 0);
+  if (!points) return chance;
+  return Math.min(MD_CHARGE_CAP, chance + points * MD_INITIATION_STEP);
+}
+
+/**
+ * Mentální zteč — offer the caster the Free Action of burning Mind to force the
+ * duel open: +10% per point, never past {@link MD_CHARGE_CAP}. The Mind is
+ * spent up front, before the initiation roll, and is gone whether or not the
+ * duel starts.
+ * @param {Actor} actor - the caster.
+ * @param {number} chance - the initiation chance before the charge.
+ * @returns {Promise<{spent: number, chance: number}>}
+ */
+export async function promptMentalCharge(actor, chance) {
+  const unchanged = { spent: 0, chance };
+  if (!canMentalCharge(actor)) return unchanged;
+
+  const mind = Number(actor.system.stats?.mind?.value) || 0;
+  if (mind <= 0 || chance >= MD_CHARGE_CAP) return unchanged;
+
+  // Never offer a point that would buy nothing: the cap is on the total.
+  const max = Math.min(
+    mind,
+    Math.ceil((MD_CHARGE_CAP - chance) / MD_INITIATION_STEP),
+  );
+
+  const DialogV2 = foundry.applications.api.DialogV2;
+  const answer = await DialogV2.wait({
+    window: { title: "Mentální zteč — Mental Charge" },
+    content: `
+      <form>
+        <p style="margin-top:0;">
+          Chance to start the Mental Duel: <b>${chance}%</b>.
+          Burn Mind to force the opening — <b>+${MD_INITIATION_STEP}%</b> per point,
+          up to <b>${MD_CHARGE_CAP}%</b>.
+        </p>
+        <label style="display:flex; align-items:center; gap:8px;">
+          <span style="flex:1;">Mind to burn (have ${mind}, max ${max})</span>
+          <input type="number" name="md-charge" value="0" min="0" max="${max}"
+            step="1" style="width:70px;">
+        </label>
+        <p style="font-size:12px; opacity:0.8; margin-bottom:0;">
+          A Free Action, declared before the cast is rolled. The Mind is spent
+          whether or not the cast lands.
+          ${
+            max >= mind
+              ? `<br><b style="color:#e0a0a0;">Burning all ${mind} would open the
+                 duel with an already-broken mind.</b>`
+              : ""
+          }
+        </p>
+      </form>`,
+    buttons: [
+      {
+        action: "charge",
+        label: "Charge",
+        icon: "fas fa-brain",
+        default: true,
+        callback: (ev, button, dialog) => {
+          const root = dialog?.element ?? button.form;
+          return root.querySelector('input[name="md-charge"]')?.value ?? "0";
+        },
+      },
+      { action: "skip", label: "No charge" },
+    ],
+    rejectClose: false,
+  });
+
+  const spent = Math.max(0, Math.min(max, Math.floor(Number(answer)) || 0));
+  if (!spent) return unchanged;
+
+  await actor.update({
+    "system.stats.mind.value": Math.max(0, mind - spent),
+  });
+  return { spent, chance: applyMentalCharge(chance, spent) };
+}
+
+/* -------------------------------------------- */
+/*  Mentální nápor (Mental Assault)             */
+/* -------------------------------------------- */
+
+/** Penalty the assault puts on the attacker's own Mental Duel test. */
+const MD_ASSAULT_PENALTY = -40;
+
+/** Mind the assault drains on top of the normal loss, per assault node held. */
+const MD_ASSAULT_DRAIN = 1;
+
+// Mentální nápor is open to any NPC or to a character holding the node — same
+// NPC convention as canDominate/canDrain.
+function canMentalAssault(actor) {
+  return (
+    actor?.type === "npc" || actorHasSpecNode(actor, "mentalist", "soubojMZ1")
+  );
+}
+
+/**
+ * Extra Mind an assault drains on a win: one point, two once the follow-up
+ * node ("Nápor: úspěch ubírá o 1 MŽ více") is taken. Unlike access to the
+ * assault itself, the upgrade is NOT assumed for NPCs — two extra Mind is most
+ * of a small pool, so an NPC assault stays at the base drain.
+ * @param {Actor} actor
+ */
+function assaultDrain(actor) {
+  const upgraded = actorHasSpecNode(actor, "mentalist", "soubojMZ2");
+  return MD_ASSAULT_DRAIN + (upgraded ? MD_ASSAULT_DRAIN : 0);
+}
+
 /**
  * Mentální souboj (Mind Bending) — an interactive duel window.
  *
@@ -184,6 +349,26 @@ const MENTAL_DUEL_CSS = `
   box-shadow: 0 0 8px -2px var(--rs-md-color, #8b6914);
 }
 .rs-md-attack:disabled { opacity: 0.4; cursor: not-allowed; }
+.rs-md-side-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.rs-md-assault {
+  padding: 5px 6px;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 6px;
+  border: 1px solid #7a3f6b;
+  background: linear-gradient(#2e1c2c, #1a1018);
+  color: #f2cfe8;
+  cursor: pointer;
+}
+.rs-md-assault:hover:not(:disabled) {
+  background: linear-gradient(#412741, #241722);
+  box-shadow: 0 0 8px -2px #b56bd0;
+}
+.rs-md-assault:disabled { opacity: 0.4; cursor: not-allowed; }
 .rs-md-banner {
   margin-top: 12px;
   padding: 10px;
@@ -767,6 +952,31 @@ export class MentalDuelApp extends ApplicationV2 {
       </button>`;
     };
 
+    // Mentální nápor — the same exchange thrown at -40 %, draining extra Mind
+    // on a win. Only shown to a side that actually has it; it spends the
+    // round's attack as well as its own once-per-round allowance.
+    const assaultBtn = (s, role) => {
+      if (!canMentalAssault(s.actor)) return "";
+      const canControl = s.actor.isOwner || game.user.isGM;
+      const spent = !this._canAssault(s);
+      const disabled =
+        ended ||
+        !started ||
+        !canControl ||
+        !this._canAttack(s) ||
+        !this._turnReached(s) ||
+        !!pending ||
+        spent;
+      const extra = assaultDrain(s.actor);
+      const reason = spent
+        ? "Already used Mentální nápor this round"
+        : `Mental Duel test at ${MD_ASSAULT_PENALTY}% — a win drains ${extra} extra Mind`;
+      return `<button type="button" class="rs-md-assault" data-role="${role}"
+        ${disabled ? "disabled" : ""} title="${reason}">
+        <i class="fas fa-burst"></i> Nápor (${MD_ASSAULT_PENALTY}%)
+      </button>`;
+    };
+
     return `
       <div class="rs-md-arena">
         ${sideHtml(a)}
@@ -785,8 +995,8 @@ export class MentalDuelApp extends ApplicationV2 {
       ${!ended && !started ? this._buildStartHTML() : ""}
 
       <div class="rs-md-actions">
-        ${attackBtn(a, "a")}
-        ${attackBtn(b, "b")}
+        <div class="rs-md-side-actions">${attackBtn(a, "a")}${assaultBtn(a, "a")}</div>
+        <div class="rs-md-side-actions">${attackBtn(b, "b")}${assaultBtn(b, "b")}</div>
       </div>
 
       ${pending ? this._buildPendingHTML(a, b, pending) : ""}
@@ -971,6 +1181,12 @@ export class MentalDuelApp extends ApplicationV2 {
         this._onAttack(role);
       }),
     );
+    content.querySelectorAll(".rs-md-assault").forEach((btn) =>
+      btn.addEventListener("click", (ev) => {
+        const role = ev.currentTarget.dataset.role;
+        this._onAttack(role, { assault: true });
+      }),
+    );
     content
       .querySelector(".rs-md-start-duel")
       ?.addEventListener("click", () => this._onStartDuel());
@@ -1074,9 +1290,34 @@ export class MentalDuelApp extends ApplicationV2 {
     }
   }
 
+  /**
+   * Mentální nápor is capped at one per round on its own, on top of the
+   * exchange it spends. Outside combat there are no rounds to count, so it is
+   * left to the table exactly as the attack allowance is.
+   */
+  _canAssault(side) {
+    const combat = game.combat;
+    if (!combat) return true;
+    return (
+      side.tokenDoc.getFlag("redsteel", "mentalDuelAssaultRound") !== combat.round
+    );
+  }
+
+  async _consumeAssault(side) {
+    const combat = game.combat;
+    if (!combat) return;
+    if (side.tokenDoc.isOwner || game.user.isGM) {
+      await side.tokenDoc.setFlag(
+        "redsteel",
+        "mentalDuelAssaultRound",
+        combat.round,
+      );
+    }
+  }
+
   /* ---- Attack resolution ---- */
 
-  async _onAttack(role) {
+  async _onAttack(role, { assault = false } = {}) {
     const aTok = this._token(this._aUuid);
     const bTok = this._token(this._bUuid);
     if (!aTok?.actor || !bTok?.actor) return this.render();
@@ -1099,6 +1340,22 @@ export class MentalDuelApp extends ApplicationV2 {
     // actor's own attacks.
     if (defender.actor.statuses?.has("mind_ward")) defender.rating += 20;
 
+    // Mentální nápor — the attacker's own test takes the penalty; the extra
+    // drain is settled by the GM when the exchange resolves.
+    if (assault) {
+      if (!canMentalAssault(attacker.actor)) {
+        ui.notifications.warn(`${attacker.name} does not have Mentální nápor.`);
+        return;
+      }
+      if (!this._canAssault(attacker)) {
+        ui.notifications.warn(
+          `${attacker.name} has already used Mentální nápor this round.`,
+        );
+        return;
+      }
+      attacker.rating += MD_ASSAULT_PENALTY;
+    }
+
     if (!this._canAttack(attacker)) {
       ui.notifications.warn(`${attacker.name} has already attacked this round.`);
       return;
@@ -1118,6 +1375,7 @@ export class MentalDuelApp extends ApplicationV2 {
     // The exchange is spent the moment the dice hit the table, win or lose —
     // a reroll replaces a die, it does not buy a second attack.
     await this._consumeAttack(attacker);
+    if (assault) await this._consumeAssault(attacker);
 
     // Nothing is applied yet: the round goes to the GM as a *pending* exchange
     // so either side can still spend a reroll (see applyRoundAction).
@@ -1134,6 +1392,8 @@ export class MentalDuelApp extends ApplicationV2 {
       bUuid: this._bUuid,
       attacker: role,
       round: game.combat?.round ?? 0,
+      assault,
+      assaultDrain: assault ? assaultDrain(attacker.actor) : 0,
       sides: {
         [role]: pack(attacker, attRoll),
         [defenderRole]: pack(defender, defRoll),
@@ -1221,10 +1481,20 @@ export class MentalDuelApp extends ApplicationV2 {
            <i class="fas fa-gavel"></i> Resolve now</button>`
       : "";
 
+    // An assault changes what a reroll is worth, so say so while the exchange
+    // is still open.
+    const assaultLine = pending.assault
+      ? `<div class="rs-md-pending-note" style="text-align:center;">
+           <i class="fas fa-burst"></i> Mentální nápor — ${attackerName} attacks at
+           ${MD_ASSAULT_PENALTY}%; a win drains ${pending.assaultDrain} extra Mind.
+         </div>`
+      : "";
+
     return `<div class="rs-md-pending">
       <div class="rs-md-pending-title">
         <i class="fa-light fa-hourglass-half"></i> Exchange thrown — reroll or accept
       </div>
+      ${assaultLine}
       <div class="rs-md-pending-rows">${row("a")}${row("b")}</div>
       <div class="rs-md-pending-verdict">Provisional: ${provisional}</div>
       ${resolveBtn ? `<div class="rs-md-pending-gm">${resolveBtn}</div>` : ""}
@@ -1602,6 +1872,8 @@ async function runRoundAction(anchorUuid, action) {
         bUuid: action.bUuid,
         round: action.round ?? (game.combat?.round ?? 0),
         attacker: action.attacker,
+        assault: !!action.assault,
+        assaultDrain: Number(action.assaultDrain) || 0,
         sides,
       };
       // Nobody can reroll (the usual case, and always for NPC-vs-NPC): settle
@@ -1711,7 +1983,11 @@ async function resolveRound(anchor, state) {
   const winnerName = attackerWins ? attackerName : defenderName;
   const loserName = attackerWins ? defenderName : attackerName;
   const loserActor = attackerWins ? defenderActor : attackerActor;
-  const drain = critical ? 2 : 1;
+  // Mentální nápor drains extra Mind only when the assault lands: a failed
+  // assault is just a lost exchange, and the attacker pays the normal price.
+  const assaultBonus =
+    state.assault && attackerWins ? Number(state.assaultDrain) || 0 : 0;
+  const drain = (critical ? 2 : 1) + assaultBonus;
   await applyMindLoss(loserActor.uuid, drain);
 
   const label = (name, entry) =>
@@ -1720,6 +1996,13 @@ async function resolveRound(anchor, state) {
     (entry.rerollLabel
       ? ` <span style="opacity:.75;font-size:12px;">(reroll — ${entry.rerollLabel})</span>`
       : "");
+
+  const assaultNote = state.assault
+    ? `<div style="text-align:center;opacity:.85;font-size:12px;">
+         <i class="fas fa-burst"></i> Mentální nápor — ${attackerName} struck at
+         ${MD_ASSAULT_PENALTY}%${assaultBonus ? ` (+${assaultBonus} Mind drained)` : ""}.
+       </div>`
+    : "";
 
   const verdict =
     `${winnerName} ${attackerWins ? "prevails" : "holds"} — ` +
@@ -1742,6 +2025,7 @@ async function resolveRound(anchor, state) {
         <div>${label(defenderName, def)}</div>
         <hr>
         <div style="text-align:center;">${verdict}</div>
+        ${assaultNote}
       </div>`,
   });
 }

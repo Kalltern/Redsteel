@@ -1050,13 +1050,19 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
 
   /**
    * The actor the attribute and skill rows describe: a portrait the user
-   * clicked, otherwise their assigned character, otherwise whatever token they
-   * have selected, otherwise null.
+   * clicked, otherwise whatever token they have selected, otherwise their
+   * assigned character, otherwise null.
    *
    * The pin comes first because it is the only one of the three the user states
-   * outright. It is dropped as soon as it stops resolving — a pinned actor can
+   * outright. It is dropped as soon as it stops resolving. A pinned actor can
    * be deleted, and a token actor's uuid is scene-bound, so it dies when the
    * scene changes.
+   *
+   * Selection outranks the assigned character because a player who controls a
+   * companion, a summon or a mount is driving whichever one they clicked, and
+   * because combat auto-selects the active combatant, which swings the bar onto
+   * whoever is up. With nothing selected the bar falls back to their own
+   * character, which is where it sits outside combat.
    */
   get actor() {
     if (this.#pinnedUuid) {
@@ -1064,9 +1070,9 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       if (pinned?.isOwner) return pinned;
       this.#pinnedUuid = null;
     }
-    return (
-      game.user.character ?? canvas.tokens?.controlled?.[0]?.actor ?? null
-    );
+    const selected = canvas.tokens?.controlled?.[0]?.actor;
+    if (selected?.isOwner) return selected;
+    return game.user.character ?? null;
   }
 
   /**
@@ -2090,13 +2096,14 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     // pinned actor's own token leaves the pin alone, which is what lets the
     // click below control a token without immediately undoing itself.
     add("controlToken", (token, controlled) => {
-      const hadPin = !!this.#pinnedUuid;
-      if (controlled && hadPin && token?.actor?.uuid !== this.#pinnedUuid) {
+      if (controlled && this.#pinnedUuid && token?.actor?.uuid !== this.#pinnedUuid) {
         this.#pinnedUuid = null;
       }
-      // With an assigned character and no pin either way, selection is
-      // irrelevant; losing the pin is a rebind and always needs the redraw.
-      if (!game.user.character || hadPin !== !!this.#pinnedUuid) this.#rerender();
+      // Selection now binds the bar on its own, so every control change is a
+      // possible rebind: taking a token binds to it, dropping the last one
+      // falls back to the assigned character. `#rerender` is debounced, so a
+      // marquee release is still one redraw.
+      this.#rerender();
     });
   }
 

@@ -1422,6 +1422,33 @@ REDSTEEL.effectDefinitions = {
     stackBehavior: "ignore",
   },
 
+  // "Rychlá reakce" — an action bought for turn order. The +4 is still on the
+  // actor when the round rolls over and every combatant rerolls initiative,
+  // because that reroll lives in the nextRound wrapper in redsteel.mjs, which
+  // runs before the round advances. It then expires at the start of the
+  // actor's own next turn, so one action buys exactly one improved reroll.
+  // Cumulative: a second action spent in the same round is a second stack, and
+  // the +4-per-stack total is written onto the change by
+  // updateStackScaledChanges(). It carries no ceiling of its own. What stops
+  // it is the clamp of 15 on a Character's ini.total; NPCs are uncapped, by
+  // design.
+  fast_reaction: {
+    name: "REDSTEEL.Items.FastReaction.name",
+    img: "icons/skills/movement/feet-winged-boots-brown.webp",
+    statuses: ["fast_reaction"],
+    useDuration: true,
+    defaultTurns: 1,
+    maxStacks: 99,
+    stackBehavior: "stack",
+    changes: [
+      {
+        key: "system.secondaryAttributes.ini.bonus",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: 4,
+      },
+    ],
+  },
+
   // "Létání" — movement speed 8 while flying.
   flight: {
     name: "Flying",

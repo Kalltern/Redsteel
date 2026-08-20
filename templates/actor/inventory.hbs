@@ -5,13 +5,25 @@
   data-tab="inventory"
 >
 <div class="inventory-box">
+{{!-- One frame around the whole tab: loadout, accessories, purse and grid --}}
+<section class="inventory-frame">
+
 {{#if (eq actor.type "character")}}
 
 {{!-- EQUIPMENT: armor and weapon sets share one row, accessories span below --}}
 <div class="equipment-groups">
 
-<div class="loadout-group">
+<div class="loadout-group armor-group">
   <div class="loadout-group-label">{{localize "REDSTEEL.Actor.Inventory.Armor"}}</div>
+  {{!-- Helmet on/off. Off drops the helmet's archery and perception
+        penalties; head-hit armor bypass is not wired yet. --}}
+  <a
+    class="armor-helmet-toggle {{#if helmetOff}}off{{/if}} {{#unless hasHelmet}}absent{{/unless}}"
+    data-action="toggleHelmet"
+    title="{{#if helmetOff}}{{localize "REDSTEEL.Actor.Inventory.HelmetOff"}}{{else}}{{localize "REDSTEEL.Actor.Inventory.HelmetOn"}}{{/if}}"
+  >
+    <i class="fa-sharp fa-light fa-helmet-battle"></i>
+  </a>
 
 {{!-- ARMOR SLOTS (layered: Bottom / Middle / Top) --}}
 <section class="armor-loadout">
@@ -374,16 +386,34 @@
 {{!-- CURRENCY DIVIDER --}}
 {{#if (eq actor.type "character")}}
 <div class="currency-bar">
-  <span class="currency-label">
-    {{localize "REDSTEEL.Actor.Inventory.Currencies"}}
-    {{#if @root.isGM}}
-      <a class="currency-config" data-action="openCurrencyConfig" title="{{localize "REDSTEEL.Currency.MenuLabel"}}">
-        <i class="fa-solid fa-gear"></i>
-      </a>
+  {{!-- Heading row: title and cog left, purse total right. Keeping both off
+        the coin row leaves the chips the full width of the strip. --}}
+  <div class="currency-head">
+    <span class="currency-label">
+      {{localize "REDSTEEL.Actor.Inventory.Currencies"}}
+      {{#if @root.isGM}}
+        <a class="currency-config" data-action="openCurrencyConfig" title="{{localize "REDSTEEL.Currency.MenuLabel"}}">
+          <i class="fa-solid fa-gear"></i>
+        </a>
+      {{/if}}
+    </span>
+    {{!-- Worth in tier-1 coins only, each figure in its own coin's colour.
+          The title carries the full breakdown over every rung. --}}
+    {{#if purse.length}}
+      <span class="currency-total" title="{{localize "REDSTEEL.Currency.PurseTotal"}}: {{purseTotal}}">
+        {{#each purseSummary as |part|}}
+          <span class="currency-total-part" style="color: {{part.color}};">
+            <b>{{part.count}}</b> {{part.label}}
+          </span>
+        {{/each}}
+      </span>
     {{/if}}
-  </span>
+  </div>
   <div class="currency-list">
     {{#each purse as |coin|}}
+      {{!-- The coin's colour is carried by its name and figure only; the box
+            stays near-black. The title holds the full name, which the label
+            itself may have to ellipsis at six coins. --}}
       <div class="currency-chip" title="{{coin.label}}">
         <span class="currency-name" style="color: {{coin.color}};">{{coin.label}}</span>
         <input
@@ -398,15 +428,13 @@
         />
       </div>
     {{/each}}
-    {{#if purse.length}}
-      <span class="currency-total" title="{{localize "REDSTEEL.Currency.PurseTotal"}}">{{purseTotal}}</span>
-    {{/if}}
   </div>
 </div>
 {{/if}}
 
 
 {{!-- INVENTORY GRID --}}
+<section class="inventory-panel">
 <div class="inventory-grid-header">
   <span class="inventory-grid-title">{{localize "REDSTEEL.Actor.Tabs.Inventory"}}</span>
   <div class="inventory-grid-tools">
@@ -496,6 +524,9 @@
     <li class="inventory-cell empty"></li>
   {{/each}}
 </ul>
+</section>
+
+</section>{{!-- /.inventory-frame --}}
 
 </div>
 </section>

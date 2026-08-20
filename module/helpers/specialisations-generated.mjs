@@ -824,7 +824,6 @@ export const GENERATED_SPECS = {
       // column 0 — the root and the two rank-free chains' openers
       meditace2: [7, 14],
       ucednik: [7, 50],
-      mentalniSouboj10a: [7, 86],
       // column 1 — Učedník's spray, with Expert sitting in the middle of it
       meditace3: [21, 8],
       mentalniZtec: [21, 19],
@@ -833,7 +832,6 @@ export const GENERATED_SPECS = {
       vytizeniKoncentrace: [21, 52],
       mentalistuvUprk: [21, 63],
       vysati: [21, 74],
-      mentalniSouboj10b: [21, 85],
       // column 2 — Expert's spray, with Mistr in the middle
       mzMeditace: [35, 8],
       soubojDotek: [35, 19],
@@ -849,7 +847,6 @@ export const GENERATED_SPECS = {
       velmistr: [49, 34],
       vytizeniZakerne: [49, 47],
       soubojPostih: [49, 60],
-      soubojMZ1: [49, 73],
       cteniMysli: [49, 86],
       // column 4 — Velmistr's spray and the chain tails
       soubojZahajeni2: [63, 8],
@@ -857,10 +854,17 @@ export const GENERATED_SPECS = {
       zoufalyVzdor: [63, 36],
       vytizeniAkce: [63, 52],
       pokrocileCteni: [63, 68],
-      soubojMZ2: [63, 88],
       // columns 5–6 — the duel-initiation tail runs on past everything else
       soubojZahajeni3: [77, 8],
       soubojZahajeni4: [91, 8],
+      // The duel-bonus chain (+10% / Nápor / +10% / Nápor+1) hangs off nothing
+      // but itself, so it takes the empty right-hand columns as a zigzag rather
+      // than fighting the crowded bottom row for depth-correct slots. Its two
+      // rank gates are hidden links, so no line reaches back across the panel.
+      mentalniSouboj10a: [77, 28],
+      soubojMZ1: [91, 40],
+      mentalniSouboj10b: [77, 52],
+      soubojMZ2: [91, 64],
     },
     nodes: {
       // rank spine
@@ -906,11 +910,32 @@ export const GENERATED_SPECS = {
       // telepath chain, off Expert
       telepat1: { tier: 8, column: 1, requires: ["expert"] },
       telepat2: { tier: 8, column: 2, requires: ["telepat1", "mistr"] },
-      // free-standing duel bonuses
-      mentalniSouboj10a: { tier: 9, column: 1 },
-      mentalniSouboj10b: { tier: 9, column: 2, requires: ["mentalniSouboj10a"] },
-      soubojMZ1: { tier: 9, column: 3, requires: ["expert"] },
-      soubojMZ2: { tier: 9, column: 4, requires: ["soubojMZ1", "velmistr"] },
+      // free-standing duel chain: +10% → Mentální nápor → +10% → Nápor drains
+      // one more. The +10% steps are a flat bonus to the Mind Bending skill and
+      // stack; the Nápor nodes are read by utils/mentalDuel.mjs.
+      mentalniSouboj10a: {
+        tier: 9,
+        column: 1,
+        passive: { changes: [add("system.skills.mindBending.bonus", 10)] },
+      },
+      soubojMZ1: {
+        tier: 9,
+        column: 2,
+        requires: ["mentalniSouboj10a", "expert"],
+        hiddenLinks: ["expert"],
+      },
+      mentalniSouboj10b: {
+        tier: 9,
+        column: 3,
+        requires: ["soubojMZ1"],
+        passive: { changes: [add("system.skills.mindBending.bonus", 10)] },
+      },
+      soubojMZ2: {
+        tier: 9,
+        column: 4,
+        requires: ["mentalniSouboj10b", "velmistr"],
+        hiddenLinks: ["velmistr"],
+      },
     },
   },
   mystic: {

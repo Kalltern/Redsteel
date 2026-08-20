@@ -5,6 +5,8 @@
   data-tab="abilities"
 >
   <div class="abilities-box">
+    {{! Same inset panel as the Features tab sections }}
+    <section class="npc-traits">
     <header class="npc-traits-header">
       <h3>{{localize "REDSTEEL.Actor.Tabs.Abilities"}}</h3>
       {{#if @root.editable}}
@@ -48,6 +50,7 @@
         </li>
       {{/each}}
     </ul>
+    </section>
 
   </div>
 </section>

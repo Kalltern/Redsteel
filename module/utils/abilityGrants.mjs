@@ -94,6 +94,7 @@ const ABILITY = {
   EXPLOIT_WEAKNESS_RANGED: A("eXploitWeakRang1"), // Střelba na slabinu
   EXPLOIT_WEAKNESS_THROW: A("WjPXKjMG7790bZfX"), // Vrh na slabinu
   EXTENDED_LUNGE: A("menifXsjGJIzCUqt"), // Daleký výpad
+  FAST_REACTION: A("fAstReaction0001"), // Rychlá reakce
   FEINT_DEX: A("pt6OeaIFk0cAvxla"), // Finta
   FEINT_PER: A("IVNZXVkihp5CK9JV"), // Finta
   FLAMBERGE_CLEAVE: A("LVAgDFzBKadXMU4A"), // Rozseknutí flambergem
@@ -168,6 +169,7 @@ export const ABILITY_GRANTS = [
       ABILITY.SPRINT,
       ABILITY.REST,
       ABILITY.DEFENSIVE_STANCE,
+      ABILITY.FAST_REACTION,
     ],
   },
 

@@ -12,6 +12,7 @@ import { ruleNoteFooter } from "./tooltipJournals.mjs";
 import { buildSpellCard, renderInspectorCard } from "./spellCards.mjs";
 import { REDSTEEL } from "../helpers/config.mjs";
 import { effectiveCombatRating } from "./testRating.mjs";
+import { renderBreakdown } from "./ratingBreakdown.mjs";
 
 /* -------------------------------------------- */
 /*  Shared rendering                            */
@@ -271,6 +272,99 @@ function attributeLabelFor(system, index) {
   );
 }
 
+/** Localized name of a doctrine, falling back to its key. */
+function doctrineLabel(key) {
+  if (!key) return null;
+  return (
+    localizeOrNull(`REDSTEEL.Actor.Character.doctrines.${key}.label`) ?? key
+  );
+}
+
+/**
+ * The weapon in hand, itemised, as terms of a combat rating.
+ *
+ * `weaponAttack` is not part of what prepareDerivedData records into
+ * `ratingParts` — it is added on top by `effectiveCombatRating` — so its terms
+ * are appended here. `weaponAttackParts` is the same object
+ * `getWeaponAttackBonus` returns, so these rows always sum to the number the
+ * attack roll uses.
+ */
+function weaponParts(skill) {
+  const parts = skill.weaponAttackParts;
+  const total = Number(skill.weaponAttack) || 0;
+  if (!parts) {
+    if (!total) return [];
+    const label = game.i18n.localize("REDSTEEL.Tooltip.weaponAttack");
+    return [
+      {
+        type: "flat",
+        label: skill.weaponAttackSource
+          ? `${label} (${skill.weaponAttackSource})`
+          : label,
+        value: total,
+      },
+    ];
+  }
+
+  const weaponLabel = game.i18n.localize("REDSTEEL.Tooltip.weaponAttack");
+  const rows = [
+    {
+      label: skill.weaponAttackSource
+        ? `${weaponLabel} (${skill.weaponAttackSource})`
+        : weaponLabel,
+      value: parts.weapon,
+    },
+    {
+      label: game.i18n.localize("REDSTEEL.Tooltip.Part.quality"),
+      value: parts.quality,
+    },
+    {
+      label: game.i18n.localize("REDSTEEL.Tooltip.Part.enchant"),
+      value: parts.enchant,
+    },
+    {
+      label:
+        doctrineLabel(parts.doctrineSource) ??
+        game.i18n.localize("REDSTEEL.Tooltip.Part.doctrine"),
+      value: parts.doctrine,
+    },
+    {
+      label: game.i18n.localize("REDSTEEL.Tooltip.Part.weaponSpec"),
+      value: parts.spec,
+    },
+    {
+      label: game.i18n.localize("REDSTEEL.Tooltip.Part.offhand"),
+      value: parts.offhand,
+    },
+  ];
+  return rows.map((r) => ({ type: "flat", label: r.label, value: r.value }));
+}
+
+/**
+ * Doctrine bonuses the defense roll adds that the sheet stat does not.
+ *
+ * Shieldbearer, Dimakerus and Monk raise a defense at roll time
+ * (defense.mjs), deliberately outside the rating so the two cannot
+ * double-count. They are still a standing property of the loadout, so the
+ * tooltip lists them under their own heading rather than inside the sum.
+ */
+function defenseDoctrineSection(skill) {
+  const value = Number(skill.doctrineDefense) || 0;
+  if (!value) return "";
+  return renderBreakdown({
+    parts: [
+      {
+        type: "flat",
+        label:
+          doctrineLabel(skill.doctrineDefenseSource) ??
+          game.i18n.localize("REDSTEEL.Tooltip.Part.doctrine"),
+        value,
+      },
+    ],
+    label: game.i18n.localize("REDSTEEL.Tooltip.WhenDefending"),
+  });
+}
+
 registerTooltip("skill", ({ id, actor }) => {
   if (!id || !actor?.system) return null;
   const system = actor.system;
@@ -286,6 +380,15 @@ registerTooltip("skill", ({ id, actor }) => {
     if (!parent) return null;
     const title =
       localizeOrNull(`REDSTEEL.Actor.Character.skills.${id}.label`) ?? id;
+    const breakdown = renderBreakdown({
+      parts: parent[`${id}Parts`],
+      total: parent[id],
+      totalLabel: ratingLabel,
+      actor,
+      bonusKey: `system.skills.${sub.parent}.bonus`,
+    });
+    if (breakdown) return ttFrame({ title, body: breakdown });
+
     const stats = [
       { label: ratingLabel, value: parent[id] },
       { label: rankLabel, value: parent.value },
@@ -304,14 +407,54 @@ registerTooltip("skill", ({ id, actor }) => {
     const title =
       localizeOrNull(`REDSTEEL.Actor.Character.${group.lang}.${id}.label`) ?? id;
 
+    const isCombat = group.path === "combatSkills";
+    const total = isCombat ? effectiveCombatRating(skill, id) : skill.rating;
+
+    // Combat and Throwing may test on their finesse variant instead, which is
+    // a different formula with its own recorded parts — show the one that won.
+    const usesFinesse =
+      isCombat &&
+      (id === "combat" || id === "throwing") &&
+      (Number(skill.finesseRating) || 0) > (Number(skill.rating) || 0);
+    let parts = usesFinesse ? skill.finesseRatingParts : skill.ratingParts;
+    if (Array.isArray(parts) && isCombat) parts = [...parts, ...weaponParts(skill)];
+
+    const breakdown = renderBreakdown({
+      parts,
+      total,
+      totalLabel: ratingLabel,
+      actor,
+      bonusKey: `system.${group.path}.${id}.bonus`,
+      // Gear and doctrine contributions to `bonus` that no Active Effect made,
+      // recorded by prepareDerivedData as it added them.
+      extraSources: (skill.bonusParts ?? []).map((p) => ({
+        name: p.label,
+        value: p.value,
+      })),
+    });
+
+    if (breakdown) {
+      // Spell Power is a second number the school carries, not a term of the
+      // rating, so it stays a stat row above the sum.
+      const stats =
+        group.path === "schools"
+          ? statsBlock([
+              {
+                label: game.i18n.localize(
+                  "REDSTEEL.Actor.Character.schools.spellPower.label",
+                ),
+                value: skill.spellPower,
+              },
+            ])
+          : "";
+      return ttFrame({
+        title,
+        body: `${stats}${breakdown}${defenseDoctrineSection(skill)}`,
+      });
+    }
+
     const stats = [
-      {
-        label: ratingLabel,
-        value:
-          group.path === "combatSkills"
-            ? effectiveCombatRating(skill, id)
-            : skill.rating,
-      },
+      { label: ratingLabel, value: total },
       { label: rankLabel, value: skill.value },
     ];
     // How much of that rating the weapon in hand is responsible for (its attack
@@ -343,7 +486,10 @@ registerTooltip("skill", ({ id, actor }) => {
       if (attr) stats.push({ label: attributeLabel, value: attr });
     }
 
-    return ttFrame({ title, body: statsBlock(stats) });
+    return ttFrame({
+      title,
+      body: `${statsBlock(stats)}${defenseDoctrineSection(skill)}`,
+    });
   }
 
   return null;

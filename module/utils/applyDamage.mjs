@@ -124,6 +124,13 @@ function evaluateAttackDamage({
     damage: selectedAttack.damage,
     penetration: selectedAttack.penetration ?? 0,
     damageProfile,
+    // TODO(head damage): when the target has its helmet off
+    // (flags.redsteel.helmetOff, set from the Armor panel on the Inventory
+    // tab) and this attack is an aimed head hit that landed
+    // (attack.aimedStrike?.part === "head" && attack.aimedStrike.su >= 0),
+    // armor should be bypassed for this packet. Not implemented yet: the
+    // toggle currently only drops the helmet's own archery/perception
+    // penalties in documents/actor.mjs.
     armor: actor.system.armor,
     hp,
     tempHp,

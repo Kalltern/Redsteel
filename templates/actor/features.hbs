@@ -6,31 +6,38 @@
 >
   <div class="features-box">
 
-    {{! ===== Rerolls ===== }}
-    <section class="npc-traits">
-      <header class="npc-traits-header">
-        <h3>{{localize "Rerolls"}}</h3>
-      </header>
-      <ul class="reroll-grid">
-        {{#each rerollPools as |pool|}}
-        <li
-          class="reroll-box {{#unless pool.remaining}}depleted{{/unless}}"
-          data-item-id="{{pool.itemId}}"
-          data-pool-index="{{pool.poolIndex}}"
-          data-action="toggleReroll"
-          title="Click to spend or restore one reroll"
-        >
-          <img class="reroll-box-icon" src="{{pool.img}}" width="36" height="36" />
-          <span class="reroll-box-name">
-            {{pool.label}}
-            {{#if pool.universal}}<span class="reroll-box-tag">Universal</span>{{/if}}
-          </span>
-          <span class="reroll-count {{#if pool.remaining}}active{{/if}}">{{pool.remaining}}/{{pool.max}}</span>
-        </li>
-        {{/each}}
-      </ul>
-    </section>
+    {{! Sub-tabs. The active one is remembered per user between sessions
+        (flags.redsteel.lastDialogTabs, key "actor-features"), defaulting to
+        Rerolls because that is the panel used mid-session. }}
+    <nav class="tabs features-subtabs" data-group="features-subtabs" data-action="tab">
+      <a
+        class="item subtab-link {{#if (eq activeFeaturesSubtab 'featureList')}}active{{/if}}"
+        data-group="features-subtabs"
+        data-tab="featureList"
+      >
+        {{localize "REDSTEEL.Actor.Character.Sections.Features"}}
+      </a>
+      <a
+        class="item subtab-link {{#if (eq activeFeaturesSubtab 'traitList')}}active{{/if}}"
+        data-group="features-subtabs"
+        data-tab="traitList"
+      >
+        {{localize "REDSTEEL.Actor.Character.Sections.Traits"}}
+      </a>
+      <a
+        class="item subtab-link {{#if (or (eq activeFeaturesSubtab 'rerolls') (not activeFeaturesSubtab))}}active{{/if}}"
+        data-group="features-subtabs"
+        data-tab="rerolls"
+      >
+        {{localize "REDSTEEL.Actor.Character.Sections.Rerolls"}}
+      </a>
+    </nav>
 
+    <section
+      class="tab features-subtab {{#if (eq activeFeaturesSubtab 'featureList')}}active{{/if}}"
+      data-group="features-subtabs"
+      data-tab="featureList"
+    >
     {{! ===== Features ===== }}
     <section class="npc-traits">
       <header class="npc-traits-header">
@@ -104,7 +111,13 @@
         {{/each}}
       </ul>
     </section>
+    </section>
 
+    <section
+      class="tab features-subtab {{#if (eq activeFeaturesSubtab 'traitList')}}active{{/if}}"
+      data-group="features-subtabs"
+      data-tab="traitList"
+    >
     {{! ===== Traits ===== }}
     <section class="npc-traits">
       <header class="npc-traits-header">
@@ -163,6 +176,34 @@
           {{/if}}
         {{/each}}
       </ul>
+    </section>
+    </section>
+
+    <section
+      class="tab features-subtab {{#if (or (eq activeFeaturesSubtab 'rerolls') (not activeFeaturesSubtab))}}active{{/if}}"
+      data-group="features-subtabs"
+      data-tab="rerolls"
+    >
+    <section class="npc-traits">
+      <ul class="reroll-grid">
+        {{#each rerollPools as |pool|}}
+        <li
+          class="reroll-box {{#unless pool.remaining}}depleted{{/unless}}"
+          data-item-id="{{pool.itemId}}"
+          data-pool-index="{{pool.poolIndex}}"
+          data-action="toggleReroll"
+          title="Click to spend or restore one reroll"
+        >
+          <img class="reroll-box-icon" src="{{pool.img}}" width="36" height="36" />
+          <span class="reroll-box-name">
+            {{pool.label}}
+            {{#if pool.universal}}<span class="reroll-box-tag">Universal</span>{{/if}}
+          </span>
+          <span class="reroll-count {{#if pool.remaining}}active{{/if}}">{{pool.remaining}}/{{pool.max}}</span>
+        </li>
+        {{/each}}
+      </ul>
+    </section>
     </section>
 
   </div>

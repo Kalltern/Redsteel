@@ -1183,6 +1183,7 @@ table tr td:nth-child(3) {
 .miracles-box,
 .abilities-box,
 .inventory-box,
+.alchemy-box,
 .specialisations-box {
   /* Flat overlay instead of a radial gradient: the gradient scaled with the
      box height, so the tall General subtab rendered darker than Combat */
@@ -1796,6 +1797,7 @@ table tr td:nth-child(3) {
 .miracles-box,
 .abilities-box,
 .inventory-box,
+.alchemy-box,
 .specialisations-box {
   display: flex;
   flex-direction: column;
@@ -1823,6 +1825,7 @@ table tr td:nth-child(3) {
 .inventory-box,
 .features-box,
 .skills-box,
+.alchemy-box,
 .specialisations-box {
   flex: 1 1 auto;
 }
@@ -3240,6 +3243,22 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 
 /* Armor and weapon sets sit side by side; wraps to stacked rows on a narrow
    sheet. Accessories are their own full-width group below this container. */
+/* Outer frame around everything on the tab: loadout panels, accessories, the
+   purse and the item grid. Deliberately lighter than the panels inside it,
+   with no inset shadow, so the nesting reads as a frame around blocks rather
+   than a panel on a panel. */
+.inventory-frame {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(181, 151, 80, 0.28);
+  /* Passes the tab height down to the item grid panel at the bottom. */
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
 .equipment-groups {
   display: flex;
   flex-direction: row;
@@ -3252,8 +3271,8 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   /* Taller than the content needs: the groups stretch to fill it and their
      bottom-aligned slots drop away from the headers. */
   min-height: 160px;
-  /* Room for the absolutely-positioned durability pips to hang into. */
-  padding-bottom: 22px;
+  /* The panels below reserve the room for their own durability pips. */
+  padding-bottom: 0;
 }
 
 .loadout-group {
@@ -3261,6 +3280,62 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   flex-direction: column;
   align-items: center;
   gap: 4px;
+  /* Same inset panel as the Features / Abilities sections. The bottom padding
+     is where the absolutely-positioned durability pips hang, so they stay
+     inside the border instead of crossing it. */
+  padding: 12px 14px 22px;
+  background: rgba(0, 0, 0, 0.38);
+  border: 1px solid rgba(181, 151, 80, 0.35);
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.45);
+}
+
+/* Helmet on/off, pinned to the panel's top-right corner. Absolute so it never
+   shifts the centred label or the slots below it. */
+.loadout-group.armor-group {
+  position: relative;
+}
+
+.armor-helmet-toggle {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(181, 151, 80, 0.45);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+}
+
+.armor-helmet-toggle i {
+  font-size: 15px;
+  line-height: 1;
+  color: #e6c878;
+}
+
+.armor-helmet-toggle:hover {
+  border-color: #d9a13b;
+  box-shadow: 0 0 6px rgba(217, 161, 59, 0.45);
+}
+
+/* Helmet taken off: the glyph dims and the frame goes dashed, so on/off reads
+   at a glance without a second icon. */
+.armor-helmet-toggle.off i {
+  color: rgba(214, 207, 194, 0.35);
+}
+
+.armor-helmet-toggle.off {
+  border-style: dashed;
+  border-color: rgba(181, 151, 80, 0.3);
+}
+
+/* No helmeted piece equipped: the toggle still works and keeps its state, it
+   simply has nothing to act on yet. */
+.armor-helmet-toggle.absent {
+  opacity: 0.4;
 }
 
 /* Slots take the leftover height under the header and sit at the bottom of it.
@@ -3332,7 +3407,10 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  margin-top: 4px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.38);
+  border: 1px solid rgba(181, 151, 80, 0.35);
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.45);
 }
 
 /* Fixed 48px tracks with auto-fit: all ten sit on one line on a roomy sheet
@@ -4282,7 +4360,6 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   padding: 8px 10px;
   border: 1px solid #8b6914;
   border-radius: 4px;
-  background: linear-gradient(180deg, #2b2410 0%, #1d1a0e 100%);
   text-align: center;
   line-height: 1.35;
 }
@@ -4313,14 +4390,12 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 .chat-message .rs-vs-test .mos-followup,
 .chat-message .rs-vs-test .speed-followup {
   color: #e0c165;
-  text-shadow: 0 0 6px rgba(200, 168, 75, 0.35);
   text-decoration: underline dotted rgba(224, 193, 101, 0.6);
 }
 
 .chat-message .rs-vs-test .mos-followup:hover,
 .chat-message .rs-vs-test .speed-followup:hover {
   color: #f7e3b0;
-  text-shadow: 0 0 10px rgba(224, 193, 101, 0.8);
 }
 
 /* Attribute follow-up dialog: stack the choices as a vertical list */
@@ -4469,13 +4544,29 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 /*  Reuses the npc-trait card styling above     */
 /* -------------------------------------------- */
 
-/* The box's flex gap spaces the sections; keep only the separator line */
-.features-box .npc-traits {
+/* Inset panel shared by the Features sub-tabs, the Abilities list and the
+   NPC Traits block on Biography. Replaces the plain underline separator, so
+   each block reads as its own container. */
+.features-box .npc-traits,
+.abilities-box .npc-traits,
+.tab.biography .npc-traits {
   margin-bottom: 0;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.38);
+  border: 1px solid rgba(181, 151, 80, 0.35);
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.45);
 }
-.features-box .npc-traits:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
+
+/* Where the panel is the whole tab body it fills the box, however few cards
+   it holds. Biography is excluded: the editor below needs the rest of the
+   tab, and keeps its gap under the traits panel. */
+.features-box .npc-traits,
+.abilities-box .npc-traits {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.tab.biography .npc-traits {
+  margin-bottom: 16px;
 }
 
 /* Rerolls â€” trait-style toggle boxes */
@@ -6467,13 +6558,24 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 
 .currency-bar {
   display: flex;
-  align-items: center;
+  /* Heading row above, coin row below: the chips get the strip's full width. */
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  padding: 10px 12px;
+  /* The same panel as every other section on the tab: no gold wash. */
+  background: rgba(0, 0, 0, 0.38);
+  border: 1px solid rgba(181, 151, 80, 0.35);
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.45);
+}
+
+.currency-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
   gap: 10px;
-  margin: 14px 0;
-  padding: 8px 10px;
-  border-top: 1px solid rgba(217, 161, 59, 0.35);
-  border-bottom: 1px solid rgba(217, 161, 59, 0.35);
-  background: rgba(110, 81, 23, 0.12);
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(181, 151, 80, 0.28);
 }
 
 .currency-label {
@@ -6484,53 +6586,83 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   flex: 0 0 auto;
 }
 
+/* One row whatever the roster holds: a single grid row whose columns are all
+   the same width, so six coins shrink together instead of wrapping to a
+   second line. min-width:0 on the chips is what lets them shrink at all. */
 .currency-list {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  align-items: stretch;
+  gap: 6px;
   flex: 1 1 auto;
+  min-width: 0;
 }
 
 /* One chip per denomination on the GM's roster. The name is plain text, not an
-   input: a player edits how many coins they hold, never what a coin is called. */
+   input: a player edits how many coins they hold, never what a coin is called.
+   Name above value, so the chip stays narrow enough for six across. */
 .currency-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 6px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1px;
+  min-width: 0;
+  padding: 3px 7px;
   border-radius: 6px;
-  background: #2b2b2b;
+  /* Near-black slots, like the inventory cells: the coin's colour lives in its
+     name and figure, never in the box behind them. */
+  background: #161616;
   border: 1px solid #444;
 }
 
 .currency-chip .currency-name {
-  font-size: 11px;
+  font-size: 10px;
   letter-spacing: 0.02em;
-  white-space: nowrap;
+  text-transform: uppercase;
   opacity: 0.85;
+  /* Long GM-chosen names truncate rather than widen the chip; the full name
+     is on the chip's title. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .currency-chip input.currency-value {
-  width: 56px;
+  width: 100%;
+  min-width: 0;
   background: transparent;
   border: none;
   color: #f1efe8;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: bold;
   text-align: right;
-  padding: 0 2px;
+  padding: 0;
 }
 
-/* Everything the purse is worth, in the largest coins that fit. */
+/* What the purse is worth, in tier-1 coins only. Sits on the heading row, so
+   it needs no divider of its own. */
 .currency-total {
-  margin-left: auto;
-  padding-left: 10px;
-  font-size: 11px;
-  font-weight: 700;
-  color: #e6c878;
-  opacity: 0.8;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex: 0 0 auto;
   white-space: nowrap;
+}
+
+/* One figure per tier-1 rung, coloured by its own coin so the sum reads
+   against the chips below it rather than as one gold blur. The label matches
+   the chip labels; the count is the part meant to be read. */
+.currency-total-part {
+  font-size: 10px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.currency-total-part b {
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .currency-config {
@@ -6704,11 +6836,25 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 /* INVENTORY GRID               */
 /* ============================= */
 
+/* Header and cells share one panel, matching the loadout containers above. */
+.inventory-panel {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.38);
+  border: 1px solid rgba(181, 151, 80, 0.35);
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.45);
+  /* Owns whatever height is left in the box, so the panel reaches the bottom
+     of the tab however few items are carried. */
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
 .inventory-grid-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: 12px 0 6px;
+  margin: 0 0 8px;
 }
 
 .inventory-grid-title {
@@ -7252,7 +7398,7 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   justify-content: center;
   gap: 4px;
   box-sizing: border-box;
-  width: 122px;
+  width: 119px;
   height: 76px;
   flex: 0 0 auto;
   padding: 6px 8px;
@@ -7361,10 +7507,24 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   flex: 0 0 auto;
 }
 
+/* Recipe list and craft panel take the same inset panel as the Features and
+   Abilities sections, so the tab reads as containers on the textured box
+   rather than content floating on it. */
 .alchemy-columns .npc-traits {
   margin-bottom: 0;
-  border-bottom: none;
-  padding-bottom: 0;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.38);
+  border: 1px solid rgba(181, 151, 80, 0.35);
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.45);
+}
+
+/* The substance strip is a row of tiles, not a list, so it gets the panel as
+   a tray around them. */
+.alchemy-substance-strip {
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.38);
+  border: 1px solid rgba(181, 151, 80, 0.35);
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.45);
 }
 
 /* Recipe list: two columns of trait-style cards that scrolls when long */
@@ -8438,6 +8598,39 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 .rs-tooltip .tt-stat-value {
   text-align: right;
   color: #e6e2d3;
+}
+
+/* Rating breakdown: one row per term of the sum, the total ruled off at the
+   bottom. Same two-column grid as .tt-stats, but the values are numbers in a
+   column so they read as an addition rather than as a list of facts. */
+.rs-tooltip .tt-calc {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: 12px;
+  row-gap: 2px;
+}
+
+.rs-tooltip .tt-calc-row {
+  display: contents;
+}
+
+.rs-tooltip .tt-calc-label {
+  color: #9a947e;
+}
+
+.rs-tooltip .tt-calc-value {
+  text-align: right;
+  color: #cfcabb;
+  font-variant-numeric: tabular-nums;
+}
+
+.rs-tooltip .tt-calc-total .tt-calc-label,
+.rs-tooltip .tt-calc-total .tt-calc-value {
+  margin-top: 3px;
+  padding-top: 3px;
+  border-top: 1px solid rgba(122, 115, 50, 0.35);
+  color: #e6e2d3;
+  font-weight: 600;
 }
 
 .rs-tooltip .tt-section {
@@ -11157,4 +11350,43 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   font-size: 11px;
   font-style: italic;
   opacity: 0.8;
+}
+
+/* Features tab sub-tabs (Features / Traits / Rerolls) */
+/* Selector carries enough weight to beat core's nav.tabs flex rules, which
+   otherwise size each label to its own text and push the dividers off-centre. */
+.features-box nav.tabs.features-subtabs {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  flex: 0 0 auto;
+}
+
+.features-box nav.tabs.features-subtabs .item {
+  /* Equal shares whatever the label lengths: same basis for every item, and
+     no content-based minimum to spoil it. */
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.features-box nav.tabs.features-subtabs .item + .item {
+  border-left: 1px solid #514226;
+}
+
+.features-box nav.tabs.features-subtabs .item:hover,
+.features-box nav.tabs.features-subtabs .item.active {
+  color: #f0d7aa;
+}
+
+/* Each sub-tab body behaves like the features box it replaced: stacked
+   sections with the same gap, filling the remaining tab height. */
+.features-subtab.active {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  flex: 1 1 auto;
 }

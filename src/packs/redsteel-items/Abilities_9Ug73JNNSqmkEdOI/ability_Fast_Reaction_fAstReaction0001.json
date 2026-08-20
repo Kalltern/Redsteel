@@ -1,0 +1,134 @@
+{
+  "name": "Fast Reaction",
+  "type": "ability",
+  "img": "icons/skills/movement/feet-winged-boots-brown.webp",
+  "system": {
+    "description": "<p>You throw yourself into the next exchange a beat ahead of everyone else. Gain +4 Initiative until the start of your next turn, which means the bonus is still with you when turn order is rolled again at the top of the next round.</p><p>Cumulative: spend the action twice in the same round and the bonus is +8. Your Initiative is still capped at 15.</p>",
+    "type": "other",
+    "key": "fastReaction",
+    "weaponAbility": false,
+    "standalone": false,
+    "modifiesAttack": false,
+    "multiAttack": false,
+    "typeOptions": [
+      "melee",
+      "ranged"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "movement",
+      "attack",
+      "defense"
+    ],
+    "resources": {
+      "0": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      },
+      "1": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      }
+    },
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "drain"
+      ],
+      "types": []
+    },
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "attributeTest": "",
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testModifier": 0,
+    "costOptions": [
+      "stamina",
+      "mana",
+      "health",
+      "mental",
+      "fatigue",
+      "inspiration",
+      "holy energy"
+    ],
+    "costType": "stamina",
+    "cost": 3,
+    "perRound": 0,
+    "effects": {
+      "stagger": 0,
+      "bleed": 0,
+      "extra1": 0,
+      "extra2": 0,
+      "extra3": 0
+    },
+    "class": "",
+    "actionCost": "1 Action",
+    "defense": 0,
+    "rangedDefense": 0,
+    "dodge": 0,
+    "attack": 0,
+    "roll": {
+      "diceBonus": ""
+    },
+    "breakthrough": "",
+    "penetration": 0,
+    "critRange": 0,
+    "critChance": 0,
+    "critFail": 0,
+    "dmgType1": "",
+    "bool2": "",
+    "dmgType2": "",
+    "bool3": "",
+    "dmgType3": "",
+    "effectType1": "",
+    "effectType2": "",
+    "effectType3": "",
+    "localizationKey": "REDSTEEL.Items.FastReaction.name"
+  },
+  "effects": [],
+  "folder": "9Ug73JNNSqmkEdOI",
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1787000000000,
+    "modifiedTime": 1787000000000,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "ownership": {
+    "default": 0
+  },
+  "_id": "fAstReaction0001",
+  "sort": 4600000,
+  "_key": "!items!fAstReaction0001"
+}

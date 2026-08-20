@@ -1,5 +1,9 @@
 import { seedRollAdvantage } from "../utils/rollAdvantage.mjs";
-import { getWeaponAttackBonus } from "../utils/combatSkillBonuses.mjs";
+import {
+  getWeaponAttackBonus,
+  computeDoctrineBonuses,
+} from "../utils/combatSkillBonuses.mjs";
+import { partBuilder, reconcileParts } from "../utils/ratingBreakdown.mjs";
 
 /**
  * Extend the base Actor document by defining a custom roll data structure which is ideal for the Simple system.
@@ -263,10 +267,20 @@ export class RedsteelActor extends Actor {
     naturalArmor.total = naturalArmor.value + naturalArmor.bonus;
     armor.total = totalArmor + naturalArmor.total;
     armor.total = Math.max(0, armor.total);
-    // Iterate through gear (only helmets)
+    // Iterate through gear (only helmets).
+    //
+    // The helmet can be taken off without unequipping the armor it belongs to:
+    // flags.redsteel.helmetOff, toggled from the Armor panel on the Inventory
+    // tab. Absent means worn, so existing actors keep their helmets on. With it
+    // off the archery and perception penalties simply do not apply.
+    // TODO(head damage): while helmetOff is set, a hit aimed at the head should
+    // also bypass this actor's armor — see evaluateAttackDamage() in
+    // utils/applyDamage.mjs, where armor enters the damage calculation.
+    const helmetOff = this.flags?.redsteel?.helmetOff === true;
     for (const item of this.items) {
       let combatSkill = systemData.combatSkills;
       if (item.type === "gear" && item.system.equipped && item.system.helmet) {
+        if (helmetOff) continue;
         combatSkill.archery.rating += item.system.archeryPenalty ?? 0;
         systemData.dodgePenalty += item.system.perPenalty ?? 0;
       }
@@ -277,6 +291,31 @@ export class RedsteelActor extends Actor {
     // things organized.
     this._prepareCharacterData(actorData);
     this._prepareNpcData(actorData);
+    this._reconcileRatingBreakdowns(systemData);
+  }
+
+  /**
+   * Last word on the rating breakdowns the skill tooltips print.
+   *
+   * Runs after every other derivation, so anything that adjusted a rating
+   * behind the recording sites — a helmet penalty, an Active Effect replayed
+   * onto the derived number — is caught here and shown as a single "Other"
+   * row rather than quietly breaking the sum.
+   *
+   * @param {object} systemData
+   */
+  _reconcileRatingBreakdowns(systemData) {
+    for (const skill of Object.values(systemData.skills ?? {})) {
+      reconcileParts(skill);
+      if (skill.swimmingParts) reconcileParts(skill, "swimming", "swimmingParts");
+      if (skill.blendParts) reconcileParts(skill, "blend", "blendParts");
+    }
+    for (const skill of Object.values(systemData.combatSkills ?? {})) {
+      reconcileParts(skill);
+      if (skill.finesseRatingParts) {
+        reconcileParts(skill, "finesseRating", "finesseRatingParts");
+      }
+    }
   }
 
   /**
@@ -410,8 +449,40 @@ export class RedsteelActor extends Actor {
       if (combatSkills[key]) {
         combatSkills[key].weaponAttack = 0;
         combatSkills[key].weaponAttackSource = "";
+        combatSkills[key].weaponAttackParts = null;
       }
     }
+    // Named contributions to each skill's `bonus`, for the tooltip breakdown.
+    // Zeroed alongside the attack numbers for the same reason.
+    for (const key of ["combat", "meleeDefense", "rangedDefense", "dodge"]) {
+      if (combatSkills[key]) combatSkills[key].bonusParts = [];
+    }
+    // Doctrine defense bonuses belong to the loadout, so an empty weapon set
+    // has to clear them rather than leave the last set's numbers standing.
+    for (const key of ["meleeDefense", "rangedDefense"]) {
+      if (combatSkills[key]) {
+        combatSkills[key].doctrineDefense = 0;
+        combatSkills[key].doctrineDefenseSource = null;
+      }
+    }
+
+    /**
+     * Add a named contribution to a combat skill's `bonus`.
+     *
+     * `bonus` is a single number several unrelated things write into — weapon
+     * defense, a shield, a dual-wield penalty, a doctrine. Routing them through
+     * here keeps the arithmetic identical while recording who paid for what, so
+     * the tooltip can print "Shield (Kite Shield) +8" instead of "Bonus +23".
+     *
+     * @param {object} skill  entry from `system.combatSkills`
+     * @param {number} value  the contribution, skipped when zero
+     * @param {string} label  finished label, already localized
+     */
+    const addBonus = (skill, value, label) => {
+      if (!skill || !value) return;
+      skill.bonus += value;
+      (skill.bonusParts ??= []).push({ type: "flat", label, value });
+    };
 
     const activeSetId = combatData?.activeWeaponSet;
     if (activeSetId) {
@@ -462,7 +533,29 @@ export class RedsteelActor extends Actor {
           weaponDefense +=
             (Number(offProps.defense) || 0) + (Number(offQuality.defense) || 0);
         }
-        combatSkills.meleeDefense.bonus += weaponDefense;
+        addBonus(
+          combatSkills.meleeDefense,
+          weaponDefense,
+          `${game.i18n.localize("REDSTEEL.Tooltip.Part.weaponDefense")}${
+            mainHand ? ` (${mainHand.localizedName ?? mainHand.name})` : ""
+          }`,
+        );
+
+        // Doctrine defense bonuses are added by the defense roll, not folded
+        // into the stat, so they are parked beside the rating for the tooltip
+        // to show as a separate "when defending" line rather than added here —
+        // adding them would double-count against defense.mjs.
+        const loadoutDoctrine = mainHand
+          ? computeDoctrineBonuses(actorData, mainHand)
+          : null;
+        combatSkills.meleeDefense.doctrineDefense =
+          Number(loadoutDoctrine?.doctrineDefenseBonus) || 0;
+        combatSkills.meleeDefense.doctrineDefenseSource =
+          loadoutDoctrine?.doctrineSource?.defense ?? null;
+        combatSkills.rangedDefense.doctrineDefense =
+          Number(loadoutDoctrine?.doctrineRangedDefenseBonus) || 0;
+        combatSkills.rangedDefense.doctrineDefenseSource =
+          loadoutDoctrine?.doctrineSource?.rangedDefense ?? null;
 
         // The attack half of the same story: the weapon's own attack value, its
         // quality mod, the doctrine bonus this weapon unlocks, a weapon
@@ -485,22 +578,32 @@ export class RedsteelActor extends Actor {
             attackSkill.weaponAttack = loadoutAttack.total;
             attackSkill.weaponAttackSource =
               mainHand.localizedName ?? mainHand.name ?? "";
+            // The itemised version of the same number, so the tooltip can name
+            // the doctrine and the specialisation inside it.
+            attackSkill.weaponAttackParts = loadoutAttack;
           }
         }
 
         if (offHand?.system?.shield) {
           // Broken shields (0 durability) grant improvised shield stats instead
           const shield = offHand.getShieldStats();
+          const shieldLabel = `${game.i18n.localize(
+            "REDSTEEL.Tooltip.Part.shield",
+          )} (${offHand.localizedName ?? offHand.name})`;
           // Defense bonuses
-          combatSkills.meleeDefense.bonus += shield.defense;
-          combatSkills.rangedDefense.bonus += shield.rangedDefense;
+          addBonus(combatSkills.meleeDefense, shield.defense, shieldLabel);
+          addBonus(
+            combatSkills.rangedDefense,
+            shield.rangedDefense,
+            shieldLabel,
+          );
 
           combatSkills.meleeDefense.critbonus += shield.critDefense;
 
           combatSkills.rangedDefense.critbonus += shield.rangedCritDefense;
 
           // Dodge penalty
-          combatSkills.dodge.bonus += shield.dodgePenalty;
+          addBonus(combatSkills.dodge, shield.dodgePenalty, shieldLabel);
           // Initiative / speed penalties
           secondary.ini.bonus += shield.iniPenalty;
           secondary.spd.bonus += shield.maxSpeed;
@@ -518,18 +621,21 @@ export class RedsteelActor extends Actor {
             // enough.
             const weaponIsDimakerus =
               mainHand?.system?.doctrines?.dimakerus === true;
+            const dimakerusLabel = game.i18n.localize(
+              "REDSTEEL.Actor.Character.doctrines.dimakerus.label",
+            );
             if (systemData.doctrines.dimakerus.value >= 1) {
               // Dimakerus negates the dual-wield penalty for its user, and adds
               // a class bonus when the weapon qualifies.
               if (weaponIsDimakerus) {
                 if (weaponClass === "axe") {
-                  combatSkills.combat.bonus += 5;
+                  addBonus(combatSkills.combat, 5, dimakerusLabel);
                 }
                 if (weaponClass === "blunt") {
-                  combatSkills.combat.bonus += 8;
+                  addBonus(combatSkills.combat, 8, dimakerusLabel);
                 }
                 if (weaponClass === "sword") {
-                  combatSkills.combat.bonus += 5;
+                  addBonus(combatSkills.combat, 5, dimakerusLabel);
                   // The +3 bleed that used to sit here lives in
                   // getDoctrineBonuses (combatSkillBonuses.mjs) as
                   // dimakerusDualWieldBleed. system.effects.bleed is actor-wide
@@ -543,10 +649,13 @@ export class RedsteelActor extends Actor {
             ) {
               // Duelist also lets a swordsman dual wield without the penalty.
             } else {
-              combatSkills.combat.bonus -= 10;
-              combatSkills.dodge.bonus -= 10;
-              combatSkills.rangedDefense.bonus -= 10;
-              combatSkills.meleeDefense.bonus -= 10;
+              const dualWieldLabel = game.i18n.localize(
+                "REDSTEEL.Tooltip.Part.dualWield",
+              );
+              addBonus(combatSkills.combat, -10, dualWieldLabel);
+              addBonus(combatSkills.dodge, -10, dualWieldLabel);
+              addBonus(combatSkills.rangedDefense, -10, dualWieldLabel);
+              addBonus(combatSkills.meleeDefense, -10, dualWieldLabel);
             }
           }
         }
@@ -564,51 +673,106 @@ export class RedsteelActor extends Actor {
       }),
     );
 
+    // Term constructors for the rating breakdowns the skill tooltips print.
+    // They rebuild each term from the same operands as the rating below it, so
+    // the rows shown to the player always sum to the rating beside them.
+    const P = partBuilder({
+      attributes: systemData.attributes,
+      attributeScore,
+      secondaryAttributes: systemData.secondaryAttributes,
+      globalMod,
+    });
+
     // Iterate through skills
     for (let [key, skill] of Object.entries(systemData.skills)) {
       // Ensure skill type is valid and matches your criteria
       if (skill.type === 1) {
         // Use skill.id to find the corresponding attribute
         if (key === "athletics") {
+          // The stored number is a starting value the rest is added on top of,
+          // so it has to be captured before the `+=` overwrites it.
+          const stored = skill.swimming;
           skill.swimming +=
             skillset1[skill.value] +
             attributeScore[skill.id].total * 3 +
             skill.bonus +
             globalMod;
+          skill.swimmingParts = [
+            P.base(stored),
+            P.rank(skill.value, skillset1[skill.value]),
+            P.attr(skill.id, 3),
+            P.bonus(skill.bonus),
+            P.global(),
+          ];
         }
 
         if (key === "acting") {
+          const stored = skill.blend;
           skill.blend +=
             skillset1[skill.value] +
             attributeScore[skill.id].total * 3 +
             skill.bonus +
             globalMod;
+          skill.blendParts = [
+            P.base(stored),
+            P.rank(skill.value, skillset1[skill.value]),
+            P.attr(skill.id, 3),
+            P.bonus(skill.bonus),
+            P.global(),
+          ];
         }
         skill.rating =
           skillset1[skill.value] +
           attributeScore[skill.id].total * 3 +
           skill.bonus +
           globalMod;
+        skill.ratingParts = [
+          P.rank(skill.value, skillset1[skill.value]),
+          P.attr(skill.id, 3),
+          P.bonus(skill.bonus),
+          P.global(),
+        ];
       } else if (skill.type === 2) {
+        // Muscles and Nimbleness derive purely from their rank: no governing
+        // attribute, and deliberately no bonus or global modifier either.
         skill.rating = skillset2[skill.value];
+        skill.ratingParts = [P.rank(skill.value, skillset2[skill.value])];
       } else if (skill.type === 3) {
         skill.rating =
           skillset3[skill.value] +
           attributeScore[skill.id].total * 3 +
           skill.bonus +
           globalMod;
+        skill.ratingParts = [
+          P.rank(skill.value, skillset3[skill.value]),
+          P.attr(skill.id, 3),
+          P.bonus(skill.bonus),
+          P.global(),
+        ];
       } else if (skill.type === 4) {
         skill.rating =
           skillset4[skill.value] +
           attributeScore[skill.id].total * 3 +
           skill.bonus +
           globalMod;
+        skill.ratingParts = [
+          P.rank(skill.value, skillset4[skill.value]),
+          P.attr(skill.id, 3),
+          P.bonus(skill.bonus),
+          P.global(),
+        ];
       } else if (skill.type === 5) {
         skill.rating =
           skillset5[skill.value] +
           attributeScore[skill.id].total * 3 +
           skill.bonus +
           globalMod;
+        skill.ratingParts = [
+          P.rank(skill.value, skillset5[skill.value]),
+          P.attr(skill.id, 3),
+          P.bonus(skill.bonus),
+          P.global(),
+        ];
       } else if (skill.type === 6) {
         if (key === "deception") {
           skill.rating =
@@ -618,6 +782,14 @@ export class RedsteelActor extends Actor {
             visage +
             skill.bonus +
             globalMod;
+          skill.ratingParts = [
+            P.rank(skill.value, skillset6[skill.value]),
+            P.attr(skill.id, 5),
+            P.attr(3, 3),
+            P.sec("vis"),
+            P.bonus(skill.bonus),
+            P.global(),
+          ];
         }
         if (key === "intimidation") {
           skill.rating =
@@ -627,6 +799,20 @@ export class RedsteelActor extends Actor {
             -Math.min(0, visage * 2) +
             skill.bonus +
             globalMod;
+          // Only an *ugly* face helps here, and it helps double — a positive
+          // Visage contributes nothing, so this is its own named term rather
+          // than a plain Visage row that would read as a bonus of zero.
+          skill.ratingParts = [
+            P.rank(skill.value, skillset6[skill.value]),
+            P.attr(skill.id, 5),
+            P.attr(0, 3),
+            P.flat(
+              "REDSTEEL.Tooltip.Part.visageFear",
+              -Math.min(0, visage * 2),
+            ),
+            P.bonus(skill.bonus),
+            P.global(),
+          ];
         }
         if (key === "persuasion") {
           skill.rating =
@@ -636,6 +822,14 @@ export class RedsteelActor extends Actor {
             visage +
             skill.bonus +
             globalMod;
+          skill.ratingParts = [
+            P.rank(skill.value, skillset6[skill.value]),
+            P.attr(skill.id, 5),
+            P.attr(4, 3),
+            P.sec("vis"),
+            P.bonus(skill.bonus),
+            P.global(),
+          ];
         }
         if (key === "temptation") {
           skill.rating =
@@ -645,6 +839,16 @@ export class RedsteelActor extends Actor {
             sin +
             skill.bonus +
             globalMod;
+          // Perception or Visage, whichever serves better — name the one that
+          // actually won so the row matches the number.
+          skill.ratingParts = [
+            P.rank(skill.value, skillset6[skill.value]),
+            P.attr(skill.id, 5),
+            attributeScore[6].total >= visage ? P.attr(6, 3) : P.sec("vis", 3),
+            P.sec("sin"),
+            P.bonus(skill.bonus),
+            P.global(),
+          ];
         }
         if (key === "insight") {
           skill.rating =
@@ -653,6 +857,13 @@ export class RedsteelActor extends Actor {
             attributeScore[5].total * 4 +
             skill.bonus +
             globalMod;
+          skill.ratingParts = [
+            P.rank(skill.value, skillset6[skill.value]),
+            P.attr(skill.id, 5),
+            P.attr(5, 4),
+            P.bonus(skill.bonus),
+            P.global(),
+          ];
         }
       } else if (skill.type === 7) {
         skill.rating =
@@ -660,6 +871,12 @@ export class RedsteelActor extends Actor {
           attributeScore[skill.id].total * 3 +
           skill.bonus +
           globalMod;
+        skill.ratingParts = [
+          P.rank(skill.value, skillset7[skill.value]),
+          P.attr(skill.id, 3),
+          P.bonus(skill.bonus),
+          P.global(),
+        ];
       }
     }
     // Calculate the attribute rating using redsteel rules. Rework calculations for stun effects
@@ -690,6 +907,53 @@ export class RedsteelActor extends Actor {
       }
     }
 
+    /**
+     * Set one combat rating and record its breakdown in the same breath.
+     *
+     * Every branch below is the same shape: a rank-table lookup, an attribute
+     * times three, the skill's own bonus, the actor-wide modifier. Routing all
+     * of them through here means the sum and the rows the tooltip prints come
+     * from one set of operands and cannot drift apart. Which table was read and
+     * which attribute governs is exactly what differs between the branches, so
+     * both are passed in.
+     *
+     * @param {object} skill    entry from `system.combatSkills`
+     * @param {string} field    "rating" or "finesseRating"
+     * @param {number} rank     the rank the table was read at, for the label
+     * @param {number} base     the value that rank produced
+     * @param {number} attrIdx  index into `attributeScore`
+     * @param {string|null} from  key from RANK_FROM, when the rank the table
+     *   was read at is not the skill's own — Ranged Defense reading the Combat
+     *   rank, Channeling reading it through Veneficus, and so on
+     */
+    const rate = (skill, field, rank, base, attrIdx, from = null) => {
+      skill[field] =
+        base + attributeScore[attrIdx].total * 3 + skill.bonus + globalMod;
+      skill[`${field}Parts`] = [
+        P.rank(rank, base, from),
+        P.attr(attrIdx, 3),
+        P.bonus(skill.bonus),
+        P.global(),
+      ];
+    };
+
+    /**
+     * Where a borrowed rank came from, for the breakdown's rank row.
+     *
+     * Half the combat ratings read a table at somebody else's rank: Dodge uses
+     * Acrobacy, Ranged Defense may use Archery, Veneficus channels through the
+     * Combat rank. A bare "Rank V" on those tooltips is a rank the player
+     * cannot find on the sheet, so the row says whose it is.
+     */
+    const RANK_FROM = {
+      ranger: "REDSTEEL.Actor.Character.combatSkills.ranger.label",
+      archery: "REDSTEEL.Actor.Character.combatSkills.archery.label",
+      combat: "REDSTEEL.Actor.Character.combatSkills.combat.label",
+      acrobacy: "REDSTEEL.Actor.Character.skills.acrobacy.label",
+      veneficus: "REDSTEEL.Actor.Character.doctrines.veneficus.label",
+      cordinas: "REDSTEEL.Actor.Character.doctrines.cordinas.label",
+    };
+
     // Iterate through combat skills
     for (let [key, combatSkill] of Object.entries(systemData.combatSkills)) {
       // Ensure skill type is valid and matches your criteria
@@ -699,88 +963,112 @@ export class RedsteelActor extends Actor {
         // Hotfixed for Finesse added
         if (hasFinesse && attributeScore[0] <= attributeScore[1]) {
           if (ranger > 0) {
-            combat.finesseRating =
-              rangerGroup[ranger] +
-              attributeScore[1].total * 3 +
-              combat.bonus +
-              globalMod;
+            rate(
+              combat,
+              "finesseRating",
+              ranger,
+              rangerGroup[ranger],
+              1,
+              RANK_FROM.ranger,
+            );
           } else if (
             archery.value > 0 &&
             rangedDefenseSet[archery.value] > combatset1[melee]
           ) {
-            combat.finesseRating =
-              rangedDefenseSet[archery.value] +
-              attributeScore[1].total * 3 +
-              combat.bonus +
-              globalMod;
+            rate(
+              combat,
+              "finesseRating",
+              archery.value,
+              rangedDefenseSet[archery.value],
+              1,
+              RANK_FROM.archery,
+            );
           } else {
-            combat.finesseRating =
-              combatset1[melee] +
-              attributeScore[1].total * 3 +
-              combat.bonus +
-              globalMod;
+            rate(combat, "finesseRating", melee, combatset1[melee], 1);
           }
         }
         if (combatSkill === combat) {
           // Apply ranger bonus if applicable
           if (ranger > 0) {
-            combatSkill.rating =
-              rangerGroup[ranger] +
-              attributeScore[combatSkill.id].total * 3 +
-              combatSkill.bonus +
-              globalMod;
+            rate(
+              combatSkill,
+              "rating",
+              ranger,
+              rangerGroup[ranger],
+              combatSkill.id,
+              RANK_FROM.ranger,
+            );
           } else if (
             archery.value > 0 &&
             rangedDefenseSet[archery.value] > combatset1[melee]
           ) {
-            combatSkill.rating =
-              rangedDefenseSet[archery.value] +
-              attributeScore[combatSkill.id].total * 3 +
-              combatSkill.bonus +
-              globalMod;
+            rate(
+              combatSkill,
+              "rating",
+              archery.value,
+              rangedDefenseSet[archery.value],
+              combatSkill.id,
+              RANK_FROM.archery,
+            );
           } else {
-            combatSkill.rating =
-              combatset1[melee] +
-              attributeScore[combatSkill.id].total * 3 +
-              combatSkill.bonus +
-              globalMod;
+            rate(
+              combatSkill,
+              "rating",
+              melee,
+              combatset1[melee],
+              combatSkill.id,
+            );
           }
         }
         if (combatSkill === rangeddef) {
           if (archery.value > melee && archery.value != 0) {
-            combatSkill.rating =
-              rangedDefenseSet[archery.value] +
-              attributeScore[combatSkill.id].total * 3 +
-              combatSkill.bonus +
-              globalMod;
+            rate(
+              combatSkill,
+              "rating",
+              archery.value,
+              rangedDefenseSet[archery.value],
+              combatSkill.id,
+              RANK_FROM.archery,
+            );
           } else if (ranger > 0) {
-            combatSkill.rating =
-              rangedDefenseSet[ranger] +
-              attributeScore[combatSkill.id].total * 3 +
-              combatSkill.bonus +
-              globalMod;
+            rate(
+              combatSkill,
+              "rating",
+              ranger,
+              rangedDefenseSet[ranger],
+              combatSkill.id,
+              RANK_FROM.ranger,
+            );
           } else {
-            combatSkill.rating =
-              rangedDefenseSet[melee] +
-              attributeScore[combatSkill.id].total * 3 +
-              combatSkill.bonus +
-              globalMod;
+            rate(
+              combatSkill,
+              "rating",
+              melee,
+              rangedDefenseSet[melee],
+              combatSkill.id,
+              RANK_FROM.combat,
+            );
           }
         }
 
         if (combatSkill === archery) {
           if (ranger > 0) {
-            archery.rating =
-              combatset1[ranger] +
-              attributeScore[combatSkill.id].total * 3 +
-              combatSkill.bonus +
-              globalMod;
+            rate(
+              archery,
+              "rating",
+              ranger,
+              combatset1[ranger],
+              combatSkill.id,
+              RANK_FROM.ranger,
+            );
           } else {
-            archery.rating =
-              combatset1[archery.value] +
-              attributeScore[combatSkill.id].total * 3 +
-              combatSkill.bonus +
-              globalMod;
+            rate(
+              archery,
+              "rating",
+              archery.value,
+              combatset1[archery.value],
+              combatSkill.id,
+            );
           }
         }
 
@@ -788,61 +1076,91 @@ export class RedsteelActor extends Actor {
         if (combatSkill === systemData.combatSkills.meleeDefense) {
           // Check if the actor has steelGrip enabled
           if (systemData.steelGrip) {
-            combatSkill.rating =
-              combatset1[melee] +
-              attributeScore[0].total * 3 +
-              combatSkill.bonus +
-              globalMod;
+            rate(
+              combatSkill,
+              "rating",
+              melee,
+              combatset1[melee],
+              0,
+              RANK_FROM.combat,
+            );
           }
           // Check if the actor has predatorySenses enabled
           else if (systemData.predatorySenses) {
-            combatSkill.rating =
-              rangerGroup[ranger] +
-              attributeScore[6].total * 3 +
-              combatSkill.bonus +
-              globalMod;
+            rate(
+              combatSkill,
+              "rating",
+              ranger,
+              rangerGroup[ranger],
+              6,
+              RANK_FROM.ranger,
+            );
           } else if (ranger > 0) {
-            combatSkill.rating =
-              rangerGroup[ranger] +
-              attributeScore[combatSkill.id].total * 3 +
-              combatSkill.bonus +
-              globalMod;
+            rate(
+              combatSkill,
+              "rating",
+              ranger,
+              rangerGroup[ranger],
+              combatSkill.id,
+              RANK_FROM.ranger,
+            );
           } else {
-            combatSkill.rating =
-              combatset1[melee] +
-              attributeScore[combatSkill.id].total * 3 +
-              combatSkill.bonus +
-              globalMod;
+            rate(
+              combatSkill,
+              "rating",
+              melee,
+              combatset1[melee],
+              combatSkill.id,
+              RANK_FROM.combat,
+            );
           }
         }
       }
       if (combatSkill.type === 1) {
         //setting ratings for dodge
-        combatSkill.rating =
-          dodge[systemData.skills.acrobacy.value] +
-          attributeScore[combatSkill.id].total * 3 +
-          combatSkill.bonus +
-          globalMod;
+        rate(
+          combatSkill,
+          "rating",
+          systemData.skills.acrobacy.value,
+          dodge[systemData.skills.acrobacy.value],
+          combatSkill.id,
+          RANK_FROM.acrobacy,
+        );
       }
       if (combatSkill.type === 2) {
         if (ranger > 0) {
-          combatSkill.rating =
-            combatset1[ranger] +
-            attributeScore[combatSkill.id].total * 3 +
-            combatSkill.bonus +
-            globalMod;
+          rate(
+            combatSkill,
+            "rating",
+            ranger,
+            combatset1[ranger],
+            combatSkill.id,
+            RANK_FROM.ranger,
+          );
         } else if (hasFinesse && attributeScore[6] <= attributeScore[1]) {
-          combatSkill.finesseRating =
-            meleeOrRanged +
-            attributeScore[1].total * 3 +
-            combatSkill.bonus +
-            globalMod;
+          // meleeOrRanged is the better of the Throwing and Archery tables, so
+          // the rank it came from is whichever of the two won.
+          rate(
+            combatSkill,
+            "finesseRating",
+            throwing[melee] >= combatset1[archery.value] ? melee : archery.value,
+            meleeOrRanged,
+            1,
+            throwing[melee] >= combatset1[archery.value]
+              ? RANK_FROM.combat
+              : RANK_FROM.archery,
+          );
         } else {
-          combatSkill.rating =
-            meleeOrRanged +
-            attributeScore[combatSkill.id].total * 3 +
-            combatSkill.bonus +
-            globalMod;
+          rate(
+            combatSkill,
+            "rating",
+            throwing[melee] >= combatset1[archery.value] ? melee : archery.value,
+            meleeOrRanged,
+            combatSkill.id,
+            throwing[melee] >= combatset1[archery.value]
+              ? RANK_FROM.combat
+              : RANK_FROM.archery,
+          );
         }
       }
       if (combatSkill.type === 3) {
@@ -859,35 +1177,40 @@ export class RedsteelActor extends Actor {
           !!systemData.specialisations?.veneficus?.nodes?.lindar;
         combatSkill.lindar = lindar;
         if (martialChanneling) {
-          const attrBonus = lindar
-            ? Math.max(
-                attributeScore[0].total, // Strength
-                attributeScore[1].total, // Dexterity
-              )
-            : attributeScore[combatSkill.id].total; // Intelligence
-          combatSkill.rating =
-            channeling2[melee] +
-            attrBonus * 3 +
-            combatSkill.bonus +
-            globalMod;
+          const attrIdx = lindar
+            ? attributeScore[0].total >= attributeScore[1].total
+              ? 0 // Strength
+              : 1 // Dexterity
+            : combatSkill.id; // Intelligence
+          rate(
+            combatSkill,
+            "rating",
+            melee,
+            channeling2[melee],
+            attrIdx,
+            RANK_FROM.veneficus,
+          );
         } else {
-          combatSkill.rating =
-            channeling1[combatSkill.value] +
-            attributeScore[combatSkill.id].total * 3 +
-            combatSkill.bonus +
-            globalMod;
+          rate(
+            combatSkill,
+            "rating",
+            combatSkill.value,
+            channeling1[combatSkill.value],
+            combatSkill.id,
+          );
         }
       }
       if (combatSkill.type === 4) {
         // Blood Manipulation (Manipulace s krví): a Willpower-based casting
         // skill. Unlike channeling it is immune to the armor cast penalty (it
         // channels through the body, not focus), so no castPenalty is applied.
-        const wilScore = attributeScore[4].total; // Willpower
-        let rating =
-          bloodManipSet[combatSkill.value] +
-          wilScore * 3 +
-          combatSkill.bonus +
-          globalMod;
+        rate(
+          combatSkill,
+          "rating",
+          combatSkill.value,
+          bloodManipSet[combatSkill.value],
+          4, // Willpower
+        );
 
         // Cordinas (rank 1+) lets the caster channel blood magic through their
         // martial prowess: the raw Combat-rank rating (combat table + Will×3)
@@ -895,12 +1218,21 @@ export class RedsteelActor extends Actor {
         // bonus comes from Blood Manipulation's own bonus, not the Combat skill.
         const cordinasRank = systemData.doctrines?.cordinas?.value ?? 0;
         if (cordinasRank > 0) {
-          const combatRating =
-            combatset1[melee] + wilScore * 3 + combatSkill.bonus + globalMod;
-          rating = Math.max(rating, combatRating);
+          const bloodRating = combatSkill.rating;
+          const bloodParts = combatSkill.ratingParts;
+          rate(
+            combatSkill,
+            "rating",
+            melee,
+            combatset1[melee],
+            4,
+            RANK_FROM.cordinas,
+          );
+          if (bloodRating >= combatSkill.rating) {
+            combatSkill.rating = bloodRating;
+            combatSkill.ratingParts = bloodParts;
+          }
         }
-
-        combatSkill.rating = rating;
       }
     }
 
@@ -911,6 +1243,12 @@ export class RedsteelActor extends Actor {
         attributeScore[1].total * 3 +
         brawler.bonus +
         globalMod;
+      brawler.ratingParts = [
+        P.rank(brawler.value, skillset1[brawler.value]),
+        P.attr(1, 3),
+        P.bonus(brawler.bonus),
+        P.global(),
+      ];
       if (skillset1[brawler.value] < rangedDefenseSet[melee]) {
         rangedDefenseSet[melee] +
           attributeScore[1].total * 3 +
@@ -923,12 +1261,30 @@ export class RedsteelActor extends Actor {
         attributeScore[0].total * 3 +
         brawler.bonus +
         globalMod;
+      brawler.ratingParts = [
+        P.rank(brawler.value, skillset1[brawler.value]),
+        P.attr(0, 3),
+        P.bonus(brawler.bonus),
+        P.global(),
+      ];
       if (skillset1[brawler.value] < rangedDefenseSet[melee]) {
         brawler.rating =
           rangedDefenseSet[melee] +
           attributeScore[0].total * 3 +
           brawler.bonus +
           globalMod;
+        // The Combat rank table stands in for the Brawler rank table here, so
+        // the rank row names the rank that was actually read.
+        brawler.ratingParts = [
+          P.rank(
+            melee,
+            rangedDefenseSet[melee],
+            "REDSTEEL.Actor.Character.combatSkills.combat.label",
+          ),
+          P.attr(0, 3),
+          P.bonus(brawler.bonus),
+          P.global(),
+        ];
       }
     }
 
@@ -1032,10 +1388,18 @@ export class RedsteelActor extends Actor {
         if (skill.id === 5) {
           // Replace its core attribute with Willpower (Wil)
           skill.rating += (-cha + wil) * 6;
+          skill.ratingParts = [
+            ...(skill.ratingParts ?? []),
+            P.flat("REDSTEEL.Tooltip.Part.shepherdsWill", (-cha + wil) * 6),
+          ];
         }
         if (skill.id === 6) {
           // Replace its core attribute with Perception (Per)
           skill.rating += (-per + wil) * 6;
+          skill.ratingParts = [
+            ...(skill.ratingParts ?? []),
+            P.flat("REDSTEEL.Tooltip.Part.shepherdsWill", (-per + wil) * 6),
+          ];
         }
       }
     }
@@ -1396,6 +1760,16 @@ export class RedsteelActor extends Actor {
         Number(combatSkill.value ?? 0) +
         Number(combatSkill.bonus ?? 0) +
         Number(systemData.globalMod ?? 0);
+
+      // An NPC skill is a flat number, not a rank read off a table, so its
+      // breakdown says "base" rather than naming a rank. With no bonus and no
+      // global modifier there is nothing to break down and the tooltip keeps
+      // the plain rating it shows today.
+      combatSkill.ratingParts = [
+        { type: "base", value: Number(combatSkill.value ?? 0) },
+        { type: "bonus", value: Number(combatSkill.bonus ?? 0) },
+        { type: "global", value: Number(systemData.globalMod ?? 0) },
+      ];
 
       //console.log("After:", key, combatSkill.rating);
     }
