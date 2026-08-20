@@ -1452,42 +1452,48 @@ export class RedsteelActor extends Actor {
         50 + systemData.stats.temporaryHealthMagic.bonus;
     }
 
+    // Spell Power per school. Computed for EVERY character, not just mages:
+    // racial traits and other non-caster sources can grant a single spell, and
+    // that spell still has to scale off the school's SK. Mana below stays
+    // gated on magicPotential — owning a spell does not make you a caster.
+    // `schoolBonus` feeds the mana formula, so it is computed here too.
+    const calcSchool = [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1];
+    let schoolBonus = 0;
+    const spellPowerSchool = [0, 0, 1, 2, 3, 4, 4, 5, 5, 6, 8];
+
+    // Corruption grants bonus Dark Spell Power: +1 at degree 2, +3 at degree 3.
+    const corruptionDarkSP =
+      systemData.corruptionDegree >= 3
+        ? 3
+        : systemData.corruptionDegree >= 2
+          ? 1
+          : 0;
+    if (corruptionDarkSP && systemData.schools?.dark) {
+      systemData.schools.dark.bonus += corruptionDarkSP;
+    }
+
+    for (const [key, school] of Object.entries(systemData.schools)) {
+      if (key !== "blood") {
+        schoolBonus += calcSchool[school.value]; // Add based on school value
+        school.spellPower =
+          spellPowerSchool[school.value] +
+          school.bonus +
+          (systemData.baseSpellPower || 0) +
+          Math.floor(int / 2);
+      }
+      if (key === "blood") {
+        schoolBonus += calcSchool[school.value]; // Add based on school value
+        school.spellPower =
+          spellPowerSchool[school.value] +
+          school.bonus +
+          Math.max(Math.floor(int / 2), Math.floor(wil / 2));
+      }
+    }
+
     // Calculate mana
     if (systemData.magicPotential) {
       const channeling = systemData.combatSkills.channeling.value;
       const calcCast = [0, 0, 3, 6, 9, 9, 9, 9, 9, 9, 9];
-      const calcSchool = [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1];
-      let schoolBonus = 0;
-      const spellPowerSchool = [0, 0, 1, 2, 3, 4, 4, 5, 5, 6, 8];
-
-      // Corruption grants bonus Dark Spell Power: +1 at degree 2, +3 at degree 3.
-      const corruptionDarkSP =
-        systemData.corruptionDegree >= 3
-          ? 3
-          : systemData.corruptionDegree >= 2
-            ? 1
-            : 0;
-      if (corruptionDarkSP && systemData.schools?.dark) {
-        systemData.schools.dark.bonus += corruptionDarkSP;
-      }
-
-      for (const [key, school] of Object.entries(systemData.schools)) {
-        if (key !== "blood") {
-          schoolBonus += calcSchool[school.value]; // Add based on school value
-          school.spellPower =
-            spellPowerSchool[school.value] +
-            school.bonus +
-            (systemData.baseSpellPower || 0) +
-            Math.floor(int / 2);
-        }
-        if (key === "blood") {
-          schoolBonus += calcSchool[school.value]; // Add based on school value
-          school.spellPower =
-            spellPowerSchool[school.value] +
-            school.bonus +
-            Math.max(Math.floor(int / 2), Math.floor(wil / 2));
-        }
-      }
       let magicDoctrine = systemData.doctrines;
       const maxValue = Math.max(
         magicDoctrine.elymas.value || 0,
@@ -1628,22 +1634,6 @@ export class RedsteelActor extends Actor {
         ch.attack = (ch.attack ?? 0) + corruptionMagicMod;
         ch.defense = (ch.defense ?? 0) + corruptionMagicMod;
       }
-    }
-
-    // Blood magic is its own path: the Blood School specialisation grants
-    // access to Blood Spell Power independent of magicPotential. Blood is no
-    // longer a progressable school (no school rank), so its Spell Power comes
-    // from the specialisation's `schools.blood.bonus` passives plus INT/WIL.
-    // When magicPotential is set the loop above already computed it identically
-    // (spellPowerSchool[0] = 0), so only fill it in for the non-mage case here.
-    if (
-      systemData.specialisations?.bloodSchool?.active &&
-      !systemData.magicPotential
-    ) {
-      const blood = systemData.schools.blood;
-      blood.spellPower =
-        (blood.bonus || 0) +
-        Math.max(Math.floor(int / 2), Math.floor(wil / 2));
     }
 
     // Surface the Blood Manipulation casting skill on the sheet only for Blood

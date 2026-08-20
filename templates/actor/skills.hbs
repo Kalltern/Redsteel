@@ -742,12 +742,14 @@
         {{/if}}
       {{/with}}
 
-      {{!-- Spell Power per school, for schools with at least one level, plus
-            Blood when its specialisation is active (Blood has no school rank). --}}
-      {{#if (or (hasLeveledEntries system.schools) system.specialisations.bloodSchool.active)}}
+      {{!-- Spell Power per school: schools with at least one level, schools the
+            character owns a spell in (a racial-trait spell is enough — no magic
+            potential required), plus Blood when its specialisation is active
+            (Blood has no school rank). --}}
+      {{#if (or (hasLeveledEntries system.schools) hasSpellSchoolsOwned system.specialisations.bloodSchool.active)}}
       <h5>{{localize "REDSTEEL.Actor.Character.schools.spellPower.label"}} <span>Rating</span></h5>
       {{#each system.schools as |school key|}}
-        {{#if (or (gt school.value 0) (and (eq key "blood") @root.system.specialisations.bloodSchool.active))}}
+        {{#if (or (gt school.value 0) (lookup @root.spellSchoolsOwned key) (and (eq key "blood") @root.system.specialisations.bloodSchool.active))}}
         <div class="skill-entry flexrow">
           <label class="skill-label flexlarge align-left skill-name" data-label="{{key}}-spellpower" data-tt-kind="skill" data-tt-id="{{key}}">
             {{localize (concat 'REDSTEEL.Actor.Character.schools.' key '.label')}}

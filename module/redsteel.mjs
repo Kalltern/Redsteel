@@ -160,6 +160,7 @@ import {
   resumeMentalDuel,
 } from "./utils/mentalDuel.mjs";
 import { getSpellPower } from "./utils/spellPower.mjs";
+import { registerTabVisibilityConfig } from "./utils/tabVisibility.mjs";
 import {
   getBaneProfile,
   actorMatchesBane,
@@ -506,6 +507,9 @@ Hooks.on("renderApplicationV2", (app, element) => {
     localizeItemDirectoryNames(element);
   }
 });
+
+// Adds the per-actor tab visibility rows to core's "Configure Sheet" dialog.
+registerTabVisibilityConfig();
 
 /* -------------------------------------------- */
 /*  Redsteel Specific Game settings                  */

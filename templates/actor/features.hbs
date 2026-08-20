@@ -191,8 +191,10 @@
           class="reroll-box {{#unless pool.remaining}}depleted{{/unless}}"
           data-item-id="{{pool.itemId}}"
           data-pool-index="{{pool.poolIndex}}"
+          data-pool-key="{{pool.key}}"
           data-action="toggleReroll"
-          title="Click to spend or restore one reroll"
+          draggable="true"
+          title="Click to spend or restore one reroll — drag to reorder"
         >
           <img class="reroll-box-icon" src="{{pool.img}}" width="36" height="36" />
           <span class="reroll-box-name">

@@ -11,6 +11,7 @@ import {
   toggleRerollCharge,
   getEligibleRerolls,
   consumeReroll,
+  setActorRerollOrder,
 } from "../utils/rerolls.mjs";
 import { scheduleRerollRefresh } from "../utils/calendariaIntegration.mjs";
 import {
@@ -1420,6 +1421,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     // Don't show the other tabs if only limited view
     if (this.document.limited) {
       options.parts.push("biography");
+      options.parts = this._applyTabVisibility(options.parts);
       return;
     }
     // Control which parts show based on document subtype
@@ -1450,6 +1452,33 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
         );
         break;
     }
+    options.parts = this._applyTabVisibility(options.parts);
+  }
+
+  /**
+   * Drop the tabs the GM has switched off for this actor in the Configure Sheet
+   * dialog (see utils/tabVisibility.mjs): "gm" keeps a tab for the GM alone,
+   * "hidden" removes it for everyone.
+   *
+   * The part is filtered out before rendering rather than hidden with CSS, so
+   * the panel is genuinely absent from the sheet instead of sitting one devtools
+   * click away. It is still not a permission boundary: Foundry syncs the actor
+   * document itself to every user who can see the actor, so this declutters a
+   * sheet, it does not keep a secret. Config is hideable like the rest, since
+   * the control lives in a dialog no tab setting can reach.
+   *
+   * @param {string[]} parts Parts about to be rendered.
+   * @returns {string[]} The parts that survive this actor's configuration.
+   * @protected
+   */
+  _applyTabVisibility(parts) {
+    const modes = this.document.system?.tabVisibility ?? {};
+    return parts.filter((partId) => {
+      const mode = modes[partId];
+      if (mode === "hidden") return false;
+      if (mode === "gm") return game.user.isGM;
+      return true;
+    });
   }
 
   /* -------------------------------------------- */
@@ -1998,8 +2027,11 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     // If you have sub-tabs this is necessary to change
     const tabGroup = "primary";
     const tabSpellGroup = "spells-subtabs";
-    // Default tab for first time it's rendered this session
-    if (!this.tabGroups[tabGroup]) {
+    // Default tab for first time it's rendered this session. The active tab is
+    // also reset when it is no longer among the rendered parts — Sheet
+    // configuration can remove the very tab the sheet was last left on, and
+    // without this the sheet would open with no panel showing at all.
+    if (!this.tabGroups[tabGroup] || !parts.includes(this.tabGroups[tabGroup])) {
       this.tabGroups[tabGroup] = parts.includes("skills")
         ? "skills"
         : "biography";
@@ -2066,16 +2098,21 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
           tab.id = "spells";
           tab.label += "Spells";
 
-          // Shown for mages (magicPotential) and for Blood mages — the Blood
+          // Shown for mages (magicPotential), for Blood mages — the Blood
           // School specialisation is its own path to spellcasting, independent
-          // of magicPotential.
+          // of magicPotential — and for anyone who simply owns a spell, e.g.
+          // a racial trait that grants one spell to a non-caster. Divine
+          // spells do not count: miracles have their own tab.
           {
             const hasMagic =
               this.actor.system.magicPotential &&
               this.actor.system.magicPotential > 0;
             const bloodActive =
               !!this.actor.system.specialisations?.bloodSchool?.active;
-            if (!hasMagic && !bloodActive) {
+            const ownsSpell = this.actor.items.some(
+              (i) => i.type === "spell" && i.system?.option !== "divine",
+            );
+            if (!hasMagic && !bloodActive && !ownsSpell) {
               tab.cssClass += " hidden"; // Add 'hidden' class to tab
             }
           }
@@ -2223,6 +2260,18 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     context.supplies = supplies.sort((a, b) => (a.sort || 0) - (b.sort || 0));
     context.race = race.sort((a, b) => (a.sort || 0) - (b.sort || 0));
 
+    // Schools the character actually owns spells in. Drives the per-school
+    // Spell Power rows under Combat statistics: Spell Power is computed for
+    // every school on every character, but a school is only worth showing once
+    // the character has a spell that scales off it (or a rank in it).
+    const spellSchoolsOwned = {};
+    for (const spell of spells) {
+      const school = spell.system?.type;
+      if (school) spellSchoolsOwned[school] = true;
+    }
+    context.spellSchoolsOwned = spellSchoolsOwned;
+    context.hasSpellSchoolsOwned = Object.keys(spellSchoolsOwned).length > 0;
+
     // Flattened reroll pools across all features, one entry per pool, for the
     // merged reroll display on the Features tab.
     context.rerollPools = getActorRerollPools(this.actor);
@@ -2328,6 +2377,88 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       );
   }
 
+  /**
+   * Features → Rerolls: drag one box onto another to reorder the grid. The
+   * order lives on the actor (a flag of pool keys), not on the feature items,
+   * so it survives the items being edited and doubles as the priority order the
+   * reroll prompt lists pools in.
+   *
+   * Hand-bound rather than routed through the sheet's item DragDrop: nothing is
+   * being moved between documents here, and the item drop path would try to
+   * sort the owning feature instead of the pool.
+   */
+  #bindRerollReorder(root) {
+    const grid = root.querySelector(".reroll-grid");
+    if (!grid || !this.isEditable) return;
+
+    const boxes = () =>
+      Array.from(grid.querySelectorAll(".reroll-box[data-pool-key]"));
+    const clearMarkers = () =>
+      boxes().forEach((el) => el.classList.remove("drop-before", "drop-after"));
+    // Which side of the hovered box the dragged pool would land on. The grid
+    // wraps into columns, so the split is horizontal.
+    const isAfter = (box, event) => {
+      const rect = box.getBoundingClientRect();
+      return event.clientX > rect.left + rect.width / 2;
+    };
+
+    for (const box of boxes()) {
+      box.addEventListener("dragstart", (event) => {
+        // Our own drag: the sheet-level item DragDrop must never see it.
+        event.stopPropagation();
+        this.#rerollDragKey = box.dataset.poolKey;
+        event.dataTransfer.effectAllowed = "move";
+        // Chrome refuses to start a drag with an empty payload.
+        event.dataTransfer.setData("text/plain", box.dataset.poolKey);
+        box.classList.add("dragging");
+      });
+
+      box.addEventListener("dragend", () => {
+        this.#rerollDragKey = null;
+        box.classList.remove("dragging");
+        clearMarkers();
+      });
+
+      box.addEventListener("dragover", (event) => {
+        if (!this.#rerollDragKey) return;
+        event.preventDefault();
+        event.stopPropagation();
+        event.dataTransfer.dropEffect = "move";
+        clearMarkers();
+        if (box.dataset.poolKey !== this.#rerollDragKey)
+          box.classList.add(isAfter(box, event) ? "drop-after" : "drop-before");
+      });
+
+      box.addEventListener("dragleave", (event) => {
+        if (event.relatedTarget && box.contains(event.relatedTarget)) return;
+        box.classList.remove("drop-before", "drop-after");
+      });
+
+      box.addEventListener("drop", async (event) => {
+        const dragged = this.#rerollDragKey;
+        if (!dragged) return;
+        // Keep the sheet-level drop handler (weapon slots, item sorting) out.
+        event.preventDefault();
+        event.stopPropagation();
+        clearMarkers();
+        this.#rerollDragKey = null;
+        const targetKey = box.dataset.poolKey;
+        if (!targetKey || targetKey === dragged) return;
+
+        const order = boxes()
+          .map((el) => el.dataset.poolKey)
+          .filter((key) => key !== dragged);
+        const at = order.indexOf(targetKey) + (isAfter(box, event) ? 1 : 0);
+        if (at < 0) return;
+        order.splice(at, 0, dragged);
+        await setActorRerollOrder(this.actor, order);
+      });
+    }
+  }
+
+  /** Pool key currently being dragged in the Rerolls grid, null otherwise. */
+  #rerollDragKey = null;
+
   _onRender(context, options) {
     super._onRender?.(context, options);
 
@@ -2346,6 +2477,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       root.addEventListener("contextmenu", this._boundRightClick);
       this.#bindShieldControls(root);
       this.#bindAlchemyControls(root);
+      this.#bindRerollReorder(root);
       // Lets the delegated tooltip engine resolve the owning actor without
       // reaching into application-registry internals.
       root.dataset.ttActorUuid = this.actor.uuid;

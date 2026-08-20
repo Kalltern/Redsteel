@@ -399,6 +399,13 @@
         "Config": "Config",
         "Specialisations": "Specialisations"
       },
+      "SheetConfig": {
+        "Title": "Sheet configuration",
+        "Hint": "Which tabs this sheet shows. A tab set to GM only or Hidden is not rendered for those users at all.",
+        "Visible": "Visible",
+        "GmOnly": "GM only",
+        "Hidden": "Hidden"
+      },
       "Inventory": {
         "Ammo": "Ammo",
         "Accessories": "Accessories",

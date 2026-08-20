@@ -399,6 +399,13 @@
         "Config": "Nastavení",
         "Specialisations": "Specializace"
       },
+      "SheetConfig": {
+        "Title": "Nastavení listu",
+        "Hint": "Které záložky se na tomto listu zobrazí. Záložka nastavená na Jen pro GM nebo Skrytá se daným uživatelům vůbec nevykreslí.",
+        "Visible": "Viditelná",
+        "GmOnly": "Jen pro GM",
+        "Hidden": "Skrytá"
+      },
       "Inventory": {
         "Ammo": "Munice",
         "Accessories": "Doplňky",

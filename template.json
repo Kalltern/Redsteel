@@ -119,6 +119,11 @@
 
     "character": {
       "skillvisibility": true,
+      "tabVisibility": {
+        "biography": "visible",
+        "config": "visible",
+        "effects": "visible"
+      },
       "dodgeLimit": {
         "value": 50,
         "bonus": 0,
@@ -1015,6 +1020,10 @@
     },
     "npc": {
       "templates": ["base"],
+      "tabVisibility": {
+        "biography": "visible",
+        "effects": "visible"
+      },
       "baneTypes": "",
       "autoDefense": true,
       "cr": 0,

@@ -232,6 +232,7 @@ export function getFeatureRerollPools(item) {
       return {
         itemId: item.id,
         poolIndex,
+        key: `${item.id}:${poolIndex}`,
         label: pool?.label || (universal ? "Universal" : item.name),
         img: item.img,
         skills,
@@ -256,6 +257,7 @@ export function getFeatureRerollPools(item) {
     {
       itemId: item.id,
       poolIndex: -1, // sentinel: legacy pool, persisted via `active[]`
+      key: `${item.id}:-1`,
       label: reroll.name || item.name,
       img: item.img,
       skills: [],
@@ -276,7 +278,49 @@ export function getFeatureRerollPools(item) {
 }
 
 /**
- * All reroll pools an actor owns, flattened across its feature items.
+ * Actor flag holding the player's own ordering of reroll pools: an array of
+ * pool keys ("<itemId>:<poolIndex>"), best-first. Keys that no longer resolve
+ * to a pool are ignored, and pools missing from the list (a feature gained
+ * after the last reorder) fall in behind the ordered ones in item order.
+ */
+export const REROLL_ORDER_FLAG = "rerollOrder";
+
+/** The stored ordering, or an empty array when the actor has never reordered. */
+export function getActorRerollOrder(actor) {
+  const order = actor?.getFlag?.("redsteel", REROLL_ORDER_FLAG);
+  return Array.isArray(order) ? order.filter((k) => typeof k === "string") : [];
+}
+
+/**
+ * Persist a new ordering of reroll pools.
+ * @param {Actor} actor
+ * @param {string[]} keys  Pool keys in display order.
+ */
+export async function setActorRerollOrder(actor, keys) {
+  if (!actor) return;
+  await actor.setFlag("redsteel", REROLL_ORDER_FLAG, [...keys]);
+}
+
+/**
+ * Apply the actor's stored ordering to a list of pools. Stable: pools with no
+ * stored rank keep their relative order at the end of the list.
+ * @param {Actor} actor
+ * @param {object[]} pools
+ */
+function sortByActorOrder(actor, pools) {
+  const order = getActorRerollOrder(actor);
+  if (!order.length) return pools;
+  const rank = new Map(order.map((key, i) => [key, i]));
+  return pools
+    .map((pool, i) => ({ pool, i, rank: rank.get(pool.key) ?? Infinity }))
+    .sort((a, b) => a.rank - b.rank || a.i - b.i)
+    .map((entry) => entry.pool);
+}
+
+/**
+ * All reroll pools an actor owns, flattened across its feature items and put in
+ * the player's own order (see {@link setActorRerollOrder}). The Features tab and
+ * the reroll prompt both read this, so a reorder is also a priority order.
  * @param {Actor} actor
  */
 export function getActorRerollPools(actor) {
@@ -287,7 +331,7 @@ export function getActorRerollPools(actor) {
     // Skip empty pools (max 0) so the display only shows real reroll sources.
     out.push(...getFeatureRerollPools(item).filter((pool) => pool.max > 0));
   }
-  return out;
+  return sortByActorOrder(actor, out);
 }
 
 /**
