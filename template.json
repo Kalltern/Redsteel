@@ -1584,7 +1584,8 @@
     "item": {
       "templates": ["base"],
       "quantity": 1,
-      "rations": false
+      "rations": false,
+      "difficulty": 0
     },
     "recipe": {
       "templates": ["base"],
@@ -1603,7 +1604,8 @@
       },
       "specialIngredient": { "name": "", "uuid": "" },
       "base": "none",
-      "baseOptions": ["none", "fat", "strongAlcohol", "distillate"]
+      "baseOptions": ["none", "fat", "strongAlcohol", "distillate", "dreamDew"],
+      "yield": 1
     },
     "ammunition": {
       "templates": ["base"],

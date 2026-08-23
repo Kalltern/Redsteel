@@ -20,7 +20,17 @@
  * The pre-fall initiative is stashed on the combatant so standing up puts the
  * character back where they were instead of leaving them pinned at 1 for the
  * rest of the fight.
+ *
+ * Nothing is ever re-sorted underneath a running turn. Lowering the *active*
+ * combatant to 1 moves them to the bottom of the order and core keeps the turn
+ * pointer on them, which jumps play to the end of the round and skips everyone
+ * in between. So a fall taken on your own turn defers the drop to the round
+ * start, and if the fall also takes you out of the fight (Downed,
+ * Incapacitated) the turn is ended first so play moves on to the next
+ * combatant.
  */
+
+import { combatantsForActor } from "./combatants.mjs";
 
 /**
  * Statuses that pin turn order to 1 while present. Downed and Incapacitated
@@ -28,6 +38,14 @@
  * unconsciousness can arrive from a head crit with neither of the other two.
  */
 export const FLOOR_STATUSES = ["prone", "downed", "incapacitated"];
+
+/**
+ * Floor statuses that also end the character's turn. At 0 health (Downed) or
+ * unconscious (Incapacitated) there is nothing left to spend the turn on, so
+ * play should move to the next combatant instead of sitting on a body. Prone
+ * is deliberately absent: a prone character still has their turn to use.
+ */
+export const TURN_ENDING_STATUSES = ["downed", "incapacitated"];
 
 /** The initiative a floored combatant is held at. */
 export const FLOOR_INITIATIVE = 1;
@@ -63,6 +81,62 @@ export function isFloorEffect(effect) {
 export function isFloored(actor, { ignoreId = null } = {}) {
   if (!actor) return false;
   return actor.effects.some((e) => e.id !== ignoreId && isFloorEffect(e));
+}
+
+/**
+ * Whether the actor carries a status that takes them out of the fight for the
+ * rest of their turn. Same effect-collection read as `isFloored`, including the
+ * legacy `core.statusId` flag.
+ * @param {Actor}  actor
+ * @param {object} [options]
+ * @param {string} [options.ignoreId]  Effect id to treat as already gone.
+ * @returns {boolean}
+ */
+function isOutOfAction(actor, { ignoreId = null } = {}) {
+  if (!actor) return false;
+  return actor.effects.some((e) => {
+    if (e.id === ignoreId) return false;
+    const legacy = e.getFlag?.("core", "statusId");
+    return TURN_ENDING_STATUSES.some(
+      (st) => e.statuses?.has(st) || legacy === st,
+    );
+  });
+}
+
+/**
+ * Whether this combatant is the one whose turn is running right now.
+ * @param {Combat}    combat
+ * @param {Combatant} combatant
+ * @returns {boolean}
+ */
+function isActiveCombatant(combat, combatant) {
+  return combat.started === true && combat.combatant?.id === combatant.id;
+}
+
+/**
+ * Combatants whose turn is already being ended. `nextTurn` fires the whole
+ * turn-change chain, which can re-enter this module (a round rollover runs the
+ * round-start sync), so without this guard one fall could advance the turn
+ * twice.
+ * @type {Set<string>}
+ */
+const turnEndsInFlight = new Set();
+
+/**
+ * End the turn of the combatant who just went down.
+ * @param {Combat}    combat
+ * @param {Combatant} combatant
+ * @returns {Promise<boolean>} Whether the turn was actually advanced.
+ */
+async function endTurnFor(combat, combatant) {
+  if (turnEndsInFlight.has(combatant.id)) return false;
+  turnEndsInFlight.add(combatant.id);
+  try {
+    await combat.nextTurn();
+  } finally {
+    turnEndsInFlight.delete(combatant.id);
+  }
+  return true;
 }
 
 /**
@@ -114,18 +188,36 @@ export async function syncFloorInitiative(
   if (!actor || !combat) return;
   if (!game.user.isGM || game.user.id !== game.users.activeGM?.id) return;
 
-  const combatants = combat.combatants.filter((c) => c.actorId === actor.id);
+  const combatants = combatantsForActor(actor, combat);
   if (!combatants.length) return;
 
   const floored = isFloored(actor, { ignoreId });
+  const outOfAction = floored && isOutOfAction(actor, { ignoreId });
   const updates = [];
   let dropped = false;
   let restored = false;
   let deferred = false;
+  let endedTurn = false;
 
   for (const combatant of combatants) {
     if (floored) {
       if (combatant.initiative === FLOOR_INITIATIVE) continue;
+
+      // Falling on your own turn. The drop must not happen now: it re-sorts
+      // the active combatant to the bottom of the order, core follows them
+      // with the turn pointer, and every combatant in between is skipped.
+      // Deferring to the round start costs nothing, because the round-start
+      // reroll uses the flat-1 formula for a floored actor anyway. Going down
+      // (as opposed to merely falling prone) also ends the turn, so the next
+      // combatant gets to act instead of the table waiting on a body.
+      if (isActiveCombatant(combat, combatant)) {
+        if (outOfAction && (await endTurnFor(combat, combatant))) {
+          endedTurn = true;
+        }
+        deferred = true;
+        continue;
+      }
+
       if (hasActedThisRound(combat, combatant)) {
         deferred = true;
         continue;
@@ -169,8 +261,14 @@ export async function syncFloorInitiative(
     }
   }
 
+  if (endedTurn) {
+    ui.notifications.info(
+      `${actor.name} goes down on their own turn. Their turn ends, and they drop to initiative 1 at the start of the next round.`,
+    );
+  }
+
   if (!updates.length) {
-    if (deferred) {
+    if (deferred && !endedTurn) {
       ui.notifications.info(
         `${actor.name} is on the floor — they drop to initiative 1 at the start of the next round.`,
       );
@@ -224,6 +322,10 @@ export function registerFloorInitiativeClamp() {
 
     const combat = combatant.parent;
     if (combat && hasActedThisRound(combat, combatant)) return;
+    // Same reason the sync defers: clamping the combatant whose turn is
+    // running re-sorts them out from under the turn pointer. The round-start
+    // sync picks them up instead.
+    if (combat && isActiveCombatant(combat, combatant)) return;
 
     const update = { initiative: FLOOR_INITIATIVE };
     const prior = combatant.getFlag("redsteel", PRIOR_FLAG);

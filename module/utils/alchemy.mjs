@@ -102,7 +102,46 @@ export const BASES = {
     icon: "icons/consumables/drinks/alcohol-jar-spirits-gray.webp",
     names: ["distillate", "destilát", "destilat"],
   },
+  // The one base that is itself brewed. A crafted unit is a single dose, so
+  // the recipe carries `yield: 2` rather than this holding two uses — that way
+  // a spoiled or traded dose is one item, not half a bottle.
+  dreamDew: {
+    usesPerUnit: 1,
+    labelKey: "REDSTEEL.Alchemy.Base.DreamDew",
+    icon: "icons/consumables/potions/potion-flask-corked-cyan.webp",
+    names: ["dream dew", "snová rosa", "snova rosa"],
+  },
 };
+
+/**
+ * Bases that may be spent in place of another, keyed by the base a recipe
+ * actually names. The recipe's own base is always drained first: a substitute
+ * is what you fall back on, never what gets burned while the real stock sits
+ * in the pack.
+ */
+export const BASE_SUBSTITUTES = {
+  distillate: ["dreamDew"],
+};
+
+/**
+ * Every base key a recipe asking for `baseKey` may be paid with, preferred
+ * first. Empty for a recipe with no base at all.
+ * @param {string|null} baseKey
+ * @returns {string[]}
+ */
+export function getAcceptedBases(baseKey) {
+  if (!baseKey || baseKey === "none" || !BASES[baseKey]) return [];
+  return [baseKey, ...(BASE_SUBSTITUTES[baseKey] ?? []).filter((k) => BASES[k])];
+}
+
+/** "Distillate / Dream dew" — what the craft panel calls a substitutable base. */
+export function getBaseLabel(baseKey) {
+  const keys = getAcceptedBases(baseKey);
+  if (!keys.length) return game.i18n.localize(BASES[baseKey]?.labelKey ?? baseKey);
+  return keys
+    .map((k) => game.i18n.localize(BASES[k].labelKey))
+    .join(" / ");
+}
 
 /**
  * Vessels the product is made in. Unlike a base, a vessel has no "uses": one
@@ -309,6 +348,18 @@ export function getBaseUses(actor, baseKey) {
   }, 0);
 }
 
+/**
+ * Base uses a recipe naming `baseKey` may actually spend: the base itself plus
+ * everything allowed to stand in for it. This — not {@link getBaseUses} — is
+ * what the craft panel and the requirement check read.
+ */
+export function getUsableBaseUses(actor, baseKey) {
+  return getAcceptedBases(baseKey).reduce(
+    (sum, key) => sum + getBaseUses(actor, key),
+    0,
+  );
+}
+
 /** Owned stacks of one vessel (flag first, name fallback). */
 export function findVesselItems(actor, vesselKey) {
   const def = VESSELS[vesselKey];
@@ -332,6 +383,16 @@ export function getVesselCount(actor, vesselKey) {
 /** The vessel key a recipe's output needs, or null. */
 export function getRecipeVessel(recipe) {
   return OUTPUT_VESSEL[recipe?.system?.outputType || "potion"] ?? null;
+}
+
+/**
+ * Units one successful craft of a single batch unit hands over. Almost every
+ * recipe is 1; a recipe whose rules line reads "-> 2 doses" carries 2, and a
+ * duplicated unit yields the same again — the Alchemist node duplicates the
+ * product of a unit, not one dose of it.
+ */
+export function getRecipeYield(recipe) {
+  return Math.max(1, Number(recipe?.system?.yield) || 1);
 }
 
 /** Owned special-ingredient stack matched by name (case-insensitive). */
@@ -596,10 +657,10 @@ export function getCraftIngredients(actor, recipe, amount = 1) {
   if (baseKey) {
     lines.push({
       key: `base-${baseKey}`,
-      label: game.i18n.localize(BASES[baseKey]?.labelKey ?? baseKey),
+      label: getBaseLabel(baseKey),
       icon: BASES[baseKey]?.icon ?? FALLBACK_INGREDIENT_ICON,
       need: amount,
-      have: getBaseUses(actor, baseKey),
+      have: getUsableBaseUses(actor, baseKey),
     });
   }
 
@@ -668,10 +729,10 @@ export function checkCraftRequirements(actor, recipe, amount) {
 
   const baseKey = sys.base && sys.base !== "none" ? sys.base : null;
   if (baseKey) {
-    const have = getBaseUses(actor, baseKey);
+    const have = getUsableBaseUses(actor, baseKey);
     if (have < amount) {
       missing.push({
-        label: game.i18n.localize(BASES[baseKey]?.labelKey ?? baseKey),
+        label: getBaseLabel(baseKey),
         need: amount,
         have,
       });
@@ -735,10 +796,31 @@ async function consumeFromStacks(stacks, amount) {
   return taken;
 }
 
-/** Spend `uses` base uses, tracking partial units via baseUsesSpent. */
+/**
+ * Spend `uses` base uses, draining the recipe's own base first and only then
+ * whatever may stand in for it.
+ * @returns {Promise<{key: string, uses: number}[]>} what each base gave up.
+ */
 async function consumeBaseUses(actor, baseKey, uses) {
+  const spent = [];
+  let left = uses;
+  for (const key of getAcceptedBases(baseKey)) {
+    if (left <= 0) break;
+    const taken = await consumeOneBase(actor, key, left);
+    if (taken > 0) spent.push({ key, uses: taken });
+    left -= taken;
+  }
+  return spent;
+}
+
+/**
+ * Spend up to `uses` uses of ONE base, tracking partial units via
+ * baseUsesSpent.
+ * @returns {Promise<number>} uses actually taken.
+ */
+async function consumeOneBase(actor, baseKey, uses) {
   const def = BASES[baseKey];
-  if (!def) return;
+  if (!def) return 0;
   let left = uses;
   for (const item of findBaseItems(actor, baseKey)) {
     if (left <= 0) break;
@@ -759,6 +841,7 @@ async function consumeBaseUses(actor, baseKey, uses) {
         "flags.redsteel.baseUsesSpent": spent,
       });
   }
+  return uses - left;
 }
 
 /**
@@ -779,10 +862,14 @@ async function consumeIngredients(actor, recipe, amount) {
 
   const baseKey = sys.base && sys.base !== "none" ? sys.base : null;
   if (baseKey) {
-    await consumeBaseUses(actor, baseKey, amount);
-    spent.push(
-      `${amount}× ${game.i18n.localize(BASES[baseKey]?.labelKey ?? baseKey)} (${game.i18n.localize("REDSTEEL.Alchemy.Chat.Uses")})`,
-    );
+    // Name the base that was actually drained: with a substitute in play the
+    // recipe's own base is not always what left the pack.
+    const usedBases = await consumeBaseUses(actor, baseKey, amount);
+    for (const used of usedBases) {
+      spent.push(
+        `${used.uses}× ${game.i18n.localize(BASES[used.key]?.labelKey ?? used.key)} (${game.i18n.localize("REDSTEEL.Alchemy.Chat.Uses")})`,
+      );
+    }
   }
 
   const vesselKey = getRecipeVessel(recipe);
@@ -1099,11 +1186,20 @@ async function sendCraftMessage(actor, subject, outcome, spentLines, { isReroll 
       })})</span>`
     : "";
 
+  // A recipe that makes more than one dose per unit says so, or the count on
+  // the card looks like the duplication node fired when it did not.
+  const yieldPer = Number(outcome.yield) || 1;
+  const yieldNote = yieldPer > 1
+    ? ` <span style="opacity:0.85;">(${i18n.format("REDSTEEL.Alchemy.Chat.Yield", {
+        count: yieldPer,
+      })})</span>`
+    : "";
+
   const resultLine = outcome.success
     ? `<p style="text-align:center;font-size:16px;"><b>${i18n.localize("REDSTEEL.Alchemy.Chat.Success")}</b> — ${i18n.format(
         "REDSTEEL.Alchemy.Chat.Created",
         { count: outcome.created ?? outcome.amount, name: outcome.resultName },
-      )}${dupNote}</p>`
+      )}${dupNote}${yieldNote}</p>`
     : `<p style="text-align:center;font-size:16px;"><b>${i18n.localize("REDSTEEL.Alchemy.Chat.Failure")}</b> — ${i18n.localize("REDSTEEL.Alchemy.Chat.IngredientsWasted")}</p>`;
 
   // Which specialisation boons were in play, so the table can audit the roll.
@@ -1186,6 +1282,7 @@ export async function craftRecipe(actor, recipe, { amount, stationKey }) {
     resultName: source.localizedName ?? source.name,
     duplication: mods.duplication,
     duplicated: 0,
+    yield: getRecipeYield(recipe),
     product: mods.product,
     productItem: productBoonTarget(source),
     created: 0,
@@ -1193,7 +1290,7 @@ export async function craftRecipe(actor, recipe, { amount, stationKey }) {
 
   if (test.success) {
     outcome.duplicated = await rollDuplication(mods.duplication, amount);
-    outcome.created = amount + outcome.duplicated;
+    outcome.created = (amount + outcome.duplicated) * outcome.yield;
     await deliverResult(actor, recipe, outcome.created, mods);
   }
 
@@ -1228,6 +1325,7 @@ export async function rerollCraft(actor, recipe, lastOutcome, { stationKey }) {
     resultName: source?.localizedName ?? source?.name ?? lastOutcome.resultName,
     duplication: mods.duplication,
     duplicated: 0,
+    yield: getRecipeYield(recipe),
     product: mods.product,
     productItem: productBoonTarget(source),
     created: 0,
@@ -1235,7 +1333,7 @@ export async function rerollCraft(actor, recipe, lastOutcome, { stationKey }) {
 
   if (test.success) {
     outcome.duplicated = await rollDuplication(mods.duplication, lastOutcome.amount);
-    outcome.created = lastOutcome.amount + outcome.duplicated;
+    outcome.created = (lastOutcome.amount + outcome.duplicated) * outcome.yield;
     await deliverResult(actor, recipe, outcome.created, mods);
   }
 

@@ -1,0 +1,33 @@
+{
+  "folder": "AVr000deYnum9gPL",
+  "name": "Dream dew",
+  "type": "item",
+  "img": "icons/consumables/potions/potion-flask-corked-cyan.webp",
+  "system": {
+    "description": "<p>Effect - Advanced base<br />Duration - 12 hours<br />Toxicity - 20<br />Production bonus - +10% -&gt; 2 doses<br />Ingredients - Strong alcohol, Pa, Al, Ve</p><p>A brewed alchemical base. One dose replaces one use of Distillate in any recipe that calls for it. The dew keeps for 12 hours after brewing; what is left over after that is spoiled. Drinking it is worth nothing but its 20 toxicity.</p>",
+    "quantity": 1,
+    "difficulty": 10,
+    "localizationKey": "REDSTEEL.Items.DreamDew.name"
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {
+    "redsteel": {
+      "alchBase": "dreamDew"
+    }
+  },
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.11.1",
+    "lastModifiedBy": null
+  },
+  "_id": "dreamDewBase0001",
+  "_key": "!items!dreamDewBase0001"
+}

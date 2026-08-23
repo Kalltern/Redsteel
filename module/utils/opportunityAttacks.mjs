@@ -27,6 +27,7 @@
  */
 
 import { ruleActive } from "./abilityGrants.mjs";
+import { combatantForActor } from "./combatants.mjs";
 
 /** Ability compendium UUID from a bare item id. */
 const A = (id) => `Compendium.redsteel.redsteel-items.Item.${id}`;
@@ -78,7 +79,7 @@ export function isOwnTurn(actor, token = null) {
   if (!combat?.started) return false;
   const combatant = token?.id
     ? combat.getCombatantByToken(token.id)
-    : combat.combatants.contents.find((c) => c.actorId === actor?.id);
+    : combatantForActor(actor, combat);
   if (!combatant) return false;
   return combat.combatant?.id === combatant.id;
 }
@@ -97,7 +98,7 @@ export function abilityUsageFit(actor, ability, token = null) {
   if (!combat?.started) return null;
   const combatant = token?.id
     ? combat.getCombatantByToken(token.id)
-    : combat.combatants.contents.find((c) => c.actorId === actor?.id);
+    : combatantForActor(actor, combat);
   if (!combatant) return null;
 
   const offTurn = combat.combatant?.id !== combatant.id;

@@ -1,6 +1,7 @@
 import { tagRollSkill } from "./rollAdvantage.mjs";
 import { resetActorRerolls } from "./rerolls.mjs";
 import { gainBloodFromBleed, bloodGainNote } from "./bloodPool.mjs";
+import { isActorInCombat } from "./combatants.mjs";
 
 export async function delayTurn() {
   const combat = game.combat;
@@ -1247,7 +1248,7 @@ const FA_APPLY_LABELS = {
 // the per-turn counter advance would never fire and the attempt would stall.
 function isCombatActive(actor) {
   if (!game.combat?.started) return false;
-  return game.combat.combatants.some((c) => c.actorId === actor?.id);
+  return isActorInCombat(actor, game.combat);
 }
 
 // Routes a combat-first-aid request to the GM (all mutations happen GM-side).

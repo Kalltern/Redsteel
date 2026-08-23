@@ -12,6 +12,7 @@ import {
   syncCombatFloorInitiative,
   registerFloorInitiativeClamp,
 } from "../utils/floorInitiative.mjs";
+import { combatantsForActor } from "../utils/combatants.mjs";
 import {
   openRoundDigest,
   setRoundDigestRound,
@@ -1796,11 +1797,8 @@ export class RedsteelActiveEffect extends ActiveEffect {
       effectId === "incapacitated" &&
       game.user.id === game.users.activeGM?.id
     ) {
-      const combatant = game.combat?.combatants.find(
-        (c) => c.actorId === actor.id,
-      );
-      if (combatant?.defeated) {
-        await combatant.update({ defeated: false });
+      for (const combatant of combatantsForActor(actor)) {
+        if (combatant.defeated) await combatant.update({ defeated: false });
       }
     }
 
@@ -2457,11 +2455,8 @@ export class RedsteelActiveEffect extends ActiveEffect {
     // Endurance test, Mind hitting 0 outside the Downed flow).
     await syncFloorInitiative(actor);
 
-    const combatant = game.combat?.combatants.find(
-      (c) => c.actorId === actor.id,
-    );
-    if (combatant && !combatant.defeated) {
-      await combatant.update({ defeated: true });
+    for (const combatant of combatantsForActor(actor)) {
+      if (!combatant.defeated) await combatant.update({ defeated: true });
     }
   }
 

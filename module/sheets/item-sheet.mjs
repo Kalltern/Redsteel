@@ -1342,6 +1342,18 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
       );
       return true;
     }
+    // A craftable base is an "item", not a consumable — Dream dew has to be
+    // findable by the base lookup, which only reads that type. It is the
+    // recipe RESULT, never the special ingredient.
+    if (dropped.type === "item" && dropped.getFlag?.("redsteel", "alchBase")) {
+      await this.item.update({ "system.resultUuid": dropped.uuid });
+      ui.notifications.info(
+        game.i18n.format("REDSTEEL.Alchemy.Recipe.ResultLinked", {
+          name: dropped.name,
+        }),
+      );
+      return true;
+    }
     if (dropped.type === "item") {
       await this.item.update({
         "system.specialIngredient": { name: dropped.name, uuid: dropped.uuid },

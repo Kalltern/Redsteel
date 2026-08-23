@@ -299,7 +299,8 @@
         "None": "No base",
         "Fat": "Fat",
         "StrongAlcohol": "Strong alcohol",
-        "Distillate": "Distillate"
+        "Distillate": "Distillate",
+        "DreamDew": "Dream dew"
       },
       "OutputType": {
         "Potion": "Potion",
@@ -352,6 +353,7 @@
         "Consumed": "Consumed",
         "Uses": "uses",
         "Duplicated": "+{count} duplicated at {chance}%",
+        "Yield": "{count} doses per unit",
         "Boons": "Specialisation",
         "Boon": {
           "Advantage": "advantage on the craft",
@@ -370,6 +372,8 @@
         "OutputType": "Output type",
         "Purpose": "Purpose",
         "PurposeHint": "Colours the recipe card on the Alchemy tab.",
+        "Yield": "Doses per unit",
+        "YieldHint": "Units handed over per crafted unit. Almost always 1.",
         "Base": "Alchemical base",
         "Result": "Result item",
         "Unlink": "Unlink",
@@ -3772,31 +3776,31 @@
         "SecondaryAttribute": {
           "Spd": {
             "long": "Speed",
-            "abbr": "spd"
+            "abbr": "SPD"
           },
           "Lck": {
             "long": "Luck",
-            "abbr": "lck"
+            "abbr": "LCK"
           },
           "Res": {
             "long": "Resolve",
-            "abbr": "res"
+            "abbr": "RES"
           },
           "Fth": {
             "long": "Faith",
-            "abbr": "fth"
+            "abbr": "FTH"
           },
           "Sin": {
             "long": "Sinfulness",
-            "abbr": "sin"
+            "abbr": "SIN"
           },
           "Vis": {
             "long": "Visage",
-            "abbr": "vis"
+            "abbr": "VIS"
           },
           "Ini": {
             "long": "Initiative",
-            "abbr": "ini"
+            "abbr": "INI"
           }
         },
         "skills": {
@@ -5492,6 +5496,14 @@
       },
       "Distillate": {
         "name": "Distillate"
+      },
+      "DreamDew": {
+        "name": "Dream dew",
+        "description": "<p>Effect - Advanced base<br />Duration - 12 hours<br />Toxicity - 20<br />Production bonus - +10% -&gt; 2 doses<br />Ingredients - Strong alcohol, Pa, Al, Ve</p><p>A brewed alchemical base. One dose replaces one use of Distillate in any recipe that calls for it. The dew keeps for 12 hours after brewing; what is left over after that is spoiled. Drinking it is worth nothing but its 20 toxicity.</p>"
+      },
+      "RecipeDreamDew": {
+        "name": "Recipe: Dream dew",
+        "description": "<p>Effect - Advanced base<br />Duration - 12 hours<br />Toxicity - 20<br />Production bonus - +10% -&gt; 2 doses<br />Ingredients - Strong alcohol, Pa, Al, Ve</p><p>A brewed alchemical base. One dose replaces one use of Distillate in any recipe that calls for it. The dew keeps for 12 hours after brewing; what is left over after that is spoiled. Drinking it is worth nothing but its 20 toxicity.</p>"
       },
       "Fat": {
         "name": "Fat"

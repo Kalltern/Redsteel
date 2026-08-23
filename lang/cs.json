@@ -299,7 +299,8 @@
         "None": "Bez základu",
         "Fat": "Tuk",
         "StrongAlcohol": "Silný alkohol",
-        "Distillate": "Destilát"
+        "Distillate": "Destilát",
+        "DreamDew": "Snová rosa"
       },
       "OutputType": {
         "Potion": "Lektvar",
@@ -352,6 +353,7 @@
         "Consumed": "Spotřebováno",
         "Uses": "použití",
         "Duplicated": "+{count} díky duplikaci na {chance}%",
+        "Yield": "{count} dávky na kus",
         "Boons": "Specializace",
         "Boon": {
           "Advantage": "výhoda na výrobu",
@@ -370,6 +372,8 @@
         "OutputType": "Typ výrobku",
         "Purpose": "Určení",
         "PurposeHint": "Obarví kartu receptu na záložce Alchymie.",
+        "Yield": "Dávek na kus",
+        "YieldHint": "Kolik kusů vydá jeden vyrobený kus. Téměř vždy 1.",
         "Base": "Alchymický základ",
         "Result": "Výsledný předmět",
         "Unlink": "Odebrat propojení",
@@ -3772,31 +3776,31 @@
         "SecondaryAttribute": {
           "Spd": {
             "long": "Rychlost",
-            "abbr": "spd"
+            "abbr": "RYCH"
           },
           "Lck": {
             "long": "Štěstí",
-            "abbr": "lck"
+            "abbr": "ŠTĚ"
           },
           "Res": {
             "long": "Nervy",
-            "abbr": "res"
+            "abbr": "NER"
           },
           "Fth": {
             "long": "Víra",
-            "abbr": "fth"
+            "abbr": "VÍR"
           },
           "Sin": {
             "long": "Hříšnost",
-            "abbr": "sin"
+            "abbr": "HŘÍ"
           },
           "Vis": {
             "long": "Vzhled",
-            "abbr": "vis"
+            "abbr": "VZH"
           },
           "Ini": {
             "long": "Iniciativa",
-            "abbr": "ini"
+            "abbr": "INI"
           }
         },
         "skills": {
@@ -5489,6 +5493,14 @@
       },
       "Distillate": {
         "name": "Destilát"
+      },
+      "DreamDew": {
+        "name": "Snová rosa",
+        "description": "<p>Účinek - Pokročilý základ<br />Trvání - 12 hodin<br />Toxicita - 20<br />Bonus k výrobě - +10% -&gt; 2 dávky<br />Složení - Silný alkohol, Pa, Al, Ve</p><p>Vyrobený alchymický základ. Jedna dávka nahradí jedno použití Destilátu v každém receptu, který ho vyžaduje. Rosa vydrží 12 hodin od uvaření, co zbyde potom, je zkažené. Vypít se dá, ale nezískáš tím nic než 20 toxicity.</p>"
+      },
+      "RecipeDreamDew": {
+        "name": "Recept: Snová rosa",
+        "description": "<p>Účinek - Pokročilý základ<br />Trvání - 12 hodin<br />Toxicita - 20<br />Bonus k výrobě - +10% -&gt; 2 dávky<br />Složení - Silný alkohol, Pa, Al, Ve</p><p>Vyrobený alchymický základ. Jedna dávka nahradí jedno použití Destilátu v každém receptu, který ho vyžaduje. Rosa vydrží 12 hodin od uvaření, co zbyde potom, je zkažené. Vypít se dá, ale nezískáš tím nic než 20 toxicity.</p>"
       },
       "Fat": {
         "name": "Tuk"

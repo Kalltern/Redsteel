@@ -17,6 +17,7 @@ import {
 } from "./aim.mjs";
 import { attackerTokenIdFromMessage } from "./overwhelm.mjs";
 import { gainBlood } from "./bloodPool.mjs";
+import { combatantForActor } from "./combatants.mjs";
 
 export const SOCKET = "system.redsteel";
 
@@ -1642,7 +1643,7 @@ export async function applyZeroHealthState(actor, { combatant } = {}) {
   }
 
   // Remove from combat if applicable
-  combatant ??= game.combat?.combatants.find((c) => c.actorId === actor.id);
+  combatant ??= combatantForActor(actor);
   if (combatant) {
     await combatant.parent.deleteEmbeddedDocuments("Combatant", [combatant.id]);
   }

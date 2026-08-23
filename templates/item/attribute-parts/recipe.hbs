@@ -33,6 +33,19 @@
       </select>
       <p class="hint">{{localize "REDSTEEL.Alchemy.Recipe.PurposeHint"}}</p>
     </div>
+
+    <div class="grid-span-1">
+      <label for="recipe-yield">{{localize "REDSTEEL.Alchemy.Recipe.Yield"}}:</label>
+      <input
+        type="number"
+        name="system.yield"
+        id="recipe-yield"
+        value="{{system.yield}}"
+        min="1"
+        data-dtype="Number"
+      />
+      <p class="hint">{{localize "REDSTEEL.Alchemy.Recipe.YieldHint"}}</p>
+    </div>
   </div>
 
   {{! ===== Result item (drop a consumable onto the sheet) ===== }}
