@@ -177,11 +177,15 @@ export const OUTPUT_VESSEL = {
   explosive: "container",
 };
 
-/** Alchemical stations and their flat roll modifiers (to be tuned later). */
+/**
+ * Alchemical stations: a flat roll modifier, plus how far the station pushes
+ * the critical-failure window up. Only the lab buys any safety, and no station
+ * can push the window past a natural 100 (see rollAlchemyTest).
+ */
 export const STATIONS = [
-  { key: "cauldron", mod: -10, labelKey: "REDSTEEL.Alchemy.Station.Cauldron" },
-  { key: "foldable", mod: 0,   labelKey: "REDSTEEL.Alchemy.Station.Foldable" },
-  { key: "lab",      mod: 15,  labelKey: "REDSTEEL.Alchemy.Station.Lab" },
+  { key: "cauldron", mod: -25, critRelief: 0, labelKey: "REDSTEEL.Alchemy.Station.Cauldron" },
+  { key: "foldable", mod: 0,   critRelief: 0, labelKey: "REDSTEEL.Alchemy.Station.Foldable" },
+  { key: "lab",      mod: 0,   critRelief: 5, labelKey: "REDSTEEL.Alchemy.Station.Lab" },
 ];
 
 /** Max units per craft action, by recipe output type. */
@@ -1015,13 +1019,17 @@ export async function deliverVessel(actor, vesselKey, amount = 1) {
 async function rollAlchemyTest(actor, stationKey, mods, difficulty = 0) {
   const skill = actor.system.skills?.alchemy ?? {};
   const rating = Number(skill.rating) || 0;
-  const stationMod = STATIONS.find((s) => s.key === stationKey)?.mod ?? 0;
+  const station = STATIONS.find((s) => s.key === stationKey);
+  const stationMod = Number(station?.mod) || 0;
+  const stationCritRelief = Number(station?.critRelief) || 0;
   const critSucc = Number(skill.criticalSuccessThreshold ?? 0);
-  // A {fam}KritNeuspech node pushes the fumble window up, out of reach.
+  // A {fam}KritNeuspech node and the lab both push the fumble window up, but a
+  // natural 100 always fumbles: no relief may carry the window past it.
   const critFail = Math.min(
-    101,
+    100,
     Number(skill.criticalFailureThreshold ?? 101) +
-      (Number(mods?.critFailureRelief) || 0),
+      (Number(mods?.critFailureRelief) || 0) +
+      stationCritRelief,
   );
 
   const total =
@@ -1049,7 +1057,10 @@ async function rollAlchemyTest(actor, stationKey, mods, difficulty = 0) {
     critFailure: d100 >= critFail,
     success: roll.total >= 0 && !(d100 >= critFail),
     advantage,
-    critFailureRelief: critFail - Number(skill.criticalFailureThreshold ?? 101),
+    // The boon line reports only what the specialisation node granted; the
+    // station relief is stated on the station line instead.
+    critFailureRelief: Number(mods?.critFailureRelief) || 0,
+    stationCritRelief,
   };
 }
 
@@ -1168,6 +1179,13 @@ async function sendCraftMessage(actor, subject, outcome, spentLines, { isReroll 
   const i18n = game.i18n;
   const station = STATIONS.find((s) => s.key === outcome.stationKey);
   const stationName = i18n.localize(station?.labelKey ?? outcome.stationKey);
+  // The lab shrinks the fumble window, so the card must say so or the table
+  // cannot audit a roll that came up high and did not fumble.
+  const stationRelief =
+    Number(outcome.stationCritRelief) || Number(station?.critRelief) || 0;
+  const stationNote = stationRelief
+    ? ` (${i18n.format("REDSTEEL.Alchemy.Station.CritRelief", { value: stationRelief })})`
+    : "";
   const critTxt = outcome.critSuccess
     ? ` · ${i18n.localize("REDSTEEL.Alchemy.Chat.CritSuccess")}`
     : outcome.critFailure
@@ -1223,7 +1241,7 @@ async function sendCraftMessage(actor, subject, outcome, spentLines, { isReroll 
     <div class="rs-alchemy-card">
       <p style="text-align:center;font-size:18px;"><b><i class="fa-light fa-flask"></i> ${i18n.localize(outcome.isSubstance ? "REDSTEEL.Alchemy.Substance.ChatTitle" : "REDSTEEL.Alchemy.Chat.Title")} — ${subject}</b></p>
       ${rerollTag}
-      <p style="text-align:center;font-size:12px;opacity:0.8;">${i18n.localize("REDSTEEL.Alchemy.Chat.UsedStation")}: ${stationName}${difficultyNote}</p>
+      <p style="text-align:center;font-size:12px;opacity:0.8;">${i18n.localize("REDSTEEL.Alchemy.Chat.UsedStation")}: ${stationName}${stationNote}${difficultyNote}</p>
       <p style="text-align:center;">d100: <b>${outcome.d100}</b> → ${i18n.localize("REDSTEEL.Alchemy.Chat.Margin")} <b>${fmtMargin(outcome.margin)}</b><span style="font-size:12px;opacity:0.8;">${critTxt}</span></p>
       ${resultLine}
       ${spentBlock}

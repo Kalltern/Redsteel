@@ -1,6 +1,6 @@
 {
   "folder": "eNR6Ak4yjoOYudB1",
-  "name": "Oak",
+  "name": "Mercy",
   "type": "consumable",
   "img": "icons/consumables/potions/bottle-bulb-corked-green.webp",
   "system": {
@@ -27,7 +27,7 @@
     "type": "",
     "toxicity": 10,
     "bleed": 100,
-    "localizationKey": "REDSTEEL.Items.Oak.name",
+    "localizationKey": "REDSTEEL.Items.Mercy.name",
     "difficulty": 0
   },
   "effects": [],

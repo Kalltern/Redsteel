@@ -4,7 +4,7 @@
   "type": "recipe",
   "img": "icons/consumables/potions/bottle-bulb-corked-glowing-red.webp",
   "system": {
-    "description": "<p>Effect - Heals 4d6+4 Health, doesn't stop Bleeding<br />Threshold - 2<br />(After drinking a Scarlet Tear that exceeds the threshold, its effectiveness is reduced by 50%. Another Scarlet Tear drunk has no effect.)<br />Duration - Immediate effect<br />Toxicity - 8<br />Production bonus - +20% -&gt; 1 dose<br />Ingredients - Strong alcohol, Be, Vi</p>",
+    "description": "<p>Effect - Heals 4d6+4 Health, doesn't stop Bleeding<br />Threshold - 2<br />(After drinking a Scarlet Tear that exceeds the threshold, its effectiveness is reduced by 50%. Another Scarlet Tear drunk has no effect.)<br />Duration - Immediate effect<br />Toxicity - 8<br />Production bonus - +20% -&gt; 1 dose<br />Ingredients - Strong alcohol, Be, Yl</p>",
     "outputType": "potion",
     "purpose": "healing",
     "resultUuid": "Compendium.redsteel.redsteel-items.Item.mQY5B85ioxIGc64B",

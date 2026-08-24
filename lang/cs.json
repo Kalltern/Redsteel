@@ -289,7 +289,8 @@
       "Station": {
         "Cauldron": "Kotlík",
         "Foldable": "Skládací alchymistická stanice",
-        "Lab": "Alchymistická laboratoř"
+        "Lab": "Alchymistická laboratoř",
+        "CritRelief": "-{value}% šance na kritický neúspěch"
       },
       "Vessel": {
         "Vial": "Flakónek",
@@ -5877,6 +5878,9 @@
       "Melancholic": {
         "name": "Melancholik"
       },
+      "Mercy": {
+        "name": "Milost"
+      },
       "MilitaryCleaver": {
         "name": "Vojenský sekáček"
       },
@@ -5903,9 +5907,6 @@
       },
       "NimbleFeet": {
         "name": "Hbité nohy"
-      },
-      "Oak": {
-        "name": "Dub"
       },
       "Ogroid": {
         "name": "Zlobrovití"

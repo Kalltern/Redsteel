@@ -1102,6 +1102,10 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     const stationName = i18n.localize(station?.labelKey ?? "");
     const stationMod = station?.mod ?? 0;
     const fmt = (n) => (n >= 0 ? `+${n}` : `${n}`);
+    const stationRelief = Number(station?.critRelief) || 0;
+    const stationNote = stationRelief
+      ? `, ${i18n.format("REDSTEEL.Alchemy.Station.CritRelief", { value: stationRelief })}`
+      : "";
 
     const DialogV2 = foundry.applications.api.DialogV2;
     const amount = await DialogV2.wait({
@@ -1117,7 +1121,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
             <input type="number" name="brew-amount" value="1" min="1" max="${max}" step="1" style="width:70px;">
           </label>
           <p style="font-size:12px; opacity:0.8; margin-top:6px;">
-            ${i18n.localize("REDSTEEL.Alchemy.Chat.UsedStation")}: ${stationName} (${fmt(stationMod)}%)<br>
+            ${i18n.localize("REDSTEEL.Alchemy.Chat.UsedStation")}: ${stationName} (${fmt(stationMod)}%${stationNote})<br>
             ${i18n.localize("REDSTEEL.Alchemy.Chat.Difficulty")}: ${fmt(SUBSTANCE_CRAFT_MOD)}%
             (${fmt(SUBSTANCE_BATCH_MOD)}% ${i18n.localize("REDSTEEL.Alchemy.Substance.BatchNote")})
           </p>
@@ -1838,7 +1842,14 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
         context.alchStations = STATIONS.map((s) => ({
           key: s.key,
           label: game.i18n.localize(s.labelKey),
-          modLabel: `${s.mod >= 0 ? "+" : ""}${s.mod}%`,
+          // The lab pays for itself with a smaller fumble window, not a
+          // bonus, so the option has to name it or the lab reads as no better
+          // than the foldable station.
+          modLabel: `${s.mod >= 0 ? "+" : ""}${s.mod}%${
+            s.critRelief
+              ? `, ${game.i18n.format("REDSTEEL.Alchemy.Station.CritRelief", { value: s.critRelief })}`
+              : ""
+          }`,
           selected: s.key === this._alchemyStation,
         }));
         context.alchStation = this._alchemyStation;
