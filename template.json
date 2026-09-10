@@ -119,6 +119,19 @@
     },
 
     "character": {
+      "progression": {
+        "earned": {
+          "cp": 0,
+          "sp": 0
+        },
+        "adjust": {
+          "cp": 0,
+          "sp": 0
+        },
+        "teachers": {},
+        "tracked": [],
+        "tracksSet": false
+      },
       "skillvisibility": true,
       "tabVisibility": {
         "biography": "visible",

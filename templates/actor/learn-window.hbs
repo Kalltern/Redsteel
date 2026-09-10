@@ -1,0 +1,317 @@
+{{!-- Learn window — the level-up screen.
+
+     ApplicationV2 requires each template part to render exactly ONE root
+     element, so the tab strip, the wallet bar and the grid all live inside
+     this wrapper. Splitting them back out to siblings throws "must render a
+     single HTML element". --}}
+<div class="rs-learn-body">
+
+  <nav class="rs-learn-tabs">
+    <button type="button" class="{{#if (eq tab 'combat')}}active{{/if}}"
+            data-action="switchTab" data-tab="combat">
+      {{localize "REDSTEEL.Learn.Tabs.combat"}}
+    </button>
+    <button type="button" class="{{#if (eq tab 'skills')}}active{{/if}}"
+            data-action="switchTab" data-tab="skills">
+      {{localize "REDSTEEL.Learn.Tabs.skills"}}
+    </button>
+    <button type="button" class="{{#if (eq tab 'features')}}active{{/if}}"
+            data-action="switchTab" data-tab="features">
+      {{localize "REDSTEEL.Learn.Tabs.features"}}
+    </button>
+    <button type="button" class="{{#if (eq tab 'specialisations')}}active{{/if}}"
+            data-action="switchTab" data-tab="specialisations">
+      {{localize "REDSTEEL.Learn.Tabs.specialisations"}}
+    </button>
+  </nav>
+
+  <div class="rs-learn-wallet">
+
+    <div class="rs-learn-purse">
+      <span class="rs-learn-stat">
+        <label>{{localize "REDSTEEL.Learn.level"}}</label>
+        <b>{{wallet.level}}</b>
+      </span>
+      <span class="rs-learn-stat">
+        <label>{{localize "REDSTEEL.Learn.cpRemaining"}}</label>
+        <b>{{wallet.remaining.cp}}</b>
+        <em>/ {{wallet.earned.cp}}</em>
+      </span>
+      <span class="rs-learn-stat">
+        <label>{{localize "REDSTEEL.Learn.spRemaining"}}</label>
+        <b>{{wallet.remaining.sp}}</b>
+        <em>/ {{wallet.earned.sp}}</em>
+      </span>
+    </div>
+
+    <div class="rs-learn-ledger">
+      {{#if isGM}}
+      <span class="rs-learn-field">
+        <label>{{localize "REDSTEEL.Learn.earnedCp"}}</label>
+        <input type="number" name="system.progression.earned.cp" value="{{wallet.earned.cp}}" step="1">
+      </span>
+      <span class="rs-learn-field">
+        <label>{{localize "REDSTEEL.Learn.earnedSp"}}</label>
+        <input type="number" name="system.progression.earned.sp" value="{{wallet.earned.sp}}" step="1">
+      </span>
+      <span class="rs-learn-field">
+        <label>{{localize "REDSTEEL.Learn.adjustCp"}}</label>
+        <input type="number" name="system.progression.adjust.cp" value="{{adjust.cp}}" step="1">
+      </span>
+      <span class="rs-learn-field">
+        <label>{{localize "REDSTEEL.Learn.adjustSp"}}</label>
+        <input type="number" name="system.progression.adjust.sp" value="{{adjust.sp}}" step="1">
+      </span>
+      {{/if}}
+    </div>
+
+  </div>
+
+  {{#if isContentTab}}
+
+  {{#if picking}}
+  {{!-- The track picker. Choosing here only decides what this window shows;
+        it never touches the sheet's own visibility, because a character may
+        roll a skill they have never bought a rank in. --}}
+  <div class="rs-learn-picker">
+
+    <header class="rs-learn-picker-head">
+      <p class="rs-learn-picker-hint">{{localize "REDSTEEL.Learn.pickerHint"}}</p>
+      <span class="rs-learn-picker-actions">
+        <button type="button" data-action="savePicker">
+          {{localize "REDSTEEL.Learn.pickerDone"}}
+        </button>
+        <button type="button" data-action="cancelPicker">
+          {{localize "REDSTEEL.Learn.pickerCancel"}}
+        </button>
+      </span>
+    </header>
+
+    {{#each picker}}
+    <section class="rs-learn-picker-section">
+      <h3 class="rs-learn-section-title">{{this.label}}</h3>
+      <div class="rs-learn-picks">
+        {{#each this.tracks}}
+        <label class="rs-learn-pick {{#if this.locked}}locked{{/if}}"
+               {{#if this.locked}}data-tooltip="{{localize "REDSTEEL.Learn.pickerLocked"}}"{{/if}}>
+          <input type="checkbox" data-track-id="{{this.id}}"
+                 {{#if this.checked}}checked{{/if}}
+                 {{#if this.locked}}disabled{{/if}}>
+          <span>{{this.label}}</span>
+          {{#if this.held}}<em>{{romanRank this.held}}</em>{{/if}}
+        </label>
+        {{/each}}
+      </div>
+    </section>
+    {{/each}}
+
+  </div>
+
+  {{else}}
+  <div class="rs-learn-grid">
+
+    <div class="rs-learn-toolbar">
+      {{#if editable}}
+      <button type="button" class="rs-learn-acquire" data-action="openPicker">
+        <i class="fas fa-list-check"></i>
+        {{localize "REDSTEEL.Learn.acquire"}}
+      </button>
+      {{/if}}
+    </div>
+
+    {{!-- The rank numerals. A grid with the same eleven columns as every track
+          block below it, so the numerals sit over their own columns by
+          construction rather than by a hand-matched width. --}}
+    <div class="rs-learn-head">
+      <div class="rs-learn-gutter"></div>
+      {{#each rankHeaders}}
+      <div class="rs-learn-col">{{this}}</div>
+      {{/each}}
+    </div>
+
+    {{#each sections}}
+    <section class="rs-learn-section" data-section="{{this.id}}">
+      <h3 class="rs-learn-section-title">{{this.label}}</h3>
+
+      {{#each this.tracks}}
+      {{!-- One track. Both layouts share the same eleven-column grid, and every
+            item states its own grid row and column, because the ten full-height
+            hover columns would otherwise push auto-placed items out of the
+            column they belong to.
+
+            matrix   - node track, abilities, a row per stat, the price.
+            segments - node track, one content row whose per-rank segments carry
+                       that rank's icons and chips, the price. No stat rows. --}}
+      <div class="rs-learn-track" data-track-id="{{this.id}}">
+
+        <div class="rs-learn-gutter rs-learn-track-head" style="{{this.titleStyle}}">
+          {{!-- No rank counter here on purpose: the filled diamonds already say
+                how far the track is trained, and a "- / X" beside every name
+                was just noise. --}}
+          <span class="rs-learn-track-name" data-tooltip="{{this.label}}">{{this.label}}</span>
+        </div>
+
+        {{!-- How far this track is trained, as one band growing to the right.
+              First in the block so everything else paints over it. --}}
+        <div class="rs-learn-fill {{this.fillClass}}" style="{{this.fillStyle}}"></div>
+
+        {{!-- Ledger rules. Emitted before the columns so they paint behind
+              them, and spanning every column so the line is unbroken. --}}
+        {{#each this.ruleStyles}}
+        <div class="rs-learn-rule" style="{{this}}"></div>
+        {{/each}}
+
+        {{!-- The hover and click target: one column per rank, running the full
+              height of the block and painted underneath it. It owns the state,
+              the tooltip, the padlock, the refund arrow and the buy action;
+              everything drawn above it is display only. --}}
+        {{#each this.cells}}
+        <div class="rs-learn-colhit state-{{this.state}}"
+             style="{{this.hitStyle}}"
+             data-rank="{{this.rank}}"
+             data-track-id="{{../id}}"
+             {{!-- Not clickable: the diamond is the buy control. This still
+                   owns the column hover and the tooltip. --}}
+             {{#if this.tooltipGroups}}data-tooltip="{{#each this.tooltipGroups}}{{#unless @first}}<hr>{{/unless}}{{#each this}}{{#unless @first}}<br>{{/unless}}{{this}}{{/each}}{{/each}}" data-tooltip-direction="UP"{{/if}}>
+
+          {{#if (eq this.state "locked")}}
+          <i class="fas fa-lock rs-learn-lock"></i>
+          {{/if}}
+
+          {{#if this.isHeld}}
+          <a class="rs-learn-refund" data-action="refundRank" data-track-id="{{../id}}"
+             data-tooltip="{{localize "REDSTEEL.Learn.refund"}}">
+            <i class="fas fa-rotate-left"></i>
+          </a>
+          {{/if}}
+
+        </div>
+        {{/each}}
+
+        {{!-- The node track: a diamond per rank on a connecting line, filled
+              for the ranks already bought. --}}
+        {{#each this.cells}}
+        <div class="rs-learn-node state-{{this.state}} {{this.nodeClass}}"
+             style="{{this.nodeStyle}}"
+             data-rank="{{this.rank}}"
+             data-track-id="{{../id}}"
+             {{#if (eq this.state "available")}}data-action="buyRank"{{/if}}>
+          {{#if this.exists}}<span class="rs-learn-diamond"></span>{{/if}}
+        </div>
+        {{/each}}
+
+        {{!-- Segment mode: one content row, each rank's own segment stacking
+              its ability icons over one chip per thing that rank does. Only
+              weapon skills and doctrines take this shape. --}}
+        {{#if this.segRow}}
+        {{#each this.cells}}
+        {{#if this.hasSegment}}
+        <div class="rs-learn-seg state-{{this.state}}"
+             style="{{this.segStyle}}"
+             data-rank="{{this.rank}}">
+          {{#if this.grants.length}}
+          <span class="rs-learn-seg-icons">
+            {{#each this.grants}}
+            <img src="{{this.img}}" width="28" height="28" alt="{{this.name}}" data-tooltip="{{this.name}}">
+            {{/each}}
+          </span>
+          {{/if}}
+          {{#each this.chips}}
+          <span class="rs-learn-chip{{#unless this.prose}} is-value{{/unless}}">{{this.text}}</span>
+          {{/each}}
+        </div>
+        {{/if}}
+        {{/each}}
+        {{/if}}
+
+        {{#if this.iconRow}}
+        {{#each this.cells}}
+        {{#if this.showIcons}}
+        <div class="rs-learn-icons state-{{this.state}}"
+             style="{{this.iconStyle}}"
+             data-rank="{{this.rank}}">
+          {{#each this.grants}}
+          <img src="{{this.img}}" width="28" height="28" alt="{{this.name}}" data-tooltip="{{this.name}}">
+          {{/each}}
+          {{#if this.showProse}}
+          {{#each this.prose}}
+          <span class="rs-learn-chip">{{this}}</span>
+          {{/each}}
+          {{/if}}
+        </div>
+        {{/if}}
+        {{/each}}
+        {{/if}}
+
+        {{!-- Matrix mode: one row per stat, the stat named once in the gutter.
+              Stats that carry the same number at every rank arrive already
+              merged into one row, so the label can be several stats long and
+              the gutter tooltip carries the whole of it. Empty in segment
+              mode. --}}
+        {{#each this.rows}}
+        <div class="rs-learn-gutter rs-learn-rowlabel" style="{{this.labelStyle}}"
+             data-tooltip="{{this.label}}">{{this.label}}</div>
+        {{#each this.cells}}
+        {{#if this.text}}
+        <div class="rs-learn-val state-{{this.state}}" style="{{this.style}}"
+             data-rank="{{this.rank}}">{{this.text}}</div>
+        {{/if}}
+        {{/each}}
+        {{/each}}
+
+        {{!-- The requirements row. One chip per clause the book puts on that
+              rank: dimmed once the character satisfies it, bright while it is
+              still blocking. A teacher clause is the cap badge, which the GM
+              clicks to grant or revoke that track's trainer. Both layouts get
+              this row, and a rank the book asks nothing of stays empty. --}}
+        <div class="rs-learn-gutter rs-learn-rowlabel is-reqs" style="{{this.reqLabelStyle}}">{{localize "REDSTEEL.Learn.requirements"}}</div>
+        {{#each this.cells}}
+        {{#if this.reqChips.length}}
+        <div class="rs-learn-reqs state-{{this.state}}" style="{{this.reqStyle}}"
+             data-rank="{{this.rank}}">
+          {{#each this.reqChips}}
+          {{#if this.teacher}}
+          <a class="rs-learn-teacher {{this.cls}}" data-action="toggleTeacher"
+             data-track-id="{{this.trackId}}" data-rank="{{this.rank}}"
+             data-tooltip="{{this.tooltip}}">
+            <i class="fas fa-graduation-cap"></i><b>{{this.roman}}</b>
+          </a>
+          {{else}}
+          {{!-- The chip is terse enough to fit a column; the sentence behind it
+                is on hover. --}}
+          <span class="rs-learn-req {{this.cls}}"
+                {{#if this.tooltip}}data-tooltip="{{this.tooltip}}"{{/if}}>{{this.text}}</span>
+          {{/if}}
+          {{/each}}
+        </div>
+        {{/if}}
+        {{/each}}
+
+        {{!-- The price row. The currency is named once in the gutter, so the
+              cells carry the bare number. --}}
+        <div class="rs-learn-gutter rs-learn-rowlabel is-cost" style="{{this.costLabelStyle}}">{{this.costLabel}}</div>
+        {{#each this.cells}}
+        {{#if this.exists}}
+        <div class="rs-learn-cost state-{{this.state}}" style="{{this.costStyle}}"
+             data-rank="{{this.rank}}">{{this.cost}}</div>
+        {{/if}}
+        {{/each}}
+
+      </div>
+      {{/each}}
+
+    </section>
+    {{/each}}
+
+    {{#unless sections.length}}
+    <p class="rs-learn-empty">{{localize "REDSTEEL.Learn.nothingTracked"}}</p>
+    {{/unless}}
+
+  </div>
+  {{/if}}
+
+  {{else}}
+  <p class="rs-learn-empty">{{localize "REDSTEEL.Learn.notBuilt"}}</p>
+  {{/if}}
+
+</div>

@@ -188,7 +188,7 @@ export async function runCommand(actor, ability, targets, test) {
     flavor: `
 <span style="display:inline-flex; align-items:center;">
   <img src="${ability.img}" width="36" height="36" style="margin-right:8px;">
-  <strong style="font-size:20px;">${name}</strong>
+  <strong>${name}</strong>
 </span>
 <hr>
 <div style="text-align:center; font-size:16px;">

@@ -1,7 +1,7 @@
 import { getTraitPills } from "./traitPills.mjs";
 import { withRollBias, tagRollSkill } from "./rollAdvantage.mjs";
 import { selectAimedPart, AIMED_PARTS } from "./aimedStrike.mjs";
-import { getImprovedAimPenetration } from "./aim.mjs";
+import { getImprovedAimPenetration, abilityIgnoresAim } from "./aim.mjs";
 import { getAttackRerollTokens } from "./rerolls.mjs";
 import { buildBanePacket } from "./baneCombat.mjs";
 import { hasHtmlContent } from "./chatBlocks.mjs";
@@ -309,8 +309,16 @@ export async function combatAbilities() {
     )?.checked
       ? -5
       : 0;
-    const aimValue =
-      parseInt(html.find('input[name="aim"]:checked').val()) || 0;
+    // The Aim radio is pre-ticked from the stacks the token already holds, and
+    // it is read before the player picks a row — so an Aim-neutral ability
+    // (Counterattack, Riposte, Retaliatory strike…) arrives here with a number
+    // selected that it has no business using. Discard it outright: no
+    // declaration is made, the aimCount flag is never written, and nothing is
+    // spent. getAttackRolls guards the bonus a second time, for the attack
+    // paths that never come through this dialog.
+    const aimValue = abilityIgnoresAim(ability)
+      ? 0
+      : parseInt(html.find('input[name="aim"]:checked').val()) || 0;
 
     const useSneak = html.find('[name="sneakAttack"]').is(":checked");
     const useFlanking = html.find('[name="flanking"]').is(":checked");
@@ -1085,7 +1093,6 @@ export async function combatAbilities() {
 
     if (intent.sneak) {
       await actor.setFlag("redsteel", "useSneakAttack", true);
-      await actor.setFlag("redsteel", "sneakAccessCounter", 0);
     } else {
       await actor.unsetFlag("redsteel", "useSneakAttack");
       await actor.unsetFlag("redsteel", "sneakAccessCounter");
@@ -1148,6 +1155,12 @@ export async function combatAbilities() {
     attackTags = [],
     banePacket = null,
     baneRoll = null,
+    sneakDeclared = false,
+    critAsSneak = false,
+    sneakRoll = null,
+    sneakTotal = 0,
+    sneakPenetration = 0,
+    sneakEffect = 0,
   }) {
     let attackHTML = "";
     let damageHTML = "";
@@ -1218,7 +1231,7 @@ ${critHTML}
         ? "Critical Failure!"
         : "";
     const critBanner = critLabel
-      ? `<p style="text-align:center; font-size:20px;"><b>${critLabel}</b></p>
+      ? `<p class="rs-card-headline"><b>${critLabel}</b></p>
 <hr>`
       : "";
 
@@ -1260,11 +1273,18 @@ ${critHTML}
   </div>
 </div>
 `,
-      rolls: banePacket ? [attackRoll, damageRoll, baneRoll] : [attackRoll, damageRoll],
+      // Sneak dice ride along for the same reason as in basicAttack.mjs, and
+      // a critAsSneak attacker's parked roll is hidden there for the same one.
+      rolls: [
+        attackRoll,
+        damageRoll,
+        ...(banePacket ? [baneRoll] : []),
+        ...(sneakRoll && sneakDeclared ? [sneakRoll] : []),
+      ],
       flavor: `
 <span style="display:inline-flex; align-items:center;">
   <img src="${ability.img}" width="36" height="36" style="margin-right:8px;">
-  <strong style="font-size:20px;">
+  <strong>
     ${rollName}
   </strong>${renderAttackTagsHtml(attackTags)}
 </span>
@@ -1337,9 +1357,25 @@ ${
             penCap,
           },
           bane: banePacket,
+          // See basicAttack.mjs — present for a declared sneak and for anyone
+          // who could earn one by critting.
+          ...(sneakDeclared || critAsSneak
+            ? {
+                sneak: {
+                  declared: sneakDeclared,
+                  critAsSneak,
+                  damage: sneakTotal,
+                  penetration: sneakPenetration,
+                  effectChance: sneakEffect,
+                },
+              }
+            : {}),
         },
       },
     });
+    // The declaration is spent by the attack, hit or miss. Once, here, after
+    // every delta reader above has run.
+    await game.redsteel.consumeSneakAttackFlag(actor);
   }
   function buildDamageProfile(systemData) {
     if (!systemData) return { expression: [] };
@@ -1548,11 +1584,13 @@ ${
         ) || 0
       : 0;
     const actorMods = game.redsteel.getActorCombatModifiers(actor, weapon);
-    // Improved Aim: read before getAttackRolls consumes the aim flag.
+    // Improved Aim: read before getAttackRolls consumes the aim flag. The
+    // ability goes with it — an Aim-neutral one draws no penetration either.
     const improvedAimPen = getImprovedAimPenetration(
       actor,
       weapon,
       weaponContext,
+      ability,
     );
     // The arrowhead's own penetration, on top of the bow's (see the ammo check
     // above — a weapon that needs ammo never gets here without it).
@@ -1562,6 +1600,17 @@ ${
     const qualityPen = weapon
       ? Number(weapon.system.qualityMods?.penetration) || 0
       : 0;
+    // Rogue VIII/X sneak penetration — see the note in basicAttack.mjs: it
+    // belongs to the Sneak Attack, not to a critical, so it rides the base sum
+    // rather than buildCriticalTotals.
+    // These also travel to the card as `attack.sneak` — see the matching note
+    // in basicAttack.mjs.
+    const {
+      sneakPenetration,
+      sneakEffect,
+      declared: sneakDeclared,
+      critAsSneak,
+    } = game.redsteel.computeSneakDeltas(actor, weapon, weaponContext ?? null);
     // Floored at 0: Penetration is what gets through armor, so a bad weapon can
     // lose all of it but never turn into extra protection for the target.
     const penetration = Math.max(
@@ -1572,7 +1621,8 @@ ${
         abilityPenetration +
         actorMods.penetrationBonus +
         qualityPen +
-        improvedAimPen,
+        improvedAimPen +
+        sneakPenetration,
     );
     // S2: fold passive weapon crit-range bonuses (spec nodes) into the crit-range
     // input that getCriticalRolls buckets into critScore.
@@ -1600,14 +1650,19 @@ ${
       ability,
     );
 
-    const { damageRoll, damageTotal, breakthroughRollResult } =
-      await game.redsteel.getDamageRolls(
-        actor,
-        weapon,
-        weaponContext,
-        abilityDamage,
-        abilityBreakthrough,
-      );
+    const {
+      damageRoll,
+      damageTotal,
+      breakthroughRollResult,
+      sneakRoll,
+      sneakTotal,
+    } = await game.redsteel.getDamageRolls(
+      actor,
+      weapon,
+      weaponContext,
+      abilityDamage,
+      abilityBreakthrough,
+    );
 
     const {
       critScore,
@@ -1840,6 +1895,12 @@ ${renderSpeedTestLine({
       attackTags: opportunityAttack ? ["opportunity"] : [],
       banePacket,
       baneRoll,
+      sneakDeclared,
+      critAsSneak,
+      sneakRoll,
+      sneakTotal,
+      sneakPenetration,
+      sneakEffect,
     });
     // ─── AMMO DEDUCTION ───
     if (ammo) {
@@ -2177,7 +2238,7 @@ ${mod.system.description ?? ""}
     flavor: `
 <span style="display:inline-flex; align-items:center;">
   <img src="${ability.img}" width="36" height="36" style="margin-right:8px;">
-  <strong style="font-size:20px;">${ability.localizedName ?? ability.name}</strong>
+  <strong>${ability.localizedName ?? ability.name}</strong>
 </span>
 <hr>
 ${
@@ -2232,7 +2293,7 @@ async function runAbsorbBlood(actor, ability) {
     flavor: `
 <span style="display:inline-flex; align-items:center;">
   <img src="${ability.img}" width="36" height="36" style="margin-right:8px;">
-  <strong style="font-size:20px;">${label}</strong>
+  <strong>${label}</strong>
 </span>
 <hr>
 <div style="text-align:center; font-size:16px; color:#a01818;">
@@ -2302,7 +2363,7 @@ async function runBloodPact(actor, ability) {
     flavor: `
 <span style="display:inline-flex; align-items:center;">
   <img src="${ability.img}" width="36" height="36" style="margin-right:8px;">
-  <strong style="font-size:20px;">${label}</strong>
+  <strong>${label}</strong>
 </span>
 <hr>
 <div style="text-align:center; font-size:16px; color:#a01818;">
@@ -2363,7 +2424,7 @@ async function runFastReaction(actor, ability) {
     flavor: `
 <span style="display:inline-flex; align-items:center;">
   <img src="${ability.img}" width="36" height="36" style="margin-right:8px;">
-  <strong style="font-size:20px;">${label}</strong>
+  <strong>${label}</strong>
 </span>
 <hr>
 <div style="text-align:center; font-size:16px;">
@@ -2402,7 +2463,7 @@ async function postStanceCard(actor, ability, active) {
     flavor: `
 <span style="display:inline-flex; align-items:center;">
   <img src="${ability.img}" width="36" height="36" style="margin-right:8px;">
-  <strong style="font-size:20px;">${label}</strong>
+  <strong>${label}</strong>
 </span>
 <hr>
 <div style="text-align:center; font-size:16px;">

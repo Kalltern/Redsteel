@@ -70,6 +70,22 @@
       "Bg3SlimChat": {
         "name": "Zúžit pole chatu, dokud se nepoužívá",
         "label": "Foundry drží pole pro zprávu v plné šířce na každé záložce postranního panelu, což tísní pravou stranu Redsteel panelu. Toto ho zmenší na proužek a šířku vrátí, jakmile do něj klikneš. Vyžaduje restart."
+      },
+      "CardCompact": {
+        "name": "Stručné bojové karty",
+        "label": "Zobrazovat karty útoku, obrany a kouzel bez bloku zranění, kritů a efektů. Hod a tlačítka akcí zůstávají. Kliknutím na název karty ji rozbalíš celou."
+      },
+      "CardAutoCollapse": {
+        "name": "Sbalovat staré karty",
+        "label": "Jakmile přeteče bojové kolo, nebo jakmile uplyne prodleva níže, karta se sbalí na řádek s názvem. Kliknutím na název ji zase rozbalíš."
+      },
+      "CardFoldAutoDefense": {
+        "name": "Sbalovat automatické obrany",
+        "label": "Obrany, které si NPC hází samo, přijdou rovnou sbalené a ukážou jen název a řádek Zásah nebo Ubráněno s porovnáním. Kliknutím na název otevřeš celou kartu."
+      },
+      "CardCollapseSeconds": {
+        "name": "Sbalit kartu po (sekundách)",
+        "label": "Jak dlouho karta zůstane rozbalená, než se sama sbalí. Hodnota 0 znamená, že se karty sbalí až po přechodu bojového kola."
       }
     },
     "Bg3Hotbar": {
@@ -472,7 +488,7 @@
             },
             "critAsSneak": {
               "label": "Kritický zásah jako Zákeřný útok",
-              "description": "10 CP; Tulák VIII. Ručně — řeší se u stolu."
+              "description": "10 CP; Tulák VIII. Zásah vyhodnocený jako kritický se počítá jako Zákeřný útok proti každému cíli, na který jsi v tomto kole Zákeřný útok ještě nepoužil. Automatizováno."
             },
             "outnumberSneak": {
               "label": "Přesila 2:1 jako Zákeřný útok",
@@ -4777,6 +4793,13 @@
       "StaminaTooLow": "{name} má {stamina} výdrže — na každé obětované Míření jsou potřeba {cost}.",
       "Applied": "{name} rozšiřuje ránu na cíli {targets}, obětuje {aim} Míření za {stamina} výdrže."
     },
+    "SneakLedger": {
+      "Refused": "Zákeřný útok se na cíl {targets} nepoužil — v tomto kole už byl proti němu vyčerpán (odebráno: {lost}).",
+      "Granted": "Kritický zásah se proti cíli {targets} počítá jako Zákeřný útok (+{gained}).",
+      "Applied": "Zákeřný útok použit na cíl {targets}.",
+      "PreviewRefused": "Zákeřný útok už byl v tomto kole vyčerpán: {amount}",
+      "PreviewGranted": "Kritický zásah se počítá jako Zákeřný útok: {amount}"
+    },
     "Overwhelm": {
       "Label": "Přesila",
       "MarkerName": "Přesila ({penalty}%)",
@@ -4785,6 +4808,10 @@
       "UnknownAttacker": "Neznámý útočník",
       "Defend": "Bránit se",
       "DefendTooltip": "Hodit obranu proti tomuto útoku."
+    },
+    "Defense": {
+      "BadDodge": "Špatný úhyb!",
+      "BadDodgeNote": "Hod překonal limit úhybu ({limit}): tento úhyb se počítá jako přesah 0."
     },
     "AutoDefense": {
       "Label": "Automatická obrana",
@@ -4816,6 +4843,12 @@
       "CriticalHit": "Kritický zásah",
       "DeniedOnDice": "Oba kritické, síla úspěchu se ignoruje. Útok hodil {attack}, obrana {defense}.",
       "DialogAttackMargin": "Obrana proti útoku o síle {margin}"
+    },
+    "Fold": {
+      "CriticalSuccess": "Kritický úspěch!",
+      "CriticalFailure": "Kritické selhání!",
+      "AttackSummary": "Útok: {margin}  ·  Zranění: {damage}",
+      "EffectStacks": "{count}× {name}"
     },
     "TempHealth": {
       "ButtonTooltip": "Získat Dočasné životy z této obrany. Lze použít jen jednou, obranou celkem nejvýše 10.",
@@ -4972,7 +5005,7 @@
       },
       "aim": {
         "label": "Míření",
-        "desc": "Každá akce Míření dává +10 % k zásahu zvoleného cíle, až do 4 stupňů. Změna cíle spálí všechny stupně. Útok na zamířený cíl je spotřebuje všechny, útok na kohokoli jiného Míření rovnou ruší. Vylepšené míření (Duelista I, nebo Služebník meče) Míření při útoku na jiný cíl zachová a při 4 stupních přidává +10 prūrazného účinku. Redukce Míření (Duelista II, nebo kterýkoli uzel Redukce Míření) stojí při zásahu jen jeden stupeň a při kritickém zásahu žádný, neúspěšný útok ale stále bere všechny. Služebník meče navíc po Zákeřném útoku jedno Míření přidává; Mečový tanečník místo toho při úspěšném Zákeřném útoku neztrácí nic a při neúspěchu jen nahoru zaokrouhlenou polovinu. Duelista VII obrací Míření i do obrany: Obrana proti protivníkovi, na kterého míříš, získává +5 % za každý stupeň a obrana žádné Míření nestojí. Každá duelistická výhoda vyžaduje odpovídající meč v ruce. Protiútok, Odvetný úder, Rozseknutí, Daleké rozseknutí, Dvojitý vrh a Vypočítavý útok nemají s Mířením žádnou interakci."
+        "desc": "Každá akce Míření dává +10 % k zásahu zvoleného cíle, až do 4 stupňů. Změna cíle spálí všechny stupně. Útok na zamířený cíl je spotřebuje všechny, útok na kohokoli jiného Míření rovnou ruší. Vylepšené míření (Duelista I, nebo Služebník meče) Míření při útoku na jiný cíl zachová a při 4 stupních přidává +10 prūrazného účinku. Redukce Míření (Duelista II, nebo kterýkoli uzel Redukce Míření) stojí při zásahu jen jeden stupeň a při kritickém zásahu žádný, neúspěšný útok ale stále bere všechny. Služebník meče navíc po Zákeřném útoku jedno Míření přidává; Mečový tanečník místo toho při úspěšném Zákeřném útoku neztrácí nic a při neúspěchu jen nahoru zaokrouhlenou polovinu. Duelista VII obrací Míření i do obrany: Obrana proti protivníkovi, na kterého míříš, získává +5 % za každý stupeň a obrana žádné Míření nestojí. Každá duelistická výhoda vyžaduje odpovídající meč v ruce. Protiútok, Riposta, Odvetný úder, Rozseknutí, Daleké rozseknutí, Dvojitý vrh a Vypočítavý útok nemají s Mířením žádnou interakci: nezískávají z tvých stupňů žádný bonus a ani je nespotřebovávají, ani neruší."
       },
       "spellPower": {
         "label": "Síla kouzla",
@@ -6165,11 +6198,14 @@
       "RetaliatoryStrike": {
         "name": "Odvetný úder"
       },
+      "Riposte": {
+        "name": "Riposta"
+      },
       "Robe": {
         "name": "Hábit"
       },
-      "RunningThrow": {
-        "name": "Vrh za běhu"
+      "RunUpThrow": {
+        "name": "Vrh s rozběhem"
       },
       "Sabre": {
         "name": "Šavle"
@@ -6639,15 +6675,6 @@
       "ExpertCraft": {
         "name": "Expert: Řemeslo"
       },
-      "ExpertRiding": {
-        "name": "Expert: Jezdectví"
-      },
-      "AdeptDrinking": {
-        "name": "Adept: Pijáctví"
-      },
-      "ExpertDrinking": {
-        "name": "Expert: Pijáctví"
-      },
       "AdeptArt": {
         "name": "Adept: Umělecká tvorba"
       },
@@ -6702,12 +6729,6 @@
       "ExpertActing": {
         "name": "Expert: Herectví"
       },
-      "ExpertDeception": {
-        "name": "Expert: Klamání"
-      },
-      "ExpertIntimidation": {
-        "name": "Expert: Zastrašování"
-      },
       "AdeptMusic": {
         "name": "Adept: Hudba"
       },
@@ -6719,24 +6740,6 @@
       },
       "ExpertPainting": {
         "name": "Expert: Malování"
-      },
-      "ExpertPersuasion": {
-        "name": "Expert: Přesvědčování"
-      },
-      "ExpertTemptation": {
-        "name": "Expert: Pokoušení"
-      },
-      "ExpertBlend": {
-        "name": "Expert: Splývání v davu"
-      },
-      "ExpertHerbalism": {
-        "name": "Expert: Bylinkářství"
-      },
-      "ExpertInsight": {
-        "name": "Expert: Vhled"
-      },
-      "ExpertSurvival": {
-        "name": "Expert: Přežití"
       },
       "Lethargic": {
         "name": "Letargický"
@@ -6776,6 +6779,15 @@
       },
       "FleetFooted": {
         "name": "Hbitý"
+      },
+      "RogueI": {
+        "name": "Tulák I"
+      },
+      "RogueII": {
+        "name": "Tulák II"
+      },
+      "RogueIII": {
+        "name": "Tulák III"
       },
       "Soft": {
         "name": "Měkký"
@@ -7132,6 +7144,278 @@
       "PurseTotal": "Celkem neseno",
       "NumericKey": "Klíč nominální hodnoty nemůže být číslo ({keys}). Použijte krátké slovo, například c1 nebo med.",
       "DuplicateKey": "Dvě nominální hodnoty sdílejí klíč \"{key}\". Každá potřebuje vlastní."
+    },
+    "Learn": {
+      "Stat": {
+        "attack": "Útok",
+        "bleed": "Krvácení",
+        "concentration": "Koncentrace",
+        "criticalDefense": "Kritická obrana",
+        "criticalHit": "Kritický zásah",
+        "criticalRange": "Kritický rozsah",
+        "detection": "Detekce",
+        "effect": "Efekt",
+        "gunnery": "Palba",
+        "hit": "Zásah",
+        "initiative": "Iniciativa",
+        "magicAttack": "Magický útok",
+        "magicDefense": "Magická obrana",
+        "manaBase": "Základ many",
+        "melody": "Melodie",
+        "mindPoints": "Mentální život",
+        "shieldLoad": "Zatížení štítu",
+        "shortRest": "Krátký odpočinek",
+        "spellPower": "Síla kouzla",
+        "stagger": "Omráčení",
+        "stamina": "Výdrž"
+      },
+      "Effect": {
+        "pct": "{label} {value} %",
+        "mod": "{label} +{value}",
+        "modPct": "{label} +{value} %",
+        "val": "{label} {value}",
+        "bojoveTestyRychlostiIniciativa3": "Bojové Testy Rychlosti: Iniciativa +3",
+        "bonusProtiVelkymTvorum": "Bonus proti velkým tvorům",
+        "bonusZaZbran": "Bonus za zbraň",
+        "brilantniProtiutok": "Brilantní protiútok",
+        "chvat": "Chvat",
+        "cilenyUtokZpusobujeJednoKrvaceniNavic": "Cílený útok: Způsobuje jedno Krvácení navíc",
+        "dalekeRozseknuti": "Daleké rozseknutí",
+        "dalekyVypad": "Daleký výpad",
+        "divokaMagie": "Divoká magie",
+        "divokaMagie2sk": "Divoká magie: +2SK",
+        "dlouhyLukBezPostihu": "Dlouhý luk: Bez postihu",
+        "dlouhyLukViceUtoku": "Dlouhý luk: Více útoků",
+        "dlouhyOdpocinek100Many": "Dlouhý odpočinek 100% many",
+        "dlouhyOdpocinek20Many": "Dlouhý odpočinek 20 many",
+        "dlouhyOdpocinek25Many": "Dlouhý odpočinek 25 many",
+        "dlouhyOdpocinek30Many": "Dlouhý odpočinek 30 many",
+        "dlouhyOdpocinek35Many": "Dlouhý odpočinek 35 many",
+        "dlouhyOdpocinek40Many": "Dlouhý odpočinek 40 many",
+        "dlouhyOdpocinek50Many": "Dlouhý odpočinek 50% many",
+        "duelistuvKrok": "Duelistův krok",
+        "dvojityVrh": "Dvojitý vrh",
+        "expert": "Expert",
+        "finta": "Finta",
+        "ignorujePruraznost": "Ignoruje Průraznost",
+        "jedenOdvetnyUderZaKoloJakoVolnaAkce": "Jeden Odvetný úder za kolo jako Volná akce",
+        "jednaOdvetnaAkceZaKoloJakoVolnaAkce": "Jedna Odvetná akce za kolo jako Volná akce",
+        "jezdeckaOchrana": "Jezdecká ochrana",
+        "jezdeckaOdveta": "Jezdecká odveta",
+        "jezdeckaZtec": "Jezdecká zteč",
+        "jezdeckeObrneni": "Jezdecké obrnění",
+        "jezdeckeRozseknuti": "Jezdecké rozseknutí",
+        "klamavyUtok": "Klamavý útok",
+        "kratkyOdpocinek100Many": "Krátký odpočinek 100% many",
+        "kritickaObranaKryt3": "Kritická obrana/kryt +3%",
+        "kritickaObranaKrytZvysujeDocasneZivotyO5": "Kritická obrana/kryt zvyšuje Dočasné životy o 5",
+        "kritickeZraneniPrubojnost5": "Kritické zranění/Průbojnost +5",
+        "kritickyNeuspech3": "Kritický neúspěch -3%",
+        "krvaceniSousedicichNepratelSePridavaDoZasoby": "Krvácení sousedících nepřátel se přidává do Zásoby",
+        "krvavyUder": "Krvavý úder",
+        "magickeMomentum": "Magické momentum",
+        "magickeObrneni": "Magické obrnění",
+        "mireniStrelba10": "Míření: Střelba +10%",
+        "mireniZarovenZvysujeObranuO5ProtiCili": "Míření zároveň zvyšuje Obranu o +5% proti cíli",
+        "mistr": "Mistr",
+        "mnich": "Mnich",
+        "mnichuvUder": "Mnichův úder",
+        "modifikatorMany1": "Modifikátor many 1",
+        "modifikatorMany10": "Modifikátor many 10",
+        "modifikatorMany12": "Modifikátor many 12",
+        "modifikatorMany15": "Modifikátor many 1,5",
+        "modifikatorMany2": "Modifikátor many 2",
+        "modifikatorMany25": "Modifikátor many 2,5",
+        "modifikatorMany3": "Modifikátor many 3",
+        "modifikatorMany35": "Modifikátor many 3,5",
+        "modifikatorMany4": "Modifikátor many 4",
+        "modifikatorMany5": "Modifikátor many 5",
+        "modifikatorMany6": "Modifikátor many 6",
+        "modifikatorMany8": "Modifikátor many 8",
+        "momentum": "Momentum",
+        "nabodnuti": "Nabodnutí",
+        "nabodnutiNavazujiciUtok": "Nabodnutí: Navazující útok",
+        "nahlePrezbrojeni": "Náhlé přezbrojení",
+        "nasledujiciSePoZasahuPocitaJakoZakernyUtok": "Následující se po zásahu počítá jako Zákeřný útok",
+        "navazujiciUtok": "Navazující útok",
+        "nestabilita1": "Nestabilita -1",
+        "obnoveni": "Obnovení",
+        "obnoveni6Many": "Obnovení: +6 many",
+        "obranaProtiZteci": "Obrana proti zteči",
+        "obrannyPostoj": "Obranný postoj",
+        "obrneni": "Obrnění",
+        "ochrana": "Ochrana",
+        "oddech5Many": "Oddech: +5 many",
+        "odstrceni": "Odstrčení",
+        "odsunuti": "Odsunutí",
+        "odveta": "Odveta",
+        "odvetnyUder": "Odvetný úder",
+        "omracujiciUder": "Omračující úder",
+        "opatrneCarovani": "Opatrné čarování",
+        "opatrneCarovaniObrana10": "Opatrné čarování: Obrana +10%",
+        "podpasovka": "Podpásovka",
+        "podseknuti": "Podseknutí",
+        "pomalyPohybVeVnejsiZone": "Pomalý pohyb ve vnější zóně",
+        "popadnuti": "Popadnutí",
+        "poprava": "Poprava",
+        "povaleni": "Povalení",
+        "presilaBokZasah5": "Přesila / Bok: Zásah +5%",
+        "presilaBokZasahStrelbaAVrh5": "Přesila / Bok: Zásah, Střelba a Vrh +5%",
+        "presnyVystrel": "Přesný výstřel",
+        "prilezitostnyUtokZaKolo": "Příležitostný útok za kolo",
+        "prilezitostnyUtokZbesilyUtokNabodnutiKritickyZasah": "Příležitostný útok: Zběsilý útok / Nabodnutí (Kritický zásah)",
+        "pripravnyPostoj": "Přípravný postoj",
+        "prolevaniKrve": "Prolévání krve",
+        "protiutok": "Protiútok",
+        "protiutokCilenyZasahPostihSnizenO10": "Protiútok: Cílený zásah postih snížen o 10%",
+        "pruraznost2d6": "Průraznost +2d6",
+        "pulpirueta": "Půlpirueta",
+        "rafinovanyManevr": "Rafinovaný manévr",
+        "redukceBoku": "Redukce boku",
+        "redukceMireniPoZasahu": "Redukce Míření po zásahu",
+        "riposta": "Riposta",
+        "rozptyleni": "Rozptýlení",
+        "rozseknuti": "Rozseknutí",
+        "rozstepeni": "Rozštěpení",
+        "rychlaDivokaMagie": "Rychlá Divoká magie",
+        "rychlePrebijeni": "Rychlé přebíjení",
+        "rychlyUder": "Rychlý úder",
+        "salva": "Salva",
+        "skolaKrveObtiznost10": "Škola Krve: Obtížnost -10%",
+        "smrstUtoku": "Smršť útoků",
+        "snizujePostihNaUsmernovaniZaZbrojO5": "Snižuje postih na Usměrňování za zbroj o 5%",
+        "soubojStrelbaDavaSanceDoUsmernovaniAManu": "Souboj/Střelba dává šance do Usměrňování a Manu",
+        "soustredeni": "Soustředění",
+        "soustredenyUtok": "Soustředěný útok",
+        "straz": "Stráž",
+        "strelbaVrh5": "Střelba/Vrh +5%",
+        "streleckyPostoj": "Střelecký postoj",
+        "synergieSeStitonosem": "Synergie se Štítonošem",
+        "triumf": "Triumf",
+        "ucednik": "Učedník",
+        "uderStitem": "Úder štítem",
+        "udrzovaniKouzelJeO2ManyLevnejsi": "Udržování kouzel je o 2 many levnější",
+        "uskok": "Úskok",
+        "utok1ProLehkeZbrane": "Útok +1 pro Lehké zbraně",
+        "utokACarovaniVJednomTahu": "Útok a čarování v jednom tahu",
+        "utokNaSlabinu": "Útok na slabinu",
+        "utokSOdstupem": "Útok s odstupem",
+        "utokSPohybem": "Útok s pohybem",
+        "utokVrhNaSlabinuZakernySnizenaHranice": "Útok/Vrh na slabinu: Zákeřný, snížená hranice",
+        "velmistr": "Velmistr",
+        "vetrnyPostoj": "Větrný postoj",
+        "vicenasobnyVrh": "Vícenásobný vrh",
+        "volnyUderStitem": "Volný úder štítem",
+        "vrhNaSlabinu": "Vrh na slabinu",
+        "vrhSRozbehem": "Vrh s rozběhem",
+        "vrhZaBehu": "Vrh za běhu",
+        "vstrebaniKrve": "Vstřebání krve",
+        "vycvikSeDvemaZbranemi": "Výcvik se dvěma zbraněmi",
+        "vyhodaNaPoradiTahu": "Výhoda na Pořadí tahu",
+        "vylepseneMireni": "Vylepšené míření",
+        "vylepsenyZmrzacujiciVystrel": "Vylepšený zmrzačující výstřel",
+        "vypocitavyUtok": "Vypočítavý útok",
+        "zakernyUtok1d6": "Zákeřný útok +1d6",
+        "zakernyUtok1d6ANevyvolavaPrilezitostnyUtok": "Zákeřný útok +1d6 a nevyvolává Příležitostný útok",
+        "zakernyUtok2d6": "Zákeřný útok +2d6",
+        "zakernyUtokEfekt50": "Zákeřný útok: Efekt +50%",
+        "zakernyUtokPrubojnost5": "Zákeřný útok: Průbojnost +5",
+        "zakladniDivokaMagie": "Základní Divoká magie",
+        "zbesilyUtok": "Zběsilý útok",
+        "zbesilyUtokAUtokNaSlabinu1Akce": "Zběsilý útok a Útok na slabinu: -1 akce",
+        "zbesilyUtokKrvaceni50Omraceni25": "Zběsilý útok: Krvácení +50%, Omráčení +25%",
+        "zbesilyVrh": "Zběsilý vrh",
+        "zbranJeOhniskovyPredmet": "Zbraň je Ohniskový předmět",
+        "zesileniKouzla": "Zesílení kouzla",
+        "zmrzacujiciUder": "Zmrzačující úder",
+        "zmrzacujiciVystrel": "Zmrzačující výstřel",
+        "zraneni2d4": "Zranění +2d4",
+        "ztec": "Zteč",
+        "ztecPrubojnost5": "Zteč: Průbojnost +5",
+        "ztecStitem": "Zteč štítem",
+        "ztecZraneni1d4": "Zteč: Zranění +1d4",
+        "ztecZraneni2d4": "Zteč: Zranění +2d4"
+      },
+      "title": "Učení",
+      "open": "Učit se",
+      "notBuilt": "Zatím nehotovo.",
+      "acquire": "Přidat dovednosti",
+      "and": "a",
+      "pickerHint": "Vyber dovednosti a doktríny, které chceš mít ve svém stromě postupu. Ovlivňuje to jen toto okno, na listu postavy se nic neskryje.",
+      "pickerDone": "Hotovo",
+      "pickerCancel": "Zrušit",
+      "pickerLocked": "Už je naučená, ve stromě proto zůstává.",
+      "nothingTracked": "Zatím nejsou vybrány žádné dovednosti. Použij „Vybrat dovednosti“ a zvol, co se učíš.",
+      "cannotBuy": "Tuto hodnost teď nelze koupit.",
+      "requirements": "Požadavky",
+      "skillRating": "Hodnota dovednosti",
+      "ratingOf": "{label} (hodnota)",
+      "priceCp": "Cena v CP",
+      "priceSp": "Cena v SP",
+      "level": "Úroveň",
+      "cpRemaining": "Zbývá CP",
+      "spRemaining": "Zbývá SP",
+      "earnedCp": "Získané CP",
+      "earnedSp": "Získané SP",
+      "adjustCp": "Úprava CP",
+      "adjustSp": "Úprava SP",
+      "refund": "Vrátit hodnost",
+      "refundConfirm": "Vrátit tuto hodnost? Body se vrátí do zásoby a vše, co hodnost dávala, zmizí.",
+      "Tabs": {
+        "combat": "Boj",
+        "skills": "Dovednosti",
+        "features": "Odbornosti",
+        "specialisations": "Specializace"
+      },
+      "Sections": {
+        "combat": "Bojové dovednosti",
+        "weapons": "Zbraňové dovednosti",
+        "melee": "Doktríny na blízko",
+        "ranged": "Doktríny na dálku",
+        "special": "Zvláštní doktríny",
+        "magical": "Magické doktríny",
+        "schools": "Školy magie",
+        "magic": "Magie",
+        "beast": "Zvířata"
+      },
+      "Group": {
+        "schools": "Školy",
+        "doctrine": "Doktrína",
+        "school": "Škola",
+        "weapon": "Zbraň",
+        "doctrineLower": "doktrína",
+        "schoolLower": "škola",
+        "weaponLower": "zbraň"
+      },
+      "Teacher": {
+        "grant": "Klikni pro udělení.",
+        "revoke": "Klikni pro odebrání."
+      },
+      "Req": {
+        "teacher": "Učitel {tier}",
+        "attr": "{attr} {min}+",
+        "rank": "{track} {min}",
+        "anyRank": "{group} {min}",
+        "feature": "Odbornost: {name}",
+        "flag": "Vyžaduje: {name}",
+        "specNode": "Specializace: {spec}",
+        "or": " nebo ",
+        "gmGeneric": "Musí schválit vypravěč.",
+        "gm": {
+          "specialOccasion": "Pouze při zvláštní příležitosti, dle uvážení vypravěče.",
+          "language": "Vyžaduje jazyk udělený vypravěčem.",
+          "schoolOrSpecialisation": "Vyžaduje školu nebo specializaci udělenou vypravěčem."
+        },
+        "Tip": {
+          "teacher": "Vyžaduje výuku od učitele (Hodnost {tier}).",
+          "attr": "{attr} {min} nebo vyšší.",
+          "rank": "{track} na hodnosti {min} nebo vyšší.",
+          "anyRank": "Libovolná {group} na hodnosti {min} nebo vyšší.",
+          "feature": "Vyžaduje odbornost {name}.",
+          "flag": "Vyžaduje {name}.",
+          "specNode": "Vyžaduje specializaci {spec}."
+        }
+      }
     }
   },
   "TYPES": {

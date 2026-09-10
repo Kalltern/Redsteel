@@ -189,10 +189,10 @@ async function rollAttributeFollowup(actor, key, rating, margin, source = "") {
         ? `<b>Loses</b> the contest by ${gap}.`
         : "<b>Tie</b>, so the initiator wins.";
 
-  let flavor = `<p style="text-align:center; font-size:18px;"><b>${label} Test vs ${vsLabel}</b></p>
+  let flavor = `<p class="rs-card-headline"><b>${label} Test vs ${vsLabel}</b></p>
 <p style="text-align:center;">${outcome}</p>`;
   if (criticalMessage) {
-    flavor += `<hr><p style="text-align:center; font-size:20px;"><b>${criticalMessage}</b></p>`;
+    flavor += `<hr><p class="rs-card-headline"><b>${criticalMessage}</b></p>`;
   }
 
   await roll.toMessage({

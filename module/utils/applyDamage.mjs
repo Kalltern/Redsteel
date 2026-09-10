@@ -21,6 +21,11 @@ import {
   getLacerationOffer,
 } from "./aim.mjs";
 import { attackerTokenIdFromMessage } from "./overwhelm.mjs";
+import {
+  cardDeclaredSneak,
+  recordSneakAttack,
+  hasSneakedThisRound,
+} from "./sneakLedger.mjs";
 import { gainBlood } from "./bloodPool.mjs";
 import { combatantForActor } from "./combatants.mjs";
 
@@ -212,6 +217,93 @@ function resolveAttackForTarget(attack, actor) {
   const variant = resolveBaneVariant(attack, actor);
   if (variant) return { ...attack, ...variant };
   return attack;
+}
+
+/**
+ * Zákeřný útok — is this card's Sneak Attack refused against this target?
+ *
+ * True only when the card was a declared Sneak Attack and this victim has
+ * already been sneaked by this attacker in the current round. Everything else
+ * reads as "allowed": no declaration, no identifiable attacker, no running
+ * combat. Ambiguity must never swallow a Sneak Attack the player is owed.
+ *
+ * Both the preview dialog and the GM apply call this, so the numbers shown can
+ * never disagree with the numbers applied — the same contract
+ * `resolveDegreeForTarget` keeps for the critical degree.
+ */
+function sneakRefusedForTarget(attack, tokenDoc, attackerTokenId) {
+  if (attack?.sneak?.declared !== true) return false;
+  return hasSneakedThisRound(tokenDoc, attackerTokenId);
+}
+
+/**
+ * Kritický zásah jako Zákeřný útok (shadow/critAsSneak) — is this blow being
+ * promoted to a Sneak Attack against this target?
+ *
+ * Only for an attacker who owns the node, only on a blow being applied as a
+ * critical, only when the player did NOT already declare a sneak (that one is
+ * paid for and folded into the damage), and only when this victim's
+ * once-per-round allowance is still free. The mode is what makes this an
+ * apply-time question at all: in a versus test the defender's roll is what turns
+ * a hit into a critical, so at roll time the card cannot know.
+ */
+function sneakGrantedForTarget(attack, tokenDoc, attackerTokenId, mode) {
+  const sneak = attack?.sneak;
+  if (!sneak?.critAsSneak || sneak.declared === true) return false;
+  if (mode !== "critical") return false;
+  return !hasSneakedThisRound(tokenDoc, attackerTokenId);
+}
+
+/**
+ * Move the Sneak Attack on or off a packet: `sign` -1 takes it away from a
+ * target whose allowance was already spent, +1 grants it to a critical that
+ * counts as one.
+ *
+ * The dice were rolled apart from the rest of the damage (getDamageRolls) and
+ * the penetration was added to the base sum, so both move as flat numbers here
+ * — across the normal, breakthrough and every critical option alike, since by
+ * this point each is a finished total. Floored at 0 so a stripped packet can
+ * never turn into healing or negative penetration.
+ */
+function shiftSneakOnAttack(attack, sign) {
+  const sneak = attack?.sneak;
+  if (!sneak || !sign) return attack;
+
+  // `sign` is already folded into these, so they are ADDED, never subtracted:
+  // a granted sneak carries +damage, a refused one -damage. Subtracting here
+  // instead inverts the whole feature — a critical would lose its sneak dice
+  // and an already-spent allowance would hand them out.
+  const damage = (Number(sneak.damage) || 0) * sign;
+  const pen = (Number(sneak.penetration) || 0) * sign;
+  const shift = (packet) => {
+    if (!packet || typeof packet !== "object") return packet;
+    const out = { ...packet };
+    if (typeof out.damage === "number") {
+      out.damage = Math.max(0, out.damage + damage);
+    } else if (typeof out.damage === "string" && out.damage.trim() !== "") {
+      // Breakthrough carries its total as a string.
+      const n = Number(out.damage);
+      if (Number.isFinite(n)) out.damage = String(Math.max(0, n + damage));
+    }
+    if (typeof out.penetration === "number") {
+      out.penetration = Math.max(0, out.penetration + pen);
+    }
+    return out;
+  };
+
+  return {
+    ...attack,
+    normal: shift(attack.normal),
+    breakthrough: shift(attack.breakthrough),
+    critical: attack.critical
+      ? {
+          ...shift(attack.critical),
+          options: Array.isArray(attack.critical.options)
+            ? attack.critical.options.map(shift)
+            : attack.critical.options,
+        }
+      : attack.critical,
+  };
 }
 
 /**
@@ -525,6 +617,23 @@ export async function applyDamageAsGM(data) {
   // once the loop is done so it can charge the hit nothing further.
   const lacerationSpent = {};
   const lacerationVictims = [];
+  // Zákeřný útok — read once, off the card, because the declaration flag is long
+  // consumed by now and the GM applying this may not be the player who declared
+  // it. An attacker the card cannot identify records nothing: a wrong id would
+  // burn some other token's allowance for the round.
+  const sneakDeclaredOnCard = cardDeclaredSneak(message);
+  // Resolved for ANY card carrying a sneak packet, not just a declared one. A
+  // critAsSneak promotion needs the attacker just as much: without it the
+  // ledger lookup reads "unknown attacker" — which means allowed — and the
+  // record write is refused, so every critical would promote for ever.
+  const sneakAttackerId = attack?.sneak
+    ? attackerTokenIdFromMessage(message)
+    : null;
+  // Victims the sneak was taken back off, and victims it was spent on — both
+  // reported in one chat line after the loop.
+  const sneakVictimsRefused = [];
+  const sneakVictimsSpent = [];
+  const sneakVictimsGranted = [];
   // Cordinas I — every wounded target feeds the attacker's Blood Reserve, and
   // a target that dies feeds it once more. Counted per target here, banked
   // once after the loop.
@@ -546,7 +655,28 @@ export async function applyDamageAsGM(data) {
     // If the GM did not explicitly override the suggested critical degree,
     // a Bane target crits on its own (shifted) degree rather than the
     // suggested one.
-    const effAttack = resolveAttackForTarget(attack, actor);
+    // Zákeřný útok: one allowance per victim per round. A target already
+    // sneaked by this attacker this round has the sneak taken back off its
+    // packet — dice, penetration and (below) effect chance alike — while a
+    // fresh target on the same blow keeps all of it.
+    const sneakRefused = sneakRefusedForTarget(
+      attack,
+      tokenDoc,
+      sneakAttackerId,
+    );
+    const sneakGranted = sneakGrantedForTarget(
+      attack,
+      tokenDoc,
+      sneakAttackerId,
+      mode,
+    );
+    const sneakSign = sneakRefused ? -1 : sneakGranted ? 1 : 0;
+    if (sneakRefused) sneakVictimsRefused.push(actor.name);
+
+    const effAttack = shiftSneakOnAttack(
+      resolveAttackForTarget(attack, actor),
+      sneakSign,
+    );
     const degreeForTarget = resolveDegreeForTarget(
       effAttack,
       selectedCriticalDegree,
@@ -705,7 +835,12 @@ export async function applyDamageAsGM(data) {
       // bonus is added, and which sets each checkbox's default), not here.
       // Adding it to `targetMod` again would be a no-op that reads as though
       // this path enforced the chance.
-      const targetMod = actor.system.effectMods?.[name]?.applyChance || 0;
+      // A refused Sneak Attack loses its effect-chance bonus too, deducted the
+      // same way a target's own resistance is: the d100 already rolled stands,
+      // only the threshold it is measured against comes down.
+      const targetMod =
+        (actor.system.effectMods?.[name]?.applyChance || 0) +
+        sneakSign * (Number(attack.sneak?.effectChance) || 0);
       const stackMod = actor.system.effectMods?.[name]?.stackMod || 0;
 
       const allowedEffectsForTarget = selectedEffects?.[tokenId] || [];
@@ -883,6 +1018,21 @@ export async function applyDamageAsGM(data) {
       if (Number(result.newHp) <= 0) bloodHarvest += BLOOD_HARVEST_PER_TARGET;
     }
 
+    // Zákeřný útok — the once-per-round allowance is spent here, on the victim,
+    // because this is the first point at which the blow is known to have landed
+    // on this particular target. A missed Sneak Attack sneaked nobody, and a
+    // cleave that catches three people spends three separate allowances.
+    // The allowance is spent by a sneak that actually happened: one the player
+    // declared and this target had not already taken, or one a critical earned
+    // on the spot. A refused sneak spends nothing — the allowance it wanted is
+    // already gone, and re-recording would be a no-op anyway.
+    if (sneakSign > 0 || (sneakDeclaredOnCard && !sneakRefused)) {
+      if (await recordSneakAttack(tokenDoc, sneakAttackerId)) {
+        if (sneakGranted) sneakVictimsGranted.push(actor.name);
+        else sneakVictimsSpent.push(actor.name);
+      }
+    }
+
     const combatant = combat?.combatants.find((c) => c.tokenId === tokenDoc.id);
     await handlePostDamageStatus({ actor, combatant });
   }
@@ -902,6 +1052,51 @@ export async function applyDamageAsGM(data) {
           stamina: totalAim * LACERATION_STAMINA_PER_AIM,
         },
       )}</div>`,
+    });
+  }
+
+  // Zákeřný útok. Posted when a sneak was taken away (damage quietly going
+  // missing needs explaining) or handed out by a critical (free damage appearing
+  // needs explaining just as much). A declared sneak that simply worked is
+  // announced by the card itself and says nothing here.
+  if (sneakVictimsRefused.length || sneakVictimsGranted.length) {
+    const sneak = attack.sneak ?? {};
+    const worth = [
+      Number(sneak.damage) ? `${sneak.damage} damage` : "",
+      Number(sneak.penetration) ? `${sneak.penetration} penetration` : "",
+      Number(sneak.effectChance) ? `${sneak.effectChance}% effect chance` : "",
+    ]
+      .filter(Boolean)
+      .join(", ");
+
+    const lines = [];
+    if (sneakVictimsGranted.length) {
+      lines.push(
+        game.i18n.format("REDSTEEL.SneakLedger.Granted", {
+          targets: sneakVictimsGranted.join(", "),
+          gained: worth,
+        }),
+      );
+    }
+    if (sneakVictimsRefused.length) {
+      lines.push(
+        game.i18n.format("REDSTEEL.SneakLedger.Refused", {
+          targets: sneakVictimsRefused.join(", "),
+          lost: worth,
+        }),
+      );
+    }
+    if (sneakVictimsSpent.length) {
+      lines.push(
+        game.i18n.format("REDSTEEL.SneakLedger.Applied", {
+          targets: sneakVictimsSpent.join(", "),
+        }),
+      );
+    }
+
+    await ChatMessage.create({
+      speaker: ChatMessage.getSpeaker({ actor: attacker }),
+      content: `<div style="text-align:center; color:#a01818;">${lines.join("<br>")}</div>`,
     });
   }
 
@@ -1030,8 +1225,25 @@ function openDamageSelectionDialog(message, targets) {
   const lacerationAimSpent = () =>
     Object.values(lacerationState).reduce((sum, n) => sum + n, 0);
 
-  const getSelectedAttack = (targetActor) => {
-    const effAttack = resolveAttackForTarget(attack, targetActor);
+  // Takes the target token, not just its actor: the Sneak Attack allowance is
+  // tracked per token, so four unlinked goblins preview differently.
+  const previewAttackerTokenId = attackerTokenIdFromMessage(message);
+  // -1 refused, +1 promoted by a critical, 0 untouched. Recomputed on every
+  // render, so flipping the mode radio to Critical makes a critAsSneak attacker's
+  // numbers jump in the preview exactly as they will when applied.
+  const previewSneakSign = (target) => {
+    if (sneakRefusedForTarget(attack, target, previewAttackerTokenId)) return -1;
+    if (sneakGrantedForTarget(attack, target, previewAttackerTokenId, mode)) {
+      return 1;
+    }
+    return 0;
+  };
+
+  const getSelectedAttack = (target) => {
+    const effAttack = shiftSneakOnAttack(
+      resolveAttackForTarget(attack, target.actor),
+      previewSneakSign(target),
+    );
     return mode === "critical"
       ? getCriticalAttackData(
           effAttack,
@@ -1043,8 +1255,12 @@ function openDamageSelectionDialog(message, targets) {
   const renderPreview = () =>
     targets
       .map((t) => {
-        const effAttack = resolveAttackForTarget(attack, t.actor);
-        const selectedAttack = getSelectedAttack(t.actor);
+        const sneakSign = previewSneakSign(t);
+        const effAttack = shiftSneakOnAttack(
+          resolveAttackForTarget(attack, t.actor),
+          sneakSign,
+        );
+        const selectedAttack = getSelectedAttack(t);
         console.log("attack[mode]:", selectedAttack);
 
         const baneVariant = resolveBaneVariant(attack, t.actor);
@@ -1066,6 +1282,34 @@ function openDamageSelectionDialog(message, targets) {
                   : "REDSTEEL.Banes.CritLostWithBane",
               )})</span>`
             : "";
+
+        // Says out loud why this target's number disagrees with the card's, and
+        // by how much. The size matters: the figure printed below is post-armor
+        // while the card's is raw, so without the amount there is no way to tell
+        // a granted Sneak Attack from a hard-armored target.
+        const sneakMarker = (() => {
+          if (!sneakSign) return "";
+          const sign = sneakSign < 0 ? "−" : "+";
+          const amount = [
+            Number(attack.sneak?.damage)
+              ? `${sign}${attack.sneak.damage} damage`
+              : "",
+            Number(attack.sneak?.penetration)
+              ? `${sign}${attack.sneak.penetration} penetration`
+              : "",
+            Number(attack.sneak?.effectChance)
+              ? `${sign}${attack.sneak.effectChance}% effect`
+              : "",
+          ]
+            .filter(Boolean)
+            .join(", ");
+          return ` <span style="color:${sneakSign < 0 ? "#e0894b" : "#c8a84b"}; font-size:12px;">(${game.i18n.format(
+            sneakSign < 0
+              ? "REDSTEEL.SneakLedger.PreviewRefused"
+              : "REDSTEEL.SneakLedger.PreviewGranted",
+            { amount },
+          )})</span>`;
+        })();
 
         const spend = durabilityState[t.id];
         const perPoint = spend?.itemId
@@ -1114,7 +1358,11 @@ function openDamageSelectionDialog(message, targets) {
     `;
             }
 
-            const targetMod = t.actor.system.effectMods?.[name]?.applyChance || 0;
+            // Mirrors the GM apply path: a refused Sneak Attack also loses its
+            // effect-chance bonus, so the box ticks itself the same way here.
+            const targetMod =
+              (t.actor.system.effectMods?.[name]?.applyChance || 0) +
+              sneakSign * (Number(attack.sneak?.effectChance) || 0);
 
             // NPC body-part overrides (e.g. exposed limb → extra bleed chance).
             let npcBonus = 0;
@@ -1293,7 +1541,7 @@ function openDamageSelectionDialog(message, targets) {
 
         return `
     <li>
-      ${t.name}${baneMarker}${baneCritNote} →
+      ${t.name}${baneMarker}${baneCritNote}${sneakMarker} →
       <strong>${result.finalDamage} HP</strong>${durabilityNote}
       ${gmPreview}
       ${aimedStrikeLabel}

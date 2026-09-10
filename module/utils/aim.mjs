@@ -16,8 +16,10 @@
  *     the outcome cannot change the answer, so nothing needs deferring.
  *   • Attacking anybody else breaks the aim outright, unless Advanced Aim is
  *     live, in which case the aim is neither spent nor depleted.
- *   • A handful of abilities (Counterattack, Cleave, Cunning Strike…) have no
- *     interaction with Aiming at all and skip the whole thing.
+ *   • A handful of abilities (Counterattack, Riposte, Cleave, Cunning Strike…)
+ *     have no interaction with Aiming at all: they bank no hit bonus and no
+ *     Improved Aim penetration from the stacks, and they neither spend nor
+ *     break them. See AIM_NEUTRAL_ABILITIES.
  *   • Aim reduction (Duelist II, and the two spec nodes) is the one case the
  *     attack cannot settle on its own: a hit costs one stack, a critical hit
  *     none, a miss the lot. Those attacks park a pending record instead, which
@@ -303,8 +305,17 @@ export function getAimDefenseBonus({
  * committed to this roll, i.e. the same number that pays the +40% hit bonus.
  * That flag is consumed later, inside getAttackRolls, so callers must fold this
  * in while assembling penetration (which happens before the attack roll).
+ *
+ * Pass the ability being used, where there is one: an Aim-neutral ability draws
+ * nothing from the stacks, penetration included.
  */
-export function getImprovedAimPenetration(actor, weapon, context = null) {
+export function getImprovedAimPenetration(
+  actor,
+  weapon,
+  context = null,
+  ability = null,
+) {
+  if (abilityIgnoresAim(ability)) return 0;
   const stacks = Number(actor?.getFlag(SYSTEM_ID, "aimCount")) || 0;
   if (stacks < MAX_STACKS) return 0;
   return aimPerks(actor, weapon, context).improved ? IMPROVED_AIM_PEN : 0;
@@ -443,12 +454,18 @@ export async function grantManeuverAim(aimerToken, targetToken) {
 
 /**
  * Abilities with no interaction with Aiming whatsoever: using one neither spends
- * the aim nor breaks it, whoever it is pointed at. Matched on localizationKey,
- * which is stable across renames and identical in both languages, with the
- * English name as a fallback for hand-made copies that never got a key.
+ * the aim nor breaks it, whoever it is pointed at, and it draws nothing from the
+ * stacks either — no +10%/stack on the attack roll (getAttackRolls) and no
+ * Improved Aim penetration (getImprovedAimPenetration below). Both halves of
+ * that matter: exempting only the cost would turn the clause into a free bonus.
+ *
+ * Matched on localizationKey, which is stable across renames and identical in
+ * both languages, with the English name as a fallback for hand-made copies that
+ * never got a key.
  */
 const AIM_NEUTRAL_ABILITIES = new Map([
   ["REDSTEEL.Items.Counterattack.name", "Counterattack"],
+  ["REDSTEEL.Items.Riposte.name", "Riposte"],
   ["REDSTEEL.Items.RetaliatoryStrike.name", "Retaliatory strike"],
   ["REDSTEEL.Items.Cleave.name", "Cleave"],
   ["REDSTEEL.Items.PolearmCleave.name", "Polearm Cleave"],

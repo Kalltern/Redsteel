@@ -46,12 +46,12 @@ export function buildMeleeFlavor({
   return `
 <span style="display:inline-flex; align-items:center;">
   <img src="${weapon.img}" width="36" height="36" style="margin-right:8px;">
-  <strong style="font-size:20px;">Melee attack</strong>
+  <strong>Melee attack</strong>
 </span>
 
 <hr>
 
-<p style="text-align:center; font-size:20px;">
+<p class="rs-card-headline">
   <b>${
     critSuccess ? "Critical Success!" : critFailure ? "Critical Failure!" : ""
   }</b>

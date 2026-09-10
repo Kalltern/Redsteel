@@ -116,6 +116,12 @@ const CODE_AUTOMATED_NODES = {
     "garantovanyUspech",
     "meneIngredienci",
   ],
+  // utils/combatSkillBonuses.mjs reads the node when the attack is rolled (the
+  // sneak dice are pre-rolled and parked on the card even with the box
+  // unticked), and utils/applyDamage.mjs spends it: a blow applied as a critical
+  // is promoted to a Sneak Attack against any target whose once-per-round
+  // allowance is still free, tracked in utils/sneakLedger.mjs.
+  shadow: ["critAsSneak"],
   // utils/abilityGrants.mjs — unlocking the node grants an ability item.
   // (improvedAim and aimReduction are also read by utils/aim.mjs: the first for
   // the +10 penetration and Advanced Aim, the second for aim reduction on a hit

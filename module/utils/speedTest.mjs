@@ -154,7 +154,7 @@ export async function postSpeedTest(actor, { modifier = 0 } = {}) {
 
   await roll.toMessage({
     speaker: ChatMessage.getSpeaker({ actor }),
-    flavor: `<p style="text-align:center; font-size:18px;"><b>Speed Test</b></p>
+    flavor: `<p class="rs-card-headline"><b>Speed Test</b></p>
 <p style="text-align:center;">${renderSpeedTestLine({ actor, roll, source: "", modifier })}</p>`,
     rollMode: game.settings.get("core", "rollMode"),
   });
@@ -199,7 +199,7 @@ export async function contestSpeedTest(target, source = "") {
 
   await roll.toMessage({
     speaker: ChatMessage.getSpeaker({ actor }),
-    flavor: `<p style="text-align:center; font-size:18px;"><b>Speed Test vs ${vsLabel}</b></p>
+    flavor: `<p class="rs-card-headline"><b>Speed Test vs ${vsLabel}</b></p>
 <p style="text-align:center;">${outcome}</p>`,
     rollMode: game.settings.get("core", "rollMode"),
   });

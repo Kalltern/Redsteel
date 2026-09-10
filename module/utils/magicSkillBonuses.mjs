@@ -1616,7 +1616,7 @@ export async function finalizeRollsAndPostChat(
         ? "Critical Failure!"
         : "";
   const critBanner = critLabel
-    ? `<p style="text-align: center; font-size: 20px;"><b>${critLabel}</b></p>
+    ? `<p class="rs-card-headline"><b>${critLabel}</b></p>
         <hr>`
     : "";
 
@@ -1625,7 +1625,7 @@ export async function finalizeRollsAndPostChat(
     content,
     rolls: rolls,
     flavor: `
-          <div style="display:flex; align-items:center; justify-content:left; gap:8px; font-size:1.3em; font-weight:bold;">
+          <div style="display:flex; align-items:center; justify-content:left; gap:8px; font-weight:bold;">
             <img src="${spell.img}" title="${
               spell.localizedName ?? spell.name
             }" width="36" height="36">

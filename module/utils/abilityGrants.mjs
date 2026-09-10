@@ -123,7 +123,7 @@ const ABILITY = {
   REST: A("r0zKDZ0Zs2bMiUAu"), // Odpočinek
   RETALIATORY_STRIKE: A("qaPermZFuHuTg5ni"), // Odvetný úder
   RIPOSTE: A("WX6uJeqZAqeyykJa"), // Riposta
-  RUNNING_THROW: A("wNvzvMB5p69CON5c"), // Vrh s rozběhem
+  RUN_UP_THROW: A("wNvzvMB5p69CON5c"), // Vrh s rozběhem
   SHIELD_BASH: A("6Q935yGVq7NpUIbE"), // Úder štítem
   SHIELD_BASH_SMALL: A("8lz1hQM7U6yFtmY4"), // Úder štítem, malý štít
   SHIELD_CHARGE: A("rkM1ONas7GM6M97p"), // Zteč štítem
@@ -493,9 +493,9 @@ export const ABILITY_GRANTS = [
    * Peltast
    * ==================================================================== */
   {
-    label: "Peltast 2 → Running Throw",
+    label: "Peltast 2 → Run Up Throw",
     when: doctrine("peltast", 2),
-    grant: [ABILITY.RUNNING_THROW],
+    grant: [ABILITY.RUN_UP_THROW],
   },
   {
     label: "Peltast 3 → Exploit Weakness",

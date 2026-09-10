@@ -1239,7 +1239,7 @@ async function sendCraftMessage(actor, subject, outcome, spentLines, { isReroll 
 
   const content = `
     <div class="rs-alchemy-card">
-      <p style="text-align:center;font-size:18px;"><b><i class="fa-light fa-flask"></i> ${i18n.localize(outcome.isSubstance ? "REDSTEEL.Alchemy.Substance.ChatTitle" : "REDSTEEL.Alchemy.Chat.Title")} — ${subject}</b></p>
+      <p class="rs-card-headline"><b><i class="fa-light fa-flask"></i> ${i18n.localize(outcome.isSubstance ? "REDSTEEL.Alchemy.Substance.ChatTitle" : "REDSTEEL.Alchemy.Chat.Title")} — ${subject}</b></p>
       ${rerollTag}
       <p style="text-align:center;font-size:12px;opacity:0.8;">${i18n.localize("REDSTEEL.Alchemy.Chat.UsedStation")}: ${stationName}${stationNote}${difficultyNote}</p>
       <p style="text-align:center;">d100: <b>${outcome.d100}</b> → ${i18n.localize("REDSTEEL.Alchemy.Chat.Margin")} <b>${fmtMargin(outcome.margin)}</b><span style="font-size:12px;opacity:0.8;">${critTxt}</span></p>

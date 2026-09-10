@@ -3,6 +3,7 @@ import {
   prepareSpecialisationTrees,
   syncSpecialisationPassive,
 } from "../helpers/specialisations.mjs";
+import { openLearnWindow } from "../utils/learnWindow.mjs";
 import { getTraitPills } from "../utils/traitPills.mjs";
 import { AIMED_PARTS } from "../utils/aimedStrike.mjs";
 import { gatherHerbs, promptHerbMode } from "../utils/gatherHerbs.mjs";
@@ -184,6 +185,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       adjustNumericField: this._adjustNumericField,
       adjustActorNumber: this._adjustActorNumber,
       toggleSkillsEdit: this._toggleSkillsEdit,
+      learn: this._onOpenLearn,
       toggleEffect: this._toggleEffect,
       roll: this._onRoll,
       rollSpeed: this._onRollSpeed,
@@ -2762,6 +2764,16 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     await this.actor.update({ [path]: newValue });
   }
 
+  /**
+   * Open the Learn window (the level-up screen) for this actor.
+   *
+   * @this RedsteelActorSheet
+   */
+  static _onOpenLearn(event) {
+    event?.preventDefault?.();
+    openLearnWindow(this.actor);
+  }
+
   static _toggleSkillsEdit() {
     if (!this.isEditable) return;
     this._skillsEditMode = !this._skillsEditMode;
@@ -2979,7 +2991,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
 
           // Modify the label to include critical success/failure indication
           if (criticalMessage) {
-            label += `<hr><p style="text-align: center; font-size: 20px;"><b>${criticalMessage}</b></p>`;
+            label += `<hr><p class="rs-card-headline"><b>${criticalMessage}</b></p>`;
           }
           console.log(`Critical Message: ${criticalMessage}`);
         } else {
@@ -3007,7 +3019,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
         // Síly/Odolnosti") and rolls against this number. Same mechanism the
         // ability and spell cards already use.
         const isVersusTest = dataset.rollType === "attribute";
-        let flavorBody = `<p style="text-align: center; font-size: 20px;"><b>${label}</b></p>`;
+        let flavorBody = `<p class="rs-card-headline"><b>${label}</b></p>`;
         if (isVersusTest) {
           flavorBody += `<p style="text-align:center;">${renderMarginFollowupLine({
             margin: roll.total,

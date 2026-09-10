@@ -217,7 +217,7 @@ export async function usePotion(preselected = null) {
       flavor: `
     <span style="display:inline-flex; align-items:center;">
       <img src="${consumable.img}" title="${consumable.localizedName ?? consumable.name}" width="36" height="36" style="margin-right:8px;">
-      <strong style="font-size:20px;">Drinking ${consumable.localizedName ?? consumable.name}</strong>
+      <strong>Drinking ${consumable.localizedName ?? consumable.name}</strong>
     </span>
         <table style="width: 100%; text-align: center; font-size: 15px;">
           <tr><th>Potion Effects</th></tr>

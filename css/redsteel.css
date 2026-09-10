@@ -1,4 +1,20 @@
 @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap");
+/* The seven primary attributes, as they read on the character sheet. Single
+   source of truth: the skill-section headings and the Learn window's progress
+   bands both derive from these. */
+:root {
+  --rs-attr-str: #b31e2b;
+  --rs-attr-dex: #22904e;
+  --rs-attr-end: #b46f36;
+  --rs-attr-int: #2a5eaa;
+  --rs-attr-wil: #7d3fa7;
+  --rs-attr-cha: #d19934;
+  --rs-attr-per: #8fbcc4;
+
+  /* The socket the Learn window's rank stones sit in. */
+  --rs-socket: #c3c8cc;
+}
+
 :root {
   --redsteel-c-dark: #191813;
   --redsteel-c-faint: #c9c7b8;
@@ -1232,19 +1248,13 @@ table tr td:nth-child(3) {
   font-weight: 700;
 }
 
-.skill-section.attribute-str h5 { color: #b31e2b; }
-.skill-section.attribute-dex h5 { color: #22904e; }
-.skill-section.attribute-end h5 { color: #b46f36; }
-.skill-section.attribute-int h5 { color: #2a5eaa; }
-.skill-section.attribute-wil h5 { color: #7d3fa7; }
-.skill-section.attribute-cha h5 { color: #d19934; }
-.skill-section.attribute-per h5 { color: #8fbcc4; }
-.skill-section.attribute-dex h5 { color: #22904e; }
-.skill-section.attribute-end h5 { color: #b46f36; }
-.skill-section.attribute-int h5 { color: #2a5eaa; }
-.skill-section.attribute-wil h5 { color: #7d3fa7; }
-.skill-section.attribute-cha h5 { color: #d19934; }
-.skill-section.attribute-per h5 { color: #8fbcc4; }
+.skill-section.attribute-str h5 { color: var(--rs-attr-str); }
+.skill-section.attribute-dex h5 { color: var(--rs-attr-dex); }
+.skill-section.attribute-end h5 { color: var(--rs-attr-end); }
+.skill-section.attribute-int h5 { color: var(--rs-attr-int); }
+.skill-section.attribute-wil h5 { color: var(--rs-attr-wil); }
+.skill-section.attribute-cha h5 { color: var(--rs-attr-cha); }
+.skill-section.attribute-per h5 { color: var(--rs-attr-per); }
 
 .skill-toggle-wrapper {
   background: transparent;
@@ -10752,30 +10762,31 @@ body.redsteel-bg3-hotbar #hotbar {
 
 /* --- Per-attribute tint ---------------------- */
 
-/* The same seven colours the sheet already uses for its skill section headings
-   (see .skill-section.attribute-* above). Attribute cells take their own
-   colour; a skill slot takes its governing attribute's, so a glance down the
-   row groups them the way the sheet does. */
+/* The same seven colours the sheet already uses for its skill section headings.
+   Taken from the --rs-attr-* variables rather than copied, so the hotbar cannot
+   drift from the sheet. Attribute cells take their own colour; a skill slot
+   takes its governing attribute's, so a glance down the row groups them the way
+   the sheet does. */
 #redsteel-bg3-hotbar [data-attr="str"] {
-  --rs-bg3-tint: #b31e2b;
+  --rs-bg3-tint: var(--rs-attr-str);
 }
 #redsteel-bg3-hotbar [data-attr="dex"] {
-  --rs-bg3-tint: #22904e;
+  --rs-bg3-tint: var(--rs-attr-dex);
 }
 #redsteel-bg3-hotbar [data-attr="end"] {
-  --rs-bg3-tint: #b46f36;
+  --rs-bg3-tint: var(--rs-attr-end);
 }
 #redsteel-bg3-hotbar [data-attr="int"] {
-  --rs-bg3-tint: #2a5eaa;
+  --rs-bg3-tint: var(--rs-attr-int);
 }
 #redsteel-bg3-hotbar [data-attr="wil"] {
-  --rs-bg3-tint: #7d3fa7;
+  --rs-bg3-tint: var(--rs-attr-wil);
 }
 #redsteel-bg3-hotbar [data-attr="cha"] {
-  --rs-bg3-tint: #d19934;
+  --rs-bg3-tint: var(--rs-attr-cha);
 }
 #redsteel-bg3-hotbar [data-attr="per"] {
-  --rs-bg3-tint: #8fbcc4;
+  --rs-bg3-tint: var(--rs-attr-per);
 }
 
 /* A wash off the top edge and a tinted rim, not a solid block: the numbers
@@ -11194,7 +11205,7 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
 }
 
 .rs-versus-outcome {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: bold;
   letter-spacing: 0.04em;
 }
@@ -11250,6 +11261,18 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   opacity: 0.7;
 }
 
+/* Why the versus line under a Bad Dodge reads 0 — the die beat the dodge limit
+   and the margin was capped. Same weight as the auto-defense note, but it says
+   something the GM has to act on, so it keeps the accent colour. */
+.rs-bad-dodge-note {
+  margin: 2px 0;
+  text-align: center;
+  font-size: 11px;
+  font-style: italic;
+  color: #c4c700;
+  opacity: 0.85;
+}
+
 /* Dialog header: what this defense is being rolled against. */
 .rs-versus-target {
   margin-bottom: 6px;
@@ -11270,11 +11293,27 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
 /* Defend: answers an attack card, carrying the attacker's identity into the
    defense roll so Overwhelm never has to guess who swung.
 
-   Spans the whole button grid and centres in it, so the button reads as the
-   card's own action instead of sitting in one of the two damage-button cells. */
+   Its presence flips the whole container from the two-column damage grid to a
+   single flex row, so Re-Roll / Apply Damage / Defend read as one answer strip
+   with Defend last. The GM scans one row per card instead of two. Buttons size
+   to their own label and shrink together, which keeps the row honest whether
+   the card carries two buttons or three. */
+.button-container.has-defend {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+}
+
+.button-container.has-defend > button,
+.button-container.has-defend > a.button {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  padding-inline: 6px;
+  font-size: 0.9em;
+}
+
 .button-container button.rs-defend-button {
-  grid-column: 1 / -1;
-  justify-self: center;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -11919,4 +11958,1172 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
 .rs-monster-builder .rs-mb-footer button {
   width: auto;
   flex: 0 0 auto;
+}
+
+/* -------------------------------------------- */
+/*  Chat card headline sizing                   */
+/* -------------------------------------------- */
+
+/* One size for every card headline, whatever posted it. The emitters used to
+   hard-code their own inline size on each one (20px, 18px, 1.3em ...), which is
+   why an attack card, a defense card and a speed test never agreed on how big a
+   title should be. Those literals are gone; the two rules here own it.
+
+   The title row is always the flavor's first element child: either a flex
+   wrapper around an <img> and a <strong>, or a <div> around an <img> and a
+   plain <span>. It is still declared !important so that cards already sitting
+   in an old chat log, which carry the old inline size in their stored HTML,
+   normalise too.
+
+   Announcements (critical success, critical failure, "X Test vs Y", "Speed
+   Test") are marked by their emitter instead of being matched by shape. That
+   distinction is load-bearing: a flavor is full of other unclassed <p>
+   children, and a rule broad enough to catch every announcement also catches
+   the 11px reroll note and throwExplosive's "Single target" line and blows them
+   up to headline size. Mark the paragraph, do not guess at it.
+
+   Attack tags are spans and keep their own 11px; notes like
+   .rs-auto-defense-note carry a class and keep their 11px italic; the overwhelm
+   and aim lines are grandchildren of the flavor rather than children. None of
+   them are swept up. */
+.chat-message .flavor-text > *:first-child,
+.chat-message .flavor-text > *:first-child > strong,
+.chat-message .flavor-text > *:first-child > b {
+  font-size: 16px !important;
+}
+
+/* Not scoped to .flavor-text: the alchemy card builds its headline in the
+   message content instead, and it is the same kind of thing. */
+.chat-message .rs-card-headline {
+  text-align: center;
+  font-size: 16px;
+}
+
+/* -------------------------------------------- */
+/*  Progressive chat card collapse              */
+/* -------------------------------------------- */
+
+/* Driven from module/utils/chatCardCollapse.mjs, which only ever puts one of
+   these two classes on the message root. No class at all means the full card,
+   exactly as it renders today. Everything is hidden rather than removed, so a
+   card can go back to full without being re-rendered, and none of the other
+   render hooks that inject pills and buttons need to know this exists. */
+
+.chat-message.rs-card--foldable .rs-card-toggle {
+  cursor: pointer;
+}
+
+/* Two pieces of detail survive being folded, and both folded states below carve
+   them out by name rather than fighting over specificity with an override
+   further down. The versus block is the defense card outcome word plus its
+   attack-versus-defense comparison. The summary is built by the module from
+   flags.attack and sits in the card at every level, hidden by the base rule at
+   the bottom of this section and revealed only when collapsed. */
+
+/* Compact: the title row, the versus block and the roll boxes stay. The rest of
+   the outcome detail carried in the flavor (crit banner, damage line, effects
+   table, description) goes, and the trait and Bane pills sit in that same run
+   of siblings and go with it. The damage-type footer is named separately
+   because it is not part of the flavor at all: redsteel.mjs inserts it as a
+   sibling AFTER .message-content. */
+.chat-message.rs-card--compact
+  .flavor-text
+  > *:not(:first-child):not(.rs-versus),
+.chat-message.rs-card--compact .redsteel-damage-footer {
+  display: none !important;
+}
+
+/* Collapsed: the title row, whichever of the versus block and the summary the
+   card has, and the action buttons. Everything else goes.
+
+   The buttons stay because a folded card must still be answerable. Defend in
+   particular is the whole point of an attack card for the person being swung
+   at, and a card that folds on a round tick or after three minutes would
+   otherwise take the only way to answer it with it.
+
+   That is why .message-content is kept and emptied rather than hidden outright:
+   the button container is a direct child of it (every hook that builds one
+   appends it there), so the block has to stay displayed to show them. The
+   blanket rule still covers every OTHER direct child of the message, which is
+   what catches the damage-type footer and anything a future hook hangs off the
+   message root the same way, without it having to be named here.
+
+   .rs-fold-keep is put on every actionable control and its ancestors by
+   markActionable() in the module. It is what keeps a contested card answerable:
+   Shield Bash, Knockdown and the attribute tests are resolved by clicking a
+   margin line rather than a button, and that line sits at a different depth on
+   every card, so no single selector reaches them all.
+
+   .rs-rerolled-note is kept for the opposite reason to the buttons. A card that
+   was rerolled away has had its controls stripped, and folding it would leave
+   the summary line quoting a margin and a damage that are no longer the ones in
+   play with nothing to say so. The note is what stops the folded card lying. */
+.chat-message.rs-card--collapsed > *:not(.message-header):not(.message-content),
+.chat-message.rs-card--collapsed
+  .message-content
+  > *:not(.button-container):not(.rs-rerolled-note):not(.rs-fold-keep),
+.chat-message.rs-card--collapsed
+  .flavor-text
+  > *:not(:first-child):not(.rs-versus):not(.rs-card-summary):not(.rs-fold-keep),
+.chat-message.rs-card--collapsed .redsteel-damage-footer {
+  display: none !important;
+}
+
+/* The folded attack card summary. It is the .rs-versus block's twin: an attack
+   folded above a defense folded should read as one pair, so this mirrors that
+   block rule for rule, down to the rules above and below and the gold/red a
+   critical earns. The two differ only in what they announce, since an attack
+   card cannot know whether it landed.
+
+   The frame lives on the bare class rather than under .rs-card--collapsed so
+   the state rules below, which are one class weaker, can still override the
+   border colour. Only `display` is switched by the collapsed state: the summary
+   repeats what an open card already spells out in full, so it is dead weight
+   anywhere but a folded card. */
+.rs-card-summary {
+  display: none;
+  margin: 6px 0;
+  padding: 4px 0;
+  text-align: center;
+  border-top: 1px solid rgba(200, 168, 75, 0.25);
+  border-bottom: 1px solid rgba(200, 168, 75, 0.25);
+}
+
+.chat-message.rs-card--collapsed .rs-card-summary {
+  display: block;
+}
+
+.rs-card-summary-outcome {
+  font-size: 16px;
+  font-weight: bold;
+  letter-spacing: 0.04em;
+}
+
+/* Gold for the attacker's own critical, red for a fumble, and no announcement
+   at all on an ordinary swing, which leaves the frame at its base colour. */
+.rs-card-summary.is-critical-success .rs-card-summary-outcome {
+  color: #c8a84b;
+  text-shadow: 0 0 6px rgba(200, 168, 75, 0.5);
+}
+
+.rs-card-summary.is-critical-success {
+  border-color: rgba(200, 168, 75, 0.55);
+}
+
+.rs-card-summary.is-critical-failure .rs-card-summary-outcome {
+  color: #d05c5c;
+  text-shadow: 0 0 6px rgba(208, 92, 92, 0.55);
+}
+
+.rs-card-summary.is-critical-failure {
+  border-color: rgba(208, 92, 92, 0.5);
+}
+
+.rs-card-summary-detail {
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+/* What landed. A touch brighter than the margin line, because on a folded card
+   this is the part someone is actually looking for. */
+.rs-card-summary-effects {
+  margin-top: 2px;
+  font-size: 12px;
+  color: #c8a84b;
+  opacity: 0.85;
+}
+
+/* The card takes its bottom breathing room from the content block. With that
+   gone the collapsed title would sit flush against the frame. */
+.chat-message.rs-card--collapsed .flavor-text {
+  margin-bottom: 0;
+}
+
+/* Collapsed is the one state where clicking is the only way out, so the title
+   row is widened to the full card. It is an inline-flex span otherwise, only as
+   wide as its own text. */
+.chat-message.rs-card--collapsed .rs-card-toggle {
+  width: 100%;
+}
+
+/* ============================= */
+/* LEARN WINDOW (level-up grid)  */
+/* ============================= */
+
+/* The window is a fixed-height column: tab strip and wallet bar stay put, the
+   grid is the only thing that scrolls. Without the min-height:0 on the grid a
+   flex child refuses to shrink and the scrollbar lands on the whole window
+   instead, taking the sticky rank header away with it. */
+.rs-learn .rs-learn-body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  padding: 0;
+  /* Declared, not inherited: the sticky rank header paints the same colour,
+     and matching a theme default by eye leaves a visible band behind it. */
+  background: #1c1c1c;
+}
+
+/* -------- tab strip -------- */
+
+.rs-learn .rs-learn-tabs {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 4px;
+  padding: 8px 12px 0;
+  border-bottom: 1px solid rgba(217, 161, 59, 0.35);
+}
+
+.rs-learn .rs-learn-tabs button {
+  width: auto;
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 5px 14px;
+  border: 1px solid rgba(217, 161, 59, 0.25);
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+  background: rgba(255, 255, 255, 0.02);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #b7ac97;
+  cursor: pointer;
+}
+
+.rs-learn .rs-learn-tabs button:hover {
+  color: #d6bc8c;
+  background: rgba(217, 161, 59, 0.1);
+}
+
+.rs-learn .rs-learn-tabs button.active {
+  color: #d9a13b;
+  background: linear-gradient(
+    to bottom,
+    rgba(81, 66, 38, 0.32),
+    rgba(81, 66, 38, 0.06)
+  );
+  box-shadow: inset 0 -2px 0 rgba(214, 188, 140, 0.55);
+}
+
+/* -------- wallet bar -------- */
+
+.rs-learn .rs-learn-wallet {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(217, 161, 59, 0.2);
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.rs-learn .rs-learn-purse,
+.rs-learn .rs-learn-ledger {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.rs-learn .rs-learn-stat,
+.rs-learn .rs-learn-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rs-learn .rs-learn-stat label,
+.rs-learn .rs-learn-field label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.6;
+}
+
+.rs-learn .rs-learn-stat b {
+  font-size: 16px;
+  color: #d9a13b;
+  line-height: 1.1;
+}
+
+.rs-learn .rs-learn-stat em {
+  font-size: 11px;
+  font-style: normal;
+  opacity: 0.55;
+}
+
+.rs-learn .rs-learn-stat {
+  flex-direction: row;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.rs-learn .rs-learn-stat label {
+  align-self: center;
+}
+
+.rs-learn .rs-learn-field input[type="number"] {
+  width: 68px;
+  height: 22px;
+  padding: 0 4px;
+  font-size: 12px;
+}
+
+.rs-learn .rs-learn-field select {
+  width: auto;
+  min-width: 84px;
+  height: 22px;
+  padding: 0 4px;
+  font-size: 12px;
+}
+
+/* -------- the grid -------- */
+
+.rs-learn .rs-learn-grid {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 12px 14px;
+}
+
+/* Eleven columns: a fixed label gutter, then ten equal rank columns. The
+   sticky header row and every track block below it share this one definition,
+   which is what puts a value under its own numeral and lines every track up
+   with the next without a single hand-matched width. */
+.rs-learn .rs-learn-head,
+.rs-learn .rs-learn-track {
+  display: grid;
+  grid-template-columns: 200px repeat(10, 1fr);
+  column-gap: 4px;
+  /* Both carry the same side padding: the numerals sit over their columns only
+     while the two grids stay the same width. */
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+/* The rank numerals ride the scroll. */
+.rs-learn .rs-learn-head {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  padding: 6px 8px 4px;
+  background: #1c1c1c;
+  border-bottom: 1px solid rgba(217, 161, 59, 0.35);
+}
+
+/* The numerals are the spine of the grid, so they read as a heading rather
+   than as a caption: full accent, bold, and large enough to find at a glance
+   from anywhere down the page. Letter-spacing stays small because a centred
+   numeral is shifted left by half of its own trailing letter-space. */
+.rs-learn .rs-learn-col {
+  min-width: 0;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  color: #d9a13b;
+  opacity: 1;
+}
+
+.rs-learn .rs-learn-section {
+  margin: 12px 0 0;
+}
+
+.rs-learn .rs-learn-section-title {
+  margin: 0 0 4px;
+  /* Indented to match the blocks under it, which carry the same side padding. */
+  padding: 0 8px 2px;
+  border-bottom: 1px solid rgba(217, 161, 59, 0.22);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #d6bc8c;
+}
+
+/* One track block. Every item inside states its own row and column, so the
+   ten full-height hover columns cannot push anything out of place. */
+/* One tinted panel behind the whole block. Progress is read from the filled
+   diamonds and the lit columns, not from fading the ranks you have not bought
+   yet — those still have to be legible, because they are what you are deciding
+   between. */
+.rs-learn .rs-learn-track {
+  align-items: center;
+  row-gap: 5px;
+  margin: 0 0 14px;
+  padding-top: 6px;
+  padding-bottom: 8px;
+  background: rgba(255, 255, 255, 0.022);
+}
+
+/* -------- the label gutter -------- */
+
+/* Holds the track name and one label per row. Merged rows name several stats
+   at once ("Ranged Defense, Hit and Melee Defense"), so labels wrap rather than
+   being cut: the row simply grows to fit, and the grid keeps every column
+   aligned regardless. */
+.rs-learn .rs-learn-gutter {
+  min-width: 0;
+  padding-right: 12px;
+}
+
+/* Shares the node row, so it centres against the diamonds instead of sitting
+   on a row of its own. */
+.rs-learn .rs-learn-track-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rs-learn .rs-learn-track-name {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  color: #cfc6b2;
+  line-height: 1.2;
+}
+
+
+.rs-learn .rs-learn-rowlabel {
+  font-size: 11px;
+  line-height: 1.25;
+  padding: 1px 0;
+  overflow-wrap: anywhere;
+  color: #8a8175;
+}
+
+.rs-learn .rs-learn-rowlabel.is-cost {
+  letter-spacing: 0.06em;
+  color: #d6bc8c;
+}
+
+/* -------- the hover / click column -------- */
+
+/* One per rank, running the full height of the block and painted underneath
+   the matrix, so hovering anywhere in the column lights the whole column and
+   clicking anywhere in it buys that rank. Everything drawn on top of it is
+   display only and lets the pointer through. */
+.rs-learn .rs-learn-colhit {
+  position: relative;
+  align-self: stretch;
+  min-width: 0;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.rs-learn .rs-learn-node,
+.rs-learn .rs-learn-icons,
+.rs-learn .rs-learn-seg,
+.rs-learn .rs-learn-val,
+.rs-learn .rs-learn-reqs,
+.rs-learn .rs-learn-cost {
+  /* The click column is positioned, so a static row would paint UNDER it and
+     never see a pointer — which is what silenced the teacher badge's tooltip.
+     These sit in a layer above it; the ones that must not eat a click keep
+     pointer-events: none and let it through. */
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  padding: 1px 0;
+  line-height: 1.25;
+  text-align: center;
+  pointer-events: none;
+}
+
+/* -------- the node track -------- */
+
+/* The rim is the socket the stone sits in, so it stays gold on every block and
+   the attribute colour reads only from the fill inside it. `color` here feeds
+   the diamond's border through currentcolor and nothing else — the connecting
+   line sets its own colour. */
+.rs-learn .rs-learn-node {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  color: color-mix(in srgb, var(--rs-socket) 45%, transparent);
+  /* The diamond is the buy control, so this row takes the pointer back from
+     the column underneath it. */
+  pointer-events: auto;
+}
+
+/* The connecting line, drawn as two half segments per node. A track the book
+   stops short of X simply stops drawing them. Each half reaches 4px past its
+   own column, which is exactly the column gap. */
+.rs-learn .rs-learn-node::before,
+.rs-learn .rs-learn-node::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  height: 1px;
+  background: color-mix(in srgb, var(--rs-band, #d9a13b) 22%, transparent);
+  transform: translateY(-50%);
+}
+
+.rs-learn .rs-learn-node::before {
+  left: -4px;
+  right: 50%;
+}
+
+.rs-learn .rs-learn-node::after {
+  left: 50%;
+  right: -4px;
+}
+
+.rs-learn .rs-learn-node:not(.has-left)::before,
+.rs-learn .rs-learn-node:not(.has-right)::after {
+  display: none;
+}
+
+.rs-learn .rs-learn-node.lit-left::before,
+.rs-learn .rs-learn-node.lit-right::after {
+  background: color-mix(in srgb, var(--rs-band, #d9a13b) 80%, transparent);
+}
+
+/* A rotated square, so the node needs no icon font and no image. */
+.rs-learn .rs-learn-diamond {
+  position: relative;
+  z-index: 1;
+  width: 16px;
+  height: 16px;
+  border: 1px solid currentcolor;
+  background: #14120d;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.7);
+  transform: rotate(45deg);
+  transition:
+    transform 80ms ease,
+    box-shadow 80ms ease;
+}
+
+.rs-learn .rs-learn-node[data-action] {
+  cursor: pointer;
+}
+
+.rs-learn .rs-learn-node[data-action]:hover .rs-learn-diamond {
+  transform: rotate(45deg) scale(1.18);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.7),
+    0 0 6px color-mix(in srgb, var(--rs-band, #d9a13b) 60%, transparent);
+}
+
+.rs-learn .rs-learn-node.is-owned {
+  color: var(--rs-socket);
+}
+
+.rs-learn .rs-learn-node.is-owned .rs-learn-diamond {
+  border-width: 2px;
+  background: color-mix(in srgb, var(--rs-band, #d9a13b) 62%, #0c0a07);
+}
+
+/* -------- abilities and prose -------- */
+
+.rs-learn .rs-learn-icons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 1px 0;
+}
+
+/* The icon keeps its own pointer events so its name still tooltips; a click on
+   it still buys the rank, because it bubbles through this cell. */
+.rs-learn .rs-learn-icons img {
+  border: 1px solid rgba(217, 161, 59, 0.35);
+  border-radius: 3px;
+  object-fit: cover;
+  background: rgba(0, 0, 0, 0.35);
+  pointer-events: auto;
+}
+
+/* Book prose has no stat to sit under, so a rank that grants no ability shows
+   it as a chip here instead of looking empty. Long clauses are clamped; the
+   column tooltip always carries the full sentence. */
+.rs-learn .rs-learn-chip {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  max-width: 100%;
+  overflow: hidden;
+  padding: 1px 3px;
+  border: 1px solid rgba(217, 161, 59, 0.16);
+  border-radius: 3px;
+  font-size: 9px;
+  line-height: 11px;
+  color: #8a8175;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+
+/* -------- segment mode -------- */
+
+/* Weapon skills and doctrines keep their numbers inside the rank column, so a
+   segment stacks: the icons of the abilities that rank grants, then one chip
+   per thing it does. min-width:0 is what stops a long chip from widening the
+   1fr column and knocking every block out of line with the header — the row
+   grows taller instead. */
+.rs-learn .rs-learn-seg {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 2px 1px;
+}
+
+.rs-learn .rs-learn-seg-icons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  max-width: 100%;
+}
+
+.rs-learn .rs-learn-seg-icons img {
+  border: 1px solid rgba(217, 161, 59, 0.35);
+  border-radius: 3px;
+  object-fit: cover;
+  background: rgba(0, 0, 0, 0.35);
+  pointer-events: auto;
+}
+
+/* In a segment the chip IS the content, not an aside, so it is never clipped:
+   the row grows taller to fit instead. `anywhere` wrapping keeps even a long
+   word inside the column. */
+.rs-learn .rs-learn-seg .rs-learn-chip {
+  display: block;
+  -webkit-line-clamp: none;
+  width: 100%;
+}
+
+/* A chip carrying a stat and a number is the segment's answer to a matrix row,
+   so it reads at the weight a value would. Prose chips stay muted. */
+.rs-learn .rs-learn-chip.is-value {
+  font-variant-numeric: tabular-nums;
+  color: #b7ac97;
+}
+
+.rs-learn .rs-learn-seg.state-owned .rs-learn-chip.is-value {
+  color: #d9a13b;
+  border-color: rgba(217, 161, 59, 0.35);
+}
+
+.rs-learn .rs-learn-seg.state-available .rs-learn-chip.is-value {
+  color: #d6bc8c;
+}
+
+.rs-learn .rs-learn-seg.state-poor img,
+.rs-learn .rs-learn-seg.state-locked img,
+.rs-learn .rs-learn-seg.state-blocked img {
+  filter: grayscale(0.35);
+}
+
+/* -------- the requirements row -------- */
+
+/* One chip per clause the rank asks for, wrapped inside the rank column. The
+   grid item is min-width:0 so a long clause grows the row taller instead of
+   widening the column and knocking every block out of line with the header.
+   The row lets the pointer through, exactly like the value and cost rows, so
+   clicking a requirement still buys the rank; only the teacher badge takes the
+   pointer back. */
+/* The progress band. Runs from the left edge of the block through the last
+   rank bought and grows a column at a time, so training reads as a bar filling
+   up rather than as ten separately tinted cards. Behind everything, and never
+   in the way of a pointer. */
+.rs-learn .rs-learn-fill.is-full {
+  margin-right: -8px;
+  box-shadow: none;
+}
+
+/* Skills take their band from their governing attribute, the same seven colours
+   the sheet's section headings use. The Combat tab has no parent attribute, so
+   its blocks fall through to the gold default in .rs-learn-fill.
+
+   The mix percentage is set per attribute rather than shared: these hues are
+   nowhere near equal in luminance, so a flat percentage would leave Intelligence
+   nearly invisible while Perception glared. */
+.rs-learn .rs-learn-section[data-section="str"] {
+  --rs-band: var(--rs-attr-str);
+  --rs-band-mix: 20%;
+}
+
+.rs-learn .rs-learn-section[data-section="dex"] {
+  --rs-band: var(--rs-attr-dex);
+  --rs-band-mix: 17%;
+}
+
+.rs-learn .rs-learn-section[data-section="end"] {
+  --rs-band: var(--rs-attr-end);
+  --rs-band-mix: 16%;
+}
+
+.rs-learn .rs-learn-section[data-section="int"] {
+  --rs-band: var(--rs-attr-int);
+  --rs-band-mix: 24%;
+}
+
+.rs-learn .rs-learn-section[data-section="wil"] {
+  --rs-band: var(--rs-attr-wil);
+  --rs-band-mix: 21%;
+}
+
+.rs-learn .rs-learn-section[data-section="cha"] {
+  --rs-band: var(--rs-attr-cha);
+  --rs-band-mix: 15%;
+}
+
+.rs-learn .rs-learn-section[data-section="per"] {
+  --rs-band: var(--rs-attr-per);
+  --rs-band-mix: 12%;
+}
+
+.rs-learn .rs-learn-fill {
+  align-self: stretch;
+  /* Bleeds out through the block's own padding so it fills the panel edge to
+     edge. Without this the panel showed as a second, larger band around it.
+     The values mirror .rs-learn-track's padding exactly; change them together. */
+  margin: -6px 0 -8px -8px;
+  background: color-mix(
+    in srgb,
+    var(--rs-band, #d9a13b) var(--rs-band-mix, 11%),
+    transparent
+  );
+  box-shadow: inset -1px 0 0
+    color-mix(in srgb, var(--rs-band, #d9a13b) 45%, transparent);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Ruled off like a ledger. One item per rule, spanning every column and
+   painted behind the rank cards, so the line runs the full width of the block
+   unbroken instead of restarting inside each card. */
+.rs-learn .rs-learn-rule {
+  align-self: start;
+  height: 0;
+  margin-top: -3px;
+  border-top: 1px solid rgba(217, 161, 59, 0.14);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.rs-learn .rs-learn-reqs,
+.rs-learn .rs-learn-cost,
+.rs-learn .rs-learn-rowlabel.is-reqs,
+.rs-learn .rs-learn-rowlabel.is-cost {
+  margin-top: 2px;
+  padding-top: 3px;
+}
+
+.rs-learn .rs-learn-reqs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-width: 0;
+  padding-bottom: 1px;
+  pointer-events: none;
+}
+
+/* A locked rank is the one column where this row has work to do, so it is not
+   dimmed with the rest of that column: what is still missing has to stay
+   readable. */
+.rs-learn .rs-learn-track .rs-learn-reqs.state-locked {
+  opacity: 1;
+}
+
+.rs-learn .rs-learn-req {
+  min-width: 0;
+  max-width: 100%;
+  /* Takes the pointer so its own tooltip can explain the shorthand. The rest of
+     the column is still the click target for buying the rank. */
+  pointer-events: auto;
+  cursor: help;
+  padding: 1px 3px;
+  border: 1px solid rgba(217, 161, 59, 0.16);
+  border-radius: 3px;
+  font-size: 9px;
+  line-height: 11px;
+  text-align: center;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+  color: #8a8175;
+}
+
+/* Still blocking: bright. Already satisfied: dimmed, because it is history. */
+.rs-learn .rs-learn-req.is-met {
+  color: #d9a13b;
+  border-color: rgba(217, 161, 59, 0.5);
+  background: rgba(81, 66, 38, 0.32);
+}
+
+.rs-learn .rs-learn-req.is-unmet {
+  color: #8a8175;
+  border-color: rgba(217, 161, 59, 0.16);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* The GM clauses and the book text the price table could not model never
+   block, so they must not read like a wall. */
+.rs-learn .rs-learn-req.is-advisory {
+  font-style: italic;
+  opacity: 0.55;
+}
+
+/* -------- the teacher badge -------- */
+
+.rs-learn .rs-learn-teacher {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 4px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  font-size: 9px;
+  line-height: 12px;
+  text-decoration: none;
+  pointer-events: auto;
+  cursor: default;
+}
+
+.rs-learn .rs-learn-teacher i {
+  font-size: 10px;
+  line-height: 1;
+}
+
+.rs-learn .rs-learn-teacher b {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* Found: gold, the way an owned rank reads. Missing: muted, and the column's
+   own padlock is what says that this is the thing blocking it. */
+.rs-learn .rs-learn-teacher.is-unlocked {
+  color: #d9a13b;
+  border-color: rgba(217, 161, 59, 0.5);
+  background: rgba(81, 66, 38, 0.32);
+}
+
+.rs-learn .rs-learn-teacher.is-locked {
+  color: #8a8175;
+  border-color: rgba(217, 161, 59, 0.16);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Only the GM can move it, so only the GM's pointer says so. */
+.rs-learn .rs-learn-teacher.is-gm {
+  cursor: pointer;
+}
+
+.rs-learn .rs-learn-teacher.is-gm:hover {
+  color: #f0dcae;
+  border-color: #d9a13b;
+}
+
+/* -------- values and cost -------- */
+
+.rs-learn .rs-learn-val {
+  font-size: 11px;
+  line-height: 15px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: #8a8175;
+}
+
+.rs-learn .rs-learn-cost {
+  font-size: 10px;
+  line-height: 14px;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: #8a8175;
+}
+
+.rs-learn .rs-learn-lock {
+  position: absolute;
+  top: 2px;
+  right: 3px;
+  font-size: 9px;
+  line-height: 1;
+  color: #8a8175;
+}
+
+/* -------- column states -------- */
+
+.rs-learn .rs-learn-colhit.state-available {
+  border-color: rgba(230, 196, 122, 0.45);
+  background: rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+}
+
+.rs-learn .rs-learn-colhit.state-available:hover {
+  border-color: #d9a13b;
+}
+
+.rs-learn .rs-learn-colhit.state-unavailable {
+  border-color: transparent;
+  background: none;
+}
+
+.rs-learn .rs-learn-val.state-owned,
+.rs-learn .rs-learn-cost.state-owned {
+  color: #d9a13b;
+}
+
+.rs-learn .rs-learn-val.state-available,
+.rs-learn .rs-learn-cost.state-available {
+  color: #d6bc8c;
+}
+
+.rs-learn .rs-learn-track .state-poor {
+  opacity: 0.82;
+}
+
+.rs-learn .rs-learn-cost.state-poor {
+  color: #b34a4a;
+}
+
+.rs-learn .rs-learn-track .state-locked {
+  opacity: 0.78;
+}
+
+.rs-learn .rs-learn-track .state-blocked {
+  opacity: 0.7;
+}
+
+.rs-learn .rs-learn-icons.state-poor img,
+.rs-learn .rs-learn-icons.state-locked img,
+.rs-learn .rs-learn-icons.state-blocked img {
+  filter: grayscale(0.35);
+}
+
+/* -------- column hover -------- */
+
+/* The whole column reacts, not just the part the pointer is over. One pair of
+   rules per rank is the price of matching a cell to the column it sits in:
+   CSS cannot compare an element's own data-rank to the hovered one. */
+.rs-learn .rs-learn-track:has([data-rank="1"]:hover) [data-rank="1"],
+.rs-learn .rs-learn-track:has([data-rank="2"]:hover) [data-rank="2"],
+.rs-learn .rs-learn-track:has([data-rank="3"]:hover) [data-rank="3"],
+.rs-learn .rs-learn-track:has([data-rank="4"]:hover) [data-rank="4"],
+.rs-learn .rs-learn-track:has([data-rank="5"]:hover) [data-rank="5"],
+.rs-learn .rs-learn-track:has([data-rank="6"]:hover) [data-rank="6"],
+.rs-learn .rs-learn-track:has([data-rank="7"]:hover) [data-rank="7"],
+.rs-learn .rs-learn-track:has([data-rank="8"]:hover) [data-rank="8"],
+.rs-learn .rs-learn-track:has([data-rank="9"]:hover) [data-rank="9"],
+.rs-learn .rs-learn-track:has([data-rank="10"]:hover) [data-rank="10"] {
+  color: #f0d7aa;
+}
+
+.rs-learn .rs-learn-track:has([data-rank="1"]:hover) .rs-learn-colhit[data-rank="1"],
+.rs-learn .rs-learn-track:has([data-rank="2"]:hover) .rs-learn-colhit[data-rank="2"],
+.rs-learn .rs-learn-track:has([data-rank="3"]:hover) .rs-learn-colhit[data-rank="3"],
+.rs-learn .rs-learn-track:has([data-rank="4"]:hover) .rs-learn-colhit[data-rank="4"],
+.rs-learn .rs-learn-track:has([data-rank="5"]:hover) .rs-learn-colhit[data-rank="5"],
+.rs-learn .rs-learn-track:has([data-rank="6"]:hover) .rs-learn-colhit[data-rank="6"],
+.rs-learn .rs-learn-track:has([data-rank="7"]:hover) .rs-learn-colhit[data-rank="7"],
+.rs-learn .rs-learn-track:has([data-rank="8"]:hover) .rs-learn-colhit[data-rank="8"],
+.rs-learn .rs-learn-track:has([data-rank="9"]:hover) .rs-learn-colhit[data-rank="9"],
+.rs-learn .rs-learn-track:has([data-rank="10"]:hover) .rs-learn-colhit[data-rank="10"] {
+  border-color: rgba(217, 161, 59, 0.6);
+  background: rgba(217, 161, 59, 0.1);
+}
+
+/* -------- refund -------- */
+
+.rs-learn .rs-learn-refund {
+  position: absolute;
+  top: 1px;
+  right: 2px;
+  z-index: 2;
+  font-size: 9px;
+  line-height: 1;
+  color: #8a8175;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.rs-learn .rs-learn-refund:hover {
+  color: #d9a13b;
+}
+
+/* -------- unbuilt tabs -------- */
+
+.rs-learn .rs-learn-empty {
+  flex: 1 1 auto;
+  margin: 0;
+  padding: 28px 12px;
+  text-align: center;
+  font-size: 12px;
+  font-style: italic;
+  opacity: 0.55;
+}
+
+/* The Learn button in the skills toolbar. Matched to .skills-edit-toggle so
+   the two controls read as one pair rather than as a native button parked
+   next to a styled one. */
+.learn-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: auto;
+  flex: 0 0 auto;
+  min-height: 24px;
+  padding: 2px 10px;
+  border: 1px solid #55462e;
+  border-radius: 4px;
+  color: rgb(219 199 169);
+  background: rgba(12, 12, 12, 0.78);
+  box-shadow:
+    inset 0 1px 2px rgb(255 255 255 / 7%),
+    0 1px 3px rgb(0 0 0 / 45%);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.learn-open:hover {
+  border-color: #9c7b45;
+  color: #f0d7aa;
+}
+
+/* --- Learn window: toolbar + track picker -------------------------------- */
+
+.rs-learn .rs-learn-toolbar {
+  display: flex;
+  padding: 0 0 6px;
+}
+
+.rs-learn .rs-learn-acquire,
+.rs-learn .rs-learn-picker-actions button {
+  padding: 4px 10px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: #d6bc8c;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(217, 161, 59, 0.35);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+/* The picker is the way into this window's whole content, so its button spans
+   the grid rather than tucking into a corner. */
+.rs-learn .rs-learn-acquire {
+  flex: 1 1 auto;
+  justify-content: center;
+  gap: 8px;
+  padding: 6px 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.rs-learn .rs-learn-picker-actions button {
+  width: auto;
+}
+
+.rs-learn .rs-learn-acquire:hover,
+.rs-learn .rs-learn-picker-actions button:hover {
+  color: #f0dcae;
+  border-color: #d9a13b;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.rs-learn .rs-learn-picker {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 4px 8px 0;
+}
+
+.rs-learn .rs-learn-picker-head {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+  background: #1c1c1c;
+  border-bottom: 1px solid rgba(217, 161, 59, 0.35);
+}
+
+.rs-learn .rs-learn-picker-hint {
+  flex: 1 1 auto;
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #9a9a9a;
+}
+
+.rs-learn .rs-learn-picker-actions {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 6px;
+}
+
+.rs-learn .rs-learn-picker-section {
+  margin: 12px 0 0;
+}
+
+.rs-learn .rs-learn-picks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 2px 10px;
+  padding: 4px 0 0;
+}
+
+.rs-learn .rs-learn-pick {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 6px;
+  font-size: 12px;
+  color: #d6bc8c;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.rs-learn .rs-learn-pick:hover {
+  border-color: rgba(217, 161, 59, 0.35);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.rs-learn .rs-learn-pick input {
+  flex: 0 0 auto;
+  margin: 0;
+}
+
+.rs-learn .rs-learn-pick span {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A track with ranks already bought stays in the tree, so its box is locked. */
+.rs-learn .rs-learn-pick.locked {
+  color: #d9a13b;
+  cursor: default;
+}
+
+.rs-learn .rs-learn-pick.locked:hover {
+  border-color: transparent;
+  background: none;
+}
+
+.rs-learn .rs-learn-pick em {
+  flex: 0 0 auto;
+  font-style: normal;
+  font-size: 11px;
+  color: #d9a13b;
 }

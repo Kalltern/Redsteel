@@ -44,7 +44,9 @@ import { registerCombatAutoSelect } from "./utils/combatAutoSelect.mjs";
 import { registerTempHealthGrant } from "./utils/tempHealthGrant.mjs";
 import { registerAdvantageousManeuver } from "./utils/advantageousManeuver.mjs";
 import { registerRedsteelHotbar } from "./utils/redsteelHotbar.mjs";
+import { registerChatCardCollapse } from "./utils/chatCardCollapse.mjs";
 import { monsterBuilder } from "./utils/monsterBuilder.mjs";
+import { openLearnWindow } from "./utils/learnWindow.mjs";
 import { applyTraitStatusEffects } from "./utils/traitStatusEffects.mjs";
 import { applyActorLight } from "./utils/itemLight.mjs";
 import {
@@ -64,12 +66,20 @@ import {
 import { usePotion } from "./utils/usePotion.mjs";
 import { usePoison, clearWeaponCoating } from "./utils/usePoison.mjs";
 import {
+  badDodgeMargin,
   defenseRoll,
+  isBadDodge,
   registerDefendButton,
   renderArmorTable,
   renderVersusBlock,
 } from "./utils/defense.mjs";
 import { registerOverwhelmHooks } from "./utils/overwhelm.mjs";
+import {
+  describeSneakSources,
+  hasSneakedThisRound,
+  forgetSneakSource,
+  clearSneakLedger,
+} from "./utils/sneakLedger.mjs";
 import { registerAutoDefense } from "./utils/autoDefense.mjs";
 import { registerWrathOfBlood, syncWrathOfBlood } from "./utils/wrathOfBlood.mjs";
 import {
@@ -180,6 +190,8 @@ import {
   evaluateDmgVsArmor,
   getActorCombatModifiers,
   getWeaponSpecBonuses,
+  computeSneakDeltas,
+  consumeSneakAttackFlag,
 } from "./utils/combatSkillBonuses.mjs";
 import {
   showSpellSelectionDialogs,
@@ -326,6 +338,7 @@ Hooks.once("init", function () {
   game.redsteel.selectToken = selectToken;
   game.redsteel.statusEffectManager = statusEffectManager;
   game.redsteel.monsterBuilder = monsterBuilder;
+  game.redsteel.openLearnWindow = openLearnWindow;
   game.redsteel.getActorCombatModifiers = getActorCombatModifiers;
   game.redsteel.getWeaponSpecBonuses = getWeaponSpecBonuses;
   game.redsteel.applyEffect =
@@ -366,6 +379,17 @@ Hooks.once("init", function () {
   game.redsteel.getDamageRolls = getDamageRolls;
   game.redsteel.getEffectRolls = getEffectRolls;
   game.redsteel.getCriticalRolls = getCriticalRolls;
+  game.redsteel.computeSneakDeltas = computeSneakDeltas;
+  game.redsteel.consumeSneakAttackFlag = consumeSneakAttackFlag;
+  // Sneak Attack allowance. No UI by design, so these are the only way to look
+  // at the ledger or correct it — from the console, on a selected token:
+  //   game.redsteel.sneakLedger.describe(canvas.tokens.controlled[0])
+  game.redsteel.sneakLedger = {
+    describe: describeSneakSources,
+    has: hasSneakedThisRound,
+    forget: forgetSneakSource,
+    clear: clearSneakLedger,
+  };
   game.redsteel.showSpellSelectionDialogs = showSpellSelectionDialogs;
   game.redsteel.getValidSpellVariants = getValidSpellVariants;
   game.redsteel.showVariantSelectionDialog = showVariantSelectionDialog;
@@ -442,6 +466,7 @@ Hooks.once("init", function () {
   registerCanvasZoom();
   registerDeadTokenAppearance();
   registerRedsteelHotbar();
+  registerChatCardCollapse();
 
   /**
    * Set an initiative formula for the system
@@ -1541,10 +1566,21 @@ function buildDefenseRerollParts(
   const flags = message.flags?.redsteel ?? {};
   const isDefense =
     Array.isArray(flags.rerollTokens) && flags.rerollTokens.includes("defense");
-  if (!isDefense) return { flags: {}, html: "" };
+  if (!isDefense) return { flags: {}, badDodge: false, html: "" };
+
+  // The armor block and the dodge limit belong to the defender, not to the die,
+  // so both are read live. The deflect roll deliberately is not: it was its own
+  // chance roll and rerolling the defense test does not buy a second one.
+  const defender = ChatMessage.getSpeakerActor(message.speaker ?? {});
+
+  // A rerolled dodge is a fresh die against the same limit, so the Bad Dodge
+  // test and its margin cap are re-applied here exactly as on the first card.
+  const badDodge =
+    flags.rerollTokens.includes("dodge") && isBadDodge(defender, d100);
+  const contestedTotal = badDodgeMargin(roll.total, badDodge);
 
   const versus = renderVersusBlock(flags.versusAttack ?? null, {
-    defenseTotal: roll.total,
+    defenseTotal: contestedTotal,
     defenseD100: d100,
     defenseCrit: critSuccess,
     defenseCritFailure: critFailure,
@@ -1552,7 +1588,9 @@ function buildDefenseRerollParts(
 
   // Same rule the original card used: the contest when this defense answered an
   // attack card, the roll's own margin when it was launched from the hotbar.
-  const defenseFailed = versus.versus ? !versus.versus.blocked : roll.total < 0;
+  const defenseFailed = versus.versus
+    ? !versus.versus.blocked
+    : contestedTotal < 0;
 
   const out = {};
   if (flags.versusAttack) out.versusAttack = flags.versusAttack;
@@ -1566,13 +1604,18 @@ function buildDefenseRerollParts(
     out.advantageousManeuver = { ...flags.advantageousManeuver, defenseFailed };
   }
 
-  // The armor block belongs to the defender, not to the die, so it is redrawn
-  // live. The deflect roll deliberately is not: it was its own chance roll and
-  // rerolling the defense test does not buy a second one.
-  const defender = ChatMessage.getSpeakerActor(message.speaker ?? {});
   const armor = defender ? renderArmorTable(defender) : "";
 
-  return { flags: out, html: `${versus.html}${armor}` };
+  // Same note the first card carried: say why the margin under it reads 0.
+  const note =
+    badDodge && roll.total > 0
+      ? `<p class="rs-bad-dodge-note">${game.i18n.format(
+          "REDSTEEL.Defense.BadDodgeNote",
+          { limit: Number(defender?.system?.dodgeLimit?.total) || 0 },
+        )}</p>`
+      : "";
+
+  return { flags: out, badDodge, html: `${note}${versus.html}${armor}` };
 }
 
 /**
@@ -1631,10 +1674,6 @@ async function executeReroll(message, sourceLabel) {
     ? await applyPendingCast(pendingCast, roll, critSuccess)
     : false;
 
-  let flavorText = "";
-  if (critSuccess) flavorText = "Critical Success!";
-  else if (critFailure) flavorText = "Critical Failure!";
-
   // Combat cards keep being combat cards after a reroll: the attack packet and
   // the defense claims move across with the numbers the new die changed.
   const attackFlag = buildAttackRerollFlag(message, roll, {
@@ -1646,6 +1685,15 @@ async function executeReroll(message, sourceLabel) {
     critFailure,
     d100: d100Result,
   });
+
+  // Same precedence the defense card uses: a natural critical outranks a Bad
+  // Dodge, which only ever reads as the headline on an otherwise plain roll.
+  let flavorText = "";
+  if (critSuccess) flavorText = "Critical Success!";
+  else if (critFailure) flavorText = "Critical Failure!";
+  else if (defenseParts.badDodge) {
+    flavorText = game.i18n.localize("REDSTEEL.Defense.BadDodge");
+  }
 
   const carried = {};
   for (const key of REROLL_CARRIED_FLAGS) {
@@ -1676,8 +1724,8 @@ async function executeReroll(message, sourceLabel) {
 
   const created = await roll.toMessage({
     speaker: message.speaker ?? ChatMessage.getSpeaker({ user: game.user }),
-    flavor: `<p style="text-align: center; font-size: 20px;"><b><i class="fa-light fa-dice-d20"></i> ${rollName} <i class="fa-light fa-dice-d20"></i><hr></b></p>
-          <p style="text-align: center; font-size: 20px;"><b>${flavorText}</b></p>${defenseParts.html}${versusNote}${sourceNote}${rescuedNote}`,
+    flavor: `<p class="rs-card-headline"><b><i class="fa-light fa-dice-d20"></i> ${rollName} <i class="fa-light fa-dice-d20"></i><hr></b></p>
+          <p class="rs-card-headline"><b>${flavorText}</b></p>${defenseParts.html}${versusNote}${sourceNote}${rescuedNote}`,
     flags: {
       redsteel: {
         rollName,

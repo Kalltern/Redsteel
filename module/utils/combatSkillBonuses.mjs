@@ -14,7 +14,12 @@ import {
   renderVersusTestBlock,
 } from "./attributeFollowup.mjs";
 import { abilityAllowedForWeapon } from "./weaponResolver.mjs";
-import { resolveAimOnAttack, markAimCritFail } from "./aim.mjs";
+import {
+  resolveAimOnAttack,
+  markAimCritFail,
+  abilityIgnoresAim,
+} from "./aim.mjs";
+import { actorHasSpecNode } from "../helpers/specialisations.mjs";
 import { consumeOpportunityFlag } from "./opportunityAttacks.mjs";
 
 const BLEEDING_DAMAGE_TYPES = new Set(["slash", "piercing"]);
@@ -51,44 +56,86 @@ export function canWeaponBleed(weapon, ammo = null) {
   );
 }
 
-async function getSneakDamageFormula(actor, weapon, weaponContext = null) {
+/**
+ * The three bonuses a declared Sneak Attack is worth: extra damage dice, extra
+ * penetration, and a higher chance to land an effect.
+ *
+ * PURE — it reads the declaration flag and never writes it, so any number of
+ * callers can ask for a delta. `consumeSneakAttackFlag` clears the declaration
+ * once, at the end of the attack that spent it.
+ *
+ * It used to consume itself on a three-call counter, one tick per caller, which
+ * failed two ways. Any path that called a subset (a spell or an ability that
+ * reaches getEffectRolls without getCriticalRolls) left the flag parked at 1/3
+ * and it leaked into the actor's next attack; and a fourth reader could not be
+ * added at all without breaking the count.
+ *
+ * `sneakPenetration` is deliberately NOT crit-only. It was named
+ * `sneakCritPenetration` and added inside buildCriticalTotals, so a Rogue who
+ * landed a non-critical Sneak Attack lost the whole 5/10. It now goes into the
+ * base penetration sum at each attack orchestrator, which feeds the normal,
+ * breakthrough and critical packets alike — buildCriticalTotals takes that sum
+ * as an addend, so do not add it there a second time.
+ *
+ * Both bonuses key off `system.sneakRank`, not off the actor type. NPCs used to
+ * be excluded outright: they rolled sneak dice but could never earn the effect
+ * chance or the penetration, with no way for the bestiary to grant them.
+ */
+export function computeSneakDeltas(actor, weapon, weaponContext = null) {
   const ws = weapon?.system ?? {};
   const offProps = weaponContext ? getOffhandProps(weaponContext) : null;
   const offhandSneakDamage = offProps?.sneakDamage ?? 0;
-  const useSneak = (await actor.getFlag("redsteel", "useSneakAttack")) || false;
-  if (!useSneak)
-    return { sneakDamage: "", sneakEffect: 0, sneakCritPenetration: 0 };
-
-  let counter = (await actor.getFlag("redsteel", "sneakAccessCounter")) || 0;
-  counter++;
-  await actor.setFlag("redsteel", "sneakAccessCounter", counter);
-
-  if (counter >= 3) {
-    await actor.unsetFlag("redsteel", "useSneakAttack");
-    await actor.unsetFlag("redsteel", "sneakAccessCounter");
-    //console.log("Sneak attack fully consumed, flags cleared.");
-  } else {
-    console.log(`Sneak used by ${counter}/3 systems`);
+  if (!actor) {
+    return {
+      declared: false,
+      critAsSneak: false,
+      sneakFormula: "",
+      sneakEffect: 0,
+      sneakPenetration: 0,
+    };
   }
 
-  let sneakEffect = 0;
-  let sneakCritPenetration = 0;
-  if (actor.type !== "npc") {
-    const doctrineRogueLevel = actor.system.doctrines.rogue.value;
-    if (doctrineRogueLevel >= 3) sneakEffect = 50;
-    if (doctrineRogueLevel >= 4) sneakCritPenetration = 5;
-    if (doctrineRogueLevel >= 10) sneakCritPenetration = 10;
-  }
+  // The numbers are worked out whether or not the player ticked the box, because
+  // "Kritický zásah jako Zákeřný útok" (shadow/critAsSneak) can turn an ordinary
+  // blow into a Sneak Attack after the fact — at Apply Damage, once the defense
+  // roll has settled whether it was a critical at all. `declared` says which of
+  // the two this is; only a declared sneak is folded into the damage total.
+  const declared = !!actor.getFlag("redsteel", "useSneakAttack");
+  const critAsSneak = actorHasSpecNode(actor, "shadow", "critAsSneak");
+
+  // Sneak rank 0-3, from one field for both actor types: a character derives it
+  // from the rogue doctrine in documents/actor.mjs, an NPC is given it by a
+  // Rogue I/II/III trait whose Active Effect writes system.sneakRank. An NPC
+  // with no such trait reads 0 and gets dice only, which is what every NPC got
+  // before the rank existed. Clamped, so a hand-edited 9 cannot invent a tier.
+  const rank = Math.min(3, Math.max(0, Number(actor.system.sneakRank) || 0));
+  const sneakEffect = rank >= 1 ? 50 : 0;
+  const sneakPenetration = rank >= 3 ? 10 : rank >= 2 ? 5 : 0;
   let sneakDamage = `${actor.system.sneakDamage ?? 1}d6 + ${offhandSneakDamage}`;
   if (ws.sneakDamage) {
     sneakDamage = `(${sneakDamage} + ${ws.sneakDamage} )`;
   }
 
   return {
-    sneakDamage: ` + ${sneakDamage}`,
+    declared,
+    critAsSneak,
+    sneakFormula: sneakDamage,
     sneakEffect,
-    sneakCritPenetration,
+    sneakPenetration,
   };
+}
+
+/**
+ * Clear the Sneak Attack declaration, once, from the attack that spent it.
+ * Call it after the attack card is posted — everything that reads a delta has
+ * run by then, and a miss spends the declaration exactly as a hit does.
+ * `sneakAccessCounter` is legacy from the old self-consuming counter and is
+ * cleared here so a world carrying a stale one is tidied on the next attack.
+ */
+export async function consumeSneakAttackFlag(actor) {
+  if (!actor?.getFlag("redsteel", "useSneakAttack")) return;
+  await actor.unsetFlag("redsteel", "useSneakAttack");
+  await actor.unsetFlag("redsteel", "sneakAccessCounter");
 }
 
 export async function getNonWeaponAbility(actor, ability) {
@@ -296,7 +343,7 @@ export async function getNonWeaponAbility(actor, ability) {
       },
     },
     flavor: `
-<div style="display:flex; align-items:center; justify-content:left; gap:8px; font-size:1.3em; font-weight:bold;">
+<div style="display:flex; align-items:center; justify-content:left; gap:8px; font-weight:bold;">
   <img src="${ability.img}" title="${ability.localizedName ?? ability.name}" width="36" height="36">
   <span>${ability.localizedName ?? ability.name}</span>
 </div>
@@ -757,14 +804,19 @@ export async function getAttackRolls(
   // Declared opportunity attack: consumed here, the one choke point every weapon
   // attack passes through, and reported back so the card can carry the tag.
   const opportunityAttack = await consumeOpportunityFlag(actor);
+  // Aim: the stack count the dialog committed to this roll. The flag is cleared
+  // either way, so a declaration can never leak into the next attack, but an
+  // Aim-neutral ability (Counterattack, Riposte, Retaliatory strike…) banks no
+  // bonus from it — resolveAimOnAttack below leaves those stacks untouched, and
+  // paying nothing for a bonus is not what the exemption means.
   const aimValue = actor.getFlag("redsteel", "aimCount");
   if (aimValue > 0) {
-    abilityAttack += aimValue * 10;
+    if (!abilityIgnoresAim(ability)) abilityAttack += aimValue * 10;
     await actor.unsetFlag("redsteel", "aimCount");
   }
   // Now that the bonus is banked, settle what the attack does to the Aim itself:
   // spend it, break it, or park it for Apply Damage. Reads useSneakAttack rather
-  // than consuming it — getSneakDamageFormula owns that counter.
+  // than consuming it — consumeSneakAttackFlag does that, once, after the card.
   await resolveAimOnAttack({
     actor,
     weapon,
@@ -945,11 +997,13 @@ export async function getDamageRolls(
   const offProps = getOffhandProps(weaponContext);
   const actorMods = getActorCombatModifiers(actor, weapon);
   const specDamage = getWeaponSpecBonuses(actor, weapon);
-  const { sneakDamage } = await getSneakDamageFormula(
-    actor,
-    weapon,
-    weaponContext ?? null,
-  );
+  // Sneak dice are rolled apart from the rest of the damage, not folded into
+  // this formula. Apply Damage has to be able to take them off again per target
+  // — the once-per-round allowance is spent on the victim, so one blow into a
+  // fresh target and an already-sneaked one must pay out differently — and a
+  // contribution buried inside a single evaluated Roll cannot be recovered.
+  const { sneakFormula, declared: sneakDeclared, critAsSneak } =
+    computeSneakDeltas(actor, weapon, weaponContext ?? null);
   let damageFormula = `(${ws.formula ?? 0}`;
   if (offProps?.diceBonus) {
     damageFormula += ` + ${offProps.diceBonus}`;
@@ -965,7 +1019,7 @@ export async function getDamageRolls(
     damageFormula +=
       qualityDamage > 0 ? ` + ${qualityDamage}` : ` - ${Math.abs(qualityDamage)}`;
   }
-  if (sneakDamage) damageFormula += `+ ${sneakDamage}`;
+  // (Sneak dice deliberately absent — rolled on their own below.)
   if (abilityDamage) damageFormula += `+ ${abilityDamage}`;
   if (actorMods) damageFormula += `+ ${actorMods.damageBonus}`;
   if (qualifiesForFreehand(actor, weapon)) {
@@ -1012,8 +1066,28 @@ export async function getDamageRolls(
   const damageRoll = new Roll(damageFormula, actor.system);
   await damageRoll.evaluate();
 
+  // Sneak Attack dice, on their own roll so the total stays recoverable.
+  //
+  // They are rolled for a critAsSneak attacker too, even with the box unticked,
+  // because Apply Damage may decide after the fact that the blow was a critical
+  // and therefore a Sneak Attack — and by then the preview has to be able to
+  // show the finished number. Rolling it there instead would make the dialog
+  // disagree with what it applies, which is the one thing that path guarantees.
+  //
+  // Only a *declared* sneak is added to `damageTotal`. The undeclared roll is
+  // carried on the card as a parked number and stays worth nothing unless the
+  // critical actually lands on a target with its allowance free.
+  let sneakRoll = null;
+  let sneakTotal = 0;
+  if (sneakFormula && (sneakDeclared || critAsSneak)) {
+    sneakRoll = new Roll(sneakFormula, actor.system);
+    await sneakRoll.evaluate();
+    sneakTotal = Math.floor(sneakRoll.total ?? 0);
+  }
+
   //console.log("enchant damage", actorMods.damageBonus);
-  const damageTotal = Math.floor(damageRoll.total ?? 0);
+  const damageTotal =
+    Math.floor(damageRoll.total ?? 0) + (sneakDeclared ? sneakTotal : 0);
 
   // If the weapon has breakthrough — or the character was granted some — roll
   // it. Character-granted dice (Giantslayer) do not need the weapon to carry a
@@ -1050,6 +1124,8 @@ export async function getDamageRolls(
     damageRoll,
     damageTotal,
     breakthroughRollResult,
+    sneakRoll,
+    sneakTotal,
   };
 }
 
@@ -1104,11 +1180,9 @@ export async function getCriticalRolls(
   const offProps = getOffhandProps(weaponContext);
   const failedAttack = attackRoll.total < 0 ? -5 : 0;
   const ws = weapon?.system ?? {};
-  const { sneakCritPenetration } = await getSneakDamageFormula(
-    actor,
-    weapon,
-    weaponContext ?? null,
-  );
+  // Sneak penetration is deliberately absent here: it now rides the base
+  // `penetration` argument, which buildCriticalTotals already adds in. Adding
+  // it again would double it on every critical.
   let actorCritRange;
   if (ws.class === "crossbow" || ws.class === "bow" || ws.thrown) {
     actorCritRange = actor.system.critRangeRanged;
@@ -1170,7 +1244,6 @@ export async function getCriticalRolls(
       (critPenetrationMapping[degree] ?? 0) +
         perBonus +
         actorCritBonus +
-        sneakCritPenetration +
         deadlyLungeBonus +
         penetration +
         (weapon?.system.critPenetration || 0) +
@@ -1258,7 +1331,7 @@ export async function getEffectRolls(
     (qualifiesForFreehand || shieldEquipped(actor))
       ? 100
       : 0;
-  const { sneakEffect } = await getSneakDamageFormula(
+  const { sneakEffect } = computeSneakDeltas(
     actor,
     weapon,
     weaponContext ?? null,

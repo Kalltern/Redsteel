@@ -77,7 +77,7 @@ async function coatWeapon(actor, poison, weapon) {
     flavor: `
       <span style="display:inline-flex; align-items:center;">
         <img src="${poison.img}" title="${coating.name}" width="36" height="36" style="margin-right:8px;">
-        <strong style="font-size:20px;">Coating ${weapon.localizedName ?? weapon.name}</strong>
+        <strong>Coating ${weapon.localizedName ?? weapon.name}</strong>
       </span>
       <table style="width: 100%; text-align: center; font-size: 15px;">
         <tr><th>Poison Coating</th></tr>

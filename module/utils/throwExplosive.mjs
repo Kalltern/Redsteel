@@ -243,7 +243,7 @@ export async function throwExplosive(options = {}) {
 
     const rollName = `Threw ${consumable.localizedName ?? consumable.name}`;
     const flavor = `
-<div style="display:flex; align-items:center; gap:8px; font-size:1.3em; font-weight:bold;">
+<div style="display:flex; align-items:center; gap:8px; font-weight:bold;">
   <img src="${consumable.img}" width="36" height="36">
   <span>${rollName}</span>
 </div>
@@ -252,7 +252,7 @@ export async function throwExplosive(options = {}) {
   ${s.aimed ? "Single target" : "Area effect"}
 </p>
 
-<p style="text-align:center; font-size:20px;"><b>
+<p class="rs-card-headline"><b>
   ${critSuccess ? "Critical Success!" : critFailure ? "Critical Failure!" : ""}
 </b></p>
 <hr>

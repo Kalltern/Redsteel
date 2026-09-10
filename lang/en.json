@@ -70,6 +70,22 @@
       "Bg3SlimChat": {
         "name": "Narrow the chat input until used",
         "label": "Foundry keeps the message box docked at full width on every sidebar tab, which crowds the Redsteel hotbar's right side. This shrinks it to a stub and gives the width back when you click into it. Reload required."
+      },
+      "CardCompact": {
+        "name": "Compact combat cards",
+        "label": "Show attack, defense and spell cards without their damage, critical and effects block. The roll and the action buttons stay. Click the title of a card to open it in full."
+      },
+      "CardAutoCollapse": {
+        "name": "Fold old cards away",
+        "label": "Once a combat round ticks over, or once the delay below has passed, a card folds down to its title line. Click the title to open it again."
+      },
+      "CardFoldAutoDefense": {
+        "name": "Fold automatic defenses",
+        "label": "Defenses an NPC rolls for itself arrive already folded, showing only the name and the Hit or Blocked line with its comparison. Click the title to open the full card."
+      },
+      "CardCollapseSeconds": {
+        "name": "Fold cards after (seconds)",
+        "label": "How long a card stays open before it folds down on its own. Set this to 0 to fold cards only when a combat round passes."
       }
     },
     "Bg3Hotbar": {
@@ -124,8 +140,8 @@
       },
       "EffectMod": {
         "stagger": "Stagger",
-        "bleed": "Bleeding",
-        "poison": "Poisoning"
+        "bleed": "Bleed",
+        "poison": "Poison"
       },
       "NoTags": "Nothing of note",
       "Race": "Race",
@@ -472,22 +488,22 @@
             },
             "critAsSneak": {
               "label": "Critical Hit counts as Sneak Attack",
-              "description": "10 CP; Tulák VIII. Manual — resolved at the table."
+              "description": "10 CP; Tulák VIII. A blow applied as a critical counts as a Sneak Attack against any target you have not already Sneak Attacked this round. Automated."
             },
             "outnumberSneak": {
               "label": "Outnumbering 2:1 counts as Sneak Attack",
               "description": "20 CP; Tulák X. After a hit while outnumbering 2:1, it counts as a Sneak Attack. Manual — resolved at the table."
             },
             "bleed1": {
-              "label": "Bleeding +10%",
+              "label": "Bleed +10%",
               "description": "5 CP. Automated."
             },
             "bleed2": {
-              "label": "Bleeding +10%",
+              "label": "Bleed +10%",
               "description": "5 CP. Automated."
             },
             "bleed3": {
-              "label": "Bleeding +10%",
+              "label": "Bleed +10%",
               "description": "5 CP. Automated."
             },
             "calculation": {
@@ -552,7 +568,7 @@
           "label": "Servant of the Sword",
           "nodes": {
             "bleedA": {
-              "label": "Bleeding +10%",
+              "label": "Bleed +10%",
               "description": "5 CP. Automated."
             },
             "critHitDef": {
@@ -560,7 +576,7 @@
               "description": "5 CP. Automated."
             },
             "bleedB": {
-              "label": "Bleeding +10%",
+              "label": "Bleed +10%",
               "description": "5 CP. Automated."
             },
             "initiative": {
@@ -689,7 +705,7 @@
               "description": "15 CP; M/T/S/D VIII. Manual — resolved at the table."
             },
             "bleedStun": {
-              "label": "Bleeding +10% / Stun +6%",
+              "label": "Bleed +10% / Stun +6%",
               "description": "10 CP. Automated."
             },
             "critDefRange": {
@@ -746,7 +762,7 @@
               "description": "5 CP; Štítonoš VI. Manual — resolved at the table."
             },
             "bleedStun": {
-              "label": "Bleeding +20% / Stun +10%",
+              "label": "Bleed +20% / Stun +10%",
               "description": "15 CP. Automated."
             },
             "kritZasah": {
@@ -808,7 +824,7 @@
             },
             "krvaveBodnuti": {
               "label": "Laceration",
-              "description": "5 CP. After a hit, sacrifice any number of Aim to cause one Bleeding each. Sacrificing at least one on a Sneak Attack causes two more, and costs no further Aim for the hit. Costs 2 Stamina per Aim sacrificed. Offered in the Apply Damage dialog. Automated."
+              "description": "5 CP. After a hit, sacrifice any number of Aim to cause one Bleed each. Sacrificing at least one on a Sneak Attack causes two more, and costs no further Aim for the hit. Costs 2 Stamina per Aim sacrificed. Offered in the Apply Damage dialog. Automated."
             },
             "mireniRedukce": {
               "label": "Aim Reduction",
@@ -941,7 +957,7 @@
             },
             "hnevKrve": {
               "label": "Wrath of Blood",
-              "description": "10 CP; Škola Krve - Expert. The second, third and fourth Bleeding on you each grant Blood Spell Power +1 and Blood Reserve capacity +10 (up to +3 and +30). Automated."
+              "description": "10 CP; Škola Krve - Expert. The second, third and fourth Bleed on you each grant Blood Spell Power +1 and Blood Reserve capacity +10 (up to +3 and +30). Automated."
             },
             "krvavaPlatba": {
               "label": "Blood Payment",
@@ -1369,7 +1385,7 @@
               "description": "5 CP. Manual — resolved at the table."
             },
             "bleedStun": {
-              "label": "Bleeding +20% / Stun +15%",
+              "label": "Bleed +20% / Stun +15%",
               "description": "10 CP. Automated."
             },
             "kritRozsah": {
@@ -1389,7 +1405,7 @@
               "description": "10 CP; Štítonoš VIII. Manual — resolved at the table."
             },
             "vrhSRozbehem": {
-              "label": "Running Throw: Move +50%, Impact +1d6",
+              "label": "Run Up Throw: Move +50%, Impact +1d6",
               "description": "5 CP; Štítonoš IV. Manual — resolved at the table."
             },
             "utokSPohybem": {
@@ -1584,15 +1600,15 @@
               "description": "10 CP; Lukostřelec/Kušník VII. Manual — resolved at the table."
             },
             "bleed1": {
-              "label": "Bleeding +5%",
+              "label": "Bleed +5%",
               "description": "5 CP. Automated."
             },
             "bleed2": {
-              "label": "Bleeding +5%",
+              "label": "Bleed +5%",
               "description": "5 CP. Automated."
             },
             "bleed3": {
-              "label": "Bleeding +5%",
+              "label": "Bleed +5%",
               "description": "5 CP. Automated."
             },
             "presnyVystrel": {
@@ -4613,7 +4629,7 @@
       "AppliedHeading": "Applied enchantments",
       "TotalHeading": "Total",
       "DropHint": "Drag an Enchantment Item here. Its bonuses are added to this item permanently.",
-      "EditorHint": "Set what this enchantment grants to the item it is applied to. Combat effects (Bleeding, Stagger, custom) are configured on the Combat Effects tab.",
+      "EditorHint": "Set what this enchantment grants to the item it is applied to. Combat effects (Bleed, Stagger, custom) are configured on the Combat Effects tab.",
       "WeaponMods": "Weapon bonuses",
       "GearMods": "Gear bonuses",
       "AnyClass": "Any",
@@ -4766,11 +4782,11 @@
       }
     },
     "BloodStrike": {
-      "OpenWoundOption": "Open Wound — spend {cost} Life from the Blood Reserve for 1 Bleeding",
+      "OpenWoundOption": "Open Wound — spend {cost} Life from the Blood Reserve for 1 Bleed",
       "ReserveStatus": "Blood Reserve ({name}): {spent} committed of {reserve}",
       "ReserveTooLow": "{name} needs {cost} Life in the Blood Reserve, but has {reserve}.",
-      "OpenWoundApplied": "{name} tears the wound open on {targets} — {cost} Life from the Blood Reserve, 1 Bleeding.",
-      "ChargeEarned": "{name} cuts down a bleeding foe. The next attack causes one extra Bleeding (Blood Strike)."
+      "OpenWoundApplied": "{name} tears the wound open on {targets} — {cost} Life from the Blood Reserve, 1 Bleed.",
+      "ChargeEarned": "{name} cuts down a bleeding foe. The next attack causes one extra Bleed (Blood Strike)."
     },
     "BloodHarvest": {
       "Gained": "{name} draws {amount} spilled Life into the Blood Reserve (Cordinas I)."
@@ -4780,6 +4796,13 @@
       "StaminaTooLow": "{name} has {stamina} Stamina — {cost} is needed per Aim sacrificed.",
       "Applied": "{name} tears the wound wide on {targets}, sacrificing {aim} Aim for {stamina} Stamina."
     },
+    "SneakLedger": {
+      "Refused": "Sneak Attack not applied to {targets} — already spent on them this round ({lost} removed).",
+      "Granted": "Critical Hit counts as a Sneak Attack against {targets} (+{gained}).",
+      "Applied": "Sneak Attack applied to {targets}.",
+      "PreviewRefused": "Sneak Attack already spent this round: {amount}",
+      "PreviewGranted": "Critical Hit counts as a Sneak Attack: {amount}"
+    },
     "Overwhelm": {
       "Label": "Overwhelm",
       "MarkerName": "Overwhelm ({penalty}%)",
@@ -4788,6 +4811,10 @@
       "UnknownAttacker": "Unknown attacker",
       "Defend": "Defend",
       "DefendTooltip": "Roll a defense against this attack."
+    },
+    "Defense": {
+      "BadDodge": "Bad Dodge!",
+      "BadDodgeNote": "The die beat the dodge limit ({limit}): this dodge counts as a margin of 0."
     },
     "AutoDefense": {
       "Label": "Auto-defense",
@@ -4819,6 +4846,12 @@
       "CriticalHit": "Critical Hit",
       "DeniedOnDice": "Both critical, so margins are ignored. Attack rolled {attack}, defense rolled {defense}.",
       "DialogAttackMargin": "Answering an attack of margin {margin}"
+    },
+    "Fold": {
+      "CriticalSuccess": "Critical Success!",
+      "CriticalFailure": "Critical Failure!",
+      "AttackSummary": "Attack: {margin}  ·  Damage: {damage}",
+      "EffectStacks": "{count}× {name}"
     },
     "TempHealth": {
       "ButtonTooltip": "Claim Temporary Health from this defense. Usable once, up to 10 total from defending.",
@@ -4958,8 +4991,8 @@
         "desc": "Applied together with Dying when a character drops to 0 health. The character falls to initiative 1 and loses half of their remaining Mind; if Mind reaches 0 they also become Incapacitated."
       },
       "bleeding": {
-        "label": "Bleeding",
-        "desc": "Each stack of Bleeding deals 1d4 damage when it is applied and again at the start of every round. Bleeding stacks up to 6 times."
+        "label": "Bleed",
+        "desc": "Each stack of Bleed deals 1d4 damage when it is applied and again at the start of every round. Bleed stacks up to 6 times."
       },
       "rooted": {
         "label": "Rooted",
@@ -4975,7 +5008,7 @@
       },
       "aim": {
         "label": "Aim",
-        "desc": "Each Aim action grants +10% to hit against the aimed target, up to 4 stacks. Switching targets burns every stack. Attacking the aimed target spends them all, and attacking anybody else breaks the aim outright. Improved Aim (Duelist I, or Servant of the Sword) keeps the aim intact when you attack somebody else, and adds +10 armour penetration at 4 stacks. Aim reduction (Duelist II, or either Aim-reduction node) costs a single stack on a hit and none on a critical hit, while a miss still costs the lot. Servant of the Sword adds one Aim after a Sneak Attack; Sword Dancer instead costs nothing on a Sneak Attack that lands, and only half the stacks (rounded up) on a miss. Duelist VII turns Aim to defense as well: melee defense against the opponent you are aiming at gains +5% per stack, and defending costs no Aim. Every duellist perk needs the qualifying sword in hand. Counterattack, Retaliatory strike, Cleave, Polearm Cleave, Double Throw and Cunning Strike have no interaction with Aiming at all."
+        "desc": "Each Aim action grants +10% to hit against the aimed target, up to 4 stacks. Switching targets burns every stack. Attacking the aimed target spends them all, and attacking anybody else breaks the aim outright. Improved Aim (Duelist I, or Servant of the Sword) keeps the aim intact when you attack somebody else, and adds +10 armour penetration at 4 stacks. Aim reduction (Duelist II, or either Aim-reduction node) costs a single stack on a hit and none on a critical hit, while a miss still costs the lot. Servant of the Sword adds one Aim after a Sneak Attack; Sword Dancer instead costs nothing on a Sneak Attack that lands, and only half the stacks (rounded up) on a miss. Duelist VII turns Aim to defense as well: melee defense against the opponent you are aiming at gains +5% per stack, and defending costs no Aim. Every duellist perk needs the qualifying sword in hand. Counterattack, Riposte, Retaliatory strike, Cleave, Polearm Cleave, Double Throw and Cunning Strike have no interaction with Aiming at all: they gain no bonus from your stacks, and they neither spend nor break them."
       },
       "spellPower": {
         "label": "Spell Power",
@@ -5072,17 +5105,17 @@
       "critPenetration": "Extra Penetration on a critical hit. Degrees 0 and 1 add 5 + Perception, degrees 2 and 3 add 10 + Perception, and degree 4 adds 15 + Perception.",
       "critDamage": "Extra damage on a critical hit. Each point of Perception adds 1, and the higher critical degrees add a further 5 to 20 damage.",
       "penetration": "The floor below which damage cannot be reduced by Armor. It does not apply to special Armor such as Fire or Magic Armor.",
-      "breakthrough": "Deals damage even through a successful Defense. It does not apply to Dodge or a critical Defense, and the attack itself must not be a failure. It respects Penetration and applies no effects such as Bleeding or Stagger.",
+      "breakthrough": "Deals damage even through a successful Defense. It does not apply to Dodge or a critical Defense, and the attack itself must not be a failure. It respects Penetration and applies no effects such as Bleed or Stagger.",
       "sneakDamage": "Extra damage on a Sneak Attack. Some materials raise it further, for example Obsidium by 2d6 and Dragon Tooth by 1d6 on light weapons.",
       "tags": "A free-form list of the weapon's properties, for example Long Reach, Quick, Brawler or Magazine. It feeds Specializations and Banes; the note describes each property.",
       "finesse": "A Refined weapon uses Dexterity instead of Strength or Perception for hitting and damage. It requires the Finesse specialization.",
       "twoHandGrip": "Light and Medium melee weapons held in two hands gain +1d6 damage. The Rapier, Katar, Dagger, Fencing Dagger and Throwing Knife cannot be held this way.",
       "longReach": "The weapon's reach is increased by one hex. Effects from several sources stack.",
-      "sharp": "The weapon rolls two dice to cause Bleeding instead of one.",
+      "sharp": "The weapon rolls two dice to cause Bleed instead of one.",
       "thrown": "The weapon can be thrown. Attacking a target beyond its effective range costs -20% to Throwing.",
       "offhand": "The weapon can be held in the off hand. Using a hand other than the dominant one costs 10% to hitting, Defense, Throwing, Archery and Firearms.",
       "stagger": "The weapon's chance to cause Stagger for two turns. A critical hit of degree 2 or higher adds +100% to that chance.",
-      "bleed": "The weapon's chance to cause Bleeding. The Sharp property rolls two dice instead of one, and a critical hit of degree 2 or higher adds +100%.",
+      "bleed": "The weapon's chance to cause Bleed. The Sharp property rolls two dice instead of one, and a critical hit of degree 2 or higher adds +100%.",
       "diceNum": "How many dice of base damage the weapon deals. On a hit, damage resolves in a fixed order: Armor first, then Penetration, special Armor, percentage adjustments, and finally Temporary Health and Health.",
       "dieSize": "The size of the weapon's base damage dice. Light and Medium melee weapons held in two hands gain a further +1d6.",
       "rollMod": "A flat damage adjustment on top of the dice. A weapon's material usually adds its bonus here, for example Red Steel +2d4 or Eldarin +3d4.",
@@ -5712,11 +5745,11 @@
       },
       "FuscinaIctus": {
         "name": "Fuscina Ictus",
-        "description": "<p>Modifies Attack, Counterattack, Opportunity Attack, Multiattack, Exploit Weakness, Reckless strike and Charge. Cost applies to each attack.</p><p>Bleeding chance +120%.</p><p>Cannot be combined with Trip. Trident only.</p>"
+        "description": "<p>Modifies Attack, Counterattack, Opportunity Attack, Multiattack, Exploit Weakness, Reckless strike and Charge. Cost applies to each attack.</p><p>Bleed chance +120%.</p><p>Cannot be combined with Trip. Trident only.</p>"
       },
       "FuscinaIctusFeature": {
         "name": "Fuscina Ictus",
-        "description": "<p>Grants the Fuscina Ictus action. While attacking with a trident you may spend 3 Stamina per attack to raise the Bleeding chance by 120%.</p>"
+        "description": "<p>Grants the Fuscina Ictus action. While attacking with a trident you may spend 3 Stamina per attack to raise the Bleed chance by 120%.</p>"
       },
       "Gambeson": {
         "name": "Gambeson"
@@ -6168,11 +6201,14 @@
       "RetaliatoryStrike": {
         "name": "Retaliatory Strike"
       },
+      "Riposte": {
+        "name": "Riposte"
+      },
       "Robe": {
         "name": "Robe"
       },
-      "RunningThrow": {
-        "name": "Running Throw"
+      "RunUpThrow": {
+        "name": "Run Up Throw"
       },
       "Sabre": {
         "name": "Sabre"
@@ -6642,15 +6678,6 @@
       "ExpertCraft": {
         "name": "Expert: Craft"
       },
-      "ExpertRiding": {
-        "name": "Expert: Riding"
-      },
-      "AdeptDrinking": {
-        "name": "Adept: Drinking"
-      },
-      "ExpertDrinking": {
-        "name": "Expert: Drinking"
-      },
       "AdeptArt": {
         "name": "Adept: Art"
       },
@@ -6705,12 +6732,6 @@
       "ExpertActing": {
         "name": "Expert: Acting"
       },
-      "ExpertDeception": {
-        "name": "Expert: Deception"
-      },
-      "ExpertIntimidation": {
-        "name": "Expert: Intimidation"
-      },
       "AdeptMusic": {
         "name": "Adept: Music"
       },
@@ -6722,24 +6743,6 @@
       },
       "ExpertPainting": {
         "name": "Expert: Painting"
-      },
-      "ExpertPersuasion": {
-        "name": "Expert: Persuasion"
-      },
-      "ExpertTemptation": {
-        "name": "Expert: Temptation"
-      },
-      "ExpertBlend": {
-        "name": "Expert: Blend"
-      },
-      "ExpertHerbalism": {
-        "name": "Expert: Herbalism"
-      },
-      "ExpertInsight": {
-        "name": "Expert: Insight"
-      },
-      "ExpertSurvival": {
-        "name": "Expert: Survival"
       },
       "Lethargic": {
         "name": "Lethargic"
@@ -6779,6 +6782,15 @@
       },
       "FleetFooted": {
         "name": "Fleet-Footed"
+      },
+      "RogueI": {
+        "name": "Rogue I"
+      },
+      "RogueII": {
+        "name": "Rogue II"
+      },
+      "RogueIII": {
+        "name": "Rogue III"
       },
       "Soft": {
         "name": "Soft"
@@ -6980,7 +6992,7 @@
         "name": "Vulnerable: Holy"
       },
       "ImmuneToBleeding": {
-        "name": "Immune to Bleeding"
+        "name": "Immune to Bleed"
       },
       "ImmuneToStagger": {
         "name": "Immune to Stagger"
@@ -7135,6 +7147,278 @@
       "PurseTotal": "Total carried",
       "NumericKey": "Denomination keys cannot be numbers ({keys}). Use a short word like c1 or copper.",
       "DuplicateKey": "Two denominations share the key \"{key}\". Each one needs its own."
+    },
+    "Learn": {
+      "Stat": {
+        "attack": "Attack",
+        "bleed": "Bleed",
+        "concentration": "Concentration",
+        "criticalDefense": "Critical Defense",
+        "criticalHit": "Critical Hit",
+        "criticalRange": "Critical Range",
+        "detection": "Detection",
+        "effect": "Effect",
+        "gunnery": "Gunnery",
+        "hit": "Hit",
+        "initiative": "Initiative",
+        "magicAttack": "Magic Attack",
+        "magicDefense": "Magic Defense",
+        "manaBase": "Mana Base",
+        "melody": "Melody",
+        "mindPoints": "Mind",
+        "shieldLoad": "Shield Strain",
+        "shortRest": "Short Rest",
+        "spellPower": "Spell Power",
+        "stagger": "Stagger",
+        "stamina": "Stamina"
+      },
+      "Effect": {
+        "pct": "{label} {value}%",
+        "mod": "{label} +{value}",
+        "modPct": "{label} +{value}%",
+        "val": "{label} {value}",
+        "bojoveTestyRychlostiIniciativa3": "Combat Speed Tests: Initiative +3",
+        "bonusProtiVelkymTvorum": "Bonus vs. large creatures",
+        "bonusZaZbran": "Weapon bonus",
+        "brilantniProtiutok": "Brilliant Counter",
+        "chvat": "Grapple",
+        "cilenyUtokZpusobujeJednoKrvaceniNavic": "Aimed Strike: causes one extra Bleed",
+        "dalekeRozseknuti": "Polearm Cleave",
+        "dalekyVypad": "Extended Lunge",
+        "divokaMagie": "Wild Magic",
+        "divokaMagie2sk": "Wild Magic: +2 Spell Power",
+        "dlouhyLukBezPostihu": "Longbow: no penalty",
+        "dlouhyLukViceUtoku": "Longbow: more attacks",
+        "dlouhyOdpocinek100Many": "Long Rest: 100% mana",
+        "dlouhyOdpocinek20Many": "Long Rest: 20 mana",
+        "dlouhyOdpocinek25Many": "Long Rest: 25 mana",
+        "dlouhyOdpocinek30Many": "Long Rest: 30 mana",
+        "dlouhyOdpocinek35Many": "Long Rest: 35 mana",
+        "dlouhyOdpocinek40Many": "Long Rest: 40 mana",
+        "dlouhyOdpocinek50Many": "Long Rest: 50% mana",
+        "duelistuvKrok": "Duelist's Advance",
+        "dvojityVrh": "Double Throw",
+        "expert": "Expert",
+        "finta": "Feint",
+        "ignorujePruraznost": "Ignores Breakthrough",
+        "jedenOdvetnyUderZaKoloJakoVolnaAkce": "One Retaliatory Strike per round as a Free Action",
+        "jednaOdvetnaAkceZaKoloJakoVolnaAkce": "One Retaliation per round as a Free Action",
+        "jezdeckaOchrana": "Mounted Guard",
+        "jezdeckaOdveta": "Mounted Retaliation",
+        "jezdeckaZtec": "Mounted Charge",
+        "jezdeckeObrneni": "Mounted Armoring",
+        "jezdeckeRozseknuti": "Mounted Cleave",
+        "klamavyUtok": "Feint Attack",
+        "kratkyOdpocinek100Many": "Short Rest: 100% mana",
+        "kritickaObranaKryt3": "Critical Melee/Ranged Defense +3%",
+        "kritickaObranaKrytZvysujeDocasneZivotyO5": "Critical Melee/Ranged Defense raises Temporary Health by 5",
+        "kritickeZraneniPrubojnost5": "Critical damage/Penetration +5",
+        "kritickyNeuspech3": "Critical failure -3%",
+        "krvaceniSousedicichNepratelSePridavaDoZasoby": "Bleed on adjacent enemies feeds the Blood Pool",
+        "krvavyUder": "Blood Strike",
+        "magickeMomentum": "Magic Momentum",
+        "magickeObrneni": "Magic Armoring",
+        "mireniStrelba10": "Aim: Archery +10%",
+        "mireniZarovenZvysujeObranuO5ProtiCili": "Aim also raises Defense by +5% against the target",
+        "mistr": "Master",
+        "mnich": "Monk",
+        "mnichuvUder": "Monk's Strike",
+        "modifikatorMany1": "Mana modifier 1",
+        "modifikatorMany10": "Mana modifier 10",
+        "modifikatorMany12": "Mana modifier 12",
+        "modifikatorMany15": "Mana modifier 1.5",
+        "modifikatorMany2": "Mana modifier 2",
+        "modifikatorMany25": "Mana modifier 2.5",
+        "modifikatorMany3": "Mana modifier 3",
+        "modifikatorMany35": "Mana modifier 3.5",
+        "modifikatorMany4": "Mana modifier 4",
+        "modifikatorMany5": "Mana modifier 5",
+        "modifikatorMany6": "Mana modifier 6",
+        "modifikatorMany8": "Mana modifier 8",
+        "momentum": "Momentum",
+        "nabodnuti": "Impale",
+        "nabodnutiNavazujiciUtok": "Impale: Follow-up Attack",
+        "nahlePrezbrojeni": "Sudden Re-arm",
+        "nasledujiciSePoZasahuPocitaJakoZakernyUtok": "The next attack after a hit counts as a Sneak Attack",
+        "navazujiciUtok": "Follow-up Attack",
+        "nestabilita1": "Instability -1",
+        "obnoveni": "Restoration",
+        "obnoveni6Many": "Restoration: +6 mana",
+        "obranaProtiZteci": "Defense against Charge",
+        "obrannyPostoj": "Defensive Stance",
+        "obrneni": "Armoring",
+        "ochrana": "Guard (Stance)",
+        "oddech5Many": "Rest: +5 mana",
+        "odstrceni": "Shove",
+        "odsunuti": "Push",
+        "odveta": "Retaliation",
+        "odvetnyUder": "Retaliatory Strike",
+        "omracujiciUder": "Staggering Blow",
+        "opatrneCarovani": "Careful Casting",
+        "opatrneCarovaniObrana10": "Careful Casting: Defense +10%",
+        "podpasovka": "Low Blow",
+        "podseknuti": "Trip",
+        "pomalyPohybVeVnejsiZone": "Slow Movement in the outer zone",
+        "popadnuti": "Grab",
+        "poprava": "Execution",
+        "povaleni": "Knockdown",
+        "presilaBokZasah5": "Overwhelm / Flank: Hit +5%",
+        "presilaBokZasahStrelbaAVrh5": "Overwhelm / Flank: Hit, Archery and Throwing +5%",
+        "presnyVystrel": "Accurate Shot",
+        "prilezitostnyUtokZaKolo": "Opportunity attack per round",
+        "prilezitostnyUtokZbesilyUtokNabodnutiKritickyZasah": "Opportunity Attack: Reckless Strike / Impale (Critical Hit)",
+        "pripravnyPostoj": "Prepared Stance",
+        "prolevaniKrve": "Bloodletting",
+        "protiutok": "Counterattack",
+        "protiutokCilenyZasahPostihSnizenO10": "Counterattack: Aimed Strike penalty reduced by 10%",
+        "pruraznost2d6": "Breakthrough +2d6",
+        "pulpirueta": "Half Pirouette",
+        "rafinovanyManevr": "Perfect Opening",
+        "redukceBoku": "Flank Reduction",
+        "redukceMireniPoZasahu": "Aim reduction after a hit",
+        "riposta": "Riposte",
+        "rozptyleni": "Distraction",
+        "rozseknuti": "Cleave",
+        "rozstepeni": "Splintering Strike",
+        "rychlaDivokaMagie": "Fast Wild Magic",
+        "rychlePrebijeni": "Quick Reload",
+        "rychlyUder": "Quick Strike",
+        "salva": "Volley",
+        "skolaKrveObtiznost10": "School of Blood: Difficulty -10%",
+        "smrstUtoku": "Flurry",
+        "snizujePostihNaUsmernovaniZaZbrojO5": "Reduces the armor Channeling penalty by 5%",
+        "soubojStrelbaDavaSanceDoUsmernovaniAManu": "Combat/Archery feed their chance into Channeling and Mana",
+        "soustredeni": "Focus",
+        "soustredenyUtok": "Focused Attack",
+        "straz": "Guard",
+        "strelbaVrh5": "Archery/Throwing +5%",
+        "streleckyPostoj": "Shooting Stance",
+        "synergieSeStitonosem": "Synergy with the Shieldbearer",
+        "triumf": "Triumph",
+        "ucednik": "Apprentice",
+        "uderStitem": "Shield Bash",
+        "udrzovaniKouzelJeO2ManyLevnejsi": "Sustaining spells costs 2 less mana",
+        "uskok": "Sidestep",
+        "utok1ProLehkeZbrane": "Attack +1 for Light weapons",
+        "utokACarovaniVJednomTahu": "Attack and cast in one turn",
+        "utokNaSlabinu": "Exploit Weakness",
+        "utokSOdstupem": "Attack at Reach",
+        "utokSPohybem": "Passing Strike",
+        "utokVrhNaSlabinuZakernySnizenaHranice": "Exploit Weakness (Attack/Throw): Sneak, lowered threshold",
+        "velmistr": "Grandmaster",
+        "vetrnyPostoj": "Wind Stance",
+        "vicenasobnyVrh": "Multiple Throw",
+        "volnyUderStitem": "Free Shield Bash",
+        "vrhNaSlabinu": "Exploit Weakness (Throw)",
+        "vrhSRozbehem": "Run Up Throw",
+        "vrhZaBehu": "Running Throw",
+        "vstrebaniKrve": "Blood Absorption",
+        "vycvikSeDvemaZbranemi": "Dual Wield Training",
+        "vyhodaNaPoradiTahu": "Advantage on turn order",
+        "vylepseneMireni": "Improved Aiming",
+        "vylepsenyZmrzacujiciVystrel": "Improved Crippling Shot",
+        "vypocitavyUtok": "Cunning Strike",
+        "zakernyUtok1d6": "Sneak Attack +1d6",
+        "zakernyUtok1d6ANevyvolavaPrilezitostnyUtok": "Sneak Attack +1d6 and provokes no Opportunity Attack",
+        "zakernyUtok2d6": "Sneak Attack +2d6",
+        "zakernyUtokEfekt50": "Sneak Attack: Effect +50%",
+        "zakernyUtokPrubojnost5": "Sneak Attack: Penetration +5",
+        "zakladniDivokaMagie": "Basic Wild Magic",
+        "zbesilyUtok": "Reckless Strike",
+        "zbesilyUtokAUtokNaSlabinu1Akce": "Reckless Strike and Exploit Weakness: -1 action",
+        "zbesilyUtokKrvaceni50Omraceni25": "Reckless Strike: Bleed +50%, Stagger +25%",
+        "zbesilyVrh": "Frenzied Throw",
+        "zbranJeOhniskovyPredmet": "The weapon is a Focus item",
+        "zesileniKouzla": "Spell Amplification",
+        "zmrzacujiciUder": "Crippling Blow",
+        "zmrzacujiciVystrel": "Crippling Shot",
+        "zraneni2d4": "Damage +2d4",
+        "ztec": "Charge",
+        "ztecPrubojnost5": "Charge: Penetration +5",
+        "ztecStitem": "Shield Charge",
+        "ztecZraneni1d4": "Charge: Damage +1d4",
+        "ztecZraneni2d4": "Charge: Damage +2d4"
+      },
+      "title": "Learn",
+      "open": "Learn",
+      "notBuilt": "Not built yet.",
+      "acquire": "Add skills",
+      "and": "and",
+      "pickerHint": "Choose the skills and doctrines you want in your progression tree. This only decides what this window shows; nothing is hidden on your character sheet.",
+      "pickerDone": "Done",
+      "pickerCancel": "Cancel",
+      "pickerLocked": "Already trained, so it stays in the tree.",
+      "nothingTracked": "No skills chosen yet. Use “Acquire skills” to pick what you are training.",
+      "cannotBuy": "That rank cannot be bought right now.",
+      "requirements": "Requirements",
+      "skillRating": "Skill rating",
+      "ratingOf": "{label} rating",
+      "priceCp": "Price in CP",
+      "priceSp": "Price in SP",
+      "level": "Level",
+      "cpRemaining": "CP left",
+      "spRemaining": "SP left",
+      "earnedCp": "CP earned",
+      "earnedSp": "SP earned",
+      "adjustCp": "CP adjustment",
+      "adjustSp": "SP adjustment",
+      "refund": "Refund rank",
+      "refundConfirm": "Give this rank back? The points return to the pool and anything the rank granted is lost.",
+      "Tabs": {
+        "combat": "Combat",
+        "skills": "Skills",
+        "features": "Features",
+        "specialisations": "Specialisations"
+      },
+      "Sections": {
+        "combat": "Combat skills",
+        "weapons": "Weapon skills",
+        "melee": "Melee doctrines",
+        "ranged": "Ranged doctrines",
+        "special": "Special doctrines",
+        "magical": "Magic doctrines",
+        "schools": "Schools of magic",
+        "magic": "Magic",
+        "beast": "Beasts"
+      },
+      "Group": {
+        "schools": "Schools",
+        "doctrine": "Doctrine",
+        "school": "School",
+        "weapon": "Weapon",
+        "doctrineLower": "doctrine",
+        "schoolLower": "school",
+        "weaponLower": "weapon skill"
+      },
+      "Teacher": {
+        "grant": "Click to grant.",
+        "revoke": "Click to revoke."
+      },
+      "Req": {
+        "teacher": "Teacher {tier}",
+        "attr": "{attr} {min}+",
+        "rank": "{track} {min}",
+        "anyRank": "{group} {min}",
+        "feature": "Feature: {name}",
+        "flag": "Requires: {name}",
+        "specNode": "Specialisation: {spec}",
+        "or": " or ",
+        "gmGeneric": "The GM must approve this.",
+        "gm": {
+          "specialOccasion": "Only on a special occasion, at the GM's discretion.",
+          "language": "Requires a language granted by the GM.",
+          "schoolOrSpecialisation": "Requires a school or a specialisation granted by the GM."
+        },
+        "Tip": {
+          "teacher": "Requires learning from a teacher (Rank {tier}).",
+          "attr": "Requires {attr} of {min} or higher.",
+          "rank": "Requires {track} at rank {min} or higher.",
+          "anyRank": "Requires any {group} at rank {min} or higher.",
+          "feature": "Requires the feature {name}.",
+          "flag": "Requires {name}.",
+          "specNode": "Requires the specialisation {spec}."
+        }
+      }
     }
   },
   "TYPES": {

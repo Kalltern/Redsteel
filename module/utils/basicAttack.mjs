@@ -330,6 +330,19 @@ export async function universalAttackLogic({
     // Item quality (Zbraň column). Only the main hand carries a Průbojnost
     // entry — the Druhá ruka column has none.
     const qualityPen = Number(weapon.system.qualityMods?.penetration) || 0;
+    // Rogue VIII/X sneak penetration. It belongs to the Sneak Attack itself,
+    // not to a critical — it used to be added inside buildCriticalTotals, so a
+    // non-critical Sneak Attack silently lost all 5/10 of it. Added to the base
+    // sum, it reaches the normal, breakthrough and critical packets alike.
+    // `active` also travels to the card as `attack.sneak.declared`: the
+    // declaration flag is consumed by the end of this attack, so Apply Damage
+    // can only learn a blow was a Sneak Attack from the card itself.
+    const {
+      sneakPenetration,
+      sneakEffect,
+      declared: sneakDeclared,
+      critAsSneak,
+    } = game.redsteel.computeSneakDeltas(actor, weapon, resolvedContext ?? null);
     // Floored at 0: Penetration is what gets through armor, so a bad weapon can
     // lose all of it but never turn into extra protection for the target.
     const penetration = Math.max(
@@ -341,7 +354,8 @@ export async function universalAttackLogic({
         actorMods.penetrationBonus +
         enchantPen +
         qualityPen +
-        improvedAimPen,
+        improvedAimPen +
+        sneakPenetration,
     );
     const totalDoctrineBonus = doctrine.doctrineBonus;
     const totalDoctrineCritBonus =
@@ -383,7 +397,7 @@ export async function universalAttackLogic({
     }
 
     // ─── Damage Roll ───
-    const { damageRoll, damageTotal, breakthroughRollResult } =
+    const { damageRoll, damageTotal, breakthroughRollResult, sneakRoll, sneakTotal } =
       await game.redsteel.getDamageRolls(
         actor,
         weapon,
@@ -487,7 +501,7 @@ export async function universalAttackLogic({
         ? "Critical Failure!"
         : "";
     const critBanner = critLabel
-      ? `<p style="text-align:center; font-size:20px;"><b>${critLabel}</b></p>
+      ? `<p class="rs-card-headline"><b>${critLabel}</b></p>
  <hr>`
       : "";
 
@@ -525,11 +539,22 @@ export async function universalAttackLogic({
   </div>
 </div>
 `,
-      rolls: banePacket ? [attackRoll, damageRoll, baneDamageRoll] : [attackRoll, damageRoll],
+      // The sneak dice roll separately (see getDamageRolls) so their total can
+      // be taken back off per target; a *declared* sneak shows them here, or
+      // they would vanish from the card while still counting towards the
+      // damage. A critAsSneak attacker's parked roll is deliberately not shown:
+      // it is worth nothing until a critical lands, and a dice box on every
+      // ordinary swing would read as damage the card is not doing.
+      rolls: [
+        attackRoll,
+        damageRoll,
+        ...(banePacket ? [baneDamageRoll] : []),
+        ...(sneakRoll && sneakDeclared ? [sneakRoll] : []),
+      ],
       flavor: `
 <span style="display:inline-flex; align-items:center;">
   <img src="${weapon.img}" width="36" height="36" style="margin-right:8px;">
-  <strong style="font-size:20px;">${resolvedFlavor}${modifierLabel}</strong>${renderAttackTagsHtml(attackTags)}
+  <strong>${resolvedFlavor}${modifierLabel}</strong>${renderAttackTagsHtml(attackTags)}
 </span>
  <hr>
 ${critBanner}
@@ -602,12 +627,31 @@ ${
             penCap: penCap,
           },
           bane: banePacket,
+          // Every number a Sneak Attack is worth on this blow. Present when the
+          // player declared one, and also when they merely *could* earn one by
+          // critting (shadow/critAsSneak) — Apply Damage adds or removes it per
+          // target from here, against the once-per-round allowance
+          // (utils/sneakLedger.mjs).
+          ...(sneakDeclared || critAsSneak
+            ? {
+                sneak: {
+                  declared: sneakDeclared,
+                  critAsSneak,
+                  damage: sneakTotal,
+                  penetration: sneakPenetration,
+                  effectChance: sneakEffect,
+                },
+              }
+            : {}),
         },
       },
     });
     if (ammo) {
       await actor.deductAmmo(ammo);
     }
+    // The declaration is spent by the attack, hit or miss. Once, here, after
+    // every delta reader above has run.
+    await game.redsteel.consumeSneakAttackFlag(actor);
   };
 
   if (preResolvedContext?.weapon) {

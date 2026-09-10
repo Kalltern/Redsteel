@@ -23,6 +23,43 @@ import {
 const CRITICAL_GAP = 60;
 
 /**
+ * Whether a dodge came out as a Bad Dodge (Špatný úhyb): the raw d100 beat the
+ * defender's dodge limit (`system.dodgeLimit.total`, 50 by default, 80 with
+ * Acrobatic Defense). The evasion still happened, but badly.
+ *
+ * Read off the *raw die*, not the margin. A high die can still clear a big
+ * dodge rating, which is exactly the case the limit exists to catch: the skill
+ * says the dodge worked, the die says it was ugly.
+ *
+ * @param {Actor} actor
+ * @param {number|null} d100Result  the raw d100 of the dodge test
+ * @returns {boolean}
+ */
+export function isBadDodge(actor, d100Result) {
+  const limit = Number(actor?.system?.dodgeLimit?.total);
+  const die = Number(d100Result);
+  if (!Number.isFinite(limit) || limit <= 0) return false;
+  if (!Number.isFinite(die)) return false;
+  return die > limit;
+}
+
+/**
+ * The margin a Bad Dodge takes into the versus Test: capped at 0, never above.
+ *
+ * This is the whole penalty. A bad dodge cannot win the contest on its own
+ * strength any more — a positive margin collapses to 0 — but it still answers a
+ * worse attack, and a margin that was already negative is left alone (the dodge
+ * was failing regardless, and inflating it to 0 would *reward* the bad die).
+ *
+ * @param {number} margin  the roll's own margin of success
+ * @param {boolean} badDodge
+ * @returns {number}
+ */
+export function badDodgeMargin(margin, badDodge) {
+  return badDodge ? Math.min(0, margin) : margin;
+}
+
+/**
  * The defender's armor, as the block every defense card ends with. Typed armor
  * is listed only where it exists, so a plain leather jerkin shows one row.
  *
@@ -1075,9 +1112,10 @@ export async function defenseRoll({
       await roll.evaluate();
       const d100 = roll.dice.find((d) => d.faces === 100);
       const d100Result = d100?.total;
-      const dodgeFailed =
-        d100Result > actor.system.dodgeLimit.total && roll.total >= 0;
-      console.log("dodgeFailed", dodgeFailed);
+      // Read off the raw die alone: the margin has no say in it, and gating on
+      // a successful margin here used to hide the label on every roll that
+      // actually needed it.
+      const badDodge = isBadDodge(actor, d100Result);
 
       await createDefenseChatMessage(
         roll,
@@ -1087,7 +1125,7 @@ export async function defenseRoll({
         criticalFailureThreshold,
         overwhelmStacks,
         {
-          dodgeFailed,
+          badDodge,
           deflectValue: Number(actor.system.dodgeDeflect) || 0,
           defenseKey: "dodge",
           useBane,
@@ -1253,7 +1291,7 @@ export async function defenseRoll({
               await roll.toMessage({
                 speaker: ChatMessage.getSpeaker({ actor }),
                 flavor: `
-                <div style="display:flex;align-items:center;gap:8px;font-size:1.3em;font-weight:bold;">
+                <div style="display:flex;align-items:center;gap:8px;font-weight:bold;">
                   <img src="icons/magic/defensive/shield-barrier-blades-teal.webp" width="36" height="36">
                   <span>Magic Defense (${level})</span>
                 </div>
@@ -1290,7 +1328,7 @@ export async function defenseRoll({
     criticalFailureThreshold,
     overwhelm,
     {
-      dodgeFailed = false,
+      badDodge = false,
       deflectValue = 0,
       defenseKey = "meleeDefense",
       useBane = false,
@@ -1339,10 +1377,15 @@ export async function defenseRoll({
     // for the button not to render.
     const tempHealthGrant = buildTempHealthGrantFlag(actor, weapon, defenseKey);
 
+    // The Bad Dodge penalty: the margin this defense contests with is capped at
+    // 0, so a dodge that beat its limit can no longer out-margin the blow, only
+    // tie a blow that was itself a failure.
+    const contestedTotal = badDodgeMargin(roll.total, badDodge);
+
     // Nothing when the defense was launched from the hotbar: the margin only
     // arrives when a Defend button names the attack being answered.
     const versus = resolveVersusAttack({
-      defenseTotal: roll.total,
+      defenseTotal: contestedTotal,
       defenseD100: rollResult,
       defenseCrit: critSuccess,
       defenseCritFailure: critFailure,
@@ -1354,29 +1397,37 @@ export async function defenseRoll({
     // blocks it: the rule is the GM's to apply, not the card's to enforce.
     const defenseFailed = versus.versus
       ? !versus.versus.blocked
-      : roll.total < 0;
+      : contestedTotal < 0;
 
     await ChatMessage.create({
       speaker: ChatMessage.getSpeaker({ actor }),
       rolls: [roll],
       flavor: `
-        <div style="display:flex;align-items:center;gap:8px;font-size:1.3em;font-weight:bold;">
+        <div style="display:flex;align-items:center;gap:8px;font-weight:bold;">
           <img src="${weapon.img}" width="36" height="36">
           <span>${rollName}</span>
         </div>
         <hr>
-        <p style="text-align:center;font-size:20px;"><b>
+        <p class="rs-card-headline"><b>
           ${
             critSuccess
               ? "Critical Success!"
               : critFailure
                 ? "Critical Failure!"
-                : dodgeFailed
-                  ? "Bad Dodge!"
+                : badDodge
+                  ? game.i18n.localize("REDSTEEL.Defense.BadDodge")
                   : ""
           }
 
         </b></p>
+          ${
+            badDodge && roll.total > 0
+              ? `<p class="rs-bad-dodge-note">${game.i18n.format(
+                  "REDSTEEL.Defense.BadDodgeNote",
+                  { limit: Number(actor.system?.dodgeLimit?.total) || 0 },
+                )}</p>`
+              : ""
+          }
           ${
             auto
               ? `<p class="rs-auto-defense-note"><i class="fa-light fa-bolt-auto"></i> ${game.i18n.localize(
@@ -1409,6 +1460,11 @@ export async function defenseRoll({
           // skill + its governing attribute (dodge→dex, ranged→per, melee→dex
           // unless steelGrip/predatorySenses flips it).
           rerollTokens: getDefenseRerollTokens(defenseKey),
+          // Rolled by the NPC itself rather than by a person clicking Defend.
+          // The card already says so in words (rs-auto-defense-note); the flag
+          // is what lets the chat log fold these away by default, since nobody
+          // is waiting on them (utils/chatCardCollapse.mjs).
+          ...(auto ? { autoDefense: true } : {}),
           // The attack this card answered, kept whole rather than only as the
           // resolved `versus` below: a reroll of this defense has to contest
           // the same attack again from a different die, and the crit flags and
@@ -1495,6 +1551,10 @@ export function registerDefendButton() {
     );
 
     buttonContainer.appendChild(button);
+    // Lays the container out as one flex row: the Defend button is the last
+    // thing appended to an attack card, so this puts Re-Roll / Apply Damage /
+    // Defend side by side with Defend rightmost, rather than on a second row.
+    buttonContainer.classList.add("has-defend");
   });
 }
 
