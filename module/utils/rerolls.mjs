@@ -1,4 +1,3 @@
-import { normalizeTrigger } from "./traitPills.mjs";
 import {
   isCalendariaEnabled,
   getPendingCalendariaEntries,
@@ -30,6 +29,19 @@ import {
  * Legacy features (no `pools`, only `system.reroll.{name,value,active}`) are read
  * transparently as a single universal pool so they keep working until re-saved.
  */
+
+/**
+ * Normalize a trigger for comparison: lowercase, strip everything that
+ * isn't a letter or digit. Item sheets store triggers lowercased
+ * ("animalhandling") while skill keys are camelCase ("animalHandling"),
+ * so "firstAid", "first aid", "first-aid" and "firstaid" must all match.
+ * Shared with the trait pills (traitPills.mjs imports it from here).
+ */
+export function normalizeTrigger(value) {
+  return String(value ?? "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "");
+}
 
 /** Skill tokens that mark a pool as usable on any roll. */
 const UNIVERSAL_KEYS = new Set(["universal", "any", "all"]);
@@ -112,6 +124,29 @@ function parseSkillList(raw) {
     .split(",")
     .map((s) => normalizePoolToken(s))
     .filter((s) => s && !isPoolKeyword(s));
+}
+
+/**
+ * Whether a roll-trigger scope (a trait pill's triggers, as a comma-separated
+ * string or an array of entries) reaches a roll emitting `tokens`. Entries are
+ * read like a pool's skill list: "universal" / "any" / "all" match every roll,
+ * and attribute spellings resolve, so "str-based" or "strength based" meet the
+ * "strbased" token a Strength-governed roll emits. Unlike a pool, an empty
+ * scope matches nothing, and the other pool keywords (critfail, combatcapN)
+ * are ignored.
+ * @param {string|string[]} entries
+ * @param {string[]} tokens  Normalized roll tokens.
+ * @returns {boolean}
+ */
+export function scopeMatchesTokens(entries, tokens) {
+  const list = Array.isArray(entries)
+    ? entries
+    : String(entries ?? "").split(",");
+  const tokenSet = new Set(tokens);
+  return list.some((entry) => {
+    const token = normalizePoolToken(entry);
+    return UNIVERSAL_KEYS.has(token) || tokenSet.has(token);
+  });
 }
 
 /** Whether a comma-separated skill string contains a crit-failure keyword. */

@@ -100,9 +100,10 @@ export class RedsteelActiveEffect extends ActiveEffect {
   /**
    * Whether the token counter on this kind of effect shows a stack count.
    *
-   * A duration always wins: an effect that both stacks and expires (Poison)
-   * shows the rounds it has left, because that is the number the GM has to act
-   * on. Stacks are only shown when there is no countdown to show instead.
+   * Counting stacks is not the same as showing them. A clock the definition
+   * declares wins: an effect that both stacks and expires (Poison) shows the
+   * rounds it has left, because that is the number the GM has to act on. See
+   * counterKind() for the full order.
    *
    * @param {object} def - An entry of CONFIG.REDSTEEL.effectDefinitions.
    * @returns {boolean}
@@ -110,6 +111,45 @@ export class RedsteelActiveEffect extends ActiveEffect {
   static countsStacks(def) {
     const behavior = this.stackBehaviorOf(def);
     return behavior === "stack" || behavior === "reset" || !!def?.shield;
+  }
+
+  /**
+   * What an effect's token counter counts, read off its definition: a shield
+   * its absorb pool, then the definition's own clock (rounds before turns),
+   * then its stacks. null for a definition that counts nothing.
+   *
+   * The definition decides, not whichever flags the effect happens to carry.
+   * A clock another effect imposes must not take over the number: Coagulation
+   * caps every Bleed at one round, and Bleed still shows its stacks.
+   *
+   * @param {object} def
+   * @returns {"stacks"|"rounds"|"turns"|null}
+   */
+  static counterKind(def) {
+    if (!def) return null;
+    if (def.shield) return "stacks";
+    if (def.defaultRounds) return "rounds";
+    if (def.defaultTurns || def.useDuration) return "turns";
+    if (this.countsStacks(def)) return "stacks";
+    return null;
+  }
+
+  /**
+   * The number an effect's token counter shows: whichever of rounds, turns
+   * and stacks counterKind() names. A definition that counts nothing falls
+   * back to whichever clock the effect was given.
+   */
+  static counterAmount(def, { rounds = 0, turns = 0, stacks = 1 } = {}) {
+    switch (this.counterKind(def)) {
+      case "stacks":
+        return stacks;
+      case "rounds":
+        return rounds;
+      case "turns":
+        return turns;
+      default:
+        return rounds || turns || 0;
+    }
   }
 
   static registerStatusCounterIntegration() {
@@ -147,17 +187,12 @@ export class RedsteelActiveEffect extends ActiveEffect {
         return;
       }
 
-      // Duration first, stacks only when there is no countdown — the same
-      // precedence the counter keeps for the rest of the effect's life.
-      const duration =
-        (effect.getFlag("redsteel", "rounds") ?? 0) ||
-        (effect.getFlag("redsteel", "actorTurns") ?? 0);
-
+      // Whichever of the three the definition counts, the same choice the
+      // counter keeps for the rest of the effect's life (counterKind).
       effect.updateSource({
         "flags.statuscounter.visible": true,
 
-        "flags.statuscounter.value":
-          duration || (hasStacks ? (effect.getFlag("redsteel", "stacks") ?? 1) : 0),
+        "flags.statuscounter.value": effect.counterAmountWith(),
       });
     });
 
@@ -348,6 +383,44 @@ export class RedsteelActiveEffect extends ActiveEffect {
       // The actor's derived status set may not have been rebuilt yet, so tell
       // the check to treat this effect as already gone.
       await syncFloorInitiative(effect.parent, { ignoreId: effect.id });
+    });
+
+    // Custom condition sub-effects for a condition toggled straight from the
+    // Token HUD, which never passes through applyEffect. Runs on the client
+    // that created the effect (it owns the actor, and _conditionsBeingApplied
+    // is local to it); applyEffect's own creations are skipped because it
+    // expands those itself.
+    Hooks.on("createActiveEffect", async (effect, options, userId) => {
+      if (game.user.id !== userId) return;
+      const actor = effect.parent;
+      if (!(actor instanceof Actor)) return;
+
+      for (const statusId of effect.statuses ?? []) {
+        const resolved = resolveEffectDefinition(statusId);
+        if (!resolved?.def?.subStatuses?.length) continue;
+        if (this._conditionsBeingApplied.has(`${actor.uuid}|${resolved.id}`)) {
+          continue;
+        }
+        await this._applyConditionSubStatuses(actor, effect, resolved);
+      }
+    });
+
+    // Sub-effects a condition created (flags.redsteel.conditionParent) end
+    // with it. Only the deleting client cleans up, as with the combat-modifier
+    // cleanup in _onDelete. Yields a tick first: when "Remove All" deletes the
+    // condition and its sub-effects in one batch, the collection must settle
+    // before the leftovers are read, or an id already gone gets deleted twice.
+    Hooks.on("deleteActiveEffect", async (effect, options, userId) => {
+      if (game.user.id !== userId) return;
+      const actor = effect.parent;
+      if (!(actor instanceof Actor)) return;
+
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      const ids = actor.effects.contents
+        .filter((e) => e.getFlag("redsteel", "conditionParent") === effect.id)
+        .map((e) => e.id);
+      if (!ids.length) return;
+      await actor.deleteEmbeddedDocuments("ActiveEffect", ids);
     });
 
     registerFloorInitiativeClamp();
@@ -656,7 +729,93 @@ export class RedsteelActiveEffect extends ActiveEffect {
     await this.decrementActorTurn();
   }
 
-  static async applyEffect(
+  /**
+   * `actorUuid|statusId` of custom conditions whose applyEffect call is still
+   * running on this client. The createActiveEffect hook in registerHooks skips
+   * these: applyEffect expands their sub-effects itself, once the condition's
+   * own document is fully written. A bare Token HUD toggle is not in here, so
+   * the hook expands that one.
+   */
+  static _conditionsBeingApplied = new Set();
+
+  /**
+   * Apply an effect by id. A custom condition additionally applies every
+   * status picked under "Status Conditions" on its item's effects, each as its
+   * own effect through this same pipeline. Everything else goes straight to
+   * _applySingleEffect.
+   */
+  static async applyEffect(actor, effectId, options = {}) {
+    const resolved = resolveEffectDefinition(effectId);
+    if (!resolved?.def?.subStatuses?.length) {
+      return this._applySingleEffect(actor, effectId, options);
+    }
+
+    const key = `${actor.uuid}|${resolved.id}`;
+    this._conditionsBeingApplied.add(key);
+    let parent;
+    try {
+      parent = await this._applySingleEffect(actor, effectId, options);
+    } finally {
+      this._conditionsBeingApplied.delete(key);
+    }
+
+    // Immune, or blocked: the sub-effects do not arrive without their condition.
+    if (parent) {
+      await this._applyConditionSubStatuses(actor, parent, resolved, options);
+    }
+    return parent;
+  }
+
+  /**
+   * Apply a condition's sub-statuses, sequentially (interleaved creation on an
+   * unlinked token's delta silently drops changes). Unless the condition is
+   * marked independentSubEffects, each sub-effect this call CREATED is tagged
+   * flags.redsteel.conditionParent so the deleteActiveEffect hook removes it
+   * with the condition. One the actor already had is only refreshed/stacked
+   * and never tagged, so ending the condition cannot strip it.
+   *
+   * @param {Actor} actor
+   * @param {ActiveEffect} parent - The condition's own effect document.
+   * @param {{id: string, def: object}} resolved - resolveEffectDefinition result.
+   * @param {object} [options] - caster / school pass through; conditionChain
+   *   holds the conditions already expanding above this one.
+   */
+  static async _applyConditionSubStatuses(
+    actor,
+    parent,
+    { id, def },
+    { caster = null, school = null, conditionChain = [] } = {},
+  ) {
+    // A condition may list another condition that lists it back. Stop at the
+    // first repeat rather than refreshing each other forever.
+    const chain = [...conditionChain, id];
+
+    for (const subId of def.subStatuses ?? []) {
+      if (chain.includes(subId)) continue;
+      if (!resolveEffectDefinition(subId)) {
+        console.warn(
+          `Redsteel | Condition "${def.name}" lists unknown status "${subId}"`,
+        );
+        continue;
+      }
+
+      const before = actor.effects.contents.find((e) => e.statuses?.has(subId));
+      const child = await this.applyEffect(actor, subId, {
+        caster,
+        school,
+        conditionChain: chain,
+      });
+
+      if (def.independentSubEffects || !child) continue;
+      if (before && before.id === child.id) continue;
+      // Something in the sub-effect's own apply (an override rule) may have
+      // removed the condition — a tag pointing at nothing would never clear.
+      if (!actor.effects.has(parent.id)) continue;
+      await child.setFlag("redsteel", "conditionParent", parent.id);
+    }
+  }
+
+  static async _applySingleEffect(
     actor,
     effectId,
     {
@@ -1018,10 +1177,12 @@ export class RedsteelActiveEffect extends ActiveEffect {
         // The token counter is a separate flag that decrementRound/Turn keeps in
         // step — refreshing the duration without rewriting it leaves the token
         // counting down from the *old* value while the effect actually runs on
-        // the new one. Mirror the new-effect path's precedence (rounds first).
+        // the new one.
         if (roundsDuration > 0 || turnsDuration > 0) {
-          updates["flags.statuscounter.value"] =
-            roundsDuration || turnsDuration;
+          updates["flags.statuscounter.value"] = existing.counterAmountWith({
+            ...(roundsDuration > 0 && { rounds: roundsDuration }),
+            ...(turnsDuration > 0 && { turns: turnsDuration }),
+          });
         }
 
         await existing.update(updates);
@@ -1084,16 +1245,15 @@ export class RedsteelActiveEffect extends ActiveEffect {
           updates["flags.redsteel.rounds"] = roundsDuration;
         }
 
-        // Only claim the counter when there is no countdown on this effect.
-        // Poison stacks *and* expires; the rounds left is the number the GM
-        // acts on, and writing the stack count there would look like the timer
-        // had jumped (and be undone by the next decrementRound anyway).
-        updates["flags.statuscounter.value"] =
-          (turnsDuration > 0 ? turnsDuration : 0) ||
-          (roundsDuration > 0 ? roundsDuration : 0) ||
-          (existing.getFlag("redsteel", "rounds") ?? 0) ||
-          (existing.getFlag("redsteel", "actorTurns") ?? 0) ||
-          newStacks;
+        // Whichever of the three the definition counts (counterKind). Poison
+        // stacks *and* declares its clock, so the rounds left stay the number
+        // the GM acts on. Bleed declares none, so the one-round cap Coagulation
+        // lays on it never replaces its stack count.
+        updates["flags.statuscounter.value"] = existing.counterAmountWith({
+          ...(roundsDuration > 0 && { rounds: roundsDuration }),
+          ...(turnsDuration > 0 && { turns: turnsDuration }),
+          stacks: newStacks,
+        });
 
         // Stack-side bookkeeping only when a stack was actually gained — at the
         // cap the re-apply is a pure duration refresh.
@@ -1181,7 +1341,7 @@ export class RedsteelActiveEffect extends ActiveEffect {
       return null;
     }
 
-    const counterValue = roundsDuration || turnsDuration || 0;
+    const hasClock = roundsDuration > 0 || turnsDuration > 0;
     await created.update({
       name: game.i18n.localize(def.name),
       img: def.img,
@@ -1200,9 +1360,13 @@ export class RedsteelActiveEffect extends ActiveEffect {
           // just as much as a "stack" effect does. Durations are read from the
           // resolved numbers rather than the definition's defaults, so a
           // hand-set duration (the GM's effect manager) still gets a counter.
-          visible: RedsteelActiveEffect.countsStacks(def) || counterValue > 0,
+          visible: RedsteelActiveEffect.countsStacks(def) || hasClock,
 
-          value: counterValue || initialStacks,
+          value: RedsteelActiveEffect.counterAmount(def, {
+            rounds: roundsDuration,
+            turns: turnsDuration,
+            stacks: initialStacks,
+          }),
         },
       },
     });
@@ -1225,24 +1389,22 @@ export class RedsteelActiveEffect extends ActiveEffect {
    * Turn a single GM-facing amount into the right `applyEffect` option.
    *
    * One number per effect, and it always means the same thing: what the token
-   * counter will read. A countdown wins over a stack count for the same reason
-   * the counter shows it — Slow "5" is five turns, Bleeding "5" is five
-   * stacks, Poison "5" is five rounds (its stacks still climb by one per
-   * re-apply, capped by its own maxStacks).
+   * counter will read (counterKind). Slow "5" is five turns, Bleeding "5" is
+   * five stacks, Poison "5" is five rounds (its stacks still climb by one per
+   * re-apply, capped by its own maxStacks), a shield "5" is a five-point pool.
    *
    * @param {object} def - An entry of CONFIG.REDSTEEL.effectDefinitions.
    * @param {number} amount
    * @returns {object} Options for applyEffect.
    */
   static amountOption(def, amount) {
-    if (def?.defaultRounds) return { rounds: amount };
-    if (def?.defaultTurns || def?.useDuration) return { turns: amount };
-    if (this.countsStacks(def)) return { stacks: amount };
-    return {};
+    const kind = this.counterKind(def);
+    return kind ? { [kind]: amount } : {};
   }
 
   /**
-   * Where a live effect keeps the number its counter is showing.
+   * Where a live effect keeps the number its counter is showing, so the
+   * manager's +/- moves the same number the token shows.
    *
    * @param {ActiveEffect} effect
    * @param {object} def
@@ -1251,37 +1413,26 @@ export class RedsteelActiveEffect extends ActiveEffect {
    */
   static trackedAmount(effect, def) {
     const rounds = effect.getFlag("redsteel", "rounds") ?? 0;
-    if (rounds > 0) {
-      return { path: "flags.redsteel.rounds", value: rounds, kind: "rounds" };
-    }
-
     const turns = effect.getFlag("redsteel", "actorTurns") ?? 0;
-    if (turns > 0) {
-      return {
-        path: "flags.redsteel.actorTurns",
-        value: turns,
-        kind: "turns",
-      };
-    }
-
-    if (this.countsStacks(def)) {
-      return {
+    const slots = {
+      rounds: { path: "flags.redsteel.rounds", value: rounds, kind: "rounds" },
+      turns: { path: "flags.redsteel.actorTurns", value: turns, kind: "turns" },
+      stacks: {
         path: "flags.redsteel.stacks",
         value: effect.getFlag("redsteel", "stacks") ?? 1,
         kind: "stacks",
-      };
-    }
+      },
+    };
 
-    // No flag yet, but the definition says this effect runs on a clock — an
-    // effect toggled from the Token HUD arrives with nothing set. Report the
-    // slot at zero so the GM can still give it a duration from the manager.
-    if (def?.defaultRounds) {
-      return { path: "flags.redsteel.rounds", value: 0, kind: "rounds" };
-    }
-    if (def?.defaultTurns || def?.useDuration) {
-      return { path: "flags.redsteel.actorTurns", value: 0, kind: "turns" };
-    }
+    // A clock the definition declares is reported even at zero: an effect
+    // toggled from the Token HUD arrives with nothing set, and the GM can
+    // still give it a duration from the manager.
+    const kind = this.counterKind(def);
+    if (kind) return slots[kind];
 
+    // The definition counts nothing, but something gave this one a clock.
+    if (rounds > 0) return slots.rounds;
+    if (turns > 0) return slots.turns;
     return null;
   }
 
@@ -1373,6 +1524,24 @@ export class RedsteelActiveEffect extends ActiveEffect {
     return this.getFlag("redsteel", "actorTurns") ?? 0;
   }
 
+  /**
+   * counterAmount() for this effect: its current rounds, turns and stacks with
+   * `pending` values laid over them, so the token counter can be written in the
+   * same update that changes one of the three.
+   *
+   * @param {{rounds?: number, turns?: number, stacks?: number}} [pending]
+   * @returns {number}
+   */
+  counterAmountWith(pending = {}) {
+    const def = resolveEffectDefinition(this.getFlag("core", "statusId"))?.def;
+    return RedsteelActiveEffect.counterAmount(def, {
+      rounds: this.getFlag("redsteel", "rounds") ?? 0,
+      turns: this.actorTurns,
+      stacks: this.getFlag("redsteel", "stacks") ?? 1,
+      ...pending,
+    });
+  }
+
   async decrementActorTurn() {
     if (!this.actorTurns) return;
 
@@ -1385,7 +1554,7 @@ export class RedsteelActiveEffect extends ActiveEffect {
 
     await this.update({
       "flags.redsteel.actorTurns": remaining,
-      "flags.statuscounter.value": remaining,
+      "flags.statuscounter.value": this.counterAmountWith({ turns: remaining }),
     });
   }
 
@@ -1400,9 +1569,11 @@ export class RedsteelActiveEffect extends ActiveEffect {
       return;
     }
 
+    // A stack-counting effect can carry a clock too (Bleed under Coagulation);
+    // its counter keeps showing stacks while the clock runs underneath.
     await this.update({
       "flags.redsteel.rounds": remaining,
-      "flags.statuscounter.value": remaining,
+      "flags.statuscounter.value": this.counterAmountWith({ rounds: remaining }),
     });
   }
   /* -------------------------------------------- */
@@ -1984,11 +2155,10 @@ export class RedsteelActiveEffect extends ActiveEffect {
 
     for (const bleed of bleeds) {
       const rounds = bleed.getFlag("redsteel", "rounds");
+      // The token counter stays on Bleed's stacks: the one round left is
+      // Coagulation's rule, and its own icon already shows how long it holds.
       if (rounds == null || rounds > 1) {
-        await bleed.update({
-          "flags.redsteel.rounds": 1,
-          "flags.statuscounter.value": 1,
-        });
+        await bleed.update({ "flags.redsteel.rounds": 1 });
       }
     }
   }

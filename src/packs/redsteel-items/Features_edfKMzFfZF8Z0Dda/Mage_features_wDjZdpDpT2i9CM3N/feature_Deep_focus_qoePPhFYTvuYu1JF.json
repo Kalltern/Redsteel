@@ -4,7 +4,7 @@
   "type": "feature",
   "img": "icons/magic/control/silhouette-hold-change-blue.webp",
   "system": {
-    "description": "",
+    "description": "<p>If you achieve a critical success of at least the second degree on a magic roll, you may reduce its degree by one to gain one Focus for your next spell.</p>",
     "options": [
       "feature",
       "trait",

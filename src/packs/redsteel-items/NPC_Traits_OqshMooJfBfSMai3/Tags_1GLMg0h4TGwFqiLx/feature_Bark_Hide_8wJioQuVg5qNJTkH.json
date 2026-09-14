@@ -38,7 +38,7 @@
             "type": "override"
           },
           {
-            "key": "system.armor.pierce.resistance",
+            "key": "system.armor.piercing.resistance",
             "value": true,
             "priority": null,
             "type": "override"

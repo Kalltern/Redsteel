@@ -74,6 +74,7 @@ import {
   renderVersusBlock,
 } from "./utils/defense.mjs";
 import { registerOverwhelmHooks } from "./utils/overwhelm.mjs";
+import { registerStatusCounterColors } from "./utils/statusCounterColors.mjs";
 import {
   describeSneakSources,
   hasSneakedThisRound,
@@ -92,6 +93,7 @@ import {
   openRoundDigest,
 } from "./utils/roundDigest.mjs";
 import { throwExplosive } from "./utils/throwExplosive.mjs";
+import { environmentalDamage } from "./utils/environmentalDamage.mjs";
 import {
   castSpell,
   quickCastSpell,
@@ -359,6 +361,7 @@ Hooks.once("init", function () {
   game.redsteel.combatAbilities = combatAbilities;
   game.redsteel.delayTurn = delayTurn;
   game.redsteel.restAndRecover = restAndRecover;
+  game.redsteel.environmentalDamage = environmentalDamage;
   game.redsteel.longRest = longRest;
   game.redsteel.spellDefense = spellDefense;
   game.redsteel.attackActions = attackActions;
@@ -449,6 +452,7 @@ Hooks.once("init", function () {
   registerAdvantageousManeuver();
   registerDefendButton();
   registerOverwhelmHooks();
+  registerStatusCounterColors();
   registerAutoDefense();
   registerWrathOfBlood();
   registerCommandHooks();
@@ -572,6 +576,23 @@ function registerLongRestRations() {
     config: false,
     type: Boolean,
     default: false,
+  });
+
+  // The environmental damage tray remembers its last hazard, since a GM
+  // usually repeats one per scene (a trap, the same burning room).
+  game.settings.register("redsteel", "environmentalDamageLast", {
+    scope: "client",
+    config: false,
+    type: Object,
+    default: {
+      label: "",
+      count: 1,
+      faces: 6,
+      bonus: 0,
+      penetration: 0,
+      types: [],
+      connector: "and",
+    },
   });
 }
 
@@ -1016,6 +1037,12 @@ const SYSTEM_MACROS = [
     name: "Mind Bending — Resume Duel",
     command: `game.redsteel.resumeMentalDuel();`,
     img: "icons/magic/control/hypnosis-mesmerism-eye.webp",
+  },
+  {
+    name: "Environmental damage",
+    command: `game.redsteel.environmentalDamage();`,
+    img: "icons/magic/fire/flame-burning-campfire-rocks.webp",
+    shared: false,
   },
   {
     name: "Long Rest",
@@ -2126,6 +2153,62 @@ Hooks.once("ready", async () => {
           total: 0,
         },
       });
+    }
+  }
+});
+
+// Armor's piercing slot used to be keyed `pierce` while every weapon, spell,
+// ability and condition deals `piercing`, so evaluateDmgVsArmor never found the
+// slot and piercing resistance, vulnerability and immunity silently did nothing.
+// The packs are fixed at the source; this rewrites the Active Effect change keys
+// already copied into the world (world items, actors, their owned items and
+// unlinked tokens). Idempotent: once run, nothing matches.
+Hooks.once("ready", async () => {
+  if (!game.user.isGM) return;
+
+  const OLD_PREFIX = "system.armor.pierce.";
+  const NEW_PREFIX = "system.armor.piercing.";
+
+  async function migrateEffects(effects) {
+    for (const effect of effects) {
+      const source = effect.toObject();
+      // V14 stores changes under system.changes; older data kept them top-level.
+      const path = Array.isArray(source.system?.changes)
+        ? "system.changes"
+        : "changes";
+      const changes = foundry.utils.getProperty(source, path);
+      if (!Array.isArray(changes)) continue;
+      if (!changes.some((c) => c.key?.startsWith(OLD_PREFIX))) continue;
+
+      for (const change of changes) {
+        if (change.key?.startsWith(OLD_PREFIX)) {
+          change.key = NEW_PREFIX + change.key.slice(OLD_PREFIX.length);
+        }
+      }
+      console.log(
+        `Redsteel | armor.pierce → armor.piercing: ${effect.parent?.name} / ${effect.name}`,
+      );
+      await effect.update({ [path]: changes });
+    }
+  }
+
+  async function migrateActor(actor) {
+    if (!actor) return;
+    await migrateEffects(actor.effects.contents);
+    for (const item of actor.items.contents) {
+      await migrateEffects(item.effects.contents);
+    }
+  }
+
+  for (const item of game.items.contents) {
+    await migrateEffects(item.effects.contents);
+  }
+  // Base actors first, so unlinked tokens that merely inherit an effect already
+  // read the fixed key and only genuine token-level copies get written.
+  for (const actor of game.actors.contents) await migrateActor(actor);
+  for (const scene of game.scenes.contents) {
+    for (const token of scene.tokens.contents) {
+      if (!token.actorLink) await migrateActor(token.actor);
     }
   }
 });

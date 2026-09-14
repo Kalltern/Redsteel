@@ -111,6 +111,28 @@ function collectConditionChanges(item) {
 }
 
 /**
+ * Collect the status ids picked in the "Status Conditions" field of a
+ * condition item's enabled embedded Active Effects. Each one is applied as its
+ * own effect alongside the condition (see RedsteelActiveEffect.applyEffect) —
+ * a bare status tag carries none of a definition's stacks, triggers or combat
+ * modifiers, so listing it on the condition's own effect would do nothing.
+ *
+ * @param {Item} item
+ * @returns {string[]}
+ */
+function collectConditionSubStatuses(item) {
+  const ownId = conditionStatusId(item);
+  const ids = new Set();
+  for (const effect of item.effects) {
+    if (effect.disabled) continue;
+    for (const statusId of effect.statuses ?? []) {
+      if (statusId && statusId !== ownId) ids.add(statusId);
+    }
+  }
+  return [...ids];
+}
+
+/**
  * Build the damage type expression a condition's per-round damage is
  * evaluated against (same token format as weapons / spells / abilities:
  * type strings joined by "and" / "or").
@@ -156,6 +178,12 @@ export function buildConditionDefinition(item) {
     stackBehavior: "refresh",
     isCustomCondition: true,
     conditionUuid: item.uuid,
+    // Statuses applied as separate effects together with the condition.
+    subStatuses: collectConditionSubStatuses(item),
+    // Unchecked (the default) ties every sub-effect the condition creates to
+    // it, so they are removed when the condition ends. Checked, they run their
+    // own course.
+    independentSubEffects: !!item.system.independentSubEffects,
   };
 
   if (rounds > 0) {

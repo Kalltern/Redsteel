@@ -23,6 +23,9 @@
   },
   "effects": [],
   "flags": {
+    "redsteel": {
+      "traitPolarity": "neutral"
+    },
     "scene-packer": {
       "hash": "a805cbb02ccb6b1d0a2145fc618ba662d42cf45f"
     }

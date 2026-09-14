@@ -77,6 +77,9 @@
     }
   ],
   "flags": {
+    "redsteel": {
+      "traitPolarity": "neutral"
+    },
     "scene-packer": {
       "hash": "8b58a1b029a1485006cccbdf4c1842e7ba0748c0"
     }

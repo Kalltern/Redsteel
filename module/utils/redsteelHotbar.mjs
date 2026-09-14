@@ -190,6 +190,12 @@ const ACTION_BUTTONS = [
   // GM tools first, and set apart in the row. They lead rather than close it so
   // that the far end belongs to Delay and End Turn, which is where the turn
   // controls read best and where they are hardest to hit by accident.
+  {
+    key: "envDamage",
+    api: "environmentalDamage",
+    icon: "fa-light fa-fire",
+    gmOnly: true,
+  },
   { key: "rest", api: "longRest", icon: "fa-light fa-moon", gmOnly: true },
   {
     key: "effects",
@@ -213,8 +219,9 @@ const ACTION_BUTTONS = [
 const DAMAGE_TYPES = [
   "physical",
   "slash",
-  "pierce",
+  "piercing",
   "blunt",
+  "psychic",
   "acid",
   "fire",
   "frost",
@@ -233,7 +240,8 @@ const EFFECT_MOD_TYPES = ["stagger", "bleed", "poison"];
 
 /**
  * The damage types that also carry an armor value (`value`/`bonus`/`total`) as
- * well as the booleans. The other four — physical, slash, pierce, blunt — are
+ * well as the booleans. The other five (physical, slash, piercing, blunt,
+ * psychic) are
  * flags only, so there is no number to show for them. `natural` is left out on
  * purpose: it feeds `armor.total`, which the condition strip already reports,
  * and this group is for the typed armor that is easy to miss.

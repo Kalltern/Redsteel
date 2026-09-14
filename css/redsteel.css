@@ -11119,6 +11119,98 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   border-top: 1px solid rgba(200, 162, 74, 0.25);
 }
 
+/* --- Environmental damage tray ------------------ */
+
+.rs-envdmg-dialog .rs-envdmg-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.rs-envdmg-dialog .rs-envdmg-row:not(:last-child) {
+  border-bottom: 1px solid rgba(200, 162, 74, 0.25);
+}
+
+.rs-envdmg-dialog .rs-envdmg-row > label {
+  flex: 0 0 auto;
+  min-width: 90px;
+  font-weight: 600;
+}
+
+.rs-envdmg-dialog .rs-envdmg-source input[type="text"] {
+  flex: 1 1 auto;
+}
+
+.rs-envdmg-dialog .rs-envdmg-dice-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1 1 auto;
+}
+
+.rs-envdmg-dialog .rs-envdmg-dice-line input[type="number"] {
+  flex: 0 0 auto;
+  width: 52px;
+  min-width: 52px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.rs-envdmg-dialog .rs-envdmg-dice-line select {
+  flex: 0 0 auto;
+  width: 60px;
+}
+
+.rs-envdmg-dialog .rs-envdmg-pen input[type="number"] {
+  flex: 0 0 auto;
+  width: 52px;
+  min-width: 52px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.rs-envdmg-dialog .rs-envdmg-types {
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(200, 162, 74, 0.25);
+}
+
+.rs-envdmg-dialog .rs-envdmg-heading {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.75;
+  font-weight: 700;
+}
+
+.rs-envdmg-dialog .rs-envdmg-hint {
+  font-size: 11px;
+  opacity: 0.6;
+  margin-bottom: 4px;
+}
+
+.rs-envdmg-dialog .rs-envdmg-type-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px 8px;
+}
+
+.rs-envdmg-dialog .rs-envdmg-type {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.rs-envdmg-dialog .rs-envdmg-type:hover {
+  background: rgba(200, 162, 74, 0.14);
+}
+
+.rs-envdmg-dialog .rs-envdmg-connector select {
+  flex: 1 1 auto;
+}
+
 /* ── Overwhelm (Přesila) ──────────────────────────────────────────────────
    Defense dialog control. The −/+ counter moves this roll only. The chips
    under it are the attackers on record, so taking one out edits the round
@@ -12154,138 +12246,842 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
    grid is the only thing that scrolls. Without the min-height:0 on the grid a
    flex child refuses to shrink and the scrollbar lands on the whole window
    instead, taking the sticky rank header away with it. */
+/* A full screen, not a window. The application has no frame and is not
+   positioned by Foundry (window.frame and window.positioned are both false in
+   learnWindow.mjs), so this rule is the whole of its geometry. The z-index is
+   deliberately absent: it is measured against the tooltip layers at render and
+   written inline. The direct child grows to fill, whether that child is the
+   part itself or a wrapper around it. */
+.rs-learn.redsteel {
+  /* One dial for every size of text on the screen. Each font-size and pixel
+     line-height below is written as calc(Npx * this), so raising it scales
+     the whole screen together and nothing clips. At 1.35 the smallest text
+     (chips and badges, 9px) reads at about 12px. */
+  --rs-learn-text: 1.35;
+  /* The character sheet's field material. Its knobs are declared on
+     .application.redsteel.actor and .item (see "Sheet field"), and this screen
+     is neither, so the same four values are repeated here. */
+  --rs-field-base: #121110;
+  --rs-field-warm: rgba(120, 100, 60, 0.09);
+  --rs-field-grain: 0.16;
+  --rs-field-rule: rgba(81, 66, 38, 0.6);
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  width: auto;
+  height: auto;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  background: #121110;
+}
+
+.rs-learn.redsteel > * {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* The ground is the sheet window's own forged material: light from the top, a
+   warm bloom, two woven hairlines and the stone plate. It is painted on the
+   part rather than on the application root, where a theme rule could cover
+   it. */
 .rs-learn .rs-learn-body {
   display: flex;
   flex-direction: column;
   height: 100%;
   min-height: 0;
   padding: 0;
-  /* Declared, not inherited: the sticky rank header paints the same colour,
-     and matching a theme default by eye leaves a visible band behind it. */
-  background: #1c1c1c;
+  background-color: var(--rs-field-base);
+  background-image:
+    linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.035),
+      rgba(0, 0, 0, 0) 260px
+    ),
+    radial-gradient(ellipse at 50% 0%, var(--rs-field-warm), rgba(0, 0, 0, 0) 70%),
+    repeating-linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.02) 0 1px,
+      rgba(0, 0, 0, 0) 1px 5px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(0, 0, 0, var(--rs-field-grain)) 0 1px,
+      rgba(0, 0, 0, 0) 1px 5px
+    ),
+    url(../ui/headertexture.jpg);
+  background-repeat: no-repeat, no-repeat, repeat, repeat, repeat;
+  background-size: auto, auto, auto, auto, 512px 512px;
 }
 
 /* -------- tab strip -------- */
 
+/* One long bar of blackened metal with the four headings engraved into it
+   (user ruling): no cell walls between the tabs and no box around the active
+   one. The bar is lit along its top edge and shaded along its bottom, so it
+   reads as a raised piece rather than a recessed channel, and it drops a soft
+   shadow onto the content below. Every heading has a groove cut beneath the
+   word. The active heading is lettered in antique gold with no aura behind it
+   (user ruling), and its groove is filled with a gold line carrying a small
+   diamond, the grid's rank node in miniature.
+   The tabs still share the width equally (earlier user ruling); only the
+   dividing lines are gone. */
 .rs-learn .rs-learn-tabs {
   display: flex;
   flex: 0 0 auto;
-  gap: 4px;
-  padding: 8px 12px 0;
-  border-bottom: 1px solid rgba(217, 161, 59, 0.35);
+  gap: 0;
+  padding: 0 12px;
+  background-color: #0e0d0b;
+  background-image:
+    linear-gradient(
+      to bottom,
+      rgba(214, 188, 140, 0.08),
+      rgba(214, 188, 140, 0) 2px,
+      rgba(0, 0, 0, 0) calc(100% - 4px),
+      rgba(0, 0, 0, 0.55)
+    ),
+    linear-gradient(rgba(14, 13, 11, 0.84), rgba(8, 8, 7, 0.9)),
+    url(../ui/headertexture.jpg);
+  background-repeat: no-repeat, no-repeat, repeat;
+  background-size: auto, auto, 512px 512px;
+  border-bottom: 2px solid #514226;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.55);
 }
 
 .rs-learn .rs-learn-tabs button {
+  display: flex;
+  flex: 1 1 0;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
   width: auto;
-  flex: 0 0 auto;
+  height: auto;
   margin: 0;
-  padding: 5px 14px;
-  border: 1px solid rgba(217, 161, 59, 0.25);
-  border-bottom: none;
-  border-radius: 4px 4px 0 0;
-  background: rgba(255, 255, 255, 0.02);
-  font-size: 12px;
+  padding: 11px 18px 10px;
+  overflow: hidden;
+  border: none;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  outline: none;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(13px * var(--rs-learn-text));
+  line-height: calc(18px * var(--rs-learn-text));
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #b7ac97;
+  letter-spacing: 0.12em;
+  color: #9a8f7b;
+  /* Engraved: a dark cut above the letters, a faint lit lip below them. */
+  text-shadow:
+    0 -1px 0 rgba(0, 0, 0, 0.85),
+    0 1px 0 rgba(214, 188, 140, 0.1);
   cursor: pointer;
 }
 
-.rs-learn .rs-learn-tabs button:hover {
-  color: #d6bc8c;
-  background: rgba(217, 161, 59, 0.1);
+/* The label carries the groove, so it runs the width of the word. The left
+   padding balances the letter spacing trailing the last letter. */
+.rs-learn .rs-learn-tab-label {
+  position: relative;
+  padding: 0 0 7px 0.12em;
+  white-space: nowrap;
 }
 
-.rs-learn .rs-learn-tabs button.active {
-  color: #d9a13b;
+.rs-learn .rs-learn-tab-label::after {
+  content: "";
+  position: absolute;
+  left: -4px;
+  right: -4px;
+  bottom: 0;
+  height: 2px;
+  background:
+    linear-gradient(
+      to right,
+      rgba(0, 0, 0, 0),
+      rgba(0, 0, 0, 0.8) 15%,
+      rgba(0, 0, 0, 0.8) 85%,
+      rgba(0, 0, 0, 0)
+    ) top / 100% 1px no-repeat,
+    linear-gradient(
+      to right,
+      rgba(214, 188, 140, 0),
+      rgba(214, 188, 140, 0.12) 15%,
+      rgba(214, 188, 140, 0.12) 85%,
+      rgba(214, 188, 140, 0)
+    ) bottom / 100% 1px no-repeat;
+}
+
+/* Core's button states draw their own background, outline and glow; each is
+   stated here so none of them shows through. */
+.rs-learn .rs-learn-tabs button:hover,
+.rs-learn .rs-learn-tabs button:focus,
+.rs-learn .rs-learn-tabs button:focus-visible,
+.rs-learn .rs-learn-tabs button:active {
+  background: none;
+  box-shadow: none;
+  outline: none;
+}
+
+.rs-learn .rs-learn-tabs button:hover,
+.rs-learn .rs-learn-tabs button:focus-visible {
+  color: #c9b48a;
+}
+
+.rs-learn .rs-learn-tabs button.active,
+.rs-learn .rs-learn-tabs button.active:hover,
+.rs-learn .rs-learn-tabs button.active:focus,
+.rs-learn .rs-learn-tabs button.active:focus-visible {
+  color: #e6c98f;
+  background: none;
+}
+
+.rs-learn .rs-learn-tabs button.active .rs-learn-tab-label::after {
+  bottom: 1px;
+  height: 1px;
   background: linear-gradient(
-    to bottom,
-    rgba(81, 66, 38, 0.32),
-    rgba(81, 66, 38, 0.06)
+    to right,
+    rgba(201, 164, 92, 0),
+    #c9a45c 18%,
+    #e6c98f 50%,
+    #c9a45c 82%,
+    rgba(201, 164, 92, 0)
   );
-  box-shadow: inset 0 -2px 0 rgba(214, 188, 140, 0.55);
+  box-shadow: 0 0 4px rgba(217, 161, 59, 0.3);
 }
 
-/* -------- wallet bar -------- */
+.rs-learn .rs-learn-tabs button.active .rs-learn-tab-label::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -1px;
+  width: 5px;
+  height: 5px;
+  transform: translateX(-50%) rotate(45deg);
+  background: #e6c98f;
+  box-shadow: 0 0 0 1px #0e0d0b;
+}
 
-.rs-learn .rs-learn-wallet {
-  display: flex;
+/* -------- hero header -------- */
+
+/* The character this screen levels up, across the top, in three columns with
+   the portrait in the centre (user ruling): the points left to spend on its
+   left; name, race and level and the seven attributes on its right, then the
+   GM's ledger and the close button. The two side columns split the leftover
+   width equally, which is what keeps the portrait centred whatever sits
+   beside it. Built from the sheet header's own parts rather than new styling:
+   the bevelled portrait frame, Georgia lettering over a bronze underline,
+   attribute colours on text only, Cambria lining figures, and the recessed
+   stat well. A faded, desaturated copy of the portrait lies behind it, handed
+   in from the template as --rs-learn-portrait. */
+.rs-learn .rs-learn-hero {
+  position: relative;
+  isolation: isolate;
+  display: grid;
   flex: 0 0 auto;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 8px 12px;
-  border-bottom: 1px solid rgba(217, 161, 59, 0.2);
-  background: rgba(0, 0, 0, 0.18);
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 36px;
+  padding: 18px 14px 18px 20px;
+  overflow: hidden;
+  background:
+    linear-gradient(to bottom, rgba(30, 25, 20, 0.55), rgba(10, 10, 10, 0.8)),
+    url(../ui/headertexture.jpg);
+  border-bottom: 2px solid #514226;
+  box-shadow: inset 0 -14px 26px rgba(0, 0, 0, 0.45);
 }
 
-.rs-learn .rs-learn-purse,
-.rs-learn .rs-learn-ledger {
+/* The ghost of the portrait: greyed, darkened, centred behind the portrait and
+   fading out to both sides, so it reads as part of the stone rather than as a
+   second picture. Isolation on the band keeps it above the band's own ground
+   and under everything else. */
+.rs-learn .rs-learn-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 50%;
+  z-index: -1;
+  width: 60%;
+  transform: translateX(-50%);
+  background-image: var(--rs-learn-portrait, none);
+  background-size: cover;
+  background-position: center 22%;
+  background-repeat: no-repeat;
+  filter: grayscale(0.7) brightness(0.55);
+  opacity: 0.35;
+  -webkit-mask-image: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.55) 25%, #000 50%, rgba(0, 0, 0, 0.55) 75%, transparent);
+  mask-image: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.55) 25%, #000 50%, rgba(0, 0, 0, 0.55) 75%, transparent);
+  pointer-events: none;
+}
+
+/* The sheet header's raised frame bevel (.sheet-header .profile-img), in the
+   middle column. */
+.rs-learn .rs-learn-portrait {
+  grid-column: 2;
+  width: calc(180px * var(--rs-learn-text));
+  height: calc(212px * var(--rs-learn-text));
+  max-width: none;
+  object-fit: cover;
+  object-position: center top;
+  padding: 3px;
+  border: 3px solid #433c2f;
+  border-radius: 0;
+  background: #2e271c;
+  box-shadow:
+    0 0 0 1px rgba(24, 18, 10, 0.8),
+    0 0 12px rgba(0, 0, 0, 0.5),
+    inset 0 2px 3px rgba(20, 15, 8, 0.65),
+    inset 0 -1px 0 rgb(39 30 15 / 50%);
+}
+
+/* The columns either side of the portrait. Left: the GM's ledger at the far
+   edge and the purse pushed against the portrait. Right: the identity against
+   the portrait and the close button in the far corner. The ledger lives on the
+   left because the right already carries seven attribute tiles, and together
+   they overflowed the column at 1920 wide. Stretched to the band's full
+   height, so the close button can sit at the top of it. */
+.rs-learn .rs-learn-hero-side.is-left {
+  grid-column: 1;
+}
+
+.rs-learn .rs-learn-hero-side.is-right {
+  grid-column: 3;
+}
+
+.rs-learn .rs-learn-hero-side {
+  align-self: stretch;
   display: flex;
-  align-items: flex-end;
-  gap: 14px;
-  flex-wrap: wrap;
+  align-items: center;
+  gap: 22px;
+  min-width: 0;
 }
 
-.rs-learn .rs-learn-stat,
+.rs-learn .rs-learn-identity {
+  flex: 0 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* The name over the sheet's bronze underline (the header name input's). */
+.rs-learn .rs-learn-name {
+  padding-bottom: 3px;
+  border-bottom: 1px solid #9a7d44;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(36px * var(--rs-learn-text));
+  line-height: calc(44px * var(--rs-learn-text));
+  letter-spacing: 0.04em;
+  color: #e3cfa3;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rs-learn .rs-learn-epithet {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-style: italic;
+  font-size: calc(16px * var(--rs-learn-text));
+  line-height: calc(22px * var(--rs-learn-text));
+  color: #b7ac97;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.rs-learn .rs-learn-epithet b {
+  font-family: Cambria, "Times New Roman", Times, serif;
+  font-style: normal;
+  font-variant-numeric: lining-nums;
+  font-weight: 700;
+  color: #d9a13b;
+}
+
+.rs-learn .rs-learn-sep {
+  color: #6f675a;
+}
+
+/* The doctrines the character trains, standing in for the level. */
+.rs-learn .rs-learn-doctrines {
+  color: #d6bc8c;
+}
+
+.rs-learn .rs-learn-attrs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 2px;
+}
+
+/* One recessed well per attribute, the sheet's .stat-well sunk shadow. The
+   abbreviation takes its attribute's colour through data-section. */
+.rs-learn .rs-learn-attr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: calc(52px * var(--rs-learn-text));
+  padding: 5px 7px 6px;
+  background: rgba(0, 0, 0, 0.32);
+  box-shadow:
+    inset 0 3px 7px rgba(0, 0, 0, 0.6),
+    inset 0 1px 2px rgba(0, 0, 0, 0.7),
+    inset 0 -1px 0 rgba(150, 138, 112, 0.07);
+}
+
+.rs-learn .rs-learn-attr-label {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(12px * var(--rs-learn-text));
+  line-height: calc(16px * var(--rs-learn-text));
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rs-band, #aeaeae);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+/* Cambria, not Georgia: Georgia's old-style digits bounce on a row of single
+   figures (see .sheet-header .stat-box-value). */
+.rs-learn .rs-learn-attr-value {
+  font-family: Cambria, "Times New Roman", Times, serif;
+  font-variant-numeric: lining-nums;
+  font-size: calc(24px * var(--rs-learn-text));
+  line-height: calc(28px * var(--rs-learn-text));
+  color: #d6bc8c;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+/* The traits the character carries, at the top of the Features tab's owned
+   panel: three columns, positive, neutral, negative (user ruling), each trait
+   under the last with its name beside its icon and a description that rolls out
+   on click. Each column's heading and icon frames wear its kind's colour
+   (positive green, neutral yellow, negative red); green and red are the
+   system's own Dexterity and Strength colours. A trait the pack could not
+   classify sits below in a plain bronze group. */
+.rs-learn .rs-learn-trait-columns {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0 10px;
+  margin: 6px 0 12px;
+}
+
+.rs-learn .rs-learn-trait-column {
+  --rs-trait: #514226;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.rs-learn .rs-learn-trait-column.is-positive {
+  --rs-trait: var(--rs-attr-dex);
+}
+
+.rs-learn .rs-learn-trait-column.is-neutral {
+  --rs-trait: #c9a23a;
+}
+
+.rs-learn .rs-learn-trait-column.is-negative {
+  --rs-trait: var(--rs-attr-str);
+}
+
+.rs-learn .rs-learn-trait-column.is-unsorted {
+  margin: 0 0 12px;
+}
+
+.rs-learn .rs-learn-trait-heading {
+  margin: 0 0 3px;
+  padding-bottom: 2px;
+  border-bottom: 1px solid var(--rs-trait);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(10px * var(--rs-learn-text));
+  line-height: calc(13px * var(--rs-learn-text));
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rs-trait);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.rs-learn .rs-learn-trait-entry {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 6px;
+  padding: 2px;
+}
+
+.rs-learn .rs-learn-trait-name {
+  min-width: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(12px * var(--rs-learn-text));
+  line-height: calc(15px * var(--rs-learn-text));
+  color: #d6bc8c;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+  overflow-wrap: anywhere;
+}
+
+.rs-learn .rs-learn-trait {
+  flex: 0 0 auto;
+  width: calc(32px * var(--rs-learn-text));
+  height: calc(32px * var(--rs-learn-text));
+  max-width: none;
+  object-fit: cover;
+  padding: 1px;
+  border: 2px solid var(--rs-trait);
+  border-radius: 0;
+  background: #14120d;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.8),
+    inset 0 0 6px rgba(0, 0, 0, 0.7);
+}
+
+/* The points left, large, in the left column, pushed against the portrait.
+   The picker's controls stand in the middle of the toggle row (user ruling). */
+.rs-learn .rs-learn-purse {
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
+}
+
+.rs-learn .rs-learn-coffers {
+  display: flex;
+  justify-content: center;
+  gap: 34px;
+}
+
+.rs-learn .rs-learn-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.rs-learn .rs-learn-stat label {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(12px * var(--rs-learn-text));
+  line-height: calc(16px * var(--rs-learn-text));
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8a8175;
+}
+
+.rs-learn .rs-learn-stat b {
+  font-family: Cambria, "Times New Roman", Times, serif;
+  font-variant-numeric: lining-nums;
+  font-weight: 700;
+  font-size: calc(42px * var(--rs-learn-text));
+  line-height: calc(46px * var(--rs-learn-text));
+  color: #d9a13b;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
+}
+
+.rs-learn .rs-learn-stat em {
+  font-family: Cambria, "Times New Roman", Times, serif;
+  font-variant-numeric: lining-nums;
+  font-style: normal;
+  font-size: calc(13px * var(--rs-learn-text));
+  line-height: calc(17px * var(--rs-learn-text));
+  color: #8a8175;
+}
+
+/* The GM's ledger, two by two in a recessed well of its own, at the far left
+   of the band. Players never
+   get the element at all (the template leaves it out), so it takes no room. */
+.rs-learn .rs-learn-ledger {
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  gap: 6px 12px;
+  padding: 8px 10px;
+  background: rgba(0, 0, 0, 0.32);
+  box-shadow:
+    inset 0 3px 7px rgba(0, 0, 0, 0.6),
+    inset 0 1px 2px rgba(0, 0, 0, 0.7),
+    inset 0 -1px 0 rgba(150, 138, 112, 0.07);
+}
+
 .rs-learn .rs-learn-field {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.rs-learn .rs-learn-stat label,
 .rs-learn .rs-learn-field label {
-  font-size: 10px;
-  text-transform: uppercase;
+  font-size: calc(10px * var(--rs-learn-text));
+  line-height: calc(13px * var(--rs-learn-text));
   letter-spacing: 0.06em;
-  opacity: 0.6;
-}
-
-.rs-learn .rs-learn-stat b {
-  font-size: 16px;
-  color: #d9a13b;
-  line-height: 1.1;
-}
-
-.rs-learn .rs-learn-stat em {
-  font-size: 11px;
-  font-style: normal;
-  opacity: 0.55;
-}
-
-.rs-learn .rs-learn-stat {
-  flex-direction: row;
-  align-items: baseline;
-  gap: 5px;
-}
-
-.rs-learn .rs-learn-stat label {
-  align-self: center;
+  text-transform: uppercase;
+  color: #8a8175;
 }
 
 .rs-learn .rs-learn-field input[type="number"] {
-  width: 68px;
-  height: 22px;
+  width: calc(68px * var(--rs-learn-text));
+  height: calc(22px * var(--rs-learn-text));
   padding: 0 4px;
-  font-size: 12px;
+  font-size: calc(12px * var(--rs-learn-text));
 }
 
-.rs-learn .rs-learn-field select {
+/* With no window frame, this is the only way out besides the keyboard, so it
+   sits in the band's top corner: a small square plate. */
+.rs-learn .rs-learn-close {
+  flex: 0 0 auto;
+  align-self: flex-start;
   width: auto;
-  min-width: 84px;
-  height: 22px;
-  padding: 0 4px;
-  font-size: 12px;
+  height: auto;
+  margin: 0 0 0 auto;
+  padding: 2px 10px;
+  border: 1px solid #514226;
+  border-radius: 0;
+  background: rgba(12, 12, 11, 0.6);
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.8);
+  font-size: calc(14px * var(--rs-learn-text));
+  line-height: calc(20px * var(--rs-learn-text));
+  color: #b7ac97;
+  cursor: pointer;
 }
+
+.rs-learn .rs-learn-close:hover {
+  border-color: #9c7b45;
+  background: rgba(12, 12, 11, 0.6);
+  color: #f0d7aa;
+}
+
+
+/* -------- toggle row -------- */
+
+/* The row over the grid on Combat and Skills (user ruling). Each toggle
+   switches one block on or off: an attribute on Skills; combat skills, weapon
+   skills, the doctrines and the schools on Combat. It is a toggle row, not a
+   second tab bar (user ruling), so it is built as part of the grid's own stone
+   panel rather than as another strip: the panel's bronze frame on three sides,
+   its darkened stone and sunk shadow, and a faint rule where the rank numerals
+   begin. The toggles are smaller than the tab headings, each at its natural
+   width, with a small diamond lamp before it: filled when switched on, a
+   hollow outline when off, the way the grid's rank nodes read. Each toggle
+   wears its block's colour; a block without one reads in bronze.
+
+   Every toggle sits on the left and Add skills stands in the middle of the
+   row (user ruling). Three columns keep it there: two equal sides and the
+   button's own width between them, the toggles in the left side, wrapping
+   within it should they run out of room. While picking, the hint takes the
+   left side and Done and Cancel the middle. It sits outside the grid's
+   scroller, so it never scrolls away. */
+.rs-learn .rs-learn-ribbon {
+  display: grid;
+  flex: 0 0 auto;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 12px;
+  margin: 10px 12px 0;
+  padding: 6px 8px 6px 10px;
+  border: 2px solid #514226;
+  border-bottom: 1px solid rgba(81, 66, 38, 0.45);
+  background:
+    linear-gradient(rgba(12, 12, 11, 0.5), rgba(12, 12, 11, 0.5)),
+    url(../ui/headertexture.jpg);
+  box-shadow:
+    inset 0 12px 20px -12px rgba(0, 0, 0, 0.65),
+    inset 14px 0 20px -14px rgba(0, 0, 0, 0.65),
+    inset -14px 0 20px -14px rgba(0, 0, 0, 0.65);
+}
+
+.rs-learn .rs-learn-ribbon button.rs-learn-ribbon-toggle {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 4px 10px;
+  border: none;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  outline: none;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(12px * var(--rs-learn-text));
+  line-height: calc(16px * var(--rs-learn-text));
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+  /* Switched off: dimmed, so on and off read apart at a glance. */
+  color: #6f675a;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+  cursor: pointer;
+}
+
+.rs-learn .rs-learn-ribbon button.rs-learn-ribbon-toggle::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  transform: rotate(45deg);
+  border: 1px solid #5a5043;
+  background: transparent;
+}
+
+/* Core's button states draw their own background, outline and glow. */
+.rs-learn .rs-learn-ribbon button.rs-learn-ribbon-toggle:hover,
+.rs-learn .rs-learn-ribbon button.rs-learn-ribbon-toggle:focus,
+.rs-learn .rs-learn-ribbon button.rs-learn-ribbon-toggle:focus-visible,
+.rs-learn .rs-learn-ribbon button.rs-learn-ribbon-toggle:active {
+  background: none;
+  box-shadow: none;
+  outline: none;
+}
+
+.rs-learn .rs-learn-ribbon button.rs-learn-ribbon-toggle:hover,
+.rs-learn .rs-learn-ribbon button.rs-learn-ribbon-toggle:focus-visible {
+  color: #a89d88;
+}
+
+.rs-learn .rs-learn-ribbon button.rs-learn-ribbon-toggle:hover::before,
+.rs-learn .rs-learn-ribbon button.rs-learn-ribbon-toggle:focus-visible::before {
+  border-color: #8a7b60;
+}
+
+.rs-learn .rs-learn-ribbon button.rs-learn-ribbon-toggle.active,
+.rs-learn .rs-learn-ribbon button.rs-learn-ribbon-toggle.active:hover,
+.rs-learn .rs-learn-ribbon button.rs-learn-ribbon-toggle.active:focus-visible {
+  color: var(--rs-band, #d6bc8c);
+}
+
+.rs-learn .rs-learn-ribbon button.rs-learn-ribbon-toggle.active::before {
+  border-color: var(--rs-band, #d6bc8c);
+  background: var(--rs-band, #d6bc8c);
+}
+
+.rs-learn .rs-learn-ribbon button.rs-learn-ribbon-toggle.active:hover::before,
+.rs-learn .rs-learn-ribbon button.rs-learn-ribbon-toggle.active:focus-visible::before {
+  box-shadow: 0 0 5px var(--rs-band, #d6bc8c);
+}
+
+.rs-learn .rs-learn-ribbon-toggles {
+  grid-column: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 4px 6px;
+  min-width: 0;
+}
+
+.rs-learn .rs-learn-ribbon .rs-learn-acquire,
+.rs-learn .rs-learn-ribbon .rs-learn-picker-actions {
+  grid-column: 2;
+}
+
+/* While picking the hint takes the left side. */
+.rs-learn .rs-learn-ribbon .rs-learn-picker-hint {
+  grid-column: 1;
+  padding: 0 4px;
+}
+
+
+/* -------- discounts -------- */
+
+/* A discounted skill says so once, on its price label (user ruling):
+   "(Discounted)", the word itself carrying the tooltip that names the source
+   and what it does. The rank prices carry no tooltip. The word takes the
+   pointer above the track's own layers, since the gutter shares its rows with
+   the progress band and the ledger rules. */
+.rs-learn .rs-learn-discount-note {
+  color: #8a8175;
+  white-space: nowrap;
+}
+
+.rs-learn .rs-learn-discount-source {
+  position: relative;
+  z-index: 2;
+  pointer-events: auto;
+  cursor: help;
+  font-style: italic;
+  color: #d9a13b;
+  text-decoration: underline dotted rgba(217, 161, 59, 0.6);
+  text-underline-offset: 3px;
+}
+
+/* The Features tab's discount picks: a discount that lands on a skill of the
+   player's choosing is picked here, one ruled row each, with the amount, the
+   source and the skill picker. A pick still waiting is lettered in gold so it
+   is noticed. */
+.rs-learn .rs-learn-discount-pick {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  padding: 5px 2px;
+  border-bottom: 1px solid rgba(81, 66, 38, 0.35);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(12px * var(--rs-learn-text));
+  line-height: calc(16px * var(--rs-learn-text));
+  color: #d6bc8c;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.rs-learn .rs-learn-discount-pick b {
+  font-family: Cambria, "Times New Roman", Times, serif;
+  font-variant-numeric: lining-nums;
+  font-weight: 700;
+  color: #d9a13b;
+}
+
+.rs-learn .rs-learn-discount-pick-name {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.rs-learn .rs-learn-discount-pick select {
+  width: auto;
+  max-width: 100%;
+  height: calc(24px * var(--rs-learn-text));
+  margin: 0;
+  padding: 0 6px;
+  border: 1px solid #514226;
+  border-radius: 0;
+  background: rgba(0, 0, 0, 0.45);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.7);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(12px * var(--rs-learn-text));
+  line-height: calc(16px * var(--rs-learn-text));
+  color: #d6bc8c;
+}
+
+.rs-learn .rs-learn-discount-pick.is-unpicked select {
+  border-color: #9c7b45;
+  color: #f0d7aa;
+}
+
 
 /* -------- the grid -------- */
 
+/* The grid is one stone panel laid on the material, the character sheet's
+   .skills-box plate: bronze frame, darkened stone, a sunk inner shadow. */
 .rs-learn .rs-learn-grid {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
+  margin: 10px 12px 12px;
   padding: 0 12px 14px;
+  background:
+    linear-gradient(rgba(12, 12, 11, 0.5), rgba(12, 12, 11, 0.5)),
+    url(../ui/headertexture.jpg);
+  border: 2px solid #514226;
+  border-radius: 0;
+  box-shadow:
+    inset 0 0 25px rgba(0, 0, 0, 0.65),
+    0 0 12px rgba(0, 0, 0, 0.35);
+}
+
+/* Under the toggle row the panel loses its top edge, so the two read as one
+   frame. The picker takes the grid's place under it the same way. */
+.rs-learn .rs-learn-ribbon + .rs-learn-grid,
+.rs-learn .rs-learn-ribbon + .rs-learn-picker {
+  margin-top: 0;
+  border-top: none;
 }
 
 /* Eleven columns: a fixed label gutter, then ten equal rank columns. The
@@ -12303,14 +13099,32 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   padding-right: 8px;
 }
 
-/* The rank numerals ride the scroll. */
+/* The rank numerals ride the scroll, in a recessed channel of their own, so
+   the tracks sliding under it pass beneath a ledge rather than a flat band.
+   It reaches out over the grid's 12px side padding (the negative margin) and
+   puts the same 12px back into its own padding on top of the 8px every track
+   carries, so its ten columns stay exactly as wide as theirs. The two 12px
+   values follow .rs-learn-grid's padding; change them together. */
 .rs-learn .rs-learn-head {
   position: sticky;
   top: 0;
   z-index: 3;
-  padding: 6px 8px 4px;
-  background: #1c1c1c;
-  border-bottom: 1px solid rgba(217, 161, 59, 0.35);
+  margin: 0 -12px;
+  padding: 6px 20px 4px;
+  background-color: #0d0c0a;
+  background-image:
+    linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.6),
+      rgba(255, 255, 255, 0.035) 55%,
+      rgba(0, 0, 0, 0.65)
+    ),
+    url(../ui/headertexture.jpg);
+  background-repeat: no-repeat, repeat;
+  background-size: auto, 512px 512px;
+  border-bottom: 1px solid #514226;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.55);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
 }
 
 /* The numerals are the spine of the grid, so they read as a heading rather
@@ -12320,7 +13134,7 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
 .rs-learn .rs-learn-col {
   min-width: 0;
   text-align: center;
-  font-size: 18px;
+  font-size: calc(18px * var(--rs-learn-text));
   font-weight: 700;
   line-height: 1.15;
   letter-spacing: 0.04em;
@@ -12338,10 +13152,12 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   /* Indented to match the blocks under it, which carry the same side padding. */
   padding: 0 8px 2px;
   border-bottom: 1px solid rgba(217, 161, 59, 0.22);
-  font-size: 12px;
+  font-size: calc(12px * var(--rs-learn-text));
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #d6bc8c;
+  /* An attribute heading wears its attribute's colour, as the sheet's skill
+     headings do. Blocks with no attribute (Combat, Beasts) keep the beige. */
+  color: var(--rs-band, #d6bc8c);
 }
 
 /* One track block. Every item inside states its own row and column, so the
@@ -12383,14 +13199,14 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  font-size: 12px;
+  font-size: calc(12px * var(--rs-learn-text));
   color: #cfc6b2;
   line-height: 1.2;
 }
 
 
 .rs-learn .rs-learn-rowlabel {
-  font-size: 11px;
+  font-size: calc(11px * var(--rs-learn-text));
   line-height: 1.25;
   padding: 1px 0;
   overflow-wrap: anywhere;
@@ -12412,9 +13228,21 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   position: relative;
   align-self: stretch;
   min-width: 0;
+  /* The column's hover light fills its whole slice of the panel, with no dark
+     strip left around it: it bleeds through the track's top and bottom padding
+     (6px and 8px on .rs-learn-track) and reaches halfway across the 4px column
+     gap on each side, where the neighbouring column and the progress band meet
+     it. Square, so it runs flush into the panel's edges. Change these margins
+     with the track's padding and the grid's column-gap. */
+  margin: -6px -2px -8px;
   border: 1px solid transparent;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.02);
+  border-radius: 0;
+}
+
+/* Rank X takes the track's 8px right padding as well, closing the panel off
+   the way a full progress band does. */
+.rs-learn .rs-learn-colhit[data-rank="10"] {
+  margin-right: -8px;
 }
 
 .rs-learn .rs-learn-node,
@@ -12447,7 +13275,7 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 24px;
+  height: 36px;
   color: color-mix(in srgb, var(--rs-socket) 45%, transparent);
   /* The diamond is the buy control, so this row takes the pointer back from
      the column underneath it. */
@@ -12487,12 +13315,39 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   background: color-mix(in srgb, var(--rs-band, #d9a13b) 80%, transparent);
 }
 
+/* Segment mode's cards are separate, so the rail through each diamond ends at
+   its own card instead of bridging the gap to the next one. Each half stops at
+   the engraving's side inset (2px, from .rs-learn-engrave's margin; change the
+   two together). */
+.rs-learn .rs-learn-track[data-mode="segments"] .rs-learn-node::before {
+  left: 2px;
+}
+
+.rs-learn .rs-learn-track[data-mode="segments"] .rs-learn-node::after {
+  right: 2px;
+}
+
+/* With no neighbour to connect to, every rank that exists draws both halves,
+   so the first and last cards are not lopsided. */
+.rs-learn .rs-learn-track[data-mode="segments"] .rs-learn-node:not(.state-unavailable)::before,
+.rs-learn .rs-learn-track[data-mode="segments"] .rs-learn-node:not(.state-unavailable)::after {
+  display: block;
+}
+
+/* A bought card lights its whole rail, not just the half that used to point
+   back at the rank before it. Lit classes only ever sit on owned nodes, so
+   nothing unowned lights. */
+.rs-learn .rs-learn-track[data-mode="segments"] .rs-learn-node.is-owned::before,
+.rs-learn .rs-learn-track[data-mode="segments"] .rs-learn-node.is-owned::after {
+  background: color-mix(in srgb, var(--rs-band, #d9a13b) 80%, transparent);
+}
+
 /* A rotated square, so the node needs no icon font and no image. */
 .rs-learn .rs-learn-diamond {
   position: relative;
   z-index: 1;
-  width: 16px;
-  height: 16px;
+  width: 24px;
+  height: 24px;
   border: 1px solid currentcolor;
   background: #14120d;
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.7);
@@ -12555,8 +13410,8 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   padding: 1px 3px;
   border: 1px solid rgba(217, 161, 59, 0.16);
   border-radius: 3px;
-  font-size: 9px;
-  line-height: 11px;
+  font-size: calc(9px * var(--rs-learn-text));
+  line-height: calc(11px * var(--rs-learn-text));
   color: #8a8175;
   overflow-wrap: anywhere;
   hyphens: auto;
@@ -12569,13 +13424,41 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
    per thing it does. min-width:0 is what stops a long chip from widening the
    1fr column and knocking every block out of line with the header — the row
    grows taller instead. */
+/* Segment mode's engraved card top: a recessed band per rank behind its diamond
+   and what the rank hands over, so icons and text read as set into the card.
+   Same sunk-plate treatment as the sheet header's attribute plates: a hard cast
+   from the top edge, a softer one rising from the bottom, and a faint
+   catch-light along the bottom edge. It sits at
+   z-index 0, below the diamond and content rows at 1. */
+.rs-learn .rs-learn-engrave {
+  position: relative;
+  z-index: 0;
+  align-self: stretch;
+  /* Reaches 5px above the node row so the diamond's top tip sits inside the
+     band instead of being cut by its edge. It borrows the track's 6px
+     padding-top; change the two together. */
+  margin: -5px 2px 2px;
+  background: rgba(0, 0, 0, 0.3);
+  box-shadow:
+    inset 0 7px 11px -2px rgba(0, 0, 0, 0.3),
+    inset 0 2px 3px rgba(0, 0, 0, 0.22),
+    inset 0 -6px 9px -3px rgba(0, 0, 0, 0.42),
+    inset 0 -1px 0 rgba(170, 154, 122, 0.06);
+  pointer-events: none;
+}
+
 .rs-learn .rs-learn-seg {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 2px;
-  padding: 2px 1px;
+  padding: 4px 5px;
+  /* Makes the engraved card top about three quarters of the whole card. Set on
+     this row, not on .rs-learn-engrave: a min-height on the band would spread
+     across both rows it spans and push the diamond down. On the text dial,
+     because the rows below it are mostly text and scale with the dial too. */
+  min-height: calc(120px * var(--rs-learn-text));
 }
 
 .rs-learn .rs-learn-seg-icons {
@@ -12602,6 +13485,37 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   display: block;
   -webkit-line-clamp: none;
   width: 100%;
+  /* Sized apart from the base chip: segment text is the whole content of a rank,
+     so it reads at track-name size rather than as a small label. */
+  font-size: calc(12px * var(--rs-learn-text));
+  line-height: calc(15px * var(--rs-learn-text));
+  /* Unboxed: the engraved band is the frame now. */
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: none;
+}
+
+/* A rank that hands over more than one thing separates them with a hairline.
+   Only between two items, never above the first, so a rank with a single gain
+   shows no line at all. */
+.rs-learn .rs-learn-seg .rs-learn-chip + .rs-learn-chip {
+  margin-top: 3px;
+  padding-top: 3px;
+  border-top: 1px solid rgba(217, 161, 59, 0.18);
+}
+
+/* Room between a rank's icons and the first line of text under them. Only
+   that first line: later lines keep the divider spacing above. */
+.rs-learn .rs-learn-seg .rs-learn-seg-icons + .rs-learn-chip {
+  margin-top: 6px;
+}
+
+/* A line that names an ability the rank grants, as opposed to a bonus or a
+   rule. Marked by learnWindow.mjs, which matches the line against the
+   granted abilities' own names. */
+.rs-learn .rs-learn-seg .rs-learn-chip.is-ability {
+  font-weight: 700;
 }
 
 /* A chip carrying a stat and a number is the segment's answer to a matrix row,
@@ -12611,9 +13525,9 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   color: #b7ac97;
 }
 
-.rs-learn .rs-learn-seg.state-owned .rs-learn-chip.is-value {
+/* Everything a bought rank hands over reads lit, names as well as numbers. */
+.rs-learn .rs-learn-seg.state-owned .rs-learn-chip {
   color: #d9a13b;
-  border-color: rgba(217, 161, 59, 0.35);
 }
 
 .rs-learn .rs-learn-seg.state-available .rs-learn-chip.is-value {
@@ -12649,48 +13563,111 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
 
    The mix percentage is set per attribute rather than shared: these hues are
    nowhere near equal in luminance, so a flat percentage would leave Intelligence
-   nearly invisible while Perception glared. */
-.rs-learn .rs-learn-section[data-section="str"] {
+   nearly invisible while Perception glared.
+
+   Keyed on data-section alone rather than on the block, so the attribute
+   ribbon's buttons, the picker's headings and the hero header's attribute
+   tiles all read the same colour. */
+.rs-learn [data-section="str"] {
   --rs-band: var(--rs-attr-str);
   --rs-band-mix: 20%;
 }
 
-.rs-learn .rs-learn-section[data-section="dex"] {
+.rs-learn [data-section="dex"] {
   --rs-band: var(--rs-attr-dex);
   --rs-band-mix: 17%;
 }
 
-.rs-learn .rs-learn-section[data-section="end"] {
+.rs-learn [data-section="end"] {
   --rs-band: var(--rs-attr-end);
   --rs-band-mix: 16%;
 }
 
-.rs-learn .rs-learn-section[data-section="int"] {
+.rs-learn [data-section="int"] {
   --rs-band: var(--rs-attr-int);
   --rs-band-mix: 24%;
 }
 
-.rs-learn .rs-learn-section[data-section="wil"] {
+.rs-learn [data-section="wil"] {
   --rs-band: var(--rs-attr-wil);
   --rs-band-mix: 21%;
 }
 
-.rs-learn .rs-learn-section[data-section="cha"] {
+.rs-learn [data-section="cha"] {
   --rs-band: var(--rs-attr-cha);
   --rs-band-mix: 15%;
 }
 
-.rs-learn .rs-learn-section[data-section="per"] {
+.rs-learn [data-section="per"] {
   --rs-band: var(--rs-attr-per);
   --rs-band-mix: 12%;
+}
+
+/* The Combat tab's blocks (user ruling). Combat skills and weapon skills keep
+   the bronze they have without a band. The combat doctrines, melee, ranged and
+   the hybrids, read in red and the magical doctrines in blue: the sheet's own
+   Strength and Intelligence hues, with the same mixes. Toggles, headings and
+   tracks all follow data-section. */
+.rs-learn [data-section="melee"],
+.rs-learn [data-section="ranged"],
+.rs-learn [data-section="special"] {
+  --rs-band: var(--rs-attr-str);
+  --rs-band-mix: 20%;
+}
+
+.rs-learn [data-section="magical"] {
+  --rs-band: var(--rs-attr-int);
+  --rs-band-mix: 24%;
+}
+
+/* Each school of magic in its spell chat card's colour (the accent of its
+   .spell-msg-<school> card, see the top of this file), set on the track itself
+   since the schools share one block. The block's own toggle stays bronze, as
+   no single school speaks for it. Mixes follow luminance as the attributes'
+   do: pale Air takes the least, dark Darkness the most. */
+.rs-learn [data-track-id="schools.fire"] {
+  --rs-band: #c4773d;
+  --rs-band-mix: 16%;
+}
+
+.rs-learn [data-track-id="schools.water"] {
+  --rs-band: #7ba1bb;
+  --rs-band-mix: 15%;
+}
+
+.rs-learn [data-track-id="schools.air"] {
+  --rs-band: #b4bcc4;
+  --rs-band-mix: 11%;
+}
+
+.rs-learn [data-track-id="schools.earth"] {
+  --rs-band: #5fa680;
+  --rs-band-mix: 16%;
+}
+
+.rs-learn [data-track-id="schools.spirit"] {
+  --rs-band: #b65d93;
+  --rs-band-mix: 17%;
+}
+
+.rs-learn [data-track-id="schools.body"] {
+  --rs-band: #ba983e;
+  --rs-band-mix: 15%;
+}
+
+.rs-learn [data-track-id="schools.darkness"] {
+  --rs-band: #7d5fa6;
+  --rs-band-mix: 24%;
 }
 
 .rs-learn .rs-learn-fill {
   align-self: stretch;
   /* Bleeds out through the block's own padding so it fills the panel edge to
      edge. Without this the panel showed as a second, larger band around it.
-     The values mirror .rs-learn-track's padding exactly; change them together. */
-  margin: -6px 0 -8px -8px;
+     The values mirror .rs-learn-track's padding exactly; change them together.
+     On the right it reaches half the 4px column gap, where the next column's
+     hover light (.rs-learn-colhit) begins, so the two meet with no dark strip. */
+  margin: -6px -2px -8px -8px;
   background: color-mix(
     in srgb,
     var(--rs-band, #d9a13b) var(--rs-band-mix, 11%),
@@ -12714,6 +13691,11 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   z-index: 0;
 }
 
+/* Room below each ledger rule. Every row with a rule above it gets the same:
+   the stat rows (user ruling: each percentage row is ruled off like the
+   requirements), the requirements and the price. */
+.rs-learn .rs-learn-val,
+.rs-learn .rs-learn-rowlabel.is-stat,
 .rs-learn .rs-learn-reqs,
 .rs-learn .rs-learn-cost,
 .rs-learn .rs-learn-rowlabel.is-reqs,
@@ -12750,8 +13732,8 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   padding: 1px 3px;
   border: 1px solid rgba(217, 161, 59, 0.16);
   border-radius: 3px;
-  font-size: 9px;
-  line-height: 11px;
+  font-size: calc(9px * var(--rs-learn-text));
+  line-height: calc(11px * var(--rs-learn-text));
   text-align: center;
   overflow-wrap: anywhere;
   hyphens: auto;
@@ -12787,20 +13769,20 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   padding: 1px 4px;
   border: 1px solid transparent;
   border-radius: 3px;
-  font-size: 9px;
-  line-height: 12px;
+  font-size: calc(9px * var(--rs-learn-text));
+  line-height: calc(12px * var(--rs-learn-text));
   text-decoration: none;
   pointer-events: auto;
   cursor: default;
 }
 
 .rs-learn .rs-learn-teacher i {
-  font-size: 10px;
+  font-size: calc(10px * var(--rs-learn-text));
   line-height: 1;
 }
 
 .rs-learn .rs-learn-teacher b {
-  font-size: 9px;
+  font-size: calc(9px * var(--rs-learn-text));
   font-weight: 700;
   letter-spacing: 0.04em;
 }
@@ -12832,16 +13814,19 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
 /* -------- values and cost -------- */
 
 .rs-learn .rs-learn-val {
-  font-size: 11px;
-  line-height: 15px;
+  font-size: calc(11px * var(--rs-learn-text));
+  line-height: calc(15px * var(--rs-learn-text));
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   color: #8a8175;
 }
 
 .rs-learn .rs-learn-cost {
-  font-size: 10px;
-  line-height: 14px;
+  /* The price is what a reader scans the row for, so it reads at heading
+     size rather than at the size of the stat values above it. */
+  font-weight: 700;
+  font-size: calc(15px * var(--rs-learn-text));
+  line-height: calc(20px * var(--rs-learn-text));
   letter-spacing: 0.04em;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -12849,29 +13834,29 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
 }
 
 .rs-learn .rs-learn-lock {
+  /* Dead centre on a locked rank's diamond. It is the diamond's sibling in
+     the node, not its child, so it stays upright. */
   position: absolute;
-  top: 2px;
-  right: 3px;
-  font-size: 9px;
+  top: 50%;
+  left: 50%;
+  z-index: 2;
+  transform: translate(-50%, -50%);
+  font-size: calc(9px * var(--rs-learn-text));
   line-height: 1;
-  color: #8a8175;
+  color: color-mix(in srgb, var(--rs-socket) 70%, transparent);
+  pointer-events: none;
 }
 
 /* -------- column states -------- */
 
 .rs-learn .rs-learn-colhit.state-available {
   border-color: rgba(230, 196, 122, 0.45);
-  background: rgba(255, 255, 255, 0.05);
   cursor: pointer;
 }
 
-.rs-learn .rs-learn-colhit.state-available:hover {
-  border-color: #d9a13b;
-}
 
 .rs-learn .rs-learn-colhit.state-unavailable {
   border-color: transparent;
-  background: none;
 }
 
 .rs-learn .rs-learn-val.state-owned,
@@ -12934,27 +13919,1005 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
 .rs-learn .rs-learn-track:has([data-rank="8"]:hover) .rs-learn-colhit[data-rank="8"],
 .rs-learn .rs-learn-track:has([data-rank="9"]:hover) .rs-learn-colhit[data-rank="9"],
 .rs-learn .rs-learn-track:has([data-rank="10"]:hover) .rs-learn-colhit[data-rank="10"] {
-  border-color: rgba(217, 161, 59, 0.6);
-  background: rgba(217, 161, 59, 0.1);
+  /* The whole column lights up, in the track's own band colour (gold on the
+     Combat tab, the attribute colour on Skills), rather than drawing a
+     border. It paints over the engraving, so the engraved area lights too. */
+  background: color-mix(in srgb, var(--rs-band, #d9a13b) 12%, transparent);
 }
 
-/* -------- refund -------- */
+/* -------- features tab -------- */
 
-.rs-learn .rs-learn-refund {
-  position: absolute;
-  top: 1px;
-  right: 2px;
-  z-index: 2;
-  font-size: 9px;
-  line-height: 1;
+/* Two stone plates side by side, the grid's own material: what the character
+   already has on the left, everything still to take on the right. Each panel
+   scrolls on its own, so a long available list never pushes the owned one out
+   of view. */
+.rs-learn .rs-learn-features {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(calc(360px * var(--rs-learn-text)), 38%) minmax(0, 1fr);
+  gap: 12px;
+  margin: 10px 12px 12px;
+}
+
+.rs-learn .rs-learn-features-owned,
+.rs-learn .rs-learn-features-available {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background:
+    linear-gradient(rgba(12, 12, 11, 0.5), rgba(12, 12, 11, 0.5)),
+    url(../ui/headertexture.jpg);
+  border: 2px solid #514226;
+  border-radius: 0;
+  box-shadow:
+    inset 0 0 25px rgba(0, 0, 0, 0.65),
+    0 0 12px rgba(0, 0, 0, 0.35);
+}
+
+.rs-learn .rs-learn-features-owned {
+  overflow-y: auto;
+  padding: 10px 12px 14px;
+}
+
+.rs-learn .rs-learn-features-available {
+  overflow: hidden;
+}
+
+/* One owned feature: icon, name, what it cost, and a give-back control that
+   only shows on hover (refunds are rare, as on the rank diamonds). */
+.rs-learn .rs-learn-owned {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 2px;
+  border-bottom: 1px solid rgba(81, 66, 38, 0.35);
+}
+
+.rs-learn .rs-learn-owned img,
+.rs-learn .rs-learn-feature-icon {
+  flex: 0 0 auto;
+  width: calc(32px * var(--rs-learn-text));
+  height: calc(32px * var(--rs-learn-text));
+  max-width: none;
+  object-fit: cover;
+  padding: 0;
+  border: 1px solid #514226;
+  border-radius: 0;
+  background: #14120d;
+}
+
+.rs-learn .rs-learn-owned-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(13px * var(--rs-learn-text));
+  line-height: calc(17px * var(--rs-learn-text));
+  color: #d6bc8c;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.rs-learn .rs-learn-owned b,
+.rs-learn .rs-learn-feature-cost {
+  flex: 0 0 auto;
+  font-family: Cambria, "Times New Roman", Times, serif;
+  font-variant-numeric: lining-nums;
+  font-weight: 700;
+  font-size: calc(14px * var(--rs-learn-text));
+  line-height: calc(18px * var(--rs-learn-text));
+  color: #d9a13b;
+  white-space: nowrap;
+}
+
+.rs-learn .rs-learn-owned em {
+  flex: 0 0 auto;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(11px * var(--rs-learn-text));
+  line-height: calc(14px * var(--rs-learn-text));
   color: #8a8175;
-  cursor: pointer;
-  pointer-events: auto;
+  white-space: nowrap;
 }
 
-.rs-learn .rs-learn-refund:hover {
+.rs-learn .rs-learn-owned-refund {
+  flex: 0 0 auto;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 2px 6px;
+  border: 1px solid transparent;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  font-size: calc(12px * var(--rs-learn-text));
+  line-height: calc(16px * var(--rs-learn-text));
+  color: #6f675a;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.rs-learn .rs-learn-owned:hover .rs-learn-owned-refund {
+  opacity: 1;
+}
+
+.rs-learn .rs-learn-owned-refund:hover {
+  color: #f0d7aa;
+  border-color: #9c7b45;
+  background: rgba(12, 12, 11, 0.6);
+}
+
+/* The available panel's bar: a search field sunk into the recessed channel and
+   the "meets requirements" toggle, a stone plate that lights when on. */
+.rs-learn .rs-learn-features-bar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background-color: #0d0c0a;
+  background-image:
+    linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.6),
+      rgba(255, 255, 255, 0.035) 55%,
+      rgba(0, 0, 0, 0.65)
+    ),
+    url(../ui/headertexture.jpg);
+  background-repeat: no-repeat, repeat;
+  background-size: auto, 512px 512px;
+  border-bottom: 1px solid #514226;
+}
+
+.rs-learn .rs-learn-feature-search {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: calc(28px * var(--rs-learn-text));
+  margin: 0;
+  padding: 0 8px;
+  border: 1px solid #514226;
+  border-radius: 0;
+  background: rgba(0, 0, 0, 0.45);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.7);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(13px * var(--rs-learn-text));
+  line-height: calc(18px * var(--rs-learn-text));
+  color: #d6bc8c;
+}
+
+.rs-learn .rs-learn-feature-filter {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 5px 12px;
+  border: 1px solid #514226;
+  border-radius: 0;
+  background:
+    linear-gradient(to bottom, rgba(81, 66, 38, 0.28), rgba(12, 12, 11, 0.6)),
+    url(../ui/headertexture.jpg);
+  box-shadow:
+    inset 0 1px 0 rgba(214, 188, 140, 0.12),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.6);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(12px * var(--rs-learn-text));
+  line-height: calc(16px * var(--rs-learn-text));
+  letter-spacing: 0.04em;
+  color: #b7ac97;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+  cursor: pointer;
+}
+
+.rs-learn .rs-learn-feature-filter:hover {
+  color: #f0d7aa;
+  border-color: #9c7b45;
+}
+
+.rs-learn .rs-learn-feature-filter.active {
+  color: #f0d7aa;
+  border-color: #9c7b45;
+  background:
+    linear-gradient(to bottom, rgba(81, 66, 38, 0.55), rgba(81, 66, 38, 0.15)),
+    url(../ui/headertexture.jpg);
+}
+
+.rs-learn .rs-learn-features-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 12px 14px;
+}
+
+.rs-learn .rs-learn-feature-section {
+  margin: 12px 0 0;
+}
+
+/* One available feature, ruled off like a ledger line: the buy diamond, the
+   icon (hover for its card), the name, its requirement chips, the price. */
+.rs-learn .rs-learn-feature {
+  display: grid;
+  grid-template-columns:
+    calc(36px * var(--rs-learn-text)) calc(32px * var(--rs-learn-text)) minmax(calc(170px * var(--rs-learn-text)), 1fr)
+    minmax(0, 2fr) auto;
+  align-items: center;
+  column-gap: 10px;
+  padding: 4px 8px;
+  border-bottom: 1px solid rgba(81, 66, 38, 0.35);
+}
+
+.rs-learn .rs-learn-feature:hover {
+  background: rgba(81, 66, 38, 0.18);
+}
+
+.rs-learn .rs-learn-feature-name {
+  min-width: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(13px * var(--rs-learn-text));
+  line-height: calc(17px * var(--rs-learn-text));
+  color: #d6bc8c;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.rs-learn .rs-learn-feature.state-locked .rs-learn-feature-name,
+.rs-learn .rs-learn-feature.state-taken .rs-learn-feature-name {
+  color: #8a8175;
+}
+
+.rs-learn .rs-learn-feature.state-poor .rs-learn-feature-cost,
+.rs-learn .rs-learn-feature.state-locked .rs-learn-feature-cost,
+.rs-learn .rs-learn-feature.state-taken .rs-learn-feature-cost {
+  color: #8a8175;
+}
+
+.rs-learn .rs-learn-feature-reqs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  min-width: 0;
+}
+
+.rs-learn .rs-learn-feature-reqs .rs-learn-req {
+  font-size: calc(10px * var(--rs-learn-text));
+  line-height: calc(13px * var(--rs-learn-text));
+}
+
+
+/* -------- features tab: sections, families, skill picker -------- */
+
+/* The filter pop-up (user ruling: filters work like a spreadsheet's). It hangs
+   from the Features bar under the Filters button, over the list: a dark stone
+   plate with a bronze frame and a drop shadow, two groups of checkboxes, and
+   Reset along the foot. Every tick filters at once, so there is no OK. */
+.rs-learn .rs-learn-features-bar {
+  position: relative;
+}
+
+.rs-learn .rs-learn-filter-popup {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 12px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: max-content;
+  min-width: calc(250px * var(--rs-learn-text));
+  max-width: calc(100% - 24px);
+  padding: 10px 12px;
+  background:
+    linear-gradient(rgba(12, 12, 11, 0.86), rgba(12, 12, 11, 0.94)),
+    url(../ui/headertexture.jpg);
+  border: 2px solid #514226;
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.8),
+    inset 0 0 18px rgba(0, 0, 0, 0.6);
+}
+
+.rs-learn .rs-learn-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.rs-learn .rs-learn-filter-label {
+  margin: 0 0 3px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(10px * var(--rs-learn-text));
+  line-height: calc(13px * var(--rs-learn-text));
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8a8175;
+}
+
+.rs-learn .rs-learn-filter-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 6px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(13px * var(--rs-learn-text));
+  line-height: calc(17px * var(--rs-learn-text));
+  color: #d6bc8c;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+  cursor: pointer;
+}
+
+.rs-learn .rs-learn-filter-check:hover {
+  background: rgba(81, 66, 38, 0.25);
+}
+
+/* "(Select all)" is ruled off from the sections it drives. */
+.rs-learn .rs-learn-filter-check.is-all {
+  margin-bottom: 2px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid rgba(81, 66, 38, 0.6);
+}
+
+.rs-learn .rs-learn-filter-check input {
+  flex: 0 0 auto;
+  margin: 0;
+  accent-color: #9c7b45;
+}
+
+.rs-learn .rs-learn-filter-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  padding-top: 8px;
+  border-top: 1px solid #514226;
+}
+
+.rs-learn .rs-learn-filter-actions button {
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 4px 12px;
+  border: 1px solid #514226;
+  border-radius: 0;
+  background:
+    linear-gradient(to bottom, rgba(81, 66, 38, 0.28), rgba(12, 12, 11, 0.6)),
+    url(../ui/headertexture.jpg);
+  box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.6);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(12px * var(--rs-learn-text));
+  line-height: calc(16px * var(--rs-learn-text));
+  letter-spacing: 0.04em;
+  color: #d6bc8c;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+  cursor: pointer;
+}
+
+.rs-learn .rs-learn-filter-actions button:hover {
+  color: #f0d7aa;
+  border-color: #9c7b45;
+}
+
+/* How many filters are set, on the Filters button. */
+.rs-learn .rs-learn-filter-count {
+  min-width: calc(16px * var(--rs-learn-text));
+  padding: 0 4px;
+  border: 1px solid #9c7b45;
+  background: rgba(81, 66, 38, 0.55);
+  font-family: Cambria, "Times New Roman", Times, serif;
+  font-variant-numeric: lining-nums;
+  font-weight: 700;
+  font-size: calc(11px * var(--rs-learn-text));
+  line-height: calc(15px * var(--rs-learn-text));
+  text-align: center;
+  color: #f0d7aa;
+}
+
+/* Foundry's own focus highlight painted a red outline on these after a click.
+   A click leaves no mark; the keyboard still gets a quiet bronze outline. */
+.rs-learn .rs-learn-feature-filter:focus,
+.rs-learn .rs-learn-filter-actions button:focus {
+  outline: none;
+  box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.6);
+}
+
+.rs-learn .rs-learn-feature-filter:focus-visible,
+.rs-learn .rs-learn-filter-actions button:focus-visible {
+  outline: 1px solid #9c7b45;
+  outline-offset: 1px;
+}
+
+/* A family row opens its picker, so the whole row is the control. */
+.rs-learn .rs-learn-feature.is-family {
+  cursor: pointer;
+}
+
+.rs-learn .rs-learn-feature.is-family .rs-learn-feature-name i {
+  margin-left: 4px;
+  color: #8a8175;
+}
+
+.rs-learn .rs-learn-feature.is-family:hover .rs-learn-feature-name i {
   color: #d9a13b;
 }
+
+.rs-learn .rs-learn-family-summary {
+  font-family: Georgia, "Times New Roman", serif;
+  font-style: italic;
+  font-size: calc(11px * var(--rs-learn-text));
+  line-height: calc(14px * var(--rs-learn-text));
+  color: #8a8175;
+}
+
+/* The picker's heading, beside the back button in the bar. */
+.rs-learn .rs-learn-family-title {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(16px * var(--rs-learn-text));
+  line-height: calc(20px * var(--rs-learn-text));
+  letter-spacing: 0.04em;
+  color: #e3cfa3;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+/* Three columns, one per skill class, each a ledger of skills. */
+.rs-learn .rs-learn-family-columns {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-content: start;
+  gap: 0 18px;
+  padding: 0 12px 14px;
+}
+
+.rs-learn .rs-learn-family-column {
+  margin: 12px 0 0;
+  min-width: 0;
+}
+
+.rs-learn .rs-learn-family-skill {
+  display: grid;
+  grid-template-columns: calc(36px * var(--rs-learn-text)) minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 8px;
+  padding: 3px 6px;
+  border-bottom: 1px solid rgba(81, 66, 38, 0.35);
+}
+
+.rs-learn .rs-learn-family-skill:hover {
+  background: rgba(81, 66, 38, 0.18);
+}
+
+.rs-learn .rs-learn-family-skill-name {
+  min-width: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(13px * var(--rs-learn-text));
+  line-height: calc(17px * var(--rs-learn-text));
+  color: #d6bc8c;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+  cursor: help;
+}
+
+.rs-learn .rs-learn-family-skill.state-owned .rs-learn-family-skill-name {
+  color: #d9a13b;
+}
+
+.rs-learn .rs-learn-family-skill.state-locked .rs-learn-family-skill-name,
+.rs-learn .rs-learn-family-skill.state-taken .rs-learn-family-skill-name,
+.rs-learn .rs-learn-family-skill.state-locked .rs-learn-feature-cost,
+.rs-learn .rs-learn-family-skill.state-taken .rs-learn-feature-cost,
+.rs-learn .rs-learn-family-skill.state-poor .rs-learn-feature-cost {
+  color: #8a8175;
+}
+
+
+/* -------- specialisations tab -------- */
+
+/* The tab's frame: the bar, then the card gallery (what players see), the
+   GM's plain list, or an open star sign in place of either. */
+.rs-learn .rs-learn-specs {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 10px 12px 12px;
+}
+
+/* The channel bar standing on its own, so it takes the plate's frame. */
+.rs-learn .rs-learn-specs-bar {
+  border: 2px solid #514226;
+}
+
+.rs-learn .rs-learn-spec-gallery,
+.rs-learn .rs-learn-spec-group,
+.rs-learn .rs-learn-spec-view {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background:
+    linear-gradient(rgba(12, 12, 11, 0.5), rgba(12, 12, 11, 0.5)),
+    url(../ui/headertexture.jpg);
+  border: 2px solid #514226;
+  border-radius: 0;
+  box-shadow:
+    inset 0 0 25px rgba(0, 0, 0, 0.65),
+    0 0 12px rgba(0, 0, 0, 0.35);
+}
+
+/* -------- specialisations: cards -------- */
+
+/* The gallery (user ruling: not a ledger). One stone plate, Combat then
+   Support, each a heading and a grid of cards as wide as the screen allows. */
+.rs-learn .rs-learn-spec-gallery {
+  flex: 1 1 auto;
+  overflow-y: auto;
+}
+
+.rs-learn .rs-learn-spec-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(calc(210px * var(--rs-learn-text)), 1fr));
+  gap: 16px;
+  padding: 16px 16px 20px;
+}
+
+/* A card: a smaller stone plate lit from above, bronze-edged. The token sits
+   at the top, the name on a bronze underline beneath it, then the short
+   description, and along the foot the buy diamond and the price. The whole
+   card opens the star sign. An owned card's edge and token turn gold. */
+.rs-learn .rs-learn-spec-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 18px 16px 10px;
+  text-align: center;
+  background:
+    linear-gradient(to bottom, rgba(81, 66, 38, 0.22), rgba(12, 12, 11, 0.62) 55%),
+    url(../ui/headertexture.jpg);
+  border: 1px solid #514226;
+  box-shadow:
+    inset 0 1px 0 rgba(214, 188, 140, 0.1),
+    inset 0 0 22px rgba(0, 0, 0, 0.65),
+    0 3px 10px rgba(0, 0, 0, 0.55);
+  cursor: pointer;
+}
+
+.rs-learn .rs-learn-spec-card:hover {
+  border-color: #9c7b45;
+}
+
+.rs-learn .rs-learn-spec-card.state-owned {
+  border-color: rgba(217, 161, 59, 0.75);
+  box-shadow:
+    inset 0 1px 0 rgba(214, 188, 140, 0.14),
+    inset 0 0 22px rgba(0, 0, 0, 0.6),
+    0 0 14px rgba(217, 161, 59, 0.18),
+    0 3px 10px rgba(0, 0, 0, 0.55);
+}
+
+/* The token: round like a map token, in the portrait's bevelled bronze frame
+   over a dark well. */
+.rs-learn .rs-learn-spec-token {
+  flex: 0 0 auto;
+  width: calc(120px * var(--rs-learn-text));
+  height: calc(120px * var(--rs-learn-text));
+  padding: 4px;
+  border: 3px solid #514226;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 38%, #3a3124 0%, #15120d 72%);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.85),
+    inset 0 0 14px rgba(0, 0, 0, 0.85),
+    0 5px 12px rgba(0, 0, 0, 0.6);
+}
+
+.rs-learn .rs-learn-spec-token img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  border: none;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.rs-learn .rs-learn-spec-card:hover .rs-learn-spec-token {
+  border-color: #9c7b45;
+}
+
+.rs-learn .rs-learn-spec-card.state-owned .rs-learn-spec-token {
+  border-color: #d9a13b;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.85),
+    inset 0 0 14px rgba(0, 0, 0, 0.85),
+    0 0 16px rgba(217, 161, 59, 0.4);
+}
+
+/* Out of reach: the art dims. Work in progress: it is barely there. */
+.rs-learn .rs-learn-spec-card.state-locked .rs-learn-spec-token img,
+.rs-learn .rs-learn-spec-card.state-capped .rs-learn-spec-token img {
+  filter: grayscale(0.55) brightness(0.72);
+}
+
+.rs-learn .rs-learn-spec-card.is-wip .rs-learn-spec-token img {
+  filter: grayscale(1) brightness(0.5);
+}
+
+.rs-learn .rs-learn-spec-card-name {
+  padding: 0 6px 6px;
+  border-bottom: 1px solid rgba(154, 125, 68, 0.55);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(16px * var(--rs-learn-text));
+  line-height: calc(20px * var(--rs-learn-text));
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #e6c98f;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.rs-learn .rs-learn-spec-card.state-locked .rs-learn-spec-card-name,
+.rs-learn .rs-learn-spec-card.state-capped .rs-learn-spec-card-name,
+.rs-learn .rs-learn-spec-card.is-wip .rs-learn-spec-card-name {
+  color: #b7ac97;
+}
+
+.rs-learn .rs-learn-spec-card-desc {
+  flex: 1 1 auto;
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-style: italic;
+  font-size: calc(12px * var(--rs-learn-text));
+  line-height: calc(17px * var(--rs-learn-text));
+  color: #b7ac97;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.rs-learn .rs-learn-spec-card-wip {
+  flex: 1 1 auto;
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(11px * var(--rs-learn-text));
+  line-height: calc(15px * var(--rs-learn-text));
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #6f675a;
+}
+
+.rs-learn .rs-learn-spec-card-foot {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 2px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(81, 66, 38, 0.5);
+}
+
+.rs-learn .rs-learn-spec-card-foot .rs-learn-node {
+  flex: 0 0 auto;
+  width: calc(36px * var(--rs-learn-text));
+}
+
+.rs-learn .rs-learn-spec-card-price {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.rs-learn .rs-learn-spec-card-price b {
+  font-family: Cambria, "Times New Roman", Times, serif;
+  font-variant-numeric: lining-nums;
+  font-weight: 700;
+  font-size: calc(13px * var(--rs-learn-text));
+  line-height: calc(17px * var(--rs-learn-text));
+  color: #d9a13b;
+  white-space: nowrap;
+}
+
+.rs-learn .rs-learn-spec-card-price em {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(11px * var(--rs-learn-text));
+  line-height: calc(14px * var(--rs-learn-text));
+  color: #8a8175;
+}
+
+.rs-learn .rs-learn-spec-card.state-locked .rs-learn-spec-card-price b,
+.rs-learn .rs-learn-spec-card.state-capped .rs-learn-spec-card-price b,
+.rs-learn .rs-learn-spec-card.state-poor .rs-learn-spec-card-price b {
+  color: #8a8175;
+}
+
+/* SPEC ICON EDITOR — TEMPORARY, delete with the editor (see learnWindow.mjs).
+   The GM's pencil in a card's corner, a small square stone plate. And the
+   file picker lifted over the full-screen Learn window, which sits just under
+   the tooltip layer (10000): a stylesheet !important beats the z-index Foundry
+   writes inline on the window it focuses. */
+.rs-learn .rs-learn-spec-icon-edit {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(26px * var(--rs-learn-text));
+  height: calc(26px * var(--rs-learn-text));
+  margin: 0;
+  padding: 0;
+  border: 1px solid #514226;
+  border-radius: 0;
+  background:
+    linear-gradient(to bottom, rgba(81, 66, 38, 0.28), rgba(12, 12, 11, 0.7)),
+    url(../ui/headertexture.jpg);
+  box-shadow:
+    inset 0 1px 0 rgba(214, 188, 140, 0.12),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.6);
+  font-size: calc(11px * var(--rs-learn-text));
+  line-height: 1;
+  color: #b7ac97;
+  cursor: pointer;
+}
+
+.rs-learn .rs-learn-spec-icon-edit:hover,
+.rs-learn .rs-learn-spec-icon-edit:focus-visible {
+  color: #f0d7aa;
+  border-color: #9c7b45;
+  outline: none;
+  box-shadow:
+    inset 0 1px 0 rgba(214, 188, 140, 0.12),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.6);
+}
+
+.rs-learn-icon-picker {
+  z-index: 10000 !important;
+}
+
+/* -------- specialisations: GM list and star sign -------- */
+
+/* The GM's list: two plates side by side, Combat and Support, each scrolling
+   on its own. */
+.rs-learn .rs-learn-spec-columns {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.rs-learn .rs-learn-spec-group {
+  overflow-y: auto;
+  padding-bottom: 12px;
+}
+
+.rs-learn .rs-learn-spec-view {
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+/* A group's heading, in the gallery and the list alike: the recessed channel,
+   naming the group and, for Combat, how many of its four points are spent;
+   past the cap the count turns red. */
+.rs-learn .rs-learn-spec-group-title {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+  padding: 8px 12px;
+  background-color: #0d0c0a;
+  background-image:
+    linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.6),
+      rgba(255, 255, 255, 0.035) 55%,
+      rgba(0, 0, 0, 0.65)
+    ),
+    url(../ui/headertexture.jpg);
+  background-repeat: no-repeat, repeat;
+  background-size: auto, 512px 512px;
+  border-bottom: 1px solid #514226;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.55);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(14px * var(--rs-learn-text));
+  line-height: calc(18px * var(--rs-learn-text));
+  font-weight: normal;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #d6bc8c;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.rs-learn .rs-learn-spec-group-title em {
+  font-family: Cambria, "Times New Roman", Times, serif;
+  font-variant-numeric: lining-nums;
+  font-style: normal;
+  font-size: calc(12px * var(--rs-learn-text));
+  line-height: calc(16px * var(--rs-learn-text));
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: #8a8175;
+}
+
+.rs-learn .rs-learn-spec-group-title em.is-over {
+  color: var(--rs-attr-str);
+}
+
+/* One specialisation in the list: the buy diamond, its name (with the nodes
+   unlocked, once owned), its requirement chips and its price. */
+.rs-learn .rs-learn-spec {
+  display: grid;
+  grid-template-columns:
+    calc(36px * var(--rs-learn-text)) minmax(calc(150px * var(--rs-learn-text)), 1fr)
+    minmax(0, 2fr) auto;
+  align-items: center;
+  column-gap: 10px;
+  padding: 5px 12px 5px 8px;
+  border-bottom: 1px solid rgba(81, 66, 38, 0.35);
+  cursor: pointer;
+}
+
+.rs-learn .rs-learn-spec:hover {
+  background: rgba(81, 66, 38, 0.18);
+}
+
+.rs-learn .rs-learn-spec-name {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(14px * var(--rs-learn-text));
+  line-height: calc(18px * var(--rs-learn-text));
+  color: #d6bc8c;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.rs-learn .rs-learn-spec-name i {
+  margin-left: 4px;
+  font-size: calc(11px * var(--rs-learn-text));
+  line-height: 1;
+  color: #8a8175;
+}
+
+.rs-learn .rs-learn-spec-name em {
+  font-size: calc(11px * var(--rs-learn-text));
+  line-height: calc(14px * var(--rs-learn-text));
+  color: #8a8175;
+}
+
+.rs-learn .rs-learn-spec.state-owned .rs-learn-spec-name {
+  color: #e6c98f;
+}
+
+.rs-learn .rs-learn-spec.state-locked .rs-learn-spec-name,
+.rs-learn .rs-learn-spec.state-capped .rs-learn-spec-name {
+  color: #8a8175;
+}
+
+.rs-learn .rs-learn-spec.state-locked .rs-learn-feature-cost,
+.rs-learn .rs-learn-spec.state-capped .rs-learn-feature-cost,
+.rs-learn .rs-learn-spec.state-poor .rs-learn-feature-cost {
+  color: #8a8175;
+}
+
+.rs-learn .rs-learn-spec .rs-learn-node[data-action],
+.rs-learn .rs-learn-spec-head .rs-learn-node[data-action],
+.rs-learn .rs-learn-spec-card .rs-learn-node[data-action] {
+  cursor: pointer;
+}
+
+/* The open star sign: the Back button and the specialisation's own head (the
+   same diamond, chips and price as its row) on the channel bar, then the sky. */
+.rs-learn .rs-learn-spec-bar {
+  flex-wrap: wrap;
+}
+
+.rs-learn .rs-learn-spec-head {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: calc(36px * var(--rs-learn-text)) auto minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 12px;
+}
+
+.rs-learn .rs-learn-spec-title {
+  display: flex;
+  flex-direction: column;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(16px * var(--rs-learn-text));
+  line-height: calc(20px * var(--rs-learn-text));
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #e6c98f;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.rs-learn .rs-learn-spec-title em {
+  font-size: calc(11px * var(--rs-learn-text));
+  line-height: calc(14px * var(--rs-learn-text));
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: #8a8175;
+}
+
+.rs-learn .rs-learn-spec-view-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 6px 16px 14px;
+}
+
+/* The sheet's star sign styles apply as they are (the screen carries the
+   .redsteel class); here it only needs the full width, and its stars are for
+   reading, not clicking. */
+.rs-learn .rs-learn-spec-view-body .spec-tree-wrap {
+  width: 100%;
+}
+
+.rs-learn .rs-learn-spec-view-body .spec-tree .spec-node {
+  cursor: default;
+}
+
+.rs-learn .rs-learn-spec-hint {
+  margin: 6px 0 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-style: italic;
+  font-size: calc(12px * var(--rs-learn-text));
+  line-height: calc(16px * var(--rs-learn-text));
+  text-align: center;
+  color: #8a8175;
+}
+
+
+/* -------- feature descriptions -------- */
+
+/* Every trait and feature row can roll out its description (user ruling): the
+   row is the control, so it shows a pointer and lights slightly while open.
+   The description spans the whole row, sunk into a dark well with a bronze
+   rule down its left edge, set in the sheet's serif. */
+.rs-learn [data-action="toggleFeatureDescription"] {
+  cursor: pointer;
+}
+
+.rs-learn .rs-learn-feature.is-expanded,
+.rs-learn .rs-learn-owned.is-expanded,
+.rs-learn .rs-learn-family-skill.is-expanded,
+.rs-learn .rs-learn-trait-entry.is-expanded {
+  background: rgba(81, 66, 38, 0.14);
+}
+
+.rs-learn .rs-learn-feature-desc {
+  grid-column: 1 / -1;
+  flex: 1 0 100%;
+  min-width: 0;
+  margin: 4px 0 2px;
+  padding: 6px 10px;
+  background: rgba(0, 0, 0, 0.35);
+  border-left: 2px solid #514226;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.55);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(12px * var(--rs-learn-text));
+  line-height: calc(17px * var(--rs-learn-text));
+  color: #c9bfae;
+  text-shadow: none;
+  cursor: text;
+  overflow-wrap: anywhere;
+}
+
+.rs-learn .rs-learn-feature-desc p {
+  margin: 0 0 4px;
+}
+
+.rs-learn .rs-learn-feature-desc p:last-child {
+  margin-bottom: 0;
+}
+
 
 /* -------- unbuilt tabs -------- */
 
@@ -12963,7 +14926,7 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   margin: 0;
   padding: 28px 12px;
   text-align: center;
-  font-size: 12px;
+  font-size: calc(12px * var(--rs-learn-text));
   font-style: italic;
   opacity: 0.55;
 }
@@ -12997,76 +14960,100 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
 
 /* --- Learn window: toolbar + track picker -------------------------------- */
 
-.rs-learn .rs-learn-toolbar {
-  display: flex;
-  padding: 0 0 6px;
-}
-
+/* Buttons are small stone plates: square, bronze-edged, a faint lit top edge
+   and a shaded foot, lettered in the serif the sheet uses for skill names. */
 .rs-learn .rs-learn-acquire,
 .rs-learn .rs-learn-picker-actions button {
-  padding: 4px 10px;
-  font-size: 11px;
+  height: auto;
+  padding: 4px 12px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(12px * var(--rs-learn-text));
+  line-height: calc(16px * var(--rs-learn-text));
   letter-spacing: 0.06em;
   color: #d6bc8c;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(217, 161, 59, 0.35);
-  border-radius: 3px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+  background:
+    linear-gradient(to bottom, rgba(81, 66, 38, 0.28), rgba(12, 12, 11, 0.6)),
+    url(../ui/headertexture.jpg);
+  border: 1px solid #514226;
+  border-radius: 0;
+  box-shadow:
+    inset 0 1px 0 rgba(214, 188, 140, 0.12),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.6),
+    0 1px 3px rgba(0, 0, 0, 0.5);
   cursor: pointer;
 }
 
-/* The picker is the way into this window's whole content, so its button spans
-   the grid rather than tucking into a corner. */
+/* Stands in the middle of the toggle row. Its width follows the text dial
+   like the header's boxes. */
 .rs-learn .rs-learn-acquire {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 6px 10px;
+  width: auto;
+  min-width: calc(170px * var(--rs-learn-text));
+  margin: 0;
+  padding: 5px 14px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
 
+/* Done and Cancel stand in the middle of the toggle row where Add skills
+   was, lettered the same way so the swap reads as one control changing
+   state. */
 .rs-learn .rs-learn-picker-actions button {
+  flex: 1 1 0;
   width: auto;
+  min-width: calc(80px * var(--rs-learn-text));
+  padding: 5px 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
 }
 
 .rs-learn .rs-learn-acquire:hover,
 .rs-learn .rs-learn-picker-actions button:hover {
-  color: #f0dcae;
-  border-color: #d9a13b;
-  background: rgba(255, 255, 255, 0.08);
+  color: #f0d7aa;
+  border-color: #9c7b45;
+  background:
+    linear-gradient(to bottom, rgba(81, 66, 38, 0.45), rgba(12, 12, 11, 0.5)),
+    url(../ui/headertexture.jpg);
 }
 
+/* The picker takes the grid's place, so it is the same stone panel. */
 .rs-learn .rs-learn-picker {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
-  padding: 0 4px 8px 0;
-}
-
-.rs-learn .rs-learn-picker-head {
-  position: sticky;
-  top: 0;
-  z-index: 3;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 6px 0;
-  background: #1c1c1c;
-  border-bottom: 1px solid rgba(217, 161, 59, 0.35);
+  margin: 10px 12px 12px;
+  padding: 0 12px 8px;
+  background:
+    linear-gradient(rgba(12, 12, 11, 0.5), rgba(12, 12, 11, 0.5)),
+    url(../ui/headertexture.jpg);
+  border: 2px solid #514226;
+  border-radius: 0;
+  box-shadow:
+    inset 0 0 25px rgba(0, 0, 0, 0.65),
+    0 0 12px rgba(0, 0, 0, 0.35);
 }
 
 .rs-learn .rs-learn-picker-hint {
-  flex: 1 1 auto;
+  flex: 1 1 0;
+  min-width: 0;
   margin: 0;
-  font-size: 11px;
+  font-size: calc(11px * var(--rs-learn-text));
   line-height: 1.4;
   color: #9a9a9a;
 }
 
 .rs-learn .rs-learn-picker-actions {
   flex: 0 0 auto;
+  align-self: center;
   display: flex;
   gap: 6px;
+  margin: 0;
 }
 
 .rs-learn .rs-learn-picker-section {
@@ -13075,7 +15062,7 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
 
 .rs-learn .rs-learn-picks {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(calc(190px * var(--rs-learn-text)), 1fr));
   gap: 2px 10px;
   padding: 4px 0 0;
 }
@@ -13085,16 +15072,16 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   align-items: center;
   gap: 6px;
   padding: 3px 6px;
-  font-size: 12px;
+  font-size: calc(12px * var(--rs-learn-text));
   color: #d6bc8c;
   border: 1px solid transparent;
-  border-radius: 3px;
+  border-radius: 0;
   cursor: pointer;
 }
 
 .rs-learn .rs-learn-pick:hover {
-  border-color: rgba(217, 161, 59, 0.35);
-  background: rgba(255, 255, 255, 0.04);
+  border-color: #514226;
+  background: rgba(0, 0, 0, 0.3);
 }
 
 .rs-learn .rs-learn-pick input {
@@ -13124,6 +15111,6 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
 .rs-learn .rs-learn-pick em {
   flex: 0 0 auto;
   font-style: normal;
-  font-size: 11px;
+  font-size: calc(11px * var(--rs-learn-text));
   color: #d9a13b;
 }

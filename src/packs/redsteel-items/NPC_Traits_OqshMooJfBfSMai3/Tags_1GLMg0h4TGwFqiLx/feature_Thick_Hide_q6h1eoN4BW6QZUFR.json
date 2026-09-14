@@ -32,7 +32,7 @@
       "system": {
         "changes": [
           {
-            "key": "system.armor.pierce.vulnerability",
+            "key": "system.armor.piercing.vulnerability",
             "value": true,
             "priority": null,
             "type": "override"

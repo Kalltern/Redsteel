@@ -432,8 +432,14 @@ const EDGE_PAD = 4;
  * the only anchor we can rely on. `.application` is a documented-by-convention
  * fallback that catches other windows (chat sidebar, dialogs) and costs
  * nothing when it misses, since a null host just restores the old behaviour.
+ *
+ * `data-tt-beside` opts a surface out: a full-screen surface has no free margin
+ * beside it, so treating it as the host would pin every tooltip to the edge of
+ * the screen, far from what was hovered. Inside it, tooltips sit beside their
+ * own source instead, the same as a source with no window at all.
  */
 function hostWindowRect(el) {
+  if (el.closest?.("[data-tt-beside]")) return null;
   const host =
     el.closest?.("[data-tt-window]") ?? el.closest?.(".application") ?? null;
   return host ? host.getBoundingClientRect() : null;

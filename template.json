@@ -23,12 +23,17 @@
             "vulnerability": false,
             "immunity": false
           },
-          "pierce": {
+          "piercing": {
             "resistance": false,
             "vulnerability": false,
             "immunity": false
           },
           "blunt": {
+            "resistance": false,
+            "vulnerability": false,
+            "immunity": false
+          },
+          "psychic": {
             "resistance": false,
             "vulnerability": false,
             "immunity": false
@@ -130,7 +135,9 @@
         },
         "teachers": {},
         "tracked": [],
-        "tracksSet": false
+        "tracksSet": false,
+        "discountChoices": {},
+        "specPoints": 6
       },
       "skillvisibility": true,
       "tabVisibility": {
@@ -1633,6 +1640,7 @@
       "templates": ["base"],
       "rounds": 0,
       "turns": 0,
+      "independentSubEffects": false,
       "damage": "",
       "dmgType1": "",
       "bool2": "",
@@ -1649,6 +1657,7 @@
         "poison",
         "magic",
         "dark",
+        "holy",
         "physical",
         "psychic",
         "blunt",
@@ -1730,6 +1739,7 @@
         "poison",
         "magic",
         "dark",
+        "holy",
         "physical",
         "psychic",
         "blunt",
@@ -1816,6 +1826,7 @@
         "poison",
         "magic",
         "dark",
+        "holy",
         "physical",
         "psychic",
         "blunt",

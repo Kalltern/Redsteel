@@ -96,6 +96,7 @@
         "defense": "Obranné akce",
         "ability": "Bojové schopnosti",
         "channeling": "Sesílání",
+        "envDamage": "Zranění z prostředí",
         "rest": "Dlouhý odpočinek",
         "firstAid": "První pomoc",
         "effects": "Správce efektů"
@@ -127,8 +128,9 @@
       "DamageType": {
         "physical": "Fyzické",
         "slash": "Sečné",
-        "pierce": "Bodné",
+        "piercing": "Bodné",
         "blunt": "Drtivé",
+        "psychic": "Psychické",
         "acid": "Kyselina",
         "fire": "Oheň",
         "frost": "Mráz",
@@ -481,6 +483,7 @@
         "warnDependents": "Na tomto uzlu závisí jiný odemčený uzel — nejdříve zamkni ten.",
         "shadow": {
           "label": "Stín",
+          "summary": "Zabiják ze tmy. Smrtelnější zákeřné útoky, krvácivé rány, jistota v plížení a metly lovce.",
           "nodes": {
             "sneakAttack": {
               "label": "Zákeřný útok +1d6",
@@ -556,16 +559,17 @@
             },
             "skillDiscount1": {
               "label": "Sleva 3 SP na dovednost",
-              "description": "0 SP. Sleva 3 SP za stupeň jedné dovednosti z výběru. Ručně — řeší se u stolu."
+              "description": "0 SP. Každý stupeň jedné zvolené dovednosti stojí o 3 SP méně: Plížení, Kapsářství, Odemykání zámků nebo Pasti. Dovednost se volí v okně Učení. Slevy na jednu dovednost se nesčítají."
             },
             "skillDiscount2": {
               "label": "Sleva 3 SP na dovednost",
-              "description": "0 SP. Sleva 3 SP za stupeň jedné dovednosti z výběru. Ručně — řeší se u stolu."
+              "description": "0 SP. Každý stupeň jedné zvolené dovednosti stojí o 3 SP méně: Plížení, Kapsářství, Odemykání zámků nebo Pasti. Dovednost se volí v okně Učení. Slevy na jednu dovednost se nesčítají."
             }
           }
         },
         "swordServant": {
           "label": "Služebník meče",
+          "summary": "Učedník čepele, který odpoví na každý výpad. Odvety, dračí postoje a rychlé zteče postavené na meči.",
           "nodes": {
             "bleedA": {
               "label": "Krvácení +10%",
@@ -663,6 +667,7 @@
         },
         "weaponMaster": {
           "label": "Mistr zbraní",
+          "summary": "Veterán každé zbrojnice. Výcvik se zbraněmi, zbrojnošský dril a přesné, drtivé údery jakoukoli zbraní.",
           "nodes": {
             "mistrZbrani": {
               "label": "Mistr zbraní",
@@ -740,6 +745,7 @@
         },
         "hoplite": {
           "label": "Hoplita",
+          "summary": "Živoucí kopinická stěna. Nabodává, odráží zteče a neúprosným postupem tlačí šik vpřed.",
           "nodes": {
             "nabodnuti": {
               "label": "Nabodnutí",
@@ -817,6 +823,7 @@
         },
         "swordDancer": {
           "label": "Mečový tanečník",
+          "summary": "Duelista, jehož boj je tancem. Ladné postoje, trhavé seky a protiútoky trestající každé zaváhání.",
           "nodes": {
             "duelistuvPostoj": {
               "label": "Duelistův postoj",
@@ -878,6 +885,7 @@
         },
         "bloodSchool": {
           "label": "Škola Krve",
+          "summary": "Zapovězená magie placená krví. Zvyšuje sílu kouzel, prohlubuje krevní zásobu a mění rány ve zbraně.",
           "nodes": {
             "apprentice": {
               "label": "Škola Krve - Učedník",
@@ -1503,15 +1511,15 @@
             },
             "slevaPlizeni": {
               "label": "Sleva 3 SP za stupeň Plížení",
-              "description": "0 SP. Ručně — řeší se u stolu."
+              "description": "0 SP. Každý stupeň dovednosti Plížení stojí o 3 SP méně, počítá to okno Učení. Slevy na jednu dovednost se nesčítají."
             },
             "slevaPreziti": {
               "label": "Sleva 3 SP za stupeň Přežití",
-              "description": "0 SP. Ručně — řeší se u stolu."
+              "description": "0 SP. Každý stupeň dovednosti Přežití stojí o 3 SP méně, počítá to okno Učení. Slevy na jednu dovednost se nesčítají."
             },
             "slevaRanhojicstvi": {
               "label": "Sleva 3 SP za stupeň Ranhojičství",
-              "description": "0 SP. Ručně — řeší se u stolu."
+              "description": "0 SP. Každý stupeň dovednosti Ranhojičství stojí o 3 SP méně, počítá to okno Učení. Slevy na jednu dovednost se nesčítají."
             },
             "prezbrojeni": {
               "label": "Přezbrojení: -6 Výdrže",
@@ -1525,6 +1533,7 @@
         },
         "incantator": {
           "label": "Incantator",
+          "summary": "Učenec soustředění a formulí. Usměrňuje magii skrze ohniskový předmět a čerpá z hlubokých zásob many.",
           "nodes": {
             "ohniskovyPredmet": {
               "label": "Ohniskový předmět: Kritický rozsah +5",
@@ -1752,6 +1761,7 @@
         },
         "warden": {
           "label": "Strážce",
+          "summary": "Nezlomný štít družiny. Spolehlivé kryty, drtivé údery štítem a postoje chránící spojence.",
           "nodes": {
             "kritObranaKryt": {
               "label": "Kritická obrana/kryt +2%",
@@ -1825,6 +1835,7 @@
         },
         "champion": {
           "label": "Šampion",
+          "summary": "Bojovník se dvěma zbraněmi v srdci bitvy. Mistrovství druhé ruky, smršť úderů, klamné útoky a odvety.",
           "nodes": {
             "stredniZbran": {
               "label": "Střední zbraň v druhé ruce",
@@ -1963,6 +1974,7 @@
         },
         "alchemist": {
           "label": "Alchemista",
+          "summary": "Mistr lektvarů, jedů a výbušnin. Silnější směsi, delší účinky a více dávek z každé várky.",
           "nodes": {
             "lecZastaveni1": {
               "label": "Léčivé lektvary: Zastavení krvácení +25%",
@@ -2142,11 +2154,11 @@
             },
             "sleva1": {
               "label": "Sleva 3 SP na dovednost",
-              "description": "0 SP. Ručně — řeší se u stolu."
+              "description": "0 SP. Každý stupeň jedné zvolené dovednosti stojí o 3 SP méně: libovolná dovednost kategorie Inteligence. Dovednost se volí v okně Učení. Slevy na jednu dovednost se nesčítají."
             },
             "sleva2": {
               "label": "Sleva 3 SP na dovednost",
-              "description": "0 SP. Ručně — řeší se u stolu."
+              "description": "0 SP. Každý stupeň jedné zvolené dovednosti stojí o 3 SP méně: libovolná dovednost kategorie Inteligence. Dovednost se volí v okně Učení. Slevy na jednu dovednost se nesčítají."
             },
             "mastTrvani": {
               "label": "Masti: Trvání +50%",
@@ -2408,7 +2420,7 @@
             },
             "slevaUmtvorba": {
               "label": "Sleva 5 SP za stupeň Umělecké tvorby",
-              "description": "0 SP. Ručně — řeší se u stolu."
+              "description": "0 SP. Každý stupeň dovednosti Umělecká tvorba stojí o 5 SP méně, počítá to okno Učení. Slevy na jednu dovednost se nesčítají."
             },
             "pokouseni5": {
               "label": "Pokoušení +5%",
@@ -2440,19 +2452,19 @@
             },
             "sleva1": {
               "label": "Sleva 3 SP na dovednost",
-              "description": "0 SP. Ručně — řeší se u stolu."
+              "description": "0 SP. Každý stupeň jedné zvolené dovednosti stojí o 3 SP méně: libovolná dovednost kategorie Charisma, Kapsářství nebo Umělecká tvorba. Dovednost se volí v okně Učení. Slevy na jednu dovednost se nesčítají."
             },
             "sleva2": {
               "label": "Sleva 3 SP na dovednost",
-              "description": "0 SP. Ručně — řeší se u stolu."
+              "description": "0 SP. Každý stupeň jedné zvolené dovednosti stojí o 3 SP méně: libovolná dovednost kategorie Charisma, Kapsářství nebo Umělecká tvorba. Dovednost se volí v okně Učení. Slevy na jednu dovednost se nesčítají."
             },
             "sleva3": {
               "label": "Sleva 3 SP na dovednost",
-              "description": "0 SP. Ručně — řeší se u stolu."
+              "description": "0 SP. Každý stupeň jedné zvolené dovednosti stojí o 3 SP méně: libovolná dovednost kategorie Charisma, Kapsářství nebo Umělecká tvorba. Dovednost se volí v okně Učení. Slevy na jednu dovednost se nesčítají."
             },
             "sleva4": {
               "label": "Sleva 3 SP na dovednost",
-              "description": "0 SP. Ručně — řeší se u stolu."
+              "description": "0 SP. Každý stupeň jedné zvolené dovednosti stojí o 3 SP méně: libovolná dovednost kategorie Charisma, Kapsářství nebo Umělecká tvorba. Dovednost se volí v okně Učení. Slevy na jednu dovednost se nesčítají."
             }
           }
         },
@@ -2750,6 +2762,7 @@
         },
         "grimm": {
           "label": "Grimm",
+          "summary": "Lovec nestvůr. Ovládá mnoho metel a čte stopy i ostatky bestií, které skolil.",
           "nodes": {
             "bane1": {
               "label": "Odemyká jednu Metlu",
@@ -2803,6 +2816,7 @@
         },
         "illusionist": {
           "label": "Iluzionista",
+          "summary": "Tkadlec lží ze světla. Dokonalé iluze, které je těžké popřít, a zrak, který prohlédne iluze cizí.",
           "nodes": {
             "ucednik": {
               "label": "Iluzionista: Učedník",
@@ -3100,7 +3114,7 @@
             },
             "slevaArcana": {
               "label": "Sleva 3 SP za stupeň Arcany",
-              "description": "0 SP. Ručně — řeší se u stolu."
+              "description": "0 SP. Každý stupeň dovednosti Arcana stojí o 3 SP méně, počítá to okno Učení. Slevy na jednu dovednost se nesčítají."
             }
           }
         },
@@ -3183,6 +3197,7 @@
         },
         "mentalist": {
           "label": "Mentalista",
+          "summary": "Mysl, která láme jiné mysli. Mentální souboje, telepatie, ovládnutí a čtení myšlenek.",
           "nodes": {
             "ucednik": {
               "label": "Mentalista: Učedník",
@@ -3324,6 +3339,7 @@
         },
         "mystic": {
           "label": "Mystik",
+          "summary": "Ritualista spjatý s lunou. Podmaňuje vyvolané tvory, čerpá z Lunární studny a zdokonaluje rituály.",
           "nodes": {
             "ucednik": {
               "label": "Mystik: Učedník",
@@ -3383,11 +3399,11 @@
             },
             "sleva1": {
               "label": "Sleva 3 SP na dovednost",
-              "description": "0 SP. Ručně — řeší se u stolu."
+              "description": "0 SP. Každý stupeň jedné zvolené dovednosti stojí o 3 SP méně: libovolná dovednost kategorie Inteligence, Rituály, Chodec ve snu nebo Věštění. Dovednost se volí v okně Učení. Slevy na jednu dovednost se nesčítají."
             },
             "sleva2": {
               "label": "Sleva 3 SP na dovednost",
-              "description": "0 SP. Ručně — řeší se u stolu."
+              "description": "0 SP. Každý stupeň jedné zvolené dovednosti stojí o 3 SP méně: libovolná dovednost kategorie Inteligence, Rituály, Chodec ve snu nebo Věštění. Dovednost se volí v okně Učení. Slevy na jednu dovednost se nesčítají."
             }
           }
         },
@@ -4167,6 +4183,10 @@
         "roundsHint": "Trvá tento počet bojových kol (odpočítává se na začátku každého kola). 0 = bez limitu kol.",
         "turns": "Tahy",
         "turnsHint": "Trvá tento počet tahů zasažené postavy. 0 = bez limitu tahů.",
+        "subEffectsHeader": "Vedlejší efekty",
+        "independentSubEffects": "Vedlejší efekty přetrvají stav",
+        "independentSubEffectsHint": "Statusy vybrané v poli Status Conditions na efektech tohoto stavu se aplikují jako samostatné efekty spolu s ním. Nezaškrtnuto: ty, které tento stav vytvořil, zmizí, když stav skončí. Zaškrtnuto: zůstanou a doběhnou podle svých vlastních pravidel. Status, který postava už měla, se nikdy neodstraní.",
+        "notWorldCondition": "\"{name}\" není stav v adresáři Items světa, takže ho nelze aplikovat. Nejdřív ho naimportuj do adresáře Items.",
         "damageHeader": "Poškození za kolo",
         "andOr": "A / Nebo",
         "damage": "Vzorec poškození",
@@ -4860,6 +4880,41 @@
       "AtCap": "Už máš {max} Dočasných životů — obranou další nezískáš.",
       "ActorMissing": "Bránící se postava už neexistuje."
     },
+    "EnvironmentalDamage": {
+      "Title": "Zranění z prostředí",
+      "Speaker": "Prostředí",
+      "Source": "Zdroj",
+      "SourcePlaceholder": "Padající kamení, oheň, past…",
+      "Dice": "Kostky",
+      "Bonus": "Bonus",
+      "Penetration": "Průbojnost",
+      "DamageTypes": "Typy zranění",
+      "TypesHint": "Nech vše nezaškrtnuté pro netypované zranění, které zastaví jen zbroj.",
+      "Connector": "Kombinace typů",
+      "ConnectorAnd": "Všechny najednou (a)",
+      "ConnectorOr": "Nejlepší pro útočníka (nebo)",
+      "Roll": "Hodit zranění",
+      "DamageRoll": "Hod na zranění",
+      "DamageLabel": "Zranění:",
+      "PenetrationLabel": "Průbojnost:",
+      "NothingToRoll": "Není co hodit. Nastav kostky nebo bonus.",
+      "GMOnly": "Zranění z prostředí může způsobit jen vypravěč.",
+      "Type": {
+        "blunt": "Drtivé",
+        "piercing": "Bodné",
+        "slash": "Sečné",
+        "physical": "Fyzické",
+        "acid": "Kyselina",
+        "dark": "Temnota",
+        "fire": "Oheň",
+        "frost": "Mráz",
+        "lightning": "Blesk",
+        "magic": "Magie",
+        "poison": "Jed",
+        "holy": "Svaté",
+        "psychic": "Psychické"
+      }
+    },
     "LongRest": {
       "Title": "Dlouhý odpočinek",
       "SelectAll": "Všichni",
@@ -5357,7 +5412,8 @@
         "name": "Bojový génius"
       },
       "CombatGeniusII": {
-        "name": "Bojový génius II"
+        "name": "Bojový génius II",
+        "description": "<p>Umožňuje 1x za den opakovat hod na Souboj, Střelbu nebo Vrh, včetně Kritického neúspěchu.</p>"
       },
       "CommandAdvance": {
         "name": "Velení: Vpřed"
@@ -5429,7 +5485,8 @@
         "name": "Smrtící výpad"
       },
       "DeepFocus": {
-        "name": "Usilovná koncentrace"
+        "name": "Usilovná koncentrace",
+        "description": "<p>Pokud v magii kriticky uspěje alespoň druhým stupněm, může si kritický úspěch snížit o jeden stupeň a získat jedno Soustředění na příští kouzlo.</p>"
       },
       "DeepSlash": {
         "name": "Hluboký sek"
@@ -5441,7 +5498,7 @@
         "name": "Démoni"
       },
       "Determination": {
-        "name": "Odhodlání"
+        "name": "Umíněnost"
       },
       "DevilsRoot": {
         "name": "Ďáblův kořen"
@@ -5567,7 +5624,7 @@
         "name": "Elfí talent: Plížení"
       },
       "EnduranceOfStone": {
-        "name": "Kamenná výdrž"
+        "name": "Nezdolnost kamene"
       },
       "ExpertAcrobacy": {
         "name": "Expert: Akrobacie"
@@ -6112,46 +6169,10 @@
         "name": "Přesný výpad"
       },
       "PrecisionStrike": {
-        "name": "Přesný úder"
+        "name": "Přesný zásah"
       },
       "Pretty": {
         "name": "Pohledný"
-      },
-      "ProficiencyAcrobacy": {
-        "name": "Zdatnost: Akrobacie"
-      },
-      "ProficiencyAlchemy": {
-        "name": "Zdatnost: Alchymie"
-      },
-      "ProficiencyAnimalHandling": {
-        "name": "Zdatnost: Zacházení se zvířaty"
-      },
-      "ProficiencyArcana": {
-        "name": "Zdatnost: Arcana"
-      },
-      "ProficiencyAthletics": {
-        "name": "Zdatnost: Atletika"
-      },
-      "ProficiencyFirstAid": {
-        "name": "Zdatnost: Ranhojičství"
-      },
-      "ProficiencyLeadership": {
-        "name": "Zdatnost: Velení"
-      },
-      "ProficiencyLockpicking": {
-        "name": "Zdatnost: Odemykání zámků"
-      },
-      "ProficiencyPickpocketing": {
-        "name": "Zdatnost: Kapsářství"
-      },
-      "ProficiencyResearch": {
-        "name": "Zdatnost: Výzkum"
-      },
-      "ProficiencyStealth": {
-        "name": "Zdatnost: Plížení"
-      },
-      "ProficiencyTraps": {
-        "name": "Zdatnost: Pasti"
       },
       "Qudat": {
         "name": "Qudat"
@@ -6352,7 +6373,7 @@
         "name": "Přeludy"
       },
       "SpeedyAdvantage": {
-        "name": "Výhoda rychlosti"
+        "name": "Rychlý útočník"
       },
       "Spider": {
         "name": "Pavouk"
@@ -6499,13 +6520,13 @@
         "name": "Bílá holubice"
       },
       "WillfulnessI": {
-        "name": "Síla vůle I"
+        "name": "Lidská umíněnost I"
       },
       "WillfulnessII": {
-        "name": "Síla vůle II"
+        "name": "Lidská umíněnost II"
       },
       "WillingnessToLearn": {
-        "name": "Učenlivost"
+        "name": "Lidská učenlivost"
       },
       "Woodsman": {
         "name": "Zálesák"
@@ -7346,8 +7367,10 @@
       "pickerCancel": "Zrušit",
       "pickerLocked": "Už je naučená, ve stromě proto zůstává.",
       "nothingTracked": "Zatím nejsou vybrány žádné dovednosti. Použij „Vybrat dovednosti“ a zvol, co se učíš.",
+      "nothingToggled": "Vše na pásu je vypnuté. Klikni na některou skupinu a zobrazí se.",
       "cannotBuy": "Tuto hodnost teď nelze koupit.",
       "requirements": "Požadavky",
+      "unmetRequirements": "Nesplněné požadavky",
       "skillRating": "Hodnota dovednosti",
       "ratingOf": "{label} (hodnota)",
       "priceCp": "Cena v CP",
@@ -7359,8 +7382,7 @@
       "earnedSp": "Získané SP",
       "adjustCp": "Úprava CP",
       "adjustSp": "Úprava SP",
-      "refund": "Vrátit hodnost",
-      "refundConfirm": "Vrátit tuto hodnost? Body se vrátí do zásoby a vše, co hodnost dávala, zmizí.",
+      "close": "Zavřít",
       "Tabs": {
         "combat": "Boj",
         "skills": "Dovednosti",
@@ -7385,13 +7407,103 @@
         "weapon": "Zbraň",
         "doctrineLower": "doktrína",
         "schoolLower": "škola",
-        "weaponLower": "zbraň"
+        "weaponLower": "zbraň",
+        "skill": "Dovednost",
+        "skillLower": "dovednost"
+      },
+      "Features": {
+        "traits": "Rysy",
+        "owned": "Získané odbornosti",
+        "noneOwned": "Zatím žádné odbornosti.",
+        "search": "Hledat odbornost",
+        "onlyMet": "Splněné požadavky",
+        "haveSkill": "Mám dovednost",
+        "noneMatch": "Filtru neodpovídá žádná odbornost.",
+        "unpriced": "Mimo ceník",
+        "racial": "Rasová",
+        "refund": "Vrátit odbornost",
+        "cannotBuy": "Tuto odbornost teď nelze koupit.",
+        "pickOnce": "Už máš: {name}",
+        "skillTaken": "{skill} už má odbornost {name}.",
+        "discountTaken": "{skill} už má slevu z {name}.",
+        "allRaces": "Všechny rasy",
+        "allMagic": "Magické odbornosti i bez magie",
+        "filters": "Filtry",
+        "filterSections": "Sekce",
+        "filterShow": "Zobrazit",
+        "selectAll": "(Vybrat vše)",
+        "reset": "Obnovit",
+        "Polarity": {
+          "positive": "Pozitivní",
+          "neutral": "Neutrální",
+          "negative": "Negativní",
+          "unsorted": "Nezařazené"
+        },
+        "familyCount": "Volné dovednosti: {available} z {total}",
+        "back": "Zpět na odbornosti",
+        "className": "Skupina {class}",
+        "noSkills": "Žádná dovednost této skupiny.",
+        "Families": {
+          "specialization": "Specializace",
+          "talented1": "Talentovaný I",
+          "talented2": "Talentovaný II",
+          "adept": "Adept",
+          "expert": "Expert",
+          "elvenTalent": "Elfí talent",
+          "elvenPerfection": "Elfí dokonalost"
+        },
+        "Sections": {
+          "combat": "Bojové odbornosti",
+          "general": "Obecné odbornosti",
+          "magic": "Magické odbornosti",
+          "trait": "Rysové odbornosti",
+          "racial": "Rasové odbornosti"
+        }
+      },
+      "Specs": {
+        "pointsLeft": "Zbývá specializačních bodů",
+        "pointsTotal": "Specializační body",
+        "Groups": {
+          "combat": "Bojové specializace",
+          "support": "Podpůrné specializace"
+        },
+        "capSpent": "Utraceno {spent} z {cap} bodů",
+        "Points": {
+          "one": "{n} specializační bod",
+          "few": "{n} specializační body",
+          "many": "{n} specializačních bodů"
+        },
+        "nodes": "Odemčeno {unlocked} z {total} uzlů",
+        "cannotBuy": "Tuto specializaci teď nelze koupit.",
+        "cannotBuyTitle": "Zatím nelze koupit",
+        "poor": "Nezbývá dost specializačních bodů.",
+        "capped": "Do bojových specializací lze vložit nejvýše {cap} specializační body.",
+        "refundTip": "Kliknutím specializaci vrátíš.",
+        "refundBlocked": "Než specializaci vrátíš, zamkni v deníku postavy všechny její uzly.",
+        "browseHint": "Uzly se zatím odemykají na záložce Specializace v deníku postavy.",
+        "wip": "Rozpracováno",
+        "showWip": "Rozpracované",
+        "listView": "Seznam",
+        "cardView": "Karty",
+        "IconEdit": {
+          "edit": "Změnit ikonu",
+          "copy": "Kopírovat ikony",
+          "copied": "Ikony specializací zkopírovány do schránky.",
+          "copyFailed": "Schránka odmítla zápis; seznam ikon je v konzoli (F12)."
+        }
+      },
+      "Discounts": {
+        "title": "Slevy",
+        "choose": "Vyber dovednost",
+        "alreadyDiscounted": "{skill} už má slevu z {source}. Slevy na jednu dovednost se nesčítají.",
+        "discounted": "Zlevněno"
       },
       "Teacher": {
         "grant": "Klikni pro udělení.",
         "revoke": "Klikni pro odebrání."
       },
       "Req": {
+        "noRank": "Bez {tracks}",
         "teacher": "Učitel {tier}",
         "attr": "{attr} {min}+",
         "rank": "{track} {min}",
@@ -7399,21 +7511,42 @@
         "feature": "Odbornost: {name}",
         "flag": "Vyžaduje: {name}",
         "specNode": "Specializace: {spec}",
+        "race": "{race}",
+        "attrCompare": "{greater} > {lesser}",
+        "notFlag": "Bez: {name}",
+        "countRank": "{count}× {group} {min}",
+        "featurePrefix": "{name}",
+        "Family": {
+          "elf": "Elf",
+          "dwarf": "Trpaslík"
+        },
+        "Prefix": {
+          "talented1": "Talentovaný I"
+        },
         "or": " nebo ",
         "gmGeneric": "Musí schválit vypravěč.",
         "gm": {
           "specialOccasion": "Pouze při zvláštní příležitosti, dle uvážení vypravěče.",
           "language": "Vyžaduje jazyk udělený vypravěčem.",
-          "schoolOrSpecialisation": "Vyžaduje školu nebo specializaci udělenou vypravěčem."
+          "schoolOrSpecialisation": "Vyžaduje školu nebo specializaci udělenou vypravěčem.",
+          "traumaticEvent": "Pouze po traumatickém zážitku, dle uvážení vypravěče.",
+          "vardur": "Pouze trpaslíci Vardur, potvrzuje vypravěč."
         },
         "Tip": {
+          "noRank": "Nesmí mít žádný stupeň v: {tracks}.",
           "teacher": "Vyžaduje výuku od učitele (Hodnost {tier}).",
           "attr": "{attr} {min} nebo vyšší.",
           "rank": "{track} na hodnosti {min} nebo vyšší.",
           "anyRank": "Libovolná {group} na hodnosti {min} nebo vyšší.",
           "feature": "Vyžaduje odbornost {name}.",
           "flag": "Vyžaduje {name}.",
-          "specNode": "Vyžaduje specializaci {spec}."
+          "specNode": "Vyžaduje specializaci {spec}.",
+          "race": "Vyžaduje rasu {race}.",
+          "attrCompare": "Vyžaduje {greater} vyšší než {lesser}.",
+          "notFlag": "Nesmí mít {name}.",
+          "countRank": "Vyžaduje {count} × {group} na hodnosti {min} nebo vyšší.",
+          "featurePrefix": "Vyžaduje libovolnou odbornost {name}.",
+          "featureTeacher": "Vyžaduje výuku od učitele (Hodnost {tier}). Potvrzuje vypravěč."
         }
       }
     }

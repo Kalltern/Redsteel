@@ -1,3 +1,5 @@
+import { COUNTER_TYPES } from "./statusCounterColors.mjs";
+
 /**
  * Overwhelm (Přesila) — being pressed by several enemies at once.
  *
@@ -237,7 +239,13 @@ async function syncOverwhelmMarker(doc, stacks) {
       changes: [],
       flags: {
         [FLAG_SCOPE]: { [MARKER_FLAG]: true },
-        statuscounter: { value: stacks, visible: true },
+        // Typed at creation only: the marker has no status id to be colour
+        // registered under. Never set on update, see statusCounterColors.mjs.
+        statuscounter: {
+          value: stacks,
+          visible: true,
+          config: { type: COUNTER_TYPES.stacks },
+        },
       },
     },
     { parent: actor },

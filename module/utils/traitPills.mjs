@@ -1,49 +1,37 @@
-/**
- * Normalize a trigger for comparison: lowercase, strip everything that
- * isn't a letter or digit. Item sheets store triggers lowercased
- * ("animalhandling") while skill keys are camelCase ("animalHandling"),
- * so "firstAid", "first aid", "first-aid" and "firstaid" must all match.
- */
-export function normalizeTrigger(value) {
-  return String(value ?? "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "");
-}
-
-/** Parse a comma-separated trigger string into normalized triggers. */
-function parseTriggerList(raw) {
-  return String(raw ?? "")
-    .split(",")
-    .map((s) => normalizeTrigger(s))
-    .filter(Boolean);
-}
+import { normalizeTrigger, scopeMatchesTokens } from "./rerolls.mjs";
 
 /**
- * Collect trait reminder pills for a given roll trigger.
+ * Collect trait reminder pills for a roll.
  *
- * Sources: feature items (option "trait" or "feature") with matching
- * system.rollTriggers, and currently applied Active Effects carrying
- * triggers in flags.redsteel.rollTriggersRaw.
+ * Sources: feature items (option "trait" or "feature") whose
+ * system.rollTriggers reach the roll, and currently applied Active Effects
+ * carrying triggers in flags.redsteel.rollTriggersRaw.
  *
- * @param {Actor}  actor    The rolling actor.
- * @param {string} trigger  A trigger identifier, e.g. "resolve", "fear", "athletics".
+ * Triggers read like reroll pool scopes (see scopeMatchesTokens in
+ * rerolls.mjs): "universal" / "any" / "all" fire on every roll, "str" on the
+ * raw Strength test, and "str-based" on every non-combat roll governed by
+ * Strength. An empty trigger list fires on nothing.
+ *
+ * @param {Actor} actor  The rolling actor.
+ * @param {string|string[]} tokens  The roll's tokens: "attack" / "defense" for
+ *   combat cards, or getRerollTokensForSkill(actor, key) for skill and
+ *   attribute rolls (e.g. ["athletics", "strbased"]).
  * @returns {{ name: string, description: string }[]}
  */
-export function getTraitPills(actor, trigger) {
-  if (!actor || !trigger) return [];
+export function getTraitPills(actor, tokens) {
+  if (!actor) return [];
 
-  const normalized = normalizeTrigger(trigger);
-  if (!normalized) return [];
+  const rollTokens = (Array.isArray(tokens) ? tokens : [tokens])
+    .map((t) => normalizeTrigger(t))
+    .filter(Boolean);
+  if (!rollTokens.length) return [];
 
   const pills = actor.items
     .filter(
       (item) =>
         item.type === "feature" &&
         ["trait", "feature"].includes(item.system.option) &&
-        Array.isArray(item.system.rollTriggers) &&
-        item.system.rollTriggers.some(
-          (t) => normalizeTrigger(t) === normalized,
-        ),
+        scopeMatchesTokens(item.system.rollTriggers, rollTokens),
     )
     .map((item) => ({
       name: item.localizedName ?? item.name,
@@ -53,10 +41,13 @@ export function getTraitPills(actor, trigger) {
   // appliedEffects includes transferred item effects and already excludes
   // disabled/suppressed ones.
   for (const effect of actor.appliedEffects ?? actor.effects) {
-    const triggers = parseTriggerList(
-      effect.getFlag("redsteel", "rollTriggersRaw"),
-    );
-    if (!triggers.includes(normalized)) continue;
+    if (
+      !scopeMatchesTokens(
+        effect.getFlag("redsteel", "rollTriggersRaw"),
+        rollTokens,
+      )
+    )
+      continue;
 
     pills.push({
       name: effect.name,
@@ -77,7 +68,7 @@ export function getTraitPills(actor, trigger) {
   // Corrupted (Zkažený): from Corruption degree 2 (61+) a character "counts as
   // Corrupted" for miracles/magic, and degree 3 (91+) is also Light-vulnerable.
   // Remind on every defense roll so the GM can apply Light / Miracle riders.
-  if (normalized === "defense" && actor.system?.isCorrupted) {
+  if (rollTokens.includes("defense") && actor.system?.isCorrupted) {
     pills.push({
       name: "Corrupted — Zkažený",
       description: actor.system.corruptionLightVulnerable

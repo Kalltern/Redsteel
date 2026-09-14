@@ -5,7 +5,14 @@
   "system": {
     "localizationKey": "REDSTEEL.Items.Halfling.name",
     "description": "",
-    "baneTypes": "halfling"
+    "baneTypes": "halfling",
+    "grants": [
+      {
+        "uuid": "Compendium.redsteel.redsteel-items.Item.S4zsopZawRzGZGn9",
+        "name": "Halfling reroll",
+        "img": "icons/commodities/flowers/clover.webp"
+      }
+    ]
   },
   "effects": [
     {

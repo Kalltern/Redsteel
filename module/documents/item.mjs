@@ -625,6 +625,7 @@ export class RedsteelItem extends Item {
         "dark",
         "fire",
         "frost",
+        "holy",
         "lightning",
         "magic",
         "poison",

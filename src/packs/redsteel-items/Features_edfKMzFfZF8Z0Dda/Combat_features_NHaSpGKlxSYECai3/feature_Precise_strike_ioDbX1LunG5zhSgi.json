@@ -1,11 +1,11 @@
 {
-  "folder": "WLi5IgxzbRUcdjAz",
-  "name": "Proficiency: Research",
+  "folder": "NHaSpGKlxSYECai3",
+  "name": "Precise strike",
   "type": "feature",
-  "img": "icons/commodities/treasure/bust-carved-stone.webp",
+  "img": "icons/skills/melee/strike-polearm-glowing-white.webp",
   "system": {
-    "localizationKey": "REDSTEEL.Items.ProficiencyResearch.name",
-    "description": "<p>Once per day you may reroll this ability. Adds 5% to tests of this ability.</p>",
+    "localizationKey": "REDSTEEL.Items.PrecisionStrike.name",
+    "description": "<p>Increased critical strike chance 3%.</p>",
     "options": [
       "feature",
       "trait",
@@ -17,31 +17,38 @@
     "statusEffectsRaw": "",
     "reroll": {
       "name": "",
-      "active": [],
-      "value": 0,
-      "pools": [
-        {
-          "label": "",
-          "skillsRaw": "research",
-          "max": 1,
-          "used": 0
-        }
-      ]
+      "active": [
+        false,
+        false
+      ],
+      "value": 0
     },
     "option": "feature"
   },
   "effects": [
     {
-      "name": "Proficiency: Research",
-      "origin": "Item.ByJzJaFM0hgfIeHP",
-      "img": "icons/svg/stoned.svg",
-      "_id": "9IaZCyBg76n2P26l",
+      "name": "Precise strike",
+      "origin": "Item.ioDbX1LunG5zhSgi",
+      "img": "icons/skills/melee/strike-polearm-glowing-white.webp",
+      "_id": "iD1RZGU74fe7BI4X",
       "type": "base",
       "system": {
         "changes": [
           {
-            "key": "system.skills.research.bonus",
-            "value": 5,
+            "key": "system.combatSkills.throwing.critbonus",
+            "value": 3,
+            "priority": null,
+            "type": "add"
+          },
+          {
+            "key": "system.combatSkills.combat.critbonus",
+            "value": 3,
+            "priority": null,
+            "type": "add"
+          },
+          {
+            "key": "system.combatSkills.archery.critbonus",
+            "value": 3,
             "priority": null,
             "type": "add"
           }
@@ -85,17 +92,19 @@
       "start": null,
       "showIcon": 1,
       "folder": null,
-      "_key": "!items.effects!ByJzJaFM0hgfIeHP.9IaZCyBg76n2P26l"
+      "_key": "!items.effects!ioDbX1LunG5zhSgi.iD1RZGU74fe7BI4X"
     }
   ],
-  "flags": {
-    "scene-packer": {
-      "hash": "13cdc3b1987e28a8f4c8ae2c5d5b5db5965d4636"
-    }
+  "sort": 500000,
+  "ownership": {
+    "default": 0,
+    "rs3mzx7WZdtEmvH2": 3,
+    "UHjN0KQ8w8ZxibJg": 3
   },
+  "flags": {},
   "_stats": {
-    "compendiumSource": "Compendium.dilnamodulimport.pack-1.Item.jBO2jTnFaviCyhv3",
-    "duplicateSource": "Item.ZTTaIsxOb1oArnHN",
+    "compendiumSource": null,
+    "duplicateSource": "Item.HHifYxb92zIKNZ92",
     "exportSource": null,
     "coreVersion": "14.363",
     "systemId": "redsteel",
@@ -104,13 +113,6 @@
     "modifiedTime": 1777294839144,
     "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
   },
-  "ownership": {
-    "default": 0,
-    "rs3mzx7WZdtEmvH2": 3,
-    "exQfSubzwCCs5h8v": 3,
-    "UHjN0KQ8w8ZxibJg": 3
-  },
-  "sort": 250000,
-  "_id": "ByJzJaFM0hgfIeHP",
-  "_key": "!items!ByJzJaFM0hgfIeHP"
+  "_id": "ioDbX1LunG5zhSgi",
+  "_key": "!items!ioDbX1LunG5zhSgi"
 }

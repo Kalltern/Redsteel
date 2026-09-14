@@ -1,5 +1,17 @@
 import { PROGRESSION_TRACKS } from "./progression.mjs";
+import { FEATURE_PRICES } from "./featurePrices.mjs";
+import {
+  FEATURE_DISCOUNTS,
+  NONCOMBAT_EXCLUDED,
+  SPEC_DISCOUNTS,
+} from "./rankDiscounts.mjs";
 import { actorHasSpecNode } from "./specialisations.mjs";
+import {
+  SPEC_GROUP_CAPS,
+  SPEC_GROUPS,
+  SPEC_POINTS_DEFAULT,
+  SPEC_PRICES,
+} from "./specPrices.mjs";
 import { ABILITY_GRANTS } from "../utils/abilityGrants.mjs";
 
 /* ===========================================================================
@@ -39,7 +51,7 @@ export const LEVEL_THRESHOLDS = [
 
 /** Requirement kinds that describe the fiction rather than the sheet. They are
  *  shown to the player but never block a purchase: only the GM can judge them. */
-const ADVISORY = new Set(["gm", "raw"]);
+const ADVISORY = new Set(["gm", "raw", "featureTeacher"]);
 
 /* -------------------------------------------------------------------------- */
 /*  Tracks                                                                    */
@@ -265,23 +277,40 @@ function tracksUnset(actor) {
 }
 
 /**
+ * The skills every character's grid starts with (GM ruling 2026-09-10): the
+ * everyday skills nearly anyone ends up rolling. Everything else, skill or
+ * combat track, starts hidden until it is picked or a rank in it is bought.
+ */
+export const DEFAULT_TRACKED = new Set([
+  "skills.athletics",
+  "skills.muscles",
+  "skills.acrobacy",
+  "skills.nimbleness",
+  "skills.stealth",
+  "skills.drinking",
+  "skills.arcana",
+  "skills.firstAid",
+  "skills.persuasion",
+  "skills.survival",
+]);
+
+/**
  * True when a track belongs in the grid.
  *
  * A track with any rank bought is always shown, whatever the list says: hiding
- * something already paid for would strand it with no way back.
+ * something already paid for would strand it with no way back. That is also
+ * what carries an existing character's skills into the grid.
  *
- * Until the picker is saved for the first time, the ordinary skills are all on
- * and the combat side is all off. A character can attempt any skill untrained,
- * so a full skill list is the honest starting point, while nobody wants 25
- * doctrines and 7 schools they will never train. Once the picker is saved the
- * stored list is authoritative, even when it is empty — which is what
- * `tracksSet` distinguishes from "never configured".
+ * Until the picker is saved for the first time, the grid shows the
+ * DEFAULT_TRACKED preset and nothing from the combat side. Once the picker is
+ * saved the stored list is authoritative, even when it is empty — which is
+ * what `tracksSet` distinguishes from "never configured".
  */
 export function isTracked(actor, trackId) {
   const track = PROGRESSION_TRACKS[trackId];
   if (!track) return false;
   if (getTrackRank(actor, track.group, track.key) > 0) return true;
-  if (tracksUnset(actor)) return getTrackTab(trackId) === "skills";
+  if (tracksUnset(actor)) return DEFAULT_TRACKED.has(trackId);
   return getTrackedIds(actor).includes(trackId);
 }
 
@@ -298,12 +327,11 @@ export async function setTrackedIds(actor, tab, ids) {
   );
 
   // First save has to freeze the defaults for the tab that was NOT edited,
-  // otherwise switching `tracksSet` on would silently wipe it.
+  // otherwise switching `tracksSet` on would silently wipe them. The preset is
+  // all skills, so only a first save from the Combat tab has anything to keep.
   const frozen =
     tracksUnset(actor) && tab !== "skills"
-      ? Object.keys(PROGRESSION_TRACKS).filter(
-          (id) => getTrackTab(id) === "skills",
-        )
+      ? [...DEFAULT_TRACKED].filter((id) => getTrackTab(id) !== tab)
       : [];
 
   const clean = [
@@ -341,10 +369,13 @@ export function levelFromCp(cp) {
  */
 export function computeSpentOnRanks(actor) {
   const spent = { cp: 0, sp: 0 };
+  // Discounts are retroactive (GM ruling 2026-09-11): a held rank costs what it
+  // costs this character now, discount included.
+  const discounts = getSkillDiscounts(actor);
   for (const [trackId, track] of Object.entries(PROGRESSION_TRACKS)) {
     const held = getTrackRank(actor, track.group, track.key);
     for (let rank = 1; rank <= held; rank++) {
-      const price = track.ranks[rank - 1];
+      const price = getRankCost(actor, trackId, rank, discounts);
       if (!price) continue;
       spent[price.currency] += price.cost;
     }
@@ -364,9 +395,12 @@ export function getWallet(actor) {
     sp: Number(p.earned?.sp ?? 0),
   };
   const ranks = computeSpentOnRanks(actor);
+  // Owned features count too, whether bought in the Learn window or dropped on
+  // the sheet (GM ruling 2026-09-11): the same derived model as ranks.
+  const features = computeSpentOnFeatures(actor);
   const spent = {
-    cp: ranks.cp + Number(p.adjust?.cp ?? 0),
-    sp: ranks.sp + Number(p.adjust?.sp ?? 0),
+    cp: ranks.cp + features.cp + Number(p.adjust?.cp ?? 0),
+    sp: ranks.sp + features.sp + Number(p.adjust?.sp ?? 0),
   };
   return {
     earned,
@@ -380,11 +414,18 @@ export function getWallet(actor) {
 /*  Requirements                                                              */
 /* -------------------------------------------------------------------------- */
 
-/** True when the actor owns a feature item with this (always English) name. */
+/**
+ * True when the actor owns a feature item with this (always English) name, or
+ * a copy still carrying one of its former names: renaming a compendium feature
+ * does not rename the copies characters already own.
+ */
 function hasFeature(actor, name) {
-  const wanted = name.toLowerCase();
+  const wanted = new Set([name.toLowerCase()]);
+  for (const entry of FEATURES_BY_NAME.get(name.toLowerCase()) ?? []) {
+    for (const alias of entry.aliases ?? []) wanted.add(alias.toLowerCase());
+  }
   return actor.items.some(
-    (i) => i.type === "feature" && i.name?.toLowerCase() === wanted,
+    (i) => i.type === "feature" && wanted.has(i.name?.toLowerCase()),
   );
 }
 
@@ -396,7 +437,7 @@ function hasFeature(actor, name) {
  *   system cannot see.
  */
 export function evaluateRequirement(actor, req, trackId, rank) {
-  const advisory = ADVISORY.has(req.t);
+  let advisory = ADVISORY.has(req.t);
   let met = false;
 
   switch (req.t) {
@@ -421,11 +462,69 @@ export function evaluateRequirement(actor, req, trackId, rank) {
     case "specNode":
       met = actorHasSpecNode(actor, req.spec, req.node);
       break;
-    case "anyOf":
-      met = (req.options ?? []).some(
-        (o) => evaluateRequirement(actor, o, trackId, rank).met,
+    // The clause kinds below come from the feature price table (featurePrices.mjs).
+    case "race": {
+      const race = actor.items.find((i) => i.type === "race");
+      met = !!race && (req.races ?? []).includes(race.name);
+      break;
+    }
+    case "attrCompare":
+      met =
+        Number(actor.system?.attributes?.[req.greater]?.total ?? 0) >
+        Number(actor.system?.attributes?.[req.lesser]?.total ?? 0);
+      break;
+    case "secAttr":
+      met =
+        Number(actor.system?.secondaryAttributes?.[req.key]?.total ?? 0) >=
+        req.min;
+      break;
+    case "notFlag":
+      met = !actor.system?.[req.key];
+      break;
+    case "spec":
+      met = !!actor.system?.specialisations?.[req.spec]?.active;
+      break;
+    case "countRank": {
+      const bucket = actor.system?.[req.group] ?? {};
+      const reached = Object.values(bucket).filter(
+        (entry) => Number(entry?.value ?? 0) >= req.min,
+      ).length;
+      met = reached >= req.count;
+      break;
+    }
+    case "featurePrefix": {
+      const prefix = String(req.prefix ?? "").toLowerCase();
+      met = actor.items.some(
+        (i) => i.type === "feature" && i.name?.toLowerCase().startsWith(prefix),
       );
       break;
+    }
+    // The clause kinds below come from the specialisation price table (specPrices.mjs).
+    case "specTeacher":
+      // Granted by the GM once per specialisation, not per rank.
+      met = !!actor.system?.specialisations?.[req.spec]?.teacher;
+      break;
+    case "noRank":
+      // "Nesmí mít Doktrínu: …": no rank at all in any of the named tracks.
+      met = (req.keys ?? []).every((key) => getTrackRank(actor, req.group, key) <= 0);
+      break;
+    case "allOf":
+      // An advisory inside (Vardur's GM clause) never blocks the group.
+      met = (req.options ?? []).every(
+        (o) =>
+          ADVISORY.has(o.t) || evaluateRequirement(actor, o, trackId, rank).met,
+      );
+      break;
+    case "anyOf": {
+      const options = (req.options ?? []).map((o) =>
+        evaluateRequirement(actor, o, trackId, rank),
+      );
+      met = options.some((o) => o.met);
+      // "A / Zvláštní příležitost": when the sheet cannot show A, the GM may
+      // still rule the other way in, so the group is shown but never blocks.
+      if (!met && options.some((o) => o.advisory)) advisory = true;
+      break;
+    }
     default:
       // "gm", "raw", and anything a later rules revision adds: shown, not enforced.
       met = false;
@@ -485,7 +584,7 @@ export function getRankState(actor, trackId, rank) {
   if (!requirements.met) return { state: "locked", price, requirements };
 
   const wallet = getWallet(actor);
-  if (wallet.remaining[price.currency] < price.cost) {
+  if (wallet.remaining[price.currency] < getRankCost(actor, trackId, rank).cost) {
     return { state: "poor", price, requirements };
   }
   return { state: "available", price, requirements };
@@ -534,5 +633,494 @@ export async function refundRank(actor, trackId) {
   await actor.update({
     [`system.${track.group}.${track.key}.value`]: held - 1,
   });
+  return true;
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Features                                                                  */
+/* -------------------------------------------------------------------------- */
+
+/*
+ * A feature is bought as a whole item from the redsteel-items compendium and
+ * priced by FEATURE_PRICES (featurePrices.mjs). As with ranks nothing is
+ * deducted: `spent` is derived from the features the character owns, so an
+ * owned feature costs its price however it got onto the sheet. A feature the
+ * character's race granted is free.
+ *
+ * Ownership is matched by name (and former names), never by compendium source:
+ * much of the pack was imported from another module and an owned copy's
+ * recorded source is often a dead pointer.
+ */
+
+/** The compendium every buyable feature comes from. */
+export const FEATURE_PACK_ID = "redsteel.redsteel-items";
+
+/**
+ * The families where one feature closes a skill to the others (GM ruling
+ * 2026-09-11): a skill taken by a Specialization or a Talented feature cannot
+ * take another of these.
+ */
+const SKILL_EXCLUSIVE_GROUPS = new Set([
+  "specialization",
+  "talented1",
+  "talented2",
+  "talented3",
+]);
+
+/** Lower-cased name, and every former name, → the price entries carrying it. */
+const FEATURES_BY_NAME = (() => {
+  const map = new Map();
+  for (const [id, entry] of Object.entries(FEATURE_PRICES)) {
+    for (const name of [entry.name, ...(entry.aliases ?? [])]) {
+      const key = name.toLowerCase();
+      if (!map.has(key)) map.set(key, []);
+      map.get(key).push({ id, ...entry });
+    }
+  }
+  return map;
+})();
+
+/** The compendium uuid of a priced feature. */
+export function getFeatureUuid(featureId) {
+  return `Compendium.${FEATURE_PACK_ID}.Item.${featureId}`;
+}
+
+/** The price entry for a feature id, or null. */
+export function getFeaturePrice(featureId) {
+  const entry = FEATURE_PRICES[featureId];
+  return entry ? { id: featureId, ...entry } : null;
+}
+
+/**
+ * The price entry an owned feature item stands for, or null when the table
+ * does not price it. Two entries can share a name (the human and the elven
+ * Specialization): the one whose race the actor meets wins, and they cost the
+ * same either way.
+ */
+export function getFeaturePriceForItem(actor, item) {
+  if (item?.type !== "feature" || item.system?.option !== "feature") return null;
+  const matches = FEATURES_BY_NAME.get(String(item.name ?? "").toLowerCase());
+  if (!matches?.length) return null;
+  if (matches.length === 1) return matches[0];
+  return (
+    matches.find((match) =>
+      (match.requires ?? [])
+        .filter((req) => req.t === "race")
+        .every((req) => evaluateRequirement(actor, req).met),
+    ) ?? matches[0]
+  );
+}
+
+/** Every owned feature item, with the price entry it stands for (or null). */
+export function getOwnedFeatures(actor) {
+  return (actor?.items?.contents ?? [])
+    .filter((item) => item.type === "feature" && item.system?.option === "feature")
+    .map((item) => ({ item, price: getFeaturePriceForItem(actor, item) }));
+}
+
+/** True when the actor's race put this feature on the sheet, which makes it free. */
+export function isRaceGrantedFeature(item) {
+  return !!item?.getFlag?.("redsteel", "raceGranted");
+}
+
+/** What the character's owned features cost, summed from FEATURE_PRICES. */
+export function computeSpentOnFeatures(actor) {
+  const spent = { cp: 0, sp: 0 };
+  for (const { item, price } of getOwnedFeatures(actor)) {
+    if (!price || isRaceGrantedFeature(item)) continue;
+    spent[price.currency] += price.cost;
+  }
+  return spent;
+}
+
+/**
+ * What keeps this feature from being taken, if anything: another owned feature
+ * of the same pick-once group, a Specialization / Talented feature already on
+ * the same skill, or a discount the skill already carries from another source
+ * (discounts on one skill do not stack, see rankDiscounts.mjs).
+ * @returns {{reason: "pickOnce"|"skillTaken"|"discountTaken", item: Item|null,
+ *            source?: object}|null}
+ */
+function findFeatureConflict(actor, owned, price) {
+  if (price.group) {
+    for (const { item, price: other } of owned) {
+      if (!other?.group) continue;
+      if (other.group === price.group) return { reason: "pickOnce", item };
+      if (
+        SKILL_EXCLUSIVE_GROUPS.has(price.group) &&
+        SKILL_EXCLUSIVE_GROUPS.has(other.group) &&
+        other.skill === price.skill
+      ) {
+        return { reason: "skillTaken", item };
+      }
+    }
+  }
+  const skill = fixedDiscountSkill(price);
+  const other = skill ? findOtherDiscountOn(actor, skill, null) : null;
+  if (other) return { reason: "discountTaken", item: other.item ?? null, source: other };
+  return null;
+}
+
+/**
+ * How one feature reads in the Learn window.
+ *
+ * @returns {{state: string, price: object|null, requirements: object|null,
+ *            conflict: object|null}}
+ *   state is one of:
+ *     "owned"        the character has it
+ *     "taken"        its pick-once group or its skill is already used
+ *     "locked"       requirements not met
+ *     "poor"         requirements met, not enough points
+ *     "available"    buyable right now
+ *     "unavailable"  the table does not price it
+ */
+export function getFeatureState(actor, featureId) {
+  const price = getFeaturePrice(featureId);
+  if (!price) {
+    return { state: "unavailable", price: null, requirements: null, conflict: null };
+  }
+  const owned = getOwnedFeatures(actor);
+  const names = new Set(
+    [price.name, ...(price.aliases ?? [])].map((name) => name.toLowerCase()),
+  );
+  if (owned.some(({ item }) => names.has(String(item.name).toLowerCase()))) {
+    return { state: "owned", price, requirements: null, conflict: null };
+  }
+  const requirements = evaluateRequirements(actor, price.requires);
+  const conflict = findFeatureConflict(actor, owned, price);
+  if (conflict) return { state: "taken", price, requirements, conflict };
+  if (!requirements.met) {
+    return { state: "locked", price, requirements, conflict: null };
+  }
+  if (getWallet(actor).remaining[price.currency] < price.cost) {
+    return { state: "poor", price, requirements, conflict: null };
+  }
+  return { state: "available", price, requirements, conflict: null };
+}
+
+/**
+ * Buy a feature: copy the compendium item onto the actor. The copy records the
+ * uuid it came from, the same way race and ability grants do.
+ * @returns {Promise<boolean>} false when the feature was not buyable.
+ */
+export async function purchaseFeature(actor, featureId) {
+  const { state } = getFeatureState(actor, featureId);
+  if (state !== "available") return false;
+  const uuid = getFeatureUuid(featureId);
+  const source = await fromUuid(uuid);
+  if (!source || source.type !== "feature") return false;
+  const data = source.toObject();
+  delete data._id;
+  data._stats = { ...(data._stats ?? {}), compendiumSource: uuid };
+  await actor.createEmbeddedDocuments("Item", [data]);
+  return true;
+}
+
+/**
+ * Give a bought feature back by deleting the owned copy. Only a feature the
+ * table prices, and never one the race granted: removing those would not
+ * refund anything and the race would put it back.
+ */
+export async function refundFeature(actor, itemId) {
+  const item = actor?.items?.get(itemId);
+  if (!item || isRaceGrantedFeature(item)) return false;
+  if (!getFeaturePriceForItem(actor, item)) return false;
+  await actor.deleteEmbeddedDocuments("Item", [itemId]);
+  return true;
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Rank discounts                                                            */
+/* -------------------------------------------------------------------------- */
+
+/*
+ * Features and specialisation perks that make every rank of one skill cheaper.
+ * The data and the rules behind it live in rankDiscounts.mjs: one discount per
+ * skill, retroactive, applied only in its own currency. A "one skill from a
+ * list" source stores the player's pick at
+ * `system.progression.discountChoices.<sourceId>`, made in the Learn window.
+ */
+
+/** The skill keys a choice definition allows, from the price table's skills. */
+function discountChoiceSkills(choices) {
+  const keys = new Set();
+  for (const track of Object.values(PROGRESSION_TRACKS)) {
+    if (track.group !== "skills") continue;
+    if (choices.noncombat && !NONCOMBAT_EXCLUDED.includes(track.key)) {
+      keys.add(track.key);
+    }
+    if ((choices.sections ?? []).includes(track.section)) keys.add(track.key);
+  }
+  for (const key of choices.skills ?? []) keys.add(key);
+  return [...keys];
+}
+
+/** The discount definition a priced feature carries, or null. */
+function featureDiscountDef(price) {
+  return (
+    FEATURE_DISCOUNTS.groups[price?.group] ??
+    FEATURE_DISCOUNTS.names[price?.name] ??
+    null
+  );
+}
+
+/** The fixed skill a feature's discount lands on, or null (none, or a choice). */
+function fixedDiscountSkill(price) {
+  const def = featureDiscountDef(price);
+  if (!def?.skill) return null;
+  return def.skill === "own" ? (price.skill ?? null) : def.skill;
+}
+
+/**
+ * Every discount the character has, from owned features and unlocked
+ * specialisation perks, with the skill each lands on (null while a choice is
+ * still unpicked, or when the stored pick is no longer allowed).
+ *
+ * @returns {Array<{id: string, kind: "feature"|"spec", amount: number,
+ *   currency: string, skill: string|null, choices: string[]|null,
+ *   item?: Item, spec?: string, node?: string}>}
+ */
+export function getDiscountSources(actor) {
+  const sources = [];
+  const picked = actor?.system?.progression?.discountChoices ?? {};
+  const add = (id, def, skill, extra) => {
+    const choices = def.choices ? discountChoiceSkills(def.choices) : null;
+    let landsOn = skill ?? null;
+    if (!landsOn && choices && choices.includes(picked[id])) landsOn = picked[id];
+    sources.push({
+      id,
+      amount: def.amount,
+      currency: def.currency,
+      skill: landsOn,
+      choices,
+      ...extra,
+    });
+  };
+  for (const { item, price } of getOwnedFeatures(actor)) {
+    const def = featureDiscountDef(price);
+    if (!def) continue;
+    add(`feature-${item.id}`, def, fixedDiscountSkill(price), { kind: "feature", item });
+  }
+  for (const [spec, nodes] of Object.entries(SPEC_DISCOUNTS)) {
+    for (const [node, def] of Object.entries(nodes)) {
+      if (!actorHasSpecNode(actor, spec, node)) continue;
+      add(`spec-${spec}-${node}`, def, def.skill ?? null, { kind: "spec", spec, node });
+    }
+  }
+  return sources;
+}
+
+/**
+ * The discount each skill carries: skill key → source. One per skill; should an
+ * older sheet still hold two (taken before the rule was enforced), the larger
+ * one counts, so a character is never charged for the overlap.
+ */
+export function getSkillDiscounts(actor, sources = getDiscountSources(actor)) {
+  const map = new Map();
+  for (const source of sources) {
+    if (!source.skill) continue;
+    const current = map.get(source.skill);
+    if (!current || source.amount > current.amount) map.set(source.skill, source);
+  }
+  return map;
+}
+
+/**
+ * What one rank of a track costs this character: the book price less its
+ * skill's discount, when that discount is in the rank's own currency, never
+ * below 0.
+ * @returns {{cost: number, base: number, currency: string,
+ *            discount: object|null}|null}
+ */
+export function getRankCost(actor, trackId, rank, discounts = getSkillDiscounts(actor)) {
+  const track = PROGRESSION_TRACKS[trackId];
+  const price = track?.ranks?.[rank - 1];
+  if (!price) return null;
+  const source = track.group === "skills" ? discounts.get(track.key) : null;
+  const discount = source && source.currency === price.currency ? source : null;
+  return {
+    base: price.cost,
+    cost: discount ? Math.max(0, price.cost - discount.amount) : price.cost,
+    currency: price.currency,
+    discount,
+  };
+}
+
+/** Another discount source already landing on this skill, or null. */
+function findOtherDiscountOn(actor, skill, exceptId) {
+  if (!skill) return null;
+  return (
+    getDiscountSources(actor).find(
+      (source) => source.skill === skill && source.id !== exceptId,
+    ) ?? null
+  );
+}
+
+/** A discount source's player-facing name: the feature's, or the perk's. */
+export function getDiscountSourceLabel(source) {
+  if (source?.kind === "feature") {
+    return source.item?.localizedName ?? source.item?.name ?? "";
+  }
+  const key = `REDSTEEL.Actor.Specialisations.${source?.spec}.nodes.${source?.node}.label`;
+  return game.i18n.has(key, false) ? game.i18n.localize(key) : String(source?.node ?? "");
+}
+
+/**
+ * The discount that already covers the skill a fixed-skill perk would
+ * discount, if any; unlocking that perk is refused. A "from a list" perk never
+ * clashes: its picker simply offers the skills that are still free.
+ * @returns {{skill: string, source: object}|null}
+ */
+export function getSpecNodeDiscountConflict(actor, specId, nodeId) {
+  const def = SPEC_DISCOUNTS[specId]?.[nodeId];
+  if (!def?.skill) return null;
+  const other = findOtherDiscountOn(actor, def.skill, `spec-${specId}-${nodeId}`);
+  return other ? { skill: def.skill, source: other } : null;
+}
+
+/**
+ * The skills a choice source may pick, each marked `taken` when another
+ * source already discounts it.
+ * @returns {Array<{key: string, taken: boolean}>}
+ */
+export function getDiscountChoiceOptions(actor, sourceId, sources = getDiscountSources(actor)) {
+  const source = sources.find((entry) => entry.id === sourceId);
+  if (!source?.choices) return [];
+  const taken = new Set(
+    sources
+      .filter((entry) => entry.id !== sourceId && entry.skill)
+      .map((entry) => entry.skill),
+  );
+  return source.choices.map((key) => ({ key, taken: taken.has(key) }));
+}
+
+/**
+ * Store (or clear, with an empty skill) the pick of a choice source. A skill
+ * outside the list, or one another source already discounts, is refused.
+ * @returns {Promise<boolean>}
+ */
+export async function setDiscountChoice(actor, sourceId, skill) {
+  if (skill) {
+    const option = getDiscountChoiceOptions(actor, sourceId).find(
+      (entry) => entry.key === skill,
+    );
+    if (!option || option.taken) return false;
+  }
+  await actor.update({
+    [`system.progression.discountChoices.${sourceId}`]: skill || "",
+  });
+  return true;
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Specialisations                                                           */
+/* -------------------------------------------------------------------------- */
+
+/*
+ * Specialisations cost Specialisation points, a third currency beside CP and
+ * SP (user ruling 2026-09-11). Every character has SPEC_POINTS_DEFAULT unless
+ * the GM sets `system.progression.specPoints`. Spent is derived the way CP and
+ * SP are: the price of every active specialisation, so one switched on through
+ * the GM's config checkboxes counts too (user ruling). A capped group
+ * (SPEC_GROUP_CAPS: Combat, 4) may hold no more than its cap.
+ *
+ * Buying a specialisation switches on `system.specialisations.<id>.active`,
+ * the same flag the sheet's Specialisations tab reads. Unlocking the nodes
+ * inside it stays on the sheet for now; charging CP/SP for them is the next
+ * step (user ruling).
+ */
+
+/** A specialisation's price entry, or null when the book prices none. */
+export function getSpecPrice(specId) {
+  return SPEC_PRICES[specId] ?? null;
+}
+
+/** True when the character has this specialisation. */
+function isSpecActive(actor, specId) {
+  return !!actor?.system?.specialisations?.[specId]?.active;
+}
+
+/** How many nodes of a specialisation the character has unlocked. */
+export function countUnlockedSpecNodes(actor, specId) {
+  const nodes = actor?.system?.specialisations?.[specId]?.nodes ?? {};
+  return Object.values(nodes).filter(Boolean).length;
+}
+
+/**
+ * The Specialisation points wallet.
+ * @returns {{earned: number, spent: number, remaining: number,
+ *            byGroup: Record<string, number>, caps: Record<string, number>}}
+ */
+export function getSpecWallet(actor) {
+  const stored = actor?.system?.progression?.specPoints;
+  const earned =
+    stored === undefined || stored === null || stored === ""
+      ? SPEC_POINTS_DEFAULT
+      : Number(stored) || 0;
+  const byGroup = Object.fromEntries(SPEC_GROUPS.map((group) => [group, 0]));
+  for (const [specId, price] of Object.entries(SPEC_PRICES)) {
+    if (!isSpecActive(actor, specId)) continue;
+    byGroup[price.group] = (byGroup[price.group] ?? 0) + price.cost;
+  }
+  const spent = Object.values(byGroup).reduce((sum, n) => sum + n, 0);
+  return {
+    earned,
+    spent,
+    remaining: earned - spent,
+    byGroup,
+    caps: { ...SPEC_GROUP_CAPS },
+  };
+}
+
+/**
+ * Whether a specialisation can be bought right now.
+ *
+ * @returns {{state: string, price: object|null, requirements: object|null}}
+ *   state is one of:
+ *     "owned"        the character has it
+ *     "unavailable"  the book prices no such specialisation
+ *     "locked"       requirements not met
+ *     "capped"       its group would go over the group's cap
+ *     "poor"         not enough Specialisation points left
+ *     "available"    buyable right now
+ */
+export function getSpecState(actor, specId) {
+  const price = getSpecPrice(specId);
+  if (!price) return { state: "unavailable", price: null, requirements: null };
+  const requirements = evaluateRequirements(actor, price.requires);
+  if (isSpecActive(actor, specId)) return { state: "owned", price, requirements };
+  if (!requirements.met) return { state: "locked", price, requirements };
+  const wallet = getSpecWallet(actor);
+  const cap = wallet.caps[price.group];
+  if (cap !== undefined && (wallet.byGroup[price.group] ?? 0) + price.cost > cap) {
+    return { state: "capped", price, requirements };
+  }
+  if (wallet.remaining < price.cost) return { state: "poor", price, requirements };
+  return { state: "available", price, requirements };
+}
+
+/** Buy a specialisation. @returns {Promise<boolean>} */
+export async function purchaseSpec(actor, specId) {
+  if (getSpecState(actor, specId).state !== "available") return false;
+  await actor.update({ [`system.specialisations.${specId}.active`]: true });
+  return true;
+}
+
+/**
+ * Give a specialisation back. Refused while any of its nodes is unlocked: a
+ * node can carry effects that go away with it, and nodes are locked one by one
+ * on the sheet. @returns {Promise<boolean>}
+ */
+export async function refundSpec(actor, specId) {
+  if (!isSpecActive(actor, specId)) return false;
+  if (countUnlockedSpecNodes(actor, specId) > 0) return false;
+  await actor.update({ [`system.specialisations.${specId}.active`]: false });
+  return true;
+}
+
+/** Grant or revoke a specialisation's teacher. GM only; callers must check. */
+export async function setSpecTeacher(actor, specId, found) {
+  if (!getSpecPrice(specId)) return false;
+  await actor.update({ [`system.specialisations.${specId}.teacher`]: !!found });
   return true;
 }

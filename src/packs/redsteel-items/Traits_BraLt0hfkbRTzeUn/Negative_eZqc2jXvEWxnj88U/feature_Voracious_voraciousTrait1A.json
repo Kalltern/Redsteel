@@ -80,7 +80,11 @@
       "_key": "!items.effects!voraciousTrait1A.voraciousAE0001A"
     }
   ],
-  "flags": {},
+  "flags": {
+    "redsteel": {
+      "traitPolarity": "negative"
+    }
+  },
   "_stats": {
     "compendiumSource": null,
     "duplicateSource": null,

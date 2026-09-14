@@ -4,6 +4,10 @@ import {
   syncSpecialisationPassive,
 } from "../helpers/specialisations.mjs";
 import { openLearnWindow } from "../utils/learnWindow.mjs";
+import {
+  getDiscountSourceLabel,
+  getSpecNodeDiscountConflict,
+} from "../helpers/progressionEngine.mjs";
 import { getTraitPills } from "../utils/traitPills.mjs";
 import { AIMED_PARTS } from "../utils/aimedStrike.mjs";
 import { gatherHerbs, promptHerbMode } from "../utils/gatherHerbs.mjs";
@@ -265,6 +269,20 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       if (!requirementsMet) {
         ui.notifications.warn(
           game.i18n.localize("REDSTEEL.Actor.Specialisations.warnLocked"),
+        );
+        return;
+      }
+      // A perk that discounts a skill another source already discounts cannot
+      // be taken: discounts on one skill do not stack (rankDiscounts.mjs).
+      const discountConflict = getSpecNodeDiscountConflict(this.actor, specId, nodeId);
+      if (discountConflict) {
+        ui.notifications.warn(
+          game.i18n.format("REDSTEEL.Learn.Discounts.alreadyDiscounted", {
+            skill: game.i18n.localize(
+              `REDSTEEL.Actor.Character.skills.${discountConflict.skill}.label`,
+            ),
+            source: getDiscountSourceLabel(discountConflict.source),
+          }),
         );
         return;
       }
@@ -3011,7 +3029,12 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
           skillData.criticalFailureThreshold,
         );
 
-        const traitPills = getTraitPills(this.actor, skillKey);
+        // Same tokens the reroll picker matches, so a "str-based" pill fires
+        // on Athletics exactly where a "str-based" reroll pool would.
+        const traitPills = getTraitPills(
+          this.actor,
+          getRerollTokensForSkill(this.actor, skillKey),
+        );
 
         // Attribute rolls are the ones routinely made as versus Tests, so the
         // posted margin is clickable: the opponent selects a token, picks an
@@ -3253,7 +3276,39 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     if (!this.actor.isOwner || !effect) return false;
     if (effect.target === this.actor)
       return this._onSortActiveEffect(event, effect);
+    // An effect dragged off a condition item applies the whole condition. A
+    // plain copy would only show the status icons: none of the condition's
+    // duration, damage or sub-effects come with it.
+    if (effect.parent instanceof Item && effect.parent.type === "condition") {
+      return this._applyDroppedCondition(effect.parent);
+    }
     return aeCls.create(effect, { parent: this.actor });
+  }
+
+  /**
+   * Conditions are definitions, never owned items (see customConditions.mjs):
+   * dropping one applies it through applyEffect, the same as the status effect
+   * manager. Only world conditions are registered, so a compendium or
+   * actor-owned copy resolves through the world condition of the same name.
+   *
+   * @param {Item} item - A condition item.
+   */
+  async _applyDroppedCondition(item) {
+    const worldItem =
+      !item.pack && !item.parent
+        ? item
+        : game.items.contents.find(
+            (i) => i.type === "condition" && i.name === item.name,
+          );
+    if (!worldItem) {
+      ui.notifications.warn(
+        game.i18n.format("REDSTEEL.Item.Condition.notWorldCondition", {
+          name: item.name,
+        }),
+      );
+      return false;
+    }
+    return game.redsteel.applyEffect(this.actor, worldItem.name);
   }
 
   /**
@@ -3352,6 +3407,9 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     // Handle item sorting within the same Actor
     if (this.actor.uuid === item.parent?.uuid)
       return this._onSortItem(event, item);
+
+    // Conditions are applied, never owned — see _applyDroppedCondition.
+    if (item.type === "condition") return this._applyDroppedCondition(item);
 
     // Only one Starsign (Hvězda) per character. Checked after the sort branch
     // so re-ordering the one already owned still works.

@@ -3,6 +3,7 @@ import {
   GENERATED_SPECS,
   STATE_GATED_IMMUNITIES,
 } from "./specialisations-generated.mjs";
+import { SPEC_DISCOUNTS } from "./rankDiscounts.mjs";
 
 /* ===========================================================================
  * Specialisation talent-tree definitions
@@ -179,6 +180,16 @@ const CODE_AUTOMATED_NODES = {
 // instead of repeating them here where they could drift.
 for (const t of [...CRIT_DEGREE_TRIGGERS, ...STATE_GATED_IMMUNITIES]) {
   (CODE_AUTOMATED_NODES[t.spec] ??= []).push(t.node);
+}
+
+// helpers/progressionEngine.mjs — the rank discount perks ("Sleva 3 SP za
+// stupeň …"): the Learn window prices every rank of the skill lower, counts it
+// in the CP/SP wallet, and offers the pick on a "one skill from a list" perk.
+// The node ids come straight from the data table in helpers/rankDiscounts.mjs.
+for (const [spec, nodes] of Object.entries(SPEC_DISCOUNTS)) {
+  for (const node of Object.keys(nodes)) {
+    (CODE_AUTOMATED_NODES[spec] ??= []).push(node);
+  }
 }
 
 /** True if the node is automated by code outside its own definition. */
@@ -688,9 +699,53 @@ coords: {
 // scripts/gen_specs_batch2.py) — merged alongside the handwritten ones.
 Object.assign(SPEC_DEFS, GENERATED_SPECS);
 
+/**
+ * Each specialisation's token art for the Learn window's cards. Core Foundry
+ * icons, every one already used elsewhere in the system, as a stand-in until
+ * the specialisations get art of their own (user ruling 2026-09-11).
+ */
+export const SPEC_ICONS = {
+  berserk: "icons/skills/melee/strike-axe-blood-red.webp",
+  champion: "icons/skills/melee/weapons-crossed-swords-yellow.webp",
+  elementalist: "icons/magic/fire/orb-vortex.webp",
+  elymas: "icons/magic/symbols/runes-star-pentagon-blue.webp",
+  hoplite: "icons/weapons/polearms/spear-flared-blue.webp",
+  incantator: "icons/sundries/books/book-symbol-reverse-blue.webp",
+  ranger: "icons/weapons/bows/longbow-leather-green.webp",
+  swordServant: "icons/weapons/swords/greatsword-crossguard-steel.webp",
+  shadow: "icons/magic/perception/silhouette-stealth-shadow.webp",
+  sharpshooter: "icons/skills/ranged/target-bullseye-arrow-glowing.webp",
+  skirmisher: "icons/skills/melee/shield-block-bash-yellow.webp",
+  spellslinger: "icons/magic/fire/dagger-rune-enchant-flame-blue.webp",
+  swordDancer: "icons/skills/melee/sword-twirl-orange.webp",
+  vanguard: "icons/equipment/shield/heater-steel-boss-red.webp",
+  veneficus: "icons/skills/melee/strike-sword-dagger-runes-red.webp",
+  warden: "icons/magic/defensive/shield-barrier-glowing-triangle-blue.webp",
+  weaponMaster: "icons/skills/melee/swords-triple-orange.webp",
+  alchemist: "icons/consumables/potions/bottle-conical-bubbling-blue.webp",
+  astramancer: "icons/environment/cosmos/astronomy-planetary-orbits.webp",
+  bard: "icons/tools/instruments/bell-brass-brown.webp",
+  cryomancer: "icons/magic/water/snowflake-ice-blue.webp",
+  entomancer: "icons/commodities/biological/legs-insect-brown.webp",
+  geomancer: "icons/magic/earth/projectile-stone-landslide.webp",
+  gnostic: "icons/magic/perception/third-eye-blue-red.webp",
+  grimm: "icons/magic/death/weapon-sword-skull-purple.webp",
+  illusionist: "icons/magic/defensive/illusion-evasion-echo-purple.webp",
+  priest: "icons/magic/life/cross-yellow-green.webp",
+  countermage: "icons/magic/defensive/barrier-shield-dome-deflect-blue.webp",
+  maleficarum: "icons/magic/unholy/silhouette-robe-evil-power.webp",
+  mentalist: "icons/magic/control/hypnosis-mesmerism-swirl.webp",
+  mystic: "icons/magic/perception/orb-crystal-ball-scrying.webp",
+  pyromancer: "icons/magic/fire/flame-burning-hand-white.webp",
+  runeWarrior: "icons/magic/symbols/runes-carved-stone-yellow.webp",
+  vitamancer: "icons/magic/nature/root-vine-caduceus-healing.webp",
+  bloodSchool: "icons/skills/wounds/blood-cells-vessel-red.webp",
+};
+
 // Inject localization keys and defaults derived from spec/node ids
 for (const [specId, spec] of Object.entries(SPEC_DEFS)) {
   spec.label = `REDSTEEL.Actor.Specialisations.${specId}.label`;
+  spec.img ??= SPEC_ICONS[specId] ?? "icons/svg/mystery-man.svg";
   for (const [nodeId, node] of Object.entries(spec.nodes)) {
     node.label = `REDSTEEL.Actor.Specialisations.${specId}.nodes.${nodeId}.label`;
     node.description = `REDSTEEL.Actor.Specialisations.${specId}.nodes.${nodeId}.description`;
@@ -728,95 +783,115 @@ export function prepareSpecialisationTrees(actor) {
   const trees = [];
   const owned = actor.system.specialisations ?? {};
 
-  for (const [specId, def] of Object.entries(REDSTEEL.specialisations)) {
+  for (const specId of Object.keys(REDSTEEL.specialisations)) {
     if (!owned[specId]?.active) continue;
-    const unlockedNodes = owned[specId]?.nodes ?? {};
-
-    // A constellation tree positions nodes by x/y PERCENTAGES (0–100) so the
-    // figure stretches to fill the panel. A grid tree positions by the
-    // tier/column pixel grid. Any node missing coords falls back to its grid
-    // slot, so a half-authored tree still renders.
-    const constellation = def.layout === "constellation";
-
-    let maxTier = 1;
-    let maxColumn = 1;
-    const nodes = [];
-    const byId = {};
-
-    for (const [nodeId, node] of Object.entries(def.nodes)) {
-      maxTier = Math.max(maxTier, node.tier);
-      maxColumn = Math.max(maxColumn, node.column);
-
-      // Constellation: x/y are already percentages, pass straight through.
-      // Grid: derive pixel centre from the tier/column slot.
-      const x = constellation
-        ? (node.x ?? 50)
-        : (node.column - 1) * NODE_CELL + NODE_CELL / 2;
-      const y = constellation
-        ? (node.y ?? 50)
-        : (node.tier - 1) * NODE_CELL + NODE_CELL / 2;
-
-      const unlocked = !!unlockedNodes[nodeId];
-      const available = (node.requires ?? []).every(
-        (r) => !!unlockedNodes[r],
-      );
-      const view = {
-        id: nodeId,
-        label: node.label,
-        description: node.description,
-        icon: node.icon || "",
-        // Status dot: blue when the node's effect is automated, red when it is
-        // a table ruling. `passive` covers nodes whose buff is a real Active
-        // Effect; `bane` covers Bane slot nodes (their effect is the picker
-        // plus the combat maths in baneCombat.mjs); `automated: true` is the
-        // explicit opt-in on the definition; CODE_AUTOMATED_NODES lists the
-        // ones implemented in code somewhere else.
-        automated:
-          !!node.passive ||
-          !!node.bane ||
-          node.automated === true ||
-          isCodeAutomated(specId, nodeId),
-        x,
-        y,
-        unlocked,
-        state: unlocked ? "unlocked" : available ? "available" : "locked",
-      };
-      byId[nodeId] = view;
-      nodes.push(view);
-    }
-
-    const links = [];
-    for (const [nodeId, node] of Object.entries(def.nodes)) {
-      for (const reqId of node.requires ?? []) {
-        // Enforced but deliberately undrawn — see `hiddenLinks` in the node
-        // format notes at the top of this file.
-        if ((node.hiddenLinks ?? []).includes(reqId)) continue;
-        const from = byId[reqId];
-        const to = byId[nodeId];
-        if (!from || !to) continue;
-        links.push({
-          x1: from.x,
-          y1: from.y,
-          x2: to.x,
-          y2: to.y,
-          active: from.unlocked && to.unlocked,
-        });
-      }
-    }
-
-    trees.push({
-      id: specId,
-      label: def.label,
-      nodes,
-      links,
-      constellation,
-      // Grid trees size the canvas from their slot count; constellation trees
-      // fill the panel via CSS, so no fixed pixel size is emitted.
-      width: constellation ? null : maxColumn * NODE_CELL,
-      height: constellation ? null : maxTier * NODE_CELL,
-    });
+    trees.push(buildSpecialisationTree(actor, specId));
   }
   return trees;
+}
+
+/**
+ * The view data for ONE specialisation tree, whether or not the actor has it:
+ * the Learn window browses every star sign, including ones not bought yet.
+ * Same shape as an entry of prepareSpecialisationTrees; null for an unknown id.
+ *
+ * @param {Actor} actor
+ * @param {string} specId
+ * @returns {object|null}
+ */
+export function prepareSpecialisationTree(actor, specId) {
+  if (!REDSTEEL.specialisations[specId]) return null;
+  return buildSpecialisationTree(actor, specId);
+}
+
+/** One tree's nodes and connecting lines; see prepareSpecialisationTrees. */
+function buildSpecialisationTree(actor, specId) {
+  const def = REDSTEEL.specialisations[specId];
+  const unlockedNodes = actor?.system?.specialisations?.[specId]?.nodes ?? {};
+
+  // A constellation tree positions nodes by x/y PERCENTAGES (0–100) so the
+  // figure stretches to fill the panel. A grid tree positions by the
+  // tier/column pixel grid. Any node missing coords falls back to its grid
+  // slot, so a half-authored tree still renders.
+  const constellation = def.layout === "constellation";
+
+  let maxTier = 1;
+  let maxColumn = 1;
+  const nodes = [];
+  const byId = {};
+
+  for (const [nodeId, node] of Object.entries(def.nodes)) {
+    maxTier = Math.max(maxTier, node.tier);
+    maxColumn = Math.max(maxColumn, node.column);
+
+    // Constellation: x/y are already percentages, pass straight through.
+    // Grid: derive pixel centre from the tier/column slot.
+    const x = constellation
+      ? (node.x ?? 50)
+      : (node.column - 1) * NODE_CELL + NODE_CELL / 2;
+    const y = constellation
+      ? (node.y ?? 50)
+      : (node.tier - 1) * NODE_CELL + NODE_CELL / 2;
+
+    const unlocked = !!unlockedNodes[nodeId];
+    const available = (node.requires ?? []).every(
+      (r) => !!unlockedNodes[r],
+    );
+    const view = {
+      id: nodeId,
+      label: node.label,
+      description: node.description,
+      icon: node.icon || "",
+      // Status dot: blue when the node's effect is automated, red when it is
+      // a table ruling. `passive` covers nodes whose buff is a real Active
+      // Effect; `bane` covers Bane slot nodes (their effect is the picker
+      // plus the combat maths in baneCombat.mjs); `automated: true` is the
+      // explicit opt-in on the definition; CODE_AUTOMATED_NODES lists the
+      // ones implemented in code somewhere else.
+      automated:
+        !!node.passive ||
+        !!node.bane ||
+        node.automated === true ||
+        isCodeAutomated(specId, nodeId),
+      x,
+      y,
+      unlocked,
+      state: unlocked ? "unlocked" : available ? "available" : "locked",
+    };
+    byId[nodeId] = view;
+    nodes.push(view);
+  }
+
+  const links = [];
+  for (const [nodeId, node] of Object.entries(def.nodes)) {
+    for (const reqId of node.requires ?? []) {
+      // Enforced but deliberately undrawn — see `hiddenLinks` in the node
+      // format notes at the top of this file.
+      if ((node.hiddenLinks ?? []).includes(reqId)) continue;
+      const from = byId[reqId];
+      const to = byId[nodeId];
+      if (!from || !to) continue;
+      links.push({
+        x1: from.x,
+        y1: from.y,
+        x2: to.x,
+        y2: to.y,
+        active: from.unlocked && to.unlocked,
+      });
+    }
+  }
+
+  return {
+    id: specId,
+    label: def.label,
+    nodes,
+    links,
+    constellation,
+    // Grid trees size the canvas from their slot count; constellation trees
+    // fill the panel via CSS, so no fixed pixel size is emitted.
+    width: constellation ? null : maxColumn * NODE_CELL,
+    height: constellation ? null : maxTier * NODE_CELL,
+  };
 }
 
 /**

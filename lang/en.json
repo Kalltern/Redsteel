@@ -96,6 +96,7 @@
         "defense": "Defense actions",
         "ability": "Combat abilities",
         "channeling": "Channeling",
+        "envDamage": "Environmental damage",
         "rest": "Long Rest",
         "firstAid": "First aid",
         "effects": "Effect manager"
@@ -127,8 +128,9 @@
       "DamageType": {
         "physical": "Physical",
         "slash": "Slashing",
-        "pierce": "Piercing",
+        "piercing": "Piercing",
         "blunt": "Blunt",
+        "psychic": "Psychic",
         "acid": "Acid",
         "fire": "Fire",
         "frost": "Frost",
@@ -481,6 +483,7 @@
         "warnDependents": "Another unlocked node depends on this one — lock that one first.",
         "shadow": {
           "label": "Shadow",
+          "summary": "A killer from the dark. Deadlier sneak attacks, bleeding wounds, sure footing in stealth and a hunter's banes.",
           "nodes": {
             "sneakAttack": {
               "label": "Sneak Attack +1d6",
@@ -556,16 +559,17 @@
             },
             "skillDiscount1": {
               "label": "3 SP discount on a skill",
-              "description": "0 SP. 3 SP discount per rank of one skill from a list. Manual — resolved at the table."
+              "description": "0 SP. Every rank of one skill of your choice costs 3 SP less: Stealth, Pickpocketing, Lockpicking or Traps. Pick the skill in the Learn window. A skill carries one discount at most."
             },
             "skillDiscount2": {
               "label": "3 SP discount on a skill",
-              "description": "0 SP. 3 SP discount per rank of one skill from a list. Manual — resolved at the table."
+              "description": "0 SP. Every rank of one skill of your choice costs 3 SP less: Stealth, Pickpocketing, Lockpicking or Traps. Pick the skill in the Learn window. A skill carries one discount at most."
             }
           }
         },
         "swordServant": {
           "label": "Servant of the Sword",
+          "summary": "A disciple of the blade who answers every thrust. Ripostes, dragon stances and swift charges built on the sword.",
           "nodes": {
             "bleedA": {
               "label": "Bleed +10%",
@@ -663,6 +667,7 @@
         },
         "weaponMaster": {
           "label": "Weapon Master",
+          "summary": "A veteran of every armoury. Weapon training, armiger drills and precise, overpowering blows with any weapon.",
           "nodes": {
             "mistrZbrani": {
               "label": "Weapon Master",
@@ -740,6 +745,7 @@
         },
         "hoplite": {
           "label": "Hoplite",
+          "summary": "The spear wall made flesh. Impales, braces against charges and drives the line forward with relentless advances.",
           "nodes": {
             "nabodnuti": {
               "label": "Impale",
@@ -817,6 +823,7 @@
         },
         "swordDancer": {
           "label": "Sword Dancer",
+          "summary": "A duelist who fights like a dance. Graceful stances, lacerating cuts and counters that punish every opening.",
           "nodes": {
             "duelistuvPostoj": {
               "label": "Duelist's Stance",
@@ -878,6 +885,7 @@
         },
         "bloodSchool": {
           "label": "School of Blood",
+          "summary": "Forbidden magic paid for in blood. Raises Spell Power, deepens the Blood Pool and turns wounds into weapons.",
           "nodes": {
             "apprentice": {
               "label": "School of Blood - Apprentice",
@@ -1503,15 +1511,15 @@
             },
             "slevaPlizeni": {
               "label": "3 SP discount per Stealth rank",
-              "description": "0 SP. Manual — resolved at the table."
+              "description": "0 SP. Every rank of Stealth costs 3 SP less, applied in the Learn window. A skill carries one discount at most."
             },
             "slevaPreziti": {
               "label": "3 SP discount per Survival rank",
-              "description": "0 SP. Manual — resolved at the table."
+              "description": "0 SP. Every rank of Survival costs 3 SP less, applied in the Learn window. A skill carries one discount at most."
             },
             "slevaRanhojicstvi": {
               "label": "3 SP discount per First Aid rank",
-              "description": "0 SP. Manual — resolved at the table."
+              "description": "0 SP. Every rank of First Aid costs 3 SP less, applied in the Learn window. A skill carries one discount at most."
             },
             "prezbrojeni": {
               "label": "Re-arm: -6 Stamina",
@@ -1525,6 +1533,7 @@
         },
         "incantator": {
           "label": "Incantator",
+          "summary": "A scholar of focus and formula. Channels magic through a focus item and draws on deep reserves of mana.",
           "nodes": {
             "ohniskovyPredmet": {
               "label": "Focus item: Critical Range +5",
@@ -1752,6 +1761,7 @@
         },
         "warden": {
           "label": "Warden",
+          "summary": "An unbreakable shield for the company. Reliable blocks, crushing shield bashes and stances that guard allies.",
           "nodes": {
             "kritObranaKryt": {
               "label": "Critical Defense/Cover +2%",
@@ -1825,6 +1835,7 @@
         },
         "champion": {
           "label": "Champion",
+          "summary": "A two-weapon fighter at the heart of battle. Off-hand mastery, flurries of blows, feints and ripostes.",
           "nodes": {
             "stredniZbran": {
               "label": "Medium weapon in off-hand",
@@ -1963,6 +1974,7 @@
         },
         "alchemist": {
           "label": "Alchemist",
+          "summary": "A master of potions, poisons and explosives. Stronger brews, longer effects and more doses from every batch.",
           "nodes": {
             "lecZastaveni1": {
               "label": "Healing potions: Stop bleeding +25%",
@@ -2142,11 +2154,11 @@
             },
             "sleva1": {
               "label": "3 SP discount on a skill",
-              "description": "0 SP. Manual — resolved at the table."
+              "description": "0 SP. Every rank of one skill of your choice costs 3 SP less: any Intelligence skill. Pick the skill in the Learn window. A skill carries one discount at most."
             },
             "sleva2": {
               "label": "3 SP discount on a skill",
-              "description": "0 SP. Manual — resolved at the table."
+              "description": "0 SP. Every rank of one skill of your choice costs 3 SP less: any Intelligence skill. Pick the skill in the Learn window. A skill carries one discount at most."
             },
             "mastTrvani": {
               "label": "Salves: Duration +50%",
@@ -2408,7 +2420,7 @@
             },
             "slevaUmtvorba": {
               "label": "5 SP discount per Art rank",
-              "description": "0 SP. Manual — resolved at the table."
+              "description": "0 SP. Every rank of Art costs 5 SP less, applied in the Learn window. A skill carries one discount at most."
             },
             "pokouseni5": {
               "label": "Temptation +5%",
@@ -2440,19 +2452,19 @@
             },
             "sleva1": {
               "label": "3 SP discount on a skill",
-              "description": "0 SP. Manual — resolved at the table."
+              "description": "0 SP. Every rank of one skill of your choice costs 3 SP less: any Charisma skill, Pickpocketing or Art. Pick the skill in the Learn window. A skill carries one discount at most."
             },
             "sleva2": {
               "label": "3 SP discount on a skill",
-              "description": "0 SP. Manual — resolved at the table."
+              "description": "0 SP. Every rank of one skill of your choice costs 3 SP less: any Charisma skill, Pickpocketing or Art. Pick the skill in the Learn window. A skill carries one discount at most."
             },
             "sleva3": {
               "label": "3 SP discount on a skill",
-              "description": "0 SP. Manual — resolved at the table."
+              "description": "0 SP. Every rank of one skill of your choice costs 3 SP less: any Charisma skill, Pickpocketing or Art. Pick the skill in the Learn window. A skill carries one discount at most."
             },
             "sleva4": {
               "label": "3 SP discount on a skill",
-              "description": "0 SP. Manual — resolved at the table."
+              "description": "0 SP. Every rank of one skill of your choice costs 3 SP less: any Charisma skill, Pickpocketing or Art. Pick the skill in the Learn window. A skill carries one discount at most."
             }
           }
         },
@@ -2750,6 +2762,7 @@
         },
         "grimm": {
           "label": "Grimm",
+          "summary": "A hunter of monsters. Masters many banes and reads the tracks and remains of the beasts they slay.",
           "nodes": {
             "bane1": {
               "label": "Unlocks one Bane",
@@ -2803,6 +2816,7 @@
         },
         "illusionist": {
           "label": "Illusionist",
+          "summary": "A weaver of lies made of light. Perfect illusions that are hard to deny, and sight that pierces the illusions of others.",
           "nodes": {
             "ucednik": {
               "label": "Illusionist: Apprentice",
@@ -3100,7 +3114,7 @@
             },
             "slevaArcana": {
               "label": "3 SP discount per Arcana rank",
-              "description": "0 SP. Manual — resolved at the table."
+              "description": "0 SP. Every rank of Arcana costs 3 SP less, applied in the Learn window. A skill carries one discount at most."
             }
           }
         },
@@ -3183,6 +3197,7 @@
         },
         "mentalist": {
           "label": "Mentalist",
+          "summary": "A mind that breaks other minds. Mental duels, telepathy, domination and the reading of thoughts.",
           "nodes": {
             "ucednik": {
               "label": "Mentalist: Apprentice",
@@ -3324,6 +3339,7 @@
         },
         "mystic": {
           "label": "Mystic",
+          "summary": "A ritualist bound to the moon. Subjugates summoned beings, draws on the Moon Well and perfects rituals.",
           "nodes": {
             "ucednik": {
               "label": "Mystic: Apprentice",
@@ -3383,11 +3399,11 @@
             },
             "sleva1": {
               "label": "3 SP discount on a skill",
-              "description": "0 SP. Manual — resolved at the table."
+              "description": "0 SP. Every rank of one skill of your choice costs 3 SP less: any Intelligence skill, Rituals, Dreamwalker or Augury. Pick the skill in the Learn window. A skill carries one discount at most."
             },
             "sleva2": {
               "label": "3 SP discount on a skill",
-              "description": "0 SP. Manual — resolved at the table."
+              "description": "0 SP. Every rank of one skill of your choice costs 3 SP less: any Intelligence skill, Rituals, Dreamwalker or Augury. Pick the skill in the Learn window. A skill carries one discount at most."
             }
           }
         },
@@ -4170,6 +4186,10 @@
         "roundsHint": "Lasts this many combat rounds (counts down at the start of each round). 0 = no round limit.",
         "turns": "Turns",
         "turnsHint": "Lasts this many of the affected character's turns. 0 = no turn limit.",
+        "subEffectsHeader": "Sub-effects",
+        "independentSubEffects": "Sub-effects outlast the condition",
+        "independentSubEffectsHint": "Statuses picked under Status Conditions on this condition's effects are applied as their own effects together with it. Unchecked: the ones this condition created are removed when it ends. Checked: they stay and run their own course. A status the character already had is never removed.",
+        "notWorldCondition": "\"{name}\" is not a condition in the world Items directory, so it cannot be applied. Import it into the Items directory first.",
         "damageHeader": "Damage per Round",
         "andOr": "And / Or",
         "damage": "Damage formula",
@@ -4863,6 +4883,41 @@
       "AtCap": "Already at {max} Temporary Health — defending grants no more.",
       "ActorMissing": "The defending actor no longer exists."
     },
+    "EnvironmentalDamage": {
+      "Title": "Environmental damage",
+      "Speaker": "Environment",
+      "Source": "Source",
+      "SourcePlaceholder": "Falling rocks, fire, a trap…",
+      "Dice": "Dice",
+      "Bonus": "Bonus",
+      "Penetration": "Penetration",
+      "DamageTypes": "Damage types",
+      "TypesHint": "Leave all unticked for untyped damage, stopped by armor alone.",
+      "Connector": "Combine types",
+      "ConnectorAnd": "All at once (and)",
+      "ConnectorOr": "Best for the attacker (or)",
+      "Roll": "Roll damage",
+      "DamageRoll": "Damage roll",
+      "DamageLabel": "Damage:",
+      "PenetrationLabel": "Penetration:",
+      "NothingToRoll": "Nothing to roll. Set some dice or a bonus.",
+      "GMOnly": "Only the GM can deal environmental damage.",
+      "Type": {
+        "blunt": "Blunt",
+        "piercing": "Piercing",
+        "slash": "Slashing",
+        "physical": "Physical",
+        "acid": "Acid",
+        "dark": "Dark",
+        "fire": "Fire",
+        "frost": "Frost",
+        "lightning": "Lightning",
+        "magic": "Magic",
+        "poison": "Poison",
+        "holy": "Holy",
+        "psychic": "Psychic"
+      }
+    },
     "LongRest": {
       "Title": "Long Rest",
       "SelectAll": "Everyone",
@@ -5360,7 +5415,8 @@
         "name": "Combat Genius"
       },
       "CombatGeniusII": {
-        "name": "Combat Genius II"
+        "name": "Combat Genius II",
+        "description": "<p>May reroll a Combat, Shooting, or Throw roll once per day (including a Critical Failure).</p>"
       },
       "CommandAdvance": {
         "name": "Command: Advance"
@@ -5432,7 +5488,8 @@
         "name": "Deadly Lunge"
       },
       "DeepFocus": {
-        "name": "Deep Focus"
+        "name": "Deep Focus",
+        "description": "<p>If you achieve a critical success of at least the second degree on a magic roll, you may reduce its degree by one to gain one Focus for your next spell.</p>"
       },
       "DeepSlash": {
         "name": "Deep Slash"
@@ -5444,7 +5501,7 @@
         "name": "Demon"
       },
       "Determination": {
-        "name": "Determination"
+        "name": "Willfulness"
       },
       "DevilsRoot": {
         "name": "Devil's Root"
@@ -6115,46 +6172,10 @@
         "name": "Precise Lunge"
       },
       "PrecisionStrike": {
-        "name": "Precision Strike"
+        "name": "Precise Strike"
       },
       "Pretty": {
         "name": "Pretty"
-      },
-      "ProficiencyAcrobacy": {
-        "name": "Proficiency: Acrobacy"
-      },
-      "ProficiencyAlchemy": {
-        "name": "Proficiency: Alchemy"
-      },
-      "ProficiencyAnimalHandling": {
-        "name": "Proficiency: Animal Handling"
-      },
-      "ProficiencyArcana": {
-        "name": "Proficiency: Arcana"
-      },
-      "ProficiencyAthletics": {
-        "name": "Proficiency: Athletics"
-      },
-      "ProficiencyFirstAid": {
-        "name": "Proficiency: First Aid"
-      },
-      "ProficiencyLeadership": {
-        "name": "Proficiency: Leadership"
-      },
-      "ProficiencyLockpicking": {
-        "name": "Proficiency: Lockpicking"
-      },
-      "ProficiencyPickpocketing": {
-        "name": "Proficiency: Pickpocketing"
-      },
-      "ProficiencyResearch": {
-        "name": "Proficiency: Research"
-      },
-      "ProficiencyStealth": {
-        "name": "Proficiency: Stealth"
-      },
-      "ProficiencyTraps": {
-        "name": "Proficiency: Traps"
       },
       "Qudat": {
         "name": "Qudat"
@@ -6355,7 +6376,7 @@
         "name": "Specter"
       },
       "SpeedyAdvantage": {
-        "name": "Speedy Advantage"
+        "name": "Swift Striker"
       },
       "Spider": {
         "name": "Spider"
@@ -7349,8 +7370,10 @@
       "pickerCancel": "Cancel",
       "pickerLocked": "Already trained, so it stays in the tree.",
       "nothingTracked": "No skills chosen yet. Use “Acquire skills” to pick what you are training.",
+      "nothingToggled": "Everything on the ribbon is switched off. Click a group to show it.",
       "cannotBuy": "That rank cannot be bought right now.",
       "requirements": "Requirements",
+      "unmetRequirements": "Requirements not met",
       "skillRating": "Skill rating",
       "ratingOf": "{label} rating",
       "priceCp": "Price in CP",
@@ -7362,8 +7385,7 @@
       "earnedSp": "SP earned",
       "adjustCp": "CP adjustment",
       "adjustSp": "SP adjustment",
-      "refund": "Refund rank",
-      "refundConfirm": "Give this rank back? The points return to the pool and anything the rank granted is lost.",
+      "close": "Close",
       "Tabs": {
         "combat": "Combat",
         "skills": "Skills",
@@ -7388,13 +7410,103 @@
         "weapon": "Weapon",
         "doctrineLower": "doctrine",
         "schoolLower": "school",
-        "weaponLower": "weapon skill"
+        "weaponLower": "weapon skill",
+        "skill": "Skill",
+        "skillLower": "skill"
+      },
+      "Features": {
+        "traits": "Traits",
+        "owned": "Owned features",
+        "noneOwned": "No features yet.",
+        "search": "Search features",
+        "onlyMet": "Requirements met",
+        "haveSkill": "Have skill",
+        "noneMatch": "No feature matches the filter.",
+        "unpriced": "Not priced",
+        "racial": "Racial",
+        "refund": "Give the feature back",
+        "cannotBuy": "That feature cannot be bought right now.",
+        "pickOnce": "Already taken: {name}",
+        "skillTaken": "{skill} already has {name}.",
+        "discountTaken": "{skill} already has a discount from {name}.",
+        "allRaces": "All races",
+        "allMagic": "Magic features without magic",
+        "filters": "Filters",
+        "filterSections": "Sections",
+        "filterShow": "Show",
+        "selectAll": "(Select all)",
+        "reset": "Reset",
+        "Polarity": {
+          "positive": "Positive",
+          "neutral": "Neutral",
+          "negative": "Negative",
+          "unsorted": "Unsorted"
+        },
+        "familyCount": "{available} of {total} skills open",
+        "back": "Back to features",
+        "className": "Class {class}",
+        "noSkills": "No skill of this class.",
+        "Families": {
+          "specialization": "Specialization",
+          "talented1": "Talented I",
+          "talented2": "Talented II",
+          "adept": "Adept",
+          "expert": "Expert",
+          "elvenTalent": "Elven talent",
+          "elvenPerfection": "Elven perfection"
+        },
+        "Sections": {
+          "combat": "Combat features",
+          "general": "General features",
+          "magic": "Magic features",
+          "trait": "Trait features",
+          "racial": "Racial features"
+        }
+      },
+      "Specs": {
+        "pointsLeft": "Specialisation points left",
+        "pointsTotal": "Specialisation points",
+        "Groups": {
+          "combat": "Combat specialisations",
+          "support": "Support specialisations"
+        },
+        "capSpent": "{spent} of {cap} points spent",
+        "Points": {
+          "one": "{n} Specialisation point",
+          "few": "{n} Specialisation points",
+          "many": "{n} Specialisation points"
+        },
+        "nodes": "{unlocked} of {total} nodes unlocked",
+        "cannotBuy": "This specialisation cannot be bought right now.",
+        "cannotBuyTitle": "Cannot buy yet",
+        "poor": "Not enough Specialisation points left.",
+        "capped": "At most {cap} Specialisation points may go to combat specialisations.",
+        "refundTip": "Click to give this specialisation back.",
+        "refundBlocked": "Lock every node of this specialisation on the character sheet before giving it back.",
+        "browseHint": "Nodes are unlocked on the character sheet's Specialisations tab for now.",
+        "wip": "Work in progress",
+        "showWip": "Work in progress",
+        "listView": "List",
+        "cardView": "Cards",
+        "IconEdit": {
+          "edit": "Change icon",
+          "copy": "Copy icons",
+          "copied": "Specialisation icons copied to the clipboard.",
+          "copyFailed": "The clipboard refused; the icon list is in the console (F12)."
+        }
+      },
+      "Discounts": {
+        "title": "Discounts",
+        "choose": "Choose a skill",
+        "alreadyDiscounted": "{skill} already has a discount from {source}. Discounts on one skill do not stack.",
+        "discounted": "Discounted"
       },
       "Teacher": {
         "grant": "Click to grant.",
         "revoke": "Click to revoke."
       },
       "Req": {
+        "noRank": "Not {tracks}",
         "teacher": "Teacher {tier}",
         "attr": "{attr} {min}+",
         "rank": "{track} {min}",
@@ -7402,21 +7514,42 @@
         "feature": "Feature: {name}",
         "flag": "Requires: {name}",
         "specNode": "Specialisation: {spec}",
+        "race": "{race}",
+        "attrCompare": "{greater} > {lesser}",
+        "notFlag": "Without {name}",
+        "countRank": "{count}× {group} {min}",
+        "featurePrefix": "{name}",
+        "Family": {
+          "elf": "Elf",
+          "dwarf": "Dwarf"
+        },
+        "Prefix": {
+          "talented1": "Talented I"
+        },
         "or": " or ",
         "gmGeneric": "The GM must approve this.",
         "gm": {
           "specialOccasion": "Only on a special occasion, at the GM's discretion.",
           "language": "Requires a language granted by the GM.",
-          "schoolOrSpecialisation": "Requires a school or a specialisation granted by the GM."
+          "schoolOrSpecialisation": "Requires a school or a specialisation granted by the GM.",
+          "traumaticEvent": "Only after a traumatic experience, at the GM's discretion.",
+          "vardur": "Vardur dwarves only, the GM confirms it."
         },
         "Tip": {
+          "noRank": "Must not have any rank in {tracks}.",
           "teacher": "Requires learning from a teacher (Rank {tier}).",
           "attr": "Requires {attr} of {min} or higher.",
           "rank": "Requires {track} at rank {min} or higher.",
           "anyRank": "Requires any {group} at rank {min} or higher.",
           "feature": "Requires the feature {name}.",
           "flag": "Requires {name}.",
-          "specNode": "Requires the specialisation {spec}."
+          "specNode": "Requires the specialisation {spec}.",
+          "race": "Requires the race {race}.",
+          "attrCompare": "Requires {greater} higher than {lesser}.",
+          "notFlag": "Requires not having {name}.",
+          "countRank": "Requires {count} × {group} at rank {min} or higher.",
+          "featurePrefix": "Requires any {name} feature.",
+          "featureTeacher": "Requires learning from a teacher (Rank {tier}). The GM confirms it."
         }
       }
     }

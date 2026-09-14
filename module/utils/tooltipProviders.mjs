@@ -235,6 +235,23 @@ registerTooltip("spellCard", (ctx) => {
   return renderInspectorCard(buildSpellCard(item, kind));
 });
 
+/**
+ * The same card for a spell or ability that is not on the actor, fetched by its
+ * uuid (`data-tt-uuid`). `resolveItem` is synchronous, and a compendium lookup
+ * there can come back as a bare index entry with no system data, which would
+ * render a card with no name and no description; this one awaits the full
+ * document instead. Used by the Learn screen, where the abilities a rank hands
+ * over are not owned yet.
+ */
+registerTooltip("spellCardUuid", async (ctx) => {
+  const uuid = ctx.dataset.ttUuid;
+  if (!uuid) return null;
+  const item = await fromUuid(uuid);
+  if (!item) return null;
+  const kind = ctx.dataset.cardKind || "spell";
+  return renderInspectorCard(buildSpellCard(item, kind));
+});
+
 /* -------------------------------------------- */
 /*  skill                                       */
 /* -------------------------------------------- */

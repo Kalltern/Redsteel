@@ -1,11 +1,11 @@
 {
-  "folder": "WLi5IgxzbRUcdjAz",
-  "name": "Proficiency: Arcana",
+  "folder": "NHaSpGKlxSYECai3",
+  "name": "Swift striker",
   "type": "feature",
-  "img": "icons/commodities/treasure/bust-carved-stone.webp",
+  "img": "icons/weapons/daggers/dagger-straight-blue.webp",
   "system": {
-    "localizationKey": "REDSTEEL.Items.ProficiencyArcana.name",
-    "description": "<p>Once per day you may reroll this ability. Adds 5% to tests of this ability.</p>",
+    "localizationKey": "REDSTEEL.Items.SpeedyAdvantage.name",
+    "description": "<p>When using only Light weapons in combat, Initiative +2.</p>",
     "options": [
       "feature",
       "trait",
@@ -17,43 +17,38 @@
     "statusEffectsRaw": "",
     "reroll": {
       "name": "",
-      "active": [],
-      "value": 0,
-      "pools": [
-        {
-          "label": "",
-          "skillsRaw": "arcana",
-          "max": 1,
-          "used": 0
-        }
-      ]
+      "active": [
+        false,
+        false
+      ],
+      "value": 0
     },
     "option": "feature"
   },
   "effects": [
     {
-      "name": "Proficiency: Arcana",
-      "origin": "Item.EguafzTrPCeNZQfv",
-      "img": "icons/svg/daze.svg",
-      "_id": "2e4GRa6CKn5TNaEl",
+      "name": "Speedy advantage !",
+      "origin": "Item.8on1VznNBYzQnuDz",
+      "img": "icons/weapons/daggers/dagger-straight-blue.webp",
+      "duration": {
+        "value": 1,
+        "units": "rounds",
+        "expiry": "turnStart",
+        "expired": false
+      },
+      "_id": "Ed4Gsr6Ual3Orkmw",
       "type": "base",
       "system": {
         "changes": [
           {
-            "key": "system.skills.arcana.bonus",
-            "value": 5,
+            "key": "system.secondaryAttributes.ini.bonus",
+            "value": 2,
             "priority": null,
             "type": "add"
           }
         ]
       },
       "disabled": false,
-      "duration": {
-        "value": null,
-        "units": "seconds",
-        "expiry": null,
-        "expired": false
-      },
       "description": "",
       "tint": "#ffffff",
       "transfer": true,
@@ -85,17 +80,20 @@
       "start": null,
       "showIcon": 1,
       "folder": null,
-      "_key": "!items.effects!EguafzTrPCeNZQfv.2e4GRa6CKn5TNaEl"
+      "_key": "!items.effects!8on1VznNBYzQnuDz.Ed4Gsr6Ual3Orkmw"
     }
   ],
-  "flags": {
-    "scene-packer": {
-      "hash": "389128c07a9f5fedf58433e75907f050448443dd"
-    }
+  "sort": 800000,
+  "ownership": {
+    "default": 0,
+    "rs3mzx7WZdtEmvH2": 3,
+    "11b6AVyWZe9rh7fX": 3,
+    "UHjN0KQ8w8ZxibJg": 3
   },
+  "flags": {},
   "_stats": {
-    "compendiumSource": "Compendium.dilnamodulimport.pack-1.Item.rH2izAi84XLI0iUS",
-    "duplicateSource": "Item.88I7tLryBVX3UHkm",
+    "compendiumSource": null,
+    "duplicateSource": "Item.4EIRmQDb2QZrwRSG",
     "exportSource": null,
     "coreVersion": "14.363",
     "systemId": "redsteel",
@@ -104,13 +102,6 @@
     "modifiedTime": 1777294839144,
     "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
   },
-  "ownership": {
-    "default": 0,
-    "rs3mzx7WZdtEmvH2": 3,
-    "exQfSubzwCCs5h8v": 3,
-    "UHjN0KQ8w8ZxibJg": 3
-  },
-  "sort": 400000,
-  "_id": "EguafzTrPCeNZQfv",
-  "_key": "!items!EguafzTrPCeNZQfv"
+  "_id": "8on1VznNBYzQnuDz",
+  "_key": "!items!8on1VznNBYzQnuDz"
 }

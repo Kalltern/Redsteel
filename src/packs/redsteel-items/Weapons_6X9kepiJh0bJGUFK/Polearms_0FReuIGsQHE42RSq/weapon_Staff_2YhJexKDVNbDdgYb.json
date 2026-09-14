@@ -87,8 +87,8 @@
     },
     "effects": {
       "stagger": 0,
-      "bleed": 10,
-      "extra1": 0,
+      "bleed": 0,
+      "extra1": 10,
       "extra2": 0,
       "extra3": 0
     },
@@ -115,7 +115,7 @@
     "dmgType3": "",
     "bool4": "",
     "dmgType4": "",
-    "effectType1": "",
+    "effectType1": "stun",
     "effectType2": "",
     "effectType3": "",
     "localizationKey": "REDSTEEL.Items.Staff.name"
