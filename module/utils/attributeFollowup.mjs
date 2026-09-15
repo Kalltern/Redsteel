@@ -178,19 +178,9 @@ async function rollAttributeFollowup(actor, key, rating, margin, source = "") {
     }
   }
 
-  // The total already *is* the gap between the two margins, so report it as
-  // such — several rules read that difference (Odstrčení at 25+, jousting at
-  // 30 and 60). A dead tie goes to whoever posted the original roll.
-  const gap = Math.abs(roll.total);
-  const outcome =
-    roll.total > 0
-      ? `<b>Wins</b> the contest by ${gap}.`
-      : roll.total < 0
-        ? `<b>Loses</b> the contest by ${gap}.`
-        : "<b>Tie</b>, so the initiator wins.";
-
-  let flavor = `<p class="rs-card-headline"><b>${label} Test vs ${vsLabel}</b></p>
-<p style="text-align:center;">${outcome}</p>`;
+  const rollName = `${label} Test vs ${vsLabel}`;
+  let flavor = `<p class="rs-card-headline"><b>${rollName}</b></p>
+${renderVersusOutcome(roll.total)}`;
   if (criticalMessage) {
     flavor += `<hr><p class="rs-card-headline"><b>${criticalMessage}</b></p>`;
   }
@@ -199,5 +189,40 @@ async function rollAttributeFollowup(actor, key, rating, margin, source = "") {
     speaker: ChatMessage.getSpeaker({ actor }),
     flavor,
     rollMode: game.settings.get("core", "rollMode"),
+    flags: {
+      redsteel: {
+        // An explicit name, or the createChatMessage hook infers one from the
+        // flavor and bakes this roll's "Loses the contest by …" into it, which
+        // a reroll would then print over a result that went the other way.
+        rollName,
+        // Routes the chat Re-Roll through the pool picker (a Strength versus
+        // Test is a Strength test) instead of the free reroll.
+        skill: key,
+        criticalSuccessThreshold: attr?.criticalSuccessThreshold,
+        criticalFailureThreshold: attr?.criticalFailureThreshold,
+        // Lets a reroll restate who won against the new total (see executeReroll).
+        versusFollowup: { margin, source },
+      },
+    },
   });
+}
+
+/**
+ * The "Wins / Loses the contest by N" line under a versus Test. The total
+ * already *is* the gap between the two margins, so it is reported as such;
+ * several rules read that difference (Odstrčení at 25+, jousting at 30 and
+ * 60). A dead tie goes to whoever posted the original roll.
+ *
+ * @param {number} total  The contester's roll total.
+ * @returns {string} HTML.
+ */
+export function renderVersusOutcome(total) {
+  const gap = Math.abs(total);
+  const outcome =
+    total > 0
+      ? `<b>Wins</b> the contest by ${gap}.`
+      : total < 0
+        ? `<b>Loses</b> the contest by ${gap}.`
+        : "<b>Tie</b>, so the initiator wins.";
+  return `<p style="text-align:center;">${outcome}</p>`;
 }

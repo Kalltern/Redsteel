@@ -19,7 +19,11 @@
       "value": 0
     },
     "option": "feature",
-    "localizationKey": "REDSTEEL.Items.FastSpells.name"
+    "localizationKey": "REDSTEEL.Items.FastSpells.name",
+    "cost": {
+      "cp": 5,
+      "sp": null
+    }
   },
   "effects": [],
   "sort": 0,

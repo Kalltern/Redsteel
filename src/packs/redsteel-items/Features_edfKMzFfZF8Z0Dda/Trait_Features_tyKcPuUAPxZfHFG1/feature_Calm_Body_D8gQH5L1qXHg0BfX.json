@@ -24,7 +24,11 @@
     "rollTriggersRaw": "res",
     "rollTriggers": [
       "res"
-    ]
+    ],
+    "cost": {
+      "cp": null,
+      "sp": 10
+    }
   },
   "effects": [],
   "sort": 150000,

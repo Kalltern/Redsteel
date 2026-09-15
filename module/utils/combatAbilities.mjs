@@ -1,5 +1,5 @@
 import { getTraitPills } from "./traitPills.mjs";
-import { withRollBias, tagRollSkill } from "./rollAdvantage.mjs";
+import { withRollBias, tagRollSkill, tagRollItemAdvantage } from "./rollAdvantage.mjs";
 import { selectAimedPart, AIMED_PARTS } from "./aimedStrike.mjs";
 import { getImprovedAimPenetration, abilityIgnoresAim } from "./aim.mjs";
 import { getAttackRerollTokens } from "./rerolls.mjs";
@@ -1759,7 +1759,10 @@ ${
 
       // Speed test: d12 + Initiative + Speed, higher is better.
       if (isSpeedTest(testName)) {
-        const speedRoll = await rollSpeedTest(actor, { modifier: testModifier });
+        const speedRoll = await rollSpeedTest(actor, {
+          modifier: testModifier,
+          advantage: mod.system.testAdvantage,
+        });
         attributeTestHTML += `
 <tr>
 <td>
@@ -1790,6 +1793,7 @@ ${renderSpeedTestLine({
         withRollBias({}, actor),
       );
       tagRollSkill(attributeRoll, skillKey);
+      tagRollItemAdvantage(attributeRoll, mod.system.testAdvantage);
       await attributeRoll.evaluate({ async: true });
 
       attributeTestHTML += `
@@ -1809,6 +1813,7 @@ ${renderSpeedTestLine({
       // Speed test: d12 + Initiative + Speed, higher is better.
       const speedRoll = await rollSpeedTest(actor, {
         modifier: abilityTestModifier,
+        advantage: ability.system.testAdvantage,
       });
 
       concatRollAndDescription += `
@@ -1839,6 +1844,7 @@ ${renderSpeedTestLine({
       // Tag whichever bucket the test resolved against so per-skill advantage
       // applies; null (unresolved test name) falls back to the actor-wide bucket.
       tagRollSkill(attributeRoll, testSkillKey);
+      tagRollItemAdvantage(attributeRoll, ability.system.testAdvantage);
 
       await attributeRoll.evaluate({ async: true });
 
@@ -2107,7 +2113,10 @@ async function rollUtilityTest(actor, item) {
   const source = item.localizedName ?? item.name;
 
   if (isSpeedTest(testName)) {
-    const roll = await rollSpeedTest(actor, { modifier: testModifier });
+    const roll = await rollSpeedTest(actor, {
+      modifier: testModifier,
+      advantage: item.system.testAdvantage,
+    });
     // No bold heading here: the rendered line and the roll column both already
     // say "Speed Test".
     return {
@@ -2124,6 +2133,7 @@ async function rollUtilityTest(actor, item) {
 
   const roll = new Roll(`(${total}) - 1d100`, withRollBias({}, actor));
   tagRollSkill(roll, skillKey);
+  tagRollItemAdvantage(roll, item.system.testAdvantage);
   await roll.evaluate();
 
   return {

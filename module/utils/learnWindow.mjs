@@ -41,6 +41,7 @@ import {
   evaluateRequirements,
   getRankGrants,
   getRankState,
+  getUnmetPrerequisites,
   hasTeacher,
   getLearnSection,
   getTrackRank,
@@ -60,22 +61,44 @@ import {
   isRaceGrantedFeature,
   purchaseFeature,
   refundFeature,
+  loadFeaturePackData,
+  getFeatureCatalogIds,
+  getFeaturePrice,
+  getFeaturePriceForItem,
+  isNativeLanguageFeature,
+  LANGUAGE_SLOTS,
+  LANGUAGE_FEATURE_IDS,
+  getKnownLanguages,
+  getLanguageFeatureState,
+  purchaseLanguageFeature,
+  grantNativeLanguage,
   getDiscountChoiceOptions,
   getDiscountSourceLabel,
   getDiscountSources,
+  getForcedSchool,
+  getMirrorSources,
   getRankCost,
   setDiscountChoice,
+  setMirrorChoice,
+  countBoughtSpecNodes,
   countUnlockedSpecNodes,
   getSpecPrice,
   getSpecState,
   getSpecWallet,
+  isSpecActive,
   purchaseSpec,
   refundSpec,
   setSpecTeacher,
+  getSpecNodeDependents,
+  getSpecNodeState,
+  purchaseSpecNode,
+  refundSpecNode,
 } from "../helpers/progressionEngine.mjs";
-import { FEATURE_PRICES } from "../helpers/featurePrices.mjs";
 import { SPEC_GROUPS, SPEC_PRICES } from "../helpers/specPrices.mjs";
-import { prepareSpecialisationTree } from "../helpers/specialisations.mjs";
+import {
+  isAutoUnlockNode,
+  prepareSpecialisationTree,
+} from "../helpers/specialisations.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } =
   foundry.applications.api;
@@ -221,6 +244,12 @@ function specialisationLabel(spec) {
   return game.i18n.has(key, false) ? game.i18n.localize(key) : spec;
 }
 
+/** A specialisation node's name, or null when it has none. */
+function specNodeLabel(spec, node) {
+  const key = `REDSTEEL.Actor.Specialisations.${spec}.nodes.${node}.label`;
+  return node && game.i18n.has(key, false) ? game.i18n.localize(key) : null;
+}
+
 /**
  * A race requirement's name: the family (Elf, Dwarf) when the book names one,
  * otherwise the races themselves, each through its race item's lang key.
@@ -262,6 +291,7 @@ const FEATURE_FAMILIES = new Set([
   "talented2",
   "adept",
   "expert",
+  "master",
   "elvenTalent",
   "elvenPerfection",
 ]);
@@ -380,6 +410,10 @@ function describeRequirement(req) {
         name: flagLabel(req.key),
       });
     case "specNode": {
+      // The node itself ("School of Blood - Expert"): the specialisation alone
+      // would not say which star is missing.
+      const node = specNodeLabel(req.spec, req.node);
+      if (node) return node;
       const key = `REDSTEEL.Actor.Specialisations.${req.spec}.label`;
       const spec = game.i18n.has(key, false)
         ? game.i18n.localize(key)
@@ -444,7 +478,19 @@ function describeRequirement(req) {
           .map((key) => trackLabel(req.group, key))
           .join(game.i18n.localize("REDSTEEL.Learn.Req.or")),
       });
+    // The clause kinds below come from the node price table (specNodePrices.mjs).
+    case "masterFeature":
+      return game.i18n.format("REDSTEEL.Learn.Req.masterFeature", {
+        skill: trackLabel("skills", req.skill),
+      });
+    case "specScore":
+      return game.i18n.format("REDSTEEL.Learn.Req.specScore", {
+        spec: specialisationLabel(req.spec),
+        min: req.min,
+      });
     case "gm": {
+      // A requirements note typed on the feature item reads as written.
+      if (req.text) return String(req.text);
       const key = `REDSTEEL.Learn.Req.gm.${req.note}`;
       return game.i18n.has(key, false)
         ? game.i18n.localize(key)
@@ -506,6 +552,14 @@ function requirementChips(trackId, rank, results) {
       continue;
     }
 
+    // A requirements note typed on the feature item: advisory like every GM
+    // clause, and its own text is both the chip and its tooltip.
+    if (req.t === "gm" && req.text) {
+      const note = String(req.text);
+      out.push({ teacher: false, text: note, tooltip: note, cls: "is-advisory" });
+      continue;
+    }
+
     const text = describeRequirement(req);
     if (!text) continue;
     out.push({
@@ -562,6 +616,56 @@ function specRequirementChips(specId, results) {
 }
 
 /**
+ * A price in CP and SP: "15 CP", "5 SP", or "5 CP + 15 SP" (the Priest's
+ * blessings, or a feature priced in both). A price of 0 reads "Free".
+ */
+function pointsCostLabel({ cp = 0, sp = 0 }) {
+  if (!cp && !sp) return game.i18n.localize("REDSTEEL.Learn.Specs.Node.free");
+  const cpLabel = game.i18n.format("REDSTEEL.Learn.Specs.Node.cp", { n: cp });
+  const spLabel = game.i18n.format("REDSTEEL.Learn.Specs.Node.sp", { n: sp });
+  if (cp && sp) {
+    return game.i18n.format("REDSTEEL.Learn.Specs.Node.both", { cp: cpLabel, sp: spLabel });
+  }
+  return cp ? cpLabel : spLabel;
+}
+
+/**
+ * One label for several prices, for a feature family row: "20–30 SP" when
+ * every price is in the same single currency, otherwise the cheapest price's
+ * own label.
+ */
+function rangeCostLabel(prices) {
+  const list = (prices ?? []).filter(Boolean);
+  if (!list.length) return "";
+  const currencyOf = (price) => {
+    const cp = Number(price.cp) || 0;
+    const sp = Number(price.sp) || 0;
+    if (cp > 0 && !sp) return "cp";
+    if (sp > 0 && !cp) return "sp";
+    return null;
+  };
+  const currencies = new Set(list.map(currencyOf));
+  if (currencies.size === 1 && !currencies.has(null)) {
+    const [currency] = currencies;
+    const amounts = list.map((price) => Number(price[currency]) || 0);
+    const min = Math.min(...amounts);
+    const max = Math.max(...amounts);
+    if (min === max) return pointsCostLabel({ [currency]: min });
+    return game.i18n.format(`REDSTEEL.Learn.Specs.Node.${currency}`, { n: `${min}–${max}` });
+  }
+  const total = (price) => (Number(price.cp) || 0) + (Number(price.sp) || 0);
+  return pointsCostLabel(list.reduce((best, price) => (total(price) < total(best) ? price : best)));
+}
+
+/** Text a player typed, made safe to sit inside tooltip HTML. */
+function escapeText(text) {
+  return String(text ?? "").replace(
+    /[&<>"']/g,
+    (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char],
+  );
+}
+
+/**
  * "2 Specialisation points". The name is written out in full (user ruling),
  * since SP already means Skill Points. Czech counts in three forms (1, 2 to 4,
  * 0 and 5 up), so the lang files carry one, few and many.
@@ -612,6 +716,8 @@ function explainRequirement(req) {
       const spec = game.i18n.has(key, false)
         ? game.i18n.localize(key)
         : req.spec;
+      const node = specNodeLabel(req.spec, req.node);
+      if (node) return game.i18n.format("REDSTEEL.Learn.Req.Tip.specNodeNamed", { node, spec });
       return game.i18n.format("REDSTEEL.Learn.Req.Tip.specNode", { spec });
     }
     case "race":
@@ -659,6 +765,15 @@ function explainRequirement(req) {
         tracks: (req.keys ?? [])
           .map((key) => trackLabel(req.group, key))
           .join(game.i18n.localize("REDSTEEL.Learn.Req.or")),
+      });
+    case "masterFeature":
+      return game.i18n.format("REDSTEEL.Learn.Req.Tip.masterFeature", {
+        skill: trackLabel("skills", req.skill),
+      });
+    case "specScore":
+      return game.i18n.format("REDSTEEL.Learn.Req.Tip.specScore", {
+        spec: specialisationLabel(req.spec),
+        min: req.min,
       });
     case "allOf":
       return (req.options ?? [])
@@ -890,17 +1005,24 @@ function buildStatRows(trackId, trackLabelText) {
           // A row of percentages is a rating; a row of flat bonuses is not, and
           // must not be labelled as one.
           rating: true,
+          // A rating or a plain value is printed as the figure reached by that
+          // rank; a bonus is printed as what that one rank adds. The gutter
+          // total reads the two differently (see statRowTotal).
+          additive: true,
           cells: Array.from({ length: 10 }, (_, i) => ({
             rank: i + 1,
             col: i + 2,
             text: "",
+            entry: null,
           })),
         };
         byLabel.set(entry.label, row);
         rows.push(row);
       }
       if (entry.t !== "pct") row.rating = false;
+      if (entry.t !== "mod") row.additive = false;
       row.cells[rank - 1].text = formatValue(entry);
+      row.cells[rank - 1].entry = entry;
     }
   }
 
@@ -949,6 +1071,42 @@ function priceLabel(cells) {
 }
 
 /**
+ * What the character holds on one stat row at their current rank, for the
+ * row's gutter. A rating or a plain value is already the running figure, so
+ * the total is the last one at or below the rank held; a bonus is per rank, so
+ * the total is their sum. Empty when no held rank touches the row.
+ */
+function statRowTotal(row, held) {
+  const reached = row.cells.filter((cell) => cell.entry && cell.rank <= held);
+  if (!reached.length) return "";
+  const last = reached[reached.length - 1].entry;
+  if (!row.additive) return formatValue(last);
+  const sum = reached.reduce((n, cell) => n + Number(cell.entry.value ?? 0), 0);
+  return formatValue({ ...last, value: sum });
+}
+
+/**
+ * What the character has paid for one track so far, for its price gutter: every
+ * held rank at the price this character pays, discount included, so the tracks
+ * add up to the wallet's spent. Null at rank 0.
+ */
+function paidTotal(cells, held) {
+  if (!held) return null;
+  const currency = cells.find((c) => c.currency)?.currency ?? "";
+  let sum = 0;
+  for (const cell of cells) {
+    if (cell.rank <= held && Number.isFinite(cell.cost)) sum += cell.cost;
+  }
+  return {
+    text: game.i18n.format("REDSTEEL.Learn.paid", { n: sum }),
+    tooltip: game.i18n.format("REDSTEEL.Learn.paidTooltip", {
+      n: sum,
+      currency: currency.toUpperCase(),
+    }),
+  };
+}
+
+/**
  * The "(Discounted)" note on a skill's price label, or null when no rank of the
  * track is discounted. A skill carries one discount at most, so the first
  * discounted rank names it for the whole track (user ruling: once per skill,
@@ -959,6 +1117,19 @@ function discountNote(cells) {
   const source = cells.find((cell) => cell.discountSource)?.discountSource;
   if (!source) return null;
   if (source.kind === "feature" && source.item?.uuid) return { uuid: source.item.uuid };
+  // Rank I of the first school of magic, named by the temperament that chose it.
+  if (source.kind === "freeSchool") {
+    return {
+      uuid: null,
+      title: game.i18n.localize("REDSTEEL.Learn.FreeSchool.title"),
+      text: source.trait
+        ? game.i18n.format("REDSTEEL.Learn.FreeSchool.temperament", {
+            trait: source.trait.localizedName ?? source.trait.name,
+            school: trackLabel("schools", source.school),
+          })
+        : game.i18n.localize("REDSTEEL.Learn.FreeSchool.first"),
+    };
+  }
   const title = `${specialisationLabel(source.spec)}: ${getDiscountSourceLabel(source)}`;
   const key = `REDSTEEL.Actor.Specialisations.${source.spec}.nodes.${source.node}.description`;
   return {
@@ -999,10 +1170,17 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       toggleFeatureDescription: LearnWindow._onToggleFeatureDescription,
       openFeatureFamily: LearnWindow._onOpenFeatureFamily,
       closeFeatureFamily: LearnWindow._onCloseFeatureFamily,
+      buyLanguage: LearnWindow._onBuyLanguage,
+      grantNativeLanguage: LearnWindow._onGrantNativeLanguage,
       openSpec: LearnWindow._onOpenSpec,
+      openHeroSpec: LearnWindow._onOpenHeroSpec,
       closeSpec: LearnWindow._onCloseSpec,
+      openSpecPicker: LearnWindow._onOpenSpecPicker,
+      closeSpecPicker: LearnWindow._onCloseSpecPicker,
       buySpec: LearnWindow._onBuySpec,
       refundSpec: LearnWindow._onRefundSpec,
+      buySpecNode: LearnWindow._onBuySpecNode,
+      refundSpecNode: LearnWindow._onRefundSpecNode,
       toggleSpecTeacher: LearnWindow._onToggleSpecTeacher,
       toggleSpecWip: LearnWindow._onToggleSpecWip,
       toggleSpecView: LearnWindow._onToggleSpecView,
@@ -1031,6 +1209,7 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
         ".rs-learn-features-owned",
         ".rs-learn-features-list",
         ".rs-learn-family-columns",
+        ".rs-learn-language-panel",
         ".rs-learn-spec-group.is-combat",
         ".rs-learn-spec-group.is-support",
         ".rs-learn-spec-view-body",
@@ -1097,8 +1276,17 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
   /** Bound pointerdown listener that closes the filter pop-up on an outside click. */
   #boundPopupDismiss = null;
 
-  /** The feature family whose skill picker is open, or null. Transient. */
+  /**
+   * The feature family whose skill picker is open, "languages" while the
+   * Languages panel is open, or null. Transient.
+   */
   #featureFamily = null;
+
+  /** The name typed in the Languages panel, kept across re-renders. Transient. */
+  #languageDraft = "";
+
+  /** True while a language purchase is on its way, so a double click buys once. */
+  #languageBusy = false;
 
   /**
    * Keys of the traits and features whose description is rolled out, so a
@@ -1108,6 +1296,14 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
 
   /** The specialisation whose star sign is open in place of the lists, or null. */
   #specOpen = null;
+
+  /**
+   * Whether the Specialisations tab shows the picker (every specialisation the
+   * character does not own yet, opened from the Learn Specialisation card)
+   * instead of the owned cards. Transient. Closing a star sign leaves it alone,
+   * so a star sign opened from the picker goes back to the picker.
+   */
+  #specPicking = false;
 
   /**
    * Whether the specialisations whose star sign is not drawn yet show. Off by
@@ -1130,6 +1326,9 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
 
   /** The last purchase made here, so a double-click cannot refund it. */
   #lastPurchase = null;
+
+  /** The last node bought ("spec.node") and when, for the same double-click guard. */
+  #lastNodePurchase = null;
 
   /* ---------------------------------------- */
 
@@ -1161,7 +1360,8 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       features,
       isSpecsTab,
       specs,
-      // Specialisation points, beside CP and SP in the purse on every tab.
+      // Specialisation points: what is left shows on the Specialisations tab's
+      // bar (user ruling), and the GM's ledger edits the total.
       specWallet: getSpecWallet(actor),
       // The picker button stands in the middle of the toggle row (user
       // ruling), and only while the grid it feeds is showing; while the picker
@@ -1219,6 +1419,31 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       .sort((a, b) => b.rank - a.rank)
       .map((entry) => trackLabel("doctrines", entry.key));
 
+    // The owned specialisations as small tokens under the attributes (user
+    // request 2026-09-15), in the order of the Specialisations tab's cards:
+    // Combat before Support, alphabetical within each. A click opens the star
+    // sign; the one open right now is marked.
+    const known = CONFIG.REDSTEEL?.specialisations ?? {};
+    // SPEC ICON EDITOR: the GM's pick wins over SPEC_ICONS while it exists.
+    const iconOverrides = specIconOverrides();
+    const openSpec = this.#tab === "specialisations" ? this.#specOpen : null;
+    const specs = SPEC_GROUPS.flatMap((group) =>
+      Object.keys(SPEC_PRICES)
+        .filter(
+          (specId) =>
+            SPEC_PRICES[specId].group === group &&
+            known[specId] &&
+            isSpecActive(actor, specId),
+        )
+        .map((specId) => ({
+          id: specId,
+          label: specialisationLabel(specId),
+          img: iconOverrides[specId] || known[specId].img || "icons/svg/mystery-man.svg",
+          open: specId === openSpec,
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label, game.i18n.lang)),
+    );
+
     return {
       name: actor?.name ?? "",
       img,
@@ -1228,6 +1453,7 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       race: race ? (race.localizedName ?? race.name) : "",
       doctrines: doctrines.join(" / "),
       attributes,
+      specs,
     };
   }
 
@@ -1311,30 +1537,39 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   /**
-   * The Features tab's discount picks: every discount that lands on a skill of
-   * the player's choosing, with its picker. A fixed-skill discount needs no
+   * The discount picks: every discount that lands on a skill (or a doctrine)
+   * of the player's choosing, with its picker. A fixed-skill discount needs no
    * pick and is only noted on its skill's price label. A skill another source
    * already discounts is offered but disabled, since discounts on one skill do
-   * not stack. Named by the feature, or by the specialisation for a perk.
+   * not stack. The Features tab lists them all, named by the feature, or by the
+   * specialisation for a perk. An open star sign passes its `spec` and lists
+   * only that specialisation's perks, named by the node, since the
+   * specialisation is already the page (user ruling 2026-09-15: Lindar's
+   * doctrine is picked on Veneficus).
    */
-  #buildDiscounts() {
+  #buildDiscounts({ spec = null } = {}) {
     const actor = this.actor;
     const sources = getDiscountSources(actor);
     return sources
-      .filter((source) => source.choices)
+      .filter((source) => source.choices && (!spec || source.spec === spec))
       .map((source) => ({
         id: source.id,
         label:
-          source.kind === "spec"
-            ? specialisationLabel(source.spec)
-            : getDiscountSourceLabel(source),
+          source.kind !== "spec" || spec
+            ? getDiscountSourceLabel(source)
+            : specialisationLabel(source.spec),
         amount: source.amount,
         currency: source.currency.toUpperCase(),
         skill: source.skill,
+        chooseLabel: game.i18n.localize(
+          source.group === "doctrines"
+            ? "REDSTEEL.Learn.Discounts.chooseDoctrine"
+            : "REDSTEEL.Learn.Discounts.choose",
+        ),
         options: getDiscountChoiceOptions(actor, source.id, sources)
           .map((option) => ({
             key: option.key,
-            label: trackLabel("skills", option.key),
+            label: trackLabel(source.group, option.key),
             taken: option.taken,
             selected: option.key === source.skill,
           }))
@@ -1343,26 +1578,62 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   /**
-   * The Specialisations tab (user rulings 2026-09-11): Combat specialisations
-   * with their four-point cap and Support specialisations, each as rows with a
-   * buy diamond, requirement chips and a price. Clicking a row opens its star
-   * sign in place of the lists (#specOpen), to browse; unlocking nodes stays on
-   * the sheet for now.
+   * The mirror picks of one specialisation: every unlocked perk that makes a
+   * track of the player's choosing copy the rank of another (the Hoplite's
+   * Swords, Axes or Blunt following Polearms), with its picker. Listed under
+   * the star sign, named by the node.
+   */
+  #buildMirrorPicks(spec) {
+    return getMirrorSources(this.actor, spec).map((source) => ({
+      id: source.id,
+      label: specNodeLabel(source.spec, source.node) ?? source.node,
+      badge: game.i18n.format("REDSTEEL.Learn.Mirror.badge", {
+        skill: trackLabel(source.group, source.from),
+      }),
+      skill: source.skill,
+      chooseLabel: game.i18n.localize("REDSTEEL.Learn.Discounts.choose"),
+      options: source.choices
+        .map((key) => ({
+          key,
+          label: trackLabel(source.group, key),
+          selected: key === source.skill,
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label, game.i18n.lang)),
+    }));
+  }
+
+  /**
+   * The Specialisations tab (user rulings 2026-09-11, 2026-09-14). The main
+   * view is the character's owned cards (`ownedCards`) plus a Learn
+   * Specialisation card; that card opens the picker (#specPicking): Combat
+   * specialisations with their four-point cap and Support specialisations,
+   * each with a buy diamond, requirement chips and a price, and with what the
+   * character owns left out. Clicking one opens its star sign in place of the
+   * view (#specOpen), where an owned specialisation's nodes are bought and
+   * given back (#learnSpecTree).
    */
   #buildSpecs() {
     const wallet = getSpecWallet(this.actor);
     const known = CONFIG.REDSTEEL?.specialisations ?? {};
+    const picking = this.#specPicking;
     let wipCount = 0;
+    // Group order, alphabetical within a group. The work in progress filter
+    // never hides a specialisation the character owns.
+    const ownedCards = [];
     const groups = SPEC_GROUPS.map((group) => {
       const all = Object.keys(SPEC_PRICES)
         .filter((specId) => SPEC_PRICES[specId].group === group && known[specId])
         .map((specId) => this.#specRow(specId, wallet))
         .sort((a, b) => a.label.localeCompare(b.label, game.i18n.lang));
+      ownedCards.push(...all.filter((row) => row.owned));
       // A specialisation whose star sign is not drawn yet is work in progress:
       // hidden unless switched on (user ruling), or unless the character has it.
       const wip = all.filter((row) => row.wip && !row.owned);
       wipCount += wip.length;
-      const rows = this.#specShowWip ? all : all.filter((row) => !row.wip || row.owned);
+      let rows = this.#specShowWip ? all : all.filter((row) => !row.wip || row.owned);
+      // The picker lists only what is left to learn (user ruling); the owned
+      // cards live on the main view.
+      if (picking) rows = rows.filter((row) => !row.owned);
       const cap = wallet.caps[group];
       const spent = wallet.byGroup[group] ?? 0;
       return {
@@ -1375,17 +1646,28 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
         overCap: cap !== undefined && spent > cap,
         rows,
       };
-    });
+    }).filter((group) => !picking || group.rows.length > 0);
     const open =
       this.#specOpen && known[this.#specOpen]
         ? {
             ...this.#specRow(this.#specOpen, wallet),
-            tree: prepareSpecialisationTree(this.actor, this.#specOpen),
+            tree: this.#learnSpecTree(this.#specOpen),
+            // The picks of this specialisation's owned "one from a list"
+            // perks, under its star sign (Lindar's doctrine, a Bard's skills).
+            discountPicks: this.#buildDiscounts({ spec: this.#specOpen }),
+            // The Hoplite's weapon skill that copies Polearms.
+            mirrorPicks: this.#buildMirrorPicks(this.#specOpen),
           }
         : null;
     return {
       groups,
       open,
+      picking,
+      ownedCards,
+      // The Learn Specialisation card leaves the main view once every point is
+      // spent (user ruling 2026-09-14).
+      canLearn: wallet.remaining > 0,
+      nothingToLearn: picking && groups.length === 0,
       wipCount,
       showWip: this.#specShowWip,
       // Players always get the cards; the list is the GM's check on the table.
@@ -1417,6 +1699,8 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     const owned = state === "owned";
     const editable = !!actor?.isOwner;
     const unlocked = countUnlockedSpecNodes(actor, specId);
+    // Nodes that come with the specialisation never block giving it back.
+    const bought = countBoughtSpecNodes(actor, specId);
     const total = Object.keys(
       CONFIG.REDSTEEL?.specialisations?.[specId]?.nodes ?? {},
     ).length;
@@ -1436,8 +1720,8 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       owned,
       costLabel: specPointsLabel(price?.cost ?? 0),
       canBuy: editable && state === "available",
-      refundable: editable && owned && unlocked === 0,
-      refundBlocked: owned && unlocked > 0,
+      refundable: editable && owned && bought === 0,
+      refundBlocked: owned && bought > 0,
       showLock: state === "locked" || state === "capped",
       reasons,
       reasonsTitle: game.i18n.localize(
@@ -1453,6 +1737,72 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   /**
+   * The open star sign, every node priced and, on an owned specialisation,
+   * wired to be bought or given back (user ruling 2026-09-14). A node lights
+   * as available only when it can be bought right now; anything else reads as
+   * locked, and its tooltip lists what stands in the way: the linked nodes
+   * still locked, the unmet book requirements, a discount clash or a short
+   * wallet. Advisory clauses get their own list and never block.
+   */
+  #learnSpecTree(specId) {
+    const actor = this.actor;
+    const tree = prepareSpecialisationTree(actor, specId);
+    if (!tree) return null;
+    const editable = !!actor?.isOwner;
+    const wallet = getWallet(actor);
+    const nameOf = (nodeId) => specNodeLabel(specId, nodeId) ?? nodeId;
+    for (const node of tree.nodes) {
+      const { state, price, requirements, missing, conflict } = getSpecNodeState(
+        actor,
+        specId,
+        node.id,
+        wallet,
+      );
+      const owned = state === "owned";
+      const reasons = [];
+      const advisory = [];
+      let reasonsTitle = game.i18n.localize("REDSTEEL.Learn.unmetRequirements");
+      let action = "";
+      if (owned) {
+        const dependents = getSpecNodeDependents(actor, specId, node.id);
+        if (dependents.length) {
+          reasonsTitle = game.i18n.localize("REDSTEEL.Learn.Specs.Node.refundFirst");
+          reasons.push(...dependents.map(nameOf));
+        } else if (editable && !isAutoUnlockNode(specId, node.id)) {
+          // A node that comes with the specialisation is given back with it.
+          action = "refundSpecNode";
+        }
+      } else {
+        for (const id of missing) {
+          reasons.push(game.i18n.format("REDSTEEL.Learn.Specs.Node.needsNode", { node: nameOf(id) }));
+        }
+        for (const result of requirements?.results ?? []) {
+          if (result.met) continue;
+          const line = describeRequirement(result.req);
+          if (line) (result.advisory ? advisory : reasons).push(line);
+        }
+        if (conflict) {
+          reasons.push(
+            game.i18n.format("REDSTEEL.Learn.Discounts.alreadyDiscounted", {
+              skill: trackLabel("skills", conflict.skill),
+              source: getDiscountSourceLabel(conflict.source),
+            }),
+          );
+        }
+        if (state === "poor") reasons.push(game.i18n.localize("REDSTEEL.Learn.Specs.Node.poor"));
+        if (editable && state === "available") action = "buySpecNode";
+      }
+      node.state = owned ? "unlocked" : state === "available" ? "available" : "locked";
+      node.action = action;
+      node.costLabel = price ? pointsCostLabel(price) : "";
+      node.tipReasons = reasons.join("\n");
+      node.tipReasonsTitle = reasonsTitle;
+      node.tipAdvisory = advisory.join("\n");
+    }
+    return tree;
+  }
+
+  /**
    * Localized names and artwork of every compendium feature, keyed by English
    * name, read once per window. Also fills FEATURE_LABELS, so a requirement
    * that names a feature reads in the active language everywhere.
@@ -1463,9 +1813,9 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     const pack = game.packs.get(FEATURE_PACK_ID);
     if (pack) {
       try {
-        const index = await pack.getIndex({
-          fields: ["type", "img", "system.localizationKey", "system.description"],
-        });
+        // One index read serves this map and the engine's pack prices (the
+        // costs, sections and notes that price new purchases).
+        const index = (await loadFeaturePackData()) ?? { contents: [] };
         // .contents, not for...of: iterating a Collection yields [key, value].
         for (const entry of index.contents) {
           if (entry.type !== "feature") continue;
@@ -1508,21 +1858,25 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     const actor = this.actor;
     const index = await this.#loadFeatureIndex();
     const traits = await this.#buildTraits();
+    const isGM = game.user.isGM;
 
     const owned = getOwnedFeatures(actor)
       .sort((a, b) => (a.item.sort || 0) - (b.item.sort || 0))
       .map(({ item, price }) => {
         const racial = isRaceGrantedFeature(item);
+        // A native language is the GM's free grant: it reads "Native" where a
+        // price would be, and only the GM can give it back.
+        const native = isNativeLanguageFeature(item);
         return {
           itemId: item.id,
           uuid: item.uuid,
           name: item.localizedName ?? item.name,
           img: item.img,
-          cost: price?.cost ?? null,
-          currency: price ? price.currency.toUpperCase() : "",
+          costLabel: price ? pointsCostLabel(price) : "",
           racial,
+          native,
           unpriced: !price && !racial,
-          refundable: !!price && !racial && !!actor?.isOwner,
+          refundable: !!price && !racial && !!actor?.isOwner && (!native || isGM),
           description: item.localizedDescription ?? "",
           expandKey: `owned-${item.id}`,
           expanded: this.#expandedFeatures.has(`owned-${item.id}`),
@@ -1530,9 +1884,11 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       });
 
     // Every priced feature with its state for this character, owned ones too:
-    // the skill picker shows those as taken.
+    // the skill picker shows those as taken. The table's features come first,
+    // then pack features priced only on their item. Language features come
+    // back "unavailable": they are learnt per language in the Languages panel.
     const entries = [];
-    for (const id of Object.keys(FEATURE_PRICES)) {
+    for (const id of getFeatureCatalogIds()) {
       const { state, price, requirements, conflict } = getFeatureState(actor, id);
       if (state === "unavailable") continue;
       const results = requirements?.results ?? [];
@@ -1569,8 +1925,7 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
         img: known?.img ?? "icons/svg/mystery-man.svg",
         description: known?.description ?? "",
         section: price.section,
-        cost: price.cost,
-        currency: price.currency.toUpperCase(),
+        costLabel: pointsCostLabel(price),
         family: featureFamilyOf(price),
         meets: state === "available" || state === "poor",
         showLock: state === "locked" || state === "taken",
@@ -1602,8 +1957,7 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
           name: entry.name,
           img: entry.img,
           section: entry.section,
-          cost: entry.cost,
-          currency: entry.currency,
+          costLabel: entry.costLabel,
           state: entry.state,
           meets: entry.meets,
           showLock: entry.showLock,
@@ -1633,10 +1987,6 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       const chosen = [...skills.values()];
       const open = chosen.filter((entry) => entry.state !== "owned");
       const states = new Set(open.map((entry) => entry.state));
-      const costs = chosen.map((entry) => entry.cost);
-      const min = Math.min(...costs);
-      const max = Math.max(...costs);
-      const currency = chosen[0].currency;
       const label = game.i18n.localize(`REDSTEEL.Learn.Features.Families.${family}`);
       rows.push({
         isFamily: true,
@@ -1644,7 +1994,7 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
         name: label,
         img: chosen[0].img,
         section: chosen[0].section,
-        costLabel: min === max ? `${min} ${currency}` : `${min}–${max} ${currency}`,
+        costLabel: rangeCostLabel(chosen.map((entry) => entry.price)),
         state: !open.length
           ? "owned"
           : ["available", "poor", "locked"].find((state) => states.has(state)) ?? "taken",
@@ -1666,6 +2016,10 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       });
     }
 
+    // Languages: one row in General that opens the Languages panel.
+    const languageRow = this.#buildLanguageRow(index);
+    if (languageRow) rows.push(languageRow);
+
     const lang = game.i18n.lang;
     const sections = FEATURE_SECTIONS.map((sectionId) => ({
       id: sectionId,
@@ -1682,39 +2036,46 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
         ),
     })).filter((section) => section.rows.length);
 
-    // The open family's skill picker, one column per skill class.
+    // What replaces the list: the Languages panel, or the open family's skill
+    // picker, one column per skill class. The Languages panel is checked
+    // first, because the family lookup finds no "languages" family and would
+    // close it.
     let picker = null;
-    const pickerMembers = this.#featureFamily ? families.get(this.#featureFamily) : null;
-    if (pickerMembers?.length) {
-      const skills = this.#familySkills(pickerMembers);
-      picker = {
-        family: this.#featureFamily,
-        label: game.i18n.localize(`REDSTEEL.Learn.Features.Families.${this.#featureFamily}`),
-        columns: SKILL_CLASS_ORDER.map((skillClass) => ({
-          label: game.i18n.format("REDSTEEL.Learn.Features.className", {
-            class: skillClass,
-          }),
-          skills: [...skills.entries()]
-            .filter(([skill]) => SKILL_COST_CLASSES[skill] === skillClass)
-            .map(([skill, entry]) => ({
-              id: entry.id,
-              uuid: entry.uuid,
-              skillLabel: trackLabel("skills", skill),
-              cost: entry.cost,
-              currency: entry.currency,
-              state: entry.state,
-              owned: entry.state === "owned",
-              showLock: entry.showLock,
-              reasons: entry.reasons,
-              description: entry.description,
-              expandKey: `feature-${entry.id}`,
-              expanded: this.#expandedFeatures.has(`feature-${entry.id}`),
-            }))
-            .sort((a, b) => a.skillLabel.localeCompare(b.skillLabel, lang)),
-        })),
-      };
+    let languages = null;
+    if (this.#featureFamily === "languages") {
+      languages = this.#buildLanguages();
     } else {
-      this.#featureFamily = null;
+      const pickerMembers = this.#featureFamily ? families.get(this.#featureFamily) : null;
+      if (pickerMembers?.length) {
+        const skills = this.#familySkills(pickerMembers);
+        picker = {
+          family: this.#featureFamily,
+          label: game.i18n.localize(`REDSTEEL.Learn.Features.Families.${this.#featureFamily}`),
+          columns: SKILL_CLASS_ORDER.map((skillClass) => ({
+            label: game.i18n.format("REDSTEEL.Learn.Features.className", {
+              class: skillClass,
+            }),
+            skills: [...skills.entries()]
+              .filter(([skill]) => SKILL_COST_CLASSES[skill] === skillClass)
+              .map(([skill, entry]) => ({
+                id: entry.id,
+                uuid: entry.uuid,
+                skillLabel: trackLabel("skills", skill),
+                costLabel: entry.costLabel,
+                state: entry.state,
+                owned: entry.state === "owned",
+                showLock: entry.showLock,
+                reasons: entry.reasons,
+                description: entry.description,
+                expandKey: `feature-${entry.id}`,
+                expanded: this.#expandedFeatures.has(`feature-${entry.id}`),
+              }))
+              .sort((a, b) => a.skillLabel.localeCompare(b.skillLabel, lang)),
+          })),
+        };
+      } else {
+        this.#featureFamily = null;
+      }
     }
 
     return {
@@ -1722,6 +2083,7 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       owned,
       sections,
       picker,
+      languages,
       discountPicks: this.#buildDiscounts(),
       onlyMet: this.#featureOnlyMet,
       allRaces: this.#featureAllRaces,
@@ -1736,6 +2098,127 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
         label: game.i18n.localize(`REDSTEEL.Learn.Features.Sections.${id}`),
         checked: this.#featureSections.has(id),
       })),
+    };
+  }
+
+  /**
+   * The Languages row of the General section (user ruling 2026-09-14): a
+   * family-style row that opens the Languages panel. It reads as Basic
+   * communication does, since that is what learns a new language, and never
+   * shows as owned.
+   */
+  #buildLanguageRow(index) {
+    const actor = this.actor;
+    const basicPrice = LANGUAGE_FEATURE_IDS.basic
+      ? getFeaturePrice(LANGUAGE_FEATURE_IDS.basic)
+      : null;
+    if (!basicPrice) return null;
+    const basic = getLanguageFeatureState(actor, "basic", "");
+    const known = getKnownLanguages(actor);
+    const title = game.i18n.localize("REDSTEEL.Learn.Languages.title");
+    const prices = Object.values(LANGUAGE_FEATURE_IDS)
+      .filter(Boolean)
+      .map((id) => getFeaturePrice(id))
+      .filter(Boolean);
+    return {
+      isFamily: true,
+      family: "languages",
+      name: title,
+      img: index.get(basicPrice.name)?.img ?? "icons/svg/mystery-man.svg",
+      section: "general",
+      costLabel: rangeCostLabel(prices),
+      state: basic.state,
+      meets: basic.state === "available" || basic.state === "poor",
+      raceFits: true,
+      magicFits: true,
+      skillFits: false,
+      summary: game.i18n.format("REDSTEEL.Learn.Languages.known", { n: known.length }),
+      search: normalizeSearch(
+        [
+          title,
+          ...LANGUAGE_SLOTS.map((slot) =>
+            game.i18n.localize(`REDSTEEL.Learn.Languages.slots.${slot}`),
+          ),
+          ...known.map((language) => language.name),
+        ].join(" "),
+      ),
+    };
+  }
+
+  /**
+   * The Languages panel, in place of the features list (user rulings
+   * 2026-09-14): an add row that learns Basic communication in a newly typed
+   * language, and one table row per known language with a diamond per slot.
+   * Every rule is the engine's (progressionEngine.mjs, Languages).
+   */
+  #buildLanguages() {
+    const actor = this.actor;
+    // The family picker's tooltip lines: what blocks the slot, never the
+    // advisory clauses.
+    const reasonsOf = (slotState, languageName) => {
+      const reasons = [];
+      if (slotState.reason === "needsBasic") {
+        reasons.push(
+          game.i18n.format("REDSTEEL.Learn.Languages.needsBasic", {
+            language: escapeText(languageName),
+          }),
+        );
+      }
+      for (const result of slotState.requirements?.results ?? []) {
+        if (result.met || result.advisory) continue;
+        const line = describeRequirement(result.req);
+        if (line) reasons.push(line);
+      }
+      return reasons;
+    };
+
+    const add = getLanguageFeatureState(actor, "basic", "");
+    const rows = getKnownLanguages(actor).map((language) => ({
+      name: language.name,
+      native: language.native,
+      cells: LANGUAGE_SLOTS.map((slot) => {
+        const item = language.slots[slot];
+        const slotState = getLanguageFeatureState(actor, slot, language.name);
+        // An owned slot shows what was paid for it; a native copy was free.
+        let price = slotState.price;
+        if (item) {
+          price = isNativeLanguageFeature(item)
+            ? { cp: 0, sp: 0 }
+            : getFeaturePriceForItem(actor, item);
+        }
+        const state = item ? "owned" : slotState.state;
+        return {
+          slot,
+          language: language.name,
+          state,
+          owned: !!item,
+          buyable: !item && slotState.state === "available",
+          showLock: state === "locked" || state === "blocked",
+          costLabel: price ? pointsCostLabel(price) : "",
+          reasons: item ? [] : reasonsOf(slotState, language.name),
+        };
+      }),
+    }));
+
+    return {
+      title: game.i18n.localize("REDSTEEL.Learn.Languages.title"),
+      headers: LANGUAGE_SLOTS.map((slot) => ({
+        slot,
+        label: game.i18n.localize(`REDSTEEL.Learn.Languages.slots.${slot}`),
+        // Reading and writing shows the first tier's card.
+        uuid: LANGUAGE_FEATURE_IDS[slot] ? getFeatureUuid(LANGUAGE_FEATURE_IDS[slot]) : "",
+      })),
+      rows,
+      add: {
+        state: add.state,
+        buyable: add.state === "available",
+        showLock: add.state === "locked",
+        costLabel: add.price ? pointsCostLabel(add.price) : "",
+        reasons: reasonsOf(add, ""),
+      },
+      draft: this.#languageDraft,
+      editable: !!actor?.isOwner,
+      canGrantNative: game.user.isGM && !rows.some((row) => row.native),
     };
   }
 
@@ -1829,6 +2312,8 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
   async #buildSections(shown = null) {
     const actor = this.actor;
     const buckets = new Map();
+    // The school a temperament hands out: its rank I cannot be given back.
+    const forcedSchool = getForcedSchool(actor);
 
     for (const [trackId, track] of Object.entries(PROGRESSION_TRACKS)) {
       // Each tab owns its own half of the price table, and inside a tab the
@@ -1848,6 +2333,12 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
         label: trackLabel(track.group, track.key),
         held,
         cells,
+        // A track a mirror perk copies has no refund diamond: it follows its
+        // source. Every rank above the one held says so on its lock.
+        mirrored: getMirrorSources(actor).some(
+          (source) => `${source.group}.${source.skill}` === trackId,
+        ),
+        forced: trackId === `schools.${forcedSchool}`,
       });
       if (!buckets.has(section)) buckets.set(section, []);
       buckets.get(section).push(entry);
@@ -1903,6 +2394,13 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
         cell.style = `grid-row:${row.row};grid-column:${cell.col}`;
       }
       row.labelStyle = `grid-row:${row.row};grid-column:1`;
+      row.total = statRowTotal(row, held);
+      row.totalTooltip = row.total
+        ? game.i18n.format("REDSTEEL.Learn.currentTotal", {
+            label: row.label,
+            value: row.total,
+          })
+        : "";
     }
     // Directly above the price: what the rank asks for, then what it costs.
     const reqRow = next++;
@@ -1924,7 +2422,8 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
         if (cell.state === "owned") classes.push("is-owned");
       }
       cell.nodeClass = classes.join(" ");
-      cell.isHeld = held > 0 && cell.rank === held;
+      cell.isHeld =
+        held > 0 && cell.rank === held && !entry.mirrored && !(entry.forced && held === 1);
       cell.showProse = !cell.grants.length && cell.prose.length > 0;
       cell.showIcons = cell.grants.length > 0 || cell.showProse;
       cell.hitStyle = `grid-row: ${nodeRow} / span ${costRow - nodeRow + 1}; grid-column: ${cell.col}`;
@@ -1979,6 +2478,7 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
         `grid-row:${costRow};grid-column:1 / -1`,
       ],
       costLabel: priceLabel(cells),
+      paid: paidTotal(cells, held),
       discount: discountNote(cells),
     });
   }
@@ -1989,6 +2489,10 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
    *
    * A track with a rank already bought is checked and locked — unpicking it
    * would hide a purchase from the only screen that can refund it.
+   *
+   * A track whose prerequisite is missing (getUnmetPrerequisites: Channeling
+   * without magic potential, a school without Channeling or Veneficus) is unchecked and
+   * locked, so saving the picker also drops it from the tree.
    */
   #buildPicker() {
     const actor = this.actor;
@@ -1998,13 +2502,25 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       if (getTrackTab(trackId) !== this.#tab) continue;
       const held = getTrackRank(actor, track.group, track.key);
       const section = getLearnSection(trackId);
+      const unmet = held > 0 ? [] : getUnmetPrerequisites(actor, trackId);
+      const gated = unmet.length > 0;
+      let lockTip = "";
+      if (gated) {
+        lockTip = game.i18n.format("REDSTEEL.Learn.pickerGated", {
+          requirements: unmet.map(describeRequirement).filter(Boolean).join(", "),
+        });
+      } else if (held > 0) {
+        lockTip = game.i18n.localize("REDSTEEL.Learn.pickerLocked");
+      }
       if (!buckets.has(section)) buckets.set(section, []);
       buckets.get(section).push({
         id: trackId,
         label: trackLabel(track.group, track.key),
         held,
-        checked: isTracked(actor, trackId),
-        locked: held > 0,
+        checked: !gated && isTracked(actor, trackId),
+        locked: held > 0 || gated,
+        gated,
+        lockTip,
       });
     }
 
@@ -2019,7 +2535,7 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
 
   /** One rank column of a track. */
   async #buildCell(trackId, rank) {
-    const { state, price, requirements } = getRankState(
+    const { state, price, requirements, mirror } = getRankState(
       this.actor,
       trackId,
       rank,
@@ -2042,6 +2558,14 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       const line = describeRequirement(result.req);
       if (!line) continue;
       (result.advisory ? advisories : reasons).push(line);
+    }
+    // A track a mirror perk copies is never bought: it follows its source.
+    if (mirror) {
+      reasons.push(
+        game.i18n.format("REDSTEEL.Learn.Mirror.locked", {
+          skill: trackLabel(mirror.group, mirror.from),
+        }),
+      );
     }
 
     const currency = price?.currency ?? null;
@@ -2192,6 +2716,22 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       });
     }
 
+    // The Languages panel's name field: its text survives a re-render, and
+    // Enter learns the language as the add diamond does. Like the search field
+    // it is new on every render, so these listeners never stack.
+    const languageName = root.querySelector(".rs-learn-language-name");
+    if (languageName) {
+      languageName.addEventListener("input", () => {
+        this.#languageDraft = languageName.value;
+      });
+      languageName.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter") return;
+        event.preventDefault();
+        if (!this.actor?.isOwner) return;
+        this.#buyLanguage("basic", languageName.value);
+      });
+    }
+
     // Every tick in the filter pop-up filters the list at once. Like the search
     // field the pop-up is new on every render, so its listener never stacks.
     const popup = root.querySelector(".rs-learn-filter-popup");
@@ -2263,6 +2803,12 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       setDiscountChoice(this.actor, el.dataset.discountSource, el.value);
       return;
     }
+    // So is a mirror pick (the Hoplite's weapon skill).
+    if (el?.dataset?.mirrorSource !== undefined) {
+      if (!this.actor?.isOwner) return;
+      setMirrorChoice(this.actor, el.dataset.mirrorSource, el.value);
+      return;
+    }
     const name = el?.name;
     if (!name || !name.startsWith("system.progression")) return;
     if (!this.actor?.isOwner) return;
@@ -2284,10 +2830,12 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     this.#tab = tab;
     // Leaving the Skills tab abandons an open picker, so coming back lands on
     // the grid rather than on a half-finished selection. An open feature
-    // family picker is abandoned the same way, and so is an open star sign.
+    // family picker is abandoned the same way, and so are an open star sign and
+    // the specialisation picker.
     this.#picking = false;
     this.#featureFamily = null;
     this.#specOpen = null;
+    this.#specPicking = false;
     this.render();
   }
 
@@ -2462,6 +3010,89 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     this.render();
   }
 
+  /**
+   * Learn a language slot from the Languages panel. A table diamond names its
+   * language; the add row's diamond reads the typed name.
+   *
+   * @this {LearnWindow}
+   */
+  static async _onBuyLanguage(event, target) {
+    event.preventDefault();
+    if (!this.actor?.isOwner) return;
+    const slot = target?.dataset?.slot;
+    if (!slot) return;
+    const language =
+      target.dataset.language ??
+      this.element?.querySelector?.(".rs-learn-language-name")?.value ??
+      "";
+    await this.#buyLanguage(slot, language);
+  }
+
+  /** Buy one language slot, warning in place of a silent refusal. */
+  async #buyLanguage(slot, language) {
+    if (this.#languageBusy) return;
+    const name = String(language ?? "").trim();
+    if (!name) {
+      ui.notifications.warn(game.i18n.localize("REDSTEEL.Learn.Languages.nameRequired"));
+      return;
+    }
+    const { state } = getLanguageFeatureState(this.actor, slot, name);
+    if (state === "taken") {
+      ui.notifications.warn(
+        game.i18n.format("REDSTEEL.Learn.Languages.alreadyKnown", { language: name }),
+      );
+      return;
+    }
+    this.#languageBusy = true;
+    try {
+      const bought = await purchaseLanguageFeature(this.actor, slot, name);
+      if (!bought) {
+        ui.notifications.warn(game.i18n.localize("REDSTEEL.Learn.Features.cannotBuy"));
+      } else if (slot === "basic") {
+        this.#languageDraft = "";
+      }
+    } finally {
+      this.#languageBusy = false;
+    }
+    this.render();
+  }
+
+  /**
+   * GM only: grant the typed language as the character's native language.
+   *
+   * @this {LearnWindow}
+   */
+  static async _onGrantNativeLanguage(event) {
+    event.preventDefault();
+    if (!game.user.isGM || this.#languageBusy) return;
+    const name = String(
+      this.element?.querySelector?.(".rs-learn-language-name")?.value ?? "",
+    ).trim();
+    if (!name) {
+      ui.notifications.warn(game.i18n.localize("REDSTEEL.Learn.Languages.nameRequired"));
+      return;
+    }
+    this.#languageBusy = true;
+    let result;
+    try {
+      result = await grantNativeLanguage(this.actor, name);
+    } finally {
+      this.#languageBusy = false;
+    }
+    if (result.ok) {
+      this.#languageDraft = "";
+    } else {
+      const message =
+        result.reason === "nativeTaken"
+          ? game.i18n.localize("REDSTEEL.Learn.Languages.nativeTaken")
+          : result.reason === "alreadyKnown"
+            ? game.i18n.format("REDSTEEL.Learn.Languages.alreadyKnown", { language: name })
+            : game.i18n.localize("REDSTEEL.Learn.Features.cannotBuy");
+      ui.notifications.warn(message);
+    }
+    this.render();
+  }
+
   /** @this {LearnWindow} */
   static async _onBuyFeature(event, target) {
     event.preventDefault();
@@ -2487,7 +3118,15 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     if (!this.actor?.isOwner) return;
     const itemId = target?.dataset?.itemId;
     if (!itemId) return;
-    await refundFeature(this.actor, itemId);
+    const result = await refundFeature(this.actor, itemId);
+    // A language copy can be refused (progressionEngine.mjs, Languages): say why.
+    if (!result?.ok && result?.reason) {
+      ui.notifications.warn(
+        game.i18n.format(`REDSTEEL.Learn.Languages.${result.reason}`, {
+          language: result.language ?? "",
+        }),
+      );
+    }
     this.render();
   }
 
@@ -2500,14 +3139,55 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     this.render();
   }
 
-  /** Back from a star sign to the lists. @this {LearnWindow} */
+  /**
+   * From a token under the hero's attributes straight to that star sign, from
+   * any tab. The pickers are abandoned as a tab switch abandons them, so Back
+   * lands on the owned cards. @this {LearnWindow}
+   */
+  static _onOpenHeroSpec(event, target) {
+    event.preventDefault();
+    const spec = target?.dataset?.spec;
+    if (!spec || !getSpecPrice(spec)) return;
+    if (this.#tab === "specialisations" && this.#specOpen === spec) return;
+    this.#tab = "specialisations";
+    this.#picking = false;
+    this.#featureFamily = null;
+    this.#specPicking = false;
+    this.#specOpen = spec;
+    this.render();
+  }
+
+  /**
+   * Back from a star sign. The picker flag is left alone, so a star sign opened
+   * from the picker goes back to the picker. @this {LearnWindow}
+   */
   static _onCloseSpec(event) {
     event.preventDefault();
     this.#specOpen = null;
     this.render();
   }
 
-  /** Buy a specialisation with Specialisation points. @this {LearnWindow} */
+  /** From the Learn Specialisation card to the picker. @this {LearnWindow} */
+  static _onOpenSpecPicker(event) {
+    event.preventDefault();
+    this.#specPicking = true;
+    this.render();
+  }
+
+  /** Back from the picker to the owned cards. @this {LearnWindow} */
+  static _onCloseSpecPicker(event) {
+    event.preventDefault();
+    this.#specPicking = false;
+    this.render();
+  }
+
+  /**
+   * Buy a specialisation with Specialisation points. A purchase goes back to
+   * the owned cards, where the new card shows (user ruling), whether it was made
+   * from a picker card or from a star sign opened from the picker. A refused
+   * one leaves the view as it was.
+   * @this {LearnWindow}
+   */
   static async _onBuySpec(event, target) {
     event.preventDefault();
     // The diamond sits inside a row that opens the star sign.
@@ -2516,7 +3196,10 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     const spec = target?.dataset?.spec;
     if (!spec) return;
     const bought = await purchaseSpec(this.actor, spec);
-    if (!bought) {
+    if (bought) {
+      this.#specPicking = false;
+      this.#specOpen = null;
+    } else {
       ui.notifications.warn(game.i18n.localize("REDSTEEL.Learn.Specs.cannotBuy"));
     }
     this.render();
@@ -2538,6 +3221,54 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     const refunded = await refundSpec(this.actor, spec);
     if (!refunded) {
       ui.notifications.warn(game.i18n.localize("REDSTEEL.Learn.Specs.refundBlocked"));
+    }
+    this.render();
+  }
+
+  /**
+   * Unlock a node of an owned specialisation, paying its CP and/or SP (user
+   * ruling 2026-09-14). A Bane node's picker is a dialog, which would open
+   * underneath this full screen, so the pick is left to the sheet: clicking
+   * the unlocked node there opens the picker.
+   *
+   * @this {LearnWindow}
+   */
+  static async _onBuySpecNode(event, target) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!this.actor?.isOwner) return;
+    const { spec, node } = target?.dataset ?? {};
+    if (!spec || !node) return;
+    const bought = await purchaseSpecNode(this.actor, spec, node);
+    if (bought) {
+      this.#lastNodePurchase = { key: `${spec}.${node}`, at: Date.now() };
+      if (Number(CONFIG.REDSTEEL?.specialisations?.[spec]?.nodes?.[node]?.bane) > 0) {
+        ui.notifications.info(game.i18n.localize("REDSTEEL.Learn.Specs.Node.pickBane"));
+      }
+    } else {
+      ui.notifications.warn(game.i18n.localize("REDSTEEL.Learn.Specs.Node.cannotBuy"));
+    }
+    this.render();
+  }
+
+  /**
+   * Give a node back in one click, as ranks are (no dialog may open over this
+   * screen). Refused while another unlocked node builds on it. A click right
+   * after buying the same node is a double click, not a refund.
+   *
+   * @this {LearnWindow}
+   */
+  static async _onRefundSpecNode(event, target) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!this.actor?.isOwner) return;
+    const { spec, node } = target?.dataset ?? {};
+    if (!spec || !node) return;
+    const last = this.#lastNodePurchase;
+    if (last?.key === `${spec}.${node}` && Date.now() - last.at < DOUBLE_CLICK_MS) return;
+    const refunded = await refundSpecNode(this.actor, spec, node);
+    if (!refunded) {
+      ui.notifications.warn(game.i18n.localize("REDSTEEL.Learn.Specs.Node.refundBlocked"));
     }
     this.render();
   }

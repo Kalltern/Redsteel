@@ -2,7 +2,7 @@
   "folder": "4nlwU1gxjCsUaHxh",
   "name": "Expert: Rituals",
   "type": "feature",
-  "img": "icons/commodities/treasure/medal-ribbon-striped-gold-red.webp",
+  "img": "icons/commodities/treasure/medal-ribbon-blue.webp",
   "system": {
     "localizationKey": "REDSTEEL.Items.ExpertRituals.name",
     "description": "<p>Twice per day you may reroll this ability.</p>",
@@ -28,7 +28,11 @@
         }
       ]
     },
-    "option": "feature"
+    "option": "feature",
+    "cost": {
+      "cp": null,
+      "sp": 15
+    }
   },
   "effects": [],
   "flags": {},

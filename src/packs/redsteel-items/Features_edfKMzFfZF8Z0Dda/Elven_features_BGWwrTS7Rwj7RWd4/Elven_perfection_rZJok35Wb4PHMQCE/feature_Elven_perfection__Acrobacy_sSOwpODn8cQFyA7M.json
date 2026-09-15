@@ -19,7 +19,11 @@
       "value": null
     },
     "option": "feature",
-    "localizationKey": "REDSTEEL.Items.ElvenPerfectionAcrobacy.name"
+    "localizationKey": "REDSTEEL.Items.ElvenPerfectionAcrobacy.name",
+    "cost": {
+      "cp": null,
+      "sp": 15
+    }
   },
   "effects": [],
   "flags": {

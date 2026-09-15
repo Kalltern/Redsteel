@@ -19,7 +19,11 @@
       "value": null
     },
     "option": "feature",
-    "localizationKey": "REDSTEEL.Items.WillfulnessII.name"
+    "localizationKey": "REDSTEEL.Items.WillfulnessII.name",
+    "cost": {
+      "cp": null,
+      "sp": 20
+    }
   },
   "effects": [],
   "flags": {

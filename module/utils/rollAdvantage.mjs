@@ -133,6 +133,25 @@ export function tagRollBuckets(roll, ...keys) {
   };
 }
 
+/** Signed bias for an item's Test Advantage dropdown (`system.testAdvantage`). */
+const ITEM_ADVANTAGE_BIAS = { advantage: 1, disadvantage: -1 };
+
+/**
+ * Carry the rolled item's own Test Advantage setting (`system.testAdvantage`:
+ * "" | "advantage" | "disadvantage") on a not-yet-evaluated test Roll. The
+ * evaluate wrapper sums it into the net bias like any actor bucket, so it
+ * cancels against fatigue, effects and the manual picker rather than stacking
+ * dice. Works for d100 tests and d12 speed tests alike. No-op for "".
+ * @param {Roll} roll
+ * @param {string} [mode]
+ */
+export function tagRollItemAdvantage(roll, mode) {
+  const itemBias = ITEM_ADVANTAGE_BIAS[mode] ?? 0;
+  if (!roll || !itemBias) return;
+  roll.options ??= {};
+  roll.options.redsteel = { ...(roll.options.redsteel ?? {}), itemBias };
+}
+
 /**
  * Merge the actor's advantage buckets into a roll-data object so a Roll built
  * with a custom data object (not Actor#getRollData) still carries the actor-wide

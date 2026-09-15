@@ -313,8 +313,15 @@ function gearEnchantMods(entries) {
 export class RedsteelItem extends Item {
   get localizedName() {
     const key = this.system.localizationKey?.trim();
-    if (!key || !game.i18n.has(key)) return this.name;
-    return game.i18n.localize(key);
+    const base = !key || !game.i18n.has(key) ? this.name : game.i18n.localize(key);
+    // A language feature is bought once per language, and the copy names the
+    // language it stands for: "Language: Basic communication (Landea)". Only
+    // the display name changes; ownership and prices still match item.name.
+    const language = this.flags?.redsteel?.language;
+    if (typeof language === "string" && language.trim()) {
+      return `${base} (${language.trim()})`;
+    }
+    return base;
   }
 
   /**

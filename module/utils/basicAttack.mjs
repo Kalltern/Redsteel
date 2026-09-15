@@ -1,5 +1,5 @@
 import { getTraitPills } from "./traitPills.mjs";
-import { withRollBias, tagRollSkill } from "./rollAdvantage.mjs";
+import { withRollBias, tagRollSkill, tagRollItemAdvantage } from "./rollAdvantage.mjs";
 import { AIMED_PARTS } from "./aimedStrike.mjs";
 import { getImprovedAimPenetration } from "./aim.mjs";
 import { getAttackRerollTokens } from "./rerolls.mjs";
@@ -179,7 +179,10 @@ export async function universalAttackLogic({
 
       // Speed test: d12 + Initiative + Speed, higher is better.
       if (isSpeedTest(testName)) {
-        const speedRoll = await rollSpeedTest(actor, { modifier: testModifier });
+        const speedRoll = await rollSpeedTest(actor, {
+          modifier: testModifier,
+          advantage: mod.system.testAdvantage,
+        });
         attributeTestHTML += `
     <tr>
     <td>
@@ -209,6 +212,7 @@ export async function universalAttackLogic({
         withRollBias({}, actor),
       );
       tagRollSkill(attributeRoll, skillKey);
+      tagRollItemAdvantage(attributeRoll, mod.system.testAdvantage);
 
       await attributeRoll.evaluate({ async: true });
 

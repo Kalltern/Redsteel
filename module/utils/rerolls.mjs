@@ -127,26 +127,46 @@ function parseSkillList(raw) {
 }
 
 /**
+ * Suffix marking a roll-trigger entry as GM-only: "universal-gm",
+ * "str-based-gm" and "athletics gm" fire exactly like the bare entry, but the
+ * pill they raise is shown to the GM alone. Matched on the raw entry, before
+ * normalization strips the separator.
+ */
+const GM_ONLY_SUFFIX_RE = /[\s_-]+gm\s*$/i;
+
+/**
  * Whether a roll-trigger scope (a trait pill's triggers, as a comma-separated
- * string or an array of entries) reaches a roll emitting `tokens`. Entries are
- * read like a pool's skill list: "universal" / "any" / "all" match every roll,
- * and attribute spellings resolve, so "str-based" or "strength based" meet the
- * "strbased" token a Strength-governed roll emits. Unlike a pool, an empty
- * scope matches nothing, and the other pool keywords (critfail, combatcapN)
- * are ignored.
+ * string or an array of entries) reaches a roll emitting `tokens`, and whether
+ * the pill is GM-only. Entries are read like a pool's skill list: "universal"
+ * / "any" / "all" match every roll, and attribute spellings resolve, so
+ * "str-based" or "strength based" meet the "strbased" token a
+ * Strength-governed roll emits. Unlike a pool, an empty scope matches nothing,
+ * and the other pool keywords (critfail, combatcapN) are ignored.
+ *
+ * A "-gm" entry matches like its bare form. The pill is GM-only only when
+ * every matching entry carries the suffix: one public match keeps it public.
  * @param {string|string[]} entries
  * @param {string[]} tokens  Normalized roll tokens.
- * @returns {boolean}
+ * @param {{ universal?: boolean }} [options]  `universal: false` makes the
+ *   universal keywords match nothing, for events that are not rolls (Long Rest).
+ * @returns {{ gmOnly: boolean } | null}  null when no entry matches.
  */
-export function scopeMatchesTokens(entries, tokens) {
+export function matchTriggerScope(entries, tokens, { universal = true } = {}) {
   const list = Array.isArray(entries)
     ? entries
     : String(entries ?? "").split(",");
   const tokenSet = new Set(tokens);
-  return list.some((entry) => {
-    const token = normalizePoolToken(entry);
-    return UNIVERSAL_KEYS.has(token) || tokenSet.has(token);
-  });
+  let match = null;
+  for (const entry of list) {
+    const raw = String(entry ?? "");
+    const gmOnly = GM_ONLY_SUFFIX_RE.test(raw);
+    const token = normalizePoolToken(raw.replace(GM_ONLY_SUFFIX_RE, ""));
+    const universalHit = universal && UNIVERSAL_KEYS.has(token);
+    if (!universalHit && !tokenSet.has(token)) continue;
+    if (!gmOnly) return { gmOnly: false };
+    match = { gmOnly: true };
+  }
+  return match;
 }
 
 /** Whether a comma-separated skill string contains a crit-failure keyword. */

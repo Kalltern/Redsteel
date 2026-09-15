@@ -19,7 +19,11 @@
       "value": 0
     },
     "option": "feature",
-    "localizationKey": "REDSTEEL.Items.Strain.name"
+    "localizationKey": "REDSTEEL.Items.Strain.name",
+    "cost": {
+      "cp": 5,
+      "sp": null
+    }
   },
   "effects": [],
   "sort": 600000,

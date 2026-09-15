@@ -19,7 +19,11 @@
       "value": null
     },
     "option": "feature",
-    "localizationKey": "REDSTEEL.Items.DwarvenToughness.name"
+    "localizationKey": "REDSTEEL.Items.DwarvenToughness.name",
+    "cost": {
+      "cp": 25,
+      "sp": null
+    }
   },
   "effects": [
     {

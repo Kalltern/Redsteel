@@ -1,5 +1,10 @@
 import { getTraitPills } from "./traitPills.mjs";
-import { withRollBias, applyDesperateCrit, tagRollBuckets } from "./rollAdvantage.mjs";
+import {
+  withRollBias,
+  applyDesperateCrit,
+  tagRollBuckets,
+  tagRollItemAdvantage,
+} from "./rollAdvantage.mjs";
 import { AIMED_PARTS } from "./aimedStrike.mjs";
 import { getAttackRerollTokens } from "./rerolls.mjs";
 import { hasHtmlContent } from "./chatBlocks.mjs";
@@ -156,7 +161,10 @@ export async function getNonWeaponAbility(actor, ability) {
 
   if (isSpeedTest(testName)) {
     // d12 + Initiative + Speed — rolled high, contested from the chat card.
-    speedTestRoll = await rollSpeedTest(actor, { modifier: abilityTestModifier });
+    speedTestRoll = await rollSpeedTest(actor, {
+      modifier: abilityTestModifier,
+      advantage: ability.system.testAdvantage,
+    });
     versusTestBlock = renderVersusTestBlock({
       heading: "",
       line: renderSpeedTestLine({
@@ -203,6 +211,7 @@ export async function getNonWeaponAbility(actor, ability) {
       `(${totalModifier}) - 1d100`,
       withRollBias({}, actor),
     );
+    tagRollItemAdvantage(attributeRoll, ability.system.testAdvantage);
     await attributeRoll.evaluate();
 
     attributeTestRoll = attributeRoll;

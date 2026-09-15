@@ -18,7 +18,7 @@
       {{localize "REDSTEEL.Actor.Character.Sections.General"}}
     </a>
 
-    {{#if @root.editable}}
+    {{#if @root.showSkillsEdit}}
     <button
       type="button"
       class="skills-edit-toggle {{#if @root.skillsEditMode}}active{{/if}}"
@@ -26,8 +26,11 @@
       aria-pressed="{{#if @root.skillsEditMode}}true{{else}}false{{/if}}"
     >
       <i class="fas fa-pen-to-square"></i>
-      {{#if @root.skillsEditMode}}Done{{else}}{{/if}}
+      {{#if @root.skillsEditMode}}{{localize "REDSTEEL.Actor.SheetConfig.SkillsEditDone"}}{{/if}}
     </button>
+    {{/if}}
+
+    {{#if @root.editable}}
     <button type="button" class="learn-open" data-action="learn"><i class="fas fa-graduation-cap"></i> {{localize "REDSTEEL.Learn.open"}}</button>
     {{/if}}
 

@@ -1,0 +1,21 @@
+{
+  "type": "Item",
+  "folder": "edfKMzFfZF8Z0Dda",
+  "name": "Masters",
+  "color": null,
+  "sorting": "a",
+  "_id": "nbf8he7ZcWJRUMO8",
+  "description": "",
+  "sort": 0,
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.11.4",
+    "lastModifiedBy": null
+  },
+  "_key": "!folders!nbf8he7ZcWJRUMO8"
+}

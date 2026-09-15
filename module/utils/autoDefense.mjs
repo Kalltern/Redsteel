@@ -269,6 +269,7 @@ export async function resolveAutoDefense(message) {
     criticalSuccess: flag.criticalSuccess === true,
     criticalFailure: flag.criticalFailure === true,
     d100: flag.d100 ?? null,
+    spellSchool: message.flags?.redsteel?.spellSchool ?? null,
   };
 
   const category = defenseCategory(flag.attackType);

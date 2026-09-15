@@ -176,7 +176,9 @@ function applyModifier(roll) {
   // two-handed grip).
   const tags = roll.options?.redsteel ?? {};
   let bias = getRollBias(roll.data, tags.skill, tags.advBuckets);
-  const autoBias = bias; // for messaging: was anything contributed by the actor?
+  // The rolled ability's own Test Advantage (see tagRollItemAdvantage).
+  bias += Number(tags.itemBias) || 0;
+  const autoBias = bias; // for messaging: did the actor or item contribute?
 
   // Manual picker contribution — die mode and flat modifier are independent.
   const manualActive = isActive();

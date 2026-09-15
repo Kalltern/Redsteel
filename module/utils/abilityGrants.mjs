@@ -822,6 +822,12 @@ const GRANTABLE_ACTOR_TYPES = new Set(["character", "npc"]);
 // Re-entrancy guard: syncing creates/deletes embedded items, which fire the very
 // hooks that call this; skip overlapping runs for the same actor.
 const _syncing = new Set();
+// Actors whose sync was asked for while one was already running. A running
+// pass reads the actor's ranks before its first await, so a change that lands
+// mid-pass (a mirrored rank written just after the rank it copies, see
+// rankMirrors.mjs) would go unseen until the next update. Such a request is
+// remembered here and the pass runs once more when it finishes.
+const _resyncQueued = new Set();
 
 /**
  * Does the actor currently satisfy a rule's trigger?
@@ -882,7 +888,10 @@ export function ruleActive(actor, rule) {
  */
 export async function syncGrantedAbilities(actor) {
   if (!actor?.id || !GRANTABLE_ACTOR_TYPES.has(actor.type)) return;
-  if (_syncing.has(actor.id)) return;
+  if (_syncing.has(actor.id)) {
+    _resyncQueued.add(actor.id);
+    return;
+  }
   // Fully hand-curated actor: never touch its abilities.
   if (actor.getFlag(GRANT_FLAG_SCOPE, DISABLE_FLAG)) return;
 
@@ -963,6 +972,7 @@ export async function syncGrantedAbilities(actor) {
     if (toAdd.length) await actor.createEmbeddedDocuments("Item", toAdd);
   } finally {
     _syncing.delete(actor.id);
+    if (_resyncQueued.delete(actor.id)) syncGrantedAbilities(actor);
   }
 }
 

@@ -24,7 +24,11 @@
     "rollTriggers": [
       "ini",
       "spd"
-    ]
+    ],
+    "cost": {
+      "cp": 5,
+      "sp": null
+    }
   },
   "effects": [],
   "sort": 800000,

@@ -19,7 +19,11 @@
       "value": null
     },
     "option": "feature",
-    "localizationKey": "REDSTEEL.Items.LightningReflexes.name"
+    "localizationKey": "REDSTEEL.Items.LightningReflexes.name",
+    "cost": {
+      "cp": 15,
+      "sp": null
+    }
   },
   "effects": [],
   "flags": {

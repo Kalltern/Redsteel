@@ -19,7 +19,11 @@
       "value": null
     },
     "option": "feature",
-    "localizationKey": "REDSTEEL.Items.ElvenPerfectionLeadership.name"
+    "localizationKey": "REDSTEEL.Items.ElvenPerfectionLeadership.name",
+    "cost": {
+      "cp": null,
+      "sp": 15
+    }
   },
   "effects": [],
   "flags": {

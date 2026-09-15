@@ -20,7 +20,11 @@
       "value": 0
     },
     "option": "feature",
-    "localizationKey": "REDSTEEL.Items.LegSweep.name"
+    "localizationKey": "REDSTEEL.Items.LegSweep.name",
+    "cost": {
+      "cp": 10,
+      "sp": null
+    }
   },
   "effects": [],
   "sort": 300000,

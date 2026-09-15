@@ -19,7 +19,11 @@
       "value": null
     },
     "option": "feature",
-    "localizationKey": "REDSTEEL.Items.ElvenPerfectionPickpocketing.name"
+    "localizationKey": "REDSTEEL.Items.ElvenPerfectionPickpocketing.name",
+    "cost": {
+      "cp": null,
+      "sp": 15
+    }
   },
   "effects": [],
   "flags": {

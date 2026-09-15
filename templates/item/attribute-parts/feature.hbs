@@ -91,9 +91,7 @@
     value="{{system.rollTriggersRaw}}"
     placeholder="e.g. res, athletics"
   />
-  <p class="hint">
-    Comma-separated. Pills appear in chat when a matching roll is made. attributes are written with shortcut only (str,res)
-  </p>
+  <p class="hint">{{localize "REDSTEEL.RollTriggers.Hint"}}</p>
 </div>
 {{/if}}
 
@@ -145,6 +143,53 @@
     This feature's Weapon Specialization bonuses (tier {{system.weaponSpec.tier}}) apply to any weapon whose Tags include this tag. Case-insensitive, exact tag match.
   </p>
 </div>
+{{/if}}
+
+{{#if (eq system.option "feature")}}
+{{! What the feature costs in the Learn window. An empty box stores null and
+    falls back to the book price (shown as the placeholder); 0 is free. }}
+<h3 style="margin: 12px 0 6px;">{{localize "REDSTEEL.Learn.ItemFields.title"}}</h3>
+<div class="flexrow" style="gap: 6px;">
+  <div class="form-group stacked">
+    <label>{{localize "REDSTEEL.Learn.ItemFields.costCp"}}</label>
+    <input
+      type="number"
+      name="system.cost.cp"
+      value="{{system.cost.cp}}"
+      min="0"
+      data-dtype="Number"
+      placeholder="{{featureBookPrice.cp}}"
+    />
+  </div>
+  <div class="form-group stacked">
+    <label>{{localize "REDSTEEL.Learn.ItemFields.costSp"}}</label>
+    <input
+      type="number"
+      name="system.cost.sp"
+      value="{{system.cost.sp}}"
+      min="0"
+      data-dtype="Number"
+      placeholder="{{featureBookPrice.sp}}"
+    />
+  </div>
+</div>
+<div class="form-group stacked">
+  <label>{{localize "REDSTEEL.Learn.ItemFields.section"}}</label>
+  <select name="system.learnSection">
+    {{#each featureSectionOptions}}
+      <option value="{{this.value}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
+    {{/each}}
+  </select>
+</div>
+<div class="form-group stacked">
+  <label>{{localize "REDSTEEL.Learn.ItemFields.requirementsNote"}}</label>
+  <input
+    type="text"
+    name="system.requirementsNote"
+    value="{{system.requirementsNote}}"
+  />
+</div>
+<p class="hint">{{localize "REDSTEEL.Learn.ItemFields.hint"}}</p>
 {{/if}}
 
 </section>

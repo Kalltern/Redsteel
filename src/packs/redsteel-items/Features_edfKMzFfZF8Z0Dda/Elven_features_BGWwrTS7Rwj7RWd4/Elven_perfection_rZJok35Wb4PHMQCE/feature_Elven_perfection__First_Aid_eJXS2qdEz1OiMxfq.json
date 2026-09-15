@@ -19,7 +19,11 @@
       "value": null
     },
     "option": "feature",
-    "localizationKey": "REDSTEEL.Items.ElvenPerfectionFirstAid.name"
+    "localizationKey": "REDSTEEL.Items.ElvenPerfectionFirstAid.name",
+    "cost": {
+      "cp": null,
+      "sp": 15
+    }
   },
   "effects": [],
   "flags": {

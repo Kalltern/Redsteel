@@ -19,7 +19,11 @@
       "value": 0
     },
     "option": "feature",
-    "localizationKey": "REDSTEEL.Items.MagicCommander.name"
+    "localizationKey": "REDSTEEL.Items.MagicCommander.name",
+    "cost": {
+      "cp": null,
+      "sp": 15
+    }
   },
   "effects": [],
   "sort": 0,

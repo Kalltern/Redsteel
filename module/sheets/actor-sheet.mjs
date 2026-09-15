@@ -1,5 +1,6 @@
 import { prepareActiveEffectCategories } from "../helpers/effects.mjs";
 import {
+  isAutoUnlockNode,
   prepareSpecialisationTrees,
   syncSpecialisationPassive,
 } from "../helpers/specialisations.mjs";
@@ -257,6 +258,15 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     const specDef = CONFIG.REDSTEEL.specialisations?.[specId];
     const nodeDef = specDef?.nodes?.[nodeId];
     if (!nodeDef) return;
+
+    // A node that comes with the specialisation (Magic Blood) follows it via
+    // syncAutoSpecNodes and is never toggled by hand.
+    if (isAutoUnlockNode(specId, nodeId)) {
+      ui.notifications.warn(
+        game.i18n.localize("REDSTEEL.Actor.Specialisations.warnAutoNode"),
+      );
+      return;
+    }
 
     const unlockedNodes =
       this.actor.system.specialisations?.[specId]?.nodes ?? {};
@@ -1557,6 +1567,11 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
 
   /** @override */
   async _prepareContext(options) {
+    // The skill edit button is hidden unless the GM switched it on for this
+    // actor in Configure Sheet, and even then only the GM gets it.
+    const showSkillsEdit =
+      this.isEditable && game.user.isGM && !!this.actor.system.skillsEditToggle;
+
     // Output initialization
     const context = {
       // Validates both permissions and compendium status
@@ -1570,7 +1585,8 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       flags: this.actor.flags,
       // Adding a pointer to CONFIG.REDSTEEL
       config: CONFIG.REDSTEEL,
-      skillsEditMode: this.isEditable && this._skillsEditMode,
+      showSkillsEdit,
+      skillsEditMode: showSkillsEdit && this._skillsEditMode,
       tabs: this._getTabs(options.parts),
     };
 
@@ -2793,7 +2809,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
   }
 
   static _toggleSkillsEdit() {
-    if (!this.isEditable) return;
+    if (!this.isEditable || !game.user.isGM || !this.actor.system.skillsEditToggle) return;
     this._skillsEditMode = !this._skillsEditMode;
     this.render();
   }

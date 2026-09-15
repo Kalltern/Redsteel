@@ -19,7 +19,11 @@
       "value": null
     },
     "option": "feature",
-    "localizationKey": "REDSTEEL.Items.Studiousness.name"
+    "localizationKey": "REDSTEEL.Items.Studiousness.name",
+    "cost": {
+      "cp": null,
+      "sp": 5
+    }
   },
   "effects": [],
   "flags": {

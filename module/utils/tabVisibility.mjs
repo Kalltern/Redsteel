@@ -47,10 +47,10 @@ export const TAB_VISIBILITY_MODES = [
 /**
  * Build the fieldset added to the Configure Sheet dialog.
  *
- * The selects deliberately carry no `name`: the dialog's root element is itself
+ * The fields deliberately carry no `name`: the dialog's root element is itself
  * the form, so a named field would be swept into core's submit data and sent to
- * the document as an unknown update key. They are read by `data-tab-key` and
- * written on change instead, which also means the choice applies whether the GM
+ * the document as an unknown update key. They are read by their data attribute
+ * and written on change instead, which also means the choice applies whether the GM
  * closes the dialog with "Save Changes" or with the window's X.
  *
  * @param {Actor} actor
@@ -91,6 +91,28 @@ function buildFieldset(actor, tabs) {
     }
 
     fields.append(select);
+    group.append(name, fields);
+    fieldset.append(group);
+  }
+
+  // The Skills tab's edit button is off for everyone until the GM opts this
+  // character in, and even then only the GM gets it.
+  if (actor.type === "character") {
+    const group = document.createElement("div");
+    group.classList.add("form-group");
+
+    const name = document.createElement("label");
+    name.textContent = i18n.localize("REDSTEEL.Actor.SheetConfig.SkillsEdit");
+
+    const fields = document.createElement("div");
+    fields.classList.add("form-fields");
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.dataset.skillsEditToggle = "";
+    checkbox.checked = !!actor.system?.skillsEditToggle;
+
+    fields.append(checkbox);
     group.append(name, fields);
     fieldset.append(group);
   }
@@ -139,6 +161,14 @@ function injectTabVisibility(app, element) {
       });
     }),
   );
+
+  fieldset
+    .querySelector("input[data-skills-edit-toggle]")
+    ?.addEventListener("change", async (event) => {
+      await actor.update({
+        "system.skillsEditToggle": event.currentTarget.checked,
+      });
+    });
 
   // The dialog was sized before the fieldset existed.
   app.setPosition({ height: "auto" });

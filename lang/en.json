@@ -97,7 +97,7 @@
         "ability": "Combat abilities",
         "channeling": "Channeling",
         "envDamage": "Environmental damage",
-        "rest": "Long Rest",
+        "party": "Party management",
         "firstAid": "First aid",
         "effects": "Effect manager"
       },
@@ -435,7 +435,9 @@
         "Hint": "Which tabs this sheet shows. A tab set to GM only or Hidden is not rendered for those users at all.",
         "Visible": "Visible",
         "GmOnly": "GM only",
-        "Hidden": "Hidden"
+        "Hidden": "Hidden",
+        "SkillsEdit": "Skill edit button (GM only)",
+        "SkillsEditDone": "Done"
       },
       "Inventory": {
         "Ammo": "Ammo",
@@ -481,6 +483,7 @@
       "Specialisations": {
         "warnLocked": "Unlock the connected previous node first.",
         "warnDependents": "Another unlocked node depends on this one — lock that one first.",
+        "warnAutoNode": "This node comes with the specialisation and cannot be locked by hand.",
         "shadow": {
           "label": "Shadow",
           "summary": "A killer from the dark. Deadlier sneak attacks, bleeding wounds, sure footing in stealth and a hunter's banes.",
@@ -511,7 +514,7 @@
             },
             "calculation": {
               "label": "Calculation",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Passive. With at least one Aim on a target, gains Critical Hit +3% and Critical Dodge +5% against that target. Manual — resolved at the table."
             },
             "aimedAttack": {
               "label": "Aimed Attack +5%",
@@ -539,7 +542,7 @@
             },
             "quickFeet": {
               "label": "Quick Feet",
-              "description": "10 CP. Manual — resolved at the table."
+              "description": "10 CP. Free action, 1 Stamina. Modifies any Retaliation action. Before the action, may move one hex around the opponent. Manual — resolved at the table."
             },
             "backDodge": {
               "label": "Rear Dodge",
@@ -547,7 +550,7 @@
             },
             "weakSpotMastery": {
               "label": "Improved Weak Spot Attack/Throw",
-              "description": "20 CP; Tulák VII. Manual — resolved at the table."
+              "description": "20 CP; Tulák VII. Improved Exploit Weakness (2 actions, 5 Stamina): an attack aimed at weak spots in the opponent's armor. Penetration +20. If the target has a lower Turn Order, a successful hit counts as a Sneak Attack. Can never deal more damage than its Penetration. Improved Exploit Weakness (Throw) (Free action, 4 Stamina): modifies any throw with a throwing knife, aimed at weak spots in the opponent's armor. Penetration +15, Throw -5%. Can never deal more damage than its Penetration. Manual — resolved at the table."
             },
             "speedTests": {
               "label": "Advantage on vs Speed Tests",
@@ -605,11 +608,11 @@
             },
             "odvetnyUder": {
               "label": "Retaliatory Strike",
-              "description": "10 CP; Meče IV. Manual — resolved at the table."
+              "description": "10 CP; Meče IV. 1 Reaction, 2 Stamina. After a Defense or Dodge, successful or not, may make a Retaliatory Strike that deals half damage. Does not apply to Counterattacks, Opportunity Attacks, Shield Bash or Retaliatory Strike. Retaliatory Strike has no interaction with Aim. Cannot be combined with Retaliatory Throw. Grants the Retaliatory Strike action."
             },
             "improvedAim": {
               "label": "Improved Aiming",
-              "description": "5 CP. At four Aiming stacks on the target, an attack with a two-handed sword gains Armor Penetration +10. Automated."
+              "description": "5 CP. 1 action, 0 Stamina. Raises the chance to Hit, Shoot, Throw or Gunnery by +10% for the next attack. The action can be repeated to stack the bonus, up to +40%. Can aim at targets at any distance. With four Aim on the target, gains Penetration +10. Grants the Improved Aiming action; the Penetration bonus needs a two-handed sword. Automated."
             },
             "aimReduction": {
               "label": "Aim reduction after a hit",
@@ -617,11 +620,11 @@
             },
             "draciSpanek": {
               "label": "Dragon Sleep",
-              "description": "10 CP; Šermíř IV. Manual — resolved at the table."
+              "description": "10 CP; Šermíř IV. 1 action, 0 Stamina. For one turn, Defense, Dodge and Ranged Defense +10%. Gains one Aim and restores 1 Stamina. Prevents the Riposte action for one round and gives up all Reactions this round; gains one Rest for each Reaction given up this way. Manual — resolved at the table."
             },
             "draciStraz": {
               "label": "Dragon Guard",
-              "description": "10 CP; Šermíř V. Manual — resolved at the table."
+              "description": "10 CP; Šermíř V. 1 action, 4 Stamina. For one turn, Hit +10% for Retaliation actions, Riposte and the Momentum that follows them. May use the Exploit Weakness action as a Retaliation action. Manual — resolved at the table."
             },
             "chargeDamage": {
               "label": "Charge: +1d4 damage",
@@ -633,15 +636,15 @@
             },
             "priskok": {
               "label": "Lunge Step",
-              "description": "5 CP; Meče IV. Manual — resolved at the table."
+              "description": "5 CP; Meče IV. Free action, 1 Stamina. When targeted by an attack, may move one hex toward the attacker. The move provokes no Opportunity Attacks and happens before the attack resolves. In some situations the move may not be possible. Does not apply to Shooting, Throwing or Magic. Manual — resolved at the table."
             },
             "draciVypad": {
               "label": "Dragon's Thrust",
-              "description": "10 CP; Šermíř IV. Manual — resolved at the table."
+              "description": "10 CP; Šermíř IV. 1 Reaction, 7 Stamina. Gives up Defense and attacks instead. A Speed vs Test decides who hits first. Whoever hits first and kills the opponent avoids the other attack entirely. The first hit always resolves as a Critical Hit, the second always as a normal hit. Manual — resolved at the table."
             },
             "prosmyknuti": {
               "label": "Slip Through",
-              "description": "5 CP; Meče IV. Manual — resolved at the table."
+              "description": "5 CP; Meče IV. Free action, 2 Stamina. After a successful Charge, Lindar's Thrust or Dragon's Thrust, may call a Dexterity vs Test. On success moves behind the opponent; on failure takes -10% to Defense and Dodge for one turn. After a Critical Hit, Slip Through is guaranteed. Chooses facing after the move. Manual — resolved at the table."
             },
             "dexTests": {
               "label": "Combat Dexterity Tests +10%",
@@ -649,19 +652,19 @@
             },
             "presneRozseknuti": {
               "label": "Precise Cleave",
-              "description": "0 CP. Manual — resolved at the table."
+              "description": "0 CP. Passive. The Cleave and Charge with Cleave actions apply the Aim bonus to every opponent struck. Manual — resolved at the table."
             },
             "vyhodnyManevr": {
               "label": "Advantageous Maneuver",
-              "description": "5 CP; Šermíř V. Manual — resolved at the table."
+              "description": "5 CP; Šermíř V. Free action, 3 Stamina. After a successful Defense, may immediately gain one Aim against the attacker. Manual — resolved at the table."
             },
             "utokSPohybem": {
               "label": "Attack on the Move",
-              "description": "10 CP; Meče IV. Manual — resolved at the table."
+              "description": "10 CP; Meče IV. Free action, 3 Stamina. Modifies attack actions (not Retaliation actions). After a hit, allows moving up to one hex in any direction without provoking an Opportunity Attack. Grants the Passing Strike action."
             },
             "vylUtokSPohybem": {
               "label": "Improved Attack on the Move",
-              "description": "10 CP; Šermíř VII. Manual — resolved at the table."
+              "description": "10 CP; Šermíř VII. Free action, 2 Stamina. Modifies attack actions, including Retaliation actions. After a hit, allows moving up to one hex in any direction without provoking an Opportunity Attack. Manual — resolved at the table."
             }
           }
         },
@@ -671,43 +674,43 @@
           "nodes": {
             "mistrZbrani": {
               "label": "Weapon Master",
-              "description": "0 CP. Manual — resolved at the table."
+              "description": "0 CP. Passive. Every rank of further weapon skills costs only 5 CP and needs no Teacher. The first four ranks of every further weapon skill are free. On buying the Weapon Specialization I and Weapon Specialization II features, may take each of them twice more for free. Manual — resolved at the table."
             },
             "vytrvalyValecnik": {
               "label": "Enduring Warrior",
-              "description": "15 CP; M/T/S/D V. Manual — resolved at the table."
+              "description": "15 CP; M/T/S/D V. Passive. On missing the target with an attack action, regains half the Stamina spent. If Shield Bash, Shield Charge, Feint or Improved Feint fail, regains half the Stamina spent. Manual — resolved at the table."
             },
             "vycvikSeZbrani": {
               "label": "Weapon Training",
-              "description": "0 CP; M/T/S/D VI. Manual — resolved at the table."
+              "description": "0 CP; M/T/S/D VI. Passive. Gains a bonus for the type of weapon held. Light: Critical Range is based on Dexterity. Medium: Critical Hit and Critical Defense chance +1%. Heavy: Critical Damage/Penetration +5. Manual — resolved at the table."
             },
             "bdelyOchrance": {
               "label": "Vigilant Protector",
-              "description": "25 CP; M/T/S/D VIII. Manual — resolved at the table."
+              "description": "25 CP; M/T/S/D VIII. Passive. May make an Opportunity Attack even when an ally is attacked, as long as the attacker is in reach. An Opportunity Attack can be used this way only once per round. Manual — resolved at the table."
             },
             "zbrojnos1": {
               "label": "Armiger I",
-              "description": "10 CP. Manual — resolved at the table."
+              "description": "10 CP. Passive. Light armor: sacrificing armor or shield Durability reduces damage by a further 5. Heavy armor: once per day, may reroll a Defense or Ranged Defense roll. Manual — resolved at the table."
             },
             "zbrojnos2": {
               "label": "Armiger II",
-              "description": "10 CP. Manual — resolved at the table."
+              "description": "10 CP. Passive. Light armor: Dodge Critical Success chance +3%, and the Dodge action costs 1 less Stamina. Heavy armor: gains Deflect +20% on Defense and Ranged Defense. Manual — resolved at the table."
             },
             "odrazeni": {
               "label": "Deflection",
-              "description": "10 CP; M/T/S/D VI. Manual — resolved at the table."
+              "description": "10 CP; M/T/S/D VI. 1 Reaction. When attacked, may spend a Reaction to gain Advantage on the next Defense. Manual — resolved at the table."
             },
             "veteran1": {
               "label": "Veteran I",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Passive. On a Critical Hit, may lower its degree by one to immediately use Rest as a Free action. Manual — resolved at the table."
             },
             "veteran2": {
               "label": "Veteran II",
-              "description": "5 CP; M/T/S/D V. Manual — resolved at the table."
+              "description": "5 CP; M/T/S/D V. Passive. On a Critical Defense, may immediately use the Rest action as a Free action instead of gaining Temporary Health. Manual — resolved at the table."
             },
             "vylZbranoveDovednosti": {
               "label": "Improved Weapon Skills",
-              "description": "15 CP; M/T/S/D VIII. Manual — resolved at the table."
+              "description": "15 CP; M/T/S/D VIII. Improves four weapon actions. Improved Feint (1 action, 5 Stamina): gains Aim on the target and calls a Dexterity/Perception vs Dexterity/Perception Test. On success the opponent has Disadvantage on their next Defense or Dodge and -1 Reaction for two rounds, and loses all their Aim; an Attack following in the same round scores a Critical Hit from a success of +50. Improved Splintering Strike (1 action, 8 Stamina): a furious attack aimed at damaging enemy armor. On a hit it deals damage and lowers the opponent's armor Quality by 4; on a miss, 35% chance to damage the shield. Penetration +3d6. Improved Staggering Blow (Free action, 4 Stamina per attack): modifies attack actions, Counterattack and Retaliatory Strike. Deals half damage, Stagger +30%. Cannot be combined with Trip or Impale. Improved Trip (Free action, 5 Stamina per attack): modifies Attack, Multiple Attack, Opportunity Attack or Counterattack. Half damage. After a hit, calls a Strength/Dexterity vs Endurance/Dexterity Test; on success the target is knocked down. +30% on the Test after a Critical Hit. Not usable from the saddle. Cannot be combined with Staggering Blow or Impale. Manual — resolved at the table."
             },
             "bleedStun": {
               "label": "Bleed +10% / Stun +6%",
@@ -727,11 +730,11 @@
             },
             "presileni": {
               "label": "Overpowering",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Free action, 1 Stamina. May reroll a Hit, Defense or Ranged Defense roll if the difference in margin of success was 10 or less. Manual — resolved at the table."
             },
             "rychlaReakce": {
               "label": "Improved Quick Reaction",
-              "description": "5 CP; M/T/S/D V. Manual — resolved at the table."
+              "description": "5 CP; M/T/S/D V. 1 action, 3 Stamina. For one turn, gains Initiative +4 and +1 Reaction. Manual — resolved at the table."
             },
             "weakSpotPen": {
               "label": "Weak Spot Attack: Penetration +10",
@@ -797,7 +800,7 @@
             },
             "hoplitaStance": {
               "label": "Hoplite",
-              "description": "0 CP. Manual — resolved at the table."
+              "description": "Choose the Swords, Axes or Blunt skill. Every rank of the Polearms skill counts as a rank of the chosen skill, with all its actions and bonuses. The Impale action is no longer cancelled by a defense."
             },
             "damage1d6": {
               "label": "Damage +1d6",
@@ -827,11 +830,11 @@
           "nodes": {
             "duelistuvPostoj": {
               "label": "Duelist's Stance",
-              "description": "5 CP. The duellist's stance: a one-handed sword with the off hand free or holding a fencing dagger. Every Aim perk on this tree reads it. Automated."
+              "description": "5 CP. Free action, 0 Stamina. May move their Aim to another target in range at any time, but loses one Aim doing so. The stance is a one-handed sword with the off hand free or holding a fencing dagger; every Aim perk on this tree reads it. Automated."
             },
             "krvaveBodnuti": {
               "label": "Laceration",
-              "description": "5 CP. After a hit, sacrifice any number of Aim to cause one Bleed each. Sacrificing at least one on a Sneak Attack causes two more, and costs no further Aim for the hit. Costs 2 Stamina per Aim sacrificed. Offered in the Apply Damage dialog. Automated."
+              "description": "5 CP. Free action, 2 Stamina per Aim sacrificed. After a hit, may sacrifice any number of Aim and cause one Bleed on the target for each. If at least one was sacrificed on a Sneak Attack, causes two more Bleed. If at least one was sacrificed, the hit costs no further Aim. Offered in the Apply Damage dialog. Automated."
             },
             "mireniRedukce": {
               "label": "Aim Reduction",
@@ -839,11 +842,11 @@
             },
             "vyhodnyManevr": {
               "label": "Advantageous Maneuver",
-              "description": "15 CP; Duelista VII. A successful Melee Defense with the duellist's blade may be spent on 1 Aim against the attacker, for 3 Stamina. Offered as a button on the defense card. Automated."
+              "description": "15 CP; Duelista VII. Free action, 3 Stamina. After a successful Defense, may immediately gain one Aim against the attacker. Needs a Melee Defense made with the duellist's blade. Offered as a button on the defense card. Automated."
             },
             "posileniObrany": {
               "label": "Defense Reinforcement",
-              "description": "10 CP; Duelista VIII. Manual — resolved at the table."
+              "description": "10 CP; Duelista VIII. Free action, 1 Stamina per Aim sacrificed. Before the Defense roll, may sacrifice any number of Aim and gain +10% on the coming Defense for each. Manual — resolved at the table."
             },
             "postojMireni": {
               "label": "Duelist's Stance: keeps Aim",
@@ -859,27 +862,27 @@
             },
             "akrobatickeOdpoutani": {
               "label": "Acrobatic Disengage",
-              "description": "15 CP; Meče VI. Manual — resolved at the table."
+              "description": "15 CP; Meče VI. 1 Reaction, 2 Stamina. After a successful Defense, may use the Disengage action as a Reaction. Manual — resolved at the table."
             },
             "vylUtokSPohybem": {
               "label": "Improved Attack on the Move",
-              "description": "10 CP; Duelista VII. Manual — resolved at the table."
+              "description": "10 CP; Duelista VII. Free action, 2 Stamina. Modifies attack actions, including Retaliation actions. After a hit, allows moving up to one hex in any direction without provoking an Opportunity Attack. Manual — resolved at the table."
             },
             "rafinovanyManevr": {
               "label": "Refined Maneuver: Stamina -2",
-              "description": "15 CP; Duelista IX. Manual — resolved at the table."
+              "description": "15 CP; Duelista IX. Refined Maneuver costs 2 less Stamina. Refined Maneuver (2 actions and 4 Stamina, or 1 action and 12 Stamina): a standard attack. A Critical Hit gains three Aim on the target, a normal hit two, and a miss one. Manual — resolved at the table."
             },
             "posledniVypad": {
               "label": "Final Thrust",
-              "description": "20 CP; Duelista VI, Meče VI. Manual — resolved at the table."
+              "description": "20 CP; Duelista VI, Meče VI. 2 actions, 8 Stamina. Requires four Aim on the target, all lost before the attack. Hit +10%. The hit counts as both a Sneak Attack and a Critical Hit. Ignores Armor. Advantage and Critical Range +3. After a hit, gains two Aim. Killing the opponent refunds one Action. Manual — resolved at the table."
             },
             "vylDuelistuvKrok": {
               "label": "Improved Duelist's Step",
-              "description": "15 CP; Duelista VII. Manual — resolved at the table."
+              "description": "15 CP; Duelista VII. 1 action, 3 Stamina. Move up to Speed/2 hexes, then gain one Aim on an opponent in range. Moving toward or around the target provokes no Opportunity Attacks. Cannot be combined with movement actions (Move, Sprint, Slow Movement). With three Aim on the target, may attack immediately as a Free action. Manual — resolved at the table."
             },
             "brilantniProtiutok": {
               "label": "Improved Brilliant Counter",
-              "description": "15 CP; Duelista X. Manual — resolved at the table."
+              "description": "15 CP; Duelista X. Free action, 0 or 10 Stamina. May take the Counterattack action after a Critical Dodge. For 10 Stamina, may take Counterattack as a Surprise after a successful Defense. A Counterattack following a Critical Defense or Critical Dodge counts as a Surprise (base Hit +20%, plus any other bonuses). Manual — resolved at the table."
             }
           }
         },
@@ -889,7 +892,7 @@
           "nodes": {
             "apprentice": {
               "label": "School of Blood - Apprentice",
-              "description": "5 CP. Blood Pool capacity +10 automated; school rank manual. Partially automated."
+              "description": "5 CP. Passive. Unlocks learning apprentice School of Blood spells. Once per day, may reroll a Blood Manipulation roll. Blood Pool capacity +10 automated; school rank and reroll manual. Partially automated."
             },
             "spellPower1": {
               "label": "Spell Power +2",
@@ -897,7 +900,7 @@
             },
             "expert": {
               "label": "School of Blood - Expert",
-              "description": "20 CP; MsK/D:C V. Blood Pool capacity +10 automated; school rank manual. Partially automated."
+              "description": "20 CP; MsK/D:C V. Passive. Unlocks learning expert School of Blood spells. Once per day, may reroll a Blood Manipulation roll. School of Blood: Magic Attack +5% and Magic Defense against School of Blood spells +5%. Blood Pool capacity +10, magic attack and magic defense automated; school rank and reroll manual. Partially automated."
             },
             "spellPower2": {
               "label": "Spell Power +2",
@@ -905,7 +908,7 @@
             },
             "master": {
               "label": "School of Blood - Master",
-              "description": "25 CP; MsK/D:C VII. Blood Pool capacity +20 automated; school rank manual. Partially automated."
+              "description": "25 CP; MsK/D:C VII. Passive. Unlocks learning master School of Blood spells. Once per day, may reroll a Blood Manipulation roll. School of Blood: Magic Attack +5% and Magic Defense against School of Blood spells +5%. Blood Pool capacity +20, magic attack and magic defense automated; school rank and reroll manual. Partially automated."
             },
             "spellPower3": {
               "label": "Spell Power +2",
@@ -913,7 +916,7 @@
             },
             "grandmaster": {
               "label": "School of Blood - Grandmaster",
-              "description": "30 CP; MsK/D:C IX. Blood Pool capacity +50 automated; school rank manual. Partially automated."
+              "description": "30 CP; MsK/D:C IX. Passive. Unlocks learning grandmaster School of Blood spells. Once per day, may reroll a Blood Manipulation roll, including a critical failure. School of Blood: Magic Attack +5% and Magic Defense against School of Blood spells +5%. Blood Pool capacity +50, magic attack and magic defense automated; school rank and reroll manual. Partially automated."
             },
             "spellPower4": {
               "label": "Spell Power +2",
@@ -927,33 +930,9 @@
               "label": "Blood Pool capacity +15",
               "description": "10 CP; Škola Krve - Mistr. Automated."
             },
-            "magicAttack1": {
-              "label": "Magic Attack +5%",
-              "description": "0 CP; Škola Krve - Expert. School-of-Blood-specific bonus — to be tackled later. Manual — resolved at the table."
-            },
-            "magicAttack2": {
-              "label": "Magic Attack +5%",
-              "description": "0 CP; Škola Krve - Mistr. School-of-Blood-specific bonus — to be tackled later. Manual — resolved at the table."
-            },
-            "magicAttack3": {
-              "label": "Magic Attack +5%",
-              "description": "0 CP; Škola Krve - Velmistr. School-of-Blood-specific bonus — to be tackled later. Manual — resolved at the table."
-            },
-            "magicDefense1": {
-              "label": "Magic Defense vs. Blood spells +5%",
-              "description": "0 CP; Škola Krve - Expert. School-of-Blood-specific bonus — to be tackled later. Manual — resolved at the table."
-            },
-            "magicDefense2": {
-              "label": "Magic Defense vs. Blood spells +5%",
-              "description": "0 CP; Škola Krve - Mistr. School-of-Blood-specific bonus — to be tackled later. Manual — resolved at the table."
-            },
-            "magicDefense3": {
-              "label": "Magic Defense vs. Blood spells +5%",
-              "description": "0 CP; Škola Krve - Velmistr. School-of-Blood-specific bonus — to be tackled later. Manual — resolved at the table."
-            },
             "magickaKrev": {
               "label": "Magic Blood",
-              "description": "0 CP. Manual — resolved at the table."
+              "description": "0 CP. Passive, unlocked automatically with the School of Blood. Blood Manipulation uses your Channeling rating whenever it is higher (only if you have Channeling), and Channeling ranks count as Blood Manipulation ranks for the Expert, Master and Grandmaster requirements. Automated."
             },
             "krvavyPakt": {
               "label": "Blood Pact",
@@ -969,7 +948,7 @@
             },
             "krvavaPlatba": {
               "label": "Blood Payment",
-              "description": "10 CP; Škola Krve - Expert. Manual — resolved at the table."
+              "description": "10 CP; Škola Krve - Expert. Free action, cost 5. Once, before casting a spell, may pay 5 Health from the Blood Pool to lower the Difficulty by 15%. Manual — resolved at the table."
             },
             "kritRozsah2": {
               "label": "School of Blood: Critical Range +2",
@@ -985,7 +964,7 @@
             },
             "darKrve": {
               "label": "Gift of Blood",
-              "description": "20 CP; Škola Krve - Mistr. Manual — resolved at the table."
+              "description": "20 CP; Škola Krve - Mistr. Passive. Killing a living target with a School of Blood spell heals Health equal to Spell Power ×1. Manual — resolved at the table."
             }
           }
         },
@@ -1777,11 +1756,11 @@
             },
             "spolehlivyStit1": {
               "label": "Reliable Shield I",
-              "description": "10 CP; M/T/S/D V. Manual — resolved at the table."
+              "description": "10 CP; M/T/S/D V. Passive. Sacrificing armor or shield Durability reduces damage by a further 5. Manual — resolved at the table."
             },
             "spolehlivyStit2": {
               "label": "Reliable Shield II",
-              "description": "15 CP; Štítonoš X. Manual — resolved at the table."
+              "description": "15 CP; Štítonoš X. Passive. Held shields have one more Durability. Manual — resolved at the table."
             },
             "uderStitemOdveta": {
               "label": "Shield Bash as a Retaliation",
@@ -1797,7 +1776,7 @@
             },
             "bonusZaStit": {
               "label": "Shield Bonus",
-              "description": "10 CP. Manual — resolved at the table."
+              "description": "10 CP. Passive. Gains a bonus for the shield held. Small shield: Shield Bash costs 3 less Stamina, Critical Defense +1%, Deflect +15%. Medium shield: Shield Bash has a 10% higher Stagger chance, Deflect +10%. Large shield: combat Strength Tests +10%, Deflect +10%. Manual — resolved at the table."
             },
             "uderZraneniB": {
               "label": "Shield Bash/Charge: Damage +1d4",
@@ -1809,7 +1788,7 @@
             },
             "dvojityUder": {
               "label": "Double Strike",
-              "description": "10 CP; Štítonoš VIII. Manual — resolved at the table."
+              "description": "10 CP; Štítonoš VIII. Free action, 3 Stamina. Modifies Shield Bash to strike two adjacent opponents. Manual — resolved at the table."
             },
             "obrannyPostojSpojenci": {
               "label": "Defensive Stance: allies +5% Defense",
@@ -1817,7 +1796,7 @@
             },
             "vylObrannyPostoj": {
               "label": "Improved Defensive Stance",
-              "description": "10 CP; Štítonoš VI. Manual — resolved at the table."
+              "description": "10 CP; Štítonoš VI. 2 actions, 3 Stamina, then 1 per round. Focuses fully on defense. Ranged Defense +10%, Defense +20%, and both flanks reduced while the stance lasts. Keeping the stance up takes two actions. Once per round, may use Armoring or Slow Movement as a Free action. Manual — resolved at the table."
             },
             "ochranaVolna": {
               "label": "Protection: once per round as Free action",
@@ -1829,7 +1808,7 @@
             },
             "vylObrneni": {
               "label": "Improved Armoring",
-              "description": "20 CP; Štítonoš X. Manual — resolved at the table."
+              "description": "20 CP; Štítonoš X. 1 action, 10 Stamina. Gains 15 Temporary Health, which protects against Melee and Shooting hits and against suitable magical damage. Temporary Health can be raised to at most 15 this way. Can be used on an adjacent target. Manual — resolved at the table."
             }
           }
         },
@@ -1843,15 +1822,15 @@
             },
             "bonusDruhaZbran1": {
               "label": "Off-hand Bonus I",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Passive. Gains a bonus for the type of weapon in the off hand. Axe: Bleed +10%. Blunt: Penetration +3. Sword: Critical Defense and Critical Dodge chance +3%. Manual — resolved at the table."
             },
             "bonusDruhaZbran2": {
               "label": "Off-hand Bonus II",
-              "description": "10 CP; M/T/S V. Manual — resolved at the table."
+              "description": "10 CP; M/T/S V. Passive. Gains a bonus for the type of weapon in the off hand. Defensive Katar and Light: once per day, may reroll a Defense or Dodge roll. Medium: Penetration +1, +1d6 damage on Reckless Strike and +2d4 damage on Charge. Manual — resolved at the table."
             },
             "bonusDruhaZbran3": {
               "label": "Off-hand Bonus III",
-              "description": "10 CP; M/T/S VII. Manual — resolved at the table."
+              "description": "10 CP; M/T/S VII. Passive. Gains a bonus for the type of weapon in the off hand. Axe: Critical Range +2 and Critical Damage/Penetration +5. Blunt: Stagger +5%, and staggering an already staggered target may push it back one hex. Sword: Critical Defense and Critical Dodge chance +2%, and Precision +10%. Manual — resolved at the table."
             },
             "smrstUtoku": {
               "label": "Flurry of Blows: Hit +5%",
@@ -1863,7 +1842,7 @@
             },
             "zatlaceni": {
               "label": "Push Back",
-              "description": "10 CP. Manual — resolved at the table."
+              "description": "10 CP. Free action, 4 Stamina. Modifies the Attack, Multiple Attack, Counterattack or Charge actions. After the attack resolves, calls a Strength/Dexterity vs Strength/Dexterity Test (with Advantage on a hit); on success pushes the opponent one space in the direction of the attack. The attacker must move too, and that move provokes no Opportunity Attacks. Manual — resolved at the table."
             },
             "utokPoZteci": {
               "label": "Attack after Charge as Free action",
@@ -1875,7 +1854,7 @@
             },
             "vylUtokSPohybem": {
               "label": "Improved Attack on the Move",
-              "description": "10 CP; D/M VIII. Manual — resolved at the table."
+              "description": "10 CP; D/M VIII. Free action, 2 Stamina. Modifies attack actions, including Retaliation actions. After a successful hit, allows moving up to one hex in any direction without provoking an Opportunity Attack. Manual — resolved at the table."
             },
             "vetrnyPostoj": {
               "label": "Wind Stance: Defense and Hit bonus",
@@ -1883,19 +1862,19 @@
             },
             "ztecSRozseknutim": {
               "label": "Charge with Cleave",
-              "description": "15 CP; M/T/S V. Manual — resolved at the table."
+              "description": "15 CP; M/T/S V. 2 actions, 6 Stamina. Must start at least two hexes from the target. Combines movement with Cleave and strikes two adjacent enemies. Damage +2d4. Cannot be used while fighting from the saddle. Manual — resolved at the table."
             },
             "odvetnyUder": {
               "label": "Retaliatory Strike / Improved",
-              "description": "15 CP; D/M V. Manual — resolved at the table."
+              "description": "15 CP; D/M V. Retaliatory Strike (1 Reaction, 2 Stamina): after a Defense or Dodge, successful or not, may make a Retaliatory Strike that deals half damage. Does not apply to Counterattacks, Opportunity Attacks, Shield Bash or Retaliatory Strike. Retaliatory Strike has no interaction with Aim. Cannot be combined with Retaliation. Improved Retaliatory Strike (1 Reaction, 2 Stamina): as above, but deals full damage when the Defense or Dodge failed, and cannot be combined with Retaliatory Throw. Grants the Retaliatory Strike action."
             },
             "klamavyUtok": {
               "label": "Feint Attack / Improved",
-              "description": "15 CP; D/M X. Manual — resolved at the table."
+              "description": "15 CP; D/M X. Feint Attack (2 actions and 5 Stamina, or 1 action and 13 Stamina): an attack with Advantage that cannot be answered with Riposte, Dragon's Thrust or Retaliation actions. With Wind Stance active, a hit allows an immediate Attack on the same target. Improved Feint Attack (2 actions and 0 Stamina, or 1 action and 8 Stamina): the same attack at a lower cost. Manual — resolved at the table."
             },
             "riposta": {
               "label": "Riposte",
-              "description": "25 CP; M/T/S X. Manual — resolved at the table."
+              "description": "25 CP; M/T/S X. 1 Reaction, 10 Stamina. Attacks instead of Defending. On success, interrupts the enemy attack and deals damage as a normal attack. Riposte has no interaction with Aim. Grants the Riposte action."
             }
           }
         },
@@ -1904,7 +1883,7 @@
           "nodes": {
             "lindar": {
               "label": "Lindar",
-              "description": "0 CP. Manual — resolved at the table."
+              "description": "0 CP. Channeling takes its bonus from the higher of Strength or Dexterity instead of Intelligence. Pick one combat doctrine under the Veneficus star sign in the Learn window: every rank of it costs 3 CP less. The held weapon counting as a focus item is resolved at the table."
             },
             "navazujiciKouzlo": {
               "label": "Follow-up Spell",
@@ -1998,7 +1977,7 @@
             },
             "kombinaceLektvaru": {
               "label": "Potion Combination",
-              "description": "20 SP; Alchemie: Mistr. Manual — resolved at the table."
+              "description": "20 SP; Alchemie: Mistr. Passive. Allows combining two different potions into one while crafting. The Difficulty follows the harder potion, raised by 15%, and the Test is made with Disadvantage. No secondary substance may be included. Needs a larger vial. The resulting toxicity is both potions combined, +5. Manual — resolved at the table."
             },
             "lekTrvani": {
               "label": "Potions: Duration +50%",
@@ -2046,7 +2025,7 @@
             },
             "kombinaceJedu": {
               "label": "Poison Combination",
-              "description": "20 SP; Alchemie: Mistr. Manual — resolved at the table."
+              "description": "20 SP; Alchemie: Mistr. Passive. Allows combining two different poisons into one while crafting. The Difficulty follows the harder poison, raised by 15%, and the Test is made with Disadvantage. No secondary substance may be included. The resulting poison's duration is fixed at 30 minutes. Manual — resolved at the table."
             },
             "jedTrvani": {
               "label": "Poisons: Duration +50%",
@@ -2820,31 +2799,31 @@
           "nodes": {
             "ucednik": {
               "label": "Illusionist: Apprentice",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Passive. Unlocks learning and casting apprentice illusions: Minor Illusion, Rune of Confusion and Floaters. Manual — resolved at the table."
             },
             "expert": {
               "label": "Illusionist: Expert",
-              "description": "5 CP; Škola Ducha VI. Manual — resolved at the table."
+              "description": "5 CP; Škola Ducha VI. Passive. Unlocks learning and casting expert illusions: Medium Illusion, Blending, Duplicate Spell, Decoy and False Image. Manual — resolved at the table."
             },
             "mistr": {
               "label": "Illusionist: Master",
-              "description": "5 CP; Škola Ducha VIII. Manual — resolved at the table."
+              "description": "5 CP; Škola Ducha VIII. Passive. Unlocks learning and casting master illusions: Major Illusion, Invisibility, Guardian and Double. Manual — resolved at the table."
             },
             "velmistr": {
               "label": "Illusionist: Grandmaster",
-              "description": "5 CP; Škola Ducha X. Manual — resolved at the table."
+              "description": "5 CP; Škola Ducha X. Passive. Unlocks learning and casting grandmaster illusions: Giant Illusion, Mystera's Labyrinth and Perfect Invisibility. Manual — resolved at the table."
             },
             "kapesniIluze": {
               "label": "Pocket Illusion",
-              "description": "5 SP; Iluzionista: Expert. Manual — resolved at the table."
+              "description": "5 SP; Iluzionista: Expert. Passive. Minor Illusion can be cast as a free action with no Channeling Test. Casting it is hidden and does not count as active magic. Manual — resolved at the table."
             },
             "mysterinoOko": {
               "label": "Mystera's Eye",
-              "description": "10 SP; Iluzionista: Expert. Manual — resolved at the table."
+              "description": "10 SP; Iluzionista: Expert. 2 actions. May concentrate and take full control of one of their illusions up to 100 m away, seeing, hearing and speaking through it. While concentrating, does not perceive their own surroundings. If Mind was placed into the illusion, control can be taken at any distance. Manual — resolved at the table."
             },
             "dokonalaIluze1": {
               "label": "Perfect Illusion I",
-              "description": "5 SP; Iluzionista: Expert. Manual — resolved at the table."
+              "description": "5 SP; Iluzionista: Expert. Passive. Allows placing a Mind point into a Medium or Major Illusion, where it stays Reserved. Those illusions then need no Concentration and count as Perfect. Perfect illusions adapt and can act as a solid obstacle. Manual — resolved at the table."
             },
             "obtiznostPopreni1": {
               "label": "Illusions: +20% harder to Deny",
@@ -2852,11 +2831,11 @@
             },
             "dokonalaIluze2": {
               "label": "Perfect Illusion II",
-              "description": "10 SP; Iluzionista: Mistr. Manual — resolved at the table."
+              "description": "10 SP; Iluzionista: Mistr. Passive. Raises every illusion to Perfect. Perfect illusions adapt and can act as a solid obstacle. Illusions created are 10% harder to Deny. Manual — resolved at the table."
             },
             "dokonalaIluze3": {
               "label": "Perfect Illusion III",
-              "description": "10 SP. Manual — resolved at the table."
+              "description": "10 SP. Passive. Illusions holding a Mind point gain a mind of their own, can carry out complex orders and act for themselves. Manual — resolved at the table."
             },
             "obtiznostPopreni2": {
               "label": "Illusions: +25% harder to Deny",
@@ -2872,11 +2851,11 @@
             },
             "mysterinKrok": {
               "label": "Mystera's Step",
-              "description": "5 CP; Iluzionista: Expert. Manual — resolved at the table."
+              "description": "5 CP; Iluzionista: Expert. Reaction, cost 10. When the caster is attacked, may call a Speed Test and swap places with their Double or Decoy. Manual — resolved at the table."
             },
             "udrzovaneIluze": {
               "label": "Sustained Illusions",
-              "description": "10 SP; Iluzionista: Mistr. Manual — resolved at the table."
+              "description": "10 SP; Iluzionista: Mistr. Passive. Medium, Major and Giant illusions within 20 hexes of the caster need no Concentration. Manual — resolved at the table."
             },
             "duplikaceKouzla": {
               "label": "Duplication of master spells",
@@ -2892,15 +2871,15 @@
             },
             "skrytaMagie1": {
               "label": "Hidden Magic I",
-              "description": "15 SP; Iluzionista: Mistr. Manual — resolved at the table."
+              "description": "15 SP; Iluzionista: Mistr. Passive. Connecting to the Source calls an Arcana vs Test against wizards and countermages; with a stronger success than theirs, the connection stays hidden. Opponents' Arcana Tests to detect magical potential are 40% harder. Manual — resolved at the table."
             },
             "skrytaMagie2": {
               "label": "Hidden Magic II",
-              "description": "10 CP; Iluzionista: Velmistr. Manual — resolved at the table."
+              "description": "10 CP; Iluzionista: Velmistr. Passive. Casting illusionist spells (except Duplicate Spell) does not break Invisibility or Perfect Invisibility. Manual — resolved at the table."
             },
             "mysterinStrazce": {
               "label": "Mystera's Guardian",
-              "description": "10 CP; Iluzionista: Velmistr. Manual — resolved at the table."
+              "description": "10 CP; Iluzionista: Velmistr. Passive. When casting Guardian, chooses one of two archetypes. Shieldbearer: Health +10, gains the Counterattack and Guard actions. Pikeman: Damage +1d6, gains Long Reach with no penalty and the Impale action. Manual — resolved at the table."
             }
           }
         },
@@ -4460,6 +4439,12 @@
           "attributeTest": {
             "label": "Test"
           },
+          "testAdvantage": {
+            "label": "Test Advantage",
+            "none": "None",
+            "advantage": "Advantage",
+            "disadvantage": "Disadvantage"
+          },
           "weaponAbility": {
             "label": "Weapon Ability"
           },
@@ -4834,7 +4819,8 @@
     },
     "Defense": {
       "BadDodge": "Bad Dodge!",
-      "BadDodgeNote": "The die beat the dodge limit ({limit}): this dodge counts as a margin of 0."
+      "BadDodgeNote": "The die beat the dodge limit ({limit}): this dodge counts as a margin of 0.",
+      "BloodSchoolBonus": "School of Blood defense: +{bonus}"
     },
     "AutoDefense": {
       "Label": "Auto-defense",
@@ -4843,7 +4829,13 @@
       "NoOption": "{name} has no defense it can take automatically: no usable weapon, or not enough stamina to dodge. Roll it by hand."
     },
     "Reroll": {
-      "Superseded": "Rerolled — this result no longer applies."
+      "Superseded": "Rerolled — this result no longer applies.",
+      "Used": "Rerolled with {source}.",
+      "Free": "Rerolled without spending a reroll."
+    },
+    "RollTriggers": {
+      "Hint": "Comma-separated. Pills appear in chat when a matching roll is made. Write attributes by their short key (str, res). Add -gm to any trigger (universal-gm, str-based-gm) and only the GM sees its pill. long-rest shows the pill on the character's Long Rest card (universal does not reach it).",
+      "GMOnly": "GM only"
     },
     "RoundDigest": {
       "Announcer": "Announcer",
@@ -4930,7 +4922,73 @@
       "EatRations": "Eat rations (camping)",
       "FoodTooltip": "Food carried / eaten per day",
       "AteRations": "Ate {eaten} rations ({left} left).",
-      "WentHungry": "Went hungry — only {eaten} of {needed} rations available."
+      "WentHungry": "Went hungry — only {eaten} of {needed} rations available.",
+      "Advanced": "Advanced options",
+      "ColHealth": "Health",
+      "ColHealthTooltip": "Health regained",
+      "ColStamina": "Stamina",
+      "ColStaminaTooltip": "Stamina regained",
+      "ColMana": "Mana",
+      "ColManaTooltip": "Mana regained (set by Doctrine)",
+      "ColMind": "Mind",
+      "ColMindTooltip": "Mind regained",
+      "ColFatigue": "Fatigue",
+      "ColFatigueTooltip": "Fatigue degrees removed",
+      "ColToxicity": "Toxicity",
+      "ColToxicityTooltip": "Toxicity removed",
+      "ColRations": "Rations",
+      "ColRationsTooltip": "Rations eaten (below: rations carried)",
+      "ColRerolls": "Rerolls",
+      "ColRerollsTooltip": "Restore feature rerolls",
+      "NourishingTooltip": "Includes the Nourishing Rest doubling",
+      "CardTitle": "Used Long Rest action",
+      "CardBody": "{name} had a long rest that soothes body and soul.",
+      "CardHealth": "Health +{amount}",
+      "CardStamina": "Stamina +{amount}",
+      "CardMana": "Mana +{amount}",
+      "CardMind": "Mind +{amount}",
+      "CardFatigue": "Fatigue −{amount}",
+      "CardToxicity": "Toxicity −{amount}",
+      "CardNothing": "Nothing was restored.",
+      "CardRerolls": "Rerolls restored.",
+      "CardAdjusted": "Rest values adjusted by hand."
+    },
+    "PartyManagement": {
+      "Title": "Party Management",
+      "Everyone": "Everyone",
+      "ColCharacter": "Character",
+      "ColCp": "CP",
+      "ColSp": "SP",
+      "LeftOfEarned": "Left / earned",
+      "ColMoney": "Money",
+      "ColGraveWounds": "Grave wounds",
+      "ColGrant": "Grant",
+      "Note": "Note",
+      "NotePlaceholder": "Reason (optional)",
+      "GrantTicked": "Grant to ticked",
+      "Grant": "Grant",
+      "OpenSheet": "Open sheet",
+      "OpenLearn": "Open progression",
+      "Date": "Date",
+      "InvalidDate": "Choose a valid date for the award.",
+      "Ledger": "Ledger",
+      "LedgerInfo": "Info",
+      "LedgerTotal": "Total earned",
+      "LedgerStarting": "Starting",
+      "LedgerBonus": "Bonus",
+      "LedgerEmpty": "No awards yet.",
+      "GrantTooltip": "Granted by {by}, recorded {created}",
+      "StartingInvalid": "Starting CP and SP cannot be negative.",
+      "DeleteTitle": "Delete award",
+      "DeleteGrant": "Delete this award for everyone",
+      "DeleteGrantConfirm": "Delete the award of {date} for everyone and take its CP and SP back?",
+      "DeleteShare": "Delete this character's share",
+      "DeleteConfirm": "Delete {name}'s share of this award ({cp} CP, {sp} SP)?",
+      "NothingToGrant": "Enter an amount of CP or SP to grant.",
+      "NobodyTicked": "Tick at least one character.",
+      "NoParty": "No player characters or party members.",
+      "GmOnly": "Only a Gamemaster can open Party Management.",
+      "CardTitle": "Experience awarded"
     },
     "Banes": {
       "PickerTitle": "Choose a Bane ({count})",
@@ -5396,6 +5454,9 @@
       "CalendulaAlba": {
         "name": "Calendula Alba"
       },
+      "Calligraphy": {
+        "name": "Calligraphy"
+      },
       "CalmBody": {
         "name": "Calm Body"
       },
@@ -5447,6 +5508,15 @@
       },
       "CommandVigilance": {
         "name": "Command: Vigilance"
+      },
+      "CookingI": {
+        "name": "Cooking I"
+      },
+      "CookingII": {
+        "name": "Cooking II"
+      },
+      "CookingIII": {
+        "name": "Cooking III"
       },
       "CorpseBreath": {
         "name": "Corpse Breath"
@@ -5664,6 +5734,106 @@
       },
       "ExpertTraps": {
         "name": "Expert: Traps"
+      },
+      "MasterAcrobacy": {
+        "name": "Master: Acrobacy",
+        "description": "<p>+3% Critical Success chance for Acrobacy. Once per day you may reroll one Acrobacy test, including a Critical Failure.</p>"
+      },
+      "MasterActing": {
+        "name": "Master: Acting",
+        "description": "<p>+3% Critical Success chance for Acting. Once per day you may reroll one Acting test, including a Critical Failure.</p>"
+      },
+      "MasterAlchemy": {
+        "name": "Master: Alchemy",
+        "description": "<p>+3% Critical Success chance for Alchemy. Once per day you may reroll one Alchemy test, including a Critical Failure.</p>"
+      },
+      "MasterAnimalHandling": {
+        "name": "Master: Animal Handling",
+        "description": "<p>+3% Critical Success chance for Animal Handling. Once per day you may reroll one Animal Handling test, including a Critical Failure.</p>"
+      },
+      "MasterArcana": {
+        "name": "Master: Arcana",
+        "description": "<p>+3% Critical Success chance for Arcana. Once per day you may reroll one Arcana test, including a Critical Failure.</p>"
+      },
+      "MasterArt": {
+        "name": "Master: Art",
+        "description": "<p>+3% Critical Success chance for Art. Once per day you may reroll one Art test, including a Critical Failure.</p>"
+      },
+      "MasterAthletics": {
+        "name": "Master: Athletics",
+        "description": "<p>+3% Critical Success chance for Athletics. Once per day you may reroll one Athletics test, including a Critical Failure.</p>"
+      },
+      "MasterAugury": {
+        "name": "Master: Augury",
+        "description": "<p>+3% Critical Success chance for Augury. Once per day you may reroll one Augury test, including a Critical Failure.</p>"
+      },
+      "MasterCraft": {
+        "name": "Master: Craft",
+        "description": "<p>+3% Critical Success chance for Craft. Once per day you may reroll one Craft test, including a Critical Failure.</p>"
+      },
+      "MasterDreamwalker": {
+        "name": "Master: Dreamwalker",
+        "description": "<p>+3% Critical Success chance for Dreamwalker. Once per day you may reroll one Dreamwalker test, including a Critical Failure.</p>"
+      },
+      "MasterEngineering": {
+        "name": "Master: Engineering",
+        "description": "<p>+3% Critical Success chance for Engineering. Once per day you may reroll one Engineering test, including a Critical Failure.</p>"
+      },
+      "MasterFirstAid": {
+        "name": "Master: First Aid",
+        "description": "<p>+3% Critical Success chance for First Aid. Once per day you may reroll one First Aid test, including a Critical Failure.</p>"
+      },
+      "MasterLeadership": {
+        "name": "Master: Leadership",
+        "description": "<p>+3% Critical Success chance for Leadership. Once per day you may reroll one Leadership test, including a Critical Failure.</p>"
+      },
+      "MasterLockpicking": {
+        "name": "Master: Lockpicking",
+        "description": "<p>+3% Critical Success chance for Lockpicking. Once per day you may reroll one Lockpicking test, including a Critical Failure.</p>"
+      },
+      "MasterLogic": {
+        "name": "Master: Logic",
+        "description": "<p>+3% Critical Success chance for Logic. Once per day you may reroll one Logic test, including a Critical Failure.</p>"
+      },
+      "MasterMindBending": {
+        "name": "Master: Mind Bending",
+        "description": "<p>+3% Critical Success chance for Mind Bending. Once per day you may reroll one Mind Bending test, including a Critical Failure.</p>"
+      },
+      "MasterMusic": {
+        "name": "Master: Music",
+        "description": "<p>+3% Critical Success chance for Music. Once per day you may reroll one Music test, including a Critical Failure.</p>"
+      },
+      "MasterPainting": {
+        "name": "Master: Painting",
+        "description": "<p>+3% Critical Success chance for Painting. Once per day you may reroll one Painting test, including a Critical Failure.</p>"
+      },
+      "MasterPickpocketing": {
+        "name": "Master: Pickpocketing",
+        "description": "<p>+3% Critical Success chance for Pickpocketing. Once per day you may reroll one Pickpocketing test, including a Critical Failure.</p>"
+      },
+      "MasterResearch": {
+        "name": "Master: Research",
+        "description": "<p>+3% Critical Success chance for Research. Once per day you may reroll one Research test, including a Critical Failure.</p>"
+      },
+      "MasterRituals": {
+        "name": "Master: Rituals",
+        "description": "<p>+3% Critical Success chance for Rituals. Once per day you may reroll one Rituals test, including a Critical Failure.</p>"
+      },
+      "MasterSmithing": {
+        "name": "Master: Smithing",
+        "description": "<p>+3% Critical Success chance for Smithing. Once per day you may reroll one Smithing test, including a Critical Failure.</p>"
+      },
+      "MasterStealth": {
+        "name": "Master: Stealth",
+        "description": "<p>+3% Critical Success chance for Stealth. Once per day you may reroll one Stealth test, including a Critical Failure.</p>"
+      },
+      "MasterTactics": {
+        "name": "Master: Tactics",
+        "description": "<p>+3% Critical Success chance for Tactics. Once per day you may reroll one Tactics test, including a Critical Failure.</p>"
+      },
+      "MasterTraps": {
+        "name": "Master: Traps",
+        "description": "<p>+3% Critical Success chance for Traps. Once per day you may reroll one Traps test, including a Critical Failure.</p>"
       },
       "ExploitWeakness": {
         "name": "Exploit Weakness"
@@ -6000,6 +6170,15 @@
       "LamellarArmor": {
         "name": "Lamellar Armor"
       },
+      "LanguageBasicCommunication": {
+        "name": "Language: Basic communication"
+      },
+      "LanguageFluentSpeech": {
+        "name": "Language: Fluent speech"
+      },
+      "LanguageSignLanguage": {
+        "name": "Language: Sign language"
+      },
       "LeatherArmor": {
         "name": "Leather Armor"
       },
@@ -6200,6 +6379,12 @@
       },
       "ReactionCast": {
         "name": "Reaction Cast"
+      },
+      "ReadingAndWriting": {
+        "name": "Reading and Writing"
+      },
+      "ReadingAndWritingAdditional": {
+        "name": "Reading and Writing: Additional language"
       },
       "RecklessStrike": {
         "name": "Reckless Strike"
@@ -6458,6 +6643,15 @@
       },
       "TalentedIStealth": {
         "name": "Talented I: Stealth"
+      },
+      "TeacherI": {
+        "name": "Teacher I"
+      },
+      "TeacherII": {
+        "name": "Teacher II"
+      },
+      "TeacherIII": {
+        "name": "Teacher III"
       },
       "ThrowingAxe": {
         "name": "Throwing Axe"
@@ -7054,6 +7248,9 @@
       "Voracious": {
         "name": "Voracious"
       },
+      "Ascetic": {
+        "name": "Ascetic"
+      },
       "Rations": {
         "name": "Rations",
         "description": "<p>A day's worth of trail food: hard bread, dried meat, whatever the pot gave up. One unit feeds one mouth for a third of a day. A normal character eats 3 units per Long Rest.</p>"
@@ -7369,6 +7566,7 @@
       "pickerDone": "Done",
       "pickerCancel": "Cancel",
       "pickerLocked": "Already trained, so it stays in the tree.",
+      "pickerGated": "Needs {requirements} before it can join the tree.",
       "nothingTracked": "No skills chosen yet. Use “Acquire skills” to pick what you are training.",
       "nothingToggled": "Everything on the ribbon is switched off. Click a group to show it.",
       "cannotBuy": "That rank cannot be bought right now.",
@@ -7378,11 +7576,12 @@
       "ratingOf": "{label} rating",
       "priceCp": "Price in CP",
       "priceSp": "Price in SP",
+      "paid": "Paid {n}",
+      "paidTooltip": "Total paid for the ranks held: {n} {currency}",
+      "currentTotal": "{label} at your current rank: {value}",
       "level": "Level",
       "cpRemaining": "CP left",
       "spRemaining": "SP left",
-      "earnedCp": "CP earned",
-      "earnedSp": "SP earned",
       "adjustCp": "CP adjustment",
       "adjustSp": "SP adjustment",
       "close": "Close",
@@ -7452,6 +7651,7 @@
           "talented2": "Talented II",
           "adept": "Adept",
           "expert": "Expert",
+          "master": "Master",
           "elvenTalent": "Elven talent",
           "elvenPerfection": "Elven perfection"
         },
@@ -7462,6 +7662,38 @@
           "trait": "Trait features",
           "racial": "Racial features"
         }
+      },
+      "Languages": {
+        "title": "Languages",
+        "slots": {
+          "basic": "Basic communication",
+          "fluent": "Fluent speech",
+          "sign": "Sign language",
+          "reading": "Reading and writing"
+        },
+        "namePlaceholder": "Language name",
+        "add": "Learn language",
+        "known": "Known languages: {n}",
+        "none": "No languages yet. Type a name above to learn one.",
+        "native": "Native",
+        "grantNative": "Grant native language",
+        "grantNativeHint": "Free Basic communication and Fluent speech in this language. One per character.",
+        "nameRequired": "Type the language's name first.",
+        "alreadyKnown": "{language} is already known.",
+        "needsBasic": "Basic communication in {language} first",
+        "nativeTaken": "This character already has a native language.",
+        "nativeGmOnly": "Only the GM can remove a native language.",
+        "refundDependents": "Give back the other features for {language} first.",
+        "refundReadingFirst": "Give back Reading and writing for the additional languages first."
+      },
+      "ItemFields": {
+        "title": "Learn window",
+        "costCp": "Cost in CP",
+        "costSp": "Cost in SP",
+        "section": "Learn section",
+        "sectionDefault": "Book default",
+        "requirementsNote": "Requirements note",
+        "hint": "Leave a cost empty to use the book price shown faintly; 0 makes it free. A feature missing from the book table appears in the Learn window once it has a cost. The note is shown as a GM requirement and never blocks."
       },
       "Specs": {
         "pointsLeft": "Specialisation points left",
@@ -7482,12 +7714,30 @@
         "poor": "Not enough Specialisation points left.",
         "capped": "At most {cap} Specialisation points may go to combat specialisations.",
         "refundTip": "Click to give this specialisation back.",
-        "refundBlocked": "Lock every node of this specialisation on the character sheet before giving it back.",
-        "browseHint": "Nodes are unlocked on the character sheet's Specialisations tab for now.",
+        "refundBlocked": "Give back every node of this specialisation before giving it back.",
         "wip": "Work in progress",
         "showWip": "Work in progress",
         "listView": "List",
         "cardView": "Cards",
+        "learnSpec": "Learn Specialisation",
+        "back": "Back",
+        "nothingToLearn": "No specialisation left to learn.",
+        "Node": {
+          "cp": "{n} CP",
+          "sp": "{n} SP",
+          "both": "{cp} + {sp}",
+          "free": "Free",
+          "price": "Price: {price}",
+          "needsNode": "Unlock {node} first",
+          "poor": "Not enough CP or SP left.",
+          "gmJudges": "The GM judges",
+          "refundFirst": "Give these back first",
+          "cannotBuy": "This node cannot be unlocked right now.",
+          "refundBlocked": "Give back the nodes that build on this one first.",
+          "pickBane": "Choose this node's Bane on the character sheet by clicking the node there.",
+          "hint": "Click a lit node to unlock it. Click an unlocked node to give it back.",
+          "hintNotOwned": "Learn this specialisation to unlock its nodes."
+        },
         "IconEdit": {
           "edit": "Change icon",
           "copy": "Copy icons",
@@ -7498,8 +7748,18 @@
       "Discounts": {
         "title": "Discounts",
         "choose": "Choose a skill",
+        "chooseDoctrine": "Choose a doctrine",
         "alreadyDiscounted": "{skill} already has a discount from {source}. Discounts on one skill do not stack.",
         "discounted": "Discounted"
+      },
+      "Mirror": {
+        "badge": "Copies {skill}",
+        "locked": "Increase level of {skill} skill to advance in this one"
+      },
+      "FreeSchool": {
+        "title": "First school of magic",
+        "first": "Rank I of the first school of magic costs no CP.",
+        "temperament": "{trait} sets the first school of magic: {school}. Its rank I is learned for free once the character has Channeling I, and cannot be given back while they keep it."
       },
       "Teacher": {
         "grant": "Click to grant.",
@@ -7519,6 +7779,8 @@
         "notFlag": "Without {name}",
         "countRank": "{count}× {group} {min}",
         "featurePrefix": "{name}",
+        "masterFeature": "{skill}: Master",
+        "specScore": "{spec} {min}",
         "Family": {
           "elf": "Elf",
           "dwarf": "Dwarf"
@@ -7549,7 +7811,10 @@
           "notFlag": "Requires not having {name}.",
           "countRank": "Requires {count} × {group} at rank {min} or higher.",
           "featurePrefix": "Requires any {name} feature.",
-          "featureTeacher": "Requires learning from a teacher (Rank {tier}). The GM confirms it."
+          "featureTeacher": "Requires learning from a teacher (Rank {tier}). The GM confirms it.",
+          "specNodeNamed": "Requires the {node} node of {spec}.",
+          "masterFeature": "Requires {skill}: Master. No such feature exists yet, so the GM judges it.",
+          "specScore": "The book asks for {spec} {min} without saying what it counts, so the GM judges it."
         }
       }
     }

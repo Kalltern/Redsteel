@@ -780,11 +780,30 @@ registerTooltip("specNode", ({ id, dataset }) => {
     REDSTEEL.specialisations[specId]?.label ?? "",
   );
 
+  // The Learn window's star sign adds the node's price and what stands in its
+  // way (one line per entry); the sheet's star sign passes neither.
+  const list = (heading, text) =>
+    `<div class="tt-spec-reqs"><strong>${ttEscape(heading)}</strong>${String(text)
+      .split("\n")
+      .map((line) => `<br>${ttEscape(line)}`)
+      .join("")}</div>`;
+  const extra = [
+    dataset.ttCost
+      ? `<div class="tt-spec-cost">${ttEscape(
+          game.i18n.format("REDSTEEL.Learn.Specs.Node.price", { price: dataset.ttCost }),
+        )}</div>`
+      : "",
+    dataset.ttReasons ? list(dataset.ttReasonsTitle ?? "", dataset.ttReasons) : "",
+    dataset.ttAdvisory
+      ? list(game.i18n.localize("REDSTEEL.Learn.Specs.Node.gmJudges"), dataset.ttAdvisory)
+      : "",
+  ].join("");
+
   return ttFrame({
     title,
     img: node.icon || null,
     subtitle: specLabel,
-    body: desc ? `<div class="tt-desc">${desc}</div>` : "",
+    body: `${desc ? `<div class="tt-desc">${desc}</div>` : ""}${extra}`,
   });
 });
 

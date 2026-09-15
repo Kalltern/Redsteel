@@ -16,7 +16,7 @@
  * initiator wins ties — the contester has to beat the number.
  */
 
-import { withRollBias } from "./rollAdvantage.mjs";
+import { withRollBias, tagRollItemAdvantage } from "./rollAdvantage.mjs";
 import { FLOOR_STATUSES } from "./floorInitiative.mjs";
 
 /** The Test Type dropdown value that selects a speed test. */
@@ -89,9 +89,10 @@ export function tagSpeedTest(roll) {
  * @param {Actor}  actor
  * @param {object} [options]
  * @param {number} [options.modifier]  Flat bonus from the item's Test Modifier.
+ * @param {string} [options.advantage] The item's Test Advantage ("" | "advantage" | "disadvantage").
  * @returns {Promise<Roll>} The evaluated roll.
  */
-export async function rollSpeedTest(actor, { modifier = 0 } = {}) {
+export async function rollSpeedTest(actor, { modifier = 0, advantage = "" } = {}) {
   const mod = Number(modifier) || 0;
   let formula = buildSpeedTestFormula(actor);
   if (mod > 0) formula += ` + ${mod}`;
@@ -99,6 +100,7 @@ export async function rollSpeedTest(actor, { modifier = 0 } = {}) {
 
   const roll = new Roll(formula, withRollBias(actor.getRollData(), actor));
   tagSpeedTest(roll);
+  tagRollItemAdvantage(roll, advantage);
   await roll.evaluate();
   return roll;
 }

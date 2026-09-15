@@ -23,7 +23,11 @@
       ],
       "value": 2
     },
-    "option": "feature"
+    "option": "feature",
+    "cost": {
+      "cp": null,
+      "sp": 25
+    }
   },
   "effects": [
     {

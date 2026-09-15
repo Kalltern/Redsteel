@@ -1,0 +1,52 @@
+{
+  "folder": "HBCTGlhrkFsZxRV5",
+  "name": "Teacher II",
+  "type": "feature",
+  "img": "icons/skills/social/intimidation-impressing.webp",
+  "system": {
+    "description": "<p>You can teach others what you have mastered yourself, as a Teacher II. The GM decides how long the teaching takes.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "reroll": {
+      "name": "",
+      "active": [
+        false,
+        false
+      ],
+      "value": null
+    },
+    "option": "feature",
+    "localizationKey": "REDSTEEL.Items.TeacherII.name",
+    "rollTriggersRaw": "",
+    "rollTriggers": [],
+    "cost": {
+      "cp": null,
+      "sp": 10
+    }
+  },
+  "effects": [],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1777294839144,
+    "modifiedTime": 1777294839144,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "ownership": {
+    "default": 0,
+    "rs3mzx7WZdtEmvH2": 3,
+    "exQfSubzwCCs5h8v": 3,
+    "UHjN0KQ8w8ZxibJg": 3
+  },
+  "sort": 100000,
+  "_id": "qMwuarPuBkQzQajw",
+  "_key": "!items!qMwuarPuBkQzQajw"
+}

@@ -5,6 +5,7 @@ import { getBaneProfile } from "./baneCombat.mjs";
 import { buildTempHealthGrantFlag } from "./tempHealthGrant.mjs";
 import { buildManeuverFlag } from "./advantageousManeuver.mjs";
 import { getAimDefenseBonus } from "./aim.mjs";
+import { getBloodSchoolRankBonus } from "../helpers/specialisations.mjs";
 import {
   OVERWHELM_MAX_STACKS,
   OVERWHELM_PENALTY_PER_STACK,
@@ -1268,9 +1269,17 @@ export async function defenseRoll({
 
               await settleOverwhelm();
 
+              // School of Blood ranks only harden the defender against Blood
+              // spells, so the bonus needs the card being answered.
+              const bloodSchoolBonus =
+                attack?.spellSchool === "blood"
+                  ? getBloodSchoolRankBonus(actor)
+                  : 0;
+
               const rating =
                 actor.system.combatSkills.channeling.rating +
-                actor.system.combatSkills.channeling.defense;
+                actor.system.combatSkills.channeling.defense +
+                bloodSchoolBonus;
 
               const roll = new Roll(
                 "@rating + @overwhelmPenalty - 1d100",
@@ -1297,6 +1306,7 @@ export async function defenseRoll({
                 </div>
 
                 ${overwhelmStacks > 0 ? `<p style="text-align:center">${game.i18n.localize("REDSTEEL.Overwhelm.Label")}: ${overwhelmPenalty}</p>` : ""}
+                ${bloodSchoolBonus > 0 ? `<p style="text-align:center">${game.i18n.format("REDSTEEL.Defense.BloodSchoolBonus", { bonus: bloodSchoolBonus })}</p>` : ""}
                 ${versus.html}
                 `,
                 flags: {
@@ -1519,6 +1529,8 @@ export function registerDefendButton() {
       // the fumble on margins alone.
       criticalFailure: message.flags.attack.criticalFailure === true,
       d100: message.flags.attack.d100 ?? null,
+      // Magic Defense against a Blood spell takes the School of Blood rank bonus.
+      spellSchool: message.flags?.redsteel?.spellSchool ?? null,
     };
 
     const isAuthor = game.user.id === message.author?.id;

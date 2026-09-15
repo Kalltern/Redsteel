@@ -15,16 +15,37 @@
  *     because the wallet derives what was spent from what the character owns.
  *   - A discount applies only to a rank priced in its own currency.
  *
- * Every definition carries `amount` and `currency`, and either
- *   skill    a fixed skill key ("own" on a feature: the feature's own skill), or
+ * Every definition carries `amount` and `currency`, an optional `group` (the
+ * track group it lands in, "skills" when absent; "doctrines" for a doctrine
+ * discount), and either
+ *   skill    a fixed key in that group ("own" on a feature: its own skill), or
  *   choices  what the player may pick in the Learn window:
- *              sections   governing attributes whose ordinary skills all qualify
- *              skills     single skills added to the list
+ *              sections   price-table sections whose tracks of the group all
+ *                         qualify (a skill's governing attribute; "combat" or
+ *                         "magic" for a doctrine)
+ *              skills     single keys added to the list
  *              noncombat  every ordinary skill except NONCOMBAT_EXCLUDED
+ *            A section track with no rank priced in the discount's currency is
+ *            left off the list, since the discount could never apply to it.
  *
  * Pure data: the engine (progressionEngine.mjs) applies it, and
  * specialisations.mjs reads SPEC_DISCOUNTS to paint these perks as automated.
  */
+
+/**
+ * The first school of magic ("10/0 CP" on every school's rank I): one school's
+ * rank I costs no CP. A temperament trait decides which, and a character with
+ * that trait and Channeling is handed its rank I (progressionEngine.mjs, "First
+ * school of magic"). Rules journal, Usměrňování: "První Škola magie je určena
+ * temperamentem … Cholerik - Oheň, Flegmatik - Voda, Sangvinik - Vzduch,
+ * Melancholik - Země". Keyed by the trait's English item name.
+ */
+export const TEMPERAMENT_SCHOOLS = {
+  Choleric: "fire",
+  Phlegmatic: "water",
+  Sanguine: "air",
+  Melancholic: "earth",
+};
 
 /**
  * Skills a "non-combat skill" discount can never land on: Svaly and Hbitost
@@ -93,5 +114,17 @@ export const SPEC_DISCOUNTS = {
   mystic: {
     sleva1: { choices: MYSTIC_CHOICES, amount: 3, currency: "sp" },
     sleva2: { choices: MYSTIC_CHOICES, amount: 3, currency: "sp" },
+  },
+  // Veneficus, Lindar: "Zvolí si jednu bojovou Doktrínu, která získává slevu
+  // 3 CP na každý stupeň." A combat doctrine is one the price table files under
+  // "combat" (melee, ranged, special), never a magic one. Rider is priced in SP,
+  // so the currency rule keeps it off the list.
+  veneficus: {
+    lindar: {
+      group: "doctrines",
+      choices: { sections: ["combat"] },
+      amount: 3,
+      currency: "cp",
+    },
   },
 };

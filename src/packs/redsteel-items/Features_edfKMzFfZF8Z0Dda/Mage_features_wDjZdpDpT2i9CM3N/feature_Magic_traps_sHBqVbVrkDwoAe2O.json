@@ -20,7 +20,11 @@
       "value": 0
     },
     "option": "feature",
-    "localizationKey": "REDSTEEL.Items.MagicTraps.name"
+    "localizationKey": "REDSTEEL.Items.MagicTraps.name",
+    "cost": {
+      "cp": 5,
+      "sp": null
+    }
   },
   "effects": [],
   "sort": 0,

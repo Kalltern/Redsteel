@@ -1,7 +1,10 @@
 import { getTraitPills } from "./traitPills.mjs";
 import { getSpellPower } from "./spellPower.mjs";
 import { withRollBias, applyDesperateCrit } from "./rollAdvantage.mjs";
-import { getCritDegreeTriggers } from "../helpers/specialisations.mjs";
+import {
+  getBloodSchoolRankBonus,
+  getCritDegreeTriggers,
+} from "../helpers/specialisations.mjs";
 import { hasHtmlContent } from "./chatBlocks.mjs";
 import { getStrikeId } from "./strikes.mjs";
 import { getMaxCritDegree } from "./combatSkillBonuses.mjs";
@@ -1006,9 +1009,10 @@ function getEffectiveDifficulty(spell, focusSpent) {
  */
 /**
  * Resolve the cast rating used for a spell. Blood spells (school `blood`) cast
- * off the higher of the Intelligence-based channeling rating and the
- * Willpower-based Blood Manipulation rating (Manipulace s krví); every other
- * school uses channeling.
+ * off the Willpower-based Blood Manipulation rating (Manipulace s krví); every
+ * other school uses channeling. A character's Blood Manipulation rating already
+ * holds Channeling whenever Magic Blood lets it stand in (documents/actor.mjs).
+ * NPCs have no specialisations and keep casting off the higher of the two.
  * @param {object} actor - The casting actor.
  * @param {object} spell - The spell item being cast.
  * @returns {number} - The effective cast rating.
@@ -1018,6 +1022,7 @@ export function getCastRating(actor, spell) {
   if (spell?.system?.type === "blood") {
     const bloodManipulation =
       actor.system.combatSkills?.bloodManipulation?.rating ?? 0;
+    if (actor.type === "character") return bloodManipulation;
     return Math.max(channeling, bloodManipulation);
   }
   return channeling;
@@ -1383,9 +1388,12 @@ export async function finalizeRollsAndPostChat(
   // tag would be a number that never gets compared to anything.
   const showMagicAttack =
     !isUncontestedSpell(spell) && !spell.system.isHealing;
-  const attack = attackRoll
-    ? attackRoll.total + (actor.system.combatSkills.channeling.attack || 0)
-    : null;
+  // Magic ATK is the cast margin plus the caster's flat magic attack bonuses. A
+  // Blood spell adds +5 per School of Blood rank (Expert, Master, Grandmaster).
+  const magicAttackBonus =
+    (actor.system.combatSkills.channeling.attack || 0) +
+    (spell.system.type === "blood" ? getBloodSchoolRankBonus(actor) : 0);
+  const attack = attackRoll ? attackRoll.total + magicAttackBonus : null;
   // Resolve the `{{…spellPower…}}` placeholders with the same evaluator the
   // sheet cards use, BEFORE Handlebars sees the string. Two reasons: it floors
   // SK divisions the way the rulebook does (the `math` helper alone does not),
@@ -1568,10 +1576,14 @@ export async function finalizeRollsAndPostChat(
       isSpell: true,
       // Direct magic is answered by Ranged Defense or a dodge, never a parry.
       attackType: "magic",
-      // What a defender contests. Explicitly null for an uncontested cast that
-      // never rolled: readers otherwise fall back to `rolls[0]`, which in that
-      // case is the damage roll and would be read as a wildly good attack.
-      margin: attackRoll ? attackRoll.total : null,
+      // What a defender contests: the Magic ATK printed on the card. Explicitly
+      // null for an uncontested cast that never rolled: readers otherwise fall
+      // back to `rolls[0]`, which in that case is the damage roll and would be
+      // read as a wildly good attack.
+      margin: attack,
+      // How far Magic ATK sits above the cast roll. A reroll re-evaluates only
+      // the roll, so buildAttackRerollFlag adds this back onto the new total.
+      attackBonus: magicAttackBonus,
       // Who it was aimed at, captured from the caster's targets while they still
       // exist — targets are per-user and live, the card is not.
       targets: captureAttackTargets(),

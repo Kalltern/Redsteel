@@ -25,7 +25,11 @@
     },
     "weaponSpec": { "tag": "", "tier": 2 },
     "option": "feature",
-    "localizationKey": "REDSTEEL.Items.WeaponSpecializationII.name"
+    "localizationKey": "REDSTEEL.Items.WeaponSpecializationII.name",
+    "cost": {
+      "cp": 25,
+      "sp": null
+    }
   },
   "effects": [],
   "sort": 810000,

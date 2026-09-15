@@ -1,0 +1,188 @@
+{{!--
+  Party Management (module/utils/partyManagement.mjs). One root element: the
+  part must render a single HTML element.
+  Inputs render from the window's draft, not the actor, so a re-render caused by
+  someone else's sheet edit keeps what the GM was typing. Every input carries a
+  data-focus-key so focus survives the re-render.
+  Numbers are printed plainly, never gated on themselves: {{#if 0}} is falsy.
+--}}
+<div class="rs-party-body">
+
+  {{!-- Grant bar --}}
+  <section class="rs-party-plate rs-party-grantbar">
+    <label class="rs-party-field">
+      <span class="rs-party-label">{{localize "REDSTEEL.PartyManagement.ColCp"}}</span>
+      <input type="number" class="rs-party-input rs-party-amount" data-draft="cp" data-focus-key="draft-cp" min="0" step="1" value="{{draft.cp}}">
+    </label>
+    <label class="rs-party-field">
+      <span class="rs-party-label">{{localize "REDSTEEL.PartyManagement.ColSp"}}</span>
+      <input type="number" class="rs-party-input rs-party-amount" data-draft="sp" data-focus-key="draft-sp" min="0" step="1" value="{{draft.sp}}">
+    </label>
+    <label class="rs-party-field">
+      <span class="rs-party-label">{{localize "REDSTEEL.PartyManagement.Date"}}</span>
+      <input type="date" class="rs-party-input rs-party-date" data-draft="date" data-focus-key="draft-date" value="{{draft.date}}">
+    </label>
+    <label class="rs-party-field rs-party-field--note">
+      <span class="rs-party-label">{{localize "REDSTEEL.PartyManagement.Note"}}</span>
+      <input type="text" class="rs-party-input" data-draft="note" data-focus-key="draft-note" value="{{draft.note}}" placeholder="{{localize "REDSTEEL.PartyManagement.NotePlaceholder"}}">
+    </label>
+    <button type="button" class="rs-party-button" data-action="grantParty">
+      <i class="fa-light fa-plus"></i> {{localize "REDSTEEL.PartyManagement.GrantTicked"}}
+    </button>
+    <button type="button" class="rs-party-button rs-party-rest" data-action="longRest">
+      <i class="fa-light fa-moon"></i> {{localize "REDSTEEL.LongRest.Title"}}
+    </button>
+  </section>
+
+  {{!-- Party table --}}
+  <section class="rs-party-plate rs-party-roster">
+    {{#if hasRows}}
+    <div class="rs-party-grid">
+      <div class="rs-party-row rs-party-head">
+        <label class="rs-party-cell rs-party-cell--tick" data-tooltip="{{localize "REDSTEEL.PartyManagement.Everyone"}}">
+          <input type="checkbox" class="rs-party-tick-all" data-focus-key="tick-all" aria-label="{{localize "REDSTEEL.PartyManagement.Everyone"}}" {{#if allTicked}}checked{{/if}}>
+        </label>
+        <span class="rs-party-cell rs-party-cell--name">{{localize "REDSTEEL.PartyManagement.ColCharacter"}}</span>
+        <span class="rs-party-cell">{{localize "REDSTEEL.Learn.level"}}</span>
+        <span class="rs-party-cell" data-tooltip="{{localize "REDSTEEL.PartyManagement.LeftOfEarned"}}">{{localize "REDSTEEL.PartyManagement.ColCp"}}</span>
+        <span class="rs-party-cell" data-tooltip="{{localize "REDSTEEL.PartyManagement.LeftOfEarned"}}">{{localize "REDSTEEL.PartyManagement.ColSp"}}</span>
+        <span class="rs-party-cell">{{localize "REDSTEEL.PartyManagement.ColMoney"}}</span>
+        <span class="rs-party-cell rs-party-res--health">{{localize "REDSTEEL.Actor.Character.stats.health.value.label"}}</span>
+        <span class="rs-party-cell rs-party-res--mana">{{localize "REDSTEEL.Actor.Character.stats.mana.value.label"}}</span>
+        <span class="rs-party-cell"><i class="fa-light fa-bone-break" style="color: rgb(102, 32, 29);"></i>{{localize "REDSTEEL.PartyManagement.ColGraveWounds"}}</span>
+        <span class="rs-party-cell"><i class="fa-light fa-head-side-brain" style="color: rgb(116, 119, 126);"></i>{{localize "REDSTEEL.Actor.Character.stats.mind.value.label"}}</span>
+        <span class="rs-party-cell"><i class="fa-light fa-hurricane" style="color: rgb(104, 40, 73);"></i>{{localize "REDSTEEL.Actor.Character.stats.insanity.value.label"}}</span>
+        <span class="rs-party-cell"><i class="fa-light fa-tent" style="color: rgb(96, 110, 134);"></i>{{localize "REDSTEEL.Actor.Character.stats.fatigue.value.label"}}</span>
+        <span class="rs-party-cell">{{localize "REDSTEEL.PartyManagement.ColGrant"}}</span>
+        <span class="rs-party-cell"></span>
+      </div>
+
+      {{#each rows as |row|}}
+      <div class="rs-party-row{{#if row.playerColour}} has-player{{/if}}" data-actor-uuid="{{row.uuid}}"{{#if row.playerColour}} style="--rs-party-player: {{row.playerColour}};"{{/if}}>
+        <label class="rs-party-cell rs-party-cell--tick">
+          <input type="checkbox" class="rs-party-tick" data-actor-uuid="{{row.uuid}}" data-focus-key="tick-{{row.uuid}}" {{#if row.ticked}}checked{{/if}}>
+        </label>
+        <a class="rs-party-cell rs-party-cell--name" data-action="openSheet" data-tooltip="{{localize "REDSTEEL.PartyManagement.OpenSheet"}}">
+          <img class="rs-party-portrait" src="{{row.img}}" alt="">
+          <span class="rs-party-name">{{row.name}}</span>
+        </a>
+        <span class="rs-party-cell rs-party-num rs-party-fig rs-party-level">{{row.level}}</span>
+        <span class="rs-party-cell rs-party-num rs-party-fig" data-tooltip="{{localize "REDSTEEL.PartyManagement.LeftOfEarned"}}">
+          <b>{{row.cp.left}}</b><em>/ {{row.cp.earned}}</em>
+        </span>
+        <span class="rs-party-cell rs-party-num rs-party-fig" data-tooltip="{{localize "REDSTEEL.PartyManagement.LeftOfEarned"}}">
+          <b>{{row.sp.left}}</b><em>/ {{row.sp.earned}}</em>
+        </span>
+        {{!-- Worth in tier-1 coins, each figure in its own coin's colour; the
+              title carries the full breakdown (as the inventory tab does). --}}
+        <span class="rs-party-cell rs-party-money" title="{{row.purseTitle}}">
+          {{#each row.purse as |part|}}
+          <span class="rs-party-coin" style="color: {{part.color}};"><b>{{part.count}}</b> {{part.label}}</span>
+          {{/each}}
+        </span>
+        <span class="rs-party-cell rs-party-num rs-party-fig">{{row.health.value}} / {{row.health.max}}</span>
+        <span class="rs-party-cell rs-party-num rs-party-fig">
+          {{#if row.hasMana}}{{row.mana.value}} / {{row.mana.max}}{{else}}<span class="rs-party-none">·</span>{{/if}}
+        </span>
+        <span class="rs-party-cell rs-party-num rs-party-fig">{{row.graveWounds.value}} / {{row.graveWounds.max}}</span>
+        <span class="rs-party-cell rs-party-num rs-party-fig">{{row.mind.value}} / {{row.mind.max}}</span>
+        <span class="rs-party-cell rs-party-num rs-party-fig">{{row.insanity.value}} / {{row.insanity.max}}</span>
+        <span class="rs-party-cell rs-party-num rs-party-fig">{{row.fatigue.value}} / {{row.fatigue.max}}</span>
+        <span class="rs-party-cell rs-party-grant">
+          <input type="number" class="rs-party-input rs-party-row-amount" data-row-draft="cp" data-actor-uuid="{{row.uuid}}" data-focus-key="row-{{row.uuid}}-cp" min="0" step="1" value="{{row.draftCp}}" placeholder="{{localize "REDSTEEL.PartyManagement.ColCp"}}">
+          <input type="number" class="rs-party-input rs-party-row-amount" data-row-draft="sp" data-actor-uuid="{{row.uuid}}" data-focus-key="row-{{row.uuid}}-sp" min="0" step="1" value="{{row.draftSp}}" placeholder="{{localize "REDSTEEL.PartyManagement.ColSp"}}">
+          <button type="button" class="rs-party-square" data-action="grantRow" data-tooltip="{{localize "REDSTEEL.PartyManagement.Grant"}}"><i class="fa-light fa-plus"></i></button>
+        </span>
+        <span class="rs-party-cell rs-party-cell--actions">
+          <button type="button" class="rs-party-square" data-action="openLearn" data-tooltip="{{localize "REDSTEEL.PartyManagement.OpenLearn"}}"><i class="fas fa-graduation-cap"></i></button>
+        </span>
+      </div>
+      {{/each}}
+    </div>
+    {{else}}
+    <p class="rs-party-empty">{{localize "REDSTEEL.PartyManagement.NoParty"}}</p>
+    {{/if}}
+  </section>
+
+  {{!-- Ledger: laid out like the GM's spreadsheet. Characters across the top
+        with CP and SP under each, then Total earned, Starting, Bonus, and one
+        row per grant (oldest on top). Total is starting + bonus + awards. --}}
+  <section class="rs-party-plate rs-party-ledger-plate">
+    <h3 class="rs-party-heading">{{localize "REDSTEEL.PartyManagement.Ledger"}}</h3>
+    {{#if hasRows}}
+    <div class="rs-party-ledger">
+      <div class="rs-party-ledger-inner">
+
+        <div class="rs-party-ledger-grid rs-party-ledger-fixed" style="grid-template-columns: {{ledger.cols}};">
+          <div class="rs-party-lcell rs-party-lhead rs-party-ledger-info" style="grid-row: span 2;">{{localize "REDSTEEL.PartyManagement.LedgerInfo"}}</div>
+          {{#each ledger.characters as |character|}}
+          <div class="rs-party-lcell rs-party-lhead rs-party-ledger-name is-group{{#if character.playerColour}} has-player{{/if}}" style="grid-column: span 2;{{#if character.playerColour}} --rs-party-player: {{character.playerColour}};{{/if}}">{{character.name}}</div>
+          {{/each}}
+          {{#each ledger.characters}}
+          <div class="rs-party-lcell rs-party-lhead is-group">{{localize "REDSTEEL.PartyManagement.ColCp"}}</div>
+          <div class="rs-party-lcell rs-party-lhead">{{localize "REDSTEEL.PartyManagement.ColSp"}}</div>
+          {{/each}}
+
+          <div class="rs-party-lcell rs-party-ledger-label">{{localize "REDSTEEL.PartyManagement.LedgerTotal"}}</div>
+          {{#each ledger.characters as |character|}}
+          <div class="rs-party-lcell rs-party-lfig rs-party-ledger-total is-group">{{character.total.cp}}</div>
+          <div class="rs-party-lcell rs-party-lfig rs-party-ledger-total">{{character.total.sp}}</div>
+          {{/each}}
+
+          <div class="rs-party-lcell rs-party-ledger-label">{{localize "REDSTEEL.PartyManagement.LedgerStarting"}}</div>
+          {{#each ledger.characters as |character|}}
+          <div class="rs-party-lcell is-group">
+            <input type="number" class="rs-party-input rs-party-ledger-input" min="0" step="1" value="{{character.starting.cp}}" data-ledger-field="starting" data-currency="cp" data-actor-uuid="{{character.uuid}}" data-focus-key="ledger-{{character.uuid}}-starting-cp">
+          </div>
+          <div class="rs-party-lcell">
+            <input type="number" class="rs-party-input rs-party-ledger-input" min="0" step="1" value="{{character.starting.sp}}" data-ledger-field="starting" data-currency="sp" data-actor-uuid="{{character.uuid}}" data-focus-key="ledger-{{character.uuid}}-starting-sp">
+          </div>
+          {{/each}}
+
+          <div class="rs-party-lcell rs-party-ledger-label">{{localize "REDSTEEL.PartyManagement.LedgerBonus"}}</div>
+          {{#each ledger.characters as |character|}}
+          <div class="rs-party-lcell is-group">
+            <input type="number" class="rs-party-input rs-party-ledger-input" step="1" value="{{character.bonus.cp}}" data-ledger-field="bonus" data-currency="cp" data-actor-uuid="{{character.uuid}}" data-focus-key="ledger-{{character.uuid}}-bonus-cp">
+          </div>
+          <div class="rs-party-lcell">
+            <input type="number" class="rs-party-input rs-party-ledger-input" step="1" value="{{character.bonus.sp}}" data-ledger-field="bonus" data-currency="sp" data-actor-uuid="{{character.uuid}}" data-focus-key="ledger-{{character.uuid}}-bonus-sp">
+          </div>
+          {{/each}}
+        </div>
+
+        {{#if ledger.hasRows}}
+        <div class="rs-party-ledger-rows">
+          {{#each ledger.rows as |grant|}}
+          <div class="rs-party-ledger-grid rs-party-ledger-row" style="grid-template-columns: {{@root.ledger.cols}};">
+            <div class="rs-party-lcell rs-party-ledger-label rs-party-ledger-date" data-tooltip-text="{{grant.tooltip}}">
+              <span class="rs-party-ledger-day">{{grant.dateText}}</span>
+              {{#if grant.hasNote}}<i class="fa-light fa-scroll rs-party-ledger-note" data-tooltip-text="{{grant.note}}"></i>{{/if}}
+              <button type="button" class="rs-party-square rs-party-ledger-delete" data-action="deleteGrant" data-grant-key="{{grant.grantKey}}" data-grant-date="{{grant.dateText}}" data-tooltip="{{localize "REDSTEEL.PartyManagement.DeleteGrant"}}"><i class="fa-light fa-trash"></i></button>
+            </div>
+            {{#each grant.cells as |cell|}}
+            <div class="rs-party-ledger-pair is-group">
+              {{#if cell.has}}
+              <span class="rs-party-lfig">{{cell.cp}}</span>
+              <span class="rs-party-lfig">{{cell.sp}}</span>
+              <button type="button" class="rs-party-square rs-party-ledger-delete" data-action="deleteAward" data-actor-uuid="{{cell.uuid}}" data-award-id="{{cell.awardId}}" data-tooltip="{{localize "REDSTEEL.PartyManagement.DeleteShare"}}"><i class="fa-light fa-xmark"></i></button>
+              {{else}}
+              <span class="rs-party-lfig"></span>
+              <span class="rs-party-lfig"></span>
+              {{/if}}
+            </div>
+            {{/each}}
+          </div>
+          {{/each}}
+        </div>
+        {{else}}
+        <p class="rs-party-empty">{{localize "REDSTEEL.PartyManagement.LedgerEmpty"}}</p>
+        {{/if}}
+
+      </div>
+    </div>
+    {{else}}
+    <p class="rs-party-empty">{{localize "REDSTEEL.PartyManagement.LedgerEmpty"}}</p>
+    {{/if}}
+  </section>
+
+</div>

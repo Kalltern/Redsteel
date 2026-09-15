@@ -19,7 +19,11 @@
       "value": 0
     },
     "option": "feature",
-    "localizationKey": "REDSTEEL.Items.ArmorTrainingI.name"
+    "localizationKey": "REDSTEEL.Items.ArmorTrainingI.name",
+    "cost": {
+      "cp": 5,
+      "sp": null
+    }
   },
   "effects": [],
   "flags": {

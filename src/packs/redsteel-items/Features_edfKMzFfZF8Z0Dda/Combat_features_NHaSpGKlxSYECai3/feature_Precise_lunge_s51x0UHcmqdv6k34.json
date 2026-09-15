@@ -19,7 +19,11 @@
       "value": 0
     },
     "option": "feature",
-    "localizationKey": "REDSTEEL.Items.PreciseLunge.name"
+    "localizationKey": "REDSTEEL.Items.PreciseLunge.name",
+    "cost": {
+      "cp": 5,
+      "sp": null
+    }
   },
   "effects": [],
   "sort": 400000,

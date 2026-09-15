@@ -28,7 +28,11 @@
     "rollTriggersRaw": "stealth",
     "rollTriggers": [
       "stealth"
-    ]
+    ],
+    "cost": {
+      "cp": null,
+      "sp": 20
+    }
   },
   "effects": [],
   "flags": {

@@ -196,7 +196,7 @@ const ACTION_BUTTONS = [
     icon: "fa-light fa-fire",
     gmOnly: true,
   },
-  { key: "rest", api: "longRest", icon: "fa-light fa-moon", gmOnly: true },
+  { key: "party", api: "partyManagement", icon: "fa-light fa-users", gmOnly: true },
   {
     key: "effects",
     api: "statusEffectManager",

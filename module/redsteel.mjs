@@ -21,6 +21,7 @@ import {
 import {
   wireAttributeFollowups,
   renderMarginFollowupLine,
+  renderVersusOutcome,
 } from "./utils/attributeFollowup.mjs";
 import { wireSpeedFollowups } from "./utils/speedTest.mjs";
 import { registerDrugHooks } from "./utils/drugs.mjs";
@@ -47,6 +48,12 @@ import { registerRedsteelHotbar } from "./utils/redsteelHotbar.mjs";
 import { registerChatCardCollapse } from "./utils/chatCardCollapse.mjs";
 import { monsterBuilder } from "./utils/monsterBuilder.mjs";
 import { openLearnWindow } from "./utils/learnWindow.mjs";
+import {
+  registerAutoSpecNodes,
+  registerSkillMirrors,
+  registerTemperamentSchools,
+} from "./helpers/progressionEngine.mjs";
+import { openPartyManagement } from "./utils/partyManagement.mjs";
 import { applyTraitStatusEffects } from "./utils/traitStatusEffects.mjs";
 import { applyActorLight } from "./utils/itemLight.mjs";
 import {
@@ -341,6 +348,7 @@ Hooks.once("init", function () {
   game.redsteel.statusEffectManager = statusEffectManager;
   game.redsteel.monsterBuilder = monsterBuilder;
   game.redsteel.openLearnWindow = openLearnWindow;
+  game.redsteel.partyManagement = openPartyManagement;
   game.redsteel.getActorCombatModifiers = getActorCombatModifiers;
   game.redsteel.getWeaponSpecBonuses = getWeaponSpecBonuses;
   game.redsteel.applyEffect =
@@ -465,6 +473,9 @@ Hooks.once("init", function () {
   registerLongRestRations();
   registerCurrency();
   registerAbilityGrants();
+  registerSkillMirrors();
+  registerAutoSpecNodes();
+  registerTemperamentSchools();
   registerRaceGrants();
   registerCalendariaIntegration();
   registerCanvasZoom();
@@ -1051,6 +1062,12 @@ const SYSTEM_MACROS = [
     shared: false,
   },
   {
+    name: "Party management",
+    command: `game.redsteel.partyManagement();`,
+    img: "icons/magic/fire/flame-burning-campfire-rocks.webp",
+    shared: false,
+  },
+  {
     name: "Effect manager",
     command: `await game.redsteel.statusEffectManager();`,
     img: "icons/sundries/documents/document-sealed-signatures-red.webp",
@@ -1515,6 +1532,8 @@ const REROLL_CARRIED_FLAGS = [
   // off these, and the school also tints the card.
   "casterUuid",
   "spellSchool",
+  // The margin a versus Test contested: every reroll of it restates the outcome.
+  "versusFollowup",
 ];
 
 /**
@@ -1539,7 +1558,10 @@ function buildAttackRerollFlag(message, roll, { critSuccess, critFailure }) {
   const d100 = roll.dice.find((d) => d.faces === 100)?.total ?? null;
 
   const attack = foundry.utils.deepClone(source);
-  attack.margin = roll.total;
+  // A spell card contests its Magic ATK, which sits a flat bonus above the cast
+  // roll (see finalizeRollsAndPostChat). The reroll only re-evaluates the roll,
+  // so the bonus is added back on.
+  attack.margin = roll.total + (Number(source.attackBonus) || 0);
   attack.criticalSuccess = critSuccess;
   attack.criticalFailure = critFailure;
   attack.d100 = d100;
@@ -1652,11 +1674,13 @@ function buildDefenseRerollParts(
  */
 async function markRerolledAway(source, replacement) {
   // Only cards that carry buttons are worth retiring; a plain skill test has
-  // nothing to mislead anyone with.
+  // nothing to mislead anyone with. A versus Test does: it states who won.
   const carriesButtons =
     !!source.flags?.attack ||
     !!source.flags?.heal ||
     !!source.flags?.effects ||
+    !!source.flags?.redsteel?.versusTest ||
+    !!source.flags?.redsteel?.versusFollowup ||
     Array.isArray(source.flags?.redsteel?.rerollTokens);
   if (!carriesButtons) return;
   const isAuthor = source.isAuthor ?? source.author?.id === game.user.id;
@@ -1728,9 +1752,18 @@ async function executeReroll(message, sourceLabel) {
     if (value !== undefined) carried[key] = value;
   }
 
-  const sourceNote = sourceLabel
-    ? `<p style="text-align:center; font-size:12px; opacity:0.8;"><i class="fa-light fa-rotate"></i> Reroll — ${sourceLabel}</p>`
-    : "";
+  // Every reroll says what paid for it, including when nothing did: the free
+  // path is reached by cards the pool picker cannot scope (spell and magic
+  // defense cards), and the table should see that it cost no charge.
+  const sourceText = sourceLabel
+    ? game.i18n.format("REDSTEEL.Reroll.Used", { source: sourceLabel })
+    : game.i18n.localize("REDSTEEL.Reroll.Free");
+  const sourceNote = `<p style="text-align:center; font-size:12px; opacity:0.8;"><i class="fa-light fa-rotate"></i> ${sourceText}</p>`;
+
+  // A versus Test card states who won. The reroll builds a fresh flavor, so
+  // restate it against the new total rather than leaving the old verdict.
+  const versusFollowup = message.getFlag("redsteel", "versusFollowup");
+  const followupOutcome = versusFollowup ? renderVersusOutcome(roll.total) : "";
   const rescuedNote = rescued
     ? `<p style="text-align:center; font-size:12px; opacity:0.8;"><i class="fa-light fa-sparkles"></i> Cast succeeded on the reroll — caster effects applied.</p>`
     : "";
@@ -1751,7 +1784,7 @@ async function executeReroll(message, sourceLabel) {
 
   const created = await roll.toMessage({
     speaker: message.speaker ?? ChatMessage.getSpeaker({ user: game.user }),
-    flavor: `<p class="rs-card-headline"><b><i class="fa-light fa-dice-d20"></i> ${rollName} <i class="fa-light fa-dice-d20"></i><hr></b></p>
+    flavor: `<p class="rs-card-headline"><b><i class="fa-light fa-dice-d20"></i> ${rollName} <i class="fa-light fa-dice-d20"></i><hr></b></p>${followupOutcome}
           <p class="rs-card-headline"><b>${flavorText}</b></p>${defenseParts.html}${versusNote}${sourceNote}${rescuedNote}`,
     flags: {
       redsteel: {
@@ -3111,16 +3144,24 @@ Hooks.on("preCreateActor", (actor) => {
 });
 
 Hooks.on("renderChatMessageHTML", (message, html) => {
-  const pills = message.getFlag("redsteel", "traitPills");
-  if (!pills?.length) return;
+  // GM-only pills (a "-gm" trigger such as "universal-gm") travel on the
+  // message for everyone but are drawn only on the GM's client.
+  const pills = (message.getFlag("redsteel", "traitPills") ?? []).filter(
+    (pill) => !pill.gmOnly || game.user.isGM,
+  );
+  if (!pills.length) return;
 
   const container = document.createElement("div");
   container.classList.add("trait-pills");
 
+  const gmOnlyLabel = game.i18n.localize("REDSTEEL.RollTriggers.GMOnly");
   for (const pill of pills) {
     const span = document.createElement("span");
     span.classList.add("trait-pill");
-    span.dataset.tooltip = pill.description;
+    if (pill.gmOnly) span.classList.add("trait-pill--gm");
+    span.dataset.tooltip = pill.gmOnly
+      ? [gmOnlyLabel, pill.description].filter(Boolean).join(". ")
+      : pill.description;
     span.textContent = pill.name;
     container.appendChild(span);
   }
@@ -3136,7 +3177,13 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
   }
 
   const rollCard = html.querySelector(".dice-roll");
-  if (rollCard) rollCard.prepend(container);
+  if (rollCard) {
+    rollCard.prepend(container);
+    return;
+  }
+
+  // Cards that are not rolls (Long Rest) have neither: pills go under the text.
+  html.querySelector(".message-content")?.append(container);
 });
 
 // Bane ("Metla") pill: attack chat cards that carry flags.attack.bane get a

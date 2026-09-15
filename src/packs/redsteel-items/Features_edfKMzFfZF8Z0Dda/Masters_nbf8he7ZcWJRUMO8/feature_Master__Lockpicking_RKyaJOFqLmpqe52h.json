@@ -1,0 +1,102 @@
+{
+  "folder": "nbf8he7ZcWJRUMO8",
+  "name": "Master: Lockpicking",
+  "type": "feature",
+  "img": "icons/commodities/treasure/medal-ribbon-gold-blue.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.MasterLockpicking.name",
+    "description": "<p>+3% Critical Success chance for Lockpicking. Once per day you may reroll one Lockpicking test, including a Critical Failure.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": [
+        {
+          "label": "",
+          "skillsRaw": "lockpicking, critfail",
+          "max": 1,
+          "used": 0
+        }
+      ]
+    },
+    "option": "feature",
+    "cost": {
+      "cp": null,
+      "sp": 15
+    }
+  },
+  "effects": [
+    {
+      "name": "Master: Lockpicking",
+      "origin": "Item.RKyaJOFqLmpqe52h",
+      "img": "icons/commodities/treasure/medal-ribbon-gold-blue.webp",
+      "_id": "s0OKqbxKKbmviEv7",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.skills.lockpicking.critbonus",
+            "value": 3,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
+      "disabled": false,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.11.4",
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!RKyaJOFqLmpqe52h.s0OKqbxKKbmviEv7"
+    }
+  ],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.11.4",
+    "createdTime": 1789417448500,
+    "modifiedTime": 1789417448500,
+    "lastModifiedBy": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 100000,
+  "_id": "RKyaJOFqLmpqe52h",
+  "_key": "!items!RKyaJOFqLmpqe52h"
+}

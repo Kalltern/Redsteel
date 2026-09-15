@@ -24,7 +24,11 @@
     "rollTriggers": [
       "lck",
       "pickpocketing"
-    ]
+    ],
+    "cost": {
+      "cp": null,
+      "sp": 20
+    }
   },
   "effects": [],
   "flags": {

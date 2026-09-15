@@ -1076,6 +1076,7 @@ export class RedsteelActor extends Actor {
       acrobacy: "REDSTEEL.Actor.Character.skills.acrobacy.label",
       veneficus: "REDSTEEL.Actor.Character.doctrines.veneficus.label",
       cordinas: "REDSTEEL.Actor.Character.doctrines.cordinas.label",
+      channeling: "REDSTEEL.Actor.Character.combatSkills.channeling.label",
     };
 
     // Iterate through combat skills
@@ -1357,6 +1358,38 @@ export class RedsteelActor extends Actor {
             combatSkill.ratingParts = bloodParts;
           }
         }
+      }
+    }
+
+    // Magic Blood (Magická krev), which comes with the School of Blood, lets
+    // blood magic be cast through Channeling instead: the Channeling rating
+    // stands in for Blood Manipulation whenever it is higher, the way the
+    // Cordinas Combat rating does above. Done after the loop so both ratings
+    // are final whatever order the actor's skills are stored in. Only a
+    // character who really channels gains from it (Channeling ranks, or
+    // Veneficus channeling through Combat), so Intelligence alone never takes
+    // over. Channeling already carries the armor cast penalty, so switching to
+    // it does not dodge the penalty.
+    {
+      const blood = systemData.combatSkills.bloodManipulation;
+      const channelingSkill = systemData.combatSkills.channeling;
+      const bloodSchool = systemData.specialisations?.bloodSchool;
+      const channels =
+        (channelingSkill?.value ?? 0) > 0 ||
+        (systemData.doctrines?.veneficus?.value ?? 0) > 0;
+      if (
+        blood &&
+        bloodSchool?.active &&
+        bloodSchool.nodes?.magickaKrev &&
+        channels &&
+        channelingSkill.rating > blood.rating
+      ) {
+        blood.rating = channelingSkill.rating;
+        blood.ratingParts = (channelingSkill.ratingParts ?? []).map((part) =>
+          part.type === "rank" && !part.sourceKey
+            ? { ...part, sourceKey: RANK_FROM.channeling }
+            : part,
+        );
       }
     }
 

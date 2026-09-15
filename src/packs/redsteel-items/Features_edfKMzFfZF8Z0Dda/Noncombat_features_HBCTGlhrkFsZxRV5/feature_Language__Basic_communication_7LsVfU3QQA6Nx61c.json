@@ -1,0 +1,52 @@
+{
+  "folder": "HBCTGlhrkFsZxRV5",
+  "name": "Language: Basic communication",
+  "type": "feature",
+  "img": "icons/skills/social/diplomacy-handshake.webp",
+  "system": {
+    "description": "<p>You can make yourself understood in the chosen language.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "reroll": {
+      "name": "",
+      "active": [
+        false,
+        false
+      ],
+      "value": null
+    },
+    "option": "feature",
+    "localizationKey": "REDSTEEL.Items.LanguageBasicCommunication.name",
+    "rollTriggersRaw": "",
+    "rollTriggers": [],
+    "cost": {
+      "cp": null,
+      "sp": 5
+    }
+  },
+  "effects": [],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1777294839144,
+    "modifiedTime": 1777294839144,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "ownership": {
+    "default": 0,
+    "rs3mzx7WZdtEmvH2": 3,
+    "exQfSubzwCCs5h8v": 3,
+    "UHjN0KQ8w8ZxibJg": 3
+  },
+  "sort": 100000,
+  "_id": "7LsVfU3QQA6Nx61c",
+  "_key": "!items!7LsVfU3QQA6Nx61c"
+}

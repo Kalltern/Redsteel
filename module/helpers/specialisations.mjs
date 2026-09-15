@@ -4,6 +4,7 @@ import {
   STATE_GATED_IMMUNITIES,
 } from "./specialisations-generated.mjs";
 import { SPEC_DISCOUNTS } from "./rankDiscounts.mjs";
+import { SPEC_MIRRORS } from "./rankMirrors.mjs";
 
 /* ===========================================================================
  * Specialisation talent-tree definitions
@@ -38,6 +39,10 @@ import { SPEC_DISCOUNTS } from "./rankDiscounts.mjs";
  *                                 extraEffects {bleed/stun/precision: %}, …)
  *             Both are created on unlock and removed on lock by
  *             syncSpecialisationPassive.
+ *  autoUnlock – true for a node that comes with its specialisation instead of
+ *             being bought (Magic Blood): unlocked while the specialisation is
+ *             active, locked once it is not, never toggled by hand. Kept in
+ *             step by syncAutoSpecNodes (progressionEngine.mjs).
  *
  * Label/description localization keys are injected automatically from the
  * spec id and node id (REDSTEEL.Actor.Specialisations.<spec>.nodes.<node>).
@@ -78,6 +83,34 @@ export const CRIT_DEGREE_TRIGGERS = [
 export function actorHasSpecNode(actor, specId, nodeId) {
   const spec = actor.system?.specialisations?.[specId];
   return !!(spec?.active && spec.nodes?.[nodeId]);
+}
+
+/** School of Blood ranks that each carry the Blood magic attack/defense bonus. */
+const BLOOD_SCHOOL_RANK_NODES = ["expert", "master", "grandmaster"];
+const BLOOD_SCHOOL_RANK_BONUS = 5;
+
+/**
+ * "Škola Krve: Magický útok +5%" and "Magická obrana proti kouzlům Školy Krve
+ * +5%", granted by each of Expert, Master and Grandmaster: +5 per rank to Magic
+ * ATK when casting a Blood spell, and to Magic Defense against one.
+ *
+ * Read at roll time instead of stored as an Active Effect, because it only
+ * applies to Blood spells, and because a node's passive effect is created once
+ * on unlock, so characters already past Expert would never receive it.
+ */
+export function getBloodSchoolRankBonus(actor) {
+  const ranks = BLOOD_SCHOOL_RANK_NODES.filter((node) =>
+    actorHasSpecNode(actor, "bloodSchool", node),
+  ).length;
+  return ranks * BLOOD_SCHOOL_RANK_BONUS;
+}
+
+/**
+ * True for a node that comes with its specialisation instead of being bought
+ * (`autoUnlock` on the definition). See syncAutoSpecNodes.
+ */
+export function isAutoUnlockNode(specId, nodeId) {
+  return REDSTEEL.specialisations?.[specId]?.nodes?.[nodeId]?.autoUnlock === true;
 }
 
 /** The subset of CRIT_DEGREE_TRIGGERS the actor actually owns. */
@@ -171,8 +204,14 @@ const CODE_AUTOMATED_NODES = {
   // utils/abilityGrants.mjs (Blood Pact) + utils/applyDamage.mjs (Blood Shield)
   // + utils/wrathOfBlood.mjs (Wrath of Blood — Spell Power and pool capacity
   // that follow the caster's own Bleeding stacks).
-  // The rank nodes carry passives, so they are already covered.
-  bloodSchool: ["krvavyPakt", "krvavyStit", "hnevKrve"],
+  // The rank nodes carry passives, and expert/master/grandmaster are also read
+  // by getBloodSchoolRankBonus: utils/magicSkillBonuses.mjs (Magic ATK on a
+  // Blood cast) and utils/defense.mjs (Magic Defense against a Blood spell).
+  // magickaKrev comes with the specialisation (helpers/progressionEngine.mjs,
+  // syncAutoSpecNodes); documents/actor.mjs lets Channeling stand in for Blood
+  // Manipulation, and helpers/specNodePrices.mjs lets Channeling ranks meet the
+  // rank nodes' Blood Manipulation requirements.
+  bloodSchool: ["krvavyPakt", "krvavyStit", "hnevKrve", "expert", "master", "grandmaster", "magickaKrev"],
 };
 
 // Crit-degree triggers and state-gated immunities are already declared as data
@@ -187,6 +226,16 @@ for (const t of [...CRIT_DEGREE_TRIGGERS, ...STATE_GATED_IMMUNITIES]) {
 // in the CP/SP wallet, and offers the pick on a "one skill from a list" perk.
 // The node ids come straight from the data table in helpers/rankDiscounts.mjs.
 for (const [spec, nodes] of Object.entries(SPEC_DISCOUNTS)) {
+  for (const node of Object.keys(nodes)) {
+    (CODE_AUTOMATED_NODES[spec] ??= []).push(node);
+  }
+}
+
+// helpers/progressionEngine.mjs: the rank mirror perks. The Learn window offers
+// the pick under the star sign, and the chosen track copies the rank of its
+// source for free (the Hoplite's Swords, Axes or Blunt follow Polearms). The
+// node ids come straight from the data table in helpers/rankMirrors.mjs.
+for (const [spec, nodes] of Object.entries(SPEC_MIRRORS)) {
   for (const node of Object.keys(nodes)) {
     (CODE_AUTOMATED_NODES[spec] ??= []).push(node);
   }
@@ -576,8 +625,10 @@ const SPEC_DEFS = {
     // the top, widest across the middle, point at the bottom. Straight edges are
     // deliberate: a curved outline eats label clearance in both axes at once and
     // would not close at this node count. The eight-node rank chain walks the
-    // whole left edge, both magic attack/defense chains run down the right edge,
-    // three rows fill the inside, and two field stars sit off to the left.
+    // whole left edge, the blood pool pair and five loose stars mirror it down
+    // the right edge, one star holds the centre, and two field stars sit off to
+    // the left. Every position is a slot of the earlier 25-star layout, so its
+    // label clearances still hold.
     layout: "constellation",
 coords: {
       apprentice: [50, 6],
@@ -589,26 +640,22 @@ coords: {
       grandmaster: [33, 70],
       spellPower4: [41.5, 80],
       darKrve: [50, 90],
-      magicAttack1: [58.5, 17],
-      magicAttack2: [67, 28],
-      magicAttack3: [75.5, 39],
-      magicDefense1: [84, 50],
-      magicDefense2: [75.5, 60],
-      magicDefense3: [67, 70],
+      magickaKrev: [58.5, 17],
+      krvavyPakt: [67, 28],
+      bloodPool1: [75.5, 39],
+      bloodPool2: [84, 50],
+      precision15: [75.5, 60],
+      hnevKrve: [67, 70],
       krvavyStit: [58.5, 80],
-      magickaKrev: [42, 30],
-      krvavyPakt: [58, 30],
-      bloodPool1: [38, 50],
-      bloodPool2: [50, 50],
-      precision15: [62, 50],
-      hnevKrve: [42, 70],
-      krvavaPlatba: [58, 70],
+      krvavaPlatba: [50, 50],
       kritRozsah2: [8, 30],
       oslabeniTrvani: [8, 70],
     },
     nodes: {
       // Chain: ranks alternating with spell power. Each rank also grows the
-      // blood pool capacity (+10/+10/+20/+50).
+      // blood pool capacity (+10/+10/+20/+50). Expert, Master and Grandmaster
+      // each also carry "Škola Krve: Magický útok +5%" and "Magická obrana proti
+      // kouzlům Školy Krve +5%", read at roll time by getBloodSchoolRankBonus.
       apprentice: {
         tier: 1,
         column: 1,
@@ -668,17 +715,10 @@ coords: {
         requires: ["bloodPool1"],
         passive: ae(add("system.stats.bloodPool.bonus", 15)),
       },
-      // Chain: magic attack (school-specific — manual until a per-school
-      // attack bonus exists in the system)
-      magicAttack1: { tier: 1, column: 3 },
-      magicAttack2: { tier: 2, column: 3, requires: ["magicAttack1"] },
-      magicAttack3: { tier: 3, column: 3, requires: ["magicAttack2"] },
-      // Chain: magic defense vs Blood spells (manual — same reason)
-      magicDefense1: { tier: 1, column: 4 },
-      magicDefense2: { tier: 2, column: 4, requires: ["magicDefense1"] },
-      magicDefense3: { tier: 3, column: 4, requires: ["magicDefense2"] },
       // Unchained
-      magickaKrev: { tier: 1, column: 5 },
+      // Magic Blood comes with the specialisation: a free, automatic star that
+      // lets Channeling stand in for Blood Manipulation.
+      magickaKrev: { tier: 1, column: 5, autoUnlock: true },
       krvavyPakt: { tier: 2, column: 5 },
       precision15: {
         tier: 3,

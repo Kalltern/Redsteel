@@ -19,7 +19,11 @@
       "value": null
     },
     "option": "feature",
-    "localizationKey": "REDSTEEL.Items.ElvenPerfectionArcana.name"
+    "localizationKey": "REDSTEEL.Items.ElvenPerfectionArcana.name",
+    "cost": {
+      "cp": null,
+      "sp": 15
+    }
   },
   "effects": [],
   "flags": {

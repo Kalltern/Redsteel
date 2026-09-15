@@ -29,6 +29,12 @@
  *                                                language); never auto-satisfied
  *   { t: "raw", text }                         — not yet modelled; shown to the
  *                                                player verbatim, never blocks
+ *
+ * A rank I clause may also carry `pre: true`: a prerequisite. Besides blocking
+ * the purchase as usual, an unmet one keeps the whole track out of the Learn
+ * window's picker (getUnmetPrerequisites), so Channeling cannot be added
+ * without magic potential, nor a school without Channeling I or Veneficus I.
+ * On an anyOf the marker sits on the group, not on its options.
  */
 
 export const PROGRESSION_TRACKS = {
@@ -428,7 +434,10 @@ export const PROGRESSION_TRACKS = {
     key: "veneficus",
     section: "magic",
     ranks: [
-      { cost: 5, currency: "cp", requires: [{ t: "anyRank", group: "schools", min: 3 }, { t: "teacher", tier: 1 }] },
+      // Placeholder (user ruling 2026-09-15): the book's rank I requirements
+      // (any school III, a teacher) are being rewritten, so until then only
+      // magic potential and Combat I gate it.
+      { cost: 5, currency: "cp", requires: [{ t: "flag", key: "magicPotential", pre: true }, { t: "rank", group: "combatSkills", key: "combat", min: 1, pre: true }] },
       { cost: 0, currency: "cp", requires: [] },
       { cost: 5, currency: "cp", requires: [{ t: "teacher", tier: 1 }] },
       { cost: 10, currency: "cp", requires: [] },
@@ -462,7 +471,7 @@ export const PROGRESSION_TRACKS = {
     key: "channeling",
     section: "magic",
     ranks: [
-      { cost: 5, currency: "cp", requires: [{ t: "flag", key: "magicPotential" }] },
+      { cost: 5, currency: "cp", requires: [{ t: "flag", key: "magicPotential", pre: true }] },
       { cost: 10, currency: "cp", requires: [] },
       { cost: 10, currency: "cp", requires: [{ t: "teacher", tier: 1 }] },
       { cost: 10, currency: "cp", requires: [{ t: "anyRank", group: "doctrines", min: 2 }] },
@@ -479,7 +488,7 @@ export const PROGRESSION_TRACKS = {
     key: "fire",
     section: "magic",
     ranks: [
-      { cost: 10, currency: "cp", requires: [{ t: "raw", text: "10/0 CP" }, { t: "rank", group: "combatSkills", key: "channeling", min: 1 }, { t: "gm", note: "specialOccasion" }] },
+      { cost: 10, currency: "cp", requires: [{ t: "anyOf", pre: true, options: [{ t: "rank", group: "combatSkills", key: "channeling", min: 1 }, { t: "rank", group: "doctrines", key: "veneficus", min: 1 }] }, { t: "gm", note: "specialOccasion" }] },
       { cost: 5, currency: "cp", requires: [] },
       { cost: 5, currency: "cp", requires: [] },
       { cost: 10, currency: "cp", requires: [{ t: "anyRank", group: "doctrines", min: 1 }, { t: "teacher", tier: 1 }] },
@@ -496,7 +505,7 @@ export const PROGRESSION_TRACKS = {
     key: "water",
     section: "magic",
     ranks: [
-      { cost: 10, currency: "cp", requires: [{ t: "raw", text: "10/0 CP" }, { t: "rank", group: "combatSkills", key: "channeling", min: 1 }, { t: "gm", note: "specialOccasion" }] },
+      { cost: 10, currency: "cp", requires: [{ t: "anyOf", pre: true, options: [{ t: "rank", group: "combatSkills", key: "channeling", min: 1 }, { t: "rank", group: "doctrines", key: "veneficus", min: 1 }] }, { t: "gm", note: "specialOccasion" }] },
       { cost: 5, currency: "cp", requires: [] },
       { cost: 5, currency: "cp", requires: [] },
       { cost: 10, currency: "cp", requires: [{ t: "anyRank", group: "doctrines", min: 1 }, { t: "teacher", tier: 1 }] },
@@ -513,7 +522,7 @@ export const PROGRESSION_TRACKS = {
     key: "air",
     section: "magic",
     ranks: [
-      { cost: 10, currency: "cp", requires: [{ t: "raw", text: "10/0 CP" }, { t: "rank", group: "combatSkills", key: "channeling", min: 1 }, { t: "gm", note: "specialOccasion" }] },
+      { cost: 10, currency: "cp", requires: [{ t: "anyOf", pre: true, options: [{ t: "rank", group: "combatSkills", key: "channeling", min: 1 }, { t: "rank", group: "doctrines", key: "veneficus", min: 1 }] }, { t: "gm", note: "specialOccasion" }] },
       { cost: 5, currency: "cp", requires: [] },
       { cost: 5, currency: "cp", requires: [] },
       { cost: 10, currency: "cp", requires: [{ t: "anyRank", group: "doctrines", min: 1 }, { t: "teacher", tier: 1 }] },
@@ -530,7 +539,7 @@ export const PROGRESSION_TRACKS = {
     key: "earth",
     section: "magic",
     ranks: [
-      { cost: 10, currency: "cp", requires: [{ t: "raw", text: "10/0 CP" }, { t: "rank", group: "combatSkills", key: "channeling", min: 1 }, { t: "gm", note: "specialOccasion" }] },
+      { cost: 10, currency: "cp", requires: [{ t: "anyOf", pre: true, options: [{ t: "rank", group: "combatSkills", key: "channeling", min: 1 }, { t: "rank", group: "doctrines", key: "veneficus", min: 1 }] }, { t: "gm", note: "specialOccasion" }] },
       { cost: 5, currency: "cp", requires: [] },
       { cost: 5, currency: "cp", requires: [] },
       { cost: 10, currency: "cp", requires: [{ t: "anyRank", group: "doctrines", min: 1 }, { t: "teacher", tier: 1 }] },
@@ -547,7 +556,7 @@ export const PROGRESSION_TRACKS = {
     key: "spirit",
     section: "magic",
     ranks: [
-      { cost: 10, currency: "cp", requires: [{ t: "raw", text: "10/0 CP" }, { t: "rank", group: "combatSkills", key: "channeling", min: 1 }, { t: "gm", note: "specialOccasion" }] },
+      { cost: 10, currency: "cp", requires: [{ t: "anyOf", pre: true, options: [{ t: "rank", group: "combatSkills", key: "channeling", min: 1 }, { t: "rank", group: "doctrines", key: "veneficus", min: 1 }] }, { t: "gm", note: "specialOccasion" }] },
       { cost: 5, currency: "cp", requires: [] },
       { cost: 5, currency: "cp", requires: [] },
       { cost: 10, currency: "cp", requires: [{ t: "anyRank", group: "doctrines", min: 1 }, { t: "teacher", tier: 1 }] },
@@ -564,7 +573,7 @@ export const PROGRESSION_TRACKS = {
     key: "body",
     section: "magic",
     ranks: [
-      { cost: 10, currency: "cp", requires: [{ t: "raw", text: "10/0 CP" }, { t: "rank", group: "combatSkills", key: "channeling", min: 1 }, { t: "gm", note: "specialOccasion" }] },
+      { cost: 10, currency: "cp", requires: [{ t: "anyOf", pre: true, options: [{ t: "rank", group: "combatSkills", key: "channeling", min: 1 }, { t: "rank", group: "doctrines", key: "veneficus", min: 1 }] }, { t: "gm", note: "specialOccasion" }] },
       { cost: 5, currency: "cp", requires: [] },
       { cost: 5, currency: "cp", requires: [] },
       { cost: 10, currency: "cp", requires: [{ t: "anyRank", group: "doctrines", min: 1 }, { t: "teacher", tier: 1 }] },
@@ -581,7 +590,7 @@ export const PROGRESSION_TRACKS = {
     key: "darkness",
     section: "magic",
     ranks: [
-      { cost: 10, currency: "cp", requires: [{ t: "raw", text: "10/0 CP" }, { t: "rank", group: "combatSkills", key: "channeling", min: 1 }, { t: "gm", note: "specialOccasion" }] },
+      { cost: 10, currency: "cp", requires: [{ t: "anyOf", pre: true, options: [{ t: "rank", group: "combatSkills", key: "channeling", min: 1 }, { t: "rank", group: "doctrines", key: "veneficus", min: 1 }] }, { t: "gm", note: "specialOccasion" }] },
       { cost: 5, currency: "cp", requires: [] },
       { cost: 5, currency: "cp", requires: [] },
       { cost: 10, currency: "cp", requires: [{ t: "anyRank", group: "doctrines", min: 1 }, { t: "teacher", tier: 1 }] },

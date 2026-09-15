@@ -19,7 +19,11 @@
       "value": null
     },
     "option": "feature",
-    "localizationKey": "REDSTEEL.Items.DwarvenImmunityI.name"
+    "localizationKey": "REDSTEEL.Items.DwarvenImmunityI.name",
+    "cost": {
+      "cp": 10,
+      "sp": null
+    }
   },
   "effects": [],
   "flags": {

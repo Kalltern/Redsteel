@@ -28,7 +28,11 @@
     },
     "finesse": false,
     "option": "feature",
-    "localizationKey": "REDSTEEL.Items.CombatGeniusII.name"
+    "localizationKey": "REDSTEEL.Items.CombatGeniusII.name",
+    "cost": {
+      "cp": 10,
+      "sp": null
+    }
   },
   "effects": [],
   "folder": "NHaSpGKlxSYECai3",

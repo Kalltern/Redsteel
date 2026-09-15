@@ -19,7 +19,11 @@
       "value": null
     },
     "option": "feature",
-    "localizationKey": "REDSTEEL.Items.WillingnessToLearn.name"
+    "localizationKey": "REDSTEEL.Items.WillingnessToLearn.name",
+    "cost": {
+      "cp": null,
+      "sp": 5
+    }
   },
   "effects": [],
   "flags": {

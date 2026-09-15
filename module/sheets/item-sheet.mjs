@@ -13,6 +13,10 @@ import {
 } from "../utils/itemResync.mjs";
 import { readEnchantments } from "../documents/item.mjs";
 import { resourceLabel } from "../utils/itemResources.mjs";
+import {
+  FEATURE_SECTION_IDS,
+  getBookFeaturePrice,
+} from "../helpers/progressionEngine.mjs";
 
 const { api, sheets } = foundry.applications;
 
@@ -270,7 +274,53 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
       tabs: this._getTabs(options.parts),
     };
 
+    // A feature's Learn window block (feature.hbs): the book's price shows
+    // faintly in empty cost boxes, and the section select lists the Learn
+    // window's sections after "Book default" (empty).
+    if (this.item.type === "feature") {
+      const book = getBookFeaturePrice(this.item.actor ?? null, this.item);
+      context.featureBookPrice = {
+        cp: book ? book.cp : "",
+        sp: book ? book.sp : "",
+      };
+      const section = this.item.system.learnSection ?? "";
+      context.featureSectionOptions = [
+        {
+          value: "",
+          label: game.i18n.localize("REDSTEEL.Learn.ItemFields.sectionDefault"),
+          selected: !section,
+        },
+        ...FEATURE_SECTION_IDS.map((id) => ({
+          value: id,
+          label: game.i18n.localize(`REDSTEEL.Learn.Features.Sections.${id}`),
+          selected: section === id,
+        })),
+      ];
+    }
+
     return context;
+  }
+
+  /**
+   * A feature's cost boxes: an emptied box stores null (use the book price) and
+   * 0 stores 0 (free). The value is read from the input itself, so the result
+   * does not depend on how the form data casts an empty number field.
+   * @override
+   */
+  _processFormData(event, form, formData) {
+    const data = super._processFormData(event, form, formData);
+    if (this.item.type !== "feature") return data;
+    for (const key of ["cp", "sp"]) {
+      const input = form?.elements?.namedItem?.(`system.cost.${key}`);
+      if (!input) continue;
+      const raw = String(input.value ?? "").trim();
+      const value = raw === "" ? null : Number(raw);
+      delete data[`system.cost.${key}`];
+      data.system ??= {};
+      data.system.cost ??= {};
+      data.system.cost[key] = Number.isFinite(value) ? Math.max(0, value) : null;
+    }
+    return data;
   }
 
   /** @override */

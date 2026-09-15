@@ -1,0 +1,52 @@
+{
+  "folder": "HBCTGlhrkFsZxRV5",
+  "name": "Cooking I",
+  "type": "feature",
+  "img": "icons/tools/cooking/knife-cleaver-steel-grey.webp",
+  "system": {
+    "description": "<p>During the Prepare Food camp action you can cook meals of the second quality degree, given a prepared camp, cookware and ingredients.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "reroll": {
+      "name": "",
+      "active": [
+        false,
+        false
+      ],
+      "value": null
+    },
+    "option": "feature",
+    "localizationKey": "REDSTEEL.Items.CookingI.name",
+    "rollTriggersRaw": "",
+    "rollTriggers": [],
+    "cost": {
+      "cp": null,
+      "sp": 5
+    }
+  },
+  "effects": [],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1777294839144,
+    "modifiedTime": 1777294839144,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "ownership": {
+    "default": 0,
+    "rs3mzx7WZdtEmvH2": 3,
+    "exQfSubzwCCs5h8v": 3,
+    "UHjN0KQ8w8ZxibJg": 3
+  },
+  "sort": 100000,
+  "_id": "bEXgA95yQYqdIqx6",
+  "_key": "!items!bEXgA95yQYqdIqx6"
+}

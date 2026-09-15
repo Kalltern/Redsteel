@@ -39,10 +39,7 @@ export function registerEffectSheetExtensions() {
                    value="${rawTriggers}"
                    placeholder="e.g. res, athletics"/>
           </div>
-          <p class="hint">
-            Comma-separated. Pills appear in chat when a matching roll is made.
-            Attributes are written with shortcut only (str, res).
-          </p>
+          <p class="hint">${game.i18n.localize("REDSTEEL.RollTriggers.Hint")}</p>
         </div>
       `;
 

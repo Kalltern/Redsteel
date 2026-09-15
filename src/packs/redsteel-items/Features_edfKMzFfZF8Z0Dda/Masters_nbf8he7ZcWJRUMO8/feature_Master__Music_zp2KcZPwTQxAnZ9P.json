@@ -1,0 +1,102 @@
+{
+  "folder": "nbf8he7ZcWJRUMO8",
+  "name": "Master: Music",
+  "type": "feature",
+  "img": "icons/commodities/treasure/medal-ribbon-gold-blue.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.MasterMusic.name",
+    "description": "<p>+3% Critical Success chance for Music. Once per day you may reroll one Music test, including a Critical Failure.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": [
+        {
+          "label": "",
+          "skillsRaw": "music, critfail",
+          "max": 1,
+          "used": 0
+        }
+      ]
+    },
+    "option": "feature",
+    "cost": {
+      "cp": null,
+      "sp": 20
+    }
+  },
+  "effects": [
+    {
+      "name": "Master: Music",
+      "origin": "Item.zp2KcZPwTQxAnZ9P",
+      "img": "icons/commodities/treasure/medal-ribbon-gold-blue.webp",
+      "_id": "rVjEVEgpJZf9m5aE",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.skills.music.critbonus",
+            "value": 3,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
+      "disabled": false,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.11.4",
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!zp2KcZPwTQxAnZ9P.rVjEVEgpJZf9m5aE"
+    }
+  ],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.11.4",
+    "createdTime": 1789417448500,
+    "modifiedTime": 1789417448500,
+    "lastModifiedBy": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 100000,
+  "_id": "zp2KcZPwTQxAnZ9P",
+  "_key": "!items!zp2KcZPwTQxAnZ9P"
+}

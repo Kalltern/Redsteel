@@ -18,7 +18,8 @@
  *   aliases   older names an owned copy may still carry after a rename
  *   section   the book's block: combat | general | magic | trait | racial
  *   folder    the compendium folder, for grouping in the Learn window
- *   cost, currency ("cp" | "sp")
+ *   cost, currency ("cp" | "sp")  the book price. A feature item's own
+ *     system.cost overrides it (progressionEngine.mjs, EDITABLE COSTS)
  *   requires  requirement clauses, same shapes as progression.mjs plus:
  *     race {races, family?}  the actor's race item is one of `races`
  *     attrCompare {greater, lesser}  one attribute total exceeds another
@@ -33,12 +34,16 @@
  *   group, skill  the per-skill racial families the GM ruled pick-once: a
  *     character owns at most one feature per group, and a skill covered by one
  *     Specialization or Talented feature cannot take another of those.
- *   family, skill  Adept and Expert, per skill. Not pick-once (a character may
+ *   family, skill  Adept, Expert and Master, per skill. Not pick-once (a character may
  *     hold Adept in several skills): only grouped so the Features tab can
  *     collapse the family into one row with a skill picker.
  *   bookRow   the Odbornosti row the price came from
+ *   language  a language feature, bought once per language in the Learn
+ *     window's Languages panel: basic | fluent | sign | reading
+ *   readingTier  for reading: first (full price) | additional (any further
+ *     language, once a first is owned)
  *
- * 210 features. Clause kinds: {'anyOf': 11, 'anyRank': 25, 'attr': 24, 'attrCompare': 2, 'countRank': 1, 'feature': 55, 'featurePrefix': 8, 'featureTeacher': 6, 'flag': 1, 'gm': 7, 'notFlag': 1, 'race': 82, 'rank': 119, 'secAttr': 1, 'spec': 1, 'specNode': 1}.
+ * 247 features. Clause kinds: {'anyOf': 23, 'anyRank': 25, 'attr': 29, 'attrCompare': 2, 'countRank': 1, 'feature': 86, 'featurePrefix': 8, 'featureTeacher': 14, 'flag': 13, 'gm': 8, 'notFlag': 1, 'race': 83, 'rank': 144, 'secAttr': 1, 'spec': 13, 'specNode': 1}.
  */
 
 // MAGIC GATE (user ruling 2026-09-11): every feature in the magic section also
@@ -115,7 +120,11 @@ export const FEATURE_PRICES = {
   "X1aSIFlMI22083rc": { name: "Agile I", section: "general", folder: "Noncombat features", cost: 10, currency: "sp", requires: [{ t: "rank", group: "skills", key: "nimbleness", min: 1 }], bookRow: 221 },
   "jSNpSDSJQJSXOI9w": { name: "Agile II", section: "general", folder: "Noncombat features", cost: 20, currency: "sp", requires: [{ t: "feature", name: "Agile I" }, { t: "rank", group: "skills", key: "nimbleness", min: 3 }], bookRow: 223 },
   "0WRy9xAHjmCT0EhM": { name: "Battlebrother", section: "general", folder: "Noncombat features", cost: 10, currency: "sp", requires: [{ t: "feature", name: "Adept: Leadership" }], bookRow: 267 },
+  "pwc9o1yZv69FDAwM": { name: "Calligraphy", section: "general", folder: "Noncombat features", cost: 5, currency: "sp", requires: [{ t: "feature", name: "Reading and Writing" }, { t: "featureTeacher", tier: 1 }, { t: "attr", key: "cha", min: 4 }], bookRow: 189 },
   "D8gQH5L1qXHg0BfX": { name: "Calm Body", section: "general", folder: "Trait Features", cost: 10, currency: "sp", requires: [{ t: "feature", name: "Iron Will" }], bookRow: 227 },
+  "bEXgA95yQYqdIqx6": { name: "Cooking I", section: "general", folder: "Noncombat features", cost: 5, currency: "sp", requires: [{ t: "featureTeacher", tier: 1 }], bookRow: 280 },
+  "7b2GtzPoWX5mQAqN": { name: "Cooking II", section: "general", folder: "Noncombat features", cost: 10, currency: "sp", requires: [{ t: "feature", name: "Cooking I" }, { t: "featureTeacher", tier: 2 }], bookRow: 280 },
+  "DVILsBaxaCf9LYdk": { name: "Cooking III", section: "general", folder: "Noncombat features", cost: 10, currency: "sp", requires: [{ t: "feature", name: "Cooking II" }, { t: "featureTeacher", tier: 3 }], bookRow: 280 },
   "A6HXTSxPKSnYXH5T": { name: "Crawling", section: "general", folder: "Noncombat features", cost: 15, currency: "sp", requires: [{ t: "rank", group: "skills", key: "stealth", min: 5 }], bookRow: 259 },
   "EmjaQXvsxncL8A7F": { name: "Drinker", section: "general", folder: "Noncombat features", cost: 20, currency: "sp", requires: [{ t: "rank", group: "skills", key: "drinking", min: 3 }], bookRow: 257 },
   "g1rkbmFHukdAaS48": { name: "Expert: Acrobacy", section: "general", folder: "Experts", cost: 20, currency: "sp", requires: [{ t: "rank", group: "skills", key: "acrobacy", min: 6 }, { t: "feature", name: "Adept: Acrobacy" }], bookRow: 195, family: "expert", skill: "acrobacy" },
@@ -143,18 +152,51 @@ export const FEATURE_PRICES = {
   "hGU15ebqigzJERxP": { name: "Expert: Stealth", section: "general", folder: "Experts", cost: 15, currency: "sp", requires: [{ t: "rank", group: "skills", key: "stealth", min: 6 }, { t: "feature", name: "Adept: Stealth" }], bookRow: 201, family: "expert", skill: "stealth" },
   "YMlffDDbu82CJvEL": { name: "Expert: Tactics", section: "general", folder: "Experts", cost: 10, currency: "sp", requires: [{ t: "rank", group: "skills", key: "tactics", min: 6 }, { t: "feature", name: "Adept: Tactics" }], bookRow: 207, family: "expert", skill: "tactics" },
   "LRzVxkypInTAAsil": { name: "Expert: Traps", section: "general", folder: "Experts", cost: 10, currency: "sp", requires: [{ t: "rank", group: "skills", key: "traps", min: 6 }, { t: "feature", name: "Adept: Traps" }], bookRow: 207, family: "expert", skill: "traps" },
+  "bXoRvfT1LCa3vZGW": { name: "Master: Acrobacy", section: "general", folder: "Masters", cost: 25, currency: "sp", requires: [{ t: "rank", group: "skills", key: "acrobacy", min: 10 }, { t: "feature", name: "Expert: Acrobacy" }], bookRow: 197, family: "master", skill: "acrobacy" },
+  "FeuqDBnICAZnW3Wq": { name: "Master: Acting", section: "general", folder: "Masters", cost: 15, currency: "sp", requires: [{ t: "rank", group: "skills", key: "acting", min: 10 }, { t: "feature", name: "Expert: Acting" }], bookRow: 209, family: "master", skill: "acting" },
+  "ucJI45XAS8AFRF9Y": { name: "Master: Alchemy", section: "general", folder: "Masters", cost: 25, currency: "sp", requires: [{ t: "rank", group: "skills", key: "alchemy", min: 10 }, { t: "feature", name: "Expert: Alchemy" }], bookRow: 197, family: "master", skill: "alchemy" },
+  "LxpmfpPTVKhJWZAY": { name: "Master: Animal Handling", section: "general", folder: "Masters", cost: 15, currency: "sp", requires: [{ t: "rank", group: "skills", key: "animalHandling", min: 10 }, { t: "feature", name: "Expert: Animal Handling" }], bookRow: 209, family: "master", skill: "animalHandling" },
+  "txr4Gsd42GSIrW9U": { name: "Master: Arcana", section: "general", folder: "Masters", cost: 20, currency: "sp", requires: [{ t: "rank", group: "skills", key: "arcana", min: 10 }, { t: "feature", name: "Expert: Arcana" }], bookRow: 203, family: "master", skill: "arcana" },
+  "LwbAxaEiHRKU6tJE": { name: "Master: Art", section: "general", folder: "Masters", cost: 15, currency: "sp", requires: [{ t: "rank", group: "skills", key: "art", min: 10 }, { t: "feature", name: "Expert: Art" }], bookRow: 209, family: "master", skill: "art" },
+  "EWYZCxx44st9lgzw": { name: "Master: Athletics", section: "general", folder: "Masters", cost: 20, currency: "sp", requires: [{ t: "rank", group: "skills", key: "athletics", min: 10 }, { t: "feature", name: "Expert: Athletics" }], bookRow: 203, family: "master", skill: "athletics" },
+  "YnIyVLiiDxoRfPfF": { name: "Master: Augury", section: "general", folder: "Masters", cost: 20, currency: "sp", requires: [{ t: "rank", group: "skills", key: "augury", min: 10 }, { t: "feature", name: "Expert: Augury" }], bookRow: 203, family: "master", skill: "augury" },
+  "BnMplCkjxolYFeFv": { name: "Master: Craft", section: "general", folder: "Masters", cost: 15, currency: "sp", requires: [{ t: "rank", group: "skills", key: "craft", min: 10 }, { t: "feature", name: "Expert: Craft" }], bookRow: 209, family: "master", skill: "craft" },
+  "aJjuCkfoEaEASAjf": { name: "Master: Dreamwalker", section: "general", folder: "Masters", cost: 20, currency: "sp", requires: [{ t: "rank", group: "skills", key: "dreamwalker", min: 10 }, { t: "feature", name: "Expert: Dreamwalker" }], bookRow: 203, family: "master", skill: "dreamwalker" },
+  "tirCSFLnE2v2XUNs": { name: "Master: Engineering", section: "general", folder: "Masters", cost: 15, currency: "sp", requires: [{ t: "rank", group: "skills", key: "engineering", min: 10 }, { t: "feature", name: "Expert: Engineering" }], bookRow: 209, family: "master", skill: "engineering" },
+  "INnuBFcBgENhjzpC": { name: "Master: First Aid", section: "general", folder: "Masters", cost: 20, currency: "sp", requires: [{ t: "rank", group: "skills", key: "firstAid", min: 10 }, { t: "feature", name: "Expert: First Aid" }], bookRow: 203, family: "master", skill: "firstAid" },
+  "7sBHDFtKI0SZDLHu": { name: "Master: Leadership", section: "general", folder: "Masters", cost: 25, currency: "sp", requires: [{ t: "rank", group: "skills", key: "leadership", min: 10 }, { t: "feature", name: "Expert: Leadership" }], bookRow: 197, family: "master", skill: "leadership" },
+  "RKyaJOFqLmpqe52h": { name: "Master: Lockpicking", section: "general", folder: "Masters", cost: 15, currency: "sp", requires: [{ t: "rank", group: "skills", key: "lockpicking", min: 10 }, { t: "feature", name: "Expert: Lockpicking" }], bookRow: 209, family: "master", skill: "lockpicking" },
+  "n2r1UOwSkkvWT2r9": { name: "Master: Logic", section: "general", folder: "Masters", cost: 15, currency: "sp", requires: [{ t: "rank", group: "skills", key: "logic", min: 10 }, { t: "feature", name: "Expert: Logic" }], bookRow: 209, family: "master", skill: "logic" },
+  "kWBSSL5vxsjkvqVC": { name: "Master: Mind Bending", section: "general", folder: "Masters", cost: 20, currency: "sp", requires: [{ t: "rank", group: "skills", key: "mindBending", min: 10 }, { t: "feature", name: "Expert: Mind Bending" }], bookRow: 203, family: "master", skill: "mindBending" },
+  "zp2KcZPwTQxAnZ9P": { name: "Master: Music", section: "general", folder: "Masters", cost: 20, currency: "sp", requires: [{ t: "rank", group: "skills", key: "music", min: 10 }, { t: "feature", name: "Expert: Music" }], bookRow: 203, family: "master", skill: "music" },
+  "AK6GIxEJkRNcmqEi": { name: "Master: Painting", section: "general", folder: "Masters", cost: 15, currency: "sp", requires: [{ t: "rank", group: "skills", key: "painting", min: 10 }, { t: "feature", name: "Expert: Painting" }], bookRow: 209, family: "master", skill: "painting" },
+  "qCBk1HosoetAu8nE": { name: "Master: Pickpocketing", section: "general", folder: "Masters", cost: 20, currency: "sp", requires: [{ t: "rank", group: "skills", key: "pickpocketing", min: 10 }, { t: "feature", name: "Expert: Pickpocketing" }], bookRow: 203, family: "master", skill: "pickpocketing" },
+  "NwtHXVnz7l8g0LO5": { name: "Master: Research", section: "general", folder: "Masters", cost: 20, currency: "sp", requires: [{ t: "rank", group: "skills", key: "research", min: 10 }, { t: "feature", name: "Expert: Research" }], bookRow: 203, family: "master", skill: "research" },
+  "y6eHd3KhTBsuGHGP": { name: "Master: Rituals", section: "general", folder: "Masters", cost: 20, currency: "sp", requires: [{ t: "rank", group: "skills", key: "rituals", min: 10 }, { t: "feature", name: "Expert: Rituals" }], bookRow: 203, family: "master", skill: "rituals" },
+  "4HTYSrGy2ePiih7B": { name: "Master: Smithing", section: "general", folder: "Masters", cost: 20, currency: "sp", requires: [{ t: "rank", group: "skills", key: "smithing", min: 10 }, { t: "feature", name: "Expert: Smithing" }], bookRow: 203, family: "master", skill: "smithing" },
+  "vXutXUbzhNmp2ktV": { name: "Master: Stealth", section: "general", folder: "Masters", cost: 20, currency: "sp", requires: [{ t: "rank", group: "skills", key: "stealth", min: 10 }, { t: "feature", name: "Expert: Stealth" }], bookRow: 203, family: "master", skill: "stealth" },
+  "0Efc1PFZ2ySJzqpm": { name: "Master: Tactics", section: "general", folder: "Masters", cost: 15, currency: "sp", requires: [{ t: "rank", group: "skills", key: "tactics", min: 10 }, { t: "feature", name: "Expert: Tactics" }], bookRow: 209, family: "master", skill: "tactics" },
+  "uNARyD4C2IpUkzVN": { name: "Master: Traps", section: "general", folder: "Masters", cost: 15, currency: "sp", requires: [{ t: "rank", group: "skills", key: "traps", min: 10 }, { t: "feature", name: "Expert: Traps" }], bookRow: 209, family: "master", skill: "traps" },
   "cz5XtYpl9cKUxeUu": { name: "Feldsher I", section: "general", folder: "Noncombat features", cost: 20, currency: "sp", requires: [{ t: "feature", name: "Adept: First aid" }], bookRow: 215 },
   "lZxGb0PCaX3s7ax5": { name: "Feldsher II", section: "general", folder: "Noncombat features", cost: 20, currency: "sp", requires: [{ t: "feature", name: "Feldsher I" }, { t: "feature", name: "Expert: First Aid" }], bookRow: 217 },
   "BI5SSMFs5rrJWZPw": { name: "Hardened", section: "general", folder: "Noncombat features", cost: 40, currency: "sp", requires: [{ t: "anyOf", options: [{ t: "gm", note: "specialOccasion" }, { t: "gm", note: "traumaticEvent" }] }], bookRow: 307 },
+  "7LsVfU3QQA6Nx61c": { name: "Language: Basic communication", section: "general", folder: "Noncombat features", cost: 5, currency: "sp", requires: [{ t: "featureTeacher", tier: 1 }], bookRow: 201, language: "basic" },
+  "tgm7NlEyekeZ9GEG": { name: "Language: Fluent speech", section: "general", folder: "Noncombat features", cost: 5, currency: "sp", requires: [{ t: "gm", note: "specialOccasion" }], bookRow: 201, language: "fluent" },
+  "nkyTxS01O2PH9zY1": { name: "Language: Sign language", section: "general", folder: "Noncombat features", cost: 15, currency: "sp", requires: [{ t: "featureTeacher", tier: 1 }], bookRow: 204, language: "sign" },
   "gdwPw8yvUiiuY6Vj": { name: "Liquor Connoisseur", section: "general", folder: "Noncombat features", cost: 25, currency: "sp", requires: [{ t: "rank", group: "skills", key: "drinking", min: 5 }], bookRow: 301 },
   "v9vonVWVv0BbjRE2": { name: "Magic Commander", section: "general", folder: "Noncombat features", cost: 15, currency: "sp", requires: [{ t: "rank", group: "skills", key: "leadership", min: 5 }, { t: "flag", key: "magicPotential" }], bookRow: 265 },
   "odv87zaCFElkFICf": { name: "Master herbalist", section: "general", folder: "Noncombat features", cost: 15, currency: "sp", requires: [{ t: "rank", group: "skills", key: "herbalism", min: 5 }], bookRow: 239 },
   "rX4AXoTNc1b5dqVI": { name: "Master thief", section: "general", folder: "Noncombat features", cost: 10, currency: "sp", requires: [{ t: "rank", group: "skills", key: "pickpocketing", min: 6 }, { t: "rank", group: "skills", key: "lockpicking", min: 6 }], bookRow: 245 },
   "4RpzNkmsXOck6RJn": { name: "Muscular I", section: "general", folder: "Noncombat features", cost: 10, currency: "sp", requires: [{ t: "rank", group: "skills", key: "muscles", min: 1 }], bookRow: 281 },
   "gxuP0MLKEWM6I7Ao": { name: "Muscular II", section: "general", folder: "Noncombat features", cost: 20, currency: "sp", requires: [{ t: "feature", name: "Muscular I" }, { t: "rank", group: "skills", key: "muscles", min: 3 }], bookRow: 283 },
+  "lopv0S7TTnB5dIa2": { name: "Reading and Writing", section: "general", folder: "Noncombat features", cost: 15, currency: "sp", requires: [{ t: "featureTeacher", tier: 1 }, { t: "attr", key: "int", min: 2 }], bookRow: 189, language: "reading", readingTier: "first" },
+  "tUj8bee9TvnEEvUG": { name: "Reading and Writing: Additional language", section: "general", folder: "Noncombat features", cost: 5, currency: "sp", requires: [{ t: "featureTeacher", tier: 1 }, { t: "feature", name: "Reading and Writing" }], bookRow: 192, language: "reading", readingTier: "additional" },
   "KfpPrVx9s2pWVIcd": { name: "Scholar I", section: "general", folder: "Noncombat features", cost: 0, currency: "sp", requires: [{ t: "attr", key: "int", min: 4 }], bookRow: 289 },
   "Ece8CtGhC1Qsto8p": { name: "Scholar II", section: "general", folder: "Noncombat features", cost: 0, currency: "sp", requires: [{ t: "feature", name: "Scholar I" }, { t: "anyOf", options: [{ t: "attr", key: "int", min: 5 }, { t: "feature", name: "Genius" }] }], bookRow: 291 },
   "pY1nAZ9zLssxCUNF": { name: "Sixth sense", section: "general", folder: "Noncombat features", cost: 10, currency: "sp", requires: [{ t: "rank", group: "skills", key: "insight", min: 5 }], bookRow: 279 },
+  "24APd4buzUW5BmMu": { name: "Teacher I", section: "general", folder: "Noncombat features", cost: 10, currency: "sp", requires: [{ t: "attr", key: "cha", min: 2 }], bookRow: 254 },
+  "qMwuarPuBkQzQajw": { name: "Teacher II", section: "general", folder: "Noncombat features", cost: 10, currency: "sp", requires: [{ t: "feature", name: "Teacher I" }, { t: "attr", key: "cha", min: 3 }], bookRow: 254 },
+  "S2e73J4sZF0VExvF": { name: "Teacher III", section: "general", folder: "Noncombat features", cost: 10, currency: "sp", requires: [{ t: "feature", name: "Teacher II" }, { t: "attr", key: "cha", min: 4 }], bookRow: 254 },
   "sE7EcREkQJrLZBUY": { name: "Willfulness", section: "general", folder: "Noncombat features", cost: 15, currency: "sp", requires: [{ t: "attr", key: "int", min: 3 }], bookRow: 295, aliases: ["Determination"] },
   "eKuC93YXSZy2HFWF": { name: "Woodsman", section: "general", folder: "Noncombat features", cost: 15, currency: "sp", requires: [{ t: "rank", group: "skills", key: "survival", min: 5 }], bookRow: 297 },
   "Si1SYngqhgob0ix1": { name: "Wordsmith", section: "general", folder: "Noncombat features", cost: 20, currency: "sp", requires: [{ t: "attr", key: "cha", min: 4 }, { t: "anyRank", group: "skills", min: 5 }], bookRow: 243 },

@@ -7,7 +7,7 @@ import {
 
 /**
  * Token status counters coloured by what they count, so the number on an icon
- * reads at a glance: blue for stacks, green for combat rounds, yellow for the
+ * reads at a glance: turquoise for stacks, green for combat rounds, yellow for the
  * bearer's own turns.
  *
  * The badge belongs to the Status Icon Counters module. It picks one counter
@@ -24,7 +24,7 @@ import {
  */
 
 export const COUNTER_COLORS = {
-  stacks: "#5aa9ff",
+  stacks: "#00f9f9",
   rounds: "#6fd66f",
   turns: "#ffd84a",
 };

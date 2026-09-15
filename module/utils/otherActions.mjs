@@ -1,5 +1,6 @@
 import { tagRollSkill } from "./rollAdvantage.mjs";
 import { resetActorRerolls } from "./rerolls.mjs";
+import { getTraitPills } from "./traitPills.mjs";
 import { gainBloodFromBleed, bloodGainNote } from "./bloodPool.mjs";
 import { isActorInCombat } from "./combatants.mjs";
 
@@ -287,14 +288,87 @@ function collectLongRestCandidates() {
 }
 
 /**
+ * The values a Long Rest would apply to this actor at face value, before any
+ * per-actor override — the amounts the roster dialog previews and the normal
+ * (non-advanced) rest applies outright. Pulled out of `applyLongRest` so both
+ * paths share one set of formulas.
+ *
+ * @param {Actor} actor
+ * @returns {{nourishingEffect: ActiveEffect|null, health: number, stamina: number,
+ *   mana: number, mind: number, fatigue: number, toxicity: number, rations: number}}
+ */
+function longRestDefaults(actor) {
+  const system = actor.system;
+
+  const nourishingEffect = actor.effects.find((e) =>
+    e.statuses?.has("nourishing_rest"),
+  );
+  const regenMultiplier = nourishingEffect ? 2 : 1;
+
+  // `longRestHealthBonus` is a flat extra set by Active Effects — Starsign:
+  // Rock grants +2. It is added after the Nourishing Rest multiplier, so the
+  // starsign is worth the same 2 health whether or not the rest was nourishing.
+  const longRestHealthBonus = Number(system.longRestHealthBonus) || 0;
+  const endurance = Number(system.attributes?.end?.total) || 0;
+  const health = (10 + endurance * 2) * regenMultiplier + longRestHealthBonus;
+
+  const toxicity = (5 + endurance * 2) * regenMultiplier;
+
+  const stamina = system.stats?.stamina?.max ?? 0;
+
+  // Doctrines exist only on the character template. The dialog previews every
+  // roster entry, so an NPC companion or selected token must read as rank 0
+  // rather than throw and stop the dialog from opening.
+  const doctrines = system.doctrines ?? {};
+  const elementalistRank = doctrines.elementalist?.value ?? 0;
+  const elymasRank = doctrines.elymas?.value ?? 0;
+  const incantatorRank = doctrines.incantator?.value ?? 0;
+  const veneficusRank = doctrines.veneficus?.value ?? 0;
+  const maxMana = system.stats?.mana?.max ?? 0;
+
+  let mana = 0;
+  if (elementalistRank > 0) {
+    mana = elementalistRank >= 7 ? 50 : elementalistRank >= 5 ? 35 : 25;
+  } else if (elymasRank > 0) {
+    mana = elymasRank >= 5 ? maxMana : Math.floor(maxMana / 2);
+  } else if (incantatorRank > 0) {
+    mana = incantatorRank >= 9 ? 40 : incantatorRank >= 5 ? 30 : 20;
+  } else if (veneficusRank > 0) {
+    mana = maxMana;
+  }
+
+  // A stat the actor's template does not carry comes back null, meaning "not
+  // part of this rest": the NPC template has no fatigue, and writing one onto it
+  // would invent a field.
+  const has = (key) => system.stats?.[key] !== undefined;
+
+  return {
+    nourishingEffect,
+    health: has("health") ? health : null,
+    stamina: has("stamina") ? stamina : null,
+    mana: has("mana") ? mana : null,
+    mind: has("mind") ? 1 : null,
+    fatigue: has("fatigue") ? 1 : null,
+    toxicity: has("toxicity") ? toxicity : null,
+    rations: foodPerDay(actor),
+  };
+}
+
+/**
  * Vertical roster with a checkbox per actor, everyone ticked to start with —
  * a Long Rest normally covers the whole party, and dropping the one person
  * standing watch should be a single click rather than a re-selection.
  *
+ * A GM also gets an "Advanced options" toggle: widened, it swaps every row's
+ * health/HP chip for one cell per resource (checkbox + editable amount +
+ * current value), so a rest can be tuned per actor without leaving the dialog.
+ * Off, or for a player, the dialog behaves exactly as before.
+ *
  * @param {{actor: Actor, group: string}[]} candidates
- * @returns {Promise<{actors: Actor[], eatRations: boolean}|null>} The chosen
- *   actors and whether the meal is being paid for out of packs, or null if
- *   cancelled.
+ * @returns {Promise<{actors: Actor[], eatRations: boolean, overrides: Map<string, object>|null}|null>}
+ *   The chosen actors, whether the meal is being paid for out of packs, and
+ *   any per-actor resource overrides (null unless Advanced options was on),
+ *   or null if cancelled.
  */
 async function promptForLongRestActors(candidates) {
   const label = (key) => game.i18n.localize(`REDSTEEL.LongRest.${key}`);
@@ -302,6 +376,46 @@ async function promptForLongRestActors(candidates) {
     0: label("GroupPlayers"),
     1: label("GroupParty"),
     2: label("GroupSelected"),
+  };
+
+  const isGM = game.user.isGM;
+
+  // Camping in the wild runs for days at a time, so the box remembers where it
+  // was left: once travel starts it stays ticked until the party reaches a bed.
+  const eatDefault = game.settings.get("redsteel", "longRestEatRations");
+
+  // One cell per resource, checkbox + editable amount + current value — built
+  // once per actor row, and skipped entirely for players who never see the
+  // columns at all.
+  const buildResCell = (key, opts = {}) => {
+    const {
+      dashOnly = false,
+      amount = null,
+      current = null,
+      currentClass = "",
+      tooltip = null,
+      checked = true,
+    } = opts;
+
+    if (dashOnly) {
+      return `<div class="rs-rest-cell" data-res="${key}"><span class="rs-rest-cur">—</span></div>`;
+    }
+
+    const tooltipAttr = tooltip ? ` data-tooltip="${tooltip}"` : "";
+    const amountInput =
+      amount !== null
+        ? `<input type="number" class="rs-rest-res-amt" data-res="${key}" value="${amount}" min="0" step="1"${
+            checked ? "" : " disabled"
+          }>`
+        : "";
+    const currentSpan =
+      current !== null
+        ? `<span class="rs-rest-cur${currentClass ? ` ${currentClass}` : ""}">${current}</span>`
+        : "";
+
+    return `<div class="rs-rest-cell" data-res="${key}"${tooltipAttr}>
+      <input type="checkbox" class="rs-rest-res-on" data-res="${key}" ${checked ? "checked" : ""}>${amountInput}${currentSpan}
+    </div>`;
   };
 
   let lastGroup = null;
@@ -329,21 +443,94 @@ async function promptForLongRestActors(candidates) {
              <i class="fa-light fa-drumstick-bite"></i>${have}/${need}
            </span>`;
 
+      let advCellsHtml = "";
+      if (isGM) {
+        const d = longRestDefaults(actor);
+        const nourishTooltip = d.nourishingEffect
+          ? label("NourishingTooltip")
+          : null;
+        // A stat the template lacks (null default) gets a dash, no checkbox,
+        // so the override reads it as skipped.
+        const statCell = (key, extra = {}) => {
+          if (d[key] === null) return buildResCell(key, { dashOnly: true });
+          const stat = actor.system?.stats?.[key] ?? {};
+          return buildResCell(key, {
+            amount: d[key],
+            current: `${stat.value ?? 0}/${stat.max ?? 0}`,
+            ...extra,
+          });
+        };
+
+        const advCells = [
+          statCell("health", { tooltip: nourishTooltip }),
+          statCell("stamina"),
+          statCell("mana"),
+          statCell("mind"),
+          statCell("fatigue"),
+          statCell("toxicity", { tooltip: nourishTooltip }),
+          d.rations > 0
+            ? buildResCell("rations", {
+                amount: d.rations,
+                current: String(have),
+                currentClass: have < d.rations ? "short" : "",
+                checked: eatDefault,
+              })
+            : buildResCell("rations", { dashOnly: true }),
+          buildResCell("rerolls", {}),
+        ].join("");
+
+        advCellsHtml = `<div class="rs-rest-adv">${advCells}</div>`;
+      }
+
       return `
         ${heading}
-        <label class="rs-rest-row">
-          <input type="checkbox" name="rs-rest-actor" value="${actor.uuid}" checked>
-          <img src="${actor.img ?? "icons/svg/mystery-man.svg"}" alt="">
-          <span class="rs-rest-name">${foundry.utils.escapeHTML(actor.name)}</span>
-          ${foodChip}
-          <span class="rs-rest-hp">${hpText}</span>
-        </label>`;
+        <div class="rs-rest-entry" data-uuid="${actor.uuid}">
+          <label class="rs-rest-row">
+            <input type="checkbox" name="rs-rest-actor" value="${actor.uuid}" checked>
+            <img src="${actor.img ?? "icons/svg/mystery-man.svg"}" alt="">
+            <span class="rs-rest-name">${foundry.utils.escapeHTML(actor.name)}</span>
+            ${foodChip}
+            <span class="rs-rest-hp">${hpText}</span>
+          </label>
+          ${advCellsHtml}
+        </div>`;
     })
     .join("");
 
-  // Camping in the wild runs for days at a time, so the box remembers where it
-  // was left: once travel starts it stays ticked until the party reaches a bed.
-  const eatDefault = game.settings.get("redsteel", "longRestEatRations");
+  const colDef = [
+    ["health", "fa-light fa-heart", "Health"],
+    ["stamina", "fa-light fa-bolt", "Stamina"],
+    ["mana", "fa-light fa-sparkles", "Mana"],
+    ["mind", "fa-light fa-brain", "Mind"],
+    ["fatigue", "fa-light fa-bed", "Fatigue"],
+    ["toxicity", "fa-light fa-flask", "Toxicity"],
+    ["rations", "fa-light fa-drumstick-bite", "Rations"],
+    ["rerolls", "fa-light fa-dice", "Rerolls"],
+  ];
+
+  const advHead = isGM
+    ? `<div class="rs-rest-adv-head">
+        <div class="rs-rest-adv-head-spacer"></div>
+        ${colDef
+          .map(
+            ([key, icon, labelKey]) => `
+          <label class="rs-rest-colhead" data-tooltip="${label(`Col${labelKey}Tooltip`)}">
+            <input type="checkbox" class="rs-rest-col-on" data-res="${key}" ${
+              key === "rations" ? (eatDefault ? "checked" : "") : "checked"
+            }>
+            <i class="${icon}"></i>
+            <span>${label(`Col${labelKey}`)}</span>
+          </label>`,
+          )
+          .join("")}
+      </div>`
+    : "";
+
+  const advToggle = isGM
+    ? `<button type="button" class="rs-rest-advanced-toggle" aria-pressed="false">
+        <i class="fa-light fa-sliders"></i> ${label("Advanced")}
+      </button>`
+    : "";
 
   const DialogV2 = foundry.applications.api.DialogV2;
   const chosen = await DialogV2.wait({
@@ -356,11 +543,13 @@ async function promptForLongRestActors(candidates) {
           <input type="checkbox" name="rs-rest-all" checked>
           <span class="rs-rest-name">${label("SelectAll")}</span>
         </label>
+        ${advHead}
         <div class="rs-rest-list">${rows}</div>
         <label class="rs-rest-row rs-rest-rations">
           <input type="checkbox" name="rs-rest-eat" ${eatDefault ? "checked" : ""}>
           <span class="rs-rest-name">${label("EatRations")}</span>
         </label>
+        ${advToggle}
       </form>`,
     buttons: [
       {
@@ -370,13 +559,55 @@ async function promptForLongRestActors(candidates) {
         default: true,
         callback: (event, button, dialog) => {
           const root = dialog?.element ?? button.form;
-          return {
-            uuids: Array.from(
-              root.querySelectorAll('input[name="rs-rest-actor"]:checked'),
-            ).map((input) => input.value),
-            eatRations: !!root.querySelector('input[name="rs-rest-eat"]')
-              ?.checked,
-          };
+          const uuids = Array.from(
+            root.querySelectorAll('input[name="rs-rest-actor"]:checked'),
+          ).map((input) => input.value);
+          const eatRations = !!root.querySelector('input[name="rs-rest-eat"]')
+            ?.checked;
+
+          const advancedOn = root
+            .querySelector("form")
+            ?.classList.contains("rs-rest-advanced");
+
+          let overrides = null;
+          if (advancedOn) {
+            overrides = new Map();
+            const entries = Array.from(
+              root.querySelectorAll(".rs-rest-entry"),
+            );
+            const resourceKeys = [
+              "health",
+              "stamina",
+              "mana",
+              "mind",
+              "fatigue",
+              "toxicity",
+              "rations",
+            ];
+            for (const uuid of uuids) {
+              const entry = entries.find((e) => e.dataset.uuid === uuid);
+              if (!entry) continue;
+              const ov = {};
+              for (const key of resourceKeys) {
+                const checkbox = entry.querySelector(
+                  `.rs-rest-res-on[data-res="${key}"]`,
+                );
+                const amount = entry.querySelector(
+                  `.rs-rest-res-amt[data-res="${key}"]`,
+                );
+                ov[key] = checkbox?.checked
+                  ? Number(amount?.value ?? 0)
+                  : null;
+              }
+              const rerollsBox = entry.querySelector(
+                '.rs-rest-res-on[data-res="rerolls"]',
+              );
+              ov.rerolls = !!rerollsBox?.checked;
+              overrides.set(uuid, ov);
+            }
+          }
+
+          return { uuids, eatRations, overrides };
         },
       },
     ],
@@ -384,13 +615,55 @@ async function promptForLongRestActors(candidates) {
       const root = dialog instanceof HTMLElement ? dialog : dialog?.element;
       if (!root) return;
 
+      const form = root.querySelector("form");
       const master = root.querySelector('input[name="rs-rest-all"]');
       const boxes = Array.from(
         root.querySelectorAll('input[name="rs-rest-actor"]'),
       );
+      const eatBox = root.querySelector('input[name="rs-rest-eat"]');
+      const toggle = root.querySelector(".rs-rest-advanced-toggle");
+      const colHeaderBoxes = Array.from(
+        root.querySelectorAll(".rs-rest-col-on"),
+      );
+      const cellBoxes = Array.from(root.querySelectorAll(".rs-rest-res-on"));
+
+      // The row it lives in dims the moment its own box is cleared — a quiet
+      // reminder that unticked means "not resting", not just "not selected".
+      const updateOffState = () => {
+        for (const box of boxes) {
+          const entry = box.closest(".rs-rest-entry");
+          if (entry) entry.classList.toggle("rs-rest-off", !box.checked);
+        }
+      };
+
+      const disableSibling = (box) => {
+        const cell = box.closest(".rs-rest-cell");
+        const amt = cell?.querySelector(".rs-rest-res-amt");
+        if (amt) amt.disabled = !box.checked;
+      };
+
+      // A column header reads "everyone"/"no one"/"some", the same shape as
+      // the master row, and the rations column mirrors into Eat rations.
+      const syncMasters = () => {
+        for (const header of colHeaderBoxes) {
+          const key = header.dataset.res;
+          const cells = cellBoxes.filter((b) => b.dataset.res === key);
+          if (!cells.length) continue;
+          const allChecked = cells.every((b) => b.checked);
+          const someChecked = cells.some((b) => b.checked);
+          header.checked = allChecked;
+          header.indeterminate = !allChecked && someChecked;
+
+          if (key === "rations" && eatBox) {
+            eatBox.checked = allChecked;
+            eatBox.indeterminate = !allChecked && someChecked;
+          }
+        }
+      };
 
       master?.addEventListener("change", () => {
         for (const box of boxes) box.checked = master.checked;
+        updateOffState();
       });
       // The master reads as "everyone", so it has to follow the rows back:
       // leaving it ticked after one is cleared would be a standing lie.
@@ -399,8 +672,54 @@ async function promptForLongRestActors(candidates) {
           if (!master) return;
           master.checked = boxes.every((b) => b.checked);
           master.indeterminate = !master.checked && boxes.some((b) => b.checked);
+          updateOffState();
         });
       }
+
+      for (const box of cellBoxes) {
+        box.addEventListener("change", () => {
+          disableSibling(box);
+          syncMasters();
+        });
+      }
+
+      for (const header of colHeaderBoxes) {
+        header.addEventListener("change", () => {
+          const key = header.dataset.res;
+          for (const box of cellBoxes.filter((b) => b.dataset.res === key)) {
+            box.checked = header.checked;
+            disableSibling(box);
+          }
+          if (key === "rations" && eatBox) eatBox.checked = header.checked;
+          syncMasters();
+        });
+      }
+
+      eatBox?.addEventListener("change", () => {
+        for (const box of cellBoxes.filter((b) => b.dataset.res === "rations")) {
+          box.checked = eatBox.checked;
+          disableSibling(box);
+        }
+        syncMasters();
+      });
+
+      toggle?.addEventListener("click", () => {
+        const on = toggle.getAttribute("aria-pressed") !== "true";
+        toggle.setAttribute("aria-pressed", String(on));
+        form?.classList.toggle("rs-rest-advanced", on);
+
+        const width = on ? 820 : 340;
+        if (dialog?.setPosition) {
+          dialog.setPosition({
+            width,
+            height: "auto",
+            left: Math.max(0, (window.innerWidth - width) / 2),
+          });
+        }
+      });
+
+      updateOffState();
+      syncMasters();
     },
     rejectClose: false,
   });
@@ -416,6 +735,7 @@ async function promptForLongRestActors(candidates) {
   return {
     actors: chosen.uuids.map((uuid) => fromUuidSync(uuid)).filter((a) => a),
     eatRations: chosen.eatRations,
+    overrides: chosen.overrides ?? null,
   };
 }
 
@@ -430,7 +750,7 @@ export async function longRest() {
   const choice = await promptForLongRestActors(candidates);
   if (choice === null) return; // cancelled
 
-  const { actors, eatRations } = choice;
+  const { actors, eatRations, overrides } = choice;
 
   if (!actors.length) {
     ui.notifications.warn(game.i18n.localize("REDSTEEL.LongRest.NoneChosen"));
@@ -438,7 +758,10 @@ export async function longRest() {
   }
 
   for (const actor of actors) {
-    await applyLongRest(actor, { eatRations });
+    await applyLongRest(actor, {
+      eatRations,
+      overrides: overrides?.get(actor.uuid) ?? null,
+    });
   }
 }
 
@@ -446,93 +769,128 @@ export async function longRest() {
  * The Long Rest itself for a single actor: regeneration, one Mind, one fatigue
  * degree off, rerolls back to ready, and a card saying so.
  *
+ * Without `overrides` this applies `longRestDefaults` outright, exactly as
+ * before. With `overrides` (the GM's Advanced options picks), each of the six
+ * resources plus rations is either the hand-entered amount or skipped
+ * entirely (`null`) — Nourishing Rest's doubling is still baked into the
+ * health/toxicity defaults, so it only matters if those two are used as-is.
+ *
  * @param {Actor} actor
- * @param {{eatRations?: boolean}} [options]
+ * @param {{eatRations?: boolean, overrides?: object|null}} [options]
  */
-async function applyLongRest(actor, { eatRations = false } = {}) {
+async function applyLongRest(actor, { eatRations = false, overrides = null } = {}) {
   const system = actor.system;
 
-  const nourishingEffect = actor.effects.find((e) =>
-    e.statuses?.has("nourishing_rest"),
-  );
+  // Pills for triggers naming "long-rest", read from the state the character
+  // went to rest in, before the rest deletes Nourishing Rest or anything else.
+  const traitPills = getTraitPills(actor, "longrest", { event: true });
 
-  const regenMultiplier = nourishingEffect ? 2 : 1;
+  const d = longRestDefaults(actor);
 
-  // ─── Stamina ───
-  const stamina = system.stats.stamina.value ?? 0;
-  const newStamina = Math.max(0, stamina + system.stats.stamina.max);
+  const sanitize = (v) => Math.max(0, Math.floor(Number(v) || 0));
 
-  // ─── Health ───
-  // `longRestHealthBonus` is a flat extra set by Active Effects — Starsign:
-  // Rock grants +2. It is added after the Nourishing Rest multiplier, so the
-  // starsign is worth the same 2 health whether or not the rest was nourishing.
-  const health = system.stats.health.value ?? 0;
-  const longRestHealthBonus = Number(system.longRestHealthBonus) || 0;
-  const healthRegen =
-    (10 + system.attributes.end.total * 2) * regenMultiplier +
-    longRestHealthBonus;
+  const RESOURCE_KEYS = [
+    "health",
+    "stamina",
+    "mana",
+    "mind",
+    "fatigue",
+    "toxicity",
+  ];
 
-  const newHealth = Math.max(0, health + healthRegen);
-
-  // ─── Toxicity ───
-  const toxicity = system.stats.toxicity.value ?? 0;
-
-  const toxicityReduction =
-    (5 + system.attributes.end.total * 2) * regenMultiplier;
-
-  const newToxicity = Math.max(0, toxicity - toxicityReduction);
-
-  // ─── Fatigue ───
-  const fatigue = system.stats.fatigue.value ?? 0;
-  const newFatigue = Math.max(0, fatigue - 1);
-
-  // ─── Mind ───
-  const mind = Number(system.stats.mind.value ?? 0);
-  const newMind = Math.max(0, mind + 1);
-  // ─── Mana ───
-  const mana = system.stats.mana.value ?? 0;
-  const maxMana = system.stats.mana.max ?? 0;
-
-  const elementalistRank = system.doctrines.elementalist.value ?? 0;
-  const elymasRank = system.doctrines.elymas.value ?? 0;
-  const incantatorRank = system.doctrines.incantator.value ?? 0;
-  const veneficusRank = system.doctrines.veneficus.value ?? 0;
-
-  let newMana = 0;
-
-  if (elementalistRank > 0) {
-    newMana = elementalistRank >= 7 ? 50 : elementalistRank >= 5 ? 35 : 25;
-  } else if (elymasRank > 0) {
-    newMana = elymasRank >= 5 ? maxMana : Math.floor(maxMana / 2);
-  } else if (incantatorRank > 0) {
-    newMana = incantatorRank >= 9 ? 40 : incantatorRank >= 5 ? 30 : 20;
-  } else if (veneficusRank > 0) {
-    newMana = maxMana;
+  const plan = {};
+  let resourcesDiffer = false;
+  for (const key of RESOURCE_KEYS) {
+    // Not on this actor's template: always skipped, and not a hand adjustment.
+    if (d[key] === null) {
+      plan[key] = null;
+      continue;
+    }
+    if (overrides) {
+      const raw = overrides[key];
+      if (raw === null || raw === undefined) {
+        plan[key] = null;
+        resourcesDiffer = true;
+      } else {
+        const v = sanitize(raw);
+        plan[key] = v;
+        if (v !== d[key]) resourcesDiffer = true;
+      }
+    } else {
+      plan[key] = d[key];
+    }
   }
 
-  const manaText = newMana > 0 ? `, Mana +${newMana}` : "";
-
-  if (nourishingEffect) {
-    await nourishingEffect.delete();
+  if (overrides) {
+    const raw = overrides.rations;
+    plan.rations = raw === null || raw === undefined ? null : sanitize(raw);
+  } else {
+    plan.rations = eatRations && d.rations > 0 ? d.rations : null;
   }
 
-  const updates = {
-    "system.stats.stamina.value": newStamina,
-    "system.stats.health.value": newHealth,
-    "system.stats.toxicity.value": newToxicity,
-    "system.stats.fatigue.value": newFatigue,
-    "system.stats.mind.value": newMind,
-    "system.stats.mana.value": Math.min(maxMana, mana + newMana),
-  };
-  await actor.update(updates);
+  plan.rerolls = overrides ? !!overrides.rerolls : true;
+
+  const rerollsDiffer = !!overrides && !overrides.rerolls;
+  const rationsDiffer =
+    !!overrides && plan.rations !== null && plan.rations !== d.rations;
+  const adjusted =
+    !!overrides && (resourcesDiffer || rerollsDiffer || rationsDiffer);
+
+  // Nourishing Rest's doubling is baked into `d.health`/`d.toxicity`; only
+  // spend it if one of those two is actually being applied this rest.
+  if (d.nourishingEffect && (plan.health !== null || plan.toxicity !== null)) {
+    await d.nourishingEffect.delete();
+  }
+
+  const updates = {};
+  if (plan.health !== null) {
+    updates["system.stats.health.value"] = Math.max(
+      0,
+      (system.stats.health.value ?? 0) + plan.health,
+    );
+  }
+  if (plan.stamina !== null) {
+    updates["system.stats.stamina.value"] = Math.max(
+      0,
+      (system.stats.stamina.value ?? 0) + plan.stamina,
+    );
+  }
+  if (plan.mana !== null) {
+    const maxMana = system.stats.mana.max ?? 0;
+    updates["system.stats.mana.value"] = Math.min(
+      maxMana,
+      (system.stats.mana.value ?? 0) + plan.mana,
+    );
+  }
+  if (plan.mind !== null) {
+    updates["system.stats.mind.value"] = Math.max(
+      0,
+      (system.stats.mind.value ?? 0) + plan.mind,
+    );
+  }
+  if (plan.fatigue !== null) {
+    updates["system.stats.fatigue.value"] = Math.max(
+      0,
+      (system.stats.fatigue.value ?? 0) - plan.fatigue,
+    );
+  }
+  if (plan.toxicity !== null) {
+    updates["system.stats.toxicity.value"] = Math.max(
+      0,
+      (system.stats.toxicity.value ?? 0) - plan.toxicity,
+    );
+  }
+
+  if (Object.keys(updates).length) await actor.update(updates);
 
   // ─── Rerolls ─── restore every feature reroll to ready.
-  const rerollsRestored = await resetActorRerolls(actor);
+  const rerollsRestored = plan.rerolls ? await resetActorRerolls(actor) : false;
 
   // ─── Food ─── only when the party is camping rather than paying an innkeeper.
-  const appetite = foodPerDay(actor);
   const meal =
-    eatRations && appetite > 0 ? await consumeRations(actor, appetite) : null;
+    plan.rations !== null && plan.rations > 0
+      ? await consumeRations(actor, plan.rations)
+      : null;
   const mealText = !meal
     ? ""
     : meal.short
@@ -548,27 +906,62 @@ async function applyLongRest(actor, { eatRations = false } = {}) {
   // ─── Chat Message ───
   const iconUrl = "icons/magic/time/day-night-sunset-sunrise.webp";
 
+  const statParts = [];
+  if (plan.health !== null && plan.health > 0)
+    statParts.push(
+      game.i18n.format("REDSTEEL.LongRest.CardHealth", {
+        amount: plan.health,
+      }),
+    );
+  if (plan.stamina !== null && plan.stamina > 0)
+    statParts.push(
+      game.i18n.format("REDSTEEL.LongRest.CardStamina", {
+        amount: plan.stamina,
+      }),
+    );
+  if (plan.mana !== null && plan.mana > 0)
+    statParts.push(
+      game.i18n.format("REDSTEEL.LongRest.CardMana", { amount: plan.mana }),
+    );
+  if (plan.mind !== null && plan.mind > 0)
+    statParts.push(
+      game.i18n.format("REDSTEEL.LongRest.CardMind", { amount: plan.mind }),
+    );
+  if (plan.fatigue !== null && plan.fatigue > 0)
+    statParts.push(
+      game.i18n.format("REDSTEEL.LongRest.CardFatigue", {
+        amount: plan.fatigue,
+      }),
+    );
+  if (plan.toxicity !== null && plan.toxicity > 0)
+    statParts.push(
+      game.i18n.format("REDSTEEL.LongRest.CardToxicity", {
+        amount: plan.toxicity,
+      }),
+    );
+
+  const statLine = statParts.length
+    ? statParts.join(", ")
+    : game.i18n.localize("REDSTEEL.LongRest.CardNothing");
+
+  const bodyText = game.i18n.format("REDSTEEL.LongRest.CardBody", {
+    name: `<strong>${foundry.utils.escapeHTML(actor.name)}</strong>`,
+  });
+
   const chatMessage = `
 <div style="display:flex; align-items:center; gap:10px;">
   <img src="${iconUrl}" width="36" height="36"
        style="border-radius:50%;" />
   <div>
     <p style="color:#007ba9; font-size:1.2em;">
-      <strong>Used Long Rest action</strong>
+      <strong>${game.i18n.localize("REDSTEEL.LongRest.CardTitle")}</strong>
     </p>
-    <strong>${actor.name}</strong>
-    had a long rest that soothes body and soul.
+    ${bodyText}
     <br>
-    <em>
-      Health +${healthRegen},
-      Stamina +${system.stats.stamina.max}
-      ${manaText},
-      Mind +1,
-      Fatigue -1,
-      Toxicity -${toxicityReduction}.
-    </em>
-    ${rerollsRestored ? "<br><em>Rerolls restored.</em>" : ""}
+    <em>${statLine}</em>
+    ${rerollsRestored ? `<br><em>${game.i18n.localize("REDSTEEL.LongRest.CardRerolls")}</em>` : ""}
     ${mealText}
+    ${adjusted ? `<br><em style="opacity:.7">${game.i18n.localize("REDSTEEL.LongRest.CardAdjusted")}</em>` : ""}
   </div>
 </div>
 `;
@@ -576,6 +969,7 @@ async function applyLongRest(actor, { eatRations = false } = {}) {
   await ChatMessage.create({
     content: chatMessage,
     speaker: ChatMessage.getSpeaker({ actor }),
+    flags: traitPills.length ? { redsteel: { traitPills } } : {},
   });
 }
 

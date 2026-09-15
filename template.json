@@ -137,7 +137,18 @@
         "tracked": [],
         "tracksSet": false,
         "discountChoices": {},
-        "specPoints": 6
+        "skillMirrors": {},
+        "temperamentSchool": "",
+        "specPoints": 6,
+        "starting": {
+          "cp": null,
+          "sp": null
+        },
+        "bonus": {
+          "cp": 0,
+          "sp": 0
+        },
+        "awards": []
       },
       "skillvisibility": true,
       "tabVisibility": {
@@ -145,6 +156,7 @@
         "config": "visible",
         "effects": "visible"
       },
+      "skillsEditToggle": false,
       "dodgeLimit": {
         "value": 50,
         "bonus": 0,
@@ -1628,7 +1640,10 @@
         "pools": []
       },
       "weaponSpec": { "tag": "", "tier": 0 },
-      "starsign": false
+      "starsign": false,
+      "cost": { "cp": null, "sp": null },
+      "learnSection": "",
+      "requirementsNote": ""
     },
     "race": {
       "templates": ["base"],
@@ -1779,6 +1794,7 @@
       "attributeTest": "",
       "dmgTypes": [],
       "testModifier": 0,
+      "testAdvantage": "",
       "costOptions": [
         "stamina",
         "mana",

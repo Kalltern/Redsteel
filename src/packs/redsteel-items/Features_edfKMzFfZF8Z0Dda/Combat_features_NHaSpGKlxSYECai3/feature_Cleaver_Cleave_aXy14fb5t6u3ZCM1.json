@@ -19,7 +19,11 @@
       "value": 0
     },
     "option": "feature",
-    "localizationKey": "REDSTEEL.Items.CleaverCleave.name"
+    "localizationKey": "REDSTEEL.Items.CleaverCleave.name",
+    "cost": {
+      "cp": 10,
+      "sp": null
+    }
   },
   "effects": [],
   "sort": 800000,

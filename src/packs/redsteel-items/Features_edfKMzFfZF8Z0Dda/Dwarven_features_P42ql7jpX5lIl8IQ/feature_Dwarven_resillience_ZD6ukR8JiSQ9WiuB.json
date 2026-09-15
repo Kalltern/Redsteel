@@ -19,7 +19,11 @@
       "value": null
     },
     "option": "feature",
-    "localizationKey": "REDSTEEL.Items.DwarvenResilience.name"
+    "localizationKey": "REDSTEEL.Items.DwarvenResilience.name",
+    "cost": {
+      "cp": 20,
+      "sp": null
+    }
   },
   "effects": [],
   "flags": {

@@ -317,6 +317,15 @@
             <input type="text" name="system.testModifier" value="{{system.testModifier}}" data-dtype="Number"/>
           </div>
 
+          <div class="grid-span-1">
+            <label for="test-advantage">{{localize "REDSTEEL.Item.Ability.FIELDS.testAdvantage.label"}}:</label>
+            <select name="system.testAdvantage" id="test-advantage">
+              <option value="">{{localize "REDSTEEL.Item.Ability.FIELDS.testAdvantage.none"}}</option>
+              <option value="advantage" {{#if (eq system.testAdvantage "advantage")}}selected{{/if}}>{{localize "REDSTEEL.Item.Ability.FIELDS.testAdvantage.advantage"}}</option>
+              <option value="disadvantage" {{#if (eq system.testAdvantage "disadvantage")}}selected{{/if}}>{{localize "REDSTEEL.Item.Ability.FIELDS.testAdvantage.disadvantage"}}</option>
+            </select>
+          </div>
+
           <div class="grid-span-2 rs-toggle-row">
             <label class="rs-toggle">
               <input type="checkbox" name="system.weaponAbility" {{#if system.weaponAbility}}checked{{/if}} />

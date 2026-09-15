@@ -19,7 +19,11 @@
       "value": null
     },
     "option": "feature",
-    "localizationKey": "REDSTEEL.Items.HalflingInsidiousness.name"
+    "localizationKey": "REDSTEEL.Items.HalflingInsidiousness.name",
+    "cost": {
+      "cp": 5,
+      "sp": null
+    }
   },
   "effects": [],
   "flags": {

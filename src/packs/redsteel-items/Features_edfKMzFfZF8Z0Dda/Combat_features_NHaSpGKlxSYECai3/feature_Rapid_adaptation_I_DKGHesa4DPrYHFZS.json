@@ -23,7 +23,11 @@
     "rollTriggersRaw": "attack",
     "rollTriggers": [
       "attack"
-    ]
+    ],
+    "cost": {
+      "cp": 5,
+      "sp": null
+    }
   },
   "effects": [],
   "sort": 800000,

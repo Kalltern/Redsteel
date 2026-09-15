@@ -20,7 +20,11 @@
       "value": 0
     },
     "option": "feature",
-    "localizationKey": "REDSTEEL.Items.AreaDefense.name"
+    "localizationKey": "REDSTEEL.Items.AreaDefense.name",
+    "cost": {
+      "cp": 10,
+      "sp": null
+    }
   },
   "effects": [],
   "sort": 0,

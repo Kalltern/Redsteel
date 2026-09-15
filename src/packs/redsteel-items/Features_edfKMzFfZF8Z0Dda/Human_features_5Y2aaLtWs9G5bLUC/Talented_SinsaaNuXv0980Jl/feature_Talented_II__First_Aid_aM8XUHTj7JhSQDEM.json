@@ -28,7 +28,11 @@
         }
       ]
     },
-    "option": "feature"
+    "option": "feature",
+    "cost": {
+      "cp": null,
+      "sp": 20
+    }
   },
   "effects": [
     {
