@@ -70,6 +70,8 @@ import {
   LANGUAGE_FEATURE_IDS,
   getKnownLanguages,
   getLanguageFeatureState,
+  getLanguageFeaturePrice,
+  getNativeLanguageLimit,
   purchaseLanguageFeature,
   grantNativeLanguage,
   getDiscountChoiceOptions,
@@ -78,6 +80,7 @@ import {
   getForcedSchool,
   getMirrorSources,
   getRankCost,
+  getSkillDiscounts,
   setDiscountChoice,
   setMirrorChoice,
   countBoughtSpecNodes,
@@ -89,6 +92,7 @@ import {
   purchaseSpec,
   refundSpec,
   setSpecTeacher,
+  setSpecNodeTeacher,
   getSpecNodeDependents,
   getSpecNodeState,
   purchaseSpecNode,
@@ -99,11 +103,55 @@ import {
   isAutoUnlockNode,
   prepareSpecialisationTree,
 } from "../helpers/specialisations.mjs";
+import {
+  MEMORISE_SP,
+  SPELL_PACK_ID,
+  SPELL_RANKS,
+  SPELL_SCHOOLS,
+  checkSpellRank,
+  dropArchived,
+  eraseSpell,
+  forgetSpell,
+  getBookEntries,
+  getKnownSpells,
+  getSpellbookArchive,
+  getSpellbooks,
+  memoriseSpell,
+  parseActionCost,
+  restoreSpellbook,
+  writeSpell,
+} from "./spellbook.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } =
   foundry.applications.api;
 
 const TEMPLATE = "systems/redsteel/templates/actor/learn-window.hbs";
+
+/** The book the Spells tab makes, and the icon a lost record falls back to. */
+const SPELLBOOK_IMG = "icons/sundries/books/book-purple-illuminated.webp";
+
+/** What a spell with no icon of its own shows in the Spells tab. */
+const SPELL_FALLBACK_IMG = "icons/svg/book.svg";
+
+/** The action-cost buckets the Spells tab filters by, in the pop-up's order. */
+const SPELL_ACTION_FILTERS = ["free", "1", "2", "3+", "reaction"];
+
+/**
+ * Which bucket a parsed action cost falls in. Free and reaction are read off
+ * the parsed cost directly (a spell can be both a reaction and 1 action), so
+ * this only answers for the number of actions.
+ */
+function spellActionBucket(action) {
+  if (!Number.isInteger(action?.actions)) return "";
+  return action.actions >= 3 ? "3+" : String(action.actions);
+}
+
+/** The label one action-cost filter box wears. */
+function spellActionFilterLabel(key) {
+  if (key === "free") return game.i18n.localize("REDSTEEL.Learn.Spells.freeAction");
+  if (key === "reaction") return game.i18n.localize("REDSTEEL.Learn.Spells.reaction");
+  return game.i18n.format("REDSTEEL.Learn.Spells.actions", { n: key });
+}
 
 /* SPEC ICON EDITOR — TEMPORARY (user request 2026-09-11).
  * The GM picks each specialisation's card icon in game. The choices live in a
@@ -331,6 +379,15 @@ function buildsOnHeldTrack(actor, price) {
 /** The skill picker's columns, in order. */
 const SKILL_CLASS_ORDER = ["A", "B", "C"];
 
+/**
+ * Families whose skill picker also lists skills with no A/B/C cost class, in
+ * a trailing "Other skills" column. Specialization may be taken on any
+ * ordinary skill except Muscles and Nimbleness (user ruling 2026-09-16); the
+ * A/B/C class only prices Adept/Expert/Master, so every other family still
+ * keeps the GM ruling that leaves unclassed skills out.
+ */
+const UNCLASSED_FAMILIES = new Set(["specialization"]);
+
 /** Lower-cased and accent-free, so "zasah" finds "Přesný zásah". */
 function normalizeSearch(text) {
   return String(text ?? "")
@@ -469,6 +526,7 @@ function describeRequirement(req) {
         .join(` ${game.i18n.localize("REDSTEEL.Learn.and")} `);
     // The clause kinds below come from the specialisation price table.
     case "specTeacher":
+    case "nodeTeacher":
       return game.i18n.format("REDSTEEL.Learn.Req.teacher", {
         tier: roman(req.tier),
       });
@@ -616,6 +674,42 @@ function specRequirementChips(specId, results) {
 }
 
 /**
+ * The teacher badge a star wears when the book asks for a trainer.
+ *
+ * A star's tooltip is a hover panel, so it cannot hold a control the way a
+ * rank's Requirements row does. The badge is that control instead: a cap on the
+ * star, gold once the GM has granted the teacher and dim while it is missing,
+ * and clickable for the GM alone. It carries its own tooltip so hovering the
+ * cap explains the requirement rather than repeating the node's description.
+ *
+ * @returns {object|null} null when this node has no teacher clause
+ */
+function teacherBadge(specId, nodeId, price, requirements) {
+  if (!price?.teacher) return null;
+  const isGM = game.user.isGM;
+  const result = (requirements?.results ?? []).find(
+    (r) => r?.req?.t === "nodeTeacher",
+  );
+  const granted = !!result?.met;
+  const why = game.i18n.format("REDSTEEL.Learn.Req.Tip.teacher", {
+    tier: roman(price.teacher),
+  });
+  const hint = isGM
+    ? game.i18n.localize(
+        granted ? "REDSTEEL.Learn.Teacher.revoke" : "REDSTEEL.Learn.Teacher.grant",
+      )
+    : "";
+  return {
+    specId,
+    nodeId,
+    roman: roman(price.teacher),
+    action: isGM ? "toggleSpecNodeTeacher" : "",
+    cls: `${granted ? "is-unlocked" : "is-locked"}${isGM ? " is-gm" : ""}`,
+    tooltip: [why, hint].filter(Boolean).join(" "),
+  };
+}
+
+/**
  * A price in CP and SP: "15 CP", "5 SP", or "5 CP + 15 SP" (the Priest's
  * blessings, or a feature priced in both). A price of 0 reads "Free".
  */
@@ -757,6 +851,7 @@ function explainRequirement(req) {
         tier: roman(req.tier),
       });
     case "specTeacher":
+    case "nodeTeacher":
       return game.i18n.format("REDSTEEL.Learn.Req.Tip.teacher", {
         tier: roman(req.tier),
       });
@@ -1182,6 +1277,7 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       buySpecNode: LearnWindow._onBuySpecNode,
       refundSpecNode: LearnWindow._onRefundSpecNode,
       toggleSpecTeacher: LearnWindow._onToggleSpecTeacher,
+      toggleSpecNodeTeacher: LearnWindow._onToggleSpecNodeTeacher,
       toggleSpecWip: LearnWindow._onToggleSpecWip,
       toggleSpecView: LearnWindow._onToggleSpecView,
       // SPEC ICON EDITOR (temporary)
@@ -1190,9 +1286,23 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       buyRank: LearnWindow._onBuyRank,
       toggleTeacher: LearnWindow._onToggleTeacher,
       refundRank: LearnWindow._onRefundRank,
+      toggleParty: LearnWindow._onToggleParty,
+      switchHero: LearnWindow._onSwitchHero,
       openPicker: LearnWindow._onOpenPicker,
       savePicker: LearnWindow._onSavePicker,
       cancelPicker: LearnWindow._onCancelPicker,
+      switchSpellSchool: LearnWindow._onSwitchSpellSchool,
+      switchSpellBook: LearnWindow._onSwitchSpellBook,
+      writeSpell: LearnWindow._onWriteSpell,
+      eraseSpell: LearnWindow._onEraseSpell,
+      memoriseSpell: LearnWindow._onMemoriseSpell,
+      forgetSpell: LearnWindow._onForgetSpell,
+      createSpellbook: LearnWindow._onCreateSpellbook,
+      restoreSpellbook: LearnWindow._onRestoreSpellbook,
+      forgetSpellbook: LearnWindow._onForgetSpellbook,
+      toggleSpellFilters: LearnWindow._onToggleSpellFilters,
+      resetSpellFilters: LearnWindow._onResetSpellFilters,
+      toggleAllSchools: LearnWindow._onToggleAllSchools,
       closeScreen: LearnWindow._onCloseScreen,
     },
   };
@@ -1214,6 +1324,8 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
         ".rs-learn-spec-group.is-support",
         ".rs-learn-spec-view-body",
         ".rs-learn-spec-gallery",
+        ".rs-learn-spellbook",
+        ".rs-learn-spells-list",
       ],
     },
   };
@@ -1221,6 +1333,9 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
   constructor(options = {}) {
     super(options);
     this.actor = options.actor ?? null;
+    // The party switch reopens the screen on another character; passing the
+    // tab through keeps the GM where they were reading.
+    if (options.tab) this.#tab = options.tab;
   }
 
   /**
@@ -1272,6 +1387,9 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
 
   /** True while the Features tab's filter pop-up is open. Transient. */
   #featureFiltersOpen = false;
+
+  /** True while the GM's party roster is rolled out. Transient. */
+  #partyOpen = false;
 
   /** Bound pointerdown listener that closes the filter pop-up on an outside click. */
   #boundPopupDismiss = null;
@@ -1330,6 +1448,35 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
   /** The last node bought ("spec.node") and when, for the same double-click guard. */
   #lastNodePurchase = null;
 
+  /* ---- the Spells tab. Transient, like the Features tab's filters ---- */
+
+  /** The school whose list is showing; null takes the first one held. */
+  #spellSchool = null;
+
+  /** The grimoire being read; null takes the first one carried. */
+  #spellBookId = null;
+
+  /** The Spells tab's search field and filters. */
+  #spellQuery = "";
+  #spellFiltersOpen = false;
+  /** Ticked spell ranks; empty is every rank. */
+  #spellRanks = new Set();
+  /** Ticked action costs ("free", "1", "2", "3+", "reaction"); empty is all. */
+  #spellActions = new Set();
+  #spellConcentration = false;
+  #spellSustained = false;
+  #spellHideWritten = false;
+  #spellOnlyReachable = false;
+
+  /** GM only: show every school, not only the ones the character holds. */
+  #spellAllSchools = false;
+
+  /** The spell compendium's index, read once per window. */
+  #spellIndex = null;
+
+  /** True while a memorisation is on its way, so a double click pays once. */
+  #spellBusy = false;
+
   /* ---------------------------------------- */
 
   /** @override */
@@ -1346,6 +1493,8 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     const sections = showGrid ? await this.#buildSections(shown) : [];
     const isFeaturesTab = this.#tab === "features";
     const features = isFeaturesTab ? await this.#buildFeatures() : null;
+    const isSpellsTab = this.#tab === "spells";
+    const spells = isSpellsTab ? await this.#buildSpells() : null;
     const isSpecsTab = this.#tab === "specialisations";
     const specs = isSpecsTab ? this.#buildSpecs() : null;
     const picker = this.#picking ? this.#buildPicker() : [];
@@ -1358,6 +1507,10 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       isContentTab,
       isFeaturesTab,
       features,
+      isSpellsTab,
+      spells,
+      // The tab button only stands there for a character who could use it.
+      showSpellsTab: this.#canLearnSpells(),
       isSpecsTab,
       specs,
       // Specialisation points: what is left shows on the Specialisations tab's
@@ -1375,6 +1528,7 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       picking: this.#picking,
       picker,
       hero: await this.#buildHero(),
+      party: this.#buildParty(),
       wallet: getWallet(actor),
       adjust: {
         cp: Number(actor?.system?.progression?.adjust?.cp ?? 0),
@@ -1455,6 +1609,52 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       attributes,
       specs,
     };
+  }
+
+  /**
+   * The GM's party roster for the switch in the band's corner.
+   *
+   * Membership is the Long Rest roster's rule, the one the Party Management
+   * window uses too: every non-GM user's assigned character, then every world
+   * actor ticked as a party member, narrowed to player characters. The
+   * character on screen is added whether or not it is one of them, so the
+   * roster always says where the reader is.
+   *
+   * Empty for a player, and empty for a GM with nobody to switch to, and the
+   * template drops the whole control when it is empty.
+   *
+   * @returns {object[]} Deduped by id, sorted by name.
+   */
+  #buildParty() {
+    if (!game.user.isGM) return [];
+
+    const seen = new Set();
+    const party = [];
+    const add = (actor) => {
+      if (!actor || actor.type !== "character" || seen.has(actor.id)) return;
+      seen.add(actor.id);
+      party.push(actor);
+    };
+
+    for (const user of game.users.contents) {
+      if (user.isGM) continue;
+      add(user.character);
+    }
+    for (const actor of game.actors.contents) {
+      if (actor.system?.partyMember) add(actor);
+    }
+    add(this.actor);
+
+    if (party.length < 2) return [];
+
+    return party
+      .sort((a, b) => a.name.localeCompare(b.name, game.i18n.lang))
+      .map((actor) => ({
+        id: actor.id,
+        name: actor.name,
+        img: actor.img || "icons/svg/mystery-man.svg",
+        current: actor.id === this.actor?.id,
+      }));
   }
 
   /**
@@ -1564,12 +1764,17 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
         chooseLabel: game.i18n.localize(
           source.group === "doctrines"
             ? "REDSTEEL.Learn.Discounts.chooseDoctrine"
-            : "REDSTEEL.Learn.Discounts.choose",
+            : source.group === "specialisations"
+              ? "REDSTEEL.Learn.Discounts.chooseSpecialisation"
+              : "REDSTEEL.Learn.Discounts.choose",
         ),
         options: getDiscountChoiceOptions(actor, source.id, sources)
           .map((option) => ({
             key: option.key,
-            label: trackLabel(source.group, option.key),
+            label:
+              source.group === "specialisations"
+                ? specialisationLabel(option.key)
+                : trackLabel(source.group, option.key),
             taken: option.taken,
             selected: option.key === source.skill,
           }))
@@ -1600,6 +1805,23 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
         }))
         .sort((a, b) => a.label.localeCompare(b.label, game.i18n.lang)),
     }));
+  }
+
+  /**
+   * The note for a Specialist-style discount landing on this specialisation
+   * (its pick lives on the Features tab, not here), or null when none.
+   */
+  #buildSpecNodeDiscountNote(specId) {
+    const source = getSkillDiscounts(this.actor).get(`specialisations.${specId}`);
+    if (!source) return null;
+    return {
+      amount: source.amount,
+      currency: source.currency.toUpperCase(),
+      text: game.i18n.format("REDSTEEL.Learn.Discounts.specNodes", {
+        source: getDiscountSourceLabel(source),
+        amount: source.amount,
+      }),
+    };
   }
 
   /**
@@ -1657,6 +1879,9 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
             discountPicks: this.#buildDiscounts({ spec: this.#specOpen }),
             // The Hoplite's weapon skill that copies Polearms.
             mirrorPicks: this.#buildMirrorPicks(this.#specOpen),
+            // A Specialist-style discount landing on this specialisation from
+            // elsewhere (the Features tab pick): a note only, not a picker.
+            specNodeDiscount: this.#buildSpecNodeDiscountNote(this.#specOpen),
           }
         : null;
     return {
@@ -1752,7 +1977,7 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     const wallet = getWallet(actor);
     const nameOf = (nodeId) => specNodeLabel(specId, nodeId) ?? nodeId;
     for (const node of tree.nodes) {
-      const { state, price, requirements, missing, conflict } = getSpecNodeState(
+      const { state, price, cost, requirements, missing, conflict } = getSpecNodeState(
         actor,
         specId,
         node.id,
@@ -1794,7 +2019,8 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       }
       node.state = owned ? "unlocked" : state === "available" ? "available" : "locked";
       node.action = action;
-      node.costLabel = price ? pointsCostLabel(price) : "";
+      node.teacher = teacherBadge(specId, node.id, price, requirements);
+      node.costLabel = cost ? pointsCostLabel(cost) : "";
       node.tipReasons = reasons.join("\n");
       node.tipReasonsTitle = reasonsTitle;
       node.tipAdvisory = advisory.join("\n");
@@ -1852,7 +2078,8 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
    * The per-skill families (FEATURE_FAMILIES) collapse into one row each, and
    * the row opens a skill picker in A/B/C columns (user ruling 2026-09-11).
    * Only classed skills appear there: the unclassed ones are left out on
-   * purpose (GM ruling).
+   * purpose (GM ruling), except for Specialization, which trails a fourth
+   * "Other skills" column for its unclassed skills (user ruling 2026-09-16).
    */
   async #buildFeatures() {
     const actor = this.actor;
@@ -1982,7 +2209,7 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       families.get(entry.family).push(entry);
     }
     for (const [family, members] of families) {
-      const skills = this.#familySkills(members);
+      const skills = this.#familySkills(members, family);
       if (!skills.size) continue;
       const chosen = [...skills.values()];
       const open = chosen.filter((entry) => entry.state !== "owned");
@@ -2047,31 +2274,45 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     } else {
       const pickerMembers = this.#featureFamily ? families.get(this.#featureFamily) : null;
       if (pickerMembers?.length) {
-        const skills = this.#familySkills(pickerMembers);
+        const skills = this.#familySkills(pickerMembers, this.#featureFamily);
+        const mapSkillEntry = ([skill, entry]) => ({
+          id: entry.id,
+          uuid: entry.uuid,
+          skillLabel: trackLabel("skills", skill),
+          costLabel: entry.costLabel,
+          state: entry.state,
+          owned: entry.state === "owned",
+          showLock: entry.showLock,
+          reasons: entry.reasons,
+          description: entry.description,
+          expandKey: `feature-${entry.id}`,
+          expanded: this.#expandedFeatures.has(`feature-${entry.id}`),
+        });
+        const columns = SKILL_CLASS_ORDER.map((skillClass) => ({
+          label: game.i18n.format("REDSTEEL.Learn.Features.className", {
+            class: skillClass,
+          }),
+          skills: [...skills.entries()]
+            .filter(([skill]) => SKILL_COST_CLASSES[skill] === skillClass)
+            .map(mapSkillEntry)
+            .sort((a, b) => a.skillLabel.localeCompare(b.skillLabel, lang)),
+        }));
+        const otherSkills = [...skills.entries()]
+          .filter(([skill]) => !SKILL_COST_CLASSES[skill])
+          .map(mapSkillEntry)
+          .sort((a, b) => a.skillLabel.localeCompare(b.skillLabel, lang));
+        const hasOther = otherSkills.length > 0;
+        if (hasOther) {
+          columns.push({
+            label: game.i18n.localize("REDSTEEL.Learn.Features.classOther"),
+            skills: otherSkills,
+          });
+        }
         picker = {
           family: this.#featureFamily,
           label: game.i18n.localize(`REDSTEEL.Learn.Features.Families.${this.#featureFamily}`),
-          columns: SKILL_CLASS_ORDER.map((skillClass) => ({
-            label: game.i18n.format("REDSTEEL.Learn.Features.className", {
-              class: skillClass,
-            }),
-            skills: [...skills.entries()]
-              .filter(([skill]) => SKILL_COST_CLASSES[skill] === skillClass)
-              .map(([skill, entry]) => ({
-                id: entry.id,
-                uuid: entry.uuid,
-                skillLabel: trackLabel("skills", skill),
-                costLabel: entry.costLabel,
-                state: entry.state,
-                owned: entry.state === "owned",
-                showLock: entry.showLock,
-                reasons: entry.reasons,
-                description: entry.description,
-                expandKey: `feature-${entry.id}`,
-                expanded: this.#expandedFeatures.has(`feature-${entry.id}`),
-              }))
-              .sort((a, b) => a.skillLabel.localeCompare(b.skillLabel, lang)),
-          })),
+          columns,
+          hasOther,
         };
       } else {
         this.#featureFamily = null;
@@ -2118,7 +2359,7 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     const title = game.i18n.localize("REDSTEEL.Learn.Languages.title");
     const prices = Object.values(LANGUAGE_FEATURE_IDS)
       .filter(Boolean)
-      .map((id) => getFeaturePrice(id))
+      .map((id) => getLanguageFeaturePrice(actor, id))
       .filter(Boolean);
     return {
       isFamily: true,
@@ -2218,25 +2459,46 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       },
       draft: this.#languageDraft,
       editable: !!actor?.isOwner,
-      canGrantNative: game.user.isGM && !rows.some((row) => row.native),
+      // One grant per native language, so the rows (one per language) count them.
+      canGrantNative:
+        game.user.isGM &&
+        rows.filter((row) => row.native).length < getNativeLanguageLimit(actor),
+      nativeHint: game.i18n.format("REDSTEEL.Learn.Languages.grantNativeHint", {
+        n: getNativeLanguageLimit(actor),
+      }),
     };
   }
 
   /**
-   * One entry per skill of a feature family: skill key → entry. Unclassed skills
-   * are left out (GM ruling). Where a skill has several entries (the human and
+   * One entry per skill of a feature family: skill key → entry. Unclassed
+   * skills are left out (GM ruling), except for families in
+   * UNCLASSED_FAMILIES (Specialization), which keep them for the picker's
+   * "Other skills" column. Where a skill has several entries (the human and
    * the elven Specialization), the owned one wins, then the one whose race
    * fits, then the first.
+   *
+   * Unless "all races" is on, a skill is then dropped when the character's
+   * race fits at least one member of the family overall but fits none of
+   * that skill's own entries and none is owned. Without this, an Eldarai
+   * would see the 21 Human-only Specialization skills listed as locked; a
+   * Human still sees all 38 (user ruling 2026-09-16).
    */
-  #familySkills(members) {
+  #familySkills(members, family) {
     const rank = (entry) =>
       entry.state === "owned" ? 0 : entry.raceFits ? 1 : 2;
     const bySkill = new Map();
     for (const entry of members) {
       const skill = entry.price.skill;
-      if (!SKILL_COST_CLASSES[skill]) continue;
+      if (!SKILL_COST_CLASSES[skill] && !UNCLASSED_FAMILIES.has(family)) continue;
       const current = bySkill.get(skill);
       if (!current || rank(entry) < rank(current)) bySkill.set(skill, entry);
+    }
+    if (!this.#featureAllRaces && members.some((entry) => entry.raceFits)) {
+      for (const skill of [...bySkill.keys()]) {
+        const skillEntries = members.filter((entry) => entry.price.skill === skill);
+        const ok = skillEntries.some((entry) => entry.state === "owned" || entry.raceFits);
+        if (!ok) bySkill.delete(skill);
+      }
     }
     return bySkill;
   }
@@ -2275,6 +2537,502 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     }
     const none = list.querySelector(".rs-learn-features-none");
     if (none) none.hidden = visible > 0;
+  }
+
+  /**
+   * The spell compendium's index, read once per window and kept in
+   * #spellIndex. Modelled on #loadFeatureIndex: one read, the same warning on
+   * failure, and .contents rather than iterating the Collection.
+   *
+   * Divine entries are miracles, not spells: they are learnt from a domain,
+   * never written into a grimoire, so they are left out here.
+   */
+  async #loadSpellIndex() {
+    if (this.#spellIndex) return this.#spellIndex;
+    const rows = [];
+    const pack = game.packs.get(SPELL_PACK_ID);
+    if (pack) {
+      try {
+        const index = await pack.getIndex({
+          fields: [
+            // type and img are named the way loadFeaturePackData names them,
+            // rather than trusting the pack's default index fields.
+            "type",
+            "img",
+            "system.type",
+            "system.rank",
+            "system.actionCost",
+            "system.cost",
+            "system.difficulty",
+            "system.sustained",
+            "system.spellClass",
+            "system.range",
+            "system.option",
+            "system.localizationKey",
+          ],
+        });
+        // .contents, not for...of: iterating a Collection yields [key, value].
+        for (const entry of index.contents) {
+          if (entry.type !== "spell") continue;
+          if (entry.system?.option === "divine") continue;
+          const key = entry.system?.localizationKey?.trim();
+          // No spell carries a localization key today, so these read English.
+          const name =
+            key && game.i18n.has(key, false) ? game.i18n.localize(key) : entry.name;
+          rows.push({
+            uuid: entry.uuid ?? `Compendium.${SPELL_PACK_ID}.Item.${entry._id}`,
+            name: String(name ?? ""),
+            img: entry.img ?? SPELL_FALLBACK_IMG,
+            school: String(entry.system?.type ?? ""),
+            rank: String(entry.system?.rank ?? ""),
+            cost: entry.system?.cost ?? "",
+            difficulty: entry.system?.difficulty ?? "",
+            range: entry.system?.range ?? "",
+            actionCost: String(entry.system?.actionCost ?? ""),
+            sustained: !!entry.system?.sustained,
+            spellClass: String(entry.system?.spellClass ?? ""),
+          });
+        }
+      } catch (err) {
+        console.warn(`Redsteel | Learn: could not index ${SPELL_PACK_ID}`, err);
+      }
+    }
+    this.#spellIndex = rows;
+    return rows;
+  }
+
+  /** The grimoire the tab is reading, or the first one the character carries. */
+  #activeSpellbook() {
+    const books = getSpellbooks(this.actor);
+    return books.find((book) => book.id === this.#spellBookId) ?? books[0] ?? null;
+  }
+
+  /**
+   * Whether this character has any business on the Spells tab: a school rank,
+   * the School of Blood, a grimoire in their pack, or a GM reading over their
+   * shoulder. The nav button hangs on this.
+   */
+  #canLearnSpells() {
+    if (game.user.isGM) return true;
+    const actor = this.actor;
+    if (!actor) return false;
+    for (const key of SPELL_SCHOOLS) {
+      if (Number(actor.system?.schools?.[key]?.value ?? 0) >= 1) return true;
+    }
+    if (actor.system?.specialisations?.bloodSchool?.active) return true;
+    return getSpellbooks(actor).length > 0;
+  }
+
+  /**
+   * The Spells tab: the grimoire on the left (what is written in it, what the
+   * character knows by heart, and the books they have lost), the school's whole
+   * spell list on the right.
+   *
+   * Writing a spell is free and lives in the book; memorising it is 1 SP and
+   * lives in the caster's head (Pravidla, Paměť). The school rank gate is
+   * checkSpellRank's answer alone — for the School of Blood that is the
+   * specialisation's nodes, which is why this never reads a rank itself.
+   */
+  async #buildSpells() {
+    const actor = this.actor;
+    const lang = game.i18n.lang;
+    const isGM = game.user.isGM;
+    const catalogue = await this.#loadSpellIndex();
+    const known = getKnownSpells(actor);
+    const say = (key) => game.i18n.localize(`REDSTEEL.Learn.Spells.${key}`);
+    const rankLabel = (rank) =>
+      rank ? game.i18n.localize(`REDSTEEL.Item.Spell.FIELDS.${rank}.label`) : "";
+    const schoolLabel = (key) =>
+      key ? game.i18n.localize(`REDSTEEL.Actor.Character.schools.${key}.label`) : "";
+    const rankOrder = (rank) => {
+      const at = SPELL_RANKS.indexOf(String(rank));
+      return at < 0 ? SPELL_RANKS.length : at;
+    };
+    const byRankThenName = (a, b) =>
+      rankOrder(a.rank) - rankOrder(b.rank) || a.name.localeCompare(b.name, lang);
+    const indexByUuid = new Map(catalogue.map((row) => [row.uuid, row]));
+
+    /* ---- the books ---- */
+    const activeBook = this.#activeSpellbook();
+    const books = getSpellbooks(actor).map((book) => ({
+      id: book.id,
+      name: book.name,
+      img: book.img,
+      count: getBookEntries(book).length,
+      capacity: Number(book.system?.capacity) || 0,
+      active: book.id === activeBook?.id,
+    }));
+    const activeEntries = activeBook ? getBookEntries(activeBook) : [];
+    const activeSet = new Set(activeEntries.map((entry) => entry.uuid));
+
+    /* ---- what is written in the open book, by school ---- */
+    const grouped = new Map();
+    for (const entry of activeEntries) {
+      const indexed = indexByUuid.get(entry.uuid) ?? null;
+      const school = entry.school || indexed?.school || "";
+      const rank = entry.rank || indexed?.rank || "";
+      const gate = checkSpellRank(actor, school, rank);
+      const row = {
+        uuid: entry.uuid,
+        name: indexed?.name || entry.name || "",
+        img: entry.img || indexed?.img || SPELL_FALLBACK_IMG,
+        school,
+        rank,
+        rankLabel: rankLabel(rank),
+        memorised: !!known.get(entry.uuid)?.memorised,
+        reachable: gate.ok,
+        required: gate.required,
+        // A spell in the book the character cannot reach yet stays written and
+        // says so, rather than quietly vanishing from the list.
+        note: gate.ok ? "" : say("outOfReach"),
+        needs: game.i18n.format("REDSTEEL.Learn.Spells.needsRank", { n: gate.required }),
+      };
+      if (!grouped.has(school)) grouped.set(school, []);
+      grouped.get(school).push(row);
+    }
+    const groupKeys = SPELL_SCHOOLS.concat(
+      [...grouped.keys()].filter((key) => !SPELL_SCHOOLS.includes(key)),
+    );
+    const bookGroups = groupKeys
+      .filter((key) => grouped.has(key))
+      .map((key) => ({
+        key,
+        label: schoolLabel(key),
+        spells: grouped.get(key).sort(byRankThenName),
+      }));
+
+    /* ---- known by heart, and not in the open book ---- */
+    const memorised = [];
+    for (const [uuid, record] of known) {
+      if (!record.memorised || activeSet.has(uuid)) continue;
+      const indexed = indexByUuid.get(uuid) ?? null;
+      const item = record.item;
+      const school = indexed?.school || String(item?.system?.type ?? "");
+      const rank = indexed?.rank || String(item?.system?.rank ?? "");
+      const gate = checkSpellRank(actor, school, rank);
+      memorised.push({
+        uuid,
+        name: indexed?.name || item?.localizedName || item?.name || "",
+        img: indexed?.img || item?.img || SPELL_FALLBACK_IMG,
+        school,
+        schoolLabel: schoolLabel(school),
+        rank,
+        rankLabel: rankLabel(rank),
+        memorised: true,
+        reachable: gate.ok,
+        required: gate.required,
+      });
+    }
+    memorised.sort(byRankThenName);
+
+    /* ---- the lost books ---- */
+    const archive = getSpellbookArchive(actor).map((record) => {
+      const raw = record.entries;
+      const entries = Array.isArray(raw) ? raw : Object.values(raw ?? {});
+      return {
+        id: record.id,
+        name: record.name || game.i18n.localize("TYPES.Item.spellbook"),
+        img: record.img || SPELLBOOK_IMG,
+        count: entries.length,
+        countLabel: game.i18n.format("REDSTEEL.Learn.Spells.spellCount", {
+          n: entries.length,
+        }),
+        when: record.time ? new Date(record.time).toLocaleDateString(lang) : "",
+      };
+    });
+
+    /* ---- the school pills ---- */
+    const schoolKeys = SPELL_SCHOOLS.filter((key) => {
+      if (isGM && this.#spellAllSchools) return true;
+      if (key === "blood") return !!actor?.system?.specialisations?.bloodSchool?.active;
+      return Number(actor?.system?.schools?.[key]?.value ?? 0) >= 1;
+    });
+    const activeSchool = schoolKeys.includes(this.#spellSchool)
+      ? this.#spellSchool
+      : (schoolKeys[0] ?? null);
+    const heldPerSchool = new Map();
+    for (const [uuid, record] of known) {
+      const indexed = indexByUuid.get(uuid) ?? null;
+      const school = indexed?.school || String(record.item?.system?.type ?? "");
+      if (!school) continue;
+      heldPerSchool.set(school, (heldPerSchool.get(school) ?? 0) + 1);
+    }
+    const schools = schoolKeys.map((key) => {
+      // Blood has no rank track: the specialisation's nodes are its rank.
+      const held = key === "blood" ? 0 : Number(actor?.system?.schools?.[key]?.value ?? 0);
+      const count = heldPerSchool.get(key) ?? 0;
+      return {
+        key,
+        label: schoolLabel(key),
+        rank: held,
+        rankLabel: held ? roman(held) : "",
+        active: key === activeSchool,
+        count,
+        countLabel: game.i18n.format("REDSTEEL.Learn.Spells.spellCount", { n: count }),
+      };
+    });
+
+    /* ---- the school's whole list ---- */
+    const rows = catalogue
+      .filter((row) => row.school === activeSchool)
+      .map((row) => {
+        const gate = checkSpellRank(actor, row.school, row.rank);
+        const record = known.get(row.uuid) ?? null;
+        const isMemorised = !!record?.memorised;
+        const isWritten = !!record?.books?.length;
+        const isHeld = !!record?.item;
+        const state = isMemorised
+          ? "memorised"
+          : isWritten
+            ? "written"
+            : isHeld
+              ? "owned"
+              : gate.ok
+                ? "available"
+                : "locked";
+        const action = parseActionCost(row.actionCost, row.sustained);
+        const chips = [];
+        if (action.free) chips.push(say("freeAction"));
+        if (action.reaction) chips.push(say("reaction"));
+        if (Number.isInteger(action.actions)) {
+          chips.push(
+            game.i18n.format("REDSTEEL.Learn.Spells.actions", { n: action.actions }),
+          );
+        }
+        if (action.concentration) chips.push(say("concentration"));
+        if (row.sustained) chips.push(say("sustained"));
+        const inActiveBook = activeSet.has(row.uuid);
+        // The GM writes and memorises past the gate: they are the one who
+        // hands a character a spell the table agreed on.
+        const reachable = gate.ok || isGM;
+        const needs = game.i18n.format("REDSTEEL.Learn.Spells.needsRank", {
+          n: gate.required,
+        });
+        const canWrite = reachable && !!activeBook && !inActiveBook;
+        const canMemorise = reachable && !isMemorised;
+        return {
+          uuid: row.uuid,
+          name: row.name,
+          img: row.img,
+          rank: row.rank,
+          rankLabel: rankLabel(row.rank),
+          cost: row.cost,
+          difficulty: row.difficulty,
+          range: row.range,
+          actionCost: row.actionCost,
+          actions: action.actions,
+          // What the spell asks of a turn, as the row's chips read it.
+          chips,
+          actionBucket: spellActionBucket(action),
+          free: action.free,
+          reaction: action.reaction,
+          concentration: action.concentration,
+          sustained: row.sustained,
+          state,
+          stateLabel: say(state),
+          required: gate.required,
+          needs,
+          showLock: state === "locked",
+          inActiveBook,
+          canWrite,
+          canMemorise,
+          canErase: inActiveBook,
+          canForget: isMemorised,
+          writeTooltip: inActiveBook
+            ? say("erase")
+            : reachable
+              ? say("write")
+              : `${say("write")} (${needs})`,
+          memoriseTooltip: isMemorised
+            ? say("forget")
+            : reachable
+              ? say("memorise")
+              : `${say("memorise")} (${needs})`,
+          manaTooltip: say("mana"),
+          difficultyTooltip: say("difficulty"),
+          search: normalizeSearch(row.name),
+        };
+      })
+      .sort(byRankThenName);
+
+    const wallet = getWallet(actor);
+    return {
+      books,
+      hasBook: !!activeBook,
+      multipleBooks: books.length > 1,
+      activeBook: activeBook
+        ? {
+            id: activeBook.id,
+            name: activeBook.name,
+            img: activeBook.img,
+            count: activeEntries.length,
+            capacity: Number(activeBook.system?.capacity) || 0,
+          }
+        : null,
+      bookGroups,
+      memorised,
+      archive,
+      schools,
+      activeSchool,
+      noSchools: schools.length === 0,
+      rows,
+      sp: { cost: MEMORISE_SP, remaining: wallet.remaining.sp },
+      poor: wallet.remaining.sp < MEMORISE_SP,
+      isGM,
+      allSchools: this.#spellAllSchools,
+      query: this.#spellQuery,
+      filtersOpen: this.#spellFiltersOpen,
+      activeFilters: this.#activeSpellFilterCount(),
+      rankChecks: SPELL_RANKS.map((rank) => ({
+        key: rank,
+        label: rankLabel(rank),
+        checked: !this.#spellRanks.size || this.#spellRanks.has(rank),
+      })),
+      actionChecks: SPELL_ACTION_FILTERS.map((key) => ({
+        key,
+        label: spellActionFilterLabel(key),
+        checked: !this.#spellActions.size || this.#spellActions.has(key),
+      })),
+      concentration: this.#spellConcentration,
+      sustained: this.#spellSustained,
+      hideWritten: this.#spellHideWritten,
+      onlyReachable: this.#spellOnlyReachable,
+    };
+  }
+
+  /**
+   * Filter the rendered spell list in place, the way #applyFeatureFilters does
+   * for the Features tab: the search field and every tick in the pop-up must
+   * never re-render the screen and throw the caret out of the field.
+   *   - rank: the spell ranks ticked, none ticked meaning all
+   *   - action cost: free, 1, 2, 3+ or reaction, matched as "any of these"
+   *   - concentration / sustained: only spells that carry the property
+   *   - hide written: what the character already holds drops out
+   *   - only reachable: what the school rank does not reach drops out
+   *   - search: the spell's name, accent-free
+   */
+  #applySpellFilters() {
+    const list = this.element?.querySelector?.(".rs-learn-spells-list");
+    if (!list) return;
+    const query = normalizeSearch(this.#spellQuery);
+    const ranks = this.#spellRanks;
+    const actions = this.#spellActions;
+    let visible = 0;
+    for (const row of list.querySelectorAll(".rs-learn-spell")) {
+      const data = row.dataset;
+      const actionFits =
+        !actions.size ||
+        (actions.has("free") && data.free === "true") ||
+        (actions.has("reaction") && data.reaction === "true") ||
+        (!!data.actions && actions.has(data.actions));
+      const hide =
+        (ranks.size > 0 && !ranks.has(data.rank)) ||
+        !actionFits ||
+        (this.#spellConcentration && data.concentration !== "true") ||
+        (this.#spellSustained && data.sustained !== "true") ||
+        (this.#spellHideWritten &&
+          (data.state === "written" || data.state === "memorised")) ||
+        (this.#spellOnlyReachable && data.state === "locked") ||
+        (!!query && !String(data.name ?? "").includes(query));
+      row.hidden = hide;
+      if (!hide) visible++;
+    }
+    const none = list.querySelector(".rs-learn-spells-none");
+    if (none) none.hidden = visible > 0;
+  }
+
+  /** How many Spells tab filters are away from their default. */
+  #activeSpellFilterCount() {
+    return (
+      (this.#spellRanks.size > 0 ? 1 : 0) +
+      (this.#spellActions.size > 0 ? 1 : 0) +
+      (this.#spellConcentration ? 1 : 0) +
+      (this.#spellSustained ? 1 : 0) +
+      (this.#spellHideWritten ? 1 : 0) +
+      (this.#spellOnlyReachable ? 1 : 0)
+    );
+  }
+
+  /** Show or hide the Spells filter pop-up and light its button to match. */
+  #setSpellFiltersOpen(open) {
+    this.#spellFiltersOpen = open;
+    const popup = this.element?.querySelector?.(".rs-learn-spell-filter-popup");
+    if (popup) popup.hidden = !open;
+    const button = this.element?.querySelector?.("[data-action='toggleSpellFilters']");
+    if (button) {
+      button.classList.toggle("active", open);
+      button.setAttribute("aria-expanded", String(open));
+    }
+  }
+
+  /** Tick the Spells pop-up's boxes to match the filters. */
+  #writeSpellFilterPopup() {
+    const popup = this.element?.querySelector?.(".rs-learn-spell-filter-popup");
+    if (!popup) return;
+    for (const box of popup.querySelectorAll("[data-spell-rank]")) {
+      box.checked = !this.#spellRanks.size || this.#spellRanks.has(box.dataset.spellRank);
+    }
+    for (const box of popup.querySelectorAll("[data-spell-action]")) {
+      box.checked =
+        !this.#spellActions.size || this.#spellActions.has(box.dataset.spellAction);
+    }
+    const write = (selector, value) => {
+      const box = popup.querySelector(selector);
+      if (box) box.checked = value;
+    };
+    write("[data-spell-concentration]", this.#spellConcentration);
+    write("[data-spell-sustained]", this.#spellSustained);
+    write("[data-spell-hide-written]", this.#spellHideWritten);
+    write("[data-spell-only-reachable]", this.#spellOnlyReachable);
+  }
+
+  /**
+   * A box in the Spells pop-up changed: read the boxes as the filters and
+   * filter the list straight away, as the Features pop-up does. A group with
+   * every box ticked is no filter at all, so it is stored empty.
+   */
+  #onSpellFilterChange(popup) {
+    const ticked = (selector, attribute) =>
+      [...popup.querySelectorAll(selector)]
+        .filter((box) => box.checked)
+        .map((box) => box.dataset[attribute]);
+    const rankBoxes = popup.querySelectorAll("[data-spell-rank]");
+    const rankOn = ticked("[data-spell-rank]", "spellRank");
+    this.#spellRanks = new Set(rankOn.length === rankBoxes.length ? [] : rankOn);
+    const actionBoxes = popup.querySelectorAll("[data-spell-action]");
+    const actionOn = ticked("[data-spell-action]", "spellAction");
+    this.#spellActions = new Set(actionOn.length === actionBoxes.length ? [] : actionOn);
+    this.#spellConcentration = !!popup.querySelector("[data-spell-concentration]")?.checked;
+    this.#spellSustained = !!popup.querySelector("[data-spell-sustained]")?.checked;
+    this.#spellHideWritten = !!popup.querySelector("[data-spell-hide-written]")?.checked;
+    this.#spellOnlyReachable = !!popup.querySelector("[data-spell-only-reachable]")?.checked;
+    this.#applySpellFilters();
+    this.#refreshSpellFilterCount();
+  }
+
+  /** Update the count on the Spells Filters button after the filters change. */
+  #refreshSpellFilterCount() {
+    const badge = this.element?.querySelector?.(".rs-learn-spell-filter-count");
+    if (!badge) return;
+    const count = this.#activeSpellFilterCount();
+    badge.textContent = String(count);
+    badge.hidden = count === 0;
+  }
+
+  /**
+   * Say why a write, an erase or a memorisation was refused. Every reason the
+   * spellbook module gives back is a lang key under
+   * REDSTEEL.Learn.Spells.Warn; only the rank one carries a number.
+   */
+  #warnSpell(result) {
+    const reason = result?.reason;
+    if (!reason) return;
+    const key = `REDSTEEL.Learn.Spells.Warn.${reason}`;
+    ui.notifications.warn(
+      reason === "rank"
+        ? game.i18n.format(key, { n: result.required ?? 0 })
+        : game.i18n.localize(key),
+    );
   }
 
   /**
@@ -2734,25 +3492,57 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
 
     // Every tick in the filter pop-up filters the list at once. Like the search
     // field the pop-up is new on every render, so its listener never stacks.
-    const popup = root.querySelector(".rs-learn-filter-popup");
+    // The Spells tab's pop-up wears the same class for its styling, so it is
+    // left out here and wired on its own below.
+    const popup = root.querySelector(
+      ".rs-learn-filter-popup:not(.rs-learn-spell-filter-popup)",
+    );
     if (popup) {
       popup.addEventListener("change", (event) => this.#onFilterPopupChange(popup, event.target));
       this.#syncFilterPopup(popup);
     }
 
+    // The Spells tab filters in place too (see #applySpellFilters), and both
+    // its search field and its pop-up are new on every render.
+    const spellSearch = root.querySelector(".rs-learn-spell-search");
+    if (spellSearch) {
+      spellSearch.addEventListener("input", () => {
+        this.#spellQuery = spellSearch.value;
+        this.#applySpellFilters();
+      });
+    }
+
+    const spellPopup = root.querySelector(".rs-learn-spell-filter-popup");
+    if (spellPopup) {
+      spellPopup.addEventListener("change", () => this.#onSpellFilterChange(spellPopup));
+    }
+
     // A click anywhere outside the pop-up (other than its own button) closes
-    // it. The root survives re-renders, so this is bound once and released in
-    // _onClose.
+    // it. The GM's party roster is dismissed the same way. The root survives
+    // re-renders, so this is bound once and released in _onClose.
     if (!this.#boundPopupDismiss) {
       this.#boundPopupDismiss = (event) => {
-        if (!this.#featureFiltersOpen) return;
-        if (event.target?.closest?.(".rs-learn-filter-popup, [data-action='toggleFeatureFilters']")) return;
-        this.#setFeatureFiltersOpen(false);
+        if (this.#featureFiltersOpen
+          && !event.target?.closest?.(".rs-learn-filter-popup, [data-action='toggleFeatureFilters']")) {
+          this.#setFeatureFiltersOpen(false);
+        }
+        if (this.#spellFiltersOpen
+          && !event.target?.closest?.(".rs-learn-spell-filter-popup, [data-action='toggleSpellFilters']")) {
+          this.#setSpellFiltersOpen(false);
+        }
+        if (this.#partyOpen && !event.target?.closest?.(".rs-learn-party")) {
+          this.#setPartyOpen(false);
+        }
       };
       root.addEventListener("pointerdown", this.#boundPopupDismiss);
     }
 
+    // A re-render hands back a roster that is shut (the template writes the
+    // hidden attribute), so the flag follows it down.
+    this.#partyOpen = false;
+
     this.#applyFeatureFilters();
+    this.#applySpellFilters();
   }
 
   /**
@@ -2870,6 +3660,54 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     this.#setFeatureFiltersOpen(!this.#featureFiltersOpen);
   }
 
+  /** Roll the GM's party roster out, or back in. */
+  static _onToggleParty(event) {
+    event.preventDefault();
+    this.#setPartyOpen(!this.#partyOpen);
+  }
+
+  /**
+   * Show another character's Learn screen.
+   *
+   * The window's id carries its actor (`redsteel-learn-<id>`, see
+   * _initializeApplicationOptions), so one instance cannot change character
+   * under its own id: this one closes and the other's opens, on the tab the
+   * reader was on.
+   */
+  static async _onSwitchHero(event, target) {
+    event.preventDefault();
+    this.#setPartyOpen(false);
+    const actorId = target?.dataset?.actorId;
+    if (!actorId || actorId === this.actor?.id) return;
+    const actor = game.actors.get(actorId);
+    if (!actor) return;
+    const tab = this.#tab;
+    await this.close();
+    openLearnWindow(actor, { tab });
+  }
+
+  /** Show or hide the roster without a re-render, as the pop-up does. */
+  #setPartyOpen(open) {
+    this.#partyOpen = open;
+    const menu = this.element?.querySelector?.(".rs-learn-party-menu");
+    if (menu) menu.hidden = !open;
+    const button = this.element?.querySelector?.("[data-action='toggleParty']");
+    if (button) {
+      button.classList.toggle("active", open);
+      button.setAttribute("aria-expanded", String(open));
+    }
+  }
+
+  /**
+   * Show a tab from outside the window. Used when the party switch lands on a
+   * character whose screen is already open.
+   */
+  switchTab(tab) {
+    if (!tab || tab === this.#tab) return;
+    this.#tab = tab;
+    this.render();
+  }
+
   /**
    * Reset: every section, no switch. Applies at once, like any tick.
    *
@@ -2890,7 +3728,9 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
   /** Show or hide the pop-up and light the Filters button to match. */
   #setFeatureFiltersOpen(open) {
     this.#featureFiltersOpen = open;
-    const popup = this.element?.querySelector?.(".rs-learn-filter-popup");
+    const popup = this.element?.querySelector?.(
+      ".rs-learn-filter-popup:not(.rs-learn-spell-filter-popup)",
+    );
     if (popup) popup.hidden = !open;
     const button = this.element?.querySelector?.("[data-action='toggleFeatureFilters']");
     if (button) {
@@ -2901,7 +3741,9 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
 
   /** Tick the pop-up's boxes to match the filters. */
   #writeFilterPopup() {
-    const popup = this.element?.querySelector?.(".rs-learn-filter-popup");
+    const popup = this.element?.querySelector?.(
+      ".rs-learn-filter-popup:not(.rs-learn-spell-filter-popup)",
+    );
     if (!popup) return;
     for (const box of popup.querySelectorAll("[data-filter-section]")) {
       box.checked = this.#featureSections.has(box.dataset.filterSection);
@@ -3084,12 +3926,168 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     } else {
       const message =
         result.reason === "nativeTaken"
-          ? game.i18n.localize("REDSTEEL.Learn.Languages.nativeTaken")
+          ? game.i18n.format("REDSTEEL.Learn.Languages.nativeTaken", {
+              n: getNativeLanguageLimit(this.actor),
+            })
           : result.reason === "alreadyKnown"
             ? game.i18n.format("REDSTEEL.Learn.Languages.alreadyKnown", { language: name })
             : game.i18n.localize("REDSTEEL.Learn.Features.cannotBuy");
       ui.notifications.warn(message);
     }
+    this.render();
+  }
+
+
+  /* ---------------------------------------- */
+  /*  Spells tab                              */
+  /* ---------------------------------------- */
+
+  /** Read another school's list. Switching school re-renders. @this {LearnWindow} */
+  static _onSwitchSpellSchool(event, target) {
+    event.preventDefault();
+    const school = target?.dataset?.school;
+    if (!school || school === this.#spellSchool) return;
+    this.#spellSchool = school;
+    this.render();
+  }
+
+  /** Open another grimoire. @this {LearnWindow} */
+  static _onSwitchSpellBook(event, target) {
+    event.preventDefault();
+    const bookId = target?.dataset?.bookId;
+    if (!bookId || bookId === this.#spellBookId) return;
+    this.#spellBookId = bookId;
+    this.render();
+  }
+
+  /** Write a spell into the open grimoire. Free. @this {LearnWindow} */
+  static async _onWriteSpell(event, target) {
+    event.preventDefault();
+    if (!this.actor?.isOwner) return;
+    const uuid = target?.dataset?.uuid;
+    if (!uuid) return;
+    const book = this.#activeSpellbook();
+    const result = await writeSpell(this.actor, book, uuid);
+    if (!result?.ok) this.#warnSpell(result);
+    this.render();
+  }
+
+  /** Strike a spell out of the open grimoire. @this {LearnWindow} */
+  static async _onEraseSpell(event, target) {
+    event.preventDefault();
+    if (!this.actor?.isOwner) return;
+    const uuid = target?.dataset?.uuid;
+    if (!uuid) return;
+    const book = this.#activeSpellbook();
+    const result = await eraseSpell(this.actor, book, uuid);
+    if (!result?.ok) this.#warnSpell(result);
+    this.render();
+  }
+
+  /**
+   * Learn a spell by heart: 1 SP, charged through the wallet's derived count.
+   * Guarded like a language purchase, so a double click never pays twice.
+   *
+   * @this {LearnWindow}
+   */
+  static async _onMemoriseSpell(event, target) {
+    event.preventDefault();
+    if (!this.actor?.isOwner || this.#spellBusy) return;
+    const uuid = target?.dataset?.uuid;
+    if (!uuid) return;
+    this.#spellBusy = true;
+    let result;
+    try {
+      result = await memoriseSpell(this.actor, uuid, { book: this.#activeSpellbook() });
+    } finally {
+      this.#spellBusy = false;
+    }
+    if (!result?.ok) this.#warnSpell(result);
+    this.render();
+  }
+
+  /** Give a memorised spell back, refunding its SP. @this {LearnWindow} */
+  static async _onForgetSpell(event, target) {
+    event.preventDefault();
+    if (!this.actor?.isOwner || this.#spellBusy) return;
+    const uuid = target?.dataset?.uuid;
+    if (!uuid) return;
+    this.#spellBusy = true;
+    let result;
+    try {
+      result = await forgetSpell(this.actor, uuid);
+    } finally {
+      this.#spellBusy = false;
+    }
+    if (!result?.ok) this.#warnSpell(result);
+    this.render();
+  }
+
+  /** Give the character an empty grimoire to write in. @this {LearnWindow} */
+  static async _onCreateSpellbook(event) {
+    event.preventDefault();
+    if (!this.actor?.isOwner) return;
+    await this.actor.createEmbeddedDocuments("Item", [
+      {
+        name: game.i18n.localize("TYPES.Item.spellbook"),
+        type: "spellbook",
+        img: SPELLBOOK_IMG,
+        system: { capacity: 0, spells: [] },
+      },
+    ]);
+    this.render();
+  }
+
+  /** Write a lost grimoire back onto the character. @this {LearnWindow} */
+  static async _onRestoreSpellbook(event, target) {
+    event.preventDefault();
+    if (!this.actor?.isOwner) return;
+    const bookId = target?.dataset?.bookId;
+    if (!bookId) return;
+    const result = await restoreSpellbook(this.actor, bookId);
+    if (!result?.ok) this.#warnSpell(result);
+    this.render();
+  }
+
+  /** Forget a lost grimoire for good. @this {LearnWindow} */
+  static async _onForgetSpellbook(event, target) {
+    event.preventDefault();
+    if (!this.actor?.isOwner) return;
+    const bookId = target?.dataset?.bookId;
+    if (!bookId) return;
+    await dropArchived(this.actor, bookId);
+    this.render();
+  }
+
+  /** Open or close the Spells filter pop-up. @this {LearnWindow} */
+  static _onToggleSpellFilters(event) {
+    event.preventDefault();
+    this.#setSpellFiltersOpen(!this.#spellFiltersOpen);
+  }
+
+  /** Every rank, every action cost, no switch. @this {LearnWindow} */
+  static _onResetSpellFilters(event) {
+    event.preventDefault();
+    this.#spellRanks = new Set();
+    this.#spellActions = new Set();
+    this.#spellConcentration = false;
+    this.#spellSustained = false;
+    this.#spellHideWritten = false;
+    this.#spellOnlyReachable = false;
+    this.#writeSpellFilterPopup();
+    this.#applySpellFilters();
+    this.#refreshSpellFilterCount();
+  }
+
+  /**
+   * GM only: show every school, not only the ones this character holds, so a
+   * spell can be handed over at the table. Re-renders, because it changes which
+   * pills there are. @this {LearnWindow}
+   */
+  static _onToggleAllSchools(event) {
+    event.preventDefault();
+    if (!game.user.isGM) return;
+    this.#spellAllSchools = !this.#spellAllSchools;
     this.render();
   }
 
@@ -3290,6 +4288,25 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     this.render();
   }
 
+  /**
+   * GM only: grant or revoke the teacher for one star of a specialisation.
+   * Granted star by star (user ruling 2026-09-16), unlike the specialisation's
+   * own teacher, which covers the whole tree.
+   *
+   * @this {LearnWindow}
+   */
+  static async _onToggleSpecNodeTeacher(event, target) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!game.user.isGM) return;
+    const spec = target?.dataset?.spec;
+    const node = target?.dataset?.node;
+    if (!spec || !node || !this.actor) return;
+    const found = !!this.actor.system?.specialisations?.[spec]?.teachers?.[node];
+    await setSpecNodeTeacher(this.actor, spec, node, !found);
+    this.render();
+  }
+
   /** Show or hide the work-in-progress specialisations. @this {LearnWindow} */
   static _onToggleSpecWip(event) {
     event.preventDefault();
@@ -3484,15 +4501,23 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
 /*  Entry point                                 */
 /* -------------------------------------------- */
 
-/** Open (or focus) the Learn window for one actor. */
-export function openLearnWindow(actor) {
+/**
+ * Open (or focus) the Learn window for one actor.
+ *
+ * @param {Actor} actor
+ * @param {object} [options]
+ * @param {string} [options.tab] Open on this tab instead of Combat. The party
+ *   switch passes the tab the GM was reading.
+ */
+export function openLearnWindow(actor, { tab } = {}) {
   if (!actor) return null;
   const existing = foundry.applications.instances.get(
     `redsteel-learn-${actor.id}`,
   );
   if (existing) {
+    if (tab) existing.switchTab(tab);
     existing.bringToFront();
     return existing;
   }
-  return new LearnWindow({ actor }).render(true);
+  return new LearnWindow({ actor, tab }).render(true);
 }

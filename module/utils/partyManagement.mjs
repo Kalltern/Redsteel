@@ -6,6 +6,10 @@
  * grant, the CP/SP ledger, and a Long Rest button that runs the existing
  * `game.redsteel.longRest()` rather than a copy of it.
  *
+ * Grave wounds, treated wounds, Mind, Insanity and Fatigue carry a pair of
+ * step buttons each (see COUNTERS): the GM corrects them here instead of
+ * opening five sheets.
+ *
  * The ledger is laid out like the GM's own spreadsheet: characters across the
  * top with CP and SP under each, then Total earned, Starting, Bonus and one row
  * per award. Earned CP/SP is derived from it (progressionEngine `getLedger`):
@@ -196,6 +200,103 @@ function ledgerKey(uuid, field, currency) {
   return `${uuid}|${field}|${currency}`;
 }
 
+/** One resource pool as the sheet shows it. */
+function readPool(system, key) {
+  const stat = system?.stats?.[key] ?? {};
+  return { value: Number(stat.value) || 0, max: Number(stat.max) || 0 };
+}
+
+/* -------------------------------------------- */
+/*  Counters                                    */
+/* -------------------------------------------- */
+
+/**
+ * The per-character counters the GM steps by one from this window, in column
+ * order. `read` returns the figure and its ceiling exactly as the sheet shows
+ * them, and `capped` says whether the plus button stops at that ceiling.
+ *
+ * Wounds are the one counter that is not capped: the Dying rule adds a wound
+ * over the cap on purpose (documents/effects.mjs), so a GM correcting the same
+ * situation by hand must be able to as well.
+ */
+const COUNTERS = [
+  {
+    key: "graveWounds",
+    path: "system.stats.graveWounds.value",
+    labelKey: "REDSTEEL.PartyManagement.ColGraveWounds",
+    capped: false,
+    read: (system) => readPool(system, "graveWounds"),
+  },
+  {
+    key: "treated",
+    path: "system.stats.graveWounds.treated",
+    labelKey: "REDSTEEL.Actor.Character.stats.graveWounds.treated.label",
+    capped: true,
+    // The ceiling is the wound count itself (actor.mjs derives treatedMax from
+    // it): a wound that is gone cannot stay treated.
+    read: (system) => {
+      const gw = system?.stats?.graveWounds ?? {};
+      return { value: Number(gw.treated) || 0, max: Number(gw.value) || 0 };
+    },
+  },
+  {
+    key: "mind",
+    path: "system.stats.mind.value",
+    labelKey: "REDSTEEL.Actor.Character.stats.mind.value.label",
+    capped: true,
+    read: (system) => readPool(system, "mind"),
+  },
+  {
+    key: "insanity",
+    path: "system.stats.insanity.value",
+    labelKey: "REDSTEEL.Actor.Character.stats.insanity.value.label",
+    capped: true,
+    read: (system) => readPool(system, "insanity"),
+  },
+  {
+    key: "fatigue",
+    path: "system.stats.fatigue.value",
+    labelKey: "REDSTEEL.Actor.Character.stats.fatigue.value.label",
+    capped: true,
+    read: (system) => readPool(system, "fatigue"),
+  },
+];
+
+const COUNTER_BY_KEY = new Map(COUNTERS.map((counter) => [counter.key, counter]));
+
+/**
+ * The update that steps one counter, or null when the click changes nothing
+ * (already at zero, or at a ceiling that holds).
+ *
+ * Nothing here writes a derived field: Mind's maximum, the wound cap and
+ * treatedMax are all recomputed in data preparation. Taking a wound away also
+ * takes its treatment with it, the same pairing the Calendaria healing pass
+ * makes, so `treated` can never outrun the wounds it belongs to.
+ *
+ * @param {Actor} actor
+ * @param {string} key    A COUNTERS key.
+ * @param {number} delta  +1 or -1.
+ * @returns {object|null}
+ */
+function counterUpdate(actor, key, delta) {
+  const counter = COUNTER_BY_KEY.get(key);
+  const system = actor?.system;
+  if (!counter || !system) return null;
+
+  const { value, max } = counter.read(system);
+  let next = value + Math.trunc(Number(delta) || 0);
+  if (next < 0) next = 0;
+  if (counter.capped && next > max) next = max;
+  if (next === value) return null;
+
+  const updates = { [counter.path]: next };
+  if (key === "graveWounds") {
+    const treated = Number(system.stats?.graveWounds?.treated) || 0;
+    if (treated > next) updates["system.stats.graveWounds.treated"] = next;
+  }
+  return updates;
+}
+
 /* -------------------------------------------- */
 /*  Awards                                      */
 /* -------------------------------------------- */
@@ -365,12 +466,13 @@ class PartyManagement extends HandlebarsApplicationMixin(ApplicationV2) {
       icon: ICON,
       resizable: true,
     },
-    position: { width: 1180, height: "auto" },
+    position: { width: 1310, height: "auto" },
     actions: {
       openSheet: PartyManagement._onOpenSheet,
       openLearn: PartyManagement._onOpenLearn,
       grantParty: PartyManagement._onGrantParty,
       grantRow: PartyManagement._onGrantRow,
+      adjustStat: PartyManagement._onAdjustStat,
       deleteAward: PartyManagement._onDeleteAward,
       deleteGrant: PartyManagement._onDeleteGrant,
       longRest: PartyManagement._onLongRest,
@@ -406,6 +508,13 @@ class PartyManagement extends HandlebarsApplicationMixin(ApplicationV2) {
 
   /** Set while a grant is being written, so a double click cannot grant twice. */
   #busy = false;
+
+  /**
+   * Counter steps run one after another. Each click reads the figure when its
+   * turn comes, so hammering + does not write the same number twice off a
+   * value that has not come back from the server yet.
+   */
+  #queue = Promise.resolve();
 
   /** Starting/Bonus cells whose write is in flight. */
   #committing = new Set();
@@ -452,11 +561,6 @@ class PartyManagement extends HandlebarsApplicationMixin(ApplicationV2) {
     const draft = this.#draft;
     const party = collectPartyCharacters();
 
-    const pool = (system, key) => {
-      const stat = system?.stats?.[key] ?? {};
-      return { value: Number(stat.value) || 0, max: Number(stat.max) || 0 };
-    };
-
     const rows = party.map((actor) => {
       const system = actor.system ?? {};
       const wallet = getWallet(actor);
@@ -473,13 +577,24 @@ class PartyManagement extends HandlebarsApplicationMixin(ApplicationV2) {
         sp: { left: wallet.remaining.sp, earned: wallet.earned.sp },
         purse: summarisePurse(total),
         purseTitle: formatPrice(total),
-        health: pool(system, "health"),
-        graveWounds: pool(system, "graveWounds"),
-        mind: pool(system, "mind"),
-        insanity: pool(system, "insanity"),
-        fatigue: pool(system, "fatigue"),
+        health: readPool(system, "health"),
         hasMana,
-        mana: hasMana ? pool(system, "mana") : null,
+        mana: hasMana ? readPool(system, "mana") : null,
+        // Grave wounds, treated wounds, Mind, Insanity and Fatigue, each with
+        // its own pair of step buttons, in COUNTERS order.
+        counters: COUNTERS.map((counter) => {
+          const { value, max } = counter.read(system);
+          const stat = game.i18n.localize(counter.labelKey);
+          return {
+            stat: counter.key,
+            value,
+            max,
+            atMin: value <= 0,
+            atMax: counter.capped && value >= max,
+            up: game.i18n.format("REDSTEEL.PartyManagement.StepUp", { stat }),
+            down: game.i18n.format("REDSTEEL.PartyManagement.StepDown", { stat }),
+          };
+        }),
         ticked: !draft.unticked.has(actor.uuid),
         draftCp: rowDraft.cp,
         draftSp: rowDraft.sp,
@@ -804,6 +919,26 @@ class PartyManagement extends HandlebarsApplicationMixin(ApplicationV2) {
       this.#busy = false;
     }
     this.render();
+  }
+
+  /**
+   * Step one counter on one character by one. The window redraws from the
+   * updateActor hook, so nothing renders here.
+   * @this PartyManagement
+   */
+  static _onAdjustStat(event, target) {
+    event?.preventDefault?.();
+    const actor = PartyManagement._actorFrom(target);
+    const key = target?.dataset.stat;
+    const delta = Number(target?.dataset.delta) || 0;
+    if (!actor || !delta || !COUNTER_BY_KEY.has(key)) return;
+
+    this.#queue = this.#queue
+      .then(async () => {
+        const updates = counterUpdate(actor, key, delta);
+        if (updates) await actor.update(updates);
+      })
+      .catch((err) => console.error("Redsteel | Party counter step failed", err));
   }
 
   /** @this PartyManagement */

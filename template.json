@@ -1348,7 +1348,8 @@
       "consumable",
       "condition",
       "recipe",
-      "enchantment"
+      "enchantment",
+      "spellbook"
     ],
     "htmlFields": ["description"],
     "templates": {
@@ -1686,6 +1687,12 @@
       "quantity": 1,
       "rations": false,
       "difficulty": 0
+    },
+    "spellbook": {
+      "templates": ["base"],
+      "quantity": 1,
+      "capacity": 0,
+      "spells": []
     },
     "recipe": {
       "templates": ["base"],

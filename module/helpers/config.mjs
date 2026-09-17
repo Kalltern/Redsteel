@@ -899,6 +899,34 @@ REDSTEEL.effectDefinitions = {
     stackBehavior: "ignore",
   },
 
+  // "Běh" — what the Sprint action buys and what it costs. The runner is a
+  // harder target at range (+15% Kryt) and wide open in melee (-25% Obrana).
+  // Applied to the runner by the Sprint ability itself (runUtilityAbility in
+  // combatAbilities.mjs) and cleared at the start of their next turn, so the
+  // penalty is live for the whole round the sprint was made in. "refresh", not
+  // "ignore": sprinting a second time re-arms the window rather than letting
+  // the first one run out under the runner.
+  sprint: {
+    name: "REDSTEEL.Items.Sprint.name",
+    img: "icons/creatures/mammals/rabbit-movement-glowing-green.webp",
+    statuses: ["sprint"],
+    defaultTurns: 1,
+    useDuration: true,
+    changes: [
+      {
+        key: "system.combatSkills.rangedDefense.bonus",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: 15,
+      },
+      {
+        key: "system.combatSkills.meleeDefense.bonus",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: -25,
+      },
+    ],
+    stackBehavior: "refresh",
+  },
+
   stone_skin: {
     name: "Stone Skin",
     img: "icons/magic/defensive/armor-stone-skin.webp",

@@ -89,6 +89,8 @@
       }
     },
     "Bg3Hotbar": {
+      "TempHealth": "Temp HP",
+      "TempHealthMagic": "Temp HP (Magic)",
       "Attributes": "Attributes",
       "Skills": "Skill checks",
       "Action": {
@@ -545,12 +547,12 @@
               "description": "10 CP. Free action, 1 Stamina. Modifies any Retaliation action. Before the action, may move one hex around the opponent. Manual — resolved at the table."
             },
             "backDodge": {
-              "label": "Rear Dodge",
-              "description": "10 CP. Can dodge attacks from behind at a -20% penalty. Manual — resolved at the table."
+              "label": "Blindside Dodge",
+              "description": "10 CP. Can dodge attacks from behind at a -20% penalty. Automated: the defense dialog offers a Blindside Dodge button."
             },
             "weakSpotMastery": {
               "label": "Improved Weak Spot Attack/Throw",
-              "description": "20 CP; Tulák VII. Improved Exploit Weakness (2 actions, 5 Stamina): an attack aimed at weak spots in the opponent's armor. Penetration +20. If the target has a lower Turn Order, a successful hit counts as a Sneak Attack. Can never deal more damage than its Penetration. Improved Exploit Weakness (Throw) (Free action, 4 Stamina): modifies any throw with a throwing knife, aimed at weak spots in the opponent's armor. Penetration +15, Throw -5%. Can never deal more damage than its Penetration. Manual — resolved at the table."
+              "description": "20 CP; Tulák VII. Improved Exploit Weakness (2 actions, 5 Stamina): an attack aimed at weak spots in the opponent's armor. Penetration +20. If the target has a lower Turn Order, a successful hit counts as a Sneak Attack. Can never deal more damage than its Penetration. Improved Exploit Weakness (Throw) (Free action, 4 Stamina): modifies any throw with a throwing knife, aimed at weak spots in the opponent's armor. Penetration +15, Throw -5%. Can never deal more damage than its Penetration. Both actions are granted automatically and replace the ordinary Exploit Weakness and Exploit Weakness (Throw)."
             },
             "speedTests": {
               "label": "Advantage on vs Speed Tests",
@@ -612,7 +614,7 @@
             },
             "improvedAim": {
               "label": "Improved Aiming",
-              "description": "5 CP. 1 action, 0 Stamina. Raises the chance to Hit, Shoot, Throw or Gunnery by +10% for the next attack. The action can be repeated to stack the bonus, up to +40%. Can aim at targets at any distance. With four Aim on the target, gains Penetration +10. Grants the Improved Aiming action; the Penetration bonus needs a two-handed sword. Automated."
+              "description": "0 CP. 1 action, 0 Stamina. Raises the chance to Hit, Shoot, Throw or Gunnery by +10% for the next attack. The action can be repeated to stack the bonus, up to +40%. Can aim at targets at any distance. With four Aim on the target, gains Penetration +10. Grants the Improved Aiming action; the Penetration bonus needs a two-handed sword. Automated."
             },
             "aimReduction": {
               "label": "Aim reduction after a hit",
@@ -652,7 +654,7 @@
             },
             "presneRozseknuti": {
               "label": "Precise Cleave",
-              "description": "0 CP. Passive. The Cleave and Charge with Cleave actions apply the Aim bonus to every opponent struck. Manual — resolved at the table."
+              "description": "5 CP. Passive. The Cleave and Charge with Cleave actions apply the Aim bonus to every opponent struck. Manual — resolved at the table."
             },
             "vyhodnyManevr": {
               "label": "Advantageous Maneuver",
@@ -738,7 +740,7 @@
             },
             "weakSpotPen": {
               "label": "Weak Spot Attack: Penetration +10",
-              "description": "5 CP. Situational — manual for now. Manual — resolved at the table."
+              "description": "5 CP. Adds 10 Penetration to every Exploit Weakness action, including the ranged, throwing, rapier (Imbroccata) and Improved versions."
             },
             "primaryDamage": {
               "label": "Damage +50% from Primary Attributes",
@@ -948,15 +950,15 @@
             },
             "krvavaPlatba": {
               "label": "Blood Payment",
-              "description": "10 CP; Škola Krve - Expert. Free action, cost 5. Once, before casting a spell, may pay 5 Health from the Blood Pool to lower the Difficulty by 15%. Manual — resolved at the table."
+              "description": "10 CP; Škola Krve - Expert. Free action, cost 5. Once, before casting a spell, may pay 5 Health from the Blood Pool to lower the Difficulty by 15%. Automated — a toggle in the Blood spell dialog."
             },
             "kritRozsah2": {
               "label": "School of Blood: Critical Range +2",
-              "description": "5 SP. Critical range is not automated yet. Manual — resolved at the table."
+              "description": "5 SP. Automated. Critical range +2 on the crit score roll for spells of the School of Blood, on top of the caster's own critical range. A critical of that school lands at a higher degree; it does not happen more often. No other school benefits."
             },
             "oslabeniTrvani": {
               "label": "Weaken: Duration +1 turn",
-              "description": "5 CP; Škola Krve - Expert. Manual — resolved at the table."
+              "description": "5 CP; Škola Krve - Expert. Weakened applied by your School of Blood spells lasts one turn longer (3 → 4 turns). Automated."
             },
             "krvavyStit": {
               "label": "Blood Shield",
@@ -964,7 +966,7 @@
             },
             "darKrve": {
               "label": "Gift of Blood",
-              "description": "20 CP; Škola Krve - Mistr. Passive. Killing a living target with a School of Blood spell heals Health equal to Spell Power ×1. Manual — resolved at the table."
+              "description": "20 CP; Škola Krve - Mistr. Passive. Killing a living target with a School of Blood spell heals Health equal to Spell Power ×1. Automated: the spell's own damage, and damage over time or Bleeding the spell itself applied, all pay. Each target killed pays separately; the Unliving pay nothing."
             }
           }
         },
@@ -2274,7 +2276,7 @@
             },
             "kritRozsah": {
               "label": "School of Air: Critical Range +2",
-              "description": "5 SP. Critical range is not automated yet. Manual — resolved at the table."
+              "description": "5 SP. Automated. Critical range +2 on the crit score roll for spells of the School of Air, on top of the caster's own critical range. A critical of that school lands at a higher degree; it does not happen more often. No other school benefits."
             },
             "cyklonPohyb": {
               "label": "Cyclone: Movement +2 hexes",
@@ -2484,7 +2486,7 @@
             },
             "kritRozsah": {
               "label": "School of Water: Critical Range +2",
-              "description": "5 SP. Critical range is not automated yet. Manual — resolved at the table."
+              "description": "5 SP. Automated. Critical range +2 on the crit score roll for spells of the School of Water, on top of the caster's own critical range. A critical of that school lands at a higher degree; it does not happen more often. No other school benefits."
             },
             "overeni": {
               "label": "School of Water: Precision +10%",
@@ -2614,7 +2616,7 @@
             },
             "kritRozsah": {
               "label": "School of Earth: Critical Range +2",
-              "description": "5 SP. Critical range is not automated yet. Manual — resolved at the table."
+              "description": "5 SP. Automated. Critical range +2 on the crit score roll for spells of the School of Earth, on top of the caster's own critical range. A critical of that school lands at a higher degree; it does not happen more often. No other school benefits."
             },
             "maskovani": {
               "label": "Camouflage: also rocky areas",
@@ -3122,7 +3124,7 @@
             },
             "kritRozsah": {
               "label": "School of Darkness: Critical Range +2",
-              "description": "5 SP. Critical range is not automated yet. Manual — resolved at the table."
+              "description": "5 SP. Automated. Critical range +2 on the crit score roll for spells of the School of Darkness, on top of the caster's own critical range. A critical of that school lands at a higher degree; it does not happen more often. No other school benefits."
             },
             "stoparDusi": {
               "label": "Soul Tracker",
@@ -3411,7 +3413,7 @@
             },
             "kritRozsah": {
               "label": "School of Fire: Critical Range +2",
-              "description": "5 SP. Critical range is not automated yet. Manual — resolved at the table."
+              "description": "5 SP. Automated. Critical range +2 on the crit score roll for spells of the School of Fire, on top of the caster's own critical range. A critical of that school lands at a higher degree; it does not happen more often. No other school benefits."
             },
             "burnResist1": {
               "label": "Chance to be Ignited -10%",
@@ -3549,7 +3551,7 @@
             },
             "kritRozsah": {
               "label": "Spirit and Body: Critical Range +2",
-              "description": "5 SP. Critical range is not automated yet. Manual — resolved at the table."
+              "description": "5 SP. Automated. Critical range +2 on the crit score roll for spells of the School of Spirit and the School of Body, on top of the caster's own critical range. A critical of that school lands at a higher degree; it does not happen more often. No other school benefits."
             },
             "overeni": {
               "label": "Spirit and Body: Precision +10%",
@@ -4817,7 +4819,31 @@
       "Defend": "Defend",
       "DefendTooltip": "Roll a defense against this attack."
     },
+    "BloodPayment": {
+      "Tag": "Blood Payment",
+      "Option": "Blood Payment ({cost} Life)",
+      "Hint": "Pay 5 Life from the Blood Reserve before the cast to lower the spell's Difficulty by 15%. Capped at 0 like Focus, so it does nothing for a spell that is already easy.",
+      "NoGain": "Blood Payment buys nothing here: this spell's Difficulty is already at the cap. No Life was paid.",
+      "NotEnough": "{name} needs {needed} Life in the Blood Reserve to cast with Blood Payment, but has {reserve}."
+    },
+    "GiftOfBlood": {
+      "Healed": "{name} drinks the life out of {targets} — {amount} Life restored (Gift of Blood)."
+    },
+    "Spellbook": {
+      "Capacity": "Capacity",
+      "CapacityHint": "How many spells the book holds. 0 is a book with no limit.",
+      "Contents": "Written spells",
+      "ContentsHint": "Drag a spell from the compendium onto the book to write it in. The owner's own spell list follows this one.",
+      "Empty": "Nothing is written here yet.",
+      "Remove": "Erase from the book",
+      "DropRejected": "Only a spell can be written into a grimoire.",
+      "DropNotGlobal": "Write the spell from the compendium, not from a character's own copy.",
+      "DropDuplicate": "{name} is already written in this book.",
+      "DropAdded": "{name} written into the book."
+    },
     "Defense": {
+      "BlindsideDodge": "Blindside Dodge",
+      "BlindsideDodgeRoll": "Blindside Dodge with {weapon}",
       "BadDodge": "Bad Dodge!",
       "BadDodgeNote": "The die beat the dodge limit ({limit}): this dodge counts as a margin of 0.",
       "BloodSchoolBonus": "School of Blood defense: +{bonus}"
@@ -4954,6 +4980,9 @@
       "CardAdjusted": "Rest values adjusted by hand."
     },
     "PartyManagement": {
+      "ColTreated": "Treated wounds",
+      "StepUp": "+1 {stat}",
+      "StepDown": "−1 {stat}",
       "Title": "Party Management",
       "Everyone": "Everyone",
       "ColCharacter": "Character",
@@ -5278,6 +5307,82 @@
       "UnknownTime": "an earlier date"
     },
     "Items": {
+      "ImprovedExploitWeakness": {
+        "name": "Improved Exploit Weakness"
+      },
+      "ImprovedExploitWeaknessThrow": {
+        "name": "Improved Exploit Weakness (Throw)"
+      },
+      "Linguist": {
+        "name": "Linguist",
+        "description": "<p>Learns languages faster. Every rank of the Languages skill is free, except Sign language. +1 starting language.</p>"
+      },
+      "Specialist": {
+        "name": "Specialist"
+      },
+      "SpecializationActing": {
+        "name": "Specialization: Acting"
+      },
+      "SpecializationAnimalHandling": {
+        "name": "Specialization: Animal Handling"
+      },
+      "SpecializationArt": {
+        "name": "Specialization: Art"
+      },
+      "SpecializationAugury": {
+        "name": "Specialization: Augury"
+      },
+      "SpecializationBrawler": {
+        "name": "Specialization: Brawler"
+      },
+      "SpecializationCraft": {
+        "name": "Specialization: Craft"
+      },
+      "SpecializationDancing": {
+        "name": "Specialization: Dancing"
+      },
+      "SpecializationDreamwalker": {
+        "name": "Specialization: Dreamwalker"
+      },
+      "SpecializationDrinking": {
+        "name": "Specialization: Drinking"
+      },
+      "SpecializationEngineering": {
+        "name": "Specialization: Engineering"
+      },
+      "SpecializationLogic": {
+        "name": "Specialization: Logic"
+      },
+      "SpecializationMeditation": {
+        "name": "Specialization: Meditation"
+      },
+      "SpecializationMindBending": {
+        "name": "Specialization: Mind Bending"
+      },
+      "SpecializationMusic": {
+        "name": "Specialization: Music"
+      },
+      "SpecializationPainting": {
+        "name": "Specialization: Painting"
+      },
+      "SpecializationResearch": {
+        "name": "Specialization: Research"
+      },
+      "SpecializationRiding": {
+        "name": "Specialization: Riding"
+      },
+      "SpecializationRituals": {
+        "name": "Specialization: Rituals"
+      },
+      "SpecializationSailing": {
+        "name": "Specialization: Sailing"
+      },
+      "SpecializationSmithing": {
+        "name": "Specialization: Smithing"
+      },
+      "SpecializationTactics": {
+        "name": "Specialization: Tactics"
+      },
       "AbsorbBlood": {
         "name": "Blood Absorption",
         "description": "<p>Cancel your entire Blood Reserve and heal Life equal to your Maximum Transfer. You cannot heal more Life than you cancelled from the Reserve.</p>",
@@ -7367,6 +7472,8 @@
       "DuplicateKey": "Two denominations share the key \"{key}\". Each one needs its own."
     },
     "Learn": {
+      "party": "Party",
+      "switchHero": "Switch character",
       "Stat": {
         "attack": "Attack",
         "bleed": "Bleed",
@@ -7589,7 +7696,57 @@
         "combat": "Combat",
         "skills": "Skills",
         "features": "Features",
+        "spells": "Spells",
         "specialisations": "Specialisations"
+      },
+      "Spells": {
+        "title": "Spells",
+        "book": "Grimoire",
+        "books": "Grimoires",
+        "noBook": "This character carries no grimoire.",
+        "newBook": "New grimoire",
+        "written": "Written",
+        "memorised": "Memorised",
+        "memorise": "Memorise (1 SP)",
+        "forget": "Forget",
+        "write": "Write into the grimoire",
+        "erase": "Erase from the grimoire",
+        "available": "Available",
+        "owned": "Held",
+        "locked": "Out of reach",
+        "needsRank": "Needs school rank {n}",
+        "outOfReach": "Written, but out of reach",
+        "search": "Search spells",
+        "filters": "Filters",
+        "reset": "Reset",
+        "filterRank": "Rank",
+        "filterAction": "Action cost",
+        "filterProperties": "Properties",
+        "filterStatus": "Status",
+        "concentration": "Concentration",
+        "sustained": "Sustained",
+        "reaction": "Reaction",
+        "freeAction": "Free action",
+        "actions": "{n} actions",
+        "hideWritten": "Hide what is written",
+        "onlyReachable": "Only what I can reach",
+        "allSchools": "All schools",
+        "mana": "Mana",
+        "difficulty": "Difficulty",
+        "none": "No spells here.",
+        "noSchools": "This character has no school of magic yet.",
+        "lost": "Lost grimoires",
+        "lostHint": "What the book held, kept in case it was deleted by accident.",
+        "restore": "Write it back",
+        "forgetBook": "Forget this book",
+        "spellCount": "{n} spells",
+        "Warn": {
+          "noBook": "This character carries no grimoire to write in.",
+          "notFound": "That spell could not be read.",
+          "rank": "The school rank is too low, rank {n} is needed.",
+          "full": "The grimoire is full.",
+          "notOwner": "You do not own this character."
+        }
       },
       "Sections": {
         "combat": "Combat skills",
@@ -7614,6 +7771,7 @@
         "skillLower": "skill"
       },
       "Features": {
+        "classOther": "Other skills",
         "traits": "Traits",
         "owned": "Owned features",
         "noneOwned": "No features yet.",
@@ -7677,11 +7835,11 @@
         "none": "No languages yet. Type a name above to learn one.",
         "native": "Native",
         "grantNative": "Grant native language",
-        "grantNativeHint": "Free Basic communication and Fluent speech in this language. One per character.",
+        "grantNativeHint": "Free Basic communication and Fluent speech in this language. {n} per character.",
         "nameRequired": "Type the language's name first.",
         "alreadyKnown": "{language} is already known.",
         "needsBasic": "Basic communication in {language} first",
-        "nativeTaken": "This character already has a native language.",
+        "nativeTaken": "This character already has all {n} of its native languages.",
         "nativeGmOnly": "Only the GM can remove a native language.",
         "refundDependents": "Give back the other features for {language} first.",
         "refundReadingFirst": "Give back Reading and writing for the additional languages first."
@@ -7746,6 +7904,8 @@
         }
       },
       "Discounts": {
+        "chooseSpecialisation": "Choose a specialisation",
+        "specNodes": "{source}: every SP node of this specialisation costs {amount} SP less",
         "title": "Discounts",
         "choose": "Choose a skill",
         "chooseDoctrine": "Choose a doctrine",
@@ -7825,6 +7985,7 @@
       "npc": "NPC"
     },
     "Item": {
+      "spellbook": "Grimoire",
       "weapon": "Weapon",
       "item": "Item",
       "gear": "Gear",

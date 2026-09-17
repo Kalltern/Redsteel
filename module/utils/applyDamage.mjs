@@ -27,6 +27,11 @@ import {
   hasSneakedThisRound,
 } from "./sneakLedger.mjs";
 import { gainBlood } from "./bloodPool.mjs";
+import {
+  giftOfBloodApplies,
+  hasGiftOfBlood,
+  payGiftOfBlood,
+} from "./giftOfBlood.mjs";
 import { combatantForActor } from "./combatants.mjs";
 
 export const SOCKET = "system.redsteel";
@@ -640,6 +645,13 @@ export async function applyDamageAsGM(data) {
   const bloodHarvestActive =
     hasBloodHarvestDoctrine(attacker) && isBloodHarvestAttack(message, attack);
   let bloodHarvest = 0;
+  // Dar krve — a School of Blood spell that kills a living target heals its
+  // caster for SK per kill. Attribution comes off the card's own casting
+  // context, so a weapon attack (no `spellSchool`) can never qualify. Victims
+  // are collected per target and paid once after the loop.
+  const giftOfBloodActive =
+    castingContext.school === "blood" && hasGiftOfBlood(castingContext.caster);
+  const giftOfBloodVictims = [];
   for (const tokenId of targetIds) {
     const tokenDoc = scene.tokens.get(tokenId);
     if (!tokenDoc) {
@@ -1009,6 +1021,18 @@ export async function applyDamageAsGM(data) {
       bloodStrikeEarned = true;
     }
 
+    // Dar krve — the same "drop to 0 Life" line Blood Strike above reads: an
+    // NPC dies, a character starts Dying. The Unliving are no meal, so an
+    // undead or a construct pays nothing.
+    if (
+      giftOfBloodActive &&
+      hpBeforeDamage > 0 &&
+      Number(result.newHp) <= 0 &&
+      giftOfBloodApplies(castingContext.caster, actor)
+    ) {
+      giftOfBloodVictims.push(actor.name);
+    }
+
     // Cordinas I — the wound has to reach Life: a blow soaked entirely by
     // temporary health or a shield spills no blood, the same line Bleeding and
     // Open Wound draw. Killing the target (the drop to 0 Life) pays once more,
@@ -1128,6 +1152,12 @@ export async function applyDamageAsGM(data) {
         )}</div>`,
       });
     }
+  }
+
+  // Dar krve — settled after the loop so one area spell that drops three
+  // targets is a single heal of 3×SK rather than three separate writes.
+  if (giftOfBloodVictims.length) {
+    await payGiftOfBlood(castingContext.caster, giftOfBloodVictims);
   }
 
   // Applied once even when several bleeding targets went down: the charge is a

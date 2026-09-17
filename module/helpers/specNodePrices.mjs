@@ -21,14 +21,26 @@
  *                     features
  *      specScore      "Kontramág 6" / "Kontramág 18": the book does not say
  *                     what the number counts
+ *  - Some stars need a trainer as well (user ruling 2026-09-16): the entry
+ *    carries `teacher: N`, the rank of Učitel that trainer must hold, and the
+ *    star stays locked until the GM grants it on that node. Unlike a
+ *    specialisation's own teacher, which is granted once for the whole tree,
+ *    this one is granted star by star, the way a rank's teacher is.
  *
- * Clause shapes are the rank table's (progression.mjs), plus the two above.
+ * Clause shapes are the rank table's (progression.mjs), plus the two above
+ * and `nodeTeacher`.
  * ======================================================================== */
 
 const rank = (group, key, min) => ({ t: "rank", group, key, min });
 
-/** One node's price: CP, SP, and the book clauses the tree does not cover. */
-const node = (cp, sp = 0, requires = []) => ({ cp, sp, requires });
+/**
+ * One node's price: CP, SP, and the book clauses the tree does not cover.
+ *
+ * `teacher` is the rank of Teacher (Učitel) the trainer must hold before this
+ * star may be bought. It is stored as a tier here and turned into a
+ * `nodeTeacher` clause below, so a node's entry stays one line.
+ */
+const node = (cp, sp = 0, requires = [], teacher = 0) => ({ cp, sp, requires, teacher });
 
 /**
  * Magic Blood (Magická krev): "Usměrňování se počítá jako Manipulace s krví pro
@@ -55,12 +67,12 @@ export const SPEC_NODE_PRICES = {
     aimedAttack: node(10),
     stealthAdvantage: node(0, 5, [{ t: "feature", name: "Adept: Stealth" }]), // Plížení: Adept
     stealthCritFail: node(0, 10),
-    bane1: node(5),
-    bane2: node(5),
-    bane3: node(5),
-    quickFeet: node(10),
+    bane1: node(5, 0, [], 1),
+    bane2: node(5, 0, [], 1),
+    bane3: node(5, 0, [], 1),
+    quickFeet: node(10, 0, [], 1),
     backDodge: node(10),
-    weakSpotMastery: node(20, 0, [rank("doctrines", "rogue", 7)]), // Tulák VII
+    weakSpotMastery: node(20, 0, [rank("doctrines", "rogue", 7)], 1), // Tulák VII
     speedTests: node(10, 0, [rank("doctrines", "rogue", 7)]), // Tulák VII
     daggerDefense: node(0),
     skillDiscount1: node(0),
@@ -76,32 +88,32 @@ export const SPEC_NODE_PRICES = {
     ripostaStamina: node(15),
     ripostaCrit: node(10, 0, [rank("weaponSkills", "swords", 10)]), // Meče X
     odvetnyUder: node(10, 0, [rank("weaponSkills", "swords", 4)]), // Meče IV
-    improvedAim: node(5),
+    improvedAim: node(0),
     aimReduction: node(5),
-    draciSpanek: node(10, 0, [rank("doctrines", "swordsman", 4)]), // Šermíř IV
-    draciStraz: node(10, 0, [rank("doctrines", "swordsman", 5)]), // Šermíř V
+    draciSpanek: node(10, 0, [rank("doctrines", "swordsman", 4)], 1), // Šermíř IV
+    draciStraz: node(10, 0, [rank("doctrines", "swordsman", 5)], 1), // Šermíř V
     chargeDamage: node(10, 0, [rank("weaponSkills", "swords", 7)]), // Meče VII
     chargeDistance: node(10, 0, [rank("weaponSkills", "swords", 8)]), // Meče VIII
     priskok: node(5, 0, [rank("weaponSkills", "swords", 4)]), // Meče IV
-    draciVypad: node(10, 0, [rank("doctrines", "swordsman", 4)]), // Šermíř IV
+    draciVypad: node(10, 0, [rank("doctrines", "swordsman", 4)], 1), // Šermíř IV
     prosmyknuti: node(5, 0, [rank("weaponSkills", "swords", 4)]), // Meče IV
     dexTests: node(5),
-    presneRozseknuti: node(0),
+    presneRozseknuti: node(5),
     vyhodnyManevr: node(5, 0, [rank("doctrines", "swordsman", 5)]), // Šermíř V
     utokSPohybem: node(10, 0, [rank("weaponSkills", "swords", 4)]), // Meče IV
     vylUtokSPohybem: node(10, 0, [rank("doctrines", "swordsman", 7)]), // Šermíř VII
   },
   weaponMaster: {
     mistrZbrani: node(0),
-    vytrvalyValecnik: node(15, 0, [{ t: "anyOf", options: [rank("weaponSkills", "swords", 5), rank("weaponSkills", "blunt", 5), rank("weaponSkills", "axes", 5), rank("weaponSkills", "polearms", 5)] }]), // M/T/S/D V
+    vytrvalyValecnik: node(15, 0, [{ t: "anyOf", options: [rank("weaponSkills", "swords", 5), rank("weaponSkills", "blunt", 5), rank("weaponSkills", "axes", 5), rank("weaponSkills", "polearms", 5)] }], 1), // M/T/S/D V
     vycvikSeZbrani: node(0, 0, [{ t: "anyOf", options: [rank("weaponSkills", "swords", 6), rank("weaponSkills", "blunt", 6), rank("weaponSkills", "axes", 6), rank("weaponSkills", "polearms", 6)] }]), // M/T/S/D VI
-    bdelyOchrance: node(25, 0, [{ t: "anyOf", options: [rank("weaponSkills", "swords", 8), rank("weaponSkills", "blunt", 8), rank("weaponSkills", "axes", 8), rank("weaponSkills", "polearms", 8)] }]), // M/T/S/D VIII
-    zbrojnos1: node(10),
+    bdelyOchrance: node(25, 0, [{ t: "anyOf", options: [rank("weaponSkills", "swords", 8), rank("weaponSkills", "blunt", 8), rank("weaponSkills", "axes", 8), rank("weaponSkills", "polearms", 8)] }], 1), // M/T/S/D VIII
+    zbrojnos1: node(10, 0, [], 1),
     zbrojnos2: node(10),
     odrazeni: node(10, 0, [{ t: "anyOf", options: [rank("weaponSkills", "swords", 6), rank("weaponSkills", "blunt", 6), rank("weaponSkills", "axes", 6), rank("weaponSkills", "polearms", 6)] }]), // M/T/S/D VI
     veteran1: node(5),
     veteran2: node(5, 0, [{ t: "anyOf", options: [rank("weaponSkills", "swords", 5), rank("weaponSkills", "blunt", 5), rank("weaponSkills", "axes", 5), rank("weaponSkills", "polearms", 5)] }]), // M/T/S/D V
-    vylZbranoveDovednosti: node(15, 0, [{ t: "anyOf", options: [rank("weaponSkills", "swords", 8), rank("weaponSkills", "blunt", 8), rank("weaponSkills", "axes", 8), rank("weaponSkills", "polearms", 8)] }]), // M/T/S/D VIII
+    vylZbranoveDovednosti: node(15, 0, [{ t: "anyOf", options: [rank("weaponSkills", "swords", 8), rank("weaponSkills", "blunt", 8), rank("weaponSkills", "axes", 8), rank("weaponSkills", "polearms", 8)] }], 1), // M/T/S/D VIII
     bleedStun: node(10),
     critDefRange: node(5),
     precision: node(10),
@@ -114,19 +126,19 @@ export const SPEC_NODE_PRICES = {
   hoplite: {
     nabodnuti: node(5),
     velkeTvory: node(10),
-    prilezitostnyUtok: node(15, 0, [rank("doctrines", "shieldbearer", 5)]), // Štítonoš V
+    prilezitostnyUtok: node(15, 0, [rank("doctrines", "shieldbearer", 5)], 1), // Štítonoš V
     pripravnyPostoj: node(10, 0, [rank("weaponSkills", "polearms", 4)]), // Dřevcová IV
     obranaProtiZteci: node(5, 0, [rank("doctrines", "shieldbearer", 6)]), // Štítonoš VI
     bleedStun: node(15),
     kritZasah: node(5),
-    momentum: node(15, 0, [rank("doctrines", "shieldbearer", 8)]), // Štítonoš VIII
+    momentum: node(15, 0, [rank("doctrines", "shieldbearer", 8)], 1), // Štítonoš VIII
     postup: node(5),
     raznyPostup: node(10, 0, [rank("doctrines", "shieldbearer", 4)]), // Štítonoš IV
-    napor1: node(15, 0, [rank("doctrines", "shieldbearer", 5)]), // Štítonoš V
+    napor1: node(15, 0, [rank("doctrines", "shieldbearer", 5)], 1), // Štítonoš V
     napor2: node(15, 0, [rank("doctrines", "shieldbearer", 6)]), // Štítonoš VI
     hoplitaStance: node(0),
     damage1d6: node(5, 0, [rank("weaponSkills", "polearms", 5)]), // Dřevcové V
-    troufalyVrh: node(15, 0, [rank("weaponSkills", "polearms", 7)]), // Dřevcové VII
+    troufalyVrh: node(15, 0, [rank("weaponSkills", "polearms", 7)], 1), // Dřevcové VII
     penetration2: node(5),
     hexAttack: node(10, 0, [rank("weaponSkills", "polearms", 5)]), // Dřevcové V
     silaObratnost: node(10, 0, [rank("doctrines", "shieldbearer", 10), rank("weaponSkills", "polearms", 10)]), // Štítonoš X, Dřevcové X
@@ -135,26 +147,26 @@ export const SPEC_NODE_PRICES = {
     duelistuvPostoj: node(5),
     krvaveBodnuti: node(5),
     mireniRedukce: node(10, 0, [rank("doctrines", "duelist", 5)]), // Duelista V
-    vyhodnyManevr: node(15, 0, [rank("doctrines", "duelist", 7)]), // Duelista VII
+    vyhodnyManevr: node(15, 0, [rank("doctrines", "duelist", 7)], 1), // Duelista VII
     posileniObrany: node(10, 0, [rank("doctrines", "duelist", 8)]), // Duelista VIII
     postojMireni: node(10, 0, [rank("doctrines", "duelist", 9)]), // Duelista IX
-    precision10: node(10, 0, [rank("weaponSkills", "swords", 10)]), // Meče X
+    precision10: node(10, 0, [rank("weaponSkills", "swords", 10)], 1), // Meče X
     oddechMireni: node(15, 0, [rank("weaponSkills", "swords", 5)]), // Meče V
     akrobatickeOdpoutani: node(15, 0, [rank("weaponSkills", "swords", 6)]), // Meče VI
     vylUtokSPohybem: node(10, 0, [rank("doctrines", "duelist", 7)]), // Duelista VII
     rafinovanyManevr: node(15, 0, [rank("doctrines", "duelist", 9)]), // Duelista IX
-    posledniVypad: node(20, 0, [rank("doctrines", "duelist", 6), rank("weaponSkills", "swords", 6)]), // Duelista VI, Meče VI
+    posledniVypad: node(20, 0, [rank("doctrines", "duelist", 6), rank("weaponSkills", "swords", 6)], 1), // Duelista VI, Meče VI
     vylDuelistuvKrok: node(15, 0, [rank("doctrines", "duelist", 7)]), // Duelista VII
     brilantniProtiutok: node(15, 0, [rank("doctrines", "duelist", 10)]), // Duelista X
   },
   bloodSchool: {
     apprentice: node(5),
     spellPower1: node(10),
-    expert: node(20, 0, [{ t: "anyOf", options: [rank("combatSkills", "bloodManipulation", 5), rank("doctrines", "cordinas", 5), magicBloodChanneling(5)] }]), // MsK/D:C V
+    expert: node(20, 0, [{ t: "anyOf", options: [rank("combatSkills", "bloodManipulation", 5), rank("doctrines", "cordinas", 5), magicBloodChanneling(5)] }], 1), // MsK/D:C V
     spellPower2: node(10),
-    master: node(25, 0, [{ t: "anyOf", options: [rank("combatSkills", "bloodManipulation", 7), rank("doctrines", "cordinas", 7), magicBloodChanneling(7)] }]), // MsK/D:C VII
+    master: node(25, 0, [{ t: "anyOf", options: [rank("combatSkills", "bloodManipulation", 7), rank("doctrines", "cordinas", 7), magicBloodChanneling(7)] }], 1), // MsK/D:C VII
     spellPower3: node(10),
-    grandmaster: node(30, 0, [{ t: "anyOf", options: [rank("combatSkills", "bloodManipulation", 9), rank("doctrines", "cordinas", 9), magicBloodChanneling(9)] }]), // MsK/D:C IX
+    grandmaster: node(30, 0, [{ t: "anyOf", options: [rank("combatSkills", "bloodManipulation", 9), rank("doctrines", "cordinas", 9), magicBloodChanneling(9)] }], 1), // MsK/D:C IX
     spellPower4: node(15), // Škola Krve - Velmistr
     bloodPool1: node(10, 0, [{ t: "specNode", spec: "bloodSchool", node: "expert" }]), // Škola Krve - Expert
     bloodPool2: node(10, 0, [{ t: "specNode", spec: "bloodSchool", node: "master" }]), // Škola Krve - Mistr
@@ -165,22 +177,22 @@ export const SPEC_NODE_PRICES = {
     krvavaPlatba: node(10, 0, [{ t: "specNode", spec: "bloodSchool", node: "expert" }]), // Škola Krve - Expert
     kritRozsah2: node(0, 5),
     oslabeniTrvani: node(5, 0, [{ t: "specNode", spec: "bloodSchool", node: "expert" }]), // Škola Krve - Expert
-    krvavyStit: node(15, 0, [{ t: "specNode", spec: "bloodSchool", node: "expert" }]), // Škola Krve - Expert
-    darKrve: node(20, 0, [{ t: "specNode", spec: "bloodSchool", node: "master" }]), // Škola Krve - Mistr
+    krvavyStit: node(15, 0, [{ t: "specNode", spec: "bloodSchool", node: "expert" }], 1), // Škola Krve - Expert
+    darKrve: node(20, 0, [{ t: "specNode", spec: "bloodSchool", node: "master" }], 1), // Škola Krve - Mistr
   },
   berserk: {
     zbesilost: node(0),
     imunitaPanika: node(10),
     obnovaVydrze: node(10),
-    nezastavitelny: node(15, 0, [{ t: "anyRank", group: "doctrines", min: 4 }]), // Doktrína IV
+    nezastavitelny: node(15, 0, [{ t: "anyRank", group: "doctrines", min: 4 }], 1), // Doktrína IV
     mentalniOdolnost: node(5),
     divokyVypad: node(10),
     pevnaVule: node(10, 0, [{ t: "anyRank", group: "doctrines", min: 6 }]), // Doktrína VI
     zbesilyUtokPostih: node(15, 0, [{ t: "anyOf", options: [rank("weaponSkills", "swords", 5), rank("weaponSkills", "blunt", 5), rank("weaponSkills", "axes", 5), rank("weaponSkills", "polearms", 5)] }]), // M/S/T/D V
-    zbesilyUtokVyhoda: node(15, 0, [{ t: "anyOf", options: [rank("weaponSkills", "swords", 10), rank("weaponSkills", "blunt", 10), rank("weaponSkills", "axes", 10), rank("weaponSkills", "polearms", 10)] }]), // M/S/T/D X
-    zurivyUder: node(20, 0, [{ t: "anyOf", options: [rank("weaponSkills", "swords", 6), rank("weaponSkills", "blunt", 6), rank("weaponSkills", "axes", 6), rank("weaponSkills", "polearms", 6)] }]), // M/S/T/D VI
+    zbesilyUtokVyhoda: node(15, 0, [{ t: "anyOf", options: [rank("weaponSkills", "swords", 10), rank("weaponSkills", "blunt", 10), rank("weaponSkills", "axes", 10), rank("weaponSkills", "polearms", 10)] }], 1), // M/S/T/D X
+    zurivyUder: node(20, 0, [{ t: "anyOf", options: [rank("weaponSkills", "swords", 6), rank("weaponSkills", "blunt", 6), rank("weaponSkills", "axes", 6), rank("weaponSkills", "polearms", 6)] }], 1), // M/S/T/D VI
     zurivyUderZasah: node(5),
-    zurivaNezdolnost: node(20, 0, [{ t: "anyRank", group: "doctrines", min: 5 }]), // Doktrína V
+    zurivaNezdolnost: node(20, 0, [{ t: "anyRank", group: "doctrines", min: 5 }], 1), // Doktrína V
     odolnostStun: node(5),
     desiveVzezreni: node(5, 0, [rank("skills", "intimidation", 1)]), // Zastrašování I
     masakr1: node(10, 0, [{ t: "anyOf", options: [rank("weaponSkills", "swords", 8), rank("weaponSkills", "blunt", 8), rank("weaponSkills", "axes", 8), rank("weaponSkills", "polearms", 8)] }]), // M/S/T/D VIII
@@ -191,8 +203,8 @@ export const SPEC_NODE_PRICES = {
   },
   spellslinger: {
     ucednik: node(0),
-    expert: node(15, 0, [{ t: "anyRank", group: "doctrines", min: 5 }]), // Doktrína V
-    mistr: node(15, 0, [{ t: "anyRank", group: "doctrines", min: 10 }]), // Doktrína X
+    expert: node(15, 0, [{ t: "anyRank", group: "doctrines", min: 5 }], 1), // Doktrína V
+    mistr: node(15, 0, [{ t: "anyRank", group: "doctrines", min: 10 }], 1), // Doktrína X
     salamander: node(5), // Čarostřelec: Učedník
     salamander2: node(5), // Čarostřelec: Expert
     salamander3: node(5), // Čarostřelec: Mistr
@@ -220,9 +232,9 @@ export const SPEC_NODE_PRICES = {
     beran2: node(5), // Čarostřelec: Mistr
     inkvizitor: node(5), // Čarostřelec: Expert
     intZraneni: node(5), // Čarostřelec: Expert
-    polarka: node(5), // Čarostřelec: Mistr
-    posel: node(5), // Čarostřelec: Mistr
-    sokol: node(5), // Čarostřelec: Mistr
+    polarka: node(5, 0, [], 1), // Čarostřelec: Mistr
+    posel: node(5, 0, [], 1), // Čarostřelec: Mistr
+    sokol: node(5, 0, [], 1), // Čarostřelec: Mistr
   },
   elementalist: {
     familiar: node(0),
@@ -243,7 +255,7 @@ export const SPEC_NODE_PRICES = {
     privolaniFamiliara: node(0, 10, [rank("doctrines", "elementalist", 4)]), // Elementalista IV
   },
   elymas: {
-    magProtiutok: node(10, 0, [{ t: "anyRank", group: "schools", min: 4 }]), // Škola IV
+    magProtiutok: node(10, 0, [{ t: "anyRank", group: "schools", min: 4 }], 1), // Škola IV
     mpExpert: node(10, 0, [{ t: "anyRank", group: "schools", min: 6 }]), // Škola VI
     mpUtok10: node(5),
     mpVolnaAkce: node(10, 0, [rank("doctrines", "elymas", 5)]), // Elymas V
@@ -255,14 +267,14 @@ export const SPEC_NODE_PRICES = {
     soRedukce: node(10, 0, [rank("doctrines", "elymas", 5)]), // Elymas V
     magObranaMana: node(5),
     opakovaniUsmernovani: node(5),
-    rozsahObrany: node(5),
-    magickaOzvena: node(5, 0, [rank("doctrines", "elymas", 5)]), // Elymas V
+    rozsahObrany: node(5, 0, [], 1),
+    magickaOzvena: node(5, 0, [rank("doctrines", "elymas", 5)], 1), // Elymas V
     modifikatorMany: node(10, 0, [rank("doctrines", "elymas", 10)]), // Elymas X
   },
   skirmisher: {
     harcovnikuvUm: node(10),
     kryciPostoj: node(5, 0, [rank("doctrines", "shieldbearer", 2)]), // Štítonoš II
-    odvetnyVrh: node(10, 0, [rank("doctrines", "shieldbearer", 5)]), // Štítonoš V
+    odvetnyVrh: node(10, 0, [rank("doctrines", "shieldbearer", 5)], 1), // Štítonoš V
     navazujiciVrh: node(10),
     vrh5: node(10, 0, [rank("doctrines", "shieldbearer", 10)]), // Štítonoš X
     prezbrojeni: node(5),
@@ -270,13 +282,13 @@ export const SPEC_NODE_PRICES = {
     oddechMireni: node(10),
     mireniPoVrhu: node(10, 0, [rank("doctrines", "shieldbearer", 4)]), // Štítonoš IV
     pohybPoVrhu: node(10),
-    presnyVystrel: node(10, 0, [rank("doctrines", "shieldbearer", 8)]), // Štítonoš VIII
+    presnyVystrel: node(10, 0, [rank("doctrines", "shieldbearer", 8)], 1), // Štítonoš VIII
     lehkaZbroj: node(5),
     bleedStun: node(10),
     kritRozsah: node(5),
     kritKryt: node(5),
     zmrzacujiciVystrel: node(10, 0, [rank("doctrines", "shieldbearer", 6)]), // Štítonoš VI
-    vylZmrzacujici: node(10, 0, [rank("doctrines", "shieldbearer", 8)]), // Štítonoš VIII
+    vylZmrzacujici: node(10, 0, [rank("doctrines", "shieldbearer", 8)], 1), // Štítonoš VIII
     vrhSRozbehem: node(5, 0, [rank("doctrines", "shieldbearer", 4)]), // Štítonoš IV
     utokSPohybem: node(10, 0, [rank("doctrines", "shieldbearer", 4)]), // Štítonoš IV
     zbesilyVrh: node(5, 0, [rank("doctrines", "shieldbearer", 5)]), // Štítonoš V
@@ -285,10 +297,10 @@ export const SPEC_NODE_PRICES = {
     ucednik: node(0),
     zast: node(10, 0, [rank("combatSkills", "ranger", 2)]), // Hraničář II
     lovcuvVystrel: node(10),
-    expert: node(15, 0, [rank("combatSkills", "ranger", 5)]), // Hraničář V
+    expert: node(15, 0, [rank("combatSkills", "ranger", 5)], 1), // Hraničář V
     utokDravce: node(15, 0, [rank("combatSkills", "ranger", 8)]), // Hraničář VIII
     dorazeni: node(15),
-    mistr: node(5, 0, [rank("combatSkills", "ranger", 10), { t: "anyRank", group: "doctrines", min: 10 }]), // Hraničář a Doktrína X
+    mistr: node(5, 0, [rank("combatSkills", "ranger", 10), { t: "anyRank", group: "doctrines", min: 10 }], 1), // Hraničář a Doktrína X
     metlaPrubojnost: node(5, 0, [rank("combatSkills", "ranger", 4)]), // Hraničář IV
     metlaKritRozsah: node(5),
     odhaleniSlabiny: node(15, 0, [rank("skills", "survival", 3)]), // Přežití III
@@ -296,9 +308,9 @@ export const SPEC_NODE_PRICES = {
     metlaKritZasah: node(5),
     metlaOvereni: node(10),
     metlaKritZraneni: node(10),
-    bane1: node(5),
-    bane2: node(5),
-    bane3: node(5),
+    bane1: node(5, 0, [], 1),
+    bane2: node(5, 0, [], 1),
+    bane3: node(5, 0, [], 1),
     vnimaniStopovani: node(0, 10, [rank("skills", "survival", 2)]), // Přežití II
     dravciSmysly: node(10),
     pohybVPrirode: node(0, 5, [rank("skills", "stealth", 4)]), // Plížení IV
@@ -310,20 +322,20 @@ export const SPEC_NODE_PRICES = {
   },
   incantator: {
     ohniskovyPredmet: node(5),
-    soustredeni: node(5),
-    rychleSoustredeni: node(10, 0, [rank("doctrines", "incantator", 5)]), // Incantator V
-    precizniInkantace: node(15, 0, [rank("doctrines", "incantator", 5)]), // Incantator V
+    soustredeni: node(5, 0, [], 1),
+    rychleSoustredeni: node(10, 0, [rank("doctrines", "incantator", 5)], 1), // Incantator V
+    precizniInkantace: node(15, 0, [rank("doctrines", "incantator", 5)], 1), // Incantator V
     moudraKniha: node(5),
     vlnaEnergie: node(10, 0, [rank("doctrines", "incantator", 4)]), // Incantator IV
     dvojnasobnaMana: node(0),
     stabilizaceZdroje: node(15),
-    katalyzator: node(10),
+    katalyzator: node(10, 0, [], 1),
     dlouhyOdpocinek: node(15, 0, [rank("doctrines", "incantator", 10)]), // Incantator X
     modifikatorMany: node(15, 0, [rank("doctrines", "incantator", 10)]), // Incantator X
   },
   sharpshooter: {
     mireniPomalyPohyb: node(5),
-    zmenaCile: node(5, 0, [{ t: "anyOf", options: [rank("doctrines", "archer", 5), rank("doctrines", "arbalest", 5)] }]), // Lukostřelec/Kušník V
+    zmenaCile: node(5, 0, [{ t: "anyOf", options: [rank("doctrines", "archer", 5), rank("doctrines", "arbalest", 5)] }], 1), // Lukostřelec/Kušník V
     zacileni: node(10),
     redukceMireni: node(5),
     mireniPoMinuti: node(5),
@@ -335,12 +347,12 @@ export const SPEC_NODE_PRICES = {
     strazStrelba: node(10, 0, [{ t: "anyOf", options: [rank("doctrines", "archer", 8), rank("doctrines", "arbalest", 8)] }]), // Lukostřelec/Kušník VIII
     streleckyPostoj: node(10, 0, [{ t: "anyOf", options: [rank("doctrines", "archer", 10), rank("doctrines", "arbalest", 10)] }]), // Lukostřelec/Kušník X
     ignorujeKryt: node(5, 0, [{ t: "anyOf", options: [rank("doctrines", "archer", 10), rank("doctrines", "arbalest", 10)] }]), // Lukostřelec/Kušník X
-    strelba5: node(10),
+    strelba5: node(10, 0, [], 1),
     iniciativa2: node(5),
     mireniOvereni: node(10, 0, [{ t: "anyOf", options: [rank("doctrines", "archer", 6), rank("doctrines", "arbalest", 6)] }]), // Lukostřelec/Kušník VI
     pozadavkyLuku: node(5),
     oddechMireni: node(10, 0, [{ t: "anyOf", options: [rank("doctrines", "archer", 5), rank("doctrines", "arbalest", 5)] }]), // Lukostřelec/Kušník V
-    odvetnyVystrel: node(20, 0, [{ t: "anyOf", options: [rank("doctrines", "archer", 8), rank("doctrines", "arbalest", 8)] }]), // Lukostřelec/Kušník VIII
+    odvetnyVystrel: node(20, 0, [{ t: "anyOf", options: [rank("doctrines", "archer", 8), rank("doctrines", "arbalest", 8)] }], 1), // Lukostřelec/Kušník VIII
     tesnyZasah: node(5),
     kritRozsah: node(5),
     prubojnost2: node(5),
@@ -353,14 +365,14 @@ export const SPEC_NODE_PRICES = {
     ztecPohyb100: node(5, 0, [{ t: "anyOf", options: [rank("weaponSkills", "swords", 4), rank("weaponSkills", "blunt", 4), rank("weaponSkills", "axes", 4), rank("weaponSkills", "polearms", 4)] }]), // M/T/S/D IV
     rozrazeni: node(10),
     zatlaceni: node(10),
-    ztecSRozseknutim: node(15, 0, [{ t: "anyOf", options: [rank("doctrines", "pikeman", 5), rank("doctrines", "reaver", 5), rank("doctrines", "swordsman", 5)] }]), // P/P/Š V
+    ztecSRozseknutim: node(15, 0, [{ t: "anyOf", options: [rank("doctrines", "pikeman", 5), rank("doctrines", "reaver", 5), rank("doctrines", "swordsman", 5)] }], 1), // P/P/Š V
     momentumVydrz: node(5, 0, [{ t: "anyOf", options: [rank("doctrines", "pikeman", 10), rank("doctrines", "reaver", 10), rank("doctrines", "swordsman", 10)] }]), // P/P/Š X
-    momentumSpecialni: node(20, 0, [{ t: "anyOf", options: [rank("weaponSkills", "swords", 10), rank("weaponSkills", "blunt", 10), rank("weaponSkills", "axes", 10), rank("weaponSkills", "polearms", 10)] }]), // M/T/S/D X
+    momentumSpecialni: node(20, 0, [{ t: "anyOf", options: [rank("weaponSkills", "swords", 10), rank("weaponSkills", "blunt", 10), rank("weaponSkills", "axes", 10), rank("weaponSkills", "polearms", 10)] }], 1), // M/T/S/D X
     opakovaniUtoku: node(10, 0, [{ t: "anyOf", options: [rank("doctrines", "pikeman", 5), rank("doctrines", "reaver", 5), rank("doctrines", "swordsman", 5)] }]), // P/P/Š V
     presilaPostih: node(10, 0, [{ t: "anyOf", options: [rank("weaponSkills", "swords", 5), rank("weaponSkills", "blunt", 5), rank("weaponSkills", "axes", 5), rank("weaponSkills", "polearms", 5)] }]), // M/T/S/D V
     triumf: node(15, 0, [{ t: "anyOf", options: [rank("doctrines", "pikeman", 10), rank("doctrines", "reaver", 10), rank("doctrines", "swordsman", 10)] }]), // P/P/Š X
     prubojnost2: node(5),
-    rozseknutiCil: node(10, 0, [{ t: "anyOf", options: [rank("doctrines", "pikeman", 5), rank("doctrines", "reaver", 5), rank("doctrines", "swordsman", 5)] }]), // P/P/Š V
+    rozseknutiCil: node(10, 0, [{ t: "anyOf", options: [rank("doctrines", "pikeman", 5), rank("doctrines", "reaver", 5), rank("doctrines", "swordsman", 5)] }], 1), // P/P/Š V
     rozseknutiZasah: node(10, 0, [{ t: "anyOf", options: [rank("doctrines", "pikeman", 7), rank("doctrines", "reaver", 7), rank("doctrines", "swordsman", 7)] }]), // P/P/Š VII
     bojoveTestySily: node(5),
     opakovaniTestuSily: node(10),
@@ -371,23 +383,23 @@ export const SPEC_NODE_PRICES = {
     kritObranaKryt: node(5),
     redukceBoku: node(5, 0, [rank("doctrines", "shieldbearer", 5)]), // Štítonoš V
     zatizeniStitu: node(5),
-    spolehlivyStit1: node(10, 0, [{ t: "anyOf", options: [rank("weaponSkills", "swords", 5), rank("weaponSkills", "blunt", 5), rank("weaponSkills", "axes", 5), rank("weaponSkills", "polearms", 5)] }]), // M/T/S/D V
+    spolehlivyStit1: node(10, 0, [{ t: "anyOf", options: [rank("weaponSkills", "swords", 5), rank("weaponSkills", "blunt", 5), rank("weaponSkills", "axes", 5), rank("weaponSkills", "polearms", 5)] }], 1), // M/T/S/D V
     spolehlivyStit2: node(15, 0, [rank("doctrines", "shieldbearer", 10)]), // Štítonoš X
     uderStitemOdveta: node(10, 0, [rank("doctrines", "shieldbearer", 6)]), // Štítonoš VI
     uderZraneniA: node(10),
     uderZraneniSila: node(10, 0, [rank("doctrines", "shieldbearer", 4)]), // Štítonoš IV
-    bonusZaStit: node(10),
+    bonusZaStit: node(10, 0, [], 1),
     uderZraneniB: node(10, 0, [rank("doctrines", "shieldbearer", 6)]), // Štítonoš VI
     uderSila10: node(10),
     dvojityUder: node(10, 0, [rank("doctrines", "shieldbearer", 8)]), // Štítonoš VIII
     obrannyPostojSpojenci: node(5),
     vylObrannyPostoj: node(10, 0, [rank("doctrines", "shieldbearer", 6)]), // Štítonoš VI
-    ochranaVolna: node(20, 0, [rank("doctrines", "shieldbearer", 8)]), // Štítonoš VIII
+    ochranaVolna: node(20, 0, [rank("doctrines", "shieldbearer", 8)], 1), // Štítonoš VIII
     protiutokZasah: node(15, 0, [{ t: "anyOf", options: [rank("weaponSkills", "swords", 10), rank("weaponSkills", "blunt", 10), rank("weaponSkills", "axes", 10), rank("weaponSkills", "polearms", 10)] }]), // M/T/S/D X
     vylObrneni: node(20, 0, [rank("doctrines", "shieldbearer", 10)]), // Štítonoš X
   },
   champion: {
-    stredniZbran: node(5),
+    stredniZbran: node(5, 0, [], 1),
     bonusDruhaZbran1: node(5),
     bonusDruhaZbran2: node(10, 0, [{ t: "anyOf", options: [rank("weaponSkills", "swords", 5), rank("weaponSkills", "blunt", 5), rank("weaponSkills", "axes", 5)] }]), // M/T/S V
     bonusDruhaZbran3: node(10, 0, [{ t: "anyOf", options: [rank("weaponSkills", "swords", 7), rank("weaponSkills", "blunt", 7), rank("weaponSkills", "axes", 7)] }]), // M/T/S VII
@@ -399,70 +411,70 @@ export const SPEC_NODE_PRICES = {
     vylUtokSPohybem: node(10, 0, [{ t: "anyOf", options: [rank("doctrines", "dimakerus", 8), rank("doctrines", "monk", 8)] }]), // D/M VIII
     vetrnyPostoj: node(15, 0, [{ t: "anyOf", options: [rank("doctrines", "dimakerus", 7), rank("doctrines", "monk", 7)] }]), // D/M VII
     ztecSRozseknutim: node(15, 0, [{ t: "anyOf", options: [rank("weaponSkills", "swords", 5), rank("weaponSkills", "blunt", 5), rank("weaponSkills", "axes", 5)] }]), // M/T/S V
-    odvetnyUder: node(15, 0, [{ t: "anyOf", options: [rank("doctrines", "dimakerus", 5), rank("doctrines", "monk", 5)] }]), // D/M V
+    odvetnyUder: node(15, 0, [{ t: "anyOf", options: [rank("doctrines", "dimakerus", 5), rank("doctrines", "monk", 5)] }], 1), // D/M V
     klamavyUtok: node(15, 0, [{ t: "anyOf", options: [rank("doctrines", "dimakerus", 10), rank("doctrines", "monk", 10)] }]), // D/M X
     riposta: node(25, 0, [{ t: "anyOf", options: [rank("weaponSkills", "swords", 10), rank("weaponSkills", "blunt", 10), rank("weaponSkills", "axes", 10)] }]), // M/T/S X
   },
   veneficus: {
-    lindar: node(0),
+    lindar: node(0, 0, [], 1),
     navazujiciKouzlo: node(5),
     postihZbroje: node(5),
     magickyVeteran: node(5),
     slevaMany: node(5, 0, [rank("doctrines", "veneficus", 5)]), // Veneficus V
     magickeKz: node(5),
     soubojZaManu: node(5, 0, [rank("doctrines", "veneficus", 7)]), // Veneficus VII
-    lindaruvVypad1: node(10, 0, [{ t: "anyRank", group: "schools", min: 6 }]), // Škola VI
+    lindaruvVypad1: node(10, 0, [{ t: "anyRank", group: "schools", min: 6 }], 1), // Škola VI
     lindaruvVypad2: node(10, 0, [rank("doctrines", "veneficus", 5)]), // Veneficus V
     usmernovani5: node(0, 0, [rank("doctrines", "veneficus", 10)]), // Veneficus X
-    magickaZbran: node(10, 0, [rank("doctrines", "veneficus", 5)]), // Veneficus V
+    magickaZbran: node(10, 0, [rank("doctrines", "veneficus", 5)], 1), // Veneficus V
     magickePosileni: node(10),
     modifikatorMany: node(15, 0, [rank("doctrines", "veneficus", 10)]), // Veneficus X
     magickeMireni: node(10),
     mireniObtiznost: node(0, 0, [rank("doctrines", "veneficus", 7)]), // Veneficus VII
-    magickeMomentum: node(15),
+    magickeMomentum: node(15, 0, [], 1),
     lindarovyUdery: node(5, 0, [rank("doctrines", "veneficus", 4)]), // Veneficus IV
   },
   alchemist: {
-    lecZastaveni1: node(0, 5),
+    lecZastaveni1: node(0, 5, [], 1),
     lecZivoty1: node(0, 5),
     lecZastaveni2: node(0, 10, [{ t: "feature", name: "Expert: Alchemy" }]), // Alchemie: Expert
     lecZivoty2: node(0, 10),
     lekToxicita: node(0, 10),
-    kombinaceLektvaru: node(0, 20, [{ t: "masterFeature", skill: "alchemy" }]), // Alchemie: Mistr
+    kombinaceLektvaru: node(0, 20, [{ t: "masterFeature", skill: "alchemy" }], 1), // Alchemie: Mistr
     lekTrvani: node(0, 5),
-    lekDuplikace1: node(0, 10, [{ t: "feature", name: "Expert: Alchemy" }]), // Alchemie: Expert
+    lekDuplikace1: node(0, 10, [{ t: "feature", name: "Expert: Alchemy" }], 1), // Alchemie: Expert
     lekDuplikace2: node(0, 5),
     lekDuplikace3: node(0, 10),
     lekVyhoda: node(0, 5),
     lekKritNeuspech: node(0, 5),
-    jedSance1: node(0, 5),
+    jedSance1: node(0, 5, [], 1),
     jedZraneni1: node(0, 5),
     jedSance2: node(0, 5, [{ t: "feature", name: "Expert: Alchemy" }]), // Alchemie: Expert
     jedZraneni2: node(0, 10),
     jedSance3: node(0, 10),
-    kombinaceJedu: node(0, 20, [{ t: "masterFeature", skill: "alchemy" }]), // Alchemie: Mistr
+    kombinaceJedu: node(0, 20, [{ t: "masterFeature", skill: "alchemy" }], 1), // Alchemie: Mistr
     jedTrvani: node(0, 5),
-    jedDuplikace1: node(0, 5, [{ t: "feature", name: "Expert: Alchemy" }]), // Alchemie: Expert
+    jedDuplikace1: node(0, 5, [{ t: "feature", name: "Expert: Alchemy" }], 1), // Alchemie: Expert
     jedDuplikace2: node(0, 5),
     jedDuplikace3: node(0, 5),
     jedVyhoda: node(0, 5),
     jedKritNeuspech: node(0, 5),
-    petTrvani: node(0, 5),
+    petTrvani: node(0, 5, [], 1),
     traskavice: node(0, 5, [{ t: "feature", name: "Expert: Alchemy" }]), // Alchemie: Expert
     acidum: node(0, 10),
     ignum: node(0, 5),
     draciSen: node(0, 10, [{ t: "masterFeature", skill: "alchemy" }]), // Alchemie: Mistr
     pavouciObjeti: node(0, 5),
     dablovaPecka: node(0, 20),
-    petDuplikace1: node(0, 10, [{ t: "feature", name: "Expert: Alchemy" }]), // Alchemie: Expert
+    petDuplikace1: node(0, 10, [{ t: "feature", name: "Expert: Alchemy" }], 1), // Alchemie: Expert
     petDuplikace2: node(0, 5),
     petDuplikace3: node(0, 10),
     petVyhoda: node(0, 5),
     petKritNeuspech: node(0, 5),
-    olejDuplikace1: node(0, 5, [{ t: "feature", name: "Expert: Alchemy" }]), // Alchemie: Expert
+    olejDuplikace1: node(0, 5, [{ t: "feature", name: "Expert: Alchemy" }], 1), // Alchemie: Expert
     olejDuplikace2: node(0, 5),
     olejDuplikace3: node(0, 5),
-    olejZraneni1: node(0, 5),
+    olejZraneni1: node(0, 5, [], 1),
     olejZranitelnost: node(0, 10, [{ t: "feature", name: "Expert: Alchemy" }]), // Alchemie: Expert
     olejZraneni2: node(0, 10),
     olejVyhoda: node(0, 5),
@@ -478,7 +490,7 @@ export const SPEC_NODE_PRICES = {
     drogaDuplikace1: node(0, 5, [{ t: "feature", name: "Expert: Alchemy" }]), // Alchemie: Expert
     drogaDuplikace2: node(0, 5),
     drogaDuplikace3: node(0, 5),
-    drogaNavykovostPlus: node(0, 10),
+    drogaNavykovostPlus: node(0, 10, [], 1),
     drogaNavykovostMinus: node(0, 10),
     garantovanyUspech: node(0, 10),
     meneIngredienci: node(0, 15, [{ t: "feature", name: "Expert: Alchemy" }]), // Alchemie: Expert
@@ -489,9 +501,9 @@ export const SPEC_NODE_PRICES = {
   },
   astramancer: {
     ucednik: node(5),
-    expert: node(5, 0, [rank("schools", "air", 6)]), // Škola Vzduchu VI
-    mistr: node(5, 0, [rank("schools", "air", 8)]), // Škola Vzduchu VIII
-    velmistr: node(5, 0, [rank("schools", "air", 10)]), // Škola Vzduchu X
+    expert: node(5, 0, [rank("schools", "air", 6)], 1), // Škola Vzduchu VI
+    mistr: node(5, 0, [rank("schools", "air", 8)], 1), // Škola Vzduchu VIII
+    velmistr: node(5, 0, [rank("schools", "air", 10)], 1), // Škola Vzduchu X
     stunResist: node(0, 15),
     bleskovaOdolnost: node(10), // Astramancer: Mistr
     bleskovySok: node(15), // Astramancer: Expert
@@ -516,13 +528,13 @@ export const SPEC_NODE_PRICES = {
     inspirace3c: node(6),
     bardUcednik: node(5), // Písně
     silaMelodie2: node(6),
-    bardExpert: node(20, 0, [rank("skills", "music", 6)]), // Hudba VI
+    bardExpert: node(20, 0, [rank("skills", "music", 6)], 1), // Hudba VI
     silaMelodie3: node(9),
-    bardMistr: node(30, 0, [rank("skills", "music", 8)]), // Hudba VIII
+    bardMistr: node(30, 0, [rank("skills", "music", 8)], 1), // Hudba VIII
     silaMelodie1: node(6, 0, [{ t: "masterFeature", skill: "music" }]), // Hudba: Mistr
     bardskaOdolnost: node(0), // Písně
     sylvanskaPohotovost: node(5),
-    bardskaObrana: node(5), // Bard: Mistr
+    bardskaObrana: node(5, 0, [], 1), // Bard: Mistr
     sylvanskyOdpocinek1: node(0, 10),
     sylvanskyOdpocinek2: node(0, 10, [rank("skills", "music", 5)]), // Hudba V
     sylvanskyOdpocinek3: node(0, 15, [rank("skills", "music", 7)]), // Hudba VII
@@ -530,7 +542,7 @@ export const SPEC_NODE_PRICES = {
     dvur2: node(5),
     dvur3: node(10), // Bard: Expert
     dvur4: node(10), // Bard: Mistr
-    slovaMoci: node(15), // Bard: Expert
+    slovaMoci: node(15, 0, [], 1), // Bard: Expert
     tanecVyhoda: node(0, 5, [rank("skills", "dancing", 1)]), // Tanec I
     umtvorbaVyhoda: node(0, 5, [{ t: "feature", name: "Adept: Art" }]), // Umělecká tvorba: Adept
     umtvorbaKritNeuspech: node(0, 5, [{ t: "feature", name: "Expert: Art" }]), // Umělecká tvorba: Expert
@@ -550,9 +562,9 @@ export const SPEC_NODE_PRICES = {
   },
   cryomancer: {
     ucednik: node(5),
-    expert: node(5, 0, [rank("schools", "water", 6)]), // Škola Vody VI
-    mistr: node(5, 0, [rank("schools", "water", 8)]), // Škola Vody VIII
-    velmistr: node(5, 0, [rank("schools", "water", 10)]), // Škola Vody X
+    expert: node(5, 0, [rank("schools", "water", 6)], 1), // Škola Vody VI
+    mistr: node(5, 0, [rank("schools", "water", 8)], 1), // Škola Vody VIII
+    velmistr: node(5, 0, [rank("schools", "water", 10)], 1), // Škola Vody X
     ledoveUlomky: node(10), // Cryomancer: Expert
     ledoveKopi: node(5), // Cryomancer: Mistr
     freezeResist: node(0, 15),
@@ -567,9 +579,9 @@ export const SPEC_NODE_PRICES = {
   },
   entomancer: {
     ucednik: node(5),
-    expert: node(5, 0, [rank("schools", "earth", 6)]), // Škola Země VI
-    mistr: node(5, 0, [rank("schools", "earth", 8)]), // Škola Země VIII
-    velmistr: node(5, 0, [rank("schools", "earth", 10)]), // Škola Země X
+    expert: node(5, 0, [rank("schools", "earth", 6)], 1), // Škola Země VI
+    mistr: node(5, 0, [rank("schools", "earth", 8)], 1), // Škola Země VIII
+    velmistr: node(5, 0, [rank("schools", "earth", 10)], 1), // Škola Země X
     feromony: node(0, 5),
     jedovatyHmyz: node(0, 15), // Travič II
     jedResist1: node(0, 5),
@@ -587,9 +599,9 @@ export const SPEC_NODE_PRICES = {
   },
   geomancer: {
     ucednik: node(5),
-    expert: node(5, 0, [rank("schools", "earth", 6)]), // Škola Země VI
-    mistr: node(5, 0, [rank("schools", "earth", 8)]), // Škola Země VIII
-    velmistr: node(5, 0, [rank("schools", "earth", 10)]), // Škola Země X
+    expert: node(5, 0, [rank("schools", "earth", 6)], 1), // Škola Země VI
+    mistr: node(5, 0, [rank("schools", "earth", 8)], 1), // Škola Země VIII
+    velmistr: node(5, 0, [rank("schools", "earth", 10)], 1), // Škola Země X
     kz2: node(0, 10), // Geomancer: Expert
     kritRozsah: node(0, 5),
     maskovani: node(0, 10), // Geomancer: Učedník
@@ -607,14 +619,14 @@ export const SPEC_NODE_PRICES = {
   gnostic: {
     adept: node(15),
     gsp1: node(10),
-    mistr: node(25, 0, [{ t: "anyOf", options: [rank("doctrines", "elymas", 6), rank("doctrines", "incantator", 6), rank("doctrines", "veneficus", 6)] }]), // E/I/V VI
+    mistr: node(25, 0, [{ t: "anyOf", options: [rank("doctrines", "elymas", 6), rank("doctrines", "incantator", 6), rank("doctrines", "veneficus", 6)] }], 1), // E/I/V VI
     gsp2: node(10),
-    velmistr: node(35, 0, [{ t: "anyOf", options: [rank("doctrines", "elymas", 10), rank("doctrines", "incantator", 10), rank("doctrines", "veneficus", 10)] }]), // E/I/V X
+    velmistr: node(35, 0, [{ t: "anyOf", options: [rank("doctrines", "elymas", 10), rank("doctrines", "incantator", 10), rank("doctrines", "veneficus", 10)] }], 1), // E/I/V X
     gsp3: node(5),
     zpomaleniZraneni1: node(10),
     zpomaleniZraneni2: node(15), // Gnostik: Mistr
-    casovaDisonance: node(15), // Gnostik: Adept
-    isadurovaTechnika: node(10), // Gnostik: Adept
+    casovaDisonance: node(15, 0, [], 1), // Gnostik: Adept
+    isadurovaTechnika: node(10, 0, [], 1), // Gnostik: Adept
     nekonecnaCesta: node(5), // Gnostik: Adept
     prostorovaKlec: node(0, 5), // Gnostik: Mistr
     meditaceMZ2: node(0, 5, [rank("skills", "meditation", 1)]), // Meditace I
@@ -625,13 +637,13 @@ export const SPEC_NODE_PRICES = {
     overeni: node(5), // Gnostik: Adept
   },
   grimm: {
-    bane1: node(5),
-    bane2: node(5),
-    bane3: node(5),
-    bane4: node(5),
-    bane5: node(5),
-    bane6: node(5),
-    bane7: node(5),
+    bane1: node(5, 0, [], 1),
+    bane2: node(5, 0, [], 1),
+    bane3: node(5, 0, [], 1),
+    bane4: node(5, 0, [], 1),
+    bane5: node(5, 0, [], 1),
+    bane6: node(5, 0, [], 1),
+    bane7: node(5, 0, [], 1),
     metlaVnimani: node(0, 10, [rank("skills", "survival", 2)]), // Přežití II
     metlaIniciativa: node(10),
     metlaOpakovani: node(15),
@@ -640,9 +652,9 @@ export const SPEC_NODE_PRICES = {
   },
   illusionist: {
     ucednik: node(5),
-    expert: node(5, 0, [rank("schools", "spirit", 6)]), // Škola Ducha VI
-    mistr: node(5, 0, [rank("schools", "spirit", 8)]), // Škola Ducha VIII
-    velmistr: node(5, 0, [rank("schools", "spirit", 10)]), // Škola Ducha X
+    expert: node(5, 0, [rank("schools", "spirit", 6)], 1), // Škola Ducha VI
+    mistr: node(5, 0, [rank("schools", "spirit", 8)], 1), // Škola Ducha VIII
+    velmistr: node(5, 0, [rank("schools", "spirit", 10)], 1), // Škola Ducha X
     kapesniIluze: node(0, 5), // Iluzionista: Expert
     mysterinoOko: node(0, 10), // Iluzionista: Expert
     dokonalaIluze1: node(0, 5), // Iluzionista: Expert
@@ -718,9 +730,9 @@ export const SPEC_NODE_PRICES = {
   },
   maleficarum: {
     ucednik: node(5),
-    expert: node(5, 0, [rank("schools", "darkness", 6)]), // Škola Temnoty VI
-    mistr: node(5, 0, [rank("schools", "darkness", 8)]), // Škola Temnoty VIII
-    velmistr: node(5, 0, [rank("schools", "darkness", 10)]), // Škola Temnoty X
+    expert: node(5, 0, [rank("schools", "darkness", 6)], 1), // Škola Temnoty VI
+    mistr: node(5, 0, [rank("schools", "darkness", 8)], 1), // Škola Temnoty VIII
+    velmistr: node(5, 0, [rank("schools", "darkness", 10)], 1), // Škola Temnoty X
     vysaniDuse: node(0, 5), // Maleficarum: Expert
     kritRozsah: node(0, 5),
     stoparDusi: node(0, 5), // Maleficarum: Učedník
@@ -738,9 +750,9 @@ export const SPEC_NODE_PRICES = {
   },
   mentalist: {
     ucednik: node(5),
-    expert: node(5, 0, [rank("schools", "spirit", 6)]), // Škola Ducha VI
-    mistr: node(5, 0, [rank("schools", "spirit", 8)]), // Škola Ducha VIII
-    velmistr: node(5, 0, [rank("schools", "spirit", 10)]), // Škola Ducha X
+    expert: node(5, 0, [rank("schools", "spirit", 6)], 1), // Škola Ducha VI
+    mistr: node(5, 0, [rank("schools", "spirit", 8)], 1), // Škola Ducha VIII
+    velmistr: node(5, 0, [rank("schools", "spirit", 10)], 1), // Škola Ducha X
     mentalniUder: node(10), // Mentalist: Grandmaster
     vytrvalaSnaha: node(5), // Mentalist: Apprentice
     mentalniZtec: node(0), // Mentalist: Apprentice
@@ -751,14 +763,14 @@ export const SPEC_NODE_PRICES = {
     soubojZahajeni4: node(5), // Initiation +10% III + Mentalist: Grandmaster
     mentalistuvUprk: node(5), // Mentalist: Apprentice
     vybojMysli: node(5), // Mentalist's Escape + Mentalist: Expert
-    zoufalyVzdor: node(10), // Mind Burst + Mentalist: Grandmaster
+    zoufalyVzdor: node(10, 0, [], 1), // Mind Burst + Mentalist: Grandmaster
     vytizeniKoncentrace: node(5), // Mentalist: Apprentice
     vytizeniReakce: node(5), // Strain: cancels Conc
     vytizeniZakerne: node(5), // Strain: -1 Reaction
     vytizeniAkce: node(5), // Strain: attacks are Sneak + Mentalist: Master
     vysati: node(5), // Mentalist: Apprentice
     ovladnuti: node(10), // Drain + Mentalist: Expert
-    cteniMysli: node(0, 15), // Domination + Mentalist: Master
+    cteniMysli: node(0, 15, [], 1), // Domination + Mentalist: Master
     pokrocileCteni: node(0, 10), // Mind Reading
     meditace2: node(0, 5, [rank("skills", "meditation", 1)]), // Meditation I
     meditace3: node(0, 15), // Meditation +2 MH
@@ -792,9 +804,9 @@ export const SPEC_NODE_PRICES = {
   },
   pyromancer: {
     ucednik: node(5),
-    expert: node(5, 0, [rank("schools", "fire", 6)]), // Škola Ohně VI
-    mistr: node(5, 0, [rank("schools", "fire", 8)]), // Škola Ohně VIII
-    velmistr: node(5, 0, [rank("schools", "fire", 10)]), // Škola Ohně X
+    expert: node(5, 0, [rank("schools", "fire", 6)], 1), // Škola Ohně VI
+    mistr: node(5, 0, [rank("schools", "fire", 8)], 1), // Škola Ohně VIII
+    velmistr: node(5, 0, [rank("schools", "fire", 10)], 1), // Škola Ohně X
     overeni: node(5), // Pyromancer: Expert
     kritRozsah: node(0, 5),
     burnResist1: node(0, 10),
@@ -829,9 +841,9 @@ export const SPEC_NODE_PRICES = {
   },
   vitamancer: {
     ucednik: node(5),
-    expert: node(5, 0, [{ t: "anyOf", options: [rank("schools", "spirit", 6), rank("schools", "body", 6)] }]), // Škola Ducha/Těla VI
-    mistr: node(5, 0, [{ t: "anyOf", options: [rank("schools", "spirit", 8), rank("schools", "body", 8)] }]), // Škola Ducha/Těla VIII
-    velmistr: node(5, 0, [{ t: "anyOf", options: [rank("schools", "spirit", 10), rank("schools", "body", 10)] }]), // Škola Ducha/Těla X
+    expert: node(5, 0, [{ t: "anyOf", options: [rank("schools", "spirit", 6), rank("schools", "body", 6)] }], 1), // Škola Ducha/Těla VI
+    mistr: node(5, 0, [{ t: "anyOf", options: [rank("schools", "spirit", 8), rank("schools", "body", 8)] }], 1), // Škola Ducha/Těla VIII
+    velmistr: node(5, 0, [{ t: "anyOf", options: [rank("schools", "spirit", 10), rank("schools", "body", 10)] }], 1), // Škola Ducha/Těla X
     kritRozsah: node(0, 5),
     overeni: node(5), // Vitamancer: Expert
     ochromeni1: node(5), // Vitamancer: Expert
@@ -853,3 +865,22 @@ export const SPEC_NODE_PRICES = {
     magickaStena: node(5), // Vitamancer: Mistr
   },
 };
+
+/**
+ * The teacher clause, spelled out.
+ *
+ * A node gated on a teacher carries its own tier (`teacher: 1`). The clause the
+ * engine tests has to name the node it belongs to, because the GM grants the
+ * teacher per star (`system.specialisations.<spec>.teachers.<node>`), the way a
+ * rank's teacher is granted per rank. Building it here keeps the ids out of the
+ * table: they are already the keys.
+ */
+for (const [specId, nodes] of Object.entries(SPEC_NODE_PRICES)) {
+  for (const [nodeId, price] of Object.entries(nodes)) {
+    if (!price.teacher) continue;
+    price.requires = [
+      ...price.requires,
+      { t: "nodeTeacher", spec: specId, node: nodeId, tier: price.teacher },
+    ];
+  }
+}

@@ -1,5 +1,6 @@
 import {
   getDarkHexChance,
+  getEffectiveDifficulty,
   spellCastSucceeded,
   startChannelingForSpell,
 } from "./magicSkillBonuses.mjs";
@@ -12,6 +13,13 @@ import {
   getInitiationBonus,
   promptMentalCharge,
 } from "./mentalDuel.mjs";
+import {
+  BLOOD_PAYMENT_COST,
+  BLOOD_PAYMENT_DIFFICULTY,
+  getBloodReserve,
+  hasBloodPayment,
+  payBloodPayment,
+} from "./bloodPool.mjs";
 
 export { getStrikeId };
 
@@ -26,7 +34,7 @@ export async function castSpell() {
     return;
   }
 
-  const { freeCast, focusSpent, ignoreChanneling } = result;
+  const { freeCast, focusSpent, ignoreChanneling, bloodPayment } = result;
 
   // If the spell has linked variants, let the player choose which version to
   // cast. Resolves with the parent spell itself when no valid variants exist.
@@ -41,6 +49,7 @@ export async function castSpell() {
     freeCast,
     focusSpent,
     ignoreChanneling,
+    bloodPayment,
   });
 }
 
@@ -54,7 +63,7 @@ export async function castSpell() {
  * @param {Actor} actor - The casting actor.
  * @param {Item} spell - The spell to cast (already variant-resolved).
  * @param {{token?: Token|null, freeCast?: boolean, focusSpent?: number,
- *   ignoreChanneling?: boolean}} [options]
+ *   ignoreChanneling?: boolean, bloodPayment?: boolean}} [options]
  * @returns {Promise<boolean>} False when the cast never happened (not enough
  *   mana/blood), true otherwise.
  */
@@ -66,6 +75,7 @@ export async function performCast(
     freeCast = false,
     focusSpent = 0,
     ignoreChanneling = false,
+    bloodPayment = false,
   } = {},
 ) {
   // Lindar's Strikes (veneficus tree): while unlocked, strike spells never
@@ -78,10 +88,52 @@ export async function performCast(
     ignoreChanneling = true;
   }
 
+  // Blood Payment (Krvavá platba): declared before the cast, paid out of the
+  // Blood Reserve, worth up to 15 points of Difficulty. The Reserve has to carry
+  // both this and the spell's own cost, so the pair is checked before anything is
+  // spent. A half-paid cast would leave the caster poorer and no better off.
+  let payingBlood = bloodPayment && hasBloodPayment(actor);
+  if (payingBlood) {
+    // The discount is capped at the 0-Difficulty baseline exactly like Focus,
+    // so on an easy spell (or one Focus already took to the cap) it buys
+    // nothing. Charge no Life for that instead of taking 5 for no gain.
+    const gain =
+      getEffectiveDifficulty(spell, focusSpent, BLOOD_PAYMENT_DIFFICULTY) -
+      getEffectiveDifficulty(spell, focusSpent);
+    if (gain <= 0) {
+      ui.notifications.info(
+        game.i18n.localize("REDSTEEL.BloodPayment.NoGain"),
+      );
+      payingBlood = false;
+    }
+  }
+
+  if (payingBlood) {
+    const spellBlood =
+      !freeCast && spell.system.type === "blood"
+        ? Number(spell.system.cost) || 0
+        : 0;
+    const needed = BLOOD_PAYMENT_COST + spellBlood;
+    const reserve = getBloodReserve(actor);
+    if (reserve < needed) {
+      ui.notifications.warn(
+        game.i18n.format("REDSTEEL.BloodPayment.NotEnough", {
+          name: actor.name,
+          needed,
+          reserve,
+        }),
+      );
+      return false;
+    }
+  }
+
   if (!freeCast) {
     const ok = await game.redsteel.deductMana(actor, spell);
     if (!ok) return false;
   }
+
+  if (payingBlood) payingBlood = await payBloodPayment(actor);
+  const difficultyBonus = payingBlood ? BLOOD_PAYMENT_DIFFICULTY : 0;
 
   // Mentální zteč is declared "při seslání" — before the cast is rolled, not
   // after it lands. The Mind is burned here and parked on the caster; the
@@ -95,7 +147,7 @@ export async function performCast(
     spell,
     bonuses.attackBonus,
     focusSpent,
-    { ignoreChanneling },
+    { ignoreChanneling, difficultyBonus },
   );
 
   await game.redsteel.finalizeRollsAndPostChat(
@@ -107,6 +159,7 @@ export async function performCast(
       focusSpent,
       ignoreChanneling,
       freeCast,
+      bloodPayment: payingBlood,
     },
   );
 

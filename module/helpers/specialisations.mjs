@@ -121,6 +121,121 @@ export function getCritDegreeTriggers(actor) {
 }
 
 /**
+ * S3 — "<School>: Critical Range +2". Every mancer tree (plus Maleficarum and
+ * the School of Blood) buys the same node.
+ *
+ * This is crit RANGE, not crit chance: it does nothing to the odds of critting
+ * (that band is Luck plus globalCritBonus). It is a flat bonus on the 1d20
+ * crit-score roll that buckets a landed critical into its four degrees — the
+ * caster's own critRangeCast (from Intelligence) plus this, exactly as a weapon
+ * adds critRangeMelee plus its doctrine bonus. So the node makes a critical
+ * *worse for the target*, not more frequent: +2 moves the 1-6/7-12/13-18/19+
+ * ladder two points up, which is a better degree roughly one roll in ten.
+ *
+ * Each node counts for its OWN school only: an Astramancer's criticals bite
+ * deeper on Air spells and are untouched on anything else. Vitamancer is the
+ * one tree covering two schools, because it is the School of Spirit AND Body.
+ * Entomancer has no such node in the book, so it gets none here.
+ *
+ * The schools are disjoint by design, so a caster never collects the same
+ * school twice; the lookup sums anyway, so a future tree sharing a school
+ * would stack instead of silently dropping one.
+ *
+ * Read at cast time rather than stored as an ActiveEffect for the same two
+ * reasons as getBloodSchoolRankBonus: it is school-scoped, and an AE created
+ * once on unlock would miss actors who already own the node.
+ * Consumed in utils/magicSkillBonuses.mjs (the crit-score roll).
+ */
+export const SCHOOL_CRIT_RANGE_NODES = [
+  { spec: "astramancer", node: "kritRozsah", schools: ["air"] },
+  { spec: "cryomancer", node: "kritRozsah", schools: ["water"] },
+  { spec: "geomancer", node: "kritRozsah", schools: ["earth"] },
+  { spec: "pyromancer", node: "kritRozsah", schools: ["fire"] },
+  { spec: "maleficarum", node: "kritRozsah", schools: ["darkness"] },
+  { spec: "vitamancer", node: "kritRozsah", schools: ["spirit", "body"] },
+  { spec: "bloodSchool", node: "kritRozsah2", schools: ["blood"] },
+];
+
+/** Points of critical range each of those nodes is worth. */
+const SCHOOL_CRIT_RANGE_BONUS = 2;
+
+/**
+ * Critical range the actor's specialisations add to a cast of `school`.
+ *
+ * @param {Actor} actor
+ * @param {string} school  Spell school key (spell.system.type).
+ * @returns {number} Points added to the 1d20 crit-score roll, 0 if none.
+ */
+export function getSchoolCritRangeBonus(actor, school) {
+  if (!school) return 0;
+  return SCHOOL_CRIT_RANGE_NODES.reduce(
+    (sum, entry) =>
+      entry.schools.includes(school) &&
+      actorHasSpecNode(actor, entry.spec, entry.node)
+        ? sum + SCHOOL_CRIT_RANGE_BONUS
+        : sum,
+    0,
+  );
+}
+
+/**
+ * S3 — spec nodes that make an effect the owner inflicts last longer
+ * ("Weaken: Duration +1 turn"). Several trees buy this same kind of small
+ * prolongation, so they are declared here as data instead of each one growing
+ * its own special case inside the effect code.
+ *
+ * Entry format:
+ *   spec / node  – the star that has to be unlocked
+ *   effect       – effect id as it appears in CONFIG.REDSTEEL.effectDefinitions
+ *                  (the status id, e.g. "weak", "bleed", "burn")
+ *   turns        – extra turns of the TARGET's clock (defaultTurns effects)
+ *   rounds       – extra combat rounds (defaultRounds effects)
+ *   schools      – optional: only when the effect arrives from a spell of one
+ *                  of these schools. Leave it off for a source-agnostic node.
+ *                  A manual toggle carries no school, so a school-scoped node
+ *                  deliberately does nothing there — the GM types the number.
+ *
+ * The bonus only ever lengthens a clock that is already running: an effect
+ * applied with no duration stays permanent rather than becoming a 1-turn one.
+ * Consumed in documents/effects.mjs (_applySingleEffect).
+ */
+export const EFFECT_DURATION_NODES = [
+  // "Oslabení: Trvání +1 kolo" — the School of Blood's Weaken (3 → 4 turns).
+  {
+    spec: "bloodSchool",
+    node: "oslabeniTrvani",
+    effect: "weak",
+    schools: ["blood"],
+    turns: 1,
+  },
+];
+
+/**
+ * Extra duration the actor's specialisations add to an effect they are
+ * applying. Both numbers are returned so an effect measured in rounds and one
+ * measured in the target's turns can be covered by the same table.
+ *
+ * @param {Actor} actor         The source of the effect (caster / attacker).
+ * @param {string} effectId     Canonical effect id.
+ * @param {object} [options]
+ * @param {string|null} [options.school]  Spell school the effect arrived from.
+ * @returns {{turns: number, rounds: number}}
+ */
+export function getEffectDurationBonus(actor, effectId, { school = null } = {}) {
+  const bonus = { turns: 0, rounds: 0 };
+  if (!actor || !effectId) return bonus;
+
+  for (const entry of EFFECT_DURATION_NODES) {
+    if (entry.effect !== effectId) continue;
+    if (entry.schools && !entry.schools.includes(school)) continue;
+    if (!actorHasSpecNode(actor, entry.spec, entry.node)) continue;
+    bonus.turns += entry.turns ?? 0;
+    bonus.rounds += entry.rounds ?? 0;
+  }
+  return bonus;
+}
+
+/**
  * Nodes that ARE automated but carry no `passive` block of their own, because
  * the code implementing them lives somewhere else entirely. The tree paints a
  * node's status dot from this plus `passive` / `bane` / `automated: true`;
@@ -155,7 +270,15 @@ const CODE_AUTOMATED_NODES = {
   // unticked), and utils/applyDamage.mjs spends it: a blow applied as a critical
   // is promoted to a Sneak Attack against any target whose once-per-round
   // allowance is still free, tracked in utils/sneakLedger.mjs.
-  shadow: ["critAsSneak"],
+  // (weakSpotMastery is utils/abilityGrants.mjs: it grants Improved Exploit
+  // Weakness and its throwing version, replacing the ordinary pair.
+  // backDodge is utils/defense.mjs: a Blindside Dodge button in the defense
+  // dialog, which rolls the ordinary dodge at -20%.)
+  shadow: ["critAsSneak", "weakSpotMastery", "backDodge"],
+  // utils/weakSpot.mjs — weakSpotPen adds 10 Penetration to every action in the
+  // Exploit Weakness family, folded in by utils/basicAttack.mjs (the throwing
+  // versions, which ride an ordinary attack) and utils/combatAbilities.mjs.
+  weaponMaster: ["weakSpotPen"],
   // utils/abilityGrants.mjs — unlocking the node grants an ability item.
   // (improvedAim and aimReduction are also read by utils/aim.mjs: the first for
   // the +10 penetration and Advanced Aim, the second for aim reduction on a hit
@@ -203,7 +326,13 @@ const CODE_AUTOMATED_NODES = {
   maleficarum: ["zakleti"],
   // utils/abilityGrants.mjs (Blood Pact) + utils/applyDamage.mjs (Blood Shield)
   // + utils/wrathOfBlood.mjs (Wrath of Blood — Spell Power and pool capacity
-  // that follow the caster's own Bleeding stacks).
+  // that follow the caster's own Bleeding stacks) + utils/castSpell.mjs with
+  // utils/magicSkillBonuses.mjs (Blood Payment — the Blood spell dialog's
+  // toggle that buys 15 points of Difficulty for 5 Life from the Reserve).
+  // utils/giftOfBlood.mjs holds Gift of Blood (darKrve): killing a living
+  // target with a Blood spell heals the caster SK, paid from the spell card's
+  // Apply Damage (utils/applyDamage.mjs) and from the DoT / Bleeding ticks of
+  // effects the spell stamped (documents/effects.mjs).
   // The rank nodes carry passives, and expert/master/grandmaster are also read
   // by getBloodSchoolRankBonus: utils/magicSkillBonuses.mjs (Magic ATK on a
   // Blood cast) and utils/defense.mjs (Magic Defense against a Blood spell).
@@ -211,7 +340,7 @@ const CODE_AUTOMATED_NODES = {
   // syncAutoSpecNodes); documents/actor.mjs lets Channeling stand in for Blood
   // Manipulation, and helpers/specNodePrices.mjs lets Channeling ranks meet the
   // rank nodes' Blood Manipulation requirements.
-  bloodSchool: ["krvavyPakt", "krvavyStit", "hnevKrve", "expert", "master", "grandmaster", "magickaKrev"],
+  bloodSchool: ["krvavyPakt", "krvavyStit", "hnevKrve", "krvavaPlatba", "darKrve", "expert", "master", "grandmaster", "magickaKrev"],
 };
 
 // Crit-degree triggers and state-gated immunities are already declared as data
@@ -219,6 +348,20 @@ const CODE_AUTOMATED_NODES = {
 // instead of repeating them here where they could drift.
 for (const t of [...CRIT_DEGREE_TRIGGERS, ...STATE_GATED_IMMUNITIES]) {
   (CODE_AUTOMATED_NODES[t.spec] ??= []).push(t.node);
+}
+
+// utils/magicSkillBonuses.mjs — the school-scoped "Critical Range +2" node each
+// mancer tree (plus Maleficarum and the School of Blood) buys. Node ids come
+// straight from SCHOOL_CRIT_RANGE_NODES above.
+for (const entry of SCHOOL_CRIT_RANGE_NODES) {
+  (CODE_AUTOMATED_NODES[entry.spec] ??= []).push(entry.node);
+}
+
+// documents/effects.mjs — the "duration +N" nodes, applied when the owner
+// inflicts the named effect. Node ids come straight from
+// EFFECT_DURATION_NODES above.
+for (const entry of EFFECT_DURATION_NODES) {
+  (CODE_AUTOMATED_NODES[entry.spec] ??= []).push(entry.node);
 }
 
 // helpers/progressionEngine.mjs — the rank discount perks ("Sleva 3 SP za

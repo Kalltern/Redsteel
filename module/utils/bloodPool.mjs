@@ -60,3 +60,58 @@ export function bloodGainNote(actor, gained) {
     { name: actor.name, amount: gained },
   )}</div>`;
 }
+
+/* -------------------------------------------- */
+/*  Blood Payment (Krvavá platba)               */
+/* -------------------------------------------- */
+
+/** Life paid out of the Blood Reserve for one Blood Payment. */
+export const BLOOD_PAYMENT_COST = 5;
+
+/**
+ * How far one Blood Payment shifts a cast's Difficulty.
+ *
+ * Difficulty is a *signed modifier* in this system: a spell sitting at +25 is
+ * easier than one at -50, and the number is added straight onto the cast roll.
+ * The rulebook's "snížení Obtížnosti o 15%" therefore moves the number up by
+ * 15, exactly the way Focus does (see getEffectiveDifficulty).
+ */
+export const BLOOD_PAYMENT_DIFFICULTY = 15;
+
+/**
+ * True when the caster owns the Blood Payment node (Škola Krve — Expert).
+ * @param {Actor} actor
+ * @returns {boolean}
+ */
+export function hasBloodPayment(actor) {
+  return (
+    actor?.system?.specialisations?.bloodSchool?.nodes?.krvavaPlatba === true
+  );
+}
+
+/**
+ * Current Life sitting in the Blood Reserve.
+ * @param {Actor} actor
+ * @returns {number}
+ */
+export function getBloodReserve(actor) {
+  return Number(actor?.system?.stats?.bloodPool?.value) || 0;
+}
+
+/**
+ * Pay the Blood Payment out of the Reserve. Never overdraws: the caller checks
+ * affordability before the cast starts (castSpell.mjs/performCast), so a short
+ * Reserve here means something else drained it mid-cast and the payment is
+ * simply refused.
+ *
+ * @param {Actor} actor
+ * @returns {Promise<boolean>} True when the 5 Life were actually spent.
+ */
+export async function payBloodPayment(actor) {
+  const current = getBloodReserve(actor);
+  if (current < BLOOD_PAYMENT_COST) return false;
+  await actor.update({
+    "system.stats.bloodPool.value": current - BLOOD_PAYMENT_COST,
+  });
+  return true;
+}

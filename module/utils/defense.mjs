@@ -23,6 +23,9 @@ import {
 /** "Úspěšný zásah, který je o 60 silnější než protivníkova obrana." */
 const CRITICAL_GAP = 60;
 
+/** Shadow → Úhyb do zad: the flat penalty for dodging a blow from behind. */
+const BLINDSIDE_DODGE_PENALTY = -20;
+
 /**
  * Whether a dodge came out as a Bad Dodge (Špatný úhyb): the raw d100 beat the
  * defender's dodge limit (`system.dodgeLimit.total`, 50 by default, 80 with
@@ -360,6 +363,15 @@ export async function defenseRoll({
       e.getFlag("core", "statusId") === "guard" || e.statuses?.has("guard"),
   );
 
+  // Shadow → Úhyb do zad (Blindside Dodge). Facing is not tracked anywhere, so
+  // the node cannot decide on its own that a blow came from behind: it adds a
+  // second dodge button, and taking it is the defender declaring the blindside
+  // and accepting the penalty for it.
+  const shadowSpec = actor.system?.specialisations?.shadow;
+  const hasBlindsideDodge = !!(
+    shadowSpec?.active && shadowSpec.nodes?.backDodge
+  );
+
   /* -------------------------------------------- */
   /*  SHARED CSS                                  */
   /* -------------------------------------------- */
@@ -532,6 +544,26 @@ export async function defenseRoll({
         dodgeDefense({ overwhelm, useBane });
       },
     };
+
+    if (hasBlindsideDodge) {
+      buttons.blindsideDodge = {
+        label: game.i18n.localize("REDSTEEL.Defense.BlindsideDodge"),
+        callback: (html) => {
+          const overwhelm = readOverwhelm(html);
+          const useBane = html.find('[name="baneDefense"]').is(":checked");
+
+          // Carried as a bare ability the same way the Guard buttons are: the
+          // dodge roll already folds `ability.system.dodge` in, so the node
+          // needs no path of its own.
+          dodgeDefense({
+            overwhelm,
+            useBane,
+            blindside: true,
+            ability: { system: { dodge: BLINDSIDE_DODGE_PENALTY } },
+          });
+        },
+      };
+    }
     // Add spell defense if actor can use magic
     if (actor.system.magicPotential || actor.system.priest) {
       buttons.spell = {
@@ -1056,12 +1088,17 @@ export async function defenseRoll({
     weapon = null,
     overwhelm = null,
     useBane = false,
+    blindside = false,
   } = {}) {
     const resolveWithContext = async (context) => {
       const weapon = context.weapon;
       const offProps = getOffhandProps(context);
 
-      const rollName = `Dodge with ${weapon.localizedName ?? weapon.name}`;
+      const rollName = blindside
+        ? game.i18n.format("REDSTEEL.Defense.BlindsideDodgeRoll", {
+            weapon: weapon.localizedName ?? weapon.name,
+          })
+        : `Dodge with ${weapon.localizedName ?? weapon.name}`;
 
       const offQuality = getOffhandQualityMods(context);
       const mainDodge = Number(weapon.system.dodge) || 0;

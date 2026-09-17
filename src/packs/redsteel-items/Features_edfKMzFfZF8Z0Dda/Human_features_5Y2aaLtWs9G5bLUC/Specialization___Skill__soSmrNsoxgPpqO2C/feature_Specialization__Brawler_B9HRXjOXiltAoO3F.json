@@ -1,0 +1,116 @@
+{
+  "folder": "soSmrNsoxgPpqO2C",
+  "name": "Specialization: Brawler",
+  "type": "feature",
+  "img": "icons/skills/targeting/target-glowing-yellow.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.SpecializationBrawler.name",
+    "description": "<p>You get a 3 SP discount per level for Brawler and a +5% bonus. You can reroll Brawler once per day.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": [
+        {
+          "label": "",
+          "skillsRaw": "brawler",
+          "max": 1,
+          "used": 0
+        }
+      ]
+    },
+    "option": "feature",
+    "cost": {
+      "cp": null,
+      "sp": 0
+    }
+  },
+  "effects": [
+    {
+      "name": "Specialization: Brawler",
+      "origin": "Item.B9HRXjOXiltAoO3F",
+      "img": "icons/svg/falling.svg",
+      "_id": "TiexvhhXkVKDJGYB",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.skills.brawler.bonus",
+            "value": 5,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
+      "disabled": false,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {
+        "statuscounter": {
+          "value": 1,
+          "config": {
+            "type": "default"
+          },
+          "visible": false
+        },
+        "tos": {
+          "actorTurns": null
+        }
+      },
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!B9HRXjOXiltAoO3F.TiexvhhXkVKDJGYB"
+    }
+  ],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": null,
+    "modifiedTime": null,
+    "lastModifiedBy": null
+  },
+  "ownership": {
+    "default": 0,
+    "rs3mzx7WZdtEmvH2": 3,
+    "exQfSubzwCCs5h8v": 3,
+    "UHjN0KQ8w8ZxibJg": 3
+  },
+  "sort": 100000,
+  "_id": "B9HRXjOXiltAoO3F",
+  "_key": "!items!B9HRXjOXiltAoO3F"
+}

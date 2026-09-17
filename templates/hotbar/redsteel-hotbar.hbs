@@ -20,6 +20,63 @@
   instead of beside the cell, which would otherwise cover the neighbouring row.
 --}}
 <div class="rs-bg3-outer">
+{{!--
+  The right-click resource editor, shared by every portrait: your own and each
+  party member's. Built only for actors the viewer owns (see
+  #prepareResourceEditor), which is what lets a GM reach the whole party row
+  from here. It carries its own actor's uuid so a row writes to the character
+  it belongs to rather than to whoever the bar is bound to, and so an open
+  panel can be found again after the edit's own redraw.
+
+  Declared inside the root element, not before it: the part must render a
+  single element and a block at the top would leave text nodes beside it.
+--}}
+{{#*inline "rsResEdit"}}
+<div class="rs-bg3-resedit" data-actor-uuid="{{editor.uuid}}">
+  {{#each editor.pools as |res|}}
+  <label class="rs-bg3-resedit-row">
+    <span class="rs-bg3-resedit-label">{{res.label}}</span>
+    <input
+      class="rs-bg3-resedit-input"
+      type="number"
+      data-stat="{{res.key}}"
+      value="{{res.value}}"
+      step="1"
+    />
+    <span class="rs-bg3-resedit-max">/ {{res.max}}</span>
+  </label>
+  {{/each}}
+
+  {{!-- Below the rule: what stands between the character and their Life.
+        Temporary Life writes to system.stats like the pools above it; a shield
+        carries an effect id instead, since its pool lives on the effect. --}}
+  {{#if editor.guards.length}}
+  <div class="rs-bg3-resedit-rule"></div>
+  {{#each editor.guards as |res|}}
+  <label class="rs-bg3-resedit-row">
+    <span class="rs-bg3-resedit-label">
+      {{#if res.img}}
+      <img class="rs-bg3-resedit-icon" src="{{res.img}}" alt="" />
+      {{/if}}
+      {{res.label}}
+    </span>
+    <input
+      class="rs-bg3-resedit-input"
+      type="number"
+      {{#if res.shieldId}}
+      data-shield-id="{{res.shieldId}}"
+      {{else}}
+      data-stat="{{res.key}}"
+      {{/if}}
+      value="{{res.value}}"
+      step="1"
+    />
+    <span class="rs-bg3-resedit-max">{{#if res.hasMax}}/ {{res.max}}{{/if}}</span>
+  </label>
+  {{/each}}
+  {{/if}}
+</div>
+{{/inline}}
 <div
   class="rs-bg3-anchor"
   data-tt-actor-uuid="{{actorUuid}}"
@@ -58,6 +115,9 @@
           data-tt-text="{{mate.tip}}"
         />
       </div>
+      {{#if mate.resEditor}}
+      {{> rsResEdit editor=mate.resEditor}}
+      {{/if}}
       {{#if mate.showRing}}
       <div class="rs-bg3-hp-text">{{mate.hp.value}}/{{mate.hp.max}}</div>
       {{/if}}
@@ -132,24 +192,11 @@
     {{/if}}
     {{!--
       Right-click resource editor, the panel's answer to the token HUD. Only
-      rendered for owners, and only for pools this character actually has.
+      rendered for owners, and only for the pools, temporary Life and shields
+      this character actually has.
     --}}
-    {{#if editableResources.length}}
-    <div class="rs-bg3-resedit">
-      {{#each editableResources as |res|}}
-      <label class="rs-bg3-resedit-row">
-        <span class="rs-bg3-resedit-label">{{res.label}}</span>
-        <input
-          class="rs-bg3-resedit-input"
-          type="number"
-          data-stat="{{res.key}}"
-          value="{{res.value}}"
-          step="1"
-        />
-        <span class="rs-bg3-resedit-max">/ {{res.max}}</span>
-      </label>
-      {{/each}}
-    </div>
+    {{#if resEditor}}
+    {{> rsResEdit editor=resEditor}}
     {{/if}}
 
     {{#if hasActor}}

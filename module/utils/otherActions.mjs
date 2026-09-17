@@ -863,9 +863,14 @@ async function applyLongRest(actor, { eatRations = false, overrides = null } = {
     );
   }
   if (plan.mind !== null) {
+    // Capped at the ceiling minus burns but ignoring the enchantment reserve,
+    // so an unequip still releases reserved points. Uncapped, resting at full
+    // banked a hidden point that surfaced whenever the maximum later rose.
+    const mind = system.stats.mind;
+    const ceiling = (Number(mind.max) || 0) + (Number(mind.reserved) || 0);
     updates["system.stats.mind.value"] = Math.max(
       0,
-      (system.stats.mind.value ?? 0) + plan.mind,
+      Math.min(ceiling, (Number(mind.value) || 0) + plan.mind),
     );
   }
   if (plan.fatigue !== null) {

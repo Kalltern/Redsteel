@@ -2,6 +2,7 @@ import { getTraitPills } from "./traitPills.mjs";
 import { withRollBias, tagRollSkill, tagRollItemAdvantage } from "./rollAdvantage.mjs";
 import { selectAimedPart, AIMED_PARTS } from "./aimedStrike.mjs";
 import { getImprovedAimPenetration, abilityIgnoresAim } from "./aim.mjs";
+import { getWeakSpotPenetration } from "./weakSpot.mjs";
 import { getAttackRerollTokens } from "./rerolls.mjs";
 import { buildBanePacket } from "./baneCombat.mjs";
 import { hasHtmlContent } from "./chatBlocks.mjs";
@@ -1592,6 +1593,10 @@ ${
       weaponContext,
       ability,
     );
+    // Mistr zbraní: "Útok na slabinu: Průbojnost +10" — every action in the Weak
+    // Spot family, the Improved and thrown ones included. Flat and once per
+    // roll, so stacking two of them on one attack does not double it.
+    const weakSpotPen = getWeakSpotPenetration(actor, ability, selectedModifiers);
     // The arrowhead's own penetration, on top of the bow's (see the ammo check
     // above — a weapon that needs ammo never gets here without it).
     const ammoPen = Number(ammo?.system?.penetration) || 0;
@@ -1619,6 +1624,7 @@ ${
         offPen +
         ammoPen +
         abilityPenetration +
+        weakSpotPen +
         actorMods.penetrationBonus +
         qualityPen +
         improvedAimPen +
@@ -2144,6 +2150,21 @@ async function rollUtilityTest(actor, item) {
   };
 }
 
+/**
+ * Is this the baseline Sprint action?
+ *
+ * Matched on the localisation key rather than `system.key`, because every actor
+ * already carries its own copy of the pack item and a pack edit never reaches
+ * those copies. `system.key` is honoured as well so a GM can point a custom
+ * Sprint variant at the same automation.
+ */
+function isSprintAbility(ability) {
+  return (
+    ability?.system?.key === "sprint" ||
+    ability?.system?.localizationKey === "REDSTEEL.Items.Sprint.name"
+  );
+}
+
 async function runUtilityAbility(actor, ability, modifiers = []) {
   // Vstřebání krve (Blood Absorption): cancel the entire Blood Reserve and heal
   // Life equal to the Blood School's Maximum Transfer, but never more Life than
@@ -2166,6 +2187,15 @@ async function runUtilityAbility(actor, ability, modifiers = []) {
   if (ability.system.key === "fastReaction") {
     await runFastReaction(actor, ability);
     return;
+  }
+
+  // Běh (Sprint): the movement itself stays manual, but the trade it buys does
+  // not — while the runner is moving they are harder to shoot at and wide open
+  // in melee. The `sprint` effect carries both numbers and expires at the start
+  // of the runner's next turn. Unlike the three above this does NOT return: the
+  // ordinary utility card still posts, so the table sees the action was taken.
+  if (isSprintAbility(ability)) {
+    await game.redsteel.applyEffect(actor, "sprint");
   }
 
   let description = ability.system.description || "";

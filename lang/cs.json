@@ -89,6 +89,8 @@
       }
     },
     "Bg3Hotbar": {
+      "TempHealth": "Dočasné životy",
+      "TempHealthMagic": "Magické dočasné životy",
       "Attributes": "Vlastnosti",
       "Skills": "Testy dovedností",
       "Action": {
@@ -546,11 +548,11 @@
             },
             "backDodge": {
               "label": "Úhyb do zad",
-              "description": "10 CP. Lze uhýbat útokům do zad s postihem -20%. Ručně — řeší se u stolu."
+              "description": "10 CP. Lze uhýbat útokům do zad s postihem -20%. Automatizováno: dialog obrany nabídne tlačítko Úhyb do zad."
             },
             "weakSpotMastery": {
               "label": "Vylepšený útok/vrh na slabinu",
-              "description": "20 CP; Tulák VII. Vylepšený útok na slabinu (2 akce, 5 výdrže): Útok mířený na slabá místa v soupeřově zbroji. Průbojnost +20. Pokud má cíl nižší Pořadí tahu, počítá se úspěšný zásah jako Zákeřný. Nikdy nemůže způsobit větší zranění, než kolik je Průbojnost. Vylepšený vrh na slabinu (Volná akce, 4 výdrže): Modifikuje libovolný vrh vrhacím nožem. Útok mířený na slabá místa v soupeřově zbroji. Průbojnost +15, postih na Vrh -5%. Nikdy nemůže způsobit větší zranění, než kolik je Průbojnost. Ručně — řeší se u stolu."
+              "description": "20 CP; Tulák VII. Vylepšený útok na slabinu (2 akce, 5 výdrže): Útok mířený na slabá místa v soupeřově zbroji. Průbojnost +20. Pokud má cíl nižší Pořadí tahu, počítá se úspěšný zásah jako Zákeřný. Nikdy nemůže způsobit větší zranění, než kolik je Průbojnost. Vylepšený vrh na slabinu (Volná akce, 4 výdrže): Modifikuje libovolný vrh vrhacím nožem. Útok mířený na slabá místa v soupeřově zbroji. Průbojnost +15, postih na Vrh -5%. Nikdy nemůže způsobit větší zranění, než kolik je Průbojnost. Obě akce se udělují automaticky a nahrazují běžný Útok na slabinu a Vrh na slabinu."
             },
             "speedTests": {
               "label": "Výhoda na versus Testy Rychlosti",
@@ -612,7 +614,7 @@
             },
             "improvedAim": {
               "label": "Vylepšené míření",
-              "description": "5 CP. 1 akce, bez výdrže. Zvyšuje šanci na Zásah/Střelbu/Vrh/Palbu o +10% na příští útok. Akci lze opakovat a navyšovat tak bonus, hranice +40%. Mířit lze na cíle v libovolné vzdálenosti. Pokud má na cíli čtyři Míření, získává Průbojnost +10. Uděluje akci Vylepšené míření; bonus k Průbojnosti vyžaduje meč držený obouruč. Automatizováno."
+              "description": "0 CP. 1 akce, bez výdrže. Zvyšuje šanci na Zásah/Střelbu/Vrh/Palbu o +10% na příští útok. Akci lze opakovat a navyšovat tak bonus, hranice +40%. Mířit lze na cíle v libovolné vzdálenosti. Pokud má na cíli čtyři Míření, získává Průbojnost +10. Uděluje akci Vylepšené míření; bonus k Průbojnosti vyžaduje meč držený obouruč. Automatizováno."
             },
             "aimReduction": {
               "label": "Redukce Míření po zásahu",
@@ -652,7 +654,7 @@
             },
             "presneRozseknuti": {
               "label": "Přesné rozseknutí",
-              "description": "0 CP. Pasivní. Akce Rozseknutí a Zteč s Rozseknutím získávají bonus za Míření na všechny zasažené oponenty. Ručně — řeší se u stolu."
+              "description": "5 CP. Pasivní. Akce Rozseknutí a Zteč s Rozseknutím získávají bonus za Míření na všechny zasažené oponenty. Ručně — řeší se u stolu."
             },
             "vyhodnyManevr": {
               "label": "Výhodný manévr",
@@ -738,7 +740,7 @@
             },
             "weakSpotPen": {
               "label": "Útok na slabinu: Průbojnost +10",
-              "description": "5 CP. Situační — zatím ručně. Ručně — řeší se u stolu."
+              "description": "5 CP. Přidává 10 Průbojnosti ke každé akci Útok na slabinu, včetně střelecké, vrhací, rapírové (Imbroccata) a vylepšené verze."
             },
             "primaryDamage": {
               "label": "Zranění +50% za Primární Vlastnosti",
@@ -948,15 +950,15 @@
             },
             "krvavaPlatba": {
               "label": "Krvavá platba",
-              "description": "10 CP; Škola Krve - Expert. Volná akce, cena 5. Před sesláním kouzla může jednou zaplatit 5 životů ze Zásoby krve za snížení Obtížnosti o 15%. Ručně — řeší se u stolu."
+              "description": "10 CP; Škola Krve - Expert. Volná akce, cena 5. Před sesláním kouzla může jednou zaplatit 5 životů ze Zásoby krve za snížení Obtížnosti o 15%. Automatizováno: přepínač v dialogu krvavého kouzla."
             },
             "kritRozsah2": {
               "label": "Škola Krve: Kritický rozsah +2",
-              "description": "5 SP. Kritický rozsah zatím není automatizován. Ručně — řeší se u stolu."
+              "description": "5 SP. Automatizováno. Kritický rozsah +2 k hodu na sílu kritu u kouzel Školy Krve, nad rámec vlastního kritického rozsahu sesilatele. Kritický zásah této školy dopadne o stupeň výš; nenastává častěji. Ostatním školám nepřináší nic."
             },
             "oslabeniTrvani": {
               "label": "Oslabení: Trvání +1 tah",
-              "description": "5 CP; Škola Krve - Expert. Ručně — řeší se u stolu."
+              "description": "5 CP; Škola Krve - Expert. Oslabení uvalené tvými kouzly Školy Krve trvá o kolo déle (3 → 4 kola). Automatizováno."
             },
             "krvavyStit": {
               "label": "Krvavý štít",
@@ -964,7 +966,7 @@
             },
             "darKrve": {
               "label": "Dar krve",
-              "description": "20 CP; Škola Krve - Mistr. Pasivní. Zabije-li živý cíl kouzlem Školy Krve, vyléčí si SK*1 Životů. Ručně — řeší se u stolu."
+              "description": "20 CP; Škola Krve - Mistr. Pasivní. Zabije-li živý cíl kouzlem Školy Krve, vyléčí si SK*1 Životů. Automatizováno: platí vlastní poškození kouzla i poškození v čase nebo Krvácení, které uvalilo samo kouzlo. Každý zabitý cíl platí zvlášť; Neživí neplatí nic."
             }
           }
         },
@@ -2274,7 +2276,7 @@
             },
             "kritRozsah": {
               "label": "Škola Vzduchu: Kritický rozsah +2",
-              "description": "5 SP. Kritický rozsah zatím není automatizován. Ručně — řeší se u stolu."
+              "description": "5 SP. Automatizováno. Kritický rozsah +2 k hodu na sílu kritu u kouzel Školy Vzduchu, nad rámec vlastního kritického rozsahu sesilatele. Kritický zásah této školy dopadne o stupeň výš; nenastává častěji. Ostatním školám nepřináší nic."
             },
             "cyklonPohyb": {
               "label": "Cyklon: Pohyb +2 hexy",
@@ -2484,7 +2486,7 @@
             },
             "kritRozsah": {
               "label": "Škola Vody: Kritický rozsah +2",
-              "description": "5 SP. Kritický rozsah zatím není automatizován. Ručně — řeší se u stolu."
+              "description": "5 SP. Automatizováno. Kritický rozsah +2 k hodu na sílu kritu u kouzel Školy Vody, nad rámec vlastního kritického rozsahu sesilatele. Kritický zásah této školy dopadne o stupeň výš; nenastává častěji. Ostatním školám nepřináší nic."
             },
             "overeni": {
               "label": "Škola Vody: Ověření +10%",
@@ -2614,7 +2616,7 @@
             },
             "kritRozsah": {
               "label": "Škola Země: Kritický rozsah +2",
-              "description": "5 SP. Kritický rozsah zatím není automatizován. Ručně — řeší se u stolu."
+              "description": "5 SP. Automatizováno. Kritický rozsah +2 k hodu na sílu kritu u kouzel Školy Země, nad rámec vlastního kritického rozsahu sesilatele. Kritický zásah této školy dopadne o stupeň výš; nenastává častěji. Ostatním školám nepřináší nic."
             },
             "maskovani": {
               "label": "Maskování: I kamenité oblasti",
@@ -3122,7 +3124,7 @@
             },
             "kritRozsah": {
               "label": "Škola Temnoty: Kritický rozsah +2",
-              "description": "5 SP. Kritický rozsah zatím není automatizován. Ručně — řeší se u stolu."
+              "description": "5 SP. Automatizováno. Kritický rozsah +2 k hodu na sílu kritu u kouzel Školy Temnoty, nad rámec vlastního kritického rozsahu sesilatele. Kritický zásah této školy dopadne o stupeň výš; nenastává častěji. Ostatním školám nepřináší nic."
             },
             "stoparDusi": {
               "label": "Stopař duší",
@@ -3411,7 +3413,7 @@
             },
             "kritRozsah": {
               "label": "Škola Ohně: Kritický rozsah +2",
-              "description": "5 SP. Kritický rozsah zatím není automatizován. Ručně — řeší se u stolu."
+              "description": "5 SP. Automatizováno. Kritický rozsah +2 k hodu na sílu kritu u kouzel Školy Ohně, nad rámec vlastního kritického rozsahu sesilatele. Kritický zásah této školy dopadne o stupeň výš; nenastává častěji. Ostatním školám nepřináší nic."
             },
             "burnResist1": {
               "label": "Snížená šance na Podpálení o 10%",
@@ -3549,7 +3551,7 @@
             },
             "kritRozsah": {
               "label": "Škola Ducha a Těla: Kritický rozsah +2",
-              "description": "5 SP. Kritický rozsah zatím není automatizován. Ručně — řeší se u stolu."
+              "description": "5 SP. Automatizováno. Kritický rozsah +2 k hodu na sílu kritu u kouzel Školy Ducha a Školy Těla, nad rámec vlastního kritického rozsahu sesilatele. Kritický zásah této školy dopadne o stupeň výš; nenastává častěji. Ostatním školám nepřináší nic."
             },
             "overeni": {
               "label": "Škola Ducha a Těla: Ověření +10%",
@@ -4087,6 +4089,9 @@
           "spellPower": {
             "label": "Síla kouzla"
           }
+        },
+        "headerRank": {
+          "label": "Stupeň"
         }
       },
       "NPC": {
@@ -4814,7 +4819,31 @@
       "Defend": "Bránit se",
       "DefendTooltip": "Hodit obranu proti tomuto útoku."
     },
+    "BloodPayment": {
+      "Tag": "Krevní platba",
+      "Option": "Krevní platba ({cost} životů)",
+      "Hint": "Zaplať 5 životů ze Zásoby krve před sesláním a sniž Obtížnost kouzla o 15%. Strop je 0 jako u Soustředění, takže u už snadného kouzla nepřinese nic.",
+      "NoGain": "Obtížnost už je na svém stropu, krevní platba by nic nepřinesla.",
+      "NotEnough": "{name} potřebuje na krevní platbu {needed} životů a má jich jen {reserve}."
+    },
+    "GiftOfBlood": {
+      "Healed": "{name} pije smrt cílů {targets} a získává zpět {amount} životů."
+    },
+    "Spellbook": {
+      "Capacity": "Kapacita",
+      "CapacityHint": "Kolik kouzel se do knihy vejde. 0 znamená kniha bez omezení.",
+      "Contents": "Zapsaná kouzla",
+      "ContentsHint": "Kouzlo zapíšeš přetažením z kompendia na knihu. Seznam kouzel vlastníka se řídí tímto zápisem.",
+      "Empty": "Zatím tu není zapsáno nic.",
+      "Remove": "Vymazat z knihy",
+      "DropRejected": "Do grimoáru lze zapsat pouze kouzlo.",
+      "DropNotGlobal": "Zapiš kouzlo z kompendia, ne z kopie, kterou vlastní postava.",
+      "DropDuplicate": "{name} už je v této knize zapsáno.",
+      "DropAdded": "{name} zapsáno do knihy."
+    },
     "Defense": {
+      "BlindsideDodge": "Úhyb do zad",
+      "BlindsideDodgeRoll": "Úhyb do zad se zbraní {weapon}",
       "BadDodge": "Špatný úhyb!",
       "BadDodgeNote": "Hod překonal limit úhybu ({limit}): tento úhyb se počítá jako přesah 0.",
       "BloodSchoolBonus": "Obrana proti Škole Krve: +{bonus}"
@@ -4951,6 +4980,9 @@
       "CardAdjusted": "Hodnoty odpočinku upraveny ručně."
     },
     "PartyManagement": {
+      "ColTreated": "Ošetřeno",
+      "StepUp": "Zvýšit {stat}",
+      "StepDown": "Snížit {stat}",
       "Title": "Správa družiny",
       "Everyone": "Všichni",
       "ColCharacter": "Postava",
@@ -5275,6 +5307,82 @@
       "UnknownTime": "dřívějšího data"
     },
     "Items": {
+      "ImprovedExploitWeakness": {
+        "name": "Vylepšený útok na slabinu"
+      },
+      "ImprovedExploitWeaknessThrow": {
+        "name": "Vylepšený vrh na slabinu"
+      },
+      "Linguist": {
+        "name": "Lingvista",
+        "description": "<p>Učí se jazyky rychleji. Každý stupeň dovednosti Jazyky je zdarma, kromě Znakové řeči. +1 počáteční jazyk.</p>"
+      },
+      "Specialist": {
+        "name": "Specialista"
+      },
+      "SpecializationActing": {
+        "name": "Specializace: Herectví"
+      },
+      "SpecializationAnimalHandling": {
+        "name": "Specializace: Zacházení se zvířaty"
+      },
+      "SpecializationArt": {
+        "name": "Specializace: Umělecká tvorba"
+      },
+      "SpecializationAugury": {
+        "name": "Specializace: Věštění"
+      },
+      "SpecializationBrawler": {
+        "name": "Specializace: Rváč"
+      },
+      "SpecializationCraft": {
+        "name": "Specializace: Řemeslo"
+      },
+      "SpecializationDancing": {
+        "name": "Specializace: Tanec"
+      },
+      "SpecializationDreamwalker": {
+        "name": "Specializace: Chodec ve snu"
+      },
+      "SpecializationDrinking": {
+        "name": "Specializace: Pijáctví"
+      },
+      "SpecializationEngineering": {
+        "name": "Specializace: Inženýrství"
+      },
+      "SpecializationLogic": {
+        "name": "Specializace: Logika"
+      },
+      "SpecializationMeditation": {
+        "name": "Specializace: Meditace"
+      },
+      "SpecializationMindBending": {
+        "name": "Specializace: Mentální souboj"
+      },
+      "SpecializationMusic": {
+        "name": "Specializace: Hudba"
+      },
+      "SpecializationPainting": {
+        "name": "Specializace: Malování"
+      },
+      "SpecializationResearch": {
+        "name": "Specializace: Výzkum"
+      },
+      "SpecializationRiding": {
+        "name": "Specializace: Jezdectví"
+      },
+      "SpecializationRituals": {
+        "name": "Specializace: Rituály"
+      },
+      "SpecializationSailing": {
+        "name": "Specializace: Mořeplavba"
+      },
+      "SpecializationSmithing": {
+        "name": "Specializace: Kovářství"
+      },
+      "SpecializationTactics": {
+        "name": "Specializace: Taktika"
+      },
       "AbsorbBlood": {
         "name": "Vstřebání krve",
         "description": "<p>Zruší celou svou Zásobu krve a vyléčí si Životy rovné svému Maximálnímu převodu. Nemůže vyléčit více Životů, než kolik jich zrušil ze Zásoby.</p>",
@@ -7376,6 +7484,8 @@
       "DuplicateKey": "Dvě nominální hodnoty sdílejí klíč \"{key}\". Každá potřebuje vlastní."
     },
     "Learn": {
+      "party": "Družina",
+      "switchHero": "Přepnout postavu",
       "Stat": {
         "attack": "Útok",
         "bleed": "Krvácení",
@@ -7598,7 +7708,57 @@
         "combat": "Boj",
         "skills": "Dovednosti",
         "features": "Odbornosti",
+        "spells": "Kouzla",
         "specialisations": "Specializace"
+      },
+      "Spells": {
+        "title": "Kouzla",
+        "book": "Grimoár",
+        "books": "Grimoáry",
+        "noBook": "Tato postava nemá grimoár.",
+        "newBook": "Nový grimoár",
+        "written": "Zapsáno",
+        "memorised": "Zapamatováno",
+        "memorise": "Zapamatovat (1 SP)",
+        "forget": "Zapomenout",
+        "write": "Zapsat do grimoáru",
+        "erase": "Vymazat z grimoáru",
+        "available": "K dispozici",
+        "owned": "Drženo",
+        "locked": "Mimo dosah",
+        "needsRank": "Vyžaduje stupeň školy {n}",
+        "outOfReach": "Zapsáno, ale mimo dosah",
+        "search": "Hledat kouzla",
+        "filters": "Filtry",
+        "reset": "Zrušit",
+        "filterRank": "Stupeň",
+        "filterAction": "Cena akce",
+        "filterProperties": "Vlastnosti",
+        "filterStatus": "Stav",
+        "concentration": "Koncentrace",
+        "sustained": "Udržované",
+        "reaction": "Reakce",
+        "freeAction": "Volná akce",
+        "actions": "{n} akce",
+        "hideWritten": "Skrýt zapsaná",
+        "onlyReachable": "Jen v mém dosahu",
+        "allSchools": "Všechny školy",
+        "mana": "Mana",
+        "difficulty": "Obtížnost",
+        "none": "Žádná kouzla.",
+        "noSchools": "Tato postava zatím nemá žádnou školu magie.",
+        "lost": "Ztracené grimoáry",
+        "lostHint": "Co kniha obsahovala, pro případ omylem smazané knihy.",
+        "restore": "Obnovit",
+        "forgetBook": "Zapomenout knihu",
+        "spellCount": "{n} kouzel",
+        "Warn": {
+          "noBook": "Tato postava nemá grimoár, do kterého by zapisovala.",
+          "notFound": "Toto kouzlo se nepodařilo načíst.",
+          "rank": "Stupeň školy je příliš nízký, je potřeba stupeň {n}.",
+          "full": "Grimoár je plný.",
+          "notOwner": "Tuto postavu nevlastníš."
+        }
       },
       "Sections": {
         "combat": "Bojové dovednosti",
@@ -7623,6 +7783,7 @@
         "skillLower": "dovednost"
       },
       "Features": {
+        "classOther": "Ostatní dovednosti",
         "traits": "Rysy",
         "owned": "Získané odbornosti",
         "noneOwned": "Zatím žádné odbornosti.",
@@ -7686,11 +7847,11 @@
         "none": "Zatím žádné jazyky. Zadej název nahoře a nauč se ho.",
         "native": "Mateřský",
         "grantNative": "Udělit mateřský jazyk",
-        "grantNativeHint": "Zdarma Základní dorozumívání a Plynulá mluva v tomto jazyce. Jeden na postavu.",
+        "grantNativeHint": "Zdarma Základní dorozumívání a Plynulá mluva v tomto jazyce. {n} na postavu.",
         "nameRequired": "Nejdřív napiš název jazyka.",
         "alreadyKnown": "Jazyk {language} už postava zná.",
         "needsBasic": "Nejdřív Základní dorozumívání v jazyce {language}",
-        "nativeTaken": "Tato postava už mateřský jazyk má.",
+        "nativeTaken": "Tato postava už má všechny své mateřské jazyky ({n}).",
         "nativeGmOnly": "Mateřský jazyk může odebrat jen vypravěč.",
         "refundDependents": "Nejdřív vrať ostatní odbornosti pro jazyk {language}.",
         "refundReadingFirst": "Nejdřív vrať Čtení a psaní u dalších jazyků."
@@ -7755,6 +7916,8 @@
         }
       },
       "Discounts": {
+        "chooseSpecialisation": "Vyber specializaci",
+        "specNodes": "{source}: sleva {amount} SP na každý uzel této specializace.",
         "title": "Slevy",
         "choose": "Vyber dovednost",
         "chooseDoctrine": "Vyber doktrínu",
@@ -7834,6 +7997,7 @@
       "npc": "NPC"
     },
     "Item": {
+      "spellbook": "Grimoár",
       "weapon": "Zbraň",
       "item": "Předmět",
       "gear": "Výbava",

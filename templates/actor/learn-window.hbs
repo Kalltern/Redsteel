@@ -109,12 +109,46 @@
       {{/if}}
     </div>
 
-    {{!-- No window frame, so the screen carries its own way out. --}}
-    <button type="button" class="rs-learn-close" data-action="closeScreen"
-            data-tooltip="{{localize "REDSTEEL.Learn.close"}}"
-            aria-label="{{localize "REDSTEEL.Learn.close"}}">
-      <i class="fas fa-xmark"></i>
-    </button>
+    {{!-- The band's top corner: the way between characters, then the way out.
+          They share a wrapper because the column sets a 22px gap between its
+          own items, which is far too wide for two small plates. --}}
+    <div class="rs-learn-hero-corner">
+
+      {{!-- The GM's party switch. Only the GM has it, and only when there is
+            more than one character to switch between, so a player never sees
+            the plate at all. The roster rolls out under the button; it hangs
+            inside the hero band, which clips what overflows it, so the CSS
+            caps it short of the band's lower edge and scrolls the rest. --}}
+      {{#if party.length}}
+      <div class="rs-learn-party">
+        <button type="button" class="rs-learn-party-button" data-action="toggleParty"
+                aria-haspopup="true" aria-expanded="false"
+                data-tooltip="{{localize "REDSTEEL.Learn.switchHero"}}"
+                aria-label="{{localize "REDSTEEL.Learn.switchHero"}}">
+          <i class="fas fa-users"></i>
+          <i class="fas fa-caret-down rs-learn-party-caret"></i>
+        </button>
+        <div class="rs-learn-party-menu" hidden>
+          <div class="rs-learn-party-heading">{{localize "REDSTEEL.Learn.party"}}</div>
+          {{#each party}}
+          <button type="button" class="rs-learn-party-member {{#if this.current}}is-current{{/if}}"
+                  data-action="switchHero" data-actor-id="{{this.id}}">
+            <img src="{{this.img}}" alt="">
+            <span class="rs-learn-party-name">{{this.name}}</span>
+          </button>
+          {{/each}}
+        </div>
+      </div>
+      {{/if}}
+
+      {{!-- No window frame, so the screen carries its own way out. --}}
+      <button type="button" class="rs-learn-close" data-action="closeScreen"
+              data-tooltip="{{localize "REDSTEEL.Learn.close"}}"
+              aria-label="{{localize "REDSTEEL.Learn.close"}}">
+        <i class="fas fa-xmark"></i>
+      </button>
+
+    </div>
 
     </div>
 
@@ -135,6 +169,13 @@
             data-action="switchTab" data-tab="features">
       <span class="rs-learn-tab-label">{{localize "REDSTEEL.Learn.Tabs.features"}}</span>
     </button>
+    {{#if showSpellsTab}}
+    {{!-- Only a caster (or the GM) has anything to read here. --}}
+    <button type="button" class="{{#if (eq tab 'spells')}}active{{/if}}"
+            data-action="switchTab" data-tab="spells">
+      <span class="rs-learn-tab-label">{{localize "REDSTEEL.Learn.Tabs.spells"}}</span>
+    </button>
+    {{/if}}
     <button type="button" class="{{#if (eq tab 'specialisations')}}active{{/if}}"
             data-action="switchTab" data-tab="specialisations">
       <span class="rs-learn-tab-label">{{localize "REDSTEEL.Learn.Tabs.specialisations"}}</span>
@@ -562,7 +603,7 @@
           <b class="rs-learn-feature-cost">{{features.languages.add.costLabel}}</b>
           {{#if features.languages.canGrantNative}}
           <button type="button" class="rs-learn-feature-filter" data-action="grantNativeLanguage"
-                  data-tooltip="{{localize "REDSTEEL.Learn.Languages.grantNativeHint"}}">
+                  data-tooltip="{{features.languages.nativeHint}}">
             {{localize "REDSTEEL.Learn.Languages.grantNative"}}
           </button>
           {{/if}}
@@ -603,7 +644,9 @@
       {{!-- A family's skill picker, in place of the list: one column per skill
             class (A, B, C), each skill with its buy diamond, its name (hover for
             the feature's card) and its price. Only classed skills appear; the
-            unclassed ones are left out on purpose (GM ruling). --}}
+            unclassed ones are left out on purpose (GM ruling), except for
+            Specialization, which appends a fourth "Other skills" column for
+            them (user ruling 2026-09-16). --}}
       <header class="rs-learn-features-bar">
         <button type="button" class="rs-learn-feature-filter" data-action="closeFeatureFamily">
           <i class="fas fa-arrow-left"></i>
@@ -611,7 +654,7 @@
         </button>
         <span class="rs-learn-family-title">{{features.picker.label}}</span>
       </header>
-      <div class="rs-learn-family-columns">
+      <div class="rs-learn-family-columns {{#if features.picker.hasOther}}is-four{{/if}}">
         {{#each features.picker.columns}}
         <section class="rs-learn-family-column">
           <h3 class="rs-learn-section-title">{{this.label}}</h3>
@@ -764,6 +807,267 @@
 
   </div>
 
+  {{else if isSpellsTab}}
+  {{!-- The Spells tab. Two stone plates: on the left the grimoire the character
+        carries (what is written in it, what they know by heart, and the books
+        they have lost), on the right every spell of the chosen school. Writing
+        a spell into the book is free; memorising it is 1 SP (Pravidla, Paměť).
+        Search and the filter pop-up filter the right panel in place. --}}
+  <div class="rs-learn-spells">
+
+    <section class="rs-learn-spellbook">
+      {{#if spells.hasBook}}
+      {{#if spells.multipleBooks}}
+      {{!-- More than one grimoire: one plate per book, the open one lit. --}}
+      <div class="rs-learn-spell-books">
+        {{#each spells.books}}
+        <button type="button" class="rs-learn-spell-book {{#if this.active}}active{{/if}}"
+                data-action="switchSpellBook" data-book-id="{{this.id}}">
+          <img src="{{this.img}}" alt="{{this.name}}">
+          <span class="rs-learn-spell-book-name">{{this.name}}</span>
+          <b>{{this.count}}</b>
+        </button>
+        {{/each}}
+      </div>
+      {{/if}}
+
+      <h3 class="rs-learn-section-title">
+        {{spells.activeBook.name}}
+        <span class="rs-learn-spell-count">
+          {{localize "REDSTEEL.Learn.Spells.written"}}:
+          {{#if spells.activeBook.capacity}}{{spells.activeBook.count}} / {{spells.activeBook.capacity}}{{else}}{{spells.activeBook.count}}{{/if}}
+        </span>
+      </h3>
+
+      {{#each spells.bookGroups}}
+      <div class="rs-learn-spell-group">
+        <span class="rs-learn-spell-group-name">{{this.label}}</span>
+        {{#each this.spells}}
+        <div class="rs-learn-spell-entry {{#unless this.reachable}}is-locked{{/unless}}">
+          <img src="{{this.img}}" alt="{{this.name}}"
+               data-tt-kind="spellCardUuid" data-tt-uuid="{{this.uuid}}">
+          <span class="rs-learn-spell-entry-name">{{this.name}}</span>
+          <span class="rs-learn-spell-entry-rank">{{this.rankLabel}}</span>
+          {{#if this.memorised}}
+          <em class="rs-learn-spell-entry-note">{{localize "REDSTEEL.Learn.Spells.memorised"}}</em>
+          {{else if this.note}}
+          <em class="rs-learn-spell-entry-note" data-tooltip="{{this.needs}}">{{this.note}}</em>
+          {{/if}}
+          {{#if @root.editable}}
+          <button type="button" class="rs-learn-spell-erase" data-action="eraseSpell"
+                  data-uuid="{{this.uuid}}"
+                  data-tooltip="{{localize "REDSTEEL.Learn.Spells.erase"}}"
+                  aria-label="{{localize "REDSTEEL.Learn.Spells.erase"}}">
+            <i class="fas fa-eraser"></i>
+          </button>
+          {{/if}}
+        </div>
+        {{/each}}
+      </div>
+      {{else}}
+      <p class="rs-learn-empty">{{localize "REDSTEEL.Learn.Spells.none"}}</p>
+      {{/each}}
+      {{else}}
+      {{!-- No grimoire at all: say so, and offer to make one. --}}
+      <h3 class="rs-learn-section-title">{{localize "REDSTEEL.Learn.Spells.book"}}</h3>
+      <p class="rs-learn-empty">{{localize "REDSTEEL.Learn.Spells.noBook"}}</p>
+      {{/if}}
+
+      {{#if editable}}
+      <div class="rs-learn-spell-newbook">
+        <button type="button" class="rs-learn-feature-filter" data-action="createSpellbook">
+          <i class="fas fa-book"></i>
+          {{localize "REDSTEEL.Learn.Spells.newBook"}}
+        </button>
+      </div>
+      {{/if}}
+
+      {{#if spells.memorised.length}}
+      {{!-- Known by heart: 1 SP each, and no book can take them away. --}}
+      <h3 class="rs-learn-section-title">{{localize "REDSTEEL.Learn.Spells.memorised"}}</h3>
+      {{#each spells.memorised}}
+      <div class="rs-learn-spell-entry {{#unless this.reachable}}is-locked{{/unless}}">
+        <img src="{{this.img}}" alt="{{this.name}}"
+             data-tt-kind="spellCardUuid" data-tt-uuid="{{this.uuid}}">
+        <span class="rs-learn-spell-entry-name">{{this.name}}</span>
+        <span class="rs-learn-spell-entry-rank">{{this.rankLabel}}</span>
+        <em class="rs-learn-spell-entry-note">{{this.schoolLabel}}</em>
+        {{#if @root.editable}}
+        <button type="button" class="rs-learn-spell-erase" data-action="forgetSpell"
+                data-uuid="{{this.uuid}}"
+                data-tooltip="{{localize "REDSTEEL.Learn.Spells.forget"}}"
+                aria-label="{{localize "REDSTEEL.Learn.Spells.forget"}}">
+          <i class="fas fa-rotate-left"></i>
+        </button>
+        {{/if}}
+      </div>
+      {{/each}}
+      {{/if}}
+
+      {{#if spells.archive.length}}
+      {{!-- What a lost book held, kept so a delete by accident costs a click
+            rather than an evening of rewriting. --}}
+      <h3 class="rs-learn-section-title">{{localize "REDSTEEL.Learn.Spells.lost"}}</h3>
+      <p class="rs-learn-spell-hint">{{localize "REDSTEEL.Learn.Spells.lostHint"}}</p>
+      {{#each spells.archive}}
+      <div class="rs-learn-spell-archive">
+        <img src="{{this.img}}" alt="{{this.name}}">
+        <span class="rs-learn-spell-entry-name">{{this.name}}</span>
+        <em class="rs-learn-spell-entry-note">{{this.countLabel}}{{#if this.when}}, {{this.when}}{{/if}}</em>
+        {{#if @root.editable}}
+        <button type="button" class="rs-learn-spell-erase" data-action="restoreSpellbook"
+                data-book-id="{{this.id}}"
+                data-tooltip="{{localize "REDSTEEL.Learn.Spells.restore"}}"
+                aria-label="{{localize "REDSTEEL.Learn.Spells.restore"}}">
+          <i class="fas fa-book-medical"></i>
+        </button>
+        <button type="button" class="rs-learn-spell-erase" data-action="forgetSpellbook"
+                data-book-id="{{this.id}}"
+                data-tooltip="{{localize "REDSTEEL.Learn.Spells.forgetBook"}}"
+                aria-label="{{localize "REDSTEEL.Learn.Spells.forgetBook"}}">
+          <i class="fas fa-trash"></i>
+        </button>
+        {{/if}}
+      </div>
+      {{/each}}
+      {{/if}}
+    </section>
+
+    <section class="rs-learn-spells-browser">
+      {{!-- One pill per school the character holds, with its rank; the GM can
+            switch every school on to hand a spell over at the table. --}}
+      <div class="rs-learn-spell-schools">
+        {{#each spells.schools}}
+        <button type="button" class="rs-learn-spell-school {{#if this.active}}active{{/if}}"
+                data-action="switchSpellSchool" data-school="{{this.key}}"
+                data-tooltip="{{this.countLabel}}">
+          <span class="rs-learn-spell-school-name">{{this.label}}</span>
+          {{#if this.rankLabel}}<b>{{this.rankLabel}}</b>{{/if}}
+        </button>
+        {{else}}
+        <span class="rs-learn-spell-noschools">{{localize "REDSTEEL.Learn.Spells.noSchools"}}</span>
+        {{/each}}
+        {{#if spells.isGM}}
+        <button type="button" class="rs-learn-feature-filter {{#if spells.allSchools}}active{{/if}}"
+                data-action="toggleAllSchools">
+          {{localize "REDSTEEL.Learn.Spells.allSchools"}}
+        </button>
+        {{/if}}
+      </div>
+
+      <header class="rs-learn-features-bar rs-learn-spells-bar">
+        <input type="search" class="rs-learn-spell-search" value="{{spells.query}}"
+               placeholder="{{localize "REDSTEEL.Learn.Spells.search"}}"
+               aria-label="{{localize "REDSTEEL.Learn.Spells.search"}}">
+        {{!-- What is left to memorise with: one spell costs 1 SP, so the
+              figure goes muted the moment it cannot pay for another. --}}
+        <span class="rs-learn-spell-sp {{#if spells.poor}}is-poor{{/if}}">
+          {{localize "REDSTEEL.Learn.spRemaining"}}: <b>{{spells.sp.remaining}}</b>
+        </span>
+        {{!-- Every filter lives behind this one button, as on the Features tab.
+              The count is how many filters are away from their default. --}}
+        <button type="button" class="rs-learn-feature-filter {{#if spells.filtersOpen}}active{{/if}}"
+                aria-expanded="{{#if spells.filtersOpen}}true{{else}}false{{/if}}"
+                data-action="toggleSpellFilters">
+          <i class="fas fa-filter"></i>
+          {{localize "REDSTEEL.Learn.Spells.filters"}}
+          <span class="rs-learn-filter-count rs-learn-spell-filter-count" {{#unless spells.activeFilters}}hidden{{/unless}}>{{spells.activeFilters}}</span>
+        </button>
+
+        <div class="rs-learn-filter-popup rs-learn-spell-filter-popup" role="dialog"
+             aria-label="{{localize "REDSTEEL.Learn.Spells.filters"}}"
+             {{#unless spells.filtersOpen}}hidden{{/unless}}>
+          <div class="rs-learn-filter-group">
+            <span class="rs-learn-filter-label">{{localize "REDSTEEL.Learn.Spells.filterRank"}}</span>
+            {{#each spells.rankChecks}}
+            <label class="rs-learn-filter-check">
+              <input type="checkbox" data-spell-rank="{{this.key}}" {{#if this.checked}}checked{{/if}}>
+              <span>{{this.label}}</span>
+            </label>
+            {{/each}}
+          </div>
+          <div class="rs-learn-filter-group">
+            <span class="rs-learn-filter-label">{{localize "REDSTEEL.Learn.Spells.filterAction"}}</span>
+            {{#each spells.actionChecks}}
+            <label class="rs-learn-filter-check">
+              <input type="checkbox" data-spell-action="{{this.key}}" {{#if this.checked}}checked{{/if}}>
+              <span>{{this.label}}</span>
+            </label>
+            {{/each}}
+          </div>
+          <div class="rs-learn-filter-group">
+            <span class="rs-learn-filter-label">{{localize "REDSTEEL.Learn.Spells.filterProperties"}}</span>
+            <label class="rs-learn-filter-check">
+              <input type="checkbox" data-spell-concentration {{#if spells.concentration}}checked{{/if}}>
+              <span>{{localize "REDSTEEL.Learn.Spells.concentration"}}</span>
+            </label>
+            <label class="rs-learn-filter-check">
+              <input type="checkbox" data-spell-sustained {{#if spells.sustained}}checked{{/if}}>
+              <span>{{localize "REDSTEEL.Learn.Spells.sustained"}}</span>
+            </label>
+          </div>
+          <div class="rs-learn-filter-group">
+            <span class="rs-learn-filter-label">{{localize "REDSTEEL.Learn.Spells.filterStatus"}}</span>
+            <label class="rs-learn-filter-check">
+              <input type="checkbox" data-spell-hide-written {{#if spells.hideWritten}}checked{{/if}}>
+              <span>{{localize "REDSTEEL.Learn.Spells.hideWritten"}}</span>
+            </label>
+            <label class="rs-learn-filter-check">
+              <input type="checkbox" data-spell-only-reachable {{#if spells.onlyReachable}}checked{{/if}}>
+              <span>{{localize "REDSTEEL.Learn.Spells.onlyReachable"}}</span>
+            </label>
+          </div>
+          <footer class="rs-learn-filter-actions">
+            <button type="button" data-action="resetSpellFilters">{{localize "REDSTEEL.Learn.Spells.reset"}}</button>
+          </footer>
+        </div>
+      </header>
+
+      <div class="rs-learn-spells-list">
+        {{#each spells.rows}}
+        {{!-- One spell, ruled off like a ledger line: the write diamond, the
+              memorise diamond, the icon and name (hover for the spell's card),
+              its rank, what it costs a turn, its mana and Difficulty, and where
+              the character stands with it. --}}
+        <div class="rs-learn-spell state-{{this.state}}"
+             data-rank="{{this.rank}}"
+             data-actions="{{this.actionBucket}}"
+             data-free="{{#if this.free}}true{{else}}false{{/if}}"
+             data-reaction="{{#if this.reaction}}true{{else}}false{{/if}}"
+             data-concentration="{{#if this.concentration}}true{{else}}false{{/if}}"
+             data-sustained="{{#if this.sustained}}true{{else}}false{{/if}}"
+             data-state="{{this.state}}"
+             data-name="{{this.search}}">
+          <div class="rs-learn-node state-{{this.state}} {{#if this.inActiveBook}}is-owned{{/if}}"
+               {{#if @root.editable}}{{#if this.canWrite}}data-action="writeSpell" data-uuid="{{this.uuid}}"{{else if this.canErase}}data-action="eraseSpell" data-uuid="{{this.uuid}}"{{/if}}{{/if}}
+               data-tooltip="{{this.writeTooltip}}" data-tooltip-direction="UP">
+            <span class="rs-learn-diamond"></span>
+            {{#if this.showLock}}<i class="fas fa-lock rs-learn-lock"></i>{{/if}}
+          </div>
+          <div class="rs-learn-node state-{{this.state}} {{#if (eq this.state "memorised")}}is-owned{{/if}}"
+               {{#if @root.editable}}{{#if this.canMemorise}}data-action="memoriseSpell" data-uuid="{{this.uuid}}"{{else if this.canForget}}data-action="forgetSpell" data-uuid="{{this.uuid}}"{{/if}}{{/if}}
+               data-tooltip="{{this.memoriseTooltip}}" data-tooltip-direction="UP">
+            <span class="rs-learn-diamond is-memorise"></span>
+            {{#if this.showLock}}<i class="fas fa-lock rs-learn-lock"></i>{{/if}}
+          </div>
+          <img class="rs-learn-feature-icon" src="{{this.img}}" alt="{{this.name}}">
+          <span class="rs-learn-spell-name"
+                data-tt-kind="spellCardUuid" data-tt-uuid="{{this.uuid}}">{{this.name}}</span>
+          <span class="rs-learn-spell-rank">{{this.rankLabel}}</span>
+          <span class="rs-learn-spell-chips">
+            {{#each this.chips}}<span class="rs-learn-req">{{this}}</span>{{/each}}
+          </span>
+          <b class="rs-learn-spell-mana" data-tooltip="{{this.manaTooltip}}">{{this.cost}}</b>
+          <b class="rs-learn-spell-difficulty" data-tooltip="{{this.difficultyTooltip}}">{{this.difficulty}}</b>
+          <em class="rs-learn-spell-state">{{this.stateLabel}}</em>
+        </div>
+        {{/each}}
+        <p class="rs-learn-empty rs-learn-spells-none" {{#if spells.rows.length}}hidden{{/if}}>{{localize "REDSTEEL.Learn.Spells.none"}}</p>
+      </div>
+    </section>
+
+  </div>
+
   {{else if isSpecsTab}}
   {{!-- The Specialisations tab (user rulings 2026-09-11, 2026-09-14). The main
         view holds the character's owned specialisation cards and one Learn
@@ -900,7 +1204,24 @@
                   {{#if node.tipReasons}}data-tt-reasons="{{node.tipReasons}}" data-tt-reasons-title="{{node.tipReasonsTitle}}"{{/if}}
                   {{#if node.tipAdvisory}}data-tt-advisory="{{node.tipAdvisory}}"{{/if}}>
               {{#if node.icon}}<img src="{{node.icon}}" alt="">{{/if}}
-              <span class="spec-node-label">{{localize node.label}}{{#if node.costLabel}}<span class="spec-node-cost">{{node.costLabel}}</span>{{/if}}</span>
+              {{!-- The name, and under it the line the star is priced on: the
+                    price, and the cap of the trainer the book gates the star
+                    on. The cap sits beside the price rather than on the star,
+                    where it covered the artwork. Gold once the GM has granted
+                    the teacher for THIS star, dim while it is missing. Only
+                    the GM's cap is a control, and it is the one thing in the
+                    label that takes a pointer, so its own data-action wins
+                    over the star's buy/refund one. --}}
+              <span class="spec-node-label">{{localize node.label}}<span class="spec-node-meta">
+                {{~#if node.costLabel~}}
+                <span class="spec-node-cost">{{node.costLabel}}</span>
+                {{~/if~}}
+                {{~#if node.teacher~}}
+                <span class="spec-node-teacher {{node.teacher.cls}}"
+                      {{#if node.teacher.action}}data-action="{{node.teacher.action}}" data-spec="{{node.teacher.specId}}" data-node="{{node.teacher.nodeId}}"{{/if}}
+                      data-tt-kind="text" data-tt-text="{{node.teacher.tooltip}}"><i class="fas fa-graduation-cap"></i><b>{{node.teacher.roman}}</b></span>
+                {{~/if~}}
+              </span></span>
             </span>
             {{/each}}
           </div>
@@ -926,6 +1247,16 @@
             </select>
           </div>
           {{/each}}
+        </div>
+        {{/if}}
+        {{!-- A Specialist-style discount landing on this specialisation from
+              elsewhere (its pick lives on the Features tab): a note only. --}}
+        {{#if specs.open.specNodeDiscount}}
+        <div class="rs-learn-spec-picks">
+          <div class="rs-learn-discount-pick">
+            <b>−{{specs.open.specNodeDiscount.amount}} {{specs.open.specNodeDiscount.currency}}</b>
+            <span class="rs-learn-discount-pick-name">{{specs.open.specNodeDiscount.text}}</span>
+          </div>
         </div>
         {{/if}}
         {{!-- The picks of the owned perks that make one track copy another's

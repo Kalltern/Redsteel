@@ -6,7 +6,12 @@ import {
 import { evaluateDmgVsArmor } from "../utils/combatSkillBonuses.mjs";
 import { getSpellPower } from "../utils/spellPower.mjs";
 import { gainBloodFromBleed, bloodGainNote } from "../utils/bloodPool.mjs";
+import {
+  BLOOD_SOURCE_FLAG,
+  creditGiftOfBloodFromEffect,
+} from "../utils/giftOfBlood.mjs";
 import { STATE_GATED_IMMUNITIES } from "../helpers/specialisations-generated.mjs";
+import { getEffectDurationBonus } from "../helpers/specialisations.mjs";
 import {
   isFloorEffect,
   syncFloorInitiative,
@@ -1148,10 +1153,35 @@ export class RedsteelActiveEffect extends ActiveEffect {
     }
 
     // ============================================
+    // SPECIALISATION DURATION BONUSES
+    // ============================================
+    // Last step before the effect is written, so it lengthens whatever the
+    // blocks above settled on (a flat default, an explicit `turns`/`rounds`
+    // from the caller, or an SK-scaled clock alike). A duration of 0 is left
+    // alone: that means "no clock", and adding to it would turn a permanent
+    // effect into a short one. The table lives in helpers/specialisations.mjs.
+    if (sourceCaster) {
+      const durationBonus = getEffectDurationBonus(sourceCaster, effectId, {
+        school,
+      });
+      if (turnsDuration > 0) turnsDuration += durationBonus.turns;
+      if (roundsDuration > 0) roundsDuration += durationBonus.rounds;
+    }
+
+    // ============================================
     // EXISTING EFFECT
     // ============================================
     if (existing) {
       const stackBehavior = RedsteelActiveEffect.stackBehaviorOf(def);
+
+      // Dar krve — record which Blood caster last fed this effect, so a DoT or
+      // a Bleeding it carries pays them when a tick finishes the target off.
+      // Written before the branch dispatch below so all four re-apply
+      // behaviours carry it, and never cleared: a later non-Blood re-apply does
+      // not take the wound away from the caster who opened it.
+      if (school === "blood" && sourceCaster) {
+        await existing.setFlag("redsteel", BLOOD_SOURCE_FLAG, sourceCaster.uuid);
+      }
 
       // =========================================
       // IGNORE
@@ -1301,6 +1331,14 @@ export class RedsteelActiveEffect extends ActiveEffect {
     const redsteelFlags = {
       triggers,
     };
+
+    // Dar krve — see the re-apply path above. Set here rather than after the
+    // create so it is already on the document when `onApply` fires: Bleeding's
+    // {appliedStacks}d4 can kill outright, and that tick has to be able to find
+    // the caster who caused it.
+    if (school === "blood" && sourceCaster) {
+      redsteelFlags[BLOOD_SOURCE_FLAG] = sourceCaster.uuid;
+    }
 
     // Derived, not a literal check on the definition: an effect the
     // re-application path will treat as stacking has to be *created* with a
@@ -1858,6 +1896,7 @@ export class RedsteelActiveEffect extends ActiveEffect {
 
     if (trigger.target) {
       const current = foundry.utils.getProperty(actor, trigger.target) ?? 0;
+      const hpBeforeTick = Number(actor.system.stats.health?.value ?? 0);
 
       await actor.update({
         [trigger.target]: current - roll.total,
@@ -1874,6 +1913,9 @@ export class RedsteelActiveEffect extends ActiveEffect {
       // same Dying/Downed (or death) handling as taking a hit.
       if (trigger.target === "system.stats.health.value") {
         await this._maybeApplyZeroHealthState();
+        // Dar krve — a DoT or a Bleeding that a Blood spell created pays its
+        // caster for the kill. A no-op for every effect with no Blood stamp.
+        await creditGiftOfBloodFromEffect(this, hpBeforeTick);
       }
     }
 
@@ -2029,6 +2071,8 @@ export class RedsteelActiveEffect extends ActiveEffect {
       return;
     }
 
+    const hpBeforeTick = Number(actor.system.stats.health?.value ?? 0);
+
     const result = evaluateDmgVsArmor({
       damage: roll.total,
       penetration: 0,
@@ -2066,6 +2110,9 @@ export class RedsteelActiveEffect extends ActiveEffect {
     await actor.update(updateData);
 
     await this._maybeApplyZeroHealthState();
+    // Dar krve — a GM condition a Blood spell applied pays its caster for the
+    // kill, exactly like a built-in DoT. A no-op with no Blood stamp.
+    await creditGiftOfBloodFromEffect(this, hpBeforeTick);
 
     const types = (trigger.damageProfile?.expression ?? [])
       .filter((t) => t !== "and" && t !== "or")

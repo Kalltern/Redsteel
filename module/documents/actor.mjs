@@ -1591,6 +1591,11 @@ export class RedsteelActor extends Actor {
     // is display-only (nothing is persisted), which is exactly what makes an
     // unspent reserved point reappear when the item comes off.
     stat.mind.value = Math.min(Number(stat.mind.value) || 0, stat.mind.max);
+    // The Config tab's bonus input binds to `sourceBonus`, never `bonus`:
+    // `bonus` already carries Active Effect additions (Iron Will, Mentalist
+    // nodes), so saving it back persisted the effect and stacked it again on
+    // every sheet submit. Same trap as the NPC `sourceMax` below.
+    stat.mind.sourceBonus = Number(this._source.system?.stats?.mind?.bonus) || 0;
     stat.insanity.max = wil + stat.insanity.bonus + stat.insanity.base;
 
     // Calculate trap detection skill

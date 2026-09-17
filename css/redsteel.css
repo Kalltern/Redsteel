@@ -2562,6 +2562,11 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   border-color: rgba(160, 60, 60, 0.6);
 }
 
+.action-tag.bloodPayment {
+  background: rgba(120, 12, 12, 0.55);
+  border-color: rgba(200, 90, 90, 0.6);
+}
+
 .message-content {
   position: relative;
 }
@@ -4862,6 +4867,16 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   pointer-events: none;
 }
 
+/* The line under a star's name: its price, and the teacher's cap when the book
+   gates the star on a trainer. A star that has neither leaves the row empty,
+   and an empty flex row takes no height, so nothing shifts. */
+.redsteel .spec-node-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
 /* Prerequisites not met */
 .redsteel .spec-node.locked {
   opacity: 0.45;
@@ -4874,7 +4889,7 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   cursor: pointer;
 }
 
-.redsteel .spec-node.available:hover {
+.redsteel .spec-node.available:hover:where(:not(:has(.spec-node-teacher:hover))) {
   border-color: #d9a13b;
   box-shadow: 0 0 6px rgba(217, 161, 59, 0.6);
 }
@@ -4907,6 +4922,55 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 
 .redsteel .spec-node.automated::after {
   background: #6fa8dc;
+}
+
+/* Teacher gate: a star the book only opens with a trainer wears a small cap and
+   the trainer's rank. It sits on the price line under the name, beside the
+   price, rather than on the star itself, where it lay over the artwork. Gold
+   once the GM has granted the teacher for this star, ashen while it is
+   missing. Flat on the sky — no plate, no tint — so it reads as a mark
+   scratched beside the price. */
+.redsteel .spec-node-teacher {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  color: #8a8175;
+  text-shadow: 0 0 3px #17110b;
+  cursor: default;
+  /* The label lets every pointer through to the star underneath it; the cap
+     takes one back, so the GM can toggle it and its tooltip can open. A hover
+     on the cap still reaches the star as an ancestor, which CSS cannot stop,
+     so the star's own hover rules exclude it instead (:has, above) — the name
+     must not light up for a pointer that is on the cap. */
+  pointer-events: auto;
+}
+
+.redsteel .spec-node-teacher i {
+  font-size: 10px;
+  line-height: 1;
+}
+
+.redsteel .spec-node-teacher b {
+  font-family: Cambria, Georgia, serif;
+  font-variant-numeric: lining-nums;
+  font-size: 8px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* Granted: the same gold a taken star burns in. */
+.redsteel .spec-node-teacher.is-unlocked {
+  color: #d9a13b;
+}
+
+/* Only the GM can move it, so only the GM's pointer says so. */
+.redsteel .spec-node-teacher.is-gm {
+  cursor: pointer;
+}
+
+.redsteel .spec-node-teacher.is-gm:hover {
+  color: #f0dcae;
 }
 
 /* -------------------------------------------- */
@@ -5073,7 +5137,7 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   animation: spec-star-pulse 2.4s ease-in-out infinite;
 }
 
-.redsteel .spec-tree.constellation .spec-node.available:hover::before {
+.redsteel .spec-tree.constellation .spec-node.available:hover:where(:not(:has(.spec-node-teacher:hover)))::before {
   box-shadow: 0 0 0 2px rgba(240, 210, 122, 0.8), 0 0 12px rgba(240, 210, 122, 0.9);
 }
 
@@ -5092,7 +5156,9 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   font-size: 9.5px;
 }
 
-.redsteel .spec-tree.constellation .spec-node:hover .spec-node-label {
+/* :where() so the guard costs no specificity — the .unlocked rule below still
+   wins on a taken star, exactly as it did before the guard was added. */
+.redsteel .spec-tree.constellation .spec-node:hover:where(:not(:has(.spec-node-teacher:hover))) .spec-node-label {
   color: #f0d98a;
   opacity: 1;
 }
@@ -9503,6 +9569,34 @@ body.redsteel-bg3-hotbar #hotbar {
   color: #6c6455;
 }
 
+/* Divides the pools from what is guarding them (temporary Life, absorb
+   shields): one bronze hairline, fading at both ends so it reads as a scored
+   line in the plate rather than a border. */
+#redsteel-bg3-hotbar .rs-bg3-resedit-rule {
+  flex: 0 0 auto;
+  height: 1px;
+  margin: 3px 1px 1px;
+  background: linear-gradient(
+    90deg,
+    rgba(154, 144, 120, 0) 0%,
+    rgba(154, 144, 120, 0.42) 22%,
+    rgba(154, 144, 120, 0.42) 78%,
+    rgba(154, 144, 120, 0) 100%
+  );
+}
+
+/* A shield's row is named by its effect, so it carries the effect's icon. Core
+   puts a border on every img in an app window; this one is a glyph. */
+#redsteel-bg3-hotbar .rs-bg3-resedit-icon {
+  width: 13px;
+  height: 13px;
+  margin-right: 4px;
+  vertical-align: -2px;
+  object-fit: cover;
+  border: none;
+  border-radius: 0;
+}
+
 /* Party capacity readout: a measuring aid, sitting above the bar so it never
    changes the layout it is measuring. */
 #redsteel-bg3-hotbar .rs-bg3-capacity {
@@ -13120,6 +13214,166 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
 }
 
 
+/* -------- party switch -------- */
+
+/* The GM's way between characters (user request 2026-09-16): a plate beside
+   the close button that rolls the party out under it, each member a portrait
+   and a name. A click reopens the screen on that character, on the tab that
+   was open. Only the GM has the plate, and only with more than one character
+   to switch between.
+
+   The two plates share this wrapper because the column they stand in sets a
+   22px gap between its items, which is far too wide for them. The wrapper
+   takes the corner the close button used to take on its own; the close
+   button's own margin and alignment do nothing in here and are left alone. */
+.rs-learn .rs-learn-hero-corner {
+  flex: 0 0 auto;
+  align-self: flex-start;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0 0 0 auto;
+}
+
+.rs-learn .rs-learn-party {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+/* The close button's plate, with room for the caret. */
+.rs-learn .rs-learn-party-button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: auto;
+  height: auto;
+  padding: 2px 8px;
+  border: 1px solid #514226;
+  border-radius: 0;
+  background: rgba(12, 12, 11, 0.6);
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.8);
+  font-size: calc(13px * var(--rs-learn-text));
+  line-height: calc(20px * var(--rs-learn-text));
+  color: #b7ac97;
+  cursor: pointer;
+}
+
+.rs-learn .rs-learn-party-caret {
+  font-size: calc(10px * var(--rs-learn-text));
+  opacity: 0.75;
+}
+
+.rs-learn .rs-learn-party-button:hover,
+.rs-learn .rs-learn-party-button.active {
+  border-color: #9c7b45;
+  background: rgba(12, 12, 11, 0.6);
+  color: #f0d7aa;
+}
+
+/* The roster, in the filter pop-up's material. It hangs inside the hero band,
+   which clips what overflows it (see .rs-learn-hero), so it is capped well
+   short of the band's lower edge and scrolls when the party is larger than
+   that. The cap is written against the same dial the band's height follows,
+   so the two scale together. */
+.rs-learn .rs-learn-party-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: max-content;
+  min-width: calc(180px * var(--rs-learn-text));
+  max-height: calc(170px * var(--rs-learn-text));
+  overflow-y: auto;
+  padding: 8px;
+  background:
+    linear-gradient(rgba(12, 12, 11, 0.86), rgba(12, 12, 11, 0.94)),
+    url(../ui/headertexture.jpg);
+  border: 2px solid #514226;
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.8),
+    inset 0 0 18px rgba(0, 0, 0, 0.6);
+}
+
+.rs-learn .rs-learn-party-menu[hidden] {
+  display: none;
+}
+
+/* The engraved label over the list, the sheet's small serif caps. */
+.rs-learn .rs-learn-party-heading {
+  padding: 0 2px 5px;
+  margin-bottom: 3px;
+  border-bottom: 1px solid var(--rs-field-rule);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(11px * var(--rs-learn-text));
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8c8271;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.9);
+}
+
+.rs-learn .rs-learn-party-member {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: auto;
+  padding: 3px 4px;
+  border: 1px solid transparent;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  font-size: calc(13px * var(--rs-learn-text));
+  line-height: calc(20px * var(--rs-learn-text));
+  text-align: left;
+  color: #b7ac97;
+  cursor: pointer;
+}
+
+/* The portrait frame of the hero specs in miniature, squared off. */
+.rs-learn .rs-learn-party-member img {
+  flex: 0 0 auto;
+  width: calc(26px * var(--rs-learn-text));
+  height: calc(26px * var(--rs-learn-text));
+  max-width: none;
+  padding: 1px;
+  border: 1px solid #433c2f;
+  border-radius: 0;
+  background: #2e271c;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.rs-learn .rs-learn-party-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.rs-learn .rs-learn-party-member:hover {
+  border-color: #9c7b45;
+  background: rgba(156, 123, 69, 0.12);
+  color: #f0d7aa;
+}
+
+/* The character already on screen: named in gold, and inert. */
+.rs-learn .rs-learn-party-member.is-current,
+.rs-learn .rs-learn-party-member.is-current:hover {
+  border-color: transparent;
+  background: none;
+  color: #d9a13b;
+  cursor: default;
+}
+
+.rs-learn .rs-learn-party-member.is-current img {
+  border-color: #9c7b45;
+}
+
+
 /* -------- toggle row -------- */
 
 /* The row over the grid on Combat and Skills (user ruling). Each toggle
@@ -14676,6 +14930,11 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   padding: 0 12px 14px;
 }
 
+/* Specialization's picker trails an "Other skills" column (unclassed skills). */
+.rs-learn .rs-learn-family-columns.is-four {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 .rs-learn .rs-learn-family-column {
   margin: 12px 0 0;
   min-width: 0;
@@ -15530,6 +15789,26 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   height: calc(7 * var(--rs-sky));
 }
 
+/* The price line and the cap on it grow with the sky and with the text dial,
+   exactly as the price does. Scoped to the body rather than to a constellation
+   so a grid tree gets the same line (there --rs-sky is one real pixel). */
+.rs-learn .rs-learn-spec-view-body .spec-node-meta {
+  gap: calc(4 * var(--rs-sky));
+}
+
+.rs-learn .rs-learn-spec-view-body .spec-node-teacher {
+  gap: calc(1 * var(--rs-sky));
+  margin-top: 1px;
+}
+
+.rs-learn .rs-learn-spec-view-body .spec-node-teacher i {
+  font-size: calc(8 * var(--rs-sky) * var(--rs-learn-text));
+}
+
+.rs-learn .rs-learn-spec-view-body .spec-node-teacher b {
+  font-size: calc(7 * var(--rs-sky) * var(--rs-learn-text));
+}
+
 .rs-learn .rs-learn-spec-view-body .spec-tree.constellation .spec-node-label {
   top: calc(100% + 3 * var(--rs-sky));
   width: calc(92 * var(--rs-sky));
@@ -15570,6 +15849,422 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   line-height: calc(16px * var(--rs-learn-text));
   text-align: center;
   color: #8a8175;
+}
+
+
+/* -------- spells tab -------- */
+
+/* The same two stone plates as the Features tab: the grimoire on the left,
+   the school's whole spell list on the right, each scrolling on its own. */
+.rs-learn .rs-learn-spells {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(calc(360px * var(--rs-learn-text)), 38%) minmax(0, 1fr);
+  gap: 12px;
+  margin: 10px 12px 12px;
+}
+
+.rs-learn .rs-learn-spellbook,
+.rs-learn .rs-learn-spells-browser {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background:
+    linear-gradient(rgba(12, 12, 11, 0.5), rgba(12, 12, 11, 0.5)),
+    url(../ui/headertexture.jpg);
+  border: 2px solid #514226;
+  border-radius: 0;
+  box-shadow:
+    inset 0 0 25px rgba(0, 0, 0, 0.65),
+    0 0 12px rgba(0, 0, 0, 0.35);
+}
+
+.rs-learn .rs-learn-spellbook {
+  overflow-y: auto;
+  padding: 10px 12px 14px;
+}
+
+.rs-learn .rs-learn-spells-browser {
+  overflow: hidden;
+}
+
+/* More than one grimoire: a row of small plates, the open one lit, the way the
+   toggle row over the grid reads. */
+.rs-learn .rs-learn-spell-books {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 10px;
+}
+
+.rs-learn .rs-learn-spell-book {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 3px 8px;
+  border: 1px solid #514226;
+  border-radius: 0;
+  background:
+    linear-gradient(to bottom, rgba(81, 66, 38, 0.28), rgba(12, 12, 11, 0.6)),
+    url(../ui/headertexture.jpg);
+  box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.6);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(12px * var(--rs-learn-text));
+  line-height: calc(16px * var(--rs-learn-text));
+  color: #b7ac97;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+  cursor: pointer;
+}
+
+.rs-learn .rs-learn-spell-book img {
+  flex: 0 0 auto;
+  width: calc(20px * var(--rs-learn-text));
+  height: calc(20px * var(--rs-learn-text));
+  max-width: none;
+  object-fit: cover;
+  padding: 0;
+  border: 1px solid #514226;
+  border-radius: 0;
+  background: #14120d;
+}
+
+.rs-learn .rs-learn-spell-book:hover,
+.rs-learn .rs-learn-spell-book.active {
+  color: #f0d7aa;
+  border-color: #9c7b45;
+}
+
+.rs-learn .rs-learn-spell-book b {
+  font-family: Cambria, "Times New Roman", Times, serif;
+  font-variant-numeric: lining-nums;
+  color: #d9a13b;
+}
+
+/* How full the open book is, on its heading line. */
+.rs-learn .rs-learn-spell-count {
+  float: right;
+  font-family: Cambria, "Times New Roman", Times, serif;
+  font-variant-numeric: lining-nums;
+  font-size: calc(11px * var(--rs-learn-text));
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: #8a8175;
+}
+
+.rs-learn .rs-learn-spell-group {
+  margin: 8px 0 0;
+}
+
+.rs-learn .rs-learn-spell-group-name {
+  display: block;
+  padding: 0 2px 2px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(11px * var(--rs-learn-text));
+  line-height: calc(14px * var(--rs-learn-text));
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8a8175;
+}
+
+/* One written or memorised spell, ruled off like an owned feature, with the
+   erase control showing only on hover. */
+.rs-learn .rs-learn-spell-entry,
+.rs-learn .rs-learn-spell-archive {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 2px;
+  border-bottom: 1px solid rgba(81, 66, 38, 0.35);
+}
+
+.rs-learn .rs-learn-spell-entry img,
+.rs-learn .rs-learn-spell-archive img {
+  flex: 0 0 auto;
+  width: calc(26px * var(--rs-learn-text));
+  height: calc(26px * var(--rs-learn-text));
+  max-width: none;
+  object-fit: cover;
+  padding: 0;
+  border: 1px solid #514226;
+  border-radius: 0;
+  background: #14120d;
+}
+
+.rs-learn .rs-learn-spell-entry-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(13px * var(--rs-learn-text));
+  line-height: calc(17px * var(--rs-learn-text));
+  color: #d6bc8c;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.rs-learn .rs-learn-spell-entry.is-locked .rs-learn-spell-entry-name {
+  color: #8a8175;
+}
+
+.rs-learn .rs-learn-spell-entry-rank {
+  flex: 0 0 auto;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(11px * var(--rs-learn-text));
+  line-height: calc(14px * var(--rs-learn-text));
+  color: #b7ac97;
+  white-space: nowrap;
+}
+
+.rs-learn .rs-learn-spell-entry-note {
+  flex: 0 0 auto;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(11px * var(--rs-learn-text));
+  line-height: calc(14px * var(--rs-learn-text));
+  color: #8a8175;
+  white-space: nowrap;
+}
+
+.rs-learn .rs-learn-spell-erase {
+  flex: 0 0 auto;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 2px 6px;
+  border: 1px solid transparent;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  font-size: calc(12px * var(--rs-learn-text));
+  line-height: calc(16px * var(--rs-learn-text));
+  color: #6f675a;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.rs-learn .rs-learn-spell-entry:hover .rs-learn-spell-erase,
+.rs-learn .rs-learn-spell-archive:hover .rs-learn-spell-erase {
+  opacity: 1;
+}
+
+.rs-learn .rs-learn-spell-erase:hover {
+  color: #f0d7aa;
+  border-color: #9c7b45;
+  background: rgba(12, 12, 11, 0.6);
+}
+
+.rs-learn .rs-learn-spell-newbook {
+  margin: 10px 0 0;
+}
+
+.rs-learn .rs-learn-spell-hint {
+  margin: 2px 0 6px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-style: italic;
+  font-size: calc(11px * var(--rs-learn-text));
+  line-height: calc(15px * var(--rs-learn-text));
+  color: #8a8175;
+}
+
+/* The school pills over the list: engraved plates, not rounded tabs. */
+.rs-learn .rs-learn-spell-schools {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #514226;
+}
+
+.rs-learn .rs-learn-spell-school {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 3px 10px;
+  border: 1px solid #514226;
+  border-radius: 0;
+  background:
+    linear-gradient(to bottom, rgba(81, 66, 38, 0.28), rgba(12, 12, 11, 0.6)),
+    url(../ui/headertexture.jpg);
+  box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.6);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(12px * var(--rs-learn-text));
+  line-height: calc(16px * var(--rs-learn-text));
+  letter-spacing: 0.04em;
+  color: #b7ac97;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+  cursor: pointer;
+}
+
+.rs-learn .rs-learn-spell-school:hover {
+  color: #f0d7aa;
+  border-color: #9c7b45;
+}
+
+.rs-learn .rs-learn-spell-school.active {
+  color: #f0d7aa;
+  border-color: #9c7b45;
+  background:
+    linear-gradient(to bottom, rgba(81, 66, 38, 0.55), rgba(81, 66, 38, 0.15)),
+    url(../ui/headertexture.jpg);
+}
+
+.rs-learn .rs-learn-spell-school b {
+  font-family: Cambria, "Times New Roman", Times, serif;
+  font-size: calc(11px * var(--rs-learn-text));
+  color: #d9a13b;
+}
+
+.rs-learn .rs-learn-spell-noschools {
+  font-family: Georgia, "Times New Roman", serif;
+  font-style: italic;
+  font-size: calc(12px * var(--rs-learn-text));
+  color: #8a8175;
+}
+
+/* The bar wears the Features bar's stone; only the search field and the SP
+   figure are new. */
+.rs-learn .rs-learn-spell-search {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: calc(28px * var(--rs-learn-text));
+  margin: 0;
+  padding: 0 8px;
+  border: 1px solid #514226;
+  border-radius: 0;
+  background: rgba(0, 0, 0, 0.45);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.7);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(13px * var(--rs-learn-text));
+  line-height: calc(18px * var(--rs-learn-text));
+  color: #d6bc8c;
+}
+
+.rs-learn .rs-learn-spell-sp {
+  flex: 0 0 auto;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(12px * var(--rs-learn-text));
+  line-height: calc(16px * var(--rs-learn-text));
+  color: #b7ac97;
+  white-space: nowrap;
+}
+
+.rs-learn .rs-learn-spell-sp b {
+  font-family: Cambria, "Times New Roman", Times, serif;
+  font-variant-numeric: lining-nums;
+  color: #d9a13b;
+}
+
+.rs-learn .rs-learn-spell-sp.is-poor,
+.rs-learn .rs-learn-spell-sp.is-poor b {
+  color: #8a8175;
+}
+
+.rs-learn .rs-learn-spells-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 12px 14px;
+}
+
+/* One spell of the school, on the Features row's ledger line: the write
+   diamond, the memorise diamond, the icon, the name, the rank, what it asks of
+   a turn, its mana and Difficulty, and where the character stands with it. */
+.rs-learn .rs-learn-spell {
+  display: grid;
+  grid-template-columns:
+    calc(30px * var(--rs-learn-text)) calc(30px * var(--rs-learn-text))
+    calc(32px * var(--rs-learn-text)) minmax(calc(150px * var(--rs-learn-text)), 1fr)
+    minmax(0, auto) minmax(0, 1.4fr)
+    calc(34px * var(--rs-learn-text)) calc(38px * var(--rs-learn-text))
+    minmax(calc(76px * var(--rs-learn-text)), auto);
+  align-items: center;
+  column-gap: 8px;
+  padding: 3px 8px;
+  border-bottom: 1px solid rgba(81, 66, 38, 0.35);
+}
+
+.rs-learn .rs-learn-spell:hover {
+  background: rgba(81, 66, 38, 0.18);
+}
+
+/* The memorise diamond is the smaller of the pair: the book comes first, the
+   caster's memory second. */
+.rs-learn .rs-learn-spell .rs-learn-diamond.is-memorise {
+  width: 16px;
+  height: 16px;
+}
+
+.rs-learn .rs-learn-spell-name {
+  min-width: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(13px * var(--rs-learn-text));
+  line-height: calc(17px * var(--rs-learn-text));
+  color: #d6bc8c;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.rs-learn .rs-learn-spell.state-locked .rs-learn-spell-name,
+.rs-learn .rs-learn-spell.state-written .rs-learn-spell-name,
+.rs-learn .rs-learn-spell.state-memorised .rs-learn-spell-name,
+.rs-learn .rs-learn-spell.state-owned .rs-learn-spell-name {
+  color: #8a8175;
+}
+
+.rs-learn .rs-learn-spell-rank {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(11px * var(--rs-learn-text));
+  line-height: calc(14px * var(--rs-learn-text));
+  color: #b7ac97;
+  white-space: nowrap;
+}
+
+.rs-learn .rs-learn-spell-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  min-width: 0;
+}
+
+.rs-learn .rs-learn-spell-chips .rs-learn-req {
+  font-size: calc(10px * var(--rs-learn-text));
+  line-height: calc(13px * var(--rs-learn-text));
+}
+
+.rs-learn .rs-learn-spell-mana,
+.rs-learn .rs-learn-spell-difficulty {
+  font-family: Cambria, "Times New Roman", Times, serif;
+  font-variant-numeric: lining-nums;
+  font-weight: 700;
+  font-size: calc(13px * var(--rs-learn-text));
+  line-height: calc(17px * var(--rs-learn-text));
+  text-align: right;
+  color: #d9a13b;
+  white-space: nowrap;
+}
+
+.rs-learn .rs-learn-spell.state-locked .rs-learn-spell-mana,
+.rs-learn .rs-learn-spell.state-locked .rs-learn-spell-difficulty {
+  color: #8a8175;
+}
+
+.rs-learn .rs-learn-spell-state {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(11px * var(--rs-learn-text));
+  line-height: calc(14px * var(--rs-learn-text));
+  text-align: right;
+  color: #8a8175;
+  white-space: nowrap;
+}
+
+.rs-learn .rs-learn-spell.state-memorised .rs-learn-spell-state,
+.rs-learn .rs-learn-spell.state-written .rs-learn-spell-state {
+  color: #b7ac97;
 }
 
 
@@ -15846,10 +16541,12 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   --rs-field-grain: 0.16;
   --rs-field-rule: rgba(81, 66, 38, 0.6);
   /* One column list shared by the header band and every row, so they line
-     up. Fixed tracks sum to 946px plus the 130px name floor: 1076px, inside
-     the ~1130px the plate leaves at the default 1180px width. Narrower than
-     that, the plate scrolls sideways on its own. */
-  --rs-party-cols: 26px minmax(130px, 1fr) 52px 80px 80px 128px 72px 72px 66px 72px 72px 66px 124px 36px;
+     up. The five step-button columns (wounds, treated, Mind, Insanity,
+     Fatigue) are 88px each: two 18px buttons, the figure between them and the
+     gaps. Fixed tracks sum to 1110px plus the 130px name floor: 1240px,
+     inside the ~1264px the plate leaves at the default 1310px width. Narrower
+     than that, the plate scrolls sideways on its own. */
+  --rs-party-cols: 26px minmax(130px, 1fr) 52px 80px 80px 128px 72px 72px 88px 88px 88px 88px 88px 124px 36px;
 }
 
 /* The actor sheet's field material, copied. */
@@ -16212,6 +16909,82 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
 .application.redsteel.rs-party .rs-party-coin b {
   font-family: Cambria, "Times New Roman", Times, serif;
   font-variant-numeric: lining-nums;
+}
+
+/* -------- counters -------- */
+
+/* Grave wounds, treated wounds, Mind, Insanity and Fatigue: the figure with a
+   step button either side. The buttons stay quiet until the row is under the
+   pointer, so fifty of them do not fight the figures for attention. */
+.application.redsteel.rs-party .rs-party-counter {
+  justify-content: center;
+  gap: 3px;
+  padding: 4px 3px;
+}
+
+.application.redsteel.rs-party .rs-party-counter .rs-party-fig {
+  flex: 1 1 auto;
+  text-align: center;
+}
+
+.application.redsteel.rs-party .rs-party-step {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  min-width: 18px;
+  height: 18px;
+  min-height: 18px;
+  margin: 0;
+  padding: 0;
+  font-size: 10px;
+  line-height: 1;
+  color: #8a8175;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+  background: linear-gradient(
+    to bottom,
+    rgba(81, 66, 38, 0.18),
+    rgba(12, 12, 11, 0.55)
+  );
+  border: 1px solid transparent;
+  border-radius: 0;
+  outline: none;
+  box-shadow: none;
+  opacity: 0.45;
+  cursor: pointer;
+}
+
+.application.redsteel.rs-party .rs-party-row:hover .rs-party-step {
+  border-color: #514226;
+  opacity: 1;
+}
+
+.application.redsteel.rs-party .rs-party-step:hover,
+.application.redsteel.rs-party .rs-party-step:focus-visible {
+  color: #f0d7aa;
+  background: linear-gradient(
+    to bottom,
+    rgba(81, 66, 38, 0.32),
+    rgba(12, 12, 11, 0.6)
+  );
+  border-color: #9c7b45;
+  outline: none;
+  box-shadow: inset 0 1px 0 rgba(214, 188, 140, 0.12);
+  opacity: 1;
+}
+
+/* A counter at its floor or its ceiling: the button stays in place so the
+   figures never shift, but reads as dead. The row-hover rule is repeated here
+   so it cannot light a dead button back up. */
+.application.redsteel.rs-party .rs-party-step:disabled,
+.application.redsteel.rs-party .rs-party-row:hover .rs-party-step:disabled {
+  color: #6a6357;
+  background: rgba(12, 12, 11, 0.4);
+  border-color: transparent;
+  box-shadow: none;
+  opacity: 0.18;
+  cursor: default;
 }
 
 .application.redsteel.rs-party .rs-party-grant {

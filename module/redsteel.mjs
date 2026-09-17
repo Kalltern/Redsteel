@@ -63,6 +63,7 @@ import {
   resyncGrantedAbilities,
 } from "./utils/abilityGrants.mjs";
 import { registerRaceGrants } from "./utils/raceGrants.mjs";
+import { registerSpellbookHooks } from "./utils/spellbook.mjs";
 import {
   registerCalendariaIntegration,
   scheduleRerollRefresh,
@@ -477,6 +478,7 @@ Hooks.once("init", function () {
   registerAutoSpecNodes();
   registerTemperamentSchools();
   registerRaceGrants();
+  registerSpellbookHooks();
   registerCalendariaIntegration();
   registerCanvasZoom();
   registerDeadTokenAppearance();

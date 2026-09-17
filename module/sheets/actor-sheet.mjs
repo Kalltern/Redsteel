@@ -124,7 +124,7 @@ function isAccessory(item) {
 const INVENTORY_CATEGORIES = {
   all: {
     labelKey: "REDSTEEL.Actor.Inventory.Filter.All",
-    types: ["weapon", "gear", "consumable", "ammunition", "item"],
+    types: ["weapon", "gear", "consumable", "ammunition", "item", "spellbook"],
   },
   weapon: {
     labelKey: "REDSTEEL.Actor.Inventory.Filter.Weapons",
@@ -139,8 +139,10 @@ const INVENTORY_CATEGORIES = {
     types: ["consumable", "ammunition"],
   },
   item: {
+    // A grimoire is carried like any other object, and being able to pick it up
+    // off a corpse is the point of it (see utils/spellbook.mjs).
     labelKey: "REDSTEEL.Actor.Inventory.Filter.Items",
-    types: ["item"],
+    types: ["item", "spellbook"],
   },
 };
 
@@ -2374,8 +2376,8 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
         consumables.push(i);
         supplies.push(i);
       }
-      // Append to item.
-      else if (i.type === "item") {
+      // Append to item. A grimoire rides along with the ordinary objects.
+      else if (i.type === "item" || i.type === "spellbook") {
         items.push(i);
       }
       // Append to ammunition.
@@ -3729,8 +3731,13 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
    * @override
    */
   async _processSubmitData(event, form, submitData) {
+    // V14 hands this method the expanded object, so an overridden key has to
+    // be removed by path. A flat `delete submitData["system.a.b"]` matched
+    // nothing and let effect-boosted values be saved back into the source.
     const overrides = foundry.utils.flattenObject(this.actor.overrides);
-    for (let k of Object.keys(overrides)) delete submitData[k];
+    for (const k of Object.keys(overrides)) {
+      foundry.utils.deleteProperty(submitData, k);
+    }
     await this.document.update(submitData);
   }
 
@@ -3740,8 +3747,8 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
   #disableOverrides() {
     const flatOverrides = foundry.utils.flattenObject(this.actor.overrides);
     for (const override of Object.keys(flatOverrides)) {
-      const input = this.element.querySelector(`[name="${override}"]`);
-      if (input) {
+      // The same field can appear on more than one tab (header and Config).
+      for (const input of this.element.querySelectorAll(`[name="${override}"]`)) {
         input.disabled = true;
       }
     }

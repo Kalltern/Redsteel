@@ -2,7 +2,7 @@
   "folder": "NHaSpGKlxSYECai3",
   "name": "Weapon Specialization II",
   "type": "feature",
-  "img": "icons/magic/fire/dagger-rune-enchant-blue-gray.webp",
+  "img": "icons/weapons/swords/sword-runed-glowing.webp",
   "system": {
     "description": "<p>Advanced specialization in a weapon type. On acquiring, choose a weapon Tag in the feature's attributes tab. Bonuses apply automatically to any weapon whose Tags include your chosen tag.<br />To Hit +5%, Melee Defense +5%, Critical Hit chance +3%, Damage +1d4.<br />May reroll a Combat, Shooting, or Throw roll once per day.<br />Can be taken multiple times for different tags.</p>",
     "options": [

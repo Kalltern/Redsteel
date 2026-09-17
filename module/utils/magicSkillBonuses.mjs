@@ -4,6 +4,7 @@ import { withRollBias, applyDesperateCrit } from "./rollAdvantage.mjs";
 import {
   getBloodSchoolRankBonus,
   getCritDegreeTriggers,
+  getSchoolCritRangeBonus,
 } from "../helpers/specialisations.mjs";
 import { hasHtmlContent } from "./chatBlocks.mjs";
 import { getStrikeId } from "./strikes.mjs";
@@ -17,6 +18,12 @@ import { resolveTestRating } from "./testRating.mjs";
 import { resolveSpellPowerTokens } from "./spellCards.mjs";
 import { setupDialogTabs } from "./dialogTabMemory.mjs";
 import { captureAttackTargets } from "./autoDefense.mjs";
+import {
+  BLOOD_PAYMENT_COST,
+  BLOOD_PAYMENT_DIFFICULTY,
+  getBloodReserve,
+  hasBloodPayment,
+} from "./bloodPool.mjs";
 
 // --- Helper for Dialogs (CSS Injection) ---
 function _injectDialogCSS() {
@@ -71,6 +78,15 @@ function _injectDialogCSS() {
 
           .focus-btn:hover {
             background: #3d3729;
+          }
+
+          .casting-options label.blood-payment {
+            color: #e0a0a0;
+          }
+
+          .casting-options label.blood-payment.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
           }
 
           .tab-headers {
@@ -364,6 +380,27 @@ export function showSpellSelectionDialogs(actor) {
         return;
       }
 
+      // Blood Payment (Krvavá platba, Škola Krve — Expert): offered only in the
+      // Blood school, only to a caster who owns the node. An empty Reserve
+      // leaves the option visible but disabled, so the player can see why it is
+      // out of reach instead of the row silently losing a checkbox.
+      const offersBloodPayment =
+        schoolName === "blood" && hasBloodPayment(actor);
+      const canAffordBloodPayment =
+        getBloodReserve(actor) >= BLOOD_PAYMENT_COST;
+      const bloodPaymentHint = game.i18n.localize("REDSTEEL.BloodPayment.Hint");
+      const bloodPaymentOption = offersBloodPayment
+        ? `<label class="blood-payment${canAffordBloodPayment ? "" : " disabled"}"
+             title="${bloodPaymentHint}">
+             <input type="checkbox" name="bloodPayment"${
+               canAffordBloodPayment ? "" : " disabled"
+             }>
+             ${game.i18n.format("REDSTEEL.BloodPayment.Option", {
+               cost: BLOOD_PAYMENT_COST,
+             })}
+           </label>`
+        : "";
+
       const dialogContent = `
   <form class="spell-dialog-form">
 
@@ -390,6 +427,7 @@ export function showSpellSelectionDialogs(actor) {
           <input type="checkbox" name="ignoreChanneling">
           No Channeling Evaluation
         </label>
+        ${bloodPaymentOption}
            </div>
        </div>
 
@@ -419,18 +457,30 @@ export function showSpellSelectionDialogs(actor) {
           // it always reflects the value that will go into the roll.
           const recalcCastChances = () => {
             const focus = Number(html.find('input[name="focus"]').val() || 0);
+            // Blood Payment buys Difficulty, so it moves the printed chance the
+            // same way Focus does. Show it before the player commits.
+            const difficultyBonus = html
+              .find('input[name="bloodPayment"]')
+              .is(":checked")
+              ? BLOOD_PAYMENT_DIFFICULTY
+              : 0;
             html.find(".cast-chance-cell").each(function () {
               const spellId = $(this)
                 .closest(".spell-choice")
                 .data("spell-id");
               const spell = allSpells.find((s) => s.id === spellId);
               if (!spell) return;
-              $(this).text(`${getCastChance(actor, spell, focus)}%`);
+              $(this).text(
+                `${getCastChance(actor, spell, focus, { difficultyBonus })}%`,
+              );
             });
           };
           html
             .find('input[name="focus"]')
             .on("input change", recalcCastChances);
+          html
+            .find('input[name="bloodPayment"]')
+            .on("change", recalcCastChances);
 
           // 2.c +/- stepper buttons for quick Focus adjustment.
           const stepFocus = (delta) => {
@@ -523,6 +573,9 @@ export function showSpellSelectionDialogs(actor) {
             const focusSpent = Number(
               html.find('input[name="focus"]').val() || 0,
             );
+            const bloodPayment = html
+              .find('input[name="bloodPayment"]')
+              .is(":checked");
 
             spellDialog.close();
             resolve({
@@ -530,6 +583,7 @@ export function showSpellSelectionDialogs(actor) {
               freeCast,
               focusSpent,
               ignoreChanneling,
+              bloodPayment,
             });
           });
         },
@@ -985,12 +1039,20 @@ export function calculateAttackBonuses(actor, spell) {
  * @returns {Promise<{attackRoll: object, critSuccess: boolean, critFailure: boolean}>}
  */
 
-function getEffectiveDifficulty(spell, focusSpent) {
+export function getEffectiveDifficulty(
+  spell,
+  focusSpent,
+  difficultyBonus = 0,
+) {
   const base = spell.system.difficulty || 0;
   const focusBonus = focusSpent * 10;
   console.log(`base Difficulty`, base);
   console.log(`focus Bonus`, focusBonus);
-  return base > 0 ? base : Math.min(0, base + focusBonus);
+  // Anything that "lowers the Difficulty" (Focus, Blood Payment) works on the
+  // same terms: it lifts a negative Difficulty toward zero, never past it, and
+  // does nothing at all for a spell already sitting at or above 0.
+  const bought = focusBonus + (Number(difficultyBonus) || 0);
+  return base > 0 ? base : Math.min(0, base + bought);
 }
 
 /**
@@ -1028,9 +1090,18 @@ export function getCastRating(actor, spell) {
   return channeling;
 }
 
-export function getCastChance(actor, spell, focusSpent = 0) {
+export function getCastChance(
+  actor,
+  spell,
+  focusSpent = 0,
+  { difficultyBonus = 0 } = {},
+) {
   const rating = getCastRating(actor, spell);
-  const effectiveDifficulty = getEffectiveDifficulty(spell, focusSpent);
+  const effectiveDifficulty = getEffectiveDifficulty(
+    spell,
+    focusSpent,
+    difficultyBonus,
+  );
   const { attackBonus } = calculateAttackBonuses(actor, spell);
   const chance = rating + effectiveDifficulty + attackBonus;
   return Math.max(0, Math.min(100, chance));
@@ -1069,8 +1140,12 @@ export async function performAttackRoll(
   focusSpent,
   options = {},
 ) {
-  const effectiveDifficulty = getEffectiveDifficulty(spell, focusSpent);
-  const { ignoreChanneling = false } = options;
+  const { ignoreChanneling = false, difficultyBonus = 0 } = options;
+  const effectiveDifficulty = getEffectiveDifficulty(
+    spell,
+    focusSpent,
+    difficultyBonus,
+  );
 
   // Uncontested + "No Channeling Evaluation": there is nothing left for the
   // roll to decide, so don't roll at all. `skipped` marks the cast as landed
@@ -1149,6 +1224,7 @@ export async function finalizeRollsAndPostChat(
     ignoreChanneling = false,
     fromChanneling = false,
     focusSpent = 0,
+    bloodPayment = false,
   } = options;
   const {
     attackRoll,
@@ -1359,10 +1435,16 @@ export async function finalizeRollsAndPostChat(
     await startChannelingForSpell(actor, spell, { focusSpent });
   }
   // --- CRITICAL SCORE ROLL ---
+  // Crit range is the flat bonus on the d20 that buckets a landed critical into
+  // its four degrees: the caster's own critRangeCast (Intelligence) plus any
+  // school-scoped "Critical Range +2" node they own. The mancer node counts
+  // only for its own school, so a Pyromancer's +2 never follows them onto a
+  // Water spell.
   const critScoreRoll = new Roll(`1d20`);
   await critScoreRoll.evaluate();
+  const schoolCritRange = getSchoolCritRangeBonus(actor, spell.system.type);
   const critScoreResult =
-    critScoreRoll.total + (actor.system.critRangeCast || 0);
+    critScoreRoll.total + (actor.system.critRangeCast || 0) + schoolCritRange;
 
   let critScore = 0;
   if (critScoreResult > 1) {
@@ -1414,6 +1496,13 @@ export async function finalizeRollsAndPostChat(
       ${
         showMagicAttack && attack !== null
           ? `<span class="action-tag magicAttack ">Magic ATK ${attack}</span>`
+          : ""
+      }
+      ${
+        bloodPayment
+          ? `<span class="action-tag bloodPayment ">${game.i18n.localize(
+              "REDSTEEL.BloodPayment.Tag",
+            )}</span>`
           : ""
       }
       <span class="action-tag actionCost ">Actions:${spell.system.actionCost}</span>

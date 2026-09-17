@@ -106,6 +106,8 @@ const ABILITY = {
   HALF_PIROUETTE: A("fF5ZDZZ8r1XSGjmP"), // Půlpirueta
   IMBROCCATA_EXPLOIT_WEAKNESS: A("q8A63eX3waqHl4KX"), // Útok na slabinu, rapír
   IMPALE: A("1xrf1lG6yXNgqXRC"), // Nabodnutí
+  IMPROVED_EXPLOIT_WEAKNESS: A("iMpExplWeak00001"), // Vylepšený útok na slabinu
+  IMPROVED_EXPLOIT_WEAKNESS_THROW: A("iMpExplThrow0001"), // Vylepšený vrh na slabinu
   IMPALE_FOLLOWUP: A("FoRwhcpTYnmuCfQF"), // Nabodnutí: Navazující útok
   IMPROVED_AIMING: A("5t73FrRCJ0N6hdFe"), // Vylepšené míření
   KNOCKDOWN: A("8soGfxXTgjjWZlMq"), // Povalení
@@ -699,6 +701,22 @@ export const ABILITY_GRANTS = [
     label: "School of Blood: Krvavý pakt → Blood Pact",
     when: specNode("bloodSchool", "krvavyPakt"),
     grant: [ABILITY.BLOOD_PACT],
+  },
+  {
+    // Both upgrades are strictly better than what they stand in for (Pen +20
+    // with no to-hit penalty, and Pen +15 for -5% instead of +10 for -10%), so
+    // this is a replacement, not an addition. The ranged Střelba na slabinu is
+    // untouched: the node's text only covers the melee attack and the throw.
+    // Imbroccata is untouched too — it is rapier-only and lifts the Penetration
+    // damage cap, which neither upgrade does.
+    label:
+      "Shadow: Vylepšený útok/vrh na slabinu → Improved Exploit Weakness (+ Throw)",
+    when: specNode("shadow", "weakSpotMastery"),
+    grant: [
+      ABILITY.IMPROVED_EXPLOIT_WEAKNESS,
+      ABILITY.IMPROVED_EXPLOIT_WEAKNESS_THROW,
+    ],
+    replaces: [ABILITY.EXPLOIT_WEAKNESS, ABILITY.EXPLOIT_WEAKNESS_THROW],
   },
 
   /* ======================================================================

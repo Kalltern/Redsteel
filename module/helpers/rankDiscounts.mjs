@@ -25,6 +25,10 @@
  *                         "magic" for a doctrine)
  *              skills     single keys added to the list
  *              noncombat  every ordinary skill except NONCOMBAT_EXCLUDED
+ *              specialisations  every specialisation the character owns that
+ *                         prices at least one node in the discount's currency
+ *                         (group "specialisations"; the discount then lowers
+ *                         every such node of the picked one)
  *            A section track with no rank priced in the discount's currency is
  *            left off the list, since the discount could never apply to it.
  *
@@ -63,6 +67,9 @@ export const FEATURE_DISCOUNTS = {
     // Učenec I / II: any non-combat skill but Svaly and Hbitost.
     "Scholar I": { choices: { noncombat: true }, amount: 3, currency: "sp" },
     "Scholar II": { choices: { noncombat: true }, amount: 3, currency: "sp" },
+    // Specialista (Human): one of the character's own specialisations; every
+    // stupeň (node) of it priced in SP costs 3 SP less.
+    Specialist: { group: "specialisations", choices: { specialisations: true }, amount: 3, currency: "sp" },
   },
 };
 

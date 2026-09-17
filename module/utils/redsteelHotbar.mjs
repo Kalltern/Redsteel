@@ -1048,6 +1048,13 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
   #heldRenderTimer = null;
 
   /**
+   * The actor whose portrait has its resource editor open, or null. A uuid and
+   * not the element: every edit made in the panel redraws it, and the panel has
+   * to come back open on the same portrait rather than vanish mid-adjustment.
+   */
+  #resEditUuid = null;
+
+  /**
    * The actor picked by clicking a portrait, which outranks the usual binding
    * until the canvas selection moves elsewhere. Not persisted: a reload should
    * put everyone back on their own character.
@@ -1205,7 +1212,7 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       },
       weaponSets: this.#prepareWeaponSets(actor),
       potions: this.#preparePotions(actor),
-      editableResources: this.#prepareEditableResources(actor),
+      resEditor: this.#prepareResourceEditor(actor),
       hp: this.#prepareHealth(actor),
       toxicity: this.#prepareToxicity(actor),
       aura: this.#prepareAura(actor),
@@ -1303,6 +1310,10 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
         colour: playerColourFor(mate),
         showRing,
         hp: this.#prepareHealth(mate),
+        // Right-click editor for this teammate, on the same terms as your own:
+        // it is built only for an actor the viewer owns, which for a GM is the
+        // whole row and for a player is their companions and nobody else's.
+        resEditor: this.#prepareResourceEditor(mate),
         // How hurt they look, if Health Estimate can say. Falls back to the
         // open-sheet hint so the portrait is never silent on hover.
         tip: healthEstimate(mate) ?? "REDSTEEL.Bg3Hotbar.OpenSheet",
@@ -1535,23 +1546,34 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
   }
 
   /**
-   * Every pool the viewer may edit, for the right-click panel on the portrait:
-   * health and toxicity, plus whichever of the caster pools this character
-   * actually has, gated exactly as the bars beside it are. Ownership is the
-   * same test the token HUD applies, so this offers nothing extra, just a
-   * closer place to reach it.
+   * The right-click panel on a portrait, for one character: the pools the
+   * viewer may edit, and under a rule, whatever is standing between that
+   * character and their Life.
+   *
+   * The pools are health and toxicity plus whichever of the caster pools this
+   * character actually has, gated exactly as the bars beside them are.
+   * Ownership is the same test the token HUD applies, so this offers nothing
+   * extra, just a closer place to reach it — and it is what puts the panel on
+   * a party portrait for a GM, who owns everybody.
+   *
+   * Below the rule are the two temporary Life pools and every live absorb
+   * shield, Blood Shield included. Those are the sheet's Config-tab rows, read
+   * from the same places and written the same way, so the two never disagree.
+   *
+   * Null rather than an empty object when there is nothing to show, so the
+   * template can ask one question.
    */
-  #prepareEditableResources(actor) {
-    if (!actor?.isOwner) return [];
+  #prepareResourceEditor(actor) {
+    if (!actor?.isOwner) return null;
     const sys = actor.system;
     const stats = sys?.stats;
-    if (!stats) return [];
+    if (!stats) return null;
 
     const keys = ["health", "toxicity", ...STRIP_RESOURCES.map((r) => r.key)];
     const gate = new Map(STRIP_RESOURCES.map((r) => [r.key, r.when]));
 
     const seen = new Set();
-    const rows = [];
+    const pools = [];
     for (const key of keys) {
       if (seen.has(key)) continue;
       seen.add(key);
@@ -1561,7 +1583,7 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       const when = gate.get(key);
       if (when && !when(sys)) continue;
 
-      rows.push({
+      pools.push({
         key,
         label: localizeFirst(
           `REDSTEEL.Actor.Character.stats.${key}.value.label`,
@@ -1570,7 +1592,54 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
         max: Number(stat.max ?? 0),
       });
     }
-    return rows;
+
+    const guards = [];
+
+    // Temporary Life, physical and magical. Always listed for a GM, who is the
+    // one who hands it out; for anyone else only once they have some, since two
+    // zeroes they will never type into are two rows in front of the pool they
+    // opened the panel for.
+    for (const [key, langKey] of [
+      ["temporaryHealth", "REDSTEEL.Bg3Hotbar.TempHealth"],
+      ["temporaryHealthMagic", "REDSTEEL.Bg3Hotbar.TempHealthMagic"],
+    ]) {
+      const stat = stats[key];
+      if (!stat) continue;
+      const value = Number(stat.value ?? 0);
+      if (!game.user.isGM && value <= 0) continue;
+      const max = Number(stat.max ?? 0);
+      guards.push({
+        key,
+        label: game.i18n.localize(langKey),
+        value,
+        max,
+        // `{{#if 0}}` is falsy, so the template needs a boolean rather than the
+        // number to decide whether there is a ceiling worth printing.
+        hasMax: max > 0,
+      });
+    }
+
+    // Absorb pools live on the effect (`flags.redsteel.stacks`), not in
+    // system.stats, so these rows are keyed by effect id and write through the
+    // document. Every shield is listed rather than only the one that would soak
+    // the next hit: Blood Shield is outside the exclusivity table and coexists
+    // with a cast ward.
+    for (const effect of actor.effects?.contents ?? []) {
+      const config = effect.getFlag?.("redsteel", "shield");
+      if (!config) continue;
+      const max = Number(config.max) || 0;
+      guards.push({
+        shieldId: effect.id,
+        label: effect.name,
+        img: effect.img,
+        value: Number(effect.getFlag("redsteel", "stacks")) || 0,
+        max,
+        hasMax: max > 0,
+      });
+    }
+
+    if (!pools.length && !guards.length) return null;
+    return { uuid: actor.uuid, pools, guards };
   }
 
   /**
@@ -1932,6 +2001,18 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     // Deselecting on the canvas clears a pinned portrait; the board is outside
     // this element, so it is attached separately and idempotently.
     this.#attachCanvasListener();
+
+    // An open resource editor survives the redraw its own edit caused, so a GM
+    // adjusting several of a character's pools does not have to right-click the
+    // portrait again between each one. It is dropped silently when that
+    // portrait has left the panel.
+    if (this.#resEditUuid) {
+      const panel = root.querySelector(
+        `.rs-bg3-resedit[data-actor-uuid="${CSS.escape(this.#resEditUuid)}"]`,
+      );
+      if (panel) panel.classList.add("open");
+      else this.#resEditUuid = null;
+    }
 
     this.#measureCapacity(root);
 
@@ -2377,16 +2458,16 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
    * ever deleting the Macro document.
    */
   async #onContextMenu(event) {
-    // Right-clicking your own portrait opens the resource editor, the same way
-    // right-clicking your token opens the HUD. Teammate portraits are excluded:
-    // that is someone else's character.
-    const ownFrame = event.target.closest?.(
-      ".rs-bg3-portrait-frame:not(.rs-bg3-portrait-frame--team)",
-    );
-    if (ownFrame) {
+    // Right-clicking a portrait opens its resource editor, the same way
+    // right-clicking a token opens the HUD. Party portraits included: the
+    // editor is only built for actors the viewer owns, so a GM reaches the
+    // whole row and a player reaches nothing they could not already edit
+    // through that character's token.
+    const frame = event.target.closest?.(".rs-bg3-portrait-frame");
+    if (frame) {
       event.preventDefault();
       event.stopPropagation();
-      ownFrame.querySelector(".rs-bg3-resedit")?.classList.toggle("open");
+      this.#toggleResourceEditor(frame);
       return;
     }
 
@@ -2415,6 +2496,27 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     const slot = Number(macroSlot.dataset.slot);
     if (!Number.isInteger(slot)) return;
     await game.user.assignHotbarMacro(null, slot);
+  }
+
+  /**
+   * Open one portrait's resource editor and close whichever other one was
+   * open. Two panels overlapping across a crowded party row is nobody's idea
+   * of a HUD, and the row is narrower than the panel is wide.
+   *
+   * Which one is open is remembered as an actor uuid rather than as an element,
+   * because typing a value updates the actor and the panel redraws: the node
+   * this class was on is gone by then, and without the uuid the editor would
+   * shut under the cursor after every single edit (`_onRender` reopens it).
+   */
+  #toggleResourceEditor(frame) {
+    const panel = frame.querySelector(".rs-bg3-resedit");
+    const opening = !!panel && !panel.classList.contains("open");
+    for (const open of this.element?.querySelectorAll(".rs-bg3-resedit.open") ??
+      []) {
+      open.classList.remove("open");
+    }
+    if (opening) panel.classList.add("open");
+    this.#resEditUuid = opening ? (panel.dataset.actorUuid ?? null) : null;
   }
 
   /**
@@ -2586,6 +2688,9 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
   #onDblClick(event) {
     const frame = event.target.closest?.(".rs-bg3-portrait-frame");
     if (!frame && event.target !== this.element) return;
+    // The editor lives inside the frame and owns its own clicks: double-clicking
+    // a number to select it is not a request to open the sheet.
+    if (event.target.closest?.(".rs-bg3-resedit")) return;
     event.preventDefault();
     // The gesture is resolved, so the redraw the first click deferred can run.
     this.#portraitHoldUntil = 0;
@@ -2615,20 +2720,49 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
   }
 
   /**
-   * Commit a resource typed into the portrait's right-click panel. Ownership is
-   * rechecked here rather than trusted from the render: the field only exists
+   * Commit a value typed into a portrait's right-click panel. Ownership is
+   * rechecked here rather than trusted from the render: the fields only exist
    * for owners, but a stale panel should not be able to write.
+   *
+   * The panel names its own actor, so a party portrait writes to the teammate
+   * it belongs to and not to whoever the bar happens to be bound to.
    */
   async #onResourceEdit(event) {
     const input = event.target.closest?.(".rs-bg3-resedit-input");
     if (!input) return;
 
-    const actor = this.actor;
-    const key = input.dataset.stat;
-    if (!actor?.isOwner || !key) return;
+    const uuid = input.closest(".rs-bg3-resedit")?.dataset.actorUuid;
+    const actor = (uuid ? fromUuidSync(uuid) : null) ?? this.actor;
+    if (!actor?.isOwner) return;
 
     const value = Number(input.value);
     if (!Number.isFinite(value)) return;
+
+    // A shield's pool lives on its effect and is mirrored to the token counter,
+    // and a shield emptied by hand is gone rather than left sitting at zero.
+    // This is the same write the sheet's Config tab makes (#bindShieldControls
+    // in actor-sheet.mjs) and the same one the damage pipeline makes when a
+    // shield breaks, so all three agree.
+    const shieldId = input.dataset.shieldId;
+    if (shieldId) {
+      const effect = actor.effects.get(shieldId);
+      if (!effect) return;
+      if (value <= 0) await effect.delete();
+      else {
+        await effect.update({
+          "flags.redsteel.stacks": value,
+          "flags.statuscounter.value": value,
+        });
+      }
+      // The effect hooks only redraw for the actor the bar is bound to, so a
+      // teammate's row would otherwise sit there showing a shield that has
+      // just been spent or removed.
+      this.#rerender();
+      return;
+    }
+
+    const key = input.dataset.stat;
+    if (!key) return;
     await actor.update({ [`system.stats.${key}.value`]: value });
   }
 

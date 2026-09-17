@@ -1,0 +1,56 @@
+{{! Attributes Tab — Spellbook (Grimoire) }}
+<section
+  class='tab attributes {{tab.cssClass}}'
+  data-group='primary'
+  data-tab='attributes'
+>
+
+  <div class="grid grid-2col">
+    <div class="grid-span-1">
+      <label for="spellbook-capacity">{{localize "REDSTEEL.Spellbook.Capacity"}}:</label>
+      <input
+        type="number"
+        name="system.capacity"
+        id="spellbook-capacity"
+        value="{{system.capacity}}"
+        min="0"
+        data-dtype="Number"
+      />
+      <p class="hint">{{localize "REDSTEEL.Spellbook.CapacityHint"}}</p>
+    </div>
+
+  </div>
+
+  <h3 class="spellbook-heading">
+    {{localize "REDSTEEL.Spellbook.Contents"}}
+    <span class="spellbook-count">
+      {{#if bookCapacity}}{{bookCount}} / {{bookCapacity}}{{else}}{{bookCount}}{{/if}}
+    </span>
+  </h3>
+  <p class="hint">{{localize "REDSTEEL.Spellbook.ContentsHint"}}</p>
+
+  <div class="spellbook-list">
+    {{#each bookGroups as |group|}}
+      <div class="spellbook-group">
+        <h4 class="spellbook-school">{{group.label}}</h4>
+        {{#each group.spells as |entry|}}
+          <div class="spellbook-row">
+            {{#if entry.img}}<img src="{{entry.img}}" width="20" height="20" />{{/if}}
+            <span class="spellbook-name"
+                  data-tt-kind="spellCardUuid" data-tt-uuid="{{entry.uuid}}">{{entry.name}}</span>
+            <span class="spellbook-rank">{{entry.rankLabel}}</span>
+            {{#if @root.editable}}
+              <a data-action="removeBookSpell" data-index="{{entry.index}}"
+                 title="{{localize 'REDSTEEL.Spellbook.Remove'}}">
+                <i class="fas fa-xmark"></i>
+              </a>
+            {{/if}}
+          </div>
+        {{/each}}
+      </div>
+    {{else}}
+      <p class="hint">{{localize "REDSTEEL.Spellbook.Empty"}}</p>
+    {{/each}}
+  </div>
+
+</section>

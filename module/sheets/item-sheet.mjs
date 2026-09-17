@@ -17,6 +17,11 @@ import {
   FEATURE_SECTION_IDS,
   getBookFeaturePrice,
 } from "../helpers/progressionEngine.mjs";
+import {
+  SPELL_RANKS,
+  SPELL_SCHOOLS,
+  getBookEntries,
+} from "../utils/spellbook.mjs";
 
 const { api, sheets } = foundry.applications;
 
@@ -53,6 +58,7 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
       toggleRaceChoiceEffect: this._toggleRaceChoiceEffect,
       removeRaceGrant: this._removeRaceGrant,
       removeEnchantment: this._removeEnchantment,
+      removeBookSpell: this._removeBookSpell,
       resyncItem: this._resyncItem,
       undoResync: this._undoResync,
     },
@@ -173,6 +179,9 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
     attributesRecipe: {
       template: "systems/redsteel/templates/item/attribute-parts/recipe.hbs",
     },
+    attributesSpellbook: {
+      template: "systems/redsteel/templates/item/attribute-parts/spellbook.hbs",
+    },
     attributesEnchantment: {
       template:
         "systems/redsteel/templates/item/attribute-parts/enchantment.hbs",
@@ -248,6 +257,11 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
         break;
       case "recipe":
         options.parts.push("attributesRecipe");
+        break;
+      // A grimoire carries the spells written in it (system.spells); the copies
+      // on its owner are projected from that list by utils/spellbook.mjs.
+      case "spellbook":
+        options.parts.push("attributesSpellbook");
         break;
     }
   }
@@ -455,6 +469,43 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
         ];
         break;
       }
+      case "attributesSpellbook": {
+        context.tab = context.tabs[partId];
+        // What the book holds, grouped by school in the sheet's own order, so
+        // a stolen grimoire reads the way the Spells tab does. The records are
+        // the book's own snapshot, so this reads with no compendium lookup.
+        const entries = getBookEntries(this.item);
+        const order = (key) => {
+          const at = SPELL_SCHOOLS.indexOf(key);
+          return at === -1 ? SPELL_SCHOOLS.length : at;
+        };
+        const groups = new Map();
+        for (const entry of entries) {
+          if (!groups.has(entry.school)) groups.set(entry.school, []);
+          groups.get(entry.school).push({
+            ...entry,
+            index: entries.indexOf(entry),
+            rankLabel: entry.rank
+              ? game.i18n.localize(`REDSTEEL.Item.Spell.FIELDS.${entry.rank}.label`)
+              : "",
+          });
+        }
+        context.bookGroups = [...groups.entries()]
+          .sort((a, b) => order(a[0]) - order(b[0]))
+          .map(([school, spells]) => ({
+            school,
+            label: game.i18n.localize(
+              `REDSTEEL.Actor.Character.schools.${school}.label`,
+            ),
+            spells: spells.sort((a, b) =>
+              SPELL_RANKS.indexOf(a.rank) - SPELL_RANKS.indexOf(b.rank)
+              || a.name.localeCompare(b.name, game.i18n.lang),
+            ),
+          }));
+        context.bookCount = entries.length;
+        context.bookCapacity = Number(this.item.system?.capacity) || 0;
+        break;
+      }
       case "attributesVariants": {
         context.tab = context.tabs[partId];
         // One entry per stored variant ID, with the resolved world Item (if any)
@@ -534,6 +585,7 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
         case "attributesCondition":
         case "attributesRecipe":
         case "attributesEnchantment":
+        case "attributesSpellbook":
           tab.id = "attributes";
           tab.label += "Attributes";
           break;
@@ -726,6 +778,19 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
    * @param {HTMLElement} target   The capturing HTML element which defined a [data-action]
    * @protected
    */
+  /**
+   * Strike one spell out of a grimoire. The copies on the owner follow through
+   * the update hook in utils/spellbook.mjs, which is what keeps the book the
+   * record of truth.
+   */
+  static async _removeBookSpell(event, target) {
+    const index = Number(target.dataset.index);
+    const entries = getBookEntries(this.item);
+    if (Number.isNaN(index) || index < 0 || index >= entries.length) return;
+    entries.splice(index, 1);
+    await this.item.update({ "system.spells": entries });
+  }
+
   static async _removeVariant(event, target) {
     const index = Number(target.dataset.index);
     const variants = this._getVariantArray();
@@ -1330,6 +1395,47 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
       await this.item.update({ "system.grants": next });
       ui.notifications.info(
         game.i18n.format("REDSTEEL.Race.Grants.Added", { name: dropped.name }),
+      );
+      return true;
+    }
+
+    // A grimoire accepts spell drops: the spell is written into system.spells
+    // and the owner's copies follow (see utils/spellbook.mjs). The record keeps
+    // the compendium uuid, so an actor-owned copy is no use here.
+    if (this.item.type === "spellbook") {
+      const dropped = await Item.implementation.fromDropData(data);
+      if (!dropped) return false;
+      if (dropped.type !== "spell") {
+        ui.notifications.warn(
+          game.i18n.localize("REDSTEEL.Spellbook.DropRejected"),
+        );
+        return false;
+      }
+      if (dropped.parent?.documentName === "Actor") {
+        ui.notifications.warn(
+          game.i18n.localize("REDSTEEL.Spellbook.DropNotGlobal"),
+        );
+        return false;
+      }
+      const entries = getBookEntries(this.item);
+      if (entries.some((entry) => entry.uuid === dropped.uuid)) {
+        ui.notifications.info(
+          game.i18n.format("REDSTEEL.Spellbook.DropDuplicate", {
+            name: dropped.name,
+          }),
+        );
+        return false;
+      }
+      entries.push({
+        uuid: dropped.uuid,
+        name: dropped.name,
+        img: dropped.img,
+        school: dropped.system?.type ?? "",
+        rank: dropped.system?.rank ?? "",
+      });
+      await this.item.update({ "system.spells": entries });
+      ui.notifications.info(
+        game.i18n.format("REDSTEEL.Spellbook.DropAdded", { name: dropped.name }),
       );
       return true;
     }

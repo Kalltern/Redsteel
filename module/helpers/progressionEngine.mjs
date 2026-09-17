@@ -22,6 +22,7 @@ import { SPEC_NODE_PRICES } from "./specNodePrices.mjs";
 import { REDSTEEL } from "./config.mjs";
 import { clearBaneChoice } from "./banes.mjs";
 import { ABILITY_GRANTS } from "../utils/abilityGrants.mjs";
+import { MEMORISE_SP, getMemorisedCount } from "../utils/spellbook.mjs";
 
 /* ===========================================================================
  * Progression engine — the wallet, the level, and the requirement checks the
@@ -47,6 +48,12 @@ import { ABILITY_GRANTS } from "../utils/abilityGrants.mjs";
  * records each one at
  * `system.progression.teachers.<group>.<key>.r<rank>`, and a rank whose
  * teacher has not been found stays locked.
+ *
+ * Specialisations have two more teachers, granted the same way and stored
+ * beside the specialisation: `teacher`, one per tree, which the book asks for
+ * before the specialisation itself may be bought, and `teachers.<node>`, one
+ * per star, for the stars the book only opens with a trainer
+ * (specNodePrices.mjs). Neither stands in for the other.
  * ======================================================================== */
 
 /**
@@ -478,9 +485,14 @@ export function getWallet(actor) {
   // So do unlocked specialisation nodes (user ruling 2026-09-14), whether
   // unlocked in the Learn window or on the sheet.
   const nodes = computeSpentOnSpecNodes(actor);
+  // And every spell learnt by heart: the Memory knowledge costs 1 SP a spell
+  // (Pravidla, Dovednosti → Paměť). Spells only written in a grimoire are free,
+  // and a spell dragged onto the sheet by hand carries no memorised flag, so
+  // nothing is charged for it in arrears.
+  const memorised = getMemorisedCount(actor) * MEMORISE_SP;
   const spent = {
     cp: ranks.cp + features.cp + nodes.cp + Number(p.adjust?.cp ?? 0),
-    sp: ranks.sp + features.sp + nodes.sp + Number(p.adjust?.sp ?? 0),
+    sp: ranks.sp + features.sp + nodes.sp + memorised + Number(p.adjust?.sp ?? 0),
   };
   return {
     earned,
@@ -583,6 +595,11 @@ export function evaluateRequirement(actor, req, trackId, rank) {
     case "specTeacher":
       // Granted by the GM once per specialisation, not per rank.
       met = !!actor.system?.specialisations?.[req.spec]?.teacher;
+      break;
+    case "nodeTeacher":
+      // Granted by the GM star by star, the way a rank's teacher is: the
+      // specialisation's own teacher taught the tree, not this one trick.
+      met = !!actor.system?.specialisations?.[req.spec]?.teachers?.[req.node];
       break;
     case "noRank":
       // "Nesmí mít Doktrínu: …": no rank at all in any of the named tracks.
@@ -970,7 +987,10 @@ export function getFeaturePriceForItem(actor, item) {
   } else {
     return null;
   }
-  return applyFeatureOverrides(price, item.system?.learnSection, item.system?.requirementsNote);
+  return applyLinguistDiscount(
+    actor,
+    applyFeatureOverrides(price, item.system?.learnSection, item.system?.requirementsNote),
+  );
 }
 
 /** Every owned feature item, with the price entry it stands for (or null). */
@@ -1148,11 +1168,49 @@ export async function refundFeature(actor, itemId) {
  *     Fluent speech, Sign language and Reading and writing need that first.
  *   - The first Reading and writing is the full-price feature; reading any
  *     further language is the cheaper "Additional language" one.
- *   - The GM may grant ONE native language per character: free Basic
+ *   - The GM may grant a native language per character: free Basic
  *     communication and Fluent speech copies, also flagged
  *     `flags.redsteel.nativeLanguage`. The wallet does not count them, and only
- *     the GM can give them back, as a pair.
+ *     the GM can give them back, as a pair. One per character, two with the
+ *     Linguist trait (getNativeLanguageLimit).
  */
+
+/*
+ * LINGUIST (positive trait, user ruling 2026-09-16). Its Active Effect sets
+ * `system.linguist`, the way Magic potential sets `system.magicPotential`.
+ * Two clauses:
+ *   - every language slot except Sign language costs nothing. The wallet
+ *     derives what a character spent, so this is retroactive: taking the trait
+ *     gives back the points already paid for its languages.
+ *   - the GM may grant it a second native language ("+1 začáteční jazyk").
+ * Sign language is paid for as usual (user ruling).
+ */
+
+/** True when the character carries the Linguist trait. */
+export function hasLinguist(actor) {
+  return !!actor?.system?.linguist;
+}
+
+/** How many native languages the GM may grant this character. */
+export function getNativeLanguageLimit(actor) {
+  return hasLinguist(actor) ? 2 : 1;
+}
+
+/**
+ * A price with Linguist applied. Only a language feature's price changes, and
+ * never Sign language's; everything else is handed back untouched.
+ */
+function applyLinguistDiscount(actor, price) {
+  if (!price?.language || price.language === "sign") return price;
+  if (!hasLinguist(actor)) return price;
+  return { ...price, cp: 0, sp: 0 };
+}
+
+/** A language feature's price for a NEW purchase, with Linguist applied. */
+export function getLanguageFeaturePrice(actor, featureId) {
+  const price = featureId ? getFeaturePrice(featureId) : null;
+  return price ? applyLinguistDiscount(actor, price) : null;
+}
 
 /** The slots a language is learnt in, in the panel's column order. */
 export const LANGUAGE_SLOTS = ["basic", "fluent", "sign", "reading"];
@@ -1273,7 +1331,7 @@ export function getLanguageFeatureState(actor, slot, language) {
   const featureId = LANGUAGE_SLOTS.includes(slot)
     ? getLanguageSlotFeatureId(actor, slot, name)
     : null;
-  const price = featureId ? getFeaturePrice(featureId) : null;
+  const price = getLanguageFeaturePrice(actor, featureId);
   if (!price) return { state: "unavailable", featureId, price: null, requirements: null };
   const copies = key ? getLanguageCopies(actor).filter((copy) => copy.key === key) : [];
   const known = copies.some((copy) => copy.slot === "basic");
@@ -1322,9 +1380,9 @@ export async function purchaseLanguageFeature(actor, slot, language) {
 }
 
 /**
- * GM only: grant the character's native language, a free Basic communication
- * and Fluent speech in it. One per character, and never a language the
- * character already knows.
+ * GM only: grant the character a native language, a free Basic communication
+ * and Fluent speech in it. Up to getNativeLanguageLimit(actor) of them, and
+ * never a language the character already knows.
  * @returns {Promise<{ok: boolean, reason: string|null}>} reason is one of
  *   "gmOnly", "nameRequired", "nativeTaken", "alreadyKnown", or null
  */
@@ -1333,7 +1391,13 @@ export async function grantNativeLanguage(actor, language) {
   const name = String(language ?? "").trim();
   if (!actor || !name) return { ok: false, reason: "nameRequired" };
   const copies = getLanguageCopies(actor);
-  if (copies.some((copy) => copy.native)) return { ok: false, reason: "nativeTaken" };
+  // Counted by language, not by copy: one grant is a Basic + Fluent pair.
+  const natives = new Set(
+    copies.filter((copy) => copy.native && copy.key).map((copy) => copy.key),
+  );
+  if (natives.size >= getNativeLanguageLimit(actor)) {
+    return { ok: false, reason: "nativeTaken" };
+  }
   const key = languageKey(name);
   if (copies.some((copy) => copy.key === key && copy.slot === "basic")) {
     return { ok: false, reason: "alreadyKnown" };
@@ -1403,8 +1467,12 @@ function discountGroup(def) {
   return def?.group ?? "skills";
 }
 
-/** The keys a choice definition allows, from the price table's tracks. */
-function discountChoiceSkills(def) {
+/**
+ * The keys a choice definition allows, from the price table's tracks (and,
+ * for a `specialisations` choice, from the character's own owned
+ * specialisations that price at least one node in the discount's currency).
+ */
+function discountChoiceSkills(def, actor) {
   const { choices, currency } = def;
   const group = discountGroup(def);
   const keys = new Set();
@@ -1421,6 +1489,15 @@ function discountChoiceSkills(def) {
     if ((choices.sections ?? []).includes(track.section)) keys.add(track.key);
   }
   for (const key of choices.skills ?? []) keys.add(key);
+  if (choices.specialisations) {
+    for (const specId of Object.keys(actor?.system?.specialisations ?? {})) {
+      if (!isSpecActive(actor, specId)) continue;
+      const priced = Object.values(SPEC_NODE_PRICES[specId] ?? {}).some(
+        (price) => (Number(price[currency]) || 0) > 0,
+      );
+      if (priced) keys.add(specId);
+    }
+  }
   return [...keys];
 }
 
@@ -1454,7 +1531,7 @@ export function getDiscountSources(actor) {
   const sources = [];
   const picked = actor?.system?.progression?.discountChoices ?? {};
   const add = (id, def, skill, extra) => {
-    const choices = def.choices ? discountChoiceSkills(def) : null;
+    const choices = def.choices ? discountChoiceSkills(def, actor) : null;
     let landsOn = skill ?? null;
     if (!landsOn && choices && choices.includes(picked[id])) landsOn = picked[id];
     sources.push({
@@ -2090,6 +2167,20 @@ export async function setSpecTeacher(actor, specId, found) {
   return true;
 }
 
+/**
+ * Grant or revoke the teacher for ONE node of a specialisation. GM only;
+ * callers must check. Stored beside the specialisation's own `teacher` flag as
+ * `teachers.<nodeId>`, so the tree's trainer and a single star's trainer never
+ * stand in for each other.
+ */
+export async function setSpecNodeTeacher(actor, specId, nodeId, found) {
+  if (!getSpecNodePrice(specId, nodeId)?.teacher) return false;
+  await actor.update({
+    [`system.specialisations.${specId}.teachers.${nodeId}`]: !!found,
+  });
+  return true;
+}
+
 /* -------------------------------------------------------------------------- */
 /*  Specialisation nodes                                                      */
 /* -------------------------------------------------------------------------- */
@@ -2110,17 +2201,36 @@ export function getSpecNodePrice(specId, nodeId) {
   return SPEC_NODE_PRICES[specId]?.[nodeId] ?? null;
 }
 
+/**
+ * What this character pays for one node: the book price less a Specialist-
+ * style specialisation discount (rankDiscounts.mjs), never below 0. Only the
+ * currency the discount is in is touched (a Priest blessing's CP stays put).
+ * @returns {{cp: number, sp: number, base: {cp: number, sp: number},
+ *            discount: object|null}|null}
+ */
+export function getSpecNodeCost(actor, specId, nodeId, discounts = getSkillDiscounts(actor)) {
+  const price = getSpecNodePrice(specId, nodeId);
+  if (!price) return null;
+  const base = { cp: price.cp, sp: price.sp };
+  const source = discounts.get(`specialisations.${specId}`) ?? null;
+  const discount = source && price[source.currency] > 0 ? source : null;
+  const cost = { ...base };
+  if (discount) cost[discount.currency] = Math.max(0, base[discount.currency] - discount.amount);
+  return { cp: cost.cp, sp: cost.sp, base, discount };
+}
+
 /** What the character's unlocked nodes cost, over active specialisations. */
 export function computeSpentOnSpecNodes(actor) {
   const spent = { cp: 0, sp: 0 };
+  const discounts = getSkillDiscounts(actor);
   for (const [specId, spec] of Object.entries(actor?.system?.specialisations ?? {})) {
     if (!spec?.active) continue;
     for (const [nodeId, unlocked] of Object.entries(spec.nodes ?? {})) {
       if (!unlocked) continue;
-      const price = getSpecNodePrice(specId, nodeId);
-      if (!price) continue;
-      spent.cp += price.cp;
-      spent.sp += price.sp;
+      const cost = getSpecNodeCost(actor, specId, nodeId, discounts);
+      if (!cost) continue;
+      spent.cp += cost.cp;
+      spent.sp += cost.sp;
     }
   }
   return spent;
@@ -2130,10 +2240,11 @@ export function computeSpentOnSpecNodes(actor) {
  * Whether a node can be bought right now.
  *
  * @param {object} [wallet]  getWallet(actor), when the caller already has it
- * @returns {{state: string, price: object|null, requirements: object|null,
- *            missing: string[], conflict: object|null}}
- *   `missing` lists the linked nodes still locked, `conflict` the discount that
- *   blocks it. state is one of:
+ * @returns {{state: string, price: object|null, cost: object|null,
+ *            requirements: object|null, missing: string[], conflict: object|null}}
+ *   `price` is the book price, `cost` what this character pays after any
+ *   Specialist-style discount. `missing` lists the linked nodes still locked,
+ *   `conflict` the discount that blocks it. state is one of:
  *     "owned"        unlocked
  *     "unavailable"  no such node, or the table prices none
  *     "unowned"      the specialisation is not the character's
@@ -2147,13 +2258,21 @@ export function getSpecNodeState(actor, specId, nodeId, wallet = null) {
   const nodeDef = REDSTEEL.specialisations?.[specId]?.nodes?.[nodeId];
   const price = getSpecNodePrice(specId, nodeId);
   if (!nodeDef || !price) {
-    return { state: "unavailable", price: null, requirements: null, missing: [], conflict: null };
+    return {
+      state: "unavailable",
+      price: null,
+      cost: null,
+      requirements: null,
+      missing: [],
+      conflict: null,
+    };
   }
+  const cost = getSpecNodeCost(actor, specId, nodeId);
   const spec = actor?.system?.specialisations?.[specId];
   const unlocked = spec?.nodes ?? {};
   const requirements = evaluateRequirements(actor, price.requires);
   const missing = (nodeDef.requires ?? []).filter((id) => !unlocked[id]);
-  const result = { price, requirements, missing, conflict: null };
+  const result = { price, cost, requirements, missing, conflict: null };
   if (unlocked[nodeId]) return { ...result, state: "owned" };
   if (!spec?.active) return { ...result, state: "unowned" };
   if (missing.length) return { ...result, state: "blocked" };
@@ -2163,7 +2282,7 @@ export function getSpecNodeState(actor, specId, nodeId, wallet = null) {
   // Only a currency the node costs is checked, so a free node stays buyable
   // for a character already over budget.
   const { remaining } = wallet ?? getWallet(actor);
-  if ((price.cp > 0 && remaining.cp < price.cp) || (price.sp > 0 && remaining.sp < price.sp)) {
+  if ((cost.cp > 0 && remaining.cp < cost.cp) || (cost.sp > 0 && remaining.sp < cost.sp)) {
     return { ...result, state: "poor" };
   }
   return { ...result, state: "available" };

@@ -2,6 +2,7 @@ import { getTraitPills } from "./traitPills.mjs";
 import { withRollBias, tagRollSkill, tagRollItemAdvantage } from "./rollAdvantage.mjs";
 import { AIMED_PARTS } from "./aimedStrike.mjs";
 import { getImprovedAimPenetration } from "./aim.mjs";
+import { getWeakSpotPenetration } from "./weakSpot.mjs";
 import { getAttackRerollTokens } from "./rerolls.mjs";
 import { buildBanePacket } from "./baneCombat.mjs";
 import { renderDamageLine } from "./damageLine.mjs";
@@ -323,6 +324,10 @@ export async function universalAttackLogic({
       weapon,
       resolvedContext,
     );
+    // Mistr zbraní: "Útok na slabinu: Průbojnost +10". A basic attack only ever
+    // reaches the Weak Spot family through a modifier — the throwing versions —
+    // since the standalone ones are abilities and go through combatAbilities.
+    const weakSpotPen = getWeakSpotPenetration(actor, null, selectedModifiers);
     // The arrowhead's own penetration, on top of the bow's (see the ammo check
     // above — a weapon that needs ammo never gets here without it).
     const ammoPen = Number(ammo?.system?.penetration) || 0;
@@ -355,6 +360,7 @@ export async function universalAttackLogic({
         offPen +
         ammoPen +
         customPenetration +
+        weakSpotPen +
         actorMods.penetrationBonus +
         enchantPen +
         qualityPen +
