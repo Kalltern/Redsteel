@@ -87,7 +87,9 @@
     "difficulty": -30,
     "cost": 10,
     "perRound": 0,
-    "variants": [],
+    "variants": [
+      "DkBucMVxvfFnZDSc"
+    ],
     "option": "magic",
     "type": "blood",
     "rank": "master",

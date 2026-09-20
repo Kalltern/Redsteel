@@ -646,7 +646,7 @@
             },
             "prosmyknuti": {
               "label": "Slip Through",
-              "description": "5 CP; Meče IV. Free action, 2 Stamina. After a successful Charge, Lindar's Thrust or Dragon's Thrust, may call a Dexterity vs Test. On success moves behind the opponent; on failure takes -10% to Defense and Dodge for one turn. After a Critical Hit, Slip Through is guaranteed. Chooses facing after the move. Manual — resolved at the table."
+              "description": "5 CP; Meče IV. Free action, 2 Stamina. After a successful Charge, Lindar's Charge or Dragon's Thrust, may call a Dexterity vs Test. On success moves behind the opponent; on failure takes -10% to Defense and Dodge for one turn. After a Critical Hit, Slip Through is guaranteed. Chooses facing after the move. Manual — resolved at the table."
             },
             "dexTests": {
               "label": "Combat Dexterity Tests +10%",
@@ -1912,11 +1912,11 @@
               "description": "5 CP; Veneficus VII. Manual — resolved at the table."
             },
             "lindaruvVypad1": {
-              "label": "Lindar's Thrust I",
-              "description": "10 CP; Škola VI. Manual — resolved at the table."
+              "label": "Lindar's Charge I",
+              "description": "10 CP; Škola VI. Pull, Quick pull, Relocation, Teleportation, Dark pull and Shadowstep cost 6 less Mana and roll Channeling at +10%; the Gnosis spells Shift, Swap and Spatial Leap join them once those spells exist. The free action attack after one of these spells is resolved at the table."
             },
             "lindaruvVypad2": {
-              "label": "Lindar's Thrust II",
+              "label": "Lindar's Charge II",
               "description": "10 CP; Veneficus V. Manual — resolved at the table."
             },
             "usmernovani5": {
@@ -4477,6 +4477,11 @@
         }
       },
       "Spell": {
+        "Range": {
+          "self": "Self",
+          "hexes": "{n} hex",
+          "metresLabel": "Range (m)"
+        },
         "FIELDS": {
           "propertiesHeader": {
             "label": "Spell properties"
@@ -7669,6 +7674,7 @@
       "notBuilt": "Not built yet.",
       "acquire": "Add skills",
       "and": "and",
+      "or": "or",
       "pickerHint": "Choose the skills and doctrines you want in your progression tree. This only decides what this window shows; nothing is hidden on your character sheet.",
       "pickerDone": "Done",
       "pickerCancel": "Cancel",
@@ -7705,6 +7711,9 @@
         "books": "Grimoires",
         "noBook": "This character carries no grimoire.",
         "newBook": "New grimoire",
+        "statFreeAction": "Free",
+        "statAction": "Action",
+        "perRoundShort": "Per round",
         "written": "Written",
         "memorised": "Memorised",
         "memorise": "Memorise (1 SP)",
@@ -7719,20 +7728,38 @@
         "search": "Search spells",
         "filters": "Filters",
         "reset": "Reset",
-        "filterRank": "Rank",
         "filterAction": "Action cost",
         "filterProperties": "Properties",
         "filterStatus": "Status",
         "concentration": "Concentration",
         "sustained": "Sustained",
+        "readMore": "Read more",
+        "readLess": "Read less",
+        "statSpellClass": "Class",
+        "rangeWithMetres": "{hexes} ({metres} m)",
+        "Class": {
+          "support": "Support",
+          "lesser": "Lesser",
+          "greater": "Greater"
+        },
         "reaction": "Reaction",
         "freeAction": "Free action",
         "actions": "{n} actions",
-        "hideWritten": "Hide what is written",
-        "onlyReachable": "Only what I can reach",
+        "statusCastable": "Castable",
+        "statusWritten": "In this book",
+        "statusMemorised": "Memorised",
+        "statusUnavailable": "Not available",
+        "filterRole": "Role",
+        "roleOffensive": "Offensive",
+        "roleSupport": "Support",
+        "filterDamage": "Damage type",
+        "lostBooks": "Lost books ({n})",
+        "writtenElsewhere": "Written in another grimoire",
+        "searchAll": "Search names and descriptions",
         "allSchools": "All schools",
-        "mana": "Mana",
-        "difficulty": "Difficulty",
+        "allSchoolsHint": "Show every school this character holds on one list.",
+        "browseAllSchools": "Browse every school",
+        "browseAllSchoolsHint": "GM: also list the schools this character does not have.",
         "none": "No spells here.",
         "noSchools": "This character has no school of magic yet.",
         "lost": "Lost grimoires",
@@ -7745,8 +7772,11 @@
           "notFound": "That spell could not be read.",
           "rank": "The school rank is too low, rank {n} is needed.",
           "full": "The grimoire is full.",
-          "notOwner": "You do not own this character."
-        }
+          "notOwner": "You do not own this character.",
+          "innate": "Wild magic cannot be forgotten: the school rank is what grants it."
+        },
+        "innate": "Innate",
+        "innateHint": "Wild magic. It comes with the school's first rank, costs nothing, and cannot be given back."
       },
       "Sections": {
         "combat": "Combat skills",

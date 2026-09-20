@@ -66,9 +66,9 @@
     ],
     "resources": [
       {
-        "mode": "",
-        "amount": "",
-        "type": ""
+        "mode": "add",
+        "amount": 4,
+        "type": "Corruption"
       }
     ],
     "resourceOptions": {

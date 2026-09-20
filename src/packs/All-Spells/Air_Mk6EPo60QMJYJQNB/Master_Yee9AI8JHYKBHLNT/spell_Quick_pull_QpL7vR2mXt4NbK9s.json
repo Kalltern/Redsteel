@@ -1,9 +1,9 @@
 {
-  "name": "Dark spill",
+  "name": "Quick pull",
   "type": "spell",
-  "img": "icons/magic/unholy/barrier-shield-glowing-pink.webp",
+  "img": "icons/magic/control/debuff-energy-snare-blue.webp",
   "system": {
-    "description": "Creates Very Difficult Terrain in a 6m area for {{math spellPower \"/\" 2}} rounds. Deals 3d6 damage and 2d4 Corruption per hex moved through or started in. Corruption +6. Ignores Armor.",
+    "description": "<p>Triggers a vs Test of Will + {{math spellPower \"*\" 2}} against the target's Strength/Endurance Test.</p><hr><p>On caster's success, pulls the target to any hex in a straight line toward the caster. <br>Can only be cast as a Reaction when an ally within range is attacked.</p>",
     "options": [
       "divine",
       "magic"
@@ -64,13 +64,18 @@
       "Charisma",
       "Perception"
     ],
-    "resources": [
-      {
+    "resources": {
+      "0": {
+        "type": "",
         "mode": "",
-        "amount": "",
-        "type": ""
+        "amount": null
+      },
+      "1": {
+        "type": "",
+        "mode": "",
+        "amount": null
       }
-    ],
+    },
     "resourceOptions": {
       "modes": [
         "add",
@@ -80,27 +85,27 @@
         ""
       ]
     },
-    "isOffensive": true,
+    "isOffensive": false,
     "uncontested": false,
     "sustained": false,
-    "difficulty": -30,
-    "cost": 15,
+    "difficulty": -20,
+    "cost": 12,
     "perRound": 0,
     "option": "magic",
-    "type": "darkness",
+    "type": "air",
     "rank": "master",
-    "actionCost": "2",
-    "range": "15",
-    "spellClass": "greater",
+    "actionCost": "Reaction",
+    "range": "8",
+    "spellClass": "support",
     "roll": {
-      "diceNum": 3,
-      "diceSize": "6",
+      "diceNum": 0,
+      "diceSize": "0",
       "diceBonus": ""
     },
-    "penetration": 100,
-    "dmgType1": "magic",
-    "bool2": "and",
-    "dmgType2": "dark",
+    "penetration": 0,
+    "dmgType1": "",
+    "bool2": "",
+    "dmgType2": "",
     "bool3": "",
     "dmgType3": "",
     "bool4": "",
@@ -118,31 +123,29 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "attributeTest": "will",
+    "testModifier": "@spellPower*2"
   },
   "effects": [],
-  "folder": "pwmVRgAOpIMg3gH9",
-  "flags": {
-    "scene-packer": {
-      "hash": "397ed0b9ea464872e6ef6e404d43a3c721e8ed0a"
-    }
-  },
+  "folder": "Yee9AI8JHYKBHLNT",
+  "flags": {},
   "_stats": {
-    "compendiumSource": "Compendium.world.dark-spells.Item.HTb1Fb1JA6L2ablw",
+    "compendiumSource": null,
     "duplicateSource": null,
     "exportSource": null,
     "coreVersion": "14.363",
     "systemId": "tos",
     "systemVersion": "0.8.0",
-    "createdTime": 1780601583468,
-    "modifiedTime": 1780601583468,
+    "createdTime": 1780601577692,
+    "modifiedTime": 1780601577692,
     "lastModifiedBy": "J03KIFAyMdNdBOUD"
   },
   "ownership": {
     "default": 0,
     "J03KIFAyMdNdBOUD": 3
   },
-  "_id": "gcuFW7XwyuBVGObJ",
+  "_id": "QpL7vR2mXt4NbK9s",
   "sort": 0,
-  "_key": "!items!gcuFW7XwyuBVGObJ"
+  "_key": "!items!QpL7vR2mXt4NbK9s"
 }

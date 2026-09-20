@@ -92,7 +92,9 @@
     "difficulty": -50,
     "cost": 6,
     "perRound": 6,
-    "variants": [],
+    "variants": [
+      "TwMIOxL5KiPJdEyE"
+    ],
     "option": "magic",
     "type": "spirit",
     "rank": "grandmaster",

@@ -11,6 +11,11 @@
  *   - Memorised, through the Memory knowledge (Paměť): 1 SP per spell, and it
  *     needs the same school rank. A memorised spell is in the caster's head and
  *     stays there when the book is gone.
+ *   - Innate, which is wild magic and only wild magic (user ruling
+ *     2026-09-17). Rank I of a school reads "Divoká magie" on the rank table,
+ *     and those spells are what a caster throws from the moment they can
+ *     channel at all. They arrive with the rank, cost no SP, need no grimoire,
+ *     and cannot be given back. See loadWildSpells.
  *
  * WHERE THE TRUTH LIVES. The book's own `system.spells` list is the record; the
  * spell Items on the actor are a projection of it, so that the whole casting
@@ -166,6 +171,7 @@ export function getKnownSpells(actor) {
     known.set(uuid, {
       item,
       memorised: isMemorised(item),
+      innate: isInnate(item),
       books: books.get(uuid) ?? [],
     });
   }
@@ -173,16 +179,21 @@ export function getKnownSpells(actor) {
   // runs on the next sync); the browser should still read it as written.
   for (const [uuid, ids] of books) {
     if (known.has(uuid)) continue;
-    known.set(uuid, { item: null, memorised: false, books: ids });
+    known.set(uuid, { item: null, memorised: false, innate: false, books: ids });
   }
   return known;
 }
 
-/** How many spells the character pays SP for (Paměť: 1 SP each). */
+/**
+ * How many spells the character pays SP for (Paměť: 1 SP each).
+ *
+ * Wild magic is not one of them: rank I of a school hands those spells over
+ * innately, so they are memorised without ever being bought.
+ */
 export function getMemorisedCount(actor) {
   let count = 0;
   for (const item of actor?.items?.contents ?? []) {
-    if (item.type === "spell" && isMemorised(item)) count += 1;
+    if (item.type === "spell" && isMemorised(item) && !isInnate(item)) count += 1;
   }
   return count;
 }
@@ -262,7 +273,7 @@ export function checkSpellRank(actor, school, rank) {
 /* -------------------------------------------------------------------------- */
 
 /** A compendium spell's data, ready to create on an actor, or null. */
-async function spellCopyData(uuid, { book = null, memorised = false } = {}) {
+async function spellCopyData(uuid, { book = null, memorised = false, innate = false } = {}) {
   const source = await fromUuid(uuid);
   if (!source || source.type !== "spell") return null;
   const data = source.toObject();
@@ -270,11 +281,99 @@ async function spellCopyData(uuid, { book = null, memorised = false } = {}) {
   data._stats = { ...(data._stats ?? {}), compendiumSource: uuid };
   data.flags = foundry.utils.mergeObject(data.flags ?? {}, {
     redsteel: {
-      spellSource: { uuid, book, managed: true },
-      memorised: !!memorised,
+      spellSource: { uuid, book, managed: true, innate: !!innate },
+      memorised: !!memorised || !!innate,
     },
   });
   return data;
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Wild magic                                                                */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Every wild spell in the pack, keyed by school. Read once per session: the
+ * pack only changes when it is rebuilt, which needs a reload anyway.
+ *
+ * Wild magic is not learnt. Rank I of any school reads "Divoká magie" on the
+ * rank table (Pravidla, Dovednosti), and those spells are what a caster can
+ * throw innately from the moment they can channel at all. So they cost no SP,
+ * need no grimoire, and arrive on their own with the rank.
+ */
+/**
+ * The ids of every spell that is listed as some other spell's variant.
+ *
+ * A variant is a version of its parent (the reaction version of a spell, or the
+ * one cast on a Wet target), resolved from the pack at cast time by
+ * showVariantSelectionDialog. Owning the parent is what gives access to it, so
+ * a variant is never learnt, written or granted on its own.
+ *
+ * @param {object[]} rows  Spell index entries carrying `system.variants`.
+ * @returns {Set<string>} Bare document ids, the form variants are stored in.
+ */
+export function variantChildIds(rows) {
+  const children = new Set();
+  for (const entry of rows ?? []) {
+    const raw = entry?.system?.variants;
+    const ids = Array.isArray(raw) ? raw : Object.values(raw ?? {});
+    for (const id of ids) {
+      const trimmed = typeof id === "string" ? id.trim() : "";
+      if (trimmed && trimmed !== entry._id) children.add(trimmed);
+    }
+  }
+  return children;
+}
+
+let wildSpells = null;
+async function loadWildSpells() {
+  if (wildSpells) return wildSpells;
+  const bySchool = new Map();
+  const pack = game.packs.get(SPELL_PACK_ID);
+  if (pack) {
+    try {
+      const index = await pack.getIndex({
+        fields: ["type", "system.type", "system.rank", "system.option", "system.variants"],
+      });
+      // .contents, not for...of: iterating a Collection yields [key, value].
+      const rows = index.contents.filter((entry) => entry.type === "spell");
+      // A spell listed as another spell's variant is a version of it, cast
+      // through the variant dialog, and never a thing of its own to be granted.
+      const children = variantChildIds(rows);
+      for (const entry of rows) {
+        if (entry.system?.option === "divine") continue;
+        if (children.has(entry._id)) continue;
+        if (String(entry.system?.rank ?? "").toLowerCase() !== "wild") continue;
+        const school = String(entry.system?.type ?? "");
+        if (!school) continue;
+        const uuid = entry.uuid ?? `Compendium.${SPELL_PACK_ID}.Item.${entry._id}`;
+        if (!bySchool.has(school)) bySchool.set(school, []);
+        bySchool.get(school).push(uuid);
+      }
+    } catch (err) {
+      console.warn(`Redsteel | Spellbook: could not index ${SPELL_PACK_ID}`, err);
+    }
+  }
+  wildSpells = bySchool;
+  return bySchool;
+}
+
+/** The wild spells this character casts innately, as a Set of uuids. */
+async function innateSpellUuids(actor) {
+  const wanted = new Set();
+  const bySchool = await loadWildSpells();
+  for (const [school, uuids] of bySchool) {
+    // The same gate the rest of this file uses, so Blood follows its
+    // specialisation rather than a rank it does not have.
+    if (!checkSpellRank(actor, school, "wild").ok) continue;
+    for (const uuid of uuids) wanted.add(uuid);
+  }
+  return wanted;
+}
+
+/** True for a wild spell the school rank granted, which nobody paid for. */
+export function isInnate(item) {
+  return item?.flags?.redsteel?.spellSource?.innate === true;
 }
 
 /**
@@ -316,9 +415,20 @@ export async function syncSpellbooks(actor) {
       if (uuid && !owned.has(uuid)) owned.set(uuid, item);
     }
 
+    /** The wild spells the character's school ranks hand over for nothing. */
+    const innate = await innateSpellUuids(actor);
+
     const creates = [];
-    for (const [uuid, { bookId }] of written) {
+    for (const uuid of innate) {
       if (owned.has(uuid)) continue;
+      const data = await spellCopyData(uuid, {
+        book: written.get(uuid)?.bookId ?? null,
+        innate: true,
+      });
+      if (data) creates.push(data);
+    }
+    for (const [uuid, { bookId }] of written) {
+      if (owned.has(uuid) || innate.has(uuid)) continue;
       const data = await spellCopyData(uuid, { book: bookId });
       if (data) creates.push(data);
     }
@@ -328,6 +438,47 @@ export async function syncSpellbooks(actor) {
     for (const [uuid, item] of owned) {
       const source = item.flags?.redsteel?.spellSource ?? null;
       const record = written.get(uuid);
+
+      // Wild magic first: the rank grants it, so it is memorised, free, and
+      // marked as such even on a copy that arrived some other way.
+      if (innate.has(uuid)) {
+        if (!isInnate(item) || !isMemorised(item)
+          || (source?.book ?? null) !== (record?.bookId ?? null)) {
+          updates.push({
+            _id: item.id,
+            "flags.redsteel.spellSource": {
+              uuid,
+              book: record?.bookId ?? null,
+              managed: source?.managed === true,
+              innate: true,
+            },
+            "flags.redsteel.memorised": true,
+          });
+        }
+        continue;
+      }
+
+      // The school rank is gone, and with it the wild magic it handed over.
+      // A copy the system made goes; one the player brought stays, stripped of
+      // the free memorisation it was given.
+      if (isInnate(item)) {
+        if (isManaged(item) && !record) {
+          deletes.push(item.id);
+        } else {
+          updates.push({
+            _id: item.id,
+            "flags.redsteel.spellSource": {
+              uuid,
+              book: record?.bookId ?? null,
+              managed: source?.managed === true,
+              innate: false,
+            },
+            "flags.redsteel.memorised": false,
+          });
+        }
+        continue;
+      }
+
       if (record) {
         // Adopt a hand-dragged copy rather than making a second one, and follow
         // the spell when it is erased from one book and written in another.
@@ -448,6 +599,9 @@ export async function forgetSpell(actor, uuid) {
     (candidate) => getSpellIdentity(candidate) === uuid,
   );
   if (!item) return { ok: true, reason: null };
+  // Wild magic came with the school rank and costs nothing, so there is
+  // nothing to give back; the next sync would only hand it straight back.
+  if (isInnate(item)) return { ok: false, reason: "innate" };
 
   // A book the character cannot read at this rank does not hold the spell for
   // them, so forgetting it takes the copy away — the same rule the projection

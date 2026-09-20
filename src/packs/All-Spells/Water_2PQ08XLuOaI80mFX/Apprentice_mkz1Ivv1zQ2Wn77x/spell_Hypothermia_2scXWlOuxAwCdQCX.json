@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/water/barrier-ice-water-cube.webp",
   "system": {
-    "description": "<p>60% chance to Slow the target. Deals Magic + Frost damage equal to 1d6 + {{math spellPower \"/\" 2}} per round for three rounds. Ignores armor.</p>",
+    "description": "<p>60% chance to Slow the target. Deals damage equal to 1d6 + {{math spellPower \"/\" 2}} per round for three rounds. Ignores armor.</p>",
     "options": [
       "divine",
       "magic"
@@ -103,9 +103,9 @@
       "diceBonus": ""
     },
     "penetration": 0,
-    "dmgType1": "",
-    "bool2": "",
-    "dmgType2": "",
+    "dmgType1": "magic",
+    "bool2": "and",
+    "dmgType2": "frost",
     "bool3": "",
     "dmgType3": "",
     "bool4": "",

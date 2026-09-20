@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/nature/plant-vines-skull-green.webp",
   "system": {
-    "description": "<p>Deals Magic + Blunt damage (3d20 + <span style=\"font-family:Signika, sans-serif\">{{math spellPower \"*\" 5}}</span>) in a 4.5m area. 50% chance to stun for 1 turn. A 1.5m radius at the epicenter becomes extremely difficult terrain. Pushes targets back 3 hexes and triggers a willpower test (caster’s bonus: <span style=\"font-family:Signika, sans-serif\">{{math spellPower \"*\" 2}}</span>) vs. Target's endurance test to resist being knocked down. Armor penetration 40. Critters or similar sized being do not count.</p>",
+    "description": "<p>Deals damage (3d20 + <span style=\"font-family:Signika, sans-serif\">{{math spellPower \"*\" 5}}</span>) in a 4.5m area. 50% chance to stun for 1 turn. A 1.5m radius at the epicenter becomes extremely difficult terrain. Pushes targets back 3 hexes and triggers a willpower test (caster’s bonus: <span style=\"font-family:Signika, sans-serif\">{{math spellPower \"*\" 2}}</span>) vs. Target's endurance test to resist being knocked down. Armor penetration 40. Critters or similar sized being do not count.</p>",
     "options": [
       "divine",
       "magic"

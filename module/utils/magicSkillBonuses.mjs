@@ -8,6 +8,10 @@ import {
 } from "../helpers/specialisations.mjs";
 import { hasHtmlContent } from "./chatBlocks.mjs";
 import { getStrikeId } from "./strikes.mjs";
+import {
+  getLindarChannelingBonus,
+  getLindarSpellCost,
+} from "./lindarCharge.mjs";
 import { getMaxCritDegree } from "./combatSkillBonuses.mjs";
 import {
   isSpeedTest,
@@ -319,7 +323,7 @@ export function showSpellSelectionDialogs(actor) {
           const spellTableRows = spells
             .map((spell) => {
               const actionCost = spell.system.actionCost || "-";
-              const manaCost = spell.system.cost || 0;
+              const manaCost = getLindarSpellCost(actor, spell);
               const resources = Array.isArray(spell.system.resources)
                 ? spell.system.resources
                 : Object.values(spell.system.resources || {});
@@ -507,7 +511,7 @@ export function showSpellSelectionDialogs(actor) {
               }
 
               const actionCost = spell.system.actionCost || "-";
-              const manaCost = Number(spell.system.cost) || 0;
+              const manaCost = getLindarSpellCost(actor, spell);
               const resources = Array.isArray(spell.system.resources)
                 ? spell.system.resources
                 : Object.values(spell.system.resources || {});
@@ -770,7 +774,7 @@ export async function showVariantSelectionDialog(spell) {
 export async function deductMana(actor, spell) {
   const updates = {};
 
-  const spellCost = Number(spell.system.cost) || 0;
+  const spellCost = getLindarSpellCost(actor, spell);
 
   // Blood school spells cost blood from the blood pool instead of mana
   const isBloodSpell = spell.system.type === "blood";
@@ -918,6 +922,13 @@ export function calculateAttackBonuses(actor, spell) {
       break; // Assuming only one temperament bonus applies
     }
   }
+
+  // Lindar's Charge (veneficus): the nine movement spells the perk names
+  // roll Channeling at +10%. attackBonus is the Channeling-test bonus —
+  // performAttackRoll puts it in the d100 formula and getCastChance shows
+  // it in the cast dialog — so one line covers both the roll and the
+  // number the player sees before committing.
+  attackBonus += getLindarChannelingBonus(actor, spell);
 
   const rankBonusTables = {
     fire: {

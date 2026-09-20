@@ -4,7 +4,7 @@
   "img": "icons/skills/wounds/blood-cells-disease-green.webp",
   "system": {
     "localizationKey": "",
-    "description": "Deals Dark + Poison damage equal to 1d6 + {{spellPower}} for four rounds. Ignores Armor.",
+    "description": "Deals damage equal to 1d6 + {{spellPower}} for four rounds. Ignores Armor.",
     "options": [
       "divine",
       "magic"
@@ -105,9 +105,9 @@
       "diceBonus": ""
     },
     "penetration": 0,
-    "dmgType1": "",
-    "bool2": "",
-    "dmgType2": "",
+    "dmgType1": "dark",
+    "bool2": "and",
+    "dmgType2": "poison",
     "bool3": "",
     "dmgType3": "",
     "bool4": "",

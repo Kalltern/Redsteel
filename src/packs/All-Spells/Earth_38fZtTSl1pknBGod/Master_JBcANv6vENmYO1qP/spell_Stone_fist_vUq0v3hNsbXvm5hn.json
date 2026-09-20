@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/earth/strike-fist-stone-gray.webp",
   "system": {
-    "description": "Deals Magic + Blunt damage (3d8 + SP × 4) to one target. 40% chance to stun. Triggers a Willpower test (caster’s bonus: SP × 1) vs. Strength / endurance. On success, the target is pushed back 2 hexes; if the success is 50+, they are also knocked down. On failure, the target is pushed 1 hex. Armor penetration 24.",
+    "description": "Deals damage (3d8 + SP × 4) to one target. 40% chance to stun. Triggers a Willpower test (caster’s bonus: SP × 1) vs. Strength / endurance. On success, the target is pushed back 2 hexes; if the success is 50+, they are also knocked down. On failure, the target is pushed 1 hex. Armor penetration 24.",
     "options": [
       "divine",
       "magic"

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/orb-vortex.webp",
   "system": {
-    "description": "<p>Deals Magic + Fire damage equal to 2d6 + {{math spellPower \"/\" 2}} per round for three rounds. Ignores Armor.<br />The target is 10% more likely to catch Burning from other sources while the mark lasts.</p>",
+    "description": "<p>Deals damage equal to 2d6 + {{math spellPower \"/\" 2}} per round for three rounds. Ignores Armor.<br />The target is 10% more likely to catch Burning from other sources while the mark lasts.</p>",
     "options": [
       "divine",
       "magic"
@@ -120,9 +120,9 @@
       "diceBonus": ""
     },
     "penetration": 0,
-    "dmgType1": "",
-    "bool2": "",
-    "dmgType2": "",
+    "dmgType1": "magic",
+    "bool2": "and",
+    "dmgType2": "fire",
     "bool3": "",
     "dmgType3": "",
     "bool4": "",

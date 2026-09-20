@@ -4,7 +4,7 @@
   "img": "icons/skills/wounds/blood-cells-red.webp",
   "system": {
     "localizationKey": "",
-    "description": "Deals Dark + Acid damage equal to 6d6 + {{spellPower}} in a 45° area with a range of 4.5 m.",
+    "description": "Deals damage equal to 6d6 + {{spellPower}} in a 45° area with a range of 4.5 m.",
     "options": [
       "divine",
       "magic"

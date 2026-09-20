@@ -125,7 +125,10 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "will",
-    "testModifier": "@spellPower*2"
+    "testModifier": "@spellPower*2",
+    "variants": [
+      "OqD6JV3JM8fQTkdm"
+    ]
   },
   "effects": [],
   "folder": "GaSIkEMI2Yi6RoKu",

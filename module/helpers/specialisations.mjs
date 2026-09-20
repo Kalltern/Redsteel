@@ -320,8 +320,10 @@ const CODE_AUTOMATED_NODES = {
     "soubojMZ2",
   ],
   // documents/actor.mjs (armour penalty, Lindar) + utils/castSpell.mjs
-  // (Lindar's strikes).
-  veneficus: ["postihZbroje", "lindar", "lindarovyUdery"],
+  // (Lindar's strikes) + utils/lindarCharge.mjs with
+  // utils/magicSkillBonuses.mjs (Lindar's Charge: 6 Mana off the cast cost and
+  // +10% Channeling on the nine named movement spells).
+  veneficus: ["postihZbroje", "lindar", "lindarovyUdery", "lindaruvVypad1"],
   // utils/magicSkillBonuses.mjs — the curse path.
   maleficarum: ["zakleti"],
   // utils/abilityGrants.mjs (Blood Pact) + utils/applyDamage.mjs (Blood Shield)

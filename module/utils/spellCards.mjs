@@ -127,6 +127,54 @@ export function parseActionCost(raw) {
   return { display: segments.join(" | "), concentration };
 }
 
+/**
+ * A stored range as the table reads it (user ruling 2026-09-20).
+ *
+ * The pack writes "Caster" for a spell that lands on the caster, which the
+ * rules call Self, and it writes a bare number for a distance, which is
+ * counted in hexes (one hex is 1.5 m). Both are spelled out here so every
+ * surface reading a spell says the same thing. "Touch" and anything else the
+ * pack holds is passed through untouched.
+ *
+ * @param {*} raw  The stored `system.range`.
+ * @returns {string}
+ */
+export function formatSpellRange(raw) {
+  const text = String(raw ?? "").trim();
+  if (!text) return "";
+  if (/^(caster|self)$/i.test(text)) {
+    return game.i18n.localize("REDSTEEL.Item.Spell.Range.self");
+  }
+  // A distance, whether one number or a span like "6 - 80".
+  if (/^\d+(\s*[-–]\s*\d+)?$/.test(text)) {
+    return game.i18n.format("REDSTEEL.Item.Spell.Range.hexes", { n: text });
+  }
+  return text;
+}
+
+/** One hex on the grid, in metres, for the ranges the hover card converts. */
+const METRES_PER_HEX = 1.5;
+
+/**
+ * The same range in metres, for the hover card's own box (user ruling
+ * 2026-09-20). Only a distance converts: Self and Touch have no length, so
+ * they come back empty and the caller drops the box.
+ *
+ * @param {*} raw  The stored `system.range`.
+ * @returns {string}  "12", "7,5", "9 - 120", or "" when there is nothing to
+ *   convert. Decimals read in the player's own language.
+ */
+export function spellRangeMeters(raw) {
+  const text = String(raw ?? "").trim();
+  const span = text.match(/^(\d+)(?:\s*[-–]\s*(\d+))?$/);
+  if (!span) return "";
+  const metres = (hexes) =>
+    (Number(hexes) * METRES_PER_HEX).toLocaleString(game.i18n.lang, {
+      maximumFractionDigits: 1,
+    });
+  return span[2] ? `${metres(span[1])} - ${metres(span[2])}` : metres(span[1]);
+}
+
 /** @returns {boolean} whether a pill value should be omitted. */
 function isEmptyPillValue(value) {
   return value === "" || value === null || value === undefined || value === 0;
@@ -150,31 +198,23 @@ function pill(key, labelKey, value, always = false, positive) {
 }
 
 /**
- * Build the view-model for one item's feature card.
- * @param {Item} item
+ * The strip of stat pills for one spell, miracle or ability.
+ *
+ * Split out of {@link buildSpellCard} so a caller with no Item in hand can
+ * build the same strip from plain system data: the Learn window's Spells tab
+ * reads compendium index entries, and its rows have to say exactly what the
+ * hover card says.
+ *
+ * @param {object} system  An item's `system` data, or the same fields read off
+ *   a compendium index entry.
  * @param {"spell"|"miracle"|"ability"} kind
- * @returns {object} plain view-data object — the source Item is never mutated.
+ * @returns {object[]} The pills, empty entries already dropped.
  */
-export function buildSpellCard(item, kind) {
-  const system = item.system ?? {};
-  // Descriptions store SK references as placeholders; resolve them against the
-  // owning actor's spell power in this spell's own school so the reader sees a
-  // number. Non-spell kinds carry no placeholders, so this is a no-op there.
-  const spellPower = getSpellPower(item.actor, system.type);
-  const card = {
-    id: item.id,
-    img: item.img,
-    name: item.localizedName,
-    description: resolveSpellPowerTokens(item.localizedDescription, spellPower),
-    concentration: false,
-    pills: [],
-  };
-
+export function buildSpellPills(system = {}, kind = "spell") {
   const pills = [];
 
   if (kind === "spell" || kind === "miracle") {
     const { display, concentration } = parseActionCost(system.actionCost);
-    card.concentration = concentration;
 
     if (kind === "spell") {
       pills.push(
@@ -199,7 +239,19 @@ export function buildSpellCard(item, kind) {
         true,
         concentration,
       ),
-      pill("range", "REDSTEEL.Item.Spell.FIELDS.headerRange.label", system.range),
+      pill(
+        "range",
+        "REDSTEEL.Item.Spell.FIELDS.headerRange.label",
+        formatSpellRange(system.range),
+      ),
+      // The hexes again in metres, for a table that wants the distance in
+      // the world rather than on the grid. Empty for Self and Touch, and the
+      // caller drops an empty pill.
+      pill(
+        "rangeMeters",
+        "REDSTEEL.Item.Spell.Range.metresLabel",
+        spellRangeMeters(system.range),
+      ),
     );
   } else if (kind === "ability") {
     const { display } = parseActionCost(system.actionCost);
@@ -220,7 +272,33 @@ export function buildSpellCard(item, kind) {
     );
   }
 
-  card.pills = pills.filter(Boolean);
+  return pills.filter(Boolean);
+}
+
+/**
+ * Build the view-model for one item's feature card.
+ * @param {Item} item
+ * @param {"spell"|"miracle"|"ability"} kind
+ * @returns {object} plain view-data object — the source Item is never mutated.
+ */
+export function buildSpellCard(item, kind) {
+  const system = item.system ?? {};
+  // Descriptions store SK references as placeholders; resolve them against the
+  // owning actor's spell power in this spell's own school so the reader sees a
+  // number. Non-spell kinds carry no placeholders, so this is a no-op there.
+  const spellPower = getSpellPower(item.actor, system.type);
+  const card = {
+    id: item.id,
+    img: item.img,
+    name: item.localizedName,
+    description: resolveSpellPowerTokens(item.localizedDescription, spellPower),
+    concentration: false,
+    pills: [],
+  };
+
+  // The strip itself is shared with the Learn window's spell rows.
+  card.concentration = parseActionCost(system.actionCost).concentration;
+  card.pills = buildSpellPills(system, kind);
   return card;
 }
 

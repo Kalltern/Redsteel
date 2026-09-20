@@ -119,8 +119,19 @@ import {
   memoriseSpell,
   parseActionCost,
   restoreSpellbook,
+  syncSpellbooks,
+  variantChildIds,
   writeSpell,
 } from "./spellbook.mjs";
+// Two parsers read an action cost: spellbook's answers what it is (actions,
+// free, reaction), and this one answers how to print it. The card needs both.
+import {
+  formatSpellRange,
+  spellRangeMeters,
+  parseActionCost as formatActionCost,
+  resolveSpellPowerTokens,
+} from "./spellCards.mjs";
+import { getSpellPower } from "./spellPower.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } =
   foundry.applications.api;
@@ -152,6 +163,26 @@ function spellActionFilterLabel(key) {
   if (key === "reaction") return game.i18n.localize("REDSTEEL.Learn.Spells.reaction");
   return game.i18n.format("REDSTEEL.Learn.Spells.actions", { n: key });
 }
+
+/**
+ * The status boxes of the Spells pop-up, in its order, with their labels.
+ *   castable:    projected onto the actor (held)
+ *   written:     in the open grimoire
+ *   memorised:   known by heart, Wild magic included
+ *   unavailable: not held
+ */
+const SPELL_STATUS_FILTERS = {
+  castable: "REDSTEEL.Learn.Spells.statusCastable",
+  written: "REDSTEEL.Learn.Spells.statusWritten",
+  memorised: "REDSTEEL.Learn.Spells.statusMemorised",
+  unavailable: "REDSTEEL.Learn.Spells.statusUnavailable",
+};
+
+/** The role boxes of the Spells pop-up: system.isOffensive read both ways. */
+const SPELL_ROLE_FILTERS = {
+  offensive: "REDSTEEL.Learn.Spells.roleOffensive",
+  support: "REDSTEEL.Learn.Spells.roleSupport",
+};
 
 /* SPEC ICON EDITOR — TEMPORARY (user request 2026-09-11).
  * The GM picks each specialisation's card icon in game. The choices live in a
@@ -389,6 +420,37 @@ const SKILL_CLASS_ORDER = ["A", "B", "C"];
 const UNCLASSED_FAMILIES = new Set(["specialization"]);
 
 /** Lower-cased and accent-free, so "zasah" finds "Přesný zásah". */
+/**
+ * Whether a stored description holds anything worth rolling out. Editors leave
+ * an "empty" description as `<p></p>`, so the test is on the text it would
+ * render, keeping anything with a picture in it. The same rule the hover card
+ * uses (renderInspectorCard).
+ */
+function hasProse(html) {
+  const text = String(html ?? "").trim();
+  if (!text) return false;
+  if (/<img/i.test(text)) return true;
+  return text.replace(/<[^>]*>/g, "").replace(/&nbsp;/gi, " ").trim() !== "";
+}
+
+/**
+ * A stored description as plain text: tags dropped, entities decoded by an
+ * inert DOMParser document (nothing in it loads or runs), and whitespace
+ * collapsed. Tags are replaced by a space first, so two paragraphs do not run
+ * their words together.
+ */
+function plainText(html) {
+  const source = String(html ?? "");
+  if (!source.trim()) return "";
+  const parsed = new DOMParser().parseFromString(source.replace(/<[^>]*>/g, " "), "text/html");
+  return String(parsed.body?.textContent ?? "").replace(/\s+/g, " ").trim();
+}
+
+/** A stat a spell never filled in: the card prints a dash in its place. */
+function emptyStat(value) {
+  return value === null || value === undefined || String(value).trim() === "";
+}
+
 function normalizeSearch(text) {
   return String(text ?? "")
     .normalize("NFD")
@@ -417,6 +479,52 @@ const FLAG_LABELS = {
 function flagLabel(key) {
   const lang = FLAG_LABELS[key];
   return lang && game.i18n.has(lang, false) ? game.i18n.localize(lang) : key;
+}
+
+/**
+ * A damage type's player-facing name, falling back to the bare key. Shared by
+ * the spell roster's filter pop-up and the damage footnote on a spell card,
+ * which must name a type the same way.
+ */
+function dmgTypeLabel(key) {
+  const langKey = `REDSTEEL.EnvironmentalDamage.Type.${key}`;
+  return game.i18n.has(langKey) ? game.i18n.localize(langKey) : key;
+}
+
+/**
+ * The damage footnote under a spell's icon: every type the spell deals, in the
+ * order it is stored, joined by the word the spell itself carries.
+ *
+ * A spell keeps its types in `system.dmgType1..dmgType4` and the joining words
+ * in `system.bool2`, `system.bool3` and `system.bool4` — opaquely named, but
+ * they are not booleans: each holds "and" or "or" and joins `dmgType<N>` to
+ * everything named before it. "and" is the fallback for a missing or
+ * unrecognised joiner, which nearly no pack spell has.
+ *
+ * @param {Array<{type: string, join: string}>} parts The row's `dmgParts`.
+ * @returns {string} e.g. "Magic and Dark", or "" when the spell deals nothing.
+ */
+function dmgPartsLabel(parts) {
+  const list = Array.isArray(parts) ? parts : [];
+  if (!list.length) return "";
+  const word = (join) =>
+    game.i18n.localize(join === "or" ? "REDSTEEL.Learn.or" : "REDSTEEL.Learn.and");
+  return list
+    .map((part, at) =>
+      at === 0
+        ? dmgTypeLabel(part.type)
+        : `${word(String(part.join ?? "").trim())} ${dmgTypeLabel(part.type)}`,
+    )
+    .join(" ");
+}
+
+/**
+ * "lesser" → the book's word for it. `system.spellClass` stores the English
+ * key, which must never reach the reader unlocalized.
+ */
+function spellClassLabel(key) {
+  const langKey = `REDSTEEL.Learn.Spells.Class.${key}`;
+  return game.i18n.has(langKey) ? game.i18n.localize(langKey) : String(key);
 }
 
 /** The sheet's own name for a track id ("doctrines.swordsman"). */
@@ -1263,6 +1371,7 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       toggleFeatureFilters: LearnWindow._onToggleFeatureFilters,
       resetFeatureFilters: LearnWindow._onResetFeatureFilters,
       toggleFeatureDescription: LearnWindow._onToggleFeatureDescription,
+      expandSpellRow: LearnWindow._onExpandSpellRow,
       openFeatureFamily: LearnWindow._onOpenFeatureFamily,
       closeFeatureFamily: LearnWindow._onCloseFeatureFamily,
       buyLanguage: LearnWindow._onBuyLanguage,
@@ -1300,9 +1409,12 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       createSpellbook: LearnWindow._onCreateSpellbook,
       restoreSpellbook: LearnWindow._onRestoreSpellbook,
       forgetSpellbook: LearnWindow._onForgetSpellbook,
+      toggleSpellArchive: LearnWindow._onToggleSpellArchive,
       toggleSpellFilters: LearnWindow._onToggleSpellFilters,
       resetSpellFilters: LearnWindow._onResetSpellFilters,
       toggleAllSchools: LearnWindow._onToggleAllSchools,
+      toggleSpellRank: LearnWindow._onToggleSpellRank,
+      toggleMergedSchools: LearnWindow._onToggleMergedSchools,
       closeScreen: LearnWindow._onCloseScreen,
     },
   };
@@ -1324,8 +1436,7 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
         ".rs-learn-spec-group.is-support",
         ".rs-learn-spec-view-body",
         ".rs-learn-spec-gallery",
-        ".rs-learn-spellbook",
-        ".rs-learn-spells-list",
+        ".rs-learn-roster-body",
       ],
     },
   };
@@ -1459,17 +1570,34 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
   /** The Spells tab's search field and filters. */
   #spellQuery = "";
   #spellFiltersOpen = false;
-  /** Ticked spell ranks; empty is every rank. */
-  #spellRanks = new Set();
+  /** The rank page on show; empty until one is resolved from the roster. */
+  #spellRank = "";
   /** Ticked action costs ("free", "1", "2", "3+", "reaction"); empty is all. */
   #spellActions = new Set();
   #spellConcentration = false;
   #spellSustained = false;
-  #spellHideWritten = false;
-  #spellOnlyReachable = false;
+  /**
+   * Ticked statuses ("castable", "written", "memorised", "unavailable"); empty
+   * is all. A tile passes when it matches any ticked one.
+   */
+  #spellStatuses = new Set();
+  /** Ticked roles ("offensive", "support"); empty is all. */
+  #spellRoles = new Set();
+  /** Ticked damage types; empty is all. */
+  #spellDmgTypes = new Set();
+
+  /** Whether the lost grimoires panel under the grimoire strip is open. */
+  #spellArchiveOpen = false;
 
   /** GM only: show every school, not only the ones the character holds. */
   #spellAllSchools = false;
+
+  /**
+   * Merge every school the character holds into one ranked list. The GM's
+   * #spellAllSchools only widens the row of pills to the schools they lack;
+   * the merged list stays the character's own schools.
+   */
+  #spellMerged = false;
 
   /** The spell compendium's index, read once per window. */
   #spellIndex = null;
@@ -2563,18 +2691,36 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
             "system.rank",
             "system.actionCost",
             "system.cost",
+            "system.perRound",
+            "system.description",
             "system.difficulty",
             "system.sustained",
             "system.spellClass",
             "system.range",
             "system.option",
+            "system.variants",
             "system.localizationKey",
+            "system.isOffensive",
+            "system.dmgType1",
+            "system.dmgType2",
+            "system.dmgType3",
+            "system.dmgType4",
+            // bool2..bool4 are the joiners between the damage types, not flags.
+            "system.bool2",
+            "system.bool3",
+            "system.bool4",
           ],
         });
         // .contents, not for...of: iterating a Collection yields [key, value].
-        for (const entry of index.contents) {
-          if (entry.type !== "spell") continue;
+        const entries = index.contents.filter((entry) => entry.type === "spell");
+        // A spell listed as another spell's variant is never offered on its own:
+        // the reaction version of a spell, or the one cast on a Wet target, comes
+        // with the parent and is picked in the cast dialog (user ruling
+        // 2026-09-17). Owning the parent is what grants it.
+        const children = variantChildIds(entries);
+        for (const entry of entries) {
           if (entry.system?.option === "divine") continue;
+          if (children.has(entry._id)) continue;
           const key = entry.system?.localizationKey?.trim();
           // No spell carries a localization key today, so these read English.
           const name =
@@ -2586,11 +2732,36 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
             school: String(entry.system?.type ?? ""),
             rank: String(entry.system?.rank ?? ""),
             cost: entry.system?.cost ?? "",
+            perRound: entry.system?.perRound ?? "",
             difficulty: entry.system?.difficulty ?? "",
             range: entry.system?.range ?? "",
+            description: String(entry.system?.description ?? ""),
             actionCost: String(entry.system?.actionCost ?? ""),
             sustained: !!entry.system?.sustained,
             spellClass: String(entry.system?.spellClass ?? ""),
+            // template.json defaults isOffensive to true, so an entry that never
+            // stored the field reads as offensive, the way the item itself does.
+            offensive: entry.system?.isOffensive !== false,
+            dmgTypes: [
+              ...new Set(
+                [1, 2, 3, 4]
+                  .map((n) => String(entry.system?.[`dmgType${n}`] ?? "").trim())
+                  .filter(Boolean),
+              ),
+            ],
+            // The same types in the order they are stored, each carrying the
+            // word that joins it to the one before. Never de-duplicated: a
+            // spell may name the same type twice ("magic and magic or
+            // lightning") and a Set would misalign every joiner after it.
+            dmgParts: [1, 2, 3, 4].reduce((parts, n) => {
+              const type = String(entry.system?.[`dmgType${n}`] ?? "").trim();
+              if (!type) return parts;
+              const join = parts.length
+                ? String(entry.system?.[`bool${n}`] ?? "").trim()
+                : "";
+              parts.push({ type, join });
+              return parts;
+            }, []),
           });
         }
       } catch (err) {
@@ -2624,9 +2795,9 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   /**
-   * The Spells tab: the grimoire on the left (what is written in it, what the
-   * character knows by heart, and the books they have lost), the school's whole
-   * spell list on the right.
+   * The Spells tab: one roster of spell tiles, grouped by school and then by
+   * rank, under a strip naming the open grimoire (and the books the character
+   * has lost). A tile is lit while the spell is held, dim otherwise.
    *
    * Writing a spell is free and lives in the book; memorising it is 1 SP and
    * lives in the caster's head (Pravidla, Paměť). The school rank gate is
@@ -2635,6 +2806,11 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
    */
   async #buildSpells() {
     const actor = this.actor;
+    // Wild magic arrives with the school rank, and the rank may have been
+    // bought long before that rule existed. Reconciling here is what hands it
+    // to a character the hooks never fired for. Idempotent, so an up-to-date
+    // character costs nothing but the check.
+    await syncSpellbooks(actor);
     const lang = game.i18n.lang;
     const isGM = game.user.isGM;
     const catalogue = await this.#loadSpellIndex();
@@ -2644,6 +2820,7 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       rank ? game.i18n.localize(`REDSTEEL.Item.Spell.FIELDS.${rank}.label`) : "";
     const schoolLabel = (key) =>
       key ? game.i18n.localize(`REDSTEEL.Actor.Character.schools.${key}.label`) : "";
+    const spellPowerIn = (school) => getSpellPower(actor, school);
     const rankOrder = (rank) => {
       const at = SPELL_RANKS.indexOf(String(rank));
       return at < 0 ? SPELL_RANKS.length : at;
@@ -2665,66 +2842,6 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     const activeEntries = activeBook ? getBookEntries(activeBook) : [];
     const activeSet = new Set(activeEntries.map((entry) => entry.uuid));
 
-    /* ---- what is written in the open book, by school ---- */
-    const grouped = new Map();
-    for (const entry of activeEntries) {
-      const indexed = indexByUuid.get(entry.uuid) ?? null;
-      const school = entry.school || indexed?.school || "";
-      const rank = entry.rank || indexed?.rank || "";
-      const gate = checkSpellRank(actor, school, rank);
-      const row = {
-        uuid: entry.uuid,
-        name: indexed?.name || entry.name || "",
-        img: entry.img || indexed?.img || SPELL_FALLBACK_IMG,
-        school,
-        rank,
-        rankLabel: rankLabel(rank),
-        memorised: !!known.get(entry.uuid)?.memorised,
-        reachable: gate.ok,
-        required: gate.required,
-        // A spell in the book the character cannot reach yet stays written and
-        // says so, rather than quietly vanishing from the list.
-        note: gate.ok ? "" : say("outOfReach"),
-        needs: game.i18n.format("REDSTEEL.Learn.Spells.needsRank", { n: gate.required }),
-      };
-      if (!grouped.has(school)) grouped.set(school, []);
-      grouped.get(school).push(row);
-    }
-    const groupKeys = SPELL_SCHOOLS.concat(
-      [...grouped.keys()].filter((key) => !SPELL_SCHOOLS.includes(key)),
-    );
-    const bookGroups = groupKeys
-      .filter((key) => grouped.has(key))
-      .map((key) => ({
-        key,
-        label: schoolLabel(key),
-        spells: grouped.get(key).sort(byRankThenName),
-      }));
-
-    /* ---- known by heart, and not in the open book ---- */
-    const memorised = [];
-    for (const [uuid, record] of known) {
-      if (!record.memorised || activeSet.has(uuid)) continue;
-      const indexed = indexByUuid.get(uuid) ?? null;
-      const item = record.item;
-      const school = indexed?.school || String(item?.system?.type ?? "");
-      const rank = indexed?.rank || String(item?.system?.rank ?? "");
-      const gate = checkSpellRank(actor, school, rank);
-      memorised.push({
-        uuid,
-        name: indexed?.name || item?.localizedName || item?.name || "",
-        img: indexed?.img || item?.img || SPELL_FALLBACK_IMG,
-        school,
-        schoolLabel: schoolLabel(school),
-        rank,
-        rankLabel: rankLabel(rank),
-        memorised: true,
-        reachable: gate.ok,
-        required: gate.required,
-      });
-    }
-    memorised.sort(byRankThenName);
-
     /* ---- the lost books ---- */
     const archive = getSpellbookArchive(actor).map((record) => {
       const raw = record.entries;
@@ -2742,11 +2859,18 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     });
 
     /* ---- the school pills ---- */
-    const schoolKeys = SPELL_SCHOOLS.filter((key) => {
-      if (isGM && this.#spellAllSchools) return true;
-      if (key === "blood") return !!actor?.system?.specialisations?.bloodSchool?.active;
-      return Number(actor?.system?.schools?.[key]?.value ?? 0) >= 1;
-    });
+    // What the character holds. The merged list is theirs alone: the GM's
+    // switch only widens the row of pills to the schools they lack.
+    const heldSchool = (key) =>
+      key === "blood"
+        ? !!actor?.system?.specialisations?.bloodSchool?.active
+        : Number(actor?.system?.schools?.[key]?.value ?? 0) >= 1;
+    const heldKeys = SPELL_SCHOOLS.filter(heldSchool);
+    const schoolKeys = SPELL_SCHOOLS.filter(
+      (key) => (isGM && this.#spellAllSchools) || heldSchool(key),
+    );
+    const canMerge = heldKeys.length > 1;
+    const merged = this.#spellMerged && canMerge;
     const activeSchool = schoolKeys.includes(this.#spellSchool)
       ? this.#spellSchool
       : (schoolKeys[0] ?? null);
@@ -2766,7 +2890,7 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
         label: schoolLabel(key),
         rank: held,
         rankLabel: held ? roman(held) : "",
-        active: key === activeSchool,
+        active: !merged && key === activeSchool,
         count,
         countLabel: game.i18n.format("REDSTEEL.Learn.Spells.spellCount", { n: count }),
       };
@@ -2774,34 +2898,117 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
 
     /* ---- the school's whole list ---- */
     const rows = catalogue
-      .filter((row) => row.school === activeSchool)
+      .filter((row) => (merged ? heldKeys.includes(row.school) : row.school === activeSchool))
       .map((row) => {
         const gate = checkSpellRank(actor, row.school, row.rank);
         const record = known.get(row.uuid) ?? null;
+        const isInnateSpell = !!record?.innate;
         const isMemorised = !!record?.memorised;
         const isWritten = !!record?.books?.length;
         const isHeld = !!record?.item;
-        const state = isMemorised
-          ? "memorised"
-          : isWritten
-            ? "written"
-            : isHeld
-              ? "owned"
-              : gate.ok
-                ? "available"
-                : "locked";
+        // Wild magic is its own state: the school's first rank handed it over,
+        // so it is neither bought nor given back.
+        const state = isInnateSpell
+          ? "innate"
+          : isMemorised
+            ? "memorised"
+            : isWritten
+              ? "written"
+              : isHeld
+                ? "owned"
+                : gate.ok
+                  ? "available"
+                  : "locked";
         const action = parseActionCost(row.actionCost, row.sustained);
-        const chips = [];
-        if (action.free) chips.push(say("freeAction"));
-        if (action.reaction) chips.push(say("reaction"));
-        if (Number.isInteger(action.actions)) {
-          chips.push(
-            game.i18n.format("REDSTEEL.Learn.Spells.actions", { n: action.actions }),
+        // The tag block beside the icon. A tag that has nothing to say is
+        // left out rather than printed empty (user ruling 2026-09-20), so the
+        // list is as long as the spell is complicated: three cells for the
+        // barest, eight for a spell that carries everything.
+        const cell = (key, labelKey, value) => ({
+          key,
+          label: game.i18n.localize(labelKey),
+          value: emptyStat(value) ? "–" : String(value),
+        });
+        // "Free action" runs past the cell, and on a card the word "action"
+        // is already the cell's own label (user ruling 2026-09-20).
+        const actionDisplay = /^free/i.test(String(row.actionCost).trim())
+          ? say("statFreeAction")
+          : formatActionCost(row.actionCost).display;
+        const tileStats = [
+          // The first three stand on every card, in the same places, so a
+          // page of cards still rules up into columns.
+          cell("difficulty", "REDSTEEL.Item.Spell.FIELDS.difficulty.label", row.difficulty),
+          // A cost of 0 is an answer, not a blank: the spell is free.
+          cell("cost", "REDSTEEL.Item.Spell.FIELDS.cost.label", row.cost),
+          // "Action cost" is too long for a cell and pushed its own number
+          // out of sight, so the card says "Action" (user report 2026-09-20).
+          // The number is the printable form, not spellbook's parse: that one
+          // answers what the cost is, and carries no text to print.
+          cell("actionCost", "REDSTEEL.Learn.Spells.statAction", actionDisplay),
+        ];
+        // A number here is a count of hexes, and the card carries the real
+        // distance beside it. Self and Touch convert to nothing, so they
+        // print the word alone.
+        const rangeHexes = formatSpellRange(row.range);
+        if (rangeHexes) {
+          const metres = spellRangeMeters(row.range);
+          tileStats.push(
+            cell(
+              "range",
+              "REDSTEEL.Item.Spell.FIELDS.headerRange.label",
+              metres
+                ? game.i18n.format("REDSTEEL.Learn.Spells.rangeWithMetres", {
+                    hexes: rangeHexes,
+                    metres,
+                  })
+                : rangeHexes,
+            ),
           );
         }
-        if (action.concentration) chips.push(say("concentration"));
-        if (row.sustained) chips.push(say("sustained"));
+        // Support, lesser or greater. Stored as an English key, printed in
+        // the reader's own language.
+        if (typeof row.spellClass === "string" && row.spellClass.trim()) {
+          tileStats.push(
+            cell(
+              "spellClass",
+              "REDSTEEL.Learn.Spells.statSpellClass",
+              spellClassLabel(row.spellClass.trim()),
+            ),
+          );
+        }
+        // A spell that costs nothing per round says nothing: the pack stores
+        // that as 0, which is not the same as empty (user report 2026-09-20).
+        if (!emptyStat(row.perRound) && Number(row.perRound) !== 0) {
+          tileStats.push({
+            key: "perRound",
+            label: say("perRoundShort"),
+            value: String(row.perRound),
+          });
+        }
+        // Concentration and Sustained say themselves: the tag only exists
+        // when the spell has the property, so a "Yes" beside it is a word
+        // wasted and a "No" is never printed (user ruling 2026-09-20).
+        if (action.concentration) {
+          tileStats.push({
+            key: "concentration",
+            label: game.i18n.localize("REDSTEEL.Actor.Spells.Concentration.Label"),
+            value: "",
+          });
+        }
+        if (row.sustained) {
+          tileStats.push({ key: "sustained", label: say("sustained"), value: "" });
+        }
+        // The damage types run as one line of fine print under the icon, not
+        // as another row of cells: they say what the spell deals, not what it
+        // costs, and the spell's own "and"/"or" holds them together.
+        const tileDmg = dmgPartsLabel(row.dmgParts);
+        // Spell power placeholders resolve against the character being levelled
+        // up, so the prose reads with their own numbers in it.
+        const description = resolveSpellPowerTokens(row.description, spellPowerIn(row.school));
+        const expandKey = `spell-${row.uuid}`;
         const inActiveBook = activeSet.has(row.uuid);
+        // Written down, but in a grimoire other than the open one.
+        const writtenElsewhere = isWritten && !inActiveBook;
         // The GM writes and memorises past the gate: they are the one who
         // hands a character a spell the table agreed on.
         const reachable = gate.ok || isGM;
@@ -2809,20 +3016,34 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
           n: gate.required,
         });
         const canWrite = reachable && !!activeBook && !inActiveBook;
-        const canMemorise = reachable && !isMemorised;
+        const canMemorise = reachable && !isMemorised && !isInnateSpell;
+        const writeTooltip = inActiveBook
+          ? say("erase")
+          : reachable
+            ? say("write")
+            : `${say("write")} (${needs})`;
         return {
           uuid: row.uuid,
           name: row.name,
           img: row.img,
           rank: row.rank,
           rankLabel: rankLabel(row.rank),
+          school: row.school,
+          schoolLabel: schoolLabel(row.school),
           cost: row.cost,
           difficulty: row.difficulty,
           range: row.range,
           actionCost: row.actionCost,
           actions: action.actions,
-          // What the spell asks of a turn, as the row's chips read it.
-          chips,
+          // What the spell costs and carries: as many cells as it has
+          // answers. The damage line sits apart, under the icon.
+          tileStats,
+          tileDmg,
+          // Empty for a spell with no prose, and the template leaves such a row
+          // unclickable rather than opening an empty panel.
+          description: hasProse(description) ? description : "",
+          expandKey,
+          expanded: this.#expandedFeatures.has(expandKey),
           actionBucket: spellActionBucket(action),
           free: action.free,
           reaction: action.reaction,
@@ -2830,32 +3051,88 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
           sustained: row.sustained,
           state,
           stateLabel: say(state),
+          innate: isInnateSpell,
           required: gate.required,
           needs,
           showLock: state === "locked",
           inActiveBook,
+          // Projected onto the actor, so castable. The status filter reads
+          // this one.
+          held: isHeld,
+          // The card's colour switch: the character has the spell, whether it
+          // stands in a grimoire they carry or in their head (user ruling
+          // 2026-09-20). Innate wild magic is memorised, so it is covered.
+          owned: isWritten || isMemorised,
+          writtenElsewhere,
           canWrite,
           canMemorise,
           canErase: inActiveBook,
-          canForget: isMemorised,
-          writeTooltip: inActiveBook
-            ? say("erase")
-            : reachable
-              ? say("write")
-              : `${say("write")} (${needs})`,
-          memoriseTooltip: isMemorised
-            ? say("forget")
-            : reachable
-              ? say("memorise")
-              : `${say("memorise")} (${needs})`,
-          manaTooltip: say("mana"),
-          difficultyTooltip: say("difficulty"),
-          search: normalizeSearch(row.name),
+          canForget: isMemorised && !isInnateSpell,
+          writeTooltip,
+          // The book mark's tooltip: the write/erase line, plus a sentence
+          // when the spell already sits in another grimoire. Plain text, so it
+          // does not lean on data-tooltip reading HTML.
+          bookTooltip: writtenElsewhere
+            ? `${writeTooltip}. ${say("writtenElsewhere")}`
+            : writeTooltip,
+          offensive: row.offensive,
+          dmgTypes: row.dmgTypes,
+          dmgTypesKey: row.dmgTypes.join(" "),
+          searchText: normalizeSearch(`${row.name} ${plainText(description)}`),
+          memoriseTooltip: isInnateSpell
+            ? say("innateHint")
+            : isMemorised
+              ? say("forget")
+              : reachable
+                ? say("memorise")
+                : `${say("memorise")} (${needs})`,
         };
       })
-      .sort(byRankThenName);
+      .sort(
+        merged
+          ? (a, b) =>
+              rankOrder(a.rank) - rankOrder(b.rank) ||
+              a.schoolLabel.localeCompare(b.schoolLabel, lang) ||
+              a.name.localeCompare(b.name, lang)
+          : byRankThenName,
+      );
+
+    /* ---- the roster: one grid per school ----
+       Rank headings were tried and dropped (user ruling 2026-09-20): they cut
+       the page into blobs. The whole school runs as one grid instead, ordered
+       by rank and then by name, and each card carries its own rank bar. */
+    const sectionKeys = merged ? heldKeys : activeSchool ? [activeSchool] : [];
+    const sections = sectionKeys
+      .map((school) => {
+        return {
+          key: school,
+          label: schoolLabel(school),
+          spells: rows
+            .filter((row) => row.school === school)
+            .sort(
+              (a, b) =>
+                rankOrder(a.rank) - rankOrder(b.rank) ||
+                a.name.localeCompare(b.name, lang),
+            ),
+        };
+      })
+      .filter((section) => section.spells.length > 0);
+
+    /* ---- the filter pop-up's damage types: every type on the roster ----
+       Named by the module-scope dmgTypeLabel, the same one the cards use. */
+    const dmgTypeChecks = [...new Set(rows.flatMap((row) => row.dmgTypes))]
+      .map((key) => ({
+        key,
+        label: dmgTypeLabel(key),
+        checked: !this.#spellDmgTypes.size || this.#spellDmgTypes.has(key),
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label, lang));
 
     const wallet = getWallet(actor);
+    // Which rank page is open. Resolved against the rows that survived the
+    // school switch, so changing school never strands the reader on a rank
+    // the new school has nothing at.
+    const activeRank = this.#activeSpellRank(rows);
     return {
       books,
       hasBook: !!activeBook,
@@ -2869,25 +3146,32 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
             capacity: Number(activeBook.system?.capacity) || 0,
           }
         : null,
-      bookGroups,
-      memorised,
       archive,
+      archiveOpen: this.#spellArchiveOpen,
+      lostBooksLabel: game.i18n.format("REDSTEEL.Learn.Spells.lostBooks", {
+        n: archive.length,
+      }),
       schools,
       activeSchool,
       noSchools: schools.length === 0,
       rows,
+      sections,
       sp: { cost: MEMORISE_SP, remaining: wallet.remaining.sp },
       poor: wallet.remaining.sp < MEMORISE_SP,
       isGM,
       allSchools: this.#spellAllSchools,
+      merged,
+      canMerge,
+      rankPills: SPELL_RANKS.map((rank) => ({
+        key: rank,
+        label: rankLabel(rank),
+        count: rows.filter((row) => row.rank === rank).length,
+        // Ranks are pages: exactly one plate is lit, the one on show.
+        active: rank === activeRank,
+      })),
       query: this.#spellQuery,
       filtersOpen: this.#spellFiltersOpen,
       activeFilters: this.#activeSpellFilterCount(),
-      rankChecks: SPELL_RANKS.map((rank) => ({
-        key: rank,
-        label: rankLabel(rank),
-        checked: !this.#spellRanks.size || this.#spellRanks.has(rank),
-      })),
       actionChecks: SPELL_ACTION_FILTERS.map((key) => ({
         key,
         label: spellActionFilterLabel(key),
@@ -2895,61 +3179,153 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       })),
       concentration: this.#spellConcentration,
       sustained: this.#spellSustained,
-      hideWritten: this.#spellHideWritten,
-      onlyReachable: this.#spellOnlyReachable,
+      statusChecks: Object.entries(SPELL_STATUS_FILTERS).map(([key, langKey]) => ({
+        key,
+        label: game.i18n.localize(langKey),
+        checked: !this.#spellStatuses.size || this.#spellStatuses.has(key),
+      })),
+      roleChecks: Object.entries(SPELL_ROLE_FILTERS).map(([key, langKey]) => ({
+        key,
+        label: game.i18n.localize(langKey),
+        checked: !this.#spellRoles.size || this.#spellRoles.has(key),
+      })),
+      dmgTypeChecks,
     };
   }
 
   /**
-   * Filter the rendered spell list in place, the way #applyFeatureFilters does
-   * for the Features tab: the search field and every tick in the pop-up must
-   * never re-render the screen and throw the caret out of the field.
-   *   - rank: the spell ranks ticked, none ticked meaning all
+   * The rank page on show. The stored rank holds while it still has a spell
+   * on it; otherwise the first rank in SPELL_RANKS order that has one takes
+   * over, and an empty roster leaves no page open at all. The answer is
+   * stored back, so the plates, the filters and the context all read the same
+   * page (user ruling 2026-09-20).
+   *
+   * @param {Array<object>} rows  Every spell row the roster is built from.
+   * @returns {string}            The open rank, or "" when there is none.
+   */
+  #activeSpellRank(rows) {
+    const has = (rank) => rows.some((row) => row.rank === rank);
+    const open =
+      this.#spellRank && has(this.#spellRank)
+        ? this.#spellRank
+        : (SPELL_RANKS.find((rank) => has(rank)) ?? "");
+    this.#spellRank = open;
+    return open;
+  }
+
+  /**
+   * Filter the rendered spell roster in place, the way #applyFeatureFilters
+   * does for the Features tab: the search field and every tick in the pop-up
+   * must never re-render the screen and throw the caret out of the field.
+   *   - rank: only the open rank page is on show, unless a search is typed
    *   - action cost: free, 1, 2, 3+ or reaction, matched as "any of these"
    *   - concentration / sustained: only spells that carry the property
-   *   - hide written: what the character already holds drops out
-   *   - only reachable: what the school rank does not reach drops out
-   *   - search: the spell's name, accent-free
+   *   - status: castable, in this book, memorised, not available ("any of")
+   *   - role: offensive or support
+   *   - damage type: any of the ticked types; a spell with no type passes only
+   *     while the group is unfiltered
+   *   - search: the spell's name and description, accent-free
+   * A rank heading with no tile left hides with it, and so does a school with
+   * no rank left.
    */
   #applySpellFilters() {
-    const list = this.element?.querySelector?.(".rs-learn-spells-list");
-    if (!list) return;
+    const body = this.element?.querySelector?.(".rs-learn-roster-body");
+    if (!body) return;
     const query = normalizeSearch(this.#spellQuery);
-    const ranks = this.#spellRanks;
+    const activeRank = this.#spellRank;
     const actions = this.#spellActions;
+    const statuses = this.#spellStatuses;
+    const roles = this.#spellRoles;
+    const dmgTypes = this.#spellDmgTypes;
     let visible = 0;
-    for (const row of list.querySelectorAll(".rs-learn-spell")) {
-      const data = row.dataset;
+    for (const tile of body.querySelectorAll(".rs-learn-spell-tile")) {
+      const data = tile.dataset;
       const actionFits =
         !actions.size ||
         (actions.has("free") && data.free === "true") ||
         (actions.has("reaction") && data.reaction === "true") ||
         (!!data.actions && actions.has(data.actions));
+      const held = data.held === "true";
+      const statusFits =
+        !statuses.size ||
+        (statuses.has("castable") && held) ||
+        (statuses.has("written") && data.written === "true") ||
+        (statuses.has("memorised") && data.memorised === "true") ||
+        (statuses.has("unavailable") && !held);
+      const offensive = data.offensive === "true";
+      const roleFits =
+        !roles.size ||
+        (roles.has("offensive") && offensive) ||
+        (roles.has("support") && !offensive);
+      const tileTypes = String(data.dmg ?? "").split(" ").filter(Boolean);
+      const dmgFits = !dmgTypes.size || tileTypes.some((type) => dmgTypes.has(type));
+      // Ranks are pages, not a filter: only the open rank is on show. A
+      // search is the one thing that reaches across pages, so while a query
+      // is typed every rank is eligible and the page reasserts itself the
+      // moment the box is cleared (user ruling 2026-09-20).
+      const rankFits = !!query || !activeRank || data.rank === activeRank;
       const hide =
-        (ranks.size > 0 && !ranks.has(data.rank)) ||
+        !rankFits ||
         !actionFits ||
         (this.#spellConcentration && data.concentration !== "true") ||
         (this.#spellSustained && data.sustained !== "true") ||
-        (this.#spellHideWritten &&
-          (data.state === "written" || data.state === "memorised")) ||
-        (this.#spellOnlyReachable && data.state === "locked") ||
-        (!!query && !String(data.name ?? "").includes(query));
-      row.hidden = hide;
+        !statusFits ||
+        !roleFits ||
+        !dmgFits ||
+        (!!query && !String(data.search ?? "").includes(query));
+      tile.hidden = hide;
       if (!hide) visible++;
     }
-    const none = list.querySelector(".rs-learn-spells-none");
+    // A school heading follows its cards: with none of them left on show, the
+    // heading goes too rather than standing over an empty stretch.
+    for (const school of body.querySelectorAll(".rs-learn-roster-school")) {
+      school.hidden = !school.querySelector(".rs-learn-spell-tile:not([hidden])");
+    }
+    const none = body.querySelector(".rs-learn-spells-none");
     if (none) none.hidden = visible > 0;
+    // Filtering changes which cards share a row, and a card that was never
+    // measured (its school was shut) may be on show now, so the marks are
+    // taken again.
+    this.#markClippedSpellDescriptions();
+  }
+
+  /**
+   * Flag the spell cards whose prose is actually folded away. Whether three
+   * lines are enough is a measured fact, not something the template can know,
+   * so it is read off the rendered box: the control only appears where there
+   * is something left to read.
+   *
+   * Known limit: the marks are taken on render and on filtering only. Resizing
+   * the window re-wraps the prose, so a control can read stale until the next
+   * of those. Which cards share a row is NOT affected, because that is read
+   * live at click time.
+   */
+  #markClippedSpellDescriptions() {
+    const root = this.element;
+    if (!root) return;
+    for (const tile of root.querySelectorAll(".rs-learn-spell-tile")) {
+      const desc = tile.querySelector(".rs-learn-spell-tile-desc");
+      if (!desc) continue;
+      // An expanded card has no clamp left to overflow, so it keeps the
+      // control it was opened with -- that control is now "Read less".
+      if (tile.classList.contains("is-expanded")) {
+        tile.classList.add("is-clipped");
+        continue;
+      }
+      tile.classList.toggle("is-clipped", desc.scrollHeight > desc.clientHeight + 1);
+    }
   }
 
   /** How many Spells tab filters are away from their default. */
   #activeSpellFilterCount() {
+    // The open rank is navigation, not a filter, so it never counts here.
     return (
-      (this.#spellRanks.size > 0 ? 1 : 0) +
       (this.#spellActions.size > 0 ? 1 : 0) +
       (this.#spellConcentration ? 1 : 0) +
       (this.#spellSustained ? 1 : 0) +
-      (this.#spellHideWritten ? 1 : 0) +
-      (this.#spellOnlyReachable ? 1 : 0)
+      (this.#spellStatuses.size > 0 ? 1 : 0) +
+      (this.#spellRoles.size > 0 ? 1 : 0) +
+      (this.#spellDmgTypes.size > 0 ? 1 : 0)
     );
   }
 
@@ -2969,12 +3345,19 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
   #writeSpellFilterPopup() {
     const popup = this.element?.querySelector?.(".rs-learn-spell-filter-popup");
     if (!popup) return;
-    for (const box of popup.querySelectorAll("[data-spell-rank]")) {
-      box.checked = !this.#spellRanks.size || this.#spellRanks.has(box.dataset.spellRank);
-    }
     for (const box of popup.querySelectorAll("[data-spell-action]")) {
       box.checked =
         !this.#spellActions.size || this.#spellActions.has(box.dataset.spellAction);
+    }
+    for (const box of popup.querySelectorAll("[data-spell-status]")) {
+      box.checked =
+        !this.#spellStatuses.size || this.#spellStatuses.has(box.dataset.spellStatus);
+    }
+    for (const box of popup.querySelectorAll("[data-spell-role]")) {
+      box.checked = !this.#spellRoles.size || this.#spellRoles.has(box.dataset.spellRole);
+    }
+    for (const box of popup.querySelectorAll("[data-spell-dmg]")) {
+      box.checked = !this.#spellDmgTypes.size || this.#spellDmgTypes.has(box.dataset.spellDmg);
     }
     const write = (selector, value) => {
       const box = popup.querySelector(selector);
@@ -2982,8 +3365,15 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     };
     write("[data-spell-concentration]", this.#spellConcentration);
     write("[data-spell-sustained]", this.#spellSustained);
-    write("[data-spell-hide-written]", this.#spellHideWritten);
-    write("[data-spell-only-reachable]", this.#spellOnlyReachable);
+  }
+
+  /** Light the rank plates: exactly one is lit, the page on show. */
+  #writeSpellRankPills() {
+    const root = this.element;
+    if (!root) return;
+    for (const pill of root.querySelectorAll("[data-action='toggleSpellRank']")) {
+      pill.classList.toggle("active", pill.dataset.rank === this.#spellRank);
+    }
   }
 
   /**
@@ -2996,16 +3386,20 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       [...popup.querySelectorAll(selector)]
         .filter((box) => box.checked)
         .map((box) => box.dataset[attribute]);
-    const rankBoxes = popup.querySelectorAll("[data-spell-rank]");
-    const rankOn = ticked("[data-spell-rank]", "spellRank");
-    this.#spellRanks = new Set(rankOn.length === rankBoxes.length ? [] : rankOn);
     const actionBoxes = popup.querySelectorAll("[data-spell-action]");
     const actionOn = ticked("[data-spell-action]", "spellAction");
     this.#spellActions = new Set(actionOn.length === actionBoxes.length ? [] : actionOn);
     this.#spellConcentration = !!popup.querySelector("[data-spell-concentration]")?.checked;
     this.#spellSustained = !!popup.querySelector("[data-spell-sustained]")?.checked;
-    this.#spellHideWritten = !!popup.querySelector("[data-spell-hide-written]")?.checked;
-    this.#spellOnlyReachable = !!popup.querySelector("[data-spell-only-reachable]")?.checked;
+    const statusBoxes = popup.querySelectorAll("[data-spell-status]");
+    const statusOn = ticked("[data-spell-status]", "spellStatus");
+    this.#spellStatuses = new Set(statusOn.length === statusBoxes.length ? [] : statusOn);
+    const roleBoxes = popup.querySelectorAll("[data-spell-role]");
+    const roleOn = ticked("[data-spell-role]", "spellRole");
+    this.#spellRoles = new Set(roleOn.length === roleBoxes.length ? [] : roleOn);
+    const dmgBoxes = popup.querySelectorAll("[data-spell-dmg]");
+    const dmgOn = ticked("[data-spell-dmg]", "spellDmg");
+    this.#spellDmgTypes = new Set(dmgOn.length === dmgBoxes.length ? [] : dmgOn);
     this.#applySpellFilters();
     this.#refreshSpellFilterCount();
   }
@@ -3543,6 +3937,10 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
 
     this.#applyFeatureFilters();
     this.#applySpellFilters();
+
+    // Last of all: the cards are laid out by now, so the folded prose can be
+    // measured and the Read more controls put only where they belong.
+    this.#markClippedSpellDescriptions();
   }
 
   /**
@@ -3836,6 +4234,42 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     else this.#expandedFeatures.delete(key);
   }
 
+  /**
+   * Lift the three-line clamp off a whole grid row of spell cards, or put it
+   * back. The roster is a CSS grid, so a row is already as tall as its tallest
+   * card: opening one card alone would stretch the row and leave its
+   * neighbours clamped with blank space under them. Opening the row together
+   * spends the height the row just took.
+   *
+   * @this {LearnWindow}
+   */
+  static _onExpandSpellRow(event, target) {
+    event.preventDefault();
+    const tile = target?.closest?.(".rs-learn-spell-tile");
+    const grid = tile?.closest?.(".rs-learn-roster-grid");
+    if (!tile || !grid) return;
+    // Only the cards on show are in the grid's flow: a filtered-out tile is
+    // `hidden`, which the stylesheet turns into display:none, so counting it
+    // would put every card after it in the wrong row.
+    const visible = [...grid.querySelectorAll(".rs-learn-spell-tile:not([hidden])")];
+    const at = visible.indexOf(tile);
+    if (at < 0) return;
+    // How many cards to a row is a layout fact, not a markup one: the grid is
+    // auto-fill, so the count follows the window's width. Read it back from
+    // the resolved template rather than guessing.
+    const tracks = getComputedStyle(grid).gridTemplateColumns;
+    const cols = Math.max(1, String(tracks ?? "").split(/\s+/).filter(Boolean).length);
+    const start = Math.floor(at / cols) * cols;
+    const open = !tile.classList.contains("is-expanded");
+    for (const mate of visible.slice(start, start + cols)) {
+      mate.classList.toggle("is-expanded", open);
+      const key = mate.dataset.expandKey;
+      if (!key) continue;
+      if (open) this.#expandedFeatures.add(key);
+      else this.#expandedFeatures.delete(key);
+    }
+  }
+
   /** Open a feature family's skill picker in place of the list. @this {LearnWindow} */
   static _onOpenFeatureFamily(event, target) {
     event.preventDefault();
@@ -3946,7 +4380,9 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
   static _onSwitchSpellSchool(event, target) {
     event.preventDefault();
     const school = target?.dataset?.school;
-    if (!school || school === this.#spellSchool) return;
+    if (!school) return;
+    if (school === this.#spellSchool && !this.#spellMerged) return;
+    this.#spellMerged = false;
     this.#spellSchool = school;
     this.render();
   }
@@ -4059,24 +4495,60 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     this.render();
   }
 
+  /**
+   * Open or close the lost grimoires panel under the grimoire strip. In place,
+   * like the filter pop-up, so the roster keeps its scroll. @this {LearnWindow}
+   */
+  static _onToggleSpellArchive(event, target) {
+    event.preventDefault();
+    this.#spellArchiveOpen = !this.#spellArchiveOpen;
+    const panel = this.element?.querySelector?.(".rs-learn-roster-archive");
+    if (panel) panel.hidden = !this.#spellArchiveOpen;
+    if (target) {
+      target.classList.toggle("active", this.#spellArchiveOpen);
+      target.setAttribute("aria-expanded", String(this.#spellArchiveOpen));
+    }
+  }
+
   /** Open or close the Spells filter pop-up. @this {LearnWindow} */
   static _onToggleSpellFilters(event) {
     event.preventDefault();
     this.#setSpellFiltersOpen(!this.#spellFiltersOpen);
   }
 
-  /** Every rank, every action cost, no switch. @this {LearnWindow} */
+  /**
+   * Every action cost, no switch. The open rank page is left alone: it is
+   * where the reader is, not a filter they set.
+   *
+   * @this {LearnWindow}
+   */
   static _onResetSpellFilters(event) {
     event.preventDefault();
-    this.#spellRanks = new Set();
     this.#spellActions = new Set();
     this.#spellConcentration = false;
     this.#spellSustained = false;
-    this.#spellHideWritten = false;
-    this.#spellOnlyReachable = false;
+    this.#spellStatuses = new Set();
+    this.#spellRoles = new Set();
+    this.#spellDmgTypes = new Set();
     this.#writeSpellFilterPopup();
     this.#applySpellFilters();
     this.#refreshSpellFilterCount();
+  }
+
+  /**
+   * Open a rank's page. The plates are navigation, not a filter: the rank
+   * clicked becomes the only rank on the list, in place and without a
+   * re-render.
+   *
+   * @this {LearnWindow}
+   */
+  static _onToggleSpellRank(event, target) {
+    event.preventDefault();
+    const rank = target?.dataset?.rank;
+    if (!rank) return;
+    this.#spellRank = rank;
+    this.#writeSpellRankPills();
+    this.#applySpellFilters();
   }
 
   /**
@@ -4088,6 +4560,17 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     event.preventDefault();
     if (!game.user.isGM) return;
     this.#spellAllSchools = !this.#spellAllSchools;
+    this.render();
+  }
+
+  /**
+   * Merge every school the character holds into one list, or go back to one
+   * school at a time. The list itself changes, so this re-renders.
+   * @this {LearnWindow}
+   */
+  static _onToggleMergedSchools(event) {
+    event.preventDefault();
+    this.#spellMerged = !this.#spellMerged;
     this.render();
   }
 

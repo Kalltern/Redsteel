@@ -1913,7 +1913,7 @@
             },
             "lindaruvVypad1": {
               "label": "Lindarův výpad I",
-              "description": "10 CP; Škola VI. Ručně — řeší se u stolu."
+              "description": "10 CP; Škola VI. Přitáhnutí, Rychlé přitáhnutí, Přemístění, Teleportace, Temné přitáhnutí a Stínokrok stojí o 6 many méně a hází Usměrňování s +10%; gnostická kouzla Posunutí, Výměna a Prostorový skok se přidají, až budou vytvořena. Útok Volnou akcí po některém z těchto kouzel se řeší u stolu."
             },
             "lindaruvVypad2": {
               "label": "Lindarův výpad II",
@@ -4477,6 +4477,11 @@
         }
       },
       "Spell": {
+        "Range": {
+          "self": "Na sebe",
+          "hexes": "{n} hex",
+          "metresLabel": "Dosah (m)"
+        },
         "FIELDS": {
           "propertiesHeader": {
             "label": "Vlastnosti kouzla"
@@ -7681,6 +7686,7 @@
       "notBuilt": "Zatím nehotovo.",
       "acquire": "Přidat dovednosti",
       "and": "a",
+      "or": "nebo",
       "pickerHint": "Vyber dovednosti a doktríny, které chceš mít ve svém stromě postupu. Ovlivňuje to jen toto okno, na listu postavy se nic neskryje.",
       "pickerDone": "Hotovo",
       "pickerCancel": "Zrušit",
@@ -7717,6 +7723,9 @@
         "books": "Grimoáry",
         "noBook": "Tato postava nemá grimoár.",
         "newBook": "Nový grimoár",
+        "statFreeAction": "Volná",
+        "statAction": "Akce",
+        "perRoundShort": "Za kolo",
         "written": "Zapsáno",
         "memorised": "Zapamatováno",
         "memorise": "Zapamatovat (1 SP)",
@@ -7731,20 +7740,38 @@
         "search": "Hledat kouzla",
         "filters": "Filtry",
         "reset": "Zrušit",
-        "filterRank": "Stupeň",
         "filterAction": "Cena akce",
         "filterProperties": "Vlastnosti",
         "filterStatus": "Stav",
         "concentration": "Koncentrace",
         "sustained": "Udržované",
+        "readMore": "Více",
+        "readLess": "Méně",
+        "statSpellClass": "Třída",
+        "rangeWithMetres": "{hexes} ({metres} m)",
+        "Class": {
+          "support": "Podpůrné",
+          "lesser": "Menší",
+          "greater": "Větší"
+        },
         "reaction": "Reakce",
         "freeAction": "Volná akce",
         "actions": "{n} akce",
-        "hideWritten": "Skrýt zapsaná",
-        "onlyReachable": "Jen v mém dosahu",
+        "statusCastable": "Sesílatelná",
+        "statusWritten": "V této knize",
+        "statusMemorised": "Zapamatovaná",
+        "statusUnavailable": "Nedostupná",
+        "filterRole": "Role",
+        "roleOffensive": "Útočná",
+        "roleSupport": "Podpůrná",
+        "filterDamage": "Typ poškození",
+        "lostBooks": "Ztracené knihy ({n})",
+        "writtenElsewhere": "Zapsáno v jiném grimoáru",
+        "searchAll": "Hledat v názvech a popisech",
         "allSchools": "Všechny školy",
-        "mana": "Mana",
-        "difficulty": "Obtížnost",
+        "allSchoolsHint": "Zobrazí všechna kouzla ze škol, které postava ovládá, v jednom seznamu.",
+        "browseAllSchools": "Procházet všechny školy",
+        "browseAllSchoolsHint": "PJ: vypíše i školy, které tato postava nemá.",
         "none": "Žádná kouzla.",
         "noSchools": "Tato postava zatím nemá žádnou školu magie.",
         "lost": "Ztracené grimoáry",
@@ -7757,8 +7784,11 @@
           "notFound": "Toto kouzlo se nepodařilo načíst.",
           "rank": "Stupeň školy je příliš nízký, je potřeba stupeň {n}.",
           "full": "Grimoár je plný.",
-          "notOwner": "Tuto postavu nevlastníš."
-        }
+          "notOwner": "Tuto postavu nevlastníš.",
+          "innate": "Divokou magii nelze zapomenout, uděluje ji stupeň školy."
+        },
+        "innate": "Vrozená",
+        "innateHint": "Divoká magie. Přichází s prvním stupněm školy, nic nestojí a nelze ji vrátit."
       },
       "Sections": {
         "combat": "Bojové dovednosti",

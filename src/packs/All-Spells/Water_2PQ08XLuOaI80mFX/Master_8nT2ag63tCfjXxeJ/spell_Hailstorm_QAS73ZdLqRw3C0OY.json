@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/water/ice-crystal-white.webp",
   "system": {
-    "description": "Deals Magical + Frost + blunt damage 3d6 + {{spellPower}} per turn in a 9m area. Armor penetration 4. Always counts as a Magical attack with 20 Strength. Once per turn, the area can be moved by one hex as a free action.",
+    "description": "Deals Magical + damage 3d6 + {{spellPower}} per turn in a 9m area. Armor penetration 4. Always counts as a Magical attack with 20 Strength. Once per turn, the area can be moved by one hex as a free action.",
     "options": [
       "divine",
       "magic"

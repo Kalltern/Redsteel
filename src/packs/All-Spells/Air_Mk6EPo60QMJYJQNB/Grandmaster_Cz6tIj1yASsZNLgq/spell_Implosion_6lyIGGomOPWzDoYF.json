@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/air/wind-vortex-swirl-blue-purple.webp",
   "system": {
-    "description": "<p>Deals Magic + Blunt damage (4d20 + {{math spellPower \"*\" 6}}). Penetration 50.</p>",
+    "description": "<p>Deals damage (4d20 + {{math spellPower \"*\" 6}}). Penetration 50.</p>",
     "options": [
       "divine",
       "magic"

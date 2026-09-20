@@ -4,7 +4,7 @@
   "img": "icons/skills/wounds/blood-cells-vessel-red-orange.webp",
   "system": {
     "localizationKey": "",
-    "description": "<p>Deals Dark + Fire damage equal to 4d6 + {{spellPower}} per round to selected targets in a 3 m area. Triggers a Will Test (bonus {{math spellPower \"*\" 1}}) vs. target's Endurance Test (Pain). On a success, Paralyzes the target for two turns. Ignores Armor. Cost per round 1d4 blood.</p>",
+    "description": "<p>Deals damage equal to 4d6 + {{spellPower}} per round to selected targets in a 3 m area. Triggers a Will Test (bonus {{math spellPower \"*\" 1}}) vs. target's Endurance Test (Pain). On a success, Paralyzes the target for two turns. Ignores Armor. Cost per round 1d4 blood.</p>",
     "options": [
       "divine",
       "magic"

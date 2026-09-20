@@ -142,7 +142,10 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "will",
-    "testModifier": "@spellPower*3"
+    "testModifier": "@spellPower*3",
+    "variants": [
+      "gA066BfxyAbCJVSh"
+    ]
   },
   "effects": [],
   "folder": "ELAMhHkr77jkNbi6",

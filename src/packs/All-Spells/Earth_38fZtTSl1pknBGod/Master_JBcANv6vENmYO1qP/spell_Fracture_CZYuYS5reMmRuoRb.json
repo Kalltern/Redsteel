@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/nature/root-vine-sword-broken.webp",
   "system": {
-    "description": "<p>Damages a metal, wooden, or stone object to the brink of destruction or shatters it (e.g., doors). May require multiple castings. Reduces armor by 10. Deals magic + blunt damage (4d10 + {{spellPower}}) to constructs. Ignores armor.</p>",
+    "description": "<p>Damages a metal, wooden, or stone object to the brink of destruction or shatters it (e.g., doors). May require multiple castings. Reduces armor by 10. Deals damage (4d10 + {{spellPower}}) to constructs. Ignores armor.</p>",
     "options": [
       "divine",
       "magic"

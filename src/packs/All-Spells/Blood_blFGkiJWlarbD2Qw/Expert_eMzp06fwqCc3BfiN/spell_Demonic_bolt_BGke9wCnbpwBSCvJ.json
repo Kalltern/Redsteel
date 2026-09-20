@@ -4,7 +4,7 @@
   "img": "icons/magic/fire/projectile-fireball-purple.webp",
   "system": {
     "localizationKey": "",
-    "description": "Deals Dark + Fire damage equal to 6d8 + {{spellPower}} to one target, with a 20% chance to apply Burning.",
+    "description": "Deals damage equal to 6d8 + {{spellPower}} to one target, with a 20% chance to apply Burning.",
     "options": [
       "divine",
       "magic"

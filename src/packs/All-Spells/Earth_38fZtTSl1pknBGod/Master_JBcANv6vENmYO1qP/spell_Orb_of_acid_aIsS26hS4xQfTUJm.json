@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/acid/orb-bubble-smoke-drip.webp",
   "system": {
-    "description": "<p>60% chance to damage armor (-4 armor). Deals magic + acid damage (5d6 + <span style=\"font-family:Signika, sans-serif\">{{math spellPower \"*\" 2}}</span>) in a 3m area. Armor penetration 12.</p>",
+    "description": "<p>60% chance to damage armor (-4 armor). Deals damage (5d6 + <span style=\"font-family:Signika, sans-serif\">{{math spellPower \"*\" 2}}</span>) in a 3m area. Armor penetration 12.</p>",
     "options": [
       "divine",
       "magic"

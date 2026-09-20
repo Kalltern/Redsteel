@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/lightning/projectile-tendrils-teal.webp",
   "system": {
-    "description": "<p>During casting, caster levitates (to Long-Range weapon distance), loses all Reactions and gains 75HP shield against Physical/Magic damage. </p><hr><p>Upon release, shield breaks and deals Magic + Lightning damage (2d20 + {{math spellPower \"*\" 6}}) in 15m area to chosen targets. </p><hr><p>Stun chance +50%. Penetration 35. Movement only possible under Flight effect when spell is fully charged. Caster cannot interrupt the spell.</p>",
+    "description": "<p>During casting, caster levitates (to Long-Range weapon distance), loses all Reactions and gains 75HP shield against Physical/Magic damage. </p><hr><p>Upon release, shield breaks and deals damage (2d20 + {{math spellPower \"*\" 6}}) in 15m area to chosen targets. </p><hr><p>Stun chance +50%. Penetration 35. Movement only possible under Flight effect when spell is fully charged. Caster cannot interrupt the spell.</p>",
     "options": [
       "divine",
       "magic"

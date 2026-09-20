@@ -4,7 +4,7 @@
   "img": "icons/skills/melee/strike-sword-dagger-runes-red.webp",
   "system": {
     "localizationKey": "",
-    "description": "A bloody spear erupts from the ground beneath the target and impales it. Deals Dark + Piercing damage equal to 3d8 + {{math spellPower \"*\" 4}}. Triggers a Will Test vs. target's Dexterity / Endurance Test. On a success, the target becomes Rooted. On a failure, or after breaking free, the target suffers one Bleeding.",
+    "description": "A bloody spear erupts from the ground beneath the target and impales it. Deals damage equal to 3d8 + {{math spellPower \"*\" 4}}. Triggers a Will Test vs. target's Dexterity / Endurance Test. On a success, the target becomes Rooted. On a failure, or after breaking free, the target suffers one Bleeding.",
     "options": [
       "divine",
       "magic"

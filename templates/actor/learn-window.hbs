@@ -808,106 +808,93 @@
   </div>
 
   {{else if isSpellsTab}}
-  {{!-- The Spells tab. Two stone plates: on the left the grimoire the character
-        carries (what is written in it, what they know by heart, and the books
-        they have lost), on the right every spell of the chosen school. Writing
+  {{!-- The Spells tab: one full-width stone plate, the spell roster. Over it
+        the school pills with the open grimoire at the end of the same line,
+        then the rank pages beside the search/filter bar; under them every
+        spell of the open rank (of the school, or of every school held,
+        merged) as a tile, grouped by school.
+        A tile is lit while the spell is held (castable), dim otherwise. Writing
         a spell into the book is free; memorising it is 1 SP (Pravidla, Paměť).
-        Search and the filter pop-up filter the right panel in place. --}}
-  <div class="rs-learn-spells">
-
-    <section class="rs-learn-spellbook">
-      {{#if spells.hasBook}}
-      {{#if spells.multipleBooks}}
-      {{!-- More than one grimoire: one plate per book, the open one lit. --}}
-      <div class="rs-learn-spell-books">
-        {{#each spells.books}}
-        <button type="button" class="rs-learn-spell-book {{#if this.active}}active{{/if}}"
-                data-action="switchSpellBook" data-book-id="{{this.id}}">
-          <img src="{{this.img}}" alt="{{this.name}}">
-          <span class="rs-learn-spell-book-name">{{this.name}}</span>
-          <b>{{this.count}}</b>
-        </button>
-        {{/each}}
-      </div>
+        Search and the filter pop-up filter the roster in place. --}}
+  <section class="rs-learn-roster">
+    {{!-- One pill per school the character holds, with its rank; the GM can
+          switch every school on to hand a spell over at the table. --}}
+    <div class="rs-learn-spell-schools">
+      {{#each spells.schools}}
+      <button type="button" class="rs-learn-spell-school {{#if this.active}}active{{/if}}"
+              data-action="switchSpellSchool" data-school="{{this.key}}"
+              data-tooltip="{{this.countLabel}}">
+        <span class="rs-learn-spell-school-name">{{this.label}}</span>
+        {{#if this.rankLabel}}<b>{{this.rankLabel}}</b>{{/if}}
+      </button>
+      {{else}}
+      <span class="rs-learn-spell-noschools">{{localize "REDSTEEL.Learn.Spells.noSchools"}}</span>
+      {{/each}}
+      {{#if spells.canMerge}}
+      {{!-- Every school the character holds on one list, ranked. --}}
+      <button type="button" class="rs-learn-spell-school rs-learn-spell-school-all {{#if spells.merged}}active{{/if}}"
+              data-action="toggleMergedSchools"
+              data-tooltip="{{localize "REDSTEEL.Learn.Spells.allSchoolsHint"}}">
+        <span class="rs-learn-spell-school-name">{{localize "REDSTEEL.Learn.Spells.allSchools"}}</span>
+      </button>
+      {{/if}}
+      {{#if spells.isGM}}
+      <button type="button" class="rs-learn-feature-filter {{#if spells.allSchools}}active{{/if}}"
+              data-action="toggleAllSchools"
+              data-tooltip="{{localize "REDSTEEL.Learn.Spells.browseAllSchoolsHint"}}">
+        {{localize "REDSTEEL.Learn.Spells.browseAllSchools"}}
+      </button>
       {{/if}}
 
-      <h3 class="rs-learn-section-title">
-        {{spells.activeBook.name}}
+      {{!-- The grimoire strip: the open book and how full it is, the switcher
+            when there is more than one, and the lost books behind a button. --}}
+      <div class="rs-learn-roster-grimoire">
+        {{#if spells.hasBook}}
+        <img class="rs-learn-roster-grimoire-img" src="{{spells.activeBook.img}}" alt="{{spells.activeBook.name}}">
+        <span class="rs-learn-roster-grimoire-name">{{spells.activeBook.name}}</span>
         <span class="rs-learn-spell-count">
           {{localize "REDSTEEL.Learn.Spells.written"}}:
           {{#if spells.activeBook.capacity}}{{spells.activeBook.count}} / {{spells.activeBook.capacity}}{{else}}{{spells.activeBook.count}}{{/if}}
         </span>
-      </h3>
-
-      {{#each spells.bookGroups}}
-      <div class="rs-learn-spell-group">
-        <span class="rs-learn-spell-group-name">{{this.label}}</span>
-        {{#each this.spells}}
-        <div class="rs-learn-spell-entry {{#unless this.reachable}}is-locked{{/unless}}">
-          <img src="{{this.img}}" alt="{{this.name}}"
-               data-tt-kind="spellCardUuid" data-tt-uuid="{{this.uuid}}">
-          <span class="rs-learn-spell-entry-name">{{this.name}}</span>
-          <span class="rs-learn-spell-entry-rank">{{this.rankLabel}}</span>
-          {{#if this.memorised}}
-          <em class="rs-learn-spell-entry-note">{{localize "REDSTEEL.Learn.Spells.memorised"}}</em>
-          {{else if this.note}}
-          <em class="rs-learn-spell-entry-note" data-tooltip="{{this.needs}}">{{this.note}}</em>
-          {{/if}}
-          {{#if @root.editable}}
-          <button type="button" class="rs-learn-spell-erase" data-action="eraseSpell"
-                  data-uuid="{{this.uuid}}"
-                  data-tooltip="{{localize "REDSTEEL.Learn.Spells.erase"}}"
-                  aria-label="{{localize "REDSTEEL.Learn.Spells.erase"}}">
-            <i class="fas fa-eraser"></i>
+        {{#if spells.multipleBooks}}
+        {{!-- More than one grimoire: one plate per book, the open one lit. --}}
+        <div class="rs-learn-spell-books">
+          {{#each spells.books}}
+          <button type="button" class="rs-learn-spell-book {{#if this.active}}active{{/if}}"
+                  data-action="switchSpellBook" data-book-id="{{this.id}}">
+            <img src="{{this.img}}" alt="{{this.name}}">
+            <span class="rs-learn-spell-book-name">{{this.name}}</span>
+            <b>{{this.count}}</b>
           </button>
-          {{/if}}
+          {{/each}}
         </div>
-        {{/each}}
-      </div>
-      {{else}}
-      <p class="rs-learn-empty">{{localize "REDSTEEL.Learn.Spells.none"}}</p>
-      {{/each}}
-      {{else}}
-      {{!-- No grimoire at all: say so, and offer to make one. --}}
-      <h3 class="rs-learn-section-title">{{localize "REDSTEEL.Learn.Spells.book"}}</h3>
-      <p class="rs-learn-empty">{{localize "REDSTEEL.Learn.Spells.noBook"}}</p>
-      {{/if}}
-
-      {{#if editable}}
-      <div class="rs-learn-spell-newbook">
+        {{/if}}
+        {{else}}
+        {{!-- No grimoire at all: say so. --}}
+        <span class="rs-learn-roster-grimoire-none">{{localize "REDSTEEL.Learn.Spells.noBook"}}</span>
+        {{/if}}
+        {{!-- A new grimoire can always be started, a second one included. --}}
+        {{#if editable}}
         <button type="button" class="rs-learn-feature-filter" data-action="createSpellbook">
           <i class="fas fa-book"></i>
           {{localize "REDSTEEL.Learn.Spells.newBook"}}
         </button>
-      </div>
-      {{/if}}
-
-      {{#if spells.memorised.length}}
-      {{!-- Known by heart: 1 SP each, and no book can take them away. --}}
-      <h3 class="rs-learn-section-title">{{localize "REDSTEEL.Learn.Spells.memorised"}}</h3>
-      {{#each spells.memorised}}
-      <div class="rs-learn-spell-entry {{#unless this.reachable}}is-locked{{/unless}}">
-        <img src="{{this.img}}" alt="{{this.name}}"
-             data-tt-kind="spellCardUuid" data-tt-uuid="{{this.uuid}}">
-        <span class="rs-learn-spell-entry-name">{{this.name}}</span>
-        <span class="rs-learn-spell-entry-rank">{{this.rankLabel}}</span>
-        <em class="rs-learn-spell-entry-note">{{this.schoolLabel}}</em>
-        {{#if @root.editable}}
-        <button type="button" class="rs-learn-spell-erase" data-action="forgetSpell"
-                data-uuid="{{this.uuid}}"
-                data-tooltip="{{localize "REDSTEEL.Learn.Spells.forget"}}"
-                aria-label="{{localize "REDSTEEL.Learn.Spells.forget"}}">
-          <i class="fas fa-rotate-left"></i>
+        {{/if}}
+        {{#if spells.archive.length}}
+        <button type="button" class="rs-learn-feature-filter rs-learn-roster-lost {{#if spells.archiveOpen}}active{{/if}}"
+                aria-expanded="{{#if spells.archiveOpen}}true{{else}}false{{/if}}"
+                data-action="toggleSpellArchive">
+          <i class="fas fa-book-skull"></i>
+          {{spells.lostBooksLabel}}
         </button>
         {{/if}}
       </div>
-      {{/each}}
-      {{/if}}
+    </div>
 
-      {{#if spells.archive.length}}
-      {{!-- What a lost book held, kept so a delete by accident costs a click
-            rather than an evening of rewriting. --}}
-      <h3 class="rs-learn-section-title">{{localize "REDSTEEL.Learn.Spells.lost"}}</h3>
+    {{#if spells.archive.length}}
+    {{!-- What a lost book held, kept so a delete by accident costs a click
+          rather than an evening of rewriting. --}}
+    <div class="rs-learn-roster-archive" {{#unless spells.archiveOpen}}hidden{{/unless}}>
       <p class="rs-learn-spell-hint">{{localize "REDSTEEL.Learn.Spells.lostHint"}}</p>
       {{#each spells.archive}}
       <div class="rs-learn-spell-archive">
@@ -930,143 +917,202 @@
         {{/if}}
       </div>
       {{/each}}
-      {{/if}}
-    </section>
+    </div>
+    {{/if}}
 
-    <section class="rs-learn-spells-browser">
-      {{!-- One pill per school the character holds, with its rank; the GM can
-            switch every school on to hand a spell over at the table. --}}
-      <div class="rs-learn-spell-schools">
-        {{#each spells.schools}}
-        <button type="button" class="rs-learn-spell-school {{#if this.active}}active{{/if}}"
-                data-action="switchSpellSchool" data-school="{{this.key}}"
-                data-tooltip="{{this.countLabel}}">
-          <span class="rs-learn-spell-school-name">{{this.label}}</span>
-          {{#if this.rankLabel}}<b>{{this.rankLabel}}</b>{{/if}}
+    <header class="rs-learn-features-bar rs-learn-spells-bar">
+      {{#unless spells.noSchools}}
+      {{!-- The ranks as pages: one plate each, and only the open rank is
+            on the list. A search is the one thing that reaches across them. --}}
+      <div class="rs-learn-spell-ranks">
+        {{#each spells.rankPills}}
+        <button type="button" class="rs-learn-spell-rankpill {{#if this.active}}active{{/if}}"
+                data-action="toggleSpellRank" data-rank="{{this.key}}">
+          <span>{{this.label}}</span>
+          <b>{{this.count}}</b>
         </button>
-        {{else}}
-        <span class="rs-learn-spell-noschools">{{localize "REDSTEEL.Learn.Spells.noSchools"}}</span>
         {{/each}}
-        {{#if spells.isGM}}
-        <button type="button" class="rs-learn-feature-filter {{#if spells.allSchools}}active{{/if}}"
-                data-action="toggleAllSchools">
-          {{localize "REDSTEEL.Learn.Spells.allSchools"}}
-        </button>
+      </div>
+      {{/unless}}
+      <input type="search" class="rs-learn-spell-search" value="{{spells.query}}"
+             placeholder="{{localize "REDSTEEL.Learn.Spells.searchAll"}}"
+             aria-label="{{localize "REDSTEEL.Learn.Spells.searchAll"}}">
+      {{!-- Every filter lives behind this one button, as on the Features tab.
+            The count is how many filters are away from their default. --}}
+      <button type="button" class="rs-learn-feature-filter {{#if spells.filtersOpen}}active{{/if}}"
+              aria-expanded="{{#if spells.filtersOpen}}true{{else}}false{{/if}}"
+              data-action="toggleSpellFilters">
+        <i class="fas fa-filter"></i>
+        {{localize "REDSTEEL.Learn.Spells.filters"}}
+        <span class="rs-learn-filter-count rs-learn-spell-filter-count" {{#unless spells.activeFilters}}hidden{{/unless}}>{{spells.activeFilters}}</span>
+      </button>
+
+      <div class="rs-learn-filter-popup rs-learn-spell-filter-popup" role="dialog"
+           aria-label="{{localize "REDSTEEL.Learn.Spells.filters"}}"
+           {{#unless spells.filtersOpen}}hidden{{/unless}}>
+        <div class="rs-learn-filter-group">
+          <span class="rs-learn-filter-label">{{localize "REDSTEEL.Learn.Spells.filterAction"}}</span>
+          {{#each spells.actionChecks}}
+          <label class="rs-learn-filter-check">
+            <input type="checkbox" data-spell-action="{{this.key}}" {{#if this.checked}}checked{{/if}}>
+            <span>{{this.label}}</span>
+          </label>
+          {{/each}}
+        </div>
+        <div class="rs-learn-filter-group">
+          <span class="rs-learn-filter-label">{{localize "REDSTEEL.Learn.Spells.filterProperties"}}</span>
+          <label class="rs-learn-filter-check">
+            <input type="checkbox" data-spell-concentration {{#if spells.concentration}}checked{{/if}}>
+            <span>{{localize "REDSTEEL.Learn.Spells.concentration"}}</span>
+          </label>
+          <label class="rs-learn-filter-check">
+            <input type="checkbox" data-spell-sustained {{#if spells.sustained}}checked{{/if}}>
+            <span>{{localize "REDSTEEL.Learn.Spells.sustained"}}</span>
+          </label>
+        </div>
+        {{!-- Where the character stands with a spell, matched as "any of
+              these": castable (held), in the open book, memorised, not held. --}}
+        <div class="rs-learn-filter-group">
+          <span class="rs-learn-filter-label">{{localize "REDSTEEL.Learn.Spells.filterStatus"}}</span>
+          {{#each spells.statusChecks}}
+          <label class="rs-learn-filter-check">
+            <input type="checkbox" data-spell-status="{{this.key}}" {{#if this.checked}}checked{{/if}}>
+            <span>{{this.label}}</span>
+          </label>
+          {{/each}}
+        </div>
+        <div class="rs-learn-filter-group">
+          <span class="rs-learn-filter-label">{{localize "REDSTEEL.Learn.Spells.filterRole"}}</span>
+          {{#each spells.roleChecks}}
+          <label class="rs-learn-filter-check">
+            <input type="checkbox" data-spell-role="{{this.key}}" {{#if this.checked}}checked{{/if}}>
+            <span>{{this.label}}</span>
+          </label>
+          {{/each}}
+        </div>
+        {{#if spells.dmgTypeChecks.length}}
+        {{!-- Only the damage types some spell on the roster actually deals. --}}
+        <div class="rs-learn-filter-group">
+          <span class="rs-learn-filter-label">{{localize "REDSTEEL.Learn.Spells.filterDamage"}}</span>
+          {{#each spells.dmgTypeChecks}}
+          <label class="rs-learn-filter-check">
+            <input type="checkbox" data-spell-dmg="{{this.key}}" {{#if this.checked}}checked{{/if}}>
+            <span>{{this.label}}</span>
+          </label>
+          {{/each}}
+        </div>
         {{/if}}
+        <footer class="rs-learn-filter-actions">
+          <button type="button" data-action="resetSpellFilters">{{localize "REDSTEEL.Learn.Spells.reset"}}</button>
+        </footer>
       </div>
+    </header>
 
-      <header class="rs-learn-features-bar rs-learn-spells-bar">
-        <input type="search" class="rs-learn-spell-search" value="{{spells.query}}"
-               placeholder="{{localize "REDSTEEL.Learn.Spells.search"}}"
-               aria-label="{{localize "REDSTEEL.Learn.Spells.search"}}">
-        {{!-- What is left to memorise with: one spell costs 1 SP, so the
-              figure goes muted the moment it cannot pay for another. --}}
-        <span class="rs-learn-spell-sp {{#if spells.poor}}is-poor{{/if}}">
-          {{localize "REDSTEEL.Learn.spRemaining"}}: <b>{{spells.sp.remaining}}</b>
-        </span>
-        {{!-- Every filter lives behind this one button, as on the Features tab.
-              The count is how many filters are away from their default. --}}
-        <button type="button" class="rs-learn-feature-filter {{#if spells.filtersOpen}}active{{/if}}"
-                aria-expanded="{{#if spells.filtersOpen}}true{{else}}false{{/if}}"
-                data-action="toggleSpellFilters">
-          <i class="fas fa-filter"></i>
-          {{localize "REDSTEEL.Learn.Spells.filters"}}
-          <span class="rs-learn-filter-count rs-learn-spell-filter-count" {{#unless spells.activeFilters}}hidden{{/unless}}>{{spells.activeFilters}}</span>
-        </button>
-
-        <div class="rs-learn-filter-popup rs-learn-spell-filter-popup" role="dialog"
-             aria-label="{{localize "REDSTEEL.Learn.Spells.filters"}}"
-             {{#unless spells.filtersOpen}}hidden{{/unless}}>
-          <div class="rs-learn-filter-group">
-            <span class="rs-learn-filter-label">{{localize "REDSTEEL.Learn.Spells.filterRank"}}</span>
-            {{#each spells.rankChecks}}
-            <label class="rs-learn-filter-check">
-              <input type="checkbox" data-spell-rank="{{this.key}}" {{#if this.checked}}checked{{/if}}>
-              <span>{{this.label}}</span>
-            </label>
-            {{/each}}
-          </div>
-          <div class="rs-learn-filter-group">
-            <span class="rs-learn-filter-label">{{localize "REDSTEEL.Learn.Spells.filterAction"}}</span>
-            {{#each spells.actionChecks}}
-            <label class="rs-learn-filter-check">
-              <input type="checkbox" data-spell-action="{{this.key}}" {{#if this.checked}}checked{{/if}}>
-              <span>{{this.label}}</span>
-            </label>
-            {{/each}}
-          </div>
-          <div class="rs-learn-filter-group">
-            <span class="rs-learn-filter-label">{{localize "REDSTEEL.Learn.Spells.filterProperties"}}</span>
-            <label class="rs-learn-filter-check">
-              <input type="checkbox" data-spell-concentration {{#if spells.concentration}}checked{{/if}}>
-              <span>{{localize "REDSTEEL.Learn.Spells.concentration"}}</span>
-            </label>
-            <label class="rs-learn-filter-check">
-              <input type="checkbox" data-spell-sustained {{#if spells.sustained}}checked{{/if}}>
-              <span>{{localize "REDSTEEL.Learn.Spells.sustained"}}</span>
-            </label>
-          </div>
-          <div class="rs-learn-filter-group">
-            <span class="rs-learn-filter-label">{{localize "REDSTEEL.Learn.Spells.filterStatus"}}</span>
-            <label class="rs-learn-filter-check">
-              <input type="checkbox" data-spell-hide-written {{#if spells.hideWritten}}checked{{/if}}>
-              <span>{{localize "REDSTEEL.Learn.Spells.hideWritten"}}</span>
-            </label>
-            <label class="rs-learn-filter-check">
-              <input type="checkbox" data-spell-only-reachable {{#if spells.onlyReachable}}checked{{/if}}>
-              <span>{{localize "REDSTEEL.Learn.Spells.onlyReachable"}}</span>
-            </label>
-          </div>
-          <footer class="rs-learn-filter-actions">
-            <button type="button" data-action="resetSpellFilters">{{localize "REDSTEEL.Learn.Spells.reset"}}</button>
-          </footer>
+    <div class="rs-learn-roster-body">
+      {{#each spells.sections}}
+      <section class="rs-learn-roster-school" data-school="{{this.key}}">
+        {{!-- The whole school in one grid, ordered by rank then name. No
+              heading: the open school is named on its own lit pill above, and
+              every card on a rank page is the same rank (user ruling
+              2026-09-20). --}}
+        <div class="rs-learn-roster-grid">
+          {{#each this.spells}}
+            {{!-- One spell. Hovering the tile opens the spell's card; the Read
+                  more control at its foot lifts the three-line clamp off every
+                  card in the same grid row. The two marks in the corner are the
+                  controls: the book writes/erases, the brain memorises/forgets,
+                  and each keeps its own action because the nearest data-action
+                  wins. The expand key stays on the tile so the handler can
+                  remember which cards were open across a re-render.
+                  Every data attribute here is read by #applySpellFilters. --}}
+            <div class="rs-learn-spell-tile state-{{this.state}} {{#if this.owned}}is-held{{else}}is-dim{{/if}} {{#if this.expanded}}is-expanded{{/if}}"
+                 {{#if this.description}}data-expand-key="{{this.expandKey}}"{{/if}}
+                 data-tt-kind="spellCardUuid" data-tt-uuid="{{this.uuid}}"
+                 data-rank="{{this.rank}}"
+                 data-actions="{{this.actionBucket}}"
+                 data-free="{{#if this.free}}true{{else}}false{{/if}}"
+                 data-reaction="{{#if this.reaction}}true{{else}}false{{/if}}"
+                 data-concentration="{{#if this.concentration}}true{{else}}false{{/if}}"
+                 data-sustained="{{#if this.sustained}}true{{else}}false{{/if}}"
+                 data-state="{{this.state}}"
+                 data-held="{{#if this.held}}true{{else}}false{{/if}}"
+                 data-written="{{#if this.inActiveBook}}true{{else}}false{{/if}}"
+                 data-memorised="{{#if (eq this.state "memorised")}}true{{else if this.innate}}true{{else}}false{{/if}}"
+                 data-offensive="{{#if this.offensive}}true{{else}}false{{/if}}"
+                 data-dmg="{{this.dmgTypesKey}}"
+                 data-search="{{this.searchText}}">
+              {{!-- One centred column: the title, the icon with the damage
+                    footnote under it, then the tags (user ruling 2026-09-20).
+                    The title is padded clear of the corner marks on BOTH
+                    sides, so it stays optically centred. --}}
+              <span class="rs-learn-spell-tile-name">{{this.name}}</span>
+              <div class="rs-learn-spell-tile-iconwrap">
+                <img class="rs-learn-spell-tile-icon" src="{{this.img}}" alt="{{this.name}}">
+                {{!-- What the spell deals, as fine print under the icon. --}}
+                {{#if this.tileDmg}}<div class="rs-learn-spell-tile-dmg">{{this.tileDmg}}</div>{{/if}}
+              </div>
+              {{!-- What the spell costs and carries, running across under the
+                    damage line. The list is as long as the spell is
+                    complicated: a tag with nothing to say is left out. --}}
+              <div class="rs-learn-spell-tile-stats">
+                {{#each this.tileStats}}
+                <span class="rs-learn-spell-tile-cell" data-cell="{{this.key}}">
+                  <span class="rs-learn-spell-tile-cell-label">{{this.label}}</span>
+                  {{#if this.value}}<span class="rs-learn-spell-tile-cell-value">{{this.value}}</span>{{/if}}
+                </span>
+                {{/each}}
+              </div>
+              {{!-- The spell's own prose, under the information shortcuts.
+                    Stored HTML, so it goes in whole; three lines show and Read
+                    more rolls the rest out, for this card and its row-mates
+                    together. Both labels are always here: the stylesheet shows
+                    whichever one fits the card's state, so no script touches
+                    the text. --}}
+              {{#if this.description}}<div class="rs-learn-spell-tile-desc">{{{this.description}}}</div>{{/if}}
+              {{#if this.description}}
+              <button type="button" class="rs-learn-spell-tile-more" data-action="expandSpellRow">
+                <span class="rs-learn-spell-more-open">{{localize "REDSTEEL.Learn.Spells.readMore"}}</span>
+                <span class="rs-learn-spell-more-close">{{localize "REDSTEEL.Learn.Spells.readLess"}}</span>
+              </button>
+              {{/if}}
+              <div class="rs-learn-spell-tile-marks">
+                {{!-- Book mark: lit when in the open grimoire, outlined when it
+                      is written in another one, faint when written nowhere. --}}
+                <button type="button"
+                        class="rs-learn-spell-mark is-book {{#if this.inActiveBook}}is-lit{{else if this.writtenElsewhere}}is-elsewhere{{/if}}"
+                        {{#if @root.editable}}{{#if this.canWrite}}data-action="writeSpell" data-uuid="{{this.uuid}}"{{else if this.canErase}}data-action="eraseSpell" data-uuid="{{this.uuid}}"{{/if}}{{/if}}
+                        data-tooltip="{{this.bookTooltip}}" data-tooltip-direction="UP"
+                        aria-label="{{this.bookTooltip}}">
+                  <i class="{{#if this.writtenElsewhere}}fa-regular{{else}}fas{{/if}} fa-book"></i>
+                </button>
+                {{!-- Memory mark: lit when memorised. Wild magic is lit and
+                      sealed, and cannot be clicked. --}}
+                {{#if this.innate}}
+                <span class="rs-learn-spell-mark is-memory is-lit is-innate"
+                      data-tooltip="{{this.memoriseTooltip}}" data-tooltip-direction="UP"
+                      aria-label="{{this.memoriseTooltip}}">
+                  <i class="fas fa-brain"></i>
+                  <i class="fas fa-lock rs-learn-spell-mark-seal"></i>
+                </span>
+                {{else}}
+                <button type="button"
+                        class="rs-learn-spell-mark is-memory {{#if (eq this.state "memorised")}}is-lit{{/if}}"
+                        {{#if @root.editable}}{{#if this.canMemorise}}data-action="memoriseSpell" data-uuid="{{this.uuid}}"{{else if this.canForget}}data-action="forgetSpell" data-uuid="{{this.uuid}}"{{/if}}{{/if}}
+                        data-tooltip="{{this.memoriseTooltip}}" data-tooltip-direction="UP"
+                        aria-label="{{this.memoriseTooltip}}">
+                  <i class="fas fa-brain"></i>
+                </button>
+                {{/if}}
+              </div>
+              {{#if this.showLock}}<i class="fas fa-lock rs-learn-spell-tile-lock" data-tooltip="{{this.needs}}"></i>{{/if}}
+            </div>
+          {{/each}}
         </div>
-      </header>
-
-      <div class="rs-learn-spells-list">
-        {{#each spells.rows}}
-        {{!-- One spell, ruled off like a ledger line: the write diamond, the
-              memorise diamond, the icon and name (hover for the spell's card),
-              its rank, what it costs a turn, its mana and Difficulty, and where
-              the character stands with it. --}}
-        <div class="rs-learn-spell state-{{this.state}}"
-             data-rank="{{this.rank}}"
-             data-actions="{{this.actionBucket}}"
-             data-free="{{#if this.free}}true{{else}}false{{/if}}"
-             data-reaction="{{#if this.reaction}}true{{else}}false{{/if}}"
-             data-concentration="{{#if this.concentration}}true{{else}}false{{/if}}"
-             data-sustained="{{#if this.sustained}}true{{else}}false{{/if}}"
-             data-state="{{this.state}}"
-             data-name="{{this.search}}">
-          <div class="rs-learn-node state-{{this.state}} {{#if this.inActiveBook}}is-owned{{/if}}"
-               {{#if @root.editable}}{{#if this.canWrite}}data-action="writeSpell" data-uuid="{{this.uuid}}"{{else if this.canErase}}data-action="eraseSpell" data-uuid="{{this.uuid}}"{{/if}}{{/if}}
-               data-tooltip="{{this.writeTooltip}}" data-tooltip-direction="UP">
-            <span class="rs-learn-diamond"></span>
-            {{#if this.showLock}}<i class="fas fa-lock rs-learn-lock"></i>{{/if}}
-          </div>
-          <div class="rs-learn-node state-{{this.state}} {{#if (eq this.state "memorised")}}is-owned{{/if}}"
-               {{#if @root.editable}}{{#if this.canMemorise}}data-action="memoriseSpell" data-uuid="{{this.uuid}}"{{else if this.canForget}}data-action="forgetSpell" data-uuid="{{this.uuid}}"{{/if}}{{/if}}
-               data-tooltip="{{this.memoriseTooltip}}" data-tooltip-direction="UP">
-            <span class="rs-learn-diamond is-memorise"></span>
-            {{#if this.showLock}}<i class="fas fa-lock rs-learn-lock"></i>{{/if}}
-          </div>
-          <img class="rs-learn-feature-icon" src="{{this.img}}" alt="{{this.name}}">
-          <span class="rs-learn-spell-name"
-                data-tt-kind="spellCardUuid" data-tt-uuid="{{this.uuid}}">{{this.name}}</span>
-          <span class="rs-learn-spell-rank">{{this.rankLabel}}</span>
-          <span class="rs-learn-spell-chips">
-            {{#each this.chips}}<span class="rs-learn-req">{{this}}</span>{{/each}}
-          </span>
-          <b class="rs-learn-spell-mana" data-tooltip="{{this.manaTooltip}}">{{this.cost}}</b>
-          <b class="rs-learn-spell-difficulty" data-tooltip="{{this.difficultyTooltip}}">{{this.difficulty}}</b>
-          <em class="rs-learn-spell-state">{{this.stateLabel}}</em>
-        </div>
-        {{/each}}
-        <p class="rs-learn-empty rs-learn-spells-none" {{#if spells.rows.length}}hidden{{/if}}>{{localize "REDSTEEL.Learn.Spells.none"}}</p>
-      </div>
-    </section>
-
-  </div>
+      </section>
+      {{/each}}
+      <p class="rs-learn-empty rs-learn-spells-none" {{#if spells.rows.length}}hidden{{/if}}>{{localize "REDSTEEL.Learn.Spells.none"}}</p>
+    </div>
+  </section>
 
   {{else if isSpecsTab}}
   {{!-- The Specialisations tab (user rulings 2026-09-11, 2026-09-14). The main

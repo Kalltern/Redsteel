@@ -4,7 +4,7 @@
   "img": "icons/magic/acid/orb-bubble-smoke-drip.webp",
   "system": {
     "localizationKey": "",
-    "description": "<p>Deals Dark + Poison damage equal to 3d6 + {{math spellPower \"/\" 2}} per round for six rounds. Ignores Armor.<br /><br />Not yet automated: if the target dies while the spell is active it explodes for 4d6 + {{math spellPower \"*\" 3}} Dark + Acid damage to everything within 3 m, infecting them for 1 + the remaining rounds. Resolve the explosion manually.</p>",
+    "description": "<p>Deals damage equal to 3d6 + {{math spellPower \"/\" 2}} per round for six rounds. Ignores Armor.<br /><br />Not yet automated: if the target dies while the spell is active it explodes for 4d6 + {{math spellPower \"*\" 3}} damage to everything within 3 m, infecting them for 1 + the remaining rounds. Resolve the explosion manually.</p>",
     "options": [
       "divine",
       "magic"
@@ -105,9 +105,9 @@
       "diceBonus": ""
     },
     "penetration": 0,
-    "dmgType1": "",
-    "bool2": "",
-    "dmgType2": "",
+    "dmgType1": "dark",
+    "bool2": "and",
+    "dmgType2": "poison",
     "bool3": "",
     "dmgType3": "",
     "bool4": "",

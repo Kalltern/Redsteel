@@ -4,7 +4,7 @@
   "img": "icons/magic/water/projectile-water-rings.webp",
   "system": {
     "localizationKey": "",
-    "description": "No requirements. A direct energy blow dealing Magic + Blunt Damage 2d6 + {{math spellPower \"/\" 2}} to one Target. Triggers a Will Test vs. Target's Strength/Resilience Test to push the Target 1 hex. Penetration 6.",
+    "description": "No requirements. A direct energy blow dealing damage 2d6 + {{math spellPower \"/\" 2}} to one Target. Triggers a Will Test vs. Target's Strength/Resilience Test to push the Target 1 hex. Penetration 6.",
     "options": [
       "divine",
       "magic"

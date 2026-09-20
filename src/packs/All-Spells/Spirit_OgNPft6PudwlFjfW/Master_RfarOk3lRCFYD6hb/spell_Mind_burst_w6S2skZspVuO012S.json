@@ -92,7 +92,9 @@
     "difficulty": -20,
     "cost": 15,
     "perRound": 0,
-    "variants": [],
+    "variants": [
+      "a5Ifp7HPL2xaEX6v"
+    ],
     "option": "magic",
     "type": "spirit",
     "rank": "master",

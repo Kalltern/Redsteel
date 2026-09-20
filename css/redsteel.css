@@ -15854,22 +15854,16 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
 
 /* -------- spells tab -------- */
 
-/* The same two stone plates as the Features tab: the grimoire on the left,
-   the school's whole spell list on the right, each scrolling on its own. */
-.rs-learn .rs-learn-spells {
+/* One full-width stone plate, the spell roster: the school pills, the
+   grimoire strip, the rank plates and the search bar stay put over a body of
+   spell tiles that scrolls on its own. */
+.rs-learn .rs-learn-roster {
   flex: 1 1 auto;
-  min-height: 0;
-  display: grid;
-  grid-template-columns: minmax(calc(360px * var(--rs-learn-text)), 38%) minmax(0, 1fr);
-  gap: 12px;
-  margin: 10px 12px 12px;
-}
-
-.rs-learn .rs-learn-spellbook,
-.rs-learn .rs-learn-spells-browser {
   min-height: 0;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  margin: 10px 12px 12px;
   background:
     linear-gradient(rgba(12, 12, 11, 0.5), rgba(12, 12, 11, 0.5)),
     url(../ui/headertexture.jpg);
@@ -15880,22 +15874,57 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
     0 0 12px rgba(0, 0, 0, 0.35);
 }
 
-.rs-learn .rs-learn-spellbook {
-  overflow-y: auto;
-  padding: 10px 12px 14px;
+/* The grimoire strip: the open book, how full it is, the book switcher and
+   the lost books. It is the last child of the school row rather than a row of
+   its own, so it takes no padding and no rule, and margin-left pushes it to
+   the far end of that line (user ruling 2026-09-20). */
+.rs-learn .rs-learn-roster-grimoire {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
 }
 
-.rs-learn .rs-learn-spells-browser {
-  overflow: hidden;
+.rs-learn .rs-learn-roster-grimoire-img {
+  flex: 0 0 auto;
+  width: calc(22px * var(--rs-learn-text));
+  height: calc(22px * var(--rs-learn-text));
+  max-width: none;
+  object-fit: cover;
+  padding: 0;
+  border: 1px solid #514226;
+  border-radius: 0;
+  background: #14120d;
 }
 
-/* More than one grimoire: a row of small plates, the open one lit, the way the
-   toggle row over the grid reads. */
+.rs-learn .rs-learn-roster-grimoire-name {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(13px * var(--rs-learn-text));
+  line-height: calc(17px * var(--rs-learn-text));
+  color: #d6bc8c;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.rs-learn .rs-learn-roster-grimoire-none {
+  font-family: Georgia, "Times New Roman", serif;
+  font-style: italic;
+  font-size: calc(12px * var(--rs-learn-text));
+  color: #8a8175;
+}
+
+.rs-learn .rs-learn-roster-lost {
+  margin-left: auto;
+}
+
+/* More than one grimoire: a row of small plates, the open one lit, inline on
+   the grimoire strip. */
 .rs-learn .rs-learn-spell-books {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin: 0 0 10px;
+  margin: 0;
 }
 
 .rs-learn .rs-learn-spell-book {
@@ -15944,9 +15973,8 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   color: #d9a13b;
 }
 
-/* How full the open book is, on its heading line. */
+/* How full the open book is, beside its name on the strip. */
 .rs-learn .rs-learn-spell-count {
-  float: right;
   font-family: Cambria, "Times New Roman", Times, serif;
   font-variant-numeric: lining-nums;
   font-size: calc(11px * var(--rs-learn-text));
@@ -15955,24 +15983,24 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   color: #8a8175;
 }
 
-.rs-learn .rs-learn-spell-group {
-  margin: 8px 0 0;
+/* The lost books panel, dropped under the strip by its button: a recessed
+   channel listing what each lost book held. */
+.rs-learn .rs-learn-roster-archive {
+  flex: 0 0 auto;
+  max-height: calc(180px * var(--rs-learn-text));
+  overflow-y: auto;
+  padding: 6px 12px 8px;
+  background: rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.7);
+  border-bottom: 1px solid #514226;
 }
 
-.rs-learn .rs-learn-spell-group-name {
-  display: block;
-  padding: 0 2px 2px;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: calc(11px * var(--rs-learn-text));
-  line-height: calc(14px * var(--rs-learn-text));
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #8a8175;
+.rs-learn .rs-learn-roster-archive[hidden] {
+  display: none;
 }
 
-/* One written or memorised spell, ruled off like an owned feature, with the
-   erase control showing only on hover. */
-.rs-learn .rs-learn-spell-entry,
+/* One lost book, ruled off like an owned feature, with its controls showing
+   only on hover. */
 .rs-learn .rs-learn-spell-archive {
   display: flex;
   align-items: center;
@@ -15981,7 +16009,6 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   border-bottom: 1px solid rgba(81, 66, 38, 0.35);
 }
 
-.rs-learn .rs-learn-spell-entry img,
 .rs-learn .rs-learn-spell-archive img {
   flex: 0 0 auto;
   width: calc(26px * var(--rs-learn-text));
@@ -16002,19 +16029,6 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   line-height: calc(17px * var(--rs-learn-text));
   color: #d6bc8c;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
-}
-
-.rs-learn .rs-learn-spell-entry.is-locked .rs-learn-spell-entry-name {
-  color: #8a8175;
-}
-
-.rs-learn .rs-learn-spell-entry-rank {
-  flex: 0 0 auto;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: calc(11px * var(--rs-learn-text));
-  line-height: calc(14px * var(--rs-learn-text));
-  color: #b7ac97;
-  white-space: nowrap;
 }
 
 .rs-learn .rs-learn-spell-entry-note {
@@ -16043,7 +16057,6 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   cursor: pointer;
 }
 
-.rs-learn .rs-learn-spell-entry:hover .rs-learn-spell-erase,
 .rs-learn .rs-learn-spell-archive:hover .rs-learn-spell-erase {
   opacity: 1;
 }
@@ -16052,10 +16065,6 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   color: #f0d7aa;
   border-color: #9c7b45;
   background: rgba(12, 12, 11, 0.6);
-}
-
-.rs-learn .rs-learn-spell-newbook {
-  margin: 10px 0 0;
 }
 
 .rs-learn .rs-learn-spell-hint {
@@ -16127,6 +16136,69 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   color: #8a8175;
 }
 
+/* The rank pages, at the head of the search bar: the same engraved plate,
+   smaller. Exactly one is lit, and that is the rank on the list; the dark
+   ones are the pages not open (user ruling 2026-09-20). */
+.rs-learn .rs-learn-spell-ranks {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.rs-learn .rs-learn-spell-ranks-label {
+  font-family: Georgia, "Times New Roman", serif;
+  font-style: italic;
+  font-size: calc(11px * var(--rs-learn-text));
+  letter-spacing: 0.04em;
+  color: #8a8175;
+}
+
+.rs-learn .rs-learn-spell-rankpill {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 2px 8px;
+  border: 1px solid #3b3226;
+  border-radius: 0;
+  background:
+    linear-gradient(to bottom, rgba(81, 66, 38, 0.28), rgba(12, 12, 11, 0.6)),
+    url(../ui/headertexture.jpg);
+  box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.6);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(11px * var(--rs-learn-text));
+  line-height: calc(15px * var(--rs-learn-text));
+  letter-spacing: 0.04em;
+  color: #6f665a;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+  cursor: pointer;
+}
+
+.rs-learn .rs-learn-spell-rankpill:hover {
+  color: #f0d7aa;
+  border-color: #9c7b45;
+}
+
+/* The open page, lit exactly as the school it belongs to. */
+.rs-learn .rs-learn-spell-rankpill.active {
+  color: #f0d7aa;
+  border-color: #9c7b45;
+  background:
+    linear-gradient(to bottom, rgba(81, 66, 38, 0.55), rgba(81, 66, 38, 0.15)),
+    url(../ui/headertexture.jpg);
+}
+
+.rs-learn .rs-learn-spell-rankpill b {
+  margin-left: 5px;
+  font-family: Cambria, "Times New Roman", Times, serif;
+  font-size: calc(10px * var(--rs-learn-text));
+  color: #d9a13b;
+}
+
 /* The bar wears the Features bar's stone; only the search field and the SP
    figure are new. */
 .rs-learn .rs-learn-spell-search {
@@ -16165,106 +16237,443 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   color: #8a8175;
 }
 
-.rs-learn .rs-learn-spells-list {
+/* The roster's body: every spell of the school, or of every school held,
+   and the only part of the plate that scrolls. */
+.rs-learn .rs-learn-roster-body {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
-  padding: 0 12px 14px;
+  padding: 4px 14px 18px;
 }
 
-/* One spell of the school, on the Features row's ledger line: the write
-   diamond, the memorise diamond, the icon, the name, the rank, what it asks of
-   a turn, its mana and Difficulty, and where the character stands with it. */
-.rs-learn .rs-learn-spell {
-  display: grid;
-  grid-template-columns:
-    calc(30px * var(--rs-learn-text)) calc(30px * var(--rs-learn-text))
-    calc(32px * var(--rs-learn-text)) minmax(calc(150px * var(--rs-learn-text)), 1fr)
-    minmax(0, auto) minmax(0, 1.4fr)
-    calc(34px * var(--rs-learn-text)) calc(38px * var(--rs-learn-text))
-    minmax(calc(76px * var(--rs-learn-text)), auto);
-  align-items: center;
-  column-gap: 8px;
-  padding: 3px 8px;
-  border-bottom: 1px solid rgba(81, 66, 38, 0.35);
+.rs-learn .rs-learn-roster-school[hidden] {
+  display: none;
 }
 
-.rs-learn .rs-learn-spell:hover {
-  background: rgba(81, 66, 38, 0.18);
-}
-
-/* The memorise diamond is the smaller of the pair: the book comes first, the
-   caster's memory second. */
-.rs-learn .rs-learn-spell .rs-learn-diamond.is-memorise {
-  width: 16px;
-  height: 16px;
-}
-
-.rs-learn .rs-learn-spell-name {
-  min-width: 0;
+/* A school's heading: large serif in gold, its rank beside it, a bronze rule
+   underneath. */
+.rs-learn .rs-learn-roster-school-title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 18px 0 12px;
+  padding: 0 2px 5px;
+  border-bottom: 1px solid #514226;
   font-family: Georgia, "Times New Roman", serif;
-  font-size: calc(13px * var(--rs-learn-text));
-  line-height: calc(17px * var(--rs-learn-text));
-  color: #d6bc8c;
+  font-size: calc(20px * var(--rs-learn-text));
+  line-height: calc(24px * var(--rs-learn-text));
+  font-weight: normal;
+  letter-spacing: 0.04em;
+  color: #d9a13b;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
 }
 
-.rs-learn .rs-learn-spell.state-locked .rs-learn-spell-name,
-.rs-learn .rs-learn-spell.state-written .rs-learn-spell-name,
-.rs-learn .rs-learn-spell.state-memorised .rs-learn-spell-name,
-.rs-learn .rs-learn-spell.state-owned .rs-learn-spell-name {
-  color: #8a8175;
-}
-
-.rs-learn .rs-learn-spell-rank {
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: calc(11px * var(--rs-learn-text));
-  line-height: calc(14px * var(--rs-learn-text));
+.rs-learn .rs-learn-roster-school-title b {
+  font-family: Cambria, "Times New Roman", Times, serif;
+  font-size: calc(14px * var(--rs-learn-text));
+  font-weight: normal;
   color: #b7ac97;
-  white-space: nowrap;
 }
 
-.rs-learn .rs-learn-spell-chips {
+.rs-learn .rs-learn-roster-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 14px;
+}
+
+/* One spell, read as a card (user ruling 2026-09-20): the rank bar along the
+   head, then a head row with the icon on the left and a column beside it
+   carrying the name, the tag block and the damage footnote, and the spell's
+   own prose full width under it, ten lines deep.
+   Cards rule up into columns until one is clicked open, which is wanted. */
+.rs-learn .rs-learn-spell-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 16px 12px 8px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid #514226;
+  border-left: 2px solid #3b3226;
+  border-radius: 0;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+.rs-learn .rs-learn-spell-tile[hidden] {
+  display: none;
+}
+
+.rs-learn .rs-learn-spell-tile.is-held {
+  border-left-color: #d9a13b;
+}
+
+/* The rank bar: five notches across the card's head, lit up to the spell's
+   rank, so Wild reads as one and Grandmaster as five without a heading. */
+.rs-learn .rs-learn-spell-tile-rankbar {
+  position: absolute;
+  top: 5px;
+  left: 10px;
+  right: 10px;
+  display: flex;
+  gap: 3px;
+  height: 3px;
+}
+
+.rs-learn .rs-learn-spell-tile-rankbar i {
+  flex: 1 1 0;
+  background: rgba(81, 66, 38, 0.55);
+}
+
+.rs-learn .rs-learn-spell-tile-rankbar i.is-lit {
+  background: #9c7b45;
+}
+
+.rs-learn .rs-learn-spell-tile.is-held .rs-learn-spell-tile-rankbar i.is-lit {
+  background: #d9a13b;
+}
+
+.rs-learn .rs-learn-spell-tile.is-dim {
+  opacity: 0.6;
+}
+
+.rs-learn .rs-learn-spell-tile.is-dim:hover {
+  opacity: 0.85;
+}
+
+/* The head row: the icon column holds the left, everything that reads as text
+   sits in the column beside it. The text column is padded clear of the book
+   and brain marks in the corner, which stay pinned where they were. */
+
+
+/* The icon's own column: the icon, and the damage footnote sat under it. Its
+   width is the icon's width, so the footnote never widens the head row. */
+.rs-learn .rs-learn-spell-tile-iconwrap {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 120px;
+}
+
+.rs-learn .rs-learn-spell-tile-icon {
+  flex: 0 0 auto;
+  width: 120px;
+  height: 120px;
+  max-width: none;
+  object-fit: cover;
+  padding: 0;
+  border: 1px solid #514226;
+  border-radius: 0;
+  background: #14120d;
+}
+
+.rs-learn .rs-learn-spell-tile.is-dim .rs-learn-spell-tile-icon {
+  filter: grayscale(1) brightness(0.55);
+}
+
+/* The name reads as a card's title: centred, two lines at most, and the rest
+   cut off rather than pushing the stats about. */
+.rs-learn .rs-learn-spell-tile-name {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  width: 100%;
+  /* The book and brain marks sit in the top-right corner. Padding both
+     edges by the same amount keeps the title clear of them AND keeps it
+     optically centred on the card. */
+  padding: 0 44px;
+  text-align: center;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(16px * var(--rs-learn-text));
+  line-height: calc(20px * var(--rs-learn-text));
+  color: #8a8175;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.rs-learn .rs-learn-spell-tile.is-held .rs-learn-spell-tile-name {
+  color: #f0d7aa;
+}
+
+/* What the spell costs and carries, as tags rather than a grid: the list is
+   as long as the spell is complicated, and a two-column grid left a ragged
+   half-row whenever the count came out odd (user ruling 2026-09-20). They
+   flow and wrap instead, each one struck on the same small engraved plate the
+   school and rank tags use, so nothing here is a rounded pill or a tint. */
+.rs-learn .rs-learn-spell-tile-stats {
   display: flex;
   flex-wrap: wrap;
-  gap: 3px;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  margin-top: 5px;
+}
+
+.rs-learn .rs-learn-spell-tile-cell {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
   min-width: 0;
+  padding: 2px 7px;
+  border: 1px solid #3b3226;
+  border-radius: 0;
+  background:
+    linear-gradient(to bottom, rgba(81, 66, 38, 0.28), rgba(12, 12, 11, 0.6)),
+    url(../ui/headertexture.jpg);
+  box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.6);
+  line-height: 1.3;
 }
 
-.rs-learn .rs-learn-spell-chips .rs-learn-req {
-  font-size: calc(10px * var(--rs-learn-text));
-  line-height: calc(13px * var(--rs-learn-text));
+.rs-learn .rs-learn-spell-tile.is-held .rs-learn-spell-tile-cell {
+  border-color: #514226;
 }
 
-.rs-learn .rs-learn-spell-mana,
-.rs-learn .rs-learn-spell-difficulty {
+/* Concentration and Sustained carry no value, so their plate is the one word
+   on its own and the label has to hold the plate open by itself. */
+.rs-learn .rs-learn-spell-tile-cell-label {
+  white-space: nowrap;
+  font-size: calc(9px * var(--rs-learn-text));
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6f675a;
+}
+
+.rs-learn .rs-learn-spell-tile-cell-value {
+  white-space: nowrap;
   font-family: Cambria, "Times New Roman", Times, serif;
-  font-variant-numeric: lining-nums;
-  font-weight: 700;
-  font-size: calc(13px * var(--rs-learn-text));
-  line-height: calc(17px * var(--rs-learn-text));
-  text-align: right;
-  color: #d9a13b;
-  white-space: nowrap;
-}
-
-.rs-learn .rs-learn-spell.state-locked .rs-learn-spell-mana,
-.rs-learn .rs-learn-spell.state-locked .rs-learn-spell-difficulty {
-  color: #8a8175;
-}
-
-.rs-learn .rs-learn-spell-state {
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: calc(11px * var(--rs-learn-text));
-  line-height: calc(14px * var(--rs-learn-text));
-  text-align: right;
-  color: #8a8175;
-  white-space: nowrap;
-}
-
-.rs-learn .rs-learn-spell.state-memorised .rs-learn-spell-state,
-.rs-learn .rs-learn-spell.state-written .rs-learn-spell-state {
+  font-size: calc(12px * var(--rs-learn-text));
   color: #b7ac97;
+}
+
+.rs-learn .rs-learn-spell-tile.is-held .rs-learn-spell-tile-cell-label {
+  color: #8a8175;
+}
+
+.rs-learn .rs-learn-spell-tile.is-held .rs-learn-spell-tile-cell-value {
+  color: #f0e4c6;
+}
+
+/* The foot: cost per round and Concentration, in small capitals. The line
+   keeps its height on a card that has neither, so the grid stays even. */
+.rs-learn .rs-learn-spell-tile-flags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  /* Most spells carry neither flag, so the reserved line stays slim: it is
+     only there to keep every card's stat block on the same line. */
+  min-height: calc(11px * var(--rs-learn-text));
+  padding-top: 3px;
+  font-size: calc(9px * var(--rs-learn-text));
+  line-height: calc(11px * var(--rs-learn-text));
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6f675a;
+}
+
+.rs-learn .rs-learn-spell-tile-flag b {
+  font-weight: 700;
+  color: #b7ac97;
+}
+
+.rs-learn .rs-learn-spell-tile.is-held .rs-learn-spell-tile-flag {
+  color: #9c7b45;
+}
+
+.rs-learn .rs-learn-spell-tile.is-held .rs-learn-spell-tile-flag b {
+  color: #d9a13b;
+}
+
+/* What the spell deals, as one line under the icon: the types with the spell's
+   own "and"/"or" between them. A footnote, not another tag: no rule, no box,
+   only small capitals a shade quieter than a label. It wraps, because three
+   types joined by words do not fit 120px on one line. */
+.rs-learn .rs-learn-spell-tile-dmg {
+  width: 100%;
+  text-align: center;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(8.5px * var(--rs-learn-text));
+  line-height: calc(11px * var(--rs-learn-text));
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  overflow-wrap: break-word;
+  color: #6f675a;
+}
+
+.rs-learn .rs-learn-spell-tile.is-held .rs-learn-spell-tile-dmg {
+  color: #9c7b45;
+}
+
+/* The spell's prose, under the information shortcuts. Three lines show; the
+   Read more control under it lifts the clamp off the whole grid row at once
+   (user ruling 2026-09-20). The rule above it is the card's own fold, as over
+   the stats. */
+.rs-learn .rs-learn-spell-tile-desc {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  width: 100%;
+  margin-bottom: auto;
+  margin-top: 2px;
+  padding-top: 4px;
+  border-top: 1px solid #3b3226;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(12px * var(--rs-learn-text));
+  line-height: calc(16.5px * var(--rs-learn-text));
+  color: #a79c88;
+  text-align: center;
+}
+
+/* Stored prose comes in wrapped in its own paragraphs, which would otherwise
+   blow the card apart. */
+.rs-learn .rs-learn-spell-tile-desc p {
+  margin: 0;
+}
+
+.rs-learn .rs-learn-spell-tile-desc p + p {
+  margin-top: 4px;
+}
+
+.rs-learn .rs-learn-spell-tile.is-expanded .rs-learn-spell-tile-desc {
+  -webkit-line-clamp: unset;
+  overflow: visible;
+}
+
+.rs-learn .rs-learn-spell-tile.is-held .rs-learn-spell-tile-desc {
+  color: #c2b69e;
+}
+
+/* "Read more": struck on the same small engraved plate as the stat tags, at
+   the foot of the card. It only exists on a card whose prose is actually
+   folded away (#markClippedSpellDescriptions measures that and sets
+   is-clipped), and clicking it opens every card in the same grid row, because
+   the row is already as tall as its tallest card. */
+.rs-learn .rs-learn-spell-tile-more {
+  display: none;
+  width: auto;
+  height: auto;
+  min-height: 0;
+  margin: 4px 0 0;
+  padding: 2px 8px;
+  border: 1px solid #3b3226;
+  border-radius: 0;
+  background:
+    linear-gradient(to bottom, rgba(81, 66, 38, 0.28), rgba(12, 12, 11, 0.6)),
+    url(../ui/headertexture.jpg);
+  box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.6);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(9.5px * var(--rs-learn-text));
+  line-height: calc(13px * var(--rs-learn-text));
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6f675a;
+  cursor: pointer;
+}
+
+.rs-learn .rs-learn-spell-tile-more:hover {
+  color: #d9a13b;
+  border-color: #9c7b45;
+}
+
+/* The plate keeps its place in the layout but stays out of sight until the
+   card is hovered, so a page of cards is not a page of buttons. `visibility`
+   rather than `display`: the space is already reserved, so the card does not
+   jump as the pointer crosses it. `focus-within` keeps it reachable by
+   keyboard, which a hover-only control otherwise would not be. */
+.rs-learn .rs-learn-spell-tile.is-clipped .rs-learn-spell-tile-more {
+  display: inline-block;
+  visibility: hidden;
+}
+
+.rs-learn .rs-learn-spell-tile.is-clipped:hover .rs-learn-spell-tile-more,
+.rs-learn .rs-learn-spell-tile.is-clipped:focus-within .rs-learn-spell-tile-more {
+  visibility: visible;
+}
+
+/* Both labels ship in the markup; the card's state picks the one that fits. */
+.rs-learn .rs-learn-spell-more-close {
+  display: none;
+}
+
+.rs-learn .rs-learn-spell-tile.is-expanded .rs-learn-spell-more-open {
+  display: none;
+}
+
+.rs-learn .rs-learn-spell-tile.is-expanded .rs-learn-spell-more-close {
+  display: inline;
+}
+
+/* The two marks: the book (written) and the brain (memorised). Gold when lit,
+   grey when not; only a mark that does something answers the pointer. */
+.rs-learn .rs-learn-spell-tile-marks {
+  position: absolute;
+  top: 12px;
+  right: 6px;
+  display: flex;
+  gap: 2px;
+}
+
+.rs-learn .rs-learn-spell-mark {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  font-size: 12px;
+  line-height: 18px;
+  color: #555;
+  cursor: default;
+}
+
+.rs-learn .rs-learn-spell-mark[data-action] {
+  cursor: pointer;
+}
+
+.rs-learn .rs-learn-spell-mark[data-action]:hover {
+  color: #f0d7aa;
+}
+
+.rs-learn .rs-learn-spell-mark.is-lit {
+  color: #d9a13b;
+}
+
+/* Written in another grimoire: the outlined book, a shade above unwritten. */
+.rs-learn .rs-learn-spell-mark.is-elsewhere {
+  color: #8a8175;
+}
+
+/* Wild magic's seal on the memory mark. */
+.rs-learn .rs-learn-spell-mark-seal {
+  position: absolute;
+  right: -1px;
+  bottom: 0;
+  font-size: 7px;
+  line-height: 7px;
+  color: #b7ac97;
+}
+
+/* Out of reach: a small lock in the bottom corner. */
+/* Top left, opposite the two marks: the foot line needs its whole width. */
+.rs-learn .rs-learn-spell-tile-lock {
+  position: absolute;
+  left: 8px;
+  top: 12px;
+  font-size: calc(10px * var(--rs-learn-text));
+  color: #6f675a;
 }
 
 
