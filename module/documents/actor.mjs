@@ -121,12 +121,12 @@ export class RedsteelActor extends Actor {
     system.globalPenalty ??= 0;
     // Actor-wide crit band shifts. Both widen the band they name, so a
     // positive value means "more of this outcome": globalCritBonus +5 crits on
-    // 1-10 instead of 1-5, globalFumbleBonus +5 fumbles on 91+ instead of 96+.
+    // 1-10 instead of 1-5, globalCritFailBonus +5 fumbles on 91+ instead of 96+.
     // Seeded here (not in template.json) so ADD-mode Active Effects have a
     // numeric leaf to accumulate onto before derived data reads them. Note
     // these are NOT `critRange*`, which is the crit severity roll.
     system.globalCritBonus ??= 0;
-    system.globalFumbleBonus ??= 0;
+    system.globalCritFailBonus ??= 0;
 
     // Seed the advantage/disadvantage buckets before Active Effects apply, so
     // ADD-mode effects from features/buffs accumulate onto numeric leaves.
@@ -1884,7 +1884,7 @@ export class RedsteelActor extends Actor {
     // critbonus/critfailpenalty so every consumer of the thresholds picks
     // them up without further wiring.
     const globalCritBonus = Number(systemData.globalCritBonus) || 0;
-    const globalFumbleBonus = Number(systemData.globalFumbleBonus) || 0;
+    const globalCritFailBonus = Number(systemData.globalCritFailBonus) || 0;
 
     // Function to calculate thresholds for each skill type (e.g., skills, combatSkills)
     function calculateSkillThresholds(skillsObject) {
@@ -1905,7 +1905,7 @@ export class RedsteelActor extends Actor {
           baseCriticalFailure -
             Math.max(0, -luck) -
             critFailPenalty -
-            globalFumbleBonus,
+            globalCritFailBonus,
         );
       }
     }
@@ -1923,7 +1923,7 @@ export class RedsteelActor extends Actor {
 
     this.criticalFailureThreshold = Math.min(
       100,
-      baseCriticalFailure - Math.max(0, -luck) - globalFumbleBonus,
+      baseCriticalFailure - Math.max(0, -luck) - globalCritFailBonus,
     );
 
     // Store thresholds in actor data if needed
@@ -2048,7 +2048,7 @@ export class RedsteelActor extends Actor {
     // Actor-wide band shifts from Active Effects (seeded in prepareBaseData),
     // same meaning as on characters: positive widens the band it names.
     const globalCritBonus = Number(systemData.globalCritBonus) || 0;
-    const globalFumbleBonus = Number(systemData.globalFumbleBonus) || 0;
+    const globalCritFailBonus = Number(systemData.globalCritFailBonus) || 0;
 
     // Function to calculate thresholds for each skill type (e.g., skills, combatSkills)
     function calculateSkillThresholds(skillsObject) {
@@ -2057,7 +2057,7 @@ export class RedsteelActor extends Actor {
         const critBonus = anySkill.critbonus || 0;
         // NOTE: this ADDS where the character branch subtracts, so a positive
         // per-skill critfailpenalty makes an NPC fumble *less*. Pre-existing
-        // inconsistency, deliberately left as-is. globalFumbleBonus below
+        // inconsistency, deliberately left as-is. globalCritFailBonus below
         // follows the character convention instead.
         const critFailPenalty = anySkill.critfailpenalty || 0;
 
@@ -2070,7 +2070,7 @@ export class RedsteelActor extends Actor {
         // Calculate critical failure threshold for each skill
         anySkill.criticalFailureThreshold = Math.min(
           100,
-          baseCriticalFailure + critFailPenalty - globalFumbleBonus,
+          baseCriticalFailure + critFailPenalty - globalCritFailBonus,
         );
       }
     }
