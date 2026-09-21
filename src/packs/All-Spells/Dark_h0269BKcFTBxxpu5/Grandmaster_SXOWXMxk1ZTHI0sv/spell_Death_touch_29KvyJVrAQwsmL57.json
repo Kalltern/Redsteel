@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/death/hand-undead-skeleton-fire-green.webp",
   "system": {
-    "description": "Triggers a Willpower Test vs. target's Endurance. On success, reduces HP to 0, dealing a maximum of 250 damage. On failure, reduces HP to 10, maximum 100 damage. Corruption +10. Ignores Armor and Magic Shields.",
+    "description": "Triggers a Willpower Test vs. target's Endurance. On success, reduces HP to 0, dealing a maximum of 250 damage. On failure, reduces HP to 10, maximum 100 damage. Ignores Armor and Magic Shields.",
     "options": [
       "divine",
       "magic"
@@ -66,9 +66,9 @@
     ],
     "resources": [
       {
-        "mode": "",
-        "amount": "",
-        "type": ""
+        "type": "Corruption",
+        "mode": "add",
+        "amount": 10
       }
     ],
     "resourceOptions": {

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/unholy/orb-stone-pink.webp",
   "system": {
-    "description": "<p>Deals 1d6 + {{spellPower}} damage to a single target for two rounds. Ignores Armor. Corruption +2.</p><p></p><p>Not fully automated. Resolve this effect manually</p>",
+    "description": "<p>Deals 1d6 + {{spellPower}} damage to a single target for two rounds. Ignores Armor.</p><p></p><p>Not fully automated. Resolve this effect manually</p>",
     "options": [
       "divine",
       "magic"

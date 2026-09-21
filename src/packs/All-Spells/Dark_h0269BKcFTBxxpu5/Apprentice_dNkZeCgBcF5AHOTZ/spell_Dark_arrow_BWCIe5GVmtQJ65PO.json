@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/unholy/projectile-spear-glow-pink.webp",
   "system": {
-    "description": "Deals 3d6 + {{math spellPower \"+\" 1}} damage to a single target. Corruption +2.",
+    "description": "Deals 3d6 + {{math spellPower \"+\" 1}} damage to a single target.",
     "options": [
       "divine",
       "magic"

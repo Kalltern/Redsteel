@@ -76,6 +76,12 @@ export const SPELL_RANK_MIN_SCHOOL = {
 const BLOOD_SPEC = "bloodSchool";
 
 /** What one memorised spell costs, in SP (Pravidla, Paměť: "1 SP"). */
+/** The book the Spells tab makes, and the icon a lost record falls back to.
+ *  Declared here because this module is what restores an archived book;
+ *  learnWindow.mjs imports the same constant, so the path has one home and
+ *  a second literal cannot drift away from it. */
+export const SPELLBOOK_IMG = "icons/sundries/books/book-embossed-jewel-gold-purple.webp";
+
 export const MEMORISE_SP = 1;
 
 /** How many lost books an actor keeps, newest first. */
@@ -642,6 +648,9 @@ async function archiveSpellbook(actor, book) {
     id: book.id,
     name: book.name,
     img: book.img,
+    // Kept so a book written back is the same book: its name and its own
+    // description survive the loss along with the spells.
+    description: book.system?.description ?? "",
     capacity: Number(book.system?.capacity) || 0,
     entries,
     time: Date.now(),
@@ -660,10 +669,13 @@ export async function restoreSpellbook(actor, bookId) {
     {
       name: record.name || game.i18n.localize("TYPES.Item.spellbook"),
       type: "spellbook",
-      img: record.img || "icons/sundries/books/book-purple-illuminated.webp",
+      img: record.img || SPELLBOOK_IMG,
       system: {
         capacity: Number(record.capacity) || 0,
         spells: Array.isArray(record.entries) ? record.entries : [],
+        description:
+          record.description ||
+          game.i18n.format("REDSTEEL.Learn.Spells.bookDescription", { name: actor.name }),
       },
     },
   ]);

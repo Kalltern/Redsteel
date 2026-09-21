@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/unholy/projectiles-binary-pink.webp",
   "system": {
-    "description": "Links two targets up to 12m (8 hexes) apart. Each receives the same Damage as the other. If they move too far apart, the link ends at the end of the round. Cannot deal more Damage than the remaining HP of either target. Corruption +6",
+    "description": "Links two targets up to 12m (8 hexes) apart. Each receives the same Damage as the other. If they move too far apart, the link ends at the end of the round. Cannot deal more Damage than the remaining HP of either target.",
     "options": [
       "divine",
       "magic"
@@ -66,9 +66,9 @@
     ],
     "resources": [
       {
-        "mode": "",
-        "amount": "",
-        "type": ""
+        "type": "Corruption",
+        "mode": "add",
+        "amount": 6
       }
     ],
     "resourceOptions": {

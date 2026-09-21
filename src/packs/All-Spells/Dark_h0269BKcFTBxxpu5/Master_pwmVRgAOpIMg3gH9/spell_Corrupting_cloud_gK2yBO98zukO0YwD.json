@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/air/fog-gas-smoke-purple.webp",
   "system": {
-    "description": "Creates a cloud in an area up to 30m for 2 + {{math spellPower \"*\" 1}} rounds, generating 3d6 Corruption per round. Corruption +6",
+    "description": "Creates a cloud in an area up to 30m for 2 + {{math spellPower \"*\" 1}} rounds, generating 3d6 Corruption per round.",
     "options": [
       "divine",
       "magic"
@@ -66,9 +66,9 @@
     ],
     "resources": [
       {
-        "mode": "",
-        "amount": "",
-        "type": ""
+        "type": "Corruption",
+        "mode": "add",
+        "amount": 6
       }
     ],
     "resourceOptions": {

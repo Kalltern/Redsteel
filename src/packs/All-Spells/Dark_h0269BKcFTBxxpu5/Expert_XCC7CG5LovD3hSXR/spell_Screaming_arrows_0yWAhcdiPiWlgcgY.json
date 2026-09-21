@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/unholy/projectile-bolts-salvo-pink.webp",
   "system": {
-    "description": "<p>Deals 10d6 + 80 + {{math spellPower \"*\" 5}} damage in a 6m area, evenly divided among at least four chosen targets. Minimum distance 9m. Corruption +4<br /><br />Not fully automated, divide manually</p>",
+    "description": "<p>Deals 10d6 + 80 + {{math spellPower \"*\" 5}} damage in a 6m area, evenly divided among at least four chosen targets. Minimum distance 9m.<br /><br />Not fully automated, divide manually</p>",
     "options": [
       "divine",
       "magic"

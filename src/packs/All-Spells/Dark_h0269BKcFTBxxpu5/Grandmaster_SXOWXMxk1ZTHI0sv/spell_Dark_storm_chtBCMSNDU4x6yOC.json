@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/unholy/energy-smoke-pink.webp",
   "system": {
-    "description": "Can only be cast outdoors. Creates an area up to 15m wide, dealing 5d8 + {{math spellPower \"*\" 3}} damage to selected targets. Each hit causes 3d4 Corruption. Always attacks with Magical Attack Power 50. Corruption +10.",
+    "description": "Can only be cast outdoors. Creates an area up to 15m wide, dealing 5d8 + {{math spellPower \"*\" 3}} damage to selected targets. Each hit causes 3d4 Corruption. Always attacks with Magical Attack Power 50.",
     "options": [
       "divine",
       "magic"
@@ -66,9 +66,9 @@
     ],
     "resources": [
       {
-        "mode": "",
-        "amount": "",
-        "type": ""
+        "type": "Corruption",
+        "mode": "add",
+        "amount": 10
       }
     ],
     "resourceOptions": {

@@ -816,7 +816,7 @@
         A tile is lit while the spell is held (castable), dim otherwise. Writing
         a spell into the book is free; memorising it is 1 SP (Pravidla, Paměť).
         Search and the filter pop-up filter the roster in place. --}}
-  <section class="rs-learn-roster">
+  <section class="rs-learn-roster" data-school="{{spells.activeSchool}}">
     {{!-- One pill per school the character holds, with its rank; the GM can
           switch every school on to hand a spell over at the table. --}}
     <div class="rs-learn-spell-schools">
@@ -846,29 +846,24 @@
       </button>
       {{/if}}
 
-      {{!-- The grimoire strip: the open book and how full it is, the switcher
-            when there is more than one, and the lost books behind a button. --}}
+      {{!-- The grimoire strip: one plate per book carried, the open one lit,
+            then the lost books behind a button. The plate already carries the
+            book's name and how many spells stand in it, so neither is repeated
+            as loose text beside it (user ruling 2026-09-21). Clicking the open
+            book opens its sheet, which is where it is renamed. --}}
       <div class="rs-learn-roster-grimoire">
         {{#if spells.hasBook}}
-        <img class="rs-learn-roster-grimoire-img" src="{{spells.activeBook.img}}" alt="{{spells.activeBook.name}}">
-        <span class="rs-learn-roster-grimoire-name">{{spells.activeBook.name}}</span>
-        <span class="rs-learn-spell-count">
-          {{localize "REDSTEEL.Learn.Spells.written"}}:
-          {{#if spells.activeBook.capacity}}{{spells.activeBook.count}} / {{spells.activeBook.capacity}}{{else}}{{spells.activeBook.count}}{{/if}}
-        </span>
-        {{#if spells.multipleBooks}}
-        {{!-- More than one grimoire: one plate per book, the open one lit. --}}
         <div class="rs-learn-spell-books">
           {{#each spells.books}}
           <button type="button" class="rs-learn-spell-book {{#if this.active}}active{{/if}}"
-                  data-action="switchSpellBook" data-book-id="{{this.id}}">
+                  data-action="switchSpellBook" data-book-id="{{this.id}}"
+                  data-tooltip="{{this.tooltip}}">
             <img src="{{this.img}}" alt="{{this.name}}">
             <span class="rs-learn-spell-book-name">{{this.name}}</span>
-            <b>{{this.count}}</b>
+            <b>{{this.countLabel}}</b>
           </button>
           {{/each}}
         </div>
-        {{/if}}
         {{else}}
         {{!-- No grimoire at all: say so. --}}
         <span class="rs-learn-roster-grimoire-none">{{localize "REDSTEEL.Learn.Spells.noBook"}}</span>
@@ -1017,9 +1012,10 @@
               2026-09-20). --}}
         <div class="rs-learn-roster-grid">
           {{#each this.spells}}
-            {{!-- One spell. Hovering the tile opens the spell's card; the Read
-                  more control at its foot lifts the three-line clamp off every
-                  card in the same grid row. The two marks in the corner are the
+            {{!-- One spell. No hover card: the tile already prints everything
+                  that card carried. The Read more control at its foot lifts the
+                  three-line clamp off every card in the same grid row, and the
+                  two marks in the corner are the
                   controls: the book writes/erases, the brain memorises/forgets,
                   and each keeps its own action because the nearest data-action
                   wins. The expand key stays on the tile so the handler can
@@ -1027,7 +1023,6 @@
                   Every data attribute here is read by #applySpellFilters. --}}
             <div class="rs-learn-spell-tile state-{{this.state}} {{#if this.owned}}is-held{{else}}is-dim{{/if}} {{#if this.expanded}}is-expanded{{/if}}"
                  {{#if this.description}}data-expand-key="{{this.expandKey}}"{{/if}}
-                 data-tt-kind="spellCardUuid" data-tt-uuid="{{this.uuid}}"
                  data-rank="{{this.rank}}"
                  data-actions="{{this.actionBucket}}"
                  data-free="{{#if this.free}}true{{else}}false{{/if}}"
@@ -1046,13 +1041,68 @@
                     The title is padded clear of the corner marks on BOTH
                     sides, so it stays optically centred. --}}
               <span class="rs-learn-spell-tile-name">{{this.name}}</span>
-              <div class="rs-learn-spell-tile-iconwrap">
-                <img class="rs-learn-spell-tile-icon" src="{{this.img}}" alt="{{this.name}}">
-                {{!-- What the spell deals, as fine print under the icon. --}}
-                {{#if this.tileDmg}}<div class="rs-learn-spell-tile-dmg">{{this.tileDmg}}</div>{{/if}}
+              {{!-- The head row: the icon on the left with its marks hanging
+                    off it, and the price panel in the dead space to its
+                    right. Everything in the panel is what the spell takes
+                    from the caster, so the reader gets the bill without
+                    reading the prose (user ruling 2026-09-21). --}}
+              <div class="rs-learn-spell-tile-head">
+                <div class="rs-learn-spell-tile-iconwrap">
+                  <img class="rs-learn-spell-tile-icon" src="{{this.img}}" alt="{{this.name}}">
+                  {{!-- What the spell deals, as fine print under the icon. The
+                        line is always here, empty for a spell that deals no
+                        damage, so the tags below it start at the same height on
+                        every card (user ruling 2026-09-20). --}}
+                  <div class="rs-learn-spell-tile-dmg">{{this.tileDmg}}</div>
+                  <div class="rs-learn-spell-tile-marks {{#if this.innate}}is-single{{/if}}">
+                    {{!-- Book mark: lit when in the open grimoire, part-way back when
+                          it is written in another one, grey when written nowhere.
+                          Wild magic is never written down, so it has none at all
+                          (user ruling 2026-09-20). --}}
+                    {{#unless this.innate}}
+                    <button type="button"
+                            class="rs-learn-spell-mark is-book {{#if this.inActiveBook}}is-lit{{else if this.writtenElsewhere}}is-elsewhere{{/if}}"
+                            {{#if @root.editable}}{{#if this.canWrite}}data-action="writeSpell" data-uuid="{{this.uuid}}"{{else if this.canErase}}data-action="eraseSpell" data-uuid="{{this.uuid}}"{{/if}}{{/if}}
+                            data-tooltip="{{this.bookTooltip}}" data-tooltip-direction="UP"
+                            aria-label="{{this.bookTooltip}}">
+                      <img src="{{@root.spells.bookIcon}}" alt="">
+                    </button>
+                    {{/unless}}
+                    {{!-- Memory mark: lit when memorised. Wild magic is lit and
+                          sealed, and cannot be clicked. --}}
+                    {{#if this.innate}}
+                    <span class="rs-learn-spell-mark is-memory is-lit is-innate"
+                          data-tooltip="{{this.memoriseTooltip}}" data-tooltip-direction="UP"
+                          aria-label="{{this.memoriseTooltip}}">
+                      <img src="{{@root.spells.memoryIcon}}" alt="">
+                      <i class="fas fa-lock rs-learn-spell-mark-seal"></i>
+                    </span>
+                    {{else}}
+                    <button type="button"
+                            class="rs-learn-spell-mark is-memory {{#if (eq this.state "memorised")}}is-lit{{/if}}"
+                            {{#if @root.editable}}{{#if this.canMemorise}}data-action="memoriseSpell" data-uuid="{{this.uuid}}"{{else if this.canForget}}data-action="forgetSpell" data-uuid="{{this.uuid}}"{{/if}}{{/if}}
+                            data-tooltip="{{this.memoriseTooltip}}" data-tooltip-direction="UP"
+                            aria-label="{{this.memoriseTooltip}}">
+                      <img src="{{@root.spells.memoryIcon}}" alt="">
+                    </button>
+                    {{/if}}
+                  </div>
+                </div>
+                {{!-- The price panel: Difficulty, cost, action cost, then the
+                      per-round upkeep and the Corruption or Mind the cast heaps
+                      on. Stacked full width so the numbers rule up down the
+                      column. --}}
+                <div class="rs-learn-spell-tile-keys">
+                  {{#each this.tileKeys}}
+                  <span class="rs-learn-spell-tile-cell" data-cell="{{this.key}}">
+                    <span class="rs-learn-spell-tile-cell-label">{{this.label}}</span>
+                    {{#if this.value}}<span class="rs-learn-spell-tile-cell-value">{{this.value}}</span>{{/if}}
+                  </span>
+                  {{/each}}
+                </div>
               </div>
-              {{!-- What the spell costs and carries, running across under the
-                    damage line. The list is as long as the spell is
+              {{!-- What the spell reaches and how it behaves, running across
+                    under the head. The list is as long as the spell is
                     complicated: a tag with nothing to say is left out. --}}
               <div class="rs-learn-spell-tile-stats">
                 {{#each this.tileStats}}
@@ -1075,35 +1125,6 @@
                 <span class="rs-learn-spell-more-close">{{localize "REDSTEEL.Learn.Spells.readLess"}}</span>
               </button>
               {{/if}}
-              <div class="rs-learn-spell-tile-marks">
-                {{!-- Book mark: lit when in the open grimoire, outlined when it
-                      is written in another one, faint when written nowhere. --}}
-                <button type="button"
-                        class="rs-learn-spell-mark is-book {{#if this.inActiveBook}}is-lit{{else if this.writtenElsewhere}}is-elsewhere{{/if}}"
-                        {{#if @root.editable}}{{#if this.canWrite}}data-action="writeSpell" data-uuid="{{this.uuid}}"{{else if this.canErase}}data-action="eraseSpell" data-uuid="{{this.uuid}}"{{/if}}{{/if}}
-                        data-tooltip="{{this.bookTooltip}}" data-tooltip-direction="UP"
-                        aria-label="{{this.bookTooltip}}">
-                  <i class="{{#if this.writtenElsewhere}}fa-regular{{else}}fas{{/if}} fa-book"></i>
-                </button>
-                {{!-- Memory mark: lit when memorised. Wild magic is lit and
-                      sealed, and cannot be clicked. --}}
-                {{#if this.innate}}
-                <span class="rs-learn-spell-mark is-memory is-lit is-innate"
-                      data-tooltip="{{this.memoriseTooltip}}" data-tooltip-direction="UP"
-                      aria-label="{{this.memoriseTooltip}}">
-                  <i class="fas fa-brain"></i>
-                  <i class="fas fa-lock rs-learn-spell-mark-seal"></i>
-                </span>
-                {{else}}
-                <button type="button"
-                        class="rs-learn-spell-mark is-memory {{#if (eq this.state "memorised")}}is-lit{{/if}}"
-                        {{#if @root.editable}}{{#if this.canMemorise}}data-action="memoriseSpell" data-uuid="{{this.uuid}}"{{else if this.canForget}}data-action="forgetSpell" data-uuid="{{this.uuid}}"{{/if}}{{/if}}
-                        data-tooltip="{{this.memoriseTooltip}}" data-tooltip-direction="UP"
-                        aria-label="{{this.memoriseTooltip}}">
-                  <i class="fas fa-brain"></i>
-                </button>
-                {{/if}}
-              </div>
               {{#if this.showLock}}<i class="fas fa-lock rs-learn-spell-tile-lock" data-tooltip="{{this.needs}}"></i>{{/if}}
             </div>
           {{/each}}

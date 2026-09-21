@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/unholy/orb-swirling-pink.webp",
   "system": {
-    "description": "Magical attack +10%. Doubles the target's current Corruption. All creatures within 1.5m of the target gain half of the Corruption gained this way. Corruption +4",
+    "description": "Magical attack +10%. Doubles the target's current Corruption. All creatures within 1.5m of the target gain half of the Corruption gained this way.",
     "options": [
       "divine",
       "magic"
@@ -66,9 +66,9 @@
     ],
     "resources": [
       {
-        "mode": "",
-        "amount": "",
-        "type": ""
+        "type": "Corruption",
+        "mode": "add",
+        "amount": 4
       }
     ],
     "resourceOptions": {

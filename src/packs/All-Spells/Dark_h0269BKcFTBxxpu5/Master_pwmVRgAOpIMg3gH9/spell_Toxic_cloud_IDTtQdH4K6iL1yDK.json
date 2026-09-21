@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/air/fog-gas-smoke-swirling-green.webp",
   "system": {
-    "description": "Creates a cloud up to 15m wide for 2 + {{math spellPower \"*\" 1}} rounds. Deals 2d6 + {{math spellPower \"/\" 2}} damage per round. Applies Weakened and Vulnerable. Corruption +6. Ignores Armor.",
+    "description": "Creates a cloud up to 15m wide for 2 + {{math spellPower \"*\" 1}} rounds. Deals 2d6 + {{math spellPower \"/\" 2}} damage per round. Applies Weakened and Vulnerable. Ignores Armor.",
     "options": [
       "divine",
       "magic"
@@ -66,9 +66,9 @@
     ],
     "resources": [
       {
-        "mode": "",
-        "amount": "",
-        "type": ""
+        "type": "Corruption",
+        "mode": "add",
+        "amount": 6
       }
     ],
     "resourceOptions": {

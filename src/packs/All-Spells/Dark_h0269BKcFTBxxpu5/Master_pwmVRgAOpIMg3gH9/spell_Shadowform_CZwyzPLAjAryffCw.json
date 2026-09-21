@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/unholy/silhouette-robe-evil-power.webp",
   "system": {
-    "description": "For {{math spellPower \"*\" 10}} minutes, grants Advantage on Stealth, a Bonus of {{math spellPower \"*\" 1}} + 10% to Stealth, and a 20% chance to avoid all physical Damage. Corruption +6",
+    "description": "For {{math spellPower \"*\" 10}} minutes, grants Advantage on Stealth, a Bonus of {{math spellPower \"*\" 1}} + 10% to Stealth, and a 20% chance to avoid all physical Damage.",
     "options": [
       "divine",
       "magic"
@@ -66,9 +66,9 @@
     ],
     "resources": [
       {
-        "mode": "",
-        "amount": "",
-        "type": ""
+        "type": "Corruption",
+        "mode": "add",
+        "amount": 6
       }
     ],
     "resourceOptions": {

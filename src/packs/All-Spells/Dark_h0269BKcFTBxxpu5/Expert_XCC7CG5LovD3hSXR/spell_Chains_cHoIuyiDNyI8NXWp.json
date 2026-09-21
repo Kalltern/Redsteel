@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/control/debuff-chains-purple.webp",
   "system": {
-    "description": "<p>Triggers a vs test of caster's Will + {{math spellPower \"*\" 2}}) against target's Strength/Endurance test.</p><p>On caster's success, the target is Rooted(shadowbound) and takes 2d6 damage each round.</p><p>On failure, the target loses one Action.</p><p>Cannot be escaped using Teleportation, Pull, or similar spells.</p><p>Corruption +4</p>",
+    "description": "<p>Triggers a vs test of caster's Will + {{math spellPower \"*\" 2}}) against target's Strength/Endurance test.</p><p>On caster's success, the target is Rooted(shadowbound) and takes 2d6 damage each round.</p><p>On failure, the target loses one Action.</p><p>Cannot be escaped using Teleportation, Pull, or similar spells.</p>",
     "options": [
       "divine",
       "magic"

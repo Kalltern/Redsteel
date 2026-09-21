@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/death/skeleton-skull-soul-blue.webp",
   "system": {
-    "description": "Allows the caster to witness the last memories of a deceased creature. Corruption +6",
+    "description": "Allows the caster to witness the last memories of a deceased creature.",
     "options": [
       "divine",
       "magic"
@@ -66,9 +66,9 @@
     ],
     "resources": [
       {
-        "mode": "",
-        "amount": "",
-        "type": ""
+        "type": "Corruption",
+        "mode": "add",
+        "amount": 6
       }
     ],
     "resourceOptions": {

@@ -114,6 +114,7 @@ import {
   forgetSpell,
   getBookEntries,
   getKnownSpells,
+  SPELLBOOK_IMG,
   getSpellbookArchive,
   getSpellbooks,
   memoriseSpell,
@@ -132,14 +133,16 @@ import {
   resolveSpellPowerTokens,
 } from "./spellCards.mjs";
 import { getSpellPower } from "./spellPower.mjs";
+import { normalizeResourceKey, resourceLabel } from "./itemResources.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } =
   foundry.applications.api;
 
 const TEMPLATE = "systems/redsteel/templates/actor/learn-window.hbs";
 
-/** The book the Spells tab makes, and the icon a lost record falls back to. */
-const SPELLBOOK_IMG = "icons/sundries/books/book-purple-illuminated.webp";
+/** The memorised mark on a spell card. The grimoire mark uses SPELLBOOK_IMG,
+ *  imported from spellbook.mjs, so the book art has one home. */
+const MEMORY_IMG = "icons/commodities/biological/organ-brain-pink-purple.webp";
 
 /** What a spell with no icon of its own shows in the Spells tab. */
 const SPELL_FALLBACK_IMG = "icons/svg/book.svg";
@@ -525,6 +528,51 @@ function dmgPartsLabel(parts) {
 function spellClassLabel(key) {
   const langKey = `REDSTEEL.Learn.Spells.Class.${key}`;
   return game.i18n.has(langKey) ? game.i18n.localize(langKey) : String(key);
+}
+
+/**
+ * A spell's stored `system.resources` as a flat list. The item sheet writes
+ * them as an object keyed "0", "1", older data as a plain array, and both
+ * shapes reach the card from the compendium index.
+ * @param {object|Array|null} raw
+ * @returns {Array<{type: string, mode: string, amount: *}>}
+ */
+function spellResourceList(raw) {
+  if (Array.isArray(raw)) return raw;
+  if (raw && typeof raw === "object") return Object.values(raw);
+  return [];
+}
+
+/**
+ * What casting costs the caster on top of the mana: the Corruption a Dark
+ * spell heaps on, the Mind a Spirit spell burns, the Blood that pays for a
+ * Blood spell. The pack stores these on `system.resources` and the cast path
+ * already applies them (spendSpellResources in magicSkillBonuses.mjs) — until
+ * now the card said nothing about them and the number lived in the prose,
+ * where it could not be read at a glance (user ruling 2026-09-21).
+ *
+ * A "drain" reads with a minus and an "add" with a plus, because Corruption
+ * rising is the price and Corruption falling is the point of Remove
+ * corruption. The empty rows the sheet keeps for the next entry carry no type
+ * and are skipped.
+ *
+ * @param {Array} resources  A row's flattened `resources`.
+ * @returns {Array<{key: string, label: string, value: string}>}
+ */
+function spellResourceCells(resources) {
+  const cells = [];
+  for (const res of spellResourceList(resources)) {
+    const key = normalizeResourceKey(res?.type);
+    const amount = Number(res?.amount);
+    if (!key || !amount || !Number.isFinite(amount)) continue;
+    const sign = String(res?.mode ?? "").toLowerCase() === "drain" ? "-" : "+";
+    cells.push({
+      key: `resource-${key}`,
+      label: resourceLabel(res.type),
+      value: `${sign}${Math.abs(amount)}`,
+    });
+  }
+  return cells;
 }
 
 /** The sheet's own name for a track id ("doctrines.swordsman"). */
@@ -2692,6 +2740,11 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
             "system.actionCost",
             "system.cost",
             "system.perRound",
+            // What casting adds to or drains from a pool besides its mana
+            // cost: Corruption, chiefly. The card prints it beside the cost
+            // rather than leaving it buried in the prose (user ruling
+            // 2026-09-21).
+            "system.resources",
             "system.description",
             "system.difficulty",
             "system.sustained",
@@ -2739,6 +2792,10 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
             actionCost: String(entry.system?.actionCost ?? ""),
             sustained: !!entry.system?.sustained,
             spellClass: String(entry.system?.spellClass ?? ""),
+            // The item sheet stores these as an object keyed "0","1", older
+            // data as an array; both shapes reach the index, so they are
+            // flattened once here.
+            resources: spellResourceList(entry.system?.resources),
             // template.json defaults isOffensive to true, so an entry that never
             // stored the field reads as offensive, the way the item itself does.
             offensive: entry.system?.isOffensive !== false,
@@ -2831,14 +2888,27 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
 
     /* ---- the books ---- */
     const activeBook = this.#activeSpellbook();
-    const books = getSpellbooks(actor).map((book) => ({
-      id: book.id,
-      name: book.name,
-      img: book.img,
-      count: getBookEntries(book).length,
-      capacity: Number(book.system?.capacity) || 0,
-      active: book.id === activeBook?.id,
-    }));
+    const books = getSpellbooks(actor).map((book) => {
+      const count = getBookEntries(book).length;
+      const capacity = Number(book.system?.capacity) || 0;
+      // The plate is the only place the book is named on the strip, so it
+      // carries the fill too: "3 / 12" for a bound book, plain "3" for an
+      // ordinary one (user ruling 2026-09-21).
+      const countLabel = capacity ? `${count} / ${capacity}` : String(count);
+      const active = book.id === activeBook?.id;
+      return {
+        id: book.id,
+        name: book.name,
+        img: book.img,
+        count,
+        capacity,
+        countLabel,
+        active,
+        tooltip: `${game.i18n.localize("REDSTEEL.Learn.Spells.written")}: ${countLabel}. ${game.i18n.localize(
+          active ? "REDSTEEL.Learn.Spells.openBookHint" : "REDSTEEL.Learn.Spells.switchBookHint",
+        )}`,
+      };
+    });
     const activeEntries = activeBook ? getBookEntries(activeBook) : [];
     const activeSet = new Set(activeEntries.map((entry) => entry.uuid));
 
@@ -2934,18 +3004,47 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
         const actionDisplay = /^free/i.test(String(row.actionCost).trim())
           ? say("statFreeAction")
           : formatActionCost(row.actionCost).display;
-        const tileStats = [
+        // The card carries two tag blocks. `tileKeys` is the price list,
+        // stacked in the panel beside the icon: what the spell asks of the
+        // caster before it does anything (user ruling 2026-09-21). Everything
+        // that describes the spell rather than costs for it runs under the
+        // icon in `tileStats`.
+        const tileKeys = [
           // The first three stand on every card, in the same places, so a
           // page of cards still rules up into columns.
           cell("difficulty", "REDSTEEL.Item.Spell.FIELDS.difficulty.label", row.difficulty),
-          // A cost of 0 is an answer, not a blank: the spell is free.
-          cell("cost", "REDSTEEL.Item.Spell.FIELDS.cost.label", row.cost),
+          // A cost of 0 is an answer, not a blank: the spell is free. The
+          // number names what it is paid from, because a Blood-school spell
+          // comes out of the Blood Pool rather than Mana. Same test the cast
+          // path uses (deductMana in magicSkillBonuses.mjs reads
+          // system.type === "blood").
+          cell(
+            "cost",
+            "REDSTEEL.Item.Spell.FIELDS.cost.label",
+            emptyStat(row.cost)
+              ? row.cost
+              : `${row.cost} ${say(row.school === "blood" ? "costBlood" : "costMana")}`,
+          ),
           // "Action cost" is too long for a cell and pushed its own number
           // out of sight, so the card says "Action" (user report 2026-09-20).
           // The number is the printable form, not spellbook's parse: that one
           // answers what the cost is, and carries no text to print.
           cell("actionCost", "REDSTEEL.Learn.Spells.statAction", actionDisplay),
         ];
+        // A spell that costs nothing per round says nothing: the pack stores
+        // that as 0, which is not the same as empty (user report 2026-09-20).
+        if (!emptyStat(row.perRound) && Number(row.perRound) !== 0) {
+          tileKeys.push({
+            key: "perRound",
+            label: say("perRoundShort"),
+            value: String(row.perRound),
+          });
+        }
+        // Corruption, Mind, Blood: the part of the price the prose used to
+        // carry in words. Last in the panel, under the mana and the upkeep,
+        // because it is what the cast costs the caster rather than the spell.
+        tileKeys.push(...spellResourceCells(row.resources));
+        const tileStats = [];
         // A number here is a count of hexes, and the card carries the real
         // distance beside it. Self and Touch convert to nothing, so they
         // print the word alone.
@@ -2975,15 +3074,6 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
               spellClassLabel(row.spellClass.trim()),
             ),
           );
-        }
-        // A spell that costs nothing per round says nothing: the pack stores
-        // that as 0, which is not the same as empty (user report 2026-09-20).
-        if (!emptyStat(row.perRound) && Number(row.perRound) !== 0) {
-          tileStats.push({
-            key: "perRound",
-            label: say("perRoundShort"),
-            value: String(row.perRound),
-          });
         }
         // Concentration and Sustained say themselves: the tag only exists
         // when the spell has the property, so a "Yes" beside it is a word
@@ -3036,7 +3126,9 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
           actionCost: row.actionCost,
           actions: action.actions,
           // What the spell costs and carries: as many cells as it has
-          // answers. The damage line sits apart, under the icon.
+          // answers. The price list stands in the panel beside the icon, the
+          // rest runs under it, and the damage line sits apart between them.
+          tileKeys,
           tileStats,
           tileDmg,
           // Empty for a spell with no prose, and the template leaves such a row
@@ -3146,6 +3238,10 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
             capacity: Number(activeBook.system?.capacity) || 0,
           }
         : null,
+      // The two marks beside each card icon, so neither path is typed into
+      // the template as a third copy.
+      bookIcon: SPELLBOOK_IMG,
+      memoryIcon: MEMORY_IMG,
       archive,
       archiveOpen: this.#spellArchiveOpen,
       lostBooksLabel: game.i18n.format("REDSTEEL.Learn.Spells.lostBooks", {
@@ -4387,11 +4483,20 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     this.render();
   }
 
-  /** Open another grimoire. @this {LearnWindow} */
+  /**
+   * Open another grimoire. The book already open has nothing to switch to, so
+   * clicking its plate opens the book's own sheet instead: that is where it is
+   * renamed and where its capacity is set (user ruling 2026-09-21).
+   * @this {LearnWindow}
+   */
   static _onSwitchSpellBook(event, target) {
     event.preventDefault();
     const bookId = target?.dataset?.bookId;
-    if (!bookId || bookId === this.#spellBookId) return;
+    if (!bookId) return;
+    if (bookId === this.#activeSpellbook()?.id) {
+      this.actor?.items?.get(bookId)?.sheet?.render(true);
+      return;
+    }
     this.#spellBookId = bookId;
     this.render();
   }
@@ -4463,12 +4568,23 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
   static async _onCreateSpellbook(event) {
     event.preventDefault();
     if (!this.actor?.isOwner) return;
+    // The book comes out of the shop with its owner's name on it, and reads
+    // as that character's spellbook. Both are ordinary stored text: renaming
+    // the item or rewriting its description never comes back (user ruling
+    // 2026-09-21).
+    const owner = this.actor.name;
     await this.actor.createEmbeddedDocuments("Item", [
       {
-        name: game.i18n.localize("TYPES.Item.spellbook"),
+        name: game.i18n.format("REDSTEEL.Learn.Spells.bookName", { name: owner }),
         type: "spellbook",
         img: SPELLBOOK_IMG,
-        system: { capacity: 0, spells: [] },
+        system: {
+          capacity: 0,
+          spells: [],
+          description: game.i18n.format("REDSTEEL.Learn.Spells.bookDescription", {
+            name: owner,
+          }),
+        },
       },
     ]);
     this.render();

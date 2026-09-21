@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/sonic/scream-wail-shout-teal.webp",
   "system": {
-    "description": "Triggers Fear for 3 rounds in a 3m radius around the caster. Nerve Tests have a penalty of {{math spellPower \"*\" 1}}. If a target succeeds their first Nerve Test, they must move 2 hexes away from the caster. Can be cast as a Reaction only if the caster is attacked. Corruption +6",
+    "description": "Triggers Fear for 3 rounds in a 3m radius around the caster. Nerve Tests have a penalty of {{math spellPower \"*\" 1}}. If a target succeeds their first Nerve Test, they must move 2 hexes away from the caster. Can be cast as a Reaction only if the caster is attacked.",
     "options": [
       "divine",
       "magic"
@@ -66,9 +66,9 @@
     ],
     "resources": [
       {
-        "mode": "",
-        "amount": "",
-        "type": ""
+        "type": "Corruption",
+        "mode": "add",
+        "amount": 6
       }
     ],
     "resourceOptions": {

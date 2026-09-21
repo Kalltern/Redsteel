@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/unholy/strike-body-explode-disintegrate.webp",
   "system": {
-    "description": "<p>Deals 2d6 + {{math spellPower \"/\" 2}} damage per round. If it kills the target, roll a 75% chance to capture it's soul in a suitable vessel. Corruption +4. Ignores Armor.</p><p></p><p></p>",
+    "description": "<p>Deals 2d6 + {{math spellPower \"/\" 2}} damage per round. If it kills the target, roll a 75% chance to capture it's soul in a suitable vessel. Ignores Armor.</p><p></p><p></p>",
     "options": [
       "divine",
       "magic"

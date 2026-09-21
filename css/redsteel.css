@@ -15874,10 +15874,10 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
     0 0 12px rgba(0, 0, 0, 0.35);
 }
 
-/* The grimoire strip: the open book, how full it is, the book switcher and
-   the lost books. It is the last child of the school row rather than a row of
-   its own, so it takes no padding and no rule, and margin-left pushes it to
-   the far end of that line (user ruling 2026-09-20). */
+/* The grimoire strip: one plate per book carried and the lost books. It is
+   the last child of the school row rather than a row of its own, so it takes
+   no padding and no rule, and margin-left pushes it to the far end of that
+   line (user ruling 2026-09-20). */
 .rs-learn .rs-learn-roster-grimoire {
   flex: 0 0 auto;
   display: flex;
@@ -15885,26 +15885,6 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   align-items: center;
   gap: 8px;
   margin-left: auto;
-}
-
-.rs-learn .rs-learn-roster-grimoire-img {
-  flex: 0 0 auto;
-  width: calc(22px * var(--rs-learn-text));
-  height: calc(22px * var(--rs-learn-text));
-  max-width: none;
-  object-fit: cover;
-  padding: 0;
-  border: 1px solid #514226;
-  border-radius: 0;
-  background: #14120d;
-}
-
-.rs-learn .rs-learn-roster-grimoire-name {
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: calc(13px * var(--rs-learn-text));
-  line-height: calc(17px * var(--rs-learn-text));
-  color: #d6bc8c;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
 }
 
 .rs-learn .rs-learn-roster-grimoire-none {
@@ -15918,8 +15898,9 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   margin-left: auto;
 }
 
-/* More than one grimoire: a row of small plates, the open one lit, inline on
-   the grimoire strip. */
+/* The books carried: a row of small plates, the open one lit, inline on the
+   grimoire strip. Each plate names its book and says how many spells stand in
+   it (user ruling 2026-09-21). */
 .rs-learn .rs-learn-spell-books {
   display: flex;
   flex-wrap: wrap;
@@ -15971,16 +15952,6 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   font-family: Cambria, "Times New Roman", Times, serif;
   font-variant-numeric: lining-nums;
   color: #d9a13b;
-}
-
-/* How full the open book is, beside its name on the strip. */
-.rs-learn .rs-learn-spell-count {
-  font-family: Cambria, "Times New Roman", Times, serif;
-  font-variant-numeric: lining-nums;
-  font-size: calc(11px * var(--rs-learn-text));
-  letter-spacing: 0.04em;
-  text-transform: none;
-  color: #8a8175;
 }
 
 /* The lost books panel, dropped under the strip by its button: a recessed
@@ -16095,10 +16066,16 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   height: auto;
   margin: 0;
   padding: 3px 10px;
-  border: 1px solid #514226;
+  /* Each pill already carries data-school, so it sets its own token: the row
+     reads as the nine schools at a glance. */
+  border: 1px solid rgba(var(--rs-school-rgb), 0.55);
   border-radius: 0;
   background:
-    linear-gradient(to bottom, rgba(81, 66, 38, 0.28), rgba(12, 12, 11, 0.6)),
+    linear-gradient(
+      to bottom,
+      rgba(var(--rs-school-rgb), 0.3),
+      rgba(12, 12, 11, 0.6)
+    ),
     url(../ui/headertexture.jpg);
   box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.6);
   font-family: Georgia, "Times New Roman", serif;
@@ -16112,15 +16089,27 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
 
 .rs-learn .rs-learn-spell-school:hover {
   color: #f0d7aa;
-  border-color: #9c7b45;
+  border-color: rgba(var(--rs-school-rgb), 0.9);
 }
 
+/* The open school: its own colour at full strength, lettering left in the
+   sheet's cream so it stays legible against any of the nine. */
 .rs-learn .rs-learn-spell-school.active {
   color: #f0d7aa;
-  border-color: #9c7b45;
+  border-color: rgba(var(--rs-school-rgb), 1);
   background:
-    linear-gradient(to bottom, rgba(81, 66, 38, 0.55), rgba(81, 66, 38, 0.15)),
+    linear-gradient(
+      to bottom,
+      rgba(var(--rs-school-rgb), 0.6),
+      rgba(var(--rs-school-rgb), 0.15)
+    ),
     url(../ui/headertexture.jpg);
+}
+
+/* "All schools" belongs to none of them, and has no data-school of its own, so
+   it would otherwise inherit whichever school is open. Pin it to the bronze. */
+.rs-learn .rs-learn-spell-school-all {
+  --rs-school-rgb: 81, 66, 38;
 }
 
 .rs-learn .rs-learn-spell-school b {
@@ -16163,10 +16152,14 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   height: auto;
   margin: 0;
   padding: 2px 8px;
-  border: 1px solid #3b3226;
+  border: 1px solid rgba(var(--rs-school-rgb), 0.4);
   border-radius: 0;
   background:
-    linear-gradient(to bottom, rgba(81, 66, 38, 0.28), rgba(12, 12, 11, 0.6)),
+    linear-gradient(
+      to bottom,
+      rgba(var(--rs-school-rgb), 0.28),
+      rgba(12, 12, 11, 0.6)
+    ),
     url(../ui/headertexture.jpg);
   box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.6);
   font-family: Georgia, "Times New Roman", serif;
@@ -16184,11 +16177,17 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
 }
 
 /* The open page, lit exactly as the school it belongs to. */
+/* The open page: the school at full strength on the edge, the lettering left
+   in the sheet's cream so it stays legible against any of the nine. */
 .rs-learn .rs-learn-spell-rankpill.active {
   color: #f0d7aa;
-  border-color: #9c7b45;
+  border-color: rgba(var(--rs-school-rgb), 0.95);
   background:
-    linear-gradient(to bottom, rgba(81, 66, 38, 0.55), rgba(81, 66, 38, 0.15)),
+    linear-gradient(
+      to bottom,
+      rgba(var(--rs-school-rgb), 0.6),
+      rgba(var(--rs-school-rgb), 0.15)
+    ),
     url(../ui/headertexture.jpg);
 }
 
@@ -16275,6 +16274,42 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   color: #b7ac97;
 }
 
+/* One accent per school, as an RGB triplet so the card can draw it at whatever
+   strength each part needs. Muted on purpose: the sheet is grayscale and gold,
+   and a school reads as a tint on the card's edge, never as a coloured panel.
+   The section already carries data-school, so the token flows to every card
+   inside it and nothing needs a new attribute in the markup. */
+.rs-learn .rs-learn-roster,
+.rs-learn .rs-learn-roster-school {
+  --rs-school-rgb: 81, 66, 38;
+}
+
+/* Matched on the attribute alone, so the token lands on whatever carries it:
+   the roster root (the open school, which is what the rank buttons above the
+   grid read) and each school section inside it (which wins for its own cards
+   when every school is merged onto one list).
+
+   THE VALUES ARE NOT FREE CHOICES. Each one is the `border-color` of that
+   school's chat card (`.chat-message.spell-msg-<school>` near the top of this
+   file), as an RGB triplet. A spell already reads in its school's colour when
+   it is cast, so the roster has to agree with the table or the same school is
+   two different colours in one session. If a chat card's colour is ever
+   changed, change its partner here in the same edit. Earth is GREEN and Body
+   is GOLD, which is easy to get backwards.
+
+   Gnosis is the one exception: it has no chat card to copy, because no Gnosis
+   spell exists yet. The gold below is a placeholder, and the moment those
+   spells are written it should be taken from their card like the rest. */
+.rs-learn [data-school="fire"] { --rs-school-rgb: 186, 102, 48; } /* #ba6630 */
+.rs-learn [data-school="water"] { --rs-school-rgb: 108, 147, 173; } /* #6c93ad */
+.rs-learn [data-school="air"] { --rs-school-rgb: 169, 177, 186; } /* #a9b1ba */
+.rs-learn [data-school="earth"] { --rs-school-rgb: 81, 150, 115; } /* #519673 */
+.rs-learn [data-school="spirit"] { --rs-school-rgb: 170, 77, 134; } /* #aa4d86 */
+.rs-learn [data-school="body"] { --rs-school-rgb: 176, 142, 50; } /* #b08e32 */
+.rs-learn [data-school="darkness"] { --rs-school-rgb: 91, 66, 123; } /* #5b427b */
+.rs-learn [data-school="blood"] { --rs-school-rgb: 158, 43, 34; } /* #9e2b22 */
+.rs-learn [data-school="gnosis"] { --rs-school-rgb: 198, 168, 96; } /* placeholder */
+
 .rs-learn .rs-learn-roster-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
@@ -16294,9 +16329,14 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   gap: 8px;
   min-width: 0;
   padding: 16px 12px 8px;
-  background: rgba(0, 0, 0, 0.45);
-  border: 1px solid #514226;
-  border-left: 2px solid #3b3226;
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(var(--rs-school-rgb), 0.12),
+      rgba(var(--rs-school-rgb), 0) 55%
+    ),
+    rgba(0, 0, 0, 0.45);
+  border: 2px solid rgba(var(--rs-school-rgb), 0.45);
   border-radius: 0;
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.7);
 }
@@ -16305,8 +16345,18 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   display: none;
 }
 
+/* A held (castable) spell was marked only by the heavy left rule, which is
+   gone. Its whole edge takes the school at full strength instead, and the
+   head's wash deepens with it. */
 .rs-learn .rs-learn-spell-tile.is-held {
-  border-left-color: #d9a13b;
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(var(--rs-school-rgb), 0.22),
+      rgba(var(--rs-school-rgb), 0) 55%
+    ),
+    rgba(0, 0, 0, 0.45);
+  border-color: rgba(var(--rs-school-rgb), 0.95);
 }
 
 /* The rank bar: five notches across the card's head, lit up to the spell's
@@ -16347,9 +16397,44 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
    and brain marks in the corner, which stay pinned where they were. */
 
 
+/* The head row: the icon on the left, the price panel in the dead space that
+   used to sit to its right. The book and brain marks hang 44px off the icon's
+   left edge, so that much is reserved here — it keeps them from being clipped
+   and lets the icon and the panel centre as one block. */
+.rs-learn .rs-learn-spell-tile-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding-left: 44px;
+}
+
+/* The price panel: what the spell asks of the caster, stacked down the column
+   beside the icon rather than strung out under it. The plates stretch to the
+   widest of them, so the labels rule up on the left and the numbers on the
+   right, and the panel is as wide as its own text at any text scale. */
+.rs-learn .rs-learn-spell-tile-keys {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 4px;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+/* Strung out in a row a plate hugs its text; stacked in the panel it holds
+   the label and the number apart at the two ends. */
+.rs-learn .rs-learn-spell-tile-keys .rs-learn-spell-tile-cell {
+  justify-content: space-between;
+  gap: 8px;
+}
+
 /* The icon's own column: the icon, and the damage footnote sat under it. Its
    width is the icon's width, so the footnote never widens the head row. */
 .rs-learn .rs-learn-spell-tile-iconwrap {
+  position: relative;
   flex: 0 0 auto;
   display: flex;
   flex-direction: column;
@@ -16365,7 +16450,7 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   max-width: none;
   object-fit: cover;
   padding: 0;
-  border: 1px solid #514226;
+  border: 1px solid rgba(var(--rs-school-rgb), 0.55);
   border-radius: 0;
   background: #14120d;
 }
@@ -16418,17 +16503,21 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   gap: 5px;
   min-width: 0;
   padding: 2px 7px;
-  border: 1px solid #3b3226;
+  border: 1px solid rgba(var(--rs-school-rgb), 0.45);
   border-radius: 0;
   background:
-    linear-gradient(to bottom, rgba(81, 66, 38, 0.28), rgba(12, 12, 11, 0.6)),
+    linear-gradient(
+      to bottom,
+      rgba(var(--rs-school-rgb), 0.3),
+      rgba(12, 12, 11, 0.6)
+    ),
     url(../ui/headertexture.jpg);
   box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.6);
   line-height: 1.3;
 }
 
 .rs-learn .rs-learn-spell-tile.is-held .rs-learn-spell-tile-cell {
-  border-color: #514226;
+  border-color: rgba(var(--rs-school-rgb), 0.8);
 }
 
 /* Concentration and Sustained carry no value, so their plate is the one word
@@ -16494,6 +16583,9 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
    types joined by words do not fit 120px on one line. */
 .rs-learn .rs-learn-spell-tile-dmg {
   width: 100%;
+  /* Held open even when the spell deals nothing, so the tag block below starts
+     at the same height on every card in a row. */
+  min-height: calc(11px * var(--rs-learn-text));
   text-align: center;
   font-family: Georgia, "Times New Roman", serif;
   font-size: calc(8.5px * var(--rs-learn-text));
@@ -16559,17 +16651,19 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   height: auto;
   min-height: 0;
   margin: 4px 0 0;
-  padding: 2px 8px;
+  padding: 1px 8px;
   border: 1px solid #3b3226;
-  border-radius: 0;
+  /* Rounded by request, and the one rounded thing on the sheet: it is a
+     transient control that fades in over the card, not part of the plate. */
+  border-radius: 999px;
   background:
     linear-gradient(to bottom, rgba(81, 66, 38, 0.28), rgba(12, 12, 11, 0.6)),
     url(../ui/headertexture.jpg);
   box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.6);
   font-family: Georgia, "Times New Roman", serif;
-  font-size: calc(9.5px * var(--rs-learn-text));
-  line-height: calc(13px * var(--rs-learn-text));
-  letter-spacing: 0.08em;
+  font-size: calc(8.5px * var(--rs-learn-text));
+  line-height: calc(11px * var(--rs-learn-text));
+  letter-spacing: 0.07em;
   text-transform: uppercase;
   color: #6f675a;
   cursor: pointer;
@@ -16580,19 +16674,33 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   border-color: #9c7b45;
 }
 
-/* The plate keeps its place in the layout but stays out of sight until the
-   card is hovered, so a page of cards is not a page of buttons. `visibility`
-   rather than `display`: the space is already reserved, so the card does not
-   jump as the pointer crosses it. `focus-within` keeps it reachable by
-   keyboard, which a hover-only control otherwise would not be. */
+/* The pill holds its place in the layout but fades up only while the card is
+   hovered, so a page of cards is not a page of buttons. Opacity rather than
+   `visibility` or `display`: it is the part that can be eased, the space is
+   reserved either way so the card never jumps, and `pointer-events` keeps a
+   fully faded pill from catching a click. `focus-within` keeps it reachable
+   by keyboard, which a hover-only control otherwise would not be. */
 .rs-learn .rs-learn-spell-tile.is-clipped .rs-learn-spell-tile-more {
   display: inline-block;
-  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 220ms ease,
+    color 140ms ease,
+    border-color 140ms ease;
 }
 
 .rs-learn .rs-learn-spell-tile.is-clipped:hover .rs-learn-spell-tile-more,
 .rs-learn .rs-learn-spell-tile.is-clipped:focus-within .rs-learn-spell-tile-more {
-  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Someone who asks the OS for less motion gets the pill without the fade. */
+@media (prefers-reduced-motion: reduce) {
+  .rs-learn .rs-learn-spell-tile.is-clipped .rs-learn-spell-tile-more {
+    transition: none;
+  }
 }
 
 /* Both labels ship in the markup; the card's state picks the one that fits. */
@@ -16608,14 +16716,17 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   display: inline;
 }
 
-/* The two marks: the book (written) and the brain (memorised). Gold when lit,
-   grey when not; only a mark that does something answers the pointer. */
+/* The two marks: the grimoire (written) and the brain (memorised), as round
+   art beside the card's icon. Anchored to the icon rather than to the card, so
+   a title that runs to two lines carries them down with it. Full colour means
+   true, grey means not; only a mark that does something answers the pointer. */
 .rs-learn .rs-learn-spell-tile-marks {
   position: absolute;
-  top: 12px;
-  right: 6px;
+  left: -44px;
+  top: 6px;
   display: flex;
-  gap: 2px;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .rs-learn .rs-learn-spell-mark {
@@ -16624,19 +16735,47 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
-  width: 18px;
-  height: 18px;
+  width: 34px;
+  height: 34px;
   min-height: 0;
   margin: 0;
   padding: 0;
-  border: none;
-  border-radius: 0;
-  background: none;
-  box-shadow: none;
-  font-size: 12px;
-  line-height: 18px;
-  color: #555;
+  overflow: visible;
+  border: 1px solid rgba(var(--rs-school-rgb), 0.55);
+  border-radius: 50%;
+  background: #14120d;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.8);
+  color: #b7ac97;
   cursor: default;
+}
+
+/* Wild magic carries only the sealed brain, so the one mark sits centred
+   against the icon instead of hanging from the top of the pair. */
+.rs-learn .rs-learn-spell-tile-marks.is-single {
+  top: 0;
+  bottom: 0;
+  justify-content: center;
+}
+
+.rs-learn .rs-learn-spell-mark img {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  /* Off: the art drained to grey. On: it comes up in full colour. */
+  filter: grayscale(1) brightness(0.45);
+  transition: filter 180ms ease;
+}
+
+.rs-learn .rs-learn-spell-mark.is-lit img {
+  filter: none;
+}
+
+.rs-learn .rs-learn-spell-mark.is-lit {
+  border-color: rgba(var(--rs-school-rgb), 0.95);
 }
 
 .rs-learn .rs-learn-spell-mark[data-action] {
@@ -16644,16 +16783,16 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
 }
 
 .rs-learn .rs-learn-spell-mark[data-action]:hover {
-  color: #f0d7aa;
+  border-color: #f0d7aa;
 }
 
-.rs-learn .rs-learn-spell-mark.is-lit {
-  color: #d9a13b;
+.rs-learn .rs-learn-spell-mark[data-action]:hover img {
+  filter: grayscale(0.2) brightness(0.9);
 }
 
-/* Written in another grimoire: the outlined book, a shade above unwritten. */
-.rs-learn .rs-learn-spell-mark.is-elsewhere {
-  color: #8a8175;
+/* Written in another grimoire: part way back, a shade above unwritten. */
+.rs-learn .rs-learn-spell-mark.is-elsewhere img {
+  filter: grayscale(0.55) brightness(0.75);
 }
 
 /* Wild magic's seal on the memory mark. */

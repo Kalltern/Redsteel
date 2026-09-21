@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/unholy/hand-marked-pink.webp",
   "system": {
-    "description": "Grants +2 to Speed Tests. Requires active Shadowform, which is consumed when this spell is cast to negate all Damage and move 1 hex in any direction. Can be cast as a Reaction only if the caster is attacked. Corruption +6",
+    "description": "Grants +2 to Speed Tests. Requires active Shadowform, which is consumed when this spell is cast to negate all Damage and move 1 hex in any direction. Can be cast as a Reaction only if the caster is attacked.",
     "options": [
       "divine",
       "magic"
@@ -66,9 +66,9 @@
     ],
     "resources": [
       {
-        "mode": "",
-        "amount": "",
-        "type": ""
+        "type": "Corruption",
+        "mode": "add",
+        "amount": 6
       }
     ],
     "resourceOptions": {

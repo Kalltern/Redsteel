@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/unholy/orb-contained-pink.webp",
   "system": {
-    "description": "<p>Creates a barely visible trap on an unoccupied hex (must not be adjacent to another trap) for 15 minutes.</p><hr /><p>Causing Fear for three rounds to anyone who enters the hex. <br />Corruption +4<br /><br />In case of trap trigger, roll this spell manually for 0 mana cost and disregard the channeling test.</p>",
+    "description": "<p>Creates a barely visible trap on an unoccupied hex (must not be adjacent to another trap) for 15 minutes.</p><hr /><p>Causing Fear for three rounds to anyone who enters the hex. <br /><br />In case of trap trigger, roll this spell manually for 0 mana cost and disregard the channeling test.</p>",
     "options": [
       "divine",
       "magic"

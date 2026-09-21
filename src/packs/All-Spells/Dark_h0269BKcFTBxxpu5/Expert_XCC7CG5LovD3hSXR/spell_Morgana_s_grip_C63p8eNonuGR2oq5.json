@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/unholy/hand-grasping-green.webp",
   "system": {
-    "description": "Deals 2d6 + {{math spellPower \"/\" 2}} damage per round to one target and forces a vs test of caster's Will against target's Constitution (Pain) test each round. On caster's success, the target is Stunned for one round. Corruption +4. Ignores Armor.",
+    "description": "Deals 2d6 + {{math spellPower \"/\" 2}} damage per round to one target and forces a vs test of caster's Will against target's Constitution (Pain) test each round. On caster's success, the target is Stunned for one round. Ignores Armor.",
     "options": [
       "divine",
       "magic"

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/death/undead-skeleton-fire-green.webp",
   "system": {
-    "description": "<p>Animates a suitable corpse into an undead with 25 Health. It can move one hex per round and always has a set Margin of Success for Dodge -1. Once per round, it may use the effect of Death rattle, including as an Opportunity Attack triggered by movement. The undead lasts for {{math spellPower \"*\" 1}} minutes or until destroyed. Corruption +2.</p>",
+    "description": "<p>Animates a suitable corpse into an undead with 25 Health. It can move one hex per round and always has a set Margin of Success for Dodge -1. Once per round, it may use the effect of Death rattle, including as an Opportunity Attack triggered by movement. The undead lasts for {{math spellPower \"*\" 1}} minutes or until destroyed.</p>",
     "options": [
       "divine",
       "magic"

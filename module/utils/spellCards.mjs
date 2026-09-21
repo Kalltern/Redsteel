@@ -7,6 +7,7 @@
  */
 
 import { getSpellPower } from "./spellPower.mjs";
+import { normalizeResourceKey, resourceLabel } from "./itemResources.mjs";
 
 /**
  * Matches a spell-power placeholder in stored description prose, in any of the
@@ -198,6 +199,41 @@ function pill(key, labelKey, value, always = false, positive) {
 }
 
 /**
+ * What a cast takes from the caster besides its mana, as pills: the
+ * Corruption a Dark spell heaps on, the Mind a Spirit spell burns, the Health
+ * Remove corruption pays with. The pack keeps these on `system.resources` —
+ * the item sheet writes them as an object keyed "0", "1", older data as an
+ * array, and a compendium index hands over whichever shape was stored.
+ *
+ * A "drain" reads with a minus and an "add" with a plus: Corruption rising is
+ * the price, Corruption falling is the point of Remove corruption. The blank
+ * rows the sheet keeps for the next entry carry no type and are skipped.
+ *
+ * @param {object|Array|null} resources  An item's `system.resources`.
+ * @returns {object[]} Pills, in the order the item stores them.
+ */
+function spellResourcePills(resources) {
+  const list = Array.isArray(resources)
+    ? resources
+    : resources && typeof resources === "object"
+      ? Object.values(resources)
+      : [];
+  const pills = [];
+  for (const res of list) {
+    const key = normalizeResourceKey(res?.type);
+    const amount = Number(res?.amount);
+    if (!key || !amount || !Number.isFinite(amount)) continue;
+    const sign = String(res?.mode ?? "").toLowerCase() === "drain" ? "-" : "+";
+    pills.push({
+      key: `resource-${key}`,
+      label: resourceLabel(res.type),
+      value: `${sign}${Math.abs(amount)}`,
+    });
+  }
+  return pills;
+}
+
+/**
  * The strip of stat pills for one spell, miracle or ability.
  *
  * Split out of {@link buildSpellCard} so a caller with no Item in hand can
@@ -230,6 +266,16 @@ export function buildSpellPills(system = {}, kind = "spell") {
       pill("cost", "REDSTEEL.Item.Spell.FIELDS.cost.label", system.cost),
       pill("perRound", "REDSTEEL.Item.Spell.FIELDS.perRound.label", system.perRound),
       pill("actionCost", "REDSTEEL.Item.Spell.FIELDS.actionCost.label", display),
+    );
+    // What the cast takes on top of the mana: the Corruption a Dark spell
+    // heaps on, chiefly. `system.resources` already drives the cast path
+    // (deductMana in magicSkillBonuses.mjs), and the number used to be
+    // repeated in the prose as well — it now lives on the resource alone
+    // (user ruling 2026-09-21), so the card has to print it. It stands with
+    // the costs, before the pills that describe the spell rather than price
+    // it.
+    pills.push(...spellResourcePills(system.resources));
+    pills.push(
       pill(
         "concentration",
         "REDSTEEL.Actor.Spells.Concentration.Label",

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/death/hand-undead-skeleton-fire-pink.webp",
   "system": {
-    "description": "Marks the souls of targets in a 4.5m area. Upon death, there's a 50% chance the soul is trapped in a suitable vessel. Corruption +4",
+    "description": "Marks the souls of targets in a 4.5m area. Upon death, there's a 50% chance the soul is trapped in a suitable vessel.",
     "options": [
       "divine",
       "magic"

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/unholy/projectile-smoke-trail-pink.webp",
   "system": {
-    "description": "Deals 6d6 + {{math spellPower \"+\" 1}} damage to one target. Corruption +4",
+    "description": "Deals 6d6 + {{math spellPower \"+\" 1}} damage to one target.",
     "options": [
       "divine",
       "magic"
