@@ -891,6 +891,13 @@ async function applyLongRest(actor, { eatRations = false, overrides = null } = {
   // ─── Rerolls ─── restore every feature reroll to ready.
   const rerollsRestored = plan.rerolls ? await resetActorRerolls(actor) : false;
 
+  // ─── Scrolls ─── a scroll this character failed to make sense of yesterday
+  // can be studied again today (see utils/spellScrolls.mjs). Cleared wholesale
+  // the way firstAidProgress is; the flag only ever holds today's failures.
+  if (actor.flags?.redsteel?.scrollIdentifyFails) {
+    await actor.unsetFlag("redsteel", "scrollIdentifyFails");
+  }
+
   // ─── Food ─── only when the party is camping rather than paying an innkeeper.
   const meal =
     plan.rations !== null && plan.rations > 0

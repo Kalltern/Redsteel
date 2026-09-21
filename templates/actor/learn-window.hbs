@@ -14,10 +14,8 @@
         with a large portrait in the centre. Left of it (the GM's ledger fields
         are hidden for now, see below), the points left to spend, with
         the picker's controls under them; right of it, name, race and level and
-        the seven attributes, with the close button in the corner. The portrait
-        also goes to the band as a CSS variable, so a faded copy of it lies
-        behind it. --}}
-  <header class="rs-learn-hero" style="{{hero.portraitStyle}}">
+        the seven attributes, with the close button in the corner. --}}
+  <header class="rs-learn-hero">
 
     <div class="rs-learn-hero-side is-left">
 
@@ -1041,12 +1039,49 @@
                     The title is padded clear of the corner marks on BOTH
                     sides, so it stays optically centred. --}}
               <span class="rs-learn-spell-tile-name">{{this.name}}</span>
-              {{!-- The head row: the icon on the left with its marks hanging
-                    off it, and the price panel in the dead space to its
-                    right. Everything in the panel is what the spell takes
-                    from the caster, so the reader gets the bill without
-                    reading the prose (user ruling 2026-09-21). --}}
+              {{!-- The head row, in three columns: the marks, the icon dead
+                    centre under the title, and the price panel. Everything in
+                    the panel is what the spell takes from the caster, so the
+                    reader gets the bill without reading the prose (user
+                    ruling 2026-09-21). --}}
               <div class="rs-learn-spell-tile-head">
+                {{!-- The grimoire and memory marks. They live in the head
+                      row's empty left column rather than hanging off the
+                      icon, so they sit centred in the gutter between the
+                      card's edge and the icon (user ruling 2026-09-21). --}}
+                <div class="rs-learn-spell-tile-marks {{#if this.innate}}is-single{{/if}}">
+                  {{!-- Book mark: lit when in the open grimoire, part-way back when
+                        it is written in another one, grey when written nowhere.
+                        Wild magic is never written down, so it has none at all
+                        (user ruling 2026-09-20). --}}
+                  {{#unless this.innate}}
+                  <button type="button"
+                          class="rs-learn-spell-mark is-book {{#if this.inActiveBook}}is-lit{{else if this.writtenElsewhere}}is-elsewhere{{/if}}"
+                          {{#if @root.editable}}{{#if this.canWrite}}data-action="writeSpell" data-uuid="{{this.uuid}}"{{else if this.canErase}}data-action="eraseSpell" data-uuid="{{this.uuid}}"{{/if}}{{/if}}
+                          data-tooltip="{{this.bookTooltip}}" data-tooltip-direction="UP"
+                          aria-label="{{this.bookTooltip}}">
+                    <img src="{{@root.spells.bookIcon}}" alt="">
+                  </button>
+                  {{/unless}}
+                  {{!-- Memory mark: lit when memorised. Wild magic is lit and
+                        sealed, and cannot be clicked. --}}
+                  {{#if this.innate}}
+                  <span class="rs-learn-spell-mark is-memory is-lit is-innate"
+                        data-tooltip="{{this.memoriseTooltip}}" data-tooltip-direction="UP"
+                        aria-label="{{this.memoriseTooltip}}">
+                    <img src="{{@root.spells.memoryIcon}}" alt="">
+                    <i class="fas fa-lock rs-learn-spell-mark-seal"></i>
+                  </span>
+                  {{else}}
+                  <button type="button"
+                          class="rs-learn-spell-mark is-memory {{#if (eq this.state "memorised")}}is-lit{{/if}}"
+                          {{#if @root.editable}}{{#if this.canMemorise}}data-action="memoriseSpell" data-uuid="{{this.uuid}}"{{else if this.canForget}}data-action="forgetSpell" data-uuid="{{this.uuid}}"{{/if}}{{/if}}
+                          data-tooltip="{{this.memoriseTooltip}}" data-tooltip-direction="UP"
+                          aria-label="{{this.memoriseTooltip}}">
+                    <img src="{{@root.spells.memoryIcon}}" alt="">
+                  </button>
+                  {{/if}}
+                </div>
                 <div class="rs-learn-spell-tile-iconwrap">
                   <img class="rs-learn-spell-tile-icon" src="{{this.img}}" alt="{{this.name}}">
                   {{!-- What the spell deals, as fine print under the icon. The
@@ -1054,39 +1089,6 @@
                         damage, so the tags below it start at the same height on
                         every card (user ruling 2026-09-20). --}}
                   <div class="rs-learn-spell-tile-dmg">{{this.tileDmg}}</div>
-                  <div class="rs-learn-spell-tile-marks {{#if this.innate}}is-single{{/if}}">
-                    {{!-- Book mark: lit when in the open grimoire, part-way back when
-                          it is written in another one, grey when written nowhere.
-                          Wild magic is never written down, so it has none at all
-                          (user ruling 2026-09-20). --}}
-                    {{#unless this.innate}}
-                    <button type="button"
-                            class="rs-learn-spell-mark is-book {{#if this.inActiveBook}}is-lit{{else if this.writtenElsewhere}}is-elsewhere{{/if}}"
-                            {{#if @root.editable}}{{#if this.canWrite}}data-action="writeSpell" data-uuid="{{this.uuid}}"{{else if this.canErase}}data-action="eraseSpell" data-uuid="{{this.uuid}}"{{/if}}{{/if}}
-                            data-tooltip="{{this.bookTooltip}}" data-tooltip-direction="UP"
-                            aria-label="{{this.bookTooltip}}">
-                      <img src="{{@root.spells.bookIcon}}" alt="">
-                    </button>
-                    {{/unless}}
-                    {{!-- Memory mark: lit when memorised. Wild magic is lit and
-                          sealed, and cannot be clicked. --}}
-                    {{#if this.innate}}
-                    <span class="rs-learn-spell-mark is-memory is-lit is-innate"
-                          data-tooltip="{{this.memoriseTooltip}}" data-tooltip-direction="UP"
-                          aria-label="{{this.memoriseTooltip}}">
-                      <img src="{{@root.spells.memoryIcon}}" alt="">
-                      <i class="fas fa-lock rs-learn-spell-mark-seal"></i>
-                    </span>
-                    {{else}}
-                    <button type="button"
-                            class="rs-learn-spell-mark is-memory {{#if (eq this.state "memorised")}}is-lit{{/if}}"
-                            {{#if @root.editable}}{{#if this.canMemorise}}data-action="memoriseSpell" data-uuid="{{this.uuid}}"{{else if this.canForget}}data-action="forgetSpell" data-uuid="{{this.uuid}}"{{/if}}{{/if}}
-                            data-tooltip="{{this.memoriseTooltip}}" data-tooltip-direction="UP"
-                            aria-label="{{this.memoriseTooltip}}">
-                      <img src="{{@root.spells.memoryIcon}}" alt="">
-                    </button>
-                    {{/if}}
-                  </div>
                 </div>
                 {{!-- The price panel: Difficulty, cost, action cost, then the
                       per-round upkeep and the Corruption or Mind the cast heaps
@@ -1101,15 +1103,19 @@
                   {{/each}}
                 </div>
               </div>
-              {{!-- What the spell reaches and how it behaves, running across
-                    under the head. The list is as long as the spell is
-                    complicated: a tag with nothing to say is left out. --}}
+              {{!-- What the spell reaches and how it behaves: one line of
+                    fine print under the head, the entries divided by middots
+                    rather than each struck on its own plate (user ruling
+                    2026-09-21). The plates belong to the price panel, where a
+                    number needs a frame around it; this reads as a caption.
+                    The line is as long as the spell is complicated: an entry
+                    with nothing to say is left out, and the class carries its
+                    own wording instead of a label. The dividers are drawn by
+                    the stylesheet, so nothing here has to know which entry
+                    comes last. --}}
               <div class="rs-learn-spell-tile-stats">
                 {{#each this.tileStats}}
-                <span class="rs-learn-spell-tile-cell" data-cell="{{this.key}}">
-                  <span class="rs-learn-spell-tile-cell-label">{{this.label}}</span>
-                  {{#if this.value}}<span class="rs-learn-spell-tile-cell-value">{{this.value}}</span>{{/if}}
-                </span>
+                <span class="rs-learn-spell-tile-stat" data-stat="{{this.key}}">{{#if this.label}}<span class="rs-learn-spell-tile-stat-label">{{this.label}}</span> {{/if}}{{#if this.value}}<span class="rs-learn-spell-tile-stat-value">{{this.value}}</span>{{/if}}</span>
                 {{/each}}
               </div>
               {{!-- The spell's own prose, under the information shortcuts.

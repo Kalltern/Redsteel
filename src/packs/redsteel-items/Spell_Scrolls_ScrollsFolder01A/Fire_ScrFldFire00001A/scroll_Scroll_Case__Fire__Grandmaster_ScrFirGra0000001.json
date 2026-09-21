@@ -1,0 +1,36 @@
+{
+  "folder": "ScrFldFire00001A",
+  "name": "Scroll Case: Fire, Grandmaster",
+  "type": "scroll",
+  "img": "icons/sundries/scrolls/scroll-runed-brown-purple.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.ScrollCaseFireGrandmaster.name",
+    "description": "<p>A bound case of grandmaster scrolls from the School of Fire. Every sheet inside carries one spell, and the sigils stay unread until somebody sits down and studies them.</p>",
+    "quantity": 1,
+    "school": "fire",
+    "rank": "grandmaster",
+    "spell": "",
+    "identifyDifficulty": -30,
+    "writeDifficulty": -40,
+    "castBonus": 60
+  },
+  "effects": [],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.365",
+    "systemId": "redsteel",
+    "systemVersion": "0.12.0",
+    "createdTime": 1786000000000,
+    "modifiedTime": 1786000000000,
+    "lastModifiedBy": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "_id": "ScrFirGra0000001",
+  "sort": 400000,
+  "_key": "!items!ScrFirGra0000001"
+}

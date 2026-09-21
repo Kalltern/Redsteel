@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/creatures/invertebrates/wasp-swarm-movement.webp",
   "system": {
-    "description": "<p>Creates a 1.5m area of swarming insects for {{math spellPower \"/\" 2}} turns. Deals 2d6 Physical Damage per turn and forces a Nerve test for panic each turn. Applies a 10% penalty to Success Rolls, -1 Reaction, prevents Aiming, and imposes a 50% penalty to ranged attacks and Perception tests. Ignores armor. The swarm can be moved up to 3 hexes per turn as a free action. Effect of this spell can be neutralised with Repellent ointment or relevant spells such as Fiery aura</p>",
+    "description": "<p>Creates a 1.5m area of swarming insects for {{math spellPower \"/\" 2}} turns. Deals 2d6 Physical Damage per turn and forces a Nerve test for panic each turn. Applies a 10% penalty to Success Rolls, -1 Reaction, prevents Aiming, and imposes a 50% penalty to ranged attacks and Perception tests. The swarm can be moved up to 3 hexes per turn as a free action. Effect of this spell can be neutralised with Repellent ointment or relevant spells such as Fiery aura</p>",
     "options": [
       "divine",
       "magic"
@@ -114,7 +114,7 @@
       "diceSize": "6",
       "diceBonus": ""
     },
-    "penetration": 0,
+    "penetration": 100,
     "dmgType1": "",
     "bool2": "",
     "dmgType2": "",

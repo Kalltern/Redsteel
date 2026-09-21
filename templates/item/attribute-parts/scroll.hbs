@@ -1,0 +1,148 @@
+{{! Attributes Tab — Spell Scroll }}
+{{! Two shapes in one part. A master scroll (system.spell empty) is a case
+    holding every scroll of one school and rank: it shows the school/rank
+    selects and the pool the case can hand out. A concrete scroll is one
+    readable sheet bound to a single spell, and only names that spell once the
+    reader has identified it. }}
+<section
+  class='tab attributes {{tab.cssClass}}'
+  data-group='primary'
+  data-tab='attributes'
+>
+
+  {{#if isMaster}}
+
+    <div class="grid grid-2col">
+      <div class="grid-span-1">
+        <label for="scroll-school">{{localize "REDSTEEL.Scroll.Field.School"}}:</label>
+        <select name="system.school" id="scroll-school">
+          {{#each schoolOptions as |choice|}}
+            <option value="{{choice.key}}" {{#if choice.selected}}selected{{/if}}>{{choice.label}}</option>
+          {{/each}}
+        </select>
+      </div>
+
+      <div class="grid-span-1">
+        <label for="scroll-rank">{{localize "REDSTEEL.Scroll.Field.Rank"}}:</label>
+        <select name="system.rank" id="scroll-rank">
+          {{#each rankOptions as |choice|}}
+            <option value="{{choice.key}}" {{#if choice.selected}}selected{{/if}}>{{choice.label}}</option>
+          {{/each}}
+        </select>
+      </div>
+
+      <div class="grid-span-1">
+        <label for="scroll-identify">{{localize "REDSTEEL.Scroll.Field.IdentifyDifficulty"}}:</label>
+        <input
+          type="number"
+          name="system.identifyDifficulty"
+          id="scroll-identify"
+          value="{{system.identifyDifficulty}}"
+          data-dtype="Number"
+        />
+      </div>
+
+      <div class="grid-span-1">
+        <label for="scroll-write">{{localize "REDSTEEL.Scroll.Field.WriteDifficulty"}}:</label>
+        <input
+          type="number"
+          name="system.writeDifficulty"
+          id="scroll-write"
+          value="{{system.writeDifficulty}}"
+          data-dtype="Number"
+        />
+      </div>
+
+      <div class="grid-span-1">
+        <label for="scroll-cast-bonus">{{localize "REDSTEEL.Scroll.Field.CastBonus"}}:</label>
+        <input
+          type="number"
+          name="system.castBonus"
+          id="scroll-cast-bonus"
+          value="{{system.castBonus}}"
+          data-dtype="Number"
+        />
+        <p class="hint">{{localize "REDSTEEL.Scroll.Field.CastBonusHint"}}</p>
+      </div>
+    </div>
+
+    <h3 class="spellbook-heading">
+      {{localize "REDSTEEL.Scroll.Sheet.Pool"}}
+    </h3>
+    <p class="hint">{{localize "REDSTEEL.Scroll.MasterHint"}}</p>
+
+    <div class="rs-scroll-pool">
+      {{#each pool as |entry|}}
+        <div class="rs-scroll-pool-row">
+          {{#if entry.img}}<img src="{{entry.img}}" width="20" height="20" />{{/if}}
+          <span class="rs-scroll-pool-name"
+                data-tt-kind="spellCardUuid" data-tt-uuid="{{entry.uuid}}">{{entry.name}}</span>
+          {{#if @root.canTakeOut}}
+            <button type="button" class="rs-scroll-take"
+                    data-action="takeOutScroll" data-uuid="{{entry.uuid}}">
+              {{localize "REDSTEEL.Scroll.Sheet.TakeOut"}}
+            </button>
+          {{/if}}
+        </div>
+      {{else}}
+        <p class="hint">{{localize "REDSTEEL.Scroll.Sheet.Empty"}}</p>
+      {{/each}}
+    </div>
+
+  {{else}}
+
+    <label>{{localize "REDSTEEL.Scroll.Field.Spell"}}:</label>
+    <div class="rs-scroll-pool">
+      <div class="rs-scroll-pool-row">
+        {{#if identified}}
+          {{#if spellImg}}<img src="{{spellImg}}" width="20" height="20" />{{/if}}
+          <span class="rs-scroll-pool-name"
+                data-tt-kind="spellCardUuid" data-tt-uuid="{{system.spell}}">{{spellName}}</span>
+        {{else}}
+          <span class="rs-scroll-pool-name">{{localize "REDSTEEL.Scroll.Unidentified"}}</span>
+        {{/if}}
+      </div>
+    </div>
+    {{#unless identified}}
+      <p class="hint">{{localize "REDSTEEL.Scroll.Window.UnknownHint"}}</p>
+    {{/unless}}
+
+    <div class="grid grid-2col">
+      <div class="grid-span-1">
+        <label for="scroll-identify">{{localize "REDSTEEL.Scroll.Field.IdentifyDifficulty"}}:</label>
+        <input
+          type="number"
+          name="system.identifyDifficulty"
+          id="scroll-identify"
+          value="{{system.identifyDifficulty}}"
+          data-dtype="Number"
+        />
+      </div>
+
+      <div class="grid-span-1">
+        <label for="scroll-write">{{localize "REDSTEEL.Scroll.Field.WriteDifficulty"}}:</label>
+        <input
+          type="number"
+          name="system.writeDifficulty"
+          id="scroll-write"
+          value="{{system.writeDifficulty}}"
+          data-dtype="Number"
+        />
+      </div>
+
+      <div class="grid-span-1">
+        <label for="scroll-cast-bonus">{{localize "REDSTEEL.Scroll.Field.CastBonus"}}:</label>
+        <input
+          type="number"
+          name="system.castBonus"
+          id="scroll-cast-bonus"
+          value="{{system.castBonus}}"
+          data-dtype="Number"
+        />
+        <p class="hint">{{localize "REDSTEEL.Scroll.Field.CastBonusHint"}}</p>
+      </div>
+    </div>
+
+  {{/if}}
+
+</section>

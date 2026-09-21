@@ -527,10 +527,17 @@ export async function syncSpellbooks(actor) {
 /**
  * Write a spell into one of the character's books.
  *
+ * `ignoreRank` lets a spell above the character's school rank be written
+ * anyway. Only spell scrolls pass it (utils/spellScrolls.mjs): a scroll is a
+ * shortcut past the teacher, not past the school, so the entry lands in the
+ * book and syncSpellbooks simply declines to project it onto the actor until
+ * the rank catches up. The Learn window never passes it, so ordinary learning
+ * is gated exactly as it always was.
+ *
  * @returns {Promise<{ok: boolean, reason: string|null, required?: number}>}
  *   `reason` is a lang key suffix under REDSTEEL.Learn.Spells.Warn.
  */
-export async function writeSpell(actor, book, uuid) {
+export async function writeSpell(actor, book, uuid, { ignoreRank = false } = {}) {
   if (!actor?.isOwner || book?.type !== "spellbook") {
     return { ok: false, reason: "noBook" };
   }
@@ -538,7 +545,7 @@ export async function writeSpell(actor, book, uuid) {
   if (!source || source.type !== "spell") return { ok: false, reason: "notFound" };
 
   const gate = checkSpellRank(actor, source.system?.type, source.system?.rank);
-  if (!gate.ok && !game.user.isGM) {
+  if (!gate.ok && !ignoreRank && !game.user.isGM) {
     return { ok: false, reason: "rank", required: gate.required };
   }
 

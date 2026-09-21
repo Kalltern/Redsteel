@@ -4,7 +4,7 @@
   "img": "icons/magic/water/barrier-ice-wall-explosion.webp",
   "system": {
     "localizationKey": "",
-    "description": "<p>No requirement. Deals 1d4 damage per turn to everyone in a 3m area around the caster. Ignores armor.<br /><br />Not fully automated. Resolve damage per turn manually</p>",
+    "description": "<p>No requirement. Deals 1d4 damage per turn to everyone in a 3m area around the caster.<br /><br />Not fully automated. Resolve damage per turn manually</p>",
     "options": [
       "divine",
       "magic"

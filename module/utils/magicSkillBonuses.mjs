@@ -1470,8 +1470,12 @@ export async function finalizeRollsAndPostChat(
 
   const critDamageMapping = [0, 5, 5, 10, 20];
   const critBonusDamage = critDamageMapping[critScore] || 0;
-  const critBonusPenetration =
-    critDamageMapping[critScore] + spell.system.penetration;
+  // Coerced: `penetration` was only added to the spell schema in
+  // template.json on 2026-09-21, and a spell stored before that carries no
+  // key at all — the bare addition wrote NaN into the attack flag, which
+  // the apply path then read as the packet's penetration.
+  const spellPenetration = Number(spell.system.penetration) || 0;
+  const critBonusPenetration = critBonusDamage + spellPenetration;
   const actorCritBonus = Number(actor.system.critDamage) || 0;
   const critDamageTotal = critBonusDamage + actorCritBonus + damageTotal;
 
@@ -1592,7 +1596,7 @@ export async function finalizeRollsAndPostChat(
   `
     : "";
 
-  const hasPenetration = spell.system.penetration > 0;
+  const hasPenetration = spellPenetration > 0;
   // Critical Score is only meaningful on a critical success (not on failures)
   const hasCrit = (ignoreChanneling ? displayCritSuccess : critSuccess) === true;
   const showTable = hasPenetration || hasCrit;
@@ -1601,7 +1605,7 @@ export async function finalizeRollsAndPostChat(
     hasCrit ? "<th>Critical Score</th>" : "",
   ].join("");
   const values = [
-    hasPenetration ? `<td>${spell.system.penetration}</td>` : "",
+    hasPenetration ? `<td>${spellPenetration}</td>` : "",
     hasCrit
       ? `<td title="Crit range result ${critScoreResult}">[${critScore}]</td>`
       : "",
@@ -1690,7 +1694,7 @@ export async function finalizeRollsAndPostChat(
       damageProfile,
       normal: {
         damage: damageTotal,
-        penetration: spell.system.penetration,
+        penetration: spellPenetration,
       },
 
       effects: mechanicalEffects,

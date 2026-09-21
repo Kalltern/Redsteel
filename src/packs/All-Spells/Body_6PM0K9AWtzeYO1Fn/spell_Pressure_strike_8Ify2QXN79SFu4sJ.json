@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
-    "description": "Deals Magical + Crushing damage 1d8 + {{math spellPower \"/\" 2}} to one Target and triggers a Willpower Test (Bonus {{math spellPower \"*\" 2}}) vs. Target's Strength/Endurance. On success, pushes Target two hexes. On failure, pushes one hex. Ignores armor.",
+    "description": "Deals Magical + Crushing damage 1d8 + {{math spellPower \"/\" 2}} to one Target and triggers a Willpower Test (Bonus {{math spellPower \"*\" 2}}) vs. Target's Strength/Endurance. On success, pushes Target two hexes. On failure, pushes one hex.",
     "options": [
       "divine",
       "magic"

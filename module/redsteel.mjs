@@ -64,6 +64,7 @@ import {
 } from "./utils/abilityGrants.mjs";
 import { registerRaceGrants } from "./utils/raceGrants.mjs";
 import { registerSpellbookHooks } from "./utils/spellbook.mjs";
+import { registerScrollHooks } from "./utils/spellScrolls.mjs";
 import {
   registerCalendariaIntegration,
   scheduleRerollRefresh,
@@ -479,6 +480,7 @@ Hooks.once("init", function () {
   registerTemperamentSchools();
   registerRaceGrants();
   registerSpellbookHooks();
+  registerScrollHooks();
   registerCalendariaIntegration();
   registerCanvasZoom();
   registerDeadTokenAppearance();

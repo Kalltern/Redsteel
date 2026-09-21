@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/unholy/orb-stone-pink.webp",
   "system": {
-    "description": "<p>Deals damage equal to 1d6 + {{spellPower}} to a single target for two rounds. Ignores Armor.</p>",
+    "description": "<p>Deals damage equal to 1d6 + {{spellPower}} to a single target for two rounds.</p>",
     "options": [
       "divine",
       "magic"
@@ -102,7 +102,7 @@
       "diceSize": "0",
       "diceBonus": ""
     },
-    "penetration": 0,
+    "penetration": 100,
     "dmgType1": "magic",
     "bool2": "and",
     "dmgType2": "dark",

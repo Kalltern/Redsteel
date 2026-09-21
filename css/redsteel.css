@@ -12634,6 +12634,32 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   background-size: auto, auto, auto, auto, 512px 512px;
 }
 
+/* Every scrolling body in this window keeps the scrollbar's width reserved
+   whether it is scrolling or not.
+   Without it a tab whose content overflows is narrower than one that fits, by
+   the width of the bar, and the card grids inside reflow to match: switching
+   tabs, or filtering a list down until it stopped overflowing, shifted every
+   icon sideways (user report 2026-09-21). The gutter is held on the
+   inline-end edge alone, so the content box is simply a constant width rather
+   than padded on both sides.
+   Listed one by one rather than applied to everything: the two panels that
+   drop OUT of the window — the party menu and the lost-books archive — are
+   transient and narrow, and a permanent empty gutter down the side of them
+   would read as a mistake. `scrollbar-gutter` does nothing on an element that
+   does not scroll, so a body here that stops overflowing is unaffected. */
+.rs-learn .rs-learn-grid,
+.rs-learn .rs-learn-features-owned,
+.rs-learn .rs-learn-features-list,
+.rs-learn .rs-learn-family-columns,
+.rs-learn .rs-learn-language-panel,
+.rs-learn .rs-learn-spec-gallery,
+.rs-learn .rs-learn-spec-group,
+.rs-learn .rs-learn-spec-view-body,
+.rs-learn .rs-learn-roster-body,
+.rs-learn .rs-learn-picker {
+  scrollbar-gutter: stable;
+}
+
 /* -------- tab strip -------- */
 
 /* One long bar of blackened metal with the four headings engraved into it
@@ -12789,11 +12815,9 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
    beside it. Built from the sheet header's own parts rather than new styling:
    the bevelled portrait frame, Georgia lettering over a bronze underline,
    attribute colours on text only, Cambria lining figures, and the recessed
-   stat well. A faded, desaturated copy of the portrait lies behind it, handed
-   in from the template as --rs-learn-portrait. */
+   stat well. */
 .rs-learn .rs-learn-hero {
   position: relative;
-  isolation: isolate;
   display: grid;
   flex: 0 0 auto;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
@@ -12806,28 +12830,6 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
     url(../ui/headertexture.jpg);
   border-bottom: 2px solid #514226;
   box-shadow: inset 0 -14px 26px rgba(0, 0, 0, 0.45);
-}
-
-/* The ghost of the portrait: greyed, darkened, centred behind the portrait and
-   fading out to both sides, so it reads as part of the stone rather than as a
-   second picture. Isolation on the band keeps it above the band's own ground
-   and under everything else. */
-.rs-learn .rs-learn-hero::before {
-  content: "";
-  position: absolute;
-  inset: 0 auto 0 50%;
-  z-index: -1;
-  width: 60%;
-  transform: translateX(-50%);
-  background-image: var(--rs-learn-portrait, none);
-  background-size: cover;
-  background-position: center 22%;
-  background-repeat: no-repeat;
-  filter: grayscale(0.7) brightness(0.55);
-  opacity: 0.35;
-  -webkit-mask-image: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.55) 25%, #000 50%, rgba(0, 0, 0, 0.55) 75%, transparent);
-  mask-image: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.55) 25%, #000 50%, rgba(0, 0, 0, 0.55) 75%, transparent);
-  pointer-events: none;
 }
 
 /* The sheet header's raised frame bevel (.sheet-header .profile-img), in the
@@ -16322,6 +16324,15 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
    own prose full width under it, ten lines deep.
    Cards rule up into columns until one is clicked open, which is wanted. */
 .rs-learn .rs-learn-spell-tile {
+  /* One price plate's outer height, named so the panel's plates all come out
+     the same whatever they carry. It is the tallest line box a plate can hold
+     — the 12px value at the cell's own line-height of 1.3 — plus the 2px
+     padding on each edge and the 1px rule. The 9px label baseline-aligns
+     inside that box rather than adding to it. */
+  --rs-tile-cell-height: calc(15.6px * var(--rs-learn-text) + 6px);
+  /* The grimoire / memory marks' diameter. Named because the lone brain on a
+     wild-magic card is centred against the icon by arithmetic on it. */
+  --rs-tile-mark: 40px;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -16392,35 +16403,39 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   opacity: 0.85;
 }
 
-/* The head row: the icon column holds the left, everything that reads as text
-   sits in the column beside it. The text column is padded clear of the book
-   and brain marks in the corner, which stay pinned where they were. */
-
-
-/* The head row: the icon on the left, the price panel in the dead space that
-   used to sit to its right. The book and brain marks hang 44px off the icon's
-   left edge, so that much is reserved here — it keeps them from being clipped
-   and lets the icon and the panel centre as one block. */
+/* The head row, as three columns rather than a centred flex line: the marks,
+   the icon, the price panel. The icon is the middle column, so it hangs dead
+   centre under the title and the two 1fr columns either side of it are equal
+   by construction (user ruling 2026-09-21). Centring the icon AND the panel
+   as one block — which is what a flex row does — put the icon left of the
+   card's centre, under nothing.
+   Both 1fr columns come to about 116px on the narrowest card the roster grid
+   allows and about 137px on a wide one. That is room enough for the marks on
+   the left and for the widest plate on the right ("DIFFICULTY 25", roughly
+   110px), and an `fr` track cannot shrink under its content anyway: a plate
+   that outgrew its column would nudge the icon a pixel or two off centre
+   rather than spill over the card. */
 .rs-learn .rs-learn-spell-tile-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: start;
+  column-gap: 10px;
   width: 100%;
-  padding-left: 44px;
 }
 
 /* The price panel: what the spell asks of the caster, stacked down the column
-   beside the icon rather than strung out under it. The plates stretch to the
-   widest of them, so the labels rule up on the left and the numbers on the
-   right, and the panel is as wide as its own text at any text scale. */
+   beside the icon rather than strung out under it. It fills the right-hand
+   column, and the plates fill the panel, so the labels rule up on the left and
+   the numbers on the right. The column is narrower now that the icon is
+   centred — around 137px on a 443px card, against roughly 110px for the widest
+   plate ("DIFFICULTY 25") — so the plates have room to spare. */
 .rs-learn .rs-learn-spell-tile-keys {
+  grid-column: 3;
   display: flex;
   flex-direction: column;
   align-items: stretch;
   justify-content: flex-start;
   gap: 4px;
-  flex: 0 1 auto;
   min-width: 0;
 }
 
@@ -16432,8 +16447,11 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
 }
 
 /* The icon's own column: the icon, and the damage footnote sat under it. Its
-   width is the icon's width, so the footnote never widens the head row. */
+   width is the icon's width, so the footnote never widens the head row. It is
+   the middle of the head row's three columns, which is what puts it dead
+   centre under the title. */
 .rs-learn .rs-learn-spell-tile-iconwrap {
+  grid-column: 2;
   position: relative;
   flex: 0 0 auto;
   display: flex;
@@ -16467,9 +16485,13 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   -webkit-line-clamp: 2;
   overflow: hidden;
   width: 100%;
-  /* The book and brain marks sit in the top-right corner. Padding both
-     edges by the same amount keeps the title clear of them AND keeps it
-     optically centred on the card. */
+  /* Clearance for the lock in the top-left corner, matched on the right so
+     the title stays optically centred. It used to be clearance for the book
+     and brain marks, which were in the title's corners until they moved down
+     into the head row; the lock alone needs far less than this. Trimming it
+     is the cheap way to stop a long name wrapping to a second line and
+     pushing that one card's prose down — no name in the pack is over 42
+     characters. */
   padding: 0 44px;
   text-align: center;
   font-family: Georgia, "Times New Roman", serif;
@@ -16483,25 +16505,65 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   color: #f0d7aa;
 }
 
-/* What the spell costs and carries, as tags rather than a grid: the list is
-   as long as the spell is complicated, and a two-column grid left a ragged
-   half-row whenever the count came out odd (user ruling 2026-09-20). They
-   flow and wrap instead, each one struck on the same small engraved plate the
-   school and rank tags use, so nothing here is a rounded pill or a tint. */
+/* What the spell reaches and how it behaves, as one line of fine print rather
+   than a row of plates (user ruling 2026-09-21): a caption in the damage
+   footnote's own voice, its entries divided by middots. A plate is for a
+   number that needs a frame around it, and these are words — "support spell",
+   "ignores armor" — which read better run together than boxed one by one.
+   Two lines are held open whatever the spell carries, so a spell with a long
+   line and one with a short line start their prose at the same height. */
 .rs-learn .rs-learn-spell-tile-stats {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 4px;
   width: 100%;
-  margin-top: 5px;
+  min-height: calc(24px * var(--rs-learn-text));
+  margin-top: 6px;
+  text-align: center;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(9.5px * var(--rs-learn-text));
+  line-height: calc(12px * var(--rs-learn-text));
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #6f675a;
 }
 
+/* One entry. Held together as a unit so "8 hex (12 m)" is never split across
+   the line break; the break falls between entries instead, after a middot. */
+.rs-learn .rs-learn-spell-tile-stat {
+  white-space: nowrap;
+}
+
+/* The divider hangs off the end of the entry it follows, tied to it by a
+   no-break space, so a middot can never begin a line. The ordinary space that
+   the template's own line break leaves after it is where the line may wrap. */
+.rs-learn .rs-learn-spell-tile-stat:not(:last-child)::after {
+  content: " ·";
+  color: #514226;
+}
+
+.rs-learn .rs-learn-spell-tile-stat-value {
+  font-family: Cambria, "Times New Roman", Times, serif;
+  color: #8a8175;
+}
+
+.rs-learn .rs-learn-spell-tile.is-held .rs-learn-spell-tile-stats {
+  color: #8a8175;
+}
+
+.rs-learn .rs-learn-spell-tile.is-held .rs-learn-spell-tile-stat-value {
+  color: #d6bc8c;
+}
+
+/* One plate of the price panel. The tag line under the head used to be struck
+   on these too; it is fine print now, and a plate is reserved for what it is
+   good at — framing a number so the eye can find it. Struck on the same small
+   engraved plate the school and rank tags use, so nothing here is a rounded
+   pill or a tint. */
 .rs-learn .rs-learn-spell-tile-cell {
   display: inline-flex;
   align-items: baseline;
   gap: 5px;
   min-width: 0;
+  box-sizing: border-box;
+  height: var(--rs-tile-cell-height);
   padding: 2px 7px;
   border: 1px solid rgba(var(--rs-school-rgb), 0.45);
   border-radius: 0;
@@ -16520,8 +16582,6 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   border-color: rgba(var(--rs-school-rgb), 0.8);
 }
 
-/* Concentration and Sustained carry no value, so their plate is the one word
-   on its own and the label has to hold the plate open by itself. */
 .rs-learn .rs-learn-spell-tile-cell-label {
   white-space: nowrap;
   font-size: calc(9px * var(--rs-learn-text));
@@ -16583,9 +16643,17 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
    types joined by words do not fit 120px on one line. */
 .rs-learn .rs-learn-spell-tile-dmg {
   width: 100%;
-  /* Held open even when the spell deals nothing, so the tag block below starts
-     at the same height on every card in a row. */
-  min-height: calc(11px * var(--rs-learn-text));
+  /* Two lines, always, whatever the spell deals. One type fits on one line and
+     "physical or magic or lightning" needs two, and that single line of
+     difference pushed the rule and the whole prose block down on one card in a
+     row of four (user report 2026-09-21). Held open at two and clamped at two,
+     so nothing under it can be moved by what the spell happens to deal. The
+     longest label in the pack is 30 characters, which fits in the two. */
+  min-height: calc(22px * var(--rs-learn-text));
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
   text-align: center;
   font-family: Georgia, "Times New Roman", serif;
   font-size: calc(8.5px * var(--rs-learn-text));
@@ -16720,10 +16788,17 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
    art beside the card's icon. Anchored to the icon rather than to the card, so
    a title that runs to two lines carries them down with it. Full colour means
    true, grey means not; only a mark that does something answers the pointer. */
+/* The grimoire and memory marks. They used to hang 44px off the icon's left
+   edge, which put them hard against the card's border once the icon moved to
+   the centre. They are the head row's first column now, centred in it, so the
+   gutter is shared evenly either side of them at any card width (user ruling
+   2026-09-21). Aligned to the top of the icon, not the row: `margin-top`
+   matches the 6px drop they had before. */
 .rs-learn .rs-learn-spell-tile-marks {
-  position: absolute;
-  left: -44px;
-  top: 6px;
+  grid-column: 1;
+  justify-self: center;
+  align-self: start;
+  margin-top: 6px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -16735,8 +16810,8 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
-  width: 34px;
-  height: 34px;
+  width: var(--rs-tile-mark);
+  height: var(--rs-tile-mark);
   min-height: 0;
   margin: 0;
   padding: 0;
@@ -16750,11 +16825,12 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
 }
 
 /* Wild magic carries only the sealed brain, so the one mark sits centred
-   against the icon instead of hanging from the top of the pair. */
+   against the icon instead of hanging from the top of the pair. Centred
+   against the ICON's 120px, not the head row: the row is taller by the damage
+   footnote under the icon, and centring on that would drop the brain below
+   the picture it belongs to. */
 .rs-learn .rs-learn-spell-tile-marks.is-single {
-  top: 0;
-  bottom: 0;
-  justify-content: center;
+  margin-top: calc((120px - var(--rs-tile-mark)) / 2);
 }
 
 .rs-learn .rs-learn-spell-mark img {
@@ -16800,8 +16876,8 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   position: absolute;
   right: -1px;
   bottom: 0;
-  font-size: 7px;
-  line-height: 7px;
+  font-size: 8px;
+  line-height: 8px;
   color: #b7ac97;
 }
 
@@ -17773,4 +17849,353 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
 .application.redsteel.rs-party .rs-party-row.has-player,
 .application.redsteel.rs-party .rs-party-ledger-name.has-player {
   background: color-mix(in srgb, var(--rs-party-player) 20%, rgba(10, 10, 9, 0.35));
+}
+
+
+/* -------------------------------------------- */
+/*  Spell scrolls                               */
+/* -------------------------------------------- */
+/* The master scroll's pool list on the item sheet, and the scroll window
+   (module/utils/spellScrolls.mjs, templates/scroll/scroll-window.hbs). Built
+   from the sheet's own parts rather than new styling: the .skills-box stone
+   plate, the recessed channel the inputs sit in, bronze rules and the Learn
+   window's stone buttons with their serif lettering. */
+
+/* -------- the pool list (item sheet) -------- */
+
+/* A recessed channel cut into the attributes tab: the case's contents read as
+   sheets stacked in a box, not as cards laid on top of the sheet. */
+.rs-scroll-pool {
+  display: flex;
+  flex-direction: column;
+  margin: 4px 0 0;
+  padding: 4px 6px;
+  max-height: 320px;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid #514226;
+  border-radius: 0;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.7);
+}
+
+/* One bronze hairline between sheets; the last one keeps the channel's own
+   bottom edge instead of doubling it. */
+.rs-scroll-pool-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 2px;
+  border-bottom: 1px solid rgba(81, 66, 38, 0.45);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 13px;
+  line-height: 18px;
+  color: #b7ac97;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.rs-scroll-pool-row:last-child {
+  border-bottom: none;
+}
+
+.rs-scroll-pool-row img {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  object-fit: cover;
+  border: 1px solid #514226;
+  border-radius: 0;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.rs-scroll-pool-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: #d6bc8c;
+}
+
+/* The Learn window's stone button, shrunk to a row control. Core gives every
+   button a fixed height and a full-width flex basis, hence the resets. */
+.rs-scroll-take,
+.redsteel .rs-scroll-pool button.rs-scroll-take {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  height: auto;
+  min-height: 22px;
+  margin: 0;
+  padding: 2px 10px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 11px;
+  line-height: 14px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #d6bc8c;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+  background:
+    linear-gradient(to bottom, rgba(81, 66, 38, 0.28), rgba(12, 12, 11, 0.6)),
+    url(../ui/headertexture.jpg);
+  border: 1px solid #514226;
+  border-radius: 0;
+  outline: none;
+  box-shadow:
+    inset 0 1px 0 rgba(214, 188, 140, 0.12),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.6),
+    0 1px 3px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+}
+
+/* Core's hover draws its own background and glow, so it is restated. */
+.rs-scroll-take:hover,
+.rs-scroll-take:focus-visible,
+.redsteel .rs-scroll-pool button.rs-scroll-take:hover,
+.redsteel .rs-scroll-pool button.rs-scroll-take:focus-visible {
+  border-color: #9c7b45;
+  color: #f0d7aa;
+  outline: none;
+  background:
+    linear-gradient(to bottom, rgba(81, 66, 38, 0.28), rgba(12, 12, 11, 0.6)),
+    url(../ui/headertexture.jpg);
+  box-shadow:
+    inset 0 1px 0 rgba(214, 188, 140, 0.12),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.6),
+    0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+/* -------- the scroll window -------- */
+
+/* The window body is one stone plate on the sheet's field, the same recipe the
+   Party window uses. */
+.rs-scroll-window {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 13px;
+  line-height: 18px;
+  color: #b7ac97;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+  background:
+    linear-gradient(rgba(12, 12, 11, 0.5), rgba(12, 12, 11, 0.5)),
+    url(../ui/headertexture.jpg);
+  border: 2px solid #514226;
+  border-radius: 0;
+  box-shadow:
+    inset 0 0 25px rgba(0, 0, 0, 0.65),
+    0 0 12px rgba(0, 0, 0, 0.35);
+}
+
+/* Art on the left, the two title lines on the right, a bronze rule under it. */
+.rs-scroll-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(81, 66, 38, 0.6);
+}
+
+.rs-scroll-art {
+  flex: 0 0 auto;
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid #514226;
+  border-radius: 0;
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.7);
+}
+
+.rs-scroll-title {
+  margin: 0;
+  padding: 0;
+  border: none;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 17px;
+  line-height: 22px;
+  letter-spacing: 0.06em;
+  font-weight: normal;
+  color: #d6bc8c;
+}
+
+.rs-scroll-sub {
+  margin: 2px 0 0;
+  font-size: 11px;
+  line-height: 15px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8a8175;
+}
+
+/* Flavour and warnings. Italic rather than tinted: no colour states here. */
+.rs-scroll-hint {
+  margin: 0;
+  font-size: 12px;
+  line-height: 17px;
+  font-style: italic;
+  color: #8a8175;
+}
+
+/* The roll readout sits in the same recessed channel as the inputs, so a
+   result reads as something struck into the plate. */
+.rs-scroll-result {
+  margin: 0;
+  padding: 6px 10px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid #514226;
+  border-radius: 0;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.7);
+  font-family: Cambria, "Times New Roman", Times, serif;
+  font-variant-numeric: lining-nums;
+  font-size: 13px;
+  color: #d6bc8c;
+}
+
+/* Grimoire picker: label on the left, the select filling the rest. */
+.rs-scroll-book-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rs-scroll-book-row > label {
+  flex: 0 0 auto;
+  font-size: 11px;
+  line-height: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8a8175;
+}
+
+.rs-scroll-book-row > select,
+.application .rs-scroll-book-row > select {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 28px;
+  margin: 0;
+  padding: 0 8px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid #514226;
+  border-radius: 0;
+  outline: none;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.7);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 13px;
+  color: #d6bc8c;
+  color-scheme: dark;
+}
+
+.rs-scroll-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(81, 66, 38, 0.6);
+}
+
+/* The Learn window's stone button again, at full size. */
+.rs-scroll-btn,
+.application .rs-scroll-window button.rs-scroll-btn {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: auto;
+  height: auto;
+  min-height: 28px;
+  margin: 0;
+  padding: 4px 14px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #d6bc8c;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+  background:
+    linear-gradient(to bottom, rgba(81, 66, 38, 0.28), rgba(12, 12, 11, 0.6)),
+    url(../ui/headertexture.jpg);
+  border: 1px solid #514226;
+  border-radius: 0;
+  outline: none;
+  box-shadow:
+    inset 0 1px 0 rgba(214, 188, 140, 0.12),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.6),
+    0 1px 3px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+}
+
+.rs-scroll-btn:hover,
+.rs-scroll-btn:focus-visible,
+.application .rs-scroll-window button.rs-scroll-btn:hover,
+.application .rs-scroll-window button.rs-scroll-btn:focus-visible {
+  border-color: #9c7b45;
+  color: #f0d7aa;
+  outline: none;
+  background:
+    linear-gradient(to bottom, rgba(81, 66, 38, 0.28), rgba(12, 12, 11, 0.6)),
+    url(../ui/headertexture.jpg);
+  box-shadow:
+    inset 0 1px 0 rgba(214, 188, 140, 0.12),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.6),
+    0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.rs-scroll-btn:disabled,
+.application .rs-scroll-window button.rs-scroll-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* The one-way acts (copying, reading aloud) spend the scroll. Marked by a
+   heavier, darker stone and a brighter edge rather than a colour tint. */
+.rs-scroll-btn.danger,
+.application .rs-scroll-window button.rs-scroll-btn.danger {
+  color: #e8cf9e;
+  background:
+    linear-gradient(to bottom, rgba(81, 66, 38, 0.1), rgba(6, 6, 5, 0.85)),
+    url(../ui/headertexture.jpg);
+  border-color: #6b5730;
+  box-shadow:
+    inset 0 1px 0 rgba(214, 188, 140, 0.1),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.8),
+    0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+.rs-scroll-btn.danger:hover,
+.rs-scroll-btn.danger:focus-visible,
+.application .rs-scroll-window button.rs-scroll-btn.danger:hover,
+.application .rs-scroll-window button.rs-scroll-btn.danger:focus-visible {
+  border-color: #c09a55;
+  color: #f7e4bb;
+  background:
+    linear-gradient(to bottom, rgba(81, 66, 38, 0.1), rgba(6, 6, 5, 0.85)),
+    url(../ui/headertexture.jpg);
+  box-shadow:
+    inset 0 1px 0 rgba(214, 188, 140, 0.1),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.8),
+    0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+/* The readout carries a win/loss state from the window template. Told apart by
+   the depth of the cut and the brightness of the lettering, not by colour: a
+   success is struck cleanly into the plate, a failure sinks and goes dull. */
+.rs-scroll-result.is-success {
+  border-color: #9c7b45;
+  color: #f0d7aa;
+}
+
+.rs-scroll-result.is-failure {
+  border-color: #3b3020;
+  color: #8a8175;
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.85);
 }

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/water/projectile-ice-teardrop.webp",
   "system": {
-    "description": "<p>Requires a wet target. Deals 4d4 + {{math spellPower \"/\" 2}} damage to a single Target per turn. +10% chance to Slow. Ignores armor.</p>",
+    "description": "<p>Requires a wet target. Deals 4d4 + {{math spellPower \"/\" 2}} damage to a single Target per turn. +10% chance to Slow.</p>",
     "options": [
       "divine",
       "magic"

@@ -4,7 +4,7 @@
   "img": "icons/magic/symbols/rune-sigil-horned-blue.webp",
   "system": {
     "description": "<p>You gain 10 temporary hit points. <br />Protects only against magical damage.<br />Temporary hit points gained this way cannot exceed 10. <br />Can be used together with shield spells.</p>",
-    "type": "",
+    "type": "other",
     "weaponAbility": false,
     "standalone": false,
     "modifiesAttack": false,

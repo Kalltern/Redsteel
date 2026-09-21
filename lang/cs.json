@@ -4482,6 +4482,7 @@
           "hexes": "{n} hex",
           "metresLabel": "Dosah (m)"
         },
+        "ignoresArmor": "Ignoruje zbroj",
         "FIELDS": {
           "propertiesHeader": {
             "label": "Vlastnosti kouzla"
@@ -4845,6 +4846,58 @@
       "DropNotGlobal": "Zapiš kouzlo z kompendia, ne z kopie, kterou vlastní postava.",
       "DropDuplicate": "{name} už je v této knize zapsáno.",
       "DropAdded": "{name} zapsáno do knihy."
+    },
+    "Scroll": {
+      "Name": "Svitek: {spell}",
+      "Unidentified": "Neurčený svitek",
+      "MasterHint": "Pouzdro se svitky. Dej ho postavě a jeden se z něj vytáhne náhodně.",
+      "Sheet": {
+        "Pool": "Svitky v tomto pouzdře",
+        "TakeOut": "Vytáhnout",
+        "Empty": "V kompendiu nejsou žádná kouzla této školy a tohoto stupně."
+      },
+      "Field": {
+        "School": "Škola",
+        "Rank": "Stupeň",
+        "Spell": "Kouzlo",
+        "IdentifyDifficulty": "Obtížnost určení",
+        "WriteDifficulty": "Obtížnost opisu",
+        "CastBonus": "Bonus svitku k seslání",
+        "CastBonusHint": "Přičítá se k Usměrňování toho, kdo svitek předčítá nahlas, a vyrovnává vlastní obtížnost kouzla."
+      },
+      "Window": {
+        "Title": "Kouzelný svitek",
+        "Identify": "Určit",
+        "Write": "Opsat do grimoáru",
+        "Cast": "Přečíst nahlas",
+        "Reroll": "Přehodit",
+        "Book": "Cílový grimoár",
+        "NoBooks": "Tato postava u sebe nemá žádný grimoár.",
+        "Difficulty": "Obtížnost",
+        "Result": "d100 {d100} — přesah {margin}",
+        "UnknownHint": "Znaky zatím nic neříkají. Urči svitek, nebo ho přečti naslepo a poznej to po zlém.",
+        "WriteHint": "Opsáním se svitek zničí, ať už je ruka pevná, nebo ne.",
+        "CastHint": "Přečtením nahlas se svitek spotřebuje. Žádná mana, žádný hod na Usměrňování.",
+        "Close": "Zavřít"
+      },
+      "Warn": {
+        "NoRerolls": "Nezbývají žádné přehozy.",
+        "IdentifyLocked": "{name} už jednou tento svitek přečíst nedokázal. Zkus to znovu po dlouhém odpočinku.",
+        "NotIdentified": "Neurčený svitek nelze opsat do grimoáru.",
+        "NoSpell": "Tento svitek nenese žádné kouzlo.",
+        "Empty": "Není z čeho tahat: žádná kouzla té školy a toho stupně.",
+        "NoBook": "Nejdřív vyber grimoár.",
+        "NotOwner": "Tuto postavu nevlastníš."
+      },
+      "Chat": {
+        "Identify": "<b>{actor}</b> zkoumal svitek — Arcana, d100 {d100}, přesah {margin}.",
+        "IdentifySuccess": "Je to <b>{spell}</b>.",
+        "IdentifyFailure": "Znaky zůstávají nesrozumitelné.",
+        "Write": "<b>{actor}</b> opsal <b>{spell}</b> do grimoáru {book} — Arcana, d100 {d100}, přesah {margin}. Svitek je spotřebován.",
+        "WriteFailure": "<b>{actor}</b> zpackal opis kouzla <b>{spell}</b> — Arcana, d100 {d100}, přesah {margin}. Svitek je zničen.",
+        "Cast": "<b>{actor}</b> přečetl <b>{spell}</b> ze svitku. Svitek se rozpadá.",
+        "Reroll": "Přehozeno."
+      }
     },
     "Defense": {
       "BlindsideDodge": "Úhyb do zad",
@@ -7373,6 +7426,118 @@
       "Ascetic": {
         "name": "Asketa"
       },
+      "ScrollCaseFireApprentice": {
+        "name": "Pouzdro se svitky: Oheň, Učedník",
+        "description": "<p>Svázané pouzdro se svitky učednického stupně ze Školy Ohně. Každý list uvnitř nese jedno kouzlo a jeho znaky zůstávají nepřečtené, dokud si nad nimi někdo nesedne a neprostuduje je.</p>"
+      },
+      "ScrollCaseFireExpert": {
+        "name": "Pouzdro se svitky: Oheň, Expert",
+        "description": "<p>Svázané pouzdro se svitky expertního stupně ze Školy Ohně. Každý list uvnitř nese jedno kouzlo a jeho znaky zůstávají nepřečtené, dokud si nad nimi někdo nesedne a neprostuduje je.</p>"
+      },
+      "ScrollCaseFireMaster": {
+        "name": "Pouzdro se svitky: Oheň, Mistr",
+        "description": "<p>Svázané pouzdro se svitky mistrovského stupně ze Školy Ohně. Každý list uvnitř nese jedno kouzlo a jeho znaky zůstávají nepřečtené, dokud si nad nimi někdo nesedne a neprostuduje je.</p>"
+      },
+      "ScrollCaseFireGrandmaster": {
+        "name": "Pouzdro se svitky: Oheň, Velmistr",
+        "description": "<p>Svázané pouzdro se svitky velmistrovského stupně ze Školy Ohně. Každý list uvnitř nese jedno kouzlo a jeho znaky zůstávají nepřečtené, dokud si nad nimi někdo nesedne a neprostuduje je.</p>"
+      },
+      "ScrollCaseWaterApprentice": {
+        "name": "Pouzdro se svitky: Voda, Učedník",
+        "description": "<p>Svázané pouzdro se svitky učednického stupně ze Školy Vody. Každý list uvnitř nese jedno kouzlo a jeho znaky zůstávají nepřečtené, dokud si nad nimi někdo nesedne a neprostuduje je.</p>"
+      },
+      "ScrollCaseWaterExpert": {
+        "name": "Pouzdro se svitky: Voda, Expert",
+        "description": "<p>Svázané pouzdro se svitky expertního stupně ze Školy Vody. Každý list uvnitř nese jedno kouzlo a jeho znaky zůstávají nepřečtené, dokud si nad nimi někdo nesedne a neprostuduje je.</p>"
+      },
+      "ScrollCaseWaterMaster": {
+        "name": "Pouzdro se svitky: Voda, Mistr",
+        "description": "<p>Svázané pouzdro se svitky mistrovského stupně ze Školy Vody. Každý list uvnitř nese jedno kouzlo a jeho znaky zůstávají nepřečtené, dokud si nad nimi někdo nesedne a neprostuduje je.</p>"
+      },
+      "ScrollCaseWaterGrandmaster": {
+        "name": "Pouzdro se svitky: Voda, Velmistr",
+        "description": "<p>Svázané pouzdro se svitky velmistrovského stupně ze Školy Vody. Každý list uvnitř nese jedno kouzlo a jeho znaky zůstávají nepřečtené, dokud si nad nimi někdo nesedne a neprostuduje je.</p>"
+      },
+      "ScrollCaseAirApprentice": {
+        "name": "Pouzdro se svitky: Vzduch, Učedník",
+        "description": "<p>Svázané pouzdro se svitky učednického stupně ze Školy Vzduchu. Každý list uvnitř nese jedno kouzlo a jeho znaky zůstávají nepřečtené, dokud si nad nimi někdo nesedne a neprostuduje je.</p>"
+      },
+      "ScrollCaseAirExpert": {
+        "name": "Pouzdro se svitky: Vzduch, Expert",
+        "description": "<p>Svázané pouzdro se svitky expertního stupně ze Školy Vzduchu. Každý list uvnitř nese jedno kouzlo a jeho znaky zůstávají nepřečtené, dokud si nad nimi někdo nesedne a neprostuduje je.</p>"
+      },
+      "ScrollCaseAirMaster": {
+        "name": "Pouzdro se svitky: Vzduch, Mistr",
+        "description": "<p>Svázané pouzdro se svitky mistrovského stupně ze Školy Vzduchu. Každý list uvnitř nese jedno kouzlo a jeho znaky zůstávají nepřečtené, dokud si nad nimi někdo nesedne a neprostuduje je.</p>"
+      },
+      "ScrollCaseAirGrandmaster": {
+        "name": "Pouzdro se svitky: Vzduch, Velmistr",
+        "description": "<p>Svázané pouzdro se svitky velmistrovského stupně ze Školy Vzduchu. Každý list uvnitř nese jedno kouzlo a jeho znaky zůstávají nepřečtené, dokud si nad nimi někdo nesedne a neprostuduje je.</p>"
+      },
+      "ScrollCaseEarthApprentice": {
+        "name": "Pouzdro se svitky: Země, Učedník",
+        "description": "<p>Svázané pouzdro se svitky učednického stupně ze Školy Země. Každý list uvnitř nese jedno kouzlo a jeho znaky zůstávají nepřečtené, dokud si nad nimi někdo nesedne a neprostuduje je.</p>"
+      },
+      "ScrollCaseEarthExpert": {
+        "name": "Pouzdro se svitky: Země, Expert",
+        "description": "<p>Svázané pouzdro se svitky expertního stupně ze Školy Země. Každý list uvnitř nese jedno kouzlo a jeho znaky zůstávají nepřečtené, dokud si nad nimi někdo nesedne a neprostuduje je.</p>"
+      },
+      "ScrollCaseEarthMaster": {
+        "name": "Pouzdro se svitky: Země, Mistr",
+        "description": "<p>Svázané pouzdro se svitky mistrovského stupně ze Školy Země. Každý list uvnitř nese jedno kouzlo a jeho znaky zůstávají nepřečtené, dokud si nad nimi někdo nesedne a neprostuduje je.</p>"
+      },
+      "ScrollCaseEarthGrandmaster": {
+        "name": "Pouzdro se svitky: Země, Velmistr",
+        "description": "<p>Svázané pouzdro se svitky velmistrovského stupně ze Školy Země. Každý list uvnitř nese jedno kouzlo a jeho znaky zůstávají nepřečtené, dokud si nad nimi někdo nesedne a neprostuduje je.</p>"
+      },
+      "ScrollCaseSpiritApprentice": {
+        "name": "Pouzdro se svitky: Duch, Učedník",
+        "description": "<p>Svázané pouzdro se svitky učednického stupně ze Školy Ducha. Každý list uvnitř nese jedno kouzlo a jeho znaky zůstávají nepřečtené, dokud si nad nimi někdo nesedne a neprostuduje je.</p>"
+      },
+      "ScrollCaseSpiritExpert": {
+        "name": "Pouzdro se svitky: Duch, Expert",
+        "description": "<p>Svázané pouzdro se svitky expertního stupně ze Školy Ducha. Každý list uvnitř nese jedno kouzlo a jeho znaky zůstávají nepřečtené, dokud si nad nimi někdo nesedne a neprostuduje je.</p>"
+      },
+      "ScrollCaseSpiritMaster": {
+        "name": "Pouzdro se svitky: Duch, Mistr",
+        "description": "<p>Svázané pouzdro se svitky mistrovského stupně ze Školy Ducha. Každý list uvnitř nese jedno kouzlo a jeho znaky zůstávají nepřečtené, dokud si nad nimi někdo nesedne a neprostuduje je.</p>"
+      },
+      "ScrollCaseSpiritGrandmaster": {
+        "name": "Pouzdro se svitky: Duch, Velmistr",
+        "description": "<p>Svázané pouzdro se svitky velmistrovského stupně ze Školy Ducha. Každý list uvnitř nese jedno kouzlo a jeho znaky zůstávají nepřečtené, dokud si nad nimi někdo nesedne a neprostuduje je.</p>"
+      },
+      "ScrollCaseBodyApprentice": {
+        "name": "Pouzdro se svitky: Tělo, Učedník",
+        "description": "<p>Svázané pouzdro se svitky učednického stupně ze Školy Těla. Každý list uvnitř nese jedno kouzlo a jeho znaky zůstávají nepřečtené, dokud si nad nimi někdo nesedne a neprostuduje je.</p>"
+      },
+      "ScrollCaseBodyExpert": {
+        "name": "Pouzdro se svitky: Tělo, Expert",
+        "description": "<p>Svázané pouzdro se svitky expertního stupně ze Školy Těla. Každý list uvnitř nese jedno kouzlo a jeho znaky zůstávají nepřečtené, dokud si nad nimi někdo nesedne a neprostuduje je.</p>"
+      },
+      "ScrollCaseBodyMaster": {
+        "name": "Pouzdro se svitky: Tělo, Mistr",
+        "description": "<p>Svázané pouzdro se svitky mistrovského stupně ze Školy Těla. Každý list uvnitř nese jedno kouzlo a jeho znaky zůstávají nepřečtené, dokud si nad nimi někdo nesedne a neprostuduje je.</p>"
+      },
+      "ScrollCaseBodyGrandmaster": {
+        "name": "Pouzdro se svitky: Tělo, Velmistr",
+        "description": "<p>Svázané pouzdro se svitky velmistrovského stupně ze Školy Těla. Každý list uvnitř nese jedno kouzlo a jeho znaky zůstávají nepřečtené, dokud si nad nimi někdo nesedne a neprostuduje je.</p>"
+      },
+      "ScrollCaseDarknessApprentice": {
+        "name": "Pouzdro se svitky: Temnota, Učedník",
+        "description": "<p>Svázané pouzdro se svitky učednického stupně ze Školy Temnoty. Každý list uvnitř nese jedno kouzlo a jeho znaky zůstávají nepřečtené, dokud si nad nimi někdo nesedne a neprostuduje je.</p>"
+      },
+      "ScrollCaseDarknessExpert": {
+        "name": "Pouzdro se svitky: Temnota, Expert",
+        "description": "<p>Svázané pouzdro se svitky expertního stupně ze Školy Temnoty. Každý list uvnitř nese jedno kouzlo a jeho znaky zůstávají nepřečtené, dokud si nad nimi někdo nesedne a neprostuduje je.</p>"
+      },
+      "ScrollCaseDarknessMaster": {
+        "name": "Pouzdro se svitky: Temnota, Mistr",
+        "description": "<p>Svázané pouzdro se svitky mistrovského stupně ze Školy Temnoty. Každý list uvnitř nese jedno kouzlo a jeho znaky zůstávají nepřečtené, dokud si nad nimi někdo nesedne a neprostuduje je.</p>"
+      },
+      "ScrollCaseDarknessGrandmaster": {
+        "name": "Pouzdro se svitky: Temnota, Velmistr",
+        "description": "<p>Svázané pouzdro se svitky velmistrovského stupně ze Školy Temnoty. Každý list uvnitř nese jedno kouzlo a jeho znaky zůstávají nepřečtené, dokud si nad nimi někdo nesedne a neprostuduje je.</p>"
+      },
       "Rations": {
         "name": "Zásoby jídla",
         "description": "<p>Jídlo na cesty: tvrdý chléb, sušené maso, co zbylo v kotlíku. Jedna jednotka nasytí jedny ústa na třetinu dne. Normální jedinec spotřebuje 3 jednotky za Dlouhý odpočinek.</p>"
@@ -7754,6 +7919,7 @@
         "readMore": "Více",
         "readLess": "Méně",
         "statSpellClass": "Třída",
+        "classAsSpell": "{class} kouzlo",
         "rangeWithMetres": "{hexes} ({metres} m)",
         "Class": {
           "support": "Podpůrné",
@@ -8034,6 +8200,7 @@
     },
     "Item": {
       "spellbook": "Grimoár",
+      "scroll": "Kouzelný svitek",
       "weapon": "Zbraň",
       "item": "Předmět",
       "gear": "Výbava",

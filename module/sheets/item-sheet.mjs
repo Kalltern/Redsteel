@@ -22,6 +22,14 @@ import {
   SPELL_SCHOOLS,
   getBookEntries,
 } from "../utils/spellbook.mjs";
+import {
+  SCROLL_SCHOOLS,
+  SCROLL_RANKS,
+  isMasterScroll,
+  isScrollIdentified,
+  getScrollPool,
+  createConcreteScroll,
+} from "../utils/spellScrolls.mjs";
 
 const { api, sheets } = foundry.applications;
 
@@ -59,6 +67,7 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
       removeRaceGrant: this._removeRaceGrant,
       removeEnchantment: this._removeEnchantment,
       removeBookSpell: this._removeBookSpell,
+      takeOutScroll: this._takeOutScroll,
       resyncItem: this._resyncItem,
       undoResync: this._undoResync,
     },
@@ -182,6 +191,9 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
     attributesSpellbook: {
       template: "systems/redsteel/templates/item/attribute-parts/spellbook.hbs",
     },
+    attributesScroll: {
+      template: "systems/redsteel/templates/item/attribute-parts/scroll.hbs",
+    },
     attributesEnchantment: {
       template:
         "systems/redsteel/templates/item/attribute-parts/enchantment.hbs",
@@ -262,6 +274,12 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
       // on its owner are projected from that list by utils/spellbook.mjs.
       case "spellbook":
         options.parts.push("attributesSpellbook");
+        break;
+      // A master scroll (system.spell empty) is a case of scrolls for one
+      // school and rank; a concrete scroll is one sheet bound to one spell.
+      // Both live on the same part (see utils/spellScrolls.mjs).
+      case "scroll":
+        options.parts.push("attributesScroll");
         break;
     }
   }
@@ -506,6 +524,44 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
         context.bookCapacity = Number(this.item.system?.capacity) || 0;
         break;
       }
+      case "attributesScroll": {
+        context.tab = context.tabs[partId];
+        // A case of scrolls versus one readable sheet. The case lists every
+        // spell of its school and rank that the compendium knows; the single
+        // sheet names its spell only once someone has identified it.
+        const master = isMasterScroll(this.item);
+        context.isMaster = master;
+        context.identified = isScrollIdentified(this.item);
+        // Drawing a scroll out of the case creates a document, so it stays a
+        // GM tool; players read the case but cannot help themselves.
+        context.canTakeOut = game.user.isGM && this.isEditable;
+        const school = this.item.system?.school ?? "";
+        const rank = this.item.system?.rank ?? "";
+        context.schoolOptions = SCROLL_SCHOOLS.map((key) => ({
+          key,
+          label: game.i18n.localize(
+            `REDSTEEL.Actor.Character.schools.${key}.label`,
+          ),
+          selected: school === key,
+        }));
+        context.rankOptions = SCROLL_RANKS.map((key) => ({
+          key,
+          label: game.i18n.localize(`REDSTEEL.Item.Spell.FIELDS.${key}.label`),
+          selected: rank === key,
+        }));
+        if (master) {
+          context.pool = await getScrollPool(school, rank);
+        } else {
+          const spell = this.item.system?.spell
+            ? await fromUuid(this.item.system.spell)
+            : null;
+          context.spellName = spell
+            ? (spell.localizedName ?? spell.name)
+            : "";
+          context.spellImg = spell?.img ?? "";
+        }
+        break;
+      }
       case "attributesVariants": {
         context.tab = context.tabs[partId];
         // One entry per stored variant ID, with the resolved world Item (if any)
@@ -586,6 +642,7 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
         case "attributesRecipe":
         case "attributesEnchantment":
         case "attributesSpellbook":
+        case "attributesScroll":
           tab.id = "attributes";
           tab.label += "Attributes";
           break;
@@ -789,6 +846,24 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
     if (Number.isNaN(index) || index < 0 || index >= entries.length) return;
     entries.splice(index, 1);
     await this.item.update({ "system.spells": entries });
+  }
+
+  /**
+   * Draw one scroll out of a master scroll (the case). The new concrete scroll
+   * is created beside the case — on the same actor, or in the world Items
+   * directory if the case is unowned — by utils/spellScrolls.mjs.
+   *
+   * @this RedsteelItemSheet
+   * @param {PointerEvent} event   The originating click event
+   * @param {HTMLElement} target   The capturing HTML element which defined a [data-action]
+   * @protected
+   */
+  static async _takeOutScroll(event, target) {
+    if (!game.user.isGM) return;
+    const uuid = target.dataset.uuid;
+    if (!uuid) return;
+    await createConcreteScroll(this.item, uuid);
+    this.render();
   }
 
   static async _removeVariant(event, target) {

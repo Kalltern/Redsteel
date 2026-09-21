@@ -4,7 +4,7 @@
   "img": "icons/magic/unholy/strike-beam-blood-large-red-purple.webp",
   "system": {
     "localizationKey": "",
-    "description": "Deals Dark damage equal to 2d6 + {{math spellPower \"/\" 2}} for each Bleeding on the target, up to a maximum of 6 Bleeding (12d6 + {{math spellPower \"*\" 3}}). At the same time, deals damage of the same value in an area of 1.5 m + 1.5 m for every two Bleeding on the target, up to a maximum of 6 m. This spell does not provoke Opportunity Attacks. Ignores Armor.",
+    "description": "Deals Dark damage equal to 2d6 + {{math spellPower \"/\" 2}} for each Bleeding on the target, up to a maximum of 6 Bleeding (12d6 + {{math spellPower \"*\" 3}}). At the same time, deals damage of the same value in an area of 1.5 m + 1.5 m for every two Bleeding on the target, up to a maximum of 6 m. This spell does not provoke Opportunity Attacks.",
     "options": [
       "divine",
       "magic"

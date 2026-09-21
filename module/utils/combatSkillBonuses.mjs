@@ -2245,6 +2245,20 @@ function knifeMasterCheck(actor, weapon) {
   );
 }
 
+/**
+ * Penetration at or above this number means "Ignores Armor" — it is the same
+ * rule, written as a number the sheet already carries rather than a flag of
+ * its own (user ruling 2026-09-21). Spells, abilities and consumables that
+ * bypass armour are authored at 100 and nothing else reaches it, so the
+ * damage path can read the intent straight off the packet.
+ *
+ * Penetration is a floor rather than a subtraction, so 100 already bypasses
+ * any armour a target can wear — but only up to 100 damage. Death touch deals
+ * 250, and armour was still biting into the excess. Treating the number as
+ * the switch closes that gap: see evaluateDmgVsArmor below.
+ */
+export const ARMOR_IGNORING_PENETRATION = 100;
+
 export function evaluateDmgVsArmor({
   damage,
   penetration,
@@ -2288,8 +2302,14 @@ export function evaluateDmgVsArmor({
   const damageAfterShield = Math.max(0, baseDamage);
 
   /* 2. Normal Armor (skipped e.g. for condition damage ticks, which are
-     only mitigated by specialized armor / resistances / vulnerabilities) */
-  if (!ignoreBaseArmor) {
+     only mitigated by specialized armor / resistances / vulnerabilities, and
+     for anything authored at ARMOR_IGNORING_PENETRATION — see the constant
+     above: 100 Penetration IS "Ignores Armor", and reading it here means a
+     packet bigger than 100 is not quietly clipped by armour it was written to
+     bypass.) */
+  const bypassesArmor =
+    ignoreBaseArmor || (Number(penetration) || 0) >= ARMOR_IGNORING_PENETRATION;
+  if (!bypassesArmor) {
     // `baseArmorOverride` replaces the armor total for this packet alone; the
     // armor table itself is left intact so the typed reductions and the
     // resistance/vulnerability modifiers below still read the real numbers.

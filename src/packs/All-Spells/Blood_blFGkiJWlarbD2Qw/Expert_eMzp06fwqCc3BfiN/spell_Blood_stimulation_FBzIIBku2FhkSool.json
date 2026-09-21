@@ -4,7 +4,7 @@
   "img": "icons/magic/unholy/strike-body-life-soul-purple.webp",
   "system": {
     "localizationKey": "",
-    "description": "Deals Dark damage equal to {{math spellPower \"*\" 1}} to the target and restores three times the damage dealt as Endurance. Ignores Armor.",
+    "description": "Deals Dark damage equal to {{math spellPower \"*\" 1}} to the target and restores three times the damage dealt as Endurance.",
     "options": [
       "divine",
       "magic"
@@ -104,7 +104,7 @@
       "diceSize": "0",
       "diceBonus": "@spellPower"
     },
-    "penetration": 0,
+    "penetration": 100,
     "dmgType1": "",
     "bool2": "",
     "dmgType2": "",

@@ -4,7 +4,7 @@
   "img": "icons/magic/defensive/illusion-evasion-echo-purple.webp",
   "system": {
     "localizationKey": "",
-    "description": "Creates a trap resembling an identical copy of the caster or another Target on an unoccupied hex (cannot be adjacent to another trap). During casting, caster may secretly swap with the copy. Moving through or attacking it dispels the copy and deals damage 4d6 + {{spellPower}}. Ignores Armor. Can damage distant Targets. Ignores Magic Defense.",
+    "description": "Creates a trap resembling an identical copy of the caster or another Target on an unoccupied hex (cannot be adjacent to another trap). During casting, caster may secretly swap with the copy. Moving through or attacking it dispels the copy and deals damage 4d6 + {{spellPower}}. Can damage distant Targets. Ignores Magic Defense.",
     "options": [
       "divine",
       "magic"

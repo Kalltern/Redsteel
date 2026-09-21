@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/orb-lightning-sun.webp",
   "system": {
-    "description": "<p>Focuses on a single target, dealing 1d4 + {{math spellPower \"/\" 2}} damage per round. Ignores armor.<br /><br />Not fully automated. Resolve this effect manually</p>",
+    "description": "<p>Focuses on a single target, dealing 1d4 + {{math spellPower \"/\" 2}} damage per round.<br /><br />Not fully automated. Resolve this effect manually</p>",
     "options": [
       "divine",
       "magic"

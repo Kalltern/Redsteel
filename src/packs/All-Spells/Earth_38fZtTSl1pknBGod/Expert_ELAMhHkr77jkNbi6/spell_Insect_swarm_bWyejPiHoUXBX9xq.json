@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/creatures/invertebrates/wasp-swarm-attack.webp",
   "system": {
-    "description": "<p>Incites nearby insects to harass the target for <span style=\"font-family:Signika, sans-serif\">{{math spellPower \"/\" 2}} </span>turns.</p><p>Deals 1d4 Physical damage per turn and forces a Resolve test for Panic each turn.</p><p>Applies a 5% penalty to success rolls, -1 Reaction, prevents using Aim and inflicts a 50% penalty to Ranged attacks and Perception Tests.</p><hr><p>Ignores armor. Effect of this spell can be neutralised with Repellent ointment or relevant spells such as Fiery aura</p>",
+    "description": "<p>Incites nearby insects to harass the target for <span style=\"font-family:Signika, sans-serif\">{{math spellPower \"/\" 2}} </span>turns.</p><p>Deals 1d4 Physical damage per turn and forces a Resolve test for Panic each turn.</p><p>Applies a 5% penalty to success rolls, -1 Reaction, prevents using Aim and inflicts a 50% penalty to Ranged attacks and Perception Tests.</p><hr><p> Effect of this spell can be neutralised with Repellent ointment or relevant spells such as Fiery aura</p>",
     "options": [
       "divine",
       "magic"

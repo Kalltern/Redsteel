@@ -4,7 +4,7 @@
   "img": "icons/magic/unholy/hand-claw-glow-orange.webp",
   "system": {
     "localizationKey": "",
-    "description": "Deals damage equal to {{math spellPower \"*\" 4}} per round to one target for up to four rounds and also applies two Bleeding effects each round. For the duration, the target is Rooted. Ignores Armor.",
+    "description": "Deals damage equal to {{math spellPower \"*\" 4}} per round to one target for up to four rounds and also applies two Bleeding effects each round. For the duration, the target is Rooted.",
     "options": [
       "divine",
       "magic"

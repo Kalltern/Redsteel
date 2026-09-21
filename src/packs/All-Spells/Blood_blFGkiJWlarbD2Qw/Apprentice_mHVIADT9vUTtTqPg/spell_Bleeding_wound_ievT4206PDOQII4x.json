@@ -4,7 +4,7 @@
   "img": "icons/skills/wounds/injury-stitched-flesh-red.webp",
   "system": {
     "localizationKey": "",
-    "description": "<p>Has a {{math spellPower \"*\" 2}} + 45% chance to cause Bleeding. If the target already has at least one Bleeding effect, it additionally deals Dark damage equal to 5d6 + {{spellPower}}. Ignores Armor.</p>",
+    "description": "<p>Has a {{math spellPower \"*\" 2}} + 45% chance to cause Bleeding. If the target already has at least one Bleeding effect, it additionally deals Dark damage equal to 5d6 + {{spellPower}}.</p>",
     "options": [
       "divine",
       "magic"

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/water/water-drop-swirl-blue.webp",
   "system": {
-    "description": "Extracts most Water from a creature, dealing {{math spellPower \"*\" 8}} Magical damage. Ignores armor. If Target survives, they must drink at least 2 liters of Water within Endurance * 1 minutes or die.",
+    "description": "Extracts most Water from a creature, dealing {{math spellPower \"*\" 8}} Magical damage. If Target survives, they must drink at least 2 liters of Water within Endurance * 1 minutes or die.",
     "options": [
       "divine",
       "magic"

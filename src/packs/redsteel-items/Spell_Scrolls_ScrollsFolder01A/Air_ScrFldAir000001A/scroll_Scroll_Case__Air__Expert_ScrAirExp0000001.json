@@ -1,0 +1,36 @@
+{
+  "folder": "ScrFldAir000001A",
+  "name": "Scroll Case: Air, Expert",
+  "type": "scroll",
+  "img": "icons/sundries/scrolls/scroll-runed-brown-purple.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.ScrollCaseAirExpert.name",
+    "description": "<p>A bound case of expert scrolls from the School of Air. Every sheet inside carries one spell, and the sigils stay unread until somebody sits down and studies them.</p>",
+    "quantity": 1,
+    "school": "air",
+    "rank": "expert",
+    "spell": "",
+    "identifyDifficulty": -10,
+    "writeDifficulty": -20,
+    "castBonus": 10
+  },
+  "effects": [],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.365",
+    "systemId": "redsteel",
+    "systemVersion": "0.12.0",
+    "createdTime": 1786000000000,
+    "modifiedTime": 1786000000000,
+    "lastModifiedBy": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "_id": "ScrAirExp0000001",
+  "sort": 200000,
+  "_key": "!items!ScrAirExp0000001"
+}

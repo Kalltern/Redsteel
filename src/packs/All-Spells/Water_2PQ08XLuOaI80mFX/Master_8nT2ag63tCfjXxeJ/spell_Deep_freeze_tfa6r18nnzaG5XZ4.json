@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/water/barrier-ice-crystal-wall-faceted-light.webp",
   "system": {
-    "description": "<p>Deals 3d6 damage to Target and Slows them. 30% chance to Freeze Target. Can also end existing Freeze effects. Ignores armor. </p>",
+    "description": "<p>Deals 3d6 damage to Target and Slows them. 30% chance to Freeze Target. Can also end existing Freeze effects. </p>",
     "options": [
       "divine",
       "magic"

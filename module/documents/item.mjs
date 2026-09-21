@@ -1,3 +1,7 @@
+import { ARMOR_IGNORING_PENETRATION } from "../utils/combatSkillBonuses.mjs";
+import { normalizeResourceKey, resourceLabel } from "../utils/itemResources.mjs";
+import { scrollDisplayName, openScrollWindow } from "../utils/spellScrolls.mjs";
+
 /**
  * Stat block of the "Improvised shield" compendium item
  * (src/packs/redsteel-items/.../gear_Improvised_shield_cfblSb9uigt23fRA.json).
@@ -312,6 +316,14 @@ function gearEnchantMods(entries) {
  */
 export class RedsteelItem extends Item {
   get localizedName() {
+    // A spell scroll names itself: "Scroll: Fireball" once Arcana has read it,
+    // and "Unidentified Scroll" before that. The stored name keeps the spell
+    // so the GM can read the sidebar, so this has to come BEFORE the stored
+    // name is used, or an unidentified scroll would announce itself.
+    // Returns null for a scroll case, which keeps its own authored name.
+    const scroll = scrollDisplayName(this);
+    if (scroll !== null) return scroll;
+
     const key = this.system.localizationKey?.trim();
     const base = !key || !game.i18n.has(key) ? this.name : game.i18n.localize(key);
     // A language feature is bought once per language, and the copy names the
@@ -882,6 +894,13 @@ export class RedsteelItem extends Item {
   async roll(event) {
     const item = this;
 
+    // A scroll is not rolled, it is read: clicking it in the inventory opens
+    // its own window (identify / copy into a grimoire / read aloud). Casting
+    // it outright is the right-click, handled by the actor sheet.
+    if (this.type === "scroll" && this.actor) {
+      return openScrollWindow(this.actor, this);
+    }
+
     // Initialize chat data.
     const speaker = ChatMessage.getSpeaker({ actor: this.actor });
     const rollMode = game.settings.get("core", "rollMode");
@@ -966,6 +985,14 @@ export class RedsteelItem extends Item {
         `${data.effectType3} ${data.effects?.extra3 ? data.effects.extra3 + "%" : ""}`,
     ].filter(Boolean);
 
+    const penetration = Number(data.penetration) || 0;
+    const rawResources = Array.isArray(data.resources)
+      ? data.resources
+      : Object.values(data.resources ?? {});
+    const spellResources = rawResources.filter(
+      (res) => normalizeResourceKey(res?.type) && Number(res?.amount),
+    );
+
     return {
       icon: this.img,
       title: this.localizedName,
@@ -981,6 +1008,29 @@ export class RedsteelItem extends Item {
         },
         { label: "Actions", value: data.actionCost },
         { label: "Range", value: data.range },
+        // Penetration, and the armour bypass read off it. 100 IS "Ignores
+        // Armor" (see ARMOR_IGNORING_PENETRATION in combatSkillBonuses.mjs),
+        // which the prose used to repeat in words until 2026-09-21 — so this
+        // panel has to carry it or the spell no longer says it anywhere.
+        // `statsBlock` drops a null, so a spell with no penetration prints
+        // nothing.
+        {
+          label: game.i18n.localize("REDSTEEL.Item.Weapon.FIELDS.penetration.label"),
+          value: !penetration
+            ? null
+            : penetration >= ARMOR_IGNORING_PENETRATION
+              ? game.i18n.localize("REDSTEEL.Item.Spell.ignoresArmor")
+              : penetration,
+        },
+        // The Corruption or Mind the cast heaps on, which left the prose in
+        // the same change. The pack stores these as an object keyed "0", "1",
+        // older data as an array.
+        ...spellResources.map((res) => ({
+          label: resourceLabel(res.type),
+          value: `${
+            String(res.mode ?? "").toLowerCase() === "drain" ? "-" : "+"
+          }${Math.abs(Number(res.amount))}`,
+        })),
       ],
       description: data.description,
     };

@@ -62,8 +62,15 @@ export async function castSpell() {
  *
  * @param {Actor} actor - The casting actor.
  * @param {Item} spell - The spell to cast (already variant-resolved).
+ * `extraAttackBonus` is a flat addition to the cast roll that comes from
+ * outside the caster: today only a spell scroll passes it, contributing the
+ * original scribe's work so that reading one aloud is not purely a test of the
+ * reader's own Channeling (see utils/spellScrolls.mjs). It rides on
+ * `bonuses.attackBonus`, so the chat card's breakdown states it.
+ *
  * @param {{token?: Token|null, freeCast?: boolean, focusSpent?: number,
- *   ignoreChanneling?: boolean, bloodPayment?: boolean}} [options]
+ *   ignoreChanneling?: boolean, bloodPayment?: boolean,
+ *   extraAttackBonus?: number}} [options]
  * @returns {Promise<boolean>} False when the cast never happened (not enough
  *   mana/blood), true otherwise.
  */
@@ -76,6 +83,7 @@ export async function performCast(
     focusSpent = 0,
     ignoreChanneling = false,
     bloodPayment = false,
+    extraAttackBonus = 0,
   } = {},
 ) {
   // Lindar's Strikes (veneficus tree): while unlocked, strike spells never
@@ -141,6 +149,13 @@ export async function performCast(
   await offerMentalCharge(actor, spell);
 
   const bonuses = game.redsteel.calculateAttackBonuses(actor, spell);
+
+  // Folded in before the roll rather than passed alongside it, so every
+  // consumer of `bonuses` (the roll, the card, the breakdown) sees one figure.
+  if (extraAttackBonus) {
+    bonuses.attackBonus =
+      (Number(bonuses.attackBonus) || 0) + (Number(extraAttackBonus) || 0);
+  }
 
   const attackResults = await game.redsteel.performAttackRoll(
     actor,

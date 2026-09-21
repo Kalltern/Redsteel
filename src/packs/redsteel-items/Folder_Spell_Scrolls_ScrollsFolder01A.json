@@ -1,0 +1,23 @@
+{
+  "type": "Item",
+  "folder": null,
+  "name": "Spell Scrolls",
+  "color": null,
+  "sorting": "a",
+  "_id": "ScrollsFolder01A",
+  "description": "",
+  "sort": 950000,
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.365",
+    "systemId": "redsteel",
+    "systemVersion": "0.12.0",
+    "createdTime": 1786000000000,
+    "modifiedTime": 1786000000000,
+    "lastModifiedBy": null
+  },
+  "_key": "!folders!ScrollsFolder01A"
+}

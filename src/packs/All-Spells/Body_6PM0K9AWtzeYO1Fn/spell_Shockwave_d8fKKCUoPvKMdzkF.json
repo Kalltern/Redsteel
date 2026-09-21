@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
-    "description": "Deals 2d8 + {{spellPower}} Magical + Bludgeoning damage in a 180° arc within 3m and initiates a Willpower (Bonus {{math spellPower \"*\" 2}}) vs. Target's Strength/Endurance Test. On success, pushes Targets back two hexes. On failure, pushes them back one hex. Ignores armor. May only be cast as a Reaction if the Caster is being attacked.",
+    "description": "Deals 2d8 + {{spellPower}} Magical + Bludgeoning damage in a 180° arc within 3m and initiates a Willpower (Bonus {{math spellPower \"*\" 2}}) vs. Target's Strength/Endurance Test. On success, pushes Targets back two hexes. On failure, pushes them back one hex. May only be cast as a Reaction if the Caster is being attacked.",
     "options": [
       "divine",
       "magic"

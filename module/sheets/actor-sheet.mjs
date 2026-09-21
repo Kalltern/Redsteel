@@ -61,6 +61,7 @@ import { renderMarginFollowupLine } from "../utils/attributeFollowup.mjs";
 import { addItemToHotbar } from "../utils/hotbarMacros.mjs";
 import { openBanePicker, clearBaneChoice } from "../helpers/banes.mjs";
 import { buildSpellCard, buildRankGroups } from "../utils/spellCards.mjs";
+import { castFromScroll } from "../utils/spellScrolls.mjs";
 import {
   getRememberedTab,
   rememberTab,
@@ -124,7 +125,15 @@ function isAccessory(item) {
 const INVENTORY_CATEGORIES = {
   all: {
     labelKey: "REDSTEEL.Actor.Inventory.Filter.All",
-    types: ["weapon", "gear", "consumable", "ammunition", "item", "spellbook"],
+    types: [
+      "weapon",
+      "gear",
+      "consumable",
+      "ammunition",
+      "item",
+      "spellbook",
+      "scroll",
+    ],
   },
   weapon: {
     labelKey: "REDSTEEL.Actor.Inventory.Filter.Weapons",
@@ -140,9 +149,10 @@ const INVENTORY_CATEGORIES = {
   },
   item: {
     // A grimoire is carried like any other object, and being able to pick it up
-    // off a corpse is the point of it (see utils/spellbook.mjs).
+    // off a corpse is the point of it (see utils/spellbook.mjs). Spell scrolls
+    // ride along with it (see utils/spellScrolls.mjs).
     labelKey: "REDSTEEL.Actor.Inventory.Filter.Items",
-    types: ["item", "spellbook"],
+    types: ["item", "spellbook", "scroll"],
   },
 };
 
@@ -839,6 +849,22 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       event.preventDefault();
       this._setArmorEquipped(item, !item.system.equipped);
       return;
+    }
+
+    /* ---------------------------------- */
+    /* 0️⃣ SCROLL RIGHT-CLICK (READ ALOUD) */
+    /* ---------------------------------- */
+    // Reading a scroll aloud is its one combat use, so it sits on the same
+    // right-click the rest of the inventory uses. Ahead of the slot branches
+    // because a scroll never occupies a slot (see utils/spellScrolls.mjs).
+    const scrollRow = event.target.closest(".item[data-item-id]");
+    if (scrollRow) {
+      const scroll = this.actor.items.get(scrollRow.dataset.itemId);
+      if (scroll?.type === "scroll") {
+        event.preventDefault();
+        castFromScroll(this.actor, scroll);
+        return;
+      }
     }
 
     /* ---------------------------------- */
@@ -2376,8 +2402,13 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
         consumables.push(i);
         supplies.push(i);
       }
-      // Append to item. A grimoire rides along with the ordinary objects.
-      else if (i.type === "item" || i.type === "spellbook") {
+      // Append to item. A grimoire and a spell scroll ride along with the
+      // ordinary objects.
+      else if (
+        i.type === "item" ||
+        i.type === "spellbook" ||
+        i.type === "scroll"
+      ) {
         items.push(i);
       }
       // Append to ammunition.

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
-    "description": "Initiates a Willpower vs. Target's Endurance Test. On failure, deals {{math spellPower \"*\" 3}} Magical + Bludgeoning damage and Stuns the Target for one round. Ignores armor. On success, breaks 2d4d1 limbs (chosen by the Caster) and causes the same number of Serious Wounds. This spell cannot kill the Target or exceed the limit of Serious Wounds.",
+    "description": "Initiates a Willpower vs. Target's Endurance Test. On failure, deals {{math spellPower \"*\" 3}} Magical + Bludgeoning damage and Stuns the Target for one round. On success, breaks 2d4d1 limbs (chosen by the Caster) and causes the same number of Serious Wounds. This spell cannot kill the Target or exceed the limit of Serious Wounds.",
     "options": [
       "divine",
       "magic"

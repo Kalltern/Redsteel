@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/earth/strike-body-stone-crumble.webp",
   "system": {
-    "description": "<p>Forces a willpower test vs. endurance test on one target. On success, the target is turned to stone. On failure, the target takes magic damage  {{math spellPower \"*\" 4}} and is slowed for 2 turns. Ignores armor.</p>",
+    "description": "<p>Forces a willpower test vs. endurance test on one target. On success, the target is turned to stone. On failure, the target takes magic damage {{math spellPower \"*\" 4}} and is slowed for 2 turns.</p>",
     "options": [
       "divine",
       "magic"

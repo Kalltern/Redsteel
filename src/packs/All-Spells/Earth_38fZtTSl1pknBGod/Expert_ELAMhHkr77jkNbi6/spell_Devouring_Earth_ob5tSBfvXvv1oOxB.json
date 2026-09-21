@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/nature/root-vine-entangled-humanoid.webp",
   "system": {
-    "description": "<p>Creates a barely visible trap on unoccupied hexes (must not be adjacent to another trap) for 15 minutes.</p><hr><p>Deals (2d8 + <span style=\"font-family:Signika, sans-serif\">{{spellPower}}</span>) damage and roots anyone entering the hex. <br>Triggers a vs test of caster's Will + <span style=\"font-family:Signika, sans-serif\">{{math spellPower \"*\" 3}}</span>) against target's Strength / Endurance test to break free.</p><hr><p>Ignores armor and Magical Defense.</p>",
+    "description": "<p>Creates a barely visible trap on unoccupied hexes (must not be adjacent to another trap) for 15 minutes.</p><hr><p>Deals (2d8 + <span style=\"font-family:Signika, sans-serif\">{{spellPower}}</span>) damage and roots anyone entering the hex. <br>Triggers a vs test of caster's Will + <span style=\"font-family:Signika, sans-serif\">{{math spellPower \"*\" 3}}</span>) against target's Strength / Endurance test to break free.</p><hr><p>Ignores Magical Defense.</p>",
     "options": [
       "divine",
       "magic"

@@ -4,7 +4,7 @@
   "img": "icons/magic/perception/eye-ringed-glow-angry-small-teal.webp",
   "system": {
     "localizationKey": "",
-    "description": "No requirements. Drains 1 Mind point from the caster. Targets an intelligent creature. Deals damage 3d6 + {{spellPower}}, 20% chance to Stun. Ignores Armor. ",
+    "description": "No requirements. Drains 1 Mind point from the caster. Targets an intelligent creature. Deals damage 3d6 + {{spellPower}}, 20% chance to Stun. ",
     "options": [
       "divine",
       "magic"

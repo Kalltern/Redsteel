@@ -134,6 +134,7 @@ import {
 } from "./spellCards.mjs";
 import { getSpellPower } from "./spellPower.mjs";
 import { normalizeResourceKey, resourceLabel } from "./itemResources.mjs";
+import { ARMOR_IGNORING_PENETRATION } from "./combatSkillBonuses.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } =
   foundry.applications.api;
@@ -1777,9 +1778,6 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     return {
       name: actor?.name ?? "",
       img,
-      // Handed to the stylesheet as a variable, so the band can lay a faded
-      // copy of the portrait behind itself without a rule per character.
-      portraitStyle: img ? `--rs-learn-portrait: url("${img}")` : "",
       race: race ? (race.localizedName ?? race.name) : "",
       doctrines: doctrines.join(" / "),
       attributes,
@@ -2740,6 +2738,10 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
             "system.actionCost",
             "system.cost",
             "system.perRound",
+            // 100 Penetration IS "Ignores Armor" (see
+            // ARMOR_IGNORING_PENETRATION), so the card reads the tag off the
+            // number instead of off the prose (user ruling 2026-09-21).
+            "system.penetration",
             // What casting adds to or drains from a pool besides its mana
             // cost: Corruption, chiefly. The card prints it beside the cost
             // rather than leaving it buried in the prose (user ruling
@@ -2796,6 +2798,7 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
             // data as an array; both shapes reach the index, so they are
             // flattened once here.
             resources: spellResourceList(entry.system?.resources),
+            penetration: Number(entry.system?.penetration) || 0,
             // template.json defaults isOffensive to true, so an entry that never
             // stored the field reads as offensive, the way the item itself does.
             offensive: entry.system?.isOffensive !== false,
@@ -3010,8 +3013,9 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
         // that describes the spell rather than costs for it runs under the
         // icon in `tileStats`.
         const tileKeys = [
-          // The first three stand on every card, in the same places, so a
-          // page of cards still rules up into columns.
+          // Difficulty, cost and action cost stand on every card, in this
+          // order, so a page of cards still rules up into columns. The upkeep
+          // slots between the cost and the action when there is one.
           cell("difficulty", "REDSTEEL.Item.Spell.FIELDS.difficulty.label", row.difficulty),
           // A cost of 0 is an answer, not a blank: the spell is free. The
           // number names what it is paid from, because a Blood-school spell
@@ -3025,21 +3029,25 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
               ? row.cost
               : `${row.cost} ${say(row.school === "blood" ? "costBlood" : "costMana")}`,
           ),
+          // The upkeep stands immediately under the cost, never anywhere else:
+          // it is the same currency paid again every round, and a plate that
+          // says only "Per round 4" has to sit beside the one that names what
+          // the 4 is (user ruling 2026-09-21). A spell that costs nothing per
+          // round says nothing at all — the pack stores that as 0, which is
+          // not the same as empty (user report 2026-09-20).
+          emptyStat(row.perRound) || Number(row.perRound) === 0
+            ? null
+            : {
+                key: "perRound",
+                label: say("perRoundShort"),
+                value: String(row.perRound),
+              },
           // "Action cost" is too long for a cell and pushed its own number
           // out of sight, so the card says "Action" (user report 2026-09-20).
           // The number is the printable form, not spellbook's parse: that one
           // answers what the cost is, and carries no text to print.
           cell("actionCost", "REDSTEEL.Learn.Spells.statAction", actionDisplay),
-        ];
-        // A spell that costs nothing per round says nothing: the pack stores
-        // that as 0, which is not the same as empty (user report 2026-09-20).
-        if (!emptyStat(row.perRound) && Number(row.perRound) !== 0) {
-          tileKeys.push({
-            key: "perRound",
-            label: say("perRoundShort"),
-            value: String(row.perRound),
-          });
-        }
+        ].filter(Boolean);
         // Corruption, Mind, Blood: the part of the price the prose used to
         // carry in words. Last in the panel, under the mana and the upkeep,
         // because it is what the cast costs the caster rather than the spell.
@@ -3065,13 +3073,38 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
           );
         }
         // Support, lesser or greater. Stored as an English key, printed in
-        // the reader's own language.
+        // the reader's own language. No label: the class reads as a phrase on
+        // its own — "support spell", not "Class: Support" — so the word
+        // "spell" carries what the label used to (user ruling 2026-09-21).
+        // Built through a format key because the two words do not join the
+        // same way in every language.
         if (typeof row.spellClass === "string" && row.spellClass.trim()) {
+          tileStats.push({
+            key: "spellClass",
+            label: "",
+            value: game.i18n.format("REDSTEEL.Learn.Spells.classAsSpell", {
+              class: spellClassLabel(row.spellClass.trim()),
+            }),
+          });
+        }
+        // Penetration, and the armour bypass read off it. 100 IS "Ignores
+        // Armor" (see ARMOR_IGNORING_PENETRATION), which the prose used to
+        // repeat in words (user ruling 2026-09-21) — so at 100 the plate
+        // carries the words alone, the way Concentration and Sustained do,
+        // and below it the number. It stands beside Class because it says
+        // what the spell does to a target rather than what it costs.
+        if (row.penetration >= ARMOR_IGNORING_PENETRATION) {
+          tileStats.push({
+            key: "ignoresArmor",
+            label: game.i18n.localize("REDSTEEL.Item.Spell.ignoresArmor"),
+            value: "",
+          });
+        } else if (row.penetration > 0) {
           tileStats.push(
             cell(
-              "spellClass",
-              "REDSTEEL.Learn.Spells.statSpellClass",
-              spellClassLabel(row.spellClass.trim()),
+              "penetration",
+              "REDSTEEL.Item.Weapon.FIELDS.penetration.label",
+              row.penetration,
             ),
           );
         }

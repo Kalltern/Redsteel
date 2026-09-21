@@ -4,7 +4,7 @@
   "img": "icons/magic/water/projectile-ice-teardrop.webp",
   "system": {
     "localizationKey": "",
-    "description": "<p>No requirement. Deals 1d4 damage to a single target per turn. Ignores armor.<br /><br />Not fully automated. Resolve damage per turn manually</p>",
+    "description": "<p>No requirement. Deals 1d4 damage to a single target per turn.<br /><br />Not fully automated. Resolve damage per turn manually</p>",
     "options": [
       "divine",
       "magic"

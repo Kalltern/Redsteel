@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/unholy/barrier-shield-glowing-pink.webp",
   "system": {
-    "description": "Creates Very Difficult Terrain in a 6m area for {{math spellPower \"/\" 2}} rounds. Deals 3d6 damage and 2d4 Corruption per hex moved through or started in. Ignores Armor.",
+    "description": "Creates Very Difficult Terrain in a 6m area for {{math spellPower \"/\" 2}} rounds. Deals 3d6 damage and 2d4 Corruption per hex moved through or started in.",
     "options": [
       "divine",
       "magic"

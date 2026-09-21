@@ -4,7 +4,7 @@
   "img": "icons/skills/wounds/blood-cells-disease-green.webp",
   "system": {
     "localizationKey": "",
-    "description": "Deals damage equal to 1d6 + {{spellPower}} for four rounds. Ignores Armor.",
+    "description": "Deals damage equal to 1d6 + {{spellPower}} for four rounds.",
     "options": [
       "divine",
       "magic"
@@ -104,7 +104,7 @@
       "diceSize": "0",
       "diceBonus": ""
     },
-    "penetration": 0,
+    "penetration": 100,
     "dmgType1": "dark",
     "bool2": "and",
     "dmgType2": "poison",

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/skills/wounds/illness-disease-glowing-green.webp",
   "system": {
-    "description": "<p>The target is afflicted by microscopic parasites for {{math spellPower \"/\" 2}} + 1 rounds, suffering 1d4 damage each round. The damage dealt is also gained as Corruption. Ignores Armor.<br /><br />The unbearable itching also costs the target 1 Action and 1 Reaction each round — resolve that at the table.</p>",
+    "description": "<p>The target is afflicted by microscopic parasites for {{math spellPower \"/\" 2}} + 1 rounds, suffering 1d4 damage each round. The damage dealt is also gained as Corruption.<br /><br />The unbearable itching also costs the target 1 Action and 1 Reaction each round — resolve that at the table.</p>",
     "options": [
       "divine",
       "magic"
@@ -97,7 +97,7 @@
       "diceSize": "0",
       "diceBonus": ""
     },
-    "penetration": 0,
+    "penetration": 100,
     "dmgType1": "magic",
     "bool2": "and",
     "dmgType2": "dark",

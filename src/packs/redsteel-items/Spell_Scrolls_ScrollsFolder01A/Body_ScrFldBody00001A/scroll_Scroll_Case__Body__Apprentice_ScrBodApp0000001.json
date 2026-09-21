@@ -1,0 +1,36 @@
+{
+  "folder": "ScrFldBody00001A",
+  "name": "Scroll Case: Body, Apprentice",
+  "type": "scroll",
+  "img": "icons/sundries/scrolls/scroll-runed-brown-purple.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.ScrollCaseBodyApprentice.name",
+    "description": "<p>A bound case of apprentice scrolls from the School of Body. Every sheet inside carries one spell, and the sigils stay unread until somebody sits down and studies them.</p>",
+    "quantity": 1,
+    "school": "body",
+    "rank": "apprentice",
+    "spell": "",
+    "identifyDifficulty": 0,
+    "writeDifficulty": -10,
+    "castBonus": 0
+  },
+  "effects": [],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.365",
+    "systemId": "redsteel",
+    "systemVersion": "0.12.0",
+    "createdTime": 1786000000000,
+    "modifiedTime": 1786000000000,
+    "lastModifiedBy": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "_id": "ScrBodApp0000001",
+  "sort": 100000,
+  "_key": "!items!ScrBodApp0000001"
+}

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/blast-jet-stream-embers-orange.webp",
   "system": {
-    "description": "<p>Targets an armored opponent, dealing 4d6 + 2d6x + {{spellPower}} damage. Triggers Will vs Endurance (Pain) with Disadvantage. On success, target is Paralyzed for 1 round. Cannot apply Burning effect. Ignores Armor.</p>",
+    "description": "<p>Targets an armored opponent, dealing 4d6 + 2d6x + {{spellPower}} damage. Triggers Will vs Endurance (Pain) with Disadvantage. On success, target is Paralyzed for 1 round. Cannot apply Burning effect.</p>",
     "options": [
       "divine",
       "magic"

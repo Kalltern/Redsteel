@@ -8,6 +8,7 @@
 
 import { getSpellPower } from "./spellPower.mjs";
 import { normalizeResourceKey, resourceLabel } from "./itemResources.mjs";
+import { ARMOR_IGNORING_PENETRATION } from "./combatSkillBonuses.mjs";
 
 /**
  * Matches a spell-power placeholder in stored description prose, in any of the
@@ -299,6 +300,23 @@ export function buildSpellPills(system = {}, kind = "spell") {
         spellRangeMeters(system.range),
       ),
     );
+    // Penetration, and the armour bypass read off it. 100 IS "Ignores Armor"
+    // (see ARMOR_IGNORING_PENETRATION in combatSkillBonuses.mjs), which the
+    // prose used to repeat in words (user ruling 2026-09-21) — so at 100 the
+    // box prints the words instead of a number that means nothing on its own.
+    // A spell with no penetration says nothing, as every other pill does.
+    const penetration = Number(system.penetration) || 0;
+    if (penetration > 0) {
+      pills.push(
+        pill(
+          "penetration",
+          "REDSTEEL.Item.Weapon.FIELDS.penetration.label",
+          penetration >= ARMOR_IGNORING_PENETRATION
+            ? game.i18n.localize("REDSTEEL.Item.Spell.ignoresArmor")
+            : penetration,
+        ),
+      );
+    }
   } else if (kind === "ability") {
     const { display } = parseActionCost(system.actionCost);
     pills.push(

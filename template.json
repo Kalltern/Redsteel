@@ -1349,7 +1349,8 @@
       "condition",
       "recipe",
       "enchantment",
-      "spellbook"
+      "spellbook",
+      "scroll"
     ],
     "htmlFields": ["description"],
     "templates": {
@@ -1694,6 +1695,16 @@
       "capacity": 0,
       "spells": []
     },
+    "scroll": {
+      "templates": ["base"],
+      "quantity": 1,
+      "school": "",
+      "rank": "apprentice",
+      "spell": "",
+      "identifyDifficulty": 0,
+      "writeDifficulty": -10,
+      "castBonus": 0
+    },
     "recipe": {
       "templates": ["base"],
       "outputType": "potion",
@@ -1882,6 +1893,7 @@
       "difficulty": 0,
       "cost": 0,
       "perRound": 0,
+      "penetration": 0,
       "variants": []
     }
   }

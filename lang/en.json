@@ -4482,6 +4482,7 @@
           "hexes": "{n} hex",
           "metresLabel": "Range (m)"
         },
+        "ignoresArmor": "Ignores Armor",
         "FIELDS": {
           "propertiesHeader": {
             "label": "Spell properties"
@@ -4845,6 +4846,58 @@
       "DropNotGlobal": "Write the spell from the compendium, not from a character's own copy.",
       "DropDuplicate": "{name} is already written in this book.",
       "DropAdded": "{name} written into the book."
+    },
+    "Scroll": {
+      "Name": "Scroll: {spell}",
+      "Unidentified": "Unidentified Scroll",
+      "MasterHint": "A case of scrolls. Give it to a character and one is drawn at random.",
+      "Sheet": {
+        "Pool": "Scrolls in this case",
+        "TakeOut": "Take out",
+        "Empty": "No spells of this school and rank in the compendium."
+      },
+      "Field": {
+        "School": "School",
+        "Rank": "Rank",
+        "Spell": "Spell",
+        "IdentifyDifficulty": "Identify difficulty",
+        "WriteDifficulty": "Copying difficulty",
+        "CastBonus": "Scroll cast bonus",
+        "CastBonusHint": "Added to the reader's Channeling when the scroll is read aloud, offsetting the spell's own difficulty."
+      },
+      "Window": {
+        "Title": "Spell Scroll",
+        "Identify": "Identify",
+        "Write": "Copy into grimoire",
+        "Cast": "Read aloud",
+        "Reroll": "Re-roll",
+        "Book": "Target grimoire",
+        "NoBooks": "This character carries no grimoire.",
+        "Difficulty": "Difficulty",
+        "Result": "d100 {d100} — margin {margin}",
+        "UnknownHint": "The sigils mean nothing yet. Identify the scroll, or read it blind and find out the hard way.",
+        "WriteHint": "Copying the scroll destroys it, whether the hand is steady or not.",
+        "CastHint": "Reading the scroll aloud spends it. No mana, no channelling test.",
+        "Close": "Close"
+      },
+      "Warn": {
+        "NoRerolls": "No re-roll charges left.",
+        "IdentifyLocked": "{name} has already failed to read this scroll. Try again after a long rest.",
+        "NotIdentified": "An unidentified scroll cannot be copied into a grimoire.",
+        "NoSpell": "This scroll carries no spell.",
+        "Empty": "There are no spells of that school and rank to draw.",
+        "NoBook": "Choose a grimoire first.",
+        "NotOwner": "You do not own this character."
+      },
+      "Chat": {
+        "Identify": "<b>{actor}</b> studied a scroll — Arcana, d100 {d100}, margin {margin}.",
+        "IdentifySuccess": "It is <b>{spell}</b>.",
+        "IdentifyFailure": "The sigils stay meaningless.",
+        "Write": "<b>{actor}</b> copied <b>{spell}</b> into {book} — Arcana, d100 {d100}, margin {margin}. The scroll is spent.",
+        "WriteFailure": "<b>{actor}</b> botched the copying of <b>{spell}</b> — Arcana, d100 {d100}, margin {margin}. The scroll is ruined.",
+        "Cast": "<b>{actor}</b> read <b>{spell}</b> from a scroll. The scroll crumbles.",
+        "Reroll": "Re-rolled."
+      }
     },
     "Defense": {
       "BlindsideDodge": "Blindside Dodge",
@@ -7361,6 +7414,118 @@
       "Ascetic": {
         "name": "Ascetic"
       },
+      "ScrollCaseFireApprentice": {
+        "name": "Scroll Case: Fire, Apprentice",
+        "description": "<p>A bound case of apprentice scrolls from the School of Fire. Every sheet inside carries one spell, and the sigils stay unread until somebody sits down and studies them.</p>"
+      },
+      "ScrollCaseFireExpert": {
+        "name": "Scroll Case: Fire, Expert",
+        "description": "<p>A bound case of expert scrolls from the School of Fire. Every sheet inside carries one spell, and the sigils stay unread until somebody sits down and studies them.</p>"
+      },
+      "ScrollCaseFireMaster": {
+        "name": "Scroll Case: Fire, Master",
+        "description": "<p>A bound case of master scrolls from the School of Fire. Every sheet inside carries one spell, and the sigils stay unread until somebody sits down and studies them.</p>"
+      },
+      "ScrollCaseFireGrandmaster": {
+        "name": "Scroll Case: Fire, Grandmaster",
+        "description": "<p>A bound case of grandmaster scrolls from the School of Fire. Every sheet inside carries one spell, and the sigils stay unread until somebody sits down and studies them.</p>"
+      },
+      "ScrollCaseWaterApprentice": {
+        "name": "Scroll Case: Water, Apprentice",
+        "description": "<p>A bound case of apprentice scrolls from the School of Water. Every sheet inside carries one spell, and the sigils stay unread until somebody sits down and studies them.</p>"
+      },
+      "ScrollCaseWaterExpert": {
+        "name": "Scroll Case: Water, Expert",
+        "description": "<p>A bound case of expert scrolls from the School of Water. Every sheet inside carries one spell, and the sigils stay unread until somebody sits down and studies them.</p>"
+      },
+      "ScrollCaseWaterMaster": {
+        "name": "Scroll Case: Water, Master",
+        "description": "<p>A bound case of master scrolls from the School of Water. Every sheet inside carries one spell, and the sigils stay unread until somebody sits down and studies them.</p>"
+      },
+      "ScrollCaseWaterGrandmaster": {
+        "name": "Scroll Case: Water, Grandmaster",
+        "description": "<p>A bound case of grandmaster scrolls from the School of Water. Every sheet inside carries one spell, and the sigils stay unread until somebody sits down and studies them.</p>"
+      },
+      "ScrollCaseAirApprentice": {
+        "name": "Scroll Case: Air, Apprentice",
+        "description": "<p>A bound case of apprentice scrolls from the School of Air. Every sheet inside carries one spell, and the sigils stay unread until somebody sits down and studies them.</p>"
+      },
+      "ScrollCaseAirExpert": {
+        "name": "Scroll Case: Air, Expert",
+        "description": "<p>A bound case of expert scrolls from the School of Air. Every sheet inside carries one spell, and the sigils stay unread until somebody sits down and studies them.</p>"
+      },
+      "ScrollCaseAirMaster": {
+        "name": "Scroll Case: Air, Master",
+        "description": "<p>A bound case of master scrolls from the School of Air. Every sheet inside carries one spell, and the sigils stay unread until somebody sits down and studies them.</p>"
+      },
+      "ScrollCaseAirGrandmaster": {
+        "name": "Scroll Case: Air, Grandmaster",
+        "description": "<p>A bound case of grandmaster scrolls from the School of Air. Every sheet inside carries one spell, and the sigils stay unread until somebody sits down and studies them.</p>"
+      },
+      "ScrollCaseEarthApprentice": {
+        "name": "Scroll Case: Earth, Apprentice",
+        "description": "<p>A bound case of apprentice scrolls from the School of Earth. Every sheet inside carries one spell, and the sigils stay unread until somebody sits down and studies them.</p>"
+      },
+      "ScrollCaseEarthExpert": {
+        "name": "Scroll Case: Earth, Expert",
+        "description": "<p>A bound case of expert scrolls from the School of Earth. Every sheet inside carries one spell, and the sigils stay unread until somebody sits down and studies them.</p>"
+      },
+      "ScrollCaseEarthMaster": {
+        "name": "Scroll Case: Earth, Master",
+        "description": "<p>A bound case of master scrolls from the School of Earth. Every sheet inside carries one spell, and the sigils stay unread until somebody sits down and studies them.</p>"
+      },
+      "ScrollCaseEarthGrandmaster": {
+        "name": "Scroll Case: Earth, Grandmaster",
+        "description": "<p>A bound case of grandmaster scrolls from the School of Earth. Every sheet inside carries one spell, and the sigils stay unread until somebody sits down and studies them.</p>"
+      },
+      "ScrollCaseSpiritApprentice": {
+        "name": "Scroll Case: Spirit, Apprentice",
+        "description": "<p>A bound case of apprentice scrolls from the School of Spirit. Every sheet inside carries one spell, and the sigils stay unread until somebody sits down and studies them.</p>"
+      },
+      "ScrollCaseSpiritExpert": {
+        "name": "Scroll Case: Spirit, Expert",
+        "description": "<p>A bound case of expert scrolls from the School of Spirit. Every sheet inside carries one spell, and the sigils stay unread until somebody sits down and studies them.</p>"
+      },
+      "ScrollCaseSpiritMaster": {
+        "name": "Scroll Case: Spirit, Master",
+        "description": "<p>A bound case of master scrolls from the School of Spirit. Every sheet inside carries one spell, and the sigils stay unread until somebody sits down and studies them.</p>"
+      },
+      "ScrollCaseSpiritGrandmaster": {
+        "name": "Scroll Case: Spirit, Grandmaster",
+        "description": "<p>A bound case of grandmaster scrolls from the School of Spirit. Every sheet inside carries one spell, and the sigils stay unread until somebody sits down and studies them.</p>"
+      },
+      "ScrollCaseBodyApprentice": {
+        "name": "Scroll Case: Body, Apprentice",
+        "description": "<p>A bound case of apprentice scrolls from the School of Body. Every sheet inside carries one spell, and the sigils stay unread until somebody sits down and studies them.</p>"
+      },
+      "ScrollCaseBodyExpert": {
+        "name": "Scroll Case: Body, Expert",
+        "description": "<p>A bound case of expert scrolls from the School of Body. Every sheet inside carries one spell, and the sigils stay unread until somebody sits down and studies them.</p>"
+      },
+      "ScrollCaseBodyMaster": {
+        "name": "Scroll Case: Body, Master",
+        "description": "<p>A bound case of master scrolls from the School of Body. Every sheet inside carries one spell, and the sigils stay unread until somebody sits down and studies them.</p>"
+      },
+      "ScrollCaseBodyGrandmaster": {
+        "name": "Scroll Case: Body, Grandmaster",
+        "description": "<p>A bound case of grandmaster scrolls from the School of Body. Every sheet inside carries one spell, and the sigils stay unread until somebody sits down and studies them.</p>"
+      },
+      "ScrollCaseDarknessApprentice": {
+        "name": "Scroll Case: Darkness, Apprentice",
+        "description": "<p>A bound case of apprentice scrolls from the School of Darkness. Every sheet inside carries one spell, and the sigils stay unread until somebody sits down and studies them.</p>"
+      },
+      "ScrollCaseDarknessExpert": {
+        "name": "Scroll Case: Darkness, Expert",
+        "description": "<p>A bound case of expert scrolls from the School of Darkness. Every sheet inside carries one spell, and the sigils stay unread until somebody sits down and studies them.</p>"
+      },
+      "ScrollCaseDarknessMaster": {
+        "name": "Scroll Case: Darkness, Master",
+        "description": "<p>A bound case of master scrolls from the School of Darkness. Every sheet inside carries one spell, and the sigils stay unread until somebody sits down and studies them.</p>"
+      },
+      "ScrollCaseDarknessGrandmaster": {
+        "name": "Scroll Case: Darkness, Grandmaster",
+        "description": "<p>A bound case of grandmaster scrolls from the School of Darkness. Every sheet inside carries one spell, and the sigils stay unread until somebody sits down and studies them.</p>"
+      },
       "Rations": {
         "name": "Rations",
         "description": "<p>A day's worth of trail food: hard bread, dried meat, whatever the pot gave up. One unit feeds one mouth for a third of a day. A normal character eats 3 units per Long Rest.</p>"
@@ -7742,6 +7907,7 @@
         "readMore": "Read more",
         "readLess": "Read less",
         "statSpellClass": "Class",
+        "classAsSpell": "{class} spell",
         "rangeWithMetres": "{hexes} ({metres} m)",
         "Class": {
           "support": "Support",
@@ -8022,6 +8188,7 @@
     },
     "Item": {
       "spellbook": "Grimoire",
+      "scroll": "Spell Scroll",
       "weapon": "Weapon",
       "item": "Item",
       "gear": "Gear",
