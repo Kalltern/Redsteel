@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/earth/strike-body-stone-crumble.webp",
   "system": {
-    "description": "Puts the caster or a willing target into a state indistinguishable from death for a predetermined duration (max 10 days, extendable by recasting). The Probe spell has a 35% chance to detect the truth.",
+    "description": "<p>Puts the caster or a willing target into a state indistinguishable from death, for a set duration of up to ten days, extendable by recasting.</p><p>The Probe spell has a 35% chance to see through it.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
       "effect2": 0,
       "effect3": 0,
       "effect4": 0
-    }
+    },
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "JBcANv6vENmYO1qP",

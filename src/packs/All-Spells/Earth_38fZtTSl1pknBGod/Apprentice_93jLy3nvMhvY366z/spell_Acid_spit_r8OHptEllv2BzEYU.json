@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/acid/projectile-smoke-glowing.webp",
   "system": {
-    "description": "<p>The caster spits a corrosive glob of acid at a single target, with a 50% chance to corrode the target’s armor, reducing it by 4 points. </p><p>Afterwards, it deals 4d6 + <span style=\"font-family:Signika, sans-serif\">{{math spellPower}} damage</span>.</p>",
+    "description": "<p>Spits a corrosive glob of acid at one target for 4d6 + {{spellPower}} damage, with a 50% chance to corrode its armor by 4.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "93jLy3nvMhvY366z",

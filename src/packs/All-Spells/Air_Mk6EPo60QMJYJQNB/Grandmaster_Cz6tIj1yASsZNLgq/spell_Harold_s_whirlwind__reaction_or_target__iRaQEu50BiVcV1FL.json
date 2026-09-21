@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/air/wind-tornado-cyclone-red-orange.webp",
   "system": {
-    "description": "<p>Harold's Whirlwind: Propels self or target in any direction (vertically or horizontally).</p><hr><p>Will Test (bonus {{math spellPower \"*\" 4}}) vs. Target's Dexterity Test.</p><hr><p>On caster's success: Propels target up to {{math spellPower \"*\" 5}} hexes.</p><p>On failure: Moves the target 3 hexes in any direction. Target takes 1d8 damage per hex it couldn't move.</p><p>Fall damage follows Falling/Acrobatics rules.</p><p>Maximum damage capped at 100. Can only be cast as Reaction on self when attacked.</p>",
+    "description": "<p>Propels the caster or a target in any direction, vertically or horizontally.</p><p>The caster tests Will + {{math spellPower \"*\" 4}} against the target's Dexterity.</p><p><strong>On success:</strong> the target is propelled up to {{math spellPower \"*\" 5}} hexes.</p><p><strong>On failure:</strong> the target moves 3 hexes in any direction and takes 1d8 damage for every hex it could not move.</p><p>Fall damage follows the Falling and Acrobatics rules. Damage from this spell is capped at 100.</p><p>Can be cast as a Reaction on the caster only, when the caster is attacked.</p>",
     "options": [
       "divine",
       "magic"
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "will",
-    "testModifier": "@spellPower*4"
+    "testModifier": "@spellPower*4",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "Cz6tIj1yASsZNLgq",

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/nature/leaf-rune-glow-green.webp",
   "system": {
-    "description": "<p>This spell creates a protective aura that repels insects for a duration equal to {{spellPower}} hours.</p><p>Can be cast on multiple targets at an additional cost per target.</p>",
+    "description": "<p>Creates an aura that repels insects for {{spellPower}} hours.</p><p>Can be cast on a group, at the cost of one casting per target.</p>",
     "options": [
       "divine",
       "magic"
@@ -143,7 +143,9 @@
     "testModifier": "",
     "effectType1": "custom",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "93jLy3nvMhvY366z",

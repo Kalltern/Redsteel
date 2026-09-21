@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/water/bubbles-air-water-pink.webp",
   "system": {
-    "description": "Pollutes or poisons any liquid. Consuming large amounts may be lethal.",
+    "description": "<p>Pollutes or poisons any liquid.</p><p>Consuming a large amount of it may be lethal.</p>",
     "options": [
       "divine",
       "magic"
@@ -118,7 +118,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "8nT2ag63tCfjXxeJ",

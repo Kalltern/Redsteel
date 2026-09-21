@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/water/snowflake-ice-blue.webp",
   "system": {
-    "description": "<p>Creates a snowstorm in 250m area that Slows Targets and deals {{math spellPower \"*\" 3}} damage per turn. 3m area around caster is protected. Maximum 30% Freeze chance. Always counts as Magical attack with 50 Strength. </p>",
+    "description": "<p>Creates a snowstorm in a 250 m area that Slows targets and deals {{math spellPower \"*\" 3}} damage per round, with up to a 30% chance to Freeze.</p><p>A 3 m area around the caster is protected. It always counts as a Magic Attack with 50.</p>",
     "options": [
       "divine",
       "magic"
@@ -118,7 +118,9 @@
     },
     "effectType1": "slow",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "5ubiTNT29W3ben57",

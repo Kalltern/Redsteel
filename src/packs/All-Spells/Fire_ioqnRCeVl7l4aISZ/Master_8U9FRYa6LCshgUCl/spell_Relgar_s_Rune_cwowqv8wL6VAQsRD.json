@@ -1,9 +1,9 @@
 {
-  "name": "Relgar’s Rune",
+  "name": "Relgar's Rune",
   "type": "spell",
   "img": "icons/magic/symbols/rune-sigil-red-orange.webp",
   "system": {
-    "description": "<p>Creates a barely visible trap on an unoccupied hex (must not be adjacent to another trap) for 15 minutes.</p><hr><p>Deals {{math spellPower \"*\" 3}} + 3d8 damage in 2 hex (3 m) radius. <br>First target has +15% Burning chance.<br>Ignores Magic Defense of the first target.</p>",
+    "description": "<p>Creates a barely visible trap on an unoccupied hex for 15 minutes, dealing 3d8 + {{math spellPower \"*\" 3}} damage in a 2 hex radius to anyone entering it.</p><p>The first target has a 15% higher chance to catch Burning. The hex must not be adjacent to another trap.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "When the trap triggers, roll this spell manually for 0 mana cost and disregard the channeling test. The first target's Magic Defense is ignored, so let them roll their defense and disregard the result manually until this is automated.",
+    "vsTest": false
   },
   "effects": [],
   "folder": "8U9FRYa6LCshgUCl",

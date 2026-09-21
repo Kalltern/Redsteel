@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/projectile-arrow-fire-red-yellow.webp",
   "system": {
-    "description": "<p>Deals 2d6 + 1d6x + {{math spellPower \"+\" 1}} damage to one target.</p>",
+    "description": "<p>Deals 2d6 + 1d6 exploding + {{math spellPower \"+\" 1}} damage to one target.</p>",
     "options": [
       "divine",
       "magic"
@@ -135,7 +135,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "PAKdG8hF5etFCq16",

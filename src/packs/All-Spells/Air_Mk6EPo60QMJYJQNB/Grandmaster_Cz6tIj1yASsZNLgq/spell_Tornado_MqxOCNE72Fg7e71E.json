@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "Cz6tIj1yASsZNLgq",

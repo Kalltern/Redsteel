@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
-    "description": "Mends broken bones, one bone/group per casting. Speeds Serious Injury healing by 15 days (cast separately for each Serious Injury). Heals 2d4 HP. Cannot be cast on self unless under Pain Dulling or similar effect.",
+    "description": "<p>Mends broken bones, one bone or group of bones per casting, and heals 2d4 HP.</p><p>Speeds the healing of a Grave Wound by 15 days. Cast it separately for each Grave Wound.</p><p>Cannot be cast on self unless the caster is under Dull pain or a similar effect.</p>",
     "options": [
       "divine",
       "magic"
@@ -110,7 +110,9 @@
       "effect2": "0",
       "effect3": "0",
       "effect4": "0"
-    }
+    },
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "6PM0K9AWtzeYO1Fn",

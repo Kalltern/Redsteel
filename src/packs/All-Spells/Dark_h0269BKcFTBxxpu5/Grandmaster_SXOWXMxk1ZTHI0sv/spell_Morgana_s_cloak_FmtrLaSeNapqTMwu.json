@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/unholy/silhouette-light-fire-blue.webp",
   "system": {
-    "description": "Creates a 7.5m aura that attracts fallen souls for immediate use or storage. Enemies within the aura suffer Fear for 2 rounds before each attack, with Nerve Tests at a penalty of {{math spellPower \"*\" 1}}. The aura can be detonated (at the cost of at least one soul) to deal Xd20 + {{math spellPower \"*\" 2}} damage to all enemies in the area (X = number of used souls), and causes Fear for 3 rounds (Nerve Test penalty {{math spellPower \"*\" 1}}).",
+    "description": "<p>Creates a 7.5 m aura that attracts fallen souls for immediate use or storage.</p><p>Enemies inside the aura suffer Fear for two rounds before each attack, with a penalty of {{math spellPower \"*\" 1}} on Resolve tests.</p><p>The aura can be detonated, at the cost of at least one soul, dealing 1d20 + {{math spellPower \"*\" 2}} damage per soul used to every enemy in the area, and causing Fear for three rounds with the same Resolve penalty.</p>",
     "options": [
       "divine",
       "magic"
@@ -118,7 +118,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "The detonation is not automated. It will be once souls are a real system. Roll 1d20 per soul spent and resolve the Fear manually until then.",
+    "vsTest": false
   },
   "effects": [],
   "folder": "SXOWXMxk1ZTHI0sv",

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
-    "description": "100/75/50% chance (depending on Poison level) to cure Poison. Prevents new Poisoning for {{math spellPower \"*\" 1}} rounds.",
+    "description": "<p>Cures Poison, with a 100%, 75% or 50% chance depending on the Poison's level, and prevents new Poisoning for {{math spellPower \"*\" 1}} rounds.</p>",
     "options": [
       "divine",
       "magic"
@@ -110,7 +110,9 @@
       "effect2": "0",
       "effect3": "0",
       "effect4": "0"
-    }
+    },
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "6PM0K9AWtzeYO1Fn",

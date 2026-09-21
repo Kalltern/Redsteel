@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/air/wind-tornado-spiral-pink-purple.webp",
   "system": {
-    "description": "<p>Can be cast as a Reaction only when caster is being attacked. <br />Successful cast cancels the incoming physical attack.</p><hr /><p>Triggers a vs Test of Will + {{math spellPower \"*\" 2}} against target's Strength/Dexterity Test.</p><hr /><ul><li><p>On caster's success, the target is set Prone and pushed back one hex.</p></li><li><p>On failure, the target is pushed back one hex.</p></li><li><p>On a failure with a target's Margin of Success of at least 50, the target is not pushed at all.</p></li></ul>",
+    "description": "<p>The caster tests Will + {{math spellPower \"*\" 2}} against the target's Strength or Dexterity.</p><p><strong>On success:</strong> the target is knocked Prone and pushed back one hex.</p><p><strong>On failure:</strong> the target is pushed back one hex.</p><p><strong>On failure by a margin of 50 or more:</strong> the target is not pushed at all.</p><p>A successful cast cancels the incoming physical attack. Can be cast as a Reaction only when the caster is attacked.</p>",
     "options": [
       "divine",
       "magic"
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "will",
-    "testModifier": "@spellPower*2"
+    "testModifier": "@spellPower*2",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "AdbWyEUEtS9mw4hw",

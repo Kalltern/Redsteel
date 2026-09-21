@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/symbols/runes-star-orange.webp",
   "system": {
-    "description": "<p>Attempts to dispells any spell, chance based on level (90/70/40/15%). </p><hr><p>Alternatively, it may disrupt ongoing casting, increasing the spell's Difficulty by -40% and the chance of Critical Failure by -1%. <br><br>If the resulting cast ends in a Critical Failure, the caster may reduce the opponent’s Critical Failure Degree to any lower level.</p><hr><p>Can be cast as a Reaction during anyone's channelling within range. Always greatly destabilizes portals.</p>",
+    "description": "<p>Attempts to dispel any spell, with a chance of 90%, 70%, 40% or 15% depending on its level.</p><p>Alternatively it disrupts an ongoing cast, adding a 40 point negative penalty to that spell's Difficulty and a 1% negative penalty to its Critical Failure chance.</p><p>If the disrupted cast ends in a Critical Failure, the caster may reduce the opponent's Critical Failure Degree to any lower level.</p><p>Can be cast as a Reaction during anyone's channelling within range. Always greatly destabilizes portals.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "UxjnWqOZrypZl1NP",

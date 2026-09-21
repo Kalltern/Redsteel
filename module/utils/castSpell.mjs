@@ -64,7 +64,7 @@ export async function castSpell() {
  * @param {Item} spell - The spell to cast (already variant-resolved).
  * `extraAttackBonus` is a flat addition to the cast roll that comes from
  * outside the caster: today only a spell scroll passes it, contributing the
- * original scribe's work so that reading one aloud is not purely a test of the
+ * original scribe's work so that breaking a seal is not purely a test of the
  * reader's own Channeling (see utils/spellScrolls.mjs). It rides on
  * `bonuses.attackBonus`, so the chat card's breakdown states it.
  *

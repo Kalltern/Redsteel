@@ -3035,7 +3035,11 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
           // the 4 is (user ruling 2026-09-21). A spell that costs nothing per
           // round says nothing at all — the pack stores that as 0, which is
           // not the same as empty (user report 2026-09-20).
-          emptyStat(row.perRound) || Number(row.perRound) === 0
+          // perRound can hold a dice formula ("1d4") as well as a plain
+          // number; Number("1d4") is NaN, so only a value that actually
+          // parses to 0 counts as "no upkeep" here.
+          emptyStat(row.perRound) ||
+          (Number.isFinite(Number(row.perRound)) && Number(row.perRound) === 0)
             ? null
             : {
                 key: "perRound",
@@ -3053,6 +3057,11 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
         // because it is what the cast costs the caster rather than the spell.
         tileKeys.push(...spellResourceCells(row.resources));
         const tileStats = [];
+        // What the spell IS, as opposed to where it reaches: armour bypass,
+        // Concentration, Sustained. These used to wrap onto a second line of
+        // the caption, where they read as more of the same sentence. They are
+        // their own row of small pills now (user ruling 2026-09-21).
+        const tileTags = [];
         // A number here is a count of hexes, and the card carries the real
         // distance beside it. Self and Touch convert to nothing, so they
         // print the word alone.
@@ -3094,13 +3103,13 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
         // and below it the number. It stands beside Class because it says
         // what the spell does to a target rather than what it costs.
         if (row.penetration >= ARMOR_IGNORING_PENETRATION) {
-          tileStats.push({
+          tileTags.push({
             key: "ignoresArmor",
             label: game.i18n.localize("REDSTEEL.Item.Spell.ignoresArmor"),
             value: "",
           });
         } else if (row.penetration > 0) {
-          tileStats.push(
+          tileTags.push(
             cell(
               "penetration",
               "REDSTEEL.Item.Weapon.FIELDS.penetration.label",
@@ -3112,14 +3121,14 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
         // when the spell has the property, so a "Yes" beside it is a word
         // wasted and a "No" is never printed (user ruling 2026-09-20).
         if (action.concentration) {
-          tileStats.push({
+          tileTags.push({
             key: "concentration",
             label: game.i18n.localize("REDSTEEL.Actor.Spells.Concentration.Label"),
             value: "",
           });
         }
         if (row.sustained) {
-          tileStats.push({ key: "sustained", label: say("sustained"), value: "" });
+          tileTags.push({ key: "sustained", label: say("sustained"), value: "" });
         }
         // The damage types run as one line of fine print under the icon, not
         // as another row of cells: they say what the spell deals, not what it
@@ -3127,7 +3136,14 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
         const tileDmg = dmgPartsLabel(row.dmgParts);
         // Spell power placeholders resolve against the character being levelled
         // up, so the prose reads with their own numbers in it.
-        const description = resolveSpellPowerTokens(row.description, spellPowerIn(row.school));
+        // `markup: true`: the tile renders this as HTML ({{{description}}}),
+        // so each resolved number becomes a hoverable `.rs-sk` span that says
+        // which Spell Power it came from.
+        const description = resolveSpellPowerTokens(
+          row.description,
+          spellPowerIn(row.school),
+          { markup: true },
+        );
         const expandKey = `spell-${row.uuid}`;
         const inActiveBook = activeSet.has(row.uuid);
         // Written down, but in a grimoire other than the open one.
@@ -3163,6 +3179,7 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
           // rest runs under it, and the damage line sits apart between them.
           tileKeys,
           tileStats,
+          tileTags,
           tileDmg,
           // Empty for a spell with no prose, and the template leaves such a row
           // unclickable rather than opening an empty panel.

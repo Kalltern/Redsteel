@@ -133,6 +133,41 @@ function collectConditionSubStatuses(item) {
 }
 
 /**
+ * Collect the text a condition item's enabled embedded Active Effects carry:
+ * their descriptions and their Roll Triggers (flags.redsteel.rollTriggersRaw,
+ * added by the effect sheet). The condition is never copied onto the actor —
+ * one effect is built from this definition — so anything written on the
+ * item's own effects has to be gathered here or it is lost on apply: the
+ * applied effect would show no details and getTraitPills (traitPills.mjs)
+ * would find no triggers to remind on.
+ *
+ * Several enabled effects merge, the same way their `changes` do. The
+ * description falls back to the condition item's own, so a condition whose
+ * text lives on the item still explains itself on the target.
+ *
+ * @param {Item} item
+ * @returns {{description: string, rollTriggersRaw: string}}
+ */
+function collectConditionText(item) {
+  const descriptions = [];
+  const triggers = [];
+  for (const effect of item.effects) {
+    if (effect.disabled) continue;
+    const description = String(effect.description ?? "").trim();
+    if (description) descriptions.push(description);
+    const raw = String(
+      effect.getFlag("redsteel", "rollTriggersRaw") ?? "",
+    ).trim();
+    if (raw) triggers.push(raw);
+  }
+
+  return {
+    description: descriptions.join("") || (item.localizedDescription ?? ""),
+    rollTriggersRaw: triggers.join(", "),
+  };
+}
+
+/**
  * Build the damage type expression a condition's per-round damage is
  * evaluated against (same token format as weapons / spells / abilities:
  * type strings joined by "and" / "or").
@@ -169,11 +204,17 @@ export function buildConditionDefinition(item) {
   const turns = Number(item.system.turns) || 0;
   const damage = String(item.system.damage ?? "").trim();
 
+  const { description, rollTriggersRaw } = collectConditionText(item);
+
   const def = {
     name: item.name,
     img: item.img,
     statuses: [id],
     changes: collectConditionChanges(item),
+    // Written onto the applied effect document (see _applySingleEffect):
+    // the details the GM authored on the condition, not just its numbers.
+    description,
+    rollTriggersRaw,
     // Re-applying an existing condition refreshes its duration.
     stackBehavior: "refresh",
     isCustomCondition: true,
@@ -325,11 +366,16 @@ export function syncConditionStatusEffects() {
     const redsteelFlags = { triggers: def.triggers ?? {} };
     if (def.defaultRounds > 0) redsteelFlags.rounds = def.defaultRounds;
     if (def.defaultTurns > 0) redsteelFlags.actorTurns = def.defaultTurns;
+    // Roll trigger pills read this flag off the applied effect.
+    if (def.rollTriggersRaw) {
+      redsteelFlags.rollTriggersRaw = def.rollTriggersRaw;
+    }
 
     registerStatusEffectEntry({
       id,
       name: item.name,
       img: item.img,
+      description: def.description,
       changes: def.changes,
       hud: true,
       flags: {

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/unholy/strike-body-life-soul-green.webp",
   "system": {
-    "description": "<p>Deals 2d6 + {{math spellPower \"/\" 2}} damage per round, which heals the caster for the damage dealt.<br /><br />Damage ticks automatically each round while maintained. Add the drained health to the caster manually.</p>",
+    "description": "<p>Deals 2d6 + {{math spellPower \"/\" 2}} damage per round to one target and heals the caster for the damage dealt.</p>",
     "options": [
       "divine",
       "magic"
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "Damage ticks automatically while maintained. Add the drained Health to the caster manually.",
+    "vsTest": false
   },
   "effects": [],
   "folder": "XCC7CG5LovD3hSXR",

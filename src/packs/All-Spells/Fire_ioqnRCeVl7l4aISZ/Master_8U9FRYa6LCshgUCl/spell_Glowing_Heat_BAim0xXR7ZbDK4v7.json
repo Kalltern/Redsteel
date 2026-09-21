@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/blast-jet-stream-embers-orange.webp",
   "system": {
-    "description": "<p>Targets an armored opponent, dealing 4d6 + 2d6x + {{spellPower}} damage. Triggers Will vs Endurance (Pain) with Disadvantage. On success, target is Paralyzed for 1 round. Cannot apply Burning effect.</p>",
+    "description": "<p>Deals 4d6 + 2d6 exploding + {{spellPower}} damage to an armoured target.</p><p>The caster tests Will against the target's Endurance (Pain), with Disadvantage.</p><p><strong>On success:</strong> the target is Stunned for one round.</p><p>This spell cannot apply Burning.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "8U9FRYa6LCshgUCl",

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/nature/root-vine-hand-strike.webp",
   "system": {
-    "description": "<p>Empowers the next attack or throw. Triggers a vs test of caster's Will + {{math spellPower \"*\" 2}} against target's Strength / Endurance test.</p><p>On caster's success, the target is rooted.</p><hr><p>Requires suitable terrain. <br>Cannot stack with other attack-enhancing effects.<br>Casting this spell does not prevent the caster from casting another spell in this turn.</p>",
+    "description": "<p>Empowers the caster's next attack or throw. The caster tests Will + {{math spellPower \"*\" 2}} against the target's Strength or Endurance.</p><p><strong>On success:</strong> the target is Rooted.</p><p>Requires suitable terrain. Cannot be combined with other attack enhancements. Casting it does not stop the caster casting another spell this round.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "will",
-    "testModifier": "@spellPower*2"
+    "testModifier": "@spellPower*2",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "ELAMhHkr77jkNbi6",

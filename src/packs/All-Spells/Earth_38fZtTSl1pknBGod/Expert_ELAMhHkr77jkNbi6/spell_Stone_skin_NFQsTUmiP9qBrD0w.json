@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/defensive/armor-stone-skin.webp",
   "system": {
-    "description": "<p>Increases the target’s armor for <span style=\"font-family:Signika, sans-serif\">{{math spellPower \"*\" 5}} </span>minutes. <br />If the target is unarmored, their armor is increased by 15 and they gain 1 armor durability.<br />If already armored, their armor is only increased by 2. <br />Acrobatics is capped at a 70% success limit.</p><p></p>",
+    "description": "<p>Raises the target's armor for {{math spellPower \"*\" 5}} minutes.</p><p>An unarmored target gains 15 armor and 1 armor durability. An already armored one gains 2.</p><p>Acrobatics is capped at a 70% success chance for the duration.</p>",
     "options": [
       "divine",
       "magic"
@@ -143,7 +143,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": "custom"
+    "effectType3": "custom",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "ELAMhHkr77jkNbi6",

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/perception/eye-ringed-green.webp",
   "system": {
-    "description": "<p>The caster touches the ground and senses the direction, movement, and number of creatures within {{math spellPower \"*\" 100}}m.</p>",
+    "description": "<p>The caster touches the ground and senses the direction, movement and number of creatures within {{math spellPower \"*\" 100}} m.</p>",
     "options": [
       "divine",
       "magic"
@@ -135,7 +135,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "JBcANv6vENmYO1qP",

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
-    "description": "Removes all beneficial or harmful effects from the Target (e.g., Weakness, Enhanced Senses, Empowerment, Stun Resistance, Poisoned Blood, Dark Curse, etc.). Cannot remove effects through Magic Shield or barriers. Counts as a Magical Attack with a +20% Bonus. For an additional cost, the area can be increased to 3m.",
+    "description": "<p>Removes every beneficial and harmful effect from every target in a 3 m radius area, such as Weakness, Enhance senses, Empowerment, Resist stuns, Poisoned blood or Dark curse.</p><p>For the extra mana it is cast on a chosen tile within range instead, and affects every target in a 3 m radius of it.</p><p>The attempt counts as a Magical Attack with a +20 bonus.</p><p>Does not work on Mark, Summoning Mark, Magic Weapons, Flight, Chains and spells of that kind, and it cannot reach effects protected by a Magic Shield or a barrier.</p>",
     "options": [
       "divine",
       "magic"
@@ -110,7 +110,9 @@
       "effect2": "0",
       "effect3": "0",
       "effect4": "0"
-    }
+    },
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "6PM0K9AWtzeYO1Fn",

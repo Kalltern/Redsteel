@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/nature/root-vine-entangled-humanoid.webp",
   "system": {
-    "description": "<p>Creates a barely visible trap on unoccupied hexes (must not be adjacent to another trap) for 15 minutes.</p><hr><p>Deals (2d8 + <span style=\"font-family:Signika, sans-serif\">{{spellPower}}</span>) damage and roots anyone entering the hex. <br>Triggers a vs test of caster's Will + <span style=\"font-family:Signika, sans-serif\">{{math spellPower \"*\" 3}}</span>) against target's Strength / Endurance test to break free.</p><hr><p>Ignores Magical Defense.</p>",
+    "description": "<p>Creates a barely visible trap on unoccupied hexes for 15 minutes, dealing 2d8 + {{spellPower}} damage to anyone entering and Rooting them.</p><p>To break free, the caster tests Will + {{math spellPower \"*\" 3}} against the target's Strength or Endurance.</p><p>The hex must not be adjacent to another trap.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "will",
-    "testModifier": "@spellPower*3"
+    "testModifier": "@spellPower*3",
+    "manualNotes": "When the trap triggers, roll this spell manually for 0 mana cost and disregard the channeling test. The trap also ignores Magic Defense, so let the target roll their defense and disregard the result manually until this is automated.",
+    "vsTest": true
   },
   "effects": [],
   "folder": "ELAMhHkr77jkNbi6",

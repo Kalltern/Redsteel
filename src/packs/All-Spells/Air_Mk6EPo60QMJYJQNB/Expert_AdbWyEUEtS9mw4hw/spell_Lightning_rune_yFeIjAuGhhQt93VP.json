@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/symbols/runes-triangle-blue.webp",
   "system": {
-    "description": "<p>Creates a barely visible trap on an unoccupied hex (must not be adjacent to another trap) for 15 minutes.</p><hr><p>Deals (6d8 + {{spellPower}}) damage to anyone entering the hex with guaranteed Chaining twice. <br>Ignores the first target's Magic Defense.</p>",
+    "description": "<p>Creates a barely visible trap on an unoccupied hex for 15 minutes, dealing 6d8 + {{spellPower}} damage to anyone entering it, with guaranteed Chaining twice.</p><p>The hex must not be adjacent to another trap.</p>",
     "options": [
       "divine",
       "magic"
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "The first target's Magic Defense is ignored. Let them roll their defense and disregard the result manually until this is automated.",
+    "vsTest": false
   },
   "effects": [],
   "folder": "AdbWyEUEtS9mw4hw",

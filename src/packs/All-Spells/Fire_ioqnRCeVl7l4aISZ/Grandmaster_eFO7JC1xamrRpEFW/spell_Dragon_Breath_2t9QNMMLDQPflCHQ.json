@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/projectile-fireball-embers-yellow.webp",
   "system": {
-    "description": "<p>Deals 2d20 + {{math spellPower \"*\" 5}} damage in a 90° cone, 6 m range. 35% chance to apply Burning effect.</p>",
+    "description": "<p>Deals 2d20 + {{math spellPower \"*\" 5}} damage in a 90° cone reaching 6 m, with a 35% chance to Burn.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,10 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false,
+    "breath": true
   },
   "effects": [],
   "folder": "eFO7JC1xamrRpEFW",

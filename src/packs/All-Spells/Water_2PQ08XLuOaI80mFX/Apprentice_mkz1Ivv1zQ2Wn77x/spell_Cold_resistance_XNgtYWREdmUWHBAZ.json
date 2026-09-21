@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/water/snowflake-ice-blue.webp",
   "system": {
-    "description": "<p>Protects against low temperatures for {{math spellPower \"*\" 1}} hours, can be cast on a group (cost per Target). <br />Increases Frost armor by +2.</p>",
+    "description": "<p>Protects the target against low temperatures for {{math spellPower \"*\" 1}} hours and raises its Frost armor by 2.</p><p>Can be cast on a group, at the cost of one casting per target.</p>",
     "options": [
       "divine",
       "magic"
@@ -126,7 +126,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "mkz1Ivv1zQ2Wn77x",

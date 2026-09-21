@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/flame-burning-hand-purple.webp",
   "system": {
-    "description": "<p>Cleanses the body of poisons and deals damage to the target based on the poison's level:</p><p>Level 1: 1d8 <br />Level 2: 2d8 <br />Level 3: 2d8 + 1 Wound<br /><br /><br />Not fully automated. Resolve this effect manually</p>",
+    "description": "<p>Cleanses the target of poison and deals damage set by the poison's level: 1d8 at level 1, 2d8 at level 2, and 2d8 plus one Wound at level 3.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "Not fully automated. Resolve the damage and the Wound manually.",
+    "vsTest": false
   },
   "effects": [],
   "folder": "UxjnWqOZrypZl1NP",

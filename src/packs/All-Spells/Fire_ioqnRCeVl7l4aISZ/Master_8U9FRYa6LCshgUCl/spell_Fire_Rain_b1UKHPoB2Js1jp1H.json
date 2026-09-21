@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/projectile-meteor-salvo-strong-red.webp",
   "system": {
-    "description": "<p>In an area up to 9 m, inflicts 3d6 + <span style=\"color:rgb(239, 230, 216);font-family:Signika, 'Palatino Linotype', sans-serif;font-size:14px;font-style:normal;font-variant-ligatures:normal;font-variant-caps:normal;font-weight:400;letter-spacing:normal;orphans:2;text-align:start;text-indent:0px;text-transform:none;widows:2;word-spacing:0px;-webkit-text-stroke-width:0px;white-space:normal;background-color:rgba(11, 10, 19, 0.9);text-decoration-thickness:initial;text-decoration-style:initial;text-decoration-color:initial;display:inline !important;float:none\">{{spellPower}} damage </span>per round. Always counts as a Magic Attack with power 20. Once per round, as a Free Action, the caster may shift the area by one hex. Cannot apply Burning effect. Increases target's chance to get Burning effect by +15%.</p>",
+    "description": "<p>Rains fire in an area up to 9 m, dealing 3d6 + {{spellPower}} damage per round.</p><p>Once per round the caster may shift the area one hex as a Free Action.</p><p>It cannot apply Burning itself, but raises the target's chance to catch Burning by 15%. It always counts as a Magic Attack with power 20.</p>",
     "options": [
       "divine",
       "magic"
@@ -135,7 +135,9 @@
     },
     "effectType1": "burn",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "8U9FRYa6LCshgUCl",

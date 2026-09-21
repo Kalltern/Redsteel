@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/lightning/bolt-strike-explosion-blue.webp",
   "system": {
-    "description": "<p>Summons a Lightning tornado on any hex in range for 4 rounds. <br>Deals (2d4 + {{math spellPower \"*\" 3}}) damage in 1.5m radius and guarantees Stun at its center. <br>At start of each round, moves twice in random direction by one hex (1d6 to determine the direction starting from top hex clockwise). </p><p>Same target can only take damage once per round.</p><hr><ol><li data-start=\"690\" data-end=\"793\"><p data-start=\"692\" data-end=\"793\">When chaining is triggered, the caster selects one creature that was hit by the<strong data-start=\"739\" data-end=\"793\"> </strong>Lightning Tornado.</p></li><li data-start=\"794\" data-end=\"873\"><p data-start=\"796\" data-end=\"873\">The chain <strong data-start=\"806\" data-end=\"848\">cannot target any creature already hit</strong> by the Lightning Tornado</p></li></ol>",
+    "description": "<p>Summons a lightning tornado on any hex in range for four rounds, dealing 2d4 + {{math spellPower \"*\" 3}} damage in a 1.5 m radius and guaranteeing a Stun at its centre.</p><p>At the start of each round it moves twice, one hex at a time, in a random direction. Roll 1d6 for the direction, counting clockwise from the top hex. A target can only take its damage once per round.</p><p>When Chaining triggers, the caster picks one creature the tornado has hit. The chain cannot target a creature the tornado has already hit.</p>",
     "options": [
       "divine",
       "magic"
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "Yee9AI8JHYKBHLNT",

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/elemental-creature-horse.webp",
   "system": {
-    "description": "For the duration, grants +1 Speed, +4 Initiative, +1 Attack, and +1 Action. Can be cast on a group (cost &amp; concentration apply per target).",
+    "description": "<p>Grants the target +1 Speed, +4 Initiative, +1 Attack and +1 Action for the duration.</p><p>Can be cast on a group, at the cost of one casting and one Concentration per target.</p>",
     "options": [
       "divine",
       "magic"
@@ -143,7 +143,9 @@
     "testModifier": "",
     "effectType1": "custom",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "eFO7JC1xamrRpEFW",

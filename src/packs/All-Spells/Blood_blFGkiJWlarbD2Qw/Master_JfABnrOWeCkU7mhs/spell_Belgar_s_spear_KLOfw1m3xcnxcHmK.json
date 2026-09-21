@@ -4,7 +4,7 @@
   "img": "icons/skills/melee/strike-sword-dagger-runes-red.webp",
   "system": {
     "localizationKey": "",
-    "description": "A bloody spear erupts from the ground beneath the target and impales it. Deals damage equal to 3d8 + {{math spellPower \"*\" 4}}. Triggers a Will Test vs. target's Dexterity / Endurance Test. On a success, the target becomes Rooted. On a failure, or after breaking free, the target suffers one Bleeding.",
+    "description": "<p>A bloody spear erupts from the ground beneath the target and impales it for 3d8 + {{math spellPower \"*\" 4}} damage.</p><p>The caster tests Will against the target's Dexterity or Endurance.</p><p><strong>On success:</strong> the target is Rooted.</p><p><strong>On failure, or once the target breaks free:</strong> it suffers one Bleeding.</p>",
     "options": [
       "divine",
       "magic"
@@ -123,7 +123,9 @@
     "testModifier": "",
     "effectType1": "root",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "JfABnrOWeCkU7mhs",

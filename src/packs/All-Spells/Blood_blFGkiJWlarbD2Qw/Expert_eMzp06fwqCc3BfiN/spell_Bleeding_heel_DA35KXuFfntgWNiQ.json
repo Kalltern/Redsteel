@@ -4,7 +4,7 @@
   "img": "icons/skills/wounds/injury-pain-impaled-hand-blood.webp",
   "system": {
     "localizationKey": "",
-    "description": "For {{math spellPower \"/\" 2}} rounds, each time the target moves by one hex, it takes damage again for each Bleeding effect it has.",
+    "description": "<p>For {{math spellPower \"/\" 2}} rounds, every single hex the target moves triggers each Bleeding effect it carries again, dealing that Bleeding's damage once more per hex.</p>",
     "options": [
       "divine",
       "magic"
@@ -123,7 +123,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "Bleeding re-triggers are not automated. Roll each Bleeding again per hex moved, 1d4 to 6d4 depending on the stack.",
+    "vsTest": false
   },
   "effects": [],
   "folder": "eMzp06fwqCc3BfiN",

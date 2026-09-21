@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/water/vortex-water-whirlpool-blue.webp",
   "system": {
-    "description": "Creates a portal between two sufficiently large bodies of Water, allowing twenty people to pass before it rapidly destabilizes. Must know the destination. Range covers approximately a large country (can be improved with Research).",
+    "description": "<p>Creates a portal between two sufficiently large bodies of water, which twenty people may pass through before it destabilises.</p><p>The caster must know the destination. The range covers roughly a large country, and can be extended with Research.</p>",
     "options": [
       "divine",
       "magic"
@@ -118,7 +118,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "8nT2ag63tCfjXxeJ",

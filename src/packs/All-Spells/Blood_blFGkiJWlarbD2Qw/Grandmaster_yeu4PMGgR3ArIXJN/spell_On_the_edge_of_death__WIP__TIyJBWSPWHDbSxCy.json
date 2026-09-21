@@ -4,7 +4,7 @@
   "img": "icons/magic/death/skull-fire-white-yellow.webp",
   "system": {
     "localizationKey": "",
-    "description": "For six rounds, the target cannot die (with rare exceptions), but still loses HP and gains Severe Injuries (their penalties are ignored). If, after the spell ends, the target has more Severe Injuries than its limit allows, the Severe Injury limit is reduced by one, existing Severe Injuries are reduced to the new limit, and the target loses consciousness. The spell cannot be extended.",
+    "description": "<p>For six rounds, the target cannot die, with rare exceptions, but still loses HP and gains Severe Injuries whose penalties are ignored for the duration.</p><p>If the target ends the spell with more Severe Injuries than its limit allows, the limit drops by one, its Severe Injuries are reduced to the new limit, and it loses consciousness.</p><p>The spell cannot be extended.</p>",
     "options": [
       "divine",
       "magic"
@@ -123,7 +123,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "yeu4PMGgR3ArIXJN",

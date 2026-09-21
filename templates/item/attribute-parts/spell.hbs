@@ -72,11 +72,22 @@
           type="text"
           name="system.perRound"
           value="{{system.perRound}}"
-          data-dtype="Number"
+          data-dtype="String"
         />
          </div>
          {{!-- Sustained / Healing live under "Spell properties" on the
                Variants tab. --}}
+
+        <div class="grid-span-4">
+        <label class="resource-label">{{localize
+            "REDSTEEL.Item.Spell.FIELDS.manualNotes.label"
+          }}</label>
+
+        <textarea
+          name="system.manualNotes"
+          data-dtype="String"
+        >{{system.manualNotes}}</textarea>
+         </div>
 
 <div class="grid-span-4">
 <label class="resource-label">{{localize

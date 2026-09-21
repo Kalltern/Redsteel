@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/defensive/shield-barrier-flaming-pentagon-blue-yellow.webp",
   "system": {
-    "description": "<p>If the target is hit while having Lightning shield, the attacker has a 100% chance to be Staggered. Incompatible with other shield spells (or similar effects).<br /><br />Apply the staggered effect manually</p>",
+    "description": "<p>An attacker who hits the target while Lightning shield is up is Staggered, with no chance to avoid it.</p><p>Incompatible with other shield spells and similar effects.</p>",
     "options": [
       "divine",
       "magic"
@@ -126,7 +126,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "Apply the Stagger effect manually.",
+    "vsTest": false
   },
   "effects": [],
   "folder": "AdbWyEUEtS9mw4hw",

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/dagger-rune-enchant-flame-purple.webp",
   "system": {
-    "description": "<p>Enchants an existing Weapon (or quiver) for {{math spellPower \"*\" 5}} minutes. The Weapon deals Physical/Magic/Dark Damage, +2 Damage, Penetration +2, and restores up to 5 Health on hit. Recasting removes or replaces any previous Dark Weapon. The Weapon can only hold one similar enchantment at a time.</p><p></p><p>Not fully automated - resolve the heal manually.</p><p></p>",
+    "description": "<p>Enchants one weapon or quiver for {{math spellPower \"*\" 5}} minutes, raising its damage by 2 and its Penetration by 2, and making it deal Physical, Magic and Dark damage.</p><p>The weapon restores up to 5 Health on hit.</p><p>Recasting replaces the previous Dark weapon. A weapon can carry only one enchantment of this kind.</p>",
     "options": [
       "divine",
       "magic"
@@ -126,7 +126,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "The on-hit heal is not automated. Resolve it manually.",
+    "vsTest": false
   },
   "effects": [],
   "folder": "XCC7CG5LovD3hSXR",

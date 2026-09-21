@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/water/vortex-water-whirlpool.webp",
   "system": {
-    "description": "Fills victim's lungs with Water, triggering Willpower test vs. Target's Endurance test (defender has advantage). Success renders Target incapacitated (automatic failure on checks) and dying; failure stuns Target for two turns. Alternatively deals 5d20 damage to fire creatures.",
+    "description": "<p>Fills the target's lungs with water.</p><p>The caster tests Will against the target's Endurance, and the target has Advantage.</p><p><strong>On success:</strong> the target is incapacitated, failing every check automatically, and starts Dying.</p><p><strong>On failure:</strong> the target is Stunned for two rounds.</p><p>Against a creature of fire it deals 5d20 damage instead.</p>",
     "options": [
       "divine",
       "magic"
@@ -81,7 +81,7 @@
       ]
     },
     "isOffensive": true,
-    "uncontested": true,
+    "uncontested": false,
     "sustained": false,
     "difficulty": -40,
     "cost": 25,
@@ -120,7 +120,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "will",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "8nT2ag63tCfjXxeJ",

@@ -1752,7 +1752,7 @@ export async function finalizeRollsAndPostChat(
         ${critBanner}
         ${
           hasHtmlContent(renderedDescription)
-            ? `<table style="width: 100%; text-align: center;font-size: 15px;">
+            ? `<table style="width: 100%; text-align: left; font-size: 15px;">
             <tr><th>Description:</th></tr>
             <tr><td>${renderedDescription}</td></tr>
         </table>`
@@ -1863,8 +1863,15 @@ export async function startChannelingForSpell(
   spell,
   { focusSpent = 0 } = {},
 ) {
-  const costPerRound = Number(spell.system.perRound) || 0;
-  if (costPerRound <= 0) return null;
+  // perRound accepts a dice formula (e.g. "1d4") alongside a plain number, for
+  // sustained spells whose per-round upkeep varies. The raw value is stored on
+  // the effect and rolled at each tick rather than once here: "1d4 blood per
+  // round" means a fresh d4 every round, not one d4 reused for the whole
+  // channel. A plain number keeps the old behaviour exactly.
+  const rawPerRound = spell.system.perRound;
+  const isPerRoundFormula =
+    typeof rawPerRound === "string" && /d/i.test(rawPerRound);
+  if (!isPerRoundFormula && !(Number(rawPerRound) > 0)) return null;
 
   const existing = actor.effects.find(
     (e) => e.getFlag("core", "statusId") === "channeling",
@@ -1885,7 +1892,11 @@ export async function startChannelingForSpell(
       isSustained: spell.system.sustained,
     });
 
-    await effect.setFlag("redsteel", "costPerRound", costPerRound);
+    await effect.setFlag(
+      "redsteel",
+      "costPerRound",
+      isPerRoundFormula ? rawPerRound : Number(rawPerRound),
+    );
   }
 
   return effect;

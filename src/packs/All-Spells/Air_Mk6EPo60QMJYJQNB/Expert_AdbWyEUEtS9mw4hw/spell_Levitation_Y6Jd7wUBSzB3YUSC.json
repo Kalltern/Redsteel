@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/control/debuff-energy-hold-teal-blue.webp",
   "system": {
-    "description": "<p>Forces horizontal movement in any direction. <br />Can be cast on a group (cost per target). <br />Maximum movement speed is 4.</p>",
+    "description": "<p>Forces horizontal movement in any direction, at a maximum movement speed of 4.</p><p>Can be cast on a group, at the cost of one casting per target.</p>",
     "options": [
       "divine",
       "magic"
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "AdbWyEUEtS9mw4hw",

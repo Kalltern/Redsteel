@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/unholy/projectiles-binary-pink.webp",
   "system": {
-    "description": "Links two targets up to 12m (8 hexes) apart. Each receives the same Damage as the other. If they move too far apart, the link ends at the end of the round. Cannot deal more Damage than the remaining HP of either target.",
+    "description": "<p>Marks two targets within range, which may be up to 8 hexes from each other. Each takes the same damage as the other.</p><p>The link ends at the end of the round if they move too far apart, and it can never deal more damage than either target has HP remaining.</p>",
     "options": [
       "divine",
       "magic"
@@ -90,7 +90,7 @@
     "type": "darkness",
     "rank": "master",
     "actionCost": "1 | C",
-    "range": "12",
+    "range": "8",
     "spellClass": "greater",
     "roll": {
       "diceNum": 0,
@@ -110,7 +110,9 @@
       "effect2": "0",
       "effect3": "0",
       "effect4": "0"
-    }
+    },
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "pwmVRgAOpIMg3gH9",

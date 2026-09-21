@@ -4480,9 +4480,26 @@
         "Range": {
           "self": "Self",
           "hexes": "{n} hex",
-          "metresLabel": "Range (m)"
+          "metresLabel": "Range (m)",
+          "breath": "Breath {n}"
+        },
+        "Delivery": {
+          "direct": "Direct",
+          "indirect": "Indirect"
+        },
+        "SpellPower": {
+          "tipTitle": "Derived from Spell Power",
+          "tipMath": "Spell Power {sk} {expr} = {result}",
+          "tipPlain": "Spell Power {sk}",
+          "roundedUp": "rounded up"
         },
         "ignoresArmor": "Ignores Armor",
+        "manualNotesHeading": "Manual resolution",
+        "vsTestYes": "Yes",
+        "dmgJoin": {
+          "and": "and",
+          "or": "or"
+        },
         "FIELDS": {
           "propertiesHeader": {
             "label": "Spell properties"
@@ -4493,6 +4510,18 @@
           "uncontested": {
             "label": "Uncontested",
             "hint": "Nothing rolls against this cast: no defense, no attribute test, no damage aimed at a target. Hides Magic ATK, and skips the channeling roll entirely when No Channeling Evaluation is used."
+          },
+          "vsTest": {
+            "label": "VS Test"
+          },
+          "delivery": {
+            "label": "Delivery"
+          },
+          "breath": {
+            "label": "Breath"
+          },
+          "manualNotes": {
+            "label": "Manual notes"
           },
           "halfDamage": {
             "label": "Half Damage"
@@ -4863,21 +4892,21 @@
         "IdentifyDifficulty": "Identify difficulty",
         "WriteDifficulty": "Copying difficulty",
         "CastBonus": "Scroll cast bonus",
-        "CastBonusHint": "Added to the reader's Channeling when the scroll is read aloud, offsetting the spell's own difficulty."
+        "CastBonusHint": "Added to the reader's Channeling when the seal is broken, offsetting the spell's own difficulty."
       },
       "Window": {
         "Title": "Spell Scroll",
         "Identify": "Identify",
         "Write": "Copy into grimoire",
-        "Cast": "Read aloud",
+        "Cast": "Break the seal",
         "Reroll": "Re-roll",
         "Book": "Target grimoire",
         "NoBooks": "This character carries no grimoire.",
         "Difficulty": "Difficulty",
         "Result": "d100 {d100} — margin {margin}",
-        "UnknownHint": "The sigils mean nothing yet. Identify the scroll, or read it blind and find out the hard way.",
+        "UnknownHint": "The sigils mean nothing yet. Identify the scroll, or break the seal blind and find out the hard way.",
         "WriteHint": "Copying the scroll destroys it, whether the hand is steady or not.",
-        "CastHint": "Reading the scroll aloud spends it. No mana, no channelling test.",
+        "CastHint": "Breaking the seal unleashes the spell bound in the scroll, burning the scroll away in the process. No mana, no channelling test.",
         "Close": "Close"
       },
       "Warn": {
@@ -4895,7 +4924,7 @@
         "IdentifyFailure": "The sigils stay meaningless.",
         "Write": "<b>{actor}</b> copied <b>{spell}</b> into {book} — Arcana, d100 {d100}, margin {margin}. The scroll is spent.",
         "WriteFailure": "<b>{actor}</b> botched the copying of <b>{spell}</b> — Arcana, d100 {d100}, margin {margin}. The scroll is ruined.",
-        "Cast": "<b>{actor}</b> read <b>{spell}</b> from a scroll. The scroll crumbles.",
+        "Cast": "<b>{actor}</b> broke the seal and unleashed <b>{spell}</b>. The scroll burns away.",
         "Reroll": "Re-rolled."
       }
     },
@@ -5241,6 +5270,18 @@
       "sustained": {
         "label": "Sustained",
         "desc": "A spell with a cost per round keeps running as a Channeling effect after the initial cast. A sustained spell rolls its effect again every round, and the caster can drop it at any time by cancelling Channeling."
+      },
+      "direct": {
+        "label": "Direct",
+        "desc": "A direct spell reaches the target itself. It can be dodged, blocked with a shield, and defended against magically, like any other attack."
+      },
+      "indirect": {
+        "label": "Indirect",
+        "desc": "An indirect spell never strikes the target itself, so it cannot be dodged and a shield blocks nothing against it. Magic defense still works normally."
+      },
+      "breath": {
+        "label": "Breath",
+        "desc": "Cone and beam spells are Breath shaped. The number beside Breath says how far from the caster the cone's origin may be placed, not how far the spell reaches. Breath 1 starts in the neighbouring hex, Breath 2 may start one or two hexes away. How far the spell reaches is written in its own text."
       },
       "graveWound": {
         "label": "Grave Wound",

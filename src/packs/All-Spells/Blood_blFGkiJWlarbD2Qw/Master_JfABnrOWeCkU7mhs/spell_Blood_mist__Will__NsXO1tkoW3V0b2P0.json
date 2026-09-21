@@ -1,10 +1,10 @@
 {
-  "name": "Blood mist (Will)",
+  "name": "Blood mist",
   "type": "spell",
   "img": "icons/magic/air/fog-gas-smoke-orange.webp",
   "system": {
     "localizationKey": "",
-    "description": "Creates dense fog in an area up to 24 m for {{spellPower}} + 2 rounds. Triggers a Will Test vs. targets' Will Test for each creature inside the fog. On a success, the target gains Panic (odd) or Frenzy (even) for as long as it remains in the fog or until the effect is dispelled. A Frenzied target loses control and attacks the nearest random target. The fog also draws blood from the surrounding area (Follower of Belgar).",
+    "description": "<p>Creates dense fog in an area up to 24 m for {{spellPower}} + 2 rounds.</p><p>Every creature inside the fog tests Will against the caster's Will.</p><p><strong>On the caster's success:</strong> the target gains Panic on an odd roll or Frenzy on an even one, for as long as it stays in the fog or until the effect is dispelled. A Frenzied target loses control and attacks the nearest random target.</p>",
     "options": [
       "divine",
       "magic"
@@ -123,7 +123,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "JfABnrOWeCkU7mhs",

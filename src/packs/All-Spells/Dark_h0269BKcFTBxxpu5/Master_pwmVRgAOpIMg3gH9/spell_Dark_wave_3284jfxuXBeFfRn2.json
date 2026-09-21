@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/unholy/beams-impact-pink.webp",
   "system": {
-    "description": "Deals 4d6 + {{math spellPower \"*\" 5}} damage to all living targets within a 6m radius around the caster. Can be cast as a Reaction only when the caster is attacked.",
+    "description": "<p>Deals 4d6 + {{math spellPower \"*\" 5}} damage to every living target within a 6 m radius of the caster.</p><p>Can be cast as a Reaction only when the caster is attacked.</p>",
     "options": [
       "divine",
       "magic"
@@ -118,7 +118,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "pwmVRgAOpIMg3gH9",

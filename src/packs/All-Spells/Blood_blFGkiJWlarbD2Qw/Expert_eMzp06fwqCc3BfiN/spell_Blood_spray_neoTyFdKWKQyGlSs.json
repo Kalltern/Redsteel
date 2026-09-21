@@ -4,7 +4,7 @@
   "img": "icons/skills/wounds/blood-cells-red.webp",
   "system": {
     "localizationKey": "",
-    "description": "Deals damage equal to 6d6 + {{spellPower}} in a 45° area with a range of 4.5 m.",
+    "description": "<p>Deals 6d6 + {{spellPower}} damage in a 45° cone reaching 4.5 m.</p>",
     "options": [
       "divine",
       "magic"
@@ -111,7 +111,10 @@
       "extra1": 0,
       "extra2": 0,
       "extra3": 0
-    }
+    },
+    "manualNotes": "",
+    "vsTest": false,
+    "breath": true
   },
   "effects": [],
   "folder": "eMzp06fwqCc3BfiN",

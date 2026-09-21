@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
-    "description": "Increases one chosen Attribute (Strength, Dexterity, Endurance, or Perception) by 2 points and grants an additional +4% to derived skills for {{math spellPower \"*\" 10}} minutes. Can be cast on multiple Targets (cost per Target). Only one Attribute may be increased per Target.",
+    "description": "<p>For {{math spellPower \"*\" 10}} minutes, raises one chosen attribute, Strength, Dexterity, Endurance or Perception, by 2 points and grants a further +4% to the skills derived from it.</p><p>Only one attribute may be raised per target. Can be cast on several targets, at the cost of one casting per target.</p>",
     "options": [
       "divine",
       "magic"
@@ -110,7 +110,9 @@
       "effect2": "0",
       "effect3": "0",
       "effect4": "0"
-    }
+    },
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "6PM0K9AWtzeYO1Fn",

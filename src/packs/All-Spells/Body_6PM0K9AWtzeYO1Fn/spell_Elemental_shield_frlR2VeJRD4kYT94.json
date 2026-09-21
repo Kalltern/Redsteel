@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
-    "description": "Creates a shield with 20 + {{math spellPower \"*\" 5}} Health that absorbs physical damage and one chosen damage type (Fire, Cold, Lightning, or Acid/Poison). Cannot be dispelled with Counterspell. Incompatible with other shields (or similar effects). Works against both magical and non-magical forms of the chosen damage. The damage type can be changed as a free action (costs 3 mana).",
+    "description": "<p>Creates a shield with 20 + {{math spellPower \"*\" 5}} Health that absorbs physical damage and one chosen damage type: Fire, Cold, Lightning, or Acid and Poison.</p><p>It works against both the magical and the non-magical form of the chosen type. The type can be changed as a Free Action for 3 mana.</p><p>Cannot be dispelled with Counterspell. Incompatible with other shields and similar effects.</p>",
     "options": [
       "divine",
       "magic"
@@ -113,7 +113,9 @@
       "extra1": -1,
       "effectName1": "shield_elemental"
     },
-    "effectType1": "custom"
+    "effectType1": "custom",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "6PM0K9AWtzeYO1Fn",

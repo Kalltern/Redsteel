@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
-    "description": "Pushes Target three hexes away and triggers a Willpower Test vs. Target's Strength/Dexterity. On success, knocks down the Target. Can only be cast as a Reaction after a successful defense by the Caster.",
+    "description": "<p>Pushes the target three hexes away.</p><p>The caster tests Will against the target's Strength or Dexterity.</p><p><strong>On success:</strong> the target is also knocked Prone.</p><p>Can be cast as a Reaction only after the caster successfully defends.</p>",
     "options": [
       "divine",
       "magic"
@@ -80,8 +80,8 @@
         ""
       ]
     },
-    "isOffensive": true,
-    "uncontested": true,
+    "isOffensive": false,
+    "uncontested": false,
     "sustained": false,
     "difficulty": -10,
     "cost": 5,
@@ -112,7 +112,9 @@
       "effect4": "0"
     },
     "attributeTest": "will",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "6PM0K9AWtzeYO1Fn",

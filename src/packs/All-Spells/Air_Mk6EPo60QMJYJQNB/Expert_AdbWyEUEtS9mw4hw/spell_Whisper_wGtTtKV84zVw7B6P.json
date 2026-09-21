@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/control/mouth-smile-deception-purple.webp",
   "system": {
-    "description": "Allows hearing the whisper of any creature in sight, unless Magically protected (e.g., by the Silence spell).",
+    "description": "<p>Lets the caster hear the whisper of any creature in sight, unless that creature is magically protected, for instance by Silence.</p>",
     "options": [
       "divine",
       "magic"
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "AdbWyEUEtS9mw4hw",

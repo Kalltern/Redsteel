@@ -4,7 +4,7 @@
   "img": "icons/magic/unholy/strike-body-life-soul-purple.webp",
   "system": {
     "localizationKey": "",
-    "description": "Deals Dark damage equal to {{math spellPower \"*\" 1}} to the target and restores three times the damage dealt as Endurance.",
+    "description": "<p>Deals {{math spellPower \"*\" 1}} damage to the target and restores three times the damage dealt to that target as Stamina.</p>",
     "options": [
       "divine",
       "magic"
@@ -123,7 +123,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "eMzp06fwqCc3BfiN",

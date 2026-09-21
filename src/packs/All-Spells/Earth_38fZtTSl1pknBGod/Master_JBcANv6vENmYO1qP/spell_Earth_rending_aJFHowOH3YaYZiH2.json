@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/earth/barrier-stone-explosion-debris.webp",
   "system": {
-    "description": "<p>Moves all chosen targets in a 6m area by 1 hex. Triggers a Will + <span style=\"font-family:Signika, sans-serif\">{{math spellPower}} </span>vs. Target's Dexterity / Endurance test. On success, targets are knocked down. May damage or destabilize structures, potentially requiring multiple castings.</p>",
+    "description": "<p>Moves every chosen target in a 6 m area one hex.</p><p>The caster tests Will + {{spellPower}} against each target's Dexterity or Endurance.</p><p><strong>On success:</strong> the target is knocked down.</p><p>It may damage or destabilise structures, which can take more than one casting.</p>",
     "options": [
       "divine",
       "magic"
@@ -98,7 +98,7 @@
       ]
     },
     "isOffensive": false,
-    "uncontested": true,
+    "uncontested": false,
     "sustained": false,
     "difficulty": -30,
     "cost": 12,
@@ -135,7 +135,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "JBcANv6vENmYO1qP",

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/unholy/strike-beam-blood-large-red-blue.webp",
   "system": {
-    "description": "Requires a corpse within range. The targeted corpse explodes, dealing 2d6 + {{spellPower}} damage in a 1.5m area.",
+    "description": "<p>Detonates a corpse, dealing 2d6 + {{spellPower}} damage in a 1.5 m area.</p><p>Requires a corpse within range.</p>",
     "options": [
       "divine",
       "magic"
@@ -118,7 +118,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "uiFKWM6saw7R2jtx",

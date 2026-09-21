@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/weapons/ammunition/arrowhead-glowing-blue.webp",
   "system": {
-    "description": "<p>Enchants a quiver or thrown weapons. </p><p>They ignore weather penalties for {{math spellPower \"*\" 5}} minutes.</p><p> Can be cast on a group (cost per target). Compatible with weapon enchantments.</p>",
+    "description": "<p>Enchants a quiver or thrown weapons so they ignore weather penalties for {{math spellPower \"*\" 5}} minutes.</p><p>Compatible with weapon enchantments.</p><p>Can be cast on a group, at the cost of one casting per target.</p>",
     "options": [
       "divine",
       "magic"
@@ -85,7 +85,7 @@
         ""
       ]
     },
-    "isOffensive": true,
+    "isOffensive": false,
     "uncontested": true,
     "sustained": false,
     "difficulty": -10,
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "AdbWyEUEtS9mw4hw",

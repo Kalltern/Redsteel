@@ -8751,6 +8751,44 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   margin-bottom: 0;
 }
 
+/* A number in spell prose that the system worked out from Spell Power rather
+   than a number somebody wrote down. It has to read as derived without
+   reading as a link: the same olive gold the inspector labels are set in,
+   with a dotted rule under it to say there is something to hover. No pill,
+   no tint, no rounding. Not scoped to the inspector, because the same prose
+   is rendered again in the Learn window's spell tiles. */
+.rs-sk {
+  color: #b3a869;
+  border-bottom: 1px dotted rgba(179, 168, 105, 0.6);
+  cursor: help;
+}
+
+/* A note that the table has to resolve by hand. Reads as secondary to the
+   description above it: dimmer and a size smaller, set off by its own
+   hairline rule so it doesn't read as more prose. */
+.spell-inspector-manual {
+  margin-top: 8px;
+  padding-top: 7px;
+  border-top: 1px solid rgba(122, 115, 50, 0.35);
+}
+
+.spell-inspector-manual-heading {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #b3a869;
+  opacity: 0.75;
+  margin-bottom: 3px;
+}
+
+.spell-inspector-manual-text {
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: #cfcabb;
+  opacity: 0.72;
+  white-space: pre-wrap;
+}
+
 /* ============================================================
    Stacked CK3-style tooltips (module/utils/tooltips.mjs)
    ============================================================ */
@@ -16443,7 +16481,26 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
    the label and the number apart at the two ends. */
 .rs-learn .rs-learn-spell-tile-keys .rs-learn-spell-tile-cell {
   justify-content: space-between;
-  gap: 8px;
+  /* Was 8px. The panel column is a fraction of the card while the text inside
+     scales with --rs-learn-text, so a long label and a wide number stopped
+     fitting together: "CORRUPTION +15" pushed its own number out through the
+     right border. Buying back a few pixels here helps every plate at once. */
+  gap: 5px;
+  padding: 2px 5px;
+}
+
+/* The number is the point of the plate, so it is the label that gives way when
+   there is not enough room: it is allowed to shrink and clip, while the value
+   is never squeezed and never leaves the frame. Nothing changes on a plate
+   that already fits, which is nearly all of them. */
+.rs-learn .rs-learn-spell-tile-keys .rs-learn-spell-tile-cell-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rs-learn .rs-learn-spell-tile-keys .rs-learn-spell-tile-cell-value {
+  flex: 0 0 auto;
 }
 
 /* The icon's own column: the icon, and the damage footnote sat under it. Its
@@ -16514,7 +16571,11 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
    line and one with a short line start their prose at the same height. */
 .rs-learn .rs-learn-spell-tile-stats {
   width: 100%;
-  min-height: calc(24px * var(--rs-learn-text));
+  /* One line, not two: the second line used to be Ignores Armor /
+     Concentration / Sustained wrapping round, and those are their own row of
+     pills now. The height the caption gives up is taken by that row, so a
+     card is exactly as tall as it was. */
+  min-height: calc(12px * var(--rs-learn-text));
   margin-top: 6px;
   text-align: center;
   font-family: Georgia, "Times New Roman", serif;
@@ -16549,6 +16610,56 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
 }
 
 .rs-learn .rs-learn-spell-tile.is-held .rs-learn-spell-tile-stat-value {
+  color: #d6bc8c;
+}
+
+/* What the spell IS, under the caption that says where it reaches: armour
+   bypass, Concentration, Sustained. Rounded here on purpose (user ruling
+   2026-09-21) — these are badges rather than framed numbers, and the round
+   shape is what separates them at a glance from the engraved plates in the
+   price panel. The row keeps its height on a card with no tags, so the grid
+   still rules up. */
+.rs-learn .rs-learn-spell-tile-tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  min-height: calc(14px * var(--rs-learn-text));
+  margin-top: 4px;
+}
+
+.rs-learn .rs-learn-spell-tile-tag {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 1px 7px;
+  border: 1px solid rgba(var(--rs-school-rgb), 0.4);
+  border-radius: 999px;
+  background: rgba(12, 12, 11, 0.5);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(8.5px * var(--rs-learn-text));
+  line-height: calc(12px * var(--rs-learn-text));
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #6f675a;
+}
+
+/* Penetration is the one tag carrying a number rather than saying itself. */
+.rs-learn .rs-learn-spell-tile-tag-value {
+  font-family: Cambria, "Times New Roman", Times, serif;
+  letter-spacing: 0;
+  color: #8a8175;
+}
+
+.rs-learn .rs-learn-spell-tile.is-held .rs-learn-spell-tile-tag {
+  border-color: rgba(var(--rs-school-rgb), 0.7);
+  color: #8a8175;
+}
+
+.rs-learn .rs-learn-spell-tile.is-held .rs-learn-spell-tile-tag-value {
   color: #d6bc8c;
 }
 
@@ -16686,7 +16797,10 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   font-size: calc(12px * var(--rs-learn-text));
   line-height: calc(16.5px * var(--rs-learn-text));
   color: #a79c88;
-  text-align: center;
+  /* Left, not centred: spell prose is now several short paragraphs with bold
+     outcome labels, and centring ragged both edges so the "On success:" lines
+     no longer lined up with each other (user ruling 2026-09-21). */
+  text-align: left;
 }
 
 /* Stored prose comes in wrapped in its own paragraphs, which would otherwise
@@ -18198,4 +18312,45 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   border-color: #3b3020;
   color: #8a8175;
   box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.85);
+}
+
+/* -------- the scroll window's in-place morph -------- */
+
+/* Identifying a scroll turns the window into the identified scroll where it
+   stands: the frame is never closed and reopened, only its body is swapped.
+   These states hide that swap -- the old body fades out, the new one fades up
+   from slightly below -- while spellScrolls.mjs pins the content box to its
+   old height and eases it to the new one, since a `height: auto` application
+   otherwise snaps to the new size in a single frame. */
+.rs-scroll-window {
+  transition:
+    opacity 130ms ease-out,
+    transform 200ms ease-out;
+}
+
+.rs-scroll-window.is-fading {
+  opacity: 0;
+}
+
+.rs-scroll-window.is-entering {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+/* Pinned mid-morph: clipped so the taller of the two bodies cannot flash a
+   scrollbar on the way past. */
+.application.rs-scroll .window-content.rs-scroll-morphing {
+  overflow: hidden;
+  transition: height 220ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rs-scroll-window,
+  .application.rs-scroll .window-content.rs-scroll-morphing {
+    transition: none;
+  }
+
+  .rs-scroll-window.is-entering {
+    transform: none;
+  }
 }

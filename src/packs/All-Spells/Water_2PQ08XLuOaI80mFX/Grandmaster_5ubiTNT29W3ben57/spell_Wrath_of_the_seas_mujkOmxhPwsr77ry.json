@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/water/wave-water-blue.webp",
   "system": {
-    "description": "Summons a massive tidal wave that devastates coastal areas. Can only be cast near large lakes or oceans.",
+    "description": "<p>Summons a massive tidal wave that devastates coastal areas.</p><p>Can only be cast near a large lake or an ocean.</p>",
     "options": [
       "divine",
       "magic"
@@ -118,7 +118,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "5ubiTNT29W3ben57",

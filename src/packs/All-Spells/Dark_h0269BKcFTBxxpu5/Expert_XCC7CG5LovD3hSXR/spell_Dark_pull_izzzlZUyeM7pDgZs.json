@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/control/debuff-energy-snare-purple-pink.webp",
   "system": {
-    "description": "Deals 3d6 + {{spellPower}} damage and triggers vs test of caster's Will + {{math spellPower \"*\" 3}}) vs. target's Strength/Constitution test. On caster's success, the caster may pull the target to any hex in a straight line. On failure, the target is pulled by one hex.",
+    "description": "<p>Deals 3d6 + {{spellPower}} damage to one target.</p><p>The caster tests Will + {{math spellPower \"*\" 3}} against the target's Strength or Endurance.</p><p><strong>On success:</strong> the caster may pull the target to any hex in a straight line.</p><p><strong>On failure:</strong> the target is pulled one hex.</p>",
     "options": [
       "divine",
       "magic"
@@ -120,7 +120,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "will",
-    "testModifier": "@spellPower*3"
+    "testModifier": "@spellPower*3",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "XCC7CG5LovD3hSXR",

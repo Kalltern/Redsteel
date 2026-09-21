@@ -129,6 +129,24 @@ export const TOOLTIP_KEYWORDS = {
     terms: ["Těžké zranění", "Grave Wound"],
     note: "vitals",
   },
+  // How a spell reaches its target. No RULE_NOTES entry covers this yet, so
+  // these three carry no `note` footer rather than pointing at a page that
+  // does not say it.
+  direct: {
+    labelKey: "REDSTEEL.Keyword.direct.label",
+    descKey: "REDSTEEL.Keyword.direct.desc",
+    terms: ["Direct", "Přímé", "Přímý", "Přímá"],
+  },
+  indirect: {
+    labelKey: "REDSTEEL.Keyword.indirect.label",
+    descKey: "REDSTEEL.Keyword.indirect.desc",
+    terms: ["Indirect", "Nepřímé", "Nepřímý", "Nepřímá"],
+  },
+  breath: {
+    labelKey: "REDSTEEL.Keyword.breath.label",
+    descKey: "REDSTEEL.Keyword.breath.desc",
+    terms: ["Breath", "Dech"],
+  },
 };
 
 /** Terms sorted longest-first so "Spell Power" wins over "SK" style overlaps. */

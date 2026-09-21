@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/unholy/hand-fire-skeleton-pink.webp",
   "system": {
-    "description": "<p>Deals 2d4 damage to the caster and 2d6 + {{spellPower}} damage to the target + 1d6 per each level of corruption.<br /><br />Not fully automated, resolve extra corruption damage manually.</p>",
+    "description": "<p>Deals 2d6 + {{spellPower}} damage to one target, plus Xd6 where X is the caster's Corruption tier.</p><p>The cast costs the caster 2d4 damage.</p>",
     "options": [
       "divine",
       "magic"
@@ -100,7 +100,7 @@
     "roll": {
       "diceNum": 2,
       "diceSize": "6",
-      "diceBonus": "@spellPower + X"
+      "diceBonus": "@spellPower"
     },
     "penetration": 100,
     "dmgType1": "magic",
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "The Corruption dice are not automated. Roll Xd6 manually, X being the caster's Corruption tier.",
+    "vsTest": false
   },
   "effects": [],
   "folder": "uiFKWM6saw7R2jtx",

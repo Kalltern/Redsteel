@@ -4,7 +4,7 @@
   "img": "icons/magic/water/barrier-ice-wall-explosion.webp",
   "system": {
     "localizationKey": "",
-    "description": "<p>No requirement. Deals 1d4 damage per turn to everyone in a 3m area around the caster.</p>",
+    "description": "<p>Deals 1d4 damage per round to everyone in a 3 m area around the caster.</p>",
     "options": [
       "divine",
       "magic"
@@ -131,7 +131,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "dKFK891TRCSJhcZW",

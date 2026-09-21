@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/water/projectile-ice-faceted-blue.webp",
   "system": {
-    "description": "<p>Deals 6d6 + {{spellPower}} damage to a single Target.</p>",
+    "description": "<p>Deals 6d6 + {{spellPower}} damage to one target.</p>",
     "options": [
       "divine",
       "magic"
@@ -118,7 +118,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "GaSIkEMI2Yi6RoKu",

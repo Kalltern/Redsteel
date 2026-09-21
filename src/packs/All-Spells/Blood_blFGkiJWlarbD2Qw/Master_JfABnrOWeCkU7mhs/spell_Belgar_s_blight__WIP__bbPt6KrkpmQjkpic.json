@@ -4,7 +4,7 @@
   "img": "icons/skills/toxins/poison-bottle-open-blood-red.webp",
   "system": {
     "localizationKey": "",
-    "description": "Burns {{math spellPower \"*\" 1}}d6 HP from the target’s Blood Pool. Magical Attack +15%. If the spell burns the entire Blood Pool, the target becomes Paralyzed for two turns. The spell has no effect if the target has no HP in its Blood Pool.",
+    "description": "<p>Burns {{math spellPower \"*\" 1}}d6 HP from the target's Blood Pool.</p><p>The spell is cast with Magical Attack +15, making it harder to defend against.</p><p><strong>If the burn empties the Blood Pool:</strong> the target is Stunned for two turns.</p><p>The spell has no effect on a target whose Blood Pool is already empty.</p>",
     "options": [
       "divine",
       "magic"
@@ -123,7 +123,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "JfABnrOWeCkU7mhs",

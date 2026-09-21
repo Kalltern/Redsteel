@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/nature/root-vine-caduceus-healing.webp",
   "system": {
-    "description": "<p>Conjures a giant, radiant flower for 2 turns. Within a 12m radius, it heals allies for 2d8 + <span style=\"font-family:Signika, sans-serif\">{{math spellPower}} </span>health per turn while inflicting poison on enemies as long as they remain in the area. Duration extends by 2 turns for each dead creature within range. Requires contact with the ground (weak flooring is no obstacle). The flower has 150 health and takes double damage from fire.</p>",
+    "description": "<p>Conjures a giant radiant flower for two rounds. Within 12 m it heals allies 2d8 + {{spellPower}} health per round, and Poisons enemies for as long as they stay in the area.</p><p>The duration extends by two rounds for every creature that dies within range.</p><p>The flower needs contact with the ground, though weak flooring is no obstacle. It has 150 health and takes double damage from fire.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
       "effect2": 0,
       "effect3": 0,
       "effect4": 0
-    }
+    },
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "4ZlNvWGr8HLJA8SI",

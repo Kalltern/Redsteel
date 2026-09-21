@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/air/air-burst-spiral-blue-gray.webp",
   "system": {
-    "description": "Creates an area of strong wind in a 30m radius around the caster for {{math spellPower \"*\" 1}} minute. Ranged and Thrown attacks from or into this area suffer a -10% Hit penalty.",
+    "description": "<p>Creates strong wind in a 30 m radius around the caster for {{math spellPower \"*\" 1}} minute.</p><p>Ranged and Thrown attacks from or into the area take a -10% Hit penalty.</p>",
     "options": [
       "divine",
       "magic"
@@ -118,7 +118,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "AdbWyEUEtS9mw4hw",

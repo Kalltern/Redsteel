@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/lightning/orb-ball-blue.webp",
   "system": {
-    "description": "<p>Creates orb with 25 HP that attacks enemies within 50 hex (75m). </p><hr><p>Casts two lightning attacks per round as spells that have Magic Attack 20.</p><p>Attacks deal damage (4d6 + {{spellPower}}), Penetration 10.</p><p>Orb uses Dodge against incoming attacks. (Margin of Success 20).</p><hr><p>Lasts {{math spellPower \"*\" 1}} hour or until destroyed.</p>",
+    "description": "<p>Creates an orb with 25 HP that lasts {{math spellPower \"*\" 1}} hour, or until destroyed.</p><p>The orb attacks enemies within 50 hexes, casting two lightning attacks per round for 4d6 + {{spellPower}} damage each, with Magic Attack 20.</p><p>The orb dodges incoming attacks with a Margin of Success of 20.</p>",
     "options": [
       "divine",
       "magic"
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "Yee9AI8JHYKBHLNT",

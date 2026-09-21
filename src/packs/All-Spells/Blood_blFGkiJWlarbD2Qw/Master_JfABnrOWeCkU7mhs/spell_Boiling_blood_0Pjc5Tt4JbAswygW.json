@@ -4,7 +4,7 @@
   "img": "icons/skills/wounds/blood-cells-vessel-red-orange.webp",
   "system": {
     "localizationKey": "",
-    "description": "<p>Deals damage equal to 4d6 + {{spellPower}} per round to selected targets in a 3 m area. Triggers a Will Test (bonus {{math spellPower \"*\" 1}}) vs. target's Endurance Test (Pain). On a success, Paralyzes the target for two turns. Cost per round 1d4 blood.</p>",
+    "description": "<p>Deals 4d6 + {{spellPower}} damage each round to selected targets in a 3 m area.</p><p>Each round, the caster tests Will + {{math spellPower \"*\" 1}} against the target's Endurance (Pain).</p><p><strong>On success:</strong> the target is Stunned for two turns.</p>",
     "options": [
       "divine",
       "magic"
@@ -91,7 +91,7 @@
     "sustained": true,
     "difficulty": -35,
     "cost": 0,
-    "perRound": 0,
+    "perRound": "1d4",
     "variants": [],
     "option": "magic",
     "type": "blood",
@@ -123,7 +123,9 @@
     "testModifier": "@spellPower",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "JfABnrOWeCkU7mhs",

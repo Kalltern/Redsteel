@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/earth/strike-body-stone-crumble.webp",
   "system": {
-    "description": "<p>Forces a willpower test vs. endurance test on one target. On success, the target is turned to stone. On failure, the target takes magic damage {{math spellPower \"*\" 4}} and is slowed for 2 turns.</p>",
+    "description": "<p>The caster tests Will against the target's Endurance.</p><p><strong>On success:</strong> the target is turned to stone.</p><p><strong>On failure:</strong> the target takes {{math spellPower \"*\" 4}} damage and is Slowed for two rounds.</p>",
     "options": [
       "divine",
       "magic"
@@ -138,7 +138,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "will",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "4ZlNvWGr8HLJA8SI",

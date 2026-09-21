@@ -4,7 +4,7 @@
   "img": "icons/magic/death/weapon-scythe-rune-green.webp",
   "system": {
     "localizationKey": "",
-    "description": "Attacks up to three adjacent enemies with a bloody scythe. Deals Dark + Slashing damage equal to 3d8 + {{math spellPower \"\" 3}} and applies one Bleeding. Half of the damage dealt is transferred to the Blood Pool. Triggers a Will Test (bonus {{math spellPower \"\" 3}}) vs. target's Strength Test to push the target back by one hex. Does not provoke Opportunity Attacks.",
+    "description": "<p>Sweeps a bloody scythe through up to three adjacent enemies, dealing 3d8 + {{math spellPower \"*\" 3}} damage and applying one Bleeding to each.</p><p>The caster tests Will + {{math spellPower \"*\" 3}} against each target's Strength.</p><p><strong>On success:</strong> the target is pushed back one hex.</p><p>Half of the damage dealt is transferred to the caster's Blood Pool. Casting this spell does not provoke Opportunity Attacks.</p>",
     "options": [
       "divine",
       "magic"
@@ -123,7 +123,9 @@
     "testModifier": "@spellPower*3",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "JfABnrOWeCkU7mhs",

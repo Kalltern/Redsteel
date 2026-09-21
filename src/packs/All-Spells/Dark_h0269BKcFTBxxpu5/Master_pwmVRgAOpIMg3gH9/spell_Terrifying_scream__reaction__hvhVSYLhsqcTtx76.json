@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/sonic/scream-wail-shout-teal.webp",
   "system": {
-    "description": "Triggers Fear for 3 rounds in a 3m radius around the caster. Nerve Tests have a penalty of {{math spellPower \"*\" 1}}. If a target succeeds their first Nerve Test, they must move 2 hexes away from the caster. Can be cast as a Reaction only if the caster is attacked.",
+    "description": "<p>Triggers Fear for three rounds in a 3 m radius around the caster, putting a penalty of {{math spellPower \"*\" 1}} on Resolve tests.</p><p>A target that succeeds on its first Resolve test must move 2 hexes away from the caster.</p><p>Can be cast as a Reaction only if the caster is attacked.</p>",
     "options": [
       "divine",
       "magic"
@@ -118,7 +118,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "pwmVRgAOpIMg3gH9",

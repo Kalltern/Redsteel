@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/earth/projectile-boulder-yellow.webp",
   "system": {
-    "description": "<p>A magically hurled stone explodes on impact, dealing 3d6 + <span style=\"font-family:Signika, sans-serif\">{{spellPower}} damage </span>to the primary target. </p><p>Dealing half of that damage to all creatures within a 1.5-meter radius. The main target also has a 25% chance to be stunned for 1 turn.</p>",
+    "description": "<p>Hurls a stone that explodes on impact for 3d6 + {{spellPower}} damage to the main target, and half that to everything within 1.5 m.</p><p>The main target has a 25% chance to be Stunned for one round.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "93jLy3nvMhvY366z",

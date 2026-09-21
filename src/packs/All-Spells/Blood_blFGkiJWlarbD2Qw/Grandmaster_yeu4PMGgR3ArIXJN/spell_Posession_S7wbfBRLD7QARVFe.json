@@ -1,10 +1,10 @@
 {
-  "name": "Posession",
+  "name": "Possession",
   "type": "spell",
   "img": "icons/skills/wounds/anatomy-organ-brain-pink-red.webp",
   "system": {
     "localizationKey": "",
-    "description": "Triggers a Will Test vs. target’s Will Test. On a success, the caster possesses the target, inhabits its body, gains full control over it, and full access to its memories and knowledge. Once per week, the target may repeat the Test to break free. Can be ended by exorcism. If the host does not have access to magic and the Blood School, the caster cannot use them either. If the caster is expelled from the body, the host vomits the caster out and loses consciousness, and the caster is Stunned for two turns.",
+    "description": "<p>The caster tests Will against the target's Will.</p><p><strong>On success:</strong> the caster seizes the target exactly as the winner of a Mind Bending duel does, taking control of its body and gaining full access to its memories and knowledge. The target may repeat the test once per week to break free.</p><p>If the host has no access to magic or to the Blood School, the caster cannot use them either. The possession can be ended by exorcism.</p><p>If the caster is expelled, the host vomits the caster out and loses consciousness, and the caster is Stunned for two turns.</p>",
     "options": [
       "divine",
       "magic"
@@ -123,7 +123,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "yeu4PMGgR3ArIXJN",

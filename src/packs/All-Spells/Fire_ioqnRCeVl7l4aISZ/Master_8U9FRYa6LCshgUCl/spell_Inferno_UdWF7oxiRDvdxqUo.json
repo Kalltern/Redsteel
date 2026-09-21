@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/barrier-wall-explosion-orange.webp",
   "system": {
-    "description": "<p>Deals 4d6 + {{math spellPower \"*\" 5}} damage within 6 m around the caster. Can be cast as a Reaction only when the caster is attacked.</p>",
+    "description": "<p>Deals 4d6 + {{math spellPower \"*\" 5}} damage within 6 m of the caster.</p><p>Can be cast as a Reaction only when the caster is attacked.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "8U9FRYa6LCshgUCl",

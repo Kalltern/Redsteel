@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/creatures/birds/corvid-call-sound-blue.webp",
   "system": {
-    "description": "<p>For a duration of <span style=\"font-family:Signika, sans-serif\">{{math spellPower \"*\" 5}}</span> minutes, the caster gains the ability to communicate with animals, understanding their basic intentions and conveying simple emotions or commands.</p>",
+    "description": "<p>For {{math spellPower \"*\" 5}} minutes, the caster can speak with animals, understanding their basic intentions and conveying simple emotions or commands.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "93jLy3nvMhvY366z",

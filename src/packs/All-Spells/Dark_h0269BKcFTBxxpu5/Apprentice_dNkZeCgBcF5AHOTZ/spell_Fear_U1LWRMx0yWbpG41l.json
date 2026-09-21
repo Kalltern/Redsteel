@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/death/undead-ghost-scream-teal.webp",
   "system": {
-    "description": "<p>Causes Fear for three rounds. All Resolve tests suffer a penalty equal to {{math spellPower \"*\" 1}}. May only be cast as a Reaction if the caster is attacked.</p>",
+    "description": "<p>Causes Fear for three rounds, putting a penalty of {{math spellPower \"*\" 1}} on all the target's Resolve tests.</p><p>The Fear itself is not resisted. Once it lands it runs the normal Fear procedure, starting with the roll for Panic.</p><p>Can be cast as a Reaction only if the caster is attacked.</p>",
     "options": [
       "divine",
       "magic"
@@ -128,7 +128,9 @@
     "testModifier": "",
     "variants": [
       "cEZ1NlEaQa9PXsWe"
-    ]
+    ],
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "dNkZeCgBcF5AHOTZ",

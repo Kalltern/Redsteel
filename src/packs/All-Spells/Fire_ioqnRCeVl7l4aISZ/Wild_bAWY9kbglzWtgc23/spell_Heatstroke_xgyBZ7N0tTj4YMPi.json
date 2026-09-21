@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/orb-lightning-sun.webp",
   "system": {
-    "description": "<p>Focuses on a single target, dealing 1d4 + {{math spellPower \"/\" 2}} damage per round.</p>",
+    "description": "<p>Deals 1d4 + {{math spellPower \"/\" 2}} damage per round to one target.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "bAWY9kbglzWtgc23",

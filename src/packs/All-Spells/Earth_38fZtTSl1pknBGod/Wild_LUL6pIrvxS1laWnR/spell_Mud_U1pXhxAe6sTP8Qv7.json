@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/commodities/materials/slime-brown.webp",
   "system": {
-    "description": "Transforms the ground in a 3m area into sticky mud. The area becomes Difficult Terrain.",
+    "description": "<p>Turns the ground in a 3 m area into sticky mud, making it Difficult Terrain.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "LUL6pIrvxS1laWnR",

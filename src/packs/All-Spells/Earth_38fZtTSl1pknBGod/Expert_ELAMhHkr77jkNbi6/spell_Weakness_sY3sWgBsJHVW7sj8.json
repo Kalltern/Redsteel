@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/control/silhouette-hold-change-green.webp",
   "system": {
-    "description": "<p>The target suffers a -30% penalty to tests of a chosen attribute (Strength, Dexterity, or Endurance) and a -30% penalty to related derived skills for a duration of <span style=\"font-family:Signika, sans-serif\">{{math spellPower \"/\" 2 + 1}}</span> turns.</p>",
+    "description": "<p>For {{math spellPower \"/\" 2 + 1}} rounds, puts a -30% penalty on the target's tests of one chosen attribute, Strength, Dexterity or Endurance, and on the skills derived from it.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "ELAMhHkr77jkNbi6",

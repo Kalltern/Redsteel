@@ -1,9 +1,9 @@
 {
-  "name": "Relgar’s Hounds",
+  "name": "Relgar's Hounds",
   "type": "spell",
   "img": "icons/magic/nature/wolf-paw-glow-large-orange.webp",
   "system": {
-    "description": "<p>Summon up to three fire hounds (cost per hound); each attacks a different target within range. Each hound deals 5d6 + <span style=\"color:rgb(239, 230, 216);font-family:Signika, 'Palatino Linotype', sans-serif;font-size:14px;font-style:normal;font-variant-ligatures:normal;font-variant-caps:normal;font-weight:400;letter-spacing:normal;orphans:2;text-align:start;text-indent:0px;text-transform:none;widows:2;word-spacing:0px;-webkit-text-stroke-width:0px;white-space:normal;background-color:rgba(11, 10, 19, 0.9);text-decoration-thickness:initial;text-decoration-style:initial;text-decoration-color:initial;display:inline !important;float:none\">{{spellPower}} </span>damage, and forces a Will + {{spellPower}} vs Strength/Dexterity Test.<br>On a failed save, the target loses 1 Action. <br>On a successful save, the target is knocked prone and takes an additional 5d6 + {{spellPower}} Magical + Fire damage, then the hound disappears. <br>If the target succeeds with Margin of Success ≥  50, nothing happens. -20% chance to apply Burning effect.</p>",
+    "description": "<p>Summons up to three fire hounds, each attacking a different target within range for 5d6 + {{spellPower}} damage. The mana cost is paid per hound.</p><p>Each hound makes the caster test Will + {{spellPower}} against its target's Strength or Dexterity.</p><p><strong>On success:</strong> the target is knocked Prone and takes a further 5d6 + {{spellPower}} damage, then the hound disappears.</p><p><strong>On failure:</strong> the target loses one Action.</p><p><strong>On failure by a margin of 50 or more:</strong> nothing happens, and the target's chance to catch Burning from this spell drops by 20%.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "8U9FRYa6LCshgUCl",

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/earth/barrier-stone-pillar-purple.webp",
   "system": {
-    "description": "<p>Creates a stone wall up to 6m high on unoccupied hexes for <span style=\"font-family:Signika, sans-serif\">{{math spellPower \"*\" 2 </span>+ 2<span style=\"font-family:Signika, sans-serif\">}}</span> turns. Hexes must be adjacent.</p>",
+    "description": "<p>Creates a stone wall up to 6 m high on unoccupied hexes for {{math spellPower \"*\" 2 + 2}} rounds.</p><p>The hexes must be adjacent.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
       "effect2": 0,
       "effect3": 0,
       "effect4": 0
-    }
+    },
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "JBcANv6vENmYO1qP",

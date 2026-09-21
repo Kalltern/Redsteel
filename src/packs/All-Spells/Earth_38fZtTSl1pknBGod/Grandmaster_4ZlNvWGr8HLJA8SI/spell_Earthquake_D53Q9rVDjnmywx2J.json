@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/earth/laval-stone-orange.webp",
   "system": {
-    "description": "Triggers a devastating earthquake across a large area.",
+    "description": "<p>Triggers a devastating earthquake across a large area.</p>",
     "options": [
       "divine",
       "magic"
@@ -135,7 +135,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "4ZlNvWGr8HLJA8SI",

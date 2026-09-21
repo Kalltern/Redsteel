@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/acid/projectile-needles-salvo-green.webp",
   "system": {
-    "description": "<p>Throws a small amount of acid at a target within range. <br /><br />Deals 3d6 + <span style=\"font-family:Signika, sans-serif\">{{math spellPower}} damage</span>.<br />30% chance to corrode armor (-4 armor). </p><hr /><p>Requires acid within reach.</p>",
+    "description": "<p>Throws a small amount of acid at one target within range, dealing 3d6 + {{spellPower}} damage, with a 30% chance to corrode its armor by 4.</p><p>Requires acid within reach.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "LUL6pIrvxS1laWnR",

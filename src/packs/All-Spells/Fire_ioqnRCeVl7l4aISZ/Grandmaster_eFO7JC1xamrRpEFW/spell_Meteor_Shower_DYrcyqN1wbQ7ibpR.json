@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/explosion-mushroom-nuke-orange.webp",
   "system": {
-    "description": "Summons a devastating meteor storm over a very large area.",
+    "description": "<p>Summons a devastating meteor storm over a very large area.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "eFO7JC1xamrRpEFW",

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
-    "description": "Empowers the next attack or throw, increasing damage by 1d4 + {{math spellPower \"/\" 2}}. +15% chance to Stun. Cannot be combined with other attack enhancements.",
+    "description": "<p>Empowers the caster's next attack or throw, raising its damage by 1d4 + {{math spellPower \"/\" 2}} and its chance to Stun by 15%.</p><p>Cannot be combined with other attack enhancements.</p>",
     "options": [
       "divine",
       "magic"
@@ -110,7 +110,9 @@
       "effect2": "0",
       "effect3": "0",
       "effect4": "0"
-    }
+    },
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "6PM0K9AWtzeYO1Fn",

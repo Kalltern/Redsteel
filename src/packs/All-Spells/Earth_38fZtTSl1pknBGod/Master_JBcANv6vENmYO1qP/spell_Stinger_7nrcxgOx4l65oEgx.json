@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/earth/projectile-stone-bullet-pink.webp",
   "system": {
-    "description": "<p>Deals {{math spellPower \"*\" 3}} + 2d8 damage to up to two targets in a line, with a 75% chance to poison. If the spell immediately kills a target, the poison effect transfers to one target within 3m.</p>",
+    "description": "<p>Deals 2d8 + {{math spellPower \"*\" 3}} damage to up to two targets in a line, with a 75% chance to Poison.</p><p>If the spell kills a target outright, the Poison transfers to one target within 3 m.</p>",
     "options": [
       "divine",
       "magic"
@@ -135,7 +135,9 @@
     },
     "effectType1": "poison",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "JBcANv6vENmYO1qP",

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/nature/symbol-moon-stars-white.webp",
   "system": {
-    "description": "<p>Reduces one Target's initiative by {{math spellPower \"/\" 2}} for three turns.<br /></p>",
+    "description": "<p>Reduces one target's Initiative by {{math spellPower \"/\" 2}} for three rounds.</p>",
     "options": [
       "divine",
       "magic"
@@ -126,7 +126,9 @@
     "effectType2": "",
     "effectType3": "custom",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "GaSIkEMI2Yi6RoKu",

@@ -4,7 +4,7 @@
   "img": "icons/skills/wounds/blood-spurt-spray-red.webp",
   "system": {
     "localizationKey": "",
-    "description": "If a target dies as a result of Bleeding, all Bleeding effects are immediately transferred to another target within 3 m. Can be cast as a Reaction only if a target within range dies from Bleeding.",
+    "description": "<p>When a target dies from Bleeding, all its Bleeding effects transfer immediately to another target within 3 m.</p><p>Can be cast as a Reaction only if a target within range dies from Bleeding.</p>",
     "options": [
       "divine",
       "magic"
@@ -123,7 +123,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "eMzp06fwqCc3BfiN",

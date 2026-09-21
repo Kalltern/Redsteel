@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/death/skull-energy-light-purple.webp",
   "system": {
-    "description": "Requires a corpse adjacent to the target within range. The corpse attacks the target, dealing 3d6 + {{spellPower}} damage with a 20% chance to Root the target for one round.",
+    "description": "<p>Animates a corpse to attack one target for 3d6 + {{spellPower}} damage, with a 20% chance to Root it for one round.</p><p>Requires a corpse adjacent to the target.</p>",
     "options": [
       "divine",
       "magic"
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "uiFKWM6saw7R2jtx",

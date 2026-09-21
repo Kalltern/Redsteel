@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/water/wave-water-teal.webp",
   "system": {
-    "description": "<p>Creates a strong current in a large Water area, potentially dragging creatures or small vessels underwater. <br />Halves movement speed and imposes a -40% swimming penalty. <br />Failed swimming tests allow the caster to move the target up to 5 hexes in any direction.</p>",
+    "description": "<p>Creates a strong current in a large body of water, which can drag creatures or small vessels under.</p><p>It halves movement speed and puts a -40% penalty on swimming. When a swimming test fails, the caster may move that target up to 5 hexes in any direction.</p>",
     "options": [
       "divine",
       "magic"
@@ -94,7 +94,7 @@
     "option": "magic",
     "type": "water",
     "rank": "expert",
-    "actionCost": "2 | K",
+    "actionCost": "2 | C",
     "range": "50",
     "spellClass": "support",
     "roll": {
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "GaSIkEMI2Yi6RoKu",

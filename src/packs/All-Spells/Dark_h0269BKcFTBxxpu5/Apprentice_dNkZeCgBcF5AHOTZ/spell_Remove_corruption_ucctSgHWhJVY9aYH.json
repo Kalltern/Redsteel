@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/unholy/hand-claw-fire-blue.webp",
   "system": {
-    "description": "Removes 20 Corruption from the body at the cost of 2d4 Health. This Health cannot be restored by magic or miracles.",
+    "description": "<p>Removes Corruption from the caster at the cost of 2d4 Health.</p><p>Health spent this way cannot be restored by magic or miracles.</p>",
     "options": [
       "divine",
       "magic"
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "dNkZeCgBcF5AHOTZ",

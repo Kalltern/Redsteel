@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/nature/root-vine-beanstalk-moon.webp",
   "system": {
-    "description": "<p>A venomous thorn launches toward a single enemy, dealing 3d6 + <span style=\"font-family:Signika, sans-serif\">{{spellPower}} damage.</span> </p><p>+15% chance to inflict Poison upon the target.</p>",
+    "description": "<p>Launches a venomous thorn at one enemy for 3d6 + {{spellPower}} damage, with a 15% chance to Poison.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "93jLy3nvMhvY366z",

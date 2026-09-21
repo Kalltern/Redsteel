@@ -1889,11 +1889,16 @@
       },
       "isOffensive": true,
       "uncontested": false,
+      "vsTest": false,
+      "deliveryOptions": ["direct", "indirect"],
+      "delivery": "direct",
+      "breath": false,
       "sustained": false,
       "difficulty": 0,
       "cost": 0,
       "perRound": 0,
       "penetration": 0,
+      "manualNotes": "",
       "variants": []
     }
   }

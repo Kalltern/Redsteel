@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/flame-burning-skeleton-explosion.webp",
   "system": {
-    "description": "<p>Deals 3d20 + {{math spellPower \"*\" 6}} damage, dealing half damage to adjacent targets.  +50% chance to apply Burning effect.</p>",
+    "description": "<p>Deals 3d20 + {{math spellPower \"*\" 6}} damage to one target and half that to adjacent targets, with a 50% chance to Burn.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "eFO7JC1xamrRpEFW",

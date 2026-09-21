@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
-    "description": "Deals Magical + Crushing damage 1d8 + {{math spellPower \"/\" 2}} to one Target and triggers a Willpower Test (Bonus {{math spellPower \"*\" 2}}) vs. Target's Strength/Endurance. On success, pushes Target two hexes. On failure, pushes one hex.",
+    "description": "<p>Deals 1d8 + {{math spellPower \"/\" 2}} damage to one target.</p><p>The caster tests Will + {{math spellPower \"*\" 2}} against the target's Strength or Endurance.</p><p><strong>On success:</strong> the target is pushed two hexes.</p><p><strong>On failure:</strong> the target is pushed one hex.</p>",
     "options": [
       "divine",
       "magic"
@@ -80,7 +80,7 @@
         ""
       ]
     },
-    "isOffensive": true,
+    "isOffensive": false,
     "uncontested": false,
     "sustained": false,
     "difficulty": -10,
@@ -110,7 +110,9 @@
       "effect2": "0",
       "effect3": "0",
       "effect4": "0"
-    }
+    },
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "6PM0K9AWtzeYO1Fn",

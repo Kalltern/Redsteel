@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/water/barrier-ice-shield.webp",
   "system": {
-    "description": "Protects small objects (books, clothing etc.) from getting Wet for centuries. Alternatively, can be cast on living creatures for {{math spellPower \"*\" 5}} minutes to grant immunity to the Wet effect.",
+    "description": "<p>Protects small objects such as books or clothing from getting Wet, for centuries.</p><p>Cast on a living creature instead, it grants immunity to the Wet effect for {{math spellPower \"*\" 5}} minutes.</p>",
     "options": [
       "divine",
       "magic"
@@ -119,7 +119,9 @@
     },
     "effectType1": "custom",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "8nT2ag63tCfjXxeJ",

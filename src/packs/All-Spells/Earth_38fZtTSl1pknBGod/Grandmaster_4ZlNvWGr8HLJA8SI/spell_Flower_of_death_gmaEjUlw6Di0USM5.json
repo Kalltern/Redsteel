@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/nature/plant-vines-skull-green.webp",
   "system": {
-    "description": "<p>Deals damage (3d20 + <span style=\"font-family:Signika, sans-serif\">{{math spellPower \"*\" 5}}</span>) in a 4.5m area. 50% chance to stun for 1 turn. A 1.5m radius at the epicenter becomes extremely difficult terrain. Pushes targets back 3 hexes and triggers a willpower test (caster’s bonus: <span style=\"font-family:Signika, sans-serif\">{{math spellPower \"*\" 2}}</span>) vs. Target's endurance test to resist being knocked down. Armor penetration 40. Critters or similar sized being do not count.</p>",
+    "description": "<p>Deals 3d20 + {{math spellPower \"*\" 5}} damage in a 4.5 m area, with a 50% chance to Stun for one round, and turns a 1.5 m radius at the epicentre into Extremely Difficult Terrain.</p><p>Targets are pushed back three hexes, and the caster tests Will + {{math spellPower \"*\" 2}} against each target's Endurance.</p><p><strong>On failure:</strong> the target is knocked down.</p><p>Critters and similarly small creatures are not affected.</p>",
     "options": [
       "divine",
       "magic"
@@ -135,7 +135,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "4ZlNvWGr8HLJA8SI",

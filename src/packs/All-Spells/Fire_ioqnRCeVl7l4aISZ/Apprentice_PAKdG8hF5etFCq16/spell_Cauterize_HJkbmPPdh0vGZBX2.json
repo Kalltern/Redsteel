@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/flame-burning-hand-white.webp",
   "system": {
-    "description": "<p>Removes all Bleeding effects from the target. If any Bleeding effects were removed, the target takes 1d4 damage. Can be used to clean wounds.<br /><br />Bleeds must be removed manually.</p>",
+    "description": "<p>Removes all Bleeding from the target. If any Bleeding was removed, the target takes 1d4 damage.</p><p>Can also be used to clean wounds.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "The Bleeding effects must be removed manually.",
+    "vsTest": false
   },
   "effects": [],
   "folder": "PAKdG8hF5etFCq16",

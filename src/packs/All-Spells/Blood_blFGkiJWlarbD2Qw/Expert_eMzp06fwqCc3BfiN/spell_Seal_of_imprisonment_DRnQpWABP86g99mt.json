@@ -4,7 +4,7 @@
   "img": "icons/magic/symbols/runes-triangle-orange.webp",
   "system": {
     "localizationKey": "",
-    "description": "Creates a poorly visible seal on the ground. Once it imprisons a target, it remains active and no longer requires Concentration until it is broken (4000 HP, half Physical damage taken, regenerates every fifteen minutes / 90 rounds, or can be restored at the cost of 5 HP) or dispelled (from the outside, easily, for example by attacking the prisoner).",
+    "description": "<p>Creates a poorly visible seal on the ground that imprisons the first target to enter it.</p><p>Once it holds a target the seal stays active on its own and no longer needs Concentration.</p><p>The seal has 4000 HP, takes half damage from Physical sources, and regenerates every fifteen minutes (90 rounds). It can also be restored for 5 HP. It is dispelled easily from the outside, for example by attacking the prisoner.</p>",
     "options": [
       "divine",
       "magic"
@@ -111,7 +111,9 @@
       "extra1": 0,
       "extra2": 0,
       "extra3": 0
-    }
+    },
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "eMzp06fwqCc3BfiN",

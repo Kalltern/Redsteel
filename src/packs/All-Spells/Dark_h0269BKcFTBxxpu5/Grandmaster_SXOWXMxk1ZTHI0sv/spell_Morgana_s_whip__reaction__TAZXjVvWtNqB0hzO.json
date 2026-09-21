@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/air/wind-vortex-swirl-purple.webp",
   "system": {
-    "description": "Deals 5d6 + {{spellPower}} damage, interrupts casting, disables the target's School of Magic for 1 round, and burns mana equal to double the cost of the interrupted spell. If it kills the target, traps their soul in a suitable item. Spreads 2d6 Corruption. Can be cast as a Reaction during any Spell Channeling within range.",
+    "description": "<p>Deals 5d6 + {{spellPower}} damage to one target, interrupts its casting, disables its School of Magic for one round, and burns mana equal to double the cost of the interrupted spell.</p><p>Spreads 2d6 Corruption. If the damage kills the target, its soul is trapped in a suitable item.</p><p>Can be cast as a Reaction during any Spell Channeling within range.</p>",
     "options": [
       "divine",
       "magic"
@@ -118,7 +118,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "SXOWXMxk1ZTHI0sv",

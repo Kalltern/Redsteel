@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/flame-burning-eye.webp",
   "system": {
-    "description": "Allows the caster to observe through a selected fire within 250m. The caster cannot hear anything and is unaware of their own surroundings during the vision",
+    "description": "<p>Lets the caster watch through a chosen fire within 250 m.</p><p>The caster hears nothing and is unaware of their own surroundings while watching.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
       "effect2": 0,
       "effect3": 0,
       "effect4": 0
-    }
+    },
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "UxjnWqOZrypZl1NP",

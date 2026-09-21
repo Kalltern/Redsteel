@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/symbols/runes-carved-stone-green.webp",
   "system": {
-    "description": "<p>The target is encased in a cocoon for one day. After this time, they regain 100% health and up to two serious injuries. Upon awakening, they consume twice the normal amount of food for one day. If the cocoon is interrupted, the target gains one serious injury and must pass an advanced endurance test or be hamstrung for one turn. Can only be used once every five days. Most targets find this experience traumatic, requiring a nerve test for potential insanity points.</p>",
+    "description": "<p>Encases the target in a cocoon for one day, after which it regains all its Health and heals up to two Grave Wounds.</p><p>On waking it eats twice as much as usual for a day. Most targets find the experience traumatic and take a Resolve test.</p><p>If the cocoon is interrupted, the target gains one Grave Wound and must pass an Advanced Endurance test or be hamstrung for one round. Can only be used once every five days.</p>",
     "options": [
       "divine",
       "magic"
@@ -135,7 +135,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "JBcANv6vENmYO1qP",

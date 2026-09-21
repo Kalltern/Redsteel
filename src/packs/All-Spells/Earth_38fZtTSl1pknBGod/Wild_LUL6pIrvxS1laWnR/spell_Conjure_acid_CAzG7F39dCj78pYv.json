@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/acid/dissolve-pool-bubbles.webp",
   "system": {
-    "description": "<p>Creates a small amount of acid in the hand and deals 2d6 damage to the caster. </p><p>Casting this spell does not prevent the caster from casting another spell in the same turn.</p><hr /><p>Requires a free hand.</p>",
+    "description": "<p>Creates a small amount of acid in the caster's hand, at the cost of 2d6 damage to the caster.</p><p>Casting it does not stop the caster casting another spell this round. Requires a free hand.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "LUL6pIrvxS1laWnR",

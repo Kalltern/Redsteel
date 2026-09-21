@@ -4480,9 +4480,26 @@
         "Range": {
           "self": "Na sebe",
           "hexes": "{n} hex",
-          "metresLabel": "Dosah (m)"
+          "metresLabel": "Dosah (m)",
+          "breath": "Dech {n}"
+        },
+        "Delivery": {
+          "direct": "Přímé",
+          "indirect": "Nepřímé"
+        },
+        "SpellPower": {
+          "tipTitle": "Odvozeno ze Síly kouzla",
+          "tipMath": "Síla kouzla {sk} {expr} = {result}",
+          "tipPlain": "Síla kouzla {sk}",
+          "roundedUp": "zaokrouhleno nahoru"
         },
         "ignoresArmor": "Ignoruje zbroj",
+        "manualNotesHeading": "Ruční vyhodnocení",
+        "vsTestYes": "Ano",
+        "dmgJoin": {
+          "and": "a",
+          "or": "nebo"
+        },
         "FIELDS": {
           "propertiesHeader": {
             "label": "Vlastnosti kouzla"
@@ -4493,6 +4510,18 @@
           "uncontested": {
             "label": "Bez obrany",
             "hint": "Proti tomuto seslání se nic nehází: žádná obrana, žádný test vlastnosti, žádné zranění mířené na cíl. Skryje Magic ATK a při volbě Bez vyhodnocení kanálování zcela vynechá hod na kanálování."
+          },
+          "vsTest": {
+            "label": "Versus test"
+          },
+          "delivery": {
+            "label": "Zacílení"
+          },
+          "breath": {
+            "label": "Dech"
+          },
+          "manualNotes": {
+            "label": "Ruční poznámky"
           },
           "halfDamage": {
             "label": "Poloviční zranění"
@@ -4863,21 +4892,21 @@
         "IdentifyDifficulty": "Obtížnost určení",
         "WriteDifficulty": "Obtížnost opisu",
         "CastBonus": "Bonus svitku k seslání",
-        "CastBonusHint": "Přičítá se k Usměrňování toho, kdo svitek předčítá nahlas, a vyrovnává vlastní obtížnost kouzla."
+        "CastBonusHint": "Přičítá se k Usměrňování toho, kdo zlomí pečeť, a vyrovnává vlastní obtížnost kouzla."
       },
       "Window": {
         "Title": "Kouzelný svitek",
         "Identify": "Určit",
         "Write": "Opsat do grimoáru",
-        "Cast": "Přečíst nahlas",
+        "Cast": "Zlomit pečeť",
         "Reroll": "Přehodit",
         "Book": "Cílový grimoár",
         "NoBooks": "Tato postava u sebe nemá žádný grimoár.",
         "Difficulty": "Obtížnost",
         "Result": "d100 {d100} — přesah {margin}",
-        "UnknownHint": "Znaky zatím nic neříkají. Urči svitek, nebo ho přečti naslepo a poznej to po zlém.",
+        "UnknownHint": "Znaky zatím nic neříkají. Urči svitek, nebo zlom pečeť naslepo a poznej to po zlém.",
         "WriteHint": "Opsáním se svitek zničí, ať už je ruka pevná, nebo ne.",
-        "CastHint": "Přečtením nahlas se svitek spotřebuje. Žádná mana, žádný hod na Usměrňování.",
+        "CastHint": "Zlomením pečeti se uvolní kouzlo uzavřené ve svitku a svitek přitom shoří. Žádná mana, žádný hod na Usměrňování.",
         "Close": "Zavřít"
       },
       "Warn": {
@@ -4895,7 +4924,7 @@
         "IdentifyFailure": "Znaky zůstávají nesrozumitelné.",
         "Write": "<b>{actor}</b> opsal <b>{spell}</b> do grimoáru {book} — Arcana, d100 {d100}, přesah {margin}. Svitek je spotřebován.",
         "WriteFailure": "<b>{actor}</b> zpackal opis kouzla <b>{spell}</b> — Arcana, d100 {d100}, přesah {margin}. Svitek je zničen.",
-        "Cast": "<b>{actor}</b> přečetl <b>{spell}</b> ze svitku. Svitek se rozpadá.",
+        "Cast": "<b>{actor}</b> zlomil pečeť a uvolnil kouzlo <b>{spell}</b>. Svitek shoří.",
         "Reroll": "Přehozeno."
       }
     },
@@ -5241,6 +5270,18 @@
       "sustained": {
         "label": "Udržované",
         "desc": "Kouzlo s cenou za kolo pokračuje po seslání jako efekt Kanálování. Udržované kouzlo si každé kolo znovu hází svůj účinek a sesilatel ho může kdykoli ukončit zrušením Kanálování."
+      },
+      "direct": {
+        "label": "Přímé",
+        "desc": "Přímé kouzlo zasahuje cíl samo. Dá se mu uhnout, dá se krýt štítem a dá se proti němu bránit magicky, stejně jako proti jinému útoku."
+      },
+      "indirect": {
+        "label": "Nepřímé",
+        "desc": "Nepřímé kouzlo cíl nezasahuje samo, takže se mu nedá uhnout a štít proti němu nekryje. Magická obrana funguje normálně dál."
+      },
+      "breath": {
+        "label": "Dech",
+        "desc": "Kuželová a paprsková kouzla mají tvar dechu. Číslo u Dechu říká, jak daleko od sesilatele smí ležet počátek kužele, ne jak daleko kouzlo dosáhne. Dech 1 začíná v sousedním hexu, Dech 2 smí začínat jeden nebo dva hexy daleko. Dosah samotného kouzla je napsaný v jeho vlastním textu."
       },
       "graveWound": {
         "label": "Těžké zranění",

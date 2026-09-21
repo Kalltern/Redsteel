@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/dagger-rune-enchant-blue-gray.webp",
   "system": {
-    "description": "<p>Charges a weapon with lightning energy. <br />The weapon deals +1d4 + {{math spellPower \"/\" 2}} additional damage on hit. <br />Changes damage type to Physical / Magical / Lightning. <br />When cast while inside a storm the bonus is additional +1d4 + {{math spellPower \"/\" 2}} damage. <br />If no target is hit by the end of the round (or the weapon is not dropped), the caster takes half the imbued damage.</p><hr /><p>Can be applied only to Melee and Throw.<br />This spell does not count to the limit of spells cast during this round.</p><hr /><p>Damage of the Spell not automated - WIP</p>",
+    "description": "<p>Charges a weapon with lightning, adding 1d4 + {{math spellPower \"/\" 2}} damage on hit and changing its damage type to Physical, Magic and Lightning.</p><p>Cast inside a storm, the bonus is a further 1d4 + {{math spellPower \"/\" 2}}.</p><p>If nothing is hit by the end of the round, and the weapon is not dropped, the caster takes half the imbued damage.</p><p>Can be applied only to Melee and Thrown weapons. This spell does not count towards the limit of spells cast this round.</p>",
     "options": [
       "divine",
       "magic"
@@ -125,7 +125,12 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "variants": [
+      "O4jATbK8LLSnyoO8"
+    ],
+    "manualNotes": "The spell's damage is not automated. Resolve it manually. Still WIP.",
+    "vsTest": false
   },
   "effects": [],
   "folder": "Lf2tEeoXte1Bo8jF",

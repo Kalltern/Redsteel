@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/water/barrier-ice-wall-explosion.webp",
   "system": {
-    "description": "<p>Requires wet target. Deals 4d4 + {{math spellPower \"/\" 2}} damage per turn to everyone in a 2 hex (3m) radius around the caster. <br />+10% chance to Slow. </p>",
+    "description": "<p>Deals 4d4 + {{math spellPower \"/\" 2}} damage per round to everyone within 2 hexes of the caster, with a 10% chance to Slow.</p><p>Requires a Wet target.</p>",
     "options": [
       "divine",
       "magic"
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "dKFK891TRCSJhcZW",

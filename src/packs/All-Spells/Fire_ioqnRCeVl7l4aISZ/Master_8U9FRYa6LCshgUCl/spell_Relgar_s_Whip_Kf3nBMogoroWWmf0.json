@@ -1,9 +1,9 @@
 {
-  "name": "Relgar’s Whip",
+  "name": "Relgar's Whip",
   "type": "spell",
   "img": "icons/magic/fire/beam-strike-whip-red.webp",
   "system": {
-    "description": "<p>Creates a fiery whip in the caster’s free hand with minimum range 3 m. Usable for:</p><ol><li><p>Trip: Will vs Strength/Dexterity test.</p></li><li><p>Pull: Will + {{spellPower}} vs Strength/Dexterity to pull target any number of hexes.</p></li><li><p>Attack: deals Magical + Fire damage 3d6 + {{spellPower}}, Armor Penetration: 8.</p></li></ol>",
+    "description": "<p>Creates a fiery whip in the caster's free hand, usable in three ways.</p><p><strong>Trip:</strong> the caster tests Will against the target's Strength or Dexterity.</p><p><strong>Pull:</strong> the caster tests Will + {{spellPower}} against the target's Strength or Dexterity, and on success pulls it any number of hexes.</p><p><strong>Attack:</strong> deals 3d6 + {{spellPower}} damage.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "8U9FRYa6LCshgUCl",

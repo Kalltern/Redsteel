@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/control/debuff-chains-purple.webp",
   "system": {
-    "description": "<p>Triggers a vs test of caster's Will + {{math spellPower \"*\" 2}}) against target's Strength/Endurance test.</p><p>On caster's success, the target is Rooted(shadowbound) and takes 2d6 damage each round.</p><p>On failure, the target loses one Action.</p><p>Cannot be escaped using Teleportation, Pull, or similar spells.</p>",
+    "description": "<p>The caster tests Will + {{math spellPower \"*\" 2}} against the target's Strength or Endurance.</p><p><strong>On success:</strong> the target becomes Rooted (Shadowbound) and takes 2d6 damage each round. It cannot escape using Teleportation, Pull, or similar spells.</p><p><strong>On failure:</strong> the target is not chained, but loses one Action.</p>",
     "options": [
       "divine",
       "magic"
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "will",
-    "testModifier": "@spellPower*2"
+    "testModifier": "@spellPower*2",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "XCC7CG5LovD3hSXR",

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/earth/strike-stone-stalactite-blood-red.webp",
   "system": {
-    "description": "<p>Deals (6d6 + <span style=\"font-family:Signika, sans-serif\">{{math spellPower}}</span>) damage to one target. <br>25% chance to stun for one turn. <br><span style=\"color:rgb(239, 230, 216);font-family:Signika, 'Palatino Linotype', sans-serif;font-size:14px;font-style:normal;font-variant-ligatures:normal;font-variant-caps:normal;font-weight:400;letter-spacing:normal;orphans:2;text-align:start;text-indent:0px;text-transform:none;widows:2;word-spacing:0px;-webkit-text-stroke-width:0px;white-space:normal;background-color:rgba(11, 10, 19, 0.9);text-decoration-thickness:initial;text-decoration-style:initial;text-decoration-color:initial;display:inline !important;float:none\">Triggers a vs test of caster's Will </span>+ <span style=\"font-family:Signika, sans-serif\">{{math spellPower \"*\" 2}}</span>) against target's strength/endurance test to push the target 1 hex.</p>",
+    "description": "<p>Deals 6d6 + {{spellPower}} damage to one target, with a 25% chance to Stun for one round.</p><p>The caster tests Will + {{math spellPower \"*\" 2}} against the target's Strength or Endurance.</p><p><strong>On success:</strong> the target is pushed one hex.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "testModifier": "@spellPower*2",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "ELAMhHkr77jkNbi6",

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/water/water-iceberg-bubbles.webp",
   "system": {
-    "description": "Freezes a Water surface. Large bodies of Water may require multiple castings.",
+    "description": "<p>Freezes a water surface.</p><p>A large body of water may need more than one casting.</p>",
     "options": [
       "divine",
       "magic"
@@ -118,7 +118,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "mkz1Ivv1zQ2Wn77x",

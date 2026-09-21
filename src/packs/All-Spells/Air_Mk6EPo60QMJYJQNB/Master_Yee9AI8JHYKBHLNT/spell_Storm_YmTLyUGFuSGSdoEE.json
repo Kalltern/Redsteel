@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/lightning/bolt-strike-clouds-blue.webp",
   "system": {
-    "description": "<p>Conjures a concentrated storm on any chosen point in range.</p><p>Affects up to 2 + {{spellPower}} targets per round in 30m (20 hex) radius. </p><p>Deals (3d8 + {{math spellPower \"*\" 2}}) damage to each target. </p><hr><p>Area can be moved by one hex  as Free Action once per round. </p><p>Can only be cast outdoors. </p>",
+    "description": "<p>Conjures a concentrated storm on any chosen point in range, striking up to 2 + {{spellPower}} targets per round in a 20 hex radius for 3d8 + {{math spellPower \"*\" 2}} damage each.</p><p>The area can be moved one hex as a Free Action, once per round. Can only be cast outdoors.</p>",
     "options": [
       "divine",
       "magic"
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "Yee9AI8JHYKBHLNT",

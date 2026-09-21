@@ -1,10 +1,10 @@
 {
-  "name": "Lightning Arc",
+  "name": "Lightning arc",
   "type": "spell",
   "img": "icons/magic/lightning/bolt-strike-sparks-teal.webp",
   "system": {
     "localizationKey": "",
-    "description": "<p>Roll 2d4 manually and reduce your health. <br />Spell transfers a Lightning discharge to the target, dealing 3d6 + {{spellPower}} damage.</p>",
+    "description": "<p>Transfers a Lightning discharge to the target, dealing 3d6 + {{spellPower}} damage.</p>",
     "options": [
       "divine",
       "magic"
@@ -131,7 +131,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "Roll 2d4 manually and reduce the caster's health by it.",
+    "vsTest": false
   },
   "effects": [],
   "folder": "Lf2tEeoXte1Bo8jF",

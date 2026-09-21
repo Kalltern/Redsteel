@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/projectile-smoke-swirl-red.webp",
   "system": {
-    "description": "<p>Empowers the next melee or ranged attack, changing its damage type to Magic + Fire.<br>Adds a 25% chance to apply Burning. <br>Cannot be combined with other forms of attack enhancement.</p>",
+    "description": "<p>Empowers the caster's next melee or ranged attack, changing its damage type to Magic and Fire and adding a 25% chance to Burn.</p><p>Cannot be combined with other attack enhancements.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "PAKdG8hF5etFCq16",

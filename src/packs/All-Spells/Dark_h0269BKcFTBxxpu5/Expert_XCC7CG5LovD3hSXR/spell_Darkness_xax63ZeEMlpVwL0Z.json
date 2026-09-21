@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/unholy/orb-swirling-teal.webp",
   "system": {
-    "description": "<p>Creates magical darkness in an area up to 7.5m radius for {{math spellPower \"*\" 10}} minutes. All creatures in the area are considered Blinded. Can be bypassed by the Darkvision spell. Dims magical light down to a 1.5m area.<br /><br />Not fully automated. Resolve the effects manually</p>",
+    "description": "<p>Creates magical darkness up to 7.5 m in radius for {{math spellPower \"*\" 10}} minutes. Every creature inside counts as Blinded.</p><p>Magical light inside is dimmed to a 1.5 m area. The Darkvision spell sees through it.</p>",
     "options": [
       "divine",
       "magic"
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "The blindness and the dimming of light are not automated. Resolve them manually.",
+    "vsTest": false
   },
   "effects": [],
   "folder": "XCC7CG5LovD3hSXR",

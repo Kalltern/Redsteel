@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/water/orb-water-bubbles.webp",
   "system": {
-    "description": "<p>Generates Water, cost per liter. Can make a Target Wet or deal 4d10 + {{math spellPower \"/\" 2}} damage to fire creatures, ignoring armor.</p>",
+    "description": "<p>Generates water, at a cost per litre. It can make a target Wet, or deal 4d10 + {{math spellPower \"/\" 2}} damage to a creature of fire.</p>",
     "options": [
       "divine",
       "magic"
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "GaSIkEMI2Yi6RoKu",

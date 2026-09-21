@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/explosion-fireball-large-red-orange.webp",
   "system": {
-    "description": "<p>Manipulates a large fire within range and hurls it at a target within range. </p><p>Deals 4d6 + {{spellPower}} damage to target and everyone in a 1.5 m radius from the target.</p><p>+20% chance to apply Burning.</p>",
+    "description": "<p>Hurls a large fire within range at a target, dealing 4d6 + {{spellPower}} damage to it and to everyone within 1.5 m, with a 20% chance to Burn.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "bAWY9kbglzWtgc23",

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/defensive/shield-barrier-glowing-triangle-blue-yellow.webp",
   "system": {
-    "description": "<p>Grants a 30 + {{spellPower}}% chance to deflect projectiles (arrows, bolts, thrown weapons) and reduces Ranged and Thrown damage by 50%.<br /><br />Roll this chance manually when being attacked this way</p>",
+    "description": "<p>Grants a 30 + {{spellPower}}% chance to deflect projectiles, meaning arrows, bolts and thrown weapons, and halves Ranged and Thrown damage.</p>",
     "options": [
       "divine",
       "magic"
@@ -126,7 +126,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "Roll the deflection chance manually when the target is attacked this way.",
+    "vsTest": false
   },
   "effects": [],
   "folder": "AdbWyEUEtS9mw4hw",

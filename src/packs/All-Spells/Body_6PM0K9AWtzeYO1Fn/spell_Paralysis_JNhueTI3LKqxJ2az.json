@@ -1,9 +1,9 @@
 {
-  "name": "Paralysis",
+  "name": "Stun",
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
-    "description": "Initiates a Willpower vs. Target's Endurance Test with one Target. On success, stuns the Target for two rounds. On failure, the Target suffers a -5% penalty to Success for two rounds.",
+    "description": "<p>The caster tests Will against the target's Endurance.</p><p><strong>On success:</strong> the target is Stunned for two rounds.</p><p><strong>On failure:</strong> the target takes a -5% penalty to Success for two rounds.</p>",
     "options": [
       "divine",
       "magic"
@@ -81,7 +81,7 @@
       ]
     },
     "isOffensive": false,
-    "uncontested": true,
+    "uncontested": false,
     "sustained": false,
     "difficulty": -25,
     "cost": 10,
@@ -110,7 +110,9 @@
       "effect2": "0",
       "effect3": "0",
       "effect4": "0"
-    }
+    },
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "6PM0K9AWtzeYO1Fn",

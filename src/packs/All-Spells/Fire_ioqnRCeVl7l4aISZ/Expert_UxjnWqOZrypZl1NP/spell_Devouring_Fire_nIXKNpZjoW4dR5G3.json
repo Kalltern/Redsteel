@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/flame-burning-building.webp",
   "system": {
-    "description": "<p>Targets a Burning enemy. The Burning effect on target cannot be extinguished and deals <span style=\"color:rgb(239, 230, 216);font-family:Signika, sans-serif;font-size:14px;font-style:normal;font-variant-ligatures:normal;font-variant-caps:normal;font-weight:400;letter-spacing:normal;orphans:2;text-align:start;text-indent:0px;text-transform:none;widows:2;word-spacing:0px;-webkit-text-stroke-width:0px;white-space:normal;background-color:rgba(11, 10, 19, 0.9);text-decoration-thickness:initial;text-decoration-style:initial;text-decoration-color:initial;display:inline !important;float:none\">{{spellPower}}</span> extra damage. <br>Upon succesful casting and at the start of each round, there is a 25% chance to apply Burning to one adjacent target. <br>Can be cast as a Reaction any time someone within range gets Burning effect.</p>",
+    "description": "<p>Targets a Burning enemy. Its Burning cannot be extinguished and deals {{spellPower}} extra damage.</p><p>On a successful cast, and at the start of every round after, there is a 25% chance to spread Burning to one adjacent target.</p><p>Can be cast as a Reaction any time someone within range catches Burning.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "UxjnWqOZrypZl1NP",

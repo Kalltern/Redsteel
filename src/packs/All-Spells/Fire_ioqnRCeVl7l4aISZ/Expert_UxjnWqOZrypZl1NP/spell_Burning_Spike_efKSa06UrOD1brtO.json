@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/blast-jet-stream-splash.webp",
   "system": {
-    "description": "<p>Creates a barely visible trap on an unoccupied hex (must not be adjacent to another trap) for 15 minutes.</p><hr /><p>Deals 5d6 + {{spellPower}} damage in a 1.5m radius around it upon anyone entering the hex. <br />First target has +10% chance to get Burning effect. <br />Ignores Magic Defense of the first target.<br /><br />In case of trap trigger, roll this spell manually for 0 mana cost and disregard the channeling test.</p>",
+    "description": "<p>Creates a barely visible trap on an unoccupied hex for 15 minutes, dealing 5d6 + {{spellPower}} damage in a 1.5 m radius to anyone entering it.</p><p>The first target has a 10% higher chance to catch Burning. The hex must not be adjacent to another trap.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "When the trap triggers, roll this spell manually for 0 mana cost and disregard the channeling test. The first target's Magic Defense is ignored, so let them roll their defense and disregard the result manually until this is automated.",
+    "vsTest": false
   },
   "effects": [],
   "folder": "UxjnWqOZrypZl1NP",

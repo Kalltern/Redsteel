@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
-    "description": "Links two chosen Targets for {{math spellPower \"*\" 10}} minutes. One may absorb any part of the other's incoming damage. Does not apply to Serious Wounds. Can be cast on self. Cannot be cast on a Target already under this effect.",
+    "description": "<p>Links two chosen targets for {{math spellPower \"*\" 10}} minutes. Either may absorb any part of the other's incoming damage.</p><p>Does not apply to Grave Wounds. Can be cast on the caster, but not on a target already under this effect.</p>",
     "options": [
       "divine",
       "magic"
@@ -110,7 +110,9 @@
       "effect2": "0",
       "effect3": "0",
       "effect4": "0"
-    }
+    },
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "6PM0K9AWtzeYO1Fn",

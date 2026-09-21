@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/projectile-embers-orange.webp",
   "system": {
-    "description": "<p>Requires a lit torch in hand. Deals 2d4 + {{math spellPower \"/\" 2}} damage in a 45° cone with a range of 4.5 meters.</p>",
+    "description": "<p>Deals 2d4 + {{math spellPower \"/\" 2}} damage in a 45° cone reaching 4.5 m.</p><p>Requires a lit torch in hand.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,10 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false,
+    "breath": true
   },
   "effects": [],
   "folder": "bAWY9kbglzWtgc23",

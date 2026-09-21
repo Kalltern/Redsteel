@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/commodities/materials/slime-white.webp",
   "system": {
-    "description": "<p>Creates a slippery, flammable area (up to 3m wide). Movement triggers an agility test. Failure knocks the target prone. Slow movement avoids the Test.</p><p>If ignited, it burns for two turns (non-magical fire), inflicting burning. If cast on a creature, it applies the Flammable effect and creates a 1.5m grease zone around them.</p>",
+    "description": "<p>Creates a slippery, flammable area up to 3 m across.</p><p>Moving through it takes an Agility test, and failing knocks the target Prone. Moving slowly avoids the test.</p><p>If ignited it burns for two rounds with ordinary fire, inflicting Burning. Cast on a creature it applies Flammable and leaves a 1.5 m grease zone around it.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "ELAMhHkr77jkNbi6",

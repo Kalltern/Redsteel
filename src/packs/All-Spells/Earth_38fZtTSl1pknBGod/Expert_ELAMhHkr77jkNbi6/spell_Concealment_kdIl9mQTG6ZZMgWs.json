@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/commodities/flowers/buds-red-green.webp",
   "system": {
-    "description": "<p>Automatically conceals tracks within a 3m radius of the caster for <span style=\"font-family:Signika, sans-serif\">{{math spellPower \"*\" 5}}</span> minutes.</p>",
+    "description": "<p>Conceals the caster's tracks within 3 m for {{math spellPower \"*\" 5}} minutes.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "ELAMhHkr77jkNbi6",

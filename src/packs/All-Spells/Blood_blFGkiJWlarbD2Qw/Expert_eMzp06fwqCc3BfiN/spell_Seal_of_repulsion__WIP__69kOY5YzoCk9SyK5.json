@@ -4,7 +4,7 @@
   "img": "icons/magic/symbols/runes-star-orange.webp",
   "system": {
     "localizationKey": "",
-    "description": "Creates up to three seals on unoccupied hexes for 1 + {{spellPower}} rounds (cost is paid for each seal). Upon entering, it triggers a Strength Test (penalty {{math spellPower \"*\" 4}} + 20%) to push the target back by one hex (Failure) and knock it Prone (Failure by -25). The seal does not disappear after being triggered. Under normal circumstances, the seal cannot be jumped over.",
+    "description": "<p>Creates up to three seals on unoccupied hexes for 1 + {{spellPower}} rounds. The mana cost is paid for each seal.</p><p>A creature entering a seal tests Strength at a penalty of {{math spellPower \"*\" 4}} + 20%.</p><p><strong>On a failed test:</strong> the creature is pushed back one hex.</p><p><strong>On a failure by 25 or more:</strong> it is also knocked Prone.</p><p>A seal does not disappear once triggered, and cannot normally be jumped over.</p>",
     "options": [
       "divine",
       "magic"
@@ -123,7 +123,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "eMzp06fwqCc3BfiN",

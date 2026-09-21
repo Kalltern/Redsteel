@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/lightning/barrier-wall-shield-gray.webp",
   "system": {
-    "description": "<p>Creates a poorly visible trap on unoccupied hexes (must not be adjacent to another trap) for 15 minutes, dealing 2d4 + {{math spellPower \"/\" 2}} damage, stopping movement, and causing Stun for one round. Ignores Magical defense.</p>",
+    "description": "<p>Creates a poorly visible trap on an unoccupied hex for 15 minutes, dealing 2d4 + {{math spellPower \"/\" 2}} damage to anyone entering it, stopping their movement and Stunning them for one round.</p><p>The hex must not be adjacent to another trap.</p>",
     "options": [
       "divine",
       "magic"
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "xCW0JHp8U8kjsvRC",

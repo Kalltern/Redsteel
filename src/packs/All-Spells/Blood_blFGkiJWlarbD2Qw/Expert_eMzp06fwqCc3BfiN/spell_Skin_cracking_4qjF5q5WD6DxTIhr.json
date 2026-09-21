@@ -4,7 +4,7 @@
   "img": "icons/skills/wounds/injury-stapled-flesh-tan.webp",
   "system": {
     "localizationKey": "",
-    "description": "<p>For three rounds, applies {{math spellPower \"/up\" 4}} Bleeding effects (rounded up) each round. Deals 1d8 damage for each Bleeding effect above the limit that could not be applied to the target. Multiple castings do not stack but only extend the duration.</p>",
+    "description": "<p>For three rounds, applies {{math spellPower \"/up\" 4}} Bleeding effects to the target each round.</p><p>Each Bleeding effect above the target's limit that cannot be applied deals 1d8 damage instead.</p><p>Further castings do not stack, they only extend the duration.</p>",
     "options": [
       "divine",
       "magic"
@@ -124,7 +124,9 @@
     "testModifier": "",
     "effectType1": "custom",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "eMzp06fwqCc3BfiN",

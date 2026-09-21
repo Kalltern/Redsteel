@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/nature/leaf-glow-green.webp",
   "system": {
-    "description": "<p>Recovers 2d4 + 2 health per round. <br />All bleeding is removed at the start of round. <br />Can be maintained up to 30m away.<br />Regeneration effects do not stack.<br /></p>",
+    "description": "<p>Recovers 2d4 + 2 health per round and removes all Bleeding at the start of each round.</p><p>It can be maintained from up to 30 m away. Regeneration effects do not stack.</p>",
     "options": [
       "divine",
       "magic"
@@ -143,7 +143,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": "custom"
+    "effectType3": "custom",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "ELAMhHkr77jkNbi6",

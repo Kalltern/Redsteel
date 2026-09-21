@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
-    "description": "Deals 2d8 + {{spellPower}} Magical + Bludgeoning damage in a 180° arc within 3m and initiates a Willpower (Bonus {{math spellPower \"*\" 2}}) vs. Target's Strength/Endurance Test. On success, pushes Targets back two hexes. On failure, pushes them back one hex. May only be cast as a Reaction if the Caster is being attacked.",
+    "description": "<p>Deals 2d8 + {{spellPower}} damage in a 180° arc within 3 m.</p><p>The caster tests Will + {{math spellPower \"*\" 2}} against each target's Strength or Endurance.</p><p><strong>On success:</strong> the target is pushed back two hexes.</p><p><strong>On failure:</strong> the target is pushed back one hex.</p><p>Can be cast as a Reaction only if the caster is attacked.</p>",
     "options": [
       "divine",
       "magic"
@@ -80,7 +80,7 @@
         ""
       ]
     },
-    "isOffensive": true,
+    "isOffensive": false,
     "uncontested": false,
     "sustained": false,
     "difficulty": -20,
@@ -113,7 +113,9 @@
     },
     "variants": [
       "NLXFiNinULUmleu6"
-    ]
+    ],
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "6PM0K9AWtzeYO1Fn",

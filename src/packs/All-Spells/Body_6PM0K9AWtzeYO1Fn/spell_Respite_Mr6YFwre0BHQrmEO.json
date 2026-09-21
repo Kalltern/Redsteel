@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
-    "description": "The “Rest” action restores 3 more Stamina for {{math spellPower \"*\" 10}} minutes. Can be cast in group (cost per each Target).",
+    "description": "<p>For {{math spellPower \"*\" 10}} minutes, the target's Rest action restores 3 more Stamina.</p><p>Can be cast on a group, at the cost of one casting per target.</p>",
     "options": [
       "divine",
       "magic"
@@ -110,7 +110,9 @@
       "effect2": "0",
       "effect3": "0",
       "effect4": "0"
-    }
+    },
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "6PM0K9AWtzeYO1Fn",

@@ -4,7 +4,7 @@
   "img": "icons/magic/fire/explosion-fireball-small-orange.webp",
   "system": {
     "localizationKey": "",
-    "description": "<p>Manipulates a small flame within range and hurls it at a target within range, dealing 2d6 + {{math spellPower \"/\" 2}} damage.</p>",
+    "description": "<p>Hurls a small flame within range at one target, dealing 2d6 + {{math spellPower \"/\" 2}} damage.</p>",
     "options": [
       "divine",
       "magic"
@@ -147,7 +147,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "bAWY9kbglzWtgc23",

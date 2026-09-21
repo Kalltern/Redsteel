@@ -9,6 +9,7 @@
 import { getSpellPower } from "./spellPower.mjs";
 import { normalizeResourceKey, resourceLabel } from "./itemResources.mjs";
 import { ARMOR_IGNORING_PENETRATION } from "./combatSkillBonuses.mjs";
+import { ttEscape } from "./tooltips.mjs";
 
 /**
  * Matches a spell-power placeholder in stored description prose, in any of the
@@ -30,6 +31,31 @@ const SPELL_POWER_TOKEN = /\{\{\s*(?:math\s+)?spellPower\b([^}]*)\}\}/gi;
  * @returns {number}
  */
 function evaluateSpellPowerArgs(rawArgs, spellPower) {
+  return describeSpellPowerArgs(rawArgs, spellPower).value;
+}
+
+/** How each operator is written out in the hover text. */
+const SPELL_POWER_GLYPH = { "*": "×", "/": "÷", "/up": "÷", "+": "+", "-": "-" };
+
+/**
+ * `"/up"` is the opt-out that rounds a SK division UP, against the rulebook's
+ * default of rounding down. It shares the division glyph, so without saying so
+ * the hover reads as an arithmetic mistake: SK 7 "÷ 4 = 2" looks wrong until
+ * you know it ceils. The flag rides back out so the hover can spell it out.
+ */
+
+/**
+ * The same evaluation as {@link evaluateSpellPowerArgs}, but it also hands
+ * back the arithmetic in words, so a reader hovering the number can see where
+ * it came from: "Spell Power 8 × 2 = 16". `expr` is everything after the SK
+ * value and is empty for a bare `{{spellPower}}`, and for the malformed
+ * placeholders that fall back to plain SK.
+ *
+ * @param {string} rawArgs
+ * @param {number} spellPower
+ * @returns {{value: number, expr: string}}
+ */
+function describeSpellPowerArgs(rawArgs, spellPower) {
   // Some stored descriptions have editor markup spliced into the middle of the
   // token (e.g. `"*" 2 </span>+ 1<span ...>`), so strip tags and decode the
   // entities the editor leaves behind before parsing.
@@ -40,7 +66,7 @@ function evaluateSpellPowerArgs(rawArgs, spellPower) {
     .replace(/&nbsp;/g, " ")
     .trim();
 
-  if (!args) return spellPower;
+  if (!args) return { value: spellPower, expr: "", roundedUp: false };
 
   // `/up` is matched before the single-character operators so the "/" branch
   // cannot claim it and leave "up" stranded in the operand.
@@ -49,7 +75,7 @@ function evaluateSpellPowerArgs(rawArgs, spellPower) {
   );
   // No usable operator — a handful of packs store `"" 2`, where the intended
   // operation was never recorded. Fall back to plain SK rather than inventing.
-  if (!parsed) return spellPower;
+  if (!parsed) return { value: spellPower, expr: "", roundedUp: false };
 
   const [, op, operandRaw, tail] = parsed;
   const operand = Number(operandRaw);
@@ -72,31 +98,66 @@ function evaluateSpellPowerArgs(rawArgs, spellPower) {
       value = spellPower - operand;
       break;
     default:
-      return spellPower;
+      return { value: spellPower, expr: "", roundedUp: false };
   }
+
+  let expr = `${SPELL_POWER_GLYPH[op] ?? op} ${operandRaw}`;
 
   // Trailing terms, e.g. `{{math spellPower "/" 2 + 1}}`. Applied after the
   // floor above, so the SK fraction rounds down before anything is added.
   for (const term of tail.matchAll(/([+-])\s*(\d+(?:\.\d+)?)/g)) {
     value += term[1] === "-" ? -Number(term[2]) : Number(term[2]);
+    expr += ` ${term[1]} ${term[2]}`;
   }
-  return value;
+  return { value, expr, roundedUp: op === "/up" };
 }
 
 /**
  * Replace every spell-power placeholder in a description with its computed
  * value, so the reader sees "1d4 + 3" instead of `1d4 + {{math spellPower "/" 2}}`.
  * Returns the text unchanged when it holds no placeholders.
+ *
+ * With `markup`, each resolved number is wrapped in a `.rs-sk` span carrying
+ * the shared tooltip engine's attributes, so the reader can hover it and see
+ * that it moves with Spell Power, and by what arithmetic. It is opt-in
+ * because the same text is also used where it gets escaped rather than
+ * rendered (manual notes) or fed to something that is not the DOM at all —
+ * those callers must keep getting the bare number.
+ *
  * @param {string} html
  * @param {number} spellPower
+ * @param {object} [options]
+ * @param {boolean} [options.markup=false]  Wrap each value in a hoverable span.
  * @returns {string}
  */
-export function resolveSpellPowerTokens(html, spellPower) {
+export function resolveSpellPowerTokens(html, spellPower, { markup = false } = {}) {
   const text = String(html ?? "");
   if (!text.includes("spellPower")) return text;
-  return text.replace(SPELL_POWER_TOKEN, (_match, args) =>
-    String(evaluateSpellPowerArgs(args, spellPower)),
-  );
+  return text.replace(SPELL_POWER_TOKEN, (_match, args) => {
+    const { value, expr, roundedUp } = describeSpellPowerArgs(args, spellPower);
+    const shown = String(value);
+    if (!markup) return shown;
+    // The hover sentence is composed from lang keys, never built in English
+    // here; the `text` tooltip provider localizes the title key and prints
+    // this already-composed body as it stands.
+    const shownExpr = roundedUp
+      ? `${expr} (${game.i18n.localize("REDSTEEL.Item.Spell.SpellPower.roundedUp")})`
+      : expr;
+    const tip = expr
+      ? game.i18n.format("REDSTEEL.Item.Spell.SpellPower.tipMath", {
+          sk: spellPower,
+          expr: shownExpr,
+          result: shown,
+        })
+      : game.i18n.format("REDSTEEL.Item.Spell.SpellPower.tipPlain", {
+          sk: spellPower,
+        });
+    return (
+      `<span class="rs-sk" data-tt-kind="text"` +
+      ` data-tt-text="${ttEscape(tip)}"` +
+      ` data-tt-title="REDSTEEL.Item.Spell.SpellPower.tipTitle">${shown}</span>`
+    );
+  });
 }
 
 /**
@@ -200,6 +261,22 @@ function pill(key, labelKey, value, always = false, positive) {
 }
 
 /**
+ * Name the glossary subject a pill stands for, so the inspector card can hand
+ * it to the shared tooltip engine (`data-tt-kind` / `data-tt-id`). Optional:
+ * every other consumer of a pill simply ignores the extra property, and it is
+ * null-safe so it can wrap a `pill()` call that came back empty.
+ *
+ * @param {object|null} built  A pill, or null.
+ * @param {string} kind  A registered tooltip kind, e.g. "keyword".
+ * @param {string} id
+ * @returns {object|null} the same pill.
+ */
+function withTip(built, kind, id) {
+  if (built) built.tip = { kind, id };
+  return built;
+}
+
+/**
  * What a cast takes from the caster besides its mana, as pills: the
  * Corruption a Dark spell heaps on, the Mind a Spirit spell burns, the Health
  * Remove corruption pays with. The pack keeps these on `system.resources` —
@@ -232,6 +309,53 @@ function spellResourcePills(resources) {
     });
   }
   return pills;
+}
+
+/**
+ * Localize one stored damage type key (e.g. "dark") through the shared
+ * damage-type map. Falls back to the raw stored string when the key has no
+ * translation, rather than printing a key path.
+ * @param {string} type
+ * @returns {string}
+ */
+function damageTypeLabel(type) {
+  if (!type) return "";
+  const key = `REDSTEEL.Bg3Hotbar.DamageType.${type}`;
+  const localized = game.i18n.localize(key);
+  return localized === key ? type : localized;
+}
+
+/**
+ * Localize an "and"/"or" connector stored in `system.bool2` .. `bool4`.
+ * Anything else stored there (blank included) reads as "and", the sheet's
+ * default.
+ * @param {string} bool
+ * @returns {string}
+ */
+function dmgJoinLabel(bool) {
+  const key =
+    bool === "or" ? "REDSTEEL.Item.Spell.dmgJoin.or" : "REDSTEEL.Item.Spell.dmgJoin.and";
+  return game.i18n.localize(key);
+}
+
+/**
+ * The spell's damage types, joined by their stored and/or connectors, e.g.
+ * "Magic and Dark". Stops at the first empty slot, since the sheet fills the
+ * four dmgType/bool pairs in order and never leaves a gap before the end.
+ * @param {object} system
+ * @returns {string} Empty when `dmgType1` is empty.
+ */
+function spellDamageTypesLabel(system) {
+  const types = [system.dmgType1, system.dmgType2, system.dmgType3, system.dmgType4];
+  const joins = [null, system.bool2, system.bool3, system.bool4];
+  if (!types[0]) return "";
+
+  let label = damageTypeLabel(types[0]);
+  for (let i = 1; i < types.length; i++) {
+    if (!types[i]) break;
+    label += ` ${dmgJoinLabel(joins[i])} ${damageTypeLabel(types[i])}`;
+  }
+  return label;
 }
 
 /**
@@ -286,11 +410,49 @@ export function buildSpellPills(system = {}, kind = "spell") {
         true,
         concentration,
       ),
-      pill(
-        "range",
-        "REDSTEEL.Item.Spell.FIELDS.headerRange.label",
-        formatSpellRange(system.range),
+      // Direct or Indirect. Only Indirect says anything worth a box: Direct
+      // is the default every spell would otherwise carry a pill for. An
+      // Indirect spell cannot be dodged or blocked with a shield, which the
+      // hovered glossary entry spells out.
+      withTip(
+        pill(
+          "delivery",
+          "REDSTEEL.Item.Spell.FIELDS.delivery.label",
+          system.delivery === "indirect"
+            ? game.i18n.localize("REDSTEEL.Item.Spell.Delivery.indirect")
+            : "",
+        ),
+        "keyword",
+        "indirect",
       ),
+      pill(
+        "vsTest",
+        "REDSTEEL.Item.Spell.FIELDS.vsTest.label",
+        system.vsTest ? game.i18n.localize("REDSTEEL.Item.Spell.vsTestYes") : "",
+      ),
+      // A cone or beam spell is Breath shaped, and its stored range is not
+      // its reach: it is how far from the caster the cone's origin may be
+      // placed. The pill says Breath so the number is not misread, and the
+      // hovered glossary entry says the rest.
+      system.breath
+        ? withTip(
+            pill(
+              "range",
+              "REDSTEEL.Item.Spell.FIELDS.headerRange.label",
+              game.i18n
+                .format("REDSTEEL.Item.Spell.Range.breath", {
+                  n: formatSpellRange(system.range),
+                })
+                .trim(),
+            ),
+            "keyword",
+            "breath",
+          )
+        : pill(
+            "range",
+            "REDSTEEL.Item.Spell.FIELDS.headerRange.label",
+            formatSpellRange(system.range),
+          ),
       // The hexes again in metres, for a table that wants the distance in
       // the world rather than on the grid. Empty for Self and Touch, and the
       // caller drops an empty pill.
@@ -317,6 +479,15 @@ export function buildSpellPills(system = {}, kind = "spell") {
         ),
       );
     }
+    // The spell's damage types, joined by their stored and/or connectors.
+    // Emits nothing when dmgType1 is empty, same as every other pill.
+    pills.push(
+      pill(
+        "dmgTypes",
+        "REDSTEEL.Item.Spell.FIELDS.headerType.label",
+        spellDamageTypesLabel(system),
+      ),
+    );
   } else if (kind === "ability") {
     const { display } = parseActionCost(system.actionCost);
     pills.push(
@@ -355,7 +526,16 @@ export function buildSpellCard(item, kind) {
     id: item.id,
     img: item.img,
     name: item.localizedName,
-    description: resolveSpellPowerTokens(item.localizedDescription, spellPower),
+    // `markup: true`: the description is rendered as HTML, so each resolved
+    // number can be a hoverable `.rs-sk` span. The manual notes below are
+    // escaped by renderInspectorCard, so they must stay bare.
+    description: resolveSpellPowerTokens(item.localizedDescription, spellPower, {
+      markup: true,
+    }),
+    // A sentence the prose used to bury: "the table resolves this manually."
+    // Plain text, not HTML, but still carries SK placeholders like the
+    // description does.
+    manualNotes: resolveSpellPowerTokens(system.manualNotes, spellPower),
     concentration: false,
     pills: [],
   };
@@ -374,13 +554,19 @@ export function buildSpellCard(item, kind) {
  */
 export function renderInspectorCard(card) {
   const boxes = (card.pills ?? [])
-    .map(
-      (p) => `
-      <div class="spell-inspector-box${p.positive ? " is-positive" : ""}" data-pill="${p.key}">
+    .map((p) => {
+      // A pill may name a glossary entry (Indirect, Breath). The shared
+      // tooltip engine reads these two attributes off any element, and opens
+      // the keyword panel on top of this one.
+      const tip = p.tip
+        ? ` data-tt-kind="${p.tip.kind}" data-tt-id="${p.tip.id}"`
+        : "";
+      return `
+      <div class="spell-inspector-box${p.positive ? " is-positive" : ""}" data-pill="${p.key}"${tip}>
         <div class="spell-inspector-box-label">${p.label}</div>
         <div class="spell-inspector-box-value">${p.value}</div>
-      </div>`,
-    )
+      </div>`;
+    })
     .join("");
 
   // The chip row and the description both carry their own separator rule, so an
@@ -392,6 +578,16 @@ export function renderInspectorCard(card) {
     /<img\b/i.test(desc) ||
     desc.replace(/<[^>]*>/g, "").replace(/&nbsp;/gi, " ").trim() !== "";
 
+  // Plain text, not HTML, so it has to be escaped rather than trusted like
+  // the description above it.
+  const manualNotes = String(card.manualNotes ?? "").trim();
+  const manualBlock = manualNotes
+    ? `<div class="spell-inspector-manual">
+        <div class="spell-inspector-manual-heading">${game.i18n.localize("REDSTEEL.Item.Spell.manualNotesHeading")}</div>
+        <div class="spell-inspector-manual-text">${foundry.utils.escapeHTML(manualNotes)}</div>
+      </div>`
+    : "";
+
   return `
     <div class="spell-inspector-header">
       <img class="spell-inspector-icon" src="${card.img}" />
@@ -399,6 +595,7 @@ export function renderInspectorCard(card) {
     </div>
     ${boxes ? `<div class="spell-inspector-boxes">${boxes}</div>` : ""}
     ${hasDesc ? `<div class="spell-inspector-desc">${desc}</div>` : ""}
+    ${manualBlock}
   `;
 }
 

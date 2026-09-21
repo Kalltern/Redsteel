@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/nature/wolf-paw-glow-purple-teal.webp",
   "system": {
-    "description": "<p>The caster transforms into a boar, lynx, or wild dog. The chosen animal determines the type of doctrine, bonuses to health, combat, attributes, and damage. </p><p>The doctrine level is based on the caster’s magical doctrine, while the base combat value is determined by their channeling skill. </p><p>When reverting to their original form, the caster retains their current Health. However, if their Health reaches 0 during the transformation, they immediately revert with only 1 health and become Incapacitated.</p>",
+    "description": "<p>Transforms the caster into a boar, a lynx or a wild dog.</p><p>The animal sets the doctrine type and the bonuses to health, combat, attributes and damage. The doctrine level follows the caster's magical doctrine, and the base combat value their Channeling.</p><p>Reverting keeps the caster's current Health. If Health reaches 0 during the transformation, the caster reverts immediately.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "93jLy3nvMhvY366z",

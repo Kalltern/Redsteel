@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/water/ice-crystal-white.webp",
   "system": {
-    "description": "<p>Creates icy armor on the target with {{spellPower}} + 20 HP and 5 armor. Protects against physical damage and direct spells. <br>Deals 2d4 damage per turn to the wearer and reduces movement by -1 (effect ignored if the wearer has resistance to Frost damage or Frost armor). <br>When destroyed, deals 3d6 + <span style=\"color:rgb(239, 230, 216);font-family:Signika, 'Palatino Linotype', sans-serif;font-size:14px;font-style:normal;font-variant-ligatures:normal;font-variant-caps:normal;font-weight:400;letter-spacing:normal;orphans:2;text-align:start;text-indent:0px;text-transform:none;widows:2;word-spacing:0px;-webkit-text-stroke-width:0px;white-space:normal;background-color:rgba(11, 10, 19, 0.9);text-decoration-thickness:initial;text-decoration-style:initial;text-decoration-color:initial;display:inline !important;float:none\">{{spellPower}}</span> Magical + damage in a 45° arc and 3m direction chosen by the caster. <br>Armor penetration 10.</p>",
+    "description": "<p>Creates icy armor on the target with {{spellPower}} + 20 HP and 5 armor, protecting against physical damage and direct spells.</p><p>It deals 2d4 damage per round to its wearer and slows them by 1, unless the wearer resists Frost damage or has Frost armor.</p><p>When destroyed it deals 3d6 + {{spellPower}} damage in a 45° cone reaching 3 m, in a direction the caster chooses.</p>",
     "options": [
       "divine",
       "magic"
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "GaSIkEMI2Yi6RoKu",

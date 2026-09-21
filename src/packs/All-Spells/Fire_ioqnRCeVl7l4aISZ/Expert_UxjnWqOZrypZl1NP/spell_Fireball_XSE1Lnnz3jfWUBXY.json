@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/projectile-fireball-smoke-large-orange.webp",
   "system": {
-    "description": "<p>Hurls a fiery ball to a target hex. Creates an explosion of 3m radius on impact dealing 3d6 + 1d6x + {{math spellPower \"*\" 2}} damage to everyone inside it.</p>",
+    "description": "<p>Hurls a fiery ball at a target hex, exploding in a 3 m radius for 3d6 + 1d6 exploding + {{math spellPower \"*\" 2}} damage to everyone inside.</p>",
     "options": [
       "divine",
       "magic"
@@ -117,7 +117,7 @@
     "roll": {
       "diceNum": 3,
       "diceSize": "6",
-      "diceBonus": "+1d6x+(@spellPower*2)"
+      "diceBonus": "1d6x+(@spellPower*2)"
     },
     "penetration": 8,
     "dmgType1": "magic",
@@ -142,7 +142,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "UxjnWqOZrypZl1NP",

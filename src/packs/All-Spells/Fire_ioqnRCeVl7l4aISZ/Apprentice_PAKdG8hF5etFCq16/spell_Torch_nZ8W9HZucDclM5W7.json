@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/light/explosion-star-orange.webp",
   "system": {
-    "description": "<p>Creates a light that follows the caster or another target for {{spellPower}} hours. It can be anchored to a fixed location. It can be dismissed or dimmed at any time.</p>",
+    "description": "<p>Creates a light that follows the caster or another target for {{spellPower}} hours.</p><p>It can be anchored to a fixed spot, and dismissed or dimmed at any time.</p>",
     "options": [
       "divine",
       "magic"
@@ -135,7 +135,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "PAKdG8hF5etFCq16",

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/nature/beam-hand-leaves-green.webp",
   "system": {
-    "description": "<p>Cures certain diseases. <br />Multiple castings may be required. <br />Cannot be self-targeted.</p>",
+    "description": "<p>Cures certain diseases, and may need more than one casting.</p><p>Cannot be cast on self.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "ELAMhHkr77jkNbi6",

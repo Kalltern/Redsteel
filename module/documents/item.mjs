@@ -19,6 +19,35 @@ export const IMPROVISED_SHIELD_STATS = {
 };
 
 /**
+ * A die size as it can be spliced straight into a roll formula.
+ *
+ * `system.roll.diceSize` is not always a bare integer. Foundry's own dice
+ * notation rides along with it: `"10x"` is an exploding d10, and the Longbow
+ * stores `"8k5"` (keep 5). `Number("10x")` is NaN, which the old `|| 0`
+ * turned into `2d0` — a formula that rolls and deals nothing at all, silently.
+ *
+ * So: a plain integer comes back as a number, a leading integer followed by
+ * dice notation comes back as authored, and anything else (empty, null, a
+ * stray word) comes back as 0. The 0 fallback is the guard that has to stay:
+ * an empty field used to build `"nulld"`, which Roll cannot resolve and which
+ * threw mid-cast, taking the whole spell down.
+ *
+ * @param {*} raw  The stored `system.roll.diceSize`.
+ * @returns {number|string}
+ */
+function parseDiceSize(raw) {
+  const text = String(raw ?? "").trim();
+  if (/^\d+$/.test(text)) return Number(text);
+  // A whole formula typed into the size field ("2d6") is not notation: it
+  // would splice into "1d2d6". Rejected before the notation test, which would
+  // otherwise wave it through, so it falls back to 0 like any other garbage.
+  if (/^\d+[dD]\d+$/.test(text)) return 0;
+  // <digits><notation>, e.g. "10x", "10x>8", "8k5", "10kh3", "10r<3".
+  if (/^\d+[A-Za-z][A-Za-z0-9<>=!]*$/.test(text)) return text;
+  return 0;
+}
+
+/**
  * Item quality (Kvalita) modifiers, applied on top of an item's hand-entered
  * base stats. The active column depends on how the item is used:
  *   weapon  → main-hand weapon       (Zbraň)
@@ -686,6 +715,16 @@ export class RedsteelItem extends Item {
         };
       }
 
+      if (this.type === "spell") {
+        // Direct or Indirect delivery. Rebuilt here every prepare for the same
+        // reason as every other option list in this file: a spell authored
+        // before this field existed carries its own copy of `system`, so
+        // template.json alone would never reach its sheet. Direct is the
+        // default, so a spell that never picked reads as Direct.
+        this.system.deliveryOptions = ["direct", "indirect"];
+        this.system.delivery ??= "direct";
+      }
+
       if (this.type === "ability") {
         this.system.typeOptions = ["melee", "ranged", "other"];
         this.system.classOptions = [
@@ -731,7 +770,7 @@ export class RedsteelItem extends Item {
       // always a valid one — "nulld" reaches Roll as an unresolvable term and
       // throws on evaluate, taking the whole cast down with it.
       const diceNum = Number(this.system.roll.diceNum) || 0;
-      const diceSize = Number(this.system.roll.diceSize) || 0;
+      const diceSize = parseDiceSize(this.system.roll.diceSize);
       const diceBonus = this.system.roll.diceBonus ?? 0;
 
       let formula = "";
@@ -895,7 +934,7 @@ export class RedsteelItem extends Item {
     const item = this;
 
     // A scroll is not rolled, it is read: clicking it in the inventory opens
-    // its own window (identify / copy into a grimoire / read aloud). Casting
+    // its own window (identify / copy into a grimoire / break the seal). Casting
     // it outright is the right-click, handled by the actor sheet.
     if (this.type === "scroll" && this.actor) {
       return openScrollWindow(this.actor, this);

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/beam-jet-stream-spiral-yellow.webp",
   "system": {
-    "description": "<p>Summons a fiery tornado for 4 rounds at a chosen hex, dealing Magical + Fire damage 2d6x +{{math spellPower \"*\" 3}} in a 1.5 m area, and applies Burning effect to a target at its center. At the start of each round, it moves twice randomly by one hex. Armor Penetration: 12. Each target can only be damaged once per round.</p>",
+    "description": "<p>Summons a fiery tornado on a chosen hex for four rounds, dealing 2d6 exploding + {{math spellPower \"*\" 3}} damage in a 1.5 m area and applying Burning to whatever stands at its centre.</p><p>At the start of each round it moves twice, one hex at a time, in a random direction. A target can only take its damage once per round.</p>",
     "options": [
       "divine",
       "magic"
@@ -135,7 +135,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "8U9FRYa6LCshgUCl",

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/acid/projectile-faceted-glob.webp",
   "system": {
-    "description": "<p>Deals (6d6 + <span style=\"font-family:Signika, sans-serif\">{{spellPower}}</span>) damage to a single target.<br />60% chance to corrode armor (-4 armor).</p>",
+    "description": "<p>Deals 6d6 + {{spellPower}} damage to one target, with a 60% chance to corrode its armor by 4.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "ELAMhHkr77jkNbi6",

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/earth/explosion-lava-stone-yellow.webp",
   "system": {
-    "description": "<p>Deals damage (3d8 + <span style=\"font-family:Signika, sans-serif\">{{math spellPower \"*\" 4}}</span>) in a 4.5m area (center hex unaffected). 15% chance to stun. Affected targets are pushed 1 hex. Armor penetration 18.</p>",
+    "description": "<p>Deals 3d8 + {{math spellPower \"*\" 4}} damage in a 4.5 m area, leaving the centre hex untouched, with a 15% chance to Stun.</p><p>Affected targets are pushed one hex.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
       "effect2": 0,
       "effect3": 0,
       "effect4": 0
-    }
+    },
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "JBcANv6vENmYO1qP",

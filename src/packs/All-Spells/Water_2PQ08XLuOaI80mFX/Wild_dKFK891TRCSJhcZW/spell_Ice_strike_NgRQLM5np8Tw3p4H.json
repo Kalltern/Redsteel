@@ -4,7 +4,7 @@
   "img": "icons/magic/water/projectile-ice-teardrop.webp",
   "system": {
     "localizationKey": "",
-    "description": "<p>No requirement. Deals 1d4 damage to a single target per turn.</p>",
+    "description": "<p>Deals 1d4 damage per round to one target.</p>",
     "options": [
       "divine",
       "magic"
@@ -132,7 +132,9 @@
     "effectType2": "",
     "effectType3": "custom",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "dKFK891TRCSJhcZW",

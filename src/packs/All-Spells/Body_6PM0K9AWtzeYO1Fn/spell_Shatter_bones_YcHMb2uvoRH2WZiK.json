@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
-    "description": "Initiates a Willpower vs. Target's Endurance Test. On failure, deals {{math spellPower \"*\" 3}} Magical + Bludgeoning damage and Stuns the Target for one round. On success, breaks 2d4d1 limbs (chosen by the Caster) and causes the same number of Serious Wounds. This spell cannot kill the Target or exceed the limit of Serious Wounds.",
+    "description": "<p>The caster tests Will against the target's Endurance.</p><p><strong>On success:</strong> breaks limbs equal to the higher of 2d4, chosen by the caster, and causes the same number of Grave Wounds.</p><p><strong>On failure:</strong> deals {{math spellPower \"*\" 3}} damage and Stuns the target for one round.</p><p>The spell cannot kill the target or take it past its Grave Wound limit.</p>",
     "options": [
       "divine",
       "magic"
@@ -80,7 +80,7 @@
         ""
       ]
     },
-    "isOffensive": true,
+    "isOffensive": false,
     "uncontested": false,
     "sustained": false,
     "difficulty": -50,
@@ -110,7 +110,9 @@
       "effect2": "0",
       "effect3": "0",
       "effect4": "0"
-    }
+    },
+    "manualNotes": "The limbs are not automated. Roll 2d4dl1 and apply that many broken limbs and Grave Wounds. The stored roll covers only the failure branch's damage.",
+    "vsTest": true
   },
   "effects": [],
   "folder": "6PM0K9AWtzeYO1Fn",

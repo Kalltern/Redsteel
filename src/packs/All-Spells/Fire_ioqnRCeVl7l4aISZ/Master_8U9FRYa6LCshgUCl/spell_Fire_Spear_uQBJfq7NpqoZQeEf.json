@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/projectile-bolt-zigzag-orange.webp",
   "system": {
-    "description": "<p>Deals 3d8 + 1d8x + {{math spellPower \"*\" 4}}<span style=\"color:rgb(239, 230, 216);font-family:Signika, 'Palatino Linotype', sans-serif;font-size:14px;font-style:normal;font-variant-ligatures:normal;font-variant-caps:normal;font-weight:400;letter-spacing:normal;orphans:2;text-align:start;text-indent:0px;text-transform:none;widows:2;word-spacing:0px;-webkit-text-stroke-width:0px;white-space:normal;background-color:rgba(11, 10, 19, 0.9);text-decoration-thickness:initial;text-decoration-style:initial;text-decoration-color:initial;display:inline !important;float:none\"> </span>damage to up to two targets in a line.</p>",
+    "description": "<p>Deals 3d8 + 1d8 exploding + {{math spellPower \"*\" 4}} damage to up to two targets in a line.</p>",
     "options": [
       "divine",
       "magic"
@@ -135,7 +135,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "8U9FRYa6LCshgUCl",

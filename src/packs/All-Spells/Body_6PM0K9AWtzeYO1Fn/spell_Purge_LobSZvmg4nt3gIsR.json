@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
-    "description": "Removes all beneficial or harmful effects from the Target (including effects such as Potions, Mark, Summoning Mark, Magic Weapons, Lightning Shield, Flight, Chains, etc.). Can negate effects protected by Magic Shield or barriers. Counts as a Magical Attack with a +20% Bonus. For an additional cost, the area can be increased to 3m.",
+    "description": "<p>Removes every beneficial and harmful effect from the target, including the Mark, Summoning Mark, Magic Weapons, Lightning Shield, Flight and Chains that the lesser dispels cannot touch.</p><p>The attempt counts as a Magical Attack with a +20 bonus, and it reaches effects protected by a Magic Shield or a barrier.</p>",
     "options": [
       "divine",
       "magic"
@@ -110,7 +110,9 @@
       "effect2": "0",
       "effect3": "0",
       "effect4": "0"
-    }
+    },
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "6PM0K9AWtzeYO1Fn",

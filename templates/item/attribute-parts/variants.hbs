@@ -85,6 +85,22 @@
     <label class='rs-toggle'>
       <input
         type='checkbox'
+        name='system.vsTest'
+        {{#if system.vsTest}}checked{{/if}}
+      />
+      <span>{{localize "REDSTEEL.Item.Spell.FIELDS.vsTest.label"}}</span>
+    </label>
+    <label class='rs-toggle'>
+      <input
+        type='checkbox'
+        name='system.breath'
+        {{#if system.breath}}checked{{/if}}
+      />
+      <span>{{localize "REDSTEEL.Item.Spell.FIELDS.breath.label"}}</span>
+    </label>
+    <label class='rs-toggle'>
+      <input
+        type='checkbox'
         name='system.sustained'
         {{#if system.sustained}}checked{{/if}}
       />
@@ -98,5 +114,24 @@
       />
       <span>{{localize "REDSTEEL.Item.Spell.FIELDS.isHealing.label"}}</span>
     </label>
+  </div>
+
+  {{! Direct or Indirect. An Indirect spell cannot be dodged or blocked with a
+      shield, but can still be defended against magically. }}
+  <div class='flexrow' style='align-items: center; gap: 6px; margin-top: 6px;'>
+    <label class='resource-label' style='flex: 0 0 auto;'>{{localize
+        "REDSTEEL.Item.Spell.FIELDS.delivery.label"
+      }}</label>
+    <select name='system.delivery' data-dtype='String' style='flex: 0 0 auto;'>
+      {{#each system.deliveryOptions as |option|}}
+        <option value='{{option}}' {{#if (eq ../system.delivery option)}}selected{{/if}}>
+          {{#if (eq option "indirect")}}
+            {{localize "REDSTEEL.Item.Spell.Delivery.indirect"}}
+          {{else}}
+            {{localize "REDSTEEL.Item.Spell.Delivery.direct"}}
+          {{/if}}
+        </option>
+      {{/each}}
+    </select>
   </div>
 </section>

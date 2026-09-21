@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/water/barrier-ice-water-cube.webp",
   "system": {
-    "description": "Encases caster in ice for maximum 10 + {{spellPower}} turns. Grants damage immunity. Cannot be dispelled by counterspell (or similar effects). Caster may end early or extend duration by recasting. Master/Grandmaster Fire spells and Lorik's hammer have 10/20/70% chance to break effect. Can only be cast as reaction when attacked or in life-threatening situations (falling).",
+    "description": "<p>Encases the caster in ice for up to 10 + {{spellPower}} rounds, granting immunity to damage.</p><p>The caster may end it early or extend it by recasting. It cannot be dispelled by Counterspell or similar. Master and Grandmaster Fire spells and Lorik's hammer have a 10%, 20% or 70% chance to break it.</p><p>Can be cast as a Reaction only when attacked, or in a life-threatening situation such as a fall.</p>",
     "options": [
       "divine",
       "magic"
@@ -118,7 +118,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "8nT2ag63tCfjXxeJ",

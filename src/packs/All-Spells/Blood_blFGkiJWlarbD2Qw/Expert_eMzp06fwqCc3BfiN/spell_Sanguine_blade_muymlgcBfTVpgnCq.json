@@ -4,7 +4,7 @@
   "img": "icons/magic/fire/dagger-rune-enchant-red.webp",
   "system": {
     "localizationKey": "",
-    "description": "<p>Enchants an existing slashing or piercing weapon (or a quiver) for {{math spellPower \"*\" 5}} minutes. Bleeding chance +50%. Recasting the spell cancels or replaces the previous Sanguine blade. A weapon can be affected by only one similar enchantment.</p>",
+    "description": "<p>Enchants one slashing or piercing weapon, or a quiver, for {{math spellPower \"*\" 5}} minutes, raising its Bleeding chance by 50%.</p><p>Recasting replaces the previous Sanguine blade. A weapon can carry only one enchantment of this kind.</p>",
     "options": [
       "divine",
       "magic"
@@ -87,7 +87,7 @@
       ]
     },
     "isOffensive": false,
-    "uncontested": false,
+    "uncontested": true,
     "sustained": false,
     "difficulty": -10,
     "cost": 5,
@@ -124,7 +124,9 @@
     "testModifier": "",
     "effectType1": "custom",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "eMzp06fwqCc3BfiN",

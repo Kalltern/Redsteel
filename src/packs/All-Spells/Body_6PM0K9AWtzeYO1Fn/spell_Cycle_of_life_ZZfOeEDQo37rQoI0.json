@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
-    "description": "Allows the Caster to swap the Health of two Targets. Cannot be cast on Targets with 150 or more Health. Cannot be cast on undead, constructs, or similar entities. Health may not exceed maximum.",
+    "description": "<p>Swaps the Health of two targets.</p><p>Neither target may have 150 or more Health, and neither may be undead, a construct or a similar entity. Health may not exceed its maximum.</p>",
     "options": [
       "divine",
       "magic"
@@ -110,7 +110,9 @@
       "effect2": "0",
       "effect3": "0",
       "effect4": "0"
-    }
+    },
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "6PM0K9AWtzeYO1Fn",

@@ -1118,6 +1118,17 @@
                 <span class="rs-learn-spell-tile-stat" data-stat="{{this.key}}">{{#if this.label}}<span class="rs-learn-spell-tile-stat-label">{{this.label}}</span> {{/if}}{{#if this.value}}<span class="rs-learn-spell-tile-stat-value">{{this.value}}</span>{{/if}}</span>
                 {{/each}}
               </div>
+              {{!-- What the spell IS: armour bypass, Concentration, Sustained.
+                    Their own row of small pills rather than a second wrapped
+                    line of the caption above, because they are properties
+                    rather than part of that sentence. The row is always here,
+                    empty or not, so a card with no tags reserves the same
+                    height as one with three and the grid still rules up. --}}
+              <div class="rs-learn-spell-tile-tags">
+                {{#each this.tileTags}}
+                <span class="rs-learn-spell-tile-tag" data-stat="{{this.key}}">{{#if this.label}}{{this.label}}{{/if}}{{#if this.value}} <span class="rs-learn-spell-tile-tag-value">{{this.value}}</span>{{/if}}</span>
+                {{/each}}
+              </div>
               {{!-- The spell's own prose, under the information shortcuts.
                     Stored HTML, so it goes in whole; three lines show and Read
                     more rolls the rest out, for this card and its row-mates

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/explosion-embers-evade-silhouette.webp",
   "system": {
-    "description": "<p>Burns {{math spellPower \"*\" 4}} corruption from a target and deals 8 HP damage. Can burn certain mutations for 20 HP, leaving scars.Cannot be cast on oneself.</p>",
+    "description": "<p>Burns {{math spellPower \"*\" 4}} Corruption from the target at the cost of 8 HP damage.</p><p>It can also burn certain mutations, for 20 HP, leaving scars.</p><p>Cannot be cast on self.</p>",
     "options": [
       "divine",
       "magic"
@@ -135,7 +135,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "8U9FRYa6LCshgUCl",

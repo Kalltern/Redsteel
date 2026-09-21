@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/death/skull-horned-worn-fire-blue.webp",
   "system": {
-    "description": "Marks a target for {{math spellPower \"/\" 2 + 1}} rounds. During this time, their Armor is reduced by 10, and they suffer 1 Damage for each point of Armor reduced.",
+    "description": "<p>Marks one target for {{math spellPower \"/\" 2 + 1}} rounds, reducing its Armor by 10.</p><p>The target suffers 1 damage for each point of Armor actually reduced.</p>",
     "options": [
       "divine",
       "magic"
@@ -119,7 +119,10 @@
     },
     "effectType1": "custom",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false,
+    "delivery": "indirect"
   },
   "effects": [],
   "folder": "dNkZeCgBcF5AHOTZ",

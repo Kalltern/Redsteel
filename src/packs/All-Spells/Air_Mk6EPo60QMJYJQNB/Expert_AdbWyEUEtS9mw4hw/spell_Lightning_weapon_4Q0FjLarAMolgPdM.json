@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/dagger-rune-enchant-flame-blue-yellow.webp",
   "system": {
-    "description": "Enchants an existing weapon (or quiver) for {{math spellPower \"*\" 5}} minutes. The weapon now deals Physical / Magic / Lightning damage, Penetration +4, Stun +10%. Recasting cancels or replaces the previous Lightning Weapon. Incompatible with other enchantements.",
+    "description": "<p>Enchants one weapon or quiver for {{math spellPower \"*\" 5}} minutes, making it deal Physical, Magic and Lightning damage, raising its Penetration by 4 and its Stun chance by 10%.</p><p>Recasting replaces the previous Lightning weapon. Incompatible with other enchantments.</p>",
     "options": [
       "divine",
       "magic"
@@ -126,7 +126,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "AdbWyEUEtS9mw4hw",

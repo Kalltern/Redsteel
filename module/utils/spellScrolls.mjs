@@ -2,8 +2,9 @@
  * SPELL SCROLLS (Svitky)
  *
  * A scroll is one spell somebody else already did the hard work of casting,
- * trapped in ink. It can be read aloud once, or unpicked and copied into a
- * grimoire. Either way the scroll does not survive it.
+ * trapped in ink. Its seal can be broken once, letting that spell loose, or
+ * the scroll can be unpicked and copied into a grimoire. Either way the
+ * scroll does not survive it.
  *
  * TWO SHAPES, ONE ITEM TYPE. `system.spell` is what tells them apart:
  *
@@ -34,7 +35,7 @@
  * (`writeSpell`'s `ignoreRank`): a scroll is a shortcut past the teacher, not
  * past the school. The spell lands in the book and simply is not projected
  * onto the actor until the rank catches up, which syncSpellbooks already
- * handles on its own. Reading one aloud is open to anybody -- the scroll
+ * handles on its own. Breaking a seal is open to anybody -- the scroll
  * supplies `system.castBonus` to the roll so its own rank carries the work.
  */
 
@@ -62,6 +63,10 @@ const { ApplicationV2, HandlebarsApplicationMixin, DialogV2 } =
 const APP_ID = "redsteel-spell-scroll";
 const TEMPLATE = "systems/redsteel/templates/scroll/scroll-window.hbs";
 const ICON = "fa-light fa-scroll";
+
+/** Crossfade timings for the window's in-place body swap, in ms. */
+const FADE_MS = 130;
+const GROW_MS = 220;
 
 /**
  * Schools that never produce a scroll.
@@ -438,7 +443,7 @@ async function scrollSpell(scroll) {
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Reading a scroll aloud                                                    */
+/*  Breaking the seal                                                         */
 /* -------------------------------------------------------------------------- */
 
 /**
@@ -453,7 +458,7 @@ async function scrollSpell(scroll) {
  * spell still rolls to hit, but `system.castBonus` puts the original scribe's
  * work behind it so the reader's own Channeling is not the whole story.
  *
- * @returns {Promise<boolean>} whether the scroll was read.
+ * @returns {Promise<boolean>} whether the seal was broken.
  */
 export async function castFromScroll(actor, scroll, { confirm = true } = {}) {
   if (!actor?.isOwner) {
@@ -467,8 +472,8 @@ export async function castFromScroll(actor, scroll, { confirm = true } = {}) {
   const source = await scrollSpell(scroll);
   if (!source) return false;
 
-  // Reading it destroys it, and an unidentified scroll is a gamble taken
-  // blind -- neither is something to do on a stray right-click.
+  // Breaking the seal burns the scroll, and an unidentified one is a gamble
+  // taken blind -- neither is something to do on a stray right-click.
   if (confirm) {
     const ok = await DialogV2.confirm({
       window: { title: game.i18n.localize("REDSTEEL.Scroll.Window.Cast") },
@@ -566,12 +571,19 @@ class ScrollWindow extends HandlebarsApplicationMixin(ApplicationV2) {
   /** The parked test: {mode: "identify"|"write", outcome} or null. */
   #pending = null;
 
+  /** A committed identify roll, kept on screen after the body has morphed. */
+  #revealed = null;
+
   /** Set while a test is resolving, so a double click cannot spend twice. */
   #busy = false;
+
+  /** Set while #morph is swapping the body, so _onRender can hide the new one. */
+  #morphing = false;
 
   async _prepareContext() {
     const scroll = this.scroll;
     const identified = isScrollIdentified(scroll);
+    const shown = this.#pending?.outcome ?? this.#revealed;
     const entry = poolEntry(scroll.system?.spell);
     const stash = scroll.flags?.redsteel?.scroll ?? {};
     const books = getSpellbooks(this.actor).map((book) => ({
@@ -603,18 +615,23 @@ class ScrollWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       castBonusText: fmtSigned(scroll.system?.castBonus),
       books,
       hasBooks: books.length > 0,
-      pending: this.#pending
-        ? {
-            mode: this.#pending.mode,
-            ...this.#pending.outcome,
-            marginText: fmtSigned(this.#pending.outcome.margin),
-          }
-        : null,
+      // The readout outlives the parked test. A successful identify commits
+      // itself, so its roll has to stay on screen above the scroll it cracked
+      // rather than vanish with the buttons that were waiting on it.
+      result: shown ? { ...shown, marginText: fmtSigned(shown.margin) } : null,
+      pending: this.#pending ? { mode: this.#pending.mode } : null,
     };
   }
 
   _onRender(context, options) {
     super._onRender(context, options);
+    // Mid-morph the new body arrives already hidden, so the crossfade never
+    // shows a frame of it at the old size.
+    if (this.#morphing) {
+      this.element
+        .querySelector(".rs-scroll-window")
+        ?.classList.add("is-entering");
+    }
     const select = this.element.querySelector("[name=book]");
     if (select) {
       select.addEventListener("change", (ev) => {
@@ -623,19 +640,98 @@ class ScrollWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     }
   }
 
-  /** Roll a test and park it. */
+  /** Roll a test and park it. A cracked scroll settles itself. */
   async #park(mode, difficulty) {
     if (this.#busy) return;
     this.#busy = true;
+    let outcome;
     try {
-      this.#pending = {
-        mode,
-        outcome: await rollArcana(this.actor, difficulty),
-      };
+      outcome = await rollArcana(this.actor, difficulty);
+      this.#pending = { mode, outcome };
     } finally {
       this.#busy = false;
     }
-    this.render();
+    // A successful identify has nothing left to decide -- nobody spends a
+    // re-roll charge on a scroll they have already read -- so it commits
+    // itself and the window becomes the identified scroll in place, instead
+    // of parking behind an Accept that would never be declined.
+    if (mode === "identify" && outcome.success) return this.#reveal(outcome);
+    await this.#morph();
+  }
+
+  /** Commit a successful identify and morph into the identified scroll. */
+  async #reveal(outcome) {
+    this.#busy = true;
+    try {
+      await this.#commitIdentify(outcome);
+    } finally {
+      this.#busy = false;
+    }
+    this.#pending = null;
+    this.#revealed = outcome;
+    await this.#morph();
+  }
+
+  /**
+   * Re-render the body in place, crossfading the old content into the new.
+   *
+   * The window is never closed and reopened: ApplicationV2 swaps the part's
+   * HTML inside the live frame, so all this has to do is hide the seam. The
+   * old body fades out, the content box is pinned to the height it had, and
+   * the new body fades in while that height eases to its own. The pin is what
+   * matters -- a `height: "auto"` window otherwise snaps to the new size in a
+   * single frame, which is the jump this exists to avoid.
+   */
+  async #morph() {
+    const box = this.element?.querySelector(".window-content");
+    const body = box?.querySelector(".rs-scroll-window");
+    // Nothing on screen to animate: first render, or closed mid-roll.
+    if (!box || !body) {
+      await this.render();
+      return;
+    }
+
+    const from = box.getBoundingClientRect().height;
+    // Pinned BEFORE the render, not after: the swap happens inside render, and
+    // an unpinned box would be free to resize for the frame in between.
+    box.classList.add("rs-scroll-morphing");
+    box.style.height = `${from}px`;
+    body.classList.add("is-fading");
+    await wait(FADE_MS);
+
+    this.#morphing = true;
+    try {
+      await this.render();
+    } finally {
+      this.#morphing = false;
+    }
+
+    // Re-queried: _replaceHTML swaps the part element, so `body` is detached.
+    const grown = this.element?.querySelector(".window-content");
+    const next = grown?.querySelector(".rs-scroll-window");
+    if (!grown) return;
+    if (!next) {
+      grown.style.height = "";
+      grown.classList.remove("rs-scroll-morphing");
+      return;
+    }
+
+    // Measure the new body's own height and put the pin straight back, all in
+    // one task: the browser reflows but never paints the intermediate size.
+    // The transition is muted across the measurement, so releasing the pin to
+    // `auto` for that one reflow cannot start an animation of its own.
+    grown.style.transition = "none";
+    grown.style.height = "";
+    const to = grown.getBoundingClientRect().height;
+    grown.style.height = `${from}px`;
+    grown.style.transition = "";
+    await nextFrame();
+
+    grown.style.height = `${to}px`;
+    next.classList.remove("is-entering");
+    await wait(GROW_MS);
+    grown.style.height = "";
+    grown.classList.remove("rs-scroll-morphing");
   }
 
   static async _onIdentify() {
@@ -696,7 +792,7 @@ class ScrollWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     this.#pending = null;
     // Copying spends the scroll, so there may be nothing left to show.
     if (this.scroll?.id && !this.actor.items.get(this.scroll.id)) this.close();
-    else this.render();
+    else await this.#morph();
   }
 
   async #commitIdentify(outcome) {
@@ -792,6 +888,18 @@ class ScrollWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     const read = await castFromScroll(this.actor, this.scroll);
     if (read) this.close();
   }
+}
+
+/** Sleep, so a fade has time to run before the DOM under it is replaced. */
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/** Two frames: long enough for a style written now to animate, not jump. */
+function nextFrame() {
+  return new Promise((resolve) =>
+    requestAnimationFrame(() => requestAnimationFrame(resolve)),
+  );
 }
 
 /** "+12" / "-7", the way every other margin in the system prints. */

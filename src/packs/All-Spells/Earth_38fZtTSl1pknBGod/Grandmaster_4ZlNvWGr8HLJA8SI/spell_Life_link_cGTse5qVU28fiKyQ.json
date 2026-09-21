@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/nature/leaf-glow-triple-green.webp",
   "system": {
-    "description": "<p>Links 2 to 5 individuals for one day. Their health pools merge, gaining a bonus of {{math spellPower \"*\" 5}} health. If the shared health drops to zero, each member suffers a serious injury, and the spell ends. The last affected target falls to 0 health (incapacitated and dying), while others remain conscious with 10 health each. The spell cannot be dismissed early. When it expires, remaining health is split evenly.</p>",
+    "description": "<p>Links between two and five people for one day, merging their health pools and adding {{math spellPower \"*\" 5}} health.</p><p>If the shared pool reaches zero, every member takes a Grave Wound and the spell ends. The last target to be hit drops to 0 health, Incapacitated and Dying, while the others stay conscious on 10 health each.</p><p>The spell cannot be dismissed early. When it expires the remaining health is split evenly.</p>",
     "options": [
       "divine",
       "magic"
@@ -135,7 +135,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "4ZlNvWGr8HLJA8SI",

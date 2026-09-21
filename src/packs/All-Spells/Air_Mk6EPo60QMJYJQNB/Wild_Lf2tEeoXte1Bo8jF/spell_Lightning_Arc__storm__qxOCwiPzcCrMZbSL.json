@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/lightning/bolt-strike-sparks-teal.webp",
   "system": {
-    "description": "<p>Requires target in a storm. <br />Roll 2d4 manually and reduce your health.</p><p>Spell transfers a Lightning discharge to the target, dealing 6d6 damage + {{math spellPower \"*\" 2}}.</p>",
+    "description": "<p>Transfers a Lightning discharge to the target, dealing 6d6 + {{math spellPower \"*\" 2}} damage.</p><p>Requires the target to be in a storm.</p>",
     "options": [
       "divine",
       "magic"
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "Roll 2d4 manually and reduce the caster's health by it.",
+    "vsTest": false
   },
   "effects": [],
   "folder": "Lf2tEeoXte1Bo8jF",

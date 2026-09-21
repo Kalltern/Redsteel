@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/water/strike-ice-blade-fang.webp",
   "system": {
-    "description": "Enhances the next attack or throw, changing its damage type to Magical + Frost and increasing range by +1 hex. Cannot be combined with other attack enhancements.",
+    "description": "<p>Enhances the caster's next attack or throw, changing its damage type to Magic and Frost and increasing its range by one hex.</p><p>Cannot be combined with other attack enhancements.</p>",
     "options": [
       "divine",
       "magic"
@@ -118,7 +118,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "GaSIkEMI2Yi6RoKu",

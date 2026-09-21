@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/lightning/bolt-strike-explosion-purple.webp",
   "system": {
-    "description": "<p>Teleports through Lightning to any location within an ongoing storm. Deals 2d4 Lightning damage to the caster. After teleporting, deals 2d4 Lightning damage to all targets within 3m radius of the caster and Stuns them.</p>",
+    "description": "<p>Teleports the caster through lightning to any location within an ongoing storm, at the cost of 2d4 damage to the caster.</p><p>On arrival it deals 2d4 damage to every target within a 3 m radius and Stuns them.</p>",
     "options": [
       "divine",
       "magic"
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "Yee9AI8JHYKBHLNT",

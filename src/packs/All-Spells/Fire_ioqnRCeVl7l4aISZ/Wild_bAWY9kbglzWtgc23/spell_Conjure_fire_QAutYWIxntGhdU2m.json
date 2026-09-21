@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/flame-burning-yellow-orange.webp",
   "system": {
-    "description": "<p>Conjures one of the following in caster's free hand:</p><ul><li><p>A small fire in the hand for 1d6 health</p></li><li><p>A medium fire for 2d6 health</p></li><li><p>A large fire for 5d6 health.</p></li></ul><p>The spell 'Fire Attack' consumes this fire.<br /></p>",
+    "description": "<p>Conjures a fire in the caster's free hand: a small one for 1d6 health, a medium one for 2d6, or a large one for 5d6.</p><p>Fire attack consumes this fire.</p>",
     "options": [
       "divine",
       "magic"
@@ -143,7 +143,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "bAWY9kbglzWtgc23",

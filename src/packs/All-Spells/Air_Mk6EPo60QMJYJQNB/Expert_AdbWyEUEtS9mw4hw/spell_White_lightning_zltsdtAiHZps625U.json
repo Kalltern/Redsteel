@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/lightning/bolt-forked-blue-yellow.webp",
   "system": {
-    "description": "<p>Deals (4d6 + {{spellPower}}) damage to up to two adjacent targets.</p><p> +15% Stun chance.</p>",
+    "description": "<p>Deals 4d6 + {{spellPower}} damage to up to two adjacent targets, with a 15% chance to Stun.</p>",
     "options": [
       "divine",
       "magic"
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "AdbWyEUEtS9mw4hw",

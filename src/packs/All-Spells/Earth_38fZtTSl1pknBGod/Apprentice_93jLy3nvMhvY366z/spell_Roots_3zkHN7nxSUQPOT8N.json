@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/nature/root-vine-entangle-foot-green.webp",
   "system": {
-    "description": "<p>Triggers a vs test of caster's Will + <span style=\"font-family:Signika, sans-serif\">{{math spellPower \"*\" 2}}</span> against target's Strength / Endurance.</p><hr /><p>On caster's success, the target is rooted.<br />On failure, the target loses one action.<br />Requires a suitable surface.</p>",
+    "description": "<p>The caster tests Will + {{math spellPower \"*\" 2}} against the target's Strength or Endurance.</p><p><strong>On success:</strong> the target is Rooted.</p><p><strong>On failure:</strong> the target loses one Action.</p><p>Requires a suitable surface.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "testModifier": "@spellPower*2",
     "effectType1": "root",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "93jLy3nvMhvY366z",

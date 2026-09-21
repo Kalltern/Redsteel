@@ -851,10 +851,10 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       return;
     }
 
-    /* ---------------------------------- */
-    /* 0️⃣ SCROLL RIGHT-CLICK (READ ALOUD) */
-    /* ---------------------------------- */
-    // Reading a scroll aloud is its one combat use, so it sits on the same
+    /* ------------------------------------- */
+    /* 0️⃣ SCROLL RIGHT-CLICK (BREAK THE SEAL) */
+    /* ------------------------------------- */
+    // Breaking a scroll's seal is its one combat use, so it sits on the same
     // right-click the rest of the inventory uses. Ahead of the slot branches
     // because a scroll never occupies a slot (see utils/spellScrolls.mjs).
     const scrollRow = event.target.closest(".item[data-item-id]");

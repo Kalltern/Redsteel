@@ -4,7 +4,7 @@
   "img": "icons/magic/control/energy-stream-link-orange.webp",
   "system": {
     "localizationKey": "",
-    "description": "The target suffers the same damage as the Caster.",
+    "description": "<p>The target suffers the same damage as the caster.</p>",
     "options": [
       "divine",
       "magic"
@@ -91,7 +91,7 @@
     "sustained": false,
     "difficulty": -30,
     "cost": 8,
-    "perRound": 0,
+    "perRound": "1d4",
     "variants": [],
     "option": "magic",
     "type": "blood",
@@ -123,7 +123,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "JfABnrOWeCkU7mhs",

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/water/barrier-ice-crystal-wall-faceted.webp",
   "system": {
-    "description": "<p>Roots Targets in a 3m area to the ground with the rooted effect. Trapped Targets may attempt one Strength test (hard) per turn to break free.</p>",
+    "description": "<p>Roots every target in a 3 m area to the ground.</p><p>A trapped target may attempt one Hard Strength test per round to break free.</p>",
     "options": [
       "divine",
       "magic"
@@ -118,7 +118,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "8nT2ag63tCfjXxeJ",

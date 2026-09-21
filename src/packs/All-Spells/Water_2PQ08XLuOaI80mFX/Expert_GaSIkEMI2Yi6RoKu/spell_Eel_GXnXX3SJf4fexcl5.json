@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/environment/creatures/fish-trout-grey.webp",
   "system": {
-    "description": "<p>Gains advantage on rolls related to slipperiness <br>(escaping bonds, squeezing through bars, Strength/Dexterity tests for grappling, etc.) for {{math spellPower \"*\" 5}} minutes. <br>Fire armor +3. Burn chance reduced by 25%. Climbing penalty -30%.</p>",
+    "description": "<p>For {{math spellPower \"*\" 5}} minutes, grants the target Advantage on anything involving slipperiness: escaping bonds, squeezing through bars, Strength and Dexterity tests to grapple, and the like.</p><p>It also grants +3 Fire armor, reduces Burn chance by 25%, and puts a -30% penalty on climbing.</p>",
     "options": [
       "divine",
       "magic"
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "GaSIkEMI2Yi6RoKu",

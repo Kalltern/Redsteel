@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/projectile-embers-orange.webp",
   "system": {
-    "description": "<p>Deals 5d6 + 1d6x + {{math spellPower \"+\" 1}} damage to a single target.</p>",
+    "description": "<p>Deals 5d6 + 1d6 exploding + {{math spellPower \"+\" 1}} damage to one target.</p>",
     "options": [
       "divine",
       "magic"
@@ -135,7 +135,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "UxjnWqOZrypZl1NP",

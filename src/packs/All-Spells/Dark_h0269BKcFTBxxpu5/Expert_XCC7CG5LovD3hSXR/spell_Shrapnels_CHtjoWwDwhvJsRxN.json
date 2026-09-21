@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/earth/projectiles-stone-salvo-red.webp",
   "system": {
-    "description": "<p>Deals 4d6 + {{math spellPower \"*\" 2}} damage in a 90° arc and 6m range. 60% chance to cause Bleeding.</p>",
+    "description": "<p>Deals 4d6 + {{math spellPower \"*\" 2}} damage in a 90° arc reaching 6 m.</p>",
     "options": [
       "divine",
       "magic"
@@ -125,7 +125,10 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false,
+    "breath": true
   },
   "effects": [],
   "folder": "XCC7CG5LovD3hSXR",

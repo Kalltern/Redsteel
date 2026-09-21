@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/air/wind-tornado-cyclone-purple-blue.webp",
   "system": {
-    "description": "<p>Creates severe weather on a chosen hex in range with 7.5m (5 hex) radius. <br><strong data-start=\"327\" data-end=\"341\">Each round</strong>, all creatures within the area must resolve a vs test of caster's Will Test (bonus {{math spellPower \"*\" 3}}) against target's Strength/Dexterity Test. </p><hr><p>On Caster's success: Knocked Down + pushed back one hex. <br>On failure: pushed back one hex. <br>On failure with differrence of 50 Margin of Success: Target is not pushed. <br><br>The direction of push is  the same for all targets, chosen by caster each round.</p>",
+    "description": "<p>Creates severe weather on a chosen hex in range, with a 5 hex radius.</p><p>Each round, every creature in the area resolves a versus test against the caster's Will + {{math spellPower \"*\" 3}}, rolling Strength or Dexterity.</p><p><strong>On the caster's success:</strong> the target is knocked Prone and pushed back one hex.</p><p><strong>On failure:</strong> the target is pushed back one hex.</p><p><strong>On failure by a margin of 50 or more:</strong> the target is not pushed at all.</p><p>The caster chooses one direction of push each round, and it is the same for every target.</p>",
     "options": [
       "divine",
       "magic"
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "will",
-    "testModifier": "@spellPower*3"
+    "testModifier": "@spellPower*3",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "Yee9AI8JHYKBHLNT",

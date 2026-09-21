@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/symbols/runes-carved-stone-yellow.webp",
   "system": {
-    "description": "Marks an animal for ten days. The caster knows its location and, with concentration, can see/hear through it. While concentrating, the caster is unaware of their surroundings. May attempt brief control via a very difficult Willpower test. This difficulty may differ situationally.",
+    "description": "<p>Marks an animal for ten days. The caster always knows where it is, and with Concentration can see and hear through it, while being unaware of their own surroundings.</p><p>The caster may attempt brief control with a Very Hard Will test, at a difficulty that may shift with the situation.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "ELAMhHkr77jkNbi6",

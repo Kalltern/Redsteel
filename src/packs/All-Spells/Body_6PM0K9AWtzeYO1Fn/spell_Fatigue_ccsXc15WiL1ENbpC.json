@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
-    "description": "Reduces Target's Stamina by 3d4 + {{spellPower}}. Alternatively, prevents use of Stamina for two rounds.",
+    "description": "<p>Reduces the target's Stamina by 3d4 + {{spellPower}}.</p><p>Alternatively, prevents the target from spending Stamina for two rounds.</p>",
     "options": [
       "divine",
       "magic"
@@ -80,7 +80,7 @@
         ""
       ]
     },
-    "isOffensive": true,
+    "isOffensive": false,
     "uncontested": true,
     "sustained": false,
     "difficulty": -15,
@@ -110,7 +110,9 @@
       "effect2": "0",
       "effect3": "0",
       "effect4": "0"
-    }
+    },
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "6PM0K9AWtzeYO1Fn",

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
-    "description": "Extends the time window to treat someone on Death's Door by {{math spellPower \"/\" 3}} rounds. 15% chance to remove the Death's Door condition. Recasting does not extend treatment window.",
+    "description": "<p>Extends the window to treat a Dying target by {{math spellPower \"/\" 3}} rounds, with a 15% chance to remove the Dying condition outright.</p><p>Recasting does not extend the window again.</p>",
     "options": [
       "divine",
       "magic"
@@ -110,7 +110,9 @@
       "effect2": "0",
       "effect3": "0",
       "effect4": "0"
-    }
+    },
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "6PM0K9AWtzeYO1Fn",

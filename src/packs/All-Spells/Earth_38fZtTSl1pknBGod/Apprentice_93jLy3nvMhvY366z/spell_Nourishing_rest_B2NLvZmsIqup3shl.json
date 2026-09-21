@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/nature/cornucopia-orange.webp",
   "system": {
-    "description": "<p>Enhances the body’s natural recovery, this spell doubles both health regeneration and toxicity reduction while resting. </p><p>It can be extended to multiple creatures simultaneously, with an additional cost for each target.</p>",
+    "description": "<p>Doubles both health regeneration and toxicity reduction while the target rests.</p><p>Can be cast on a group, at the cost of one casting per target.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "93jLy3nvMhvY366z",

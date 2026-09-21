@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/unholy/hand-marked-pink.webp",
   "system": {
-    "description": "Grants +2 to Speed Tests. Requires active Shadowform, which is consumed when this spell is cast to negate all Damage and move 1 hex in any direction. Can be cast as a Reaction only if the caster is attacked.",
+    "description": "<p>Negates all damage from one attack, moves the caster one hex in any direction, and grants +2 to Speed tests.</p><p>Requires an active Shadowform, which the cast consumes.</p><p>Can be cast as a Reaction only if the caster is attacked.</p>",
     "options": [
       "divine",
       "magic"
@@ -118,7 +118,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "pwmVRgAOpIMg3gH9",

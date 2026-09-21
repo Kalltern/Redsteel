@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
-    "description": "-30% penalty to Tests of a chosen Attribute (Strength, Dexterity, or Endurance) and -30% to related skills for {{math spellPower \"/\" 2}} + 1 rounds.",
+    "description": "<p>For {{math spellPower \"/\" 2}} + 1 rounds, puts a -30% penalty on the target's tests of one chosen attribute, Strength, Dexterity or Endurance, and on the skills derived from it.</p>",
     "options": [
       "divine",
       "magic"
@@ -110,7 +110,9 @@
       "effect2": "0",
       "effect3": "0",
       "effect4": "0"
-    }
+    },
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "6PM0K9AWtzeYO1Fn",

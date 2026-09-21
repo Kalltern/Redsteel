@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/commodities/materials/feather-blue-glowing.webp",
   "system": {
-    "description": "Slows falling speed for 5 + {{spellPower}} rounds, can be cast group-wide (cost per target). Can be cast as a Reaction at any time.",
+    "description": "<p>Slows the target's falling speed for 5 + {{spellPower}} rounds.</p><p>Can be cast as a Reaction at any time.</p><p>Can be cast on a group, at the cost of one casting per target.</p>",
     "options": [
       "divine",
       "magic"
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "xCW0JHp8U8kjsvRC",

@@ -1,9 +1,9 @@
 {
-  "name": "Relgar’s Wrath",
+  "name": "Relgar's Wrath",
   "type": "spell",
   "img": "icons/magic/fire/projectile-fireball-smoke-strong-orange.webp",
   "system": {
-    "description": "<p>Deals 6d8 + {{math spellPower \"*\" 4}} damage in a 4.5 m area.</p>",
+    "description": "<p>Deals 6d8 + {{math spellPower \"*\" 4}} damage in a 4.5 m area.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "8U9FRYa6LCshgUCl",

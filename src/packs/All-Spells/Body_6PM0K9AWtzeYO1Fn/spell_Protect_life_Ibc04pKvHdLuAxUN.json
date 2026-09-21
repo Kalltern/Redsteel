@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
-    "description": "For one day, protects the chosen Target. Prevents a blow that would reduce Health to 0 or less, and instead heals 3d6 + {{spellPower}} Health.",
+    "description": "<p>Protects the chosen target for one day. The first blow that would reduce its Health to 0 or less is prevented, and instead heals 3d6 + {{spellPower}} Health.</p>",
     "options": [
       "divine",
       "magic"
@@ -110,7 +110,9 @@
       "effect2": "0",
       "effect3": "0",
       "effect4": "0"
-    }
+    },
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "6PM0K9AWtzeYO1Fn",

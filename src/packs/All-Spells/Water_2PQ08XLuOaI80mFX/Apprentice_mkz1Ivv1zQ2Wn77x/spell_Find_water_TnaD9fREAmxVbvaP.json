@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/water/orb-water-bubbles-blue.webp",
   "system": {
-    "description": "Detects the nearest Water source within a 1km area.",
+    "description": "<p>Detects the nearest water source within 1 km.</p>",
     "options": [
       "divine",
       "magic"
@@ -118,7 +118,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "mkz1Ivv1zQ2Wn77x",

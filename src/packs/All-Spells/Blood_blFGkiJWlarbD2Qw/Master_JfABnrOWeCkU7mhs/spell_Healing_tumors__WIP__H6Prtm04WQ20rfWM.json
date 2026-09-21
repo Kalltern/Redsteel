@@ -4,7 +4,7 @@
   "img": "icons/commodities/biological/pustules-pink.webp",
   "system": {
     "localizationKey": "",
-    "description": "Numerous miniature tumors grow at the spot of a Severe Injury. Heals one Severe Injury (the penalty remains), grants one Madness point, and requires a Nerves Test to not gain an additional Madness point. After five days, the tumors fall off, the Severe Injury penalty is removed, and an ugly scar remains.",
+    "description": "<p>Grows miniature tumors over a Grave Wound, healing it while its penalty remains.</p><p>The target gains one Insanity point, and tests Resolve to avoid a second.</p><p>After five days the tumors fall off, the Grave Wound penalty is removed, and an ugly scar remains.</p>",
     "options": [
       "divine",
       "magic"
@@ -123,7 +123,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "JfABnrOWeCkU7mhs",

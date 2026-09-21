@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/water/orb-ice-glow.webp",
   "system": {
-    "description": "<p>Targets frozen creature, triggering Willpower vs. Endurance test. Failure deals 30 damage; success deals 80. Touch casting automatically counts as success.</p><p>If spell kills Target, may trigger explosion dealing 4d6 + {{spellPower}} Magical + damage (armor penetration 10) to all adjacent Targets. </p>",
+    "description": "<p>Targets a Frozen creature. The caster tests Will against its Endurance.</p><p><strong>On success:</strong> the target takes 80 damage.</p><p><strong>On failure:</strong> the target takes 30 damage.</p><p>Casting it by touch counts as an automatic success. If the spell kills the target, it may explode for 4d6 + {{spellPower}} damage to every adjacent target.</p>",
     "options": [
       "divine",
       "magic"
@@ -118,7 +118,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "8nT2ag63tCfjXxeJ",

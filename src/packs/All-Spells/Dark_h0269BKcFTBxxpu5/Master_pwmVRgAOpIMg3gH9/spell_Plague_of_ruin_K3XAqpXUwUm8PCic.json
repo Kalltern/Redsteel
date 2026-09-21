@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/unholy/orb-colllecting-energy-green.webp",
   "system": {
-    "description": "Marks a target for 3 rounds. When it ends, the target suffers 2d10x + {{math spellPower \"*\" 5}} damage. 30% chance to spread to adjacent targets. Constructs, Undead, Illusions, and similar may be immune. Paying the spell's cost again allows the caster to cancel the effect on one target within range.",
+    "description": "<p>Marks one target for three rounds. When the mark ends, the target suffers 2d10 exploding + {{math spellPower \"*\" 5}} damage, with a 30% chance to spread to adjacent targets.</p><p>Constructs, Undead, Illusions and similar creatures may be immune. Paying the spell's cost again cancels the effect on one target within range.</p>",
     "options": [
       "divine",
       "magic"
@@ -118,7 +118,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "The damage dice do not explode yet. Roll 2d10 exploding manually until the roll field supports the notation.",
+    "vsTest": false
   },
   "effects": [],
   "folder": "pwmVRgAOpIMg3gH9",

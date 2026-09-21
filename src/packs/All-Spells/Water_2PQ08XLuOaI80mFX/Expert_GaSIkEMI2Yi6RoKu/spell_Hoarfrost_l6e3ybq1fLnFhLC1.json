@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/water/ice-snowman.webp",
   "system": {
-    "description": "<p>Creates slippery ice covering up to 3 + X connected hexes for {{math spellPower \"*\" 5}} minutes. <br />Crossing requires a Dexterity test per hex—failure knocks the Target down. <br />Difficulty scales with movement speed: Slow – normal; walking – advanced; running – very hard.</p>",
+    "description": "<p>Creates slippery ice across three connected hexes for {{math spellPower \"*\" 5}} minutes, plus as many further connected hexes as the caster covers.</p><p>Crossing it takes a Dexterity test per hex, and failing knocks the target down. The difficulty follows the target's pace: normal at a slow one, advanced at walking pace, very hard at a run.</p>",
     "options": [
       "divine",
       "magic"
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "GaSIkEMI2Yi6RoKu",

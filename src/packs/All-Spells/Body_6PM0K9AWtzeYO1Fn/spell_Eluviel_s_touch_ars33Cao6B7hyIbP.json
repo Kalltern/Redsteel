@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
-    "description": "<p>Heals one target for 2 + {{spellPower}} Health each round, indefinitely — remove the effect to stop it. Cannot be cast on self.<br /><br />Resolved at the table: it also heals broken bones, removes projectiles and relieves pain; once per month, on a target at full Health, it heals one Serious Wound after five rounds; while it is running it delays gaining a Serious Wound from the Dying condition.</p>",
+    "description": "<p>Heals one target 2 + {{spellPower}} Health each round, indefinitely. Remove the effect to stop it.</p><p>Cannot be cast on self.</p>",
     "options": [
       "divine",
       "magic"
@@ -113,7 +113,9 @@
       "extra1": -1,
       "effectName1": "eluviels_touch"
     },
-    "effectType1": "custom"
+    "effectType1": "custom",
+    "manualNotes": "Resolved at the table: it also heals broken bones, removes projectiles and relieves pain. Once per month, on a target at full Health, it heals one Grave Wound after five rounds. While it is running it delays gaining a Grave Wound from the Dying condition.",
+    "vsTest": false
   },
   "effects": [],
   "folder": "6PM0K9AWtzeYO1Fn",

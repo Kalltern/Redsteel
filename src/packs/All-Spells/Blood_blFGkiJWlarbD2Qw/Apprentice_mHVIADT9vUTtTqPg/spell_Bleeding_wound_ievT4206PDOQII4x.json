@@ -4,7 +4,7 @@
   "img": "icons/skills/wounds/injury-stitched-flesh-red.webp",
   "system": {
     "localizationKey": "",
-    "description": "<p>Has a {{math spellPower \"*\" 2}} + 45% chance to cause Bleeding. If the target already has at least one Bleeding effect, it additionally deals Dark damage equal to 5d6 + {{spellPower}}.</p>",
+    "description": "<p>Always attempts to inflict Bleeding on one target, with a {{math spellPower \"*\" 2}} + 45% chance.</p><p><strong>If the target is already Bleeding:</strong> the spell also deals 5d6 + {{spellPower}} damage.</p>",
     "options": [
       "divine",
       "magic"
@@ -123,7 +123,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "The conditional damage is not automated yet. The cast rolls 5d6 + SK every time, so ignore that roll unless the target was already Bleeding. Delete this note once the gate is wired.",
+    "vsTest": false
   },
   "effects": [],
   "folder": "mHVIADT9vUTtTqPg",

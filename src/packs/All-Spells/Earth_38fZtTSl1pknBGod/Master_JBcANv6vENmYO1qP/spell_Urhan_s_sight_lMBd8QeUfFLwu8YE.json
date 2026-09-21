@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/perception/orb-eye-scrying.webp",
   "system": {
-    "description": "<p>Detects metals and minerals within {{math spellPower \"*\" 100}}m for {{math spellPower \"*\" 10}} minutes.</p>",
+    "description": "<p>Detects metals and minerals within {{math spellPower \"*\" 100}} m for {{math spellPower \"*\" 10}} minutes.</p>",
     "options": [
       "divine",
       "magic"
@@ -135,7 +135,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "JBcANv6vENmYO1qP",

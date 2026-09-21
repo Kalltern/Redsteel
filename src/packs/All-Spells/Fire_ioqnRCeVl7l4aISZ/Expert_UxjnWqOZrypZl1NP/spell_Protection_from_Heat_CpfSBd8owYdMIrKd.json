@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/defensive/shield-barrier-glowing-triangle-orange.webp",
   "system": {
-    "description": "<p>Protects against extremely high temperatures and allows walking on lava for {{math spellPower \"*\" 15}} minutes. <br>Can be cast on a group (cost per target). <br>Grants Immunity to Burning. Increases Fire Armor by +10. <br>Not compatible with Heat Protection.</p>",
+    "description": "<p>Protects the target against extreme heat for {{math spellPower \"*\" 15}} minutes, allowing it to walk on lava, granting Immunity to Burning and raising its Fire Armor by 10.</p><p>Not compatible with Protection from warmth.</p><p>Can be cast on a group, at the cost of one casting per target.</p>",
     "options": [
       "divine",
       "magic"
@@ -143,7 +143,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "UxjnWqOZrypZl1NP",

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/life/heart-cross-blue.webp",
   "system": {
-    "description": "<p>Restores {{math spellPower \"*\" 2}} + 4d6 HP to a chosen target and stops up to 2 bleeding effects.<br /><br />Not fully automated. Resolve the spell manually</p>",
+    "description": "<p>Restores 4d6 + {{math spellPower \"*\" 2}} HP to the chosen target and stops up to two Bleeding effects.</p>",
     "options": [
       "divine",
       "magic"
@@ -126,7 +126,9 @@
     "effectType3": "",
     "attributeTest": "",
     "testModifier": "",
-    "isHealing": true
+    "isHealing": true,
+    "manualNotes": "Not fully automated. Resolve the healing manually.",
+    "vsTest": false
   },
   "effects": [],
   "folder": "GaSIkEMI2Yi6RoKu",

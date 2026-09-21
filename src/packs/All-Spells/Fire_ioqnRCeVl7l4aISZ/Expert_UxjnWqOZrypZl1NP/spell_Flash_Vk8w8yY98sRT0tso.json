@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/light/beam-explosion-orange.webp",
   "system": {
-    "description": "<p>Triggers a vs test of caster's Will against target's Perception test. <br />On caster's success, the target is Blinded. <br />On failure, the target loses 1 Reaction. <br />Can only be cast as a Reaction if the caster is being attacked. Cancels a physical attack on a successful cast.<br /><br />Not fully automated. Resolve this effect manually</p>",
+    "description": "<p>The caster tests Will against the target's Perception.</p><p><strong>On success:</strong> the target is Blinded.</p><p><strong>On failure:</strong> the target loses one Reaction.</p><p>A successful cast cancels the physical attack. Can be cast as a Reaction only if the caster is attacked.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "will",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "Not fully automated. Resolve the effect manually.",
+    "vsTest": true
   },
   "effects": [],
   "folder": "UxjnWqOZrypZl1NP",

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/dagger-rune-enchant-flame-blue.webp",
   "system": {
-    "description": "<p>Enchants an existing weapon (or quiver) for {{math spellPower \"*\" 5}} minutes. The weapon now deals physical/Magical/Frost damage, +2 damage, +1 armor penetration, +15% Slow chance. <br />Recasting cancels or replaces the previous effect. Incompatible with other enchantements. <br />Maximum Freeze chance 0%.</p>",
+    "description": "<p>Enchants one weapon or quiver for {{math spellPower \"*\" 5}} minutes, making it deal Physical, Magic and Frost damage, adding 2 damage and 1 Penetration, and raising its Slow chance by 15%.</p><p>Its Freeze chance is held at 0%. Effects that would otherwise grant one do not apply to this enchantment.</p><p>Recasting replaces the previous Ice weapon. Incompatible with other enchantments.</p>",
     "options": [
       "divine",
       "magic"
@@ -126,7 +126,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "GaSIkEMI2Yi6RoKu",

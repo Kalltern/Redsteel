@@ -4,7 +4,7 @@
   "img": "icons/skills/wounds/blood-cells-disease-green.webp",
   "system": {
     "localizationKey": "",
-    "description": "Deals damage equal to 1d6 + {{spellPower}} for four rounds.",
+    "description": "<p>Deals 1d6 + {{spellPower}} damage to one target each round for four rounds.</p>",
     "options": [
       "divine",
       "magic"
@@ -124,7 +124,9 @@
     "testModifier": "",
     "effectType1": "custom",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "mHVIADT9vUTtTqPg",

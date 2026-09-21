@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/lightning/fist-unarmed-strike-blue-green.webp",
   "system": {
-    "description": "Enhances the next attack or throw and changes its damage type to Magical + Lightning. Chaining +30%. Cannot be combined with other forms of attack enhancement.",
+    "description": "<p>Enhances the caster's next attack or throw, changing its damage type to Magic and Lightning and raising its Chaining by 30%.</p><p>Cannot be combined with other attack enhancements.</p>",
     "options": [
       "divine",
       "magic"
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "xCW0JHp8U8kjsvRC",

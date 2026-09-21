@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/barrier-wall-flame-ring-yellow.webp",
   "system": {
-    "description": "<p>Creates a 6m area around the caster that is protected from insects for {{spellPower}} hours.<br>Enemies in this area have a +10% increased chance of gaining the Burning effect.</p>",
+    "description": "<p>Creates a 6 m area around the caster that is protected from insects for {{spellPower}} hours.</p><p>Enemies inside it are 10% more likely to catch Burning.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "UxjnWqOZrypZl1NP",

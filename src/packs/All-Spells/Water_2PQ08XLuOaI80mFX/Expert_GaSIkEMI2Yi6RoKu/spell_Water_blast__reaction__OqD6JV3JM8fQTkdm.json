@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/water/wave-water-explosion.webp",
   "system": {
-    "description": "<p>Can only be cast as a reaction when the caster is being attacked.</p><hr><p>Triggers a vs test of caster's Will + {{math spellPower \"*\" 2}} against target's Strength test in a 3m area around the target. <br>Affected Targets become Wet.</p><hr><p>On caster's success pushes targets back by two hexes. If the Margin of Success is 50 or higher, the target is also knocked down.<br>On failure, pushes Targets back by one hex.<br>If the Margin of Success is -50 or lower, no push occurs. <br></p>",
+    "description": "<p>The caster tests Will + {{math spellPower \"*\" 2}} against the Strength of every target in a 3 m area, and all of them become Wet.</p><p><strong>On success:</strong> the targets are pushed back two hexes, and knocked down as well if the margin is 50 or more.</p><p><strong>On failure:</strong> the targets are pushed back one hex, or not pushed at all if the margin is -50 or worse.</p><p>Can be cast as a Reaction only when the caster is attacked.</p>",
     "options": [
       "divine",
       "magic"
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "will",
-    "testModifier": "@spellPower*2"
+    "testModifier": "@spellPower*2",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "GaSIkEMI2Yi6RoKu",

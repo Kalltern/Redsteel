@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/unholy/strike-body-life-soul-purple.webp",
   "system": {
-    "description": "Deals 2d6 + {{math spellPower \"*\" 2}} damage per round to a single target. Each round, triggers a vs test of caster's Will + {{math spellPower \"*\" 1}}) vs. target's Endurance (Pain). On caster's success, the target is Stunned for one round.",
+    "description": "<p>Deals 2d6 + {{math spellPower \"*\" 2}} damage per round to one target.</p><p>Each round, the caster tests Will + {{math spellPower \"*\" 1}} against the target's Endurance (Pain).</p><p><strong>On success:</strong> the target is Stunned for one round.</p>",
     "options": [
       "divine",
       "magic"
@@ -112,7 +112,9 @@
       "effect4": "0"
     },
     "attributeTest": "will",
-    "testModifier": "@spellPower"
+    "testModifier": "@spellPower",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "pwmVRgAOpIMg3gH9",

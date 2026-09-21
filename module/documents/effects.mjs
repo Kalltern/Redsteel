@@ -1196,6 +1196,14 @@ export class RedsteelActiveEffect extends ActiveEffect {
       if (stackBehavior === "refresh") {
         const updates = {};
 
+        // A custom condition edited while it was already on someone re-applies
+        // its text too, so the effect on the actor is never a stale copy of a
+        // definition that has since changed. Built-ins carry neither field.
+        if (def.description) updates.description = def.description;
+        if (def.rollTriggersRaw) {
+          updates["flags.redsteel.rollTriggersRaw"] = def.rollTriggersRaw;
+        }
+
         if (turnsDuration > 0) {
           updates["flags.redsteel.actorTurns"] = turnsDuration;
         }
@@ -1332,6 +1340,13 @@ export class RedsteelActiveEffect extends ActiveEffect {
       triggers,
     };
 
+    // Roll Triggers authored on a custom condition's own Active Effect
+    // (buildConditionDefinition collects them). Without this the flag never
+    // reaches the actor's effect and getTraitPills has nothing to remind on.
+    if (def.rollTriggersRaw) {
+      redsteelFlags.rollTriggersRaw = def.rollTriggersRaw;
+    }
+
     // Dar krve — see the re-apply path above. Set here rather than after the
     // create so it is already on the document when `onApply` fires: Bleeding's
     // {appliedStacks}d4 can kill outright, and that tick has to be able to find
@@ -1384,6 +1399,10 @@ export class RedsteelActiveEffect extends ActiveEffect {
       name: game.i18n.localize(def.name),
       img: def.img,
       changes,
+      // Only when the definition carries one: a built-in effect has no
+      // description, and writing an empty string would blank the one the
+      // status entry supplied.
+      ...(def.description && { description: def.description }),
 
       flags: {
         core: {
@@ -2436,7 +2455,16 @@ export class RedsteelActiveEffect extends ActiveEffect {
     const data = this.getFlag("redsteel", "channelingData");
     if (!data) return;
 
-    const costPerRound = this.getFlag("redsteel", "costPerRound") ?? 0;
+    // The flag holds either a number or a dice formula ("1d4"). A formula is
+    // rolled fresh every round, because "1d4 per round" means a new d4 each
+    // round rather than one roll reused for the whole channel. Effects saved
+    // before formulas existed hold a plain number and take the same path they
+    // always did.
+    const rawCostPerRound = this.getFlag("redsteel", "costPerRound") ?? 0;
+    const costPerRound =
+      typeof rawCostPerRound === "string" && /d/i.test(rawCostPerRound)
+        ? (await new Roll(rawCostPerRound).evaluate()).total
+        : Number(rawCostPerRound) || 0;
 
     if (costPerRound > 0) {
       // Blood school spells sustain from the blood pool instead of mana

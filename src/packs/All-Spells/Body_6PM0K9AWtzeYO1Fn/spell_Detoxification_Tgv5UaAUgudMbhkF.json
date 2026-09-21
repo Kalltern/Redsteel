@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
-    "description": "Removes all Toxicity from the Target. Does not cancel potion effects. Can only be cast on the same Target once per day.",
+    "description": "<p>Removes all Toxicity from the target.</p><p>Does not cancel potion effects. Can be cast on the same target only once per day.</p>",
     "options": [
       "divine",
       "magic"
@@ -110,7 +110,9 @@
       "effect2": "0",
       "effect3": "0",
       "effect4": "0"
-    }
+    },
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "6PM0K9AWtzeYO1Fn",

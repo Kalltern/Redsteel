@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/air/wind-tornado-cyclone-white.webp",
   "system": {
-    "description": "<p>Triggers a vs test of caster's Will + {{math spellPower \"*\" 3}} against target's Strength/Dexterity Test.</p><p>On success, the target is trapped in the cyclone for up to three rounds, unable to act. While trapped, they cannot be harmed by Physical attacks or direct Magic (e.g. projectiles, beams) and can be moved one hex per round. On failure, the target loses one Action.<br /><br />Effects of this spell are not automated and must be resolved manually.</p><p>Apply effect to get a duration counter.</p>",
+    "description": "<p>The caster tests Will + {{math spellPower \"*\" 3}} against the target's Strength or Dexterity.</p><p><strong>On success:</strong> the target is trapped in the cyclone for up to three rounds and cannot act. While trapped it cannot be harmed by Physical attacks or by direct Magic such as projectiles and beams, and it can be moved one hex per round.</p><p><strong>On failure:</strong> the target loses one Action.</p>",
     "options": [
       "divine",
       "magic"
@@ -129,7 +129,9 @@
     "testModifier": "@spellPower*3",
     "variants": [
       "esiBJjncf27psJ48"
-    ]
+    ],
+    "manualNotes": "The cyclone's effects are not automated and must be resolved at the table. Apply the effect to get a duration counter.",
+    "vsTest": true
   },
   "effects": [],
   "folder": "AdbWyEUEtS9mw4hw",

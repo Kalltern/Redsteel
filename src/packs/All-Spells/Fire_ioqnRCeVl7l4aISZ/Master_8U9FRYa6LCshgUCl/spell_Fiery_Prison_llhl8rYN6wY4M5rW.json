@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/flame-burning-chain.webp",
   "system": {
-    "description": "<p>Creates a fiery prison on a chosen hex. If the target attempts to leave, they take 6d6 + {{math spellPower \"*\" 2}} damage and must make a Will + {{spellPower}}) vs Endurance (Pain) test. On failure, they remain trapped. </p>",
+    "description": "<p>Creates a fiery prison on a chosen hex.</p><p>If the target tries to leave it takes 6d6 + {{math spellPower \"*\" 2}} damage, and the caster tests Will + {{spellPower}} against its Endurance (Pain).</p><p><strong>On success:</strong> the target stays trapped.</p>",
     "options": [
       "divine",
       "magic"
@@ -135,7 +135,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "8U9FRYa6LCshgUCl",

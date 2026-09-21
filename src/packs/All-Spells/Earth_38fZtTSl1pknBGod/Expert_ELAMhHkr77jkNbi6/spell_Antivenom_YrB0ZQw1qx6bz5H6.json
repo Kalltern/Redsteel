@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/life/heart-cross-green.webp",
   "system": {
-    "description": "<p>Cures poisons with a 100/75/50% chance (depending on poison potency). Prevents re-poisoning for <span style=\"font-family:Signika, sans-serif\">{{spellPower}}</span> rounds.<br /><br />Roll the chance manually and resolve manually.</p>",
+    "description": "<p>Cures Poison, with a 100%, 75% or 50% chance depending on its potency, and prevents new Poisoning for {{spellPower}} rounds.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "Roll the chance and resolve the cure manually.",
+    "vsTest": false
   },
   "effects": [],
   "folder": "ELAMhHkr77jkNbi6",

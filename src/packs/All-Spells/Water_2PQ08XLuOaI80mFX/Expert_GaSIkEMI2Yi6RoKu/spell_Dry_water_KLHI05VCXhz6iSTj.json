@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/water/projectile-ice-impact-stone.webp",
   "system": {
-    "description": "<p>Evaporates small amounts of Water or removes the Wet effect. Larger volumes require multiple castings.<br /><br />You must remove the Wet effect manually.</p>",
+    "description": "<p>Evaporates a small amount of water, or removes the Wet effect.</p><p>A larger volume needs more than one casting.</p>",
     "options": [
       "divine",
       "magic"
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "The Wet effect must be removed manually.",
+    "vsTest": false
   },
   "effects": [],
   "folder": "GaSIkEMI2Yi6RoKu",

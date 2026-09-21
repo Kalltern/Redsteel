@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/lightning/bolt-forked-red.webp",
   "system": {
-    "description": "<p>Deals (6d6 - 2 + {{spellPower}}) damage to a single target. </p><p>15% Burn chance.</p>",
+    "description": "<p>Deals 6d6 - 2 + {{spellPower}} damage to one target, with a 15% chance to Burn.</p>",
     "options": [
       "divine",
       "magic"
@@ -100,7 +100,7 @@
     "roll": {
       "diceNum": 6,
       "diceSize": "6",
-      "diceBonus": "-2 + @spellPower"
+      "diceBonus": "@spellPower-2"
     },
     "penetration": 14,
     "dmgType1": "magic",
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "AdbWyEUEtS9mw4hw",

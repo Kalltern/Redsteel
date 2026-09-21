@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/water/water-drop-swirl-blue.webp",
   "system": {
-    "description": "Extracts most Water from a creature, dealing {{math spellPower \"*\" 8}} Magical damage. If Target survives, they must drink at least 2 liters of Water within Endurance * 1 minutes or die.",
+    "description": "<p>Wrenches the water out of a creature, dealing {{math spellPower \"*\" 8}} damage.</p><p>A target that survives is left parched to the bone. Unless it drinks at least two litres of water within as many minutes as it has Endurance, it dies.</p>",
     "options": [
       "divine",
       "magic"
@@ -118,7 +118,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "5ubiTNT29W3ben57",

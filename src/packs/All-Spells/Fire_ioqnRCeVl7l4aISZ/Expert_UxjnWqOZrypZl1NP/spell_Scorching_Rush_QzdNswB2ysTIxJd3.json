@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/elemental-creature-horse.webp",
   "system": {
-    "description": "<p>Allows the target to increase their Speed up to 7 for one round, at the cost of 1d4 HP per each increased point of Speed. <br>Duration: {{math spellPower \"*\" 2}} minutes. <br>Can be cast on a group (cost applies to each target).</p>",
+    "description": "<p>For {{math spellPower \"*\" 2}} minutes, lets the target raise its Speed up to 7, at the cost of 1d4 HP for every point of Speed gained.</p><p>Can be cast on a group, at the cost of one casting per target.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "UxjnWqOZrypZl1NP",

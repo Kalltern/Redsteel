@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/lightning/bolt-forked-orange.webp",
   "system": {
-    "description": "<p>Deals 3d6 + {{math spellPower \"-\" 1}} damage to a single target.</p>",
+    "description": "<p>Deals 3d6 + {{math spellPower \"-\" 1}} damage to one target.</p>",
     "options": [
       "divine",
       "magic"
@@ -100,7 +100,7 @@
     "roll": {
       "diceNum": 3,
       "diceSize": "6",
-      "diceBonus": "+ (@spellPower-1 )"
+      "diceBonus": "@spellPower-1"
     },
     "penetration": 12,
     "dmgType1": "magic",
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "xCW0JHp8U8kjsvRC",

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/water/snowflake-ice-purple.webp",
   "system": {
-    "description": "<p>Creates a barely visible trap on an unoccupied hex (must not be adjacent to another trap) for 15 minutes.</p><hr /><p>Anyone who enters the hex becomes Frozen. <br />Ignores Magic Defense.</p>",
+    "description": "<p>Creates a barely visible trap on an unoccupied hex for 15 minutes. Anyone entering the hex becomes Frozen.</p><p>The hex must not be adjacent to another trap.</p>",
     "options": [
       "divine",
       "magic"
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "When the trap triggers, roll this spell manually for 0 mana cost and disregard the channeling test.",
+    "vsTest": false
   },
   "effects": [],
   "folder": "GaSIkEMI2Yi6RoKu",

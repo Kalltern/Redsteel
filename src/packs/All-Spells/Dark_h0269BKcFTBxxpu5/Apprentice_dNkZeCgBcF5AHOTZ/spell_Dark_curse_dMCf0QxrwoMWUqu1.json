@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/unholy/orb-stone-pink.webp",
   "system": {
-    "description": "<p>Deals damage equal to 1d6 + {{spellPower}} to a single target for two rounds.</p>",
+    "description": "<p>Deals 1d6 + {{spellPower}} damage to one target each round for two rounds.</p>",
     "options": [
       "divine",
       "magic"
@@ -122,7 +122,9 @@
     "testModifier": "",
     "effectType1": "custom",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "dNkZeCgBcF5AHOTZ",

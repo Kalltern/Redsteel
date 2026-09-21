@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/explosion-fireball-medium-orange.webp",
   "system": {
-    "description": "<p>Manipulates a campfire sized fire within range and hurls it at a target within range, dealing 3d6 + {{math spellPower \"/\" 2}} damage.</p><p>+10% chance to apply Burning.</p>",
+    "description": "<p>Hurls a campfire-sized fire within range at one target, dealing 3d6 + {{math spellPower \"/\" 2}} damage, with a 10% chance to Burn.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "bAWY9kbglzWtgc23",

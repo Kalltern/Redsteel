@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
-    "description": "Enchants fists for {{math spellPower \"*\" 5}} minutes. Increases damage by 1d4 + {{math spellPower \"/\" 2}}, Penetration +5, and Stun chance +15%. If cast on self, allows Hit and Defense chance based on Channeling (Max 80%) and enables combat against armed foes. In this case, Caster suffers -30% penalty to Defense, Hit, and Dodge against armed opponents. Recasting cancels or replaces previous Steel Fists.",
+    "description": "<p>Enchants the target's fists for {{math spellPower \"*\" 5}} minutes, raising their damage by 1d4 + {{math spellPower \"/\" 2}}, their Penetration by 5 and their chance to Stun by 15%.</p><p><strong>Cast on the caster:</strong> it also sets Hit and Defense chance from Channeling, to a maximum of 80%, and allows unarmed fighting against armed foes. Against an armed opponent the caster then takes -30% to Defense, Hit and Dodge.</p><p>Recasting replaces the previous Steel fists.</p>",
     "options": [
       "divine",
       "magic"
@@ -110,7 +110,9 @@
       "effect2": "0",
       "effect3": "0",
       "effect4": "0"
-    }
+    },
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "6PM0K9AWtzeYO1Fn",

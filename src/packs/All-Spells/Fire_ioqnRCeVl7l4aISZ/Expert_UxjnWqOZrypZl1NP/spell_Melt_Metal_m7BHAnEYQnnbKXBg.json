@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/skills/trades/smithing-smelter-tongs.webp",
   "system": {
-    "description": "Melts a lock or other metal object. High-quality metals may resist or require repeated casting.",
+    "description": "<p>Melts a lock or another metal object.</p><p>High-quality metal may resist, or need repeated casting.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
       "effect2": "0",
       "effect3": "0",
       "effect4": "0"
-    }
+    },
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "UxjnWqOZrypZl1NP",

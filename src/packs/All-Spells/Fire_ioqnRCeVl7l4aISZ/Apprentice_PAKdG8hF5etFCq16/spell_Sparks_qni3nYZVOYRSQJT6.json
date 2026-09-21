@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/flame-burning-campfire-orange.webp",
   "system": {
-    "description": "Sets ablaze a small flammable item.",
+    "description": "<p>Sets a small flammable item ablaze.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
       "effect2": "0",
       "effect3": "0",
       "effect4": "0"
-    }
+    },
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "PAKdG8hF5etFCq16",

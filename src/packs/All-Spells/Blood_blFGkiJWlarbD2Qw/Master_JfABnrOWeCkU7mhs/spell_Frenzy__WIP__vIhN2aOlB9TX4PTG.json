@@ -4,7 +4,7 @@
   "img": "icons/magic/control/fear-fright-monster-grin-red-orange.webp",
   "system": {
     "localizationKey": "",
-    "description": "Triggers a Will Test vs. target's Will Test against one target. On a success, the target loses control for {{math spellPower \"/\" 2}} + 1 turns and attacks everything nearby. All attacks are treated as Frenzied Attacks.",
+    "description": "<p>Drives one target into an uncontrolled frenzy for {{math spellPower \"/\" 2}} + 1 turns.</p><p>The caster tests Will against the target's Will.</p><p><strong>On success:</strong> the target loses control and attacks everything nearby. Every attack it makes counts as a Frenzied Attack.</p>",
     "options": [
       "divine",
       "magic"
@@ -124,7 +124,9 @@
     "testModifier": "",
     "effectType1": "custom",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "JfABnrOWeCkU7mhs",

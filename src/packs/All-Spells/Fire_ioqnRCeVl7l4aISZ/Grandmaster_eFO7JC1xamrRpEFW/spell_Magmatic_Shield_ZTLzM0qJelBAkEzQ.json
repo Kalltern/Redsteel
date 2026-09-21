@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/defensive/shield-barrier-flaming-pentagon-red.webp",
   "system": {
-    "description": "<p>Creates orbs that each have 1 \"armor\" HP. When sacrificed, one orb absorbs 100% physical or 50% magical damage, and deals 6d6 + {{spellPower}} damage to the attacker. You can have up to three orbs active at once; they can be summoned simultaneously (cost per orb). Not compatible with other Shields or similar effects.</p>",
+    "description": "<p>Creates orbs with 1 armor HP each, up to three at once. The mana cost is paid per orb, and they may be summoned together.</p><p>Sacrificing an orb absorbs all physical or half of magical damage from one hit, and deals 6d6 + {{spellPower}} damage back to the attacker.</p><p>Not compatible with other shields or similar effects.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "eFO7JC1xamrRpEFW",

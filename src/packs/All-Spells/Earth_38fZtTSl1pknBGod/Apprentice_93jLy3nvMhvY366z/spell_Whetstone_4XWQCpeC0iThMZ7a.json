@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/commodities/stone/paver-cobble-white.webp",
   "system": {
-    "description": "<p>The caster magically sharpens a slashing or piercing weapon (or a quiver of projectiles), increasing its chance to inflict Bleeding by 10% for 10 days. </p><p>Can be cast on multiple weapons at an additional cost per target.</p>",
+    "description": "<p>Sharpens a slashing or piercing weapon, or a quiver, raising its chance to inflict Bleeding by 10% for ten days.</p><p>Can be cast on several weapons, at the cost of one casting each.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "93jLy3nvMhvY366z",

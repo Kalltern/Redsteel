@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/unholy/hands-praying-fire-green.webp",
   "system": {
-    "description": "The caster is encased by a giant plant that induces sleep. After a full rest, they regain 100% health and heal one grave wound. If the plant is attacked, the caster awakens. Usable once every ten days.",
+    "description": "<p>A giant plant encases the caster and puts them to sleep. After a full rest they regain all their Health and heal one Grave Wound.</p><p>The caster wakes if the plant is attacked. Usable once every ten days.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
       "effect2": 0,
       "effect3": 0,
       "effect4": 0
-    }
+    },
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "JBcANv6vENmYO1qP",

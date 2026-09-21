@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/symbols/rune-sigil-black-pink.webp",
   "system": {
-    "description": "The caster melts into shadows and disappears. As a single Action, they may move up to 12 hexes. Entering and exiting shadow is a Free Action. Can only enter from shadow. Exiting into light deals 10 Damage and Stuns for 1 round. Holy Light and White Flame cancel Shadowstep, deal 30 Damage, and Paralyze for 1 round. If the caster ends their turn in shadow without active Shadowform, they suffer 1d4 Damage.",
+    "description": "<p>The caster dissolves into shadow and disappears, and may move up to 12 hexes as a single Action.</p><p>Entering and exiting shadow is a Free Action, and the caster can only enter from shadow. Exiting into light deals 10 damage and Stuns for one round.</p><p>Holy Light and White Flame cancel Shadowstep, deal 30 damage, and Stun for one round.</p><p>If the caster ends their turn in shadow without an active Shadowform, they suffer 1d4 damage.</p>",
     "options": [
       "divine",
       "magic"
@@ -118,7 +118,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "SXOWXMxk1ZTHI0sv",

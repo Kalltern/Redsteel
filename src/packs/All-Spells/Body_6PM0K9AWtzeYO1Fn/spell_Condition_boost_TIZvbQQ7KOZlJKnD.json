@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
-    "description": "Grants selected Skills or Attributes (Athletics, Acrobatics, Strength, Dexterity, Endurance, or Drinking) one reroll (including critical failure) within one day. Can be cast in group (cost per each Target).",
+    "description": "<p>Grants the target one reroll, including on a critical failure, on a chosen skill or attribute for one day. The choice is limited to Athletics, Acrobatics, Strength, Dexterity, Endurance or Drinking.</p><p>Can be cast on a group, at the cost of one casting per target.</p>",
     "options": [
       "divine",
       "magic"
@@ -110,7 +110,9 @@
       "effect2": "0",
       "effect3": "0",
       "effect4": "0"
-    }
+    },
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "6PM0K9AWtzeYO1Fn",

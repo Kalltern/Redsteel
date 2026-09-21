@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/nature/mushrooms-fire-glow-blue.webp",
   "system": {
-    "description": "<p>Creates a barely visible trap on unoccupied hexes (may border another trap) lasting 15 minutes.</p><hr /><p>Applying poison for three rounds in a 1 hex (1.5m) radius upon anyone entering the hex. <br />Ignores Magic Defense.<br /><br />In case of trap trigger, roll this spell manually for 0 mana cost and disregard the channeling test.</p>",
+    "description": "<p>Creates a barely visible trap on unoccupied hexes for 15 minutes, Poisoning anyone entering, and everything within 1 hex of them, for three rounds.</p><p>This trap may border another trap.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "When the trap triggers, roll this spell manually for 0 mana cost and disregard the channeling test.",
+    "vsTest": false
   },
   "effects": [],
   "folder": "ELAMhHkr77jkNbi6",

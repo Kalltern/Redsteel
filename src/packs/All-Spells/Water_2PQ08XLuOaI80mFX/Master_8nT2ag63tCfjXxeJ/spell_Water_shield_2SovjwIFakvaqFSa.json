@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/water/orb-water-bubbles-teal.webp",
   "system": {
-    "description": "Caster surrounds themselves with Water, gaining 12 hex underwater movement. {{math spellPower \"*\" 3}}% chance to reduce physical damage by 50%. Shield has {{math spellPower \"*\" 10}} HP against fire damage. Guarantees chaining nearby lightning (4.5m range). Can detonate as free action/reaction to push adjacent Targets by one hex (reaction only when attacked or when enemy moves adjacent). Incompatible with other shields.",
+    "description": "<p>Surrounds the caster with water, granting 12 hexes of underwater movement and a {{math spellPower \"*\" 3}}% chance to halve incoming physical damage.</p><p>The shield has {{math spellPower \"*\" 10}} HP against fire damage, and guarantees chaining for nearby lightning within 4.5 m.</p><p>It can be detonated as a Free Action to push adjacent targets one hex, or as a Reaction when the caster is attacked or an enemy moves adjacent.</p><p>Incompatible with other shields.</p>",
     "options": [
       "divine",
       "magic"
@@ -118,7 +118,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "8nT2ag63tCfjXxeJ",

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
-    "description": "Creates a shield with 15 + {{math spellPower \"*\" 4}} HP that absorbs physical damage. Can be dispelled with Counterspell. Incompatible with other Shields (or similar effects).",
+    "description": "<p>Creates a shield with 15 + {{math spellPower \"*\" 4}} HP that absorbs physical damage.</p><p>Can be dispelled with Counterspell. Incompatible with other shields and similar effects.</p>",
     "options": [
       "divine",
       "magic"
@@ -113,7 +113,9 @@
       "extra1": -1,
       "effectName1": "shield_physical"
     },
-    "effectType1": "custom"
+    "effectType1": "custom",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "6PM0K9AWtzeYO1Fn",

@@ -4,7 +4,7 @@
   "img": "icons/magic/death/skull-horned-goat-pentagram-red.webp",
   "system": {
     "localizationKey": "",
-    "description": "Marks one target for {{math spellPower \"*\" 10}} minutes. For the duration, the caster may activate the protection at any time as a Free Action to prevent damage to the target once. At the moment of activation, the caster has a 75% chance to suffer one Severe Injury. Cannot be cast on the caster. Can be cast as a Reaction only if an ally within range would suffer damage.",
+    "description": "<p>Marks one target other than the caster for {{math spellPower \"*\" 10}} minutes.</p><p>While the mark lasts, the caster may activate the protection at any time as a Free Action to prevent damage to the target once. On activation the caster has a 75% chance to suffer one Grave Wound.</p><p>Can be cast as a Reaction only if an ally within range would suffer damage.</p>",
     "options": [
       "divine",
       "magic"
@@ -87,7 +87,7 @@
       ]
     },
     "isOffensive": false,
-    "uncontested": false,
+    "uncontested": true,
     "sustained": false,
     "difficulty": -60,
     "cost": 15,
@@ -124,7 +124,9 @@
     "testModifier": "",
     "effectType1": "custom",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "yeu4PMGgR3ArIXJN",

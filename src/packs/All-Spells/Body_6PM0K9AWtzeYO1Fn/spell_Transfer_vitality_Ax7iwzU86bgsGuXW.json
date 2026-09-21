@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
-    "description": "No requirement. Injures the Caster for 2d6 HP and heals the Target for the same amount plus {{math spellPower \"*\" 1}} Bonus. Cannot be cast on self.",
+    "description": "<p>Injures the caster for 2d6 HP and heals the target for the same amount plus {{math spellPower \"*\" 1}}.</p><p>Cannot be cast on self.</p>",
     "options": [
       "divine",
       "magic"
@@ -111,7 +111,9 @@
       "effect3": "0",
       "effect4": "0"
     },
-    "isHealing": true
+    "isHealing": true,
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "6PM0K9AWtzeYO1Fn",

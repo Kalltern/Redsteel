@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/unholy/strike-hand-glow-pink.webp",
   "system": {
-    "description": "Provokes an Opportunity Attack. If the target fails to defend, initiates a vs. target's Strength Test (+10% Bonus) to grapple the target. Transfers 50% of the caster's current Corruption to the target (humanoid, animal, or nature). While holding the target, the caster generates 3d10 Corruption per round and transfers it directly. Target may spend an action to attempt to escape trigerring vs test of Strength.",
+    "description": "<p>Grapples one humanoid, animal or nature creature and transfers 50% of the caster's current Corruption to it.</p><p>The caster tests Strength + 10 against the target's Strength.</p><p><strong>On success:</strong> the target is grappled. While the caster holds it, the caster generates 3d10 Corruption per round and transfers it directly.</p><p>The target may spend an Action to attempt to escape, which triggers a Strength versus test. Casting this spell provokes an Opportunity Attack, and the grapple only begins if the target fails to defend against it.</p>",
     "options": [
       "divine",
       "magic"
@@ -81,7 +81,7 @@
       ]
     },
     "isOffensive": false,
-    "uncontested": true,
+    "uncontested": false,
     "sustained": false,
     "difficulty": -10,
     "cost": 10,
@@ -120,7 +120,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "strength",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "pwmVRgAOpIMg3gH9",

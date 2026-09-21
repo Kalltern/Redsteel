@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
-    "description": "Disadvantage on Strength, Dexterity, Endurance, and Perception tests, as well as skills derived from them (e.g., Athletics, Acrobatics, Drinking, Hunting, etc.) for 1 + {{math spellPower \"/\" 2}} rounds. Does not apply to combat skills.",
+    "description": "<p>For 1 + {{math spellPower \"/\" 2}} rounds, gives the target Disadvantage on Strength, Dexterity, Endurance and Perception tests, and on the skills derived from them such as Athletics, Acrobatics, Drinking or Hunting.</p><p>Does not apply to combat skills.</p>",
     "options": [
       "divine",
       "magic"
@@ -110,7 +110,9 @@
       "effect2": "0",
       "effect3": "0",
       "effect4": "0"
-    }
+    },
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "6PM0K9AWtzeYO1Fn",

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/creatures/mammals/elk-moose-marked-green.webp",
   "system": {
-    "description": "Allows the caster to implant simple emotions into an animal. Can be used, for example, to calm it, frighten it, or provoke it to attack a chosen target.",
+    "description": "<p>Implants a simple emotion in an animal.</p><p>It can be calmed, frightened, or provoked into attacking a chosen target.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "LUL6pIrvxS1laWnR",

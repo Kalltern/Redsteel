@@ -4,7 +4,7 @@
   "img": "icons/magic/fire/beam-strike-whip-red.webp",
   "system": {
     "localizationKey": "",
-    "description": "Triggers a Will Test (bonus {{math spellPower \"\" 3}}) vs. target's Strength / Dexterity Test. On a success, deals Blunt damage equal to 3d8 + {{math spellPower \"\" 2}} to one target, throws the target in a random direction up to 6 m, and knocks it Prone. Can be cast on up to five targets at once, adds X*3 blood cost per target (min. 1 target = 4 + 3 cost)",
+    "description": "<p>The caster tests Will + {{math spellPower \"*\" 3}} against the target's Strength or Dexterity.</p><p><strong>On success:</strong> deals 3d8 + {{math spellPower \"*\" 2}} damage, throws the target up to 6 m in a random direction, and knocks it Prone.</p><p>Can be cast on up to five targets at once. The blood cost is 4 + 3 per target, so a single target costs 7.</p>",
     "options": [
       "divine",
       "magic"
@@ -124,7 +124,9 @@
     "testModifier": "@spellPower*3",
     "effectType1": "custom",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "The per-target blood cost is not automated. The cast deducts the base 4 only. Deduct 3 more per target manually.",
+    "vsTest": true
   },
   "effects": [],
   "folder": "JfABnrOWeCkU7mhs",

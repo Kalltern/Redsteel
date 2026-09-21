@@ -1,9 +1,9 @@
 {
-  "name": "Chain healing test",
+  "name": "Chain healing",
   "type": "spell",
   "img": "icons/magic/symbols/triangle-glowing-green.webp",
   "system": {
-    "description": "<p>Heals 5d6 + {{spellPower}} health, affecting up to 5 chosen targets. Targets cannot be repeated, and each subsequent target must be within 3m of the previous one.</p>",
+    "description": "<p>Heals 5d6 + {{spellPower}} health to up to five chosen targets.</p><p>No target may be chosen twice, and each after the first must be within 3 m of the one before.</p>",
     "options": [
       "divine",
       "magic"
@@ -143,7 +143,9 @@
     "effectType3": "",
     "attributeTest": "",
     "testModifier": "",
-    "isHealing": true
+    "isHealing": true,
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "JBcANv6vENmYO1qP",

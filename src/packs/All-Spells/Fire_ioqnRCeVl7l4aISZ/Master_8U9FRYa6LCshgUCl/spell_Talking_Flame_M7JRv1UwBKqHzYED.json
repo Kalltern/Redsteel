@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/creatures/magical/spirit-fire-yellow.webp",
   "system": {
-    "description": "Enables communication through any fire within 250 m, or through a known fire (e.g., fireplace, campfire) across great distances. While communicating, the caster is unaware of their surroundings.Effective area covers approximately an entire kingdom.",
+    "description": "<p>Lets the caster speak through any fire within 250 m, or through a fire they know well, such as a fireplace or a campfire, across great distances. The effective range covers roughly an entire kingdom.</p><p>While speaking, the caster is unaware of their surroundings.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "8U9FRYa6LCshgUCl",

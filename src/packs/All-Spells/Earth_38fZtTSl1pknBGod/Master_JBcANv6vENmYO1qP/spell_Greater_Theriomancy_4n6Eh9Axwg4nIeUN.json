@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/nature/wolf-paw-glow-green.webp",
   "system": {
-    "description": "Transforms the caster into an animal of any size. Multiple forms can be learned. The animal determines doctrine type, bonuses to health, combat, attributes, and damage. Doctrine level depends on magical doctrine; base combat uses channeling. Reverting retains current health. If health drops to 0, revert with 1 health and the incapacitated effect. Non Animals, e.g. Draconids do not apply",
+    "description": "<p>Transforms the caster into an animal of any size. More than one form can be learned.</p><p>The animal sets the doctrine type and the bonuses to health, combat, attributes and damage. The doctrine level follows the caster's magical doctrine, and the base combat value their Channeling.</p><p>Reverting keeps the caster's current Health. If Health drops to 0, the caster reverts with 1 Health and the Incapacitated effect. Non-animals such as Draconids cannot be taken as forms.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
       "effect2": 0,
       "effect3": 0,
       "effect4": 0
-    }
+    },
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "JBcANv6vENmYO1qP",

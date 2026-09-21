@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/elemental-fire-flying.webp",
   "system": {
-    "description": "<p>Deals 6d6 + {{spellPower}} damage to up to 3 adjacent targets. <br>Can only be cast as a Reaction after the caster successfully defends.</p><p>+10% Burning chance.</p>",
+    "description": "<p>Deals 6d6 + {{spellPower}} damage to up to three adjacent targets, with a 10% chance to Burn.</p><p>Can be cast as a Reaction only after the caster successfully defends.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "UxjnWqOZrypZl1NP",

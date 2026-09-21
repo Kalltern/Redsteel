@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
-    "description": "Completely blocks one physical attack against the Target. +2 to Speed Test if cast before Attack resolution. -2 to Speed Test if cast after. If Speed Test fails, no attack is blocked. Grants 5 temporary HP to the Target. Max 10 temporary HP from this source. Can only be cast as a Reaction if Caster or ally in range is attacked.",
+    "description": "<p>Completely blocks one physical attack against the target and grants it 5 temporary HP, to a maximum of 10 from this source.</p><p>The caster tests Speed against the creature being reacted to, at +2 if the spell is cast before the attack resolves and -2 if after.</p><p><strong>On failure:</strong> nothing is blocked.</p><p>Can be cast as a Reaction only if the caster or an ally in range is attacked.</p>",
     "options": [
       "divine",
       "magic"
@@ -110,7 +110,9 @@
       "effect2": "0",
       "effect3": "0",
       "effect4": "0"
-    }
+    },
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "6PM0K9AWtzeYO1Fn",

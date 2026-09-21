@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/flame-burning-campfire-orange.webp",
   "system": {
-    "description": "Creates a fire the size of a standard campfire in an unoccupied hex for up to one day. The fire is very difficult to extinguish and does not spread. A 6m area around the fire is protected from insects.",
+    "description": "<p>Creates a campfire-sized fire on an unoccupied hex for up to one day.</p><p>The fire is very hard to extinguish and does not spread. A 6 m area around it is protected from insects.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
       "effect2": "0",
       "effect3": "0",
       "effect4": "0"
-    }
+    },
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "UxjnWqOZrypZl1NP",

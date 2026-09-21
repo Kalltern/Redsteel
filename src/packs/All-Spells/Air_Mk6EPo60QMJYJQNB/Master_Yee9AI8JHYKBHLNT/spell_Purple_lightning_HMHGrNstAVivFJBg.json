@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/lightning/bolt-forked-magenta.webp",
   "system": {
-    "description": "<p>Deals 6d6 + {{spellPower}} damage to up to five targets in 4.5m area per round.</p><hr><p>Triggers Will Test vs. Target's Endurance (Pain) for Heavy Stun on all affected targets. This test may be repeated at the start of each round while the spell is maintained.</p>",
+    "description": "<p>Deals 6d6 + {{spellPower}} damage per round to up to five targets in a 4.5 m area.</p><p>Each round, the caster tests Will against each target's Endurance (Pain).</p><p><strong>On success:</strong> the target is Stunned. The test repeats at the start of every round the spell is maintained.</p>",
     "options": [
       "divine",
       "magic"
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "will",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "Yee9AI8JHYKBHLNT",

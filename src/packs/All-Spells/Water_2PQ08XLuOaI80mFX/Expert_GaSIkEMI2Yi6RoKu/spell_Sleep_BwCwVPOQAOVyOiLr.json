@@ -4,7 +4,7 @@
   "img": "icons/magic/nature/symbol-moon-stars-white.webp",
   "system": {
     "localizationKey": "",
-    "description": "<p>Puts a calm Target (not frightened, not in combat, etc.) to sleep.<br /><br />Resolve this effect manually</p>",
+    "description": "<p>Puts a calm target to sleep. The target must not be frightened, in combat, or otherwise roused.</p>",
     "options": [
       "divine",
       "magic"
@@ -129,7 +129,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "Resolve the sleep manually.",
+    "vsTest": false
   },
   "effects": [],
   "folder": "GaSIkEMI2Yi6RoKu",

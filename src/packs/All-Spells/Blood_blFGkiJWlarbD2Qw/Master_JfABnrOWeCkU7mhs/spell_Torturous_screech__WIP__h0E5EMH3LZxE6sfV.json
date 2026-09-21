@@ -4,7 +4,7 @@
   "img": "icons/magic/sonic/scream-wail-shout-teal.webp",
   "system": {
     "localizationKey": "",
-    "description": "Concentrates on one target, which hears a paralyzing scream inside its head. Each round, reduces Nerves by 1 for one hour. Each round, triggers a Will Test vs. target's Will Test. On a success, Paralyzes the target for two turns.",
+    "description": "<p>Fills one target's head with a paralyzing scream, reducing its Resolve by 1 each round for one hour.</p><p>Each round, the caster tests Will against the target's Will.</p><p><strong>On success:</strong> the target is Stunned for two turns.</p>",
     "options": [
       "divine",
       "magic"
@@ -87,7 +87,7 @@
       ]
     },
     "isOffensive": false,
-    "uncontested": true,
+    "uncontested": false,
     "sustained": true,
     "difficulty": -20,
     "cost": 6,
@@ -123,7 +123,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "JfABnrOWeCkU7mhs",

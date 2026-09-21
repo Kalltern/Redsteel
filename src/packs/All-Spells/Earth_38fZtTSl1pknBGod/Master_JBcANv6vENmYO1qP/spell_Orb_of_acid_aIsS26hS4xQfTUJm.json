@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/acid/orb-bubble-smoke-drip.webp",
   "system": {
-    "description": "<p>60% chance to damage armor (-4 armor). Deals damage (5d6 + <span style=\"font-family:Signika, sans-serif\">{{math spellPower \"*\" 2}}</span>) in a 3m area. Armor penetration 12.</p>",
+    "description": "<p>Deals 5d6 + {{math spellPower \"*\" 2}} damage in a 3 m area, with a 60% chance to corrode armor by 4.</p>",
     "options": [
       "divine",
       "magic"
@@ -135,7 +135,9 @@
     },
     "effectType1": "corrosion",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "JBcANv6vENmYO1qP",

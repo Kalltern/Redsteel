@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/death/hand-undead-skeleton-fire-green.webp",
   "system": {
-    "description": "Triggers a Willpower Test vs. target's Endurance. On success, reduces HP to 0, dealing a maximum of 250 damage. On failure, reduces HP to 10, maximum 100 damage. Ignores Magic Shields.",
+    "description": "<p>The caster tests Will against the target's Endurance.</p><p><strong>On success:</strong> the target's HP drops to 0, to a maximum of 250 damage.</p><p><strong>On failure:</strong> the target's HP drops to 10, to a maximum of 100 damage.</p><p>Ignores Magic Shields.</p>",
     "options": [
       "divine",
       "magic"
@@ -120,7 +120,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "will",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "SXOWXMxk1ZTHI0sv",

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/acid/projectile-bolts-salvo-green.webp",
   "system": {
-    "description": "<p>Throws a small amount of acid at a target within range. <br /><br />Deals 8d6+<span style=\"font-family:Signika, sans-serif\">{{math spellPower \"*\" 2}} damage</span>.<br />30% chance to corrode armor (-4 armor).</p><hr /><p>Requires a larger volume of acid within reach.</p>",
+    "description": "<p>Throws acid at one target within range, dealing 8d6 + {{math spellPower \"*\" 2}} damage, with a 30% chance to corrode its armor by 4.</p><p>Requires a larger volume of acid within reach.</p>",
     "options": [
       "divine",
       "magic"
@@ -117,7 +117,7 @@
     "roll": {
       "diceNum": 8,
       "diceSize": "6",
-      "diceBonus": "@spellPower"
+      "diceBonus": "@spellPower*2"
     },
     "penetration": 12,
     "dmgType1": "acid",
@@ -142,7 +142,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "LUL6pIrvxS1laWnR",

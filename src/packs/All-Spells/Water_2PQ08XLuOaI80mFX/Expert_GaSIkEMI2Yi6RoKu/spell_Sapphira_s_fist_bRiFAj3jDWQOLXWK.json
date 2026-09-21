@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/water/projectile-ice-chunk.webp",
   "system": {
-    "description": "<p>Deals 5d6 damage + {{spellPower}} to a single Target. 20% chance to stun.<br>Deals half damage of the same types with penetration 10 in a 1.5m area .</p>",
+    "description": "<p>Deals 5d6 + {{spellPower}} damage to one target, with a 20% chance to Stun.</p><p>Half that damage strikes everything in a 1.5 m area around the target, at Penetration 10 rather than the spell's own.</p>",
     "options": [
       "divine",
       "magic"
@@ -118,7 +118,9 @@
     },
     "effectType1": "stun",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "The splash is not automated. Resolve the half damage and its Penetration 10 manually.",
+    "vsTest": false
   },
   "effects": [],
   "folder": "GaSIkEMI2Yi6RoKu",

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/water/barrier-ice-crystal-wall-jagged.webp",
   "system": {
-    "description": "Creates a tall ice wall in any shape up to 6 hexes long. When cast on occupied hexes, triggers Willpower test ({{math spellPower \"*\" 3}} bonus) vs. Dexterity/Endurance test. Failure pushes Target back one hex; success traps them in Freeze-like effect. Wall has same properties as Freeze effect but with 240 HP. Targets automatically fail test if they can't move aside.",
+    "description": "<p>Creates a tall wall of ice in any shape, up to 6 hexes long, with 240 HP and the properties of Freeze.</p><p>Cast on occupied hexes, the caster tests Will + {{math spellPower \"*\" 3}} against each target's Dexterity or Endurance.</p><p><strong>On success:</strong> the target is trapped as though Frozen.</p><p><strong>On failure:</strong> the target is pushed back one hex.</p><p>A target with nowhere to move aside fails automatically.</p>",
     "options": [
       "divine",
       "magic"
@@ -81,7 +81,7 @@
       ]
     },
     "isOffensive": false,
-    "uncontested": true,
+    "uncontested": false,
     "sustained": false,
     "difficulty": -50,
     "cost": 20,
@@ -118,7 +118,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "5ubiTNT29W3ben57",

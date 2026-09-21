@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/projectile-feathers-embers-gold.webp",
   "system": {
-    "description": "<p>Teleport through obstacles up to a maximum distance of {{math spellPower \"*\" 3}} meters. Upon arrival, adjacent targets take 5d6 + {{spellPower}} damage and are pushed one hex away. If the teleport ends inside an obstacle, the caster takes 5d8 damage and is teleported to the nearest clear space within 15 m. If no space is available, the caster dies.</p>",
+    "description": "<p>Teleports the caster through obstacles up to {{math spellPower \"*\" 3}} m away. On arrival, adjacent targets take 5d6 + {{spellPower}} damage and are pushed one hex back.</p><p>If the teleport ends inside an obstacle the caster takes 5d8 damage and is moved to the nearest clear space within 15 m. If there is none, the caster dies.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "8U9FRYa6LCshgUCl",

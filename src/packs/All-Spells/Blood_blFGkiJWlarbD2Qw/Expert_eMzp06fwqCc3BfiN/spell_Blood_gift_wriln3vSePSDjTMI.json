@@ -4,7 +4,7 @@
   "img": "icons/skills/wounds/blood-drip-droplet-red.webp",
   "system": {
     "localizationKey": "",
-    "description": "Removes all Bleeding effects from the Caster and triggers a Will Test (bonus {{math spellPower \"*\" 1}}) vs. target's Endurance Test. On a success, it applies to the target as many Bleeding effects as were removed from the Caster. On a failure, it applies at most one Bleeding effect to the target.",
+    "description": "<p>Removes all Bleeding effects from the caster and moves them onto one target.</p><p>The caster tests Will + {{math spellPower \"*\" 1}} against the target's Endurance.</p><p><strong>On success:</strong> the target receives as many Bleeding effects as were removed from the caster.</p><p><strong>On failure:</strong> the target receives at most one Bleeding effect.</p>",
     "options": [
       "divine",
       "magic"
@@ -87,7 +87,7 @@
       ]
     },
     "isOffensive": false,
-    "uncontested": true,
+    "uncontested": false,
     "sustained": false,
     "difficulty": -10,
     "cost": 5,
@@ -123,7 +123,9 @@
     "testModifier": "@spellPower",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "eMzp06fwqCc3BfiN",

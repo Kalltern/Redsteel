@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/nature/tree-elm-roots-brown.webp",
   "system": {
-    "description": "Roots pull the caster and selected targets in a 3m area underground and transport them to any other location within the same forest.",
+    "description": "<p>Roots pull the caster and chosen targets in a 3 m area underground, and carry them to any other place in the same forest.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
       "effect2": 0,
       "effect3": 0,
       "effect4": 0
-    }
+    },
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "JBcANv6vENmYO1qP",

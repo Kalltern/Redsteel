@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/perception/eye-slit-pink.webp",
   "system": {
-    "description": "Creates a floating orb with 25 HP that fires at enemies within 20 hexes. Can attack up to two different targets per round (Magical Attack +20). The orb lasts {{math spellPower \"*\" 1}} hours or until destroyed. Each attack deals 2d6 + {{math spellPower \"/\" 2}} damage. Attacks against the orb require a Dodge result of 20 to hit. Movement: 3 hexes per round. The caster may concentrate to see through the orb, becoming unaware of their surroundings.",
+    "description": "<p>Creates a floating orb with 25 HP that lasts {{math spellPower \"*\" 1}} hours, or until it is destroyed.</p><p>The orb fires at enemies within 20 hexes, attacking up to two different targets per round for 2d6 + {{math spellPower \"/\" 2}} damage each. It attacks with Magical Attack +20 and moves 3 hexes per round.</p><p>An attack against the orb needs a Dodge result of 20 to hit. The caster may concentrate to see through the orb, becoming unaware of their own surroundings.</p>",
     "options": [
       "divine",
       "magic"
@@ -118,7 +118,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "pwmVRgAOpIMg3gH9",

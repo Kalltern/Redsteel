@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/movement/trail-streak-pink.webp",
   "system": {
-    "description": "<p>Moves caster to a visible hex in a straight line, up to a maximum distance of 12 hexes (18 meters). Nothing must block the path otherwise the caster takes 2d8 damage for every hex caster could not travel.</p>",
+    "description": "<p>Moves the caster to a visible hex in a straight line, up to 12 hexes away.</p><p>Nothing may block the path. If something does, the caster takes 2d8 damage for every hex not travelled.</p>",
     "options": [
       "divine",
       "magic"
@@ -118,7 +118,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "AdbWyEUEtS9mw4hw",

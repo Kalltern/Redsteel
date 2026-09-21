@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/defensive/shield-barrier-flaming-diamond-orange.webp",
   "system": {
-    "description": "<p>Creates a flaming aura on the target that hurts anyone trying to attack it for 1d4 + {{math spellPower \"/\" 2}} damage.</p><hr /><p>Does not work against Long Range attacks. <br />Duration: {{math spellPower \"*\" 2}} minutes. <br />Can be cast on a group (cost per target). <br />Not compatible with other Shields (or similar effects).<br /><br />Not fully automated. When someone with Flame Shield is attacked, roll this spell for 0 mana cost and disregard the channeling test.</p>",
+    "description": "<p>Creates a flaming aura on the target for {{math spellPower \"*\" 2}} minutes that burns anyone attacking it for 1d4 + {{math spellPower \"/\" 2}} damage.</p><p>Does not work against Long Range attacks. Not compatible with other shields or similar effects.</p><p>Can be cast on a group, at the cost of one casting per target.</p>",
     "options": [
       "divine",
       "magic"
@@ -143,7 +143,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "Not fully automated. When someone carrying Flame Shield is attacked, roll this spell for 0 mana cost and disregard the channeling test.",
+    "vsTest": false
   },
   "effects": [],
   "folder": "UxjnWqOZrypZl1NP",

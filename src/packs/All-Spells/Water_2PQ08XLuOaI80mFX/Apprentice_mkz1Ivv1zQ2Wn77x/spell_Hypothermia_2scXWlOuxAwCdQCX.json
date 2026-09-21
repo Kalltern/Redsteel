@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/water/barrier-ice-water-cube.webp",
   "system": {
-    "description": "<p>60% chance to Slow the target. Deals damage equal to 1d6 + {{math spellPower \"/\" 2}} per round for three rounds.</p>",
+    "description": "<p>Deals 1d6 + {{math spellPower \"/\" 2}} damage per round for three rounds, with a 60% chance to Slow the target.</p>",
     "options": [
       "divine",
       "magic"
@@ -126,7 +126,9 @@
     "effectType2": "custom",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "mkz1Ivv1zQ2Wn77x",

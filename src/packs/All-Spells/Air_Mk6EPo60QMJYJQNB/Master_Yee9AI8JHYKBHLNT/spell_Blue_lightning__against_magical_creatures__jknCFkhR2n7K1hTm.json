@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/lightning/bolt-forked-blue.webp",
   "system": {
-    "description": "<p>Deals (5d8 + {{math spellPower \"*\" 5}}) damage  against Magical creatures. Magic Attack +10.</p>",
+    "description": "<p>Deals 5d8 + {{math spellPower \"*\" 5}} damage to one magical creature.</p><p>The spell is cast with Magic Attack +10, making it harder to defend against.</p>",
     "options": [
       "divine",
       "magic"
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "Yee9AI8JHYKBHLNT",

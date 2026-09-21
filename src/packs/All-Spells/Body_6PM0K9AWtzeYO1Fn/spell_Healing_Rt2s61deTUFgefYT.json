@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
-    "description": "Heals 3d6 + {{math spellPower \"*\" 2}} HP and stops all Bleeding on one Target.",
+    "description": "<p>Heals one target 3d6 + {{math spellPower \"*\" 2}} HP and stops all its Bleeding.</p>",
     "options": [
       "divine",
       "magic"
@@ -111,7 +111,9 @@
       "effect3": "0",
       "effect4": "0"
     },
-    "isHealing": true
+    "isHealing": true,
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "6PM0K9AWtzeYO1Fn",

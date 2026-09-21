@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/symbols/runes-triangle-orange.webp",
   "system": {
-    "description": "<p>Creates a mobile area up to 15 m around the caster that repels fire (both magical and non-magical). Extinguishes all Burning effects and any stationary fires within the area.</p>",
+    "description": "<p>Creates a mobile area up to 15 m around the caster that repels fire, magical and ordinary alike.</p><p>It extinguishes all Burning effects and any stationary fire inside it.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "8U9FRYa6LCshgUCl",

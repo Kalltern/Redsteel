@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/earth/strike-fist-stone-gray.webp",
   "system": {
-    "description": "<p>Increases the target’s armor (max 35) for <span style=\"font-family:Signika, sans-serif\">{{math spellPower \"*\" 5}}</span>  minutes. Grants +10% defense and cover, but imposes -5% to hit (combat) and -10% Ranged / Thrown / Channeling penalties. Max speed reduced to 4. Initiative penalty -4. Acrobatics and dodge capped at 20% success. Greatly increases weight (cannot swim, cannot be pushed, etc.). Unarmored targets gain 2 armor health.</p>",
+    "description": "<p>Raises the target's armor, to a maximum of 35, for {{math spellPower \"*\" 5}} minutes, and grants +10% defense and cover.</p><p>It costs -5% to hit in combat, -10% on Ranged, Thrown and Channeling, and -4 Initiative. Maximum speed drops to 4, and Acrobatics and Dodge are capped at 20%.</p><p>The weight is such that the target cannot swim and cannot be pushed. An unarmored target also gains 2 armor health.</p>",
     "options": [
       "divine",
       "magic"
@@ -135,7 +135,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "JBcANv6vENmYO1qP",

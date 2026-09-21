@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
-    "description": "No requirement. Cast during/before a First Aid Test. Grants the Target a +10% Bonus to the ongoing First Aid Test and increases healing by 1d6 HP. Cannot be cast on self.",
+    "description": "<p>Grants the target +10% on an ongoing First Aid test and increases its healing by 1d6 HP.</p><p>Cast during or before a First Aid test. Cannot be cast on self.</p>",
     "options": [
       "divine",
       "magic"
@@ -110,7 +110,9 @@
       "effect2": "0",
       "effect3": "0",
       "effect4": "0"
-    }
+    },
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "6PM0K9AWtzeYO1Fn",

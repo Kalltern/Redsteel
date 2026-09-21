@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/unholy/projectile-missile-green.webp",
   "system": {
-    "description": "<p>Deals (2d6 + <span style=\"font-family:Signika, sans-serif\">{{spellPower}}</span>) damage in a 45° arc up to 3m. 30% chance to inflict poison.</p>",
+    "description": "<p>Deals 2d6 + {{spellPower}} damage in a 45° cone reaching 3 m, with a 30% chance to Poison.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,10 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false,
+    "breath": true
   },
   "effects": [],
   "folder": "ELAMhHkr77jkNbi6",

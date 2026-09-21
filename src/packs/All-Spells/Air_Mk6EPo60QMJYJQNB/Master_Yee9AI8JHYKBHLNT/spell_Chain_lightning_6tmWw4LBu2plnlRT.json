@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/lightning/bolt-strike-pink.webp",
   "system": {
-    "description": "<p>Deals (6d6 + {{math spellPower \"*\" 4}}) damage, hitting up to 5 chosen targets. Chained damage is not halved.</p><hr><p>Targets can't be repeated, each subsequent target must be within 3 hex (4.5m) of previous one.</p>",
+    "description": "<p>Deals 6d6 + {{math spellPower \"*\" 4}} damage to up to five chosen targets. Chained damage is not halved.</p><p>No target may be chosen twice, and each target after the first must be within 3 hexes of the one before.</p>",
     "options": [
       "divine",
       "magic"
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "Yee9AI8JHYKBHLNT",

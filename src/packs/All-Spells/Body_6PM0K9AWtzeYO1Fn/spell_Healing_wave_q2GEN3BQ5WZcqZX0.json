@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
-    "description": "Heals selected Targets within 3m for 4d6 + {{math spellPower \"*\" 2}} Health. Stops all Bleeding.",
+    "description": "<p>Heals selected targets within 3 m for 4d6 + {{math spellPower \"*\" 2}} Health and stops all their Bleeding.</p>",
     "options": [
       "divine",
       "magic"
@@ -111,7 +111,9 @@
       "effect3": "0",
       "effect4": "0"
     },
-    "isHealing": true
+    "isHealing": true,
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "6PM0K9AWtzeYO1Fn",

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/control/debuff-energy-snare-blue.webp",
   "system": {
-    "description": "<p>Triggers a vs Test of Will + {{math spellPower \"*\" 3}} against unwilling target's Strength/Dexterity Test.</p><hr><p>On caster's success, pulls target any number of hexes. <br>Doesn't work on Magic-resistant creatures. <br>Can only be cast as Reaction if ally within range is attacked.</p>",
+    "description": "<p>The caster tests Will + {{math spellPower \"*\" 3}} against an unwilling target's Strength or Dexterity.</p><p><strong>On success:</strong> the caster pulls the target any number of hexes.</p><p>Does not work on Magic-resistant creatures. Can be cast as a Reaction only if an ally within range is attacked.</p>",
     "options": [
       "divine",
       "magic"
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "will",
-    "testModifier": "@spellPower*3"
+    "testModifier": "@spellPower*3",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "Yee9AI8JHYKBHLNT",

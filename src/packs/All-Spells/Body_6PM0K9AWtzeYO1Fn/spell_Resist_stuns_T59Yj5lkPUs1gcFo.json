@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
-    "description": "Reduces chance to be Paralyzed or Stunned by 15 + {{spellPower}}% for {{math spellPower \"*\" 10}} minutes. Can be cast in group (cost per each Target).",
+    "description": "<p>For {{math spellPower \"*\" 10}} minutes, reduces the target's chance to be Stunned or Staggered by 15 + {{spellPower}}%.</p><p>Can be cast on a group, at the cost of one casting per target.</p>",
     "options": [
       "divine",
       "magic"
@@ -113,7 +113,9 @@
       "extra1": -1,
       "effectName1": "resist_stun"
     },
-    "effectType1": "custom"
+    "effectType1": "custom",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "6PM0K9AWtzeYO1Fn",

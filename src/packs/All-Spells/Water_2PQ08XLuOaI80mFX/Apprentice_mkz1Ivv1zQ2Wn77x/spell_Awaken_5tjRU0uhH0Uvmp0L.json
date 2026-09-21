@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/creatures/birds/chicken-hen-white.webp",
   "system": {
-    "description": "<p>Removes the Staggered, Stunned or Asleep effect, can be cast on a group (cost per Target).<br /><br />Not fully automated. Resolve this effect manually</p>",
+    "description": "<p>Removes the Stagger, Stun or Asleep effect from the target.</p><p>Can be cast on a group, at the cost of one casting per target.</p>",
     "options": [
       "divine",
       "magic"
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "Not fully automated. Remove the effect manually.",
+    "vsTest": false
   },
   "effects": [],
   "folder": "mkz1Ivv1zQ2Wn77x",

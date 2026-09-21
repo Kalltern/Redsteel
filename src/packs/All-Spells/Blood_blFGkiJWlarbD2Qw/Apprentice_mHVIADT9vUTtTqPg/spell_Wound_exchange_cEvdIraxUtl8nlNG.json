@@ -4,7 +4,7 @@
   "img": "icons/magic/water/orb-water-ice-pink.webp",
   "system": {
     "localizationKey": "",
-    "description": "Heals all Bleeding effects on the target and transfers them to the Caster. Can be cast as a Reaction only if Bleeding is inflicted on a creature.",
+    "description": "<p>Heals all Bleeding effects on the target and transfers them to the caster.</p><p>Can be cast as a Reaction only if Bleeding is inflicted on a creature.</p>",
     "options": [
       "divine",
       "magic"
@@ -123,7 +123,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "mHVIADT9vUTtTqPg",

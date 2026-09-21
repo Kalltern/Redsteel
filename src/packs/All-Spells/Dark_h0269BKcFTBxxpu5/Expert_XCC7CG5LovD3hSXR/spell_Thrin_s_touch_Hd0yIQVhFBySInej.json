@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/death/hand-undead-skeleton-fire-pink.webp",
   "system": {
-    "description": "Marks the souls of targets in a 4.5m area. Upon death, there's a 50% chance the soul is trapped in a suitable vessel.",
+    "description": "<p>Marks the souls of all targets in a 4.5 m area.</p><p>When a marked target dies, there is a 50% chance its soul is trapped in a suitable vessel.</p>",
     "options": [
       "divine",
       "magic"
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "XCC7CG5LovD3hSXR",

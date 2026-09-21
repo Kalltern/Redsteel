@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/nature/plant-undersea-orb-purple.webp",
   "system": {
-    "description": "Transforms the caster into a swarm of insects under their full control, with a Speed of 6. Upon reverting, the caster suffers a number of serious injuries based on the swarm’s losses. For combat purposes, it is treated as a horde of insects (see spell) covering a 3m area. The swarm is virtually immune to physical damage but highly vulnerable to area-effect magical damage. Remaining in this form for an extended period may have fatal consequences — the loss of identity.",
+    "description": "<p>Transforms the caster into a swarm of insects under their full control, with Speed 6.</p><p>In combat the swarm is treated as a horde of insects covering a 3 m area. It is virtually immune to physical damage and highly vulnerable to area magical damage.</p><p>On reverting, the caster takes Grave Wounds according to the swarm's losses. Staying in this form for a long time may have further consequences.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
       "effect2": 0,
       "effect3": 0,
       "effect4": 0
-    }
+    },
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "4ZlNvWGr8HLJA8SI",

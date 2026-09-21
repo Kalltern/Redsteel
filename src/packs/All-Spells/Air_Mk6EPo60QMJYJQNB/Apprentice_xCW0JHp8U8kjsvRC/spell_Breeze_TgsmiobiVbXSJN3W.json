@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/air/air-wave-gust-blue.webp",
   "system": {
-    "description": "Creates a pleasantly cool breeze that disperses fog and various forms of gas in a 1.5m area for {{math spellPower \"*\" 1}} hours. This area can be moved by one hex per round. Recasting cancels the previous area.",
+    "description": "<p>Creates a pleasantly cool breeze in a 1.5 m area for {{math spellPower \"*\" 1}} hours, dispersing fog and gases.</p><p>The area can be moved one hex per round. Recasting cancels the previous area.</p>",
     "options": [
       "divine",
       "magic"
@@ -125,7 +125,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "xCW0JHp8U8kjsvRC",

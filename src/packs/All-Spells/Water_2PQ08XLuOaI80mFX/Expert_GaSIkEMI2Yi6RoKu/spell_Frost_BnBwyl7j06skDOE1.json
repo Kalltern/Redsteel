@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/water/snowflake-ice-blue.webp",
   "system": {
-    "description": "<p>Deals 3d6 + {{spellPower}} damage in a 45° arc and 4.5m per turn.<br />+20% chance to Slow.</p>",
+    "description": "<p>Deals 3d6 + {{spellPower}} damage per round in a 45° cone reaching 4.5 m, with a 20% chance to Slow.</p>",
     "options": [
       "divine",
       "magic"
@@ -125,7 +125,10 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false,
+    "breath": true
   },
   "effects": [],
   "folder": "GaSIkEMI2Yi6RoKu",

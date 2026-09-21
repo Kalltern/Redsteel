@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/flame-burning-fist-strike.webp",
   "system": {
-    "description": "<p>Marks a helpless or willing target, sensing their location. Once per round as a Free Action, you can ignite the mark: deals Magical damage of 8 and forces an Endurance test (Very Hard) on failure target gains effect Heavy stun. Can dispel poison or weaker curses (Dark Curse, Soul Mark, etc.) at the cost of 8 HP.</p>",
+    "description": "<p>Marks a helpless or willing target and senses its location.</p><p>Once per round, as a Free Action, the caster may ignite the mark for 8 damage. The target then takes a Very Hard Endurance test and is Stunned if it fails.</p><p>The brand can also dispel poison, or a weaker curse such as Dark curse or Soul mark, at the cost of 8 HP.</p>",
     "options": [
       "divine",
       "magic"
@@ -135,7 +135,9 @@
     },
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "8U9FRYa6LCshgUCl",

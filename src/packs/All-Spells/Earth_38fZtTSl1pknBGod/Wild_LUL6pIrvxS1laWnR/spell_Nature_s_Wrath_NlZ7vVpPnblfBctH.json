@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/nature/tree-animated-strike.webp",
   "system": {
-    "description": "<p>Turns plants, bushes, or trees against up to three targets within range (cost per each target). Deals 2d6+<span style=\"font-family:Signika, sans-serif\">{{math spellPower}} damage</span>, with a 35% chance to Root the target for one turn. A trapped target can break free early by spending 1 Action and succeeding on a Strength Test.</p>",
+    "description": "<p>Turns plants, bushes or trees against up to three targets within range, dealing 2d6 + {{spellPower}} damage each, with a 35% chance to Root for one round. The mana cost is paid per target.</p><p>A Rooted target can break free early by spending one Action and passing a Strength test.</p>",
     "options": [
       "divine",
       "magic"
@@ -142,7 +142,9 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",
-    "testModifier": ""
+    "testModifier": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "LUL6pIrvxS1laWnR",

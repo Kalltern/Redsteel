@@ -4,7 +4,7 @@
   "img": "icons/magic/control/control-influence-puppet.webp",
   "system": {
     "localizationKey": "",
-    "description": "Triggers a Will Test (penalty -10%) vs. target’s Will Test. On a success, the caster gains control over the target, may issue commands, and read its memories and thoughts. Each day, the target may repeat the vs. Test to break free. On a failure, the target loses one Action. Reserves one Mental HP.",
+    "description": "<p>Places one target under the caster's control.</p><p>The caster tests Will at a penalty of 10 against the target's Will.</p><p><strong>On success:</strong> the caster controls the target, may issue commands, and can read its memories and thoughts. The target may repeat the versus test once per day to break free.</p><p><strong>On failure:</strong> the target loses one Action.</p><p>The spell reserves one point of Mind for as long as it lasts.</p>",
     "options": [
       "divine",
       "magic"
@@ -82,7 +82,7 @@
       ]
     },
     "isOffensive": false,
-    "uncontested": true,
+    "uncontested": false,
     "sustained": false,
     "difficulty": -60,
     "cost": 20,
@@ -113,7 +113,9 @@
       "extra3": 0
     },
     "attributeTest": "will",
-    "testModifier": "-10"
+    "testModifier": "-10",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "yeu4PMGgR3ArIXJN",
