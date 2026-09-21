@@ -4,7 +4,7 @@
   "img": "icons/magic/water/projectile-water-rings.webp",
   "system": {
     "localizationKey": "",
-    "description": "No requirements. A direct energy blow dealing damage 2d6 + {{math spellPower \"/\" 2}} to one Target. Triggers a Will Test vs. Target's Strength/Resilience Test to push the Target 1 hex. Penetration 6.",
+    "description": "<p>A direct blow of energy dealing 2d6 + {{math spellPower \"/\" 2}} damage to one target.</p><p>The caster tests Will against the target's Strength or Endurance.</p><p><strong>On success:</strong> the target is pushed one hex.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "tSmceLJu9obznnb9",

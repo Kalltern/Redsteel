@@ -4,7 +4,7 @@
   "img": "icons/magic/control/hypnosis-mesmerism-eye.webp",
   "system": {
     "localizationKey": "",
-    "description": "Triggers Will Test vs. Target's Will Test. On success, Target becomes dazed and takes no actions unless disturbed. Will answer simple questions and follow simple commands. Self-preservation overrides commands. Daze lasts {{math spellPower \"*\" 1}} minutes or until attacked. On failure, Target suffers -5% Success for two rounds.",
+    "description": "<p>The caster tests Will against the target's Will.</p><p><strong>On success:</strong> the target is dazed and takes no action unless disturbed, for {{math spellPower \"*\" 1}} minutes or until attacked. It answers simple questions and follows simple commands, though self-preservation overrides them.</p><p><strong>On failure:</strong> the target takes a -5% penalty to Success for two rounds.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "yQKWKFaPqrfuldp0",

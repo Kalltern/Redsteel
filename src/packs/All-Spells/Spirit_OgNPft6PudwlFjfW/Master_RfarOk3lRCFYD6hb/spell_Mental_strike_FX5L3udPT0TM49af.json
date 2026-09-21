@@ -4,7 +4,7 @@
   "img": "icons/magic/sonic/explosion-shock-wave-teal.webp",
   "system": {
     "localizationKey": "",
-    "description": "<p>Deals 6d6 + {{spellPower}} Magical+Psychic damage, with a 25% chance to Stun for one round. Does not work on unintelligent creatures. May incapacitate a Target instead of killing them.</p>",
+    "description": "<p>Deals 6d6 + {{spellPower}} damage to one intelligent creature, with a 25% chance to Stun for one round.</p><p>It may incapacitate a target rather than killing it. It does not work on unintelligent creatures.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "stun",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "RfarOk3lRCFYD6hb",

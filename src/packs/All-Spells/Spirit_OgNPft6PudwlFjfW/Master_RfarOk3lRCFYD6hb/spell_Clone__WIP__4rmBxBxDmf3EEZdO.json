@@ -4,7 +4,7 @@
   "img": "icons/magic/control/energy-stream-link-large-blue.webp",
   "system": {
     "localizationKey": "",
-    "description": "Caster must reserve 1 Mind point. Creates an identical copy of the caster, detectable only by Probe or Wizard's Eye. The double mimics the caster's actions. In case of an attack or spellcasting, its effects are halved, but it still pays the full cost. The double has 25 health. Only one Double may exist at a time.",
+    "description": "<p>Creates an identical copy of the caster with 25 health, detectable only by Probe or Wizard's eye.</p><p>The double mimics the caster's actions. Its attacks and spells have half the effect but cost full price. Only one double may exist at a time.</p><p>The cast reserves 1 Mind.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "RfarOk3lRCFYD6hb",

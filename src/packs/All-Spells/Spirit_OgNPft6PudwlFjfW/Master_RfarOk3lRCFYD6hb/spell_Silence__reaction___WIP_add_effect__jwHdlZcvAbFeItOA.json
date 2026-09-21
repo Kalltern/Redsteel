@@ -4,7 +4,7 @@
   "img": "icons/magic/control/fear-fright-white.webp",
   "system": {
     "localizationKey": "",
-    "description": "<p>Interrupts spellcasting and disables the respective School for 4 turns. Replaces any previous silence effect. Can be cast as a Reaction if a spell is being cast within range.</p>",
+    "description": "<p>Interrupts a spellcast and disables that School for four rounds.</p><p>It replaces any previous Silence effect.</p><p>Can be cast as a Reaction if a spell is being cast within range.</p>",
     "options": [
       "divine",
       "magic"
@@ -128,7 +128,9 @@
     "testModifier": "",
     "effectType1": "custom",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "RfarOk3lRCFYD6hb",

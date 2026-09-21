@@ -4,7 +4,7 @@
   "img": "icons/magic/lightning/barrier-shield-orb-pink.webp",
   "system": {
     "localizationKey": "",
-    "description": "Requires a glass or wooden object within 3 m of the Target. Shatters a small object and deals Physical Damage 1d4 + {{math spellPower \"/\" 2}} to one Target. 10% Bleed chance, Penetration 2. Medium object Bonus: +2d4 + {{math spellPower \"/\" 2}}, 25% Bleed, Penetration 4. Large object Bonus: +5d4 + {{math spellPower \"/\" 2}}, 40% Bleed, affects one additional adjacent Target, Penetration 6.",
+    "description": "<p>Shatters a small object, dealing 1d4 + {{math spellPower \"/\" 2}} damage to one target with a 10% chance to Bleed.</p><p>Requires a glass or wooden object within 3 m of the target.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "tSmceLJu9obznnb9",

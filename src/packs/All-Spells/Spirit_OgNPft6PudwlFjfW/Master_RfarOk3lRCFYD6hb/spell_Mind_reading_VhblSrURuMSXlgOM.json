@@ -4,7 +4,7 @@
   "img": "icons/sundries/documents/document-symbol-eye.webp",
   "system": {
     "localizationKey": "",
-    "description": "Every hour, triggers a Will Test vs. Will Test. On success, allows reading and browsing the Target's thoughts and memories. Fully exploring someone's mind—especially if they resist—is a difficult and time-consuming task.",
+    "description": "<p>Every hour, the caster tests Will against the target's Will.</p><p><strong>On success:</strong> the caster can read and browse the target's thoughts and memories.</p><p>Fully exploring a mind, especially one that resists, is difficult and slow.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "RfarOk3lRCFYD6hb",

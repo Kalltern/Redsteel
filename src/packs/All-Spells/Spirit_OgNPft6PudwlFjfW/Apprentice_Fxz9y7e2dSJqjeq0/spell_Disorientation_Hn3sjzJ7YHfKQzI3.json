@@ -4,7 +4,7 @@
   "img": "icons/magic/symbols/question-stone-yellow.webp",
   "system": {
     "localizationKey": "",
-    "description": "<p>Triggers a Will Test (Bonus {{math spellPower \"*\" 1}}) vs. Target's Perception Test. On success: Target suffers Disorientation for 3 turns. On failure: Target suffers Disorientation for 2 turns.</p>",
+    "description": "<p>The caster tests Will + {{math spellPower \"*\" 1}} against the target's Perception.</p><p><strong>On success:</strong> the target is Disoriented for three rounds.</p><p><strong>On failure:</strong> the target is Disoriented for two rounds.</p>",
     "options": [
       "divine",
       "magic"
@@ -128,7 +128,9 @@
     "testModifier": "@spellPower",
     "effectType1": "disorientation",
     "effectType2": "custom",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "Fxz9y7e2dSJqjeq0",

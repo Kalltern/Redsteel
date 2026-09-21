@@ -4,7 +4,7 @@
   "img": "icons/magic/light/beam-impact-deflect-teal.webp",
   "system": {
     "localizationKey": "",
-    "description": "Modified magical defense. On successful defense, reflects the spell back to the caster. Reflected spells cannot be reflected again but can still be defended against. Magic Defense +5%. Can be cast as a Reaction only if the caster is attacked by a spell.",
+    "description": "<p>A modified magical defense that reflects a spell back at its caster on a successful defense, and grants +5% Magic Defense.</p><p>A reflected spell cannot be reflected again, but can still be defended against.</p><p>Can be cast as a Reaction only when the caster is attacked by a spell.</p>",
     "options": [
       "divine",
       "magic"
@@ -129,7 +129,9 @@
     "testModifier": "+5",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "E9QA5mKz4cnAjuL4",

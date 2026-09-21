@@ -4,7 +4,7 @@
   "img": "icons/magic/defensive/shield-hex-blue.webp",
   "system": {
     "localizationKey": "",
-    "description": "Creates a shield with 15 + {{math spellPower \"*\" 4}} HP that absorbs magical damage. Can absorb larger hits in a single instance. Cannot be dispelled by Counterspell and protects against some magical effects (Charm, etc). Not compatible with other Shields or similar effects.",
+    "description": "<p>Creates a shield with 15 + {{math spellPower \"*\" 4}} HP that absorbs magical damage, and can absorb a larger hit in one go.</p><p>It cannot be dispelled by Counterspell and protects against some magical effects such as Charm.</p><p>Not compatible with other shields or similar effects.</p>",
     "options": [
       "divine",
       "magic"
@@ -128,7 +128,9 @@
     "testModifier": "",
     "effectType1": "custom",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "yQKWKFaPqrfuldp0",

@@ -4,7 +4,7 @@
   "img": "icons/equipment/head/hood-cloth-teal.webp",
   "system": {
     "localizationKey": "",
-    "description": "Conceals Target's magical potential and magical items and a 1.5 m area around them for one day. Arcana Tests to identify magic or magical potential suffer +60% Difficulty.",
+    "description": "<p>For one day, conceals the target's magical potential and magical items, and a 1.5 m area around them.</p><p>Arcana tests to identify magic or magical potential take a +60% Difficulty penalty.</p>",
     "options": [
       "divine",
       "magic"
@@ -128,7 +128,9 @@
     "testModifier": "",
     "effectType1": "custom",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "yQKWKFaPqrfuldp0",

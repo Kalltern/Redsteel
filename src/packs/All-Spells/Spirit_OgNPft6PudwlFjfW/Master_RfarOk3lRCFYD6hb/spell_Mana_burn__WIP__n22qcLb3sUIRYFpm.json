@@ -4,7 +4,7 @@
   "img": "icons/magic/fire/barrier-wall-flame-ring-blue.webp",
   "system": {
     "localizationKey": "",
-    "description": "Burns 4d10dl1 + {{spellPower}} of Target's Mana and deals 3d4 Magical damage, which ignores armor. If it burns more Mana than the caster has, triggers a Hard Endurance Test to avoid Incapacitation. Alternatively, it deals 3d4 + {{math spellPower \"*\" 3}} Magical damage to magical creatures.",
+    "description": "<p>Burns 4d10, dropping the lowest, + {{spellPower}} of the target's Mana and deals 3d4 damage.</p><p>If it burns more Mana than the caster has, the caster takes a Hard Endurance test to avoid being Incapacitated.</p><p>Against a magical creature it deals 3d4 + {{math spellPower \"*\" 3}} damage instead.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "RfarOk3lRCFYD6hb",

@@ -4,7 +4,7 @@
   "img": "icons/magic/perception/orb-eye-scrying.webp",
   "system": {
     "localizationKey": "",
-    "description": "<p>Protects the mind of the selected target for SK*10 minutes. When defending in a Mental combat, gains a +20% bonus to Mind Bending. Enemies have reduced chance of starting a Mental combat by 20%. Protects against the Disorientation effect. Cannot be cast on a target that is already engaged in a Mental combat.</p>",
+    "description": "<p>Protects the target's mind for {{math spellPower \"*\" 10}} minutes.</p><p>It grants +20% to Mind Bending when defending in a Mental Duel, lowers the chance of enemies starting one by 20%, and protects against Disorientation.</p><p>Cannot be cast on a target already in a Mental Duel.</p>",
     "options": [
       "divine",
       "magic"
@@ -128,7 +128,9 @@
     "testModifier": "",
     "effectType1": "custom",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "Fxz9y7e2dSJqjeq0",

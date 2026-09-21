@@ -4,7 +4,7 @@
   "img": "icons/tools/instruments/bell-brass-brown.webp",
   "system": {
     "localizationKey": "",
-    "description": "Places an invisible trap covering up to 30 m area for one day, telepathically alerts when anything enters its range.",
+    "description": "<p>Places an invisible trap covering up to a 30 m area for one day.</p><p>It alerts the caster telepathically when anything enters its range.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "yQKWKFaPqrfuldp0",

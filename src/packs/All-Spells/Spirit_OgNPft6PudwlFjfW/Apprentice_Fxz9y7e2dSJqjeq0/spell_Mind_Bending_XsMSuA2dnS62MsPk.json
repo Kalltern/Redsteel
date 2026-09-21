@@ -4,7 +4,7 @@
   "img": "icons/magic/perception/third-eye-blue-red.webp",
   "system": {
     "localizationKey": "",
-    "description": "<p>Applies the Mental Strain effect to the target and has a 35% chance to initiate a Mental Duel (Can be accepted voluntarily). In the case of a Critical Success, the chance to initiate is 100%. The caster cannot cast this spell again on the same target for the next hour. The caster is forced to Slow Movement and has a -20% penalty to Success for the duration (Except Mental Duel and Will Tests)</p>",
+    "description": "<p>Applies Mental Strain to the target, with a 35% chance to start a Mental Duel. On a Critical Success the duel always starts, and the target may accept one voluntarily.</p><p>For the duration the caster is forced to Slow Movement and takes a -20% penalty to Success, except on the Mental Duel itself and on Will tests.</p><p>The caster cannot cast this on the same target again for an hour.</p>",
     "options": [
       "divine",
       "magic"
@@ -128,7 +128,9 @@
     "testModifier": "",
     "effectType1": "custom",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "Fxz9y7e2dSJqjeq0",

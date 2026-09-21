@@ -4,7 +4,7 @@
   "img": "icons/magic/control/control-influence-puppet.webp",
   "system": {
     "localizationKey": "",
-    "description": "<p>Targets an opponent under the Mental Strain effect. Invokes a Will Test (Bonus <span style=\"color:rgb(239, 230, 216);font-family:Signika, 'Palatino Linotype', sans-serif;font-size:14px;font-style:normal;font-variant-ligatures:normal;font-variant-caps:normal;font-weight:400;letter-spacing:normal;orphans:2;text-align:start;text-indent:0px;text-transform:none;widows:2;word-spacing:0px;-webkit-text-stroke-width:0px;white-space:normal;background-color:rgba(12, 12, 12, 0.9);text-decoration-thickness:initial;text-decoration-style:initial;text-decoration-color:initial;display:inline !important;float:none\">{{math spellPower \"*\" 1}}</span>) versus a Will Test. On success, forces the target to perform a Slow movement or make a Disadvantage attack on a target within range.</p>",
+    "description": "<p>Targets an opponent under Mental Strain. The caster tests Will + {{math spellPower \"*\" 1}} against its Will.</p><p><strong>On success:</strong> the target is forced either into a Slow movement or into a Disadvantaged attack on a target within range.</p>",
     "options": [
       "divine",
       "magic"
@@ -96,7 +96,7 @@
     "option": "magic",
     "type": "spirit",
     "rank": "expert",
-    "actionCost": "free action",
+    "actionCost": "Free action",
     "range": "15",
     "spellClass": "support",
     "roll": {
@@ -127,7 +127,9 @@
     "testModifier": "@spellPower",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "yQKWKFaPqrfuldp0",

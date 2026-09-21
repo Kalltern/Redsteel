@@ -4,7 +4,7 @@
   "img": "icons/magic/control/debuff-chains-orb-movement-blue.webp",
   "system": {
     "localizationKey": "",
-    "description": "The Target and a 12 m area around them become very difficult to divine for one day. Penalty {{math spellPower \"*\" 2}} + 50% to Divination attempts.",
+    "description": "<p>For one day, the target and a 12 m area around them become very hard to divine, putting a penalty of {{math spellPower \"*\" 2}} + 50% on any attempt.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "yQKWKFaPqrfuldp0",

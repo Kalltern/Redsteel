@@ -4,7 +4,7 @@
   "img": "icons/commodities/biological/shell-conch-gray.webp",
   "system": {
     "localizationKey": "",
-    "description": "Allows listening in on a nearby location regardless of walls or obstacles. Does not penetrate the Silence spell.",
+    "description": "<p>Lets the caster listen in on a nearby place, through walls and obstacles.</p><p>It does not penetrate Silence.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "yQKWKFaPqrfuldp0",

@@ -4,7 +4,7 @@
   "img": "icons/magic/water/vortex-water-whirlpool.webp",
   "system": {
     "localizationKey": "",
-    "description": "Teleports through obstacles up to a maximum distance of 15 + {{math spellPower \"*\" 3}} meters. If teleportation would lead into an obstacle, the caster takes 5d8 damage and is teleported to the nearest unoccupied space within 15 meters. If no such space exists, death occurs.",
+    "description": "<p>Teleports the caster through obstacles up to 15 + {{math spellPower \"*\" 3}} m away.</p><p>If the teleport would end inside an obstacle, the caster takes 5d8 damage and arrives at the nearest free space within 15 m. If there is none, the caster dies.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "RfarOk3lRCFYD6hb",

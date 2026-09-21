@@ -4,7 +4,7 @@
   "img": "icons/magic/fire/explosion-fireball-large-blue.webp",
   "system": {
     "localizationKey": "",
-    "description": "Deals Magic Damage 3d6 + {{spellPower}} in a 3 m area. Triggers Will Test (Bonus {{math spellPower \"*\" 2}}) vs. Target's Strength/Resilience Test. On success, pushes Targets 2 hexes. If success is 50+, also knocks them Prone. On failure, pushes 1 hex. Penetration 8.",
+    "description": "<p>Deals 3d6 + {{spellPower}} damage in a 3 m area.</p><p>The caster tests Will + {{math spellPower \"*\" 2}} against each target's Strength or Endurance.</p><p><strong>On success:</strong> the target is pushed two hexes, and knocked Prone as well if the margin is 50 or more.</p><p><strong>On failure:</strong> the target is pushed one hex.</p>",
     "options": [
       "divine",
       "magic"
@@ -128,7 +128,9 @@
     "testModifier": "@spellPower*2",
     "effectType1": "custom",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "yQKWKFaPqrfuldp0",

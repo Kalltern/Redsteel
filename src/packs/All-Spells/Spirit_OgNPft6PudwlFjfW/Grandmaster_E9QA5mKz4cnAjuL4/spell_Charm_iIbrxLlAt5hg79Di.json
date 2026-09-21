@@ -4,7 +4,7 @@
   "img": "icons/magic/control/mouth-smile-deception-purple.webp",
   "system": {
     "localizationKey": "",
-    "description": "Caster must reserve 1 Mind point. Triggers a Willpower Test (penalty -5% for each currently Charmed Target) vs. Target's Willpower Test. On success, the Target becomes Charmed and loyally follows and protects the caster, even at the cost of their life. Retest every 12 hours.",
+    "description": "<p>The caster tests Will, at -5% for every target already Charmed, against the target's Will.</p><p><strong>On success:</strong> the target is Charmed and follows and protects the caster loyally, even at the cost of its life. It retests every 12 hours.</p><p>The cast reserves 1 Mind.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "E9QA5mKz4cnAjuL4",

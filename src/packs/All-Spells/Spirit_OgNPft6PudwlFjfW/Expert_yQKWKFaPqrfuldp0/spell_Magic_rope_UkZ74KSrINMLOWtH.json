@@ -4,7 +4,7 @@
   "img": "icons/sundries/survival/rope-coiled-tan.webp",
   "system": {
     "localizationKey": "",
-    "description": "<p>Summons a durable rope for {{math spellPower \"*\" 1}} hours, up to {{math spellPower \"*\" 3}} m long, obeys caster's will, moves on command, and is easy to grab up to its full length. Resummoning replaces the old rope. In combat, can be sent toward a Target up to 15 m away. Triggers Will Test (Bonus {{math spellPower \"*\" 1}}) vs. Target's Strength/Dexterity Test. On success, Roots the Target for 2 turns. If success is 50+, the Target is Paralyzed for 2 turns and takes 2d6 damage. On failure, the rope is destroyed. Test repeats at the start of each round or until dismissed.</p>",
+    "description": "<p>Summons a durable rope for {{math spellPower \"*\" 1}} hours, up to {{math spellPower \"*\" 3}} m long, which obeys the caster, moves on command and can be grabbed anywhere along its length.</p><p>In combat it can be sent at a target up to 15 m away. The caster tests Will + {{math spellPower \"*\" 1}} against the target's Strength or Dexterity.</p><p><strong>On success:</strong> the target is Rooted.</p><p>Resummoning replaces the old rope.</p>",
     "options": [
       "divine",
       "magic"
@@ -129,7 +129,9 @@
     "testModifier": "@spellPower",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "yQKWKFaPqrfuldp0",

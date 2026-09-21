@@ -4,7 +4,7 @@
   "img": "icons/sundries/misc/lock-bronze-reinforced.webp",
   "system": {
     "localizationKey": "",
-    "description": "Prevents the Target from using magic unless they are linked to a Source. If the Target is linked to a Source, the spell automatically fails.",
+    "description": "<p>Prevents the target from using magic.</p><p>Against a target linked to a Source the spell automatically fails.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "RfarOk3lRCFYD6hb",

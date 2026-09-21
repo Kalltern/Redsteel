@@ -4,7 +4,7 @@
   "img": "icons/magic/air/wind-tornado-spiral-pink-purple.webp",
   "system": {
     "localizationKey": "",
-    "description": "<p>Deals 1d8 + {{math spellPower \"/\" 2}} Damage that incapacitates but doesn't kill. 60% chance to Stagger for 2 turns. If the Target has 25 HP or less, 60% chance to Incapacitate or guaranteed Stagger for 2 turns.</p>",
+    "description": "<p>Deals 1d8 + {{math spellPower \"/\" 2}} damage that incapacitates rather than kills, with a 60% chance to Stagger for two rounds.</p><p>Against a target on 25 HP or less, it has a 60% chance to Incapacitate, or Staggers for two rounds guaranteed.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "stagger",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "Fxz9y7e2dSJqjeq0",

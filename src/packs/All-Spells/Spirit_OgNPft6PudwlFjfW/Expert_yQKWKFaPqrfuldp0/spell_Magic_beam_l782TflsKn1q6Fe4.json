@@ -4,7 +4,7 @@
   "img": "icons/magic/light/beam-rays-blue.webp",
   "system": {
     "localizationKey": "",
-    "description": "Deals Magic Damage 3d6 + {{spellPower}} per round in a straight line up to 5 hexes from the caster. Penetration 10.",
+    "description": "<p>Deals 3d6 + {{spellPower}} damage per round in a straight line up to 5 hexes from the caster.</p>",
     "options": [
       "divine",
       "magic"
@@ -112,7 +112,10 @@
       "effect2": "0",
       "effect3": "0",
       "effect4": "0"
-    }
+    },
+    "manualNotes": "",
+    "vsTest": false,
+    "breath": true
   },
   "effects": [],
   "folder": "yQKWKFaPqrfuldp0",

@@ -4,7 +4,7 @@
   "img": "icons/magic/control/silhouette-hold-change-blue.webp",
   "system": {
     "localizationKey": "",
-    "description": "Makes Target Invisible; movement, attacks, or spellcasting temporarily interrupt invisibility (restores at the end of the next round). Grants Advantage on Attack, treated as a Surprise. Can be cast on a group (half cost for each additional Target).",
+    "description": "<p>Makes the target Invisible. Moving, attacking or casting interrupts it, and it returns at the end of the next round.</p><p>It grants Advantage on an attack, which counts as a Surprise.</p><p>Can be cast on a group, at half cost for each additional target.</p>",
     "options": [
       "divine",
       "magic"
@@ -128,7 +128,9 @@
     "testModifier": "",
     "effectType1": "custom",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "yQKWKFaPqrfuldp0",

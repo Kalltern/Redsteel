@@ -4,7 +4,7 @@
   "img": "icons/magic/movement/chevrons-down-yellow.webp",
   "system": {
     "localizationKey": "",
-    "description": "Moves the caster in a straight line up to 6 m. Cannot move through creatures or obstacles. For each hex that couldn't be moved, caster takes 2d8 damage. Can be cast as a Reaction only when the caster is attacked.",
+    "description": "<p>Moves the caster in a straight line up to 6 m, and cannot pass through creatures or obstacles.</p><p>For every hex not travelled the caster takes 2d8 damage.</p><p>Can be cast as a Reaction only when the caster is attacked.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "yQKWKFaPqrfuldp0",

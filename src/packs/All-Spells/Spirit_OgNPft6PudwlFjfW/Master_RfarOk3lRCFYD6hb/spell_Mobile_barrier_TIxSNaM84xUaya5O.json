@@ -4,7 +4,7 @@
   "img": "icons/magic/defensive/barrier-shield-dome-blue-purple.webp",
   "system": {
     "localizationKey": "",
-    "description": "Creates a moving barrier up to 12m in size centered on the caster. The barrier is impenetrable (but indirect spells can be cast from inside) and has 50 + {{math spellPower \"*\" 15}} Health. Physical attacks deal only half damage.",
+    "description": "<p>Creates a moving barrier up to 12 m across, centred on the caster, with 50 + {{math spellPower \"*\" 15}} Health.</p><p>It is impenetrable, though Indirect spells can be cast from inside, and physical attacks against it deal only half damage.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "RfarOk3lRCFYD6hb",

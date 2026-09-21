@@ -4,7 +4,7 @@
   "img": "icons/magic/defensive/barrier-shield-dome-deflect-blue.webp",
   "system": {
     "localizationKey": "",
-    "description": "Deals Magical damage 3d20 + {{math spellPower \"*\" 25}} to shields and barriers and Stuns for two rounds. Ignores Magic Mirror. Penetration 40.",
+    "description": "<p>Deals 3d20 + {{math spellPower \"*\" 25}} damage to shields and barriers, and Stuns for two rounds.</p><p>Ignores Magic mirror.</p>",
     "options": [
       "divine",
       "magic"
@@ -97,7 +97,7 @@
     "roll": {
       "diceNum": 3,
       "diceSize": 20,
-      "diceBonus": "@spellPower*31"
+      "diceBonus": "@spellPower*25"
     },
     "penetration": 40,
     "dmgType1": "magic",
@@ -112,7 +112,9 @@
       "effect2": "0",
       "effect3": "0",
       "effect4": "0"
-    }
+    },
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "E9QA5mKz4cnAjuL4",

@@ -4,7 +4,7 @@
   "img": "icons/magic/movement/trail-streak-impact-blue.webp",
   "system": {
     "localizationKey": "",
-    "description": "Deals Magic Damage 5d6 + {{spellPower}} to one Target. If no Target was selected, it automatically homes in on the nearest enemy magical creature or Source-bound caster (does not require line of sight). Penetration 10.",
+    "description": "<p>Deals 5d6 + {{spellPower}} damage to one target.</p><p>With no target chosen it homes in on the nearest enemy magical creature or Source-bound caster, without needing line of sight.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "yQKWKFaPqrfuldp0",

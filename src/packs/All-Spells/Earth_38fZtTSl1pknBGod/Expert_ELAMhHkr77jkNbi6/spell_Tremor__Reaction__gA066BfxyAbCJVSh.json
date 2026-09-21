@@ -144,7 +144,8 @@
     "attributeTest": "will",
     "testModifier": "@spellPower*3",
     "manualNotes": "",
-    "vsTest": true
+    "vsTest": true,
+    "breath": true
   },
   "effects": [],
   "folder": "ELAMhHkr77jkNbi6",

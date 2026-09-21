@@ -4,7 +4,7 @@
   "img": "icons/magic/control/energy-stream-link-white.webp",
   "system": {
     "localizationKey": "",
-    "description": "Creates a telepathic bond with a consenting Target. Enables communication regardless of distance. The caster knows the Target's location and can see and hear through them when focusing. While focused, the caster is unaware of their own surroundings. Duration: {{math spellPower \"*\" 1}} hours.",
+    "description": "<p>Creates a telepathic bond with a consenting target for {{math spellPower \"*\" 1}} hours, allowing communication at any distance.</p><p>The caster always knows where the target is, and while focusing can see and hear through them, unaware of their own surroundings.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "RfarOk3lRCFYD6hb",

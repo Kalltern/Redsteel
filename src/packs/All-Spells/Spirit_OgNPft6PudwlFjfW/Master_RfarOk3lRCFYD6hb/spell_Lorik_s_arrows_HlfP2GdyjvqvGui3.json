@@ -4,7 +4,7 @@
   "img": "icons/magic/unholy/projectile-bolts-salvo-pink.webp",
   "system": {
     "localizationKey": "",
-    "description": "<p>Creates up to three magical projectiles (cost per each), which the caster can keep readied. Can then be fired at any Target within 60m as a Free Action. Deals Magical damage 4d6 + {{spellPower}} to a single Target. Penetration 8. Only three such projectiles can be maintained; they disappear when not connected to the Source.</p>",
+    "description": "<p>Creates up to three magical projectiles, at a cost each, which the caster keeps readied.</p><p>Each can be fired at any target within 60 m as a Free Action for 4d6 + {{spellPower}} damage.</p><p>Only three can be held at once, and they vanish if the caster loses their connection to the Source.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "RfarOk3lRCFYD6hb",

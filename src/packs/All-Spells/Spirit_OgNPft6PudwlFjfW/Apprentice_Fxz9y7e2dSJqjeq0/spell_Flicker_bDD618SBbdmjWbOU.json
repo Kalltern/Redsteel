@@ -4,7 +4,7 @@
   "img": "icons/magic/light/explosion-star-glow-purple.webp",
   "system": {
     "localizationKey": "",
-    "description": "Reduces Target's Initiative by -3 for {{math spellPower \"*\" 1}} rounds. Triggers a Will Test vs. Target's Will Test. On success, Target suffers Disadvantage on next Attack, Defense, Cover, or Dodge. Can be cast as a Reaction whenever an ally or enemy is attacked.",
+    "description": "<p>Reduces the target's Initiative by 3 for {{math spellPower \"*\" 1}} rounds.</p><p>The caster tests Will against the target's Will.</p><p><strong>On success:</strong> the target has Disadvantage on its next Attack, Defense, Cover or Dodge.</p><p>Can be cast as a Reaction whenever an ally or an enemy is attacked.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "Fxz9y7e2dSJqjeq0",

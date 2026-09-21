@@ -1,10 +1,10 @@
 {
-  "name": "*Circle*",
+  "name": "Circle",
   "type": "spell",
   "img": "icons/magic/defensive/shield-barrier-blades-teal.webp",
   "system": {
     "localizationKey": "",
-    "description": "Links up to five wizards (Leader + 4 members) into a Circle. Circle members know each other's position. If a member moves more than 90 m away from their Leader for over 1 minute, they are removed from the Circle.",
+    "description": "<p>Links up to five wizards into a Circle: a leader and four members, who always know each other's position.</p><p>A member who stays more than 90 m from the leader for over a minute is removed from the Circle.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "yQKWKFaPqrfuldp0",

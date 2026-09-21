@@ -4,7 +4,7 @@
   "img": "icons/skills/social/intimidation-impressing.webp",
   "system": {
     "localizationKey": "",
-    "description": "Caster must reserve 1 Mind point. Creates a combat illusion with 50 health and Speed 4. The illusion does not benefit from doctrines or weapons. Combat Tests are replaced by the caster's Channeling, and Strength/Dexterity Tests are replaced by the caster's Will Test. The illusion makes one attack per round dealing 3d6 + {{spellPower}} Magical+Psychic damage.",
+    "description": "<p>Creates a combat illusion with 50 health and Speed 4, which makes one attack per round for 3d6 + {{spellPower}} damage.</p><p>It gains nothing from doctrines or weapons. Its combat tests use the caster's Channeling, and its Strength and Dexterity tests use the caster's Will.</p><p>The cast reserves 1 Mind.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "RfarOk3lRCFYD6hb",

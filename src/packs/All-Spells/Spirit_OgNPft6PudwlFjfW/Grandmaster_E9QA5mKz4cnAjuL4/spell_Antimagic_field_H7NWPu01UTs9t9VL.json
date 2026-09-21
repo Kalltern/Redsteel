@@ -4,7 +4,7 @@
   "img": "icons/magic/defensive/barrier-shield-dome-blue-purple.webp",
   "system": {
     "localizationKey": "",
-    "description": "Suppresses all magic (except divine forces, Words of Power, Blood School) within 9m around the caster, including the caster's own magic.",
+    "description": "<p>Suppresses all magic within 9 m of the caster, including the caster's own.</p><p>Divine forces, Words of Power and the Blood School are unaffected.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "E9QA5mKz4cnAjuL4",

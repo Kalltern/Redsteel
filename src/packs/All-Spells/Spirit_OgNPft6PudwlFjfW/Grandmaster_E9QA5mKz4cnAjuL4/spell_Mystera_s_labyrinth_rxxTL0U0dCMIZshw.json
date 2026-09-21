@@ -4,7 +4,7 @@
   "img": "icons/magic/control/hypnosis-mesmerism-swirl.webp",
   "system": {
     "localizationKey": "",
-    "description": "Triggers a Willpower Test vs. Target's Willpower Test. On failure, the Target is Disoriented for three rounds and takes Magical + Psychic damage {{math spellPower \"*\" 3}}. This damage cannot kill, only incapacitate. On success, the Target is trapped in an impenetrable illusion and perceives no reality until released by the caster or freed (retest once every ten days). If the caster wishes, the trapped Target is sustained by magic and doesn't need food, drink, or sleep. The caster may communicate with the trapped Target.",
+    "description": "<p>The caster tests Will against the target's Will.</p><p><strong>On success:</strong> the target is trapped in an impenetrable illusion and perceives nothing of reality until the caster releases it, or it frees itself on a retest once every ten days.</p><p><strong>On failure:</strong> the target is Disoriented for three rounds and takes {{math spellPower \"*\" 3}} damage, which can incapacitate but never kill.</p>",
     "options": [
       "divine",
       "magic"
@@ -128,7 +128,9 @@
     "testModifier": "",
     "effectType1": "disorientation",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "E9QA5mKz4cnAjuL4",

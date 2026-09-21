@@ -4,7 +4,7 @@
   "img": "icons/magic/symbols/runes-star-blue.webp",
   "system": {
     "localizationKey": "",
-    "description": "Creates a faintly visible trap on an unoccupied hex (cannot be adjacent to another trap) for 15 minutes, dealing Magic Damage 4d4 + {{spellPower}}. If triggered by a magical creature or a Source-bound caster, Target is Paralyzed for 2 rounds and takes an extra 2d4 damage. Penetration 12. Ignores Magic Defense.",
+    "description": "<p>Creates a faintly visible trap on an unoccupied hex for 15 minutes, dealing 6d4 + {{spellPower}} damage to anyone entering.</p><p>A magical creature or Source-bound caster that triggers it is Stunned for two rounds and takes a further 2d4 damage.</p><p>The hex must not be adjacent to another trap.</p>",
     "options": [
       "divine",
       "magic"
@@ -87,7 +87,7 @@
       ]
     },
     "isOffensive": true,
-    "uncontested": false,
+    "uncontested": true,
     "sustained": false,
     "difficulty": -10,
     "cost": 10,
@@ -128,7 +128,9 @@
     "testModifier": "",
     "effectType1": "custom",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "When the trap triggers, roll this spell manually for 0 mana cost and disregard the channeling test.",
+    "vsTest": false
   },
   "effects": [],
   "folder": "yQKWKFaPqrfuldp0",

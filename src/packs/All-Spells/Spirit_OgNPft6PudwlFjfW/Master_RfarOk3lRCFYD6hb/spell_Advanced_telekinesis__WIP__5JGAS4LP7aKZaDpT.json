@@ -4,7 +4,7 @@
   "img": "icons/commodities/biological/organ-brain-pink-purple.webp",
   "system": {
     "localizationKey": "",
-    "description": "Allows fast manipulation of light objects, up to 12 hexes per round. Can be used to stop a light projectile (Reaction). Can launch a piercing weapon. Damage is weapon damage + {{math spellPower \"*\" 2}}; Penetration is weapon's Penetration + {{math spellPower \"/\" 3}}. Cost, difficulty, and range depend on the selected option. Can only be cast as a Reaction to stop a projectile if the caster or an ally is attacked by a Ranged or Thrown weapon.",
+    "description": "<p>Allows fast manipulation of light objects, up to 12 hexes per round.</p><p>It can stop a light projectile as a Reaction, or launch a piercing weapon for that weapon's damage + {{math spellPower \"*\" 2}} and its Penetration + {{math spellPower \"/\" 3}}.</p><p>Cost, difficulty and range depend on the option chosen.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "RfarOk3lRCFYD6hb",

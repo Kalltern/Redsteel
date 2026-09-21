@@ -4,7 +4,7 @@
   "img": "icons/magic/control/silhouette-hold-beam-blue.webp",
   "system": {
     "localizationKey": "",
-    "description": "<p>In a 4.5m radius around the caster, all Targets make a Willpower Test vs. Caster's Willpower Test. On failure, Targets are Staggered for one round. On success, they are Stunned for one round and then Staggered for another round. Interrupts physical attacks. Can only be cast as a Reaction if the caster is attacked.</p>",
+    "description": "<p>Every target within 4.5 m of the caster tests Will against the caster's Will.</p><p><strong>On the caster's success:</strong> the target is Stunned for one round, then Staggered for another.</p><p><strong>On failure:</strong> the target is Staggered for one round.</p><p>Interrupts physical attacks.</p><p>Can be cast as a Reaction only when the caster is attacked.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "stun",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "RfarOk3lRCFYD6hb",

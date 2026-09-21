@@ -4,7 +4,7 @@
   "img": "icons/magic/water/barrier-ice-shield.webp",
   "system": {
     "localizationKey": "",
-    "description": "Creates a semi-permeable barrier within 18m with 250 + {{math spellPower \"*\" 20}} Health. Physical attacks deal only half damage. No attacks or spells can be cast from inside the barrier. If someone leaves the barrier, it loses half of its maximum Health.",
+    "description": "<p>Creates a semi-permeable barrier within 18 m with 250 + {{math spellPower \"*\" 20}} Health.</p><p>Physical attacks against it deal only half damage. No attack or spell can be made from inside it.</p><p>If anyone leaves the barrier, it loses half its maximum Health.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "RfarOk3lRCFYD6hb",

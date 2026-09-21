@@ -4,7 +4,7 @@
   "img": "icons/magic/control/silhouette-hold-change-green.webp",
   "system": {
     "localizationKey": "",
-    "description": "Makes the Target Invisible and conceals tracks, sounds, life and magical energies. Spellcasting or offensive actions temporarily interrupt it (restores at the end of the next round). Has Advantage on Attacks, which count as Surprised. Can be cast in group (Half cost per each additional Target, Concentration if not adjacent to caster).",
+    "description": "<p>Makes the target Invisible and conceals its tracks, sounds, life and magical energy.</p><p>Casting or any offensive action interrupts it, and it returns at the end of the next round.</p><p>It grants Advantage on attacks, which count as Surprise.</p><p>Can be cast on a group at half cost for each additional target, with Concentration for any target not adjacent to the caster.</p>",
     "options": [
       "divine",
       "magic"
@@ -128,7 +128,9 @@
     "testModifier": "",
     "effectType1": "custom",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "E9QA5mKz4cnAjuL4",

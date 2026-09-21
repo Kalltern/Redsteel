@@ -4,7 +4,7 @@
   "img": "icons/magic/control/silhouette-grow-shrink-blue.webp",
   "system": {
     "localizationKey": "",
-    "description": "Creates a visual illusion in empty space (Wall, bridge, guard) capable of executing basic commands (Patrol, greet, etc).",
+    "description": "<p>Creates a visual illusion in empty space, such as a wall, a bridge or a guard, able to carry out basic commands like patrolling or greeting.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "yQKWKFaPqrfuldp0",

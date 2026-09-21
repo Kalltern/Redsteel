@@ -4,7 +4,7 @@
   "img": "icons/magic/defensive/shield-barrier-blades-teal.webp",
   "system": {
     "localizationKey": "",
-    "description": "Summons Spirit Marked Target. The marked Target can be summoned to the nearest unoccupied space. Summoning fails if no such space is reasonably available.",
+    "description": "<p>Summons a Spirit marked target.</p><p>The marked target can be summoned to the nearest unoccupied space. The summoning fails if no such space is reasonably available.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "RfarOk3lRCFYD6hb",

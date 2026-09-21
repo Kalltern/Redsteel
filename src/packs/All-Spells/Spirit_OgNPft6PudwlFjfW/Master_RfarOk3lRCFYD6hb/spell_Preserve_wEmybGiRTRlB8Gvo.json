@@ -4,7 +4,7 @@
   "img": "icons/magic/time/hourglass-tilted-glowing-gold.webp",
   "system": {
     "localizationKey": "",
-    "description": "Preserves a small item in its current state for many centuries (flowers, food, etc.).",
+    "description": "<p>Preserves a small item, such as a flower or food, in its current state for centuries.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "RfarOk3lRCFYD6hb",

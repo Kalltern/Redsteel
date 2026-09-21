@@ -4,7 +4,7 @@
   "img": "icons/magic/light/beam-rays-blue-large.webp",
   "system": {
     "localizationKey": "",
-    "description": "Deals 3d6 + {{math spellPower \"*\" 4}} Magical damage in a straight line up to 8 hexes starting from the caster. Penetration 18.",
+    "description": "<p>Deals 3d6 + {{math spellPower \"*\" 4}} damage in a straight line up to 8 hexes from the caster.</p>",
     "options": [
       "divine",
       "magic"
@@ -112,7 +112,10 @@
       "effect2": "0",
       "effect3": "0",
       "effect4": "0"
-    }
+    },
+    "manualNotes": "",
+    "vsTest": false,
+    "breath": true
   },
   "effects": [],
   "folder": "RfarOk3lRCFYD6hb",

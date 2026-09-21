@@ -4,7 +4,7 @@
   "img": "icons/environment/cosmos/astronomy-planetary-orbits.webp",
   "system": {
     "localizationKey": "",
-    "description": "Caster must reserve 2 Mind points. Creates a complex illusion of enormous size (turns a swamp into a forest, creates a castle or army). For combat purposes, follows the same rules as the Servant spell. These are complex, Living illusions.",
+    "description": "<p>Creates a complex living illusion of enormous size, turning a swamp into a forest or conjuring a castle or an army.</p><p>In combat it follows the same rules as Servant. The cast reserves 2 Mind.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "E9QA5mKz4cnAjuL4",

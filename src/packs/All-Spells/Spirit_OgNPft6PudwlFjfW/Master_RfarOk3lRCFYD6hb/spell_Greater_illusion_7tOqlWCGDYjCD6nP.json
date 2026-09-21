@@ -4,7 +4,7 @@
   "img": "icons/environment/settlement/castle.webp",
   "system": {
     "localizationKey": "",
-    "description": "Creates an illusion capable of masking another object (e.g., turning a halfling into an orc, a grand throne into a wooden chair, etc.).",
+    "description": "<p>Creates an illusion able to mask another object: turning a halfling into an orc, or a grand throne into a wooden chair.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "RfarOk3lRCFYD6hb",

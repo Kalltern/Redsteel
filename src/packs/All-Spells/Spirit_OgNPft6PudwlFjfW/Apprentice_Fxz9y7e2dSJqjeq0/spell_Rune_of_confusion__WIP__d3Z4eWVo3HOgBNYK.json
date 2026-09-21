@@ -4,7 +4,7 @@
   "img": "icons/magic/symbols/runes-triangle-blue.webp",
   "system": {
     "localizationKey": "",
-    "description": "<p>Creates an invisible trap on an unoccupied hex (may be adjacent to another trap) for 15 minutes.</p><hr><p>Triggers Disorientation for 3 turns to anyone entering the hex. <br>Ignores Magic Defense.</p>",
+    "description": "<p>Creates an invisible trap on an unoccupied hex for 15 minutes, Disorienting anyone who enters it for three rounds.</p><p>This trap may border another trap.</p>",
     "options": [
       "divine",
       "magic"
@@ -87,7 +87,7 @@
       ]
     },
     "isOffensive": false,
-    "uncontested": false,
+    "uncontested": true,
     "sustained": false,
     "difficulty": 25,
     "cost": 3,
@@ -128,7 +128,9 @@
     "testModifier": "",
     "effectType1": "custom",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "When the trap triggers, roll this spell manually for 0 mana cost and disregard the channeling test.",
+    "vsTest": false
   },
   "effects": [],
   "folder": "Fxz9y7e2dSJqjeq0",

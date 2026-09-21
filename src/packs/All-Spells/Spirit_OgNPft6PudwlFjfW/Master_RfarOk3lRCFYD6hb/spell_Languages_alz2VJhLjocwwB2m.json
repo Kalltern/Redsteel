@@ -4,7 +4,7 @@
   "img": "icons/skills/trades/academics-book-study-runes.webp",
   "system": {
     "localizationKey": "",
-    "description": "Allows the Target to speak in a way that all intelligent creatures can understand for {{math spellPower \"*\" 15}} minutes.",
+    "description": "<p>For {{math spellPower \"*\" 15}} minutes, the target speaks so that every intelligent creature understands them.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "RfarOk3lRCFYD6hb",

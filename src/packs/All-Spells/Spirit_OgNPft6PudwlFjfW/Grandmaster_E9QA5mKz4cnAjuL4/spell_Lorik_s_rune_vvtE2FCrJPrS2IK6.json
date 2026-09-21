@@ -4,7 +4,7 @@
   "img": "icons/magic/symbols/runes-star-pentagon-blue.webp",
   "system": {
     "localizationKey": "",
-    "description": "Creates a barely visible trap on an unoccupied hex (must not be adjacent to another trap) for 15 minutes, which dispels all magical effects (including magical shields and barriers), deals Magical damage 3d20 + {{math spellPower \"*\" 5}} and triggers a Willpower Test (Bonus {{math spellPower \"*\" 2}}) vs. Target's Willpower Test for Paralysis for one round. Penetration 45. This trap cannot be dispelled by Counterspell. Ignores Magic Defense.",
+    "description": "<p>Creates a barely visible trap on an unoccupied hex for 15 minutes, dealing 3d20 + {{math spellPower \"*\" 5}} damage to anyone entering and dispelling all magical effects on them, including magical shields and barriers.</p><p>The caster tests Will + {{math spellPower \"*\" 2}} against the target's Will.</p><p><strong>On success:</strong> the target is Stunned for one round.</p><p>The hex must not be adjacent to another trap.</p>",
     "options": [
       "divine",
       "magic"
@@ -128,7 +128,9 @@
     "testModifier": "@spellPower*2",
     "effectType1": "custom",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "When the trap triggers, roll this spell manually for 0 mana cost and disregard the channeling test.",
+    "vsTest": true
   },
   "effects": [],
   "folder": "E9QA5mKz4cnAjuL4",

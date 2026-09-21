@@ -4,7 +4,7 @@
   "img": "icons/commodities/wood/furniture-stool-brown.webp",
   "system": {
     "localizationKey": "",
-    "description": "Enables slow manipulation of small objects. Max speed 4 hexes per round.",
+    "description": "<p>Enables slow manipulation of small objects, at up to 4 hexes per round.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "yQKWKFaPqrfuldp0",

@@ -4,7 +4,7 @@
   "img": "icons/magic/fire/explosion-flame-blue.webp",
   "system": {
     "localizationKey": "",
-    "description": "Cancels any spell (except a few, such as Magic Shield), with chance based on tier (90/70/40/15%). Can be cast to disrupt target's channeling, increasing Difficulty by -40% and Critical Failure chance by -1%. Always destabilizes portals. If the disrupted spell would result in a Critical Failure, caster may reduce the severity of the failure to any lower tier. Can be cast as a Reaction on any spell Channeling in range.",
+    "description": "<p>Cancels any spell, with a chance of 90%, 70%, 40% or 15% depending on its tier. A few, such as Magic shield, cannot be cancelled.</p><p>Alternatively it disrupts an ongoing cast, adding a 40 point negative penalty to that spell's Difficulty and a 1% negative penalty to its Critical Failure chance.</p><p>If the disrupted cast ends in a Critical Failure, the caster may reduce its severity to any lower tier.</p><p>Always destabilizes portals. Can be cast as a Reaction on any spell within range.</p>",
     "options": [
       "divine",
       "magic"
@@ -128,7 +128,9 @@
     "testModifier": "",
     "effectType1": "custom",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "yQKWKFaPqrfuldp0",

@@ -4,7 +4,7 @@
   "img": "icons/magic/control/hypnosis-mesmerism-watch.webp",
   "system": {
     "localizationKey": "",
-    "description": "<p>Triggers Will Test vs. <span style=\"color:rgb(239, 230, 216);font-family:Signika, 'Palatino Linotype', sans-serif;font-size:14px;font-style:normal;font-variant-ligatures:normal;font-variant-caps:normal;font-weight:400;letter-spacing:normal;orphans:2;text-align:start;text-indent:0px;text-transform:none;widows:2;word-spacing:0px;-webkit-text-stroke-width:0px;white-space:normal;background-color:rgba(12, 12, 12, 0.9);text-decoration-thickness:initial;text-decoration-style:initial;text-decoration-color:initial;display:inline !important;float:none\">Target's</span> Will Test with the target. On a success, everyone gains a +15% bonus on one subsequent Persuasion, Deception, Intimidation, or Temptation Test against the target. On a failure, the target may be aware of the manipulation attempt.</p>",
+    "description": "<p>The caster tests Will against the target's Will.</p><p><strong>On success:</strong> everyone gains +15% on one later Persuasion, Deception, Intimidation or Temptation test against that target.</p><p><strong>On failure:</strong> the target may notice the attempt.</p>",
     "options": [
       "divine",
       "magic"
@@ -96,7 +96,7 @@
     "option": "magic",
     "type": "spirit",
     "rank": "expert",
-    "actionCost": "free action",
+    "actionCost": "Free action",
     "range": "20",
     "spellClass": "support",
     "roll": {
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "yQKWKFaPqrfuldp0",

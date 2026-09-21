@@ -4,7 +4,7 @@
   "img": "icons/magic/lightning/orb-ball-spiral-blue.webp",
   "system": {
     "localizationKey": "",
-    "description": "Target has a 75% chance to draw in spells from within 7.5m. Exceptions include touch-range spells. Does not affect spells cast by the Target.",
+    "description": "<p>The target has a 75% chance to draw in spells cast within 7.5 m.</p><p>Touch-range spells are excepted, and it never affects spells the target casts themselves.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "RfarOk3lRCFYD6hb",

@@ -4,7 +4,7 @@
   "img": "icons/magic/perception/orb-crystal-ball-scrying-blue.webp",
   "system": {
     "localizationKey": "",
-    "description": "Allows seeing magical items and life or magical energy through obstacles up to 12 m away for {{math spellPower \"*\" 5}} minutes. Can be cast on a group (cost per Target). Also grants +25% Bonus to Disbelieve Illusion.",
+    "description": "<p>For {{math spellPower \"*\" 5}} minutes, lets the target see magical items and living or magical energy through obstacles up to 12 m away, and grants +25% to Disbelieve Illusion.</p><p>Can be cast on a group, at the cost of one casting per target.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "Fxz9y7e2dSJqjeq0",

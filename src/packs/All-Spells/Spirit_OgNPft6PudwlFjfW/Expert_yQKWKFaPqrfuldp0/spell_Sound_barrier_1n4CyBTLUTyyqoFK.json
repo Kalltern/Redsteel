@@ -4,7 +4,7 @@
   "img": "icons/magic/control/orb-web-hold.webp",
   "system": {
     "localizationKey": "",
-    "description": "Modifies sound propagation within an area up to {{math spellPower \"*\" 1.5}} m for {{math spellPower \"*\" 10}} minutes.",
+    "description": "<p>Modifies sound propagation in an area up to {{math spellPower \"*\" 1.5}} m across for {{math spellPower \"*\" 10}} minutes.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "yQKWKFaPqrfuldp0",

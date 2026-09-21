@@ -4,7 +4,7 @@
   "img": "icons/magic/perception/orb-crystal-ball-scrying.webp",
   "system": {
     "localizationKey": "",
-    "description": "Creates a small illusion. Can be a simple sound (Horn blast, scream) or a small object or cosmetic camouflage (Coin, eye color change, tattoo).",
+    "description": "<p>Creates a small illusion: a simple sound such as a horn blast or a scream, a small object, or a cosmetic change such as a coin, an eye colour or a tattoo.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "Fxz9y7e2dSJqjeq0",

@@ -4,7 +4,7 @@
   "img": "icons/magic/perception/silhouette-stealth-shadow.webp",
   "system": {
     "localizationKey": "",
-    "description": "Guaranteed Reaction (no Speed Test), triggers Will Test (Bonus {{math spellPower \"*\" 2}}) vs. Target's Perception Test. On failure, caster takes only half damage. On success, fully avoids the attack. Can only be used against the same opponent once every five rounds. Can only be cast when the caster is attacked.",
+    "description": "<p>The caster tests Will + {{math spellPower \"*\" 2}} against the target's Perception, as a guaranteed Reaction with no Speed test.</p><p><strong>On success:</strong> the attack is avoided entirely.</p><p><strong>On failure:</strong> the caster takes only half damage.</p><p>Usable against the same opponent only once every five rounds, and only when the caster is attacked.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "@spellPower*2",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": true
   },
   "effects": [],
   "folder": "yQKWKFaPqrfuldp0",

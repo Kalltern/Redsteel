@@ -4,7 +4,7 @@
   "img": "icons/magic/fire/dagger-rune-enchant-blue-gray.webp",
   "system": {
     "localizationKey": "",
-    "description": "Empowers the next attack or throw and changes its Damage Type to Magic. +15% chance to Paralyze. Cannot be combined with other attack enhancements.",
+    "description": "<p>Empowers the caster's next attack or throw, changing its damage type to Magic and adding a 15% chance to Stun.</p><p>Cannot be combined with other attack enhancements.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "Fxz9y7e2dSJqjeq0",

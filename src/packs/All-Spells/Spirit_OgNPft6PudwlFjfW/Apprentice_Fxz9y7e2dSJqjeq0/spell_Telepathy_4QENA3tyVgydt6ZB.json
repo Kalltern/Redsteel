@@ -4,7 +4,7 @@
   "img": "icons/creatures/eyes/humanoid-single-blind.webp",
   "system": {
     "localizationKey": "",
-    "description": "Enables communication with a nearby Target.",
+    "description": "<p>Enables communication with a nearby target.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "Fxz9y7e2dSJqjeq0",

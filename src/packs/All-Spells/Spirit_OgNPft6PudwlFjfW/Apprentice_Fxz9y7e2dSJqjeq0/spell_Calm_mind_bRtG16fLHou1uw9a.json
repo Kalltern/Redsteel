@@ -4,7 +4,7 @@
   "img": "icons/magic/holy/meditation-chi-focus-blue.webp",
   "system": {
     "localizationKey": "",
-    "description": "Triggers a Nerve Test (Bonus {{math spellPower \"*\" 1}}). On success, cancels effects of Panic, Fear, Terror, Rage, and other strong emotions. Test difficulty is based on the source. Can be cast as a Reaction.",
+    "description": "<p>The target takes a Resolve test at +{{math spellPower \"*\" 1}}.</p><p><strong>On success:</strong> Panic, Fear, Terror, Rage and other strong emotions are cancelled.</p><p>The difficulty follows whatever caused the emotion. Can be cast as a Reaction.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "Fxz9y7e2dSJqjeq0",

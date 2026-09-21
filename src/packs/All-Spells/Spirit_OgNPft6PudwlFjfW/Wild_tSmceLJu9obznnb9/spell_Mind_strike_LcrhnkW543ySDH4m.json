@@ -4,7 +4,7 @@
   "img": "icons/magic/perception/eye-ringed-glow-angry-small-teal.webp",
   "system": {
     "localizationKey": "",
-    "description": "No requirements. Drains 1 Mind point from the caster. Targets an intelligent creature. Deals damage 3d6 + {{spellPower}}, 20% chance to Stun. ",
+    "description": "<p>Deals 3d6 + {{spellPower}} damage to one intelligent creature, with a 20% chance to Stun.</p><p>The cast drains 1 Mind from the caster.</p>",
     "options": [
       "divine",
       "magic"
@@ -128,7 +128,9 @@
     "testModifier": "",
     "effectType1": "custom",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "tSmceLJu9obznnb9",

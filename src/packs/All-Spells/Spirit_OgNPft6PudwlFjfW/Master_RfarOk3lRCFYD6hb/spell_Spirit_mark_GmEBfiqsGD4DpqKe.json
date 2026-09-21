@@ -4,7 +4,7 @@
   "img": "icons/magic/defensive/shield-barrier-blades-teal.webp",
   "system": {
     "localizationKey": "",
-    "description": "Marks a consenting or unable-to-resist creature or object (up to the size of an elephant) with an invisible mark that lasts ten days (or forever for 1 reserved Mind point), until cancelled or activated. The marked Target can be summoned to the nearest unoccupied space. Summoning fails if no such space is reasonably available.",
+    "description": "<p>Marks a consenting or helpless creature or object, up to the size of an elephant, with an invisible mark that lasts ten days, or forever for 1 reserved Mind.</p><p>The mark lasts until cancelled or activated.</p><p>The marked target can be summoned to the nearest unoccupied space. The summoning fails if no such space is reasonably available.</p>",
     "options": [
       "divine",
       "magic"
@@ -112,7 +112,9 @@
       "effect2": "0",
       "effect3": "0",
       "effect4": "0"
-    }
+    },
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "RfarOk3lRCFYD6hb",

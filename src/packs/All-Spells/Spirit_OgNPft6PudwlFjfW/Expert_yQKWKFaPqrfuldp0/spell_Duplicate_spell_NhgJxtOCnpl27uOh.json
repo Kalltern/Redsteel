@@ -4,7 +4,7 @@
   "img": "icons/magic/perception/hand-eye-fire-blue.webp",
   "system": {
     "localizationKey": "",
-    "description": "Duplicates the base version of a just-cast apprentice or expert spell with half Damage or Healing (other effects remain unchanged). Always uses {{spellPower}} based on Spirit School. Does not roll Speed, always triggers after the original spell resolves. Can be cast as a Reaction after a valid spell is cast within range.",
+    "description": "<p>Duplicates the base version of an apprentice or expert spell just cast, at half damage or healing. Other effects are unchanged.</p><p>It always uses the caster's Spirit spell power, never rolls Speed, and always resolves after the original spell.</p><p>Can be cast as a Reaction after a valid spell is cast within range.</p>",
     "options": [
       "divine",
       "magic"
@@ -127,7 +127,9 @@
     "testModifier": "",
     "effectType1": "",
     "effectType2": "",
-    "effectType3": ""
+    "effectType3": "",
+    "manualNotes": "",
+    "vsTest": false
   },
   "effects": [],
   "folder": "yQKWKFaPqrfuldp0",

@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/earth/projectile-stone-landslide.webp",
   "system": {
-    "description": "<p>The caster tests Will + {{math spellPower \"*\" 3}} against the Strength or Dexterity of every target in a 5 hex line from the caster.</p><p><strong>On success:</strong> the target is knocked down and pushed back one hex.</p><p><strong>On failure:</strong> the target is pushed back one hex.</p>",
+    "description": "<p>The caster tests Will + {{math spellPower \"*\" 3}} against the Strength or Dexterity of every target in a 5 hex line from the caster.</p><p><strong>On success:</strong> the target is knocked down and pushed back one hex.</p><p><strong>On failure:</strong> the target is pushed back one hex.</p><p>Can be cast as a Reaction only when the caster is attacked, in which case a successful cast cancels the incoming physical attack.</p>",
     "options": [
       "divine",
       "magic"
@@ -147,7 +147,8 @@
       "gA066BfxyAbCJVSh"
     ],
     "manualNotes": "",
-    "vsTest": true
+    "vsTest": true,
+    "breath": true
   },
   "effects": [],
   "folder": "ELAMhHkr77jkNbi6",
