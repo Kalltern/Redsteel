@@ -20,6 +20,7 @@ import {
   hasBloodPayment,
   payBloodPayment,
 } from "./bloodPool.mjs";
+import { spendForItems } from "./actionTracker.mjs";
 
 export { getStrikeId };
 
@@ -139,6 +140,12 @@ export async function performCast(
     const ok = await game.redsteel.deductMana(actor, spell);
     if (!ok) return false;
   }
+
+  // Tick the hotbar's action readout. After the mana gate, so a cast nobody
+  // could pay for costs no actions either; a free cast still takes the
+  // caster's turn, so it is charged all the same. A spell whose cost line
+  // offers "Reaction" spends the reaction when cast outside its own turn.
+  await spendForItems(actor, spell);
 
   if (payingBlood) payingBlood = await payBloodPayment(actor);
   const difficultyBonus = payingBlood ? BLOOD_PAYMENT_DIFFICULTY : 0;

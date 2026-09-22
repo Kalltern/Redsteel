@@ -103,6 +103,15 @@
         "firstAid": "První pomoc",
         "effects": "Správce efektů"
       },
+      "ActionTracker": {
+        "title": "Akce a Reakce",
+        "action": "Akce",
+        "reaction": "Reakce",
+        "actionSpent": "Akce (využitá)",
+        "reactionSpent": "Reakce (využitá)",
+        "hint": "Kliknutím hvězdu využiješ nebo vrátíš zpět. Pravým tlačítkem na pás vrátíš celé kolo.",
+        "summary": "Akce {actions}/{actionsMax} · Reakce {reactions}/{reactionsMax}"
+      },
       "ShowArmor": "Zobrazit zbroj podle typu poškození",
       "ShowConditions": "Zobrazit stavy",
       "SettingsTitle": "Nastavení panelu",

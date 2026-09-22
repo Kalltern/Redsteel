@@ -9657,6 +9657,228 @@ body.redsteel-bg3-hotbar #hotbar {
   border-color: #6d4a24;
 }
 
+/* --- Action / Reaction pips ------------------ */
+
+/* The round economy in its own short channel, immediately right of the
+   readouts. Same recess the stats tray is cut with — same fill, rule and inner
+   shadow — because it is the same kind of thing: a container the stars sit in
+   rather than a row of buttons. Two channels rather than one, because the tray
+   answers what this character IS and this answers what it has LEFT, and a
+   single channel holding both invites reading the stars as another status.
+
+   Sized to its contents and never flexible, so it cannot take room the
+   readouts need; the group around the pair is what absorbs the row's slack.
+
+   The star is sized off the condition icon in the tray beside it (17px) rather
+   than picked independently, so the two cannot drift apart when that one is
+   retuned. */
+#redsteel-bg3-hotbar .rs-bg3-actions-strip {
+  --rs-pip-star: 17px;
+  --rs-pip-gap: 8px;
+
+  /* Eight slots wide, always, whether three stars are in it or eight (user
+     ruling 2026-09-22). A box sized to its contents would change width every
+     time a Reaction was granted or a doctrine came off, shifting the readouts
+     beside it mid-fight; a stated one means the row's geometry never moves.
+
+     231px is 8 stars at 17px, their 8 gaps at 8px, the 1px group rule with its
+     4px of margin, and the box's own 24px padding and 2px border — which is
+     exactly 205px of contents, the width eight stars ask for. Written out
+     rather than calc()'d off the variables on purpose: the density classes
+     below change those variables, and this width must NOT follow them.
+
+     box-sizing is set here rather than assumed. It is not global in this
+     stylesheet, and without it the padding would be added to the 231. */
+  box-sizing: border-box;
+  flex: 0 0 231px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--rs-pip-gap);
+  min-height: 26px;
+  padding: 2px 12px;
+  background: #060605;
+  border: 1px solid #211e19;
+  box-shadow:
+    inset 0 2px 5px rgba(0, 0, 0, 0.95),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.025),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.6);
+}
+
+/* Pools bigger than the book's 2 + 1 are rare but legal — Lightning Reflexes,
+   the Haste spell, a doctrine — and the channel is sized to its contents while
+   the tray takes what is left, so every extra star comes out of the readouts.
+
+   The channel is a fixed eight-slot box, so these are not about making room —
+   they are about fitting a ninth star and beyond into a box that will not
+   grow. Eight is the realistic ceiling (3 Actions + 5 Reactions); past it the
+   stars step down rather than the box widening, because a channel that grew
+   would push the readouts around and the whole point of stating its width was
+   that it does not.
+
+   Contents at each size against the box's 205px, first that fits marked:
+
+     pips     17/8     15/6     13/5     11/4
+        8    205 <-     173      149      125
+        9    230      194 <-     167      140
+       10    255       215     185 <-     155
+       11    280       236     203 <-     170
+       12    305       257      221     185 <-
+
+   So everything up to and including eight keeps full size, and only a pool no
+   rule produces gets smaller. Twelve is the ceiling in actionTracker.mjs, and
+   it still fits: nothing here ever widens the panel.
+
+   The tier is picked in #prepareActionTracker; each class here redefines
+   nothing but the two variables. */
+#redsteel-bg3-hotbar .rs-bg3-actions-strip--dense {
+  --rs-pip-star: 15px;
+  --rs-pip-gap: 6px;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-actions-strip--denser {
+  --rs-pip-star: 13px;
+  --rs-pip-gap: 5px;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-actions-strip--densest {
+  --rs-pip-star: 11px;
+  --rs-pip-gap: 4px;
+}
+
+/* The readouts and the round economy as one block, which is the row's single
+   growing child. Centred, so the pair keeps its shape as readouts come and go
+   instead of crawling left along the row. */
+#redsteel-bg3-hotbar .rs-bg3-tray-group {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Wider than the row's own 8px: these two are both recessed channels, and at
+     the row gap they read as one box with a seam down it. */
+  gap: 12px;
+}
+
+/* Somebody who does not own the character reads the strip rather than setting
+   it. The handlers refuse the write anyway, so the cursor should not offer
+   one. */
+#redsteel-bg3-hotbar .rs-bg3-actions-strip.locked .rs-bg3-pip {
+  pointer-events: none;
+}
+
+/* Half the channel each, so the Actions centre in their own half and the
+   Reactions in theirs. Centring the whole run instead clumped both sets
+   against the rule in the middle and left the box's two ends empty, which read
+   as one group of stars rather than two pools.
+
+   `flex: 1 1 0` shares the box evenly, and `min-width: auto` — left alone on
+   purpose — floors each half at its own contents, so a lopsided pool like 1
+   Action and 7 Reactions gives the bigger half the room it needs instead of
+   spilling it out of the box. An actor with only one pool has one half, which
+   then takes the whole channel and centres in it. */
+#redsteel-bg3-hotbar .rs-bg3-pip-group {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--rs-pip-gap);
+}
+
+/* Rules the Actions apart from the Reactions, the same vertical bronze rule
+   the condition tray uses between the sheet's groups. */
+#redsteel-bg3-hotbar .rs-bg3-pip-divider {
+  flex: 0 0 auto;
+  width: 1px;
+  /* Just short of the star, so the rule reads as separating the two groups
+     rather than as another cell in the run. */
+  height: calc(var(--rs-pip-star) - 3px);
+  margin: 0 2px;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    var(--rs-bg3-border) 50%,
+    transparent 100%
+  );
+  opacity: 0.7;
+}
+
+/* The star itself is the whole control: no fill, no border, nothing but the
+   glyph, the way a condition icon sits in this tray.
+
+   `height: auto` with a stated width and min-height is fighting core, which
+   gives every button a fixed height; `appearance`, the zeroed padding, margin,
+   border and background strip the rest of core's button chrome. Without them
+   the star comes out boxed in a grey plate at core's own height. */
+#redsteel-bg3-hotbar .rs-bg3-pip {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--rs-pip-star);
+  min-height: var(--rs-pip-star);
+  height: auto;
+  padding: 0;
+  margin: 0;
+  line-height: 0;
+  appearance: none;
+  background: none;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+/* Core paints a focus ring that would box the star after every click. */
+#redsteel-bg3-hotbar .rs-bg3-pip:focus,
+#redsteel-bg3-hotbar .rs-bg3-pip:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-pip-star {
+  display: block;
+  width: var(--rs-pip-star);
+  height: var(--rs-pip-star);
+}
+
+/* An Action still in hand: a bright core bleeding out to the accent through
+   its own glow, which is what the thin tips of the star read as. The filter
+   sits on the svg rather than on the path, or the glow would be clipped at the
+   edge of the viewBox. */
+#redsteel-bg3-hotbar .rs-bg3-pip--actions .rs-bg3-pip-star {
+  filter: drop-shadow(0 0 4px rgba(200, 162, 74, 0.75))
+    drop-shadow(0 0 1px rgba(200, 162, 74, 0.9));
+}
+
+#redsteel-bg3-hotbar .rs-bg3-pip--actions .rs-bg3-pip-star path {
+  fill: var(--rs-bg3-bright);
+}
+
+/* The same recipe in the sheet's pale steel blue, so the Reaction reads as a
+   different currency at a glance rather than as a dimmer Action. */
+#redsteel-bg3-hotbar .rs-bg3-pip--reactions .rs-bg3-pip-star {
+  filter: drop-shadow(0 0 4px rgba(143, 188, 196, 0.7))
+    drop-shadow(0 0 1px rgba(143, 188, 196, 0.85));
+}
+
+#redsteel-bg3-hotbar .rs-bg3-pip--reactions .rs-bg3-pip-star path {
+  fill: var(--rs-attr-per);
+}
+
+/* Spent: the star goes out and nothing else changes. The socket and its rule
+   stay exactly as they are, because dimming the chrome around the ones still
+   available is the thing that reads as a broken panel. */
+#redsteel-bg3-hotbar .rs-bg3-pip.spent .rs-bg3-pip-star {
+  filter: none;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-pip.spent .rs-bg3-pip-star path {
+  /* Lighter than the #151413 used on the old plate: the tray's own fill is
+     #060605, and a star darker than its background disappears instead of
+     reading as spent. */
+  fill: #2a2722;
+}
+
 /* --- Teammate portraits ---------------------- */
 
 
@@ -9930,12 +10152,31 @@ body.redsteel-bg3-hotbar #hotbar {
    hope. The attribute row sets the bar's width: twelve 44px cells at the 3px
    group gap, plus the divider and the row's own gaps, is about 566px. Take off
    the modifier (74), the three tray toggles (26 each: auto-defense, potions,
-   weapon sets) and four 8px gaps and this tray has roughly 381px. A character
-   carrying every condition at once, on top of the two steady readouts
-   (detection, movement), is about 380px — so the condition view still fits, but
-   only just. It used to clear by 35px; the auto-defense chip spent that margin.
-   Anything further added to this row has to widen the panel or come out of the
-   tray's own padding.
+   weapon sets) and four 8px gaps and .rs-bg3-tray-group has roughly 385px.
+   That is shared now, and not by flexing: this tray is stated at 178px, a
+   third off the 267px it used to fill, which is about 128px of readouts once
+   its own 48px of padding is paid for. Of the group's 385px that leaves 195px
+   for the action channel, which is 106px at the book's 2 + 1 (three 17px
+   stars, their gaps and rule, plus 24px padding and border) with the group's
+   12px gap between them. The remaining 89px is slack the pair centres in.
+
+   A bigger action pool spends that slack rather than this tray: the channel
+   grows until it reaches 195px, and past there the stars step down a size (see
+   the density tiers beside .rs-bg3-actions-strip) instead of the readouts
+   giving any more ground. So 128px of readouts is the floor, whatever the pool.
+
+   A character carrying every condition at once, on top of the two steady
+   readouts (detection, movement), is about 380px, so the full condition view
+   no longer fits. It does not spill: `min-width: auto` floors the box at its
+   contents, so the tray expands and the panel widens with it, which is the
+   same accepted failure as the two cases below.
+
+   That was accepted knowingly (user ruling 2026-09-22) — the round economy is
+   read every turn and the full condition set is rare. The overflow behaves the
+   way the two cases below do: the panel grows wider and stays centred. In
+   ordinary play, with two or three readouts up, nothing moves at all.
+   Anything further added to this row has to widen the panel, come out of the
+   tray's own padding, or come out of the action channel's.
 
    Two cases can exceed it: a character in the armor view warded against most
    of the eight damage types, and an NPC, whose tray carries both readings at
@@ -9944,6 +10185,16 @@ body.redsteel-bg3-hotbar #hotbar {
    would quietly hide a number someone is reading the tray to find. In practice
    armor against more than two or three types is already unusual. */
 #redsteel-bg3-hotbar .rs-bg3-stats-tray {
+  /* Takes whatever the star channel leaves. The two swapped roles (user ruling
+     2026-09-22): the channel is the stated one now, eight slots wide come what
+     may, and this tray is the remainder — 142px of the group's 385, or about
+     92px of readouts. It is the smaller box of the pair on purpose. A round
+     economy that jumps sideways whenever a Reaction is granted is worse to
+     read than a short condition tray, and the conditions have a tooltip.
+
+     Stating this one instead was tried first and is wrong for the same reason
+     in reverse: a fixed tray plus a contents-sized channel moves the stars.
+     One of the two has to float, and it is this one. */
   flex: 1 1 auto;
   position: relative;
   display: flex;

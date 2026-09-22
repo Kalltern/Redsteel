@@ -50,6 +50,7 @@ import {
 } from "./opportunityAttacks.mjs";
 import { setupDialogTabs } from "./dialogTabMemory.mjs";
 import { getCommandTargets, runCommand } from "./commands.mjs";
+import { spendForItems } from "./actionTracker.mjs";
 
 export async function combatAbilities() {
   // ====================================================================
@@ -2137,6 +2138,12 @@ export async function deductAbilityCost(actor, abilities = []) {
   if (Object.keys(updates).length) {
     await actor.update(updates);
   }
+
+  // The hotbar's action/reaction readout. Deliberately last: a use refused
+  // above for want of Stamina never happened, so it must not show as spent.
+  // Attack modifiers ride in this same list and are Free actions in the pack,
+  // so the whole list can go through as it stands.
+  await spendForItems(actor, abilities);
 
   return true;
 }

@@ -103,6 +103,15 @@
         "firstAid": "First aid",
         "effects": "Effect manager"
       },
+      "ActionTracker": {
+        "title": "Actions & Reactions",
+        "action": "Action",
+        "reaction": "Reaction",
+        "actionSpent": "Action (spent)",
+        "reactionSpent": "Reaction (spent)",
+        "hint": "Click a pip to spend or restore it. Right-click the strip to reset the round.",
+        "summary": "Actions {actions}/{actionsMax} · Reactions {reactions}/{reactionsMax}"
+      },
       "ShowArmor": "Show armor by damage type",
       "ShowConditions": "Show conditions",
       "SettingsTitle": "Bar settings",

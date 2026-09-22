@@ -31,6 +31,13 @@ import {
   getRollModifierState,
   openModifierDialog,
 } from "./rollModifier.mjs";
+import {
+  getActionPools,
+  getSpent,
+  resetSpent,
+  setSpent,
+  trackedCombat,
+} from "./actionTracker.mjs";
 
 const SETTING = "bg3Hotbar";
 const TEAM_HEALTH_SETTING = "bg3HotbarTeamHealth";
@@ -984,6 +991,7 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       pickWeaponSet: this._onPickWeaponSet,
       toggleTrayView: this._onToggleTrayView,
       toggleAutoDefense: this._onToggleAutoDefense,
+      toggleActionPip: this._onToggleActionPip,
     },
   };
 
@@ -1177,6 +1185,7 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     // NPCs carry only spd, ini and res, so the secondary group can come back
     // shorter than the character list. hasAttributes covers an empty pair.
     const statuses = this.#prepareStatuses(actor);
+    const trayRows = this.#prepareTrayRows(actor);
 
     return Object.assign(context, {
       hasActor: !!actor,
@@ -1227,11 +1236,14 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
           groupStart: i > 0 && !!a.gmOnly !== !!all[i - 1].gmOnly,
         }),
       ),
+      // Its own key: `actions` above is the button row, and the two would
+      // shadow each other in the template.
+      actionTracker: this.#prepareActionTracker(actor),
       resourceBars: this.#prepareResourceBars(actor),
       // One tray, two readings on a character and both at once on an NPC. The
       // flag is per user rather than per actor, so a player who switched to
       // armor stays there as the panel rebinds.
-      trayRows: this.#prepareTrayRows(actor),
+      trayRows,
       armorView: this.armorView,
       // No chip on an NPC: with both readings already in the tray there is
       // nothing behind it.
@@ -1831,6 +1843,120 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     return { text: parts.join(" "), empty: !parts.length, tone };
   }
 
+  /**
+   * The Action / Reaction pips above the bar.
+   *
+   * Drawn only inside a started encounter this actor is in. That gate is
+   * `trackedCombat`, the same one the spend path uses, so the strip can never
+   * show a round the tracker is not counting.
+   *
+   * A pool of zero contributes no pips at all rather than an empty group: a
+   * creature whose Reaction has been taken away has no reaction, which is not
+   * the same thing as one that is permanently spent.
+   *
+   * `density` is a stated rule, not a measured fit, and the rule is about the
+   * tray rather than about the stars.
+   *
+   * The channel is a stated eight-slot box (user ruling 2026-09-22) that never
+   * resizes, so this is not about making room for the readouts — they take
+   * whatever is left and the box does not move. It is about fitting a ninth
+   * star and beyond into 205px that will not grow. Eight is the realistic
+   * ceiling: 3 Actions + 5 Reactions.
+   *
+   * Which lands the boundaries here, read straight off the width table in the
+   * CSS beside these classes:
+   *
+   *     <= 8 pips   17/8   205px of the box's 205, exactly
+   *        9 pips   15/6   194px
+   *    10-11 pips   13/5   185px, 203px
+   *       12 pips   11/4   185px, and 12 is the pool ceiling
+   *
+   * Only twelve pips — the ceiling in actionTracker.mjs, and not a number any
+   * rule produces — dips under the floor. Measuring what fits and scaling to
+   * it would feed back on the thing being measured; the hotbar notes say to
+   * state the rule, so it is stated.
+   */
+  #prepareActionTracker(actor) {
+    const blank = {
+      show: false,
+      groups: [],
+      density: "",
+      editable: false,
+      tip: "",
+    };
+    if (!actor || !trackedCombat(actor)) return blank;
+
+    const pools = getActionPools(actor);
+    const spent = getSpent(actor);
+    const groups = [];
+    let total = 0;
+    for (const pool of ["actions", "reactions"]) {
+      if (!pools[pool]) continue;
+      const base = pool === "actions" ? "action" : "reaction";
+      const pips = [];
+      for (let index = 0; index < pools[pool]; index++) {
+        // Right to left (user ruling 2026-09-22): the rightmost star goes out
+        // first, so what is left always sits against the half's left edge and
+        // the gap that opens up grows toward the rule in the middle. The
+        // stored count is still a plain number of spent actions; only which
+        // star wears it is reversed.
+        const isSpent = index >= pools[pool] - spent[pool];
+        pips.push({
+          pool,
+          index,
+          spent: isSpent,
+          label: game.i18n.localize(
+            `REDSTEEL.Bg3Hotbar.ActionTracker.${isSpent ? `${base}Spent` : base}`,
+          ),
+        });
+      }
+      total += pips.length;
+      groups.push({
+        pool,
+        pips,
+        // The rule goes between halves, never in front of the first one, so an
+        // actor with no Actions at all gets no rule hanging before its
+        // Reactions. A boundary test rather than @first, matching how the
+        // action-button row writes its own gap.
+        divider: groups.length > 0,
+      });
+    }
+    if (!total) return blank;
+
+    // The first size whose stars still fit the box's fixed 205px. Splitting the
+    // run into halves did not change that arithmetic: the two outer gaps the
+    // halves now sit in replace the two the rule used to sit in, so the total
+    // is still one gap per star.
+    //
+    // Each class redefines only --rs-pip-star and --rs-pip-gap; every other
+    // size in that CSS block already derives from the two, and the box's own
+    // width deliberately does not.
+    const density =
+      total <= 8 ? "" : total <= 9 ? "dense" : total <= 11 ? "denser" : "densest";
+
+    // Localized here rather than in the template: the `text` tooltip provider
+    // localizes whatever `data-tt-text` carries, and an already-built sentence
+    // passes through that untouched.
+    const summary = game.i18n.format(
+      "REDSTEEL.Bg3Hotbar.ActionTracker.summary",
+      {
+        actions: pools.actions - spent.actions,
+        actionsMax: pools.actions,
+        reactions: pools.reactions - spent.reactions,
+        reactionsMax: pools.reactions,
+      },
+    );
+    const hint = game.i18n.localize("REDSTEEL.Bg3Hotbar.ActionTracker.hint");
+
+    return {
+      show: true,
+      groups,
+      density,
+      editable: !!actor.isOwner,
+      tip: `${summary} ${hint}`,
+    };
+  }
+
   /** Portrait ring data. `pct` drives the conic-gradient in CSS. */
   #prepareHealth(actor) {
     const health = actor?.system?.stats?.health ?? {};
@@ -2180,6 +2306,20 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       });
     }
 
+    // The action/reaction strip is drawn from the live encounter: which round
+    // it is decides whether a stored spend still counts, and whether there is
+    // a combat at all decides if the strip appears. Spends themselves land as
+    // actor flag writes, which `updateActor` above already covers.
+    for (const hook of [
+      "createCombat",
+      "deleteCombat",
+      "updateCombat",
+      "createCombatant",
+      "deleteCombatant",
+    ]) {
+      add(hook, () => this.#rerender());
+    }
+
     // Selecting a different token on the canvas outranks a clicked portrait:
     // the canvas is the more direct statement of "this one now". Selecting the
     // pinned actor's own token leaves the pin alone, which is what lets the
@@ -2418,6 +2558,59 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
   }
 
   /**
+   * Spend or give back one Action or Reaction by hand.
+   *
+   * The strip reads as a slider rather than as a row of independent switches:
+   * clicking a lit star spends everything from the right edge down to it, and
+   * clicking a dark one hands back everything from the left edge up to it.
+   * Treating each star as its own toggle would let the bar show a spent star
+   * sitting to the left of an available one, which is not a state a round
+   * economy has.
+   *
+   * No re-render here: the spend is an actor flag write, and the panel already
+   * redraws on `updateActor`.
+   *
+   * @this {Bg3Hotbar}
+   */
+  static async _onToggleActionPip(event, target) {
+    if (isRightClick(event)) return;
+
+    const actor = this.actor;
+    if (!actor?.isOwner) return;
+
+    const pool = target.dataset.pool;
+    const index = Number(target.dataset.index);
+    if (!Number.isInteger(index) || index < 0) return;
+
+    const max = getActionPools(actor)[pool];
+    if (!Number.isInteger(max) || index >= max) return;
+
+    // Mirrored with the display: the stars go out right to left, so clicking
+    // a lit one spends everything from the right edge down to it, and clicking
+    // a dark one hands back everything from the left edge up to it. Which is
+    // the same slider it always was, read from the other end.
+    const wasSpent = index >= max - getSpent(actor)[pool];
+    await setSpent(actor, pool, wasSpent ? max - index - 1 : max - index);
+  }
+
+  /**
+   * Right-click anywhere on the strip: give the whole round back.
+   *
+   * The tracker reads costs off the pack's free-text action line, so the
+   * cheapest possible way out of a wrong reading has to exist. Reached from
+   * `#onContextMenu` rather than from the `actions` map, because ApplicationV2
+   * dispatches `data-action` on click and never sees a contextmenu event, the
+   * same route the favourite-skill and macro slots already take.
+   *
+   * @this {Bg3Hotbar}
+   */
+  static async _onResetActionPips(event) {
+    if (!isRightClick(event)) return;
+    if (!this.actor?.isOwner) return;
+    await resetSpent(this.actor);
+  }
+
+  /**
    * The wrench in the corner. Both row counts are set in one dialog, written in
    * one user update so the panel redraws once rather than twice.
    *
@@ -2480,6 +2673,14 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       const effect = fromUuidSync(effectEl.dataset.uuid);
       if (effect?.parent === this.actor) await effect.delete();
       return;
+    }
+
+    // The whole round back, from anywhere on the action strip.
+    const strip = event.target.closest?.(".rs-bg3-actions-strip");
+    if (strip) {
+      event.preventDefault();
+      event.stopPropagation();
+      return Bg3Hotbar._onResetActionPips.call(this, event);
     }
 
     const skillSlot = event.target.closest?.(".rs-bg3-skill-slot.filled");

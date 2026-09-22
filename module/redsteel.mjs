@@ -83,6 +83,15 @@ import {
   renderVersusBlock,
 } from "./utils/defense.mjs";
 import { registerOverwhelmHooks } from "./utils/overwhelm.mjs";
+import {
+  getActionPools,
+  getSpent,
+  grantFreeMovement,
+  noteMovement,
+  registerActionTrackerHooks,
+  resetSpent,
+  setSpent,
+} from "./utils/actionTracker.mjs";
 import { registerStatusCounterColors } from "./utils/statusCounterColors.mjs";
 import {
   describeSneakSources,
@@ -403,6 +412,29 @@ Hooks.once("init", function () {
     forget: forgetSneakSource,
     clear: clearSneakLedger,
   };
+  /**
+   * The hotbar's Action / Reaction readout. A tracker, never a rule: nothing
+   * here refuses anything, so calling it wrongly costs a star and no more.
+   *
+   *   game.redsteel.actionTracker.freeMovement(actor)
+   *     Account for this turn's movement without charging for it. This is the
+   *     hook for everything that grants free movement, one ability at a time.
+   *     Call it BEFORE the token moves.
+   *
+   *   game.redsteel.actionTracker.pools(actor)   what the actor has per round
+   *   game.redsteel.actionTracker.spent(actor)   what has gone this round
+   *   game.redsteel.actionTracker.spend(actor, "actions", n)   set a count
+   *   game.redsteel.actionTracker.reset(actor)   hand the whole round back
+   *   game.redsteel.actionTracker.moved(actor)   charge movement by hand
+   */
+  game.redsteel.actionTracker = {
+    pools: getActionPools,
+    spent: getSpent,
+    spend: setSpent,
+    reset: resetSpent,
+    moved: noteMovement,
+    freeMovement: grantFreeMovement,
+  };
   game.redsteel.showSpellSelectionDialogs = showSpellSelectionDialogs;
   game.redsteel.getValidSpellVariants = getValidSpellVariants;
   game.redsteel.showVariantSelectionDialog = showVariantSelectionDialog;
@@ -462,6 +494,7 @@ Hooks.once("init", function () {
   registerAdvantageousManeuver();
   registerDefendButton();
   registerOverwhelmHooks();
+  registerActionTrackerHooks();
   registerStatusCounterColors();
   registerAutoDefense();
   registerWrathOfBlood();

@@ -259,6 +259,15 @@
     --}}
     {{#if hasActor}}
     <div class="rs-bg3-row rs-bg3-row--status">
+
+      {{!--
+        The readouts and the round economy travel together as one flexible
+        block, so the row still has exactly one growing child and the chips at
+        its far end stay put. The tray inside it is sized to its own contents
+        now rather than stretched across the row, which is what leaves the
+        stars sitting immediately beside it instead of a channel away.
+      --}}
+      <div class="rs-bg3-tray-group">
       <div class="rs-bg3-stats-tray">
         {{#each trayRows as |cond|}}
         {{#if cond.divider}}
@@ -291,6 +300,57 @@
           data-tt-text="REDSTEEL.Bg3Hotbar.{{#if armorView}}ShowConditions{{else}}ShowArmor{{/if}}"
         ><i class="fas fa-chevron-{{#if armorView}}left{{else}}right{{/if}}"></i></button>
         {{/if}}
+      </div>
+
+      {{!--
+        What is left of the round, in its own short channel to the right of the
+        readouts. Present only inside a started encounter, and never a rule: it
+        counts what was spent so it can be seen, a click corrects one star and
+        a right-click hands the whole round back when the count read the action
+        line wrong.
+
+        Its own recess rather than a share of the tray's: the two answer
+        different questions — what this character IS, and what it has LEFT this
+        round — and a single channel holding both invites reading the stars as
+        another status. Sized to its contents, so it never takes room the
+        readouts could use.
+      --}}
+      {{#if actionTracker.show}}
+      <div
+        class="rs-bg3-actions-strip
+          {{~#if actionTracker.density}} rs-bg3-actions-strip--{{actionTracker.density}}{{/if~}}
+          {{~#unless actionTracker.editable}} locked{{/unless}}"
+        data-tt-kind="text"
+        data-tt-title="REDSTEEL.Bg3Hotbar.ActionTracker.title"
+        data-tt-text="{{actionTracker.tip}}"
+      >
+        {{!--
+          One half per pool, each centring its own stars in its own half rather
+          than the whole run centring as one clump against the rule in the
+          middle. Actions read as a set and Reactions as a set, which is how
+          they are spent.
+        --}}
+        {{#each actionTracker.groups as |group|}}
+        {{#if group.divider}}<span class="rs-bg3-pip-divider" role="separator"></span>{{/if}}
+        <div class="rs-bg3-pip-group rs-bg3-pip-group--{{group.pool}}">
+          {{#each group.pips as |pip|}}
+          <button
+            type="button"
+            class="rs-bg3-pip rs-bg3-pip--{{pip.pool}}{{#if pip.spent}} spent{{/if}}"
+            data-action="toggleActionPip"
+            data-pool="{{pip.pool}}"
+            data-index="{{pip.index}}"
+            aria-label="{{pip.label}}"
+          >
+            <svg class="rs-bg3-pip-star" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M12 1 Q13 11 23 12 Q13 13 12 23 Q11 13 1 12 Q11 11 12 1 Z" />
+            </svg>
+          </button>
+          {{/each}}
+        </div>
+        {{/each}}
+      </div>
+      {{/if}}
       </div>
 
       {{!-- Auto-defense, immediately left of the modifier. Only an NPC answers

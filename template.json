@@ -157,6 +157,10 @@
         "effects": "visible"
       },
       "skillsEditToggle": false,
+      "actionEconomy": {
+        "actions": 2,
+        "reactions": 1
+      },
       "dodgeLimit": {
         "value": 50,
         "bonus": 0,
@@ -1066,6 +1070,10 @@
       },
       "baneTypes": "",
       "autoDefense": true,
+      "actionEconomy": {
+        "actions": 2,
+        "reactions": 1
+      },
       "cr": 0,
       "critRangeMelee": 0,
       "critRangeRanged": 0,

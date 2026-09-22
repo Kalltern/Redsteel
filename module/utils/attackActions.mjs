@@ -1,6 +1,7 @@
 import { selectAimedPart } from "./aimedStrike.mjs";
 import { filterModifiersByWeapon } from "./weaponResolver.mjs";
 import { isOwnTurn } from "./opportunityAttacks.mjs";
+import { spendForAttack } from "./actionTracker.mjs";
 import {
   SECTOR,
   attackSector,
@@ -314,6 +315,11 @@ ${
           selectedModifiers,
         );
         if (!paid) return;
+
+        // No ability item swings a plain weapon attack, so the hotbar readout
+        // is told about it here. The book prices one at 1 Action; declared as
+        // an Opportunity Attack it spends the reaction instead.
+        await spendForAttack(actor, { opportunity: useOpportunity });
 
         // ─── Execute Attack ───
         await game.redsteel[fnName]({
