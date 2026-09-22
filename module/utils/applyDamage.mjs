@@ -20,12 +20,21 @@ import {
   grantAimOnDamage,
   getLacerationOffer,
 } from "./aim.mjs";
-import { attackerTokenIdFromMessage } from "./overwhelm.mjs";
+import {
+  attackerTokenIdFromMessage,
+  getOverwhelmSources,
+} from "./overwhelm.mjs";
 import {
   cardDeclaredSneak,
   recordSneakAttack,
   hasSneakedThisRound,
 } from "./sneakLedger.mjs";
+import {
+  countAdjacentEnemies,
+  matchSneakTrigger,
+  sneakTriggerLabel,
+  targetActsLaterThanAttacker,
+} from "./sneakTriggers.mjs";
 import { gainBlood } from "./bloodPool.mjs";
 import {
   giftOfBloodApplies,
@@ -242,21 +251,51 @@ function sneakRefusedForTarget(attack, tokenDoc, attackerTokenId) {
 }
 
 /**
- * Kritický zásah jako Zákeřný útok (shadow/critAsSneak) — is this blow being
- * promoted to a Sneak Attack against this target?
+ * Which clause is promoting this blow to a Sneak Attack against this target, or
+ * null for none (utils/sneakTriggers.mjs).
  *
- * Only for an attacker who owns the node, only on a blow being applied as a
- * critical, only when the player did NOT already declare a sneak (that one is
- * paid for and folded into the damage), and only when this victim's
- * once-per-round allowance is still free. The mode is what makes this an
- * apply-time question at all: in a versus test the defender's roll is what turns
- * a hit into a critical, so at roll time the card cannot know.
+ * Everything the triggers ask is a question about THIS victim, which is why it
+ * is asked here and not at roll time: a cleave has not yet picked which of
+ * three people it caught, and in a versus test the defender's own roll is what
+ * turns a hit into a critical.
+ *
+ * Three gates come before any clause is consulted, and all three predate this:
+ * a declared sneak is already paid for and folded into the damage, so it is
+ * never promoted on top; the victim's once-per-round allowance has to be free;
+ * and an attacker the card cannot name records nothing.
+ *
+ * @returns {string|null} the trigger key, for the line that names the reason
  */
-function sneakGrantedForTarget(attack, tokenDoc, attackerTokenId, mode) {
+function sneakPromotionForTarget(attack, tokenDoc, attackerTokenId, mode) {
   const sneak = attack?.sneak;
-  if (!sneak?.critAsSneak || sneak.declared === true) return false;
-  if (mode !== "critical") return false;
-  return !hasSneakedThisRound(tokenDoc, attackerTokenId);
+  if (!sneak || sneak.declared === true) return null;
+  if (hasSneakedThisRound(tokenDoc, attackerTokenId)) return null;
+
+  // `critAsSneak` is the original promotion and still ships as its own boolean
+  // on older cards, so it is honoured directly rather than being migrated. A
+  // card written since carries "critical" in `triggers` and takes the same
+  // path through matchSneakTrigger.
+  if (sneak.critAsSneak === true && mode === "critical") return "critical";
+
+  const triggers = sneak.triggers;
+  if (!Array.isArray(triggers) || !triggers.length) return null;
+
+  return matchSneakTrigger({
+    triggers,
+    targetActor: tokenDoc?.actor ?? null,
+    sector: attack?.positioning?.[tokenDoc?.id] ?? null,
+    overwhelmSources: getOverwhelmSources(tokenDoc).length,
+    adjacentEnemies: countAdjacentEnemies(tokenDoc),
+    targetActsLater: targetActsLaterThanAttacker(tokenDoc?.id, attackerTokenId),
+    mode,
+  });
+}
+
+/** Whether this blow is promoted to a Sneak Attack against this target. */
+function sneakGrantedForTarget(attack, tokenDoc, attackerTokenId, mode) {
+  return (
+    sneakPromotionForTarget(attack, tokenDoc, attackerTokenId, mode) !== null
+  );
 }
 
 /**
@@ -676,12 +715,16 @@ export async function applyDamageAsGM(data) {
       tokenDoc,
       sneakAttackerId,
     );
-    const sneakGranted = sneakGrantedForTarget(
+    // The clause that promoted this blow, kept rather than reduced to a boolean
+    // so the chat line can say WHY this victim was sneaked. With six ways for a
+    // Rogue to earn one, "it just happened" is not a readable answer at a table.
+    const sneakReason = sneakPromotionForTarget(
       attack,
       tokenDoc,
       sneakAttackerId,
       mode,
     );
+    const sneakGranted = sneakReason !== null;
     const sneakSign = sneakRefused ? -1 : sneakGranted ? 1 : 0;
     if (sneakRefused) sneakVictimsRefused.push(actor.name);
 
@@ -1052,8 +1095,13 @@ export async function applyDamageAsGM(data) {
     // already gone, and re-recording would be a no-op anyway.
     if (sneakSign > 0 || (sneakDeclaredOnCard && !sneakRefused)) {
       if (await recordSneakAttack(tokenDoc, sneakAttackerId)) {
-        if (sneakGranted) sneakVictimsGranted.push(actor.name);
-        else sneakVictimsSpent.push(actor.name);
+        if (sneakGranted) {
+          // "Guard (from behind)" rather than a bare name: the reason is the
+          // whole story on a promoted sneak, and a GM reading the log needs to
+          // be able to disagree with it.
+          const why = sneakTriggerLabel(sneakReason);
+          sneakVictimsGranted.push(why ? `${actor.name} (${why})` : actor.name);
+        } else sneakVictimsSpent.push(actor.name);
       }
     }
 

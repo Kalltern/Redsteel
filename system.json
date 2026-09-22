@@ -105,7 +105,7 @@
   "download": "https://github.com/Kalltern/Project-Redsteel/releases/latest/download/redsteel.zip",
   "background": "systems/redsteel/assets/start_screen.png",
   "grid": {
-    "type": 2,
+    "type": 4,
     "distance": 1.5,
     "units": "Meters",
     "diagonals": 0

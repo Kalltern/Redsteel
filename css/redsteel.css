@@ -11728,6 +11728,14 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   opacity: 0.6;
 }
 
+/* Which arc a blow comes from: attack dialogs and the denied-defense card. */
+.rs-position-note {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.6;
+}
+
 .rs-overwhelm-sources-label {
   margin-top: 6px;
   font-size: 11px;

@@ -175,6 +175,10 @@ export async function performCast(
       ignoreChanneling,
       freeCast,
       bloodPayment: payingBlood,
+      // The caster's own token, which is what positioning measures the targets
+      // against (utils/positioning.mjs). Without it a spell card stamps no
+      // arcs and a cast into a flank takes no bonus.
+      token,
     },
   );
 

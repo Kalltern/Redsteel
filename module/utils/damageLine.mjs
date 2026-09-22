@@ -67,3 +67,43 @@ ${
 </div>
 `;
 }
+
+/**
+ * The damage dice box, with a declared Sneak Attack's dice folded into it.
+ *
+ * The two are separate Roll objects on purpose: utils/applyDamage.mjs adds or
+ * removes the sneak total per target, and a contribution buried inside one
+ * evaluated Roll cannot be recovered. Players should still see a single damage
+ * roll rather than two boxes, so the terms of both are stitched into one
+ * display Roll with `Roll.fromTerms`, which reuses the evaluated terms and
+ * rolls nothing again. `message.rolls` keeps both originals, so re-rolls and
+ * the per-target shift are untouched.
+ *
+ * Shared by the weapon card and the ability card so the two cannot drift.
+ *
+ * @param {Roll} damageRoll
+ * @param {Roll|null} sneakRoll  the sneak dice, or null when none was declared
+ * @returns {Promise<string>} rendered HTML for the damage column
+ */
+export async function renderDamageWithSneak(damageRoll, sneakRoll = null) {
+  if (!damageRoll) return "";
+  if (!sneakRoll) return damageRoll.render();
+
+  try {
+    const combined = Roll.fromTerms([
+      ...damageRoll.terms,
+      new foundry.dice.terms.OperatorTerm({ operator: "+" }),
+      ...sneakRoll.terms,
+    ]);
+    return await combined.render();
+  } catch (error) {
+    // Never swallow the dice. A merge that fails falls back to two boxes,
+    // which is ugly but honest; hiding the sneak roll would understate the
+    // damage the card is actually doing.
+    console.warn(
+      "Redsteel | could not merge the Sneak Attack dice into the damage roll",
+      error,
+    );
+    return `${await damageRoll.render()}${await sneakRoll.render()}`;
+  }
+}

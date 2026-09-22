@@ -500,7 +500,7 @@
             },
             "outnumberSneak": {
               "label": "Outnumbering 2:1 counts as Sneak Attack",
-              "description": "20 CP; Tulák X. After a hit while outnumbering 2:1, it counts as a Sneak Attack. Manual — resolved at the table."
+              "description": "20 CP; Tulák X. After a hit while outnumbering 2:1, it counts as a Sneak Attack. Automated."
             },
             "bleed1": {
               "label": "Bleed +10%",
@@ -4845,6 +4845,26 @@
       "PreviewRefused": "Sneak Attack already spent this round: {amount}",
       "PreviewGranted": "Critical Hit counts as a Sneak Attack: {amount}"
     },
+    "Sneak": {
+      "Preview": "Counts as a Sneak Attack ({reason})",
+      "Trigger": {
+        "weakSpotOrder": "slower target",
+        "weakSpot": "weak spot",
+        "critical": "critical hit",
+        "outnumbered2": "outnumbered 2:1",
+        "back": "from behind",
+        "flank": "from the flank",
+        "outnumbered3": "outnumbered 3:1",
+        "surrounded": "surrounded",
+        "slow": "slowed",
+        "prone": "prone",
+        "stun": "stunned",
+        "root": "rooted",
+        "blind": "blinded",
+        "dazzled": "dazzled",
+        "panic": "panicking"
+      }
+    },
     "Overwhelm": {
       "Label": "Overwhelm",
       "MarkerName": "Overwhelm ({penalty}%)",
@@ -4853,6 +4873,17 @@
       "UnknownAttacker": "Unknown attacker",
       "Defend": "Defend",
       "DefendTooltip": "Roll a defense against this attack."
+    },
+    "Positioning": {
+      "Label": "Positioning",
+      "Front": "from the front",
+      "Flank": "from the flank",
+      "Back": "from behind",
+      "DialogNote": "Attack {arc}",
+      "FlankBonus": "Flank +{bonus}%",
+      "BackstabTitle": "Attack from behind",
+      "DeniedHeadline": "Critical Failure!",
+      "BackstabDenied": "No defense is possible against an attack from behind."
     },
     "BloodPayment": {
       "Tag": "Blood Payment",

@@ -2,7 +2,14 @@ import { getTraitPills } from "./traitPills.mjs";
 import { withRollBias, tagRollSkill, tagRollItemAdvantage } from "./rollAdvantage.mjs";
 import { selectAimedPart, AIMED_PARTS } from "./aimedStrike.mjs";
 import { getImprovedAimPenetration, abilityIgnoresAim } from "./aim.mjs";
-import { getWeakSpotPenetration } from "./weakSpot.mjs";
+import { getWeakSpotPenetration, isWeakSpotAttack } from "./weakSpot.mjs";
+import {
+  attackerSneakTriggers,
+  previewSneakTrigger,
+  sneakTriggerLabel,
+} from "./sneakTriggers.mjs";
+import { renderDamageWithSneak } from "./damageLine.mjs";
+import { ruleActive } from "./abilityGrants.mjs";
 import { getAttackRerollTokens } from "./rerolls.mjs";
 import { buildBanePacket } from "./baneCombat.mjs";
 import { hasHtmlContent } from "./chatBlocks.mjs";
@@ -27,6 +34,14 @@ import {
   resourceLabel,
 } from "./itemResources.mjs";
 import { captureAttackTargets } from "./autoDefense.mjs";
+import {
+  SECTOR,
+  attackSector,
+  captureAttackPositioning,
+  hasLongReachExemption,
+  longReachPenaltyAgainst,
+  sectorLabel,
+} from "./positioning.mjs";
 import { resolveTestRating } from "./testRating.mjs";
 import {
   isOwnTurn,
@@ -618,6 +633,54 @@ export async function combatAbilities() {
   // Opportunity Attack is never pre-ticked, and it is hidden entirely while the
   // actor is taking its own turn — an attack on your turn can't be one.
   const showOpportunity = !isOwnTurn(actor, token);
+  // Positioning (utils/positioning.mjs). With exactly one target the arc is
+  // unambiguous, so the Flanking pill opens ticked when the attacker stands on
+  // that target's flank. The checkbox stays the single source of truth for the
+  // roll; this only sets its starting state and names the arc beside it.
+  const soloTargets = [...(game.user?.targets ?? [])];
+  const soloTarget = soloTargets.length === 1 ? soloTargets[0] : null;
+  const targetSector = soloTarget ? attackSector(soloTarget, token) : null;
+  const flankChecked = targetSector === SECTOR.FLANK ? " checked" : "";
+  // A long-reach weapon is unwieldy against someone already inside its reach,
+  // so the penalty opens ticked when the target is in a neighbouring hex. Only
+  // the opponent being fought counts; a third party at your elbow does not
+  // hamper a thrust at someone two hexes off.
+  const longReachClose =
+    soloTarget && longReachPenaltyAgainst(actor, token, soloTarget) !== 0
+      ? " checked"
+      : "";
+  // A feature that cancels the penalty removes the pill outright rather than
+  // leaving an unticked box that would silently do nothing if clicked.
+  const showLongReach = hasLongReach && !hasLongReachExemption(actor);
+  // Zákeřný útok: the clause this swing would already be promoted by. The box
+  // opens ticked on it, and the note beside it names the reason.
+  //
+  // Safe to pre-tick ONLY because this is gated on exactly one target. A
+  // declared sneak is folded into the damage for every target the blow
+  // catches, while a promotion is judged per victim, so pre-ticking a cleave
+  // into one prone guard and one standing one would quietly sneak both. With a
+  // single target the two are the same thing.
+  //
+  // No ability is passed: this dialog is where one is CHOSEN, so nothing is
+  // settled yet. The Weak Spot clauses therefore never preview here, and still
+  // fire at Apply Damage from the list stamped on the card.
+  const sneakPreview = soloTarget
+    ? previewSneakTrigger(actor, token, soloTarget)
+    : null;
+  const sneakChecked = sneakPreview ? " checked" : "";
+  const sneakNote = sneakPreview
+    ? `<span class="rs-position-note">${game.i18n.format(
+        "REDSTEEL.Sneak.Preview",
+        { reason: sneakTriggerLabel(sneakPreview) },
+      )}</span>`
+    : "";
+  const positionNote =
+    targetSector === SECTOR.FLANK || targetSector === SECTOR.BACK
+      ? `<span class="rs-position-note">${game.i18n.format(
+          "REDSTEEL.Positioning.DialogNote",
+          { arc: sectorLabel(targetSector) },
+        )}</span>`
+      : "";
 
   let abilityDialog = new Dialog({
     title: `Choose Combat or Defense Ability`,
@@ -651,14 +714,16 @@ export async function combatAbilities() {
 <div class="form-group">
 <div class="form-group attack-options-row">
   <label class="pill">
-    <input type="checkbox" name="sneakAttack" />
+    <input type="checkbox" name="sneakAttack"${sneakChecked} />
     <span>Sneak Attack</span>
   </label>
+  ${sneakNote}
 
   <label class="pill">
-    <input type="checkbox" name="flanking" />
+    <input type="checkbox" name="flanking"${flankChecked} />
     <span>Flanking</span>
   </label>
+  ${positionNote}
 
   <label class="pill">
     <input type="checkbox" name="aimedStrike" />
@@ -677,10 +742,10 @@ export async function combatAbilities() {
   }
 
   ${
-    hasLongReach
+    showLongReach
       ? `
   <label class="pill penalty" title="Penalty of -5 applies for close combat">
-    <input type="checkbox" name="longReachPenalty" />
+    <input type="checkbox" name="longReachPenalty"${longReachClose} />
     <span>Polearm penalty</span>
   </label>
 `
@@ -1158,6 +1223,9 @@ export async function combatAbilities() {
     baneRoll = null,
     sneakDeclared = false,
     critAsSneak = false,
+    // Computed by the caller, where the ticked modifiers are still in scope.
+    sneakTriggers = [],
+    criticalGap = null,
     sneakRoll = null,
     sneakTotal = 0,
     sneakPenetration = 0,
@@ -1188,7 +1256,13 @@ export async function combatAbilities() {
     }
 
     if (damageRoll) {
-      damageHTML = await damageRoll.render();
+      // One damage box with a declared sneak's dice folded in — see
+      // renderDamageWithSneak. This card supplies its own `content`, so a roll
+      // left only in `rolls` is never drawn at all.
+      damageHTML = await renderDamageWithSneak(
+        damageRoll,
+        sneakDeclared ? sneakRoll : null,
+      );
     }
     const hasBreakthrough =
       showBreakthrough &&
@@ -1331,11 +1405,19 @@ ${
           // Who was swung at, captured from the attacker's targets while they
           // still exist — targets are per-user and live, the card is not.
           targets: captureAttackTargets(),
+          // Where each target stood when the blow was thrown (utils/positioning.mjs).
+          // The defense reads this rather than live facing, because a reaction can
+          // resolve after everyone has moved.
+          positioning: captureAttackPositioning(token?.document ?? token),
           // What a defender contests. The margin is stored explicitly rather
           // than read back off `rolls[0]`, which only happens to be the attack
           // roll; the crit flag and raw die matter because two natural
           // criticals are settled on the dice, not on the margins.
           margin: attackRoll.total,
+          // Tulák IX → "Útok/Vrh na slabinu: snížená hranice": a Weak Spot
+          // action by a rank-9 Rogue crits 20 lower than the usual 60. Null
+          // means "use the standard gap" (defense.mjs falls back to 60).
+          criticalGap,
           criticalSuccess: critSuccess,
           criticalFailure: critFailure,
           d100: attackRoll.dice.find((d) => d.faces === 100)?.total ?? null,
@@ -1358,13 +1440,15 @@ ${
             penCap,
           },
           bane: banePacket,
-          // See basicAttack.mjs — present for a declared sneak and for anyone
-          // who could earn one by critting.
-          ...(sneakDeclared || critAsSneak
+          // See basicAttack.mjs — present for a declared sneak, for anyone who
+          // could earn one by critting, and for anyone carrying a promotion
+          // trigger that Apply Damage answers per victim.
+          ...(sneakDeclared || critAsSneak || sneakTriggers.length
             ? {
                 sneak: {
                   declared: sneakDeclared,
                   critAsSneak,
+                  triggers: sneakTriggers,
                   damage: sneakTotal,
                   penetration: sneakPenetration,
                   effectChance: sneakEffect,
@@ -1616,6 +1700,24 @@ ${
       declared: sneakDeclared,
       critAsSneak,
     } = game.redsteel.computeSneakDeltas(actor, weapon, weaponContext ?? null);
+    // Every "X counts as a Sneak Attack" clause this attacker owns on this
+    // swing (utils/sneakTriggers.mjs). Only the attacker's side is knowable
+    // here; Apply Damage tests each key against each victim. Ability and ticked
+    // modifiers both asked, the same pair getWeakSpotPenetration is given above.
+    const sneakTriggers = attackerSneakTriggers(actor, {
+      ability,
+      modifiers: selectedModifiers,
+    });
+    // Tulák IX → "Útok/Vrh na slabinu: snížená hranice": a Weak Spot action by
+    // a rank-9 Rogue crits 20 lower than the usual 60.
+    const weakSpotAction =
+      isWeakSpotAttack(ability) ||
+      (selectedModifiers ?? []).some((mod) => isWeakSpotAttack(mod));
+    const criticalGap =
+      weakSpotAction &&
+      ruleActive(actor, { when: { kind: "doctrine", key: "rogue", min: 9 } })
+        ? 40
+        : null;
     // Floored at 0: Penetration is what gets through armor, so a bad weapon can
     // lose all of it but never turn into extra protection for the target.
     const penetration = Math.max(
@@ -1909,6 +2011,8 @@ ${renderSpeedTestLine({
       baneRoll,
       sneakDeclared,
       critAsSneak,
+      sneakTriggers,
+      criticalGap,
       sneakRoll,
       sneakTotal,
       sneakPenetration,

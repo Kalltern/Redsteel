@@ -270,6 +270,10 @@ export async function resolveAutoDefense(message) {
     criticalFailure: flag.criticalFailure === true,
     d100: flag.d100 ?? null,
     spellSchool: message.flags?.redsteel?.spellSchool ?? null,
+    // Where each target stood when the blow was thrown (utils/positioning.mjs).
+    positioning: flag.positioning ?? null,
+    // Tulák IX's lowered critical threshold on a Weak Spot action, if any.
+    criticalGap: flag.criticalGap ?? null,
   };
 
   const category = defenseCategory(flag.attackType);

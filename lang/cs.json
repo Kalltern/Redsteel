@@ -500,7 +500,7 @@
             },
             "outnumberSneak": {
               "label": "Přesila 2:1 jako Zákeřný útok",
-              "description": "20 CP; Tulák X. Přesila 2:1 se po zásahu počítá jako Zákeřný útok. Ručně — řeší se u stolu."
+              "description": "20 CP; Tulák X. Přesila 2:1 se po zásahu počítá jako Zákeřný útok. Automatizováno."
             },
             "bleed1": {
               "label": "Krvácení +10%",
@@ -4845,6 +4845,26 @@
       "PreviewRefused": "Zákeřný útok už byl v tomto kole vyčerpán: {amount}",
       "PreviewGranted": "Kritický zásah se počítá jako Zákeřný útok: {amount}"
     },
+    "Sneak": {
+      "Preview": "Počítá se jako Zákeřný útok ({reason})",
+      "Trigger": {
+        "weakSpotOrder": "pomalejší cíl",
+        "weakSpot": "slabina",
+        "critical": "kritický zásah",
+        "outnumbered2": "přesila 2:1",
+        "back": "zezadu",
+        "flank": "z boku",
+        "outnumbered3": "přesila 3:1",
+        "surrounded": "obklíčen",
+        "slow": "zpomalen",
+        "prone": "povalen",
+        "stun": "ochromen",
+        "root": "zakořeněn",
+        "blind": "oslepen",
+        "dazzled": "oslněn",
+        "panic": "v panice"
+      }
+    },
     "Overwhelm": {
       "Label": "Přesila",
       "MarkerName": "Přesila ({penalty}%)",
@@ -4853,6 +4873,17 @@
       "UnknownAttacker": "Neznámý útočník",
       "Defend": "Bránit se",
       "DefendTooltip": "Hodit obranu proti tomuto útoku."
+    },
+    "Positioning": {
+      "Label": "Postavení v boji",
+      "Front": "zepředu",
+      "Flank": "z boku",
+      "Back": "zezadu",
+      "DialogNote": "Útok {arc}",
+      "FlankBonus": "Z boku +{bonus} %",
+      "BackstabTitle": "Útok zezadu",
+      "DeniedHeadline": "Kritický neúspěch!",
+      "BackstabDenied": "Proti útoku zezadu se nelze bránit."
     },
     "BloodPayment": {
       "Tag": "Krevní platba",

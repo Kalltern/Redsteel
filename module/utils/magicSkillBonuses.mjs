@@ -22,6 +22,7 @@ import { resolveTestRating } from "./testRating.mjs";
 import { resolveSpellPowerTokens } from "./spellCards.mjs";
 import { setupDialogTabs } from "./dialogTabMemory.mjs";
 import { captureAttackTargets } from "./autoDefense.mjs";
+import { attackBonusFor, captureAttackPositioning } from "./positioning.mjs";
 import {
   BLOOD_PAYMENT_COST,
   BLOOD_PAYMENT_DIFFICULTY,
@@ -1236,6 +1237,10 @@ export async function finalizeRollsAndPostChat(
     fromChanneling = false,
     focusSpent = 0,
     bloodPayment = false,
+    // The caster's own token, for reading which arc each target stands in. No
+    // caller hands it over yet, so the positioning map on a spell card is empty
+    // for now and the defense falls back to live facing.
+    token = null,
   } = options;
   const {
     attackRoll,
@@ -1485,11 +1490,25 @@ export async function finalizeRollsAndPostChat(
   // tag would be a number that never gets compared to anything.
   const showMagicAttack =
     !isUncontestedSpell(spell) && !spell.system.isHealing;
+  // Where each target stood when the spell went off (utils/positioning.mjs).
+  // Computed once here: it is both stamped onto the card below and read for the
+  // flank bonus.
+  const attackPositioning = captureAttackPositioning(token?.document ?? token);
+  // A card carries ONE Magic ATK number, so a per-target bonus cannot be
+  // expressed on a multi-target spell. Only a cast that positioned exactly one
+  // target takes an arc bonus at all.
+  const positionedSectors = Object.values(attackPositioning);
+  const magicFlankBonus =
+    showMagicAttack && positionedSectors.length === 1
+      ? attackBonusFor(positionedSectors[0])
+      : 0;
   // Magic ATK is the cast margin plus the caster's flat magic attack bonuses. A
-  // Blood spell adds +5 per School of Blood rank (Expert, Master, Grandmaster).
+  // Blood spell adds +5 per School of Blood rank (Expert, Master, Grandmaster),
+  // and a single-target cast into a flank adds the arc bonus.
   const magicAttackBonus =
     (actor.system.combatSkills.channeling.attack || 0) +
-    (spell.system.type === "blood" ? getBloodSchoolRankBonus(actor) : 0);
+    (spell.system.type === "blood" ? getBloodSchoolRankBonus(actor) : 0) +
+    magicFlankBonus;
   const attack = attackRoll ? attackRoll.total + magicAttackBonus : null;
   // Resolve the `{{…spellPower…}}` placeholders with the same evaluator the
   // sheet cards use, BEFORE Handlebars sees the string. Two reasons: it floors
@@ -1511,6 +1530,14 @@ export async function finalizeRollsAndPostChat(
       ${
         showMagicAttack && attack !== null
           ? `<span class="action-tag magicAttack ">Magic ATK ${attack}</span>`
+          : ""
+      }
+      ${
+        magicFlankBonus
+          ? `<span class="action-tag flank">${game.i18n.format(
+              "REDSTEEL.Positioning.FlankBonus",
+              { bonus: magicFlankBonus },
+            )}</span>`
           : ""
       }
       ${
@@ -1691,6 +1718,10 @@ export async function finalizeRollsAndPostChat(
       // Who it was aimed at, captured from the caster's targets while they still
       // exist — targets are per-user and live, the card is not.
       targets: captureAttackTargets(),
+      // Where each target stood when the blow was thrown (utils/positioning.mjs).
+      // The defense reads this rather than live facing, because a reaction can
+      // resolve after everyone has moved.
+      positioning: attackPositioning,
       damageProfile,
       normal: {
         damage: damageTotal,

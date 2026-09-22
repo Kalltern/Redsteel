@@ -2,10 +2,12 @@ import { getTraitPills } from "./traitPills.mjs";
 import { withRollBias, tagRollSkill, tagRollItemAdvantage } from "./rollAdvantage.mjs";
 import { AIMED_PARTS } from "./aimedStrike.mjs";
 import { getImprovedAimPenetration } from "./aim.mjs";
-import { getWeakSpotPenetration } from "./weakSpot.mjs";
+import { getWeakSpotPenetration, isWeakSpotAttack } from "./weakSpot.mjs";
+import { attackerSneakTriggers } from "./sneakTriggers.mjs";
+import { ruleActive } from "./abilityGrants.mjs";
 import { getAttackRerollTokens } from "./rerolls.mjs";
 import { buildBanePacket } from "./baneCombat.mjs";
-import { renderDamageLine } from "./damageLine.mjs";
+import { renderDamageLine, renderDamageWithSneak } from "./damageLine.mjs";
 import { hasHtmlContent } from "./chatBlocks.mjs";
 import { appendHeavyWeaponDamage } from "./weaponResolver.mjs";
 import {
@@ -17,6 +19,7 @@ import { resolveTestRating } from "./testRating.mjs";
 import { renderMarginFollowupLine } from "./attributeFollowup.mjs";
 import { renderAttackTagsHtml } from "./opportunityAttacks.mjs";
 import { captureAttackTargets } from "./autoDefense.mjs";
+import { captureAttackPositioning } from "./positioning.mjs";
 
 export async function universalAttackLogic({
   attackType,
@@ -352,6 +355,25 @@ export async function universalAttackLogic({
       declared: sneakDeclared,
       critAsSneak,
     } = game.redsteel.computeSneakDeltas(actor, weapon, resolvedContext ?? null);
+    // Every "X counts as a Sneak Attack" clause this attacker owns on this
+    // swing (utils/sneakTriggers.mjs). Only the attacker's side is knowable
+    // here; Apply Damage tests each key against each victim. A basic attack
+    // reaches the Weak Spot family only through a ticked modifier, so no
+    // ability is passed — the same pair getWeakSpotPenetration is given above.
+    const sneakTriggers = attackerSneakTriggers(actor, {
+      ability: null,
+      modifiers: selectedModifiers,
+    });
+    // Tulák IX → "Útok/Vrh na slabinu: snížená hranice": a Weak Spot action by
+    // a rank-9 Rogue crits 20 lower than the usual 60.
+    const weakSpotAction = (selectedModifiers ?? []).some((mod) =>
+      isWeakSpotAttack(mod),
+    );
+    const criticalGap =
+      weakSpotAction &&
+      ruleActive(actor, { when: { kind: "doctrine", key: "rogue", min: 9 } })
+        ? 40
+        : null;
     // Floored at 0: Penetration is what gets through armor, so a bad weapon can
     // lose all of it but never turn into extra protection for the target.
     const penetration = Math.max(
@@ -498,7 +520,22 @@ export async function universalAttackLogic({
     });
 
     const attackHTML = await attackRoll.render();
-    const damageHTML = await damageRoll.render();
+    // ONE damage box, sneak dice included.
+    //
+    // The sneak dice have to stay a separate Roll in the data, because Apply
+    // Damage adds or removes their total per target and a contribution buried
+    // in a single evaluated Roll cannot be recovered. But the player should see
+    // one damage roll, so the two are merged for DISPLAY ONLY: Roll.fromTerms
+    // reuses the already-evaluated terms rather than rolling anything again,
+    // and `message.rolls` still carries both separately for re-rolls.
+    //
+    // Only a *declared* sneak is merged. A promotion is decided per victim at
+    // Apply Damage, so folding its parked roll into every swing's damage box
+    // would show damage the card is not doing.
+    const damageHTML = await renderDamageWithSneak(
+      damageRoll,
+      sneakDeclared ? sneakRoll : null,
+    );
     const modifierLabel = selectedModifiers.length
       ? ` + ${selectedModifiers.map((m) => m.localizedName ?? m.name).join(", ")}`
       : "";
@@ -601,11 +638,19 @@ ${
           // Who was swung at, captured from the attacker's targets while they
           // still exist — targets are per-user and live, the card is not.
           targets: captureAttackTargets(),
+          // Where each target stood when the blow was thrown (utils/positioning.mjs).
+          // The defense reads this rather than live facing, because a reaction can
+          // resolve after everyone has moved.
+          positioning: captureAttackPositioning(token?.document ?? token),
           // What a defender contests. The margin is stored explicitly rather
           // than read back off `rolls[0]`, which only happens to be the attack
           // roll; the crit flag and raw die matter because two natural
           // criticals are settled on the dice, not on the margins.
           margin: attackRoll.total,
+          // Tulák IX → "Útok/Vrh na slabinu: snížená hranice": a Weak Spot
+          // action by a rank-9 Rogue crits 20 lower than the usual 60. Null
+          // means "use the standard gap" (defense.mjs falls back to 60).
+          criticalGap,
           criticalSuccess: critSuccess,
           criticalFailure: critFailure,
           d100: attackRoll.dice.find((d) => d.faces === 100)?.total ?? null,
@@ -641,12 +686,15 @@ ${
           // player declared one, and also when they merely *could* earn one by
           // critting (shadow/critAsSneak) — Apply Damage adds or removes it per
           // target from here, against the once-per-round allowance
-          // (utils/sneakLedger.mjs).
-          ...(sneakDeclared || critAsSneak
+          // (utils/sneakLedger.mjs). Also present whenever the attacker owns a
+          // promotion trigger at all, since those are answered per victim at
+          // apply time and a Rogue who declared nothing still earns them.
+          ...(sneakDeclared || critAsSneak || sneakTriggers.length
             ? {
                 sneak: {
                   declared: sneakDeclared,
                   critAsSneak,
+                  triggers: sneakTriggers,
                   damage: sneakTotal,
                   penetration: sneakPenetration,
                   effectChance: sneakEffect,

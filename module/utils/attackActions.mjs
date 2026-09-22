@@ -1,6 +1,14 @@
 import { selectAimedPart } from "./aimedStrike.mjs";
 import { filterModifiersByWeapon } from "./weaponResolver.mjs";
 import { isOwnTurn } from "./opportunityAttacks.mjs";
+import {
+  SECTOR,
+  attackSector,
+  hasLongReachExemption,
+  longReachPenaltyAgainst,
+  sectorLabel,
+} from "./positioning.mjs";
+import { previewSneakTrigger, sneakTriggerLabel } from "./sneakTriggers.mjs";
 
 export async function attackActions() {
   const context = game.redsteel.selectToken({ notifyFallback: true });
@@ -66,6 +74,57 @@ export async function attackActions() {
   // Opportunity Attack is never pre-ticked, and it is hidden entirely while the
   // actor is taking its own turn — an attack on your turn can't be one.
   const showOpportunity = !isOwnTurn(actor, token);
+  // Positioning (utils/positioning.mjs). With exactly one target the arc is
+  // unambiguous, so the Flanking pill opens ticked when the attacker stands on
+  // that target's flank. The checkbox stays the single source of truth for the
+  // roll; this only sets its starting state and names the arc beside it.
+  const soloTargets = [...(game.user?.targets ?? [])];
+  const soloTarget = soloTargets.length === 1 ? soloTargets[0] : null;
+  const targetSector = soloTarget ? attackSector(soloTarget, token) : null;
+  const flankChecked = targetSector === SECTOR.FLANK ? " checked" : "";
+  // A long-reach weapon is unwieldy against someone already inside its reach,
+  // so the penalty opens ticked when the target is in a neighbouring hex. Only
+  // the opponent being fought counts; a third party at your elbow does not
+  // hamper a thrust at someone two hexes off.
+  const longReachClose =
+    soloTarget && longReachPenaltyAgainst(actor, token, soloTarget) !== 0
+      ? " checked"
+      : "";
+  // A feature that cancels the penalty removes the pill outright rather than
+  // leaving an unticked box that would silently do nothing if clicked.
+  const showLongReach = hasLongReach && !hasLongReachExemption(actor);
+  // Zákeřný útok: the clause this swing would already be promoted by. The box
+  // opens ticked on it, and the note beside it names the reason.
+  //
+  // Safe to pre-tick ONLY because this is gated on exactly one target. A
+  // declared sneak is folded into the damage for every target the blow
+  // catches, while a promotion is judged per victim, so pre-ticking a cleave
+  // into one prone guard and one standing one would quietly sneak both. With a
+  // single target the two are the same thing, and ticking it puts the dice on
+  // the attack card where the player can see them instead of leaving them to
+  // appear at Apply Damage.
+  //
+  // Reads "normal" mode, so no critical is assumed: the Shadow critAsSneak
+  // clause never pre-ticks and still fires later.
+  const sneakPreview = soloTarget
+    ? previewSneakTrigger(actor, token, soloTarget, {
+        modifiers: [],
+      })
+    : null;
+  const sneakChecked = sneakPreview ? " checked" : "";
+  const sneakNote = sneakPreview
+    ? `<span class="rs-position-note">${game.i18n.format(
+        "REDSTEEL.Sneak.Preview",
+        { reason: sneakTriggerLabel(sneakPreview) },
+      )}</span>`
+    : "";
+  const positionNote =
+    targetSector === SECTOR.FLANK || targetSector === SECTOR.BACK
+      ? `<span class="rs-position-note">${game.i18n.format(
+          "REDSTEEL.Positioning.DialogNote",
+          { arc: sectorLabel(targetSector) },
+        )}</span>`
+      : "";
   const content = `
 <form>
   ${activeSetPreview}
@@ -89,14 +148,16 @@ export async function attackActions() {
 
 <div class="form-group attack-options-row">
   <label class="pill">
-    <input type="checkbox" name="sneakAttack" />
+    <input type="checkbox" name="sneakAttack"${sneakChecked} />
     <span>Sneak Attack</span>
   </label>
+  ${sneakNote}
 
   <label class="pill">
-    <input type="checkbox" name="flanking" />
+    <input type="checkbox" name="flanking"${flankChecked} />
     <span>Flanking</span>
   </label>
+  ${positionNote}
 
   <label class="pill">
     <input type="checkbox" name="aimedStrike" />
@@ -115,10 +176,10 @@ export async function attackActions() {
   }
 
 ${
-  hasLongReach
+  showLongReach
     ? `
   <label class="pill penalty" title="Penalty of -5 applies for close combat">
-    <input type="checkbox" name="longReachPenalty" />
+    <input type="checkbox" name="longReachPenalty"${longReachClose} />
     <span>Polearm penalty</span>
   </label>
 `

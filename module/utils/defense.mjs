@@ -1,11 +1,23 @@
 import { getTraitPills } from "./traitPills.mjs";
-import { withRollBias, applyDesperateCrit, tagRollSkill } from "./rollAdvantage.mjs";
+import {
+  withRollBias,
+  applyDesperateCrit,
+  tagRollSkill,
+} from "./rollAdvantage.mjs";
 import { getDefenseRerollTokens } from "./rerolls.mjs";
 import { getBaneProfile } from "./baneCombat.mjs";
 import { buildTempHealthGrantFlag } from "./tempHealthGrant.mjs";
 import { buildManeuverFlag } from "./advantageousManeuver.mjs";
 import { getAimDefenseBonus } from "./aim.mjs";
 import { getBloodSchoolRankBonus } from "../helpers/specialisations.mjs";
+import {
+  SECTOR,
+  deniesDefense,
+  hasLongReachExemption,
+  longReachPenaltyAgainst,
+  resolveDefenseSector,
+  sectorLabel,
+} from "./positioning.mjs";
 import {
   OVERWHELM_MAX_STACKS,
   OVERWHELM_PENALTY_PER_STACK,
@@ -93,7 +105,9 @@ export function renderArmorTable(actor) {
       <table style="width:100%;text-align:center;font-size:15px;">
         <tr><th>Type</th><th>Value</th></tr>
         ${armorRows
-          .map(([label, value]) => `<tr><td>${label}</td><td>${value}</td></tr>`)
+          .map(
+            ([label, value]) => `<tr><td>${label}</td><td>${value}</td></tr>`,
+          )
           .join("")}
       </table>
     `;
@@ -157,6 +171,13 @@ export function renderVersusBlock(
   const attackCritFailure = attack?.criticalFailure === true;
   const attackD100 = attack?.d100 ?? null;
 
+  // Tulák IX → "Útok/Vrh na slabinu: snížená hranice". A Weak Spot action by a
+  // rank-9 Rogue crits on a margin of 40 rather than 60, so the threshold is a
+  // property of the blow rather than a constant. It moves the ATTACK side only:
+  // the defense still needs a full 60 to turn the guard into a Critical
+  // Defense, because nothing lowered that.
+  const attackCriticalGap = Number(attack?.criticalGap) || CRITICAL_GAP;
+
   const gap = defenseTotal - knownAttackMargin;
 
   // Which side each natural critical favours. A fumble helps the other guy.
@@ -185,7 +206,7 @@ export function renderVersusBlock(
   } else if (gap >= CRITICAL_GAP) {
     blocked = true;
     critical = "defense";
-  } else if (-gap >= CRITICAL_GAP) {
+  } else if (-gap >= attackCriticalGap) {
     blocked = false;
     critical = "hit";
   } else {
@@ -248,6 +269,57 @@ export function renderVersusBlock(
       onDice,
     },
   };
+}
+
+/**
+ * The card for a blow that could not be answered at all.
+ *
+ * An attack from behind is a critical failure on defense "bez možnosti hodu" —
+ * without the chance to roll — so there is no Roll here and none is faked. The
+ * versus block is handed `defenseCritFailure: true` with a margin of zero,
+ * which is all it needs: a natural critical for the attacker settles the
+ * contest on its own and never looks at the margins.
+ *
+ * Carries none of the claims a real defense card does. There is no roll to
+ * re-roll, no successful guard to buy Temporary Health with, and no parry to
+ * spend on an Advantageous Maneuver.
+ */
+async function postDeniedDefense({ actor, token = null, attack = null } = {}) {
+  const versus = renderVersusBlock(attack, {
+    defenseTotal: 0,
+    defenseD100: null,
+    defenseCrit: false,
+    defenseCritFailure: true,
+  });
+
+  const title = game.i18n.localize("REDSTEEL.Positioning.BackstabTitle");
+
+  await ChatMessage.create({
+    speaker: ChatMessage.getSpeaker({
+      actor,
+      token: token?.document ?? token,
+    }),
+    flavor: `
+        <div style="display:flex;align-items:center;gap:8px;font-weight:bold;">
+          <i class="fa-light fa-shield-slash"></i>
+          <span>${title}</span>
+        </div>
+        <hr>
+        <p class="rs-card-headline"><b>${game.i18n.localize(
+          "REDSTEEL.Positioning.DeniedHeadline",
+        )}</b></p>
+        <p class="rs-position-note">${game.i18n.localize(
+          "REDSTEEL.Positioning.BackstabDenied",
+        )}</p>
+        ${versus.html}
+      `,
+    flags: {
+      redsteel: {
+        rollName: title,
+        positioning: { sector: SECTOR.BACK, denied: true },
+      },
+    },
+  });
 }
 
 export async function defenseRoll({
@@ -363,14 +435,55 @@ export async function defenseRoll({
       e.getFlag("core", "statusId") === "guard" || e.statuses?.has("guard"),
   );
 
-  // Shadow → Úhyb do zad (Blindside Dodge). Facing is not tracked anywhere, so
-  // the node cannot decide on its own that a blow came from behind: it adds a
-  // second dodge button, and taking it is the defender declaring the blindside
-  // and accepting the penalty for it.
+  /* -------------------------------------------- */
+  /*  POSITIONING                                 */
+  /* -------------------------------------------- */
+
+  // Which arc this blow comes from (utils/positioning.mjs). The card's own
+  // stamp when it has one, live token facing otherwise. Null means the arc
+  // cannot be read at all — a hotbar defense answering no card, an attack that
+  // named no target — and every branch below treats null as "say nothing and
+  // behave exactly as this dialog did before positioning existed".
+  const positionSector = resolveDefenseSector({
+    defenderToken,
+    attackerTokenId: defendingAgainstId(),
+    attack,
+  });
+
+  /**
+   * The token actually swinging, as a document on the defender's own scene.
+   * Needed on top of the arc because the polearm's close-quarters penalty is a
+   * question about live distance, which no card stamps: where the attacker
+   * stands NOW is what a spear has to cope with.
+   */
+  const attackerTokenDoc = (() => {
+    const id = defendingAgainstId();
+    const defender = defenderToken?.document ?? defenderToken ?? null;
+    if (!id || !defender || id === defender.id) return null;
+    return defender.parent?.tokens?.get(id) ?? null;
+  })();
+
+  // A blow from behind that this defender has nothing to answer with. There is
+  // no roll to make and no choice to offer, so no dialog opens: the card is
+  // posted outright as the critical failure the rules say it is. Deliberately
+  // before the ability and auto-defense branches, so a reaction ability and an
+  // NPC defending itself are denied on the same terms a player is.
+  if (deniesDefense(positionSector, actor)) {
+    await postDeniedDefense({ actor, token: defenderToken, attack });
+    return;
+  }
+
+  // Shadow → Úhyb do zad (Blindside Dodge): the one thing that does answer a
+  // blow from behind, at -20%. Now that facing is tracked the button appears
+  // when the blow actually came from behind, and the arc-less case keeps the
+  // old behaviour of offering it for the defender to declare by hand.
   const shadowSpec = actor.system?.specialisations?.shadow;
-  const hasBlindsideDodge = !!(
+  const hasBackDodgeNode = !!(
     shadowSpec?.active && shadowSpec.nodes?.backDodge
   );
+  const isBackAttack = positionSector === SECTOR.BACK;
+  const hasBlindsideDodge =
+    hasBackDodgeNode && (isBackAttack || positionSector === null);
 
   /* -------------------------------------------- */
   /*  SHARED CSS                                  */
@@ -460,6 +573,17 @@ export async function defenseRoll({
     );
   }
 
+  // Parrying with a long-reach weapon is as awkward as attacking with one: the
+  // penalty applies when the attacker is in a neighbouring hex. Computed from
+  // where they stand now rather than from the card, and 0 whenever the weapon
+  // has no long reach, so the number is safe to pass unconditionally.
+  const longReachClosePenalty = hasLongReach
+    ? longReachPenaltyAgainst(actor, defenderToken, attackerTokenDoc)
+    : 0;
+  // A feature that cancels the penalty hides the checkbox rather than leaving
+  // an unticked box that would silently do nothing if clicked.
+  const showLongReach = hasLongReach && !hasLongReachExemption(actor);
+
   /* -------------------------------------------- */
   /*  AUTO-DEFENSE                                */
   /* -------------------------------------------- */
@@ -470,9 +594,23 @@ export async function defenseRoll({
   // Overwhelm still records the attacker, the versus block still contests the
   // attack, and the card comes out identical bar the auto marker.
   if (auto) {
+    // An NPC with Blindside Dodge being hit from behind has exactly one legal
+    // answer, whatever the card asked for. Everything without the node was
+    // already turned away by the deny gate above — bar a future
+    // `backstabDefense` feature, which must not be charged the node's -20% for
+    // a dodge it never bought.
+    if (isBackAttack && hasBackDodgeNode) {
+      return dodgeDefense({
+        weapon,
+        blindside: true,
+        ability: { system: { dodge: BLINDSIDE_DODGE_PENALTY } },
+      });
+    }
     if (auto === "ranged") return rangedDefense({ weapon });
     if (auto === "dodge") return dodgeDefense({ weapon });
-    return meleeDefense({ weapon });
+    // An NPC never sees the checkbox, so the penalty has to be handed to it
+    // outright or a spear-armed guard would parry at close quarters for free.
+    return meleeDefense({ weapon, longReachPenalty: longReachClosePenalty });
   }
 
   if (!ability) {
@@ -575,6 +713,21 @@ export async function defenseRoll({
       };
     }
 
+    // A blow from behind leaves the Blindside Dodge and nothing else. The node
+    // buys a dodge, not a guard: parrying, shielding and warding a blade you
+    // never saw are all still off the table.
+    //
+    // Conditional on the button existing, not merely on the blow coming from
+    // behind. A future feature that grants `system.backstabDefense` without
+    // Shadow's node passes the deny gate and arrives here with no blindside
+    // button to keep, and stripping the rest would hand it an empty dialog.
+    // Such a defender keeps the full set until the feature says otherwise.
+    if (isBackAttack && buttons.blindsideDodge) {
+      for (const key of Object.keys(buttons)) {
+        if (key !== "blindsideDodge") delete buttons[key];
+      }
+    }
+
     const dialog = new Dialog({
       title: "Select Defense Type",
       content: `
@@ -588,15 +741,25 @@ export async function defenseRoll({
               { margin: knownAttackMargin },
             )}</div>`
       }
+      ${
+        positionSector && positionSector !== SECTOR.FRONT
+          ? `<div class="rs-position-note">${game.i18n.format(
+              "REDSTEEL.Positioning.DialogNote",
+              { arc: sectorLabel(positionSector) },
+            )}</div>`
+          : ""
+      }
       <div class="rs-overwhelm"></div>
       <div class="rs-aim-defense"></div>
 
         ${
-          hasLongReach
+          showLongReach
             ? `
       <div style="margin-top:6px;">
         <label>
-          <input type="checkbox" name="longReachPenalty">
+          <input type="checkbox" name="longReachPenalty"${
+            longReachClosePenalty ? " checked" : ""
+          }>
           Long Reach penalty (-5)
         </label>
       </div>
@@ -744,14 +907,20 @@ export async function defenseRoll({
     const container = html.find(".rs-aim-defense");
     if (!container.length) return;
 
-    const { perk, aimTargetId, held, attackerTokenId: against, stacks, bonus } =
-      getAimDefenseBonus({
-        actor,
-        token: defenderToken,
-        weapon: activeWeapon,
-        context,
-        attackerTokenId: defendingAgainstId(),
-      });
+    const {
+      perk,
+      aimTargetId,
+      held,
+      attackerTokenId: against,
+      stacks,
+      bonus,
+    } = getAimDefenseBonus({
+      actor,
+      token: defenderToken,
+      weapon: activeWeapon,
+      context,
+      attackerTokenId: defendingAgainstId(),
+    });
 
     // Nothing to report for a defender who has no aim out, or no perk to spend
     // it on. Everyone else gets a straight answer either way.
@@ -1104,7 +1273,8 @@ export async function defenseRoll({
       const mainDodge = Number(weapon.system.dodge) || 0;
       const offDodge = Number(offProps?.dodge) || 0;
       const offCritDodge =
-        (Number(offProps?.critDodge) || 0) + (Number(offQuality.critDodge) || 0);
+        (Number(offProps?.critDodge) || 0) +
+        (Number(offQuality.critDodge) || 0);
 
       const dodge = actor.system.combatSkills.dodge;
       const abilityDefense = Number(ability?.system?.dodge) || 0;
@@ -1568,6 +1738,15 @@ export function registerDefendButton() {
       d100: message.flags.attack.d100 ?? null,
       // Magic Defense against a Blood spell takes the School of Blood rank bonus.
       spellSchool: message.flags?.redsteel?.spellSchool ?? null,
+      // Where each target stood when the blow was thrown, keyed by token id
+      // (utils/positioning.mjs). Absent on cards written before positioning
+      // existed and on attacks that named no target, and the defense falls back
+      // to live token facing in both cases.
+      positioning: message.flags.attack.positioning ?? null,
+      // Tulák IX lowers the attacker's critical threshold on a Weak Spot
+      // action. Absent on every other card, where the versus block falls back
+      // to the usual 60.
+      criticalGap: message.flags.attack.criticalGap ?? null,
     };
 
     const isAuthor = game.user.id === message.author?.id;

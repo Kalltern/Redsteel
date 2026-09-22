@@ -274,7 +274,10 @@ const CODE_AUTOMATED_NODES = {
   // Weakness and its throwing version, replacing the ordinary pair.
   // backDodge is utils/defense.mjs: a Blindside Dodge button in the defense
   // dialog, which rolls the ordinary dodge at -20%.)
-  shadow: ["critAsSneak", "weakSpotMastery", "backDodge"],
+  // (outnumberSneak is utils/sneakTriggers.mjs: it adds the "outnumbered 2:1"
+  // promotion clause to the trigger list stamped on the attack card, which
+  // utils/applyDamage.mjs answers against each victim as damage is applied.)
+  shadow: ["critAsSneak", "weakSpotMastery", "backDodge", "outnumberSneak"],
   // utils/weakSpot.mjs — weakSpotPen adds 10 Penetration to every action in the
   // Exploit Weakness family, folded in by utils/basicAttack.mjs (the throwing
   // versions, which ride an ordinary attack) and utils/combatAbilities.mjs.

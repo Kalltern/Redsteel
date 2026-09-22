@@ -1,20 +1,3 @@
-const EVEN_NEIGHBORS = [
-  [-1, 0],
-  [1, 0],
-  [0, -1],
-  [1, -1],
-  [0, 1],
-  [1, 1],
-];
-
-const ODD_NEIGHBORS = [
-  [-1, 0],
-  [1, 0],
-  [-1, -1],
-  [0, -1],
-  [-1, 1],
-  [0, 1],
-];
 // Foundry's drag callbacks are SYNCHRONOUS and their return value is part of
 // the contract: `_onDragLeftDrop` returning false keeps the drag alive (that is
 // how core turns a CTRL+Click into a ruler waypoint instead of a drop), and
@@ -26,25 +9,6 @@ const ODD_NEIGHBORS = [
 // fire-and-forget.
 // Track mutation observers per token to avoid leaks across interrupted drags.
 const _labelObservers = new Map();
-
-// Helpers for hex distance only. Traversal continues to use offset coords and
-// parity-aware neighbor tables as requested.
-function offsetToCube({ i, j }) {
-  const x = i - Math.floor((j - (j & 1)) / 2);
-  const z = j;
-  const y = -x - z;
-  return { x, y, z };
-}
-
-function getHexDistance(a, b) {
-  const A = offsetToCube(a);
-  const B = offsetToCube(b);
-  return Math.max(
-    Math.abs(A.x - B.x),
-    Math.abs(A.y - B.y),
-    Math.abs(A.z - B.z),
-  );
-}
 
 export class RedsteelToken extends Token {
   // Runtime-only: observers are tracked in `_labelObservers` map above.
@@ -238,11 +202,16 @@ export class RedsteelToken extends Token {
       if (current.distance > maxDistance) continue;
       reachable.push(current);
 
-      const neighbors = current.j % 2 === 0 ? EVEN_NEIGHBORS : ODD_NEIGHBORS;
-      for (const [di, dj] of neighbors) {
+      // Neighbours come from the grid itself, so the overlay is correct on any
+      // hex layout (flat-top or pointy-top, odd or even, rows or columns).
+      const neighbors = canvas.grid.getAdjacentOffsets({
+        i: current.i,
+        j: current.j,
+      });
+      for (const neighbor of neighbors) {
         queue.push({
-          i: current.i + di,
-          j: current.j + dj,
+          i: neighbor.i,
+          j: neighbor.j,
           distance: current.distance + 1,
         });
       }

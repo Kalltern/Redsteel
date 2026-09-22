@@ -89,7 +89,9 @@ export function canWeaponBleed(weapon, ammo = null) {
 export function computeSneakDeltas(actor, weapon, weaponContext = null) {
   const ws = weapon?.system ?? {};
   const offProps = weaponContext ? getOffhandProps(weaponContext) : null;
-  const offhandSneakDamage = offProps?.sneakDamage ?? 0;
+  // Left as the raw field: it is a formula fragment, and the sneak formula
+  // below decides whether there is anything worth appending.
+  const offhandSneakDamage = offProps?.sneakDamage ?? "";
   if (!actor) {
     return {
       declared: false,
@@ -116,9 +118,29 @@ export function computeSneakDeltas(actor, weapon, weaponContext = null) {
   const rank = Math.min(3, Math.max(0, Number(actor.system.sneakRank) || 0));
   const sneakEffect = rank >= 1 ? 50 : 0;
   const sneakPenetration = rank >= 3 ? 10 : rank >= 2 ? 5 : 0;
-  let sneakDamage = `${actor.system.sneakDamage ?? 1}d6 + ${offhandSneakDamage}`;
-  if (ws.sneakDamage) {
-    sneakDamage = `(${sneakDamage} + ${ws.sneakDamage} )`;
+
+  // How many d6. A character derives it from the rogue doctrine (one die even
+  // at rank 0, so everybody has at least 1d6); an NPC has it authored on the
+  // sheet. A real 0 is kept — actor.mjs stores it deliberately for a creature
+  // that cannot sneak at all — and only a missing or unreadable value falls
+  // back to one die.
+  const sneakDice = Number(actor.system.sneakDamage);
+  const diceCount = Number.isFinite(sneakDice) ? sneakDice : 1;
+
+  // Both extras are FORMULA FRAGMENTS, not numbers: the off hand's is a string
+  // field that is "" on every weapon nobody has filled in, and the weapon's own
+  // may be a dice expression. Appended only when they hold something, because
+  // interpolating an empty one straight in built "1d6 + " — a trailing operator
+  // with nothing after it, which is not a valid Roll and is why a declared
+  // Sneak Attack silently added nothing at all. Do not reintroduce `?? 0` here:
+  // `??` does not catch "", which is exactly the value this field defaults to.
+  const offhandExtra = String(offhandSneakDamage ?? "").trim();
+  const weaponExtra = String(ws.sneakDamage ?? "").trim();
+
+  let sneakDamage = diceCount > 0 ? `${diceCount}d6` : "";
+  const extras = [offhandExtra, weaponExtra].filter(Boolean);
+  if (extras.length) {
+    sneakDamage = [sneakDamage, ...extras].filter(Boolean).join(" + ");
   }
 
   return {
@@ -1011,8 +1033,11 @@ export async function getDamageRolls(
   // — the once-per-round allowance is spent on the victim, so one blow into a
   // fresh target and an already-sneaked one must pay out differently — and a
   // contribution buried inside a single evaluated Roll cannot be recovered.
-  const { sneakFormula, declared: sneakDeclared, critAsSneak } =
-    computeSneakDeltas(actor, weapon, weaponContext ?? null);
+  const { sneakFormula, declared: sneakDeclared } = computeSneakDeltas(
+    actor,
+    weapon,
+    weaponContext ?? null,
+  );
   let damageFormula = `(${ws.formula ?? 0}`;
   if (offProps?.diceBonus) {
     damageFormula += ` + ${offProps.diceBonus}`;
@@ -1077,18 +1102,31 @@ export async function getDamageRolls(
 
   // Sneak Attack dice, on their own roll so the total stays recoverable.
   //
-  // They are rolled for a critAsSneak attacker too, even with the box unticked,
-  // because Apply Damage may decide after the fact that the blow was a critical
-  // and therefore a Sneak Attack — and by then the preview has to be able to
+  // They are rolled with the box unticked too, because Apply Damage may decide
+  // after the fact that the blow counts as a Sneak Attack against this
+  // particular victim — and by then the preview has to be able to
   // show the finished number. Rolling it there instead would make the dialog
   // disagree with what it applies, which is the one thing that path guarantees.
   //
   // Only a *declared* sneak is added to `damageTotal`. The undeclared roll is
   // carried on the card as a parked number and stays worth nothing unless the
   // critical actually lands on a target with its allowance free.
+  // Rolled for EVERY attack that has a sneak formula at all, not only for a
+  // declared sneak or a critAsSneak attacker.
+  //
+  // This gate used to name the two ways a sneak could happen, and every new way
+  // added since (utils/sneakTriggers.mjs: prone, flanked, outnumbered, Weak
+  // Spot, and the rest) silently parked a zero on the card. The promotion fired
+  // correctly at Apply Damage and then added nothing, which reads at the table
+  // as "sneak attacks do not work". The condition cannot be kept in step with
+  // that list by hand, so it no longer tries: the dice are always rolled, and
+  // whether they are worth anything is decided per victim where it belongs.
+  //
+  // Costs one unused Roll on attacks that never promote. That is the price of
+  // the bug not being able to come back.
   let sneakRoll = null;
   let sneakTotal = 0;
-  if (sneakFormula && (sneakDeclared || critAsSneak)) {
+  if (sneakFormula) {
     sneakRoll = new Roll(sneakFormula, actor.system);
     await sneakRoll.evaluate();
     sneakTotal = Math.floor(sneakRoll.total ?? 0);

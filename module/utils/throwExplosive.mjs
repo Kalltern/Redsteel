@@ -8,6 +8,7 @@ import {
 import { getAttackRerollTokens } from "./rerolls.mjs";
 import { resolveAimOnAttack } from "./aim.mjs";
 import { captureAttackTargets } from "./autoDefense.mjs";
+import { captureAttackPositioning } from "./positioning.mjs";
 
 /** Local copy of the damage-profile builder used across the attack pipeline. */
 function buildDamageProfile(systemData) {
@@ -290,6 +291,10 @@ ${damageLine}
           // Who it was thrown at, captured from the thrower's targets while they
           // still exist — targets are per-user and live, the card is not.
           targets: captureAttackTargets(),
+          // Where each target stood when the blow was thrown (utils/positioning.mjs).
+          // The defense reads this rather than live facing, because a reaction can
+          // resolve after everyone has moved.
+          positioning: captureAttackPositioning(token?.document ?? token),
           damageProfile,
           effects: mechanicalEffects,
           normal: {
