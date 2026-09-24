@@ -1,5 +1,15 @@
 {
   "REDSTEEL": {
+    "AllyPass": {
+      "Title": "Propustit spojence?",
+      "Body": "{mover} chce projít přes pole, na kterém stojí {ally}. Propuštění stojí postavu {ally} její Reakci.",
+      "Allow": "Propustit",
+      "Refuse": "Odmítnout",
+      "Waiting": "Žádáš postavu {ally} o propuštění…",
+      "Declined": "Postava {ally} tě nepropustila. Tento pohyb je zrušen.",
+      "NoReaction": "Postava {ally} už nemá Reakci na propuštění. Tento pohyb je zrušen.",
+      "NoOne": "Za postavu {ally} teď nikdo nemůže odpovědět. Tento pohyb je zrušen."
+    },
     "SheetLabels": {
       "Actor": "List Actor ToS",
       "Item": "List Item ToS"
@@ -111,6 +121,18 @@
         "reactionSpent": "Reakce (využitá)",
         "hint": "Kliknutím hvězdu využiješ nebo vrátíš zpět. Pravým tlačítkem na pás vrátíš celé kolo.",
         "summary": "Akce {actions}/{actionsMax} · Reakce {reactions}/{reactionsMax}"
+      },
+      "Suggest": {
+        "Move": "Pohyb",
+        "SlowMove": "Pomalý pohyb",
+        "Sprint": "Běh",
+        "Disengage": "Odpoutání",
+        "OneAction": "1 akce",
+        "TwoActions": "2 akce",
+        "Hexes": "{n} hex",
+        "Remaining": "{remaining}/{budget} hex",
+        "Locked": "Pohyb ohlášen",
+        "Confirm": "Potvrdit pohyb"
       },
       "ShowArmor": "Zobrazit zbroj podle typu poškození",
       "ShowConditions": "Zobrazit stavy",
@@ -4893,6 +4915,14 @@
       "BackstabTitle": "Útok zezadu",
       "DeniedHeadline": "Kritický neúspěch!",
       "BackstabDenied": "Proti útoku zezadu se nelze bránit."
+    },
+    "AttackDialog": {
+      "SneakAttack": "Zákeřný útok",
+      "Flanking": "Útok z boku",
+      "OpportunityAttack": "Příležitostný útok",
+      "OpportunityHint": "útok mimo vlastní tah, vyvolaný pohybem, sesíláním nebo střelbou sousedního nepřítele.",
+      "PolearmPenalty": "Postih dřevcové zbraně",
+      "PolearmPenaltyHint": "-5 při boji zblízka se zbraní s dlouhým dosahem."
     },
     "BloodPayment": {
       "Tag": "Krevní platba",

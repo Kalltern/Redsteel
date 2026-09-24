@@ -90,6 +90,58 @@
   <div class="rs-bg3-capacity"></div>
   {{/if}}
 
+  {{!-- Turn suggestions, floated centred above the bar. Out of flow, so the
+        strip coming and going never moves the bar. No tooltips on the chips:
+        the panel's above-tooltips would park right over them. --}}
+  {{#if suggestions.length}}
+  <div class="rs-bg3-suggest{{#if showCapacity}} rs-bg3-suggest--raised{{/if}}">
+    {{#each suggestions as |chip|}}
+    {{#if chip.locked}}
+    {{!-- The declared movement. Clicking it does nothing, so it is a box
+          rather than a button, which is what lets the confirm check sit
+          inside its right end: a button cannot hold a button. --}}
+    <div
+      class="rs-bg3-suggest-chip locked"
+      data-suggestion-id="{{chip.id}}"
+      data-suggestion-mode="{{chip.mode}}"
+      role="group"
+      aria-label="{{chip.ariaLabel}}"
+    >
+      <i class="{{chip.icon}} rs-bg3-suggest-icon" aria-hidden="true"></i>
+      <span class="rs-bg3-suggest-text">
+        <span class="rs-bg3-suggest-name">{{chip.label}}</span>
+        <span class="rs-bg3-suggest-meta">{{chip.hexLabel}}</span>
+      </span>
+      <button
+        type="button"
+        class="rs-bg3-suggest-confirm"
+        data-action="confirmMovement"
+        aria-label="{{localize "REDSTEEL.Bg3Hotbar.Suggest.Confirm"}}"
+      ><i class="fa-solid fa-check" aria-hidden="true"></i></button>
+    </div>
+    {{else}}
+    <button
+      type="button"
+      class="rs-bg3-suggest-chip"
+      data-action="useSuggestion"
+      data-suggestion-id="{{chip.id}}"
+      data-suggestion-mode="{{chip.mode}}"
+      aria-label="{{chip.ariaLabel}}"
+    >
+      <i class="{{chip.icon}} rs-bg3-suggest-icon" aria-hidden="true"></i>
+      <span class="rs-bg3-suggest-text">
+        <span class="rs-bg3-suggest-name">{{chip.label}}</span>
+        <span class="rs-bg3-suggest-meta">
+          {{~#if chip.costLabel}}{{chip.costLabel}} · {{/if~}}
+          {{chip.hexLabel~}}
+        </span>
+      </span>
+    </button>
+    {{/if}}
+    {{/each}}
+  </div>
+  {{/if}}
+
   {{!-- Everything left of the bar, hung off its left edge --}}
   <div class="rs-bg3-left">
 

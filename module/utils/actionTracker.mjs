@@ -145,6 +145,7 @@ export function getSpent(actor) {
     actions: clamp(record?.actions, pools.actions),
     reactions: clamp(record?.reactions, pools.reactions),
     moved: !!record?.moved,
+    movement: record?.movement ?? null,
   };
 }
 
@@ -165,11 +166,16 @@ function clamp(value, max) {
  * permission error over a pip.
  *
  * The whole record is written every time, so a caller that means to keep
- * `moved` has to pass it. Every one of them below starts from `getSpent`,
- * which carries it.
+ * `moved` or `movement` has to pass them. Every one of them below starts from
+ * `getSpent`, which carries both.
+ *
+ * `movement` is written as an explicit null rather than left out. A flag
+ * update merges into what is stored, so an omitted key would let last round's
+ * lock survive under this round's stamp.
  *
  * @param {Actor} actor
- * @param {{actions: number, reactions: number, moved?: boolean}} spent
+ * @param {{actions: number, reactions: number, moved?: boolean,
+ *   movement?: object|null}} spent
  */
 async function writeSpent(actor, spent) {
   const combat = trackedCombat(actor);
@@ -181,6 +187,7 @@ async function writeSpent(actor, spent) {
     actions: clamp(spent.actions, pools.actions),
     reactions: clamp(spent.reactions, pools.reactions),
     moved: !!spent.moved,
+    movement: spent.movement ?? null,
   });
 }
 
@@ -289,6 +296,76 @@ export async function grantFreeMovement(actor) {
   await writeSpent(actor, { ...spent, moved: true });
 }
 
+/**
+ * Declare this turn's movement action from the hotbar's suggestion strip:
+ * Move, Slow Movement or Sprint, with the number of hexes it buys.
+ *
+ * Stored in the round-stamped record, so the lock expires with the round and
+ * the right-click reset on the pips clears it along with everything else.
+ * `startSpent` is the token's `movementSpent` at the moment of locking; hexes
+ * walked since are that counter minus this, which keeps the zone right even
+ * when the round-change reset of `movementSpent` did not run (no GM online).
+ *
+ * Marks `moved`, so the `updateToken` hook does not charge the first step a
+ * second time. `charge` is what this call adds to the Action count: 1 for Move
+ * and Slow Movement, 0 for a Sprint whose ability already paid through
+ * `deductAbilityCost`.
+ *
+ * @param {Actor} actor
+ * `ignore` is Disengage's: the ids of the enemies it breaks free from, which
+ * neither threaten the move nor may be walked around (movementZones.mjs).
+ *
+ * @param {{mode: "move"|"slow"|"sprint"|"disengage", budget: number,
+ *   startSpent: number, charge?: number, ignore?: string[]}} lock
+ */
+export async function lockMovement(
+  actor,
+  { mode, budget, startSpent = 0, charge = 0, ignore = [] },
+) {
+  if (!trackedCombat(actor)) return;
+  const spent = getSpent(actor);
+  await writeSpent(actor, {
+    ...spent,
+    actions: spent.actions + Math.max(0, charge),
+    moved: true,
+    movement: {
+      mode,
+      budget: Math.max(0, Math.floor(Number(budget) || 0)),
+      startSpent: Math.max(0, Math.floor(Number(startSpent) || 0)),
+      ignore: Array.isArray(ignore) ? ignore : [],
+    },
+  });
+}
+
+/**
+ * The player says the declared movement is finished: the strip's check
+ * button. Marks the lock `done`, which hides the locked chip and its zone.
+ * The lock itself stays, so the drag overlay still caps a further drag at
+ * what was left, and it expires with the round like the rest of the record.
+ *
+ * @param {Actor} actor
+ */
+export async function confirmMovement(actor) {
+  if (!trackedCombat(actor)) return;
+  const spent = getSpent(actor);
+  if (!spent.movement || spent.movement.done) return;
+  await writeSpent(actor, {
+    ...spent,
+    movement: { ...spent.movement, done: true },
+  });
+}
+
+/**
+ * This round's declared movement, or null when none was locked.
+ *
+ * @param {Actor} actor
+ * @returns {{mode: string, budget: number, startSpent: number,
+ *   done?: boolean}|null}
+ */
+export function getMovementLock(actor) {
+  return getSpent(actor).movement;
+}
+
 /* -------------------------------------------------------------------------- */
 /*  Turning an item into a cost                                               */
 /* -------------------------------------------------------------------------- */
@@ -307,6 +384,17 @@ export async function grantFreeMovement(actor) {
 function isActorsTurn(actor, combat) {
   const combatant = combatantForActor(actor, combat);
   return !!combatant && combat.combatant?.id === combatant.id;
+}
+
+/**
+ * Is it this actor's turn in a tracked encounter? The hotbar's suggestion
+ * strip offers turn actions only then.
+ *
+ * @param {Actor} actor
+ */
+export function isTrackedTurn(actor) {
+  const combat = trackedCombat(actor);
+  return !!combat && isActorsTurn(actor, combat);
 }
 
 /**
@@ -404,9 +492,24 @@ export function registerActionTrackerHooks() {
    * Whoever actually performed it is the one who records it, and `isOwner`
    * inside `noteMovement`'s write is what stops that being a permission error.
    */
+  /**
+   * Where each token stood before an update this client made. A drag released
+   * on the token's own hex still sends x/y, identical to the old ones, and
+   * that must not read as a move. `preUpdateToken` runs on the updating client
+   * only, which is the same client the `userId` guard below lets through.
+   */
+  const before = new Map();
+  Hooks.on("preUpdateToken", (tokenDoc, changed) => {
+    if (typeof changed?.x !== "number" && typeof changed?.y !== "number") return;
+    before.set(tokenDoc.id, { x: tokenDoc.x, y: tokenDoc.y });
+  });
+
   Hooks.on("updateToken", async (tokenDoc, changed, _options, userId) => {
     if (userId !== game.user.id) return;
     if (typeof changed?.x !== "number" && typeof changed?.y !== "number") return;
+    const prev = before.get(tokenDoc.id);
+    before.delete(tokenDoc.id);
+    if (prev && prev.x === tokenDoc.x && prev.y === tokenDoc.y) return;
     const actor = tokenDoc?.actor;
     if (!actor?.isOwner) return;
     await noteMovement(actor);

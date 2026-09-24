@@ -1,5 +1,15 @@
 {
   "REDSTEEL": {
+    "AllyPass": {
+      "Title": "Let an ally pass?",
+      "Body": "{mover} wants to move through the hex {ally} stands on. Letting them pass spends {ally}'s Reaction.",
+      "Allow": "Let them pass",
+      "Refuse": "Refuse",
+      "Waiting": "Asking {ally} to let you pass…",
+      "Declined": "{ally} did not let you pass. That move is cancelled.",
+      "NoReaction": "{ally} has no Reaction left to let you pass. That move is cancelled.",
+      "NoOne": "Nobody can answer for {ally} right now. That move is cancelled."
+    },
     "SheetLabels": {
       "Actor": "Redsteel Actor Sheet",
       "Item": "Redsteel Item Sheet"
@@ -111,6 +121,18 @@
         "reactionSpent": "Reaction (spent)",
         "hint": "Click a pip to spend or restore it. Right-click the strip to reset the round.",
         "summary": "Actions {actions}/{actionsMax} · Reactions {reactions}/{reactionsMax}"
+      },
+      "Suggest": {
+        "Move": "Move",
+        "SlowMove": "Slow Movement",
+        "Sprint": "Sprint",
+        "Disengage": "Disengage",
+        "OneAction": "1 Action",
+        "TwoActions": "2 Actions",
+        "Hexes": "{n} hex",
+        "Remaining": "{remaining}/{budget} hex",
+        "Locked": "Movement declared",
+        "Confirm": "Confirm movement"
       },
       "ShowArmor": "Show armor by damage type",
       "ShowConditions": "Show conditions",
@@ -4893,6 +4915,14 @@
       "BackstabTitle": "Attack from behind",
       "DeniedHeadline": "Critical Failure!",
       "BackstabDenied": "No defense is possible against an attack from behind."
+    },
+    "AttackDialog": {
+      "SneakAttack": "Sneak Attack",
+      "Flanking": "Flanking",
+      "OpportunityAttack": "Opportunity Attack",
+      "OpportunityHint": "attack made outside your own turn, triggered by an adjacent enemy's movement, casting or shooting.",
+      "PolearmPenalty": "Polearm penalty",
+      "PolearmPenaltyHint": "-5 when fighting at close range with a long-reach weapon."
     },
     "BloodPayment": {
       "Tag": "Blood Payment",

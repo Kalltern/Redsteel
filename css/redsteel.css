@@ -11289,6 +11289,200 @@ body.redsteel-bg3-hotbar #hotbar {
   cursor: default;
 }
 
+/* --- Turn suggestions ------------------------ */
+
+/* A small stone plate floated centred above the bar, holding the turn actions
+   worth taking now (utils/actionSuggestions.mjs). Absolutely placed off the
+   anchor like the capacity readout, so it takes no layout space and the bar
+   never moves when it comes or goes. Under the popovers (z-index 5), which
+   open over the same air.
+
+   Three chips at 124px, two 6px gaps, 6px padding each side and the 1px
+   border: 398px. */
+#redsteel-bg3-hotbar .rs-bg3-suggest {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 6px);
+  transform: translateX(-50%);
+  z-index: 4;
+  display: flex;
+  gap: 6px;
+  width: max-content;
+  padding: 5px 6px 6px;
+  background: linear-gradient(
+    180deg,
+    rgba(9, 9, 10, 0.9) 0%,
+    rgba(4, 4, 5, 0.97) 100%
+  );
+  border: 1px solid var(--rs-bg3-border);
+  border-radius: 0;
+  box-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.55),
+    inset 0 0 18px rgba(0, 0, 0, 0.5);
+  /* #ui-bottom is pointer-events: none. */
+  pointer-events: auto;
+}
+
+/* The bronze hairline along the plate's foot, the resource editor's scored
+   rule. */
+#redsteel-bg3-hotbar .rs-bg3-suggest::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  bottom: 2px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgba(154, 144, 120, 0) 0%,
+    rgba(154, 144, 120, 0.42) 22%,
+    rgba(154, 144, 120, 0.42) 78%,
+    rgba(154, 144, 120, 0) 100%
+  );
+  pointer-events: none;
+}
+
+/* The capacity readout sits at the bar's top-left corner; with it on, the
+   strip lifts clear of it rather than risk sharing its line. */
+#redsteel-bg3-hotbar .rs-bg3-suggest--raised {
+  bottom: calc(100% + 30px);
+}
+
+/* Each chip is a socket, the action row's recipe: flat dark fill, shadow from
+   the top, no radius. Core's fixed button height is undone, or the second
+   line would burst out of the border. */
+#redsteel-bg3-hotbar .rs-bg3-suggest-chip {
+  flex: 0 0 124px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: 124px;
+  min-width: 124px;
+  height: auto;
+  min-height: 38px;
+  margin: 0;
+  padding: 4px 7px;
+  text-align: left;
+  line-height: 1.15;
+  color: var(--rs-bg3-text);
+  background: #0c0c0a;
+  border: 1px solid #4a4130;
+  border-radius: 0;
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.95),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.55);
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-suggest-chip:hover {
+  filter: brightness(1.3);
+}
+
+/* Clicking leaves the chip focused, and core rings a focused button. */
+#redsteel-bg3-hotbar .rs-bg3-suggest-chip:focus {
+  outline: none;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-suggest-chip:focus-visible {
+  border-color: var(--rs-bg3-accent);
+}
+
+#redsteel-bg3-hotbar .rs-bg3-suggest-icon {
+  flex: 0 0 16px;
+  width: 16px;
+  margin: 0;
+  font-size: 15px;
+  text-align: center;
+  color: #93783f;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-suggest-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-suggest-name,
+#redsteel-bg3-hotbar .rs-bg3-suggest-meta {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-suggest-name {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 12px;
+  color: var(--rs-bg3-text);
+}
+
+#redsteel-bg3-hotbar .rs-bg3-suggest-meta {
+  font-size: 10px;
+  color: rgb(154, 144, 120);
+}
+
+/* The declared movement: the gold edge and faint inner glow the armed
+   auto-defense switch wears. Nothing else is dimmed to set it apart, and it
+   does not brighten on hover, since clicking it does nothing. */
+#redsteel-bg3-hotbar .rs-bg3-suggest-chip.locked {
+  border-color: var(--rs-bg3-accent);
+  box-shadow:
+    inset 0 0 10px rgba(200, 162, 74, 0.16),
+    inset 0 1px 3px rgba(0, 0, 0, 0.8);
+  cursor: default;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-suggest-chip.locked:hover {
+  filter: none;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-suggest-chip.locked .rs-bg3-suggest-icon {
+  color: var(--rs-bg3-bright);
+}
+
+/* Room for the confirm check at the locked chip's right end. */
+#redsteel-bg3-hotbar .rs-bg3-suggest-chip.locked {
+  flex-basis: 150px;
+  width: 150px;
+  min-width: 150px;
+  padding-right: 3px;
+}
+
+/* The confirm check: a small socket of its own cut into the chip's right
+   end, pushed there by the auto margin. Core's fixed button height undone. */
+#redsteel-bg3-hotbar .rs-bg3-suggest-confirm {
+  flex: 0 0 26px;
+  width: 26px;
+  min-width: 26px;
+  height: auto;
+  min-height: 28px;
+  margin: 0 0 0 auto;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--rs-bg3-accent);
+  background: #080807;
+  border: 1px solid #4a4130;
+  border-radius: 0;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.95);
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-suggest-confirm:hover {
+  filter: brightness(1.4);
+}
+
+#redsteel-bg3-hotbar .rs-bg3-suggest-confirm:focus {
+  outline: none;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-suggest-confirm i {
+  margin: 0;
+  font-size: 13px;
+}
+
 /* Narrow displays squeeze the wings, not the bar: the player list holds the
    bottom left and the chat input the bottom right, so 1920 has far less room
    either side than its width suggests. These come after the height rules so
@@ -11985,6 +12179,96 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   opacity: 0.6;
+}
+
+/* Attack dialogs: Sneak / Flanking / Opportunity as round icon toggles
+   (utils/attackOptionIcons.mjs). Off = greyed and sunk, on = full colour
+   with a gold rim. */
+.attack-options-notes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: -2px 0 8px;
+}
+
+.rs-atk-icon {
+  position: relative;
+  flex: 0 0 auto;
+  cursor: pointer;
+}
+
+.rs-atk-icon input {
+  display: none;
+}
+
+.rs-atk-icon-face {
+  position: relative;
+  display: block;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid #4a4336;
+  background: #1a1a1a;
+  box-shadow:
+    inset 0 2px 5px rgba(0, 0, 0, 0.8),
+    0 1px 0 rgba(255, 255, 255, 0.05);
+  filter: grayscale(1) brightness(0.45);
+  transition:
+    filter 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.rs-atk-icon-face img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: none;
+  object-fit: cover;
+}
+
+/* Sneak Attack: a dark purple wash over the pink dagger. */
+.rs-atk-icon.sneak .rs-atk-icon-face::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(90, 30, 130, 0.55) 0%,
+    rgba(35, 5, 55, 0.85) 100%
+  );
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+/* Polearm penalty: a blood-red wash over the spear tips. */
+.rs-atk-icon.penalty .rs-atk-icon-face::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(170, 30, 25, 0.6) 0%,
+    rgba(70, 5, 5, 0.85) 100%
+  );
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+.rs-atk-icon:hover .rs-atk-icon-face {
+  filter: grayscale(0.6) brightness(0.7);
+  border-color: #7a6a48;
+}
+
+.rs-atk-icon input:checked + .rs-atk-icon-face {
+  filter: none;
+  border-color: #c9a54a;
+  box-shadow:
+    inset 0 0 4px rgba(0, 0, 0, 0.6),
+    0 0 6px rgba(201, 165, 74, 0.45);
 }
 
 .rs-overwhelm-sources-label {

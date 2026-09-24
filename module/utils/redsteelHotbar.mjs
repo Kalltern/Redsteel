@@ -32,12 +32,27 @@ import {
   openModifierDialog,
 } from "./rollModifier.mjs";
 import {
+  confirmMovement,
   getActionPools,
+  getMovementLock,
   getSpent,
+  lockMovement,
   resetSpent,
   setSpent,
   trackedCombat,
 } from "./actionTracker.mjs";
+import { prepareSuggestions } from "./actionSuggestions.mjs";
+import {
+  clearLockedZone,
+  clearPreview,
+  engagingEnemyIds,
+  movementBudget,
+  refreshLockedZone,
+  setZoneActor,
+  showPreview,
+  tokenMovementSpent,
+} from "./movementZones.mjs";
+import { isSprintAbility, useUtilityAbility } from "./combatAbilities.mjs";
 
 const SETTING = "bg3Hotbar";
 const TEAM_HEALTH_SETTING = "bg3HotbarTeamHealth";
@@ -992,6 +1007,8 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       toggleTrayView: this._onToggleTrayView,
       toggleAutoDefense: this._onToggleAutoDefense,
       toggleActionPip: this._onToggleActionPip,
+      useSuggestion: this._onUseSuggestion,
+      confirmMovement: this._onConfirmMovement,
     },
   };
 
@@ -1017,6 +1034,9 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
   #boundPointerOver;
   #boundPointerLeave;
   #boundKeyDown;
+
+  /** A suggestion chip's click is still being carried out. */
+  #suggestionBusy = false;
 
   /** The board element the deselect listener is on, so `_onClose` can undo it. */
   #board = null;
@@ -1239,6 +1259,9 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       // Its own key: `actions` above is the button row, and the two would
       // shadow each other in the template.
       actionTracker: this.#prepareActionTracker(actor),
+      // Turn actions worth taking now, floated above the bar. Empty when there
+      // is nothing to suggest, and then the strip is not drawn at all.
+      suggestions: prepareSuggestions(actor),
       resourceBars: this.#prepareResourceBars(actor),
       // One tray, two readings on a character and both at once on an NPC. The
       // flag is per user rather than per actor, so a player who switched to
@@ -2096,6 +2119,13 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     const root = this.element;
     if (!(root instanceof HTMLElement)) return;
 
+    // A redraw replaces the chip under the cursor, so its pointerleave never
+    // fires: drop any hover preview here, and let the new chip redraw it.
+    clearPreview();
+    this.#bindSuggestionHover(root);
+    setZoneActor(this.actor);
+    refreshLockedZone();
+
     // Re-render replaces the part content but keeps this root element, so the
     // delegated listeners are removed first to avoid stacking duplicates.
     root.removeEventListener("contextmenu", this.#boundContextMenu);
@@ -2147,6 +2177,22 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     // so fire it ourselves rather than depend on it. If core fires it too the
     // listener simply no-ops: `injectButton` bails when the container exists.
     Hooks.callAll("renderBg3Hotbar", this, root);
+  }
+
+  /**
+   * Hovering a movement chip previews that mode's zone on the canvas. Bound
+   * per chip, since pointerenter/pointerleave do not bubble. A locked chip has
+   * no preview: its zone is already drawn.
+   */
+  #bindSuggestionHover(root) {
+    for (const chip of root.querySelectorAll(".rs-bg3-suggest-chip")) {
+      if (chip.classList.contains("locked")) continue;
+      const mode = chip.dataset.suggestionMode;
+      chip.addEventListener("pointerenter", () => {
+        if (this.actor) showPreview(this.actor, mode);
+      });
+      chip.addEventListener("pointerleave", () => clearPreview());
+    }
   }
 
   /**
@@ -2255,7 +2301,16 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       add(hook, () => this.#rerender());
     }
 
-    add("updateToken", (_tokenDoc, changed) => {
+    add("updateToken", (tokenDoc, changed) => {
+      // The bound actor's walked-hex counter drives the locked suggestion
+      // chip's remaining count.
+      if (
+        this.actor &&
+        tokenDoc?.actor?.uuid === this.actor.uuid &&
+        "movementSpent" in (changed?.flags?.redsteel ?? {})
+      ) {
+        return this.#rerender();
+      }
       // Dragging a token fires this continuously. Only these can alter the
       // roster; everything else is movement and appearance.
       if (!("hidden" in changed) && !("delta" in changed) && !("actorLink" in changed)) {
@@ -2344,6 +2399,9 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     this.#board = null;
     document.removeEventListener("keydown", this.#boundKeyDown);
     this.#hoveredPortraitUuid = null;
+    clearPreview();
+    setZoneActor(null);
+    clearLockedZone();
     super._onClose?.(options);
   }
 
@@ -2591,6 +2649,95 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     // the same slider it always was, read from the other end.
     const wasSpent = index >= max - getSpent(actor)[pool];
     await setSpent(actor, pool, wasSpent ? max - index - 1 : max - index);
+  }
+
+  /**
+   * A suggestion chip: declare this turn's movement.
+   *
+   * Move and Slow Movement charge their Action through the lock itself. Sprint
+   * runs the Sprint ability when the actor has it (effect, chat card, stamina
+   * and its two Actions) and locks for nothing more; if the ability cannot be
+   * paid for, nothing is locked. An actor without the ability gets the Sprint
+   * effect directly and the lock charges the two Actions.
+   *
+   * No re-render here: the lock is an actor flag write, and the panel already
+   * redraws on `updateActor`.
+   *
+   * @this {Bg3Hotbar}
+   */
+  static async _onUseSuggestion(event, target) {
+    if (isRightClick(event)) return;
+    const chip = target.closest("[data-action=useSuggestion]");
+    if (!chip || chip.classList.contains("locked")) return;
+
+    const actor = this.actor;
+    if (!actor?.isOwner) return;
+    if (getMovementLock(actor)) return;
+
+    const mode = chip.dataset.suggestionMode;
+    if (!["move", "slow", "sprint", "disengage"].includes(mode)) return;
+
+    // A second click landing before the lock is written would declare twice
+    // (and run Sprint twice).
+    if (this.#suggestionBusy) return;
+    this.#suggestionBusy = true;
+    try {
+      clearPreview();
+      const startSpent = tokenMovementSpent(tokenForActor(actor));
+      const budget = movementBudget(actor, mode);
+
+      // Disengage runs its own ability (card, and its two Actions through
+      // the tracker) and remembers whom it broke free from, so the locked
+      // zone keeps ignoring them after the first step away.
+      if (mode === "disengage") {
+        const ignore = engagingEnemyIds(tokenForActor(actor));
+        const disengage = actor.items.find(
+          (i) =>
+            i.type === "ability" &&
+            (i.system?.key === "disengage" ||
+              i.system?.localizationKey === "REDSTEEL.Items.Disengage.name"),
+        );
+        if (disengage) {
+          if (!(await useUtilityAbility(actor, disengage))) return;
+          await lockMovement(actor, { mode, budget, startSpent, charge: 0, ignore });
+        } else {
+          await lockMovement(actor, { mode, budget, startSpent, charge: 2, ignore });
+        }
+        return;
+      }
+
+      if (mode !== "sprint") {
+        await lockMovement(actor, { mode, budget, startSpent, charge: 1 });
+        return;
+      }
+
+      const sprint = actor.items.find(
+        (i) => i.type === "ability" && isSprintAbility(i),
+      );
+      if (sprint) {
+        if (!(await useUtilityAbility(actor, sprint))) return;
+        await lockMovement(actor, { mode, budget, startSpent, charge: 0 });
+        return;
+      }
+
+      await game.redsteel.applyEffect(actor, "sprint");
+      await lockMovement(actor, { mode, budget, startSpent, charge: 2 });
+    } finally {
+      this.#suggestionBusy = false;
+    }
+  }
+
+  /**
+   * The check button beside a declared movement: the player is done walking.
+   * The chip and its zone go away; the panel redraws on the actor flag write.
+   *
+   * @this {Bg3Hotbar}
+   */
+  static async _onConfirmMovement(event) {
+    if (isRightClick(event)) return;
+    const actor = this.actor;
+    if (!actor?.isOwner) return;
+    await confirmMovement(actor);
   }
 
   /**

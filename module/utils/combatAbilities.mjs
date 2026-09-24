@@ -51,6 +51,7 @@ import {
 import { setupDialogTabs } from "./dialogTabMemory.mjs";
 import { getCommandTargets, runCommand } from "./commands.mjs";
 import { spendForItems } from "./actionTracker.mjs";
+import { attackOptionIconsHtml } from "./attackOptionIcons.mjs";
 
 export async function combatAbilities() {
   // ====================================================================
@@ -714,46 +715,24 @@ export async function combatAbilities() {
 
 <div class="form-group">
 <div class="form-group attack-options-row">
-  <label class="pill">
-    <input type="checkbox" name="sneakAttack"${sneakChecked} />
-    <span>Sneak Attack</span>
-  </label>
-  ${sneakNote}
-
-  <label class="pill">
-    <input type="checkbox" name="flanking"${flankChecked} />
-    <span>Flanking</span>
-  </label>
-  ${positionNote}
+  ${attackOptionIconsHtml({
+    sneak: !!sneakChecked,
+    flank: !!flankChecked,
+    opportunity: showOpportunity,
+    longReach: showLongReach,
+    longReachClose: !!longReachClose,
+  })}
 
   <label class="pill">
     <input type="checkbox" name="aimedStrike" />
     <span>Aimed Attack</span>
   </label>
-
-  ${
-    showOpportunity
-      ? `
-  <label class="pill" title="Attack made outside your own turn, triggered by an adjacent enemy's movement, casting or shooting.">
-    <input type="checkbox" name="opportunityAttack" />
-    <span>Opportunity Attack</span>
-  </label>
-`
-      : ""
-  }
-
-  ${
-    showLongReach
-      ? `
-  <label class="pill penalty" title="Penalty of -5 applies for close combat">
-    <input type="checkbox" name="longReachPenalty"${longReachClose} />
-    <span>Polearm penalty</span>
-  </label>
-`
-      : ""
-  }
 </div>
-
+${
+  sneakNote || positionNote
+    ? `<div class="attack-options-notes">${sneakNote}${positionNote}</div>`
+    : ""
+}
 
 </div>
 <div class="attack-modifiers">
@@ -2151,6 +2130,15 @@ export async function deductAbilityCost(actor, abilities = []) {
 function renderWeaponLoadoutsDialog(actor) {
   const weaponSets = game.redsteel.buildWeaponSetView(actor);
   const activeSet = actor.system.combat.activeWeaponSet;
+  // A character with nothing in set 2 has no sets to speak of, so the whole
+  // loadout is left out. Only from set 1, so a character already standing
+  // on an empty set 2 still sees the switch back.
+  if (
+    Number(activeSet) === 1 &&
+    !weaponSets[2]?.main &&
+    !weaponSets[2]?.off
+  )
+    return "";
 
   return `
 <section class="weapon-loadouts horizontal active-set-${activeSet}">
@@ -2269,11 +2257,29 @@ async function rollUtilityTest(actor, item) {
  * those copies. `system.key` is honoured as well so a GM can point a custom
  * Sprint variant at the same automation.
  */
-function isSprintAbility(ability) {
+export function isSprintAbility(ability) {
   return (
     ability?.system?.key === "sprint" ||
     ability?.system?.localizationKey === "REDSTEEL.Items.Sprint.name"
   );
+}
+
+/**
+ * Use one utility ability directly, outside the Combat Abilities dialog: pay
+ * its cost (resources, then the action tracker) and run it exactly as the
+ * dialog's "other" branch does. The hotbar's suggestion strip launches Sprint
+ * through this.
+ *
+ * @param {Actor} actor
+ * @param {Item} ability  An ability of type "other" that is not a stance or a
+ *   command; those take their own branches in the dialog.
+ * @returns {Promise<boolean>} False when the cost could not be paid.
+ */
+export async function useUtilityAbility(actor, ability) {
+  const paid = await deductAbilityCost(actor, [ability]);
+  if (!paid) return false;
+  await runUtilityAbility(actor, ability);
+  return true;
 }
 
 async function runUtilityAbility(actor, ability, modifiers = []) {

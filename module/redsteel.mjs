@@ -92,6 +92,8 @@ import {
   resetSpent,
   setSpent,
 } from "./utils/actionTracker.mjs";
+import { registerMovementZoneHooks } from "./utils/movementZones.mjs";
+import { registerAllyPassage } from "./utils/allyPassage.mjs";
 import { registerStatusCounterColors } from "./utils/statusCounterColors.mjs";
 import {
   describeSneakSources,
@@ -495,6 +497,8 @@ Hooks.once("init", function () {
   registerDefendButton();
   registerOverwhelmHooks();
   registerActionTrackerHooks();
+  registerMovementZoneHooks();
+  registerAllyPassage();
   registerStatusCounterColors();
   registerAutoDefense();
   registerWrathOfBlood();

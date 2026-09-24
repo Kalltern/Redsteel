@@ -1,3 +1,17 @@
+import { getMovementLock, isTrackedTurn } from "../utils/actionTracker.mjs";
+import {
+  MOVEMENT_MODES,
+  DRAG_PATH_LAYER,
+  clearLockedZone,
+  clearZone,
+  computeMovementZone,
+  refreshLockedZone,
+  pathSwordHexes,
+  renderSwords,
+  lockRemaining,
+  renderZone,
+} from "../utils/movementZones.mjs";
+
 // Foundry's drag callbacks are SYNCHRONOUS and their return value is part of
 // the contract: `_onDragLeftDrop` returning false keeps the drag alive (that is
 // how core turns a CTRL+Click into a ruler waypoint instead of a drop), and
@@ -10,11 +24,16 @@
 // Track mutation observers per token to avoid leaks across interrupted drags.
 const _labelObservers = new Map();
 
+
 export class RedsteelToken extends Token {
   // Runtime-only: observers are tracked in `_labelObservers` map above.
 
   _onDragLeftMove(event) {
     const result = super._onDragLeftMove(event);
+
+    // The route's swords follow the cursor, CTRL planning included: the
+    // waypoints being placed are exactly the route being judged.
+    if (this.#isInCombat()) this.#refreshPathSwords();
 
     // Let Foundry handle CTRL path planning normally
     if (this.#isPlanningMovement(event)) return result;
@@ -83,36 +102,12 @@ export class RedsteelToken extends Token {
    * this token's movement budget. Runs one microtask after core's drop so the
    * label still carries the final cumulative distance.
    */
+  /**
+   * The drop is over: take the overlay down. Hexes are no longer charged
+   * here. They are counted from the `moveToken` hook at the bottom of this
+   * file, which reports the spaces the token really moved.
+   */
   #commitMovement() {
-    try {
-      const label = document.querySelector(
-        "#measurement .token-ruler-labels .waypoint-label",
-      );
-
-      let meters = 0;
-
-      if (label) {
-        const text = label.textContent || "";
-        const match = text.match(/[\d.,]+/);
-        meters = Number(match?.[0]?.replace(",", ".") ?? 0) || 0;
-      }
-
-      const hexMoved = Math.round(meters / 1.5) || 0;
-
-      if (hexMoved > 0 && this.document) {
-        const spent =
-          (this.document.getFlag("redsteel", "movementSpent") ?? 0) || 0;
-
-        this.document
-          .setFlag("redsteel", "movementSpent", spent + hexMoved)
-          .catch((err) =>
-            console.error("REDSTEEL: Failed to commit movement on drop", err),
-          );
-      }
-    } catch (err) {
-      console.error("REDSTEEL: Failed to commit movement on drop", err);
-    }
-
     this.#clearMovementRange();
   }
 
@@ -143,8 +138,84 @@ export class RedsteelToken extends Token {
   #movementLayerId = "redsteel-movement";
   #sprintLayerId = "redsteel-sprint";
 
+  /**
+   * Hexes left of a movement declared from the hotbar's suggestion strip, read
+   * when the drag started. Null when no movement is locked, and then the label
+   * caps at full Speed as before.
+   */
+  #lockedCap = null;
+
+  /** Canvas centre of the token when the current drag began. */
+  #dragOriginPoint = null;
+
+  /** Waypoint centres placed during the current drag (CTRL+Click). */
+  #dragWaypoints = [];
+
+  /** Enemy ids a declared Disengage broke free from, for the route swords. */
+  #pathIgnore = [];
+
+  /** Origin, waypoints and cursor hex the path swords were last drawn for. */
+  #pathKey = null;
+
+  /**
+   * Record each waypoint core places, snapped to its hex centre, so the path
+   * swords judge the same route the ruler shows. Return value passed through
+   * untouched, as with every drag override here.
+   */
+  _addDragWaypoint(point, options) {
+    const result = super._addDragWaypoint(point, options);
+    try {
+      if (point) this.#dragWaypoints.push(canvas.grid.getCenterPoint(point));
+    } catch (err) {
+      console.error("REDSTEEL: failed to record drag waypoint", err);
+    }
+    return result;
+  }
+
+  _removeDragWaypoint(...args) {
+    const result = super._removeDragWaypoint(...args);
+    this.#dragWaypoints.pop();
+    return result;
+  }
+
+  /**
+   * Swords on the dragged route: every hex entered by a step that starts next
+   * to a threatening enemy. Redrawn only when the cursor's hex or the waypoint
+   * list changes, since this runs on every mouse move.
+   */
+  #refreshPathSwords() {
+    try {
+      const origin = this.#dragOriginPoint;
+      const cursor = canvas.mousePosition;
+      if (!origin || !cursor) return;
+      const cursorHex = canvas.grid.getOffset(cursor);
+      const points = [
+        origin,
+        ...this.#dragWaypoints,
+        canvas.grid.getCenterPoint(cursorHex),
+      ];
+      const key = points.map((p) => `${Math.round(p.x)},${Math.round(p.y)}`).join("|");
+      if (key === this.#pathKey) return;
+      this.#pathKey = key;
+      renderSwords(DRAG_PATH_LAYER, pathSwordHexes(this, points, { ignore: this.#pathIgnore }));
+    } catch (err) {
+      console.error("REDSTEEL: failed to draw route swords", err);
+    }
+  }
+
   _onDragLeftStart(event) {
+    this.#dragWaypoints = [];
+    this.#pathKey = null;
+    // A declared Disengage: the enemies it broke from put no swords on the
+    // route either.
+    const dragLock =
+      this.actor && isTrackedTurn(this.actor) ? getMovementLock(this.actor) : null;
+    this.#pathIgnore = dragLock?.ignore ?? [];
+    this.#dragOriginPoint = this.center
+      ? { x: this.center.x, y: this.center.y }
+      : null;
     const result = super._onDragLeftStart(event);
+    this.#lockedCap = null;
 
     // Don't interfere with Foundry ruler planning
     if (this.#isPlanningMovement(event)) return result;
@@ -154,106 +225,80 @@ export class RedsteelToken extends Token {
 
     this.#clearMovementRange();
 
+    // A declared movement replaces the three bands with the one it allows,
+    // shrunk by what has been walked since it was declared.
+    const actor = this.actor;
+    const lock = actor && isTrackedTurn(actor) ? getMovementLock(actor) : null;
+    const lockMode = lock ? MOVEMENT_MODES[lock.mode] : null;
+    if (lockMode) {
+      // The drag band stands in for the locked zone while the token is held;
+      // #clearMovementRange puts the locked zone back when the drag ends.
+      clearLockedZone();
+      const remaining = lockRemaining(this, lock);
+      this.#lockedCap = remaining;
+      renderZone(
+        this.#movementLayerId,
+        computeMovementZone(this, remaining, { ignore: lock.ignore ?? [] }),
+        { color: lockMode.color, alpha: 0.15 },
+        this.document?.id ?? null,
+        { swords: false },
+      );
+      this.#afterCore(result, () => this.#ensureMovementLabel());
+      return result;
+    }
+
     const state = this.#getMovementState();
 
-    const walkRange = this.#getReachableHexes(Math.floor(state.remaining / 2));
-    const movementRange = this.#getReachableHexes(state.remaining);
-    const sprintRange = this.#getReachableHexes(
+    const selfId = this.document?.id ?? null;
+    const walkRange = computeMovementZone(this, Math.floor(state.remaining / 2));
+    const movementRange = computeMovementZone(this, state.remaining);
+    const sprintRange = computeMovementZone(
+      this,
       Math.max(0, state.sprintRemaining),
     );
 
-    this.#renderRange(this.#sprintLayerId, sprintRange, {
-      color: 0xffff66,
-      alpha: 0.15,
-    });
+    // The red tint comes from the outer (sprint) band alone, so three stacked
+    // layers do not triple it. The inner bands draw only their unthreatened
+    // hexes. No zone swords while dragging: the swords follow the dragged
+    // route instead (#refreshPathSwords).
+    renderZone(
+      this.#sprintLayerId,
+      sprintRange,
+      { color: 0xffff66, alpha: 0.15 },
+      selfId,
+      { swords: false },
+    );
 
-    this.#renderRange(this.#movementLayerId, movementRange, {
-      color: 0x66ff99,
-      alpha: 0.15,
-    });
+    renderZone(
+      this.#movementLayerId,
+      movementRange,
+      { color: 0x66ff99, alpha: 0.15 },
+      selfId,
+      { threatened: "skip", swords: false },
+    );
 
-    this.#renderRange(this.#walkLayerId, walkRange, {
-      color: 0x66ccff,
-      alpha: 0.15,
-    });
+    renderZone(
+      this.#walkLayerId,
+      walkRange,
+      { color: 0x66ccff, alpha: 0.15 },
+      selfId,
+      { threatened: "skip", swords: false },
+    );
 
     this.#afterCore(result, () => this.#ensureMovementLabel());
 
     return result;
   }
 
-  #getReachableHexes(maxDistance) {
-    const origin = canvas.grid.getOffset({
-      x: this.center.x,
-      y: this.center.y,
-    });
-
-    const visited = new Set();
-    const reachable = [];
-
-    const queue = [{ i: origin.i, j: origin.j, distance: 0 }];
-    let head = 0;
-
-    while (head < queue.length) {
-      const current = queue[head++];
-      const key = `${current.i},${current.j}`;
-      if (visited.has(key)) continue;
-      visited.add(key);
-      if (current.distance > maxDistance) continue;
-      reachable.push(current);
-
-      // Neighbours come from the grid itself, so the overlay is correct on any
-      // hex layout (flat-top or pointy-top, odd or even, rows or columns).
-      const neighbors = canvas.grid.getAdjacentOffsets({
-        i: current.i,
-        j: current.j,
-      });
-      for (const neighbor of neighbors) {
-        queue.push({
-          i: neighbor.i,
-          j: neighbor.j,
-          distance: current.distance + 1,
-        });
-      }
-    }
-
-    return reachable;
-  }
-
-  #renderRange(layer, cells, style) {
-    canvas.interface.grid.addHighlightLayer(layer);
-    const shape = canvas.grid.getShape();
-
-    // Build an occupied set of i,j offsets (exclude this token's own cell).
-    // Exclude tokens that are not visible so hidden/invisible tokens don't
-    // block the overlay visually.
-    const occupied = new Set();
-    for (const t of canvas.tokens.placeables) {
-      if (!t?.center) continue;
-      if (!t.visible) continue;
-      if (this.document && t.document?.id === this.document.id) continue;
-      const off = canvas.grid.getOffset({ x: t.center.x, y: t.center.y });
-      occupied.add(`${off.i},${off.j}`);
-    }
-
-    for (const cell of cells) {
-      const key = `${cell.i},${cell.j}`;
-      if (occupied.has(key)) continue;
-      const point = canvas.grid.getTopLeftPoint({ i: cell.i, j: cell.j });
-      canvas.interface.grid.highlightPosition(layer, {
-        x: point.x,
-        y: point.y,
-        shape,
-        color: style.color,
-        alpha: style.alpha,
-      });
-    }
-  }
-
+  // Highlights and their sword markers together.
   #clearMovementRange() {
-    canvas.interface.grid.clearHighlightLayer(this.#walkLayerId);
-    canvas.interface.grid.clearHighlightLayer(this.#movementLayerId);
-    canvas.interface.grid.clearHighlightLayer(this.#sprintLayerId);
+    renderSwords(DRAG_PATH_LAYER, []);
+    this.#pathKey = null;
+    clearZone(this.#walkLayerId);
+    clearZone(this.#movementLayerId);
+    clearZone(this.#sprintLayerId);
+    // Hidden for the drag; a no-op when the hotbar has no lock to draw.
+    refreshLockedZone();
   }
 
   #updateMovementLabel() {
@@ -265,8 +310,9 @@ export class RedsteelToken extends Token {
 
     const state = this.#getMovementState();
 
-    // Always use full movement allowance as the cap.
-    const cap = state.max;
+    // Full movement allowance as the cap, unless a declared movement is in
+    // force: then what was left of it when the drag started.
+    const cap = this.#lockedCap ?? state.max;
 
     labels.forEach((label, index) => {
       const distanceText = label.textContent || "";
@@ -357,6 +403,31 @@ export class RedsteelToken extends Token {
 
 // Movement is committed on drop using the ruler traversal; preUpdateToken
 // handler removed to avoid undercounting (straight-line distance).
+
+// Count the hexes walked this round from the move itself. `moveToken` fires on
+// every client once a movement update is processed; `movement.passed.spaces`
+// is the number of grid spaces the token moved along its path (V14
+// TokenMovementOperation / TokenMovementSectionData). This replaces reading
+// the ruler label at drop, which charged a drag released on the token's own
+// hex and raced core's own drop handling. It also counts arrow-key moves.
+// Only the user who made the move writes, the same single-writer rule as the
+// action tracker's updateToken hook.
+Hooks.on("moveToken", (tokenDoc, movement, _operation, user) => {
+  if (user?.id !== game.user.id) return;
+  if (!game.combat?.started) return;
+  const hexes = Math.round(Number(movement?.passed?.spaces) || 0);
+  if (hexes <= 0) return;
+  addMovementSpent(tokenDoc, hexes);
+});
+
+function addMovementSpent(tokenDoc, hexes) {
+  const spent = (tokenDoc.getFlag("redsteel", "movementSpent") ?? 0) || 0;
+  tokenDoc
+    .setFlag("redsteel", "movementSpent", spent + hexes)
+    .catch((err) =>
+      console.error("REDSTEEL: Failed to commit movement on drop", err),
+    );
+}
 
 // Reset movementSpent at the start of a new round. Use the canvas tokens
 // when available to only touch tokens present in the scene.
