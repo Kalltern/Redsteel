@@ -11,7 +11,21 @@ import {
   resyncItemFromSource,
   undoItemResync,
 } from "../utils/itemResync.mjs";
-import { readEnchantments } from "../documents/item.mjs";
+import {
+  readEnchantments,
+  weaponEnchantMods,
+  gearEnchantMods,
+} from "../documents/item.mjs";
+import {
+  isItemUnidentified,
+  hasHiddenCurse,
+  visibleEnchantments,
+  identifyDifficulty,
+  derivedIdentifyDifficulty,
+  identifyDifficultyOverride,
+  isItemIdentifyLocked,
+  openIdentifyWindow,
+} from "../utils/itemIdentify.mjs";
 import { resourceLabel } from "../utils/itemResources.mjs";
 import {
   FEATURE_SECTION_IDS,
@@ -66,6 +80,7 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
       toggleRaceChoiceEffect: this._toggleRaceChoiceEffect,
       removeRaceGrant: this._removeRaceGrant,
       removeEnchantment: this._removeEnchantment,
+      identifyItem: this._identifyItem,
       removeBookSpell: this._removeBookSpell,
       takeOutScroll: this._takeOutScroll,
       resyncItem: this._resyncItem,
@@ -297,6 +312,11 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
       item: this.item,
       itemDisplayName: this.item.localizedName,
       hasLocalizedName: this.item.localizedName !== this.item.name,
+      isGM: game.user.isGM,
+      // A player looking at an unidentified magic item sees only its disguise
+      // (see utils/itemIdentify.mjs). The GM always sees the real thing.
+      isUnidentified: isItemUnidentified(this.item),
+      identifyHidden: isItemUnidentified(this.item) && !game.user.isGM,
       // Adding system and flags for easier access
       system: this.item.system,
       flags: this.item.flags,
@@ -341,6 +361,22 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
    */
   _processFormData(event, form, formData) {
     const data = super._processFormData(event, form, formData);
+    // The GM's identify difficulty override (enchantments.hbs): an emptied box
+    // stores null (use the tier-derived value), never "" or 0. Read from the
+    // input itself, like the feature cost boxes below.
+    const identifyInput = form?.elements?.namedItem?.(
+      "flags.redsteel.identify.difficulty",
+    );
+    if (identifyInput) {
+      const raw = String(identifyInput.value ?? "").trim();
+      const value = raw === "" ? null : Number(raw);
+      delete data["flags.redsteel.identify.difficulty"];
+      foundry.utils.setProperty(
+        data,
+        "flags.redsteel.identify.difficulty",
+        Number.isFinite(value) ? value : null,
+      );
+    }
     if (this.item.type !== "feature") return data;
     for (const key of ["cp", "sp"]) {
       const input = form?.elements?.namedItem?.(`system.cost.${key}`);
@@ -432,6 +468,45 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
         context.enchantmentEntries = this._getEnchantmentArray();
         context.enchantMods = this.item.system.enchantMods ?? {};
         context.enchantSlot = this.item.type === "weapon" ? "weapon" : "gear";
+        if (game.user.isGM) {
+          // The GM identification block. Display only: the real numbers the
+          // combat math reads are never touched by identification.
+          const flag = this.item.flags?.redsteel?.identify ?? {};
+          context.identifyFlags = {
+            unidentified: flag.unidentified === true,
+            appearsAs: String(flag.appearsAs ?? ""),
+            difficulty: identifyDifficultyOverride(this.item) ?? "",
+            curseRevealed: flag.curseRevealed === true,
+          };
+          context.hasBound = readEnchantments(this.item).some(
+            (entry) => !!entry?.bound,
+          );
+          context.derivedDifficulty = fmtSigned(
+            derivedIdentifyDifficulty(this.item),
+          );
+        } else if (isItemUnidentified(this.item)) {
+          context.identifyHidden = true;
+          context.enchantmentEntries = [];
+          context.enchantMods = {};
+          context.identifyDifficulty = fmtSigned(identifyDifficulty(this.item));
+          context.identifyLocked = isItemIdentifyLocked(
+            this.item.actor,
+            this.item,
+          );
+          context.identifyActorName = this.item.actor?.name ?? "";
+        } else if (hasHiddenCurse(this.item)) {
+          // A hidden curse must not show up in the totals either, so they are
+          // re-summed from the visible entries only.
+          const visible = visibleEnchantments(this.item, { isGM: false });
+          const ids = new Set(visible.map((entry) => entry?.id ?? ""));
+          context.enchantmentEntries = context.enchantmentEntries.filter(
+            (entry) => ids.has(entry.id),
+          );
+          context.enchantMods =
+            this.item.type === "weapon"
+              ? weaponEnchantMods(visible)
+              : gearEnchantMods(visible);
+        }
         break;
       case "attributesLight":
         context.tab = context.tabs[partId];
@@ -577,6 +652,11 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
       }
       case "description":
         context.tab = context.tabs[partId];
+        // An unidentified item shows players a hint instead of its prose.
+        if (context.identifyHidden) {
+          context.enrichedDescription = "";
+          break;
+        }
         // Enrich description info for display
         // Enrichment turns text like `[[/r 1d20]]` into buttons
         context.enrichedDescription = await TextEditor.enrichHTML(
@@ -1020,6 +1100,16 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
     if (Number.isNaN(index) || index < 0 || index >= groups.length) return;
     groups.splice(index, 1);
     await this.item.update({ "system.grants": groups });
+  }
+
+  /** Open the Arcana identify window for this item's owner. */
+  static async _identifyItem() {
+    const actor = this.item.actor;
+    if (!actor) {
+      ui.notifications.warn(game.i18n.localize("REDSTEEL.Identify.Warn.NoActor"));
+      return;
+    }
+    await openIdentifyWindow(actor, this.item);
   }
 
   /**
@@ -1709,4 +1799,10 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
       return new DragDrop(d);
     });
   }
+}
+
+/** "+10" / "0" / "-30", the way every difficulty in the system is printed. */
+function fmtSigned(value) {
+  const n = Number(value) || 0;
+  return n > 0 ? `+${n}` : String(n);
 }

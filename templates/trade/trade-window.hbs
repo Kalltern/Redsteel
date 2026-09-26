@@ -1,0 +1,122 @@
+{{!-- Player-to-player trade (utils/trade.mjs). Left: my side, right: the
+      partner's snapshot, read-only. ApplicationV2 parts must render a SINGLE
+      root element, so the item picker lives inside it too. --}}
+<div class="rs-trade-body{{#if waiting}} is-waiting{{/if}}">
+  {{#if ready}}
+  <div class="rs-trade-columns">
+
+    {{!-- My side --}}
+    <section class="rs-trade-side rs-trade-side--mine{{#if mine.accepted}} is-accepted{{/if}}">
+      <header class="rs-trade-head">
+        <img class="rs-trade-portrait" src="{{mine.img}}" alt="" />
+        <div class="rs-trade-who">
+          <div class="rs-trade-name">{{mine.name}}</div>
+          <div class="rs-trade-sub">{{localize "REDSTEEL.Trade.YourOffer"}}</div>
+        </div>
+      </header>
+
+      <div class="rs-trade-slots">
+        {{#each mine.slots as |slot|}}
+          {{#if slot.filled}}
+          <div class="rs-trade-slot filled" data-slot="{{slot.index}}" data-tooltip="{{slot.name}}">
+            <img class="rs-trade-icon" src="{{slot.img}}" alt="" />
+            <span class="rs-trade-item">{{#if slot.unidentified}}<i class="rs-trade-unknown">?</i> {{/if}}{{slot.name}}</span>
+            {{#if slot.stack}}
+              <input class="rs-trade-qty" type="number" min="1" max="{{slot.max}}" step="1"
+                     value="{{slot.quantity}}" data-slot="{{slot.index}}" {{#if ../waiting}}disabled{{/if}} />
+            {{/if}}
+          </div>
+          {{else}}
+          <div class="rs-trade-slot empty" data-slot="{{slot.index}}" data-action="openPicker"
+               data-tooltip="{{localize "REDSTEEL.Trade.EmptySlot"}}"></div>
+          {{/if}}
+        {{/each}}
+      </div>
+
+      <div class="rs-trade-money">
+        <div class="rs-trade-label">{{localize "REDSTEEL.Trade.Money"}}</div>
+        <div class="rs-trade-coins">
+          {{#each mine.coins as |coin|}}
+          <label class="rs-trade-coin-field">
+            <input class="rs-trade-coin" type="number" min="0" step="1" value="{{coin.count}}"
+                   data-key="{{coin.key}}" {{#if ../waiting}}disabled{{/if}} />
+            <span class="rs-trade-coin-label" style="color: {{coin.color}};">{{coin.label}}</span>
+          </label>
+          {{/each}}
+        </div>
+        <div class="rs-trade-purse">{{mine.purse}}</div>
+      </div>
+
+      <div class="rs-trade-state">{{#if mine.accepted}}{{localize "REDSTEEL.Trade.Accepted"}}{{/if}}</div>
+
+      {{#if picker.open}}
+      <div class="rs-trade-picker">
+        <div class="rs-trade-label">{{localize "REDSTEEL.Trade.PickItem"}}</div>
+        {{#if picker.hasChoices}}
+        <ul class="rs-trade-picker-list">
+          {{#each picker.choices as |choice|}}
+          <li>
+            <button type="button" class="rs-trade-pick" data-action="pickItem" data-item-id="{{choice.id}}">
+              <img class="rs-trade-icon" src="{{choice.img}}" alt="" />
+              <span class="rs-trade-item">{{#if choice.unidentified}}<i class="rs-trade-unknown">?</i> {{/if}}{{choice.name}}</span>
+              {{#if choice.stack}}<span class="rs-trade-count">×{{choice.quantity}}</span>{{/if}}
+            </button>
+          </li>
+          {{/each}}
+        </ul>
+        {{else}}
+        <p class="rs-trade-hint">{{localize "REDSTEEL.Trade.NothingToOffer"}}</p>
+        {{/if}}
+      </div>
+      {{/if}}
+    </section>
+
+    {{!-- Their side: a snapshot, never their actor's items --}}
+    <section class="rs-trade-side rs-trade-side--theirs{{#if theirs.accepted}} is-accepted{{/if}}">
+      <header class="rs-trade-head">
+        <img class="rs-trade-portrait" src="{{theirs.img}}" alt="" />
+        <div class="rs-trade-who">
+          <div class="rs-trade-name">{{theirs.name}}</div>
+          <div class="rs-trade-sub">{{localize "REDSTEEL.Trade.TheirOffer"}}</div>
+        </div>
+      </header>
+
+      <div class="rs-trade-slots">
+        {{#each theirs.slots as |slot|}}
+          {{#if slot.filled}}
+          <div class="rs-trade-slot filled" data-tooltip="{{slot.name}}">
+            <img class="rs-trade-icon" src="{{slot.img}}" alt="" />
+            <span class="rs-trade-item">{{#if slot.unidentified}}<i class="rs-trade-unknown">?</i> {{/if}}{{slot.name}}</span>
+            {{#if slot.stack}}<span class="rs-trade-count">×{{slot.quantity}}</span>{{/if}}
+          </div>
+          {{else}}
+          <div class="rs-trade-slot empty"></div>
+          {{/if}}
+        {{/each}}
+      </div>
+
+      <div class="rs-trade-money">
+        <div class="rs-trade-label">{{localize "REDSTEEL.Trade.Money"}}</div>
+        <div class="rs-trade-money-value">{{theirs.money}}</div>
+      </div>
+
+      <div class="rs-trade-state">{{#if theirs.accepted}}{{localize "REDSTEEL.Trade.Accepted"}}{{/if}}</div>
+    </section>
+
+  </div>
+
+  {{#if waiting}}
+  <p class="rs-trade-hint rs-trade-waiting">{{localize "REDSTEEL.Trade.WaitingGM"}}</p>
+  {{/if}}
+
+  <footer class="rs-trade-footer">
+    <button type="button" class="rs-trade-btn rs-trade-accept{{#if mine.accepted}} is-accepted{{/if}}"
+            data-action="accept" {{#if waiting}}disabled{{/if}}>
+      <i class="fa-solid fa-scale-balanced"></i> {{tradeLabel}}
+    </button>
+    <button type="button" class="rs-trade-btn" data-action="cancel">
+      {{localize "REDSTEEL.Trade.Cancel"}}
+    </button>
+  </footer>
+  {{/if}}
+</div>

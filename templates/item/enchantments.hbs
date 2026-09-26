@@ -5,6 +5,76 @@
   data-tab="enchantments"
 >
 
+  {{!-- GM only: Arcana identification (utils/itemIdentify.mjs). Hides what
+        players SEE; the enchantments keep working either way. --}}
+  {{#if @root.isGM}}
+    <h3 class="enchantment-heading">{{localize "REDSTEEL.Identify.GM.Heading"}}</h3>
+    <div class="grid grid-3col">
+      <div class="grid-span-1">
+        <label class="checkbox">
+          <input
+            type="checkbox"
+            name="flags.redsteel.identify.unidentified"
+            {{checked identifyFlags.unidentified}}
+          />
+          {{localize "REDSTEEL.Identify.GM.Unidentified"}}
+        </label>
+      </div>
+      <div class="grid-span-1">
+        <label class="resource-label">{{localize "REDSTEEL.Identify.GM.AppearsAs"}}</label>
+        <input
+          type="text"
+          name="flags.redsteel.identify.appearsAs"
+          value="{{identifyFlags.appearsAs}}"
+        />
+      </div>
+      <div class="grid-span-1">
+        <label class="resource-label" title="{{localize 'REDSTEEL.Identify.GM.DifficultyHint'}}">{{localize
+            "REDSTEEL.Identify.GM.Difficulty"
+          }}</label>
+        <input
+          type="number"
+          name="flags.redsteel.identify.difficulty"
+          value="{{identifyFlags.difficulty}}"
+          placeholder="{{derivedDifficulty}}"
+          title="{{localize 'REDSTEEL.Identify.GM.DifficultyHint'}}"
+        />
+      </div>
+      {{#if hasBound}}
+        <div class="grid-span-1">
+          <label class="checkbox">
+            <input
+              type="checkbox"
+              name="flags.redsteel.identify.curseRevealed"
+              {{checked identifyFlags.curseRevealed}}
+            />
+            {{localize "REDSTEEL.Identify.GM.CurseRevealed"}}
+          </label>
+        </div>
+      {{/if}}
+    </div>
+  {{/if}}
+
+  {{#if identifyHidden}}
+    {{!-- A player looking at an unidentified item: no list, no totals. --}}
+    <h3 class="enchantment-heading">{{localize
+        "REDSTEEL.Enchantment.AppliedHeading"
+      }}</h3>
+    <p class="hint">{{localize "REDSTEEL.Identify.UnknownHint"}}</p>
+    <button
+      type="button"
+      data-action="identifyItem"
+      {{#if identifyLocked}}disabled{{/if}}
+    >
+      <i class="fa-solid fa-circle-question"></i>
+      {{localize "REDSTEEL.Identify.Button"}}
+      ({{localize "REDSTEEL.Identify.Difficulty"}} {{identifyDifficulty}})
+    </button>
+    {{#if identifyLocked}}
+      <p class="hint">{{localize "REDSTEEL.Identify.Locked" name=identifyActorName}}</p>
+    {{/if}}
+  {{else}}
+
   <h3 class="enchantment-heading">{{localize
       "REDSTEEL.Enchantment.AppliedHeading"
     }}</h3>
@@ -181,5 +251,7 @@
       {{/if}}
     </div>
   {{/if}}
+
+  {{/if}}{{!-- /identifyHidden --}}
 
 </section>

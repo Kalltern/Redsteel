@@ -10,6 +10,41 @@
       "NoReaction": "{ally} has no Reaction left to let you pass. That move is cancelled.",
       "NoOne": "Nobody can answer for {ally} right now. That move is cancelled."
     },
+    "Trade": {
+      "Title": "Trade",
+      "MenuTrade": "Trade",
+      "MenuResources": "Resources",
+      "YourOffer": "Your offer",
+      "TheirOffer": "Their offer",
+      "Trade": "Trade",
+      "Unaccept": "Withdraw",
+      "Cancel": "Cancel",
+      "Accepted": "Accepted",
+      "WaitingGM": "Waiting for the GM to complete the trade…",
+      "Money": "Coins",
+      "Purse": "Purse: {amount}",
+      "Complete": "Trade complete.",
+      "Cancelled": "{name} cancelled the trade.",
+      "Busy": "{name} is already trading.",
+      "SelfBusy": "You are already trading.",
+      "NoGM": "A GM must be online to complete a trade.",
+      "NotYours": "Only items your own character carries can be offered.",
+      "NotTradeable": "That item cannot be traded.",
+      "Equipped": "Unequip that item before trading it.",
+      "Duplicate": "That item is already in your offer.",
+      "Full": "All six slots are taken.",
+      "Failed": "The trade could not be completed: {reason}",
+      "ItemMissing": "an offered item is no longer there.",
+      "ItemEquipped": "an offered item has been equipped.",
+      "NotEnoughMoney": "a purse no longer holds the offered coins.",
+      "QuantityChanged": "a stack no longer holds the offered amount.",
+      "Generic": "something went wrong, check the console.",
+      "ChatGave": "{actor} gave:",
+      "Nothing": "nothing",
+      "PickItem": "Choose an item",
+      "NothingToOffer": "Nothing left to offer.",
+      "EmptySlot": "Drag an item here or click to choose"
+    },
     "SheetLabels": {
       "Actor": "Redsteel Actor Sheet",
       "Item": "Redsteel Item Sheet"
@@ -132,7 +167,18 @@
         "Hexes": "{n} hex",
         "Remaining": "{remaining}/{budget} hex",
         "Locked": "Movement declared",
-        "Confirm": "Confirm movement"
+        "Confirm": "Confirm movement",
+        "SetFacing": "Set facing, then confirm",
+        "TurnLeft": "Turn left",
+        "TurnRight": "Turn right",
+        "ConfirmFacing": "Confirm facing",
+        "CancelFacing": "Back",
+        "Reaction": "Reaction",
+        "FreeAction": "Free action",
+        "AbilityUnavailable": "{name} cannot be used with the weapon in hand.",
+        "StopSustain": "Stop sustaining {spell}",
+        "SustainEnded": "You let {spell} go.",
+        "MoreMovement": "More movement"
       },
       "ShowArmor": "Show armor by damage type",
       "ShowConditions": "Show conditions",
@@ -376,7 +422,6 @@
         "DialogTitle": "Boil down: {name}",
         "Have": "{count} herbs on hand, {cost} per dose",
         "Doses": "Doses",
-        "BatchNote": "for more than one dose",
         "WasteWarning": "The herbs are used up even if the roll fails.",
         "Brew": "Boil down",
         "ChatTitle": "Boiling a substance",
@@ -402,6 +447,8 @@
         "Failure": "Failure",
         "Created": "created {count}× {name}",
         "IngredientsWasted": "ingredients were wasted",
+        "UnitsLost": "{count} failed, their ingredients were wasted",
+        "PartialSuccess": "Partial success",
         "Consumed": "Consumed",
         "Uses": "uses",
         "Duplicated": "+{count} duplicated at {chance}%",
@@ -497,6 +544,13 @@
         },
         "TwoHandGrip": "Two-handed grip",
         "OffHandGrip": "Use in off-hand",
+        "Split": {
+          "Title": "Split stack: {name}",
+          "Have": "{name}: {count} in the stack",
+          "Amount": "Take",
+          "Result": "Stacks after the split: {left} and {right}",
+          "Confirm": "Split"
+        },
         "Currencies": "Currencies",
         "Filter": {
           "All": "All",
@@ -4945,6 +4999,36 @@
       "DropNotGlobal": "Write the spell from the compendium, not from a character's own copy.",
       "DropDuplicate": "{name} is already written in this book.",
       "DropAdded": "{name} written into the book."
+    },
+    "Identify": {
+      "UnidentifiedName": "Unidentified {type}",
+      "UnknownDescription": "Something about this piece is not what it seems. Until someone studies it, its nature stays hidden.",
+      "UnknownHint": "Whatever magic this item carries has not been identified yet. An Arcana test can reveal it.",
+      "MarkerTitle": "Unidentified",
+      "Button": "Identify",
+      "Difficulty": "Difficulty",
+      "Locked": "{name} has already failed to identify this item. Try again after a long rest.",
+      "Window": {
+        "Title": "Identify Item"
+      },
+      "GM": {
+        "Heading": "Identification",
+        "Unidentified": "Unidentified",
+        "AppearsAs": "Appears as",
+        "Difficulty": "Identify difficulty",
+        "DifficultyHint": "Leave empty to use the value derived from the highest enchantment tier.",
+        "CurseRevealed": "Curse revealed"
+      },
+      "Chat": {
+        "Identify": "<b>{actor}</b> studied {item}: Arcana, d100 {d100}, margin {margin}.",
+        "Success": "It is <b>{name}</b>.",
+        "Failure": "Its secrets stay hidden.",
+        "Reroll": "Re-rolled."
+      },
+      "Warn": {
+        "NoActor": "Only an item carried by a character can be identified.",
+        "NotOwner": "You do not own this character."
+      }
     },
     "Scroll": {
       "Name": "Scroll: {spell}",

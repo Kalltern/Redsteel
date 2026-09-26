@@ -31,9 +31,9 @@ import {
   resolveDefenderToken,
   stacksFromSources,
 } from "./overwhelm.mjs";
-
-/** "Úspěšný zásah, který je o 60 silnější než protivníkova obrana." */
-const CRITICAL_GAP = 60;
+// The verdict itself lives in a Foundry-free module so NPC auto-defense can
+// ask the same question a hundred times without drawing a card for it.
+import { resolveVersus } from "./defenseOdds.mjs";
 
 /** Shadow → Úhyb do zad: the flat penalty for dodging a blow from behind. */
 const BLINDSIDE_DODGE_PENALTY = -20;
@@ -160,58 +160,20 @@ export function renderVersusBlock(
     defenseCritFailure = false,
   } = {},
 ) {
-  // `== null` catches both null and undefined before the cast, because
-  // Number(null) is 0 and a hotbar defense would otherwise contest a phantom
-  // attack of margin zero.
-  const parsedMargin = attack?.margin == null ? NaN : Number(attack.margin);
-  if (!Number.isFinite(parsedMargin)) return { html: "", versus: null };
-  const knownAttackMargin = parsedMargin;
+  // The verdict is decided in defenseOdds.mjs (the rules above live there in
+  // full); this function only draws it. Null is the "not answering a card"
+  // case, which has nothing to draw.
+  const verdict = resolveVersus(attack, {
+    defenseTotal,
+    defenseD100,
+    defenseCrit,
+    defenseCritFailure,
+  });
+  if (!verdict) return { html: "", versus: null };
 
-  const attackCrit = attack?.criticalSuccess === true;
-  const attackCritFailure = attack?.criticalFailure === true;
+  const { attackMargin: knownAttackMargin, gap, blocked, critical, onDice } =
+    verdict;
   const attackD100 = attack?.d100 ?? null;
-
-  // Tulák IX → "Útok/Vrh na slabinu: snížená hranice". A Weak Spot action by a
-  // rank-9 Rogue crits on a margin of 40 rather than 60, so the threshold is a
-  // property of the blow rather than a constant. It moves the ATTACK side only:
-  // the defense still needs a full 60 to turn the guard into a Critical
-  // Defense, because nothing lowered that.
-  const attackCriticalGap = Number(attack?.criticalGap) || CRITICAL_GAP;
-
-  const gap = defenseTotal - knownAttackMargin;
-
-  // Which side each natural critical favours. A fumble helps the other guy.
-  const naturalForDefense = defenseCrit || attackCritFailure;
-  const naturalForAttack = defenseCritFailure || attackCrit;
-
-  let blocked;
-  let critical = null; // "defense" | "hit" | null
-  let onDice = false;
-
-  if (naturalForDefense && naturalForAttack) {
-    // Two natural criticals pulling opposite ways deny each other, and the
-    // margins are ignored entirely: whoever rolled closer to 1 takes it.
-    if (attackD100 != null && defenseD100 != null) {
-      blocked = defenseD100 < attackD100;
-      onDice = true;
-    } else {
-      blocked = gap > 0;
-    }
-  } else if (naturalForDefense) {
-    blocked = true;
-    critical = "defense";
-  } else if (naturalForAttack) {
-    blocked = false;
-    critical = "hit";
-  } else if (gap >= CRITICAL_GAP) {
-    blocked = true;
-    critical = "defense";
-  } else if (-gap >= attackCriticalGap) {
-    blocked = false;
-    critical = "hit";
-  } else {
-    blocked = gap > 0;
-  }
 
   const outcome = critical
     ? game.i18n.localize(
@@ -320,6 +282,289 @@ async function postDeniedDefense({ actor, token = null, attack = null } = {}) {
       },
     },
   });
+}
+
+/* -------------------------------------------- */
+/*  DEFENSE PROFILE                             */
+/* -------------------------------------------- */
+
+/**
+ * The token actually swinging, as a document on the defender's own scene.
+ * Null when there is no id, no defender, or the defender is answering itself.
+ *
+ * @param {TokenDocument|Token|null} defenderToken
+ * @param {string|null} attackerTokenId
+ * @returns {TokenDocument|null}
+ */
+export function attackerTokenDocFor(defenderToken, attackerTokenId) {
+  const defender = defenderToken?.document ?? defenderToken ?? null;
+  if (!attackerTokenId || !defender || attackerTokenId === defender.id) {
+    return null;
+  }
+  return defender.parent?.tokens?.get(attackerTokenId) ?? null;
+}
+
+/**
+ * Whether this defender parries with a long-reach weapon in hand.
+ *
+ * A character is judged by the weapon it is actually holding. An NPC has no
+ * weapon sets to say which one that is, so any long-reach weapon it carries
+ * counts: the safe reading for a spear-armed guard.
+ *
+ * @param {Actor} actor
+ * @param {Item|null} activeWeapon  the weapon `resolveWeaponContext` settled on
+ * @returns {boolean}
+ */
+export function hasDefenseLongReach(actor, activeWeapon) {
+  if (activeWeapon?.system?.longReach) return true;
+  if (actor.type === "character") return false;
+  return actor.items.some((i) => i.type === "weapon" && i.system?.longReach);
+}
+
+/**
+ * The Long Reach close-quarters penalty an automatic melee defense takes.
+ *
+ * Exactly what the auto-defense branch of {@link defenseRoll} hands to
+ * `meleeDefense`, exported so auto-defense can score a parry with the number
+ * it would really be rolled at. The penalty is a property of the defender and
+ * where the attacker stands, not of the parrying weapon, which is why it reads
+ * the default weapon context rather than the candidate being scored.
+ *
+ * @param {Actor} actor
+ * @param {TokenDocument|Token|null} defenderToken
+ * @param {string|null} attackerTokenId
+ * @returns {number} 0 or a negative modifier
+ */
+export function autoDefenseLongReachPenalty(
+  actor,
+  defenderToken,
+  attackerTokenId,
+) {
+  const activeWeapon = game.redsteel.resolveWeaponContext(actor, null)?.weapon;
+  if (!hasDefenseLongReach(actor, activeWeapon)) return 0;
+  return longReachPenaltyAgainst(
+    actor,
+    defenderToken,
+    attackerTokenDocFor(defenderToken, attackerTokenId),
+  );
+}
+
+/**
+ * Everything a defense roll is made of, up to but not including the die.
+ *
+ * One builder for both uses: the defense closures in {@link defenseRoll} roll
+ * `formula` against `rollData`, and NPC auto-defense (autoDefense.mjs) feeds
+ * `rating` and the thresholds to defenseOdds.mjs to ask which defense would
+ * hold. A second copy of these sums anywhere else is how the two would come to
+ * disagree, so they live here and nowhere else.
+ *
+ * Reads only; writes nothing. Overwhelm is taken as a number rather than
+ * committed here, because committing is the roll's business and scoring a
+ * defense must not record an attacker.
+ *
+ * @param {object} params
+ * @param {Actor} params.actor
+ * @param {"melee"|"ranged"|"dodge"} params.mode
+ * @param {object} params.context  from `game.redsteel.resolveWeaponContext`
+ * @param {object|null} [params.ability]  reaction ability or a bare
+ *   `{system: {defense|rangedDefense|dodge}}` modifier (Guard, Blindside)
+ * @param {TokenDocument|Token|null} [params.defenderToken]  for the Aim perk
+ * @param {string|null} [params.attackerTokenId]  who is swinging, for the Aim perk
+ * @param {number} [params.overwhelmStacks=0]
+ * @param {number} [params.longReachPenalty=0]  melee only
+ * @param {boolean} [params.useBane=false]
+ * @returns {Promise<{formula: string, rollData: object, rating: number,
+ *   critSuccess: number, critFailure: number,
+ *   skillKey: "meleeDefense"|"rangedDefense"|"dodge",
+ *   dodgeLimit: number|null, aimDefense: object|null}>}
+ */
+export async function buildDefenseProfile({
+  actor,
+  mode,
+  context,
+  ability = null,
+  defenderToken = null,
+  attackerTokenId = null,
+  overwhelmStacks = 0,
+  longReachPenalty = 0,
+  useBane = false,
+} = {}) {
+  const weapon = context.weapon;
+  const offProps = getOffhandProps(context);
+  const baneProfile = getBaneProfile(actor);
+  const overwhelmPenalty = overwhelmStacks * OVERWHELM_PENALTY_PER_STACK;
+
+  let formula;
+  let rollData;
+  let critSuccess;
+  let critFailure;
+  let skillKey;
+  let dodgeLimit = null;
+  let aimDefense = null;
+
+  if (mode === "melee") {
+    // Weapon quality: main hand uses the Zbraň column, off-hand the Druhá ruka column.
+    const mainQuality = weapon.system.qualityMods ?? {};
+    // Enchantments applied to the main-hand weapon, read beside its quality.
+    const mainEnchant = weapon.system.enchantMods ?? {};
+    const offQuality = getOffhandQualityMods(context);
+    const mainDefense =
+      (Number(weapon.system.defense) || 0) +
+      (Number(mainQuality.defense) || 0) +
+      (Number(mainEnchant.defense) || 0);
+    const offDefense =
+      (Number(offProps?.defense) || 0) + (Number(offQuality.defense) || 0);
+    // Characters fold weapon defense into meleeDefense.bonus during
+    // prepareDerivedData so the sheet shows the real number, which means it
+    // already sits inside defenseRating here. NPCs have no weapon sets, so
+    // they still pick it up at roll time.
+    const weaponDefense =
+      actor.type === "character" ? 0 : mainDefense + offDefense;
+    const mainCrit =
+      (Number(weapon.system.critDefense) || 0) +
+      (Number(mainQuality.critDefense) || 0);
+    const offCrit =
+      (Number(offProps?.critDefense) || 0) +
+      (Number(offQuality.critDefense) || 0);
+
+    const weaponSpec = game.redsteel.getWeaponSpecBonuses(actor, weapon);
+
+    const { doctrineCritDefenseBonus, doctrineDefenseBonus } =
+      await game.redsteel.getDoctrineBonuses(actor, weapon);
+
+    const defense = actor.system.combatSkills.meleeDefense;
+    const defenseRating = defense.rating;
+    const abilityDefense = Number(ability?.system?.defense) || 0;
+
+    // Duelist VII: parrying the opponent you are aiming at is worth +5% per
+    // stack. Passive — the aim is not spent, so it is still there to attack
+    // with on the duellist's own turn.
+    aimDefense = getAimDefenseBonus({
+      actor,
+      token: defenderToken,
+      weapon,
+      context,
+      attackerTokenId,
+    });
+
+    critSuccess =
+      defense.criticalSuccessThreshold +
+      mainCrit +
+      offCrit +
+      doctrineCritDefenseBonus +
+      weaponSpec.critDefense +
+      (useBane ? baneProfile.critDefense : 0);
+
+    critFailure = defense.criticalFailureThreshold;
+
+    rollData = {
+      defenseRating,
+      weaponDefense,
+      doctrineDefenseBonus,
+      abilityDefense,
+      overwhelmPenalty,
+      longReachPenalty,
+      specDefense: weaponSpec.defense,
+      baneDefense: useBane ? baneProfile.defense : 0,
+      aimDefense: aimDefense.bonus,
+    };
+
+    formula =
+      "@defenseRating + @weaponDefense + @doctrineDefenseBonus + @abilityDefense + @overwhelmPenalty + @longReachPenalty + @specDefense + @baneDefense + @aimDefense - 1d100";
+    skillKey = "meleeDefense";
+  } else if (mode === "ranged") {
+    const { doctrineCritDefenseBonus, doctrineRangedDefenseBonus } =
+      await game.redsteel.getDoctrineBonuses(actor, weapon);
+
+    const defense = actor.system.combatSkills.rangedDefense;
+    const abilityDefense = Number(ability?.system?.rangedDefense) || 0;
+
+    critSuccess =
+      defense.criticalSuccessThreshold +
+      doctrineCritDefenseBonus +
+      (useBane ? baneProfile.critDefense : 0);
+
+    critFailure = defense.criticalFailureThreshold;
+
+    rollData = {
+      defenseRating: defense.rating,
+      doctrineRangedDefenseBonus,
+      abilityDefense,
+      overwhelmPenalty,
+      baneDefense: useBane ? baneProfile.defense : 0,
+    };
+
+    formula =
+      "@defenseRating + @doctrineRangedDefenseBonus + @abilityDefense + @overwhelmPenalty + @baneDefense - 1d100";
+    skillKey = "rangedDefense";
+  } else if (mode === "dodge") {
+    const offQuality = getOffhandQualityMods(context);
+    const mainDodge = Number(weapon.system.dodge) || 0;
+    const offDodge = Number(offProps?.dodge) || 0;
+    const offCritDodge =
+      (Number(offProps?.critDodge) || 0) + (Number(offQuality.critDodge) || 0);
+
+    const dodge = actor.system.combatSkills.dodge;
+    const abilityDefense = Number(ability?.system?.dodge) || 0;
+
+    critSuccess =
+      dodge.criticalSuccessThreshold +
+      (Number(weapon.system.critDodge) || 0) +
+      offCritDodge +
+      (useBane ? baneProfile.critDefense : 0);
+
+    critFailure = dodge.criticalFailureThreshold;
+
+    rollData = {
+      dodgeRating: dodge.rating,
+      weaponDodge: mainDodge + offDodge,
+      abilityDefense,
+      overwhelmPenalty,
+      baneDefense: useBane ? baneProfile.defense : 0,
+    };
+
+    formula =
+      "@dodgeRating + @weaponDodge + @abilityDefense + @overwhelmPenalty + @baneDefense - 1d100";
+    skillKey = "dodge";
+    // Read the same way isBadDodge reads it; a limit of 0 or less means none.
+    dodgeLimit = Number(actor.system?.dodgeLimit?.total);
+  } else {
+    throw new Error(`Redsteel | unknown defense mode "${mode}"`);
+  }
+
+  // Every rollData term is a flat addend in the formula (they are all "+ @x"),
+  // so their sum is the number the die is subtracted from. Taken here, before
+  // the caller runs withRollBias, which adds keys that are not terms.
+  const rating = Object.values(rollData).reduce(
+    (sum, value) => sum + (Number(value) || 0),
+    0,
+  );
+
+  return {
+    formula,
+    rollData,
+    rating,
+    critSuccess,
+    critFailure,
+    skillKey,
+    dodgeLimit,
+    aimDefense,
+  };
+}
+
+/**
+ * Mark a defense roll as rolled by NPC auto-defense, so the roll layer keeps
+ * the GM's manual modifier picker out of it (see rollModifier.mjs →
+ * applyModifier). Merged, never replacing: `skill` is already on the options.
+ *
+ * @param {Roll} roll
+ */
+function tagAutoDefenseRoll(roll) {
+  roll.options ??= {};
+  roll.options.redsteel = {
+    ...(roll.options.redsteel ?? {}),
+    autoDefense: true,
+  };
 }
 
 export async function defenseRoll({
@@ -456,12 +701,10 @@ export async function defenseRoll({
    * question about live distance, which no card stamps: where the attacker
    * stands NOW is what a spear has to cope with.
    */
-  const attackerTokenDoc = (() => {
-    const id = defendingAgainstId();
-    const defender = defenderToken?.document ?? defenderToken ?? null;
-    if (!id || !defender || id === defender.id) return null;
-    return defender.parent?.tokens?.get(id) ?? null;
-  })();
+  const attackerTokenDoc = attackerTokenDocFor(
+    defenderToken,
+    defendingAgainstId(),
+  );
 
   // A blow from behind that this defender has nothing to answer with. There is
   // no roll to make and no choice to offer, so no dialog opens: the card is
@@ -559,19 +802,11 @@ export async function defenseRoll({
     ? renderWeaponLoadoutsDialog(actor)
     : "";
 
-  let hasLongReach = false;
-
   // Try active weapon first (PC flow)
   const context = game.redsteel.resolveWeaponContext(actor, ability);
   const activeWeapon = context?.weapon;
 
-  if (activeWeapon?.system?.longReach) {
-    hasLongReach = true;
-  } else if (actor.type !== "character") {
-    hasLongReach = actor.items.some(
-      (i) => i.type === "weapon" && i.system?.longReach,
-    );
-  }
+  const hasLongReach = hasDefenseLongReach(actor, activeWeapon);
 
   // Parrying with a long-reach weapon is as awkward as attacking with one: the
   // penalty applies when the attacker is in a neighbouring hex. Computed from
@@ -998,57 +1233,27 @@ export async function defenseRoll({
   } = {}) {
     const resolveWithContext = async (context) => {
       const weapon = context.weapon;
-      const offProps = getOffhandProps(context);
       const rollName = `Defense with ${weapon.localizedName ?? weapon.name}`;
-      // Weapon quality: main hand uses the Zbraň column, off-hand the Druhá ruka column.
-      const mainQuality = weapon.system.qualityMods ?? {};
-      // Enchantments applied to the main-hand weapon, read beside its quality.
-      const mainEnchant = weapon.system.enchantMods ?? {};
-      const offQuality = getOffhandQualityMods(context);
-      const mainDefense =
-        (Number(weapon.system.defense) || 0) +
-        (Number(mainQuality.defense) || 0) +
-        (Number(mainEnchant.defense) || 0);
-      const offDefense =
-        (Number(offProps?.defense) || 0) + (Number(offQuality.defense) || 0);
-      // Characters fold weapon defense into meleeDefense.bonus during
-      // prepareDerivedData so the sheet shows the real number, which means it
-      // already sits inside defenseRating here. NPCs have no weapon sets, so
-      // they still pick it up at roll time.
-      const weaponDefense =
-        actor.type === "character" ? 0 : mainDefense + offDefense;
-      const mainCrit =
-        (Number(weapon.system.critDefense) || 0) +
-        (Number(mainQuality.critDefense) || 0);
-      const offCrit =
-        (Number(offProps?.critDefense) || 0) +
-        (Number(offQuality.critDefense) || 0);
       // Records the attacker and settles the number in one step. Null means the
       // caller passed no override (an ability-driven defense that never showed
       // the dialog), so the tracked value stands.
       const overwhelmStacks = await commitOverwhelm(overwhelm);
-      const overwhelmPenalty = overwhelmStacks * OVERWHELM_PENALTY_PER_STACK;
       console.log("DEFENSE CONTEXT:", context);
 
-      const weaponSpec = game.redsteel.getWeaponSpecBonuses(actor, weapon);
-
-      const { doctrineCritDefenseBonus, doctrineDefenseBonus } =
-        await game.redsteel.getDoctrineBonuses(actor, weapon);
-
-      const defense = actor.system.combatSkills.meleeDefense;
-      const defenseRating = defense.rating;
-      const abilityDefense = Number(ability?.system?.defense) || 0;
-
-      // Duelist VII: parrying the opponent you are aiming at is worth +5% per
-      // stack. Passive — the aim is not spent, so it is still there to attack
-      // with on the duellist's own turn.
-      const aimDefense = getAimDefenseBonus({
+      // Weapon, off-hand, doctrine, spec, Aim and Bane terms: see
+      // buildDefenseProfile, which auto-defense scores from as well.
+      const profile = await buildDefenseProfile({
         actor,
-        token: defenderToken,
-        weapon,
+        mode: "melee",
         context,
+        ability,
+        defenderToken,
         attackerTokenId: defendingAgainstId(),
+        overwhelmStacks,
+        longReachPenalty,
+        useBane,
       });
+      const aimDefense = profile.aimDefense;
 
       // Advantageous Maneuver: a parry that holds may be turned into an Aim on
       // the attacker for Stamina. Built here rather than in the card, because
@@ -1063,32 +1268,15 @@ export async function defenseRoll({
         defenseKey: "meleeDefense",
       });
 
-      const criticalSuccessThreshold =
-        defense.criticalSuccessThreshold +
-        mainCrit +
-        offCrit +
-        doctrineCritDefenseBonus +
-        weaponSpec.critDefense +
-        (useBane ? baneProfile.critDefense : 0);
-
-      const criticalFailureThreshold = defense.criticalFailureThreshold;
-
-      const rollData = {
-        defenseRating,
-        weaponDefense,
-        doctrineDefenseBonus,
-        abilityDefense,
-        overwhelmPenalty,
-        longReachPenalty,
-        specDefense: weaponSpec.defense,
-        baneDefense: useBane ? baneProfile.defense : 0,
-        aimDefense: aimDefense.bonus,
-      };
+      const criticalSuccessThreshold = profile.critSuccess;
+      const criticalFailureThreshold = profile.critFailure;
 
       const roll = new Roll(
-        "@defenseRating + @weaponDefense + @doctrineDefenseBonus + @abilityDefense + @overwhelmPenalty + @longReachPenalty + @specDefense + @baneDefense + @aimDefense - 1d100",
-        withRollBias(rollData, actor),
+        profile.formula,
+        withRollBias(profile.rollData, actor),
       );
+      tagRollSkill(roll, profile.skillKey);
+      if (auto) tagAutoDefenseRoll(roll);
 
       await roll.evaluate();
 
@@ -1166,40 +1354,36 @@ export async function defenseRoll({
   } = {}) {
     const resolveWithContext = async (context) => {
       const weapon = context.weapon;
-      const offProps = getOffhandProps(context);
 
       const rollName = `Ranged defense with ${weapon.localizedName ?? weapon.name}`;
 
-      const { doctrineCritDefenseBonus, doctrineRangedDefenseBonus } =
-        await game.redsteel.getDoctrineBonuses(actor, weapon);
-
-      const defense = actor.system.combatSkills.rangedDefense;
       // Records the attacker and settles the number in one step. Null means the
       // caller passed no override (an ability-driven defense that never showed
       // the dialog), so the tracked value stands.
       const overwhelmStacks = await commitOverwhelm(overwhelm);
-      const overwhelmPenalty = overwhelmStacks * OVERWHELM_PENALTY_PER_STACK;
-      const abilityDefense = Number(ability?.system?.rangedDefense) || 0;
 
-      const criticalSuccessThreshold =
-        defense.criticalSuccessThreshold +
-        doctrineCritDefenseBonus +
-        (useBane ? baneProfile.critDefense : 0);
+      // Doctrine, ability and Bane terms: see buildDefenseProfile, which
+      // auto-defense scores from as well.
+      const profile = await buildDefenseProfile({
+        actor,
+        mode: "ranged",
+        context,
+        ability,
+        defenderToken,
+        attackerTokenId: defendingAgainstId(),
+        overwhelmStacks,
+        useBane,
+      });
 
-      const criticalFailureThreshold = defense.criticalFailureThreshold;
-
-      const rollData = {
-        defenseRating: defense.rating,
-        doctrineRangedDefenseBonus,
-        abilityDefense,
-        overwhelmPenalty,
-        baneDefense: useBane ? baneProfile.defense : 0,
-      };
+      const criticalSuccessThreshold = profile.critSuccess;
+      const criticalFailureThreshold = profile.critFailure;
 
       const roll = new Roll(
-        "@defenseRating + @doctrineRangedDefenseBonus + @abilityDefense + @overwhelmPenalty + @baneDefense - 1d100",
-        withRollBias(rollData, actor),
+        profile.formula,
+        withRollBias(profile.rollData, actor),
       );
+      tagRollSkill(roll, profile.skillKey);
+      if (auto) tagAutoDefenseRoll(roll);
 
       await roll.evaluate();
 
@@ -1261,7 +1445,6 @@ export async function defenseRoll({
   } = {}) {
     const resolveWithContext = async (context) => {
       const weapon = context.weapon;
-      const offProps = getOffhandProps(context);
 
       const rollName = blindside
         ? game.i18n.format("REDSTEEL.Defense.BlindsideDodgeRoll", {
@@ -1269,28 +1452,27 @@ export async function defenseRoll({
           })
         : `Dodge with ${weapon.localizedName ?? weapon.name}`;
 
-      const offQuality = getOffhandQualityMods(context);
-      const mainDodge = Number(weapon.system.dodge) || 0;
-      const offDodge = Number(offProps?.dodge) || 0;
-      const offCritDodge =
-        (Number(offProps?.critDodge) || 0) +
-        (Number(offQuality.critDodge) || 0);
-
-      const dodge = actor.system.combatSkills.dodge;
-      const abilityDefense = Number(ability?.system?.dodge) || 0;
       // Records the attacker and settles the number in one step. Null means the
       // caller passed no override (an ability-driven defense that never showed
       // the dialog), so the tracked value stands.
       const overwhelmStacks = await commitOverwhelm(overwhelm);
-      const overwhelmPenalty = overwhelmStacks * OVERWHELM_PENALTY_PER_STACK;
 
-      const criticalSuccessThreshold =
-        dodge.criticalSuccessThreshold +
-        (Number(weapon.system.critDodge) || 0) +
-        offCritDodge +
-        (useBane ? baneProfile.critDefense : 0);
+      // Weapon, off-hand, ability and Bane terms: see buildDefenseProfile,
+      // which auto-defense scores from as well. Built before the stamina is
+      // spent, which is when the old inline sums were read too.
+      const profile = await buildDefenseProfile({
+        actor,
+        mode: "dodge",
+        context,
+        ability,
+        defenderToken,
+        attackerTokenId: defendingAgainstId(),
+        overwhelmStacks,
+        useBane,
+      });
 
-      const criticalFailureThreshold = dodge.criticalFailureThreshold;
+      const criticalSuccessThreshold = profile.critSuccess;
+      const criticalFailureThreshold = profile.critFailure;
 
       const staminaCost = 4;
       const stamina = actor.system.stats.stamina.value ?? 0;
@@ -1304,19 +1486,12 @@ export async function defenseRoll({
         "system.stats.stamina.value": stamina - staminaCost,
       });
 
-      const rollData = {
-        dodgeRating: dodge.rating,
-        weaponDodge: mainDodge + offDodge,
-        abilityDefense,
-        overwhelmPenalty,
-        baneDefense: useBane ? baneProfile.defense : 0,
-      };
-
       const roll = new Roll(
-        "@dodgeRating + @weaponDodge + @abilityDefense + @overwhelmPenalty + @baneDefense - 1d100",
-        withRollBias(rollData, actor),
+        profile.formula,
+        withRollBias(profile.rollData, actor),
       );
-      tagRollSkill(roll, "dodge");
+      tagRollSkill(roll, profile.skillKey);
+      if (auto) tagAutoDefenseRoll(roll);
       await roll.evaluate();
       const d100 = roll.dice.find((d) => d.faces === 100);
       const d100Result = d100?.total;
@@ -1697,6 +1872,26 @@ export async function defenseRoll({
           ...(maneuver
             ? { advantageousManeuver: { ...maneuver, defenseFailed } }
             : {}),
+          // Who defended against whom, with what, and whether it held. The
+          // hotbar's reaction suggestions (Counterattack, Retaliatory strike)
+          // read this back off the chat log rather than storing anything, so
+          // the card stamps the combat moment it belongs to: a suggestion
+          // lives only for the turn its defense was rolled in.
+          defense: {
+            defenderTokenId: defenderToken?.id ?? null,
+            attackerTokenId: defendingAgainstId() ?? null,
+            defenseKey,
+            succeeded: !defenseFailed,
+            attackAbilityKey: attack?.abilityKey ?? null,
+            attackTags: Array.isArray(attack?.attackTags) ? attack.attackTags : [],
+            combat: game.combat?.started
+              ? {
+                  id: game.combat.id,
+                  round: game.combat.round,
+                  turn: game.combat.turn,
+                }
+              : null,
+          },
         },
       },
     });
@@ -1747,6 +1942,11 @@ export function registerDefendButton() {
       // action. Absent on every other card, where the versus block falls back
       // to the usual 60.
       criticalGap: message.flags.attack.criticalGap ?? null,
+      // Which ability swung and its tags ("opportunity"), carried onto the
+      // defense card so the reaction suggestions can tell a Counterattack or
+      // an Opportunity Attack (which cannot be answered in kind) from a blow.
+      abilityKey: message.flags?.redsteel?.abilityKey ?? null,
+      attackTags: message.flags?.redsteel?.attackTags ?? [],
     };
 
     const isAuthor = game.user.id === message.author?.id;

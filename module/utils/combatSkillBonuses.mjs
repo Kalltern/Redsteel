@@ -1693,14 +1693,20 @@ export async function getEffectRolls(
   // flags.redsteel.impaleBleeds (set in applyDamage) and fires in effects.mjs
   // on removal. A plain Root (no Impale, or no feature) carries no tag and so
   // never bleeds.
-  if (mechanicalEffects["root"] && actor.system.woundingImpale) {
+  //
+  // Every Impale Root is also marked `impale`, feature or not: applyDamage
+  // stamps the impaler on it, which is who gets Impale: Follow-up Attack when
+  // the target dies (impaleFollowup.mjs).
+  if (mechanicalEffects["root"]) {
     const isImpale = (item) =>
       item?.system?.localizationKey === "REDSTEEL.Items.Impale.name" ||
       item?.name === "Impale";
     const usedImpale =
       isImpale(ability) || selectedModifiers.some((m) => isImpale(m));
 
-    if (usedImpale) {
+    if (usedImpale) mechanicalEffects["root"].impale = true;
+
+    if (usedImpale && actor.system.woundingImpale) {
       const weaponTags = String(ws.tags ?? "")
         .split(",")
         .map((t) => t.trim().toLowerCase());

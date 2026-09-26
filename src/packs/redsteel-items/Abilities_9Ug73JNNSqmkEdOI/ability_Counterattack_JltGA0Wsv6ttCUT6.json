@@ -3,7 +3,7 @@
   "type": "ability",
   "img": "icons/skills/melee/strike-sword-gray.webp",
   "system": {
-    "description": "<p>A retaliation attack that deals half damage. <br />Can be performed only immediately after a successful Defense.<br />Does not apply to Counterattacks, Opportunity Attacks, Shield Bash, or Riposte Strike.<br />Has no interactions with Aiming.</p>",
+    "description": "<p>A retaliation attack. <br />Can be performed only immediately after a successful Defense.<br />Does not apply to Counterattacks, Opportunity Attacks, Shield Bash, or Riposte Strike.<br />Has no interactions with Aiming.</p>",
     "type": "melee",
     "weaponAbility": true,
     "standalone": false,

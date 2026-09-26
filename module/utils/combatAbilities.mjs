@@ -53,7 +53,18 @@ import { getCommandTargets, runCommand } from "./commands.mjs";
 import { spendForItems } from "./actionTracker.mjs";
 import { attackOptionIconsHtml } from "./attackOptionIcons.mjs";
 
-export async function combatAbilities() {
+/**
+ * The Combat Abilities dialog.
+ *
+ * @param {object} [options]
+ * @param {string} [options.launchAbilityId] An ability Item id to fire as soon
+ *   as the dialog renders, exactly as if its row had been clicked. Used by the
+ *   hotbar's combat suggestion chips. Omitted by every other caller.
+ */
+export async function combatAbilities({ launchAbilityId = null } = {}) {
+  // One-shot: the dialog's render callback can run again on a re-render, and
+  // the launch must not fire twice.
+  let pendingLaunchId = launchAbilityId;
   // ====================================================================
   // 1. INITIAL SETUP AND FILTERING
   // ====================================================================
@@ -926,6 +937,40 @@ ${
         abilityDialog.close();
         combatAbilities();
       });
+
+      // Launched from a hotbar suggestion: choose the ability the same way a
+      // row click does, so intents, costs, the weapon flow and the chat card
+      // are identical. An ability the list filtered out (the weapon in hand
+      // cannot perform it) leaves the dialog open with a warning.
+      if (pendingLaunchId) {
+        const launchId = pendingLaunchId;
+        pendingLaunchId = null;
+        const launched = abilities.find((a) => a.id === launchId);
+        if (launched) {
+          // The chip already said which ability: the dialog stays hidden and
+          // closes once the ability has run (user ruling). It is shown only
+          // when the flow turned it into the Multi-Attack strip, which needs
+          // it for "Attack Again".
+          const app = abilityDialog.element?.[0];
+          if (app) app.style.display = "none";
+          Promise.resolve(onAbilityChosen(launched, root, abilityDialog, actor))
+            .catch((err) => console.error("REDSTEEL: ability launch failed", err))
+            .finally(() => {
+              if (lockedMultiAttackAbility) {
+                if (app) app.style.display = "";
+              } else if (abilityDialog.rendered) {
+                abilityDialog.close();
+              }
+            });
+        } else {
+          const item = actor.items.get(launchId);
+          ui.notifications.warn(
+            game.i18n.format("REDSTEEL.Bg3Hotbar.Suggest.AbilityUnavailable", {
+              name: item?.localizedName ?? item?.name ?? "",
+            }),
+          );
+        }
+      }
     },
   });
 

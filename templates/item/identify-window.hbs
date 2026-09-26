@@ -1,0 +1,44 @@
+{{!-- One unidentified weapon / gear item: roll Arcana to identify it.
+      Reuses the scroll window's classes (see utils/itemIdentify.mjs).
+      ApplicationV2 parts must render a SINGLE root element. --}}
+<div class="rs-scroll-window">
+
+  <div class="rs-scroll-head">
+    <img class="rs-scroll-art" src="{{img}}" alt="" />
+    <div>
+      <div class="rs-scroll-title">{{name}}</div>
+      <div class="rs-scroll-sub">{{localize "REDSTEEL.Identify.Difficulty"}} {{identifyDifficulty}}</div>
+    </div>
+  </div>
+
+  <p class="rs-scroll-hint">{{localize "REDSTEEL.Identify.UnknownHint"}}</p>
+
+  {{#if result}}
+    <div class="rs-scroll-result {{#if result.success}}is-success{{else}}is-failure{{/if}}">
+      {{localize "REDSTEEL.Scroll.Window.Result" d100=result.d100 margin=result.marginText}}
+    </div>
+  {{/if}}
+
+  {{!-- A parked failure. Nothing is written until Accept. --}}
+  {{#if pending}}
+    <div class="rs-scroll-actions">
+      <button type="button" class="rs-scroll-btn" data-action="reroll">
+        <i class="fa-light fa-rotate"></i> {{localize "REDSTEEL.Scroll.Window.Reroll"}}
+      </button>
+      <button type="button" class="rs-scroll-btn danger" data-action="accept">
+        {{localize "REDSTEEL.Scroll.Window.Close"}}
+      </button>
+    </div>
+  {{else}}
+    <div class="rs-scroll-actions">
+      <button type="button" class="rs-scroll-btn" data-action="identify" {{#if locked}}disabled{{/if}}>
+        {{localize "REDSTEEL.Identify.Button"}}
+        <span class="rs-scroll-sub">({{localize "REDSTEEL.Identify.Difficulty"}} {{identifyDifficulty}})</span>
+      </button>
+    </div>
+    {{#if locked}}
+      <p class="rs-scroll-hint">{{localize "REDSTEEL.Identify.Locked" name=actorName}}</p>
+    {{/if}}
+  {{/if}}
+
+</div>

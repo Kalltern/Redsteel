@@ -1,5 +1,16 @@
-import { defenseRoll } from "./defense.mjs";
-import { attackerTokenIdFromMessage } from "./overwhelm.mjs";
+import {
+  autoDefenseLongReachPenalty,
+  buildDefenseProfile,
+  defenseRoll,
+} from "./defense.mjs";
+import { defenseWinChance } from "./defenseOdds.mjs";
+import {
+  attackerTokenIdFromMessage,
+  getOverwhelmSources,
+  isOverwhelmTracked,
+  stacksFromSources,
+} from "./overwhelm.mjs";
+import { getRollBias, withRollBias } from "./rollAdvantage.mjs";
 
 /**
  * NPC auto-defense: an attack card posted against a targeted NPC answers itself.
@@ -94,9 +105,6 @@ const weaponDefenseValue = (weapon) =>
   (Number(weapon?.system?.qualityMods?.defense) || 0) +
   (Number(weapon?.system?.enchantMods?.defense) || 0);
 
-/** What a weapon adds to a dodge. */
-const weaponDodgeValue = (weapon) => Number(weapon?.system?.dodge) || 0;
-
 /**
  * The weapon a card should be drawn with when the roll itself does not care
  * which one it is (Ranged Defense reads nothing off the weapon, but the card
@@ -113,75 +121,131 @@ function mainWeapon(actor) {
 }
 
 /**
- * The defense this NPC is most likely to make hold, as `{mode, weapon, score}`.
+ * The defense this NPC is most likely to make hold against the blow already on
+ * the card, as `{mode, weapon, score}`.
  *
  * Every legal (defense, weapon) pair is scored and the best one wins, rather
  * than picking a weapon first and a defense after — a shield is a better parry
  * than the sword next to it, and the point of the toggle is that the GM does not
  * have to notice that.
  *
- * The score is the roll's own success chance: a d100 margin roll succeeds on
- * anything at or under the rating, so the higher rating is the better defense.
- * Two things are folded in beyond the raw rating:
+ * The score is the exact chance, out of 10000, that this defense wins the
+ * versus Test against *this* attack (defenseOdds.mjs → defenseWinChance). The
+ * attack is already rolled, so its margin and crit flags are facts, not
+ * averages, and each option is scored with the numbers its real roll would be
+ * made of (defense.mjs → buildDefenseProfile): Overwhelm as it will stand once
+ * this attacker is recorded, the Long Reach penalty, the NPC's own advantage
+ * bias, crit thresholds and, for a dodge, the Bad Dodge limit. A higher rating
+ * is therefore not automatically better: a dodge whose limit throws away the
+ * dice it would need scores only for the dice it can still win on, and against
+ * a blow that is already a critical hit only a natural critical defense counts.
+ * Those rules are not linear in the rating, which is also why Overwhelm has to
+ * be counted even though it lands on every option alike.
  *
- * - a dodge is also lost when the raw die beats `dodgeLimit`, so the limit caps
- *   what a dodge can be worth however good the skill behind it is;
- * - a dodge that cannot be paid for is not an option at all.
+ * Nothing is written while scoring: the Overwhelm projection reads the record
+ * and adds the attacker in memory only. The roll itself commits it.
  *
- * Overwhelm and the Long Reach penalty are deliberately absent: they land on
- * every option equally, so they cannot change which one is best.
+ * A dodge that cannot be paid for is not an option at all.
  *
  * @param {Actor} actor
  * @param {"melee"|"ranged"} category
- * @returns {{mode: "melee"|"ranged"|"dodge", weapon: Item, score: number}|null}
+ * @param {object} params
+ * @param {object} params.attack  the rolled attack, as resolveAutoDefense builds it
+ * @param {TokenDocument} params.defenderToken
+ * @param {string|null} params.attackerTokenId
+ * @returns {Promise<{mode: "melee"|"ranged"|"dodge", weapon: Item, score: number}|null>}
  */
-export function pickBestDefense(actor, category) {
+export async function pickBestDefense(
+  actor,
+  category,
+  { attack, defenderToken = null, attackerTokenId = null } = {},
+) {
   // Every defense path builds its card around a weapon, so an NPC with none has
   // no automatic answer to give.
   if (!weaponsOf(actor).length) return null;
 
-  const options = [];
-  const skills = actor.system?.combatSkills ?? {};
+  const candidates = [];
 
   const stamina = Number(actor.system?.stats?.stamina?.value) || 0;
   if (stamina >= DODGE_STAMINA_COST) {
-    const dodgeRating = Number(skills.dodge?.rating) || 0;
-    const dodgeLimit = Number(actor.system?.dodgeLimit?.total);
-
     for (const weapon of candidateWeapons(actor)) {
-      const raw = dodgeRating + weaponDodgeValue(weapon);
-      options.push({
-        mode: "dodge",
-        weapon,
-        score: dodgeLimit > 0 ? Math.min(raw, dodgeLimit) : raw,
-      });
+      candidates.push({ mode: "dodge", weapon });
     }
   }
 
   if (category === "melee") {
-    const rating = Number(skills.meleeDefense?.rating) || 0;
     for (const weapon of meleeWeaponsOf(actor)) {
-      options.push({
-        mode: "melee",
-        weapon,
-        score: rating + weaponDefenseValue(weapon),
-      });
+      candidates.push({ mode: "melee", weapon });
     }
   } else {
     const weapon = mainWeapon(actor);
-    if (weapon) {
-      options.push({
-        mode: "ranged",
-        weapon,
-        score: Number(skills.rangedDefense?.rating) || 0,
-      });
+    if (weapon) candidates.push({ mode: "ranged", weapon });
+  }
+
+  if (!candidates.length) return null;
+
+  // Overwhelm as it will stand after this defense records the attacker — the
+  // same projection the defense dialog shows, read without writing.
+  let overwhelmStacks = 0;
+  if (isOverwhelmTracked()) {
+    const sources = getOverwhelmSources(defenderToken);
+    if (
+      attackerTokenId &&
+      attackerTokenId !== defenderToken?.id &&
+      !sources.includes(attackerTokenId)
+    ) {
+      sources.push(attackerTokenId);
     }
+    overwhelmStacks = stacksFromSources(sources);
+  }
+
+  // Same for every parry, so read once. Only the melee roll takes it.
+  const longReachPenalty =
+    category === "melee"
+      ? autoDefenseLongReachPenalty(actor, defenderToken, attackerTokenId)
+      : 0;
+
+  // The actor's buckets exactly as the roll layer will see them.
+  const biasData = withRollBias({}, actor);
+
+  const options = [];
+  for (const { mode, weapon } of candidates) {
+    const context = game.redsteel.resolveWeaponContext(actor, null, weapon);
+    if (!context) continue;
+
+    const profile = await buildDefenseProfile({
+      actor,
+      mode,
+      context,
+      defenderToken,
+      attackerTokenId,
+      overwhelmStacks,
+      longReachPenalty: mode === "melee" ? longReachPenalty : 0,
+    });
+    const bias = getRollBias(biasData, profile.skillKey);
+
+    options.push({
+      mode,
+      weapon,
+      score: defenseWinChance(profile, attack, bias),
+    });
   }
 
   if (!options.length) return null;
 
+  console.debug(
+    "Redsteel | auto-defense odds",
+    defenderToken?.name ?? actor.name,
+    options.map(({ mode, weapon, score }) => ({
+      mode,
+      weapon: weapon.name,
+      pct: score / 100,
+    })),
+  );
+
   // Ties go to the option that costs nothing: an equal dodge is a worse deal
-  // than a parry, because it is paid for in stamina.
+  // than a parry, because it is paid for in stamina. Any other tie keeps the
+  // first option listed.
   return options.reduce((best, option) => {
     if (option.score !== best.score) {
       return option.score > best.score ? option : best;
@@ -292,7 +356,11 @@ export async function resolveAutoDefense(message) {
     // No weapon to defend with, or nothing left to pay a dodge with. Said out
     // loud rather than passed over: the GM is counting on this NPC to answer
     // for itself, and silence would read as "the attack missed".
-    const choice = pickBestDefense(actor, category);
+    const choice = await pickBestDefense(actor, category, {
+      attack,
+      defenderToken: tokenDoc,
+      attackerTokenId,
+    });
     if (!choice) {
       ui.notifications.warn(
         game.i18n.format("REDSTEEL.AutoDefense.NoOption", {

@@ -53,6 +53,7 @@ import {
   tokenMovementSpent,
 } from "./movementZones.mjs";
 import { isSprintAbility, useUtilityAbility } from "./combatAbilities.mjs";
+import { canTradeWith, requestTrade } from "./trade.mjs";
 
 const SETTING = "bg3Hotbar";
 const TEAM_HEALTH_SETTING = "bg3HotbarTeamHealth";
@@ -1008,7 +1009,13 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       toggleAutoDefense: this._onToggleAutoDefense,
       toggleActionPip: this._onToggleActionPip,
       useSuggestion: this._onUseSuggestion,
+      useCombatSuggestion: this._onUseCombatSuggestion,
+      stopSustain: this._onStopSustain,
+      toggleMovementMore: this._onToggleMovementMore,
       confirmMovement: this._onConfirmMovement,
+      rotateFacing: this._onRotateFacing,
+      confirmFacing: this._onConfirmFacing,
+      cancelFacing: this._onCancelFacing,
     },
   };
 
@@ -1037,6 +1044,19 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
 
   /** A suggestion chip's click is still being carried out. */
   #suggestionBusy = false;
+
+  /**
+   * Uuid of the actor in Slow Movement's facing step, or null. Transient and
+   * per client: the step only changes what the strip shows until the check.
+   */
+  #facingUuid = null;
+
+  /**
+   * Whether the movement drawer (Slow Movement, Sprint, Disengage behind the
+   * » tab) is rolled out. Per client and transient; kept across redraws so
+   * the drawer does not snap shut every time the panel repaints.
+   */
+  #movementExpanded = false;
 
   /** The board element the deselect listener is on, so `_onClose` can undo it. */
   #board = null;
@@ -1261,7 +1281,10 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       actionTracker: this.#prepareActionTracker(actor),
       // Turn actions worth taking now, floated above the bar. Empty when there
       // is nothing to suggest, and then the strip is not drawn at all.
-      suggestions: prepareSuggestions(actor),
+      movementExpanded: this.#movementExpanded,
+      suggestions: prepareSuggestions(actor, {
+        facing: !!actor && this.#facingUuid === actor.uuid,
+      }),
       resourceBars: this.#prepareResourceBars(actor),
       // One tray, two readings on a character and both at once on an NPC. The
       // flag is per user rather than per actor, so a player who switched to
@@ -2123,6 +2146,16 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     // fires: drop any hover preview here, and let the new chip redraw it.
     clearPreview();
     this.#bindSuggestionHover(root);
+    // During the facing step the Slow Movement zone stays up, so the player
+    // sees where they can go while choosing where to face. A strip without
+    // the facing chip (turn over, bar rebound) ends the step.
+    if (this.#facingUuid) {
+      if (this.actor && root.querySelector(".rs-bg3-suggest-chip.facing")) {
+        showPreview(this.actor, "slow");
+      } else {
+        this.#facingUuid = null;
+      }
+    }
     setZoneActor(this.actor);
     refreshLockedZone();
 
@@ -2187,6 +2220,8 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
   #bindSuggestionHover(root) {
     for (const chip of root.querySelectorAll(".rs-bg3-suggest-chip")) {
       if (chip.classList.contains("locked")) continue;
+      // Combat ability chips have no zone to preview.
+      if (chip.classList.contains("ability")) continue;
       const mode = chip.dataset.suggestionMode;
       chip.addEventListener("pointerenter", () => {
         if (this.actor) showPreview(this.actor, mode);
@@ -2373,6 +2408,23 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       "deleteCombatant",
     ]) {
       add(hook, () => this.#rerender());
+    }
+
+    // Combat suggestions (Counterattack, Retaliatory strike) are read off the
+    // chat log: a defense card or an attack card arriving or being deleted
+    // can add or spend one. Everything else in chat is left alone.
+    const isCombatCard = (message) => {
+      const flags = message?.flags ?? {};
+      return !!(
+        flags.redsteel?.defense ||
+        flags.redsteel?.abilityKey ||
+        flags.attack
+      );
+    };
+    for (const hook of ["createChatMessage", "deleteChatMessage"]) {
+      add(hook, (message) => {
+        if (isCombatCard(message)) this.#rerender();
+      });
     }
 
     // Selecting a different token on the canvas outranks a clicked portrait:
@@ -2706,6 +2758,16 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
         return;
       }
 
+      // A movement was picked: fold the drawer away for next time.
+      this.#movementExpanded = false;
+
+      // Slow Movement asks for the facing first; the check declares it.
+      if (mode === "slow") {
+        this.#facingUuid = actor.uuid;
+        this.#rerender();
+        return;
+      }
+
       if (mode !== "sprint") {
         await lockMovement(actor, { mode, budget, startSpent, charge: 1 });
         return;
@@ -2725,6 +2787,144 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     } finally {
       this.#suggestionBusy = false;
     }
+  }
+
+  /**
+   * The » tab: roll the other movements out, or fold them back. Toggled on the
+   * live element rather than by a redraw, so the CSS transition plays.
+   *
+   * @this {Bg3Hotbar}
+   */
+  static _onToggleMovementMore(event, target) {
+    if (isRightClick(event)) return;
+    this.#movementExpanded = !this.#movementExpanded;
+    const open = this.#movementExpanded;
+    const group = target?.closest(".rs-bg3-suggest-movegroup");
+    group?.querySelector(".rs-bg3-suggest-more")?.classList.toggle("open", open);
+    target?.classList.toggle("open", open);
+    target?.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+
+  /**
+   * A held sustained cast: let it go.
+   *
+   * @this {Bg3Hotbar}
+   */
+  static async _onStopSustain(event, target) {
+    if (isRightClick(event)) return;
+    const actor = this.actor;
+    if (!actor?.isOwner) return;
+    const effect = actor.effects.get(target?.dataset?.effectId);
+    if (!effect) return;
+    const data = effect.getFlag("redsteel", "channelingData");
+    const spell =
+      actor.items.get(data?.spellId) ?? game.items.get(data?.spellId) ?? null;
+    // The Channeling effect is the held cast: deleting it stops the cast, the
+    // per-round upkeep and the effect itself. The panel redraws on the
+    // deleteActiveEffect hook.
+    await effect.delete();
+    ui.notifications.info(
+      game.i18n.format("REDSTEEL.Bg3Hotbar.Suggest.SustainEnded", {
+        spell: spell?.localizedName ?? spell?.name ?? effect.name,
+      }),
+    );
+  }
+
+  /**
+   * A combat suggestion chip: open the Combat Abilities dialog with this
+   * ability already chosen, so the attack runs through the dialog's own flow.
+   *
+   * A reaction targets the attacker first. The dialog resolves its actor from
+   * the controlled token (`game.redsteel.selectToken`), so the bound actor's
+   * token is taken into control the way a portrait click does it.
+   *
+   * @this {Bg3Hotbar}
+   */
+  static async _onUseCombatSuggestion(event, target) {
+    if (isRightClick(event)) return;
+    const chip = target.closest("[data-action=useCombatSuggestion]");
+    if (!chip) return;
+
+    const actor = this.actor;
+    if (!actor?.isOwner) return;
+    const abilityId = chip.dataset.abilityId;
+    if (!abilityId || !actor.items.get(abilityId)) return;
+
+    const token = tokenForActor(actor);
+    if (!token?.isOwner) return;
+
+    // The dialog fires the ability the moment it renders, so a double click
+    // would swing twice. Held a moment past the launch for the second click.
+    if (this.#suggestionBusy) return;
+    this.#suggestionBusy = true;
+    try {
+      const targetId = chip.dataset.targetTokenId;
+      const attacker = targetId ? canvas.tokens?.get(targetId) : null;
+      if (attacker) attacker.setTarget(true, { releaseOthers: true });
+
+      const controlled = canvas.tokens?.controlled ?? [];
+      if (controlled.length !== 1 || controlled[0] !== token) {
+        token.control({ releaseOthers: true });
+      }
+
+      await game.redsteel.combatAbilities({ launchAbilityId: abilityId });
+    } finally {
+      setTimeout(() => {
+        this.#suggestionBusy = false;
+      }, PORTRAIT_HOLD_MS);
+    }
+  }
+
+  /**
+   * Facing step: turn the token one hex side (60°). Rotation 0 faces south and
+   * grows clockwise (see positioning.mjs), so +1 turns right.
+   *
+   * @this {Bg3Hotbar}
+   */
+  static async _onRotateFacing(event, target) {
+    if (isRightClick(event)) return;
+    const actor = this.actor;
+    const tokenDoc = tokenForActor(actor)?.document;
+    if (!actor?.isOwner || !tokenDoc) return;
+    const dir = Number(target?.dataset?.dir) || 0;
+    if (!dir) return;
+    const rotation =
+      ((((Number(tokenDoc.rotation) || 0) + dir * 60) % 360) + 360) % 360;
+    await tokenDoc.update({ rotation });
+  }
+
+  /**
+   * Facing step: the facing is set, declare Slow Movement. From here the move
+   * keeps that facing (movementZones.mjs switches auto-rotation off).
+   *
+   * @this {Bg3Hotbar}
+   */
+  static async _onConfirmFacing(event) {
+    if (isRightClick(event)) return;
+    const actor = this.actor;
+    if (!actor?.isOwner || getMovementLock(actor)) return;
+    if (this.#suggestionBusy) return;
+    this.#suggestionBusy = true;
+    try {
+      this.#facingUuid = null;
+      clearPreview();
+      await lockMovement(actor, {
+        mode: "slow",
+        budget: movementBudget(actor, "slow"),
+        startSpent: tokenMovementSpent(tokenForActor(actor)),
+        charge: 1,
+      });
+    } finally {
+      this.#suggestionBusy = false;
+    }
+  }
+
+  /** Facing step: back out to the chips, nothing spent. @this {Bg3Hotbar} */
+  static _onCancelFacing(event) {
+    if (isRightClick(event)) return;
+    this.#facingUuid = null;
+    clearPreview();
+    this.#rerender();
   }
 
   /**
@@ -2807,6 +3007,19 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     if (frame) {
       event.preventDefault();
       event.stopPropagation();
+      // A second right-click on a portrait just closes the open menu.
+      if (this.#closePortraitMenu()) return;
+      // A teammate someone else plays gets a small menu with Trade (and the
+      // resource editor where the viewer has one). Everything else keeps the
+      // plain toggle.
+      if (frame.classList.contains("rs-bg3-portrait-frame--team")) {
+        const mate = fromUuidSync(frame.dataset.actorUuid);
+        const me = this.actor?.isOwner ? this.actor : game.user.character;
+        if (mate && canTradeWith(me, mate)) {
+          this.#openPortraitMenu(event, frame, me, mate);
+          return;
+        }
+      }
       this.#toggleResourceEditor(frame);
       return;
     }
@@ -2865,6 +3078,85 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     }
     if (opening) panel.classList.add("open");
     this.#resEditUuid = opening ? (panel.dataset.actorUuid ?? null) : null;
+  }
+
+  /** Tears down the open portrait menu, or null when none is open. */
+  #portraitMenuTeardown = null;
+
+  /** Close the portrait menu. True if one was open. */
+  #closePortraitMenu() {
+    if (!this.#portraitMenuTeardown) return false;
+    this.#portraitMenuTeardown();
+    this.#portraitMenuTeardown = null;
+    return true;
+  }
+
+  /**
+   * The teammate portrait's right-click menu: Trade, plus Resources where the
+   * frame carries a resource editor. It lives on document.body rather than in
+   * the panel, because the panel redraws constantly and would take it along.
+   */
+  #openPortraitMenu(event, frame, me, mate) {
+    const uuid = frame.dataset.actorUuid;
+    const entries = [
+      {
+        icon: "fa-solid fa-scale-balanced",
+        label: "REDSTEEL.Trade.MenuTrade",
+        run: () => requestTrade(me, mate),
+      },
+    ];
+    if (frame.querySelector(".rs-bg3-resedit")) {
+      entries.push({
+        icon: "fa-solid fa-sliders",
+        label: "REDSTEEL.Trade.MenuResources",
+        run: () => {
+          // The frame the menu opened on may have been redrawn since.
+          const live = [
+            ...(this.element?.querySelectorAll(".rs-bg3-portrait-frame") ?? []),
+          ].find((el) => el.dataset.actorUuid === uuid);
+          if (live) this.#toggleResourceEditor(live);
+        },
+      });
+    }
+
+    const menu = document.createElement("div");
+    menu.id = "rs-portrait-menu";
+    for (const entry of entries) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.innerHTML = `<i class="${entry.icon}"></i>`;
+      button.append(document.createTextNode(game.i18n.localize(entry.label)));
+      button.addEventListener("click", () => {
+        this.#closePortraitMenu();
+        entry.run();
+      });
+      menu.append(button);
+    }
+    document.body.append(menu);
+
+    const rect = menu.getBoundingClientRect();
+    const left = Math.max(4, Math.min(event.clientX, window.innerWidth - rect.width - 4));
+    const top = Math.max(4, Math.min(event.clientY, window.innerHeight - rect.height - 4));
+    menu.style.left = `${left}px`;
+    menu.style.top = `${top}px`;
+
+    // A right-press on a portrait is left to #onContextMenu, which closes the
+    // menu itself, so that a second right-click closes rather than reopens.
+    const onPointerDown = (e) => {
+      if (menu.contains(e.target)) return;
+      if (e.button === 2 && e.target.closest?.(".rs-bg3-portrait-frame")) return;
+      this.#closePortraitMenu();
+    };
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") this.#closePortraitMenu();
+    };
+    document.addEventListener("pointerdown", onPointerDown, true);
+    document.addEventListener("keydown", onKeyDown, true);
+    this.#portraitMenuTeardown = () => {
+      document.removeEventListener("pointerdown", onPointerDown, true);
+      document.removeEventListener("keydown", onKeyDown, true);
+      menu.remove();
+    };
   }
 
   /**

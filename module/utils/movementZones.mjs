@@ -884,6 +884,17 @@ export function registerMovementZoneHooks() {
     if (isZoneActor(actor)) refresh();
   });
 
+  // Slow Movement keeps the facing confirmed before the move: the token does
+  // not turn toward where it walks. `autoRotate` is one of the two writable
+  // fields of the V14 pre-movement operation, and this hook runs on the
+  // moving client only.
+  Hooks.on("preMoveToken", (tokenDoc, movement) => {
+    const actor = tokenDoc?.actor;
+    if (!actor || !isTrackedTurn(actor)) return;
+    if (getMovementLock(actor)?.mode !== "slow") return;
+    movement.autoRotate = false;
+  });
+
   // Redraw once the bound token has finished moving. A redraw fired by the
   // update itself runs while the token is still animating along its path and
   // left the swords wrong until the next (even fake) drag redrew them; V14's

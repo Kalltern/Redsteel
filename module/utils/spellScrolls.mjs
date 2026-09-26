@@ -350,7 +350,7 @@ export async function createConcreteScroll(master, uuid) {
  * @param {Actor} actor
  * @param {number} difficulty  Signed, system convention: higher is easier.
  */
-async function rollArcana(actor, difficulty) {
+export async function rollArcana(actor, difficulty) {
   const skill = actor.system.skills?.arcana ?? {};
   const rating = Number(skill.rating) || 0;
   const critSuccess = Number(skill.criticalSuccessThreshold ?? 0);
@@ -382,7 +382,7 @@ async function rollArcana(actor, difficulty) {
  * Mirrors the Alchemy craft re-roll (actor-sheet `_rerollCraft`).
  * @returns {Promise<boolean>} whether a charge was actually spent.
  */
-async function spendArcanaReroll(actor, { critFailure = false } = {}) {
+export async function spendArcanaReroll(actor, { critFailure = false } = {}) {
   const eligible = getEligibleRerolls(
     actor,
     getRerollTokensForSkill(actor, "arcana"),

@@ -94,6 +94,9 @@ import {
 } from "./utils/actionTracker.mjs";
 import { registerMovementZoneHooks } from "./utils/movementZones.mjs";
 import { registerAllyPassage } from "./utils/allyPassage.mjs";
+import { registerTrade } from "./utils/trade.mjs";
+import { registerImpaleFollowupHooks } from "./utils/impaleFollowup.mjs";
+import { registerSuggestionHooks } from "./utils/actionSuggestions.mjs";
 import { registerStatusCounterColors } from "./utils/statusCounterColors.mjs";
 import {
   describeSneakSources,
@@ -499,6 +502,9 @@ Hooks.once("init", function () {
   registerActionTrackerHooks();
   registerMovementZoneHooks();
   registerAllyPassage();
+  registerTrade();
+  registerImpaleFollowupHooks();
+  registerSuggestionHooks();
   registerStatusCounterColors();
   registerAutoDefense();
   registerWrathOfBlood();
@@ -1016,14 +1022,21 @@ Hooks.once("ready", () => {
     // ------------------------
 
     if (data.type === "sustainSpell") {
-      const actor = game.actors.get(data.actorId);
+      // Addressed to one user (effects.mjs picks the connected owner); older
+      // senders without `userId` fall back to the owner test below.
+      if (data.userId && data.userId !== game.user.id) return;
+
+      // By uuid first, so an unlinked token's synthetic actor resolves too.
+      const actor =
+        (data.actorUuid ? fromUuidSync(data.actorUuid) : null) ??
+        game.actors.get(data.actorId);
       if (!actor) return;
 
       // only owners execute
       if (!actor.isOwner) return;
 
       // prevent GM duplicate execution
-      if (game.user.isGM && actor.hasPlayerOwner) return;
+      if (!data.userId && game.user.isGM && actor.hasPlayerOwner) return;
 
       const effect = actor.effects.get(data.effectId);
       if (!effect) return;

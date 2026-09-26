@@ -371,7 +371,7 @@
           data-drag="true"
           data-item-id="{{slot.item._id}}"
         {{/if}}
-        title="{{#if slot.item}}{{slot.item.name}}{{/if}}"
+        title="{{#if slot.item}}{{slot.item.localizedName}}{{/if}}"
       >
         {{#if slot.item}}
           <img src="{{slot.item.img}}" class="item-icon" data-item-id="{{slot.item._id}}" data-tt-kind="item" data-tt-id="{{slot.item._id}}" />
@@ -490,6 +490,10 @@
         >
           <i class="fa-solid fa-hand"></i>
         </a>
+      {{/if}}
+
+      {{#if entry.unidentified}}
+        <i class="fa-solid fa-circle-question inventory-unidentified" title="{{localize 'REDSTEEL.Identify.MarkerTitle'}}"></i>
       {{/if}}
 
       {{#if entry.showQty}}

@@ -13,17 +13,24 @@
 
   <div class="header-fields">
     <div class="document-name">
-      {{#if hasLocalizedName}}
-        <input type="text" value="{{itemDisplayName}}" readonly title="{{item.name}}" />
+      {{!-- An unidentified magic item: players get the disguise with no title
+            (the title would leak the true name), the GM always gets the
+            editable real name. --}}
+      {{#if (and hasLocalizedName (not (and isGM isUnidentified)))}}
+        <input type="text" value="{{itemDisplayName}}" readonly {{#unless identifyHidden}}title="{{item.name}}"{{/unless}} />
       {{else}}
         <input name="name" type="text" value="{{item.name}}" placeholder="{{localize 'REDSTEEL.UI.name'}}" />
       {{/if}}
-      <input
-        name="system.localizationKey"
-        type="text"
-        value="{{system.localizationKey}}"
-        placeholder="{{localize 'REDSTEEL.UI.localizationKey'}}"
-      />
+      {{!-- The key can name the item, so a player never sees it on an
+            unidentified one. --}}
+      {{#unless identifyHidden}}
+        <input
+          name="system.localizationKey"
+          type="text"
+          value="{{system.localizationKey}}"
+          placeholder="{{localize 'REDSTEEL.UI.localizationKey'}}"
+        />
+      {{/unless}}
     </div>
     {{!-- =====================
          AMMUNITION

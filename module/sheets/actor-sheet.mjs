@@ -35,7 +35,6 @@ import {
   MAX_BATCH,
   SUBSTANCE_HERB_COST,
   SUBSTANCE_CRAFT_MOD,
-  SUBSTANCE_BATCH_MOD,
   getSubstanceCount,
   getHerbCount,
   getMaxSubstanceBatch,
@@ -56,6 +55,7 @@ import {
   initializeRaceChoices,
 } from "../utils/race.mjs";
 import { openWeaponSpecDialog } from "../utils/weaponSpec.mjs";
+import { isItemUnidentified } from "../utils/itemIdentify.mjs";
 import { postSpeedTest } from "../utils/speedTest.mjs";
 import { renderMarginFollowupLine } from "../utils/attributeFollowup.mjs";
 import { addItemToHotbar } from "../utils/hotbarMacros.mjs";
@@ -155,6 +155,9 @@ const INVENTORY_CATEGORIES = {
     types: ["item", "spellbook", "scroll"],
   },
 };
+
+// Item types that carry a quantity in the inventory grid (and can be split).
+const STACKABLE_TYPES = ["consumable", "ammunition", "item"];
 
 /**
  * Extend the basic ActorSheet with some very simple modifications
@@ -677,7 +680,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       return `
         <button type="button" class="rs-equip-cell${mine ? " is-on" : ""}"
                 data-set="${set}" data-hand="${hand}"
-                ${other ? `title="${esc(other.name)}"` : ""}
+                ${other ? `title="${esc(other.localizedName ?? other.name)}"` : ""}
                 aria-pressed="${mine ? "true" : "false"}"
           >${L(hand === "main" ? "Main" : "Off")}</button>`;
     };
@@ -692,7 +695,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       <div class="rs-equip-dialog">
         <div class="rs-equip-item">
           <img src="${esc(item.img)}" alt="">
-          <span>${esc(item.name)}</span>
+          <span>${esc(item.localizedName ?? item.name)}</span>
         </div>
         <div class="rs-equip-grid"
              style="grid-template-columns: auto repeat(${hands.length}, 1fr);">
@@ -1226,7 +1229,6 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
           <p style="font-size:12px; opacity:0.8; margin-top:6px;">
             ${i18n.localize("REDSTEEL.Alchemy.Chat.UsedStation")}: ${stationName} (${fmt(stationMod)}%${stationNote})<br>
             ${i18n.localize("REDSTEEL.Alchemy.Chat.Difficulty")}: ${fmt(SUBSTANCE_CRAFT_MOD)}%
-            (${fmt(SUBSTANCE_BATCH_MOD)}% ${i18n.localize("REDSTEEL.Alchemy.Substance.BatchNote")})
           </p>
           <p style="font-size:12px; opacity:0.8;">${
             mods.guaranteed
@@ -1422,13 +1424,13 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
   }
 
   /**
-   * Spend an alchemy/universal reroll to re-roll the last FAILED craft.
-   * Ingredients are not consumed again; a new success delivers the potions.
+   * Spend an alchemy/universal reroll to re-roll ONE failed unit of the last
+   * craft. Ingredients are not consumed again; a new success delivers that unit.
    */
   static async _rerollCraft(event, target) {
     this.#readAlchemyControls();
     const last = this._alchemyLastOutcome;
-    if (!last?.ok || last.success) return;
+    if (!last?.ok || !(last.rerollable > 0)) return;
     const recipe = this.actor.items.get(last.recipeId);
     if (!recipe) return;
 
@@ -1733,7 +1735,6 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     // Inventory grid: everything carried that isn't currently equipped.
     // Equipped weapons/armor/shields/ammo live in the slots above and take
     // no space in the grid (RPG-style).
-    const STACKABLE_TYPES = ["consumable", "ammunition", "item"];
     // Only characters have equipment slots to hold equipped gear; NPCs keep
     // everything in the grid so it stays reachable.
     const equippedIds =
@@ -1768,6 +1769,8 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
           quantity,
           showQty: stackable && quantity > 1,
           equipped: !!i.system.equipped,
+          // Marker for a magic item the GM has left unidentified.
+          unidentified: isItemUnidentified(i),
         };
       });
 
@@ -2006,30 +2009,39 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
               await this.#getRecipeProduct(selected),
             )
           : [];
-        // Reroll only re-opens a FAILED craft, and only with an eligible pool.
+        // Reroll re-opens one FAILED unit per charge, and only with an
+        // eligible pool.
         const last = this._alchemyLastOutcome;
         context.alchCanReroll =
           !!last?.ok &&
-          !last.success &&
+          last.rerollable > 0 &&
           !last.isSubstance &&
           getEligibleRerolls(
             this.actor,
             getRerollTokensForSkill(this.actor, "alchemy"),
           ).length > 0;
         if (last?.ok) {
+          const i18n = game.i18n;
+          const lost = last.failed
+            ? `; ${i18n.format("REDSTEEL.Alchemy.Chat.UnitsLost", { count: last.failed })}`
+            : "";
           context.alchAnnouncement = {
             success: last.success,
             text: last.success
-              ? `${game.i18n.localize("REDSTEEL.Alchemy.Chat.Success")} — ${game.i18n.format(
-                  "REDSTEEL.Alchemy.Chat.Created",
-                  { count: last.created, name: last.resultName },
-                )}`
-              : `${game.i18n.localize("REDSTEEL.Alchemy.Chat.Failure")} — ${game.i18n.localize(
+              ? `${i18n.localize(
+                  last.failed
+                    ? "REDSTEEL.Alchemy.Chat.PartialSuccess"
+                    : "REDSTEEL.Alchemy.Chat.Success",
+                )} — ${i18n.format("REDSTEEL.Alchemy.Chat.Created", {
+                  count: last.created,
+                  name: last.resultName,
+                })}${lost}`
+              : `${i18n.localize("REDSTEEL.Alchemy.Chat.Failure")} — ${i18n.localize(
                   "REDSTEEL.Alchemy.Chat.IngredientsWasted",
                 )}`,
-            detail: `d100: ${last.d100} · ${game.i18n.localize(
-              "REDSTEEL.Alchemy.Chat.Margin",
-            )} ${last.margin >= 0 ? "+" : ""}${last.margin}`,
+            detail: (last.rolls ?? [])
+              .map((r) => `d100: ${r.d100} (${r.margin >= 0 ? "+" : ""}${r.margin})`)
+              .join(" · "),
           };
         } else {
           context.alchAnnouncement = null;
@@ -2927,6 +2939,14 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     switch (dataset.rollType) {
       case "item":
         const item = this._getEmbeddedDocument(target);
+        // Shift+click on a stack in the inventory grid splits it instead.
+        if (
+          item &&
+          event.shiftKey &&
+          target.closest(".inventory-grid") &&
+          this._canSplitStack(item)
+        )
+          return this._splitStack(item);
         if (item) return item.roll();
     }
 
@@ -3248,6 +3268,9 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
 
     const dragData = this._getEmbeddedDocument(docRow)?.toDragData();
     if (!dragData) return;
+    // Shift held when the drag starts marks it as a stack split; the drop
+    // re-checks Shift too, so either moment is enough.
+    if (event.shiftKey) dragData.redsteelSplit = true;
 
     event.dataTransfer.setData("text/plain", JSON.stringify(dragData));
   }
@@ -3453,9 +3476,34 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
         return false; // Stop item from being added
       }
     }
-    // Handle item sorting within the same Actor
-    if (this.actor.uuid === item.parent?.uuid)
+    // Handle item sorting within the same Actor. A Shift drag of a stack
+    // inside the grid splits it, the new stack landing where it was dropped.
+    if (this.actor.uuid === item.parent?.uuid) {
+      if (
+        (data.redsteelSplit || event.shiftKey) &&
+        event.target.closest(".inventory-grid") &&
+        this._canSplitStack(item)
+      ) {
+        const cell = event.target.closest(".inventory-cell");
+        const dropOn = cell?.dataset.itemId
+          ? this.actor.items.get(cell.dataset.itemId)
+          : null;
+        // Empty cell → end of the grid; another stack → before it;
+        // its own cell → right after the source.
+        let placement = "after";
+        if (cell && !cell.dataset.itemId) placement = "end";
+        else if (dropOn && dropOn.id !== item.id) placement = "before";
+        return this._splitStack(item, { placement, target: dropOn });
+      }
+      // A plain drag onto an identical stack merges the two.
+      const onCell = event.target.closest(".inventory-grid .inventory-cell");
+      const mergeInto = onCell?.dataset.itemId
+        ? this.actor.items.get(onCell.dataset.itemId)
+        : null;
+      if (mergeInto && this._isSameStack(item, mergeInto))
+        return this._mergeStacks(item, mergeInto);
       return this._onSortItem(event, item);
+    }
 
     // Conditions are applied, never owned — see _applyDroppedCondition.
     if (item.type === "condition") return this._applyDroppedCondition(item);
@@ -3671,6 +3719,179 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     if (!item?.isOwned || item.type !== "ammunition") return;
 
     return this._equipAmmo(item, true);
+  }
+
+  /**
+   * Whether an owned item is a stack that can be split (two or more in it).
+   * @param {Item} item
+   */
+  _canSplitStack(item) {
+    return (
+      this.isEditable &&
+      STACKABLE_TYPES.includes(item.type) &&
+      Math.floor(Number(item.system.quantity) || 0) > 1
+    );
+  }
+
+  /**
+   * Whether two owned items are the same thing in different stacks: every
+   * field matches except the count, grid order, equipped state and ids.
+   * @param {Item} a
+   * @param {Item} b
+   */
+  _isSameStack(a, b) {
+    if (!a || !b || a.id === b.id || a.type !== b.type) return false;
+    if (!this.isEditable || !STACKABLE_TYPES.includes(a.type)) return false;
+    const strip = (item) => {
+      const data = item.toObject();
+      for (const key of ["_id", "sort", "_stats", "ownership", "folder"])
+        delete data[key];
+      delete data.system.quantity;
+      delete data.system.equipped;
+      data.effects = (data.effects ?? []).map((e) => {
+        delete e._id;
+        delete e._stats;
+        return e;
+      });
+      return data;
+    };
+    return foundry.utils.objectsEqual(strip(a), strip(b));
+  }
+
+  /**
+   * Pour one stack into an identical one and delete the emptied source.
+   * @param {Item} source  The stack being dragged.
+   * @param {Item} target  The stack it was dropped on (it survives).
+   */
+  async _mergeStacks(source, target) {
+    const add = Math.floor(Number(source.system.quantity) || 0);
+    const have = Math.floor(Number(target.system.quantity) || 0);
+    await target.update({ "system.quantity": have + add });
+    await source.delete();
+    return target;
+  }
+
+  /**
+   * Ask how many to take off a stack, then move them into a new stack.
+   * @param {Item} item
+   * @param {object} [options]
+   * @param {"after"|"before"|"end"} [options.placement="after"]
+   *   Where the new stack lands in the grid: right after the source, before
+   *   `target`, or at the end.
+   * @param {Item|null} [options.target]  The stack dropped on ("before").
+   */
+  async _splitStack(item, { placement = "after", target = null } = {}) {
+    const i18n = game.i18n;
+    const total = Math.floor(Number(item.system.quantity) || 0);
+    if (total < 2) return;
+    const max = total - 1;
+    const start = Math.floor(total / 2);
+    const name = foundry.utils.escapeHTML(item.localizedName ?? item.name);
+
+    const DialogV2 = foundry.applications.api.DialogV2;
+    const raw = await DialogV2.wait({
+      window: {
+        title: i18n.format("REDSTEEL.Actor.Inventory.Split.Title", { name }),
+      },
+      content: `
+        <form class="redsteel-split-stack">
+          <p style="display:flex; align-items:center; gap:8px;">
+            <img src="${item.img}" width="36" height="36" style="border:none; flex:0 0 auto;">
+            <span>${i18n.format("REDSTEEL.Actor.Inventory.Split.Have", { name, count: total })}</span>
+          </p>
+          <label style="display:flex; align-items:center; gap:8px;">
+            <span style="flex:0 0 auto;">${i18n.localize("REDSTEEL.Actor.Inventory.Split.Amount")}</span>
+            <input type="range" name="split-range" value="${start}" min="1" max="${max}" step="1" style="flex:1;">
+            <input type="number" name="split-amount" value="${start}" min="1" max="${max}" step="1" style="width:60px;">
+          </label>
+          <p class="split-remain" style="font-size:12px; opacity:0.8; margin-top:6px;">
+            ${i18n.format("REDSTEEL.Actor.Inventory.Split.Result", { left: total - start, right: start })}
+          </p>
+        </form>`,
+      buttons: [
+        {
+          action: "split",
+          label: i18n.localize("REDSTEEL.Actor.Inventory.Split.Confirm"),
+          icon: "fas fa-code-branch",
+          default: true,
+          callback: (ev, button, dialog) => {
+            const root = dialog?.element ?? button.form;
+            return root.querySelector('input[name="split-amount"]')?.value;
+          },
+        },
+        { action: "cancel", label: i18n.localize("Cancel") },
+      ],
+      // Keep the slider, the number box and the preview line in step.
+      render: (event, dialog) => {
+        const root = dialog?.element ?? dialog;
+        const range = root?.querySelector?.('input[name="split-range"]');
+        const num = root?.querySelector?.('input[name="split-amount"]');
+        const note = root?.querySelector?.(".split-remain");
+        if (!range || !num) return;
+        const sync = (value) => {
+          const n = Math.clamp(Math.floor(Number(value) || 1), 1, max);
+          range.value = n;
+          num.value = n;
+          if (note)
+            note.textContent = i18n.format(
+              "REDSTEEL.Actor.Inventory.Split.Result",
+              { left: total - n, right: n },
+            );
+        };
+        range.addEventListener("input", () => sync(range.value));
+        num.addEventListener("change", () => sync(num.value));
+        num.focus();
+        num.select();
+      },
+      rejectClose: false,
+    });
+    if (raw == null || raw === "cancel") return;
+
+    // Re-read the stack: it may have changed while the dialog was open.
+    const current = this.actor.items.get(item.id);
+    const have = Math.floor(Number(current?.system.quantity) || 0);
+    const amount = Math.floor(Number(raw) || 0);
+    if (!current || amount < 1 || amount >= have) return;
+
+    const data = current.toObject();
+    delete data._id;
+    data.system.quantity = amount;
+    if ("equipped" in data.system) data.system.equipped = false;
+
+    await current.update({ "system.quantity": have - amount });
+    const [created] = await this.actor.createEmbeddedDocuments("Item", [data]);
+    if (!created) return;
+
+    // Slot the new stack in among the grid's current order.
+    const gridIds = [
+      ...(this.element?.querySelectorAll(
+        ".inventory-grid > .inventory-cell[data-item-id]",
+      ) ?? []),
+    ].map((el) => el.dataset.itemId);
+    const siblings = gridIds
+      .filter((id) => id !== created.id)
+      .map((id) => this.actor.items.get(id))
+      .filter(Boolean);
+    let sortTarget = current;
+    let sortBefore = false;
+    if (placement === "before" && target && target.id !== current.id) {
+      sortTarget = target;
+      sortBefore = true;
+    } else if (placement === "end" && siblings.length) {
+      sortTarget = siblings[siblings.length - 1];
+    }
+    if (!siblings.some((s) => s.id === sortTarget.id)) return created;
+
+    const sortUpdates = SortingHelpers.performIntegerSort(created, {
+      target: sortTarget,
+      siblings,
+      sortBefore,
+    });
+    await this.actor.updateEmbeddedDocuments(
+      "Item",
+      sortUpdates.map((u) => ({ ...u.update, _id: u.target.id })),
+    );
+    return created;
   }
 
   /**

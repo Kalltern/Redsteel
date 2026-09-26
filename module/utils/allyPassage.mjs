@@ -242,15 +242,6 @@ function onResponse(data) {
 
 export function registerAllyPassage() {
   Hooks.on("preMoveToken", (tokenDoc, movement) => {
-    // TEMP diagnostic (2026-09-24): remove once ally passage is confirmed.
-    const dbg = (...a) => console.log("REDSTEEL allyPass |", ...a);
-    dbg("preMoveToken fired", tokenDoc.name, {
-      combatStarted: !!game.combat?.started,
-      hasObject: !!tokenDoc.object,
-      origin: movement?.origin,
-      pending: movement?.pending?.waypoints?.map((w) => ({ x: w.x, y: w.y })),
-      passed: movement?.passed?.waypoints?.map((w) => ({ x: w.x, y: w.y })),
-    });
     if (!game.combat?.started) return;
     const token = tokenDoc.object;
     // The route of THIS move sits in `passed` at pre-move time and `pending`
@@ -268,15 +259,6 @@ export function registerAllyPassage() {
       ...waypoints.map((w) => centreOf(w, tokenDoc)),
     ];
     const allies = alliesOnPath(token, points);
-    dbg("route", {
-      points,
-      path: canvas.grid.getDirectPath(points).map((o) => `${o.i},${o.j}`),
-      allies: allies.map((a) => `${a.doc.name}@${a.key} reaction=${a.hasReaction}`),
-      tokens: canvas.tokens.placeables.map((t) => {
-        const o = canvas.grid.getOffset(t.center);
-        return `${t.name}@${o.i},${o.j} disp=${t.document.disposition} type=${t.actor?.type}`;
-      }),
-    });
     if (!allies.length) return;
 
     const approval = approvals.get(tokenDoc.id);

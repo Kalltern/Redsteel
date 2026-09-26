@@ -5,7 +5,10 @@
   data-tab='description'
 >
   {{! Editors must receive enriched text data from getData to properly handle rolls, UUID links, etc. }}
-  {{#if editable}} 
+  {{#if identifyHidden}}
+    {{! An unidentified magic item: players see a hint, not the prose. }}
+    <p class="hint">{{localize "REDSTEEL.Identify.UnknownDescription"}}</p>
+  {{else if editable}} 
     <prose-mirror name="system.description" data-document-u-u-i-d="{{item.uuid}}" value="{{system.description}}" collaborate="true" toggled="true">
       {{{enrichedDescription}}}
     </prose-mirror>

@@ -180,10 +180,16 @@ function applyModifier(roll) {
   bias += Number(tags.itemBias) || 0;
   const autoBias = bias; // for messaging: did the actor or item contribute?
 
+  // NPC auto-defense (defense.mjs tags it) rolls on the GM's client, but the
+  // picker is the GM's choice for the GM's own next roll. Letting it land here
+  // would spend it on a goblin's parry, so the picker is read as empty and left
+  // armed; the NPC's own actor/item bias above still applies.
+  const pickerApplies = !tags.autoDefense;
+
   // Manual picker contribution — die mode and flat modifier are independent.
-  const manualActive = isActive();
-  if (state.die === "advantage") bias += 1;
-  else if (state.die === "disadvantage") bias -= 1;
+  const manualActive = pickerApplies && isActive();
+  if (pickerApplies && state.die === "advantage") bias += 1;
+  else if (pickerApplies && state.die === "disadvantage") bias -= 1;
 
   // Speed/initiative d12 test: only advantage/disadvantage applies (higher die
   // is better) — never the flat bonus/penalty or Desperate Effort.
@@ -192,14 +198,14 @@ function applyModifier(roll) {
     return;
   }
 
-  let flat = state.flat;
+  let flat = pickerApplies ? state.flat : 0;
 
   // Desperate Effort: +20% success, ignores fatigue penalties (restore the
   // -10 globalMod at degree 3+ and cancel the degree-4 disadvantage die),
   // costs one degree of Fatigue, and tags the roll so crit thresholds shift
   // downstream (crit success +5%, crit failure -5%, fatigue crit penalty
   // ignored — see applyDesperateCrit).
-  if (state.desperate) {
+  if (pickerApplies && state.desperate) {
     roll.options ??= {};
     roll.options.redsteel = { ...(roll.options.redsteel ?? {}), desperate: true };
     flat += 20;
@@ -227,7 +233,7 @@ function applyModifier(roll) {
 
   // Describe what landed. Prefer the explicit manual label; otherwise report
   // the automatic advantage/disadvantage so players see why the die changed.
-  let label = describeModifier();
+  let label = pickerApplies ? describeModifier() : null;
   if (!label && autoBias !== 0) {
     label = autoBias > 0 ? "advantage" : "disadvantage";
   }

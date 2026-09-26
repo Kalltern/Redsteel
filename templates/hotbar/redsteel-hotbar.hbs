@@ -95,8 +95,98 @@
         the panel's above-tooltips would park right over them. --}}
   {{#if suggestions.length}}
   <div class="rs-bg3-suggest{{#if showCapacity}} rs-bg3-suggest--raised{{/if}}">
+    {{!-- One movement chip, shared by Move and by the chips in its drawer.
+          Declared inside the strip so the part still renders one root. --}}
+    {{#*inline "rsMoveChip"}}
+    <button
+      type="button"
+      class="rs-bg3-suggest-chip"
+      data-action="useSuggestion"
+      data-suggestion-id="{{chip.id}}"
+      data-suggestion-mode="{{chip.mode}}"
+      aria-label="{{chip.ariaLabel}}"
+    >
+      <i class="{{chip.icon}} rs-bg3-suggest-icon" aria-hidden="true"></i>
+      <span class="rs-bg3-suggest-text">
+        <span class="rs-bg3-suggest-name">{{chip.label}}</span>
+        <span class="rs-bg3-suggest-meta">
+          {{~#if chip.costLabel}}{{chip.costLabel}} · {{/if~}}
+          {{chip.hexLabel~}}
+        </span>
+      </span>
+    </button>
+    {{/inline}}
     {{#each suggestions as |chip|}}
-    {{#if chip.locked}}
+    {{#if chip.groupStart}}
+    {{!-- Rules the movement chips apart from the combat ones. --}}
+    <span class="rs-bg3-suggest-divider" aria-hidden="true"></span>
+    {{/if}}
+    {{#if chip.facing}}
+    {{!-- Slow Movement's facing step: turn the token a hex side at a time,
+          then confirm; the move is declared only on the check. --}}
+    <div
+      class="rs-bg3-suggest-chip locked facing"
+      data-suggestion-id="{{chip.id}}"
+      data-suggestion-mode="{{chip.mode}}"
+      role="group"
+      aria-label="{{chip.ariaLabel}}"
+    >
+      <i class="{{chip.icon}} rs-bg3-suggest-icon" aria-hidden="true"></i>
+      <span class="rs-bg3-suggest-text">
+        <span class="rs-bg3-suggest-name">{{chip.label}}</span>
+        <span class="rs-bg3-suggest-meta">{{chip.hexLabel}}</span>
+      </span>
+      <button type="button" class="rs-bg3-suggest-confirm rs-bg3-suggest-rotate"
+        data-action="rotateFacing" data-dir="-1"
+        aria-label="{{localize "REDSTEEL.Bg3Hotbar.Suggest.TurnLeft"}}"
+      ><i class="fa-solid fa-rotate-left" aria-hidden="true"></i></button>
+      <button type="button" class="rs-bg3-suggest-confirm rs-bg3-suggest-rotate"
+        data-action="rotateFacing" data-dir="1"
+        aria-label="{{localize "REDSTEEL.Bg3Hotbar.Suggest.TurnRight"}}"
+      ><i class="fa-solid fa-rotate-right" aria-hidden="true"></i></button>
+      <button type="button" class="rs-bg3-suggest-confirm"
+        data-action="confirmFacing"
+        aria-label="{{localize "REDSTEEL.Bg3Hotbar.Suggest.ConfirmFacing"}}"
+      ><i class="fa-solid fa-check" aria-hidden="true"></i></button>
+      <button type="button" class="rs-bg3-suggest-confirm rs-bg3-suggest-cancel"
+        data-action="cancelFacing"
+        aria-label="{{localize "REDSTEEL.Bg3Hotbar.Suggest.CancelFacing"}}"
+      ><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+    </div>
+    {{else if (eq chip.kind "sustain")}}
+    {{!-- A spell held in a sustained cast: clicking lets it go (the caster's
+          Channeling effect is deleted, which stops the cast and its upkeep). --}}
+    <button
+      type="button"
+      class="rs-bg3-suggest-chip ability sustain"
+      data-action="stopSustain"
+      data-suggestion-id="{{chip.id}}"
+      data-effect-id="{{chip.effectId}}"
+      data-tooltip="{{chip.label}}"
+      data-tooltip-direction="UP"
+      aria-label="{{chip.ariaLabel}}"
+    >
+      <img class="rs-bg3-suggest-img" src="{{chip.img}}" alt="" />
+    </button>
+    {{else if (eq chip.kind "ability")}}
+    {{!-- A combat ability usable right now, shown by its icon alone (user
+          ruling); its name and cost ride on a core tooltip pointing up, clear
+          of the strip. Clicking opens the Combat Abilities dialog with it
+          already chosen, aimed at the attacker for a reaction. --}}
+    <button
+      type="button"
+      class="rs-bg3-suggest-chip ability"
+      data-action="useCombatSuggestion"
+      data-suggestion-id="{{chip.id}}"
+      data-ability-id="{{chip.abilityId}}"
+      {{#if chip.targetTokenId}}data-target-token-id="{{chip.targetTokenId}}"{{/if}}
+      data-tooltip="{{chip.label}} · {{chip.costLabel}}"
+      data-tooltip-direction="UP"
+      aria-label="{{chip.ariaLabel}}"
+    >
+      <img class="rs-bg3-suggest-img" src="{{chip.img}}" alt="" />
+    </button>
+    {{else if chip.locked}}
     {{!-- The declared movement. Clicking it does nothing, so it is a box
           rather than a button, which is what lets the confirm check sit
           inside its right end: a button cannot hold a button. --}}
@@ -119,24 +209,28 @@
         aria-label="{{localize "REDSTEEL.Bg3Hotbar.Suggest.Confirm"}}"
       ><i class="fa-solid fa-check" aria-hidden="true"></i></button>
     </div>
+    {{else if chip.more}}
+    {{!-- Move, with the other movements folded behind the » tab. The drawer
+          rolls out to the right over the strip rather than widening it, so
+          nothing shifts under the cursor; its open state is toggled as a class
+          (no redraw), which is what lets it animate. --}}
+    <div class="rs-bg3-suggest-movegroup">
+      {{> rsMoveChip chip=chip}}
+      <button
+        type="button"
+        class="rs-bg3-suggest-more-toggle{{#if @root.movementExpanded}} open{{/if}}"
+        data-action="toggleMovementMore"
+        aria-expanded="{{#if @root.movementExpanded}}true{{else}}false{{/if}}"
+        aria-label="{{localize "REDSTEEL.Bg3Hotbar.Suggest.MoreMovement"}}"
+      ><i class="fa-solid fa-angles-right" aria-hidden="true"></i></button>
+      <div class="rs-bg3-suggest-more{{#if @root.movementExpanded}} open{{/if}}">
+        {{#each chip.more as |m|}}
+        {{> rsMoveChip chip=m}}
+        {{/each}}
+      </div>
+    </div>
     {{else}}
-    <button
-      type="button"
-      class="rs-bg3-suggest-chip"
-      data-action="useSuggestion"
-      data-suggestion-id="{{chip.id}}"
-      data-suggestion-mode="{{chip.mode}}"
-      aria-label="{{chip.ariaLabel}}"
-    >
-      <i class="{{chip.icon}} rs-bg3-suggest-icon" aria-hidden="true"></i>
-      <span class="rs-bg3-suggest-text">
-        <span class="rs-bg3-suggest-name">{{chip.label}}</span>
-        <span class="rs-bg3-suggest-meta">
-          {{~#if chip.costLabel}}{{chip.costLabel}} · {{/if~}}
-          {{chip.hexLabel~}}
-        </span>
-      </span>
-    </button>
+    {{> rsMoveChip chip=chip}}
     {{/if}}
     {{/each}}
   </div>

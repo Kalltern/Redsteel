@@ -8,8 +8,9 @@
  *
  * Crafting rolls the Alchemy skill exactly like other margin tests
  * (`rating - 1d100` with roll-advantage bias), modified by the alchemical
- * station in use. Ingredients are consumed whether the roll succeeds or not;
- * only a success delivers the potions into the crafter's inventory.
+ * station in use. A batch rolls once PER UNIT, so a five-potion batch can
+ * come out 3 made, 2 lost. Ingredients for the whole batch are consumed
+ * whatever the rolls say; only the units that succeed are delivered.
  *
  * The Alchemist specialisation tree feeds the roll through
  * {@link getAlchemistCraftModifiers} (per output-type family) and
@@ -258,13 +259,12 @@ const CRIT_FAILURE_RELIEF = 3;
 /**
  * Boiling herbs down into a substance (rules: "Alchemie" sheet).
  * Five ingredients carrying the substance make one dose, the recipe itself is
- * an easy one, and any number of doses may be boiled in one pot — resolved by
- * a single roll, at the standard mass-production penalty.
+ * an easy one, and any number of doses may be boiled in one pot. Each dose
+ * rolls on its own, with no penalty for the batch size.
  */
 export const SUBSTANCE_HERB_COST = 5;
-/** Signed craft modifiers, same convention as a recipe's system.difficulty. */
+/** Signed craft modifier, same convention as a recipe's system.difficulty. */
 export const SUBSTANCE_CRAFT_MOD = -10;
-export const SUBSTANCE_BATCH_MOD = -10;
 /** Sanity cap on one brew action, so a stray keystroke can't eat the pack. */
 export const SUBSTANCE_MAX_BATCH = 20;
 
@@ -1065,6 +1065,45 @@ async function rollAlchemyTest(actor, stationKey, mods, difficulty = 0) {
 }
 
 /**
+ * Roll the Alchemy test once per unit of a batch. Every unit stands alone, so
+ * a critical failure only loses its own unit.
+ *
+ * @param {number}  units
+ * @param {boolean} [guaranteed]  Garantovaný úspěch: every unit succeeds, the
+ *                                dice are still shown.
+ * @returns {Promise<object>} { rolls, succeeded, failed, success, ...shared }
+ *   `success` is true when at least one unit came out. The shared fields
+ *   (advantage, relief) are identical for every roll of the batch.
+ */
+async function rollAlchemyBatch(actor, stationKey, mods, difficulty, units, guaranteed = false) {
+  const rolls = [];
+  for (let i = 0; i < units; i++) {
+    const test = await rollAlchemyTest(actor, stationKey, mods, difficulty);
+    if (guaranteed) {
+      test.success = true;
+      test.critFailure = false;
+    }
+    rolls.push(test);
+  }
+  return summarizeBatch(rolls);
+}
+
+/** Recount a batch's roll list into the outcome fields the card reads. */
+function summarizeBatch(rolls) {
+  const succeeded = rolls.filter((r) => r.success).length;
+  const first = rolls[0] ?? {};
+  return {
+    rolls,
+    succeeded,
+    failed: rolls.length - succeeded,
+    success: succeeded > 0,
+    advantage: first.advantage ?? 0,
+    critFailureRelief: first.critFailureRelief ?? 0,
+    stationCritRelief: first.stationCritRelief ?? 0,
+  };
+}
+
+/**
  * Roll the Duplikace chance once per crafted unit; each hit is a bonus unit.
  * @returns {Promise<number>} extra units produced.
  */
@@ -1186,11 +1225,20 @@ async function sendCraftMessage(actor, subject, outcome, spentLines, { isReroll 
   const stationNote = stationRelief
     ? ` (${i18n.format("REDSTEEL.Alchemy.Station.CritRelief", { value: stationRelief })})`
     : "";
-  const critTxt = outcome.critSuccess
-    ? ` · ${i18n.localize("REDSTEEL.Alchemy.Chat.CritSuccess")}`
-    : outcome.critFailure
-      ? ` · ${i18n.localize("REDSTEEL.Alchemy.Chat.CritFailure")}`
-      : "";
+  // One line per unit, so the table can audit every die of the batch.
+  const rolls = outcome.rolls ?? [];
+  const rollLines = rolls
+    .map((r, idx) => {
+      const crit = r.critSuccess
+        ? ` · ${i18n.localize("REDSTEEL.Alchemy.Chat.CritSuccess")}`
+        : r.critFailure
+          ? ` · ${i18n.localize("REDSTEEL.Alchemy.Chat.CritFailure")}`
+          : "";
+      const icon = r.success ? "fa-check" : "fa-xmark";
+      const num = rolls.length > 1 ? `${idx + 1}. ` : "";
+      return `<div style="text-align:center;${r.success ? "" : "opacity:0.65;"}"><i class="fa-light ${icon}"></i> ${num}d100: <b>${r.d100}</b> → ${i18n.localize("REDSTEEL.Alchemy.Chat.Margin")} <b>${fmtMargin(r.margin)}</b><span style="font-size:12px;opacity:0.8;">${crit}</span></div>`;
+    })
+    .join("");
 
   const rerollTag = isReroll
     ? `<p style="text-align:center;font-size:12px;opacity:0.8;"><i class="fa-light fa-rotate"></i> ${i18n.localize("REDSTEEL.Alchemy.Chat.Reroll")}</p>`
@@ -1213,11 +1261,17 @@ async function sendCraftMessage(actor, subject, outcome, spentLines, { isReroll 
       })})</span>`
     : "";
 
+  const failed = Number(outcome.failed) || 0;
+  const lostNote = failed
+    ? `; ${i18n.format("REDSTEEL.Alchemy.Chat.UnitsLost", { count: failed })}`
+    : "";
   const resultLine = outcome.success
-    ? `<p style="text-align:center;font-size:16px;"><b>${i18n.localize("REDSTEEL.Alchemy.Chat.Success")}</b> — ${i18n.format(
+    ? `<p style="text-align:center;font-size:16px;"><b>${i18n.localize(
+        failed ? "REDSTEEL.Alchemy.Chat.PartialSuccess" : "REDSTEEL.Alchemy.Chat.Success",
+      )}</b> — ${i18n.format(
         "REDSTEEL.Alchemy.Chat.Created",
         { count: outcome.created ?? outcome.amount, name: outcome.resultName },
-      )}${dupNote}${yieldNote}</p>`
+      )}${dupNote}${yieldNote}${lostNote}</p>`
     : `<p style="text-align:center;font-size:16px;"><b>${i18n.localize("REDSTEEL.Alchemy.Chat.Failure")}</b> — ${i18n.localize("REDSTEEL.Alchemy.Chat.IngredientsWasted")}</p>`;
 
   // Which specialisation boons were in play, so the table can audit the roll.
@@ -1242,7 +1296,7 @@ async function sendCraftMessage(actor, subject, outcome, spentLines, { isReroll 
       <p class="rs-card-headline"><b><i class="fa-light fa-flask"></i> ${i18n.localize(outcome.isSubstance ? "REDSTEEL.Alchemy.Substance.ChatTitle" : "REDSTEEL.Alchemy.Chat.Title")} — ${subject}</b></p>
       ${rerollTag}
       <p style="text-align:center;font-size:12px;opacity:0.8;">${i18n.localize("REDSTEEL.Alchemy.Chat.UsedStation")}: ${stationName}${stationNote}${difficultyNote}</p>
-      <p style="text-align:center;">d100: <b>${outcome.d100}</b> → ${i18n.localize("REDSTEEL.Alchemy.Chat.Margin")} <b>${fmtMargin(outcome.margin)}</b><span style="font-size:12px;opacity:0.8;">${critTxt}</span></p>
+      <div style="margin:4px 0;">${rollLines}</div>
       ${resultLine}
       ${spentBlock}
       ${boonBlock}
@@ -1267,7 +1321,7 @@ async function sendCraftMessage(actor, subject, outcome, spentLines, { isReroll 
  * @param {object} options
  * @param {number} options.amount            Units to craft (1..MAX_BATCH).
  * @param {string} options.stationKey        STATIONS key in use.
- * @returns {Promise<object>} outcome — { ok, success, d100, margin, ... }
+ * @returns {Promise<object>} outcome — { ok, success, rolls, succeeded, failed, ... }
  */
 export async function craftRecipe(actor, recipe, { amount, stationKey }) {
   amount = Math.floor(Number(amount) || 0);
@@ -1284,14 +1338,16 @@ export async function craftRecipe(actor, recipe, { amount, stationKey }) {
 
   const mods = getAlchemistCraftModifiers(actor, recipe);
   const difficulty = Number(source.system?.difficulty) || 0;
-  const test = await rollAlchemyTest(actor, stationKey, mods, difficulty);
+  const batch = await rollAlchemyBatch(actor, stationKey, mods, difficulty, amount);
 
-  // Grimdark: the cauldron doesn't refund failure.
+  // Grimdark: the cauldron doesn't refund failure, not even a partial one.
   const spentLines = await consumeIngredients(actor, recipe, amount);
 
   const outcome = {
     ok: true,
-    ...test,
+    ...batch,
+    // Failed units a reroll charge may still salvage, one per charge.
+    rerollable: batch.failed,
     amount,
     stationKey,
     difficulty,
@@ -1306,9 +1362,10 @@ export async function craftRecipe(actor, recipe, { amount, stationKey }) {
     created: 0,
   };
 
-  if (test.success) {
-    outcome.duplicated = await rollDuplication(mods.duplication, amount);
-    outcome.created = (amount + outcome.duplicated) * outcome.yield;
+  // Duplikace rolls only for the units that came out.
+  if (batch.success) {
+    outcome.duplicated = await rollDuplication(mods.duplication, batch.succeeded);
+    outcome.created = (batch.succeeded + outcome.duplicated) * outcome.yield;
     await deliverResult(actor, recipe, outcome.created, mods);
   }
 
@@ -1322,20 +1379,22 @@ export async function craftRecipe(actor, recipe, { amount, stationKey }) {
 }
 
 /**
- * Re-roll a FAILED craft's Alchemy test. Ingredients are NOT consumed again;
- * a new success delivers the originally attempted amount. The caller is
- * responsible for spending the reroll charge before calling this.
+ * Re-roll ONE failed unit of the last craft. Ingredients are NOT consumed
+ * again; a new success delivers that single unit. The returned outcome keeps
+ * counting how many failed units are still open to further charges. The
+ * caller is responsible for spending the reroll charge before calling this.
  */
 export async function rerollCraft(actor, recipe, lastOutcome, { stationKey }) {
   const mods = getAlchemistCraftModifiers(actor, recipe);
   const source = await fromUuid(recipe.system.resultUuid);
   const difficulty = Number(source?.system?.difficulty) || 0;
-  const test = await rollAlchemyTest(actor, stationKey, mods, difficulty);
+  const batch = await rollAlchemyBatch(actor, stationKey, mods, difficulty, 1);
 
   const outcome = {
     ok: true,
-    ...test,
-    amount: lastOutcome.amount,
+    ...batch,
+    rerollable: Math.max(0, (Number(lastOutcome.rerollable) || 0) - batch.succeeded),
+    amount: 1,
     stationKey,
     difficulty,
     recipeId: recipe.id,
@@ -1349,9 +1408,9 @@ export async function rerollCraft(actor, recipe, lastOutcome, { stationKey }) {
     created: 0,
   };
 
-  if (test.success) {
-    outcome.duplicated = await rollDuplication(mods.duplication, lastOutcome.amount);
-    outcome.created = (lastOutcome.amount + outcome.duplicated) * outcome.yield;
+  if (batch.success) {
+    outcome.duplicated = await rollDuplication(mods.duplication, 1);
+    outcome.created = (1 + outcome.duplicated) * outcome.yield;
     await deliverResult(actor, recipe, outcome.created, mods);
   }
 
@@ -1402,9 +1461,9 @@ async function deliverSubstance(actor, def, amount) {
 /**
  * Boil owned herbs down into doses of one substance.
  *
- * Five herbs carrying the substance make one dose. Any batch size resolves on
- * a single Alchemy roll: −10% for the substance recipe itself, another −10%
- * once more than one dose shares the pot. Herbs are consumed either way.
+ * Five herbs carrying the substance make one dose. Each dose rolls its own
+ * Alchemy test at −10% for the substance recipe, whatever the batch size.
+ * Herbs for the whole batch are consumed either way.
  *
  * @param {Actor}  actor
  * @param {string} substanceKey   A SUBSTANCES key.
@@ -1440,12 +1499,10 @@ export async function brewSubstance(actor, substanceKey, { amount, stationKey })
     };
   }
 
-  const difficulty = SUBSTANCE_CRAFT_MOD + (amount > 1 ? SUBSTANCE_BATCH_MOD : 0);
-  const test = await rollAlchemyTest(actor, stationKey, mods, difficulty);
-  if (mods.guaranteed) {
-    test.success = true;
-    test.critFailure = false;
-  }
+  const difficulty = SUBSTANCE_CRAFT_MOD;
+  const batch = await rollAlchemyBatch(
+    actor, stationKey, mods, difficulty, amount, !!mods.guaranteed,
+  );
 
   // Same bargain as recipe crafting: the pot keeps the herbs regardless.
   const taken = await consumeFromStacks(findHerbItems(actor, substanceKey), need);
@@ -1453,7 +1510,7 @@ export async function brewSubstance(actor, substanceKey, { amount, stationKey })
 
   const outcome = {
     ok: true,
-    ...test,
+    ...batch,
     isSubstance: true,
     substanceKey,
     amount,
@@ -1465,9 +1522,9 @@ export async function brewSubstance(actor, substanceKey, { amount, stationKey })
     created: 0,
   };
 
-  if (test.success) {
-    await deliverSubstance(actor, def, amount);
-    outcome.created = amount;
+  if (batch.success) {
+    await deliverSubstance(actor, def, batch.succeeded);
+    outcome.created = batch.succeeded;
   }
 
   await sendCraftMessage(actor, def.name, outcome, spentLines);

@@ -10,6 +10,41 @@
       "NoReaction": "Postava {ally} už nemá Reakci na propuštění. Tento pohyb je zrušen.",
       "NoOne": "Za postavu {ally} teď nikdo nemůže odpovědět. Tento pohyb je zrušen."
     },
+    "Trade": {
+      "Title": "Obchod",
+      "MenuTrade": "Obchodovat",
+      "MenuResources": "Zdroje",
+      "YourOffer": "Tvoje nabídka",
+      "TheirOffer": "Jejich nabídka",
+      "Trade": "Obchodovat",
+      "Unaccept": "Odvolat",
+      "Cancel": "Zrušit",
+      "Accepted": "Přijato",
+      "WaitingGM": "Čeká se, až PJ obchod dokončí…",
+      "Money": "Mince",
+      "Purse": "Měšec: {amount}",
+      "Complete": "Obchod dokončen.",
+      "Cancelled": "{name} obchod zrušil(a).",
+      "Busy": "{name} už obchoduje.",
+      "SelfBusy": "Už obchoduješ.",
+      "NoGM": "K dokončení obchodu musí být připojen PJ.",
+      "NotYours": "Nabídnout lze jen předměty, které nese tvoje postava.",
+      "NotTradeable": "S tímto předmětem nelze obchodovat.",
+      "Equipped": "Předmět před obchodem nejprve sundej.",
+      "Duplicate": "Tento předmět už v nabídce je.",
+      "Full": "Všech šest míst je obsazeno.",
+      "Failed": "Obchod nelze dokončit: {reason}",
+      "ItemMissing": "nabízený předmět už neexistuje.",
+      "ItemEquipped": "nabízený předmět byl nasazen.",
+      "NotEnoughMoney": "v měšci už nabízené mince nejsou.",
+      "QuantityChanged": "v balíku už není nabízené množství.",
+      "Generic": "něco se pokazilo, podívej se do konzole.",
+      "ChatGave": "{actor} dal(a):",
+      "Nothing": "nic",
+      "PickItem": "Vyber předmět",
+      "NothingToOffer": "Už není co nabídnout.",
+      "EmptySlot": "Přetáhni sem předmět nebo klikni a vyber"
+    },
     "SheetLabels": {
       "Actor": "List Actor ToS",
       "Item": "List Item ToS"
@@ -132,7 +167,18 @@
         "Hexes": "{n} hex",
         "Remaining": "{remaining}/{budget} hex",
         "Locked": "Pohyb ohlášen",
-        "Confirm": "Potvrdit pohyb"
+        "Confirm": "Potvrdit pohyb",
+        "SetFacing": "Natoč se a potvrď",
+        "TurnLeft": "Otočit doleva",
+        "TurnRight": "Otočit doprava",
+        "ConfirmFacing": "Potvrdit natočení",
+        "CancelFacing": "Zpět",
+        "Reaction": "Reakce",
+        "FreeAction": "Volná akce",
+        "AbilityUnavailable": "{name} nelze použít se zbraní v ruce.",
+        "StopSustain": "Přestat udržovat kouzlo {spell}",
+        "SustainEnded": "Přestáváš udržovat kouzlo {spell}.",
+        "MoreMovement": "Další pohyby"
       },
       "ShowArmor": "Zobrazit zbroj podle typu poškození",
       "ShowConditions": "Zobrazit stavy",
@@ -376,7 +422,6 @@
         "DialogTitle": "Převaření: {name}",
         "Have": "{count} rostlin v zásobě, {cost} na jednu dávku",
         "Doses": "Dávky",
-        "BatchNote": "při více než jedné dávce",
         "WasteWarning": "Rostliny se spotřebují i při neúspěšném hodu.",
         "Brew": "Převařit",
         "ChatTitle": "Výroba substance",
@@ -402,6 +447,8 @@
         "Failure": "Neúspěch",
         "Created": "vytvořeno {count}× {name}",
         "IngredientsWasted": "suroviny byly zničeny",
+        "UnitsLost": "nezdařilo se {count}, jejich suroviny byly zničeny",
+        "PartialSuccess": "Částečný úspěch",
         "Consumed": "Spotřebováno",
         "Uses": "použití",
         "Duplicated": "+{count} díky duplikaci na {chance}%",
@@ -497,6 +544,13 @@
         },
         "TwoHandGrip": "Obouruční úchop",
         "OffHandGrip": "Použít v druhé ruce",
+        "Split": {
+          "Title": "Rozdělit balík: {name}",
+          "Have": "{name}: {count} v balíku",
+          "Amount": "Oddělit",
+          "Result": "Po rozdělení: {left} a {right}",
+          "Confirm": "Rozdělit"
+        },
         "Currencies": "Měny",
         "Filter": {
           "All": "Vše",
@@ -4945,6 +4999,36 @@
       "DropNotGlobal": "Zapiš kouzlo z kompendia, ne z kopie, kterou vlastní postava.",
       "DropDuplicate": "{name} už je v této knize zapsáno.",
       "DropAdded": "{name} zapsáno do knihy."
+    },
+    "Identify": {
+      "UnidentifiedName": "Neidentifikovaná {type}",
+      "UnknownDescription": "Na tomto kusu něco nesedí. Dokud ho někdo neprozkoumá, jeho povaha zůstane skrytá.",
+      "UnknownHint": "Magie, kterou tento předmět nese, zatím nebyla identifikována. Odhalit ji může test Arcany.",
+      "MarkerTitle": "Neidentifikováno",
+      "Button": "Identifikovat",
+      "Difficulty": "Obtížnost",
+      "Locked": "{name} už tento předmět jednou identifikovat nedokázal. Zkus to znovu po dlouhém odpočinku.",
+      "Window": {
+        "Title": "Identifikace předmětu"
+      },
+      "GM": {
+        "Heading": "Identifikace",
+        "Unidentified": "Neidentifikováno",
+        "AppearsAs": "Vypadá jako",
+        "Difficulty": "Obtížnost identifikace",
+        "DifficultyHint": "Nech prázdné a použije se hodnota odvozená z nejvyššího stupně očarování.",
+        "CurseRevealed": "Kletba odhalena"
+      },
+      "Chat": {
+        "Identify": "<b>{actor}</b> zkoumal {item}: Arcana, d100 {d100}, přesah {margin}.",
+        "Success": "Je to <b>{name}</b>.",
+        "Failure": "Jeho tajemství zůstává skryto.",
+        "Reroll": "Přehozeno."
+      },
+      "Warn": {
+        "NoActor": "Identifikovat lze jen předmět, který nese postava.",
+        "NotOwner": "Tuto postavu nevlastníš."
+      }
     },
     "Scroll": {
       "Name": "Svitek: {spell}",

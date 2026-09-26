@@ -1,3 +1,4 @@
+import { stampImpaleRoot } from "./impaleFollowup.mjs";
 import {
   evaluateDmgVsArmor,
   applyToHp,
@@ -957,6 +958,8 @@ export async function applyDamageAsGM(data) {
         if (bleeds > 0) {
           await applied.setFlag("redsteel", "impaleBleeds", bleeds);
         }
+        // Who holds it impaled, for Impale: Follow-up Attack.
+        await stampImpaleRoot(applied, effect, attackerTokenIdFromMessage(message));
       }
     }
 
@@ -2350,6 +2353,12 @@ export async function applyEffectsAsGM(data) {
         if (bleeds > 0) {
           await applied.setFlag("redsteel", "impaleBleeds", bleeds);
         }
+        // Who holds it impaled, for Impale: Follow-up Attack.
+        await stampImpaleRoot(
+          applied,
+          effectData,
+          attackerTokenIdFromMessage(message),
+        );
       }
     }
   }

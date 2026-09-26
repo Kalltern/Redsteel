@@ -1,6 +1,12 @@
 import { ARMOR_IGNORING_PENETRATION } from "../utils/combatSkillBonuses.mjs";
 import { normalizeResourceKey, resourceLabel } from "../utils/itemResources.mjs";
 import { scrollDisplayName, openScrollWindow } from "../utils/spellScrolls.mjs";
+// Circular on purpose: itemIdentify.mjs reads readEnchantments from here.
+// Safe because neither module calls into the other at evaluation time.
+import {
+  unidentifiedDisplayName,
+  isItemUnidentified,
+} from "../utils/itemIdentify.mjs";
 
 /**
  * Stat block of the "Improvised shield" compendium item
@@ -232,7 +238,7 @@ function itemisationMods(entries) {
   return out;
 }
 
-function weaponEnchantMods(entries) {
+export function weaponEnchantMods(entries) {
   const mods = {
     attack: 0,
     defense: 0,
@@ -302,7 +308,7 @@ function weaponEnchantMods(entries) {
  * armour piece or shield adds. Same contract — always fully shaped.
  * @param {object[]} entries
  */
-function gearEnchantMods(entries) {
+export function gearEnchantMods(entries) {
   const resistTypes = [
     "acid",
     "fire",
@@ -352,6 +358,10 @@ export class RedsteelItem extends Item {
     // Returns null for a scroll case, which keeps its own authored name.
     const scroll = scrollDisplayName(this);
     if (scroll !== null) return scroll;
+    // An unidentified magic weapon / gear piece hides its true name behind the
+    // GM's "appears as" text (see utils/itemIdentify.mjs).
+    const unknown = unidentifiedDisplayName(this);
+    if (unknown !== null) return unknown;
 
     const key = this.system.localizationKey?.trim();
     const base = !key || !game.i18n.has(key) ? this.name : game.i18n.localize(key);
@@ -372,7 +382,20 @@ export class RedsteelItem extends Item {
    * key with `.name` swapped for `.description`. Items with no translation —
    * which is most of them — fall back to the stored text unchanged.
    */
+  /**
+   * The description a hover tooltip prints. Tooltips read the stored prose
+   * directly, so an unidentified item has to be caught here or hovering it in
+   * the inventory would give the answer away.
+   */
+  _tooltipDescription(data) {
+    if (isItemUnidentified(this)) return this.localizedDescription;
+    return data.description;
+  }
+
   get localizedDescription() {
+    if (isItemUnidentified(this)) {
+      return game.i18n.localize("REDSTEEL.Identify.UnknownDescription");
+    }
     const raw = this.system.description ?? "";
     const key = this.system.localizationKey?.trim();
     if (!key) return raw;
@@ -951,7 +974,10 @@ export class RedsteelItem extends Item {
         speaker: speaker,
         rollMode: rollMode,
         flavor: label,
-        content: item.system.description ?? "",
+        // An unidentified item must not post its true prose to chat.
+        content: isItemUnidentified(item)
+          ? item.localizedDescription
+          : (item.system.description ?? ""),
       });
     }
     // Otherwise, create a roll and send a chat message from it.
@@ -1004,7 +1030,7 @@ export class RedsteelItem extends Item {
       img: this.img,
       sections: [],
       stats: [],
-      description: data.description,
+      description: this._tooltipDescription(data),
     };
   }
   _getMagicTooltipData(data) {
@@ -1071,7 +1097,7 @@ export class RedsteelItem extends Item {
           }${Math.abs(Number(res.amount))}`,
         })),
       ],
-      description: data.description,
+      description: this._tooltipDescription(data),
     };
   }
 
@@ -1104,7 +1130,7 @@ export class RedsteelItem extends Item {
         { label: "Actions", value: data.actionCost },
         { label: "Range", value: data.range },
       ],
-      description: data.description,
+      description: this._tooltipDescription(data),
     };
   }
   _getWeaponTooltipData(data) {
@@ -1154,7 +1180,7 @@ export class RedsteelItem extends Item {
         (stat) =>
           stat.value !== 0 && stat.value !== false && stat.value != null,
       ),
-      description: data.description,
+      description: this._tooltipDescription(data),
     };
   }
   _getGearTooltipData(data) {
@@ -1190,7 +1216,7 @@ export class RedsteelItem extends Item {
         (stat) =>
           stat.value !== 0 && stat.value !== false && stat.value != null,
       ),
-      description: data.description,
+      description: this._tooltipDescription(data),
     };
   }
   _getShieldTooltipData(data) {
@@ -1227,7 +1253,7 @@ export class RedsteelItem extends Item {
         (stat) =>
           stat.value !== 0 && stat.value !== false && stat.value != null,
       ),
-      description: data.description,
+      description: this._tooltipDescription(data),
     };
   }
   _getPotionTooltipData(data) {
@@ -1253,7 +1279,7 @@ export class RedsteelItem extends Item {
         (stat) =>
           stat.value !== 0 && stat.value !== false && stat.value != null,
       ),
-      description: data.description,
+      description: this._tooltipDescription(data),
     };
   }
   _getFeatureTooltipData(data) {
@@ -1275,7 +1301,7 @@ export class RedsteelItem extends Item {
         (stat) =>
           stat.value !== 0 && stat.value !== false && stat.value != null,
       ),
-      description: data.description,
+      description: this._tooltipDescription(data),
     };
   }
 }

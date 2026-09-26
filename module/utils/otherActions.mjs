@@ -897,6 +897,11 @@ async function applyLongRest(actor, { eatRations = false, overrides = null } = {
   if (actor.flags?.redsteel?.scrollIdentifyFails) {
     await actor.unsetFlag("redsteel", "scrollIdentifyFails");
   }
+  // Same rule for magic items this character failed to identify
+  // (see utils/itemIdentify.mjs).
+  if (actor.flags?.redsteel?.itemIdentifyFails) {
+    await actor.unsetFlag("redsteel", "itemIdentifyFails");
+  }
 
   // ─── Food ─── only when the party is camping rather than paying an innkeeper.
   const meal =

@@ -2504,14 +2504,33 @@ export class RedsteelActiveEffect extends ActiveEffect {
     // buffering, so the card would land above it. Hand the emit to the digest
     // instead: it fires once the round card is in chat (and immediately when no
     // round card is coming, which is every path outside a round rollover).
+    //
+    // Who re-casts: a connected player who owns the caster, addressed by id so
+    // a character with two owning players does not cast twice; otherwise this
+    // client does it. That second branch is not optional: a socket emit never
+    // reaches the client that sent it, so an NPC caster, or a PC whose player
+    // is offline, used to have the upkeep paid and the spell never cast.
     const actorId = actor.id;
+    const actorUuid = actor.uuid;
     const effectId = this.id;
-    afterRoundDigest(() => {
-      game.socket.emit("system.redsteel", {
-        type: "sustainSpell",
-        actorId,
-        effectId,
-      });
+    const players = game.users.contents.filter(
+      (u) => u.active && !u.isGM && actor.testUserPermission(u, "OWNER"),
+    );
+    const caster =
+      players.find((u) => u.character?.id === actor.id) ?? players[0] ?? null;
+    afterRoundDigest(async () => {
+      if (caster && caster.id !== game.user.id) {
+        game.socket.emit("system.redsteel", {
+          type: "sustainSpell",
+          actorId,
+          actorUuid,
+          effectId,
+          userId: caster.id,
+        });
+        return;
+      }
+      const effect = actor.effects.get(effectId);
+      if (effect) await game.redsteel.resolveChannelingTick(actor, effect);
     });
   }
 
