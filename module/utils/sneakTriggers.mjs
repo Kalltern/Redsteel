@@ -87,12 +87,14 @@ export const SNEAK_TRIGGERS = [
     capability: NODE("shadow", "outnumberSneak"),
     test: (ctx) => ctx.overwhelmSources >= 2,
   },
-  // Rogue II — Boky a Záda, now that facing is tracked (utils/positioning.mjs).
+  // Záda — a blow from behind is a Sneak Attack for everyone, no doctrine
+  // needed (table ruling). Rogue II only adds the flank below.
   {
     key: "back",
-    capability: ROGUE(2),
+    capability: null,
     test: (ctx) => ctx.sector === SECTOR.BACK,
   },
+  // Rogue II — Boky, now that facing is tracked (utils/positioning.mjs).
   {
     key: "flank",
     capability: ROGUE(2),
