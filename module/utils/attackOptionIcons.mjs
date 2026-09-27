@@ -36,6 +36,7 @@ const OPTIONS = [
  * @param {boolean} state.sneak        Sneak Attack opens ticked.
  * @param {boolean} state.flank        Flanking opens ticked.
  * @param {boolean} state.opportunity  Show the Opportunity Attack toggle at all.
+ * @param {boolean} [state.opportunityChecked]  Opportunity Attack opens ticked.
  * @param {boolean} state.longReach    Show the polearm penalty toggle at all.
  * @param {boolean} state.longReachClose  Polearm penalty opens ticked.
  * @returns {string}
@@ -44,12 +45,14 @@ export function attackOptionIconsHtml({
   sneak,
   flank,
   opportunity,
+  opportunityChecked = false,
   longReach,
   longReachClose,
 }) {
   const checked = {
     sneakAttack: sneak,
     flanking: flank,
+    opportunityAttack: opportunityChecked,
     longReachPenalty: longReachClose,
   };
   const shown = { opportunityAttack: opportunity, longReachPenalty: longReach };

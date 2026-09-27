@@ -197,6 +197,7 @@
         "Disengage": "Disengage",
         "DuelistsAdvance": "Duelist's Advance",
         "PassingStrike": "Passing Strike step",
+        "ExtendedLunge": "Extended Lunge step",
         "OneAction": "1 Action",
         "TwoActions": "2 Actions",
         "Hexes": "{n} hex",
@@ -261,6 +262,8 @@
       },
       "NoTags": "Nothing of note",
       "Race": "Race",
+      "Size": "Size",
+      "Large": "Large",
       "Armor": "Armor",
       "NoDescription": "No description provided"
     },
@@ -4959,7 +4962,14 @@
     "BloodHarvest": {
       "Gained": "{name} draws {amount} spilled Life into the Blood Reserve (Cordinas I)."
     },
+    "Distraction": {
+      "ReactionLost": "{name} loses the contest and loses 1 Reaction (Distraction)."
+    },
     "ForcedMovement": {
+      "NoContest": "{source}: no answering versus Test found after this card. Apply it as the GM rules.",
+      "ContestLost": "{source}: the target won the contest by {gap}. Nothing happens.",
+      "PushOnly": "{source}: won the contest by {gap}, below the {min} needed for damage. {targets} pushed without damage.",
+      "Rooted": "{name} is Rooted and cannot be moved.",
       "WrongScene": "Forced movement needs the GM to be viewing the scene the tokens are on. Move them by hand.",
       "NoAttacker": "Push: the attacker's token could not be found on this scene, so the target was not pushed. Move it by hand.",
       "CollisionTitle": "Collision",
@@ -5008,6 +5018,13 @@
       "UnknownAttacker": "Unknown attacker",
       "Defend": "Defend",
       "DefendTooltip": "Roll a defense against this attack."
+    },
+    "Overwatch": {
+      "NoGM": "Overwatch needs a GM online to mark the watched area.",
+      "PickArea": "Overwatch: move the area over the board and click to place it (right-click or Esc cancels).",
+      "Activated": "Watching the area until the start of their next turn.",
+      "ShootMove": "{target} moved in the watched area. Shoot as an Opportunity Attack.",
+      "ShootCast": "{target} cast in the watched area. Shoot as an Opportunity Attack."
     },
     "Positioning": {
       "Label": "Positioning",
@@ -5347,7 +5364,7 @@
       "CritOnlyWithBane": "Critical applies only with the Bane bonus.",
       "CritLostWithBane": "Not a critical hit with the Bane bonus.",
       "TagField": "Bane tags",
-      "TagFieldHint": "Comma-separated English Bane keys, e.g. undead, beast",
+      "TagFieldHint": "Comma-separated English Bane keys, e.g. undead, beast. Add large for a Large creature (Anti-Large)",
       "DefenseToggle": "Against a Bane (+5% defense)",
       "ExposeEffect": "Exposed Weakness",
       "ExposedLabel": "Exposed weakness",

@@ -10691,6 +10691,12 @@ body.redsteel-bg3-hotbar #hotbar {
   --rs-tag: #ded4bc;
 }
 
+/* Size sits between race and traits, so it takes a cold stone grey that
+   neither warm neighbour can be mistaken for. */
+#redsteel-bg3-hotbar .rs-bg3-npctag[data-kind="size"] {
+  --rs-tag: #a3aab3;
+}
+
 #redsteel-bg3-hotbar .rs-bg3-npctag[data-kind="trait"] {
   --rs-tag: #d8bd7a;
 }

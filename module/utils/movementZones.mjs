@@ -95,6 +95,16 @@ export const MOVEMENT_MODES = {
     icon: "fa-light fa-arrows-up-down-left-right",
     labelKey: "REDSTEEL.Bg3Hotbar.Suggest.PassingStrike",
   },
+  // Extended Lunge (Daleký výpad): one hex in any direction after the attack,
+  // hit or miss. Unlike Passing Strike the book grants no OA immunity, so the
+  // step walks under the ordinary threat rules.
+  lunge: {
+    budgetFn: () => 1,
+    color: 0xd8c38a,
+    actions: 0,
+    icon: "fa-light fa-arrows-up-down-left-right",
+    labelKey: "REDSTEEL.Bg3Hotbar.Suggest.ExtendedLunge",
+  },
 };
 
 const PREVIEW_LAYER = "redsteel-move-preview";
@@ -122,7 +132,9 @@ const HARMLESS_STATUSES = ["dead", "dying", "downed", "unconscious"];
  * 2026-09-24). It still engages: its hex stays impassable and the one-step-
  * around rule still holds next to it, but its neighbours are not tinted red,
  * leaving them provokes nothing and they carry no swords. Ids from
- * CONFIG.REDSTEEL.effectDefinitions; extend here for later features.
+ * CONFIG.REDSTEEL.effectDefinitions; extend here for later features. An enemy
+ * with no Reaction left this round (Distraction takes one) is treated the
+ * same way in threatMaps.
  */
 export const NO_OPPORTUNITY_ATTACK_STATUSES = [
   "stagger",
@@ -394,7 +406,7 @@ function parseKey(key) {
  * `hasPlayerOwner`, and a hostile NPC whose actor players had been given
  * owner rights to (to read its sheet) switched sides and threatened nobody.
  */
-function isHostileSide(t) {
+export function isHostileSide(t) {
   const actor = t?.actor;
   if (actor?.type === "character" || actor?.system?.partyMember) return false;
   return Number(t?.disposition) === CONST.TOKEN_DISPOSITIONS.HOSTILE;
@@ -508,10 +520,13 @@ function threatMaps(token, ignore = [], { free = false } = {}) {
   for (const enemy of enemiesOf(token)) {
     const center = enemy.object?.center;
     if (!center) continue;
-    const statuses = enemy.actor?.statuses;
-    const canStrike = !(
-      statuses && NO_OPPORTUNITY_ATTACK_STATUSES.some((s) => statuses.has(s))
-    );
+    const actor = enemy.actor;
+    const statuses = actor?.statuses;
+    // An Opportunity Attack spends a Reaction, so an enemy with none left this
+    // round (spent, or taken by Distraction) threatens nobody.
+    const canStrike =
+      !(statuses && NO_OPPORTUNITY_ATTACK_STATUSES.some((s) => statuses.has(s))) &&
+      (!actor || getSpent(actor).reactions < getActionPools(actor).reactions);
     const at = canvas.grid.getOffset({ x: center.x, y: center.y });
     blocked.add(offsetKey(at));
     // A free step (Passing Strike): the enemy only blocks its own hex.
@@ -912,8 +927,13 @@ export function registerMovementZoneHooks() {
     if ("movementSpent" in (c.flags?.redsteel ?? {})) refresh();
   });
 
-  Hooks.on("updateActor", (actor) => {
+  Hooks.on("updateActor", (actor, changed) => {
     if (isZoneActor(actor)) refresh();
+    // Any actor: an enemy spending its Reaction (or losing it to Distraction)
+    // stops threatening, and getting it back threatens again.
+    else if (zoneActor && "actionTracker" in (changed?.flags?.redsteel ?? {})) {
+      refresh();
+    }
   });
 
   // Slow Movement keeps the facing confirmed before the move: the token does

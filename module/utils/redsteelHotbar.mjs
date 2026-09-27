@@ -1109,6 +1109,7 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       toggleActionPip: this._onToggleActionPip,
       useSuggestion: this._onUseSuggestion,
       useCombatSuggestion: this._onUseCombatSuggestion,
+      overwatchShot: this._onOverwatchShot,
       stopSustain: this._onStopSustain,
       toggleMovementMore: this._onToggleMovementMore,
       confirmMovement: this._onConfirmMovement,
@@ -1946,8 +1947,16 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     // still renders and the template says so.
     // Order runs from what the creature IS to how it takes damage: race, then
     // traits, then the armor numbers, then the two damage modifiers.
+    // Size is a creature tag like the Bane keys, typed into the same field (or
+    // carried by the race). Only "large" exists so far; it is what Anti-Large
+    // reads, so the GM should be able to see it on the token.
+    const size = getActorBaneTags(actor).has("large")
+      ? [{ name: game.i18n.localize("REDSTEEL.Bg3Hotbar.Large") }]
+      : [];
+
     const groups = [
       { kind: "race", label: "REDSTEEL.Bg3Hotbar.Race", tags: race },
+      { kind: "size", label: "REDSTEEL.Bg3Hotbar.Size", tags: size },
       { kind: "trait", label: "REDSTEEL.Bg3Hotbar.Traits", tags: traits },
       { kind: "armor", label: "REDSTEEL.Bg3Hotbar.Armor", tags: armor },
       { kind: "resist", label: "REDSTEEL.Bg3Hotbar.Resistances", tags: resistances },
@@ -2970,6 +2979,43 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       }
 
       await game.redsteel.combatAbilities({ launchAbilityId: abilityId });
+    } finally {
+      setTimeout(() => {
+        this.#suggestionBusy = false;
+      }, PORTRAIT_HOLD_MS);
+    }
+  }
+
+  /**
+   * Overwatch shot: open the Attack dialog aimed at the creature that moved or
+   * cast in the watched area, with Opportunity Attack already ticked. The shot
+   * is a plain weapon attack, so it runs through that dialog's own flow, which
+   * also spends the Reaction (spendForAttack). Target and control are taken
+   * the way the ability chip takes them.
+   *
+   * @this {Bg3Hotbar}
+   */
+  static async _onOverwatchShot(event, target) {
+    if (isRightClick(event)) return;
+    const chip = target.closest("[data-action=overwatchShot]");
+    if (!chip) return;
+
+    const actor = this.actor;
+    if (!actor?.isOwner) return;
+    const token = tokenForActor(actor);
+    if (!token?.isOwner) return;
+    const victim = canvas.tokens?.get(chip.dataset.targetTokenId);
+    if (!victim) return;
+
+    if (this.#suggestionBusy) return;
+    this.#suggestionBusy = true;
+    try {
+      victim.setTarget(true, { releaseOthers: true });
+      const controlled = canvas.tokens?.controlled ?? [];
+      if (controlled.length !== 1 || controlled[0] !== token) {
+        token.control({ releaseOthers: true });
+      }
+      await game.redsteel.attackActions({ opportunity: true });
     } finally {
       setTimeout(() => {
         this.#suggestionBusy = false;

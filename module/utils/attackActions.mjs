@@ -1,5 +1,6 @@
 import { selectAimedPart } from "./aimedStrike.mjs";
 import { filterModifiersByWeapon } from "./weaponResolver.mjs";
+import { autoTickModifier } from "./autoModifiers.mjs";
 import { isOwnTurn } from "./opportunityAttacks.mjs";
 import { spendForAttack } from "./actionTracker.mjs";
 import {
@@ -12,7 +13,12 @@ import {
 import { previewSneakTrigger, sneakTriggerLabel } from "./sneakTriggers.mjs";
 import { attackOptionIconsHtml } from "./attackOptionIcons.mjs";
 
-export async function attackActions() {
+/**
+ * @param {object} [options]
+ * @param {boolean} [options.opportunity]  Open with Opportunity Attack ticked
+ *   (the hotbar's Overwatch reaction shot). Only where the toggle is shown.
+ */
+export async function attackActions({ opportunity = false } = {}) {
   const context = game.redsteel.selectToken({ notifyFallback: true });
   if (!context) return;
 
@@ -157,6 +163,7 @@ export async function attackActions() {
     sneak: !!sneakChecked,
     flank: !!flankChecked,
     opportunity: showOpportunity,
+    opportunityChecked: showOpportunity && opportunity === true,
     longReach: showLongReach,
     longReachClose: !!longReachClose,
   })}
@@ -176,7 +183,11 @@ ${
 <label class="pill">
   <input type="checkbox"
          class="attack-modifier-checkbox"
-         data-ability-id="${mod.id}" />
+         data-ability-id="${mod.id}"${
+           autoTickModifier(mod, actor, activeWeapon ?? null, soloTarget)
+             ? " checked"
+             : ""
+         } />
   <span>${mod.localizedName ?? mod.name}</span>
 </label>
   `,

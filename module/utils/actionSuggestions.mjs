@@ -20,6 +20,7 @@ import {
 } from "./actionTracker.mjs";
 import {
   MOVEMENT_MODES,
+  NO_OPPORTUNITY_ATTACK_STATUSES,
   engagingEnemyIds,
   lockRemaining,
   movementBudget,
@@ -28,6 +29,7 @@ import {
 import { areAdjacent } from "./positioning.mjs";
 import { resolveWeaponContext } from "./weaponResolver.mjs";
 import { hasImpaleFollowup, IMPALE_FOLLOWUP_KEY } from "./impaleFollowup.mjs";
+import { OVERWATCH_KEY, overwatchTrigger } from "./overwatch.mjs";
 
 const MODE_ORDER = ["move", "slow", "sprint", "disengage"];
 
@@ -127,6 +129,14 @@ function movementProvider(actor) {
 const COUNTERATTACK_KEY = "REDSTEEL.Items.Counterattack.name";
 const RETALIATORY_KEY = "REDSTEEL.Items.RetaliatoryStrike.name";
 const RIPOSTE_KEY = "REDSTEEL.Items.Riposte.name";
+/**
+ * Odstrčení (Shove), both attribute forms. Granted by Pikeman 5 and Musketeer
+ * 8 (abilityGrants.mjs); a retaliation attack "after a successful Defense".
+ */
+const SHOVE_KEYS = Object.freeze([
+  "REDSTEEL.Items.ShoveStrength.name",
+  "REDSTEEL.Items.ShoveDexterity.name",
+]);
 
 /**
  * The newest chat message when the current turn began. Attack cards carry no
@@ -138,17 +148,21 @@ const RIPOSTE_KEY = "REDSTEEL.Items.Riposte.name";
 let turnStartMessageId = null;
 
 /**
- * Attacks that cannot themselves be answered with Counterattack or
- * Retaliatory strike: the two reactions, Riposte, and Shield Bash in both its
- * normal and small-shield form.
+ * Attacks that cannot themselves be answered with Counterattack, Retaliatory
+ * strike or Shove: the reactions themselves, Riposte, and Shield Bash in both
+ * its normal and small-shield form.
  */
 const UNANSWERABLE_ATTACK_KEYS = new Set([
   COUNTERATTACK_KEY,
   RETALIATORY_KEY,
+  ...SHOVE_KEYS,
   "REDSTEEL.Items.Riposte.name",
   "REDSTEEL.Items.ShieldBash.name",
   "REDSTEEL.Items.ShieldBashSmallShield.name",
 ]);
+
+/** Every retaliation this strip offers; posting any one answers the defense. */
+const RETALIATION_KEYS = new Set([COUNTERATTACK_KEY, RETALIATORY_KEY, ...SHOVE_KEYS]);
 
 /** The actor's ability Item carrying this localisation key, or null. */
 function abilityByKey(actor, key) {
@@ -174,7 +188,7 @@ function actorTokenIds(actor) {
 
 /**
  * The newest defense card this actor rolled, and whether they have posted a
- * Counterattack or Retaliatory strike since. Read off the chat log, nothing
+ * Counterattack, Retaliatory strike or Shove since. Read off the chat log, nothing
  * stored (the overwhelm.mjs pattern).
  *
  * @param {Set<string>} tokenIds
@@ -193,8 +207,7 @@ function latestDefense(tokenIds) {
     // The reaction is used up once the defender has swung it after the
     // defense card, told apart by the speaker's token.
     if (
-      (flags.abilityKey === COUNTERATTACK_KEY ||
-        flags.abilityKey === RETALIATORY_KEY) &&
+      RETALIATION_KEYS.has(flags.abilityKey) &&
       tokenIds.has(message.speaker?.token)
     ) {
       answered = true;
@@ -287,6 +300,14 @@ function retaliatoryFits(defense) {
 }
 
 /**
+ * Shove (Odstrčení): "Can be performed after a successful Defense", the same
+ * gate as Counterattack. Dodge does not count.
+ */
+function shoveFits(defense) {
+  return counterattackFits(defense);
+}
+
+/**
  * One ability chip: the ability's own icon and name, and what it costs. Its
  * theme picks the plate it sits on: a ranged ability goes on the yellow one,
  * anything else (melee, other) on the red.
@@ -312,8 +333,8 @@ function abilityChip(item, costKey, targetTokenId) {
 }
 
 /**
- * Reactions to the defense this actor just rolled: Counterattack and
- * Retaliatory strike, aimed back at the attacker.
+ * Reactions to the defense this actor just rolled: Counterattack, Retaliatory
+ * strike and Shove, aimed back at the attacker.
  *
  * @param {Actor} actor
  * @returns {object[]}
@@ -321,7 +342,8 @@ function abilityChip(item, costKey, targetTokenId) {
 function reactionChips(actor) {
   const counter = abilityByKey(actor, COUNTERATTACK_KEY);
   const retaliatory = abilityByKey(actor, RETALIATORY_KEY);
-  if (!counter && !retaliatory) return [];
+  const shoves = SHOVE_KEYS.map((key) => abilityByKey(actor, key)).filter(Boolean);
+  if (!counter && !retaliatory && !shoves.length) return [];
 
   // A Reaction left to pay with.
   if (getSpent(actor).reactions >= getActionPools(actor).reactions) return [];
@@ -349,6 +371,13 @@ function reactionChips(actor) {
     chips.push(
       abilityChip(retaliatory, "REDSTEEL.Bg3Hotbar.Suggest.Reaction", attackerToken.id),
     );
+  }
+  if (shoveFits(defense)) {
+    for (const shove of shoves) {
+      chips.push(
+        abilityChip(shove, "REDSTEEL.Bg3Hotbar.Suggest.Reaction", attackerToken.id),
+      );
+    }
   }
   return chips;
 }
@@ -501,6 +530,70 @@ function impaleFollowupChips(actor) {
   return [abilityChip(followup, "REDSTEEL.Bg3Hotbar.Suggest.FreeAction", null)];
 }
 
+/** Fallback icon of the Overwatch shot, for a status set without the ability. */
+const OVERWATCH_ICON = "icons/skills/ranged/arrows-triple-yellow-red.webp";
+
+/** States that take an archer's Opportunity Attacks away (movementZones.mjs). */
+const CANNOT_SHOOT = [
+  ...NO_OPPORTUNITY_ATTACK_STATUSES,
+  "dead",
+  "dying",
+  "downed",
+  "unconscious",
+];
+
+/**
+ * Something to shoot with: the active set's main weapon for a character, any
+ * weapon for anyone else. Bows, crossbows and thrown weapons count.
+ */
+function hasRangedWeapon(actor) {
+  const ranged = (w) =>
+    ["bow", "crossbow"].includes(w?.system?.class) || w?.system?.thrown === true;
+  if (actor.type === "character") return ranged(resolveWeaponContext(actor)?.weapon);
+  return actor.items.some((i) => i.type === "weapon" && ranged(i));
+}
+
+/**
+ * Stráž (Overwatch): an enemy moved or cast inside the watched area this turn
+ * (overwatch.mjs stamps it), so the archer may shoot them as an Opportunity
+ * Attack. Costs the Reaction; gone once the shot is posted or the turn moves.
+ *
+ * @param {Actor} actor
+ * @returns {object[]}
+ */
+function overwatchChips(actor) {
+  const trigger = overwatchTrigger(actor);
+  if (!trigger) return [];
+  if (getSpent(actor).reactions >= getActionPools(actor).reactions) return [];
+  if (CANNOT_SHOOT.some((s) => actor.statuses?.has(s))) return [];
+  if (!hasRangedWeapon(actor)) return [];
+  const target = answerableAttacker(trigger.tokenId);
+  if (!target) return [];
+
+  const ability = abilityByKey(actor, OVERWATCH_KEY);
+  const label = ability?.localizedName ?? game.i18n.localize(OVERWATCH_KEY);
+  const hint = game.i18n.format(
+    trigger.reason === "cast"
+      ? "REDSTEEL.Overwatch.ShootCast"
+      : "REDSTEEL.Overwatch.ShootMove",
+    { target: target.name },
+  );
+  return [
+    {
+      id: `overwatch-${target.id}`,
+      kind: "overwatch",
+      theme: "ranged",
+      uuid: ability?.uuid ?? "",
+      costKind: "reaction",
+      img: ability?.img || OVERWATCH_ICON,
+      label,
+      hint,
+      targetTokenId: target.id,
+      ariaLabel: `${label}: ${hint}`,
+    },
+  ];
+}
+
 /**
  * Combat abilities the actor may use right now, on or off its turn.
  * Suggestions only: an ability missing here can still be used from the
@@ -512,7 +605,7 @@ function impaleFollowupChips(actor) {
 function combatProvider(actor) {
   if (!canvas?.ready) return [];
   return [...riposteChips(actor),
-    ...reactionChips(actor), ...impaleFollowupChips(actor),
+    ...reactionChips(actor), ...overwatchChips(actor), ...impaleFollowupChips(actor),
     ...sustainChips(actor)];
 }
 

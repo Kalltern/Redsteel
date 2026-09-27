@@ -18,6 +18,28 @@
  */
 
 import { withRollBias, tagRollSkill } from "./rollAdvantage.mjs";
+import { spend, getSpent, setSpent } from "./actionTracker.mjs";
+
+/**
+ * Abilities whose versus Test costs the loser something, keyed by
+ * localizationKey. Rozptýlení: "On attacker's success, the target loses 1
+ * Reaction." The English names are the fallback for copies predating the key.
+ */
+const VERSUS_LOSS = Object.freeze({
+  "REDSTEEL.Items.DistractionDexterity.name": "reaction",
+  "REDSTEEL.Items.DistractionPerception.name": "reaction",
+});
+const VERSUS_LOSS_NAMES = Object.freeze({
+  "Distraction (Dexterity)": "REDSTEEL.Items.DistractionDexterity.name",
+  "Distraction (Perception)": "REDSTEEL.Items.DistractionPerception.name",
+});
+
+/** What the loser of this item's versus Test forfeits ("reaction"), or null. */
+export function versusLossFor(item) {
+  const key =
+    item?.system?.localizationKey || VERSUS_LOSS_NAMES[item?.name] || null;
+  return (key && VERSUS_LOSS[key]) || null;
+}
 
 const ATTRIBUTE_KEYS = ["str", "dex", "end", "int", "wil", "cha", "per"];
 
@@ -45,6 +67,7 @@ export function renderMarginFollowupLine({
   source,
   chance = null,
   result = null,
+  onLose = null,
 }) {
   const tooltip = [
     chance != null ? `Test chance ${chance}%` : null,
@@ -54,7 +77,8 @@ export function renderMarginFollowupLine({
     .filter(Boolean)
     .join("<br>");
 
-  return `<span class="mos-followup" data-margin="${margin}" data-source="${source ?? ""}" data-tooltip="${tooltip}" style="cursor:pointer; text-decoration:underline dotted;">Margin of Success: [${margin}]</span>`;
+  const loseAttr = onLose ? ` data-on-lose="${onLose}"` : "";
+  return `<span class="mos-followup" data-margin="${margin}" data-source="${source ?? ""}"${loseAttr} data-tooltip="${tooltip}" style="cursor:pointer; text-decoration:underline dotted;">Margin of Success: [${margin}]</span>`;
 }
 
 /**
@@ -92,7 +116,9 @@ export function wireAttributeFollowups(html) {
     el.addEventListener("click", () => {
       const margin = Number(el.dataset.margin);
       if (Number.isNaN(margin)) return;
-      promptAttributeFollowup(margin, el.dataset.source ?? "");
+      promptAttributeFollowup(margin, el.dataset.source ?? "", {
+        onLose: el.dataset.onLose ?? null,
+      });
     });
   }
 }
@@ -103,8 +129,10 @@ export function wireAttributeFollowups(html) {
  *
  * @param {number} margin  The original margin of success to subtract.
  * @param {string} source  Name of the originating ability/spell (for flavor).
+ * @param {{onLose?: string|null}} [options]  What the contester forfeits on a
+ *   loss, from the line's data-on-lose (see versusLossFor).
  */
-export function promptAttributeFollowup(margin, source = "") {
+export function promptAttributeFollowup(margin, source = "", { onLose = null } = {}) {
   const context = game.redsteel.selectToken({ notifyFallback: true });
   if (!context) return;
   const { actor } = context;
@@ -122,7 +150,8 @@ export function promptAttributeFollowup(margin, source = "") {
     const rating = attr.mod ?? 0;
     buttons[key] = {
       label: `${label} (${rating})`,
-      callback: () => rollAttributeFollowup(actor, key, rating, margin, source),
+      callback: () =>
+        rollAttributeFollowup(actor, key, rating, margin, source, onLose),
     };
   }
 
@@ -149,7 +178,14 @@ export function promptAttributeFollowup(margin, source = "") {
  * @param {number} rating  The attribute rating used in the formula.
  * @param {number} margin  The original margin of success.
  */
-async function rollAttributeFollowup(actor, key, rating, margin, source = "") {
+async function rollAttributeFollowup(
+  actor,
+  key,
+  rating,
+  margin,
+  source = "",
+  onLose = null,
+) {
   const label = attributeLabel(key);
   const vsLabel = source ? source : `Margin ${margin}`;
 
@@ -179,8 +215,13 @@ async function rollAttributeFollowup(actor, key, rating, margin, source = "") {
   }
 
   const rollName = `${label} Test vs ${vsLabel}`;
+  const settled = await settleVersusLoss(
+    actor,
+    { margin, source, ...(onLose && { onLose }) },
+    roll.total,
+  );
   let flavor = `<p class="rs-card-headline"><b>${rollName}</b></p>
-${renderVersusOutcome(roll.total)}`;
+${renderVersusOutcome(roll.total)}${settled.note}`;
   if (criticalMessage) {
     flavor += `<hr><p class="rs-card-headline"><b>${criticalMessage}</b></p>`;
   }
@@ -201,7 +242,7 @@ ${renderVersusOutcome(roll.total)}`;
         criticalSuccessThreshold: attr?.criticalSuccessThreshold,
         criticalFailureThreshold: attr?.criticalFailureThreshold,
         // Lets a reroll restate who won against the new total (see executeReroll).
-        versusFollowup: { margin, source },
+        versusFollowup: settled.followup,
       },
     },
   });
@@ -225,4 +266,36 @@ export function renderVersusOutcome(total) {
         ? `<b>Loses</b> the contest by ${gap}.`
         : "<b>Tie</b>, so the initiator wins.";
   return `<p style="text-align:center;">${outcome}</p>`;
+}
+
+/**
+ * Charge (or hand back) what the loser of a versus Test forfeits.
+ *
+ * Runs on the contester's own client against their own actor, so ordinary
+ * ownership covers the tracker write. The contester is the target, and a
+ * total at or below 0 means the initiator won (a tie goes to the initiator).
+ * `reactionLost` on the followup flag remembers the charge, so a reroll that
+ * flips the result refunds it and one that flips it back charges again, never
+ * twice.
+ *
+ * @param {Actor} actor       The contester.
+ * @param {object} followup   The `versusFollowup` flag ({margin, source, onLose?, reactionLost?}).
+ * @param {number} total      The contester's roll total.
+ * @returns {Promise<{followup: object, note: string}>}
+ */
+export async function settleVersusLoss(actor, followup, total) {
+  if (followup?.onLose !== "reaction") return { followup, note: "" };
+  const lost = total <= 0;
+  const was = !!followup.reactionLost;
+  if (actor && lost && !was) await spend(actor, { reactions: 1 });
+  if (actor && !lost && was) {
+    await setSpent(actor, "reactions", getSpent(actor).reactions - 1);
+  }
+  const note = lost
+    ? `<p style="text-align:center;">${game.i18n.format(
+        "REDSTEEL.Distraction.ReactionLost",
+        { name: foundry.utils.escapeHTML(actor?.name ?? "") },
+      )}</p>`
+    : "";
+  return { followup: { ...followup, reactionLost: lost }, note };
 }

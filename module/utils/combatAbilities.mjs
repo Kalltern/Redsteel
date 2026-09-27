@@ -12,6 +12,12 @@ import { renderDamageWithSneak } from "./damageLine.mjs";
 import { ruleActive } from "./abilityGrants.mjs";
 import { getAttackRerollTokens } from "./rerolls.mjs";
 import { buildBanePacket } from "./baneCombat.mjs";
+import { autoTickModifier } from "./autoModifiers.mjs";
+import {
+  activateOverwatch,
+  isOverwatchAbility,
+  pickOverwatchArea,
+} from "./overwatch.mjs";
 import { hasHtmlContent } from "./chatBlocks.mjs";
 import {
   appendHeavyWeaponDamage,
@@ -34,6 +40,7 @@ import {
   resourceLabel,
 } from "./itemResources.mjs";
 import { captureAttackTargets } from "./autoDefense.mjs";
+import { versusLossFor } from "./attributeFollowup.mjs";
 import {
   SECTOR,
   attackSector,
@@ -55,7 +62,9 @@ import { attackOptionIconsHtml } from "./attackOptionIcons.mjs";
 import { throwExplosiveItem } from "./throwExplosive.mjs";
 import {
   declareDuelistsAdvance,
+  grantExtendedLungeStep,
   isDuelistsAdvance,
+  isExtendedLunge,
   modifierKeysOf,
 } from "./abilityMovement.mjs";
 
@@ -439,6 +448,23 @@ export async function combatAbilities({ launchAbilityId = null } = {}) {
       if (!commandTargets) return;
     }
 
+    // Stráž (Overwatch) rolls nothing: it marks an area to watch and puts the
+    // Overwatch status on the archer (overwatch.mjs). The area is placed before
+    // anything is spent, so backing out costs nothing; modifiers do not apply.
+    // Without "keep open" the dialog closes as soon as Overwatch is chosen;
+    // with it, the dialog steps aside while the player places the area and
+    // comes back afterwards.
+    if (isOverwatchAbility(ability)) {
+      if (!keepOpen) dialog?.close();
+      const area = await pickOverwatchArea({
+        hide: keepOpen ? dialog?.element : null,
+      });
+      if (!area) return;
+      if (!(await game.redsteel.deductAbilityCost(actor, [ability]))) return;
+      await activateOverwatch(actor, ability, area);
+      return;
+    }
+
     let paid;
 
     if (ability.system.class === "stance") {
@@ -740,6 +766,10 @@ export async function combatAbilities({ launchAbilityId = null } = {}) {
   // Weapon-locked modifiers (Fuscina Ictus → trident) only show when the weapon
   // that will actually swing can carry them. modifierAbilities itself stays
   // whole: it is only used to look selections back up by id.
+  // A modifier bound to the target (Anti-Large vs a Large creature) opens
+  // ticked, judged against the single target only.
+  const soloTargets = [...(game.user?.targets ?? [])];
+  const soloTarget = soloTargets.length === 1 ? soloTargets[0] : null;
   const modifierCheckboxHtml = filterModifiersByWeapon(
     modifierAbilities,
     actor,
@@ -750,7 +780,11 @@ export async function combatAbilities({ launchAbilityId = null } = {}) {
 <label class="pill">
   <input type="checkbox"
          class="attack-modifier-checkbox"
-         data-ability-id="${mod.id}" />
+         data-ability-id="${mod.id}"${
+           autoTickModifier(mod, actor, activeWeapon ?? null, soloTarget)
+             ? " checked"
+             : ""
+         } />
   <span>${mod.localizedName ?? mod.name}</span>
 </label>
   `,
@@ -766,8 +800,7 @@ export async function combatAbilities({ launchAbilityId = null } = {}) {
   // unambiguous, so the Flanking pill opens ticked when the attacker stands on
   // that target's flank. The checkbox stays the single source of truth for the
   // roll; this only sets its starting state and names the arc beside it.
-  const soloTargets = [...(game.user?.targets ?? [])];
-  const soloTarget = soloTargets.length === 1 ? soloTargets[0] : null;
+  // soloTarget is resolved above, with the modifier pills.
   const targetSector = soloTarget ? attackSector(soloTarget, token) : null;
   const flankChecked = targetSector === SECTOR.FLANK ? " checked" : "";
   // A long-reach weapon is unwieldy against someone already inside its reach,
@@ -1481,7 +1514,7 @@ ${critHTML}
  </div>`
         : "";
 
-    await ChatMessage.create({
+    const message = await ChatMessage.create({
       // Resolved from the attacking actor rather than the bare getSpeaker(),
       // which reads the client's *selected* token. Overwhelm files attackers by
       // the token id on this speaker, so it has to name the one that attacked.
@@ -1620,6 +1653,11 @@ ${
     // The declaration is spent by the attack, hit or miss. Once, here, after
     // every delta reader above has run.
     await game.redsteel.consumeSneakAttackFlag(actor);
+    // Extended Lunge's step follows the attack itself, hit or miss, so it is
+    // offered as soon as the card is out rather than at Apply Damage.
+    if (isExtendedLunge(ability)) {
+      await grantExtendedLungeStep(actor, message, token?.document ?? token);
+    }
   }
   function buildDamageProfile(systemData) {
     if (!systemData) return { expression: [] };
@@ -2068,7 +2106,7 @@ ${renderSpeedTestLine({
 <td>
 <span>
 <b>${mod.localizedName ?? mod.name} — ${testName} Test ${attributeTotalValue}%</b><br>
-<span class="mos-followup" data-margin="${attributeRoll.total}" data-source="${ability.localizedName ?? ability.name}" data-tooltip="Test chance ${attributeTotalValue}%<br>Rolled: ${attributeRoll.result}<br>Click to roll an attribute against this margin" style="cursor:pointer; text-decoration:underline dotted;">Margin of Success: [${attributeRoll.total}]</span>
+<span class="mos-followup" data-margin="${attributeRoll.total}" data-source="${ability.localizedName ?? ability.name}"${versusLossFor(mod) ? ` data-on-lose="${versusLossFor(mod)}"` : ""} data-tooltip="Test chance ${attributeTotalValue}%<br>Rolled: ${attributeRoll.result}<br>Click to roll an attribute against this margin" style="cursor:pointer; text-decoration:underline dotted;">Margin of Success: [${attributeRoll.total}]</span>
 </span>
 </td>
 </tr>

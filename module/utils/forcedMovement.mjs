@@ -24,7 +24,8 @@
  * card and applied through the ordinary Apply Damage pipeline so temporary
  * health, shields and Dying all behave as for any other hit.
  *
- * Dead tokens do not block: a corpse is on the floor, not in the way.
+ * Dead tokens do not block: a corpse is on the floor, not in the way. A
+ * Rooted token (IMMOVABLE_STATUSES) is not moved at all.
  *
  * A forced move never turns the token (`autoRotate: false`), never counts
  * against the moved token's own movement, never charges its Action and never
@@ -39,6 +40,20 @@
 // touch the other's exports at call time, never while the modules evaluate.
 import { applyDamageAsGM, SOCKET } from "./applyDamage.mjs";
 import { withForcedFlag } from "./forcedMoveRegistry.mjs";
+
+/**
+ * Statuses that pin a token in place: pushes, pulls and slides leave it where
+ * it stands (no movement, no collision). Rooted covers Impale too, which
+ * reuses the Rooted effect. Swap and teleport are not gated; whether magic
+ * can lift a rooted body is the calling spell's rule.
+ */
+export const IMMOVABLE_STATUSES = Object.freeze(["root"]);
+
+/** Is this token pinned against straight-line forced movement? */
+export function isImmovable(tokenDoc) {
+  const statuses = tokenDoc?.actor?.statuses;
+  return !!statuses && IMMOVABLE_STATUSES.some((id) => statuses.has(id));
+}
 
 /** Collision damage when a caller does not name its own. */
 export const DEFAULT_COLLISION_DAMAGE = "1d8";
@@ -169,6 +184,12 @@ async function moveAlongHeading(tokenDoc, opts) {
     sourceActor = null,
   } = opts;
   const scene = tokenDoc.parent;
+  if (isImmovable(tokenDoc)) {
+    ui.notifications.info(
+      game.i18n.format("REDSTEEL.ForcedMovement.Rooted", { name: tokenDoc.name }),
+    );
+    return { moved: 0, collision: null };
+  }
   if (!canvas?.ready || canvas.scene?.id !== scene?.id) {
     ui.notifications.warn(game.i18n.localize("REDSTEEL.ForcedMovement.WrongScene"));
     return { moved: 0, collision: null };
@@ -400,15 +421,22 @@ async function dealCollisionDamage(scene, victims, { formula, label, sourceActor
  * reads this after the damage is in; adding a new pushing ability is one line.
  *
  * `distance` hexes, `collisionDamage` formula (default 1d8, ignores armor).
+ * `damageMinMargin`: the card's own damage needs the versus Test won by at
+ * least this much; a smaller win pushes without it (see gateVersusPush).
  */
 export const PUSH_ON_HIT = Object.freeze({
   "REDSTEEL.Items.ShieldBash.name": { distance: 1 },
   "REDSTEEL.Items.ShieldBashSmallShield.name": { distance: 1 },
+  // Odstrčení: pushed on any win, the 3d4 only at MoS 25+.
+  "REDSTEEL.Items.ShoveStrength.name": { distance: 1, damageMinMargin: 25 },
+  "REDSTEEL.Items.ShoveDexterity.name": { distance: 1, damageMinMargin: 25 },
 });
 
 const PUSH_ON_HIT_NAMES = Object.freeze({
   "Shield Bash": "REDSTEEL.Items.ShieldBash.name",
   "Shield Bash (small shield)": "REDSTEEL.Items.ShieldBashSmallShield.name",
+  "Shove (Strength)": "REDSTEEL.Items.ShoveStrength.name",
+  "Shove (Dexterity)": "REDSTEEL.Items.ShoveDexterity.name",
 });
 
 /** The push a landed card carries, or null. */
@@ -450,15 +478,129 @@ export async function resolvePushOnHit(message, scene, targetIds, attackerDoc, a
 }
 
 /* -------------------------------------------- */
+/*  VERSUS TEST GATE                            */
+/* -------------------------------------------- */
+
+/**
+ * How the versus Test on a contested card came out, read off the chat log.
+ *
+ * The card posts its margin as a `.mos-followup` span (data-margin,
+ * data-source); the defender's answer is a later card flagged
+ * `versusFollowup {margin, source}` whose total is the gap between the two
+ * margins, positive when the DEFENDER came out ahead (attributeFollowup.mjs).
+ * The newest answer wins, so a rerolled answer replaces the first. A rerolled
+ * attack card posts a new margin, and an answer to the old one no longer
+ * matches it.
+ *
+ * @returns {{attackerWon:boolean, gap:number}|null}  null when nobody answered
+ */
+export function versusOutcome(message) {
+  const html = `${message?.flavor ?? ""}${message?.content ?? ""}`;
+  const span = new DOMParser()
+    .parseFromString(html, "text/html")
+    .querySelector(".mos-followup");
+  if (!span) return null;
+  const margin = Number(span.dataset.margin);
+  const source = span.dataset.source ?? "";
+  if (!Number.isFinite(margin)) return null;
+
+  const messages = game.messages?.contents ?? [];
+  const start = messages.findIndex((m) => m.id === message.id);
+  for (let i = messages.length - 1; i > start; i--) {
+    const followup = messages[i].flags?.redsteel?.versusFollowup;
+    if (!followup) continue;
+    if (Number(followup.margin) !== margin || (followup.source ?? "") !== source) continue;
+    const total = Number(messages[i].rolls?.[0]?.total);
+    if (!Number.isFinite(total)) continue;
+    // A dead tie goes to the initiator.
+    return { attackerWon: total <= 0, gap: Math.abs(total) };
+  }
+  return null;
+}
+
+/**
+ * Apply Damage on a card whose damage needs a minimum win (Shove). Runs on
+ * the clicking client before the damage dialog opens.
+ *
+ * - no answer on record: false, the dialog opens and the GM rules it;
+ * - defender won: nothing happens, true;
+ * - won below the threshold: push only, no dialog, true;
+ * - won at or above it: false, the dialog opens and applyDamageAsGM pushes
+ *   after the damage, as for Shield Bash.
+ *
+ * @returns {Promise<boolean>} true when the click has been fully handled
+ */
+export async function gateVersusPush(message, targets) {
+  const push = pushForCard(message);
+  const min = Number(push?.damageMinMargin);
+  if (!push || !Number.isFinite(min)) return false;
+
+  const source = message.flags?.redsteel?.rollName ?? "";
+  const outcome = versusOutcome(message);
+  if (!outcome) {
+    ui.notifications.info(
+      game.i18n.format("REDSTEEL.ForcedMovement.NoContest", { source }),
+    );
+    return false;
+  }
+  if (outcome.attackerWon && outcome.gap >= min) return false;
+
+  const speaker = { scene: canvas.scene?.id ?? null, actor: null, token: null, alias: source };
+  const esc = (v) => foundry.utils.escapeHTML(String(v ?? ""));
+  if (!outcome.attackerWon) {
+    await ChatMessage.create({
+      speaker,
+      content: `<p style="text-align:center;">${game.i18n.format(
+        "REDSTEEL.ForcedMovement.ContestLost",
+        { source: esc(source), gap: outcome.gap },
+      )}</p>`,
+    });
+    return true;
+  }
+
+  const attackerTokenId = message.speaker?.token ?? null;
+  if (!attackerTokenId) {
+    ui.notifications.warn(game.i18n.localize("REDSTEEL.ForcedMovement.NoAttacker"));
+    return true;
+  }
+  await ChatMessage.create({
+    speaker,
+    content: `<p style="text-align:center;">${game.i18n.format(
+      "REDSTEEL.ForcedMovement.PushOnly",
+      {
+        source: esc(source),
+        gap: outcome.gap,
+        min,
+        targets: targets.map((t) => esc(t.name)).join(", "),
+      },
+    )}</p>`,
+  });
+  for (const target of targets) {
+    if (target.id === attackerTokenId) continue;
+    await requestForcedMovement({
+      op: "push",
+      sceneId: canvas.scene.id,
+      tokenId: target.id,
+      fromTokenId: attackerTokenId,
+      distance: push.distance ?? 1,
+      collisionDamage: push.collisionDamage,
+      label: source,
+    });
+  }
+  return true;
+}
+
+/* -------------------------------------------- */
 /*  SOCKET RELAY                                */
 /* -------------------------------------------- */
 
 /**
  * Run a forced movement from any client. Payload:
  * `{ op: "push"|"pull"|"slide"|"swap"|"teleport", sceneId, tokenId,
- *    otherTokenId?, point?, heading?, distance?, collide?, collisionDamage?,
- *    label?, sourceActorUuid? }`
- * `point` is the push origin / pull target / teleport destination.
+ *    otherTokenId?, point?, fromTokenId?, heading?, distance?, collide?,
+ *    collisionDamage?, label?, sourceActorUuid? }`
+ * `point` is the push origin / pull target / teleport destination;
+ * `fromTokenId` names a token to push from / pull toward instead.
  */
 export async function requestForcedMovement(payload) {
   if (game.user.isGM) return runForcedMovement(payload);
@@ -471,6 +613,7 @@ async function runForcedMovement(p) {
   const tokenDoc = scene?.tokens.get(p.tokenId);
   if (!tokenDoc) return null;
   const sourceActor = p.sourceActorUuid ? await fromUuid(p.sourceActorUuid) : null;
+  const point = p.fromTokenId ? (scene.tokens.get(p.fromTokenId) ?? null) : p.point;
   const opts = {
     distance: p.distance ?? 1,
     collide: p.collide ?? true,
@@ -480,9 +623,9 @@ async function runForcedMovement(p) {
   };
   switch (p.op) {
     case "push":
-      return pushToken(tokenDoc, p.point, opts);
+      return pushToken(tokenDoc, point, opts);
     case "pull":
-      return pullToken(tokenDoc, p.point, opts);
+      return pullToken(tokenDoc, point, opts);
     case "slide":
       return slideToken(tokenDoc, p.heading ?? 0, opts);
     case "swap":

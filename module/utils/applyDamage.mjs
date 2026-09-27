@@ -26,7 +26,7 @@ import {
   getOverwhelmSources,
 } from "./overwhelm.mjs";
 import { grantPassingStrikeStep } from "./abilityMovement.mjs";
-import { resolvePushOnHit } from "./forcedMovement.mjs";
+import { gateVersusPush, resolvePushOnHit } from "./forcedMovement.mjs";
 import {
   cardDeclaredSneak,
   recordSneakAttack,
@@ -453,12 +453,15 @@ export async function handleApplyDamage(messageId) {
   const message = game.messages.get(messageId);
   if (!message?.flags?.attack) return;
 
-  const checkTargetsAndContinue = () => {
+  const checkTargetsAndContinue = async () => {
     const targets = Array.from(game.user.targets);
     if (!targets.length) {
       ui.notifications.warn("Please select at least one target.");
       return false;
     }
+    // Shove and anything else whose damage needs a minimum versus Test win:
+    // a lost contest or a push-only win is settled here, with no dialog.
+    if (await gateVersusPush(message, targets)) return true;
     openDamageSelectionDialog(message, targets);
     return true;
   };

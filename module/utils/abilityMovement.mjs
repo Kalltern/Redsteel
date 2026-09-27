@@ -12,6 +12,11 @@
  *   damage grants one hex in any direction that provokes no Opportunity
  *   Attack, as a bonus step on top of the turn's movement
  *   (actionTracker.grantBonusStep).
+ * - Extended Lunge (Daleký výpad): once the attack is made, hit or miss, the
+ *   attacker may take one hex in any direction under the ordinary threat
+ *   rules. Granted when the card posts, not at Apply Damage, since the hit
+ *   does not matter. Ignoring it costs nothing: ✓ or simply Moving on hands
+ *   the turn's movement back, and it expires with the round.
  *
  * Both are guidance like the rest of the tracker: nothing here refuses a move.
  */
@@ -29,6 +34,7 @@ import {
 
 export const DUELISTS_ADVANCE_KEY = "REDSTEEL.Items.DuelistsAdvance.name";
 export const PASSING_STRIKE_KEY = "REDSTEEL.Items.PassingStrike.name";
+export const EXTENDED_LUNGE_KEY = "REDSTEEL.Items.ExtendedLunge.name";
 
 /**
  * Matched on the localisation key, with the pack's English name as the
@@ -104,6 +110,35 @@ export async function grantPassingStrikeStep(actor, message, tokenDoc) {
     mode: "passing",
     budget: 1,
     startSpent,
+    source: message.id,
+  });
+}
+
+/** Is this the Extended Lunge ability (by key, or the pack's English name)? */
+export function isExtendedLunge(ability) {
+  return (
+    ability?.system?.localizationKey === EXTENDED_LUNGE_KEY ||
+    ability?.name === "Extended Lunge"
+  );
+}
+
+/**
+ * An Extended Lunge card was just posted: grant the attacker its one-hex
+ * step. Runs on the attacker's own client, which owns the actor the tracker
+ * writes to. Own turn in a tracked encounter only; anywhere else the step
+ * stays manual. Once per card (grantBonusStep's `source`).
+ *
+ * @param {Actor|null} actor  The attacker.
+ * @param {ChatMessage|null} message  The attack card.
+ * @param {TokenDocument|null} tokenDoc  The attacker's token.
+ */
+export async function grantExtendedLungeStep(actor, message, tokenDoc) {
+  if (!actor || !tokenDoc || !message) return;
+  if (!isTrackedTurn(actor)) return;
+  await grantBonusStep(actor, {
+    mode: "lunge",
+    budget: 1,
+    startSpent: Number(tokenDoc.getFlag("redsteel", "movementSpent") ?? 0) || 0,
     source: message.id,
   });
 }

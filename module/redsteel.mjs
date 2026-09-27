@@ -22,6 +22,7 @@ import {
   wireAttributeFollowups,
   renderMarginFollowupLine,
   renderVersusOutcome,
+  settleVersusLoss,
 } from "./utils/attributeFollowup.mjs";
 import { wireSpeedFollowups } from "./utils/speedTest.mjs";
 import { registerInitiativeTiebreakSocket } from "./utils/initiativeTiebreak.mjs";
@@ -103,6 +104,7 @@ import { registerAllyPassage } from "./utils/allyPassage.mjs";
 import { registerForcedMovement } from "./utils/forcedMovement.mjs";
 import { registerTrade } from "./utils/trade.mjs";
 import { registerImpaleFollowupHooks } from "./utils/impaleFollowup.mjs";
+import { registerOverwatchHooks } from "./utils/overwatch.mjs";
 import { registerSuggestionHooks } from "./utils/actionSuggestions.mjs";
 import { registerStatusCounterColors } from "./utils/statusCounterColors.mjs";
 import {
@@ -517,6 +519,7 @@ Hooks.once("init", function () {
   registerForcedMovement();
   registerTrade();
   registerImpaleFollowupHooks();
+  registerOverwatchHooks();
   registerSuggestionHooks();
   registerStatusCounterColors();
   registerAutoDefense();
@@ -1834,7 +1837,18 @@ async function executeReroll(message, sourceLabel) {
   // A versus Test card states who won. The reroll builds a fresh flavor, so
   // restate it against the new total rather than leaving the old verdict.
   const versusFollowup = message.getFlag("redsteel", "versusFollowup");
-  const followupOutcome = versusFollowup ? renderVersusOutcome(roll.total) : "";
+  let followupOutcome = versusFollowup ? renderVersusOutcome(roll.total) : "";
+  // A versus Test that costs the loser (Distraction's Reaction) is charged or
+  // refunded when the reroll flips who won.
+  if (versusFollowup?.onLose) {
+    const settled = await settleVersusLoss(
+      ChatMessage.getSpeakerActor(message.speaker),
+      versusFollowup,
+      roll.total,
+    );
+    carried.versusFollowup = settled.followup;
+    followupOutcome += settled.note;
+  }
   const rescuedNote = rescued
     ? `<p style="text-align:center; font-size:12px; opacity:0.8;"><i class="fa-light fa-sparkles"></i> Cast succeeded on the reroll — caster effects applied.</p>`
     : "";

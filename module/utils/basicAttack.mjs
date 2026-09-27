@@ -16,7 +16,10 @@ import {
   renderSpeedTestLine,
 } from "./speedTest.mjs";
 import { resolveTestRating } from "./testRating.mjs";
-import { renderMarginFollowupLine } from "./attributeFollowup.mjs";
+import {
+  renderMarginFollowupLine,
+  versusLossFor,
+} from "./attributeFollowup.mjs";
 import { renderAttackTagsHtml } from "./opportunityAttacks.mjs";
 import { captureAttackTargets } from "./autoDefense.mjs";
 import { captureAttackPositioning } from "./positioning.mjs";
@@ -232,6 +235,7 @@ export async function universalAttackLogic({
       source: mod.localizedName ?? mod.name,
       chance: attributeTotalValue,
       result: attributeRoll.result,
+      onLose: versusLossFor(mod),
     })}<br>
       </span>
     </td>

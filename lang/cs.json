@@ -197,6 +197,7 @@
         "Disengage": "Odpoutání",
         "DuelistsAdvance": "Duelistův krok",
         "PassingStrike": "Krok z útoku s pohybem",
+        "ExtendedLunge": "Krok z dalekého výpadu",
         "OneAction": "1 akce",
         "TwoActions": "2 akce",
         "Hexes": "{n} hex",
@@ -261,6 +262,8 @@
       },
       "NoTags": "Nic zvláštního",
       "Race": "Rasa",
+      "Size": "Velikost",
+      "Large": "Velký",
       "Armor": "Zbroj",
       "NoDescription": "Popis nebyl zadán"
     },
@@ -4959,7 +4962,14 @@
     "BloodHarvest": {
       "Gained": "{name} vtahuje {amount} prolité krve do Zásoby krve (Cordinas I)."
     },
+    "Distraction": {
+      "ReactionLost": "{name} prohrává střet a ztrácí 1 Reakci (Rozptýlení)."
+    },
     "ForcedMovement": {
+      "NoContest": "{source}: po této kartě nebyl nalezen žádný odpovídající versus Test. Použijte ji podle rozhodnutí PJ.",
+      "ContestLost": "{source}: cíl vyhrál střet o {gap}. Nic se nestane.",
+      "PushOnly": "{source}: střet vyhrán o {gap}, méně než {min} potřebných pro zranění. {targets} odstrčen bez zranění.",
+      "Rooted": "{name} je Zakořeněný a nelze s ním pohnout.",
       "WrongScene": "Vynucený pohyb vyžaduje, aby PJ sledoval scénu, na které tokeny stojí. Přesuňte je ručně.",
       "NoAttacker": "Odražení: token útočníka na této scéně nebyl nalezen, cíl proto nebyl odražen. Přesuňte ho ručně.",
       "CollisionTitle": "Náraz",
@@ -5008,6 +5018,13 @@
       "UnknownAttacker": "Neznámý útočník",
       "Defend": "Bránit se",
       "DefendTooltip": "Hodit obranu proti tomuto útoku."
+    },
+    "Overwatch": {
+      "NoGM": "Připravená střelba potřebuje připojeného GM, který označí hlídanou oblast.",
+      "PickArea": "Připravená střelba: posuňte oblast po mapě a kliknutím ji umístěte (pravé tlačítko nebo Esc ruší).",
+      "Activated": "Hlídá oblast až do začátku svého dalšího tahu.",
+      "ShootMove": "Pohyb v hlídané oblasti: {target}. Vystřelte jako příležitostný útok.",
+      "ShootCast": "Sesílání v hlídané oblasti: {target}. Vystřelte jako příležitostný útok."
     },
     "Positioning": {
       "Label": "Postavení v boji",
@@ -5347,7 +5364,7 @@
       "CritOnlyWithBane": "Kritický zásah platí jen s Metlou.",
       "CritLostWithBane": "S Metlou nejde o kritický zásah.",
       "TagField": "Metly (tagy)",
-      "TagFieldHint": "Anglické klíče Metel oddělené čárkou, např. undead, beast",
+      "TagFieldHint": "Anglické klíče Metel oddělené čárkou, např. undead, beast. Velkého tvora označte large (Bonus proti velkým tvorům)",
       "DefenseToggle": "Proti Metle (+5 % obrana)",
       "ExposeEffect": "Odhalená slabina",
       "ExposedLabel": "Odhalená slabina",

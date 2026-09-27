@@ -906,6 +906,22 @@ REDSTEEL.effectDefinitions = {
   // penalty is live for the whole round the sprint was made in. "refresh", not
   // "ignore": sprinting a second time re-arms the window rather than letting
   // the first one run out under the runner.
+  // "Stráž" — the archer is watching an area (utils/overwatch.mjs). Applied by
+  // the Overwatch ability itself; the area is a Scene Region flagged with the
+  // archer, deleted when this effect goes. Enemies moving or casting in it arm
+  // a reaction shot on the hotbar. Gone at the start of the archer's next
+  // turn. No `changes`: the book's -20% from outside the area is a table
+  // ruling. "refresh": watching again re-arms the turn; the Region is replaced.
+  overwatch: {
+    name: "REDSTEEL.Items.Overwatch.name",
+    img: "icons/skills/ranged/arrows-triple-yellow-red.webp",
+    statuses: ["overwatch"],
+    defaultTurns: 1,
+    useDuration: true,
+    stackBehavior: "refresh",
+    changes: [],
+  },
+
   sprint: {
     name: "REDSTEEL.Items.Sprint.name",
     img: "icons/creatures/mammals/rabbit-movement-glowing-green.webp",
