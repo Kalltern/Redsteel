@@ -133,8 +133,8 @@ export async function attackActions() {
 
   ${activeSetPreview ? "<hr>" : ""}
 
-  <div class="form-group">
-    <label>Aim:</label><br>
+  <div class="form-group aim-row">
+    <label class="aim-row-label">Aim:</label>
     <div id="aim-selector">
       ${[0, 1, 2, 3, 4]
         .map(
@@ -145,6 +145,10 @@ export async function attackActions() {
         )
         .join("")}
     </div>
+    <label class="pill aimed-strike-pill">
+      <input type="checkbox" name="aimedStrike" />
+      <span>Aimed Attack</span>
+    </label>
   </div>
   <hr>
 
@@ -156,11 +160,6 @@ export async function attackActions() {
     longReach: showLongReach,
     longReachClose: !!longReachClose,
   })}
-
-  <label class="pill">
-    <input type="checkbox" name="aimedStrike" />
-    <span>Aimed Attack</span>
-  </label>
 </div>
 ${
   sneakNote || positionNote
@@ -187,6 +186,20 @@ ${
 <style>
 .form-group {
   margin-bottom: 8px;
+}
+.aim-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.aim-row .aim-row-label {
+  flex: 0 0 auto;
+}
+.aim-row #aim-selector {
+  flex: 0 0 auto;
+}
+.aim-row .aimed-strike-pill {
+  margin-left: auto;
 }
 .attack-options-row,
 .attack-modifiers {
@@ -346,7 +359,10 @@ ${
     default: Object.keys(buttons)[0],
 
     render: (html) => {
-      html.find(".weapon-set-toggle").on("click", async () => {
+      // The set titles are the switch: clicking the inactive one swaps to it.
+      html.find(".weapon-loadout-label[data-set]").on("click", async (ev) => {
+        const setId = Number(ev.currentTarget.dataset.set);
+        if (setId === Number(actor.system.combat?.activeWeaponSet)) return;
         await game.redsteel.switchWeaponSet(actor);
         dialog.close();
 
@@ -381,7 +397,9 @@ function renderWeaponLoadoutsDialog(actor) {
 
       return `
 <div class="weapon-set-block">
-  <div class="weapon-loadout-label">Set ${setId}</div>
+  <div class="weapon-loadout-label${
+    Number(setId) === Number(activeSet) ? "" : " switchable"
+  }" data-set="${setId}">Set ${setId}</div>
 
   <div class="weapon-slot-row">
 
@@ -422,14 +440,6 @@ function renderWeaponLoadoutsDialog(actor) {
 `;
     })
     .join("")}
-
-  <div class="weapon-set-switcher">
-    <button type="button"
-      class="weapon-set-toggle set-${activeSet}"
-      title="Switch Weapon Set">
-      <i class="fa-sharp fa-regular fa-arrows-repeat"></i>
-    </button>
-  </div>
 
 </section>
 `;

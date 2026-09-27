@@ -54,6 +54,18 @@ export const FLOOR_INITIATIVE = 1;
 const PRIOR_FLAG = "initBeforeFloor";
 
 /**
+ * Whether an initiative sits in the floor slot. Several floored combatants are
+ * separated by the tie-break into 1.2, 1.1 … (initiativeTiebreak.mjs), and all
+ * of those are still "at 1" — a strict `=== 1` would clamp them straight back
+ * into the tie.
+ * @param {number|null} value
+ * @returns {boolean}
+ */
+function isAtFloor(value) {
+  return value != null && Math.floor(value) === FLOOR_INITIATIVE;
+}
+
+/**
  * Whether an effect is one of the floor statuses. Reads both the modern
  * `statuses` set and the legacy `core.statusId` flag, so effects created by the
  * system and by the core Token HUD are both caught.
@@ -201,7 +213,7 @@ export async function syncFloorInitiative(
 
   for (const combatant of combatants) {
     if (floored) {
-      if (combatant.initiative === FLOOR_INITIATIVE) continue;
+      if (isAtFloor(combatant.initiative)) continue;
 
       // Falling on your own turn. The drop must not happen now: it re-sorts
       // the active combatant to the bottom of the order, core follows them
@@ -252,7 +264,7 @@ export async function syncFloorInitiative(
       // Only hand the old number back if they are still sitting on the floor
       // value; anything else means something re-rolled them in the meantime and
       // that fresher number wins.
-      if (combatant.initiative === FLOOR_INITIATIVE) {
+      if (isAtFloor(combatant.initiative)) {
         update.initiative = prior;
         restored = true;
       }
@@ -315,7 +327,7 @@ export function registerFloorInitiativeClamp() {
     // `resetAll` blanks initiative before a reroll; the reroll that follows
     // uses the flat-1 formula, so there is nothing to clamp yet.
     if (combatant.initiative == null) return;
-    if (combatant.initiative === FLOOR_INITIATIVE) return;
+    if (isAtFloor(combatant.initiative)) return;
 
     const actor = combatant.actor;
     if (!actor || !isFloored(actor)) return;

@@ -354,6 +354,13 @@
               <span>{{localize "REDSTEEL.Item.Ability.FIELDS.multiAttack.label"}}</span>
             </label>
 
+            {{#if (eq system.type "ranged")}}
+            <label class="rs-toggle" title="{{localize "REDSTEEL.Item.Ability.FIELDS.throwsExplosives.hint"}}">
+              <input type="checkbox" name="system.throwsExplosives" {{#if system.throwsExplosives}}checked{{/if}} />
+              <span>{{localize "REDSTEEL.Item.Ability.FIELDS.throwsExplosives.label"}}</span>
+            </label>
+            {{/if}}
+
             <label class="rs-toggle" title="{{localize "REDSTEEL.Item.Ability.FIELDS.opportunityAttack.hint"}}">
               <input type="checkbox" name="system.opportunityAttack" {{#if system.opportunityAttack}}checked{{/if}} />
               <span>{{localize "REDSTEEL.Item.Ability.FIELDS.opportunityAttack.label"}}</span>

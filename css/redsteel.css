@@ -4142,6 +4142,18 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   letter-spacing: 0.04em;
 }
 
+.window-app.dialog .weapon-loadout-label.switchable,
+.dialog.window-app .weapon-loadout-label.switchable,
+.application.dialog .weapon-loadout-label.switchable {
+  cursor: pointer;
+}
+
+.window-app.dialog .weapon-loadout-label.switchable:hover,
+.dialog.window-app .weapon-loadout-label.switchable:hover,
+.application.dialog .weapon-loadout-label.switchable:hover {
+  color: #d7c697;
+}
+
 .window-app.dialog .weapon-loadout-label::after,
 .dialog.window-app .weapon-loadout-label::after,
 .application.dialog .weapon-loadout-label::after {
@@ -11303,19 +11315,19 @@ body.redsteel-bg3-hotbar #hotbar {
 
 /* --- Turn suggestions ------------------------ */
 
-/* A small stone plate floated centred above the bar, holding the turn actions
-   worth taking now (utils/actionSuggestions.mjs). Absolutely placed off the
-   anchor like the capacity readout, so it takes no layout space and the bar
-   never moves when it comes or goes. Under the popovers (z-index 5), which
+/* Small stone plates floated above the bar, holding the turn actions worth
+   taking now (utils/actionSuggestions.mjs): movement at the bar's left end,
+   combat abilities and held spells centred. Absolutely placed off the anchor
+   like the capacity readout, so they take no layout space and the bar never
+   moves when one comes or goes. Under the popovers (z-index 5), which
    open over the same air.
 
    Three chips at 124px, two 6px gaps, 6px padding each side and the 1px
    border: 398px. */
 #redsteel-bg3-hotbar .rs-bg3-suggest {
   position: absolute;
-  left: 50%;
+  left: 0;
   bottom: calc(100% + 6px);
-  transform: translateX(-50%);
   z-index: 4;
   display: flex;
   gap: 6px;
@@ -11333,6 +11345,11 @@ body.redsteel-bg3-hotbar #hotbar {
     inset 0 0 18px rgba(0, 0, 0, 0.5);
   /* #ui-bottom is pointer-events: none. */
   pointer-events: auto;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-suggest--combat {
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 /* The bronze hairline along the plate's foot, the resource editor's scored
@@ -11515,8 +11532,8 @@ body.redsteel-bg3-hotbar #hotbar {
 }
 
 /* Move with its drawer. The group holds Move and the » tab in flow; the
-   drawer hangs off the group's right edge, over the rest of the strip, so
-   rolling it out never widens the strip or moves anything under the cursor. */
+   drawer hangs above the group, over the map, so rolling it out never widens
+   the strip or moves anything under the cursor. */
 #redsteel-bg3-hotbar .rs-bg3-suggest-movegroup {
   position: relative;
   display: flex;
@@ -11524,8 +11541,8 @@ body.redsteel-bg3-hotbar #hotbar {
   align-items: stretch;
 }
 
-/* The » tab: a narrow socket beside Move. It turns to point back once the
-   drawer is out. */
+/* The » tab: a narrow socket beside Move, pointing up. It turns to point
+   back down once the drawer is out. */
 #redsteel-bg3-hotbar .rs-bg3-suggest-more-toggle {
   flex: 0 0 18px;
   width: 18px;
@@ -11564,16 +11581,19 @@ body.redsteel-bg3-hotbar #hotbar {
   transform: rotate(180deg);
 }
 
-/* The drawer: its own small plate, the strip's stone and bronze edge,
-   aligned to the strip's outer top edge (5px padding + 1px border). Closed,
-   it is clipped away to nothing from the right; opening un-clips it left to
-   right, which is the roll-out. */
+/* The drawer: its own small plate, the strip's stone and bronze edge, a
+   column standing on the strip's top edge (5px padding + 1px border, then a
+   6px gap) and flush with its left edge (6px padding + 1px border). The
+   first chip sits lowest, nearest Move. Closed, it is clipped away to
+   nothing from the top; opening un-clips it bottom to top, which is the
+   roll-up. */
 #redsteel-bg3-hotbar .rs-bg3-suggest-more {
   position: absolute;
-  top: -6px;
-  left: calc(100% + 6px);
+  bottom: calc(100% + 12px);
+  left: -7px;
   z-index: 6;
   display: flex;
+  flex-direction: column-reverse;
   gap: 6px;
   padding: 5px 6px 6px;
   background: linear-gradient(
@@ -11584,7 +11604,7 @@ body.redsteel-bg3-hotbar #hotbar {
   border: 1px solid var(--rs-bg3-border);
   border-radius: 0;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.55);
-  clip-path: inset(0 100% 0 0);
+  clip-path: inset(100% 0 0 0);
   opacity: 0;
   pointer-events: none;
   transition:
@@ -11600,8 +11620,11 @@ body.redsteel-bg3-hotbar #hotbar {
 
 /* Each chip slides in after the one before it. */
 #redsteel-bg3-hotbar .rs-bg3-suggest-more > .rs-bg3-suggest-chip {
+  /* The chip's 124px basis is a width in the strip's row; in this column it
+     would become the height. */
+  flex: 0 0 auto;
   opacity: 0;
-  transform: translateX(-14px);
+  transform: translateY(14px);
   transition:
     transform 0.3s ease,
     opacity 0.3s ease,
@@ -11645,20 +11668,86 @@ body.redsteel-bg3-hotbar #hotbar {
   border-radius: 0;
 }
 
-/* Rules the movement chips apart from the combat ones: the same vertical
-   bronze rule as the action pips' divider. */
-#redsteel-bg3-hotbar .rs-bg3-suggest-divider {
-  flex: 0 0 auto;
-  align-self: stretch;
-  width: 1px;
-  margin: 3px 0;
-  background: linear-gradient(
-    180deg,
-    transparent 0%,
-    var(--rs-bg3-border) 50%,
-    transparent 100%
-  );
-  opacity: 0.7;
+/* The combat row: no plate of its own, just the centred line the themed
+   plates sit in, one per theme present (user ruling): red for melee, yellow
+   for ranged, blue for spells. */
+#redsteel-bg3-hotbar .rs-bg3-suggest--combat {
+  gap: 8px;
+  padding: 0;
+  background: none;
+  border: 0;
+  box-shadow: none;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-suggest--combat::after {
+  content: none;
+}
+
+/* A themed plate: dark stone in the theme's colour with no drawn edge, only
+   a very short glow round it, and a narrow even margin round the icons. The
+   theme supplies four inputs; everything else is shared. */
+#redsteel-bg3-hotbar .rs-bg3-suggest-plate {
+  --plate-hi: rgba(58, 14, 12, 0.94);
+  --plate-lo: rgba(28, 6, 6, 0.98);
+  --plate-glow: rgba(170, 32, 24, 0.6);
+  --plate-frame: #8a2a20;
+  display: flex;
+  gap: 6px;
+  padding: 3px;
+  background: linear-gradient(180deg, var(--plate-hi) 0%, var(--plate-lo) 100%);
+  border: 1px solid transparent;
+  /* Barely softened, a touch more than the icons' 2px so the curves read
+     alike round the 3px margin. */
+  border-radius: 4px;
+  box-shadow:
+    0 0 4px 1px var(--plate-glow),
+    inset 0 0 18px rgba(0, 0, 0, 0.55);
+}
+
+/* Melee: blood red (the defaults above). */
+
+/* Ranged: tarnished gold, the panel's own accent darkened. */
+#redsteel-bg3-hotbar .rs-bg3-suggest-plate--ranged {
+  --plate-hi: rgba(54, 42, 12, 0.94);
+  --plate-lo: rgba(24, 18, 5, 0.98);
+  --plate-glow: rgba(200, 162, 74, 0.55);
+  --plate-frame: #8a6a24;
+}
+
+/* Spells: deep arcane blue. */
+#redsteel-bg3-hotbar .rs-bg3-suggest-plate--magic {
+  --plate-hi: rgba(12, 24, 54, 0.94);
+  --plate-lo: rgba(5, 10, 26, 0.98);
+  --plate-glow: rgba(64, 124, 210, 0.55);
+  --plate-frame: #2c4f8c;
+}
+
+/* Each ability socket is a 1px frame in the theme's colour holding the
+   40x40 icon flush, with no padding or dark inner edge between the icon and
+   the frame, its corners slightly softened (user ruling; the rest of the
+   panel keeps square sockets). Core's fixed button height undone. */
+#redsteel-bg3-hotbar .rs-bg3-suggest-plate .rs-bg3-suggest-chip.ability {
+  flex: 0 0 42px;
+  width: 42px;
+  min-width: 42px;
+  height: 42px;
+  min-height: 42px;
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+  background: #060605;
+  border-color: var(--plate-frame);
+  border-radius: 2px;
+  box-shadow: none;
+}
+
+#redsteel-bg3-hotbar .rs-bg3-suggest-plate .rs-bg3-suggest-img {
+  flex: 0 0 40px;
+  display: block;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 1px;
 }
 
 /* Narrow displays squeeze the wings, not the bar: the player list holds the
@@ -12186,6 +12275,30 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
 
 .rs-envdmg-dialog .rs-envdmg-connector select {
   flex: 1 1 auto;
+}
+
+.rs-envdmg-dialog .rs-envdmg-effects {
+  padding: 6px 0;
+}
+
+.rs-envdmg-dialog .rs-envdmg-effect {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 0;
+}
+
+.rs-envdmg-dialog .rs-envdmg-effect select {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.rs-envdmg-dialog .rs-envdmg-effect input[type="number"] {
+  flex: 0 0 auto;
+  width: 52px;
+  min-width: 52px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
 }
 
 /* ── Overwhelm (Přesila) ──────────────────────────────────────────────────

@@ -25,6 +25,7 @@ import {
   attackerTokenIdFromMessage,
   getOverwhelmSources,
 } from "./overwhelm.mjs";
+import { grantPassingStrikeStep } from "./abilityMovement.mjs";
 import {
   cardDeclaredSneak,
   recordSneakAttack,
@@ -1258,6 +1259,15 @@ export async function applyDamageAsGM(data) {
     abilityName: message.flags?.redsteel?.abilityName ?? null,
     message,
   });
+
+  // Útok s pohybem (Passing Strike): the hit is in, so the attacker gets its
+  // free step. Once per card, however many times it is applied.
+  const attackerTokenId = attackerTokenIdFromMessage(message);
+  await grantPassingStrikeStep(
+    attacker,
+    message,
+    attackerTokenId ? (scene?.tokens.get(attackerTokenId) ?? null) : null,
+  );
 }
 
 function openDamageSelectionDialog(message, targets) {

@@ -47,6 +47,7 @@ import {
   brewSubstance,
   craftRecipe,
   rerollCraft,
+  getRerollBlockReason,
 } from "../utils/alchemy.mjs";
 import {
   getRaceChoiceGroups,
@@ -1433,6 +1434,12 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     if (!last?.ok || !(last.rerollable > 0)) return;
     const recipe = this.actor.items.get(last.recipeId);
     if (!recipe) return;
+
+    const blocked = getRerollBlockReason(this.actor, recipe);
+    if (blocked) {
+      ui.notifications.warn(blocked);
+      return;
+    }
 
     const eligible = getEligibleRerolls(
       this.actor,

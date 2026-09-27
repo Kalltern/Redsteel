@@ -52,6 +52,44 @@ import { setupDialogTabs } from "./dialogTabMemory.mjs";
 import { getCommandTargets, runCommand } from "./commands.mjs";
 import { spendForItems } from "./actionTracker.mjs";
 import { attackOptionIconsHtml } from "./attackOptionIcons.mjs";
+import { throwExplosiveItem } from "./throwExplosive.mjs";
+import {
+  declareDuelistsAdvance,
+  isDuelistsAdvance,
+  modifierKeysOf,
+} from "./abilityMovement.mjs";
+
+/**
+ * The explosives this actor could throw right now: consumables flagged as
+ * explosive with at least one left. Same filter as the Throw Explosive picker.
+ * @param {Actor} actor
+ * @returns {Item[]}
+ */
+function getThrowableExplosives(actor) {
+  return actor.items.filter(
+    (i) =>
+      i.type === "consumable" &&
+      i.system.option === "explosive" &&
+      (i.system.quantity ?? 0) > 0,
+  );
+}
+
+/**
+ * Does this ability let a strike be an explosive instead of the thrown weapon
+ * (Double Throw, Flurry of Throws), and does the actor carry one to throw?
+ * Ranged abilities only: a melee multiattack never throws a bomb, even if the
+ * flag was ticked on it by mistake.
+ * @param {Item} ability
+ * @param {Actor} actor
+ * @returns {boolean}
+ */
+function offersExplosives(ability, actor) {
+  return (
+    ability?.system?.type === "ranged" &&
+    !!ability?.system?.throwsExplosives &&
+    getThrowableExplosives(actor).length > 0
+  );
+}
 
 /**
  * The Combat Abilities dialog.
@@ -330,8 +368,20 @@ export async function combatAbilities({ launchAbilityId = null } = {}) {
     container,
     dialog,
     actor,
-    { preselectedWeapon = null } = {},
+    { preselectedWeapon = null, preselectedExplosiveId = null } = {},
   ) {
+    // A strike thrown with an explosive (multi-throw abilities only). Checked
+    // before anything is spent, so an empty stack costs nothing.
+    if (preselectedExplosiveId) {
+      const explosive = actor.items.get(preselectedExplosiveId);
+      if (!explosive || (explosive.system.quantity ?? 0) <= 0) {
+        ui.notifications.warn(
+          game.i18n.localize("REDSTEEL.MultiAttack.NoExplosiveLeft"),
+        );
+        return;
+      }
+    }
+
     const html = $(container);
     const longReachPenalty = container.querySelector(
       '[name="longReachPenalty"]',
@@ -421,14 +471,16 @@ export async function combatAbilities({ launchAbilityId = null } = {}) {
 
     // Multi-attack that needs a manual weapon pick (e.g. NPCs): merge the weapon
     // picker into THIS dialog instead of opening a second "Select Weapon" dialog.
-    // Defer cost + attack to the weapon-button click below.
+    // Defer cost + attack to the weapon-button click below. A multi-throw that
+    // may throw explosives always comes here too, even with a weapon in hand,
+    // so the very first throw can already be an explosive.
     if (
       ability.system.multiAttack &&
       (actor.type === "character" || actor.type === "npc") &&
       !lockedMultiAttackAbility &&
       !preselectedWeapon &&
       goesThroughWeaponFlow &&
-      !autoWeaponContext
+      (!autoWeaponContext || offersExplosives(ability, actor))
     ) {
       lockedMultiAttackAbility = ability;
       multiAttackFirstStrikePaid = false;
@@ -439,18 +491,39 @@ export async function combatAbilities({ launchAbilityId = null } = {}) {
     const isMultiStrike =
       ability.system.multiAttack && lockedMultiAttackAbility?.id === ability.id;
 
+    // An explosive throw has no weapon to carry attack modifiers, so they are
+    // neither applied nor charged for it.
+    const costModifiers = preselectedExplosiveId ? [] : selectedModifiers;
+
     if (isMultiStrike && multiAttackFirstStrikePaid) {
       // Subsequent multi-attack strike → only pay modifiers
-      paid = await game.redsteel.deductAbilityCost(actor, selectedModifiers);
+      paid = await game.redsteel.deductAbilityCost(actor, costModifiers);
     } else {
       // First strike (or normal ability) → pay ability + modifiers once
       paid = await game.redsteel.deductAbilityCost(actor, [
         ability,
-        ...selectedModifiers,
+        ...costModifiers,
       ]);
       if (isMultiStrike) multiAttackFirstStrikePaid = true;
     }
     if (!paid) return;
+
+    if (preselectedExplosiveId) {
+      if (selectedModifiers.length) {
+        ui.notifications.info(
+          game.i18n.localize("REDSTEEL.MultiAttack.ModifiersIgnored"),
+        );
+      }
+      // Flanking and Aim reach the throw through the same actor flags a
+      // weapon strike reads.
+      await updateCombatFlags(actor, intent);
+      await throwExplosiveItem(actor, token, preselectedExplosiveId, {
+        attackModifier: Number(ability.system.attack) || 0,
+        ignoreAim: abilityIgnoresAim(ability),
+        ability,
+      });
+      return;
+    }
     if (ability.system.class === "stance") {
       const applied = await game.redsteel.applyEffect(
         actor,
@@ -506,6 +579,9 @@ export async function combatAbilities({ launchAbilityId = null } = {}) {
     } else {
       await game.redsteel.getNonWeaponAbility(actor, ability);
     }
+    // Duelist's Advance is paid and carded above; its Speed/2 move is
+    // declared to the hotbar like a Slow Movement.
+    if (isDuelistsAdvance(ability)) await declareDuelistsAdvance(actor);
     function transformDialogToMultiAttackMode(dialog, ability, actor) {
       const html = dialog.element;
 
@@ -523,7 +599,28 @@ export async function combatAbilities({ launchAbilityId = null } = {}) {
 
       let promptHtml = "";
       let controlsHtml;
-      if (autoWeapon) {
+      const withExplosives = offersExplosives(ability, actor);
+      if (withExplosives) {
+        // Every strike is picked: the weapon in hand (or each valid weapon when
+        // none resolves), then every explosive with its count.
+        const weapons = autoWeapon
+          ? [autoWeapon.weapon]
+          : getAbilityWeapons(actor, ability);
+        promptHtml = `<p class="multiattack-prompt" style="margin:0 0 6px;">${game.i18n.localize("REDSTEEL.MultiAttack.WeaponsOrExplosives")}</p>`;
+        const weaponButtons = weapons
+          .map(
+            (w) =>
+              `<button type="button" class="multiattack-weapon-btn multiattack-strike-btn" data-weapon-id="${w.id}">${w.localizedName ?? w.name}</button>`,
+          )
+          .join("");
+        const explosiveButtons = getThrowableExplosives(actor)
+          .map(
+            (e) =>
+              `<button type="button" class="multiattack-explosive-btn multiattack-strike-btn" data-item-id="${e.id}" title="${game.i18n.localize("REDSTEEL.MultiAttack.Explosives")}"><i class="fa-light fa-bomb"></i> ${e.localizedName ?? e.name} <span class="multiattack-explosive-qty">×${e.system.quantity}</span></button>`,
+          )
+          .join("");
+        controlsHtml = weaponButtons + explosiveButtons;
+      } else if (autoWeapon) {
         controlsHtml = `
         <button type="button" id="continue-multiattack" class="multiattack-strike-btn">
           Attack Again
@@ -576,6 +673,25 @@ export async function combatAbilities({ launchAbilityId = null } = {}) {
           preselectedWeapon: weapon,
         });
         bumpStrikeCount();
+      });
+
+      // Explosive: each button throws one of that explosive as a strike. The
+      // count is re-read afterwards, and the button goes once the stack is out.
+      html.find(".multiattack-explosive-btn").click(async (event) => {
+        const button = event.currentTarget;
+        const itemId = button.dataset.itemId;
+        const before = actor.items.get(itemId)?.system.quantity ?? 0;
+        await onAbilityChosen(ability, formEl, dialog, actor, {
+          preselectedExplosiveId: itemId,
+        });
+        const after = actor.items.get(itemId)?.system.quantity ?? 0;
+        if (after < before) bumpStrikeCount();
+        if (after > 0) {
+          button.querySelector(".multiattack-explosive-qty").textContent =
+            `×${after}`;
+        } else {
+          button.remove();
+        }
       });
     }
 
@@ -1255,6 +1371,7 @@ ${
     sneakTotal = 0,
     sneakPenetration = 0,
     sneakEffect = 0,
+    modifierKeys = [],
   }) {
     let attackHTML = "";
     let damageHTML = "";
@@ -1417,6 +1534,9 @@ ${
           // raw name is the fallback for a hand-made copy that has no key.
           abilityKey: ability?.system?.localizationKey ?? null,
           abilityName: ability?.name ?? null,
+          // The ticked attack modifiers, for the ones that act on the outcome:
+          // Passing Strike's free step is granted in Apply Damage.
+          modifierKeys,
           // Reroll tokens for the chat reroll picker: "attack" + combat skill +
           // governing attribute (finesse-aware), so e.g. Brawny (str) can reroll
           // a strength melee attack and Nimble (dex) a finesse attack.
@@ -2042,6 +2162,7 @@ ${renderSpeedTestLine({
       sneakTotal,
       sneakPenetration,
       sneakEffect,
+      modifierKeys: modifierKeysOf(selectedModifiers),
     });
     // ─── AMMO DEDUCTION ───
     if (ammo) {

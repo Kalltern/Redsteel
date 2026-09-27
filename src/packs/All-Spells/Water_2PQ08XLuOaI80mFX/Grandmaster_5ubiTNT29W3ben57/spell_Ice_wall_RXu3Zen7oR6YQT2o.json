@@ -120,7 +120,9 @@
     "effectType2": "",
     "effectType3": "",
     "manualNotes": "",
-    "vsTest": true
+    "vsTest": true,
+    "attributeTest": "will",
+    "testModifier": "@spellPower*3"
   },
   "effects": [],
   "folder": "5ubiTNT29W3ben57",

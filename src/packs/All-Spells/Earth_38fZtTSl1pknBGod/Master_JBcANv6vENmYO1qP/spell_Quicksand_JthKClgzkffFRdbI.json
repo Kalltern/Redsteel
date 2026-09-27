@@ -137,7 +137,9 @@
     "effectType2": "",
     "effectType3": "",
     "manualNotes": "",
-    "vsTest": true
+    "vsTest": true,
+    "attributeTest": "will",
+    "testModifier": "@spellPower*3"
   },
   "effects": [],
   "folder": "JBcANv6vENmYO1qP",

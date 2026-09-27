@@ -141,8 +141,8 @@
     "effectType1": "burn",
     "effectType2": "",
     "effectType3": "",
-    "attributeTest": "",
-    "testModifier": "",
+    "attributeTest": "will",
+    "testModifier": "@spellPower",
     "manualNotes": "",
     "vsTest": true
   },

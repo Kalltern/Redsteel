@@ -162,6 +162,8 @@
         "SlowMove": "Pomalý pohyb",
         "Sprint": "Běh",
         "Disengage": "Odpoutání",
+        "DuelistsAdvance": "Duelistův krok",
+        "PassingStrike": "Krok z útoku s pohybem",
         "OneAction": "1 akce",
         "TwoActions": "2 akce",
         "Hexes": "{n} hex",
@@ -433,7 +435,8 @@
         "NotEnough": "Nedostatek surovin",
         "ResultMissing": "Výsledný předmět receptu nebyl nalezen (odkaz je neplatný).",
         "NoRecipeSelected": "Nejdříve vyber recept.",
-        "NoRerolls": "Žádné dostupné přehozy pro Alchymii."
+        "NoRerolls": "Žádné dostupné přehozy pro Alchymii.",
+        "NoVesselForReroll": "Zachráněná dávka potřebuje prázdnou nádobu: {name}."
       },
       "Chat": {
         "Title": "Alchymistická výroba",
@@ -448,6 +451,7 @@
         "Created": "vytvořeno {count}× {name}",
         "IngredientsWasted": "suroviny byly zničeny",
         "UnitsLost": "nezdařilo se {count}, jejich suroviny byly zničeny",
+        "VesselsReturned": "Vráceno",
         "PartialSuccess": "Částečný úspěch",
         "Consumed": "Spotřebováno",
         "Uses": "použití",
@@ -4548,6 +4552,10 @@
           "multiAttack": {
             "label": "Více útoků"
           },
+          "throwsExplosives": {
+            "label": "Hází výbušniny",
+            "hint": "Při vícenásobném útoku může být každý hod výbušnina, kterou házející nese, místo vrhací zbraně."
+          },
           "requiredWeaponTag": {
             "label": "Vyžadovaný štítek zbraně",
             "hint": "Štítek zbraně, který akce vyžaduje, např. trident. Prázdné = libovolná zbraň."
@@ -5114,7 +5122,9 @@
       "Details": "Podrobnosti kola",
       "GmOnly": "Jen pro GM",
       "Quiet": "Nic se neházelo.",
-      "Other": "Ostatní"
+      "Other": "Ostatní",
+      "Tiebreak": "Rozstřel o pořadí tahu",
+      "TiebreakLine": "{name}: hodil {scores}, pořadí tahu {initiative}"
     },
     "Versus": {
       "Blocked": "Ubráněno",
@@ -5142,6 +5152,12 @@
       "AtCap": "Už máš {max} Dočasných životů — obranou další nezískáš.",
       "ActorMissing": "Bránící se postava už neexistuje."
     },
+    "MultiAttack": {
+      "WeaponsOrExplosives": "Vyber zbraň nebo výbušninu k hodu:",
+      "Explosives": "Výbušniny",
+      "ModifiersIgnored": "Modifikátory útoku se na hozenou výbušninu nevztahují a nebyly zaplaceny.",
+      "NoExplosiveLeft": "Tato výbušnina už došla."
+    },
     "EnvironmentalDamage": {
       "Title": "Zranění z prostředí",
       "Speaker": "Prostředí",
@@ -5159,7 +5175,11 @@
       "DamageRoll": "Hod na zranění",
       "DamageLabel": "Zranění:",
       "PenetrationLabel": "Průbojnost:",
-      "NothingToRoll": "Není co hodit. Nastav kostky nebo bonus.",
+      "NothingToRoll": "Není co hodit. Nastav kostky, bonus nebo efekt.",
+      "Effects": "Efekty",
+      "EffectsHint": "Vyber efekt a jeho šanci. Odolnost každého cíle se odečte při aplikaci zranění.",
+      "EffectNone": "Žádný efekt",
+      "EffectSuccess": "ÚSPĚCH",
       "GMOnly": "Zranění z prostředí může způsobit jen vypravěč.",
       "Type": {
         "blunt": "Drtivé",

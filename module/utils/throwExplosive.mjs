@@ -55,266 +55,8 @@ export async function throwExplosive(options = {}) {
     quantity: consumable.system.quantity ?? 0,
   }));
 
-  const handleExplosiveSelection = async (itemId) => {
-    // Re-resolve the live item: the picker's snapshot goes stale once a throw
-    // consumes (or deletes) the explosive.
-    const consumable = actor.items.get(itemId);
-    if (!consumable || (consumable.system.quantity ?? 0) <= 0) {
-      ui.notifications.warn("No more of this explosive remaining.");
-      return;
-    }
-    const s = consumable.system;
-
-    // ─── Consume attack-modifying flags (before the formula is built) ───
-    let attackBonus = 0;
-
-    const aimValue = actor.getFlag("redsteel", "aimCount");
-    if (aimValue > 0) {
-      attackBonus += aimValue * 10;
-      await actor.unsetFlag("redsteel", "aimCount");
-    }
-    // No weapon in hand, so no duellist perk is live: the throw burns the aim
-    // outright, whether it went at the aimed target or somebody else.
-    await resolveAimOnAttack({ actor });
-
-    if (actor.getFlag("redsteel", "useFlankingAttack")) {
-      attackBonus += 10;
-      await actor.unsetFlag("redsteel", "useFlankingAttack");
-    }
-
-    // Sneak attack and aimed-part targeting don't apply to explosives, but
-    // clear them so they can't leak into a later attack.
-    await actor.unsetFlag("redsteel", "useSneakAttack");
-    await actor.unsetFlag("redsteel", "sneakAccessCounter");
-    await actor.unsetFlag("redsteel", "aimedPart");
-
-    // ─── Attack roll (always built — aimed or area) ───
-    const throwing = actor.system.combatSkills.throwing;
-    const useFinesse = throwing.finesseRating > throwing.rating;
-
-    const formula = `@combatSkills.throwing.${useFinesse ? "finesseRating" : "rating"} + ${attackBonus} - 1d100`;
-
-    const attackRoll = new Roll(
-      formula,
-      withRollBias({ combatSkills: actor.system.combatSkills }, actor),
-    );
-    tagRollSkill(attackRoll, "throwing");
-    tagRollBuckets(attackRoll, "attack");
-    await attackRoll.evaluate();
-    const rollResult = attackRoll.dice[0].total;
-
-    const criticalSuccessThreshold = throwing.criticalSuccessThreshold;
-    const criticalFailureThreshold = throwing.criticalFailureThreshold;
-
-    const {
-      successThreshold: critSuccessThreshold,
-      failureThreshold: critFailThreshold,
-    } = applyDesperateCrit(
-      attackRoll,
-      criticalSuccessThreshold,
-      criticalFailureThreshold,
-    );
-    const critSuccess = rollResult <= critSuccessThreshold;
-    const critFailure = rollResult >= critFailThreshold;
-
-    // ─── Damage roll ───
-    const damageRoll = new Roll(s.formula || "1d6");
-    await damageRoll.evaluate();
-    const damageTotal = Math.floor(damageRoll.total);
-
-    // ─── Mechanical effects ───
-    // Two authoring surfaces feed the same pool, and they add up per effect:
-    //   • the header's quick fields (system.burn / freeze / stagger) — the
-    //     original explosive fields, kept so existing items keep working;
-    //   • the Combat Effects tab (system.effects.stagger / bleed and the three
-    //     effectTypeN + effects.extraN slots), which is the only way to author
-    //     anything else — Stun, Slow, Root, Disorientation …
-    // Names must be effectDefinitions ids: applyDamage feeds each key straight
-    // to applyEffectToActor. -1 means guaranteed and beats any summed chance.
-    const chances = {};
-    const addChance = (name, value) => {
-      const v = Math.floor(Number(value) || 0);
-      if (!v) return;
-      if (v === -1 || chances[name] === -1) chances[name] = -1;
-      else chances[name] = (chances[name] || 0) + v;
-    };
-
-    addChance("burn", s.burn);
-    addChance("freeze", s.freeze);
-    addChance("stagger", s.stagger);
-
-    const authoredEffects = s.effects ?? {};
-    addChance("stagger", authoredEffects.stagger);
-    addChance("bleed", authoredEffects.bleed);
-
-    for (let i = 1; i <= 3; i++) {
-      const type = (s[`effectType${i}`] || "").toLowerCase();
-      if (!type) continue;
-      const name =
-        type === "custom"
-          ? (authoredEffects[`effectName${i}`] || "").toLowerCase()
-          : type;
-      if (!name) continue;
-      addChance(name, authoredEffects[`extra${i}`]);
-    }
-
-    const mechanicalEffects = {};
-    let effectResults = "";
-
-    for (const [name, value] of Object.entries(chances)) {
-      // An effect definition's `name` may be a localization key (see
-      // helpers/config.mjs), so it is localized rather than printed raw.
-      const definitionName = CONFIG.REDSTEEL.effectDefinitions?.[name]?.name;
-      const label = definitionName ? game.i18n.localize(definitionName) : name;
-
-      if (value === -1) {
-        mechanicalEffects[name] = { chance: null, roll: null, auto: true };
-        effectResults += `<p><b>|${label}|</b></p>`;
-        continue;
-      }
-
-      if (value <= 0) continue;
-
-      const d100Roll = new Roll("1d100");
-      await d100Roll.evaluate();
-
-      const success = d100Roll.total <= value;
-      const successText = success
-        ? `<i class="fa-regular fa-star" style="--fa-primary-color: #c4c700; --fa-secondary-color: #5c5400;"></i> SUCCESS`
-        : "";
-
-      mechanicalEffects[name] = {
-        chance: value,
-        roll: d100Roll.total,
-        auto: false,
-      };
-
-      effectResults += `<p><b>| ${label}: </b>${d100Roll.total} | < ${value}% ${successText}</p>`;
-    }
-
-    // ─── Damage profile from the explosive's damage-type fields ───
-    const damageProfile = buildDamageProfile(s);
-
-    // ─── Chat card ───
-    const damageLine = `
-<div style="
-  display:grid;
-  column-gap: 24px;
-  font-size:16px;
-  max-width: fit-content;
-  margin: 0 auto;
-">
-
-  <div style="
-    display:grid;
-    grid-template-columns: auto 1fr;
-    column-gap: 8px;
-  ">
-    <div>Damage:</div>
-    <div style="text-align:center;">
-      ${damageTotal}
-    </div>
-
-    <div>Penetration:</div>
-    <div style="text-align:center;">
-      ${Number(s.penetration) || 0}
-    </div>
-
-<div></div>
-</div>
-`;
-
-    const attackHTML = await attackRoll.render();
-    const damageHTML = await damageRoll.render();
-    const content = `
-<div class="dual-roll">
-
-  <div class="roll-column">
-    <div class="roll-label">Margin of Success</div>
-    ${attackHTML}
-  </div>
-
-  <div class="roll-column">
-    <div class="roll-label">Damage Roll</div>
-    ${damageHTML}
-  </div>
-
-</div>
-`;
-
-    const rollName = `Threw ${consumable.localizedName ?? consumable.name}`;
-    const flavor = `
-<div style="display:flex; align-items:center; gap:8px; font-weight:bold;">
-  <img src="${consumable.img}" width="36" height="36">
-  <span>${rollName}</span>
-</div>
-
-<p style="text-align:center; font-size:14px;">
-  ${s.aimed ? "Single target" : "Area effect"}
-</p>
-
-<p class="rs-card-headline"><b>
-  ${critSuccess ? "Critical Success!" : critFailure ? "Critical Failure!" : ""}
-</b></p>
-<hr>
-${damageLine}
-<hr>
-<table style="width:100%; text-align:center; font-size:15px;">
-  <tr>
-    <th>Explosive Effects</th>
-    <td>${effectResults}</td>
-  </tr>
-</table>
-`;
-
-    await ChatMessage.create({
-      speaker: ChatMessage.getSpeaker(),
-      content,
-      rolls: [attackRoll, damageRoll],
-      flavor,
-
-      flags: {
-        redsteel: {
-          rollName,
-          criticalSuccessThreshold: critSuccessThreshold,
-          criticalFailureThreshold: critFailThreshold,
-          traitPills: getTraitPills(actor, "attack"),
-          // Thrown explosive is a consumable, not a weapon-skill attack — generic
-          // "attack" token only so attribute pools don't wrongly attach.
-          rerollTokens: getAttackRerollTokens(),
-        },
-
-        attack: {
-          type: "attack",
-          // Thrown: answered by Ranged Defense or a dodge, never a parry.
-          attackType: "throwing",
-          // Who it was thrown at, captured from the thrower's targets while they
-          // still exist — targets are per-user and live, the card is not.
-          targets: captureAttackTargets(),
-          // Where each target stood when the blow was thrown (utils/positioning.mjs).
-          // The defense reads this rather than live facing, because a reaction can
-          // resolve after everyone has moved.
-          positioning: captureAttackPositioning(token?.document ?? token),
-          damageProfile,
-          effects: mechanicalEffects,
-          normal: {
-            damage: damageTotal,
-            penetration: Number(s.penetration) || 0,
-          },
-        },
-      },
-    });
-
-    // ─── Consume quantity only after the chat card is safely created ───
-    if (s.quantity > 0) {
-      const newQty = s.quantity - 1;
-      if (newQty > 0) {
-        await consumable.update({ "system.quantity": newQty });
-      } else {
-        await consumable.delete();
-      }
-    }
-  };
+  const handleExplosiveSelection = (itemId) =>
+    throwExplosiveItem(actor, token, itemId);
 
   // Inject CSS (once per session, guarded by element id)
   if (!document.getElementById("redsteel-explosive-dialog-styles")) {
@@ -374,4 +116,294 @@ ${damageLine}
     },
   });
   dialog.render(true);
+}
+
+/**
+ * Throw one explosive the actor carries: roll to hit with Throwing, roll its
+ * damage and effect chances, post the attack card and use one up. The picker
+ * above calls it, and so do multi-throw abilities (Double Throw, Flurry of
+ * Throws) that let a strike be an explosive instead of the thrown weapon.
+ *
+ * @param {Actor} actor
+ * @param {Token|null} token
+ * @param {string} itemId  the explosive consumable's id on the actor
+ * @param {object} [options]
+ * @param {number} [options.attackModifier=0]  the ability's own to-hit change
+ * @param {boolean} [options.ignoreAim=false]  an Aim-neutral ability neither
+ *   reads nor spends the thrower's Aim
+ * @param {Item|null} [options.ability=null]  the ability throwing it, named on the card
+ * @returns {Promise<boolean>} whether the explosive was thrown
+ */
+export async function throwExplosiveItem(
+  actor,
+  token,
+  itemId,
+  { attackModifier = 0, ignoreAim = false, ability = null } = {},
+) {
+  // Re-resolve the live item: a picker's snapshot goes stale once a throw
+  // consumes (or deletes) the explosive.
+  const consumable = actor.items.get(itemId);
+  if (!consumable || (consumable.system.quantity ?? 0) <= 0) {
+    ui.notifications.warn(
+      game.i18n.localize("REDSTEEL.MultiAttack.NoExplosiveLeft"),
+    );
+    return false;
+  }
+  const s = consumable.system;
+
+  // ─── Consume attack-modifying flags (before the formula is built) ───
+  let attackBonus = Number(attackModifier) || 0;
+
+  if (!ignoreAim) {
+    const aimValue = actor.getFlag("redsteel", "aimCount");
+    if (aimValue > 0) {
+      attackBonus += aimValue * 10;
+      await actor.unsetFlag("redsteel", "aimCount");
+    }
+    // No weapon in hand, so no duellist perk is live: the throw burns the aim
+    // outright, whether it went at the aimed target or somebody else.
+    await resolveAimOnAttack({ actor });
+  }
+
+  if (actor.getFlag("redsteel", "useFlankingAttack")) {
+    attackBonus += 10;
+    await actor.unsetFlag("redsteel", "useFlankingAttack");
+  }
+
+  // Sneak attack and aimed-part targeting don't apply to explosives, but
+  // clear them so they can't leak into a later attack.
+  await actor.unsetFlag("redsteel", "useSneakAttack");
+  await actor.unsetFlag("redsteel", "sneakAccessCounter");
+  await actor.unsetFlag("redsteel", "aimedPart");
+
+  // ─── Attack roll (always built — aimed or area) ───
+  const throwing = actor.system.combatSkills.throwing;
+  const useFinesse = throwing.finesseRating > throwing.rating;
+
+  const formula = `@combatSkills.throwing.${useFinesse ? "finesseRating" : "rating"} + ${attackBonus} - 1d100`;
+
+  const attackRoll = new Roll(
+    formula,
+    withRollBias({ combatSkills: actor.system.combatSkills }, actor),
+  );
+  tagRollSkill(attackRoll, "throwing");
+  tagRollBuckets(attackRoll, "attack");
+  await attackRoll.evaluate();
+  const rollResult = attackRoll.dice[0].total;
+
+  const criticalSuccessThreshold = throwing.criticalSuccessThreshold;
+  const criticalFailureThreshold = throwing.criticalFailureThreshold;
+
+  const {
+    successThreshold: critSuccessThreshold,
+    failureThreshold: critFailThreshold,
+  } = applyDesperateCrit(
+    attackRoll,
+    criticalSuccessThreshold,
+    criticalFailureThreshold,
+  );
+  const critSuccess = rollResult <= critSuccessThreshold;
+  const critFailure = rollResult >= critFailThreshold;
+
+  // ─── Damage roll ───
+  const damageRoll = new Roll(s.formula || "1d6");
+  await damageRoll.evaluate();
+  const damageTotal = Math.floor(damageRoll.total);
+
+  // ─── Mechanical effects ───
+  // Two authoring surfaces feed the same pool, and they add up per effect:
+  //   • the header's quick fields (system.burn / freeze / stagger) — the
+  //     original explosive fields, kept so existing items keep working;
+  //   • the Combat Effects tab (system.effects.stagger / bleed and the three
+  //     effectTypeN + effects.extraN slots), which is the only way to author
+  //     anything else — Stun, Slow, Root, Disorientation …
+  // Names must be effectDefinitions ids: applyDamage feeds each key straight
+  // to applyEffectToActor. -1 means guaranteed and beats any summed chance.
+  const chances = {};
+  const addChance = (name, value) => {
+    const v = Math.floor(Number(value) || 0);
+    if (!v) return;
+    if (v === -1 || chances[name] === -1) chances[name] = -1;
+    else chances[name] = (chances[name] || 0) + v;
+  };
+
+  addChance("burn", s.burn);
+  addChance("freeze", s.freeze);
+  addChance("stagger", s.stagger);
+
+  const authoredEffects = s.effects ?? {};
+  addChance("stagger", authoredEffects.stagger);
+  addChance("bleed", authoredEffects.bleed);
+
+  for (let i = 1; i <= 3; i++) {
+    const type = (s[`effectType${i}`] || "").toLowerCase();
+    if (!type) continue;
+    const name =
+      type === "custom"
+        ? (authoredEffects[`effectName${i}`] || "").toLowerCase()
+        : type;
+    if (!name) continue;
+    addChance(name, authoredEffects[`extra${i}`]);
+  }
+
+  const mechanicalEffects = {};
+  let effectResults = "";
+
+  for (const [name, value] of Object.entries(chances)) {
+    // An effect definition's `name` may be a localization key (see
+    // helpers/config.mjs), so it is localized rather than printed raw.
+    const definitionName = CONFIG.REDSTEEL.effectDefinitions?.[name]?.name;
+    const label = definitionName ? game.i18n.localize(definitionName) : name;
+
+    if (value === -1) {
+      mechanicalEffects[name] = { chance: null, roll: null, auto: true };
+      effectResults += `<p><b>|${label}|</b></p>`;
+      continue;
+    }
+
+    if (value <= 0) continue;
+
+    const d100Roll = new Roll("1d100");
+    await d100Roll.evaluate();
+
+    const success = d100Roll.total <= value;
+    const successText = success
+      ? `<i class="fa-regular fa-star" style="--fa-primary-color: #c4c700; --fa-secondary-color: #5c5400;"></i> SUCCESS`
+      : "";
+
+    mechanicalEffects[name] = {
+      chance: value,
+      roll: d100Roll.total,
+      auto: false,
+    };
+
+    effectResults += `<p><b>| ${label}: </b>${d100Roll.total} | < ${value}% ${successText}</p>`;
+  }
+
+  // ─── Damage profile from the explosive's damage-type fields ───
+  const damageProfile = buildDamageProfile(s);
+
+  // ─── Chat card ───
+  const damageLine = `
+<div style="
+display:grid;
+column-gap: 24px;
+font-size:16px;
+max-width: fit-content;
+margin: 0 auto;
+">
+
+<div style="
+  display:grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 8px;
+">
+  <div>Damage:</div>
+  <div style="text-align:center;">
+    ${damageTotal}
+  </div>
+
+  <div>Penetration:</div>
+  <div style="text-align:center;">
+    ${Number(s.penetration) || 0}
+  </div>
+
+<div></div>
+</div>
+`;
+
+  const attackHTML = await attackRoll.render();
+  const damageHTML = await damageRoll.render();
+  const content = `
+<div class="dual-roll">
+
+<div class="roll-column">
+  <div class="roll-label">Margin of Success</div>
+  ${attackHTML}
+</div>
+
+<div class="roll-column">
+  <div class="roll-label">Damage Roll</div>
+  ${damageHTML}
+</div>
+
+</div>
+`;
+
+  const thrown = `Threw ${consumable.localizedName ?? consumable.name}`;
+  const rollName = ability
+    ? `${ability.localizedName ?? ability.name}: ${thrown}`
+    : thrown;
+  const flavor = `
+<div style="display:flex; align-items:center; gap:8px; font-weight:bold;">
+<img src="${consumable.img}" width="36" height="36">
+<span>${rollName}</span>
+</div>
+
+<p style="text-align:center; font-size:14px;">
+${s.aimed ? "Single target" : "Area effect"}
+</p>
+
+<p class="rs-card-headline"><b>
+${critSuccess ? "Critical Success!" : critFailure ? "Critical Failure!" : ""}
+</b></p>
+<hr>
+${damageLine}
+<hr>
+<table style="width:100%; text-align:center; font-size:15px;">
+<tr>
+  <th>Explosive Effects</th>
+  <td>${effectResults}</td>
+</tr>
+</table>
+`;
+
+  await ChatMessage.create({
+    speaker: ChatMessage.getSpeaker(),
+    content,
+    rolls: [attackRoll, damageRoll],
+    flavor,
+
+    flags: {
+      redsteel: {
+        rollName,
+        criticalSuccessThreshold: critSuccessThreshold,
+        criticalFailureThreshold: critFailThreshold,
+        traitPills: getTraitPills(actor, "attack"),
+        // Thrown explosive is a consumable, not a weapon-skill attack — generic
+        // "attack" token only so attribute pools don't wrongly attach.
+        rerollTokens: getAttackRerollTokens(),
+      },
+
+      attack: {
+        type: "attack",
+        // Thrown: answered by Ranged Defense or a dodge, never a parry.
+        attackType: "throwing",
+        // Who it was thrown at, captured from the thrower's targets while they
+        // still exist — targets are per-user and live, the card is not.
+        targets: captureAttackTargets(),
+        // Where each target stood when the blow was thrown (utils/positioning.mjs).
+        // The defense reads this rather than live facing, because a reaction can
+        // resolve after everyone has moved.
+        positioning: captureAttackPositioning(token?.document ?? token),
+        damageProfile,
+        effects: mechanicalEffects,
+        normal: {
+          damage: damageTotal,
+          penetration: Number(s.penetration) || 0,
+        },
+      },
+    },
+  });
+
+  // ─── Consume quantity only after the chat card is safely created ───
+  if (s.quantity > 0) {
+    const newQty = s.quantity - 1;
+    if (newQty > 0) {
+      await consumable.update({ "system.quantity": newQty });
+    } else {
+      await consumable.delete();
+    }
+  }
+  return true;
 }

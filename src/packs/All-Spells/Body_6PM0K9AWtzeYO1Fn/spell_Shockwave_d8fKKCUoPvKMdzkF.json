@@ -115,7 +115,9 @@
       "NLXFiNinULUmleu6"
     ],
     "manualNotes": "",
-    "vsTest": true
+    "vsTest": true,
+    "attributeTest": "will",
+    "testModifier": "@spellPower*2"
   },
   "effects": [],
   "folder": "6PM0K9AWtzeYO1Fn",

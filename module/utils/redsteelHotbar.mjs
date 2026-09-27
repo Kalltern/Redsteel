@@ -55,6 +55,29 @@ import {
 import { isSprintAbility, useUtilityAbility } from "./combatAbilities.mjs";
 import { canTradeWith, requestTrade } from "./trade.mjs";
 
+/** The combat plates, left to right: red melee, yellow ranged, blue spells. */
+const COMBAT_THEMES = ["melee", "ranged", "magic"];
+
+/**
+ * Split the suggestion chips: movement on its plate at the bar's left end,
+ * combat chips (anything carrying a theme) centred on one plate per theme
+ * present, each plate growing a row as chips are added.
+ *
+ * @param {object[]} chips
+ * @returns {{movementSuggestions: object[], combatPlates: {theme: string, chips: object[]}[]}}
+ */
+function splitSuggestions(chips) {
+  const movementSuggestions = [];
+  const byTheme = new Map(COMBAT_THEMES.map((theme) => [theme, []]));
+  for (const chip of chips) {
+    if (chip.theme) byTheme.get(chip.theme)?.push(chip);
+    else movementSuggestions.push(chip);
+  }
+  const combatPlates = COMBAT_THEMES.filter((theme) => byTheme.get(theme).length)
+    .map((theme) => ({ theme, chips: byTheme.get(theme) }));
+  return { movementSuggestions, combatPlates };
+}
+
 const SETTING = "bg3Hotbar";
 const TEAM_HEALTH_SETTING = "bg3HotbarTeamHealth";
 const BODY_CLASS = "redsteel-bg3-hotbar";
@@ -1279,12 +1302,15 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       // Its own key: `actions` above is the button row, and the two would
       // shadow each other in the template.
       actionTracker: this.#prepareActionTracker(actor),
-      // Turn actions worth taking now, floated above the bar. Empty when there
-      // is nothing to suggest, and then the strip is not drawn at all.
+      // Turn actions worth taking now, floated above the bar: movement on a
+      // plate at the bar's left end, combat (abilities, held spells) on one
+      // centred (user ruling). An empty set draws no plate at all.
       movementExpanded: this.#movementExpanded,
-      suggestions: prepareSuggestions(actor, {
-        facing: !!actor && this.#facingUuid === actor.uuid,
-      }),
+      ...splitSuggestions(
+        prepareSuggestions(actor, {
+          facing: !!actor && this.#facingUuid === actor.uuid,
+        }),
+      ),
       resourceBars: this.#prepareResourceBars(actor),
       // One tray, two readings on a character and both at once on an NPC. The
       // flag is per user rather than per actor, so a player who switched to
@@ -2937,7 +2963,10 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     if (isRightClick(event)) return;
     const actor = this.actor;
     if (!actor?.isOwner) return;
-    await confirmMovement(actor);
+    // A bonus step hands back the movement it interrupted, less what it walked.
+    await confirmMovement(actor, {
+      tokenSpent: tokenMovementSpent(tokenForActor(actor)),
+    });
   }
 
   /**

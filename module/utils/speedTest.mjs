@@ -52,15 +52,19 @@ function hasFloorStatus(actor, statusId) {
  * Build the initiative-style d12 formula for an actor. Kept in one place so
  * initiative rolls and ability speed tests can never drift apart.
  * @param {Actor} actor
+ * @param {object} [options]
+ * @param {boolean} [options.ignoreFloor]  Roll the real test even on the
+ *   floor. Only the initiative tie-break wants this: floored combatants all sit
+ *   at 1, and a flat 1 against a flat 1 would never separate them.
  * @returns {string} A formula for `actor.getRollData()`.
  */
-export function buildSpeedTestFormula(actor) {
+export function buildSpeedTestFormula(actor, { ignoreFloor = false } = {}) {
   // "Povalení: Pořadí tahu dočasně sníženo na 1." Downed (0 health) and
   // Incapacitated (unconscious) are on the floor too, so they take the same
   // flat 1 — each independently, since either can be applied on its own. Same
   // list the turn-order clamp in floorInitiative.mjs enforces, so a re-roll and
   // the tracker can never disagree.
-  if (FLOOR_STATUSES.some((s) => hasFloorStatus(actor, s))) {
+  if (!ignoreFloor && FLOOR_STATUSES.some((s) => hasFloorStatus(actor, s))) {
     return "1";
   }
 

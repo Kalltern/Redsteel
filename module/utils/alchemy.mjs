@@ -1286,6 +1286,11 @@ async function sendCraftMessage(actor, subject, outcome, spentLines, { isReroll 
     ? `<p style="font-size:12px;opacity:0.85;"><b>${i18n.localize("REDSTEEL.Alchemy.Chat.Consumed")}:</b> ${spentLines.join(", ")}</p>`
     : "";
 
+  const returned = outcome.vesselsReturned;
+  const returnedBlock = returned?.count && VESSELS[returned.key]
+    ? `<p style="font-size:12px;opacity:0.85;"><b>${i18n.localize("REDSTEEL.Alchemy.Chat.VesselsReturned")}:</b> ${returned.count}× ${i18n.localize(VESSELS[returned.key].labelKey)}</p>`
+    : "";
+
   const difficulty = Number(outcome.difficulty) || 0;
   const difficultyNote = difficulty
     ? ` · ${i18n.localize("REDSTEEL.Alchemy.Chat.Difficulty")} ${fmtMargin(difficulty)}`
@@ -1299,6 +1304,7 @@ async function sendCraftMessage(actor, subject, outcome, spentLines, { isReroll 
       <div style="margin:4px 0;">${rollLines}</div>
       ${resultLine}
       ${spentBlock}
+      ${returnedBlock}
       ${boonBlock}
     </div>`;
 
@@ -1343,6 +1349,15 @@ export async function craftRecipe(actor, recipe, { amount, stationKey }) {
   // Grimdark: the cauldron doesn't refund failure, not even a partial one.
   const spentLines = await consumeIngredients(actor, recipe, amount);
 
+  // ...except the glass. A failed unit never went into its vessel, so the
+  // empty comes back; a later reroll success fills it again.
+  const vesselKey = getRecipeVessel(recipe);
+  let vesselsReturned = null;
+  if (vesselKey && batch.failed > 0) {
+    await deliverVessel(actor, vesselKey, batch.failed);
+    vesselsReturned = { key: vesselKey, count: batch.failed };
+  }
+
   const outcome = {
     ok: true,
     ...batch,
@@ -1360,6 +1375,7 @@ export async function craftRecipe(actor, recipe, { amount, stationKey }) {
     product: mods.product,
     productItem: productBoonTarget(source),
     created: 0,
+    vesselsReturned,
   };
 
   // Duplikace rolls only for the units that came out.
@@ -1376,6 +1392,20 @@ export async function craftRecipe(actor, recipe, { amount, stationKey }) {
     spentLines,
   );
   return outcome;
+}
+
+/**
+ * Why a reroll of this recipe cannot go ahead, or null when it can. A failed
+ * unit handed its vessel back, so salvaging it needs an empty one on hand.
+ * Checked before the reroll charge is spent.
+ * @returns {string|null} A localised warning, or null.
+ */
+export function getRerollBlockReason(actor, recipe) {
+  const vesselKey = getRecipeVessel(recipe);
+  if (!vesselKey || getVesselCount(actor, vesselKey) >= 1) return null;
+  return game.i18n.format("REDSTEEL.Alchemy.Warn.NoVesselForReroll", {
+    name: game.i18n.localize(VESSELS[vesselKey].labelKey),
+  });
 }
 
 /**
@@ -1409,6 +1439,11 @@ export async function rerollCraft(actor, recipe, lastOutcome, { stationKey }) {
   };
 
   if (batch.success) {
+    // The salvaged unit goes into the empty its failure handed back.
+    const vesselKey = getRecipeVessel(recipe);
+    if (vesselKey) {
+      await consumeFromStacks(findVesselItems(actor, vesselKey), 1);
+    }
     outcome.duplicated = await rollDuplication(mods.duplication, 1);
     outcome.created = (1 + outcome.duplicated) * outcome.yield;
     await deliverResult(actor, recipe, outcome.created, mods);

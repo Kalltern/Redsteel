@@ -72,6 +72,29 @@ export const MOVEMENT_MODES = {
     icon: "fa-light fa-person-walking-arrow-right",
     labelKey: "REDSTEEL.Bg3Hotbar.Suggest.Disengage",
   },
+  // The two below are never offered as chips: an ability declares them
+  // (abilityMovement.mjs). Duelist's Advance (Duelistův krok) walks like Slow
+  // Movement, Speed/2 under the ordinary threat rules; the ability pays its
+  // own Action.
+  duelist: {
+    budgetFn: (spd) => Math.floor(spd / 2),
+    color: 0x66ccff,
+    actions: 1,
+    icon: "fa-light fa-shoe-prints",
+    labelKey: "REDSTEEL.Bg3Hotbar.Suggest.DuelistsAdvance",
+  },
+  // Passing Strike (Útok s pohybem): one hex in any direction after a hit,
+  // provoking no Opportunity Attack. `free` = no enemy threatens or engages
+  // the step (no red, no swords, no step-around rule); enemy and ally hexes
+  // still block.
+  passing: {
+    budgetFn: () => 1,
+    color: 0xd8c38a,
+    actions: 0,
+    free: true,
+    icon: "fa-light fa-arrows-up-down-left-right",
+    labelKey: "REDSTEEL.Bg3Hotbar.Suggest.PassingStrike",
+  },
 };
 
 const PREVIEW_LAYER = "redsteel-move-preview";
@@ -470,7 +493,7 @@ function enemiesOf(token) {
  * @returns {{engage: Map<string, Set<string>>, threat: Map<string,
  *   Set<string>>, blocked: Set<string>}}
  */
-function threatMaps(token, ignore = []) {
+function threatMaps(token, ignore = [], { free = false } = {}) {
   const engage = new Map();
   const threat = new Map();
   const blocked = new Set();
@@ -491,6 +514,8 @@ function threatMaps(token, ignore = []) {
     );
     const at = canvas.grid.getOffset({ x: center.x, y: center.y });
     blocked.add(offsetKey(at));
+    // A free step (Passing Strike): the enemy only blocks its own hex.
+    if (free) continue;
     for (const nb of canvas.grid.getAdjacentOffsets(at)) {
       const key = offsetKey(nb);
       if (ignored.has(enemy.id)) {
@@ -533,8 +558,8 @@ export function engagingEnemyIds(token) {
  * @param {{x: number, y: number}[]} points
  * @returns {{i: number, j: number}[]}
  */
-export function pathSwordHexes(token, points, { ignore = [] } = {}) {
-  if (!canDraw() || points.length < 2) return [];
+export function pathSwordHexes(token, points, { ignore = [], free = false } = {}) {
+  if (!canDraw() || points.length < 2 || free) return [];
   const { threat } = threatMaps(token, ignore);
   const path = canvas.grid.getDirectPath(points);
   const swords = [];
@@ -592,12 +617,18 @@ function swordTextStyle() {
  *   provokes: boolean, sword: boolean}>} Keyed "i,j", origin excluded.
  *   `sword` = every way in provokes on its last step.
  */
-export function computeMovementZone(token, budget, { ignore = [] } = {}) {
+export function computeMovementZone(
+  token,
+  budget,
+  { ignore = [], free = false } = {},
+) {
   const zone = new Map();
   const origin = documentOrigin(token);
   if (!origin) return zone;
 
-  const { engage, threat, blocked, ignoredRing } = threatMaps(token, ignore);
+  const { engage, threat, blocked, ignoredRing } = threatMaps(token, ignore, {
+    free,
+  });
   const disengaging = (ignore?.length ?? 0) > 0;
   const forbidden = new Set(ignoredRing);
   forbidden.delete(offsetKey(origin));
@@ -847,6 +878,7 @@ export function refreshLockedZone() {
     LOCK_LAYER,
     computeMovementZone(token, lockRemaining(token, lock), {
       ignore: lock.ignore ?? [],
+      free: !!def.free,
     }),
     { color: def.color, alpha: LOCK_ALPHA },
     token.document.id,

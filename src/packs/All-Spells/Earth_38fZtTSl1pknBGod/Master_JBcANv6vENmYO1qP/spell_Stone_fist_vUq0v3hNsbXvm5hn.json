@@ -129,7 +129,9 @@
       "effect4": "0"
     },
     "manualNotes": "",
-    "vsTest": true
+    "vsTest": true,
+    "attributeTest": "will",
+    "testModifier": "@spellPower"
   },
   "effects": [],
   "folder": "JBcANv6vENmYO1qP",

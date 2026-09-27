@@ -90,13 +90,14 @@
   <div class="rs-bg3-capacity"></div>
   {{/if}}
 
-  {{!-- Turn suggestions, floated centred above the bar. Out of flow, so the
-        strip coming and going never moves the bar. No tooltips on the chips:
-        the panel's above-tooltips would park right over them. --}}
-  {{#if suggestions.length}}
-  <div class="rs-bg3-suggest{{#if showCapacity}} rs-bg3-suggest--raised{{/if}}">
+  {{!-- Turn suggestions, on two stone plates floated above the bar: the
+        movement one at the bar's left end, the combat one (abilities, held
+        spells) centred (user ruling). Out of flow, so a plate coming and
+        going never moves the bar. No tooltips on the movement chips: the
+        panel's above-tooltips would park right over them. The partials are
+        declarations and render nothing, so the part keeps one root. --}}
     {{!-- One movement chip, shared by Move and by the chips in its drawer.
-          Declared inside the strip so the part still renders one root. --}}
+          Declared here so both plates share it. --}}
     {{#*inline "rsMoveChip"}}
     <button
       type="button"
@@ -116,11 +117,8 @@
       </span>
     </button>
     {{/inline}}
-    {{#each suggestions as |chip|}}
-    {{#if chip.groupStart}}
-    {{!-- Rules the movement chips apart from the combat ones. --}}
-    <span class="rs-bg3-suggest-divider" aria-hidden="true"></span>
-    {{/if}}
+    {{!-- Any chip, whichever plate it lands on. --}}
+    {{#*inline "rsSuggestChip"}}
     {{#if chip.facing}}
     {{!-- Slow Movement's facing step: turn the token a hex side at a time,
           then confirm; the move is declared only on the check. --}}
@@ -211,7 +209,7 @@
     </div>
     {{else if chip.more}}
     {{!-- Move, with the other movements folded behind the » tab. The drawer
-          rolls out to the right over the strip rather than widening it, so
+          rolls up above the strip rather than widening it, so
           nothing shifts under the cursor; its open state is toggled as a class
           (no redraw), which is what lets it animate. --}}
     <div class="rs-bg3-suggest-movegroup">
@@ -222,7 +220,7 @@
         data-action="toggleMovementMore"
         aria-expanded="{{#if @root.movementExpanded}}true{{else}}false{{/if}}"
         aria-label="{{localize "REDSTEEL.Bg3Hotbar.Suggest.MoreMovement"}}"
-      ><i class="fa-solid fa-angles-right" aria-hidden="true"></i></button>
+      ><i class="fa-solid fa-angles-up" aria-hidden="true"></i></button>
       <div class="rs-bg3-suggest-more{{#if @root.movementExpanded}} open{{/if}}">
         {{#each chip.more as |m|}}
         {{> rsMoveChip chip=m}}
@@ -232,6 +230,23 @@
     {{else}}
     {{> rsMoveChip chip=chip}}
     {{/if}}
+    {{/inline}}
+  {{#if movementSuggestions.length}}
+  <div class="rs-bg3-suggest rs-bg3-suggest--movement{{#if showCapacity}} rs-bg3-suggest--raised{{/if}}">
+    {{#each movementSuggestions as |chip|}}
+    {{> rsSuggestChip chip=chip}}
+    {{/each}}
+  </div>
+  {{/if}}
+  {{#if combatPlates.length}}
+  {{!-- One plate per theme present: red melee, yellow ranged, blue spells. --}}
+  <div class="rs-bg3-suggest rs-bg3-suggest--combat{{#if showCapacity}} rs-bg3-suggest--raised{{/if}}">
+    {{#each combatPlates as |plate|}}
+    <div class="rs-bg3-suggest-plate rs-bg3-suggest-plate--{{plate.theme}}">
+      {{#each plate.chips as |chip|}}
+      {{> rsSuggestChip chip=chip}}
+      {{/each}}
+    </div>
     {{/each}}
   </div>
   {{/if}}

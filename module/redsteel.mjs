@@ -24,6 +24,7 @@ import {
   renderVersusOutcome,
 } from "./utils/attributeFollowup.mjs";
 import { wireSpeedFollowups } from "./utils/speedTest.mjs";
+import { registerInitiativeTiebreakSocket } from "./utils/initiativeTiebreak.mjs";
 import { registerDrugHooks } from "./utils/drugs.mjs";
 import {
   registerCurrency,
@@ -650,6 +651,7 @@ function registerLongRestRations() {
       penetration: 0,
       types: [],
       connector: "and",
+      effects: [],
     },
   });
 }
@@ -1139,6 +1141,9 @@ Hooks.once("ready", () => ensureSystemMacros(SYSTEM_MACROS));
 
 // The three Aim macros are generated the same way, from aim.mjs where they live.
 Hooks.once("ready", () => ensureAimMacros());
+
+// A player's initiative roll hands tied turn orders to the GM to separate.
+Hooks.once("ready", () => registerInitiativeTiebreakSocket());
 
 /* -------------------------------------------- */
 /*  Hooks for Dynamic initiative if enabled     */

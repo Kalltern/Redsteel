@@ -20,6 +20,7 @@ import { renderMarginFollowupLine } from "./attributeFollowup.mjs";
 import { renderAttackTagsHtml } from "./opportunityAttacks.mjs";
 import { captureAttackTargets } from "./autoDefense.mjs";
 import { captureAttackPositioning } from "./positioning.mjs";
+import { modifierKeysOf } from "./abilityMovement.mjs";
 
 export async function universalAttackLogic({
   attackType,
@@ -629,6 +630,8 @@ ${
           traitPills: getTraitPills(actor, "attack"),
           attackTags,
           rerollTokens: getAttackRerollTokens(weapon),
+          // Read in Apply Damage by Passing Strike's free step.
+          modifierKeys: modifierKeysOf(selectedModifiers),
         },
         attack: {
           type: "attack",

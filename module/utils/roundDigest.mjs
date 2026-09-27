@@ -347,7 +347,12 @@ function _group(entries) {
 
     // A token name/portrait beats the base actor's — initiative entries carry
     // the combatant's, effect ticks only know the actor.
-    if (entry.initiative != null && group.initiative == null) {
+    // A tie-break line carries the separated value (10.3 rather than 10), so
+    // it overrides the badge the plain roll set.
+    if (
+      entry.initiative != null &&
+      (group.initiative == null || entry.kind === "tiebreak")
+    ) {
       group.initiative = entry.initiative;
       group.name = entry.name;
       group.img = entry.img;
@@ -404,6 +409,8 @@ function _tally(groups, gm) {
         initiative += 1;
         continue;
       }
+      // Part of the turn order, already counted with the combatant's roll.
+      if (line.kind === "tiebreak") continue;
       const label =
         line.label || game.i18n.localize("REDSTEEL.RoundDigest.Other");
       labels.set(label, (labels.get(label) ?? 0) + 1);

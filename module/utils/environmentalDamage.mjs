@@ -1,7 +1,8 @@
 /**
  * GM-only "environmental damage" tray: a small DialogV2 where the GM enters a
- * dice expression, a flat bonus, penetration and optional damage types, rolls
- * it, and posts a normal damage chat card. The card carries `flags.attack`
+ * dice expression, a flat bonus, penetration, optional damage types and up to
+ * three effects with a chance each, rolls it, and posts a normal damage chat
+ * card. The card carries `flags.attack`
  * with no attacker actor/token behind its speaker, so it runs through the
  * existing Apply Damage pipeline (armor, penetration, shields, resistances,
  * temp HP, Dying) exactly like a weapon or explosive card, while every
@@ -40,6 +41,9 @@ const DAMAGE_TYPES = [
 
 const FACE_OPTIONS = [4, 6, 8, 10, 12, 20];
 
+// Effect slots on the tray. Three, like the Combat Effects tab on items.
+const EFFECT_SLOTS = 3;
+
 const DEFAULT_LAST_USED = {
   label: "",
   count: 1,
@@ -48,7 +52,26 @@ const DEFAULT_LAST_USED = {
   penetration: 0,
   types: [],
   connector: "and",
+  effects: [],
 };
+
+/**
+ * Every effect definition a hazard can inflict, sorted by display name.
+ * Shields are left out: they are protections, not something a trap causes.
+ * @returns {{id: string, label: string}[]}
+ */
+function getEffectChoices() {
+  const definitions = CONFIG.REDSTEEL.effectDefinitions ?? {};
+  const shields = new Set(CONFIG.REDSTEEL.shieldEffectIds ?? []);
+  return Object.entries(definitions)
+    .filter(([id]) => !shields.has(id))
+    .map(([id, def]) => ({
+      id,
+      // A definition's name may be a localization key (see helpers/config.mjs).
+      label: def?.name ? game.i18n.localize(def.name) : id,
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label, game.i18n.lang));
+}
 
 export async function environmentalDamage() {
   const localize = (key) =>
@@ -91,6 +114,28 @@ export async function environmentalDamage() {
         <input type="checkbox" name="rs-envdmg-type" value="${type}" ${checked}>
         <span>${typeLabel}</span>
       </label>`;
+  }).join("");
+
+  const effectChoices = getEffectChoices();
+  const lastEffects = Array.isArray(last.effects) ? last.effects : [];
+  const effectRows = Array.from({ length: EFFECT_SLOTS }, (_, index) => {
+    const slot = lastEffects[index] ?? {};
+    const options = effectChoices
+      .map(
+        ({ id, label }) =>
+          `<option value="${id}" ${slot.id === id ? "selected" : ""}>${foundry.utils.escapeHTML(label)}</option>`,
+      )
+      .join("");
+    const chance = Number(slot.chance) || "";
+    return `
+      <div class="rs-envdmg-effect">
+        <select name="rs-envdmg-effect">
+          <option value="">${localize("EffectNone")}</option>
+          ${options}
+        </select>
+        <input type="number" name="rs-envdmg-chance" min="0" max="1000" step="1"
+          value="${chance}" placeholder="%">
+      </div>`;
   }).join("");
 
   const escapedLabel = foundry.utils.escapeHTML(last.label ?? "");
@@ -137,6 +182,12 @@ export async function environmentalDamage() {
             <option value="or" ${last.connector === "or" ? "selected" : ""}>${localize("ConnectorOr")}</option>
           </select>
         </div>
+
+        <div class="rs-envdmg-effects">
+          <div class="rs-envdmg-heading">${localize("Effects")}</div>
+          <div class="rs-envdmg-hint">${localize("EffectsHint")}</div>
+          ${effectRows}
+        </div>
       </form>`,
     buttons: [
       {
@@ -157,6 +208,12 @@ export async function environmentalDamage() {
             ).map((input) => input.value),
             connector: root.querySelector('select[name="rs-envdmg-connector"]')
               ?.value,
+            effects: Array.from(
+              root.querySelectorAll(".rs-envdmg-effect"),
+            ).map((row) => ({
+              id: row.querySelector('select[name="rs-envdmg-effect"]')?.value,
+              chance: row.querySelector('input[name="rs-envdmg-chance"]')?.value,
+            })),
           };
         },
       },
@@ -187,6 +244,18 @@ export async function environmentalDamage() {
   const connector = result.connector === "or" ? "or" : "and";
   const label = String(result.label ?? "").trim();
 
+  // Only known definition ids survive: applyDamage feeds each key straight to
+  // applyEffectToActor. Two slots naming one effect add up, like the item
+  // authoring surfaces do in throwExplosive.mjs.
+  const validEffects = new Set(getEffectChoices().map(({ id }) => id));
+  const effects = (Array.isArray(result.effects) ? result.effects : [])
+    .map(({ id, chance }) => {
+      let value = Math.floor(Number(chance));
+      if (!Number.isFinite(value)) value = 0;
+      return { id: String(id ?? ""), chance: Math.min(1000, Math.max(0, value)) };
+    })
+    .filter(({ id, chance }) => validEffects.has(id) && chance > 0);
+
   try {
     await game.settings.set("redsteel", "environmentalDamageLast", {
       label,
@@ -196,6 +265,7 @@ export async function environmentalDamage() {
       penetration,
       types,
       connector,
+      effects,
     });
   } catch (err) {
     console.warn(
@@ -205,7 +275,8 @@ export async function environmentalDamage() {
     );
   }
 
-  if (count === 0 && bonus === 0) {
+  // An effects-only hazard (a gas cloud) is allowed to deal no damage at all.
+  if (count === 0 && bonus === 0 && effects.length === 0) {
     ui.notifications.warn(localize("NothingToRoll"));
     return;
   }
@@ -223,11 +294,38 @@ export async function environmentalDamage() {
           : `- ${Math.abs(bonus)}`,
     );
   }
-  const formula = parts.join(" ");
+  const formula = parts.join(" ") || "0";
 
   const roll = new Roll(formula);
   await roll.evaluate();
   const damage = Math.max(0, Math.floor(roll.total));
+
+  // ─── Effects ───
+  // Same packet shape throwExplosive.mjs posts: one d100 per effect, rolled
+  // here, measured at Apply Damage against the chance minus each target's own
+  // resistance. Bleed above 100% encodes whole stacks, as everywhere else.
+  const chances = {};
+  for (const { id, chance } of effects) {
+    chances[id] = (chances[id] || 0) + chance;
+  }
+
+  const mechanicalEffects = {};
+  let effectResults = "";
+  for (const [id, chance] of Object.entries(chances)) {
+    const d100Roll = new Roll("1d100");
+    await d100Roll.evaluate();
+    const success = d100Roll.total <= chance;
+    mechanicalEffects[id] = { chance, roll: d100Roll.total, auto: false };
+
+    const definitionName = CONFIG.REDSTEEL.effectDefinitions?.[id]?.name;
+    const effectLabel = foundry.utils.escapeHTML(
+      definitionName ? game.i18n.localize(definitionName) : id,
+    );
+    const successText = success
+      ? `<i class="fa-regular fa-star" style="--fa-primary-color: #c4c700; --fa-secondary-color: #5c5400;"></i> ${localize("EffectSuccess")}`
+      : "";
+    effectResults += `<p><b>| ${effectLabel}: </b>${d100Roll.total} | < ${chance}% ${successText}</p>`;
+  }
 
   // ─── Expression, types interleaved with the chosen connector ───
   const expression = [];
@@ -277,6 +375,17 @@ export async function environmentalDamage() {
 </div>
 <hr>
 ${damageLine}
+${
+  effectResults
+    ? `<hr>
+<table style="width:100%; text-align:center; font-size:15px;">
+  <tr>
+    <th>${localize("Effects")}</th>
+    <td>${effectResults}</td>
+  </tr>
+</table>`
+    : ""
+}
 `;
 
   const content = `
@@ -302,6 +411,7 @@ ${damageLine}
       attack: {
         type: "environment",
         damageProfile: { expression },
+        effects: mechanicalEffects,
         normal: {
           damage,
           penetration,

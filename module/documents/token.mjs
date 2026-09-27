@@ -1,4 +1,8 @@
-import { getMovementLock, isTrackedTurn } from "../utils/actionTracker.mjs";
+import {
+  confirmMovement,
+  getMovementLock,
+  isTrackedTurn,
+} from "../utils/actionTracker.mjs";
 import {
   MOVEMENT_MODES,
   DRAG_PATH_LAYER,
@@ -154,6 +158,9 @@ export class RedsteelToken extends Token {
   /** Enemy ids a declared Disengage broke free from, for the route swords. */
   #pathIgnore = [];
 
+  /** A declared free step (Passing Strike): the route carries no swords. */
+  #pathFree = false;
+
   /** Origin, waypoints and cursor hex the path swords were last drawn for. */
   #pathKey = null;
 
@@ -197,7 +204,13 @@ export class RedsteelToken extends Token {
       const key = points.map((p) => `${Math.round(p.x)},${Math.round(p.y)}`).join("|");
       if (key === this.#pathKey) return;
       this.#pathKey = key;
-      renderSwords(DRAG_PATH_LAYER, pathSwordHexes(this, points, { ignore: this.#pathIgnore }));
+      renderSwords(
+        DRAG_PATH_LAYER,
+        pathSwordHexes(this, points, {
+          ignore: this.#pathIgnore,
+          free: this.#pathFree,
+        }),
+      );
     } catch (err) {
       console.error("REDSTEEL: failed to draw route swords", err);
     }
@@ -211,6 +224,7 @@ export class RedsteelToken extends Token {
     const dragLock =
       this.actor && isTrackedTurn(this.actor) ? getMovementLock(this.actor) : null;
     this.#pathIgnore = dragLock?.ignore ?? [];
+    this.#pathFree = !!MOVEMENT_MODES[dragLock?.mode]?.free && !dragLock?.done;
     this.#dragOriginPoint = this.center
       ? { x: this.center.x, y: this.center.y }
       : null;
@@ -238,7 +252,10 @@ export class RedsteelToken extends Token {
       this.#lockedCap = remaining;
       renderZone(
         this.#movementLayerId,
-        computeMovementZone(this, remaining, { ignore: lock.ignore ?? [] }),
+        computeMovementZone(this, remaining, {
+          ignore: lock.ignore ?? [],
+          free: !!lockMode.free,
+        }),
         { color: lockMode.color, alpha: 0.15 },
         this.document?.id ?? null,
         { swords: false },
@@ -417,7 +434,8 @@ Hooks.on("moveToken", (tokenDoc, movement, _operation, user) => {
   if (!game.combat?.started) return;
   const hexes = Math.round(Number(movement?.passed?.spaces) || 0);
   if (hexes <= 0) return;
-  addMovementSpent(tokenDoc, hexes);
+  const total = addMovementSpent(tokenDoc, hexes);
+  endWalkedBonusStep(tokenDoc.actor, total);
 });
 
 function addMovementSpent(tokenDoc, hexes) {
@@ -427,6 +445,20 @@ function addMovementSpent(tokenDoc, hexes) {
     .catch((err) =>
       console.error("REDSTEEL: Failed to commit movement on drop", err),
     );
+  return spent + hexes;
+}
+
+// A bonus step (Passing Strike) ends by itself once it has been walked, which
+// hands back the movement it interrupted (actionTracker.confirmMovement).
+// Runs under the moving user's single-writer guard above.
+function endWalkedBonusStep(actor, tokenSpent) {
+  if (!actor || !isTrackedTurn(actor)) return;
+  const lock = getMovementLock(actor);
+  if (!lock?.bonus || lock.done) return;
+  if (tokenSpent - lock.startSpent < lock.budget) return;
+  confirmMovement(actor, { tokenSpent }).catch((err) =>
+    console.error("REDSTEEL: Failed to end the bonus step", err),
+  );
 }
 
 // Reset movementSpent at the start of a new round. Use the canvas tokens

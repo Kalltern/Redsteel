@@ -162,6 +162,8 @@
         "SlowMove": "Slow Movement",
         "Sprint": "Sprint",
         "Disengage": "Disengage",
+        "DuelistsAdvance": "Duelist's Advance",
+        "PassingStrike": "Passing Strike step",
         "OneAction": "1 Action",
         "TwoActions": "2 Actions",
         "Hexes": "{n} hex",
@@ -433,7 +435,8 @@
         "NotEnough": "Not enough ingredients",
         "ResultMissing": "The recipe's result item could not be found (broken link).",
         "NoRecipeSelected": "Select a recipe first.",
-        "NoRerolls": "No rerolls available for Alchemy."
+        "NoRerolls": "No rerolls available for Alchemy.",
+        "NoVesselForReroll": "A salvaged unit needs an empty {name} to go in."
       },
       "Chat": {
         "Title": "Alchemical crafting",
@@ -448,6 +451,7 @@
         "Created": "created {count}× {name}",
         "IngredientsWasted": "ingredients were wasted",
         "UnitsLost": "{count} failed, their ingredients were wasted",
+        "VesselsReturned": "Returned",
         "PartialSuccess": "Partial success",
         "Consumed": "Consumed",
         "Uses": "uses",
@@ -4548,6 +4552,10 @@
           "multiAttack": {
             "label": "Multiattack"
           },
+          "throwsExplosives": {
+            "label": "Throws explosives",
+            "hint": "In a multiattack, each throw may be an explosive the thrower carries instead of the thrown weapon."
+          },
           "requiredWeaponTag": {
             "label": "Required weapon tag",
             "hint": "Weapon tag this ability needs, e.g. trident. Leave empty for any weapon."
@@ -5114,7 +5122,9 @@
       "Details": "Round details",
       "GmOnly": "GM only",
       "Quiet": "Nothing was rolled.",
-      "Other": "Other"
+      "Other": "Other",
+      "Tiebreak": "Initiative tie-break",
+      "TiebreakLine": "{name}: rolled {scores}, turn order {initiative}"
     },
     "Versus": {
       "Blocked": "Defended",
@@ -5142,6 +5152,12 @@
       "AtCap": "Already at {max} Temporary Health — defending grants no more.",
       "ActorMissing": "The defending actor no longer exists."
     },
+    "MultiAttack": {
+      "WeaponsOrExplosives": "Choose a weapon or an explosive to throw:",
+      "Explosives": "Explosives",
+      "ModifiersIgnored": "Attack modifiers do not apply to a thrown explosive and were not charged.",
+      "NoExplosiveLeft": "No more of this explosive remaining."
+    },
     "EnvironmentalDamage": {
       "Title": "Environmental damage",
       "Speaker": "Environment",
@@ -5159,7 +5175,11 @@
       "DamageRoll": "Damage roll",
       "DamageLabel": "Damage:",
       "PenetrationLabel": "Penetration:",
-      "NothingToRoll": "Nothing to roll. Set some dice or a bonus.",
+      "NothingToRoll": "Nothing to roll. Set some dice, a bonus or an effect.",
+      "Effects": "Effects",
+      "EffectsHint": "Pick an effect and its chance. Each target's own resistance is deducted at Apply Damage.",
+      "EffectNone": "No effect",
+      "EffectSuccess": "SUCCESS",
       "GMOnly": "Only the GM can deal environmental damage.",
       "Type": {
         "blunt": "Blunt",

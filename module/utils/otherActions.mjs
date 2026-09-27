@@ -82,8 +82,15 @@ export async function delayTurn() {
 
           // Option 1: After target
           if (targetId) {
+            // Halfway to whoever acts next after the target. A flat −0.1 used
+            // to land exactly on a tie-broken neighbour (10.2 → 10.1) and
+            // recreate the tie the tie-break had just separated.
             const target = combat.combatants.get(targetId);
-            newInit = target.initiative - 0.1;
+            const next = ordered.find((c) => c.initiative < target.initiative);
+            newInit = next
+              ? Math.round(((target.initiative + next.initiative) / 2) * 1000) /
+                1000
+              : target.initiative - 0.1;
           }
 
           // Option 2: Manual value

@@ -286,13 +286,18 @@ function retaliatoryFits(defense) {
   return defense.defenseKey === "meleeDefense" || defense.defenseKey === "dodge";
 }
 
-/** One ability chip: the ability's own icon and name, and what it costs. */
+/**
+ * One ability chip: the ability's own icon and name, and what it costs. Its
+ * theme picks the plate it sits on: a ranged ability goes on the yellow one,
+ * anything else (melee, other) on the red.
+ */
 function abilityChip(item, costKey, targetTokenId) {
   const label = item.localizedName ?? item.name;
   const cost = game.i18n.localize(costKey);
   return {
     id: `ability-${item.id}`,
     kind: "ability",
+    theme: item.system?.type === "ranged" ? "ranged" : "melee",
     abilityId: item.id,
     img: item.img,
     label,
@@ -455,6 +460,7 @@ function sustainChips(actor) {
     chips.push({
       id: `sustain-${effect.id}`,
       kind: "sustain",
+      theme: "magic",
       effectId: effect.id,
       img: spell?.img || STOP_SUSTAIN_ICON,
       label,
@@ -542,13 +548,5 @@ export function prepareSuggestions(actor, { facing = false } = {}) {
       },
     ];
   }
-  // The first chip of each later group opens with a divider, so movement and
-  // combat read as two sets.
-  const chips = [];
-  for (const provider of PROVIDERS) {
-    const group = provider(actor) ?? [];
-    if (group.length && chips.length) group[0] = { ...group[0], groupStart: true };
-    chips.push(...group);
-  }
-  return chips;
+  return PROVIDERS.flatMap((provider) => provider(actor) ?? []);
 }

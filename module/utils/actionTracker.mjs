@@ -146,6 +146,26 @@ export function getSpent(actor) {
     reactions: clamp(record?.reactions, pools.reactions),
     moved: !!record?.moved,
     movement: record?.movement ?? null,
+    bonusSources: Array.isArray(record?.bonusSources) ? record.bonusSources : [],
+  };
+}
+
+/**
+ * A movement lock with every key spelled out. `setFlag` merges into what is
+ * stored, so a key left out of a new lock would let the previous lock's value
+ * survive (a stale `done` or `bonus` would end or divert the new movement).
+ */
+function normaliseLock(lock) {
+  if (!lock) return null;
+  return {
+    mode: lock.mode,
+    budget: Math.max(0, Math.floor(Number(lock.budget) || 0)),
+    startSpent: Math.max(0, Math.floor(Number(lock.startSpent) || 0)),
+    ignore: Array.isArray(lock.ignore) ? lock.ignore : [],
+    done: !!lock.done,
+    bonus: !!lock.bonus,
+    resume: lock.bonus ? normaliseLock(lock.resume) : null,
+    resumeMoved: !!lock.resumeMoved,
   };
 }
 
@@ -187,7 +207,8 @@ async function writeSpent(actor, spent) {
     actions: clamp(spent.actions, pools.actions),
     reactions: clamp(spent.reactions, pools.reactions),
     moved: !!spent.moved,
-    movement: spent.movement ?? null,
+    movement: normaliseLock(spent.movement),
+    bonusSources: Array.isArray(spent.bonusSources) ? spent.bonusSources : [],
   });
 }
 
@@ -343,16 +364,97 @@ export async function lockMovement(
  * The lock itself stays, so the drag overlay still caps a further drag at
  * what was left, and it expires with the round like the rest of the record.
  *
+ * A bonus step (see grantBonusStep) does not stay behind as a done lock: it
+ * hands back whatever movement it interrupted, shifted by the hexes the step
+ * walked so that movement's remainder is unchanged, and `moved` goes back to
+ * what it was. `tokenSpent` is the token's `movementSpent` now; without it the
+ * step counts as fully walked.
+ *
  * @param {Actor} actor
+ * @param {{tokenSpent?: number}} [options]
  */
-export async function confirmMovement(actor) {
+export async function confirmMovement(actor, { tokenSpent } = {}) {
   if (!trackedCombat(actor)) return;
   const spent = getSpent(actor);
-  if (!spent.movement || spent.movement.done) return;
+  const lock = spent.movement;
+  if (!lock || lock.done) return;
+
+  if (lock.bonus) {
+    const walked = Number.isFinite(Number(tokenSpent))
+      ? Math.max(0, Number(tokenSpent) - lock.startSpent)
+      : lock.budget;
+    const prev = lock.resume;
+    await writeSpent(actor, {
+      ...spent,
+      moved: lock.resumeMoved,
+      movement: prev
+        ? prev.done
+          ? prev
+          : { ...prev, startSpent: prev.startSpent + walked }
+        : null,
+    });
+    return;
+  }
+
   await writeSpent(actor, {
     ...spent,
-    movement: { ...spent.movement, done: true },
+    movement: { ...lock, done: true },
   });
+}
+
+/**
+ * A step an ability grants on top of the turn's movement: Passing Strike's
+ * one hex after a hit. Costs nothing and takes the movement slot only for as
+ * long as it lasts. Whatever was locked before (a Move with hexes left, or a
+ * finished one) is stashed in the lock and comes back when the step ends
+ * (confirmMovement), and so does `moved`, so a character who attacks first
+ * can still Move afterwards.
+ *
+ * `source` names what granted the step (the attack card's message id) and is
+ * remembered for the round, so applying the same card again grants nothing.
+ * A step granted while another bonus step is running replaces it and keeps
+ * the original stash.
+ *
+ * @param {Actor} actor
+ * @param {{mode: string, budget: number, startSpent: number, source?: string}} step
+ * @returns {Promise<boolean>} Whether a step was granted.
+ */
+export async function grantBonusStep(
+  actor,
+  { mode, budget, startSpent = 0, source = null },
+) {
+  if (!trackedCombat(actor)) return false;
+  const spent = getSpent(actor);
+  if (source && spent.bonusSources.includes(source)) return false;
+
+  const current = spent.movement;
+  let resume = current;
+  let resumeMoved = spent.moved;
+  if (current?.bonus) {
+    // The running step's own hexes must not come off the stashed movement.
+    const walked = Math.max(0, Number(startSpent) - current.startSpent);
+    resume =
+      current.resume && !current.resume.done
+        ? { ...current.resume, startSpent: current.resume.startSpent + walked }
+        : current.resume;
+    resumeMoved = current.resumeMoved;
+  }
+
+  await writeSpent(actor, {
+    ...spent,
+    // Marked so the movement hook does not charge the step an Action.
+    moved: true,
+    movement: {
+      mode,
+      budget,
+      startSpent,
+      bonus: true,
+      resume,
+      resumeMoved,
+    },
+    bonusSources: source ? [...spent.bonusSources, source] : spent.bonusSources,
+  });
+  return true;
 }
 
 /**

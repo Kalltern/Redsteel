@@ -7,6 +7,10 @@ import {
   openRoundDigest,
   finishRoundDigest,
 } from "../utils/roundDigest.mjs";
+import {
+  resolveInitiativeTies,
+  TIEBREAK_FLAG,
+} from "../utils/initiativeTiebreak.mjs";
 
 /**
  * Extend the basic Combat with custom initiative handling.
@@ -69,9 +73,12 @@ export class RedsteelCombat extends Combat {
       // Store initiative update
       // -----------------------------------------
 
+      // A fresh roll starts a fresh slot, so any tie-break stash from the last
+      // one is dropped (see initiativeTiebreak.mjs).
       updates.push({
         _id: id,
         initiative: roll.total,
+        [`flags.redsteel.-=${TIEBREAK_FLAG}`]: null,
       });
 
       // -----------------------------------------
@@ -167,6 +174,16 @@ export class RedsteelCombat extends Combat {
     // -----------------------------------------
 
     await this.updateEmbeddedDocuments("Combatant", updates);
+
+    // -----------------------------------------
+    // Separate tied turn orders
+    // -----------------------------------------
+    // Runs before the round card closes so the secondary rolls land on it.
+
+    await resolveInitiativeTies(
+      this,
+      updates.map((u) => u._id),
+    );
 
     // -----------------------------------------
     // Preserve current turn
