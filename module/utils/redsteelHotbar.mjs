@@ -675,6 +675,82 @@ function registerPanelStatTooltip() {
  * unescaped exactly as the shared `item` provider does; only the fallback,
  * which is plain text, is escaped.
  */
+/** The action tracker's Reaction star, drawn in a combat chip's tooltip. */
+const REACTION_STAR_SVG =
+  '<svg class="rs-bg3-stt-star" viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+  '<path d="M12 1 Q13 11 23 12 Q13 13 12 23 Q11 13 1 12 Q11 11 12 1 Z" /></svg>';
+
+/**
+ * A combat suggestion's tooltip, dressed in its plate's theme: the name with
+ * its cost beside it (a Reaction as the tracker's blue star). No icon: the
+ * chip under it already shows one. The ability's prose is not in it; the name
+ * is a link that opens it one level deeper, once the tooltip has pinned and
+ * the cursor walks up onto it (user ruling). A held spell shows what clicking
+ * does instead.
+ */
+function registerSuggestTooltip() {
+  registerTooltip("bg3Suggest", ({ dataset }) => {
+    const title = dataset.ttTitle;
+    if (!title) return null;
+
+    let cost = "";
+    if (dataset.ttCost === "reaction") {
+      const label = ttEscape(game.i18n.localize("REDSTEEL.Bg3Hotbar.Suggest.Reaction"));
+      cost = `<span class="rs-bg3-stt-cost" title="${label}">${REACTION_STAR_SVG}</span>`;
+    } else if (dataset.ttCost === "free") {
+      cost = `<span class="rs-bg3-stt-cost rs-bg3-stt-cost--text">${ttEscape(
+        game.i18n.localize("REDSTEEL.Bg3Hotbar.Suggest.FreeAction"),
+      )}</span>`;
+    }
+
+    const theme = suggestTheme(dataset.ttTheme);
+    const titleHtml = suggestDescription(dataset.ttUuid)
+      ? `<span class="rs-bg3-stt-title tt-link" data-tt-kind="bg3SuggestDesc"
+          data-tt-uuid="${ttEscape(dataset.ttUuid)}"
+          data-tt-theme="${theme}">${ttEscape(title)}</span>`
+      : `<span class="rs-bg3-stt-title">${ttEscape(title)}</span>`;
+    const hint = dataset.ttHint
+      ? `<div class="rs-bg3-stt-hint">${ttEscape(dataset.ttHint)}</div>`
+      : "";
+    return `<div class="rs-bg3-stt rs-bg3-stt--${theme}">
+      <div class="rs-bg3-stt-head">${titleHtml}${cost}</div>
+      ${hint}
+    </div>`;
+  });
+
+  // The description, opened from the name, in the same themed frame.
+  registerTooltip("bg3SuggestDesc", ({ dataset }) => {
+    const desc = suggestDescription(dataset.ttUuid);
+    if (!desc) return null;
+    const theme = suggestTheme(dataset.ttTheme);
+    return `<div class="rs-bg3-stt rs-bg3-stt--${theme}">
+      <div class="rs-bg3-stt-desc">${desc}</div>
+    </div>`;
+  });
+}
+
+function suggestTheme(theme) {
+  return ["melee", "ranged", "magic"].includes(theme) ? theme : "melee";
+}
+
+/**
+ * The ability's prose, or null when it has none. Editor HTML, which goes in
+ * unescaped as the shared `item` provider does; an emptied editor leaves
+ * "<p></p>" behind, so the test is on the text.
+ */
+function suggestDescription(uuid) {
+  if (!uuid) return null;
+  let item = null;
+  try {
+    item = fromUuidSync(uuid);
+  } catch (err) {
+    item = null;
+  }
+  const desc = String(item?.localizedDescription ?? "");
+  const hasText = !!desc.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim();
+  return hasText ? desc : null;
+}
+
 function registerNpcTagTooltip() {
   registerTooltip("bg3NpcTag", ({ dataset }) => {
     if (!dataset.ttUuid) return null;
@@ -3820,6 +3896,7 @@ export function registerRedsteelHotbar() {
 
   registerPanelStatTooltip();
   registerNpcTagTooltip();
+  registerSuggestTooltip();
 
   Hooks.once("ready", () => {
     document.body.classList.add(BODY_CLASS);

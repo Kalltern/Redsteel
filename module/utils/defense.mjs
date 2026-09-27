@@ -1018,7 +1018,10 @@ export async function defenseRoll({
       buttons: buttons,
       default: "melee",
       render: (html) => {
-        html.find(".weapon-set-toggle").on("click", async () => {
+        // The set titles are the switch: clicking the inactive one swaps to it.
+        html.find(".weapon-loadout-label[data-set]").on("click", async (ev) => {
+          const setId = Number(ev.currentTarget.dataset.set);
+          if (setId === Number(actor.system.combat?.activeWeaponSet)) return;
           await game.redsteel.switchWeaponSet(actor);
 
           dialog.close();
@@ -2026,7 +2029,9 @@ function renderWeaponLoadoutsDialog(actor) {
 
       return `
 <div class="weapon-set-block">
-  <div class="weapon-loadout-label">Set ${setId}</div>
+  <div class="weapon-loadout-label${
+    Number(setId) === Number(activeSet) ? "" : " switchable"
+  }" data-set="${setId}">Set ${setId}</div>
 
   <div class="weapon-slot-row">
 
@@ -2067,14 +2072,6 @@ function renderWeaponLoadoutsDialog(actor) {
 `;
     })
     .join("")}
-
-  <div class="weapon-set-switcher">
-    <button type="button"
-      class="weapon-set-toggle set-${activeSet}"
-      title="Switch Weapon Set">
-      <i class="fa-sharp fa-regular fa-arrows-repeat"></i>
-    </button>
-  </div>
 
 </section>
 `;

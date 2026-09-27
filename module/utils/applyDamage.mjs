@@ -26,6 +26,7 @@ import {
   getOverwhelmSources,
 } from "./overwhelm.mjs";
 import { grantPassingStrikeStep } from "./abilityMovement.mjs";
+import { resolvePushOnHit } from "./forcedMovement.mjs";
 import {
   cardDeclaredSneak,
   recordSneakAttack,
@@ -1268,6 +1269,18 @@ export async function applyDamageAsGM(data) {
     message,
     attackerTokenId ? (scene?.tokens.get(attackerTokenId) ?? null) : null,
   );
+
+  // Úder štítem (Shield Bash) and any other PUSH_ON_HIT ability: landing it
+  // means the versus Test was won, so each target is pushed straight away from
+  // the attacker. Last, so the push happens after everything above has read
+  // where the tokens stood when the blow landed.
+  await resolvePushOnHit(
+    message,
+    scene,
+    targetIds,
+    attackerTokenId ? (scene?.tokens.get(attackerTokenId) ?? null) : null,
+    attacker,
+  );
 }
 
 function openDamageSelectionDialog(message, targets) {
@@ -2062,7 +2075,9 @@ export async function applyZeroHealthState(actor, { combatant } = {}) {
   const hp = actor.system.stats.health.value;
   if (hp > 0) return;
 
-  // Characters begin Dying and are Downed (instead of merely falling prone).
+  // Characters begin Dying, are Downed and fall Prone. Prone outlives Downed:
+  // once Downed ends (see endDownedIfRecovered) they are still on the ground
+  // and stand up as normal.
   if (actor.type === "character") {
     if (!actor.statuses.has("dying")) {
       await game.redsteel.applyEffect(actor, "dying");
@@ -2074,6 +2089,11 @@ export async function applyZeroHealthState(actor, { combatant } = {}) {
       !actor.statuses.has("downed") &&
       !actor.statuses.has("incapacitated")
     ) {
+      // Prone first: Downed's onApply can knock them straight out (0 Mind),
+      // and they fall either way.
+      if (!actor.statuses.has("prone")) {
+        await game.redsteel.applyEffect(actor, "prone");
+      }
       await game.redsteel.applyEffect(actor, "downed");
     }
     return;
@@ -2120,8 +2140,8 @@ const dyingHealInFlight = new Set();
  * Aid, Regeneration ticks, Absorb Blood, a long rest, a hand-edited health
  * field, a dragged token bar. Safe to call directly and repeatedly.
  *
- * Downed is deliberately left in place, exactly as performStabilise leaves it —
- * getting back on your feet is its own action.
+ * Downed is not touched here — it has its own exit, endDownedIfRecovered,
+ * which the same updateActor hook runs right after this.
  *
  * @param {Actor} actor
  * @returns {Promise<boolean>} Whether this call removed the Dying effect.
@@ -2140,6 +2160,37 @@ export async function endDyingIfHealed(actor) {
     return true;
   } finally {
     dyingHealInFlight.delete(actor.id);
+  }
+}
+
+// Same double-delete guard as dyingHealInFlight, for Downed.
+const downedEndInFlight = new Set();
+
+/**
+ * Downed ends only when both halves hold: the Endurance/Will test was passed
+ * (`flags.redsteel.downedPassed` on the Downed effect, set by the test card or
+ * Indestructible) AND health is above 0. Whichever half arrives second removes
+ * it — the test card calls this on success, and the GM's updateActor hook
+ * calls it on every health write. Prone stays; they still have to stand up.
+ * Safe to call directly and repeatedly.
+ *
+ * @param {Actor} actor
+ * @returns {Promise<boolean>} Whether this call removed the Downed effect.
+ */
+export async function endDownedIfRecovered(actor) {
+  if (!actor?.system?.stats?.health) return false;
+  if (!(Number(actor.system.stats.health.value) > 0)) return false;
+
+  const downed = actor.effects.find((e) => e.statuses?.has("downed"));
+  if (!downed?.getFlag("redsteel", "downedPassed")) return false;
+
+  if (downedEndInFlight.has(actor.id)) return false;
+  downedEndInFlight.add(actor.id);
+  try {
+    await downed.delete();
+    return true;
+  } finally {
+    downedEndInFlight.delete(actor.id);
   }
 }
 

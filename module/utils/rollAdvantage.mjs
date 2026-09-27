@@ -59,8 +59,9 @@ const ROLL_GROUPS = [
  * key can never collide with one of them.
  *   - `attack`    every attack roll (weapon, ability, thrown explosive)
  *   - `twoHanded` attacks made with a two-handed grip on a non-heavy weapon
+ *   - `cheatDeath` the Cheat Death roll (cheatDeath.mjs; Guardian Angel trait)
  */
-const CATEGORY_BUCKETS = ["attack", "twoHanded"];
+const CATEGORY_BUCKETS = ["attack", "twoHanded", "cheatDeath"];
 
 /**
  * Initialise `system.rollAdvantage` with a 0 bucket for `all` and for every

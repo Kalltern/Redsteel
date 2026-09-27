@@ -207,6 +207,9 @@
       },
 
       "healthBonus": 0,
+      "cheatDeath": {
+        "bonus": 0
+      },
       "sneakDamageBonus": 0,
       "critDamage": 0,
       "critPenetration": 0,
@@ -229,7 +232,8 @@
           "treated": 0,
           "base": 2,
           "max": 5,
-          "bonus": 0
+          "bonus": 0,
+          "lost": 0
         },
         "stamina": {
           "value": 0,

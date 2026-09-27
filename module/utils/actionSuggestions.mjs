@@ -298,6 +298,10 @@ function abilityChip(item, costKey, targetTokenId) {
     id: `ability-${item.id}`,
     kind: "ability",
     theme: item.system?.type === "ranged" ? "ranged" : "melee",
+    // The tooltip reads the ability's prose off the item, and draws a
+    // Reaction as the action tracker's blue star rather than spelling it out.
+    uuid: item.uuid,
+    costKind: costKey === "REDSTEEL.Bg3Hotbar.Suggest.Reaction" ? "reaction" : "free",
     abilityId: item.id,
     img: item.img,
     label,
@@ -462,6 +466,7 @@ function sustainChips(actor) {
       kind: "sustain",
       theme: "magic",
       effectId: effect.id,
+      spellName,
       img: spell?.img || STOP_SUSTAIN_ICON,
       label,
       ariaLabel: label,

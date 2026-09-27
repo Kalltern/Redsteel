@@ -1524,7 +1524,8 @@ async function applyStabiliseAsGM(data) {
   if (!actor) return;
 
   // Back to 1 health, then drop Dying (its _onDelete handles +1 Wound and the
-  // resolve test). Downed is intentionally left in place.
+  // resolve test). Downed ends too, but only if its test was already passed
+  // (endDownedIfRecovered, run by the same updateActor hook).
   //
   // The removal goes through the shared helper rather than a local find/delete:
   // the GM's updateActor hook reacts to this very health write with the same

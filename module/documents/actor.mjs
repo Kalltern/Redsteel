@@ -1512,8 +1512,14 @@ export class RedsteelActor extends Actor {
 
     // Calculate wounds cap
     const calcWounds = [0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 2];
-    stat.graveWounds.max =
-      calcWounds[end] + stat.graveWounds.base + stat.graveWounds.bonus;
+    // `lost` = Max Wounds permanently given up to Cheat Death (cheatDeath.mjs).
+    stat.graveWounds.max = Math.max(
+      0,
+      calcWounds[end] +
+        stat.graveWounds.base +
+        stat.graveWounds.bonus -
+        (Number(stat.graveWounds.lost) || 0),
+    );
 
     // Treated wounds can never exceed the actual wound count (dynamic cap).
     stat.graveWounds.treatedMax = stat.graveWounds.value;

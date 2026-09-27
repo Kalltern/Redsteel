@@ -25,6 +25,11 @@ import {
 } from "./utils/attributeFollowup.mjs";
 import { wireSpeedFollowups } from "./utils/speedTest.mjs";
 import { registerInitiativeTiebreakSocket } from "./utils/initiativeTiebreak.mjs";
+import {
+  registerCheatDeath,
+  onBledOut,
+  getCheatDeathChance,
+} from "./utils/cheatDeath.mjs";
 import { registerDrugHooks } from "./utils/drugs.mjs";
 import {
   registerCurrency,
@@ -95,6 +100,7 @@ import {
 } from "./utils/actionTracker.mjs";
 import { registerMovementZoneHooks } from "./utils/movementZones.mjs";
 import { registerAllyPassage } from "./utils/allyPassage.mjs";
+import { registerForcedMovement } from "./utils/forcedMovement.mjs";
 import { registerTrade } from "./utils/trade.mjs";
 import { registerImpaleFollowupHooks } from "./utils/impaleFollowup.mjs";
 import { registerSuggestionHooks } from "./utils/actionSuggestions.mjs";
@@ -176,6 +182,7 @@ import {
   applyHealingAsGM,
   applyZeroHealthState,
   endDyingIfHealed,
+  endDownedIfRecovered,
   getDurabilityItems,
   getDurabilityReductionPerPoint,
   SOCKET,
@@ -374,6 +381,10 @@ Hooks.once("init", function () {
     RedsteelActiveEffect.adjustEffectAmount.bind(RedsteelActiveEffect);
   game.redsteel.applyZeroHealthState = applyZeroHealthState;
   game.redsteel.endDyingIfHealed = endDyingIfHealed;
+  game.redsteel.endDownedIfRecovered = endDownedIfRecovered;
+  // Bled out → GM confirms → player may Cheat Death (utils/cheatDeath.mjs).
+  game.redsteel.cheatDeath = { onBledOut, getCheatDeathChance };
+  registerCheatDeath();
   game.redsteel.advanceCombatFirstAid = advanceCombatFirstAid;
   game.redsteel.resolveEffectDefinition = resolveEffectDefinition;
   game.redsteel.resolveWeaponContext = resolveWeaponContext;
@@ -503,6 +514,7 @@ Hooks.once("init", function () {
   registerActionTrackerHooks();
   registerMovementZoneHooks();
   registerAllyPassage();
+  registerForcedMovement();
   registerTrade();
   registerImpaleFollowupHooks();
   registerSuggestionHooks();
@@ -2076,8 +2088,10 @@ Hooks.on("renderChatMessageHTML", (message, html, data) => {
       });
     }
 
-    // Only create Apply Damage if this is an attack message
-    if (message.flags?.attack) {
+    // Only create Apply Damage if this is an attack message. A card the system
+    // already applied itself (forced-movement collisions) gets none, so it
+    // cannot land twice.
+    if (message.flags?.attack && !message.flags?.redsteel?.autoApplied) {
       let buttonContainer = html.querySelector(".button-container");
 
       if (!buttonContainer) {
@@ -2759,9 +2773,17 @@ async function _rollDownedTest(actor, attr) {
 }
 
 async function _postDownedResult(actor, attr, { roll, label, success }) {
-  // On failure the character is knocked unconscious.
+  // On failure the character is knocked unconscious. On success the pass is
+  // recorded on Downed, which then ends as soon as health is also above 0 —
+  // right now if they were already healed, otherwise on the next heal.
   if (!success) {
     await game.redsteel.applyEffect(actor, "incapacitated");
+  } else {
+    const downed = actor.effects.find((e) => e.statuses?.has("downed"));
+    if (downed) {
+      await downed.setFlag("redsteel", "downedPassed", true);
+      await game.redsteel.endDownedIfRecovered(actor);
+    }
   }
 
   const outcome = success
@@ -2781,9 +2803,15 @@ async function _postDownedResult(actor, attr, { roll, label, success }) {
       <div class="redsteel-downed">
         ${outcome}
         ${rollHTML}
-        <div class="redsteel-action-buttons">
+        ${
+          // Only a failure is worth rerolling. Rerolling a pass could knock
+          // out a character whose Downed has already ended.
+          success
+            ? ""
+            : `<div class="redsteel-action-buttons">
           <button type="button" data-action="downedReroll" data-attr="${attr}">Reroll (+1 Insanity)</button>
-        </div>
+        </div>`
+        }
       </div>`,
     rolls: [roll],
     flags: { redsteel: { type: "downedResult", actorUuid: actor.uuid, attr } },

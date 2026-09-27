@@ -108,7 +108,7 @@ export function registerCalendariaIntegration() {
 /* -------------------------------------------- */
 
 /** Seconds in one in-world day, per the active Calendaria calendar (or a 24h fallback). */
-function secondsPerDay() {
+export function secondsPerDay() {
   const calendar =
     globalThis.CALENDARIA?.managers?.CalendarManager?.getActiveCalendar?.();
   const days = calendar?.days;

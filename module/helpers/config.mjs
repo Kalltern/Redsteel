@@ -1022,7 +1022,7 @@ REDSTEEL.effectDefinitions = {
   },
   prone: {
     name: "Prone",
-    img: "icons/svg/falling.svg",
+    img: "icons/commodities/wood/log-cut-hickory-brown.webp",
     statuses: ["prone"],
 
     triggers: {
@@ -1058,7 +1058,7 @@ REDSTEEL.effectDefinitions = {
   // dying-removal resolve message in _onDelete.
   dying: {
     name: "Dying",
-    img: "icons/svg/blood.svg",
+    img: "icons/commodities/bones/skull-hollow-orange.webp",
     statuses: ["dying"],
     // No stacking: re-applying (e.g. taking more damage while already dying)
     // must not re-roll the bleed-out countdown.
@@ -1068,11 +1068,13 @@ REDSTEEL.effectDefinitions = {
       onRoundStart: { custom: "dyingCountdown" },
     },
   },
-  // Applied (together with Dying) when a character is reduced to 0 health.
+  // Applied (together with Dying and Prone) when a character is reduced to 0
+  // health. Ends once the Endurance/Will test is passed AND health is above 0
+  // (endDownedIfRecovered in applyDamage.mjs); Prone stays behind.
   // See effects.mjs: _handleDownedStart (Mind loss + Endurance/Will prompt).
   downed: {
     name: "Downed",
-    img: "icons/svg/daze.svg",
+    img: "icons/sundries/flags/banner-flag-white.webp",
     statuses: ["downed"],
     // No stacking: the Mind-point loss must only happen once.
     stackBehavior: "ignore",
@@ -1108,7 +1110,7 @@ REDSTEEL.effectDefinitions = {
   // roll, and has Speed halved.
   fatigued: {
     name: "Fatigued",
-    img: "icons/svg/degen.svg",
+    img: "icons/sundries/survival/waterskin-leather-brown.webp",
     statuses: ["fatigued"],
     // Re-applying (e.g. spending the last stamina again) must not stack.
     stackBehavior: "ignore",
@@ -1394,7 +1396,7 @@ REDSTEEL.effectDefinitions = {
   // running — those are driven by the per-combatant round loop.
   incapacitated: {
     name: "Incapacitated",
-    img: "icons/svg/unconscious.svg",
+    img: "icons/magic/control/sleep-bubble-purple.webp",
     statuses: ["incapacitated"],
     stackBehavior: "ignore",
     triggers: {
@@ -1552,7 +1554,7 @@ REDSTEEL.effectDefinitions = {
   // bleeds on apply and blocks new ones for the duration.
   resist_bleed: {
     name: "Bleed Ward",
-    img: "icons/svg/blood.svg",
+    img: "icons/magic/lightning/barrier-shield-orb-pink.webp",
     statuses: ["resist_bleed"],
     defaultRounds: 3,
     useDuration: true,
@@ -2236,7 +2238,7 @@ REDSTEEL.effectDefinitions = {
   // deliberately not in it. The narrower `twoHanded` bucket is still tagged and
   // stays free for a two-handed-only wound.
   maimed_hands: {
-    name: "Zranění rukou",
+    name: "Hand Injury",
     img: "icons/skills/wounds/injury-hand-blood-red.webp",
     statuses: ["maimed_hands"],
     defaultTurns: 2,
@@ -2254,8 +2256,8 @@ REDSTEEL.effectDefinitions = {
   // Aimed Strike — applied to the TARGET when an aimed hit lands on Legs.
   // Grants disadvantage on dodge rolls.
   maimed_legs: {
-    name: "Zranění nohou",
-    img: "icons/skills/wounds/injury-foot-blood-red.webp",
+    name: "Leg Injury",
+    img: "icons/commodities/leather/boot-torn-tan.webp",
     statuses: ["maimed_legs"],
     defaultTurns: 2,
     useDuration: true,

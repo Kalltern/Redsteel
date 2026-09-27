@@ -282,7 +282,7 @@ async function showTooltip(src, depth, token) {
   el.className = "rs-tooltip";
   el.dataset.depth = String(depth);
   el.innerHTML = `<div class="rs-tooltip-inner">${html}</div>`;
-  linkifyKeywords(el);
+  linkifyKeywords(el, chainKeywordIds(el, src, kind));
   root.appendChild(el);
 
   // Links inside an already-frozen tooltip are born interactive: the player is
@@ -298,11 +298,38 @@ async function showTooltip(src, depth, token) {
   freezeTimer = null;
   // data-tt-nofreeze opts a surface out of ever becoming interactive: no pin,
   // no walking into the tooltip. Right for plain label tooltips, which hold
-  // nothing you could click through to.
-  const canFreeze = !src.closest("[data-tt-nofreeze]");
+  // nothing you could click through to. data-tt-freeze opts a part of such a
+  // surface back in; whichever of the two sits nearer the source wins.
+  const gate = src.closest("[data-tt-nofreeze], [data-tt-freeze]");
+  const canFreeze = !gate || gate.hasAttribute("data-tt-freeze");
   if (!frozen && canFreeze) {
     freezeTimer = setTimeout(() => freezeLayer(layer), TT.freezeDelay);
   }
+}
+
+/**
+ * Keywords already open in the chain, which a new layer must not link again:
+ * the Aim glossary entry offering another Aim, or an item called Aim offering
+ * the Aim keyword. A keyword layer counts by its id; any layer counts by its
+ * title, when that title is itself a glossary term. Read after the prune, so
+ * only the layers this one hangs from are seen.
+ */
+function chainKeywordIds(el, src, kind) {
+  if (!keywordPattern) buildKeywordPattern();
+  const ids = new Set();
+  const layers = [...stack, { el, source: src, kind }];
+  for (const layer of layers) {
+    if (layer.kind === "keyword" && layer.source.dataset.ttId) {
+      ids.add(layer.source.dataset.ttId);
+    }
+    const title = layer.el
+      .querySelector(".tt-title, .rs-bg3-stt-title")
+      ?.textContent?.trim()
+      .toLowerCase();
+    const id = title ? keywordLookup?.get(title) : null;
+    if (id) ids.add(id);
+  }
+  return ids;
 }
 
 function freezeLayer(layer) {
@@ -605,8 +632,9 @@ const SKIP_LINKIFY = new Set(["A", "BUTTON", "INPUT", "TEXTAREA", "SELECT", "COD
  * Wrap the first occurrence of each glossary term in `container` with a
  * tooltip link. Walks text nodes only, so it can never corrupt attributes, and
  * never reaches inside something that is already a link or a tooltip source.
+ * Keyword ids in `skipIds` are left as plain text.
  */
-export function linkifyKeywords(container) {
+export function linkifyKeywords(container, skipIds = new Set()) {
   if (!keywordPattern) buildKeywordPattern();
   if (!keywordLookup?.size) return;
 
@@ -626,13 +654,20 @@ export function linkifyKeywords(container) {
   while (walker.nextNode()) targets.push(walker.currentNode);
 
   for (const node of targets) {
-    const match = keywordPattern.exec(node.nodeValue);
+    // One link per text node, but a skipped term must not hide a later one in
+    // the same node, so keep searching past it.
+    let offset = 0;
+    let match = null;
+    let id = null;
+    while ((match = keywordPattern.exec(node.nodeValue.slice(offset)))) {
+      id = keywordLookup.get(match[1].toLowerCase());
+      if (id && !used.has(id) && !skipIds.has(id)) break;
+      offset += match.index + match[1].length;
+    }
     if (!match) continue;
-    const id = keywordLookup.get(match[1].toLowerCase());
-    if (!id || used.has(id)) continue;
     used.add(id);
 
-    const after = node.splitText(match.index);
+    const after = node.splitText(offset + match.index);
     after.nodeValue = after.nodeValue.slice(match[1].length);
 
     const link = document.createElement("span");

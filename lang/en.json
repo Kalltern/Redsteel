@@ -10,6 +10,39 @@
       "NoReaction": "{ally} has no Reaction left to let you pass. That move is cancelled.",
       "NoOne": "Nobody can answer for {ally} right now. That move is cancelled."
     },
+    "CheatDeath": {
+      "Title": "Cheat Death",
+      "BledOutTitle": "{name} has bled out",
+      "BledOutBody": "Confirm the death to let the player choose whether to attempt Cheat Death.",
+      "ConfirmButton": "Confirm Death",
+      "DoorTitle": "{name} stands at death's door",
+      "Chance": "Chance to Cheat Death: {chance}%",
+      "Breakdown": "Endurance {end} ×5 = {endPart}, Luck {lck} ×2 = {lckPart}, bonuses {bonus}, base 25",
+      "Advantage": "The roll is made with Advantage.",
+      "Cost": "The attempt permanently lowers Maximum Wounds by 1 (from {max} to {after}), whatever the outcome.",
+      "AttemptButton": "Attempt to Cheat Death",
+      "AcceptButton": "Accept Death",
+      "IneligibleCooldown": "Cheat Death was used too recently. It can be attempted again in {days} day(s).",
+      "IneligibleWounds": "Maximum Wounds cannot drop below the current Wounds. There is no right to Cheat Death.",
+      "ResultSuccess": "Success! {name} cheats death.",
+      "ResultFailure": "Failure. Death claims {name}.",
+      "MaxWoundLost": "Maximum Wounds are now {max}.",
+      "DeadTitle": "{name} is dead.",
+      "SuccessTitle": "{name} cheats death and clings to life",
+      "SuccessHealth": "Stabilised at 1 Health. Cheat Death grants no Wound.",
+      "RemovedList": "Removed: {list}.",
+      "Removed": {
+        "Bleed": "Bleed",
+        "Burn": "Burn",
+        "Incapacitated": "Incapacitated"
+      },
+      "ProneApplied": "They lie Prone on the ground.",
+      "ResolveHeader": "{name} cheated death and steps back from the brink. Cheat Death grants no Wound.",
+      "GMOnly": "Only the GM can confirm a death.",
+      "NotOwner": "You don't control this character.",
+      "Stale": "This Cheat Death decision is no longer pending.",
+      "NoGM": "No GM is connected to resolve Cheat Death."
+    },
     "Trade": {
       "Title": "Trade",
       "MenuTrade": "Trade",
@@ -4926,6 +4959,15 @@
     "BloodHarvest": {
       "Gained": "{name} draws {amount} spilled Life into the Blood Reserve (Cordinas I)."
     },
+    "ForcedMovement": {
+      "WrongScene": "Forced movement needs the GM to be viewing the scene the tokens are on. Move them by hand.",
+      "NoAttacker": "Push: the attacker's token could not be found on this scene, so the target was not pushed. Move it by hand.",
+      "CollisionTitle": "Collision",
+      "CollisionTitleFrom": "Collision ({source})",
+      "HitToken": "{name} is driven into {other}.",
+      "HitWall": "{name} is driven into an obstacle and stops.",
+      "CollisionDamage": "{damage} damage, ignoring armor, to {targets}."
+    },
     "Laceration": {
       "Option": "Laceration — sacrifice Aim ({cost} Stamina each):",
       "StaminaTooLow": "{name} has {stamina} Stamina — {cost} is needed per Aim sacrificed.",
@@ -6388,6 +6430,10 @@
       },
       "GuardStance": {
         "name": "Guard (Stance)"
+      },
+      "GuardianAngel": {
+        "name": "Guardian Angel",
+        "description": "+25% to the Cheat Death chance, and the Cheat Death roll is made with Advantage."
       },
       "Halberd": {
         "name": "Halberd"

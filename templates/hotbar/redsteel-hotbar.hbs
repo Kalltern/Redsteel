@@ -160,16 +160,18 @@
       data-action="stopSustain"
       data-suggestion-id="{{chip.id}}"
       data-effect-id="{{chip.effectId}}"
-      data-tooltip="{{chip.label}}"
-      data-tooltip-direction="UP"
+      data-tt-kind="bg3Suggest"
+      data-tt-theme="{{chip.theme}}"
+      data-tt-title="{{chip.spellName}}"
+      data-tt-hint="{{chip.label}}"
       aria-label="{{chip.ariaLabel}}"
     >
       <img class="rs-bg3-suggest-img" src="{{chip.img}}" alt="" />
     </button>
     {{else if (eq chip.kind "ability")}}
     {{!-- A combat ability usable right now, shown by its icon alone (user
-          ruling); its name and cost ride on a core tooltip pointing up, clear
-          of the strip. Clicking opens the Combat Abilities dialog with it
+          ruling); its name, cost and prose ride on the system's own tooltip,
+          set above the combat row. Clicking opens the Combat Abilities dialog with it
           already chosen, aimed at the attacker for a reaction. --}}
     <button
       type="button"
@@ -178,8 +180,11 @@
       data-suggestion-id="{{chip.id}}"
       data-ability-id="{{chip.abilityId}}"
       {{#if chip.targetTokenId}}data-target-token-id="{{chip.targetTokenId}}"{{/if}}
-      data-tooltip="{{chip.label}} · {{chip.costLabel}}"
-      data-tooltip-direction="UP"
+      data-tt-kind="bg3Suggest"
+      data-tt-theme="{{chip.theme}}"
+      data-tt-uuid="{{chip.uuid}}"
+      data-tt-title="{{chip.label}}"
+      data-tt-cost="{{chip.costKind}}"
       aria-label="{{chip.ariaLabel}}"
     >
       <img class="rs-bg3-suggest-img" src="{{chip.img}}" alt="" />
@@ -239,8 +244,17 @@
   </div>
   {{/if}}
   {{#if combatPlates.length}}
-  {{!-- One plate per theme present: red melee, yellow ranged, blue spells. --}}
-  <div class="rs-bg3-suggest rs-bg3-suggest--combat{{#if showCapacity}} rs-bg3-suggest--raised{{/if}}">
+  {{!-- One plate per theme present: red melee, yellow ranged, blue spells.
+        data-tt-above on the row itself, so the chips' tooltips sit over the
+        row rather than over the bar, where they would cover the chips.
+        data-tt-freeze lets them pin (the bar says nofreeze), so the cursor
+        can walk up onto the name and open the description beside it. --}}
+  <div
+    class="rs-bg3-suggest rs-bg3-suggest--combat{{#if showCapacity}} rs-bg3-suggest--raised{{/if}}"
+    data-tt-above
+    data-tt-freeze
+    data-tt-delay="250"
+  >
     {{#each combatPlates as |plate|}}
     <div class="rs-bg3-suggest-plate rs-bg3-suggest-plate--{{plate.theme}}">
       {{#each plate.chips as |chip|}}

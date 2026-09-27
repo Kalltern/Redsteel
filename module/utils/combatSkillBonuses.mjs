@@ -343,9 +343,18 @@ export async function getNonWeaponAbility(actor, ability) {
   // has to be consumed here instead.
   const attackTags = (await consumeOpportunityFlag(actor)) ? ["opportunity"] : [];
 
+  // Named from the ability's own actor and token, not the bare getSpeaker()
+  // (the client's selected token): a pushing ability (Shield Bash) pushes away
+  // from the token on this speaker, so it has to be the one that struck. The
+  // token goes in explicitly, as on weapon attack cards, or a linked PC's card
+  // carries no token at all.
+  const speakerToken = actor.isToken
+    ? actor.token
+    : (actor.getActiveTokens(false, true)?.[0] ?? null);
+
   // Send the combined chat message
   await ChatMessage.create({
-    speaker: ChatMessage.getSpeaker(),
+    speaker: ChatMessage.getSpeaker({ actor, token: speakerToken }),
     content,
     rolls: validRolls,
     flags: {
@@ -353,6 +362,11 @@ export async function getNonWeaponAbility(actor, ability) {
         rollName,
         traitPills: getTraitPills(actor, "attack"),
         attackTags,
+        // Which ability this was, read in Apply Damage for what happens once it
+        // lands (forcedMovement.mjs PUSH_ON_HIT). Key first, raw name as the
+        // fallback for a hand-made copy with none.
+        abilityKey: ability?.system?.localizationKey ?? null,
+        abilityName: ability?.name ?? null,
         // Non-weapon ability attack — generic "attack" token only.
         rerollTokens: getAttackRerollTokens(),
       },

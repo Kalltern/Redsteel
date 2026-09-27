@@ -8843,26 +8843,16 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   pointer-events: none;
 }
 
-/* Frozen: the tooltip has been held open and now accepts the cursor. */
+/* Frozen: the tooltip has been held open and now accepts the cursor. Said
+   the Crusader Kings way, by the border lighting up, not by an icon. */
 .rs-tooltip.frozen {
   pointer-events: auto;
   overflow-y: auto;
   border-color: #c9a94a;
   box-shadow:
     0 6px 18px rgba(0, 0, 0, 0.6),
-    0 0 0 1px rgba(201, 169, 74, 0.25);
-}
-
-.rs-tooltip.frozen::after {
-  content: "\f08d"; /* thumbtack */
-  font-family: "Font Awesome 6 Pro", "Font Awesome 5 Pro", "Font Awesome 6 Free";
-  font-weight: 900;
-  position: absolute;
-  top: 5px;
-  right: 7px;
-  font-size: 9px;
-  color: #c9a94a;
-  opacity: 0.65;
+    0 0 0 1px rgba(201, 169, 74, 0.25),
+    0 0 6px rgba(201, 169, 74, 0.35);
 }
 
 /* Every level keeps the same background; depth reads from the offset and the
@@ -11748,6 +11738,158 @@ body.redsteel-bg3-hotbar #hotbar {
   height: 40px;
   border: 0;
   border-radius: 1px;
+}
+
+/* A combat suggestion's tooltip, dressed as its plate: the plate's dark
+   stone and short glow instead of the shared tooltip's olive frame, a serif
+   name and its cost (a Reaction as the tracker's blue star). The name opens
+   the ability's prose one level deeper, in the same frame. The theme's
+   inputs are set on the tooltip root, found through the content's class. */
+.rs-tooltip:has(.rs-bg3-stt) {
+  --stt-hi: rgba(40, 11, 10, 0.97);
+  --stt-lo: rgba(14, 5, 5, 0.98);
+  --stt-glow: rgba(170, 32, 24, 0.55);
+  --stt-edge: #6e231b;
+  --stt-rule: rgba(190, 60, 44, 0.55);
+  --stt-lit: #c8483a;
+  max-width: 300px;
+  padding: 8px 10px 9px;
+  background: linear-gradient(180deg, var(--stt-hi) 0%, var(--stt-lo) 100%);
+  border: 1px solid var(--stt-edge);
+  border-radius: 4px;
+  box-shadow:
+    0 0 5px 1px var(--stt-glow),
+    0 6px 16px rgba(0, 0, 0, 0.6),
+    inset 0 0 18px rgba(0, 0, 0, 0.5);
+}
+
+.rs-tooltip:has(.rs-bg3-stt--ranged) {
+  --stt-hi: rgba(40, 31, 10, 0.97);
+  --stt-lo: rgba(14, 11, 4, 0.98);
+  --stt-glow: rgba(200, 162, 74, 0.5);
+  --stt-edge: #6e5620;
+  --stt-rule: rgba(200, 162, 74, 0.55);
+  --stt-lit: #d9b45a;
+}
+
+.rs-tooltip:has(.rs-bg3-stt--magic) {
+  --stt-hi: rgba(10, 19, 42, 0.97);
+  --stt-lo: rgba(4, 7, 18, 0.98);
+  --stt-glow: rgba(64, 124, 210, 0.5);
+  --stt-edge: #244278;
+  --stt-rule: rgba(90, 140, 214, 0.55);
+  --stt-lit: #5f95e0;
+}
+
+/* Pinned: the edge lights up in the theme's colour and the glow widens a
+   little, the same signal the shared tooltip gives in gold. */
+.rs-tooltip.frozen:has(.rs-bg3-stt) {
+  border-color: var(--stt-lit);
+  box-shadow:
+    0 0 7px 1px var(--stt-glow),
+    0 6px 16px rgba(0, 0, 0, 0.6),
+    inset 0 0 18px rgba(0, 0, 0, 0.5);
+}
+
+.rs-tooltip .rs-bg3-stt-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rs-tooltip .rs-bg3-stt-title {
+  flex: 1 1 auto;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 15px;
+  letter-spacing: 0.3px;
+  color: var(--rs-bg3-bright, #f0d9a0);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+/* A name with prose behind it: the shared link's dotted underline, in the
+   theme's rule colour, brightening once the tooltip has pinned. */
+.rs-tooltip .rs-bg3-stt-title.tt-link {
+  border-bottom: 1px dotted var(--stt-rule);
+}
+
+.rs-tooltip.frozen .rs-bg3-stt-title.tt-link:hover {
+  color: #fff3cf;
+  background: none;
+  border-bottom-color: var(--rs-bg3-bright, #f0d9a0);
+}
+
+/* The cost, pushed to the right end of the head. */
+.rs-tooltip .rs-bg3-stt-cost {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 6px;
+}
+
+/* A Reaction: the action tracker's star, same steel blue and glow. */
+.rs-tooltip .rs-bg3-stt-star {
+  display: block;
+  width: 16px;
+  height: 16px;
+  filter: drop-shadow(0 0 4px rgba(143, 188, 196, 0.7))
+    drop-shadow(0 0 1px rgba(143, 188, 196, 0.85));
+}
+
+.rs-tooltip .rs-bg3-stt-star path {
+  fill: var(--rs-attr-per, #8fbcc4);
+}
+
+.rs-tooltip .rs-bg3-stt-cost--text {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: rgb(154, 144, 120);
+}
+
+/* The ability's prose, the whole of its own tooltip. */
+.rs-tooltip .rs-bg3-stt-desc {
+  font-size: 12px;
+  line-height: 1.45;
+  color: #cfc8b6;
+}
+
+/* A held spell's line under a hairline in the theme's colour, fading at both
+   ends. */
+.rs-tooltip .rs-bg3-stt-hint {
+  position: relative;
+  margin-top: 7px;
+  padding-top: 7px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.rs-tooltip .rs-bg3-stt-hint::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--stt-rule) 20%,
+    var(--stt-rule) 80%,
+    transparent 100%
+  );
+}
+
+.rs-tooltip .rs-bg3-stt-hint {
+  font-style: italic;
+  color: rgb(154, 144, 120);
+}
+
+.rs-tooltip .rs-bg3-stt-desc p {
+  margin: 0 0 4px;
+}
+
+.rs-tooltip .rs-bg3-stt-desc p:last-child {
+  margin-bottom: 0;
 }
 
 /* Narrow displays squeeze the wings, not the bar: the player list holds the

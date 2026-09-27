@@ -3,6 +3,7 @@ import {
   getMovementLock,
   isTrackedTurn,
 } from "../utils/actionTracker.mjs";
+import { isForcedMove } from "../utils/forcedMoveRegistry.mjs";
 import {
   MOVEMENT_MODES,
   DRAG_PATH_LAYER,
@@ -431,6 +432,8 @@ export class RedsteelToken extends Token {
 // action tracker's updateToken hook.
 Hooks.on("moveToken", (tokenDoc, movement, _operation, user) => {
   if (user?.id !== game.user.id) return;
+  // Pushed, pulled or teleported: not the token's own movement.
+  if (isForcedMove(tokenDoc)) return;
   if (!game.combat?.started) return;
   const hexes = Math.round(Number(movement?.passed?.spaces) || 0);
   if (hexes <= 0) return;

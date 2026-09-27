@@ -25,6 +25,7 @@
  */
 
 import { spend } from "./actionTracker.mjs";
+import { isForcedMove } from "./forcedMoveRegistry.mjs";
 import { alliesOnPath } from "./movementZones.mjs";
 
 const SOCKET = "system.redsteel";
@@ -243,6 +244,8 @@ function onResponse(data) {
 export function registerAllyPassage() {
   Hooks.on("preMoveToken", (tokenDoc, movement) => {
     if (!game.combat?.started) return;
+    // A forced move is nobody's choice to ask permission for.
+    if (isForcedMove(tokenDoc)) return;
     const token = tokenDoc.object;
     // The route of THIS move sits in `passed` at pre-move time and `pending`
     // is empty (seen in V14, 2026-09-24); a paused or split move can carry

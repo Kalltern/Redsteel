@@ -496,6 +496,8 @@ export class RedsteelActiveEffect extends ActiveEffect {
     if (healthWrite == null) return;
 
     await game.redsteel.endDyingIfHealed?.(actor);
+    // Downed ends on the same heal if its Endurance/Will test was passed.
+    await game.redsteel.endDownedIfRecovered?.(actor);
   }
 
   /**
@@ -2038,20 +2040,30 @@ export class RedsteelActiveEffect extends ActiveEffect {
     // When Dying ends (e.g. stabilised by First Aid), the survivor must test
     // their resolve or take an Insanity point. Posted once, by the user who
     // removed the effect, with a chat button to roll the test.
-    if (effectId === "dying" && game.user.id === userId) {
-      // Surviving the brink leaves a lasting mark: +1 Wound. Applied every
-      // time Dying is removed — not clamped to the (often very low) wound cap,
-      // which would otherwise silently swallow the increment.
-      const gw = actor.system.stats.graveWounds ?? {};
-      const newWounds = (Number(gw.value) || 0) + 1;
-      await actor.update({ "system.stats.graveWounds.value": newWounds });
+    // Cheat Death (cheatDeath.mjs) stamps `endedBy` right before deleting:
+    //   "death"      the character died: no Wound, no resolve test.
+    //   "cheatDeath" survived by Cheat Death: no Wound, resolve test still due.
+    const endedBy = this.getFlag("redsteel", "endedBy");
+    if (effectId === "dying" && game.user.id === userId && endedBy !== "death") {
+      let header;
+      if (endedBy === "cheatDeath") {
+        header = `<p><b>${game.i18n.format("REDSTEEL.CheatDeath.ResolveHeader", { name: actor.name })}</b></p>`;
+      } else {
+        // Surviving the brink leaves a lasting mark: +1 Wound. Applied every
+        // time Dying is removed — not clamped to the (often very low) wound cap,
+        // which would otherwise silently swallow the increment.
+        const gw = actor.system.stats.graveWounds ?? {};
+        const newWounds = (Number(gw.value) || 0) + 1;
+        await actor.update({ "system.stats.graveWounds.value": newWounds });
+        header = `<p><b>${actor.name} steps back from the brink.</b></p>
+            <p>They receive <b>+1 Wound</b> (now ${newWounds}).</p>`;
+      }
 
       await ChatMessage.create({
         speaker: ChatMessage.getSpeaker({ actor }),
         content: `
           <div class="redsteel-dying">
-            <p><b>${actor.name} steps back from the brink.</b></p>
-            <p>They receive <b>+1 Wound</b> (now ${newWounds}).</p>
+            ${header}
             <p>Once per day, after being close to death, you must test your
             resolve to prevent receiving an Insanity point.</p>
             <div class="redsteel-action-buttons">
@@ -2620,6 +2632,12 @@ export class RedsteelActiveEffect extends ActiveEffect {
         blind: true,
       },
     });
+
+    // Bled out: hand over to Cheat Death (GM confirms, then the player picks).
+    // Guarded inside onBledOut, so re-calling every negative round is safe.
+    if (rounds <= -1) {
+      await game.redsteel.cheatDeath?.onBledOut?.(actor, this);
+    }
   }
 
   /**
@@ -2667,6 +2685,8 @@ export class RedsteelActiveEffect extends ActiveEffect {
     );
 
     if (indestructible) {
+      // Counts as a passed test: Downed ends once health is above 0.
+      await this.setFlag("redsteel", "downedPassed", true);
       await ChatMessage.create({
         speaker,
         content: `

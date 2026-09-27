@@ -52,6 +52,7 @@
 
 import { parseActionCost } from "./spellbook.mjs";
 import { combatantForActor } from "./combatants.mjs";
+import { isForcedMove } from "./forcedMoveRegistry.mjs";
 
 const SYSTEM_ID = "redsteel";
 const FLAG = "actionTracker";
@@ -611,6 +612,8 @@ export function registerActionTrackerHooks() {
     if (typeof changed?.x !== "number" && typeof changed?.y !== "number") return;
     const prev = before.get(tokenDoc.id);
     before.delete(tokenDoc.id);
+    // Pushed, pulled or teleported (forcedMovement.mjs): spends no Action.
+    if (isForcedMove(tokenDoc)) return;
     if (prev && prev.x === tokenDoc.x && prev.y === tokenDoc.y) return;
     const actor = tokenDoc?.actor;
     if (!actor?.isOwner) return;

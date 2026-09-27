@@ -10,6 +10,39 @@
       "NoReaction": "Postava {ally} už nemá Reakci na propuštění. Tento pohyb je zrušen.",
       "NoOne": "Za postavu {ally} teď nikdo nemůže odpovědět. Tento pohyb je zrušen."
     },
+    "CheatDeath": {
+      "Title": "Obelstění smrti",
+      "BledOutTitle": "Postava {name} vykrvácela",
+      "BledOutBody": "Potvrď smrt, aby se hráč mohl rozhodnout, zda se pokusí o Obelstění smrti.",
+      "ConfirmButton": "Potvrdit smrt",
+      "DoorTitle": "Postava {name} stojí na prahu smrti",
+      "Chance": "Šance na Obelstění smrti: {chance} %",
+      "Breakdown": "Odolnost {end} ×5 = {endPart}, Štěstí {lck} ×2 = {lckPart}, bonusy {bonus}, základ 25",
+      "Advantage": "Hází se s Výhodou.",
+      "Cost": "Pokus bez ohledu na výsledek trvale sníží Maximální Vážná zranění o 1 (z {max} na {after}).",
+      "AttemptButton": "Pokusit se obelstít smrt",
+      "AcceptButton": "Přijmout smrt",
+      "IneligibleCooldown": "Obelstění smrti bylo použito příliš nedávno. Dní do dalšího pokusu: {days}.",
+      "IneligibleWounds": "Maximální Vážná zranění nesmí klesnout pod současná Vážná zranění. Na Obelstění smrti není nárok.",
+      "ResultSuccess": "Úspěch! Postava {name} obelstila smrt.",
+      "ResultFailure": "Neúspěch. Smrt si bere postavu {name}.",
+      "MaxWoundLost": "Maximální Vážná zranění jsou nyní {max}.",
+      "DeadTitle": "Postava {name} je mrtvá.",
+      "SuccessTitle": "Postava {name} obelstila smrt a drží se při životě",
+      "SuccessHealth": "Stabilizována na 1 Život. Obelstění smrti nepřidává Vážné zranění.",
+      "RemovedList": "Odstraněno: {list}.",
+      "Removed": {
+        "Bleed": "Krvácení",
+        "Burn": "Podpálení",
+        "Incapacitated": "Vyřazený"
+      },
+      "ProneApplied": "Leží na zemi (stav Na zemi).",
+      "ResolveHeader": "Postava {name} obelstila smrt a vrací se z prahu smrti. Obelstění smrti nepřidává Vážné zranění.",
+      "GMOnly": "Smrt může potvrdit jen PJ.",
+      "NotOwner": "Tuto postavu neovládáš.",
+      "Stale": "Toto rozhodnutí o Obelstění smrti už není aktuální.",
+      "NoGM": "Není připojen žádný PJ, který by Obelstění smrti vyřešil."
+    },
     "Trade": {
       "Title": "Obchod",
       "MenuTrade": "Obchodovat",
@@ -4926,6 +4959,15 @@
     "BloodHarvest": {
       "Gained": "{name} vtahuje {amount} prolité krve do Zásoby krve (Cordinas I)."
     },
+    "ForcedMovement": {
+      "WrongScene": "Vynucený pohyb vyžaduje, aby PJ sledoval scénu, na které tokeny stojí. Přesuňte je ručně.",
+      "NoAttacker": "Odražení: token útočníka na této scéně nebyl nalezen, cíl proto nebyl odražen. Přesuňte ho ručně.",
+      "CollisionTitle": "Náraz",
+      "CollisionTitleFrom": "Náraz ({source})",
+      "HitToken": "{name} je vražen do {other}.",
+      "HitWall": "{name} narazí do překážky a zastaví se.",
+      "CollisionDamage": "{damage} zranění ignorujícího zbroj pro {targets}."
+    },
     "Laceration": {
       "Option": "Tržná rána — obětovat Míření ({cost} výdrže za každé):",
       "StaminaTooLow": "{name} má {stamina} výdrže — na každé obětované Míření jsou potřeba {cost}.",
@@ -6392,6 +6434,10 @@
       },
       "GuardStance": {
         "name": "Ochrana"
+      },
+      "GuardianAngel": {
+        "name": "Strážný anděl",
+        "description": "+25 % k šanci na Obelstění smrti a hod na Obelstění smrti se provádí s Výhodou."
       },
       "Halberd": {
         "name": "Halapartna"
