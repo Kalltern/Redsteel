@@ -143,6 +143,7 @@
     "effectType3": "",
     "attributeTest": "will",
     "testModifier": "@spellPower*3",
+    "versusAgainst": "str,end",
     "manualNotes": "When the trap triggers, roll this spell manually for 0 mana cost and disregard the channeling test. The trap also ignores Magic Defense, so let the target roll their defense and disregard the result manually until this is automated.",
     "vsTest": true
   },

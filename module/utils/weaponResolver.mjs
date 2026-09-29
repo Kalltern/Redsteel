@@ -1,3 +1,5 @@
+import { isHandheldLight } from "./itemLight.mjs";
+
 /**
  * Fold in the extra damage an ability only deals with a Heavy weapon.
  *
@@ -125,9 +127,11 @@ export function resolveWeaponContext(
     if (selectedWeapon) {
       return {
         weapon: selectedWeapon,
-        offWeapon: ws.off || null,
-        isDualWield: ws.off && !ws.mainIsTwoHanded && !ws.offIsShield,
+        // A handheld light (torch) in the off hand is not a weapon.
+        offWeapon: ws.offIsLight ? null : ws.off || null,
+        isDualWield: ws.isDualWield || false,
         hasShield: ws.offIsShield || false,
+        offIsLight: ws.offIsLight || false,
       };
     }
     //  Ability filtering (optional)
@@ -149,9 +153,11 @@ export function resolveWeaponContext(
 
     return {
       weapon,
-      offWeapon: ws.off || null,
+      // A handheld light (torch) in the off hand is not a weapon.
+      offWeapon: ws.offIsLight ? null : ws.off || null,
       isDualWield: ws.isDualWield || false,
       hasShield: ws.offIsShield || false,
+      offIsLight: ws.offIsLight || false,
     };
   }
 
@@ -194,13 +200,22 @@ export function buildWeaponSetView(actor) {
       : false;
 
     const offIsShield = !!off?.system?.shield;
-    const isDualWield = !!main && !!off && !mainIsTwoHanded && !offIsShield;
+    // A handheld light (torch) occupies the off hand but is not a weapon.
+    const offIsLight = isHandheldLight(off);
+    // Dual wielding needs an actual weapon in the off hand.
+    const isDualWield =
+      !!main &&
+      !!off &&
+      off.type === "weapon" &&
+      !mainIsTwoHanded &&
+      !offIsShield;
 
     result[setId] = {
       main,
       off,
       mainIsTwoHanded,
       offIsShield,
+      offIsLight,
       isDualWield,
     };
   }

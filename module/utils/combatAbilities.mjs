@@ -19,6 +19,7 @@ import {
   pickOverwatchArea,
 } from "./overwatch.mjs";
 import { hasHtmlContent } from "./chatBlocks.mjs";
+import { markStanceHeld, postStanceCard } from "./stances.mjs";
 import {
   appendHeavyWeaponDamage,
   filterModifiersByWeapon,
@@ -40,7 +41,11 @@ import {
   resourceLabel,
 } from "./itemResources.mjs";
 import { captureAttackTargets } from "./autoDefense.mjs";
-import { versusLossFor } from "./attributeFollowup.mjs";
+import {
+  versusLossFor,
+  renderAgainstAttr,
+  versusAgainstFor,
+} from "./attributeFollowup.mjs";
 import {
   SECTOR,
   attackSector,
@@ -61,8 +66,10 @@ import { spendForItems } from "./actionTracker.mjs";
 import { attackOptionIconsHtml } from "./attackOptionIcons.mjs";
 import { throwExplosiveItem } from "./throwExplosive.mjs";
 import {
+  declareChargeMove,
   declareDuelistsAdvance,
   grantExtendedLungeStep,
+  isCharge,
   isDuelistsAdvance,
   isExtendedLunge,
   modifierKeysOf,
@@ -107,8 +114,13 @@ function offersExplosives(ability, actor) {
  * @param {string} [options.launchAbilityId] An ability Item id to fire as soon
  *   as the dialog renders, exactly as if its row had been clicked. Used by the
  *   hotbar's combat suggestion chips. Omitted by every other caller.
+ * @param {boolean} [options.launchAimed] With launchAbilityId: tick Aimed
+ *   Attack first, so the launch asks for the body part (a right-clicked chip).
  */
-export async function combatAbilities({ launchAbilityId = null } = {}) {
+export async function combatAbilities({
+  launchAbilityId = null,
+  launchAimed = false,
+} = {}) {
   // One-shot: the dialog's render callback can run again on a re-render, and
   // the launch must not fire twice.
   let pendingLaunchId = launchAbilityId;
@@ -465,6 +477,14 @@ export async function combatAbilities({ launchAbilityId = null } = {}) {
       return;
     }
 
+    // Charge (Zteč) moves before it swings: on the actor's own turn the first
+    // pick only declares the approach on the hotbar, and nothing is spent.
+    // The attack comes from the strip's ✓ or from picking Charge again.
+    if (isCharge(ability) && (await declareChargeMove(actor))) {
+      if (!keepOpen) dialog?.close();
+      return;
+    }
+
     let paid;
 
     if (ability.system.class === "stance") {
@@ -480,7 +500,7 @@ export async function combatAbilities({ launchAbilityId = null } = {}) {
       // Turning OFF → free
       if (existing) {
         await existing.delete();
-        await postStanceCard(actor, ability, false);
+        await postStanceCard(actor, ability, "dropped");
         return;
       }
 
@@ -555,7 +575,12 @@ export async function combatAbilities({ launchAbilityId = null } = {}) {
         actor,
         ability.system.key,
       );
-      if (applied) await postStanceCard(actor, ability, true);
+      if (applied) {
+        // Taking it up pays for this turn; each later turn of the holder asks
+        // again from the hotbar (stances.mjs), never the round rollover.
+        await markStanceHeld(actor, applied, ability);
+        await postStanceCard(actor, ability, "taken");
+      }
       return;
     }
     // Commands are type "other" as well, so they are intercepted first.
@@ -1116,6 +1141,12 @@ ${
           // it for "Attack Again".
           const app = abilityDialog.element?.[0];
           if (app) app.style.display = "none";
+          // The hidden dialog's own checkbox, so the launch reads it exactly
+          // as a row click would.
+          if (launchAimed) {
+            const aimedBox = root.querySelector('[name="aimedStrike"]');
+            if (aimedBox) aimedBox.checked = true;
+          }
           Promise.resolve(onAbilityChosen(launched, root, abilityDialog, actor))
             .catch((err) => console.error("REDSTEEL: ability launch failed", err))
             .finally(() => {
@@ -2106,7 +2137,7 @@ ${renderSpeedTestLine({
 <td>
 <span>
 <b>${mod.localizedName ?? mod.name} — ${testName} Test ${attributeTotalValue}%</b><br>
-<span class="mos-followup" data-margin="${attributeRoll.total}" data-source="${ability.localizedName ?? ability.name}"${versusLossFor(mod) ? ` data-on-lose="${versusLossFor(mod)}"` : ""} data-tooltip="Test chance ${attributeTotalValue}%<br>Rolled: ${attributeRoll.result}<br>Click to roll an attribute against this margin" style="cursor:pointer; text-decoration:underline dotted;">Margin of Success: [${attributeRoll.total}]</span>
+<span class="mos-followup" data-margin="${attributeRoll.total}" data-source="${ability.localizedName ?? ability.name}"${versusLossFor(mod) ? ` data-on-lose="${versusLossFor(mod)}"` : ""}${renderAgainstAttr(versusAgainstFor(mod))} data-chance="${attributeTotalValue}" data-tooltip="Test chance ${attributeTotalValue}%<br>Rolled: ${attributeRoll.result}<br>Click to roll an attribute against this margin" style="cursor:pointer; text-decoration:underline dotted;">Margin of Success: [${attributeRoll.total}]</span>
 </span>
 </td>
 </tr>
@@ -2156,7 +2187,7 @@ ${renderSpeedTestLine({
       concatRollAndDescription += `
 
 <b>${abilityAttributeTestName} Test ${totalModifier}%</b><br>
-<span class="mos-followup" data-margin="${attributeRoll.total}" data-source="${ability.localizedName ?? ability.name}" data-tooltip="Test chance ${totalModifier}%<br>Rolled: ${attributeRoll.result}<br>Click to roll an attribute against this margin" style="cursor:pointer; text-decoration:underline dotted;">Margin of Success: ${attributeRoll.total}</span>
+<span class="mos-followup" data-margin="${attributeRoll.total}" data-source="${ability.localizedName ?? ability.name}"${renderAgainstAttr(versusAgainstFor(ability))} data-chance="${totalModifier}" data-tooltip="Test chance ${totalModifier}%<br>Rolled: ${attributeRoll.result}<br>Click to roll an attribute against this margin" style="cursor:pointer; text-decoration:underline dotted;">Margin of Success: ${attributeRoll.total}</span>
 `;
     }
     const modifierLabel = selectedModifiers.length
@@ -2457,7 +2488,7 @@ async function rollUtilityTest(actor, item) {
     roll,
     label: "Margin of Success",
     html: `<b>${testName} Test ${total}%</b><br>
-<span class="mos-followup" data-margin="${roll.total}" data-source="${source}" data-tooltip="Test chance ${total}%<br>Rolled: ${roll.result}<br>Click to roll an attribute against this margin" style="cursor:pointer; text-decoration:underline dotted;">Margin of Success: [${roll.total}]</span>`,
+<span class="mos-followup" data-margin="${roll.total}" data-source="${source}"${renderAgainstAttr(versusAgainstFor(item))} data-chance="${total}" data-tooltip="Test chance ${total}%<br>Rolled: ${roll.result}<br>Click to roll an attribute against this margin" style="cursor:pointer; text-decoration:underline dotted;">Margin of Success: [${roll.total}]</span>`,
   };
 }
 
@@ -2799,49 +2830,6 @@ async function runFastReaction(actor, ability) {
 <div style="text-align:center; font-size:16px;">
   ${summary}
   ${capped}
-</div>
-`,
-  });
-}
-
-/**
- * Stances are the one ability class that resolves with no roll and no card of
- * its own: the effect simply appears on the token. At the table that reads as
- * nothing having happened, so nobody sees the fighter lock into Defensive
- * Stance, and nobody sees it dropped three rounds later either. Both edges of
- * the toggle therefore post a short card.
- *
- * Taking the stance carries its description, because that is where the bonuses
- * it grants are written and the rest of the table has no other way to read
- * them. Dropping it is a single line: the stance is already off the sheet, all
- * that is left to do is say so.
- *
- * @param {Actor} actor      Whose stance changed.
- * @param {Item} ability     The stance ability being toggled.
- * @param {boolean} active   true when it was taken up, false when dropped.
- */
-async function postStanceCard(actor, ability, active) {
-  const label = ability.localizedName ?? ability.name;
-  const status = game.i18n.localize(
-    active ? "REDSTEEL.Items.Stance.taken" : "REDSTEEL.Items.Stance.dropped",
-  );
-  const description = active ? (ability.localizedDescription ?? "") : "";
-
-  await ChatMessage.create({
-    speaker: ChatMessage.getSpeaker({ actor }),
-    flavor: `
-<span style="display:inline-flex; align-items:center;">
-  <img src="${ability.img}" width="36" height="36" style="margin-right:8px;">
-  <strong>${label}</strong>
-</span>
-<hr>
-<div style="text-align:center; font-size:16px;">
-  <strong>${status}</strong>
-  ${
-    hasHtmlContent(description)
-      ? `<div style="font-size:14px; opacity:0.8;">${description}</div>`
-      : ""
-  }
 </div>
 `,
   });

@@ -114,7 +114,8 @@
     "manualNotes": "",
     "vsTest": true,
     "attributeTest": "will",
-    "testModifier": ""
+    "testModifier": "",
+    "versusAgainst": "end"
   },
   "effects": [],
   "folder": "6PM0K9AWtzeYO1Fn",

@@ -114,7 +114,8 @@
     "manualNotes": "The limbs are not automated. Roll 2d4dl1 and apply that many broken limbs and Grave Wounds. The stored roll covers only the failure branch's damage.",
     "vsTest": true,
     "attributeTest": "will",
-    "testModifier": ""
+    "testModifier": "",
+    "versusAgainst": "end"
   },
   "effects": [],
   "folder": "6PM0K9AWtzeYO1Fn",

@@ -350,6 +350,26 @@ export function autoDefenseLongReachPenalty(
 }
 
 /**
+ * Can this actor answer an attack with Magic (or Holy) Defense?
+ *
+ * A character is a mage through `magicPotential`. An NPC has no such flag: its
+ * stat block is flat numbers, so an authored Channeling skill is what makes it
+ * a caster, and it defends with that the same way a character does.
+ *
+ * @param {Actor} actor
+ * @returns {boolean}
+ */
+export function canMagicDefend(actor) {
+  const system = actor?.system;
+  if (!system) return false;
+  if (system.magicPotential || system.priest) return true;
+  return (
+    actor.type === "npc" &&
+    (Number(system.combatSkills?.channeling?.value) || 0) > 0
+  );
+}
+
+/**
  * Everything a defense roll is made of, up to but not including the die.
  *
  * One builder for both uses: the defense closures in {@link defenseRoll} roll
@@ -364,8 +384,9 @@ export function autoDefenseLongReachPenalty(
  *
  * @param {object} params
  * @param {Actor} params.actor
- * @param {"melee"|"ranged"|"dodge"} params.mode
+ * @param {"melee"|"ranged"|"dodge"|"magic"} params.mode
  * @param {object} params.context  from `game.redsteel.resolveWeaponContext`
+ *   (ignored, and may be null, for "magic")
  * @param {object|null} [params.ability]  reaction ability or a bare
  *   `{system: {defense|rangedDefense|dodge}}` modifier (Guard, Blindside)
  * @param {TokenDocument|Token|null} [params.defenderToken]  for the Aim perk
@@ -373,6 +394,8 @@ export function autoDefenseLongReachPenalty(
  * @param {number} [params.overwhelmStacks=0]
  * @param {number} [params.longReachPenalty=0]  melee only
  * @param {boolean} [params.useBane=false]
+ * @param {string|null} [params.spellSchool]  school of the spell being answered
+ *   ("magic" only, for the Blood school bonus)
  * @returns {Promise<{formula: string, rollData: object, rating: number,
  *   critSuccess: number, critFailure: number,
  *   skillKey: "meleeDefense"|"rangedDefense"|"dodge",
@@ -388,7 +411,40 @@ export async function buildDefenseProfile({
   overwhelmStacks = 0,
   longReachPenalty = 0,
   useBane = false,
+  spellSchool = null,
 } = {}) {
+  // Magic Defense rolls Channeling and reads no weapon at all, so it is settled
+  // before anything below dereferences the context (an NPC mage may carry
+  // none). NPCs have no `channeling.defense` field — doctrine bonuses are a
+  // character thing — hence the Number guard rather than a NaN rating.
+  if (mode === "magic") {
+    const channeling = actor.system.combatSkills.channeling;
+    // School of Blood ranks only harden the defender against Blood spells.
+    const bloodSchoolBonus =
+      spellSchool === "blood" ? getBloodSchoolRankBonus(actor) : 0;
+    const rollData = {
+      rating:
+        (Number(channeling?.rating) || 0) +
+        (Number(channeling?.defense) || 0) +
+        bloodSchoolBonus,
+      overwhelmPenalty: overwhelmStacks * OVERWHELM_PENALTY_PER_STACK,
+    };
+    return {
+      formula: "@rating + @overwhelmPenalty - 1d100",
+      rollData,
+      rating: rollData.rating + rollData.overwhelmPenalty,
+      // Channeling defense has no crits of its own: the contest is decided on
+      // margins, so these thresholds can never be reached.
+      critSuccess: 0,
+      critFailure: 101,
+      // Rolled untagged, so only the global advantage bucket applies.
+      skillKey: null,
+      dodgeLimit: null,
+      aimDefense: null,
+      bloodSchoolBonus,
+    };
+  }
+
   const weapon = context.weapon;
   const offProps = getOffhandProps(context);
   const baneProfile = getBaneProfile(actor);
@@ -834,13 +890,16 @@ export async function defenseRoll({
     // already turned away by the deny gate above — bar a future
     // `backstabDefense` feature, which must not be charged the node's -20% for
     // a dodge it never bought.
-    if (isBackAttack && hasBackDodgeNode) {
+    // A weaponless NPC mage answering a spell has no weapon to draw the dodge
+    // card around, so it keeps its Magic Defense instead.
+    if (isBackAttack && hasBackDodgeNode && weapon) {
       return dodgeDefense({
         weapon,
         blindside: true,
         ability: { system: { dodge: BLINDSIDE_DODGE_PENALTY } },
       });
     }
+    if (auto === "magic") return spellDefense();
     if (auto === "ranged") return rangedDefense({ weapon });
     if (auto === "dodge") return dodgeDefense({ weapon });
     // An NPC never sees the checkbox, so the penalty has to be handed to it
@@ -938,7 +997,7 @@ export async function defenseRoll({
       };
     }
     // Add spell defense if actor can use magic
-    if (actor.system.magicPotential || actor.system.priest) {
+    if (canMagicDefend(actor)) {
       buttons.spell = {
         label: "Magic defense",
         callback: (html) => {
@@ -1633,6 +1692,82 @@ export async function defenseRoll({
       Grandmaster: 5,
     };
 
+    const rollMagicDefense = async (level, cost) => {
+      const mana = actor.system.stats.mana.value ?? 0;
+
+      if (mana < cost) {
+        ui.notifications.warn("Not enough Mana!");
+        return;
+      }
+
+      if (cost > 0) {
+        await actor.update({
+          "system.stats.mana.value": mana - cost,
+        });
+      }
+
+      await settleOverwhelm();
+
+      // Channeling, its doctrine defense and the Blood school bonus: see
+      // buildDefenseProfile, which auto-defense scores from as well.
+      const profile = await buildDefenseProfile({
+        actor,
+        mode: "magic",
+        context: null,
+        overwhelmStacks,
+        spellSchool: attack?.spellSchool ?? null,
+      });
+      const { bloodSchoolBonus } = profile;
+
+      const roll = new Roll(
+        profile.formula,
+        withRollBias(profile.rollData, actor),
+      );
+      if (auto) tagAutoDefenseRoll(roll);
+
+      await roll.evaluate();
+
+      // Channeling defense posts no crit thresholds of its own, so the
+      // contest rests on margins here too.
+      const versus = resolveVersusAttack({
+        defenseTotal: roll.total,
+        defenseD100: roll.dice.find((d) => d.faces === 100)?.total ?? null,
+        defenseCrit: false,
+      });
+
+      await roll.toMessage({
+        speaker: ChatMessage.getSpeaker({ actor }),
+        flavor: `
+        <div style="display:flex;align-items:center;gap:8px;font-weight:bold;">
+          <img src="icons/magic/defensive/shield-barrier-blades-teal.webp" width="36" height="36">
+          <span>Magic Defense (${level})</span>
+        </div>
+
+        ${
+          auto
+            ? `<p class="rs-auto-defense-note"><i class="fa-light fa-bolt-auto"></i> ${game.i18n.localize(
+                "REDSTEEL.AutoDefense.CardNote",
+              )}</p>`
+            : ""
+        }
+        ${overwhelmStacks > 0 ? `<p style="text-align:center">${game.i18n.localize("REDSTEEL.Overwhelm.Label")}: ${overwhelmPenalty}</p>` : ""}
+        ${bloodSchoolBonus > 0 ? `<p style="text-align:center">${game.i18n.format("REDSTEEL.Defense.BloodSchoolBonus", { bonus: bloodSchoolBonus })}</p>` : ""}
+        ${versus.html}
+        `,
+        flags: {
+          redsteel: {
+            traitPills: getTraitPills(actor, "defense"),
+            ...(auto ? { autoDefense: true } : {}),
+            versus: versus.versus,
+          },
+        },
+      });
+    };
+
+    // An NPC answering on its own takes the free Wild level: the level only
+    // sets the Mana price, never the roll, so paying more buys nothing.
+    if (auto) return rollMagicDefense("Wild", 0);
+
     new Dialog({
       title: "Magic defense",
       content: `<p>Select your Magic defense level:</p>`,
@@ -1640,68 +1775,7 @@ export async function defenseRoll({
         (buttons, [level, cost]) => {
           buttons[level] = {
             label: `${level} (-${cost} Mana)`,
-            callback: async () => {
-              const mana = actor.system.stats.mana.value ?? 0;
-
-              if (mana < cost) {
-                ui.notifications.warn("Not enough Mana!");
-                return;
-              }
-
-              await actor.update({
-                "system.stats.mana.value": mana - cost,
-              });
-
-              await settleOverwhelm();
-
-              // School of Blood ranks only harden the defender against Blood
-              // spells, so the bonus needs the card being answered.
-              const bloodSchoolBonus =
-                attack?.spellSchool === "blood"
-                  ? getBloodSchoolRankBonus(actor)
-                  : 0;
-
-              const rating =
-                actor.system.combatSkills.channeling.rating +
-                actor.system.combatSkills.channeling.defense +
-                bloodSchoolBonus;
-
-              const roll = new Roll(
-                "@rating + @overwhelmPenalty - 1d100",
-                withRollBias({ rating, overwhelmPenalty }, actor),
-              );
-
-              await roll.evaluate();
-
-              // Channeling defense posts no crit thresholds of its own, so the
-              // contest rests on margins here too.
-              const versus = resolveVersusAttack({
-                defenseTotal: roll.total,
-                defenseD100:
-                  roll.dice.find((d) => d.faces === 100)?.total ?? null,
-                defenseCrit: false,
-              });
-
-              await roll.toMessage({
-                speaker: ChatMessage.getSpeaker({ actor }),
-                flavor: `
-                <div style="display:flex;align-items:center;gap:8px;font-weight:bold;">
-                  <img src="icons/magic/defensive/shield-barrier-blades-teal.webp" width="36" height="36">
-                  <span>Magic Defense (${level})</span>
-                </div>
-
-                ${overwhelmStacks > 0 ? `<p style="text-align:center">${game.i18n.localize("REDSTEEL.Overwhelm.Label")}: ${overwhelmPenalty}</p>` : ""}
-                ${bloodSchoolBonus > 0 ? `<p style="text-align:center">${game.i18n.format("REDSTEEL.Defense.BloodSchoolBonus", { bonus: bloodSchoolBonus })}</p>` : ""}
-                ${versus.html}
-                `,
-                flags: {
-                  redsteel: {
-                    traitPills: getTraitPills(actor, "defense"),
-                    versus: versus.versus,
-                  },
-                },
-              });
-            },
+            callback: () => rollMagicDefense(level, cost),
           };
 
           return buttons;

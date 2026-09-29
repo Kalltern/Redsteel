@@ -48,6 +48,7 @@
     "attributeTest": "strength",
     "dmgTypes": [],
     "testModifier": 0,
+    "versusAgainst": "end,dex",
     "costOptions": [
       "stamina",
       "mana",

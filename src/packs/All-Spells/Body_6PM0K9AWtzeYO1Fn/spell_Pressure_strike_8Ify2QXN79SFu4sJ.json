@@ -114,7 +114,8 @@
     "manualNotes": "",
     "vsTest": true,
     "attributeTest": "will",
-    "testModifier": "@spellPower*2"
+    "testModifier": "@spellPower*2",
+    "versusAgainst": "str,end"
   },
   "effects": [],
   "folder": "6PM0K9AWtzeYO1Fn",

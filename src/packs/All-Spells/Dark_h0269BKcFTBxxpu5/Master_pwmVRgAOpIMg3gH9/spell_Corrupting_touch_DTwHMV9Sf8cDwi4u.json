@@ -121,6 +121,7 @@
     "effectType3": "",
     "attributeTest": "strength",
     "testModifier": "",
+    "versusAgainst": "str",
     "manualNotes": "",
     "vsTest": true
   },

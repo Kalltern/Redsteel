@@ -1,6 +1,7 @@
 import {
   autoDefenseLongReachPenalty,
   buildDefenseProfile,
+  canMagicDefend,
   defenseRoll,
 } from "./defense.mjs";
 import { defenseWinChance } from "./defenseOdds.mjs";
@@ -147,24 +148,33 @@ function mainWeapon(actor) {
  *
  * A dodge that cannot be paid for is not an option at all.
  *
+ * Against a spell, an NPC mage (see defense.mjs → canMagicDefend) also weighs
+ * Magic Defense, exactly as a character mage would pick it from the dialog. It
+ * needs no weapon, so a staffless caster still answers spells.
+ *
  * @param {Actor} actor
  * @param {"melee"|"ranged"} category
  * @param {object} params
  * @param {object} params.attack  the rolled attack, as resolveAutoDefense builds it
  * @param {TokenDocument} params.defenderToken
  * @param {string|null} params.attackerTokenId
- * @returns {Promise<{mode: "melee"|"ranged"|"dodge", weapon: Item, score: number}|null>}
+ * @param {boolean} [params.magic=false]  the attack is a spell
+ * @returns {Promise<{mode: "melee"|"ranged"|"dodge"|"magic", weapon: Item|null, score: number}|null>}
  */
 export async function pickBestDefense(
   actor,
   category,
-  { attack, defenderToken = null, attackerTokenId = null } = {},
+  { attack, defenderToken = null, attackerTokenId = null, magic = false } = {},
 ) {
-  // Every defense path builds its card around a weapon, so an NPC with none has
-  // no automatic answer to give.
-  if (!weaponsOf(actor).length) return null;
+  const magicDefense = magic && canMagicDefend(actor);
+
+  // Every weapon defense builds its card around a weapon, so an NPC with none
+  // has no automatic answer to give, bar Magic Defense against a spell.
+  if (!weaponsOf(actor).length && !magicDefense) return null;
 
   const candidates = [];
+
+  if (magicDefense) candidates.push({ mode: "magic", weapon: null });
 
   const stamina = Number(actor.system?.stats?.stamina?.value) || 0;
   if (stamina >= DODGE_STAMINA_COST) {
@@ -210,8 +220,11 @@ export async function pickBestDefense(
 
   const options = [];
   for (const { mode, weapon } of candidates) {
-    const context = game.redsteel.resolveWeaponContext(actor, null, weapon);
-    if (!context) continue;
+    const context =
+      mode === "magic"
+        ? null
+        : game.redsteel.resolveWeaponContext(actor, null, weapon);
+    if (!context && mode !== "magic") continue;
 
     const profile = await buildDefenseProfile({
       actor,
@@ -221,6 +234,7 @@ export async function pickBestDefense(
       attackerTokenId,
       overwhelmStacks,
       longReachPenalty: mode === "melee" ? longReachPenalty : 0,
+      spellSchool: attack?.spellSchool ?? null,
     });
     const bias = getRollBias(biasData, profile.skillKey);
 
@@ -238,14 +252,15 @@ export async function pickBestDefense(
     defenderToken?.name ?? actor.name,
     options.map(({ mode, weapon, score }) => ({
       mode,
-      weapon: weapon.name,
+      weapon: weapon?.name ?? null,
       pct: score / 100,
     })),
   );
 
   // Ties go to the option that costs nothing: an equal dodge is a worse deal
   // than a parry, because it is paid for in stamina. Any other tie keeps the
-  // first option listed.
+  // first option listed (Magic Defense, when offered, is listed first; the
+  // automatic one is the free Wild level).
   return options.reduce((best, option) => {
     if (option.score !== best.score) {
       return option.score > best.score ? option : best;
@@ -360,6 +375,7 @@ export async function resolveAutoDefense(message) {
       attack,
       defenderToken: tokenDoc,
       attackerTokenId,
+      magic: flag.attackType === "magic",
     });
     if (!choice) {
       ui.notifications.warn(

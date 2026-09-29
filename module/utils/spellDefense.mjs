@@ -69,9 +69,10 @@ export async function spellDefense() {
             "system.stats.mana.value": newMana,
           });
 
+          // NPCs have no `channeling.defense` field; guard it or the roll is NaN.
           const rating =
-            actor.system.combatSkills.channeling.rating +
-            actor.system.combatSkills.channeling.defense;
+            (Number(actor.system.combatSkills.channeling.rating) || 0) +
+            (Number(actor.system.combatSkills.channeling.defense) || 0);
 
           const roll = new Roll(`${rating} - 1d100`, withRollBias({}, actor));
           await roll.evaluate();

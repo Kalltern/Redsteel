@@ -23,12 +23,18 @@ import { resolveSpellPowerTokens } from "./spellCards.mjs";
 import { setupDialogTabs } from "./dialogTabMemory.mjs";
 import { captureAttackTargets } from "./autoDefense.mjs";
 import { attackBonusFor, captureAttackPositioning } from "./positioning.mjs";
+import { renderAgainstAttr, versusAgainstFor } from "./attributeFollowup.mjs";
 import {
   BLOOD_PAYMENT_COST,
   BLOOD_PAYMENT_DIFFICULTY,
   getBloodReserve,
   hasBloodPayment,
 } from "./bloodPool.mjs";
+import {
+  HASTENED_CAST_CRIT_FAIL,
+  HASTENED_CAST_DIFFICULTY,
+  hasHastenedCast,
+} from "./hastenedCast.mjs";
 
 // --- Helper for Dialogs (CSS Injection) ---
 function _injectDialogCSS() {
@@ -406,6 +412,15 @@ export function showSpellSelectionDialogs(actor) {
            </label>`
         : "";
 
+      // Hastened Cast (Zrychlené čarování): any school, owners only.
+      const hastenedCastOption = hasHastenedCast(actor)
+        ? `<label class="hastened-cast"
+             title="${game.i18n.localize("REDSTEEL.HastenedCast.Hint")}">
+             <input type="checkbox" name="hastenedCast">
+             ${game.i18n.localize("REDSTEEL.HastenedCast.Option")}
+           </label>`
+        : "";
+
       const dialogContent = `
   <form class="spell-dialog-form">
 
@@ -433,6 +448,7 @@ export function showSpellSelectionDialogs(actor) {
           No Channeling Evaluation
         </label>
         ${bloodPaymentOption}
+        ${hastenedCastOption}
            </div>
        </div>
 
@@ -464,11 +480,13 @@ export function showSpellSelectionDialogs(actor) {
             const focus = Number(html.find('input[name="focus"]').val() || 0);
             // Blood Payment buys Difficulty, so it moves the printed chance the
             // same way Focus does. Show it before the player commits.
-            const difficultyBonus = html
-              .find('input[name="bloodPayment"]')
-              .is(":checked")
-              ? BLOOD_PAYMENT_DIFFICULTY
-              : 0;
+            const difficultyBonus =
+              (html.find('input[name="bloodPayment"]').is(":checked")
+                ? BLOOD_PAYMENT_DIFFICULTY
+                : 0) +
+              (html.find('input[name="hastenedCast"]').is(":checked")
+                ? HASTENED_CAST_DIFFICULTY
+                : 0);
             html.find(".cast-chance-cell").each(function () {
               const spellId = $(this)
                 .closest(".spell-choice")
@@ -484,7 +502,7 @@ export function showSpellSelectionDialogs(actor) {
             .find('input[name="focus"]')
             .on("input change", recalcCastChances);
           html
-            .find('input[name="bloodPayment"]')
+            .find('input[name="bloodPayment"], input[name="hastenedCast"]')
             .on("change", recalcCastChances);
 
           // 2.c +/- stepper buttons for quick Focus adjustment.
@@ -581,6 +599,9 @@ export function showSpellSelectionDialogs(actor) {
             const bloodPayment = html
               .find('input[name="bloodPayment"]')
               .is(":checked");
+            const hastenedCast = html
+              .find('input[name="hastenedCast"]')
+              .is(":checked");
 
             spellDialog.close();
             resolve({
@@ -589,6 +610,7 @@ export function showSpellSelectionDialogs(actor) {
               focusSpent,
               ignoreChanneling,
               bloodPayment,
+              hastenedCast,
             });
           });
         },
@@ -1145,6 +1167,19 @@ export function isUncontestedSpell(spell) {
   return !!getStrikeId(spell);
 }
 
+/**
+ * The channeling Critical Failure threshold for one cast. Hastened Cast pulls
+ * it 5 lower (96 → 91), which is its +5% Critical Failure price. The chat card
+ * stores the same figure so a reroll judges the new die on the same terms.
+ * @param {Actor} actor
+ * @param {{hastenedCast?: boolean}} [options]
+ * @returns {number}
+ */
+function getCastCritFailThreshold(actor, { hastenedCast = false } = {}) {
+  const base = actor.system.combatSkills.channeling.criticalFailureThreshold;
+  return hastenedCast ? base - HASTENED_CAST_CRIT_FAIL : base;
+}
+
 export async function performAttackRoll(
   actor,
   spell,
@@ -1152,7 +1187,11 @@ export async function performAttackRoll(
   focusSpent,
   options = {},
 ) {
-  const { ignoreChanneling = false, difficultyBonus = 0 } = options;
+  const {
+    ignoreChanneling = false,
+    difficultyBonus = 0,
+    hastenedCast = false,
+  } = options;
   const effectiveDifficulty = getEffectiveDifficulty(
     spell,
     focusSpent,
@@ -1176,8 +1215,9 @@ export async function performAttackRoll(
 
   const critSuccessThreshold =
     actor.system.combatSkills.channeling.criticalSuccessThreshold;
-  const critFailureThreshold =
-    actor.system.combatSkills.channeling.criticalFailureThreshold;
+  const critFailureThreshold = getCastCritFailThreshold(actor, {
+    hastenedCast,
+  });
 
   // Blood spells cast off the higher of channeling and Blood Manipulation; all
   // other schools use channeling. Resolve to a number so the chosen rating
@@ -1237,6 +1277,7 @@ export async function finalizeRollsAndPostChat(
     fromChanneling = false,
     focusSpent = 0,
     bloodPayment = false,
+    hastenedCast = false,
     // The caster's own token, for reading which arc each target stands in. No
     // caller hands it over yet, so the positioning map on a spell card is empty
     // for now and the defense falls back to live facing.
@@ -1327,7 +1368,7 @@ export async function finalizeRollsAndPostChat(
     const attributeString = `
     <hr>
   <span style="display:inline-block;">
-    ${capitalizedName} Test <span class="mos-followup" data-margin="${attributeRoll.total}" data-source="${spell.localizedName ?? spell.name}" data-tooltip="Test chance ${modifierRoll.total}%<br>Rolled: ${attributeRoll.result}<br>Click to roll an attribute against this margin" style="cursor:pointer; text-decoration:underline dotted;">Margin of Success: [${attributeRoll.total}]</span>
+    ${capitalizedName} Test <span class="mos-followup" data-margin="${attributeRoll.total}" data-source="${spell.localizedName ?? spell.name}"${renderAgainstAttr(versusAgainstFor(spell))} data-chance="${modifierRoll.total}" data-tooltip="Test chance ${modifierRoll.total}%<br>Rolled: ${attributeRoll.result}<br>Click to roll an attribute against this margin" style="cursor:pointer; text-decoration:underline dotted;">Margin of Success: [${attributeRoll.total}]</span>
   </span>
 
 `;
@@ -1544,6 +1585,13 @@ export async function finalizeRollsAndPostChat(
         bloodPayment
           ? `<span class="action-tag bloodPayment ">${game.i18n.localize(
               "REDSTEEL.BloodPayment.Tag",
+            )}</span>`
+          : ""
+      }
+      ${
+        hastenedCast
+          ? `<span class="action-tag hastenedCast ">${game.i18n.localize(
+              "REDSTEEL.HastenedCast.Tag",
             )}</span>`
           : ""
       }
@@ -1798,10 +1846,17 @@ export async function finalizeRollsAndPostChat(
         rollName,
         spellSchool: spell.system.type,
         casterUuid: actor.uuid,
+        // Which spell and which round this card is: the hotbar's sustain
+        // Apply chip finds this round's card of a held spell by them.
+        spellId: spell.id,
+        ...(game.combat?.started && {
+          castRound: { combat: game.combat.id, round: game.combat.round },
+        }),
         criticalSuccessThreshold:
           actor.system.combatSkills.channeling.criticalSuccessThreshold,
-        criticalFailureThreshold:
-          actor.system.combatSkills.channeling.criticalFailureThreshold,
+        criticalFailureThreshold: getCastCritFailThreshold(actor, {
+          hastenedCast,
+        }),
         traitPills: getTraitPills(actor, "attack"),
         // A failed cast applied nothing to the caster. Carry enough context to
         // redo that side if a reroll turns the margin positive — the reroll

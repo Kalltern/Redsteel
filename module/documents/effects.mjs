@@ -1818,9 +1818,11 @@ export class RedsteelActiveEffect extends ActiveEffect {
       return this._handleFearTest();
     }
 
-    if (trigger.custom === "staminaDrain") {
-      return this._handleStaminaDrain(trigger);
-    }
+    // Retired: stance upkeep is paid on the holder's own turn from the
+    // hotbar (utils/stances.mjs). Stances taken up before that change still
+    // carry this trigger in their stored flags, so it is swallowed here
+    // rather than charging them at the round rollover.
+    if (trigger.custom === "staminaDrain") return;
 
     if (trigger.custom === "channelingDrain") {
       return this._handleChannelingDrain();
@@ -2424,42 +2426,6 @@ export class RedsteelActiveEffect extends ActiveEffect {
       roll,
     });
   }
-  async _handleStaminaDrain(trigger) {
-    const actor = this.parent;
-    if (!actor) return;
-
-    let formula = trigger.formula;
-
-    const stacks = this.getFlag("redsteel", "stacks") ?? 1;
-    formula = formula.replace("{stacks}", stacks);
-
-    const roll = await new Roll(formula).evaluate();
-    const cost = roll.total;
-
-    const path = trigger.target;
-    const current = foundry.utils.getProperty(actor, path) ?? 0;
-
-    // ❌ Not enough stamina → remove effect
-    if (current < cost) {
-      await this.delete();
-
-      ui.notifications.info(
-        `${actor.name} drops Defensive Stance (no stamina)`,
-      );
-
-      return;
-    }
-
-    // ✅ Safe update
-    const latest = foundry.utils.getProperty(actor, path) ?? 0;
-
-    await actor.update({
-      [path]: Math.max(0, latest - cost),
-    });
-
-    ui.notifications.info(`${this.name} – Stamina Drain`);
-  }
-
   async _handleChannelingDrain() {
     const actor = this.parent;
     if (!actor) return;

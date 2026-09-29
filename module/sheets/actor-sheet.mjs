@@ -5,6 +5,7 @@ import {
   syncSpecialisationPassive,
 } from "../helpers/specialisations.mjs";
 import { openLearnWindow } from "../utils/learnWindow.mjs";
+import { isHandheldLight } from "../utils/itemLight.mjs";
 import {
   getDiscountSourceLabel,
   getSpecNodeDiscountConflict,
@@ -111,11 +112,15 @@ const ACCESSORY_LAYERS = new Set(["Accessory", "Not Armor"]);
 // only: the document keeps its name, and the hover panel still shows it in full.
 const RECIPE_NAME_PREFIX = /^\s*(recipe|recept)\s*:\s*/i;
 
-/** @returns {boolean} whether this item can occupy an accessory slot. */
+/**
+ * @returns {boolean} whether this item can occupy an accessory slot. Handheld
+ * lights (torches) are held in the off hand like a shield, never worn.
+ */
 function isAccessory(item) {
   return (
     item?.type === "gear" &&
     !item.system?.shield &&
+    !isHandheldLight(item) &&
     ACCESSORY_LAYERS.has(item.system?.layer)
   );
 }
@@ -561,8 +566,8 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
 
     const isShield = item.system.shield;
 
-    // Shields ONLY in off-hand
-    if (isShield && slot !== "off") return;
+    // Shields and handheld lights (torches) ONLY in off-hand
+    if ((isShield || isHandheldLight(item)) && slot !== "off") return;
 
     const currentMain = weaponSets?.[set]?.main;
     const currentOff = weaponSets?.[set]?.off;
@@ -648,10 +653,12 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     const L = (key) => i18n.localize(`REDSTEEL.Actor.Inventory.Equip.${key}`);
 
     const isShield = item.system?.shield === true;
+    const isLight = isHandheldLight(item);
     const isTwoHanded = this._isEffectivelyTwoHanded(item);
 
-    // Shields are off-hand only; two-handed weapons are main-hand only.
-    const allowMain = !isShield;
+    // Shields and handheld lights (torches) are off-hand only; two-handed
+    // weapons are main-hand only.
+    const allowMain = !isShield && !isLight;
     const allowOff = !isTwoHanded;
     if (!allowMain && !allowOff) return;
 
@@ -707,7 +714,9 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
 
     const DialogV2 = foundry.applications.api.DialogV2;
     const picked = await DialogV2.wait({
-      window: { title: L(isShield ? "TitleShield" : "TitleWeapon") },
+      window: {
+        title: L(isShield ? "TitleShield" : isLight ? "TitleLight" : "TitleWeapon"),
+      },
       classes: ["redsteel", "rs-equip-picker"],
       content,
       buttons: [
@@ -784,6 +793,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
         if (next[set][hand] === itemId) next[set][hand] = null;
 
     const isShield = item.system?.shield === true;
+    const isLight = isHandheldLight(item);
     const isTwoHanded = this._isEffectivelyTwoHanded(item);
     const displaced = [];
 
@@ -791,7 +801,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       const set = String(pick?.set ?? "");
       const hand = pick?.hand;
       if (!next[set] || !["main", "off"].includes(hand)) continue;
-      if (isShield && hand !== "off") continue;
+      if ((isShield || isLight) && hand !== "off") continue;
       if (isTwoHanded && hand !== "main") continue;
 
       const otherHand = hand === "main" ? "off" : "main";
@@ -943,9 +953,9 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       return;
     }
 
-    // Shields hold a weapon set's off hand, so they get the same picker as a
-    // weapon — only the off-hand row is offered.
-    if (item.type === "gear" && item.system.shield) {
+    // Shields and handheld lights (torches) hold a weapon set's off hand, so
+    // they get the same picker as a weapon — only the off-hand row is offered.
+    if (item.type === "gear" && (item.system.shield || isHandheldLight(item))) {
       this._openWeaponEquipMenuFromItem(itemId);
       return;
     }
@@ -1012,6 +1022,8 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
 
     const item = this.actor.items.get(itemId);
     if (!item || item.type !== "gear" || item.system.shield) return;
+    // A handheld light (torch) is held in the off hand, never worn as armor.
+    if (isHandheldLight(item)) return;
 
     // Armor only fits the slot matching its own layer
     if (ARMOR_LAYER_SLOTS[item.system.layer] !== layer) return;
@@ -3641,9 +3653,10 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     if (!item?.isOwned) return;
 
     const isShield = item.system.shield;
+    const isLight = isHandheldLight(item);
 
-    // Shields only in off-hand
-    if (isShield && toSlot !== "off") return;
+    // Shields and handheld lights (torches) only in off-hand
+    if ((isShield || isLight) && toSlot !== "off") return;
 
     // Two-handed blocks off-hand
     if (toSlot === "off") {
@@ -3658,8 +3671,8 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       }
     }
 
-    // Weapons only
-    if (item.type !== "weapon" && !isShield) return;
+    // Weapons, shields and handheld lights only
+    if (item.type !== "weapon" && !isShield && !isLight) return;
 
     this._assignWeaponDirect(item.id, toSet, toSlot);
   }

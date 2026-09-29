@@ -1,4 +1,5 @@
-import { stampImpaleRoot } from "./impaleFollowup.mjs";
+import { grantImpaleKill, stampImpaleRoot } from "./impaleFollowup.mjs";
+import { stampEscapeSource } from "./escapeFollowup.mjs";
 import {
   evaluateDmgVsArmor,
   applyToHp,
@@ -953,6 +954,7 @@ export async function applyDamageAsGM(data) {
         stacks,
         castingContext,
       );
+      await stampEscapeSource(applied, name, message);
 
       // Wounding Impale: Impale applies the Rooted effect; carry the
       // pre-computed Bleeding count (set in getEffectRolls) onto that Root so it
@@ -1115,6 +1117,14 @@ export async function applyDamageAsGM(data) {
 
     const combatant = combat?.combatants.find((c) => c.tokenId === tokenDoc.id);
     await handlePostDamageStatus({ actor, combatant });
+
+    // Impale: Follow-up Attack when this Impale was the killing blow, whether
+    // or not its Root landed.
+    await grantImpaleKill(
+      actor,
+      message.flags.attack.effects?.root ?? null,
+      attackerTokenIdFromMessage(message),
+    );
   }
 
   if (lacerationVictims.length) {
@@ -1744,14 +1754,11 @@ function openDamageSelectionDialog(message, targets) {
             )
             .join("")}
         </fieldset>
-        <!-- Manual half-damage toggle hidden 2026-08-10: attacks that halve
-             damage already carry system.roll.halfDamage, so the GM no longer
-             needs to set it here. The control and its wiring are kept intact
-             (just not displayed) until we are sure nothing relies on the
-             manual override. Delete this block and the "halfDamage" handler
-             below to remove it for good, or drop the inline display:none to
-             bring it back. -->
-        <div class="attack-options-row" style="display:none;">
+        <!-- Manual half-damage toggle, spells only. Weapon attacks that halve
+             damage carry system.roll.halfDamage, but a spell's halving is
+             situational (partial save, cover), so the GM sets it here. The
+             cast card flags itself isSpell for exactly this. -->
+        <div class="attack-options-row" ${attack.isSpell ? "" : 'style="display:none;"'}>
           <label class="pill">
             <input type="checkbox" name="halfDamage" ${halfDamage ? "checked" : ""}>
             <span>${game.i18n.localize("REDSTEEL.Item.Spell.FIELDS.halfDamage.label")}</span>
@@ -1951,8 +1958,7 @@ function openDamageSelectionDialog(message, targets) {
           degreeTouched = true;
           refreshPreview();
         });
-        // Kept wired while the checkbox itself is hidden (see the note in the
-        // dialog content). It simply never fires as long as the row is hidden.
+        // Spell-only manual half damage (see the note in the dialog content).
         html.find('input[name="halfDamage"]').on("change", (ev) => {
           halfDamage = ev.target.checked;
           refreshPreview();
@@ -2408,6 +2414,7 @@ export async function applyEffectsAsGM(data) {
         stacks,
         castingContext,
       );
+      await stampEscapeSource(applied, effectId, message);
 
       // Wounding Impale: Impale applies the Rooted effect; carry the pre-computed
       // Bleeding count onto that Root so it fires when the Root is removed (see

@@ -72,7 +72,7 @@ export const MOVEMENT_MODES = {
     icon: "fa-light fa-person-walking-arrow-right",
     labelKey: "REDSTEEL.Bg3Hotbar.Suggest.Disengage",
   },
-  // The two below are never offered as chips: an ability declares them
+  // The ones below are never offered as chips: an ability declares them
   // (abilityMovement.mjs). Duelist's Advance (Duelistův krok) walks like Slow
   // Movement, Speed/2 under the ordinary threat rules; the ability pays its
   // own Action.
@@ -82,6 +82,15 @@ export const MOVEMENT_MODES = {
     actions: 1,
     icon: "fa-light fa-shoe-prints",
     labelKey: "REDSTEEL.Bg3Hotbar.Suggest.DuelistsAdvance",
+  },
+  // Charge (Zteč): the approach before the swing, a full Speed move under the
+  // ordinary threat rules. The attack pays the ability's two Actions.
+  charge: {
+    budgetFn: (spd) => spd,
+    color: 0xd8a04a,
+    actions: 0,
+    icon: "fa-light fa-person-running",
+    labelKey: "REDSTEEL.Bg3Hotbar.Suggest.Charge",
   },
   // Passing Strike (Útok s pohybem): one hex in any direction after a hit,
   // provoking no Opportunity Attack. `free` = no enemy threatens or engages

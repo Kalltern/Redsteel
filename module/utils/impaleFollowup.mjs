@@ -54,23 +54,36 @@ function findTokenDoc(tokenId, preferScene = null) {
 }
 
 /**
- * Grant the follow-up to everyone holding this dead creature impaled.
+ * Is the creature dead? Read off the effect collection, not the derived
+ * `statuses` set: inside a createActiveEffect hook the set is not reliably
+ * rebuilt yet (the deadTokens.mjs `isActorDead` reasoning), so the `dead`
+ * status arriving last, which is the order Apply Damage lands it in, read as
+ * alive and the grant was silently skipped.
  *
+ * @param {Actor} actor
+ */
+function isDead(actor) {
+  if (actor?.statuses?.has?.("dead")) return true;
+  return actor?.effects?.some?.((e) => e.statuses?.has?.("dead")) === true;
+}
+
+/** Only the active GM writes, so there is one writer and it can write any actor. */
+function isGrantWriter() {
+  return game.user.isGM && game.users.activeGM?.id === game.user.id;
+}
+
+/**
+ * Hand these impalers this round's follow-up. Once per round: an impaler
+ * already granted this round is left alone.
+ *
+ * @param {Iterable<string>} tokenIds
  * @param {Actor} victim
  */
-async function grantFor(victim) {
-  if (!game.user.isGM || game.users.activeGM?.id !== game.user.id) return;
+async function grantTo(tokenIds, victim) {
   const combat = game.combat;
-  if (!combat?.started || !victim?.statuses?.has("dead")) return;
-
-  const impalers = new Set();
-  for (const effect of victim.effects ?? []) {
-    const id = impalerOf(effect);
-    if (id) impalers.add(id);
-  }
-
-  const scene = victim.token?.parent ?? null;
-  for (const tokenId of impalers) {
+  if (!combat?.started) return;
+  const scene = victim?.token?.parent ?? null;
+  for (const tokenId of tokenIds) {
     const impaler = findTokenDoc(tokenId, scene)?.actor;
     if (!impaler || impaler === victim) continue;
     const current = impaler.getFlag(SYSTEM_ID, FLAG);
@@ -85,6 +98,43 @@ async function grantFor(victim) {
       at: Date.now(),
     });
   }
+}
+
+/**
+ * Grant the follow-up to everyone holding this dead creature impaled.
+ *
+ * @param {Actor} victim
+ * @param {object} [options]
+ * @param {boolean} [options.dead] The caller already knows it is dead (the
+ *   hook fired for the `dead` effect itself).
+ */
+async function grantFor(victim, { dead = false } = {}) {
+  if (!isGrantWriter()) return;
+  if (!dead && !isDead(victim)) return;
+
+  const impalers = new Set();
+  for (const effect of victim.effects ?? []) {
+    const id = impalerOf(effect);
+    if (id) impalers.add(id);
+  }
+  await grantTo(impalers, victim);
+}
+
+/**
+ * The Impale attack itself was the killing blow. "The target of Impale dies"
+ * does not need the Root to have landed: an immune target, an unticked Root
+ * box or a Magic Shield leaves no stamped Root behind, and the impaler is
+ * still owed the attack. Called by applyDamage once the target's zero-health
+ * state is in.
+ *
+ * @param {Actor} victim
+ * @param {object|null} rootPacket     The card's root entry (getEffectRolls).
+ * @param {string|null} attackerTokenId From the attack card's speaker.
+ */
+export async function grantImpaleKill(victim, rootPacket, attackerTokenId) {
+  if (!rootPacket?.impale || !attackerTokenId) return;
+  if (!isGrantWriter() || !isDead(victim)) return;
+  await grantTo([attackerTokenId], victim);
 }
 
 /**
@@ -142,7 +192,8 @@ export function registerImpaleFollowupHooks() {
   Hooks.on("createActiveEffect", (effect) => {
     const actor = effectActor(effect);
     if (!actor) return;
-    if (effect.statuses?.has("dead") || impalerOf(effect)) grantFor(actor);
+    if (effect.statuses?.has("dead")) grantFor(actor, { dead: true });
+    else if (impalerOf(effect)) grantFor(actor);
   });
 
   // The stamp lands on a Root after the fact (setFlag is an update), on a

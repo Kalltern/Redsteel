@@ -47,6 +47,7 @@
     "attributeTest": "dexterity",
     "dmgTypes": [],
     "testModifier": 0,
+    "versusAgainst": "dex,per",
     "costOptions": [
       "stamina",
       "mana",

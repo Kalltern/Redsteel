@@ -127,6 +127,7 @@
     "effectType3": "",
     "attributeTest": "will",
     "testModifier": "@spellPower*3",
+    "versusAgainst": "str,dex",
     "manualNotes": "The cyclone's effects are not automated and must be resolved at the table. Apply the effect to get a duration counter.",
     "vsTest": true
   },

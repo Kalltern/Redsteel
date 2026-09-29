@@ -23,6 +23,8 @@ import {
   renderMarginFollowupLine,
   renderVersusOutcome,
   settleVersusLoss,
+  settleBreakFree,
+  loadVersusIndex,
 } from "./utils/attributeFollowup.mjs";
 import { wireSpeedFollowups } from "./utils/speedTest.mjs";
 import { registerInitiativeTiebreakSocket } from "./utils/initiativeTiebreak.mjs";
@@ -106,6 +108,7 @@ import { registerTrade } from "./utils/trade.mjs";
 import { registerImpaleFollowupHooks } from "./utils/impaleFollowup.mjs";
 import { registerOverwatchHooks } from "./utils/overwatch.mjs";
 import { registerSuggestionHooks } from "./utils/actionSuggestions.mjs";
+import { registerStanceHooks } from "./utils/stances.mjs";
 import { registerStatusCounterColors } from "./utils/statusCounterColors.mjs";
 import {
   describeSneakSources,
@@ -521,6 +524,7 @@ Hooks.once("init", function () {
   registerImpaleFollowupHooks();
   registerOverwatchHooks();
   registerSuggestionHooks();
+  registerStanceHooks();
   registerStatusCounterColors();
   registerAutoDefense();
   registerWrathOfBlood();
@@ -896,6 +900,8 @@ Hooks.once("ready", () => {
     tool: ui.controls.tool.name,
   });
   RedsteelActiveEffect.registerStatusCounterIntegration();
+  // Defender attributes for item copies that predate system.versusAgainst.
+  loadVersusIndex();
 });
 
 Hooks.once("ready", function () {
@@ -1849,6 +1855,9 @@ async function executeReroll(message, sourceLabel) {
     carried.versusFollowup = settled.followup;
     followupOutcome += settled.note;
   }
+  // Break Free: the formula holds both sides' dice, so this reroll already
+  // rolled the whole contest again; a win now deletes the binding effect.
+  followupOutcome += await settleBreakFree(versusFollowup, roll.total);
   const rescuedNote = rescued
     ? `<p style="text-align:center; font-size:12px; opacity:0.8;"><i class="fa-light fa-sparkles"></i> Cast succeeded on the reroll — caster effects applied.</p>`
     : "";
@@ -2629,6 +2638,81 @@ Hooks.once("ready", async () => {
   }
 
   console.log("Stun → Stagger migration complete");
+});
+// Old spell copies that predate the All-Spells rework. Hand-made NPC spells
+// and anything dragged in from redsteel-items still carry the old mechanics,
+// so each entry rewrites a same-named copy to the All-Spells shape. Only the
+// fields listed are touched; everything else on the copy is left alone.
+// Idempotent: `isCurrent` skips copies that already match.
+//
+// DoT spells resolved by an effect on the target (SK baked in applyEffect),
+// not by a direct roll the caster repeats:
+//   "Temná kletba" / Dark curse → dark_curse (1d6 + SK, two rounds)
+//   "Vypálené znamení" / Burning Mark → burning_mark (2d6 + SK/2, three rounds)
+// Sustained spells whose copies lost `sustained` or their per-round upkeep,
+// so they cast once instead of re-rolling every round while channelled.
+const dotEffectFix = (effectName, description) => ({
+  isCurrent: (system) => system.effects?.effectName1 === effectName,
+  update: {
+    "system.description": description,
+    "system.roll.diceNum": 0,
+    "system.roll.diceSize": "0",
+    "system.roll.diceBonus": "",
+    "system.sustained": false,
+    "system.perRound": 0,
+    "system.effectType1": "custom",
+    "system.effects.effectName1": effectName,
+    "system.effects.extra1": -1,
+  },
+});
+const sustainedFix = (perRound) => ({
+  isCurrent: (system) =>
+    system.sustained === true && String(system.perRound) === String(perRound),
+  update: { "system.sustained": true, "system.perRound": perRound },
+});
+const LEGACY_SPELL_FIXES = {
+  "Dark curse": dotEffectFix(
+    "dark_curse",
+    "<p>Deals 1d6 + {{spellPower}} damage to one target each round for two rounds.</p>",
+  ),
+  "Burning Mark": dotEffectFix(
+    "burning_mark",
+    "<p>Deals 2d6 + {{math spellPower \"/\" 2}} damage per round for three rounds.</p><p>While the mark lasts, the target is 10% more likely to catch Burning from other sources.</p>",
+  ),
+  "Burning Hands": sustainedFix(1),
+  Frost: sustainedFix(1),
+  "Life drain": sustainedFix(4),
+  "Morgana's grip": sustainedFix(2),
+  "Soul drain": sustainedFix(2),
+  "Boiling blood": sustainedFix("1d4"),
+};
+Hooks.once("ready", async () => {
+  if (!game.user.isGM) return;
+
+  async function migrateItem(item) {
+    if (item?.type !== "spell") return;
+    const fix = LEGACY_SPELL_FIXES[item.name];
+    if (!fix || fix.isCurrent(item.system)) return;
+    console.log(
+      `Redsteel | Legacy spell → All-Spells shape: ${item.parent?.name ?? "world"} / ${item.name}`,
+    );
+    await item.update(fix.update);
+  }
+
+  async function migrateActor(actor) {
+    if (!actor) return;
+    for (const item of actor.items.contents) await migrateItem(item);
+  }
+
+  for (const item of game.items.contents) await migrateItem(item);
+  // Base actors first, so unlinked tokens that merely inherit the spell already
+  // read the fixed item and only genuine token-level copies get written.
+  for (const actor of game.actors.contents) await migrateActor(actor);
+  for (const scene of game.scenes.contents) {
+    for (const token of scene.tokens.contents) {
+      if (!token.actorLink) await migrateActor(token.actor);
+    }
+  }
 });
 /** Spell school keys that can own a crit-fail table (mirrors template.json). */
 const MAGIC_SCHOOLS = [

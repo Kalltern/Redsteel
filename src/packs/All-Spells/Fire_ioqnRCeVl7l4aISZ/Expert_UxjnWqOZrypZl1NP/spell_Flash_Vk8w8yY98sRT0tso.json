@@ -143,6 +143,7 @@
     "effectType3": "",
     "attributeTest": "will",
     "testModifier": "",
+    "versusAgainst": "per",
     "manualNotes": "Not fully automated. Resolve the effect manually.",
     "vsTest": true
   },

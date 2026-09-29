@@ -126,6 +126,7 @@
     "effectType3": "",
     "attributeTest": "will",
     "testModifier": "@spellPower*2",
+    "versusAgainst": "str",
     "variants": [
       "OqD6JV3JM8fQTkdm"
     ],

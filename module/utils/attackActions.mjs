@@ -530,9 +530,11 @@ export async function autoAttack(options = {}) {
 
       const context = {
         weapon,
-        offWeapon: ws.off || null,
+        // A handheld light (torch) in the off hand is not a weapon.
+        offWeapon: ws.offIsLight ? null : ws.off || null,
         isDualWield: ws.isDualWield || false,
         hasShield: ws.offIsShield || false,
+        offIsLight: ws.offIsLight || false,
       };
 
       if (isThrown)

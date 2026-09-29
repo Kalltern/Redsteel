@@ -152,18 +152,62 @@
       ><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
     </div>
     {{else if (eq chip.kind "sustain")}}
-    {{!-- A spell held in a sustained cast: clicking lets it go (the caster's
-          Channeling effect is deleted, which stops the cast and its upkeep). --}}
+    {{!-- A spell held in a sustained cast, one chip (user ruling): click
+          applies this round's card of it to the current targets, right-click
+          lets it go (the caster's Channeling effect is deleted, which stops
+          the cast and its upkeep). --}}
     <button
       type="button"
       class="rs-bg3-suggest-chip ability sustain"
-      data-action="stopSustain"
+      data-action="applySustainSpell"
+      data-suggestion-id="{{chip.id}}"
+      data-effect-id="{{chip.effectId}}"
+      data-message-id="{{chip.messageId}}"
+      data-tt-kind="bg3Suggest"
+      data-tt-theme="{{chip.theme}}"
+      data-tt-title="{{chip.spellName}}"
+      data-tt-hint="{{chip.hint}}"
+      data-tt-hint2="{{chip.hint2}}"
+      aria-label="{{chip.ariaLabel}}"
+    >
+      <img class="rs-bg3-suggest-img" src="{{chip.img}}" alt="" />
+    </button>
+    {{else if (eq chip.kind "escape")}}
+    {{!-- Rooted or Shadowbound, on the actor's turn: repeat the versus Test
+          against the card that bound it (escapeFollowup.mjs). Costs 1 Action
+          once rolled; a win does not remove the effect. On the white
+          recall plate. --}}
+    <button
+      type="button"
+      class="rs-bg3-suggest-chip ability"
+      data-action="escapeEffect"
       data-suggestion-id="{{chip.id}}"
       data-effect-id="{{chip.effectId}}"
       data-tt-kind="bg3Suggest"
       data-tt-theme="{{chip.theme}}"
-      data-tt-title="{{chip.spellName}}"
-      data-tt-hint="{{chip.label}}"
+      data-tt-title="{{chip.label}}"
+      data-tt-hint="{{chip.hint}}"
+      data-tt-cost="{{chip.costKind}}"
+      aria-label="{{chip.ariaLabel}}"
+    >
+      <img class="rs-bg3-suggest-img" src="{{chip.img}}" alt="" />
+    </button>
+    {{else if (eq chip.kind "stance")}}
+    {{!-- A stance with upkeep, on its holder's turn: Hold pays this turn's
+          actions and upkeep, Drop (the same icon, shaded red) lets it go.
+          A turn ended with neither drops it (stances.mjs). --}}
+    <button
+      type="button"
+      class="rs-bg3-suggest-chip ability stance{{#if (eq chip.stanceAction "drop")}} stance-drop{{/if}}"
+      data-action="stanceSuggestion"
+      data-suggestion-id="{{chip.id}}"
+      data-effect-id="{{chip.effectId}}"
+      data-stance-action="{{chip.stanceAction}}"
+      data-tt-kind="bg3Suggest"
+      data-tt-theme="{{chip.theme}}"
+      data-tt-uuid="{{chip.uuid}}"
+      data-tt-title="{{chip.label}}"
+      data-tt-hint="{{chip.hint}}"
       aria-label="{{chip.ariaLabel}}"
     >
       <img class="rs-bg3-suggest-img" src="{{chip.img}}" alt="" />
@@ -172,7 +216,8 @@
     {{!-- A combat ability usable right now, shown by its icon alone (user
           ruling); its name, cost and prose ride on the system's own tooltip,
           set above the combat row. Clicking opens the Combat Abilities dialog with it
-          already chosen, aimed at the attacker for a reaction. --}}
+          already chosen, aimed at the attacker for a reaction. Right-click
+          makes it an Aimed Attack at a body part. --}}
     <button
       type="button"
       class="rs-bg3-suggest-chip ability"
@@ -180,11 +225,13 @@
       data-suggestion-id="{{chip.id}}"
       data-ability-id="{{chip.abilityId}}"
       {{#if chip.targetTokenId}}data-target-token-id="{{chip.targetTokenId}}"{{/if}}
+      {{#if chip.aimable}}data-aimable="true"{{/if}}
       data-tt-kind="bg3Suggest"
       data-tt-theme="{{chip.theme}}"
       data-tt-uuid="{{chip.uuid}}"
       data-tt-title="{{chip.label}}"
       data-tt-cost="{{chip.costKind}}"
+      {{#if chip.hint}}data-tt-hint="{{chip.hint}}"{{/if}}
       aria-label="{{chip.ariaLabel}}"
     >
       <img class="rs-bg3-suggest-img" src="{{chip.img}}" alt="" />
@@ -884,9 +931,8 @@
       class="rs-bg3-effect{{#if eff.disabled}} disabled{{/if}}{{#if eff.canManage}} manageable{{/if}}"
       data-uuid="{{eff.uuid}}"
       {{#if eff.canManage}}data-action="editEffect"{{/if}}
-      data-tt-kind="text"
-      data-tt-title="{{eff.name}}"
-      data-tt-text="{{#if eff.canManage}}REDSTEEL.Bg3Hotbar.EffectManage{{else}}REDSTEEL.Bg3Hotbar.EffectView{{/if}}"
+      data-tt-kind="bg3Effect"
+      data-tt-hint="{{#if eff.canManage}}REDSTEEL.Bg3Hotbar.EffectManage{{/if}}"
     >
       <img src="{{eff.img}}" alt="{{eff.name}}" />
     </div>

@@ -30,6 +30,8 @@ import { areAdjacent } from "./positioning.mjs";
 import { resolveWeaponContext } from "./weaponResolver.mjs";
 import { hasImpaleFollowup, IMPALE_FOLLOWUP_KEY } from "./impaleFollowup.mjs";
 import { OVERWATCH_KEY, overwatchTrigger } from "./overwatch.mjs";
+import { holdCostLabel, isStanceHeld, maintainedStances } from "./stances.mjs";
+import { escapeTargets, liveMessage } from "./escapeFollowup.mjs";
 
 const MODE_ORDER = ["move", "slow", "sprint", "disengage"];
 
@@ -315,6 +317,9 @@ function shoveFits(defense) {
 function abilityChip(item, costKey, targetTokenId) {
   const label = item.localizedName ?? item.name;
   const cost = game.i18n.localize(costKey);
+  // An attack can be aimed at a body part, the Combat Abilities dialog's
+  // Aimed Attack pill: right-click on the chip.
+  const aimable = ["melee", "ranged"].includes(item.system?.type);
   return {
     id: `ability-${item.id}`,
     kind: "ability",
@@ -328,6 +333,8 @@ function abilityChip(item, costKey, targetTokenId) {
     label,
     costLabel: cost,
     targetTokenId,
+    aimable,
+    hint: aimable ? game.i18n.localize("REDSTEEL.Bg3Hotbar.Suggest.AimedHint") : "",
     ariaLabel: `${label}, ${cost}`,
   };
 }
@@ -470,16 +477,22 @@ function riposteChips(actor) {
 const STOP_SUSTAIN_ICON = "icons/magic/light/projectile-smoke-blue-light.webp";
 
 /**
- * A spell held in a sustained cast can be let go. The held cast is the caster's
- * Channeling effect (magicSkillBonuses.mjs startChannelingForSpell): it carries
- * the spell and its per-round upkeep, pays the upkeep and re-rolls the spell
- * each round (effects.mjs). Deleting it ends all three at once, which is
- * exactly what the system itself does when the mana runs out.
+ * A spell held in a sustained cast, as ONE chip (user ruling: two identical
+ * icons read as the same thing). Click applies this round's card of the spell
+ * to whoever is targeted now, so a creature entering the area late still gets
+ * hit; right-click lets the spell go.
+ *
+ * The held cast is the caster's Channeling effect (magicSkillBonuses.mjs
+ * startChannelingForSpell): it carries the spell and its per-round upkeep,
+ * pays the upkeep and re-rolls the spell each round (effects.mjs). Deleting it
+ * ends all three at once, which is exactly what the system itself does when
+ * the mana runs out.
  *
  * @param {Actor} actor
  * @returns {object[]}
  */
 function sustainChips(actor) {
+  const combat = trackedCombat(actor);
   const chips = [];
   for (const effect of actor.effects ?? []) {
     const data = effect.getFlag?.("redsteel", "channelingData");
@@ -487,7 +500,13 @@ function sustainChips(actor) {
     const spell =
       actor.items.get(data.spellId) ?? game.items.get(data.spellId) ?? null;
     const spellName = spell?.localizedName ?? spell?.name ?? effect.name;
-    const label = game.i18n.format("REDSTEEL.Bg3Hotbar.Suggest.StopSustain", {
+    const card = data.isSustained ? thisRoundCard(actor, data, combat) : null;
+    const hint = card
+      ? game.i18n.format("REDSTEEL.Bg3Hotbar.Suggest.SustainApply", {
+          spell: spellName,
+        })
+      : game.i18n.localize("REDSTEEL.Bg3Hotbar.Suggest.SustainNoCard");
+    const hint2 = game.i18n.format("REDSTEEL.Bg3Hotbar.Suggest.StopSustain", {
       spell: spellName,
     });
     chips.push({
@@ -495,11 +514,134 @@ function sustainChips(actor) {
       kind: "sustain",
       theme: "magic",
       effectId: effect.id,
+      messageId: card?.id ?? "",
       spellName,
       img: spell?.img || STOP_SUSTAIN_ICON,
-      label,
-      ariaLabel: label,
+      hint,
+      hint2,
+      ariaLabel: `${spellName}: ${hint} ${hint2}`,
     });
+  }
+  return chips;
+}
+
+/**
+ * This round's card of a held sustained spell. The re-rolled card
+ * (resolveChannelingTick → finalizeRollsAndPostChat) is found by the
+ * `spellId` / `casterUuid` / `castRound` it carries; only the newest card of
+ * the spell is looked at, and a rerolled card is followed to its replacement.
+ *
+ * @param {Actor} actor
+ * @param {object} data     The Channeling effect's channelingData.
+ * @param {Combat|null} combat
+ * @returns {ChatMessage|null}
+ */
+function thisRoundCard(actor, data, combat) {
+  if (!combat) return null;
+  const messages = game.messages?.contents ?? [];
+  let match = null;
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const flags = messages[i].flags?.redsteel ?? {};
+    if (flags.spellId === data.spellId && flags.casterUuid === actor.uuid) {
+      match = messages[i];
+      break;
+    }
+  }
+  const stamp = match?.flags?.redsteel?.castRound;
+  if (
+    !stamp ||
+    stamp.combat !== combat.id ||
+    Number(stamp.round) !== Number(combat.round)
+  ) {
+    return null;
+  }
+  const live = liveMessage(match);
+  if (!live || !(live.flags?.attack || live.flags?.effects)) return null;
+  return live;
+}
+
+/**
+ * Break free of a Rooted or Shadowbound effect (escapeFollowup.mjs): repeat
+ * the versus Test against the card that bound the actor, for 1 Action on its
+ * own turn. One chip per binding effect whose card is still in chat.
+ *
+ * @param {Actor} actor
+ * @returns {object[]}
+ */
+function escapeChips(actor) {
+  if (!isTrackedTurn(actor)) return [];
+  if (getActionPools(actor).actions - getSpent(actor).actions < 1) return [];
+  return escapeTargets(actor).map(({ effect, message, line }) => {
+    const label = game.i18n.localize(effect.name);
+    const hint =
+      line.chance != null
+        ? game.i18n.format("REDSTEEL.Bg3Hotbar.Suggest.EscapeFresh", {
+            source: line.source,
+            chance: line.chance,
+          })
+        : game.i18n.format("REDSTEEL.Bg3Hotbar.Suggest.Escape", {
+            source: line.source,
+            margin: line.margin,
+          });
+    return {
+      id: `escape-${effect.id}`,
+      kind: "escape",
+      theme: "recall",
+      effectId: effect.id,
+      img: effect.img,
+      label,
+      hint,
+      costKind: "action",
+      ariaLabel: `${label}: ${hint}`,
+    };
+  });
+}
+
+/**
+ * A stance with upkeep, on its holder's own turn and not yet paid for this
+ * turn (stances.mjs): Hold (the ability's icon; its action cost plus the
+ * upkeep) and Drop (the same icon shaded red, free). Both leave once either
+ * is picked; a turn ended without Hold drops the stance on its own.
+ *
+ * @param {Actor} actor
+ * @returns {object[]}
+ */
+function stanceChips(actor) {
+  if (!isTrackedTurn(actor)) return [];
+  const combat = trackedCombat(actor);
+  const chips = [];
+  for (const { effect, ability } of maintainedStances(actor)) {
+    if (isStanceHeld(effect, combat)) continue;
+    const label = ability.localizedName ?? ability.name;
+    const theme = ability.system?.type === "ranged" ? "ranged" : "melee";
+    const holdHint = game.i18n.format("REDSTEEL.Bg3Hotbar.Suggest.HoldStance", {
+      cost: holdCostLabel(ability),
+    });
+    const dropHint = game.i18n.localize("REDSTEEL.Bg3Hotbar.Suggest.DropStance");
+    const shared = {
+      kind: "stance",
+      theme,
+      effectId: effect.id,
+      uuid: ability.uuid,
+      img: ability.img,
+      label,
+    };
+    chips.push(
+      {
+        ...shared,
+        id: `stance-hold-${effect.id}`,
+        stanceAction: "hold",
+        hint: holdHint,
+        ariaLabel: `${label}: ${holdHint}`,
+      },
+      {
+        ...shared,
+        id: `stance-drop-${effect.id}`,
+        stanceAction: "drop",
+        hint: dropHint,
+        ariaLabel: `${label}: ${dropHint}`,
+      },
+    );
   }
   return chips;
 }
@@ -606,7 +748,7 @@ function combatProvider(actor) {
   if (!canvas?.ready) return [];
   return [...riposteChips(actor),
     ...reactionChips(actor), ...overwatchChips(actor), ...impaleFollowupChips(actor),
-    ...sustainChips(actor)];
+    ...escapeChips(actor), ...sustainChips(actor), ...stanceChips(actor)];
 }
 
 const PROVIDERS = [movementProvider, combatProvider];

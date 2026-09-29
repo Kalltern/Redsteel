@@ -57,23 +57,46 @@ function itemLightToTokenLight(light) {
 }
 
 /**
+ * Whether an item is a handheld light source (a torch): gear flagged
+ * `system.light.handheld`. Handheld lights only shine while held in the hand
+ * of the active weapon set (off hand only, like a shield), never from an
+ * accessory/armor slot or the inventory grid.
+ * @param {Item|null|undefined} item
+ * @returns {boolean}
+ */
+export function isHandheldLight(item) {
+  return item?.type === "gear" && !!item.system?.light?.handheld;
+}
+
+/**
+ * Item ids held in the active weapon set's hands (characters). A sheathed
+ * item in the inactive set is not held.
+ * @param {Actor} actor
+ * @returns {Set<string>}
+ */
+function getHeldIds(actor) {
+  const combat = actor.system.combat ?? {};
+  const ids = new Set();
+  const activeSet = combat.activeWeaponSet ?? 1;
+  const set = combat.weaponSets?.[activeSet];
+  if (set?.main) ids.add(set.main);
+  if (set?.off) ids.add(set.off);
+  return ids;
+}
+
+/**
  * Item ids whose light is allowed to shine. This is stricter than the actor's
  * general "equipped" set: a weapon only counts while it sits in the *active*
  * weapon set (a sheathed weapon in the inactive set stays dark). Armor slots,
  * accessory slots, and anything explicitly flagged `system.equipped` (NPC
- * weapons/armor, shields, etc.), count as usual.
+ * weapons/armor, shields, etc.), count as usual — except for handheld lights,
+ * which are filtered separately in getActorLightItem.
  * @param {Actor} actor
  * @returns {Set<string>}
  */
 function getLightEligibleIds(actor) {
   const combat = actor.system.combat ?? {};
-  const ids = new Set();
-
-  // Characters: only the active weapon set emits light.
-  const activeSet = combat.activeWeaponSet ?? 1;
-  const set = combat.weaponSets?.[activeSet];
-  if (set?.main) ids.add(set.main);
-  if (set?.off) ids.add(set.off);
+  const ids = getHeldIds(actor);
 
   for (const id of Object.values(combat.armorSlots ?? {})) {
     if (id) ids.add(id);
@@ -90,12 +113,19 @@ function getLightEligibleIds(actor) {
 /**
  * The equipped gear/weapon whose light should drive the token, or null.
  * Strongest wins: largest bright radius, breaking ties on dim radius.
+ *
+ * Handheld lights (torches) follow their own rule: on a character they shine
+ * only while in the active weapon set's hands (the sheet only lets them into
+ * the off hand); on an NPC, which has no weapon sets, `system.equipped` means
+ * "in hand". Non-handheld light gear (lanterns, glowing amulets/armor) uses
+ * the general eligible set.
  * @param {Actor} actor
  * @returns {Item|null}
  */
 export function getActorLightItem(actor) {
   if (!actor) return null;
   const equipped = getLightEligibleIds(actor);
+  const held = actor.type === "character" ? getHeldIds(actor) : null;
 
   let best = null;
   let bestBright = -1;
@@ -103,7 +133,10 @@ export function getActorLightItem(actor) {
 
   for (const item of actor.items) {
     if (item.type !== "gear" && item.type !== "weapon") continue;
-    if (!equipped.has(item.id)) continue;
+    if (isHandheldLight(item)) {
+      const inHand = held ? held.has(item.id) : !!item.system?.equipped;
+      if (!inHand) continue;
+    } else if (!equipped.has(item.id)) continue;
 
     const light = item.system?.light;
     if (!light) continue;

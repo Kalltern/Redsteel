@@ -595,9 +595,12 @@ export class RedsteelActor extends Actor {
             ["crossbow", "bow"].includes(mainHand.system.class) ||
             mainHand.system.gripMode === "two"
           : false;
+        // Only an actual weapon in the off hand dual wields: a handheld
+        // light (torch) is gear and contributes no weapon defense.
         const isDualWield =
           !!mainHand &&
           !!offHand &&
+          offHand.type === "weapon" &&
           !mainIsTwoHanded &&
           !offHand?.system?.shield;
 

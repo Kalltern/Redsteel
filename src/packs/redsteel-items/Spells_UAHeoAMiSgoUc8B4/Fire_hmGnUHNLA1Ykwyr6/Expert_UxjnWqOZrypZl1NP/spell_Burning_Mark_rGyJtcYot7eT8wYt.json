@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/magic/fire/orb-vortex.webp",
   "system": {
-    "description": "<p>Deals 2d6 + {{math spellPower \"/\" 2}} damage per round for three rounds. Target has a +10% higher chance to get Burning effect from other sources.<br /><br />Not fully automated. Resolve this effect manually</p>",
+    "description": "<p>Deals 2d6 + {{math spellPower \"/\" 2}} damage per round for three rounds.</p><p>While the mark lasts, the target is 10% more likely to catch Burning from other sources.</p>",
     "options": [
       "divine",
       "magic"
@@ -115,9 +115,9 @@
     "range": "15",
     "spellClass": "support",
     "roll": {
-      "diceNum": 2,
-      "diceSize": "6",
-      "diceBonus": "(@spellPower/2)"
+      "diceNum": 0,
+      "diceSize": "0",
+      "diceBonus": ""
     },
     "penetration": 100,
     "dmgType1": "magic",
@@ -128,17 +128,14 @@
     "bool4": "",
     "dmgType4": "",
     "effects": {
-      "effect1": 0,
-      "effect2": 0,
-      "effect3": 0,
-      "effect4": 0,
+      "extra1": -1,
+      "extra2": 0,
+      "extra3": 0,
+      "stagger": null,
       "bleed": null,
-      "extra1": null,
-      "extra2": null,
-      "extra3": null,
-      "stagger": null
+      "effectName1": "burning_mark"
     },
-    "effectType1": "",
+    "effectType1": "custom",
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "",

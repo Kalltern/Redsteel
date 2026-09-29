@@ -9,6 +9,23 @@
       {{localize "REDSTEEL.Item.Light.hint"}}
     </p>
 
+    {{! Handheld (torch): lights only from the off hand of the active weapon set }}
+    {{#if (eq item.type "gear")}}
+      <div class="rs-toggle-row">
+        <label class="rs-toggle">
+          <input
+            type="checkbox"
+            name="system.light.handheld"
+            {{checked system.light.handheld}}
+          />
+          <span>{{localize "REDSTEEL.Item.Light.handheld"}}</span>
+        </label>
+      </div>
+      <p class="notes">
+        {{localize "REDSTEEL.Item.Light.handheldHint"}}
+      </p>
+    {{/if}}
+
     {{! Basic radius / emission }}
     <div class="grid grid-4col">
       <div class="grid-span-1">

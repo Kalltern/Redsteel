@@ -125,7 +125,8 @@
     "effectType2": "",
     "effectType3": "",
     "attributeTest": "will",
-    "testModifier": "@spellPower*2"
+    "testModifier": "@spellPower*2",
+    "versusAgainst": "str,end"
   },
   "effects": [],
   "folder": "XCC7CG5LovD3hSXR",

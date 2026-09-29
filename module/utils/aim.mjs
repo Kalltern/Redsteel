@@ -143,6 +143,8 @@ function isTwoHandedSword(weapon) {
  */
 function hasDuelistOffHand(context) {
   if (context?.hasShield) return false;
+  // A torch fills the hand even though it is not an off-hand weapon.
+  if (context?.offIsLight) return false;
   const off = context?.offWeapon;
   if (!off) return true; // empty hand
   return off.system?.offhandProperties?.doctrines?.duelist === true;

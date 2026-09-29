@@ -67,6 +67,7 @@
       "slash"
     ],
     "testModifier": 5,
+    "versusAgainst": "str,end",
     "costOptions": [
       "stamina",
       "mana",

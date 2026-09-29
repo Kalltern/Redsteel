@@ -17,6 +17,7 @@ import { ATTRIBUTE_KEYS } from "./testRating.mjs";
 import {
   renderMarginFollowupLine,
   renderVersusTestBlock,
+  versusAgainstFor,
 } from "./attributeFollowup.mjs";
 import { abilityAllowedForWeapon } from "./weaponResolver.mjs";
 import {
@@ -250,6 +251,7 @@ export async function getNonWeaponAbility(actor, ability) {
         source: ability.localizedName ?? ability.name,
         chance: totalModifier,
         result: attributeRoll.result,
+        against: versusAgainstFor(ability),
       }),
     });
   }
@@ -437,6 +439,8 @@ function isDualWieldingMainHand(actor, weapon) {
   const offHand = actor.items.get(set.off);
   if (!mainHand || !offHand) return false;
   if (offHand.system?.shield) return false;
+  // Only a weapon in the off hand counts: a handheld light (torch) is gear.
+  if (offHand.type !== "weapon") return false;
 
   const mainIsTwoHanded =
     mainHand.system?.type === "heavy" ||

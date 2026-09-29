@@ -21,6 +21,10 @@ import {
   payBloodPayment,
 } from "./bloodPool.mjs";
 import { spendForItems } from "./actionTracker.mjs";
+import {
+  HASTENED_CAST_DIFFICULTY,
+  hasHastenedCast,
+} from "./hastenedCast.mjs";
 
 export { getStrikeId };
 
@@ -35,7 +39,8 @@ export async function castSpell() {
     return;
   }
 
-  const { freeCast, focusSpent, ignoreChanneling, bloodPayment } = result;
+  const { freeCast, focusSpent, ignoreChanneling, bloodPayment, hastenedCast } =
+    result;
 
   // If the spell has linked variants, let the player choose which version to
   // cast. Resolves with the parent spell itself when no valid variants exist.
@@ -51,6 +56,7 @@ export async function castSpell() {
     focusSpent,
     ignoreChanneling,
     bloodPayment,
+    hastenedCast,
   });
 }
 
@@ -70,7 +76,7 @@ export async function castSpell() {
  * `bonuses.attackBonus`, so the chat card's breakdown states it.
  *
  * @param {{token?: Token|null, freeCast?: boolean, focusSpent?: number,
- *   ignoreChanneling?: boolean, bloodPayment?: boolean,
+ *   ignoreChanneling?: boolean, bloodPayment?: boolean, hastenedCast?: boolean,
  *   extraAttackBonus?: number}} [options]
  * @returns {Promise<boolean>} False when the cast never happened (not enough
  *   mana/blood), true otherwise.
@@ -84,6 +90,7 @@ export async function performCast(
     focusSpent = 0,
     ignoreChanneling = false,
     bloodPayment = false,
+    hastenedCast = false,
     extraAttackBonus = 0,
   } = {},
 ) {
@@ -136,6 +143,27 @@ export async function performCast(
     }
   }
 
+  // Hastened Cast (Zrychlené čarování): +15 Difficulty for +5% Critical
+  // Failure. Stacks after Focus and Blood Payment under the same 0 cap, so when
+  // they already bought everything there is, the caster keeps the normal crit
+  // odds instead of paying for nothing.
+  let hastening = hastenedCast && hasHastenedCast(actor);
+  if (hastening) {
+    const before = payingBlood ? BLOOD_PAYMENT_DIFFICULTY : 0;
+    const gain =
+      getEffectiveDifficulty(
+        spell,
+        focusSpent,
+        before + HASTENED_CAST_DIFFICULTY,
+      ) - getEffectiveDifficulty(spell, focusSpent, before);
+    if (gain <= 0) {
+      ui.notifications.info(
+        game.i18n.localize("REDSTEEL.HastenedCast.NoGain"),
+      );
+      hastening = false;
+    }
+  }
+
   if (!freeCast) {
     const ok = await game.redsteel.deductMana(actor, spell);
     if (!ok) return false;
@@ -148,7 +176,9 @@ export async function performCast(
   await spendForItems(actor, spell);
 
   if (payingBlood) payingBlood = await payBloodPayment(actor);
-  const difficultyBonus = payingBlood ? BLOOD_PAYMENT_DIFFICULTY : 0;
+  const difficultyBonus =
+    (payingBlood ? BLOOD_PAYMENT_DIFFICULTY : 0) +
+    (hastening ? HASTENED_CAST_DIFFICULTY : 0);
 
   // Mentální zteč is declared "při seslání" — before the cast is rolled, not
   // after it lands. The Mind is burned here and parked on the caster; the
@@ -169,7 +199,7 @@ export async function performCast(
     spell,
     bonuses.attackBonus,
     focusSpent,
-    { ignoreChanneling, difficultyBonus },
+    { ignoreChanneling, difficultyBonus, hastenedCast: hastening },
   );
 
   await game.redsteel.finalizeRollsAndPostChat(
@@ -182,6 +212,7 @@ export async function performCast(
       ignoreChanneling,
       freeCast,
       bloodPayment: payingBlood,
+      hastenedCast: hastening,
       // The caster's own token, which is what positioning measures the targets
       // against (utils/positioning.mjs). Without it a spell card stamps no
       // arcs and a cast into a flank takes no bonus.

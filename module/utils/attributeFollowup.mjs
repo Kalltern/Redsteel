@@ -43,6 +43,63 @@ export function versusLossFor(item) {
 
 const ATTRIBUTE_KEYS = ["str", "dex", "end", "int", "wil", "cha", "per"];
 
+/**
+ * Parse a comma-separated list of attribute keys ("str, End") into canonical
+ * keys, dropping anything that is not one of ATTRIBUTE_KEYS.
+ *
+ * @param {string|string[]|null|undefined} value
+ * @returns {string[]}
+ */
+export function parseAttributeKeys(value) {
+  const parts = Array.isArray(value) ? value : String(value ?? "").split(",");
+  const keys = parts
+    .map((part) => String(part ?? "").trim().toLowerCase())
+    .filter((key) => ATTRIBUTE_KEYS.includes(key));
+  return [...new Set(keys)];
+}
+
+/**
+ * Which attributes this actor may answer a versus Test with.
+ *
+ * The ruling: the defender's attribute is defined by the test itself. A test
+ * posted "versus target's Strength/Endurance" (the item's
+ * `system.versusAgainst`, carried onto the card as `data-against`) may only be
+ * answered with Strength or Endurance. An empty list means the test names no
+ * defender attribute, so every attribute is allowed (the legacy behaviour).
+ *
+ * The one exception is a feature that specifically allows a different
+ * attribute. Features grant that through an Active Effect change on
+ * `system.versusAlternates` (mode OVERRIDE), e.g. key
+ * `system.versusAlternates.dex`, value `"end"`: wherever Dexterity is allowed,
+ * Endurance may be used instead. The key `any` adds its attributes to every
+ * versus Test. Values are comma-separated attribute keys; unknown keys are
+ * ignored.
+ *
+ * @param {Actor} actor
+ * @param {string[]|string|null} against  Attribute keys the test allows.
+ * @returns {{key: string, viaFeature: boolean}[]} In ATTRIBUTE_KEYS order.
+ */
+export function resolveVersusChoices(actor, against) {
+  const restricted = parseAttributeKeys(against);
+  const allowed = new Set(restricted.length ? restricted : ATTRIBUTE_KEYS);
+
+  const alternates = actor?.system?.versusAlternates;
+  const viaFeature = new Set();
+  if (alternates && typeof alternates === "object") {
+    for (const [from, value] of Object.entries(alternates)) {
+      const source = String(from).trim().toLowerCase();
+      if (source !== "any" && !allowed.has(source)) continue;
+      for (const key of parseAttributeKeys(value)) {
+        if (!allowed.has(key)) viaFeature.add(key);
+      }
+    }
+  }
+
+  return ATTRIBUTE_KEYS.filter(
+    (key) => allowed.has(key) || viaFeature.has(key),
+  ).map((key) => ({ key, viaFeature: !allowed.has(key) }));
+}
+
 /** Localized attribute name, matching the labels on the sheets. */
 function attributeLabel(key) {
   const capitalized = key.charAt(0).toUpperCase() + key.slice(1);
@@ -60,6 +117,8 @@ function attributeLabel(key) {
  * @param {string} data.source    Name of the originating roll (for flavor).
  * @param {number} [data.chance]  Success chance of the posted roll, for the tooltip.
  * @param {string} [data.result]  Dice breakdown of the posted roll, for the tooltip.
+ * @param {string} [data.against] Attribute keys the defender may answer with
+ *   ("str,end", the item's system.versusAgainst). Empty = any attribute.
  * @returns {string} HTML.
  */
 export function renderMarginFollowupLine({
@@ -68,6 +127,7 @@ export function renderMarginFollowupLine({
   chance = null,
   result = null,
   onLose = null,
+  against = null,
 }) {
   const tooltip = [
     chance != null ? `Test chance ${chance}%` : null,
@@ -78,7 +138,92 @@ export function renderMarginFollowupLine({
     .join("<br>");
 
   const loseAttr = onLose ? ` data-on-lose="${onLose}"` : "";
-  return `<span class="mos-followup" data-margin="${margin}" data-source="${source ?? ""}"${loseAttr} data-tooltip="${tooltip}" style="cursor:pointer; text-decoration:underline dotted;">Margin of Success: [${margin}]</span>`;
+  // The posted chance lets Break Free roll the whole contest again
+  // (escapeFollowup.mjs), both sides fresh.
+  const chanceAttr = chance != null ? ` data-chance="${chance}"` : "";
+  const againstAttr = renderAgainstAttr(against);
+  return `<span class="mos-followup" data-margin="${margin}" data-source="${source ?? ""}"${loseAttr}${chanceAttr}${againstAttr} data-tooltip="${tooltip}" style="cursor:pointer; text-decoration:underline dotted;">Margin of Success: [${margin}]</span>`;
+}
+
+/**
+ * `system.versusAgainst` of every compendium Item that has one, so a copy
+ * that predates the field (already on a sheet, or in the world) still reads
+ * the defender's attributes without being re-imported. Keyed by compendium
+ * uuid (a copy's `_stats.compendiumSource`), and by English name and
+ * localized name as the fallback, which is also what an old chat line's
+ * `data-source` holds. Filled once on ready (loadVersusIndex).
+ */
+const PACK_VERSUS = { byUuid: new Map(), byName: new Map() };
+
+/** Build PACK_VERSUS from the Item compendium indexes. Called on ready. */
+export async function loadVersusIndex() {
+  for (const pack of game.packs ?? []) {
+    if (pack.documentName !== "Item") continue;
+    let index;
+    try {
+      index = await pack.getIndex({
+        fields: ["system.versusAgainst", "system.localizationKey"],
+      });
+    } catch (err) {
+      console.warn(`Redsteel | versus index skipped ${pack.collection}`, err);
+      continue;
+    }
+    for (const entry of index) {
+      const against = parseAttributeKeys(entry.system?.versusAgainst);
+      if (!against.length) continue;
+      const value = against.join(",");
+      if (entry.uuid) PACK_VERSUS.byUuid.set(entry.uuid, value);
+      const names = [entry.name];
+      const key = entry.system?.localizationKey;
+      if (key && game.i18n.has(key)) names.push(game.i18n.localize(key));
+      for (const name of names) {
+        if (name) PACK_VERSUS.byName.set(name.trim().toLowerCase(), value);
+      }
+    }
+  }
+}
+
+/**
+ * The defender's attributes for this item's versus Test: its own field, else
+ * its compendium original's, else a compendium item of the same name.
+ *
+ * @param {Item|null|undefined} item
+ * @returns {string} "str,end", or "" when unrestricted.
+ */
+export function versusAgainstFor(item) {
+  const own = parseAttributeKeys(item?.system?.versusAgainst);
+  if (own.length) return own.join(",");
+  const source = item?._stats?.compendiumSource;
+  if (source && PACK_VERSUS.byUuid.has(source)) {
+    return PACK_VERSUS.byUuid.get(source);
+  }
+  return versusAgainstForName(item?.name) || versusAgainstForName(item?.localizedName);
+}
+
+/**
+ * A compendium item's defender attributes by name ("" when none). Old chat
+ * lines posted without `data-against` are resolved through their
+ * `data-source`.
+ *
+ * @param {string|null|undefined} name
+ * @returns {string}
+ */
+export function versusAgainstForName(name) {
+  if (!name) return "";
+  return PACK_VERSUS.byName.get(String(name).trim().toLowerCase()) ?? "";
+}
+
+/**
+ * The ` data-against="…"` attribute for a margin line, or "" when the test
+ * names no defender attribute. Shared by every emitter of `.mos-followup`.
+ *
+ * @param {string|string[]|null|undefined} against
+ * @returns {string}
+ */
+export function renderAgainstAttr(against) {
+  const keys = parseAttributeKeys(against);
+  if (!keys.length) return "";
+  return ` data-against="${foundry.utils.escapeHTML(keys.join(","))}"`;
 }
 
 /**
@@ -118,6 +263,9 @@ export function wireAttributeFollowups(html) {
       if (Number.isNaN(margin)) return;
       promptAttributeFollowup(margin, el.dataset.source ?? "", {
         onLose: el.dataset.onLose ?? null,
+        against: parseAttributeKeys(
+          el.dataset.against || versusAgainstForName(el.dataset.source),
+        ),
       });
     });
   }
@@ -129,16 +277,43 @@ export function wireAttributeFollowups(html) {
  *
  * @param {number} margin  The original margin of success to subtract.
  * @param {string} source  Name of the originating ability/spell (for flavor).
- * @param {{onLose?: string|null}} [options]  What the contester forfeits on a
+ * @param {object} [options]
+ * @param {string|null} [options.onLose]  What the contester forfeits on a
  *   loss, from the line's data-on-lose (see versusLossFor).
+ * @param {Actor|null} [options.actor]  Who contests. Given, it skips the token
+ *   pick (the hotbar's Escape chip already knows who is bound).
+ * @param {Function|null} [options.onRolled]  Awaited once the roll is posted,
+ *   never on a cancelled dialog (the Escape chip pays its Action here).
+ * @param {{chance: number, effectUuid?: string}|null} [options.contest]
+ *   Roll the whole contest again instead of beating a posted margin: the
+ *   initiator's side is re-rolled from its posted chance inside the same
+ *   formula, so a chat Re-Roll repeats both sides too. With `effectUuid`
+ *   (Break Free), a win deletes that effect (settleBreakFree).
+ * @param {string[]|null} [options.against]  Attribute keys the test lets the
+ *   defender answer with (from data-against). Empty = any attribute. Feature
+ *   alternates are added on top (resolveVersusChoices).
  */
-export function promptAttributeFollowup(margin, source = "", { onLose = null } = {}) {
-  const context = game.redsteel.selectToken({ notifyFallback: true });
-  if (!context) return;
-  const { actor } = context;
+export function promptAttributeFollowup(
+  margin,
+  source = "",
+  {
+    onLose = null,
+    actor = null,
+    onRolled = null,
+    contest = null,
+    against = null,
+  } = {},
+) {
+  if (!actor) {
+    const context = game.redsteel.selectToken({ notifyFallback: true });
+    if (!context) return;
+    actor = context.actor;
+  }
 
+  // Only the attributes the test names (plus feature alternates). A single
+  // remaining button still opens the dialog so the player confirms the roll.
   const buttons = {};
-  for (const key of ATTRIBUTE_KEYS) {
+  for (const { key, viaFeature } of resolveVersusChoices(actor, against)) {
     const attr = actor.system.attributes?.[key];
     if (!attr) continue;
     const label = attributeLabel(key);
@@ -149,9 +324,20 @@ export function promptAttributeFollowup(margin, source = "", { onLose = null } =
     // a roll with a different number than its own sheet would have used.
     const rating = attr.mod ?? 0;
     buttons[key] = {
-      label: `${label} (${rating})`,
+      label: viaFeature
+        ? game.i18n.format("REDSTEEL.Versus.ViaFeature", { label, rating })
+        : `${label} (${rating})`,
       callback: () =>
-        rollAttributeFollowup(actor, key, rating, margin, source, onLose),
+        rollAttributeFollowup(
+          actor,
+          key,
+          rating,
+          margin,
+          source,
+          onLose,
+          onRolled,
+          contest,
+        ),
     };
   }
 
@@ -163,7 +349,15 @@ export function promptAttributeFollowup(margin, source = "", { onLose = null } =
   new Dialog(
     {
       title: "Attribute Test",
-      content: `<p style="text-align:center;">Roll which attribute against margin <b>${margin}</b>?</p>`,
+      content: contest
+        ? `<p style="text-align:center;">${game.i18n.format(
+            "REDSTEEL.Bg3Hotbar.Suggest.EscapePick",
+            {
+              source: foundry.utils.escapeHTML(source),
+              chance: contest.chance,
+            },
+          )}</p>`
+        : `<p style="text-align:center;">Roll which attribute against margin <b>${margin}</b>?</p>`,
       buttons,
     },
     { classes: ["dialog", "attribute-followup-dialog"] },
@@ -177,6 +371,8 @@ export function promptAttributeFollowup(margin, source = "", { onLose = null } =
  * @param {string} key     Attribute key (str, dex, …).
  * @param {number} rating  The attribute rating used in the formula.
  * @param {number} margin  The original margin of success.
+ * @param {Function|null} [onRolled]  Awaited after the card is posted.
+ * @param {object|null} [contest]  See promptAttributeFollowup.
  */
 async function rollAttributeFollowup(
   actor,
@@ -185,12 +381,24 @@ async function rollAttributeFollowup(
   margin,
   source = "",
   onLose = null,
+  onRolled = null,
+  contest = null,
 ) {
   const label = attributeLabel(key);
-  const vsLabel = source ? source : `Margin ${margin}`;
+  const fresh = Number.isFinite(contest?.chance);
+  const vsLabel = fresh
+    ? `${source} ${contest.chance}%`
+    : source
+      ? source
+      : `Margin ${margin}`;
 
+  // A fresh contest rolls the initiator's side in the same formula. The roll
+  // bias rewrites only the first 1d100, which is the contester's own die, and
+  // a chat Re-Roll re-evaluates the whole formula, so both sides roll again.
   const roll = new Roll(
-    `${rating} - 1d100 - ${margin}`,
+    fresh
+      ? `${rating} - 1d100 - (${contest.chance} - 1d100)`
+      : `${rating} - 1d100 - ${margin}`,
     withRollBias({}, actor),
   );
   tagRollSkill(roll, key);
@@ -217,11 +425,18 @@ async function rollAttributeFollowup(
   const rollName = `${label} Test vs ${vsLabel}`;
   const settled = await settleVersusLoss(
     actor,
-    { margin, source, ...(onLose && { onLose }) },
+    {
+      margin,
+      source,
+      ...(onLose && { onLose }),
+      ...(fresh && { chance: contest.chance }),
+      ...(contest?.effectUuid && { breakFree: contest.effectUuid }),
+    },
     roll.total,
   );
+  const freedNote = await settleBreakFree(settled.followup, roll.total);
   let flavor = `<p class="rs-card-headline"><b>${rollName}</b></p>
-${renderVersusOutcome(roll.total)}${settled.note}`;
+${renderVersusOutcome(roll.total)}${settled.note}${freedNote}`;
   if (criticalMessage) {
     flavor += `<hr><p class="rs-card-headline"><b>${criticalMessage}</b></p>`;
   }
@@ -246,6 +461,7 @@ ${renderVersusOutcome(roll.total)}${settled.note}`;
       },
     },
   });
+  if (onRolled) await onRolled();
 }
 
 /**
@@ -298,4 +514,31 @@ export async function settleVersusLoss(actor, followup, total) {
       )}</p>`
     : "";
   return { followup: { ...followup, reactionLost: lost }, note };
+}
+
+/**
+ * Break Free: a won contest removes the effect that bound the contester. Runs
+ * on the contester's own client (their own effect, so ordinary ownership
+ * covers the delete), both after the first roll and after every chat Re-Roll
+ * (executeReroll). A Re-Roll only ever follows a loss, and an effect already
+ * gone is left alone, so nothing is ever put back.
+ *
+ * @param {object} followup  The `versusFollowup` flag.
+ * @param {number} total     The contester's roll total (a tie is a loss).
+ * @returns {Promise<string>} The note for the card, or "".
+ */
+export async function settleBreakFree(followup, total) {
+  if (!followup?.breakFree || total <= 0) return "";
+  const effect = fromUuidSync(followup.breakFree);
+  if (!effect) return "";
+  const name = game.i18n.localize(effect.name);
+  const actorName = effect.parent?.name ?? "";
+  await effect.delete();
+  return `<p style="text-align:center;">${game.i18n.format(
+    "REDSTEEL.Bg3Hotbar.Suggest.BrokeFree",
+    {
+      name: foundry.utils.escapeHTML(actorName),
+      effect: foundry.utils.escapeHTML(name),
+    },
+  )}</p>`;
 }

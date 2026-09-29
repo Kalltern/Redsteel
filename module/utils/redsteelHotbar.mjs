@@ -53,10 +53,17 @@ import {
   tokenMovementSpent,
 } from "./movementZones.mjs";
 import { isSprintAbility, useUtilityAbility } from "./combatAbilities.mjs";
+import { isCharge } from "./abilityMovement.mjs";
 import { canTradeWith, requestTrade } from "./trade.mjs";
+import { dropStance, holdStance } from "./stances.mjs";
+import { rollEscape } from "./escapeFollowup.mjs";
+import { handleApplyDamage, handleApplyEffects } from "./applyDamage.mjs";
 
-/** The combat plates, left to right: red melee, yellow ranged, blue spells. */
-const COMBAT_THEMES = ["melee", "ranged", "magic"];
+/**
+ * The combat plates, left to right: red melee, yellow ranged, blue spells,
+ * then white recall (a card fetched back from chat: Escape, sustained Apply).
+ */
+const COMBAT_THEMES = ["melee", "ranged", "magic", "recall"];
 
 /**
  * Split the suggestion chips: movement on its plate at the bar's left end,
@@ -688,6 +695,71 @@ const REACTION_STAR_SVG =
  * the cursor walks up onto it (user ruling). A held spell shows what clicking
  * does instead.
  */
+/**
+ * A status icon in the tray: its name, what it does to the character, and
+ * the live stacks / duration read off the effect itself, so the numbers are
+ * never a render behind.
+ *
+ * The prose comes from `REDSTEEL.EffectDesc.<status id>` for the system's own
+ * definitions. A world condition has no lang entry, but its GM-authored
+ * description is already written onto the effect document (see
+ * buildConditionDefinition), so that is the fallback; it is editor HTML and
+ * goes in unescaped, as the shared `item` provider does. Only the GM's
+ * manage hint is appended; players need no "Active condition." line once the
+ * effect explains itself, so that one survives only when there is no prose.
+ */
+function registerEffectTooltip() {
+  registerTooltip("bg3Effect", ({ dataset }) => {
+    let effect = null;
+    try {
+      effect = fromUuidSync(dataset.uuid);
+    } catch (err) {
+      effect = null;
+    }
+    if (!effect) return null;
+
+    let desc = null;
+    for (const id of effect.statuses ?? []) {
+      const key = `REDSTEEL.EffectDesc.${id}`;
+      if (game.i18n.has(key)) {
+        desc = `<div class="tt-desc">${ttEscape(game.i18n.localize(key))}</div>`;
+        break;
+      }
+    }
+    const authored = String(effect.description ?? "").trim();
+    if (!desc && authored.replace(/<[^>]*>/g, "").trim()) {
+      desc = `<div class="tt-desc">${authored}</div>`;
+    }
+
+    const counts = [];
+    const stacks = Number(effect.getFlag("redsteel", "stacks")) || 0;
+    const rounds = Number(effect.getFlag("redsteel", "rounds")) || 0;
+    const turns = Number(effect.getFlag("redsteel", "actorTurns")) || 0;
+    if (stacks > 1) {
+      counts.push(game.i18n.format("REDSTEEL.Bg3Hotbar.EffectStacks", { n: stacks }));
+    }
+    if (rounds > 0) {
+      counts.push(game.i18n.format("REDSTEEL.Bg3Hotbar.EffectRounds", { n: rounds }));
+    }
+    if (turns > 0) {
+      counts.push(game.i18n.format("REDSTEEL.Bg3Hotbar.EffectTurns", { n: turns }));
+    }
+
+    const hintKey = dataset.ttHint || (desc ? "" : "REDSTEEL.Bg3Hotbar.EffectView");
+    const body = [
+      desc ?? "",
+      counts.length ? `<div class="tt-desc">${ttEscape(counts.join(" · "))}</div>` : "",
+      hintKey ? `<div class="tt-desc">${ttEscape(game.i18n.localize(hintKey))}</div>` : "",
+    ].join("");
+
+    return ttFrame({
+      title: game.i18n.localize(effect.name),
+      subtitle: effect.disabled ? game.i18n.localize("REDSTEEL.Bg3Hotbar.EffectDisabled") : null,
+      body,
+    });
+  });
+}
+
 function registerSuggestTooltip() {
   registerTooltip("bg3Suggest", ({ dataset }) => {
     const title = dataset.ttTitle;
@@ -709,9 +781,10 @@ function registerSuggestTooltip() {
           data-tt-uuid="${ttEscape(dataset.ttUuid)}"
           data-tt-theme="${theme}">${ttEscape(title)}</span>`
       : `<span class="rs-bg3-stt-title">${ttEscape(title)}</span>`;
-    const hint = dataset.ttHint
-      ? `<div class="rs-bg3-stt-hint">${ttEscape(dataset.ttHint)}</div>`
-      : "";
+    const hint = [dataset.ttHint, dataset.ttHint2]
+      .filter(Boolean)
+      .map((line) => `<div class="rs-bg3-stt-hint">${ttEscape(line)}</div>`)
+      .join("");
     return `<div class="rs-bg3-stt rs-bg3-stt--${theme}">
       <div class="rs-bg3-stt-head">${titleHtml}${cost}</div>
       ${hint}
@@ -730,7 +803,7 @@ function registerSuggestTooltip() {
 }
 
 function suggestTheme(theme) {
-  return ["melee", "ranged", "magic"].includes(theme) ? theme : "melee";
+  return COMBAT_THEMES.includes(theme) ? theme : "melee";
 }
 
 /**
@@ -1110,7 +1183,9 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       useSuggestion: this._onUseSuggestion,
       useCombatSuggestion: this._onUseCombatSuggestion,
       overwatchShot: this._onOverwatchShot,
-      stopSustain: this._onStopSustain,
+      escapeEffect: this._onEscapeEffect,
+      applySustainSpell: this._onApplySustainSpell,
+      stanceSuggestion: this._onStanceSuggestion,
       toggleMovementMore: this._onToggleMovementMore,
       confirmMovement: this._onConfirmMovement,
       rotateFacing: this._onRotateFacing,
@@ -2524,12 +2599,16 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     // Combat suggestions (Counterattack, Retaliatory strike) are read off the
     // chat log: a defense card or an attack card arriving or being deleted
     // can add or spend one. Everything else in chat is left alone.
+    // An Apply Effects card counts too: a held spell's round card may carry
+    // only effects (the sustain Apply chip), and a binding card deleted takes
+    // its Escape chip with it.
     const isCombatCard = (message) => {
       const flags = message?.flags ?? {};
       return !!(
         flags.redsteel?.defense ||
         flags.redsteel?.abilityKey ||
-        flags.attack
+        flags.attack ||
+        flags.effects
       );
     };
     for (const hook of ["createChatMessage", "deleteChatMessage"]) {
@@ -2537,6 +2616,13 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
         if (isCombatCard(message)) this.#rerender();
       });
     }
+    // A reroll retires a card by marking it `rerolledAway`: the Escape and
+    // sustain Apply chips follow that mark to the replacement.
+    add("updateChatMessage", (_message, changed) => {
+      if (foundry.utils.hasProperty(changed ?? {}, "flags.redsteel.rerolledAway")) {
+        this.#rerender();
+      }
+    });
 
     // Selecting a different token on the canvas outranks a clicked portrait:
     // the canvas is the more direct statement of "this one now". Selecting the
@@ -2917,12 +3003,13 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
   }
 
   /**
-   * A held sustained cast: let it go.
+   * A held sustained cast, right-clicked: let it go.
    *
    * @this {Bg3Hotbar}
    */
   static async _onStopSustain(event, target) {
-    if (isRightClick(event)) return;
+    // Reached only from #onContextMenu: the chip's click applies instead.
+    if (!isRightClick(event)) return;
     const actor = this.actor;
     if (!actor?.isOwner) return;
     const effect = actor.effects.get(target?.dataset?.effectId);
@@ -2942,6 +3029,69 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
   }
 
   /**
+   * Rooted or Shadowbound: repeat the versus Test against the card that bound
+   * the actor (escapeFollowup.mjs). The Action is paid once the roll is
+   * posted, so cancelling the attribute dialog costs nothing.
+   *
+   * @this {Bg3Hotbar}
+   */
+  static async _onEscapeEffect(event, target) {
+    if (isRightClick(event)) return;
+    const actor = this.actor;
+    if (!actor?.isOwner) return;
+    const effectId = target?.dataset?.effectId;
+    if (!effectId) return;
+    await rollEscape(actor, effectId);
+  }
+
+  /**
+   * A held sustained spell, clicked: open Apply Damage (or Apply Effects)
+   * for this round's card of it, against the user's current targets. No card
+   * yet this round (or a held cast that never re-rolls): say so, and point at
+   * right-click, which is what stops it.
+   *
+   * @this {Bg3Hotbar}
+   */
+  static async _onApplySustainSpell(event, target) {
+    if (isRightClick(event)) return;
+    const actor = this.actor;
+    if (!actor?.isOwner) return;
+    const message = game.messages.get(target?.dataset?.messageId);
+    if (!message) {
+      ui.notifications.info(
+        game.i18n.localize("REDSTEEL.Bg3Hotbar.Suggest.SustainNoCard"),
+      );
+      return;
+    }
+    if (message.flags?.attack) await handleApplyDamage(message.id);
+    else await handleApplyEffects(message.id);
+  }
+
+  /**
+   * A held stance on its holder's turn: Hold pays this turn's actions and
+   * upkeep, Drop lets it go (stances.mjs). The panel redraws on the effect's
+   * update or deletion, which is what takes both chips away.
+   *
+   * @this {Bg3Hotbar}
+   */
+  static async _onStanceSuggestion(event, target) {
+    if (isRightClick(event)) return;
+    const chip = target.closest("[data-action=stanceSuggestion]");
+    const actor = this.actor;
+    if (!chip || !actor?.isOwner) return;
+    // A second click landing before the flag is written would pay twice.
+    if (this.#suggestionBusy) return;
+    this.#suggestionBusy = true;
+    try {
+      const { effectId, stanceAction } = chip.dataset;
+      if (stanceAction === "hold") await holdStance(actor, effectId);
+      else if (stanceAction === "drop") await dropStance(actor, effectId);
+    } finally {
+      this.#suggestionBusy = false;
+    }
+  }
+
+  /**
    * A combat suggestion chip: open the Combat Abilities dialog with this
    * ability already chosen, so the attack runs through the dialog's own flow.
    *
@@ -2955,10 +3105,36 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     if (isRightClick(event)) return;
     const chip = target.closest("[data-action=useCombatSuggestion]");
     if (!chip) return;
+    await this.#launchCombatSuggestion(chip);
+  }
 
+  /**
+   * Carry out a combat suggestion chip: a left click fires it plain, a
+   * right-click (from `#onContextMenu`) as an Aimed Attack.
+   *
+   * @param {HTMLElement} chip
+   * @param {object} [options]
+   * @param {boolean} [options.aimed]
+   */
+  async #launchCombatSuggestion(chip, { aimed = false } = {}) {
+    await this.#launchAbility(chip.dataset.abilityId, {
+      aimed,
+      targetId: chip.dataset.targetTokenId,
+    });
+  }
+
+  /**
+   * Open the Combat Abilities dialog firing this ability, with the bound
+   * actor's token in control and, when given, `targetId` targeted.
+   *
+   * @param {string} abilityId
+   * @param {object} [options]
+   * @param {boolean} [options.aimed]
+   * @param {string} [options.targetId]
+   */
+  async #launchAbility(abilityId, { aimed = false, targetId = null } = {}) {
     const actor = this.actor;
     if (!actor?.isOwner) return;
-    const abilityId = chip.dataset.abilityId;
     if (!abilityId || !actor.items.get(abilityId)) return;
 
     const token = tokenForActor(actor);
@@ -2969,7 +3145,6 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     if (this.#suggestionBusy) return;
     this.#suggestionBusy = true;
     try {
-      const targetId = chip.dataset.targetTokenId;
       const attacker = targetId ? canvas.tokens?.get(targetId) : null;
       if (attacker) attacker.setTarget(true, { releaseOthers: true });
 
@@ -2978,7 +3153,10 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
         token.control({ releaseOthers: true });
       }
 
-      await game.redsteel.combatAbilities({ launchAbilityId: abilityId });
+      await game.redsteel.combatAbilities({
+        launchAbilityId: abilityId,
+        launchAimed: aimed,
+      });
     } finally {
       setTimeout(() => {
         this.#suggestionBusy = false;
@@ -3085,10 +3263,19 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     if (isRightClick(event)) return;
     const actor = this.actor;
     if (!actor?.isOwner) return;
+    const lock = getMovementLock(actor);
     // A bonus step hands back the movement it interrupted, less what it walked.
     await confirmMovement(actor, {
       tokenSpent: tokenMovementSpent(tokenForActor(actor)),
     });
+    // The Charge approach is over: make its attack, at whatever the player
+    // has targeted. The dialog sees the finished Charge move and swings.
+    if (lock?.mode === "charge" && !lock.done) {
+      const charge = actor.items.find(
+        (i) => i.type === "ability" && isCharge(i),
+      );
+      if (charge) await this.#launchAbility(charge.id);
+    }
   }
 
   /**
@@ -3183,6 +3370,25 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       if (!game.user.isGM) return;
       const effect = fromUuidSync(effectEl.dataset.uuid);
       if (effect?.parent === this.actor) await effect.delete();
+      return;
+    }
+
+    // A held sustained spell right-clicked: let it go.
+    const sustainChip = event.target.closest?.("[data-action=applySustainSpell]");
+    if (sustainChip) {
+      event.preventDefault();
+      event.stopPropagation();
+      return Bg3Hotbar._onStopSustain.call(this, event, sustainChip);
+    }
+
+    // An attack chip right-clicked: the same attack, aimed at a body part.
+    const aimChip = event.target.closest?.(
+      "[data-action=useCombatSuggestion][data-aimable]",
+    );
+    if (aimChip) {
+      event.preventDefault();
+      event.stopPropagation();
+      await this.#launchCombatSuggestion(aimChip, { aimed: true });
       return;
     }
 
@@ -3943,6 +4149,7 @@ export function registerRedsteelHotbar() {
   registerPanelStatTooltip();
   registerNpcTagTooltip();
   registerSuggestTooltip();
+  registerEffectTooltip();
 
   Hooks.once("ready", () => {
     document.body.classList.add(BODY_CLASS);

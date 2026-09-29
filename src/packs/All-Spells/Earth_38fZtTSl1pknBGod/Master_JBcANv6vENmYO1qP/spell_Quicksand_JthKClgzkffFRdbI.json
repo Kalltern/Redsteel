@@ -139,7 +139,8 @@
     "manualNotes": "",
     "vsTest": true,
     "attributeTest": "will",
-    "testModifier": "@spellPower*3"
+    "testModifier": "@spellPower*3",
+    "versusAgainst": "dex,end"
   },
   "effects": [],
   "folder": "JBcANv6vENmYO1qP",

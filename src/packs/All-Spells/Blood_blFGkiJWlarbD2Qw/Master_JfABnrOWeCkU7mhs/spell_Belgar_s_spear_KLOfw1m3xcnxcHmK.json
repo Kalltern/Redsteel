@@ -121,6 +121,7 @@
     },
     "attributeTest": "will",
     "testModifier": "",
+    "versusAgainst": "dex,end",
     "effectType1": "root",
     "effectType2": "",
     "effectType3": "",

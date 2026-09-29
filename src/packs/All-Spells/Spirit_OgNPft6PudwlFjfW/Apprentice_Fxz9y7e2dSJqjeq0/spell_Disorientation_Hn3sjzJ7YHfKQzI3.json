@@ -126,6 +126,7 @@
     },
     "attributeTest": "will",
     "testModifier": "@spellPower",
+    "versusAgainst": "per",
     "effectType1": "disorientation",
     "effectType2": "custom",
     "effectType3": "",

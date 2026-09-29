@@ -17,11 +17,19 @@
  *   rules. Granted when the card posts, not at Apply Damage, since the hit
  *   does not matter. Ignoring it costs nothing: ✓ or simply Moving on hands
  *   the turn's movement back, and it expires with the round.
+ * - Charge (Zteč): movement first, then the attack. Picking Charge on the
+ *   actor's own turn, before it has moved, declares a Speed move and rolls
+ *   nothing. The attack comes once the approach is done: the strip's ✓ on
+ *   the Charge move (redsteelHotbar.mjs), or picking Charge again. The
+ *   attack pays the ability's cost and its two Actions, so the move charges
+ *   nothing. A character that already moved just attacks.
  *
  * Both are guidance like the rest of the tracker: nothing here refuses a move.
  */
 
 import {
+  getMovementLock,
+  getSpent,
   grantBonusStep,
   isTrackedTurn,
   lockMovement,
@@ -35,6 +43,7 @@ import {
 export const DUELISTS_ADVANCE_KEY = "REDSTEEL.Items.DuelistsAdvance.name";
 export const PASSING_STRIKE_KEY = "REDSTEEL.Items.PassingStrike.name";
 export const EXTENDED_LUNGE_KEY = "REDSTEEL.Items.ExtendedLunge.name";
+export const CHARGE_KEY = "REDSTEEL.Items.Charge.name";
 
 /**
  * Matched on the localisation key, with the pack's English name as the
@@ -141,4 +150,36 @@ export async function grantExtendedLungeStep(actor, message, tokenDoc) {
     startSpent: Number(tokenDoc.getFlag("redsteel", "movementSpent") ?? 0) || 0,
     source: message.id,
   });
+}
+
+/** Is this the Charge ability (by key, or the pack's English name)? */
+export function isCharge(ability) {
+  return (
+    ability?.system?.localizationKey === CHARGE_KEY || ability?.name === "Charge"
+  );
+}
+
+/**
+ * Charge was picked: declare its approach instead of attacking, when this is
+ * the first movement of the actor's own turn. Nothing is paid here; the
+ * attack that follows pays for the whole Charge.
+ *
+ * @param {Actor} actor
+ * @returns {Promise<boolean>} True when the move was declared and the attack
+ *   must wait; false when the attack should go ahead now (out of a tracked
+ *   turn, no token, or the turn's movement is already taken, which includes
+ *   a Charge move declared earlier).
+ */
+export async function declareChargeMove(actor) {
+  if (!actor || !isTrackedTurn(actor)) return false;
+  if (getMovementLock(actor) || getSpent(actor).moved) return false;
+  const token = tokenForActor(actor);
+  if (!token) return false;
+  await lockMovement(actor, {
+    mode: "charge",
+    budget: movementBudget(actor, "charge"),
+    startSpent: tokenMovementSpent(token),
+    charge: 0,
+  });
+  return true;
 }

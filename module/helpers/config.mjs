@@ -868,13 +868,8 @@ REDSTEEL.effectDefinitions = {
     name: "Defensive stance",
     img: "icons/skills/melee/shield-block-gray-yellow.webp",
     statuses: ["defensive_stance"],
-    triggers: {
-      onRoundStart: {
-        formula: "1",
-        target: "system.stats.stamina.value",
-        custom: "staminaDrain",
-      },
-    },
+    // No upkeep trigger: a stance is paid on its holder's own turn from the
+    // hotbar (utils/stances.mjs), never at the round rollover.
     changes: [
       {
         key: "system.combatSkills.meleeDefense.bonus",

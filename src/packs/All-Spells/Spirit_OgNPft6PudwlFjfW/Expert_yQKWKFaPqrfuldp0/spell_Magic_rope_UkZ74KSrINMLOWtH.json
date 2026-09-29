@@ -127,6 +127,7 @@
     },
     "attributeTest": "will",
     "testModifier": "@spellPower",
+    "versusAgainst": "str,dex",
     "effectType1": "",
     "effectType2": "",
     "effectType3": "",
