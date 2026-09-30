@@ -3794,7 +3794,13 @@
           "Statistics": "Statistics",
           "Features": "Features",
           "Traits": "Traits",
-          "Rerolls": "Rerolls"
+          "Rerolls": "Rerolls",
+          "Armor": "Armor",
+          "Value": "Value",
+          "Resistances": "Resistances",
+          "Vulnerabilities": "Vulnerabilities",
+          "Immunities": "Immunities",
+          "NoDamageModifiers": "No resistances, vulnerabilities or immunities."
         },
         "Condition": {
           "max": "max",

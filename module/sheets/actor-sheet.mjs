@@ -125,6 +125,83 @@ function isAccessory(item) {
   );
 }
 
+// Damage types in `system.armor` that carry resistance/vulnerability/immunity
+// flags, and the subset that also carries its own armor value.
+const DEFENSE_DAMAGE_TYPES = [
+  "physical", "slash", "piercing", "blunt", "psychic",
+  "acid", "fire", "frost", "lightning", "poison", "dark", "holy", "magic",
+];
+const SPECIAL_ARMOR_TYPES = [
+  "acid", "fire", "frost", "lightning", "poison", "dark", "holy", "magic",
+];
+const DEFENSE_EFFECT_MODS = ["stagger", "bleed", "poison"];
+
+/**
+ * The Combat skills subtab's defense column: every armor value, then the
+ * damage types the actor resists, is vulnerable to, or is immune to. Immunity
+ * wins over the other two, as it does in the damage calculation
+ * (combatSkillBonuses.mjs), and effect immunities (effectMods) join it.
+ */
+function buildCombatDefense(actor) {
+  const armor = actor.system?.armor ?? {};
+  const typeLabel = (key) =>
+    game.i18n.localize(`REDSTEEL.Bg3Hotbar.DamageType.${key}`);
+
+  const armorRows = [
+    {
+      key: "armor",
+      label: game.i18n.localize("REDSTEEL.Item.Gear.FIELDS.armor.label"),
+      value: Number(armor.total ?? 0),
+    },
+    ...SPECIAL_ARMOR_TYPES.map((key) => ({
+      key,
+      label: typeLabel(key),
+      value: Number(armor[key]?.total ?? 0),
+    })),
+  ];
+
+  const resistances = [];
+  const vulnerabilities = [];
+  const immunities = [];
+  for (const key of DEFENSE_DAMAGE_TYPES) {
+    const row = armor[key];
+    if (!row) continue;
+    if (row.immunity) {
+      immunities.push(typeLabel(key));
+      continue;
+    }
+    if (row.resistance) resistances.push(typeLabel(key));
+    if (row.vulnerability) vulnerabilities.push(typeLabel(key));
+  }
+  for (const key of DEFENSE_EFFECT_MODS) {
+    if (actor.system?.effectMods?.[key]?.immune) {
+      immunities.push(game.i18n.localize(`REDSTEEL.Bg3Hotbar.EffectMod.${key}`));
+    }
+  }
+
+  return { armorRows, resistances, vulnerabilities, immunities };
+}
+
+// Display-only swaps in the General skills ledger: each pair trades places
+// when the stored data has them the other way round. Stored key order
+// follows the actor's data, so template.json alone cannot reorder existing
+// actors.
+const SKILL_DISPLAY_SWAPS = [
+  ["survival", "animalHandling"],
+  ["rituals", "mindBending"],
+];
+
+/** `system.skills` re-keyed in display order; the values are the originals. */
+function orderSkillsForDisplay(skills) {
+  const keys = Object.keys(skills ?? {});
+  for (const [first, second] of SKILL_DISPLAY_SWAPS) {
+    const i = keys.indexOf(first);
+    const j = keys.indexOf(second);
+    if (i > j && j >= 0) [keys[i], keys[j]] = [keys[j], keys[i]];
+  }
+  return Object.fromEntries(keys.map((key) => [key, skills[key]]));
+}
+
 // Inventory grid category filters. `all` shows everything; the rest map a
 // display category to the underlying item types (ammunition rides with the
 // alchemy/supplies bucket, matching the old "supplies" grouping).
@@ -1871,6 +1948,8 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       }
       case "skills":
         context.activeSkillsSubtab = this.tabGroups["skills-subtabs"] ?? null;
+        context.combatDefense = buildCombatDefense(this.actor);
+        context.orderedSkills = orderSkillsForDisplay(this.actor.system?.skills);
         context.tab = context.tabs[partId];
         break;
       case "specialisations":

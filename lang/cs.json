@@ -3794,7 +3794,13 @@
           "Statistics": "Statistiky",
           "Features": "Rysy",
           "Traits": "Vlastnosti",
-          "Rerolls": "Opakování hodů"
+          "Rerolls": "Opakování hodů",
+          "Armor": "Zbroj",
+          "Value": "Hodnota",
+          "Resistances": "Odolnosti",
+          "Vulnerabilities": "Zranitelnosti",
+          "Immunities": "Imunity",
+          "NoDamageModifiers": "Žádné odolnosti, zranitelnosti ani imunity."
         },
         "Condition": {
           "max": "max",

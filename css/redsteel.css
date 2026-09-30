@@ -1056,7 +1056,7 @@ table tr td:nth-child(3) {
 }
 .skill-section h5 {
   display: grid;
-  grid-template-columns: 176px 111px 80px;
+  grid-template-columns: minmax(0, 1fr) 34px;
   justify-items: start;
 }
 
@@ -1067,10 +1067,9 @@ table tr td:nth-child(3) {
   align-self: center;
 
 }
-.skill-section h5 :nth-child(2) {
-  color: silver;
-  font-size: 0.8rem;
-  align-self: center;
+/* The Rating label sits over the centered rating plates. */
+.skill-section h5 :first-child {
+  justify-self: center;
 }
 .skill-header span:nth-child(2),
 .skill-header span:nth-child(3) {
@@ -1080,19 +1079,25 @@ table tr td:nth-child(3) {
 .skill-header span:nth-child(3) {
   text-align: center;
 }
+/* Rating: a bare serif numeral, no frame. */
 .skill-rating,
 .skills-container input[readonly] {
-  color: silver;
-  background: radial-gradient(
-    circle at 30% 30%,
-    #112021,
-    #101623 65%,
-    #080c14 100%
-  );
-  box-shadow:
-    inset 0 -2px 3px rgb(22 18 18),
-    inset 0 3px 5px rgb(0 0 0 / 70%),
-    0 1px 2px rgb(0 0 0);
+  color: #e2cf9f;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: lining-nums tabular-nums;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+  background: none;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  cursor: default;
+}
+.skill-rating:focus,
+.skills-container input[readonly]:focus {
+  outline: none;
+  box-shadow: none;
 }
 
 /* Center the grid items inside their grid cell */
@@ -1209,10 +1214,10 @@ table tr td:nth-child(3) {
 }
 /* Skill entry alignment and rating centering */
 .skill-entry { display: flex; align-items: center; gap: 2px; justify-content: flex-start; }
-.skill-rating { width: 42px; text-align: center; flex: 0 0 42px; }
+.skill-rating { width: 34px; text-align: center; flex: 0 0 34px; }
 
 /* Stronger selector to override other utility classes */
-.skill-entry > .skill-rating { flex: 0 0 42px !important; }
+.skill-entry > .skill-rating { flex: 0 0 34px !important; }
 .skill-entry > .skill-rank-editor { flex: 0 0 auto; margin-left: 0 !important; }
 .skill-rank-editor { display: flex; align-items: center; gap: 6px; margin-left: 8px; }
 .skill-rank-button { min-width: 26px; padding: 2px 6px; }
@@ -1222,10 +1227,6 @@ table tr td:nth-child(3) {
   margin: 0;
 }
 
-.skill-rank-label {
-  text-align: center;
-  margin: 0;
-}
 
 .skill-rating {
   justify-self: center;
@@ -1247,7 +1248,9 @@ table tr td:nth-child(3) {
     url(../ui/headertexture.jpg);
   border: 2px solid #514226;
   border-radius: 0;
-  padding: 16px;
+  /* Top trimmed to 3px (80% off 16px) so the sub-tab row sits right under
+     the frame on every tab. */
+  padding: 3px 16px 16px;
   box-shadow:
     inset 0 0 25px rgba(0, 0, 0, 0.65),
     0 0 12px rgba(0, 0, 0, 0.35);
@@ -1266,8 +1269,8 @@ table tr td:nth-child(3) {
 }
 .skill-section + .skill-section {
   border-top: 1px solid rgba(181, 151, 80, 0.2);
-  margin-top: 16px;
-  padding-top: 16px;
+  margin-top: 0;
+  padding-top: 12px;
 }
 .skill-section h5 {
   margin-top: 0;
@@ -1290,6 +1293,49 @@ table tr td:nth-child(3) {
 .skill-section.attribute-cha h5 { color: var(--rs-attr-cha); }
 .skill-section.attribute-per h5 { color: var(--rs-attr-per); }
 
+/* Each General section's ledger cells and hover take a faint tone of its
+   attribute colour; anything outside a section falls back to bronze. */
+.skill-section.attribute-str { --rs-ledger-tint: var(--rs-attr-str); }
+.skill-section.attribute-dex { --rs-ledger-tint: var(--rs-attr-dex); }
+.skill-section.attribute-end { --rs-ledger-tint: var(--rs-attr-end); }
+.skill-section.attribute-int { --rs-ledger-tint: var(--rs-attr-int); }
+.skill-section.attribute-wil { --rs-ledger-tint: var(--rs-attr-wil); }
+.skill-section.attribute-cha { --rs-ledger-tint: var(--rs-attr-cha); }
+.skill-section.attribute-per { --rs-ledger-tint: var(--rs-attr-per); }
+
+/* The tone also washes the whole section as its background, so a section
+   reads as one tinted plate. With a background of its own it needs inner
+   padding, and the divider line between sections gives way to the column gap. */
+.skills-container:not(.skills-combat-container) .skill-section {
+  /* The heading ribbon's palette spread over the whole section, inverted:
+     the attribute colour lights the side walls and softens towards the centre,
+     which keeps some of the colour and is only slightly darker. Low contrast
+     on purpose. */
+  background:
+    linear-gradient(90deg,
+      color-mix(in srgb, var(--rs-ledger-tint, rgb(181 151 80)) 12%, transparent),
+      color-mix(in srgb, var(--rs-ledger-tint, rgb(181 151 80)) 6%, transparent) 50%,
+      color-mix(in srgb, var(--rs-ledger-tint, rgb(181 151 80)) 12%, transparent)),
+    linear-gradient(90deg,
+      rgba(0, 0, 0, 0.22),
+      rgba(0, 0, 0, 0.32) 50%,
+      rgba(0, 0, 0, 0.22));
+  padding: 10px 8px 5px;
+}
+/* Each section is framed in the dark bronze of the outer box, with a small
+   tint of its attribute colour worked in. */
+.skills-container:not(.skills-combat-container) .skill-section,
+.skills-container:not(.skills-combat-container) .skill-section + .skill-section {
+  border: 2px solid color-mix(in srgb, var(--rs-ledger-tint, rgb(181 151 80)) 18%, rgb(52 43 26));
+  /* Sunk into the column like the sheet's stone panels: a soft inner
+     shadow all round, heavier from the top wall. */
+  box-shadow:
+    inset 0 0 18px rgba(0, 0, 0, 0.55),
+    inset 0 6px 10px -4px rgba(0, 0, 0, 0.6);
+  /* No gap above the heading: its band sits against the top of the frame. */
+  padding-top: 0;
+}
+
 .skill-toggle-wrapper {
   background: transparent;
   border: none;
@@ -1308,7 +1354,7 @@ table tr td:nth-child(3) {
    matching the General sub-tab section headers. */
 .skills-combat-container .skills-column h5 {
   display: grid;
-  grid-template-columns: 144px 110px 80px;
+  grid-template-columns: minmax(0, 1fr) 34px;
   align-items: center;
   /* No bottom margin: the column's flex gap already spaces the header
      from the first entry, same as between entries */
@@ -1327,14 +1373,9 @@ table tr td:nth-child(3) {
   color: silver;
   font-size: 0.8rem;
 }
-/* Rank header (left combat column) â€” tune independently here */
-.skills-combat-container .skills-column:first-child h5 span {
-  transform: none;
-}
-/* Rating header (right combat column) â€” nudge left to line up with the
-   rating inputs, independently of the Rank label */
-.skills-combat-container .skills-column:last-child h5 span {
-  transform: translateX(-5px);
+/* Edit-mode rank column: the - x/y + editor takes the right-hand cell. */
+.skills-combat-container .skills-rank-column h5 {
+  grid-template-columns: minmax(0, 1fr) auto;
 }
 .redsteel .tab.biography .editor {
   height: 100%;
@@ -1858,7 +1899,9 @@ table tr td:nth-child(3) {
     url(../ui/headertexture.jpg);
   border: 2px solid #514226;
   border-radius: 0;
-  padding: 16px;
+  /* Top trimmed to 3px (80% off 16px) so the sub-tab row sits right under
+     the frame on every tab. */
+  padding: 3px 16px 16px;
   box-shadow:
     inset 0 0 25px rgba(0, 0, 0, 0.65),
     0 0 12px rgba(0, 0, 0, 0.35);
@@ -1877,6 +1920,13 @@ table tr td:nth-child(3) {
 .alchemy-box,
 .specialisations-box {
   flex: 1 1 auto;
+}
+/* Skills tab: the sub-tab row sits close over the skills panel below it
+   (the shared 1rem box gap was a wide empty band there). */
+.skills-box {
+  gap: 4px;
+  /* Half the shared 16px under the skills panel. */
+  padding-bottom: 8px;
 }
 /* The skills tab nests its box in this wrapper: pass the tab height down */
 .scrollable-tab {
@@ -1922,15 +1972,42 @@ table tr td:nth-child(3) {
 }
 
 .skills-container:not(.skills-combat-container) .skills-column {
-  flex: 1 1 31%;
-  min-width: 240px;
+  /* Three equal columns that never wrap to a second row. */
+  flex: 1 1 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 6px;
+  /* Both columns keep the same 6px between sections and line up top and
+     bottom: the shorter column's spare height goes into its sections (they
+     grow evenly, below), never into the gaps. */
+  justify-content: flex-start;
+  /* The columns no longer box themselves: the container below is the one
+     box. The border stays as a transparent 1px so nothing moves. */
+  background: transparent;
+  border: 1px solid transparent;
+  /* Narrow sides: the gutter between columns is kept as tight as it goes. */
+  padding: 14px 3px 12px;
+  box-shadow: none;
+}
+/* Sections share out their column's spare height evenly. In the tallest
+   column there is none, so nothing changes there; in the shorter one each
+   section grows a little and centres its heading and buttons in the extra,
+   so the space splits above and below instead of pooling at the bottom. */
+.skills-container:not(.skills-combat-container) .skills-column > .skill-section {
+  flex: 1 1 auto;
+}
+/* General tab: one box behind all the columns, where each column used to
+   carry its own. The border is drawn as an inset 1px ring (box-shadow), so
+   it takes no layout space, lands where the columns' outer borders were,
+   and every column stays exactly where it was. */
+.skills-container:not(.skills-combat-container) {
+  gap: 4px;
+  padding: 0 8px;
   background: rgba(0, 0, 0, 0.31);
-  border: 1px solid rgba(181, 151, 80, 0.35);
-  padding: 14px 12px 12px;
-  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.28);
+  box-shadow:
+    inset 0 0 0 2px rgba(181, 151, 80, 0.35),
+    inset 0 0 12px rgba(0, 0, 0, 0.28);
 }
 
 /* Box the combat columns the same way as the general columns */
@@ -1945,22 +2022,13 @@ table tr td:nth-child(3) {
 }
 .skill-entry {
   display: grid;
-  grid-template-columns: 130px 110px 80px;
+  grid-template-columns: minmax(0, 1fr) 34px;
   gap: 8px;
 
   padding: 3px 6px;
   border-bottom: 1px solid rgba(181,151,80,0.10);
 }
 
-.skill-rank-label {
-  color: #d3c199;
-  font-size: 15px;
-  white-space: nowrap;
-  margin-left: 6px;
-  width: 100%;
-  text-align: center;
-  font-family: "Times New Roman", Times, serif;
-}
 
 
 .skill-value {
@@ -1980,10 +2048,189 @@ table tr td:nth-child(3) {
   padding: 2px; /* Small padding for cleaner look */
 }
 .skill-rating {
-  height: 20px;
-  line-height: 20px;
+  height: 19px;
+  line-height: 19px;
   margin: 0;
-  align-self: start;
+  padding: 0;
+  align-self: center;
+}
+/* Edit mode adds the rank editor as a third cell after the rating; the
+   combat rank column has no rating, so the editor takes the second. */
+.skill-entry:has(> .skill-rank-editor) {
+  grid-template-columns: minmax(0, 1fr) 34px auto;
+}
+.skills-rank-column .skill-entry {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+/* General tab: each attribute section lays its skills out in two columns so
+   the rating sits close to its name. The heading spans both. A wrapper whose
+   skill is hidden is dropped so it does not hold an empty cell. Edit mode
+   goes back to one column, since the rank editor needs the width. */
+.skills-container:not(.skills-combat-container) .skill-section {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  row-gap: 5px;
+  column-gap: 6px;
+  align-content: center;
+}
+.skills-container:not(.skills-combat-container) .skill-section > h5 {
+  display: block;
+  text-align: center;
+  padding-left: 0;
+  /* Cancels the grid's 5px row gap: the first row of buttons starts right
+     where the heading's underline used to be. */
+  margin-bottom: -5px;
+  border-bottom: none;
+  /* The ribbon palette now fills the whole section (below), so the heading
+     has no band of its own. */
+  padding-top: 6px;
+  padding-bottom: 2px;
+  background: none;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+.skills-container:not(.skills-combat-container) .skill-section > h5,
+.skills-container:not(.skills-combat-container) .skill-section > .skill-header {
+  grid-column: 1 / -1;
+}
+.skills-container:not(.skills-combat-container) .skill-section:has(.skill-rank-editor) {
+  grid-template-columns: minmax(0, 1fr);
+}
+.skill-section > .skill-toggle-wrapper.is-hidden {
+  display: none;
+}
+/* Skill buttons. Each General skill is a plate sunk into the section, cut
+   like the header's primary attribute boxes: a dark bronze wall, the light
+   from above falling off inside it, a faint catch-light on the bottom lip, and
+   the section's attribute tone barely washing the floor. The whole plate
+   rolls: the name's rollable label is stretched over it by an ::after, so
+   the click still lands on the element carrying data-action and its data. */
+.skills-container:not(.skills-combat-container) .skill-section > :is(.skill-toggle-wrapper, .skill-entry) {
+  margin: 0;
+}
+.skills-container:not(.skills-combat-container) .skill-section .skill-entry {
+  position: relative;
+  /* 2px top and bottom, with the name's own padding trimmed below: roughly
+     40px in the original down to about 29px. */
+  padding: 2px 10px;
+  border: 1px solid rgb(45 40 32);
+  border-radius: 4px;
+  /* Dark enough to stand off the section's coloured plate. */
+  background-color: rgba(8, 7, 5, 0.72);
+  background-image: radial-gradient(
+    ellipse at 50% 42%,
+    rgba(40, 36, 28, 0.18),
+    rgba(4, 3, 2, 0.35)
+  );
+  box-shadow:
+    inset 0 5px 8px -2px rgba(0, 0, 0, 0.5),
+    inset 0 1px 2px rgba(0, 0, 0, 0.4),
+    inset 0 -1px 0 rgba(170, 154, 122, 0.06);
+  cursor: pointer;
+  transition: box-shadow 0.12s ease, border-color 0.12s ease;
+}
+.skills-container:not(.skills-combat-container) .skill-section .skill-entry:hover {
+  border-color: rgb(62 54 40);
+  box-shadow:
+    inset 0 5px 9px -2px rgba(0, 0, 0, 0.58),
+    inset 0 1px 3px rgba(0, 0, 0, 0.47),
+    inset 0 -1px 0 rgba(198, 180, 142, 0.12),
+    inset 0 0 0 100vmax color-mix(in srgb, var(--rs-ledger-tint, rgb(181 151 80)) 5%, transparent);
+}
+.skills-container:not(.skills-combat-container) .skill-section .skill-entry:hover .skill-name {
+  color: #d6d2c8;
+}
+/* The global .rollable hover glow (4px gold blur) is cut to a 1px halo on
+   the skill buttons. */
+.skills-container:not(.skills-combat-container) .skill-section .skill-entry .skill-label.rollable:is(:hover, :focus),
+.skills-container:not(.skills-combat-container) .skill-section .skill-entry:hover .skill-label.rollable {
+  text-shadow: 0 0 1px rgba(154, 123, 46, 0.7);
+}
+/* Pressed: the plate sinks a little further. */
+.skills-container:not(.skills-combat-container) .skill-section .skill-entry:active {
+  box-shadow:
+    inset 0 7px 11px -2px rgba(0, 0, 0, 0.7),
+    inset 0 2px 4px rgba(0, 0, 0, 0.6),
+    inset 0 -1px 0 rgba(198, 180, 142, 0.08);
+}
+.skills-container:not(.skills-combat-container) .skill-section .skill-entry .skill-label.rollable::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+.skills-container:not(.skills-combat-container) .skill-section .skill-entry .skill-label.rollable {
+  padding-top: 1.5px;
+  padding-bottom: 1.5px;
+}
+/* The rank editor in edit mode stays above the stretched click area. */
+.skills-container:not(.skills-combat-container) .skill-section .skill-entry .skill-rank-editor {
+  position: relative;
+  z-index: 2;
+}
+/* A skill left alone on the last row (an odd count of visible cells) takes
+   the full row instead, with its name and number centred together. It keeps
+   the ledger's own shading and spacing so it reads as part of the section. Hidden skills are
+   not counted, so this follows what is actually shown. Edit mode is one
+   column already and is left alone. */
+.skills-container:not(.skills-combat-container) .skill-section > :is(.skill-toggle-wrapper, .skill-entry):not(.is-hidden):nth-child(odd of :is(.skill-toggle-wrapper, .skill-entry):not(.is-hidden)):nth-last-child(1 of :is(.skill-toggle-wrapper, .skill-entry):not(.is-hidden)) {
+  grid-column: 1 / -1;
+  border-right: none;
+}
+.skills-container:not(.skills-combat-container) .skill-section > :is(.skill-toggle-wrapper, .skill-entry):not(.is-hidden):nth-child(odd of :is(.skill-toggle-wrapper, .skill-entry):not(.is-hidden)):nth-last-child(1 of :is(.skill-toggle-wrapper, .skill-entry):not(.is-hidden)) .skill-entry,
+.skills-container:not(.skills-combat-container) .skill-section > :is(.skill-toggle-wrapper, .skill-entry):not(.is-hidden):nth-child(odd of :is(.skill-toggle-wrapper, .skill-entry):not(.is-hidden)):nth-last-child(1 of :is(.skill-toggle-wrapper, .skill-entry):not(.is-hidden)).skill-entry {
+  grid-template-columns: auto 34px;
+  justify-content: center;
+}
+.skills-container:not(.skills-combat-container) .skill-section:has(.skill-rank-editor) > :is(.skill-toggle-wrapper, .skill-entry):not(.is-hidden):nth-child(odd of :is(.skill-toggle-wrapper, .skill-entry):not(.is-hidden)):nth-last-child(1 of :is(.skill-toggle-wrapper, .skill-entry):not(.is-hidden)) {
+  grid-column: auto;
+}
+.skills-container:not(.skills-combat-container) .skill-section:has(.skill-rank-editor) > :is(.skill-toggle-wrapper, .skill-entry):not(.is-hidden):nth-child(odd of :is(.skill-toggle-wrapper, .skill-entry):not(.is-hidden)):nth-last-child(1 of :is(.skill-toggle-wrapper, .skill-entry):not(.is-hidden)) .skill-entry {
+  grid-template-columns: minmax(0, 1fr) 34px auto;
+  justify-content: stretch;
+}
+
+/* Skill names 2px over the inherited size, and a faint lift on the hovered
+   cell. The lift is an inset shadow so it layers over the ledger shading
+   without having to outrank its nth-child selectors. */
+.skills-container .skill-entry .skill-name {
+  font-size: calc(100% + 2px);
+}
+.skills-container .skill-entry {
+  transition: box-shadow 120ms ease;
+}
+.skills-container .skill-entry:hover {
+  box-shadow: inset 0 0 0 100vmax color-mix(in srgb, var(--rs-ledger-tint, rgb(181 151 80)) 8%, transparent);
+}
+/* Combat defense column: a zero armor value recedes; damage modifiers are
+   plain serif words divided by bronze rules, not pills. */
+.skills-defense-column .skill-entry.is-zero .skill-rating {
+  color: rgba(226, 207, 159, 0.35);
+}
+.skills-defense-column .skill-entry.is-zero .skill-name {
+  opacity: 0.55;
+}
+.skills-defense-column .defense-tags {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0 6px;
+  font-family: Georgia, "Times New Roman", serif;
+  color: #d3c199;
+}
+.skills-defense-column .defense-tag + .defense-tag::before {
+  content: "";
+  display: inline-block;
+  width: 1px;
+  height: 0.9em;
+  margin: 0 8px;
+  vertical-align: -1px;
+  background: #514226;
+}
+.skills-defense-column .defense-none {
+  margin: 0;
+  padding: 0 6px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-style: italic;
+  color: rgba(211, 193, 153, 0.5);
 }
 .skill-rank-editor {
   order: 2;
@@ -1999,14 +2246,6 @@ table tr td:nth-child(3) {
   white-space: nowrap;
   color: rgb(219 199 169);
   font-size: 12px;
-}
-.skill-rank-label {
-  order: 2;
-  flex: 0 0 auto;
-  font-weight: 500;
-  margin-left: 4px;
-  white-space: nowrap;
-  align-self: flex-start;
 }
 .skill-rank-progress {
   min-width: 42px;
