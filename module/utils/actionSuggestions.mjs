@@ -130,6 +130,8 @@ function movementProvider(actor) {
 /** The pack abilities offered here, by their localisation key. */
 const COUNTERATTACK_KEY = "REDSTEEL.Items.Counterattack.name";
 const RETALIATORY_KEY = "REDSTEEL.Items.RetaliatoryStrike.name";
+/** The Champion's upgrade stands in for the plain strike (abilityGrants.mjs). */
+const IMPROVED_RETALIATORY_KEY = "REDSTEEL.Items.ImprovedRetaliatoryStrike.name";
 const RIPOSTE_KEY = "REDSTEEL.Items.Riposte.name";
 /**
  * Odstrčení (Shove), both attribute forms. Granted by Pikeman 5 and Musketeer
@@ -157,6 +159,7 @@ let turnStartMessageId = null;
 const UNANSWERABLE_ATTACK_KEYS = new Set([
   COUNTERATTACK_KEY,
   RETALIATORY_KEY,
+  IMPROVED_RETALIATORY_KEY,
   ...SHOVE_KEYS,
   "REDSTEEL.Items.Riposte.name",
   "REDSTEEL.Items.ShieldBash.name",
@@ -164,7 +167,12 @@ const UNANSWERABLE_ATTACK_KEYS = new Set([
 ]);
 
 /** Every retaliation this strip offers; posting any one answers the defense. */
-const RETALIATION_KEYS = new Set([COUNTERATTACK_KEY, RETALIATORY_KEY, ...SHOVE_KEYS]);
+const RETALIATION_KEYS = new Set([
+  COUNTERATTACK_KEY,
+  RETALIATORY_KEY,
+  IMPROVED_RETALIATORY_KEY,
+  ...SHOVE_KEYS,
+]);
 
 /** The actor's ability Item carrying this localisation key, or null. */
 function abilityByKey(actor, key) {
@@ -348,7 +356,9 @@ function abilityChip(item, costKey, targetTokenId) {
  */
 function reactionChips(actor) {
   const counter = abilityByKey(actor, COUNTERATTACK_KEY);
-  const retaliatory = abilityByKey(actor, RETALIATORY_KEY);
+  const retaliatory =
+    abilityByKey(actor, IMPROVED_RETALIATORY_KEY) ??
+    abilityByKey(actor, RETALIATORY_KEY);
   const shoves = SHOVE_KEYS.map((key) => abilityByKey(actor, key)).filter(Boolean);
   if (!counter && !retaliatory && !shoves.length) return [];
 
@@ -599,9 +609,10 @@ function escapeChips(actor) {
 
 /**
  * A stance with upkeep, on its holder's own turn and not yet paid for this
- * turn (stances.mjs): Hold (the ability's icon; its action cost plus the
- * upkeep) and Drop (the same icon shaded red, free). Both leave once either
- * is picked; a turn ended without Hold drops the stance on its own.
+ * turn (stances.mjs), as ONE chip with the ability's icon, the way a held
+ * sustained spell is (user ruling): click holds it (its action cost plus the
+ * upkeep), right-click drops it. The chip leaves once either is done; a turn
+ * ended without Hold drops the stance on its own.
  *
  * @param {Actor} actor
  * @returns {object[]}
@@ -613,35 +624,22 @@ function stanceChips(actor) {
   for (const { effect, ability } of maintainedStances(actor)) {
     if (isStanceHeld(effect, combat)) continue;
     const label = ability.localizedName ?? ability.name;
-    const theme = ability.system?.type === "ranged" ? "ranged" : "melee";
-    const holdHint = game.i18n.format("REDSTEEL.Bg3Hotbar.Suggest.HoldStance", {
+    const hint = game.i18n.format("REDSTEEL.Bg3Hotbar.Suggest.HoldStance", {
       cost: holdCostLabel(ability),
     });
-    const dropHint = game.i18n.localize("REDSTEEL.Bg3Hotbar.Suggest.DropStance");
-    const shared = {
+    const hint2 = game.i18n.localize("REDSTEEL.Bg3Hotbar.Suggest.DropStance");
+    chips.push({
+      id: `stance-${effect.id}`,
       kind: "stance",
-      theme,
+      theme: ability.system?.type === "ranged" ? "ranged" : "melee",
       effectId: effect.id,
       uuid: ability.uuid,
       img: ability.img,
       label,
-    };
-    chips.push(
-      {
-        ...shared,
-        id: `stance-hold-${effect.id}`,
-        stanceAction: "hold",
-        hint: holdHint,
-        ariaLabel: `${label}: ${holdHint}`,
-      },
-      {
-        ...shared,
-        id: `stance-drop-${effect.id}`,
-        stanceAction: "drop",
-        hint: dropHint,
-        ariaLabel: `${label}: ${dropHint}`,
-      },
-    );
+      hint,
+      hint2,
+      ariaLabel: `${label}: ${hint} ${hint2}`,
+    });
   }
   return chips;
 }

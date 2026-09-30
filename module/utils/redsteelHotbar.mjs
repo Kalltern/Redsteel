@@ -3068,14 +3068,15 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
   }
 
   /**
-   * A held stance on its holder's turn: Hold pays this turn's actions and
-   * upkeep, Drop lets it go (stances.mjs). The panel redraws on the effect's
-   * update or deletion, which is what takes both chips away.
+   * A held stance on its holder's turn: click holds it (pays this turn's
+   * actions and upkeep), right-click drops it (stances.mjs). Right-click
+   * arrives from #onContextMenu, since ApplicationV2 dispatches `data-action`
+   * on click only. The panel redraws on the effect's update or deletion,
+   * which is what takes the chip away.
    *
    * @this {Bg3Hotbar}
    */
   static async _onStanceSuggestion(event, target) {
-    if (isRightClick(event)) return;
     const chip = target.closest("[data-action=stanceSuggestion]");
     const actor = this.actor;
     if (!chip || !actor?.isOwner) return;
@@ -3083,9 +3084,9 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     if (this.#suggestionBusy) return;
     this.#suggestionBusy = true;
     try {
-      const { effectId, stanceAction } = chip.dataset;
-      if (stanceAction === "hold") await holdStance(actor, effectId);
-      else if (stanceAction === "drop") await dropStance(actor, effectId);
+      const { effectId } = chip.dataset;
+      if (isRightClick(event)) await dropStance(actor, effectId);
+      else await holdStance(actor, effectId);
     } finally {
       this.#suggestionBusy = false;
     }
@@ -3379,6 +3380,14 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       event.preventDefault();
       event.stopPropagation();
       return Bg3Hotbar._onStopSustain.call(this, event, sustainChip);
+    }
+
+    // A held stance right-clicked: drop it.
+    const stanceChip = event.target.closest?.("[data-action=stanceSuggestion]");
+    if (stanceChip) {
+      event.preventDefault();
+      event.stopPropagation();
+      return Bg3Hotbar._onStanceSuggestion.call(this, event, stanceChip);
     }
 
     // An attack chip right-clicked: the same attack, aimed at a body part.

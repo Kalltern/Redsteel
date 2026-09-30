@@ -42,6 +42,12 @@ import {
 
 export const DUELISTS_ADVANCE_KEY = "REDSTEEL.Items.DuelistsAdvance.name";
 export const PASSING_STRIKE_KEY = "REDSTEEL.Items.PassingStrike.name";
+// The Improved variants (spec-node upgrades, abilityGrants.mjs) carry the same
+// movement; they are recognised alongside their base.
+export const IMPROVED_DUELISTS_ADVANCE_KEY =
+  "REDSTEEL.Items.ImprovedDuelistsAdvance.name";
+export const IMPROVED_PASSING_STRIKE_KEY =
+  "REDSTEEL.Items.ImprovedPassingStrike.name";
 export const EXTENDED_LUNGE_KEY = "REDSTEEL.Items.ExtendedLunge.name";
 export const CHARGE_KEY = "REDSTEEL.Items.Charge.name";
 
@@ -52,7 +58,9 @@ export const CHARGE_KEY = "REDSTEEL.Items.Charge.name";
 export function isDuelistsAdvance(ability) {
   return (
     ability?.system?.localizationKey === DUELISTS_ADVANCE_KEY ||
-    ability?.name === "Duelist's Advance"
+    ability?.system?.localizationKey === IMPROVED_DUELISTS_ADVANCE_KEY ||
+    ability?.name === "Duelist's Advance" ||
+    ability?.name === "Improved Duelist's Advance"
   );
 }
 
@@ -89,11 +97,16 @@ export async function declareDuelistsAdvance(actor) {
   });
 }
 
-/** Did this attack card swing with Passing Strike selected? */
+/** Did this attack card swing with Passing Strike (or its Improved form) selected? */
 export function cardUsedPassingStrike(message) {
   const keys = message?.flags?.redsteel?.modifierKeys;
   if (!Array.isArray(keys)) return false;
-  return keys.includes(PASSING_STRIKE_KEY) || keys.includes("Passing Strike");
+  return (
+    keys.includes(PASSING_STRIKE_KEY) ||
+    keys.includes("Passing Strike") ||
+    keys.includes(IMPROVED_PASSING_STRIKE_KEY) ||
+    keys.includes("Improved Passing Strike")
+  );
 }
 
 /**
@@ -104,7 +117,8 @@ export function cardUsedPassingStrike(message) {
  *
  * Only on the attacker's own turn. The base Passing Strike does not apply to
  * retaliation attacks, and those (Counterattack, Riposte, Retaliatory strike,
- * opportunity attacks) are all made on someone else's turn.
+ * opportunity attacks) are all made on someone else's turn. Improved Passing
+ * Strike does apply to them, but its off-turn step stays manual for now.
  *
  * @param {Actor|null} actor  The attacker.
  * @param {ChatMessage} message  The attack card.

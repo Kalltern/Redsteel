@@ -39,6 +39,21 @@ body.theme-dark .application,
 body.theme-dark.application {
   background: rgb(12 12 12 / 90%);
 }
+
+/* Scrollbars: the sheet's bronze border colour on a near-black track, replacing
+   core's magenta. Core scopes its scrollbar variables per theme class, so they
+   are overridden on those classes too, not only on :root. */
+:root,
+.theme-dark,
+.theme-light,
+.themed {
+  --color-scrollbar: #514226;
+  --color-scrollbar-track: #0e0d0b;
+  --color-scrollbar-border: #514226;
+}
+* {
+  scrollbar-color: #514226 #0e0d0b;
+}
 /* Global styles */
 .window-app {
   font-family: "Roboto", sans-serif;
@@ -4276,7 +4291,7 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 .application.dialog .spell-tabs .tab-content {
   max-height: 360px !important;
   overflow-y: auto !important;
-  scrollbar-color: #665534 #0e0d0b;
+  scrollbar-color: #514226 #0e0d0b;
   scrollbar-width: thin;
 }
 
@@ -7804,7 +7819,7 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   min-height: 168px;
   overflow-y: auto;
   scrollbar-gutter: stable;
-  scrollbar-color: #665534 #0e0d0b;
+  scrollbar-color: #514226 #0e0d0b;
   scrollbar-width: thin;
   /* Small offset so cards aren't flush against the scrollbar */
   padding-right: 4px;
@@ -11667,21 +11682,6 @@ body.redsteel-bg3-hotbar #hotbar {
   background: #060605;
   border: 1px solid #241f19;
   border-radius: 0;
-}
-
-/* Drop stance: the stance's own icon shaded red (user ruling), multiplied
-   rather than filmed over so it reads as spent, not greyed. */
-#redsteel-bg3-hotbar .rs-bg3-suggest-chip.ability.stance-drop {
-  position: relative;
-}
-
-#redsteel-bg3-hotbar .rs-bg3-suggest-chip.ability.stance-drop::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: rgba(190, 28, 18, 0.85);
-  mix-blend-mode: multiply;
-  pointer-events: none;
 }
 
 

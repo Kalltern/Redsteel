@@ -193,21 +193,22 @@
       <img class="rs-bg3-suggest-img" src="{{chip.img}}" alt="" />
     </button>
     {{else if (eq chip.kind "stance")}}
-    {{!-- A stance with upkeep, on its holder's turn: Hold pays this turn's
-          actions and upkeep, Drop (the same icon, shaded red) lets it go.
-          A turn ended with neither drops it (stances.mjs). --}}
+    {{!-- A stance with upkeep, on its holder's turn, one chip like a held
+          sustained spell (user ruling): click holds it (this turn's actions
+          and upkeep), right-click drops it. A turn ended with neither drops
+          it (stances.mjs). --}}
     <button
       type="button"
-      class="rs-bg3-suggest-chip ability stance{{#if (eq chip.stanceAction "drop")}} stance-drop{{/if}}"
+      class="rs-bg3-suggest-chip ability stance"
       data-action="stanceSuggestion"
       data-suggestion-id="{{chip.id}}"
       data-effect-id="{{chip.effectId}}"
-      data-stance-action="{{chip.stanceAction}}"
       data-tt-kind="bg3Suggest"
       data-tt-theme="{{chip.theme}}"
       data-tt-uuid="{{chip.uuid}}"
       data-tt-title="{{chip.label}}"
       data-tt-hint="{{chip.hint}}"
+      data-tt-hint2="{{chip.hint2}}"
       aria-label="{{chip.ariaLabel}}"
     >
       <img class="rs-bg3-suggest-img" src="{{chip.img}}" alt="" />

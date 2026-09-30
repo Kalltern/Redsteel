@@ -233,15 +233,21 @@ function aimPerks(actor, weapon, context = null) {
     keepsAim: blade && node("swordDancer", "postojMireni"),
     defense: blade && rank >= 7,
     laceration: blade && node("swordDancer", "krvaveBodnuti"),
-    maneuver: blade && node("swordDancer", "vyhodnyManevr"),
+    // Both trees buy the same maneuver; each gates it on its own weapon, the
+    // way every other Aim perk here does.
+    maneuver:
+      (blade && node("swordDancer", "vyhodnyManevr")) ||
+      (broadsword && node("swordServant", "vyhodnyManevr")),
   };
 }
 
 /**
- * Advantageous Maneuver (Sword Dancer) — is the perk live for this defense?
+ * Advantageous Maneuver (Sword Dancer, Servant of the Sword) — is the perk live
+ * for this defense?
  *
- * Weapon-gated like every other Aim perk on the tree: the duellist's blade has to
- * be the thing that turned the blow aside. Character-only, as spec nodes are.
+ * Weapon-gated like every other Aim perk on these trees: the duellist's blade
+ * (Sword Dancer) or a two-handed sword (Servant of the Sword) has to be the thing
+ * that turned the blow aside. Character-only, as spec nodes are.
  */
 export function hasAdvantageousManeuver(actor, weapon = null, context = null) {
   if (actor?.type !== "character") return false;
@@ -469,6 +475,10 @@ const AIM_NEUTRAL_ABILITIES = new Map([
   ["REDSTEEL.Items.Counterattack.name", "Counterattack"],
   ["REDSTEEL.Items.Riposte.name", "Riposte"],
   ["REDSTEEL.Items.RetaliatoryStrike.name", "Retaliatory strike"],
+  [
+    "REDSTEEL.Items.ImprovedRetaliatoryStrike.name",
+    "Improved Retaliatory Strike",
+  ],
   ["REDSTEEL.Items.Cleave.name", "Cleave"],
   ["REDSTEEL.Items.PolearmCleave.name", "Polearm Cleave"],
   ["REDSTEEL.Items.FlambergeCleaveAbility.name", "Flamberge Cleave (Ability)"],
@@ -492,8 +502,8 @@ export function abilityIgnoresAim(ability) {
  * AIM_NEUTRAL_ABILITIES above: the localisation key first, the English name as a
  * fallback for a hand-made copy that never got one.
  *
- * Perfect Opening (Rafinovaný manévr, in both its action costs) is the whole
- * list. The blow is a set-up rather than a finisher, so landing it leaves the
+ * Perfect Opening (Rafinovaný manévr, in both its action costs, plus the Sword
+ * Dancer's cheaper Refined copies) is the whole list. The blow is a set-up rather than a finisher, so landing it leaves the
  * duellist better aimed than they started: two Aim on the target for an ordinary
  * hit, three when it lands as a critical.
  */
@@ -505,6 +515,16 @@ const AIM_GRANT_ABILITIES = new Map([
   [
     "REDSTEEL.Items.PerfectOpeningHastened.name",
     { name: "Perfect Opening (Hastened)", normal: 2, critical: 3 },
+  ],
+  // The Sword Dancer's cheaper copies (Rafinovaný manévr: Výdrž -2) replace
+  // the pair above and grant exactly the same.
+  [
+    "REDSTEEL.Items.RefinedPerfectOpening.name",
+    { name: "Refined Perfect Opening", normal: 2, critical: 3 },
+  ],
+  [
+    "REDSTEEL.Items.RefinedPerfectOpeningHastened.name",
+    { name: "Refined Perfect Opening (Hastened)", normal: 2, critical: 3 },
   ],
 ]);
 

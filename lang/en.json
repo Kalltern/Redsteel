@@ -223,8 +223,8 @@
         "EscapePick": "Roll which attribute against {source} ({chance}%)? Both sides roll.",
         "BrokeFree": "{name} breaks free of {effect}.",
         "EscapeSourceGone": "The card that bound you is no longer in chat.",
-        "HoldStance": "Keep holding the stance: {cost}",
-        "DropStance": "Drop the stance",
+        "HoldStance": "Click: keep holding the stance ({cost})",
+        "DropStance": "Right-click: drop the stance",
         "MoreMovement": "More movement"
       },
       "ShowArmor": "Show armor by damage type",
@@ -685,7 +685,7 @@
             },
             "quickFeet": {
               "label": "Quick Feet",
-              "description": "10 CP. Free action, 1 Stamina. Modifies any Retaliation action. Before the action, may move one hex around the opponent. Manual — resolved at the table."
+              "description": "10 CP. Free action, 1 Stamina. Modifies any Retaliation action. Before the action, may move one hex around the opponent. Grants the Quick Feet action; the step itself is resolved at the table."
             },
             "backDodge": {
               "label": "Blindside Dodge",
@@ -763,11 +763,11 @@
             },
             "draciSpanek": {
               "label": "Dragon Sleep",
-              "description": "10 CP; Šermíř IV. 1 action, 0 Stamina. For one turn, Defense, Dodge and Ranged Defense +10%. Gains one Aim and restores 1 Stamina. Prevents the Riposte action for one round and gives up all Reactions this round; gains one Rest for each Reaction given up this way. Manual — resolved at the table."
+              "description": "10 CP; Šermíř IV. 1 action, 0 Stamina. For one turn, Defense, Dodge and Ranged Defense +10%. Gains one Aim and restores 1 Stamina. Prevents the Riposte action for one round and gives up all Reactions this round; gains one Rest for each Reaction given up this way. Grants the Dragon Sleep action; the bonuses, the Aim, the Stamina, the lost Reactions and the Rests are resolved at the table."
             },
             "draciStraz": {
               "label": "Dragon Guard",
-              "description": "10 CP; Šermíř V. 1 action, 4 Stamina. For one turn, Hit +10% for Retaliation actions, Riposte and the Momentum that follows them. May use the Exploit Weakness action as a Retaliation action. Manual — resolved at the table."
+              "description": "10 CP; Šermíř V. 1 action, 4 Stamina. For one turn, Hit +10% for Retaliation actions, Riposte and the Momentum that follows them. May use the Exploit Weakness action as a Retaliation action. Grants the Dragon Guard action; the Hit bonus and using Exploit Weakness as a Retaliation action are resolved at the table."
             },
             "chargeDamage": {
               "label": "Charge: +1d4 damage",
@@ -779,15 +779,15 @@
             },
             "priskok": {
               "label": "Lunge Step",
-              "description": "5 CP; Meče IV. Free action, 1 Stamina. When targeted by an attack, may move one hex toward the attacker. The move provokes no Opportunity Attacks and happens before the attack resolves. In some situations the move may not be possible. Does not apply to Shooting, Throwing or Magic. Manual — resolved at the table."
+              "description": "5 CP; Meče IV. Free action, 1 Stamina. When targeted by an attack, may move one hex toward the attacker. The move provokes no Opportunity Attacks and happens before the attack resolves. In some situations the move may not be possible. Does not apply to Shooting, Throwing or Magic. Grants the Lunge Step action; the move is resolved at the table."
             },
             "draciVypad": {
               "label": "Dragon's Thrust",
-              "description": "10 CP; Šermíř IV. 1 Reaction, 7 Stamina. Gives up Defense and attacks instead. A Speed vs Test decides who hits first. Whoever hits first and kills the opponent avoids the other attack entirely. The first hit always resolves as a Critical Hit, the second always as a normal hit. Manual — resolved at the table."
+              "description": "10 CP; Šermíř IV. 1 Reaction, 7 Stamina. Gives up Defense and attacks instead. A Speed vs Test decides who hits first. Whoever hits first and kills the opponent avoids the other attack entirely. The first hit always resolves as a Critical Hit, the second always as a normal hit. Grants the Dragon's Thrust action; the Speed contest and the order of the hits are resolved at the table."
             },
             "prosmyknuti": {
               "label": "Slip Through",
-              "description": "5 CP; Meče IV. Free action, 2 Stamina. After a successful Charge, Lindar's Charge or Dragon's Thrust, may call a Dexterity vs Test. On success moves behind the opponent; on failure takes -10% to Defense and Dodge for one turn. After a Critical Hit, Slip Through is guaranteed. Chooses facing after the move. Manual — resolved at the table."
+              "description": "5 CP; Meče IV. Free action, 2 Stamina. After a successful Charge, Lindar's Charge or Dragon's Thrust, may call a Dexterity vs Test. On success moves behind the opponent; on failure takes -10% to Defense and Dodge for one turn. After a Critical Hit, Slip Through is guaranteed. Chooses facing after the move. Grants the Slip Through action; the move and the failure penalty are resolved at the table."
             },
             "dexTests": {
               "label": "Combat Dexterity Tests +10%",
@@ -799,7 +799,7 @@
             },
             "vyhodnyManevr": {
               "label": "Advantageous Maneuver",
-              "description": "5 CP; Šermíř V. Free action, 3 Stamina. After a successful Defense, may immediately gain one Aim against the attacker. Manual — resolved at the table."
+              "description": "5 CP; Šermíř V. Free action, 3 Stamina. After a successful Defense, may immediately gain one Aim against the attacker. Needs a Melee Defense made with a two-handed sword. Offered as a button on the defense card. Automated."
             },
             "utokSPohybem": {
               "label": "Attack on the Move",
@@ -807,7 +807,7 @@
             },
             "vylUtokSPohybem": {
               "label": "Improved Attack on the Move",
-              "description": "10 CP; Šermíř VII. Free action, 2 Stamina. Modifies attack actions, including Retaliation actions. After a hit, allows moving up to one hex in any direction without provoking an Opportunity Attack. Manual — resolved at the table."
+              "description": "10 CP; Šermíř VII. Free action, 2 Stamina. Modifies attack actions, including Retaliation actions. After a hit, allows moving up to one hex in any direction without provoking an Opportunity Attack. Grants the Improved Passing Strike action, which replaces Passing Strike; on your own turn the free step is granted when the damage is applied, while the step after an off-turn Retaliation action is resolved at the table."
             }
           }
         },
@@ -841,7 +841,7 @@
             },
             "odrazeni": {
               "label": "Deflection",
-              "description": "10 CP; M/T/S/D VI. 1 Reaction. When attacked, may spend a Reaction to gain Advantage on the next Defense. Manual — resolved at the table."
+              "description": "10 CP; M/T/S/D VI. 1 Reaction. When attacked, may spend a Reaction to gain Advantage on the next Defense. Grants the Deflection action; the Advantage is resolved at the table."
             },
             "veteran1": {
               "label": "Veteran I",
@@ -853,7 +853,7 @@
             },
             "vylZbranoveDovednosti": {
               "label": "Improved Weapon Skills",
-              "description": "15 CP; M/T/S/D VIII. Improves four weapon actions. Improved Feint (1 action, 5 Stamina): gains Aim on the target and calls a Dexterity/Perception vs Dexterity/Perception Test. On success the opponent has Disadvantage on their next Defense or Dodge and -1 Reaction for two rounds, and loses all their Aim; an Attack following in the same round scores a Critical Hit from a success of +50. Improved Splintering Strike (1 action, 8 Stamina): a furious attack aimed at damaging enemy armor. On a hit it deals damage and lowers the opponent's armor Quality by 4; on a miss, 35% chance to damage the shield. Penetration +3d6. Improved Staggering Blow (Free action, 4 Stamina per attack): modifies attack actions, Counterattack and Retaliatory Strike. Deals half damage, Stagger +30%. Cannot be combined with Trip or Impale. Improved Trip (Free action, 5 Stamina per attack): modifies Attack, Multiple Attack, Opportunity Attack or Counterattack. Half damage. After a hit, calls a Strength/Dexterity vs Endurance/Dexterity Test; on success the target is knocked down. +30% on the Test after a Critical Hit. Not usable from the saddle. Cannot be combined with Staggering Blow or Impale. Manual — resolved at the table."
+              "description": "15 CP; M/T/S/D VIII. Improves four weapon actions. Improved Feint (1 action, 5 Stamina): gains Aim on the target and calls a Dexterity/Perception vs Dexterity/Perception Test. On success the opponent has Disadvantage on their next Defense or Dodge and -1 Reaction for two rounds, and loses all their Aim; an Attack following in the same round scores a Critical Hit from a success of +50. Improved Splintering Strike (1 action, 8 Stamina): a furious attack aimed at damaging enemy armor. On a hit it deals damage and lowers the opponent's armor Quality by 4; on a miss, 35% chance to damage the shield. Breakthrough +3d6. Improved Staggering Blow (Free action, 4 Stamina per attack): modifies attack actions, Counterattack and Retaliatory Strike. Deals half damage, Stagger +30%. Cannot be combined with Trip or Impale. Improved Trip (Free action, 5 Stamina per attack): modifies Attack, Multiple Attack, Opportunity Attack or Counterattack. Half damage. After a hit, calls a Strength/Dexterity vs Endurance/Dexterity Test; on success the target is knocked down. +30% on the Test after a Critical Hit. Not usable from the saddle. Cannot be combined with Staggering Blow or Impale. Grants the improved version of each of these actions the character already has, in place of the base action; whatever the base action leaves to the table is still resolved at the table."
             },
             "bleedStun": {
               "label": "Bleed +10% / Stun +6%",
@@ -873,11 +873,11 @@
             },
             "presileni": {
               "label": "Overpowering",
-              "description": "5 CP. Free action, 1 Stamina. May reroll a Hit, Defense or Ranged Defense roll if the difference in margin of success was 10 or less. Manual — resolved at the table."
+              "description": "5 CP. Free action, 1 Stamina. May reroll a Hit, Defense or Ranged Defense roll if the difference in margin of success was 10 or less. Grants the Overpowering action; the reroll is resolved at the table."
             },
             "rychlaReakce": {
               "label": "Improved Quick Reaction",
-              "description": "5 CP; M/T/S/D V. 1 action, 3 Stamina. For one turn, gains Initiative +4 and +1 Reaction. Manual — resolved at the table."
+              "description": "5 CP; M/T/S/D V. 1 action, 3 Stamina. Fast Reaction that also grants +1 Reaction: for one turn, gains Initiative +4 and +1 Reaction. Grants the Improved Fast Reaction action, which replaces Fast Reaction; the Initiative bonus is applied automatically, while the extra Reaction is resolved at the table."
             },
             "weakSpotPen": {
               "label": "Weak Spot Attack: Penetration +10",
@@ -907,11 +907,11 @@
             },
             "pripravnyPostoj": {
               "label": "Prepared Stance",
-              "description": "10 CP; Dřevcová IV. Manual — resolved at the table."
+              "description": "10 CP; Dřevcová IV. 1 action, 4 Stamina. The next Opportunity Attack with a spear or trident gains Hit +20%. Does not stack; moving or attacking breaks the stance. Grants the Prepared Stance action; the bonus and breaking the stance are resolved at the table."
             },
             "obranaProtiZteci": {
               "label": "Defense against Charge",
-              "description": "5 CP; Štítonoš VI. Manual — resolved at the table."
+              "description": "5 CP; Štítonoš VI. Free action. Modifies an Opportunity Attack with a spear or trident against a Charge or a Sprint; on a hit it stops the Charge. Damage +4d4, Penetration +4, Critical Range +2; Impale may be added at no cost. Grants the Charge Defense action; stopping the Charge and the free Impale are resolved at the table."
             },
             "bleedStun": {
               "label": "Bleed +20% / Stun +10%",
@@ -923,23 +923,23 @@
             },
             "momentum": {
               "label": "Momentum",
-              "description": "15 CP; Štítonoš VIII. Manual — resolved at the table."
+              "description": "15 CP; Štítonoš VIII. Free action, 3 Stamina. Once per round, after a kill or a Critical Hit with a short sword, hatchet, mace, spear or trident (or a kill with Daring Throw), may attack again. Grants the Momentum (Hoplite) action; the trigger and the extra attack are resolved at the table."
             },
             "postup": {
               "label": "Advance",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Free action, 1 Stamina. After a kill, may move up to two hexes in the direction of the attack without provoking Opportunity Attacks. Grants the Advance action; the move is resolved at the table."
             },
             "raznyPostup": {
               "label": "Forceful Advance",
-              "description": "10 CP; Štítonoš IV. Manual — resolved at the table."
+              "description": "10 CP; Štítonoš IV. Free action. Once per round, after moving with Advance, may make a Shield Bash or Shield Charge as a Free action. Grants the Forceful Advance action; the free Shield Bash or Shield Charge is resolved at the table."
             },
             "napor1": {
               "label": "Onslaught I",
-              "description": "15 CP; Štítonoš V. Manual — resolved at the table."
+              "description": "15 CP; Štítonoš V. Free action, 3 Stamina. Once per round, if Shield Bash, Shield Charge or Trip pushes or knocks down the target, may attack again. Grants the Onslaught I action; the extra attack is resolved at the table."
             },
             "napor2": {
               "label": "Onslaught II",
-              "description": "15 CP; Štítonoš VI. Manual — resolved at the table."
+              "description": "15 CP; Štítonoš VI. Free action, 3 Stamina. Once per round, if Shield Bash or Shield Charge fails to push the target, may switch to a light weapon and attack again. Grants the Onslaught II action; the weapon swap and the extra attack are resolved at the table."
             },
             "hoplitaStance": {
               "label": "Hoplite",
@@ -951,7 +951,7 @@
             },
             "troufalyVrh": {
               "label": "Daring Throw",
-              "description": "15 CP; Dřevcové VII. Manual — resolved at the table."
+              "description": "15 CP; Dřevcové VII. 1 action, 8 Stamina. Throws a spear or trident up to 5 hexes: Damage +3d8, Penetration +6, Breakthrough +4d6, Critical Range +5. Grants the Daring Throw action; the Critical Hit threshold, the shield strain and the weapon swap are resolved at the table."
             },
             "penetration2": {
               "label": "Penetration +2",
@@ -989,7 +989,7 @@
             },
             "posileniObrany": {
               "label": "Defense Reinforcement",
-              "description": "10 CP; Duelista VIII. Free action, 1 Stamina per Aim sacrificed. Before the Defense roll, may sacrifice any number of Aim and gain +10% on the coming Defense for each. Manual — resolved at the table."
+              "description": "10 CP; Duelista VIII. Free action, 1 Stamina per Aim sacrificed. Before the Defense roll, may sacrifice any number of Aim and gain +10% on the coming Defense for each. Grants the Defense Reinforcement action; the Aim sacrifice and the Defense bonus are resolved at the table."
             },
             "postojMireni": {
               "label": "Duelist's Stance: keeps Aim",
@@ -1005,27 +1005,27 @@
             },
             "akrobatickeOdpoutani": {
               "label": "Acrobatic Disengage",
-              "description": "15 CP; Meče VI. 1 Reaction, 2 Stamina. After a successful Defense, may use the Disengage action as a Reaction. Manual — resolved at the table."
+              "description": "15 CP; Meče VI. 1 Reaction, 2 Stamina. After a successful Defense, may use the Disengage action as a Reaction. Grants the Acrobatic Disengage action; the move is resolved at the table."
             },
             "vylUtokSPohybem": {
               "label": "Improved Attack on the Move",
-              "description": "10 CP; Duelista VII. Free action, 2 Stamina. Modifies attack actions, including Retaliation actions. After a hit, allows moving up to one hex in any direction without provoking an Opportunity Attack. Manual — resolved at the table."
+              "description": "10 CP; Duelista VII. Free action, 2 Stamina. Modifies attack actions, including Retaliation actions. After a hit, allows moving up to one hex in any direction without provoking an Opportunity Attack. Grants the Improved Passing Strike action, which replaces Passing Strike; on your own turn the free step is granted when the damage is applied, while the step after an off-turn Retaliation action is resolved at the table."
             },
             "rafinovanyManevr": {
               "label": "Refined Maneuver: Stamina -2",
-              "description": "15 CP; Duelista IX. Refined Maneuver costs 2 less Stamina. Refined Maneuver (2 actions and 4 Stamina, or 1 action and 12 Stamina): a standard attack. A Critical Hit gains three Aim on the target, a normal hit two, and a miss one. Manual — resolved at the table."
+              "description": "15 CP; Duelista IX. Refined Maneuver costs 2 less Stamina. Refined Maneuver (2 actions and 4 Stamina, or 1 action and 12 Stamina): a standard attack. A Critical Hit gains three Aim on the target, a normal hit two, and a miss one. Grants the Refined Perfect Opening action at both action costs, replacing Perfect Opening. The Aim for a landed hit is added when damage is applied; the one Aim on a miss is resolved at the table."
             },
             "posledniVypad": {
               "label": "Final Thrust",
-              "description": "20 CP; Duelista VI, Meče VI. 2 actions, 8 Stamina. Requires four Aim on the target, all lost before the attack. Hit +10%. The hit counts as both a Sneak Attack and a Critical Hit. Ignores Armor. Advantage and Critical Range +3. After a hit, gains two Aim. Killing the opponent refunds one Action. Manual — resolved at the table."
+              "description": "20 CP; Duelista VI, Meče VI. 2 actions, 8 Stamina. Requires four Aim on the target, all lost before the attack. Hit +10%. The hit counts as both a Sneak Attack and a Critical Hit. Ignores Armor. Advantage and Critical Range +3. After a hit, gains two Aim. Killing the opponent refunds one Action. Grants the Final Thrust action; the Aim requirement, the Sneak Attack, the Critical Hit, the Aim gained and the refunded Action are resolved at the table."
             },
             "vylDuelistuvKrok": {
               "label": "Improved Duelist's Step",
-              "description": "15 CP; Duelista VII. 1 action, 3 Stamina. Move up to Speed/2 hexes, then gain one Aim on an opponent in range. Moving toward or around the target provokes no Opportunity Attacks. Cannot be combined with movement actions (Move, Sprint, Slow Movement). With three Aim on the target, may attack immediately as a Free action. Manual — resolved at the table."
+              "description": "15 CP; Duelista VII. 1 action, 3 Stamina. Move up to Speed/2 hexes, then gain one Aim on an opponent in range. Moving toward or around the target provokes no Opportunity Attacks. Cannot be combined with movement actions (Move, Sprint, Slow Movement). With three Aim on the target, may attack immediately as a Free action. Grants the Improved Duelist's Advance action, which replaces Duelist's Advance; on your own turn the Speed/2 move is declared automatically, while the Aim and the follow-up attack are resolved at the table."
             },
             "brilantniProtiutok": {
               "label": "Improved Brilliant Counter",
-              "description": "15 CP; Duelista X. Free action, 0 or 10 Stamina. May take the Counterattack action after a Critical Dodge. For 10 Stamina, may take Counterattack as a Surprise after a successful Defense. A Counterattack following a Critical Defense or Critical Dodge counts as a Surprise (base Hit +20%, plus any other bonuses). Manual — resolved at the table."
+              "description": "15 CP; Duelista X. Free action, 0 or 10 Stamina. May take the Counterattack action after a Critical Dodge. For 10 Stamina, may take Counterattack as a Surprise after a successful Defense. A Counterattack following a Critical Defense or Critical Dodge counts as a Surprise (base Hit +20%, plus any other bonuses). Grants the Improved Brilliant Counter action in both forms (free, and for 10 Stamina as a Surprise after an ordinary Defense); when the Counterattack is allowed is resolved at the table."
             }
           }
         },
@@ -1667,11 +1667,11 @@
             },
             "rychleSoustredeni": {
               "label": "Quick Focus",
-              "description": "10 CP; Incantator V. Manual — resolved at the table."
+              "description": "10 CP; Incantator V. Free action, 15 Mana. Gains one Focus, at most twice per round. Grants the Quick Focus action; the Focus is resolved at the table."
             },
             "precizniInkantace": {
               "label": "Precise Incantation",
-              "description": "15 CP; Incantator V. Manual — resolved at the table."
+              "description": "15 CP; Incantator V. Free action. Pays the spell's cost again to reroll its effect roll, or to force the opponent to reroll their test to resist the effect. Does not apply to the Mental Duel. Grants the Precise Incantation action; the reroll and its cost are resolved at the table."
             },
             "moudraKniha": {
               "label": "Wise Book",
@@ -1687,11 +1687,11 @@
             },
             "stabilizaceZdroje": {
               "label": "Source Stabilization",
-              "description": "15 CP. Manual — resolved at the table."
+              "description": "15 CP. Free action. On a critical Channeling failure, rolls 1d100 to lower (1-50) or raise (51-100) its degree by one, or pays 10% of maximum Mana to choose the direction. Grants the Source Stabilization action; the degree shift is resolved at the table."
             },
             "katalyzator": {
               "label": "Catalyst",
-              "description": "10 CP. Manual — resolved at the table."
+              "description": "10 CP. Free action. Before a casting Test, raises the Critical Success chance by 15% and the Critical Failure chance by 5%. Grants the Catalyst action; the changed chances are resolved at the table."
             },
             "dlouhyOdpocinek": {
               "label": "Long rest: 50 mana",
@@ -1931,7 +1931,7 @@
             },
             "dvojityUder": {
               "label": "Double Strike",
-              "description": "10 CP; Štítonoš VIII. Free action, 3 Stamina. Modifies Shield Bash to strike two adjacent opponents. Manual — resolved at the table."
+              "description": "10 CP; Štítonoš VIII. Free action, 3 Stamina. Modifies Shield Bash to strike two adjacent opponents. Grants the Double Strike action; the second target is resolved at the table."
             },
             "obrannyPostojSpojenci": {
               "label": "Defensive Stance: allies +5% Defense",
@@ -1939,7 +1939,7 @@
             },
             "vylObrannyPostoj": {
               "label": "Improved Defensive Stance",
-              "description": "10 CP; Štítonoš VI. 2 actions, 3 Stamina, then 1 per round. Focuses fully on defense. Ranged Defense +10%, Defense +20%, and both flanks reduced while the stance lasts. Keeping the stance up takes two actions. Once per round, may use Armoring or Slow Movement as a Free action. Manual — resolved at the table."
+              "description": "10 CP; Štítonoš VI. 2 actions, 3 Stamina, then 1 per round. Focuses fully on defense. Ranged Defense +10%, Defense +20%, and both flanks reduced while the stance lasts. Keeping the stance up takes two actions. Once per round, may use Armoring or Slow Movement as a Free action. Grants the Improved Defensive Stance action, which replaces Defensive Stance and uses the same stance effect and upkeep; the higher bonuses, the flanks and the free Armoring or Slow Movement are resolved at the table."
             },
             "ochranaVolna": {
               "label": "Protection: once per round as Free action",
@@ -1951,7 +1951,7 @@
             },
             "vylObrneni": {
               "label": "Improved Armoring",
-              "description": "20 CP; Štítonoš X. 1 action, 10 Stamina. Gains 15 Temporary Health, which protects against Melee and Shooting hits and against suitable magical damage. Temporary Health can be raised to at most 15 this way. Can be used on an adjacent target. Manual — resolved at the table."
+              "description": "20 CP; Štítonoš X. 1 action, 10 Stamina. Gains 15 Temporary Health, which protects against Melee and Shooting hits and against suitable magical damage. Temporary Health can be raised to at most 15 this way. Can be used on an adjacent target. Grants the Improved Armoring action; the Temporary Health is resolved at the table."
             }
           }
         },
@@ -1985,7 +1985,7 @@
             },
             "zatlaceni": {
               "label": "Push Back",
-              "description": "10 CP. Free action, 4 Stamina. Modifies the Attack, Multiple Attack, Counterattack or Charge actions. After the attack resolves, calls a Strength/Dexterity vs Strength/Dexterity Test (with Advantage on a hit); on success pushes the opponent one space in the direction of the attack. The attacker must move too, and that move provokes no Opportunity Attacks. Manual — resolved at the table."
+              "description": "10 CP. Free action, 4 Stamina. Modifies the Attack, Multiple Attack, Counterattack or Charge actions. After the attack resolves, calls a Strength/Dexterity vs Strength/Dexterity Test (with Advantage on a hit); on success pushes the opponent one space in the direction of the attack. The attacker must move too, and that move provokes no Opportunity Attacks. Grants the Push Back action (Strength or Dexterity); the push and the follow-up move are resolved at the table."
             },
             "utokPoZteci": {
               "label": "Attack after Charge as Free action",
@@ -1997,7 +1997,7 @@
             },
             "vylUtokSPohybem": {
               "label": "Improved Attack on the Move",
-              "description": "10 CP; D/M VIII. Free action, 2 Stamina. Modifies attack actions, including Retaliation actions. After a successful hit, allows moving up to one hex in any direction without provoking an Opportunity Attack. Manual — resolved at the table."
+              "description": "10 CP; D/M VIII. Free action, 2 Stamina. Modifies attack actions, including Retaliation actions. After a successful hit, allows moving up to one hex in any direction without provoking an Opportunity Attack. Grants the Improved Passing Strike action, which replaces Passing Strike; on your own turn the free step is granted when the damage is applied, while the step after an off-turn Retaliation action is resolved at the table."
             },
             "vetrnyPostoj": {
               "label": "Wind Stance: Defense and Hit bonus",
@@ -2005,15 +2005,15 @@
             },
             "ztecSRozseknutim": {
               "label": "Charge with Cleave",
-              "description": "15 CP; M/T/S V. 2 actions, 6 Stamina. Must start at least two hexes from the target. Combines movement with Cleave and strikes two adjacent enemies. Damage +2d4. Cannot be used while fighting from the saddle. Manual — resolved at the table."
+              "description": "15 CP; M/T/S V. 2 actions, 6 Stamina. Must start at least two hexes from the target. Combines movement with Cleave and strikes two adjacent enemies. Damage +2d4. Cannot be used while fighting from the saddle. Grants the Charge with Cleave action; the approach and the second target are resolved at the table."
             },
             "odvetnyUder": {
               "label": "Retaliatory Strike / Improved",
-              "description": "15 CP; D/M V. Retaliatory Strike (1 Reaction, 2 Stamina): after a Defense or Dodge, successful or not, may make a Retaliatory Strike that deals half damage. Does not apply to Counterattacks, Opportunity Attacks, Shield Bash or Retaliatory Strike. Retaliatory Strike has no interaction with Aim. Cannot be combined with Retaliation. Improved Retaliatory Strike (1 Reaction, 2 Stamina): as above, but deals full damage when the Defense or Dodge failed, and cannot be combined with Retaliatory Throw. Grants the Retaliatory Strike action."
+              "description": "15 CP; D/M V. Retaliatory Strike (1 Reaction, 2 Stamina): after a Defense or Dodge, successful or not, may make a Retaliatory Strike that deals half damage. Does not apply to Counterattacks, Opportunity Attacks, Shield Bash or Retaliatory Strike. Retaliatory Strike has no interaction with Aim. Cannot be combined with Retaliation. Improved Retaliatory Strike (1 Reaction, 2 Stamina): as above, but deals full damage when the Defense or Dodge failed, and cannot be combined with Retaliatory Throw. Grants the Improved Retaliatory Strike action, which replaces Retaliatory Strike; full damage after a failed Defense or Dodge is resolved at the table."
             },
             "klamavyUtok": {
               "label": "Feint Attack / Improved",
-              "description": "15 CP; D/M X. Feint Attack (2 actions and 5 Stamina, or 1 action and 13 Stamina): an attack with Advantage that cannot be answered with Riposte, Dragon's Thrust or Retaliation actions. With Wind Stance active, a hit allows an immediate Attack on the same target. Improved Feint Attack (2 actions and 0 Stamina, or 1 action and 8 Stamina): the same attack at a lower cost. Manual — resolved at the table."
+              "description": "15 CP; D/M X. Improved Feint Attack (2 actions and 0 Stamina, or 1 action and 8 Stamina): an attack with Advantage. Scores a Critical Hit from a success of +40. Advantage on the Critical Range roll and Critical Range +1. After a hit, may immediately make an Attack against the same target. Grants the Improved Feint Attack action at both action costs; the Advantage, the lowered Critical Hit threshold and the follow-up Attack are resolved at the table."
             },
             "riposta": {
               "label": "Riposte",
@@ -2962,7 +2962,7 @@
             },
             "mysterinoOko": {
               "label": "Mystera's Eye",
-              "description": "10 SP; Iluzionista: Expert. 2 actions. May concentrate and take full control of one of their illusions up to 100 m away, seeing, hearing and speaking through it. While concentrating, does not perceive their own surroundings. If Mind was placed into the illusion, control can be taken at any distance. Manual — resolved at the table."
+              "description": "10 SP; Iluzionista: Expert. 2 actions. May concentrate and take full control of one of their illusions up to 100 m away, seeing, hearing and speaking through it. While concentrating, does not perceive their own surroundings. If Mind was placed into the illusion, control can be taken at any distance. Grants the Mystera's Eye action; controlling the illusion is resolved at the table."
             },
             "dokonalaIluze1": {
               "label": "Perfect Illusion I",
@@ -2994,7 +2994,7 @@
             },
             "mysterinKrok": {
               "label": "Mystera's Step",
-              "description": "5 CP; Iluzionista: Expert. Reaction, cost 10. When the caster is attacked, may call a Speed Test and swap places with their Double or Decoy. Manual — resolved at the table."
+              "description": "5 CP; Iluzionista: Expert. Reaction, cost 10. When the caster is attacked, may call a Speed Test and swap places with their Double or Decoy. Grants the Mystera's Step action; the Speed Test and the swap are resolved at the table."
             },
             "udrzovaneIluze": {
               "label": "Sustained Illusions",
@@ -3481,11 +3481,11 @@
             },
             "podmaneni1": {
               "label": "Subjugation I",
-              "description": "20 SP; Arcana V. Manual — resolved at the table."
+              "description": "20 SP; Arcana V. 2 actions. A Will versus Test against a free summoned creature; on success it comes under direct control, within the control limit. Grants the Subjugation I action; taking control is resolved at the table."
             },
             "podmaneni2": {
               "label": "Subjugation II",
-              "description": "10 SP. Manual — resolved at the table."
+              "description": "10 SP. 2 actions. A Will versus Test at -10% against the owner of a summoned creature; on success the creature comes under direct control, within the control limit. Grants the Subjugation II action; taking control is resolved at the table."
             },
             "mesicniStudna": {
               "label": "Moon Well",
@@ -3505,7 +3505,7 @@
             },
             "mystickaObet": {
               "label": "Mystic Sacrifice",
-              "description": "15 SP; Rituály VI. Manual — resolved at the table."
+              "description": "15 SP; Rituály VI. Free action. While preparing a ritual, burns one Mind point to replace one second-degree ingredient. Grants the Mystic Sacrifice action; the Mind cost and the replaced ingredient are resolved at the table."
             },
             "bane1": {
               "label": "Unlocks one Bane",
@@ -5896,6 +5896,9 @@
       "AcrobaticDefense": {
         "name": "Acrobatic Defense"
       },
+      "AcrobaticDisengage": {
+        "name": "Acrobatic Disengage"
+      },
       "AdeptAcrobacy": {
         "name": "Adept: Acrobacy"
       },
@@ -5937,6 +5940,9 @@
       },
       "AdeptTraps": {
         "name": "Adept: Traps"
+      },
+      "Advance": {
+        "name": "Advance"
       },
       "AgileI": {
         "name": "Agile I"
@@ -6063,6 +6069,15 @@
       "Casting": {
         "name": "Casting"
       },
+      "Catalyst": {
+        "name": "Catalyst"
+      },
+      "ChargeDefense": {
+        "name": "Charge Defense"
+      },
+      "ChargeWithCleave": {
+        "name": "Charge with Cleave"
+      },
       "Cleave": {
         "name": "Cleave"
       },
@@ -6151,6 +6166,9 @@
       "Dagger": {
         "name": "Dagger"
       },
+      "DaringThrow": {
+        "name": "Daring Throw"
+      },
       "DeadlyLunge": {
         "name": "Deadly Lunge"
       },
@@ -6161,8 +6179,14 @@
       "DeepSlash": {
         "name": "Deep Slash"
       },
+      "DefenseReinforcement": {
+        "name": "Defense Reinforcement"
+      },
       "DefensiveStance": {
         "name": "Defensive Stance"
+      },
+      "Deflection": {
+        "name": "Deflection"
       },
       "Demon": {
         "name": "Demon"
@@ -6197,11 +6221,23 @@
       "Dodge": {
         "name": "Dodge"
       },
+      "DoubleStrike": {
+        "name": "Double Strike"
+      },
       "DoubleThrow": {
         "name": "Double Throw"
       },
       "Draconic": {
         "name": "Draconic"
+      },
+      "DragonGuard": {
+        "name": "Dragon Guard"
+      },
+      "DragonSleep": {
+        "name": "Dragon Sleep"
+      },
+      "DragonsThrust": {
+        "name": "Dragon's Thrust"
       },
       "Drinker": {
         "name": "Drinker"
@@ -6332,6 +6368,66 @@
       "ExpertTraps": {
         "name": "Expert: Traps"
       },
+      "FinalThrust": {
+        "name": "Final Thrust"
+      },
+      "ForcefulAdvance": {
+        "name": "Forceful Advance"
+      },
+      "HopliteMomentum": {
+        "name": "Momentum (Hoplite)"
+      },
+      "ImprovedArmoring": {
+        "name": "Improved Armoring"
+      },
+      "ImprovedBrilliantCounter": {
+        "name": "Improved Brilliant Counter"
+      },
+      "ImprovedBrilliantCounterSurprise": {
+        "name": "Improved Brilliant Counter (Surprise)"
+      },
+      "ImprovedDefensiveStance": {
+        "name": "Improved Defensive Stance"
+      },
+      "ImprovedDuelistsAdvance": {
+        "name": "Improved Duelist's Advance"
+      },
+      "ImprovedFastReaction": {
+        "name": "Improved Fast Reaction"
+      },
+      "ImprovedFeintAttack": {
+        "name": "Improved Feint Attack"
+      },
+      "ImprovedFeintAttackHastened": {
+        "name": "Improved Feint Attack (Hastened)"
+      },
+      "ImprovedFeintDexterity": {
+        "name": "Improved Feint (Dexterity)"
+      },
+      "ImprovedFeintPerception": {
+        "name": "Improved Feint (Perception)"
+      },
+      "ImprovedPassingStrike": {
+        "name": "Improved Passing Strike"
+      },
+      "ImprovedRetaliatoryStrike": {
+        "name": "Improved Retaliatory Strike"
+      },
+      "ImprovedSplinteringStrike": {
+        "name": "Improved Splintering Strike"
+      },
+      "ImprovedStaggeringBlow": {
+        "name": "Improved Staggering Blow"
+      },
+      "ImprovedTripDexterity": {
+        "name": "Improved Trip (Dexterity)"
+      },
+      "ImprovedTripStrength": {
+        "name": "Improved Trip (Strength)"
+      },
+      "LungeStep": {
+        "name": "Lunge Step"
+      },
       "MasterAcrobacy": {
         "name": "Master: Acrobacy",
         "description": "<p>+3% Critical Success chance for Acrobacy. Once per day you may reroll one Acrobacy test, including a Critical Failure.</p>"
@@ -6447,11 +6543,65 @@
       "Mountain": {
         "name": "Mountain"
       },
+      "MysterasEye": {
+        "name": "Mystera's Eye"
+      },
+      "MysterasStep": {
+        "name": "Mystera's Step"
+      },
+      "MysticSacrifice": {
+        "name": "Mystic Sacrifice"
+      },
+      "OnslaughtI": {
+        "name": "Onslaught I"
+      },
+      "OnslaughtII": {
+        "name": "Onslaught II"
+      },
+      "Overpowering": {
+        "name": "Overpowering"
+      },
+      "PreciseIncantation": {
+        "name": "Precise Incantation"
+      },
+      "PreparedStance": {
+        "name": "Prepared Stance"
+      },
+      "PushBackDexterity": {
+        "name": "Push Back (Dexterity)"
+      },
+      "PushBackStrength": {
+        "name": "Push Back (Strength)"
+      },
+      "QuickFeet": {
+        "name": "Quick Feet"
+      },
+      "QuickFocus": {
+        "name": "Quick Focus"
+      },
+      "RefinedPerfectOpening": {
+        "name": "Refined Perfect Opening"
+      },
+      "RefinedPerfectOpeningHastened": {
+        "name": "Refined Perfect Opening (Hastened)"
+      },
       "Shapeshifter": {
         "name": "Shapeshifter"
       },
+      "SlipThrough": {
+        "name": "Slip Through"
+      },
+      "SourceStabilization": {
+        "name": "Source Stabilization"
+      },
       "SpidersEmbrace": {
         "name": "Spider's Embrace"
+      },
+      "SubjugationI": {
+        "name": "Subjugation I"
+      },
+      "SubjugationII": {
+        "name": "Subjugation II"
       },
       "Vial": {
         "name": "Vial"

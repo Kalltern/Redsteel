@@ -18,6 +18,7 @@
  *            { kind: "doctrine", key: "swordsman", min: 1 } // doctrine value >= min (default 1)
  *            { kind: "weaponSkill", key: "swords", min: 1 } // weapon skill value >= min
  *            { kind: "specNode", spec: "hoplite", node: "nabodnuti" } // node unlocked
+ *            { kind: "all", of: [trigger, trigger, ...] }   // every sub-trigger holds
  *          For an "item" trigger you must give `name` and/or `uuid`. `type` and
  *          `name` may be combined for extra safety against name collisions.
  *          Feature triggers below match on name + type on purpose: a feature
@@ -67,9 +68,14 @@ const A = (id) => `Compendium.redsteel.redsteel-items.Item.${id}`;
  * ----------------------------------------------------------------------- */
 const ABILITY = {
   ACCURATE_SHOT: A("buuxxJT0wA3vKJNg"), // Přesný výstřel
+  ACROBATIC_DISENGAGE: A("aCroDisengage001"), // Akrobatické odpoutání
+  ADVANCE: A("aDvance000000001"), // Postup
   ANTI_LARGE: A("yx2pLONxkiwDfWpo"), // Bonus proti velkým tvorům
   BLOOD_PACT: A("blOodPact0000001"), // Krvavý pakt
+  CATALYST: A("cAtalyst00000001"), // Katalyzátor
   CHARGE: A("2jCzZEc3kXL6zglG"), // Zteč — carries its own Heavy-weapon bonus dice
+  CHARGE_DEFENSE: A("cHargeDefense001"), // Obrana proti zteči
+  CHARGE_WITH_CLEAVE: A("cHargeCleave0001"), // Zteč s rozseknutím
   CLEAVE: A("52NJ0ZhgGrHmrQ8z"), // Rozseknutí
   COMMAND_NERVE: A("cOmmandNerve0001"), // Velení: Nervy +1
   COMMAND_SPEED: A("cOmmandSpeed0001"), // Velení: Rychlost +1
@@ -84,11 +90,18 @@ const ABILITY = {
   COUNTERATTACK: A("JltGA0Wsv6ttCUT6"), // Protiútok
   CRIPPLING_SHOT: A("9WR4lbdssYQVdLoH"), // Zmrzačující výstřel
   CUNNING_STRIKE: A("cUnningStrike001"), // Vypočítavý útok
+  DARING_THROW: A("dAringThrow00001"), // Troufalý vrh
+  DEFENSE_REINFORCEMENT: A("dEfReinforce0001"), // Posílení obrany
   DEFENSIVE_STANCE: A("KprSydD2eARqm2QS"), // Obranný postoj
+  DEFLECTION: A("dEflection000001"), // Odražení
   DISENGAGE: A("Zkket4924S0MClYW"), // Odpoutání
   DISTRACTION_DEX: A("yoaHzPcADWincgO4"), // Rozptýlení
   DISTRACTION_PER: A("gC4G0bkqy7tXghxX"), // Rozptýlení
+  DOUBLE_STRIKE: A("dOubleStrike0001"), // Dvojitý úder
   DOUBLE_THROW: A("dOubleThrow00001"), // Dvojitý vrh
+  DRAGONS_THRUST: A("dRagonsThrust001"), // Dračí výpad
+  DRAGON_GUARD: A("dRagonGuard00001"), // Dračí stráž
+  DRAGON_SLEEP: A("dRagonSleep00001"), // Dračí spánek
   DUELISTS_ADVANCE: A("sbgSHiDt2hyptsxy"), // Duelistův krok
   EXPLOIT_WEAKNESS: A("VK73lWQNsMotICbn"), // Útok na slabinu
   EXPLOIT_WEAKNESS_RANGED: A("eXploitWeakRang1"), // Střelba na slabinu
@@ -97,31 +110,65 @@ const ABILITY = {
   FAST_REACTION: A("fAstReaction0001"), // Rychlá reakce
   FEINT_DEX: A("pt6OeaIFk0cAvxla"), // Finta
   FEINT_PER: A("IVNZXVkihp5CK9JV"), // Finta
+  FINAL_THRUST: A("fInalThrust00001"), // Poslední výpad
   FLAMBERGE_CLEAVE: A("LVAgDFzBKadXMU4A"), // Rozseknutí flambergem
   FLURRY: A("zosOTl8qIL3DISsr"), // Smršť útoků
+  FORCEFUL_ADVANCE: A("fOrcefulAdvance1"), // Rázný postup
   FUSCINA_ICTUS: A("fUsCinaIctus0001"), // Fuscina Ictus, trojzubec
   FLURRY_OF_THROWS: A("rWVInSjYveJyVonf"), // Vícenásobný vrh
   FRENZIED_THROW: A("RUMZLtefyxVDNA74"), // Zběsilý vrh
   GUARD_STANCE: A("n6cK9hKnV52nwOzh"), // Ochrana
   HALF_PIROUETTE: A("fF5ZDZZ8r1XSGjmP"), // Půlpirueta
+  HOPLITE_MOMENTUM: A("hOpliteMomentum1"), // Momentum, Hoplita
   IMBROCCATA_EXPLOIT_WEAKNESS: A("q8A63eX3waqHl4KX"), // Útok na slabinu, rapír
   IMPALE: A("1xrf1lG6yXNgqXRC"), // Nabodnutí
+  IMPROVED_ARMORING: A("iMpArmoring00001"), // Vylepšené obrnění
+  IMPROVED_BRILLIANT_COUNTER: A("iMpBrilCount0001"), // Vylepšený brilantní protiútok
+  IMPROVED_BRILLIANT_COUNTER_SURPRISE: A("iMpBrilCountS001"), // Vylepšený brilantní protiútok, za 10 výdrže
+  IMPROVED_DEFENSIVE_STANCE: A("iMpDefStance0001"), // Vylepšený obranný postoj
+  IMPROVED_DUELISTS_ADVANCE: A("iMpDuelAdv000001"), // Vylepšený duelistův krok
   IMPROVED_EXPLOIT_WEAKNESS: A("iMpExplWeak00001"), // Vylepšený útok na slabinu
   IMPROVED_EXPLOIT_WEAKNESS_THROW: A("iMpExplThrow0001"), // Vylepšený vrh na slabinu
   IMPALE_FOLLOWUP: A("FoRwhcpTYnmuCfQF"), // Nabodnutí: Navazující útok
   IMPROVED_AIMING: A("5t73FrRCJ0N6hdFe"), // Vylepšené míření
+  IMPROVED_FAST_REACTION: A("iMpFastReact0001"), // Vylepšená rychlá reakce
+  IMPROVED_FEINT_ATTACK: A("iMpFeintAtk00001"), // Vylepšený klamavý útok, 2 akce
+  IMPROVED_FEINT_ATTACK_HASTENED: A("iMpFeintAtkH0001"), // Vylepšený klamavý útok, 1 akce
+  IMPROVED_FEINT_DEX: A("iMpFeintDex00001"), // Vylepšená finta
+  IMPROVED_FEINT_PER: A("iMpFeintPer00001"), // Vylepšená finta
+  IMPROVED_PASSING_STRIKE: A("iMpPassStrike001"), // Vylepšený útok s pohybem
+  IMPROVED_RETALIATORY_STRIKE: A("iMpRetalStrike01"), // Vylepšený odvetný úder
+  IMPROVED_SPLINTERING_STRIKE: A("iMpSplinter00001"), // Vylepšené rozštěpení
+  IMPROVED_STAGGERING_BLOW: A("iMpStagger000001"), // Vylepšený omračující úder
+  IMPROVED_TRIP_DEX: A("iMpTripDex000001"), // Vylepšené podseknutí
+  IMPROVED_TRIP_STR: A("iMpTripStr000001"), // Vylepšené podseknutí
   KNOCKDOWN: A("8soGfxXTgjjWZlMq"), // Povalení
   LEG_SWEEP_DEX: A("Z4ZES1CFCCd82YMn"), // Nastrčená noha
   LEG_SWEEP_STR: A("GvpBIkl7tAxx5xrX"), // Nastrčená noha
+  LUNGE_STEP: A("lUngeStep0000001"), // Přískok
   MAGIC_WARD: A("jb3WkQ7CKe0E3hW8"), // Magické obrnění
+  MYSTERAS_EYE: A("mYsterasEye00001"), // Mysteřino oko
+  MYSTERAS_STEP: A("mYsterasStep0001"), // Mysteřin krok
+  MYSTIC_SACRIFICE: A("mYsticSacrific01"), // Mystická oběť
+  ONSLAUGHT_I: A("oNslaught1000001"), // Nápor I
+  ONSLAUGHT_II: A("oNslaught2000001"), // Nápor II
+  OVERPOWERING: A("oVerpowering0001"), // Přesílení
   OVERWATCH: A("9YQu2LgtpfCW0TWk"), // Stráž
   PASSING_STRIKE: A("HrGzgwOiif01bpDi"), // Útok s pohybem
   PERFECT_OPENING: A("6W5C7JvpFUpAbj8l"), // Rafinovaný manévr, 2 akce
   PERFECT_OPENING_HASTENED: A("hIK2uTDXUvO9TeuV"), // Rafinovaný manévr, 1 akce
   PIKEMAN_CHARGE: A("cghhodlLxiU69WLO"), // Zteč: Průbojnost +5 — also carries Heavy dice
   POLEARM_CLEAVE: A("PPV4asgA1ESKgD26"), // Daleké rozseknutí
+  PRECISE_INCANTATION: A("pRecIncant000001"), // Precizní inkantace
+  PREPARED_STANCE: A("pRepStance000001"), // Přípravný postoj
+  PUSH_BACK_DEX: A("pUshBackDex00001"), // Zatlačení
+  PUSH_BACK_STR: A("pUshBackStr00001"), // Zatlačení
+  QUICK_FEET: A("qUickFeet0000001"), // Rychlé nohy
+  QUICK_FOCUS: A("qUickFocus000001"), // Rychlé soustředění
   RECKLESS_STRIKE: A("CKSRdqAvrm7SOqCs"), // Zběsilý útok
   RECKLESS_STRIKE_REAVER: A("0YDsI6HYQ31hAWHp"), // Zběsilý útok, Plenitel
+  REFINED_PERFECT_OPENING: A("rEfPerfOpen00001"), // Rafinovaný manévr (vylepšený), 2 akce
+  REFINED_PERFECT_OPENING_HASTENED: A("rEfPerfOpenH0001"), // Rafinovaný manévr (vylepšený), 1 akce
   REST: A("r0zKDZ0Zs2bMiUAu"), // Odpočinek
   RETALIATORY_STRIKE: A("qaPermZFuHuTg5ni"), // Odvetný úder
   RIPOSTE: A("WX6uJeqZAqeyykJa"), // Riposta
@@ -133,9 +180,13 @@ const ABILITY = {
   SHIELDBEARER_DEFENSIVE_STANCE: A("Z5uFEQqLBQXvsjDq"), // Obranný postoj: Ignoruje Průraznost
   SHOVE_DEX: A("eM1CMfrwZeMl1X8O"), // Odstrčení
   SHOVE_STR: A("quN6stREoJF84H84"), // Odstrčení
+  SLIP_THROUGH: A("sLipThrough00001"), // Prosmýknutí
+  SOURCE_STABILIZATION: A("sOurceStabil0001"), // Stabilizace zdroje
   SPLINTERING_STRIKE: A("HxHXxA3Mq03dD7ku"), // Rozštěpení
   SPRINT: A("Xc0SM3CwS9pnT5rY"), // Sprint
   STAGGERING_BLOW: A("DFnAqroELNHfbweO"), // Omračující úder
+  SUBJUGATION_I: A("sUbjugation10001"), // Podmanění I
+  SUBJUGATION_II: A("sUbjugation20001"), // Podmanění II
   TRIP_DEX: A("kkHN2VhkuN0wIePo"), // Podseknutí
   TRIP_STR: A("lceDlymn87I1aDNX"), // Podseknutí
 };
@@ -147,6 +198,7 @@ const doctrine = (key, min) => ({ kind: "doctrine", key, min });
 const weaponSkill = (key, min) => ({ kind: "weaponSkill", key, min });
 const specNode = (spec, node) => ({ kind: "specNode", spec, node });
 const feature = (name) => ({ kind: "item", name, type: "feature" });
+const all = (...of) => ({ kind: "all", of });
 
 /** Every weapon skill grants the same actions at ranks 1-3. */
 const WEAPON_SKILLS = ["swords", "axes", "blunt", "polearms"];
@@ -683,9 +735,13 @@ export const ABILITY_GRANTS = [
     grant: [ABILITY.ANTI_LARGE, ABILITY.IMPALE_FOLLOWUP],
   },
   {
-    label: "Champion: Odvetný úder → Retaliatory strike",
+    // The Champion node is the improved strike (full damage when the Defense
+    // or Dodge failed), so it stands in for the plain one from any source.
+    label:
+      "Champion: Odvetný úder → Retaliatory strike upgrades to Improved Retaliatory Strike",
     when: specNode("champion", "odvetnyUder"),
-    grant: [ABILITY.RETALIATORY_STRIKE],
+    grant: [ABILITY.IMPROVED_RETALIATORY_STRIKE],
+    replaces: [ABILITY.RETALIATORY_STRIKE],
   },
   {
     label: "Champion: Riposta → Riposte",
@@ -718,6 +774,246 @@ export const ABILITY_GRANTS = [
     ],
     replaces: [ABILITY.EXPLOIT_WEAKNESS, ABILITY.EXPLOIT_WEAKNESS_THROW],
   },
+  {
+    label: "Shadow: Rychlé nohy → Quick Feet",
+    when: specNode("shadow", "quickFeet"),
+    grant: [ABILITY.QUICK_FEET],
+  },
+
+  /* Služebník meče (Servant of the Sword) */
+  {
+    label: "Servant of the Sword: Dračí stráž → Dragon Guard",
+    when: specNode("swordServant", "draciStraz"),
+    grant: [ABILITY.DRAGON_GUARD],
+  },
+  {
+    label: "Servant of the Sword: Dračí spánek → Dragon Sleep",
+    when: specNode("swordServant", "draciSpanek"),
+    grant: [ABILITY.DRAGON_SLEEP],
+  },
+  {
+    label: "Servant of the Sword: Přískok → Lunge Step",
+    when: specNode("swordServant", "priskok"),
+    grant: [ABILITY.LUNGE_STEP],
+  },
+  {
+    label: "Servant of the Sword: Dračí výpad → Dragon's Thrust",
+    when: specNode("swordServant", "draciVypad"),
+    grant: [ABILITY.DRAGONS_THRUST],
+  },
+  {
+    label: "Servant of the Sword: Prosmýknutí → Slip Through",
+    when: specNode("swordServant", "prosmyknuti"),
+    grant: [ABILITY.SLIP_THROUGH],
+  },
+
+  /* Vylepšený útok s pohybem — the same node on three trees. The improved
+   * strike also works on Retaliation actions, so it replaces Passing Strike
+   * from every source (doctrines and the plain Útok s pohybem nodes). */
+  ...["swordServant", "swordDancer", "champion"].map((spec) => ({
+    label: `${spec}: Vylepšený útok s pohybem → Passing Strike upgrades to Improved Passing Strike`,
+    when: specNode(spec, "vylUtokSPohybem"),
+    grant: [ABILITY.IMPROVED_PASSING_STRIKE],
+    replaces: [ABILITY.PASSING_STRIKE],
+  })),
+
+  /* Mistr zbraní (Weapon Master). Vylepšené zbraňové dovednosti is not listed
+   * here: it is conditional on the base actions and is added below the table
+   * (IMPROVED_WEAPON_SKILL_PAIRS). */
+  {
+    label: "Weapon Master: Přesílení → Overpowering",
+    when: specNode("weaponMaster", "presileni"),
+    grant: [ABILITY.OVERPOWERING],
+  },
+  {
+    label: "Weapon Master: Odražení → Deflection",
+    when: specNode("weaponMaster", "odrazeni"),
+    grant: [ABILITY.DEFLECTION],
+  },
+  {
+    // Keeps system.key "fastReaction", so the +4 Initiative automation in
+    // combatAbilities.mjs runs for the upgrade exactly as for the base action.
+    label: "Weapon Master: Vylepšená rychlá reakce → Fast Reaction upgrades to Improved Fast Reaction",
+    when: specNode("weaponMaster", "rychlaReakce"),
+    grant: [ABILITY.IMPROVED_FAST_REACTION],
+    replaces: [ABILITY.FAST_REACTION],
+  },
+
+  /* Mečový tanečník (Sword Dancer) */
+  {
+    label: "Sword Dancer: Posílení obrany → Defense Reinforcement",
+    when: specNode("swordDancer", "posileniObrany"),
+    grant: [ABILITY.DEFENSE_REINFORCEMENT],
+  },
+  {
+    label: "Sword Dancer: Akrobatické odpoutání → Acrobatic Disengage",
+    when: specNode("swordDancer", "akrobatickeOdpoutani"),
+    grant: [ABILITY.ACROBATIC_DISENGAGE],
+  },
+  {
+    // The node is "Rafinovaný manévr: Výdrž -2": the same attack, 2 Stamina
+    // cheaper at both action costs.
+    label: "Sword Dancer: Rafinovaný manévr → Perfect Opening upgrades to Refined Perfect Opening",
+    when: specNode("swordDancer", "rafinovanyManevr"),
+    grant: [
+      ABILITY.REFINED_PERFECT_OPENING,
+      ABILITY.REFINED_PERFECT_OPENING_HASTENED,
+    ],
+    replaces: [ABILITY.PERFECT_OPENING, ABILITY.PERFECT_OPENING_HASTENED],
+  },
+  {
+    label: "Sword Dancer: Poslední výpad → Final Thrust",
+    when: specNode("swordDancer", "posledniVypad"),
+    grant: [ABILITY.FINAL_THRUST],
+  },
+  {
+    label: "Sword Dancer: Vylepšený duelistův krok → Duelist's Advance upgrades to Improved Duelist's Advance",
+    when: specNode("swordDancer", "vylDuelistuvKrok"),
+    grant: [ABILITY.IMPROVED_DUELISTS_ADVANCE],
+    replaces: [ABILITY.DUELISTS_ADVANCE],
+  },
+  {
+    // Two items for the node's two prices: free after a critical Defense or
+    // Dodge, 10 Stamina to make a Surprise out of an ordinary Defense.
+    label: "Sword Dancer: Vylepšený brilantní protiútok → Improved Brilliant Counter (both costs)",
+    when: specNode("swordDancer", "brilantniProtiutok"),
+    grant: [
+      ABILITY.IMPROVED_BRILLIANT_COUNTER,
+      ABILITY.IMPROVED_BRILLIANT_COUNTER_SURPRISE,
+    ],
+  },
+
+  /* Šampion (Champion) */
+  {
+    label: "Champion: Zatlačení → Push Back",
+    when: specNode("champion", "zatlaceni"),
+    grant: [ABILITY.PUSH_BACK_STR, ABILITY.PUSH_BACK_DEX],
+  },
+  {
+    label: "Champion: Zteč s rozseknutím → Charge with Cleave",
+    when: specNode("champion", "ztecSRozseknutim"),
+    grant: [ABILITY.CHARGE_WITH_CLEAVE],
+  },
+  {
+    label: "Champion: Klamavý útok → Improved Feint Attack (both action costs)",
+    when: specNode("champion", "klamavyUtok"),
+    grant: [ABILITY.IMPROVED_FEINT_ATTACK, ABILITY.IMPROVED_FEINT_ATTACK_HASTENED],
+  },
+
+  /* Hoplita (Hoplite) */
+  {
+    label: "Hoplite: Přípravný postoj → Prepared Stance",
+    when: specNode("hoplite", "pripravnyPostoj"),
+    grant: [ABILITY.PREPARED_STANCE],
+  },
+  {
+    label: "Hoplite: Obrana proti zteči → Charge Defense",
+    when: specNode("hoplite", "obranaProtiZteci"),
+    grant: [ABILITY.CHARGE_DEFENSE],
+  },
+  {
+    label: "Hoplite: Troufalý vrh → Daring Throw",
+    when: specNode("hoplite", "troufalyVrh"),
+    grant: [ABILITY.DARING_THROW],
+  },
+  {
+    label: "Hoplite: Momentum → Momentum (Hoplite)",
+    when: specNode("hoplite", "momentum"),
+    grant: [ABILITY.HOPLITE_MOMENTUM],
+  },
+  {
+    label: "Hoplite: Postup → Advance",
+    when: specNode("hoplite", "postup"),
+    grant: [ABILITY.ADVANCE],
+  },
+  {
+    label: "Hoplite: Rázný postup → Forceful Advance",
+    when: specNode("hoplite", "raznyPostup"),
+    grant: [ABILITY.FORCEFUL_ADVANCE],
+  },
+  {
+    label: "Hoplite: Nápor I → Onslaught I",
+    when: specNode("hoplite", "napor1"),
+    grant: [ABILITY.ONSLAUGHT_I],
+  },
+  {
+    label: "Hoplite: Nápor II → Onslaught II",
+    when: specNode("hoplite", "napor2"),
+    grant: [ABILITY.ONSLAUGHT_II],
+  },
+
+  /* Strážce (Warden) */
+  {
+    label: "Warden: Dvojitý úder → Double Strike",
+    when: specNode("warden", "dvojityUder"),
+    grant: [ABILITY.DOUBLE_STRIKE],
+  },
+  {
+    // Replaces the plain Defensive Stance only. The Shieldbearer 6 stance
+    // ignores Breakthrough, which the improved stance does not, so the two
+    // are different trades and a Shieldbearer keeps theirs. Both share the
+    // defensive_stance status key, so upkeep works the same.
+    label: "Warden: Vylepšený obranný postoj → Defensive Stance upgrades to Improved Defensive Stance",
+    when: specNode("warden", "vylObrannyPostoj"),
+    grant: [ABILITY.IMPROVED_DEFENSIVE_STANCE],
+    replaces: [ABILITY.DEFENSIVE_STANCE],
+  },
+  {
+    label: "Warden: Vylepšené obrnění → Improved Armoring",
+    when: specNode("warden", "vylObrneni"),
+    grant: [ABILITY.IMPROVED_ARMORING],
+  },
+
+  /* Incantator */
+  {
+    label: "Incantator: Rychlé soustředění → Quick Focus",
+    when: specNode("incantator", "rychleSoustredeni"),
+    grant: [ABILITY.QUICK_FOCUS],
+  },
+  {
+    label: "Incantator: Precizní inkantace → Precise Incantation",
+    when: specNode("incantator", "precizniInkantace"),
+    grant: [ABILITY.PRECISE_INCANTATION],
+  },
+  {
+    label: "Incantator: Stabilizace zdroje → Source Stabilization",
+    when: specNode("incantator", "stabilizaceZdroje"),
+    grant: [ABILITY.SOURCE_STABILIZATION],
+  },
+  {
+    label: "Incantator: Katalyzátor → Catalyst",
+    when: specNode("incantator", "katalyzator"),
+    grant: [ABILITY.CATALYST],
+  },
+
+  /* Mystik (Mystic) */
+  {
+    label: "Mystic: Podmanění I → Subjugation I",
+    when: specNode("mystic", "podmaneni1"),
+    grant: [ABILITY.SUBJUGATION_I],
+  },
+  {
+    label: "Mystic: Podmanění II → Subjugation II",
+    when: specNode("mystic", "podmaneni2"),
+    grant: [ABILITY.SUBJUGATION_II],
+  },
+  {
+    label: "Mystic: Mystická oběť → Mystic Sacrifice",
+    when: specNode("mystic", "mystickaObet"),
+    grant: [ABILITY.MYSTIC_SACRIFICE],
+  },
+
+  /* Iluzionista (Illusionist) */
+  {
+    label: "Illusionist: Mysteřino oko → Mystera's Eye",
+    when: specNode("illusionist", "mysterinoOko"),
+    grant: [ABILITY.MYSTERAS_EYE],
+  },
+  {
+    label: "Illusionist: Mysteřin krok → Mystera's Step",
+    when: specNode("illusionist", "mysterinKrok"),
+    grant: [ABILITY.MYSTERAS_STEP],
+  },
 
   /* ======================================================================
    * Velení (Leadership) — the Commands
@@ -743,6 +1039,44 @@ export const ABILITY_GRANTS = [
     grant: [id],
   })),
 ];
+
+/* --------------------------------------------------------------------------
+ * Weapon Master: Vylepšené zbraňové dovednosti — conditional upgrades.
+ *
+ * The node improves the four weapon actions (Feint, Splintering strike,
+ * Staggering blow, Trip) the character actually has. It must not hand a Blunt
+ * fighter a Feint, so an improved action is granted only while the actor also
+ * holds a trigger for its base: one extra rule per base-granting rule, whose
+ * trigger is "node unlocked AND that base rule's own trigger". Each extra rule
+ * replaces the base, so the upgrade stands in for it from every source.
+ *
+ * The rules are derived from the table above rather than written out, so a
+ * new source of Feint (etc.) picks up its upgrade automatically. The scan
+ * runs once over a snapshot of the base rules; the rules it pushes are never
+ * scanned themselves.
+ * ----------------------------------------------------------------------- */
+const IMPROVED_WEAPON_SKILL_PAIRS = [
+  [ABILITY.FEINT_DEX, ABILITY.IMPROVED_FEINT_DEX],
+  [ABILITY.FEINT_PER, ABILITY.IMPROVED_FEINT_PER],
+  [ABILITY.SPLINTERING_STRIKE, ABILITY.IMPROVED_SPLINTERING_STRIKE],
+  [ABILITY.STAGGERING_BLOW, ABILITY.IMPROVED_STAGGERING_BLOW],
+  [ABILITY.TRIP_STR, ABILITY.IMPROVED_TRIP_STR],
+  [ABILITY.TRIP_DEX, ABILITY.IMPROVED_TRIP_DEX],
+];
+{
+  const baseRules = [...ABILITY_GRANTS];
+  for (const [base, improved] of IMPROVED_WEAPON_SKILL_PAIRS) {
+    for (const rule of baseRules) {
+      if (!(rule.grant ?? []).includes(base)) continue;
+      ABILITY_GRANTS.push({
+        label: `Weapon Master: Vylepšené zbraňové dovednosti + (${rule.label ?? "base"}) → upgrade`,
+        when: all(specNode("weaponMaster", "vylZbranoveDovednosti"), rule.when),
+        grant: [improved],
+        replaces: [base],
+      });
+    }
+  }
+}
 
 const GRANT_FLAG_SCOPE = "redsteel";
 const GRANTED_FLAG = "grantedAbility"; // boolean: this item was auto-granted
@@ -786,15 +1120,28 @@ const CATEGORY_BY_KIND_RANK = [
 /** compendium ability UUID -> derived category. Built once, on first use. */
 let _categoryByUuid = null;
 
+/**
+ * The CATEGORY_BY_KIND_RANK key a trigger ranks under.
+ * Leadership is the only skill trigger and it is what makes a Command. An
+ * "all" combinator has no rank of its own: it ranks as a specialisation node
+ * when any of its sub-triggers is one (the Weapon Master upgrades), otherwise
+ * as its first sub-trigger.
+ */
+function rankKeyOf(when) {
+  if (when?.kind === "all") {
+    const subs = when.of ?? [];
+    const spec = subs.find((sub) => sub?.kind === "specNode");
+    return rankKeyOf(spec ?? subs[0]);
+  }
+  if (when?.kind === "skill" && when.key === "leadership") return "leadership";
+  return when?.kind;
+}
+
 function categoryByUuid() {
   if (_categoryByUuid) return _categoryByUuid;
   const kinds = new Map(); // uuid -> Set of ranking keys
   for (const rule of ABILITY_GRANTS) {
-    // Leadership is the only skill trigger and it is what makes a Command.
-    const key =
-      rule.when.kind === "skill" && rule.when.key === "leadership"
-        ? "leadership"
-        : rule.when.kind;
+    const key = rankKeyOf(rule.when);
     for (const uuid of rule.grant) {
       if (!kinds.has(uuid)) kinds.set(uuid, new Set());
       kinds.get(uuid).add(key);
@@ -860,6 +1207,9 @@ export function ruleActive(actor, rule) {
   if (!w) return false;
 
   if (w.kind === "always") return true;
+
+  if (w.kind === "all")
+    return (w.of ?? []).every((sub) => ruleActive(actor, { when: sub }));
 
   if (w.kind === "skill") {
     const skill = actor.system?.skills?.[w.key];

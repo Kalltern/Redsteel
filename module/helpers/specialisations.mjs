@@ -286,7 +286,9 @@ const CODE_AUTOMATED_NODES = {
   // (improvedAim and aimReduction are also read by utils/aim.mjs: the first for
   // the +10 penetration and Advanced Aim, the second for aim reduction on a hit
   // plus the Sneak Attack grant.)
-  swordServant: ["odvetnyUder", "improvedAim", "aimReduction", "utokSPohybem"],
+  // (vyhodnyManevr is utils/aim.mjs + utils/advantageousManeuver.mjs: the same
+  // defense-card button as the Sword Dancer's, gated on a two-handed sword.)
+  swordServant: ["odvetnyUder", "improvedAim", "aimReduction", "utokSPohybem", "vyhodnyManevr"],
   hoplite: ["nabodnuti", "velkeTvory"],
   champion: ["odvetnyUder", "riposta"],
   skirmisher: ["utokSPohybem"],

@@ -1,0 +1,111 @@
+{
+  "folder": "9Ug73JNNSqmkEdOI",
+  "name": "Improved Feint (Dexterity)",
+  "type": "ability",
+  "_id": "iMpFeintDex00001",
+  "img": "icons/skills/melee/swords-triple-orange.webp",
+  "system": {
+    "description": "<p>Gain Aim on the target and call a Dexterity/Perception versus Test.<br />On success the opponent has Disadvantage on their next Defense or Dodge, -1 Reaction for two rounds, and loses all their Aim.<br />An Attack following in the same round scores a Critical Hit from a success of +50.</p>",
+    "type": "melee",
+    "weaponAbility": false,
+    "standalone": false,
+    "modifiesAttack": false,
+    "multiAttack": false,
+    "typeOptions": [
+      "melee",
+      "ranged"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "movement",
+      "attack",
+      "defense"
+    ],
+    "resources": {
+      "0": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      },
+      "1": {
+        "type": "",
+        "mode": "",
+        "amount": null
+      }
+    },
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "drain"
+      ],
+      "types": []
+    },
+    "testOptions": [],
+    "attributeTest": "dexterity",
+    "dmgTypes": [],
+    "testModifier": 0,
+    "versusAgainst": "dex,per",
+    "costOptions": [
+      "stamina",
+      "mana",
+      "health",
+      "mental",
+      "fatigue",
+      "inspiration",
+      "holy energy"
+    ],
+    "costType": "stamina",
+    "cost": 5,
+    "perRound": 0,
+    "effects": {
+      "stagger": 0,
+      "bleed": 0,
+      "extra1": 0,
+      "extra2": 0,
+      "extra3": 0
+    },
+    "roll": {
+      "diceBonus": ""
+    },
+    "penetration": null,
+    "class": "attack",
+    "actionCost": "1 Action",
+    "breakthrough": "",
+    "attack": null,
+    "critRange": null,
+    "critChance": null,
+    "critFail": null,
+    "dmgType1": "",
+    "bool2": "",
+    "dmgType2": "",
+    "bool3": "",
+    "dmgType3": "",
+    "effectType1": "",
+    "effectType2": "",
+    "effectType3": "",
+    "localizationKey": "REDSTEEL.Items.ImprovedFeintDexterity.name",
+    "category": "doctrine"
+  },
+  "effects": [],
+  "sort": 6100000,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": null,
+    "modifiedTime": null,
+    "lastModifiedBy": null
+  },
+  "_key": "!items!iMpFeintDex00001"
+}
