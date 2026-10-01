@@ -4,6 +4,9 @@ import {
   computeDoctrineBonuses,
 } from "../utils/combatSkillBonuses.mjs";
 import { partBuilder, reconcileParts } from "../utils/ratingBreakdown.mjs";
+import { weaponHasTag } from "../utils/weaponResolver.mjs";
+import { actorHasSpecNode } from "../helpers/specialisations.mjs";
+import { getWeaponTrainingClass } from "../utils/weaponMaster.mjs";
 
 /**
  * Shield Strain (`shield_strain`) — the shield arm is spent, so the shield
@@ -627,6 +630,22 @@ export class RedsteelActor extends Actor {
             mainHand ? ` (${mainHand.localizedName ?? mainHand.name})` : ""
           }`,
         );
+        // Shadow: No Defense penalty with dagger. A dagger in the active set's
+        // main hand loses its own Defense penalty (-20 on the pack Dagger), so
+        // this cancels the weapon's base value and never turns into a bonus.
+        // Quality and enchantment are the item's, not the dagger's: untouched.
+        // A separate part so the tooltip shows the node doing its work.
+        if (
+          mainHand &&
+          weaponHasTag(mainHand, "dagger") &&
+          actorHasSpecNode(actorData, "shadow", "daggerDefense")
+        ) {
+          addBonus(
+            combatSkills.meleeDefense,
+            Math.max(0, -(Number(mainHand.system.defense) || 0)),
+            game.i18n.localize("REDSTEEL.Tooltip.Part.daggerDefense"),
+          );
+        }
 
         // Doctrine defense bonuses are added by the defense roll, not folded
         // into the stat, so they are parked beside the rating for the tooltip
@@ -1532,7 +1551,10 @@ export class RedsteelActor extends Actor {
 
     // Calculate critRanges
     const calcCritRange = [0, 0, 0, 0, 1, 1, 2, 3, 3, 3, 3];
-    systemData.critRangeMelee = calcCritRange[str] + calcCritRange[per];
+    // Weapon Training (Mistr zbrani, vycvikSeZbrani), light class: melee
+    // Critical Range reads Dexterity instead of Strength.
+    const critMeleeAttr = getWeaponTrainingClass(this) === "light" ? dex : str;
+    systemData.critRangeMelee = calcCritRange[critMeleeAttr] + calcCritRange[per];
     systemData.critRangeRanged = calcCritRange[per];
     systemData.critRangeCast = calcCritRange[int] ?? 0;
     // Calculate misc

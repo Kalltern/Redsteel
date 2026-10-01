@@ -830,6 +830,61 @@ table tr td:nth-child(3) {
     box-shadow: 0 0 0 1px rgba(24, 18, 10, 0.8), 0 0 12px rgba(0, 0, 0, 0.5), inset 0 2px 3px rgba(20, 15, 8, 0.65), inset 0 -1px 0 rgb(39 30 15 / 50%);
 }
 
+/* First open of a new character: the header becomes a create/skip choice.
+   One dark plate, one gold border; the halves are split only by a faint rule
+   that fades out at both ends, so the plate still reads as a single piece. */
+.redsteel .sheet-header.creation-choice {
+  flex-wrap: nowrap;
+  align-items: stretch;
+  padding: 0;
+  border: 2px solid #a8894a;
+  background:
+    radial-gradient(
+      ellipse at center,
+      rgba(40, 38, 32, 0.9) 0%,
+      rgba(12, 12, 11, 0.98) 85%
+    ),
+    #0f0f0f;
+  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.8);
+}
+
+.redsteel .sheet-header.creation-choice button.creation-choice-side {
+  flex: 1 1 50%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #c9c7b8;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 26px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.redsteel .sheet-header.creation-choice button.creation-choice-side:hover,
+.redsteel .sheet-header.creation-choice button.creation-choice-side:focus-visible {
+  color: #e6c878;
+  background: rgba(230, 200, 120, 0.04);
+  outline: none;
+  box-shadow: none;
+}
+
+.redsteel .sheet-header.creation-choice .creation-choice-divider {
+  flex: 0 0 1px;
+  margin: 40px 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(168, 137, 74, 0),
+    rgba(168, 137, 74, 0.35) 50%,
+    rgba(168, 137, 74, 0)
+  );
+}
+
 .redsteel .sheet-header-item {
   height: auto; /* Adjust the height as needed */
   overflow: hidden; /* Ensures content does not exceed the height */
@@ -1992,8 +2047,8 @@ table tr td:nth-child(3) {
 }
 /* Sections share out their column's spare height evenly. In the tallest
    column there is none, so nothing changes there; in the shorter one each
-   section grows a little and centres its heading and buttons in the extra,
-   so the space splits above and below instead of pooling at the bottom. */
+   section grows a little, the extra sitting under its last row so the
+   heading stays at the same distance from the top frame everywhere. */
 .skills-container:not(.skills-combat-container) .skills-column > .skill-section {
   flex: 1 1 auto;
 }
@@ -2071,7 +2126,9 @@ table tr td:nth-child(3) {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   row-gap: 5px;
   column-gap: 6px;
-  align-content: center;
+  /* Heading always hugs the top frame; a grown section keeps its extra
+     height below the last row. */
+  align-content: start;
 }
 .skills-container:not(.skills-combat-container) .skill-section > h5 {
   display: block;
@@ -2114,12 +2171,17 @@ table tr td:nth-child(3) {
   padding: 2px 10px;
   border: 1px solid rgb(45 40 32);
   border-radius: 4px;
-  /* Dark enough to stand off the section's coloured plate. */
-  background-color: rgba(8, 7, 5, 0.72);
-  background-image: radial-gradient(
-    ellipse at 50% 42%,
-    rgba(40, 36, 28, 0.18),
-    rgba(4, 3, 2, 0.35)
+  /* A dark plate carrying its section's colour, so it reads as a deeper
+     shade of the section rather than a brown film over it. */
+  background-color: color-mix(in srgb, var(--rs-ledger-tint, rgb(181 151 80)) 7%, rgba(6, 5, 4, 0.8));
+  /* One even dark plate with only a hint of the section colour, a little
+     deeper down the middle. No colour is added at the sides: that lit the
+     edges up and made the plates look pale. */
+  background-image: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 0, 0, 0.18) 50%,
+    transparent
   );
   box-shadow:
     inset 0 5px 8px -2px rgba(0, 0, 0, 0.5),
@@ -2175,14 +2237,29 @@ table tr td:nth-child(3) {
 .skills-container:not(.skills-combat-container) .skill-section > :is(.skill-toggle-wrapper, .skill-entry):not(.is-hidden):nth-child(odd of :is(.skill-toggle-wrapper, .skill-entry):not(.is-hidden)):nth-last-child(1 of :is(.skill-toggle-wrapper, .skill-entry):not(.is-hidden)) {
   grid-column: 1 / -1;
   border-right: none;
+  /* Centred, not full width: as wide as one ordinary button, growing only
+     when the name would otherwise wrap, and never past the row. */
+  justify-self: center;
+  width: max-content;
+  min-width: calc(50% - 3px);
+  max-width: 100%;
+}
+.skills-container:not(.skills-combat-container) .skill-section > :is(.skill-toggle-wrapper, .skill-entry):not(.is-hidden):nth-child(odd of :is(.skill-toggle-wrapper, .skill-entry):not(.is-hidden)):nth-last-child(1 of :is(.skill-toggle-wrapper, .skill-entry):not(.is-hidden)) .skill-name,
+.skills-container:not(.skills-combat-container) .skill-section > :is(.skill-toggle-wrapper, .skill-entry):not(.is-hidden):nth-child(odd of :is(.skill-toggle-wrapper, .skill-entry):not(.is-hidden)):nth-last-child(1 of :is(.skill-toggle-wrapper, .skill-entry):not(.is-hidden)) .skill-label {
+  white-space: nowrap;
 }
 .skills-container:not(.skills-combat-container) .skill-section > :is(.skill-toggle-wrapper, .skill-entry):not(.is-hidden):nth-child(odd of :is(.skill-toggle-wrapper, .skill-entry):not(.is-hidden)):nth-last-child(1 of :is(.skill-toggle-wrapper, .skill-entry):not(.is-hidden)) .skill-entry,
 .skills-container:not(.skills-combat-container) .skill-section > :is(.skill-toggle-wrapper, .skill-entry):not(.is-hidden):nth-child(odd of :is(.skill-toggle-wrapper, .skill-entry):not(.is-hidden)):nth-last-child(1 of :is(.skill-toggle-wrapper, .skill-entry):not(.is-hidden)).skill-entry {
-  grid-template-columns: auto 34px;
-  justify-content: center;
+  /* Laid out like any other button inside: name left, number right. The
+     name column never shrinks below its text, which is what widens the
+     button instead of wrapping. */
+  grid-template-columns: minmax(max-content, 1fr) 34px;
 }
 .skills-container:not(.skills-combat-container) .skill-section:has(.skill-rank-editor) > :is(.skill-toggle-wrapper, .skill-entry):not(.is-hidden):nth-child(odd of :is(.skill-toggle-wrapper, .skill-entry):not(.is-hidden)):nth-last-child(1 of :is(.skill-toggle-wrapper, .skill-entry):not(.is-hidden)) {
   grid-column: auto;
+  justify-self: stretch;
+  width: auto;
+  min-width: 0;
 }
 .skills-container:not(.skills-combat-container) .skill-section:has(.skill-rank-editor) > :is(.skill-toggle-wrapper, .skill-entry):not(.is-hidden):nth-child(odd of :is(.skill-toggle-wrapper, .skill-entry):not(.is-hidden)):nth-last-child(1 of :is(.skill-toggle-wrapper, .skill-entry):not(.is-hidden)) .skill-entry {
   grid-template-columns: minmax(0, 1fr) 34px auto;
@@ -20039,4 +20116,1405 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   width: 14px;
   text-align: center;
   color: #9c7b45;
+}
+
+/* ============================= */
+/* Character creation window     */
+/* ============================= */
+
+/* A full screen, not a window, with the Learn window's geometry: no frame and
+   no JavaScript positioning (characterCreation.mjs), so this rule is the whole
+   of its geometry. The z-index is written inline at render, as for Learn. */
+.rs-create.redsteel {
+  --rs-create-gold: #e6c878;
+  --rs-create-bronze: #514226;
+  --rs-create-bronze-lit: #9c7b45;
+  --rs-create-text: #b8bbbd;
+  --rs-create-dim: #7d7a72;
+  --rs-field-base: #121110;
+  --rs-field-warm: rgba(120, 100, 60, 0.09);
+  --rs-field-grain: 0.16;
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  width: auto;
+  height: auto;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  background: #121110;
+  color: var(--rs-create-text);
+}
+
+/* Crisp type across the whole screen: no inherited or window-default text
+   shadow (it smears small serif letters into one another), a hair of extra
+   tracking, and proper kerning. Titles that set their own letter-spacing
+   keep it. */
+.rs-create.redsteel,
+.rs-create.redsteel * {
+  text-shadow: none;
+}
+
+.rs-create .rs-create-body {
+  letter-spacing: 0.02em;
+  font-kerning: normal;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+.rs-create.redsteel > * {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* The same forged ground as the Learn window's body. */
+.rs-create .rs-create-body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  padding: 0;
+  background-color: var(--rs-field-base);
+  background-image:
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.035), rgba(0, 0, 0, 0) 260px),
+    radial-gradient(ellipse at 50% 0%, var(--rs-field-warm), rgba(0, 0, 0, 0) 70%),
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.02) 0 1px, rgba(0, 0, 0, 0) 1px 5px),
+    repeating-linear-gradient(-45deg, rgba(0, 0, 0, var(--rs-field-grain)) 0 1px, rgba(0, 0, 0, 0) 1px 5px),
+    url(../ui/headertexture.jpg);
+  background-repeat: no-repeat, no-repeat, repeat, repeat, repeat;
+  background-size: auto, auto, auto, auto, 512px 512px;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+/* -------- title bar and progress rule -------- */
+
+.rs-create .rs-create-titlebar {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 28px 10px;
+}
+
+.rs-create .rs-create-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rs-create .rs-create-kicker {
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--rs-create-dim);
+}
+
+.rs-create .rs-create-step-title {
+  margin: 0;
+  padding: 0;
+  border: none;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 28px;
+  font-weight: normal;
+  letter-spacing: 0.06em;
+  color: var(--rs-create-gold);
+}
+
+.rs-create .rs-create-step-of {
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--rs-create-text);
+}
+
+.rs-create .rs-create-progress {
+  flex: 0 0 auto;
+  height: 1px;
+  margin: 0 28px;
+  background: var(--rs-create-bronze);
+}
+
+.rs-create .rs-create-progress-fill {
+  height: 1px;
+  background: var(--rs-create-gold);
+  box-shadow: 0 0 4px rgba(217, 161, 59, 0.3);
+}
+
+/* -------- columns -------- */
+
+/* Four columns, each its own scroller, so a short screen scrolls a column
+   rather than the whole page. */
+.rs-create .rs-create-columns {
+  display: grid;
+  /* Character and traits to pick | race, attributes and picked traits | info */
+  grid-template-columns: minmax(300px, 1.2fr) minmax(320px, 1.1fr) minmax(280px, 1fr);
+  flex: 1 1 auto;
+  gap: 14px;
+  min-height: 0;
+  padding: 16px 28px;
+}
+
+.rs-create .rs-create-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border: 1px solid var(--rs-create-bronze);
+  background: rgba(10, 10, 9, 0.72);
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
+}
+
+.rs-create .rs-create-panel-title {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 9px 12px 7px;
+  border-bottom: 1px solid var(--rs-create-bronze);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 15px;
+  font-weight: normal;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #c9b48a;
+}
+
+.rs-create .rs-create-counter {
+  display: flex;
+  flex: 0 0 auto;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 12px;
+  border-bottom: 1px solid rgba(81, 66, 38, 0.5);
+  font-size: 13px;
+  color: var(--rs-create-text);
+}
+
+.rs-create .rs-create-counter .is-over {
+  color: #c0504a;
+}
+
+.rs-create .rs-create-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 8px 10px 12px;
+  scrollbar-gutter: stable;
+}
+
+.rs-create .rs-create-hint {
+  margin: 4px 2px 10px;
+  font-style: italic;
+  font-size: 13px;
+  color: var(--rs-create-dim);
+}
+
+.rs-create .rs-create-group-label {
+  margin: 10px 2px 4px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid rgba(81, 66, 38, 0.5);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--rs-create-dim);
+}
+
+.rs-create .rs-create-trait-section:first-of-type .rs-create-group-label {
+  margin-top: 2px;
+}
+
+/* -------- race and subrace buttons -------- */
+
+.rs-create .rs-create-race-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.rs-create .rs-create-race-row.is-sub {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(81, 66, 38, 0.5);
+}
+
+.rs-create .rs-create-race {
+  flex: 1 1 0;
+  min-width: 72px;
+  height: 32px;
+  margin: 0;
+  padding: 0 10px;
+  border: 1px solid var(--rs-create-bronze);
+  border-radius: 0;
+  background: rgba(12, 12, 11, 0.8);
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.8);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  color: var(--rs-create-text);
+  cursor: pointer;
+}
+
+.rs-create .rs-create-race-row.is-sub .rs-create-race {
+  flex: 0 1 auto;
+  height: 28px;
+  font-size: 13px;
+}
+
+.rs-create .rs-create-race:hover,
+.rs-create .rs-create-race:focus-visible {
+  border-color: var(--rs-create-bronze-lit);
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.8);
+  outline: none;
+  color: #f0d7aa;
+}
+
+.rs-create .rs-create-race.is-selected {
+  border-color: var(--rs-create-gold);
+  color: var(--rs-create-gold);
+}
+
+/* No race chosen yet: a gold frame around the race buttons, a "start here"
+   line above them, and the button borders breathing bronze to gold. */
+.rs-create .rs-create-race-pick.is-prompt {
+  margin: 0 0 4px;
+  padding: 8px 10px 10px;
+  border: 1px solid var(--rs-create-gold);
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.7), 0 0 8px rgba(230, 200, 120, 0.2);
+}
+
+.rs-create .rs-create-race-prompt {
+  margin: 0 0 8px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rs-create-gold);
+}
+
+.rs-create .rs-create-race-prompt.is-info {
+  margin: 4px 2px 10px;
+  font-size: 14px;
+  line-height: 1.45;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.rs-create .rs-create-race-pick.is-prompt .rs-create-race {
+  animation: rs-create-race-beckon 2.4s ease-in-out infinite;
+}
+
+.rs-create .rs-create-race-pick.is-prompt .rs-create-race:hover,
+.rs-create .rs-create-race-pick.is-prompt .rs-create-race:focus-visible {
+  animation: none;
+}
+
+@keyframes rs-create-race-beckon {
+  0%, 100% { border-color: var(--rs-create-bronze); }
+  50% { border-color: var(--rs-create-gold); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rs-create .rs-create-race-pick.is-prompt .rs-create-race {
+    animation: none;
+  }
+}
+
+/* -------- shared row look: flat plates, no rounding -------- */
+
+.rs-create .rs-create-choice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: auto;
+  min-height: 28px;
+  margin: 0 0 2px;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 14px;
+  line-height: 1.25;
+  text-align: left;
+  color: var(--rs-create-text);
+  cursor: pointer;
+}
+
+.rs-create .rs-create-choice:hover,
+.rs-create .rs-create-choice:focus-visible {
+  border-color: var(--rs-create-bronze);
+  background: rgba(0, 0, 0, 0.35);
+  box-shadow: none;
+  outline: none;
+  color: #f0d7aa;
+}
+
+.rs-create .rs-create-choice.is-selected {
+  border-color: var(--rs-create-bronze-lit);
+  background: rgba(0, 0, 0, 0.45);
+  color: var(--rs-create-gold);
+}
+
+.rs-create .rs-create-race-req {
+  margin: 0;
+  font-size: 12px;
+  font-style: italic;
+  color: #a0685f;
+}
+
+/* A small square mark, filled gold when picked. */
+.rs-create .rs-create-choice-mark {
+  flex: 0 0 auto;
+  width: 9px;
+  height: 9px;
+  border: 1px solid var(--rs-create-bronze-lit);
+  background: transparent;
+}
+
+.rs-create .is-selected > .rs-create-choice-mark {
+  border-color: var(--rs-create-gold);
+  background: var(--rs-create-gold);
+}
+
+/* -------- racial choices -------- */
+
+.rs-create .rs-create-choices {
+  margin-top: 14px;
+  padding-top: 8px;
+  border-top: 1px solid var(--rs-create-bronze);
+}
+
+.rs-create .rs-create-choice-group {
+  margin-bottom: 10px;
+}
+
+.rs-create .rs-create-choice-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 2px 4px;
+  font-size: 13px;
+  color: #c9b48a;
+}
+
+.rs-create .rs-create-choice-pick {
+  font-size: 12px;
+  font-style: italic;
+  color: var(--rs-create-dim);
+}
+
+.rs-create .rs-create-choice-group.is-complete .rs-create-choice-pick {
+  color: var(--rs-create-gold);
+}
+
+.rs-create .rs-create-choice {
+  font-size: 13px;
+  min-height: 24px;
+  padding: 2px 8px;
+}
+
+/* -------- attributes (under the race, same column) -------- */
+
+/* The attributes follow the race buttons in the centre column, right under
+   their own title. */
+.rs-create .rs-create-attributes {
+  margin: -10px -10px 0;
+  padding: 0 10px;
+}
+
+.rs-create .rs-create-attributes > .rs-create-panel-title,
+.rs-create .rs-create-attributes > .rs-create-counter {
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+.rs-create .rs-create-attr {
+  display: grid;
+  align-items: center;
+  /* The tracks come from the row's inline grid (attrGrid): name flush left,
+     the controls centred between two flexible tracks. */
+  gap: 6px;
+  padding: 5px 4px;
+  border-bottom: 1px solid rgba(81, 66, 38, 0.35);
+}
+
+.rs-create .rs-create-attr.is-head {
+  padding-top: 6px;
+  padding-bottom: 2px;
+  border-bottom: none;
+}
+
+.rs-create .rs-create-attr.is-head:hover {
+  background: none;
+}
+
+.rs-create .rs-create-attr.is-head {
+  align-items: end;
+}
+
+.rs-create .rs-create-choice-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 11px;
+  line-height: 1.15;
+  text-align: center;
+  color: var(--rs-create-dim);
+}
+
+.rs-create .rs-create-choice-head em {
+  font-size: 10px;
+  opacity: 0.8;
+}
+
+.rs-create .rs-create-choice-head.is-complete {
+  color: var(--rs-create-gold);
+}
+
+/* A racial pick: a flat square, filled gold when taken. A pick that also
+   raises the limit wears a doubled frame. */
+.rs-create .rs-create-square {
+  justify-self: center;
+  width: 16px;
+  height: 16px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--rs-create-bronze-lit);
+  border-radius: 0;
+  background: rgba(12, 12, 11, 0.85);
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.rs-create .rs-create-square.raises-limit {
+  outline: 1px solid var(--rs-create-bronze);
+  outline-offset: 2px;
+}
+
+.rs-create .rs-create-square:hover:not(.is-empty),
+.rs-create .rs-create-square:focus-visible {
+  border-color: var(--rs-create-gold);
+  box-shadow: none;
+}
+
+.rs-create .rs-create-square.is-selected {
+  border-color: var(--rs-create-gold);
+  background: var(--rs-create-gold);
+}
+
+.rs-create .rs-create-square.is-empty {
+  border-color: transparent;
+  background: none;
+  cursor: default;
+}
+
+/* Already the pick of the group's other column: a small gold dot says so;
+   clicking moves the pick here. */
+.rs-create .rs-create-square.is-elsewhere {
+  background: radial-gradient(circle, var(--rs-create-bronze-lit) 0 3px, transparent 3.5px),
+    rgba(12, 12, 11, 0.85);
+}
+
+.rs-create .rs-create-attr:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Each attribute row is a ribbon in its own sheet colour (--rs-attr-*),
+   kept very dark, lit on the left and falling to black on the right. */
+.rs-create .rs-create-attr.attr-row-str { --rs-row: var(--rs-attr-str); }
+.rs-create .rs-create-attr.attr-row-dex { --rs-row: var(--rs-attr-dex); }
+.rs-create .rs-create-attr.attr-row-end { --rs-row: var(--rs-attr-end); }
+.rs-create .rs-create-attr.attr-row-int { --rs-row: var(--rs-attr-int); }
+.rs-create .rs-create-attr.attr-row-wil { --rs-row: var(--rs-attr-wil); }
+.rs-create .rs-create-attr.attr-row-cha { --rs-row: var(--rs-attr-cha); }
+.rs-create .rs-create-attr.attr-row-per { --rs-row: var(--rs-attr-per); }
+
+/* The ribbons stack edge to edge: each overlaps the one above by its 1px
+   border, so neighbours share a single line. */
+.rs-create .rs-create-attr.is-ribbon + .rs-create-attr.is-ribbon {
+  margin-top: -1px;
+}
+
+/* A lit border (hover, raised cap) draws over its neighbours' shared lines. */
+.rs-create .rs-create-attr.is-ribbon:hover,
+.rs-create .rs-create-attr.is-ribbon.is-cap-raised {
+  z-index: 1;
+}
+
+.rs-create .rs-create-attr.is-ribbon {
+  position: relative;
+  margin-bottom: 0;
+  padding-left: 10px;
+  border: 1px solid color-mix(in srgb, var(--rs-row) 30%, black);
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--rs-row) 22%, black),
+    color-mix(in srgb, var(--rs-row) 8%, black)
+  );
+}
+
+.rs-create .rs-create-attr.is-ribbon:hover {
+  border-color: color-mix(in srgb, var(--rs-row) 55%, black);
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--rs-row) 28%, black),
+    color-mix(in srgb, var(--rs-row) 10%, black)
+  );
+}
+
+/* A picked trait raised this attribute's cap: the ribbon burns bright, and
+   the name turns pale so it still reads on its own colour. */
+.rs-create .rs-create-attr.is-ribbon.is-cap-raised,
+.rs-create .rs-create-attr.is-ribbon.is-cap-raised:hover {
+  border-color: color-mix(in srgb, var(--rs-row) 80%, black);
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--rs-row) 48%, black),
+    color-mix(in srgb, var(--rs-row) 22%, black)
+  );
+}
+
+.rs-create .rs-create-attr.is-cap-raised .rs-create-attr-name {
+  color: #f4f0e6;
+}
+
+.rs-create .rs-create-attr.is-cap-raised .rs-create-attr-limit {
+  color: #f4f0e6;
+}
+
+.rs-create .rs-create-attr-name {
+  font-size: 15px;
+  letter-spacing: 0.03em;
+}
+
+/* Each attribute wears its sheet colour (the :root --rs-attr-* set). */
+.rs-create .rs-create-attr-name.attr-str { color: var(--rs-attr-str); }
+.rs-create .rs-create-attr-name.attr-dex { color: var(--rs-attr-dex); }
+.rs-create .rs-create-attr-name.attr-end { color: var(--rs-attr-end); }
+.rs-create .rs-create-attr-name.attr-int { color: var(--rs-attr-int); }
+.rs-create .rs-create-attr-name.attr-wil { color: var(--rs-attr-wil); }
+.rs-create .rs-create-attr-name.attr-cha { color: var(--rs-attr-cha); }
+.rs-create .rs-create-attr-name.attr-per { color: var(--rs-attr-per); }
+
+.rs-create .rs-create-attr-total {
+  font-size: 20px;
+  text-align: center;
+  color: #e8e4da;
+}
+
+/* Gold only where a racial pick lands on this attribute, not at the cap. */
+.rs-create .rs-create-attr.has-choice .rs-create-attr-total {
+  color: var(--rs-create-gold);
+}
+
+/* "4 / 5": the total, then its limit in a smaller, dimmer hand. */
+.rs-create .rs-create-attr-total {
+  white-space: nowrap;
+}
+
+.rs-create .rs-create-attr-limit {
+  font-size: 14px;
+  color: var(--rs-create-dim);
+}
+
+.rs-create .rs-create-step-btn {
+  width: 28px;
+  height: 28px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--rs-create-bronze);
+  border-radius: 0;
+  background: rgba(12, 12, 11, 0.7);
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.8);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 17px;
+  line-height: 26px;
+  color: #c9b48a;
+  cursor: pointer;
+}
+
+.rs-create .rs-create-step-btn:hover:not([disabled]),
+.rs-create .rs-create-step-btn:focus-visible {
+  border-color: var(--rs-create-bronze-lit);
+  background: rgba(12, 12, 11, 0.7);
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.8);
+  outline: none;
+  color: #f0d7aa;
+}
+
+.rs-create .rs-create-step-btn[disabled] {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.rs-create .rs-create-attributes.is-locked .rs-create-attr,
+.rs-create .rs-create-traits.is-locked .rs-create-trait-section {
+  opacity: 0.45;
+}
+
+/* The picked traits sit under the attributes in the centre column. */
+.rs-create .rs-create-picked {
+  margin-top: 6px;
+}
+
+.rs-create .rs-create-picked > .rs-create-hint {
+  margin-top: 8px;
+}
+
+.rs-create .rs-create-picked-columns {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+  gap: 8px;
+  padding: 2px 2px 6px;
+}
+
+.rs-create .rs-create-picked-column {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+/* All three headers on one line: the same margin in every column (the
+   trait-section :first-of-type rule would otherwise lift the first one). */
+.rs-create .rs-create-picked-columns .rs-create-picked-column .rs-create-group-label {
+  margin: 8px 0 0;
+}
+
+/* -------- traits: icon tiles framed by kind -------- */
+
+/* On the section (its header) and on each tile, so a picked tile keeps its
+   colour in the centre column's picked list. */
+.rs-create .rs-create-trait-section.is-positive,
+.rs-create .rs-create-trait.is-positive { --rs-trait-kind: #43912f; }
+.rs-create .rs-create-trait-section.is-neutral,
+.rs-create .rs-create-trait.is-neutral  { --rs-trait-kind: #bf931d; }
+.rs-create .rs-create-trait-section.is-negative,
+.rs-create .rs-create-trait.is-negative { --rs-trait-kind: #ae3428; }
+
+.rs-create .rs-create-trait-section .rs-create-group-label {
+  color: var(--rs-trait-kind);
+  border-bottom-color: var(--rs-trait-kind);
+}
+
+.rs-create .rs-create-trait-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 6px;
+  padding: 4px 2px 6px;
+}
+
+/* Every tile is the same fixed height, so the icon fills it edge to edge and
+   no row is taller than its neighbours (a long name wraps to two lines
+   inside the ribbon instead of stretching the tile). */
+.rs-create .rs-create-trait {
+  --rs-trait-h: 42px;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 0;
+  width: 100%;
+  height: var(--rs-trait-h);
+  min-height: 0;
+  max-height: var(--rs-trait-h);
+  margin: 0;
+  padding: 0;
+  line-height: normal;
+  overflow: hidden;
+  border: 2px solid var(--rs-trait-kind);
+  border-radius: 0;
+  background: #0c0c0b;
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.9);
+  cursor: pointer;
+}
+
+.rs-create .rs-create-trait-icon {
+  display: block;
+  /* A square as tall as the tile's inside (the 2px frame on each side). */
+  flex: 0 0 calc(var(--rs-trait-h) - 4px);
+  width: calc(var(--rs-trait-h) - 4px);
+  height: 100%;
+  overflow: hidden;
+  filter: saturate(0.85) brightness(0.9);
+}
+
+.rs-create .rs-create-trait-icon img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: none;
+  object-fit: cover;
+}
+
+/* The ribbon beside the icon: the name, then the cost. */
+.rs-create .rs-create-trait-ribbon {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  height: 100%;
+  padding: 0 8px;
+  border-left: 1px solid var(--rs-trait-kind);
+  /* The whole ribbon wears its kind, lit on the left and deepening to the right. */
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--rs-trait-kind) 36%, black),
+    color-mix(in srgb, var(--rs-trait-kind) 18%, black)
+  );
+  font-family: Georgia, "Times New Roman", serif;
+  line-height: 1.1;
+}
+
+.rs-create .rs-create-trait-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 1.15;
+  text-align: left;
+  color: #f4f0e6;
+  /* At most two lines, so a long name never outgrows the fixed tile. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.rs-create .rs-create-trait-price {
+  flex: 0 0 auto;
+  padding-left: 6px;
+  border-left: 1px solid rgba(0, 0, 0, 0.45);
+  font-size: 13px;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.rs-create .rs-create-trait:hover,
+.rs-create .rs-create-trait:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.9), 0 0 0 1px var(--rs-trait-kind);
+}
+
+.rs-create .rs-create-trait:hover .rs-create-trait-icon,
+.rs-create .rs-create-trait:focus-visible .rs-create-trait-icon {
+  filter: none;
+}
+
+.rs-create .rs-create-trait.is-disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.rs-create .rs-create-trait.is-disabled:hover {
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.9);
+}
+
+.rs-create .rs-create-trait.is-disabled:hover .rs-create-trait-icon {
+  filter: saturate(0.85) brightness(0.9);
+}
+
+/* -------- info panel: skills an attribute governs -------- */
+
+.rs-create .rs-create-info-subtitle {
+  margin: 12px 0 4px;
+  padding: 0 0 3px;
+  border-bottom: 1px solid rgba(81, 66, 38, 0.5);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 12px;
+  font-weight: normal;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--rs-create-dim);
+}
+
+.rs-create .rs-create-info-skills {
+  columns: 2;
+  margin: 0;
+  padding: 0 0 0 16px;
+  font-size: 13px;
+  color: var(--rs-create-text);
+}
+
+/* -------- info panel -------- */
+
+.rs-create .rs-create-info-title {
+  margin: 2px 0 6px;
+  padding: 0 0 5px;
+  border-bottom: 1px solid var(--rs-create-bronze);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 19px;
+  font-weight: normal;
+  color: var(--rs-create-gold);
+}
+
+.rs-create .rs-create-info-meta {
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-style: italic;
+  color: var(--rs-create-dim);
+}
+
+.rs-create .rs-create-info-facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 3px 14px;
+  margin: 0;
+  font-style: normal;
+}
+
+.rs-create .rs-create-info-facts dt {
+  color: var(--rs-create-dim);
+}
+
+.rs-create .rs-create-info-facts dd {
+  margin: 0;
+  color: #e8e4da;
+}
+
+.rs-create .rs-create-info-req {
+  font-style: italic;
+  color: #a0685f;
+}
+
+.rs-create .rs-create-info-desc {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--rs-create-text);
+}
+
+/* -------- footer -------- */
+
+.rs-create .rs-create-footer {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 28px 16px;
+  border-top: 1px solid var(--rs-create-bronze);
+}
+
+.rs-create .rs-create-footer-right {
+  display: flex;
+  gap: 10px;
+}
+
+.rs-create .rs-create-btn {
+  width: auto;
+  height: auto;
+  min-width: 110px;
+  margin: 0;
+  padding: 7px 18px;
+  border: 1px solid var(--rs-create-bronze);
+  border-radius: 0;
+  background: rgba(12, 12, 11, 0.75);
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.8);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #b7ac97;
+  cursor: pointer;
+}
+
+.rs-create .rs-create-btn:hover:not([disabled]),
+.rs-create .rs-create-btn:focus-visible {
+  border-color: var(--rs-create-bronze-lit);
+  background: rgba(12, 12, 11, 0.75);
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.8);
+  outline: none;
+  color: #f0d7aa;
+}
+
+.rs-create .rs-create-btn[disabled] {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* The primary action: the same dark plate, framed in gold. */
+.rs-create .rs-create-btn.is-primary {
+  border-color: var(--rs-create-gold);
+  color: var(--rs-create-gold);
+}
+
+.rs-create .rs-create-btn.is-primary:hover:not([disabled]),
+.rs-create .rs-create-btn.is-primary:focus-visible {
+  border-color: #f0d7aa;
+  color: #f0d7aa;
+}
+
+/* The unspent-points confirmation must sit above the full screen, whose
+   z-index is written inline just under the tooltip layers. */
+.application.dialog.rs-create-confirm {
+  z-index: 10001 !important;
+}
+
+/* -------- identity: the name -------- */
+
+.rs-create .rs-create-identity {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.rs-create .rs-create-name-row {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  align-items: center;
+  gap: 10px;
+}
+
+.rs-create .rs-create-select-label {
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--rs-create-dim);
+}
+
+.rs-create .rs-create-name-row input {
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--rs-create-bronze);
+  border-radius: 0;
+  background: rgba(12, 12, 11, 0.85);
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.8);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 17px;
+  color: #e8e4da;
+}
+
+.rs-create .rs-create-name-row input:focus {
+  border-color: var(--rs-create-bronze-lit);
+  outline: none;
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.8);
+}
+
+/* A section title inside the scrolling column (Race under the identity). */
+.rs-create .rs-create-panel-title.is-inline {
+  margin: 12px -10px 10px;
+  border-top: 1px solid var(--rs-create-bronze);
+}
+
+/* -------- info panel: a race's bonuses -------- */
+
+/* -------- loading card (first open of the session) -------- */
+
+/* Centred on the screen's own forged ground: a slowly turning gold die and
+   the line under it. */
+.rs-create .rs-create-loading {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+}
+
+.rs-create .rs-create-loading-die {
+  font-size: 54px;
+  color: var(--rs-create-gold);
+  filter: drop-shadow(0 0 10px rgba(230, 200, 120, 0.35));
+  animation: rs-create-die-spin 1.6s linear infinite;
+}
+
+.rs-create .rs-create-loading-text {
+  font-size: 15px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #c9b48a;
+}
+
+@keyframes rs-create-die-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rs-create .rs-create-loading-die {
+    animation-duration: 6s;
+  }
+}
+
+/* -------- step 2: doctrine choice -------- */
+
+/* Two columns on this step: the doctrines, then the info panel. */
+.rs-create .rs-create-columns.is-doctrine-step {
+  grid-template-columns: minmax(420px, 2fr) minmax(280px, 1fr);
+}
+
+.rs-create .rs-create-doctrine-advice {
+  margin: 2px 2px 10px;
+  font-size: 13px;
+  font-style: italic;
+  color: var(--rs-create-dim);
+}
+
+.rs-create .rs-create-doctrine-warning {
+  margin: 0 2px 10px;
+  padding: 5px 8px;
+  border: 1px solid #7a3b2e;
+  background: rgba(60, 20, 14, 0.45);
+  font-size: 13px;
+  color: #d9a08f;
+}
+
+.rs-create .rs-create-doctrine-block {
+  margin-bottom: 12px;
+}
+
+.rs-create .rs-create-doctrine-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 16px;
+  padding: 10px 4px 6px;
+}
+
+/* A doctrine card: a dark stone plate with a bronze frame and a second,
+   inner hairline frame; a faint glow of its kind rises behind the crest. */
+.rs-create .rs-create-doctrine-card {
+  --rs-dc-accent: #8c6a3a;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Top-aligned, so crest, kind and name sit at the same height on every
+     card whatever the length of its ladder. */
+  justify-content: flex-start;
+  gap: 6px;
+  box-sizing: border-box;
+  width: 100%;
+  height: auto;
+  min-height: 260px;
+  margin: 0;
+  padding: 22px 14px 16px;
+  border: 1px solid var(--rs-create-bronze);
+  border-radius: 0;
+  outline: 1px solid rgba(156, 123, 69, 0.28);
+  outline-offset: -7px;
+  background:
+    radial-gradient(ellipse 80% 45% at 50% 18%,
+      color-mix(in srgb, var(--rs-dc-accent) 26%, transparent), transparent 70%),
+    linear-gradient(to bottom, #1b1915, #0d0c0a 70%);
+  box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.85), 0 3px 10px rgba(0, 0, 0, 0.55);
+  font-family: Georgia, "Times New Roman", serif;
+  color: var(--rs-create-text);
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.rs-create .rs-create-doctrine-card.is-melee   { --rs-dc-accent: #9a4a32; }
+.rs-create .rs-create-doctrine-card.is-ranged  { --rs-dc-accent: #5d7a3e; }
+.rs-create .rs-create-doctrine-card.is-special { --rs-dc-accent: #8f7536; }
+.rs-create .rs-create-doctrine-card.is-magical { --rs-dc-accent: #4a5f9e; }
+
+.rs-create .rs-create-doctrine-card:hover,
+.rs-create .rs-create-doctrine-card:focus-visible {
+  transform: translateY(-3px);
+  border-color: var(--rs-create-bronze-lit);
+  outline-color: rgba(156, 123, 69, 0.5);
+  box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.85), 0 10px 22px rgba(0, 0, 0, 0.7),
+    0 0 16px color-mix(in srgb, var(--rs-dc-accent) 35%, transparent);
+}
+
+/* The crest: a round medallion in a bronze ring (with a dark gap and an
+   outer bronze hairline), holding the doctrine's icon. */
+.rs-create .rs-dc-crest {
+  position: relative;
+  display: block;
+  width: 84px;
+  height: 84px;
+  margin: 4px 0 12px;
+  border: 2px solid var(--rs-create-bronze-lit);
+  border-radius: 50%;
+  background: #0a0908;
+  box-shadow: 0 0 0 3px #0d0c0a, 0 0 0 4px var(--rs-create-bronze),
+    0 0 18px color-mix(in srgb, var(--rs-dc-accent) 45%, transparent);
+  overflow: hidden;
+}
+
+/* The icon fills the medallion, pinned at its exact centre. The max-width
+   reset matters: Foundry caps images at 100% of their box. */
+.rs-create .rs-dc-crest img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  border: none;
+  border-radius: 50%;
+  object-fit: cover;
+  transform: translate(-50%, -50%);
+}
+
+.rs-create .rs-dc-kind {
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--rs-dc-accent) 55%, #c9b48a);
+}
+
+.rs-create .rs-dc-name {
+  font-size: 21px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #e8dcc0;
+}
+
+/* A gold hairline under the name, fading at both ends. */
+.rs-create .rs-dc-rule {
+  width: 70%;
+  height: 1px;
+  margin: 2px 0 6px;
+  background: linear-gradient(to right, transparent, var(--rs-create-bronze-lit), transparent);
+}
+
+/* The abilities the doctrine's ranks unlock, rank numeral on each: a grid
+   of up to five 30px columns (the count comes inline from the context, so a
+   short ladder is exactly as wide as its icons), centred on the card; the
+   icons line up in columns across rows and a short last row starts at the
+   left edge of the block. */
+.rs-create .rs-dc-ladder {
+  display: grid;
+  grid-template-columns: repeat(var(--rs-dc-cols, 5), 30px);
+  justify-content: center;
+  gap: 6px;
+}
+
+.rs-create .rs-dc-step {
+  position: relative;
+  display: block;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--rs-create-bronze);
+  background: #0a0908;
+  cursor: help;
+}
+
+.rs-create .rs-dc-step img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: none;
+  object-fit: cover;
+}
+
+.rs-create .rs-dc-step em {
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  padding: 0 2px;
+  background: rgba(0, 0, 0, 0.85);
+  font-size: 9px;
+  font-style: normal;
+  line-height: 12px;
+  color: #c9b48a;
+}
+
+.rs-create .rs-dc-step:hover {
+  border-color: var(--rs-create-gold);
+}
+
+/* Taken: gold frames, a warm glow, the crest lit, and the seal on top. */
+.rs-create .rs-create-doctrine-card.is-selected {
+  border-color: var(--rs-create-gold);
+  outline-color: rgba(230, 200, 120, 0.55);
+  box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.8), 0 0 22px rgba(230, 200, 120, 0.22),
+    0 8px 20px rgba(0, 0, 0, 0.7);
+}
+
+.rs-create .rs-create-doctrine-card.is-selected .rs-dc-crest {
+  border-color: var(--rs-create-gold);
+  box-shadow: 0 0 0 3px #0d0c0a, 0 0 0 4px var(--rs-create-gold),
+    0 0 22px rgba(230, 200, 120, 0.45);
+}
+
+.rs-create .rs-create-doctrine-card.is-selected .rs-dc-name {
+  color: var(--rs-create-gold);
+}
+
+.rs-create .rs-dc-seal {
+  position: absolute;
+  top: -1px;
+  left: 50%;
+  padding: 2px 14px;
+  transform: translateX(-50%);
+  background: linear-gradient(to bottom, #e6c878, #b8963e);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #1a1508;
+}
+
+/* Locked (a magical doctrine without Magic potential): drained of colour,
+   no lift, a padlock line at the foot. Still hoverable for its info. */
+.rs-create .rs-create-doctrine-card.is-locked,
+.rs-create .rs-create-doctrine-card.is-locked:hover {
+  transform: none;
+  border-color: var(--rs-create-bronze);
+  outline-color: rgba(156, 123, 69, 0.18);
+  box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.85);
+  cursor: not-allowed;
+}
+
+.rs-create .rs-create-doctrine-card.is-locked > :not(.rs-dc-lock) {
+  filter: grayscale(1) brightness(0.5);
+}
+
+.rs-create .rs-dc-lock {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 8px;
+  font-size: 12px;
+  font-style: italic;
+  color: #a58a6a;
+}
+
+/* The info panel's crest for a doctrine: the same diamond, larger. */
+.rs-create .rs-create-info-crest {
+  --rs-dc-accent: #8c6a3a;
+  display: flex;
+  justify-content: center;
+  padding: 18px 0 16px;
+}
+
+.rs-create .rs-create-info-crest.is-melee   { --rs-dc-accent: #9a4a32; }
+.rs-create .rs-create-info-crest.is-ranged  { --rs-dc-accent: #5d7a3e; }
+.rs-create .rs-create-info-crest.is-special { --rs-dc-accent: #8f7536; }
+.rs-create .rs-create-info-crest.is-magical { --rs-dc-accent: #4a5f9e; }
+
+.rs-create .rs-create-info-crest .rs-dc-crest {
+  width: 96px;
+  height: 96px;
+  margin: 6px 0;
+}
+
+/* A doctrine's weapon skills: flat bronze-framed plates. */
+.rs-create .rs-create-skill-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 2px 0 8px;
+}
+
+.rs-create .rs-create-skill-chip {
+  padding: 3px 10px;
+  border: 1px solid var(--rs-create-bronze-lit);
+  background: rgba(0, 0, 0, 0.45);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: #e8dcc0;
+}
+
+/* A doctrine's weapons, one small heading per grip. */
+.rs-create .rs-create-weapon-group {
+  margin: 0 0 6px;
+}
+
+.rs-create .rs-create-weapon-grip {
+  display: block;
+  margin: 4px 0 3px;
+  font-size: 11px;
+  font-style: italic;
+  letter-spacing: 0.06em;
+  color: var(--rs-create-dim);
+}
+
+.rs-create .rs-create-feature-rank {
+  flex: 0 0 26px;
+  font-size: 12px;
+  text-align: right;
+  color: #c9b48a;
+}
+
+/* -------- info panel: a race's features, icon + name, hover for text -------- */
+
+.rs-create .rs-create-features {
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.rs-create .rs-create-feature {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 3px;
+  padding: 2px 4px;
+  border: 1px solid transparent;
+  font-size: 13px;
+  color: var(--rs-create-text);
+  cursor: help;
+}
+
+.rs-create .rs-create-feature:hover {
+  border-color: var(--rs-create-bronze);
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.rs-create .rs-create-feature-icon {
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--rs-create-bronze);
+  object-fit: cover;
+}
+
+.rs-create .rs-create-feature-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.rs-create .rs-create-feature-text em {
+  color: var(--rs-create-dim);
+}
+
+.rs-create .rs-create-feature-price {
+  margin-left: 4px;
+  color: #c9b48a;
+}
+
+.rs-create .rs-create-info-bonuses {
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+  color: var(--rs-create-text);
+}
+
+.rs-create .rs-create-info-bonuses li {
+  margin: 3px 0;
+}
+
+.rs-create .rs-create-info-bonuses b {
+  font-weight: normal;
+  color: #c9b48a;
+}
+
+.rs-create .rs-create-info-bonuses em {
+  color: var(--rs-create-dim);
+}
+
+.rs-create .rs-create-info-note {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-style: italic;
+  color: var(--rs-create-dim);
 }

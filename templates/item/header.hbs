@@ -435,6 +435,17 @@
               {{/each}}
             </select>
           </div>
+
+          {{#unless (eq system.layer "Accessory")}}
+            <div class="grid-span-1">
+              <label for="gear-armor-weight">{{localize "REDSTEEL.Item.Gear.FIELDS.armorWeight.label"}}:</label>
+              <select name="system.armorWeight" id="gear-armor-weight">
+                <option value="" {{#unless system.armorWeight}}selected{{/unless}}>{{localize "REDSTEEL.Item.Gear.FIELDS.armorWeight.none"}}</option>
+                <option value="light" {{#if (eq system.armorWeight "light")}}selected{{/if}}>{{localize "REDSTEEL.Item.Gear.FIELDS.armorWeight.light"}}</option>
+                <option value="heavy" {{#if (eq system.armorWeight "heavy")}}selected{{/if}}>{{localize "REDSTEEL.Item.Gear.FIELDS.armorWeight.heavy"}}</option>
+              </select>
+            </div>
+          {{/unless}}
         {{/unless}}
 
         <div class="grid-span-1">

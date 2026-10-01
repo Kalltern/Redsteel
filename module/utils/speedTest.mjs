@@ -18,6 +18,7 @@
 
 import { withRollBias, tagRollItemAdvantage } from "./rollAdvantage.mjs";
 import { FLOOR_STATUSES } from "./floorInitiative.mjs";
+import { actorHasSpecNode } from "../helpers/specialisations.mjs";
 
 /** The Test Type dropdown value that selects a speed test. */
 export const SPEED_TEST_NAME = "speed";
@@ -105,6 +106,15 @@ export async function rollSpeedTest(actor, { modifier = 0, advantage = "" } = {}
   const roll = new Roll(formula, withRollBias(actor.getRollData(), actor));
   tagSpeedTest(roll);
   tagRollItemAdvantage(roll, advantage);
+  // Shadow: Advantage on versus Speed Tests. Every test rolled here is one side
+  // of a versus contest (the ability/spell test, the sheet's posted test and
+  // the contester's answer); initiative and its tie-break build their own
+  // rolls and are deliberately left out. Summed into the same signed bias the
+  // item's own setting uses, so a disadvantage still cancels it.
+  if (actorHasSpecNode(actor, "shadow", "speedTests")) {
+    roll.options.redsteel.itemBias =
+      (Number(roll.options.redsteel.itemBias) || 0) + 1;
+  }
   await roll.evaluate();
   return roll;
 }

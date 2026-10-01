@@ -1,9 +1,9 @@
 {
-  "name": "Deflection",
+  "name": "Brace",
   "type": "ability",
-  "img": "icons/skills/melee/shield-block-gray-orange.webp",
+  "img": "icons/equipment/shield/heater-steel-sword-yellow-black.webp",
   "system": {
-    "description": "<p>When attacked, you may spend a Reaction to gain Advantage on your next Defense.</p>",
+    "description": "<p>When attacked in melee, you may spend a Reaction to brace yourself: Advantage on your next Defense, Ranged Defense or Dodge roll. The Advantage lasts until that roll or the start of your next turn.</p>",
     "type": "other",
     "weaponAbility": false,
     "standalone": false,

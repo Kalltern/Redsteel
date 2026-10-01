@@ -3,7 +3,7 @@
   "type": "ability",
   "img": "icons/skills/movement/feet-winged-boots-brown.webp",
   "system": {
-    "description": "<p>After a successful Charge, Lindar's Charge or Dragon's Thrust, call a Dexterity versus Test.<br />On success you move behind the opponent; on failure you take -10% to Defense and Dodge for one turn.<br />After a Critical Hit, Slip Through always succeeds. Choose your facing after the move.</p>",
+    "description": "<p>After a successful Charge, Lindar's Charge or Dragon Strike, call a Dexterity versus Test.<br />On success you move behind the opponent; on failure you take -10% to Defense and Dodge for one turn.<br />After a Critical Hit, Slip Through always succeeds. Choose your facing after the move.</p>",
     "type": "other",
     "weaponAbility": false,
     "standalone": false,

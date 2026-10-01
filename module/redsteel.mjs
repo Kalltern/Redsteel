@@ -108,6 +108,10 @@ import { registerTrade } from "./utils/trade.mjs";
 import { registerImpaleFollowupHooks } from "./utils/impaleFollowup.mjs";
 import { registerOverwatchHooks } from "./utils/overwatch.mjs";
 import { registerSuggestionHooks } from "./utils/actionSuggestions.mjs";
+import { registerBraceHooks } from "./utils/brace.mjs";
+import { buildVeteranRestFlag } from "./utils/veteranRest.mjs";
+import { registerOverpowerHooks } from "./utils/overpower.mjs";
+import { registerEnduringWarrior } from "./utils/enduringWarrior.mjs";
 import { registerStanceHooks } from "./utils/stances.mjs";
 import { registerStatusCounterColors } from "./utils/statusCounterColors.mjs";
 import {
@@ -395,6 +399,9 @@ Hooks.once("init", function () {
   game.redsteel.resolveWeaponContext = resolveWeaponContext;
   game.redsteel.switchWeaponSet = switchWeaponSet;
   game.redsteel.deductAbilityCost = deductAbilityCost;
+  // Overpower (utils/overpower.mjs) rerolls a combat card the way the chat
+  // reroll button does, without spending a reroll pool.
+  game.redsteel.executeReroll = executeReroll;
   game.redsteel.buildWeaponSetView = buildWeaponSetView;
   game.redsteel.evaluateDmgVsArmor = evaluateDmgVsArmor;
   game.redsteel.getSpellPower = getSpellPower;
@@ -524,6 +531,9 @@ Hooks.once("init", function () {
   registerImpaleFollowupHooks();
   registerOverwatchHooks();
   registerSuggestionHooks();
+  registerBraceHooks();
+  registerOverpowerHooks();
+  registerEnduringWarrior();
   registerStanceHooks();
   registerStatusCounterColors();
   registerAutoDefense();
@@ -1614,6 +1624,9 @@ const REROLL_CARRIED_FLAGS = [
   "spellSchool",
   // The margin a versus Test contested: every reroll of it restates the outcome.
   "versusFollowup",
+  // Overpower is once per contest per side (utils/overpower.mjs): the sides
+  // that already spent it stay spent on the card that replaces this one.
+  "overpowerUsedBy",
 ];
 
 /**
@@ -1724,6 +1737,27 @@ function buildDefenseRerollParts(
   const out = {};
   if (flags.versusAttack) out.versusAttack = flags.versusAttack;
   if (versus.versus) out.versus = versus.versus;
+  // Who defended against whom, restated for the new die. The hotbar's
+  // reaction suggestions, Overpower and Apply Damage's critical-failure ruling
+  // all read the newest defense card, which is now this one.
+  if (flags.defense) {
+    out.defense = { ...flags.defense, succeeded: !defenseFailed, critFailure };
+  }
+  // Veteran II (utils/veteranRest.mjs): the free Rest is offered on a Critical
+  // Defense, so the new die decides whether the claim exists. Spending either
+  // the Rest or the Temporary Health on the old card spends both here too.
+  const criticalDefense = versus.versus
+    ? versus.versus.critical === "defense"
+    : critSuccess;
+  if (criticalDefense) {
+    const claim = flags.veteranRest ?? buildVeteranRestFlag(defender);
+    if (claim) {
+      out.veteranRest = {
+        ...claim,
+        consumed: !!(claim.consumed || flags.tempHealthGrant?.consumed),
+      };
+    }
+  }
   // `consumed` rides along untouched: a claim already spent on the old card
   // stays spent, since rerolling the die does not hand the points back.
   if (flags.tempHealthGrant) {
@@ -1782,7 +1816,7 @@ async function markRerolledAway(source, replacement) {
  * new card carries the same attack packet / defense claims, so it is answerable,
  * appliable and rerollable exactly like the card it replaces.
  */
-async function executeReroll(message, sourceLabel) {
+async function executeReroll(message, sourceLabel, { extraFlags = {} } = {}) {
   const rollFormula = message.rolls[0].formula;
   const roll = new Roll(rollFormula);
   await roll.evaluate();
@@ -1892,6 +1926,11 @@ async function executeReroll(message, sourceLabel) {
         // Still failed? Keep the context alive so the next reroll can rescue
         // it too. Once applied, drop it so nothing double-applies.
         ...(pendingCast && !rescued && { pendingCast }),
+        // The card this one replaces. A reroll is the same roll again, not a
+        // new one, so one-shot effects spent by "the next roll" (Brace,
+        // utils/brace.mjs) must not fire a second time on it.
+        rerolledFrom: message.id,
+        ...extraFlags,
       },
       ...(attackFlag && { attack: attackFlag }),
       // Neither the healed amount nor the effect chances were rerolled — only
@@ -1903,6 +1942,7 @@ async function executeReroll(message, sourceLabel) {
   });
 
   await markRerolledAway(message, created);
+  return created;
 }
 
 /**
@@ -3316,6 +3356,18 @@ Hooks.once("ready", async () => {
 
 // An NPC imported or dragged in from an older world arrives after the startup
 // pass, so fold its movement in before the document is ever stored.
+// A brand-new character opens on the create/skip choice instead of the normal
+// header (templates/actor/header.hbs). Imports and duplicates are finished
+// characters already, so only a blank creation gets the flag.
+Hooks.on("preCreateActor", (actor, data, options, userId) => {
+  if (actor.type !== "character") return;
+  const stats = actor._source?._stats ?? {};
+  if (stats.compendiumSource || stats.duplicateSource) return;
+  if (actor._source?.flags?.redsteel?.creationPending !== undefined) return;
+  if (actor._source?.items?.length) return;
+  actor.updateSource({ "flags.redsteel.creationPending": true });
+});
+
 Hooks.on("preCreateActor", (actor) => {
   if (actor.type !== "npc") return;
 

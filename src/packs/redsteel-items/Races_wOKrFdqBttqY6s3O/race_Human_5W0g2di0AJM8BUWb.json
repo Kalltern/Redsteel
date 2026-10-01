@@ -8,7 +8,7 @@
     "baneTypes": "human",
     "choices": [
       {
-        "label": "Univerzální atributová volba",
+        "label": "REDSTEEL.Race.Choice.HumanExtraAttribute",
         "count": 2,
         "effectIds": [
           "8vRHduhKH1X3U6Vt",

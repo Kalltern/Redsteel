@@ -3,7 +3,7 @@
   "type": "ability",
   "img": "icons/skills/movement/feet-winged-boots-brown.webp",
   "system": {
-    "description": "<p>For one turn, gain +4 Initiative and +1 Reaction.<br />The Initiative bonus is applied automatically, the extra Reaction is not.</p>",
+    "description": "<p>For one turn, gain +4 Initiative and +1 Reaction.</p>",
     "type": "other",
     "key": "fastReaction",
     "weaponAbility": false,

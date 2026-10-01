@@ -1,4 +1,8 @@
 import { getTraitPills } from "./traitPills.mjs";
+import { dragonGuardTags } from "./dragonGuard.mjs";
+import { chargeDistanceAllowed, paidAbilityCost } from "./swordServant.mjs";
+import { isSlipThrough, useSlipThrough } from "./slipThrough.mjs";
+import { DRAGON_SLEEP_STATUS, takeDragonSleep } from "./dragonSleep.mjs";
 import { withRollBias, tagRollSkill, tagRollItemAdvantage } from "./rollAdvantage.mjs";
 import { selectAimedPart, AIMED_PARTS } from "./aimedStrike.mjs";
 import { getImprovedAimPenetration, abilityIgnoresAim } from "./aim.mjs";
@@ -34,6 +38,12 @@ import {
   renderSpeedTestLine,
 } from "./speedTest.mjs";
 import { mindBurnUpdates } from "./mindPoints.mjs";
+import { IMPROVED_FAST_REACTION_KEY, isBraceAbility } from "./brace.mjs";
+import {
+  notePaidStamina,
+  peekPaidStamina,
+  registerMultiAttackChain,
+} from "./enduringWarrior.mjs";
 import {
   canSpendResource,
   normalizeResourceKey,
@@ -62,16 +72,21 @@ import {
 } from "./opportunityAttacks.mjs";
 import { setupDialogTabs } from "./dialogTabMemory.mjs";
 import { getCommandTargets, runCommand } from "./commands.mjs";
-import { spendForItems } from "./actionTracker.mjs";
+import { isTrackedTurn, spendForItems } from "./actionTracker.mjs";
 import { attackOptionIconsHtml } from "./attackOptionIcons.mjs";
 import { throwExplosiveItem } from "./throwExplosive.mjs";
 import {
   declareChargeMove,
   declareDuelistsAdvance,
+  declareLungeStep,
+  declareQuickFeetStep,
   grantExtendedLungeStep,
   isCharge,
+  chargeWouldDeclare,
   isDuelistsAdvance,
   isExtendedLunge,
+  isLungeStep,
+  isQuickFeet,
   modifierKeysOf,
 } from "./abilityMovement.mjs";
 
@@ -116,10 +131,14 @@ function offersExplosives(ability, actor) {
  *   hotbar's combat suggestion chips. Omitted by every other caller.
  * @param {boolean} [options.launchAimed] With launchAbilityId: tick Aimed
  *   Attack first, so the launch asks for the body part (a right-clicked chip).
+ * @param {string[]} [options.launchModifierIds] With launchAbilityId: tick
+ *   these modifier abilities first (Quick Feet from a Shift-clicked chip, and
+ *   the retaliation the Quick Feet step's check button fires).
  */
 export async function combatAbilities({
   launchAbilityId = null,
   launchAimed = false,
+  launchModifierIds = [],
 } = {}) {
   // One-shot: the dialog's render callback can run again on a re-render, and
   // the launch must not fire twice.
@@ -140,8 +159,11 @@ export async function combatAbilities({
   // Collect all relevant abilities: (type: ability) AND (type: melee OR class: defense)
   const allAbilities = actor.items.filter((i) => i.type === "ability");
 
+  // Quick Feet modifies a retaliation, which never happens on the actor's own
+  // turn, so it is left off the list while that turn is running.
+  const ownTurn = isTrackedTurn(actor);
   const modifierAbilities = allAbilities.filter(
-    (a) => a.system.modifiesAttack === true,
+    (a) => a.system.modifiesAttack === true && !(ownTurn && isQuickFeet(a)),
   );
 
   // An ability that names a required weapon tag (Imbroccata → "rapier") is
@@ -480,7 +502,32 @@ export async function combatAbilities({
     // Charge (Zteč) moves before it swings: on the actor's own turn the first
     // pick only declares the approach on the hotbar, and nothing is spent.
     // The attack comes from the strip's ✓ or from picking Charge again.
-    if (isCharge(ability) && (await declareChargeMove(actor))) {
+    // Every charge starts at least 2 hexes from its target (1 with Servant of
+    // the Sword's Charge distance node), measured as the approach is declared.
+    if (
+      isCharge(ability) &&
+      chargeWouldDeclare(actor) &&
+      !chargeDistanceAllowed(actor, token)
+    ) {
+      return;
+    }
+    if (isCharge(ability) && (await declareChargeMove(actor, ability))) {
+      if (!keepOpen) dialog?.close();
+      return;
+    }
+
+    // Quick Feet (Shadow) steps around the opponent before the retaliation
+    // swings, the same two-stage flow: the first pick declares the step and
+    // spends nothing; the strip's check button fires the retaliation.
+    if (await declareQuickFeetStep(actor, ability, selectedModifiers)) {
+      if (!keepOpen) dialog?.close();
+      return;
+    }
+
+    // Slip Through after a landed charge or Dragon Strike: the versus Test,
+    // the move behind the opponent or the penalty (slipThrough.mjs). With
+    // nothing pending it falls through to its plain Dexterity card.
+    if (isSlipThrough(ability) && (await useSlipThrough(actor, ability))) {
       if (!keepOpen) dialog?.close();
       return;
     }
@@ -544,6 +591,15 @@ export async function combatAbilities({
     if (isMultiStrike && multiAttackFirstStrikePaid) {
       // Subsequent multi-attack strike → only pay modifiers
       paid = await game.redsteel.deductAbilityCost(actor, costModifiers);
+      // Enduring Warrior refunds half the ability on a miss, whichever strike
+      // of the chain missed, so every strike's card carries the ability's own
+      // Stamina on top of what its modifiers just paid.
+      if (paid) {
+        notePaidStamina(
+          actor,
+          peekPaidStamina(actor) + abilityStaminaCost(actor, ability),
+        );
+      }
     } else {
       // First strike (or normal ability) → pay ability + modifiers once
       paid = await game.redsteel.deductAbilityCost(actor, [
@@ -580,6 +636,9 @@ export async function combatAbilities({
         // again from the hotbar (stances.mjs), never the round rollover.
         await markStanceHeld(actor, applied, ability);
         await postStanceCard(actor, ability, "taken");
+        // Dragon Sleep gives up the Reactions for Rests, restores Stamina and
+        // grants an Aim the moment it is taken (dragonSleep.mjs).
+        if (ability.system.key === DRAGON_SLEEP_STATUS) await takeDragonSleep(actor);
       }
       return;
     }
@@ -599,6 +658,9 @@ export async function combatAbilities({
     const isStandalone = ability.system.standalone;
     if (ability.system.type === "other") {
       await runUtilityAbility(actor, ability, selectedModifiers);
+      // Lunge Step is paid and carded above; its hex toward the attacker is
+      // declared to the hotbar as an off-turn step.
+      if (isLungeStep(ability)) await declareLungeStep(actor);
 
       if (!keepOpen) dialog.close();
       return;
@@ -702,6 +764,10 @@ export async function combatAbilities({
       <hr>
     </div>
   `);
+
+      // Enduring Warrior's "Missed" button ends the chain by closing this
+      // dialog (utils/enduringWarrior.mjs).
+      registerMultiAttackChain(actor, () => dialog.close());
 
       const formEl = html.find(".ability-dialog-form")[0];
       const bumpStrikeCount = () => {
@@ -1146,6 +1212,11 @@ ${
           if (launchAimed) {
             const aimedBox = root.querySelector('[name="aimedStrike"]');
             if (aimedBox) aimedBox.checked = true;
+          }
+          for (const box of root.querySelectorAll(".attack-modifier-checkbox")) {
+            if (launchModifierIds.includes(box.dataset.abilityId)) {
+              box.checked = true;
+            }
           }
           Promise.resolve(onAbilityChosen(launched, root, abilityDialog, actor))
             .catch((err) => console.error("REDSTEEL: ability launch failed", err))
@@ -1973,6 +2044,7 @@ ${
       criticalFailureThreshold,
       aimedPart,
       opportunityAttack,
+      dragonGuard,
     } = await game.redsteel.getAttackRolls(
       actor,
       weapon,
@@ -2234,7 +2306,10 @@ ${renderSpeedTestLine({
       aimedStrike: aimedPart
         ? { part: aimedPart, su: attackRoll.total }
         : null,
-      attackTags: opportunityAttack ? ["opportunity"] : [],
+      attackTags: [
+        ...(opportunityAttack ? ["opportunity"] : []),
+        ...dragonGuardTags(dragonGuard, actor, ability),
+      ],
       banePacket,
       baneRoll,
       sneakDeclared,
@@ -2274,6 +2349,30 @@ ${renderSpeedTestLine({
  * @returns {Promise<boolean>}  False when the actor cannot afford the total,
  *                              having changed nothing.
  */
+/**
+ * Stamina an ability's own cost drains, modifiers aside: its cost field when
+ * that is paid in Stamina, plus any Stamina drain among its resources.
+ *
+ * @param {Actor} actor
+ * @param {Item} ability
+ * @returns {number}
+ */
+function abilityStaminaCost(actor, ability) {
+  let total = 0;
+  if (normalizeResourceKey(ability.system.costType) === "stamina") {
+    total += Number(paidAbilityCost(actor, ability)) || 0;
+  }
+  const resources = Array.isArray(ability.system.resources)
+    ? ability.system.resources
+    : Object.values(ability.system.resources ?? {});
+  for (const res of resources) {
+    if (res?.mode === "drain" && normalizeResourceKey(res.type) === "stamina") {
+      total += Number(res.amount) || 0;
+    }
+  }
+  return total;
+}
+
 export async function deductAbilityCost(actor, abilities = []) {
   if (!Array.isArray(abilities)) abilities = [abilities];
 
@@ -2305,8 +2404,9 @@ export async function deductAbilityCost(actor, abilities = []) {
   // 1. Collect all drains and adds
   // ---------------------------------
   for (const ability of abilities) {
-    // Simple costType system
-    tally(drainTotals, ability.system.costType, ability.system.cost);
+    // Simple costType system. Riposte: Stamina -4 (Servant of the Sword) is
+    // taken off here, where it is paid.
+    tally(drainTotals, ability.system.costType, paidAbilityCost(actor, ability));
 
     const resources = Array.isArray(ability.system.resources)
       ? ability.system.resources
@@ -2366,6 +2466,10 @@ export async function deductAbilityCost(actor, abilities = []) {
   if (Object.keys(updates).length) {
     await actor.update(updates);
   }
+
+  // Enduring Warrior: the attack card about to be posted records what it
+  // cost, so a miss can refund half (utils/enduringWarrior.mjs).
+  notePaidStamina(actor, drainTotals.stamina || 0);
 
   // The hotbar's action/reaction readout. Deliberately last: a use refused
   // above for want of Stamina never happened, so it must not show as spent.
@@ -2546,7 +2650,19 @@ async function runUtilityAbility(actor, ability, modifiers = []) {
   // reroll. Cumulative — spend the action twice and it is +8.
   if (ability.system.key === "fastReaction") {
     await runFastReaction(actor, ability);
+    // Vylepšená rychlá reakce (Weapon Master) shares the key, and adds the
+    // extra Reaction on top of the Initiative.
+    if (ability.system.localizationKey === IMPROVED_FAST_REACTION_KEY) {
+      await game.redsteel.applyEffect(actor, "improved_fast_reaction");
+    }
     return;
+  }
+
+  // Odražení (Brace, Weapon Master): the Reaction was paid above; the effect
+  // carries the Advantage to the next defense roll (utils/brace.mjs). Like
+  // Sprint it falls through, so the ordinary card still posts.
+  if (isBraceAbility(ability)) {
+    await game.redsteel.applyEffect(actor, "brace");
   }
 
   // Běh (Sprint): the movement itself stays manual, but the trade it buys does

@@ -1476,6 +1476,8 @@
       "templates": ["base"],
       "equipped": false,
       "layerOptions": ["Accessory", "Bottom", "Middle", "Top"],
+      "armorWeight": "",
+      "armorWeightOptions": ["", "light", "heavy"],
       "armor": {
         "value": 0,
         "durability": 0,

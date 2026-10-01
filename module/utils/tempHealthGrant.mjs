@@ -18,6 +18,11 @@
  * both weapon-bound.
  */
 
+import {
+  consumeRestOrTempHealthUpdate,
+  registerVeteranRestButton,
+} from "./veteranRest.mjs";
+
 /** Defense cards that may carry the button, keyed by `defenseKey`. */
 const ELIGIBLE_DEFENSE_KEYS = new Set(["meleeDefense", "rangedDefense"]);
 
@@ -142,11 +147,9 @@ async function claimTempHealth(message, grant) {
   }
 
   // Burn the button first: a second click while the update is in flight would
-  // otherwise grant twice.
-  await message.setFlag("redsteel", "tempHealthGrant", {
-    ...grant,
-    consumed: true,
-  });
+  // otherwise grant twice. Veterán II's free Rest on the same card is spent
+  // with it: the Rest is taken "instead of" the Temporary Health, never both.
+  await message.update(consumeRestOrTempHealthUpdate(message));
 
   await actor.update({ "system.stats.temporaryHealth.value": next });
 
@@ -193,8 +196,15 @@ export function registerTempHealthGrant() {
     }
 
     // The hook can fire more than once against the same element; never stack
-    // two claim buttons on one card.
-    if (buttonContainer.querySelector(".rs-temp-hp-button")) return;
+    // two claim buttons on one card. The Veteran "Free rest" button borrows
+    // this class for its look, so it is excluded here.
+    if (
+      buttonContainer.querySelector(
+        ".rs-temp-hp-button:not(.rs-veteran-rest-button)",
+      )
+    ) {
+      return;
+    }
 
     const button = document.createElement("button");
     button.type = "button";
@@ -238,4 +248,8 @@ export function registerTempHealthGrant() {
       }
     });
   });
+
+  // Veterán II's "Free rest" button, registered after the hook above so it
+  // sits to the right of the Temporary Health button on a card with both.
+  registerVeteranRestButton();
 }

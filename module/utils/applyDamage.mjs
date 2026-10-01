@@ -4,6 +4,7 @@ import {
   evaluateDmgVsArmor,
   applyToHp,
   getActiveShield,
+  getMaxCritDegree,
 } from "./combatSkillBonuses.mjs";
 import {
   resolveEffectDefinition,
@@ -27,6 +28,7 @@ import {
   getOverwhelmSources,
 } from "./overwhelm.mjs";
 import { grantPassingStrikeStep } from "./abilityMovement.mjs";
+import { offerSlipThrough } from "./slipThrough.mjs";
 import { gateVersusPush, resolvePushOnHit } from "./forcedMovement.mjs";
 import {
   cardDeclaredSneak,
@@ -46,6 +48,12 @@ import {
   payGiftOfBlood,
 } from "./giftOfBlood.mjs";
 import { combatantForActor } from "./combatants.mjs";
+import {
+  ARMIGER_LIGHT_SACRIFICE_BONUS,
+  getArmigerBranch,
+  hasWeaponMasterNode,
+} from "./weaponMaster.mjs";
+import { grantFreeRest } from "./veteranRest.mjs";
 
 export const SOCKET = "system.redsteel";
 
@@ -99,7 +107,19 @@ export const BASE_DURABILITY_DAMAGE_REDUCTION = 15;
  * hook without touching this file.
  */
 export function getDurabilityReductionPerPoint(actor, item = null) {
-  const context = { value: BASE_DURABILITY_DAMAGE_REDUCTION, actor, item };
+  // Mistr zbraní → Zbrojnoš I, light armor on top: "Obětování Života
+  // zbroje/štítu snižuje zranění o dalších 5". The actor is the victim doing
+  // the sacrificing, and every caller (both previews and the GM apply) reads
+  // the per-point value from here, so they cannot disagree.
+  const armigerBonus =
+    getArmigerBranch(actor, "zbrojnos1") === "light"
+      ? ARMIGER_LIGHT_SACRIFICE_BONUS
+      : 0;
+  const context = {
+    value: BASE_DURABILITY_DAMAGE_REDUCTION + armigerBonus,
+    actor,
+    item,
+  };
 
   Hooks.callAll("redsteelDurabilityReduction", context);
 
@@ -365,12 +385,109 @@ function shiftSneakOnAttack(attack, sign) {
  * selected degree against the base packet's degree — that inference broke on
  * cards whose base packet carries no `degree` at all.
  *
+ * Two rulings sit on top:
+ * - `forcedDegree` (see {@link critFailForcedDegree}): a critical hit landing
+ *   on a defense that critically failed is always degree 4 for that target.
+ *   It outranks the rolled and the Bane degree, but the GM override still
+ *   outranks it.
+ * - `veteran` (Mistr zbraní → Veterán I): the attacker trades one degree for a
+ *   free Rest, applied last to whatever degree was resolved, see
+ *   {@link applyVeteranDegree}.
+ *
  * Both the preview dialog and the GM apply call this, so the number shown can
  * never disagree with the number applied.
  */
-function resolveDegreeForTarget(effAttack, selectedDegree, overridden) {
-  if (overridden) return selectedDegree;
-  return effAttack.critical?.degree ?? selectedDegree;
+function resolveDegreeForTarget(
+  effAttack,
+  selectedDegree,
+  overridden,
+  { forcedDegree = null, veteran = false } = {},
+) {
+  let degree;
+  if (overridden) degree = selectedDegree;
+  else if (forcedDegree !== null) degree = forcedDegree;
+  else degree = effAttack.critical?.degree ?? selectedDegree;
+  return veteran ? applyVeteranDegree(degree) : degree;
+}
+
+/* -------------------------------------------- */
+/*  Critical failure on defense → degree 4      */
+/* -------------------------------------------- */
+
+/**
+ * The degree a critical hit always carries against a defender whose defense
+ * was a critical failure (rolled, or the "bez možnosti hodu" back-attack card).
+ */
+const CRIT_FAIL_DEFENSE_DEGREE = 4;
+
+/**
+ * The newest defense card that answered this attack card for this target, or
+ * null. A card retired by a reroll is skipped: its replacement (if it carries
+ * the same flags) is the one that counts.
+ *
+ * @param {string} attackMessageId
+ * @param {string} targetTokenId
+ * @returns {ChatMessage|null}
+ */
+function findAnsweringDefense(attackMessageId, targetTokenId) {
+  if (!attackMessageId || !targetTokenId) return null;
+  const messages = game.messages?.contents ?? [];
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const flags = messages[i].flags?.redsteel;
+    if (!flags?.defense || flags.rerolledAway) continue;
+    if (flags.versusAttack?.messageId !== attackMessageId) continue;
+    if (flags.defense.defenderTokenId !== targetTokenId) continue;
+    return messages[i];
+  }
+  return null;
+}
+
+/**
+ * Degree forced on this target by the critical-failure ruling, or null when the
+ * ruling does not apply: the card offers no critical degree, no answering
+ * defense card is found, the defense was not a critical failure, or the verdict
+ * was not a critical hit. Clamped by the attacker's own cap (Wimp) and by the
+ * highest degree the card actually offers.
+ *
+ * @param {ChatMessage} message  the attack card
+ * @param {object} effAttack     this target's packet (Bane variant included)
+ * @param {Actor|null} attacker
+ * @param {string} targetTokenId
+ * @returns {number|null}
+ */
+function critFailForcedDegree(message, effAttack, attacker, targetTokenId) {
+  const options = getCriticalOptions(effAttack);
+  if (!options.length) return null;
+  const defense = findAnsweringDefense(message?.id, targetTokenId);
+  const flags = defense?.flags?.redsteel;
+  if (flags?.defense?.critFailure !== true) return null;
+  if (flags?.versus?.critical !== "hit") return null;
+  const offered = Math.max(...options.map((o) => Number(o.degree) || 0));
+  return Math.max(
+    0,
+    Math.min(CRIT_FAIL_DEFENSE_DEGREE, getMaxCritDegree(attacker), offered),
+  );
+}
+
+/* -------------------------------------------- */
+/*  Veterán I (Weapon Master)                   */
+/* -------------------------------------------- */
+
+/** With Veteran used the degree is at most this: a 4 can never stand. */
+const VETERAN_MAX_DEGREE = 3;
+
+/**
+ * "Při Kritickém zásahu může snížit stupeň Kritického zásahu o jeden." User
+ * rulings: never above 4, never below 0, so a degree of 0 is left alone (there
+ * is nothing to trade), and with Veteran on a 4 is impossible.
+ *
+ * @param {number|null} degree
+ * @returns {number|null}
+ */
+function applyVeteranDegree(degree) {
+  const n = Number(degree);
+  if (degree === null || !Number.isFinite(n) || n <= 0) return degree;
+  return Math.min(VETERAN_MAX_DEGREE, n - 1);
 }
 
 /* -------------------------------------------- */
@@ -498,6 +615,7 @@ async function applyDamageToTargets(
   degreeOverridden = false,
   openWound = {},
   laceration = {},
+  veteran = false,
 ) {
   const data = {
     type: "applyDamage",
@@ -512,6 +630,7 @@ async function applyDamageToTargets(
     degreeOverridden,
     openWound,
     laceration,
+    veteran,
   };
 
   if (game.user.isGM) {
@@ -643,6 +762,11 @@ export async function applyDamageAsGM(data) {
   const message = game.messages.get(messageId);
 
   const attack = message.flags.attack;
+  // Damage has been applied from this card: Enduring Warrior's "Missed"
+  // button on it is spent (utils/enduringWarrior.mjs).
+  if (!message.getFlag("redsteel", "damageApplied")) {
+    await message.setFlag("redsteel", "damageApplied", true);
+  }
   const castingContext = getCastingContext(message);
   const selectedCriticalDegree = Number.isFinite(Number(data.criticalDegree))
     ? Number(data.criticalDegree)
@@ -663,6 +787,14 @@ export async function applyDamageAsGM(data) {
   const attacker = getAttackingActor(message);
   const attackerHasBloodStrike = hasBloodStrikeDoctrine(attacker);
   let bloodStrikeEarned = false;
+  // Veterán I — re-checked here: the toggle arrives over the socket. Only a
+  // critical has a degree to give up. `veteranUsed` turns true once any target
+  // actually had a degree above 0 to lower, which is what buys the one Rest.
+  const veteranActive =
+    data.veteran === true &&
+    mode === "critical" &&
+    hasWeaponMasterNode(attacker, "veteran1");
+  let veteranUsed = false;
   const openWoundVictims = [];
   // Tržná rána — tokenId → Aim actually sacrificed, handed to resolveAimOnDamage
   // once the loop is done so it can charge the hit nothing further.
@@ -739,11 +871,26 @@ export async function applyDamageAsGM(data) {
       resolveAttackForTarget(attack, actor),
       sneakSign,
     );
+    // Critical hit on a critically failed defense: degree 4 for this target.
+    const forcedDegree = critFailForcedDegree(
+      message,
+      effAttack,
+      attacker,
+      tokenId,
+    );
+    const degreeBeforeVeteran = resolveDegreeForTarget(
+      effAttack,
+      selectedCriticalDegree,
+      degreeOverridden,
+      { forcedDegree },
+    );
     const degreeForTarget = resolveDegreeForTarget(
       effAttack,
       selectedCriticalDegree,
       degreeOverridden,
+      { forcedDegree, veteran: veteranActive },
     );
+    if (veteranActive && Number(degreeBeforeVeteran) > 0) veteranUsed = true;
     const selectedAttack =
       mode === "critical"
         ? getCriticalAttackData(effAttack, degreeForTarget)
@@ -1239,6 +1386,18 @@ export async function applyDamageAsGM(data) {
     });
   }
 
+  // Veterán I — one free Rest per apply, however many targets lost a degree.
+  if (veteranUsed && attacker) {
+    const gained = await grantFreeRest(attacker);
+    await ChatMessage.create({
+      speaker: ChatMessage.getSpeaker({ actor: attacker }),
+      content: `<div style="text-align:center;">${game.i18n.format(
+        "REDSTEEL.Veteran.Used",
+        { name: foundry.utils.escapeHTML(attacker.name), amount: gained },
+      )}</div>`,
+    });
+  }
+
   if (criticalOverrideRows.length) {
     await notifyCriticalDegreeOverride({
       message,
@@ -1282,6 +1441,9 @@ export async function applyDamageAsGM(data) {
     message,
     attackerTokenId ? (scene?.tokens.get(attackerTokenId) ?? null) : null,
   );
+  // Prosmýknutí (Slip Through): a charge or Dragon Strike landed, so the
+  // attacker may slip behind the opponent this turn.
+  await offerSlipThrough(attacker, message, targetIds, mode);
 
   // Úder štítem (Shield Bash) and any other PUSH_ON_HIT ability: landing it
   // means the versus Test was won, so each target is pushed straight away from
@@ -1308,6 +1470,33 @@ function openDamageSelectionDialog(message, targets) {
     attack.breakthrough?.damage !== "" &&
     attack.breakthrough?.damage !== undefined;
   const criticalOptions = getCriticalOptions(attack);
+
+  // Veterán I (Weapon Master): the attacker may give up one critical degree for
+  // a free Rest. Offered only when the card's attacker has the node and the
+  // card offers a critical degree at all.
+  const degreeActor = getAttackingActor(message);
+  const canVeteran =
+    hasCritical &&
+    criticalOptions.length > 0 &&
+    hasWeaponMasterNode(degreeActor, "veteran1");
+  let veteran = false;
+  /** Whether Veteran lowers the degree right now (critical mode, toggled on). */
+  const veteranOn = () => canVeteran && veteran && mode === "critical";
+
+  /** The critical-failure ruling's degree for this target, or null. */
+  const forcedDegreeFor = (target, effAttack) =>
+    critFailForcedDegree(message, effAttack, degreeActor, target.id);
+
+  /**
+   * This target's degree, the same call the GM apply makes. `withVeteran`
+   * false gives the degree before Veteran, which is what the toggle reads to
+   * know whether there is anything left to lower.
+   */
+  const degreeFor = (target, effAttack, withVeteran = veteranOn()) =>
+    resolveDegreeForTarget(effAttack, criticalDegree, degreeTouched, {
+      forcedDegree: forcedDegreeFor(target, effAttack),
+      veteran: withVeteran,
+    });
 
   // tokenId -> { itemId, points } for targets sacrificing durability
   const durabilityState = {};
@@ -1362,12 +1551,22 @@ function openDamageSelectionDialog(message, targets) {
       previewSneakSign(target),
     );
     return mode === "critical"
-      ? getCriticalAttackData(
-          effAttack,
-          resolveDegreeForTarget(effAttack, criticalDegree, degreeTouched),
-        )
+      ? getCriticalAttackData(effAttack, degreeFor(target, effAttack))
       : effAttack[mode];
   };
+
+  /**
+   * True when no target has a degree above 0 to give up, which is when the
+   * Veteran toggle is disabled.
+   */
+  const veteranHasNothingToLower = () =>
+    targets.every((t) => {
+      const effAttack = shiftSneakOnAttack(
+        resolveAttackForTarget(attack, t.actor),
+        previewSneakSign(t),
+      );
+      return !(Number(degreeFor(t, effAttack, false)) > 0);
+    });
 
   const renderPreview = () =>
     targets
@@ -1511,11 +1710,7 @@ function openDamageSelectionDialog(message, targets) {
                     targetMod: targetMod + npcBonus,
                     stackMod,
                     mode,
-                    criticalDegree: resolveDegreeForTarget(
-                      effAttack,
-                      criticalDegree,
-                      degreeTouched,
-                    ),
+                    criticalDegree: degreeFor(t, effAttack),
                   });
               // Hemophylia doubles what apply will actually hand out. Predict
               // the doubled figure here or the preview promises half the
@@ -1637,6 +1832,27 @@ function openDamageSelectionDialog(message, targets) {
     `;
         })();
 
+        // Critical-failure ruling and Veteran, said out loud per target so the
+        // GM can see why this target's degree differs from the radio.
+        const forcedDegree = forcedDegreeFor(t, effAttack);
+        const critFailNote =
+          forcedDegree !== null
+            ? `<div style="margin-left:15px; font-size:12px; color:#e0894b;">${game.i18n.format(
+                "REDSTEEL.CritFailDefense.DegreeNote",
+                { degree: forcedDegree },
+              )}</div>`
+            : "";
+        const veteranNote = (() => {
+          if (!veteranOn()) return "";
+          const before = degreeFor(t, effAttack, false);
+          const after = degreeFor(t, effAttack, true);
+          if (before === after) return "";
+          return `<div style="margin-left:15px; font-size:12px; color:#c8a84b;">${game.i18n.format(
+            "REDSTEEL.Veteran.PreviewNote",
+            { from: before, to: after },
+          )}</div>`;
+        })();
+
         const aimedStrikeLabel = (() => {
           const as = attack.aimedStrike;
           if (!as?.part) return "";
@@ -1661,6 +1877,8 @@ function openDamageSelectionDialog(message, targets) {
       ${t.name}${baneMarker}${baneCritNote}${sneakMarker} →
       <strong>${result.finalDamage} HP</strong>${durabilityNote}
       ${gmPreview}
+      ${critFailNote}
+      ${veteranNote}
       ${aimedStrikeLabel}
       ${effectPreview}
       ${lacerationRow}
@@ -1753,6 +1971,20 @@ function openDamageSelectionDialog(message, targets) {
               `,
             )
             .join("")}
+          ${
+            canVeteran
+              ? `<div class="attack-options-row" style="margin-top:6px;">
+                  <label class="pill rs-veteran-toggle" data-tooltip="${foundry.utils.escapeHTML(
+                    game.i18n.localize("REDSTEEL.Veteran.ToggleTooltip"),
+                  )}">
+                    <input type="checkbox" name="veteran">
+                    <span><img src="icons/sundries/flags/banner-sword-blue.webp" width="16" height="16" style="vertical-align:middle; border:none;"> ${game.i18n.localize(
+                      "REDSTEEL.Veteran.Toggle",
+                    )}</span>
+                  </label>
+                </div>`
+              : ""
+          }
         </fieldset>
         <!-- Manual half-damage toggle, spells only. Weapon attacks that halve
              damage carry system.roll.halfDamage, but a spell's halving is
@@ -1863,6 +2095,7 @@ function openDamageSelectionDialog(message, targets) {
               degreeTouched,
               openWound,
               laceration,
+              veteranOn(),
             );
           },
         },
@@ -1927,12 +2160,40 @@ function openDamageSelectionDialog(message, targets) {
           });
         };
 
+        // Veteran is disabled while no target has a degree to give up, and
+        // switched off with it so a stale tick cannot buy a Rest.
+        const syncVeteranToggle = () => {
+          if (!canVeteran) return;
+          const input = html.find('input[name="veteran"]');
+          const blocked = veteranHasNothingToLower();
+          if (blocked) veteran = false;
+          input.prop("disabled", blocked).prop("checked", veteran);
+          input
+            .closest(".rs-veteran-toggle")
+            .css("opacity", blocked ? 0.5 : "")
+            .attr(
+              "data-tooltip",
+              game.i18n.localize(
+                blocked
+                  ? "REDSTEEL.Veteran.NothingToLower"
+                  : "REDSTEEL.Veteran.ToggleTooltip",
+              ),
+            );
+        };
+
         const refreshPreview = () => {
+          syncVeteranToggle();
           html.find(".damage-preview").html(renderPreview());
           bindOpenWound();
           bindLaceration();
           html.find(".open-wound-status").html(renderOpenWoundStatus());
         };
+
+        syncVeteranToggle();
+        html.find('input[name="veteran"]').on("change", (ev) => {
+          veteran = ev.target.checked;
+          refreshPreview();
+        });
 
         bindOpenWound();
         bindLaceration();

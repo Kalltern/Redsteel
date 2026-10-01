@@ -13,6 +13,26 @@
  * d12 + Initiative + Speed instead of a d100 margin of success.
  */
 
+import { actorHasSpecNode } from "../helpers/specialisations.mjs";
+
+/**
+ * Flat bonus to one side of a versus Test, by attribute key.
+ *
+ * Servant of the Sword: Combat Dexterity Tests +10% (Bojové Testy Obratnosti).
+ * Every Dexterity versus Test, whether the actor calls it (an ability's own
+ * test, resolveTestRating below) or answers one (the attribute picker in
+ * attributeFollowup.mjs). Plain sheet attribute rolls are not contests and do
+ * not come through either path.
+ *
+ * @param {Actor} actor
+ * @param {string} key  Attribute key ("dex", "str", …).
+ * @returns {number}
+ */
+export function versusTestBonus(actor, key) {
+  if (!actor || key !== "dex") return 0;
+  return actorHasSpecNode(actor, "swordServant", "dexTests") ? 10 : 0;
+}
+
 /**
  * Test Type label → `system.attributes` key.
  *
@@ -71,11 +91,14 @@ export function resolveTestRating(actor, testName) {
   }
   if (ATTRIBUTE_KEYS[lower]) {
     const shortKey = ATTRIBUTE_KEYS[lower];
+    // Every attribute test rolled here posts a margin line: it is the calling
+    // side of a versus Test.
+    const base =
+      actor.type === "npc"
+        ? (actor.system.attributes[shortKey]?.value ?? 0)
+        : (actor.system.attributes[shortKey]?.mod ?? 0);
     return {
-      value:
-        actor.type === "npc"
-          ? (actor.system.attributes[shortKey]?.value ?? 0)
-          : (actor.system.attributes[shortKey]?.mod ?? 0),
+      value: base + versusTestBonus(actor, shortKey),
       skillKey: shortKey,
     };
   }

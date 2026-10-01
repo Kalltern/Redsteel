@@ -37,11 +37,13 @@ import {
   getMovementLock,
   getSpent,
   lockMovement,
+  markBonusSource,
   resetSpent,
   setSpent,
   trackedCombat,
 } from "./actionTracker.mjs";
-import { prepareSuggestions } from "./actionSuggestions.mjs";
+import { prepareSuggestions, vigilantSource } from "./actionSuggestions.mjs";
+import { useOverpower } from "./overpower.mjs";
 import {
   clearLockedZone,
   clearPreview,
@@ -53,7 +55,8 @@ import {
   tokenMovementSpent,
 } from "./movementZones.mjs";
 import { isSprintAbility, useUtilityAbility } from "./combatAbilities.mjs";
-import { isCharge } from "./abilityMovement.mjs";
+import { isCharge, isQuickFeet } from "./abilityMovement.mjs";
+import { isReactionAbility } from "./opportunityAttacks.mjs";
 import { canTradeWith, requestTrade } from "./trade.mjs";
 import { dropStance, holdStance } from "./stances.mjs";
 import { rollEscape } from "./escapeFollowup.mjs";
@@ -1183,6 +1186,8 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       useSuggestion: this._onUseSuggestion,
       useCombatSuggestion: this._onUseCombatSuggestion,
       overwatchShot: this._onOverwatchShot,
+      overpowerSuggestion: this._onOverpower,
+      vigilantShot: this._onVigilantShot,
       escapeEffect: this._onEscapeEffect,
       applySustainSpell: this._onApplySustainSpell,
       stanceSuggestion: this._onStanceSuggestion,
@@ -3106,21 +3111,33 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     if (isRightClick(event)) return;
     const chip = target.closest("[data-action=useCombatSuggestion]");
     if (!chip) return;
-    await this.#launchCombatSuggestion(chip);
+    await this.#launchCombatSuggestion(chip, { quickFeet: !!event.shiftKey });
   }
 
   /**
    * Carry out a combat suggestion chip: a left click fires it plain, a
-   * right-click (from `#onContextMenu`) as an Aimed Attack.
+   * right-click (from `#onContextMenu`) as an Aimed Attack, and a Shift-click
+   * on a retaliation with Quick Feet attached (Shadow; user ruling
+   * 2026-09-30), which steps around the opponent before it swings.
    *
    * @param {HTMLElement} chip
    * @param {object} [options]
    * @param {boolean} [options.aimed]
+   * @param {boolean} [options.quickFeet]
    */
-  async #launchCombatSuggestion(chip, { aimed = false } = {}) {
-    await this.#launchAbility(chip.dataset.abilityId, {
+  async #launchCombatSuggestion(chip, { aimed = false, quickFeet = false } = {}) {
+    const abilityId = chip.dataset.abilityId;
+    let modifierIds = [];
+    if (quickFeet && isReactionAbility(this.actor?.items.get(abilityId))) {
+      const feet = this.actor.items.find(
+        (i) => i.type === "ability" && isQuickFeet(i),
+      );
+      if (feet) modifierIds = [feet.id];
+    }
+    await this.#launchAbility(abilityId, {
       aimed,
       targetId: chip.dataset.targetTokenId,
+      modifierIds,
     });
   }
 
@@ -3132,8 +3149,12 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
    * @param {object} [options]
    * @param {boolean} [options.aimed]
    * @param {string} [options.targetId]
+   * @param {string[]} [options.modifierIds]  modifier abilities to tick
    */
-  async #launchAbility(abilityId, { aimed = false, targetId = null } = {}) {
+  async #launchAbility(
+    abilityId,
+    { aimed = false, targetId = null, modifierIds = [] } = {},
+  ) {
     const actor = this.actor;
     if (!actor?.isOwner) return;
     if (!abilityId || !actor.items.get(abilityId)) return;
@@ -3157,6 +3178,7 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       await game.redsteel.combatAbilities({
         launchAbilityId: abilityId,
         launchAimed: aimed,
+        launchModifierIds: modifierIds,
       });
     } finally {
       setTimeout(() => {
@@ -3189,6 +3211,67 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     if (this.#suggestionBusy) return;
     this.#suggestionBusy = true;
     try {
+      victim.setTarget(true, { releaseOthers: true });
+      const controlled = canvas.tokens?.controlled ?? [];
+      if (controlled.length !== 1 || controlled[0] !== token) {
+        token.control({ releaseOthers: true });
+      }
+      await game.redsteel.attackActions({ opportunity: true });
+    } finally {
+      setTimeout(() => {
+        this.#suggestionBusy = false;
+      }, PORTRAIT_HOLD_MS);
+    }
+  }
+
+  /**
+   * Overpower (Weapon Master): reroll this actor's own die in the contest the
+   * chip names and restate it (utils/overpower.mjs).
+   *
+   * @this {Bg3Hotbar}
+   */
+  static async _onOverpower(event, target) {
+    if (isRightClick(event)) return;
+    const chip = target.closest("[data-action=overpowerSuggestion]");
+    const actor = this.actor;
+    if (!chip || !actor?.isOwner) return;
+    if (this.#suggestionBusy) return;
+    this.#suggestionBusy = true;
+    try {
+      await useOverpower(actor, chip.dataset.messageId);
+    } finally {
+      setTimeout(() => {
+        this.#suggestionBusy = false;
+      }, PORTRAIT_HOLD_MS);
+    }
+  }
+
+  /**
+   * Vigilant Protector (Weapon Master): the Opportunity Attack on an enemy
+   * that just attacked an ally. Notes the once-per-round allowance, then runs
+   * exactly as the Overwatch shot does: the Attack dialog with Opportunity
+   * Attack ticked, which pays the Reaction.
+   *
+   * @this {Bg3Hotbar}
+   */
+  static async _onVigilantShot(event, target) {
+    if (isRightClick(event)) return;
+    const chip = target.closest("[data-action=vigilantShot]");
+    if (!chip) return;
+
+    const actor = this.actor;
+    if (!actor?.isOwner) return;
+    const token = tokenForActor(actor);
+    if (!token?.isOwner) return;
+    const victim = canvas.tokens?.get(chip.dataset.targetTokenId);
+    if (!victim) return;
+    const combat = trackedCombat(actor);
+    if (!combat) return;
+
+    if (this.#suggestionBusy) return;
+    this.#suggestionBusy = true;
+    try {
+      await markBonusSource(actor, vigilantSource(combat));
       victim.setTarget(true, { releaseOthers: true });
       const controlled = canvas.tokens?.controlled ?? [];
       if (controlled.length !== 1 || controlled[0] !== token) {
@@ -3272,10 +3355,23 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     // The Charge approach is over: make its attack, at whatever the player
     // has targeted. The dialog sees the finished Charge move and swings.
     if (lock?.mode === "charge" && !lock.done) {
-      const charge = actor.items.find(
-        (i) => i.type === "ability" && isCharge(i),
-      );
+      // The charge that was declared; an older lock without one falls back
+      // to the first charge on the sheet.
+      const charge =
+        actor.items.get(lock.launch?.abilityId) ??
+        actor.items.find((i) => i.type === "ability" && isCharge(i));
       if (charge) await this.#launchAbility(charge.id);
+    }
+    // The Quick Feet step is over: swing the retaliation it was declared for,
+    // Quick Feet still attached, at the opponent. Only while the turn it
+    // answered is still running; a step confirmed later just closes.
+    const launch = lock?.mode === "quickFeet" && !lock.done ? lock.launch : null;
+    const combat = trackedCombat(actor);
+    if (launch?.abilityId && combat && Number(combat.turn) === launch.turn) {
+      await this.#launchAbility(launch.abilityId, {
+        targetId: launch.targetId,
+        modifierIds: launch.modifierIds,
+      });
     }
   }
 

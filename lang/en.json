@@ -1,5 +1,15 @@
 {
   "REDSTEEL": {
+    "Charge": {
+      "TooClose": "A charge must start at least {min} hexes from its target; {target} is {distance} away."
+    },
+    "SlipThrough": {
+      "CriticalAuto": "After a Critical Hit, Slip Through always succeeds.",
+      "Moved": "{name} slips behind {target}.",
+      "Blocked": "{name} wins, but there is no free hex behind {target}.",
+      "Failed": "{name} fails: Defense and Dodge -10% for one turn.",
+      "FailEffect": "Slip Through failed"
+    },
     "AllyPass": {
       "Title": "Let an ally pass?",
       "Body": "{mover} wants to move through the hex {ally} stands on. Letting them pass spends {ally}'s Reaction.",
@@ -199,6 +209,7 @@
         "PassingStrike": "Passing Strike step",
         "ExtendedLunge": "Extended Lunge step",
         "Charge": "Charge",
+        "QuickFeet": "Quick Feet step",
         "OneAction": "1 Action",
         "TwoActions": "2 Actions",
         "Hexes": "{n} hex",
@@ -225,7 +236,8 @@
         "EscapeSourceGone": "The card that bound you is no longer in chat.",
         "HoldStance": "Click: keep holding the stance ({cost})",
         "DropStance": "Right-click: drop the stance",
-        "MoreMovement": "More movement"
+        "MoreMovement": "More movement",
+        "LungeStep": "Lunge Step"
       },
       "ShowArmor": "Show armor by damage type",
       "ShowConditions": "Show conditions",
@@ -657,11 +669,11 @@
             },
             "calculation": {
               "label": "Calculation",
-              "description": "5 CP. Passive. With at least one Aim on a target, gains Critical Hit +3% and Critical Dodge +5% against that target. Manual — resolved at the table."
+              "description": "5 CP. Passive. With at least one Aim on a target, gains Critical Hit +3% and Critical Dodge +5% against that target. Automated: the attack roll and every weapon defense (Defense, Ranged Defense, Dodge) against the aimed creature widen their critical range."
             },
             "aimedAttack": {
               "label": "Aimed Attack +5%",
-              "description": "10 CP. Aimed attack: Hit, Throw and Shooting +5% — situational, manual for now. Manual — resolved at the table."
+              "description": "10 CP. Aimed attack: Hit, Throw and Shooting +5%. Automated: eases the penalty of every aimed attack at a body part."
             },
             "stealthAdvantage": {
               "label": "Stealth: Advantage",
@@ -685,7 +697,7 @@
             },
             "quickFeet": {
               "label": "Quick Feet",
-              "description": "10 CP. Free action, 1 Stamina. Modifies any Retaliation action. Before the action, may move one hex around the opponent. Grants the Quick Feet action; the step itself is resolved at the table."
+              "description": "10 CP. Free action, 1 Stamina. Modifies any Retaliation action. Before the action, may move one hex around the opponent. Automated: outside your own turn, tick Quick Feet on a retaliation or Shift-click the retaliation's hotbar chip. The hotbar shows a one-hex step next to the targeted opponent; confirm it with the check and the retaliation swings."
             },
             "backDodge": {
               "label": "Blindside Dodge",
@@ -697,11 +709,11 @@
             },
             "speedTests": {
               "label": "Advantage on vs Speed Tests",
-              "description": "10 CP; Tulák VII. Manual — resolved at the table."
+              "description": "10 CP; Tulák VII. Automated: every versus Speed Test you roll (an ability or spell test, a posted Speed Test, or your answer to one) rolls with advantage. Initiative is not a versus Test."
             },
             "daggerDefense": {
               "label": "No Defense penalty with dagger",
-              "description": "0 CP. Removes the Defense penalty against weapons when using a dagger. Manual — resolved at the table."
+              "description": "0 CP. Removes the Defense penalty against weapons when using a dagger. Automated: a dagger in the active set's main hand loses its Defense penalty."
             },
             "skillDiscount1": {
               "label": "3 SP discount on a skill",
@@ -739,15 +751,15 @@
             },
             "ripostaFree": {
               "label": "One Riposte per round as Free action",
-              "description": "10 CP; Šermíř X. Manual — resolved at the table."
+              "description": "10 CP; Šermíř X. The first Riposte each round costs no Reaction; its Stamina is still paid. Automated."
             },
             "ripostaStamina": {
               "label": "Riposte: Stamina -4",
-              "description": "15 CP. Manual — resolved at the table."
+              "description": "15 CP. Riposte costs 4 Stamina less. Automated."
             },
             "ripostaCrit": {
               "label": "Riposte: always counts as Critical",
-              "description": "10 CP; Meče X. Manual — resolved at the table."
+              "description": "10 CP; Meče X. Every Riposte is a Critical Hit unless the dice fumble. Automated."
             },
             "odvetnyUder": {
               "label": "Retaliatory Strike",
@@ -763,51 +775,51 @@
             },
             "draciSpanek": {
               "label": "Dragon Sleep",
-              "description": "10 CP; Šermíř IV. 1 action, 0 Stamina. For one turn, Defense, Dodge and Ranged Defense +10%. Gains one Aim and restores 1 Stamina. Prevents the Riposte action for one round and gives up all Reactions this round; gains one Rest for each Reaction given up this way. Grants the Dragon Sleep action; the bonuses, the Aim, the Stamina, the lost Reactions and the Rests are resolved at the table."
+              "description": "10 CP; Šermíř IV. 1 action, 0 Stamina. For one turn, Defense, Dodge and Ranged Defense +10%. Gains one Aim and restores 1 Stamina. Prevents the Riposte action for one round and gives up all Reactions this round; gains one Rest for each Reaction given up this way. Grants the Dragon Sleep stance. Automated: the defenses, the Stamina, the Reactions traded for Rests (5 Stamina each), the Aim on your current target and the blocked Riposte."
             },
             "draciStraz": {
               "label": "Dragon Guard",
-              "description": "10 CP; Šermíř V. 1 action, 4 Stamina. For one turn, Hit +10% for Retaliation actions, Riposte and the Momentum that follows them. May use the Exploit Weakness action as a Retaliation action. Grants the Dragon Guard action; the Hit bonus and using Exploit Weakness as a Retaliation action are resolved at the table."
+              "description": "10 CP; Šermíř V. 1 action, 4 Stamina. For one turn, Hit +10% for Retaliation actions, Riposte and the Momentum that follows them. May use the Exploit Weakness action as a Retaliation action. Grants the Dragon Guard stance. Automated: the Hit bonus (Momentum counts as any further off-turn attack after a boosted one in the same turn) and Exploit Weakness as a Retaliation action, paid with the Reaction and offered on the hotbar after a Defense or Dodge."
             },
             "chargeDamage": {
               "label": "Charge: +1d4 damage",
-              "description": "10 CP; Meče VII. Manual — resolved at the table."
+              "description": "10 CP; Meče VII. Grants Improved Charge, which replaces Charge: Damage +3d4 instead of +2d4. Automated."
             },
             "chargeDistance": {
               "label": "Charge: Min. distance -1 hex",
-              "description": "10 CP; Meče VIII. Manual — resolved at the table."
+              "description": "10 CP; Meče VIII. Every charge normally starts at least 2 hexes from its target; this lowers it to 1. Automated."
             },
             "priskok": {
               "label": "Lunge Step",
-              "description": "5 CP; Meče IV. Free action, 1 Stamina. When targeted by an attack, may move one hex toward the attacker. The move provokes no Opportunity Attacks and happens before the attack resolves. In some situations the move may not be possible. Does not apply to Shooting, Throwing or Magic. Grants the Lunge Step action; the move is resolved at the table."
+              "description": "5 CP; Meče IV. Free action, 1 Stamina. When targeted by an attack, may move one hex toward the attacker. The move provokes no Opportunity Attacks and happens before the attack resolves. In some situations the move may not be possible. Does not apply to Shooting, Throwing or Magic. Grants the Lunge Step action. When a melee attack comes from beyond the next hex (Long Reach or Extended Lunge), the hotbar offers it until you defend; using it grants the step toward the attacker. Automated."
             },
             "draciVypad": {
-              "label": "Dragon's Thrust",
-              "description": "10 CP; Šermíř IV. 1 Reaction, 7 Stamina. Gives up Defense and attacks instead. A Speed vs Test decides who hits first. Whoever hits first and kills the opponent avoids the other attack entirely. The first hit always resolves as a Critical Hit, the second always as a normal hit. Grants the Dragon's Thrust action; the Speed contest and the order of the hits are resolved at the table."
+              "label": "Dragon Strike",
+              "description": "10 CP; Šermíř IV. 1 Reaction, 7 Stamina. Gives up Defense and attacks instead. A Speed vs Test decides who hits first. Whoever hits first and kills the opponent avoids the other attack entirely. The first hit always resolves as a Critical Hit, the second always as a normal hit. Grants the Dragon Strike action, offered on the hotbar beside Riposte against an incoming melee attack. The Speed vs Test is on its card; the Critical and normal hits are set in Apply Damage. Automated."
             },
             "prosmyknuti": {
               "label": "Slip Through",
-              "description": "5 CP; Meče IV. Free action, 2 Stamina. After a successful Charge, Lindar's Charge or Dragon's Thrust, may call a Dexterity vs Test. On success moves behind the opponent; on failure takes -10% to Defense and Dodge for one turn. After a Critical Hit, Slip Through is guaranteed. Chooses facing after the move. Grants the Slip Through action; the move and the failure penalty are resolved at the table."
+              "description": "5 CP; Meče IV. Free action, 2 Stamina. After a successful Charge, Lindar's Charge or Dragon Strike, may call a Dexterity vs Test. On success moves behind the opponent; on failure takes -10% to Defense and Dodge for one turn. After a Critical Hit, Slip Through is guaranteed. Chooses facing after the move. Grants the Slip Through action, offered on the hotbar for the rest of the turn after a charge or Dragon Strike lands. Rolls the Dexterity contest, moves you behind the opponent facing them, or applies the penalty. Automated, except after Lindar's Charge."
             },
             "dexTests": {
               "label": "Combat Dexterity Tests +10%",
-              "description": "5 CP. Situational test bonus — manual for now. Manual — resolved at the table."
+              "description": "5 CP. Dexterity +10% on every Dexterity versus Test, whether you call it or answer it. Automated."
             },
             "presneRozseknuti": {
               "label": "Precise Cleave",
-              "description": "5 CP. Passive. The Cleave and Charge with Cleave actions apply the Aim bonus to every opponent struck. Manual — resolved at the table."
+              "description": "5 CP. Passive. The Cleave and Charge with Cleave actions apply the Aim bonus to every opponent struck. Cleave (and Flamberge Cleave) is no longer exempt from Aim. Automated."
             },
             "vyhodnyManevr": {
               "label": "Advantageous Maneuver",
               "description": "5 CP; Šermíř V. Free action, 3 Stamina. After a successful Defense, may immediately gain one Aim against the attacker. Needs a Melee Defense made with a two-handed sword. Offered as a button on the defense card. Automated."
             },
             "utokSPohybem": {
-              "label": "Attack on the Move",
+              "label": "Passing Strike",
               "description": "10 CP; Meče IV. Free action, 3 Stamina. Modifies attack actions (not Retaliation actions). After a hit, allows moving up to one hex in any direction without provoking an Opportunity Attack. Grants the Passing Strike action."
             },
             "vylUtokSPohybem": {
-              "label": "Improved Attack on the Move",
-              "description": "10 CP; Šermíř VII. Free action, 2 Stamina. Modifies attack actions, including Retaliation actions. After a hit, allows moving up to one hex in any direction without provoking an Opportunity Attack. Grants the Improved Passing Strike action, which replaces Passing Strike; on your own turn the free step is granted when the damage is applied, while the step after an off-turn Retaliation action is resolved at the table."
+              "label": "Improved Passing Strike",
+              "description": "10 CP; Šermíř VII. Free action, 2 Stamina. Modifies attack actions, including Retaliation actions. After a hit, allows moving up to one hex in any direction without provoking an Opportunity Attack. Grants the Improved Passing Strike action, which replaces Passing Strike; the free step is granted when the damage is applied, on your own turn or after an off-turn Retaliation action. Automated."
             }
           }
         },
@@ -817,39 +829,39 @@
           "nodes": {
             "mistrZbrani": {
               "label": "Weapon Master",
-              "description": "0 CP. Passive. Every rank of further weapon skills costs only 5 CP and needs no Teacher. The first four ranks of every further weapon skill are free. On buying the Weapon Specialization I and Weapon Specialization II features, may take each of them twice more for free. Manual — resolved at the table."
+              "description": "0 CP. Passive. Every rank of further weapon skills costs only 5 CP and needs no Teacher. The first four ranks of every further weapon skill are free. On buying the Weapon Specialization I and Weapon Specialization II features, may take each of them twice more for free. Further weapon skills are all but the one with the highest rank; the Learn window applies the prices."
             },
             "vytrvalyValecnik": {
               "label": "Enduring Warrior",
-              "description": "15 CP; M/T/S/D V. Passive. On missing the target with an attack action, regains half the Stamina spent. If Shield Bash, Shield Charge, Feint or Improved Feint fail, regains half the Stamina spent. Manual — resolved at the table."
+              "description": "15 CP; M/T/S/D V. Passive. On missing the target with an attack action, regains half the Stamina spent. If Shield Bash, Shield Charge, Feint or Improved Feint fail, regains half the Stamina spent. The attack card carries a \"Missed\" button beside Apply Damage that refunds half the Stamina paid, until damage is applied or the character attacks again; using it ends a multi-attack."
             },
             "vycvikSeZbrani": {
               "label": "Weapon Training",
-              "description": "0 CP; M/T/S/D VI. Passive. Gains a bonus for the type of weapon held. Light: Critical Range is based on Dexterity. Medium: Critical Hit and Critical Defense chance +1%. Heavy: Critical Damage/Penetration +5. Manual — resolved at the table."
+              "description": "0 CP; M/T/S/D VI. Passive. Gains a bonus for the type of weapon held. Light: Critical Range is based on Dexterity. Medium: Critical Hit and Critical Defense chance +1%. Heavy: Critical Damage/Penetration +5. The class comes from the main weapon of the active weapon set and applies to every attack."
             },
             "bdelyOchrance": {
               "label": "Vigilant Protector",
-              "description": "25 CP; M/T/S/D VIII. Passive. May make an Opportunity Attack even when an ally is attacked, as long as the attacker is in reach. An Opportunity Attack can be used this way only once per round. Manual — resolved at the table."
+              "description": "25 CP; M/T/S/D VIII. Passive. May make an Opportunity Attack even when an ally is attacked, as long as the attacker is in reach. An Opportunity Attack can be used this way only once per round. Offered on the hotbar when an enemy within reach attacks an ally."
             },
             "zbrojnos1": {
               "label": "Armiger I",
-              "description": "10 CP. Passive. Light armor: sacrificing armor or shield Durability reduces damage by a further 5. Heavy armor: once per day, may reroll a Defense or Ranged Defense roll. Manual — resolved at the table."
+              "description": "10 CP. Passive. Light armor: sacrificing armor or shield Durability reduces damage by a further 5. Heavy armor: once per day, may reroll a Defense or Ranged Defense roll. Only the topmost armor layer counts. Automated: the bonus is added to every sacrifice in the Apply Damage dialog, and the node grants the Armiger feature, whose reroll is offered only while heavy armor is on top. The pool refreshes on a Long Rest."
             },
             "zbrojnos2": {
               "label": "Armiger II",
-              "description": "10 CP. Passive. Light armor: Dodge Critical Success chance +3%, and the Dodge action costs 1 less Stamina. Heavy armor: gains Deflect +20% on Defense and Ranged Defense. Manual — resolved at the table."
+              "description": "10 CP. Passive. Light armor: Dodge Critical Success chance +3%, and the Dodge action costs 1 less Stamina. Heavy armor: gains Deflect +20% on Defense and Ranged Defense. Only the topmost armor layer counts, read when the defense is rolled. Automated."
             },
             "odrazeni": {
-              "label": "Deflection",
-              "description": "10 CP; M/T/S/D VI. 1 Reaction. When attacked, may spend a Reaction to gain Advantage on the next Defense. Grants the Deflection action; the Advantage is resolved at the table."
+              "label": "Brace",
+              "description": "10 CP; M/T/S/D VI. 1 Reaction. When attacked in melee, may spend a Reaction to gain Advantage on the next defense roll. Grants the Brace action, offered on the hotbar against an incoming melee attack; the Advantage is used up by the next Defense, Ranged Defense or Dodge roll, or lapses at the start of the next turn."
             },
             "veteran1": {
               "label": "Veteran I",
-              "description": "5 CP. Passive. On a Critical Hit, may lower its degree by one to immediately use Rest as a Free action. Manual — resolved at the table."
+              "description": "5 CP. Passive. On a Critical Hit, may lower its degree by one to immediately use Rest as a Free action. The degree never goes below 0 and, with Veteran used, is never 4. Automated: a Veteran toggle in the Apply Damage dialog lowers every target's degree by one and gives one free Rest (+5 Stamina) per application."
             },
             "veteran2": {
               "label": "Veteran II",
-              "description": "5 CP; M/T/S/D V. Passive. On a Critical Defense, may immediately use the Rest action as a Free action instead of gaining Temporary Health. Manual — resolved at the table."
+              "description": "5 CP; M/T/S/D V. Passive. On a Critical Defense, may immediately use the Rest action as a Free action instead of gaining Temporary Health. Automated: the defense card shows a Free rest button (+5 Stamina); using it or the Temporary Health button spends both."
             },
             "vylZbranoveDovednosti": {
               "label": "Improved Weapon Skills",
@@ -872,12 +884,12 @@
               "description": "5 CP. Automated."
             },
             "presileni": {
-              "label": "Overpowering",
-              "description": "5 CP. Free action, 1 Stamina. May reroll a Hit, Defense or Ranged Defense roll if the difference in margin of success was 10 or less. Grants the Overpowering action; the reroll is resolved at the table."
+              "label": "Overpower",
+              "description": "5 CP. Free action, 1 Stamina. May reroll a Hit, Defense or Ranged Defense roll if the difference in margin of success was 10 or less. Grants the Overpower action: once per contest the hotbar offers it to the side that lost by 10 or less, and the contest is restated against the new roll."
             },
             "rychlaReakce": {
               "label": "Improved Quick Reaction",
-              "description": "5 CP; M/T/S/D V. 1 action, 3 Stamina. Fast Reaction that also grants +1 Reaction: for one turn, gains Initiative +4 and +1 Reaction. Grants the Improved Fast Reaction action, which replaces Fast Reaction; the Initiative bonus is applied automatically, while the extra Reaction is resolved at the table."
+              "description": "5 CP; M/T/S/D V. 1 action, 3 Stamina. Fast Reaction that also grants +1 Reaction: for one turn, gains Initiative +4 and +1 Reaction. Grants the Improved Fast Reaction action, which replaces Fast Reaction; both the Initiative bonus and the extra Reaction are applied automatically, until the start of the next turn."
             },
             "weakSpotPen": {
               "label": "Weak Spot Attack: Penetration +10",
@@ -885,7 +897,7 @@
             },
             "primaryDamage": {
               "label": "Damage +50% from Primary Attributes",
-              "description": "10 CP. Manual — resolved at the table."
+              "description": "10 CP. Passive. The primary attribute added to weapon damage (Strength, or whichever attribute the attack uses) counts one and a half times, rounded down."
             }
           }
         },
@@ -1008,8 +1020,8 @@
               "description": "15 CP; Meče VI. 1 Reaction, 2 Stamina. After a successful Defense, may use the Disengage action as a Reaction. Grants the Acrobatic Disengage action; the move is resolved at the table."
             },
             "vylUtokSPohybem": {
-              "label": "Improved Attack on the Move",
-              "description": "10 CP; Duelista VII. Free action, 2 Stamina. Modifies attack actions, including Retaliation actions. After a hit, allows moving up to one hex in any direction without provoking an Opportunity Attack. Grants the Improved Passing Strike action, which replaces Passing Strike; on your own turn the free step is granted when the damage is applied, while the step after an off-turn Retaliation action is resolved at the table."
+              "label": "Improved Passing Strike",
+              "description": "10 CP; Duelista VII. Free action, 2 Stamina. Modifies attack actions, including Retaliation actions. After a hit, allows moving up to one hex in any direction without provoking an Opportunity Attack. Grants the Improved Passing Strike action, which replaces Passing Strike; the free step is granted when the damage is applied, on your own turn or after an off-turn Retaliation action. Automated."
             },
             "rafinovanyManevr": {
               "label": "Refined Maneuver: Stamina -2",
@@ -1539,8 +1551,8 @@
               "description": "5 CP; Štítonoš IV. Manual — resolved at the table."
             },
             "utokSPohybem": {
-              "label": "Attack on the Move",
-              "description": "10 CP; Štítonoš IV. Manual — resolved at the table."
+              "label": "Passing Strike",
+              "description": "10 CP; Štítonoš IV. Grants the Passing Strike action."
             },
             "zbesilyVrh": {
               "label": "Frenzied Throw: Shield strain +25%",
@@ -1996,8 +2008,8 @@
               "description": "10 CP; M/T/S V. Manual — resolved at the table."
             },
             "vylUtokSPohybem": {
-              "label": "Improved Attack on the Move",
-              "description": "10 CP; D/M VIII. Free action, 2 Stamina. Modifies attack actions, including Retaliation actions. After a successful hit, allows moving up to one hex in any direction without provoking an Opportunity Attack. Grants the Improved Passing Strike action, which replaces Passing Strike; on your own turn the free step is granted when the damage is applied, while the step after an off-turn Retaliation action is resolved at the table."
+              "label": "Improved Passing Strike",
+              "description": "10 CP; D/M VIII. Free action, 2 Stamina. Modifies attack actions, including Retaliation actions. After a successful hit, allows moving up to one hex in any direction without provoking an Opportunity Attack. Grants the Improved Passing Strike action, which replaces Passing Strike; the free step is granted when the damage is applied, on your own turn or after an off-turn Retaliation action. Automated."
             },
             "vetrnyPostoj": {
               "label": "Wind Stance: Defense and Hit bonus",
@@ -4478,6 +4490,12 @@
           "helmet": {
             "label": "Has helmet"
           },
+          "armorWeight": {
+            "label": "Armor type",
+            "none": "—",
+            "light": "Light",
+            "heavy": "Heavy"
+          },
           "shield": {
             "label": "Is a shield"
           },
@@ -4766,6 +4784,119 @@
     "Feature": {
       "NpcTraitOnly": "NPCs can only have traits, not features ({name})."
     },
+    "CharacterCreation": {
+      "Create": "Create a character",
+      "Skip": "Skip creation"
+    },
+    "Creation": {
+      "title": "Character creation",
+      "stepOf": "Step {n} of {total}",
+      "Step1": {
+        "title": "Origin"
+      },
+      "Step2": {
+        "title": "Doctrine"
+      },
+      "Doctrine": {
+        "heading": "Combat doctrine",
+        "advice": "Pick the doctrine your character trains in. It joins your skills, and you distribute points into it afterwards. One combat doctrine is recommended; Rogue is the exception and can sit beside another.",
+        "tooMany": "More than one combat doctrine besides Rogue is not recommended.",
+        "needsMagic": "Requires the Magic potential trait.",
+        "kind": "Kind",
+        "rank1": "Rank I costs",
+        "path": "Abilities",
+        "weaponSkills": "Compatible weapon skills",
+        "weapons": "Weapons",
+        "Group": {
+          "oneChoice": "One-handed weapons of choice",
+          "dualChoice": "One-handed weapons of choice, one in each hand",
+          "twoChoice": "Two-handed weapons of choice",
+          "bothHands": "One-handed weapons of choice, held in both hands",
+          "anyChoice": "Weapons of choice",
+          "thrownChoice": "Thrown weapons of choice",
+          "offhand": "Off hand only"
+        },
+        "chosen": "Chosen",
+        "Kind": {
+          "melee": "Melee",
+          "ranged": "Ranged",
+          "special": "Special",
+          "magical": "Magic"
+        }
+      },
+      "Race": {
+        "Vardur": "Vardur"
+      },
+      "Attributes": "Attributes",
+      "Traits": "Traits",
+      "Info": {
+        "title": "Info",
+        "empty": "Hover over a race, an attribute or a trait to read about it.",
+        "base": "Base",
+        "racialBonus": "Racial bonus",
+        "racialBonuses": "Racial bonuses",
+        "traitBonus": "From traits",
+        "racialFeatures": "Racial features",
+        "granted": "granted",
+        "skillCount": "{n} skills",
+        "priceCp": "{n} CP",
+        "priceSp": "{n} SP",
+        "fixedBonuses": "Fixed",
+        "traitPoints": "Trait points",
+        "raisesLimitNote": "* also raises that attribute's limit.",
+        "derivedSkills": "Derived skills",
+        "spent": "Points spent",
+        "limit": "Physical limit"
+      },
+      "pointsRemaining": "Points remaining {remaining} / {budget}",
+      "traitPointsRemaining": "Trait points remaining {remaining} / {total}",
+      "traitCount": "Traits {count} / {max}",
+      "chooseRaceFirst": "Choose a race first.",
+      "raceStartHere": "Start here: choose your race.",
+      "raceStartHereInfo": "Every character begins with a race. Choose one in the Race panel: it sets your racial bonuses, your attribute limits and your trait points, so attributes and traits stay closed until it is chosen.",
+      "Identity": "Character",
+      "loading": "Building the character creation",
+      "PickedTraits": "Picked traits",
+      "noPickedTraits": "No traits picked yet. Click a trait on the left to take it; click it here to give it back.",
+      "Name": "Name",
+      "Portrait": "Portrait",
+      "Token": "Token",
+      "raisesLimit": "also raises the limit",
+      "max": "max {limit}",
+      "back": "Back",
+      "close": "Close",
+      "finish": "Finish",
+      "next": "Next",
+      "Group": {
+        "Human": "Human",
+        "Halfling": "Halfling",
+        "Dwarf": "Dwarf",
+        "Elf": "Elf"
+      },
+      "Requires": {
+        "arenai": "Requires the Magic potential trait."
+      },
+      "TraitKind": {
+        "positive": "Positive",
+        "neutral": "Neutral",
+        "negative": "Negative"
+      },
+      "Warn": {
+        "noRace": "Choose a race first.",
+        "raceMissing": "The chosen race could not be loaded from the compendium.",
+        "choicesIncomplete": "Racial choice \"{label}\": choose exactly {count}.",
+        "traitOverspent": "You have spent more trait points than your race gives. Remove a positive trait or take a negative one.",
+        "traitLimit": "A character can have at most {max} traits.",
+        "traitUnaffordable": "Not enough trait points left for this trait.",
+        "negativeRemove": "Removing this trait would leave you with negative trait points. Remove a positive trait first.",
+        "traitMissing": "The trait {name} could not be loaded from the compendium."
+      },
+      "Confirm": {
+        "unspentTitle": "Unspent attribute points",
+        "unspentContent": "You still have {n} unspent attribute points. They will not be kept. Finish anyway?"
+      },
+      "RaceHeading": "Race"
+    },
     "Race": {
       "ChooseRace": "Choose a race",
       "PickerTitle": "Race selection",
@@ -4794,6 +4925,21 @@
         "DropRejected": "Only feature Items can be granted by a race.",
         "DropNotGlobal": "Drag the feature from the sidebar or a compendium, not off an actor.",
         "DropDuplicate": "{name} is already granted by this race."
+      },
+      "Choice": {
+        "HumanExtraAttribute": "Human extra attribute selection",
+        "ElvenTalent": "Elven talent",
+        "EldaraiHeritage": "Eldarai heritage",
+        "HalflingAgility": "Halfling heritage",
+        "LomeraiHeritage1": "Lomerai heritage I",
+        "LomeraiHeritage2": "Lomerai heritage II",
+        "ZephyraiHeritage1": "Zephyrai heritage I",
+        "ZephyraiHeritage2": "Zephyrai heritage II",
+        "IkaraiHeritage": "Ikarai heritage",
+        "MorneraiHeritage": "Mornerai heritage",
+        "KerneraiHeritage": "Kernerai heritage",
+        "BorgorHeritage1": "Borgor heritage I",
+        "BorgorHeritage2": "Borgor heritage II"
       }
     },
     "Resource": {
@@ -5039,6 +5185,25 @@
         "panic": "panicking"
       }
     },
+    "EnduringWarrior": {
+      "Button": "Missed: +{amount} Stamina",
+      "Tooltip": "Enduring Warrior: the attack missed, regain half the Stamina it cost. Not after Apply Damage or a further attack; ends a multi-attack.",
+      "Used": "{name} missed: Enduring Warrior refunds {amount} Stamina.",
+      "Blocked": "Enduring Warrior can no longer be claimed on this attack."
+    },
+    "WeaponMaster": {
+      "OverpowerSource": "Overpower",
+      "OverpowerDefenseHint": "Reroll your defense: the contest was lost by {gap}. Costs 1 Stamina.",
+      "OverpowerAttackHint": "Reroll your Hit: the attack fell {gap} short. Costs 1 Stamina.",
+      "OverpowerRestated": "Overpower: {name} rerolled the Hit, the contest is restated against the new roll.",
+      "OverpowerNoGM": "Overpower needs a GM connected to restate the defense card.",
+      "OverpowerNoCard": "That contest is no longer open to Overpower.",
+      "BraceHint": "Advantage on your next defense roll against {attacker}.",
+      "BraceApplied": "{name} braces: Advantage on the next defense roll.",
+      "VigilantLabel": "Vigilant Protector",
+      "VigilantHint": "{attacker} attacked {ally}: Opportunity Attack. Once per round.",
+      "ExtraReaction": "Improved Fast Reaction: +1 Reaction"
+    },
     "Overwhelm": {
       "Label": "Overwhelm",
       "MarkerName": "Overwhelm ({penalty}%)",
@@ -5246,6 +5411,23 @@
       "Capped": "Defending grants Temporary Health only up to {max}.",
       "AtCap": "Already at {max} Temporary Health — defending grants no more.",
       "ActorMissing": "The defending actor no longer exists."
+    },
+    "VeteranRest": {
+      "Button": "Free rest",
+      "Tooltip": "Veteran II: take a free Rest (+{amount} Stamina) instead of Temporary Health. Usable once.",
+      "AlreadyUsed": "Already claimed from this defense: the free Rest or the Temporary Health.",
+      "Granted": "{name} uses Veteran and takes a free Rest: +{amount} Stamina.",
+      "ActorMissing": "The defending actor no longer exists."
+    },
+    "Veteran": {
+      "Toggle": "Veteran",
+      "ToggleTooltip": "Veteran I: lower every target's critical degree by one (never below 0, never 4) and take a free Rest (+5 Stamina).",
+      "NothingToLower": "Veteran I: every target is already at degree 0, so there is nothing to lower.",
+      "PreviewNote": "Veteran: degree {from} → {to}",
+      "Used": "{name} uses Veteran: the critical degree drops by one and they take a free Rest (+{amount} Stamina)."
+    },
+    "CritFailDefense": {
+      "DegreeNote": "Critical failure on defense: degree {degree}"
     },
     "MultiAttack": {
       "WeaponsOrExplosives": "Choose a weapon or an explosive to throw:",
@@ -5463,6 +5645,7 @@
         "weaponSpec": "Weapon specialisation",
         "offhand": "Off hand",
         "weaponDefense": "Weapon defense",
+        "daggerDefense": "No dagger penalty (Shadow)",
         "shield": "Shield",
         "dualWield": "Dual wielding"
       }
@@ -5986,6 +6169,10 @@
       "Argos": {
         "name": "Argos"
       },
+      "Armiger": {
+        "name": "Armiger",
+        "description": "<p>Weapon Master, Armiger I (heavy armor). Once per day, may reroll a Defense or Ranged Defense roll while heavy armor is the topmost armor layer worn. Granted automatically by the Armiger I node.</p>"
+      },
       "ArmorTrainingI": {
         "name": "Armor Training I"
       },
@@ -6192,7 +6379,7 @@
         "name": "Defensive Stance"
       },
       "Deflection": {
-        "name": "Deflection"
+        "name": "Brace"
       },
       "Demon": {
         "name": "Demon"
@@ -6237,13 +6424,19 @@
         "name": "Draconic"
       },
       "DragonGuard": {
-        "name": "Dragon Guard"
+        "name": "Dragon Guard",
+        "tag": "Dragon Guard +10%",
+        "retaliationTag": "Retaliation"
       },
       "DragonSleep": {
-        "name": "Dragon Sleep"
+        "name": "Dragon Sleep",
+        "reactionsGiven": "Reactions given up for Rests: {count}",
+        "staminaGained": "Stamina restored: {amount}",
+        "aimGained": "Gains one Aim on {target}.",
+        "noAimTarget": "No target, so no Aim gained."
       },
       "DragonsThrust": {
-        "name": "Dragon's Thrust"
+        "name": "Dragon Strike"
       },
       "Drinker": {
         "name": "Drinker"
@@ -6286,6 +6479,30 @@
       },
       "Eldarai": {
         "name": "Eldarai"
+      },
+      "Lomerai": {
+        "name": "Lomerai"
+      },
+      "Ornerai": {
+        "name": "Ornerai"
+      },
+      "Zephyrai": {
+        "name": "Zephyrai"
+      },
+      "Ikarai": {
+        "name": "Ikarai"
+      },
+      "Mornerai": {
+        "name": "Mornerai"
+      },
+      "Kernerai": {
+        "name": "Kernerai"
+      },
+      "Arenai": {
+        "name": "Arenai"
+      },
+      "Borgor": {
+        "name": "Borgor"
       },
       "ElvenGrace": {
         "name": "Elven Grace"
@@ -6565,7 +6782,7 @@
         "name": "Onslaught II"
       },
       "Overpowering": {
-        "name": "Overpowering"
+        "name": "Overpower"
       },
       "PreciseIncantation": {
         "name": "Precise Incantation"
@@ -6998,7 +7215,8 @@
         "name": "Magic Commander"
       },
       "MagicPotential": {
-        "name": "Magic Potential"
+        "name": "Magic Potential",
+        "description": "<p><strong>Allows you to become a mage:</strong> it opens the magical doctrines and the study of magic.</p><p>Channeling +5%, Base Mana +5.<br />Mana modifier 1.<br />May reroll a Channeling roll once per day.</p>"
       },
       "MagicResistance": {
         "name": "Magic Resistance"
@@ -8124,6 +8342,9 @@
       "Rations": {
         "name": "Rations",
         "description": "<p>A day's worth of trail food: hard bread, dried meat, whatever the pot gave up. One unit feeds one mouth for a third of a day. A normal character eats 3 units per Long Rest.</p>"
+      },
+      "ImprovedCharge": {
+        "name": "Improved Charge"
       }
     },
     "MonsterBuilder": {
@@ -8712,6 +8933,10 @@
       "Mirror": {
         "badge": "Copies {skill}",
         "locked": "Increase level of {skill} skill to advance in this one"
+      },
+      "WeaponMaster": {
+        "title": "Weapon Master",
+        "ranks": "A further weapon skill (any but the highest): ranks I to IV are free, every later rank costs 5 CP, and no Teacher is needed."
       },
       "FreeSchool": {
         "title": "First school of magic",

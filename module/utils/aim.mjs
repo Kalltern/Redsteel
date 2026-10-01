@@ -57,6 +57,8 @@ const MAX_STACKS = 4;
 const PER_STACK = 10; // % hit chance per stack
 const IMPROVED_AIM_PEN = 10; // Improved Aim: penetration at full aim
 const DEFENSE_PER_STACK = 5; // Duelist VII: % melee defense per stack held
+const CALCULATION_CRIT_HIT = 3; // Shadow Calculation: crit hit vs the aimed target
+const CALCULATION_CRIT_DEFENSE = 5; // Shadow Calculation: crit defense vs it
 
 const COLOR_AMBER = 0xffb300; // stacks 1–3
 const COLOR_RED = 0xff3030; // stack 4 (capped)
@@ -329,6 +331,49 @@ export function getImprovedAimPenetration(
   return aimPerks(actor, weapon, context).improved ? IMPROVED_AIM_PEN : 0;
 }
 
+/**
+ * Shadow: Calculation (Vypočítavost). While the Shadow holds at least one Aim
+ * on a creature, its attacks against that creature get Critical Hit +3% and
+ * its defenses against that creature Critical Dodge +5%. Purely passive: it
+ * reads the aim, never spends it, and it does not care whether the ability is
+ * Aim-neutral, because it draws nothing from the stacks.
+ *
+ * The attack side reads the reticle the way resolveAimOnAttack does, so an
+ * empty reticle counts as swinging at the aimed creature. It must be read
+ * before resolveAimOnAttack runs, since that may spend or break the aim.
+ *
+ * @param {Actor} actor  the attacker
+ * @returns {number} critical-hit range bonus
+ */
+export function getCalculationCritHit(actor) {
+  if (!actor || !actorHasSpecNode(actor, "shadow", "calculation")) return 0;
+  const aim = readAim(getAimerToken(actor));
+  if (!aim?.targetId || !(Number(aim.stacks) > 0)) return 0;
+  const targetIds = [...(game.user?.targets ?? [])]
+    .map((t) => t.id)
+    .filter(Boolean);
+  const struckAimed =
+    targetIds.length === 0 || targetIds.includes(aim.targetId);
+  return struckAimed ? CALCULATION_CRIT_HIT : 0;
+}
+
+/**
+ * The defense half of Calculation: live only when the aim points at the token
+ * actually attacking, the same match getAimDefenseBonus makes.
+ *
+ * @param {Actor} actor  the defender
+ * @param {TokenDocument|Token|null} token  the defender's token (holds the aim)
+ * @param {string|null} attackerTokenId  the token being defended against
+ * @returns {number} critical-defense range bonus
+ */
+export function getCalculationCritDefense(actor, token, attackerTokenId) {
+  if (!actor || !actorHasSpecNode(actor, "shadow", "calculation")) return 0;
+  if (!attackerTokenId) return 0;
+  const aim = readAim(token ?? getAimerToken(actor));
+  if (aim?.targetId !== attackerTokenId || !(Number(aim.stacks) > 0)) return 0;
+  return CALCULATION_CRIT_DEFENSE;
+}
+
 /* -------------------------------------------- */
 /*  Core aim mutations (token → target)         */
 /* -------------------------------------------- */
@@ -486,10 +531,35 @@ const AIM_NEUTRAL_ABILITIES = new Map([
   ["REDSTEEL.Items.CunningStrike.name", "Cunning Strike"],
 ]);
 
+/**
+ * Servant of the Sword: Precise Cleave (Přesné rozseknutí). Cleave and Charge
+ * with Cleave "apply the Aim bonus to every opponent struck". Charge with Cleave
+ * was never Aim-neutral; the node lifts the exemption from Cleave and from its
+ * Flamberge upgrade, which stands in for Cleave on the same greatsword. A cleave
+ * is one roll against every victim, so the bonus on that roll reaches them all.
+ * Polearm Cleave is a different weapon's action and stays neutral.
+ */
+const PRECISE_CLEAVE_ABILITIES = new Set([
+  "REDSTEEL.Items.Cleave.name",
+  "REDSTEEL.Items.FlambergeCleaveAbility.name",
+]);
+
+/** Does Precise Cleave lift this ability's Aim exemption for its owner? */
+function preciseCleaveApplies(ability, key) {
+  const aimed =
+    PRECISE_CLEAVE_ABILITIES.has(key) ||
+    ability.name === "Cleave" ||
+    ability.name === "Flamberge Cleave (Ability)";
+  if (!aimed) return false;
+  const owner = ability.actor ?? ability.parent ?? null;
+  return !!owner && actorHasSpecNode(owner, "swordServant", "presneRozseknuti");
+}
+
 /** True when this ability is one the rules exempt from Aiming entirely. */
 export function abilityIgnoresAim(ability) {
   if (!ability) return false;
   const key = ability.system?.localizationKey;
+  if (preciseCleaveApplies(ability, key)) return false;
   if (key && AIM_NEUTRAL_ABILITIES.has(key)) return true;
   for (const name of AIM_NEUTRAL_ABILITIES.values()) {
     if (ability.name === name) return true;

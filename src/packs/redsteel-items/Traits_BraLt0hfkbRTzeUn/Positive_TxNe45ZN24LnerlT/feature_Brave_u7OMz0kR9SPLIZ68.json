@@ -4,7 +4,7 @@
   "type": "feature",
   "img": "icons/creatures/abilities/lion-roar-yellow.webp",
   "system": {
-    "description": "<p>Advantage on Nerve Tests against Fear or Terror.</p>",
+    "description": "<p>Advantage on Resolve tests against Fear or Terror.</p>",
     "options": [
       "feature",
       "trait",

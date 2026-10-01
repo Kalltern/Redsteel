@@ -80,6 +80,7 @@ import {
   getForcedSchool,
   getMirrorSources,
   getRankCost,
+  getWeaponMasterFreeCopyIds,
   getSkillDiscounts,
   setDiscountChoice,
   setMirrorChoice,
@@ -740,6 +741,8 @@ function requirementChips(trackId, rank, results) {
     if (!req) continue;
 
     if (req.t === "teacher") {
+      // Weapon Master waives the Teacher on a further weapon skill: no badge.
+      if (result.waived) continue;
       const tier = Number(req.tier) || 0;
       const unlocked = !!result.met;
       // The badge's own colour already says whether the teacher has been found,
@@ -1369,6 +1372,14 @@ function discountNote(cells) {
   const source = cells.find((cell) => cell.discountSource)?.discountSource;
   if (!source) return null;
   if (source.kind === "feature" && source.item?.uuid) return { uuid: source.item.uuid };
+  // A further weapon skill under the Weapon Master node (mistrZbrani).
+  if (source.kind === "weaponMaster") {
+    return {
+      uuid: null,
+      title: game.i18n.localize("REDSTEEL.Learn.WeaponMaster.title"),
+      text: game.i18n.localize("REDSTEEL.Learn.WeaponMaster.ranks"),
+    };
+  }
   // Rank I of the first school of magic, named by the temperament that chose it.
   if (source.kind === "freeSchool") {
     return {
@@ -2261,6 +2272,8 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     const traits = await this.#buildTraits();
     const isGM = game.user.isGM;
 
+    // Weapon Master: the 2nd and 3rd Weapon Specialization copies cost nothing.
+    const weaponMasterFree = getWeaponMasterFreeCopyIds(actor);
     const owned = getOwnedFeatures(actor)
       .sort((a, b) => (a.item.sort || 0) - (b.item.sort || 0))
       .map(({ item, price }) => {
@@ -2273,7 +2286,9 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
           uuid: item.uuid,
           name: item.localizedName ?? item.name,
           img: item.img,
-          costLabel: price ? pointsCostLabel(price) : "",
+          costLabel: price
+            ? pointsCostLabel(weaponMasterFree.has(item.id) ? { cp: 0, sp: 0 } : price)
+            : "",
           racial,
           native,
           unpriced: !price && !racial,
@@ -2425,16 +2440,14 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     const sections = FEATURE_SECTIONS.map((sectionId) => ({
       id: sectionId,
       label: game.i18n.localize(`REDSTEEL.Learn.Features.Sections.${sectionId}`),
-      // A section's families come first, then its features, each by name.
+      // What the character can buy right now comes first, then the rest,
+      // each block by name.
       rows: rows
         .filter((row) => row.section === sectionId)
-        .sort((a, b) =>
-          !!a.isFamily === !!b.isFamily
-            ? a.name.localeCompare(b.name, lang)
-            : a.isFamily
-              ? -1
-              : 1,
-        ),
+        .sort((a, b) => {
+          const buyable = (row) => (row.state === "available" ? 0 : 1);
+          return buyable(a) - buyable(b) || a.name.localeCompare(b.name, lang);
+        }),
     })).filter((section) => section.rows.length);
 
     // What replaces the list: the Languages panel, or the open family's skill

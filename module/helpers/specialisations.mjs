@@ -277,20 +277,113 @@ const CODE_AUTOMATED_NODES = {
   // (outnumberSneak is utils/sneakTriggers.mjs: it adds the "outnumbered 2:1"
   // promotion clause to the trigger list stamped on the attack card, which
   // utils/applyDamage.mjs answers against each victim as damage is applied.)
-  shadow: ["critAsSneak", "weakSpotMastery", "backDodge", "outnumberSneak"],
+  // (calculation is utils/aim.mjs, getCalculationCritHit/-CritDefense, read by
+  // utils/combatSkillBonuses.mjs (attack crit range) and utils/defense.mjs
+  // (weapon defense crit range) while an Aim points at the other side.
+  // aimedAttack is utils/combatSkillBonuses.mjs: +5 against the aimed-strike
+  // penalty. speedTests is utils/speedTest.mjs: advantage on every
+  // rollSpeedTest, the versus Speed Test path. daggerDefense is
+  // documents/actor.mjs: a main-hand dagger's Defense penalty cancelled in the
+  // derived melee defense. quickFeet is utils/abilityMovement.mjs
+  // (declareQuickFeetStep) with utils/combatAbilities.mjs and
+  // utils/redsteelHotbar.mjs: the step around the opponent, then the swing.)
+  shadow: [
+    "critAsSneak",
+    "weakSpotMastery",
+    "backDodge",
+    "outnumberSneak",
+    "calculation",
+    "aimedAttack",
+    "speedTests",
+    "daggerDefense",
+    "quickFeet",
+  ],
   // utils/weakSpot.mjs — weakSpotPen adds 10 Penetration to every action in the
   // Exploit Weakness family, folded in by utils/basicAttack.mjs (the throwing
   // versions, which ride an ordinary attack) and utils/combatAbilities.mjs.
-  weaponMaster: ["weakSpotPen"],
+  // utils/weaponMaster.mjs holds the shared reads (topmost armor layer's
+  // class, active main weapon's class) for the rest of the tree:
+  // mistrZbrani is helpers/progressionEngine.mjs (further weapon skills priced
+  // in the Learn window, free Weapon Specialization copies). vycvikSeZbrani is
+  // documents/actor.mjs (light: Dex melee crit range), combatSkillBonuses.mjs
+  // (medium crit hit, heavy crit damage/penetration) and utils/defense.mjs
+  // (medium crit defense). primaryDamage is documents/item.mjs (the attribute
+  // term of the weapon formula x1.5). zbrojnos1 is utils/applyDamage.mjs
+  // (light: durability sacrifice) and the granted Armiger feature's reroll
+  // pool, gated in utils/rerolls.mjs (heavy). zbrojnos2 is utils/defense.mjs
+  // (light: dodge crit and cost; heavy: Deflect). veteran1 is
+  // utils/applyDamage.mjs (the Veteran toggle), veteran2 utils/veteranRest.mjs
+  // (Free rest on a Critical Defense). presileni is utils/overpower.mjs,
+  // odrazeni utils/brace.mjs, bdelyOchrance the Vigilant chip, all three
+  // offered by utils/actionSuggestions.mjs. rychlaReakce is
+  // utils/combatAbilities.mjs (the improved_fast_reaction +1 Reaction).
+  // vytrvalyValecnik is utils/enduringWarrior.mjs: the "Missed" button on
+  // the attack card, fed the Stamina paid by deductAbilityCost.
+  weaponMaster: [
+    "weakSpotPen",
+    "vytrvalyValecnik",
+    "mistrZbrani",
+    "vycvikSeZbrani",
+    "primaryDamage",
+    "zbrojnos1",
+    "zbrojnos2",
+    "veteran1",
+    "veteran2",
+    "presileni",
+    "odrazeni",
+    "bdelyOchrance",
+    "rychlaReakce",
+  ],
   // utils/abilityGrants.mjs — unlocking the node grants an ability item.
   // (improvedAim and aimReduction are also read by utils/aim.mjs: the first for
   // the +10 penetration and Advanced Aim, the second for aim reduction on a hit
   // plus the Sneak Attack grant.)
   // (vyhodnyManevr is utils/aim.mjs + utils/advantageousManeuver.mjs: the same
   // defense-card button as the Sword Dancer's, gated on a two-handed sword.)
-  swordServant: ["odvetnyUder", "improvedAim", "aimReduction", "utokSPohybem", "vyhodnyManevr"],
+  // (chargeDamage grants Improved Charge, the +1d4 Charge, in place of Charge.
+  // priskok is also utils/actionSuggestions.mjs + utils/abilityMovement.mjs:
+  // the off-turn hotbar chip against a melee attack from beyond the next hex,
+  // and the free hex toward the attacker. presneRozseknuti is utils/aim.mjs:
+  // Cleave stops being Aim-neutral. dexTests is utils/testRating.mjs:
+  // +10 on both sides of a Dexterity versus Test. vylUtokSPohybem is
+  // utils/abilityMovement.mjs, grantPassingStrikeStep: the step after an
+  // off-turn retaliation; the same node on swordDancer and champion.
+  // draciStraz is utils/dragonGuard.mjs: the Hit bonus read in
+  // utils/combatSkillBonuses.mjs getAttackRolls, Exploit Weakness as a
+  // retaliation in utils/actionTracker.mjs (Reaction cost) and
+  // utils/actionSuggestions.mjs (hotbar chip). draciSpanek is
+  // utils/dragonSleep.mjs, run from the stance branch of
+  // utils/combatAbilities.mjs; the hotbar drops Riposte while it holds.
+  // ripostaFree / ripostaStamina / ripostaCrit and chargeDistance are
+  // utils/swordServant.mjs: read by utils/actionTracker.mjs (the free
+  // Riposte), utils/combatAbilities.mjs deductAbilityCost (Stamina -4) and
+  // the charge declaration, and utils/combatSkillBonuses.mjs (the crit).
+  // draciVypad is utils/actionSuggestions.mjs: the hotbar chip beside
+  // Riposte; its card already rolls the Speed contest. prosmyknuti is
+  // utils/slipThrough.mjs, stamped in utils/applyDamage.mjs.)
+  swordServant: [
+    "draciStraz",
+    "draciSpanek",
+    "ripostaFree",
+    "ripostaStamina",
+    "ripostaCrit",
+    "chargeDistance",
+    "draciVypad",
+    "prosmyknuti",
+    "odvetnyUder",
+    "improvedAim",
+    "aimReduction",
+    "utokSPohybem",
+    "vyhodnyManevr",
+    "chargeDamage",
+    "priskok",
+    "presneRozseknuti",
+    "dexTests",
+    "vylUtokSPohybem",
+  ],
   hoplite: ["nabodnuti", "velkeTvory"],
-  champion: ["odvetnyUder", "riposta"],
+  // (vylUtokSPohybem: see swordServant.)
+  champion: ["odvetnyUder", "riposta", "vylUtokSPohybem"],
   skirmisher: ["utokSPohybem"],
   // utils/aim.mjs — duelistuvPostoj is the stance itself (one-handed sword,
   // off hand free or holding a fencing dagger), which aimPerks tests as `blade`
@@ -299,12 +392,15 @@ const CODE_AUTOMATED_NODES = {
   // (utils/applyDamage.mjs); postojMireni carries stacks across a target switch;
   // vyhodnyManevr buys an Aim off a defense that held, offered as a button on
   // the defense card (utils/advantageousManeuver.mjs).
+  // vylUtokSPohybem is utils/abilityGrants.mjs + utils/abilityMovement.mjs:
+  // Improved Passing Strike, whose step also follows an off-turn retaliation.
   swordDancer: [
     "duelistuvPostoj",
     "krvaveBodnuti",
     "mireniRedukce",
     "postojMireni",
     "vyhodnyManevr",
+    "vylUtokSPohybem",
   ],
   // utils/mentalDuel.mjs — ovladnuti unlocks "Seize control" on the winner's
   // banner; vysati unlocks "Drain" (+2 Mind to the victor, ends the duel);

@@ -52,6 +52,8 @@
 
 import { parseActionCost } from "./spellbook.mjs";
 import { combatantForActor } from "./combatants.mjs";
+import { isExploitAsRetaliation } from "./dragonGuard.mjs";
+import { hasFreeRiposte, isRiposte, markFreeRiposteUsed } from "./swordServant.mjs";
 import { isForcedMove } from "./forcedMoveRegistry.mjs";
 
 const SYSTEM_ID = "redsteel";
@@ -167,6 +169,21 @@ function normaliseLock(lock) {
     bonus: !!lock.bonus,
     resume: lock.bonus ? normaliseLock(lock.resume) : null,
     resumeMoved: !!lock.resumeMoved,
+    // Quick Feet: the opponent the step must stay next to, and the retaliation
+    // the strip's check button fires once the step is done.
+    around: typeof lock.around === "string" && lock.around ? lock.around : null,
+    // Lunge Step: the attacker the step must close in on.
+    toward: typeof lock.toward === "string" && lock.toward ? lock.toward : null,
+    launch: lock.launch?.abilityId
+      ? {
+          abilityId: String(lock.launch.abilityId),
+          targetId: lock.launch.targetId ? String(lock.launch.targetId) : null,
+          modifierIds: Array.isArray(lock.launch.modifierIds)
+            ? lock.launch.modifierIds.map(String)
+            : [],
+          turn: Number(lock.launch.turn),
+        }
+      : null,
   };
 }
 
@@ -342,7 +359,7 @@ export async function grantFreeMovement(actor) {
  */
 export async function lockMovement(
   actor,
-  { mode, budget, startSpent = 0, charge = 0, ignore = [] },
+  { mode, budget, startSpent = 0, charge = 0, ignore = [], launch = null },
 ) {
   if (!trackedCombat(actor)) return;
   const spent = getSpent(actor);
@@ -355,6 +372,8 @@ export async function lockMovement(
       budget: Math.max(0, Math.floor(Number(budget) || 0)),
       startSpent: Math.max(0, Math.floor(Number(startSpent) || 0)),
       ignore: Array.isArray(ignore) ? ignore : [],
+      // A Charge: which charge ability the strip's check button swings.
+      launch,
     },
   });
 }
@@ -416,13 +435,26 @@ export async function confirmMovement(actor, { tokenSpent } = {}) {
  * A step granted while another bonus step is running replaces it and keeps
  * the original stash.
  *
+ * `around` and `launch` are Quick Feet's (abilityMovement.mjs): the opponent
+ * the step keeps next to, and the retaliation to fire once it is done.
+ * `toward` is Lunge Step's: the attacker the step must close in on.
+ *
  * @param {Actor} actor
- * @param {{mode: string, budget: number, startSpent: number, source?: string}} step
+ * @param {{mode: string, budget: number, startSpent: number, source?: string,
+ *   around?: string|null, toward?: string|null, launch?: object|null}} step
  * @returns {Promise<boolean>} Whether a step was granted.
  */
 export async function grantBonusStep(
   actor,
-  { mode, budget, startSpent = 0, source = null },
+  {
+    mode,
+    budget,
+    startSpent = 0,
+    source = null,
+    around = null,
+    toward = null,
+    launch = null,
+  },
 ) {
   if (!trackedCombat(actor)) return false;
   const spent = getSpent(actor);
@@ -452,8 +484,32 @@ export async function grantBonusStep(
       bonus: true,
       resume,
       resumeMoved,
+      around,
+      toward,
+      launch,
     },
     bonusSources: source ? [...spent.bonusSources, source] : spent.bonusSources,
+  });
+  return true;
+}
+
+/**
+ * Note a once-per-round allowance as used, in the same round-stamped record
+ * (Vigilant Protector's ally Opportunity Attack). Expires with the round like
+ * everything else here. False when there is no encounter to note it in or it
+ * was already noted.
+ *
+ * @param {Actor} actor
+ * @param {string} source  any id unique to the allowance and the round
+ * @returns {Promise<boolean>}
+ */
+export async function markBonusSource(actor, source) {
+  if (!source || !trackedCombat(actor)) return false;
+  const spent = getSpent(actor);
+  if (spent.bonusSources.includes(source)) return false;
+  await writeSpent(actor, {
+    ...spent,
+    bonusSources: [...spent.bonusSources, source],
   });
   return true;
 }
@@ -501,6 +557,33 @@ export function isTrackedTurn(actor) {
 }
 
 /**
+ * Movement modes an ability declares outside the actor's own turn
+ * (abilityMovement.mjs): Quick Feet's step before a retaliation, Improved
+ * Passing Strike's step after one, and Lunge Step's step toward an attacker.
+ * Movement is otherwise a turn action, so the strip, the locked zone and the
+ * drag caps ask isMovementTurn rather than isTrackedTurn, which lets these
+ * steps show off-turn without opening Move and Sprint there.
+ */
+const OFF_TURN_MODES = new Set(["quickFeet", "passingReaction", "lungeStep"]);
+
+/** Does this actor hold an unfinished off-turn step (Quick Feet and the like)? */
+export function hasOffTurnStep(actor) {
+  if (!trackedCombat(actor)) return false;
+  const lock = getMovementLock(actor);
+  return !!lock && OFF_TURN_MODES.has(lock.mode) && !lock.done;
+}
+
+/**
+ * May this actor's movement lock be walked right now: its own turn, or an
+ * off-turn step it has been granted.
+ *
+ * @param {Actor} actor
+ */
+export function isMovementTurn(actor) {
+  return isTrackedTurn(actor) || hasOffTurnStep(actor);
+}
+
+/**
  * What one item costs this actor *right now*, reading its `system.actionCost`
  * and the current turn.
  *
@@ -523,7 +606,14 @@ export function costOf(actor, item) {
   // Off-turn and able to react: that is what the reaction is for, whatever
   // else the cost line also offers ("1 | Reaction" cast in someone else's
   // turn is the reaction reading of that spell).
+  // Servant of the Sword: one Riposte per round is a Free action.
+  if (isRiposte(item) && hasFreeRiposte(actor)) return none;
   if (parsed.reaction && !onTurn) return { actions: 0, reactions: 1 };
+  // Dragon Guard: Exploit Weakness swung off-turn is a Retaliation action,
+  // paid with the Reaction rather than its two Actions.
+  if (!onTurn && isExploitAsRetaliation(actor, item)) {
+    return { actions: 0, reactions: 1 };
+  }
 
   // A pure reaction used on its own turn. The dialog already calls that out as
   // a timing mistake; charging it an invented action cost would not.
@@ -545,11 +635,19 @@ export async function spendForItems(actor, items) {
   const list = Array.isArray(items) ? items : [items];
   let actions = 0;
   let reactions = 0;
+  let freeRiposte = false;
   for (const item of list) {
+    // The free Riposte covers one use: a second Riposte in the same list (or
+    // later this round) pays its Reaction.
+    if (!freeRiposte && isRiposte(item) && hasFreeRiposte(actor)) {
+      freeRiposte = true;
+      continue;
+    }
     const cost = costOf(actor, item);
     actions += cost.actions;
     reactions += cost.reactions;
   }
+  if (freeRiposte) await markFreeRiposteUsed(actor);
   await spend(actor, { actions, reactions });
 }
 

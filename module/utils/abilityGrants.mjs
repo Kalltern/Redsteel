@@ -125,6 +125,7 @@ const ABILITY = {
   IMPROVED_ARMORING: A("iMpArmoring00001"), // Vylepšené obrnění
   IMPROVED_BRILLIANT_COUNTER: A("iMpBrilCount0001"), // Vylepšený brilantní protiútok
   IMPROVED_BRILLIANT_COUNTER_SURPRISE: A("iMpBrilCountS001"), // Vylepšený brilantní protiútok, za 10 výdrže
+  IMPROVED_CHARGE: A("iMprovedCharge01"), // Zteč +1d4 (Služebník meče)
   IMPROVED_DEFENSIVE_STANCE: A("iMpDefStance0001"), // Vylepšený obranný postoj
   IMPROVED_DUELISTS_ADVANCE: A("iMpDuelAdv000001"), // Vylepšený duelistův krok
   IMPROVED_EXPLOIT_WEAKNESS: A("iMpExplWeak00001"), // Vylepšený útok na slabinu
@@ -797,7 +798,7 @@ export const ABILITY_GRANTS = [
     grant: [ABILITY.LUNGE_STEP],
   },
   {
-    label: "Servant of the Sword: Dračí výpad → Dragon's Thrust",
+    label: "Servant of the Sword: Dračí výpad → Dragon Strike",
     when: specNode("swordServant", "draciVypad"),
     grant: [ABILITY.DRAGONS_THRUST],
   },
@@ -805,6 +806,15 @@ export const ABILITY_GRANTS = [
     label: "Servant of the Sword: Prosmýknutí → Slip Through",
     when: specNode("swordServant", "prosmyknuti"),
     grant: [ABILITY.SLIP_THROUGH],
+  },
+  {
+    // "Zteč: +1d4 zranění": the same Charge with +3d4 instead of +2d4. It
+    // keeps the Charge flow (abilityMovement.mjs isCharge). Pikeman Charge,
+    // which also replaces Charge, is left alongside it.
+    label: "Servant of the Sword: Charge +1d4 → Charge upgrades to Improved Charge",
+    when: specNode("swordServant", "chargeDamage"),
+    grant: [ABILITY.IMPROVED_CHARGE],
+    replaces: [ABILITY.CHARGE],
   },
 
   /* Vylepšený útok s pohybem — the same node on three trees. The improved
@@ -837,6 +847,15 @@ export const ABILITY_GRANTS = [
     when: specNode("weaponMaster", "rychlaReakce"),
     grant: [ABILITY.IMPROVED_FAST_REACTION],
     replaces: [ABILITY.FAST_REACTION],
+  },
+  {
+    // A feature, not an ability: its once-per-day Defense / Ranged Defense
+    // reroll pool only works while heavy armor is the top layer
+    // (flags.redsteel.rerollRequiresArmor, read in rerolls.mjs). The light
+    // branch of the same node is the durability bonus in applyDamage.mjs.
+    label: "Weapon Master: Zbrojnoš I → Armiger (heavy armor reroll feature)",
+    when: specNode("weaponMaster", "zbrojnos1"),
+    grant: [A("aRmigerFeature01")],
   },
 
   /* Mečový tanečník (Sword Dancer) */

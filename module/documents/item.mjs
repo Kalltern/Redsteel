@@ -7,6 +7,10 @@ import {
   unidentifiedDisplayName,
   isItemUnidentified,
 } from "../utils/itemIdentify.mjs";
+import {
+  hasWeaponMasterNode,
+  PRIMARY_DAMAGE_MULTIPLIER,
+} from "../utils/weaponMaster.mjs";
 
 /**
  * Stat block of the "Improvised shield" compendium item
@@ -842,14 +846,22 @@ export class RedsteelItem extends Item {
               attr = "dex"; // Use Dexterity if all conditions are met
             }
           }
+          // Damage +50% from Primary Attributes (Weapon Master, primaryDamage):
+          // whichever attribute this attack adds counts one and a half times,
+          // rounded down.
+          const attrTerm =
+            this.actor.type === "character" &&
+            hasWeaponMasterNode(this.actor, "primaryDamage")
+              ? `floor(@${attr} * ${PRIMARY_DAMAGE_MULTIPLIER})`
+              : `@${attr}`;
           if (
             hasGiant &&
             this.system.class !== "crossbow" &&
             this.system.class !== "bow"
           ) {
-            formula = `${diceNum}d${diceSize} + 1d4 ${diceBonus ? `+${diceBonus}` : ""} + @${attr}`;
+            formula = `${diceNum}d${diceSize} + 1d4 ${diceBonus ? `+${diceBonus}` : ""} + ${attrTerm}`;
           } else {
-            formula = `${diceNum}d${diceSize} ${diceBonus ? `+${diceBonus}` : ""} + @${attr}`;
+            formula = `${diceNum}d${diceSize} ${diceBonus ? `+${diceBonus}` : ""} + ${attrTerm}`;
           }
           if (this.actor.type === "npc") {
             formula = `${diceNum}d${diceSize}  ${

@@ -5,6 +5,7 @@ import {
   syncSpecialisationPassive,
 } from "../helpers/specialisations.mjs";
 import { openLearnWindow } from "../utils/learnWindow.mjs";
+import { openCharacterCreation } from "../utils/characterCreation.mjs";
 import { isHandheldLight } from "../utils/itemLight.mjs";
 import {
   getDiscountSourceLabel,
@@ -315,6 +316,8 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       rerollCraft: this._rerollCraft,
       selectRace: this._selectRace,
       chooseWeaponSpec: this._chooseWeaponSpec,
+      startCreation: this._startCreation,
+      skipCreation: this._skipCreation,
     },
     // Custom property that's merged into `this.options`
     dragDrop: [{ dragSelector: "[data-drag]", dropSelector: null }],
@@ -1578,6 +1581,20 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     }
   }
 
+  /**
+   * First-open choice on a freshly created character (see the preCreateActor
+   * hook in redsteel.mjs). "Skip creation" clears the pending flag, which
+   * brings back the normal header. "Create a character" opens the Character
+   * Creation window and keeps the flag: its Finish clears it.
+   */
+  static async _startCreation(event, target) {
+    openCharacterCreation(this.actor);
+  }
+
+  static async _skipCreation(event, target) {
+    await this.actor.unsetFlag("redsteel", "creationPending");
+  }
+
   /** @override */
   static PARTS = {
     header: {
@@ -1713,6 +1730,12 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       config: CONFIG.REDSTEEL,
       showSkillsEdit,
       skillsEditMode: showSkillsEdit && this._skillsEditMode,
+      // Only an owner can answer the create/skip choice; everyone else sees
+      // the ordinary header meanwhile.
+      creationPending:
+        this.actor.type === "character" &&
+        this.isEditable &&
+        !!this.actor.getFlag("redsteel", "creationPending"),
       tabs: this._getTabs(options.parts),
     };
 

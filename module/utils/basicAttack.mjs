@@ -24,6 +24,7 @@ import { renderAttackTagsHtml } from "./opportunityAttacks.mjs";
 import { captureAttackTargets } from "./autoDefense.mjs";
 import { captureAttackPositioning } from "./positioning.mjs";
 import { modifierKeysOf } from "./abilityMovement.mjs";
+import { dragonGuardTags } from "./dragonGuard.mjs";
 
 export async function universalAttackLogic({
   attackType,
@@ -424,9 +425,14 @@ export async function universalAttackLogic({
       criticalFailureThreshold,
       aimedPart,
       opportunityAttack,
+      dragonGuard,
     } = attackData;
-    // Runtime tag only — no bonus attached, it just travels to the chat card.
-    const attackTags = opportunityAttack ? ["opportunity"] : [];
+    // Runtime tags only; they travel to the chat card. Dragon Guard's +10% is
+    // already in the roll (getAttackRolls), the chip says why.
+    const attackTags = [
+      ...(opportunityAttack ? ["opportunity"] : []),
+      ...dragonGuardTags(dragonGuard, actor, null),
+    ];
     const aimedPartDef = aimedPart ? AIMED_PARTS[aimedPart] : null;
     if (aimedPartDef) {
       if (concatDescription) concatDescription += "<br>";

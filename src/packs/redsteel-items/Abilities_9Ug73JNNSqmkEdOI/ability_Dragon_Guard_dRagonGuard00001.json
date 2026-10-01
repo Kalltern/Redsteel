@@ -1,7 +1,7 @@
 {
   "name": "Dragon Guard",
   "type": "ability",
-  "img": "icons/skills/melee/sword-twirl-orange.webp",
+  "img": "icons/creatures/eyes/lizard-single-slit-blue.webp",
   "system": {
     "description": "<p>For one round, Hit +10% for Retaliation actions, Riposte and any Momentum that follows them.<br />You may use Exploit Weakness as a Retaliation action.</p>",
     "type": "other",
@@ -86,7 +86,7 @@
       "extra2": 0,
       "extra3": 0
     },
-    "class": "",
+    "class": "stance",
     "actionCost": "1 Action",
     "defense": 0,
     "rangedDefense": 0,
@@ -109,7 +109,8 @@
     "effectType2": "",
     "effectType3": "",
     "localizationKey": "REDSTEEL.Items.DragonGuard.name",
-    "category": "doctrine"
+    "category": "doctrine",
+    "key": "dragon_guard"
   },
   "effects": [],
   "folder": "9Ug73JNNSqmkEdOI",

@@ -1,6 +1,7 @@
 import {
   confirmMovement,
   getMovementLock,
+  isMovementTurn,
   isTrackedTurn,
 } from "../utils/actionTracker.mjs";
 import { isForcedMove } from "../utils/forcedMoveRegistry.mjs";
@@ -223,7 +224,7 @@ export class RedsteelToken extends Token {
     // A declared Disengage: the enemies it broke from put no swords on the
     // route either.
     const dragLock =
-      this.actor && isTrackedTurn(this.actor) ? getMovementLock(this.actor) : null;
+      this.actor && isMovementTurn(this.actor) ? getMovementLock(this.actor) : null;
     this.#pathIgnore = dragLock?.ignore ?? [];
     this.#pathFree = !!MOVEMENT_MODES[dragLock?.mode]?.free && !dragLock?.done;
     this.#dragOriginPoint = this.center
@@ -243,7 +244,8 @@ export class RedsteelToken extends Token {
     // A declared movement replaces the three bands with the one it allows,
     // shrunk by what has been walked since it was declared.
     const actor = this.actor;
-    const lock = actor && isTrackedTurn(actor) ? getMovementLock(actor) : null;
+    // isMovementTurn: an off-turn Quick Feet step caps the drag like a turn's.
+    const lock = actor && isMovementTurn(actor) ? getMovementLock(actor) : null;
     const lockMode = lock ? MOVEMENT_MODES[lock.mode] : null;
     if (lockMode) {
       // The drag band stands in for the locked zone while the token is held;
@@ -256,6 +258,8 @@ export class RedsteelToken extends Token {
         computeMovementZone(this, remaining, {
           ignore: lock.ignore ?? [],
           free: !!lockMode.free,
+          around: lock.around ?? null,
+          toward: lock.toward ?? null,
         }),
         { color: lockMode.color, alpha: 0.15 },
         this.document?.id ?? null,

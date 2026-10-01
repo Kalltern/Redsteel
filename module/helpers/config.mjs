@@ -894,6 +894,73 @@ REDSTEEL.effectDefinitions = {
     stackBehavior: "ignore",
   },
 
+  // "Dračí stráž" (Servant of the Sword): Hit +10% for retaliations, Riposte
+  // and the Momentum after them, and Exploit Weakness as a retaliation. No
+  // `changes`: the bonus is per attack, read in getAttackRolls
+  // (utils/dragonGuard.mjs). Gone at the start of the holder's next turn.
+  dragon_guard: {
+    name: "REDSTEEL.Items.DragonGuard.name",
+    img: "icons/creatures/eyes/lizard-single-slit-blue.webp",
+    statuses: ["dragon_guard"],
+    defaultTurns: 1,
+    useDuration: true,
+    stackBehavior: "ignore",
+    changes: [],
+  },
+
+  // "Prosmýknutí" (Slip Through, Servant of the Sword) failed its versus
+  // Test: -10% Defense and Dodge until the start of the slipper's next turn
+  // (utils/slipThrough.mjs).
+  slip_through_fail: {
+    name: "REDSTEEL.SlipThrough.FailEffect",
+    img: "icons/skills/movement/feet-winged-boots-brown.webp",
+    statuses: ["slip_through_fail"],
+    defaultTurns: 1,
+    useDuration: true,
+    stackBehavior: "refresh",
+    changes: [
+      {
+        key: "system.combatSkills.meleeDefense.bonus",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: -10,
+      },
+      {
+        key: "system.combatSkills.dodge.bonus",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: -10,
+      },
+    ],
+  },
+
+  // "Dračí spánek" (Servant of the Sword): the three defenses +10% for one
+  // turn. Giving up the Reactions for Rests, the Stamina and the Aim happen
+  // once, when it is taken (utils/dragonSleep.mjs); no Riposte while it holds.
+  dragon_sleep: {
+    name: "REDSTEEL.Items.DragonSleep.name",
+    img: "icons/creatures/reptiles/dragon-horned-blue.webp",
+    statuses: ["dragon_sleep"],
+    defaultTurns: 1,
+    useDuration: true,
+    stackBehavior: "ignore",
+    changes: [
+      {
+        key: "system.combatSkills.meleeDefense.bonus",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: 10,
+      },
+      {
+        key: "system.combatSkills.dodge.bonus",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: 10,
+      },
+      {
+        key: "system.combatSkills.rangedDefense.bonus",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: 10,
+      },
+    ],
+  },
+
   // "Běh" — what the Sprint action buys and what it costs. The runner is a
   // harder target at range (+15% Kryt) and wide open in melee (-25% Obrana).
   // Applied to the runner by the Sprint ability itself (runUtilityAbility in
@@ -1502,6 +1569,57 @@ REDSTEEL.effectDefinitions = {
         key: "system.secondaryAttributes.ini.bonus",
         mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
         value: 4,
+      },
+    ],
+  },
+
+  // "Vylepšená rychlá reakce" (Weapon Master) — the +1 Reaction half of the
+  // improved action. Lasts until the start of the actor's next turn, like the
+  // Initiative half above. Refreshes rather than stacks: a second purchase in
+  // the same round buys Initiative, not a third Reaction.
+  improved_fast_reaction: {
+    name: "REDSTEEL.WeaponMaster.ExtraReaction",
+    img: "icons/skills/movement/feet-winged-boots-brown.webp",
+    statuses: ["improved_fast_reaction"],
+    useDuration: true,
+    defaultTurns: 1,
+    stackBehavior: "refresh",
+    changes: [
+      {
+        key: "system.actionEconomy.reactions",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: 1,
+      },
+    ],
+  },
+
+  // "Odražení" (Brace, Weapon Master) — a Reaction spent against an incoming
+  // melee attack buys Advantage on the next defense roll, whichever of the
+  // three it turns out to be. utils/brace.mjs deletes it as soon as a defense
+  // card is posted for its owner; otherwise it lapses at the start of the
+  // owner's next turn.
+  brace: {
+    name: "REDSTEEL.Items.Deflection.name",
+    img: "icons/equipment/shield/heater-steel-sword-yellow-black.webp",
+    statuses: ["brace"],
+    useDuration: true,
+    defaultTurns: 1,
+    stackBehavior: "refresh",
+    changes: [
+      {
+        key: "system.rollAdvantage.meleeDefense",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: 1,
+      },
+      {
+        key: "system.rollAdvantage.rangedDefense",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: 1,
+      },
+      {
+        key: "system.rollAdvantage.dodge",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: 1,
       },
     ],
   },

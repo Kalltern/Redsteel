@@ -1,6 +1,19 @@
 ﻿{{! Sheet Header }}
 
-{{#if (eq actor.type "character")}}
+{{#if creationPending}}
+{{!-- First open of a new character: one dark plate, one gold border, split
+      into the two choices. Either one clears flags.redsteel.creationPending
+      and the normal header below takes over. --}}
+<header class="sheet-header creation-choice">
+  <button type="button" class="creation-choice-side" data-action="startCreation">
+    <span class="creation-choice-label">{{localize "REDSTEEL.CharacterCreation.Create"}}</span>
+  </button>
+  <div class="creation-choice-divider"></div>
+  <button type="button" class="creation-choice-side" data-action="skipCreation">
+    <span class="creation-choice-label">{{localize "REDSTEEL.CharacterCreation.Skip"}}</span>
+  </button>
+</header>
+{{else if (eq actor.type "character")}}
 <header class="sheet-header">
 
   <div class="profile-container">

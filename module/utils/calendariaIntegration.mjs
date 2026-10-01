@@ -4,7 +4,8 @@
  * When enabled (world setting + Calendaria active), two things become
  * calendar-driven instead of manual:
  *  - Spent reroll pools refresh automatically after N calendar days (1 by
- *    default, or 7/5 for a Lucky pool spent on a Critical Failure — see
+ *    default, or 7 for any pool spent on a Critical Failure, 5 for Lucky
+ *    with Untiring Luck — see
  *    {@link scheduleRerollRefresh}).
  *  - Grave wounds heal automatically after `system.woundHealDays` calendar
  *    days each (see {@link getWoundHealDays}).
@@ -20,7 +21,7 @@
  *     poolLabel?, noteId }
  * `due` is a worldTime timestamp (seconds). `lockout` (rerollRefresh only)
  * marks a pool that must NOT be reset by Long Rest until `due` passes — this
- * is how Lucky's crit-failure lockout survives Long Rest by design.
+ * is how the crit-failure lockout survives Long Rest by design.
  *
  * Calendar notes created for these entries are purely cosmetic flavour — the
  * actor flag is the source of truth. If no GM is online when a note request
@@ -192,7 +193,7 @@ function* iterCharacterActors() {
  * @param {{itemId:string, poolIndex:number, label:string}} pool  Descriptor
  *   from {@link module:utils/rerolls.getEligibleRerolls}.
  * @param {{critFailure?:boolean}} [options]  Whether the roll this reroll is
- *   replacing was itself a natural Critical Failure (Lucky's long lockout).
+ *   replacing was itself a natural Critical Failure (7-day lockout).
  */
 export async function scheduleRerollRefresh(actor, pool, { critFailure = false } = {}) {
   try {
@@ -209,10 +210,12 @@ export async function scheduleRerollRefresh(actor, pool, { critFailure = false }
       (i) => i.system?.localizationKey === "REDSTEEL.Items.UntiringLuck.name",
     );
 
+    // Any pool spent rerolling a natural Critical Failure is locked out for a
+    // week; Untiring Luck shortens Lucky's lockout to 5 days.
     let days = 1;
     let lockout = false;
-    if (critFailure && isLucky) {
-      days = isUntiring ? 5 : 7;
+    if (critFailure) {
+      days = isLucky && isUntiring ? 5 : 7;
       lockout = true;
     }
 

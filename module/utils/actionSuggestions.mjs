@@ -15,6 +15,7 @@ import {
   getActionPools,
   getMovementLock,
   getSpent,
+  isMovementTurn,
   isTrackedTurn,
   trackedCombat,
 } from "./actionTracker.mjs";
@@ -27,11 +28,20 @@ import {
   tokenForActor,
 } from "./movementZones.mjs";
 import { areAdjacent } from "./positioning.mjs";
+import { EXPLOIT_WEAKNESS_KEY, hasDragonGuard } from "./dragonGuard.mjs";
+import { hasDragonSleep } from "./dragonSleep.mjs";
+import { hasFreeRiposte } from "./swordServant.mjs";
+import { isSlipThrough, pendingSlipThrough } from "./slipThrough.mjs";
 import { resolveWeaponContext } from "./weaponResolver.mjs";
 import { hasImpaleFollowup, IMPALE_FOLLOWUP_KEY } from "./impaleFollowup.mjs";
 import { OVERWATCH_KEY, overwatchTrigger } from "./overwatch.mjs";
 import { holdCostLabel, isStanceHeld, maintainedStances } from "./stances.mjs";
 import { escapeTargets, liveMessage } from "./escapeFollowup.mjs";
+import { LUNGE_STEP_KEY, lungeStepSource } from "./abilityMovement.mjs";
+import { findOverpowerContest, OVERPOWER_KEY } from "./overpower.mjs";
+import { BRACE_KEY, getBraceEffect } from "./brace.mjs";
+import { isHostileSide } from "./movementZones.mjs";
+import { hasWeaponMasterNode } from "./weaponMaster.mjs";
 
 const MODE_ORDER = ["move", "slow", "sprint", "disengage"];
 
@@ -51,8 +61,9 @@ function costLabel(actions) {
  * @returns {object[]}
  */
 function movementProvider(actor) {
-  // Movement is a turn action: only on the actor's own turn.
-  if (!isTrackedTurn(actor)) return [];
+  // Movement is a turn action: only on the actor's own turn, save an off-turn
+  // step an ability granted (Quick Feet), which shows as its locked chip.
+  if (!isMovementTurn(actor)) return [];
   const lock = getMovementLock(actor);
   if (lock) {
     const def = MOVEMENT_MODES[lock.mode];
@@ -133,6 +144,11 @@ const RETALIATORY_KEY = "REDSTEEL.Items.RetaliatoryStrike.name";
 /** The Champion's upgrade stands in for the plain strike (abilityGrants.mjs). */
 const IMPROVED_RETALIATORY_KEY = "REDSTEEL.Items.ImprovedRetaliatoryStrike.name";
 const RIPOSTE_KEY = "REDSTEEL.Items.Riposte.name";
+/**
+ * Dračí výpad (Dragon Strike, Servant of the Sword): like Riposte it answers
+ * an incoming melee attack instead of a Defense, so it is offered beside it.
+ */
+const DRAGON_STRIKE_KEY = "REDSTEEL.Items.DragonsThrust.name";
 /**
  * Odstrčení (Shove), both attribute forms. Granted by Pikeman 5 and Musketeer
  * 8 (abilityGrants.mjs); a retaliation attack "after a successful Defense".
@@ -216,8 +232,10 @@ function latestDefense(tokenIds) {
     }
     // The reaction is used up once the defender has swung it after the
     // defense card, told apart by the speaker's token.
+    // Exploit Weakness under Dragon Guard counts too: its card is tagged.
+    const tags = Array.isArray(flags.attackTags) ? flags.attackTags : [];
     if (
-      RETALIATION_KEYS.has(flags.abilityKey) &&
+      (RETALIATION_KEYS.has(flags.abilityKey) || tags.includes("retaliation")) &&
       tokenIds.has(message.speaker?.token)
     ) {
       answered = true;
@@ -290,7 +308,8 @@ function answerableAttacker(tokenId) {
 function attackIsAnswerable(defense) {
   if (UNANSWERABLE_ATTACK_KEYS.has(defense.attackAbilityKey)) return false;
   const tags = Array.isArray(defense.attackTags) ? defense.attackTags : [];
-  return !tags.includes("opportunity");
+  // "retaliation": Exploit Weakness swung as one under Dragon Guard.
+  return !tags.includes("opportunity") && !tags.includes("retaliation");
 }
 
 /**
@@ -360,7 +379,11 @@ function reactionChips(actor) {
     abilityByKey(actor, IMPROVED_RETALIATORY_KEY) ??
     abilityByKey(actor, RETALIATORY_KEY);
   const shoves = SHOVE_KEYS.map((key) => abilityByKey(actor, key)).filter(Boolean);
-  if (!counter && !retaliatory && !shoves.length) return [];
+  // Dragon Guard lets Exploit Weakness be swung as a Retaliation action.
+  const exploit = hasDragonGuard(actor)
+    ? abilityByKey(actor, EXPLOIT_WEAKNESS_KEY)
+    : null;
+  if (!counter && !retaliatory && !shoves.length && !exploit) return [];
 
   // A Reaction left to pay with.
   if (getSpent(actor).reactions >= getActionPools(actor).reactions) return [];
@@ -396,6 +419,12 @@ function reactionChips(actor) {
       );
     }
   }
+  // Offered wherever Retaliatory strike would be: after a Defense or a Dodge.
+  if (exploit && retaliatoryFits(defense)) {
+    chips.push(
+      abilityChip(exploit, "REDSTEEL.Bg3Hotbar.Suggest.Reaction", attackerToken.id),
+    );
+  }
   return chips;
 }
 
@@ -415,9 +444,27 @@ function reactionChips(actor) {
  * @returns {object[]}
  */
 function riposteChips(actor) {
-  const riposte = abilityByKey(actor, RIPOSTE_KEY);
-  if (!riposte) return [];
-  if (getSpent(actor).reactions >= getActionPools(actor).reactions) return [];
+  // Dragon Sleep: "You cannot use Riposte for one round."
+  const riposte = hasDragonSleep(actor) ? null : abilityByKey(actor, RIPOSTE_KEY);
+  const dragonStrike = abilityByKey(actor, DRAGON_STRIKE_KEY);
+  if (!riposte && !dragonStrike) return [];
+  const reactionLeft =
+    getSpent(actor).reactions < getActionPools(actor).reactions;
+  // Servant of the Sword: the round's first Riposte is a Free action.
+  const freeRiposte = !!riposte && hasFreeRiposte(actor);
+  const offers = [];
+  if (riposte && (reactionLeft || freeRiposte)) {
+    offers.push({
+      item: riposte,
+      costKey: freeRiposte
+        ? "REDSTEEL.Bg3Hotbar.Suggest.FreeAction"
+        : "REDSTEEL.Bg3Hotbar.Suggest.Reaction",
+    });
+  }
+  if (dragonStrike && reactionLeft) {
+    offers.push({ item: dragonStrike, costKey: "REDSTEEL.Bg3Hotbar.Suggest.Reaction" });
+  }
+  if (!offers.length) return [];
 
   const tokenIds = actorTokenIds(actor);
   if (!tokenIds.size) return [];
@@ -439,8 +486,10 @@ function riposteChips(actor) {
       if (defense.attackerTokenId) defendedAgainst.add(defense.attackerTokenId);
       continue;
     }
+    // Either answer uses the chance up: one swing instead of a Defense.
     if (
-      flags.redsteel?.abilityKey === RIPOSTE_KEY &&
+      (flags.redsteel?.abilityKey === RIPOSTE_KEY ||
+        flags.redsteel?.abilityKey === DRAGON_STRIKE_KEY) &&
       tokenIds.has(message.speaker?.token)
     ) {
       riposted = true;
@@ -472,8 +521,266 @@ function riposteChips(actor) {
     if (!attackerToken || !defenderToken) return [];
     if (!withinReach(actor, defenderToken, attackerToken)) return [];
 
+    return offers.map(({ item, costKey }) =>
+      abilityChip(item, costKey, attackerToken.id),
+    );
+  }
+  return [];
+}
+
+/**
+ * Lunge Step (Přískok, Servant of the Sword): "When targeted by an attack, may
+ * move one hex toward the attacker ... before the attack resolves." Offered
+ * for the newest melee attack card this turn that names this actor's token,
+ * when the attacker struck from beyond the next hex, which only Long Reach or
+ * Extended Lunge allow. Gone once the actor has defended against that
+ * attacker (the attack has resolved), has stepped toward it this turn, or
+ * stands next to it. Ranged, thrown and magic attacks do not count. A Free
+ * action: no Reaction needed, the Stamina is paid when it is used.
+ *
+ * @param {Actor} actor
+ * @returns {object[]}
+ */
+function lungeStepChips(actor) {
+  const lunge = abilityByKey(actor, LUNGE_STEP_KEY);
+  if (!lunge) return [];
+  const combat = trackedCombat(actor);
+  if (!combat || isTrackedTurn(actor)) return [];
+
+  const tokenIds = actorTokenIds(actor);
+  if (!tokenIds.size) return [];
+
+  const messages = game.messages?.contents ?? [];
+  const defendedAgainst = new Set();
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const message = messages[i];
+    if (turnStartMessageId && message.id === turnStartMessageId) break;
+    const flags = message.flags ?? {};
+
+    const defense = flags.redsteel?.defense;
+    if (defense && tokenIds.has(defense.defenderTokenId)) {
+      if (defense.attackerTokenId) defendedAgainst.add(defense.attackerTokenId);
+      continue;
+    }
+
+    const attack = flags.attack;
+    if (attack?.type !== "attack") continue;
+    const targets = Array.isArray(attack.targets) ? attack.targets : [];
+    if (!targets.some((id) => tokenIds.has(id))) continue;
+
+    // The newest attack aimed at this actor this turn decides.
+    if (["ranged", "throwing", "magic"].includes(attack.attackType)) return [];
+    const attackerId = message.speaker?.token ?? null;
+    if (!attackerId || tokenIds.has(attackerId)) return [];
+    if (defendedAgainst.has(attackerId)) return [];
+    // Reload mid-turn: no turn boundary known, so only the attacker whose
+    // turn it is counts.
+    if (!turnStartMessageId && combat.combatant?.tokenId !== attackerId) return [];
+    if (getSpent(actor).bonusSources.includes(lungeStepSource(combat, attackerId))) {
+      return [];
+    }
+
+    const attackerToken = answerableAttacker(attackerId);
+    const defenderToken = [...tokenIds]
+      .map((id) => canvas.tokens?.get(id))
+      .find((t) => t && targets.includes(t.id));
+    if (!attackerToken || !defenderToken) return [];
+    // Struck from the next hex: nothing to close in on.
+    if (hexDistance(defenderToken, attackerToken) < 2) return [];
+
     return [
-      abilityChip(riposte, "REDSTEEL.Bg3Hotbar.Suggest.Reaction", attackerToken.id),
+      abilityChip(lunge, "REDSTEEL.Bg3Hotbar.Suggest.FreeAction", attackerToken.id),
+    ];
+  }
+  return [];
+}
+
+/**
+ * The newest melee attack card of this turn aimed at one of these tokens that
+ * has not been defended against yet: the blow a Brace answers. Same walk and
+ * same rules as Riposte's (contested cards, ranged, thrown and magic attacks
+ * are not melee exchanges).
+ *
+ * @param {Set<string>} tokenIds
+ * @returns {{attackerToken: Token}|null}
+ */
+function undefendedMeleeAttack(tokenIds) {
+  const combat = game.combat;
+  const messages = game.messages?.contents ?? [];
+  const defendedAgainst = new Set();
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const message = messages[i];
+    if (turnStartMessageId && message.id === turnStartMessageId) break;
+    const flags = message.flags ?? {};
+
+    const defense = flags.redsteel?.defense;
+    if (defense && tokenIds.has(defense.defenderTokenId)) {
+      if (defense.attackerTokenId) defendedAgainst.add(defense.attackerTokenId);
+      continue;
+    }
+
+    const attack = flags.attack;
+    if (attack?.type !== "attack" || attack.contested) continue;
+    if (flags.redsteel?.rerolledAway) continue;
+    const targets = Array.isArray(attack.targets) ? attack.targets : [];
+    if (!targets.some((id) => tokenIds.has(id))) continue;
+
+    // The newest attack aimed at this actor this turn decides.
+    if (["ranged", "throwing", "magic"].includes(attack.attackType)) return null;
+    const attackerId = message.speaker?.token ?? null;
+    if (!attackerId || tokenIds.has(attackerId)) return null;
+    if (defendedAgainst.has(attackerId)) return null;
+    if (!turnStartMessageId && combat?.combatant?.tokenId !== attackerId) return null;
+
+    const attackerToken = answerableAttacker(attackerId);
+    return attackerToken ? { attackerToken } : null;
+  }
+  return null;
+}
+
+/**
+ * Odražení (Brace, Weapon Master): "When attacked, may spend a Reaction to
+ * gain Advantage on the next Defense." Offered against the newest undefended
+ * melee attack aimed at this actor, while a Reaction is left and no Brace is
+ * already held (utils/brace.mjs).
+ *
+ * @param {Actor} actor
+ * @returns {object[]}
+ */
+function braceChips(actor) {
+  const brace = abilityByKey(actor, BRACE_KEY);
+  if (!brace || getBraceEffect(actor)) return [];
+  if (getSpent(actor).reactions >= getActionPools(actor).reactions) return [];
+  const tokenIds = actorTokenIds(actor);
+  if (!tokenIds.size) return [];
+  const found = undefendedMeleeAttack(tokenIds);
+  if (!found) return [];
+  const chip = abilityChip(
+    brace,
+    "REDSTEEL.Bg3Hotbar.Suggest.Reaction",
+    found.attackerToken.id,
+  );
+  chip.hint = game.i18n.format("REDSTEEL.WeaponMaster.BraceHint", {
+    attacker: found.attackerToken.name,
+  });
+  return [chip];
+}
+
+/**
+ * Přesílení (Overpower, Weapon Master): a combat contest of this turn that the
+ * actor lost by 10 or less, on either side of it, not yet Overpowered by them
+ * (utils/overpower.mjs decides all of that). One chip: rerolls the actor's own
+ * die and restates the contest.
+ *
+ * @param {Actor} actor
+ * @returns {object[]}
+ */
+function overpowerChips(actor) {
+  const ability = abilityByKey(actor, OVERPOWER_KEY);
+  if (!ability) return [];
+  const found = findOverpowerContest(actorTokenIds(actor), trackedCombat(actor));
+  if (!found) return [];
+  const label = ability.localizedName ?? ability.name;
+  const hint = game.i18n.format(
+    found.side === "defender"
+      ? "REDSTEEL.WeaponMaster.OverpowerDefenseHint"
+      : "REDSTEEL.WeaponMaster.OverpowerAttackHint",
+    { gap: found.gap },
+  );
+  return [
+    {
+      id: `overpower-${found.message.id}`,
+      kind: "overpower",
+      theme: "melee",
+      uuid: ability.uuid,
+      costKind: "free",
+      img: ability.img,
+      label,
+      hint,
+      messageId: found.message.id,
+      ariaLabel: `${label}: ${hint}`,
+    },
+  ];
+}
+
+/** Icon of the Vigilant Protector chip (user's pick). */
+const VIGILANT_ICON = "icons/skills/melee/swords-parry-block-yellow.webp";
+
+/** The once-per-round allowance Vigilant Protector notes in the tracker. */
+export function vigilantSource(combat) {
+  return `vigilant.${combat.id}.${combat.round}`;
+}
+
+/**
+ * Bdělý ochránce (Vigilant Protector, Weapon Master): "May make an Opportunity
+ * Attack even when an ally is attacked, as long as the attacker is in reach.
+ * Only once per round." Offered off the actor's turn for the newest attack of
+ * this turn aimed at an ally by an enemy standing within the actor's reach.
+ * Costs the Reaction (the Attack dialog's Opportunity Attack pays it); the
+ * allowance is noted in the tracker when the chip is used.
+ *
+ * @param {Actor} actor
+ * @returns {object[]}
+ */
+function vigilantChips(actor) {
+  if (!hasWeaponMasterNode(actor, "bdelyOchrance")) return [];
+  const combat = trackedCombat(actor);
+  if (!combat || isTrackedTurn(actor)) return [];
+  const spent = getSpent(actor);
+  if (spent.reactions >= getActionPools(actor).reactions) return [];
+  if (spent.bonusSources.includes(vigilantSource(combat))) return [];
+  if (CANNOT_SHOOT.some((s) => actor.statuses?.has(s))) return [];
+  // A melee Opportunity Attack: a bow in hand reaches nobody.
+  const weapon = resolveWeaponContext(actor)?.weapon;
+  if (["bow", "crossbow"].includes(weapon?.system?.class)) return [];
+
+  const tokenIds = actorTokenIds(actor);
+  const myToken = [...tokenIds].map((id) => canvas.tokens?.get(id)).find(Boolean);
+  if (!myToken) return [];
+  const mySide = isHostileSide(myToken.document);
+
+  const messages = game.messages?.contents ?? [];
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const message = messages[i];
+    if (turnStartMessageId && message.id === turnStartMessageId) break;
+    const flags = message.flags ?? {};
+    const attack = flags.attack;
+    if (attack?.type !== "attack") continue;
+    if (flags.redsteel?.rerolledAway) continue;
+
+    const attackerId = message.speaker?.token ?? null;
+    if (!attackerId || tokenIds.has(attackerId)) continue;
+    if (!turnStartMessageId && combat.combatant?.tokenId !== attackerId) return [];
+    const attackerToken = answerableAttacker(attackerId);
+    if (!attackerToken) return [];
+    if (isHostileSide(attackerToken.document) === mySide) return [];
+
+    const targets = Array.isArray(attack.targets) ? attack.targets : [];
+    const ally = targets
+      .filter((id) => !tokenIds.has(id))
+      .map((id) => canvas.tokens?.get(id))
+      .find((t) => t && isHostileSide(t.document) === mySide);
+    // The newest attack decides; one on the actor itself is Riposte's.
+    if (!ally) return [];
+    if (!withinReach(actor, myToken, attackerToken)) return [];
+
+    const label = game.i18n.localize("REDSTEEL.WeaponMaster.VigilantLabel");
+    const hint = game.i18n.format("REDSTEEL.WeaponMaster.VigilantHint", {
+      attacker: attackerToken.name,
+      ally: ally.name,
+    });
+    return [
+      {
+        id: `vigilant-${message.id}`,
+        kind: "vigilant",
+        theme: "melee",
+        costKind: "reaction",
+        img: VIGILANT_ICON,
+        label,
+        hint,
+        targetTokenId: attackerToken.id,
+        ariaLabel: `${label}: ${hint}`,
+      },
     ];
   }
   return [];
@@ -670,6 +977,24 @@ function impaleFollowupChips(actor) {
   return [abilityChip(followup, "REDSTEEL.Bg3Hotbar.Suggest.FreeAction", null)];
 }
 
+/**
+ * Slip Through (Prosmýknutí, Servant of the Sword): offered for the rest of
+ * the turn a charge or Dragon Strike landed in (slipThrough.mjs), aimed at
+ * the opponent it hit. A Free action; the Stamina is paid when it is used.
+ *
+ * @param {Actor} actor
+ * @returns {object[]}
+ */
+function slipThroughChips(actor) {
+  const pending = pendingSlipThrough(actor);
+  if (!pending) return [];
+  const slip = actor.items.find((i) => i.type === "ability" && isSlipThrough(i));
+  if (!slip) return [];
+  return [
+    abilityChip(slip, "REDSTEEL.Bg3Hotbar.Suggest.FreeAction", pending.target.id),
+  ];
+}
+
 /** Fallback icon of the Overwatch shot, for a status set without the ability. */
 const OVERWATCH_ICON = "icons/skills/ranged/arrows-triple-yellow-red.webp";
 
@@ -744,9 +1069,11 @@ function overwatchChips(actor) {
  */
 function combatProvider(actor) {
   if (!canvas?.ready) return [];
-  return [...riposteChips(actor),
-    ...reactionChips(actor), ...overwatchChips(actor), ...impaleFollowupChips(actor),
-    ...escapeChips(actor), ...sustainChips(actor), ...stanceChips(actor)];
+  return [...riposteChips(actor), ...braceChips(actor), ...lungeStepChips(actor),
+    ...reactionChips(actor), ...overpowerChips(actor), ...vigilantChips(actor),
+    ...overwatchChips(actor), ...impaleFollowupChips(actor),
+    ...escapeChips(actor), ...sustainChips(actor), ...stanceChips(actor),
+    ...slipThroughChips(actor)];
 }
 
 const PROVIDERS = [movementProvider, combatProvider];

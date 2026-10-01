@@ -1,5 +1,15 @@
 {
   "REDSTEEL": {
+    "Charge": {
+      "TooClose": "Zteč musí začínat alespoň {min} hexy od cíle; {target} je {distance} daleko."
+    },
+    "SlipThrough": {
+      "CriticalAuto": "Po Kritickém zásahu je Prosmýknutí garantované.",
+      "Moved": "{name} se prosmýkne za {target}.",
+      "Blocked": "{name} vítězí, ale za {target} není volná hexa.",
+      "Failed": "{name} neuspěl: Obrana a Úhyb -10 % na jeden tah.",
+      "FailEffect": "Neúspěšné prosmýknutí"
+    },
     "AllyPass": {
       "Title": "Propustit spojence?",
       "Body": "{mover} chce projít přes pole, na kterém stojí {ally}. Propuštění stojí postavu {ally} její Reakci.",
@@ -199,6 +209,7 @@
         "PassingStrike": "Krok z útoku s pohybem",
         "ExtendedLunge": "Krok z dalekého výpadu",
         "Charge": "Zteč",
+        "QuickFeet": "Krok rychlých nohou",
         "OneAction": "1 akce",
         "TwoActions": "2 akce",
         "Hexes": "{n} hex",
@@ -225,7 +236,8 @@
         "EscapeSourceGone": "Karta, která tě spoutala, už v chatu není.",
         "HoldStance": "Kliknutí: udržet postoj ({cost})",
         "DropStance": "Pravé tlačítko: opustit postoj",
-        "MoreMovement": "Další pohyby"
+        "MoreMovement": "Další pohyby",
+        "LungeStep": "Přískok"
       },
       "ShowArmor": "Zobrazit zbroj podle typu poškození",
       "ShowConditions": "Zobrazit stavy",
@@ -657,11 +669,11 @@
             },
             "calculation": {
               "label": "Vypočítavost",
-              "description": "5 CP. Pasivní. Pokud má na cíli alespoň jedno Míření, získává proti tomuto cíli bonus +3% na Kritický zásah a +5% na Kritický úhyb. Ručně — řeší se u stolu."
+              "description": "5 CP. Pasivní. Pokud má na cíli alespoň jedno Míření, získává proti tomuto cíli bonus +3% na Kritický zásah a +5% na Kritický úhyb. Automatizováno: hod na útok i každá obrana zbraní (Obrana, Obrana proti střelbě, Úhyb) proti zamířenému tvoru rozšíří rozsah kritického úspěchu."
             },
             "aimedAttack": {
               "label": "Cílený útok +5%",
-              "description": "10 CP. Cílený útok: Zásah, Vrh a Střelba +5% — situační, zatím ručně. Ručně — řeší se u stolu."
+              "description": "10 CP. Cílený útok: Zásah, Vrh a Střelba +5%. Automatizováno: zmírní postih každého cíleného útoku na část těla."
             },
             "stealthAdvantage": {
               "label": "Plížení: Výhoda",
@@ -685,7 +697,7 @@
             },
             "quickFeet": {
               "label": "Rychlé nohy",
-              "description": "10 CP. Volná akce, stojí 1 výdrž. Modifikuje libovolnou Odvetnou akci. Před provedením akce se může pohnout o jednu hexu okolo oponenta. Uděluje akci Rychlé nohy; samotný pohyb se řeší u stolu."
+              "description": "10 CP. Volná akce, stojí 1 výdrž. Modifikuje libovolnou Odvetnou akci. Před provedením akce se může pohnout o jednu hexu okolo oponenta. Automatizováno: mimo svůj tah zaškrtni Rychlé nohy u odvetné akce, nebo klikni se Shiftem na její ikonu v liště. Lišta ukáže krok o jednu hexu vedle zacíleného oponenta; po potvrzení fajfkou proběhne odvetná akce."
             },
             "backDodge": {
               "label": "Úhyb do zad",
@@ -697,11 +709,11 @@
             },
             "speedTests": {
               "label": "Výhoda na versus Testy Rychlosti",
-              "description": "10 CP; Tulák VII. Ručně — řeší se u stolu."
+              "description": "10 CP; Tulák VII. Automatizováno: každý versus Test Rychlosti, který hodíš (test schopnosti či kouzla, vyvěšený Test Rychlosti nebo odpověď na něj), se hází s výhodou. Iniciativa versus Test není."
             },
             "daggerDefense": {
               "label": "Obrana s dýkou bez postihu",
-              "description": "0 CP. Odstraňuje postih na Obranu proti zbraním u dýky. Ručně — řeší se u stolu."
+              "description": "0 CP. Odstraňuje postih na Obranu proti zbraním u dýky. Automatizováno: dýka v hlavní ruce aktivní sady ztrácí postih na Obranu."
             },
             "skillDiscount1": {
               "label": "Sleva 3 SP na dovednost",
@@ -739,15 +751,15 @@
             },
             "ripostaFree": {
               "label": "Riposta jako Volná akce",
-              "description": "10 CP; Šermíř X. Ručně — řeší se u stolu."
+              "description": "10 CP; Šermíř X. První Riposta v každém kole nestojí Reakci; Výdrž se platí dál. Automatizováno."
             },
             "ripostaStamina": {
               "label": "Riposta: Výdrž -4",
-              "description": "15 CP. Ručně — řeší se u stolu."
+              "description": "15 CP. Riposta stojí o 4 Výdrže méně. Automatizováno."
             },
             "ripostaCrit": {
               "label": "Riposta: vždy Kritický zásah",
-              "description": "10 CP; Meče X. Ručně — řeší se u stolu."
+              "description": "10 CP; Meče X. Každá Riposta je Kritický zásah, pokud nepadne kritický neúspěch. Automatizováno."
             },
             "odvetnyUder": {
               "label": "Odvetný úder",
@@ -763,39 +775,39 @@
             },
             "draciSpanek": {
               "label": "Dračí spánek",
-              "description": "10 CP; Šermíř IV. 1 akce, bez výdrže. Zvyšuje na jeden tah Obranu, Úhyb a Kryt o 10%, získává jedno Míření, obnoví 1 Výdrž, zabraňuje použití akce Riposta na jedno kolo a zároveň přijde o všechny své Reakce v tomto kole. Za každou takto spotřebovanou Reakci získá jeden Oddech. Uděluje akci Dračí spánek; bonusy, Míření, Výdrž, ztracené Reakce a Oddechy se řeší u stolu."
+              "description": "10 CP; Šermíř IV. 1 akce, bez výdrže. Zvyšuje na jeden tah Obranu, Úhyb a Kryt o 10%, získává jedno Míření, obnoví 1 Výdrž, zabraňuje použití akce Riposta na jedno kolo a zároveň přijde o všechny své Reakce v tomto kole. Za každou takto spotřebovanou Reakci získá jeden Oddech. Uděluje postoj Dračí spánek. Automatizováno: obrany, Výdrž, Reakce vyměněné za Oddech (5 Výdrže za každý), Míření na aktuální cíl a zablokovaná Riposta."
             },
             "draciStraz": {
               "label": "Dračí stráž",
-              "description": "10 CP; Šermíř V. 1 akce, stojí 4 výdrže. Zvyšuje na jeden tah Zásah o 10% pro Odvetné akce, Ripostu a Momentum na ně navazující. Může použít akci Útok na slabinu jako Odvetnou akci. Uděluje akci Dračí stráž; bonus k Zásahu a použití Útoku na slabinu jako Odvetné akce se řeší u stolu."
+              "description": "10 CP; Šermíř V. 1 akce, stojí 4 výdrže. Zvyšuje na jeden tah Zásah o 10% pro Odvetné akce, Ripostu a Momentum na ně navazující. Může použít akci Útok na slabinu jako Odvetnou akci. Uděluje postoj Dračí stráž. Automatizováno: bonus k Zásahu (Momentum je každý další útok mimo vlastní tah po posíleném útoku ve stejném tahu) a Útok na slabinu jako Odvetná akce, placený Reakcí a nabízený na liště po Obraně nebo Úhybu."
             },
             "chargeDamage": {
               "label": "Zteč: +1d4 zranění",
-              "description": "10 CP; Meče VII. Ručně — řeší se u stolu."
+              "description": "10 CP; Meče VII. Uděluje Vylepšenou zteč, která nahrazuje Zteč: Zranění +3d4 místo +2d4. Automatizováno."
             },
             "chargeDistance": {
               "label": "Zteč: Min. vzdálenost -1 hex",
-              "description": "10 CP; Meče VIII. Ručně — řeší se u stolu."
+              "description": "10 CP; Meče VIII. Každá zteč běžně začíná alespoň 2 hexy od cíle; tento uzel to snižuje na 1. Automatizováno."
             },
             "priskok": {
               "label": "Přískok",
-              "description": "5 CP; Meče IV. Volná akce, stojí 1 výdrž. Je-li napaden útokem, umožňuje pohyb o jednu hexu směrem k útočníkovi. Tento pohyb nevyvolává Příležitostné útoky a uskuteční se ještě předtím, než se útok vyhodnotí. Za některých situací nemusí být pohyb umožněn. Nevztahuje se na Střelbu, Vrh a Magii. Uděluje akci Přískok; pohyb se řeší u stolu."
+              "description": "5 CP; Meče IV. Volná akce, stojí 1 výdrž. Je-li napaden útokem, umožňuje pohyb o jednu hexu směrem k útočníkovi. Tento pohyb nevyvolává Příležitostné útoky a uskuteční se ještě předtím, než se útok vyhodnotí. Za některých situací nemusí být pohyb umožněn. Nevztahuje se na Střelbu, Vrh a Magii. Uděluje akci Přískok. Přijde-li útok na blízko z větší vzdálenosti než ze sousední hexy (Dlouhý dosah nebo Daleký výpad), hotbar ji nabízí, dokud se nebráníš; její použití udělí krok směrem k útočníkovi. Automatizováno."
             },
             "draciVypad": {
               "label": "Dračí výpad",
-              "description": "10 CP; Šermíř IV. 1 reakce, stojí 7 výdrže. Vzdá se Obrany a místo ní provede vlastní útok. Versus Test Rychlosti určí, kdo zasáhne první. Ten, kdo zasáhne první a zabije oponenta, se zcela vyhýbá útoku. První zásah se vždy vyhodnotí jako Kritický zásah, druhý se vždy vyhodnotí jako normální zásah. Uděluje akci Dračí výpad; Versus Test Rychlosti a pořadí zásahů se řeší u stolu."
+              "description": "10 CP; Šermíř IV. 1 reakce, stojí 7 výdrže. Vzdá se Obrany a místo ní provede vlastní útok. Versus Test Rychlosti určí, kdo zasáhne první. Ten, kdo zasáhne první a zabije oponenta, se zcela vyhýbá útoku. První zásah se vždy vyhodnotí jako Kritický zásah, druhý se vždy vyhodnotí jako normální zásah. Uděluje akci Dračí výpad, nabízenou na liště vedle Riposty proti příchozímu útoku na blízko. Versus Test Rychlosti je na její kartě; Kritický a normální zásah se nastaví v Aplikaci zranění. Automatizováno."
             },
             "prosmyknuti": {
               "label": "Prosmýknutí",
-              "description": "5 CP; Meče IV. Volná akce, stojí 2 výdrže. Po úspěšné Zteči, Lindarově výpadu nebo Dračím výpadu umožňuje vyvolat Versus Test Obratnosti. Při úspěchu se pohne za oponenta, při neúspěchu postih -10% na Obranu a Úhyb na jeden tah. Po Kritickém zásahu je Prosmýknutí garantované. Po vykonání pohybu si vybírá své směřování. Uděluje akci Prosmýknutí; pohyb a postih při neúspěchu se řeší u stolu."
+              "description": "5 CP; Meče IV. Volná akce, stojí 2 výdrže. Po úspěšné Zteči, Lindarově výpadu nebo Dračím výpadu umožňuje vyvolat Versus Test Obratnosti. Při úspěchu se pohne za oponenta, při neúspěchu postih -10% na Obranu a Úhyb na jeden tah. Po Kritickém zásahu je Prosmýknutí garantované. Po vykonání pohybu si vybírá své směřování. Uděluje akci Prosmýknutí, nabízenou na liště po zbytek tahu, ve kterém zasáhla zteč nebo Dračí výpad. Hodí Versus Test Obratnosti, přesune tě za oponenta čelem k němu, nebo udělí postih. Automatizováno, kromě Lindarova výpadu."
             },
             "dexTests": {
               "label": "Bojové Testy Obratnosti +10%",
-              "description": "5 CP. Situační bonus na Testy — zatím ručně. Ručně — řeší se u stolu."
+              "description": "5 CP. Obratnost +10% při každém Versus Testu Obratnosti, ať ho vyvoláváš, nebo na něj odpovídáš. Automatizováno."
             },
             "presneRozseknuti": {
               "label": "Přesné rozseknutí",
-              "description": "5 CP. Pasivní. Akce Rozseknutí a Zteč s Rozseknutím získávají bonus za Míření na všechny zasažené oponenty. Ručně — řeší se u stolu."
+              "description": "5 CP. Pasivní. Akce Rozseknutí a Zteč s Rozseknutím získávají bonus za Míření na všechny zasažené oponenty. Rozseknutí (i Rozseknutí flambergem) už není vyňato z Míření. Automatizováno."
             },
             "vyhodnyManevr": {
               "label": "Výhodný manévr",
@@ -807,7 +819,7 @@
             },
             "vylUtokSPohybem": {
               "label": "Vylepšený útok s pohybem",
-              "description": "10 CP; Šermíř VII. Volná akce, stojí 2 výdrže. Modifikuje útočné akce, včetně akcí Odvetných. Po zásahu umožní pohyb až o jednu hexu libovolným směrem, aniž by vyvolal Příležitostný útok. Uděluje akci Vylepšený útok s pohybem, která nahrazuje Útok s pohybem; ve vlastním tahu se volný pohyb udělí při aplikaci zranění, pohyb po Odvetné akci mimo vlastní tah se řeší u stolu."
+              "description": "10 CP; Šermíř VII. Volná akce, stojí 2 výdrže. Modifikuje útočné akce, včetně akcí Odvetných. Po zásahu umožní pohyb až o jednu hexu libovolným směrem, aniž by vyvolal Příležitostný útok. Uděluje akci Vylepšený útok s pohybem, která nahrazuje Útok s pohybem; volný pohyb se udělí při aplikaci zranění, ve vlastním tahu i po Odvetné akci mimo vlastní tah. Automatizováno."
             }
           }
         },
@@ -817,39 +829,39 @@
           "nodes": {
             "mistrZbrani": {
               "label": "Mistr zbraní",
-              "description": "0 CP. Pasivní. Každý stupeň dalších zbraňových dovedností stojí pouze 5 CP a má odstraněny požadavky na Učitele. První čtyři stupně všech dalších zbraňových dovedností jsou zdarma. Při zakoupení odborností Specializace na zbraň I a Specializace na zbraň II si může každou z těchto odborností dvakrát znovu vzít zdarma. Ručně — řeší se u stolu."
+              "description": "0 CP. Pasivní. Každý stupeň dalších zbraňových dovedností stojí pouze 5 CP a má odstraněny požadavky na Učitele. První čtyři stupně všech dalších zbraňových dovedností jsou zdarma. Při zakoupení odborností Specializace na zbraň I a Specializace na zbraň II si může každou z těchto odborností dvakrát znovu vzít zdarma. Další zbraňové dovednosti jsou všechny kromě té s nejvyšším stupněm; ceny uplatňuje okno Učení."
             },
             "vytrvalyValecnik": {
               "label": "Vytrvalý válečník",
-              "description": "15 CP; M/T/S/D V. Pasivní. Pokud nezasáhne cíl útočnou akcí, získává zpět polovinu utracené Výdrže. Pokud akce Úder štítem, Zteč štítem, Finta a Vylepšená finta neuspějí, získává zpět polovinu utracené Výdrže. Ručně — řeší se u stolu."
+              "description": "15 CP; M/T/S/D V. Pasivní. Pokud nezasáhne cíl útočnou akcí, získává zpět polovinu utracené Výdrže. Pokud akce Úder štítem, Zteč štítem, Finta a Vylepšená finta neuspějí, získává zpět polovinu utracené Výdrže. Karta útoku nese vedle Uplatnit zranění tlačítko „Minul“, které vrátí polovinu zaplacené výdrže, dokud není uplatněno zranění nebo postava nezaútočí znovu; jeho použití ukončí vícenásobný útok."
             },
             "vycvikSeZbrani": {
               "label": "Výcvik se zbraní",
-              "description": "0 CP; M/T/S/D VI. Pasivní. Získává bonus za držený typ zbraně. Lehké: Kritický rozsah se počítá podle Obratnosti. Střední: Šance na Kritický zásah a obranu +1%. Těžké: Kritické zranění/Průbojnost +5. Ručně — řeší se u stolu."
+              "description": "0 CP; M/T/S/D VI. Pasivní. Získává bonus za držený typ zbraně. Lehké: Kritický rozsah se počítá podle Obratnosti. Střední: Šance na Kritický zásah a obranu +1%. Těžké: Kritické zranění/Průbojnost +5. Typ určuje hlavní zbraň aktivní sady zbraní a bonus platí pro každý útok."
             },
             "bdelyOchrance": {
               "label": "Bdělý ochránce",
-              "description": "25 CP; M/T/S/D VIII. Pasivní. Může použít Příležitostný útok i v případě, že je napaden spojenec a útočník je v dosahu. Takto lze využít Příležitostný útok jen jednou za kolo. Ručně — řeší se u stolu."
+              "description": "25 CP; M/T/S/D VIII. Pasivní. Může použít Příležitostný útok i v případě, že je napaden spojenec a útočník je v dosahu. Takto lze využít Příležitostný útok jen jednou za kolo. Lišta ho nabídne, když nepřítel v dosahu napadne spojence."
             },
             "zbrojnos1": {
               "label": "Zbrojnoš I",
-              "description": "10 CP. Pasivní. Lehká zbroj: Obětování Života zbroje/štítu snižuje zranění o dalších 5. Těžká zbroj: Možnost 1x za den opakovat hod na Obranu nebo Kryt. Ručně — řeší se u stolu."
+              "description": "10 CP. Pasivní. Lehká zbroj: Obětování Života zbroje/štítu snižuje zranění o dalších 5. Těžká zbroj: Možnost 1x za den opakovat hod na Obranu nebo Kryt. Počítá se jen nejsvrchnější vrstva zbroje. Automatizováno: bonus se přičte ke každému obětování v okně Aplikovat zranění a uzel uděluje odbornost Zbrojnoš, jejíž opakování hodu se nabízí jen s těžkou zbrojí navrchu. Obnoví se Dlouhým odpočinkem."
             },
             "zbrojnos2": {
               "label": "Zbrojnoš II",
-              "description": "10 CP. Pasivní. Lehká zbroj: Šance na Kritický úspěch Úhybu +3%. Akce Úhyb stojí o 1 méně Výdrže. Těžká zbroj: Při Obraně a Krytu získává Odklonění +20%. Ručně — řeší se u stolu."
+              "description": "10 CP. Pasivní. Lehká zbroj: Šance na Kritický úspěch Úhybu +3%. Akce Úhyb stojí o 1 méně Výdrže. Těžká zbroj: Při Obraně a Krytu získává Odklonění +20%. Počítá se jen nejsvrchnější vrstva zbroje v okamžiku hodu na obranu. Automatizováno."
             },
             "odrazeni": {
               "label": "Odražení",
-              "description": "10 CP; M/T/S/D VI. 1 reakce. Pokud je napaden, může použít Reakci, aby získal Výhodu na příští Obranu. Uděluje akci Odražení; Výhoda se řeší u stolu."
+              "description": "10 CP; M/T/S/D VI. 1 reakce. Pokud je napaden na blízko, může použít Reakci, aby získal Výhodu na příští hod na obranu. Uděluje akci Odražení, kterou lišta nabídne proti útoku na blízko; Výhodu spotřebuje příští hod na Obranu, Kryt nebo Úhyb, jinak vyprší na začátku dalšího tahu."
             },
             "veteran1": {
               "label": "Veterán I",
-              "description": "5 CP. Pasivní. Při Kritickém zásahu může snížit stupeň Kritického zásahu o jeden, aby mohl ihned použít Oddech jako Volnou akci. Ručně — řeší se u stolu."
+              "description": "5 CP. Pasivní. Při Kritickém zásahu může snížit stupeň Kritického zásahu o jeden, aby mohl ihned použít Oddech jako Volnou akci. Stupeň nikdy neklesne pod 0 a s Veteránem nikdy není 4. Automatizováno: přepínač Veterán v okně Aplikovat zranění sníží stupeň u každého cíle o jeden a za každou aplikaci dá jeden Oddech zdarma (+5 Výdrže)."
             },
             "veteran2": {
               "label": "Veterán II",
-              "description": "5 CP; M/T/S/D V. Pasivní. Při Kritické obraně může místo získání Dočasných životů okamžitě použít akci Oddech jako Volnou akci. Ručně — řeší se u stolu."
+              "description": "5 CP; M/T/S/D V. Pasivní. Při Kritické obraně může místo získání Dočasných životů okamžitě použít akci Oddech jako Volnou akci. Automatizováno: karta obrany nabídne tlačítko Oddech zdarma (+5 Výdrže); použití tohoto tlačítka nebo tlačítka Dočasných životů spotřebuje obě."
             },
             "vylZbranoveDovednosti": {
               "label": "Vylepšené zbraňové dovednosti",
@@ -873,11 +885,11 @@
             },
             "presileni": {
               "label": "Přesílení",
-              "description": "5 CP. Volná akce, stojí 1 výdrž. Může opakovat hod na Zásah, Obranu nebo Kryt, pokud byl rozdíl síly úspěchu 10 nebo méně. Uděluje akci Přesílení; opakování hodu se řeší u stolu."
+              "description": "5 CP. Volná akce, stojí 1 výdrž. Může opakovat hod na Zásah, Obranu nebo Kryt, pokud byl rozdíl síly úspěchu 10 nebo méně. Uděluje akci Přesílení: jednou za střet ji lišta nabídne straně, která prohrála o 10 nebo méně, a střet se vyhodnotí znovu proti novému hodu."
             },
             "rychlaReakce": {
               "label": "Vylepšená rychlá reakce",
-              "description": "5 CP; M/T/S/D V. 1 akce, 3 výdrže. Rychlá reakce, která navíc dává +1 Reakci: na jeden tah získává bonus +4 do Iniciativy a +1 Reakci. Uděluje akci Vylepšená rychlá reakce, která nahrazuje Rychlou reakci; bonus k Iniciativě se použije automaticky, Reakce navíc se řeší u stolu."
+              "description": "5 CP; M/T/S/D V. 1 akce, 3 výdrže. Rychlá reakce, která navíc dává +1 Reakci: na jeden tah získává bonus +4 do Iniciativy a +1 Reakci. Uděluje akci Vylepšená rychlá reakce, která nahrazuje Rychlou reakci; bonus k Iniciativě i Reakce navíc se použijí automaticky, do začátku dalšího tahu."
             },
             "weakSpotPen": {
               "label": "Útok na slabinu: Průbojnost +10",
@@ -885,7 +897,7 @@
             },
             "primaryDamage": {
               "label": "Zranění +50% za Primární Vlastnosti",
-              "description": "10 CP. Ručně — řeší se u stolu."
+              "description": "10 CP. Pasivní. Primární vlastnost přičítaná ke zranění zbraní (Síla, případně ta vlastnost, kterou útok používá) se počítá jedenapůlkrát, zaokrouhleno dolů."
             }
           }
         },
@@ -1009,7 +1021,7 @@
             },
             "vylUtokSPohybem": {
               "label": "Vylepšený útok s pohybem",
-              "description": "10 CP; Duelista VII. Volná akce, stojí 2 výdrže. Modifikuje útočné akce, včetně akcí Odvetných. Po zásahu umožní pohyb až o jednu hexu libovolným směrem, aniž by vyvolal Příležitostný útok. Uděluje akci Vylepšený útok s pohybem, která nahrazuje Útok s pohybem; ve vlastním tahu se volný pohyb udělí při aplikaci zranění, pohyb po Odvetné akci mimo vlastní tah se řeší u stolu."
+              "description": "10 CP; Duelista VII. Volná akce, stojí 2 výdrže. Modifikuje útočné akce, včetně akcí Odvetných. Po zásahu umožní pohyb až o jednu hexu libovolným směrem, aniž by vyvolal Příležitostný útok. Uděluje akci Vylepšený útok s pohybem, která nahrazuje Útok s pohybem; volný pohyb se udělí při aplikaci zranění, ve vlastním tahu i po Odvetné akci mimo vlastní tah. Automatizováno."
             },
             "rafinovanyManevr": {
               "label": "Rafinovaný manévr: Výdrž -2",
@@ -1540,7 +1552,7 @@
             },
             "utokSPohybem": {
               "label": "Útok s pohybem",
-              "description": "10 CP; Štítonoš IV. Ručně — řeší se u stolu."
+              "description": "10 CP; Štítonoš IV. Uděluje akci Útok s pohybem."
             },
             "zbesilyVrh": {
               "label": "Zběsilý vrh: Zatížení štítu +25%",
@@ -1997,7 +2009,7 @@
             },
             "vylUtokSPohybem": {
               "label": "Vylepšený útok s pohybem",
-              "description": "10 CP; D/M VIII. Volná akce, stojí 2 výdrže. Modifikuje útočné akce, včetně akcí Odvetných. Po úspěšném zásahu umožní pohyb až o jednu hexu libovolným směrem, aniž by vyvolal Příležitostný útok. Uděluje akci Vylepšený útok s pohybem, která nahrazuje Útok s pohybem; ve vlastním tahu se volný pohyb udělí při aplikaci zranění, pohyb po Odvetné akci mimo vlastní tah se řeší u stolu."
+              "description": "10 CP; D/M VIII. Volná akce, stojí 2 výdrže. Modifikuje útočné akce, včetně akcí Odvetných. Po úspěšném zásahu umožní pohyb až o jednu hexu libovolným směrem, aniž by vyvolal Příležitostný útok. Uděluje akci Vylepšený útok s pohybem, která nahrazuje Útok s pohybem; volný pohyb se udělí při aplikaci zranění, ve vlastním tahu i po Odvetné akci mimo vlastní tah. Automatizováno."
             },
             "vetrnyPostoj": {
               "label": "Větrný postoj: Obrana i Zásah",
@@ -4478,6 +4490,12 @@
           "helmet": {
             "label": "Má helmu"
           },
+          "armorWeight": {
+            "label": "Typ zbroje",
+            "none": "—",
+            "light": "Lehká",
+            "heavy": "Těžká"
+          },
           "shield": {
             "label": "Je štít"
           },
@@ -4766,6 +4784,119 @@
     "Feature": {
       "NpcTraitOnly": "NPC může mít pouze rysy, ne schopnosti ({name})."
     },
+    "CharacterCreation": {
+      "Create": "Vytvořit postavu",
+      "Skip": "Přeskočit tvorbu"
+    },
+    "Creation": {
+      "title": "Tvorba postavy",
+      "stepOf": "Krok {n} z {total}",
+      "Step1": {
+        "title": "Původ"
+      },
+      "Step2": {
+        "title": "Doktrína"
+      },
+      "Doctrine": {
+        "heading": "Bojová doktrína",
+        "advice": "Vyber doktrínu, ve které se tvá postava cvičí. Přidá se k tvým dovednostem a body do ní rozdělíš později. Doporučujeme jen jednu bojovou doktrínu; výjimkou je Tulák, který může stát vedle jiné.",
+        "tooMany": "Více než jedna bojová doktrína kromě Tuláka se nedoporučuje.",
+        "needsMagic": "Vyžaduje rys Magický potenciál.",
+        "kind": "Druh",
+        "rank1": "Cena stupně I",
+        "path": "Schopnosti",
+        "weaponSkills": "Kompatibilní zbraňové dovednosti",
+        "weapons": "Zbraně",
+        "Group": {
+          "oneChoice": "Jednoruční zbraně dle volby",
+          "dualChoice": "Jednoruční zbraně dle volby, jedna v každé ruce",
+          "twoChoice": "Obouruční zbraně dle volby",
+          "bothHands": "Jednoruční zbraně dle volby, držené oběma rukama",
+          "anyChoice": "Zbraně dle volby",
+          "thrownChoice": "Vrhací zbraně dle volby",
+          "offhand": "Jen do druhé ruky"
+        },
+        "chosen": "Zvoleno",
+        "Kind": {
+          "melee": "Na blízko",
+          "ranged": "Na dálku",
+          "special": "Zvláštní",
+          "magical": "Magie"
+        }
+      },
+      "Race": {
+        "Vardur": "Vardur"
+      },
+      "Attributes": "Vlastnosti",
+      "Traits": "Rysy",
+      "Info": {
+        "title": "Informace",
+        "empty": "Najeď myší na rasu, vlastnost nebo rys a přečti si o nich víc.",
+        "base": "Základ",
+        "racialBonus": "Rasový bonus",
+        "racialBonuses": "Rasové bonusy",
+        "traitBonus": "Z rysů",
+        "racialFeatures": "Rasové odbornosti",
+        "granted": "získáno rasou",
+        "skillCount": "dovedností: {n}",
+        "priceCp": "{n} CP",
+        "priceSp": "{n} SP",
+        "fixedBonuses": "Pevné",
+        "traitPoints": "Rysové body",
+        "raisesLimitNote": "* zvyšuje i hranici daného atributu.",
+        "derivedSkills": "Odvozené dovednosti",
+        "spent": "Utracené body",
+        "limit": "Fyzická hranice"
+      },
+      "pointsRemaining": "Zbývající body {remaining} / {budget}",
+      "traitPointsRemaining": "Zbývající rysové body {remaining} / {total}",
+      "traitCount": "Rysy {count} / {max}",
+      "chooseRaceFirst": "Nejprve vyber rasu.",
+      "raceStartHere": "Začni zde: vyber si rasu.",
+      "raceStartHereInfo": "Každá postava začíná rasou. Vyber ji v panelu Rasa: určuje rasové bonusy, limity vlastností a rysové body, proto jsou vlastnosti a rysy uzamčené, dokud ji nezvolíš.",
+      "Identity": "Postava",
+      "loading": "Připravuji tvorbu postavy",
+      "PickedTraits": "Vybrané rysy",
+      "noPickedTraits": "Zatím nejsou vybrány žádné rysy. Klikni na rys vlevo a vezmi si ho, kliknutím zde ho vrátíš.",
+      "Name": "Jméno",
+      "Portrait": "Portrét",
+      "Token": "Žeton",
+      "raisesLimit": "zvyšuje i hranici",
+      "max": "max {limit}",
+      "back": "Zpět",
+      "close": "Zavřít",
+      "finish": "Dokončit",
+      "next": "Další",
+      "Group": {
+        "Human": "Člověk",
+        "Halfling": "Půlčík",
+        "Dwarf": "Trpaslík",
+        "Elf": "Elf"
+      },
+      "Requires": {
+        "arenai": "Vyžaduje rys Magický potenciál."
+      },
+      "TraitKind": {
+        "positive": "Kladné",
+        "neutral": "Neutrální",
+        "negative": "Záporné"
+      },
+      "Warn": {
+        "noRace": "Nejprve vyber rasu.",
+        "raceMissing": "Zvolenou rasu se nepodařilo načíst z kompendia.",
+        "choicesIncomplete": "Rasová volba „{label}“: vyber přesně {count}.",
+        "traitOverspent": "Utratil jsi víc rysových bodů, než ti rasa dává. Odeber kladný rys, nebo si vezmi záporný.",
+        "traitLimit": "Postava může mít nejvýše {max} rysů.",
+        "traitUnaffordable": "Na tento rys ti nezbývá dost rysových bodů.",
+        "negativeRemove": "Odebráním tohoto rysu by ti zbyly záporné rysové body. Nejprve odeber některý kladný rys.",
+        "traitMissing": "Rys {name} se nepodařilo načíst z kompendia."
+      },
+      "Confirm": {
+        "unspentTitle": "Nevyužité body vlastností",
+        "unspentContent": "Stále máš {n} nevyužitých bodů vlastností. Nezachovají se. Přesto dokončit?"
+      },
+      "RaceHeading": "Rasa"
+    },
     "Race": {
       "ChooseRace": "Vyber rasu",
       "PickerTitle": "Výběr rasy",
@@ -4794,6 +4925,21 @@
         "DropRejected": "Rasa může udělit pouze předměty typu Rys.",
         "DropNotGlobal": "Přetáhni Rys z postranního panelu nebo z kompendia, ne z postavy.",
         "DropDuplicate": "{name} už tato rasa uděluje."
+      },
+      "Choice": {
+        "HumanExtraAttribute": "Lidská volba atributu navíc",
+        "ElvenTalent": "Elfí nadání",
+        "EldaraiHeritage": "Dědictví Eldarai",
+        "HalflingAgility": "Dědictví půlčíků",
+        "LomeraiHeritage1": "Dědictví Lomerai I",
+        "LomeraiHeritage2": "Dědictví Lomerai II",
+        "ZephyraiHeritage1": "Dědictví Zephyrai I",
+        "ZephyraiHeritage2": "Dědictví Zephyrai II",
+        "IkaraiHeritage": "Dědictví Ikarai",
+        "MorneraiHeritage": "Dědictví Mornerai",
+        "KerneraiHeritage": "Dědictví Kernerai",
+        "BorgorHeritage1": "Dědictví Borgor I",
+        "BorgorHeritage2": "Dědictví Borgor II"
       }
     },
     "Resource": {
@@ -5039,6 +5185,25 @@
         "panic": "v panice"
       }
     },
+    "EnduringWarrior": {
+      "Button": "Minul: +{amount} výdrže",
+      "Tooltip": "Vytrvalý válečník: útok minul, vrať polovinu výdrže, kterou stál. Ne po Uplatnění zranění ani po dalším útoku; ukončí vícenásobný útok.",
+      "Used": "{name} minul: Vytrvalý válečník vrací {amount} výdrže.",
+      "Blocked": "Vytrvalého válečníka už u tohoto útoku nelze uplatnit."
+    },
+    "WeaponMaster": {
+      "OverpowerSource": "Přesílení",
+      "OverpowerDefenseHint": "Opakuj hod na obranu: střet byl prohrán o {gap}. Stojí 1 výdrž.",
+      "OverpowerAttackHint": "Opakuj hod na Zásah: útoku chybělo {gap}. Stojí 1 výdrž.",
+      "OverpowerRestated": "Přesílení: {name} opakoval hod na Zásah, střet se vyhodnocuje znovu proti novému hodu.",
+      "OverpowerNoGM": "Přesílení potřebuje připojeného GM, aby přepsal kartu obrany.",
+      "OverpowerNoCard": "Tento střet už nelze Přesílením zvrátit.",
+      "BraceHint": "Výhoda na příští hod na obranu proti {attacker}.",
+      "BraceApplied": "{name} se zapírá: Výhoda na příští hod na obranu.",
+      "VigilantLabel": "Bdělý ochránce",
+      "VigilantHint": "{attacker} napadl {ally}: Příležitostný útok. Jednou za kolo.",
+      "ExtraReaction": "Vylepšená rychlá reakce: +1 Reakce"
+    },
     "Overwhelm": {
       "Label": "Přesila",
       "MarkerName": "Přesila ({penalty}%)",
@@ -5246,6 +5411,23 @@
       "Capped": "Obranou lze získat Dočasné životy jen do {max}.",
       "AtCap": "Už máš {max} Dočasných životů — obranou další nezískáš.",
       "ActorMissing": "Bránící se postava už neexistuje."
+    },
+    "VeteranRest": {
+      "Button": "Oddech zdarma",
+      "Tooltip": "Veterán II: místo Dočasných životů si vezmi Oddech zdarma (+{amount} Výdrže). Lze použít jen jednou.",
+      "AlreadyUsed": "Z této obrany už byl využit Oddech zdarma, nebo Dočasné životy.",
+      "Granted": "{name} využívá Veterána a bere si Oddech zdarma: +{amount} Výdrže.",
+      "ActorMissing": "Bránící se postava už neexistuje."
+    },
+    "Veteran": {
+      "Toggle": "Veterán",
+      "ToggleTooltip": "Veterán I: sníží stupeň Kritického zásahu u každého cíle o jeden (nikdy pod 0, nikdy 4) a dá Oddech zdarma (+5 Výdrže).",
+      "NothingToLower": "Veterán I: všechny cíle už mají stupeň 0, není co snížit.",
+      "PreviewNote": "Veterán: stupeň {from} → {to}",
+      "Used": "{name} využívá Veterána: stupeň Kritického zásahu klesá o jeden a bere si Oddech zdarma (+{amount} Výdrže)."
+    },
+    "CritFailDefense": {
+      "DegreeNote": "Kritický neúspěch obrany: stupeň {degree}"
     },
     "MultiAttack": {
       "WeaponsOrExplosives": "Vyber zbraň nebo výbušninu k hodu:",
@@ -5463,6 +5645,7 @@
         "weaponSpec": "Zbraňová specializace",
         "offhand": "Druhá ruka",
         "weaponDefense": "Obrana zbraní",
+        "daggerDefense": "Bez postihu dýky (Stín)",
         "shield": "Štít",
         "dualWield": "Boj dvěma zbraněmi"
       }
@@ -5986,6 +6169,10 @@
       "Argos": {
         "name": "Argosové"
       },
+      "Armiger": {
+        "name": "Zbrojnoš",
+        "description": "<p>Mistr zbraní, Zbrojnoš I (těžká zbroj). Jednou za den může opakovat hod na Obranu nebo Kryt, pokud má jako nejsvrchnější vrstvu zbroje oblečenou těžkou zbroj. Uděluje se automaticky uzlem Zbrojnoš I.</p>"
+      },
       "ArmorTrainingI": {
         "name": "Výcvik se zbrojí I"
       },
@@ -6241,10 +6428,16 @@
         "name": "Drakovití"
       },
       "DragonGuard": {
-        "name": "Dračí stráž"
+        "name": "Dračí stráž",
+        "tag": "Dračí stráž +10 %",
+        "retaliationTag": "Odveta"
       },
       "DragonSleep": {
-        "name": "Dračí spánek"
+        "name": "Dračí spánek",
+        "reactionsGiven": "Reakce vyměněné za Oddech: {count}",
+        "staminaGained": "Obnovená výdrž: {amount}",
+        "aimGained": "Získává jedno Míření na {target}.",
+        "noAimTarget": "Žádný cíl, Míření nezískáno."
       },
       "DragonsThrust": {
         "name": "Dračí výpad"
@@ -6290,6 +6483,30 @@
       },
       "Eldarai": {
         "name": "Eldarai"
+      },
+      "Lomerai": {
+        "name": "Lomerai"
+      },
+      "Ornerai": {
+        "name": "Ornerai"
+      },
+      "Zephyrai": {
+        "name": "Zephyrai"
+      },
+      "Ikarai": {
+        "name": "Ikarai"
+      },
+      "Mornerai": {
+        "name": "Mornerai"
+      },
+      "Kernerai": {
+        "name": "Kernerai"
+      },
+      "Arenai": {
+        "name": "Arenai"
+      },
+      "Borgor": {
+        "name": "Borgor"
       },
       "ElvenGrace": {
         "name": "Elfí ladnost"
@@ -7005,7 +7222,8 @@
         "name": "Magický velitel"
       },
       "MagicPotential": {
-        "name": "Magický potenciál"
+        "name": "Magický potenciál",
+        "description": "<p><strong>Umožňuje stát se mágem:</strong> otevírá magické doktríny a studium magie.</p><p>Usměrňování +5 %, Základ many +5.<br />Modifikátor many 1.<br />Jednou za den může opakovat hod na Usměrňování.</p>"
       },
       "MagicResistance": {
         "name": "Odolnost vůči magii"
@@ -8136,6 +8354,9 @@
       "Rations": {
         "name": "Zásoby jídla",
         "description": "<p>Jídlo na cesty: tvrdý chléb, sušené maso, co zbylo v kotlíku. Jedna jednotka nasytí jedny ústa na třetinu dne. Normální jedinec spotřebuje 3 jednotky za Dlouhý odpočinek.</p>"
+      },
+      "ImprovedCharge": {
+        "name": "Vylepšená zteč"
       }
     },
     "MonsterBuilder": {
@@ -8724,6 +8945,10 @@
       "Mirror": {
         "badge": "Kopíruje {skill}",
         "locked": "Pro postup v této dovednosti zvyš stupeň dovednosti {skill}"
+      },
+      "WeaponMaster": {
+        "title": "Mistr zbraní",
+        "ranks": "Další zbraňová dovednost (jakákoli kromě nejvyšší): stupně I až IV jsou zdarma, každý další stupeň stojí 5 CP a nevyžaduje Učitele."
       },
       "FreeSchool": {
         "title": "První škola magie",

@@ -59,6 +59,7 @@
     "rangedCritDefense": 0,
     "archeryPenalty": -5,
     "perPenalty": -5,
+    "armorWeight": "heavy",
     "layer": "Top"
   },
   "effects": [],

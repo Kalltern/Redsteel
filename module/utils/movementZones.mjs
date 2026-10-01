@@ -28,6 +28,7 @@ import {
   getActionPools,
   getMovementLock,
   getSpent,
+  isMovementTurn,
   isTrackedTurn,
 } from "./actionTracker.mjs";
 
@@ -104,6 +105,30 @@ export const MOVEMENT_MODES = {
     icon: "fa-light fa-arrows-up-down-left-right",
     labelKey: "REDSTEEL.Bg3Hotbar.Suggest.PassingStrike",
   },
+  // Improved Passing Strike (Vylepšený útok s pohybem) after a retaliation, on
+  // somebody else's turn: the same free hex as `passing`, kept as its own mode
+  // so the tracker can let it be walked off-turn (actionTracker.mjs
+  // OFF_TURN_MODES) without doing the same for an on-turn step left open.
+  passingReaction: {
+    budgetFn: () => 1,
+    color: 0xd8c38a,
+    actions: 0,
+    free: true,
+    icon: "fa-light fa-arrows-up-down-left-right",
+    labelKey: "REDSTEEL.Bg3Hotbar.Suggest.PassingStrike",
+  },
+  // Lunge Step (Přískok, Servant of the Sword): one hex toward an attacker
+  // striking from beyond the next hex, before the attack resolves, on the
+  // attacker's turn. Provokes no Opportunity Attack (`free`); the lock's
+  // `toward` names the attacker and the zone keeps only hexes closer to it.
+  lungeStep: {
+    budgetFn: () => 1,
+    color: 0xd8c38a,
+    actions: 0,
+    free: true,
+    icon: "fa-light fa-person-walking-arrow-right",
+    labelKey: "REDSTEEL.Bg3Hotbar.Suggest.LungeStep",
+  },
   // Extended Lunge (Daleký výpad): one hex in any direction after the attack,
   // hit or miss. Unlike Passing Strike the book grants no OA immunity, so the
   // step walks under the ordinary threat rules.
@@ -113,6 +138,17 @@ export const MOVEMENT_MODES = {
     actions: 0,
     icon: "fa-light fa-arrows-up-down-left-right",
     labelKey: "REDSTEEL.Bg3Hotbar.Suggest.ExtendedLunge",
+  },
+  // Quick Feet (Rychlé nohy, Shadow): one hex around the opponent before a
+  // retaliation, on somebody else's turn. The lock's `around` names the
+  // opponent and the zone keeps only hexes next to it. Ordinary threat rules
+  // (user ruling 2026-09-30): the step can provoke like any other.
+  quickFeet: {
+    budgetFn: () => 1,
+    color: 0xd8c38a,
+    actions: 0,
+    icon: "fa-light fa-arrows-spin",
+    labelKey: "REDSTEEL.Bg3Hotbar.Suggest.QuickFeet",
   },
 };
 
@@ -399,6 +435,15 @@ function parseKey(key) {
   return { i, j };
 }
 
+/** Grid steps between two offsets, along the grid's direct path. */
+function offsetDistance(a, b) {
+  const path = canvas.grid.getDirectPath([
+    canvas.grid.getCenterPoint(a),
+    canvas.grid.getCenterPoint(b),
+  ]);
+  return Math.max(0, (path?.length ?? 1) - 1);
+}
+
 /**
  * The tokens that engage this one: the other side (HOSTILE against
  * everything else, the countAdjacentEnemies model in sneakTriggers.mjs),
@@ -635,6 +680,11 @@ function swordTextStyle() {
  * next to an enemy and whether getting there must provoke. Enemies stand on
  * their centre hex (multi-hex creatures are simplified to it).
  *
+ * `around` (a token id) keeps only hexes next to that token: Quick Feet's
+ * step around the opponent. `toward` (a token id) keeps only hexes nearer that
+ * token than the start: Lunge Step's step toward the attacker. An id that is
+ * not on the canvas filters nothing.
+ *
  * @param {Token} token
  * @param {number} budget
  * @returns {Map<string, {i: number, j: number, threatened: boolean,
@@ -644,11 +694,21 @@ function swordTextStyle() {
 export function computeMovementZone(
   token,
   budget,
-  { ignore = [], free = false } = {},
+  { ignore = [], free = false, around = null, toward = null } = {},
 ) {
   const zone = new Map();
   const origin = documentOrigin(token);
   if (!origin) return zone;
+  const aroundOrigin = around
+    ? documentOrigin(canvas.tokens?.get(around))
+    : null;
+  const aroundRing = aroundOrigin
+    ? new Set(canvas.grid.getAdjacentOffsets(aroundOrigin).map(offsetKey))
+    : null;
+  const towardOrigin = toward
+    ? documentOrigin(canvas.tokens?.get(toward))
+    : null;
+  const towardFrom = towardOrigin ? offsetDistance(origin, towardOrigin) : null;
 
   const { engage, threat, blocked, ignoredRing } = threatMaps(token, ignore, {
     free,
@@ -671,6 +731,13 @@ export function computeMovementZone(
   for (const [key, cell] of found) {
     // A Disengage may pass another enemy but not stop next to one.
     if (disengaging && engage.has(key)) continue;
+    if (aroundRing && !aroundRing.has(key)) continue;
+    if (
+      towardOrigin &&
+      offsetDistance(parseKey(key), towardOrigin) >= towardFrom
+    ) {
+      continue;
+    }
     zone.set(key, {
       ...parseKey(key),
       ...cell,
@@ -889,7 +956,7 @@ export function refreshLockedZone() {
   clearZone(LOCK_LAYER);
 
   const actor = zoneActor;
-  if (!actor || !isTrackedTurn(actor)) return;
+  if (!actor || !isMovementTurn(actor)) return;
   const lock = getMovementLock(actor);
   const def = MOVEMENT_MODES[lock?.mode];
   // Confirmed from the strip's check button: the movement is over.
@@ -903,6 +970,8 @@ export function refreshLockedZone() {
     computeMovementZone(token, lockRemaining(token, lock), {
       ignore: lock.ignore ?? [],
       free: !!def.free,
+      around: lock.around ?? null,
+      toward: lock.toward ?? null,
     }),
     { color: def.color, alpha: LOCK_ALPHA },
     token.document.id,

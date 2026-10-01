@@ -7,8 +7,17 @@ import {
 import { getDefenseRerollTokens } from "./rerolls.mjs";
 import { getBaneProfile } from "./baneCombat.mjs";
 import { buildTempHealthGrantFlag } from "./tempHealthGrant.mjs";
+import { buildVeteranRestFlag } from "./veteranRest.mjs";
 import { buildManeuverFlag } from "./advantageousManeuver.mjs";
-import { getAimDefenseBonus } from "./aim.mjs";
+import {
+  ARMIGER_HEAVY_DEFLECT,
+  ARMIGER_LIGHT_DODGE_COST,
+  ARMIGER_LIGHT_DODGE_CRIT,
+  WEAPON_TRAINING_MEDIUM_CRIT,
+  getArmigerBranch,
+  getWeaponTrainingClass,
+} from "./weaponMaster.mjs";
+import { getAimDefenseBonus, getCalculationCritDefense } from "./aim.mjs";
 import { getBloodSchoolRankBonus } from "../helpers/specialisations.mjs";
 import {
   SECTOR,
@@ -37,6 +46,84 @@ import { resolveVersus } from "./defenseOdds.mjs";
 
 /** Shadow → Úhyb do zad: the flat penalty for dodging a blow from behind. */
 const BLINDSIDE_DODGE_PENALTY = -20;
+
+/** Stamina the Dodge action costs before any discount. */
+const DODGE_STAMINA_COST = 4;
+
+/**
+ * Stamina this actor pays for the Dodge action. Mistr zbraní → Zbrojnoš II,
+ * light armor: "Akce Úhyb stojí o 1 méně Výdrže". Read at roll time, so it
+ * follows whatever armor is worn now. Never below 0.
+ *
+ * Exported so NPC auto-defense prices a dodge the way the roll charges it.
+ *
+ * @param {Actor} actor
+ * @returns {number}
+ */
+export function getDodgeStaminaCost(actor) {
+  const discount =
+    getArmigerBranch(actor, "zbrojnos2") === "light"
+      ? ARMIGER_LIGHT_DODGE_COST
+      : 0;
+  return Math.max(0, DODGE_STAMINA_COST - discount);
+}
+
+/**
+ * Deflect (Odklonění) a Defense or Ranged Defense gets from Mistr zbraní →
+ * Zbrojnoš II, heavy armor: "Při Obraně a Krytu získává Odklonění +20%".
+ * Never on a Dodge. Read at roll time.
+ *
+ * @param {Actor} actor
+ * @returns {number}
+ */
+function getArmigerDeflect(actor) {
+  return getArmigerBranch(actor, "zbrojnos2") === "heavy"
+    ? ARMIGER_HEAVY_DEFLECT
+    : 0;
+}
+
+/**
+ * The attack packet a defense contests, read off an attack card.
+ *
+ * `rolls[0]` is the fallback for cards posted before the margin was stored on
+ * the flag, so older chat history stays answerable. Those cards carry no crit
+ * flag or raw die, which degrades to a plain margin contest.
+ *
+ * `messageId` names the attack card itself. The defense card keeps the packet
+ * as `flags.redsteel.versusAttack`, which is how Apply Damage finds the defense
+ * that answered a given attack (the critical-failure degree ruling).
+ *
+ * @param {ChatMessage} message  an attack card (`flags.attack.type === "attack"`)
+ * @returns {object}
+ */
+export function buildAttackPacket(message) {
+  return {
+    messageId: message.id,
+    margin: message.flags.attack.margin ?? message.rolls?.[0]?.total ?? null,
+    criticalSuccess: message.flags.attack.criticalSuccess === true,
+    // A fumbled attack is a natural critical for the defender, so it belongs
+    // in the packet the versus block reads — without it the defense contests
+    // the fumble on margins alone.
+    criticalFailure: message.flags.attack.criticalFailure === true,
+    d100: message.flags.attack.d100 ?? null,
+    // Magic Defense against a Blood spell takes the School of Blood rank bonus.
+    spellSchool: message.flags?.redsteel?.spellSchool ?? null,
+    // Where each target stood when the blow was thrown, keyed by token id
+    // (utils/positioning.mjs). Absent on cards written before positioning
+    // existed and on attacks that named no target, and the defense falls back
+    // to live token facing in both cases.
+    positioning: message.flags.attack.positioning ?? null,
+    // Tulák IX lowers the attacker's critical threshold on a Weak Spot
+    // action. Absent on every other card, where the versus block falls back
+    // to the usual 60.
+    criticalGap: message.flags.attack.criticalGap ?? null,
+    // Which ability swung and its tags ("opportunity"), carried onto the
+    // defense card so the reaction suggestions can tell a Counterattack or
+    // an Opportunity Attack (which cannot be answered in kind) from a blow.
+    abilityKey: message.flags?.redsteel?.abilityKey ?? null,
+    attackTags: message.flags?.redsteel?.attackTags ?? [],
+  };
+}
 
 /**
  * Whether a dodge came out as a Bad Dodge (Špatný úhyb): the raw d100 beat the
@@ -246,7 +333,12 @@ export function renderVersusBlock(
  * re-roll, no successful guard to buy Temporary Health with, and no parry to
  * spend on an Advantageous Maneuver.
  */
-async function postDeniedDefense({ actor, token = null, attack = null } = {}) {
+async function postDeniedDefense({
+  actor,
+  token = null,
+  attack = null,
+  attackerTokenId = null,
+} = {}) {
   const versus = renderVersusBlock(attack, {
     defenseTotal: 0,
     defenseD100: null,
@@ -279,6 +371,34 @@ async function postDeniedDefense({ actor, token = null, attack = null } = {}) {
       redsteel: {
         rollName: title,
         positioning: { sector: SECTOR.BACK, denied: true },
+        // The attack answered and the verdict, the same two keys a rolled
+        // defense card carries: Apply Damage reads them to force degree 4 on a
+        // critical hit landing on a critical failure (see applyDamage.mjs
+        // findAnsweringDefense).
+        ...(versus.versus ? { versusAttack: attack ?? null } : {}),
+        ...(versus.versus ? { versus: versus.versus } : {}),
+        // No defense skill was used (`defenseKey: null`), so no Counterattack
+        // or Retaliatory strike fits it; `critFailure` is always true here,
+        // because a blow that cannot be answered is a critical failure.
+        defense: {
+          defenderTokenId: (token?.document ?? token)?.id ?? null,
+          attackerTokenId: attackerTokenId ?? null,
+          defenseKey: null,
+          succeeded: false,
+          critFailure: true,
+          denied: true,
+          attackAbilityKey: attack?.abilityKey ?? null,
+          attackTags: Array.isArray(attack?.attackTags)
+            ? attack.attackTags
+            : [],
+          combat: game.combat?.started
+            ? {
+                id: game.combat.id,
+                round: game.combat.round,
+                turn: game.combat.turn,
+              }
+            : null,
+        },
       },
     },
   });
@@ -588,6 +708,28 @@ export async function buildDefenseProfile({
     throw new Error(`Redsteel | unknown defense mode "${mode}"`);
   }
 
+  // Shadow Calculation: holding an Aim on the creature being defended against
+  // widens the critical range of every weapon defense against it (melee,
+  // ranged and dodge alike; Magic Defense returned above).
+  critSuccess += getCalculationCritDefense(
+    actor,
+    defenderToken,
+    attackerTokenId,
+  );
+
+  // Mistr zbraní → Výcvik se zbraní, medium weapon in the main hand: "Šance na
+  // Kritický zásah a obranu +1%". Critical Defense chance covers all three
+  // weapon defenses, Dodge included.
+  if (getWeaponTrainingClass(actor) === "medium") {
+    critSuccess += WEAPON_TRAINING_MEDIUM_CRIT;
+  }
+
+  // Mistr zbraní → Zbrojnoš II, light armor on top: "Šance na Kritický úspěch
+  // Úhybu +3%". Dodge only.
+  if (mode === "dodge" && getArmigerBranch(actor, "zbrojnos2") === "light") {
+    critSuccess += ARMIGER_LIGHT_DODGE_CRIT;
+  }
+
   // Every rollData term is a flat addend in the formula (they are all "+ @x"),
   // so their sum is the number the die is subtracted from. Taken here, before
   // the caller runs withRollBias, which adds keys that are not terms.
@@ -768,7 +910,12 @@ export async function defenseRoll({
   // before the ability and auto-defense branches, so a reaction ability and an
   // NPC defending itself are denied on the same terms a player is.
   if (deniesDefense(positionSector, actor)) {
-    await postDeniedDefense({ actor, token: defenderToken, attack });
+    await postDeniedDefense({
+      actor,
+      token: defenderToken,
+      attack,
+      attackerTokenId: defendingAgainstId(),
+    });
     return;
   }
 
@@ -1350,7 +1497,9 @@ export async function defenseRoll({
         criticalFailureThreshold,
         overwhelmStacks,
         {
-          deflectValue: Number(actor.system.defenseDeflect) || 0,
+          deflectValue:
+            (Number(actor.system.defenseDeflect) || 0) +
+            getArmigerDeflect(actor),
           defenseKey: "meleeDefense",
           useBane,
           aimDefense,
@@ -1456,7 +1605,13 @@ export async function defenseRoll({
         criticalSuccessThreshold,
         criticalFailureThreshold,
         overwhelmStacks,
-        { defenseKey: "rangedDefense", useBane },
+        {
+          // Ranged Defense had no Deflect source of its own; Zbrojnoš II
+          // (heavy) is the first, so only that is read here.
+          deflectValue: getArmigerDeflect(actor),
+          defenseKey: "rangedDefense",
+          useBane,
+        },
       );
     };
 
@@ -1536,7 +1691,7 @@ export async function defenseRoll({
       const criticalSuccessThreshold = profile.critSuccess;
       const criticalFailureThreshold = profile.critFailure;
 
-      const staminaCost = 4;
+      const staminaCost = getDodgeStaminaCost(actor);
       const stamina = actor.system.stats.stamina.value ?? 0;
 
       if (stamina < staminaCost) {
@@ -1868,6 +2023,15 @@ export async function defenseRoll({
       ? !versus.versus.blocked
       : contestedTotal < 0;
 
+    // Mistr zbraní → Veterán II: a Critical Defense buys a free Rest instead of
+    // the Temporary Health. The contested verdict decides when there is one; a
+    // hotbar defense with no attack to answer falls back to its own natural
+    // critical success. Null when the defender has no such claim.
+    const criticalDefense = versus.versus
+      ? versus.versus.critical === "defense"
+      : critSuccess;
+    const veteranRest = criticalDefense ? buildVeteranRestFlag(actor) : null;
+
     await ChatMessage.create({
       speaker: ChatMessage.getSpeaker({ actor }),
       rolls: [roll],
@@ -1943,6 +2107,7 @@ export async function defenseRoll({
           ...(tempHealthGrant
             ? { tempHealthGrant: { ...tempHealthGrant, defenseFailed } }
             : {}),
+          ...(veteranRest ? { veteranRest } : {}),
           // Carries `defenseFailed` for the same reason the grant above does:
           // the card is the only place that knows whether the guard held, and
           // the button hook has nothing else to read it from.
@@ -1959,6 +2124,10 @@ export async function defenseRoll({
             attackerTokenId: defendingAgainstId() ?? null,
             defenseKey,
             succeeded: !defenseFailed,
+            // Natural critical failure on this defense's own die (Desperate
+            // Effort thresholds included). Apply Damage forces critical degree
+            // 4 when this meets a critical hit (applyDamage.mjs).
+            critFailure,
             attackAbilityKey: attack?.abilityKey ?? null,
             attackTags: Array.isArray(attack?.attackTags) ? attack.attackTags : [],
             combat: game.combat?.started
@@ -1997,34 +2166,8 @@ export function registerDefendButton() {
     const attackerTokenId = attackerTokenIdFromMessage(message);
     if (!attackerTokenId) return;
 
-    // `rolls[0]` is the fallback for cards posted before the margin was stored
-    // on the flag, so older chat history stays answerable. Those cards carry no
-    // crit flag or raw die, which degrades to a plain margin contest.
-    const attack = {
-      margin: message.flags.attack.margin ?? message.rolls?.[0]?.total ?? null,
-      criticalSuccess: message.flags.attack.criticalSuccess === true,
-      // A fumbled attack is a natural critical for the defender, so it belongs
-      // in the packet the versus block reads — without it the defense contests
-      // the fumble on margins alone.
-      criticalFailure: message.flags.attack.criticalFailure === true,
-      d100: message.flags.attack.d100 ?? null,
-      // Magic Defense against a Blood spell takes the School of Blood rank bonus.
-      spellSchool: message.flags?.redsteel?.spellSchool ?? null,
-      // Where each target stood when the blow was thrown, keyed by token id
-      // (utils/positioning.mjs). Absent on cards written before positioning
-      // existed and on attacks that named no target, and the defense falls back
-      // to live token facing in both cases.
-      positioning: message.flags.attack.positioning ?? null,
-      // Tulák IX lowers the attacker's critical threshold on a Weak Spot
-      // action. Absent on every other card, where the versus block falls back
-      // to the usual 60.
-      criticalGap: message.flags.attack.criticalGap ?? null,
-      // Which ability swung and its tags ("opportunity"), carried onto the
-      // defense card so the reaction suggestions can tell a Counterattack or
-      // an Opportunity Attack (which cannot be answered in kind) from a blow.
-      abilityKey: message.flags?.redsteel?.abilityKey ?? null,
-      attackTags: message.flags?.redsteel?.attackTags ?? [],
-    };
+    // Built by buildAttackPacket, which the Overpower re-contest reads too.
+    const attack = buildAttackPacket(message);
 
     const isAuthor = game.user.id === message.author?.id;
     if (isAuthor && !game.user.isGM) return;

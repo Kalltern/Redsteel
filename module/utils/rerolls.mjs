@@ -2,6 +2,7 @@ import {
   isCalendariaEnabled,
   getPendingCalendariaEntries,
 } from "./calendariaIntegration.mjs";
+import { getTopArmorWeight } from "./weaponMaster.mjs";
 
 /**
  * Reroll resource model.
@@ -429,6 +430,14 @@ export function getEligibleRerolls(actor, tokens, { critFailure = false } = {}) 
   return getActorRerollPools(actor).filter((pool) => {
     if (pool.remaining <= 0) return false;
     if (critFailure && !pool.critFail) return false;
+    // A pool whose feature needs a class of armor worn on top (Armiger, heavy:
+    // `flags.redsteel.rerollRequiresArmor: "heavy"`) is only usable while that
+    // armor is the topmost layer. Read now, at reroll time.
+    const requiredArmor = actor.items.get(pool.itemId)?.flags?.redsteel
+      ?.rerollRequiresArmor;
+    if (requiredArmor && getTopArmorWeight(actor) !== requiredArmor) {
+      return false;
+    }
     if (isCombat && pool.combatRemaining <= 0) return false;
     if (pool.universal) return true;
     return pool.skills.some((s) => tokenSet.has(s));
@@ -593,9 +602,9 @@ export async function pickRerollPool(eligible) {
 /**
  * Restore every reroll the actor owns to ready (used = 0). Called on Long Rest.
  *
- * When the Calendaria integration is enabled, a pool under an active Lucky
+ * When the Calendaria integration is enabled, a pool under an active
  * crit-failure lockout (spent rerolling a natural Critical Failure — 7 days,
- * 5 with Untiring Luck) is skipped here: Lucky's crit-failure lockout
+ * 5 for Lucky with Untiring Luck) is skipped here: the crit-failure lockout
  * survives Long Rest by design, and only clears when the scheduled Calendaria
  * refresh fires. With the integration disabled, behavior is unchanged.
  *

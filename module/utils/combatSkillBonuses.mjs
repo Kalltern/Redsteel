@@ -24,11 +24,21 @@ import {
   resolveAimOnAttack,
   markAimCritFail,
   abilityIgnoresAim,
+  getCalculationCritHit,
 } from "./aim.mjs";
 import { actorHasSpecNode } from "../helpers/specialisations.mjs";
 import { consumeOpportunityFlag } from "./opportunityAttacks.mjs";
+import { dragonGuardAttack, DRAGON_GUARD_HIT_BONUS } from "./dragonGuard.mjs";
+import { riposteAlwaysCrits } from "./swordServant.mjs";
+import {
+  getWeaponTrainingClass,
+  WEAPON_TRAINING_MEDIUM_CRIT,
+  WEAPON_TRAINING_HEAVY_CRIT,
+} from "./weaponMaster.mjs";
 
 const BLEEDING_DAMAGE_TYPES = new Set(["slash", "piercing"]);
+/** Shadow: Aimed Attack +5% (Cílený útok) — hit chance on an aimed attack. */
+const SHADOW_AIMED_ATTACK_BONUS = 5;
 
 /**
  * Can this attack open a bleeding wound at all? An edge or a point swung in
@@ -863,6 +873,9 @@ export async function getAttackRolls(
     if (!abilityIgnoresAim(ability)) abilityAttack += aimValue * 10;
     await actor.unsetFlag("redsteel", "aimCount");
   }
+  // Shadow Calculation reads the aim as it stands before this attack touches
+  // it: the next call may spend or break it.
+  const calculationCrit = getCalculationCritHit(actor);
   // Now that the bonus is banked, settle what the attack does to the Aim itself:
   // spend it, break it, or park it for Apply Damage. Reads useSneakAttack rather
   // than consuming it — consumeSneakAttackFlag does that, once, after the card.
@@ -878,8 +891,19 @@ export async function getAttackRolls(
   if (aimedPart) {
     const partDef = AIMED_PARTS[aimedPart];
     if (partDef) abilityAttack += partDef.attackPenalty;
+    // Shadow: Aimed Attack +5% eases the penalty on every aimed attack, hit,
+    // throw and shot alike (all three arrive here).
+    if (partDef && actorHasSpecNode(actor, "shadow", "aimedAttack")) {
+      abilityAttack += SHADOW_AIMED_ATTACK_BONUS;
+    }
     await actor.unsetFlag("redsteel", "aimedPart");
   }
+  // Dragon Guard (Servant of the Sword): Hit +10% for a retaliation, a
+  // Riposte or the Momentum after them, never an Opportunity Attack.
+  const dragonGuard = await dragonGuardAttack(actor, ability, {
+    opportunity: opportunityAttack,
+  });
+  if (dragonGuard) abilityAttack += DRAGON_GUARD_HIT_BONUS;
 
   // A standalone ranged ability has no weapon to read the skill off, so the
   // ability itself names which ranged skill the attack rolls against. Blank
@@ -962,7 +986,12 @@ export async function getAttackRolls(
     }
   }
 
-  criticalSuccessThreshold += specBonus.critChance;
+  criticalSuccessThreshold += specBonus.critChance + calculationCrit;
+  // Weapon Training (Weapon Master, vycvikSeZbrani), medium class: Critical
+  // Hit chance +1 on every weapon attack, whatever weapon is swung.
+  if (getWeaponTrainingClass(actor) === "medium") {
+    criticalSuccessThreshold += WEAPON_TRAINING_MEDIUM_CRIT;
+  }
 
   // Roll data setup
 
@@ -998,8 +1027,12 @@ export async function getAttackRolls(
       criticalSuccessThreshold,
       criticalFailureThreshold,
     );
-  const critSuccess = rollResult <= critSuccessThreshold;
   const critFailure = rollResult >= critFailThreshold;
+  // Servant of the Sword: a Riposte always counts as a Critical Hit, unless
+  // the dice fumbled (user ruling 2026-10-01).
+  const critSuccess =
+    rollResult <= critSuccessThreshold ||
+    (!critFailure && riposteAlwaysCrits(actor, ability));
 
   // A fumble burns the whole aim even under Sword Dancer's half-loss. The aim
   // was parked before the dice existed, so tag that record now.
@@ -1014,6 +1047,7 @@ export async function getAttackRolls(
     rollName,
     aimedPart,
     opportunityAttack,
+    dragonGuard,
   };
 }
 
@@ -1294,10 +1328,16 @@ export async function getCriticalRolls(
       deadlyLungeBonus = 5;
     }
   }
+  // Weapon Training (Weapon Master, vycvikSeZbrani), heavy class: critical
+  // damage and critical penetration +5, carried by every degree like the
+  // weapon-skill crit bonuses beside it.
+  const weaponTrainingCrit =
+    getWeaponTrainingClass(actor) === "heavy" ? WEAPON_TRAINING_HEAVY_CRIT : 0;
   const buildCriticalTotals = (degree) => {
     const critDamageTotal =
       (critDamageMapping[degree] ?? 0) +
       weaponSkillCritDmg +
+      weaponTrainingCrit +
       deadlyLungeBonus +
       perBonus +
       actorCritBonus +
@@ -1313,6 +1353,7 @@ export async function getCriticalRolls(
         penetration +
         (weapon?.system.critPenetration || 0) +
         weaponSkillCritPen +
+        weaponTrainingCrit +
         doctrineSkillCritPen || 0;
 
     return {

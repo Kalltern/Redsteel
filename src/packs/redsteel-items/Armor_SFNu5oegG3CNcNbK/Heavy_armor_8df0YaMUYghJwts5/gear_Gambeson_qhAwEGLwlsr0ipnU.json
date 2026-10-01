@@ -58,6 +58,7 @@
     "rangedCritDefense": 0,
     "archeryPenalty": 0,
     "perPenalty": 0,
+    "armorWeight": "heavy",
     "layer": "Bottom",
     "localizationKey": "REDSTEEL.Items.Gambeson.name"
   },

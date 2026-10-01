@@ -1,7 +1,7 @@
 {
   "name": "Dragon Sleep",
   "type": "ability",
-  "img": "icons/consumables/plants/tearthumb-halberd-leaf-green.webp",
+  "img": "icons/creatures/reptiles/dragon-horned-blue.webp",
   "system": {
     "description": "<p>For one round, Defense, Dodge and Ranged Defense +10%.<br />Gain one Aim and restore 1 Stamina.<br />You cannot use Riposte for one round and give up all your Reactions this round; gain one Rest for each Reaction given up this way.</p>",
     "type": "other",
@@ -86,7 +86,7 @@
       "extra2": 0,
       "extra3": 0
     },
-    "class": "",
+    "class": "stance",
     "actionCost": "1 Action",
     "defense": 0,
     "rangedDefense": 0,
@@ -109,7 +109,8 @@
     "effectType2": "",
     "effectType3": "",
     "localizationKey": "REDSTEEL.Items.DragonSleep.name",
-    "category": "doctrine"
+    "category": "doctrine",
+    "key": "dragon_sleep"
   },
   "effects": [],
   "folder": "9Ug73JNNSqmkEdOI",

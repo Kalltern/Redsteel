@@ -1,0 +1,435 @@
+{
+  "name": "Lomerai",
+  "type": "race",
+  "img": "icons/svg/aura.svg",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.Lomerai.name",
+    "description": "<p><strong>Table ruling (not automated):</strong></p><ul><li>Air spell power +2, OR Stealth +10% and +3% to Ranged or Melee (pick one).</li></ul>",
+    "baneTypes": "elf",
+    "choices": [
+      {
+        "label": "REDSTEEL.Race.Choice.ElvenTalent",
+        "count": 1,
+        "effectIds": [
+          "2RDFSQD5wX1o8bhK",
+          "Q4f2wMbJtPVAVJBt"
+        ]
+      },
+      {
+        "label": "REDSTEEL.Race.Choice.LomeraiHeritage1",
+        "count": 1,
+        "effectIds": [
+          "18TZ6hBcwRCRRLvt",
+          "SyNxcew1Rvl5kvx5"
+        ]
+      },
+      {
+        "label": "REDSTEEL.Race.Choice.LomeraiHeritage2",
+        "count": 1,
+        "effectIds": [
+          "Zxer0d4koBCW7TWq",
+          "BuQCyAfsFewfoklV"
+        ]
+      }
+    ]
+  },
+  "effects": [
+    {
+      "name": "Racial bonus: Elf",
+      "origin": "Item.Bl4MMx535ZNfHvAn",
+      "img": "icons/svg/aura.svg",
+      "_id": "8H1ET7544Y0YKpA0",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.attributes.per.bonus",
+            "value": 1,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
+      "disabled": false,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!Bl4MMx535ZNfHvAn.8H1ET7544Y0YKpA0"
+    },
+    {
+      "name": "Racial bonus: Lomerai",
+      "origin": "Item.Bl4MMx535ZNfHvAn",
+      "img": "icons/svg/aura.svg",
+      "_id": "BTXBEqdOiF33ko5s",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.stats.mana.base",
+            "value": 2,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
+      "disabled": false,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!Bl4MMx535ZNfHvAn.BTXBEqdOiF33ko5s"
+    },
+    {
+      "name": "Racial choice: Dexterity +1",
+      "origin": "Item.Bl4MMx535ZNfHvAn",
+      "img": "icons/svg/aura.svg",
+      "_id": "2RDFSQD5wX1o8bhK",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.attributes.dex.bonus",
+            "value": 1,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
+      "disabled": true,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!Bl4MMx535ZNfHvAn.2RDFSQD5wX1o8bhK"
+    },
+    {
+      "name": "Racial choice: Intelligence +1",
+      "origin": "Item.Bl4MMx535ZNfHvAn",
+      "img": "icons/svg/aura.svg",
+      "_id": "Q4f2wMbJtPVAVJBt",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.attributes.int.bonus",
+            "value": 1,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
+      "disabled": true,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!Bl4MMx535ZNfHvAn.Q4f2wMbJtPVAVJBt"
+    },
+    {
+      "name": "Racial choice: Dexterity +1",
+      "origin": "Item.Bl4MMx535ZNfHvAn",
+      "img": "icons/svg/aura.svg",
+      "_id": "18TZ6hBcwRCRRLvt",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.attributes.dex.bonus",
+            "value": 1,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
+      "disabled": true,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {
+        "redsteel": {
+          "raisesLimit": true
+        }
+      },
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!Bl4MMx535ZNfHvAn.18TZ6hBcwRCRRLvt"
+    },
+    {
+      "name": "Racial choice: Intelligence +1",
+      "origin": "Item.Bl4MMx535ZNfHvAn",
+      "img": "icons/svg/aura.svg",
+      "_id": "SyNxcew1Rvl5kvx5",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.attributes.int.bonus",
+            "value": 1,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
+      "disabled": true,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {
+        "redsteel": {
+          "raisesLimit": true
+        }
+      },
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!Bl4MMx535ZNfHvAn.SyNxcew1Rvl5kvx5"
+    },
+    {
+      "name": "Racial choice: Will +1",
+      "origin": "Item.Bl4MMx535ZNfHvAn",
+      "img": "icons/svg/aura.svg",
+      "_id": "Zxer0d4koBCW7TWq",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.attributes.wil.bonus",
+            "value": 1,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
+      "disabled": true,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {
+        "redsteel": {
+          "raisesLimit": true
+        }
+      },
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!Bl4MMx535ZNfHvAn.Zxer0d4koBCW7TWq"
+    },
+    {
+      "name": "Racial choice: Endurance +1",
+      "origin": "Item.Bl4MMx535ZNfHvAn",
+      "img": "icons/svg/aura.svg",
+      "_id": "BuQCyAfsFewfoklV",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.attributes.end.bonus",
+            "value": 1,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
+      "disabled": true,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {
+        "redsteel": {
+          "raisesLimit": true
+        }
+      },
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!Bl4MMx535ZNfHvAn.BuQCyAfsFewfoklV"
+    }
+  ],
+  "folder": "wOKrFdqBttqY6s3O",
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1790787863326,
+    "modifiedTime": 1790787863326,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "ownership": {
+    "default": 0,
+    "rs3mzx7WZdtEmvH2": 3,
+    "UHjN0KQ8w8ZxibJg": 3
+  },
+  "sort": 151000,
+  "_id": "Bl4MMx535ZNfHvAn",
+  "_key": "!items!Bl4MMx535ZNfHvAn"
+}

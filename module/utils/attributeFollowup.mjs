@@ -19,6 +19,7 @@
 
 import { withRollBias, tagRollSkill } from "./rollAdvantage.mjs";
 import { spend, getSpent, setSpent } from "./actionTracker.mjs";
+import { versusTestBonus } from "./testRating.mjs";
 
 /**
  * Abilities whose versus Test costs the loser something, keyed by
@@ -322,7 +323,9 @@ export function promptAttributeFollowup(
     // attribute*10 + globalMod; NPC: value + modBonus + globalMod). Reading
     // the raw NPC `value` here used to drop its globalMod, so an NPC contested
     // a roll with a different number than its own sheet would have used.
-    const rating = attr.mod ?? 0;
+    // Plus the answering side's versus Test bonus (Servant of the Sword's
+    // Combat Dexterity Tests), shown in the button's number.
+    const rating = (attr.mod ?? 0) + versusTestBonus(actor, key);
     buttons[key] = {
       label: viaFeature
         ? game.i18n.format("REDSTEEL.Versus.ViaFeature", { label, rating })

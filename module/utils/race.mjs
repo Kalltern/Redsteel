@@ -11,6 +11,15 @@
  */
 
 /**
+ * Choice-group labels written as plain Czech text before they became lang
+ * keys. Owned race copies (and a compendium not yet rebuilt) still carry
+ * them, so they are read as the key they became.
+ */
+const LEGACY_CHOICE_LABELS = {
+  "Univerzální atributová volba": "REDSTEEL.Race.Choice.HumanExtraAttribute",
+};
+
+/**
  * Normalize a race Item's `system.choices` into a clean array of groups.
  * Tolerates the array arriving as an indexed object after a form submit.
  * Groups with no effect ids are dropped.
@@ -26,7 +35,10 @@ export function getRaceChoiceGroups(item) {
       const rawIds = group?.effectIds;
       const ids = Array.isArray(rawIds) ? rawIds : Object.values(rawIds ?? {});
       return {
-        label: group?.label ?? "",
+        // A lang key (e.g. REDSTEEL.Race.Choice.ElvenTalent) or a legacy plain
+        // label; display sites run it through game.i18n.localize, which hands
+        // a non-key back unchanged.
+        label: LEGACY_CHOICE_LABELS[group?.label] ?? group?.label ?? "",
         count: Math.max(1, Number(group?.count) || 1),
         effectIds: ids.filter((id) => typeof id === "string" && id),
       };
@@ -249,7 +261,7 @@ export async function openRaceChoicesDialog(item) {
 
         return `
           <fieldset class="race-choice-group">
-            <legend>${group.label} (${game.i18n.format("REDSTEEL.Race.Choices.PickCount", {
+            <legend>${game.i18n.localize(group.label)} (${game.i18n.format("REDSTEEL.Race.Choices.PickCount", {
               count: group.count,
             })})</legend>
             <div class="race-choice-options">${optionsHtml}</div>
@@ -281,7 +293,7 @@ export async function openRaceChoicesDialog(item) {
               if (selected.size !== group.count) {
                 ui.notifications.warn(
                   game.i18n.format("REDSTEEL.Race.Choices.InvalidCount", {
-                    label: group.label,
+                    label: game.i18n.localize(group.label),
                     count: group.count,
                   }),
                 );

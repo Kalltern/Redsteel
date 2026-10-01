@@ -77,6 +77,7 @@
         "reverse": false
       }
     },
+    "armorWeight": "light",
     "layer": "Middle"
   },
   "effects": [],

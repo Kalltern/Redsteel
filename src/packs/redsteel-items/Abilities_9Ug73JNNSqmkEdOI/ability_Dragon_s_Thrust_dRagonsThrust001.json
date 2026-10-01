@@ -1,7 +1,7 @@
 {
-  "name": "Dragon's Thrust",
+  "name": "Dragon Strike",
   "type": "ability",
-  "img": "icons/skills/melee/strike-sword-steel-yellow.webp",
+  "img": "icons/skills/melee/strike-sword-dagger-runes-red.webp",
   "system": {
     "description": "<p>Give up your Defense and attack instead.<br />A Speed versus Test decides who hits first. Whoever hits first and kills the opponent avoids the other attack entirely.<br />The first hit always resolves as a Critical Hit, the second always as a normal hit.</p>",
     "type": "melee",

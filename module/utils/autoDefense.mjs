@@ -3,6 +3,7 @@ import {
   buildDefenseProfile,
   canMagicDefend,
   defenseRoll,
+  getDodgeStaminaCost,
 } from "./defense.mjs";
 import { defenseWinChance } from "./defenseOdds.mjs";
 import {
@@ -33,9 +34,6 @@ import { getRollBias, withRollBias } from "./rollAdvantage.mjs";
  * 2. *What kind of attack* — `flags.attack.attackType`, because a bolt and a
  *    sword are not answered by the same skill.
  */
-
-/** Must match the cost `dodgeDefense` actually deducts in defense.mjs. */
-const DODGE_STAMINA_COST = 4;
 
 /** The classes the melee-defense weapon dialog offers, so auto picks the same pool. */
 const MELEE_CLASSES = ["axe", "sword", "blunt", "polearm"];
@@ -177,7 +175,8 @@ export async function pickBestDefense(
   if (magicDefense) candidates.push({ mode: "magic", weapon: null });
 
   const stamina = Number(actor.system?.stats?.stamina?.value) || 0;
-  if (stamina >= DODGE_STAMINA_COST) {
+  // The same price dodgeDefense charges (Zbrojnoš II light takes 1 off).
+  if (stamina >= getDodgeStaminaCost(actor)) {
     for (const weapon of candidateWeapons(actor)) {
       candidates.push({ mode: "dodge", weapon });
     }
@@ -344,6 +343,8 @@ export async function resolveAutoDefense(message) {
   // Same shape the Defend button hands over. The crit flags matter because
   // natural criticals outrank the margins.
   const attack = {
+    // The attack card itself, so Apply Damage can find this defense again.
+    messageId: message.id,
     margin: Number(margin),
     criticalSuccess: flag.criticalSuccess === true,
     criticalFailure: flag.criticalFailure === true,

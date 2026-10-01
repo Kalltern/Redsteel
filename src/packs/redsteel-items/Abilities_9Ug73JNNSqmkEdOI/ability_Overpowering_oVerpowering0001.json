@@ -1,9 +1,9 @@
 {
-  "name": "Overpowering",
+  "name": "Overpower",
   "type": "ability",
-  "img": "icons/skills/melee/strike-sword-steel-yellow.webp",
+  "img": "icons/skills/melee/hand-grip-sword-white-brown.webp",
   "system": {
-    "description": "<p>You may reroll a Hit, Defense or Ranged Defense roll if the difference in margin of success was 10 or less.</p>",
+    "description": "<p>You may reroll a Hit, Defense or Ranged Defense roll if the difference in margin of success was 10 or less. Once per contest; offered on the hotbar to the side that lost.</p>",
     "type": "other",
     "weaponAbility": false,
     "standalone": false,

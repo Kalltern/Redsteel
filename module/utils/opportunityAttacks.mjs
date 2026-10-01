@@ -28,6 +28,7 @@
 
 import { ruleActive } from "./abilityGrants.mjs";
 import { combatantForActor } from "./combatants.mjs";
+import { isExploitAsRetaliation } from "./dragonGuard.mjs";
 
 /** Ability compendium UUID from a bare item id. */
 const A = (id) => `Compendium.redsteel.redsteel-items.Item.${id}`;
@@ -111,7 +112,13 @@ export function abilityUsageFit(actor, ability, token = null) {
     };
   }
 
-  if (offTurn && !reaction && !canBeOpportunityAttack(actor, ability)) {
+  // Dragon Guard: Exploit Weakness off-turn is a Retaliation action.
+  if (
+    offTurn &&
+    !reaction &&
+    !canBeOpportunityAttack(actor, ability) &&
+    !isExploitAsRetaliation(actor, ability)
+  ) {
     return {
       fit: "turnAction",
       reason:
@@ -135,14 +142,21 @@ const ATTACK_TAG_LABELS = {
   opportunity: "Opportunity Attack",
 };
 
+/** Tags whose label is a localisation key (Dragon Guard's, dragonGuard.mjs). */
+const ATTACK_TAG_KEYS = {
+  dragonGuard: "REDSTEEL.Items.DragonGuard.tag",
+  retaliation: "REDSTEEL.Items.DragonGuard.retaliationTag",
+};
+
 /** Chat-card chip for the tags on an attack. */
 export function renderAttackTagsHtml(tags = []) {
   if (!tags?.length) return "";
   return tags
     .map((tag) => {
       const key = String(tag ?? "");
-      const label =
-        ATTACK_TAG_LABELS[key] ?? key.charAt(0).toUpperCase() + key.slice(1);
+      const label = ATTACK_TAG_KEYS[key]
+        ? game.i18n.localize(ATTACK_TAG_KEYS[key])
+        : (ATTACK_TAG_LABELS[key] ?? key.charAt(0).toUpperCase() + key.slice(1));
       return `<span class="rs-attack-tag">${label}</span>`;
     })
     .join("");

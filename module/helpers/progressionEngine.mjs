@@ -22,6 +22,7 @@ import { SPEC_NODE_PRICES } from "./specNodePrices.mjs";
 import { REDSTEEL } from "./config.mjs";
 import { clearBaneChoice } from "./banes.mjs";
 import { ABILITY_GRANTS } from "../utils/abilityGrants.mjs";
+import { hasWeaponMasterNode } from "../utils/weaponMaster.mjs";
 import { MEMORISE_SP, getMemorisedCount } from "../utils/spellbook.mjs";
 
 /* ===========================================================================
@@ -531,9 +532,17 @@ function hasFeature(actor, name) {
 export function evaluateRequirement(actor, req, trackId, rank) {
   let advisory = ADVISORY.has(req.t);
   let met = false;
+  let waived = false;
 
   switch (req.t) {
     case "teacher":
+      // Weapon Master: a further weapon skill needs no Teacher. `waived` lets
+      // the Learn window leave the teacher badge off rather than show it.
+      if (trackId && isWeaponMasterFurtherSkill(actor, trackId)) {
+        met = true;
+        waived = true;
+        break;
+      }
       met = hasTeacher(actor, trackId, rank);
       break;
     case "attr":
@@ -557,7 +566,15 @@ export function evaluateRequirement(actor, req, trackId, rank) {
     // The clause kinds below come from the feature price table (featurePrices.mjs).
     case "race": {
       const race = actor.items.find((i) => i.type === "race");
-      met = !!race && (req.races ?? []).includes(race.name);
+      // A clause naming a `family` also opens to every subrace carrying that
+      // bane type (Eldarai, Lomerai... are all "elf"), not only the named item.
+      const families = String(race?.system?.baneTypes ?? "")
+        .split(/[\s,]+/)
+        .filter(Boolean);
+      met =
+        !!race &&
+        ((req.races ?? []).includes(race.name) ||
+          (!!req.family && families.includes(req.family)));
       break;
     }
     case "attrCompare":
@@ -628,7 +645,7 @@ export function evaluateRequirement(actor, req, trackId, rank) {
       break;
   }
 
-  return { met, advisory, req };
+  return { met, advisory, req, waived };
 }
 
 /**
@@ -997,6 +1014,9 @@ export function getFeaturePriceForItem(actor, item) {
 export function getOwnedFeatures(actor) {
   return (actor?.items?.contents ?? [])
     .filter((item) => item.type === "feature" && item.system?.option === "feature")
+    // Auto-granted items (abilityGrants.mjs, e.g. Armiger) are never bought:
+    // they must not count as spent or offer a refund.
+    .filter((item) => !item.flags?.redsteel?.grantedAbility)
     .map((item) => ({ item, price: getFeaturePriceForItem(actor, item) }));
 }
 
@@ -1013,8 +1033,10 @@ export function isNativeLanguageFeature(item) {
 /** What the character's owned features cost: each copy's own price, else the book's. */
 export function computeSpentOnFeatures(actor) {
   const spent = { cp: 0, sp: 0 };
+  const weaponMasterFree = getWeaponMasterFreeCopyIds(actor);
   for (const { item, price } of getOwnedFeatures(actor)) {
     if (!price || isRaceGrantedFeature(item) || isNativeLanguageFeature(item)) continue;
+    if (weaponMasterFree.has(item.id)) continue;
     spent.cp += Number(price.cp) || 0;
     spent.sp += Number(price.sp) || 0;
   }
@@ -1088,8 +1110,23 @@ export function getFeatureState(actor, featureId) {
   const names = new Set(
     [price.name, ...(price.aliases ?? [])].map((name) => name.toLowerCase()),
   );
-  if (owned.some(({ item }) => names.has(String(item.name).toLowerCase()))) {
+  const copies = owned.filter(({ item }) => names.has(String(item.name).toLowerCase())).length;
+  // Weapon Master: Weapon Specialization I / II may be taken twice more, free.
+  const extraFree =
+    copies > 0 &&
+    copies < 1 + WEAPON_MASTER_FREE_COPIES &&
+    WEAPON_MASTER_FEATURES.has(String(price.name).toLowerCase()) &&
+    hasWeaponMasterNode(actor, "mistrZbrani");
+  if (copies > 0 && !extraFree) {
     return { state: "owned", price, requirements: null, conflict: null };
+  }
+  if (extraFree) {
+    const freePrice = { ...price, cp: 0, sp: 0, weaponMasterFree: true };
+    const extraReqs = evaluateRequirements(actor, price.requires);
+    if (!extraReqs.met) {
+      return { state: "locked", price: freePrice, requirements: extraReqs, conflict: null };
+    }
+    return { state: "available", price: freePrice, requirements: extraReqs, conflict: null };
   }
   const requirements = evaluateRequirements(actor, price.requires);
   const conflict = findFeatureConflict(actor, owned, price);
@@ -1575,6 +1612,72 @@ export function getSkillDiscounts(actor, sources = getDiscountSources(actor)) {
   return map;
 }
 
+/* -------------------------------------------------------------------------- */
+/*  Weapon Master (specialisation weaponMaster, node mistrZbrani)             */
+/* -------------------------------------------------------------------------- */
+
+/*
+ * "Every rank of further weapon skills costs only 5 CP and needs no Teacher.
+ * The first four ranks of every further weapon skill are free. On buying the
+ * Weapon Specialization I and II features, may take each of them twice more
+ * for free." Like every price here it is derived, so it is retroactive.
+ */
+const WEAPON_MASTER_FREE_RANKS = 4;
+const WEAPON_MASTER_RANK_COST = 5;
+const WEAPON_MASTER_FREE_COPIES = 2;
+const WEAPON_MASTER_FEATURES = new Set(["weapon specialization i", "weapon specialization ii"]);
+
+/**
+ * The weapon skill key that is NOT "further": the highest `.value`. A tie goes
+ * to the key that comes first in Object.keys(system.weaponSkills). With no
+ * weapon skill trained there is no main skill yet (null), so the first rank
+ * bought is priced normally and the skill then becomes the main one; otherwise
+ * a free first rank would flip to full price the moment it was bought.
+ */
+function getMainWeaponSkillKey(actor) {
+  const skills = actor?.system?.weaponSkills ?? {};
+  let best = null;
+  let bestValue = 0;
+  for (const key of Object.keys(skills)) {
+    const value = Number(skills[key]?.value) || 0;
+    if (value > bestValue) {
+      best = key;
+      bestValue = value;
+    }
+  }
+  return best;
+}
+
+/** True when the track is a weapon skill other than the character's main one and the node is owned. */
+export function isWeaponMasterFurtherSkill(actor, trackId) {
+  const track = PROGRESSION_TRACKS[trackId];
+  if (track?.group !== "weaponSkills") return false;
+  if (!hasWeaponMasterNode(actor, "mistrZbrani")) return false;
+  const main = getMainWeaponSkillKey(actor);
+  return main !== null && main !== track.key;
+}
+
+/**
+ * Ids of the owned Weapon Specialization I / II copies that cost nothing:
+ * with the node, the 2nd and 3rd copy of each (the first one is paid for).
+ * @returns {Set<string>}
+ */
+export function getWeaponMasterFreeCopyIds(actor) {
+  const free = new Set();
+  if (!hasWeaponMasterNode(actor, "mistrZbrani")) return free;
+  const seen = new Map();
+  const owned = getOwnedFeatures(actor)
+    .filter(({ item }) => WEAPON_MASTER_FEATURES.has(String(item.name ?? "").toLowerCase()))
+    .sort((a, b) => (a.item.sort || 0) - (b.item.sort || 0));
+  for (const { item } of owned) {
+    const name = String(item.name).toLowerCase();
+    const n = seen.get(name) ?? 0;
+    seen.set(name, n + 1);
+    if (n >= 1 && n <= WEAPON_MASTER_FREE_COPIES) free.add(item.id);
+  }
+  return free;
+}
+
 /**
  * What one rank of a track costs this character: the book price less the
  * track's discount, when that discount is in the rank's own currency, never
@@ -1610,6 +1713,18 @@ export function getRankCost(
       cost: 0,
       currency: price.currency,
       discount: { kind: "freeSchool", school: track.key, trait: freeSchool.trait },
+    };
+  }
+  // Weapon Master (mistrZbrani) is its own rule, not a SPEC_DISCOUNTS entry: it
+  // sets the price outright (0 for ranks I to IV, 5 CP after) instead of taking
+  // an amount off, and the "discounts do not stack" rule must not block it. It
+  // is the cheapest price a rank can have, so it wins over any other discount.
+  if (price.currency === "cp" && isWeaponMasterFurtherSkill(actor, trackId)) {
+    return {
+      base: price.cost,
+      cost: rank <= WEAPON_MASTER_FREE_RANKS ? 0 : Math.min(price.cost, WEAPON_MASTER_RANK_COST),
+      currency: price.currency,
+      discount: { kind: "weaponMaster" },
     };
   }
   const source = discounts.get(trackId) ?? null;
