@@ -120,7 +120,8 @@
             "immune": false
           }
         },
-        "versusAlternates": {}
+        "versusAlternates": {},
+        "reachBonus": 0
       }
     },
 
@@ -149,6 +150,7 @@
           "cp": 0,
           "sp": 0
         },
+        "converted": 0,
         "awards": []
       },
       "skillvisibility": true,
@@ -1389,6 +1391,7 @@
       "equipped": false,
       "twoHandGrip": false,
       "longReach": false,
+      "effectiveRange": 0,
       "gripMode": "one",
       "offhand": false,
       "npcOffhand": false,
@@ -1805,6 +1808,7 @@
       "multiAttack": false,
       "throwsExplosives": false,
       "requiredWeaponTag": "",
+      "reachBonus": 0,
       "opportunityAttack": false,
       "rangedSkill": "",
       "rangedSkillOptions": ["archery", "throwing"],

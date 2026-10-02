@@ -30,7 +30,12 @@ export function getSpellPower(
   school,
   { multiplier = 1, round = true } = {},
 ) {
-  const base = Number(caster?.system?.schools?.[school]?.spellPower ?? 0);
+  // Miracles carry the "divine" school (utils/miracles.mjs), whose power is
+  // Miracle Power: Faith plus its bonuses, derived in actor.mjs.
+  const base =
+    school === "divine"
+      ? Number(caster?.system?.stats?.holyEnergy?.power ?? 0)
+      : Number(caster?.system?.schools?.[school]?.spellPower ?? 0);
   if (!Number.isFinite(base)) return 0;
 
   const scaled = base * multiplier;

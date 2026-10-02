@@ -3,7 +3,7 @@
  * the system's "versus Test".
  *
  * When an attack/spell, or a plain attribute roll from a sheet, posts a
- * "Margin of Success: [x]" line, that line is clickable. The acting player
+ * gilded "Margin of Success" panel, its margin is clickable. The acting player
  * picks an attribute, then we roll:
  *
  *   <attribute rating> - 1d100 - <original margin of success>
@@ -110,8 +110,10 @@ function attributeLabel(key) {
 }
 
 /**
- * The clickable "Margin of Success" line that opens a versus Test. Kept here
- * next to its click handler so the markup and the handler cannot drift apart.
+ * The gilded versus Test panel with the clickable margin that opens the
+ * contest. Kept here next to its click handler so the markup and the handler
+ * cannot drift apart. Every margin a card posts (ability, modifier, spell,
+ * sheet attribute roll, reroll) comes through here, so they all read the same.
  *
  * @param {object} data
  * @param {number} data.margin    The posted margin the contester has to beat.
@@ -120,6 +122,9 @@ function attributeLabel(key) {
  * @param {string} [data.result]  Dice breakdown of the posted roll, for the tooltip.
  * @param {string} [data.against] Attribute keys the defender may answer with
  *   ("str,end", the item's system.versusAgainst). Empty = any attribute.
+ * @param {string} [data.heading] Optional line above the margin, only to
+ *   tell several panels on one card apart (a modifier's name). Never the
+ *   test name or chance: the roller already knows both.
  * @returns {string} HTML.
  */
 export function renderMarginFollowupLine({
@@ -129,11 +134,11 @@ export function renderMarginFollowupLine({
   result = null,
   onLose = null,
   against = null,
+  heading = "",
 }) {
   const tooltip = [
     chance != null ? `Test chance ${chance}%` : null,
     result != null ? `Rolled: ${result}` : null,
-    "Click to contest with your own attribute test",
   ]
     .filter(Boolean)
     .join("<br>");
@@ -143,7 +148,8 @@ export function renderMarginFollowupLine({
   // (escapeFollowup.mjs), both sides fresh.
   const chanceAttr = chance != null ? ` data-chance="${chance}"` : "";
   const againstAttr = renderAgainstAttr(against);
-  return `<span class="mos-followup" data-margin="${margin}" data-source="${source ?? ""}"${loseAttr}${chanceAttr}${againstAttr} data-tooltip="${tooltip}" style="cursor:pointer; text-decoration:underline dotted;">Margin of Success: [${margin}]</span>`;
+  const line = `<span class="mos-followup" data-margin="${margin}" data-source="${source ?? ""}"${loseAttr}${chanceAttr}${againstAttr} data-tooltip="${tooltip}"><span class="rs-vs-test__label">Margin of Success</span><span class="rs-vs-test__value">${margin}</span></span>`;
+  return renderVersusTestBlock({ heading, line });
 }
 
 /**
@@ -228,19 +234,17 @@ export function renderAgainstAttr(against) {
 }
 
 /**
- * The gilded "versus Test" panel that closes out a contested ability's
- * description.
+ * The gilded "versus Test" panel around a clickable contest number.
  *
- * A versus Test ability is decided by this one number, so it gets its own
- * block at the very bottom of the description rather than a line of prose in
- * the middle of it: the margin is what the defender has to beat, and it is the
- * only thing on the card anyone clicks. Takes either margin line (the attribute
- * `.mos-followup` or the speed `.speed-followup`), so both kinds of contest
- * read the same on a card.
+ * A versus Test is decided by this one number, so it gets its own block
+ * rather than a line of prose: the margin is what the defender has to beat,
+ * and it is the only thing on the card anyone clicks. Wraps either kind of
+ * contest (the attribute `.mos-followup` or the speed `.speed-followup`); the
+ * two renderers call this themselves, so callers never wrap their output.
  *
  * @param {object} data
- * @param {string} data.heading  e.g. "Strength Test 45%".
- * @param {string} data.line     The rendered clickable contest line.
+ * @param {string} data.heading  Optional, e.g. a modifier's name.
+ * @param {string} data.line     The clickable contest span.
  * @returns {string} HTML.
  */
 export function renderVersusTestBlock({ heading, line }) {
@@ -258,8 +262,18 @@ export function renderVersusTestBlock({ heading, line }) {
  * @param {HTMLElement} html  The rendered chat message element.
  */
 export function wireAttributeFollowups(html) {
+  // Left click rolls the highest chance straight away; right click opens the
+  // picker, for when a lower number is the better roll (a disadvantage on the
+  // best attribute, or a reroll that only another attribute can use).
   for (const el of html.querySelectorAll(".mos-followup")) {
-    el.addEventListener("click", () => {
+    // The click hint is added here, not baked into the card, so cards posted
+    // before a change (or in another language) still explain both clicks.
+    const baked = (el.dataset.tooltip ?? "")
+      .split("<br>")
+      .filter((part) => part && !part.startsWith("Click to contest"));
+    baked.push(game.i18n.localize("REDSTEEL.Versus.ClickHint"));
+    el.dataset.tooltip = baked.join("<br>");
+    const open = (autoPick) => {
       const margin = Number(el.dataset.margin);
       if (Number.isNaN(margin)) return;
       promptAttributeFollowup(margin, el.dataset.source ?? "", {
@@ -267,7 +281,14 @@ export function wireAttributeFollowups(html) {
         against: parseAttributeKeys(
           el.dataset.against || versusAgainstForName(el.dataset.source),
         ),
+        autoPick,
       });
+    };
+    el.addEventListener("click", () => open(true));
+    el.addEventListener("contextmenu", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      open(false);
     });
   }
 }
@@ -293,6 +314,8 @@ export function wireAttributeFollowups(html) {
  * @param {string[]|null} [options.against]  Attribute keys the test lets the
  *   defender answer with (from data-against). Empty = any attribute. Feature
  *   alternates are added on top (resolveVersusChoices).
+ * @param {boolean} [options.autoPick]  Roll the highest-rated choice without
+ *   asking (a left click on the chat margin). A single choice never asks.
  */
 export function promptAttributeFollowup(
   margin,
@@ -303,6 +326,7 @@ export function promptAttributeFollowup(
     onRolled = null,
     contest = null,
     against = null,
+    autoPick = false,
   } = {},
 ) {
   if (!actor) {
@@ -311,9 +335,9 @@ export function promptAttributeFollowup(
     actor = context.actor;
   }
 
-  // Only the attributes the test names (plus feature alternates). A single
-  // remaining button still opens the dialog so the player confirms the roll.
+  // Only the attributes the test names (plus feature alternates).
   const buttons = {};
+  let best = null;
   for (const { key, viaFeature } of resolveVersusChoices(actor, against)) {
     const attr = actor.system.attributes?.[key];
     if (!attr) continue;
@@ -326,6 +350,8 @@ export function promptAttributeFollowup(
     // Plus the answering side's versus Test bonus (Servant of the Sword's
     // Combat Dexterity Tests), shown in the button's number.
     const rating = (attr.mod ?? 0) + versusTestBonus(actor, key);
+    // Ties keep the earlier, test-named attribute over a feature alternate.
+    if (!best || rating > best.rating) best = { key, rating };
     buttons[key] = {
       label: viaFeature
         ? game.i18n.format("REDSTEEL.Versus.ViaFeature", { label, rating })
@@ -344,8 +370,15 @@ export function promptAttributeFollowup(
     };
   }
 
-  if (!Object.keys(buttons).length) {
+  const keys = Object.keys(buttons);
+  if (!keys.length) {
     ui.notifications.warn("This actor has no attributes to roll.");
+    return;
+  }
+
+  // Nothing to choose, or the player asked for their best chance: roll now.
+  if (keys.length === 1 || autoPick) {
+    buttons[best.key].callback();
     return;
   }
 

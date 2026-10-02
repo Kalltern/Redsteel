@@ -112,7 +112,9 @@
 
   {{!-- Ledger: laid out like the GM's spreadsheet. Characters across the top
         with CP and SP under each, then Total earned, Starting, Bonus, and one
-        row per grant (oldest on top). Total is starting + bonus + awards. --}}
+        row per grant (oldest on top). Total is starting + bonus + awards,
+        with any CP converted to SP at character creation moved across; the
+        read-only Converted row shows that move when any character made one. --}}
   <section class="rs-party-plate rs-party-ledger-plate">
     <h3 class="rs-party-heading">{{localize "REDSTEEL.PartyManagement.Ledger"}}</h3>
     {{#if hasRows}}
@@ -154,6 +156,14 @@
             <input type="number" class="rs-party-input rs-party-ledger-input" step="1" value="{{character.bonus.sp}}" data-ledger-field="bonus" data-currency="sp" data-actor-uuid="{{character.uuid}}" data-focus-key="ledger-{{character.uuid}}-bonus-sp">
           </div>
           {{/each}}
+
+          {{#if ledger.hasConverted}}
+          <div class="rs-party-lcell rs-party-ledger-label">{{localize "REDSTEEL.PartyManagement.LedgerConverted"}}</div>
+          {{#each ledger.characters as |character|}}
+          <div class="rs-party-lcell rs-party-lfig is-group">{{#if character.converted}}&minus;{{character.converted}}{{/if}}</div>
+          <div class="rs-party-lcell rs-party-lfig">{{#if character.converted}}+{{character.converted}}{{/if}}</div>
+          {{/each}}
+          {{/if}}
         </div>
 
         {{#if ledger.hasRows}}

@@ -146,6 +146,9 @@ const ATTACK_TAG_LABELS = {
 const ATTACK_TAG_KEYS = {
   dragonGuard: "REDSTEEL.Items.DragonGuard.tag",
   retaliation: "REDSTEEL.Items.DragonGuard.retaliationTag",
+  // Reach and thrown range (positioning.mjs).
+  outOfReach: "REDSTEEL.Reach.TagOutOfReach",
+  beyondRange: "REDSTEEL.Reach.TagBeyondRange",
 };
 
 /** Chat-card chip for the tags on an attack. */

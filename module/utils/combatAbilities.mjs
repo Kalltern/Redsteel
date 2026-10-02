@@ -53,16 +53,20 @@ import {
 import { captureAttackTargets } from "./autoDefense.mjs";
 import {
   versusLossFor,
-  renderAgainstAttr,
+  renderMarginFollowupLine,
   versusAgainstFor,
 } from "./attributeFollowup.mjs";
 import {
   SECTOR,
   attackSector,
   captureAttackPositioning,
+  checkMeleeReach,
+  confirmOutOfReach,
   hasLongReachExemption,
+  isReachChecked,
   longReachPenaltyAgainst,
   sectorLabel,
+  weaponReach,
 } from "./positioning.mjs";
 import { resolveTestRating } from "./testRating.mjs";
 import {
@@ -532,6 +536,62 @@ export async function combatAbilities({
       return;
     }
 
+    // Does this ability route through the weapon-selection flow, and can a weapon
+    // be auto-resolved (e.g. a character's active set)? When no weapon can be
+    // auto-resolved, the weapon must be picked manually.
+    const goesThroughWeaponFlow = isDefenseRoll || ability.system.weaponAbility;
+    const autoWeaponContext = goesThroughWeaponFlow
+      ? game.redsteel.resolveWeaponContext(actor, ability)
+      : null;
+
+    // Multi-attack that needs a manual weapon pick (e.g. NPCs): merge the weapon
+    // picker into THIS dialog instead of opening a second "Select Weapon" dialog.
+    // Defer cost + attack to the weapon-button click below. A multi-throw that
+    // may throw explosives always comes here too, even with a weapon in hand,
+    // so the very first throw can already be an explosive.
+    const opensMultiAttackPicker =
+      ability.system.multiAttack &&
+      (actor.type === "character" || actor.type === "npc") &&
+      !lockedMultiAttackAbility &&
+      !preselectedWeapon &&
+      goesThroughWeaponFlow &&
+      (!autoWeaponContext || offersExplosives(ability, actor));
+
+    // Reach (positioning.mjs). Asked before anything is paid, so cancelling
+    // costs nothing. The declaring picks above (Overwatch, Charge, Quick Feet,
+    // Slip Through) have already returned; the swing that follows a declared
+    // move comes back through here and is measured from the new position.
+    // Every multi-attack strike is asked again; the click that only opens the
+    // multi-attack picker is not.
+    if (
+      !isDefenseRoll &&
+      ability.system.weaponAbility &&
+      ability.system.type === "melee" &&
+      !preselectedExplosiveId &&
+      !ability.system.standalone &&
+      !opensMultiAttackPicker
+    ) {
+      const reachWeapon =
+        preselectedWeapon?.type === "weapon"
+          ? preselectedWeapon
+          : (autoWeaponContext?.weapon ??
+            longestReachWeapon(actor, getAbilityWeapons(actor, ability), ability));
+      if (isReachChecked(reachWeapon)) {
+        const reach = checkMeleeReach({
+          actor,
+          token,
+          weapon: reachWeapon,
+          ability,
+          modifiers: intent.modifiers,
+          targets: [...(game.user?.targets ?? [])],
+        });
+        if (!reach.ok) {
+          if (!(await confirmOutOfReach(reach.reason))) return;
+          intent.outOfReach = true;
+        }
+      }
+    }
+
     let paid;
 
     if (ability.system.class === "stance") {
@@ -554,27 +614,9 @@ export async function combatAbilities({
       // Turning ON → cost will be paid
     }
 
-    // Does this ability route through the weapon-selection flow, and can a weapon
-    // be auto-resolved (e.g. a character's active set)? When no weapon can be
-    // auto-resolved, the weapon must be picked manually.
-    const goesThroughWeaponFlow = isDefenseRoll || ability.system.weaponAbility;
-    const autoWeaponContext = goesThroughWeaponFlow
-      ? game.redsteel.resolveWeaponContext(actor, ability)
-      : null;
-
-    // Multi-attack that needs a manual weapon pick (e.g. NPCs): merge the weapon
-    // picker into THIS dialog instead of opening a second "Select Weapon" dialog.
-    // Defer cost + attack to the weapon-button click below. A multi-throw that
-    // may throw explosives always comes here too, even with a weapon in hand,
-    // so the very first throw can already be an explosive.
-    if (
-      ability.system.multiAttack &&
-      (actor.type === "character" || actor.type === "npc") &&
-      !lockedMultiAttackAbility &&
-      !preselectedWeapon &&
-      goesThroughWeaponFlow &&
-      (!autoWeaponContext || offersExplosives(ability, actor))
-    ) {
+    // The multi-attack picker (opensMultiAttackPicker, worked out above the
+    // reach check): defer cost + attack to the weapon-button click below.
+    if (opensMultiAttackPicker) {
       lockedMultiAttackAbility = ability;
       multiAttackFirstStrikePaid = false;
       transformDialogToMultiAttackMode(dialog, ability, actor);
@@ -1307,8 +1349,10 @@ ${
     const runWithWeaponContext = async (weaponContext) => {
       if (!weaponContext) return;
 
-      // Last gate before any resource is spent: the weapon that will actually
-      // swing has to carry the tag the ability requires.
+      // The weapon that will actually swing has to carry the tag the ability
+      // requires. The ability's cost is already paid by the time this runs
+      // (onAbilityChosen pays before weaponSelectionFlow), so a refusal here
+      // does not refund it.
       if (!abilityAllowedForWeapon(ability, weaponContext.weapon)) {
         return ui.notifications.warn(
           `${ability.localizedName ?? ability.name} requires a ${ability.system.requiredWeaponTag} in hand.`,
@@ -1342,6 +1386,7 @@ ${
         ability.system.roll.halfDamage || false,
         ability.system.roll.penCap || false,
         intent.longReachPenalty,
+        intent.outOfReach === true,
       );
     };
 
@@ -1858,6 +1903,7 @@ ${
     halfDamage,
     penCap,
     longReachPenalty = 0,
+    outOfReach = false,
   ) {
     let totalHalfDamage = Boolean(halfDamage);
     for (const mod of selectedModifiers) {
@@ -2045,6 +2091,7 @@ ${
       aimedPart,
       opportunityAttack,
       dragonGuard,
+      rangePenalty,
     } = await game.redsteel.getAttackRolls(
       actor,
       weapon,
@@ -2174,15 +2221,13 @@ ${
         attributeTestHTML += `
 <tr>
 <td>
-<span>
-<b>${mod.localizedName ?? mod.name}</b><br>
 ${renderSpeedTestLine({
   actor,
   roll: speedRoll,
   source: ability.localizedName ?? ability.name,
   modifier: testModifier,
+  heading: mod.localizedName ?? mod.name,
 })}
-</span>
 </td>
 </tr>
 `;
@@ -2207,10 +2252,15 @@ ${renderSpeedTestLine({
       attributeTestHTML += `
 <tr>
 <td>
-<span>
-<b>${mod.localizedName ?? mod.name} — ${testName} Test ${attributeTotalValue}%</b><br>
-<span class="mos-followup" data-margin="${attributeRoll.total}" data-source="${ability.localizedName ?? ability.name}"${versusLossFor(mod) ? ` data-on-lose="${versusLossFor(mod)}"` : ""}${renderAgainstAttr(versusAgainstFor(mod))} data-chance="${attributeTotalValue}" data-tooltip="Test chance ${attributeTotalValue}%<br>Rolled: ${attributeRoll.result}<br>Click to roll an attribute against this margin" style="cursor:pointer; text-decoration:underline dotted;">Margin of Success: [${attributeRoll.total}]</span>
-</span>
+${renderMarginFollowupLine({
+  margin: attributeRoll.total,
+  source: ability.localizedName ?? ability.name,
+  chance: attributeTotalValue,
+  result: attributeRoll.result,
+  onLose: versusLossFor(mod),
+  against: versusAgainstFor(mod),
+  heading: mod.localizedName ?? mod.name,
+})}
 </td>
 </tr>
 `;
@@ -2258,8 +2308,13 @@ ${renderSpeedTestLine({
 
       concatRollAndDescription += `
 
-<b>${abilityAttributeTestName} Test ${totalModifier}%</b><br>
-<span class="mos-followup" data-margin="${attributeRoll.total}" data-source="${ability.localizedName ?? ability.name}"${renderAgainstAttr(versusAgainstFor(ability))} data-chance="${totalModifier}" data-tooltip="Test chance ${totalModifier}%<br>Rolled: ${attributeRoll.result}<br>Click to roll an attribute against this margin" style="cursor:pointer; text-decoration:underline dotted;">Margin of Success: ${attributeRoll.total}</span>
+${renderMarginFollowupLine({
+  margin: attributeRoll.total,
+  source: ability.localizedName ?? ability.name,
+  chance: totalModifier,
+  result: attributeRoll.result,
+  against: versusAgainstFor(ability),
+})}
 `;
     }
     const modifierLabel = selectedModifiers.length
@@ -2309,6 +2364,9 @@ ${renderSpeedTestLine({
       attackTags: [
         ...(opportunityAttack ? ["opportunity"] : []),
         ...dragonGuardTags(dragonGuard, actor, ability),
+        // Reach and thrown range (positioning.mjs).
+        ...(outOfReach ? ["outOfReach"] : []),
+        ...(rangePenalty ? ["beyondRange"] : []),
       ],
       banePacket,
       baneRoll,
@@ -2371,6 +2429,23 @@ function abilityStaminaCost(actor, ability) {
     }
   }
   return total;
+}
+
+/**
+ * Best case for the reach check when the weapon is not picked yet: the one
+ * with the longest reach for this ability, or null (bare hands, reach 1).
+ */
+function longestReachWeapon(actor, weapons, ability) {
+  let best = null;
+  for (const weapon of weapons ?? []) {
+    if (
+      !best ||
+      weaponReach(actor, weapon, ability) > weaponReach(actor, best, ability)
+    ) {
+      best = weapon;
+    }
+  }
+  return best;
 }
 
 export async function deductAbilityCost(actor, abilities = []) {
@@ -2591,8 +2666,13 @@ async function rollUtilityTest(actor, item) {
   return {
     roll,
     label: "Margin of Success",
-    html: `<b>${testName} Test ${total}%</b><br>
-<span class="mos-followup" data-margin="${roll.total}" data-source="${source}"${renderAgainstAttr(versusAgainstFor(item))} data-chance="${total}" data-tooltip="Test chance ${total}%<br>Rolled: ${roll.result}<br>Click to roll an attribute against this margin" style="cursor:pointer; text-decoration:underline dotted;">Margin of Success: [${roll.total}]</span>`,
+    html: renderMarginFollowupLine({
+      margin: roll.total,
+      source,
+      chance: total,
+      result: roll.result,
+      against: versusAgainstFor(item),
+    }),
   };
 }
 

@@ -19,6 +19,7 @@
     "equipped": false,
     "twoHandGrip": false,
     "longReach": false,
+    "effectiveRange": 8,
     "gripMode": "one",
     "offhand": false,
     "npcOffhand": false,

@@ -619,6 +619,8 @@ class PartyManagement extends HandlebarsApplicationMixin(ApplicationV2) {
         total: { cp: ledger.total.cp, sp: ledger.total.sp },
         starting: cell("starting"),
         bonus: cell("bonus"),
+        // CP converted to SP at character creation (read only).
+        converted: ledger.converted,
       };
     });
 
@@ -655,6 +657,7 @@ class PartyManagement extends HandlebarsApplicationMixin(ApplicationV2) {
       ledger: {
         cols: ledgerColumns(party.length),
         characters,
+        hasConverted: characters.some((character) => character.converted > 0),
         rows: ledgerRows,
         hasRows: ledgerRows.length > 0,
       },

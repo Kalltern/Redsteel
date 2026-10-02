@@ -43,7 +43,8 @@ import { MEMORISE_SP, getMemorisedCount } from "../utils/spellbook.mjs";
  *
  * Level is derived from CP earned and is INFORMATIONAL. The book's rank caps
  * per level ("Dovednost III" at level 1 and so on) apply at character creation
- * only, so nothing here enforces them. The one rank gate that is enforced is
+ * only: getRankState enforces them while the character is still in creation
+ * (CREATION_RANK_CAPS) and never afterwards. The one other rank gate is
  * the teacher, and a teacher is PER RANK: finding somebody to take you from
  * sword IV to sword V says nothing about who can take you to VIII. The GM
  * records each one at
@@ -426,9 +427,16 @@ function isUnsetStarting(value) {
  * Management writes that figure down the first time it touches the character
  * (`getLedgerMaterializeUpdate`), after which the old `earned` is unused.
  *
+ * At character creation up to half the CP may be converted to SP, never the
+ * other way round (book rule, "Tvorba postavy"). `converted` is that figure,
+ * clamped to half the CP total before conversion; `total` already has it
+ * moved from CP to SP. The level is set by the CP BEFORE conversion, which is
+ * `levelCp`.
+ *
  * @returns {{starting: {cp:number,sp:number}, bonus: {cp:number,sp:number},
  *            awards: {cp:number,sp:number}, total: {cp:number,sp:number},
- *            legacy: {cp:boolean,sp:boolean}}}
+ *            legacy: {cp:boolean,sp:boolean}, converted: number,
+ *            levelCp: number}}
  */
 export function getLedger(actor) {
   const p = actor?.system?.progression ?? {};
@@ -438,6 +446,8 @@ export function getLedger(actor) {
     awards: { cp: 0, sp: 0 },
     total: {},
     legacy: {},
+    converted: 0,
+    levelCp: 0,
   };
   for (const award of Array.isArray(p.awards) ? p.awards : []) {
     for (const c of LEDGER_CURRENCIES) ledger.awards[c] += Number(award?.[c]) || 0;
@@ -451,6 +461,13 @@ export function getLedger(actor) {
       : Number(p.starting[c]) || 0;
     ledger.total[c] = ledger.starting[c] + ledger.bonus[c] + ledger.awards[c];
   }
+  const preCp = ledger.total.cp;
+  ledger.levelCp = preCp;
+  const maxConvert = preCp > 0 ? Math.floor(preCp / 2) : 0;
+  const stored = Math.floor(Number(p.converted) || 0);
+  ledger.converted = Math.min(Math.max(stored, 0), maxConvert);
+  ledger.total.cp -= ledger.converted;
+  ledger.total.sp += ledger.converted;
   return ledger;
 }
 
@@ -478,7 +495,8 @@ export function getLedgerMaterializeUpdate(actor) {
  */
 export function getWallet(actor) {
   const p = actor?.system?.progression ?? {};
-  const earned = getLedger(actor).total;
+  const ledger = getLedger(actor);
+  const earned = ledger.total;
   const ranks = computeSpentOnRanks(actor);
   // Owned features count too, whether bought in the Learn window or dropped on
   // the sheet (GM ruling 2026-09-11): the same derived model as ranks.
@@ -499,8 +517,58 @@ export function getWallet(actor) {
     earned,
     spent,
     remaining: { cp: earned.cp - spent.cp, sp: earned.sp - spent.sp },
-    level: levelFromCp(earned.cp),
+    // The level is set by the CP before any CP to SP conversion (book rule).
+    level: levelFromCp(ledger.levelCp),
   };
+}
+
+/** The most CP this character may convert to SP: half the pre-conversion CP. */
+export function getConvertMax(actor) {
+  return Math.max(0, Math.floor(getLedger(actor).levelCp / 2));
+}
+
+/**
+ * Store how many CP are converted to SP. Creation only. Clamped to
+ * [0, getConvertMax], and further so the change never leaves the wallet in
+ * debt: converting more cannot take CP below zero, converting less cannot
+ * take SP below zero. Returns the stored value.
+ */
+export async function setConverted(actor, n) {
+  const current = getLedger(actor).converted;
+  if (!isInCreation(actor)) return current;
+  let next = Math.min(Math.max(Math.floor(Number(n) || 0), 0), getConvertMax(actor));
+  const { remaining } = getWallet(actor);
+  // Going up costs CP; going down costs SP. Clamp to the nearest value the
+  // wallet can carry (never past `current` the other way).
+  if (next > current) next = Math.min(next, current + Math.max(0, remaining.cp));
+  else if (next < current) next = Math.max(next, current - Math.max(0, remaining.sp));
+  if (next === current) return current;
+  await actor.update({ "system.progression.converted": next });
+  return next;
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Creation rank cap                                                         */
+/* -------------------------------------------------------------------------- */
+
+/** True while a character is still in character creation. */
+export function isInCreation(actor) {
+  return actor?.type === "character" && !!actor?.getFlag?.("redsteel", "creationPending");
+}
+
+/**
+ * The highest rank any track may reach at character creation, index 0 =
+ * level 1. Source: "Tvorba postavy" → the Úrovně table. Level 12 and above
+ * use the last entry.
+ */
+export const CREATION_RANK_CAPS = [3, 4, 4, 4, 5, 5, 6, 7, 8, 8, 9, 10];
+
+/** The creation rank cap for this character, or null once it is finished. */
+export function getCreationRankCap(actor) {
+  if (!isInCreation(actor)) return null;
+  const level = getWallet(actor).level;
+  const index = Math.min(Math.max(level, 1), CREATION_RANK_CAPS.length) - 1;
+  return CREATION_RANK_CAPS[index];
 }
 
 /* -------------------------------------------------------------------------- */
@@ -688,7 +756,9 @@ export function getUnmetPrerequisites(actor, trackId) {
  *     "owned"        already bought
  *     "unavailable"  the book sells no such rank
  *     "blocked"      an earlier rank is still missing (ranks are bought in order)
- *     "locked"       requirements not met
+ *     "locked"       requirements not met; or a mirror perk copies the track
+ *                    (`mirror` set); or the rank is above the character
+ *                    creation cap (`capped` = the cap, creation only)
  *     "poor"         requirements met, not enough points
  *     "available"    buyable right now
  */
@@ -705,6 +775,11 @@ export function getRankState(actor, trackId, rank) {
   // (rankMirrors.mjs), so every rank above the one held stays locked.
   const mirror = getActiveMirrors(actor).get(trackId);
   if (mirror) return { state: "locked", price, requirements: null, mirror };
+  // Character creation caps every track at the level's rank (Úrovně table).
+  const cap = getCreationRankCap(actor);
+  if (cap !== null && rank > cap) {
+    return { state: "locked", price, requirements: null, capped: cap };
+  }
   if (rank > held + 1) return { state: "blocked", price, requirements: null };
 
   const requirements = evaluateRequirements(

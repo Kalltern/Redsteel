@@ -728,11 +728,11 @@ export const GENERATED_SPECS = {
   priest: {
     nodes: {
       modlitba: { tier: 1, column: 1 },
-      testViry1: { tier: 1, column: 2 },
-      testViry2: { tier: 1, column: 3, requires: ["testViry1"] },
-      testViry3: { tier: 1, column: 4, requires: ["testViry2"] },
-      testViry4: { tier: 1, column: 5, requires: ["testViry3"] },
-      testViry5: { tier: 1, column: 6, requires: ["testViry4"] },
+      testViry1: { tier: 1, column: 2, passive: { changes: [add("system.stats.holyEnergy.cast", 10)] } },
+      testViry2: { tier: 1, column: 3, requires: ["testViry1"], passive: { changes: [add("system.stats.holyEnergy.cast", 10)] } },
+      testViry3: { tier: 1, column: 4, requires: ["testViry2"], passive: { changes: [add("system.stats.holyEnergy.cast", 10)] } },
+      testViry4: { tier: 1, column: 5, requires: ["testViry3"], passive: { changes: [add("system.stats.holyEnergy.cast", 10)] } },
+      testViry5: { tier: 1, column: 6, requires: ["testViry4"], passive: { changes: [add("system.stats.holyEnergy.cast", 10)] } },
       zazraky: { tier: 2, column: 1 },
       novic: { tier: 2, column: 2, requires: ["zazraky"] },
       svataEnergie1: { tier: 2, column: 3, passive: { changes: [add("system.stats.holyEnergy.bonus", 10)] } },

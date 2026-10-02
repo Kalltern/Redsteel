@@ -6,9 +6,13 @@ import { spendForAttack } from "./actionTracker.mjs";
 import {
   SECTOR,
   attackSector,
+  checkMeleeReach,
+  confirmOutOfReach,
   hasLongReachExemption,
+  isReachChecked,
   longReachPenaltyAgainst,
   sectorLabel,
+  weaponReach,
 } from "./positioning.mjs";
 import { previewSneakTrigger, sneakTriggerLabel } from "./sneakTriggers.mjs";
 import { attackOptionIconsHtml } from "./attackOptionIcons.mjs";
@@ -260,6 +264,37 @@ ${
     buttons[label] = {
       label,
       callback: async (html) => {
+        // ─── Collect Modifiers ───
+        const selectedModifierIds = Array.from(
+          html[0].querySelectorAll(".attack-modifier-checkbox:checked"),
+        ).map((cb) => cb.dataset.abilityId);
+
+        const selectedModifiers = modifierAbilities.filter((mod) =>
+          selectedModifierIds.includes(mod.id),
+        );
+
+        // ─── Reach (positioning.mjs) ───
+        // Asked before anything is set, prompted or spent: cancelling leaves
+        // the actor exactly as it was. Going ahead anyway stamps the card.
+        let outOfReach = false;
+        if (fnName === "autoAttack" || fnName === "meleeAttack") {
+          const reachWeapon = reachWeaponFor(actor, activeWeapon);
+          if (reachWeapon !== undefined) {
+            const reach = checkMeleeReach({
+              actor,
+              token,
+              weapon: reachWeapon,
+              ability: null,
+              modifiers: selectedModifiers,
+              targets: [...(game.user?.targets ?? [])],
+            });
+            if (!reach.ok) {
+              if (!(await confirmOutOfReach(reach.reason))) return;
+              outOfReach = true;
+            }
+          }
+        }
+
         const useSneak = html.find('[name="sneakAttack"]').is(":checked");
         const useFlanking = html.find('[name="flanking"]').is(":checked");
         const useAimedStrike = html.find('[name="aimedStrike"]').is(":checked");
@@ -303,15 +338,6 @@ ${
           ? await actor.setFlag("redsteel", "aimCount", aimValue)
           : await actor.unsetFlag("redsteel", "aimCount");
 
-        // ─── Collect Modifiers ───
-        const selectedModifierIds = Array.from(
-          html[0].querySelectorAll(".attack-modifier-checkbox:checked"),
-        ).map((cb) => cb.dataset.abilityId);
-
-        const selectedModifiers = modifierAbilities.filter((mod) =>
-          selectedModifierIds.includes(mod.id),
-        );
-
         // ─── Deduct Costs ───
         const paid = await game.redsteel.deductAbilityCost(
           actor,
@@ -330,6 +356,7 @@ ${
           token,
           selectedModifiers,
           longReachPenalty,
+          outOfReach,
         });
       },
     };
@@ -480,6 +507,39 @@ function resolveActiveWeaponForAttack(actor, attackType) {
   return { weapon, hasShield };
 }
 
+/**
+ * The weapon a plain attack's reach is checked against, or undefined when the
+ * attack takes no reach check at all.
+ *
+ * A character swings its active weapon; a thrown, bow, crossbow or firearm one
+ * is not checked (null, bare hands, is: reach 1). An NPC picks its weapon only
+ * after this, so it gets the best case: the melee weapon with the longest
+ * reach, or bare hands when it has none.
+ *
+ * @param {Actor} actor
+ * @param {Item|null} activeWeapon  resolveWeaponContext's weapon
+ * @returns {Item|null|undefined}
+ */
+function reachWeaponFor(actor, activeWeapon) {
+  if (actor.type === "character") {
+    return isReachChecked(activeWeapon) ? (activeWeapon ?? null) : undefined;
+  }
+  const melee = actor.items.filter(
+    (i) =>
+      i.type === "weapon" &&
+      ["axe", "sword", "blunt", "polearm"].includes(i.system.class) &&
+      i.system.thrown !== true &&
+      !i.system.npcOffhand,
+  );
+  let best = null;
+  for (const weapon of melee) {
+    if (!best || weaponReach(actor, weapon) > weaponReach(actor, best)) {
+      best = weapon;
+    }
+  }
+  return best;
+}
+
 export async function autoAttack(options = {}) {
   const actor = options.actor ?? canvas.tokens.controlled[0]?.actor;
   if (!actor) return;
@@ -511,6 +571,7 @@ export async function autoAttack(options = {}) {
       context: options.weaponContext,
       selectedModifiers: options.selectedModifiers ?? [],
       longReachPenalty: options.longReachPenalty ?? 0,
+      outOfReach: options.outOfReach === true,
     });
   }
 
@@ -553,6 +614,7 @@ export async function autoAttack(options = {}) {
         context,
         selectedModifiers: options.selectedModifiers ?? [],
         longReachPenalty: options.longReachPenalty ?? 0,
+        outOfReach: options.outOfReach === true,
       });
     }
 
@@ -565,6 +627,7 @@ export async function autoAttack(options = {}) {
       getWeaponSkillData: (actor, weapon) =>
         game.redsteel.getWeaponSkillBonuses(actor, weapon),
       selectedModifiers: options.selectedModifiers ?? [],
+      outOfReach: options.outOfReach === true,
     });
   }
 
@@ -574,5 +637,6 @@ export async function autoAttack(options = {}) {
   return game.redsteel.meleeAttack({
     selectedModifiers: options.selectedModifiers ?? [],
     longReachPenalty: options.longReachPenalty ?? 0,
+    outOfReach: options.outOfReach === true,
   });
 }

@@ -98,7 +98,18 @@ import {
   getSpecNodeState,
   purchaseSpecNode,
   refundSpecNode,
+  getConvertMax,
+  getCreationRankCap,
+  getLedger,
+  setConverted,
 } from "../helpers/progressionEngine.mjs";
+// Import cycle with characterCreation.mjs (it opens this window for step 3):
+// fine, as neither module uses the other's exports at top level.
+import {
+  finishCharacterCreation,
+  isCreationSkillsStep,
+  returnToOrigin,
+} from "./characterCreation.mjs";
 import { SPEC_GROUPS, SPEC_PRICES } from "../helpers/specPrices.mjs";
 import {
   isAutoUnlockNode,
@@ -1476,6 +1487,10 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       toggleSpellRank: LearnWindow._onToggleSpellRank,
       toggleMergedSchools: LearnWindow._onToggleMergedSchools,
       closeScreen: LearnWindow._onCloseScreen,
+      creationConvertUp: LearnWindow._onCreationConvertUp,
+      creationConvertDown: LearnWindow._onCreationConvertDown,
+      creationBack: LearnWindow._onCreationBack,
+      creationFinish: LearnWindow._onCreationFinish,
     },
   };
 
@@ -1725,7 +1740,36 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       rankHeaders: RANK_HEADERS,
       ribbon,
       sections,
+      creation: this.#buildCreation(),
     });
+  }
+
+  /**
+   * Character creation, step 3: the banner over the tabs, or null when the
+   * character is not in that step. Read from the CURRENT actor on every
+   * render, since the GM's party switch can change it.
+   */
+  #buildCreation() {
+    const actor = this.actor;
+    if (!actor || !isCreationSkillsStep(actor)) return null;
+    const editable = !!actor.isOwner;
+    const wallet = getWallet(actor);
+    const converted = getLedger(actor).converted;
+    const convertMax = getConvertMax(actor);
+    const starting = actor.system?.progression?.starting ?? {};
+    const unset = (value) => value === null || value === undefined || value === "";
+    return {
+      stepOf: game.i18n.format("REDSTEEL.Creation.stepOf", { n: 3, total: 3 }),
+      title: game.i18n.localize("REDSTEEL.Creation.Step3.title"),
+      level: wallet.level,
+      capRoman: roman(getCreationRankCap(actor)),
+      converted,
+      convertMax,
+      canConvertUp: editable && converted < convertMax && wallet.remaining.cp >= 1,
+      canConvertDown: editable && converted > 0 && wallet.remaining.sp >= 1,
+      noStarting: unset(starting.cp) && unset(starting.sp),
+      editable,
+    };
   }
 
   /**
@@ -3846,7 +3890,7 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
 
   /** One rank column of a track. */
   async #buildCell(trackId, rank) {
-    const { state, price, requirements, mirror } = getRankState(
+    const { state, price, requirements, mirror, capped } = getRankState(
       this.actor,
       trackId,
       rank,
@@ -3875,6 +3919,15 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       reasons.push(
         game.i18n.format("REDSTEEL.Learn.Mirror.locked", {
           skill: trackLabel(mirror.group, mirror.from),
+        }),
+      );
+    }
+    // Character creation caps every track at the level's rank.
+    if (capped) {
+      reasons.push(
+        game.i18n.format("REDSTEEL.Learn.creationCap", {
+          level: getWallet(this.actor).level,
+          rank: roman(capped),
         }),
       );
     }
@@ -5132,6 +5185,45 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
   static _onCloseScreen(event) {
     event.preventDefault();
     this.close();
+  }
+
+  /* ---- character creation, step 3. Never a dialog here: this screen is
+     full-screen and a DialogV2 would open underneath it. ---- */
+
+  /** Convert more CP to SP; Shift moves 5. @this {LearnWindow} */
+  static async _onCreationConvertUp(event) {
+    event.preventDefault();
+    const actor = this.actor;
+    if (!actor?.isOwner || !isCreationSkillsStep(actor)) return;
+    const step = event.shiftKey ? 5 : 1;
+    await setConverted(actor, getLedger(actor).converted + step);
+  }
+
+  /** Convert fewer CP to SP; Shift moves 5. @this {LearnWindow} */
+  static async _onCreationConvertDown(event) {
+    event.preventDefault();
+    const actor = this.actor;
+    if (!actor?.isOwner || !isCreationSkillsStep(actor)) return;
+    const step = event.shiftKey ? 5 : 1;
+    await setConverted(actor, getLedger(actor).converted - step);
+  }
+
+  /** Back to step 2 of the creation window. @this {LearnWindow} */
+  static async _onCreationBack(event) {
+    event.preventDefault();
+    const actor = this.actor;
+    if (!actor?.isOwner || !isCreationSkillsStep(actor)) return;
+    await returnToOrigin(actor);
+    this.close();
+  }
+
+  /** Finish character creation. @this {LearnWindow} */
+  static async _onCreationFinish(event) {
+    event.preventDefault();
+    const actor = this.actor;
+    if (!actor?.isOwner || !isCreationSkillsStep(actor)) return;
+    const ok = await finishCharacterCreation(actor);
+    if (ok) this.close();
   }
 
   /**

@@ -152,6 +152,52 @@
 
   </header>
 
+  {{!-- Character creation, step 3 (characterCreation.mjs isCreationSkillsStep):
+        one compact row between the hero and the tabs. The step, the level's
+        rank cap, the CP to SP conversion (Shift moves 5), and the way back to
+        step 2 or on to Finish. --}}
+  {{#if creation}}
+  <section class="rs-learn-creation">
+    <div class="rs-learn-creation-step">
+      <span class="rs-learn-creation-kicker">{{localize "REDSTEEL.Creation.title"}}</span>
+      <span class="rs-learn-creation-title">{{creation.title}}</span>
+      <span class="rs-learn-creation-stepof">{{creation.stepOf}}</span>
+    </div>
+    <div class="rs-learn-creation-cap">
+      {{localize "REDSTEEL.Creation.Learn.levelCap" level=creation.level rank=creation.capRoman}}
+    </div>
+    <div class="rs-learn-creation-convert"
+         data-tooltip="{{localize "REDSTEEL.Creation.Learn.convertHint"}}" data-tooltip-direction="DOWN">
+      <span class="rs-learn-creation-label">{{localize "REDSTEEL.Creation.Learn.convert"}}</span>
+      <button type="button" class="rs-learn-creation-step-btn" data-action="creationConvertDown"
+              aria-label="-" {{#unless creation.canConvertDown}}disabled{{/unless}}>
+        <i class="fas fa-minus"></i>
+      </button>
+      <b class="rs-learn-creation-value">{{creation.converted}}</b>
+      <button type="button" class="rs-learn-creation-step-btn" data-action="creationConvertUp"
+              aria-label="+" {{#unless creation.canConvertUp}}disabled{{/unless}}>
+        <i class="fas fa-plus"></i>
+      </button>
+      <span class="rs-learn-creation-max">{{localize "REDSTEEL.Creation.Learn.convertMax" n=creation.convertMax}}</span>
+    </div>
+    {{#if creation.noStarting}}
+    <p class="rs-learn-creation-warning">
+      <i class="fas fa-triangle-exclamation"></i>
+      {{localize "REDSTEEL.Creation.Learn.noStarting"}}
+    </p>
+    {{/if}}
+    {{!-- The picker's Done and Cancel plates, reused. --}}
+    <span class="rs-learn-picker-actions rs-learn-creation-actions">
+      <button type="button" data-action="creationBack" {{#unless creation.editable}}disabled{{/unless}}>
+        &larr; {{localize "REDSTEEL.Creation.back"}}
+      </button>
+      <button type="button" class="is-primary" data-action="creationFinish" {{#unless creation.editable}}disabled{{/unless}}>
+        {{localize "REDSTEEL.Creation.finish"}}
+      </button>
+    </span>
+  </section>
+  {{/if}}
+
   {{!-- The labels are wrapped so the engraved underline, and the active tab's
         gold line and diamond, run the width of the word, not of the tab. --}}
   <nav class="rs-learn-tabs">

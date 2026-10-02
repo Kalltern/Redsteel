@@ -223,7 +223,25 @@
           placeholder="e.g. Trident, Reach"
         />
       </div>
+      {{! A thrown weapon's effective range in hexes; beyond it the throw takes
+          -20%. 0 falls back to the default for its tag (positioning.mjs). }}
+      {{#if system.thrown}}
+      <div class="grid-span-2">
+        <label class="resource-label">{{localize
+            "REDSTEEL.Reach.EffectiveRange"
+          }}</label>
+        <input
+          type="number"
+          name="system.effectiveRange"
+          value="{{system.effectiveRange}}"
+          min="0"
+          step="1"
+          data-dtype="Number"
+        />
+      </div>
+      {{else}}
       <div class="grid-span-2"></div>
+      {{/if}}
 
 
 

@@ -135,6 +135,7 @@ import { throwExplosive } from "./utils/throwExplosive.mjs";
 import { environmentalDamage } from "./utils/environmentalDamage.mjs";
 import {
   castSpell,
+  castMiracle,
   quickCastSpell,
   applyPostCastEffects,
 } from "./utils/castSpell.mjs";
@@ -418,6 +419,7 @@ Hooks.once("init", function () {
   game.redsteel.rangedAttack = rangedAttack;
   game.redsteel.throwingAttack = throwingAttack;
   game.redsteel.castSpell = castSpell;
+  game.redsteel.castMiracle = castMiracle;
   game.redsteel.quickCastSpell = quickCastSpell;
   game.redsteel.throwExplosive = throwExplosive;
   game.redsteel.usePotion = usePotion;
@@ -1587,8 +1589,22 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
   const expression = attackFlag.damageProfile.expression || [];
   if (!expression.length) return;
 
+  // Same vocabulary as the hover card's damage-type pill: types through the
+  // shared damage-type map, connectors through dmgJoin. An unknown token falls
+  // back to its stored spelling rather than printing a key path.
+  const localizeOr = (key, fallback) => {
+    const localized = game.i18n.localize(key);
+    return localized === key ? fallback : localized;
+  };
   const formatted = expression
-    .map((t) => t.charAt(0).toUpperCase() + t.slice(1))
+    .map((t) =>
+      t === "and" || t === "or"
+        ? localizeOr(`REDSTEEL.Item.Spell.dmgJoin.${t}`, t)
+        : localizeOr(
+            `REDSTEEL.Bg3Hotbar.DamageType.${t}`,
+            t.charAt(0).toUpperCase() + t.slice(1),
+          ),
+    )
     .join(" ");
 
   const footer = document.createElement("div");
@@ -1622,6 +1638,8 @@ const REROLL_CARRIED_FLAGS = [
   // off these, and the school also tints the card.
   "casterUuid",
   "spellSchool",
+  // Prices Magic Defense against the card (utils/defense.mjs).
+  "spellRank",
   // The margin a versus Test contested: every reroll of it restates the outcome.
   "versusFollowup",
   // Overpower is once per contest per side (utils/overpower.mjs): the sides
@@ -1902,12 +1920,12 @@ async function executeReroll(message, sourceLabel, { extraFlags = {} } = {}) {
   const versusTest = message.getFlag("redsteel", "versusTest");
   const versusChance = message.getFlag("redsteel", "versusChance");
   const versusNote = versusTest
-    ? `<p style="text-align:center;">${renderMarginFollowupLine({
+    ? renderMarginFollowupLine({
         margin: roll.total,
         source: rollName ?? "",
         chance: versusChance ?? null,
         result: roll.result,
-      })}</p>`
+      })
     : "";
 
   const created = await roll.toMessage({

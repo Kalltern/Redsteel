@@ -16,7 +16,6 @@ import {
 import { ATTRIBUTE_KEYS } from "./testRating.mjs";
 import {
   renderMarginFollowupLine,
-  renderVersusTestBlock,
   versusAgainstFor,
 } from "./attributeFollowup.mjs";
 import { abilityAllowedForWeapon } from "./weaponResolver.mjs";
@@ -30,6 +29,8 @@ import { actorHasSpecNode } from "../helpers/specialisations.mjs";
 import { consumeOpportunityFlag } from "./opportunityAttacks.mjs";
 import { dragonGuardAttack, DRAGON_GUARD_HIT_BONUS } from "./dragonGuard.mjs";
 import { riposteAlwaysCrits } from "./swordServant.mjs";
+import { thrownEffectiveRange, tokenHexDistance } from "./positioning.mjs";
+import { tokenForActor } from "./movementZones.mjs";
 import {
   getWeaponTrainingClass,
   WEAPON_TRAINING_MEDIUM_CRIT,
@@ -187,7 +188,7 @@ export async function getNonWeaponAbility(actor, ability) {
   let attributeTestRoll = null;
   let speedTestRoll = null;
   // The gilded contest panel, appended last so it always closes the
-  // description — see renderVersusTestBlock.
+  // description. Both renderers return the whole panel.
   let versusTestBlock = "";
 
   const testName = ability.system.attributeTest?.trim();
@@ -198,14 +199,11 @@ export async function getNonWeaponAbility(actor, ability) {
       modifier: abilityTestModifier,
       advantage: ability.system.testAdvantage,
     });
-    versusTestBlock = renderVersusTestBlock({
-      heading: "",
-      line: renderSpeedTestLine({
-        actor,
-        roll: speedTestRoll,
-        source: ability.localizedName ?? ability.name,
-        modifier: abilityTestModifier,
-      }),
+    versusTestBlock = renderSpeedTestLine({
+      actor,
+      roll: speedTestRoll,
+      source: ability.localizedName ?? ability.name,
+      modifier: abilityTestModifier,
     });
   } else if (testName && testName !== "-- Select a Type --") {
     const lowerTestName = testName.toLowerCase();
@@ -253,16 +251,12 @@ export async function getNonWeaponAbility(actor, ability) {
     // defender can roll their own attribute against it (Shield Bash, Knockdown,
     // any ability whose Test Type names an opposed roll). Same line the spell
     // and weapon-ability paths post — see utils/attributeFollowup.mjs.
-    const testLabel = testName.charAt(0).toUpperCase() + testName.slice(1);
-    versusTestBlock = renderVersusTestBlock({
-      heading: `${testLabel} Test ${totalModifier}%`,
-      line: renderMarginFollowupLine({
-        margin: attributeRoll.total,
-        source: ability.localizedName ?? ability.name,
-        chance: totalModifier,
-        result: attributeRoll.result,
-        against: versusAgainstFor(ability),
-      }),
+    versusTestBlock = renderMarginFollowupLine({
+      margin: attributeRoll.total,
+      source: ability.localizedName ?? ability.name,
+      chance: totalModifier,
+      result: attributeRoll.result,
+      against: versusAgainstFor(ability),
     });
   }
 
@@ -838,6 +832,11 @@ export async function getAttackRolls(
     qualityAttack +
     enchantAttack +
     Number(longReachPenalty || 0);
+  // Thrown weapons past their effective range (book: "Útok na vzdálenější
+  // cíle má postih -20% na Vrh"). Measured to the farthest target. There is
+  // no maximum range, so this never refuses a throw.
+  const rangePenalty = thrownRangePenalty(actor, weapon);
+  totalWeaponAttack += rangePenalty;
   let criticalSuccessThreshold = 0;
   let criticalFailureThreshold = 0;
   const offProps = getOffhandProps(weaponContext);
@@ -1048,7 +1047,28 @@ export async function getAttackRolls(
     aimedPart,
     opportunityAttack,
     dragonGuard,
+    rangePenalty,
   };
+}
+
+/** To-hit penalty for a throw at a target beyond the effective range. */
+export const THROWN_RANGE_PENALTY = -20;
+
+/**
+ * THROWN_RANGE_PENALTY when the weapon is thrown, has an effective range, and
+ * the farthest current target stands beyond it; otherwise 0.
+ */
+function thrownRangePenalty(actor, weapon) {
+  if (weapon?.system?.thrown !== true) return 0;
+  const range = thrownEffectiveRange(weapon);
+  if (!(range > 0)) return 0;
+  const token = tokenForActor(actor);
+  if (!token) return 0;
+  let farthest = 0;
+  for (const target of game.user?.targets ?? []) {
+    farthest = Math.max(farthest, tokenHexDistance(token, target));
+  }
+  return farthest > range ? THROWN_RANGE_PENALTY : 0;
 }
 
 export async function getDamageRolls(

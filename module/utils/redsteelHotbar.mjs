@@ -61,6 +61,7 @@ import { canTradeWith, requestTrade } from "./trade.mjs";
 import { dropStance, holdStance } from "./stances.mjs";
 import { rollEscape } from "./escapeFollowup.mjs";
 import { handleApplyDamage, handleApplyEffects } from "./applyDamage.mjs";
+import { getMiracles, isMiracle } from "./miracles.mjs";
 
 /**
  * The combat plates, left to right: red melee, yellow ranged, blue spells,
@@ -263,7 +264,28 @@ const ACTION_BUTTONS = [
   { key: "defense", api: "defenseRoll", icon: "fa-light fa-shield" },
   // A fist: martial and unmistakably not the sword or the shield beside it.
   { key: "ability", api: "combatAbilities", icon: "fa-light fa-hand-fist" },
-  { key: "channeling", api: "castSpell", icon: "fa-light fa-sparkles" },
+  // Only for an actor that can cast something: the same test as
+  // getUniqueSpellSchools, which the cast dialog refuses on when it is empty.
+  // With no actor drawn the button stays, since castSpell picks its own token.
+  {
+    key: "channeling",
+    api: "castSpell",
+    icon: "fa-light fa-sparkles",
+    when: (actor) =>
+      !actor ||
+      actor.items.contents.some(
+        (i) => i.type === "spell" && i.system.type && !isMiracle(i),
+      ),
+  },
+  // Miracles have their own picker and pipeline (utils/miracles.mjs), so only
+  // an actor holding one sees this. Unlike Channeling it hides with no actor:
+  // there is no priest to ask.
+  {
+    key: "miracle",
+    api: "castMiracle",
+    icon: "fa-light fa-hands-praying",
+    when: (actor) => getMiracles(actor).length > 0,
+  },
   { key: "firstAid", api: "firstAid", icon: "fa-light fa-staff-snake" },
 ];
 
@@ -1445,7 +1467,9 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       hp: this.#prepareHealth(actor),
       toxicity: this.#prepareToxicity(actor),
       aura: this.#prepareAura(actor),
-      actions: ACTION_BUTTONS.filter((a) => !a.gmOnly || game.user.isGM).map(
+      actions: ACTION_BUTTONS.filter(
+        (a) => (!a.gmOnly || game.user.isGM) && (a.when?.(actor) ?? true),
+      ).map(
         (a, i, all) => ({
           ...a,
           label: game.i18n.localize(`REDSTEEL.Bg3Hotbar.Action.${a.key}`),
@@ -2565,7 +2589,8 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     // screen whether or not it holds anything, so a quantity going stale now
     // shows. `#rerender` is debounced, so looting a pile is one render.
     // `feature` joins them for the NPC tag row: a trait is a feature Item.
-    const ITEM_TYPES = new Set(["race", "consumable", "feature"]);
+    // `spell` decides whether Channeling and Miracle are on the action row.
+    const ITEM_TYPES = new Set(["race", "consumable", "feature", "spell"]);
     for (const hook of ["createItem", "deleteItem", "updateItem"]) {
       add(hook, (item) => {
         if (!ITEM_TYPES.has(item?.type)) return;
@@ -2719,7 +2744,7 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
   /**
    * Run one of the action row's buttons. The name is matched against the
    * button list rather than taken from the DOM directly, so nothing but those
-   * eight entry points can ever be called from here.
+   * listed entry points can ever be called from here.
    *
    * @this {Bg3Hotbar}
    */

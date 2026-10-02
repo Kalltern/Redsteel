@@ -109,6 +109,7 @@
     "effectType2": "",
     "effectType3": "",
     "localizationKey": "REDSTEEL.Items.ExtendedLunge.name",
+    "reachBonus": 1,
     "category": "doctrine"
   },
   "effects": [],

@@ -189,7 +189,8 @@
         "envDamage": "Environmental damage",
         "party": "Party management",
         "firstAid": "First aid",
-        "effects": "Effect manager"
+        "effects": "Effect manager",
+        "miracle": "Miracles"
       },
       "ActionTracker": {
         "title": "Actions & Reactions",
@@ -3047,23 +3048,23 @@
             },
             "testViry1": {
               "label": "Faith Test on Attack/Defense +10%",
-              "description": "3 CP. Manual — resolved at the table."
+              "description": "3 CP. Automated."
             },
             "testViry2": {
               "label": "Faith Test on Attack/Defense +10%",
-              "description": "3 CP. Manual — resolved at the table."
+              "description": "3 CP. Automated."
             },
             "testViry3": {
               "label": "Faith Test on Attack/Defense +10%",
-              "description": "3 CP; Víra 5. Manual — resolved at the table."
+              "description": "3 CP; Víra 5. Automated."
             },
             "testViry4": {
               "label": "Faith Test on Attack/Defense +10%",
-              "description": "3 CP; Víra 8. Manual — resolved at the table."
+              "description": "3 CP; Víra 8. Automated."
             },
             "testViry5": {
               "label": "Faith Test on Attack/Defense +10%",
-              "description": "3 CP. Manual — resolved at the table."
+              "description": "3 CP. Automated."
             },
             "zazraky": {
               "label": "Miracles",
@@ -4797,11 +4798,37 @@
       "Step2": {
         "title": "Doctrine"
       },
+      "Step2b": {
+        "title": "Weapons and magic"
+      },
+      "Step3": {
+        "title": "Skills and features"
+      },
+      "Learn": {
+        "levelCap": "Level {level}: ranks up to {rank}",
+        "convert": "CP to SP",
+        "convertMax": "max {n}",
+        "convertHint": "Up to half of your CP may become SP, never the other way round. Locked once the character is finished.",
+        "noStarting": "The GM has not set this character's starting CP and SP yet. They do that in Party Management.",
+        "finished": "{name} is ready."
+      },
+      "Details": {
+        "weaponsHeading": "Weapon skills",
+        "weaponsAdvice": "Choose the weapon each doctrine will train with.",
+        "magicHeading": "Magical doctrine of the {school} school",
+        "fixedWeapon": "{doctrine} trains with {weapon}.",
+        "combatSkillHeading": "Combat skills",
+        "fixedCombatSkill": "{doctrine} fights with {skill}.",
+        "fixedChanneling": "Your {school} magic is cast through {skill}.",
+        "peltastAdvice": "Combat gives you better melee chances, but from rank V to rank X a slightly lower throwing chance than Archery. Archery gives you 10% more ranged chance (+5% at rank V and another +5% at rank VII), but over the ranks your melee attack and defense chances fall behind."
+      },
       "Doctrine": {
         "heading": "Combat doctrine",
         "advice": "Pick the doctrine your character trains in. It joins your skills, and you distribute points into it afterwards. One combat doctrine is recommended; Rogue is the exception and can sit beside another.",
         "tooMany": "More than one combat doctrine besides Rogue is not recommended.",
         "needsMagic": "Requires the Magic potential trait.",
+        "schoolsHeading": "Schools of magic",
+        "temperamentSchool": "Set by your temperament.",
         "kind": "Kind",
         "rank1": "Rank I costs",
         "path": "Abilities",
@@ -4889,7 +4916,9 @@
         "traitLimit": "A character can have at most {max} traits.",
         "traitUnaffordable": "Not enough trait points left for this trait.",
         "negativeRemove": "Removing this trait would leave you with negative trait points. Remove a positive trait first.",
-        "traitMissing": "The trait {name} could not be loaded from the compendium."
+        "traitMissing": "The trait {name} could not be loaded from the compendium.",
+        "overspent": "More points are spent than the character has. Give some back before finishing.",
+        "detailsIncomplete": "Answer every choice: a weapon for each doctrine, a combat skill for the Peltast, and a magical doctrine for your school."
       },
       "Confirm": {
         "unspentTitle": "Unspent attribute points",
@@ -5231,6 +5260,18 @@
       "DeniedHeadline": "Critical Failure!",
       "BackstabDenied": "No defense is possible against an attack from behind."
     },
+    "Reach": {
+      "OutOfReach": "Out of reach: {distance} hexes, reach {reach}",
+      "LungeNeedsEmpty": "Extended Lunge needs an empty hex between you and the target",
+      "OpponentBlocks": "An opponent blocks the line of attack",
+      "NoRecklessThroughOccupied": "Reckless Strike and Exploit Weakness can't be used through an occupied hex",
+      "ConfirmTitle": "Out of reach",
+      "ConfirmContent": "{reason}. Attack anyway?",
+      "TagOutOfReach": "Out of reach",
+      "TagBeyondRange": "Beyond effective range −20%",
+      "EffectiveRange": "Effective range",
+      "ReachBonus": "Reach bonus"
+    },
     "AttackDialog": {
       "SneakAttack": "Sneak Attack",
       "Flanking": "Flanking",
@@ -5238,6 +5279,16 @@
       "OpportunityHint": "attack made outside your own turn, triggered by an adjacent enemy's movement, casting or shooting.",
       "PolearmPenalty": "Polearm penalty",
       "PolearmPenaltyHint": "-5 when fighting at close range with a long-reach weapon."
+    },
+    "Miracle": {
+      "Tag": "Miracle",
+      "AttackLabel": "Faith Attack",
+      "NoTest": "A miracle needs no test",
+      "PickerTitle": "Miracles (Holy Energy {energy})",
+      "Cast": "Cast",
+      "Cost": "{cost} Holy Energy",
+      "NoneKnown": "{name} knows no miracles.",
+      "NotEnough": "Not enough Holy Energy to cast {name} (Cost: {cost})."
     },
     "BloodPayment": {
       "Tag": "Blood Payment",
@@ -5354,7 +5405,8 @@
       "BlindsideDodgeRoll": "Blindside Dodge with {weapon}",
       "BadDodge": "Bad Dodge!",
       "BadDodgeNote": "The die beat the dodge limit ({limit}): this dodge counts as a margin of 0.",
-      "BloodSchoolBonus": "School of Blood defense: +{bonus}"
+      "BloodSchoolBonus": "School of Blood defense: +{bonus}",
+      "MagicDefenseCost": "Magic defense: {rank} (-{cost} Mana)"
     },
     "AutoDefense": {
       "Label": "Auto-defense",
@@ -5387,6 +5439,7 @@
     },
     "Versus": {
       "ViaFeature": "{label} ({rating}), by feature",
+      "ClickHint": "Left click: roll your best attribute. Right click: choose the attribute.",
       "Blocked": "Defended",
       "Hit": "Hit",
       "Tie": "Tie, the attack lands",
@@ -5543,6 +5596,7 @@
       "LedgerTotal": "Total earned",
       "LedgerStarting": "Starting",
       "LedgerBonus": "Bonus",
+      "LedgerConverted": "Converted to SP",
       "LedgerEmpty": "No awards yet.",
       "GrantTooltip": "Granted by {by}, recorded {created}",
       "StartingInvalid": "Starting CP and SP cannot be negative.",
@@ -8934,6 +8988,7 @@
         "badge": "Copies {skill}",
         "locked": "Increase level of {skill} skill to advance in this one"
       },
+      "creationCap": "Character creation: level {level} allows ranks up to {rank}.",
       "WeaponMaster": {
         "title": "Weapon Master",
         "ranks": "A further weapon skill (any but the highest): ranks I to IV are free, every later rank costs 5 CP, and no Teacher is needed."

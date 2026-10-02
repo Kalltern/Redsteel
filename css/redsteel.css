@@ -4835,16 +4835,29 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
 
 .rs-vs-test__line {
   margin-top: 4px;
-  font-size: 17px;
-  font-weight: 700;
 }
 
-/* The clickable margin itself. Overrides the muted steel the follow-up lines
-   use elsewhere on a card — inside this panel it is the headline. */
+/* The clickable margin itself: label on one line, the number under it. Every
+   versus Test (ability, modifier, spell, sheet roll, speed) renders this. */
 .chat-message .rs-vs-test .mos-followup,
 .chat-message .rs-vs-test .speed-followup {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
   color: #e0c165;
+}
+
+.rs-vs-test__label {
+  font-size: 13px;
+  font-weight: 700;
   text-decoration: underline dotted rgba(224, 193, 101, 0.6);
+}
+
+.rs-vs-test__value {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.15;
 }
 
 .chat-message .rs-vs-test .mos-followup:hover,
@@ -11261,6 +11274,11 @@ body.redsteel-bg3-hotbar #hotbar {
 
 #redsteel-bg3-hotbar .rs-bg3-action[data-act="potion"] {
   --rs-act: #d47fa8;
+}
+
+/* Miracles light white: holy, and apart from Channeling's blue. */
+#redsteel-bg3-hotbar .rs-bg3-action[data-act="miracle"] {
+  --rs-act: #ffffff;
 }
 
 #redsteel-bg3-hotbar .rs-bg3-action:hover {
@@ -18529,6 +18547,152 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   margin: 0;
 }
 
+/* --- Learn window: character creation banner (step 3) ------------------- */
+
+/* One compact row of stone between the hero and the tabs while a character is
+   in creation: the step, the level's rank cap, the CP to SP conversion, then
+   Back and Finish at the right. It wraps on a narrow screen. */
+.rs-learn .rs-learn-creation {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 22px;
+  margin: 0;
+  padding: 8px 14px 8px 20px;
+  background:
+    linear-gradient(to bottom, rgba(214, 188, 140, 0.05), rgba(12, 12, 11, 0.6)),
+    url(../ui/headertexture.jpg);
+  border-bottom: 1px solid #514226;
+  box-shadow: inset 0 -8px 14px rgba(0, 0, 0, 0.45);
+  font-family: Georgia, "Times New Roman", serif;
+  color: #c9bfae;
+}
+
+.rs-learn .rs-learn-creation-step {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+
+.rs-learn .rs-learn-creation-kicker {
+  font-size: calc(10px * var(--rs-learn-text));
+  line-height: calc(14px * var(--rs-learn-text));
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: #8a7b60;
+}
+
+.rs-learn .rs-learn-creation-title {
+  font-size: calc(14px * var(--rs-learn-text));
+  line-height: calc(18px * var(--rs-learn-text));
+  letter-spacing: 0.04em;
+  color: #e6c878;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.rs-learn .rs-learn-creation-stepof,
+.rs-learn .rs-learn-creation-max {
+  font-size: calc(11px * var(--rs-learn-text));
+  line-height: calc(14px * var(--rs-learn-text));
+  color: #8a8175;
+}
+
+.rs-learn .rs-learn-creation-cap {
+  padding-left: 22px;
+  border-left: 1px solid rgba(81, 66, 38, 0.7);
+  font-size: calc(12px * var(--rs-learn-text));
+  line-height: calc(16px * var(--rs-learn-text));
+  color: #c9bfae;
+}
+
+.rs-learn .rs-learn-creation-convert {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-left: 22px;
+  border-left: 1px solid rgba(81, 66, 38, 0.7);
+}
+
+.rs-learn .rs-learn-creation-label {
+  margin-right: 4px;
+  font-size: calc(11px * var(--rs-learn-text));
+  line-height: calc(14px * var(--rs-learn-text));
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #9a8f7b;
+}
+
+.rs-learn .rs-learn-creation-value {
+  min-width: calc(24px * var(--rs-learn-text));
+  font-size: calc(14px * var(--rs-learn-text));
+  line-height: calc(18px * var(--rs-learn-text));
+  font-weight: normal;
+  text-align: center;
+  color: #e6c878;
+}
+
+/* The stepper's small square plates, cut from the same stone as the picker's
+   Done and Cancel. */
+.rs-learn .rs-learn-creation-step-btn {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: calc(22px * var(--rs-learn-text));
+  height: calc(22px * var(--rs-learn-text));
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  font-size: calc(9px * var(--rs-learn-text));
+  line-height: 1;
+  color: #d6bc8c;
+  background:
+    linear-gradient(to bottom, rgba(81, 66, 38, 0.28), rgba(12, 12, 11, 0.6)),
+    url(../ui/headertexture.jpg);
+  border: 1px solid #514226;
+  border-radius: 0;
+  box-shadow:
+    inset 0 1px 0 rgba(214, 188, 140, 0.12),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.6);
+  cursor: pointer;
+}
+
+.rs-learn .rs-learn-creation-step-btn:hover:not(:disabled) {
+  color: #f0d7aa;
+  border-color: #9c7b45;
+}
+
+.rs-learn .rs-learn-creation-step-btn:disabled,
+.rs-learn .rs-learn-creation-actions button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.rs-learn .rs-learn-creation-warning {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  min-width: 0;
+  font-size: calc(11px * var(--rs-learn-text));
+  line-height: calc(14px * var(--rs-learn-text));
+  font-style: italic;
+  color: #c9a86a;
+}
+
+/* Back and Finish stand at the right end of the row. */
+.rs-learn .rs-learn-creation .rs-learn-creation-actions {
+  margin-left: auto;
+}
+
+/* Finish is the way on: a brighter bronze edge and gold letters. */
+.rs-learn .rs-learn-creation-actions button.is-primary {
+  color: #e6c878;
+  border-color: #9c7b45;
+}
+
 .rs-learn .rs-learn-picker-section {
   margin: 12px 0 0;
 }
@@ -21404,6 +21568,136 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   width: 96px;
   height: 96px;
   margin: 6px 0;
+}
+
+/* A school's crest: no image exists for the schools, so the medallion holds
+   a glyph, lettered in the card's bronze and lit gold once taken. */
+.rs-create .rs-dc-crest.is-glyph {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rs-create .rs-dc-crest.is-glyph i {
+  font-size: 34px;
+  color: #c9b48a;
+  text-shadow: 0 0 10px color-mix(in srgb, var(--rs-dc-accent) 70%, transparent);
+}
+
+.rs-create .rs-create-info-crest .rs-dc-crest.is-glyph i {
+  font-size: 40px;
+}
+
+.rs-create .rs-create-doctrine-card.is-selected .rs-dc-crest.is-glyph i {
+  color: var(--rs-create-gold);
+}
+
+/* The school a temperament sets: its reason sits at the foot like a lock
+   line, but in gold, since the card is taken, not barred. */
+.rs-create .rs-dc-lock.is-fixed {
+  color: var(--rs-create-gold);
+}
+
+/* Another school is fixed by temperament: this one cannot be taken. No lift,
+   dimmed, but still hoverable for its info. */
+.rs-create .rs-create-doctrine-card.is-shut,
+.rs-create .rs-create-doctrine-card.is-shut:hover {
+  transform: none;
+  border-color: var(--rs-create-bronze);
+  box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.85);
+  cursor: not-allowed;
+}
+
+.rs-create .rs-create-doctrine-card.is-shut > * {
+  opacity: 0.45;
+}
+
+/* -------- step 2.5: weapons and magic -------- */
+
+/* The two plates, side by side; one alone takes the whole width. */
+.rs-create .rs-create-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 14px;
+  min-height: 0;
+}
+
+/* One doctrine per row: its name, then four square plates, one per weapon
+   skill, parted by a bronze rule. */
+.rs-create .rs-create-weapon-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 14px;
+  padding: 10px 4px;
+  border-bottom: 1px solid rgba(81, 66, 38, 0.5);
+}
+
+.rs-create .rs-create-weapon-doctrine {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 16px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #e8dcc0;
+}
+
+.rs-create .rs-create-weapon-doctrine i {
+  font-size: 12px;
+  color: #a58a6a;
+}
+
+.rs-create .rs-create-weapon-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.rs-create .rs-create-weapon-option {
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 84px;
+  height: 30px;
+  margin: 0;
+  padding: 0 10px;
+  border: 1px solid var(--rs-create-bronze);
+  border-radius: 0;
+  background: rgba(12, 12, 11, 0.8);
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.8);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--rs-create-text);
+  cursor: pointer;
+}
+
+.rs-create .rs-create-weapon-option:hover:not(:disabled),
+.rs-create .rs-create-weapon-option:focus-visible {
+  border-color: var(--rs-create-bronze-lit);
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.8);
+  outline: none;
+  color: #f0d7aa;
+}
+
+.rs-create .rs-create-weapon-option.is-selected,
+.rs-create .rs-create-weapon-option.is-selected:disabled {
+  border-color: var(--rs-create-gold);
+  color: var(--rs-create-gold);
+  opacity: 1;
+}
+
+.rs-create .rs-create-weapon-option:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* The Peltast's comparison: a full line under its two plates. */
+.rs-create .rs-create-weapon-row .rs-create-skill-advice {
+  flex: 1 1 100%;
+  margin: 2px 0 0;
 }
 
 /* A doctrine's weapon skills: flat bronze-framed plates. */

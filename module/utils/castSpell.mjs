@@ -25,6 +25,7 @@ import {
   HASTENED_CAST_DIFFICULTY,
   hasHastenedCast,
 } from "./hastenedCast.mjs";
+import { isMiracle, pickMiracle, rollMiracleAttack } from "./miracles.mjs";
 
 export { getStrikeId };
 
@@ -58,6 +59,25 @@ export async function castSpell() {
     bloodPayment,
     hastenedCast,
   });
+}
+
+/**
+ * Cast a miracle: the hotbar's praying-hands button and its macro. No Focus,
+ * free cast or channeling options, since nothing is channeled; the miracle is
+ * paid from Holy Energy and rolls Faith for its Magic ATK (utils/miracles.mjs).
+ */
+export async function castMiracle() {
+  const context = game.redsteel.selectToken({ notifyFallback: true });
+  if (!context) return;
+
+  const { actor, token } = context;
+  const picked = await pickMiracle(actor);
+  if (!picked) return;
+
+  const spell = await game.redsteel.showVariantSelectionDialog(picked);
+  if (!spell) return;
+
+  await performCast(actor, spell, { token });
 }
 
 /**
@@ -187,6 +207,12 @@ export async function performCast(
 
   const bonuses = game.redsteel.calculateAttackBonuses(actor, spell);
 
+  // A miracle is not channeled: every channeling bonus stays off its roll,
+  // which is Faith instead (rollMiracleAttack). Damage and effect bonuses
+  // still apply.
+  const miracle = isMiracle(spell);
+  if (miracle) bonuses.attackBonus = 0;
+
   // Folded in before the roll rather than passed alongside it, so every
   // consumer of `bonuses` (the roll, the card, the breakdown) sees one figure.
   if (extraAttackBonus) {
@@ -194,13 +220,15 @@ export async function performCast(
       (Number(bonuses.attackBonus) || 0) + (Number(extraAttackBonus) || 0);
   }
 
-  const attackResults = await game.redsteel.performAttackRoll(
-    actor,
-    spell,
-    bonuses.attackBonus,
-    focusSpent,
-    { ignoreChanneling, difficultyBonus, hastenedCast: hastening },
-  );
+  const attackResults = miracle
+    ? await rollMiracleAttack(actor, spell)
+    : await game.redsteel.performAttackRoll(
+        actor,
+        spell,
+        bonuses.attackBonus,
+        focusSpent,
+        { ignoreChanneling, difficultyBonus, hastenedCast: hastening },
+      );
 
   await game.redsteel.finalizeRollsAndPostChat(
     actor,

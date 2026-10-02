@@ -108,6 +108,9 @@ export function buildAttackPacket(message) {
     d100: message.flags.attack.d100 ?? null,
     // Magic Defense against a Blood spell takes the School of Blood rank bonus.
     spellSchool: message.flags?.redsteel?.spellSchool ?? null,
+    // The spell's rank sets the Magic Defense Mana price. Absent on weapon
+    // attacks and older spell cards, which keep the rank picker.
+    spellRank: message.flags?.redsteel?.spellRank ?? null,
     // Where each target stood when the blow was thrown, keyed by token id
     // (utils/positioning.mjs). Absent on cards written before positioning
     // existed and on attacks that named no target, and the defense falls back
@@ -487,6 +490,34 @@ export function canMagicDefend(actor) {
     actor.type === "npc" &&
     (Number(system.combatSkills?.channeling?.value) || 0) > 0
   );
+}
+
+/**
+ * Mana price of Magic Defense, by the rank of the spell being answered. The
+ * rank sets only the price, never the roll.
+ */
+const MAGIC_DEFENSE_COST = {
+  wild: 0,
+  apprentice: 1,
+  expert: 2,
+  master: 3,
+  grandmaster: 5,
+};
+
+/**
+ * The spell rank an attack packet carries, or null when the attack is not a
+ * spell card (or predates the stamp) and the defender must pick one.
+ *
+ * @param {object|null} attack  packet from buildAttackPacket
+ * @returns {string|null}
+ */
+function magicDefenseRank(attack) {
+  const rank = String(attack?.spellRank ?? "").toLowerCase();
+  return rank in MAGIC_DEFENSE_COST ? rank : null;
+}
+
+function magicRankLabel(rank) {
+  return game.i18n.localize(`REDSTEEL.Item.Spell.FIELDS.${rank}.label`);
 }
 
 /**
@@ -1145,8 +1176,16 @@ export async function defenseRoll({
     }
     // Add spell defense if actor can use magic
     if (canMagicDefend(actor)) {
+      // Against a spell card the rank, and so the Mana price, is already known
+      // and is printed on the button. Priests pay Holy Energy, not Mana.
+      const knownRank = actor.system.priest ? null : magicDefenseRank(attack);
       buttons.spell = {
-        label: "Magic defense",
+        label: knownRank
+          ? game.i18n.format("REDSTEEL.Defense.MagicDefenseCost", {
+              rank: magicRankLabel(knownRank),
+              cost: MAGIC_DEFENSE_COST[knownRank],
+            })
+          : "Magic defense",
         callback: (html) => {
           const overwhelm = readOverwhelm(html);
           spellDefense({ overwhelm });
@@ -1839,15 +1878,9 @@ export async function defenseRoll({
     // Magic Defense (non-priests)
     // ─────────────────────────────
 
-    const defenseLevels = {
-      Wild: 0,
-      Apprentice: 1,
-      Expert: 2,
-      Master: 3,
-      Grandmaster: 5,
-    };
-
-    const rollMagicDefense = async (level, cost) => {
+    const rollMagicDefense = async (rank) => {
+      const cost = MAGIC_DEFENSE_COST[rank] ?? 0;
+      const level = magicRankLabel(rank);
       const mana = actor.system.stats.mana.value ?? 0;
 
       if (mana < cost) {
@@ -1921,23 +1954,28 @@ export async function defenseRoll({
 
     // An NPC answering on its own takes the free Wild level: the level only
     // sets the Mana price, never the roll, so paying more buys nothing.
-    if (auto) return rollMagicDefense("Wild", 0);
+    if (auto) return rollMagicDefense("wild");
+
+    // A spell card names its own rank, and the Defend button already showed
+    // the price, so there is nothing left to choose.
+    const knownRank = magicDefenseRank(attack);
+    if (knownRank) return rollMagicDefense(knownRank);
 
     new Dialog({
       title: "Magic defense",
       content: `<p>Select your Magic defense level:</p>`,
-      buttons: Object.entries(defenseLevels).reduce(
-        (buttons, [level, cost]) => {
-          buttons[level] = {
-            label: `${level} (-${cost} Mana)`,
-            callback: () => rollMagicDefense(level, cost),
+      buttons: Object.entries(MAGIC_DEFENSE_COST).reduce(
+        (buttons, [rank, cost]) => {
+          buttons[rank] = {
+            label: `${magicRankLabel(rank)} (-${cost} Mana)`,
+            callback: () => rollMagicDefense(rank),
           };
 
           return buttons;
         },
         {},
       ),
-      default: "Wild",
+      default: "wild",
     }).render(true);
   }
   /* -------------------------------------------- */

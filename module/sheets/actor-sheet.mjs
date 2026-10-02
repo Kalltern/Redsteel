@@ -3234,12 +3234,12 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
         const isVersusTest = dataset.rollType === "attribute";
         let flavorBody = `<p class="rs-card-headline"><b>${label}</b></p>`;
         if (isVersusTest) {
-          flavorBody += `<p style="text-align:center;">${renderMarginFollowupLine({
+          flavorBody += renderMarginFollowupLine({
             margin: roll.total,
             source: rollName.trim(),
             chance: skillData.mod,
             result: roll.result,
-          })}</p>`;
+          });
         }
 
         // Now, pass only the deconstructed values in the flags

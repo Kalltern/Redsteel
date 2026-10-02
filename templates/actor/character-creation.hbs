@@ -26,6 +26,47 @@
   </button>
   {{/inline}}
 
+  {{!-- One doctrine or school card (step 2, and the magical doctrine on 2.5):
+        its crest (an image, or a glyph for a school), its name, and the
+        ladder of abilities its ranks unlock (hover an icon for the ability).
+        Taken: gold frame and seal. Locked: greyed out under a padlock. Fixed
+        (a temperament's school): taken, with the reason at its foot. Shut:
+        another card is fixed, so this one cannot be taken.
+        A div, not a <button>: a button centres its content vertically, which
+        set every card's crest at a different height depending on how long its
+        ladder is. --}}
+  {{#*inline "doctrineCard"}}
+  <div role="button" tabindex="0"
+       class="rs-create-doctrine-card is-{{kind}} {{#if selected}}is-selected{{/if}} {{#if locked}}is-locked{{/if}} {{#if shut}}is-shut{{/if}}"
+       data-action="{{action}}" data-{{keyAttr}}="{{key}}" data-info="{{info}}"
+       aria-pressed="{{#if selected}}true{{else}}false{{/if}}"
+       {{#if disabled}}aria-disabled="true"{{/if}}>
+    <span class="rs-dc-crest {{#if glyph}}is-glyph{{/if}}">{{#if glyph}}<i class="fa-solid {{glyph}}"></i>{{else}}<img src="{{crest}}" alt="">{{/if}}</span>
+    <span class="rs-dc-kind">{{kindLabel}}</span>
+    <span class="rs-dc-name">{{label}}</span>
+    <span class="rs-dc-rule"></span>
+    {{#if ladder.length}}
+    <span class="rs-dc-ladder" style="--rs-dc-cols: {{ladderCols}}">
+      {{#each ladder}}
+      <span class="rs-dc-step" data-tt-kind="creationFeature" data-tt-id="{{this.id}}">
+        <img src="{{this.img}}" alt="">
+        <em>{{this.numeral}}</em>
+      </span>
+      {{/each}}
+    </span>
+    {{/if}}
+    {{#if locked}}
+    <span class="rs-dc-lock"><i class="fa-solid fa-lock"></i>{{lockText}}</span>
+    {{/if}}
+    {{#if fixed}}
+    <span class="rs-dc-lock is-fixed"><i class="fa-solid fa-lock"></i>{{fixedText}}</span>
+    {{/if}}
+    {{#if selected}}
+    <span class="rs-dc-seal">{{localize "REDSTEEL.Creation.Doctrine.chosen"}}</span>
+    {{/if}}
+  </div>
+  {{/inline}}
+
   {{#if loading}}
   {{!-- Shown at once while the compendium data loads (first open of the
         session); the window re-renders into the screen proper when it is in. --}}
@@ -44,13 +85,14 @@
   </header>
   <div class="rs-create-progress"><div class="rs-create-progress-fill" style="width: {{progress}}%"></div></div>
 
-  <div class="rs-create-columns {{#if isStep2}}is-doctrine-step{{/if}}">
+  <div class="rs-create-columns {{#if isStep2}}is-doctrine-step{{/if}}{{#if isDetails}}is-doctrine-step{{/if}}">
 
     {{#if isStep2}}
-    {{!-- Step 2 — Doctrine: every doctrine the character may train in, by
-          kind. Taking one adds it to the character's skills; no rank is
-          bought here. Magical ones need Magic potential (greyed out without
-          it); Cordinas is not offered (it needs a specialisation). --}}
+    {{!-- Step 2 — Doctrine: every combat doctrine the character may train
+          in, by kind, then the schools of magic (exactly one; Magic potential
+          needed, greyed out without it; a temperament sets it). Taking one
+          adds it to the character's skills; no rank is bought here. The
+          magical doctrine is picked on 2.5. --}}
     <section class="rs-create-panel rs-create-doctrines">
       <h2 class="rs-create-panel-title">{{localize "REDSTEEL.Creation.Doctrine.heading"}}</h2>
       <div class="rs-create-scroll">
@@ -61,47 +103,92 @@
         {{#each doctrineKinds}}
         <div class="rs-create-doctrine-block is-{{this.kind}}">
           <div class="rs-create-group-label">{{this.label}}</div>
-          {{!-- One card per doctrine: its crest (the first ability it teaches),
-                its name, and the ladder of abilities its ranks unlock (hover
-                an icon for the ability). Taken: gold frame and seal. Locked:
-                greyed out under a padlock. --}}
           <div class="rs-create-doctrine-grid">
             {{#each this.doctrines}}
-            {{!-- A div, not a <button>: a button centres its content
-                  vertically, which set every card's crest at a different
-                  height depending on how long its ladder is. --}}
-            <div role="button" tabindex="0"
-                    class="rs-create-doctrine-card is-{{this.kind}} {{#if this.selected}}is-selected{{/if}} {{#if this.locked}}is-locked{{/if}}"
-                    data-action="toggleDoctrine" data-doctrine="{{this.key}}" data-info="doctrine:{{this.key}}"
-                    aria-pressed="{{#if this.selected}}true{{else}}false{{/if}}"
-                    {{#if this.disabled}}aria-disabled="true"{{/if}}>
-              <span class="rs-dc-crest"><img src="{{this.crest}}" alt=""></span>
-              <span class="rs-dc-kind">{{this.kindLabel}}</span>
-              <span class="rs-dc-name">{{this.label}}</span>
-              <span class="rs-dc-rule"></span>
-              {{#if this.ladder.length}}
-              <span class="rs-dc-ladder" style="--rs-dc-cols: {{this.ladderCols}}">
-                {{#each this.ladder}}
-                <span class="rs-dc-step" data-tt-kind="creationFeature" data-tt-id="{{this.id}}">
-                  <img src="{{this.img}}" alt="">
-                  <em>{{this.numeral}}</em>
-                </span>
-                {{/each}}
-              </span>
-              {{/if}}
-              {{#if this.locked}}
-              <span class="rs-dc-lock"><i class="fa-solid fa-lock"></i>{{localize "REDSTEEL.Creation.Doctrine.needsMagic"}}</span>
-              {{/if}}
-              {{#if this.selected}}
-              <span class="rs-dc-seal">{{localize "REDSTEEL.Creation.Doctrine.chosen"}}</span>
-              {{/if}}
-            </div>
+            {{> doctrineCard}}
             {{/each}}
           </div>
         </div>
         {{/each}}
       </div>
     </section>
+    {{else if isDetails}}
+    {{!-- Step 2.5 — Weapons and magic: the weapon skill each combat doctrine
+          trains with (fixed ones locked), and with a school, its magical
+          doctrine. Two plates side by side, or one alone. --}}
+    <div class="rs-create-details">
+      {{!-- The combat skills the doctrines fight with: fixed ones locked (and
+            Channeling with a school), the Peltast's a choice with the book's
+            comparison under it. --}}
+      {{#if details.hasCombatSkills}}
+      <section class="rs-create-panel rs-create-details-skills">
+        <h2 class="rs-create-panel-title">{{localize "REDSTEEL.Creation.Details.combatSkillHeading"}}</h2>
+        <div class="rs-create-scroll">
+          {{#each details.combatSkills as |row|}}
+          <div class="rs-create-weapon-row {{#if row.answered}}is-answered{{/if}}"
+               {{#if row.fixed}}data-tooltip="{{row.fixedText}}"{{/if}}>
+            <span class="rs-create-weapon-doctrine">
+              {{#if row.fixed}}<i class="fa-solid fa-lock"></i>{{/if}}
+              {{row.label}}
+            </span>
+            <span class="rs-create-weapon-options">
+              {{#each row.options as |option|}}
+              <button type="button" class="rs-create-weapon-option {{#if option.selected}}is-selected{{/if}}"
+                      data-action="pickCombatSkill" data-skill="{{option.key}}"
+                      aria-pressed="{{#if option.selected}}true{{else}}false{{/if}}"
+                      {{#if option.disabled}}disabled{{/if}}>
+                {{option.label}}
+              </button>
+              {{/each}}
+            </span>
+            {{#if row.advice}}
+            <p class="rs-create-doctrine-advice rs-create-skill-advice">{{row.advice}}</p>
+            {{/if}}
+          </div>
+          {{/each}}
+        </div>
+      </section>
+      {{/if}}
+      {{#if details.hasWeapons}}
+      <section class="rs-create-panel rs-create-details-weapons">
+        <h2 class="rs-create-panel-title">{{localize "REDSTEEL.Creation.Details.weaponsHeading"}}</h2>
+        <div class="rs-create-scroll">
+          <p class="rs-create-doctrine-advice">{{localize "REDSTEEL.Creation.Details.weaponsAdvice"}}</p>
+          {{#each details.weapons as |row|}}
+          <div class="rs-create-weapon-row {{#if row.answered}}is-answered{{/if}}" data-info="doctrine:{{row.key}}"
+               {{#if row.fixed}}data-tooltip="{{row.fixedText}}"{{/if}}>
+            <span class="rs-create-weapon-doctrine">
+              {{#if row.fixed}}<i class="fa-solid fa-lock"></i>{{/if}}
+              {{row.label}}
+            </span>
+            <span class="rs-create-weapon-options">
+              {{#each row.options as |option|}}
+              <button type="button" class="rs-create-weapon-option {{#if option.selected}}is-selected{{/if}}"
+                      data-action="pickWeapon" data-doctrine="{{row.key}}" data-weapon="{{option.key}}"
+                      aria-pressed="{{#if option.selected}}true{{else}}false{{/if}}"
+                      {{#if option.disabled}}disabled{{/if}}>
+                {{option.label}}
+              </button>
+              {{/each}}
+            </span>
+          </div>
+          {{/each}}
+        </div>
+      </section>
+      {{/if}}
+      {{#if details.hasMagic}}
+      <section class="rs-create-panel rs-create-details-magic">
+        <h2 class="rs-create-panel-title">{{details.magicHeading}}</h2>
+        <div class="rs-create-scroll">
+          <div class="rs-create-doctrine-grid">
+            {{#each details.magic}}
+            {{> doctrineCard}}
+            {{/each}}
+          </div>
+        </div>
+      </section>
+      {{/if}}
+    </div>
     {{else}}
 
     {{!-- Left column: the name, then the traits still to pick. --}}
@@ -276,15 +363,11 @@
       <button type="button" class="rs-create-btn" data-action="closeScreen">
         {{localize "REDSTEEL.Creation.close"}}
       </button>
-      {{#if isLastStep}}
-      <button type="button" class="rs-create-btn is-primary" data-action="finish" {{#unless editable}}disabled{{/unless}}>
-        {{localize "REDSTEEL.Creation.finish"}}
-      </button>
-      {{else}}
+      {{!-- Next on the last step of this screen writes the origin and opens
+            step 3, the Learn window, which carries Finish. --}}
       <button type="button" class="rs-create-btn is-primary" data-action="next" {{#unless editable}}disabled{{/unless}}>
         {{localize "REDSTEEL.Creation.next"}} &rarr;
       </button>
-      {{/if}}
     </div>
   </footer>
   {{/if}}

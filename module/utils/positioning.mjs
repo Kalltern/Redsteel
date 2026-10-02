@@ -329,6 +329,324 @@ export function longReachPenaltyAgainst(actor, self, opponent) {
   return areAdjacent(self, opponent) ? LONG_REACH_PENALTY : 0;
 }
 
+/**
+ * Extended Lunge (Daleký výpad), by key or by the pack's English name. Inlined
+ * rather than imported from abilityMovement.mjs: that module pulls in the
+ * action tracker and movement zones, and this file stays import free.
+ */
+const EXTENDED_LUNGE_KEY = "REDSTEEL.Items.ExtendedLunge.name";
+
+/**
+ * Abilities that may not strike through an occupied hex (book: Dlouhý dosah).
+ * Zběsilý útok and Útok na slabinu, with their variants.
+ */
+const NO_PASS_THROUGH_KEYS = new Set([
+  "REDSTEEL.Items.RecklessStrike.name",
+  "REDSTEEL.Items.RecklessStrikeReaver.name",
+  "REDSTEEL.Items.ExploitWeakness.name",
+  "REDSTEEL.Items.ImprovedExploitWeakness.name",
+  "REDSTEEL.Items.Imbroccata.name",
+  // The pack's Imbroccata ability carries this key; Imbroccata.name is the
+  // feature that grants it.
+  "REDSTEEL.Items.ImbroccataExploitWeakness.name",
+]);
+
+/**
+ * Thrown weapons without their own `effectiveRange`, by weapon tag, in hexes.
+ */
+const THROWN_RANGE_BY_TAG = Object.freeze({
+  "throwing knife": 10,
+  "throwing axe": 8,
+  javelin: 12,
+});
+
+/** Weapon classes that never take a reach or range check. */
+const UNCHECKED_CLASSES = new Set(["bow", "crossbow", "firearm"]);
+
+function isExtendedLungeAbility(ability) {
+  return (
+    ability?.system?.localizationKey === EXTENDED_LUNGE_KEY ||
+    ability?.name === "Extended Lunge"
+  );
+}
+
+function forbidsPassThrough(item) {
+  return NO_PASS_THROUGH_KEYS.has(item?.system?.localizationKey ?? "");
+}
+
+/** The hexes a token covers, as offsets. Its centre hex when core says none. */
+function occupiedOffsets(token) {
+  const grid = canvas?.grid;
+  const doc = docOf(token);
+  if (!grid || !doc) return [];
+  let offsets = [];
+  try {
+    offsets = doc.getOccupiedGridSpaceOffsets?.() ?? [];
+  } catch (_error) {
+    offsets = [];
+  }
+  if (offsets.length) return offsets.map(({ i, j }) => ({ i, j }));
+  const center = centerOf(token);
+  if (!center) return [];
+  try {
+    const { i, j } = grid.getOffset({ x: center.x, y: center.y });
+    return [{ i, j }];
+  } catch (_error) {
+    return [];
+  }
+}
+
+const offsetKey = ({ i, j }) => `${i},${j}`;
+
+/** The direct grid path between two hex offsets, both ends included. */
+function pathBetween(from, to) {
+  const grid = canvas.grid;
+  return (
+    grid.getDirectPath([grid.getCenterPoint(from), grid.getCenterPoint(to)]) ??
+    []
+  );
+}
+
+/**
+ * The nearest pair of hexes between two tokens: one the first covers, one the
+ * second covers. Large tokens are measured edge to edge this way.
+ *
+ * @returns {{distance:number, from:{i:number,j:number}, to:{i:number,j:number}}|null}
+ */
+function nearestHexes(a, b) {
+  if (!canvas?.grid?.getDirectPath) return null;
+  const fromList = occupiedOffsets(a);
+  const toList = occupiedOffsets(b);
+  if (!fromList.length || !toList.length) return null;
+
+  let best = null;
+  for (const from of fromList) {
+    for (const to of toList) {
+      let distance;
+      try {
+        distance = Math.max(0, (pathBetween(from, to)?.length ?? 1) - 1);
+      } catch (_error) {
+        continue;
+      }
+      if (!best || distance < best.distance) best = { distance, from, to };
+    }
+  }
+  return best;
+}
+
+/**
+ * Hex distance between two tokens: the fewest hexes from any hex one covers to
+ * any hex the other covers. Two 1×1 tokens cost a single path. 0 when they
+ * share a hex, and also 0 when there is no grid to measure on.
+ *
+ * @param {Token|TokenDocument|null} a
+ * @param {Token|TokenDocument|null} b
+ * @returns {number}
+ */
+export function tokenHexDistance(a, b) {
+  return nearestHexes(a, b)?.distance ?? 0;
+}
+
+/**
+ * How many hexes a melee swing reaches (book: Dlouhý dosah, "Efekt z více
+ * zdrojů se sčítá"). One by default; the weapon's Long Reach, the ability's
+ * `reachBonus` (Extended Lunge counts as +1 when the field is empty) and the
+ * actor's `system.reachBonus` each add on top.
+ *
+ * @param {Actor|null} actor
+ * @param {Item|null} weapon
+ * @param {Item|null} [ability]
+ * @returns {number}
+ */
+export function weaponReach(actor, weapon, ability = null) {
+  const abilityReachBonus =
+    Number(ability?.system?.reachBonus) ||
+    (isExtendedLungeAbility(ability) ? 1 : 0);
+  return (
+    1 +
+    (weapon?.system?.longReach ? 1 : 0) +
+    abilityReachBonus +
+    Number(actor?.system?.reachBonus || 0)
+  );
+}
+
+/**
+ * Does this weapon's swing get a reach check at all? Thrown weapons answer to
+ * their effective range instead, and bows, crossbows and firearms to nothing.
+ */
+export function isReachChecked(weapon) {
+  if (weapon?.system?.thrown === true) return false;
+  return !UNCHECKED_CLASSES.has(weapon?.system?.class ?? "");
+}
+
+/**
+ * A thrown weapon's effective range in hexes (book: "Útok na vzdálenější cíle
+ * má postih -20% na Vrh"). Its own `effectiveRange` when set, otherwise a
+ * default by weapon tag, otherwise 0, which means never penalised.
+ */
+export function thrownEffectiveRange(weapon) {
+  const own = Number(weapon?.system?.effectiveRange);
+  if (own > 0) return own;
+  const tags = String(weapon?.system?.tags ?? "")
+    .split(",")
+    .map((tag) => tag.trim().toLowerCase())
+    .filter(Boolean);
+  for (const tag of tags) {
+    if (THROWN_RANGE_BY_TAG[tag]) return THROWN_RANGE_BY_TAG[tag];
+  }
+  return 0;
+}
+
+/**
+ * Who stands in each hex, for the line-of-attack walk. Hidden tokens and the
+ * dead are left out; so are the attacker and the target themselves.
+ */
+function occupantsByHex(exclude) {
+  const map = new Map();
+  for (const placeable of canvas?.tokens?.placeables ?? []) {
+    const doc = docOf(placeable);
+    if (!doc || exclude.has(doc.id)) continue;
+    if (doc.hidden) continue;
+    if (placeable.actor?.statuses?.has("dead")) continue;
+    for (const offset of occupiedOffsets(placeable)) {
+      const key = offsetKey(offset);
+      if (!map.has(key)) map.set(key, []);
+      map.get(key).push(doc);
+    }
+  }
+  return map;
+}
+
+/**
+ * Can this melee swing reach every target, and along a legal line?
+ *
+ * Never a hard block: the caller asks the player (`confirmOutOfReach`) and
+ * stamps the card if they go ahead anyway. Checked, in order, per target:
+ *
+ *   1. distance beyond reach. The farthest offender is reported.
+ *   2. at distance 2 or more, every hex strictly between the two (the direct
+ *      grid path, minus the hexes the attacker and the target cover):
+ *      - Extended Lunge wants them all empty, ally or foe;
+ *      - an opponent (different disposition) blocks the line;
+ *      - an ally may be struck past, but not with Reckless Strike or Exploit
+ *        Weakness, whether chosen as the ability or ticked as a modifier.
+ *
+ * No targets, no attacker token or no grid: nothing to check, ok.
+ *
+ * @param {object} args
+ * @param {Actor|null} args.actor
+ * @param {Token|TokenDocument|null} args.token
+ * @param {Item|null} args.weapon
+ * @param {Item|null} [args.ability]
+ * @param {Item[]} [args.modifiers]
+ * @param {Array<Token|TokenDocument>} [args.targets]
+ * @returns {{ok:true}|{ok:false, reason:string}}
+ */
+export function checkMeleeReach({
+  actor,
+  token,
+  weapon,
+  ability = null,
+  modifiers = [],
+  targets = [],
+} = {}) {
+  if (!token || !targets?.length || !canvas?.grid?.getDirectPath) {
+    return { ok: true };
+  }
+  const selfDoc = docOf(token);
+  if (!selfDoc) return { ok: true };
+
+  const reach = weaponReach(actor, weapon, ability);
+  const lunge = isExtendedLungeAbility(ability);
+  const noPassThrough =
+    forbidsPassThrough(ability) ||
+    (modifiers ?? []).some((mod) => forbidsPassThrough(mod));
+
+  // 1. Reach. Reported against the farthest target out of it.
+  let farthest = null;
+  const measured = [];
+  for (const target of targets) {
+    const targetDoc = docOf(target);
+    if (!targetDoc || targetDoc.id === selfDoc.id) continue;
+    const nearest = nearestHexes(token, target);
+    if (!nearest) continue;
+    measured.push({ targetDoc, nearest });
+    if (nearest.distance > reach && nearest.distance > (farthest ?? -1)) {
+      farthest = nearest.distance;
+    }
+  }
+  if (farthest !== null) {
+    return {
+      ok: false,
+      reason: game.i18n.format("REDSTEEL.Reach.OutOfReach", {
+        distance: farthest,
+        reach,
+      }),
+    };
+  }
+
+  // 2. The line between.
+  let allyInTheWay = false;
+  for (const { targetDoc, nearest } of measured) {
+    if (nearest.distance < 2) continue;
+    const exclude = new Set([selfDoc.id, targetDoc.id]);
+    const covered = new Set(
+      [...occupiedOffsets(token), ...occupiedOffsets(targetDoc)].map(offsetKey),
+    );
+    const occupants = occupantsByHex(exclude);
+    let path = [];
+    try {
+      path = pathBetween(nearest.from, nearest.to);
+    } catch (_error) {
+      path = [];
+    }
+    for (const offset of path) {
+      const key = offsetKey(offset);
+      if (covered.has(key)) continue;
+      const here = occupants.get(key);
+      if (!here?.length) continue;
+      if (lunge) {
+        return {
+          ok: false,
+          reason: game.i18n.localize("REDSTEEL.Reach.LungeNeedsEmpty"),
+        };
+      }
+      if (here.some((doc) => doc.disposition !== selfDoc.disposition)) {
+        return {
+          ok: false,
+          reason: game.i18n.localize("REDSTEEL.Reach.OpponentBlocks"),
+        };
+      }
+      allyInTheWay = true;
+    }
+  }
+  if (allyInTheWay && noPassThrough) {
+    return {
+      ok: false,
+      reason: game.i18n.localize("REDSTEEL.Reach.NoRecklessThroughOccupied"),
+    };
+  }
+  return { ok: true };
+}
+
+/**
+ * Ask the player whether to swing anyway. Resolves true only on an explicit
+ * yes; closing the dialog counts as no.
+ *
+ * @param {string} reason  Already localized.
+ * @returns {Promise<boolean>}
+ */
+export async function confirmOutOfReach(reason) {
+  const answer = await foundry.applications.api.DialogV2.confirm({
+    window: { title: game.i18n.localize("REDSTEEL.Reach.ConfirmTitle") },
+    content: `<p>${game.i18n.format("REDSTEEL.Reach.ConfirmContent", {
+      reason,
+    })}</p>`,
+    rejectClose: false,
+  });
+  return answer === true;
+}
+
 /* -------------------------------------------- */
 /*  ATTACK CARDS                                */
 /* -------------------------------------------- */

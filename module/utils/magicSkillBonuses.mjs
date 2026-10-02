@@ -8,6 +8,7 @@ import {
 } from "../helpers/specialisations.mjs";
 import { hasHtmlContent } from "./chatBlocks.mjs";
 import { getStrikeId } from "./strikes.mjs";
+import { DIVINE_SCHOOL, isMiracle } from "./miracles.mjs";
 import {
   getLindarChannelingBonus,
   getLindarSpellCost,
@@ -23,7 +24,10 @@ import { resolveSpellPowerTokens } from "./spellCards.mjs";
 import { setupDialogTabs } from "./dialogTabMemory.mjs";
 import { captureAttackTargets } from "./autoDefense.mjs";
 import { attackBonusFor, captureAttackPositioning } from "./positioning.mjs";
-import { renderAgainstAttr, versusAgainstFor } from "./attributeFollowup.mjs";
+import {
+  renderMarginFollowupLine,
+  versusAgainstFor,
+} from "./attributeFollowup.mjs";
 import {
   BLOOD_PAYMENT_COST,
   BLOOD_PAYMENT_DIFFICULTY,
@@ -253,8 +257,9 @@ function _injectDialogCSS() {
 export function getUniqueSpellSchools(actor) {
   const spellSchools = new Set();
   // Assuming spell school is stored in spell.system.type
+  // Miracles are cast from their own picker (utils/miracles.mjs), not here.
   actor.items
-    .filter((i) => i.type === "spell")
+    .filter((i) => i.type === "spell" && !isMiracle(i))
     .forEach((spell) => {
       if (spell.system.type) {
         spellSchools.add(spell.system.type);
@@ -284,7 +289,8 @@ export function showSpellSelectionDialogs(actor) {
       if (schoolDialog) schoolDialog.close();
 
       const allSpells = actor.items.filter(
-        (i) => i.type === "spell" && i.system.type === schoolName,
+        (i) =>
+          i.type === "spell" && i.system.type === schoolName && !isMiracle(i),
       );
 
       // Define Ranks (now lowercase) and Group Spells
@@ -797,13 +803,31 @@ export async function showVariantSelectionDialog(spell) {
 export async function deductMana(actor, spell) {
   const updates = {};
 
-  const spellCost = getLindarSpellCost(actor, spell);
+  // A miracle's cost is Holy Energy, never Mana, and no mage perk touches it.
+  const miracle = isMiracle(spell);
+  const spellCost = miracle
+    ? Number(spell.system.cost) || 0
+    : getLindarSpellCost(actor, spell);
 
   // Blood school spells cost blood from the blood pool instead of mana
   const isBloodSpell = spell.system.type === "blood";
 
   if (spellCost) {
-    if (isBloodSpell) {
+    if (miracle) {
+      const currentEnergy = actor.system.stats.holyEnergy?.value ?? 0;
+
+      if (currentEnergy < spellCost) {
+        ui.notifications.warn(
+          game.i18n.format("REDSTEEL.Miracle.NotEnough", {
+            name: spell.localizedName ?? spell.name,
+            cost: spellCost,
+          }),
+        );
+        return false;
+      }
+
+      updates["system.stats.holyEnergy.value"] = currentEnergy - spellCost;
+    } else if (isBloodSpell) {
       const currentBlood = actor.system.stats.bloodPool?.value ?? 0;
 
       if (currentBlood < spellCost) {
@@ -1298,6 +1322,10 @@ export async function finalizeRollsAndPostChat(
   // imposes on the *caster* (channeling upkeep, caster effects, Mental Duel)
   // hangs off this — a botched cast must not sustain or self-debuff.
   const castSucceeded = spellCastSucceeded(attackResults);
+  // A miracle has no school of its own; it is stamped "divine", which is also
+  // what makes getSpellPower read Miracle Power for its formulas.
+  const miracle = isMiracle(spell);
+  const cardSchool = miracle ? DIVINE_SCHOOL : spell.system.type;
 
   // --- Roll Data Setup (needed for Damage/Description) ---
   const rollData = {
@@ -1305,20 +1333,12 @@ export async function finalizeRollsAndPostChat(
     difficulty: spell.system.difficulty,
     int: actor.system.attributes.int.total,
     wil: actor.system.attributes.wil.total,
-    spellPower: getSpellPower(actor, spell.system.type),
+    spellPower: getSpellPower(actor, cardSchool),
   };
 
   const spellAttributeTestName = spell.system.attributeTest || 0;
   const spellTestModifier = spell.system.testModifier || 0;
   const effectiveCritSuccess = ignoreChanneling ? false : critSuccess;
-  const isInvalid =
-    !spellAttributeTestName || spellAttributeTestName === "--select a type--";
-
-  const capitalizedName = isInvalid
-    ? null // or "" depending on your UI needs
-    : spellAttributeTestName.charAt(0).toUpperCase() +
-      spellAttributeTestName.slice(1);
-
   let concatRollAndDescription = spell.system.description;
   console.log(`Spell Description:`, concatRollAndDescription);
   let attributeTestRoll = null;
@@ -1330,16 +1350,12 @@ export async function finalizeRollsAndPostChat(
 
     // Only separate from the description when there is one to separate from.
     if (hasHtmlContent(concatRollAndDescription)) concatRollAndDescription += "<hr>";
-    concatRollAndDescription += `
-  <span style="display:inline-block;">
-    ${renderSpeedTestLine({
+    concatRollAndDescription += renderSpeedTestLine({
       actor,
       roll: speedRoll,
       source: spell.localizedName ?? spell.name,
       modifier: spellTestModifier,
-    })}
-  </span>
-`;
+    });
     attributeTestRoll = speedRoll;
   } else if (
     spellAttributeTestName &&
@@ -1367,10 +1383,13 @@ export async function finalizeRollsAndPostChat(
 
     const attributeString = `
     <hr>
-  <span style="display:inline-block;">
-    ${capitalizedName} Test <span class="mos-followup" data-margin="${attributeRoll.total}" data-source="${spell.localizedName ?? spell.name}"${renderAgainstAttr(versusAgainstFor(spell))} data-chance="${modifierRoll.total}" data-tooltip="Test chance ${modifierRoll.total}%<br>Rolled: ${attributeRoll.result}<br>Click to roll an attribute against this margin" style="cursor:pointer; text-decoration:underline dotted;">Margin of Success: [${attributeRoll.total}]</span>
-  </span>
-
+${renderMarginFollowupLine({
+  margin: attributeRoll.total,
+  source: spell.localizedName ?? spell.name,
+  chance: modifierRoll.total,
+  result: attributeRoll.result,
+  against: versusAgainstFor(spell),
+})}
 `;
 
     concatRollAndDescription += attributeString;
@@ -1546,10 +1565,13 @@ export async function finalizeRollsAndPostChat(
   // Magic ATK is the cast margin plus the caster's flat magic attack bonuses. A
   // Blood spell adds +5 per School of Blood rank (Expert, Master, Grandmaster),
   // and a single-target cast into a flank adds the arc bonus.
-  const magicAttackBonus =
-    (actor.system.combatSkills.channeling.attack || 0) +
-    (spell.system.type === "blood" ? getBloodSchoolRankBonus(actor) : 0) +
-    magicFlankBonus;
+  // A miracle is not channeled, so only the flank carries over: its Faith
+  // bonuses are already inside the roll (rollMiracleAttack).
+  const magicAttackBonus = miracle
+    ? magicFlankBonus
+    : (actor.system.combatSkills.channeling.attack || 0) +
+      (spell.system.type === "blood" ? getBloodSchoolRankBonus(actor) : 0) +
+      magicFlankBonus;
   const attack = attackRoll ? attackRoll.total + magicAttackBonus : null;
   // Resolve the `{{…spellPower…}}` placeholders with the same evaluator the
   // sheet cards use, BEFORE Handlebars sees the string. Two reasons: it floors
@@ -1563,10 +1585,22 @@ export async function finalizeRollsAndPostChat(
   );
   const compiled = Handlebars.compile(rawTemplate);
   const renderedDescription = compiled(rollData);
-  const tags = rollData.difficulty
-    ? `<span class="action-tag difficulty ">Difficulty ${rollData.difficulty} </span>
+  // A miracle has no Difficulty (nothing is tested), and still needs its tags.
+  const tags =
+    rollData.difficulty || miracle
+    ? `${
+        miracle
+          ? `<span class="action-tag spellClass ">${game.i18n.localize(
+              "REDSTEEL.Miracle.Tag",
+            )}</span>`
+          : `<span class="action-tag difficulty ">Difficulty ${rollData.difficulty} </span>`
+      }
       <span class="action-tag range ">Range ${spell.system.range} </span>
-      <span class="action-tag spellClass ">${spell.system.spellClass} Spell</span>
+      ${
+        miracle
+          ? ""
+          : `<span class="action-tag spellClass ">${spell.system.spellClass} Spell</span>`
+      }
       <span class="action-tag rank ">${spell.system.rank} rank</span>
       ${
         showMagicAttack && attack !== null
@@ -1710,9 +1744,20 @@ export async function finalizeRollsAndPostChat(
   <div class="roll-column">
     ${
       attackRoll
-        ? `<div class="roll-label">Margin of Success</div>
+        ? `<div class="roll-label">${
+            miracle
+              ? game.i18n.localize("REDSTEEL.Miracle.AttackLabel")
+              : "Margin of Success"
+          }</div>
     ${attackHTML}`
-        : `<div class="roll-label">Uncontested</div>
+        : miracle
+          ? `<div class="roll-label">${game.i18n.localize(
+              "REDSTEEL.Miracle.Tag",
+            )}</div>
+    <div style="text-align:center; opacity:.8;">${game.i18n.localize(
+      "REDSTEEL.Miracle.NoTest",
+    )}</div>`
+          : `<div class="roll-label">Uncontested</div>
     <div style="text-align:center; opacity:.8;">No channeling evaluation</div>`
     }
   </div>
@@ -1844,7 +1889,10 @@ export async function finalizeRollsAndPostChat(
     flags: {
       redsteel: {
         rollName,
-        spellSchool: spell.system.type,
+        spellSchool: cardSchool,
+        // Magic Defense against this card is priced by the spell's rank, so
+        // the Defend dialog names the cost up front instead of asking.
+        spellRank: spell.system.rank || "wild",
         casterUuid: actor.uuid,
         // Which spell and which round this card is: the hotbar's sustain
         // Apply chip finds this round's card of a held spell by them.
@@ -1852,11 +1900,15 @@ export async function finalizeRollsAndPostChat(
         ...(game.combat?.started && {
           castRound: { combat: game.combat.id, round: game.combat.round },
         }),
-        criticalSuccessThreshold:
-          actor.system.combatSkills.channeling.criticalSuccessThreshold,
-        criticalFailureThreshold: getCastCritFailThreshold(actor, {
-          hastenedCast,
-        }),
+        // A reroll judges its new die against these. Faith has no criticals,
+        // so a miracle card carries bounds no d100 can reach (null would not
+        // do: `d100 >= null` is always true).
+        criticalSuccessThreshold: miracle
+          ? 0
+          : actor.system.combatSkills.channeling.criticalSuccessThreshold,
+        criticalFailureThreshold: miracle
+          ? 101
+          : getCastCritFailThreshold(actor, { hastenedCast }),
         traitPills: getTraitPills(actor, "attack"),
         // A failed cast applied nothing to the caster. Carry enough context to
         // redo that side if a reroll turns the margin positive — the reroll
@@ -1925,6 +1977,9 @@ export function spellCastSucceeded(attackResults) {
   // An uncontested cast that skipped its channeling roll has nothing to judge:
   // it landed by definition (see isUncontestedSpell).
   if (attackResults?.skipped === true) return true;
+  // A miracle takes no test: its roll is Magic ATK for the defender to
+  // contest, never a pass/fail of the cast (utils/miracles.mjs).
+  if (attackResults?.miracle === true) return true;
   // A margin of exactly 0 is a success, so this must not lean on falsiness.
   const total = Number(attackResults?.attackRoll?.total);
   return Number.isFinite(total) && total >= 0;

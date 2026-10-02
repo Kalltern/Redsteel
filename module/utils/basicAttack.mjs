@@ -35,6 +35,7 @@ export async function universalAttackLogic({
   context: preResolvedContext = null,
   selectedModifiers = [],
   longReachPenalty = 0,
+  outOfReach = false,
 }) {
   const context = game.redsteel.selectToken({ notifyFallback: true });
   if (!context) return;
@@ -195,15 +196,13 @@ export async function universalAttackLogic({
         attributeTestHTML += `
     <tr>
     <td>
-    <span style="display:inline-block;">
-    <b>${mod.localizedName ?? mod.name}</b><br>
     ${renderSpeedTestLine({
       actor,
       roll: speedRoll,
       source: mod.localizedName ?? mod.name,
       modifier: testModifier,
+      heading: mod.localizedName ?? mod.name,
     })}
-    </span>
     </td>
     </tr>
   `;
@@ -229,16 +228,14 @@ export async function universalAttackLogic({
 
     <tr>
     <td>
-    <span style="display:inline-block;">
-    <b>${mod.localizedName ?? mod.name} — ${testName} Test ${attributeTotalValue}%</b><br>
     ${renderMarginFollowupLine({
       margin: attributeRoll.total,
       source: mod.localizedName ?? mod.name,
       chance: attributeTotalValue,
       result: attributeRoll.result,
       onLose: versusLossFor(mod),
-    })}<br>
-      </span>
+      heading: mod.localizedName ?? mod.name,
+    })}
     </td>
     </tr>
     
@@ -426,12 +423,18 @@ export async function universalAttackLogic({
       aimedPart,
       opportunityAttack,
       dragonGuard,
+      rangePenalty,
     } = attackData;
     // Runtime tags only; they travel to the chat card. Dragon Guard's +10% is
     // already in the roll (getAttackRolls), the chip says why.
     const attackTags = [
       ...(opportunityAttack ? ["opportunity"] : []),
       ...dragonGuardTags(dragonGuard, actor, null),
+      // Reach and thrown range (positioning.mjs): the player swung anyway past
+      // the reach prompt, or threw beyond the effective range (already in the
+      // roll as -20%).
+      ...(outOfReach ? ["outOfReach"] : []),
+      ...(rangePenalty ? ["beyondRange"] : []),
     ];
     const aimedPartDef = aimedPart ? AIMED_PARTS[aimedPart] : null;
     if (aimedPartDef) {
@@ -811,5 +814,6 @@ export async function meleeAttack(options = {}) {
     context: options.context ?? null,
     selectedModifiers: options.selectedModifiers ?? [],
     longReachPenalty: options.longReachPenalty ?? 0,
+    outOfReach: options.outOfReach === true,
   });
 }

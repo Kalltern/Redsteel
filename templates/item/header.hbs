@@ -382,6 +382,12 @@
             <input type="text" name="system.requiredWeaponTag" value="{{system.requiredWeaponTag}}"
               placeholder="{{localize "REDSTEEL.Item.Ability.FIELDS.requiredWeaponTag.hint"}}" />
           </div>
+
+          {{!-- Extra melee reach in hexes (positioning.mjs weaponReach). --}}
+          <div class="grid-span-1">
+            <label class="resource-label">{{localize "REDSTEEL.Reach.ReachBonus"}}</label>
+            <input type="number" name="system.reachBonus" value="{{system.reachBonus}}" min="0" step="1" data-dtype="Number"/>
+          </div>
         {{/if}}
 
       </div>

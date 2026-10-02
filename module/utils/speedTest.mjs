@@ -19,6 +19,7 @@
 import { withRollBias, tagRollItemAdvantage } from "./rollAdvantage.mjs";
 import { FLOOR_STATUSES } from "./floorInitiative.mjs";
 import { actorHasSpecNode } from "../helpers/specialisations.mjs";
+import { renderVersusTestBlock } from "./attributeFollowup.mjs";
 
 /** The Test Type dropdown value that selects a speed test. */
 export const SPEED_TEST_NAME = "speed";
@@ -146,14 +147,22 @@ function describeSpeedParts(actor, modifier = 0) {
  * @param {number} [data.modifier]
  * @returns {string} HTML.
  */
-export function renderSpeedTestLine({ actor, roll, source, modifier = 0 }) {
+export function renderSpeedTestLine({
+  actor,
+  roll,
+  source,
+  modifier = 0,
+  heading = "",
+}) {
   const tooltip = [
     describeSpeedParts(actor, modifier),
     `Rolled: ${roll.result}`,
     "Click to contest with your own speed test",
   ].join("<br>");
 
-  return `<span class="speed-followup" data-speed="${roll.total}" data-source="${source ?? ""}" data-tooltip="${tooltip}" style="cursor:pointer; text-decoration:underline dotted;">Speed Test: [${roll.total}]</span>`;
+  const line = `<span class="speed-followup" data-speed="${roll.total}" data-source="${source ?? ""}" data-tooltip="${tooltip}"><span class="rs-vs-test__label">Speed Test</span><span class="rs-vs-test__value">${roll.total}</span></span>`;
+  // Same gilded panel as the d100 margin (attributeFollowup.mjs).
+  return renderVersusTestBlock({ heading, line });
 }
 
 /**
@@ -171,7 +180,7 @@ export async function postSpeedTest(actor, { modifier = 0 } = {}) {
   await roll.toMessage({
     speaker: ChatMessage.getSpeaker({ actor }),
     flavor: `<p class="rs-card-headline"><b>Speed Test</b></p>
-<p style="text-align:center;">${renderSpeedTestLine({ actor, roll, source: "", modifier })}</p>`,
+${renderSpeedTestLine({ actor, roll, source: "", modifier })}`,
     rollMode: game.settings.get("core", "rollMode"),
   });
 
