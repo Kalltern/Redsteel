@@ -2,6 +2,7 @@ import { getTraitPills } from "./traitPills.mjs";
 import {
   withRollBias,
   applyDesperateCrit,
+  forfeitAdvantageOnCritFail,
   tagRollBuckets,
   tagRollItemAdvantage,
 } from "./rollAdvantage.mjs";
@@ -1017,7 +1018,6 @@ export async function getAttackRolls(
     tagRollBuckets(attackRoll, "twoHanded");
   }
   await attackRoll.evaluate();
-  const rollResult = attackRoll.dice[0].total;
 
   // Desperate Effort shifts the crit thresholds for this attack.
   const { successThreshold: critSuccessThreshold, failureThreshold: critFailThreshold } =
@@ -1026,6 +1026,9 @@ export async function getAttackRolls(
       criticalSuccessThreshold,
       criticalFailureThreshold,
     );
+  // A fumbling first die forfeits advantage; read the die only after.
+  forfeitAdvantageOnCritFail(attackRoll, critFailThreshold);
+  const rollResult = attackRoll.dice[0].total;
   const critFailure = rollResult >= critFailThreshold;
   // Servant of the Sword: a Riposte always counts as a Critical Hit, unless
   // the dice fumbled (user ruling 2026-10-01).

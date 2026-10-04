@@ -46,6 +46,7 @@ import {
   formatPrice,
 } from "./utils/currency.mjs";
 import { registerRollModifier } from "./utils/rollModifier.mjs";
+import { forfeitAdvantageOnCritFail } from "./utils/rollAdvantage.mjs";
 import { initTooltips } from "./utils/tooltips.mjs";
 import { registerCoreTooltipProviders } from "./utils/tooltipProviders.mjs";
 import { registerFormulaDisplay } from "./utils/formulaDisplay.mjs";
@@ -1838,11 +1839,14 @@ async function executeReroll(message, sourceLabel, { extraFlags = {} } = {}) {
   const rollFormula = message.rolls[0].formula;
   const roll = new Roll(rollFormula);
   await roll.evaluate();
-  const d100Result = roll.dice?.[0]?.total ?? roll.total; // works with 2d100kl/kh
   const criticalSuccessThreshold =
     message.flags?.redsteel?.criticalSuccessThreshold;
   const criticalFailureThreshold =
     message.flags?.redsteel?.criticalFailureThreshold;
+  // The rerolled pair is still an advantage roll: a fumbling first die
+  // forfeits it here too. Read the die only after.
+  forfeitAdvantageOnCritFail(roll, criticalFailureThreshold);
+  const d100Result = roll.dice?.[0]?.total ?? roll.total; // works with 2d100kl/kh
   const critSuccess = d100Result <= criticalSuccessThreshold;
   const critFailure = d100Result >= criticalFailureThreshold;
   const rollName = message.getFlag("redsteel", "rollName");
@@ -3018,6 +3022,8 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
     const wounds = Number(actor.system.stats.graveWounds?.value ?? 0);
     const penalty = 10 * wounds;
     const roll = await new Roll(`${res * 10} - ${penalty} - 1d100`).evaluate();
+    // A picker advantage is forfeit on a fumbling first die (natural 96+).
+    forfeitAdvantageOnCritFail(roll, 96);
     const success = roll.total >= 0;
 
     // Critical failure (same convention as Fear/Burning resolve tests): a

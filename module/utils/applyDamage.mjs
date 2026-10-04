@@ -1656,6 +1656,20 @@ function openDamageSelectionDialog(message, targets) {
         const aimedHit = aimedStrike?.su >= 0 && aimedStrike?.part;
         const aimedPart = aimedHit ? aimedStrike.part : null;
         const npcOverrides = getBodyPartOverrides(t.actor, aimedPart);
+        // A head shot that missed its mark (SU < 0) loses its boons. The +20%
+        // stagger / +10% precision were baked into the effect chances when the
+        // attack rolled, so they come back off the threshold here, the way a
+        // refused Sneak Attack does. Read from the card's SU, so a rerolled
+        // attack is judged on its new margin.
+        const headBoonLost = aimedStrike?.part === "head" && !aimedHit;
+        const headBoonFor = (name) =>
+          !headBoonLost
+            ? 0
+            : name === "stagger"
+              ? AIMED_PARTS.head.staggerBonus
+              : name === "precision"
+                ? AIMED_PARTS.head.precisionBonus
+                : 0;
 
         // Set by the bleed branch below; stays false when the packet carries no
         // bleed at all, which is exactly when Open Wound is most wanted.
@@ -1693,10 +1707,18 @@ function openDamageSelectionDialog(message, targets) {
             const baneBonus =
               name === "precision" && baneVariant ? baneVariant.precision : 0;
 
-            const modifiedChance = effect.chance + targetMod + npcBonus + baneBonus;
+            const headLoss = headBoonFor(name);
+            const modifiedChance =
+              effect.chance + targetMod + npcBonus + baneBonus - headLoss;
 
             const displayChance = modifiedChance;
             let extraInfo = npcBonus ? ` <em style="color:#c8a84b;">(+${npcBonus}% body part)</em>` : "";
+            if (headLoss) {
+              extraInfo += ` <em style="color:#e88;">(${game.i18n.format(
+                "REDSTEEL.Actor.BodyParts.HeadBoonLost",
+                { amount: headLoss },
+              )})</em>`;
+            }
             let success = effect.roll <= modifiedChance;
 
             if (name === "bleed") {

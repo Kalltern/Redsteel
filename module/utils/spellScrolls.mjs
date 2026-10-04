@@ -48,7 +48,11 @@ import {
   variantChildIds,
 } from "./spellbook.mjs";
 import { performCast } from "./castSpell.mjs";
-import { withRollBias, tagRollSkill } from "./rollAdvantage.mjs";
+import {
+  withRollBias,
+  tagRollSkill,
+  forfeitAdvantageOnCritFail,
+} from "./rollAdvantage.mjs";
 import {
   getRerollTokensForSkill,
   getEligibleRerolls,
@@ -364,6 +368,8 @@ export async function rollArcana(actor, difficulty) {
   const roll = new Roll(`${total} - 1d100`, withRollBias({}, actor));
   tagRollSkill(roll, "arcana");
   await roll.evaluate();
+  // A fumbling first die forfeits advantage; read the die only after.
+  forfeitAdvantageOnCritFail(roll, critFailure);
   const d100 = roll.dice?.[0]?.total ?? total - roll.total;
 
   return {

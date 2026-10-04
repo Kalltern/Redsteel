@@ -2,6 +2,7 @@ import { getTraitPills } from "./traitPills.mjs";
 import {
   withRollBias,
   applyDesperateCrit,
+  forfeitAdvantageOnCritFail,
   tagRollSkill,
 } from "./rollAdvantage.mjs";
 import { getDefenseRerollTokens } from "./rerolls.mjs";
@@ -1749,6 +1750,11 @@ export async function defenseRoll({
       tagRollSkill(roll, profile.skillKey);
       if (auto) tagAutoDefenseRoll(roll);
       await roll.evaluate();
+      // Settle a forfeit advantage before the die is read for Bad Dodge.
+      forfeitAdvantageOnCritFail(
+        roll,
+        applyDesperateCrit(roll, 0, criticalFailureThreshold).failureThreshold,
+      );
       const d100 = roll.dice.find((d) => d.faces === 100);
       const d100Result = d100?.total;
       // Read off the raw die alone: the margin has no say in it, and gating on
@@ -1998,8 +2004,6 @@ export async function defenseRoll({
       maneuver = null,
     } = {},
   ) {
-    const rollResult = roll.dice[0].total;
-
     // Deflect (Odklonění): auto-roll the chance and surface it on the card,
     // mirroring how attack "precision" is displayed. Manual beyond the roll.
     let deflectHTML = "";
@@ -2021,6 +2025,9 @@ export async function defenseRoll({
       criticalSuccessThreshold,
       criticalFailureThreshold,
     );
+    // A fumbling first die forfeits advantage; read the die only after.
+    forfeitAdvantageOnCritFail(roll, failureThreshold);
+    const rollResult = roll.dice[0].total;
     const critSuccess = rollResult <= successThreshold;
     const critFailure = rollResult >= failureThreshold;
 

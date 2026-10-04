@@ -14,7 +14,11 @@ import {
 import { getTraitPills } from "../utils/traitPills.mjs";
 import { AIMED_PARTS } from "../utils/aimedStrike.mjs";
 import { gatherHerbs, promptHerbMode } from "../utils/gatherHerbs.mjs";
-import { tagRollSkill, applyDesperateCrit } from "../utils/rollAdvantage.mjs";
+import {
+  tagRollSkill,
+  applyDesperateCrit,
+  forfeitAdvantageOnCritFail,
+} from "../utils/rollAdvantage.mjs";
 import {
   getActorRerollPools,
   toggleRerollCharge,
@@ -3148,7 +3152,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       if (isSkillRoll) tagRollSkill(roll, skillKey);
       await roll.evaluate();
 
-      const d100Result = roll.dice[0]?.total; // Extract the d100 result
+      let d100Result = roll.dice[0]?.total; // Extract the d100 result
       let skillData = null;
       // Only evaluate critical status if it's a skill or combat skill roll
       if (isSkillRoll) {
@@ -3183,6 +3187,10 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
             skillData.criticalSuccessThreshold,
             skillData.criticalFailureThreshold,
           );
+          // A fumbling first die forfeits advantage; re-read the die after.
+          if (forfeitAdvantageOnCritFail(roll, failureThreshold)) {
+            d100Result = roll.dice[0]?.total;
+          }
           const criticalMessage = this.evaluateCriticalSuccess(
             d100Result,
             successThreshold,

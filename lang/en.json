@@ -4287,6 +4287,7 @@
         "Armored": "armored. Click to expose this location.",
         "Exposed": "exposed — a landed aimed strike here ignores this creature's armor. Click to armor it.",
         "ArmorBypassed": "unarmored, {amount} armor ignored",
+        "HeadBoonLost": "−{amount}% aimed head shot missed",
         "head": "Head",
         "hands": "Hands",
         "legs": "Legs"

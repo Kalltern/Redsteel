@@ -4287,6 +4287,7 @@
         "Armored": "chráněno zbrojí. Kliknutím místo odkryješ.",
         "Exposed": "odkryto — mířený zásah sem ignoruje zbroj tohoto tvora. Kliknutím místo zakryješ.",
         "ArmorBypassed": "bez zbroje, ignorováno {amount} zbroje",
+        "HeadBoonLost": "−{amount}% mířená rána do hlavy minula",
         "head": "Hlava",
         "hands": "Ruce",
         "legs": "Nohy"

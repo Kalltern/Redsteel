@@ -4,6 +4,7 @@ import {
   tagRollSkill,
   tagRollBuckets,
   applyDesperateCrit,
+  forfeitAdvantageOnCritFail,
 } from "./rollAdvantage.mjs";
 import { getAttackRerollTokens } from "./rerolls.mjs";
 import { resolveAimOnAttack } from "./aim.mjs";
@@ -189,7 +190,6 @@ export async function throwExplosiveItem(
   tagRollSkill(attackRoll, "throwing");
   tagRollBuckets(attackRoll, "attack");
   await attackRoll.evaluate();
-  const rollResult = attackRoll.dice[0].total;
 
   const criticalSuccessThreshold = throwing.criticalSuccessThreshold;
   const criticalFailureThreshold = throwing.criticalFailureThreshold;
@@ -202,6 +202,9 @@ export async function throwExplosiveItem(
     criticalSuccessThreshold,
     criticalFailureThreshold,
   );
+  // A fumbling first die forfeits advantage; read the die only after.
+  forfeitAdvantageOnCritFail(attackRoll, critFailThreshold);
+  const rollResult = attackRoll.dice[0].total;
   const critSuccess = rollResult <= critSuccessThreshold;
   const critFailure = rollResult >= critFailThreshold;
 

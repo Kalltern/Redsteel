@@ -7,6 +7,7 @@ import {
   pickRerollPool,
 } from "./rerolls.mjs";
 import { scheduleRerollRefresh } from "./calendariaIntegration.mjs";
+import { forfeitAdvantageOnCritFail } from "./rollAdvantage.mjs";
 
 // Only a winner who can Dominate may seize control: any NPC, or a player
 // character who has unlocked the Mentalist "Domination" (ovladnuti) perk.
@@ -702,6 +703,8 @@ function buildSide(token) {
 async function rollSide({ rating, critSuccess, critFailure }) {
   const roll = new Roll("@rating - 1d100", { rating });
   await roll.evaluate();
+  // A picker advantage is forfeit on a fumbling first die.
+  forfeitAdvantageOnCritFail(roll, critFailure);
   const raw = roll.dice[0].total;
   return {
     roll,

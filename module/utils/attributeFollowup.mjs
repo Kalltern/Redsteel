@@ -17,7 +17,11 @@
  * Tests are routinely cross-attribute ("Test Síly versus Test Síly/Odolnosti").
  */
 
-import { withRollBias, tagRollSkill } from "./rollAdvantage.mjs";
+import {
+  withRollBias,
+  tagRollSkill,
+  forfeitAdvantageOnCritFail,
+} from "./rollAdvantage.mjs";
 import { spend, getSpent, setSpent } from "./actionTracker.mjs";
 import { versusTestBonus } from "./testRating.mjs";
 
@@ -442,6 +446,8 @@ async function rollAttributeFollowup(
 
   // Primary attribute rolls honour critical thresholds (based on the raw d100).
   const attr = actor.system.attributes[key];
+  // A fumbling first die forfeits advantage; read the die only after.
+  forfeitAdvantageOnCritFail(roll, attr?.criticalFailureThreshold);
   const d100 = roll.dice[0]?.total;
   let criticalMessage = "";
   if (d100 != null) {

@@ -25,7 +25,11 @@
  * second crafting mode, not a modifier) and the mutation nodes (no system).
  */
 
-import { withRollBias, tagRollSkill } from "./rollAdvantage.mjs";
+import {
+  withRollBias,
+  tagRollSkill,
+  forfeitAdvantageOnCritFail,
+} from "./rollAdvantage.mjs";
 import { actorHasSpecNode } from "../helpers/specialisations.mjs";
 
 /**
@@ -1048,6 +1052,8 @@ async function rollAlchemyTest(actor, stationKey, mods, difficulty = 0) {
   const roll = new Roll(`${total} - 1d100`, rollData);
   tagRollSkill(roll, "alchemy");
   await roll.evaluate();
+  // A fumbling first die forfeits advantage; read the die only after.
+  forfeitAdvantageOnCritFail(roll, critFail);
   const d100 = roll.dice?.[0]?.total ?? total - roll.total;
 
   return {

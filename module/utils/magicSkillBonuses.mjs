@@ -1,6 +1,10 @@
 import { getTraitPills } from "./traitPills.mjs";
 import { getSpellPower } from "./spellPower.mjs";
-import { withRollBias, applyDesperateCrit } from "./rollAdvantage.mjs";
+import {
+  withRollBias,
+  applyDesperateCrit,
+  forfeitAdvantageOnCritFail,
+} from "./rollAdvantage.mjs";
 import {
   getBloodSchoolRankBonus,
   getCritDegreeTriggers,
@@ -1256,10 +1260,12 @@ export async function performAttackRoll(
 
   const attackRoll = new Roll(attackRollFormula, withRollBias(rollData, actor));
   await attackRoll.evaluate();
-  const rollResult = attackRoll.dice[0].total;
   // Desperate Effort shifts crit thresholds for this spell attack.
   const { successThreshold: critSuccessT, failureThreshold: critFailT } =
     applyDesperateCrit(attackRoll, critSuccessThreshold, critFailureThreshold);
+  // A fumbling first die forfeits advantage; read the die only after.
+  forfeitAdvantageOnCritFail(attackRoll, critFailT);
+  const rollResult = attackRoll.dice[0].total;
   const displayCritSuccess = rollResult <= critSuccessT;
   const displayCritFailure = rollResult >= critFailT;
 

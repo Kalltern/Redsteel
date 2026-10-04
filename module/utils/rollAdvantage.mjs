@@ -197,3 +197,49 @@ export function applyDesperateCrit(roll, successThreshold, failureThreshold) {
     failureThreshold: failureThreshold + 5 + fatigueDegree,
   };
 }
+
+/**
+ * Ruleset: advantage is forfeit when the FIRST die of the pair is a Critical
+ * Failure. The fumble stands and the second die is thrown away, so advantage
+ * can never rescue a roll from a crit fail.
+ *
+ * Mutates an evaluated advantage roll (`2d100kl`) in place: the first result is
+ * made the kept one, the second discarded, and the cached total recomputed, so
+ * `roll.total`, `roll.dice[0].total` and the chat tooltip all agree afterwards.
+ * Call it with the FINAL failure threshold (after applyDesperateCrit and any
+ * other shift) and before reading the die. A no-op on anything that is not a
+ * two-die keep-lowest d100, so it is safe at every crit evaluation.
+ *
+ * Disadvantage needs nothing: keep-highest already keeps a fumbling die.
+ *
+ * Tags `options.redsteel.advantageForfeit = true` when it fired.
+ * @param {Roll} roll  an evaluated roll
+ * @param {number} failureThreshold  die result at or above which is a crit fail
+ * @returns {boolean} whether the advantage was forfeit
+ */
+export function forfeitAdvantageOnCritFail(roll, failureThreshold) {
+  const die = roll?.dice?.find((d) => d.faces === 100);
+  if (!die || die.results?.length !== 2) return false;
+  if (!die.modifiers?.some((m) => /^kl/i.test(m))) return false;
+  // No threshold means no fumble to forfeit on (Number(null) would read as 0).
+  if (failureThreshold == null || failureThreshold === "") return false;
+  const threshold = Number(failureThreshold);
+  if (!Number.isFinite(threshold)) return false;
+
+  const [first, second] = die.results;
+  if (first.result < threshold || first.active) return false;
+
+  first.active = true;
+  first.discarded = false;
+  second.active = false;
+  second.discarded = true;
+  // DiceTerm#total sums the active results; the Roll caches its own total.
+  roll._total = roll._evaluateTotal();
+  if (die.total !== first.result) {
+    console.warn("Redsteel | advantage forfeit: die total did not follow the kept result", die);
+  }
+
+  roll.options ??= {};
+  roll.options.redsteel = { ...(roll.options.redsteel ?? {}), advantageForfeit: true };
+  return true;
+}

@@ -1,4 +1,7 @@
-import { tagRollSkill } from "./rollAdvantage.mjs";
+import {
+  tagRollSkill,
+  forfeitAdvantageOnCritFail,
+} from "./rollAdvantage.mjs";
 import { resetActorRerolls } from "./rerolls.mjs";
 import { getTraitPills } from "./traitPills.mjs";
 import { gainBloodFromBleed, bloodGainNote } from "./bloodPool.mjs";
@@ -1241,6 +1244,8 @@ async function performFirstAid(actor, token, extraPenalty = 0, { useSalve = fals
 
   await firstAidRoll.evaluate({ async: true });
 
+  // A fumbling first die forfeits advantage; read the die only after.
+  forfeitAdvantageOnCritFail(firstAidRoll, criticalFailureThreshold);
   const d100 = firstAidRoll.dice[0]?.total;
 
   const bonus = healbonus ? `${healbonus}` : "";

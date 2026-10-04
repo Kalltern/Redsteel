@@ -32,7 +32,11 @@
  * and the final per-substance totals.
  */
 
-import { withRollBias, tagRollSkill } from "./rollAdvantage.mjs";
+import {
+  withRollBias,
+  tagRollSkill,
+  forfeitAdvantageOnCritFail,
+} from "./rollAdvantage.mjs";
 
 const PACK_ID = "redsteel.redsteel-items";
 
@@ -167,6 +171,8 @@ export async function gatherHerbs(actor, skillKey, skillData) {
     const skillRoll = new Roll(`${rating} - 1d100`, withRollBias({}, actor));
     tagRollSkill(skillRoll, skillKey);
     const roll = await skillRoll.evaluate();
+    // A fumbling first die forfeits advantage; read the die only after.
+    forfeitAdvantageOnCritFail(roll, critFail);
     const d100 = roll.dice?.[0]?.total ?? rating - roll.total;
     state.d100 = d100;
     state.margin = roll.total;
