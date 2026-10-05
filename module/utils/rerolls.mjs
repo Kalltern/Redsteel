@@ -29,6 +29,11 @@ import { getTopArmorWeight } from "./weaponMaster.mjs";
  *
  * Legacy features (no `pools`, only `system.reroll.{name,value,active}`) are read
  * transparently as a single universal pool so they keep working until re-saved.
+ *
+ * A specialisation node can own a pool too (see {@link NODE_REROLL_POOLS}).
+ * It has no item: its spent count lives on the actor and its `itemId` is a
+ * synthetic `node-<spec>-<node>` id, which every function here that takes an
+ * itemId understands.
  */
 
 /**
@@ -305,6 +310,7 @@ export function getFeatureRerollPools(item) {
         skills,
         universal,
         critFail: hasCritFailKey(pool?.skillsRaw),
+        requiresArmor: item.flags?.redsteel?.rerollRequiresArmor ?? null,
         max,
         used,
         remaining: Math.max(0, max - used),
@@ -342,6 +348,109 @@ export function getFeatureRerollPools(item) {
       combatRemaining: Infinity,
     },
   ];
+}
+
+/* -------------------------------------------- */
+/*  Specialisation node pools                   */
+/* -------------------------------------------- */
+
+/**
+ * Reroll pools owned by a specialisation node rather than a feature item. The
+ * pool exists while the node is unlocked; `requiresArmor` limits it to a
+ * topmost armor class, read at reroll time.
+ */
+export const NODE_REROLL_POOLS = [
+  {
+    // Mistr zbraní → Zbrojnoš I, heavy armor: "Možnost 1x za den opakovat hod
+    // na Obranu nebo Kryt". The light branch is in applyDamage.mjs.
+    spec: "weaponMaster",
+    node: "zbrojnos1",
+    skillsRaw: "meleeDefense, rangedDefense",
+    max: 1,
+    requiresArmor: "heavy",
+    img: "icons/equipment/chest/breastplate-collared-steel.webp",
+  },
+];
+
+/** Actor flag holding node pool spend: { "<spec>-<node>": {used, combatUsed} }. */
+const NODE_REROLL_FLAG = "nodeRerolls";
+const NODE_POOL_PREFIX = "node-";
+
+const nodePoolId = (def) => `${NODE_POOL_PREFIX}${def.spec}-${def.node}`;
+
+/** True for the synthetic itemId of a node-owned pool. */
+export function isNodeRerollId(itemId) {
+  return typeof itemId === "string" && itemId.startsWith(NODE_POOL_PREFIX);
+}
+
+function findNodePoolDef(itemId) {
+  return NODE_REROLL_POOLS.find((def) => nodePoolId(def) === itemId) ?? null;
+}
+
+function hasNode(actor, def) {
+  const spec = actor?.system?.specialisations?.[def.spec];
+  return !!(spec?.active && spec.nodes?.[def.node]);
+}
+
+/** Stored spend of one node pool, as {used, combatUsed}. */
+function getNodePoolState(actor, def) {
+  const all = actor?.getFlag?.("redsteel", NODE_REROLL_FLAG) ?? {};
+  const state = all[`${def.spec}-${def.node}`] ?? {};
+  return {
+    used: Math.max(0, Number(state.used) || 0),
+    combatUsed: Math.max(0, Number(state.combatUsed) || 0),
+  };
+}
+
+async function setNodePoolState(actor, def, state) {
+  await actor.setFlag("redsteel", NODE_REROLL_FLAG, {
+    [`${def.spec}-${def.node}`]: state,
+  });
+}
+
+/** Pool descriptors for every node pool the actor has unlocked. */
+function getNodeRerollPools(actor) {
+  return NODE_REROLL_POOLS.filter((def) => hasNode(actor, def)).map((def) => {
+    const max = def.max;
+    const state = getNodePoolState(actor, def);
+    const used = Math.min(max, state.used);
+    const combatMax = parseCombatMax(def.skillsRaw);
+    const combatUsed = Math.min(used, state.combatUsed);
+    const skills = parseSkillList(def.skillsRaw);
+    const itemId = nodePoolId(def);
+    return {
+      itemId,
+      poolIndex: 0,
+      key: `${itemId}:0`,
+      label: game.i18n.localize(
+        `REDSTEEL.Actor.Specialisations.${def.spec}.nodes.${def.node}.label`,
+      ),
+      img: def.img,
+      skills,
+      universal: skills.length === 0,
+      critFail: hasCritFailKey(def.skillsRaw),
+      requiresArmor: def.requiresArmor ?? null,
+      max,
+      used,
+      remaining: Math.max(0, max - used),
+      combatMax,
+      combatUsed,
+      combatRemaining: Math.max(0, combatMax - combatUsed),
+    };
+  });
+}
+
+/**
+ * Restore a node pool to full. Used by Long Rest and the Calendaria refresh.
+ * @returns {Promise<boolean>} true when anything was spent.
+ */
+export async function refreshNodeRerollPool(actor, itemId) {
+  const def = findNodePoolDef(itemId);
+  if (!def) return false;
+  const state = getNodePoolState(actor, def);
+  if (!state.used && !state.combatUsed) return false;
+  await setNodePoolState(actor, def, { used: 0, combatUsed: 0 });
+  return true;
 }
 
 /**
@@ -398,6 +507,7 @@ export function getActorRerollPools(actor) {
     // Skip empty pools (max 0) so the display only shows real reroll sources.
     out.push(...getFeatureRerollPools(item).filter((pool) => pool.max > 0));
   }
+  out.push(...getNodeRerollPools(actor));
   return sortByActorOrder(actor, out);
 }
 
@@ -430,11 +540,10 @@ export function getEligibleRerolls(actor, tokens, { critFailure = false } = {}) 
   return getActorRerollPools(actor).filter((pool) => {
     if (pool.remaining <= 0) return false;
     if (critFailure && !pool.critFail) return false;
-    // A pool whose feature needs a class of armor worn on top (Armiger, heavy:
-    // `flags.redsteel.rerollRequiresArmor: "heavy"`) is only usable while that
-    // armor is the topmost layer. Read now, at reroll time.
-    const requiredArmor = actor.items.get(pool.itemId)?.flags?.redsteel
-      ?.rerollRequiresArmor;
+    // A pool that needs a class of armor worn on top (Zbrojnoš I, heavy; or a
+    // feature flagged `rerollRequiresArmor`) is only usable while that armor
+    // is the topmost layer. Read now, at reroll time.
+    const requiredArmor = pool.requiresArmor;
     if (requiredArmor && getTopArmorWeight(actor) !== requiredArmor) {
       return false;
     }
@@ -454,6 +563,17 @@ export function getEligibleRerolls(actor, tokens, { critFailure = false } = {}) 
  * @returns {Promise<boolean>} true when a charge was consumed.
  */
 export async function consumeReroll(actor, itemId, poolIndex, { combat = false } = {}) {
+  if (isNodeRerollId(itemId)) {
+    const def = findNodePoolDef(itemId);
+    if (!def || !hasNode(actor, def)) return false;
+    const state = getNodePoolState(actor, def);
+    if (state.used >= def.max) return false;
+    await setNodePoolState(actor, def, {
+      used: state.used + 1,
+      combatUsed: state.combatUsed + (combat ? 1 : 0),
+    });
+    return true;
+  }
   const item = actor?.items?.get(itemId);
   if (!item) return false;
   const reroll = item.system?.reroll ?? {};
@@ -495,6 +615,18 @@ export async function consumeReroll(actor, itemId, poolIndex, { combat = false }
  * @param {number} poolIndex
  */
 export async function toggleRerollCharge(actor, itemId, poolIndex) {
+  if (isNodeRerollId(itemId)) {
+    const def = findNodePoolDef(itemId);
+    if (!def) return;
+    const { used, combatUsed } = getNodePoolState(actor, def);
+    // Same cycle as an item pool: spend one, wrap back to full.
+    await setNodePoolState(
+      actor,
+      def,
+      used < def.max ? { used: used + 1, combatUsed } : { used: 0, combatUsed: 0 },
+    );
+    return;
+  }
   const item = actor?.items?.get(itemId);
   if (!item) return;
   const reroll = item.system?.reroll ?? {};
@@ -660,7 +792,14 @@ export async function resetActorRerolls(actor) {
     if (changed) updates.push(update);
   }
 
-  if (!updates.length) return false;
+  let nodeChanged = false;
+  for (const def of NODE_REROLL_POOLS) {
+    const itemId = nodePoolId(def);
+    if (locked.has(`${itemId}:0`)) continue;
+    if (await refreshNodeRerollPool(actor, itemId)) nodeChanged = true;
+  }
+
+  if (!updates.length) return nodeChanged;
   await actor.updateEmbeddedDocuments("Item", updates);
   return true;
 }

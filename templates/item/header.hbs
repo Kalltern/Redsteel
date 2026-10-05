@@ -328,8 +328,13 @@
             <label class="resource-label" title="{{localize "REDSTEEL.Item.Ability.FIELDS.versusAgainst.hint"}}">
               {{localize "REDSTEEL.Item.Ability.FIELDS.versusAgainst.label"}}
             </label>
-            <input type="text" name="system.versusAgainst" value="{{system.versusAgainst}}"
-              placeholder="{{localize "REDSTEEL.Item.Ability.FIELDS.versusAgainst.placeholder"}}" />
+            <div class="rs-versus-against">
+              {{#each versusAgainstOptions as |opt|}}
+                <label class="rs-versus-against__opt" data-tooltip="{{opt.label}}">
+                  <input type="checkbox" data-versus-against="{{opt.key}}" {{checked opt.checked}} {{#unless ../editable}}disabled{{/unless}} />{{opt.abbr}}
+                </label>
+              {{/each}}
+            </div>
           </div>
 
           <div class="grid-span-1">
@@ -686,8 +691,13 @@
             <label class="resource-label" title="{{localize "REDSTEEL.Item.Ability.FIELDS.versusAgainst.hint"}}">
               {{localize "REDSTEEL.Item.Ability.FIELDS.versusAgainst.label"}}
             </label>
-            <input type="text" name="system.versusAgainst" value="{{system.versusAgainst}}"
-              placeholder="{{localize "REDSTEEL.Item.Ability.FIELDS.versusAgainst.placeholder"}}" />
+            <div class="rs-versus-against">
+              {{#each versusAgainstOptions as |opt|}}
+                <label class="rs-versus-against__opt" data-tooltip="{{opt.label}}">
+                  <input type="checkbox" data-versus-against="{{opt.key}}" {{checked opt.checked}} {{#unless ../editable}}disabled{{/unless}} />{{opt.abbr}}
+                </label>
+              {{/each}}
+            </div>
           </div>
          </div>
          <div class="grid grid-3col">

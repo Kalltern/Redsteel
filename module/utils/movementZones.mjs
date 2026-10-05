@@ -150,6 +150,18 @@ export const MOVEMENT_MODES = {
     icon: "fa-light fa-arrows-spin",
     labelKey: "REDSTEEL.Bg3Hotbar.Suggest.QuickFeet",
   },
+  // Half Pirouette (Půlpirueta): one hex around the opponent after a landed
+  // Counterattack or Riposte, usually on somebody else's turn. The lock's
+  // `around` names the opponent; the book says the move provokes no
+  // Opportunity Attack (`free`).
+  halfPirouette: {
+    budgetFn: () => 1,
+    color: 0xd8c38a,
+    actions: 0,
+    free: true,
+    icon: "fa-light fa-arrows-spin",
+    labelKey: "REDSTEEL.Bg3Hotbar.Suggest.HalfPirouette",
+  },
 };
 
 const PREVIEW_LAYER = "redsteel-move-preview";

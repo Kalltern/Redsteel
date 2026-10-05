@@ -10,6 +10,7 @@ import { getStrikeId } from "./strikes.mjs";
 import {
   MD_BASE_INITIATION,
   applyMentalCharge,
+  applyMentalStrain,
   getInitiationBonus,
   promptMentalCharge,
 } from "./mentalDuel.mjs";
@@ -610,6 +611,9 @@ async function maybeStartMentalDuel(
     );
     return;
   }
+
+  // A landed Mind Bending strains the target whether or not the duel starts.
+  await applyMentalStrain(targetToken);
 
   // 35% to initiate, plus the Mentalist "Zahájení +10%" chain; a Critical
   // success forces it (100%) and needs no help from either perk or Mind.

@@ -87,23 +87,54 @@ ${
  */
 export async function renderDamageWithSneak(damageRoll, sneakRoll = null) {
   if (!damageRoll) return "";
-  if (!sneakRoll) return damageRoll.render();
+  return renderMergedRolls([damageRoll, sneakRoll]);
+}
+
+/**
+ * Stitch several evaluated Rolls into one display box (see
+ * renderDamageWithSneak). A merge that fails falls back to one box per roll,
+ * which is ugly but honest; hiding dice would understate the damage.
+ */
+async function renderMergedRolls(rolls) {
+  const parts = rolls.filter(Boolean);
+  if (parts.length === 1) return parts[0].render();
 
   try {
-    const combined = Roll.fromTerms([
-      ...damageRoll.terms,
-      new foundry.dice.terms.OperatorTerm({ operator: "+" }),
-      ...sneakRoll.terms,
-    ]);
-    return await combined.render();
+    const terms = parts.flatMap((roll, i) =>
+      i === 0
+        ? roll.terms
+        : [new foundry.dice.terms.OperatorTerm({ operator: "+" }), ...roll.terms],
+    );
+    return await Roll.fromTerms(terms).render();
   } catch (error) {
-    // Never swallow the dice. A merge that fails falls back to two boxes,
-    // which is ugly but honest; hiding the sneak roll would understate the
-    // damage the card is actually doing.
     console.warn(
-      "Redsteel | could not merge the Sneak Attack dice into the damage roll",
+      "Redsteel | could not merge the extra damage dice into the damage roll",
       error,
     );
-    return `${await damageRoll.render()}${await sneakRoll.render()}`;
+    const boxes = await Promise.all(parts.map((roll) => roll.render()));
+    return boxes.join("");
   }
+}
+
+/**
+ * The damage column of an attack card: the normal tray, plus a hidden Bane
+ * tray with the Bane bonus die folded in when the card carries a Bane packet.
+ *
+ * The Bane die only lands on targets the Bane applies to, so it cannot sit in
+ * the tray every reader sees. Instead the Bane pill (redsteel.mjs) swaps the
+ * two trays in step with the `.rs-attack-face` it flips, so the dice under
+ * "Damage Roll" always add up to the Damage number shown beside them.
+ *
+ * @param {Roll} damageRoll
+ * @param {Roll|null} sneakRoll  a declared sneak's dice, or null
+ * @param {Roll|null} baneRoll   the Bane bonus die, or null without a packet
+ * @returns {Promise<string>}
+ */
+export async function renderDamageTrays(damageRoll, sneakRoll = null, baneRoll = null) {
+  const normal = await renderDamageWithSneak(damageRoll, sneakRoll);
+  if (!damageRoll || !baneRoll) return normal;
+
+  const bane = await renderMergedRolls([damageRoll, sneakRoll, baneRoll]);
+  return `<div class="rs-damage-tray" data-tray="normal">${normal}</div>
+<div class="rs-damage-tray" data-tray="bane" style="display:none;">${bane}</div>`;
 }

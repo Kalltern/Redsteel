@@ -501,6 +501,29 @@ export async function grantManeuverAim(aimerToken, targetToken) {
   return { before: held, after: readAim(aimer)?.stacks ?? 0 };
 }
 
+/**
+ * Add `stacks` Aim from `aimerToken` toward `targetToken`, one at a time
+ * through addAimStackOn, so a switch of target costs what any other switch
+ * costs (Duelist's Stance included). Half Pirouette's grant
+ * (halfPirouette.mjs).
+ *
+ * @param {TokenDocument|Token} aimerToken
+ * @param {TokenDocument|Token} targetToken
+ * @param {number} stacks
+ * @returns {Promise<{before: number, after: number}>}
+ */
+export async function grantAimStacks(aimerToken, targetToken, stacks) {
+  const aimer = tokenDoc(aimerToken);
+  const target = tokenDoc(targetToken);
+  if (!aimer || !target || !(stacks > 0)) return { before: 0, after: 0 };
+
+  const { held } = previewManeuverAim(aimer, target);
+  const perks = livePerks(aimer.actor);
+  for (let n = 0; n < stacks; n++) await addAimStackOn(aimer, target, perks);
+
+  return { before: held, after: readAim(aimer)?.stacks ?? 0 };
+}
+
 /* -------------------------------------------- */
 /*  Attack interaction                          */
 /* -------------------------------------------- */

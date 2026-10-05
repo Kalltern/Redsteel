@@ -1089,7 +1089,7 @@ export function getFeaturePriceForItem(actor, item) {
 export function getOwnedFeatures(actor) {
   return (actor?.items?.contents ?? [])
     .filter((item) => item.type === "feature" && item.system?.option === "feature")
-    // Auto-granted items (abilityGrants.mjs, e.g. Armiger) are never bought:
+    // Auto-granted items (abilityGrants.mjs) are never bought:
     // they must not count as spent or offer a refund.
     .filter((item) => !item.flags?.redsteel?.grantedAbility)
     .map((item) => ({ item, price: getFeaturePriceForItem(actor, item) }));

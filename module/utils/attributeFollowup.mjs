@@ -478,7 +478,7 @@ async function rollAttributeFollowup(
   );
   const freedNote = await settleBreakFree(settled.followup, roll.total);
   let flavor = `<p class="rs-card-headline"><b>${rollName}</b></p>
-${renderVersusOutcome(roll.total)}${settled.note}${freedNote}`;
+${renderOwnMargin(roll, settled.followup)}${renderVersusOutcome(roll.total)}${settled.note}${freedNote}`;
   if (criticalMessage) {
     flavor += `<hr><p class="rs-card-headline"><b>${criticalMessage}</b></p>`;
   }
@@ -524,6 +524,31 @@ export function renderVersusOutcome(total) {
         ? `<b>Loses</b> the contest by ${gap}.`
         : "<b>Tie</b>, so the initiator wins.";
   return `<p style="text-align:center;">${outcome}</p>`;
+}
+
+/**
+ * The contester's own margin beside the one they answered, so a later reroll
+ * by the initiator can be read against it at a glance instead of being worked
+ * back out of the gap. A fresh contest rolled the initiator's die in the same
+ * formula (its second 1d100), so their margin is read off that die.
+ *
+ * @param {Roll} roll         The contester's evaluated roll.
+ * @param {object} followup   The `versusFollowup` flag ({margin, chance?}).
+ * @returns {string} HTML, or "" when the opposing margin cannot be read.
+ */
+export function renderOwnMargin(roll, followup) {
+  let opposing = Number(followup?.margin);
+  if (Number.isFinite(followup?.chance)) {
+    const theirDie = roll.dice?.[1]?.total;
+    if (!Number.isFinite(theirDie)) return "";
+    opposing = followup.chance - theirDie;
+  }
+  if (!Number.isFinite(opposing)) return "";
+  const text = game.i18n.format("REDSTEEL.Versus.OwnMargin", {
+    own: roll.total + opposing,
+    opposing,
+  });
+  return `<p style="text-align:center;">${text}</p>`;
 }
 
 /**

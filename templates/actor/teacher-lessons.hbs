@@ -1,0 +1,35 @@
+{{!-- The lessons pop-up beside a teacher badge (teacherLessons.mjs). One
+      diamond per day of teaching; the last one ticked grants the teacher. --}}
+<div class="rs-lessons-inner">
+  <header class="rs-lessons-head">
+    <i class="fas fa-graduation-cap"></i>
+    <span class="rs-lessons-title">{{title}}</span>
+    <b class="rs-lessons-tier">{{localize "REDSTEEL.Learn.Lessons.teacher"}} {{tier}}</b>
+    <a class="rs-lessons-close" data-lesson-close><i class="fas fa-xmark"></i></a>
+  </header>
+  <div class="rs-lessons-diamonds">
+    {{#each diamonds}}
+    <a class="rs-lessons-day {{#if this.filled}}is-filled{{/if}} {{#unless @root.editable}}is-readonly{{/unless}}"
+       {{#if @root.editable}}data-lesson-tick="{{this.index}}"{{/if}}><span></span></a>
+    {{/each}}
+  </div>
+  <div class="rs-lessons-status">
+    <span>{{progress}}</span>
+    {{#if granted}}
+    <b class="is-done">{{localize "REDSTEEL.Learn.Lessons.taught"}}</b>
+    {{else}}
+    <b>{{leftLabel}}</b>
+    {{/if}}
+  </div>
+  <ul class="rs-lessons-mods">
+    <li><span>{{localize "REDSTEEL.Learn.Lessons.base"}}</span><em>{{baseLabel}}</em></li>
+    {{#each speedUps}}
+    <li><span>{{this.label}}</span><em>{{this.days}}</em></li>
+    {{/each}}
+    <li>
+      <label><input type="checkbox" data-lesson-mentor {{checked mentor}} {{#unless editable}}disabled{{/unless}}>
+        {{localize "REDSTEEL.Learn.Lessons.mentor"}}</label>
+      <em>{{mentorDays}}</em>
+    </li>
+  </ul>
+</div>

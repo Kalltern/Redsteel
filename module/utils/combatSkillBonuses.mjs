@@ -7,7 +7,10 @@ import {
   tagRollItemAdvantage,
 } from "./rollAdvantage.mjs";
 import { AIMED_PARTS } from "./aimedStrike.mjs";
-import { getAttackRerollTokens } from "./rerolls.mjs";
+import {
+  getAttackRerollTokens,
+  getRerollTokensForSkill,
+} from "./rerolls.mjs";
 import { hasHtmlContent } from "./chatBlocks.mjs";
 import {
   isSpeedTest,
@@ -188,6 +191,9 @@ export async function getNonWeaponAbility(actor, ability) {
   let concatRollAndDescription = ability.system.description;
   let attributeTestRoll = null;
   let speedTestRoll = null;
+  // The skill/attribute key the Test Type rolled, so a pool scoped to it
+  // (Muscular: "str") can reroll the card. Null for a Speed Test or no test.
+  let testSkillKey = null;
   // The gilded contest panel, appended last so it always closes the
   // description. Both renderers return the whole panel.
   let versusTestBlock = "";
@@ -212,6 +218,7 @@ export async function getNonWeaponAbility(actor, ability) {
 
     // 1️⃣ Leadership special rule FIRST
     if (lowerTestName === "leadership") {
+      testSkillKey = "leadership";
       baseValue =
         actor.type === "npc"
           ? (actor.system.attributes.cha?.value ?? 0)
@@ -220,17 +227,20 @@ export async function getNonWeaponAbility(actor, ability) {
 
     // 2️⃣ Combat Skills
     else if (actor.system.combatSkills?.[lowerTestName]) {
+      testSkillKey = lowerTestName;
       baseValue = actor.system.combatSkills[lowerTestName]?.rating ?? 0;
     }
 
     // 3️⃣ Other Skills
     else if (actor.system.skills?.[lowerTestName]) {
+      testSkillKey = lowerTestName;
       baseValue = actor.system.skills[lowerTestName]?.rating ?? 0;
     }
 
     // 4️⃣ Attributes LAST
     else if (attributeMap[lowerTestName]) {
       const shortKey = attributeMap[lowerTestName];
+      testSkillKey = shortKey;
 
       baseValue =
         actor.type === "npc"
@@ -374,8 +384,13 @@ export async function getNonWeaponAbility(actor, ability) {
         // fallback for a hand-made copy with none.
         abilityKey: ability?.system?.localizationKey ?? null,
         abilityName: ability?.name ?? null,
-        // Non-weapon ability attack — generic "attack" token only.
-        rerollTokens: getAttackRerollTokens(),
+        // Non-weapon ability attack: the generic "attack" token, plus the
+        // Test Type it rolled. Shield Bash's Strength test is a Strength
+        // test, so Muscular ("str") must be offered next to Lucky.
+        rerollTokens: [
+          ...getAttackRerollTokens(),
+          ...(testSkillKey ? getRerollTokensForSkill(actor, testSkillKey) : []),
+        ],
       },
       attack: {
         type: "attack",

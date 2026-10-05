@@ -2164,11 +2164,47 @@ table tr td:nth-child(3) {
 .skills-container:not(.skills-combat-container) .skill-section > :is(.skill-toggle-wrapper, .skill-entry) {
   margin: 0;
 }
+/* Both plates in a row share its height: when one name wraps to two lines
+   (long Czech names), its neighbour's plate grows with it instead of sitting
+   short at the top of the cell. The grid stretches the wrapper; the plate
+   fills the wrapper, and its name and rating stay vertically centred.
+   :not(.is-hidden) keeps hidden skills dropped. */
+.skills-container:not(.skills-combat-container) .skill-section > .skill-toggle-wrapper:not(.is-hidden) {
+  display: flex;
+  flex-direction: column;
+}
+.skills-container:not(.skills-combat-container) .skill-section > .skill-toggle-wrapper > .skill-entry {
+  flex: 1 1 auto;
+  align-items: center;
+}
+/* Names stay on one line; utils/skillLedgerLayout.mjs shrinks the font of
+   one too long for its button until it fits. The name gets the room up to
+   the number: no right margin or padding, and a narrower gap. The name
+   starts nearer the left wall and the number sits flush against the right
+   one, in a column just wide enough for "-17". Edit mode keeps its own
+   three-column grid. */
+.skills-container:not(.skills-combat-container) .skill-section .skill-entry {
+  column-gap: 4px;
+}
+.skills-container:not(.skills-combat-container) .skill-section .skill-entry:not(:has(> .skill-rank-editor)) {
+  grid-template-columns: minmax(0, 1fr) 26px;
+}
+.skills-container:not(.skills-combat-container) .skill-section .skill-entry > .skill-rating {
+  width: 26px;
+  text-align: right;
+}
+.skills-container:not(.skills-combat-container) .skill-section .skill-entry .skill-name {
+  white-space: nowrap;
+  margin-right: 0;
+  padding-right: 0;
+  padding-left: 0;
+}
 .skills-container:not(.skills-combat-container) .skill-section .skill-entry {
   position: relative;
   /* 2px top and bottom, with the name's own padding trimmed below: roughly
-     40px in the original down to about 29px. */
-  padding: 2px 10px;
+     40px in the original down to about 29px. 6px at the sides, so the
+     name and number sit near the walls. */
+  padding: 2px 6px;
   border: 1px solid rgb(45 40 32);
   border-radius: 4px;
   /* A dark plate carrying its section's colour, so it reads as a deeper
@@ -2265,7 +2301,6 @@ table tr td:nth-child(3) {
   grid-template-columns: minmax(0, 1fr) 34px auto;
   justify-content: stretch;
 }
-
 /* Skill names 2px over the inherited size, and a faint lift on the hovered
    cell. The lift is an inset shadow so it layers over the ledger shading
    without having to outrank its nth-child selectors. */
@@ -5325,12 +5360,12 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   color: #d9a13b;
 }
 
-/* Only the GM can move it, so only the GM's pointer says so. */
-.redsteel .spec-node-teacher.is-gm {
+/* The GM's click grants it and a player's opens the lessons pop-up. */
+.redsteel .spec-node-teacher[data-action] {
   cursor: pointer;
 }
 
-.redsteel .spec-node-teacher.is-gm:hover {
+.redsteel .spec-node-teacher[data-action]:hover {
   color: #f0dcae;
 }
 
@@ -15759,12 +15794,13 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   background: rgba(255, 255, 255, 0.02);
 }
 
-/* Only the GM can move it, so only the GM's pointer says so. */
-.rs-learn .rs-learn-teacher.is-gm {
+/* The GM's click grants it and a player's opens the lessons pop-up, so every
+   badge that carries an action takes the pointer. */
+.rs-learn .rs-learn-teacher[data-action] {
   cursor: pointer;
 }
 
-.rs-learn .rs-learn-teacher.is-gm:hover {
+.rs-learn .rs-learn-teacher[data-action]:hover {
   color: #f0dcae;
   border-color: #d9a13b;
 }
@@ -21811,4 +21847,169 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   font-size: 12px;
   font-style: italic;
   color: var(--rs-create-dim);
+}
+
+/* Item sheet: defender attributes of a versus Test, one tick per attribute. */
+.redsteel.item .rs-versus-against {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+}
+.redsteel.item .rs-versus-against__opt {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.redsteel.item .rs-versus-against__opt input {
+  margin: 0;
+  width: 14px;
+  height: 14px;
+}
+
+/* -------------------------------------------- */
+/*  Teacher lessons pop-up (teacherLessons.mjs) */
+/* -------------------------------------------- */
+
+/* Sits on document.body beside the Learn screen, on the same layer and after
+   it, so it paints on top. A stone plate with a bronze rule, like the rest of
+   the screen. */
+.redsteel.rs-teacher-lessons {
+  position: fixed;
+  width: 260px;
+  padding: 8px 10px 10px;
+  border: 1px solid rgba(217, 161, 59, 0.55);
+  background: linear-gradient(#1b1915, #121110);
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.7),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.6);
+  color: #cfc6b8;
+  font-family: Cambria, Georgia, serif;
+  font-size: 13px;
+}
+
+.rs-teacher-lessons .rs-lessons-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(217, 161, 59, 0.3);
+  color: #d9a13b;
+}
+
+.rs-teacher-lessons .rs-lessons-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  color: #f0dcae;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rs-teacher-lessons .rs-lessons-tier {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.rs-teacher-lessons .rs-lessons-close {
+  color: #8a8175;
+  cursor: pointer;
+}
+
+.rs-teacher-lessons .rs-lessons-close:hover {
+  color: #f0dcae;
+}
+
+/* One rotated square per day, the Learn screen's own node. */
+.rs-teacher-lessons .rs-lessons-diamonds {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 4px 10px;
+}
+
+.rs-teacher-lessons .rs-lessons-day {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  color: #d9a13b;
+  cursor: pointer;
+}
+
+.rs-teacher-lessons .rs-lessons-day.is-readonly {
+  cursor: default;
+}
+
+.rs-teacher-lessons .rs-lessons-day span {
+  width: 15px;
+  height: 15px;
+  border: 1px solid rgba(217, 161, 59, 0.55);
+  background: #14120d;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.7);
+  transform: rotate(45deg);
+  transition: transform 80ms ease;
+}
+
+.rs-teacher-lessons .rs-lessons-day:not(.is-readonly):hover span {
+  transform: rotate(45deg) scale(1.18);
+  border-color: #d9a13b;
+}
+
+.rs-teacher-lessons .rs-lessons-day.is-filled span {
+  border: 2px solid #d9a13b;
+  background: color-mix(in srgb, #d9a13b 62%, #0c0a07);
+}
+
+.rs-teacher-lessons .rs-lessons-status {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(217, 161, 59, 0.3);
+}
+
+.rs-teacher-lessons .rs-lessons-status b {
+  color: #8a8175;
+}
+
+.rs-teacher-lessons .rs-lessons-status b.is-done {
+  color: #d9a13b;
+}
+
+.rs-teacher-lessons .rs-lessons-mods {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+}
+
+.rs-teacher-lessons .rs-lessons-mods li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 1px 0;
+}
+
+.rs-teacher-lessons .rs-lessons-mods em {
+  color: #8a8175;
+  font-style: normal;
+  white-space: nowrap;
+}
+
+.rs-teacher-lessons .rs-lessons-mods label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.rs-teacher-lessons .rs-lessons-mods input[type="checkbox"] {
+  width: 13px;
+  height: 13px;
+  margin: 0;
 }

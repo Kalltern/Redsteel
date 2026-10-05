@@ -36,6 +36,7 @@
  */
 
 import { PROGRESSION_TRACKS, SKILL_COST_CLASSES } from "../helpers/progression.mjs";
+import { closeTeacherLessons, openTeacherLessons } from "./teacherLessons.mjs";
 import { RANK_EFFECTS } from "../helpers/progressionEffects.mjs";
 import {
   evaluateRequirements,
@@ -731,6 +732,21 @@ function describeRequirement(req) {
 }
 
 /**
+ * What clicking a teacher badge does, for the tooltip: the GM grants or
+ * revokes with a click and opens the lessons with a right-click; anyone else
+ * opens the lessons with a click (teacherLessons.mjs).
+ */
+function teacherHint(isGM, unlocked) {
+  if (!isGM) return game.i18n.localize("REDSTEEL.Learn.Teacher.lessons");
+  return [
+    game.i18n.localize(
+      unlocked ? "REDSTEEL.Learn.Teacher.revoke" : "REDSTEEL.Learn.Teacher.grant",
+    ),
+    game.i18n.localize("REDSTEEL.Learn.Teacher.gmLessons"),
+  ].join(" ");
+}
+
+/**
  * One rank's requirements as the chips the Requirements row prints.
  *
  * A teacher clause gets a badge of its own — a cap and its numeral — because
@@ -762,13 +778,7 @@ function requirementChips(trackId, rank, results) {
       const why = game.i18n.format("REDSTEEL.Learn.Req.Tip.teacher", {
         tier: roman(tier),
       });
-      const hint = isGM
-        ? game.i18n.localize(
-            unlocked
-              ? "REDSTEEL.Learn.Teacher.revoke"
-              : "REDSTEEL.Learn.Teacher.grant",
-          )
-        : "";
+      const hint = trackId ? teacherHint(isGM, unlocked) : "";
       out.push({
         teacher: true,
         trackId,
@@ -818,14 +828,11 @@ function specRequirementChips(specId, results) {
       const why = game.i18n.format("REDSTEEL.Learn.Req.Tip.teacher", {
         tier: roman(req.tier),
       });
-      const hint = isGM
-        ? game.i18n.localize(
-            unlocked ? "REDSTEEL.Learn.Teacher.revoke" : "REDSTEEL.Learn.Teacher.grant",
-          )
-        : "";
+      const hint = teacherHint(isGM, unlocked);
       out.push({
         teacher: true,
         specId,
+        tier: Number(req.tier) || 0,
         roman: roman(req.tier),
         cls: `${unlocked ? "is-unlocked" : "is-locked"}${isGM ? " is-gm" : ""}`,
         tooltip: [why, hint].filter(Boolean).join(" "),
@@ -849,9 +856,10 @@ function specRequirementChips(specId, results) {
  *
  * A star's tooltip is a hover panel, so it cannot hold a control the way a
  * rank's Requirements row does. The badge is that control instead: a cap on the
- * star, gold once the GM has granted the teacher and dim while it is missing,
- * and clickable for the GM alone. It carries its own tooltip so hovering the
- * cap explains the requirement rather than repeating the node's description.
+ * star, gold once the GM has granted the teacher and dim while it is missing.
+ * The GM's click grants it; anyone else's opens the lessons. It carries its
+ * own tooltip so hovering the cap explains the requirement rather than
+ * repeating the node's description.
  *
  * @returns {object|null} null when this node has no teacher clause
  */
@@ -865,16 +873,13 @@ function teacherBadge(specId, nodeId, price, requirements) {
   const why = game.i18n.format("REDSTEEL.Learn.Req.Tip.teacher", {
     tier: roman(price.teacher),
   });
-  const hint = isGM
-    ? game.i18n.localize(
-        granted ? "REDSTEEL.Learn.Teacher.revoke" : "REDSTEEL.Learn.Teacher.grant",
-      )
-    : "";
+  const hint = teacherHint(isGM, granted);
   return {
     specId,
     nodeId,
+    tier: Number(price.teacher) || 0,
     roman: roman(price.teacher),
-    action: isGM ? "toggleSpecNodeTeacher" : "",
+    action: "toggleSpecNodeTeacher",
     cls: `${granted ? "is-unlocked" : "is-locked"}${isGM ? " is-gm" : ""}`,
     tooltip: [why, hint].filter(Boolean).join(" "),
   };
@@ -1627,6 +1632,9 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
 
   /** Bound change listener for the wallet fields. */
   #boundChange = null;
+
+  /** Bound right-click listener: the GM's way into a badge's lessons. */
+  #boundContext = null;
 
   /** The last purchase made here, so a double-click cannot refund it. */
   #lastPurchase = null;
@@ -4070,6 +4078,21 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     this.#boundChange = (event) => this.#onFieldChange(event);
     root.addEventListener("change", this.#boundChange);
 
+    // A teacher badge's left click is the GM's instant grant, so the GM opens
+    // the lessons pop-up with a right-click instead.
+    if (this.#boundContext) root.removeEventListener("contextmenu", this.#boundContext);
+    this.#boundContext = (event) => {
+      if (!game.user.isGM) return;
+      const badge = event.target.closest?.(
+        ".rs-learn-teacher[data-action], .spec-node-teacher[data-action]",
+      );
+      if (!badge) return;
+      event.preventDefault();
+      event.stopPropagation();
+      this.#openLessons(badge);
+    };
+    root.addEventListener("contextmenu", this.#boundContext);
+
     // The Features tab filters in place (see #applyFeatureFilters). The search
     // field is new on every render, so its listener never stacks.
     const search = root.querySelector(".rs-learn-feature-search");
@@ -4184,6 +4207,11 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       root.removeEventListener("change", this.#boundChange);
     }
     this.#boundChange = null;
+    if (this.#boundContext && root instanceof HTMLElement) {
+      root.removeEventListener("contextmenu", this.#boundContext);
+    }
+    this.#boundContext = null;
+    closeTeacherLessons();
     if (this.#boundPopupDismiss && root instanceof HTMLElement) {
       root.removeEventListener("pointerdown", this.#boundPopupDismiss);
     }
@@ -4995,7 +5023,7 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
   static async _onToggleSpecTeacher(event, target) {
     event.preventDefault();
     event.stopPropagation();
-    if (!game.user.isGM) return;
+    if (!game.user.isGM) return this.#openLessons(target);
     const spec = target?.dataset?.spec;
     if (!spec || !this.actor) return;
     const found = !!this.actor.system?.specialisations?.[spec]?.teacher;
@@ -5013,7 +5041,7 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
   static async _onToggleSpecNodeTeacher(event, target) {
     event.preventDefault();
     event.stopPropagation();
-    if (!game.user.isGM) return;
+    if (!game.user.isGM) return this.#openLessons(target);
     const spec = target?.dataset?.spec;
     const node = target?.dataset?.node;
     if (!spec || !node || !this.actor) return;
@@ -5111,12 +5139,64 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   /**
+   * Open the lessons pop-up for a teacher badge: the days of teaching as
+   * diamonds, the last of which grants the teacher (teacherLessons.mjs).
+   * Players reach it with a click, the GM with a right-click. Each badge kind
+   * keeps its own progress key and grants through its own setter.
+   *
+   * @param {HTMLElement} target the badge
+   */
+  #openLessons(target) {
+    const actor = this.actor;
+    if (!actor?.isOwner || !(target instanceof HTMLElement)) return;
+    const data = target.dataset;
+    let lesson = null;
+
+    if (data.action === "toggleTeacher") {
+      const track = PROGRESSION_TRACKS[data.trackId];
+      const rank = Number(data.rank);
+      if (!track || !rank) return;
+      lesson = {
+        key: `rank.${track.group}.${track.key}.r${rank}`,
+        tier: Number(data.tier) || 0,
+        title: `${trackLabel(track.group, track.key)} ${roman(rank)}`,
+        isGranted: () => hasTeacher(actor, data.trackId, rank),
+        setGranted: (found) => setTeacher(actor, data.trackId, rank, found),
+      };
+    } else if (data.action === "toggleSpecTeacher" && data.spec) {
+      const spec = data.spec;
+      lesson = {
+        key: `spec.${spec}`,
+        tier: Number(data.tier) || 0,
+        title: specialisationLabel(spec),
+        isGranted: () => !!actor.system?.specialisations?.[spec]?.teacher,
+        setGranted: (found) => setSpecTeacher(actor, spec, found),
+      };
+    } else if (data.action === "toggleSpecNodeTeacher" && data.spec && data.node) {
+      const { spec, node } = data;
+      lesson = {
+        key: `node.${spec}.${node}`,
+        tier: Number(data.tier) || 0,
+        title: data.title || specialisationLabel(spec),
+        isGranted: () => !!actor.system?.specialisations?.[spec]?.teachers?.[node],
+        setGranted: (found) => setSpecNodeTeacher(actor, spec, node, found),
+      };
+    }
+    if (!lesson) return;
+
+    // Same layer as this screen; appended after it, so it paints on top.
+    const z = Number.parseInt(this.element?.style?.zIndex, 10);
+    openTeacherLessons(actor, lesson, target, z);
+  }
+
+  /**
    * Grant or revoke this track's teacher.
    *
    * GM only: which trainers a character has found is a table fact, and a
    * player handing themselves one would unlock half the price table. Clicking
    * a badge that is already satisfied revokes back to just below it, so the
-   * same chip both gives and takes away.
+   * same chip both gives and takes away. A player's click opens the lessons
+   * pop-up instead, where ticking off the last day grants it.
    *
    * @this {LearnWindow}
    */
@@ -5125,7 +5205,7 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     // The badge is painted over the column's own click target, and a click on
     // it means "this trainer", never "buy this rank".
     event.stopPropagation();
-    if (!game.user.isGM) return;
+    if (!game.user.isGM) return this.#openLessons(target);
     const trackId = target?.dataset?.trackId;
     const rank = Number(target?.dataset?.rank);
     if (!trackId || !rank) return;

@@ -1218,7 +1218,25 @@ export async function firstAid() {
   ).render(true);
 }
 
-async function performFirstAid(actor, token, extraPenalty = 0, { useSalve = false } = {}) {
+// Every card the First Aid button posts is a First Aid test for rerolls: the
+// `skill` flag scopes the reroll-pool picker to First Aid, and `firstAidCard`
+// swaps the generic Re-Roll for the dedicated one, which re-runs the attempt
+// so a passed reroll actually applies (see registerFirstAidHealing).
+const FA_CARD_FLAGS = { skill: "firstAid", firstAidCard: true };
+
+// The "Rerolled with <pool>." line a re-run card carries, like executeReroll's.
+function rerollSourceNote(rerollSource) {
+  if (!rerollSource) return "";
+  const text = game.i18n.format("REDSTEEL.Reroll.Used", { source: rerollSource });
+  return `<p style="font-size:0.85em; opacity:0.8;"><i class="fa-light fa-rotate"></i> ${text}</p>`;
+}
+
+async function performFirstAid(
+  actor,
+  token,
+  extraPenalty = 0,
+  { useSalve = false, rerollSource = null } = {},
+) {
   let firstAidData =
     actor.type === "npc"
       ? actor.system.attributes.int.mod
@@ -1256,6 +1274,7 @@ async function performFirstAid(actor, token, extraPenalty = 0, { useSalve = fals
 
   const isCritFail = d100 >= criticalFailureThreshold;
   const isCritSuccess = d100 <= criticalSuccessThreshold;
+  const failed = isCritFail || firstAidRoll.total <= 0;
 
   if (isCritFail) {
     critStatus =
@@ -1303,6 +1322,7 @@ async function performFirstAid(actor, token, extraPenalty = 0, { useSalve = fals
         ? `<p style="font-size:0.85em; opacity:0.8;">Healing salve spent (+1d6).</p>`
         : ""
     }
+    ${rerollSourceNote(rerollSource)}
   </div>
 </div>
     `,
@@ -1312,6 +1332,12 @@ async function performFirstAid(actor, token, extraPenalty = 0, { useSalve = fals
         rollName,
         criticalSuccessThreshold,
         criticalFailureThreshold,
+        ...FA_CARD_FLAGS,
+        // A failed attempt can be rerolled; the salve was already spent, so
+        // the re-run keeps its +1d6 without taking another.
+        ...(failed
+          ? { firstAidRerun: { actionType: "firstAid", extraPenalty, useSalve } }
+          : {}),
         ...(healRoll && !isCritFail
           ? { firstAidHeal: { amount: healRoll.total } }
           : {}),
@@ -1330,7 +1356,12 @@ async function performFirstAid(actor, token, extraPenalty = 0, { useSalve = fals
 
   return true;
 }
-async function performStopBleeding(actor, token, extraPenalty = 0) {
+async function performStopBleeding(
+  actor,
+  token,
+  extraPenalty = 0,
+  { rerollSource = null } = {},
+) {
   // A First Aid test at +30%. The self-heal penalty never reaches here — the
   // dialog strips it for this action (see getExtraPenalty).
   const skillBase =
@@ -1366,6 +1397,7 @@ async function performStopBleeding(actor, token, extraPenalty = 0) {
       <strong>Attempted to stop bleeding</strong><br>
       ${resultText}
     </p>
+    ${rerollSourceNote(rerollSource)}
   </div>
 </div>
     `,
@@ -1377,6 +1409,10 @@ async function performStopBleeding(actor, token, extraPenalty = 0) {
     flags: {
       redsteel: {
         rollName: "stopBleeding",
+        ...FA_CARD_FLAGS,
+        ...(success
+          ? {}
+          : { firstAidRerun: { actionType: "stopBleeding", extraPenalty } }),
         // A successful test offers a "Remove Bleeding" button on the card
         // (wired in registerFirstAidHealing).
         ...(success
@@ -1456,6 +1492,7 @@ async function rollAndPostStabilise({
   base,
   penalty,
   aiderUuid,
+  rerollSource = null,
 }) {
   const targetActor = game.scenes.get(sceneId)?.tokens.get(targetId)?.actor;
   if (!targetActor) return;
@@ -1486,6 +1523,7 @@ async function rollAndPostStabilise({
       ${resultText}
     </p>
     <p style="font-size:0.85em; opacity:0.8;">Stabilisation penalty: −${penalty}%.</p>
+    ${rerollSourceNote(rerollSource)}
   </div>
 </div>`,
     rolls: [roll],
@@ -1493,6 +1531,7 @@ async function rollAndPostStabilise({
     flags: {
       redsteel: {
         rollName: "Stabilise",
+        ...FA_CARD_FLAGS,
         stabilise: {
           sceneId,
           targetId,
@@ -1548,14 +1587,24 @@ async function applyStabiliseAsGM(data) {
  * wound as treated on the target, capped so treated never exceeds the actual
  * wound count.
  */
-async function performTreatWound(actor, token, extraPenalty = 0) {
-  const targets = Array.from(game.user.targets);
-  if (targets.length !== 1) {
-    ui.notifications.warn("Target exactly one token to treat a wound.");
-    return false;
+async function performTreatWound(
+  actor,
+  token,
+  extraPenalty = 0,
+  { rerollSource = null, target = null, targetSceneId = null } = {},
+) {
+  // A reroll re-runs against the patient of the original card, not whoever
+  // happens to be targeted now.
+  let targetToken = target;
+  if (!targetToken) {
+    const targets = Array.from(game.user.targets);
+    if (targets.length !== 1) {
+      ui.notifications.warn("Target exactly one token to treat a wound.");
+      return false;
+    }
+    targetToken = targets[0];
   }
-
-  const targetToken = targets[0];
+  const sceneId = targetSceneId ?? canvas.scene.id;
   const targetActor = targetToken.actor;
   if (!targetActor) return false;
 
@@ -1597,15 +1646,31 @@ async function performTreatWound(actor, token, extraPenalty = 0) {
       ${resultText}
     </p>
     <p style="font-size:0.85em; opacity:0.8;">Treat Wound penalty: −${penalty}%.</p>
+    ${rerollSourceNote(rerollSource)}
   </div>
 </div>`,
     rolls: [roll],
     type: CONST.CHAT_MESSAGE_STYLES.ROLL,
-    flags: { redsteel: { rollName: "Treat Wound" } },
+    flags: {
+      redsteel: {
+        rollName: "Treat Wound",
+        ...FA_CARD_FLAGS,
+        ...(success
+          ? {}
+          : {
+              firstAidRerun: {
+                actionType: "treatWound",
+                extraPenalty,
+                sceneId,
+                targetId: targetToken.id,
+              },
+            }),
+      },
+    },
   });
 
   if (success) {
-    await requestApplyTreatWound(canvas.scene.id, targetToken.id);
+    await requestApplyTreatWound(sceneId, targetToken.id);
   }
 
   return true;
@@ -1880,7 +1945,7 @@ async function computeFaHeal(actor, total, useSalve = false) {
 // tagging it with the First Aid skill lets the global roll-modifier wrapper
 // apply the hotbar picker and the actor's advantage/disadvantage bias — exactly
 // like every other margin-of-success test — and the dice are shown in the card.
-async function faResolveAndPost(actor, ctx) {
+async function faResolveAndPost(actor, ctx, { rerollSource = null } = {}) {
   if (!actor) return;
   const targetActor = game.scenes
     .get(ctx.sceneId)
@@ -1939,6 +2004,7 @@ async function faResolveAndPost(actor, ctx) {
         <p style="font-size:0.85em; opacity:0.8;">Penalty: −${penalty}%.${
           useSalve ? " Healing salve spent (+1d6)." : ""
         }</p>
+        ${rerollSourceNote(rerollSource)}
         <div class="redsteel-action-buttons">${buttons}</div>
       </div>`,
     rolls: [roll],
@@ -1946,6 +2012,7 @@ async function faResolveAndPost(actor, ctx) {
     flags: {
       redsteel: {
         rollName: label,
+        ...FA_CARD_FLAGS,
         firstAidResult: {
           actorUuid: actor.uuid,
           actionType: ctx.actionType,
@@ -2178,12 +2245,16 @@ export function registerFirstAidHealing() {
     });
   });
 
-  // Dedicated Re-Roll for a failed Stabilise attempt. The generic Re-Roll is
-  // suppressed for these messages (it can't re-apply the stabilisation), so
-  // this re-runs the whole attempt and applies on success.
+  // Dedicated Re-Roll for a failed out-of-combat First Aid action (First Aid,
+  // Stop Bleeding, Stabilise, Treat Wound). The generic Re-Roll is suppressed
+  // for these messages (it can't re-apply the outcome), so this spends a First
+  // Aid reroll through the pool picker, then re-runs the whole attempt and
+  // applies on success.
   Hooks.on("renderChatMessageHTML", (message, html) => {
     const stab = message.flags?.redsteel?.stabilise;
-    if (!stab || !stab.failed) return;
+    const failedStab = stab?.failed ? stab : null;
+    const rerunCtx = message.flags?.redsteel?.firstAidRerun;
+    if (!failedStab && !rerunCtx) return;
     if (game.user.id !== message.author?.id && !game.user.isGM) return;
 
     let buttonContainer = html.querySelector(".button-container");
@@ -2196,7 +2267,7 @@ export function registerFirstAidHealing() {
     const rerollButton = document.createElement("button");
     rerollButton.type = "button";
     rerollButton.className = "reroll-button";
-    rerollButton.textContent = "Re-Roll Stabilisation";
+    rerollButton.textContent = failedStab ? "Re-Roll Stabilisation" : "Re-Roll";
     buttonContainer.appendChild(rerollButton);
 
     const buttonCount = buttonContainer.querySelectorAll(
@@ -2206,7 +2277,13 @@ export function registerFirstAidHealing() {
 
     rerollButton.addEventListener("click", async () => {
       rerollButton.disabled = true;
-      await rollAndPostStabilise(stab);
+      const rerolled = await game.redsteel.rerollWithPool(message, (source) =>
+        failedStab
+          ? rollAndPostStabilise({ ...failedStab, rerollSource: source })
+          : rerunFirstAidAction(message, rerunCtx, source),
+      );
+      // No pool, or the picker was cancelled: nothing was spent.
+      if (!rerolled) rerollButton.disabled = false;
     });
   });
 
@@ -2239,6 +2316,13 @@ export function registerFirstAidHealing() {
     const result = message.flags?.redsteel?.firstAidResult;
     if (!counter && !result) return;
 
+    // A rerolled-away result card keeps its dice but not its controls; these
+    // buttons live outside the .button-container the generic retire hook clears.
+    if (message.getFlag("redsteel", "rerolledAway")) {
+      html.querySelector(".redsteel-action-buttons")?.remove();
+      return;
+    }
+
     const actorUuid = counter?.actorUuid ?? result?.actorUuid;
     const actor = actorUuid ? fromUuidSync(actorUuid) : null;
     if (!actor?.isOwner) return;
@@ -2257,7 +2341,8 @@ export function registerFirstAidHealing() {
       html.querySelectorAll(`[data-action="${action}"]`).forEach((btn) => {
         btn.addEventListener("click", async () => {
           btn.disabled = true;
-          await run();
+          // `false` = nothing happened (reroll picker cancelled / no pool).
+          if ((await run()) === false) btn.disabled = false;
         });
       });
     };
@@ -2290,15 +2375,22 @@ export function registerFirstAidHealing() {
     }
 
     if (result && !result.success) {
-      // Re-roll re-runs the whole test on this client (no progress flag left).
+      // Re-roll spends a First Aid reroll, then re-runs the whole test on
+      // this client (no progress flag left).
       wireRoll("faReroll", () =>
-        faResolveAndPost(actor, {
-          actionType: result.actionType,
-          sceneId: result.sceneId,
-          targetId: result.targetId,
-          extraPenalty: result.extraPenalty,
-          useSalve: result.useSalve,
-        }),
+        game.redsteel.rerollWithPool(message, (source) =>
+          faResolveAndPost(
+            actor,
+            {
+              actionType: result.actionType,
+              sceneId: result.sceneId,
+              targetId: result.targetId,
+              extraPenalty: result.extraPenalty,
+              useSalve: result.useSalve,
+            },
+            { rerollSource: source },
+          ),
+        ),
       );
       wire("faResume", () => ({
         type: "faResume",
@@ -2307,6 +2399,36 @@ export function registerFirstAidHealing() {
       }));
     }
   });
+}
+
+// Re-run a failed out-of-combat First Aid / Stop Bleeding / Treat Wound card
+// from the context it stored, after the reroll charge was spent. Kit and salve
+// were consumed by the original attempt and are not taken again.
+async function rerunFirstAidAction(message, ctx, rerollSource) {
+  const actor = ChatMessage.getSpeakerActor(message.speaker);
+  if (!actor) return;
+  const token = canvas.tokens?.get(message.speaker?.token) ?? null;
+  const extraPenalty = Number(ctx.extraPenalty) || 0;
+
+  if (ctx.actionType === "firstAid") {
+    await performFirstAid(actor, token, extraPenalty, {
+      useSalve: !!ctx.useSalve,
+      rerollSource,
+    });
+  } else if (ctx.actionType === "stopBleeding") {
+    await performStopBleeding(actor, token, extraPenalty, { rerollSource });
+  } else if (ctx.actionType === "treatWound") {
+    const target = game.scenes.get(ctx.sceneId)?.tokens.get(ctx.targetId);
+    if (!target) {
+      ui.notifications.warn(game.i18n.localize("REDSTEEL.Reroll.PatientGone"));
+      return;
+    }
+    await performTreatWound(actor, token, extraPenalty, {
+      rerollSource,
+      target,
+      targetSceneId: ctx.sceneId,
+    });
+  }
 }
 
 function handleApplyInjury(messageId) {

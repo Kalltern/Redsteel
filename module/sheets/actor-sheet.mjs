@@ -5,6 +5,7 @@ import {
   syncSpecialisationPassive,
 } from "../helpers/specialisations.mjs";
 import { openLearnWindow } from "../utils/learnWindow.mjs";
+import { bindSkillLedgerLayout } from "../utils/skillLedgerLayout.mjs";
 import { openCharacterCreation } from "../utils/characterCreation.mjs";
 import { isHandheldLight } from "../utils/itemLight.mjs";
 import {
@@ -2803,6 +2804,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       this.#bindShieldControls(root);
       this.#bindAlchemyControls(root);
       this.#bindRerollReorder(root);
+      bindSkillLedgerLayout(root);
       // Lets the delegated tooltip engine resolve the owning actor without
       // reaching into application-registry internals.
       root.dataset.ttActorUuid = this.actor.uuid;

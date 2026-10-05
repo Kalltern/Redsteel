@@ -240,6 +240,8 @@ export function renderArmorTable(actor) {
  * @param {number|null} params.defenseD100 the raw die, for the crit tiebreak
  * @param {boolean} params.defenseCrit   natural critical success on defense
  * @param {boolean} params.defenseCritFailure natural critical failure on defense
+ * @param {boolean} params.dodge         the defense was a Dodge, which names its
+ *   critical "Critical Dodge" rather than "Critical Defense"
  * @returns {{html: string, versus: object|null}}
  */
 export function renderVersusBlock(
@@ -249,6 +251,7 @@ export function renderVersusBlock(
     defenseD100 = null,
     defenseCrit = false,
     defenseCritFailure = false,
+    dodge = false,
   } = {},
 ) {
   // The verdict is decided in defenseOdds.mjs (the rules above live there in
@@ -269,7 +272,9 @@ export function renderVersusBlock(
   const outcome = critical
     ? game.i18n.localize(
         critical === "defense"
-          ? "REDSTEEL.Versus.CriticalDefense"
+          ? dodge
+            ? "REDSTEEL.Versus.CriticalDodge"
+            : "REDSTEEL.Versus.CriticalDefense"
           : "REDSTEEL.Versus.CriticalHit",
       )
     : !onDice && gap === 0
@@ -2058,6 +2063,7 @@ export async function defenseRoll({
       defenseD100: rollResult,
       defenseCrit: critSuccess,
       defenseCritFailure: critFailure,
+      dodge: defenseKey === "dodge",
     });
 
     // Whether the guard actually held. The contested result is the truth when
@@ -2150,7 +2156,13 @@ export async function defenseRoll({
           ...(versus.versus ? { versusAttack: attack ?? null } : {}),
           ...(versus.versus ? { versus: versus.versus } : {}),
           ...(tempHealthGrant
-            ? { tempHealthGrant: { ...tempHealthGrant, defenseFailed } }
+            ? {
+                tempHealthGrant: {
+                  ...tempHealthGrant,
+                  defenseFailed,
+                  criticalDefense,
+                },
+              }
             : {}),
           ...(veteranRest ? { veteranRest } : {}),
           // Carries `defenseFailed` for the same reason the grant above does:

@@ -29,6 +29,7 @@ import {
 } from "./overwhelm.mjs";
 import { grantPassingStrikeStep } from "./abilityMovement.mjs";
 import { offerSlipThrough } from "./slipThrough.mjs";
+import { offerHalfPirouette } from "./halfPirouette.mjs";
 import { gateVersusPush, resolvePushOnHit } from "./forcedMovement.mjs";
 import {
   cardDeclaredSneak,
@@ -830,6 +831,8 @@ export async function applyDamageAsGM(data) {
   const giftOfBloodActive =
     castingContext.school === "blood" && hasGiftOfBlood(castingContext.caster);
   const giftOfBloodVictims = [];
+  // Targets this Apply Damage killed, for Half Pirouette (halfPirouette.mjs).
+  const killedIds = [];
   for (const tokenId of targetIds) {
     const tokenDoc = scene.tokens.get(tokenId);
     if (!tokenDoc) {
@@ -839,6 +842,8 @@ export async function applyDamageAsGM(data) {
 
     const actor = tokenDoc.actor;
     if (!actor) continue;
+    // Hitting a corpse again kills nobody (Half Pirouette).
+    const wasDead = actor.statuses?.has("dead") === true;
 
     // Bane-aware packet: a target matching the attacker's Bane uses the
     // Bane variant of normal/critical/breakthrough instead of the base one.
@@ -1211,9 +1216,13 @@ export async function applyDamageAsGM(data) {
     // guaranteed Bleeding on the attacker's next attack. "Killed" is the drop
     // to 0 Life: an NPC dies, a character starts Dying. Damage from the bleed
     // itself never reaches here — this is the attack path only, as the rule
-    // requires (Zásah).
+    // requires (Zásah). A spell kill earns nothing: the cast card flags
+    // isSpell, and spell automation cards carry only casterUuid, so either
+    // marks it as cast damage.
     if (
       attackerHasBloodStrike &&
+      !attack.isSpell &&
+      !castingContext.caster &&
       wasBleedingBeforeHit &&
       hpBeforeDamage > 0 &&
       Number(result.newHp) <= 0
@@ -1264,6 +1273,13 @@ export async function applyDamageAsGM(data) {
 
     const combatant = combat?.combatants.find((c) => c.tokenId === tokenDoc.id);
     await handlePostDamageStatus({ actor, combatant });
+    if (
+      !wasDead &&
+      (actor.statuses?.has("dead") ||
+        actor.effects?.some((e) => e.statuses?.has("dead")))
+    ) {
+      killedIds.push(tokenId);
+    }
 
     // Impale: Follow-up Attack when this Impale was the killing blow, whether
     // or not its Root landed.
@@ -1444,6 +1460,9 @@ export async function applyDamageAsGM(data) {
   // Prosmýknutí (Slip Through): a charge or Dragon Strike landed, so the
   // attacker may slip behind the opponent this turn.
   await offerSlipThrough(attacker, message, targetIds, mode);
+  // Půlpirueta (Half Pirouette): a kill, or a landed Counterattack or
+  // Riposte, lets the attacker step in and take Aim this turn.
+  await offerHalfPirouette(attacker, message, targetIds, killedIds);
 
   // Úder štítem (Shield Bash) and any other PUSH_ON_HIT ability: landing it
   // means the versus Test was won, so each target is pushed straight away from

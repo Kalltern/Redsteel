@@ -8,6 +8,9 @@
  *   - Swordsman doctrine rank 3+, defending with a weapon that carries the
  *     swordsman doctrine flag (+5).
  *
+ * Only a Critical Defense earns it: the versus verdict when the defense
+ * answered an attack card, the natural critical success otherwise.
+ *
  * The grant is never automatic. Melee and Ranged Defense cards get a gold
  * shield-heart button showing the amount; clicking it applies the temporary HP
  * and posts a public confirmation line so the table sees a misclick happen.
@@ -181,6 +184,9 @@ export function registerTempHealthGrant() {
   Hooks.on("renderChatMessageHTML", (message, html) => {
     const grant = message.flags?.redsteel?.tempHealthGrant;
     if (!grant?.amount) return;
+    // Only a Critical Defense earns the ward. Strict `false` so cards written
+    // before the field existed keep their button.
+    if (grant.criticalDefense === false) return;
 
     // Only the roller (or the GM) can spend it — the same gate the First Aid
     // buttons use, and the only two users allowed to write the message flag.

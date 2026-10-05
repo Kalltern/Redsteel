@@ -848,15 +848,6 @@ export const ABILITY_GRANTS = [
     grant: [ABILITY.IMPROVED_FAST_REACTION],
     replaces: [ABILITY.FAST_REACTION],
   },
-  {
-    // A feature, not an ability: its once-per-day Defense / Ranged Defense
-    // reroll pool only works while heavy armor is the top layer
-    // (flags.redsteel.rerollRequiresArmor, read in rerolls.mjs). The light
-    // branch of the same node is the durability bonus in applyDamage.mjs.
-    label: "Weapon Master: Zbrojnoš I → Armiger (heavy armor reroll feature)",
-    when: specNode("weaponMaster", "zbrojnos1"),
-    grant: [A("aRmigerFeature01")],
-  },
 
   /* Mečový tanečník (Sword Dancer) */
   {
@@ -1430,9 +1421,41 @@ export async function clearGrantSuppression(actor, uuid) {
 }
 
 /**
+ * Grants that no longer exist. A copy one of them left on an actor would sit
+ * there until that actor's next sync, so the GM's client removes them on load.
+ * Zbrojnoš I used to grant an Armiger feature; its reroll pool now belongs to
+ * the node itself (NODE_REROLL_POOLS in rerolls.mjs).
+ */
+const RETIRED_GRANTS = new Set([A("aRmigerFeature01")]);
+
+async function removeRetiredGrants() {
+  for (const actor of game.actors.contents) {
+    const stale = actor.items.contents
+      .filter(
+        (i) =>
+          i.getFlag(GRANT_FLAG_SCOPE, GRANTED_FLAG) &&
+          RETIRED_GRANTS.has(i.getFlag(GRANT_FLAG_SCOPE, GRANT_SOURCE_FLAG)),
+      )
+      .map((i) => i.id);
+    if (!stale.length) continue;
+    // Held as a sync so the deleteItem hook does not record a suppression.
+    _syncing.add(actor.id);
+    try {
+      await actor.deleteEmbeddedDocuments("Item", stale);
+    } finally {
+      _syncing.delete(actor.id);
+    }
+  }
+}
+
+/**
  * Register the hooks that keep granted abilities in sync. Call once at init/ready.
  */
 export function registerAbilityGrants() {
+  Hooks.once("ready", () => {
+    if (game.user.isActiveGM) removeRetiredGrants();
+  });
+
   // New actor: evaluate all grants.
   Hooks.on("createActor", (actor, options, userId) => {
     if (game.user.id !== userId) return;

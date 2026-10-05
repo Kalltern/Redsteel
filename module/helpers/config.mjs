@@ -1519,11 +1519,32 @@ REDSTEEL.effectDefinitions = {
   },
 
   // "Mentální vytížení" — prerequisite for Rozkaz / mental duel.
+  // "Úspěch -20% (Vyjma Mentálního souboje a Testů Vůle)": same shape as the
+  // mind_bending_caster debuff — the −20 globalBonus reaches every rating, and
+  // the +20 on Will and Mind Bending cancels it on the exempt rolls (PCs duel
+  // on Mind Bending, NPCs on Will; see mentalDuel.mjs duelSkill).
   mental_strain: {
     name: "Mental Strain",
     img: "icons/svg/aura.svg",
     statuses: ["mental_strain"],
     stackBehavior: "ignore",
+    changes: [
+      {
+        key: "system.globalBonus",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: -20,
+      },
+      {
+        key: "system.attributes.wil.modBonus",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: 20,
+      },
+      {
+        key: "system.skills.mindBending.bonus",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: 20,
+      },
+    ],
   },
 
   // "Rychlost" — the +1 Action part is not automated.
@@ -1820,6 +1841,21 @@ REDSTEEL.effectDefinitions = {
       },
     ],
     stackBehavior: "ignore",
+  },
+
+  // "Usilovná koncentrace" (Focused Concentration) — 1 Action from the Mental
+  // Duel window: +10 % to the Mental Duel (attack and defence) per stack, until
+  // the start of the actor's next turn. Usable once per Action, so each use adds
+  // a stack and refreshes the clock. The bonus is read off the stack count in
+  // mentalDuel.mjs (duelSkill), because PCs duel on the skill and NPCs on Will,
+  // so no single `changes` key covers both. The clock is passed as `turns` at
+  // apply time rather than declared here, so the token counter shows stacks.
+  mental_focus: {
+    name: "REDSTEEL.MentalDuel.Focus.Name",
+    img: "icons/magic/perception/third-eye-blue-red.webp",
+    statuses: ["mental_focus"],
+    stackBehavior: "stack",
+    maxStacks: 9,
   },
 
   // "Čistý vzduch" (Clean air) — protection from poisonous and intoxicating

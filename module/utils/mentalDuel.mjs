@@ -8,6 +8,12 @@ import {
 } from "./rerolls.mjs";
 import { scheduleRerollRefresh } from "./calendariaIntegration.mjs";
 import { forfeitAdvantageOnCritFail } from "./rollAdvantage.mjs";
+import {
+  getActionPools,
+  getSpent,
+  spend,
+  trackedCombat,
+} from "./actionTracker.mjs";
 
 // Only a winner who can Dominate may seize control: any NPC, or a player
 // character who has unlocked the Mentalist "Domination" (ovladnuti) perk.
@@ -26,6 +32,32 @@ function canDrain(actor) {
 
 // Mind restored to the victor by Drain.
 const DRAIN_MIND_GAIN = 2;
+
+/* -------------------------------------------- */
+/*  Usilovná koncentrace (Focused Concentration) */
+/* -------------------------------------------- */
+
+const FOCUS_STATUS = "mental_focus";
+/** Mental Duel bonus per stack of Focused Concentration. */
+const FOCUS_STEP = 10;
+
+/** +10 % per stack, on attack and defence alike, for PCs and NPCs. */
+function focusBonus(actor) {
+  const effect = actor?.effects?.contents.find((e) =>
+    e.statuses?.has(FOCUS_STATUS),
+  );
+  if (!effect) return 0;
+  return (Number(effect.getFlag("redsteel", "stacks")) || 1) * FOCUS_STEP;
+}
+
+/**
+ * Actions left this round, or null outside a tracked encounter (no turn
+ * economy, so the button is never limited there).
+ */
+function actionsLeft(actor) {
+  if (!trackedCombat(actor)) return null;
+  return getActionPools(actor).actions - getSpent(actor).actions;
+}
 
 /* -------------------------------------------- */
 /*  Initiation chance (perks + Mentální zteč)   */
@@ -370,6 +402,22 @@ const MENTAL_DUEL_CSS = `
   box-shadow: 0 0 8px -2px #b56bd0;
 }
 .rs-md-assault:disabled { opacity: 0.4; cursor: not-allowed; }
+.rs-md-focus {
+  padding: 5px 6px;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 6px;
+  border: 1px solid #8b6914;
+  background: linear-gradient(#2a2418, #17140d);
+  color: #ead9a8;
+  cursor: pointer;
+}
+.rs-md-focus i { color: #e0b33a; }
+.rs-md-focus:hover:not(:disabled) {
+  background: linear-gradient(#3a3120, #201b11);
+  box-shadow: 0 0 8px -2px #c9a227;
+}
+.rs-md-focus:disabled { opacity: 0.4; cursor: not-allowed; }
 .rs-md-banner {
   margin-top: 12px;
   padding: 10px;
@@ -664,7 +712,7 @@ function duelSkill(actor) {
     {};
   return {
     isWill,
-    rating: Number(isWill ? source.mod : source.rating) || 0,
+    rating: (Number(isWill ? source.mod : source.rating) || 0) + focusBonus(actor),
     critSuccess: Number(source.criticalSuccessThreshold) || 5,
     critFailure: Number(source.criticalFailureThreshold) || 96,
   };
@@ -980,6 +1028,26 @@ export class MentalDuelApp extends ApplicationV2 {
       </button>`;
     };
 
+    // Usilovná koncentrace — 1 Action for +10 % on the duel until the actor's
+    // next turn. Repeatable for as long as the actor has Actions left.
+    const focusBtn = (s, role) => {
+      const canControl = s.actor.isOwner || game.user.isGM;
+      const left = actionsLeft(s.actor);
+      const outOfActions = left !== null && left <= 0;
+      const disabled = ended || !canControl || outOfActions;
+      const reason = !canControl
+        ? "You don't control this combatant"
+        : outOfActions
+          ? game.i18n.localize("REDSTEEL.MentalDuel.Focus.NoActions")
+          : game.i18n.format("REDSTEEL.MentalDuel.Focus.Hint", {
+              bonus: FOCUS_STEP,
+            });
+      return `<button type="button" class="rs-md-focus" data-role="${role}"
+        ${disabled ? "disabled" : ""} title="${reason}">
+        <i class="fas fa-star"></i> ${game.i18n.localize("REDSTEEL.MentalDuel.Focus.Button")}
+      </button>`;
+    };
+
     return `
       <div class="rs-md-arena">
         ${sideHtml(a)}
@@ -998,8 +1066,8 @@ export class MentalDuelApp extends ApplicationV2 {
       ${!ended && !started ? this._buildStartHTML() : ""}
 
       <div class="rs-md-actions">
-        <div class="rs-md-side-actions">${attackBtn(a, "a")}${assaultBtn(a, "a")}</div>
-        <div class="rs-md-side-actions">${attackBtn(b, "b")}${assaultBtn(b, "b")}</div>
+        <div class="rs-md-side-actions">${attackBtn(a, "a")}${assaultBtn(a, "a")}${focusBtn(a, "a")}</div>
+        <div class="rs-md-side-actions">${attackBtn(b, "b")}${assaultBtn(b, "b")}${focusBtn(b, "b")}</div>
       </div>
 
       ${pending ? this._buildPendingHTML(a, b, pending) : ""}
@@ -1190,6 +1258,13 @@ export class MentalDuelApp extends ApplicationV2 {
         this._onAttack(role, { assault: true });
       }),
     );
+    content.querySelectorAll(".rs-md-focus").forEach((btn) =>
+      btn.addEventListener("click", (ev) => {
+        const button = ev.currentTarget;
+        button.disabled = true; // no double-click double-spend
+        this._onFocus(button.dataset.role);
+      }),
+    );
     content
       .querySelector(".rs-md-start-duel")
       ?.addEventListener("click", () => this._onStartDuel());
@@ -1316,6 +1391,30 @@ export class MentalDuelApp extends ApplicationV2 {
         combat.round,
       );
     }
+  }
+
+  /**
+   * Usilovná koncentrace — spend 1 Action and add a stack of the Focused
+   * Concentration status, which lasts until the start of the actor's next turn.
+   */
+  async _onFocus(role) {
+    const tok = this._token(role === "a" ? this._aUuid : this._bUuid);
+    const actor = tok?.actor;
+    if (!actor) return this.render();
+    if (!(actor.isOwner || game.user.isGM)) {
+      ui.notifications.warn(`You don't control ${actor.name}.`);
+      return this.render();
+    }
+    const left = actionsLeft(actor);
+    if (left !== null && left <= 0) {
+      ui.notifications.warn(
+        game.i18n.localize("REDSTEEL.MentalDuel.Focus.NoActions"),
+      );
+      return this.render();
+    }
+    await spend(actor, { actions: 1 });
+    await game.redsteel.applyEffect(actor, FOCUS_STATUS, { turns: 1 });
+    this.render();
   }
 
   /* ---- Attack resolution ---- */
@@ -1583,6 +1682,11 @@ export class MentalDuelApp extends ApplicationV2 {
       if ("round" in changed) this._maybeAutoCoinToss();
     });
     this._hookIds.deleteCombat = Hooks.on("deleteCombat", rerender);
+    // Focused Concentration lives on an Active Effect, so the shown rating has
+    // to follow its stacks coming and going.
+    for (const hook of ["createActiveEffect", "updateActiveEffect", "deleteActiveEffect"]) {
+      this._hookIds[hook] = Hooks.on(hook, rerender);
+    }
 
     // Roll the opening coin toss immediately (no manual initiation).
     this._maybeAutoCoinToss();
@@ -1634,6 +1738,9 @@ export class MentalDuelApp extends ApplicationV2 {
     Hooks.off("updateToken", this._hookIds.updateToken);
     Hooks.off("updateCombat", this._hookIds.updateCombat);
     Hooks.off("deleteCombat", this._hookIds.deleteCombat);
+    for (const hook of ["createActiveEffect", "updateActiveEffect", "deleteActiveEffect"]) {
+      Hooks.off(hook, this._hookIds[hook]);
+    }
     if (activeDuel === this) activeDuel = null;
   }
 }
@@ -1703,6 +1810,9 @@ export async function openMentalDuel(attacker, defender, { broadcast = true } = 
     ) {
       await game.settings.set("redsteel", "mentalDuelActive", next);
     }
+    // "Mentální souboj vyvolává efekt Mentální vytížení" — covers duels opened
+    // without a Mind Bending cast (macro, monsters). No-op if already strained.
+    await applyMentalStrain(bTok);
   }
 
   if (activeDuel?.rendered) await activeDuel.close();
@@ -1710,6 +1820,32 @@ export async function openMentalDuel(attacker, defender, { broadcast = true } = 
   activeDuel = app;
   await app.render(true);
   return app;
+}
+
+/**
+ * Put Mental Strain ("Mentální vytížení") on a duel's target. Mind Bending
+ * strains the target on any successful cast, duel or not, and the caster rarely
+ * owns the target, so a non-owner relays to the active GM.
+ * @param {Token|TokenDocument} target
+ */
+export async function applyMentalStrain(target) {
+  const doc = target?.document ?? target;
+  const actor = doc?.actor;
+  if (!actor) return;
+  if (actor.statuses?.has("mental_strain")) return;
+
+  if (game.user.isGM || actor.isOwner) {
+    await game.redsteel.applyEffect(actor, "mental_strain");
+    return;
+  }
+  game.socket.emit(SOCKET, { type: "mentalStrainApply", tokenUuid: doc.uuid });
+}
+
+/** Socket receiver: the active GM applies a relayed Mental Strain. */
+export async function handleMentalStrainApply(data) {
+  if (game.user.id !== game.users.activeGM?.id) return;
+  const doc = fromUuidSync(data.tokenUuid);
+  if (doc) await applyMentalStrain(doc);
 }
 
 /**

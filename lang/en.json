@@ -10,6 +10,14 @@
       "Failed": "{name} fails: Defense and Dodge -10% for one turn.",
       "FailEffect": "Slip Through failed"
     },
+    "HalfPirouette": {
+      "MovedIn": "{name} steps into {target}'s space.",
+      "Blocked": "{name} cannot step into {target}'s space: the hex is taken.",
+      "Step": "{name} may step one hex around {target}. The step provokes no Opportunity Attack.",
+      "Aim": "{name} gains {stacks} Aim on {target} (now {after}).",
+      "NoAimTarget": "No enemy within reach to aim at.",
+      "PickPrompt": "Gain Aim on which enemy within reach?"
+    },
     "AllyPass": {
       "Title": "Let an ally pass?",
       "Body": "{mover} wants to move through the hex {ally} stands on. Letting them pass spends {ally}'s Reaction.",
@@ -238,7 +246,8 @@
         "HoldStance": "Click: keep holding the stance ({cost})",
         "DropStance": "Right-click: drop the stance",
         "MoreMovement": "More movement",
-        "LungeStep": "Lunge Step"
+        "LungeStep": "Lunge Step",
+        "HalfPirouette": "Half Pirouette step"
       },
       "ShowArmor": "Show armor by damage type",
       "ShowConditions": "Show conditions",
@@ -846,7 +855,7 @@
             },
             "zbrojnos1": {
               "label": "Armiger I",
-              "description": "10 CP. Passive. Light armor: sacrificing armor or shield Durability reduces damage by a further 5. Heavy armor: once per day, may reroll a Defense or Ranged Defense roll. Only the topmost armor layer counts. Automated: the bonus is added to every sacrifice in the Apply Damage dialog, and the node grants the Armiger feature, whose reroll is offered only while heavy armor is on top. The pool refreshes on a Long Rest."
+              "description": "10 CP. Passive. Light armor: sacrificing armor or shield Durability reduces damage by a further 5. Heavy armor: once per day, may reroll a Defense or Ranged Defense roll. Only the topmost armor layer counts. Automated: the bonus is added to every sacrifice in the Apply Damage dialog, and the node itself holds the reroll, listed under Features, Rerolls and offered only while heavy armor is on top. It refreshes on a Long Rest."
             },
             "zbrojnos2": {
               "label": "Armiger II",
@@ -4127,10 +4136,12 @@
             "label": "Dodge"
           },
           "combat": {
-            "label": "Combat"
+            "label": "Combat",
+            "ratingLabel": "Melee Attack"
           },
           "archery": {
-            "label": "Archery"
+            "label": "Archery",
+            "ratingLabel": "Ranged Attack"
           },
           "channeling": {
             "label": "Channeling"
@@ -4642,8 +4653,7 @@
           },
           "versusAgainst": {
             "label": "Versus (defender)",
-            "hint": "Attributes the defender may answer this versus Test with, comma separated keys (str, dex, end, int, wil, cha, per). Leave empty to allow any attribute.",
-            "placeholder": "str, end"
+            "hint": "Attributes the defender may answer this versus Test with. A left click on the margin rolls the best of the ticked ones. Tick none to allow any attribute."
           },
           "opportunityAttack": {
             "label": "Opportunity attack",
@@ -5418,7 +5428,8 @@
     "Reroll": {
       "Superseded": "Rerolled — this result no longer applies.",
       "Used": "Rerolled with {source}.",
-      "Free": "Rerolled without spending a reroll."
+      "Free": "Rerolled without spending a reroll.",
+      "PatientGone": "The patient of this attempt is no longer on the scene."
     },
     "RollTriggers": {
       "Hint": "Comma-separated. Pills appear in chat when a matching roll is made. Write attributes by their short key (str, res). Add -gm to any trigger (universal-gm, str-based-gm) and only the GM sees its pill. long-rest shows the pill on the character's Long Rest card (universal does not reach it).",
@@ -5440,15 +5451,17 @@
     },
     "Versus": {
       "ViaFeature": "{label} ({rating}), by feature",
-      "ClickHint": "Left click: roll your best attribute. Right click: choose the attribute.",
+      "ClickHint": "Left click: roll your best attribute this test allows. Right click: choose the attribute.",
       "Blocked": "Defended",
       "Hit": "Hit",
       "Tie": "Tie, the attack lands",
       "Detail": "Attack {attack} vs Defense {defense} ({gap})",
       "CriticalDefense": "Critical Defense",
+      "CriticalDodge": "Critical Dodge",
       "CriticalHit": "Critical Hit",
       "DeniedOnDice": "Both critical, so margins are ignored. Attack rolled {attack}, defense rolled {defense}.",
-      "DialogAttackMargin": "Answering an attack of margin {margin}"
+      "DialogAttackMargin": "Answering an attack of margin {margin}",
+      "OwnMargin": "Own margin {own} vs {opposing}"
     },
     "Fold": {
       "CriticalSuccess": "Critical Success!",
@@ -5874,7 +5887,7 @@
       "invisible": "Invisible. A marker resolved at the table.",
       "charm": "Charmed: follows and protects the caster. A marker resolved at the table.",
       "frenzy": "Frenzied: loses control and attacks everything nearby. A marker resolved at the table. Lasts 3 turns.",
-      "mental_strain": "Mental Strain, the prerequisite for a Mental Duel or a Command. A marker resolved at the table.",
+      "mental_strain": "Mental Strain, the prerequisite for a Mental Duel or a Command. Success -20%, except in the Mental Duel and on Will tests.",
       "haste": "+1 Speed and +4 Initiative. The extra action is resolved at the table.",
       "fast_reaction": "+4 Initiative per stack, counted in the next round's initiative roll. Expires at the start of the bearer's next turn.",
       "flight": "Flying. Speed is set to 8.",
@@ -5923,7 +5936,16 @@
       "shield_physical": "Absorbs physical damage before armor, from a pool of 15 + 4×SK. Can be dispelled, and replaces the other shields.",
       "shield_magic": "Absorbs magical damage from a pool of 15 + 4×SK, swallows one oversized hit whole, and blocks effects carried by magical hits. Cannot be dispelled, and replaces the other shields.",
       "shield_elemental": "Absorbs physical damage and one chosen element (Fire, Frost, Lightning, or Acid and Poison) from a pool of 20 + 5×SK. Switching the element costs 3 Mana, paid by hand. Replaces the other shields.",
-      "blood_shield": "Absorbs physical damage. Raised when the bearer loses Health to a hit, worth half the Health lost, and further hits add to the pool. Cleared at the start of the next round."
+      "blood_shield": "Absorbs physical damage. Raised when the bearer loses Health to a hit, worth half the Health lost, and further hits add to the pool. Cleared at the start of the next round.",
+      "mental_focus": "+10% to the Mental Duel per stack, attacking and defending. Each use costs 1 Action and adds a stack. Lasts until the start of the next turn."
+    },
+    "MentalDuel": {
+      "Focus": {
+        "Name": "Focused Concentration",
+        "Button": "Focus (1 Action)",
+        "Hint": "Spend 1 Action: +{bonus}% to the Mental Duel until your next turn. Stacks with every use.",
+        "NoActions": "No Actions left this round."
+      }
     },
     "Note": {
       "attributes": "Attributes",
@@ -6223,10 +6245,6 @@
       },
       "Argos": {
         "name": "Argos"
-      },
-      "Armiger": {
-        "name": "Armiger",
-        "description": "<p>Weapon Master, Armiger I (heavy armor). Once per day, may reroll a Defense or Ranged Defense roll while heavy armor is the topmost armor layer worn. Granted automatically by the Armiger I node.</p>"
       },
       "ArmorTrainingI": {
         "name": "Armor Training I"
@@ -9001,7 +9019,18 @@
       },
       "Teacher": {
         "grant": "Click to grant.",
-        "revoke": "Click to revoke."
+        "revoke": "Click to revoke.",
+        "lessons": "Click to track the lessons.",
+        "gmLessons": "Right-click to track the lessons."
+      },
+      "Lessons": {
+        "teacher": "Teacher",
+        "days": "{days} d",
+        "progress": "{done} / {required} days",
+        "left": "{left} left",
+        "taught": "Taught",
+        "base": "Base length",
+        "mentor": "Teacher is a Mentor"
       },
       "Req": {
         "noRank": "Not {tracks}",

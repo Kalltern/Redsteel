@@ -32,6 +32,7 @@ import { EXPLOIT_WEAKNESS_KEY, hasDragonGuard } from "./dragonGuard.mjs";
 import { hasDragonSleep } from "./dragonSleep.mjs";
 import { hasFreeRiposte } from "./swordServant.mjs";
 import { isSlipThrough, pendingSlipThrough } from "./slipThrough.mjs";
+import { isHalfPirouette, pendingHalfPirouette } from "./halfPirouette.mjs";
 import { resolveWeaponContext } from "./weaponResolver.mjs";
 import { hasImpaleFollowup, IMPALE_FOLLOWUP_KEY } from "./impaleFollowup.mjs";
 import { OVERWATCH_KEY, overwatchTrigger } from "./overwatch.mjs";
@@ -995,6 +996,31 @@ function slipThroughChips(actor) {
   ];
 }
 
+/**
+ * Half Pirouette (Půlpirueta): offered for the rest of the turn a kill, or a
+ * landed Counterattack or Riposte, happened in (halfPirouette.mjs). After a
+ * plain Counterattack or Riposte it targets the opponent, so the Aim goes on
+ * them unless the player targets someone else. A Free action; the Stamina is
+ * paid when it is used. Not an attack, so no Aimed Attack on right-click.
+ *
+ * @param {Actor} actor
+ * @returns {object[]}
+ */
+function halfPirouetteChips(actor) {
+  const pending = pendingHalfPirouette(actor);
+  if (!pending) return [];
+  const pirouette = actor.items.find(
+    (i) => i.type === "ability" && isHalfPirouette(i),
+  );
+  if (!pirouette) return [];
+  const chip = abilityChip(
+    pirouette,
+    "REDSTEEL.Bg3Hotbar.Suggest.FreeAction",
+    pending.kind === "counter" ? pending.target.id : null,
+  );
+  return [{ ...chip, aimable: false, hint: "" }];
+}
+
 /** Fallback icon of the Overwatch shot, for a status set without the ability. */
 const OVERWATCH_ICON = "icons/skills/ranged/arrows-triple-yellow-red.webp";
 
@@ -1073,7 +1099,7 @@ function combatProvider(actor) {
     ...reactionChips(actor), ...overpowerChips(actor), ...vigilantChips(actor),
     ...overwatchChips(actor), ...impaleFollowupChips(actor),
     ...escapeChips(actor), ...sustainChips(actor), ...stanceChips(actor),
-    ...slipThroughChips(actor)];
+    ...slipThroughChips(actor), ...halfPirouetteChips(actor)];
 }
 
 const PROVIDERS = [movementProvider, combatProvider];

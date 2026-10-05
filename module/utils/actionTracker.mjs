@@ -559,12 +559,18 @@ export function isTrackedTurn(actor) {
 /**
  * Movement modes an ability declares outside the actor's own turn
  * (abilityMovement.mjs): Quick Feet's step before a retaliation, Improved
- * Passing Strike's step after one, and Lunge Step's step toward an attacker.
+ * Passing Strike's step after one, Lunge Step's step toward an attacker, and
+ * Half Pirouette's step around the opponent after a Counterattack or Riposte.
  * Movement is otherwise a turn action, so the strip, the locked zone and the
  * drag caps ask isMovementTurn rather than isTrackedTurn, which lets these
  * steps show off-turn without opening Move and Sprint there.
  */
-const OFF_TURN_MODES = new Set(["quickFeet", "passingReaction", "lungeStep"]);
+const OFF_TURN_MODES = new Set([
+  "quickFeet",
+  "passingReaction",
+  "lungeStep",
+  "halfPirouette",
+]);
 
 /** Does this actor hold an unfinished off-turn step (Quick Feet and the like)? */
 export function hasOffTurnStep(actor) {

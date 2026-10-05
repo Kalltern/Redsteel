@@ -22,6 +22,7 @@ import {
   wireAttributeFollowups,
   renderMarginFollowupLine,
   renderVersusOutcome,
+  renderOwnMargin,
   settleVersusLoss,
   settleBreakFree,
   loadVersusIndex,
@@ -210,6 +211,7 @@ import {
   handleMentalDuelRound,
   handleMentalDuelPossess,
   handleMentalDuelDrain,
+  handleMentalStrainApply,
   handlePossessionRender,
   refreshPossessedActorTokens,
   resumeMentalDuel,
@@ -404,6 +406,8 @@ Hooks.once("init", function () {
   // Overpower (utils/overpower.mjs) rerolls a combat card the way the chat
   // reroll button does, without spending a reroll pool.
   game.redsteel.executeReroll = executeReroll;
+  game.redsteel.rerollWithPool = (message, rerun) =>
+    handleRerollClick(message, { rerun });
   game.redsteel.buildWeaponSetView = buildWeaponSetView;
   game.redsteel.evaluateDmgVsArmor = evaluateDmgVsArmor;
   game.redsteel.getSpellPower = getSpellPower;
@@ -1046,6 +1050,11 @@ Hooks.once("ready", () => {
     // Drain — only the active GM restores the Mind and ends the duel.
     if (data.type === "mentalDuelDrain") {
       await handleMentalDuelDrain(data);
+    }
+
+    // Mental Strain on a target the caster doesn't own — active GM applies it.
+    if (data.type === "mentalStrainApply") {
+      await handleMentalStrainApply(data);
     }
 
     // Not GM-gated: every client rebuilds the possessed token's sprite locally.
@@ -1745,6 +1754,7 @@ function buildDefenseRerollParts(
     defenseD100: d100,
     defenseCrit: critSuccess,
     defenseCritFailure: critFailure,
+    dodge: flags.rerollTokens.includes("dodge"),
   });
 
   // Same rule the original card used: the contest when this defense answered an
@@ -1780,7 +1790,11 @@ function buildDefenseRerollParts(
   // `consumed` rides along untouched: a claim already spent on the old card
   // stays spent, since rerolling the die does not hand the points back.
   if (flags.tempHealthGrant) {
-    out.tempHealthGrant = { ...flags.tempHealthGrant, defenseFailed };
+    out.tempHealthGrant = {
+      ...flags.tempHealthGrant,
+      defenseFailed,
+      criticalDefense,
+    };
   }
   if (flags.advantageousManeuver) {
     out.advantageousManeuver = { ...flags.advantageousManeuver, defenseFailed };
@@ -1814,6 +1828,7 @@ async function markRerolledAway(source, replacement) {
     !!source.flags?.effects ||
     !!source.flags?.redsteel?.versusTest ||
     !!source.flags?.redsteel?.versusFollowup ||
+    !!source.flags?.redsteel?.firstAidCard ||
     Array.isArray(source.flags?.redsteel?.rerollTokens);
   if (!carriesButtons) return;
   const isAuthor = source.isAuthor ?? source.author?.id === game.user.id;
@@ -1899,7 +1914,9 @@ async function executeReroll(message, sourceLabel, { extraFlags = {} } = {}) {
   // A versus Test card states who won. The reroll builds a fresh flavor, so
   // restate it against the new total rather than leaving the old verdict.
   const versusFollowup = message.getFlag("redsteel", "versusFollowup");
-  let followupOutcome = versusFollowup ? renderVersusOutcome(roll.total) : "";
+  let followupOutcome = versusFollowup
+    ? renderOwnMargin(roll, versusFollowup) + renderVersusOutcome(roll.total)
+    : "";
   // A versus Test that costs the loser (Distraction's Reaction) is charged or
   // refunded when the reroll flips who won.
   if (versusFollowup?.onLose) {
@@ -2014,8 +2031,14 @@ async function applyPendingCast(pendingCast, roll, critSuccess) {
  * Handle a click on a chat reroll button: resolve the rolling actor and the
  * test's skill, gather eligible reroll pools, let the user pick one when there
  * are several, then spend the charge and re-roll.
+ *
+ * `rerun` replaces the generic re-roll for cards whose outcome is more than the
+ * dice (the First Aid family): it is handed the pool's label, re-runs the whole
+ * attempt so the new result actually applies, and the old card is retired.
+ *
+ * @returns {Promise<boolean>} true when a charge was spent and the roll redone.
  */
-async function handleRerollClick(message) {
+async function handleRerollClick(message, { rerun = null } = {}) {
   // Who spends the reroll: the actor who made the roll when the message
   // carries one. Older/actorless messages fall back to the clicking user's
   // controlled token (must be owned — this is how a GM picks the character),
@@ -2031,7 +2054,7 @@ async function handleRerollClick(message) {
     ui.notifications.warn(
       "No actor found for this roll — select the character's token and try again.",
     );
-    return;
+    return false;
   }
 
   // Roll tokens this card can be rerolled against. Attack/defense cards carry a
@@ -2063,13 +2086,13 @@ async function handleRerollClick(message) {
         ? "No rerolls available that can reroll a Critical Failure."
         : "No eligible rerolls available.",
     );
-    return;
+    return false;
   }
 
   let chosen = eligible[0];
   if (eligible.length > 1) {
     chosen = await pickRerollPool(eligible);
-    if (!chosen) return; // cancelled
+    if (!chosen) return false; // cancelled
   }
 
   const spent = await consumeReroll(actor, chosen.itemId, chosen.poolIndex, {
@@ -2077,7 +2100,7 @@ async function handleRerollClick(message) {
   });
   if (!spent) {
     ui.notifications.warn("That reroll is already spent.");
-    return;
+    return false;
   }
 
   try {
@@ -2086,7 +2109,13 @@ async function handleRerollClick(message) {
     console.warn("Redsteel | Calendaria scheduling failed", err);
   }
 
-  await executeReroll(message, chosen.label);
+  if (rerun) {
+    const created = await rerun(chosen.label);
+    await markRerolledAway(message, created);
+  } else {
+    await executeReroll(message, chosen.label);
+  }
+  return true;
 }
 
 // A card that has been rerolled away keeps its dice in the log but loses its
@@ -2133,13 +2162,16 @@ Hooks.on("renderChatMessageHTML", (message, html, data) => {
     // Match 1d100 tests as well as advantage/disadvantage variants (2d100kl/kh)
     const hasTestRoll = message.rolls?.some((r) => /\d+d100/i.test(r.formula));
 
-    // Stabilise messages carry their own Re-Roll button (which re-applies the
-    // outcome); the generic one can't, so skip it for those. Mental Duel cards
+    // First Aid cards (every action of the First Aid button, in or out of
+    // combat) carry their own Re-Roll button, which spends a First Aid reroll
+    // and re-runs the attempt so the outcome applies; the generic one can't,
+    // so skip it for those (see registerFirstAidHealing). Mental Duel cards
     // are posted only after both sides locked their dice in — the reroll step
     // lives in the duel window, so the generic button would be a lie here.
     if (
       hasTestRoll &&
       !message.getFlag("redsteel", "stabilise") &&
+      !message.getFlag("redsteel", "firstAidCard") &&
       !message.getFlag("redsteel", "mentalDuel")
     ) {
       const rerollButton = document.createElement("button");
@@ -3564,10 +3596,20 @@ ${critNote}
     const faces = [normalFaceHTML, ...baneFaces];
     let currentIndex = 0;
 
+    // Every Bane face shares the one Bane die, so the damage tray only has two
+    // states. Cards posted before the trays existed have none and skip this.
+    const normalTray = html.querySelector('.rs-damage-tray[data-tray="normal"]');
+    const baneTray = html.querySelector('.rs-damage-tray[data-tray="bane"]');
+
     pill.addEventListener("click", () => {
       currentIndex = (currentIndex + 1) % faces.length;
       faceEl.innerHTML = faces[currentIndex];
-      pill.classList.toggle("is-active", currentIndex !== 0);
+      const baneShown = currentIndex !== 0;
+      pill.classList.toggle("is-active", baneShown);
+      if (normalTray && baneTray) {
+        normalTray.style.display = baneShown ? "none" : "";
+        baneTray.style.display = baneShown ? "" : "none";
+      }
     });
   }
 
@@ -3644,6 +3686,35 @@ Hooks.on("deleteCombat", async (combat) => {
   if (!otherCombats) actors.push(...game.actors.contents);
 
   await clearTemporaryHealth(actors);
+});
+
+// Fast Reaction (and the Improved half) expire at the start of the actor's own
+// next turn. When the encounter ends, or the combatant leaves it, before that
+// turn comes, nothing would ever tick them down, so they are cleared here.
+const TURN_ORDER_ONLY_STATUSES = ["fast_reaction", "improved_fast_reaction"];
+
+async function clearTurnOrderEffects(actor) {
+  const ids = (actor?.effects?.contents ?? [])
+    .filter((e) => TURN_ORDER_ONLY_STATUSES.some((s) => e.statuses?.has(s)))
+    .map((e) => e.id);
+  if (!ids.length) return;
+  try {
+    await actor.deleteEmbeddedDocuments("ActiveEffect", ids);
+  } catch (err) {
+    console.error("redsteel | failed to clear Fast Reaction", actor, err);
+  }
+}
+
+Hooks.on("deleteCombat", async (combat) => {
+  if (game.user.id !== game.users.activeGM?.id) return;
+  for (const combatant of combat.combatants.contents) {
+    await clearTurnOrderEffects(combatant.actor);
+  }
+});
+
+Hooks.on("deleteCombatant", async (combatant) => {
+  if (game.user.id !== game.users.activeGM?.id) return;
+  await clearTurnOrderEffects(combatant.actor);
 });
 
 // Make "Margin of Success" lines clickable → follow-up attribute test, and

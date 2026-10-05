@@ -28,6 +28,10 @@ import {
 } from "../utils/itemIdentify.mjs";
 import { resourceLabel } from "../utils/itemResources.mjs";
 import {
+  parseAttributeKeys,
+  versusAgainstFor,
+} from "../utils/attributeFollowup.mjs";
+import {
   FEATURE_SECTION_IDS,
   getBookFeaturePrice,
 } from "../helpers/progressionEngine.mjs";
@@ -325,6 +329,22 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
       // You can factor out context construction to helper functions
       tabs: this._getTabs(options.parts),
     };
+
+    // The defender's attributes for this item's versus Test, as ticks. An
+    // owned copy that predates the field shows its compendium original's set
+    // (what the chat line already uses), so a first tick keeps the rest.
+    const versusAgainst = new Set(parseAttributeKeys(versusAgainstFor(this.item)));
+    context.versusAgainstOptions = ["str", "dex", "end", "int", "wil", "cha", "per"].map(
+      (key) => {
+        const path = `REDSTEEL.Actor.Character.Attribute.${key.charAt(0).toUpperCase()}${key.slice(1)}`;
+        return {
+          key,
+          abbr: game.i18n.localize(`${path}.abbr`),
+          label: game.i18n.localize(`${path}.long`),
+          checked: versusAgainst.has(key),
+        };
+      },
+    );
 
     // A feature's Learn window block (feature.hbs): the book's price shows
     // faintly in empty cost boxes, and the section select lists the Learn
@@ -780,6 +800,17 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
     const root =
       this.element instanceof HTMLElement ? this.element : this.element?.[0];
     if (root) root.dataset.ttWindow = "";
+
+    // Versus Test defender ticks are unnamed, so the form submit skips them;
+    // each change writes the whole ticked set as "str,end" ("" = any).
+    root?.querySelectorAll("input[data-versus-against]").forEach((box) => {
+      box.addEventListener("change", (event) => {
+        event.stopPropagation();
+        const keys = [...root.querySelectorAll("input[data-versus-against]:checked")]
+          .map((el) => el.dataset.versusAgainst);
+        this.document.update({ "system.versusAgainst": keys.join(",") });
+      });
+    });
 
     // You may want to add other special handling here
     // Foundry comes with a large number of utility classes, e.g. SearchFilter

@@ -460,7 +460,8 @@
         {{!-- The requirements row. One chip per clause the book puts on that
               rank: dimmed once the character satisfies it, bright while it is
               still blocking. A teacher clause is the cap badge, which the GM
-              clicks to grant or revoke that track's trainer. Both layouts get
+              clicks to grant or revoke that track's trainer (right-click for
+              the lessons pop-up) and a player clicks to tick off lessons. Both layouts get
               this row, and a rank the book asks nothing of stays empty. --}}
         <div class="rs-learn-gutter rs-learn-rowlabel is-reqs" style="{{this.reqLabelStyle}}">{{localize "REDSTEEL.Learn.requirements"}}</div>
         {{#each this.cells}}
@@ -470,7 +471,7 @@
           {{#each this.reqChips}}
           {{#if this.teacher}}
           <a class="rs-learn-teacher {{this.cls}}" data-action="toggleTeacher"
-             data-track-id="{{this.trackId}}" data-rank="{{this.rank}}"
+             data-track-id="{{this.trackId}}" data-rank="{{this.rank}}" data-tier="{{this.tier}}"
              data-tooltip="{{this.tooltip}}">
             <i class="fas fa-graduation-cap"></i><b>{{this.roman}}</b>
           </a>
@@ -1288,7 +1289,7 @@
             {{#each spec.reqChips}}
             {{#if this.teacher}}
             <a class="rs-learn-teacher {{this.cls}}"
-               {{#if @root.isGM}}data-action="toggleSpecTeacher" data-spec="{{this.specId}}"{{/if}}
+               data-action="toggleSpecTeacher" data-spec="{{this.specId}}" data-tier="{{this.tier}}"
                data-tooltip="{{this.tooltip}}">
               <i class="fas fa-graduation-cap"></i><b>{{this.roman}}</b>
             </a>
@@ -1338,8 +1339,9 @@
                     price, and the cap of the trainer the book gates the star
                     on. The cap sits beside the price rather than on the star,
                     where it covered the artwork. Gold once the GM has granted
-                    the teacher for THIS star, dim while it is missing. Only
-                    the GM's cap is a control, and it is the one thing in the
+                    the teacher for THIS star, dim while it is missing. The
+                    GM's click grants it, a player's opens the lessons pop-up.
+                    The cap is the one thing in the
                     label that takes a pointer, so its own data-action wins
                     over the star's buy/refund one. --}}
               <span class="spec-node-label">{{localize node.label}}<span class="spec-node-meta">
@@ -1348,7 +1350,7 @@
                 {{~/if~}}
                 {{~#if node.teacher~}}
                 <span class="spec-node-teacher {{node.teacher.cls}}"
-                      {{#if node.teacher.action}}data-action="{{node.teacher.action}}" data-spec="{{node.teacher.specId}}" data-node="{{node.teacher.nodeId}}"{{/if}}
+                      data-action="{{node.teacher.action}}" data-spec="{{node.teacher.specId}}" data-node="{{node.teacher.nodeId}}" data-tier="{{node.teacher.tier}}" data-title="{{localize node.label}}"
                       data-tt-kind="text" data-tt-text="{{node.teacher.tooltip}}"><i class="fas fa-graduation-cap"></i><b>{{node.teacher.roman}}</b></span>
                 {{~/if~}}
               </span></span>
@@ -1479,7 +1481,7 @@
           {{#each spec.reqChips}}
           {{#if this.teacher}}
           <a class="rs-learn-teacher {{this.cls}}"
-             {{#if @root.isGM}}data-action="toggleSpecTeacher" data-spec="{{this.specId}}"{{/if}}
+             data-action="toggleSpecTeacher" data-spec="{{this.specId}}" data-tier="{{this.tier}}"
              data-tooltip="{{this.tooltip}}">
             <i class="fas fa-graduation-cap"></i><b>{{this.roman}}</b>
           </a>

@@ -244,6 +244,7 @@ export async function restateDefense(data) {
     defenseD100: d100,
     defenseCrit: critSuccess,
     defenseCritFailure: critFailure,
+    dodge: tokens.includes("dodge"),
   });
   if (!versus.versus) return;
   const defenseFailed = !versus.versus.blocked;
@@ -271,6 +272,8 @@ export async function restateDefense(data) {
   if (flags.defense) update["flags.redsteel.defense.succeeded"] = !defenseFailed;
   if (flags.tempHealthGrant) {
     update["flags.redsteel.tempHealthGrant.defenseFailed"] = defenseFailed;
+    update["flags.redsteel.tempHealthGrant.criticalDefense"] =
+      versus.versus.critical === "defense";
   }
   if (flags.advantageousManeuver) {
     update["flags.redsteel.advantageousManeuver.defenseFailed"] = defenseFailed;

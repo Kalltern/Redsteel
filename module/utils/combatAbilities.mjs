@@ -2,6 +2,7 @@ import { getTraitPills } from "./traitPills.mjs";
 import { dragonGuardTags } from "./dragonGuard.mjs";
 import { chargeDistanceAllowed, paidAbilityCost } from "./swordServant.mjs";
 import { isSlipThrough, useSlipThrough } from "./slipThrough.mjs";
+import { isHalfPirouette, useHalfPirouette } from "./halfPirouette.mjs";
 import { DRAGON_SLEEP_STATUS, takeDragonSleep } from "./dragonSleep.mjs";
 import { withRollBias, tagRollSkill, tagRollItemAdvantage } from "./rollAdvantage.mjs";
 import { selectAimedPart, AIMED_PARTS } from "./aimedStrike.mjs";
@@ -12,7 +13,7 @@ import {
   previewSneakTrigger,
   sneakTriggerLabel,
 } from "./sneakTriggers.mjs";
-import { renderDamageWithSneak } from "./damageLine.mjs";
+import { renderDamageTrays } from "./damageLine.mjs";
 import { ruleActive } from "./abilityGrants.mjs";
 import { getAttackRerollTokens } from "./rerolls.mjs";
 import { buildBanePacket } from "./baneCombat.mjs";
@@ -532,6 +533,14 @@ export async function combatAbilities({
     // the move behind the opponent or the penalty (slipThrough.mjs). With
     // nothing pending it falls through to its plain Dexterity card.
     if (isSlipThrough(ability) && (await useSlipThrough(actor, ability))) {
+      if (!keepOpen) dialog?.close();
+      return;
+    }
+
+    // Half Pirouette after a kill or a landed Counterattack or Riposte: the
+    // move and the Aim (halfPirouette.mjs). With nothing pending it falls
+    // through to its plain card.
+    if (isHalfPirouette(ability) && (await useHalfPirouette(actor, ability))) {
       if (!keepOpen) dialog?.close();
       return;
     }
@@ -1593,11 +1602,12 @@ ${
 
     if (damageRoll) {
       // One damage box with a declared sneak's dice folded in — see
-      // renderDamageWithSneak. This card supplies its own `content`, so a roll
+      // renderDamageTrays, which also adds the hidden Bane tray. This card supplies its own `content`, so a roll
       // left only in `rolls` is never drawn at all.
-      damageHTML = await renderDamageWithSneak(
+      damageHTML = await renderDamageTrays(
         damageRoll,
         sneakDeclared ? sneakRoll : null,
+        banePacket ? baneRoll : null,
       );
     }
     const hasBreakthrough =

@@ -573,9 +573,16 @@ export class RedsteelActiveEffect extends ActiveEffect {
     const actor = combat.combatant?.actor;
     if (!actor) return;
 
-    for (const effect of actor.effects) {
-      await effect.executeTrigger?.("onTurnStart");
-      await effect.decrementActorTurn?.();
+    // Snapshot, since the loop deletes effects as their clocks run out. Each
+    // effect is ticked on its own: one trigger that throws must not leave every
+    // effect after it frozen at its current duration.
+    for (const effect of actor.effects.contents) {
+      try {
+        await effect.executeTrigger?.("onTurnStart");
+        await effect.decrementActorTurn?.();
+      } catch (err) {
+        console.error("Redsteel | turn-start tick failed", effect, err);
+      }
     }
 
     // Advance any in-combat First Aid the actor has committed to.

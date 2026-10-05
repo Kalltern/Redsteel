@@ -7,7 +7,7 @@ import { attackerSneakTriggers } from "./sneakTriggers.mjs";
 import { ruleActive } from "./abilityGrants.mjs";
 import { getAttackRerollTokens } from "./rerolls.mjs";
 import { buildBanePacket } from "./baneCombat.mjs";
-import { renderDamageLine, renderDamageWithSneak } from "./damageLine.mjs";
+import { renderDamageLine, renderDamageTrays } from "./damageLine.mjs";
 import { hasHtmlContent } from "./chatBlocks.mjs";
 import { appendHeavyWeaponDamage } from "./weaponResolver.mjs";
 import {
@@ -19,6 +19,7 @@ import { resolveTestRating } from "./testRating.mjs";
 import {
   renderMarginFollowupLine,
   versusLossFor,
+  versusAgainstFor,
 } from "./attributeFollowup.mjs";
 import { renderAttackTagsHtml } from "./opportunityAttacks.mjs";
 import { captureAttackTargets } from "./autoDefense.mjs";
@@ -234,6 +235,7 @@ export async function universalAttackLogic({
       chance: attributeTotalValue,
       result: attributeRoll.result,
       onLose: versusLossFor(mod),
+      against: versusAgainstFor(mod),
       heading: mod.localizedName ?? mod.name,
     })}
     </td>
@@ -546,9 +548,13 @@ export async function universalAttackLogic({
     // Only a *declared* sneak is merged. A promotion is decided per victim at
     // Apply Damage, so folding its parked roll into every swing's damage box
     // would show damage the card is not doing.
-    const damageHTML = await renderDamageWithSneak(
+    //
+    // The Bane die gets its own hidden tray, shown when the Bane pill flips
+    // the card (see renderDamageTrays).
+    const damageHTML = await renderDamageTrays(
       damageRoll,
       sneakDeclared ? sneakRoll : null,
+      banePacket ? baneDamageRoll : null,
     );
     const modifierLabel = selectedModifiers.length
       ? ` + ${selectedModifiers.map((m) => m.localizedName ?? m.name).join(", ")}`

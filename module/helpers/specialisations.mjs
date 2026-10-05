@@ -309,8 +309,8 @@ const CODE_AUTOMATED_NODES = {
   // (medium crit hit, heavy crit damage/penetration) and utils/defense.mjs
   // (medium crit defense). primaryDamage is documents/item.mjs (the attribute
   // term of the weapon formula x1.5). zbrojnos1 is utils/applyDamage.mjs
-  // (light: durability sacrifice) and the granted Armiger feature's reroll
-  // pool, gated in utils/rerolls.mjs (heavy). zbrojnos2 is utils/defense.mjs
+  // (light: durability sacrifice) and utils/rerolls.mjs NODE_REROLL_POOLS
+  // (heavy: the node's own once a day reroll). zbrojnos2 is utils/defense.mjs
   // (light: dodge crit and cost; heavy: Deflect). veteran1 is
   // utils/applyDamage.mjs (the Veteran toggle), veteran2 utils/veteranRest.mjs
   // (Free rest on a Critical Defense). presileni is utils/overpower.mjs,

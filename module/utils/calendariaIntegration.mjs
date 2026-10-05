@@ -27,6 +27,7 @@
  * actor flag is the source of truth. If no GM is online when a note request
  * is made, the note simply never appears; the schedule still fires normally.
  */
+import { isNodeRerollId, refreshNodeRerollPool } from "./rerolls.mjs";
 
 /** Guards overlapping "day changed" processing runs. */
 let processing = false;
@@ -546,6 +547,18 @@ async function processActorEntries(actor, pending, now, api) {
 
 /** Reset one pool's `used` count and post a refresh chat card, if it had spent charges. */
 async function processRerollRefresh(actor, entry) {
+  // A specialisation node's pool (Zbrojnoš I) has no item to update.
+  if (isNodeRerollId(entry.itemId)) {
+    if (!(await refreshNodeRerollPool(actor, entry.itemId))) return;
+    await ChatMessage.create({
+      speaker: ChatMessage.getSpeaker({ actor }),
+      content: `<p style="font-size:1.1em;">${game.i18n.format(
+        "REDSTEEL.Calendaria.Chat.rerollRefreshed",
+        { actor: actor.name, label: entry.poolLabel ?? "" },
+      )}</p>`,
+    });
+    return;
+  }
   const item = actor.items.get(entry.itemId);
   if (!item) return;
   const reroll = item.system?.reroll ?? {};

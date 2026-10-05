@@ -10,6 +10,14 @@
       "Failed": "{name} neuspěl: Obrana a Úhyb -10 % na jeden tah.",
       "FailEffect": "Neúspěšné prosmýknutí"
     },
+    "HalfPirouette": {
+      "MovedIn": "{name} vstoupí na místo, kde stál {target}.",
+      "Blocked": "{name} nemůže vstoupit na místo, kde stál {target}: hexa je obsazená.",
+      "Step": "{name} smí udělat jednu hexu kolem {target}. Krok nevyvolá příležitostný útok.",
+      "Aim": "{name} získává {stacks} Míření na {target} (nyní {after}).",
+      "NoAimTarget": "V dosahu není žádný nepřítel, na kterého by šlo mířit.",
+      "PickPrompt": "Na kterého nepřítele v dosahu získat Míření?"
+    },
     "AllyPass": {
       "Title": "Propustit spojence?",
       "Body": "{mover} chce projít přes pole, na kterém stojí {ally}. Propuštění stojí postavu {ally} její Reakci.",
@@ -238,7 +246,8 @@
         "HoldStance": "Kliknutí: udržet postoj ({cost})",
         "DropStance": "Pravé tlačítko: opustit postoj",
         "MoreMovement": "Další pohyby",
-        "LungeStep": "Přískok"
+        "LungeStep": "Přískok",
+        "HalfPirouette": "Krok půlpiruety"
       },
       "ShowArmor": "Zobrazit zbroj podle typu poškození",
       "ShowConditions": "Zobrazit stavy",
@@ -846,7 +855,7 @@
             },
             "zbrojnos1": {
               "label": "Zbrojnoš I",
-              "description": "10 CP. Pasivní. Lehká zbroj: Obětování Života zbroje/štítu snižuje zranění o dalších 5. Těžká zbroj: Možnost 1x za den opakovat hod na Obranu nebo Kryt. Počítá se jen nejsvrchnější vrstva zbroje. Automatizováno: bonus se přičte ke každému obětování v okně Aplikovat zranění a uzel uděluje odbornost Zbrojnoš, jejíž opakování hodu se nabízí jen s těžkou zbrojí navrchu. Obnoví se Dlouhým odpočinkem."
+              "description": "10 CP. Pasivní. Lehká zbroj: Obětování Života zbroje/štítu snižuje zranění o dalších 5. Těžká zbroj: Možnost 1x za den opakovat hod na Obranu nebo Kryt. Počítá se jen nejsvrchnější vrstva zbroje. Automatizováno: bonus se přičte ke každému obětování v okně Aplikovat zranění a opakování hodu drží sám uzel. Najdeš ho v záložce Rysy, Opakování hodů a nabízí se jen s těžkou zbrojí navrchu. Obnoví se Dlouhým odpočinkem."
             },
             "zbrojnos2": {
               "label": "Zbrojnoš II",
@@ -4127,10 +4136,12 @@
             "label": "Úhyb"
           },
           "combat": {
-            "label": "Souboj"
+            "label": "Souboj",
+            "ratingLabel": "Útok na blízko"
           },
           "archery": {
-            "label": "Střelba"
+            "label": "Střelba",
+            "ratingLabel": "Útok na dálku"
           },
           "channeling": {
             "label": "Usměrňování"
@@ -4642,8 +4653,7 @@
           },
           "versusAgainst": {
             "label": "Versus (obránce)",
-            "hint": "Vlastnosti, kterými smí obránce odpovědět na tento versus Test, klíče oddělené čárkou (str, dex, end, int, wil, cha, per). Prázdné = libovolná vlastnost.",
-            "placeholder": "str, end"
+            "hint": "Vlastnosti, kterými smí obránce odpovědět na tento versus Test. Levé kliknutí na rozdíl hodí nejlepší z označených. Bez označení = libovolná vlastnost."
           },
           "opportunityAttack": {
             "label": "Příležitostný útok",
@@ -5418,7 +5428,8 @@
     "Reroll": {
       "Superseded": "Přehozeno — tento výsledek už neplatí.",
       "Used": "Přehozeno pomocí: {source}.",
-      "Free": "Přehozeno bez spotřebování přehozu."
+      "Free": "Přehozeno bez spotřebování přehozu.",
+      "PatientGone": "Pacient tohoto pokusu už na scéně není."
     },
     "RollTriggers": {
       "Hint": "Odděleno čárkami. Štítky se zobrazí v chatu, když padne odpovídající hod. Vlastnosti piš zkratkou (str, res). Přidej -gm k jakémukoli spouštěči (universal-gm, str-based-gm) a jeho štítek uvidí jen GM. long-rest zobrazí štítek na kartě dlouhého odpočinku postavy (universal na ni nedosáhne).",
@@ -5440,15 +5451,17 @@
     },
     "Versus": {
       "ViaFeature": "{label} ({rating}), díky odbornosti",
-      "ClickHint": "Levé tlačítko: hodí tvou nejlepší vlastnost. Pravé tlačítko: vyber vlastnost.",
+      "ClickHint": "Levé tlačítko: hodí tvou nejlepší vlastnost, kterou test povoluje. Pravé tlačítko: vyber vlastnost.",
       "Blocked": "Ubráněno",
       "Hit": "Zásah",
       "Tie": "Shoda, útok prochází",
       "Detail": "Útok {attack} vs Obrana {defense} ({gap})",
       "CriticalDefense": "Kritická obrana",
+      "CriticalDodge": "Kritický úhyb",
       "CriticalHit": "Kritický zásah",
       "DeniedOnDice": "Oba kritické, síla úspěchu se ignoruje. Útok hodil {attack}, obrana {defense}.",
-      "DialogAttackMargin": "Obrana proti útoku o síle {margin}"
+      "DialogAttackMargin": "Obrana proti útoku o síle {margin}",
+      "OwnMargin": "Vlastní SÚ {own} vs {opposing}"
     },
     "Fold": {
       "CriticalSuccess": "Kritický úspěch!",
@@ -5874,7 +5887,7 @@
       "invisible": "Neviditelný. Značka, řeší se u stolu.",
       "charm": "Okouzlený: následuje a chrání sesilatele. Značka, řeší se u stolu.",
       "frenzy": "Běsnící: ztrácí kontrolu a útočí na vše v okolí. Značka, řeší se u stolu. Trvá 3 tahy.",
-      "mental_strain": "Mentální vytížení, předpoklad pro Mentální souboj nebo Rozkaz. Značka, řeší se u stolu.",
+      "mental_strain": "Mentální vytížení, předpoklad pro Mentální souboj nebo Rozkaz. Úspěch -20% (vyjma Mentálního souboje a Testů Vůle).",
       "haste": "+1 k Rychlosti a +4 k Iniciativě. Akce navíc se řeší u stolu.",
       "fast_reaction": "+4 k Iniciativě za každý stupeň, počítá se do hodu na iniciativu v dalším kole. Vyprší na začátku dalšího tahu nositele.",
       "flight": "Létá. Rychlost je nastavena na 8.",
@@ -5923,7 +5936,16 @@
       "shield_physical": "Pohlcuje fyzické zranění před zbrojí ze zásoby 15 + 4×SK. Lze ho rozptýlit a nahrazuje ostatní štíty.",
       "shield_magic": "Pohlcuje magické zranění ze zásoby 15 + 4×SK, jeden větší zásah pohltí celý a blokuje efekty magických zásahů. Nelze ho rozptýlit a nahrazuje ostatní štíty.",
       "shield_elemental": "Pohlcuje fyzické zranění a jeden zvolený živel (Oheň, Mráz, Blesk, nebo Kyselinu a Jed) ze zásoby 20 + 5×SK. Změna živlu stojí 3 many, platí se ručně. Nahrazuje ostatní štíty.",
-      "blood_shield": "Pohlcuje fyzické zranění. Vzniká, když nositel ztratí Životy zásahem, v hodnotě poloviny ztracených Životů, a další zásahy zásobu navyšují. Mizí na začátku dalšího kola."
+      "blood_shield": "Pohlcuje fyzické zranění. Vzniká, když nositel ztratí Životy zásahem, v hodnotě poloviny ztracených Životů, a další zásahy zásobu navyšují. Mizí na začátku dalšího kola.",
+      "mental_focus": "+10 % na Mentální souboj za každou úroveň, v útoku i v obraně. Každé použití stojí 1 akci a přidá úroveň. Trvá do začátku dalšího tahu."
+    },
+    "MentalDuel": {
+      "Focus": {
+        "Name": "Usilovná koncentrace",
+        "Button": "Koncentrace (1 akce)",
+        "Hint": "Utrať 1 akci: +{bonus} % na Mentální souboj do tvého dalšího tahu. Každé použití se sčítá.",
+        "NoActions": "V tomto kole ti nezbývají žádné akce."
+      }
     },
     "Note": {
       "attributes": "Vlastnosti",
@@ -6223,10 +6245,6 @@
       },
       "Argos": {
         "name": "Argosové"
-      },
-      "Armiger": {
-        "name": "Zbrojnoš",
-        "description": "<p>Mistr zbraní, Zbrojnoš I (těžká zbroj). Jednou za den může opakovat hod na Obranu nebo Kryt, pokud má jako nejsvrchnější vrstvu zbroje oblečenou těžkou zbroj. Uděluje se automaticky uzlem Zbrojnoš I.</p>"
       },
       "ArmorTrainingI": {
         "name": "Výcvik se zbrojí I"
@@ -9013,7 +9031,18 @@
       },
       "Teacher": {
         "grant": "Klikni pro udělení.",
-        "revoke": "Klikni pro odebrání."
+        "revoke": "Klikni pro odebrání.",
+        "lessons": "Klikni pro sledování výuky.",
+        "gmLessons": "Pravým klikem sleduješ výuku."
+      },
+      "Lessons": {
+        "teacher": "Učitel",
+        "days": "{days} d",
+        "progress": "{done} / {required} dní",
+        "left": "zbývá {left}",
+        "taught": "Vyučeno",
+        "base": "Základní délka",
+        "mentor": "Učitel je Mentor"
       },
       "Req": {
         "noRank": "Bez {tracks}",
