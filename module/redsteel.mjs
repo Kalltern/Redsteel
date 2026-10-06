@@ -553,6 +553,7 @@ Hooks.once("init", function () {
   registerFirstAidHealing();
   registerMentalDuelSetting();
   registerLongRestRations();
+  registerCreationStarting();
   registerCurrency();
   registerAbilityGrants();
   registerSkillMirrors();
@@ -659,6 +660,19 @@ function registerKeepDialogOpen() {
     config: false,
     type: Boolean,
     default: false,
+  });
+}
+
+function registerCreationStarting() {
+  // The CP and SP a character made in the creation window starts with (user
+  // ruling 2026-10-06: 15 CP, 50 SP for a Human, 40 SP for any other race).
+  // The GM edits it in Party Management; progressionEngine reads it through
+  // getCreationStartingDefaults.
+  game.settings.register("redsteel", "creationStarting", {
+    scope: "world",
+    config: false,
+    type: Object,
+    default: { cp: 15, spHuman: 50, spOther: 40 },
   });
 }
 

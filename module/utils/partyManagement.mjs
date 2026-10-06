@@ -21,6 +21,7 @@
  */
 
 import {
+  getCreationStartingDefaults,
   getLedger,
   getLedgerMaterializeUpdate,
   getWallet,
@@ -39,6 +40,17 @@ const LEDGER_FIELDS = ["starting", "bonus"];
 const LEDGER_CURRENCIES = ["cp", "sp"];
 
 const label = (key) => game.i18n.localize(`REDSTEEL.PartyManagement.${key}`);
+
+/**
+ * The new-character starting figures, read back through the engine so the
+ * window shows exactly what a creation would use.
+ * @returns {{cp:number, spHuman:number, spOther:number}}
+ */
+function readCreationStarting() {
+  const human = getCreationStartingDefaults({ getFlag: () => ({ race: "human" }) });
+  const other = getCreationStartingDefaults(null);
+  return { cp: human.cp, spHuman: human.sp, spOther: other.sp };
+}
 
 /* -------------------------------------------- */
 /*  Ledger helpers                              */
@@ -651,6 +663,7 @@ class PartyManagement extends HandlebarsApplicationMixin(ApplicationV2) {
     return {
       ...context,
       draft: { cp: draft.cp, sp: draft.sp, note: draft.note, date: draft.date },
+      creationStarting: readCreationStarting(),
       rows,
       hasRows: rows.length > 0,
       allTicked: rows.length > 0 && rows.every((r) => r.ticked),
@@ -735,6 +748,10 @@ class PartyManagement extends HandlebarsApplicationMixin(ApplicationV2) {
       };
       input.addEventListener("change", commit);
       input.addEventListener("focusout", commit);
+    }
+
+    for (const input of root.querySelectorAll("input[data-creation-starting]")) {
+      input.addEventListener("change", () => this.#commitCreationStarting(input));
     }
 
     const master = root.querySelector("input.rs-party-tick-all");
@@ -838,6 +855,27 @@ class PartyManagement extends HandlebarsApplicationMixin(ApplicationV2) {
     } finally {
       this.#committing.delete(key);
       drafts.delete(key);
+    }
+    this.#queueRender();
+  }
+
+  /**
+   * Write one of the new-character starting figures. Blank, non-numeric or
+   * negative input is dropped and the stored figure shown again.
+   */
+  async #commitCreationStarting(input) {
+    const key = input.dataset.creationStarting;
+    const current = readCreationStarting();
+    if (!(key in current)) return;
+    const raw = String(input.value).trim();
+    const value = Math.trunc(Number(raw));
+    if (raw === "" || !Number.isFinite(value) || value < 0) {
+      if (raw !== "") ui.notifications.warn(label("StartingInvalid"));
+      this.#queueRender();
+      return;
+    }
+    if (value !== current[key]) {
+      await game.settings.set("redsteel", "creationStarting", { ...current, [key]: value });
     }
     this.#queueRender();
   }

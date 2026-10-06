@@ -4823,12 +4823,33 @@
         "noStarting": "The GM has not set this character's starting CP and SP yet. They do that in Party Management.",
         "finished": "{name} is ready."
       },
+      "Skills": {
+        "character": "Character",
+        "skills": "Your skills",
+        "points": "Points",
+        "noSkills": "Nothing taken yet. Pick a combat track or a skill from the roster.",
+        "boughtFeatures": "Bought features",
+        "unpick": "Remove from your skills",
+        "ledgerEmpty": "Pick a skill to see all its ranks.",
+        "spent": "Spent on this skill: {cost}",
+        "total": "Total: {cost}",
+        "roster": "Roster",
+        "rosterCombat": "Combat",
+        "rosterSkills": "Skills",
+        "rosterFeatures": "Features",
+        "acquire": "Acquire skill",
+        "previewHint": "Preview only. Use the book beside it in the roster to acquire it.",
+        "stoppedAt": "Bought up to rank {rank}. Rank {next} could not be bought.",
+        "allRanks": "All ranks: {cost}"
+      },
       "Details": {
-        "weaponsHeading": "Weapon skills",
-        "weaponsAdvice": "Choose the weapon each doctrine will train with.",
+        "weaponsAdvice": "Choose the weapon each doctrine will train with. Hover a card to see all ten of its ranks.",
+        "weaponFor": "{doctrine}: weapon skill",
+        "combatSkillFor": "{doctrine}: combat skill",
+        "weaponSkill": "Weapon skill",
+        "combatSkill": "Combat skill",
         "magicHeading": "Magical doctrine of the {school} school",
         "fixedWeapon": "{doctrine} trains with {weapon}.",
-        "combatSkillHeading": "Combat skills",
         "fixedCombatSkill": "{doctrine} fights with {skill}.",
         "fixedChanneling": "Your {school} magic is cast through {skill}.",
         "peltastAdvice": "Combat gives you better melee chances, but from rank V to rank X a slightly lower throwing chance than Archery. Archery gives you 10% more ranged chance (+5% at rank V and another +5% at rank VII), but over the ranks your melee attack and defense chances fall behind."
@@ -4842,7 +4863,7 @@
         "temperamentSchool": "Set by your temperament.",
         "kind": "Kind",
         "rank1": "Rank I costs",
-        "path": "Abilities",
+        "ranks": "Ranks",
         "weaponSkills": "Compatible weapon skills",
         "weapons": "Weapons",
         "Group": {
@@ -4860,7 +4881,74 @@
           "ranged": "Ranged",
           "special": "Special",
           "magical": "Magic"
-        }
+        },
+        "about": "About",
+        "requirements": "Weapon requirements",
+        "browse": "Browse weapons",
+        "prev": "Previous weapon",
+        "next": "Next weapon",
+        "page": "{n} of {total}",
+        "Info": {
+          "swordsman": {
+            "about": "The art of the long blade wielded in both hands. The Swordsman cuts wide, lunges from afar, turns well timed defences into counterattacks and leaves bleeding wounds behind.",
+            "weapons": "Swords held in both hands: a two handed sword such as the Longsword or Flamberge, or a Broadsword gripped in both hands. Trains with the Swords weapon skill."
+          },
+          "shieldbearer": {
+            "about": "A wall of steel and wood. The Shieldbearer fights from behind a shield, strikes and charges with it, guards nearby allies and closes their own flanks.",
+            "weapons": "One handed weapons only, since the other hand carries the shield: light and medium swords, axes, maces and flails, or a Spear held in one hand. Never a two handed weapon."
+          },
+          "reaver": {
+            "about": "Raw, brutal force. The Reaver swings heavy axes and hammers in wide cleaves, widens their critical range, throws themselves into frenzied attacks and knocks foes to the ground.",
+            "weapons": "Heavy axes, hammers and flails in both hands (Bardiche, Long Axe, Great Hammer, Two-Handed Flail), or a War Axe, War Hammer, War Pick or Flail gripped in both hands."
+          },
+          "pikeman": {
+            "about": "Master of reach. The Pikeman keeps enemies at a distance, impales charging foes, gains an edge against large creatures, punishes every opening with opportunity attacks and pushes enemies back.",
+            "weapons": "Polearms held in both hands: Halberd, Glaive, Bec de Corbin, or a Spear or melee Javelin gripped in both hands. Trains with the Polearms weapon skill."
+          },
+          "dimakerus": {
+            "about": "The two weapon fighter. The Dimakerus strikes with a weapon in each hand, unleashes flurries of attacks, answers blows with retaliating strikes and gains defence from the second blade.",
+            "weapons": "A one handed weapon in each hand: light or medium swords, axes, maces and flails. Some weapons, such as the Broadsword and the Throwing Knife, go in the off hand only."
+          },
+          "duelist": {
+            "about": "Precision over strength. The Duelist aims carefully, keeps their aim after landing a hit, dances around foes with the Duelist's Step and attacks on the move.",
+            "weapons": "A fencing weapon in the main hand (Rapier, Dagger or Military Cleaver) and, if wanted, a Fencing Dagger in the off hand. Trains with the Swords weapon skill."
+          },
+          "rogue": {
+            "about": "The dirty fighter. The Rogue strikes where it hurts, adds sneak attack damage against surprised or undefended foes and turns hits into new openings. The only doctrine that may sit beside another one.",
+            "weapons": "No single style: daggers, short blades, light maces, spears, bows and crossbows alike. The Rogue brings no weapon skill of their own and works with the weapons of their other doctrine."
+          },
+          "archer": {
+            "about": "The patient bowman. The Archer shoots more accurately, cripples targets, aims for weak spots and lands precise shots that pierce armour.",
+            "weapons": "Bows only: Hunting Bow, Reflex Bow or Longbow, always held in both hands. Fights with the Archery combat skill."
+          },
+          "arbalest": {
+            "about": "Heavy bolts from a steady stance. The Arbalest hits harder with every shot, aims for weak spots, cripples targets and keeps watch over the field.",
+            "weapons": "Crossbows only: Crossbow or Heavy Crossbow, always held in both hands. Fights with the Archery combat skill."
+          },
+          "peltast": {
+            "about": "The skirmisher. The Peltast hurls heavy javelins and axes that make foes bleed and stagger, throws on the run and unleashes frenzied volleys.",
+            "weapons": "Thrown weapons: Javelin and Throwing Axe. Throws with the Throwing skill and chooses Combat or Archery as their combat skill."
+          },
+          "juggler": {
+            "about": "Quick hands and light blades. The Juggler throws fast and precisely, lands critical hits more often, aims throws at weak spots and keeps watch over the field.",
+            "weapons": "Thrown weapons: Throwing Knife and Throwing Axe. Throws with the Throwing skill and fights with the Archery combat skill."
+          },
+          "elymas": {
+            "about": "The enduring mage. The Elymas builds a deep mana pool that grows with their power, recovers it over a long rest, wraps themselves in magical armour and steadies their spells.",
+            "weapons": "No weapon requirement. Needs a school of magic, which brings the Channeling skill."
+          },
+          "incantator": {
+            "about": "The battle caster. The Incantator gains a large, steady mana pool, strikes harder with spells, wraps themselves in magical armour and steadies their spells.",
+            "weapons": "No weapon requirement. Needs a school of magic, which brings the Channeling skill."
+          },
+          "veneficus": {
+            "about": "The warrior mage. The Veneficus recovers mana over a short rest, feeds Channeling and mana from their weapon attacks, suffers less from armour and learns to attack and cast in the same turn.",
+            "weapons": "Any weapon: the Veneficus fights with the weapons of their combat doctrine. Needs a school of magic, which brings the Channeling skill."
+          }
+        },
+        "damage": "Damage",
+        "damageType": "Damage type",
+        "skill": "Skill"
       },
       "Race": {
         "Vardur": "Vardur"
@@ -5614,6 +5702,11 @@
       "LedgerEmpty": "No awards yet.",
       "GrantTooltip": "Granted by {by}, recorded {created}",
       "StartingInvalid": "Starting CP and SP cannot be negative.",
+      "NewCharacters": "New characters start with",
+      "NewCharactersHint": "Starting CP and SP for a character made in the creation window. Typing a figure into a character's Starting cell overrides it for that character.",
+      "NewCp": "CP",
+      "NewSpHuman": "SP Human",
+      "NewSpOther": "SP other races",
       "DeleteTitle": "Delete award",
       "DeleteGrant": "Delete this award for everyone",
       "DeleteGrantConfirm": "Delete the award of {date} for everyone and take its CP and SP back?",
@@ -9082,6 +9175,93 @@
           "specNodeNamed": "Requires the {node} node of {spec}.",
           "masterFeature": "Requires {skill}: Master. No such feature exists yet, so the GM judges it.",
           "specScore": "The book asks for {spec} {min} without saying what it counts, so the GM judges it."
+        }
+      },
+      "TrackInfo": {
+        "combatSkills": {
+          "combat": "Cannot be taken with the Ranger specialisation.\n\nCover does not stack with Cover from Archery; only the higher rank counts.",
+          "archery": "Cannot be taken with the Ranger specialisation.\n\nCover does not stack with Cover from Combat; only the higher rank counts.",
+          "ranger": "Hit counts for Combat as well as for Archery and Throwing.",
+          "channeling": "The doctrine requirements can be replaced by the matching specialisation.",
+          "bloodManipulation": "Used to cast School of Blood spells by those without Magic Potential."
+        },
+        "doctrines": {
+          "pikeman": "Applies only to a two-handed Spear, Glaive, Bec de Corbin and Halberd, and a two-handed Trident.",
+          "swordsman": "Applies only to the Longsword and the Flamberge, and to a two-handed Broadsword, Military Cleaver, Sabre and Short Sword.",
+          "reaver": "Applies only to the Long Axe, Bardiche, Great Hammer and Two-Handed Flail, and to a two-handed War Hammer, War Pick, War Axe, Hatchet and Mace.",
+          "shieldbearer": "Applies only to Light and Medium weapons wielded together with an Improvised, Small, Medium or Large shield.",
+          "dimakerus": "Applies to almost any combination of Light and Medium weapons (see Armory).\n\nDoes not apply to the Fencing Dagger, Spear, Trident, Cestus, Fist, Javelin or Katar.",
+          "duelist": "Applies only to the Short Sword, Broadsword, Sabre, Dagger, Military Cleaver and Rapier.\n\nRequires a free hand, a Fencing Dagger, a Hand Crossbow or a Flintlock Pistol.",
+          "monk": "Applies only to the Staff, and to the Katar together with a Defensive Katar.",
+          "rogue": "Applies only to fine weapons, bows and crossbows. Cannot use a Medium or Large shield.",
+          "rider": "Applies only when fighting from the saddle with a suitable weapon.",
+          "archer": "Covers the Hunting Bow, Reflex Bow and Longbow.",
+          "arbalest": "Covers the Hand Crossbow, Light Crossbow, Heavy Crossbow and Dwarven Crossbow.",
+          "peltast": "Covers the Javelin (Throwing), Throwing Axe (Throwing) and Sling.",
+          "juggler": "Covers the Throwing Knife (Throwing), Throwing Axe (Throwing), the Petard and the like.",
+          "musketeer": "Covers the Musket and the Flintlock Pistol.",
+          "elymas": "Its bonuses count only for this doctrine.\n\nMana regenerates only on a Long Rest, and at later ranks once a day on a Short Rest.",
+          "incantator": "Its bonuses count only for this doctrine.\n\nMana regenerates only on a Long Rest.\n\nWithout a Focus item, an Incantator takes a 10% penalty to Channeling and a +2% chance of a Critical Failure.",
+          "veneficus": "Its bonuses count only for this doctrine.\n\nMana regenerates only on a Short Rest, and at later ranks in small amounts as a free action.\n\nFor every 150 mages regenerated, gains 1 degree of Fatigue (reset on a Long Rest).",
+          "elementalist": "Its bonuses count only for this doctrine. This doctrine cannot be changed.\n\nMana regenerates only on a Long Rest.",
+          "cordinas": "Its bonuses count only for this doctrine."
+        },
+        "weaponSkills": {
+          "swords": "Covers the Short Sword, Military Cleaver, Broadsword, Sabre, Rapier, Longsword, Flamberge, Dagger, Katar and Throwing Knife.",
+          "axes": "Covers the Hatchet, Throwing Axe, War Pick, War Axe and Long Axe.",
+          "blunt": "Covers the Baton, Mace, War Hammer, Flail, Two-Handed Flail and Great Hammer.",
+          "polearms": "Covers the Javelin, Musket, Spear, Trident, Glaive, Halberd, Bec de Corbin and Staff."
+        },
+        "schools": {
+          "fire": "Spell Power counts only for this school.\n\nLimited magic potential can reach at most rank VIII of a school.\n\nThe first school is unlocked through the temperament or a 1d7 roll, and is free. Further schools open up through the Wild Mage feature.",
+          "water": "Spell Power counts only for this school.\n\nLimited magic potential can reach at most rank VIII of a school.\n\nThe first school is unlocked through the temperament or a 1d7 roll, and is free. Further schools open up through the Wild Mage feature.",
+          "air": "Spell Power counts only for this school.\n\nLimited magic potential can reach at most rank VIII of a school.\n\nThe first school is unlocked through the temperament or a 1d7 roll, and is free. Further schools open up through the Wild Mage feature.",
+          "earth": "Spell Power counts only for this school.\n\nLimited magic potential can reach at most rank VIII of a school.\n\nThe first school is unlocked through the temperament or a 1d7 roll, and is free. Further schools open up through the Wild Mage feature.",
+          "spirit": "Spell Power counts only for this school.\n\nLimited magic potential can reach at most rank VIII of a school.\n\nThe first school is unlocked through the temperament or a 1d7 roll, and is free. Further schools open up through the Wild Mage feature.",
+          "body": "Spell Power counts only for this school.\n\nLimited magic potential can reach at most rank VIII of a school.\n\nThe first school is unlocked through the temperament or a 1d7 roll, and is free. Further schools open up through the Wild Mage feature.",
+          "darkness": "Spell Power counts only for this school.\n\nLimited magic potential can reach at most rank VIII of a school.\n\nThe first school is unlocked through the temperament or a 1d7 roll, and is free. Further schools open up through the Wild Mage feature."
+        },
+        "skills": {
+          "athletics": "Swimming, running, climbing and hard labor.",
+          "smithing": "Making and repairing.\n\nMaking armor and weapons requires the Armorer and Swordsmith features.",
+          "brawler": "Unarmed fighting and grapples.",
+          "muscles": "Grants a bonus to Strength Tests.",
+          "acrobacy": "Climbing and acrobatics (rope walking and the like).",
+          "nimbleness": "Grants a bonus to Dexterity Tests.",
+          "riding": "Controlling animals, staying in the saddle and the like.",
+          "pickpocketing": "Lifting small things from pockets and purses without the owner noticing.",
+          "sailing": "Everything to do with handling ships: sailing, steering and the like.",
+          "lockpicking": "Opening locks without the key.",
+          "stealth": "Moving without being noticed.",
+          "craft": "Choose one craft.",
+          "dancing": "Dancing, in company or on stage.",
+          "drinking": "On a success, takes only half the toxicity from alcohol and potions.\n\nDoes not apply to drugs.",
+          "alchemy": "Making alchemical things, and also knowing the plants and minerals useful in alchemy.",
+          "arcana": "Knowledge of magical phenomena.",
+          "engineering": "Covers varied knowledge of building machines, ships and buildings, including siege engines and how to operate them.",
+          "logic": "Forgery, cryptography, chess and possibly more.",
+          "firstAid": "Treats wounds and diseases and allows surgery. Also covers knowledge of medicinal plants.",
+          "tactics": "Affects effectiveness in larger conflicts. Also covers skill at tactical games such as chess.",
+          "art": "Choose one kind of art: musical composition, poetry, plays or writing books.",
+          "research": "Knowing the right methods and techniques to gather information efficiently. Also useful for developing new things.",
+          "deception": "Lying.",
+          "acting": "Also covers blending into a crowd and rhetoric.",
+          "music": "Choose singing or one musical instrument.",
+          "painting": "Painting and drawing.",
+          "persuasion": "Winning others over with words and arguments.",
+          "temptation": "Seduction, in short.",
+          "leadership": "Affects the effectiveness and morale of a small unit. A boon to the party.\n\nEvery rank unlocks new actions.",
+          "intimidation": "A form of persuasion built on physical threats and menace.",
+          "herbalism": "Gathering alchemical and medicinal herbs.",
+          "traps": "Disarming, dismantling, building and spotting traps.",
+          "survival": "Covers tracking, foraging, fishing, hunting, finding water, building makeshift shelters, gathering herbs and the like.",
+          "insight": "Seeing through lies.",
+          "animalHandling": "Taming, handling and getting along with animals. Also covers knowing how to care for them.",
+          "dreamwalker": "Lets you visit and influence the Dream World. Protecting and manipulating dreams.",
+          "meditation": "Once a day, allows a Meditation that restores 1 Mind.",
+          "mindBending": "Contests of will, mind against mind.",
+          "rituals": "Improves the chance of performing Rituals successfully. Choose one group: Necromancy, Demonology, Occultism, General, Priestly or Blood.",
+          "augury": "A chance to glimpse a person's future, foretell weather and disasters, and deliver Prophecies."
         }
       }
     }

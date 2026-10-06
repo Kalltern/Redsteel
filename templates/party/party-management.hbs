@@ -34,6 +34,23 @@
     </button>
   </section>
 
+  {{!-- Starting CP/SP for characters made in the creation window. --}}
+  <section class="rs-party-plate rs-party-grantbar rs-party-newchars">
+    <span class="rs-party-label rs-party-newchars-title" data-tooltip="{{localize "REDSTEEL.PartyManagement.NewCharactersHint"}}">{{localize "REDSTEEL.PartyManagement.NewCharacters"}}</span>
+    <label class="rs-party-field">
+      <span class="rs-party-label">{{localize "REDSTEEL.PartyManagement.NewCp"}}</span>
+      <input type="number" class="rs-party-input rs-party-amount" data-creation-starting="cp" data-focus-key="newchars-cp" min="0" step="1" value="{{creationStarting.cp}}">
+    </label>
+    <label class="rs-party-field">
+      <span class="rs-party-label">{{localize "REDSTEEL.PartyManagement.NewSpHuman"}}</span>
+      <input type="number" class="rs-party-input rs-party-amount" data-creation-starting="spHuman" data-focus-key="newchars-sphuman" min="0" step="1" value="{{creationStarting.spHuman}}">
+    </label>
+    <label class="rs-party-field">
+      <span class="rs-party-label">{{localize "REDSTEEL.PartyManagement.NewSpOther"}}</span>
+      <input type="number" class="rs-party-input rs-party-amount" data-creation-starting="spOther" data-focus-key="newchars-spother" min="0" step="1" value="{{creationStarting.spOther}}">
+    </label>
+  </section>
+
   {{!-- Party table --}}
   <section class="rs-party-plate rs-party-roster">
     {{#if hasRows}}

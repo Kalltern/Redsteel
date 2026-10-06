@@ -307,25 +307,33 @@ export async function resolveAutoDefense(message) {
   const flag = message.flags?.attack;
   if (flag?.type !== "attack") return;
 
+  // Every attack card that does not end in a defense says why, so a missing
+  // auto-defense can be traced from the console after the fact.
+  const skip = (reason, extra = {}) =>
+    console.info("Redsteel | auto-defense skipped:", reason, {
+      messageId: message.id,
+      ...extra,
+    });
+
   // A versus Test is answered by clicking the margin, not by a defense roll —
   // the same reason the Defend button stays off those cards.
-  if (flag.contested) return;
+  if (flag.contested) return skip("contested card");
 
   // A rerolled attack is the same blow with a different die. The defense that
   // already answered it is rerolled from its own card; rolling a second one here
   // would defend twice against one attack.
-  if (flag.suppressAutoDefense) return;
+  if (flag.suppressAutoDefense) return skip("rerolled attack");
 
   // A fumble is blocked by the versus rules whatever the defender rolls, so the
   // roll can only cost them stamina and an Overwhelm slot for nothing.
-  if (flag.criticalFailure === true) return;
+  if (flag.criticalFailure === true) return skip("attack fumbled");
 
   const targets = [...new Set(flag.targets ?? [])];
-  if (!targets.length) return;
+  if (!targets.length) return skip("attacker had nothing targeted");
 
   const scene =
     game.scenes?.get(message.speaker?.scene) ?? game.scenes?.current ?? null;
-  if (!scene) return;
+  if (!scene) return skip("no scene");
 
   const attackerTokenId = attackerTokenIdFromMessage(message);
 
@@ -338,7 +346,9 @@ export async function resolveAutoDefense(message) {
 
   // Nothing to contest means nothing to answer: an automatic defense here would
   // post a card with no versus line and charge the NPC stamina for it.
-  if (!Number.isFinite(Number(margin))) return;
+  if (!Number.isFinite(Number(margin))) {
+    return skip("attack has no margin", { margin });
+  }
 
   // Same shape the Defend button hands over. The crit flags matter because
   // natural criticals outrank the margins.
@@ -359,13 +369,34 @@ export async function resolveAutoDefense(message) {
   const category = defenseCategory(flag.attackType);
 
   for (const tokenId of targets) {
-    if (tokenId === attackerTokenId) continue;
+    if (tokenId === attackerTokenId) {
+      skip("target is the attacker", { tokenId });
+      continue;
+    }
 
     const tokenDoc = scene.tokens.get(tokenId);
     const actor = tokenDoc?.actor;
-    if (!actor || !autoDefends(actor)) continue;
+    if (!actor) {
+      skip("target token not on this scene", { tokenId, scene: scene.name });
+      continue;
+    }
+    if (!autoDefends(actor)) {
+      // PCs land here on every attack, so only an NPC with the toggle off
+      // is worth a line.
+      if (actor.type === "npc") {
+        skip("auto-defense switched off", { token: tokenDoc.name });
+      }
+      continue;
+    }
 
-    if (BLOCKING_STATUSES.some((status) => actor.statuses?.has(status))) {
+    const blocking = BLOCKING_STATUSES.filter((status) =>
+      actor.statuses?.has(status),
+    );
+    if (blocking.length) {
+      skip("defender has a blocking status", {
+        token: tokenDoc.name,
+        statuses: blocking,
+      });
       continue;
     }
 

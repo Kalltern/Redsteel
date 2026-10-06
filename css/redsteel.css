@@ -18583,107 +18583,618 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   margin: 0;
 }
 
-/* --- Learn window: character creation banner (step 3) ------------------- */
+/* --- Learn window: character creation, the step 3 screen ----------------- */
 
-/* One compact row of stone between the hero and the tabs while a character is
-   in creation: the step, the level's rank cap, the CP to SP conversion, then
-   Back and Finish at the right. It wraps on a narrow screen. */
-.rs-learn .rs-learn-creation {
+/* While a character is in step 3 the Learn window drops its own layout (hero,
+   tabs, grid) and shows the creation window's instead: title bar, three
+   columns, footer. The wrapper wears .rs-create, so the creation window's
+   body, title bar, panel, tile and footer rules apply; their colours are
+   declared on .rs-create.redsteel together with that window's fixed
+   geometry, so they are repeated here rather than shared. It fills the whole
+   screen, and its .rs-create-body paints the creation ground edge to edge.
+   Text the creation window has no rule for rides the Learn screen's text
+   dial. */
+.rs-learn .rs-learn-cskills {
+  --rs-create-gold: #e6c878;
+  --rs-create-bronze: #514226;
+  --rs-create-bronze-lit: #9c7b45;
+  --rs-create-text: #b8bbbd;
+  --rs-create-dim: #7d7a72;
+  flex: 1 1 auto;
+  min-height: 0;
   display: flex;
-  flex: 0 0 auto;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 22px;
-  margin: 0;
-  padding: 8px 14px 8px 20px;
-  background:
-    linear-gradient(to bottom, rgba(214, 188, 140, 0.05), rgba(12, 12, 11, 0.6)),
-    url(../ui/headertexture.jpg);
-  border-bottom: 1px solid #514226;
-  box-shadow: inset 0 -8px 14px rgba(0, 0, 0, 0.45);
-  font-family: Georgia, "Times New Roman", serif;
-  color: #c9bfae;
+  flex-direction: column;
+  color: var(--rs-create-text);
 }
 
-.rs-learn .rs-learn-creation-step {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
+.rs-learn .rs-learn-cskills > .rs-create-body {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* Character | your skills | ledger over roster. One row the height of what
+   is left between the title bar and the footer, so each column scrolls
+   inside it instead of stretching the screen. */
+.rs-learn .rs-learn-cskills .rs-learn-cskills-columns {
+  grid-template-columns:
+    minmax(260px, 0.9fr)
+    minmax(240px, 0.8fr)
+    minmax(460px, 1.7fr);
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.rs-learn .rs-learn-cskills .rs-create-panel {
   min-width: 0;
 }
 
-.rs-learn .rs-learn-creation-kicker {
+/* -------- column 1: the points -------- */
+
+.rs-learn .rs-learn-cskills-points {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0 0 8px;
+}
+
+.rs-learn .rs-learn-cskills .rs-learn-cskills-purse {
+  padding: 4px 2px 6px;
+}
+
+.rs-learn .rs-learn-cskills-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.rs-learn .rs-learn-cskills-stat label {
+  font-size: calc(9px * var(--rs-learn-text));
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--rs-create-dim);
+}
+
+.rs-learn .rs-learn-cskills-stat b {
+  font-size: calc(15px * var(--rs-learn-text));
+  line-height: 1;
+  font-weight: normal;
+  font-variant-numeric: tabular-nums;
+  color: var(--rs-create-gold);
+}
+
+.rs-learn .rs-learn-cskills-stat em {
+  font-size: calc(10px * var(--rs-learn-text));
+  font-style: normal;
+  color: var(--rs-create-dim);
+}
+
+.rs-learn .rs-learn-cskills-cap {
+  padding: 0 2px;
   font-size: calc(10px * var(--rs-learn-text));
   line-height: calc(14px * var(--rs-learn-text));
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: #8a7b60;
+  color: var(--rs-create-text);
 }
 
-.rs-learn .rs-learn-creation-title {
-  font-size: calc(14px * var(--rs-learn-text));
-  line-height: calc(18px * var(--rs-learn-text));
-  letter-spacing: 0.04em;
-  color: #e6c878;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
-}
-
-.rs-learn .rs-learn-creation-stepof,
-.rs-learn .rs-learn-creation-max {
-  font-size: calc(11px * var(--rs-learn-text));
-  line-height: calc(14px * var(--rs-learn-text));
-  color: #8a8175;
-}
-
-.rs-learn .rs-learn-creation-cap {
-  padding-left: 22px;
-  border-left: 1px solid rgba(81, 66, 38, 0.7);
-  font-size: calc(12px * var(--rs-learn-text));
-  line-height: calc(16px * var(--rs-learn-text));
-  color: #c9bfae;
-}
-
-.rs-learn .rs-learn-creation-convert {
+.rs-learn .rs-learn-cskills-convert {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding-left: 22px;
-  border-left: 1px solid rgba(81, 66, 38, 0.7);
+  padding: 0 2px;
 }
 
-.rs-learn .rs-learn-creation-label {
+.rs-learn .rs-learn-cskills-convert-label {
   margin-right: 4px;
+  font-size: calc(9px * var(--rs-learn-text));
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--rs-create-dim);
+}
+
+.rs-learn .rs-learn-cskills-convert-value {
+  min-width: calc(22px * var(--rs-learn-text));
+  font-size: calc(13px * var(--rs-learn-text));
+  font-weight: normal;
+  text-align: center;
+  color: var(--rs-create-gold);
+}
+
+.rs-learn .rs-learn-cskills-convert-max {
+  font-size: calc(9px * var(--rs-learn-text));
+  color: var(--rs-create-dim);
+}
+
+.rs-learn .rs-learn-cskills-warning {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0;
+  padding: 0 2px;
+  font-size: calc(9px * var(--rs-learn-text));
+  line-height: calc(13px * var(--rs-learn-text));
+  font-style: italic;
+  color: #c9a86a;
+}
+
+/* The identity under the points, ruled off from them. */
+.rs-learn .rs-learn-cskills-points + .rs-learn-cskills-identity {
+  padding-top: 10px;
+  border-top: 1px solid var(--rs-create-bronze);
+}
+
+/* Column three: the ledger over the roster, half the height each, each its
+   own scroller. */
+.rs-learn .rs-learn-cskills-col.is-detail {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* -------- column 1: the character -------- */
+
+.rs-learn .rs-learn-cskills-identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 2px 2px 4px;
+}
+
+.rs-learn .rs-learn-cskills-portrait {
+  flex: 0 0 auto;
+  width: calc(56px * var(--rs-learn-text));
+  height: calc(56px * var(--rs-learn-text));
+  object-fit: cover;
+  border: 1px solid #9c7b45;
+  border-radius: 0;
+  box-shadow: 0 0 0 2px #0d0c0a, 0 0 0 3px #514226;
+}
+
+.rs-learn .rs-learn-cskills-who {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.rs-learn .rs-learn-cskills-name {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(15px * var(--rs-learn-text));
+  line-height: calc(19px * var(--rs-learn-text));
+  letter-spacing: 0.04em;
+  color: #e6c878;
+  overflow-wrap: anywhere;
+}
+
+.rs-learn .rs-learn-cskills-race {
+  font-family: Georgia, "Times New Roman", serif;
   font-size: calc(11px * var(--rs-learn-text));
   line-height: calc(14px * var(--rs-learn-text));
-  text-transform: uppercase;
   letter-spacing: 0.1em;
+  text-transform: uppercase;
   color: #9a8f7b;
 }
 
-.rs-learn .rs-learn-creation-value {
-  min-width: calc(24px * var(--rs-learn-text));
-  font-size: calc(14px * var(--rs-learn-text));
-  line-height: calc(18px * var(--rs-learn-text));
+/* The attributes: one ruled line each, name left, value right. */
+.rs-learn .rs-learn-cskills-attrs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 14px;
+  padding: 0 2px;
+}
+
+.rs-learn .rs-learn-cskills-attr {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 3px 2px;
+  border-bottom: 1px solid rgba(81, 66, 38, 0.5);
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.rs-learn .rs-learn-cskills-attr-name {
+  font-size: calc(10px * var(--rs-learn-text));
+  line-height: calc(14px * var(--rs-learn-text));
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #9a8f7b;
+}
+
+.rs-learn .rs-learn-cskills-attr-value {
+  font-size: calc(13px * var(--rs-learn-text));
+  line-height: calc(16px * var(--rs-learn-text));
   font-weight: normal;
-  text-align: center;
+  font-variant-numeric: tabular-nums;
   color: #e6c878;
 }
 
-/* The stepper's small square plates, cut from the same stone as the picker's
-   Done and Cancel. */
-.rs-learn .rs-learn-creation-step-btn {
-  display: inline-flex;
+/* -------- ribbon tiles (traits, skills, features) -------- */
+
+/* One tile per line: the columns are too narrow for the creation window's
+   auto-fill grid. */
+.rs-learn .rs-learn-cskills-tiles {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 2px 6px;
+}
+
+.rs-learn .rs-learn-cskills .rs-create-trait {
+  --rs-trait-h: calc(28px * var(--rs-learn-text));
+  cursor: default;
+}
+
+.rs-learn .rs-learn-cskills .rs-create-trait-name,
+.rs-learn .rs-learn-cskills .rs-create-trait-price {
+  font-size: calc(11px * var(--rs-learn-text));
+  line-height: calc(13px * var(--rs-learn-text));
+}
+
+/* A trait the pack could not classify keeps a plain bronze frame. */
+.rs-learn .rs-learn-cskills .rs-create-trait-section.is-unsorted,
+.rs-learn .rs-learn-cskills .rs-create-trait.is-unsorted {
+  --rs-trait-kind: #7d7a72;
+}
+
+/* A skill or a bought feature: bronze, and the selected skill takes a gold
+   edge. */
+.rs-learn .rs-learn-cskills .rs-create-trait.is-skill {
+  --rs-trait-kind: #9c7b45;
+}
+
+.rs-learn .rs-learn-cskills .rs-create-trait.is-skill[data-action] {
+  cursor: pointer;
+}
+
+.rs-learn .rs-learn-cskills .rs-create-trait.is-skill.is-selected {
+  border-color: #e6c878;
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.9), 0 0 0 1px #e6c878;
+}
+
+.rs-learn .rs-learn-cskills .rs-create-trait.is-skill.is-selected .rs-create-trait-name {
+  color: #e6c878;
+}
+
+.rs-learn .rs-learn-cskills .rs-create-trait.is-skill.is-selected .rs-create-trait-ribbon {
+  border-left-color: #e6c878;
+}
+
+/* The rank numeral of a skill reads in gold. */
+.rs-learn .rs-learn-cskills .rs-create-trait.is-skill:not(.is-feature) .rs-create-trait-price {
+  color: #e6c878;
+  font-weight: normal;
+}
+
+.rs-learn .rs-learn-cskills .rs-create-trait.is-feature .rs-create-trait-name,
+.rs-learn .rs-learn-cskills .rs-create-trait.is-feature .rs-create-trait-icon {
+  cursor: help;
+}
+
+/* The cross that puts a picked skill back, and a bought feature's give-back,
+   at the ribbon's right end. The give-back shows on hover, as on the
+   Features tab. */
+.rs-learn .rs-learn-cskills .rs-learn-cskills-unpick,
+.rs-learn .rs-learn-cskills .rs-create-trait .rs-learn-owned-refund {
   flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
-  width: calc(22px * var(--rs-learn-text));
-  height: calc(22px * var(--rs-learn-text));
+  width: auto;
+  height: auto;
   min-width: 0;
+  margin: 0 -4px 0 0;
+  padding: 1px 5px;
+  border: 1px solid transparent;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  font-size: calc(10px * var(--rs-learn-text));
+  line-height: calc(14px * var(--rs-learn-text));
+  color: #8a8175;
+  cursor: pointer;
+}
+
+.rs-learn .rs-learn-cskills .rs-create-trait:hover .rs-learn-owned-refund {
+  opacity: 1;
+}
+
+.rs-learn .rs-learn-cskills .rs-learn-cskills-unpick:hover,
+.rs-learn .rs-learn-cskills .rs-create-trait .rs-learn-owned-refund:hover {
+  color: #f0d7aa;
+  border-color: #9c7b45;
+  background: rgba(12, 12, 11, 0.6);
+}
+
+/* -------- column 3, top: the rank ledger -------- */
+
+.rs-learn .rs-learn-cskills-spent {
+  flex: 0 0 auto;
+  padding: 5px 12px;
+  border-bottom: 1px solid rgba(81, 66, 38, 0.5);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(11px * var(--rs-learn-text));
+  line-height: calc(14px * var(--rs-learn-text));
+  color: #9a8f7b;
+}
+
+.rs-learn .rs-learn-cskills-ledger {
+  padding-top: 0;
+}
+
+/* One rank, a full-width ledger line ruled in bronze: diamond, numeral, what
+   it gives, what it asks, what it costs. */
+.rs-learn .rs-learn-cskills-rank {
+  display: grid;
+  grid-template-columns:
+    calc(32px * var(--rs-learn-text))
+    calc(26px * var(--rs-learn-text))
+    minmax(0, 1fr)
+    minmax(0, auto)
+    calc(78px * var(--rs-learn-text));
+  align-items: center;
+  column-gap: 10px;
+  padding: 5px 4px;
+  border-bottom: 1px solid #514226;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.rs-learn .rs-learn-cskills-rank .rs-learn-node {
+  height: calc(30px * var(--rs-learn-text));
+}
+
+.rs-learn .rs-learn-cskills-rank .rs-learn-diamond {
+  width: 18px;
+  height: 18px;
+}
+
+.rs-learn .rs-learn-cskills-numeral {
+  font-size: calc(13px * var(--rs-learn-text));
+  line-height: calc(16px * var(--rs-learn-text));
+  letter-spacing: 0.06em;
+  text-align: center;
+  color: #9a8f7b;
+}
+
+.rs-learn .rs-learn-cskills-rank.state-owned .rs-learn-cskills-numeral {
+  color: #e6c878;
+}
+
+/* What the rank gives, wrapping to as many lines as it needs. */
+.rs-learn .rs-learn-cskills-gives {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  min-width: 0;
+}
+
+.rs-learn .rs-learn-cskills-gives .rs-learn-seg-icons img {
+  width: calc(26px * var(--rs-learn-text));
+  height: calc(26px * var(--rs-learn-text));
+}
+
+.rs-learn .rs-learn-cskills-gives .rs-learn-chip {
+  display: inline;
+  -webkit-line-clamp: none;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: none;
+  font-size: calc(11px * var(--rs-learn-text));
+  line-height: calc(15px * var(--rs-learn-text));
+}
+
+/* Between two things a rank gives: a bronze hairline, never a dash. */
+.rs-learn .rs-learn-cskills-gives .rs-learn-chip + .rs-learn-chip {
+  padding-left: 6px;
+  border-left: 1px solid rgba(81, 66, 38, 0.8);
+}
+
+.rs-learn .rs-learn-cskills-gives .rs-learn-chip.is-ability {
+  font-weight: 700;
+}
+
+.rs-learn .rs-learn-cskills-rank.state-owned .rs-learn-chip {
+  color: #d9a13b;
+}
+
+.rs-learn .rs-learn-cskills-reqs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 3px;
+  min-width: 0;
+  max-width: calc(180px * var(--rs-learn-text));
+}
+
+.rs-learn .rs-learn-cskills-cost {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.rs-learn .rs-learn-cskills-cost b {
+  font-size: calc(12px * var(--rs-learn-text));
+  line-height: calc(15px * var(--rs-learn-text));
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #b7ac97;
+}
+
+.rs-learn .rs-learn-cskills-cost em {
+  font-size: calc(9px * var(--rs-learn-text));
+  line-height: calc(12px * var(--rs-learn-text));
+  font-style: normal;
+  letter-spacing: 0.04em;
+  color: #8a8175;
+}
+
+.rs-learn .rs-learn-cskills-rank.state-owned .rs-learn-cskills-cost b {
+  color: #d9a13b;
+}
+
+.rs-learn .rs-learn-cskills-rank.state-available .rs-learn-cskills-cost em {
+  color: #d6bc8c;
+}
+
+.rs-learn .rs-learn-cskills-rank.state-locked .rs-learn-cskills-gives,
+.rs-learn .rs-learn-cskills-rank.state-locked .rs-learn-cskills-cost,
+.rs-learn .rs-learn-cskills-rank.state-poor .rs-learn-cskills-cost {
+  opacity: 0.6;
+}
+
+/* -------- column 3, top: description beside the ledger -------- */
+
+/* The top plate splits in two, half each, ruled apart in bronze: what the
+   book says about the track on the left, its ranks on the right. Each half
+   scrolls on its own. */
+.rs-learn .rs-learn-cskills-split {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.rs-learn .rs-learn-cskills-info-half,
+.rs-learn .rs-learn-cskills-ledger-half {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.rs-learn .rs-learn-cskills-info-half {
+  border-right: 1px solid var(--rs-create-bronze);
+}
+
+.rs-learn .rs-learn-cskills-info-head {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 9px 12px 7px;
+  border-bottom: 1px solid var(--rs-create-bronze);
+}
+
+.rs-learn .rs-learn-cskills-info-title {
   margin: 0;
   padding: 0;
-  font-size: calc(9px * var(--rs-learn-text));
-  line-height: 1;
-  color: #d6bc8c;
+  border: none;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(13px * var(--rs-learn-text));
+  line-height: calc(17px * var(--rs-learn-text));
+  font-weight: normal;
+  letter-spacing: 0.06em;
+  color: var(--rs-create-gold);
+}
+
+.rs-learn .rs-learn-cskills-info-kicker {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(8px * var(--rs-learn-text));
+  line-height: calc(11px * var(--rs-learn-text));
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--rs-create-dim);
+}
+
+.rs-learn .rs-learn-cskills-info-text {
+  margin: 0 0 8px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(10px * var(--rs-learn-text));
+  line-height: calc(15px * var(--rs-learn-text));
+  color: var(--rs-create-text);
+}
+
+/* What every rank costs in all, ruled off under the text. */
+.rs-learn .rs-learn-cskills-info-cost {
+  margin: 4px 0 0;
+  padding-top: 6px;
+  border-top: 1px solid rgba(81, 66, 38, 0.5);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(10px * var(--rs-learn-text));
+  line-height: calc(14px * var(--rs-learn-text));
+  letter-spacing: 0.04em;
+  color: #c9b48a;
+}
+
+/* At half width a rank line takes two lines: what it gives on top, what it
+   asks under it, with the diamond and numeral at the left and the cost held
+   at the right edge across both. */
+.rs-learn .rs-learn-cskills-ledger-half .rs-learn-cskills-rank {
+  grid-template-columns:
+    calc(28px * var(--rs-learn-text))
+    calc(22px * var(--rs-learn-text))
+    minmax(0, 1fr)
+    max-content;
+  grid-template-areas:
+    "node numeral gives cost"
+    "node numeral reqs cost";
+  column-gap: 8px;
+  row-gap: 3px;
+}
+
+.rs-learn .rs-learn-cskills-ledger-half .rs-learn-cskills-rank > .rs-learn-node {
+  grid-area: node;
+}
+
+.rs-learn .rs-learn-cskills-ledger-half .rs-learn-cskills-numeral {
+  grid-area: numeral;
+}
+
+.rs-learn .rs-learn-cskills-ledger-half .rs-learn-cskills-gives {
+  grid-area: gives;
+}
+
+.rs-learn .rs-learn-cskills-ledger-half .rs-learn-cskills-reqs {
+  grid-area: reqs;
+  justify-content: flex-start;
+  max-width: none;
+}
+
+/* A rank that asks nothing gives its second line back. */
+.rs-learn .rs-learn-cskills-ledger-half .rs-learn-cskills-reqs:not(:has(*)) {
+  display: none;
+}
+
+.rs-learn .rs-learn-cskills-ledger-half .rs-learn-cskills-cost {
+  grid-area: cost;
+}
+
+/* -------- column 3, bottom: the roster -------- */
+
+.rs-learn .rs-learn-cskills-roster-head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-right: 10px;
+  border-bottom: 1px solid #514226;
+}
+
+.rs-learn .rs-learn-cskills-roster-head .rs-create-panel-title {
+  border-bottom: none;
+}
+
+/* Skills | Features: two square stone plates side by side, the one showing
+   lettered in gold. */
+.rs-learn .rs-learn-cskills-switch {
+  display: flex;
+  flex: 0 0 auto;
+}
+
+.rs-learn .rs-learn-cskills-switch button {
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 3px 12px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(10px * var(--rs-learn-text));
+  line-height: calc(14px * var(--rs-learn-text));
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #9a8f7b;
   background:
     linear-gradient(to bottom, rgba(81, 66, 38, 0.28), rgba(12, 12, 11, 0.6)),
     url(../ui/headertexture.jpg);
@@ -18695,38 +19206,152 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   cursor: pointer;
 }
 
-.rs-learn .rs-learn-creation-step-btn:hover:not(:disabled) {
+.rs-learn .rs-learn-cskills-switch button + button {
+  border-left: none;
+}
+
+.rs-learn .rs-learn-cskills-switch button:hover {
   color: #f0d7aa;
-  border-color: #9c7b45;
 }
 
-.rs-learn .rs-learn-creation-step-btn:disabled,
-.rs-learn .rs-learn-creation-actions button:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
-
-.rs-learn .rs-learn-creation-warning {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 0;
-  min-width: 0;
-  font-size: calc(11px * var(--rs-learn-text));
-  line-height: calc(14px * var(--rs-learn-text));
-  font-style: italic;
-  color: #c9a86a;
-}
-
-/* Back and Finish stand at the right end of the row. */
-.rs-learn .rs-learn-creation .rs-learn-creation-actions {
-  margin-left: auto;
-}
-
-/* Finish is the way on: a brighter bronze edge and gold letters. */
-.rs-learn .rs-learn-creation-actions button.is-primary {
+.rs-learn .rs-learn-cskills-switch button.active {
   color: #e6c878;
   border-color: #9c7b45;
+}
+
+.rs-learn .rs-learn-cskills-roster-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(calc(170px * var(--rs-learn-text)), 1fr));
+  column-gap: 12px;
+  padding: 2px 2px 6px;
+}
+
+/* One skill to pick: name, a lock when a prerequisite is missing, the price
+   of rank I. */
+.rs-learn .rs-learn-cskills-pick {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+  padding: 3px 4px;
+  border-bottom: 1px solid rgba(81, 66, 38, 0.35);
+  font-family: Georgia, "Times New Roman", serif;
+  cursor: pointer;
+}
+
+.rs-learn .rs-learn-cskills-pick:hover {
+  background: rgba(81, 66, 38, 0.18);
+}
+
+.rs-learn .rs-learn-cskills-pick-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: calc(12px * var(--rs-learn-text));
+  line-height: calc(16px * var(--rs-learn-text));
+  color: #d6bc8c;
+}
+
+.rs-learn .rs-learn-cskills-pick.is-gated .rs-learn-cskills-pick-name,
+.rs-learn .rs-learn-cskills-pick i {
+  color: #8a8175;
+}
+
+.rs-learn .rs-learn-cskills-pick i {
+  font-size: calc(9px * var(--rs-learn-text));
+}
+
+/* The track being previewed: a gold rule under it. The open book on the right
+   takes a track into "Your skills", to the left. */
+.rs-learn .rs-learn-cskills-pick.is-selected {
+  border-bottom-color: #e6c878;
+  background: rgba(81, 66, 38, 0.18);
+}
+
+.rs-learn .rs-learn-cskills-pick.is-selected .rs-learn-cskills-pick-name {
+  color: #e6c878;
+}
+
+.rs-learn .rs-learn-cskills-pick {
+  align-items: center;
+}
+
+.rs-learn .rs-learn-cskills-pick .rs-learn-cskills-pick-acquire {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(22px * var(--rs-learn-text));
+  height: calc(18px * var(--rs-learn-text));
+  margin: 0;
+  padding: 0;
+  border: 1px solid #514226;
+  border-radius: 0;
+  background: rgba(10, 10, 9, 0.6);
+  box-shadow: none;
+  color: #9c7b45;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.rs-learn .rs-learn-cskills-pick .rs-learn-cskills-pick-acquire i {
+  margin: 0;
+  font-size: calc(10px * var(--rs-learn-text));
+  color: inherit;
+}
+
+.rs-learn .rs-learn-cskills-pick .rs-learn-cskills-pick-acquire:hover,
+.rs-learn .rs-learn-cskills-pick .rs-learn-cskills-pick-acquire:focus-visible,
+.rs-learn .rs-learn-cskills-pick.is-selected .rs-learn-cskills-pick-acquire {
+  border-color: #9c7b45;
+  color: #e6c878;
+  outline: none;
+}
+
+.rs-learn .rs-learn-cskills-pick .rs-learn-cskills-pick-acquire:hover {
+  border-color: #e6c878;
+}
+
+.rs-learn .rs-learn-cskills-spent.is-preview {
+  font-style: italic;
+}
+
+/* The Features tab's purchasable list, set into the roster plate: it drops
+   its own frame, and nothing above it clips, so the filter pop-up can open
+   upward over the ledger instead of being cut off by the half-height
+   plate. The list inside still scrolls on its own. */
+.rs-learn .rs-learn-cskills-half.is-roster {
+  overflow: visible;
+}
+
+.rs-learn .rs-learn-cskills-features {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.rs-learn .rs-learn-cskills-features .rs-learn-features-available {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: visible;
+  background: none;
+  border: none;
+  box-shadow: none;
+}
+
+.rs-learn .rs-learn-cskills-features .rs-learn-filter-popup {
+  top: auto;
+  bottom: calc(100% + 4px);
+  z-index: 20;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+/* The feature rows' wide name and requirement columns are narrower here. */
+.rs-learn .rs-learn-cskills-features .rs-learn-feature {
+  grid-template-columns:
+    calc(36px * var(--rs-learn-text)) calc(32px * var(--rs-learn-text)) minmax(calc(120px * var(--rs-learn-text)), 1fr)
+    minmax(0, 1.4fr) auto;
 }
 
 .rs-learn .rs-learn-picker-section {
@@ -18936,6 +19561,13 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
 
 .application.redsteel.rs-party .rs-party-amount {
   width: 72px;
+}
+
+/* "New characters start with": the title sits on the inputs' baseline. */
+.application.redsteel.rs-party .rs-party-newchars-title {
+  align-self: center;
+  margin-right: 4px;
+  cursor: help;
 }
 
 .application.redsteel.rs-party .rs-party-rest {
@@ -21650,90 +22282,60 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
 
 /* -------- step 2.5: weapons and magic -------- */
 
-/* The two plates, side by side; one alone takes the whole width. */
-.rs-create .rs-create-details {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 14px;
-  min-height: 0;
+/* One plate of cards (.rs-create-details), the doctrine step's grid and
+   blocks. Info panel: a track's ten ranks, numeral in the gutter, then the
+   abilities the rank hands over and its other effects, one per line. */
+.rs-create .rs-create-ranks {
+  margin: 0 0 10px;
+  padding: 0;
+  list-style: none;
 }
 
-/* One doctrine per row: its name, then four square plates, one per weapon
-   skill, parted by a bronze rule. */
-.rs-create .rs-create-weapon-row {
+.rs-create .rs-create-rank {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px 14px;
-  padding: 10px 4px;
-  border-bottom: 1px solid rgba(81, 66, 38, 0.5);
+  align-items: flex-start;
+  gap: 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(81, 66, 38, 0.35);
 }
 
-.rs-create .rs-create-weapon-doctrine {
+.rs-create .rs-create-rank .rs-create-feature-rank {
+  padding-top: 3px;
+}
+
+.rs-create .rs-create-rank-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.rs-create .rs-create-rank-ability {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 16px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #e8dcc0;
-}
-
-.rs-create .rs-create-weapon-doctrine i {
-  font-size: 12px;
-  color: #a58a6a;
-}
-
-.rs-create .rs-create-weapon-options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.rs-create .rs-create-weapon-option {
-  flex: 0 0 auto;
-  width: auto;
-  min-width: 84px;
-  height: 30px;
-  margin: 0;
-  padding: 0 10px;
-  border: 1px solid var(--rs-create-bronze);
-  border-radius: 0;
-  background: rgba(12, 12, 11, 0.8);
-  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.8);
-  font-family: Georgia, "Times New Roman", serif;
+  padding: 1px 4px;
+  border: 1px solid transparent;
   font-size: 13px;
-  letter-spacing: 0.04em;
+  font-weight: bold;
+  color: #e8dcc0;
+  cursor: help;
+}
+
+.rs-create .rs-create-rank-ability:hover {
+  border-color: var(--rs-create-bronze);
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.rs-create .rs-create-rank-effect {
+  padding: 1px 4px;
+  font-size: 13px;
   color: var(--rs-create-text);
-  cursor: pointer;
 }
 
-.rs-create .rs-create-weapon-option:hover:not(:disabled),
-.rs-create .rs-create-weapon-option:focus-visible {
-  border-color: var(--rs-create-bronze-lit);
-  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.8);
-  outline: none;
-  color: #f0d7aa;
-}
-
-.rs-create .rs-create-weapon-option.is-selected,
-.rs-create .rs-create-weapon-option.is-selected:disabled {
-  border-color: var(--rs-create-gold);
-  color: var(--rs-create-gold);
-  opacity: 1;
-}
-
-.rs-create .rs-create-weapon-option:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
-
-/* The Peltast's comparison: a full line under its two plates. */
-.rs-create .rs-create-weapon-row .rs-create-skill-advice {
-  flex: 1 1 100%;
-  margin: 2px 0 0;
+.rs-create .rs-create-rank-effect.is-empty {
+  color: var(--rs-create-dim);
 }
 
 /* A doctrine's weapon skills: flat bronze-framed plates. */
@@ -21765,6 +22367,139 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   font-style: italic;
   letter-spacing: 0.06em;
   color: var(--rs-create-dim);
+}
+
+/* A doctrine's opening prose: what it is, and what it fights with. */
+.rs-create .rs-create-doctrine-text {
+  margin: 2px 0 8px;
+}
+
+/* A doctrine's weapon browser: one weapon plate at a time, arrows to page,
+   every weapon by name beneath to jump straight to it. */
+.rs-create .rs-create-weapon-browser {
+  margin: 4px 0 8px;
+  font-size: 13px;
+}
+
+.rs-create .rs-create-weapon-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 0 6px;
+}
+
+.rs-create .rs-create-weapon-count {
+  flex: 1 1 auto;
+  text-align: center;
+  font-family: Georgia, "Times New Roman", serif;
+  letter-spacing: 0.08em;
+  color: var(--rs-create-dim);
+}
+
+.rs-create .rs-create-weapon-step {
+  flex: 0 0 30px;
+  width: 30px;
+  height: 26px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--rs-create-bronze);
+  border-radius: 0;
+  background: rgba(0, 0, 0, 0.45);
+  color: #c9b48a;
+  line-height: 24px;
+  cursor: pointer;
+}
+
+.rs-create .rs-create-weapon-step:hover {
+  border-color: var(--rs-create-bronze-lit);
+  color: var(--rs-create-gold);
+  box-shadow: none;
+}
+
+.rs-create .rs-create-weapon-page {
+  display: none;
+  padding: 8px 10px;
+  border: 1px solid var(--rs-create-bronze);
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.rs-create .rs-create-weapon-page.is-current {
+  display: block;
+}
+
+.rs-create .rs-create-weapon-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 8px;
+  padding: 0 0 6px;
+  border-bottom: 1px solid rgba(81, 66, 38, 0.5);
+}
+
+.rs-create .rs-create-weapon-icon {
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--rs-create-bronze-lit);
+  object-fit: cover;
+}
+
+.rs-create .rs-create-weapon-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 16px;
+  color: var(--rs-create-gold);
+}
+
+.rs-create .rs-create-weapon-name .rs-create-weapon-grip {
+  margin: 2px 0 0;
+}
+
+.rs-create .rs-create-weapon-browser > .rs-create-weapon-group {
+  margin: 8px 0 0;
+}
+
+.rs-create .rs-create-weapon-index {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.rs-create .rs-create-weapon-jump {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 5px;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 2px 8px 2px 2px;
+  border: 1px solid var(--rs-create-bronze);
+  border-radius: 0;
+  background: rgba(0, 0, 0, 0.35);
+  font-size: 12px;
+  line-height: 1.2;
+  color: var(--rs-create-text);
+  cursor: pointer;
+}
+
+.rs-create .rs-create-weapon-jump img {
+  width: 20px;
+  height: 20px;
+  border: 0;
+  object-fit: cover;
+}
+
+.rs-create .rs-create-weapon-jump:hover {
+  border-color: var(--rs-create-bronze-lit);
+  box-shadow: none;
+}
+
+.rs-create .rs-create-weapon-jump.is-current {
+  border-color: var(--rs-create-bronze-lit);
+  color: var(--rs-create-gold);
 }
 
 .rs-create .rs-create-feature-rank {

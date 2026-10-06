@@ -4823,12 +4823,33 @@
         "noStarting": "Vypravěč této postavě ještě nezadal počáteční CP a SP. Udělá to ve Správě družiny.",
         "finished": "Postava {name} je hotová."
       },
+      "Skills": {
+        "character": "Postava",
+        "skills": "Tvé dovednosti",
+        "points": "Body",
+        "noSkills": "Zatím nic. Vyber si něco z nabídky, z boje nebo z dovedností.",
+        "boughtFeatures": "Koupené odbornosti",
+        "unpick": "Odebrat z tvých dovedností",
+        "ledgerEmpty": "Vyber dovednost a uvidíš všechny její stupně.",
+        "spent": "Utraceno za tuto dovednost: {cost}",
+        "total": "Celkem: {cost}",
+        "roster": "Nabídka",
+        "rosterCombat": "Boj",
+        "rosterSkills": "Dovednosti",
+        "rosterFeatures": "Odbornosti",
+        "acquire": "Získat dovednost",
+        "previewHint": "Jen náhled. Získáš ji knihou vedle ní v nabídce.",
+        "stoppedAt": "Koupeno do stupně {rank}. Stupeň {next} koupit nešlo.",
+        "allRanks": "Všechny stupně: {cost}"
+      },
       "Details": {
-        "weaponsHeading": "Zbraňové dovednosti",
-        "weaponsAdvice": "Vyber zbraň, se kterou bude každá doktrína cvičit.",
+        "weaponsAdvice": "Vyber zbraň, se kterou bude každá doktrína cvičit. Najeď na kartu a uvidíš všech deset jejích stupňů.",
+        "weaponFor": "{doctrine}: zbraňová dovednost",
+        "combatSkillFor": "{doctrine}: bojová dovednost",
+        "weaponSkill": "Zbraňová dovednost",
+        "combatSkill": "Bojová dovednost",
         "magicHeading": "Magická doktrína pro školu {school}",
         "fixedWeapon": "{doctrine} používá zbraňovou dovednost {weapon}.",
-        "combatSkillHeading": "Bojové dovednosti",
         "fixedCombatSkill": "{doctrine} bojuje s dovedností {skill}.",
         "fixedChanneling": "Magii školy {school} sesíláš skrze dovednost {skill}.",
         "peltastAdvice": "Souboj ti dá lepší šance v boji na blízko, ale od stupně V do stupně X o něco nižší šanci na vrh než Střelba. Střelba ti dá o 10 % vyšší šanci na dálku (+5 % na stupni V a dalších +5 % na stupni VII), ale s rostoucími stupni zaostávají tvé šance na útok a obranu na blízko."
@@ -4842,7 +4863,7 @@
         "temperamentSchool": "Určeno tvým temperamentem.",
         "kind": "Druh",
         "rank1": "Cena stupně I",
-        "path": "Schopnosti",
+        "ranks": "Stupně",
         "weaponSkills": "Kompatibilní zbraňové dovednosti",
         "weapons": "Zbraně",
         "Group": {
@@ -4860,7 +4881,74 @@
           "ranged": "Na dálku",
           "special": "Zvláštní",
           "magical": "Magie"
-        }
+        },
+        "about": "O doktríně",
+        "requirements": "Požadavky na zbraně",
+        "browse": "Procházet zbraně",
+        "prev": "Předchozí zbraň",
+        "next": "Další zbraň",
+        "page": "{n} z {total}",
+        "Info": {
+          "swordsman": {
+            "about": "Umění dlouhé čepele vedené oběma rukama. Šermíř seká zeširoka, útočí dalekým výpadem, dobře načasovanou obranu mění v protiútok a zanechává krvácející rány.",
+            "weapons": "Meče držené oběma rukama: obouruční meč jako Dlouhý meč či Flamberg, nebo Široký meč uchopený oběma rukama. Cvičí se ve zbraňové dovednosti Meče."
+          },
+          "shieldbearer": {
+            "about": "Hradba z oceli a dřeva. Štítonoš bojuje zpoza štítu, udeří jím i vtrhne s ním do boje, chrání blízké spojence a kryje si vlastní boky.",
+            "weapons": "Jen jednoruční zbraně, protože druhá ruka nese štít: lehké a střední meče, sekery, palice a řemdihy, nebo Kopí držené jednou rukou. Nikdy obouruční zbraň."
+          },
+          "reaver": {
+            "about": "Hrubá, brutální síla. Plenitel máchá těžkými sekerami a kladivy v širokých sečích, rozšiřuje svůj kritický rozsah, vrhá se do zběsilých útoků a sráží soupeře k zemi.",
+            "weapons": "Těžké sekery, kladiva a cepy v obou rukou (Berdyš, Dlouhá sekera, Obouruční kladivo, Bojový cep), nebo Válečná sekera, Válečné kladivo, Válečný krumpáč či Řemdih uchopené oběma rukama."
+          },
+          "pikeman": {
+            "about": "Mistr dosahu. Pikenýr drží nepřátele v odstupu, nabodává útočící soupeře, má výhodu proti velkým tvorům, trestá každé odkrytí příležitostným útokem a odstrkuje nepřátele.",
+            "weapons": "Dřevcové zbraně držené oběma rukama: Halapartna, Glefa, Bec de Corbin, nebo Kopí či Oštěp (zblízka) uchopené oběma rukama. Cvičí se ve zbraňové dovednosti Dřevcové."
+          },
+          "dimakerus": {
+            "about": "Bojovník se dvěma zbraněmi. Dimakerus útočí zbraní v každé ruce, rozpoutává smršť útoků, oplácí rány odvetným úderem a z druhé čepele získává obranu.",
+            "weapons": "Jednoruční zbraň v každé ruce: lehké či střední meče, sekery, palice a řemdihy. Některé zbraně, jako Široký meč a Vrhací nůž, patří jen do druhé ruky."
+          },
+          "duelist": {
+            "about": "Přesnost nad silou. Duelista pečlivě míří, po zásahu o míření nepřichází, tančí kolem soupeřů Duelistovým krokem a útočí v pohybu.",
+            "weapons": "Šermířská zbraň v hlavní ruce (Rapír, Dýka nebo Vojenský sekáček) a podle chuti Šermířská dýka v druhé ruce. Cvičí se ve zbraňové dovednosti Meče."
+          },
+          "rogue": {
+            "about": "Špinavý bojovník. Tulák udeří tam, kde to bolí, přidává zranění zákeřného útoku proti překvapeným či nebránícím se soupeřům a z každého zásahu dělá nové odkrytí. Jediná doktrína, která může stát vedle jiné.",
+            "weapons": "Žádný jediný styl: dýky, krátké čepele, lehké palice, kopí, luky i kuše. Tulák nepřináší vlastní zbraňovou dovednost a pracuje se zbraněmi své druhé doktríny."
+          },
+          "archer": {
+            "about": "Trpělivý lučištník. Lukostřelec střílí přesněji, mrzačí cíle, míří na slabiny a zasazuje přesné výstřely, které probíjí zbroj.",
+            "weapons": "Jen luky: Lovecký luk, Reflexní luk nebo Dlouhý luk, vždy držené oběma rukama. Bojuje bojovou dovedností Střelba."
+          },
+          "arbalest": {
+            "about": "Těžké šipky z pevného postoje. Kušník zasahuje každou ranou tvrději, míří na slabiny, mrzačí cíle a drží stráž nad bojištěm.",
+            "weapons": "Jen kuše: Kuše nebo Těžká kuše, vždy držené oběma rukama. Bojuje bojovou dovedností Střelba."
+          },
+          "peltast": {
+            "about": "Lehkooděnec. Peltast vrhá těžké oštěpy a sekery, po kterých soupeři krvácí a vrávorají, vrhá s rozběhem a rozpoutává zběsilé vrhy.",
+            "weapons": "Vrhací zbraně: Oštěp a Vrhací sekera. Vrhá dovedností Vrh a jako bojovou dovednost si volí Souboj nebo Střelbu."
+          },
+          "juggler": {
+            "about": "Rychlé ruce a lehké čepele. Kejklíř vrhá rychle a přesně, častěji kriticky zasahuje, míří vrhy na slabiny a drží stráž nad bojištěm.",
+            "weapons": "Vrhací zbraně: Vrhací nůž a Vrhací sekera. Vrhá dovedností Vrh a bojuje bojovou dovedností Střelba."
+          },
+          "elymas": {
+            "about": "Vytrvalý mág. Elymas buduje hlubokou zásobu many, která roste s jeho mocí, obnovuje ji dlouhým odpočinkem, halí se do magického obrnění a zklidňuje svá kouzla.",
+            "weapons": "Bez požadavku na zbraň. Vyžaduje školu magie, která přináší dovednost Usměrňování."
+          },
+          "incantator": {
+            "about": "Bojový čaroděj. Incantator získává velkou, stálou zásobu many, kouzly udeří silněji, halí se do magického obrnění a zklidňuje svá kouzla.",
+            "weapons": "Bez požadavku na zbraň. Vyžaduje školu magie, která přináší dovednost Usměrňování."
+          },
+          "veneficus": {
+            "about": "Válečník a mág. Veneficus obnovuje manu krátkým odpočinkem, útoky zbraní mu plní Usměrňování i manu, zbroj ho omezuje méně a učí se útočit i čarovat v jednom tahu.",
+            "weapons": "Jakákoliv zbraň: Veneficus bojuje zbraněmi své bojové doktríny. Vyžaduje školu magie, která přináší dovednost Usměrňování."
+          }
+        },
+        "damage": "Zranění",
+        "damageType": "Typ zranění",
+        "skill": "Dovednost"
       },
       "Race": {
         "Vardur": "Vardur"
@@ -5614,6 +5702,11 @@
       "LedgerEmpty": "Zatím žádné odměny.",
       "GrantTooltip": "Udělil {by}, zapsáno {created}",
       "StartingInvalid": "Počáteční CP a SP nemohou být záporné.",
+      "NewCharacters": "Nové postavy začínají s",
+      "NewCharactersHint": "Počáteční CP a SP pro postavu vytvořenou v okně tvorby postavy. Číslo zapsané do buňky Počáteční u postavy ho pro tu postavu přepíše.",
+      "NewCp": "CP",
+      "NewSpHuman": "SP člověk",
+      "NewSpOther": "SP ostatní rasy",
       "DeleteTitle": "Smazat odměnu",
       "DeleteGrant": "Smazat tuto odměnu všem",
       "DeleteGrantConfirm": "Smazat odměnu ze dne {date} všem postavám a vzít jim její CP a SP zpět?",
@@ -9094,6 +9187,93 @@
           "specNodeNamed": "Vyžaduje uzel {node} specializace {spec}.",
           "masterFeature": "Vyžaduje {skill}: Mistr. Taková odbornost zatím neexistuje, posoudí vypravěč.",
           "specScore": "Pravidla žádají {spec} {min}, ale neříkají, co se počítá. Posoudí vypravěč."
+        }
+      },
+      "TrackInfo": {
+        "combatSkills": {
+          "combat": "Nesmí mít specializaci Hraničář.\n\nKryt se nesčítá s Krytem za Střelbu, počítá se pouze vyšší stupeň.",
+          "archery": "Nesmí mít specializaci Hraničář.\n\nKryt se nesčítá s Krytem za Souboj, počítá se pouze vyšší stupeň.",
+          "ranger": "Zásah se počítá jak pro Souboj, tak pro Střelbu a Vrh.",
+          "channeling": "Požadavek na Doktríny lze nahradit patřičnou Specializací.",
+          "bloodManipulation": "Slouží k sesílání kouzel Školy Krve pro ty, kdo nemají Magický potenciál."
+        },
+        "doctrines": {
+          "pikeman": "Vztahuje se pouze na obouručně držené Kopí, Glaivu, Havraní zobák, Halapartnu a obouručně držený Trojzubec.",
+          "swordsman": "Vztahuje se pouze na Dlouhý meč, Flamberg a obouručně držený Široký meč, Vojenský sekáček, Šavli a Krátký meč.",
+          "reaver": "Vztahuje se pouze na Dlouhou sekeru, Berdyš, Obouruční válečné kladivo, Cep a obouručně držené Válečné kladivo, Vojenský krumpáč, Válečnou sekeru, Sekerku a Palcát.",
+          "shieldbearer": "Vztahuje se pouze na Lehké a Střední zbraně držené společně s Provizorním, Malým, Středním nebo Velkým štítem.",
+          "dimakerus": "Vztahuje se na téměř libovolnou kombinaci Lehkých a Středních zbraní (viz Zbrojnice).\n\nNevztahuje se na Šermířskou dýku, Kopí, Trojzubec, Cestus, Pěst, Oštěp a Katar.",
+          "duelist": "Vztahuje se pouze na Krátký meč, Široký meč, Šavli, Dýku, Vojenský sekáček a Rapír.\n\nVyžaduje volnou ruku, Šermířskou dýku, Jednoruční kuši nebo Křesadlovou pistoli.",
+          "monk": "Vztahuje se pouze na Hůl a Katar společně s Obranným katarem.",
+          "rogue": "Vztahuje se pouze na vytříbené zbraně, luky a kuše. Nesmí používat Střední nebo Velký štít.",
+          "rider": "Aplikuje se pouze při boji ze sedla s vhodnou zbraní.",
+          "archer": "Vztahuje se na Lovecký luk, Reflexní luk a Dlouhý luk.",
+          "arbalest": "Vztahuje se na Jednoruční kuši, Lehkou kuši, Těžkou kuši a Trpasličí kuši.",
+          "peltast": "Vztahuje se na Oštěp (Vrh), Vrhací sekeru (Vrh) a Prak.",
+          "juggler": "Vztahuje se na Vrhací nůž (Vrh), Vrhací sekeru (Vrh), Petardu a obdobné.",
+          "musketeer": "Vztahuje se na Mušketu a Křesadlovou pistoli.",
+          "elymas": "Bonusy se počítají pouze pro danou Doktrínu.\n\nRegenerace many je pouze za Dlouhý odpočinek a později jednou za den za Krátký odpočinek.",
+          "incantator": "Bonusy se počítají pouze pro danou Doktrínu.\n\nRegenerace many je pouze za Dlouhý odpočinek.\n\nIncantator má bez Ohniskového předmětu postih 10 % na Usměrňování a šanci na Kritické selhání +2 %.",
+          "veneficus": "Bonusy se počítají pouze pro danou Doktrínu.\n\nRegenerace many je pouze za Krátký odpočinek a později v malém množství za volnou akci.\n\nZa každých 150 zregenerovaných magů získává 1 stupeň Únavy (resetuje se za Dlouhý odpočinek).",
+          "elementalist": "Bonusy se počítají pouze pro danou Doktrínu. Tuto Doktrínu nelze změnit.\n\nRegenerace many je pouze za Dlouhý odpočinek.",
+          "cordinas": "Bonusy se počítají pouze pro danou Doktrínu."
+        },
+        "weaponSkills": {
+          "swords": "Vztahuje se na Krátký meč, Vojenský sekáček, Široký meč, Šavli, Rapír, Dlouhý meč, Flamberg, Dýku, Katar a Vrhací nůž.",
+          "axes": "Vztahuje se na Sekerku, Vrhací sekeru, Vojenský krumpáč, Válečnou sekeru a Dlouhou sekeru.",
+          "blunt": "Vztahuje se na Obušek, Palcát, Válečné kladivo, Řemdih, Cep a Obouruční válečné kladivo.",
+          "polearms": "Vztahuje se na Oštěp, Mušketu, Kopí, Trojzubec, Glaivu, Halapartnu, Havraní zobák a Hůl."
+        },
+        "schools": {
+          "fire": "Síla kouzla se počítá pouze pro danou Školu.\n\nOmezený magický potenciál může dosáhnout nejvýše stupně VIII této Školy.\n\nPrvní Škola se odemyká skrze Temperament nebo hodem 1d7 a je zdarma. Další Školy se zpřístupňují skrze odbornost „Divoký mág“.",
+          "water": "Síla kouzla se počítá pouze pro danou Školu.\n\nOmezený magický potenciál může dosáhnout nejvýše stupně VIII této Školy.\n\nPrvní Škola se odemyká skrze Temperament nebo hodem 1d7 a je zdarma. Další Školy se zpřístupňují skrze odbornost „Divoký mág“.",
+          "air": "Síla kouzla se počítá pouze pro danou Školu.\n\nOmezený magický potenciál může dosáhnout nejvýše stupně VIII této Školy.\n\nPrvní Škola se odemyká skrze Temperament nebo hodem 1d7 a je zdarma. Další Školy se zpřístupňují skrze odbornost „Divoký mág“.",
+          "earth": "Síla kouzla se počítá pouze pro danou Školu.\n\nOmezený magický potenciál může dosáhnout nejvýše stupně VIII této Školy.\n\nPrvní Škola se odemyká skrze Temperament nebo hodem 1d7 a je zdarma. Další Školy se zpřístupňují skrze odbornost „Divoký mág“.",
+          "spirit": "Síla kouzla se počítá pouze pro danou Školu.\n\nOmezený magický potenciál může dosáhnout nejvýše stupně VIII této Školy.\n\nPrvní Škola se odemyká skrze Temperament nebo hodem 1d7 a je zdarma. Další Školy se zpřístupňují skrze odbornost „Divoký mág“.",
+          "body": "Síla kouzla se počítá pouze pro danou Školu.\n\nOmezený magický potenciál může dosáhnout nejvýše stupně VIII této Školy.\n\nPrvní Škola se odemyká skrze Temperament nebo hodem 1d7 a je zdarma. Další Školy se zpřístupňují skrze odbornost „Divoký mág“.",
+          "darkness": "Síla kouzla se počítá pouze pro danou Školu.\n\nOmezený magický potenciál může dosáhnout nejvýše stupně VIII této Školy.\n\nPrvní Škola se odemyká skrze Temperament nebo hodem 1d7 a je zdarma. Další Školy se zpřístupňují skrze odbornost „Divoký mág“."
+        },
+        "skills": {
+          "athletics": "Plavání, běh, šplh a těžká práce.",
+          "smithing": "Výroba a oprava.\n\nPro výrobu zbrojí a zbraní je zapotřebí odborností Zbrojíř a Mečíř.",
+          "brawler": "Souboj beze zbraně a chvaty.",
+          "muscles": "Uděluje bonus na Test Síly.",
+          "acrobacy": "Šplh a akrobacie (chůze po laně apod.).",
+          "nimbleness": "Uděluje bonus na Test Obratnosti.",
+          "riding": "Ovládání zvířat, udržení se v sedle apod.",
+          "pickpocketing": "Krádež drobností z kapes a měšců tak, aby si toho okradený nevšiml.",
+          "sailing": "Všechno týkající se ovládání lodí: plachtění, kormidlování apod.",
+          "lockpicking": "Otevírání zámků bez klíče.",
+          "stealth": "Pohyb tak, aby si tě nikdo nevšiml.",
+          "craft": "Vybere si jedno řemeslo.",
+          "dancing": "Tanec ve společnosti i na jevišti.",
+          "drinking": "Při úspěchu získává jen poloviční toxicitu z alkoholu a lektvarů.\n\nNeplatí na drogy.",
+          "alchemy": "Výroba alchymistických věcí, rovněž znalost rostlin a minerálů užitečných v alchymii.",
+          "arcana": "Znalosti týkající se magického fenoménu.",
+          "engineering": "Zahrnuje rozličné znalosti týkající se stavby různých strojů, lodí a budov, včetně obléhacích strojů a jejich ovládání.",
+          "logic": "Padělání, kryptografie, šachy a potenciálně další.",
+          "firstAid": "Umožňuje léčit rány a nemoci a provádět operace. Rovněž zahrnuje znalost léčivých rostlin.",
+          "tactics": "Dovednost ovlivňující efektivitu v rozsáhlejších konfliktech. Rovněž zahrnuje um v taktických hrách, jako jsou například šachy.",
+          "art": "Vybírá si jeden typ umělecké tvorby: hudební kompozice, poezie, divadelní hry, psaní knih.",
+          "research": "Znalost vhodných metod a technik potřebných pro efektivní sběr informací. Rovněž použitelné pro vývoj nových věcí.",
+          "deception": "Lhaní.",
+          "acting": "Zahrnuje i splývání v davu a rétoriku.",
+          "music": "Vybírá si zpěv nebo jeden hudební nástroj.",
+          "painting": "Malba a kresba.",
+          "persuasion": "Získávání druhých pro svou věc slovy a argumenty.",
+          "temptation": "Zkrátka svádění.",
+          "leadership": "Dovednost ovlivňující efektivitu a morálku menšího oddílu. Přínos pro družinu.\n\nKaždý stupeň odemyká nové akce.",
+          "intimidation": "Forma přesvědčování založená na fyzických hrozbách a výhružkách.",
+          "herbalism": "Sběr alchymistických a lékařských bylin.",
+          "traps": "Deaktivace, rozebrání, sestavení a zpozorování.",
+          "survival": "Zahrnuje stopování, sběr jídla, rybaření, lov, hledání vody, stavbu provizorních přístřešků, sběr bylin apod.",
+          "insight": "Prohlédnutí lží.",
+          "animalHandling": "Krocení zvířat, manipulace a vycházení se zvířaty. Zahrnuje i znalosti, jak se o ně starat.",
+          "dreamwalker": "Umožňuje navštívit a ovlivnit Snový svět. Ochrana a manipulace snů.",
+          "meditation": "Umožňuje jednou za den provést Meditaci, která obnoví 1 MŽ.",
+          "mindBending": "Souboje vůle, mysl proti mysli.",
+          "rituals": "Zvyšuje šance na úspěšné provedení Rituálů. Vybírá si jednu skupinu: Nekromancie, Démonologie, Okultismus, Obecné, Kněžské, Krvavé.",
+          "augury": "Šance nahlédnout do budoucnosti jednotlivce, předpovídat počasí, pohromy a vynášet Věštby."
         }
       }
     }

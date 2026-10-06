@@ -433,6 +433,11 @@ function isUnsetStarting(value) {
  * moved from CP to SP. The level is set by the CP BEFORE conversion, which is
  * `levelCp`.
  *
+ * A character still in creation with no starting figure written down starts
+ * from the GM's default instead (getCreationStartingDefaults). It stays marked
+ * legacy, so getLedgerMaterializeUpdate writes the default down: Finish does
+ * that, and so does any Party Management edit made before it.
+ *
  * @returns {{starting: {cp:number,sp:number}, bonus: {cp:number,sp:number},
  *            awards: {cp:number,sp:number}, total: {cp:number,sp:number},
  *            legacy: {cp:boolean,sp:boolean}, converted: number,
@@ -452,13 +457,14 @@ export function getLedger(actor) {
   for (const award of Array.isArray(p.awards) ? p.awards : []) {
     for (const c of LEDGER_CURRENCIES) ledger.awards[c] += Number(award?.[c]) || 0;
   }
+  const creationDefault = isInCreation(actor) ? getCreationStartingDefaults(actor) : null;
   for (const c of LEDGER_CURRENCIES) {
     const legacy = isUnsetStarting(p.starting?.[c]);
     ledger.legacy[c] = legacy;
     ledger.bonus[c] = Number(p.bonus?.[c]) || 0;
-    ledger.starting[c] = legacy
-      ? (Number(p.earned?.[c]) || 0) - ledger.awards[c]
-      : Number(p.starting[c]) || 0;
+    if (!legacy) ledger.starting[c] = Number(p.starting[c]) || 0;
+    else if (creationDefault) ledger.starting[c] = creationDefault[c];
+    else ledger.starting[c] = (Number(p.earned?.[c]) || 0) - ledger.awards[c];
     ledger.total[c] = ledger.starting[c] + ledger.bonus[c] + ledger.awards[c];
   }
   const preCp = ledger.total.cp;
@@ -469,6 +475,31 @@ export function getLedger(actor) {
   ledger.total.cp -= ledger.converted;
   ledger.total.sp += ledger.converted;
   return ledger;
+}
+
+/** Book defaults, used when the world setting is missing or unreadable. */
+const CREATION_STARTING_FALLBACK = { cp: 15, spHuman: 50, spOther: 40 };
+
+/**
+ * The starting CP/SP of a character made in the creation window (user ruling
+ * 2026-10-06): the GM's figures from Party Management (world setting
+ * `creationStarting`), SP split by whether the race picked in the creation
+ * draft is Human. No race picked yet reads as another race.
+ * @returns {{cp:number, sp:number}}
+ */
+export function getCreationStartingDefaults(actor) {
+  let stored = null;
+  try {
+    stored = game.settings.get("redsteel", "creationStarting");
+  } catch (err) {
+    // Not registered yet (init): the book defaults stand.
+  }
+  const figure = (key) => {
+    const value = Math.trunc(Number(stored?.[key]));
+    return Number.isFinite(value) && value >= 0 ? value : CREATION_STARTING_FALLBACK[key];
+  };
+  const human = actor?.getFlag?.("redsteel", "creationDraft")?.race === "human";
+  return { cp: figure("cp"), sp: figure(human ? "spHuman" : "spOther") };
 }
 
 /**

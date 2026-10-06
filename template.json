@@ -239,7 +239,7 @@
           "lost": 0
         },
         "stamina": {
-          "value": 0,
+          "value": 5,
           "min": 0,
           "base": 0,
           "max": 5,

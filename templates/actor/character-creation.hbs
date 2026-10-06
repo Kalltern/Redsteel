@@ -38,7 +38,8 @@
   {{#*inline "doctrineCard"}}
   <div role="button" tabindex="0"
        class="rs-create-doctrine-card is-{{kind}} {{#if selected}}is-selected{{/if}} {{#if locked}}is-locked{{/if}} {{#if shut}}is-shut{{/if}}"
-       data-action="{{action}}" data-{{keyAttr}}="{{key}}" data-info="{{info}}"
+       {{#if action}}data-action="{{action}}"{{/if}} data-{{keyAttr}}="{{key}}" data-info="{{info}}"
+       {{#if owner}}data-owner="{{owner}}"{{/if}}
        aria-pressed="{{#if selected}}true{{else}}false{{/if}}"
        {{#if disabled}}aria-disabled="true"{{/if}}>
     <span class="rs-dc-crest {{#if glyph}}is-glyph{{/if}}">{{#if glyph}}<i class="fa-solid {{glyph}}"></i>{{else}}<img src="{{crest}}" alt="">{{/if}}</span>
@@ -113,82 +114,28 @@
       </div>
     </section>
     {{else if isDetails}}
-    {{!-- Step 2.5 — Weapons and magic: the weapon skill each combat doctrine
-          trains with (fixed ones locked), and with a school, its magical
-          doctrine. Two plates side by side, or one alone. --}}
-    <div class="rs-create-details">
-      {{!-- The combat skills the doctrines fight with: fixed ones locked (and
-            Channeling with a school), the Peltast's a choice with the book's
-            comparison under it. --}}
-      {{#if details.hasCombatSkills}}
-      <section class="rs-create-panel rs-create-details-skills">
-        <h2 class="rs-create-panel-title">{{localize "REDSTEEL.Creation.Details.combatSkillHeading"}}</h2>
-        <div class="rs-create-scroll">
-          {{#each details.combatSkills as |row|}}
-          <div class="rs-create-weapon-row {{#if row.answered}}is-answered{{/if}}"
-               {{#if row.fixed}}data-tooltip="{{row.fixedText}}"{{/if}}>
-            <span class="rs-create-weapon-doctrine">
-              {{#if row.fixed}}<i class="fa-solid fa-lock"></i>{{/if}}
-              {{row.label}}
-            </span>
-            <span class="rs-create-weapon-options">
-              {{#each row.options as |option|}}
-              <button type="button" class="rs-create-weapon-option {{#if option.selected}}is-selected{{/if}}"
-                      data-action="pickCombatSkill" data-skill="{{option.key}}"
-                      aria-pressed="{{#if option.selected}}true{{else}}false{{/if}}"
-                      {{#if option.disabled}}disabled{{/if}}>
-                {{option.label}}
-              </button>
-              {{/each}}
-            </span>
-            {{#if row.advice}}
-            <p class="rs-create-doctrine-advice rs-create-skill-advice">{{row.advice}}</p>
-            {{/if}}
-          </div>
-          {{/each}}
-        </div>
-      </section>
-      {{/if}}
-      {{#if details.hasWeapons}}
-      <section class="rs-create-panel rs-create-details-weapons">
-        <h2 class="rs-create-panel-title">{{localize "REDSTEEL.Creation.Details.weaponsHeading"}}</h2>
-        <div class="rs-create-scroll">
-          <p class="rs-create-doctrine-advice">{{localize "REDSTEEL.Creation.Details.weaponsAdvice"}}</p>
-          {{#each details.weapons as |row|}}
-          <div class="rs-create-weapon-row {{#if row.answered}}is-answered{{/if}}" data-info="doctrine:{{row.key}}"
-               {{#if row.fixed}}data-tooltip="{{row.fixedText}}"{{/if}}>
-            <span class="rs-create-weapon-doctrine">
-              {{#if row.fixed}}<i class="fa-solid fa-lock"></i>{{/if}}
-              {{row.label}}
-            </span>
-            <span class="rs-create-weapon-options">
-              {{#each row.options as |option|}}
-              <button type="button" class="rs-create-weapon-option {{#if option.selected}}is-selected{{/if}}"
-                      data-action="pickWeapon" data-doctrine="{{row.key}}" data-weapon="{{option.key}}"
-                      aria-pressed="{{#if option.selected}}true{{else}}false{{/if}}"
-                      {{#if option.disabled}}disabled{{/if}}>
-                {{option.label}}
-              </button>
-              {{/each}}
-            </span>
-          </div>
-          {{/each}}
-        </div>
-      </section>
-      {{/if}}
-      {{#if details.hasMagic}}
-      <section class="rs-create-panel rs-create-details-magic">
-        <h2 class="rs-create-panel-title">{{details.magicHeading}}</h2>
-        <div class="rs-create-scroll">
+    {{!-- Step 2.5 — Weapons and magic: one plate of cards, a block per
+          question. Each combat doctrine's weapon skill (a fixed one taken,
+          the others greyed out), each doctrine's combat skill the same way
+          (the Peltast chooses), Channeling for a school, then the school's
+          magical doctrine. --}}
+    <section class="rs-create-panel rs-create-details">
+      <h2 class="rs-create-panel-title">{{localize "REDSTEEL.Creation.Step2b.title"}}</h2>
+      <div class="rs-create-scroll">
+        <p class="rs-create-doctrine-advice">{{localize "REDSTEEL.Creation.Details.weaponsAdvice"}}</p>
+        {{#each details.groups}}
+        <div class="rs-create-doctrine-block">
+          <div class="rs-create-group-label">{{this.label}}</div>
+          {{#if this.advice}}<p class="rs-create-doctrine-advice">{{this.advice}}</p>{{/if}}
           <div class="rs-create-doctrine-grid">
-            {{#each details.magic}}
+            {{#each this.cards}}
             {{> doctrineCard}}
             {{/each}}
           </div>
         </div>
-      </section>
-      {{/if}}
-    </div>
+        {{/each}}
+      </div>
+    </section>
     {{else}}
 
     {{!-- Left column: the name, then the traits still to pick. --}}

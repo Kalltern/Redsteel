@@ -70,7 +70,7 @@ import {
 } from "../helpers/progressionEngine.mjs";
 // Import cycle with learnWindow.mjs (it imports this module's creation
 // exports): fine, as neither module uses the other's exports at top level.
-import { openLearnWindow } from "./learnWindow.mjs";
+import { describeRankChips, markAbilityChips, openLearnWindow } from "./learnWindow.mjs";
 import { SPEC_ICONS } from "../helpers/specialisations.mjs";
 import { TEMPERAMENT_SCHOOLS } from "../helpers/rankDiscounts.mjs";
 import { getRaceChoiceGroups } from "./race.mjs";
@@ -97,6 +97,8 @@ const CACHE = {
   traits: null,
   racialFeatures: null,
   ladders: null,
+  // The same ladders for the skills 2.5 offers, by track id.
+  skillLadders: null,
   weapons: null,
 };
 
@@ -121,9 +123,20 @@ async function enrichText(text) {
  * @returns {Promise<Map<string, object[]>>}
  */
 async function buildDoctrineLadders(keys) {
-  // Every (doctrine, rank, uuid) first, so the fetches can run together.
-  const plan = keys.map((key) => {
-    const trackId = `doctrines.${key}`;
+  const ladders = await buildTrackLadders(keys.map((key) => `doctrines.${key}`));
+  return new Map(keys.map((key) => [key, ladders.get(`doctrines.${key}`)]));
+}
+
+/**
+ * The ladder builder behind buildDoctrineLadders, for any tracks: track id →
+ * the abilities its ranks hand over, rank by rank.
+ * @param {string[]} trackIds
+ * @returns {Promise<Map<string, object[]>>}
+ */
+async function buildTrackLadders(trackIds) {
+  // Every (track, rank, uuid) first, so the fetches can run together.
+  const plan = trackIds.map((key) => {
+    const trackId = key;
     const grants = [];
     for (let rank = 1; getRankPrice(trackId, rank); rank++) {
       for (const uuid of getRankGrants(trackId, rank)) grants.push({ rank, uuid });
@@ -159,6 +172,8 @@ async function buildDoctrineLadders(keys) {
           numeral: ROMAN_RANKS[rank - 1] ?? String(rank),
           id: uuid,
           name: FEATURE_TIPS.get(uuid)?.title ?? docs.get(uuid).name,
+          // The document's own name, for matching the book's rank lines.
+          docName: docs.get(uuid).name,
           img: docs.get(uuid).img,
         })),
     );
@@ -266,6 +281,46 @@ function weaponGrip(system) {
 }
 
 /**
+ * The weapon browser's stat lines for one weapon, labelled the way the weapon
+ * sheet labels its fields: damage dice and types, Attack, Defense,
+ * Penetration, Crit chance, Bleed and Stagger. Zero values are left out.
+ * @returns {[string, string][]} label → value
+ */
+function weaponStats(system) {
+  const i18n = game.i18n;
+  const field = (key) => i18n.localize(`REDSTEEL.Item.Weapon.FIELDS.${key}.label`);
+  const signed = (n) => (n > 0 ? `+${n}` : String(n));
+  const out = [];
+  const roll = system?.roll ?? {};
+  const dice = Number(roll.diceNum) || 0;
+  if (dice) {
+    const bonus = String(roll.diceBonus ?? "").trim();
+    const extra = bonus && bonus !== "0" ? (/^[-+]/.test(bonus) ? bonus : `+${bonus}`) : "";
+    out.push([i18n.localize("REDSTEEL.Creation.Doctrine.damage"), `${dice}d${roll.diceSize}${extra}`]);
+  }
+  const types = [system?.dmgType1, system?.dmgType2, system?.dmgType3, system?.dmgType4]
+    .filter(Boolean)
+    .map((type) => {
+      const key = `REDSTEEL.Bg3Hotbar.DamageType.${type}`;
+      return i18n.has(key, false) ? i18n.localize(key) : type;
+    });
+  if (types.length) out.push([i18n.localize("REDSTEEL.Creation.Doctrine.damageType"), types.join(", ")]);
+  for (const key of ["attack", "defense"]) {
+    const n = Number(system?.[key]) || 0;
+    if (n) out.push([field(key), `${signed(n)}%`]);
+  }
+  const penetration = Number(system?.penetration) || 0;
+  if (penetration) out.push([field("penetration"), String(penetration)]);
+  const crit = Number(system?.critChance) || 0;
+  if (crit) out.push([field("critChance"), `${signed(crit)}%`]);
+  for (const key of ["bleed", "stagger"]) {
+    const n = Number(system?.effects?.[key]) || 0;
+    if (n) out.push([field(key), `${n}%`]);
+  }
+  return out;
+}
+
+/**
  * The weapons each doctrine fights with, read from the weapons themselves:
  * a weapon names its doctrines at system.doctrines.<key> (and, for the off
  * hand only, at system.offhandProperties.doctrines.<key>). Per doctrine, the
@@ -291,6 +346,17 @@ async function buildDoctrineWeapons(keys) {
             "system.offhandProperties.doctrines",
             "system.localizationKey",
             "system.description",
+            // The weapon browser's stat block (weaponStats).
+            "system.roll",
+            "system.attack",
+            "system.defense",
+            "system.penetration",
+            "system.critChance",
+            "system.effects",
+            "system.dmgType1",
+            "system.dmgType2",
+            "system.dmgType3",
+            "system.dmgType4",
           ],
         })
       : null;
@@ -328,6 +394,7 @@ async function buildDoctrineWeapons(keys) {
         name: FEATURE_TIPS.get(entry._id)?.title ?? entry.name,
         img: entry.img,
         skill: DOCTRINE_WEAPON_SKILL[key] ?? WEAPON_CLASS_SKILL[system.class] ?? null,
+        stats: weaponStats(system),
       });
     }
     // The style decides which of them show, and under which heading.
@@ -339,8 +406,11 @@ async function buildDoctrineWeapons(keys) {
           .sort((a, b) => a.name.localeCompare(b.name, lang)),
       }))
       .filter((group) => group.weapons.length);
+    for (const group of groups) {
+      for (const weapon of group.weapons) weapon.skillLabel = weapon.skill ? skillLabel(weapon.skill) : "";
+    }
     const skills = new Set(
-      groups.flatMap((group) => group.weapons.map((w) => w.skill)).filter(Boolean).map(skillLabel),
+      groups.flatMap((group) => group.weapons.map((w) => w.skillLabel)).filter(Boolean),
     );
     out.set(key, { skills: [...skills].sort((a, b) => a.localeCompare(b, lang)), groups });
   }
@@ -457,6 +527,20 @@ const WEAPON_SKILL_KEYS = ["swords", "axes", "blunt", "polearms"];
 
 /** Doctrines whose weapon skill is fixed (user ruling 2026-10-01). */
 const FIXED_WEAPONS = { pikeman: "polearms", swordsman: "swords", duelist: "swords" };
+
+/**
+ * Each skill card's crest on 2.5 and in the info panel (core Foundry icons
+ * the item packs already use), with the doctrine kind whose accent it wears.
+ */
+const SKILL_CARDS = {
+  "weaponSkills.swords": { img: "icons/weapons/swords/greatsword-crossguard-steel.webp", kind: "melee" },
+  "weaponSkills.axes": { img: "icons/weapons/axes/axe-broad-grey.webp", kind: "melee" },
+  "weaponSkills.blunt": { img: "icons/weapons/maces/mace-studded-steel.webp", kind: "melee" },
+  "weaponSkills.polearms": { img: "icons/weapons/polearms/halberd-crescent-small-spiked.webp", kind: "melee" },
+  "combatSkills.combat": { img: "icons/skills/melee/swords-triple-orange.webp", kind: "melee" },
+  "combatSkills.archery": { img: "icons/skills/ranged/target-bullseye-arrow-glowing.webp", kind: "ranged" },
+  "combatSkills.channeling": { img: "icons/magic/symbols/runes-star-pentagon-blue.webp", kind: "magical" },
+};
 
 /**
  * Combat doctrines that ask no weapon question: Archer and Arbalest fight
@@ -743,6 +827,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
       pickWeapon: CharacterCreationWindow._onPickWeapon,
       pickCombatSkill: CharacterCreationWindow._onPickCombatSkill,
       pickMagicDoctrine: CharacterCreationWindow._onPickMagicDoctrine,
+      pageWeapon: CharacterCreationWindow._onPageWeapon,
       closeScreen: CharacterCreationWindow._onCloseScreen,
     },
   };
@@ -756,9 +841,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
         ".rs-create-origin .rs-create-scroll",
         ".rs-create-build .rs-create-scroll",
         ".rs-create-info .rs-create-scroll",
-        ".rs-create-details-skills .rs-create-scroll",
-        ".rs-create-details-weapons .rs-create-scroll",
-        ".rs-create-details-magic .rs-create-scroll",
+        ".rs-create-details .rs-create-scroll",
       ],
     },
   };
@@ -817,6 +900,9 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
    * Loaded with the ladders.
    */
   #doctrineWeapons = null;
+
+  /** The same ladders for the SKILL_CARDS skills, by track id. */
+  #skillLadders = null;
 
   /** Info panel HTML by "kind:id", rebuilt every render. */
   #infoHtml = new Map();
@@ -983,49 +1069,115 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
    * FEATURE_TIPS under its uuid.
    */
   async #loadDoctrineLadders() {
-    if (this.#doctrineLadders && this.#doctrineWeapons) return this.#doctrineLadders;
+    if (this.#doctrineLadders && this.#doctrineWeapons && this.#skillLadders) return this.#doctrineLadders;
     const keys = this.#doctrineKeys();
     CACHE.ladders ??= buildDoctrineLadders(keys);
+    CACHE.skillLadders ??= buildTrackLadders(Object.keys(SKILL_CARDS));
     CACHE.weapons ??= buildDoctrineWeapons(keys);
-    [this.#doctrineLadders, this.#doctrineWeapons] = await Promise.all([CACHE.ladders, CACHE.weapons]);
+    [this.#doctrineLadders, this.#doctrineWeapons, this.#skillLadders] = await Promise.all([
+      CACHE.ladders,
+      CACHE.weapons,
+      CACHE.skillLadders,
+    ]);
     return this.#doctrineLadders;
   }
 
   /**
-   * The info panel's weapons block for one doctrine: the weapon skills it
-   * fights with, then its weapons grouped by how they are held (two-handed,
-   * one hand or both, one-handed, off hand only), each with its icon and its
-   * description on hover. "" when the doctrine names no weapon.
+   * The info panel's opening for one doctrine: what it is about, then its
+   * weapon requirements in words (REDSTEEL.Creation.Doctrine.Info.<key>) and
+   * the weapon skills its weapons are fought with. "" for a doctrine with no
+   * text written.
+   */
+  #doctrineAboutHtml(key) {
+    const i18n = game.i18n;
+    const title = (labelKey) =>
+      `<h4 class="rs-create-info-subtitle">${escapeHtml(i18n.localize(labelKey))}</h4>`;
+    const text = (labelKey) =>
+      i18n.has(labelKey, false) ? `<p class="rs-create-doctrine-text">${escapeHtml(i18n.localize(labelKey))}</p>` : "";
+    const about = text(`REDSTEEL.Creation.Doctrine.Info.${key}.about`);
+    const weapons = text(`REDSTEEL.Creation.Doctrine.Info.${key}.weapons`);
+    const skills = this.#doctrineWeapons?.get(key)?.skills ?? [];
+    let html = about ? title("REDSTEEL.Creation.Doctrine.about") + about : "";
+    if (weapons || skills.length) {
+      html += title("REDSTEEL.Creation.Doctrine.requirements") + weapons;
+      if (skills.length) {
+        html += `<div class="rs-create-skill-chips">${skills
+          .map((skill) => `<span class="rs-create-skill-chip">${escapeHtml(skill)}</span>`)
+          .join("")}</div>`;
+      }
+    }
+    return html;
+  }
+
+  /**
+   * The info panel's weapon browser for one doctrine: one weapon at a time
+   * (icon, name, how it is held, skill, stats), paged with the arrows, and
+   * below it every weapon by name, grouped by how they are held, each one
+   * jumping the browser to it (_onPageWeapon). "" when the doctrine names no
+   * weapon.
    */
   #doctrineWeaponsHtml(key) {
     const data = this.#doctrineWeapons?.get(key);
     if (!data?.groups.length) return "";
     const i18n = game.i18n;
-    const title = (labelKey) =>
-      `<h4 class="rs-create-info-subtitle">${escapeHtml(i18n.localize(labelKey))}</h4>`;
-    let html = "";
-    if (data.skills.length) {
-      html +=
-        title("REDSTEEL.Creation.Doctrine.weaponSkills") +
-        `<div class="rs-create-skill-chips">${data.skills
-          .map((skill) => `<span class="rs-create-skill-chip">${escapeHtml(skill)}</span>`)
-          .join("")}</div>`;
-    }
-    html += title("REDSTEEL.Creation.Doctrine.weapons");
-    for (const { label, weapons: list } of data.groups) {
-      html +=
-        `<div class="rs-create-weapon-group">` +
-        `<span class="rs-create-weapon-grip">${escapeHtml(i18n.localize(`REDSTEEL.Creation.Doctrine.Group.${label}`))}</span>` +
-        `<ul class="rs-create-features">${list
-          .map(
-            (weapon) =>
-              `<li class="rs-create-feature" data-tt-kind="creationFeature" data-tt-id="${escapeHtml(weapon.id)}">` +
-              `<img class="rs-create-feature-icon" src="${escapeHtml(weapon.img)}" alt="">` +
-              `<span class="rs-create-feature-text">${escapeHtml(weapon.name)}</span></li>`,
-          )
-          .join("")}</ul></div>`;
-    }
-    return html;
+    const all = data.groups.flatMap(({ label, weapons: list }) => list.map((weapon) => ({ label, weapon })));
+    const pages = all
+      .map(({ label, weapon }, index) => {
+        const facts = [
+          ...(weapon.skillLabel ? [[i18n.localize("REDSTEEL.Creation.Doctrine.skill"), weapon.skillLabel]] : []),
+          ...weapon.stats,
+        ];
+        return (
+          `<div class="rs-create-weapon-page${index ? "" : " is-current"}" data-index="${index}">` +
+          `<div class="rs-create-weapon-head">` +
+          `<img class="rs-create-weapon-icon" src="${escapeHtml(weapon.img)}" alt="">` +
+          `<div class="rs-create-weapon-name">${escapeHtml(weapon.name)}` +
+          `<span class="rs-create-weapon-grip">${escapeHtml(i18n.localize(`REDSTEEL.Creation.Doctrine.Group.${label}`))}</span>` +
+          `</div></div>` +
+          (facts.length
+            ? `<dl class="rs-create-info-facts">${facts
+                .map(([dt, dd]) => `<dt>${escapeHtml(dt)}</dt><dd>${escapeHtml(dd)}</dd>`)
+                .join("")}</dl>`
+            : "") +
+          `</div>`
+        );
+      })
+      .join("");
+    const step = (dir, icon, labelKey) =>
+      `<button type="button" class="rs-create-weapon-step" data-action="pageWeapon" data-step="${dir}" ` +
+      `aria-label="${escapeHtml(i18n.localize(labelKey))}" data-tooltip="${escapeHtml(i18n.localize(labelKey))}">` +
+      `<i class="fa-solid ${icon}"></i></button>`;
+    let index = 0;
+    const list = data.groups
+      .map(
+        ({ label, weapons: group }) =>
+          `<div class="rs-create-weapon-group">` +
+          `<span class="rs-create-weapon-grip">${escapeHtml(i18n.localize(`REDSTEEL.Creation.Doctrine.Group.${label}`))}</span>` +
+          `<div class="rs-create-weapon-index">${group
+            .map((weapon) => {
+              const i = index++;
+              return (
+                `<button type="button" class="rs-create-weapon-jump${i ? "" : " is-current"}" data-action="pageWeapon" data-index="${i}">` +
+                `<img src="${escapeHtml(weapon.img)}" alt="">${escapeHtml(weapon.name)}</button>`
+              );
+            })
+            .join("")}</div></div>`,
+      )
+      .join("");
+    return (
+      `<h4 class="rs-create-info-subtitle">${escapeHtml(i18n.localize("REDSTEEL.Creation.Doctrine.browse"))}</h4>` +
+      `<div class="rs-create-weapon-browser" data-count="${all.length}">` +
+      `<div class="rs-create-weapon-nav">` +
+      step(-1, "fa-chevron-left", "REDSTEEL.Creation.Doctrine.prev") +
+      `<span class="rs-create-weapon-count">${escapeHtml(
+        i18n.format("REDSTEEL.Creation.Doctrine.page", { n: 1, total: all.length }),
+      )}</span>` +
+      step(1, "fa-chevron-right", "REDSTEEL.Creation.Doctrine.next") +
+      `</div>` +
+      pages +
+      list +
+      `</div>`
+    );
   }
 
   /** The info panel's "Racial features" block for one race, or "". */
@@ -1635,30 +1787,23 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
         kind === "magical"
           ? `<p class="rs-create-info-req">${escapeHtml(i18n.localize("REDSTEEL.Creation.Doctrine.needsMagic"))}</p>`
           : "";
-      // The full ladder: every ability the doctrine teaches, rank by rank,
-      // each with its icon and its description on hover.
-      const ladder = this.#doctrineLadders?.get(key) ?? [];
-      const path = ladder.length
-        ? `<h4 class="rs-create-info-subtitle">${escapeHtml(
-            i18n.localize("REDSTEEL.Creation.Doctrine.path"),
-          )}</h4><ul class="rs-create-features">${ladder
-            .map(
-              (step) =>
-                `<li class="rs-create-feature" data-tt-kind="creationFeature" data-tt-id="${escapeHtml(step.id)}">` +
-                `<span class="rs-create-feature-rank">${escapeHtml(step.numeral)}</span>` +
-                `<img class="rs-create-feature-icon" src="${escapeHtml(step.img)}" alt="">` +
-                `<span class="rs-create-feature-text">${escapeHtml(step.name)}</span></li>`,
-            )
-            .join("")}</ul>`
-        : "";
+      // All ten ranks: the abilities each hands over, and the book's other
+      // rank effects.
+      const path = this.#rankPathHtml(trackId, this.#doctrineLadders?.get(key) ?? []);
       const crest = this.#doctrineCrest(key);
       const head =
         `<div class="rs-create-info-crest is-${escapeHtml(kind)}">` +
         `<span class="rs-dc-crest"><img src="${escapeHtml(crest)}" alt=""></span></div>`;
       map.set(
         `doctrine:${key}`,
-        // Abilities first, then the weapons and the skills they use.
-        head + frame(this.#doctrineLabel(key), meta, requirement + path + this.#doctrineWeaponsHtml(key)),
+        // What the doctrine is and what it fights with first, then the
+        // weapon browser, then the ranks.
+        head +
+          frame(
+            this.#doctrineLabel(key),
+            meta,
+            requirement + this.#doctrineAboutHtml(key) + this.#doctrineWeaponsHtml(key) + path,
+          ),
       );
     }
 
@@ -1679,7 +1824,118 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
         head + frame(this.#schoolLabel(key), escapeHtml(i18n.localize("REDSTEEL.Creation.Doctrine.Kind.magical")), notes),
       );
     }
+
+    // The skills 2.5 offers as cards: kind, what rank I costs, all ten ranks.
+    for (const [trackId, card] of Object.entries(SKILL_CARDS)) {
+      const [group] = trackId.split(".");
+      const facts = [
+        [
+          i18n.localize("REDSTEEL.Creation.Doctrine.kind"),
+          i18n.localize(group === "weaponSkills" ? "REDSTEEL.Creation.Details.weaponSkill" : "REDSTEEL.Creation.Details.combatSkill"),
+        ],
+      ];
+      const rank1 = getRankPrice(trackId, 1);
+      if (rank1?.cost) {
+        facts.push([
+          i18n.localize("REDSTEEL.Creation.Doctrine.rank1"),
+          i18n.localize(
+            rank1.currency === "sp" ? "REDSTEEL.Creation.Info.priceSp" : "REDSTEEL.Creation.Info.priceCp",
+          ).replace("{n}", rank1.cost),
+        ]);
+      }
+      const meta =
+        `<dl class="rs-create-info-facts">` +
+        facts
+          .map(([label, value]) => `<dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd>`)
+          .join("") +
+        `</dl>`;
+      const head =
+        `<div class="rs-create-info-crest is-${escapeHtml(card.kind)}">` +
+        `<span class="rs-dc-crest"><img src="${escapeHtml(card.img)}" alt=""></span></div>`;
+      map.set(
+        `skill:${trackId}`,
+        head + frame(this.#skillLabel(trackId), meta, this.#rankPathHtml(trackId, this.#skillLadders?.get(trackId) ?? [])),
+      );
+    }
     return map;
+  }
+
+  /**
+   * The info panel's ranks block: all ten ranks of a track, each with the
+   * abilities it hands over (icon and name, description on hover) and the
+   * book's other effects for it (RANK_EFFECTS, worded as the Learn window
+   * words them). A book line that only names a granted ability is left to that
+   * ability's row; one carrying a rider after a colon stays. A rank that does
+   * nothing shows a dash.
+   */
+  #rankPathHtml(trackId, ladder) {
+    const rows = [];
+    for (let rank = 1; rank <= ROMAN_RANKS.length; rank++) {
+      const grants = ladder.filter((step) => step.rank === rank);
+      const chips = markAbilityChips(
+        describeRankChips(trackId, rank),
+        grants.map((step) => ({ localizedName: step.name, name: step.docName })),
+      ).filter((chip) => !chip.ability || String(chip.text ?? "").includes(":"));
+      const body = [
+        ...grants.map(
+          (step) =>
+            `<span class="rs-create-rank-ability" data-tt-kind="creationFeature" data-tt-id="${escapeHtml(step.id)}">` +
+            `<img class="rs-create-feature-icon" src="${escapeHtml(step.img)}" alt="">` +
+            `<span class="rs-create-feature-text">${escapeHtml(step.name)}</span></span>`,
+        ),
+        ...chips.map((chip) => `<span class="rs-create-rank-effect">${escapeHtml(chip.text)}</span>`),
+      ];
+      rows.push(
+        `<li class="rs-create-rank">` +
+          `<span class="rs-create-feature-rank">${escapeHtml(ROMAN_RANKS[rank - 1])}</span>` +
+          `<div class="rs-create-rank-body">${
+            body.join("") || `<span class="rs-create-rank-effect is-empty">&mdash;</span>`
+          }</div></li>`,
+      );
+    }
+    return (
+      `<h4 class="rs-create-info-subtitle">${escapeHtml(game.i18n.localize("REDSTEEL.Creation.Doctrine.ranks"))}</h4>` +
+      `<ul class="rs-create-ranks">${rows.join("")}</ul>`
+    );
+  }
+
+  /** A combat or weapon skill's localized name, by track id. */
+  #skillLabel(trackId) {
+    const [group, key] = trackId.split(".");
+    return game.i18n.localize(`REDSTEEL.Actor.Character.${group}.${key}.label`);
+  }
+
+  /**
+   * One skill card for 2.5: a weapon skill or a combat skill, picked for
+   * `owner` (the doctrine, or the school for Channeling). `fixedText` marks the
+   * one the owner is bound to; `shut` greys out the others beside it.
+   */
+  #skillCard(trackId, { owner, action, selected, fixedText = "", shut = false, editable }) {
+    const i18n = game.i18n;
+    const [group, key] = trackId.split(".");
+    const card = SKILL_CARDS[trackId];
+    const ladder = this.#skillLadders?.get(trackId) ?? [];
+    return {
+      key,
+      kind: card.kind,
+      action,
+      keyAttr: group === "weaponSkills" ? "weapon" : "skill",
+      owner,
+      info: `skill:${trackId}`,
+      label: this.#skillLabel(trackId),
+      kindLabel: i18n.localize(
+        group === "weaponSkills" ? "REDSTEEL.Creation.Details.weaponSkill" : "REDSTEEL.Creation.Details.combatSkill",
+      ),
+      crest: card.img,
+      ladder,
+      ladderCols: Math.max(1, Math.min(5, ladder.length)),
+      selected,
+      locked: false,
+      fixed: !!fixedText,
+      fixedText,
+      shut,
+      disabled: !editable || !!fixedText || shut,
+    };
   }
 
   /**
@@ -1743,95 +1999,90 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
   }
 
   /**
-   * Step 2.5: one weapon row per combat doctrine that trains with a weapon
-   * skill (fixed ones locked), and the magical doctrine of the drafted
-   * school.
+   * Step 2.5, one plate of cards in blocks: per combat doctrine that trains
+   * with a weapon skill, the four weapon skills (a fixed one taken, the rest
+   * greyed out); per doctrine with a combat skill, Combat and Archery the same
+   * way (the Peltast chooses); Channeling alone for a school; then the
+   * school's magical doctrines.
    */
   #buildDetails(editable) {
     const i18n = game.i18n;
     const draft = this.#draft;
-    const weaponLabel = (k) => i18n.localize(`REDSTEEL.Actor.Character.weaponSkills.${k}.label`);
-    const weapons = weaponDoctrines(draft.doctrines).map((key) => {
+    const groups = [];
+    for (const key of weaponDoctrines(draft.doctrines)) {
       const fixed = FIXED_WEAPONS[key] ?? null;
       const chosen = weaponFor(draft, key);
-      return {
-        key,
-        label: this.#doctrineLabel(key),
-        fixed: !!fixed,
-        fixedText: fixed
-          ? i18n.format("REDSTEEL.Creation.Details.fixedWeapon", {
-              doctrine: this.#doctrineLabel(key),
-              weapon: weaponLabel(fixed),
-            })
-          : "",
-        answered: !!chosen,
-        options: WEAPON_SKILL_KEYS.map((weapon) => ({
-          key: weapon,
-          label: weaponLabel(weapon),
-          selected: weapon === chosen,
-          disabled: !editable || !!fixed,
-        })),
-      };
-    });
-    const skillLabel = (k) => i18n.localize(`REDSTEEL.Actor.Character.combatSkills.${k}.label`);
-    const combatSkills = combatSkillDoctrines(draft.doctrines).map((key) => {
-      const fixed = fixedCombatSkill(key);
-      const chosen = fixed ?? draft.combatSkill;
-      return {
-        key,
-        label: this.#doctrineLabel(key),
-        fixed: !!fixed,
-        fixedText: fixed
-          ? i18n.format("REDSTEEL.Creation.Details.fixedCombatSkill", {
-              doctrine: this.#doctrineLabel(key),
-              skill: skillLabel(fixed),
-            })
-          : "",
-        // The Peltast's choice carries the book's comparison under it.
-        advice: fixed ? "" : i18n.localize("REDSTEEL.Creation.Details.peltastAdvice"),
-        answered: !!chosen,
-        options: COMBAT_SKILL_KEYS.map((skill) => ({
-          key: skill,
-          label: skillLabel(skill),
-          selected: skill === chosen,
-          disabled: !editable || !!fixed,
-        })),
-      };
-    });
-    const school = this.#school();
-    // A school brings Channeling (applied with it): shown locked, the same
-    // way as a fixed combat skill.
-    if (school) {
-      combatSkills.push({
-        key: "channeling",
-        label: this.#schoolLabel(school),
-        fixed: true,
-        fixedText: i18n.format("REDSTEEL.Creation.Details.fixedChanneling", {
-          school: this.#schoolLabel(school),
-          skill: skillLabel("channeling"),
+      const doctrine = this.#doctrineLabel(key);
+      groups.push({
+        label: i18n.format("REDSTEEL.Creation.Details.weaponFor", { doctrine }),
+        cards: WEAPON_SKILL_KEYS.map((weapon) => {
+          const trackId = `weaponSkills.${weapon}`;
+          return this.#skillCard(trackId, {
+            owner: key,
+            action: "pickWeapon",
+            selected: weapon === chosen,
+            fixedText:
+              fixed === weapon
+                ? i18n.format("REDSTEEL.Creation.Details.fixedWeapon", { doctrine, weapon: this.#skillLabel(trackId) })
+                : "",
+            shut: !!fixed && fixed !== weapon,
+            editable,
+          });
         }),
-        advice: "",
-        answered: true,
-        options: [{ key: "channeling", label: skillLabel("channeling"), selected: true, disabled: true }],
       });
     }
-    const magic = school
-      ? this.#doctrineKeys()
+    for (const key of combatSkillDoctrines(draft.doctrines)) {
+      const fixed = fixedCombatSkill(key);
+      const chosen = fixed ?? draft.combatSkill;
+      const doctrine = this.#doctrineLabel(key);
+      groups.push({
+        label: i18n.format("REDSTEEL.Creation.Details.combatSkillFor", { doctrine }),
+        // The Peltast's choice carries the book's comparison.
+        advice: fixed ? "" : i18n.localize("REDSTEEL.Creation.Details.peltastAdvice"),
+        cards: COMBAT_SKILL_KEYS.map((skill) => {
+          const trackId = `combatSkills.${skill}`;
+          return this.#skillCard(trackId, {
+            owner: key,
+            action: "pickCombatSkill",
+            selected: skill === chosen,
+            fixedText:
+              fixed === skill
+                ? i18n.format("REDSTEEL.Creation.Details.fixedCombatSkill", { doctrine, skill: this.#skillLabel(trackId) })
+                : "",
+            shut: !!fixed && fixed !== skill,
+            editable,
+          });
+        }),
+      });
+    }
+    const school = this.#school();
+    if (school) {
+      // A school brings Channeling (applied with it): its one card, taken.
+      const trackId = "combatSkills.channeling";
+      groups.push({
+        label: i18n.format("REDSTEEL.Creation.Details.combatSkillFor", { doctrine: this.#schoolLabel(school) }),
+        cards: [
+          this.#skillCard(trackId, {
+            owner: school,
+            action: "",
+            selected: true,
+            fixedText: i18n.format("REDSTEEL.Creation.Details.fixedChanneling", {
+              school: this.#schoolLabel(school),
+              skill: this.#skillLabel(trackId),
+            }),
+            editable,
+          }),
+        ],
+      });
+      groups.push({
+        label: i18n.format("REDSTEEL.Creation.Details.magicHeading", { school: this.#schoolLabel(school) }),
+        cards: this.#doctrineKeys()
           .filter((key) => isMagicalDoctrine(key))
           .map((key) => this.#doctrineCard(key, { editable, action: "pickMagicDoctrine" }))
-          .sort((a, b) => a.label.localeCompare(b.label, i18n.lang))
-      : [];
-    return {
-      combatSkills,
-      hasCombatSkills: combatSkills.length > 0,
-      weapons,
-      hasWeapons: weapons.length > 0,
-      magic,
-      hasMagic: magic.length > 0,
-      magicHeading: school
-        ? i18n.format("REDSTEEL.Creation.Details.magicHeading", { school: this.#schoolLabel(school) })
-        : "",
-    };
+          .sort((a, b) => a.label.localeCompare(b.label, i18n.lang)),
+      });
+    }
+    return { groups: groups.filter((group) => group.cards.length) };
   }
 
   /** A school's localized name. */
@@ -2409,10 +2660,11 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     event.preventDefault();
     if (!this.actor?.isOwner) return;
     const el = target?.closest?.("[data-weapon]");
-    const doctrine = el?.dataset.doctrine;
+    const doctrine = el?.dataset.owner;
     const weapon = el?.dataset.weapon;
     if (!WEAPON_SKILL_KEYS.includes(weapon) || FIXED_WEAPONS[doctrine]) return;
     if (!weaponDoctrines(this.#draft.doctrines).includes(doctrine)) return;
+    this.#info = `skill:weaponSkills.${weapon}`;
     this.#draft.weapons = { ...this.#draft.weapons, [doctrine]: weapon };
     await this.#commit();
   }
@@ -2421,9 +2673,13 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
   static async _onPickCombatSkill(event, target) {
     event.preventDefault();
     if (!this.actor?.isOwner) return;
-    const skill = target?.closest?.("[data-skill]")?.dataset.skill;
+    const el = target?.closest?.("[data-skill]");
+    const skill = el?.dataset.skill;
     if (!COMBAT_SKILL_KEYS.includes(skill)) return;
+    // Only the Peltast's cards choose; a fixed doctrine's are shut.
+    if (el.dataset.owner !== COMBAT_SKILL_CHOICE) return;
     if (!this.#draft.doctrines.includes(COMBAT_SKILL_CHOICE)) return;
+    this.#info = `skill:combatSkills.${skill}`;
     this.#draft.combatSkill = skill;
     await this.#commit();
   }
@@ -2437,6 +2693,30 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     this.#info = `doctrine:${key}`;
     this.#draft.doctrines = [...this.#draft.doctrines.filter((k) => !isMagicalDoctrine(k)), key];
     await this.#commit();
+  }
+
+  /**
+   * The info panel's weapon browser: page by an arrow (data-step, wrapping
+   * round) or jump to a weapon by name (data-index). Only the panel's DOM
+   * changes, so nothing re-renders and the panel keeps its scroll.
+   * @this {CharacterCreationWindow}
+   */
+  static _onPageWeapon(event, target) {
+    event.preventDefault();
+    const browser = target?.closest?.(".rs-create-weapon-browser");
+    const count = Number(browser?.dataset.count) || 0;
+    if (!count) return;
+    const current = Number(browser.querySelector(".rs-create-weapon-page.is-current")?.dataset.index) || 0;
+    const index =
+      target.dataset.index !== undefined
+        ? Number(target.dataset.index)
+        : (current + Number(target.dataset.step) + count) % count;
+    if (!Number.isInteger(index) || index < 0 || index >= count) return;
+    for (const el of browser.querySelectorAll(".rs-create-weapon-page, .rs-create-weapon-jump")) {
+      el.classList.toggle("is-current", Number(el.dataset.index) === index);
+    }
+    const label = browser.querySelector(".rs-create-weapon-count");
+    if (label) label.textContent = game.i18n.format("REDSTEEL.Creation.Doctrine.page", { n: index + 1, total: count });
   }
 
   /**
@@ -2705,6 +2985,9 @@ export async function returnToOrigin(actor) {
   openCharacterCreation(actor);
 }
 
+/** Pools Finish fills to their maximum. */
+const FINISH_REFILLED_POOLS = ["health", "stamina", "mana", "mind"];
+
 /**
  * Finish from step 3: the character leaves creation. Refused while more points
  * are spent than the character has; unspent points are fine (book rule).
@@ -2720,7 +3003,18 @@ export async function finishCharacterCreation(actor) {
     ui.notifications.warn(game.i18n.localize("REDSTEEL.Creation.Warn.overspent"));
     return false;
   }
+  // The character steps out rested (user ruling 2026-10-06): every pool full
+  // at the maximum its race, attributes and traits now give it. The starting
+  // CP/SP the ledger read from the GM's default is written down in the same
+  // update, since it reads as the legacy figure once creationPending is gone.
+  const pools = {};
+  for (const key of FINISH_REFILLED_POOLS) {
+    const max = Number(actor.system?.stats?.[key]?.max);
+    if (Number.isFinite(max)) pools[`system.stats.${key}.value`] = Math.max(max, 0);
+  }
   await actor.update({
+    ...getLedgerMaterializeUpdate(actor),
+    ...pools,
     "flags.redsteel.-=creationDraft": null,
     "flags.redsteel.-=creationPending": null,
   });

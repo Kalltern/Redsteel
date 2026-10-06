@@ -900,6 +900,24 @@ function pointsCostLabel({ cp = 0, sp = 0 }) {
 }
 
 /**
+ * A price for the character creation layout's rank ledger, in the creation
+ * window's words: "4 CP", "5 SP", or "4 CP + 5 SP" when both are spent. A
+ * price of nothing reads "0 CP", never "Free", since it is a sum.
+ */
+function creationCostLabel({ cp = 0, sp = 0 }) {
+  const parts = [];
+  if (cp || !sp) parts.push(game.i18n.format("REDSTEEL.Creation.Info.priceCp", { n: cp }));
+  if (sp) parts.push(game.i18n.format("REDSTEEL.Creation.Info.priceSp", { n: sp }));
+  return parts.join(" + ");
+}
+
+/** One rank's own price ("4 CP"), in its own currency even when it is 0. */
+function creationRankCostLabel(rankCost) {
+  const key = rankCost?.currency === "sp" ? "priceSp" : "priceCp";
+  return game.i18n.format(`REDSTEEL.Creation.Info.${key}`, { n: rankCost?.cost ?? 0 });
+}
+
+/**
  * One label for several prices, for a feature family row: "20–30 SP" when
  * every price is in the same single currency, otherwise the cheapest price's
  * own label.
@@ -1183,7 +1201,7 @@ const ABILITY_NAME_LINES = new Set([
  * ("Feint (Dexterity)" is still Feint). Lines the book words differently from
  * their item are listed in ABILITY_NAME_LINES.
  */
-function markAbilityChips(chips, grants) {
+export function markAbilityChips(chips, grants) {
   const key = (text) => String(text ?? "").trim().toLocaleLowerCase();
   const stripVariant = (text) => String(text ?? "").replace(/\s*\([^)]*\)\s*$/, "");
   const names = new Set();
@@ -1207,7 +1225,7 @@ function markAbilityChips(chips, grants) {
   });
 }
 
-function describeRankChips(trackId, rank) {
+export function describeRankChips(trackId, rank) {
   const entries = RANK_EFFECTS[trackId]?.[rank - 1] ?? [];
   const out = [];
   const byShape = new Map();
@@ -1496,6 +1514,13 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       creationConvertDown: LearnWindow._onCreationConvertDown,
       creationBack: LearnWindow._onCreationBack,
       creationFinish: LearnWindow._onCreationFinish,
+      creationSelectSkill: LearnWindow._onCreationSelectSkill,
+      creationPickSkill: LearnWindow._onCreationPickSkill,
+      creationAcquireSkill: LearnWindow._onCreationAcquireSkill,
+      creationUnpickSkill: LearnWindow._onCreationUnpickSkill,
+      creationRosterMode: LearnWindow._onCreationRosterMode,
+      creationBuyTo: LearnWindow._onCreationBuyTo,
+      creationRefundTo: LearnWindow._onCreationRefundTo,
     },
   };
 
@@ -1517,6 +1542,13 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
         ".rs-learn-spec-view-body",
         ".rs-learn-spec-gallery",
         ".rs-learn-roster-body",
+        // Character creation, the step 3 screen: the four scrollers of its
+        // three columns.
+        ".rs-learn-cskills-character",
+        ".rs-learn-cskills-skills",
+        ".rs-learn-cskills-info",
+        ".rs-learn-cskills-ledger",
+        ".rs-learn-cskills-roster-body",
       ],
     },
   };
@@ -1688,6 +1720,26 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
   /** True while a memorisation is on its way, so a double click pays once. */
   #spellBusy = false;
 
+  /* ---- character creation, the step 3 screen. Transient, never written to
+     the actor, and kept across tab switches. The party switch opens another
+     character's screen as a new window (see _onSwitchHero), so these never
+     carry over from one character to the next. ---- */
+
+  /**
+   * Track ids picked from the roster this session. The persisted tracked
+   * list cannot say this: after step 2 it already holds every skill.
+   */
+  #creationPicked = new Set();
+
+  /** The track whose ranks the ledger shows; null takes the first one listed. */
+  #creationSkill = null;
+
+  /** What the roster under the ledger lists: "combat", "skills" or "features". */
+  #creationRoster = "skills";
+
+  /** True while a run of rank purchases or refunds is on its way. */
+  #creationBusy = false;
+
   /* ---------------------------------------- */
 
   /** @override */
@@ -1695,20 +1747,34 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     const context = await super._prepareContext(options);
     const actor = this.actor;
 
+    // Character creation, step 3: the step 3 screen (#buildCreationSkills)
+    // takes the place of the whole Learn layout, tabs included, so the tab is
+    // ignored and nothing a tab shows is built. Spells and specialisations are
+    // learnt in the normal window after Finish.
+    const creation = this.#buildCreation();
+    const inCreation = !!creation;
+
     const isContentTab = this.#tab === "combat" || this.#tab === "skills";
-    const showGrid = isContentTab && !this.#picking;
+    const showGrid = isContentTab && !this.#picking && !inCreation;
     const ribbon = showGrid ? this.#buildRibbon() : [];
     const shown = ribbon.length
       ? new Set(ribbon.filter((entry) => entry.active).map((entry) => entry.id))
       : null;
     const sections = showGrid ? await this.#buildSections(shown) : [];
     const isFeaturesTab = this.#tab === "features";
-    const features = isFeaturesTab ? await this.#buildFeatures() : null;
+    // The step 3 screen needs the Features data too: the traits, the bought
+    // features and the purchasable list in its roster.
+    const features =
+      isFeaturesTab || inCreation ? await this.#buildFeatures() : null;
     const isSpellsTab = this.#tab === "spells";
-    const spells = isSpellsTab ? await this.#buildSpells() : null;
+    const spells = isSpellsTab && !inCreation ? await this.#buildSpells() : null;
     const isSpecsTab = this.#tab === "specialisations";
-    const specs = isSpecsTab ? this.#buildSpecs() : null;
-    const picker = this.#picking ? this.#buildPicker() : [];
+    const specs = isSpecsTab && !inCreation ? this.#buildSpecs() : null;
+    const picker = this.#picking && !inCreation ? this.#buildPicker() : [];
+    const hero = await this.#buildHero();
+    const creationSkills = inCreation
+      ? await this.#buildCreationSkills(hero, features)
+      : null;
 
     return Object.assign(context, {
       actorId: actor?.id ?? "",
@@ -1735,10 +1801,12 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       // picker button, or the picker's own controls. So a character with no
       // track picked yet still reaches Add skills.
       showBar:
-        isContentTab && (ribbon.length > 0 || this.#picking || !!actor?.isOwner),
+        isContentTab &&
+        !inCreation &&
+        (ribbon.length > 0 || this.#picking || !!actor?.isOwner),
       picking: this.#picking,
       picker,
-      hero: await this.#buildHero(),
+      hero,
       party: this.#buildParty(),
       wallet: getWallet(actor),
       adjust: {
@@ -1748,12 +1816,14 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       rankHeaders: RANK_HEADERS,
       ribbon,
       sections,
-      creation: this.#buildCreation(),
+      creation,
+      creationSkills,
     });
   }
 
   /**
-   * Character creation, step 3: the banner over the tabs, or null when the
+   * Character creation, step 3: the step 3 screen's title, points and
+   * conversion (see #buildCreationSkills for its columns), or null when the
    * character is not in that step. Read from the CURRENT actor on every
    * render, since the GM's party switch can change it.
    */
@@ -1777,6 +1847,310 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       canConvertDown: editable && converted > 0 && wallet.remaining.sp >= 1,
       noStarting: unset(starting.cp) && unset(starting.sp),
       editable,
+    };
+  }
+
+  /**
+   * Character creation, the step 3 screen: three columns in the creation
+   * window's style in place of the whole Learn layout.
+   *   1. Character: points, portrait, name, race, attributes and traits.
+   *   2. Your skills: the Combat and Skills tracks taken, then the features
+   *      bought.
+   *   3. Top, the rank ledger of the selected track, one row per rank with a
+   *      diamond that buys up to (or refunds down to) that rank. Bottom, the
+   *      roster: Combat or Skills tracks still untouched, or the Features
+   *      tab's purchasable list.
+   * Every rule is still the engine's (getRankState, getRankCost,
+   * evaluateRequirements, getWallet); this only lays the answers out.
+   *
+   * @param {object} hero      #buildHero()
+   * @param {object} features  #buildFeatures()
+   */
+  async #buildCreationSkills(hero, features) {
+    const actor = this.actor;
+    const editable = !!actor?.isOwner;
+
+    /* ---- column 1: the character ---- */
+    const traitGroups = (features?.traits?.columns ?? [])
+      .filter((column) => column.items.length)
+      .map((column) => ({
+        kind: column.polarity,
+        label: column.label,
+        items: column.items,
+      }));
+    if (features?.traits?.unsorted) {
+      traitGroups.push({
+        kind: "unsorted",
+        label: features.traits.unsorted.label,
+        items: features.traits.unsorted.items,
+      });
+    }
+
+    /* ---- column 2: the tracks taken, by section, Combat before Skills ---- */
+    // A Combat track is taken when step 2 tracked it (doctrines, weapon skill,
+    // combat skill, Channeling, school), when a rank is held, or when it was
+    // picked here. A Skills track only when held or picked, since its tracked
+    // list is every skill. Everything else is in the roster, by tab.
+    const skillIds = [];
+    const buckets = new Map();
+    const rosterBuckets = { combat: new Map(), skills: new Map() };
+    for (const [trackId, track] of Object.entries(PROGRESSION_TRACKS)) {
+      const tab = getTrackTab(trackId);
+      if (tab !== "skills" && tab !== "combat") continue;
+      const held = getTrackRank(actor, track.group, track.key);
+      const section = getLearnSection(trackId);
+      const label = trackLabel(track.group, track.key);
+      const picked = this.#creationPicked.has(trackId);
+      const tracked = tab === "combat" && isTracked(actor, trackId);
+      if (held > 0 || picked || tracked) {
+        if (!buckets.has(section)) buckets.set(section, []);
+        buckets.get(section).push({
+          id: trackId,
+          label,
+          numeral: held > 0 ? roman(held) : "",
+          // Only a pick made here is taken back here; a track from step 2
+          // stays.
+          canUnpick: held === 0 && picked && !tracked,
+        });
+        continue;
+      }
+      // Not taken: the roster, as #buildPicker words a missing prerequisite.
+      // A gated track can still be picked, to read its ranks.
+      const unmet = getUnmetPrerequisites(actor, trackId);
+      const roster = rosterBuckets[tab];
+      if (!roster.has(section)) roster.set(section, []);
+      roster.get(section).push({
+        id: trackId,
+        label,
+        gated: unmet.length > 0,
+        lockTip: unmet.length
+          ? game.i18n.format("REDSTEEL.Learn.pickerGated", {
+              requirements: unmet.map(describeRequirement).filter(Boolean).join(", "),
+            })
+          : "",
+      });
+    }
+    const skillSections = [];
+    for (const id of [...(LEARN_SECTION_ORDER.combat ?? []), ...(LEARN_SECTION_ORDER.skills ?? [])]) {
+      const tracks = buckets.get(id);
+      if (!tracks?.length) continue;
+      skillSections.push({ id, label: sectionLabel(id), tracks });
+      for (const entry of tracks) skillIds.push(entry.id);
+    }
+    const rosterSectionsOf = (tab) =>
+      (LEARN_SECTION_ORDER[tab] ?? [])
+        .filter((id) => rosterBuckets[tab].get(id)?.length)
+        .map((id) => ({ id, label: sectionLabel(id), tracks: rosterBuckets[tab].get(id) }));
+    const rosterMode = ["combat", "skills", "features"].includes(this.#creationRoster)
+      ? this.#creationRoster
+      : "skills";
+    // A roster track can be selected too: a preview of its ranks, with no
+    // diamond to buy. A second click on it in the roster takes it.
+    const inRoster = (id) =>
+      Object.values(rosterBuckets).some((map) =>
+        [...map.values()].some((tracks) => tracks.some((entry) => entry.id === id)),
+      );
+    const preview = !skillIds.includes(this.#creationSkill) && inRoster(this.#creationSkill);
+    const selectedId =
+      skillIds.includes(this.#creationSkill) || preview
+        ? this.#creationSkill
+        : (skillIds[0] ?? null);
+    for (const section of skillSections) {
+      for (const entry of section.tracks) entry.selected = entry.id === selectedId;
+    }
+    for (const map of Object.values(rosterBuckets)) {
+      for (const tracks of map.values()) {
+        for (const entry of tracks) entry.selected = entry.id === selectedId;
+      }
+    }
+
+    // The features bought: priced, and neither racial, native nor a trait.
+    const boughtFeatures = (features?.owned ?? []).filter((entry) => {
+      if (entry.racial || entry.native || entry.unpriced || !entry.costLabel) return false;
+      const item = actor?.items?.get(entry.itemId);
+      return item?.system?.option !== "trait";
+    });
+
+    /* ---- column 3, top: the rank ledger of the selected track ---- */
+    const ledger = selectedId ? await this.#buildCreationLedger(selectedId) : null;
+    if (ledger && preview) {
+      ledger.preview = true;
+      for (const row of ledger.rows) row.buyable = row.refundable = false;
+    }
+
+    return {
+      editable,
+      character: {
+        img: hero.img,
+        name: hero.name,
+        race: hero.race,
+        attributes: hero.attributes,
+        traitGroups,
+      },
+      skillSections,
+      hasSkills: skillIds.length > 0,
+      boughtFeatures,
+      ledger,
+      roster: {
+        mode: rosterMode,
+        isCombat: rosterMode === "combat",
+        isSkills: rosterMode === "skills",
+        isFeatures: rosterMode === "features",
+        // The track list of the Combat or Skills mode; Features mode shows
+        // the Features tab's purchasable list instead.
+        sections: rosterMode === "features" ? [] : rosterSectionsOf(rosterMode),
+      },
+    };
+  }
+
+  /**
+   * The rank ledger of one track for the step 3 screen: one row per rank the
+   * book sells, each with what it gives, what it asks, what it costs and a
+   * diamond. An unowned row reads as the whole path up to it, since its
+   * diamond buys every rank from the one held up to it: locked when any rank
+   * on the way is (requirements, a mirror, the creation cap), poor when the
+   * path costs more than the wallet holds, otherwise available.
+   */
+  async #buildCreationLedger(trackId) {
+    const actor = this.actor;
+    const track = PROGRESSION_TRACKS[trackId];
+    if (!track) return null;
+    const held = getTrackRank(actor, track.group, track.key);
+    // The same two conditions as a held cell's refund in #layoutTrack.
+    const mirrored = getMirrorSources(actor).some(
+      (source) => `${source.group}.${source.skill}` === trackId,
+    );
+    const forced = trackId === `schools.${getForcedSchool(actor)}`;
+    const remaining = getWallet(actor).remaining;
+
+    const spent = { cp: 0, sp: 0 };
+    const path = { cp: 0, sp: 0 };
+    // Why the path is locked so far: every reason met along the way, once.
+    const pathReasons = [];
+    let pathLocked = false;
+    const rows = [];
+
+    for (let rank = 1; rank <= 10; rank++) {
+      const price = track.ranks?.[rank - 1] ?? null;
+      const rankCost = getRankCost(actor, trackId, rank);
+      if (!price || !rankCost) {
+        // A rank the book does not sell. Past the one held it also breaks the
+        // path, as no rank above it could be reached.
+        if (rank > held) pathLocked = true;
+        continue;
+      }
+      const cell = await this.#buildCell(trackId, rank);
+      const row = {
+        rank,
+        numeral: roman(rank),
+        grants: cell.grants,
+        chips: cell.chips,
+        reqChips: cell.reqChips,
+        costLabel: creationRankCostLabel(rankCost),
+        totalLabel: "",
+        reasons: [],
+        owned: false,
+        refundable: false,
+        buyable: false,
+      };
+
+      if (rank <= held) {
+        spent[rankCost.currency] += rankCost.cost;
+        row.state = "owned";
+        row.owned = true;
+        row.refundable = !mirrored && !(forced && rank === 1);
+        rows.push(row);
+        continue;
+      }
+
+      if (!pathLocked) {
+        // getRankState answers a mirror, the cap and (for the next rank) the
+        // requirements; for a rank further up it stops at "blocked", so its
+        // requirements are evaluated here instead.
+        const { state } = getRankState(actor, trackId, rank);
+        let own = [];
+        let locked = false;
+        if (state === "locked" || state === "unavailable") {
+          locked = true;
+          own = cell.reasons;
+        } else if (state === "blocked") {
+          const requirements = evaluateRequirements(actor, price.requires, trackId, rank);
+          if (!requirements.met) {
+            locked = true;
+            for (const result of requirements.results) {
+              if (result.met || result.advisory) continue;
+              const line = describeRequirement(result.req);
+              if (line) own.push(line);
+            }
+          }
+        }
+        if (locked) {
+          pathLocked = true;
+          for (const line of own) if (!pathReasons.includes(line)) pathReasons.push(line);
+        } else {
+          path[rankCost.currency] += rankCost.cost;
+        }
+      }
+
+      if (pathLocked) {
+        row.state = "locked";
+        row.reasons = [...pathReasons];
+      } else {
+        const poor = path.cp > remaining.cp || path.sp > remaining.sp;
+        row.state = poor ? "poor" : "available";
+        row.buyable = !poor;
+        row.totalLabel = game.i18n.format("REDSTEEL.Creation.Skills.total", {
+          cost: creationCostLabel(path),
+        });
+      }
+      rows.push(row);
+    }
+
+    return {
+      trackId,
+      label: trackLabel(track.group, track.key),
+      held,
+      spentLabel: game.i18n.format("REDSTEEL.Creation.Skills.spent", {
+        cost: creationCostLabel(spent),
+      }),
+      rows,
+      info: this.#buildTrackInfo(trackId),
+    };
+  }
+
+  /**
+   * The description beside the rank ledger on the step 3 screen: the track's
+   * name, its section, the rulebook's note on it (REDSTEEL.Learn.TrackInfo,
+   * from the Dovednosti sheet's cell comments) split into paragraphs, and
+   * what every rank the book sells costs this character in all. A track
+   * with no note shows none, never the raw key.
+   */
+  #buildTrackInfo(trackId) {
+    const actor = this.actor;
+    const track = PROGRESSION_TRACKS[trackId];
+    if (!track) return null;
+    const key = `REDSTEEL.Learn.TrackInfo.${track.group}.${track.key}`;
+    const text = game.i18n.has(key, false) ? game.i18n.localize(key) : "";
+    const total = { cp: 0, sp: 0 };
+    let sold = 0;
+    for (let rank = 1; rank <= 10; rank++) {
+      const rankCost = getRankCost(actor, trackId, rank);
+      if (!rankCost) continue;
+      total[rankCost.currency] += rankCost.cost;
+      sold++;
+    }
+    return {
+      label: trackLabel(track.group, track.key),
+      section: sectionLabel(getLearnSection(trackId)),
+      paragraphs: text
+        .split(/\n\s*\n/)
+        .map((paragraph) => paragraph.trim())
+        .filter(Boolean),
+      allRanksLabel: sold
+        ? game.i18n.format("REDSTEEL.Creation.Skills.allRanks", {
+            cost: creationCostLabel(total),
+          })
+        : "",
     };
   }
 
@@ -5304,6 +5678,142 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     if (!actor?.isOwner || !isCreationSkillsStep(actor)) return;
     const ok = await finishCharacterCreation(actor);
     if (ok) this.close();
+  }
+
+  /** Show one track's ranks in the ledger. @this {LearnWindow} */
+  static _onCreationSelectSkill(event, target) {
+    event.preventDefault();
+    const trackId = target?.closest?.("[data-track-id]")?.dataset?.trackId;
+    if (!trackId || trackId === this.#creationSkill) return;
+    this.#creationSkill = trackId;
+    this.render();
+  }
+
+  /**
+   * Take a track from the roster into "Your skills" and show its ranks.
+   * Nothing is written to the actor: a track joins for real with its first
+   * rank. @this {LearnWindow}
+   */
+  static _onCreationPickSkill(event, target) {
+    event.preventDefault();
+    const trackId = target?.closest?.("[data-track-id]")?.dataset?.trackId;
+    if (!trackId || !PROGRESSION_TRACKS[trackId]) return;
+    // A click on the row previews the track's ranks; its book button
+    // (creationAcquireSkill) takes it into "Your skills".
+    if (this.#creationSkill === trackId) return;
+    this.#creationSkill = trackId;
+    this.render();
+  }
+
+  /** Take a roster track into "Your skills" and show its ranks. @this {LearnWindow} */
+  static _onCreationAcquireSkill(event, target) {
+    event.preventDefault();
+    // The book button sits on the roster row, which previews on click.
+    event.stopPropagation();
+    const trackId = target?.closest?.("[data-track-id]")?.dataset?.trackId;
+    if (!trackId || !PROGRESSION_TRACKS[trackId]) return;
+    this.#creationPicked.add(trackId);
+    this.#creationSkill = trackId;
+    this.render();
+  }
+
+  /** Put a picked track with no rank back in the roster. @this {LearnWindow} */
+  static _onCreationUnpickSkill(event, target) {
+    event.preventDefault();
+    // The cross sits on the skill's ribbon, which selects on click.
+    event.stopPropagation();
+    const trackId = target?.closest?.("[data-track-id]")?.dataset?.trackId;
+    if (!trackId) return;
+    this.#creationPicked.delete(trackId);
+    if (this.#creationSkill === trackId) this.#creationSkill = null;
+    this.render();
+  }
+
+  /** Switch the roster between combat, skills and features. @this {LearnWindow} */
+  static _onCreationRosterMode(event, target) {
+    event.preventDefault();
+    const requested = target?.dataset?.mode;
+    const mode = ["combat", "skills", "features"].includes(requested) ? requested : "skills";
+    if (mode === this.#creationRoster) return;
+    this.#creationRoster = mode;
+    this.render();
+  }
+
+  /**
+   * Buy every rank from the one held up to the clicked one, in order, each
+   * through the engine's own purchaseRank. Stops at the first rank it refuses
+   * and says how far it got.
+   *
+   * @this {LearnWindow}
+   */
+  static async _onCreationBuyTo(event, target) {
+    event.preventDefault();
+    const actor = this.actor;
+    if (!actor?.isOwner || this.#creationBusy) return;
+    const trackId = target?.dataset?.trackId;
+    const rank = Number(target?.dataset?.rank);
+    const track = PROGRESSION_TRACKS[trackId];
+    if (!track || !rank) return;
+
+    this.#creationBusy = true;
+    let last = 0;
+    try {
+      const start = getTrackRank(actor, track.group, track.key);
+      for (let r = start + 1; r <= rank; r++) {
+        const bought = await purchaseRank(actor, trackId, r);
+        if (!bought) break;
+        last = r;
+      }
+    } finally {
+      this.#creationBusy = false;
+    }
+
+    if (last) this.#lastPurchase = { trackId, at: Date.now() };
+    if (!last) {
+      ui.notifications.warn(game.i18n.localize("REDSTEEL.Learn.cannotBuy"));
+    } else if (last < rank) {
+      ui.notifications.warn(
+        game.i18n.format("REDSTEEL.Creation.Skills.stoppedAt", {
+          rank: roman(last),
+          next: roman(last + 1),
+        }),
+      );
+    }
+    this.render();
+  }
+
+  /**
+   * Give ranks back from the top down to the clicked one, so the skill is
+   * left one rank below it. Stops when the engine refuses a refund. The same
+   * double-click guard as _onRefundRank.
+   *
+   * @this {LearnWindow}
+   */
+  static async _onCreationRefundTo(event, target) {
+    event.preventDefault();
+    event.stopPropagation();
+    const actor = this.actor;
+    if (!actor?.isOwner || this.#creationBusy) return;
+    const trackId = target?.dataset?.trackId;
+    const rank = Number(target?.dataset?.rank);
+    const track = PROGRESSION_TRACKS[trackId];
+    if (!track || !rank) return;
+
+    const last = this.#lastPurchase;
+    if (last?.trackId === trackId && Date.now() - last.at < DOUBLE_CLICK_MS) {
+      return;
+    }
+
+    this.#creationBusy = true;
+    try {
+      while (getTrackRank(actor, track.group, track.key) >= rank) {
+        const refunded = await refundRank(actor, trackId);
+        if (!refunded) break;
+      }
+    } finally {
+      this.#creationBusy = false;
+    }
+    this.render();
   }
 
   /**
