@@ -1,7 +1,7 @@
 {
   "id": "redsteel",
   "title": "Redsteel",
-  "description": "Project: Redsteel system for FoundryVTT!",
+  "description": "A grimdark medieval fantasy RPG system: d100 margin of success rolls with deep automation for combat, magic, healing and attrition.",
   "authors": [
     {
       "name": "Kalltern",
@@ -32,11 +32,11 @@
       }
     ]
   },
-  "url": "Replace this with a link to your public repository",
-  "license": "LICENSE.txt",
-  "readme": "README.md",
-  "bugs": "Replace this with a link to file issues or tickets",
-  "changelog": "CHANGELOG.md",
+  "url": "https://github.com/Kalltern/Redsteel",
+  "license": "https://github.com/Kalltern/Redsteel/blob/main/LICENSE.txt",
+  "readme": "https://github.com/Kalltern/Redsteel/blob/main/README.md",
+  "bugs": "https://github.com/Kalltern/Redsteel/issues",
+  "changelog": "https://github.com/Kalltern/Redsteel/blob/main/CHANGELOG.md",
   "media": [
     {
       "type": "setup",
@@ -66,25 +66,25 @@
   "packs": [
     {
       "name": "redsteel-magic-crit-fails",
-      "label": "Redsteel-magic-crit-fails",
+      "label": "Magic Critical Failures",
       "type": "RollTable",
       "system": "redsteel"
     },
     {
       "name": "redsteel-items",
-      "label": "Redsteel-items",
+      "label": "Items",
       "type": "Item",
       "system": "redsteel"
     },
     {
       "name": "All-Spells",
-      "label": "All-Spells",
+      "label": "Spells",
       "type": "Item",
       "system": "redsteel"
     },
     {
       "name": "redsteel-rules",
-      "label": "Redsteel-rules",
+      "label": "Rules",
       "type": "JournalEntry",
       "system": "redsteel"
     }
@@ -101,7 +101,7 @@
     }
   ],
   "socket": true,
-  "manifest": "https://raw.githubusercontent.com/Kalltern/Project-Redsteel/refs/heads/main/system.json",
+  "manifest": "https://raw.githubusercontent.com/Kalltern/Redsteel/refs/heads/main/system.json",
   "download": "https://github.com/Kalltern/Project-Redsteel/releases/latest/download/redsteel.zip",
   "background": "systems/redsteel/assets/start_screen.png",
   "grid": {

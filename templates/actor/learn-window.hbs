@@ -283,26 +283,26 @@
       <div class="rs-create-scroll rs-learn-cskills-character">
         {{!-- The points: CP and SP left of what was earned, the level's rank
               cap, and the CP to SP conversion (Shift moves 5). --}}
-        <div class="rs-create-group-label">{{localize "REDSTEEL.Creation.Skills.points"}}</div>
+        <div class="rs-create-group-label">{{localize "REDSTEEL.Creation.Skills.points"}}<i class="rs-create-help fa-light fa-circle-question" data-tooltip="{{localize 'REDSTEEL.Creation.Help.leftover'}}"></i></div>
         <div class="rs-learn-cskills-points">
           <div class="rs-create-counter rs-learn-cskills-purse">
             <span class="rs-learn-cskills-stat">
-              <label>{{localize "REDSTEEL.Learn.cpRemaining"}}</label>
+              <label>{{localize "REDSTEEL.Learn.cpRemaining"}}<i class="rs-create-help fa-light fa-circle-question" data-tooltip="{{localize 'REDSTEEL.Creation.Help.cp'}}"></i></label>
               <b>{{wallet.remaining.cp}}</b>
               <em>/ {{wallet.earned.cp}}</em>
             </span>
             <span class="rs-learn-cskills-stat">
-              <label>{{localize "REDSTEEL.Learn.spRemaining"}}</label>
+              <label>{{localize "REDSTEEL.Learn.spRemaining"}}<i class="rs-create-help fa-light fa-circle-question" data-tooltip="{{localize 'REDSTEEL.Creation.Help.sp'}}"></i></label>
               <b>{{wallet.remaining.sp}}</b>
               <em>/ {{wallet.earned.sp}}</em>
             </span>
           </div>
           <div class="rs-learn-cskills-cap">
-            {{localize "REDSTEEL.Creation.Learn.levelCap" level=creation.level rank=creation.capRoman}}
+            {{localize "REDSTEEL.Creation.Learn.levelCap" level=creation.level rank=creation.capRoman}}<i class="rs-create-help fa-light fa-circle-question" data-tooltip="{{localize 'REDSTEEL.Creation.Help.rankCap'}}"></i>
           </div>
           <div class="rs-learn-cskills-convert"
                data-tooltip="{{localize "REDSTEEL.Creation.Learn.convertHint"}}" data-tooltip-direction="DOWN">
-            <span class="rs-learn-cskills-convert-label">{{localize "REDSTEEL.Creation.Learn.convert"}}</span>
+            <span class="rs-learn-cskills-convert-label">{{localize "REDSTEEL.Creation.Learn.convert"}}<i class="rs-create-help fa-light fa-circle-question" data-tooltip="{{localize 'REDSTEEL.Creation.Help.convert'}}"></i></span>
             <button type="button" class="rs-create-step-btn" data-action="creationConvertDown"
                     aria-label="-" {{#unless creation.canConvertDown}}disabled{{/unless}}>&minus;</button>
             <b class="rs-learn-cskills-convert-value">{{creation.converted}}</b>

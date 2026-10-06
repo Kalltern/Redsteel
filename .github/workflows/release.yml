@@ -45,12 +45,9 @@ jobs:
           cp -r templates release/ 2>/dev/null || true
           cp -r packs release/ 2>/dev/null || true
           cp -r module release/ 2>/dev/null || true
-          cp -r scripts release/ 2>/dev/null || true
-          cp -r styles release/ 2>/dev/null || true
           cp -r css release/ 2>/dev/null || true
           cp -r assets release/ 2>/dev/null || true
           cp -r ui release/ 2>/dev/null || true
-          cp -r lib release/ 2>/dev/null || true
 
           cd release
           zip -r ../redsteel.zip .

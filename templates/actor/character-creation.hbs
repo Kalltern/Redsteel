@@ -98,9 +98,6 @@
       <h2 class="rs-create-panel-title">{{localize "REDSTEEL.Creation.Doctrine.heading"}}</h2>
       <div class="rs-create-scroll">
         <p class="rs-create-doctrine-advice">{{localize "REDSTEEL.Creation.Doctrine.advice"}}</p>
-        {{#if doctrineWarning}}
-        <p class="rs-create-doctrine-warning">{{localize "REDSTEEL.Creation.Doctrine.tooMany"}}</p>
-        {{/if}}
         {{#each doctrineKinds}}
         <div class="rs-create-doctrine-block is-{{this.kind}}">
           <div class="rs-create-group-label">{{this.label}}</div>
@@ -150,11 +147,12 @@
           </label>
         </div>
 
-        {{!-- Traits still to pick. A picked trait moves to the centre column. --}}
+        {{!-- Every trait. A picked one stays in its place, see-through
+              (click it to give it back), and shows in the centre column too. --}}
         <div class="rs-create-traits {{#unless hasRace}}is-locked{{/unless}}">
           <h2 class="rs-create-panel-title is-inline">{{localize "REDSTEEL.Creation.Traits"}}</h2>
           <div class="rs-create-counter">
-            <span class="{{#if traitOverspent}}is-over{{/if}}">{{traitPointsRemaining}}</span>
+            <span>{{{traitPointsRemaining}}}<i class="rs-create-help fa-light fa-circle-question" data-tooltip="{{localize 'REDSTEEL.Creation.Help.traitPoints'}}"></i></span>
             <span>{{traitCount}}</span>
           </div>
           {{#unless hasRace}}<p class="rs-create-hint">{{localize "REDSTEEL.Creation.chooseRaceFirst"}}</p>{{/unless}}
@@ -177,8 +175,8 @@
     </section>
 
     {{!-- Centre column: race buttons, subrace buttons when the race has any;
-          the attribute buy with the racial picks as squares on each
-          attribute's own row; then the picked traits. --}}
+          the racial choices as chip rows; the attribute buy; then the
+          picked traits. --}}
     <section class="rs-create-panel rs-create-build">
       <h2 class="rs-create-panel-title">{{localize "REDSTEEL.Creation.RaceHeading"}}</h2>
       <div class="rs-create-scroll">
@@ -205,28 +203,42 @@
         </div>
         {{#if raceRequirement}}<p class="rs-create-race-req">{{raceRequirement}}</p>{{/if}}
 
-        <h2 class="rs-create-panel-title is-inline">{{localize "REDSTEEL.Creation.Attributes"}}</h2>
+        {{!-- Racial choices: one row per choice group, its name, the picks
+              taken of those allowed, and a chip per option in the
+              attribute's colour. Clicking a chip takes or gives it back; when
+              the group is full, its oldest pick gives way. --}}
+        {{#if choiceGroups.length}}
+        <h2 class="rs-create-panel-title is-inline">{{localize "REDSTEEL.Creation.RacialChoices"}}</h2>
+        <div class="rs-create-choices">
+          {{#each choiceGroups}}
+          <div class="rs-create-choice-group {{#if this.complete}}is-complete{{/if}}">
+            <div class="rs-create-choice-label">
+              <span>{{this.label}}</span>
+              <span class="rs-create-choice-pick">{{this.pick}} <b>{{this.picked}}/{{this.count}}</b></span>
+            </div>
+            <div class="rs-create-chip-row">
+              {{#each this.options}}
+              <button type="button" class="rs-create-chip {{#if this.attr}}attr-{{this.attr}}{{/if}} {{#if this.selected}}is-selected{{/if}}"
+                      data-action="pickChoice" data-group="{{../index}}" data-effect="{{this.id}}"
+                      aria-pressed="{{#if this.selected}}true{{else}}false{{/if}}"
+                      {{#unless @root.editable}}disabled{{/unless}}>
+                <span class="rs-create-chip-label">{{this.label}}</span>
+                {{#if this.raisesLimit}}<span class="rs-create-chip-note">{{localize "REDSTEEL.Creation.limitPlusOne"}}</span>{{/if}}
+              </button>
+              {{/each}}
+            </div>
+          </div>
+          {{/each}}
+        </div>
+        {{/if}}
+
+        <h2 class="rs-create-panel-title is-inline">{{localize "REDSTEEL.Creation.Attributes"}}<i class="rs-create-help fa-light fa-circle-question" data-tooltip="{{localize 'REDSTEEL.Creation.Help.physicalLimit'}}"></i></h2>
         <div class="rs-create-attributes {{#unless hasRace}}is-locked{{/unless}}">
-          <div class="rs-create-counter">{{pointsRemaining}}</div>
+          <div class="rs-create-counter"><span>{{pointsRemaining}}<i class="rs-create-help fa-light fa-circle-question" data-tooltip="{{localize 'REDSTEEL.Creation.Help.attributePoints'}}"></i></span></div>
           {{#unless hasRace}}<p class="rs-create-hint">{{localize "REDSTEEL.Creation.chooseRaceFirst"}}</p>{{/unless}}
 
-          {{#if choiceHeads.length}}
-          {{!-- Column heads for the squares: one per pick column, with its
-                group's name (numbered when the group takes more than one). --}}
-          <div class="rs-create-attr is-head" style="{{attrGrid}}">
-            <span></span><span></span><span></span><span></span>
-            {{#each choiceHeads}}
-            <span class="rs-create-choice-head {{#if this.complete}}is-complete{{/if}}">
-              <span class="rs-create-choice-head-name">{{this.label}}</span>
-              <em>{{this.pick}}</em>
-            </span>
-            {{/each}}
-            <span></span>
-          </div>
-          {{/if}}
-
           {{#each attributes}}
-          <div class="rs-create-attr is-ribbon attr-row-{{this.key}} {{#if this.hasChoice}}has-choice{{/if}} {{#if this.capRaised}}is-cap-raised{{/if}}" style="{{@root.attrGrid}}"
+          <div class="rs-create-attr is-ribbon attr-row-{{this.key}} {{#if this.hasChoice}}has-choice{{/if}} {{#if this.capRaised}}is-cap-raised{{/if}}"
                data-attr="{{this.key}}" data-info="attr:{{this.key}}">
             <span class="rs-create-attr-name attr-{{this.key}}">{{this.label}}</span>
             <button type="button" class="rs-create-step-btn" data-action="attrDown" data-attr="{{this.key}}"
@@ -234,41 +246,16 @@
             <span class="rs-create-attr-total">{{this.total}}{{#if @root.hasRace}}<span class="rs-create-attr-limit"> / {{this.limit}}</span>{{/if}}</span>
             <button type="button" class="rs-create-step-btn" data-action="attrUp" data-attr="{{this.key}}"
                     aria-label="+" {{#unless this.canUp}}disabled{{/unless}}>+</button>
-            {{#each this.choices}}
-            {{#if this.option}}
-            <button type="button" class="rs-create-square {{#if this.selected}}is-selected{{/if}} {{#if this.elsewhere}}is-elsewhere{{/if}} {{#if this.option.raisesLimit}}raises-limit{{/if}}"
-                    data-action="pickChoice" data-group="{{this.group}}" data-slot="{{this.slot}}" data-effect="{{this.option.id}}"
-                    data-tooltip="{{this.tooltip}}" aria-label="{{this.tooltip}}"
-                    {{#unless @root.editable}}disabled{{/unless}}></button>
-            {{else}}
-            <span class="rs-create-square is-empty"></span>
-            {{/if}}
-            {{/each}}
             <span></span>
           </div>
           {{/each}}
-
-          {{#if hasLooseChoices}}
-          <div class="rs-create-choices">
-            {{#each choiceGroups}}
-            {{#each this.loose}}
-            <button type="button" class="rs-create-choice {{#if this.selected}}is-selected{{/if}}"
-                    data-action="pickChoice" data-group="{{../index}}" data-effect="{{this.id}}"
-                    {{#unless @root.editable}}disabled{{/unless}}>
-              <span class="rs-create-choice-mark"></span>
-              <span>{{this.label}}</span>
-            </button>
-            {{/each}}
-            {{/each}}
-          </div>
-          {{/if}}
         </div>
 
         {{!-- Picked traits: click one to give it back. --}}
         <div class="rs-create-picked">
           <h2 class="rs-create-panel-title is-inline">{{localize "REDSTEEL.Creation.PickedTraits"}}</h2>
           <div class="rs-create-counter">
-            <span class="{{#if traitOverspent}}is-over{{/if}}">{{traitPointsRemaining}}</span>
+            <span>{{{traitPointsRemaining}}}</span>
             <span>{{traitCount}}</span>
           </div>
           {{#if hasPickedTraits}}
@@ -306,6 +293,19 @@
     <button type="button" class="rs-create-btn" data-action="back" {{#if isFirstStep}}disabled{{/if}}>
       &larr; {{localize "REDSTEEL.Creation.back"}}
     </button>
+    {{!-- What the character will have, read off an unsaved copy of the
+          actor carrying the draft (characterCreation.mjs #preview). Nothing
+          before a race is chosen. --}}
+    {{#if preview}}
+    <div class="rs-create-preview">
+      {{#each preview}}
+      <span class="rs-create-preview-stat is-{{this.key}}" data-tooltip="{{this.tooltip}}">
+        <span class="rs-create-preview-label">{{this.label}}</span>
+        <b class="rs-create-preview-value">{{this.value}}</b>
+      </span>
+      {{/each}}
+    </div>
+    {{/if}}
     <div class="rs-create-footer-right">
       <button type="button" class="rs-create-btn" data-action="closeScreen">
         {{localize "REDSTEEL.Creation.close"}}

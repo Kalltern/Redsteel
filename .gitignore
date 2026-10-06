@@ -11,7 +11,6 @@ npm-debug.log
 jsconfig.json
 foundry
 /packs/
-tos.zip
 
 # Logs
 *.log
@@ -22,6 +21,7 @@ Kniha kouzel pro ToS V12.1 (WIP).xlsx
 Pravidla pro ToS V12.1 (WIP).xlsx
 SPELL_EFFECTS_ANALYSIS.md
 SPECIALISATIONS.md
+feature-price-review.xlsx
 
 # One-off dev/utility scripts (not part of releases)
 scripts/
@@ -44,7 +44,4 @@ SPELL_EFFECTS_DEV_PLAN.md
 SPELL_EFFECTS.md
 SPECIALISATION_DEV_PLAN.md
 ABILITY_GRANTS_GAPS.md
-HOTBAR_UI_NOTES.md
-HOTBAR_UI_NOTES.md
-HOTBAR_UI_NOTES.md
 HOTBAR_UI_NOTES.md

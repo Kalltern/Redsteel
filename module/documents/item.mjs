@@ -107,7 +107,7 @@ const QUALITY_KEYS = ["bad", "normal", "expert", "master", "legendary"];
 /**
  * The itemisation groups an enchantment can belong to. Every magic item trades
  * something from the character for its benefit, and the group says *what* is
- * traded and *when*. See ITEMISATION_SPEC.md.
+ * traded and *when*. See docs/ITEMISATION_SPEC.md.
  *
  * A blank group is the plain enchantment that predates all of this: a passive
  * stat block with no cost, no charges and no use button.

@@ -4856,8 +4856,8 @@
       },
       "Doctrine": {
         "heading": "Bojová doktrína",
-        "advice": "Vyber doktrínu, ve které se tvá postava cvičí. Přidá se k tvým dovednostem a body do ní rozdělíš později. Doporučujeme jen jednu bojovou doktrínu; výjimkou je Tulák, který může stát vedle jiné.",
-        "tooMany": "Více než jedna bojová doktrína kromě Tuláka se nedoporučuje.",
+        "advice": "Vyber jednu doktrínu pro boj zblízka nebo na dálku, ve které se tvá postava cvičí. Přidá se k tvým dovednostem a body do ní rozdělíš později. Vedle ní si můžeš vzít Tuláka. Další doktríny se dají naučit později.",
+        "pickOne": "Vyber jednu doktrínu pro boj zblízka nebo na dálku.",
         "needsMagic": "Vyžaduje rys Magický potenciál.",
         "schoolsHeading": "Školy magie",
         "temperamentSchool": "Určeno tvým temperamentem.",
@@ -4987,7 +4987,28 @@
       "Name": "Jméno",
       "Portrait": "Portrét",
       "Token": "Žeton",
-      "raisesLimit": "zvyšuje i hranici",
+      "RacialChoices": "Rasové volby",
+      "limitPlusOne": "hranice +1",
+      "Help": {
+        "attributePoints": "<p>Rozděluješ 15 bodů, k nimž se připočte rasový bonus a bonus za úroveň (+1 na 8., 15. a 20. úrovni). Každá vlastnost začíná na 1.</p><p>Žádná hodnota nesmí překročit svou Fyzickou hranici, kterou určuje rasa; některé rasové volby a rysy ji zvyšují o 1. Bod za 15. úroveň zvýší i Fyzickou hranici té jedné vlastnosti, do které ho vložíš.</p>",
+        "physicalLimit": "<p>Číslo za lomítkem je Fyzická hranice: nejvyšší hodnota, jaké tato vlastnost může u tvé rasy dosáhnout.</p><p>Některé rasové volby a rysy ji zvyšují o 1. Na 15. úrovni smí jedna vlastnost dle tvé volby jít o 1 výš.</p>",
+        "traitPoints": "<p>Rysové body ti dává rasa (člověk 15, ostatní rasy 11 až 14). Pozitivní rysy body stojí, negativní je vracejí, neutrální nestojí nic. Rysů můžeš mít nejvýše 15.</p><p>Nevyužité Rysové body se mění na SP v poměru 1:5. Do mínusu jít smíš, ale dál nepokračuješ, dokud nejsi zpátky na 0 nebo výš.</p>",
+        "cp": "<p>Bojové body. Kupuješ za ně bojové dovednosti, doktríny, zbraňové dovednosti, školy magie a většinu odborností.</p><p>Celkový počet CP určuje tvou Úroveň. Nová postava začíná na 1. úrovni s 15 CP, pokud Vypravěč neurčí jiný začátek (nováček se přidá na úrovni družiny).</p>",
+        "sp": "<p>Body dovedností. Kupuješ za ně běžné dovednosti a rasové odbornosti.</p><p>Na 1. úrovni dostane člověk 50 SP a ostatní rasy 40 SP.</p>",
+        "convert": "<p>Při tvorbě postavy můžeš až polovinu CP převést na SP, nikdy naopak.</p><p>Úroveň se dál počítá z CP před převodem.</p>",
+        "rankCap": "<p>Úroveň omezuje, jak vysoko můžeš při tvorbě postavy zvednout kteroukoli dovednost: 1. úroveň dovolí Dovednost III, 2. úroveň IV, 5. úroveň V, 7. úroveň VI a tak dále.</p><p>Po dokončení postavy tě omezují už jen tvoji učitelé.</p>",
+        "leftover": "<p>Při tvorbě postavy nemusíš utratit všechny CP a SP. Co zbude, postavě zůstane na později.</p>"
+      },
+      "Preview": {
+        "health": "Kolik zranění sneseš, než budeš Vyřazen.",
+        "stamina": "Palivo pro soubojové akce; obnovuje ji akce Oddech.",
+        "mana": "Palivo pro kouzla.",
+        "mind": "Duševní zdraví; při 0 ztrácíš vědomí.",
+        "spd": "O kolik hexů se posuneš jedním pohybem; je i součástí Testu Rychlosti, který určuje Pořadí tahu.",
+        "ini": "Bonus do Testů Rychlosti, které určují Pořadí tahu.",
+        "res": "Testují se proti strachu, panice a šílenství.",
+        "lck": "Posouvá tvé šance na Kritický (ne)úspěch; testuje se u hazardu, náhodných nálezů a nehod."
+      },
       "max": "max {limit}",
       "back": "Zpět",
       "close": "Zavřít",
@@ -5014,14 +5035,15 @@
         "traitOverspent": "Utratil jsi víc rysových bodů, než ti rasa dává. Odeber kladný rys, nebo si vezmi záporný.",
         "traitLimit": "Postava může mít nejvýše {max} rysů.",
         "traitUnaffordable": "Na tento rys ti nezbývá dost rysových bodů.",
-        "negativeRemove": "Odebráním tohoto rysu by ti zbyly záporné rysové body. Nejprve odeber některý kladný rys.",
         "traitMissing": "Rys {name} se nepodařilo načíst z kompendia.",
         "overspent": "Utraceno je víc bodů, než postava má. Před dokončením nějaké vrať.",
         "detailsIncomplete": "Odpověz na všechny volby: zbraň pro každou doktrínu, bojovou dovednost pro Peltasta a magickou doktrínu pro svou školu."
       },
       "Confirm": {
         "unspentTitle": "Nevyužité body vlastností",
-        "unspentContent": "Stále máš {n} nevyužitých bodů vlastností. Nezachovají se. Přesto dokončit?"
+        "unspentContent": "Stále máš {n} nevyužitých bodů vlastností. Nezachovají se. Přesto dokončit?",
+        "dropMagicTitle": "Odebrat Magický potenciál",
+        "dropMagicContent": "Bez Magického potenciálu postava přijde o to, co si vybrala v magii: {lost}. Přesto odebrat?"
       },
       "RaceHeading": "Rasa"
     },

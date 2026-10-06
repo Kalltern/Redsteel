@@ -31,7 +31,7 @@
  *     name: string|null,
  *     race: string|null,        CREATION_RACES key
  *     choices: string[][],      per choice group index: chosen effect ids
- *                               ("" keeps an empty pick column in place)
+ *                               in the order taken (the oldest gives way)
  *     spend: {str..per},        points bought on top of the base 1
  *     traits: string[],         compendium ids from TRAIT_PRICES
  *     doctrines: string[],      doctrine keys (system.doctrines), the
@@ -329,7 +329,8 @@ function weaponStats(system) {
  * fought with. Each weapon's tooltip goes into FEATURE_TIPS under its id. Run
  * once per session.
  * @param {string[]} keys  the doctrines offered
- * @returns {Promise<Map<string, {skills: string[], groups: {label: string, weapons: object[]}[]}>>}
+ * @returns {Promise<Map<string, {skills: string[], weaponSkills: Set<string>,
+ *            groups: {label: string, weapons: object[]}[]}>>}
  */
 async function buildDoctrineWeapons(keys) {
   const pack = game.packs.get(FEATURE_PACK_ID);
@@ -412,7 +413,15 @@ async function buildDoctrineWeapons(keys) {
     const skills = new Set(
       groups.flatMap((group) => group.weapons.map((w) => w.skillLabel)).filter(Boolean),
     );
-    out.set(key, { skills: [...skills].sort((a, b) => a.localeCompare(b, lang)), groups });
+    // The weapon skills (keys) the shown weapons are fought with: step 2.5
+    // offers only these to the doctrine.
+    const weaponSkills = new Set(
+      groups
+        .flatMap((group) => group.weapons.map((w) => w.skill))
+        .filter((path) => path?.startsWith("weaponSkills."))
+        .map((path) => path.split(".")[1]),
+    );
+    out.set(key, { skills: [...skills].sort((a, b) => a.localeCompare(b, lang)), weaponSkills, groups });
   }
   return out;
 }
@@ -653,6 +662,11 @@ function specIconOverrides() {
 /** The one doctrine the book lets sit beside another (the hybrid Rogue). */
 const COMPANION_DOCTRINE = "rogue";
 
+/** A melee or ranged doctrine: not Rogue, not magical. Creation takes one. */
+function isMainDoctrine(key) {
+  return key !== COMPANION_DOCTRINE && !isMagicalDoctrine(key);
+}
+
 /**
  * The system's own tooltip root (#rs-tooltip-root in redsteel.css). Like the
  * Learn window, the screen sits just under it and under Foundry's tooltip.
@@ -662,9 +676,6 @@ const SYSTEM_TOOLTIP_LAYER = 10000;
 const RACE_BY_KEY = new Map(CREATION_RACES.map((entry) => [entry.key, entry]));
 
 const ATTRIBUTE_BONUS_KEY = /^system\.attributes\.(\w+)\.bonus$/;
-
-/** Column marks for the racial choice groups on the attribute rows. */
-const ROMAN = ["I", "II", "III", "IV", "V"];
 
 /** Rank numerals for the doctrine ladders (ranks run to X). */
 const ROMAN_RANKS = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
@@ -745,9 +756,9 @@ function readDraft(actor) {
   const choices = Array.isArray(raw.choices) ? raw.choices : Object.values(raw.choices ?? {});
   draft.choices = choices.map((group) => {
     const ids = Array.isArray(group) ? group : Object.values(group ?? {});
-    // "" keeps an empty column slot in place (a two-pick group's first
-    // column cleared while the second stays).
-    return ids.map((id) => (typeof id === "string" ? id : ""));
+    // Picks in the order they were taken (the oldest gives way first). Drafts
+    // from the old pick-column layout may still hold "" for an empty column.
+    return ids.filter((id) => typeof id === "string" && id);
   });
   for (const k of ATTRIBUTE_KEYS) {
     draft.spend[k] = Math.max(0, Math.floor(Number(raw.spend?.[k]) || 0));
@@ -796,6 +807,29 @@ async function featureCopyData(featureId) {
   const data = source.toObject();
   delete data._id;
   data._stats = { ...(data._stats ?? {}), compendiumSource: uuid };
+  return data;
+}
+
+/**
+ * The attribute values the origin writes (flat update keys): each attribute
+ * starts at 1, plus the points bought. Racial and trait bonuses arrive through
+ * their Active Effects, not here. Shared by the apply and the footer preview.
+ */
+function originAttributeUpdate(draft) {
+  const update = {};
+  for (const k of ATTRIBUTE_KEYS) {
+    update[`system.attributes.${k}.value`] = 1 + draft.spend[k];
+  }
+  return update;
+}
+
+/**
+ * Everything creation writes carries this flag, so a later apply (Back, then
+ * Next again) finds and replaces it.
+ */
+function markOrigin(data) {
+  data.flags = data.flags ?? {};
+  data.flags.redsteel = { ...(data.flags.redsteel ?? {}), creationOrigin: true };
   return data;
 }
 
@@ -917,6 +951,15 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
   #boundChange = null;
   /** Guards the origin apply (Next on step 2) against a double click. */
   #applying = false;
+
+  /**
+   * Trait copies (featureCopyData) by trait id, each a promise fetched once:
+   * the footer preview builds them on every render, the apply once more.
+   */
+  #traitCopies = new Map();
+
+  /** The footer preview has already warned about a failure this session. */
+  #previewWarned = false;
 
   /* ---------------------------------------- */
   /*  Loading                                 */
@@ -1322,11 +1365,24 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     const limits = {};
     const totals = {};
     for (const k of ATTRIBUTE_KEYS) {
-      limits[k] = entry
-        ? entry.limits[k] + limitBumps[k] + (level >= 15 ? 1 : 0)
-        : 0;
+      limits[k] = entry ? entry.limits[k] + limitBumps[k] : 0;
       totals[k] = 1 + draft.spend[k] + bonus[k];
     }
+    // Level 15 ("Primární vlastnost a Fyzická hranice +1"): the point it gives
+    // also raises the limit of the ONE attribute it goes into (user ruling
+    // 2026-10-06). Derived, not stored: the attribute already over its limit
+    // holds the raise; while none is, any attribute may still take it.
+    let levelLimitKey = null;
+    if (entry && level >= 15) {
+      levelLimitKey = ATTRIBUTE_KEYS.find((k) => totals[k] > limits[k]) ?? null;
+      if (levelLimitKey) limits[levelLimitKey] += 1;
+    }
+    const canRaise = Object.fromEntries(
+      ATTRIBUTE_KEYS.map((k) => [
+        k,
+        totals[k] < limits[k] || (level >= 15 && !levelLimitKey && totals[k] < limits[k] + 1),
+      ]),
+    );
 
     const budget = BASE_ATTRIBUTE_BUDGET + levelBudgetBonus(level);
     const spent = ATTRIBUTE_KEYS.reduce((sum, k) => sum + draft.spend[k], 0);
@@ -1343,6 +1399,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
       traitBonus,
       limits,
       totals,
+      canRaise,
       budget,
       spent,
       remaining: budget - spent,
@@ -1468,14 +1525,17 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
         ? i18n.localize(`REDSTEEL.Creation.Requires.${state.entry.key}`)
         : null;
 
-    // The chosen race's choice groups.
+    // The chosen race's choice groups: one row of chips per group, above the
+    // attribute table. A chip reads the option's attribute change ("Dexterity
+    // +1"), not the effect's name; an option that moves no attribute falls
+    // back to its effect name.
     const choiceGroups = state.groups.map((group, index) => {
-      const picked = draft.choices[index] ?? [];
+      const picked = (draft.choices[index] ?? []).filter((id) => group.effectIds.includes(id));
       const options = group.effectIds
         .map((id) => {
           const effect = state.doc.effects.get(id);
           if (!effect) return null;
-          let label = effect.name;
+          let label = i18n.localize(effect.name ?? "");
           const change = effectChanges(effect).find((c) => ATTRIBUTE_BONUS_KEY.test(c?.key ?? ""));
           const attr = change ? ATTRIBUTE_BONUS_KEY.exec(change.key)[1] : null;
           const onAttr = !!attr && !!CONFIG.REDSTEEL.attributes?.[attr];
@@ -1491,46 +1551,24 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
           };
         })
         .filter(Boolean);
-      const groupLabel = i18n.localize(group.label);
-      const pick = i18n.format("REDSTEEL.Race.Choices.PickCount", { count: group.count });
       return {
         index,
-        numeral: ROMAN[index] ?? String(index + 1),
-        label: groupLabel,
-        pick,
-        tooltip: `${groupLabel} (${pick})`,
-        complete: picked.filter((id) => group.effectIds.includes(id)).length === group.count,
+        label: i18n.localize(group.label),
+        pick: i18n.format("REDSTEEL.Race.Choices.PickCount", { count: group.count }),
+        picked: picked.length,
+        count: group.count,
+        complete: picked.length === group.count,
         options,
-        // Options that raise no attribute have no square to sit in; they
-        // keep a row of their own under the attributes.
-        loose: options.filter((option) => !option.attr),
       };
     });
 
-    // Square columns: one per pick, so a group taking two (Human extra
-    // attribute selection) gets two columns of one pick each. Column `slot`
-    // holds draft.choices[group][slot].
-    const choiceColumns = choiceGroups.flatMap((group) => {
-      const picked = draft.choices[group.index] ?? [];
-      const count = state.groups[group.index]?.count ?? 1;
-      return Array.from({ length: count }, (_, slot) => ({
-        group,
-        slot,
-        label: count > 1 ? `${group.label} ${ROMAN[slot] ?? slot + 1}` : group.label,
-        pick: count > 1 ? i18n.format("REDSTEEL.Race.Choices.PickCount", { count: 1 }) : group.pick,
-        chosen: group.options.some((o) => o.id === picked[slot]) ? picked[slot] : null,
-        picked,
-      }));
-    });
-
-    // Attributes. Each row carries one square per pick column: the group's
-    // option for this attribute, or an empty cell when it offers none.
+    // Attributes: value / limit, racial bonuses included.
     const attributes = ATTRIBUTE_KEYS.map((k) => ({
       key: k,
       label: i18n.localize(CONFIG.REDSTEEL.attributes?.[k] ?? k),
       total: state.totals[k],
       limit: state.limits[k],
-      canUp: editable && hasRace && state.remaining > 0 && state.totals[k] < state.limits[k],
+      canUp: editable && hasRace && state.remaining > 0 && state.canRaise[k],
       canDown: editable && hasRace && draft.spend[k] > 0,
       // A picked trait raises this attribute's cap (Brawny, Nimble, ...): the
       // row's ribbon then burns bright.
@@ -1539,33 +1577,6 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
       hasChoice: choiceGroups.some((group) =>
         group.options.some((option) => option.attr === k && option.selected),
       ),
-      choices: choiceColumns.map((column) => {
-        const option = column.group.options.find((o) => o.attr === k) ?? null;
-        return {
-          group: column.group.index,
-          slot: column.slot,
-          option,
-          selected: !!option && column.chosen === option.id,
-          // Picked in the group's other column: clicking here moves it over.
-          elsewhere: !!option && column.chosen !== option.id && column.picked.includes(option.id),
-          tooltip: option
-            ? `${column.label}: ${option.label}${
-                option.raisesLimit ? ` · ${i18n.localize("REDSTEEL.Creation.raisesLimit")}` : ""
-              }`
-            : "",
-        };
-      }),
-    }));
-    // The row grid: the name flush left in a flexible track, then − total +
-    // and one square column per pick (wide enough for the column's name above
-    // it), then a matching flexible spacer so those controls sit centred.
-    const attrGrid = `grid-template-columns: minmax(110px, 1fr) 28px 64px 28px${" 84px".repeat(
-      choiceColumns.length,
-    )} minmax(0, 1fr);`;
-    const choiceHeads = choiceColumns.map((column) => ({
-      label: column.label,
-      pick: column.pick,
-      complete: !!column.chosen,
     }));
 
     // Traits, in three sections, each sorted by name.
@@ -1586,11 +1597,12 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
         disabled: !editable || !hasRace || unaffordable || full,
       };
     };
-    // Left: the traits still to pick, by kind. A picked trait leaves this
-    // list for the centre column's picked list.
+    // Left: every trait, by kind. A picked trait stays in its place, drawn
+    // see-through (clicking it gives it back), so the list never reflows; the
+    // centre column's picked list shows it as well.
     const sections = ["positive", "neutral", "negative"].map((kind) => {
       const traits = [...this.#traits.values()]
-        .filter((trait) => trait.kind === kind && !draft.traits.includes(trait.id))
+        .filter((trait) => trait.kind === kind)
         .sort((a, b) => a.label.localeCompare(b.label, lang))
         .map(traitTile);
       return {
@@ -1635,9 +1647,6 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
               .sort((a, b) => a.label.localeCompare(b.label, i18n.lang)),
     })).filter((block) => block.doctrines.length);
     // The magical doctrine comes from 2.5, so only combat doctrines count.
-    const mainDoctrines = draft.doctrines.filter(
-      (key) => key !== COMPANION_DOCTRINE && !isMagicalDoctrine(key),
-    );
     const details = isDetails ? this.#buildDetails(editable) : null;
 
     return Object.assign(context, {
@@ -1658,30 +1667,33 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
       isFirstStep: step === 1,
       doctrineKinds,
       magicOpen,
-      // More than one doctrine besides Rogue: advised against, not blocked.
-      doctrineWarning: mainDoctrines.length > 1,
       selectedDoctrines: draft.doctrines.map((key) => this.#doctrineLabel(key)),
       raceOptions,
       subraceOptions,
       raceRequirement,
       choiceGroups,
-      hasLooseChoices: choiceGroups.some((group) => group.loose.length),
       attributes,
-      attrGrid,
-      choiceHeads,
       pointsRemaining: i18n.format("REDSTEEL.Creation.pointsRemaining", {
         remaining: state.remaining,
         budget: state.budget,
       }),
-      traitPointsRemaining: i18n.format("REDSTEEL.Creation.traitPointsRemaining", {
-        remaining: state.traitRemaining,
-        total: state.traitPoints,
-      }),
+      // HTML: only the remaining number turns red when it is below zero.
+      traitPointsRemaining: (() => {
+        const mark = "\u0000";
+        const text = escapeHtml(
+          i18n.format("REDSTEEL.Creation.traitPointsRemaining", { remaining: mark, total: state.traitPoints }),
+        );
+        const number = `<span class="rs-create-num${state.traitRemaining < 0 ? " is-over" : ""}">${
+          state.traitRemaining
+        }</span>`;
+        return text.includes(mark) ? text.replace(mark, number) : text;
+      })(),
+      // Steps 1 and 2: what the character will have (null hides the strip).
+      preview: await this.#preview(state),
       traitCount: i18n.format("REDSTEEL.Creation.traitCount", {
         count: state.traitCount,
         max: MAX_TRAITS,
       }),
-      traitOverspent: state.traitRemaining < 0,
       traitSections: sections,
       // Centre: the picked traits in three columns by kind, each in the order
       // its traits were taken.
@@ -2017,15 +2029,16 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
         label: i18n.format("REDSTEEL.Creation.Details.weaponFor", { doctrine }),
         cards: WEAPON_SKILL_KEYS.map((weapon) => {
           const trackId = `weaponSkills.${weapon}`;
+          const allowed = this.#weaponAllowed(key, weapon);
           return this.#skillCard(trackId, {
             owner: key,
             action: "pickWeapon",
-            selected: weapon === chosen,
+            selected: weapon === chosen && allowed,
             fixedText:
               fixed === weapon
                 ? i18n.format("REDSTEEL.Creation.Details.fixedWeapon", { doctrine, weapon: this.#skillLabel(trackId) })
                 : "",
-            shut: !!fixed && fixed !== weapon,
+            shut: (!!fixed && fixed !== weapon) || !allowed,
             editable,
           });
         }),
@@ -2133,14 +2146,35 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     const keep = draft.school ? magical.slice(0, 1) : [];
     draft.doctrines = draft.doctrines.filter((key) => !isMagicalDoctrine(key) || keep.includes(key));
     const asked = new Set(weaponDoctrines(draft.doctrines).filter((key) => !FIXED_WEAPONS[key]));
-    draft.weapons = Object.fromEntries(Object.entries(draft.weapons).filter(([key]) => asked.has(key)));
+    draft.weapons = Object.fromEntries(
+      Object.entries(draft.weapons).filter(([key, weapon]) => asked.has(key) && this.#weaponAllowed(key, weapon)),
+    );
     if (!draft.doctrines.includes(COMBAT_SKILL_CHOICE)) draft.combatSkill = null;
+  }
+
+  /**
+   * A weapon skill the doctrine can train with: one its weapons are fought
+   * with (user ruling 2026-10-06: a Reaver takes no Swords or Polearms). Read
+   * off the weapons naming the doctrine (buildDoctrineWeapons). A doctrine
+   * with no weapon skill found, or data not loaded, allows every skill rather
+   * than locking the player out.
+   */
+  #weaponAllowed(doctrine, weapon) {
+    const allowed = this.#doctrineWeapons?.get(doctrine)?.weaponSkills;
+    return !allowed?.size || allowed.has(weapon);
   }
 
   /** What 2.5 still lacks, as true when something is unanswered. */
   #detailsIncomplete() {
     const draft = this.#draft;
-    if (weaponDoctrines(draft.doctrines).some((key) => !weaponFor(draft, key))) return true;
+    if (
+      weaponDoctrines(draft.doctrines).some((key) => {
+        const weapon = weaponFor(draft, key);
+        return !weapon || !this.#weaponAllowed(key, weapon);
+      })
+    ) {
+      return true;
+    }
     if (draft.doctrines.includes(COMBAT_SKILL_CHOICE) && !draft.combatSkill) return true;
     if (this.#school() && !draft.doctrines.some((key) => isMagicalDoctrine(key))) return true;
     return false;
@@ -2213,6 +2247,9 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     // released in _onClose.
     if (!this.#boundInfo) {
       this.#boundInfo = (event) => {
+        // Step 2 (and 2.5) describes only what is clicked (user ruling
+        // 2026-10-06): sweeping the pointer over the cards must not swap it.
+        if (event.type === "pointerover" && this.#draft.step === 2) return;
         const source = event.target?.closest?.("[data-info]");
         if (source && root.contains(source)) this.#showInfo(source.dataset.info);
       };
@@ -2442,33 +2479,18 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
 
     const choices = this.#draft.choices;
     while (choices.length < state.groups.length) choices.push([]);
-    const slotAttr = Number(el?.dataset.slot);
 
-    if (Number.isInteger(slotAttr) && slotAttr >= 0 && slotAttr < group.count) {
-      // A square in pick column `slot`: that column holds exactly one pick.
-      const picked = Array.from({ length: group.count }, (_, i) => {
-        const id = choices[index]?.[i];
-        return group.effectIds.includes(id) ? id : "";
-      });
-      if (picked[slotAttr] === effectId) {
-        picked[slotAttr] = "";
-      } else {
-        // Already the other column's pick: it moves here.
-        for (let i = 0; i < picked.length; i++) if (picked[i] === effectId) picked[i] = "";
-        picked[slotAttr] = effectId;
-      }
-      choices[index] = picked;
+    // A chip toggles: a picked one is given back; an unpicked one is taken,
+    // and when the group then holds more than it allows, its oldest pick
+    // gives way.
+    let picked = (choices[index] ?? []).filter((id) => group.effectIds.includes(id));
+    if (picked.includes(effectId)) {
+      picked = picked.filter((id) => id !== effectId);
     } else {
-      // A loose option (no attribute column): toggle, oldest pick gives way.
-      let picked = (choices[index] ?? []).filter((id) => group.effectIds.includes(id));
-      if (picked.includes(effectId)) {
-        picked = picked.filter((id) => id !== effectId);
-      } else {
-        picked.push(effectId);
-        while (picked.length > group.count) picked.shift();
-      }
-      choices[index] = picked;
+      picked.push(effectId);
+      while (picked.length > group.count) picked.shift();
     }
+    choices[index] = picked;
     this.#clampSpend(this.#draft);
     await this.#commit();
   }
@@ -2480,7 +2502,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     const k = target?.closest?.("[data-attr]")?.dataset.attr;
     if (!ATTRIBUTE_KEYS.includes(k)) return;
     const state = this.#compute();
-    if (!state.entry || state.remaining <= 0 || state.totals[k] >= state.limits[k]) return;
+    if (!state.entry || state.remaining <= 0 || !state.canRaise[k]) return;
     this.#info = `attr:${k}`;
     this.#draft.spend[k] += 1;
     await this.#commit();
@@ -2510,12 +2532,15 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
 
     const traits = this.#draft.traits;
     if (traits.includes(id)) {
-      // Taking back a negative trait takes back the points it gave.
-      if (price.cost < 0 && state.traitRemaining + price.cost < 0) {
-        ui.notifications.warn(game.i18n.localize("REDSTEEL.Creation.Warn.negativeRemove"));
-        return;
-      }
+      // Taking back a negative trait takes back the points it gave. That may
+      // leave the budget negative (user ruling 2026-10-06): allowed here, and
+      // Next refuses until it is settled (#originProblem, Warn.traitOverspent).
+      if (id === MAGIC_POTENTIAL_ID && !(await this.#confirmDropMagic())) return;
       this.#draft.traits = traits.filter((t) => t !== id);
+      if (id === MAGIC_POTENTIAL_ID) {
+        this.#draft.school = null;
+        this.#draft.doctrines = this.#draft.doctrines.filter((k) => !isMagicalDoctrine(k));
+      }
     } else {
       if (traits.length >= MAX_TRAITS) {
         ui.notifications.warn(
@@ -2534,6 +2559,30 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     // bought points are re-checked against the limits either way.
     this.#clampSpend(this.#draft);
     await this.#commit();
+  }
+
+  /**
+   * Dropping Magic potential loses the drafted school and magical doctrine.
+   * Asks first, but only when one of them is drafted (user ruling 2026-10-06).
+   * The dialog carries rs-create-confirm, which lifts it above this screen.
+   * @returns {Promise<boolean>} true to go ahead.
+   */
+  async #confirmDropMagic() {
+    const draft = this.#draft;
+    const magical = draft.doctrines.filter((k) => isMagicalDoctrine(k));
+    if (!draft.school && !magical.length) return true;
+    const i18n = game.i18n;
+    const lost = [
+      ...(draft.school ? [this.#schoolLabel(draft.school)] : []),
+      ...magical.map((k) => this.#doctrineLabel(k)),
+    ].join(", ");
+    const confirmed = await foundry.applications.api.DialogV2.confirm({
+      classes: ["rs-create-confirm"],
+      window: { title: i18n.localize("REDSTEEL.Creation.Confirm.dropMagicTitle") },
+      content: `<p>${escapeHtml(i18n.format("REDSTEEL.Creation.Confirm.dropMagicContent", { lost }))}</p>`,
+      rejectClose: false,
+    });
+    return confirmed === true;
   }
 
   /** One step back (none from step 1). @this {CharacterCreationWindow} */
@@ -2566,6 +2615,10 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     // Step 2's doctrine cards: on to 2.5 when it has something to ask, else
     // straight to the apply.
     if (this.#draft.step === WINDOW_STEPS && this.#draft.stage !== "details") {
+      if (this.#draft.doctrines.filter(isMainDoctrine).length !== 1) {
+        ui.notifications.warn(game.i18n.localize("REDSTEEL.Creation.Doctrine.pickOne"));
+        return;
+      }
       this.#settleMagic();
       if (draftHasDetails(this.#draft)) {
         this.#draft.stage = "details";
@@ -2610,8 +2663,9 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
   }
 
   /**
-   * Take or drop a doctrine. Any number may be taken (the screen advises one,
-   * Rogue aside); a magical one only with Magic potential.
+   * Take or drop a doctrine. Exactly one melee or ranged doctrine (user ruling
+   * 2026-10-06: a second comes later, through the Learn window): taking
+   * another replaces it. Rogue toggles on its own and may sit beside it.
    * @this {CharacterCreationWindow}
    */
   static async _onToggleDoctrine(event, target) {
@@ -2625,12 +2679,10 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     const doctrines = this.#draft.doctrines;
     if (doctrines.includes(key)) {
       this.#draft.doctrines = doctrines.filter((k) => k !== key);
-    } else {
-      if (getLearnSection(`doctrines.${key}`) === "magical" && !this.#hasMagicPotential()) {
-        ui.notifications.warn(game.i18n.localize("REDSTEEL.Creation.Doctrine.needsMagic"));
-        return;
-      }
+    } else if (key === COMPANION_DOCTRINE) {
       this.#draft.doctrines = [...doctrines, key];
+    } else {
+      this.#draft.doctrines = [...doctrines.filter((k) => !isMainDoctrine(k)), key];
     }
     await this.#commit();
   }
@@ -2664,6 +2716,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     const weapon = el?.dataset.weapon;
     if (!WEAPON_SKILL_KEYS.includes(weapon) || FIXED_WEAPONS[doctrine]) return;
     if (!weaponDoctrines(this.#draft.doctrines).includes(doctrine)) return;
+    if (!this.#weaponAllowed(doctrine, weapon)) return;
     this.#info = `skill:weaponSkills.${weapon}`;
     this.#draft.weapons = { ...this.#draft.weapons, [doctrine]: weapon };
     await this.#commit();
@@ -2757,6 +2810,121 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
   /* ---------------------------------------- */
 
   /**
+   * One trait's copy, fetched once per window and handed out as a fresh
+   * object each time (the callers mark and mutate it). A failed fetch is not
+   * kept, so the next call tries again.
+   * @returns {Promise<object|null>}
+   */
+  async #traitCopy(id) {
+    let pending = this.#traitCopies.get(id);
+    if (!pending) {
+      pending = featureCopyData(id);
+      this.#traitCopies.set(id, pending);
+    }
+    const data = await pending.catch(() => null);
+    if (!data) {
+      this.#traitCopies.delete(id);
+      return null;
+    }
+    return foundry.utils.deepClone(data);
+  }
+
+  /**
+   * The item data the origin creates: the race (its choice effects enabled
+   * for the picks, disabled otherwise) and a copy of every drafted trait, all
+   * marked creationOrigin. Used by the apply and by the footer preview, so
+   * the two cannot drift.
+   * @returns {Promise<{raceData: object, traitData: object[], missing: string|null}>}
+   *   `missing`: the first drafted trait whose copy could not be made
+   *   (traitData then leaves it out).
+   */
+  async #buildOriginItems(state, draft = this.#draft) {
+    const raceData = state.doc.toObject();
+    delete raceData._id;
+    raceData._stats = { ...(raceData._stats ?? {}), compendiumSource: state.doc.uuid };
+    const chosen = new Set();
+    state.groups.forEach((group, i) => {
+      for (const id of draft.choices[i] ?? []) if (group.effectIds.includes(id)) chosen.add(id);
+    });
+    const choiceIds = new Set(state.groups.flatMap((g) => g.effectIds));
+    for (const effect of raceData.effects ?? []) {
+      if (choiceIds.has(effect._id)) effect.disabled = !chosen.has(effect._id);
+    }
+
+    // All trait copies fetched at once.
+    const copies = await Promise.all(draft.traits.map((id) => this.#traitCopy(id)));
+    const missing = draft.traits.find((id, i) => !copies[i]) ?? null;
+    const traitData = copies.filter(Boolean);
+
+    markOrigin(raceData);
+    for (const data of traitData) markOrigin(data);
+    return { raceData, traitData, missing };
+  }
+
+  /** The items an apply replaces: any race, and whatever creation wrote before. */
+  #originReplacedIds(actor = this.actor) {
+    return actor.items.contents
+      .filter((i) => i.type === "race" || i.getFlag("redsteel", "creationOrigin"))
+      .map((i) => i.id);
+  }
+
+  /**
+   * The footer strip: the character as the draft would make it, read off a
+   * temporary, unsaved clone of the actor carrying the drafted attributes,
+   * race and traits (the same documents the apply writes), so every number
+   * comes from the system's own formulas. Null (no strip) before a race is
+   * chosen, or on any failure (warned once).
+   */
+  async #preview(state) {
+    if (!state.doc || !this.actor) return null;
+    try {
+      const { raceData, traitData } = await this.#buildOriginItems(state);
+      const replaced = new Set(this.#originReplacedIds());
+      // Fresh ids: the clone's item collection is keyed by id.
+      const added = [raceData, ...traitData].map((data) => ({ ...data, _id: foundry.utils.randomID() }));
+      const items = [
+        ...this.actor.items.contents.filter((i) => !replaced.has(i.id)).map((i) => i.toObject()),
+        ...added,
+      ];
+      const data = foundry.utils.expandObject(originAttributeUpdate(this.#draft));
+      data.items = items;
+      const clone = this.actor.clone(data, { save: false });
+      const system = clone?.system;
+      if (!system) return null;
+
+      const i18n = game.i18n;
+      const number = (value) => {
+        const n = Number(value);
+        return Number.isFinite(n) ? n : 0;
+      };
+      const entries = [
+        ["health", "REDSTEEL.Actor.Character.stats.health.value.label", system.stats?.health?.max],
+        ["stamina", "REDSTEEL.Actor.Character.stats.stamina.value.label", system.stats?.stamina?.max],
+        ...(this.#hasMagicPotential()
+          ? [["mana", "REDSTEEL.Actor.Character.stats.mana.value.label", system.stats?.mana?.max]]
+          : []),
+        ["mind", "REDSTEEL.Actor.Character.stats.mind.value.label", system.stats?.mind?.max],
+        ["spd", CONFIG.REDSTEEL.secondaryAttributes.spd, system.secondaryAttributes?.spd?.total],
+        ["ini", CONFIG.REDSTEEL.secondaryAttributes.ini, system.secondaryAttributes?.ini?.total],
+        ["res", CONFIG.REDSTEEL.secondaryAttributes.res, system.secondaryAttributes?.res?.total],
+        ["lck", CONFIG.REDSTEEL.secondaryAttributes.lck, system.secondaryAttributes?.lck?.total],
+      ];
+      return entries.map(([key, labelKey, value]) => ({
+        key,
+        label: i18n.localize(labelKey),
+        value: number(value),
+        tooltip: i18n.localize(`REDSTEEL.Creation.Preview.${key}`),
+      }));
+    } catch (err) {
+      if (!this.#previewWarned) {
+        this.#previewWarned = true;
+        console.warn("Redsteel | Creation: the character preview could not be built", err);
+      }
+      return null;
+    }
+  }
+
+  /**
    * Validate the draft, then write the origin to the actor and open step 3.
    * Safe to run again after Back: it replaces exactly what the previous run
    * wrote (the creationOrigin items, the trait SP payout, the doctrines it
@@ -2795,42 +2963,17 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     }
 
     // Build every document before anything is written, so a missing trait
-    // aborts with the character untouched.
-    const raceData = state.doc.toObject();
-    delete raceData._id;
-    raceData._stats = { ...(raceData._stats ?? {}), compendiumSource: state.doc.uuid };
-    const chosen = new Set();
-    state.groups.forEach((group, i) => {
-      for (const id of draft.choices[i] ?? []) if (group.effectIds.includes(id)) chosen.add(id);
-    });
-    const choiceIds = new Set(state.groups.flatMap((g) => g.effectIds));
-    for (const effect of raceData.effects ?? []) {
-      if (choiceIds.has(effect._id)) effect.disabled = !chosen.has(effect._id);
-    }
-
-    // All trait copies fetched at once.
-    const traitData = await Promise.all(draft.traits.map((id) => featureCopyData(id)));
-    const missing = draft.traits.find((id, i) => !traitData[i]);
+    // aborts with the character untouched. The footer preview builds the
+    // same documents with the same helper (#buildOriginItems).
+    const { raceData, traitData, missing } = await this.#buildOriginItems(state, draft);
     if (missing) {
       return warn("REDSTEEL.Creation.Warn.traitMissing", {
         name: this.#traits?.get(missing)?.label ?? TRAIT_PRICES[missing]?.name ?? missing,
       });
     }
 
-    // Everything creation wrote carries this flag, so a later apply (Back,
-    // then Next again) finds and replaces it.
-    const markOrigin = (data) => {
-      data.flags = data.flags ?? {};
-      data.flags.redsteel = { ...(data.flags.redsteel ?? {}), creationOrigin: true };
-      return data;
-    };
-    markOrigin(raceData);
-    for (const data of traitData) markOrigin(data);
-
     // 1. The old race, and whatever a previous apply wrote, go in one call.
-    const oldIds = actor.items.contents
-      .filter((i) => i.type === "race" || i.getFlag("redsteel", "creationOrigin"))
-      .map((i) => i.id);
+    const oldIds = this.#originReplacedIds(actor);
     if (oldIds.length) await actor.deleteEmbeddedDocuments("Item", oldIds);
 
     // 2–3. The race and the traits land together.
@@ -2882,10 +3025,8 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
       "system.progression.bonus.sp": currentBonusSp - (previous?.traitSp ?? 0) + traitSp,
       "flags.redsteel.creationDraft": nextDraft,
       ...this.#weaponDeletions(nextDraft),
+      ...originAttributeUpdate(draft),
     };
-    for (const k of ATTRIBUTE_KEYS) {
-      update[`system.attributes.${k}.value`] = 1 + draft.spend[k];
-    }
     // The chosen doctrines join the character's skills: shown on the sheet
     // (no rank bought, points are distributed in step 3).
     for (const key of draft.doctrines) {

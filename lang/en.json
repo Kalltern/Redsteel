@@ -4856,8 +4856,8 @@
       },
       "Doctrine": {
         "heading": "Combat doctrine",
-        "advice": "Pick the doctrine your character trains in. It joins your skills, and you distribute points into it afterwards. One combat doctrine is recommended; Rogue is the exception and can sit beside another.",
-        "tooMany": "More than one combat doctrine besides Rogue is not recommended.",
+        "advice": "Pick the one melee or ranged doctrine your character trains in. It joins your skills, and you distribute points into it afterwards. Rogue may be taken beside it. Further doctrines can be learned later.",
+        "pickOne": "Pick one melee or ranged doctrine.",
         "needsMagic": "Requires the Magic potential trait.",
         "schoolsHeading": "Schools of magic",
         "temperamentSchool": "Set by your temperament.",
@@ -4987,7 +4987,28 @@
       "Name": "Name",
       "Portrait": "Portrait",
       "Token": "Token",
-      "raisesLimit": "also raises the limit",
+      "RacialChoices": "Racial choices",
+      "limitPlusOne": "limit +1",
+      "Help": {
+        "attributePoints": "<p>You distribute 15 points, plus your racial bonus and a level bonus (+1 at levels 8, 15 and 20). Every attribute starts at 1.</p><p>No value can go above its physical limit, which your race sets; some racial choices and traits raise it by 1. The level 15 point also raises the limit of the one attribute it goes into.</p>",
+        "physicalLimit": "<p>The number after the slash is the physical limit: the highest value this attribute can reach for your race.</p><p>Some racial choices and traits raise it by 1. At level 15, one attribute of your choice may go 1 above it.</p>",
+        "traitPoints": "<p>Your race gives you trait points (Human 15, other races 11 to 14). Positive traits cost points, negative traits give points back, neutral traits cost nothing. You may take at most 15 traits.</p><p>Unspent trait points become SP at 1:5. You may go below zero, but you cannot continue until you are back at 0 or more.</p>",
+        "cp": "<p>Combat points. They buy combat skills, doctrines, weapon skills, schools of magic and most features.</p><p>Your total CP sets your level. A new character starts at level 1 with 15 CP, unless the GM sets a different start (a newcomer joins at the party's level).</p>",
+        "sp": "<p>Skill points. They buy ordinary skills and racial features.</p><p>Level 1 gives 50 SP to a Human and 40 SP to other races.</p>",
+        "convert": "<p>At character creation up to half of your CP may be converted to SP, never the other way.</p><p>Your level still counts the CP before conversion.</p>",
+        "rankCap": "<p>Your level limits how high any skill can be raised during creation: level 1 allows rank III, level 2 rank IV, level 5 rank V, level 7 rank VI, and so on.</p><p>After creation only your teachers limit you.</p>",
+        "leftover": "<p>You do not have to spend every CP and SP during creation. Whatever is left stays with the character for later.</p>"
+      },
+      "Preview": {
+        "health": "Damage you can take before you are Downed.",
+        "stamina": "Fuel for combat actions; Catch Breath restores it.",
+        "mana": "Fuel for spells.",
+        "mind": "Mental health; at 0 you fall unconscious.",
+        "spd": "Hexes you move per movement; also part of the Speed Test for turn order.",
+        "ini": "A bonus to Speed Tests, which set turn order.",
+        "res": "Tested to resist fear, panic and madness.",
+        "lck": "Shifts your critical chances; tested for gambling, lucky finds and accidents."
+      },
       "max": "max {limit}",
       "back": "Back",
       "close": "Close",
@@ -5014,14 +5035,15 @@
         "traitOverspent": "You have spent more trait points than your race gives. Remove a positive trait or take a negative one.",
         "traitLimit": "A character can have at most {max} traits.",
         "traitUnaffordable": "Not enough trait points left for this trait.",
-        "negativeRemove": "Removing this trait would leave you with negative trait points. Remove a positive trait first.",
         "traitMissing": "The trait {name} could not be loaded from the compendium.",
         "overspent": "More points are spent than the character has. Give some back before finishing.",
         "detailsIncomplete": "Answer every choice: a weapon for each doctrine, a combat skill for the Peltast, and a magical doctrine for your school."
       },
       "Confirm": {
         "unspentTitle": "Unspent attribute points",
-        "unspentContent": "You still have {n} unspent attribute points. They will not be kept. Finish anyway?"
+        "unspentContent": "You still have {n} unspent attribute points. They will not be kept. Finish anyway?",
+        "dropMagicTitle": "Drop Magic potential",
+        "dropMagicContent": "Without Magic potential your character loses what they picked in magic: {lost}. Drop it anyway?"
       },
       "RaceHeading": "Race"
     },

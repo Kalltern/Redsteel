@@ -1,7 +1,7 @@
 {
   "name": "redsteel",
   "version": "1.0.0",
-  "description": "JSON compiler for the Redsteel system",
+  "description": "Build tooling for the Redsteel Foundry VTT system (compendium pack compiler)",
   "scripts": {
     "pullJSONtoLDB": "node ./tools/pullJSONtoLDB.mjs",
     "pushLDBtoJSON": "node ./tools/pushLDBtoJSON.mjs"
@@ -14,9 +14,5 @@
   "devDependencies": {
     "@foundryvtt/foundryvtt-cli": "^3.0.0",
     "sass": "^1.53.0"
-  },
-  "main": "index.js",
-  "directories": {
-    "lib": "lib"
   }
 }
