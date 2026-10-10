@@ -84,9 +84,10 @@
         </div>
       </div>
       {{else if features.picker}}
-      {{!-- A family's skill picker, in place of the list: one column per skill
-            class (A, B, C), each skill with its buy diamond, its name (hover for
-            the feature's card) and its price. Only classed skills appear; the
+      {{!-- A family's skill picker, in place of the list: the family's general
+            description, then one column per skill class (A, B, C), each skill
+            with its buy diamond and its name. The price is the family row's
+            (a class heading names its own when the classes differ). Only classed skills appear; the
             unclassed ones are left out on purpose (GM ruling), except for
             Specialization, which appends a fourth "Other skills" column for
             them (user ruling 2026-09-16). --}}
@@ -97,23 +98,23 @@
         </button>
         <span class="rs-learn-family-title">{{features.picker.label}}</span>
       </header>
+      {{!-- What the family gives, in general terms, once for every skill. --}}
+      {{#if features.picker.description}}
+      <p class="rs-learn-family-info">{{features.picker.description}}</p>
+      {{/if}}
       <div class="rs-learn-family-columns {{#if features.picker.hasOther}}is-four{{/if}}">
         {{#each features.picker.columns}}
         <section class="rs-learn-family-column">
-          <h3 class="rs-learn-section-title">{{this.label}}</h3>
+          <h3 class="rs-learn-section-title">{{this.label}}{{#if this.price}} <span class="rs-learn-family-price">{{this.price}}</span>{{/if}}</h3>
           {{#each this.skills}}
-          <div class="rs-learn-family-skill state-{{this.state}} {{#if this.expanded}}is-expanded{{/if}}"
-               {{#if this.description}}data-action="toggleFeatureDescription" data-expand-key="{{this.expandKey}}"{{/if}}>
+          <div class="rs-learn-family-skill state-{{this.state}}">
             <div class="rs-learn-node state-{{this.state}} {{#if this.owned}}is-owned{{/if}}"
                  {{#if (eq this.state "available")}}data-action="buyFeature" data-feature-id="{{this.id}}"{{/if}}
                  {{#if this.reasons.length}}data-tooltip="<strong>{{localize "REDSTEEL.Learn.unmetRequirements"}}</strong>{{#each this.reasons}}<br>{{this}}{{/each}}" data-tooltip-direction="UP"{{/if}}>
               <span class="rs-learn-diamond"></span>
               {{#if this.showLock}}<i class="fas fa-lock rs-learn-lock"></i>{{/if}}
             </div>
-            <span class="rs-learn-family-skill-name"
-                  data-tt-kind="spellCardUuid" data-tt-uuid="{{this.uuid}}" data-card-kind="feature">{{this.skillLabel}}</span>
-            <b class="rs-learn-feature-cost">{{this.costLabel}}</b>
-            {{#if this.description}}<div class="rs-learn-feature-desc" {{#unless this.expanded}}hidden{{/unless}}>{{{this.description}}}</div>{{/if}}
+            <span class="rs-learn-family-skill-name">{{this.skillLabel}}</span>
           </div>
           {{else}}
           <p class="rs-learn-empty">{{localize "REDSTEEL.Learn.Features.noSkills"}}</p>
@@ -175,8 +176,9 @@
               <input type="checkbox" data-filter-all-races {{#if features.allRaces}}checked{{/if}}>
               <span>{{localize "REDSTEEL.Learn.Features.allRaces"}}</span>
             </label>
-            {{!-- Off by default: magic features stay hidden for a character with
-                  neither Magic Potential nor the School of Blood (user ruling). --}}
+            {{!-- On by default (user ruling 2026-10-10): magic features show,
+                  locked, for a character with neither Magic Potential nor the
+                  School of Blood too. Unticked, they hide. --}}
             <label class="rs-learn-filter-check">
               <input type="checkbox" data-filter-all-magic {{#if features.allMagic}}checked{{/if}}>
               <span>{{localize "REDSTEEL.Learn.Features.allMagic"}}</span>
@@ -188,28 +190,42 @@
         </div>
       </header>
 
+      {{!-- One tab per section: the list shows one section at a time (the
+            window sets which, see #applyFeatureFilters). Hidden while a search
+            is typed, which looks through every section. --}}
+      <nav class="rs-learn-feature-tabs" role="tablist">
+        {{#each features.sections}}
+        <button type="button" role="tab" data-action="featureSectionTab" data-section="{{this.id}}">{{this.tabLabel}}</button>
+        {{/each}}
+      </nav>
+
       <div class="rs-learn-features-list">
         {{#each features.sections}}
         <section class="rs-learn-feature-section" data-section="{{this.id}}">
           <h3 class="rs-learn-section-title">{{this.label}}</h3>
           {{#each this.rows}}
           {{#if this.isFamily}}
-          {{!-- A per-skill family (Specialization, Adept…) as one row: clicking
-                it opens the skill picker. --}}
-          <div class="rs-learn-feature is-family state-{{this.state}}"
-               data-action="openFeatureFamily" data-family="{{this.family}}"
+          {{!-- A per-skill family (Specialization, Adept…) as one row. With a
+                general description (user ruling 2026-10-10) a click rolls it
+                out and the diamond opens the skill picker; without one (the
+                Languages row) the whole row opens its panel. --}}
+          <div class="rs-learn-feature is-family state-{{this.state}} {{#if this.expanded}}is-expanded{{/if}}"
+               {{#if this.description}}data-action="toggleFeatureDescription" data-expand-key="{{this.expandKey}}"{{else}}data-action="openFeatureFamily" data-family="{{this.family}}"{{/if}}
                data-meets="{{#if this.meets}}true{{else}}false{{/if}}"
                data-race-fits="{{#if this.raceFits}}true{{else}}false{{/if}}"
                data-magic-fits="{{#if this.magicFits}}true{{else}}false{{/if}}"
                data-skill-fits="{{#if this.skillFits}}true{{else}}false{{/if}}"
                data-search="{{this.search}}">
-            <div class="rs-learn-node state-{{this.state}} {{#if (eq this.state "owned")}}is-owned{{/if}}">
+            <div class="rs-learn-node state-{{this.state}} {{#if (eq this.state "owned")}}is-owned{{/if}}"
+                 {{#if this.description}}data-action="openFeatureFamily" data-family="{{this.family}}"
+                 data-tooltip="{{localize "REDSTEEL.Learn.Features.chooseSkill"}}" data-tooltip-direction="UP"{{/if}}>
               <span class="rs-learn-diamond"></span>
             </div>
             <img class="rs-learn-feature-icon" src="{{this.img}}" alt="{{this.name}}">
-            <span class="rs-learn-feature-name">{{this.name}} <i class="fas fa-angle-right"></i></span>
+            <span class="rs-learn-feature-name">{{this.name}}{{#unless this.description}} <i class="fas fa-angle-right"></i>{{/unless}}</span>
             <span class="rs-learn-feature-reqs"><span class="rs-learn-family-summary">{{this.summary}}</span></span>
             <b class="rs-learn-feature-cost">{{this.costLabel}}</b>
+            {{#if this.description}}<div class="rs-learn-feature-desc" {{#unless this.expanded}}hidden{{/unless}}>{{{this.description}}}</div>{{/if}}
           </div>
           {{else}}
           {{!-- One feature. The diamond buys it, as on the rank tracks; a locked
@@ -254,15 +270,18 @@
         the creation window's own layout instead of the Learn window's. A
         title bar, three columns, and the footer with Back, Close and Finish.
         The wrapper wears .rs-create so the creation window's rules apply.
-          1. Character: the points left, the level's rank cap and the CP to SP
-             conversion (Shift moves 5), then attributes and traits (hover a trait for its card).
-          2. Your skills: the Combat and Skills tracks taken, each a ribbon
-             with its rank; click one to read its ranks. Then the features
-             bought, each with its give-back control.
-          3. Top, the selected track's ranks: a diamond buys every rank up to
-             it, or gives back every rank down to it. Bottom, the roster:
-             Combat or Skills tracks to pick, or the Features tab's
-             purchasable list. --}}
+        Laid out like step 1's trait buying: buy on the left, the character
+        in the centre, the details on the right.
+          1. Roster: the points left, the level's rank cap and the CP to SP
+             conversion (Shift moves 5), then Skills, Features or Combat. Each
+             track is one line: its name, its ten rank diamonds (click to buy
+             up to or give back down to one) and its next rank's price. Beside
+             the list, the dock shows the selected track's note and ranks.
+          2. Character: attributes, the tracks taken with their rank and what
+             they cost (click one to read its ranks), the features bought,
+             then the traits.
+          Rank I given back sends the track back to the roster. A bought
+          feature's description opens under its tile. --}}
   <div class="rs-create rs-learn-cskills">
   <div class="rs-create-body">
 
@@ -277,26 +296,49 @@
 
   <div class="rs-create-columns rs-learn-cskills-columns">
 
-    <section class="rs-create-panel rs-learn-cskills-col is-character">
-      {{!-- Titled with the character's name and race, not a heading. --}}
-      <h2 class="rs-create-panel-title">{{creationSkills.character.name}}{{#if creationSkills.character.race}} - {{creationSkills.character.race}}{{/if}}</h2>
-      <div class="rs-create-scroll rs-learn-cskills-character">
-        {{!-- The points: CP and SP left of what was earned, the level's rank
-              cap, and the CP to SP conversion (Shift moves 5). --}}
-        <div class="rs-create-group-label">{{localize "REDSTEEL.Creation.Skills.points"}}<i class="rs-create-help fa-light fa-circle-question" data-tooltip="{{localize 'REDSTEEL.Creation.Help.leftover'}}"></i></div>
-        <div class="rs-learn-cskills-points">
-          <div class="rs-create-counter rs-learn-cskills-purse">
-            <span class="rs-learn-cskills-stat">
-              <label>{{localize "REDSTEEL.Learn.cpRemaining"}}<i class="rs-create-help fa-light fa-circle-question" data-tooltip="{{localize 'REDSTEEL.Creation.Help.cp'}}"></i></label>
-              <b>{{wallet.remaining.cp}}</b>
-              <em>/ {{wallet.earned.cp}}</em>
-            </span>
-            <span class="rs-learn-cskills-stat">
-              <label>{{localize "REDSTEEL.Learn.spRemaining"}}<i class="rs-create-help fa-light fa-circle-question" data-tooltip="{{localize 'REDSTEEL.Creation.Help.sp'}}"></i></label>
-              <b>{{wallet.remaining.sp}}</b>
-              <em>/ {{wallet.earned.sp}}</em>
-            </span>
-          </div>
+    {{!-- Left: the roster, where points are spent. The wallet heads it, then
+          the Combat | Skills | Features switch, then every track not taken
+          yet with what its rank I costs and the book that acquires it. --}}
+    <section class="rs-create-panel rs-learn-cskills-col is-roster">
+      <header class="rs-learn-cskills-roster-head">
+        <h2 class="rs-create-panel-title">{{localize "REDSTEEL.Creation.Skills.roster"}}</h2>
+        {{!-- Skills, Combat, Features: the roster's three lists, centred in
+              its head where the eye lands first. --}}
+        <div class="rs-learn-cskills-switch" role="group">
+          <button type="button" class="{{#if creationSkills.roster.isSkills}}active{{/if}}"
+                  aria-pressed="{{#if creationSkills.roster.isSkills}}true{{else}}false{{/if}}"
+                  data-action="creationRosterMode" data-mode="skills">
+            {{localize "REDSTEEL.Creation.Skills.rosterSkills"}}
+          </button>
+          <button type="button" class="{{#if creationSkills.roster.isCombat}}active{{/if}}"
+                  aria-pressed="{{#if creationSkills.roster.isCombat}}true{{else}}false{{/if}}"
+                  data-action="creationRosterMode" data-mode="combat">
+            {{localize "REDSTEEL.Creation.Skills.rosterCombat"}}
+          </button>
+          <button type="button" class="{{#if creationSkills.roster.isFeatures}}active{{/if}}"
+                  aria-pressed="{{#if creationSkills.roster.isFeatures}}true{{else}}false{{/if}}"
+                  data-action="creationRosterMode" data-mode="features">
+            {{localize "REDSTEEL.Creation.Skills.rosterFeatures"}}
+          </button>
+        </div>
+      </header>
+
+      {{!-- The points: CP and SP left of what was earned, the level's rank
+            cap, and the CP to SP conversion (Shift moves 5). --}}
+      <div class="rs-learn-cskills-points">
+        <div class="rs-create-counter rs-learn-cskills-purse">
+          <span class="rs-learn-cskills-stat">
+            <label>{{localize "REDSTEEL.Learn.cpRemaining"}}<i class="rs-create-help fa-light fa-circle-question" data-tooltip="{{localize 'REDSTEEL.Creation.Help.cp'}}"></i></label>
+            <b>{{wallet.remaining.cp}}</b>
+            <em>/ {{wallet.earned.cp}}</em>
+          </span>
+          <span class="rs-learn-cskills-stat">
+            <label>{{localize "REDSTEEL.Learn.spRemaining"}}<i class="rs-create-help fa-light fa-circle-question" data-tooltip="{{localize 'REDSTEEL.Creation.Help.sp'}}"></i></label>
+            <b>{{wallet.remaining.sp}}</b>
+            <em>/ {{wallet.earned.sp}}</em>
+          </span>
+        </div>
+        <div class="rs-learn-cskills-points-row">
           <div class="rs-learn-cskills-cap">
             {{localize "REDSTEEL.Creation.Learn.levelCap" level=creation.level rank=creation.capRoman}}<i class="rs-create-help fa-light fa-circle-question" data-tooltip="{{localize 'REDSTEEL.Creation.Help.rankCap'}}"></i>
           </div>
@@ -310,15 +352,146 @@
                     aria-label="+" {{#unless creation.canConvertUp}}disabled{{/unless}}>+</button>
             <span class="rs-learn-cskills-convert-max">{{localize "REDSTEEL.Creation.Learn.convertMax" n=creation.convertMax}}</span>
           </div>
-          {{#if creation.noStarting}}
-          <p class="rs-learn-cskills-warning">
-            <i class="fas fa-triangle-exclamation"></i>
-            {{localize "REDSTEEL.Creation.Learn.noStarting"}}
-          </p>
-          {{/if}}
         </div>
+        {{#if creation.noStarting}}
+        <p class="rs-learn-cskills-warning">
+          <i class="fas fa-triangle-exclamation"></i>
+          {{localize "REDSTEEL.Creation.Learn.noStarting"}}
+        </p>
+        {{/if}}
+      </div>
 
-        <h2 class="rs-create-panel-title is-inline">{{localize "REDSTEEL.Creation.Attributes"}}</h2>
+      {{#unless creationSkills.roster.isFeatures}}
+      {{!-- The track list, with the ranks dock beside it on the right. --}}
+      <div class="rs-learn-cskills-roster-split">
+        <div class="rs-create-scroll rs-learn-cskills-roster-body">
+          {{!-- The sections (by attribute on the Skills tab) flow in two
+                balanced sub-columns. --}}
+          <div class="rs-learn-cskills-roster-flow">
+          {{#each creationSkills.roster.sections}}
+          <div class="rs-learn-cskills-roster-section">
+          <div class="rs-create-group-label">{{this.label}}</div>
+          <div class="rs-learn-cskills-roster-list">
+            {{#each this.tracks}}
+            {{!-- One track: its name (click to show its ranks in the dock), its
+                  ten rank diamonds and the price of its next rank. A diamond
+                  buys every rank up to it (rank I with its Teacher) or gives
+                  back every rank down to it; its hover says which, or what
+                  stands in the way. A missing prerequisite shows the lock. --}}
+            <div role="button" tabindex="0"
+                 class="rs-learn-cskills-pick {{#if this.owned}}is-owned{{/if}} {{#if this.gated}}is-gated{{/if}} {{#if this.selected}}is-selected{{/if}}"
+                 data-action="creationPickSkill" data-track-id="{{this.id}}">
+              <span class="rs-learn-cskills-pick-name" {{#if this.lockTip}}data-tooltip="{{this.lockTip}}"{{/if}}>
+                {{this.label}}{{#if this.gated}} <i class="fas fa-lock"></i>{{/if}}
+              </span>
+              <span class="rs-learn-cskills-pips">
+                {{#each this.pips}}
+                <span class="rs-learn-cskills-pip state-{{this.state}}"
+                      {{#unless (eq this.state "none")}}data-track-id="{{../id}}" data-rank="{{this.rank}}" data-tooltip="{{this.tip}}" data-tooltip-direction="UP"{{/unless}}
+                      {{#if this.buyable}}data-action="creationBuyTo"{{/if}}
+                      {{#if this.refundable}}data-action="creationRefundTo"{{/if}}></span>
+                {{/each}}
+              </span>
+              <span class="rs-learn-cskills-pick-cost state-{{this.nextState}}">{{this.nextCost}}</span>
+            </div>
+            {{/each}}
+          </div>
+          </div>
+          {{/each}}
+          </div>
+        </div>
+        {{!-- The ranks dock: the selected track's note, what was spent on it
+              and what every rank costs, then its ranks side by side as cards.
+              Docked as a column at the roster's right edge, the ranks stacked
+              top to bottom. --}}
+        <div class="rs-learn-cskills-dock">
+          {{#with creationSkills.ledger}}
+          <header class="rs-learn-cskills-dock-head">
+            <h3 class="rs-learn-cskills-dock-title">{{this.label}}</h3>
+            <span class="rs-learn-cskills-dock-spent">{{this.spentLabel}}</span>
+            {{#if this.info.allRanksLabel}}<span class="rs-learn-cskills-all-ranks">{{this.info.allRanksLabel}}</span>{{/if}}
+          </header>
+          {{#if (or this.info.paragraphs.length this.info.weaponsPill)}}
+          <div class="rs-learn-cskills-dock-note">
+            {{#each this.info.paragraphs}}
+            <p class="rs-learn-cskills-info-text">{{this}}</p>
+            {{/each}}
+            {{#if this.info.weaponsPill}}{{{this.info.weaponsPill}}}{{/if}}
+          </div>
+          {{/if}}
+          <div class="rs-learn-cskills-track">
+            {{#each this.rows}}
+            {{!-- One rank card, clickable as a whole: buys every rank up to it,
+                  or gives back every rank down to it. Its numeral and diamond on
+                  the left, the rank's value large with its other effects and
+                  what it asks beside them, its price and the running total on
+                  the right. The left edge wears the state (gold owned, bronze
+                  buyable, red short of points); the hover says what a click
+                  does. --}}
+            <div class="rs-learn-cskills-card state-{{this.state}}"
+                 data-track-id="{{../trackId}}" data-rank="{{this.rank}}"
+                 data-tooltip="{{this.tip}}" data-tooltip-direction="UP"
+                 {{#if this.buyable}}data-action="creationBuyTo"{{/if}}
+                 {{#if this.refundable}}data-action="creationRefundTo"{{/if}}>
+              <div class="rs-learn-cskills-card-head">
+                <span class="rs-learn-cskills-card-numeral">{{this.numeral}}</span>
+                <span class="rs-learn-cskills-pip state-{{this.state}}"></span>
+              </div>
+              <div class="rs-learn-cskills-card-body">
+                {{#if this.value}}<div class="rs-learn-cskills-card-value">{{this.value}}</div>{{/if}}
+                {{#if this.grants.length}}
+                <span class="rs-learn-seg-icons rs-learn-cskills-card-grants">
+                  {{#each this.grants}}
+                  <img src="{{this.img}}" width="64" height="64" alt="{{this.name}}" data-tt-kind="spellCardUuid" data-tt-uuid="{{this.uuid}}" data-card-kind="ability">
+                  {{/each}}
+                </span>
+                {{/if}}
+                {{#each this.lines}}
+                <div class="rs-learn-cskills-card-line{{#if this.ability}} is-ability{{/if}}">{{this.text}}</div>
+                {{/each}}
+                {{#if this.reqChips.length}}
+                <div class="rs-learn-cskills-card-reqs">
+                  {{#each this.reqChips}}
+                  {{#if this.teacher}}
+                  <a class="rs-learn-teacher {{this.cls}}" data-action="toggleTeacher"
+                     data-track-id="{{this.trackId}}" data-rank="{{this.rank}}" data-tier="{{this.tier}}"
+                     data-tooltip="{{this.tooltip}}">
+                    <b>{{localize "REDSTEEL.Learn.Req.teacher" tier=this.roman}}</b>
+                  </a>
+                  {{else}}
+                  <span class="rs-learn-req {{this.cls}}"
+                        {{#if this.tooltip}}data-tooltip="{{this.tooltip}}"{{/if}}>{{this.text}}</span>
+                  {{/if}}
+                  {{/each}}
+                </div>
+                {{/if}}
+              </div>
+              <div class="rs-learn-cskills-card-foot">
+                <span class="rs-learn-cskills-card-cost">{{this.costLabel}}</span>
+                {{#if this.totalLabel}}<span class="rs-learn-cskills-card-total">{{this.totalLabel}}</span>{{/if}}
+              </div>
+            </div>
+            {{/each}}
+          </div>
+          {{else}}
+          <p class="rs-learn-cskills-dock-empty">{{localize "REDSTEEL.Creation.Skills.dockEmpty"}}</p>
+          {{/with}}
+        </div>
+      </div>
+      {{else}}
+      <div class="rs-learn-cskills-features">
+        {{> learnFeaturesAvailable}}
+      </div>
+      {{/unless}}
+    </section>
+
+    {{!-- Centre: the character. Attributes and traits, then the Combat and
+          Skills tracks taken, each a ribbon with its rank (click one to read
+          its ranks), then the features bought with their give-back control. --}}
+    <section class="rs-create-panel rs-learn-cskills-col is-character">
+      {{!-- Titled with the character's name and race, not a heading. --}}
+      <h2 class="rs-create-panel-title">{{creationSkills.character.name}}{{#if creationSkills.character.race}} - {{creationSkills.character.race}}{{/if}}</h2>
+      <div class="rs-create-scroll rs-learn-cskills-character">
         <div class="rs-learn-cskills-attrs">
           {{#each creationSkills.character.attributes}}
           <div class="rs-learn-cskills-attr">
@@ -327,6 +500,65 @@
           </div>
           {{/each}}
         </div>
+
+        <h2 class="rs-create-panel-title is-inline">{{localize "REDSTEEL.Creation.Skills.skills"}}</h2>
+        {{#each creationSkills.skillSections}}
+        <div class="rs-create-group-label">{{this.label}}</div>
+        <div class="rs-learn-cskills-tiles">
+          {{#each this.tracks}}
+          <div role="button" tabindex="0"
+               class="rs-create-trait is-skill {{#if this.selected}}is-selected{{/if}}"
+               aria-pressed="{{#if this.selected}}true{{else}}false{{/if}}"
+               data-action="creationSelectSkill" data-track-id="{{this.id}}">
+            <span class="rs-create-trait-ribbon">
+              <span class="rs-create-trait-name">{{this.label}}</span>
+              <span class="rs-learn-cskills-skill-spent">{{this.spentLabel}}</span>
+              <span class="rs-create-trait-price">{{this.numeral}}</span>
+              {{#if this.refundable}}
+              <button type="button" class="rs-learn-owned-refund" data-action="creationRefundTo"
+                      data-track-id="{{this.id}}" data-rank="1"
+                      data-tooltip="{{localize "REDSTEEL.Creation.Skills.refundSkill"}}"
+                      aria-label="{{localize "REDSTEEL.Creation.Skills.refundSkill"}}">
+                <i class="fas fa-rotate-left"></i>
+              </button>
+              {{/if}}
+            </span>
+          </div>
+          {{/each}}
+        </div>
+        {{else}}
+        <p class="rs-create-hint">{{localize "REDSTEEL.Creation.Skills.noSkills"}}</p>
+        {{/each}}
+
+        {{#if creationSkills.boughtFeatures.length}}
+        <h2 class="rs-create-panel-title is-inline">{{localize "REDSTEEL.Creation.Skills.boughtFeatures"}}</h2>
+        <div class="rs-learn-cskills-tiles">
+          {{#each creationSkills.boughtFeatures}}
+          {{!-- A click opens the feature's description under it; a second
+                click closes it. --}}
+          <div role="button" tabindex="0"
+               class="rs-create-trait is-skill is-feature {{#if this.selected}}is-selected{{/if}}"
+               aria-pressed="{{#if this.selected}}true{{else}}false{{/if}}"
+               data-action="creationSelectFeature" data-item-id="{{this.itemId}}">
+            <span class="rs-create-trait-icon"><img src="{{this.img}}" alt=""></span>
+            <span class="rs-create-trait-ribbon">
+              <span class="rs-create-trait-name">{{this.name}}</span>
+              <span class="rs-create-trait-price">{{this.costLabel}}</span>
+              {{#if this.refundable}}
+              <button type="button" class="rs-learn-owned-refund" data-action="refundFeature"
+                      data-item-id="{{this.itemId}}"
+                      aria-label="{{localize "REDSTEEL.Learn.Features.refund"}}">
+                <i class="fas fa-rotate-left"></i>
+              </button>
+              {{/if}}
+            </span>
+          </div>
+          {{#if this.selected}}
+          <div class="rs-learn-cskills-feature-desc">{{{this.description}}}</div>
+          {{/if}}
+          {{/each}}
+        </div>
+        {{/if}}
 
         {{#if creationSkills.character.traitGroups.length}}
         <h2 class="rs-create-panel-title is-inline">{{localize "REDSTEEL.Creation.Traits"}}</h2>
@@ -349,204 +581,6 @@
         {{/if}}
       </div>
     </section>
-
-    <section class="rs-create-panel rs-learn-cskills-col is-skills">
-      <h2 class="rs-create-panel-title">{{localize "REDSTEEL.Creation.Skills.skills"}}</h2>
-      <div class="rs-create-scroll rs-learn-cskills-skills">
-        {{#each creationSkills.skillSections}}
-        <div class="rs-create-group-label">{{this.label}}</div>
-        <div class="rs-learn-cskills-tiles">
-          {{#each this.tracks}}
-          <div role="button" tabindex="0"
-               class="rs-create-trait is-skill {{#if this.selected}}is-selected{{/if}}"
-               aria-pressed="{{#if this.selected}}true{{else}}false{{/if}}"
-               data-action="creationSelectSkill" data-track-id="{{this.id}}">
-            <span class="rs-create-trait-ribbon">
-              <span class="rs-create-trait-name">{{this.label}}</span>
-              {{#if this.numeral}}<span class="rs-create-trait-price">{{this.numeral}}</span>{{/if}}
-              {{#if this.canUnpick}}
-              <button type="button" class="rs-learn-cskills-unpick" data-action="creationUnpickSkill"
-                      data-track-id="{{this.id}}"
-                      data-tooltip="{{localize "REDSTEEL.Creation.Skills.unpick"}}"
-                      aria-label="{{localize "REDSTEEL.Creation.Skills.unpick"}}">
-                <i class="fas fa-xmark"></i>
-              </button>
-              {{/if}}
-            </span>
-          </div>
-          {{/each}}
-        </div>
-        {{else}}
-        <p class="rs-create-hint">{{localize "REDSTEEL.Creation.Skills.noSkills"}}</p>
-        {{/each}}
-
-        {{#if creationSkills.boughtFeatures.length}}
-        <h2 class="rs-create-panel-title is-inline">{{localize "REDSTEEL.Creation.Skills.boughtFeatures"}}</h2>
-        <div class="rs-learn-cskills-tiles">
-          {{#each creationSkills.boughtFeatures}}
-          <div class="rs-create-trait is-skill is-feature">
-            <span class="rs-create-trait-icon"
-                  data-tt-kind="spellCardUuid" data-tt-uuid="{{this.uuid}}" data-card-kind="feature"><img src="{{this.img}}" alt=""></span>
-            <span class="rs-create-trait-ribbon">
-              <span class="rs-create-trait-name"
-                    data-tt-kind="spellCardUuid" data-tt-uuid="{{this.uuid}}" data-card-kind="feature">{{this.name}}</span>
-              <span class="rs-create-trait-price">{{this.costLabel}}</span>
-              {{#if this.refundable}}
-              <button type="button" class="rs-learn-owned-refund" data-action="refundFeature"
-                      data-item-id="{{this.itemId}}"
-                      aria-label="{{localize "REDSTEEL.Learn.Features.refund"}}">
-                <i class="fas fa-rotate-left"></i>
-              </button>
-              {{/if}}
-            </span>
-          </div>
-          {{/each}}
-        </div>
-        {{/if}}
-      </div>
-    </section>
-
-    <div class="rs-learn-cskills-col is-detail">
-
-      <section class="rs-create-panel rs-learn-cskills-half is-ledger">
-        {{#if creationSkills.ledger}}
-        {{!-- Two halves side by side, each its own scroller: on the left what
-              the book says about the track, on the right its ranks. --}}
-        <div class="rs-learn-cskills-split">
-        <div class="rs-learn-cskills-info-half">
-          {{#with creationSkills.ledger.info}}
-          <header class="rs-learn-cskills-info-head">
-            <h2 class="rs-learn-cskills-info-title">{{this.label}}</h2>
-            <span class="rs-learn-cskills-info-kicker">{{this.section}}</span>
-          </header>
-          <div class="rs-create-scroll rs-learn-cskills-info">
-            {{#each this.paragraphs}}
-            <p class="rs-learn-cskills-info-text">{{this}}</p>
-            {{/each}}
-            {{#if this.weaponsPill}}<div>{{{this.weaponsPill}}}</div>{{/if}}
-            {{#if this.allRanksLabel}}
-            <p class="rs-learn-cskills-info-cost">{{this.allRanksLabel}}</p>
-            {{/if}}
-          </div>
-          {{/with}}
-        </div>
-        <div class="rs-learn-cskills-ledger-half">
-        {{#if creationSkills.ledger.preview}}
-        <div class="rs-learn-cskills-spent is-preview">{{localize "REDSTEEL.Creation.Skills.previewHint"}}</div>
-        {{else}}
-        <div class="rs-learn-cskills-spent">{{creationSkills.ledger.spentLabel}}</div>
-        {{/if}}
-        <div class="rs-create-scroll rs-learn-cskills-ledger">
-          {{#each creationSkills.ledger.rows}}
-          {{!-- One rank: its diamond, its numeral, what it gives, what it asks
-                and what it costs. A locked diamond names every reason on the
-                way to it, as the grid's diamond does. --}}
-          <div class="rs-learn-cskills-rank state-{{this.state}}" data-rank="{{this.rank}}">
-            <div class="rs-learn-node state-{{this.state}} {{#if this.owned}}is-owned{{/if}}"
-                 data-track-id="{{@root.creationSkills.ledger.trackId}}" data-rank="{{this.rank}}"
-                 {{#if this.buyable}}data-action="creationBuyTo"{{/if}}
-                 {{#if this.refundable}}data-action="creationRefundTo"{{/if}}
-                 {{#if (eq this.state "locked")}}{{#if this.reasons.length}}data-tooltip="<strong>{{localize "REDSTEEL.Learn.unmetRequirements"}}</strong>{{#each this.reasons}}<br>{{this}}{{/each}}" data-tooltip-direction="UP"{{/if}}{{/if}}>
-              <span class="rs-learn-diamond"></span>
-              {{#if (eq this.state "locked")}}<i class="fas fa-lock rs-learn-lock"></i>{{/if}}
-            </div>
-            <span class="rs-learn-cskills-numeral">{{this.numeral}}</span>
-            <div class="rs-learn-cskills-gives">
-              {{#if this.grants.length}}
-              <span class="rs-learn-seg-icons">
-                {{#each this.grants}}
-                <img src="{{this.img}}" width="64" height="64" alt="{{this.name}}" data-tt-kind="spellCardUuid" data-tt-uuid="{{this.uuid}}" data-card-kind="ability">
-                {{/each}}
-              </span>
-              {{/if}}
-              {{#each this.chips}}
-              <span class="rs-learn-chip{{#unless this.prose}} is-value{{/unless}}{{#if this.ability}} is-ability{{/if}}">{{this.text}}</span>
-              {{/each}}
-            </div>
-            <div class="rs-learn-cskills-reqs">
-              {{#each this.reqChips}}
-              {{#if this.teacher}}
-              <a class="rs-learn-teacher {{this.cls}}" data-action="toggleTeacher"
-                 data-track-id="{{this.trackId}}" data-rank="{{this.rank}}" data-tier="{{this.tier}}"
-                 data-tooltip="{{this.tooltip}}">
-                <i class="fas fa-graduation-cap"></i><b>{{this.roman}}</b>
-              </a>
-              {{else}}
-              <span class="rs-learn-req {{this.cls}}"
-                    {{#if this.tooltip}}data-tooltip="{{this.tooltip}}"{{/if}}>{{this.text}}</span>
-              {{/if}}
-              {{/each}}
-            </div>
-            <div class="rs-learn-cskills-cost">
-              <b>{{this.costLabel}}</b>
-              {{#if this.totalLabel}}<em>{{this.totalLabel}}</em>{{/if}}
-            </div>
-          </div>
-          {{/each}}
-        </div>
-        </div>
-        </div>
-        {{else}}
-        <h2 class="rs-create-panel-title">{{localize "REDSTEEL.Creation.Skills.skills"}}</h2>
-        <div class="rs-create-scroll rs-learn-cskills-ledger">
-          <p class="rs-create-hint">{{localize "REDSTEEL.Creation.Skills.ledgerEmpty"}}</p>
-        </div>
-        {{/if}}
-      </section>
-
-      <section class="rs-create-panel rs-learn-cskills-half is-roster">
-        <header class="rs-learn-cskills-roster-head">
-          <h2 class="rs-create-panel-title">{{localize "REDSTEEL.Creation.Skills.roster"}}</h2>
-          <div class="rs-learn-cskills-switch" role="group">
-            <button type="button" class="{{#if creationSkills.roster.isCombat}}active{{/if}}"
-                    aria-pressed="{{#if creationSkills.roster.isCombat}}true{{else}}false{{/if}}"
-                    data-action="creationRosterMode" data-mode="combat">
-              {{localize "REDSTEEL.Creation.Skills.rosterCombat"}}
-            </button>
-            <button type="button" class="{{#if creationSkills.roster.isSkills}}active{{/if}}"
-                    aria-pressed="{{#if creationSkills.roster.isSkills}}true{{else}}false{{/if}}"
-                    data-action="creationRosterMode" data-mode="skills">
-              {{localize "REDSTEEL.Creation.Skills.rosterSkills"}}
-            </button>
-            <button type="button" class="{{#if creationSkills.roster.isFeatures}}active{{/if}}"
-                    aria-pressed="{{#if creationSkills.roster.isFeatures}}true{{else}}false{{/if}}"
-                    data-action="creationRosterMode" data-mode="features">
-              {{localize "REDSTEEL.Creation.Skills.rosterFeatures"}}
-            </button>
-          </div>
-        </header>
-        {{#unless creationSkills.roster.isFeatures}}
-        <div class="rs-create-scroll rs-learn-cskills-roster-body">
-          {{#each creationSkills.roster.sections}}
-          <div class="rs-create-group-label">{{this.label}}</div>
-          <div class="rs-learn-cskills-roster-list">
-            {{#each this.tracks}}
-            {{!-- A skill whose prerequisite is missing shows the lock and the
-                  picker's reason, but can still be picked to read its ranks. --}}
-            <div role="button" tabindex="0"
-                 class="rs-learn-cskills-pick {{#if this.gated}}is-gated{{/if}} {{#if this.selected}}is-selected{{/if}}"
-                 data-action="creationPickSkill" data-track-id="{{this.id}}"
-                 {{#if this.lockTip}}data-tooltip="{{this.lockTip}}"{{/if}}>
-              <span class="rs-learn-cskills-pick-name">{{this.label}}</span>
-              {{#if this.gated}}<i class="fas fa-lock"></i>{{/if}}
-              <button type="button" class="rs-learn-cskills-pick-acquire" data-action="creationAcquireSkill"
-                      data-track-id="{{this.id}}" data-tooltip="{{localize "REDSTEEL.Creation.Skills.acquire"}}"
-                      aria-label="{{localize "REDSTEEL.Creation.Skills.acquire"}}">
-                <i class="fas fa-book-open"></i>
-              </button>
-            </div>
-            {{/each}}
-          </div>
-          {{/each}}
-        </div>
-        {{else}}
-        <div class="rs-learn-cskills-features">
-          {{> learnFeaturesAvailable}}
-        </div>
-        {{/unless}}
-      </section>
-
-    </div>
   </div>
 
   <footer class="rs-create-footer">
@@ -985,7 +1019,7 @@
           <a class="rs-learn-teacher {{this.cls}}" data-action="toggleTeacher"
              data-track-id="{{this.trackId}}" data-rank="{{this.rank}}" data-tier="{{this.tier}}"
              data-tooltip="{{this.tooltip}}">
-            <i class="fas fa-graduation-cap"></i><b>{{this.roman}}</b>
+            <b>{{localize "REDSTEEL.Learn.Req.teacher" tier=this.roman}}</b>
           </a>
           {{else}}
           {{!-- The chip is terse enough to fit a column; the sentence behind it
@@ -1572,7 +1606,7 @@
             <a class="rs-learn-teacher {{this.cls}}"
                data-action="toggleSpecTeacher" data-spec="{{this.specId}}" data-tier="{{this.tier}}"
                data-tooltip="{{this.tooltip}}">
-              <i class="fas fa-graduation-cap"></i><b>{{this.roman}}</b>
+              <b>{{localize "REDSTEEL.Learn.Req.teacher" tier=this.roman}}</b>
             </a>
             {{else}}
             <span class="rs-learn-req {{this.cls}}"
@@ -1632,7 +1666,7 @@
                 {{~#if node.teacher~}}
                 <span class="spec-node-teacher {{node.teacher.cls}}"
                       data-action="{{node.teacher.action}}" data-spec="{{node.teacher.specId}}" data-node="{{node.teacher.nodeId}}" data-tier="{{node.teacher.tier}}" data-title="{{localize node.label}}"
-                      data-tt-kind="text" data-tt-text="{{node.teacher.tooltip}}"><i class="fas fa-graduation-cap"></i><b>{{node.teacher.roman}}</b></span>
+                      data-tt-kind="text" data-tt-text="{{node.teacher.tooltip}}"><b>{{localize "REDSTEEL.Learn.Req.teacher" tier=node.teacher.roman}}</b></span>
                 {{~/if~}}
               </span></span>
             </span>
@@ -1764,7 +1798,7 @@
           <a class="rs-learn-teacher {{this.cls}}"
              data-action="toggleSpecTeacher" data-spec="{{this.specId}}" data-tier="{{this.tier}}"
              data-tooltip="{{this.tooltip}}">
-            <i class="fas fa-graduation-cap"></i><b>{{this.roman}}</b>
+            <b>{{localize "REDSTEEL.Learn.Req.teacher" tier=this.roman}}</b>
           </a>
           {{else}}
           <span class="rs-learn-req {{this.cls}}"

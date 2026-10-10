@@ -159,7 +159,11 @@ import {
   resolveWeaponContext,
   buildWeaponSetView,
 } from "./utils/weaponResolver.mjs";
-import { attackActions, autoAttack } from "./utils/attackActions.mjs";
+import {
+  attackActions,
+  autoAttack,
+  makeshiftMeleeAttack,
+} from "./utils/attackActions.mjs";
 import { registerCanvasZoom } from "./utils/canvasZoom.mjs";
 import { registerDeadTokenAppearance } from "./utils/deadTokens.mjs";
 import {
@@ -423,6 +427,7 @@ Hooks.once("init", function () {
   game.redsteel.spellDefense = spellDefense;
   game.redsteel.attackActions = attackActions;
   game.redsteel.meleeAttack = meleeAttack;
+  game.redsteel.makeshiftMeleeAttack = makeshiftMeleeAttack;
   game.redsteel.universalAttackLogic = universalAttackLogic;
   game.redsteel.rangedAttack = rangedAttack;
   game.redsteel.throwingAttack = throwingAttack;

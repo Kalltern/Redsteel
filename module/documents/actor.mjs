@@ -5,6 +5,11 @@ import {
 } from "../utils/combatSkillBonuses.mjs";
 import { partBuilder, reconcileParts } from "../utils/ratingBreakdown.mjs";
 import { weaponHasTag } from "../utils/weaponResolver.mjs";
+import {
+  MAKESHIFT_STATS,
+  isRangedWeapon,
+  makeshiftSizeOf,
+} from "../utils/makeshift.mjs";
 import { actorHasSpecNode } from "../helpers/specialisations.mjs";
 import { getWeaponTrainingClass } from "../utils/weaponMaster.mjs";
 
@@ -613,10 +618,15 @@ export class RedsteelActor extends Actor {
         // weapon defense into the stat here, so it has to be added here too or
         // an enchanted blade would defend for NPCs and not for PCs.
         const mainEnchant = mainHand?.system?.enchantMods ?? {};
-        let weaponDefense =
-          (Number(mainHand?.system?.defense) || 0) +
-          (Number(mainQuality.defense) || 0) +
-          (Number(mainEnchant.defense) || 0);
+        // A bow or crossbow parries as a makeshift weapon of its size
+        // (utils/makeshift.mjs): the makeshift parry value, with the bow's own
+        // quality and enchantment left out, exactly as defense.mjs rolls it.
+        const makeshiftMain = isRangedWeapon(mainHand);
+        let weaponDefense = makeshiftMain
+          ? MAKESHIFT_STATS[makeshiftSizeOf(mainHand)].defense
+          : (Number(mainHand?.system?.defense) || 0) +
+            (Number(mainQuality.defense) || 0) +
+            (Number(mainEnchant.defense) || 0);
         if (isDualWield) {
           const offProps = offHand.system.offhandProperties ?? {};
           const offQuality = offHand.system.offhandQualityMods ?? {};
@@ -626,9 +636,11 @@ export class RedsteelActor extends Actor {
         addBonus(
           combatSkills.meleeDefense,
           weaponDefense,
-          `${game.i18n.localize("REDSTEEL.Tooltip.Part.weaponDefense")}${
-            mainHand ? ` (${mainHand.localizedName ?? mainHand.name})` : ""
-          }`,
+          `${game.i18n.localize(
+            makeshiftMain
+              ? "REDSTEEL.Tooltip.Part.makeshiftWeapon"
+              : "REDSTEEL.Tooltip.Part.weaponDefense",
+          )}${mainHand ? ` (${mainHand.localizedName ?? mainHand.name})` : ""}`,
         );
         // Shadow: No Defense penalty with dagger. A dagger in the active set's
         // main hand loses its own Defense penalty (-20 on the pack Dagger), so

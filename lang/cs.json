@@ -4839,12 +4839,19 @@
         "rosterFeatures": "Odbornosti",
         "acquire": "Získat dovednost",
         "previewHint": "Jen náhled. Získáš ji knihou vedle ní v nabídce.",
-        "stoppedAt": "Koupeno do stupně {rank}. Stupeň {next} koupit nešlo.",
+        "refundSkill": "Vrátit všechny stupně (vrátí ji do seznamu)",
+        "dockEmpty": "Klikni na jméno dovednosti a uvidíš zde její stupně.",
+        "pipBuy": "Kliknutím koupíš všechny stupně až po tento.",
+        "pipRefund": "Kliknutím vrátíš všechny stupně až po tento.",
+        "startingRankFailed": "Stupeň I nešlo koupit pro: {names}. Získej ho ze seznamu, až to splníš.",
+        "stoppedAt": "Koupeno do stupně {rank}. {reason}",
         "allRanks": "Všechny stupně: {cost}"
       },
       "Details": {
         "weaponsAdvice": "Vyber zbraň, se kterou bude každá doktrína cvičit. Najeď na kartu a uvidíš všech deset jejích stupňů.",
         "weaponFor": "{doctrine}: zbraňová dovednost",
+        "schoolFor": "{doctrine}: škola magie",
+        "schoolKind": "Škola magie",
         "combatSkillFor": "{doctrine}: bojová dovednost",
         "weaponSkill": "Zbraňová dovednost",
         "combatSkill": "Bojová dovednost",
@@ -4934,15 +4941,15 @@
           },
           "elymas": {
             "about": "Vytrvalý mág. Elymas buduje hlubokou zásobu many, která roste s jeho mocí, obnovuje ji dlouhým odpočinkem, halí se do magického obrnění a zklidňuje svá kouzla.",
-            "weapons": "Bez požadavku na zbraň. Vyžaduje školu magie, která přináší dovednost Usměrňování."
+            "weapons": "Bez požadavku na zbraň. Přináší dovednost Usměrňování; školu magie vybereš v dalším kroku."
           },
           "incantator": {
             "about": "Bojový čaroděj. Incantator získává velkou, stálou zásobu many, kouzly udeří silněji, halí se do magického obrnění a zklidňuje svá kouzla.",
-            "weapons": "Bez požadavku na zbraň. Vyžaduje školu magie, která přináší dovednost Usměrňování."
+            "weapons": "Bez požadavku na zbraň. Přináší dovednost Usměrňování; školu magie vybereš v dalším kroku."
           },
           "veneficus": {
             "about": "Válečník a mág. Veneficus obnovuje manu krátkým odpočinkem, útoky zbraní mu plní Usměrňování i manu, zbroj ho omezuje méně a učí se útočit i čarovat v jednom tahu.",
-            "weapons": "Jakákoliv zbraň: Veneficus bojuje zbraněmi své bojové doktríny. Vyžaduje školu magie, která přináší dovednost Usměrňování."
+            "weapons": "Jakákoliv zbraň: Veneficus bojuje zbraněmi své bojové doktríny. Přináší dovednost Usměrňování; školu magie vybereš v dalším kroku."
           }
         },
         "damage": "Zranění",
@@ -5033,6 +5040,7 @@
         "raceMissing": "Zvolenou rasu se nepodařilo načíst z kompendia.",
         "choicesIncomplete": "Rasová volba „{label}“: vyber přesně {count}.",
         "traitOverspent": "Utratil jsi víc rysových bodů, než ti rasa dává. Odeber kladný rys, nebo si vezmi záporný.",
+        "oneTemperament": "Postava má jen jeden temperament. Nejdřív vrať {name}.",
         "traitLimit": "Postava může mít nejvýše {max} rysů.",
         "traitUnaffordable": "Na tento rys ti nezbývá dost rysových bodů.",
         "traitMissing": "Rys {name} se nepodařilo načíst z kompendia.",
@@ -5399,7 +5407,10 @@
       "OpportunityAttack": "Příležitostný útok",
       "OpportunityHint": "útok mimo vlastní tah, vyvolaný pohybem, sesíláním nebo střelbou sousedního nepřítele.",
       "PolearmPenalty": "Postih dřevcové zbraně",
-      "PolearmPenaltyHint": "-5 při boji zblízka se zbraní s dlouhým dosahem."
+      "PolearmPenaltyHint": "-5 při boji zblízka se zbraní s dlouhým dosahem.",
+      "Shoot": "Vystřelit",
+      "MakeshiftMelee": "Útok zblízka",
+      "MakeshiftSuffix": "(provizorní)"
     },
     "Miracle": {
       "Tag": "Zázrak",
@@ -5841,6 +5852,7 @@
         "weaponSpec": "Zbraňová specializace",
         "offhand": "Druhá ruka",
         "weaponDefense": "Obrana zbraní",
+        "makeshiftWeapon": "Provizorní zbraň",
         "daggerDefense": "Bez postihu dýky (Stín)",
         "shield": "Štít",
         "dualWield": "Boj dvěma zbraněmi"
@@ -7612,6 +7624,33 @@
       "MagicWard": {
         "name": "Magická ochrana"
       },
+      "MakeshiftHeavyBlunt": {
+        "name": "Těžká provizorní zbraň (drtivá)"
+      },
+      "MakeshiftHeavyPiercing": {
+        "name": "Těžká provizorní zbraň (bodná)"
+      },
+      "MakeshiftHeavySlashing": {
+        "name": "Těžká provizorní zbraň (sečná)"
+      },
+      "MakeshiftLightBlunt": {
+        "name": "Lehká provizorní zbraň (drtivá)"
+      },
+      "MakeshiftLightPiercing": {
+        "name": "Lehká provizorní zbraň (bodná)"
+      },
+      "MakeshiftLightSlashing": {
+        "name": "Lehká provizorní zbraň (sečná)"
+      },
+      "MakeshiftMediumBlunt": {
+        "name": "Střední provizorní zbraň (drtivá)"
+      },
+      "MakeshiftMediumPiercing": {
+        "name": "Střední provizorní zbraň (bodná)"
+      },
+      "MakeshiftMediumSlashing": {
+        "name": "Střední provizorní zbraň (sečná)"
+      },
       "MasterHerbalist": {
         "name": "Mistr bylinář"
       },
@@ -9166,6 +9205,8 @@
       "nothingTracked": "Zatím nejsou vybrány žádné dovednosti. Použij „Vybrat dovednosti“ a zvol, co se učíš.",
       "nothingToggled": "Vše na pásu je vypnuté. Klikni na některou skupinu a zobrazí se.",
       "cannotBuy": "Tuto hodnost teď nelze koupit.",
+      "cannotBuyBecause": "Nelze koupit {skill} {rank}: {reasons}.",
+      "notEnoughPoints": "stojí {cost}, zbývá ti {left}",
       "requirements": "Požadavky",
       "unmetRequirements": "Nesplněné požadavky",
       "skillRating": "Hodnota dovednosti",
@@ -9323,6 +9364,17 @@
         "back": "Zpět na odbornosti",
         "className": "Skupina {class}",
         "noSkills": "Žádná dovednost této skupiny.",
+        "chooseSkill": "Vybrat dovednost",
+        "FamilyInfo": {
+          "specialization": "Získáváš slevu 3 SP za každý stupeň zvolené dovednosti a bonus +5 % k ní. Jednou za den ji můžeš opakovat. Nelze vzít pro dovednost, ve které už máš Talentovaný I.",
+          "talented1": "Získáváš bonus +5 % ke zvolené dovednosti a jednou za den ji můžeš opakovat. Nelze vzít pro dovednost, ve které už máš Specializaci.",
+          "talented2": "Získáváš bonus +5 % ke zvolené dovednosti a jednou za den ji můžeš opakovat. Nelze vzít pro dovednost, ve které už máš Talentovaný I nebo Specializaci.",
+          "adept": "Přidává 5 % k testům zvolené dovednosti a jednou za den ji můžeš opakovat.",
+          "expert": "Dvakrát za den můžeš opakovat test zvolené dovednosti.",
+          "master": "Šance na Kritický úspěch +3 % pro zvolenou dovednost. 1× za den můžeš opakovat jeden její test (včetně Kritického neúspěchu).",
+          "elvenTalent": "Získáváš bonus +5 % ke zvolené dovednosti a jednou za den ji můžeš opakovat. Nelze vzít pro dovednost, ve které už máš Specializaci.",
+          "elvenPerfection": "Kritický neúspěch zvolené dovednosti můžeš opakovat za cenu dvou jejích běžných opakování."
+        },
         "Families": {
           "specialization": "Specializace",
           "talented1": "Talentovaný I",
@@ -9332,6 +9384,13 @@
           "master": "Mistr",
           "elvenTalent": "Elfí talent",
           "elvenPerfection": "Elfí dokonalost"
+        },
+        "Tabs": {
+          "combat": "Bojové",
+          "general": "Obecné",
+          "magic": "Magické",
+          "trait": "Rysové",
+          "racial": "Rasové"
         },
         "Sections": {
           "combat": "Bojové odbornosti",

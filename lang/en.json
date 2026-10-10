@@ -4839,12 +4839,19 @@
         "rosterFeatures": "Features",
         "acquire": "Acquire skill",
         "previewHint": "Preview only. Use the book beside it in the roster to acquire it.",
-        "stoppedAt": "Bought up to rank {rank}. Rank {next} could not be bought.",
+        "refundSkill": "Give back every rank (returns it to the roster)",
+        "dockEmpty": "Click a skill's name to see its ranks here.",
+        "pipBuy": "Click to buy every rank up to this one.",
+        "pipRefund": "Click to give back every rank down to this one.",
+        "startingRankFailed": "Rank I could not be bought for: {names}. Acquire it from the roster once that is met.",
+        "stoppedAt": "Bought up to rank {rank}. {reason}",
         "allRanks": "All ranks: {cost}"
       },
       "Details": {
         "weaponsAdvice": "Choose the weapon each doctrine will train with. Hover a card to see all ten of its ranks.",
         "weaponFor": "{doctrine}: weapon skill",
+        "schoolFor": "{doctrine}: school of magic",
+        "schoolKind": "School of magic",
         "combatSkillFor": "{doctrine}: combat skill",
         "weaponSkill": "Weapon skill",
         "combatSkill": "Combat skill",
@@ -4934,15 +4941,15 @@
           },
           "elymas": {
             "about": "The enduring mage. The Elymas builds a deep mana pool that grows with their power, recovers it over a long rest, wraps themselves in magical armour and steadies their spells.",
-            "weapons": "No weapon requirement. Needs a school of magic, which brings the Channeling skill."
+            "weapons": "No weapon requirement. Brings the Channeling skill; the school of magic is chosen in the next step."
           },
           "incantator": {
             "about": "The battle caster. The Incantator gains a large, steady mana pool, strikes harder with spells, wraps themselves in magical armour and steadies their spells.",
-            "weapons": "No weapon requirement. Needs a school of magic, which brings the Channeling skill."
+            "weapons": "No weapon requirement. Brings the Channeling skill; the school of magic is chosen in the next step."
           },
           "veneficus": {
             "about": "The warrior mage. The Veneficus recovers mana over a short rest, feeds Channeling and mana from their weapon attacks, suffers less from armour and learns to attack and cast in the same turn.",
-            "weapons": "Any weapon: the Veneficus fights with the weapons of their combat doctrine. Needs a school of magic, which brings the Channeling skill."
+            "weapons": "Any weapon: the Veneficus fights with the weapons of their combat doctrine. Brings the Channeling skill; the school of magic is chosen in the next step."
           }
         },
         "damage": "Damage",
@@ -5033,6 +5040,7 @@
         "raceMissing": "The chosen race could not be loaded from the compendium.",
         "choicesIncomplete": "Racial choice \"{label}\": choose exactly {count}.",
         "traitOverspent": "You have spent more trait points than your race gives. Remove a positive trait or take a negative one.",
+        "oneTemperament": "A character has one temperament. Give back {name} first.",
         "traitLimit": "A character can have at most {max} traits.",
         "traitUnaffordable": "Not enough trait points left for this trait.",
         "traitMissing": "The trait {name} could not be loaded from the compendium.",
@@ -5399,7 +5407,10 @@
       "OpportunityAttack": "Opportunity Attack",
       "OpportunityHint": "attack made outside your own turn, triggered by an adjacent enemy's movement, casting or shooting.",
       "PolearmPenalty": "Polearm penalty",
-      "PolearmPenaltyHint": "-5 when fighting at close range with a long-reach weapon."
+      "PolearmPenaltyHint": "-5 when fighting at close range with a long-reach weapon.",
+      "Shoot": "Shoot",
+      "MakeshiftMelee": "Melee attack",
+      "MakeshiftSuffix": "(makeshift)"
     },
     "Miracle": {
       "Tag": "Miracle",
@@ -5841,6 +5852,7 @@
         "weaponSpec": "Weapon specialisation",
         "offhand": "Off hand",
         "weaponDefense": "Weapon defense",
+        "makeshiftWeapon": "Makeshift weapon",
         "daggerDefense": "No dagger penalty (Shadow)",
         "shield": "Shield",
         "dualWield": "Dual wielding"
@@ -7605,6 +7617,33 @@
       "MagicWard": {
         "name": "Magic Ward"
       },
+      "MakeshiftHeavyBlunt": {
+        "name": "Heavy Makeshift Weapon (Blunt)"
+      },
+      "MakeshiftHeavyPiercing": {
+        "name": "Heavy Makeshift Weapon (Piercing)"
+      },
+      "MakeshiftHeavySlashing": {
+        "name": "Heavy Makeshift Weapon (Slashing)"
+      },
+      "MakeshiftLightBlunt": {
+        "name": "Light Makeshift Weapon (Blunt)"
+      },
+      "MakeshiftLightPiercing": {
+        "name": "Light Makeshift Weapon (Piercing)"
+      },
+      "MakeshiftLightSlashing": {
+        "name": "Light Makeshift Weapon (Slashing)"
+      },
+      "MakeshiftMediumBlunt": {
+        "name": "Medium Makeshift Weapon (Blunt)"
+      },
+      "MakeshiftMediumPiercing": {
+        "name": "Medium Makeshift Weapon (Piercing)"
+      },
+      "MakeshiftMediumSlashing": {
+        "name": "Medium Makeshift Weapon (Slashing)"
+      },
       "MasterHerbalist": {
         "name": "Master Herbalist"
       },
@@ -9154,6 +9193,8 @@
       "nothingTracked": "No skills chosen yet. Use “Acquire skills” to pick what you are training.",
       "nothingToggled": "Everything on the ribbon is switched off. Click a group to show it.",
       "cannotBuy": "That rank cannot be bought right now.",
+      "cannotBuyBecause": "Cannot buy {skill} {rank}: {reasons}.",
+      "notEnoughPoints": "costs {cost}, you have {left} left",
       "requirements": "Requirements",
       "unmetRequirements": "Requirements not met",
       "skillRating": "Skill rating",
@@ -9311,6 +9352,17 @@
         "back": "Back to features",
         "className": "Class {class}",
         "noSkills": "No skill of this class.",
+        "chooseSkill": "Choose the skill",
+        "FamilyInfo": {
+          "specialization": "You get a 3 SP discount per rank of the chosen skill and a +5% bonus to it. You can reroll it once per day. Cannot be taken for a skill you already hold Talented I in.",
+          "talented1": "You get a +5% bonus to the chosen skill and can reroll it once per day. Cannot be taken for a skill you already hold Specialization in.",
+          "talented2": "You get a +5% bonus to the chosen skill and can reroll it once per day. Cannot be taken for a skill you already hold Talented I or Specialization in.",
+          "adept": "Adds 5% to tests of the chosen skill, and once per day you may reroll it.",
+          "expert": "Twice per day you may reroll the chosen skill.",
+          "master": "+3% Critical Success chance for the chosen skill. Once per day you may reroll one of its tests, including a Critical Failure.",
+          "elvenTalent": "You get a +5% bonus to the chosen skill and can reroll it once per day. Cannot be taken for a skill you already hold Specialization in.",
+          "elvenPerfection": "You can reroll a critical failure of the chosen skill at the cost of two of its normal rerolls."
+        },
         "Families": {
           "specialization": "Specialization",
           "talented1": "Talented I",
@@ -9320,6 +9372,13 @@
           "master": "Master",
           "elvenTalent": "Elven talent",
           "elvenPerfection": "Elven perfection"
+        },
+        "Tabs": {
+          "combat": "Combat",
+          "general": "General",
+          "magic": "Magic",
+          "trait": "Trait",
+          "racial": "Racial"
         },
         "Sections": {
           "combat": "Combat features",

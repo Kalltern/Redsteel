@@ -44,6 +44,7 @@ import {
 // The verdict itself lives in a Foundry-free module so NPC auto-defense can
 // ask the same question a hundred times without drawing a card for it.
 import { resolveVersus } from "./defenseOdds.mjs";
+import { asMakeshiftMelee, isRangedWeapon } from "./makeshift.mjs";
 
 /** Shadow → Úhyb do zad: the flat penalty for dodging a blow from behind. */
 const BLINDSIDE_DODGE_PENALTY = -20;
@@ -602,7 +603,11 @@ export async function buildDefenseProfile({
     };
   }
 
-  const weapon = context.weapon;
+  // A parry with a bow or crossbow is a parry with a makeshift weapon
+  // of its size (utils/makeshift.mjs). Melee only: ranged and dodge read the
+  // weapon as it is.
+  const weapon =
+    mode === "melee" ? asMakeshiftMelee(context.weapon) : context.weapon;
   const offProps = getOffhandProps(context);
   const baneProfile = getBaneProfile(actor);
   const overwhelmPenalty = overwhelmStacks * OVERWHELM_PENALTY_PER_STACK;
@@ -1485,7 +1490,14 @@ export async function defenseRoll({
     longReachPenalty = 0,
     useBane = false,
   } = {}) {
-    const resolveWithContext = async (context) => {
+    const resolveWithContext = async (resolvedContext) => {
+      // A ranged weapon parries as its makeshift view, so the card name, the
+      // Advantageous Maneuver gate and the profile all read the same weapon.
+      // buildDefenseProfile maps it again; a view passes through unchanged.
+      const context = {
+        ...resolvedContext,
+        weapon: asMakeshiftMelee(resolvedContext.weapon),
+      };
       const weapon = context.weapon;
       const rollName = `Defense with ${weapon.localizedName ?? weapon.name}`;
       // Records the attacker and settles the number in one step. Null means the
@@ -1575,12 +1587,16 @@ export async function defenseRoll({
     /* -------------------------------------------- */
     /*  OTHERWISE → ASK PLAYER                     */
     /* -------------------------------------------- */
-    const weapons = actor.items.filter(
-      (i) =>
-        i.type === "weapon" &&
-        ["axe", "sword", "blunt", "polearm"].includes(i.system.class) &&
-        i.system.thrown !== true,
-    );
+    // Ranged weapons parry as makeshift weapons (see resolveWithContext).
+    const weapons = actor.items
+      .filter(
+        (i) =>
+          (i.type === "weapon" &&
+            ["axe", "sword", "blunt", "polearm"].includes(i.system.class) &&
+            i.system.thrown !== true) ||
+          isRangedWeapon(i),
+      )
+      .map((i) => asMakeshiftMelee(i));
 
     if (!weapons.length) {
       ui.notifications.warn("This actor has no melee weapons.");

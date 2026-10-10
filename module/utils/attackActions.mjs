@@ -16,6 +16,7 @@ import {
 } from "./positioning.mjs";
 import { previewSneakTrigger, sneakTriggerLabel } from "./sneakTriggers.mjs";
 import { attackOptionIconsHtml } from "./attackOptionIcons.mjs";
+import { asMakeshiftMelee, isRangedWeapon } from "./makeshift.mjs";
 
 /**
  * @param {object} [options]
@@ -36,10 +37,27 @@ export async function attackActions({ opportunity = false } = {}) {
     (i) => i.type === "consumable" && i.system.option === "explosive",
   );
   const actions = {};
+  // Read up here because the character buttons depend on it; the same value
+  // is used for reach and modifiers further down.
+  const contextWeapon = game.redsteel.resolveWeaponContext(actor);
+  const activeWeapon = contextWeapon?.weapon;
 
   if (actor.type === "character") {
-    // Characters: single smart attack
-    actions["Attack"] = "autoAttack";
+    if (isRangedWeapon(activeWeapon)) {
+      // A bow or crossbow in hand: shoot it (the default), or swing
+      // it as a makeshift weapon (utils/makeshift.mjs).
+      actions["Shoot"] = {
+        fn: "autoAttack",
+        label: game.i18n.localize("REDSTEEL.AttackDialog.Shoot"),
+      };
+      actions["MakeshiftMelee"] = {
+        fn: "makeshiftMeleeAttack",
+        label: game.i18n.localize("REDSTEEL.AttackDialog.MakeshiftMelee"),
+      };
+    } else {
+      // Characters: single smart attack
+      actions["Attack"] = "autoAttack";
+    }
   } else {
     // NPCs: explicit intent
     actions["Melee attack"] = "meleeAttack";
@@ -61,9 +79,6 @@ export async function attackActions({ opportunity = false } = {}) {
     ? renderWeaponLoadoutsDialog(actor)
     : "";
   let hasLongReach = false;
-
-  const contextWeapon = game.redsteel.resolveWeaponContext(actor);
-  const activeWeapon = contextWeapon?.weapon;
 
   if (activeWeapon?.system?.longReach) {
     hasLongReach = true;
@@ -260,8 +275,12 @@ ${
 
   const buttons = {};
 
-  for (const [label, fnName] of Object.entries(actions)) {
-    buttons[label] = {
+  for (const [key, action] of Object.entries(actions)) {
+    // Most entries are a bare function name with the key as its label; the
+    // ranged-weapon pair carries a localized label of its own.
+    const fnName = typeof action === "string" ? action : action.fn;
+    const label = typeof action === "string" ? key : action.label;
+    buttons[key] = {
       label,
       callback: async (html) => {
         // ─── Collect Modifiers ───
@@ -277,8 +296,17 @@ ${
         // Asked before anything is set, prompted or spent: cancelling leaves
         // the actor exactly as it was. Going ahead anyway stamps the card.
         let outOfReach = false;
-        if (fnName === "autoAttack" || fnName === "meleeAttack") {
-          const reachWeapon = reachWeaponFor(actor, activeWeapon);
+        if (
+          fnName === "autoAttack" ||
+          fnName === "meleeAttack" ||
+          fnName === "makeshiftMeleeAttack"
+        ) {
+          // A makeshift swing is checked at the view's reach (1), which a bow
+          // on its own would skip.
+          const reachWeapon =
+            fnName === "makeshiftMeleeAttack"
+              ? asMakeshiftMelee(activeWeapon)
+              : reachWeaponFor(actor, activeWeapon);
           if (reachWeapon !== undefined) {
             const reach = checkMeleeReach({
               actor,
@@ -638,5 +666,49 @@ export async function autoAttack(options = {}) {
     selectedModifiers: options.selectedModifiers ?? [],
     longReachPenalty: options.longReachPenalty ?? 0,
     outOfReach: options.outOfReach === true,
+  });
+}
+
+/**
+ * A character swinging the bow or crossbow of its active set as a
+ * makeshift weapon (utils/makeshift.mjs). Built like autoAttack's character
+ * branch, but the weapon is the makeshift view and nothing else is held: a
+ * launcher fills both hands, so no off hand, dual wield or shield.
+ *
+ * @param {object} options
+ * @param {Actor} [options.actor]
+ * @param {Token} [options.token]
+ * @param {Item[]} [options.selectedModifiers]
+ * @param {number} [options.longReachPenalty]
+ * @param {boolean} [options.outOfReach]
+ */
+export async function makeshiftMeleeAttack({
+  actor = null,
+  token = null,
+  selectedModifiers = [],
+  longReachPenalty = 0,
+  outOfReach = false,
+} = {}) {
+  actor = actor ?? canvas.tokens.controlled[0]?.actor;
+  if (!actor || actor.type !== "character") return;
+
+  const activeSet = actor.system.combat?.activeWeaponSet;
+  const weaponSets = game.redsteel.buildWeaponSetView(actor);
+  const ws = activeSet ? weaponSets?.[activeSet] : null;
+  if (!ws?.main) return;
+
+  const context = {
+    weapon: asMakeshiftMelee(ws.main),
+    offWeapon: null,
+    isDualWield: false,
+    hasShield: false,
+    offIsLight: false,
+  };
+
+  return game.redsteel.meleeAttack({
+    context,
+    selectedModifiers: selectedModifiers ?? [],
+    longReachPenalty: longReachPenalty ?? 0,
+    outOfReach: outOfReach === true,
   });
 }

@@ -74,7 +74,7 @@
   </header>
   <div class="rs-create-progress"><div class="rs-create-progress-fill" style="width: {{progress}}%"></div></div>
 
-  <div class="rs-create-columns {{#if isStep2}}is-doctrine-step{{/if}}{{#if isDetails}}is-doctrine-step{{/if}}">
+  <div class="rs-create-columns {{#if isStep2}}is-doctrine-step{{/if}}{{#if isDetails}}is-details-step{{/if}}">
 
     {{#if isStep2}}
     {{!-- Step 2 — Doctrine: every combat doctrine the character may train
@@ -100,10 +100,11 @@
     </section>
     {{else if isDetails}}
     {{!-- Step 2.5 — Weapons and magic: one plate of cards, a block per
-          question. Each combat doctrine's weapon skill (a fixed one taken,
-          the others greyed out), each doctrine's combat skill the same way
-          (the Peltast chooses), Channeling for a school, then the school's
-          magical doctrine. --}}
+          question, along the bottom of the screen; the info panel runs
+          across the top (user ruling 2026-10-10). Each combat doctrine's
+          weapon skill (a fixed one taken, the others greyed out), each
+          doctrine's combat skill the same way (the Peltast chooses), then the
+          magical doctrine's school (a temperament sets it). --}}
     <section class="rs-create-panel rs-create-details">
       <h2 class="rs-create-panel-title">{{localize "REDSTEEL.Creation.Step2b.title"}}</h2>
       <div class="rs-create-scroll">

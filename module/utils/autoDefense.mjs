@@ -12,7 +12,9 @@ import {
   isOverwhelmTracked,
   stacksFromSources,
 } from "./overwhelm.mjs";
+import { deniesDefense, resolveDefenseSector } from "./positioning.mjs";
 import { getRollBias, withRollBias } from "./rollAdvantage.mjs";
+import { isRangedWeapon } from "./makeshift.mjs";
 
 /**
  * NPC auto-defense: an attack card posted against a targeted NPC answers itself.
@@ -93,9 +95,14 @@ function candidateWeapons(actor) {
   return main.length ? main : weapons;
 }
 
+// A bow or crossbow parries too, as a makeshift weapon of its size
+// (utils/makeshift.mjs); defense.mjs swaps in the makeshift view when it rolls
+// or scores the parry, so a bow-only NPC still has a melee answer.
 const meleeWeaponsOf = (actor) =>
   candidateWeapons(actor).filter(
-    (w) => MELEE_CLASSES.includes(w.system?.class) && w.system?.thrown !== true,
+    (w) =>
+      (MELEE_CLASSES.includes(w.system?.class) && w.system?.thrown !== true) ||
+      isRangedWeapon(w),
   );
 
 /** What a weapon adds to a parry. NPCs pick this up at roll time, so it counts here. */
@@ -410,6 +417,25 @@ export async function resolveAutoDefense(message) {
       magic: flag.attackType === "magic",
     });
     if (!choice) {
+      // A blow from behind has no defense to roll at all, so "roll it by hand"
+      // would be wrong. defenseRoll posts the denied card before it reads any
+      // weapon, which is why it can be called with none here.
+      const sector = resolveDefenseSector({
+        defenderToken: tokenDoc,
+        attackerTokenId,
+        attack,
+      });
+      if (deniesDefense(sector, actor)) {
+        await defenseRoll({
+          actor,
+          token: tokenDoc,
+          weapon: null,
+          attackerTokenId,
+          attack,
+        });
+        continue;
+      }
+
       ui.notifications.warn(
         game.i18n.format("REDSTEEL.AutoDefense.NoOption", {
           name: tokenDoc.name,

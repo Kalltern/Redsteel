@@ -3,11 +3,13 @@
  *   1. Origin: name, race (and its racial choices), the attribute point buy,
  *      the trait buy.
  *   2. Doctrine: the combat doctrine(s) the character trains in, and one
- *      school of magic for a character with Magic potential. A sub-step of
+ *      magical doctrine for a character with Magic potential. A sub-step of
  *      step 2 ("details", shown as 2.5) then shows the combat skill each
  *      doctrine fights with (the Peltast chooses), asks for the weapon skill
- *      each combat doctrine trains with and, with a school, the magical
- *      doctrine.
+ *      each combat doctrine trains with and, with a magical doctrine, the
+ *      school of magic (user ruling 2026-10-10: magical doctrine first, then
+ *      its school; a temperament sets it). Further schools are bought in
+ *      step 3.
  *   3. Skills and features: NOT this window. It is the Learn window running in
  *      creation mode (isCreationSkillsStep), which carries Back and Finish.
  * An info panel beside them describes whatever the player last hovered or
@@ -19,8 +21,9 @@
  * swaps in the race item (choice effects enabled/disabled in the data itself),
  * copies the traits, writes the attribute values and the name, pays unspent
  * trait points out as SP, adds the chosen doctrines to the character's skills
- * (shown on the sheet and tracked in the Learn window, no ranks bought: points
- * are distributed in step 3), and moves the draft to step 3. The race and the
+ * (shown on the sheet, tracked in the Learn window, and rank I bought with its
+ * teacher: user ruling 2026-10-10, refunded in step 3 if unwanted), and moves
+ * the draft to step 3. The race and the
  * trait copies carry `flags.redsteel.creationOrigin`, and the draft records
  * what was paid out (`applied`), so Back and Next again replaces exactly what
  * the previous apply wrote. Finish in the Learn window
@@ -36,7 +39,7 @@
  *     traits: string[],         compendium ids from TRAIT_PRICES
  *     doctrines: string[],      doctrine keys (system.doctrines), the
  *                               magical one (picked on 2.5) included
- *     school: string|null,      CREATION_SCHOOLS key
+ *     school: string|null,      CREATION_SCHOOLS key, picked on 2.5
  *     weapons: {doctrine: weaponSkill},  the free weapon picks (fixed ones,
  *                               FIXED_WEAPONS, are never stored)
  *     combatSkill: "combat"|"archery"|null,  the Peltast's combat skill
@@ -48,7 +51,8 @@
  *       weapons: string[],        weapon skill keys it made visible
  *       combatSkills: string[],   combat skill keys it made visible
  *                                 (Channeling has its own flag)
- *       channeling: boolean } }   whether it made Channeling visible
+ *       channeling: boolean,      whether it made Channeling visible
+ *       autoRanks: string[] } }   track ids whose rank I it bought
  */
 
 import { CREATION_RACES, CREATION_RACE_GROUPS } from "../helpers/creationRaces.mjs";
@@ -62,17 +66,23 @@ import {
   getRankGrants,
   getRankPrice,
   getTrackedIds,
+  getTrackRank,
   getTrackTab,
   getWallet,
+  hasTeacher,
   isInCreation,
+  purchaseRank,
   readItemFeatureCost,
+  refundRank,
+  setTeacher,
   setTrackedIds,
 } from "../helpers/progressionEngine.mjs";
+import { PROGRESSION_TRACKS } from "../helpers/progression.mjs";
+import { TEMPERAMENT_SCHOOLS } from "../helpers/rankDiscounts.mjs";
 // Import cycle with learnWindow.mjs (it imports this module's creation
 // exports): fine, as neither module uses the other's exports at top level.
-import { describeRankChips, markAbilityChips, openLearnWindow } from "./learnWindow.mjs";
+import { describeRankChips, explainUnbuyable, markAbilityChips, openLearnWindow } from "./learnWindow.mjs";
 import { SPEC_ICONS } from "../helpers/specialisations.mjs";
-import { TEMPERAMENT_SCHOOLS } from "../helpers/rankDiscounts.mjs";
 import { getRaceChoiceGroups } from "./race.mjs";
 import { registerTooltip, ttFrame } from "./tooltips.mjs";
 import { compatibleWeaponsPill, loadCompatibleWeapons } from "./compatibleWeapons.mjs";
@@ -270,7 +280,7 @@ const HIDDEN_DOCTRINES = new Set(["cordinas", "musketeer", "rider", "monk", "ele
 /** A doctrine card with no ability to show as its crest. */
 const DOCTRINE_FALLBACK_CREST = "icons/svg/sword.svg";
 
-/** The schools of magic step 2 offers (user ruling 2026-10-01). */
+/** The schools of magic 2.5 offers a magical doctrine (user ruling 2026-10-01). */
 const CREATION_SCHOOLS = ["fire", "water", "air", "earth", "spirit", "body", "darkness"];
 
 /**
@@ -317,7 +327,7 @@ const NO_WEAPON_DOCTRINES = new Set(["archer", "arbalest", "rogue"]);
  * The combat skill a doctrine fights with (user ruling 2026-10-02): melee
  * doctrines Combat; Archer, Arbalest and Juggler Archery; the Peltast picks
  * one of the two (COMBAT_SKILL_CHOICE). Rogue adds none, and a magical
- * doctrine's Channeling comes with the school.
+ * doctrine brings Channeling.
  */
 const ARCHERY_DOCTRINES = new Set(["archer", "arbalest", "juggler"]);
 const COMBAT_SKILL_CHOICE = "peltast";
@@ -346,6 +356,14 @@ function draftCombatSkills(draft) {
   ];
 }
 
+/**
+ * True for a temperament trait (Choleric, Phlegmatic, Sanguine, Melancholic):
+ * a character has one temperament at most (user ruling 2026-10-10).
+ */
+function isTemperament(traitId) {
+  return Object.hasOwn(TEMPERAMENT_SCHOOLS, TRAIT_PRICES[traitId]?.name ?? "");
+}
+
 /** True for a magical doctrine. */
 function isMagicalDoctrine(key) {
   return getLearnSection(`doctrines.${key}`) === "magical";
@@ -358,12 +376,12 @@ function weaponDoctrines(doctrines) {
 
 /**
  * True when step 2's details half (2.5) has something to ask: a weapon pick
- * that is not fixed, the Peltast's combat skill, or the magical doctrine of a
- * drafted school. Fixed combat skills alone ask nothing.
+ * that is not fixed, the Peltast's combat skill, or a magical doctrine's
+ * school. Fixed combat skills alone ask nothing.
  */
 function draftHasDetails(draft) {
   return (
-    !!draft.school ||
+    draft.doctrines.some((key) => isMagicalDoctrine(key)) ||
     draft.doctrines.includes(COMBAT_SKILL_CHOICE) ||
     weaponDoctrines(draft.doctrines).some((key) => !FIXED_WEAPONS[key])
   );
@@ -372,6 +390,24 @@ function draftHasDetails(draft) {
 /** The weapon skill a doctrine trains with: fixed, picked, or null. */
 function weaponFor(draft, key) {
   return FIXED_WEAPONS[key] ?? draft.weapons[key] ?? null;
+}
+
+/**
+ * Every track id the draft's step 2 picks bring into step 3, in buying order:
+ * Channeling and the school (with a magical doctrine; Channeling first, so a
+ * temperament's school has already come with it), the weapon and combat
+ * skills, then the doctrines (a doctrine's rank may ask for a skill's).
+ */
+function draftTrackIds(draft) {
+  const weapons = new Set(weaponDoctrines(draft.doctrines).map((key) => weaponFor(draft, key)).filter(Boolean));
+  const magical = draft.doctrines.some((key) => isMagicalDoctrine(key));
+  return [
+    ...(magical ? ["combatSkills.channeling"] : []),
+    ...(magical && draft.school ? [`schools.${draft.school}`] : []),
+    ...[...weapons].map((key) => `weaponSkills.${key}`),
+    ...draftCombatSkills(draft).map((key) => `combatSkills.${key}`),
+    ...draft.doctrines.map((key) => `doctrines.${key}`),
+  ];
 }
 
 /**
@@ -521,7 +557,6 @@ function readDraft(actor) {
   }
   const traits = Array.isArray(raw.traits) ? raw.traits : Object.values(raw.traits ?? {});
   draft.traits = [...new Set(traits.filter((id) => typeof id === "string" && TRAIT_PRICES[id]))];
-  if (typeof raw.school === "string" && CREATION_SCHOOLS.includes(raw.school)) draft.school = raw.school;
   // A pick only counts for a drafted doctrine that asks the question.
   const asked = new Set(weaponDoctrines(draft.doctrines).filter((key) => !FIXED_WEAPONS[key]));
   if (raw.weapons && typeof raw.weapons === "object") {
@@ -533,6 +568,7 @@ function readDraft(actor) {
   if (draft.doctrines.includes(COMBAT_SKILL_CHOICE) && COMBAT_SKILL_KEYS.includes(raw.combatSkill)) {
     draft.combatSkill = raw.combatSkill;
   }
+  if (typeof raw.school === "string" && CREATION_SCHOOLS.includes(raw.school)) draft.school = raw.school;
   if (raw.stage === "details") draft.stage = "details";
   const applied = raw.applied;
   if (applied && typeof applied === "object") {
@@ -545,6 +581,7 @@ function readDraft(actor) {
       weapons: list(applied.weapons),
       combatSkills: list(applied.combatSkills),
       channeling: applied.channeling === true,
+      autoRanks: list(applied.autoRanks),
     };
   }
   return draft;
@@ -613,10 +650,9 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
       back: CharacterCreationWindow._onBack,
       next: CharacterCreationWindow._onNext,
       toggleDoctrine: CharacterCreationWindow._onToggleDoctrine,
-      pickSchool: CharacterCreationWindow._onPickSchool,
       pickWeapon: CharacterCreationWindow._onPickWeapon,
       pickCombatSkill: CharacterCreationWindow._onPickCombatSkill,
-      pickMagicDoctrine: CharacterCreationWindow._onPickMagicDoctrine,
+      pickSchool: CharacterCreationWindow._onPickSchool,
       closeScreen: CharacterCreationWindow._onCloseScreen,
     },
   };
@@ -870,7 +906,10 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     if (this.#doctrineLadders && this.#doctrineWeapons && this.#skillLadders) return this.#doctrineLadders;
     const keys = this.#doctrineKeys();
     CACHE.ladders ??= buildDoctrineLadders(keys);
-    CACHE.skillLadders ??= buildTrackLadders(Object.keys(SKILL_CARDS));
+    CACHE.skillLadders ??= buildTrackLadders([
+      ...Object.keys(SKILL_CARDS),
+      ...CREATION_SCHOOLS.map((key) => `schools.${key}`),
+    ]);
     // By doctrine key, as #doctrineWeapons reads it.
     CACHE.weapons ??= loadCompatibleWeapons().then(
       (catalog) => new Map(keys.map((key) => [key, catalog.get(`doctrines.${key}`)]).filter(([, v]) => v)),
@@ -1276,6 +1315,9 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
       const unaffordable =
         !selected && trait.kind === "positive" && trait.cost > state.traitRemaining;
       const full = !selected && state.traitCount >= MAX_TRAITS;
+      // One temperament: with one taken, the others are out of reach.
+      const otherTemperament =
+        !selected && isTemperament(trait.id) && draft.traits.some((t) => t !== trait.id && isTemperament(t));
       return {
         id: trait.id,
         kind: trait.kind,
@@ -1284,7 +1326,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
         // Plain cost: a positive trait reads "6", a negative one "-3".
         price: String(trait.cost),
         selected,
-        disabled: !editable || !hasRace || unaffordable || full,
+        disabled: !editable || !hasRace || unaffordable || full || otherTemperament,
       };
     };
     // Left: every trait, by kind. A picked trait stays in its place, drawn
@@ -1314,30 +1356,29 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
             : null;
     }
 
-    // Step 2: the doctrines, in blocks by kind. The magical block offers the
-    // schools of magic instead of doctrines (the magical doctrine is picked on
-    // 2.5); they need the Magic potential trait (drafted, or already on the
-    // character) and stay listed but greyed out without it.
+    // Step 2: the doctrines, in blocks by kind. The magical doctrines need the
+    // Magic potential trait (drafted, or already on the character) and stay
+    // listed but greyed out without it.
     const step = draft.step;
     const isDetails = step === 2 && draft.stage === "details";
     const magicOpen = this.#hasMagicPotential();
     const doctrineKinds = DOCTRINE_KIND_ORDER.map((kind) => ({
       kind,
-      label:
-        kind === "magical"
-          ? i18n.localize("REDSTEEL.Creation.Doctrine.schoolsHeading")
-          : i18n.localize(`REDSTEEL.Learn.Sections.${kind}`),
+      label: i18n.localize(`REDSTEEL.Learn.Sections.${kind}`),
       needsMagic: kind === "magical" && !magicOpen,
-      doctrines:
-        kind === "magical"
-          ? this.#schoolCards(editable, magicOpen)
-          : this.#doctrineKeys()
-              .filter((key) => getLearnSection(`doctrines.${key}`) === kind)
-              .map((key) => this.#doctrineCard(key, { editable }))
-              .sort((a, b) => a.label.localeCompare(b.label, i18n.lang)),
+      doctrines: this.#doctrineKeys()
+        .filter((key) => getLearnSection(`doctrines.${key}`) === kind)
+        .map((key) => this.#doctrineCard(key, { editable, locked: kind === "magical" && !magicOpen }))
+        .sort((a, b) => a.label.localeCompare(b.label, i18n.lang)),
     })).filter((block) => block.doctrines.length);
-    // The magical doctrine comes from 2.5, so only combat doctrines count.
     const details = isDetails ? this.#buildDetails(editable) : null;
+    // 2.5's info row opens on what was picked there (the first taken card),
+    // never on a step 2 doctrine left over from the card before.
+    if (details && !/^(skill|school):/.test(this.#info ?? "")) {
+      const cards = details.groups.flatMap((group) => group.cards);
+      const first = cards.find((card) => card.selected) ?? cards[0];
+      if (first?.info && this.#infoHtml.has(first.info)) this.#info = first.info;
+    }
 
     return Object.assign(context, {
       actor: this.actor,
@@ -1508,21 +1549,24 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
       );
     }
 
-    // Schools (step 2): the name, and what gates it. No rules prose exists
-    // for the schools, so none is written here.
+    // Schools (2.5): the crest, what sets or gates it, and all ten ranks.
     const temperament = this.#temperamentSchool();
     for (const key of CREATION_SCHOOLS) {
       const head =
         `<div class="rs-create-info-crest is-magical">` +
         `<span class="rs-dc-crest is-glyph"><i class="fa-solid ${SCHOOL_GLYPHS[key]}"></i></span></div>`;
       const notes =
-        `<p class="rs-create-info-req">${escapeHtml(i18n.localize("REDSTEEL.Creation.Doctrine.needsMagic"))}</p>` +
-        (temperament === key
+        temperament === key
           ? `<p class="rs-create-info-req">${escapeHtml(i18n.localize("REDSTEEL.Creation.Doctrine.temperamentSchool"))}</p>`
-          : "");
+          : "";
       map.set(
         `school:${key}`,
-        head + frame(this.#schoolLabel(key), escapeHtml(i18n.localize("REDSTEEL.Creation.Doctrine.Kind.magical")), notes),
+        head +
+          frame(
+            this.#schoolLabel(key),
+            escapeHtml(i18n.localize("REDSTEEL.Creation.Details.schoolKind")),
+            notes + this.#rankPathHtml(`schools.${key}`, this.#skillLadders?.get(`schools.${key}`) ?? []),
+          ),
       );
     }
 
@@ -1658,7 +1702,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
   }
 
   /**
-   * One doctrine card for the step 2 grid or the 2.5 magical doctrine pick.
+   * One doctrine card for the step 2 grid.
    * `action` is the click it carries; `locked` greys it out under a padlock.
    */
   #doctrineCard(key, { editable, action = "toggleDoctrine", selected, locked = false } = {}) {
@@ -1681,43 +1725,10 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
   }
 
   /**
-   * The school cards for step 2's magical block. Without Magic potential all
-   * are locked; with a temperament its school is taken and the rest are shut.
-   */
-  #schoolCards(editable, magicOpen) {
-    const i18n = game.i18n;
-    const temperament = magicOpen ? this.#temperamentSchool() : null;
-    const school = this.#school();
-    return CREATION_SCHOOLS.map((key) => {
-      const selected = key === school;
-      const shut = !!temperament && !selected;
-      return {
-        key,
-        kind: "magical",
-        action: "pickSchool",
-        keyAttr: "school",
-        info: `school:${key}`,
-        label: this.#schoolLabel(key),
-        kindLabel: i18n.localize("REDSTEEL.Creation.Doctrine.Kind.magical"),
-        glyph: SCHOOL_GLYPHS[key],
-        selected,
-        locked: !magicOpen,
-        lockText: !magicOpen ? i18n.localize("REDSTEEL.Creation.Doctrine.needsMagic") : "",
-        // The temperament's school: taken, and it cannot be put down.
-        fixed: selected && !!temperament,
-        fixedText: selected && temperament ? i18n.localize("REDSTEEL.Creation.Doctrine.temperamentSchool") : "",
-        shut,
-        disabled: !editable || !magicOpen || !!temperament,
-      };
-    });
-  }
-
-  /**
    * Step 2.5, one plate of cards in blocks: per combat doctrine that trains
    * with a weapon skill, the four weapon skills (a fixed one taken, the rest
    * greyed out); per doctrine with a combat skill, Combat and Archery the same
-   * way (the Peltast chooses); Channeling alone for a school; then the
-   * school's magical doctrines.
+   * way (the Peltast chooses); Channeling alone for a magical doctrine.
    */
   #buildDetails(editable) {
     const i18n = game.i18n;
@@ -1770,34 +1781,45 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
         }),
       });
     }
-    const school = this.#school();
-    if (school) {
-      // A school brings Channeling (applied with it): its one card, taken.
-      const trackId = "combatSkills.channeling";
+    const magical = draft.doctrines.find((key) => isMagicalDoctrine(key));
+    if (magical) {
+      // A magical doctrine casts through a school (user ruling 2026-10-10):
+      // pick one, or take the temperament's. Channeling comes with it.
       groups.push({
-        label: i18n.format("REDSTEEL.Creation.Details.combatSkillFor", { doctrine: this.#schoolLabel(school) }),
-        cards: [
-          this.#skillCard(trackId, {
-            owner: school,
-            action: "",
-            selected: true,
-            fixedText: i18n.format("REDSTEEL.Creation.Details.fixedChanneling", {
-              school: this.#schoolLabel(school),
-              skill: this.#skillLabel(trackId),
-            }),
-            editable,
-          }),
-        ],
-      });
-      groups.push({
-        label: i18n.format("REDSTEEL.Creation.Details.magicHeading", { school: this.#schoolLabel(school) }),
-        cards: this.#doctrineKeys()
-          .filter((key) => isMagicalDoctrine(key))
-          .map((key) => this.#doctrineCard(key, { editable, action: "pickMagicDoctrine" }))
-          .sort((a, b) => a.label.localeCompare(b.label, i18n.lang)),
+        label: i18n.format("REDSTEEL.Creation.Details.schoolFor", { doctrine: this.#doctrineLabel(magical) }),
+        cards: this.#schoolCards(editable),
       });
     }
     return { groups: groups.filter((group) => group.cards.length) };
+  }
+
+  /**
+   * The school cards for 2.5: with a temperament its school is taken and the
+   * rest are shut, else exactly one may be picked.
+   */
+  #schoolCards(editable) {
+    const i18n = game.i18n;
+    const temperament = this.#temperamentSchool();
+    const school = this.#school();
+    return CREATION_SCHOOLS.map((key) => {
+      const selected = key === school;
+      return {
+        key,
+        kind: "magical",
+        action: "pickSchool",
+        keyAttr: "school",
+        info: `school:${key}`,
+        label: this.#schoolLabel(key),
+        kindLabel: i18n.localize("REDSTEEL.Creation.Details.schoolKind"),
+        glyph: SCHOOL_GLYPHS[key],
+        selected,
+        // The temperament's school: taken, and it cannot be put down.
+        fixed: selected && !!temperament,
+        fixedText: selected && temperament ? i18n.localize("REDSTEEL.Creation.Doctrine.temperamentSchool") : "",
+        shut: !!temperament && !selected,
+        disabled: !editable || !!temperament,
+      };
+    });
   }
 
   /** A school's localized name. */
@@ -1827,26 +1849,28 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
   }
 
   /**
-   * The school the character takes: none without Magic potential, the
-   * temperament's when there is one, else the drafted pick.
+   * The school the character takes: none without Magic potential and a
+   * magical doctrine, the temperament's when there is one, else the pick.
    */
   #school() {
     if (!this.#hasMagicPotential()) return null;
+    if (!this.#draft.doctrines.some((key) => isMagicalDoctrine(key))) return null;
     return this.#temperamentSchool() ?? this.#draft.school;
   }
 
   /**
-   * Bring the draft's school and magical doctrine in line before step 2 is
-   * left: the school as #school() reads it, no magical doctrine without one,
-   * and at most one with it. Weapon picks for doctrines no longer drafted go,
-   * and so does the Peltast's combat skill without the Peltast.
+   * Bring the draft's magical doctrine and school in line before step 2 is
+   * left: no magical doctrine without Magic potential, at most one with it,
+   * and the school as #school() reads it (none without a magical doctrine).
+   * Weapon picks for doctrines no longer drafted go, and so does the
+   * Peltast's combat skill without the Peltast.
    */
   #settleMagic() {
     const draft = this.#draft;
-    draft.school = this.#school();
     const magical = draft.doctrines.filter((key) => isMagicalDoctrine(key));
-    const keep = draft.school ? magical.slice(0, 1) : [];
+    const keep = this.#hasMagicPotential() ? magical.slice(0, 1) : [];
     draft.doctrines = draft.doctrines.filter((key) => !isMagicalDoctrine(key) || keep.includes(key));
+    draft.school = this.#school();
     const asked = new Set(weaponDoctrines(draft.doctrines).filter((key) => !FIXED_WEAPONS[key]));
     draft.weapons = Object.fromEntries(
       Object.entries(draft.weapons).filter(([key, weapon]) => asked.has(key) && this.#weaponAllowed(key, weapon)),
@@ -1878,7 +1902,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
       return true;
     }
     if (draft.doctrines.includes(COMBAT_SKILL_CHOICE) && !draft.combatSkill) return true;
-    if (this.#school() && !draft.doctrines.some((key) => isMagicalDoctrine(key))) return true;
+    if (draft.doctrines.some((key) => isMagicalDoctrine(key)) && !this.#school()) return true;
     return false;
   }
 
@@ -2240,13 +2264,21 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
       if (id === MAGIC_POTENTIAL_ID && !(await this.#confirmDropMagic())) return;
       this.#draft.traits = traits.filter((t) => t !== id);
       if (id === MAGIC_POTENTIAL_ID) {
-        this.#draft.school = null;
         this.#draft.doctrines = this.#draft.doctrines.filter((k) => !isMagicalDoctrine(k));
       }
     } else {
       if (traits.length >= MAX_TRAITS) {
         ui.notifications.warn(
           game.i18n.format("REDSTEEL.Creation.Warn.traitLimit", { max: MAX_TRAITS }),
+        );
+        return;
+      }
+      const held = isTemperament(id) ? traits.find((t) => isTemperament(t)) : null;
+      if (held) {
+        ui.notifications.warn(
+          game.i18n.format("REDSTEEL.Creation.Warn.oneTemperament", {
+            name: this.#traits?.get(held)?.label ?? TRAIT_PRICES[held]?.name ?? held,
+          }),
         );
         return;
       }
@@ -2264,20 +2296,17 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
   }
 
   /**
-   * Dropping Magic potential loses the drafted school and magical doctrine.
-   * Asks first, but only when one of them is drafted (user ruling 2026-10-06).
+   * Dropping Magic potential loses the drafted magical doctrine. Asks first,
+   * but only when one is drafted (user ruling 2026-10-06).
    * The dialog carries rs-create-confirm, which lifts it above this screen.
    * @returns {Promise<boolean>} true to go ahead.
    */
   async #confirmDropMagic() {
     const draft = this.#draft;
     const magical = draft.doctrines.filter((k) => isMagicalDoctrine(k));
-    if (!draft.school && !magical.length) return true;
+    if (!magical.length) return true;
     const i18n = game.i18n;
-    const lost = [
-      ...(draft.school ? [this.#schoolLabel(draft.school)] : []),
-      ...magical.map((k) => this.#doctrineLabel(k)),
-    ].join(", ");
+    const lost = magical.map((k) => this.#doctrineLabel(k)).join(", ");
     const confirmed = await foundry.applications.api.DialogV2.confirm({
       classes: ["rs-create-confirm"],
       window: { title: i18n.localize("REDSTEEL.Creation.Confirm.dropMagicTitle") },
@@ -2355,7 +2384,6 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
         this.#draft.doctrines = this.#draft.doctrines.filter(
           (key) => getLearnSection(`doctrines.${key}`) !== "magical",
         );
-        this.#draft.school = null;
       }
       this.#draft.stage = "doctrines";
     }
@@ -2367,7 +2395,8 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
   /**
    * Take or drop a doctrine. Exactly one melee or ranged doctrine (user ruling
    * 2026-10-06: a second comes later, through the Learn window): taking
-   * another replaces it. Rogue toggles on its own and may sit beside it.
+   * another replaces it. Rogue toggles on its own and may sit beside it. At
+   * most one magical doctrine, the same way, and only with Magic potential.
    * @this {CharacterCreationWindow}
    */
   static async _onToggleDoctrine(event, target) {
@@ -2375,12 +2404,17 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     if (!this.actor?.isOwner) return;
     const key = target?.closest?.("[data-doctrine]")?.dataset.doctrine;
     if (!key || !this.#doctrineKeys().includes(key)) return;
-    // The magical doctrine is picked on 2.5 (_onPickMagicDoctrine).
-    if (isMagicalDoctrine(key)) return;
     this.#info = `doctrine:${key}`;
     const doctrines = this.#draft.doctrines;
     if (doctrines.includes(key)) {
       this.#draft.doctrines = doctrines.filter((k) => k !== key);
+    } else if (isMagicalDoctrine(key)) {
+      if (!this.#hasMagicPotential()) {
+        ui.notifications.warn(game.i18n.localize("REDSTEEL.Creation.Doctrine.needsMagic"));
+        await this.#commit();
+        return;
+      }
+      this.#draft.doctrines = [...doctrines.filter((k) => !isMagicalDoctrine(k)), key];
     } else if (key === COMPANION_DOCTRINE) {
       this.#draft.doctrines = [...doctrines, key];
     } else {
@@ -2390,8 +2424,8 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
   }
 
   /**
-   * Take a school (exactly one: another replaces it, the taken one clears).
-   * A temperament's school cannot be changed.
+   * 2.5: the school of the magical doctrine (exactly one: another replaces
+   * it, the taken one clears). A temperament's school cannot be changed.
    * @this {CharacterCreationWindow}
    */
   static async _onPickSchool(event, target) {
@@ -2400,11 +2434,10 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     const key = target?.closest?.("[data-school]")?.dataset.school;
     if (!CREATION_SCHOOLS.includes(key)) return;
     this.#info = `school:${key}`;
-    if (!this.#hasMagicPotential()) {
-      ui.notifications.warn(game.i18n.localize("REDSTEEL.Creation.Doctrine.needsMagic"));
+    if (this.#temperamentSchool()) {
+      await this.#commit();
       return;
     }
-    if (this.#temperamentSchool()) return;
     this.#draft.school = this.#draft.school === key ? null : key;
     await this.#commit();
   }
@@ -2436,17 +2469,6 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     if (!this.#draft.doctrines.includes(COMBAT_SKILL_CHOICE)) return;
     this.#info = `skill:combatSkills.${skill}`;
     this.#draft.combatSkill = skill;
-    await this.#commit();
-  }
-
-  /** 2.5: the one magical doctrine of the school. @this {CharacterCreationWindow} */
-  static async _onPickMagicDoctrine(event, target) {
-    event.preventDefault();
-    if (!this.actor?.isOwner || !this.#school()) return;
-    const key = target?.closest?.("[data-doctrine]")?.dataset.doctrine;
-    if (!key || !isMagicalDoctrine(key) || !this.#doctrineKeys().includes(key)) return;
-    this.#info = `doctrine:${key}`;
-    this.#draft.doctrines = [...this.#draft.doctrines.filter((k) => !isMagicalDoctrine(k)), key];
     await this.#commit();
   }
 
@@ -2665,22 +2687,34 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     const currentBonusSp = Number(actor.system?.progression?.bonus?.sp) || 0;
     const previous = draft.applied;
     const identity = this.#identity();
+    // A pick a previous apply bought rank I in and that is no longer chosen
+    // gives that rank back (and the teacher with it), so it reads as unranked
+    // below. Only when rank I is all it holds: a rank bought on top in step 3
+    // keeps the track. Doctrines first, as they may ask for a skill's rank.
+    const wanted = new Set(draftTrackIds(draft));
+    const stale = (previous?.autoRanks ?? [])
+      .filter((id) => !wanted.has(id) && PROGRESSION_TRACKS[id])
+      .sort((a, b) => Number(b.startsWith("doctrines.")) - Number(a.startsWith("doctrines.")));
+    for (const id of stale) {
+      const track = PROGRESSION_TRACKS[id];
+      if (getTrackRank(actor, track.group, track.key) !== 1) continue;
+      if (await refundRank(actor, id)) await releaseCreationTeacher(actor, id);
+    }
     // Doctrines a previous apply showed that are no longer drafted go hidden
     // again, unless a rank was bought in them since.
     const unranked = (group, key) => (Number(actor.system?.[group]?.[key]?.value) || 0) === 0;
     const dropped = (previous?.doctrines ?? []).filter(
       (key) => !draft.doctrines.includes(key) && unranked("doctrines", key),
     );
-    // The school, Channeling with it, the weapon skills the doctrines train
-    // with and the combat skills they fight with: shown and tracked, no rank
-    // bought. Whatever a previous
-    // apply showed that is no longer chosen goes the same way as a doctrine.
-    const school = draft.school;
-    const schools = school ? [school] : [];
+    // The school and Channeling (with a magical doctrine), the weapon skills
+    // the doctrines train with and the combat skills they fight with: shown
+    // and tracked, rank I bought in step 6. Whatever a previous apply showed
+    // that is no longer chosen goes the same way as a doctrine.
+    const schools = draft.school ? [draft.school] : [];
     const weapons = [
       ...new Set(weaponDoctrines(draft.doctrines).map((key) => weaponFor(draft, key)).filter(Boolean)),
     ];
-    const channeling = !!school;
+    const channeling = draft.doctrines.some((key) => isMagicalDoctrine(key));
     const droppedSchools = (previous?.schools ?? []).filter(
       (key) => !schools.includes(key) && unranked("schools", key),
     );
@@ -2706,7 +2740,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
       ...originAttributeUpdate(draft),
     };
     // The chosen doctrines join the character's skills: shown on the sheet
-    // (no rank bought, points are distributed in step 3).
+    // (rank I is bought in step 6, once the wallet below is written).
     for (const key of draft.doctrines) {
       update[`system.doctrines.${key}.visible`] = true;
     }
@@ -2727,13 +2761,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     // 5. ...and tracked in the Learn window, beside whatever combat tracks the
     // character already follows (setTrackedIds replaces the Combat tab's list).
     // Anything dropped leaves the list.
-    const addedIds = [
-      ...draft.doctrines.map((key) => `doctrines.${key}`),
-      ...schools.map((key) => `schools.${key}`),
-      ...(channeling ? ["combatSkills.channeling"] : []),
-      ...weapons.map((key) => `weaponSkills.${key}`),
-      ...combatSkills.map((key) => `combatSkills.${key}`),
-    ];
+    const addedIds = draftTrackIds(draft);
     const droppedIds = new Set([
       ...dropped.map((key) => `doctrines.${key}`),
       ...droppedSchools.map((key) => `schools.${key}`),
@@ -2748,7 +2776,31 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
       await setTrackedIds(actor, "combat", [...combat, ...addedIds]);
     }
 
-    // 6. On to step 3: the Learn window, on the Combat tab.
+    // 6. Rank I in every pick, with its teacher (acquireCreationRank). The
+    // ones bought here are recorded, so a later apply that drops the pick
+    // gives that rank back. A rank the points cannot cover is left to the
+    // roster in step 3, and said so.
+    const { bought, failed } = await acquireCreationRanks(actor, addedIds);
+    const autoRanks = [...new Set([...(previous?.autoRanks ?? []).filter((id) => wanted.has(id)), ...bought])];
+    await actor.update({ "flags.redsteel.creationDraft.applied.autoRanks": autoRanks });
+    nextDraft.applied.autoRanks = autoRanks;
+    if (failed.length) {
+      ui.notifications.warn(
+        i18n.format("REDSTEEL.Creation.Skills.startingRankFailed", {
+          // Each pick with what stood in the way (its Teacher was unlocked).
+          names: failed
+            .map((id) => {
+              const track = PROGRESSION_TRACKS[id];
+              const name = i18n.localize(`REDSTEEL.Actor.Character.${track.group}.${track.key}.label`);
+              const reasons = explainUnbuyable(actor, id, 1, { teacherGiven: true });
+              return reasons.length ? `${name} (${reasons.join("; ")})` : name;
+            })
+            .join(", "),
+        }),
+      );
+    }
+
+    // 7. On to step 3: the Learn window, on the Combat tab.
     await this.close();
     openLearnWindow(actor, { tab: "combat" });
   }
@@ -2785,6 +2837,88 @@ export function openCharacterCreation(actor) {
  */
 export function isCreationSkillsStep(actor) {
   return isInCreation(actor) && Number(actor.getFlag("redsteel", "creationDraft")?.step) === 3;
+}
+
+/**
+ * The track ids whose rank I teacher creation unlocked (step 2's picks and
+ * step 3's acquire button), so giving rank I back takes the teacher back too.
+ * Kept beside the draft, not in it: readDraft keeps only the draft's own keys.
+ */
+const CREATION_TEACHERS_FLAG = "creationTeachers";
+
+function creationTeachers(actor) {
+  const list = actor?.getFlag("redsteel", CREATION_TEACHERS_FLAG);
+  return Array.isArray(list) ? list.filter((id) => typeof id === "string") : [];
+}
+
+/**
+ * Buy rank I of a track during creation (user ruling 2026-10-10: a skill
+ * taken at creation comes with its first trainer): unlock the rank I teacher
+ * if missing, then buy through the engine's own purchaseRank. A rank the
+ * engine still refuses (other requirements, the wallet) takes the teacher
+ * back. True when the track holds rank I afterwards.
+ * @param {Actor} actor
+ * @param {string} trackId
+ */
+export async function acquireCreationRank(actor, trackId) {
+  const track = PROGRESSION_TRACKS[trackId];
+  if (!track || !actor?.isOwner) return false;
+  if (getTrackRank(actor, track.group, track.key) >= 1) return true;
+  const granted = !hasTeacher(actor, trackId, 1);
+  if (granted) await setTeacher(actor, trackId, 1, true);
+  const bought = await purchaseRank(actor, trackId, 1);
+  if (!bought) {
+    if (granted) await setTeacher(actor, trackId, 1, false);
+    return false;
+  }
+  if (granted) {
+    await actor.setFlag("redsteel", CREATION_TEACHERS_FLAG, [...new Set([...creationTeachers(actor), trackId])]);
+  }
+  return true;
+}
+
+/**
+ * After ranks were given back in creation: a track left with no rank loses
+ * the rank I teacher creation unlocked for it. No-op for a track that still
+ * holds a rank or whose teacher came from elsewhere.
+ * @param {Actor} actor
+ * @param {string} trackId
+ */
+export async function releaseCreationTeacher(actor, trackId) {
+  const track = PROGRESSION_TRACKS[trackId];
+  if (!track || !actor?.isOwner) return;
+  if (getTrackRank(actor, track.group, track.key) >= 1) return;
+  const list = creationTeachers(actor);
+  if (!list.includes(trackId)) return;
+  await setTeacher(actor, trackId, 1, false);
+  await actor.setFlag("redsteel", CREATION_TEACHERS_FLAG, list.filter((id) => id !== trackId));
+}
+
+/**
+ * Buy rank I in each track, in passes, so a rank whose requirement is another
+ * track's rank I (a doctrine on its weapon skill) lands once that one has.
+ * @returns {Promise<{bought: string[], failed: string[]}>}
+ */
+async function acquireCreationRanks(actor, trackIds) {
+  let pending = [...new Set(trackIds)].filter((id) => PROGRESSION_TRACKS[id]);
+  const bought = [];
+  let progress = true;
+  while (pending.length && progress) {
+    progress = false;
+    const next = [];
+    for (const id of pending) {
+      const track = PROGRESSION_TRACKS[id];
+      const had = getTrackRank(actor, track.group, track.key) >= 1;
+      if (await acquireCreationRank(actor, id)) {
+        if (!had) bought.push(id);
+        progress = true;
+      } else {
+        next.push(id);
+      }
+    }
+    pending = next;
+  }
+  return { bought, failed: pending };
 }
 
 /**

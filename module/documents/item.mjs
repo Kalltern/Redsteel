@@ -7,10 +7,11 @@ import {
   unidentifiedDisplayName,
   isItemUnidentified,
 } from "../utils/itemIdentify.mjs";
+// parseDiceSize lives there too (moved, unchanged), shared with the formula.
 import {
-  hasWeaponMasterNode,
-  PRIMARY_DAMAGE_MULTIPLIER,
-} from "../utils/weaponMaster.mjs";
+  parseDiceSize,
+  weaponDamageFormula,
+} from "../utils/weaponFormula.mjs";
 
 /**
  * Stat block of the "Improvised shield" compendium item
@@ -27,35 +28,6 @@ export const IMPROVISED_SHIELD_STATS = {
   iniPenalty: 0,
   maxSpeed: 0,
 };
-
-/**
- * A die size as it can be spliced straight into a roll formula.
- *
- * `system.roll.diceSize` is not always a bare integer. Foundry's own dice
- * notation rides along with it: `"10x"` is an exploding d10, and the Longbow
- * stores `"8k5"` (keep 5). `Number("10x")` is NaN, which the old `|| 0`
- * turned into `2d0` — a formula that rolls and deals nothing at all, silently.
- *
- * So: a plain integer comes back as a number, a leading integer followed by
- * dice notation comes back as authored, and anything else (empty, null, a
- * stray word) comes back as 0. The 0 fallback is the guard that has to stay:
- * an empty field used to build `"nulld"`, which Roll cannot resolve and which
- * threw mid-cast, taking the whole spell down.
- *
- * @param {*} raw  The stored `system.roll.diceSize`.
- * @returns {number|string}
- */
-function parseDiceSize(raw) {
-  const text = String(raw ?? "").trim();
-  if (/^\d+$/.test(text)) return Number(text);
-  // A whole formula typed into the size field ("2d6") is not notation: it
-  // would splice into "1d2d6". Rejected before the notation test, which would
-  // otherwise wave it through, so it falls back to 0 like any other garbage.
-  if (/^\d+[dD]\d+$/.test(text)) return 0;
-  // <digits><notation>, e.g. "10x", "10x>8", "8k5", "10kh3", "10r<3".
-  if (/^\d+[A-Za-z][A-Za-z0-9<>=!]*$/.test(text)) return text;
-  return 0;
-}
 
 /**
  * Item quality (Kvalita) modifiers, applied on top of an item's hand-entered
@@ -806,69 +778,9 @@ export class RedsteelItem extends Item {
         // Define a unique formula for consumables
         formula = `${diceNum}d${diceSize} ${diceBonus ? `+${diceBonus}` : ""}`;
       } else {
-        // Default to Strength
-        let attr = "str";
-
-        if (this.actor) {
-          let str = this.actor.system.attributes.str.total;
-          let dex = this.actor.system.attributes.dex.total;
-          let per = this.actor.system.attributes.per.total;
-
-          // Check if the actor owns an item named "Finesse"
-          const hasFinesse = this.actor.items.some(
-            (item) => item.name.toLowerCase() === "finesse",
-          );
-          // Check if the actor owns an item named "Giant"
-          const hasGiant = this.actor.items.some(
-            (item) => item.name.toLowerCase() === "giant",
-          );
-
-          // Check if *this* weapon has finesse
-          if (this.system.finesse === true && hasFinesse && str <= dex) {
-            attr = "dex"; // Use Dexterity if all conditions are met
-          }
-
-          // Check if *this* weapon is bow or crossbow
-          if (this.system.class === "crossbow" || this.system.class === "bow") {
-            attr = "per"; // Use Perception if ranged weapon
-          }
-
-          // Check if *this* weapon is throwing and compare str with per
-          if (this.system.thrown && str <= per) {
-            attr = "per";
-            // Check if *this* weapon has finesse
-            if (
-              this.system.finesse === true &&
-              hasFinesse &&
-              str <= dex &&
-              str <= per
-            ) {
-              attr = "dex"; // Use Dexterity if all conditions are met
-            }
-          }
-          // Damage +50% from Primary Attributes (Weapon Master, primaryDamage):
-          // whichever attribute this attack adds counts one and a half times,
-          // rounded down.
-          const attrTerm =
-            this.actor.type === "character" &&
-            hasWeaponMasterNode(this.actor, "primaryDamage")
-              ? `floor(@${attr} * ${PRIMARY_DAMAGE_MULTIPLIER})`
-              : `@${attr}`;
-          if (
-            hasGiant &&
-            this.system.class !== "crossbow" &&
-            this.system.class !== "bow"
-          ) {
-            formula = `${diceNum}d${diceSize} + 1d4 ${diceBonus ? `+${diceBonus}` : ""} + ${attrTerm}`;
-          } else {
-            formula = `${diceNum}d${diceSize} ${diceBonus ? `+${diceBonus}` : ""} + ${attrTerm}`;
-          }
-          if (this.actor.type === "npc") {
-            formula = `${diceNum}d${diceSize}  ${
-              diceBonus ? `+${diceBonus}` : ""
-            } + ${this.actor.system.combatSkills.damageBonus.value}`;
-          }
-        }
+        // Dice plus the wielder's attribute (utils/weaponFormula.mjs); "" when
+        // the item has no actor.
+        formula = weaponDamageFormula(this.actor, this.system);
       }
 
       // Store the formula in system.formula

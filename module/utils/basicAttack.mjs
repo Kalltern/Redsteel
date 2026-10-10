@@ -26,6 +26,7 @@ import { captureAttackTargets } from "./autoDefense.mjs";
 import { captureAttackPositioning } from "./positioning.mjs";
 import { modifierKeysOf } from "./abilityMovement.mjs";
 import { dragonGuardTags } from "./dragonGuard.mjs";
+import { asMakeshiftMelee, isRangedWeapon } from "./makeshift.mjs";
 
 export async function universalAttackLogic({
   attackType,
@@ -45,9 +46,17 @@ export async function universalAttackLogic({
 
   // Weapons assigned to the off hand (NPCs) are consumed automatically as the
   // off-hand weapon and must not be offered as the attacking weapon.
-  const weapons = actor.items.filter(
+  const filteredWeapons = actor.items.filter(
     (i) => weaponFilter(i) && !(actor.type === "npc" && i.system.npcOffhand),
   );
+  // In melee a bow or crossbow fights as a makeshift blunt weapon of
+  // its size (utils/makeshift.mjs). Mapped before the empty check and before
+  // the pre-resolved context is matched by id, so a view handed in as
+  // context.weapon finds its slot. Other weapons pass through unchanged.
+  const weapons =
+    attackType === "melee"
+      ? filteredWeapons.map((w) => asMakeshiftMelee(w))
+      : filteredWeapons;
 
   if (!weapons.length) {
     ui.notifications.warn(`This actor has no ${attackType} weapons.`);
@@ -302,9 +311,14 @@ export async function universalAttackLogic({
     const resolvedFlavor =
       typeof flavorLabel === "function" ? flavorLabel(weapon) : flavorLabel;
 
+    // A pre-resolved context that still carries the real ranged weapon gets
+    // the makeshift view in its place, so every reader of context.weapon
+    // agrees with `weapon`.
     const resolvedContext =
-      preResolvedContext ??
-      game.redsteel.resolveWeaponContext(actor, null, weapon);
+      preResolvedContext && weapon?.isMakeshiftView === true
+        ? { ...preResolvedContext, weapon }
+        : (preResolvedContext ??
+          game.redsteel.resolveWeaponContext(actor, null, weapon));
 
     if (!resolvedContext) return;
 
@@ -811,10 +825,12 @@ export async function meleeAttack(options = {}) {
     flavorLabel: (weapon) =>
       `Melee attack with ${weapon.localizedName ?? weapon.name}`,
     showBreakthrough: true,
+    // Ranged weapons too: they swing as makeshift weapons (see above).
     weaponFilter: (i) =>
-      i.type === "weapon" &&
-      ["axe", "sword", "blunt", "polearm"].includes(i.system.class) &&
-      i.system.thrown !== true,
+      (i.type === "weapon" &&
+        ["axe", "sword", "blunt", "polearm"].includes(i.system.class) &&
+        i.system.thrown !== true) ||
+      isRangedWeapon(i),
     getWeaponSkillData: (actor, weapon) =>
       game.redsteel.getWeaponSkillBonuses(actor, weapon),
     context: options.context ?? null,
