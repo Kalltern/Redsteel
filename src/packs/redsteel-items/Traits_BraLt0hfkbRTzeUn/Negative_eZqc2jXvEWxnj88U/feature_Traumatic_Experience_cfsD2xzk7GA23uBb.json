@@ -1,0 +1,49 @@
+{
+  "folder": "eZqc2jXvEWxnj88U",
+  "name": "Traumatic Experience",
+  "type": "feature",
+  "img": "icons/skills/wounds/anatomy-organ-brain-pink-red.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.TraumaticExperience.name",
+    "description": "<p>Haunted by a traumatic event that left a scar on the soul. Gains 2d4d1 madness points.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "trait"
+  },
+  "effects": [],
+  "flags": {
+    "redsteel": {
+      "traitPolarity": "negative"
+    }
+  },
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.14.1",
+    "lastModifiedBy": null,
+    "createdTime": null,
+    "modifiedTime": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 0,
+  "_id": "cfsD2xzk7GA23uBb",
+  "_key": "!items!cfsD2xzk7GA23uBb"
+}

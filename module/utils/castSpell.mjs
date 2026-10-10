@@ -607,7 +607,7 @@ async function maybeStartMentalDuel(
 
   if (!casterToken || !targetToken) {
     ui.notifications.warn(
-      "Mind Bending: target an opponent to start the Mental Duel.",
+      game.i18n.localize("REDSTEEL.MentalDuel.Initiation.NoTarget"),
     );
     return;
   }
@@ -632,15 +632,26 @@ async function maybeStartMentalDuel(
   const chance = crit ? 100 : applyMentalCharge(perkChance, charged);
 
   const breakdown = crit
-    ? "Critical success — the duel cannot be refused." +
+    ? game.i18n.localize("REDSTEEL.MentalDuel.Initiation.CritBreakdown") +
       (charged
-        ? ` (${charged} Mind burned on Mentální zteč, bought before the roll)`
+        ? ` ${game.i18n.format("REDSTEEL.MentalDuel.Initiation.CritCharged", {
+            amount: charged,
+          })}`
         : "")
     : [
-        `${MD_BASE_INITIATION}% base`,
-        perkBonus ? `+${perkBonus}% perks` : null,
+        game.i18n.format("REDSTEEL.MentalDuel.Initiation.Base", {
+          chance: MD_BASE_INITIATION,
+        }),
+        perkBonus
+          ? game.i18n.format("REDSTEEL.MentalDuel.Initiation.Perks", {
+              bonus: perkBonus,
+            })
+          : null,
         charged
-          ? `+${chance - perkChance}% Mentální zteč (${charged} Mind burned)`
+          ? game.i18n.format("REDSTEEL.MentalDuel.Initiation.Charge", {
+              bonus: chance - perkChance,
+              amount: charged,
+            })
           : null,
       ]
         .filter(Boolean)
@@ -651,18 +662,25 @@ async function maybeStartMentalDuel(
 
   await ChatMessage.create({
     speaker: ChatMessage.getSpeaker({ actor }),
-    flavor: `<b>Mentální souboj — initiation</b>`,
+    flavor: `<b>${game.i18n.localize("REDSTEEL.MentalDuel.Initiation.Title")}</b>`,
     rolls: [roll],
     content: `
       <p style="text-align:center;">
-        Chance to start: <b>${chance}%</b> — rolled ${roll.total} →
-        <b>${initiated ? "Duel begins!" : "Not triggered"}</b>
+        ${game.i18n.format("REDSTEEL.MentalDuel.Initiation.Result", {
+          chance,
+          roll: roll.total,
+        })}
+        <b>${game.i18n.localize(
+          initiated
+            ? "REDSTEEL.MentalDuel.Initiation.Begins"
+            : "REDSTEEL.MentalDuel.Initiation.NotTriggered",
+        )}</b>
       </p>
       <p style="text-align:center;font-size:11px;opacity:.8;">${breakdown}</p>
       ${
         initiated
           ? ""
-          : `<p style="text-align:center;font-size:11px;opacity:.8;">The target may still voluntarily accept.</p>`
+          : `<p style="text-align:center;font-size:11px;opacity:.8;">${game.i18n.localize("REDSTEEL.MentalDuel.Initiation.MayAccept")}</p>`
       }`,
   });
 

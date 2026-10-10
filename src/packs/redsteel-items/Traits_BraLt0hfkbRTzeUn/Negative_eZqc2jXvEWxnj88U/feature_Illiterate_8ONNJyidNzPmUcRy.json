@@ -1,0 +1,49 @@
+{
+  "folder": "eZqc2jXvEWxnj88U",
+  "name": "Illiterate",
+  "type": "feature",
+  "img": "icons/sundries/books/book-embossed-bound-brown.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.Illiterate.name",
+    "description": "<p>Cannot read or write and can never learn to. Skills of the Intelligence group cost 1 SP more.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "trait"
+  },
+  "effects": [],
+  "flags": {
+    "redsteel": {
+      "traitPolarity": "negative"
+    }
+  },
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.14.1",
+    "lastModifiedBy": null,
+    "createdTime": null,
+    "modifiedTime": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 0,
+  "_id": "8ONNJyidNzPmUcRy",
+  "_key": "!items!8ONNJyidNzPmUcRy"
+}

@@ -1,0 +1,213 @@
+{
+  "folder": "TxNe45ZN24LnerlT",
+  "name": "Elder Blood",
+  "type": "feature",
+  "img": "icons/skills/wounds/blood-cells-vessel-blue.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.ElderBlood.name",
+    "description": "<p>Choose one: base Mana +2, or Health +5.</p><p>Spell Power +1, Melody Power +1, Miracle Power +1. Channeling +5%, Visage +1.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "trait"
+  },
+  "effects": [
+    {
+      "name": "Elder Blood",
+      "origin": null,
+      "img": "icons/skills/wounds/blood-cells-vessel-blue.webp",
+      "_id": "W7LSKFmv4n5r2bw0",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.combatSkills.channeling.bonus",
+            "value": 5,
+            "priority": null,
+            "type": "add"
+          },
+          {
+            "key": "system.secondaryAttributes.vis.bonus",
+            "value": 1,
+            "priority": null,
+            "type": "add"
+          },
+          {
+            "key": "system.baseSpellPower",
+            "value": 1,
+            "priority": null,
+            "type": "add"
+          },
+          {
+            "key": "system.miraclePowerBonus",
+            "value": 1,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
+      "disabled": false,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.14.1",
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!6uLqm8bNLVkZMxjc.W7LSKFmv4n5r2bw0"
+    },
+    {
+      "name": "Elder Blood: Mana",
+      "origin": null,
+      "img": "icons/skills/wounds/blood-cells-vessel-blue.webp",
+      "_id": "qFLnrnoAsce34xSQ",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.stats.mana.bonus",
+            "value": 2,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
+      "disabled": true,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {
+        "redsteel": {
+          "traitChoice": "elderBlood",
+          "choiceLabel": "REDSTEEL.Traits.ElderBlood.Mana"
+        }
+      },
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.14.1",
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!6uLqm8bNLVkZMxjc.qFLnrnoAsce34xSQ"
+    },
+    {
+      "name": "Elder Blood: Health",
+      "origin": null,
+      "img": "icons/skills/wounds/blood-cells-vessel-blue.webp",
+      "_id": "ZQINDX5KurmkTBGs",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.stats.health.base",
+            "value": 5,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
+      "disabled": true,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {
+        "redsteel": {
+          "traitChoice": "elderBlood",
+          "choiceLabel": "REDSTEEL.Traits.ElderBlood.Health"
+        }
+      },
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.14.1",
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!6uLqm8bNLVkZMxjc.ZQINDX5KurmkTBGs"
+    }
+  ],
+  "flags": {
+    "redsteel": {
+      "traitPolarity": "positive"
+    }
+  },
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.14.1",
+    "lastModifiedBy": null,
+    "createdTime": null,
+    "modifiedTime": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 0,
+  "_id": "6uLqm8bNLVkZMxjc",
+  "_key": "!items!6uLqm8bNLVkZMxjc"
+}

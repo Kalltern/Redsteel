@@ -1,0 +1,108 @@
+{
+  "folder": "TxNe45ZN24LnerlT",
+  "name": "Iron Stomach",
+  "type": "feature",
+  "img": "icons/consumables/drinks/alcohol-beer-stein-wooden-metal-brown.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.IronStomach.name",
+    "description": "<p>Maximum Toxicity +10. Drinking +10%.</p><p>May reroll a Drinking roll twice per day.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": [
+        {
+          "label": "Drinking",
+          "skillsRaw": "drinking",
+          "max": 2,
+          "used": 0
+        }
+      ]
+    },
+    "option": "trait"
+  },
+  "effects": [
+    {
+      "name": "Iron Stomach",
+      "origin": null,
+      "img": "icons/consumables/drinks/alcohol-beer-stein-wooden-metal-brown.webp",
+      "_id": "fK5EPNsKWDOSAUbr",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.stats.toxicity.bonus",
+            "value": 10,
+            "priority": null,
+            "type": "add"
+          },
+          {
+            "key": "system.skills.drinking.bonus",
+            "value": 10,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
+      "disabled": false,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.14.1",
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!TBVfRt36ICsBUW2c.fK5EPNsKWDOSAUbr"
+    }
+  ],
+  "flags": {
+    "redsteel": {
+      "traitPolarity": "positive"
+    }
+  },
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.14.1",
+    "lastModifiedBy": null,
+    "createdTime": null,
+    "modifiedTime": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 0,
+  "_id": "TBVfRt36ICsBUW2c",
+  "_key": "!items!TBVfRt36ICsBUW2c"
+}

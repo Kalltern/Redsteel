@@ -73,9 +73,8 @@ export function getTraitPills(actor, tokens, { event = false } = {}) {
   // character is down to a single action and rolls at −5%.
   if (actor.statuses?.has("fatigued")) {
     pills.push({
-      name: "Fatigued — 1 action",
-      description:
-        "Stamina at 0: loses one action (minimum one remains), −5% to every Success roll, and Speed is halved.",
+      name: game.i18n.localize("REDSTEEL.TraitPill.Fatigued.Name"),
+      description: game.i18n.localize("REDSTEEL.TraitPill.Fatigued.Desc"),
     });
   }
 
@@ -84,10 +83,12 @@ export function getTraitPills(actor, tokens, { event = false } = {}) {
   // Remind on every defense roll so the GM can apply Light / Miracle riders.
   if (rollTokens.includes("defense") && actor.system?.isCorrupted) {
     pills.push({
-      name: "Corrupted — Zkažený",
-      description: actor.system.corruptionLightVulnerable
-        ? "Counts as Corrupted for Miracles, magic and similar — and is more vulnerable to Light and selected Miracles."
-        : "Counts as Corrupted for the purposes of Miracles, magic and similar effects.",
+      name: game.i18n.localize("REDSTEEL.TraitPill.Corrupted.Name"),
+      description: game.i18n.localize(
+        actor.system.corruptionLightVulnerable
+          ? "REDSTEEL.TraitPill.Corrupted.DescLight"
+          : "REDSTEEL.TraitPill.Corrupted.Desc",
+      ),
     });
   }
 

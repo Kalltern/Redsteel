@@ -75,6 +75,7 @@ import { SPEC_ICONS } from "../helpers/specialisations.mjs";
 import { TEMPERAMENT_SCHOOLS } from "../helpers/rankDiscounts.mjs";
 import { getRaceChoiceGroups } from "./race.mjs";
 import { registerTooltip, ttFrame } from "./tooltips.mjs";
+import { compatibleWeaponsPill, loadCompatibleWeapons } from "./compatibleWeapons.mjs";
 
 /**
  * Racial features listed in the info panel, by compendium id → {title, img,
@@ -179,251 +180,6 @@ async function buildTrackLadders(trackIds) {
     );
   }
   return ladders;
-}
-
-/**
- * The skill a weapon class is fought with (the sheet's weapon skills; bows and
- * crossbows fall to Archery), as "<group>.<key>" under system.
- */
-const WEAPON_CLASS_SKILL = {
-  axe: "weaponSkills.axes",
-  blunt: "weaponSkills.blunt",
-  sword: "weaponSkills.swords",
-  polearm: "weaponSkills.polearms",
-  bow: "combatSkills.archery",
-  crossbow: "combatSkills.archery",
-};
-
-/**
- * Ranged doctrines whose weapons are fought with a combat skill, whatever the
- * weapon's class (a thrown axe is still a Throwing weapon).
- */
-const DOCTRINE_WEAPON_SKILL = {
-  archer: "combatSkills.archery",
-  arbalest: "combatSkills.archery",
-  peltast: "combatSkills.throwing",
-  juggler: "combatSkills.throwing",
-};
-
-/** How a weapon can be held (weaponGrip), plus weapons for the off hand only. */
-const WEAPON_GRIPS = ["two", "versatile", "one", "offhand"];
-
-/**
- * How each doctrine fights, which decides what its weapons are shown as in
- * the info panel (user ruling 2026-09-30). A weapon's own doctrine flags are
- * not enough on their own: the Two handed flail names Shieldbearer, but a
- * shield leaves one hand free, so a one-handed style never lists two-handed
- * weapons, and a weapon that goes in one hand or both is shown the way the
- * style holds it.
- *   oneHand  one weapon in one hand (a shield or nothing in the other)
- *   dual     a one-handed weapon in each hand
- *   twoHand  both hands on one weapon
- *   ranged   bows and crossbows
- *   thrown   thrown weapons
- *   mixed    anything goes (Rogue)
- * A doctrine not named here is shown as "mixed".
- */
-const DOCTRINE_STYLE = {
-  shieldbearer: "oneHand",
-  duelist: "oneHand",
-  dimakerus: "dual",
-  reaver: "twoHand",
-  pikeman: "twoHand",
-  swordsman: "twoHand",
-  archer: "ranged",
-  arbalest: "ranged",
-  peltast: "thrown",
-  juggler: "thrown",
-  rogue: "mixed",
-};
-
-/**
- * Per style: the info panel's weapon groups, in order. Each takes the weapons
- * of the listed grips and shows them under its label
- * (REDSTEEL.Creation.Doctrine.Group.<label>). Grips a style leaves out are
- * not shown at all.
- */
-const STYLE_GROUPS = {
-  oneHand: [
-    { label: "oneChoice", grips: ["one", "versatile"] },
-    { label: "offhand", grips: ["offhand"] },
-  ],
-  dual: [
-    { label: "dualChoice", grips: ["one", "versatile"] },
-    { label: "offhand", grips: ["offhand"] },
-  ],
-  twoHand: [
-    { label: "twoChoice", grips: ["two"] },
-    { label: "bothHands", grips: ["versatile"] },
-    { label: "oneChoice", grips: ["one"] },
-    { label: "offhand", grips: ["offhand"] },
-  ],
-  ranged: [{ label: "anyChoice", grips: ["two", "versatile", "one"] }],
-  thrown: [{ label: "thrownChoice", grips: ["two", "versatile", "one"] }],
-  mixed: [
-    { label: "twoChoice", grips: ["two"] },
-    { label: "oneChoice", grips: ["versatile", "one"] },
-    { label: "offhand", grips: ["offhand"] },
-  ],
-};
-
-/**
- * How a weapon is held, by the sheet's own reading (actor-sheet.mjs
- * _isEffectivelyTwoHanded): heavy weapons, bows and crossbows need both hands;
- * a weapon with the two-hand grip option goes in one hand or both; the rest
- * in one.
- * @returns {"two"|"versatile"|"one"}
- */
-function weaponGrip(system) {
-  if (system?.type === "heavy" || ["bow", "crossbow"].includes(system?.class)) return "two";
-  if (system?.twoHandGrip) return "versatile";
-  return "one";
-}
-
-/**
- * The weapon browser's stat lines for one weapon, labelled the way the weapon
- * sheet labels its fields: damage dice and types, Attack, Defense,
- * Penetration, Crit chance, Bleed and Stagger. Zero values are left out.
- * @returns {[string, string][]} label → value
- */
-function weaponStats(system) {
-  const i18n = game.i18n;
-  const field = (key) => i18n.localize(`REDSTEEL.Item.Weapon.FIELDS.${key}.label`);
-  const signed = (n) => (n > 0 ? `+${n}` : String(n));
-  const out = [];
-  const roll = system?.roll ?? {};
-  const dice = Number(roll.diceNum) || 0;
-  if (dice) {
-    const bonus = String(roll.diceBonus ?? "").trim();
-    const extra = bonus && bonus !== "0" ? (/^[-+]/.test(bonus) ? bonus : `+${bonus}`) : "";
-    out.push([i18n.localize("REDSTEEL.Creation.Doctrine.damage"), `${dice}d${roll.diceSize}${extra}`]);
-  }
-  const types = [system?.dmgType1, system?.dmgType2, system?.dmgType3, system?.dmgType4]
-    .filter(Boolean)
-    .map((type) => {
-      const key = `REDSTEEL.Bg3Hotbar.DamageType.${type}`;
-      return i18n.has(key, false) ? i18n.localize(key) : type;
-    });
-  if (types.length) out.push([i18n.localize("REDSTEEL.Creation.Doctrine.damageType"), types.join(", ")]);
-  for (const key of ["attack", "defense"]) {
-    const n = Number(system?.[key]) || 0;
-    if (n) out.push([field(key), `${signed(n)}%`]);
-  }
-  const penetration = Number(system?.penetration) || 0;
-  if (penetration) out.push([field("penetration"), String(penetration)]);
-  const crit = Number(system?.critChance) || 0;
-  if (crit) out.push([field("critChance"), `${signed(crit)}%`]);
-  for (const key of ["bleed", "stagger"]) {
-    const n = Number(system?.effects?.[key]) || 0;
-    if (n) out.push([field(key), `${n}%`]);
-  }
-  return out;
-}
-
-/**
- * The weapons each doctrine fights with, read from the weapons themselves:
- * a weapon names its doctrines at system.doctrines.<key> (and, for the off
- * hand only, at system.offhandProperties.doctrines.<key>). Per doctrine, the
- * weapons shown in its info panel, grouped the way its style holds them
- * (DOCTRINE_STYLE / STYLE_GROUPS), and the skills those shown weapons are
- * fought with. Each weapon's tooltip goes into FEATURE_TIPS under its id. Run
- * once per session.
- * @param {string[]} keys  the doctrines offered
- * @returns {Promise<Map<string, {skills: string[], weaponSkills: Set<string>,
- *            groups: {label: string, weapons: object[]}[]}>>}
- */
-async function buildDoctrineWeapons(keys) {
-  const pack = game.packs.get(FEATURE_PACK_ID);
-  let index = null;
-  try {
-    index = pack
-      ? await pack.getIndex({
-          fields: [
-            "img",
-            "system.class",
-            "system.type",
-            "system.twoHandGrip",
-            "system.doctrines",
-            "system.offhandProperties.doctrines",
-            "system.localizationKey",
-            "system.description",
-            // The weapon browser's stat block (weaponStats).
-            "system.roll",
-            "system.attack",
-            "system.defense",
-            "system.penetration",
-            "system.critChance",
-            "system.effects",
-            "system.dmgType1",
-            "system.dmgType2",
-            "system.dmgType3",
-            "system.dmgType4",
-          ],
-        })
-      : null;
-  } catch (err) {
-    console.warn(`Redsteel | Creation: could not index ${FEATURE_PACK_ID}`, err);
-  }
-  const weapons = (index?.contents ?? []).filter((entry) => entry.type === "weapon");
-  const lang = game.i18n.lang;
-  const skillLabel = (path) => {
-    const [group, key] = path.split(".");
-    const labelKey = `REDSTEEL.Actor.Character.${group}.${key}.label`;
-    return game.i18n.has(labelKey, false) ? game.i18n.localize(labelKey) : key;
-  };
-
-  // Every weapon's tooltip, enriched together.
-  await Promise.all(
-    weapons.map(async (entry) => {
-      if (FEATURE_TIPS.has(entry._id)) return;
-      const { name, text } = localizedNameAndText(entry);
-      FEATURE_TIPS.set(entry._id, { title: name, img: entry.img, description: await enrichText(text) });
-    }),
-  );
-
-  const out = new Map();
-  for (const key of keys) {
-    // Every weapon naming this doctrine, with how it can be held.
-    const byGrip = Object.fromEntries(WEAPON_GRIPS.map((grip) => [grip, []]));
-    for (const entry of weapons) {
-      const system = entry.system ?? {};
-      const main = !!system.doctrines?.[key];
-      const offhand = !main && !!system.offhandProperties?.doctrines?.[key];
-      if (!main && !offhand) continue;
-      byGrip[offhand ? "offhand" : weaponGrip(system)].push({
-        id: entry._id,
-        name: FEATURE_TIPS.get(entry._id)?.title ?? entry.name,
-        img: entry.img,
-        skill: DOCTRINE_WEAPON_SKILL[key] ?? WEAPON_CLASS_SKILL[system.class] ?? null,
-        stats: weaponStats(system),
-      });
-    }
-    // The style decides which of them show, and under which heading.
-    const groups = (STYLE_GROUPS[DOCTRINE_STYLE[key] ?? "mixed"] ?? STYLE_GROUPS.mixed)
-      .map(({ label, grips }) => ({
-        label,
-        weapons: grips
-          .flatMap((grip) => byGrip[grip])
-          .sort((a, b) => a.name.localeCompare(b.name, lang)),
-      }))
-      .filter((group) => group.weapons.length);
-    for (const group of groups) {
-      for (const weapon of group.weapons) weapon.skillLabel = weapon.skill ? skillLabel(weapon.skill) : "";
-    }
-    const skills = new Set(
-      groups.flatMap((group) => group.weapons.map((w) => w.skillLabel)).filter(Boolean),
-    );
-    // The weapon skills (keys) the shown weapons are fought with: step 2.5
-    // offers only these to the doctrine.
-    const weaponSkills = new Set(
-      groups
-        .flatMap((group) => group.weapons.map((w) => w.skill))
-        .filter((path) => path?.startsWith("weaponSkills."))
-        .map((path) => path.split(".")[1]),
-    );
-    out.set(key, { skills: [...skills].sort((a, b) => a.localeCompare(b, lang)), weaponSkills, groups });
-  }
-  return out;
 }
 
 /**
@@ -861,7 +617,6 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
       pickWeapon: CharacterCreationWindow._onPickWeapon,
       pickCombatSkill: CharacterCreationWindow._onPickCombatSkill,
       pickMagicDoctrine: CharacterCreationWindow._onPickMagicDoctrine,
-      pageWeapon: CharacterCreationWindow._onPageWeapon,
       closeScreen: CharacterCreationWindow._onCloseScreen,
     },
   };
@@ -930,7 +685,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
 
   /**
    * The weapons each offered doctrine fights with, by doctrine key:
-   * {skills, groups: {two, versatile, one, offhand}} (buildDoctrineWeapons).
+   * {skills, weaponSkills, groups} (compatibleWeapons.mjs).
    * Loaded with the ladders.
    */
   #doctrineWeapons = null;
@@ -1116,7 +871,10 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     const keys = this.#doctrineKeys();
     CACHE.ladders ??= buildDoctrineLadders(keys);
     CACHE.skillLadders ??= buildTrackLadders(Object.keys(SKILL_CARDS));
-    CACHE.weapons ??= buildDoctrineWeapons(keys);
+    // By doctrine key, as #doctrineWeapons reads it.
+    CACHE.weapons ??= loadCompatibleWeapons().then(
+      (catalog) => new Map(keys.map((key) => [key, catalog.get(`doctrines.${key}`)]).filter(([, v]) => v)),
+    );
     [this.#doctrineLadders, this.#doctrineWeapons, this.#skillLadders] = await Promise.all([
       CACHE.ladders,
       CACHE.weapons,
@@ -1127,9 +885,10 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
 
   /**
    * The info panel's opening for one doctrine: what it is about, then its
-   * weapon requirements in words (REDSTEEL.Creation.Doctrine.Info.<key>) and
-   * the weapon skills its weapons are fought with. "" for a doctrine with no
-   * text written.
+   * weapon requirements in words (REDSTEEL.Creation.Doctrine.Info.<key>), the
+   * weapon skills its weapons are fought with, and the "Compatible weapons"
+   * pill, which on click lists the weapons in a tooltip (compatibleWeapons).
+   * "" for a doctrine with nothing to say.
    */
   #doctrineAboutHtml(key) {
     const i18n = game.i18n;
@@ -1139,88 +898,19 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
       i18n.has(labelKey, false) ? `<p class="rs-create-doctrine-text">${escapeHtml(i18n.localize(labelKey))}</p>` : "";
     const about = text(`REDSTEEL.Creation.Doctrine.Info.${key}.about`);
     const weapons = text(`REDSTEEL.Creation.Doctrine.Info.${key}.weapons`);
-    const skills = this.#doctrineWeapons?.get(key)?.skills ?? [];
+    const data = this.#doctrineWeapons?.get(key);
+    const skills = data?.skills ?? [];
+    const pill = data?.groups.length ? compatibleWeaponsPill(`doctrines.${key}`, "rs-create-skill-chip") : "";
     let html = about ? title("REDSTEEL.Creation.Doctrine.about") + about : "";
-    if (weapons || skills.length) {
+    if (weapons || skills.length || pill) {
       html += title("REDSTEEL.Creation.Doctrine.requirements") + weapons;
-      if (skills.length) {
+      if (skills.length || pill) {
         html += `<div class="rs-create-skill-chips">${skills
           .map((skill) => `<span class="rs-create-skill-chip">${escapeHtml(skill)}</span>`)
-          .join("")}</div>`;
+          .join("")}${pill}</div>`;
       }
     }
     return html;
-  }
-
-  /**
-   * The info panel's weapon browser for one doctrine: one weapon at a time
-   * (icon, name, how it is held, skill, stats), paged with the arrows, and
-   * below it every weapon by name, grouped by how they are held, each one
-   * jumping the browser to it (_onPageWeapon). "" when the doctrine names no
-   * weapon.
-   */
-  #doctrineWeaponsHtml(key) {
-    const data = this.#doctrineWeapons?.get(key);
-    if (!data?.groups.length) return "";
-    const i18n = game.i18n;
-    const all = data.groups.flatMap(({ label, weapons: list }) => list.map((weapon) => ({ label, weapon })));
-    const pages = all
-      .map(({ label, weapon }, index) => {
-        const facts = [
-          ...(weapon.skillLabel ? [[i18n.localize("REDSTEEL.Creation.Doctrine.skill"), weapon.skillLabel]] : []),
-          ...weapon.stats,
-        ];
-        return (
-          `<div class="rs-create-weapon-page${index ? "" : " is-current"}" data-index="${index}">` +
-          `<div class="rs-create-weapon-head">` +
-          `<img class="rs-create-weapon-icon" src="${escapeHtml(weapon.img)}" alt="">` +
-          `<div class="rs-create-weapon-name">${escapeHtml(weapon.name)}` +
-          `<span class="rs-create-weapon-grip">${escapeHtml(i18n.localize(`REDSTEEL.Creation.Doctrine.Group.${label}`))}</span>` +
-          `</div></div>` +
-          (facts.length
-            ? `<dl class="rs-create-info-facts">${facts
-                .map(([dt, dd]) => `<dt>${escapeHtml(dt)}</dt><dd>${escapeHtml(dd)}</dd>`)
-                .join("")}</dl>`
-            : "") +
-          `</div>`
-        );
-      })
-      .join("");
-    const step = (dir, icon, labelKey) =>
-      `<button type="button" class="rs-create-weapon-step" data-action="pageWeapon" data-step="${dir}" ` +
-      `aria-label="${escapeHtml(i18n.localize(labelKey))}" data-tooltip="${escapeHtml(i18n.localize(labelKey))}">` +
-      `<i class="fa-solid ${icon}"></i></button>`;
-    let index = 0;
-    const list = data.groups
-      .map(
-        ({ label, weapons: group }) =>
-          `<div class="rs-create-weapon-group">` +
-          `<span class="rs-create-weapon-grip">${escapeHtml(i18n.localize(`REDSTEEL.Creation.Doctrine.Group.${label}`))}</span>` +
-          `<div class="rs-create-weapon-index">${group
-            .map((weapon) => {
-              const i = index++;
-              return (
-                `<button type="button" class="rs-create-weapon-jump${i ? "" : " is-current"}" data-action="pageWeapon" data-index="${i}">` +
-                `<img src="${escapeHtml(weapon.img)}" alt="">${escapeHtml(weapon.name)}</button>`
-              );
-            })
-            .join("")}</div></div>`,
-      )
-      .join("");
-    return (
-      `<h4 class="rs-create-info-subtitle">${escapeHtml(i18n.localize("REDSTEEL.Creation.Doctrine.browse"))}</h4>` +
-      `<div class="rs-create-weapon-browser" data-count="${all.length}">` +
-      `<div class="rs-create-weapon-nav">` +
-      step(-1, "fa-chevron-left", "REDSTEEL.Creation.Doctrine.prev") +
-      `<span class="rs-create-weapon-count">${escapeHtml(
-        i18n.format("REDSTEEL.Creation.Doctrine.page", { n: 1, total: all.length }),
-      )}</span>` +
-      step(1, "fa-chevron-right", "REDSTEEL.Creation.Doctrine.next") +
-      `</div>` +
-      pages +
-      list +
-      `</div>`
-    );
   }
 
   /** The info panel's "Racial features" block for one race, or "". */
@@ -1808,13 +1498,12 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
         `<span class="rs-dc-crest"><img src="${escapeHtml(crest)}" alt=""></span></div>`;
       map.set(
         `doctrine:${key}`,
-        // What the doctrine is and what it fights with first, then the
-        // weapon browser, then the ranks.
+        // What the doctrine is and what it fights with first, then the ranks.
         head +
           frame(
             this.#doctrineLabel(key),
             meta,
-            requirement + this.#doctrineAboutHtml(key) + this.#doctrineWeaponsHtml(key) + path,
+            requirement + this.#doctrineAboutHtml(key) + path,
           ),
       );
     }
@@ -1866,7 +1555,13 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
         `<span class="rs-dc-crest"><img src="${escapeHtml(card.img)}" alt=""></span></div>`;
       map.set(
         `skill:${trackId}`,
-        head + frame(this.#skillLabel(trackId), meta, this.#rankPathHtml(trackId, this.#skillLadders?.get(trackId) ?? [])),
+        // A weapon skill's weapons (the "Compatible weapons" pill), then its ranks.
+        head +
+          frame(
+            this.#skillLabel(trackId),
+            meta,
+            this.#skillWeaponsHtml(trackId) + this.#rankPathHtml(trackId, this.#skillLadders?.get(trackId) ?? []),
+          ),
       );
     }
     return map;
@@ -1911,6 +1606,21 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     );
   }
 
+  /**
+   * The info panel's weapons block for a 2.5 skill card: the "Compatible
+   * weapons" pill, which lists on click every weapon the skill covers
+   * (compatibleWeapons.mjs; the catalog is in by step 2). "" for a skill with
+   * no weapons of its own (Combat, Archery, Channeling).
+   */
+  #skillWeaponsHtml(trackId) {
+    const pill = compatibleWeaponsPill(trackId, "rs-create-skill-chip");
+    if (!pill) return "";
+    return (
+      `<h4 class="rs-create-info-subtitle">${escapeHtml(game.i18n.localize("REDSTEEL.Creation.Doctrine.weapons"))}</h4>` +
+      `<div class="rs-create-skill-chips">${pill}</div>`
+    );
+  }
+
   /** A combat or weapon skill's localized name, by track id. */
   #skillLabel(trackId) {
     const [group, key] = trackId.split(".");
@@ -1926,7 +1636,6 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     const i18n = game.i18n;
     const [group, key] = trackId.split(".");
     const card = SKILL_CARDS[trackId];
-    const ladder = this.#skillLadders?.get(trackId) ?? [];
     return {
       key,
       kind: card.kind,
@@ -1939,8 +1648,6 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
         group === "weaponSkills" ? "REDSTEEL.Creation.Details.weaponSkill" : "REDSTEEL.Creation.Details.combatSkill",
       ),
       crest: card.img,
-      ladder,
-      ladderCols: Math.max(1, Math.min(5, ladder.length)),
       selected,
       locked: false,
       fixed: !!fixedText,
@@ -1957,7 +1664,6 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
   #doctrineCard(key, { editable, action = "toggleDoctrine", selected, locked = false } = {}) {
     const i18n = game.i18n;
     const kind = getLearnSection(`doctrines.${key}`);
-    const ladder = this.#doctrineLadders?.get(key) ?? [];
     return {
       key,
       kind,
@@ -1967,9 +1673,6 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
       label: this.#doctrineLabel(key),
       kindLabel: i18n.localize(`REDSTEEL.Creation.Doctrine.Kind.${kind}`),
       crest: this.#doctrineCrest(key),
-      ladder,
-      // Ladder columns: one per ability, five at most.
-      ladderCols: Math.max(1, Math.min(5, ladder.length)),
       selected: selected ?? this.#draft.doctrines.includes(key),
       locked,
       lockText: locked ? i18n.localize("REDSTEEL.Creation.Doctrine.needsMagic") : "",
@@ -1997,7 +1700,6 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
         label: this.#schoolLabel(key),
         kindLabel: i18n.localize("REDSTEEL.Creation.Doctrine.Kind.magical"),
         glyph: SCHOOL_GLYPHS[key],
-        ladder: [],
         selected,
         locked: !magicOpen,
         lockText: !magicOpen ? i18n.localize("REDSTEEL.Creation.Doctrine.needsMagic") : "",
@@ -2155,7 +1857,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
   /**
    * A weapon skill the doctrine can train with: one its weapons are fought
    * with (user ruling 2026-10-06: a Reaver takes no Swords or Polearms). Read
-   * off the weapons naming the doctrine (buildDoctrineWeapons). A doctrine
+   * off the weapons naming the doctrine (compatibleWeapons.mjs). A doctrine
    * with no weapon skill found, or data not loaded, allows every skill rather
    * than locking the player out.
    */
@@ -2746,30 +2448,6 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     this.#info = `doctrine:${key}`;
     this.#draft.doctrines = [...this.#draft.doctrines.filter((k) => !isMagicalDoctrine(k)), key];
     await this.#commit();
-  }
-
-  /**
-   * The info panel's weapon browser: page by an arrow (data-step, wrapping
-   * round) or jump to a weapon by name (data-index). Only the panel's DOM
-   * changes, so nothing re-renders and the panel keeps its scroll.
-   * @this {CharacterCreationWindow}
-   */
-  static _onPageWeapon(event, target) {
-    event.preventDefault();
-    const browser = target?.closest?.(".rs-create-weapon-browser");
-    const count = Number(browser?.dataset.count) || 0;
-    if (!count) return;
-    const current = Number(browser.querySelector(".rs-create-weapon-page.is-current")?.dataset.index) || 0;
-    const index =
-      target.dataset.index !== undefined
-        ? Number(target.dataset.index)
-        : (current + Number(target.dataset.step) + count) % count;
-    if (!Number.isInteger(index) || index < 0 || index >= count) return;
-    for (const el of browser.querySelectorAll(".rs-create-weapon-page, .rs-create-weapon-jump")) {
-      el.classList.toggle("is-current", Number(el.dataset.index) === index);
-    }
-    const label = browser.querySelector(".rs-create-weapon-count");
-    if (label) label.textContent = game.i18n.format("REDSTEEL.Creation.Doctrine.page", { n: index + 1, total: count });
   }
 
   /**

@@ -16,21 +16,24 @@ foundry
 *.log
 
 # Local notes / working documents (not part of releases)
-module/instructions.md
+# Every Markdown file is ignored, except the ones shipped with the system.
+*.md
+!/README.md
+!/CHANGELOG.md
 Kniha kouzel pro ToS V12.1 (WIP).xlsx
 Pravidla pro ToS V12.1 (WIP).xlsx
-SPELL_EFFECTS_ANALYSIS.md
-SPECIALISATIONS.md
 feature-price-review.xlsx
 
 # One-off dev/utility scripts (not part of releases)
+# System code (module/, tools/) is .mjs/.js and stays tracked.
 scripts/
 __pycache__/
+*.py
 *.pyc
-inspect2.py
-inspect_lines.py
-replace_rows2.py
-replace_skill_rows.py
+*.ps1
+*.sh
+*.bat
+*.cmd
 
 # Local build output / release artifacts
 release/
@@ -38,10 +41,3 @@ redsteel.zip
 
 # Local tool settings
 .claude/
-CLAUDE.md
-PROJECT_SCOPE.md
-SPELL_EFFECTS_DEV_PLAN.md
-SPELL_EFFECTS.md
-SPECIALISATION_DEV_PLAN.md
-ABILITY_GRANTS_GAPS.md
-HOTBAR_UI_NOTES.md

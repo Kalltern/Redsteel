@@ -4873,7 +4873,10 @@
           "bothHands": "Jednoruční zbraně dle volby, držené oběma rukama",
           "anyChoice": "Zbraně dle volby",
           "thrownChoice": "Vrhací zbraně dle volby",
-          "offhand": "Jen do druhé ruky"
+          "offhand": "Jen do druhé ruky",
+          "twoHanded": "Obouruční",
+          "versatile": "Jednou či oběma rukama",
+          "oneHanded": "Jednoruční"
         },
         "chosen": "Zvoleno",
         "Kind": {
@@ -4884,54 +4887,50 @@
         },
         "about": "O doktríně",
         "requirements": "Požadavky na zbraně",
-        "browse": "Procházet zbraně",
-        "prev": "Předchozí zbraň",
-        "next": "Další zbraň",
-        "page": "{n} z {total}",
         "Info": {
           "swordsman": {
             "about": "Umění dlouhé čepele vedené oběma rukama. Šermíř seká zeširoka, útočí dalekým výpadem, dobře načasovanou obranu mění v protiútok a zanechává krvácející rány.",
-            "weapons": "Meče držené oběma rukama: obouruční meč jako Dlouhý meč či Flamberg, nebo Široký meč uchopený oběma rukama. Cvičí se ve zbraňové dovednosti Meče."
+            "weapons": "Meče držené oběma rukama: obouruční meč, nebo jednoruční meč uchopený oběma rukama. Cvičí se ve zbraňové dovednosti Meče."
           },
           "shieldbearer": {
             "about": "Hradba z oceli a dřeva. Štítonoš bojuje zpoza štítu, udeří jím i vtrhne s ním do boje, chrání blízké spojence a kryje si vlastní boky.",
-            "weapons": "Jen jednoruční zbraně, protože druhá ruka nese štít: lehké a střední meče, sekery, palice a řemdihy, nebo Kopí držené jednou rukou. Nikdy obouruční zbraň."
+            "weapons": "Jen jednoruční zbraně, protože druhá ruka nese štít: lehké a střední meče, sekery, palice, řemdihy a kopí. Nikdy obouruční zbraň."
           },
           "reaver": {
             "about": "Hrubá, brutální síla. Plenitel máchá těžkými sekerami a kladivy v širokých sečích, rozšiřuje svůj kritický rozsah, vrhá se do zběsilých útoků a sráží soupeře k zemi.",
-            "weapons": "Těžké sekery, kladiva a cepy v obou rukou (Berdyš, Dlouhá sekera, Obouruční kladivo, Bojový cep), nebo Válečná sekera, Válečné kladivo, Válečný krumpáč či Řemdih uchopené oběma rukama."
+            "weapons": "Těžké sekery, kladiva a cepy v obou rukou, nebo střední zbraň uchopená oběma rukama."
           },
           "pikeman": {
             "about": "Mistr dosahu. Pikenýr drží nepřátele v odstupu, nabodává útočící soupeře, má výhodu proti velkým tvorům, trestá každé odkrytí příležitostným útokem a odstrkuje nepřátele.",
-            "weapons": "Dřevcové zbraně držené oběma rukama: Halapartna, Glefa, Bec de Corbin, nebo Kopí či Oštěp (zblízka) uchopené oběma rukama. Cvičí se ve zbraňové dovednosti Dřevcové."
+            "weapons": "Dřevcové zbraně držené oběma rukama. Cvičí se ve zbraňové dovednosti Dřevcové."
           },
           "dimakerus": {
             "about": "Bojovník se dvěma zbraněmi. Dimakerus útočí zbraní v každé ruce, rozpoutává smršť útoků, oplácí rány odvetným úderem a z druhé čepele získává obranu.",
-            "weapons": "Jednoruční zbraň v každé ruce: lehké či střední meče, sekery, palice a řemdihy. Některé zbraně, jako Široký meč a Vrhací nůž, patří jen do druhé ruky."
+            "weapons": "Jednoruční zbraň v každé ruce: lehké či střední meče, sekery, palice a řemdihy. Některé zbraně patří jen do druhé ruky."
           },
           "duelist": {
             "about": "Přesnost nad silou. Duelista pečlivě míří, po zásahu o míření nepřichází, tančí kolem soupeřů Duelistovým krokem a útočí v pohybu.",
-            "weapons": "Šermířská zbraň v hlavní ruce (Rapír, Dýka nebo Vojenský sekáček) a podle chuti Šermířská dýka v druhé ruce. Cvičí se ve zbraňové dovednosti Meče."
+            "weapons": "Šermířská zbraň v hlavní ruce a podle chuti šermířská dýka v druhé ruce. Cvičí se ve zbraňové dovednosti Meče."
           },
           "rogue": {
             "about": "Špinavý bojovník. Tulák udeří tam, kde to bolí, přidává zranění zákeřného útoku proti překvapeným či nebránícím se soupeřům a z každého zásahu dělá nové odkrytí. Jediná doktrína, která může stát vedle jiné.",
-            "weapons": "Žádný jediný styl: dýky, krátké čepele, lehké palice, kopí, luky i kuše. Tulák nepřináší vlastní zbraňovou dovednost a pracuje se zbraněmi své druhé doktríny."
+            "weapons": "Žádný jediný styl: čepele, palice, kopí, luky i kuše. Tulák nepřináší vlastní zbraňovou dovednost a pracuje se zbraněmi své druhé doktríny."
           },
           "archer": {
             "about": "Trpělivý lučištník. Lukostřelec střílí přesněji, mrzačí cíle, míří na slabiny a zasazuje přesné výstřely, které probíjí zbroj.",
-            "weapons": "Jen luky: Lovecký luk, Reflexní luk nebo Dlouhý luk, vždy držené oběma rukama. Bojuje bojovou dovedností Střelba."
+            "weapons": "Jen luky, vždy držené oběma rukama. Bojuje bojovou dovedností Střelba."
           },
           "arbalest": {
             "about": "Těžké šipky z pevného postoje. Kušník zasahuje každou ranou tvrději, míří na slabiny, mrzačí cíle a drží stráž nad bojištěm.",
-            "weapons": "Jen kuše: Kuše nebo Těžká kuše, vždy držené oběma rukama. Bojuje bojovou dovedností Střelba."
+            "weapons": "Jen kuše, vždy držené oběma rukama. Bojuje bojovou dovedností Střelba."
           },
           "peltast": {
             "about": "Lehkooděnec. Peltast vrhá těžké oštěpy a sekery, po kterých soupeři krvácí a vrávorají, vrhá s rozběhem a rozpoutává zběsilé vrhy.",
-            "weapons": "Vrhací zbraně: Oštěp a Vrhací sekera. Vrhá dovedností Vrh a jako bojovou dovednost si volí Souboj nebo Střelbu."
+            "weapons": "Oštěpy a vrhací sekery. Vrhá dovedností Vrh a jako bojovou dovednost si volí Souboj nebo Střelbu."
           },
           "juggler": {
             "about": "Rychlé ruce a lehké čepele. Kejklíř vrhá rychle a přesně, častěji kriticky zasahuje, míří vrhy na slabiny a drží stráž nad bojištěm.",
-            "weapons": "Vrhací zbraně: Vrhací nůž a Vrhací sekera. Vrhá dovedností Vrh a bojuje bojovou dovedností Střelba."
+            "weapons": "Vrhací nože a vrhací sekery. Vrhá dovedností Vrh a bojuje bojovou dovedností Střelba."
           },
           "elymas": {
             "about": "Vytrvalý mág. Elymas buduje hlubokou zásobu many, která roste s jeho mocí, obnovuje ji dlouhým odpočinkem, halí se do magického obrnění a zklidňuje svá kouzla.",
@@ -4948,7 +4947,8 @@
         },
         "damage": "Zranění",
         "damageType": "Typ zranění",
-        "skill": "Dovednost"
+        "skill": "Dovednost",
+        "compatibleWeapons": "Kompatibilní zbraně"
       },
       "Race": {
         "Vardur": "Vardur"
@@ -5539,7 +5539,8 @@
       "Superseded": "Přehozeno — tento výsledek už neplatí.",
       "Used": "Přehozeno pomocí: {source}.",
       "Free": "Přehozeno bez spotřebování přehozu.",
-      "PatientGone": "Pacient tohoto pokusu už na scéně není."
+      "PatientGone": "Pacient tohoto pokusu už na scéně není.",
+      "PromptRetired": "Přehozeno"
     },
     "RollTriggers": {
       "Hint": "Odděleno čárkami. Štítky se zobrazí v chatu, když padne odpovídající hod. Vlastnosti piš zkratkou (str, res). Přidej -gm k jakémukoli spouštěči (universal-gm, str-based-gm) a jeho štítek uvidí jen GM. long-rest zobrazí štítek na kartě dlouhého odpočinku postavy (universal na ni nedosáhne).",
@@ -5803,6 +5804,18 @@
       "DetailPrecision": "Ověření",
       "PrecisionProc": "Ověření!"
     },
+    "Traits": {
+      "ElderBlood": {
+        "PickerTitle": "Starší krev: vyber bonus",
+        "Mana": "Základ many +2",
+        "Health": "Životy +5",
+        "PickLater": "Bonus Starší krve nebyl vybrán. Vybrat jde později zapnutím jednoho z jejích efektů na rysu."
+      },
+      "HatedEnemy": {
+        "PickerTitle": "Nenáviděný nepřítel: vyber Metlu",
+        "PickLater": "Metla Nenáviděného nepřítele nebyla vybrána. Pro výběr rys odeber a přidej znovu."
+      }
+    },
     "Tooltip": {
       "successChance": "Šance na úspěch",
       "rating": "Hodnota",
@@ -5923,6 +5936,10 @@
         "desc": "Každé neošetřené těžké zranění dává -5 % na všechny testy. Ošetření vrátí 3 % z tohoto postihu a samotné zranění zmizí až po řádném léčení."
       }
     },
+    "EffectName": {
+      "corrupted": "Zkažený",
+      "possessed": "Posednutý"
+    },
     "EffectDesc": {
       "stagger": "-10 % na všechny testy. Nemůže provádět příležitostné útoky. Trvá 2 tahy a Ochromení nebo Ochrnutí ho nahradí.",
       "bleed": "Způsobí 1d4 zranění za každý stupeň při uvalení a znovu na začátku každého kola. Sčítá se až do 6 stupňů.",
@@ -5987,7 +6004,7 @@
       "corrupted": "Stupeň Zkaženosti 2 nebo vyšší (61+). Postava se počítá jako Zkažená a hody na obranu nesou připomínku pro účinky Světla a zázraků. Synchronizuje se automaticky s Korupcí.",
       "possessed": "Ovládán vítězem Mentálního souboje, který sdílí ovládání žetonu. Odstranění tohoto efektu posednutí ukončí a vrátí původní vlastnictví.",
       "shield_strain": "Štít přestává pomáhat: jeho Obrana, Kryt, kritická obrana, zbroj a bonus k Životům klesají na 0. Jeho postihy k Úhybu, Iniciativě a Rychlosti zůstávají.",
-      "paralyze": "-40 % na všechny testy. Nemůže provádět příležitostné útoky. Trvá 2 tahy a nahrazuje Ochromení i Omráčení.",
+      "paralyze": "-40 % na všechny testy. Nemůže provádět příležitostné útoky. Trvá 3 tahy a nahrazuje Ochromení i Omráčení.",
       "blind": "-30 % na Souboj, -50 % na Střelbu a Vrh a -15 % na Obranu, Kryt a Úhyb. Nemůže provádět příležitostné útoky.",
       "dazzled": "-10 % na Souboj a -20 % na Střelbu a Vrh. Nemůže provádět příležitostné útoky. Trvá 2 tahy.",
       "disorientation": "-10 % na všechny testy. Trvá 3 tahy.",
@@ -6060,6 +6077,179 @@
         "Button": "Koncentrace (1 akce)",
         "Hint": "Utrať 1 akci: +{bonus} % na Mentální souboj do tvého dalšího tahu. Každé použití se sčítá.",
         "NoActions": "V tomto kole ti nezbývají žádné akce."
+      },
+      "Window": {
+        "Title": "Mentální souboj",
+        "RatingWill": "Vůle",
+        "RatingDuel": "Souboj",
+        "TokenGone": "Žeton jednoho ze soupeřů už na scéně není.",
+        "Close": "Zavřít",
+        "Draw": "Obě mysli se hroutí. Souboj končí nerozhodně.",
+        "PossessedNote": "{winner} ovládl mysl postavy {loser}. Pro propuštění odstraň ze žetonu stav „{status}“.",
+        "Seize": "Ovládnout",
+        "NoDomination": "{winner} nemá schopnost Ovládnutí a nemůže převzít kontrolu.",
+        "DrainButton": "Vysát: {loser} (+{amount} Mysl)",
+        "Breaks": "{winner} zlomil vůli postavy {loser}.",
+        "MindValue": "Mysl <b>{value}</b> / {max}",
+        "Reason": {
+          "NotYours": "Tohoto soupeře neovládáš",
+          "Over": "Souboj skončil",
+          "NotStarted": "Vypravěč ještě Mentální souboj nezahájil",
+          "Pending": "Jedna výměna ještě není uzavřená",
+          "AlreadyAttacked": "V tomto kole už proběhl útok",
+          "WaitTurn": "Počkej si v tomto kole na svůj tah",
+          "Attack": "Za Volnou akci zaútoč"
+        },
+        "Attacks": "{name} útočí",
+        "EndHintGM": "Ukončit souboj pro všechny",
+        "EndHintPlayer": "Nemáš moc ukončit souboj předčasně",
+        "End": "Ukončit souboj",
+        "Start": "Zahájit Mentální souboj",
+        "StartNote": "Dokud souboj nezahájíš, nemůže útočit žádná strana.",
+        "WaitingForGM": "Čeká se, až Vypravěč zahájí Mentální souboj…"
+      },
+      "Charge": {
+        "Title": "Mentální zteč",
+        "Intro": "Šance na zahájení Mentálního souboje: <b>{chance} %</b>. Vyčerpej Mysl a vynuť si zahájení: <b>+{step} %</b> za každý bod, nejvýše <b>{cap} %</b>.",
+        "BurnLabel": "Mysl k vyčerpání (máš {mind}, nejvýše {max})",
+        "FreeActionNote": "Volná akce, ohlášená před hodem na seslání. Mysl se vyčerpá bez ohledu na to, zda seslání uspěje.",
+        "BurnAllWarning": "Vyčerpáním všech {mind} bodů Mysli bys zahájil souboj s již zlomenou myslí.",
+        "Charge": "Zteč",
+        "NoCharge": "Bez zteče"
+      },
+      "Initiation": {
+        "NoTarget": "Mentální souboj: pro zahájení souboje zaměř soupeře.",
+        "CritBreakdown": "Kritický úspěch: souboj nelze odmítnout.",
+        "CritCharged": "({amount} Mysli vyčerpáno na Mentální zteč před hodem)",
+        "Base": "základ {chance} %",
+        "Perks": "+{bonus} % ze schopností",
+        "Charge": "+{bonus} % Mentální zteč ({amount} Mysli vyčerpáno)",
+        "Title": "Mentální souboj: zahájení",
+        "Result": "Šance na zahájení: <b>{chance} %</b>, padlo {roll} →",
+        "Begins": "Souboj začíná!",
+        "NotTriggered": "Nezahájen",
+        "MayAccept": "Cíl může souboj stále dobrovolně přijmout."
+      },
+      "Assault": {
+        "AlreadyUsed": "Mentální nápor už byl v tomto kole použit",
+        "Hint": "Test Mentálního souboje s postihem {penalty} %. Výhra vyčerpá navíc {extra} Mysli.",
+        "Button": "Nápor ({penalty} %)",
+        "PendingNote": "Mentální nápor: {name} útočí s postihem {penalty} %. Výhra vyčerpá navíc {extra} Mysli.",
+        "Result": "Mentální nápor: {name} udeřil s postihem {penalty} %.",
+        "ResultDrained": "Mentální nápor: {name} udeřil s postihem {penalty} % (vyčerpáno navíc {amount} Mysli)."
+      },
+      "Pending": {
+        "Crit": "kritický úspěch",
+        "Fumble": "kritický neúspěch",
+        "Rerolled": "Přehozeno: {label}",
+        "RerollStands": "přehození platí",
+        "LockedIn": "potvrzeno",
+        "WaitingFor": "čeká se na: {name}…",
+        "RerollHint": "Použij na tento test přehození",
+        "Reroll": "Přehodit",
+        "AcceptHint": "Ponechat tento hod",
+        "Accept": "Přijmout",
+        "Attacker": "útočník",
+        "Defender": "obránce",
+        "Roll": "d100 <b>{raw}</b> → stupeň úspěchu <b>{margin}</b>",
+        "Provisional": "{winner} by zvítězil. {loser} ztrácí <b>{amount}</b> Mysli.",
+        "ProvisionalLabel": "Předběžně:",
+        "ResolveHint": "Potvrdit oba hody a uplatnit výsledek",
+        "Resolve": "Vyhodnotit hned",
+        "Title": "Výměna hozena: přehoď, nebo přijmi"
+      },
+      "Result": {
+        "Rerolled": "přehozeno: {label}",
+        "Prevails": "{winner} vítězí. {loser} ztrácí <b>{amount}</b> Mysli.",
+        "PrevailsDecisive": "{winner} vítězí. {loser} ztrácí <b>{amount}</b> Mysli (drtivě!).",
+        "Holds": "{winner} odolává. {loser} ztrácí <b>{amount}</b> Mysli.",
+        "HoldsDecisive": "{winner} odolává. {loser} ztrácí <b>{amount}</b> Mysli (drtivě!).",
+        "Title": "Mentální souboj",
+        "Pair": "{attacker} proti {defender}"
+      },
+      "Gamble": {
+        "Rock": "Kámen",
+        "Paper": "Papír",
+        "Scissors": "Nůžky",
+        "CoinPending": "Hod mincí se teprve hodí…",
+        "Declined": "{name} sázku odmítl.",
+        "CannotAfford": "Mince určila postavu {name}, ale ta si sázku nemůže dovolit.",
+        "Replenishes": "Sázka se obnoví v příštím kole.",
+        "Chosen": "Mince padla na tebe. Přijmeš sázku?",
+        "TooLow": "Na sázku potřebuješ víc než 1 bod Mysli",
+        "AcceptHint": "Přijmi a zaplať 1 bod Mysli. Prohra stojí ještě jeden bod",
+        "Accept": "Přijmout (zaplatit 1 Mysl)",
+        "Decline": "Odmítnout",
+        "WaitingFor": "Čeká se na rozhodnutí: <b>{name}</b>…",
+        "CoinChose": "Mince určila: <b>{name}</b>",
+        "Committed": "zvoleno",
+        "Choose": "{name}, vyber:",
+        "Choosing": "vybírá…",
+        "Staked": "<b>{name}</b> vsadil 1 bod Mysli (při prohře ztratí 2). Vybírá se jednou, volbu nelze změnit",
+        "Versus": "proti",
+        "VerdictDraw": "Remíza: nikdo neztrácí Mysl. Vsazená Mysl propadá.",
+        "VerdictInitiatorWins": "{winner} vítězí a získává vsazenou Mysl zpět. {loser} ztrácí 1 bod Mysli.",
+        "VerdictInitiatorLoses": "{winner} vítězí. {loser} (iniciátor) ztrácí 2 body Mysli: sázku i prohru.",
+        "SomeCombatant": "jeden ze soupeřů",
+        "CardOffered": "Hod mincí: <b>{name}</b> dostává nabídku sázky Kámen, nůžky, papír.",
+        "CardCannotAfford": "Hod mincí určil: <b>{name}</b>, ale na sázku nemá dost Mysli.",
+        "CardDraw": "Remíza: vsazená Mysl propadá.",
+        "CardInitiatorWins": "{winner} vyhrává sázku a získává vklad zpět. {loser} ztrácí 1 bod Mysli.",
+        "CardInitiatorLoses": "{winner} vyhrává sázku. {loser} (iniciátor) ztrácí 2 body Mysli: vsazený bod i prohru."
+      },
+      "Drain": {
+        "BrokenMind": "zlomená mysl",
+        "Card": "<b>{winner}</b> vysává: <b>{loser}</b>. Obnoveno <b>+{amount}</b> Mysli.",
+        "CardFull": "<b>{winner}</b> vysává: <b>{loser}</b>, ale Mysl už má plnou. Nic nezískává."
+      },
+      "Possession": {
+        "AlreadyPossessed": "{name} už je posednutý.",
+        "ControlPasses": "Kontrolu nad postavou <b>{loser}</b> přebírají hráči postavy {winner}, dokud se neodstraní stav „{status}“.",
+        "Released": "Postava <b>{name}</b> je propuštěna z posednutí, které držel {winner}. Kontrola se vrací do normálu.",
+        "ReleasedNoWinner": "Postava <b>{name}</b> je propuštěna z posednutí. Kontrola se vrací do normálu.",
+        "NoPlayer": "Postavu {winner} nevlastní žádný hráč. Značka je přidána, aby loutku ovládal Vypravěč.",
+        "Seizes": "<b>{winner}</b> přebírá kontrolu nad postavou <b>{loser}</b>."
+      },
+      "Voluntary": {
+        "NoResponder": "Za cíl nemůže Mentální souboj přijmout žádný aktivní hráč ani Vypravěč.",
+        "Awaiting": "Čeká se, zda Mentální souboj přijme: {name}…",
+        "TargetOwner": "vlastník cíle",
+        "ForcedFailed": "Vynucené zahájení selhalo ({chance} % → padlo {roll}).",
+        "Title": "Mentální souboj",
+        "Invite": "<b>{attacker}</b> sahá do mysli postavy <b>{defender}</b> a vyzývá ji k Mentálnímu souboji.",
+        "Question": "Přijímáš souboj dobrovolně?",
+        "Refuses": "<b>{name}</b> odmítá Mentální souboj."
+      },
+      "Notify": {
+        "NotYours": "Postavu {name} neovládáš.",
+        "ExchangeOpen": "Poslední výměna je stále otevřená. Než zaútočíš znovu, uzavři ji.",
+        "NoAssault": "{name} nemá Mentální nápor.",
+        "AssaultUsed": "{name} už v tomto kole Mentální nápor použil.",
+        "AlreadyAttacked": "{name} už v tomto kole zaútočil.",
+        "NotActedYet": "{name} ještě v tomto kole nebyl na tahu.",
+        "NoCritFailReroll": "Nemáš žádné přehození, které by smělo přehodit Kritický neúspěch.",
+        "NoReroll": "Nemáš k dispozici žádné vhodné přehození.",
+        "RerollSpent": "Toto přehození už bylo použito.",
+        "SelectTokens": "Pro zahájení Mentálního souboje vyber svůj žeton a zaměř soupeře (nebo vyber oba žetony).",
+        "SelfDuel": "Nikdo nemůže svést souboj sám se sebou.",
+        "NoActiveDuel": "Žádný Mentální souboj právě neprobíhá.",
+        "NoGMExchange": "K vyhodnocení výměny musí být připojen Vypravěč.",
+        "NoGMGamble": "Ke hře o sázku Kámen, nůžky, papír musí být připojen Vypravěč.",
+        "StakeTooLow": "{name} potřebuje na sázku víc než 1 bod Mysli.",
+        "NoGMSeize": "K Ovládnutí musí být připojen Vypravěč.",
+        "NoGMDrain": "K vysátí zlomené mysli musí být připojen Vypravěč.",
+        "NoDrain": "{name} se nenaučil Vysátí."
+      }
+    },
+    "TraitPill": {
+      "Fatigued": {
+        "Name": "Unavený: 1 akce",
+        "Desc": "Výdrž na 0: ztrácí jednu akci (aspoň jedna zůstává), −5 % na každý hod na Úspěch a Rychlost klesá na polovinu."
+      },
+      "Corrupted": {
+        "Name": "Zkažený",
+        "Desc": "Pro účely Zázraků, magie a podobných účinků se počítá jako Zkažený.",
+        "DescLight": "Pro Zázraky, magii a podobné účinky se počítá jako Zkažený a je zranitelnější vůči Světlu a vybraným Zázrakům."
       }
     },
     "Note": {
@@ -8427,6 +8617,118 @@
       "Ascetic": {
         "name": "Asketa"
       },
+      "ChildOfTheSea": {
+        "name": "Dítě moře",
+        "description": "<p>Plavání a Mořeplavba +15 %, je-li na moři, řece, jezeře nebo ve vodě. Zadržení dechu +3 kola.</p><p>1× za den může opakovat hod na Plavání nebo Mořeplavbu.</p>"
+      },
+      "BornInTheSaddle": {
+        "name": "Narozen v sedle",
+        "description": "<p>Jezdectví +20 %.</p><p>2× za den může opakovat hod na Jezdectví.</p>"
+      },
+      "ChildOfTheNight": {
+        "name": "Dítě noci",
+        "description": "<p>Vidění ve tmě do vzdálenosti 6 m. Snižuje postihy za Temnotu na polovinu.</p>"
+      },
+      "IronStomach": {
+        "name": "Železný žaludek",
+        "description": "<p>Zvyšuje maximální Toxicitu o +10. Pijáctví +10 %.</p><p>2× za den může opakovat hod na Pijáctví.</p>"
+      },
+      "Ambidextrous": {
+        "name": "Ambidextrie",
+        "description": "<p>Stejně dokonalá obratnost pravé i levé ruky.</p>"
+      },
+      "Callous": {
+        "name": "Otrlý",
+        "description": "<p>Hranice šílenství navýšena o 2 body. Zkracuje trvání efektu Strach o jedno kolo.</p>"
+      },
+      "DragonEyes": {
+        "name": "Dračí oči",
+        "description": "<p>Pohled, který málokdo svede opětovat. Zastrašování a Vhled +5 %.</p>"
+      },
+      "ElderBlood": {
+        "name": "Starší krev",
+        "description": "<p>Vybírá si jedno: Základ many +2, nebo Životy +5.</p><p>Síla kouzla +1, Síla melodie +1, Síla zázraku +1. Usměrňování +5 %, Vzhled +1.</p>"
+      },
+      "SylvanBlood": {
+        "name": "Krev Sylvanů",
+        "description": "<p>Inspirace +1, Melodie +5 %.</p>"
+      },
+      "HatedEnemy": {
+        "name": "Nenáviděný nepřítel",
+        "description": "<p>Zvolí si jednu Metlu: Drakovití, Zlobrovití, Upíři, Lykantropové, Sylvani, Nemrtví, Zvířata, Zkažení, Hmyzovití, Relikty, Nekrofágové, Přeludy nebo Démoni.</p>"
+      },
+      "GiftSeer": {
+        "name": "Nadání: Věštec",
+        "description": "<p>Náhodné vize budoucnosti či minulosti, které mohou mít různou formu. Věštění a Divinace +10 %.</p><p>2× za den může opakovat hod na Věštění.</p>"
+      },
+      "GiftNatureBond": {
+        "name": "Nadání: Spojení s přírodou",
+        "description": "<p>Příroda má tendence pomáhat. Mluvení se zvířaty a naslouchání stromům. Zacházení se zvířaty a Přežití +10 %.</p><p>2× za den může opakovat hod na Zacházení se zvířaty nebo Přežití.</p>"
+      },
+      "GiftSpiritualist": {
+        "name": "Nadání: Spiritualista",
+        "description": "<p>Zvýšená citlivost na nadpřirozené jevy. Umožňuje vidět, komunikovat a přivolat duchy. Rituály a Arcana +10 %.</p><p>2× za den může opakovat hod na Rituály nebo Arcanu.</p>"
+      },
+      "GiftEmpath": {
+        "name": "Nadání: Empat",
+        "description": "<p>Doteková telepatie. Zvýšená citlivost na emoce a utrpení v okolí. Lepší vhled. Ranhojičství a Vhled +10 %.</p><p>2× za den může opakovat hod na Ranhojičství nebo Vhled.</p>"
+      },
+      "Hunchback": {
+        "name": "Hrbáč",
+        "description": "<p>Fyzická hranice Rychlosti -2. Vzhled -2. Postih do Obratnosti, Síly, odvozených dovedností a Splývání s okolím -15 % a do Souboje a Vrhu -5 %.</p>"
+      },
+      "EndlessSeasickness": {
+        "name": "Nekončící mořská nemoc",
+        "description": "<p>Postih -20 % na Úspěch a Nervy -1, je-li na moři, řece, jezeře nebo ve vodě.</p>"
+      },
+      "Illiterate": {
+        "name": "Negramot",
+        "description": "<p>Není schopen číst a psát a nemůže se to nikdy naučit. Dovednosti ze skupiny Inteligence jsou o 1 SP dražší.</p>"
+      },
+      "Nemesis": {
+        "name": "Nemesis",
+        "description": "<p>Na světě existuje něco, co z hloubi duše nenávidí a udělá cokoliv, aby to zničil nebo tomu uškodil. Cíle jsou obezřetné a někdy i nepřátelské. Domluva s DM.</p>"
+      },
+      "WeakLiver": {
+        "name": "Slabá játra",
+        "description": "<p>Toxicita -10 a Pijáctví -25 %.</p>"
+      },
+      "PotionAllergy": {
+        "name": "Alergický na lektvary",
+        "description": "<p>Test Odolnosti (-15 %) na vyzvrácení vypitých lektvarů. Vyzvrácený lektvar udělí zranění 2d6, nemá žádný efekt a je znehodnocen. Rovněž ztrácí 1 akci.</p>"
+      },
+      "TouchOfCorruption": {
+        "name": "Dotek korupce",
+        "description": "<p>Začíná s mutací temnoty. Vybírá si po domluvě mutaci. Korupce +1 kdykoliv nějakou korupci získá.</p>"
+      },
+      "TouchOfMadness": {
+        "name": "Dotek šílenství",
+        "description": "<p>Začíná se Šílenstvím dle domluvy. Hranice šílenství snížena o 1.</p>"
+      },
+      "Cursed": {
+        "name": "Prokletý",
+        "description": "<p>Začíná proklet kletbou dle domluvy.</p>"
+      },
+      "GuardianDevil": {
+        "name": "Ďábel strážný",
+        "description": "<p>Nucené tajné hody na Věštbu každý měsíc. Hází se dva hody, bere se obvykle ten horší. Hříšnost +1.</p>"
+      },
+      "Godless": {
+        "name": "Neznaboh",
+        "description": "<p>Sníží Víru na 0. Nelibost k bohům a kněžstvu. Pozitivní Zázraky obvykle nemají žádný efekt.</p>"
+      },
+      "TraumaticExperience": {
+        "name": "Traumatický zážitek",
+        "description": "<p>Pronásledován traumatickou událostí, která zanechala jizvu na duši. Získává 2d4d1 bodů šílenství.</p>"
+      },
+      "Crippled": {
+        "name": "Zmrzačený",
+        "description": "<p>Začíná zmrzačen. Vybírá si mezi rukou, nohou, okem, nosem, uchem či jazykem. Lze vzít vícekrát. Postihy v Různém infu, Kritické zásahy.</p>"
+      },
+      "LatentMagicPotential": {
+        "name": "Latentní magický potenciál",
+        "description": "<p>Pro účely pravidel se počítá jako Magický tvor, aniž by měl přístup k magii. Neúspěšné Testy Nervů mohou vést k Nestabilitě.</p>"
+      },
       "ScrollCaseFireApprentice": {
         "name": "Pouzdro se svitky: Oheň, Učedník",
         "description": "<p>Svázané pouzdro se svitky učednického stupně ze Školy Ohně. Každý list uvnitř nese jedno kouzlo a jeho znaky zůstávají nepřečtené, dokud si nad nimi někdo nesedne a neprostuduje je.</p>"
@@ -9220,31 +9522,16 @@
           "bloodManipulation": "Slouží k sesílání kouzel Školy Krve pro ty, kdo nemají Magický potenciál."
         },
         "doctrines": {
-          "pikeman": "Vztahuje se pouze na obouručně držené Kopí, Glaivu, Havraní zobák, Halapartnu a obouručně držený Trojzubec.",
-          "swordsman": "Vztahuje se pouze na Dlouhý meč, Flamberg a obouručně držený Široký meč, Vojenský sekáček, Šavli a Krátký meč.",
-          "reaver": "Vztahuje se pouze na Dlouhou sekeru, Berdyš, Obouruční válečné kladivo, Cep a obouručně držené Válečné kladivo, Vojenský krumpáč, Válečnou sekeru, Sekerku a Palcát.",
           "shieldbearer": "Vztahuje se pouze na Lehké a Střední zbraně držené společně s Provizorním, Malým, Středním nebo Velkým štítem.",
-          "dimakerus": "Vztahuje se na téměř libovolnou kombinaci Lehkých a Středních zbraní (viz Zbrojnice).\n\nNevztahuje se na Šermířskou dýku, Kopí, Trojzubec, Cestus, Pěst, Oštěp a Katar.",
-          "duelist": "Vztahuje se pouze na Krátký meč, Široký meč, Šavli, Dýku, Vojenský sekáček a Rapír.\n\nVyžaduje volnou ruku, Šermířskou dýku, Jednoruční kuši nebo Křesadlovou pistoli.",
-          "monk": "Vztahuje se pouze na Hůl a Katar společně s Obranným katarem.",
+          "duelist": "Vyžaduje volnou ruku, Šermířskou dýku, Jednoruční kuši nebo Křesadlovou pistoli.",
           "rogue": "Vztahuje se pouze na vytříbené zbraně, luky a kuše. Nesmí používat Střední nebo Velký štít.",
           "rider": "Aplikuje se pouze při boji ze sedla s vhodnou zbraní.",
-          "archer": "Vztahuje se na Lovecký luk, Reflexní luk a Dlouhý luk.",
-          "arbalest": "Vztahuje se na Jednoruční kuši, Lehkou kuši, Těžkou kuši a Trpasličí kuši.",
-          "peltast": "Vztahuje se na Oštěp (Vrh), Vrhací sekeru (Vrh) a Prak.",
-          "juggler": "Vztahuje se na Vrhací nůž (Vrh), Vrhací sekeru (Vrh), Petardu a obdobné.",
           "musketeer": "Vztahuje se na Mušketu a Křesadlovou pistoli.",
           "elymas": "Bonusy se počítají pouze pro danou Doktrínu.\n\nRegenerace many je pouze za Dlouhý odpočinek a později jednou za den za Krátký odpočinek.",
           "incantator": "Bonusy se počítají pouze pro danou Doktrínu.\n\nRegenerace many je pouze za Dlouhý odpočinek.\n\nIncantator má bez Ohniskového předmětu postih 10 % na Usměrňování a šanci na Kritické selhání +2 %.",
           "veneficus": "Bonusy se počítají pouze pro danou Doktrínu.\n\nRegenerace many je pouze za Krátký odpočinek a později v malém množství za volnou akci.\n\nZa každých 150 zregenerovaných magů získává 1 stupeň Únavy (resetuje se za Dlouhý odpočinek).",
           "elementalist": "Bonusy se počítají pouze pro danou Doktrínu. Tuto Doktrínu nelze změnit.\n\nRegenerace many je pouze za Dlouhý odpočinek.",
           "cordinas": "Bonusy se počítají pouze pro danou Doktrínu."
-        },
-        "weaponSkills": {
-          "swords": "Vztahuje se na Krátký meč, Vojenský sekáček, Široký meč, Šavli, Rapír, Dlouhý meč, Flamberg, Dýku, Katar a Vrhací nůž.",
-          "axes": "Vztahuje se na Sekerku, Vrhací sekeru, Vojenský krumpáč, Válečnou sekeru a Dlouhou sekeru.",
-          "blunt": "Vztahuje se na Obušek, Palcát, Válečné kladivo, Řemdih, Cep a Obouruční válečné kladivo.",
-          "polearms": "Vztahuje se na Oštěp, Mušketu, Kopí, Trojzubec, Glaivu, Halapartnu, Havraní zobák a Hůl."
         },
         "schools": {
           "fire": "Síla kouzla se počítá pouze pro danou Školu.\n\nOmezený magický potenciál může dosáhnout nejvýše stupně VIII této Školy.\n\nPrvní Škola se odemyká skrze Temperament nebo hodem 1d7 a je zdarma. Další Školy se zpřístupňují skrze odbornost „Divoký mág“.",

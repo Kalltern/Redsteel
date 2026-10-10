@@ -148,6 +148,7 @@ import {
 import { getSpellPower } from "./spellPower.mjs";
 import { normalizeResourceKey, resourceLabel } from "./itemResources.mjs";
 import { ARMOR_IGNORING_PENETRATION } from "./combatSkillBonuses.mjs";
+import { compatibleWeaponsPill, loadCompatibleWeapons } from "./compatibleWeapons.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } =
   foundry.applications.api;
@@ -1981,7 +1982,6 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     return {
       editable,
       character: {
-        img: hero.img,
         name: hero.name,
         race: hero.race,
         attributes: hero.attributes,
@@ -2106,6 +2106,8 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       rows.push(row);
     }
 
+    // The weapon catalog first, so the note can carry its pill.
+    await loadCompatibleWeapons();
     return {
       trackId,
       label: trackLabel(track.group, track.key),
@@ -2123,7 +2125,9 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
    * name, its section, the rulebook's note on it (REDSTEEL.Learn.TrackInfo,
    * from the Dovednosti sheet's cell comments) split into paragraphs, and
    * what every rank the book sells costs this character in all. A track
-   * with no note shows none, never the raw key.
+   * with no note shows none, never the raw key. A doctrine or weapon skill
+   * with compendium weapons also gets the "Compatible weapons" pill
+   * (compatibleWeapons.mjs; the catalog is loaded by the caller).
    */
   #buildTrackInfo(trackId) {
     const actor = this.actor;
@@ -2146,6 +2150,7 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
         .split(/\n\s*\n/)
         .map((paragraph) => paragraph.trim())
         .filter(Boolean),
+      weaponsPill: compatibleWeaponsPill(trackId),
       allRanksLabel: sold
         ? game.i18n.format("REDSTEEL.Creation.Skills.allRanks", {
             cost: creationCostLabel(total),

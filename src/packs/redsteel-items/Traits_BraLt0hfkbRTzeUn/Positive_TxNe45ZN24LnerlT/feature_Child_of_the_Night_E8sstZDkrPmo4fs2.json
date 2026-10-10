@@ -1,0 +1,49 @@
+{
+  "folder": "TxNe45ZN24LnerlT",
+  "name": "Child of the Night",
+  "type": "feature",
+  "img": "icons/magic/nature/symbol-moon-stars-white.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.ChildOfTheNight.name",
+    "description": "<p>Darkvision up to 6 m. Penalties for Darkness are halved.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "trait"
+  },
+  "effects": [],
+  "flags": {
+    "redsteel": {
+      "traitPolarity": "positive"
+    }
+  },
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.14.1",
+    "lastModifiedBy": null,
+    "createdTime": null,
+    "modifiedTime": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 0,
+  "_id": "E8sstZDkrPmo4fs2",
+  "_key": "!items!E8sstZDkrPmo4fs2"
+}

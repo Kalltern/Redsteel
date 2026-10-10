@@ -4873,7 +4873,10 @@
           "bothHands": "One-handed weapons of choice, held in both hands",
           "anyChoice": "Weapons of choice",
           "thrownChoice": "Thrown weapons of choice",
-          "offhand": "Off hand only"
+          "offhand": "Off hand only",
+          "twoHanded": "Two-handed",
+          "versatile": "One or both hands",
+          "oneHanded": "One-handed"
         },
         "chosen": "Chosen",
         "Kind": {
@@ -4884,54 +4887,50 @@
         },
         "about": "About",
         "requirements": "Weapon requirements",
-        "browse": "Browse weapons",
-        "prev": "Previous weapon",
-        "next": "Next weapon",
-        "page": "{n} of {total}",
         "Info": {
           "swordsman": {
             "about": "The art of the long blade wielded in both hands. The Swordsman cuts wide, lunges from afar, turns well timed defences into counterattacks and leaves bleeding wounds behind.",
-            "weapons": "Swords held in both hands: a two handed sword such as the Longsword or Flamberge, or a Broadsword gripped in both hands. Trains with the Swords weapon skill."
+            "weapons": "Swords held in both hands: a two handed sword, or a one handed sword gripped in both hands. Trains with the Swords weapon skill."
           },
           "shieldbearer": {
             "about": "A wall of steel and wood. The Shieldbearer fights from behind a shield, strikes and charges with it, guards nearby allies and closes their own flanks.",
-            "weapons": "One handed weapons only, since the other hand carries the shield: light and medium swords, axes, maces and flails, or a Spear held in one hand. Never a two handed weapon."
+            "weapons": "One handed weapons only, since the other hand carries the shield: light and medium swords, axes, maces, flails and spears. Never a two handed weapon."
           },
           "reaver": {
             "about": "Raw, brutal force. The Reaver swings heavy axes and hammers in wide cleaves, widens their critical range, throws themselves into frenzied attacks and knocks foes to the ground.",
-            "weapons": "Heavy axes, hammers and flails in both hands (Bardiche, Long Axe, Great Hammer, Two-Handed Flail), or a War Axe, War Hammer, War Pick or Flail gripped in both hands."
+            "weapons": "Heavy axes, hammers and flails in both hands, or a medium one gripped in both hands."
           },
           "pikeman": {
             "about": "Master of reach. The Pikeman keeps enemies at a distance, impales charging foes, gains an edge against large creatures, punishes every opening with opportunity attacks and pushes enemies back.",
-            "weapons": "Polearms held in both hands: Halberd, Glaive, Bec de Corbin, or a Spear or melee Javelin gripped in both hands. Trains with the Polearms weapon skill."
+            "weapons": "Polearms held in both hands. Trains with the Polearms weapon skill."
           },
           "dimakerus": {
             "about": "The two weapon fighter. The Dimakerus strikes with a weapon in each hand, unleashes flurries of attacks, answers blows with retaliating strikes and gains defence from the second blade.",
-            "weapons": "A one handed weapon in each hand: light or medium swords, axes, maces and flails. Some weapons, such as the Broadsword and the Throwing Knife, go in the off hand only."
+            "weapons": "A one handed weapon in each hand: light or medium swords, axes, maces and flails. Some weapons go in the off hand only."
           },
           "duelist": {
             "about": "Precision over strength. The Duelist aims carefully, keeps their aim after landing a hit, dances around foes with the Duelist's Step and attacks on the move.",
-            "weapons": "A fencing weapon in the main hand (Rapier, Dagger or Military Cleaver) and, if wanted, a Fencing Dagger in the off hand. Trains with the Swords weapon skill."
+            "weapons": "A fencing weapon in the main hand and, if wanted, a fencing dagger in the off hand. Trains with the Swords weapon skill."
           },
           "rogue": {
             "about": "The dirty fighter. The Rogue strikes where it hurts, adds sneak attack damage against surprised or undefended foes and turns hits into new openings. The only doctrine that may sit beside another one.",
-            "weapons": "No single style: daggers, short blades, light maces, spears, bows and crossbows alike. The Rogue brings no weapon skill of their own and works with the weapons of their other doctrine."
+            "weapons": "No single style: blades, maces, spears, bows and crossbows alike. The Rogue brings no weapon skill of their own and works with the weapons of their other doctrine."
           },
           "archer": {
             "about": "The patient bowman. The Archer shoots more accurately, cripples targets, aims for weak spots and lands precise shots that pierce armour.",
-            "weapons": "Bows only: Hunting Bow, Reflex Bow or Longbow, always held in both hands. Fights with the Archery combat skill."
+            "weapons": "Bows only, always held in both hands. Fights with the Archery combat skill."
           },
           "arbalest": {
             "about": "Heavy bolts from a steady stance. The Arbalest hits harder with every shot, aims for weak spots, cripples targets and keeps watch over the field.",
-            "weapons": "Crossbows only: Crossbow or Heavy Crossbow, always held in both hands. Fights with the Archery combat skill."
+            "weapons": "Crossbows only, always held in both hands. Fights with the Archery combat skill."
           },
           "peltast": {
             "about": "The skirmisher. The Peltast hurls heavy javelins and axes that make foes bleed and stagger, throws on the run and unleashes frenzied volleys.",
-            "weapons": "Thrown weapons: Javelin and Throwing Axe. Throws with the Throwing skill and chooses Combat or Archery as their combat skill."
+            "weapons": "Javelins and throwing axes. Throws with the Throwing skill and chooses Combat or Archery as their combat skill."
           },
           "juggler": {
             "about": "Quick hands and light blades. The Juggler throws fast and precisely, lands critical hits more often, aims throws at weak spots and keeps watch over the field.",
-            "weapons": "Thrown weapons: Throwing Knife and Throwing Axe. Throws with the Throwing skill and fights with the Archery combat skill."
+            "weapons": "Throwing knives and throwing axes. Throws with the Throwing skill and fights with the Archery combat skill."
           },
           "elymas": {
             "about": "The enduring mage. The Elymas builds a deep mana pool that grows with their power, recovers it over a long rest, wraps themselves in magical armour and steadies their spells.",
@@ -4948,7 +4947,8 @@
         },
         "damage": "Damage",
         "damageType": "Damage type",
-        "skill": "Skill"
+        "skill": "Skill",
+        "compatibleWeapons": "Compatible weapons"
       },
       "Race": {
         "Vardur": "Vardur"
@@ -5539,7 +5539,8 @@
       "Superseded": "Rerolled — this result no longer applies.",
       "Used": "Rerolled with {source}.",
       "Free": "Rerolled without spending a reroll.",
-      "PatientGone": "The patient of this attempt is no longer on the scene."
+      "PatientGone": "The patient of this attempt is no longer on the scene.",
+      "PromptRetired": "Rerolled"
     },
     "RollTriggers": {
       "Hint": "Comma-separated. Pills appear in chat when a matching roll is made. Write attributes by their short key (str, res). Add -gm to any trigger (universal-gm, str-based-gm) and only the GM sees its pill. long-rest shows the pill on the character's Long Rest card (universal does not reach it).",
@@ -5803,6 +5804,18 @@
       "DetailPrecision": "Precision",
       "PrecisionProc": "Precision!"
     },
+    "Traits": {
+      "ElderBlood": {
+        "PickerTitle": "Elder Blood: choose a bonus",
+        "Mana": "Base Mana +2",
+        "Health": "Health +5",
+        "PickLater": "No Elder Blood bonus chosen. Enable one of its effects on the trait to choose later."
+      },
+      "HatedEnemy": {
+        "PickerTitle": "Hated Enemy: choose a Bane",
+        "PickLater": "No Hated Enemy Bane chosen. Remove the trait and add it again to choose."
+      }
+    },
     "Tooltip": {
       "successChance": "Success chance",
       "rating": "Rating",
@@ -5923,6 +5936,10 @@
         "desc": "Every untreated grave wound applies -5% to all tests. Treating a wound gives 3% of that penalty back, and only proper healing removes the wound itself."
       }
     },
+    "EffectName": {
+      "corrupted": "Corrupted",
+      "possessed": "Possessed"
+    },
     "EffectDesc": {
       "stagger": "-10% on every test. Cannot make opportunity attacks. Lasts 2 turns, and Stun or Paralyze replace it.",
       "bleed": "Deals 1d4 damage per stack when applied and again at the start of every round. Stacks up to 6 times.",
@@ -5987,7 +6004,7 @@
       "corrupted": "Corruption degree 2 or higher (61+). The character counts as Corrupted, and defense rolls carry a reminder for Light and miracle effects. Synced automatically with Corruption.",
       "possessed": "Controlled by the winner of a Mental Duel, who shares control of the token. Removing this effect ends the possession and restores ownership.",
       "shield_strain": "The shield stops helping: its Defense, Cover, critical defense, armor and Health bonus drop to 0. Its penalties to Dodge, Initiative and Speed stay.",
-      "paralyze": "-40% on every test. Cannot make opportunity attacks. Lasts 2 turns and replaces Stun and Stagger.",
+      "paralyze": "-40% on every test. Cannot make opportunity attacks. Lasts 3 turns and replaces Stun and Stagger.",
       "blind": "-30% Combat, -50% Archery and Throwing, and -15% Defense, Cover and Dodge. Cannot make opportunity attacks.",
       "dazzled": "-10% Combat and -20% Archery and Throwing. Cannot make opportunity attacks. Lasts 2 turns.",
       "disorientation": "-10% on every test. Lasts 3 turns.",
@@ -6060,6 +6077,179 @@
         "Button": "Focus (1 Action)",
         "Hint": "Spend 1 Action: +{bonus}% to the Mental Duel until your next turn. Stacks with every use.",
         "NoActions": "No Actions left this round."
+      },
+      "Window": {
+        "Title": "Mental Duel: Mind Bending",
+        "RatingWill": "Will",
+        "RatingDuel": "Duel",
+        "TokenGone": "A combatant token is no longer on the scene.",
+        "Close": "Close",
+        "Draw": "Both minds collapse. It is a draw.",
+        "PossessedNote": "{loser} is possessed by {winner}. Remove the “{status}” token status to release them.",
+        "Seize": "Seize control",
+        "NoDomination": "{winner} lacks the Domination perk and cannot seize control.",
+        "DrainButton": "Drain {loser} (+{amount} Mind)",
+        "Breaks": "{winner} breaks {loser}'s will.",
+        "MindValue": "Mind <b>{value}</b> / {max}",
+        "Reason": {
+          "NotYours": "You don't control this combatant",
+          "Over": "The duel is over",
+          "NotStarted": "The GM has not started the Mind Bending yet",
+          "Pending": "An exchange is still open",
+          "AlreadyAttacked": "Already attacked this round",
+          "WaitTurn": "Wait for your turn this round",
+          "Attack": "Spend a Free Action to attack"
+        },
+        "Attacks": "{name} attacks",
+        "EndHintGM": "End the duel for everyone",
+        "EndHintPlayer": "You do not possess the power to end the duel prematurely",
+        "End": "End duel",
+        "Start": "Start Mind Bending",
+        "StartNote": "Neither side can attack until you start.",
+        "WaitingForGM": "Waiting for the GM to start the Mind Bending…"
+      },
+      "Charge": {
+        "Title": "Mental Charge",
+        "Intro": "Chance to start the Mental Duel: <b>{chance}%</b>. Burn Mind to force the opening: <b>+{step}%</b> per point, up to <b>{cap}%</b>.",
+        "BurnLabel": "Mind to burn (have {mind}, max {max})",
+        "FreeActionNote": "A Free Action, declared before the cast is rolled. The Mind is spent whether or not the cast lands.",
+        "BurnAllWarning": "Burning all {mind} would open the duel with an already-broken mind.",
+        "Charge": "Charge",
+        "NoCharge": "No charge"
+      },
+      "Initiation": {
+        "NoTarget": "Mind Bending: target an opponent to start the Mental Duel.",
+        "CritBreakdown": "Critical success: the duel cannot be refused.",
+        "CritCharged": "({amount} Mind burned on Mental Charge, bought before the roll)",
+        "Base": "{chance}% base",
+        "Perks": "+{bonus}% perks",
+        "Charge": "+{bonus}% Mental Charge ({amount} Mind burned)",
+        "Title": "Mental Duel: initiation",
+        "Result": "Chance to start: <b>{chance}%</b>, rolled {roll} →",
+        "Begins": "Duel begins!",
+        "NotTriggered": "Not triggered",
+        "MayAccept": "The target may still voluntarily accept."
+      },
+      "Assault": {
+        "AlreadyUsed": "Already used Mental Assault this round",
+        "Hint": "Mental Duel test at {penalty}%. A win drains {extra} extra Mind.",
+        "Button": "Assault ({penalty}%)",
+        "PendingNote": "Mental Assault: {name} attacks at {penalty}%. A win drains {extra} extra Mind.",
+        "Result": "Mental Assault: {name} struck at {penalty}%.",
+        "ResultDrained": "Mental Assault: {name} struck at {penalty}% (+{amount} Mind drained)."
+      },
+      "Pending": {
+        "Crit": "crit",
+        "Fumble": "fumble",
+        "Rerolled": "Rerolled: {label}",
+        "RerollStands": "reroll stands",
+        "LockedIn": "locked in",
+        "WaitingFor": "waiting for {name}…",
+        "RerollHint": "Spend a reroll on this test",
+        "Reroll": "Reroll",
+        "AcceptHint": "Keep this roll",
+        "Accept": "Accept",
+        "Attacker": "attacker",
+        "Defender": "defender",
+        "Roll": "d100 <b>{raw}</b> → margin <b>{margin}</b>",
+        "Provisional": "{winner} would prevail. {loser} loses <b>{amount}</b> Mind.",
+        "ProvisionalLabel": "Provisional:",
+        "ResolveHint": "Lock in both rolls and apply the result",
+        "Resolve": "Resolve now",
+        "Title": "Exchange thrown: reroll or accept"
+      },
+      "Result": {
+        "Rerolled": "reroll: {label}",
+        "Prevails": "{winner} prevails. {loser} loses <b>{amount}</b> Mind.",
+        "PrevailsDecisive": "{winner} prevails. {loser} loses <b>{amount}</b> Mind (decisive!).",
+        "Holds": "{winner} holds. {loser} loses <b>{amount}</b> Mind.",
+        "HoldsDecisive": "{winner} holds. {loser} loses <b>{amount}</b> Mind (decisive!).",
+        "Title": "Mental Duel",
+        "Pair": "{attacker} vs {defender}"
+      },
+      "Gamble": {
+        "Rock": "Rock",
+        "Paper": "Paper",
+        "Scissors": "Scissors",
+        "CoinPending": "Coin toss pending…",
+        "Declined": "{name} declined the gamble.",
+        "CannotAfford": "Coin toss decided {name}, but they cannot afford the stake.",
+        "Replenishes": "The gamble replenishes next round.",
+        "Chosen": "You were chosen. Accept the gamble?",
+        "TooLow": "You need more than 1 Mind to stake the gamble",
+        "AcceptHint": "Accept and pay 1 Mind. Losing costs a second point",
+        "Accept": "Accept (pay 1 Mind)",
+        "Decline": "Decline",
+        "WaitingFor": "Waiting for <b>{name}</b> to decide…",
+        "CoinChose": "Coin toss chose <b>{name}</b>",
+        "Committed": "committed",
+        "Choose": "{name}, choose:",
+        "Choosing": "choosing…",
+        "Staked": "<b>{name}</b> staked 1 Mind (2 lost if they lose). Pick once, you can't change it",
+        "Versus": "vs",
+        "VerdictDraw": "Draw: no Mind lost. The staked Mind is forfeit.",
+        "VerdictInitiatorWins": "{winner} wins and regains the staked Mind. {loser} loses 1 Mind.",
+        "VerdictInitiatorLoses": "{winner} wins. {loser} (initiator) loses 2 Mind: the stake and the loss.",
+        "SomeCombatant": "a combatant",
+        "CardOffered": "Coin toss: <b>{name}</b> is offered a Rock-Paper-Scissors gamble.",
+        "CardCannotAfford": "Coin toss decided <b>{name}</b>, but they cannot afford the stake.",
+        "CardDraw": "Draw: the staked Mind is forfeit.",
+        "CardInitiatorWins": "{winner} wins the gamble and regains the stake. {loser} loses 1 Mind.",
+        "CardInitiatorLoses": "{winner} wins the gamble. {loser} (initiator) loses 2 Mind: the staked point and the loss."
+      },
+      "Drain": {
+        "BrokenMind": "the broken mind",
+        "Card": "<b>{winner}</b> drains <b>{loser}</b>: <b>+{amount}</b> Mind restored.",
+        "CardFull": "<b>{winner}</b> drains <b>{loser}</b>, but is already at full Mind. Nothing is gained."
+      },
+      "Possession": {
+        "AlreadyPossessed": "{name} is already possessed.",
+        "ControlPasses": "Control of <b>{loser}</b> passes to {winner}'s player(s) until the “{status}” status is removed.",
+        "Released": "<b>{name}</b> is released from possession by {winner}. Control returns to normal.",
+        "ReleasedNoWinner": "<b>{name}</b> is released from possession. Control returns to normal.",
+        "NoPlayer": "No player owns {winner}. The marker is applied for the GM to puppet.",
+        "Seizes": "<b>{winner}</b> seizes control of <b>{loser}</b>."
+      },
+      "Voluntary": {
+        "NoResponder": "No active player or GM can accept the Mental Duel for the target.",
+        "Awaiting": "Awaiting {name} to accept the Mental Duel…",
+        "TargetOwner": "the target's owner",
+        "ForcedFailed": "Forced initiation failed ({chance}% → rolled {roll}).",
+        "Title": "Mental Duel",
+        "Invite": "<b>{attacker}</b> reaches into <b>{defender}</b>'s mind, inviting a Mental Duel.",
+        "Question": "Do you voluntarily accept the duel?",
+        "Refuses": "<b>{name}</b> refuses the Mental Duel."
+      },
+      "Notify": {
+        "NotYours": "You don't control {name}.",
+        "ExchangeOpen": "The last exchange is still open. Resolve it before attacking again.",
+        "NoAssault": "{name} does not have Mental Assault.",
+        "AssaultUsed": "{name} has already used Mental Assault this round.",
+        "AlreadyAttacked": "{name} has already attacked this round.",
+        "NotActedYet": "{name} has not acted yet this round.",
+        "NoCritFailReroll": "No rerolls available that can reroll a Critical Failure.",
+        "NoReroll": "No eligible rerolls available.",
+        "RerollSpent": "That reroll is already spent.",
+        "SelectTokens": "Select your token and target an opponent (or select both tokens) to start a Mental Duel.",
+        "SelfDuel": "A combatant cannot duel themselves.",
+        "NoActiveDuel": "There is no Mental Duel in progress.",
+        "NoGMExchange": "A GM must be connected to resolve the exchange.",
+        "NoGMGamble": "A GM must be connected to run the Rock-Paper-Scissors gamble.",
+        "StakeTooLow": "{name} needs more than 1 Mind to stake on the gamble.",
+        "NoGMSeize": "A GM must be connected to seize control.",
+        "NoGMDrain": "A GM must be connected to drain the broken mind.",
+        "NoDrain": "{name} has not learned Drain."
+      }
+    },
+    "TraitPill": {
+      "Fatigued": {
+        "Name": "Fatigued: 1 action",
+        "Desc": "Stamina at 0: loses one action (minimum one remains), −5% to every Success roll, and Speed is halved."
+      },
+      "Corrupted": {
+        "Name": "Corrupted",
+        "Desc": "Counts as Corrupted for the purposes of Miracles, magic and similar effects.",
+        "DescLight": "Counts as Corrupted for Miracles, magic and similar, and is more vulnerable to Light and selected Miracles."
       }
     },
     "Note": {
@@ -8415,6 +8605,118 @@
       "Ascetic": {
         "name": "Ascetic"
       },
+      "ChildOfTheSea": {
+        "name": "Child of the Sea",
+        "description": "<p>Swimming and Sailing +15% when at sea, on a river or lake, or in water. Holding breath +3 rounds.</p><p>May reroll a Swimming or Sailing roll once per day.</p>"
+      },
+      "BornInTheSaddle": {
+        "name": "Born in the Saddle",
+        "description": "<p>Riding +20%.</p><p>May reroll a Riding roll twice per day.</p>"
+      },
+      "ChildOfTheNight": {
+        "name": "Child of the Night",
+        "description": "<p>Darkvision up to 6 m. Penalties for Darkness are halved.</p>"
+      },
+      "IronStomach": {
+        "name": "Iron Stomach",
+        "description": "<p>Maximum Toxicity +10. Drinking +10%.</p><p>May reroll a Drinking roll twice per day.</p>"
+      },
+      "Ambidextrous": {
+        "name": "Ambidextrous",
+        "description": "<p>Equally skilled with the right and the left hand.</p>"
+      },
+      "Callous": {
+        "name": "Callous",
+        "description": "<p>Madness threshold +2. The Fear effect lasts one round less.</p>"
+      },
+      "DragonEyes": {
+        "name": "Dragon Eyes",
+        "description": "<p>A gaze few can hold. Intimidation and Insight +5%.</p>"
+      },
+      "ElderBlood": {
+        "name": "Elder Blood",
+        "description": "<p>Choose one: base Mana +2, or Health +5.</p><p>Spell Power +1, Melody Power +1, Miracle Power +1. Channeling +5%, Visage +1.</p>"
+      },
+      "SylvanBlood": {
+        "name": "Sylvan Blood",
+        "description": "<p>Inspiration +1, Melody +5%.</p>"
+      },
+      "HatedEnemy": {
+        "name": "Hated Enemy",
+        "description": "<p>Choose one Bane: Draconic, Ogroid, Vampire, Lycanthrope, Sylvan, Undead, Beast, Corrupt, Insectoid, Relict, Necrophage, Specter or Demon.</p>"
+      },
+      "GiftSeer": {
+        "name": "Gift: Seer",
+        "description": "<p>Random visions of the future or the past, which may take many forms. Augury and Divination +10%.</p><p>May reroll an Augury roll twice per day.</p>"
+      },
+      "GiftNatureBond": {
+        "name": "Gift: Nature Bond",
+        "description": "<p>Nature tends to help. Speaks with animals and listens to trees. Animal Handling and Survival +10%.</p><p>May reroll an Animal Handling or Survival roll twice per day.</p>"
+      },
+      "GiftSpiritualist": {
+        "name": "Gift: Spiritualist",
+        "description": "<p>Heightened sensitivity to supernatural phenomena. Can see, communicate with and summon spirits. Rituals and Arcana +10%.</p><p>May reroll a Rituals or Arcana roll twice per day.</p>"
+      },
+      "GiftEmpath": {
+        "name": "Gift: Empath",
+        "description": "<p>Touch telepathy. Heightened sensitivity to emotions and suffering nearby. Better insight. First Aid and Insight +10%.</p><p>May reroll a First Aid or Insight roll twice per day.</p>"
+      },
+      "Hunchback": {
+        "name": "Hunchback",
+        "description": "<p>Speed cap -2. Visage -2. Strength, Dexterity, the skills based on them and Blending in -15%. Combat and Throwing -5%.</p>"
+      },
+      "EndlessSeasickness": {
+        "name": "Endless Seasickness",
+        "description": "<p>-20% to success and Resolve -1 while at sea, on a river or lake, or in water.</p>"
+      },
+      "Illiterate": {
+        "name": "Illiterate",
+        "description": "<p>Cannot read or write and can never learn to. Skills of the Intelligence group cost 1 SP more.</p>"
+      },
+      "Nemesis": {
+        "name": "Nemesis",
+        "description": "<p>There is something in the world the character hates from the depths of the soul and will do anything to destroy or harm. Its targets are wary and sometimes hostile. Agreed with the GM.</p>"
+      },
+      "WeakLiver": {
+        "name": "Weak Liver",
+        "description": "<p>Toxicity -10 and Drinking -25%.</p>"
+      },
+      "PotionAllergy": {
+        "name": "Potion Allergy",
+        "description": "<p>Endurance Test (-15%) to keep down every potion drunk. A potion thrown up deals 2d6 damage, has no effect and is wasted. The character also loses 1 action.</p>"
+      },
+      "TouchOfCorruption": {
+        "name": "Touch of Corruption",
+        "description": "<p>Starts with a mutation of darkness, chosen by agreement. Corruption +1 whenever any Corruption is gained.</p>"
+      },
+      "TouchOfMadness": {
+        "name": "Touch of Madness",
+        "description": "<p>Starts with a Madness by agreement. Madness threshold reduced by 1.</p>"
+      },
+      "Cursed": {
+        "name": "Cursed",
+        "description": "<p>Starts under a curse chosen by agreement.</p>"
+      },
+      "GuardianDevil": {
+        "name": "Guardian Devil",
+        "description": "<p>Forced secret Prophecy rolls every month. Two rolls are made and the worse one is usually taken. Sinfulness +1.</p>"
+      },
+      "Godless": {
+        "name": "Godless",
+        "description": "<p>Faith is reduced to 0. Dislikes the gods and the clergy. Positive Miracles usually have no effect.</p>"
+      },
+      "TraumaticExperience": {
+        "name": "Traumatic Experience",
+        "description": "<p>Haunted by a traumatic event that left a scar on the soul. Gains 2d4d1 madness points.</p>"
+      },
+      "Crippled": {
+        "name": "Crippled",
+        "description": "<p>Starts crippled. Chooses between an arm, a leg, an eye, the nose, an ear or the tongue. May be taken more than once. The penalties are listed under Miscellaneous info and Critical hits.</p>"
+      },
+      "LatentMagicPotential": {
+        "name": "Latent Magic Potential",
+        "description": "<p>Counts as a Magical creature for rules purposes without having access to magic. Failed Resolve Tests may lead to Instability.</p>"
+      },
       "ScrollCaseFireApprentice": {
         "name": "Scroll Case: Fire, Apprentice",
         "description": "<p>A bound case of apprentice scrolls from the School of Fire. Every sheet inside carries one spell, and the sigils stay unread until somebody sits down and studies them.</p>"
@@ -9208,31 +9510,16 @@
           "bloodManipulation": "Used to cast School of Blood spells by those without Magic Potential."
         },
         "doctrines": {
-          "pikeman": "Applies only to a two-handed Spear, Glaive, Bec de Corbin and Halberd, and a two-handed Trident.",
-          "swordsman": "Applies only to the Longsword and the Flamberge, and to a two-handed Broadsword, Military Cleaver, Sabre and Short Sword.",
-          "reaver": "Applies only to the Long Axe, Bardiche, Great Hammer and Two-Handed Flail, and to a two-handed War Hammer, War Pick, War Axe, Hatchet and Mace.",
           "shieldbearer": "Applies only to Light and Medium weapons wielded together with an Improvised, Small, Medium or Large shield.",
-          "dimakerus": "Applies to almost any combination of Light and Medium weapons (see Armory).\n\nDoes not apply to the Fencing Dagger, Spear, Trident, Cestus, Fist, Javelin or Katar.",
-          "duelist": "Applies only to the Short Sword, Broadsword, Sabre, Dagger, Military Cleaver and Rapier.\n\nRequires a free hand, a Fencing Dagger, a Hand Crossbow or a Flintlock Pistol.",
-          "monk": "Applies only to the Staff, and to the Katar together with a Defensive Katar.",
+          "duelist": "Requires a free hand, a Fencing Dagger, a Hand Crossbow or a Flintlock Pistol.",
           "rogue": "Applies only to fine weapons, bows and crossbows. Cannot use a Medium or Large shield.",
           "rider": "Applies only when fighting from the saddle with a suitable weapon.",
-          "archer": "Covers the Hunting Bow, Reflex Bow and Longbow.",
-          "arbalest": "Covers the Hand Crossbow, Light Crossbow, Heavy Crossbow and Dwarven Crossbow.",
-          "peltast": "Covers the Javelin (Throwing), Throwing Axe (Throwing) and Sling.",
-          "juggler": "Covers the Throwing Knife (Throwing), Throwing Axe (Throwing), the Petard and the like.",
           "musketeer": "Covers the Musket and the Flintlock Pistol.",
           "elymas": "Its bonuses count only for this doctrine.\n\nMana regenerates only on a Long Rest, and at later ranks once a day on a Short Rest.",
           "incantator": "Its bonuses count only for this doctrine.\n\nMana regenerates only on a Long Rest.\n\nWithout a Focus item, an Incantator takes a 10% penalty to Channeling and a +2% chance of a Critical Failure.",
           "veneficus": "Its bonuses count only for this doctrine.\n\nMana regenerates only on a Short Rest, and at later ranks in small amounts as a free action.\n\nFor every 150 mages regenerated, gains 1 degree of Fatigue (reset on a Long Rest).",
           "elementalist": "Its bonuses count only for this doctrine. This doctrine cannot be changed.\n\nMana regenerates only on a Long Rest.",
           "cordinas": "Its bonuses count only for this doctrine."
-        },
-        "weaponSkills": {
-          "swords": "Covers the Short Sword, Military Cleaver, Broadsword, Sabre, Rapier, Longsword, Flamberge, Dagger, Katar and Throwing Knife.",
-          "axes": "Covers the Hatchet, Throwing Axe, War Pick, War Axe and Long Axe.",
-          "blunt": "Covers the Baton, Mace, War Hammer, Flail, Two-Handed Flail and Great Hammer.",
-          "polearms": "Covers the Javelin, Musket, Spear, Trident, Glaive, Halberd, Bec de Corbin and Staff."
         },
         "schools": {
           "fire": "Spell Power counts only for this school.\n\nLimited magic potential can reach at most rank VIII of a school.\n\nThe first school is unlocked through the temperament or a 1d7 roll, and is free. Further schools open up through the Wild Mage feature.",

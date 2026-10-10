@@ -79,7 +79,7 @@
       "reaver": false,
       "rogue": false,
       "shieldbearer": true,
-      "swordsman": false,
+      "swordsman": true,
       "archer": false,
       "arbalest": false,
       "peltast": false,

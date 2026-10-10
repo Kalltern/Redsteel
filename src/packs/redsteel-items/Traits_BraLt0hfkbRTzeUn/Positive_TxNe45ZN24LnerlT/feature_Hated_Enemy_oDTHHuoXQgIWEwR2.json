@@ -1,0 +1,50 @@
+{
+  "folder": "TxNe45ZN24LnerlT",
+  "name": "Hated Enemy",
+  "type": "feature",
+  "img": "icons/skills/targeting/target-glowing-yellow.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.HatedEnemy.name",
+    "description": "<p>Choose one Bane: Draconic, Ogroid, Vampire, Lycanthrope, Sylvan, Undead, Beast, Corrupt, Insectoid, Relict, Necrophage, Specter or Demon.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "trait"
+  },
+  "effects": [],
+  "flags": {
+    "redsteel": {
+      "traitPolarity": "positive",
+      "hatedEnemyTrait": true
+    }
+  },
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.14.1",
+    "lastModifiedBy": null,
+    "createdTime": null,
+    "modifiedTime": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 0,
+  "_id": "oDTHHuoXQgIWEwR2",
+  "_key": "!items!oDTHHuoXQgIWEwR2"
+}

@@ -1,0 +1,49 @@
+{
+  "folder": "eZqc2jXvEWxnj88U",
+  "name": "Nemesis",
+  "type": "feature",
+  "img": "icons/magic/perception/eye-ringed-glow-angry-red.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.Nemesis.name",
+    "description": "<p>There is something in the world the character hates from the depths of the soul and will do anything to destroy or harm. Its targets are wary and sometimes hostile. Agreed with the GM.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "trait"
+  },
+  "effects": [],
+  "flags": {
+    "redsteel": {
+      "traitPolarity": "negative"
+    }
+  },
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.14.1",
+    "lastModifiedBy": null,
+    "createdTime": null,
+    "modifiedTime": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 0,
+  "_id": "zG8b8B53WnaIVNvs",
+  "_key": "!items!zG8b8B53WnaIVNvs"
+}

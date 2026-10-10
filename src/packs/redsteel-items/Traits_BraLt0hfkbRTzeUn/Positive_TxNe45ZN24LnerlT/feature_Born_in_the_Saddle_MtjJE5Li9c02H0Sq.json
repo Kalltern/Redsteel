@@ -1,0 +1,102 @@
+{
+  "folder": "TxNe45ZN24LnerlT",
+  "name": "Born in the Saddle",
+  "type": "feature",
+  "img": "icons/magic/fire/elemental-creature-horse.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.BornInTheSaddle.name",
+    "description": "<p>Riding +20%.</p><p>May reroll a Riding roll twice per day.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": [
+        {
+          "label": "Riding",
+          "skillsRaw": "riding",
+          "max": 2,
+          "used": 0
+        }
+      ]
+    },
+    "option": "trait"
+  },
+  "effects": [
+    {
+      "name": "Born in the Saddle",
+      "origin": null,
+      "img": "icons/magic/fire/elemental-creature-horse.webp",
+      "_id": "AAkHsnUFqn7cjHwb",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.skills.riding.bonus",
+            "value": 20,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
+      "disabled": false,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.14.1",
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!MtjJE5Li9c02H0Sq.AAkHsnUFqn7cjHwb"
+    }
+  ],
+  "flags": {
+    "redsteel": {
+      "traitPolarity": "positive"
+    }
+  },
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.14.1",
+    "lastModifiedBy": null,
+    "createdTime": null,
+    "modifiedTime": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 0,
+  "_id": "MtjJE5Li9c02H0Sq",
+  "_key": "!items!MtjJE5Li9c02H0Sq"
+}

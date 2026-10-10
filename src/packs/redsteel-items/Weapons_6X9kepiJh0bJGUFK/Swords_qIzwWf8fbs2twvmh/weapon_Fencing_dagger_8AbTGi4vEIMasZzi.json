@@ -72,7 +72,7 @@
     },
     "doctrines": {
       "cavalry": false,
-      "dimakerus": true,
+      "dimakerus": false,
       "duelist": false,
       "monk": false,
       "pikeman": false,

@@ -1,0 +1,59 @@
+{
+  "folder": "TxNe45ZN24LnerlT",
+  "name": "Child of the Sea",
+  "type": "feature",
+  "img": "icons/magic/water/wave-water-blue.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.ChildOfTheSea.name",
+    "description": "<p>Swimming and Sailing +15% when at sea, on a river or lake, or in water. Holding breath +3 rounds.</p><p>May reroll a Swimming or Sailing roll once per day.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [
+      "sailing",
+      "athletics"
+    ],
+    "rollTriggersRaw": "sailing, athletics",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": [
+        {
+          "label": "Swimming or Sailing",
+          "skillsRaw": "athletics, sailing",
+          "max": 1,
+          "used": 0
+        }
+      ]
+    },
+    "option": "trait"
+  },
+  "effects": [],
+  "flags": {
+    "redsteel": {
+      "traitPolarity": "positive"
+    }
+  },
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.14.1",
+    "lastModifiedBy": null,
+    "createdTime": null,
+    "modifiedTime": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 0,
+  "_id": "ixnuw8hWbLxMIpS3",
+  "_key": "!items!ixnuw8hWbLxMIpS3"
+}

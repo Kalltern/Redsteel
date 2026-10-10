@@ -16,6 +16,8 @@
  *   data-tt-kind   required, selects the registered content provider
  *   data-tt-id     the thing to describe (item id, effect id, keyword id, ...)
  *   data-tt-*      anything else the provider wants, via ctx.dataset
+ *   data-tt-click  open on click instead of hover, already frozen so you can
+ *                  walk straight in; a second click on it closes it
  *
  * Providers are registered with `registerTooltip(kind, fn)` and return an HTML
  * string (or null for "nothing to show"). They may be async.
@@ -58,7 +60,7 @@ let root = null;
 
 /**
  * The one open chain: root at index 0, each keyword you walk into one deeper.
- * @type {Array<{el: HTMLElement, source: Element, depth: number, kind: string, frozen: boolean}>}
+ * @type {Array<{el: HTMLElement, source: Element, depth: number, kind: string, frozen: boolean, pinned: boolean}>}
  */
 let stack = [];
 
@@ -114,13 +116,14 @@ export function initTooltips() {
   // accepts it, so clicks inside a frozen layer bubble up to here.
   root.addEventListener("click", onTooltipClick);
 
+  document.addEventListener("click", onClickSource, false);
   document.addEventListener("mouseover", onOver, false);
   document.addEventListener("mouseout", onOut, false);
   document.addEventListener("mousemove", onMove, { passive: true });
   document.addEventListener("mousedown", onMouseDown, true);
   document.addEventListener("keydown", onKeyDown, true);
-  // Any scroll or resize invalidates every anchor we measured.
-  document.addEventListener("scroll", closeAllTooltips, true);
+  // A scroll that moves an anchor, or any resize, invalidates what we measured.
+  document.addEventListener("scroll", onScroll, true);
   window.addEventListener("resize", closeAllTooltips);
   window.addEventListener("blur", closeAllTooltips);
 }
@@ -163,6 +166,8 @@ function onOver(ev) {
       pruneDeeperThan(owning);
       return;
     }
+    // A click source waits for its click (onClickSource).
+    if (src.hasAttribute("data-tt-click")) return;
   }
 
   // Over tooltip chrome but not over a link. The child is *not* dropped on the
@@ -212,7 +217,47 @@ function onMouseDown(ev) {
   if (!(target instanceof Element)) return;
   // Clicks inside a frozen tooltip belong to the tooltip.
   if (target.closest(".rs-tooltip.frozen")) return;
+  // A click source opens or closes its own tooltip on the click that follows.
+  if (target.closest("[data-tt-kind][data-tt-click]")) return;
   closeAllTooltips();
+}
+
+/**
+ * A data-tt-click source: the click opens its tooltip at once, frozen, in
+ * place of whatever chain was up (or one level deeper when the source sits in
+ * a tooltip); clicking it again while its tooltip is up closes it.
+ */
+function onClickSource(ev) {
+  const target = ev.target;
+  if (!(target instanceof Element)) return;
+  const src = target.closest("[data-tt-kind][data-tt-click]");
+  if (!src) return;
+  ev.preventDefault();
+  const owning = stack.findIndex((l) => l.source === src);
+  cancelShow();
+  if (owning >= 0) {
+    pruneDeeperThan(owning - 1);
+    return;
+  }
+  const layerEl = src.closest(".rs-tooltip");
+  const depth = layerEl ? stack.findIndex((l) => l.el === layerEl) + 1 : 0;
+  if (depth > TT.maxDepth) return;
+  showTooltip(src, depth, showToken, { pin: true });
+}
+
+/**
+ * Close the chain when the scroll moved one of its anchors: the page itself,
+ * or a scroller holding a layer's source. A scroll somewhere unrelated (the
+ * chat log taking a new message) leaves it alone.
+ */
+function onScroll(ev) {
+  if (!stack.length) return;
+  const target = ev.target;
+  if (!(target instanceof Element) || target === document.documentElement || target === document.body) {
+    closeAllTooltips();
+    return;
+  }
+  if (stack.some((l) => target.contains(l.source))) closeAllTooltips();
 }
 
 function onKeyDown(ev) {
@@ -249,7 +294,7 @@ function cancelShow() {
   showToken++;
 }
 
-async function showTooltip(src, depth, token) {
+async function showTooltip(src, depth, token, { pin = false } = {}) {
   showTimer = null;
   pendingSource = null;
 
@@ -286,9 +331,10 @@ async function showTooltip(src, depth, token) {
   root.appendChild(el);
 
   // Links inside an already-frozen tooltip are born interactive: the player is
-  // in inspect mode already and should not have to hold a second time.
-  const frozen = depth > 0;
-  const layer = { el, source: src, depth, kind, frozen };
+  // in inspect mode already and should not have to hold a second time. A
+  // clicked source (data-tt-click) is pinned the same way.
+  const frozen = depth > 0 || pin;
+  const layer = { el, source: src, depth, kind, frozen, pinned: pin };
   if (frozen) el.classList.add("frozen");
   stack.push(layer);
 
@@ -373,7 +419,10 @@ function closeStaleLayers() {
   for (let i = 0; i < stack.length; i++) {
     const l = stack[i];
     if (!l.source.isConnected) break;
+    // A clicked layer stays until a click elsewhere, Escape or a second
+    // click on its source; only what it opened closes on looking away.
     if (
+      l.pinned ||
       l.el.matches(":hover") ||
       l.source.matches(":hover") ||
       pointerNear(l.el.getBoundingClientRect())

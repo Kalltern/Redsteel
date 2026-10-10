@@ -286,25 +286,37 @@ export class RedsteelActiveEffect extends ActiveEffect {
 
     Hooks.on("updateCombat", async (combat, changed) => {
       if (!this._isAuthoritative()) return;
+      if (!("round" in changed || "turn" in changed || "combatantId" in changed))
+        return;
 
-      const turnKey = `${combat.round}-${combat.turn}`;
-      const lastProcessed = combat.getFlag("redsteel", "lastTurnKey");
-
-      // 🔒 Prevent double execution globally
-      if (lastProcessed === turnKey) return;
+      // Time only runs forward. Rounds and turns are processed against a
+      // high-water mark, so a GM stepping back (Previous Turn / Previous Round)
+      // and then forward again never re-ticks a DoT or burns a clock twice.
+      // Keyed by the round number, never by the turn index: dynamic initiative
+      // reshuffles the order every round, and adding or removing a combatant
+      // shifts the index mid-round.
+      const round = combat.round;
+      const highRound = combat.getFlag("redsteel", "lastProcessedRound") ?? 0;
+      if (round < highRound) return;
 
       // -------------------------
       // ROUND START
       // -------------------------
-      if ("round" in changed) {
-        await this._onRoundStart(combat);
-      }
+      const newRound = round > highRound;
+      if (newRound) await this._onRoundStart(combat);
 
       // -------------------------
       // TURN START (including round rollover)
       // -------------------------
-      if ("turn" in changed || "combatantId" in changed || "round" in changed) {
-        await combat.setFlag("redsteel", "lastTurnKey", turnKey);
+      // Each combatant starts its turn at most once per round.
+      const combatantId = combat.combatant?.id;
+      const started = combat.getFlag("redsteel", "turnsStarted");
+      const startedIds = started?.round === round ? started.ids : [];
+      if (combatantId && !startedIds.includes(combatantId)) {
+        await combat.setFlag("redsteel", "turnsStarted", {
+          round,
+          ids: [...startedIds, combatantId],
+        });
         await this._onTurnStart(combat);
       }
 
@@ -312,7 +324,7 @@ export class RedsteelActiveEffect extends ActiveEffect {
       // rolled for this rollover. Signalled here rather than at the end of
       // _onRoundStart because _onTurnStart runs after it and ticks the first
       // combatant's turn-start effects — those belong on the same card.
-      if ("round" in changed) finishRoundDigest();
+      if (newRound) finishRoundDigest();
     });
 
     // Resource-threshold conditions (Fatigued / Toxic Shock) follow the
@@ -577,6 +589,9 @@ export class RedsteelActiveEffect extends ActiveEffect {
     // effect is ticked on its own: one trigger that throws must not leave every
     // effect after it frozen at its current duration.
     for (const effect of actor.effects.contents) {
+      // An earlier tick in this loop may have removed it (one effect ending
+      // another); never tick a deleted effect.
+      if (!actor.effects.has(effect.id)) continue;
       try {
         await effect.executeTrigger?.("onTurnStart");
         await effect.decrementActorTurn?.();
@@ -594,7 +609,7 @@ export class RedsteelActiveEffect extends ActiveEffect {
 
     const lastProcessed = combat.getFlag("redsteel", "lastProcessedRound");
 
-    if (lastProcessed === combat.round) {
+    if (lastProcessed != null && lastProcessed >= combat.round) {
       console.warn("Redsteel | Round already processed:", combat.round);
       return;
     }
@@ -633,9 +648,16 @@ export class RedsteelActiveEffect extends ActiveEffect {
       // -------------------------
       // 1. Run ROUND effects
       // -------------------------
-      for (const effect of actor.effects) {
-        await effect.executeTrigger?.("onRoundStart");
-        await effect.decrementRound?.();
+      // Snapshot and isolate each tick, as _onTurnStart does: one trigger that
+      // throws must not freeze every effect and combatant after it.
+      for (const effect of actor.effects.contents) {
+        if (!actor.effects.has(effect.id)) continue;
+        try {
+          await effect.executeTrigger?.("onRoundStart");
+          await effect.decrementRound?.();
+        } catch (err) {
+          console.error("Redsteel | round-start tick failed", effect, err);
+        }
       }
 
       // -------------------------
@@ -1995,22 +2017,49 @@ export class RedsteelActiveEffect extends ActiveEffect {
     if (effectId === "possessed" && game.user.id === game.users.activeGM?.id) {
       const possession = actor.getFlag("redsteel", "possession");
       if (possession) {
-        // Rebuild the full ownership map and replace it wholesale. Foundry
-        // merges partial ownership updates, so `-=` key removal is unreliable;
-        // {diff:false, recursive:false} forces a deterministic replace.
-        const ownership = foundry.utils.deepClone(actor.ownership ?? {});
-        for (const [userId, prior] of Object.entries(possession.grants ?? {})) {
-          if (prior === null || prior === undefined) delete ownership[userId];
-          else ownership[userId] = prior;
+        const grants = Object.entries(possession.grants ?? {});
+        if (actor.isToken) {
+          // Unlinked token: its ActorDelta ignores both `-=` key removal and
+          // the wholesale replace below. The replace never reaches the delta,
+          // desyncs this client's synthetic actor (its flags and effects
+          // vanish until reload), and turns the unset that follows into a
+          // no-op, so the possession flag outlives the release. INHERIT (-1)
+          // recurses token → actor → token. Set each granted user back to a
+          // concrete level instead: the prior one, else the actor's default.
+          if (grants.length) {
+            const fallback = actor.ownership?.default ?? 0;
+            const update = {};
+            for (const [userId, prior] of grants) {
+              update[`ownership.${userId}`] = prior ?? fallback;
+            }
+            await actor.update(update);
+          }
+        } else {
+          // Rebuild the full ownership map and replace it wholesale. Foundry
+          // merges partial ownership updates, so `-=` key removal is
+          // unreliable; {diff:false, recursive:false} forces a deterministic
+          // replace.
+          const ownership = foundry.utils.deepClone(actor.ownership ?? {});
+          for (const [userId, prior] of grants) {
+            if (prior === null || prior === undefined) delete ownership[userId];
+            else ownership[userId] = prior;
+          }
+          await actor.update({ ownership }, { diff: false, recursive: false });
         }
-        await actor.update({ ownership }, { diff: false, recursive: false });
         await actor.unsetFlag("redsteel", "possession");
         await ChatMessage.create({
           speaker: ChatMessage.getSpeaker({ actor }),
-          content: `<p style="text-align:center;">
-            <b>${actor.name}</b> is released from possession${
-              possession.possessorName ? ` by ${possession.possessorName}` : ""
-            }; control returns to normal.</p>`,
+          content: `<p style="text-align:center;">${
+            possession.possessorName
+              ? game.i18n.format("REDSTEEL.MentalDuel.Possession.Released", {
+                  name: actor.name,
+                  winner: possession.possessorName,
+                })
+              : game.i18n.format(
+                  "REDSTEEL.MentalDuel.Possession.ReleasedNoWinner",
+                  { name: actor.name },
+                )
+          }</p>`,
         });
       }
     }

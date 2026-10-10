@@ -1,0 +1,49 @@
+{
+  "folder": "TxNe45ZN24LnerlT",
+  "name": "Ambidextrous",
+  "type": "feature",
+  "img": "icons/weapons/thrown/daggers-guard-gold.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.Ambidextrous.name",
+    "description": "<p>Equally skilled with the right and the left hand.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "trait"
+  },
+  "effects": [],
+  "flags": {
+    "redsteel": {
+      "traitPolarity": "positive"
+    }
+  },
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.14.1",
+    "lastModifiedBy": null,
+    "createdTime": null,
+    "modifiedTime": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 0,
+  "_id": "NyEeUlpGinzsfVtA",
+  "_key": "!items!NyEeUlpGinzsfVtA"
+}

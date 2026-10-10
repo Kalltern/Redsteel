@@ -1,0 +1,49 @@
+{
+  "folder": "eZqc2jXvEWxnj88U",
+  "name": "Cursed",
+  "type": "feature",
+  "img": "icons/magic/unholy/hand-marked-pink.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.Cursed.name",
+    "description": "<p>Starts under a curse chosen by agreement.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "trait"
+  },
+  "effects": [],
+  "flags": {
+    "redsteel": {
+      "traitPolarity": "negative"
+    }
+  },
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.14.1",
+    "lastModifiedBy": null,
+    "createdTime": null,
+    "modifiedTime": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 0,
+  "_id": "Z8nhTr7M0JeE5Z8l",
+  "_key": "!items!Z8nhTr7M0JeE5Z8l"
+}

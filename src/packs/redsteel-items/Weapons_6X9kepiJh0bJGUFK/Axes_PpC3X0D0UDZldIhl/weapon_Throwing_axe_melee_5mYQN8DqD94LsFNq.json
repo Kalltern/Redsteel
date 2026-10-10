@@ -77,7 +77,7 @@
       "monk": false,
       "pikeman": false,
       "reaver": false,
-      "rogue": false,
+      "rogue": true,
       "shieldbearer": true,
       "swordsman": false,
       "archer": false,

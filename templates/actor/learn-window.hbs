@@ -255,8 +255,7 @@
         title bar, three columns, and the footer with Back, Close and Finish.
         The wrapper wears .rs-create so the creation window's rules apply.
           1. Character: the points left, the level's rank cap and the CP to SP
-             conversion (Shift moves 5), then portrait, name, race,
-             attributes and traits (hover a trait for its card).
+             conversion (Shift moves 5), then attributes and traits (hover a trait for its card).
           2. Your skills: the Combat and Skills tracks taken, each a ribbon
              with its rank; click one to read its ranks. Then the features
              bought, each with its give-back control.
@@ -279,7 +278,8 @@
   <div class="rs-create-columns rs-learn-cskills-columns">
 
     <section class="rs-create-panel rs-learn-cskills-col is-character">
-      <h2 class="rs-create-panel-title">{{localize "REDSTEEL.Creation.Skills.character"}}</h2>
+      {{!-- Titled with the character's name and race, not a heading. --}}
+      <h2 class="rs-create-panel-title">{{creationSkills.character.name}}{{#if creationSkills.character.race}} - {{creationSkills.character.race}}{{/if}}</h2>
       <div class="rs-create-scroll rs-learn-cskills-character">
         {{!-- The points: CP and SP left of what was earned, the level's rank
               cap, and the CP to SP conversion (Shift moves 5). --}}
@@ -316,16 +316,6 @@
             {{localize "REDSTEEL.Creation.Learn.noStarting"}}
           </p>
           {{/if}}
-        </div>
-
-        <div class="rs-learn-cskills-identity">
-          {{#if creationSkills.character.img}}
-          <img class="rs-learn-cskills-portrait" src="{{creationSkills.character.img}}" alt="{{creationSkills.character.name}}">
-          {{/if}}
-          <div class="rs-learn-cskills-who">
-            <span class="rs-learn-cskills-name">{{creationSkills.character.name}}</span>
-            {{#if creationSkills.character.race}}<span class="rs-learn-cskills-race">{{creationSkills.character.race}}</span>{{/if}}
-          </div>
         </div>
 
         <h2 class="rs-create-panel-title is-inline">{{localize "REDSTEEL.Creation.Attributes"}}</h2>
@@ -433,6 +423,7 @@
             {{#each this.paragraphs}}
             <p class="rs-learn-cskills-info-text">{{this}}</p>
             {{/each}}
+            {{#if this.weaponsPill}}<div>{{{this.weaponsPill}}}</div>{{/if}}
             {{#if this.allRanksLabel}}
             <p class="rs-learn-cskills-info-cost">{{this.allRanksLabel}}</p>
             {{/if}}

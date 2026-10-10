@@ -103,7 +103,9 @@ REDSTEEL.effectDefinitions = {
     useDuration: true,
     changes: [
       {
-        key: "system.globalMod",
+        // globalBonus, like every other blanket modifier: globalMod itself is
+        // rebuilt from zero after effects apply, which wiped this -10.
+        key: "system.globalBonus",
         mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
         value: -10,
       },
@@ -1227,7 +1229,7 @@ REDSTEEL.effectDefinitions = {
   // the corrupted state is visible on the token and readable by other systems.
   // The defense-roll reminder pill is emitted directly in traitPills.mjs.
   corrupted: {
-    name: "Corrupted (Zkažený)",
+    name: "REDSTEEL.EffectName.corrupted",
     img: "icons/svg/blood.svg",
     statuses: ["corrupted"],
     stackBehavior: "ignore",
@@ -1241,7 +1243,7 @@ REDSTEEL.effectDefinitions = {
   // Removing this status is the canonical way to END possession — the effect's
   // _onDelete (documents/effects.mjs) restores the original ownership.
   possessed: {
-    name: "Possessed (Posednutí)",
+    name: "REDSTEEL.EffectName.possessed",
     img: "icons/svg/terror.svg",
     statuses: ["possessed"],
     stackBehavior: "ignore",
@@ -1277,7 +1279,7 @@ REDSTEEL.effectDefinitions = {
     name: "Paralyzed",
     img: "icons/svg/paralysis.svg",
     statuses: ["paralyze"],
-    defaultTurns: 2,
+    defaultTurns: 3,
     useDuration: true,
     changes: [
       {

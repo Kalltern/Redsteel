@@ -145,26 +145,26 @@ export async function promptMentalCharge(actor, chance) {
 
   const DialogV2 = foundry.applications.api.DialogV2;
   const answer = await DialogV2.wait({
-    window: { title: "Mentální zteč — Mental Charge" },
+    window: { title: game.i18n.localize("REDSTEEL.MentalDuel.Charge.Title") },
     content: `
       <form>
         <p style="margin-top:0;">
-          Chance to start the Mental Duel: <b>${chance}%</b>.
-          Burn Mind to force the opening — <b>+${MD_INITIATION_STEP}%</b> per point,
-          up to <b>${MD_CHARGE_CAP}%</b>.
+          ${game.i18n.format("REDSTEEL.MentalDuel.Charge.Intro", {
+            chance,
+            step: MD_INITIATION_STEP,
+            cap: MD_CHARGE_CAP,
+          })}
         </p>
         <label style="display:flex; align-items:center; gap:8px;">
-          <span style="flex:1;">Mind to burn (have ${mind}, max ${max})</span>
+          <span style="flex:1;">${game.i18n.format("REDSTEEL.MentalDuel.Charge.BurnLabel", { mind, max })}</span>
           <input type="number" name="md-charge" value="0" min="0" max="${max}"
             step="1" style="width:70px;">
         </label>
         <p style="font-size:12px; opacity:0.8; margin-bottom:0;">
-          A Free Action, declared before the cast is rolled. The Mind is spent
-          whether or not the cast lands.
+          ${game.i18n.localize("REDSTEEL.MentalDuel.Charge.FreeActionNote")}
           ${
             max >= mind
-              ? `<br><b style="color:#e0a0a0;">Burning all ${mind} would open the
-                 duel with an already-broken mind.</b>`
+              ? `<br><b style="color:#e0a0a0;">${game.i18n.format("REDSTEEL.MentalDuel.Charge.BurnAllWarning", { mind })}</b>`
               : ""
           }
         </p>
@@ -172,7 +172,7 @@ export async function promptMentalCharge(actor, chance) {
     buttons: [
       {
         action: "charge",
-        label: "Charge",
+        label: game.i18n.localize("REDSTEEL.MentalDuel.Charge.Charge"),
         icon: "fas fa-brain",
         default: true,
         callback: (ev, button, dialog) => {
@@ -180,7 +180,7 @@ export async function promptMentalCharge(actor, chance) {
           return root.querySelector('input[name="md-charge"]')?.value ?? "0";
         },
       },
-      { action: "skip", label: "No charge" },
+      { action: "skip", label: game.i18n.localize("REDSTEEL.MentalDuel.Charge.NoCharge") },
     ],
     rejectClose: false,
   });
@@ -255,7 +255,11 @@ const RPS_ICON = {
   paper: '<i class="fas fa-hand-paper"></i>',
   scissors: '<i class="fas fa-hand-scissors"></i>',
 };
-const RPS_LABEL = { rock: "Rock", paper: "Paper", scissors: "Scissors" };
+const RPS_LABEL = {
+  rock: "REDSTEEL.MentalDuel.Gamble.Rock",
+  paper: "REDSTEEL.MentalDuel.Gamble.Paper",
+  scissors: "REDSTEEL.MentalDuel.Gamble.Scissors",
+};
 
 /** Stable key identifying which duel pair an RPS state belongs to. */
 function rpsPairKey(aUuid, bUuid) {
@@ -739,7 +743,11 @@ function buildSide(token) {
     critFailure: skill.critFailure,
     // NPCs roll Will, not the skill — label it so the arena doesn't claim a
     // Mind Bending rating they don't have.
-    ratingLabel: skill.isWill ? "Will" : "Duel",
+    ratingLabel: game.i18n.localize(
+      skill.isWill
+        ? "REDSTEEL.MentalDuel.Window.RatingWill"
+        : "REDSTEEL.MentalDuel.Window.RatingDuel",
+    ),
   };
 }
 
@@ -885,7 +893,7 @@ export class MentalDuelApp extends ApplicationV2 {
     id: "redsteel-mental-duel",
     classes: ["redsteel", "redsteel-mental-duel"],
     window: {
-      title: "Mentální souboj — Mind Bending",
+      title: "REDSTEEL.MentalDuel.Window.Title",
       icon: "fas fa-brain",
       resizable: false,
     },
@@ -904,8 +912,8 @@ export class MentalDuelApp extends ApplicationV2 {
     const aTok = this._token(this._aUuid);
     const bTok = this._token(this._bUuid);
     if (!aTok?.actor || !bTok?.actor) {
-      return `<div class="rs-md-banner">A combatant token is no longer on the scene.</div>
-        <div class="rs-md-footer"><button type="button" class="rs-md-end rs-md-close">Close</button></div>`;
+      return `<div class="rs-md-banner">${game.i18n.localize("REDSTEEL.MentalDuel.Window.TokenGone")}</div>
+        <div class="rs-md-footer"><button type="button" class="rs-md-end rs-md-close">${game.i18n.localize("REDSTEEL.MentalDuel.Window.Close")}</button></div>`;
     }
     return this._buildHTML(buildSide(aTok), buildSide(bTok));
   }
@@ -931,14 +939,20 @@ export class MentalDuelApp extends ApplicationV2 {
       const winner = a.mindValue > 0 ? a : b.mindValue > 0 ? b : null;
       const loser = winner === a ? b : a;
       if (!winner) {
-        banner = `<div class="rs-md-banner">Both minds collapse — a draw.</div>`;
+        banner = `<div class="rs-md-banner">${game.i18n.localize("REDSTEEL.MentalDuel.Window.Draw")}</div>`;
       } else {
         const possessed = !!loser.actor.getFlag("redsteel", "possession");
         let action = "";
         if (possessed) {
           action = `<div class="rs-md-possess-note">
-            <i class="fas fa-hand-sparkles"></i> ${loser.name} is possessed by ${winner.name}.
-            Remove the “Possessed” token status to release them.</div>`;
+            <i class="fas fa-hand-sparkles"></i> ${game.i18n.format(
+              "REDSTEEL.MentalDuel.Window.PossessedNote",
+              {
+                loser: loser.name,
+                winner: winner.name,
+                status: game.i18n.localize("REDSTEEL.EffectName.possessed"),
+              },
+            )}</div>`;
         } else if (game.user.isGM) {
           // Seizing control is a GM-only action, and only for a winner who can
           // Dominate (any NPC, or a PC with the Domination perk).
@@ -946,9 +960,9 @@ export class MentalDuelApp extends ApplicationV2 {
             ? `<button type="button" class="rs-md-possess"
                 data-winner-uuid="${winner.tokenDoc.uuid}"
                 data-loser-uuid="${loser.tokenDoc.uuid}">
-                <i class="fas fa-hand-sparkles"></i> Seize control</button>`
+                <i class="fas fa-hand-sparkles"></i> ${game.i18n.localize("REDSTEEL.MentalDuel.Window.Seize")}</button>`
             : `<div class="rs-md-possess-note">
-                ${winner.name} lacks the Domination perk and cannot seize control.</div>`;
+                ${game.i18n.format("REDSTEEL.MentalDuel.Window.NoDomination", { winner: winner.name })}</div>`;
         }
         // Drain (Vysátí) — the victor feeds on the broken mind, recovering
         // Mind and ending the duel. Offered to the winner's own players as
@@ -959,12 +973,17 @@ export class MentalDuelApp extends ApplicationV2 {
                 data-winner-uuid="${winner.tokenDoc.uuid}"
                 data-loser-uuid="${loser.tokenDoc.uuid}"
                 data-anchor-uuid="${this._aUuid}">
-                <i class="fas fa-brain"></i> Drain ${loser.name}
-                (+${DRAIN_MIND_GAIN} Mind)</button>`
+                <i class="fas fa-brain"></i> ${game.i18n.format(
+                  "REDSTEEL.MentalDuel.Window.DrainButton",
+                  { loser: loser.name, amount: DRAIN_MIND_GAIN },
+                )}</button>`
             : "";
 
         banner = `<div class="rs-md-banner"><i class="fas fa-crown"></i>
-             ${winner.name} breaks ${loser.name}'s will.
+             ${game.i18n.format("REDSTEEL.MentalDuel.Window.Breaks", {
+               winner: winner.name,
+               loser: loser.name,
+             })}
              ${action}${drain}</div>`;
       }
     }
@@ -973,7 +992,10 @@ export class MentalDuelApp extends ApplicationV2 {
       <div class="rs-md-side" style="--rs-md-color:${s.color}">
         <img class="rs-md-portrait" src="${s.img}" alt="${s.name}">
         <div class="rs-md-name" title="${s.name}">${s.name}</div>
-        <div class="rs-md-mind">Mind <b>${s.mindValue}</b> / ${s.mindMax}</div>
+        <div class="rs-md-mind">${game.i18n.format("REDSTEEL.MentalDuel.Window.MindValue", {
+          value: s.mindValue,
+          max: s.mindMax,
+        })}</div>
         <div class="rs-md-rating">${s.ratingLabel} ${s.rating >= 0 ? "+" : ""}${s.rating}%</div>
       </div>`;
 
@@ -983,23 +1005,25 @@ export class MentalDuelApp extends ApplicationV2 {
       const turnReached = this._turnReached(s);
       const disabled =
         ended || !started || !canControl || !ready || !turnReached || !!pending;
-      const reason = !canControl
-        ? "You don't control this combatant"
-        : ended
-          ? "The duel is over"
-          : !started
-            ? "The GM has not started the Mind Bending yet"
-            : pending
-              ? "An exchange is still open"
-              : !ready
-                ? "Already attacked this round"
-                : !turnReached
-                  ? "Wait for your turn this round"
-                  : "Spend a Free Action to attack";
+      const reason = game.i18n.localize(
+        !canControl
+          ? "REDSTEEL.MentalDuel.Window.Reason.NotYours"
+          : ended
+            ? "REDSTEEL.MentalDuel.Window.Reason.Over"
+            : !started
+              ? "REDSTEEL.MentalDuel.Window.Reason.NotStarted"
+              : pending
+                ? "REDSTEEL.MentalDuel.Window.Reason.Pending"
+                : !ready
+                  ? "REDSTEEL.MentalDuel.Window.Reason.AlreadyAttacked"
+                  : !turnReached
+                    ? "REDSTEEL.MentalDuel.Window.Reason.WaitTurn"
+                    : "REDSTEEL.MentalDuel.Window.Reason.Attack",
+      );
       return `<button type="button" class="rs-md-attack" data-role="${role}"
         ${disabled ? "disabled" : ""} title="${reason}"
         style="--rs-md-color:${s.color}">
-        <i class="fas fa-bolt"></i> ${s.name} attacks
+        <i class="fas fa-bolt"></i> ${game.i18n.format("REDSTEEL.MentalDuel.Window.Attacks", { name: s.name })}
       </button>`;
     };
 
@@ -1020,11 +1044,14 @@ export class MentalDuelApp extends ApplicationV2 {
         spent;
       const extra = assaultDrain(s.actor);
       const reason = spent
-        ? "Already used Mentální nápor this round"
-        : `Mental Duel test at ${MD_ASSAULT_PENALTY}% — a win drains ${extra} extra Mind`;
+        ? game.i18n.localize("REDSTEEL.MentalDuel.Assault.AlreadyUsed")
+        : game.i18n.format("REDSTEEL.MentalDuel.Assault.Hint", {
+            penalty: MD_ASSAULT_PENALTY,
+            extra,
+          });
       return `<button type="button" class="rs-md-assault" data-role="${role}"
         ${disabled ? "disabled" : ""} title="${reason}">
-        <i class="fas fa-burst"></i> Nápor (${MD_ASSAULT_PENALTY}%)
+        <i class="fas fa-burst"></i> ${game.i18n.format("REDSTEEL.MentalDuel.Assault.Button", { penalty: MD_ASSAULT_PENALTY })}
       </button>`;
     };
 
@@ -1036,7 +1063,7 @@ export class MentalDuelApp extends ApplicationV2 {
       const outOfActions = left !== null && left <= 0;
       const disabled = ended || !canControl || outOfActions;
       const reason = !canControl
-        ? "You don't control this combatant"
+        ? game.i18n.localize("REDSTEEL.MentalDuel.Window.Reason.NotYours")
         : outOfActions
           ? game.i18n.localize("REDSTEEL.MentalDuel.Focus.NoActions")
           : game.i18n.format("REDSTEEL.MentalDuel.Focus.Hint", {
@@ -1079,11 +1106,11 @@ export class MentalDuelApp extends ApplicationV2 {
       <div class="rs-md-footer">
         <button type="button" class="rs-md-end rs-md-end-duel"
           ${game.user.isGM ? "" : "disabled"}
-          title="${
+          title="${game.i18n.localize(
             game.user.isGM
-              ? "End the duel for everyone"
-              : "You do not posses the power to end the duel prematurely"
-          }">End duel</button>
+              ? "REDSTEEL.MentalDuel.Window.EndHintGM"
+              : "REDSTEEL.MentalDuel.Window.EndHintPlayer",
+          )}">${game.i18n.localize("REDSTEEL.MentalDuel.Window.End")}</button>
       </div>`;
   }
 
@@ -1105,14 +1132,14 @@ export class MentalDuelApp extends ApplicationV2 {
     if (game.user.isGM) {
       return `<div class="rs-md-start-wrap">
         <button type="button" class="rs-md-start-duel">
-          <i class="fas fa-play"></i> Start Mind Bending
+          <i class="fas fa-play"></i> ${game.i18n.localize("REDSTEEL.MentalDuel.Window.Start")}
         </button>
-        <div class="rs-md-start-note">Neither side can attack until you start.</div>
+        <div class="rs-md-start-note">${game.i18n.localize("REDSTEEL.MentalDuel.Window.StartNote")}</div>
       </div>`;
     }
     return `<div class="rs-md-start-wrap">
       <div class="rs-md-start-note"><i class="fas fa-hourglass-half"></i>
-        Waiting for the GM to start the Mind Bending…</div>
+        ${game.i18n.localize("REDSTEEL.MentalDuel.Window.WaitingForGM")}</div>
     </div>`;
   }
 
@@ -1145,7 +1172,7 @@ export class MentalDuelApp extends ApplicationV2 {
     // No state yet → the GM auto-rolls the coin toss on open / each new round.
     if (!rps) {
       return `<div class="rs-md-rps"><div class="rs-md-rps-note">
-        <i class="fas fa-coins"></i> Coin toss pending…
+        <i class="fas fa-coins"></i> ${game.i18n.localize("REDSTEEL.MentalDuel.Gamble.CoinPending")}
       </div></div>`;
     }
 
@@ -1154,11 +1181,11 @@ export class MentalDuelApp extends ApplicationV2 {
       let summary;
       if (rps.phase === "resolved") summary = this._rpsResultSummary(sides, rps);
       else if (rps.phase === "declined")
-        summary = `<div class="rs-md-rps-note">${sides[rps.initiator].name} declined the gamble.</div>`;
+        summary = `<div class="rs-md-rps-note">${game.i18n.format("REDSTEEL.MentalDuel.Gamble.Declined", { name: sides[rps.initiator].name })}</div>`;
       else
-        summary = `<div class="rs-md-rps-note">Coin toss decided ${sides[rps.initiator].name}, but they cannot afford the stake.</div>`;
+        summary = `<div class="rs-md-rps-note">${game.i18n.format("REDSTEEL.MentalDuel.Gamble.CannotAfford", { name: sides[rps.initiator].name })}</div>`;
       return `<div class="rs-md-rps">${summary}
-        <div class="rs-md-rps-note" style="opacity:.7;">The gamble replenishes next round.</div>
+        <div class="rs-md-rps-note" style="opacity:.7;">${game.i18n.localize("REDSTEEL.MentalDuel.Gamble.Replenishes")}</div>
       </div>`;
     }
 
@@ -1171,16 +1198,16 @@ export class MentalDuelApp extends ApplicationV2 {
       const tooLow = initiator.mindValue <= 1;
       const body = initControls
         ? `<div class="rs-md-rps-offer">
-             <span>You were chosen — accept the gamble?</span>
+             <span>${game.i18n.localize("REDSTEEL.MentalDuel.Gamble.Chosen")}</span>
              <div class="rs-md-rps-buttons">
                <button type="button" class="rs-md-rps-accept" ${tooLow ? "disabled" : ""}
-                 title="${tooLow ? "You need more than 1 Mind to stake the gamble" : "Accept and pay 1 Mind — losing costs a second point"}">Accept (pay 1 Mind)</button>
-               <button type="button" class="rs-md-rps-decline">Decline</button>
+                 title="${game.i18n.localize(tooLow ? "REDSTEEL.MentalDuel.Gamble.TooLow" : "REDSTEEL.MentalDuel.Gamble.AcceptHint")}">${game.i18n.localize("REDSTEEL.MentalDuel.Gamble.Accept")}</button>
+               <button type="button" class="rs-md-rps-decline">${game.i18n.localize("REDSTEEL.MentalDuel.Gamble.Decline")}</button>
              </div>
            </div>`
-        : `<div class="rs-md-rps-note">Waiting for <b>${initiator.name}</b> to decide…</div>`;
+        : `<div class="rs-md-rps-note">${game.i18n.format("REDSTEEL.MentalDuel.Gamble.WaitingFor", { name: initiator.name })}</div>`;
       return `<div class="rs-md-rps">
-        <div class="rs-md-rps-title"><i class="fas fa-coins"></i> Coin toss chose <b>${initiator.name}</b></div>
+        <div class="rs-md-rps-title"><i class="fas fa-coins"></i> ${game.i18n.format("REDSTEEL.MentalDuel.Gamble.CoinChose", { name: initiator.name })}</div>
         ${body}
       </div>`;
     }
@@ -1192,9 +1219,12 @@ export class MentalDuelApp extends ApplicationV2 {
         const mine = s.actor.isOwner || game.user.isGM;
         const committed = !!rps.choices[key];
         if (committed) {
+          const committedLabel = game.i18n.localize(
+            "REDSTEEL.MentalDuel.Gamble.Committed",
+          );
           const reveal = mine
-            ? `${RPS_ICON[rps.choices[key]]} committed`
-            : "committed";
+            ? `${RPS_ICON[rps.choices[key]]} ${committedLabel}`
+            : committedLabel;
           return `<div class="rs-md-rps-pick committed" style="--rs-md-color:${s.color}">
             <div class="rs-md-rps-pick-name">${s.name}</div>
             <div class="rs-md-rps-pick-state">${reveal}</div>
@@ -1202,22 +1232,22 @@ export class MentalDuelApp extends ApplicationV2 {
         }
         if (mine) {
           return `<div class="rs-md-rps-pick" style="--rs-md-color:${s.color}">
-            <div class="rs-md-rps-pick-name">${s.name} — choose:</div>
+            <div class="rs-md-rps-pick-name">${game.i18n.format("REDSTEEL.MentalDuel.Gamble.Choose", { name: s.name })}</div>
             <div class="rs-md-rps-choices">
               ${RPS_CHOICES.map(
                 (c) =>
-                  `<button type="button" class="rs-md-rps-choose" data-side="${key}" data-choice="${c}" title="${RPS_LABEL[c]}">${RPS_ICON[c]}</button>`,
+                  `<button type="button" class="rs-md-rps-choose" data-side="${key}" data-choice="${c}" title="${game.i18n.localize(RPS_LABEL[c])}">${RPS_ICON[c]}</button>`,
               ).join("")}
             </div>
           </div>`;
         }
         return `<div class="rs-md-rps-pick" style="--rs-md-color:${s.color}">
           <div class="rs-md-rps-pick-name">${s.name}</div>
-          <div class="rs-md-rps-pick-state">choosing…</div>
+          <div class="rs-md-rps-pick-state">${game.i18n.localize("REDSTEEL.MentalDuel.Gamble.Choosing")}</div>
         </div>`;
       };
       return `<div class="rs-md-rps">
-        <div class="rs-md-rps-title"><b>${initiator.name}</b> staked 1 Mind (2 lost if they lose) — pick once, you can't change it</div>
+        <div class="rs-md-rps-title">${game.i18n.format("REDSTEEL.MentalDuel.Gamble.Staked", { name: initiator.name })}</div>
         <div class="rs-md-rps-arena">${pick("a")}${pick("b")}</div>
       </div>`;
     }
@@ -1229,18 +1259,24 @@ export class MentalDuelApp extends ApplicationV2 {
     const { winner } = rps.result;
     const a = sides.a;
     const b = sides.b;
-    const picks = `${a.name} ${RPS_ICON[rps.choices.a]} &nbsp;vs&nbsp; ${RPS_ICON[rps.choices.b]} ${b.name}`;
+    const picks = `${a.name} ${RPS_ICON[rps.choices.a]} &nbsp;${game.i18n.localize("REDSTEEL.MentalDuel.Gamble.Versus")}&nbsp; ${RPS_ICON[rps.choices.b]} ${b.name}`;
 
     let verdict;
     if (winner === "draw") {
-      verdict = "Draw — no Mind lost. The staked Mind is forfeit.";
+      verdict = game.i18n.localize("REDSTEEL.MentalDuel.Gamble.VerdictDraw");
     } else {
       const w = sides[winner];
       const l = sides[winner === "a" ? "b" : "a"];
       verdict =
         winner === rps.initiator
-          ? `${w.name} wins — regains the staked Mind; ${l.name} loses 1 Mind.`
-          : `${w.name} wins — ${l.name} (initiator) loses 2 Mind: the stake and the loss.`;
+          ? game.i18n.format("REDSTEEL.MentalDuel.Gamble.VerdictInitiatorWins", {
+              winner: w.name,
+              loser: l.name,
+            })
+          : game.i18n.format("REDSTEEL.MentalDuel.Gamble.VerdictInitiatorLoses", {
+              winner: w.name,
+              loser: l.name,
+            });
     }
     return `<div class="rs-md-rps-result"><div>${picks}</div><div><b>${verdict}</b></div></div>`;
   }
@@ -1402,7 +1438,9 @@ export class MentalDuelApp extends ApplicationV2 {
     const actor = tok?.actor;
     if (!actor) return this.render();
     if (!(actor.isOwner || game.user.isGM)) {
-      ui.notifications.warn(`You don't control ${actor.name}.`);
+      ui.notifications.warn(
+        game.i18n.format("REDSTEEL.MentalDuel.Notify.NotYours", { name: actor.name }),
+      );
       return this.render();
     }
     const left = actionsLeft(actor);
@@ -1428,7 +1466,7 @@ export class MentalDuelApp extends ApplicationV2 {
     // before another one can be thrown.
     if (this._pendingState()) {
       ui.notifications.warn(
-        "The last exchange is still open — resolve it before attacking again.",
+        game.i18n.localize("REDSTEEL.MentalDuel.Notify.ExchangeOpen"),
       );
       return;
     }
@@ -1446,12 +1484,18 @@ export class MentalDuelApp extends ApplicationV2 {
     // drain is settled by the GM when the exchange resolves.
     if (assault) {
       if (!canMentalAssault(attacker.actor)) {
-        ui.notifications.warn(`${attacker.name} does not have Mentální nápor.`);
+        ui.notifications.warn(
+          game.i18n.format("REDSTEEL.MentalDuel.Notify.NoAssault", {
+            name: attacker.name,
+          }),
+        );
         return;
       }
       if (!this._canAssault(attacker)) {
         ui.notifications.warn(
-          `${attacker.name} has already used Mentální nápor this round.`,
+          game.i18n.format("REDSTEEL.MentalDuel.Notify.AssaultUsed", {
+            name: attacker.name,
+          }),
         );
         return;
       }
@@ -1459,15 +1503,27 @@ export class MentalDuelApp extends ApplicationV2 {
     }
 
     if (!this._canAttack(attacker)) {
-      ui.notifications.warn(`${attacker.name} has already attacked this round.`);
+      ui.notifications.warn(
+        game.i18n.format("REDSTEEL.MentalDuel.Notify.AlreadyAttacked", {
+          name: attacker.name,
+        }),
+      );
       return;
     }
     if (!this._turnReached(attacker)) {
-      ui.notifications.warn(`${attacker.name} has not acted yet this round.`);
+      ui.notifications.warn(
+        game.i18n.format("REDSTEEL.MentalDuel.Notify.NotActedYet", {
+          name: attacker.name,
+        }),
+      );
       return;
     }
     if (!(attacker.actor.isOwner || game.user.isGM)) {
-      ui.notifications.warn(`You don't control ${attacker.name}.`);
+      ui.notifications.warn(
+        game.i18n.format("REDSTEEL.MentalDuel.Notify.NotYours", {
+          name: attacker.name,
+        }),
+      );
       return;
     }
 
@@ -1531,40 +1587,46 @@ export class MentalDuelApp extends ApplicationV2 {
       const entry = pending.sides[key];
       const role = key === pending.attacker ? "attacker" : "defender";
       const crit = entry.critSuccess
-        ? ` <span style="color:#8fd08f;">⚡crit</span>`
+        ? ` <span style="color:#8fd08f;">⚡${game.i18n.localize("REDSTEEL.MentalDuel.Pending.Crit")}</span>`
         : entry.critFailure
-          ? ` <span style="color:#e08b8b;">✖fumble</span>`
+          ? ` <span style="color:#e08b8b;">✖${game.i18n.localize("REDSTEEL.MentalDuel.Pending.Fumble")}</span>`
           : "";
       const rerolled = entry.rerollLabel
-        ? `<div class="rs-md-pending-note"><i class="fa-light fa-rotate"></i> Rerolled — ${entry.rerollLabel}</div>`
+        ? `<div class="rs-md-pending-note"><i class="fa-light fa-rotate"></i> ${game.i18n.format("REDSTEEL.MentalDuel.Pending.Rerolled", { label: entry.rerollLabel })}</div>`
         : "";
 
       const mine = s.actor.isOwner || game.user.isGM;
       let controls;
       if (entry.done) {
         controls = `<div class="rs-md-pending-note">
-          <i class="fas fa-check"></i> ${entry.rerollLabel ? "reroll stands" : "locked in"}</div>`;
+          <i class="fas fa-check"></i> ${game.i18n.localize(entry.rerollLabel ? "REDSTEEL.MentalDuel.Pending.RerollStands" : "REDSTEEL.MentalDuel.Pending.LockedIn")}</div>`;
       } else if (!mine) {
-        controls = `<div class="rs-md-pending-note">waiting for ${s.name}…</div>`;
+        controls = `<div class="rs-md-pending-note">${game.i18n.format("REDSTEEL.MentalDuel.Pending.WaitingFor", { name: s.name })}</div>`;
       } else {
         controls = `<div class="rs-md-pending-buttons">
           ${
             entry.canReroll
               ? `<button type="button" class="rs-md-pending-reroll" data-side="${key}"
-                   title="Spend a reroll on this test">
-                   <i class="fa-light fa-rotate"></i> Reroll</button>`
+                   title="${game.i18n.localize("REDSTEEL.MentalDuel.Pending.RerollHint")}">
+                   <i class="fa-light fa-rotate"></i> ${game.i18n.localize("REDSTEEL.MentalDuel.Pending.Reroll")}</button>`
               : ""
           }
           <button type="button" class="rs-md-pending-accept" data-side="${key}"
-            title="Keep this roll">Accept</button>
+            title="${game.i18n.localize("REDSTEEL.MentalDuel.Pending.AcceptHint")}">${game.i18n.localize("REDSTEEL.MentalDuel.Pending.Accept")}</button>
         </div>`;
       }
 
       return `<div class="rs-md-pending-row" style="--rs-md-color:${s.color}">
         <div class="rs-md-pending-who"><b>${s.name}</b>
-          <span style="opacity:.6;">(${role})</span></div>
-        <div class="rs-md-pending-roll">d100 <b>${entry.raw}</b> → margin
-          <b>${entry.margin}</b>${crit}</div>
+          <span style="opacity:.6;">(${game.i18n.localize(
+            role === "attacker"
+              ? "REDSTEEL.MentalDuel.Pending.Attacker"
+              : "REDSTEEL.MentalDuel.Pending.Defender",
+          )})</span></div>
+        <div class="rs-md-pending-roll">${game.i18n.format("REDSTEEL.MentalDuel.Pending.Roll", {
+          raw: entry.raw,
+          margin: entry.margin,
+        })}${crit}</div>
         ${rerolled}
         ${controls}
       </div>`;
@@ -1575,30 +1637,37 @@ export class MentalDuelApp extends ApplicationV2 {
     const def = pending.sides[pending.attacker === "a" ? "b" : "a"];
     const { attackerWins, critical } = resolveVersus(att, def);
     const provLoser = attackerWins ? defenderName : attackerName;
-    const provisional = `${attackerWins ? attackerName : defenderName} would prevail — ${provLoser} loses <b>${critical ? 2 : 1}</b> Mind.`;
+    const provisional = game.i18n.format("REDSTEEL.MentalDuel.Pending.Provisional", {
+      winner: attackerWins ? attackerName : defenderName,
+      loser: provLoser,
+      amount: critical ? 2 : 1,
+    });
 
     const resolveBtn = game.user.isGM
       ? `<button type="button" class="rs-md-pending-resolve"
-           title="Lock in both rolls and apply the result">
-           <i class="fas fa-gavel"></i> Resolve now</button>`
+           title="${game.i18n.localize("REDSTEEL.MentalDuel.Pending.ResolveHint")}">
+           <i class="fas fa-gavel"></i> ${game.i18n.localize("REDSTEEL.MentalDuel.Pending.Resolve")}</button>`
       : "";
 
     // An assault changes what a reroll is worth, so say so while the exchange
     // is still open.
     const assaultLine = pending.assault
       ? `<div class="rs-md-pending-note" style="text-align:center;">
-           <i class="fas fa-burst"></i> Mentální nápor — ${attackerName} attacks at
-           ${MD_ASSAULT_PENALTY}%; a win drains ${pending.assaultDrain} extra Mind.
+           <i class="fas fa-burst"></i> ${game.i18n.format("REDSTEEL.MentalDuel.Assault.PendingNote", {
+             name: attackerName,
+             penalty: MD_ASSAULT_PENALTY,
+             extra: pending.assaultDrain,
+           })}
          </div>`
       : "";
 
     return `<div class="rs-md-pending">
       <div class="rs-md-pending-title">
-        <i class="fa-light fa-hourglass-half"></i> Exchange thrown — reroll or accept
+        <i class="fa-light fa-hourglass-half"></i> ${game.i18n.localize("REDSTEEL.MentalDuel.Pending.Title")}
       </div>
       ${assaultLine}
       <div class="rs-md-pending-rows">${row("a")}${row("b")}</div>
-      <div class="rs-md-pending-verdict">Provisional: ${provisional}</div>
+      <div class="rs-md-pending-verdict">${game.i18n.localize("REDSTEEL.MentalDuel.Pending.ProvisionalLabel")} ${provisional}</div>
       ${resolveBtn ? `<div class="rs-md-pending-gm">${resolveBtn}</div>` : ""}
     </div>`;
   }
@@ -1617,7 +1686,11 @@ export class MentalDuelApp extends ApplicationV2 {
     const actor = tok?.actor;
     if (!actor) return;
     if (!(actor.isOwner || game.user.isGM)) {
-      ui.notifications.warn(`You don't control ${tok.document.name}.`);
+      ui.notifications.warn(
+        game.i18n.format("REDSTEEL.MentalDuel.Notify.NotYours", {
+          name: tok.document.name,
+        }),
+      );
       return;
     }
 
@@ -1629,8 +1702,8 @@ export class MentalDuelApp extends ApplicationV2 {
     if (!eligible.length) {
       ui.notifications.info(
         entry.critFailure
-          ? "No rerolls available that can reroll a Critical Failure."
-          : "No eligible rerolls available.",
+          ? game.i18n.localize("REDSTEEL.MentalDuel.Notify.NoCritFailReroll")
+          : game.i18n.localize("REDSTEEL.MentalDuel.Notify.NoReroll"),
       );
       return;
     }
@@ -1641,7 +1714,9 @@ export class MentalDuelApp extends ApplicationV2 {
 
     const spent = await consumeReroll(actor, chosen.itemId, chosen.poolIndex);
     if (!spent) {
-      ui.notifications.warn("That reroll is already spent.");
+      ui.notifications.warn(
+        game.i18n.localize("REDSTEEL.MentalDuel.Notify.RerollSpent"),
+      );
       return;
     }
     try {
@@ -1778,12 +1853,12 @@ export async function openMentalDuel(attacker, defender, { broadcast = true } = 
 
   if (!aTok || !bTok) {
     ui.notifications.warn(
-      "Select your token and target an opponent (or select both tokens) to start a Mental Duel.",
+      game.i18n.localize("REDSTEEL.MentalDuel.Notify.SelectTokens"),
     );
     return null;
   }
   if (aTok === bTok) {
-    ui.notifications.warn("A combatant cannot duel themselves.");
+    ui.notifications.warn(game.i18n.localize("REDSTEEL.MentalDuel.Notify.SelfDuel"));
     return null;
   }
 
@@ -1888,7 +1963,9 @@ export async function handleRemoteMentalDuel(data) {
 export async function resumeMentalDuel({ notify = true } = {}) {
   const active = game.settings.get("redsteel", "mentalDuelActive");
   if (!active?.attackerUuid || !active?.defenderUuid) {
-    if (notify) ui.notifications.info("There is no Mental Duel in progress.");
+    if (notify) {
+      ui.notifications.info(game.i18n.localize("REDSTEEL.MentalDuel.Notify.NoActiveDuel"));
+    }
     return;
   }
   await handleRemoteMentalDuel(active);
@@ -1935,7 +2012,7 @@ function endDuelEverywhere(anchorUuid) {
 async function dispatchRound(anchorUuid, action) {
   const gm = game.users.activeGM;
   if (!gm) {
-    ui.notifications.warn("A GM must be connected to resolve the exchange.");
+    ui.notifications.warn(game.i18n.localize("REDSTEEL.MentalDuel.Notify.NoGMExchange"));
     return;
   }
   const data = { anchorUuid, action };
@@ -2040,7 +2117,9 @@ async function runRoundAction(anchorUuid, action) {
           critSuccess: action.critSuccess,
           critFailure: action.critFailure,
           rollJson: action.rollJson,
-          rerollLabel: action.label ?? "Reroll",
+          rerollLabel:
+            action.label ??
+            game.i18n.localize("REDSTEEL.MentalDuel.Pending.Reroll"),
           canReroll: false,
           done: true,
         },
@@ -2131,21 +2210,47 @@ async function resolveRound(anchor, state) {
 
   const label = (name, entry) =>
     `${name}: <b>${entry.margin}</b>` +
-    (entry.critSuccess ? " ⚡crit" : entry.critFailure ? " ✖fumble" : "") +
+    (entry.critSuccess
+      ? ` ⚡${game.i18n.localize("REDSTEEL.MentalDuel.Pending.Crit")}`
+      : entry.critFailure
+        ? ` ✖${game.i18n.localize("REDSTEEL.MentalDuel.Pending.Fumble")}`
+        : "") +
     (entry.rerollLabel
-      ? ` <span style="opacity:.75;font-size:12px;">(reroll — ${entry.rerollLabel})</span>`
+      ? ` <span style="opacity:.75;font-size:12px;">(${game.i18n.format(
+          "REDSTEEL.MentalDuel.Result.Rerolled",
+          { label: entry.rerollLabel },
+        )})</span>`
       : "");
 
   const assaultNote = state.assault
     ? `<div style="text-align:center;opacity:.85;font-size:12px;">
-         <i class="fas fa-burst"></i> Mentální nápor — ${attackerName} struck at
-         ${MD_ASSAULT_PENALTY}%${assaultBonus ? ` (+${assaultBonus} Mind drained)` : ""}.
+         <i class="fas fa-burst"></i> ${
+           assaultBonus
+             ? game.i18n.format("REDSTEEL.MentalDuel.Assault.ResultDrained", {
+                 name: attackerName,
+                 penalty: MD_ASSAULT_PENALTY,
+                 amount: assaultBonus,
+               })
+             : game.i18n.format("REDSTEEL.MentalDuel.Assault.Result", {
+                 name: attackerName,
+                 penalty: MD_ASSAULT_PENALTY,
+               })
+         }
        </div>`
     : "";
 
-  const verdict =
-    `${winnerName} ${attackerWins ? "prevails" : "holds"} — ` +
-    `${loserName} loses <b>${drain}</b> Mind${critical ? " (decisive!)" : ""}.`;
+  const verdictKey = attackerWins
+    ? critical
+      ? "REDSTEEL.MentalDuel.Result.PrevailsDecisive"
+      : "REDSTEEL.MentalDuel.Result.Prevails"
+    : critical
+      ? "REDSTEEL.MentalDuel.Result.HoldsDecisive"
+      : "REDSTEEL.MentalDuel.Result.Holds";
+  const verdict = game.i18n.format(verdictKey, {
+    winner: winnerName,
+    loser: loserName,
+    amount: drain,
+  });
 
   const rolls = [unpackRoll(att.rollJson), unpackRoll(def.rollJson)].filter(
     Boolean,
@@ -2153,7 +2258,10 @@ async function resolveRound(anchor, state) {
 
   await ChatMessage.create({
     speaker: ChatMessage.getSpeaker({ actor: attackerActor }),
-    flavor: `<b>Mentální souboj</b> — ${attackerName} vs ${defenderName}`,
+    flavor: `<b>${game.i18n.localize("REDSTEEL.MentalDuel.Result.Title")}</b>: ${game.i18n.format(
+      "REDSTEEL.MentalDuel.Result.Pair",
+      { attacker: attackerName, defender: defenderName },
+    )}`,
     ...(rolls.length ? { rolls } : {}),
     // Marks the card so the generic chat Re-Roll button skips it: rerolling a
     // decided exchange from chat would change nothing that was applied.
@@ -2183,7 +2291,7 @@ async function resolveRound(anchor, state) {
 async function dispatchRps(anchorUuid, action) {
   const gm = game.users.activeGM;
   if (!gm) {
-    ui.notifications.warn("A GM must be connected to run the RPS gamble.");
+    ui.notifications.warn(game.i18n.localize("REDSTEEL.MentalDuel.Notify.NoGMGamble"));
     return;
   }
   const data = { anchorUuid, action };
@@ -2241,8 +2349,22 @@ async function applyRpsAction({ anchorUuid, action }) {
       await ChatMessage.create({
         speaker: ChatMessage.getSpeaker({ actor: initActor }),
         content: canAfford
-          ? `<p style="text-align:center;"><i class="fas fa-coins"></i> Coin toss: <b>${initActor?.name ?? "A combatant"}</b> is offered a Rock-Paper-Scissors gamble.</p>`
-          : `<p style="text-align:center;"><i class="fas fa-coins"></i> Coin toss decided <b>${initActor?.name ?? "a combatant"}</b>, but they cannot afford the stake.</p>`,
+          ? `<p style="text-align:center;"><i class="fas fa-coins"></i> ${game.i18n.format(
+              "REDSTEEL.MentalDuel.Gamble.CardOffered",
+              {
+                name:
+                  initActor?.name ??
+                  game.i18n.localize("REDSTEEL.MentalDuel.Gamble.SomeCombatant"),
+              },
+            )}</p>`
+          : `<p style="text-align:center;"><i class="fas fa-coins"></i> ${game.i18n.format(
+              "REDSTEEL.MentalDuel.Gamble.CardCannotAfford",
+              {
+                name:
+                  initActor?.name ??
+                  game.i18n.localize("REDSTEEL.MentalDuel.Gamble.SomeCombatant"),
+              },
+            )}</p>`,
       });
       return;
     }
@@ -2264,7 +2386,9 @@ async function applyRpsAction({ anchorUuid, action }) {
       if (!initActor) return;
       if ((Number(initActor.system.stats?.mind?.value) || 0) <= 1) {
         ui.notifications.warn(
-          `${initActor.name} needs more than 1 Mind to stake on the gamble.`,
+          game.i18n.format("REDSTEEL.MentalDuel.Notify.StakeTooLow", {
+            name: initActor.name,
+          }),
         );
         return;
       }
@@ -2324,21 +2448,29 @@ async function resolveRps(state) {
   const aName = rpsSideActor(state, "a")?.name ?? "A";
   const bName = rpsSideActor(state, "b")?.name ?? "B";
   let verdict;
-  if (winner === "draw") verdict = "Draw — the staked Mind is forfeit.";
+  if (winner === "draw") {
+    verdict = game.i18n.localize("REDSTEEL.MentalDuel.Gamble.CardDraw");
+  }
   else {
     const wName = winner === "a" ? aName : bName;
     const lName = winner === "a" ? bName : aName;
     verdict =
       winner === initiator
-        ? `${wName} wins the gamble — regains the stake; ${lName} loses 1 Mind.`
-        : `${wName} wins the gamble — ${lName} (initiator) loses 2 Mind: the staked point and the loss.`;
+        ? game.i18n.format("REDSTEEL.MentalDuel.Gamble.CardInitiatorWins", {
+            winner: wName,
+            loser: lName,
+          })
+        : game.i18n.format("REDSTEEL.MentalDuel.Gamble.CardInitiatorLoses", {
+            winner: wName,
+            loser: lName,
+          });
   }
 
   await ChatMessage.create({
     speaker: ChatMessage.getSpeaker({ actor: rpsSideActor(state, initiator) }),
     content: `
       <p style="text-align:center;">
-        ${aName} ${RPS_ICON[state.choices.a]} vs ${RPS_ICON[state.choices.b]} ${bName}
+        ${aName} ${RPS_ICON[state.choices.a]} ${game.i18n.localize("REDSTEEL.MentalDuel.Gamble.Versus")} ${RPS_ICON[state.choices.b]} ${bName}
       </p>
       <p style="text-align:center;"><b>${verdict}</b></p>`,
   });
@@ -2380,7 +2512,7 @@ export function requestVoluntaryMentalDuel(attacker, defender, info = {}) {
   const responderId = pickVoluntaryResponder(defenderActor);
   if (!responderId) {
     ui.notifications.warn(
-      "No active player or GM can accept the Mental Duel for the target.",
+      game.i18n.localize("REDSTEEL.MentalDuel.Voluntary.NoResponder"),
     );
     return;
   }
@@ -2399,7 +2531,11 @@ export function requestVoluntaryMentalDuel(attacker, defender, info = {}) {
   } else {
     const responder = game.users.get(responderId);
     ui.notifications.info(
-      `Awaiting ${responder?.name ?? "the target's owner"} to accept the Mental Duel…`,
+      game.i18n.format("REDSTEEL.MentalDuel.Voluntary.Awaiting", {
+        name:
+          responder?.name ??
+          game.i18n.localize("REDSTEEL.MentalDuel.Voluntary.TargetOwner"),
+      }),
     );
     game.socket.emit(SOCKET, payload);
   }
@@ -2420,22 +2556,25 @@ export async function handleVoluntaryMentalDuel(data) {
 
   const rollNote =
     data.chance != null && data.roll != null
-      ? `<p style="opacity:.8;font-size:12px;">Forced initiation failed (${data.chance}% → rolled ${data.roll}).</p>`
+      ? `<p style="opacity:.8;font-size:12px;">${game.i18n.format("REDSTEEL.MentalDuel.Voluntary.ForcedFailed", { chance: data.chance, roll: data.roll })}</p>`
       : "";
 
   const accept = await Dialog.confirm({
-    title: "Mentální souboj",
+    title: game.i18n.localize("REDSTEEL.MentalDuel.Voluntary.Title"),
     content: `
-      <p><b>${aDoc.name}</b> reaches into <b>${bDoc.name}</b>'s mind, inviting a Mental Duel.</p>
+      <p>${game.i18n.format("REDSTEEL.MentalDuel.Voluntary.Invite", {
+        attacker: aDoc.name,
+        defender: bDoc.name,
+      })}</p>
       ${rollNote}
-      <p>Do you voluntarily accept the duel?</p>`,
+      <p>${game.i18n.localize("REDSTEEL.MentalDuel.Voluntary.Question")}</p>`,
     defaultYes: false,
   });
 
   if (!accept) {
     await ChatMessage.create({
       speaker: ChatMessage.getSpeaker({ actor: bDoc.actor }),
-      content: `<p style="text-align:center;"><b>${bDoc.name}</b> refuses the Mental Duel.</p>`,
+      content: `<p style="text-align:center;">${game.i18n.format("REDSTEEL.MentalDuel.Voluntary.Refuses", { name: bDoc.name })}</p>`,
     });
     return;
   }
@@ -2465,7 +2604,7 @@ export async function handleVoluntaryMentalDuel(data) {
 function requestPossession(loserUuid, winnerUuid) {
   const gm = game.users.activeGM;
   if (!gm) {
-    ui.notifications.warn("A GM must be connected to seize control.");
+    ui.notifications.warn(game.i18n.localize("REDSTEEL.MentalDuel.Notify.NoGMSeize"));
     return;
   }
   const data = { loserUuid, winnerUuid };
@@ -2484,7 +2623,7 @@ function requestPossession(loserUuid, winnerUuid) {
 function requestDrain(winnerUuid, loserUuid, anchorUuid) {
   const gm = game.users.activeGM;
   if (!gm) {
-    ui.notifications.warn("A GM must be connected to drain the broken mind.");
+    ui.notifications.warn(game.i18n.localize("REDSTEEL.MentalDuel.Notify.NoGMDrain"));
     return;
   }
   const data = { winnerUuid, loserUuid, anchorUuid };
@@ -2510,7 +2649,9 @@ async function applyDrainAsGM({ winnerUuid, loserUuid, anchorUuid }) {
 
   // Enforce the perk gate server-side too, not just by hiding the button.
   if (!canDrain(winnerActor)) {
-    ui.notifications.warn(`${winnerActor.name} has not learned Drain.`);
+    ui.notifications.warn(
+      game.i18n.format("REDSTEEL.MentalDuel.Notify.NoDrain", { name: winnerActor.name }),
+    );
     return;
   }
 
@@ -2518,16 +2659,23 @@ async function applyDrainAsGM({ winnerUuid, loserUuid, anchorUuid }) {
   await adjustMind(winnerActor, DRAIN_MIND_GAIN);
   const gained = (Number(winnerActor.system.stats?.mind?.value) || 0) - before;
 
-  const loserName = loserActor?.name ?? "the broken mind";
+  const loserName =
+    loserActor?.name ?? game.i18n.localize("REDSTEEL.MentalDuel.Drain.BrokenMind");
   await ChatMessage.create({
     speaker: ChatMessage.getSpeaker({ actor: winnerActor }),
     content: `
       <div style="text-align:center;">
-        <p><i class="fas fa-brain"></i> <b>${winnerActor.name}</b> drains
-        <b>${loserName}</b> — ${
+        <p><i class="fas fa-brain"></i> ${
           gained > 0
-            ? `<b>+${gained}</b> Mind restored.`
-            : `already at full Mind, nothing is gained.`
+            ? game.i18n.format("REDSTEEL.MentalDuel.Drain.Card", {
+                winner: winnerActor.name,
+                loser: loserName,
+                amount: gained,
+              })
+            : game.i18n.format("REDSTEEL.MentalDuel.Drain.CardFull", {
+                winner: winnerActor.name,
+                loser: loserName,
+              })
         }</p>
       </div>`,
   });
@@ -2560,14 +2708,20 @@ async function applyPossessionAsGM({ loserUuid, winnerUuid }) {
 
   // Idempotent — don't stack a second possession on an already-possessed mind.
   if (loserActor.getFlag("redsteel", "possession")) {
-    ui.notifications.info(`${loserActor.name} is already possessed.`);
+    ui.notifications.info(
+      game.i18n.format("REDSTEEL.MentalDuel.Possession.AlreadyPossessed", {
+        name: loserActor.name,
+      }),
+    );
     return;
   }
 
   // Enforce the seize rule server-side too: only a winner who can Dominate.
   if (!canDominate(winnerActor)) {
     ui.notifications.warn(
-      `${winnerActor.name} lacks the Domination perk to seize control.`,
+      game.i18n.format("REDSTEEL.MentalDuel.Window.NoDomination", {
+        winner: winnerActor.name,
+      }),
     );
     return;
   }
@@ -2613,14 +2767,27 @@ async function applyPossessionAsGM({ loserUuid, winnerUuid }) {
   broadcastPossessionRender(loserActor.uuid);
 
   const controlNote = userIds.length
-    ? `<p style="opacity:.85;font-size:12px;">Control of <b>${loserActor.name}</b> passes to ${winnerActor.name}'s player(s) until the “Possessed” status is removed.</p>`
-    : `<p style="opacity:.85;font-size:12px;">No player owns ${winnerActor.name}; the marker is applied for the GM to puppet.</p>`;
+    ? `<p style="opacity:.85;font-size:12px;">${game.i18n.format(
+        "REDSTEEL.MentalDuel.Possession.ControlPasses",
+        {
+          loser: loserActor.name,
+          winner: winnerActor.name,
+          status: game.i18n.localize("REDSTEEL.EffectName.possessed"),
+        },
+      )}</p>`
+    : `<p style="opacity:.85;font-size:12px;">${game.i18n.format(
+        "REDSTEEL.MentalDuel.Possession.NoPlayer",
+        { winner: winnerActor.name },
+      )}</p>`;
 
   await ChatMessage.create({
     speaker: ChatMessage.getSpeaker({ actor: winnerActor }),
     content: `
       <div style="text-align:center;">
-        <p><i class="fas fa-hand-sparkles"></i> <b>${winnerActor.name}</b> seizes control of <b>${loserActor.name}</b>.</p>
+        <p><i class="fas fa-hand-sparkles"></i> ${game.i18n.format("REDSTEEL.MentalDuel.Possession.Seizes", {
+          winner: winnerActor.name,
+          loser: loserActor.name,
+        })}</p>
         ${controlNote}
       </div>`,
   });

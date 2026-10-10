@@ -219,6 +219,8 @@
       "critRangeMelee": 0,
       "critRangeRanged": 0,
       "critRangeCast": 0,
+      "baseSpellPower": 0,
+      "miraclePowerBonus": 0,
       "baneTypes": "",
       "templates": ["base"],
       "stats": {
@@ -1085,6 +1087,8 @@
       "critRangeMelee": 0,
       "critRangeRanged": 0,
       "critRangeCast": 0,
+      "baseSpellPower": 0,
+      "miraclePowerBonus": 0,
       "sneakDice": 1,
       "sneakDamageBonus": 0,
       "stats": {

@@ -22,23 +22,23 @@
  * `specs` lists every specialisation tree id allowed to pick this Bane.
  */
 export const BANE_TYPES = Object.freeze({
-  draconic: { label: "REDSTEEL.Banes.Types.draconic", specs: ["ranger", "grimm"] },
-  ogroid: { label: "REDSTEEL.Banes.Types.ogroid", specs: ["ranger", "grimm"] },
-  lycanthrope: { label: "REDSTEEL.Banes.Types.lycanthrope", specs: ["grimm"] },
-  sylvan: { label: "REDSTEEL.Banes.Types.sylvan", specs: ["grimm", "countermage"] },
-  vampire: { label: "REDSTEEL.Banes.Types.vampire", specs: ["grimm"] },
-  undead: { label: "REDSTEEL.Banes.Types.undead", specs: ["ranger"] },
-  beast: { label: "REDSTEEL.Banes.Types.beast", specs: ["ranger"] },
-  corrupt: { label: "REDSTEEL.Banes.Types.corrupt", specs: ["ranger"] },
+  draconic: { label: "REDSTEEL.Banes.Types.draconic", specs: ["ranger", "grimm", "hatedEnemy"] },
+  ogroid: { label: "REDSTEEL.Banes.Types.ogroid", specs: ["ranger", "grimm", "hatedEnemy"] },
+  lycanthrope: { label: "REDSTEEL.Banes.Types.lycanthrope", specs: ["grimm", "hatedEnemy"] },
+  sylvan: { label: "REDSTEEL.Banes.Types.sylvan", specs: ["grimm", "countermage", "hatedEnemy"] },
+  vampire: { label: "REDSTEEL.Banes.Types.vampire", specs: ["grimm", "hatedEnemy"] },
+  undead: { label: "REDSTEEL.Banes.Types.undead", specs: ["ranger", "hatedEnemy"] },
+  beast: { label: "REDSTEEL.Banes.Types.beast", specs: ["ranger", "hatedEnemy"] },
+  corrupt: { label: "REDSTEEL.Banes.Types.corrupt", specs: ["ranger", "hatedEnemy"] },
   elf: { label: "REDSTEEL.Banes.Types.elf", specs: ["shadow"] },
   yormun: { label: "REDSTEEL.Banes.Types.yormun", specs: ["shadow"] },
   avesan: { label: "REDSTEEL.Banes.Types.avesan", specs: ["shadow"] },
-  insectoid: { label: "REDSTEEL.Banes.Types.insectoid", specs: ["ranger", "grimm"] },
-  relict: { label: "REDSTEEL.Banes.Types.relict", specs: ["ranger", "mystic"] },
-  necrophage: { label: "REDSTEEL.Banes.Types.necrophage", specs: ["ranger", "grimm"] },
-  specter: { label: "REDSTEEL.Banes.Types.specter", specs: ["grimm"] },
+  insectoid: { label: "REDSTEEL.Banes.Types.insectoid", specs: ["ranger", "grimm", "hatedEnemy"] },
+  relict: { label: "REDSTEEL.Banes.Types.relict", specs: ["ranger", "mystic", "hatedEnemy"] },
+  necrophage: { label: "REDSTEEL.Banes.Types.necrophage", specs: ["ranger", "grimm", "hatedEnemy"] },
+  specter: { label: "REDSTEEL.Banes.Types.specter", specs: ["grimm", "hatedEnemy"] },
   magical: { label: "REDSTEEL.Banes.Types.magical", specs: ["countermage"] },
-  demon: { label: "REDSTEEL.Banes.Types.demon", specs: ["ranger", "countermage"] },
+  demon: { label: "REDSTEEL.Banes.Types.demon", specs: ["ranger", "countermage", "hatedEnemy"] },
   human: { label: "REDSTEEL.Banes.Types.human", specs: ["shadow"] },
   dwarf: { label: "REDSTEEL.Banes.Types.dwarf", specs: ["shadow"] },
   halfling: { label: "REDSTEEL.Banes.Types.halfling", specs: ["shadow"] },
@@ -60,8 +60,9 @@ export function getBaneTypesForSpec(specId) {
 
 /**
  * Every Bane key an actor currently has picked, across every specialisation
- * tree and every node. Stale keys that no longer exist in the registry are
- * filtered out.
+ * tree and every node, plus the pick stored on any Hated Enemy trait item
+ * (`flags.redsteel.hatedEnemy`). Stale keys that no longer exist in the
+ * registry are filtered out.
  * @param {Actor|null} actor
  * @returns {Set<string>}
  */
@@ -76,6 +77,13 @@ export function getActorBanes(actor) {
         if (key in BANE_TYPES) picked.add(key);
       }
     }
+  }
+
+  // Hated Enemy (Nenáviděný nepřítel) trait: the pick lives on the item.
+  // `.contents`, never for...of the Collection itself.
+  for (const item of actor?.items?.contents ?? []) {
+    const key = item.flags?.redsteel?.hatedEnemy;
+    if (typeof key === "string" && key in BANE_TYPES) picked.add(key);
   }
 
   return picked;
@@ -99,7 +107,7 @@ export function getActorBaneLabels(actor) {
  * same class names, only renamed to bane-* — since the global dialog theme
  * in css/redsteel.css re-skins `.pill` with `!important`.
  */
-function pillStyleBlock() {
+export function pillStyleBlock() {
   return `
     <style>
       .form-group { margin-bottom: 8px; }
@@ -136,37 +144,24 @@ function pillStyleBlock() {
 }
 
 /**
- * Open the Bane picker dialog for a newly unlocked (or re-opened) bane node.
- * The pool offered is every Bane eligible for `specId` minus every Bane the
- * actor has picked anywhere else, except whatever is already stored at this
- * exact node (so re-opening shows the current pick as available/pre-checked
- * instead of filtering it out).
- * @param {Actor} actor
- * @param {string} specId
- * @param {string} nodeId
- * @param {number} count how many picks this node grants
- * @returns {Promise<boolean>} true if a pick was written, false if cancelled/invalid
+ * The shared Bane picker dialog. Offers `pool` as pills (radio for a single
+ * pick, checkboxes otherwise), pre-checks `storedSet`, and on a valid confirm
+ * awaits `onConfirm(keys)` before resolving.
+ * @param {object} args
+ * @param {[string, {label: string}][]} args.pool
+ * @param {Set<string>} args.storedSet
+ * @param {number} args.count how many picks are required
+ * @param {string} args.title already localized dialog title
+ * @param {(keys: string[]) => Promise<unknown>} args.onConfirm
+ * @returns {Promise<boolean>} true if a pick was written, false if cancelled
  */
-export async function openBanePicker(actor, specId, nodeId, count) {
-  const stored = actor?.system?.specialisations?.[specId]?.baneChoices?.[nodeId] ?? [];
-  const storedSet = new Set(Array.isArray(stored) ? stored : []);
-  const takenElsewhere = getActorBanes(actor);
-
-  const pool = getBaneTypesForSpec(specId).filter(
-    ([key]) => storedSet.has(key) || !takenElsewhere.has(key),
-  );
-
-  if (!pool.length) {
-    ui.notifications.warn(game.i18n.localize("REDSTEEL.Banes.NoneAvailable"));
-    return false;
-  }
-
+function showBaneDialog({ pool, storedSet, count, title, onConfirm }) {
   return new Promise((resolve) => {
     // Foundry's V1 Dialog closes right after a button callback runs and does
     // not wait for an async callback to finish. Two consequences are handled
     // here: `reopening` keeps the close of a dialog we are deliberately
     // replacing (invalid selection) from resolving, and `write` lets the close
-    // handler wait for a confirm's actor.update before deciding what to
+    // handler wait for a confirm's update before deciding what to
     // resolve — otherwise a successful pick resolves false and the caller
     // wrongly reports that nothing was chosen.
     let settled = false;
@@ -200,7 +195,7 @@ export async function openBanePicker(actor, specId, nodeId, count) {
         ${pillStyleBlock()}`;
 
       new Dialog({
-        title: game.i18n.format("REDSTEEL.Banes.PickerTitle", { count }),
+        title,
         content,
         buttons: {
           confirm: {
@@ -221,13 +216,7 @@ export async function openBanePicker(actor, specId, nodeId, count) {
                 return;
               }
 
-              write = actor
-                .update({
-                  [`system.specialisations.${specId}.baneChoices.${nodeId}`]: [
-                    ...selected,
-                  ],
-                })
-                .then(() => true);
+              write = Promise.resolve(onConfirm([...selected])).then(() => true);
               await write;
               finish(true);
             },
@@ -252,6 +241,78 @@ export async function openBanePicker(actor, specId, nodeId, count) {
     };
 
     open();
+  });
+}
+
+/**
+ * Open the Bane picker dialog for a newly unlocked (or re-opened) bane node.
+ * The pool offered is every Bane eligible for `specId` minus every Bane the
+ * actor has picked anywhere else, except whatever is already stored at this
+ * exact node (so re-opening shows the current pick as available/pre-checked
+ * instead of filtering it out).
+ * @param {Actor} actor
+ * @param {string} specId
+ * @param {string} nodeId
+ * @param {number} count how many picks this node grants
+ * @returns {Promise<boolean>} true if a pick was written, false if cancelled/invalid
+ */
+export async function openBanePicker(actor, specId, nodeId, count) {
+  const stored = actor?.system?.specialisations?.[specId]?.baneChoices?.[nodeId] ?? [];
+  const storedSet = new Set(Array.isArray(stored) ? stored : []);
+  const takenElsewhere = getActorBanes(actor);
+
+  const pool = getBaneTypesForSpec(specId).filter(
+    ([key]) => storedSet.has(key) || !takenElsewhere.has(key),
+  );
+
+  if (!pool.length) {
+    ui.notifications.warn(game.i18n.localize("REDSTEEL.Banes.NoneAvailable"));
+    return false;
+  }
+
+  return showBaneDialog({
+    pool,
+    storedSet,
+    count,
+    title: game.i18n.format("REDSTEEL.Banes.PickerTitle", { count }),
+    onConfirm: (keys) =>
+      actor.update({
+        [`system.specialisations.${specId}.baneChoices.${nodeId}`]: keys,
+      }),
+  });
+}
+
+/**
+ * Open the Bane picker for a Hated Enemy (Nenáviděný nepřítel) trait item on
+ * an actor. One pick, drawn from the "hatedEnemy" Bane list minus every Bane
+ * the actor already has elsewhere; the item's own current pick stays
+ * available. The pick is stored on the item at `flags.redsteel.hatedEnemy`.
+ * @param {Item} item the embedded trait item
+ * @returns {Promise<boolean>} true if a pick was written, false if cancelled
+ */
+export async function openHatedEnemyPicker(item) {
+  const actor = item?.parent;
+  if (!actor) return false;
+
+  const current = item.flags?.redsteel?.hatedEnemy;
+  const storedSet = new Set(typeof current === "string" && current ? [current] : []);
+  const takenElsewhere = getActorBanes(actor);
+
+  const pool = getBaneTypesForSpec("hatedEnemy").filter(
+    ([key]) => storedSet.has(key) || !takenElsewhere.has(key),
+  );
+
+  if (!pool.length) {
+    ui.notifications.warn(game.i18n.localize("REDSTEEL.Banes.NoneAvailable"));
+    return false;
+  }
+
+  return showBaneDialog({
+    pool,
+    storedSet,
+    count: 1,
+    title: game.i18n.localize("REDSTEEL.Traits.HatedEnemy.PickerTitle"),
+    onConfirm: ([key]) => item.update({ "flags.redsteel.hatedEnemy": key }),
   });
 }
 

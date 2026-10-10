@@ -76,7 +76,7 @@
       "duelist": false,
       "monk": false,
       "pikeman": false,
-      "reaver": false,
+      "reaver": true,
       "rogue": true,
       "shieldbearer": true,
       "swordsman": false,

@@ -1,0 +1,95 @@
+{
+  "folder": "eZqc2jXvEWxnj88U",
+  "name": "Guardian Devil",
+  "type": "feature",
+  "img": "icons/magic/unholy/silhouette-robe-evil-power.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.GuardianDevil.name",
+    "description": "<p>Forced secret Prophecy rolls every month. Two rolls are made and the worse one is usually taken. Sinfulness +1.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "trait"
+  },
+  "effects": [
+    {
+      "name": "Guardian Devil",
+      "origin": null,
+      "img": "icons/magic/unholy/silhouette-robe-evil-power.webp",
+      "_id": "pNVlhFiRUdhfdm10",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.secondaryAttributes.sin.bonus",
+            "value": 1,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
+      "disabled": false,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.14.1",
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!Q60jjwnxfBf6u4x0.pNVlhFiRUdhfdm10"
+    }
+  ],
+  "flags": {
+    "redsteel": {
+      "traitPolarity": "negative"
+    }
+  },
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.14.1",
+    "lastModifiedBy": null,
+    "createdTime": null,
+    "modifiedTime": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 0,
+  "_id": "Q60jjwnxfBf6u4x0",
+  "_key": "!items!Q60jjwnxfBf6u4x0"
+}

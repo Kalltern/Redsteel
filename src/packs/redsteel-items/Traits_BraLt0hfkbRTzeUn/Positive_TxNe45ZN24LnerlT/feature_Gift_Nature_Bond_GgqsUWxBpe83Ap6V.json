@@ -1,0 +1,108 @@
+{
+  "folder": "TxNe45ZN24LnerlT",
+  "name": "Gift: Nature Bond",
+  "type": "feature",
+  "img": "icons/magic/nature/wolf-paw-glow-green.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.GiftNatureBond.name",
+    "description": "<p>Nature tends to help. Speaks with animals and listens to trees. Animal Handling and Survival +10%.</p><p>May reroll an Animal Handling or Survival roll twice per day.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": [
+        {
+          "label": "Animal Handling or Survival",
+          "skillsRaw": "animalHandling, survival",
+          "max": 2,
+          "used": 0
+        }
+      ]
+    },
+    "option": "trait"
+  },
+  "effects": [
+    {
+      "name": "Gift: Nature Bond",
+      "origin": null,
+      "img": "icons/magic/nature/wolf-paw-glow-green.webp",
+      "_id": "8yXZY6CcS06dg515",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.skills.animalHandling.bonus",
+            "value": 10,
+            "priority": null,
+            "type": "add"
+          },
+          {
+            "key": "system.skills.survival.bonus",
+            "value": 10,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
+      "disabled": false,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.14.1",
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!GgqsUWxBpe83Ap6V.8yXZY6CcS06dg515"
+    }
+  ],
+  "flags": {
+    "redsteel": {
+      "traitPolarity": "positive"
+    }
+  },
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.14.1",
+    "lastModifiedBy": null,
+    "createdTime": null,
+    "modifiedTime": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "sort": 0,
+  "_id": "GgqsUWxBpe83Ap6V",
+  "_key": "!items!GgqsUWxBpe83Ap6V"
+}

@@ -1208,6 +1208,57 @@ function getCastCritFailThreshold(actor, { hastenedCast = false } = {}) {
   return hastenedCast ? base - HASTENED_CAST_CRIT_FAIL : base;
 }
 
+/**
+ * Magic is stricter than other Tests: a cast that fails by 25 or more is a
+ * Critical Failure even on an ordinary die (Pravidla, Různé info r403). Unlike
+ * a natural fumble it stays rerollable — the reroll gate reads the die alone.
+ */
+export const SPELL_MARGIN_CRIT_FAIL = -25;
+
+/**
+ * Whether a cast's margin (`rating + difficulty + bonus - 1d100`) is a
+ * margin Critical Failure.
+ * @param {Roll} roll
+ * @returns {boolean}
+ */
+export function isSpellMarginCritFail(roll) {
+  const total = Number(roll?.total);
+  return Number.isFinite(total) && total <= SPELL_MARGIN_CRIT_FAIL;
+}
+
+/**
+ * Post the "Accept Critical Failure" prompt for a fumbled cast. The prompt
+ * remembers its cast card, so rerolling that card retires the prompt.
+ * @param {Actor} actor
+ * @param {{spellType: string, spellRank: string, spellId?: string, sourceMessageId?: string}} data
+ */
+export async function postCritFailPrompt(
+  actor,
+  { spellType, spellRank, spellId = null, sourceMessageId = null },
+) {
+  await ChatMessage.create({
+    speaker: ChatMessage.getSpeaker({ actor }),
+    content: `
+<div class="crit-warning">
+  <p><b>${actor.name}'s channeling is becoming unstable...</b></p>
+  <button class="crit-fail-accept" data-action="acceptCritFail">
+    Accept Critical Failure
+  </button>
+</div>
+    `,
+    flags: {
+      redsteel: {
+        type: "critFailPrompt",
+        actorId: actor.id,
+        spellId,
+        spellType,
+        spellRank,
+        sourceMessageId,
+      },
+    },
+  });
+}
+
 export async function performAttackRoll(
   actor,
   spell,
@@ -1274,7 +1325,12 @@ export async function performAttackRoll(
 
   if (!ignoreChanneling) {
     critSuccess = rollResult <= critSuccessT;
-    critFailure = rollResult >= critFailT;
+    // Natural fumble, or a margin of -25 or worse. A miracle is not a
+    // pass/fail Test, so only its die can fumble; a natural Critical Success
+    // never fumbles, however hopeless the odds were.
+    critFailure =
+      rollResult >= critFailT ||
+      (!critSuccess && !isMiracle(spell) && isSpellMarginCritFail(attackRoll));
   }
 
   return {
@@ -1528,8 +1584,9 @@ ${renderMarginFollowupLine({
   const critScoreResult =
     critScoreRoll.total + (actor.system.critRangeCast || 0) + schoolCritRange;
 
+  // Degree 1 starts at a roll of 1 (Různé info r388), as for weapon crits.
   let critScore = 0;
-  if (critScoreResult > 1) {
+  if (critScoreResult >= 1) {
     if (critScoreResult <= 6) critScore = 1;
     else if (critScoreResult <= 12) critScore = 2;
     else if (critScoreResult <= 18) critScore = 3;
@@ -1866,7 +1923,7 @@ ${renderMarginFollowupLine({
         <hr>`
     : "";
 
-  await ChatMessage.create({
+  const castCard = await ChatMessage.create({
     speaker: ChatMessage.getSpeaker({ actor }),
     content,
     rolls: rolls,
@@ -1916,6 +1973,17 @@ ${renderMarginFollowupLine({
           ? 101
           : getCastCritFailThreshold(actor, { hastenedCast }),
         traitPills: getTraitPills(actor, "attack"),
+        // A channeling-judged cast can fumble on its margin (-25). A reroll
+        // re-judges the new margin and re-prompts from this.
+        ...(!ignoreChanneling &&
+          !miracle &&
+          spell.system.type && {
+            spellCritFail: {
+              spellType: spell.system.type,
+              spellRank: spell.system.rank,
+              spellId: spell.id,
+            },
+          }),
         // A failed cast applied nothing to the caster. Carry enough context to
         // redo that side if a reroll turns the margin positive — the reroll
         // re-evaluates this card's own margin formula, so the new total is
@@ -1943,25 +2011,11 @@ ${renderMarginFollowupLine({
   });
 
   if (!ignoreChanneling && critFailure && spell.system.type) {
-    await ChatMessage.create({
-      speaker: ChatMessage.getSpeaker({ actor }),
-      content: `
-<div class="crit-warning">
-  <p><b>${actor.name}'s channeling is becoming unstable...</b></p>
-  <button class="crit-fail-accept" data-action="acceptCritFail">
-    Accept Critical Failure
-  </button>
-</div>
-    `,
-      flags: {
-        redsteel: {
-          type: "critFailPrompt",
-          actorId: actor.id,
-          spellId: spell.id,
-          spellType: spell.system.type,
-          spellRank: spell.system.rank,
-        },
-      },
+    await postCritFailPrompt(actor, {
+      spellType: spell.system.type,
+      spellRank: spell.system.rank,
+      spellId: spell.id,
+      sourceMessageId: castCard?.id ?? null,
     });
   }
   //tables -> Flag: "redsteel.critTable: fire"

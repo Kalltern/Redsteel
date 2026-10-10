@@ -27,14 +27,12 @@
   {{/inline}}
 
   {{!-- One doctrine or school card (step 2, and the magical doctrine on 2.5):
-        its crest (an image, or a glyph for a school), its name, and the
-        ladder of abilities its ranks unlock (hover an icon for the ability).
-        Taken: gold frame and seal. Locked: greyed out under a padlock. Fixed
+        its crest (an image, or a glyph for a school), its kind and its name.
+        Its ranks and abilities are read in the info panel on click. Taken: gold frame and seal. Locked: greyed out under a padlock. Fixed
         (a temperament's school): taken, with the reason at its foot. Shut:
         another card is fixed, so this one cannot be taken.
         A div, not a <button>: a button centres its content vertically, which
-        set every card's crest at a different height depending on how long its
-        ladder is. --}}
+        would set the crest of a locked card higher than the others. --}}
   {{#*inline "doctrineCard"}}
   <div role="button" tabindex="0"
        class="rs-create-doctrine-card is-{{kind}} {{#if selected}}is-selected{{/if}} {{#if locked}}is-locked{{/if}} {{#if shut}}is-shut{{/if}}"
@@ -46,16 +44,6 @@
     <span class="rs-dc-kind">{{kindLabel}}</span>
     <span class="rs-dc-name">{{label}}</span>
     <span class="rs-dc-rule"></span>
-    {{#if ladder.length}}
-    <span class="rs-dc-ladder" style="--rs-dc-cols: {{ladderCols}}">
-      {{#each ladder}}
-      <span class="rs-dc-step" data-tt-kind="creationFeature" data-tt-id="{{this.id}}">
-        <img src="{{this.img}}" alt="">
-        <em>{{this.numeral}}</em>
-      </span>
-      {{/each}}
-    </span>
-    {{/if}}
     {{#if locked}}
     <span class="rs-dc-lock"><i class="fa-solid fa-lock"></i>{{lockText}}</span>
     {{/if}}
@@ -120,17 +108,19 @@
       <h2 class="rs-create-panel-title">{{localize "REDSTEEL.Creation.Step2b.title"}}</h2>
       <div class="rs-create-scroll">
         <p class="rs-create-doctrine-advice">{{localize "REDSTEEL.Creation.Details.weaponsAdvice"}}</p>
-        {{#each details.groups}}
-        <div class="rs-create-doctrine-block">
-          <div class="rs-create-group-label">{{this.label}}</div>
-          {{#if this.advice}}<p class="rs-create-doctrine-advice">{{this.advice}}</p>{{/if}}
-          <div class="rs-create-doctrine-grid">
-            {{#each this.cards}}
-            {{> doctrineCard}}
-            {{/each}}
+        <div class="rs-create-detail-groups">
+          {{#each details.groups}}
+          <div class="rs-create-doctrine-block">
+            <div class="rs-create-group-label">{{this.label}}</div>
+            {{#if this.advice}}<p class="rs-create-doctrine-advice">{{this.advice}}</p>{{/if}}
+            <div class="rs-create-doctrine-grid">
+              {{#each this.cards}}
+              {{> doctrineCard}}
+              {{/each}}
+            </div>
           </div>
+          {{/each}}
         </div>
-        {{/each}}
       </div>
     </section>
     {{else}}

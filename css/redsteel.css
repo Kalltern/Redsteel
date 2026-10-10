@@ -18714,12 +18714,6 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   color: #c9a86a;
 }
 
-/* The identity under the points, ruled off from them. */
-.rs-learn .rs-learn-cskills-points + .rs-learn-cskills-identity {
-  padding-top: 10px;
-  border-top: 1px solid var(--rs-create-bronze);
-}
-
 /* Column three: the ledger over the roster, half the height each, each its
    own scroller. */
 .rs-learn .rs-learn-cskills-col.is-detail {
@@ -18731,48 +18725,6 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
 }
 
 /* -------- column 1: the character -------- */
-
-.rs-learn .rs-learn-cskills-identity {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 2px 2px 4px;
-}
-
-.rs-learn .rs-learn-cskills-portrait {
-  flex: 0 0 auto;
-  width: calc(56px * var(--rs-learn-text));
-  height: calc(56px * var(--rs-learn-text));
-  object-fit: cover;
-  border: 1px solid #9c7b45;
-  border-radius: 0;
-  box-shadow: 0 0 0 2px #0d0c0a, 0 0 0 3px #514226;
-}
-
-.rs-learn .rs-learn-cskills-who {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.rs-learn .rs-learn-cskills-name {
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: calc(15px * var(--rs-learn-text));
-  line-height: calc(19px * var(--rs-learn-text));
-  letter-spacing: 0.04em;
-  color: #e6c878;
-  overflow-wrap: anywhere;
-}
-
-.rs-learn .rs-learn-cskills-race {
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: calc(11px * var(--rs-learn-text));
-  line-height: calc(14px * var(--rs-learn-text));
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #9a8f7b;
-}
 
 /* The attributes: one ruled line each, name left, value right. */
 .rs-learn .rs-learn-cskills-attrs {
@@ -22004,11 +21956,45 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   margin-bottom: 12px;
 }
 
+/* The plates measure the card width: seven cards fit one row (the seven
+   schools), so every block is a single centred row of equal cards. */
+.rs-create .rs-create-doctrines .rs-create-scroll,
+.rs-create .rs-create-details .rs-create-scroll {
+  container-type: inline-size;
+}
+
 .rs-create .rs-create-doctrine-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-  gap: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
   padding: 10px 4px 6px;
+}
+
+/* Step 2.5: the question blocks side by side, the row centred in the
+   plate both ways. */
+.rs-create .rs-create-details .rs-create-scroll {
+  display: flex;
+  flex-direction: column;
+}
+
+.rs-create .rs-create-detail-groups {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 8px 36px;
+  margin-block: auto;
+}
+
+.rs-create .rs-create-detail-groups .rs-create-doctrine-block {
+  flex: 0 0 auto;
+  max-width: 100%;
+  margin-bottom: 0;
+}
+
+.rs-create .rs-create-detail-groups .rs-create-doctrine-advice {
+  max-width: 40em;
 }
 
 /* A doctrine card: a dark stone plate with a bronze frame and a second,
@@ -22020,15 +22006,17 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   flex-direction: column;
   align-items: center;
   /* Top-aligned, so crest, kind and name sit at the same height on every
-     card whatever the length of its ladder. */
+     card, locked or not. */
   justify-content: flex-start;
-  gap: 6px;
+  gap: 5px;
+  flex: 0 0 auto;
   box-sizing: border-box;
-  width: 100%;
+  width: clamp(100px, calc((100cqi - 6 * 12px - 12px) / 7), 168px);
   height: auto;
-  min-height: 260px;
+  min-height: 214px;
   margin: 0;
-  padding: 22px 14px 16px;
+  padding: 22px 10px 14px;
+  container-type: inline-size;
   border: 1px solid var(--rs-create-bronze);
   border-radius: 0;
   outline: 1px solid rgba(156, 123, 69, 0.28);
@@ -22064,9 +22052,9 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
 .rs-create .rs-dc-crest {
   position: relative;
   display: block;
-  width: 84px;
-  height: 84px;
-  margin: 4px 0 12px;
+  width: 72px;
+  height: 72px;
+  margin: 4px 0 10px;
   border: 2px solid var(--rs-create-bronze-lit);
   border-radius: 50%;
   background: #0a0908;
@@ -22100,9 +22088,14 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   color: color-mix(in srgb, var(--rs-dc-accent) 55%, #c9b48a);
 }
 
+/* Sized by the card, so the longest name (Shieldbearer) keeps one line. */
 .rs-create .rs-dc-name {
-  font-size: 21px;
-  letter-spacing: 0.1em;
+  font-size: clamp(10px, 11cqi, 17px);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
   text-transform: uppercase;
   color: #e8dcc0;
 }
@@ -22113,52 +22106,6 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   height: 1px;
   margin: 2px 0 6px;
   background: linear-gradient(to right, transparent, var(--rs-create-bronze-lit), transparent);
-}
-
-/* The abilities the doctrine's ranks unlock, rank numeral on each: a grid
-   of up to five 30px columns (the count comes inline from the context, so a
-   short ladder is exactly as wide as its icons), centred on the card; the
-   icons line up in columns across rows and a short last row starts at the
-   left edge of the block. */
-.rs-create .rs-dc-ladder {
-  display: grid;
-  grid-template-columns: repeat(var(--rs-dc-cols, 5), 30px);
-  justify-content: center;
-  gap: 6px;
-}
-
-.rs-create .rs-dc-step {
-  position: relative;
-  display: block;
-  width: 30px;
-  height: 30px;
-  border: 1px solid var(--rs-create-bronze);
-  background: #0a0908;
-  cursor: help;
-}
-
-.rs-create .rs-dc-step img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  border: none;
-  object-fit: cover;
-}
-
-.rs-create .rs-dc-step em {
-  position: absolute;
-  right: -1px;
-  bottom: -1px;
-  padding: 0 2px;
-  background: rgba(0, 0, 0, 0.85);
-  font-size: 9px;
-  font-style: normal;
-  line-height: 12px;
-  color: #c9b48a;
-}
-
-.rs-create .rs-dc-step:hover {
-  border-color: var(--rs-create-gold);
 }
 
 /* Taken: gold frames, a warm glow, the crest lit, and the seal on top. */
@@ -22211,6 +22158,7 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   display: flex;
   align-items: center;
   gap: 6px;
+  line-height: 1.25;
   margin-top: auto;
   padding-top: 8px;
   font-size: 12px;
@@ -22373,132 +22321,59 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   margin: 2px 0 8px;
 }
 
-/* A doctrine's weapon browser: one weapon plate at a time, arrows to page,
-   every weapon by name beneath to jump straight to it. */
-.rs-create .rs-create-weapon-browser {
-  margin: 4px 0 8px;
-  font-size: 13px;
-}
-
-.rs-create .rs-create-weapon-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin: 0 0 6px;
-}
-
-.rs-create .rs-create-weapon-count {
-  flex: 1 1 auto;
-  text-align: center;
-  font-family: Georgia, "Times New Roman", serif;
-  letter-spacing: 0.08em;
-  color: var(--rs-create-dim);
-}
-
-.rs-create .rs-create-weapon-step {
-  flex: 0 0 30px;
-  width: 30px;
-  height: 26px;
-  margin: 0;
-  padding: 0;
-  border: 1px solid var(--rs-create-bronze);
-  border-radius: 0;
+/* "Compatible weapons" pill (compatibleWeapons.mjs), in the creation
+   window's doctrine panel and the Learn window's track note: a flat bronze
+   plate that opens, on click, the tooltip listing the weapons. */
+.rs-weapons-pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border: 1px solid #9c7b45;
   background: rgba(0, 0, 0, 0.45);
-  color: #c9b48a;
-  line-height: 24px;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: #e6c878;
   cursor: pointer;
 }
 
-.rs-create .rs-create-weapon-step:hover {
-  border-color: var(--rs-create-bronze-lit);
-  color: var(--rs-create-gold);
-  box-shadow: none;
+.rs-weapons-pill:hover {
+  background: rgba(0, 0, 0, 0.7);
+  box-shadow: inset 0 0 0 1px rgba(156, 123, 69, 0.45);
 }
 
-.rs-create .rs-create-weapon-page {
-  display: none;
-  padding: 8px 10px;
-  border: 1px solid var(--rs-create-bronze);
-  background: rgba(0, 0, 0, 0.35);
+/* Beside the creation window's skill chips, which it borrows the size of. */
+.rs-create .rs-weapons-pill {
+  border-color: #9c7b45;
+  color: #e6c878;
 }
 
-.rs-create .rs-create-weapon-page.is-current {
-  display: block;
-}
-
-.rs-create .rs-create-weapon-head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.rs-learn .rs-learn-cskills-info .rs-weapons-pill {
   margin: 0 0 8px;
-  padding: 0 0 6px;
-  border-bottom: 1px solid rgba(81, 66, 38, 0.5);
+  font-size: calc(9px * var(--rs-learn-text));
 }
 
-.rs-create .rs-create-weapon-icon {
-  flex: 0 0 44px;
-  width: 44px;
-  height: 44px;
-  border: 1px solid var(--rs-create-bronze-lit);
-  object-fit: cover;
-}
-
-.rs-create .rs-create-weapon-name {
-  flex: 1 1 auto;
-  min-width: 0;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 16px;
-  color: var(--rs-create-gold);
-}
-
-.rs-create .rs-create-weapon-name .rs-create-weapon-grip {
-  margin: 2px 0 0;
-}
-
-.rs-create .rs-create-weapon-browser > .rs-create-weapon-group {
-  margin: 8px 0 0;
-}
-
-.rs-create .rs-create-weapon-index {
+/* One weapon row in that tooltip: icon and name, hover for its stats. */
+.rs-tooltip .rs-tt-weapon {
   display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.rs-create .rs-create-weapon-jump {
-  display: inline-flex;
-  flex: 0 0 auto;
   align-items: center;
-  gap: 5px;
-  width: auto;
-  height: auto;
-  margin: 0;
-  padding: 2px 8px 2px 2px;
-  border: 1px solid var(--rs-create-bronze);
-  border-radius: 0;
+  gap: 6px;
+  margin: 1px 0;
+  padding: 2px 4px;
+  border: 1px solid transparent;
+  color: #e6e2d3;
+  cursor: help;
+}
+
+.rs-tooltip .rs-tt-weapon:hover {
+  border-color: rgba(122, 115, 50, 0.6);
   background: rgba(0, 0, 0, 0.35);
-  font-size: 12px;
-  line-height: 1.2;
-  color: var(--rs-create-text);
-  cursor: pointer;
 }
 
-.rs-create .rs-create-weapon-jump img {
-  width: 20px;
-  height: 20px;
-  border: 0;
+.rs-tooltip .rs-tt-weapon img {
+  flex: 0 0 22px;
+  width: 22px;
+  height: 22px;
+  border: 1px solid rgba(122, 115, 50, 0.6);
   object-fit: cover;
-}
-
-.rs-create .rs-create-weapon-jump:hover {
-  border-color: var(--rs-create-bronze-lit);
-  box-shadow: none;
-}
-
-.rs-create .rs-create-weapon-jump.is-current {
-  border-color: var(--rs-create-bronze-lit);
-  color: var(--rs-create-gold);
 }
 
 .rs-create .rs-create-feature-rank {

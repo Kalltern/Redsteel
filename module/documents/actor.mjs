@@ -1429,10 +1429,21 @@ export class RedsteelActor extends Actor {
         P.global(),
       ];
       if (skillset1[brawler.value] < rangedDefenseSet[melee]) {
-        rangedDefenseSet[melee] +
+        brawler.rating =
+          rangedDefenseSet[melee] +
           attributeScore[1].total * 3 +
           brawler.bonus +
           globalMod;
+        brawler.ratingParts = [
+          P.rank(
+            melee,
+            rangedDefenseSet[melee],
+            "REDSTEEL.Actor.Character.combatSkills.combat.label",
+          ),
+          P.attr(1, 3),
+          P.bonus(brawler.bonus),
+          P.global(),
+        ];
       }
     } else {
       brawler.rating =
@@ -1562,6 +1573,8 @@ export class RedsteelActor extends Actor {
     secAttribute.vis.total = secAttribute.vis.value + secAttribute.vis.bonus;
     secAttribute.sin.total = secAttribute.sin.value + secAttribute.sin.bonus;
     secAttribute.fth.total = secAttribute.fth.value + secAttribute.fth.bonus;
+    // Godless (Neznaboh) trait: an Active Effect sets system.godless; Faith is 0.
+    if (systemData.godless) secAttribute.fth.total = 0;
     stat.corruption.max = stat.corruption.base + stat.corruption.bonus;
     // Death by exhaustion happens at the final degree; resilience pushes the
     // raw point cap from 6 to 7 so the same degree is reached one point later.
@@ -1577,7 +1590,7 @@ export class RedsteelActor extends Actor {
         stat.holyEnergy.bonus +
         secAttribute.fth.total * 5;
       stat.holyEnergy.power =
-        secAttribute.fth.total + (stat.holyEnergy.power.bonus || 0);
+        secAttribute.fth.total + (Number(systemData.miraclePowerBonus) || 0);
       let chosenSkill = systemData.shepherdsWill.skill;
 
       // Check if the chosen skill is valid
@@ -1701,6 +1714,7 @@ export class RedsteelActor extends Actor {
         school.spellPower =
           spellPowerSchool[school.value] +
           school.bonus +
+          (systemData.baseSpellPower || 0) +
           Math.max(Math.floor(int / 2), Math.floor(wil / 2));
       }
     }

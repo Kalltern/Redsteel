@@ -74,6 +74,7 @@ import {
   resyncGrantedAbilities,
 } from "./utils/abilityGrants.mjs";
 import { registerRaceGrants } from "./utils/raceGrants.mjs";
+import { registerTraitChoices } from "./utils/traitChoices.mjs";
 import { registerSpellbookHooks } from "./utils/spellbook.mjs";
 import { registerScrollHooks } from "./utils/spellScrolls.mjs";
 import {
@@ -250,6 +251,8 @@ import {
   finalizeRollsAndPostChat,
   resolveChannelingTick,
   spellCastSucceeded,
+  isSpellMarginCritFail,
+  postCritFailPrompt,
 } from "./utils/magicSkillBonuses.mjs";
 import {
   getEligibleRerolls,
@@ -560,6 +563,7 @@ Hooks.once("init", function () {
   registerAutoSpecNodes();
   registerTemperamentSchools();
   registerRaceGrants();
+  registerTraitChoices();
   registerSpellbookHooks();
   registerScrollHooks();
   registerCalendariaIntegration();
@@ -1669,6 +1673,8 @@ const REROLL_CARRIED_FLAGS = [
   // Overpower is once per contest per side (utils/overpower.mjs): the sides
   // that already spent it stay spent on the card that replaces this one.
   "overpowerUsedBy",
+  // A spell cast can fumble on its margin; every reroll re-judges it.
+  "spellCritFail",
 ];
 
 /**
@@ -1877,7 +1883,12 @@ async function executeReroll(message, sourceLabel, { extraFlags = {} } = {}) {
   forfeitAdvantageOnCritFail(roll, criticalFailureThreshold);
   const d100Result = roll.dice?.[0]?.total ?? roll.total; // works with 2d100kl/kh
   const critSuccess = d100Result <= criticalSuccessThreshold;
-  const critFailure = d100Result >= criticalFailureThreshold;
+  // A spell cast also fumbles on a margin of -25 or worse. That kind stays
+  // rerollable (the gate in the reroll handler reads the die alone).
+  const spellCritFail = message.getFlag("redsteel", "spellCritFail");
+  const critFailure =
+    d100Result >= criticalFailureThreshold ||
+    (!!spellCritFail && !critSuccess && isSpellMarginCritFail(roll));
   const rollName = message.getFlag("redsteel", "rollName");
   const skill = message.getFlag("redsteel", "skill");
 
@@ -1995,7 +2006,39 @@ async function executeReroll(message, sourceLabel, { extraFlags = {} } = {}) {
   });
 
   await markRerolledAway(message, created);
+  if (spellCritFail) {
+    await retireCritFailPrompts(message.id);
+    const caster = await fromUuid(message.getFlag("redsteel", "casterUuid") ?? "");
+    if (critFailure && caster) {
+      await postCritFailPrompt(caster, {
+        ...spellCritFail,
+        sourceMessageId: created?.id ?? null,
+      });
+    }
+  }
   return created;
+}
+
+/**
+ * Retire the "Accept Critical Failure" prompts of a cast card that was just
+ * rerolled: that fumble no longer applies, whatever the new roll does.
+ * @param {string} sourceMessageId
+ */
+async function retireCritFailPrompts(sourceMessageId) {
+  const prompts = game.messages.contents.filter(
+    (m) =>
+      m.flags?.redsteel?.type === "critFailPrompt" &&
+      m.flags.redsteel.sourceMessageId === sourceMessageId &&
+      !m.flags.redsteel.retired,
+  );
+  for (const prompt of prompts) {
+    if (!prompt.isOwner) continue;
+    try {
+      await prompt.setFlag("redsteel", "retired", true);
+    } catch (err) {
+      console.warn("Redsteel | Could not retire the crit fail prompt", err);
+    }
+  }
 }
 
 /**
@@ -2901,7 +2944,14 @@ async function _resolveCritFailTable(school) {
 
 // Magic crit fails evaluation
 Hooks.on("renderChatMessageHTML", (message, html) => {
+  // The cast behind this prompt was rerolled: its fumble no longer applies.
+  const retired = message.flags?.redsteel?.retired === true;
   html.querySelectorAll(".crit-fail-accept").forEach((button) => {
+    if (retired) {
+      button.disabled = true;
+      button.innerText = game.i18n.localize("REDSTEEL.Reroll.PromptRetired");
+      return;
+    }
     button.addEventListener("click", async (event) => {
       const target = event.currentTarget;
       if (!(target instanceof HTMLElement)) return;
@@ -2910,6 +2960,10 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
       const data = msg.flags.redsteel;
 
       if (!data || data.type !== "critFailPrompt") return;
+      if (data.retired) {
+        ui.notifications.info(game.i18n.localize("REDSTEEL.Reroll.Superseded"));
+        return;
+      }
 
       const actor = game.actors.get(data.actorId);
       const spellType = data.spellType;
