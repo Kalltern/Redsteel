@@ -78,6 +78,7 @@ import {
   ABILITY_CATEGORY_IDS,
   getAbilityCategory,
 } from "../utils/abilityGrants.mjs";
+import { getSheetCritChances } from "../utils/sheetCritChances.mjs";
 
 const { api, sheets } = foundry.applications;
 
@@ -1746,6 +1747,21 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
 
     // Offloading context prep to a helper function
     this._prepareItems(context);
+
+    // Critical success / failure chances under Combat statistics, with the
+    // active weapon set in hand (characters only; NPCs have no weapon sets).
+    if (this.actor.type === "character") {
+      const crit = await getSheetCritChances(this.actor);
+      const base = "REDSTEEL.Actor.Character.combatSkills";
+      context.critChanceRows = [
+        ["combat", `${base}.combat.ratingLabel`],
+        ["meleeDefense", `${base}.meleeDefense.label`],
+        ["dodge", `${base}.dodge.label`],
+        ["rangedDefense", `${base}.rangedDefense.label`],
+        ["throwing", `${base}.throwing.label`],
+        ["archery", `${base}.archery.ratingLabel`],
+      ].map(([key, label]) => ({ key, label, ...crit[key] }));
+    }
 
     // Absorb pools for the Config tab. Read straight off the effects so the
     // rows always reflect the live pool (`flags.redsteel.stacks`).

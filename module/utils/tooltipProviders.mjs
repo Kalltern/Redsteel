@@ -28,6 +28,13 @@ function statsBlock(stats = []) {
   return rows.length ? `<div class="tt-stats">${rows.join("")}</div>` : "";
 }
 
+function tagsBlock(tags = []) {
+  if (!tags?.length) return "";
+  return `<div class="tt-tags">${tags
+    .map((t) => `<span class="tt-tag">${ttEscape(t)}</span>`)
+    .join("")}</div>`;
+}
+
 function sectionsBlock(sections = []) {
   return sections
     .filter((s) => s.lines?.length)
@@ -66,6 +73,7 @@ registerTooltip("item", (ctx) => {
   const data = item.getTooltipData?.() ?? {};
   const body = [
     statsBlock(data.stats),
+    tagsBlock(data.tags),
     sectionsBlock(data.sections),
     data.description ? `<div class="tt-desc">${data.description}</div>` : "",
   ].join("");

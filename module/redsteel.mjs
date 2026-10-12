@@ -261,6 +261,7 @@ import {
 import {
   getEligibleRerolls,
   consumeReroll,
+  refundReroll,
   getRerollTokensForSkill,
   pickRerollPool,
 } from "./utils/rerolls.mjs";
@@ -1875,7 +1876,11 @@ async function markRerolledAway(source, replacement) {
  * new card carries the same attack packet / defense claims, so it is answerable,
  * appliable and rerollable exactly like the card it replaces.
  */
-async function executeReroll(message, sourceLabel, { extraFlags = {} } = {}) {
+async function executeReroll(
+  message,
+  sourceLabel,
+  { extraFlags = {}, onCritSuccess = null } = {},
+) {
   const rollFormula = message.rolls[0].formula;
   const roll = new Roll(rollFormula);
   await roll.evaluate();
@@ -1939,7 +1944,11 @@ async function executeReroll(message, sourceLabel, { extraFlags = {} } = {}) {
   const sourceText = sourceLabel
     ? game.i18n.format("REDSTEEL.Reroll.Used", { source: sourceLabel })
     : game.i18n.localize("REDSTEEL.Reroll.Free");
-  const sourceNote = `<p style="text-align:center; font-size:12px; opacity:0.8;"><i class="fa-light fa-rotate"></i> ${sourceText}</p>`;
+  // A caller may give the charge back on a Critical Success (Combat Master);
+  // the card says so beside what paid for the reroll.
+  const keptText =
+    critSuccess && onCritSuccess ? await onCritSuccess() : "";
+  const sourceNote = `<p style="text-align:center; font-size:12px; opacity:0.8;"><i class="fa-light fa-rotate"></i> ${sourceText}${keptText ? ` ${keptText}` : ""}</p>`;
 
   // A versus Test card states who won. The reroll builds a fresh flavor, so
   // restate it against the new total rather than leaving the old verdict.
@@ -2165,17 +2174,41 @@ async function handleRerollClick(message, { rerun = null } = {}) {
     return false;
   }
 
-  try {
-    await scheduleRerollRefresh(actor, chosen, { critFailure: wasCritFailure });
-  } catch (err) {
-    console.warn("Redsteel | Calendaria scheduling failed", err);
-  }
+  // Combat Master (Mistr boje): a reroll of an attack (Zásah, Střelba, Vrh),
+  // a Melee Defense (Obrana) or a Ranged Defense (Kryt) is not spent when the
+  // new roll is a Critical Success. Dodge is not on the book's list.
+  const keepsOnCrit =
+    !!actor.system?.combatMaster &&
+    tokens.some((t) =>
+      ["attack", "meleeDefense", "rangedDefense"].includes(t),
+    );
+  let refunded = false;
+  const onCritSuccess = keepsOnCrit
+    ? async () => {
+        refunded = await refundReroll(actor, chosen.itemId, chosen.poolIndex, {
+          combat: isCombat,
+        });
+        return refunded
+          ? game.i18n.localize("REDSTEEL.Reroll.KeptByCombatMaster")
+          : "";
+      }
+    : null;
 
   if (rerun) {
     const created = await rerun(chosen.label);
     await markRerolledAway(message, created);
   } else {
-    await executeReroll(message, chosen.label);
+    await executeReroll(message, chosen.label, { onCritSuccess });
+  }
+
+  // Scheduled after the reroll so a charge Combat Master gave back never gets
+  // a calendar refresh it no longer needs.
+  if (!refunded) {
+    try {
+      await scheduleRerollRefresh(actor, chosen, { critFailure: wasCritFailure });
+    } catch (err) {
+      console.warn("Redsteel | Calendaria scheduling failed", err);
+    }
   }
   return true;
 }

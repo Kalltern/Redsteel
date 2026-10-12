@@ -1,4 +1,5 @@
 import { seedRollAdvantage } from "../utils/rollAdvantage.mjs";
+import { doctrineAppliesToWeapon } from "../utils/doctrineWeapons.mjs";
 import {
   getWeaponAttackBonus,
   computeDoctrineBonuses,
@@ -744,12 +745,14 @@ export class RedsteelActor extends Actor {
           // which Dimakerus removes (and turns into a bonus on flagged
           // weapons). A single weapon or a free off hand is unaffected.
           if (isDualWield) {
-            // Rank 1 only rewards weapons flagged for the doctrine, matching
-            // the rank 2+ gate in combatSkillBonuses (which keys off
-            // ws.doctrines.dimakerus). A class alone (e.g. a Rapier) is not
-            // enough.
-            const weaponIsDimakerus =
-              mainHand?.system?.doctrines?.dimakerus === true;
+            // Rank 1 rewards the same setup the rank 2+ bonuses need
+            // (doctrineWeapons.mjs): both hands hold Dimakerus weapons, ticked
+            // and tagged. A class alone (e.g. a Rapier) is not enough.
+            const weaponIsDimakerus = doctrineAppliesToWeapon(
+              actorData,
+              mainHand,
+              "dimakerus",
+            );
             const dimakerusLabel = game.i18n.localize(
               "REDSTEEL.Actor.Character.doctrines.dimakerus.label",
             );

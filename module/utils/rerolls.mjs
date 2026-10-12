@@ -609,6 +609,56 @@ export async function consumeReroll(actor, itemId, poolIndex, { combat = false }
 }
 
 /**
+ * Give back one charge {@link consumeReroll} just spent: the exact inverse,
+ * including the combat count. Used by Combat Master, whose combat rerolls are
+ * not spent when they land a Critical Success.
+ * @param {Actor} actor
+ * @param {string} itemId
+ * @param {number} poolIndex  Pool index, or -1 for a legacy `{value,active}` pool.
+ * @param {{combat?: boolean}} [options]  Whether the charge was spent on a combat roll.
+ * @returns {Promise<boolean>} true when a charge was restored.
+ */
+export async function refundReroll(actor, itemId, poolIndex, { combat = false } = {}) {
+  if (isNodeRerollId(itemId)) {
+    const def = findNodePoolDef(itemId);
+    if (!def || !hasNode(actor, def)) return false;
+    const state = getNodePoolState(actor, def);
+    if (state.used <= 0) return false;
+    await setNodePoolState(actor, def, {
+      used: state.used - 1,
+      combatUsed: Math.max(0, state.combatUsed - (combat ? 1 : 0)),
+    });
+    return true;
+  }
+  const item = actor?.items?.get(itemId);
+  if (!item) return false;
+  const reroll = item.system?.reroll ?? {};
+  const rawPools = poolsArray(reroll);
+
+  // Legacy pool: clear the last spent `active[]` slot.
+  if (poolIndex === -1 || !rawPools.length) {
+    const active = Array.isArray(reroll.active) ? [...reroll.active] : [];
+    const spentIndex = active.lastIndexOf(true);
+    if (spentIndex === -1) return false;
+    active[spentIndex] = false;
+    await item.update({ "system.reroll.active": active });
+    return true;
+  }
+
+  const pools = rawPools.map((p) => ({ ...p }));
+  const pool = pools[poolIndex];
+  if (!pool) return false;
+  const used = Math.max(0, Number(pool.used) || 0);
+  if (used <= 0) return false;
+  pool.used = used - 1;
+  if (combat) {
+    pool.combatUsed = Math.max(0, (Number(pool.combatUsed) || 0) - 1);
+  }
+  await item.update({ "system.reroll.pools": pools });
+  return true;
+}
+
+/**
  * Toggle a single charge of a pool between ready and used (manual sheet control).
  * @param {Actor} actor
  * @param {string} itemId

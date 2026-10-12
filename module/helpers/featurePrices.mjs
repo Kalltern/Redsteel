@@ -43,7 +43,7 @@
  *   readingTier  for reading: first (full price) | additional (any further
  *     language, once a first is owned)
  *
- * 247 features. Clause kinds: {'anyOf': 23, 'anyRank': 25, 'attr': 29, 'attrCompare': 2, 'countRank': 1, 'feature': 86, 'featurePrefix': 8, 'featureTeacher': 14, 'flag': 13, 'gm': 8, 'notFlag': 1, 'race': 83, 'rank': 144, 'secAttr': 1, 'spec': 13, 'specNode': 1}.
+ * 249 features. Clause kinds: {'anyOf': 23, 'anyRank': 27, 'attr': 29, 'attrCompare': 2, 'countRank': 1, 'feature': 88, 'featurePrefix': 8, 'featureTeacher': 14, 'flag': 13, 'gm': 8, 'notFlag': 1, 'race': 83, 'rank': 144, 'secAttr': 1, 'spec': 13, 'specNode': 1}.
  */
 
 // MAGIC GATE (user ruling 2026-09-11): every feature in the magic section also
@@ -53,6 +53,8 @@
 export const FEATURE_PRICES = {
   "UYmALzKn6MWIv7VA": { name: "Acrobatic defense", section: "combat", folder: "Combat features", cost: 10, currency: "cp", requires: [{ t: "rank", group: "skills", key: "acrobacy", min: 5 }, { t: "anyOf", options: [{ t: "rank", group: "combatSkills", key: "combat", min: 5 }, { t: "rank", group: "combatSkills", key: "archery", min: 5 }] }], bookRow: 20 },
   "nKhrJmPebXTTUuIN": { name: "Adept: Combat", section: "combat", folder: "Combat features", cost: 10, currency: "cp", requires: [{ t: "anyOf", options: [{ t: "rank", group: "combatSkills", key: "combat", min: 5 }, { t: "rank", group: "combatSkills", key: "archery", min: 5 }] }], bookRow: 14 },
+  "UoSIiGg7xhrCHwA5": { name: "Expert: Combat", section: "combat", folder: "Combat features", cost: 10, currency: "cp", requires: [{ t: "anyRank", group: "doctrines", min: 7 }, { t: "feature", name: "Adept: Combat" }] },
+  "C2XCYfRia2WqHn5c": { name: "Master: Combat", section: "combat", folder: "Combat features", cost: 20, currency: "cp", requires: [{ t: "anyRank", group: "doctrines", min: 10 }, { t: "feature", name: "Expert: Combat" }] },
   "fC884XH5k9yB8xbs": { name: "Armor Training I", section: "combat", folder: "Combat features", cost: 5, currency: "cp", requires: [{ t: "attr", key: "end", min: 3 }, { t: "featureTeacher", tier: 1 }], bookRow: 162 },
   "bErtPmLkFQ3obSBb": { name: "Armor Training II", section: "combat", folder: "Combat features", cost: 10, currency: "cp", requires: [{ t: "feature", name: "Armor Training I" }, { t: "featureTeacher", tier: 1 }], bookRow: 164 },
   "2IZoNZ0SyXDbIOGh": { name: "Battle Hardened I", section: "combat", folder: "Combat features", cost: 15, currency: "cp", requires: [{ t: "attr", key: "end", min: 5 }, { t: "anyRank", group: "weaponSkills", min: 6 }], bookRow: 176 },

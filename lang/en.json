@@ -1125,7 +1125,7 @@
             },
             "krvavyStit": {
               "label": "Blood Shield",
-              "description": "15 CP; Škola Krve - Expert. Every hit that costs Life raises a physical shield worth half the Life lost, until the end of the round. Automated."
+              "description": "15 CP; Škola Krve - Expert. Every physical hit, or hit able to cause Bleed, that costs Life raises a physical shield worth half the Life lost, until the end of the round. Automated."
             },
             "darKrve": {
               "label": "Gift of Blood",
@@ -3802,6 +3802,12 @@
         }
       },
       "Character": {
+        "CritChance": {
+          "header": "Critical Chance",
+          "columns": "Success / Fail",
+          "success": "Critical success chance",
+          "failure": "Critical failure chance"
+        },
         "Sections": {
           "Primary": "Primary Attributes",
           "Secondary": "Secondary Attributes",
@@ -4836,6 +4842,7 @@
         "roster": "Roster",
         "rosterCombat": "Combat",
         "rosterSkills": "Skills",
+        "rosterOrigin": "Attributes & Traits",
         "rosterFeatures": "Features",
         "acquire": "Acquire skill",
         "previewHint": "Preview only. Use the book beside it in the roster to acquire it.",
@@ -4850,6 +4857,7 @@
       "Details": {
         "weaponsAdvice": "Choose the weapon each doctrine will train with. Hover a card to see all ten of its ranks.",
         "weaponFor": "{doctrine}: weapon skill",
+        "spellsOpen": "Spells ({n})",
         "schoolFor": "{doctrine}: school of magic",
         "schoolKind": "School of magic",
         "combatSkillFor": "{doctrine}: combat skill",
@@ -5035,6 +5043,13 @@
         "neutral": "Neutral",
         "negative": "Negative"
       },
+      "Origin": {
+        "blocked": "Can't make that change. It would break what you bought: {list}. Give those back first.",
+        "shortCp": "CP left would drop to {n}",
+        "shortSp": "SP left would drop to {n}",
+        "attributes": "Attributes",
+        "traits": "Traits"
+      },
       "Warn": {
         "noRace": "Choose a race first.",
         "raceMissing": "The chosen race could not be loaded from the compendium.",
@@ -5045,7 +5060,7 @@
         "traitUnaffordable": "Not enough trait points left for this trait.",
         "traitMissing": "The trait {name} could not be loaded from the compendium.",
         "overspent": "More points are spent than the character has. Give some back before finishing.",
-        "detailsIncomplete": "Answer every choice: a weapon for each doctrine, a combat skill for the Peltast, and a magical doctrine for your school."
+        "detailsIncomplete": "Answer every choice: a weapon for each doctrine, a combat skill for the Peltast, and a school of magic for your magical doctrine."
       },
       "Confirm": {
         "unspentTitle": "Unspent attribute points",
@@ -5551,7 +5566,8 @@
       "Used": "Rerolled with {source}.",
       "Free": "Rerolled without spending a reroll.",
       "PatientGone": "The patient of this attempt is no longer on the scene.",
-      "PromptRetired": "Rerolled"
+      "PromptRetired": "Rerolled",
+      "KeptByCombatMaster": "Critical Success: Master: Combat keeps the reroll."
     },
     "RollTriggers": {
       "Hint": "Comma-separated. Pills appear in chat when a matching roll is made. Write attributes by their short key (str, res). Add -gm to any trigger (universal-gm, str-based-gm) and only the GM sees its pill. long-rest shows the pill on the character's Long Rest card (universal does not reach it).",
@@ -6499,6 +6515,12 @@
       },
       "AdeptCombat": {
         "name": "Adept: Combat"
+      },
+      "ExpertCombat": {
+        "name": "Expert: Combat"
+      },
+      "MasterCombat": {
+        "name": "Master: Combat"
       },
       "AdeptFirstAid": {
         "name": "Adept: First Aid"
@@ -8628,6 +8650,9 @@
       },
       "ImmuneToProne": {
         "name": "Immune to Prone"
+      },
+      "PersistsInCombat": {
+        "name": "Persists in Combat"
       },
       "ImmuneToCharm": {
         "name": "Immune to Charm"

@@ -302,8 +302,8 @@
     <section class="rs-create-panel rs-learn-cskills-col is-roster">
       <header class="rs-learn-cskills-roster-head">
         <h2 class="rs-create-panel-title">{{localize "REDSTEEL.Creation.Skills.roster"}}</h2>
-        {{!-- Skills, Combat, Features: the roster's three lists, centred in
-              its head where the eye lands first. --}}
+        {{!-- Skills, Combat, Features, Attributes & Traits: the roster's
+              lists, centred in its head where the eye lands first. --}}
         <div class="rs-learn-cskills-switch" role="group">
           <button type="button" class="{{#if creationSkills.roster.isSkills}}active{{/if}}"
                   aria-pressed="{{#if creationSkills.roster.isSkills}}true{{else}}false{{/if}}"
@@ -319,6 +319,11 @@
                   aria-pressed="{{#if creationSkills.roster.isFeatures}}true{{else}}false{{/if}}"
                   data-action="creationRosterMode" data-mode="features">
             {{localize "REDSTEEL.Creation.Skills.rosterFeatures"}}
+          </button>
+          <button type="button" class="{{#if creationSkills.roster.isOrigin}}active{{/if}}"
+                  aria-pressed="{{#if creationSkills.roster.isOrigin}}true{{else}}false{{/if}}"
+                  data-action="creationRosterMode" data-mode="origin">
+            {{localize "REDSTEEL.Creation.Skills.rosterOrigin"}}
           </button>
         </div>
       </header>
@@ -361,6 +366,62 @@
         {{/if}}
       </div>
 
+      {{#if creationSkills.roster.isOrigin}}
+      {{!-- Attributes & Traits (user ruling 2026-10-11): step 1's attribute
+            buy and trait picking, live on the character. An edit that would
+            break a rank or feature bought here is refused, with what it would
+            break (characterCreation.mjs, editOrigin). Race and racial choices
+            stay in step 1. --}}
+      {{#with creationSkills.roster.origin}}
+      <div class="rs-create-scroll rs-learn-cskills-origin">
+        <section class="rs-learn-cskills-origin-attrs">
+          <h2 class="rs-create-panel-title is-inline">{{localize "REDSTEEL.Creation.Origin.attributes"}}</h2>
+          <div class="rs-create-counter"><span>{{this.pointsRemaining}}</span></div>
+          {{#each this.attributes}}
+          <div class="rs-create-attr is-ribbon attr-row-{{this.key}} {{#if this.capRaised}}is-cap-raised{{/if}}">
+            <span class="rs-create-attr-name attr-{{this.key}}">{{this.label}}</span>
+            <button type="button" class="rs-create-step-btn" data-action="creationOriginAttr"
+                    data-attr="{{this.key}}" data-dir="down" aria-label="-" {{#unless this.canDown}}disabled{{/unless}}>&minus;</button>
+            <span class="rs-create-attr-total">{{this.total}}<span class="rs-create-attr-limit"> / {{this.limit}}</span></span>
+            <button type="button" class="rs-create-step-btn" data-action="creationOriginAttr"
+                    data-attr="{{this.key}}" data-dir="up" aria-label="+" {{#unless this.canUp}}disabled{{/unless}}>+</button>
+            <span></span>
+          </div>
+          {{/each}}
+        </section>
+        <section class="rs-learn-cskills-origin-traits">
+          <h2 class="rs-create-panel-title is-inline">{{localize "REDSTEEL.Creation.Origin.traits"}}</h2>
+          <div class="rs-create-counter">
+            <span>{{this.traitPointsRemaining}}</span>
+            <span>{{this.traitCount}}</span>
+          </div>
+          {{#each this.traitSections}}
+          {{#if this.traits.length}}
+          <div class="rs-create-trait-section is-{{this.kind}}">
+            <div class="rs-create-group-label">{{this.label}}</div>
+            <div class="rs-create-trait-grid">
+              {{#each this.traits}}
+              <button type="button"
+                      class="rs-create-trait is-{{this.kind}} {{#if this.selected}}is-selected{{/if}} {{#if this.disabled}}is-disabled{{/if}}"
+                      data-action="creationOriginTrait" data-trait="{{this.id}}"
+                      data-tt-kind="creationFeature" data-tt-id="{{this.id}}"
+                      aria-label="{{this.label}} ({{this.price}})"
+                      {{#if this.disabled}}aria-disabled="true"{{/if}}>
+                <span class="rs-create-trait-icon"><img src="{{this.img}}" alt=""></span>
+                <span class="rs-create-trait-ribbon">
+                  <span class="rs-create-trait-name">{{this.label}}</span>
+                  <span class="rs-create-trait-price">{{this.price}}</span>
+                </span>
+              </button>
+              {{/each}}
+            </div>
+          </div>
+          {{/if}}
+          {{/each}}
+        </section>
+      </div>
+      {{/with}}
+      {{else}}
       {{#unless creationSkills.roster.isFeatures}}
       {{!-- The track list, with the ranks dock beside it on the right. --}}
       <div class="rs-learn-cskills-roster-split">
@@ -483,6 +544,7 @@
         {{> learnFeaturesAvailable}}
       </div>
       {{/unless}}
+      {{/if}}
     </section>
 
     {{!-- Centre: the character. Attributes and traits, then the Combat and

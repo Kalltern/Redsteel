@@ -23,6 +23,7 @@ import {
   versusAgainstFor,
 } from "./attributeFollowup.mjs";
 import { abilityAllowedForWeapon } from "./weaponResolver.mjs";
+import { doctrineAppliesToWeapon } from "./doctrineWeapons.mjs";
 import {
   resolveAimOnAttack,
   markAimCritFail,
@@ -522,176 +523,193 @@ export function computeDoctrineBonuses(actor, weapon) {
       doctrineSource,
     };
   }
-  for (const [doctrineName, doctrineValue] of Object.entries(
-    ws.doctrines ?? 0,
-  )) {
-    if (doctrineValue === true) {
-      // The branches below assign rather than accumulate, so "this value
-      // changed while walking this doctrine" is exactly "this doctrine set
-      // it". Two doctrines landing on the same number leaves the first one
-      // named, which is still a true statement about where the bonus is from.
-      const before = {
-        attack: doctrineBonus,
-        defense: doctrineDefenseBonus,
-        rangedDefense: doctrineRangedDefenseBonus,
-      };
-      if (doctrineName === "pikeman" && doctrine.pikeman.value >= 3) {
-        doctrineBonus = 10;
-        if (doctrine.pikeman.value >= 7) {
-          doctrineBonus = 15;
-        }
+  // Each doctrine fills its own bundle; within a doctrine the higher rank
+  // replaces the lower (hence the assignments). Doctrines that pass
+  // doctrineAppliesToWeapon (checkbox + tag list + hand setup) then add
+  // together (user ruling 2026-10-12).
+  const totals = {
+    attack: 0,
+    crit: 0,
+    critRange: 0,
+    stagger: 0,
+    bleed: 0,
+    critDefense: 0,
+    defense: 0,
+    rangedDefense: 0,
+    critDmg: 0,
+    critPen: 0,
+  };
+  // Biggest contributor per sourced stat, for the sheet tooltip.
+  const best = { attack: 0, defense: 0, rangedDefense: 0 };
+  for (const doctrineName of Object.keys(ws.doctrines ?? {})) {
+    if (!doctrineAppliesToWeapon(actor, weapon, doctrineName)) continue;
+    const d = Object.fromEntries(Object.keys(totals).map((k) => [k, 0]));
+    if (doctrineName === "pikeman" && doctrine.pikeman.value >= 3) {
+      d.attack = 10;
+      if (doctrine.pikeman.value >= 7) {
+        d.attack = 15;
       }
-      if (doctrineName === "swordsman" && doctrine.swordsman.value >= 3) {
-        doctrineBonus = 10;
-        if (doctrine.swordsman.value >= 5) {
-          doctrineBleedBonus = 25;
-        }
+    }
+    if (doctrineName === "swordsman" && doctrine.swordsman.value >= 3) {
+      d.attack = 10;
+      if (doctrine.swordsman.value >= 5) {
+        d.bleed = 25;
       }
-      if (doctrineName === "reaver" && doctrine.reaver.value >= 2) {
-        doctrineBonus = 10;
-        if (doctrine.reaver.value >= 4) {
-          doctrineCritRangeBonus = 2;
-        }
-        if (doctrine.reaver.value >= 7) {
-          doctrineBleedBonus = 15;
-          doctrineStaggerBonus = 10;
-        }
-        if (doctrine.reaver.value >= 8) {
-          doctrineBonus = 15;
-        }
+    }
+    if (doctrineName === "reaver" && doctrine.reaver.value >= 2) {
+      d.attack = 10;
+      if (doctrine.reaver.value >= 4) {
+        d.critRange = 2;
       }
-      if (doctrineName === "shieldbearer" && doctrine.shieldbearer.value >= 3) {
-        doctrineCritDefenseBonus = 3;
-        if (doctrine.shieldbearer.value >= 7) {
-          doctrineDefenseBonus = 5;
-          doctrineRangedDefenseBonus = 10;
-        }
+      if (doctrine.reaver.value >= 7) {
+        d.bleed = 15;
+        d.stagger = 10;
       }
-      if (doctrineName === "dimakerus" && doctrine.dimakerus.value >= 2) {
-        doctrineDefenseBonus = 5;
-        doctrineRangedDefenseBonus = 5;
-        if (doctrine.dimakerus.value >= 4) {
-          doctrineBleedBonus = 10;
-          doctrineStaggerBonus = 5;
-        }
-        if (doctrine.dimakerus.value >= 7) {
-          doctrineDefenseBonus = 10;
-        }
-        if (doctrine.dimakerus.value >= 9) {
-          doctrineBonus = 5;
-        }
+      if (doctrine.reaver.value >= 8) {
+        d.attack = 15;
       }
+    }
+    if (doctrineName === "shieldbearer" && doctrine.shieldbearer.value >= 3) {
+      d.critDefense = 3;
+      if (doctrine.shieldbearer.value >= 7) {
+        d.defense = 5;
+        d.rangedDefense = 10;
+      }
+    }
+    if (doctrineName === "dimakerus" && doctrine.dimakerus.value >= 2) {
+      d.defense = 5;
+      d.rangedDefense = 5;
+      if (doctrine.dimakerus.value >= 4) {
+        d.bleed = 10;
+        d.stagger = 5;
+      }
+      if (doctrine.dimakerus.value >= 7) {
+        d.defense = 10;
+      }
+      if (doctrine.dimakerus.value >= 9) {
+        d.attack = 5;
+      }
+    }
 
-      // Rank 1: dual wielding a flagged sword opens wounds a little wider. The
-      // matching +5 combat bonus stays in actor.mjs because it is a sheet stat,
-      // but the bleed belongs here with every other doctrine bleed bonus —
-      // parked on system.effects.bleed it was actor-wide, and so leaked onto
-      // maces, bows, spells and every weaponless ability the character used.
-      // Reaching this branch already means ws.doctrines.dimakerus === true.
-      if (
-        doctrineName === "dimakerus" &&
-        doctrine.dimakerus.value >= 1 &&
-        ws.class === "sword" &&
-        isDualWieldingMainHand(actor, weapon)
-      ) {
-        dimakerusDualWieldBleed = 3;
-      }
+    // Rank 1: dual wielding a flagged sword opens wounds a little wider. The
+    // matching +5 combat bonus stays in actor.mjs because it is a sheet stat,
+    // but the bleed belongs here with every other doctrine bleed bonus —
+    // parked on system.effects.bleed it was actor-wide, and so leaked onto
+    // maces, bows, spells and every weaponless ability the character used.
+    if (
+      doctrineName === "dimakerus" &&
+      doctrine.dimakerus.value >= 1 &&
+      ws.class === "sword" &&
+      isDualWieldingMainHand(actor, weapon)
+    ) {
+      dimakerusDualWieldBleed = 3;
+    }
 
-      if (doctrineName === "duelist" && doctrine.duelist.value >= 4) {
-        doctrineBonus = 5;
-        doctrineCritBonus = 2;
-        if (doctrine.dimakerus.value >= 8) {
-          doctrineCritDefenseBonus = 1;
-        }
+    if (doctrineName === "duelist" && doctrine.duelist.value >= 4) {
+      d.attack = 5;
+      d.crit = 2;
+      // Duelist VIII: Kritická obrana +2%.
+      if (doctrine.duelist.value >= 8) {
+        d.critDefense = 2;
       }
-      if (doctrineName === "monk" && doctrine.monk.value >= 1) {
-        doctrineBonus = 5;
-        doctrineDefenseBonus = 5;
-        if (doctrine.monk.value >= 5) {
-          doctrineCritDefenseBonus = 2;
-        }
-        if (doctrine.monk.value >= 6) {
-          doctrineBonus = 8;
-          doctrineDefenseBonus = 8;
-        }
+    }
+    if (doctrineName === "monk" && doctrine.monk.value >= 1) {
+      d.attack = 5;
+      d.defense = 5;
+      if (doctrine.monk.value >= 5) {
+        d.critDefense = 2;
       }
-      if (doctrineName === "archer" && doctrine.archer.value >= 1) {
-        doctrineBonus = 10;
-        if (doctrine.archer.value >= 4) {
-          doctrineBleedBonus = 10;
-          doctrineSkillCritPen = 5;
-          doctrineCritDmg = 5;
-        }
-        if (doctrine.archer.value >= 6) {
-          doctrineCritBonus = 3;
-        }
-        if (doctrine.archer.value >= 7) {
-          doctrineSkillCritPen = 10;
-          doctrineCritDmg = 10;
-        }
+      if (doctrine.monk.value >= 6) {
+        d.attack = 8;
+        d.defense = 8;
       }
-      if (doctrineName === "arbalest" && doctrine.arbalest.value >= 1) {
-        doctrineBonus = 10;
-        if (doctrine.arbalest.value >= 4) {
-          doctrineSkillCritPen = 5;
-          doctrineCritDmg = 5;
-        }
-        if (doctrine.arbalest.value >= 6) {
-          doctrineBleedBonus = 10;
-          doctrineBonus = 15;
-        }
-        if (doctrine.arbalest.value >= 7) {
-          doctrineSkillCritPen = 10;
-          doctrineCritDmg = 10;
-        }
-        if (doctrine.arbalest.value >= 8) {
-          doctrineCritBonus = 5;
-        }
+    }
+    if (doctrineName === "archer" && doctrine.archer.value >= 1) {
+      d.attack = 10;
+      if (doctrine.archer.value >= 4) {
+        d.bleed = 10;
+        d.critPen = 5;
+        d.critDmg = 5;
       }
-      if (doctrineName === "peltast" && doctrine.peltast.value >= 1) {
-        doctrineBleedBonus = 20;
-        doctrineStaggerBonus = 10;
-        if (doctrine.peltast.value >= 4) {
-          doctrineSkillCritPen = 5;
-          doctrineCritDmg = 5;
-        }
-        if (doctrine.peltast.value >= 6) {
-          doctrineCritBonus = 3;
-        }
-        if (doctrine.peltast.value >= 7) {
-          doctrineSkillCritPen = 10;
-          doctrineCritDmg = 10;
-        }
-        if (doctrine.peltast.value >= 9) {
-          // add zatizeni stitu
-          doctrineCritRangeBonus = 2;
-        }
+      if (doctrine.archer.value >= 6) {
+        d.crit = 3;
       }
-      if (doctrineName === "juggler" && doctrine.juggler.value >= 3) {
-        doctrineBonus = 5;
-        if (doctrine.juggler.value >= 2) {
-          doctrineCritBonus = 3;
-        }
-        if (doctrine.juggler.value >= 4) {
-          doctrineBleedBonus = 10;
-          doctrineSkillCritPen = 5;
-          doctrineCritDmg = 5;
-        }
-        if (doctrine.juggler.value >= 7) {
-          doctrineSkillCritPen = 10;
-          doctrineCritDmg = 10;
-        }
+      if (doctrine.archer.value >= 7) {
+        d.critPen = 10;
+        d.critDmg = 10;
       }
+    }
+    if (doctrineName === "arbalest" && doctrine.arbalest.value >= 1) {
+      d.attack = 10;
+      if (doctrine.arbalest.value >= 4) {
+        d.critPen = 5;
+        d.critDmg = 5;
+      }
+      if (doctrine.arbalest.value >= 6) {
+        d.bleed = 10;
+        d.attack = 15;
+      }
+      if (doctrine.arbalest.value >= 7) {
+        d.critPen = 10;
+        d.critDmg = 10;
+      }
+      if (doctrine.arbalest.value >= 8) {
+        d.crit = 5;
+      }
+    }
+    if (doctrineName === "peltast" && doctrine.peltast.value >= 1) {
+      d.bleed = 20;
+      d.stagger = 10;
+      if (doctrine.peltast.value >= 4) {
+        d.critPen = 5;
+        d.critDmg = 5;
+      }
+      if (doctrine.peltast.value >= 6) {
+        d.crit = 3;
+      }
+      if (doctrine.peltast.value >= 7) {
+        d.critPen = 10;
+        d.critDmg = 10;
+      }
+      if (doctrine.peltast.value >= 9) {
+        // add zatizeni stitu
+        d.critRange = 2;
+      }
+    }
+    if (doctrineName === "juggler" && doctrine.juggler.value >= 3) {
+      d.attack = 5;
+      if (doctrine.juggler.value >= 2) {
+        d.crit = 3;
+      }
+      if (doctrine.juggler.value >= 4) {
+        d.bleed = 10;
+        d.critPen = 5;
+        d.critDmg = 5;
+      }
+      if (doctrine.juggler.value >= 7) {
+        d.critPen = 10;
+        d.critDmg = 10;
+      }
+    }
 
-      if (doctrineBonus !== before.attack) doctrineSource.attack = doctrineName;
-      if (doctrineDefenseBonus !== before.defense) {
-        doctrineSource.defense = doctrineName;
-      }
-      if (doctrineRangedDefenseBonus !== before.rangedDefense) {
-        doctrineSource.rangedDefense = doctrineName;
+    for (const key of Object.keys(totals)) totals[key] += d[key];
+    for (const key of Object.keys(best)) {
+      if (d[key] > best[key]) {
+        best[key] = d[key];
+        doctrineSource[key] = doctrineName;
       }
     }
   }
+  doctrineBonus = totals.attack;
+  doctrineCritBonus = totals.crit;
+  doctrineCritRangeBonus = totals.critRange;
+  doctrineStaggerBonus = totals.stagger;
+  doctrineBleedBonus = totals.bleed;
+  doctrineCritDefenseBonus = totals.critDefense;
+  doctrineDefenseBonus = totals.defense;
+  doctrineRangedDefenseBonus = totals.rangedDefense;
+  doctrineCritDmg = totals.critDmg;
+  doctrineSkillCritPen = totals.critPen;
   /* console.log(
     `Doctrine Bonus: ${doctrineBonus}, ${doctrineCritBonus}, ${doctrineCritRangeBonus}, ${doctrineStaggerBonus}, ${doctrineBleedBonus}`,
   );*/
@@ -823,6 +841,87 @@ export async function getWeaponSkillBonuses(actor, weapon) {
   };
 }
 
+/**
+ * Critical success / failure thresholds of a weapon attack, before anything
+ * that belongs to one particular swing (Aim's Calculation crit, Desperate
+ * Effort). Pure and synchronous so the sheet can show the very number
+ * getAttackRolls rolls against.
+ *
+ * @param {Actor} actor
+ * @param {Item|null} weapon
+ * @param {object} [opts]
+ * @param {number} [opts.doctrineCritBonus]
+ * @param {number} [opts.weaponSkillCrit]  melee only; see the branch below
+ * @param {number} [opts.customCritFail]
+ * @param {string} [opts.rangedSkill]  "archery" / "throwing" picks the skill
+ *   when there is no weapon to read it off (standalone ranged abilities)
+ * @returns {{success: number, failure: number}}
+ */
+export function getAttackCritThresholds(
+  actor,
+  weapon,
+  {
+    doctrineCritBonus = 0,
+    weaponSkillCrit = 0,
+    customCritFail = 0,
+    rangedSkill = "",
+  } = {},
+) {
+  const ws = weapon?.system ?? {};
+  const qualityCritChance = Number(ws.qualityMods?.critChance || 0);
+  const enchantCritChance = Number(ws.enchantMods?.critChance || 0);
+  const skills = actor.system.combatSkills;
+  let success;
+  let failure;
+  if (ws.class === "bow" || ws.class === "crossbow" || rangedSkill === "archery") {
+    success =
+      skills.archery.criticalSuccessThreshold +
+      doctrineCritBonus +
+      (ws.critChance ?? 0) +
+      qualityCritChance +
+      enchantCritChance;
+    failure =
+      skills.archery.criticalFailureThreshold -
+      (ws.critFail ?? 0) -
+      customCritFail;
+  } else if (ws.thrown || rangedSkill === "throwing") {
+    const knifeMasterCrit = knifeMasterCheck(actor, weapon) ? 2 : 0;
+    // No weapon-skill VII crit here: thrown crit chance comes from the
+    // Peltast / Juggler doctrines, so adding it would double-dip.
+    success =
+      skills.combat.criticalSuccessThreshold +
+      (ws.critChance ?? 0) +
+      qualityCritChance +
+      enchantCritChance +
+      knifeMasterCrit +
+      doctrineCritBonus;
+    failure =
+      skills.combat.criticalFailureThreshold -
+      (ws.critFail ?? 0) -
+      customCritFail;
+  } else {
+    success =
+      skills.combat.criticalSuccessThreshold +
+      ((ws.critChance ?? 0) +
+        qualityCritChance +
+        enchantCritChance +
+        doctrineCritBonus +
+        weaponSkillCrit || 0);
+    failure =
+      skills.combat.criticalFailureThreshold -
+      (ws.critFail ?? 0) -
+      customCritFail;
+  }
+
+  success += getWeaponSpecBonuses(actor, weapon).critChance;
+  // Weapon Training (Weapon Master, vycvikSeZbrani), medium class: Critical
+  // Hit chance +1 on every weapon attack, whatever weapon is swung.
+  if (getWeaponTrainingClass(actor) === "medium") {
+    success += WEAPON_TRAINING_MEDIUM_CRIT;
+  }
+  return { success, failure };
+}
+
 export async function getAttackRolls(
   actor,
   weapon,
@@ -836,12 +935,11 @@ export async function getAttackRolls(
   ability = null,
 ) {
   const ws = weapon?.system ?? {};
-  // Weapon quality (Zbraň column): attack + critical-hit chance bonuses.
+  // Weapon quality (Zbraň column) attack bonus; its crit chance is read in
+  // getAttackCritThresholds.
   const qualityAttack = Number(ws.qualityMods?.attack || 0);
-  const qualityCritChance = Number(ws.qualityMods?.critChance || 0);
   // Applied enchantments, added everywhere the quality mods are.
   const enchantAttack = Number(ws.enchantMods?.attack || 0);
-  const enchantCritChance = Number(ws.enchantMods?.critChance || 0);
   let totalWeaponAttack =
     Number(doctrineBonus || 0) +
     Number(ws.attack || 0) +
@@ -853,16 +951,13 @@ export async function getAttackRolls(
   // no maximum range, so this never refuses a throw.
   const rangePenalty = thrownRangePenalty(actor, weapon);
   totalWeaponAttack += rangePenalty;
-  let criticalSuccessThreshold = 0;
-  let criticalFailureThreshold = 0;
   const offProps = getOffhandProps(weaponContext);
   if (offProps?.attack) {
     totalWeaponAttack += offProps.attack;
   }
-  if (offProps) {
-    criticalSuccessThreshold += offProps?.critChance || 0;
-    criticalFailureThreshold -= offProps?.critFail || 0;
-  }
+  // The off hand's critChance / critFail used to be added here and then
+  // overwritten by every branch below, so they never reached a roll. Left out
+  // of getAttackCritThresholds until that is ruled on.
 
   const specBonus = getWeaponSpecBonuses(actor, weapon);
   totalWeaponAttack += specBonus.attack;
@@ -927,42 +1022,28 @@ export async function getAttackRolls(
     ? ""
     : String(ability?.system?.rangedSkill ?? "");
 
+  const crit = getAttackCritThresholds(actor, weapon, {
+    doctrineCritBonus,
+    weaponSkillCrit,
+    customCritFail,
+    rangedSkill: abilityRangedSkill,
+  });
+  // Shadow Calculation belongs to this swing's Aim, so it is added here
+  // rather than in the shared thresholds the sheet also shows.
+  const criticalSuccessThreshold = crit.success + calculationCrit;
+  const criticalFailureThreshold = crit.failure;
+
   if (
     ws.class === "bow" ||
     ws.class === "crossbow" ||
     abilityRangedSkill === "archery"
   ) {
-    // Critical success and failure thresholds
-    criticalSuccessThreshold =
-      actor.system.combatSkills.archery.criticalSuccessThreshold +
-      doctrineCritBonus +
-      (ws.critChance ?? 0) +
-      qualityCritChance +
-      enchantCritChance;
-    criticalFailureThreshold =
-      actor.system.combatSkills.archery.criticalFailureThreshold -
-      (ws.critFail ?? 0) -
-      customCritFail;
     // ATTACK ROLL
     attackRollFormula = `@combatSkills.archery.rating + ${totalWeaponAttack} - 1d100`;
     if (abilityAttack) {
       attackRollFormula = `@combatSkills.archery.rating + ${totalWeaponAttack} + ${abilityAttack} - 1d100`;
     }
   } else if (ws.thrown || abilityRangedSkill === "throwing") {
-    const knifeMasterCrit = knifeMasterCheck(actor, weapon) ? 2 : 0;
-    // No weapon-skill VII crit here: thrown crit chance comes from the
-    // Peltast / Juggler doctrines, so adding it would double-dip.
-    criticalSuccessThreshold =
-      actor.system.combatSkills.combat.criticalSuccessThreshold +
-      (ws.critChance ?? 0) +
-      qualityCritChance +
-      enchantCritChance +
-      knifeMasterCrit +
-      doctrineCritBonus;
-    criticalFailureThreshold =
-      actor.system.combatSkills.combat.criticalFailureThreshold -
-      (ws.critFail ?? 0) -
-      customCritFail;
     // ATTACK ROLL
     //  console.log("Aim value", aimValue);
     attackRollFormula =
@@ -976,17 +1057,6 @@ export async function getAttackRolls(
           : `@combatSkills.throwing.rating + ${totalWeaponAttack} + ${abilityAttack} - 1d100`;
     }
   } else {
-    criticalSuccessThreshold =
-      actor.system.combatSkills.combat.criticalSuccessThreshold +
-      ((ws.critChance ?? 0) +
-        qualityCritChance +
-        enchantCritChance +
-        doctrineCritBonus +
-        weaponSkillCrit || 0);
-    criticalFailureThreshold =
-      actor.system.combatSkills.combat.criticalFailureThreshold -
-      (ws.critFail ?? 0) -
-      customCritFail;
     // ATTACK ROLL
     //  console.log("Aim value", aimValue);
     attackRollFormula =
@@ -999,13 +1069,6 @@ export async function getAttackRolls(
           ? `@combatSkills.combat.finesseRating + ${totalWeaponAttack} + ${abilityAttack} - 1d100`
           : `@combatSkills.combat.rating + ${totalWeaponAttack} + ${abilityAttack} - 1d100`;
     }
-  }
-
-  criticalSuccessThreshold += specBonus.critChance + calculationCrit;
-  // Weapon Training (Weapon Master, vycvikSeZbrani), medium class: Critical
-  // Hit chance +1 on every weapon attack, whatever weapon is swung.
-  if (getWeaponTrainingClass(actor) === "medium") {
-    criticalSuccessThreshold += WEAPON_TRAINING_MEDIUM_CRIT;
   }
 
   // Roll data setup

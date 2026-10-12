@@ -1,0 +1,122 @@
+{
+  "folder": "NHaSpGKlxSYECai3",
+  "name": "Expert: Combat",
+  "type": "feature",
+  "img": "icons/commodities/treasure/medal-ribbon-gold-blue.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.ExpertCombat.name",
+    "description": "<p>Stamina +5 and Hit Points +5.</p><p>Once per day you may reroll an attack (melee, ranged or thrown), a Melee Defense or a Ranged Defense test. This reroll may be used on a Critical Failure.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": [
+        {
+          "label": "",
+          "skillsRaw": "attack, meleeDefense, rangedDefense, critfail",
+          "max": 1,
+          "used": 0
+        }
+      ]
+    },
+    "option": "feature",
+    "cost": {
+      "cp": 10,
+      "sp": null
+    }
+  },
+  "effects": [
+    {
+      "name": "Expert combat: Health and Stamina",
+      "origin": null,
+      "img": "icons/commodities/treasure/medal-ribbon-gold-blue.webp",
+      "_id": "0poJDWkH47WSw9Hi",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.stats.health.bonus",
+            "value": 5,
+            "priority": null,
+            "type": "add"
+          },
+          {
+            "key": "system.stats.stamina.bonus",
+            "value": 5,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
+      "disabled": false,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {
+        "statuscounter": {
+          "value": 1,
+          "config": {
+            "type": "default"
+          },
+          "visible": false
+        },
+        "tos": {
+          "actorTurns": null
+        }
+      },
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!UoSIiGg7xhrCHwA5.0poJDWkH47WSw9Hi"
+    }
+  ],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": null,
+    "modifiedTime": null,
+    "lastModifiedBy": null
+  },
+  "ownership": {
+    "default": 0,
+    "rs3mzx7WZdtEmvH2": 3,
+    "11b6AVyWZe9rh7fX": 3,
+    "UHjN0KQ8w8ZxibJg": 3
+  },
+  "sort": 900000,
+  "_id": "UoSIiGg7xhrCHwA5",
+  "_key": "!items!UoSIiGg7xhrCHwA5"
+}

@@ -69,6 +69,8 @@ import {
   getTrackRank,
   getTrackTab,
   getWallet,
+  evaluateRequirements,
+  getOwnedFeatures,
   hasTeacher,
   isInCreation,
   purchaseRank,
@@ -79,9 +81,16 @@ import {
 } from "../helpers/progressionEngine.mjs";
 import { PROGRESSION_TRACKS } from "../helpers/progression.mjs";
 import { TEMPERAMENT_SCHOOLS } from "../helpers/rankDiscounts.mjs";
+import { SPELL_PACK_ID, SPELL_RANK_MIN_SCHOOL } from "./spellbook.mjs";
 // Import cycle with learnWindow.mjs (it imports this module's creation
 // exports): fine, as neither module uses the other's exports at top level.
-import { describeRankChips, explainUnbuyable, markAbilityChips, openLearnWindow } from "./learnWindow.mjs";
+import {
+  describeRankChips,
+  describeRequirement,
+  explainUnbuyable,
+  markAbilityChips,
+  openLearnWindow,
+} from "./learnWindow.mjs";
 import { SPEC_ICONS } from "../helpers/specialisations.mjs";
 import { getRaceChoiceGroups } from "./race.mjs";
 import { registerTooltip, ttFrame } from "./tooltips.mjs";
@@ -110,6 +119,8 @@ const CACHE = {
   ladders: null,
   // The same ladders for the skills 2.5 offers, by track id.
   skillLadders: null,
+  // The spells each school opens, by school rank (buildSchoolSpells).
+  schoolSpells: null,
   weapons: null,
 };
 
@@ -123,6 +134,45 @@ async function enrichText(text) {
   } catch (err) {
     return text;
   }
+}
+
+/**
+ * The spells each school offers, by the school rank that opens them (wild
+ * magic at I, apprentice at IV, expert at VI, master at VIII, grandmaster at
+ * X: SPELL_RANK_MIN_SCHOOL), read once per session from the spell pack's
+ * index. Names read as the Learn window's Spells tab reads them.
+ * @returns {Promise<Map<string, Map<number, {uuid: string, name: string, img: string}[]>>>}
+ */
+async function buildSchoolSpells() {
+  const bySchool = new Map();
+  const pack = game.packs.get(SPELL_PACK_ID);
+  if (!pack) return bySchool;
+  let index = [];
+  try {
+    index = await pack.getIndex({ fields: ["img", "system.type", "system.rank", "system.localizationKey"] });
+  } catch (err) {
+    return bySchool;
+  }
+  const lang = game.i18n.lang;
+  for (const entry of index.contents ?? []) {
+    const school = String(entry.system?.type ?? "");
+    const rank = SPELL_RANK_MIN_SCHOOL[String(entry.system?.rank ?? "").toLowerCase()];
+    if (!school || !rank) continue;
+    const key = entry.system?.localizationKey?.trim();
+    const name = key && game.i18n.has(key, false) ? game.i18n.localize(key) : entry.name;
+    if (!bySchool.has(school)) bySchool.set(school, new Map());
+    const ranks = bySchool.get(school);
+    if (!ranks.has(rank)) ranks.set(rank, []);
+    ranks.get(rank).push({
+      uuid: entry.uuid ?? `Compendium.${SPELL_PACK_ID}.Item.${entry._id}`,
+      name: String(name ?? ""),
+      img: entry.img,
+    });
+  }
+  for (const ranks of bySchool.values()) {
+    for (const list of ranks.values()) list.sort((a, b) => a.name.localeCompare(b.name, lang));
+  }
+  return bySchool;
 }
 
 /**
@@ -729,6 +779,9 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
   /** The same ladders for the SKILL_CARDS skills, by track id. */
   #skillLadders = null;
 
+  /** The spells each school opens, by school rank (buildSchoolSpells). */
+  #schoolSpells = null;
+
   /** Info panel HTML by "kind:id", rebuilt every render. */
   #infoHtml = new Map();
 
@@ -903,7 +956,10 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
    * FEATURE_TIPS under its uuid.
    */
   async #loadDoctrineLadders() {
-    if (this.#doctrineLadders && this.#doctrineWeapons && this.#skillLadders) return this.#doctrineLadders;
+    if (this.#doctrineLadders && this.#doctrineWeapons && this.#skillLadders && this.#schoolSpells) {
+      return this.#doctrineLadders;
+    }
+    CACHE.schoolSpells ??= buildSchoolSpells();
     const keys = this.#doctrineKeys();
     CACHE.ladders ??= buildDoctrineLadders(keys);
     CACHE.skillLadders ??= buildTrackLadders([
@@ -914,10 +970,11 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     CACHE.weapons ??= loadCompatibleWeapons().then(
       (catalog) => new Map(keys.map((key) => [key, catalog.get(`doctrines.${key}`)]).filter(([, v]) => v)),
     );
-    [this.#doctrineLadders, this.#doctrineWeapons, this.#skillLadders] = await Promise.all([
+    [this.#doctrineLadders, this.#doctrineWeapons, this.#skillLadders, this.#schoolSpells] = await Promise.all([
       CACHE.ladders,
       CACHE.weapons,
       CACHE.skillLadders,
+      CACHE.schoolSpells,
     ]);
     return this.#doctrineLadders;
   }
@@ -1025,6 +1082,13 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
       return new Map(loaded.filter(Boolean));
     })();
     this.#traits = await CACHE.traits;
+    // Each trait's card for the creationFeature tooltip (step 3's Attributes &
+    // Traits tab shows it on hover).
+    for (const trait of this.#traits.values()) {
+      if (!FEATURE_TIPS.has(trait.id)) {
+        FEATURE_TIPS.set(trait.id, { title: trait.label, img: trait.img, description: trait.description ?? "" });
+      }
+    }
     return this.#traits;
   }
 
@@ -1039,6 +1103,48 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     } catch (err) {
       return 1;
     }
+  }
+
+  /**
+   * One trait tile as step 1 and step 3's Attributes & Traits tab draw it: a
+   * positive trait the points cannot pay, a full list, or a second
+   * temperament leave it disabled.
+   */
+  #traitTile(trait, state, editable, hasRace, draft = this.#draft) {
+    const selected = draft.traits.includes(trait.id);
+    const unaffordable = !selected && trait.kind === "positive" && trait.cost > state.traitRemaining;
+    const full = !selected && state.traitCount >= MAX_TRAITS;
+    // One temperament: with one taken, the others are out of reach.
+    const otherTemperament =
+      !selected && isTemperament(trait.id) && draft.traits.some((t) => t !== trait.id && isTemperament(t));
+    return {
+      id: trait.id,
+      kind: trait.kind,
+      label: trait.label,
+      img: trait.img,
+      // Plain cost: a positive trait reads "6", a negative one "-3".
+      price: String(trait.cost),
+      selected,
+      disabled: !editable || !hasRace || unaffordable || full || otherTemperament,
+    };
+  }
+
+  /**
+   * Every trait, by kind, each kind sorted by name. A picked trait stays in
+   * its place, drawn see-through (clicking it gives it back), so the list
+   * never reflows.
+   */
+  #traitSections(state, editable, hasRace, draft = this.#draft) {
+    const i18n = game.i18n;
+    const lang = i18n.lang;
+    return ["positive", "neutral", "negative"].map((kind) => ({
+      kind,
+      label: i18n.localize(`REDSTEEL.Creation.TraitKind.${kind}`),
+      traits: [...this.#traits.values()]
+        .filter((trait) => trait.kind === kind)
+        .sort((a, b) => a.label.localeCompare(b.label, lang))
+        .map((trait) => this.#traitTile(trait, state, editable, hasRace, draft)),
+    }));
   }
 
   /**
@@ -1310,39 +1416,8 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
 
     // Traits, in three sections, each sorted by name.
     const lang = i18n.lang;
-    const traitTile = (trait) => {
-      const selected = draft.traits.includes(trait.id);
-      const unaffordable =
-        !selected && trait.kind === "positive" && trait.cost > state.traitRemaining;
-      const full = !selected && state.traitCount >= MAX_TRAITS;
-      // One temperament: with one taken, the others are out of reach.
-      const otherTemperament =
-        !selected && isTemperament(trait.id) && draft.traits.some((t) => t !== trait.id && isTemperament(t));
-      return {
-        id: trait.id,
-        kind: trait.kind,
-        label: trait.label,
-        img: trait.img,
-        // Plain cost: a positive trait reads "6", a negative one "-3".
-        price: String(trait.cost),
-        selected,
-        disabled: !editable || !hasRace || unaffordable || full || otherTemperament,
-      };
-    };
-    // Left: every trait, by kind. A picked trait stays in its place, drawn
-    // see-through (clicking it gives it back), so the list never reflows; the
-    // centre column's picked list shows it as well.
-    const sections = ["positive", "neutral", "negative"].map((kind) => {
-      const traits = [...this.#traits.values()]
-        .filter((trait) => trait.kind === kind)
-        .sort((a, b) => a.label.localeCompare(b.label, lang))
-        .map(traitTile);
-      return {
-        kind,
-        label: i18n.localize(`REDSTEEL.Creation.TraitKind.${kind}`),
-        traits,
-      };
-    });
+    const traitTile = (trait) => this.#traitTile(trait, state, editable, hasRace);
+    const sections = this.#traitSections(state, editable, hasRace);
 
     // Info panel: every subject's HTML, so a hover can swap it in without a
     // re-render.
@@ -1565,7 +1640,11 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
           frame(
             this.#schoolLabel(key),
             escapeHtml(i18n.localize("REDSTEEL.Creation.Details.schoolKind")),
-            notes + this.#rankPathHtml(`schools.${key}`, this.#skillLadders?.get(`schools.${key}`) ?? []),
+            notes +
+              this.#rankPathHtml(`schools.${key}`, this.#skillLadders?.get(`schools.${key}`) ?? [], {
+                inline: true,
+                spells: this.#schoolSpells?.get(key),
+              }),
           ),
       );
     }
@@ -1604,7 +1683,8 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
           frame(
             this.#skillLabel(trackId),
             meta,
-            this.#skillWeaponsHtml(trackId) + this.#rankPathHtml(trackId, this.#skillLadders?.get(trackId) ?? []),
+            this.#skillWeaponsHtml(trackId) +
+              this.#rankPathHtml(trackId, this.#skillLadders?.get(trackId) ?? [], { inline: true }),
           ),
       );
     }
@@ -1619,7 +1699,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
    * ability's row; one carrying a rider after a colon stays. A rank that does
    * nothing shows a dash.
    */
-  #rankPathHtml(trackId, ladder) {
+  #rankPathHtml(trackId, ladder, { inline = false, spells = null } = {}) {
     const rows = [];
     for (let rank = 1; rank <= ROMAN_RANKS.length; rank++) {
       const grants = ladder.filter((step) => step.rank === rank);
@@ -1627,12 +1707,39 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
         describeRankChips(trackId, rank),
         grants.map((step) => ({ localizedName: step.name, name: step.docName })),
       ).filter((chip) => !chip.ability || String(chip.text ?? "").includes(":"));
+      // A school's rank that opens a spell rank lists that rank's spells, a
+      // card on hover (user ruling 2026-10-11: a caster sees what each rank
+      // of the school lets them cast).
+      const spellsHtml = (at) => {
+        const list = spells?.get(at);
+        if (!list?.length) return "";
+        return (
+          `<div class="rs-create-rank-spells"><span class="rs-create-rank-spells-label">${escapeHtml(
+            game.i18n.format("REDSTEEL.Creation.Details.spellsOpen", { n: list.length }),
+          )}</span>` +
+          list
+            .map(
+              (spell) =>
+                `<span class="rs-create-rank-spell" data-tt-kind="spellCardUuid" data-tt-uuid="${escapeHtml(spell.uuid)}" data-card-kind="spell">` +
+                `<img src="${escapeHtml(spell.img)}" alt=""><span>${escapeHtml(spell.name)}</span></span>`,
+            )
+            .join("") +
+          `</div>`
+        );
+      };
+      // Inline (2.5's wide info row, user ruling 2026-10-10): each ability
+      // prints its description under its name, read without a hover.
+      // Otherwise the name alone, its card on hover.
       const body = [
-        ...grants.map(
-          (step) =>
-            `<span class="rs-create-rank-ability" data-tt-kind="creationFeature" data-tt-id="${escapeHtml(step.id)}">` +
-            `<img class="rs-create-feature-icon" src="${escapeHtml(step.img)}" alt="">` +
-            `<span class="rs-create-feature-text">${escapeHtml(step.name)}</span></span>`,
+        ...grants.map((step) =>
+          inline
+            ? `<div class="rs-create-rank-ability is-inline">` +
+              `<span class="rs-create-rank-ability-head"><img class="rs-create-feature-icon" src="${escapeHtml(step.img)}" alt="">` +
+              `<span class="rs-create-feature-text">${escapeHtml(step.name)}</span></span>` +
+              `<div class="rs-create-rank-ability-desc">${FEATURE_TIPS.get(step.id)?.description ?? ""}</div></div>`
+            : `<span class="rs-create-rank-ability" data-tt-kind="creationFeature" data-tt-id="${escapeHtml(step.id)}">` +
+              `<img class="rs-create-feature-icon" src="${escapeHtml(step.img)}" alt="">` +
+              `<span class="rs-create-feature-text">${escapeHtml(step.name)}</span></span>`,
         ),
         ...chips.map((chip) => `<span class="rs-create-rank-effect">${escapeHtml(chip.text)}</span>`),
       ];
@@ -1641,7 +1748,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
           `<span class="rs-create-feature-rank">${escapeHtml(ROMAN_RANKS[rank - 1])}</span>` +
           `<div class="rs-create-rank-body">${
             body.join("") || `<span class="rs-create-rank-effect is-empty">&mdash;</span>`
-          }</div></li>`,
+          }${spellsHtml(rank)}</div></li>`,
       );
     }
     return (
@@ -2624,6 +2731,199 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     }
   }
 
+  /* ---------------------------------------- */
+  /*  Step 3: the Attributes & Traits tab     */
+  /* ---------------------------------------- */
+
+  /*
+   * Step 3 (the Learn window) edits attributes and traits in place (user
+   * ruling 2026-10-11) through an instance of this window that is never
+   * rendered: getOriginEditor() keeps one per actor. Every edit is checked
+   * against an unsaved clone of the character as the edit would leave it
+   * (the footer preview's own clone), and refused when anything bought would
+   * stop qualifying or the points would run short (user ruling: refuse,
+   * never undo a purchase). Race and racial choices are not edited here.
+   */
+
+  /** Read the stored draft afresh and load what the rules read. */
+  async originEditorLoad() {
+    this.#draft = readDraft(this.actor);
+    await this.#loadAll();
+  }
+
+  /** The tab's data: attribute rows and the trait tiles, as step 1 draws them. */
+  originEditorData() {
+    const i18n = game.i18n;
+    const draft = this.#draft;
+    const state = this.#compute();
+    const editable = !!this.actor?.isOwner;
+    const hasRace = !!state.doc;
+    return {
+      hasRace,
+      attributes: ATTRIBUTE_KEYS.map((k) => ({
+        key: k,
+        label: i18n.localize(CONFIG.REDSTEEL.attributes?.[k] ?? k),
+        total: state.totals[k],
+        limit: state.limits[k],
+        canUp: editable && hasRace && state.remaining > 0 && state.canRaise[k],
+        canDown: editable && hasRace && draft.spend[k] > 0,
+        capRaised: draft.traits.some((id) => TRAIT_PRICES[id]?.raisesLimit === k),
+      })),
+      pointsRemaining: i18n.format("REDSTEEL.Creation.pointsRemaining", {
+        remaining: state.remaining,
+        budget: state.budget,
+      }),
+      traitPointsRemaining: i18n.format("REDSTEEL.Creation.traitPointsRemaining", {
+        remaining: state.traitRemaining,
+        total: state.traitPoints,
+      }),
+      traitCount: i18n.format("REDSTEEL.Creation.traitCount", { count: state.traitCount, max: MAX_TRAITS }),
+      traitSections: this.#traitSections(state, editable, hasRace),
+    };
+  }
+
+  /**
+   * One edit from the tab: "attrUp" / "attrDown" with an attribute key, or
+   * "trait" with a trait id (take it, or give it back). The same rules as
+   * step 1; then the clone check; then the write. Nothing is written when the
+   * edit is refused.
+   * @returns {Promise<{ok: boolean, reasons: string[]}>}
+   */
+  async editOrigin(kind, key) {
+    const i18n = game.i18n;
+    const actor = this.actor;
+    const refuse = (...reasons) => ({ ok: false, reasons: reasons.filter(Boolean) });
+    if (!actor?.isOwner) return refuse();
+    this.#draft = readDraft(actor);
+    const before = this.#compute();
+    if (!before.entry) return refuse();
+    const next = foundry.utils.deepClone(this.#draft);
+
+    if (kind === "attrUp") {
+      if (!ATTRIBUTE_KEYS.includes(key) || before.remaining <= 0 || !before.canRaise[key]) return refuse();
+      next.spend[key] += 1;
+    } else if (kind === "attrDown") {
+      if (!ATTRIBUTE_KEYS.includes(key) || !(next.spend[key] > 0)) return refuse();
+      next.spend[key] -= 1;
+    } else if (kind === "trait") {
+      const price = TRAIT_PRICES[key];
+      if (!price || !this.#traits?.has(key)) return refuse();
+      if (next.traits.includes(key)) {
+        next.traits = next.traits.filter((t) => t !== key);
+        // Without Magic potential no magical doctrine or school is drafted
+        // (one with a rank bought is caught by the clone check below).
+        if (key === MAGIC_POTENTIAL_ID) {
+          next.doctrines = next.doctrines.filter((k) => !isMagicalDoctrine(k));
+          next.school = null;
+        }
+      } else {
+        if (next.traits.length >= MAX_TRAITS) {
+          return refuse(i18n.format("REDSTEEL.Creation.Warn.traitLimit", { max: MAX_TRAITS }));
+        }
+        if (price.cost > 0 && price.cost > before.traitRemaining) {
+          return refuse(i18n.localize("REDSTEEL.Creation.Warn.traitUnaffordable"));
+        }
+        const held = isTemperament(key) ? next.traits.find((t) => isTemperament(t)) : null;
+        if (held) {
+          return refuse(
+            i18n.format("REDSTEEL.Creation.Warn.oneTemperament", {
+              name: this.#traits?.get(held)?.label ?? TRAIT_PRICES[held]?.name ?? held,
+            }),
+          );
+        }
+        next.traits = [...next.traits, key];
+      }
+      this.#clampSpend(next);
+      // A temperament sets the school (#school): a new one takes it over, and
+      // with the old one given back its school goes too. The engine's own
+      // temperament sync moves the free rank I on the character itself.
+      const temperamentOf = (traits) =>
+        traits.map((id) => TEMPERAMENT_SCHOOLS[TRAIT_PRICES[id]?.name]).find(Boolean) ?? null;
+      const oldSchool = temperamentOf(this.#draft.traits);
+      const newSchool = temperamentOf(next.traits);
+      if (newSchool && next.doctrines.some((k) => isMagicalDoctrine(k))) next.school = newSchool;
+      else if (oldSchool && next.school === oldSchool) next.school = null;
+    } else {
+      return refuse();
+    }
+
+    const state = this.#compute(next);
+    // Step 1 lets the trait budget dip below zero until Next; here the
+    // character is live, so it never may.
+    if (state.traitRemaining < 0) return refuse(i18n.localize("REDSTEEL.Creation.Warn.traitOverspent"));
+
+    // The character as the edit would leave it.
+    const traitsChanged = kind === "trait";
+    let traitData = null;
+    if (traitsChanged) {
+      const built = await this.#buildOriginItems(state, next);
+      if (built.missing) {
+        return refuse(
+          i18n.format("REDSTEEL.Creation.Warn.traitMissing", {
+            name: this.#traits?.get(built.missing)?.label ?? built.missing,
+          }),
+        );
+      }
+      traitData = built.traitData;
+    }
+    const traitSp = Math.max(0, state.traitRemaining) * SP_PER_TRAIT_POINT;
+    const bonusSp =
+      (Number(actor.system?.progression?.bonus?.sp) || 0) - (next.applied?.traitSp ?? 0) + traitSp;
+    const clone = this.#originClone(next, traitData, bonusSp);
+    if (!clone) return refuse();
+    const broken = originBreaks(actor, clone);
+    if (broken.length) {
+      return refuse(i18n.format("REDSTEEL.Creation.Origin.blocked", { list: broken.join("; ") }));
+    }
+
+    // The write: the traits (only when they changed, so an attribute click
+    // never churns items), then attributes, the trait SP payout and the draft.
+    if (traitsChanged) {
+      const oldIds = actor.items.contents
+        .filter((i) => i.type !== "race" && i.getFlag("redsteel", "creationOrigin"))
+        .map((i) => i.id);
+      if (oldIds.length) await actor.deleteEmbeddedDocuments("Item", oldIds);
+      if (traitData.length) await actor.createEmbeddedDocuments("Item", traitData);
+    }
+    next.applied = { ...(next.applied ?? {}), traitSp };
+    await actor.update({
+      ...originAttributeUpdate(next),
+      "system.progression.bonus.sp": bonusSp,
+      "flags.redsteel.creationDraft": next,
+    });
+    this.#draft = next;
+    return { ok: true, reasons: [] };
+  }
+
+  /**
+   * An unsaved clone of the actor carrying a draft's attributes and trait SP
+   * payout, and (when given) a new set of trait copies in place of the ones
+   * creation wrote. Null on failure.
+   */
+  #originClone(draft, traitData, bonusSp) {
+    try {
+      const data = foundry.utils.expandObject({
+        ...originAttributeUpdate(draft),
+        "system.progression.bonus.sp": bonusSp,
+      });
+      if (traitData) {
+        const replaced = new Set(
+          this.actor.items.contents
+            .filter((i) => i.type !== "race" && i.getFlag("redsteel", "creationOrigin"))
+            .map((i) => i.id),
+        );
+        data.items = [
+          ...this.actor.items.contents.filter((i) => !replaced.has(i.id)).map((i) => i.toObject()),
+          ...traitData.map((d) => ({ ...d, _id: foundry.utils.randomID() })),
+        ];
+      }
+      return this.actor.clone(data, { save: false });
+    } catch (err) {
+      console.warn("Redsteel | Creation: the origin edit clone could not be built", err);
+      return null;
+    }
+  }
+
   /**
    * Validate the draft, then write the origin to the actor and open step 3.
    * Safe to run again after Back: it replaces exactly what the previous run
@@ -2829,6 +3129,71 @@ export function openCharacterCreation(actor) {
 /* -------------------------------------------- */
 /*  Step 3: the Learn window's creation mode    */
 /* -------------------------------------------- */
+
+/**
+ * What an origin edit would break, read off the clone: every rank held whose
+ * requirements (a Teacher aside: those were found, not derived) the clone no
+ * longer meets, every bought feature likewise, and a wallet the edit would
+ * push below zero. One line each, for the refusal.
+ * @param {Actor} actor  the character as it is
+ * @param {Actor} clone  the character as the edit would leave it
+ * @returns {string[]}
+ */
+function originBreaks(actor, clone) {
+  const i18n = game.i18n;
+  const lines = [];
+  const unmet = (results) =>
+    results
+      .filter((result) => !result.met && !result.advisory && result.req?.t !== "teacher")
+      .map((result) => describeRequirement(result.req))
+      .filter(Boolean);
+  for (const [trackId, track] of Object.entries(PROGRESSION_TRACKS)) {
+    const held = getTrackRank(actor, track.group, track.key);
+    for (let rank = 1; rank <= held; rank++) {
+      const requires = track.ranks?.[rank - 1]?.requires;
+      if (!requires?.length) continue;
+      const missing = unmet(evaluateRequirements(clone, requires, trackId, rank).results);
+      if (!missing.length) continue;
+      const label = i18n.localize(`REDSTEEL.Actor.Character.${track.group}.${track.key}.label`);
+      lines.push(`${label} ${ROMAN_RANKS[rank - 1]}: ${missing.join(", ")}`);
+      break;
+    }
+  }
+  for (const { item, price } of getOwnedFeatures(actor)) {
+    if (!price?.requires?.length) continue;
+    const missing = unmet(evaluateRequirements(clone, price.requires).results);
+    if (missing.length) lines.push(`${item.name}: ${missing.join(", ")}`);
+  }
+  const before = getWallet(actor).remaining;
+  const after = getWallet(clone).remaining;
+  for (const currency of ["cp", "sp"]) {
+    if (after[currency] < 0 && after[currency] < before[currency]) {
+      lines.push(
+        i18n.format(`REDSTEEL.Creation.Origin.short${currency === "cp" ? "Cp" : "Sp"}`, { n: after[currency] }),
+      );
+    }
+  }
+  return lines;
+}
+
+/** The never-rendered creation windows step 3's Attributes & Traits tab edits through. */
+const ORIGIN_EDITORS = new Map();
+
+/**
+ * The origin editor for one actor (see CharacterCreationWindow#editOrigin),
+ * loaded and holding the stored draft.
+ * @param {Actor} actor
+ */
+export async function getOriginEditor(actor) {
+  if (!actor) return null;
+  let editor = ORIGIN_EDITORS.get(actor.id);
+  if (!editor || editor.actor !== actor) {
+    editor = new CharacterCreationWindow({ actor });
+    ORIGIN_EDITORS.set(actor.id, editor);
+  }
+  await editor.originEditorLoad();
+  return editor;
+}
 
 /**
  * True while the character is in creation and on step 3, the Learn window.

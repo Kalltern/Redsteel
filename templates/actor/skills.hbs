@@ -703,6 +703,21 @@
         {{/if}}
       {{/with}}
 
+      {{!-- Critical success / failure chance of each combat roll with the
+            active weapon set in hand (sheetCritChances.mjs). --}}
+      {{#if critChanceRows}}
+      <h5>{{localize "REDSTEEL.Actor.Character.CritChance.header"}} <span>{{localize "REDSTEEL.Actor.Character.CritChance.columns"}}</span></h5>
+      {{#each critChanceRows as |row|}}
+        <div class="skill-entry flexrow crit-chance-row">
+          <label class="skill-label flexlarge align-left skill-name" data-label="{{row.key}}-crit">
+            {{localize row.label}}
+          </label>
+          <input type="text" class="skill-rating" value="{{row.success}}%" title="{{localize 'REDSTEEL.Actor.Character.CritChance.success'}}" readonly />
+          <input type="text" class="skill-rating" value="{{row.failure}}%" title="{{localize 'REDSTEEL.Actor.Character.CritChance.failure'}}" readonly />
+        </div>
+      {{/each}}
+      {{/if}}
+
       {{!-- Spell Power per school: schools with at least one level, schools the
             character owns a spell in (a racial-trait spell is enough — no magic
             potential required), plus Blood when its specialisation is active

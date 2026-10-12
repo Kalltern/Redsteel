@@ -109,6 +109,7 @@ import {
 import {
   acquireCreationRank,
   finishCharacterCreation,
+  getOriginEditor,
   isCreationSkillsStep,
   releaseCreationTeacher,
   returnToOrigin,
@@ -610,7 +611,7 @@ function sectionLabel(section) {
  * verbatim: it is book text, and a half-parsed version of it would be worse
  * than the sentence the GM can read.
  */
-function describeRequirement(req) {
+export function describeRequirement(req) {
   switch (req?.t) {
     case "teacher":
       return game.i18n.format("REDSTEEL.Learn.Req.teacher", {
@@ -1586,6 +1587,8 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       creationSelectFeature: LearnWindow._onCreationSelectFeature,
       creationPickSkill: LearnWindow._onCreationPickSkill,
       creationRosterMode: LearnWindow._onCreationRosterMode,
+      creationOriginAttr: LearnWindow._onCreationOriginAttr,
+      creationOriginTrait: LearnWindow._onCreationOriginTrait,
       creationBuyTo: LearnWindow._onCreationBuyTo,
       creationRefundTo: LearnWindow._onCreationRefundTo,
     },
@@ -2032,7 +2035,7 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       (LEARN_SECTION_ORDER[tab] ?? [])
         .filter((id) => rosterBuckets[tab].get(id)?.length)
         .map((id) => ({ id, label: sectionLabel(id), tracks: rosterBuckets[tab].get(id) }));
-    const rosterMode = ["combat", "skills", "features"].includes(this.#creationRoster)
+    const rosterMode = ["combat", "skills", "features", "origin"].includes(this.#creationRoster)
       ? this.#creationRoster
       : "skills";
     // The features bought: priced, and neither racial, native nor a trait.
@@ -2093,9 +2096,12 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
         isCombat: rosterMode === "combat",
         isSkills: rosterMode === "skills",
         isFeatures: rosterMode === "features",
+        isOrigin: rosterMode === "origin",
         // The track list of the Combat or Skills mode; Features mode shows
-        // the Features tab's purchasable list instead.
-        sections: rosterMode === "features" ? [] : rosterSectionsOf(rosterMode),
+        // the Features tab's purchasable list instead, and Attributes &
+        // Traits step 1's editor (characterCreation.mjs getOriginEditor).
+        sections: rosterMode === "combat" || rosterMode === "skills" ? rosterSectionsOf(rosterMode) : [],
+        origin: rosterMode === "origin" ? (await getOriginEditor(actor))?.originEditorData() ?? null : null,
       },
     };
   }
@@ -2165,7 +2171,9 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
           pip.state = "locked";
           pip.reasons = [...pathReasons];
         } else {
-          const poor = path.cp > remaining.cp || path.sp > remaining.sp;
+          // Only a currency the path spends can fall short: a character
+          // overdrawn in CP can still buy a rank priced in SP.
+          const poor = (path.cp > 0 && path.cp > remaining.cp) || (path.sp > 0 && path.sp > remaining.sp);
           pip.state = poor ? "poor" : "available";
           pip.buyable = !poor;
           pip.totalLabel = i18n.format("REDSTEEL.Creation.Skills.total", { cost: creationCostLabel(path) });
@@ -2177,11 +2185,13 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       if (pip.refundable) lines.push(i18n.localize("REDSTEEL.Creation.Skills.pipRefund"));
       if (pip.state === "available") lines.push(pip.totalLabel, i18n.localize("REDSTEEL.Creation.Skills.pipBuy"));
       if (pip.state === "poor") {
+        // The currency that runs short, in its own terms.
+        const short = path.cp > 0 && path.cp > remaining.cp ? "cp" : "sp";
         lines.push(
           pip.totalLabel,
           i18n.format("REDSTEEL.Learn.notEnoughPoints", {
-            cost: creationCostLabel(path),
-            left: creationCostLabel(remaining),
+            cost: creationRankCostLabel({ currency: short, cost: path[short] }),
+            left: creationRankCostLabel({ currency: short, cost: remaining[short] }),
           }),
         );
       }
@@ -5897,11 +5907,51 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     this.render();
   }
 
+  /**
+   * The Attributes & Traits tab: one attribute up or down (data-dir), live,
+   * through the origin editor (characterCreation.mjs). A refused edit says
+   * what stands in the way and changes nothing.
+   * @this {LearnWindow}
+   */
+  static async _onCreationOriginAttr(event, target) {
+    event.preventDefault();
+    const key = target?.dataset?.attr;
+    const dir = target?.dataset?.dir;
+    if (!key || (dir !== "up" && dir !== "down")) return;
+    await this.#editOrigin(dir === "up" ? "attrUp" : "attrDown", key);
+  }
+
+  /** The Attributes & Traits tab: take or give back one trait. @this {LearnWindow} */
+  static async _onCreationOriginTrait(event, target) {
+    event.preventDefault();
+    const id = target?.closest?.("[data-trait]")?.dataset?.trait;
+    if (!id) return;
+    await this.#editOrigin("trait", id);
+  }
+
+  /** Run one origin edit, guarded like a rank purchase, and repaint. */
+  async #editOrigin(kind, key) {
+    const actor = this.actor;
+    if (!actor?.isOwner || this.#creationBusy || !isCreationSkillsStep(actor)) return;
+    this.#creationBusy = true;
+    let result = null;
+    try {
+      const editor = await getOriginEditor(actor);
+      result = await editor?.editOrigin(kind, key);
+    } finally {
+      this.#creationBusy = false;
+    }
+    if (result && !result.ok && result.reasons.length) {
+      ui.notifications.warn(result.reasons.join(" "));
+    }
+    this.render();
+  }
+
   /** Switch the roster between combat, skills and features. @this {LearnWindow} */
   static _onCreationRosterMode(event, target) {
     event.preventDefault();
     const requested = target?.dataset?.mode;
-    const mode = ["combat", "skills", "features"].includes(requested) ? requested : "skills";
+    const mode = ["combat", "skills", "features", "origin"].includes(requested) ? requested : "skills";
     if (mode === this.#creationRoster) return;
     this.#creationRoster = mode;
     this.render();

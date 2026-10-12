@@ -69,13 +69,19 @@ export const SOCKET = "system.redsteel";
  * running its "until end of round" expiry is driven by the round-start hook;
  * out of combat it simply persists until rounds advance or it is cleared.
  * No-ops unless the perk node is unlocked and the loss halves to a non-zero
- * shield.
+ * shield. Only a physical hit, or one carrying a bleed source, raises it:
+ * a pure poison/fire/magic packet costs Life without triggering the perk
+ * (table ruling).
  *
  * @param {Actor} actor
  * @param {number} hpLost  Life removed by the hit (before − after).
+ * @param {object} hit
+ * @param {"physical"|"magical"} hit.damageClass  From classifyDamagePacket.
+ * @param {boolean} hit.canBleed  The attack carried a bleed packet.
  */
-async function maybeApplyBloodShield(actor, hpLost) {
+async function maybeApplyBloodShield(actor, hpLost, { damageClass, canBleed }) {
   if (!actor?.system?.specialisations?.bloodSchool?.nodes?.krvavyStit) return;
+  if (damageClass !== "physical" && !canBleed) return;
 
   const amount = Math.floor((Number(hpLost) || 0) / 2);
   if (amount <= 0) return;
@@ -387,8 +393,9 @@ function shiftSneakOnAttack(attack, sign) {
  * cards whose base packet carries no `degree` at all.
  *
  * Two rulings sit on top:
- * - `forcedDegree` (see {@link critFailForcedDegree}): a critical hit landing
- *   on a defense that critically failed is always degree 4 for that target.
+ * - `forcedDegree` (see {@link critFailForcedDegree}): a natural critical hit
+ *   landing on a defense that critically failed is always degree 4 for that
+ *   target.
  *   It outranks the rolled and the Bane degree, but the GM override still
  *   outranks it.
  * - `veteran` (Mistr zbraní → Veterán I): the attacker trades one degree for a
@@ -446,8 +453,8 @@ function findAnsweringDefense(attackMessageId, targetTokenId) {
 /**
  * Degree forced on this target by the critical-failure ruling, or null when the
  * ruling does not apply: the card offers no critical degree, no answering
- * defense card is found, the defense was not a critical failure, or the verdict
- * was not a critical hit. Clamped by the attacker's own cap (Wimp) and by the
+ * defense card is found, the defense was not a critical failure, the attack
+ * was not a natural critical, or the verdict was not a critical hit. Clamped by the attacker's own cap (Wimp) and by the
  * highest degree the card actually offers.
  *
  * @param {ChatMessage} message  the attack card
@@ -463,6 +470,12 @@ function critFailForcedDegree(message, effAttack, attacker, targetTokenId) {
   const flags = defense?.flags?.redsteel;
   if (flags?.defense?.critFailure !== true) return null;
   if (flags?.versus?.critical !== "hit") return null;
+  // Both sides have to have rolled it: the defender's fumble alone already
+  // makes the verdict a critical hit (defenseOdds.mjs), so without the
+  // attacker's own natural critical the blow keeps its rolled degree.
+  const attackCrit =
+    flags.versusAttack?.criticalSuccess ?? message?.flags?.attack?.criticalSuccess;
+  if (attackCrit !== true) return null;
   const offered = Math.max(...options.map((o) => Number(o.degree) || 0));
   return Math.max(
     0,
@@ -1018,7 +1031,10 @@ export async function applyDamageAsGM(data) {
     // Krvavý štít (Blood Shield perk): losing Life to a hit raises a physical
     // shield worth half the Life just lost, until the end of the round. Applied
     // after the drain above so it never touches the shield that soaked this hit.
-    await maybeApplyBloodShield(actor, hpBeforeDamage - Number(result.newHp));
+    await maybeApplyBloodShield(actor, hpBeforeDamage - Number(result.newHp), {
+      damageClass: result.damageClass,
+      canBleed: "bleed" in (message.flags.attack.effects || {}),
+    });
 
     if (durabilityItem && result.durabilityPointsUsed > 0) {
       const remaining =
@@ -2418,7 +2434,10 @@ export async function applyZeroHealthState(actor, { combatant } = {}) {
     });
   }
 
-  // Remove from combat if applicable
+  // Remove from combat if applicable. The "Persists in Combat" NPC trait
+  // (AE flag system.persistsInCombat) keeps the dead creature in the tracker,
+  // for monsters that revive or still act while dead.
+  if (actor.system.persistsInCombat) return;
   combatant ??= combatantForActor(actor);
   if (combatant) {
     await combatant.parent.deleteEmbeddedDocuments("Combatant", [combatant.id]);

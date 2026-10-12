@@ -9328,6 +9328,26 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   font-weight: 600;
 }
 
+/* Yes/no item properties (Finesse, Sharp…) as a wrapping row of tags. */
+.rs-tooltip .tt-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.rs-tooltip .tt-tag {
+  padding: 1px 6px;
+  border: 1px solid rgba(179, 168, 105, 0.55);
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.25);
+  color: #d8cf9a;
+  font-size: 11px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
 .rs-tooltip .tt-section {
   margin-top: 6px;
   padding-top: 6px;
@@ -19136,6 +19156,26 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   background: linear-gradient(135deg, #c98a6a, #7d4a2e);
 }
 
+/* -------- column 1: the Attributes & Traits tab -------- */
+
+/* Step 1's attribute buy and trait picking, live in the roster: the
+   attribute rows in a narrow column, the trait tiles filling the rest. The
+   rows and tiles wear step 1's own classes, so they read the same. */
+.rs-learn .rs-learn-cskills-origin {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
+  align-content: start;
+  gap: 8px 28px;
+  padding: 8px 16px 12px;
+}
+
+.rs-learn .rs-learn-cskills-origin-attrs,
+.rs-learn .rs-learn-cskills-origin-traits {
+  min-width: 0;
+}
+
 /* -------- column 1: the list beside the ranks dock -------- */
 
 .rs-learn .rs-learn-cskills-roster-split {
@@ -22460,10 +22500,14 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
 
 /* -------- step 2.5: weapons and magic -------- */
 
-/* One column (user ruling 2026-10-10): the info panel across the top, the
-   cards in a row along the bottom at the height they need. The info reads
-   left to right: the crest of what was picked, its name, facts and text,
-   then its ten ranks side by side as small cards. */
+/* One column (user rulings 2026-10-10/11): the info panel across the top,
+   filling every pixel the cards leave (it scrolls when its text runs
+   longer), the cards below at the height they need. The cards scale with
+   the window, so a large screen gets large cards rather than empty space.
+   The info reads left to right: the crest of what was picked, its name,
+   facts and text, then its ten ranks side by side, each ability's
+   description printed in place and, for a school, the spells each rank
+   opens. */
 .rs-create .rs-create-columns.is-details-step {
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr) auto;
@@ -22471,10 +22515,6 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
 
 .rs-create .rs-create-columns.is-details-step > .rs-create-info {
   order: -1;
-}
-
-.rs-create .rs-create-columns.is-details-step .rs-create-details .rs-create-scroll {
-  overflow: visible;
 }
 
 .rs-create .rs-create-columns.is-details-step .rs-create-detail-groups {
@@ -22521,28 +22561,126 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   text-align: center;
 }
 
-/* The cards along the bottom are compact, so the info above keeps the room
-   and every question fits one row on a wide screen. */
+/* The cards are the dominant part: large, centred in the plate both ways
+  ("safe", so cards taller than the plate scroll instead of spilling over
+  the info above), a question's cards wrapping to a new row only when the
+  screen runs out. */
+.rs-create .rs-create-columns.is-details-step .rs-create-details .rs-create-scroll {
+  justify-content: safe center;
+}
+
 .rs-create .rs-create-columns.is-details-step .rs-create-doctrine-card {
-  width: calc(112px * var(--rs-learn-text, 1));
-  min-height: 0;
-  padding: 16px 6px 10px;
-  gap: 3px;
+  width: clamp(140px, min(8.6vw, 14vh), 250px);
+  min-height: clamp(180px, min(11vw, 18vh), 320px);
+  padding: clamp(16px, 1.6vh, 26px) 10px 12px;
+  gap: 5px;
 }
 
 .rs-create .rs-create-columns.is-details-step .rs-dc-crest {
-  width: 52px;
-  height: 52px;
-  margin: 2px 0 6px;
+  width: clamp(76px, min(5vw, 8vh), 140px);
+  height: clamp(76px, min(5vw, 8vh), 140px);
+  margin: 2px 0 8px;
+}
+
+.rs-create .rs-create-columns.is-details-step .rs-dc-crest.is-glyph i {
+  font-size: clamp(36px, min(2.6vw, 4.2vh), 70px);
+}
+
+/* Each group heading already names the kind ("Pikeman: weapon skill"), so
+   the cards drop their kind line here, and the plate its advice line: the
+   room goes to the cards. */
+.rs-create .rs-create-columns.is-details-step .rs-dc-kind,
+.rs-create .rs-create-columns.is-details-step .rs-create-details .rs-create-scroll > .rs-create-doctrine-advice {
+  display: none;
+}
+
+.rs-create .rs-create-columns.is-details-step .rs-dc-name {
+  font-size: clamp(14px, min(0.95vw, 1.6vh), 22px);
 }
 
 .rs-create .rs-create-columns.is-details-step .rs-create-doctrine-grid {
-  gap: 8px;
-  padding: 6px 2px 4px;
+  gap: 12px;
+  padding: 8px 4px 4px;
 }
 
 .rs-create .rs-create-columns.is-details-step .rs-create-detail-groups {
-  gap: 6px 28px;
+  gap: 2px 44px;
+}
+
+/* A school rank's spells in the 2.5 info row: a small label, then each
+   spell as icon and name, its card on hover. */
+.rs-create .rs-create-rank-spells {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(81, 66, 38, 0.5);
+}
+
+.rs-create .rs-create-rank-spells-label {
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #8a7fb8;
+}
+
+.rs-create .rs-create-rank-spell {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  line-height: 14px;
+  color: #c8c0e0;
+  cursor: help;
+}
+
+.rs-create .rs-create-rank-spell:hover {
+  color: #e6c878;
+}
+
+.rs-create .rs-create-rank-spell img {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  border: 1px solid #3a3226;
+}
+
+/* A rank's ability in the 2.5 info row: icon and name, its description
+   printed under it, read in place rather than on hover. */
+.rs-create .rs-create-rank-ability.is-inline {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 3px;
+  padding: 2px 0;
+  border: none;
+  font-weight: normal;
+  cursor: default;
+}
+
+.rs-create .rs-create-rank-ability.is-inline:hover {
+  border: none;
+  background: none;
+}
+
+.rs-create .rs-create-rank-ability-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: bold;
+  color: #e6c878;
+}
+
+.rs-create .rs-create-rank-ability-desc {
+  font-size: 11px;
+  line-height: 15px;
+  font-weight: normal;
+  color: var(--rs-create-text);
+}
+
+.rs-create .rs-create-rank-ability-desc p {
+  margin: 0 0 4px;
 }
 
 /* One plate of cards (.rs-create-details), the doctrine step's grid and

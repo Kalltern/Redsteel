@@ -1096,14 +1096,19 @@ export class RedsteelItem extends Item {
         { label: "Dodge", value: data.dodge },
         { label: "Breakthrough", value: data.breakthrough },
         { label: "Sneak damage", value: data.sneakDamage },
-        { label: "Finesse", value: data.finesse },
-        { label: "Sharp", value: data.sharp },
-        { label: "Thrown", value: data.thrown },
-        { label: "Can be held in offhand", value: data.offhand },
       ].filter(
         (stat) =>
           stat.value !== 0 && stat.value !== false && stat.value != null,
       ),
+      // Yes/no properties read as a row of tags, not "Finesse — true" rows.
+      tags: [
+        data.finesse && "REDSTEEL.Item.Weapon.FIELDS.finesse.label",
+        data.sharp && "REDSTEEL.Item.Weapon.FIELDS.sharp.label",
+        data.thrown && "REDSTEEL.Item.Weapon.FIELDS.thrown.label",
+        // No Off hand tag: every one-handed weapon can be held off hand.
+      ]
+        .filter(Boolean)
+        .map((key) => game.i18n.localize(key)),
       description: this._tooltipDescription(data),
     };
   }

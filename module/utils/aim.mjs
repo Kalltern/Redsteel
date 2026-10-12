@@ -143,7 +143,7 @@ function isTwoHandedSword(weapon) {
  * the day it is added with that flag set, no code change needed. A shield never
  * qualifies.
  */
-function hasDuelistOffHand(context) {
+export function hasDuelistOffHand(context) {
   if (context?.hasShield) return false;
   // A torch fills the hand even though it is not an off-hand weapon.
   if (context?.offIsLight) return false;
