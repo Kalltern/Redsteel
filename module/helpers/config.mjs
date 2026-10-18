@@ -910,6 +910,29 @@ REDSTEEL.effectDefinitions = {
     changes: [],
   },
 
+  // "Větrný postoj" (Wind Stance, Champion): weapon attacks against two
+  // different enemies in one round (utils/champion.mjs). Defense +5% here,
+  // melee Defense only (not Dodge, not ranged); the Hit +5% is per attack, read
+  // in getAttackRolls (championWindStanceHit). defaultTurns 3, not 2: turn
+  // clocks tick at the bearer's own turn start and the effect is deleted at 0
+  // (documents/effects.mjs updateCombat), so 3 keeps it alive through the next
+  // two own turns whether it was gained on or off the bearer's turn.
+  wind_stance: {
+    name: "REDSTEEL.Champion.WindStance",
+    img: "icons/magic/air/air-burst-spiral-blue-gray.webp",
+    statuses: ["wind_stance"],
+    defaultTurns: 3,
+    useDuration: true,
+    stackBehavior: "refresh",
+    changes: [
+      {
+        key: "system.combatSkills.meleeDefense.bonus",
+        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        value: 5,
+      },
+    ],
+  },
+
   // "Prosmýknutí" (Slip Through, Servant of the Sword) failed its versus
   // Test: -10% Defense and Dodge until the start of the slipper's next turn
   // (utils/slipThrough.mjs).

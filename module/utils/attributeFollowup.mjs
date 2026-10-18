@@ -126,6 +126,10 @@ function attributeLabel(key) {
  * @param {string} [data.result]  Dice breakdown of the posted roll, for the tooltip.
  * @param {string} [data.against] Attribute keys the defender may answer with
  *   ("str,end", the item's system.versusAgainst). Empty = any attribute.
+ * @param {string} [data.mirror]  The attribute the posted roll tested (a sheet
+ *   attribute roll). A left click answers with the same attribute instead of
+ *   the defender's best, so Strength vs Strength stays a Strength test and
+ *   Muscular can reroll it. Right click still offers every allowed attribute.
  * @param {string} [data.heading] Optional line above the margin, only to
  *   tell several panels on one card apart (a modifier's name). Never the
  *   test name or chance: the roller already knows both.
@@ -138,6 +142,7 @@ export function renderMarginFollowupLine({
   result = null,
   onLose = null,
   against = null,
+  mirror = null,
   heading = "",
 }) {
   const tooltip = [
@@ -152,7 +157,10 @@ export function renderMarginFollowupLine({
   // (escapeFollowup.mjs), both sides fresh.
   const chanceAttr = chance != null ? ` data-chance="${chance}"` : "";
   const againstAttr = renderAgainstAttr(against);
-  const line = `<span class="mos-followup" data-margin="${margin}" data-source="${source ?? ""}"${loseAttr}${chanceAttr}${againstAttr} data-tooltip="${tooltip}"><span class="rs-vs-test__label">Margin of Success</span><span class="rs-vs-test__value">${margin}</span></span>`;
+  const mirrorAttr = ATTRIBUTE_KEYS.includes(mirror)
+    ? ` data-mirror="${mirror}"`
+    : "";
+  const line = `<span class="mos-followup" data-margin="${margin}" data-source="${source ?? ""}"${loseAttr}${chanceAttr}${againstAttr}${mirrorAttr} data-tooltip="${tooltip}"><span class="rs-vs-test__label">Margin of Success</span><span class="rs-vs-test__value">${margin}</span></span>`;
   return renderVersusTestBlock({ heading, line });
 }
 
@@ -275,7 +283,13 @@ export function wireAttributeFollowups(html) {
     const baked = (el.dataset.tooltip ?? "")
       .split("<br>")
       .filter((part) => part && !part.startsWith("Click to contest"));
-    baked.push(game.i18n.localize("REDSTEEL.Versus.ClickHint"));
+    baked.push(
+      game.i18n.localize(
+        el.dataset.mirror
+          ? "REDSTEEL.Versus.ClickHintMirror"
+          : "REDSTEEL.Versus.ClickHint",
+      ),
+    );
     el.dataset.tooltip = baked.join("<br>");
     const open = (autoPick) => {
       const margin = Number(el.dataset.margin);
@@ -285,6 +299,7 @@ export function wireAttributeFollowups(html) {
         against: parseAttributeKeys(
           el.dataset.against || versusAgainstForName(el.dataset.source),
         ),
+        mirror: el.dataset.mirror ?? null,
         autoPick,
       });
     };
@@ -320,6 +335,8 @@ export function wireAttributeFollowups(html) {
  *   alternates are added on top (resolveVersusChoices).
  * @param {boolean} [options.autoPick]  Roll the highest-rated choice without
  *   asking (a left click on the chat margin). A single choice never asks.
+ * @param {string|null} [options.mirror]  The attribute the posted roll tested
+ *   (data-mirror). autoPick rolls it instead of the highest when allowed.
  */
 export function promptAttributeFollowup(
   margin,
@@ -330,6 +347,7 @@ export function promptAttributeFollowup(
     onRolled = null,
     contest = null,
     against = null,
+    mirror = null,
     autoPick = false,
   } = {},
 ) {
@@ -382,7 +400,7 @@ export function promptAttributeFollowup(
 
   // Nothing to choose, or the player asked for their best chance: roll now.
   if (keys.length === 1 || autoPick) {
-    buttons[best.key].callback();
+    (buttons[mirror] ?? buttons[best.key]).callback();
     return;
   }
 

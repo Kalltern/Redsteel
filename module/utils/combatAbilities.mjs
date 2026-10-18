@@ -6,7 +6,14 @@ import { isHalfPirouette, useHalfPirouette } from "./halfPirouette.mjs";
 import { DRAGON_SLEEP_STATUS, takeDragonSleep } from "./dragonSleep.mjs";
 import { withRollBias, tagRollSkill, tagRollItemAdvantage } from "./rollAdvantage.mjs";
 import { selectAimedPart, AIMED_PARTS } from "./aimedStrike.mjs";
-import { getImprovedAimPenetration, abilityIgnoresAim } from "./aim.mjs";
+import {
+  getImprovedAimPenetration,
+  abilityIgnoresAim,
+  isFinalStrike,
+  checkFinalStrikeAim,
+  FINAL_STRIKE_AIM,
+  grantRespiteAim,
+} from "./aim.mjs";
 import { getWeakSpotPenetration, isWeakSpotAttack } from "./weakSpot.mjs";
 import {
   attackerSneakTriggers,
@@ -79,13 +86,21 @@ import { setupDialogTabs } from "./dialogTabMemory.mjs";
 import { getCommandTargets, runCommand } from "./commands.mjs";
 import { isTrackedTurn, spendForItems } from "./actionTracker.mjs";
 import { attackOptionIconsHtml } from "./attackOptionIcons.mjs";
+import {
+  championAbilityDamage,
+  grantChargeFollowUp,
+  isPushBackModifier,
+  pushBackStampFor,
+} from "./champion.mjs";
 import { throwExplosiveItem } from "./throwExplosive.mjs";
 import {
+  declareAcrobaticDisengage,
   declareChargeMove,
   declareDuelistsAdvance,
   declareLungeStep,
   declareQuickFeetStep,
   grantExtendedLungeStep,
+  isAcrobaticDisengage,
   isCharge,
   chargeWouldDeclare,
   isDuelistsAdvance,
@@ -443,11 +458,16 @@ export async function combatAbilities({
     // declaration is made, the aimCount flag is never written, and nothing is
     // spent. getAttackRolls guards the bonus a second time, for the attack
     // paths that never come through this dialog.
-    const aimValue = abilityIgnoresAim(ability)
-      ? 0
-      : parseInt(html.find('input[name="aim"]:checked').val()) || 0;
+    // Final Strike's four stacks are its price, not a bonus (aim.mjs).
+    const aimValue =
+      abilityIgnoresAim(ability) || isFinalStrike(ability)
+        ? 0
+        : parseInt(html.find('input[name="aim"]:checked').val()) || 0;
 
-    const useSneak = html.find('[name="sneakAttack"]').is(":checked");
+    // Final Strike: "Zásah se počítá jako Zákeřný útok", declared whatever the
+    // box says. The once-per-round allowance still applies at Apply Damage.
+    const useSneak =
+      isFinalStrike(ability) || html.find('[name="sneakAttack"]').is(":checked");
     const useFlanking = html.find('[name="flanking"]').is(":checked");
     const useAimedStrike = html.find('[name="aimedStrike"]').is(":checked");
     const useOpportunity = html
@@ -543,6 +563,21 @@ export async function combatAbilities({
     if (isHalfPirouette(ability) && (await useHalfPirouette(actor, ability))) {
       if (!keepOpen) dialog?.close();
       return;
+    }
+
+    // Final Strike needs four Aim on its target and is refused without them
+    // (user ruling 2026-10-14), before anything is paid.
+    if (isFinalStrike(ability)) {
+      const { ok, stacks } = checkFinalStrikeAim(actor);
+      if (!ok) {
+        ui.notifications.warn(
+          game.i18n.format("REDSTEEL.SwordDancer.FinalStrikeNeedsAim", {
+            needed: FINAL_STRIKE_AIM,
+            stacks,
+          }),
+        );
+        return;
+      }
     }
 
     // Does this ability route through the weapon-selection flow, and can a weapon
@@ -712,6 +747,9 @@ export async function combatAbilities({
       // Lunge Step is paid and carded above; its hex toward the attacker is
       // declared to the hotbar as an off-turn step.
       if (isLungeStep(ability)) await declareLungeStep(actor);
+      // Acrobatic Disengage is paid and carded above; its Disengage is
+      // declared to the hotbar, off-turn as well as on.
+      if (isAcrobaticDisengage(ability)) await declareAcrobaticDisengage(actor);
 
       if (!keepOpen) dialog.close();
       return;
@@ -745,7 +783,7 @@ export async function combatAbilities({
     }
     // Duelist's Advance is paid and carded above; its Speed/2 move is
     // declared to the hotbar like a Slow Movement.
-    if (isDuelistsAdvance(ability)) await declareDuelistsAdvance(actor);
+    if (isDuelistsAdvance(ability)) await declareDuelistsAdvance(actor, ability);
     function transformDialogToMultiAttackMode(dialog, ability, actor) {
       const html = dialog.element;
 
@@ -1575,6 +1613,8 @@ ${
     sneakPenetration = 0,
     sneakEffect = 0,
     modifierKeys = [],
+    // Zatlačení: the deferred Push Back test (champion.mjs pushBackStampFor).
+    pushBack = null,
   }) {
     let attackHTML = "";
     let damageHTML = "";
@@ -1741,6 +1781,8 @@ ${
           // The ticked attack modifiers, for the ones that act on the outcome:
           // Passing Strike's free step is granted in Apply Damage.
           modifierKeys,
+          // Zatlačení: the Push Back button rolls this test (champion.mjs).
+          ...(pushBack ? { pushBack } : {}),
           // Reroll tokens for the chat reroll picker: "attack" + combat skill +
           // governing attribute (finesse-aware), so e.g. Brawny (str) can reroll
           // a strength melee attack and Nimble (dex) a finesse attack.
@@ -1814,6 +1856,13 @@ ${
     // offered as soon as the card is out rather than at Apply Damage.
     if (isExtendedLunge(ability)) {
       await grantExtendedLungeStep(actor, message, token?.document ?? token);
+    }
+    // Šampion → Útok po Zteči: any charge, hit or miss, makes the next plain
+    // Attack a Free action. The first strike's card only, so a Charge with
+    // Cleave grants and posts once (multiAttackCount counts this dialog's
+    // strikes, 1 for a single attack and for a chain's first strike).
+    if (multiAttackCount <= 1) {
+      await grantChargeFollowUp(actor, ability, message);
     }
   }
   function buildDamageProfile(systemData) {
@@ -1987,6 +2036,15 @@ ${
       ability,
       ...selectedModifiers,
     ]);
+    // Šampion → Bonus za druhou zbraň II, Medium weapon in the off hand:
+    // +1d6 on Reckless Strike, +2d4 on a Charge. Composed exactly like the
+    // modifier dice above (any @Half was already stripped into a flag).
+    const championDice = championAbilityDamage(actor, ability);
+    if (championDice) {
+      abilityDamage = abilityDamage
+        ? `(${abilityDamage}) + (${championDice})`
+        : championDice;
+    }
     if (weapon) {
       ({
         doctrineBonus,
@@ -2221,6 +2279,9 @@ ${
       const testModifier = Number(mod.system.testModifier) || 0;
 
       if (!testName || testName === "-- Select a Type --") continue;
+      // Zatlačení (Push Back): rolled later from the card's Push Back button,
+      // once the hit is known (champion.mjs; the card carries pushBack).
+      if (isPushBackModifier(mod)) continue;
 
       // Speed test: d12 + Initiative + Speed, higher is better.
       if (isSpeedTest(testName)) {
@@ -2389,6 +2450,7 @@ ${renderMarginFollowupLine({
       sneakPenetration,
       sneakEffect,
       modifierKeys: modifierKeysOf(selectedModifiers),
+      pushBack: pushBackStampFor(selectedModifiers, versusAgainstFor),
     });
     // ─── AMMO DEDUCTION ───
     if (ammo) {
@@ -2719,7 +2781,18 @@ export async function useUtilityAbility(actor, ability) {
   return true;
 }
 
+/** Is this the Rest action (Oddech), by key or the pack's English name? */
+function isRestAbility(ability) {
+  return (
+    ability?.system?.localizationKey === "REDSTEEL.Items.Rest.name" ||
+    ability?.name === "Rest"
+  );
+}
+
 async function runUtilityAbility(actor, ability, modifiers = []) {
+  // Respite (Oddech: Míření +1): a Rest is worth one Aim as well. Both the
+  // dialog and the hotbar (useUtilityAbility) come through here.
+  if (isRestAbility(ability)) await grantRespiteAim(actor);
   // Vstřebání krve (Blood Absorption): cancel the entire Blood Reserve and heal
   // Life equal to the Blood School's Maximum Transfer, but never more Life than
   // was cancelled from the Reserve. Keyed off `system.key` the same way stances

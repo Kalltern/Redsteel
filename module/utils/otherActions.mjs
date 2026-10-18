@@ -3,6 +3,7 @@ import {
   forfeitAdvantageOnCritFail,
 } from "./rollAdvantage.mjs";
 import { resetActorRerolls } from "./rerolls.mjs";
+import { grantRespiteAim } from "./aim.mjs";
 import { getTraitPills } from "./traitPills.mjs";
 import { gainBloodFromBleed, bloodGainNote } from "./bloodPool.mjs";
 import { isActorInCombat } from "./combatants.mjs";
@@ -160,6 +161,8 @@ export async function restAndRecover() {
     content: chatMessage,
     speaker: ChatMessage.getSpeaker({ actor }),
   });
+  // Respite (Oddech: Míření +1): the Rest macro is a Rest too.
+  await grantRespiteAim(actor);
 }
 
 /* -------------------------------------------- */
@@ -338,7 +341,14 @@ function longRestDefaults(actor) {
 
   let mana = 0;
   if (elementalistRank > 0) {
-    mana = elementalistRank >= 7 ? 50 : elementalistRank >= 5 ? 35 : 25;
+    // Elementalist I: 25, VI: 35, VIII: half the pool (whichever is more,
+    // so a small pool never rests for less than VI gave).
+    mana =
+      elementalistRank >= 8
+        ? Math.max(35, Math.floor(maxMana / 2))
+        : elementalistRank >= 6
+          ? 35
+          : 25;
   } else if (elymasRank > 0) {
     mana = elymasRank >= 5 ? maxMana : Math.floor(maxMana / 2);
   } else if (incantatorRank > 0) {

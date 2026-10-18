@@ -37,6 +37,10 @@
  *   on the attacker and provokes nothing. Once per attacker per turn.
  * - Improved Passing Strike off-turn: the Passing Strike step, after a
  *   retaliation landed on somebody else's turn (grantPassingStrikeStep).
+ * - Acrobatic Disengage (Akrobatické odpoutání, Sword Dancer): after a
+ *   successful Defense, the Disengage action taken as a Reaction. The hotbar
+ *   offers it (actionSuggestions.mjs); using it pays the Reaction and Stamina
+ *   and declares an ordinary Disengage, on or off the actor's turn.
  *
  * All of it is guidance like the rest of the tracker: nothing here refuses a move.
  */
@@ -51,7 +55,9 @@ import {
   trackedCombat,
 } from "./actionTracker.mjs";
 import { isReactionAbility } from "./opportunityAttacks.mjs";
+import { duelistsAdvanceOpponent } from "./swordDancer.mjs";
 import {
+  engagingEnemyIds,
   movementBudget,
   tokenForActor,
   tokenMovementSpent,
@@ -69,6 +75,7 @@ export const EXTENDED_LUNGE_KEY = "REDSTEEL.Items.ExtendedLunge.name";
 export const CHARGE_KEY = "REDSTEEL.Items.Charge.name";
 export const QUICK_FEET_KEY = "REDSTEEL.Items.QuickFeet.name";
 export const LUNGE_STEP_KEY = "REDSTEEL.Items.LungeStep.name";
+export const ACROBATIC_DISENGAGE_KEY = "REDSTEEL.Items.AcrobaticDisengage.name";
 // Servant of the Sword's Charge: +1d4 damage (abilityGrants.mjs), the same
 // approach-then-swing action.
 export const IMPROVED_CHARGE_KEY = "REDSTEEL.Items.ImprovedCharge.name";
@@ -100,22 +107,38 @@ export function modifierKeysOf(modifiers = []) {
     .filter(Boolean);
 }
 
+/** Is this the Improved form (by key, or the pack's English name)? */
+function isImprovedDuelistsAdvance(ability) {
+  return (
+    ability?.system?.localizationKey === IMPROVED_DUELISTS_ADVANCE_KEY ||
+    ability?.name === "Improved Duelist's Advance"
+  );
+}
+
 /**
  * Declare Duelist's Advance's movement once the ability has been paid for.
  * Only on the actor's own turn in a tracked encounter; anywhere else the move
- * stays manual.
+ * stays manual. The Improved form: "Pohyb k cíli nebo okolo něj nevyvolává
+ * Příležitostné útoky", so the opponent is exempt from the threat rules for
+ * this move (swordDancer.mjs duelistsAdvanceOpponent picks who that is).
+ * The strip's ✓ then grants the Aim (swordDancer.mjs completeDuelistsAdvance).
  *
  * @param {Actor} actor
+ * @param {Item|null} [ability]
  */
-export async function declareDuelistsAdvance(actor) {
+export async function declareDuelistsAdvance(actor, ability = null) {
   if (!actor || !isTrackedTurn(actor)) return;
   const token = tokenForActor(actor);
   if (!token) return;
+  const opponent = isImprovedDuelistsAdvance(ability)
+    ? duelistsAdvanceOpponent(token)
+    : null;
   await lockMovement(actor, {
     mode: "duelist",
     budget: movementBudget(actor, "duelist"),
     startSpent: tokenMovementSpent(token),
     charge: 0,
+    exempt: opponent ? [opponent] : [],
   });
 }
 
@@ -374,5 +397,53 @@ export async function declareLungeStep(actor) {
     startSpent: tokenMovementSpent(token),
     source: lungeStepSource(combat, attacker?.id ?? null),
     toward: attacker?.id ?? null,
+  });
+}
+
+/** Is this the Acrobatic Disengage ability (by key, or the pack's English name)? */
+export function isAcrobaticDisengage(ability) {
+  return (
+    ability?.system?.localizationKey === ACROBATIC_DISENGAGE_KEY ||
+    ability?.name === "Acrobatic Disengage"
+  );
+}
+
+/**
+ * Acrobatic Disengage was used (and paid): declare a Disengage, Speed/2 away
+ * from the enemies standing next to the token, which neither threaten the
+ * move nor may be walked around (the ordinary Disengage rules,
+ * movementZones.mjs). Its own mode, `acrobaticDisengage`, so the tracker lets
+ * it be walked off-turn (actionTracker.mjs OFF_TURN_MODES). Only inside a
+ * tracked encounter, on or off the actor's turn; anywhere else the move stays
+ * manual. The ability paid the Reaction, so the lock charges nothing.
+ *
+ * @param {Actor} actor
+ */
+/**
+ * The bonus-step source of an Acrobatic Disengage: one per turn of the
+ * encounter, so the hotbar chip stays gone once it is used, even after ✓
+ * has closed the step (actionSuggestions.mjs).
+ *
+ * @param {Combat|null} combat
+ * @returns {string|null}
+ */
+export function acrobaticDisengageSource(combat) {
+  if (!combat) return null;
+  return `acrobaticDisengage.${combat.id}.${combat.round}.${combat.turn}`;
+}
+
+export async function declareAcrobaticDisengage(actor) {
+  if (!actor || !trackedCombat(actor)) return;
+  const token = tokenForActor(actor);
+  if (!token) return;
+  // A bonus step, not a lock: it stashes whatever movement the turn holds and
+  // hands it back on ✓, so a Disengage taken before the actor's own turn (or
+  // in the middle of its Move) does not eat that turn's movement.
+  await grantBonusStep(actor, {
+    mode: "acrobaticDisengage",
+    budget: movementBudget(actor, "disengage"),
+    startSpent: tokenMovementSpent(token),
+    ignore: engagingEnemyIds(token),
+    source: acrobaticDisengageSource(trackedCombat(actor)),
   });
 }

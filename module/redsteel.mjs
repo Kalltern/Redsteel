@@ -54,6 +54,8 @@ import { registerFormulaDisplay } from "./utils/formulaDisplay.mjs";
 import { registerEndTurnButton } from "./utils/endTurnButton.mjs";
 import { registerCombatAutoSelect } from "./utils/combatAutoSelect.mjs";
 import { registerTempHealthGrant } from "./utils/tempHealthGrant.mjs";
+import { registerFinalStrikeAimButton } from "./utils/swordDancer.mjs";
+import { BANE_REROLL_TOKEN, rollIsAgainstBane } from "./utils/grimm.mjs";
 import { registerAdvantageousManeuver } from "./utils/advantageousManeuver.mjs";
 import { registerRedsteelHotbar } from "./utils/redsteelHotbar.mjs";
 import { registerChatCardCollapse } from "./utils/chatCardCollapse.mjs";
@@ -95,6 +97,7 @@ import {
   renderVersusBlock,
 } from "./utils/defense.mjs";
 import { registerOverwhelmHooks } from "./utils/overwhelm.mjs";
+import { registerChampionHooks } from "./utils/champion.mjs";
 import {
   getActionPools,
   getSpent,
@@ -536,9 +539,11 @@ Hooks.once("init", function () {
   registerEndTurnButton();
   registerCombatAutoSelect();
   registerTempHealthGrant();
+  registerFinalStrikeAimButton();
   registerAdvantageousManeuver();
   registerDefendButton();
   registerOverwhelmHooks();
+  registerChampionHooks();
   registerActionTrackerHooks();
   registerMovementZoneHooks();
   registerAllyPassage();
@@ -1681,6 +1686,12 @@ const REROLL_CARRIED_FLAGS = [
   "overpowerUsedBy",
   // A spell cast can fumble on its margin; every reroll re-judges it.
   "spellCritFail",
+  // Zatlačení (champion.mjs): a rerolled attack keeps its Push Back button,
+  // spent if it was already rolled, and a rerolled Push Back test stays the
+  // card the defender's answer resolves.
+  "pushBack",
+  "pushBackRolled",
+  "pushBackTest",
 ];
 
 /**
@@ -1985,6 +1996,7 @@ async function executeReroll(
         source: rollName ?? "",
         chance: versusChance ?? null,
         result: roll.result,
+        mirror: message.getFlag("redsteel", "skill") ?? null,
       })
     : "";
 
@@ -2137,8 +2149,10 @@ async function handleRerollClick(message, { rerun = null } = {}) {
     message.getFlag("redsteel", "skill") ??
     message.rolls?.[0]?.options?.redsteel?.skill;
   const tokens = Array.isArray(stored)
-    ? stored
+    ? [...stored]
     : getRerollTokensForSkill(actor, skillKey);
+  // Grimm's Bane reroll answers only a roll made against a Bane (grimm.mjs).
+  if (rollIsAgainstBane(actor, message)) tokens.push(BANE_REROLL_TOKEN);
   const isCombat = tokens.some((t) => t === "attack" || t === "defense");
 
   // A natural Critical Failure can only be rerolled by pools carrying the

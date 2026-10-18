@@ -247,7 +247,10 @@
         "DropStance": "Pravé tlačítko: opustit postoj",
         "MoreMovement": "Další pohyby",
         "LungeStep": "Přískok",
-        "HalfPirouette": "Krok půlpiruety"
+        "HalfPirouette": "Krok půlpiruety",
+        "AcrobaticDisengage": "Akrobatické odpoutání",
+        "CounterattackSurprise": "Protiútok (Překvapení)",
+        "PlusStamina": "+{n} Výdrže"
       },
       "ShowArmor": "Zobrazit zbroj podle typu poškození",
       "ShowConditions": "Zobrazit stavy",
@@ -1011,7 +1014,7 @@
             },
             "posileniObrany": {
               "label": "Posílení obrany",
-              "description": "10 CP; Duelista VIII. Volná akce, stojí 1 výdrž za každé obětované Míření. Před hodem na Obranu může obětovat libovolný počet Míření a za každé získat na nadcházející Obranu bonus +10%. Uděluje akci Posílení obrany; obětování Míření a bonus k Obraně se řeší u stolu."
+              "description": "10 CP; Duelista VIII. Volná akce, stojí 1 výdrž za každé obětované Míření. Před hodem na Obranu může obětovat libovolný počet Míření a za každé získat na nadcházející Obranu bonus +10%. Automatizováno: okno obrany nabízí obětování Míření u Obrany na blízko."
             },
             "postojMireni": {
               "label": "Duelistův postoj: Neztrácí Míření",
@@ -1023,11 +1026,11 @@
             },
             "oddechMireni": {
               "label": "Oddech: Míření +1",
-              "description": "15 CP; Meče V. Ručně — řeší se u stolu."
+              "description": "15 CP; Meče V. Každý Oddech přinese také jedno Míření: na cíl, na který už míří, jinak na zacíleného nepřítele. Počítá se akce Oddech, Veteránův Oddech zdarma i Oddechy získané Dračím spánkem. Automatizováno."
             },
             "akrobatickeOdpoutani": {
               "label": "Akrobatické odpoutání",
-              "description": "15 CP; Meče VI. 1 reakce, stojí 2 výdrže. Po úspěšné Obraně může použít akci Odpoutání jako Reakci. Uděluje akci Akrobatické odpoutání; pohyb se řeší u stolu."
+              "description": "15 CP; Meče VI. 1 reakce, stojí 2 výdrže. Po úspěšné Obraně může použít akci Odpoutání jako Reakci. Automatizováno: po úspěšné Obraně se nabízí na liště a jeho použití vyhlásí pohyb Odpoutání."
             },
             "vylUtokSPohybem": {
               "label": "Vylepšený útok s pohybem",
@@ -1035,19 +1038,19 @@
             },
             "rafinovanyManevr": {
               "label": "Rafinovaný manévr: Výdrž -2",
-              "description": "15 CP; Duelista IX. Rafinovaný manévr stojí o 2 výdrže méně. Rafinovaný manévr (2 akce za 4 výdrže, nebo 1 akce za 12 výdrže): Klasický útok. Při kritickém zásahu získá na cíl tři Míření, při obyčejném zásahu dvě Míření a pokud nezasáhne, tak jedno Míření. Uděluje akci Rafinovaný manévr (vylepšený) v obou variantách místo Rafinovaného manévru. Míření za zásah se přičtou při aplikaci zranění; jedno Míření za minutí se řeší u stolu."
+              "description": "15 CP; Duelista IX. Rafinovaný manévr stojí o 2 výdrže méně. Rafinovaný manévr (2 akce za 4 výdrže, nebo 1 akce za 12 výdrže): Klasický útok. Při kritickém zásahu získá na cíl tři Míření, při obyčejném zásahu dvě Míření a pokud nezasáhne, tak jedno Míření. Uděluje akci Rafinovaný manévr (vylepšený) v obou variantách místo Rafinovaného manévru. Automatizováno: Míření za zásah se přičtou při aplikaci zranění, Míření za minutí na konci tahu."
             },
             "posledniVypad": {
               "label": "Poslední výpad",
-              "description": "20 CP; Duelista VI, Meče VI. 2 akce, stojí 8 výdrže. Musí mít na cíli čtyři Míření, o které před útokem přichází. Zásah +10%. Zásah se počítá jako Zákeřný útok a zároveň jako Kritický zásah. Ignoruje Kz. Výhoda a Bonus na Kritický rozsah +3. Po zásahu získává dvě Míření. Při zabití oponenta získává zpět jednu Akci. Uděluje akci Poslední výpad; požadavek Míření, Zákeřný útok, Kritický zásah, získaná Míření a vrácená Akce se řeší u stolu."
+              "description": "20 CP; Duelista VI, Meče VI. 2 akce, stojí 8 výdrže. Musí mít na cíli čtyři Míření, o které před útokem přichází. Zásah +10%. Zásah se počítá jako Zákeřný útok a zároveň jako Kritický zásah. Ignoruje Kz. Výhoda a Bonus na Kritický rozsah +3. Po zásahu získává dvě Míření. Při zabití oponenta získává zpět jednu Akci. Uděluje akci Poslední výpad. Automatizováno: bez čtyř Míření se útok odmítne a tato Míření nedávají bonus k Zásahu. Zabití nebo sražení cíle k zemi vrátí Akci a jeho dvě Míření se umístí na jiný cíl tlačítkem na kartě."
             },
             "vylDuelistuvKrok": {
               "label": "Vylepšený duelistův krok",
-              "description": "15 CP; Duelista VII. 1 akce, stojí 3 výdrže. Umožní pohyb o Rychlost/2 hex a následně získá jedno Míření na oponenta v dosahu. Pohyb k cíli nebo okolo něj nevyvolává Příležitostné útoky. Nelze kombinovat s pohybovými akcemi (Pohyb, Běh, Pomalý pohyb). Pokud má na cíli tři Míření, může ihned zaútočit jako Volnou akci. Uděluje akci Vylepšený duelistův krok, která nahrazuje Duelistův krok; ve vlastním tahu se pohyb o Rychlost/2 vyhlásí automaticky, Míření a navazující útok se řeší u stolu."
+              "description": "15 CP; Duelista VII. 1 akce, stojí 3 výdrže. Umožní pohyb o Rychlost/2 hex a následně získá jedno Míření na oponenta v dosahu. Pohyb k cíli nebo okolo něj nevyvolává Příležitostné útoky. Nelze kombinovat s pohybovými akcemi (Pohyb, Běh, Pomalý pohyb). Pokud má na cíli tři Míření, může ihned zaútočit jako Volnou akci. Uděluje akci Vylepšený duelistův krok, která nahrazuje Duelistův krok. Automatizováno: ve vlastním tahu se pohyb vyhlásí bez ohrožení od cíle; jeho potvrzení udělí Míření a se třemi Míření je další obyčejný Útok Volnou akcí."
             },
             "brilantniProtiutok": {
               "label": "Vylepšený brilantní protiútok",
-              "description": "15 CP; Duelista X. Volná akce, 0 nebo 10 výdrže. Může provést akci Protiútok po Kritickém Úhybu. Může za 10 Výdrže provést akci Protiútok po úspěšné Obraně jako Překvapení. Protiútok následující po Kritické Obraně či Úhybu se počítá jako Překvapení (V základu +20% na Zásah, plus případné další bonusy). Uděluje akci Vylepšený brilantní protiútok v obou podobách (zdarma a za 10 výdrže jako Překvapení po běžné Obraně); kdy lze Protiútok provést, se řeší u stolu."
+              "description": "15 CP; Duelista X. Volná akce, 0 nebo 10 výdrže. Může provést akci Protiútok po Kritickém Úhybu. Může za 10 Výdrže provést akci Protiútok po úspěšné Obraně jako Překvapení. Protiútok následující po Kritické Obraně či Úhybu se počítá jako Překvapení (V základu +20% na Zásah, plus případné další bonusy). Uděluje akci Vylepšený brilantní protiútok v obou podobách. Automatizováno: lišta nabízí Protiútok i jeho Překvapení."
             }
           }
         },
@@ -1518,7 +1521,7 @@
             },
             "oddechMireni": {
               "label": "Oddech: Míření +1",
-              "description": "10 CP. Ručně — řeší se u stolu."
+              "description": "10 CP. Každý Oddech přinese také jedno Míření: na cíl, na který už míří, jinak na zacíleného nepřítele. Počítá se akce Oddech, Veteránův Oddech zdarma i Oddechy získané Dračím spánkem. Automatizováno."
             },
             "mireniPoVrhu": {
               "label": "Po vrhu získává jedno Míření",
@@ -1798,7 +1801,7 @@
             },
             "oddechMireni": {
               "label": "Oddech: Míření +1",
-              "description": "10 CP; Lukostřelec/Kušník V. Ručně — řeší se u stolu."
+              "description": "10 CP; Lukostřelec/Kušník V. Každý Oddech přinese také jedno Míření: na cíl, na který už míří, jinak na zacíleného nepřítele. Počítá se akce Oddech, Veteránův Oddech zdarma i Oddechy získané Dračím spánkem. Automatizováno."
             },
             "odvetnyVystrel": {
               "label": "Odvetný výstřel",
@@ -1983,23 +1986,23 @@
           "nodes": {
             "stredniZbran": {
               "label": "Střední zbraň v druhé ruce",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Pasivní. Může držet Střední zbraň v druhé ruce. Bez této schopnosti se do druhé ruky vejde jen Lehká zbraň. Automatizováno."
             },
             "bonusDruhaZbran1": {
               "label": "Bonus za druhou zbraň I",
-              "description": "5 CP. Pasivní. Získává bonus za specifický typ zbraně v druhé ruce. Sekera: Krvácení +10%. Tupá: Průbojnost +3. Meč: Kritická obrana a Kritická šance na Úhyb +3%. Ručně — řeší se u stolu."
+              "description": "5 CP. Pasivní. Při boji se dvěma zbraněmi získává bonus za typ zbraně v druhé ruce. Sekera: Krvácení +10% při útocích na blízko. Tupá: Průbojnost +3 při útocích na blízko. Meč: Kritická obrana a Kritická šance na Úhyb +3%. Automatizováno."
             },
             "bonusDruhaZbran2": {
               "label": "Bonus za druhou zbraň II",
-              "description": "10 CP; M/T/S V. Pasivní. Získává bonus za specifický typ zbraně v druhé ruce. Obranný katar a Lehká: Může 1x za den opakovat hod na Obranu či Úhyb. Střední: Průbojnost +1 a +1d6 zranění do Zběsilého útoku a bonus +2d4 zranění do Zteče. Ručně — řeší se u stolu."
+              "description": "10 CP; M/T/S V. Pasivní. Při boji se dvěma zbraněmi získává bonus za váhu zbraně v druhé ruce. Obranný katar a Lehká: Může 1x za den opakovat hod na Obranu či Úhyb. Střední: Průbojnost +1 při útocích na blízko, +1d6 zranění do Zběsilého útoku a +2d4 zranění do Zteče. Automatizováno."
             },
             "bonusDruhaZbran3": {
               "label": "Bonus za druhou zbraň III",
-              "description": "10 CP; M/T/S VII. Pasivní. Získává bonus za specifický typ zbraně v druhé ruce. Sekera: Kritický rozsah +2 a Kritické zranění/Průbojnost +5. Tupá: Omráčení +5%, Omráčí-li omráčený cíl, může ho odsunout o jednu hexu. Meč: Kritická obrana a Kritická šance na Úhyb +2% a Ověření +10%. Ručně — řeší se u stolu."
+              "description": "10 CP; M/T/S VII. Pasivní. Při boji se dvěma zbraněmi získává bonus za typ zbraně v druhé ruce. Sekera: Kritický rozsah +2 a Kritické zranění/Průbojnost +5 při útocích na blízko. Tupá: Omráčení +5% při útocích na blízko, a omráčí-li už omráčený cíl, může ho odsunout o jednu hexu. Meč: Kritická obrana a Kritická šance na Úhyb +2% a Ověření +10% při útocích na blízko. Po Aplikaci zranění nabídne odsunutí tlačítko Odsunout na kartě v chatu, a to pro každý cíl, který byl omráčen znovu. Automatizováno."
             },
             "smrstUtoku": {
               "label": "Smršť útoků: Zásah +5%",
-              "description": "15 CP; D/M V. Ručně — řeší se u stolu."
+              "description": "15 CP; D/M V. Pasivní. Každý útok Smršti útoků má Zásah +5%. Automatizováno."
             },
             "uhyb5": {
               "label": "Úhyb +5%",
@@ -2007,15 +2010,15 @@
             },
             "zatlaceni": {
               "label": "Zatlačení",
-              "description": "10 CP. Volná akce, stojí 4 výdrže. Modifikuje akce Útok, Vícenásobný útok, Protiútok nebo Zteč. Po vyhodnocení útoku vyvolá Test Síly/Obratnosti versus Test Síly/Obratnosti (Při zásahu s Výhodou), při úspěchu zatlačí oponenta ve směru útoku o jedno pole. Útočník se musí pohnout rovněž, pohyb útočníka nevyvolává Příležitostné útoky. Uděluje akci Zatlačení (Síla nebo Obratnost); zatlačení a následný pohyb se řeší u stolu."
+              "description": "10 CP. Volná akce, stojí 4 výdrže. Modifikuje akce Útok, Vícenásobný útok, Protiútok nebo Zteč. Po vyhodnocení útoku vyvolá Test Síly/Obratnosti versus Test Síly/Obratnosti (Při zásahu s Výhodou), při úspěchu zatlačí oponenta ve směru útoku o jedno pole. Útočník se musí pohnout rovněž, pohyb útočníka nevyvolává Příležitostné útoky. Uděluje akci Zatlačení (Síla nebo Obratnost). Karta útoku nabídne tlačítko Zatlačit, které hodí test, až je útok vyhodnocen; když oponent odpoví a prohraje, je zatlačen o jedno pole a útočník se přesune na uvolněné pole. Automatizováno."
             },
             "utokPoZteci": {
               "label": "Po Zteči Útok jako Volná akce",
-              "description": "10 CP; M/T/S V. Ručně — řeší se u stolu."
+              "description": "10 CP; M/T/S V. Pasivní. Po každé Zteči, ať zasáhne nebo ne, může provést Útok jako Volnou akci. Automatizováno."
             },
             "presilaPostih": {
               "label": "Obránce: postih za Přesilu -5%",
-              "description": "10 CP; M/T/S V. Ručně — řeší se u stolu."
+              "description": "10 CP; M/T/S V. Pasivní. Při obraně se postih za Přesilu snižuje o 5%. Nikdy se nezmění v bonus. Automatizováno."
             },
             "vylUtokSPohybem": {
               "label": "Vylepšený útok s pohybem",
@@ -2023,11 +2026,11 @@
             },
             "vetrnyPostoj": {
               "label": "Větrný postoj: Obrana i Zásah",
-              "description": "15 CP; D/M VII. Ručně — řeší se u stolu."
+              "description": "15 CP; D/M VII. Pasivní. Pokud v jednom kole zaútočí zbraní na dva různé nepřátele, ve vlastním tahu i mimo něj, získá Zásah +5% a Obranu +5% po dobu svých dvou příštích tahů. Automatizováno."
             },
             "ztecSRozseknutim": {
               "label": "Zteč s rozseknutím",
-              "description": "15 CP; M/T/S V. 2 akce, stojí 6 výdrže. Musí být alespoň dvě hexy vzdálený od cíle. Kombinace pohybu a Rozseknutí. Zasahuje dva vedle sebe se nacházející nepřátele. Zranění +2d4. Tuto akci nelze použít při boji ze sedla. Uděluje akci Zteč s rozseknutím; přiblížení a druhý cíl se řeší u stolu."
+              "description": "15 CP; M/T/S V. 2 akce, stojí 6 výdrže. Musí být alespoň dvě hexy vzdálený od cíle. Kombinace pohybu a Rozseknutí. Zasahuje dva vedle sebe se nacházející nepřátele. Zranění +2d4. Tuto akci nelze použít při boji ze sedla. Uděluje akci Zteč s rozseknutím: její výběr ohlásí přiblížení a po pohybu útok otevře řetěz úderů pro druhý cíl. Automatizováno."
             },
             "odvetnyUder": {
               "label": "Odvetný úder / Vylepšený",
@@ -2035,7 +2038,7 @@
             },
             "klamavyUtok": {
               "label": "Klamavý útok / Vylepšený",
-              "description": "15 CP; D/M X. Vylepšený klamavý útok (2 akce bez výdrže, nebo 1 akce za 8 výdrže): Útok s Výhodou. Kritický zásah od Úspěchu o síle +40. Výhoda na hod na Kritický rozsah a Kritický rozsah +1. Po zásahu může ihned provést Útok na stejný cíl. Uděluje akci Vylepšený klamavý útok v obou variantách; Výhoda, snížená hranice Kritického zásahu a navazující Útok se řeší u stolu."
+              "description": "15 CP; D/M X. Vylepšený klamavý útok (2 akce bez výdrže, nebo 1 akce za 8 výdrže): Provede útok s Výhodou, na který nelze reagovat Ripostou, Dračím výpadem ani Odvetnými akcemi. Pokud má aktivní Větrný postoj a zasáhne, může ihned provést Útok na stejný cíl. Uděluje akci Vylepšený klamavý útok v obou variantách. Automatizováno."
             },
             "riposta": {
               "label": "Riposta",
@@ -2942,11 +2945,11 @@
             },
             "metlaIniciativa": {
               "label": "Metla: Iniciativa +3",
-              "description": "10 CP. Ručně — řeší se u stolu."
+              "description": "10 CP. +3 k hodu na Iniciativu, pokud je mezi nepřáteli ve střetnutí alespoň jedna z tvých Metel nebo cíl s Odhalením slabiny. Automatizováno."
             },
             "metlaOpakovani": {
               "label": "Metla: 1x opakování hodu na útok/kryt",
-              "description": "15 CP. Ručně — řeší se u stolu."
+              "description": "15 CP. Jednou za Dlouhý odpočinek opakuj hod na Souboj, Střelbu, Vrh nebo Kryt proti jedné ze svých Metel. Automatizováno: výběr opakování ho nabídne jen u hodu proti Metle."
             },
             "tkane1": {
               "label": "Přežití: Tkáně a Substance +50%",
@@ -5263,9 +5266,21 @@
         }
       }
     },
+    "SwordDancer": {
+      "FinalStrikeNeedsAim": "Poslední výpad vyžaduje {needed} Míření na cíli; drženo {stacks}.",
+      "FinalStrikeRefund": "{name} zabíjí Posledním výpadem a získává zpět jednu Akci.",
+      "FinalStrikeAimOffer": "Cíl padl: {name} může umístit {stacks} Míření na jiného nepřítele.",
+      "FinalStrikeAimButton": "Získat {stacks} Míření",
+      "FreeAttack": "Tři Míření na cíli {target}: {name} na něj může zaútočit jako Volnou akci.",
+      "ReinforceNone": "Bez obětování Míření",
+      "ReinforceOption": "{stacks} Míření: +{bonus} %, {stacks} Výdrže",
+      "ReinforceCard": "Posílení obrany: {stacks} Míření, +{bonus} %"
+    },
     "Aim": {
       "Swept": "Útok na cíl {target} nezasáhl: {actor} klesá z {before} Míření na {after}.",
       "Granted": "Otevřená příležitost: {actor} získává {stacks} Míření na cíl {target} (celkem {after}).",
+      "RespiteGranted": "{actor} popadá dech: +{stacks} Míření na cíl {target} (celkem {after}).",
+      "MissGranted": "Úder minul, ale příležitost zůstává: {actor} získává {stacks} Míření na cíl {target} (celkem {after}).",
       "UnknownTarget": "cíl",
       "DefenseBonus": "Míření ({stacks}): +{bonus}",
       "DefenseHint": "Míříš na útočníka ({stacks}): +{bonus} k Obraně.",
@@ -5376,6 +5391,27 @@
       "VigilantLabel": "Bdělý ochránce",
       "VigilantHint": "{attacker} napadl {ally}: Příležitostný útok. Jednou za kolo.",
       "ExtraReaction": "Vylepšená rychlá reakce: +1 Reakce"
+    },
+    "Champion": {
+      "MediumOffhandRefused": "Střední zbraň v druhé ruce smí držet jen Šampion se schopností Střední zbraň v druhé ruce.",
+      "WindStance": "Větrný postoj",
+      "WindStanceGained": "{name} zaujímá Větrný postoj: Zásah a Obrana +5% na dva tahy.",
+      "FeintFollowUp": "{name} může provést Útok na {target} jako Volnou akci.",
+      "ChargeFollowUp": "{name} může po Zteči provést Útok jako Volnou akci.",
+      "PushBackTitle": "Zatlačení",
+      "PushBackButton": "Zatlačit",
+      "PushBackTooltip": "Hoď versus Test Zatlačení, až bude útok vyhodnocen (po případné Obraně). S Výhodou, pokud útok zasáhl.",
+      "PushBackAdvantage": "S Výhodou: útok zasáhl.",
+      "PushBackNoAdvantage": "Bez Výhody: útok minul.",
+      "PushBackUsed": "Zatlačení už bylo pro tento útok hozeno.",
+      "PushBackNoTarget": "Zatlačení: karta útoku neuvádí žádný cíl.",
+      "PushBackWon": "Zatlačení: {target} couvá o pole, {attacker} postupuje za ním.",
+      "PushBackNoFollow": "Zatlačení: {target} couvá o pole, {attacker} však za ním postoupit nemůže.",
+      "PushBackBlocked": "Zatlačení: {target} se nehne, {attacker} zůstává na místě.",
+      "PushBackLost": "Zatlačení: {target} drží pozici.",
+      "RestaggerPushTitle": "Bonus za druhou zbraň III: Tupá",
+      "RestaggerPush": "{target} už byl omráčen: {attacker} ho smí odsunout o jednu hexu.",
+      "RestaggerPushButton": "Odsunout"
     },
     "Overwhelm": {
       "Label": "Přesila",
@@ -5590,6 +5626,7 @@
     "Versus": {
       "ViaFeature": "{label} ({rating}), díky odbornosti",
       "ClickHint": "Levé tlačítko: hodí tvou nejlepší vlastnost, kterou test povoluje. Pravé tlačítko: vyber vlastnost.",
+      "ClickHintMirror": "Levé tlačítko: odpověz stejnou vlastností. Pravé tlačítko: vyber vlastnost.",
       "Blocked": "Ubráněno",
       "Hit": "Zásah",
       "Tie": "Shoda, útok prochází",

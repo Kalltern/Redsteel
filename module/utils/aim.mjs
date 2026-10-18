@@ -53,6 +53,8 @@ const SYSTEM_ID = "redsteel";
 const FLAG = "aim";
 /** Actor flag: attacks whose aim cost is not known until damage is applied. */
 const PENDING_FLAG = "aimPending";
+/** Actor flag: Aim a missed attack still owes its attacker (Perfect Opening). */
+const MISS_FLAG = "aimMissOwed";
 const MAX_STACKS = 4;
 const PER_STACK = 10; // % hit chance per stack
 const IMPROVED_AIM_PEN = 10; // Improved Aim: penetration at full aim
@@ -525,6 +527,141 @@ export async function grantAimStacks(aimerToken, targetToken, stacks) {
 }
 
 /* -------------------------------------------- */
+/*  Sword Dancer                                */
+/* -------------------------------------------- */
+
+/**
+ * The aim a token holds right now, whoever it points at: what Defense
+ * Reinforcement may sacrifice. Zero stacks when there is none.
+ *
+ * @param {TokenDocument|Token} token
+ * @returns {{targetId: string|null, stacks: number}}
+ */
+export function getHeldAim(token) {
+  const aim = readAim(token);
+  return {
+    targetId: aim?.targetId ?? null,
+    stacks: Math.min(MAX_STACKS, Math.max(0, aim?.stacks ?? 0)),
+  };
+}
+
+/**
+ * Posílení obrany (Defense Reinforcement, Sword Dancer): "Před hodem na Obranu
+ * může obětovat libovolný počet Míření". Takes `count` stacks off the aim,
+ * whatever it points at, and reports what was actually taken. Called at roll
+ * time by the defense dialog, which also charges the Stamina.
+ *
+ * @param {TokenDocument|Token} token
+ * @param {number} count
+ * @returns {Promise<number>} stacks sacrificed
+ */
+export async function sacrificeAim(token, count) {
+  const { targetId, stacks } = getHeldAim(token);
+  const spent = Math.min(stacks, Math.max(0, Math.floor(Number(count) || 0)));
+  if (!targetId || spent <= 0) return 0;
+  await setAim(token, targetId, stacks - spent);
+  return spent;
+}
+
+/**
+ * "Oddech: Míření +1" (Respite: Aim +1). The same node id on the Sword Dancer,
+ * Skirmisher and Sharpshooter trees.
+ */
+const RESPITE_SPECS = ["swordDancer", "skirmisher", "sharpshooter"];
+
+function hasRespiteAim(actor) {
+  return RESPITE_SPECS.some((spec) =>
+    actorHasSpecNode(actor, spec, "oddechMireni"),
+  );
+}
+
+/**
+ * Respite: each Rest the actor takes is worth one Aim as well. Every Rest
+ * counts (user ruling 2026-10-14): the Rest action, Veteran's free Rest and
+ * each Rest Dragon Sleep buys, so the callers pass how many Rests they gave.
+ *
+ * The Aim goes on the target already aimed at; with no aim held, on the one
+ * token the user has targeted. Nothing happens with neither, since there is
+ * nobody to aim at.
+ *
+ * @param {Actor} actor
+ * @param {number} [rests=1]
+ */
+export async function grantRespiteAim(actor, rests = 1) {
+  if (!actor || !(rests > 0) || !hasRespiteAim(actor)) return;
+  const aimer = tokenDoc(getAimerToken(actor));
+  if (!aimer) return;
+
+  const aim = readAim(aimer);
+  let targetId = aim?.targetId ?? null;
+  if (!targetId) {
+    const targets = [...(game.user?.targets ?? [])].filter(
+      (t) => t.id !== aimer.id,
+    );
+    if (targets.length !== 1) return;
+    targetId = targets[0].id;
+  }
+
+  const before = aim?.targetId === targetId ? (aim.stacks ?? 0) : 0;
+  const after = Math.min(MAX_STACKS, before + rests);
+  if (after <= before) return;
+  await setAim(aimer, targetId, after);
+
+  const target = aimer.parent?.tokens?.get(targetId) ?? null;
+  await ChatMessage.create({
+    speaker: ChatMessage.getSpeaker({ actor }),
+    content: `<div style="text-align:center;">${game.i18n.format(
+      "REDSTEEL.Aim.RespiteGranted",
+      {
+        actor: actor.name,
+        stacks: after - before,
+        target: target?.name ?? game.i18n.localize("REDSTEEL.Aim.UnknownTarget"),
+        after,
+      },
+    )}</div>`,
+  });
+}
+
+/**
+ * Poslední výpad (Final Strike, Sword Dancer). "Musí mít na cíli čtyři
+ * Míření, o které před útokem přichází": the four stacks are the price, not a
+ * bonus, so the attack banks no +10%/stack from them (user ruling 2026-10-14)
+ * and spends them outright, whatever reduction profile the duellist has.
+ */
+export const FINAL_STRIKE_KEY = "REDSTEEL.Items.FinalThrust.name";
+export const FINAL_STRIKE_AIM = 4;
+
+/** Is this Final Strike (by key, or the pack's English name, old or new)? */
+export function isFinalStrike(ability) {
+  return (
+    ability?.system?.localizationKey === FINAL_STRIKE_KEY ||
+    ability?.name === "Final Strike" ||
+    ability?.name === "Final Thrust"
+  );
+}
+
+/**
+ * Whether the actor may make Final Strike now: four Aim held, and the user's
+ * target (if any is set) is the aimed one. The attack is refused otherwise
+ * (user ruling 2026-10-14).
+ *
+ * @param {Actor} actor
+ * @returns {{ok: boolean, stacks: number, targetId: string|null}}
+ */
+export function checkFinalStrikeAim(actor) {
+  const aimer = getAimerToken(actor);
+  const { targetId, stacks } = getHeldAim(aimer);
+  const targets = [...(game.user?.targets ?? [])].map((t) => t.id);
+  const onTarget =
+    !!targetId && (targets.length === 0 || targets.includes(targetId));
+  return {
+    ok: onTarget && stacks >= FINAL_STRIKE_AIM,
+    stacks: onTarget ? stacks : 0,
+    targetId,
+  };
+}
+
+/* -------------------------------------------- */
 /*  Attack interaction                          */
 /* -------------------------------------------- */
 
@@ -596,28 +733,43 @@ export function abilityIgnoresAim(ability) {
  * fallback for a hand-made copy that never got one.
  *
  * Perfect Opening (Rafinovaný manévr, in both its action costs, plus the Sword
- * Dancer's cheaper Refined copies) is the whole list. The blow is a set-up rather than a finisher, so landing it leaves the
+ * Dancer's cheaper Refined copies). The blow is a set-up rather than a finisher, so landing it leaves the
  * duellist better aimed than they started: two Aim on the target for an ordinary
- * hit, three when it lands as a critical.
+ * hit, three when it lands as a critical, and one on a miss (`miss`, settled
+ * by the end-of-turn sweep: see recordMissGrant).
+ *
+ * Final Strike (Poslední výpad): "Po zásahu získává dvě Míření". It always
+ * lands as a critical, so both amounts are two.
  */
 const AIM_GRANT_ABILITIES = new Map([
   [
     "REDSTEEL.Items.PerfectOpening.name",
-    { name: "Perfect Opening", normal: 2, critical: 3 },
+    { name: "Perfect Opening", normal: 2, critical: 3, miss: 1 },
   ],
   [
     "REDSTEEL.Items.PerfectOpeningHastened.name",
-    { name: "Perfect Opening (Hastened)", normal: 2, critical: 3 },
+    { name: "Perfect Opening (Hastened)", normal: 2, critical: 3, miss: 1 },
   ],
   // The Sword Dancer's cheaper copies (Rafinovaný manévr: Výdrž -2) replace
   // the pair above and grant exactly the same.
   [
     "REDSTEEL.Items.RefinedPerfectOpening.name",
-    { name: "Refined Perfect Opening", normal: 2, critical: 3 },
+    { name: "Refined Perfect Opening", normal: 2, critical: 3, miss: 1 },
   ],
   [
     "REDSTEEL.Items.RefinedPerfectOpeningHastened.name",
-    { name: "Refined Perfect Opening (Hastened)", normal: 2, critical: 3 },
+    {
+      name: "Refined Perfect Opening (Hastened)",
+      normal: 2,
+      critical: 3,
+      miss: 1,
+    },
+  ],
+  // `retarget`: when the blow fells its target, the Aim is not put on the
+  // body; it is handed back for the player to place (swordDancer.mjs).
+  [
+    FINAL_STRIKE_KEY,
+    { name: "Final Strike", normal: 2, critical: 2, retarget: true },
   ],
 ]);
 
@@ -683,6 +835,51 @@ async function writePending(actor, queue) {
 }
 
 /**
+ * Miss grants owed (Perfect Opening: "a minul jedno"), oldest first. Same
+ * lifecycle as the pending queue above: parked when the attack is rolled,
+ * dropped by Apply Damage when the blow lands, paid by the end-of-turn sweep
+ * when it never did.
+ */
+function readMissOwed(actor) {
+  const queue = actor?.getFlag(SYSTEM_ID, MISS_FLAG);
+  return Array.isArray(queue) ? [...queue] : [];
+}
+
+async function writeMissOwed(actor, queue) {
+  if (!actor) return;
+  if (queue.length) await actor.setFlag(SYSTEM_ID, MISS_FLAG, queue);
+  else if (actor.getFlag(SYSTEM_ID, MISS_FLAG))
+    await actor.unsetFlag(SYSTEM_ID, MISS_FLAG);
+}
+
+/** Park the miss grant an ability owes, if it owes one and has a target. */
+async function recordMissGrant(actor, aimer, ability, targetId) {
+  const grant = aimGrantForAbility(
+    ability?.system?.localizationKey ?? null,
+    ability?.name ?? null,
+  );
+  if (!(grant?.miss > 0) || !targetId) return;
+  const doc = tokenDoc(aimer);
+  await writeMissOwed(actor, [
+    ...readMissOwed(actor),
+    {
+      sceneId: doc?.parent?.id ?? canvas?.scene?.id ?? null,
+      tokenId: doc?.id ?? null,
+      targetId,
+      stacks: grant.miss,
+    },
+  ]);
+}
+
+/** The blow landed on these targets: nothing is owed for them any more. */
+async function clearMissGrant(actor, targetIds = []) {
+  const queue = readMissOwed(actor);
+  if (!queue.length) return;
+  const left = queue.filter((entry) => !targetIds.includes(entry.targetId));
+  if (left.length !== queue.length) await writeMissOwed(actor, left);
+}
+
+/**
  * Spend, break or park the aim for an attack that is about to be rolled.
  *
  * Called from getAttackRolls — the one choke point every weapon attack and
@@ -715,6 +912,14 @@ export async function resolveAimOnAttack({
   const aimer = getAimerToken(actor);
   if (!aimer) return;
 
+  // Final Strike: the four stacks are lost before the attack, all of them,
+  // whatever reduction profile the duellist has. Its two Aim for the hit come
+  // back through grantAimOnDamage.
+  if (isFinalStrike(ability)) {
+    await clearAim(aimer);
+    return;
+  }
+
   const aim = readAim(aimer);
   const perks = aimPerks(actor, weapon, context);
 
@@ -727,6 +932,10 @@ export async function resolveAimOnAttack({
     (targetIds.length === 0 || targetIds.includes(aim.targetId));
   // A Sneak Attack grant lands on whoever actually took the hit.
   const sneakTargetId = struckAimed ? aim.targetId : (targetIds[0] ?? null);
+
+  // Perfect Opening's one Aim on a miss is owed from now on, and cancelled by
+  // Apply Damage if the blow lands.
+  await recordMissGrant(actor, aimer, ability, sneakTargetId);
 
   let pending = null;
 
@@ -917,9 +1126,13 @@ export async function resolveAimOnDamage(
  * @param {string}   [opts.abilityKey] localisation key off the attack card
  * @param {string}   [opts.abilityName] raw ability name off the attack card
  * @param {ChatMessage} [opts.message] the attack card, to stamp as already paid
+ * @param {string[]} [opts.felledIds] targets this apply killed or downed
+ * @returns {Promise<{owed: number}|undefined>} `owed` when a `retarget` grant
+ *   was held back because its target fell
  */
 export async function grantAimOnDamage({
   actor,
+  felledIds = [],
   tokenId = null,
   sceneId = null,
   targetIds = [],
@@ -929,6 +1142,8 @@ export async function grantAimOnDamage({
   message = null,
 } = {}) {
   if (!actor) return;
+  // The blow landed, so a miss grant parked for it is no longer owed.
+  await clearMissGrant(actor, targetIds);
   const grant = aimGrantForAbility(abilityKey, abilityName);
   if (!grant) return;
 
@@ -947,6 +1162,15 @@ export async function grantAimOnDamage({
   // would walk the aim straight to the cap.
   const paid = message?.getFlag(SYSTEM_ID, "aimGranted") ?? [];
   if (paid.includes(targetId)) return;
+
+  // Final Strike felled its target: no Aim on the body. Marked paid so a
+  // re-apply cannot owe it twice; the caller offers it elsewhere.
+  if (grant.retarget && felledIds.includes(targetId)) {
+    if (message) {
+      await message.setFlag(SYSTEM_ID, "aimGranted", [...paid, targetId]);
+    }
+    return { owed: stacks };
+  }
 
   const aim = readAim(aimer);
   const before = aim?.targetId === targetId ? (aim.stacks ?? 0) : 0;
@@ -983,6 +1207,48 @@ export async function grantAimOnDamage({
  * before and after in chat rather than silently changing the number on the token.
  */
 async function sweepPendingAim(actor) {
+  await sweepPendingReductions(actor);
+  // After the reductions, so a miss grant lands on whatever the miss left.
+  await sweepMissGrants(actor);
+}
+
+/**
+ * Pay the miss grants nobody cancelled: the attack never got its damage
+ * applied, so it missed. The aim moves to the target the attack went at, as a
+ * hit's grant would move it. Reported in chat, being inferred like the miss.
+ */
+async function sweepMissGrants(actor) {
+  const queue = readMissOwed(actor);
+  if (!queue.length) return;
+  await writeMissOwed(actor, []);
+
+  for (const entry of queue) {
+    const aimer = pendingToken(entry);
+    if (!aimer) continue;
+    const aim = readAim(aimer);
+    const before = aim?.targetId === entry.targetId ? (aim.stacks ?? 0) : 0;
+    const after = Math.min(MAX_STACKS, before + (Number(entry.stacks) || 0));
+    if (after <= before) continue;
+    await setAim(aimer, entry.targetId, after);
+
+    const target = pendingTarget(entry);
+    await ChatMessage.create({
+      speaker: ChatMessage.getSpeaker({ actor }),
+      content: `<div style="text-align:center;">${game.i18n.format(
+        "REDSTEEL.Aim.MissGranted",
+        {
+          actor: actor.name,
+          stacks: after - before,
+          target:
+            target?.name ?? game.i18n.localize("REDSTEEL.Aim.UnknownTarget"),
+          after,
+        },
+      )}</div>`,
+    });
+  }
+}
+
+async function sweepPendingReductions(actor) {
   const queue = readPending(actor);
   if (!queue.length) return;
   await writePending(actor, []);

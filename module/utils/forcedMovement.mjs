@@ -325,12 +325,14 @@ export async function swapTokens(a, b) {
  * Put a token on the hex at `point` without travelling there. Refuses an
  * occupied hex or one off the scene, and returns false: what to do then
  * (fizzle, pick again, collide) is the calling spell's rule, not this one's.
+ * `ignoreIds` names tokens the caller knows have just left that hex (their
+ * stored position moved, the canvas animation may still be catching up).
  */
-export async function teleportToken(tokenDoc, point) {
+export async function teleportToken(tokenDoc, point, { ignoreIds = [] } = {}) {
   const scene = tokenDoc.parent;
   const dest = canvas.grid.getCenterPoint(canvas.grid.getOffset(point));
   if (outsideScene(dest)) return false;
-  if (occupantAt(scene, dest, new Set([tokenDoc.id]))) return false;
+  if (occupantAt(scene, dest, new Set([tokenDoc.id, ...ignoreIds]))) return false;
   await placeAlong(tokenDoc, centerOfDoc(tokenDoc), [dest], { teleport: true });
   return true;
 }

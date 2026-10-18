@@ -319,6 +319,15 @@ const CODE_AUTOMATED_NODES = {
   // utils/combatAbilities.mjs (the improved_fast_reaction +1 Reaction).
   // vytrvalyValecnik is utils/enduringWarrior.mjs: the "Missed" button on
   // the attack card, fed the Stamina paid by deductAbilityCost.
+  // vylZbranoveDovednosti is utils/abilityGrants.mjs
+  // (IMPROVED_WEAPON_SKILL_PAIRS): each base Feint / Splintering Strike /
+  // Staggering Blow / Trip the actor holds is swapped for its improved item.
+  // utils/grimm.mjs: metlaIniciativa is the +3 in documents/combat.mjs
+  // rollInitiative when a Bane (or an Expose Weakness mark) is among the
+  // enemies; metlaOpakovani is a node reroll pool in utils/rerolls.mjs
+  // NODE_REROLL_POOLS, gated on the `bane` token redsteel.mjs
+  // handleRerollClick adds. metlaVnimani and tkane1/2 stay table rulings.
+  grimm: ["metlaIniciativa", "metlaOpakovani"],
   weaponMaster: [
     "weakSpotPen",
     "vytrvalyValecnik",
@@ -333,6 +342,7 @@ const CODE_AUTOMATED_NODES = {
     "odrazeni",
     "bdelyOchrance",
     "rychlaReakce",
+    "vylZbranoveDovednosti",
   ],
   // utils/abilityGrants.mjs — unlocking the node grants an ability item.
   // (improvedAim and aimReduction are also read by utils/aim.mjs: the first for
@@ -383,8 +393,59 @@ const CODE_AUTOMATED_NODES = {
   ],
   hoplite: ["nabodnuti", "velkeTvory"],
   // (vylUtokSPohybem: see swordServant.)
-  champion: ["odvetnyUder", "riposta", "vylUtokSPohybem"],
-  skirmisher: ["utokSPohybem"],
+  // utils/champion.mjs — the off-hand reads. stredniZbran is the off-hand
+  // equip gate in sheets/actor-sheet.mjs (_offhandMediumRefused).
+  // bonusDruhaZbran1 folds into utils/combatSkillBonuses.mjs
+  // getActorCombatModifiers (axe bleed, blunt penetration) and utils/defense.mjs
+  // buildDefenseProfile (sword crit Defense / crit Dodge). bonusDruhaZbran2:
+  // the Light / Katar branch is a NODE_REROLL_POOLS entry in utils/rerolls.mjs
+  // (requiresOffhand), the Medium branch is the penetration in
+  // getActorCombatModifiers and the Reckless Strike / Charge dice in
+  // utils/combatAbilities.mjs runAttackMacro. smrstUtoku is the Flurry Hit
+  // bonus in utils/combatSkillBonuses.mjs getAttackRolls. presilaPostih is
+  // utils/overwhelm.mjs overwhelmPenaltyFor, read by utils/defense.mjs and the
+  // Overwhelm marker. bonusDruhaZbran3 is wired the same way (crit range,
+  // crit damage / penetration in getCriticalRolls, stagger, precision, crit
+  // Defense / Dodge); its blunt push on re-staggering a staggered target is
+  // utils/champion.mjs offerChampionRestaggerPush, called from
+  // utils/applyDamage.mjs applyDamageAsGM (a "Push back" button per target,
+  // through utils/forcedMovement.mjs). zatlaceni is utils/champion.mjs too:
+  // the modifier's test is skipped on the card in utils/combatAbilities.mjs
+  // and utils/basicAttack.mjs, the card's Push Back button rolls it with
+  // Advantage on a hit, and the registerChampionHooks GM queue pushes the
+  // target and moves the attacker into the vacated hex on a won contest.
+  // vetrnyPostoj is utils/champion.mjs registerChampionHooks (the two-enemy
+  // count, on the active GM) applying the wind_stance status from
+  // helpers/config.mjs (+5 melee Defense); its +5 Hit is
+  // championWindStanceHit in utils/combatSkillBonuses.mjs getAttackRolls.
+  // klamavyUtok: the Advantage in getAttackRolls, no Riposte / Dragon Strike /
+  // Retaliation chip in utils/actionSuggestions.mjs, and the follow-up Attack
+  // under Wind Stance is utils/champion.mjs settleChampionFeint, called from
+  // utils/applyDamage.mjs. utokPoZteci is utils/champion.mjs
+  // grantChargeFollowUp, called from utils/combatAbilities.mjs after a
+  // charge's first attack card. ztecSRozseknutim is the charge approach in
+  // utils/abilityMovement.mjs (isCharge, declareChargeMove) launched from the
+  // hotbar's check button, whose swing opens the Multi-Attack chain in
+  // utils/combatAbilities.mjs for the second target.
+  champion: [
+    "odvetnyUder",
+    "riposta",
+    "vylUtokSPohybem",
+    "stredniZbran",
+    "bonusDruhaZbran1",
+    "bonusDruhaZbran2",
+    "smrstUtoku",
+    "presilaPostih",
+    "vetrnyPostoj",
+    "klamavyUtok",
+    "utokPoZteci",
+    "ztecSRozseknutim",
+    "zatlaceni",
+    "bonusDruhaZbran3",
+  ],
+  // (oddechMireni on skirmisher and sharpshooter: see swordDancer.)
+  skirmisher: ["utokSPohybem", "oddechMireni"],
+  sharpshooter: ["oddechMireni"],
   // utils/aim.mjs — duelistuvPostoj is the stance itself (one-handed sword,
   // off hand free or holding a fencing dagger), which aimPerks tests as `blade`
   // and every perk below gates on; mireniRedukce upgrades the Duelist II aim
@@ -394,6 +455,27 @@ const CODE_AUTOMATED_NODES = {
   // the defense card (utils/advantageousManeuver.mjs).
   // vylUtokSPohybem is utils/abilityGrants.mjs + utils/abilityMovement.mjs:
   // Improved Passing Strike, whose step also follows an off-turn retaliation.
+  // posileniObrany is utils/defense.mjs: the Aim sacrifice in the defense
+  // dialog, paid through utils/aim.mjs sacrificeAim.
+  // oddechMireni is utils/aim.mjs grantRespiteAim, called from
+  // utils/combatAbilities.mjs runUtilityAbility, utils/otherActions.mjs
+  // restAndRecover, utils/veteranRest.mjs grantFreeRest and
+  // utils/dragonSleep.mjs (the same node on skirmisher and sharpshooter).
+  // akrobatickeOdpoutani is utils/actionSuggestions.mjs (the hotbar chip
+  // after a successful Defense) + utils/abilityMovement.mjs
+  // declareAcrobaticDisengage (the off-turn Disengage).
+  // rafinovanyManevr is utils/abilityGrants.mjs + utils/aim.mjs: the Aim on a
+  // hit, and on a miss through the end-of-turn sweep.
+  // posledniVypad is utils/aim.mjs (the four-Aim gate and its price),
+  // utils/combatSkillBonuses.mjs (the crit and the Advantage),
+  // utils/combatAbilities.mjs (the Sneak Attack) and utils/swordDancer.mjs
+  // settleFinalStrikeKill (on a kill or Downed: the Action back, and the two
+  // Aim placed from a card button instead of on the body).
+  // vylDuelistuvKrok is utils/abilityMovement.mjs (the target exempt from the
+  // threat rules), utils/swordDancer.mjs completeDuelistsAdvance (the Aim) and
+  // utils/actionTracker.mjs grantFreeAttack (the free Attack).
+  // brilantniProtiutok is utils/actionSuggestions.mjs: the Counterattack chip
+  // after a Critical Dodge, and the Surprise chips with the modifier ticked.
   swordDancer: [
     "duelistuvPostoj",
     "krvaveBodnuti",
@@ -401,6 +483,13 @@ const CODE_AUTOMATED_NODES = {
     "postojMireni",
     "vyhodnyManevr",
     "vylUtokSPohybem",
+    "posileniObrany",
+    "oddechMireni",
+    "akrobatickeOdpoutani",
+    "rafinovanyManevr",
+    "posledniVypad",
+    "vylDuelistuvKrok",
+    "brilantniProtiutok",
   ],
   // utils/mentalDuel.mjs — ovladnuti unlocks "Seize control" on the winner's
   // banner; vysati unlocks "Drain" (+2 Mind to the victor, ends the duel);

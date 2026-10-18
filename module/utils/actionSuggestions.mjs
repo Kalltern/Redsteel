@@ -38,11 +38,17 @@ import { hasImpaleFollowup, IMPALE_FOLLOWUP_KEY } from "./impaleFollowup.mjs";
 import { OVERWATCH_KEY, overwatchTrigger } from "./overwatch.mjs";
 import { holdCostLabel, isStanceHeld, maintainedStances } from "./stances.mjs";
 import { escapeTargets, liveMessage } from "./escapeFollowup.mjs";
-import { LUNGE_STEP_KEY, lungeStepSource } from "./abilityMovement.mjs";
+import {
+  ACROBATIC_DISENGAGE_KEY,
+  LUNGE_STEP_KEY,
+  acrobaticDisengageSource,
+  lungeStepSource,
+} from "./abilityMovement.mjs";
 import { findOverpowerContest, OVERPOWER_KEY } from "./overpower.mjs";
 import { BRACE_KEY, getBraceEffect } from "./brace.mjs";
 import { isHostileSide } from "./movementZones.mjs";
 import { hasWeaponMasterNode } from "./weaponMaster.mjs";
+import { FEINT_ATTACK_KEYS, isFeintAttack } from "./champion.mjs";
 
 const MODE_ORDER = ["move", "slow", "sprint", "disengage"];
 
@@ -146,6 +152,15 @@ const RETALIATORY_KEY = "REDSTEEL.Items.RetaliatoryStrike.name";
 const IMPROVED_RETALIATORY_KEY = "REDSTEEL.Items.ImprovedRetaliatoryStrike.name";
 const RIPOSTE_KEY = "REDSTEEL.Items.Riposte.name";
 /**
+ * Vylepšený brilantní protiútok (Improved Brilliant Counter, Sword Dancer):
+ * two Counterattack modifiers. The free one makes a Counterattack after a
+ * Critical Defense or Critical Dodge a Surprise; the 10 Stamina one buys the
+ * Surprise after an ordinary successful Defense.
+ */
+const IMPROVED_BRILLIANT_COUNTER_KEY = "REDSTEEL.Items.ImprovedBrilliantCounter.name";
+const IMPROVED_BRILLIANT_COUNTER_SURPRISE_KEY =
+  "REDSTEEL.Items.ImprovedBrilliantCounterSurprise.name";
+/**
  * Dračí výpad (Dragon Strike, Servant of the Sword): like Riposte it answers
  * an incoming melee attack instead of a Defense, so it is offered beside it.
  */
@@ -170,8 +185,9 @@ let turnStartMessageId = null;
 
 /**
  * Attacks that cannot themselves be answered with Counterattack, Retaliatory
- * strike or Shove: the reactions themselves, Riposte, and Shield Bash in both
- * its normal and small-shield form.
+ * strike or Shove: the reactions themselves, Riposte, Shield Bash in both
+ * its normal and small-shield form, and Improved Feint Attack in both its
+ * action costs ("nelze reagovat ... Odvetnými akcemi", champion.mjs).
  */
 const UNANSWERABLE_ATTACK_KEYS = new Set([
   COUNTERATTACK_KEY,
@@ -181,6 +197,7 @@ const UNANSWERABLE_ATTACK_KEYS = new Set([
   "REDSTEEL.Items.Riposte.name",
   "REDSTEEL.Items.ShieldBash.name",
   "REDSTEEL.Items.ShieldBashSmallShield.name",
+  ...FEINT_ATTACK_KEYS,
 ]);
 
 /** Every retaliation this strip offers; posting any one answers the defense. */
@@ -322,6 +339,14 @@ function counterattackFits(defense) {
 }
 
 /**
+ * Improved Brilliant Counter: "Může provést akci Protiútok po Kritickém
+ * úhybu." A Dodge that held critically (the defense card's `critical`).
+ */
+function criticalDodge(defense) {
+  return defense.defenseKey === "dodge" && defense.critical === true;
+}
+
+/**
  * Retaliatory strike (Odvetný úder): after a Defense or a Dodge, whether it
  * held or not.
  */
@@ -363,13 +388,22 @@ function abilityChip(item, costKey, targetTokenId) {
     targetTokenId,
     aimable,
     hint: aimable ? game.i18n.localize("REDSTEEL.Bg3Hotbar.Suggest.AimedHint") : "",
+    // Modifier abilities the launch ticks in the Combat Abilities dialog, as
+    // a comma list for the chip's data attribute (redsteelHotbar.mjs).
+    modifierIds: "",
     ariaLabel: `${label}, ${cost}`,
   };
 }
 
 /**
  * Reactions to the defense this actor just rolled: Counterattack, Retaliatory
- * strike and Shove, aimed back at the attacker.
+ * strike and Shove, aimed back at the attacker, and Acrobatic Disengage.
+ *
+ * Improved Brilliant Counter: Counterattack is offered after a Critical Dodge
+ * too, and after a Critical Defense or Critical Dodge it launches with the
+ * free modifier ticked (counts as a Surprise). After an ordinary successful
+ * Defense a second Counterattack chip launches it with the 10 Stamina
+ * Surprise modifier ticked.
  *
  * @param {Actor} actor
  * @returns {object[]}
@@ -384,7 +418,15 @@ function reactionChips(actor) {
   const exploit = hasDragonGuard(actor)
     ? abilityByKey(actor, EXPLOIT_WEAKNESS_KEY)
     : null;
-  if (!counter && !retaliatory && !shoves.length && !exploit) return [];
+  const acrobatic = abilityByKey(actor, ACROBATIC_DISENGAGE_KEY);
+  const brilliant = abilityByKey(actor, IMPROVED_BRILLIANT_COUNTER_KEY);
+  const brilliantSurprise = abilityByKey(
+    actor,
+    IMPROVED_BRILLIANT_COUNTER_SURPRISE_KEY,
+  );
+  if (!counter && !retaliatory && !shoves.length && !exploit && !acrobatic) {
+    return [];
+  }
 
   // A Reaction left to pay with.
   if (getSpent(actor).reactions >= getActionPools(actor).reactions) return [];
@@ -403,10 +445,45 @@ function reactionChips(actor) {
   if (!withinReach(actor, defenderToken, attackerToken)) return [];
 
   const chips = [];
-  if (counter && counterattackFits(defense)) {
-    chips.push(
-      abilityChip(counter, "REDSTEEL.Bg3Hotbar.Suggest.Reaction", attackerToken.id),
+  const critical = defense.critical === true;
+  if (
+    counter &&
+    (counterattackFits(defense) || (brilliant && criticalDodge(defense)))
+  ) {
+    const chip = abilityChip(
+      counter,
+      "REDSTEEL.Bg3Hotbar.Suggest.Reaction",
+      attackerToken.id,
     );
+    // After a Critical Defense or Critical Dodge the Counterattack counts as
+    // a Surprise: Improved Brilliant Counter's free modifier rides along.
+    if (brilliant && critical) chip.modifierIds = brilliant.id;
+    chips.push(chip);
+  }
+  // The Surprise bought for 10 Stamina after an ordinary successful Defense.
+  if (counter && brilliantSurprise && counterattackFits(defense) && !critical) {
+    const base = abilityChip(
+      counter,
+      "REDSTEEL.Bg3Hotbar.Suggest.Reaction",
+      attackerToken.id,
+    );
+    const label = game.i18n.localize(
+      "REDSTEEL.Bg3Hotbar.Suggest.CounterattackSurprise",
+    );
+    const stamina = game.i18n.format("REDSTEEL.Bg3Hotbar.Suggest.PlusStamina", {
+      n: Number(brilliantSurprise.system?.cost) || 0,
+    });
+    const cost = `${base.costLabel} ${stamina}`;
+    chips.push({
+      ...base,
+      id: `ability-${counter.id}-surprise`,
+      label,
+      costLabel: cost,
+      hint: stamina,
+      hint2: base.hint,
+      modifierIds: brilliantSurprise.id,
+      ariaLabel: `${label}, ${cost}`,
+    });
   }
   if (retaliatory && retaliatoryFits(defense)) {
     chips.push(
@@ -425,6 +502,19 @@ function reactionChips(actor) {
     chips.push(
       abilityChip(exploit, "REDSTEEL.Bg3Hotbar.Suggest.Reaction", attackerToken.id),
     );
+  }
+  // Acrobatic Disengage: "Po úspěšné Obraně může použít akci Odpoutání jako
+  // Reakci." The Counterattack gate, and once per turn: the step it granted
+  // (abilityMovement.mjs) is remembered by its source even after ✓ closed it.
+  // No target: the move answers nobody.
+  if (
+    acrobatic &&
+    counterattackFits(defense) &&
+    !getSpent(actor).bonusSources.includes(
+      acrobaticDisengageSource(game.combat),
+    )
+  ) {
+    chips.push(abilityChip(acrobatic, "REDSTEEL.Bg3Hotbar.Suggest.Reaction", null));
   }
   return chips;
 }
@@ -505,6 +595,9 @@ function riposteChips(actor) {
     // The newest attack aimed at this actor this turn decides; older ones
     // were already answered one way or another.
     if (riposted) return [];
+    // Improved Feint Attack "nelze reagovat Ripostou, Dračím výpadem"
+    // (champion.mjs): neither chip is offered against it.
+    if (isFeintAttack(flags.redsteel?.abilityKey ?? null)) return [];
     // Not a melee exchange: the same split autoDefense.mjs defenseCategory
     // makes (ranged, thrown and magic are answered at range).
     if (["ranged", "throwing", "magic"].includes(attack.attackType)) return [];

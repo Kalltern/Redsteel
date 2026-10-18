@@ -20,6 +20,7 @@
  */
 
 import { hasWeaponMasterNode } from "./weaponMaster.mjs";
+import { grantRespiteAim } from "./aim.mjs";
 
 /** Stamina one Rest restores: the Rest action's amount (otherActions.mjs). */
 export const REST_STAMINA = 5;
@@ -43,6 +44,8 @@ export async function grantFreeRest(actor) {
   if (next !== current) {
     await actor.update({ "system.stats.stamina.value": next });
   }
+  // Respite (Oddech: Míření +1): a free Rest counts as a Rest.
+  await grantRespiteAim(actor);
   return next - current;
 }
 

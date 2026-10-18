@@ -150,6 +150,9 @@ export function getSpent(actor) {
     moved: !!record?.moved,
     movement: record?.movement ?? null,
     bonusSources: Array.isArray(record?.bonusSources) ? record.bonusSources : [],
+    // Duelist's Advance: the token a plain Attack may now be made at as a
+    // Free action (grantFreeAttack).
+    freeAttack: typeof record?.freeAttack === "string" ? record.freeAttack : null,
   };
 }
 
@@ -165,6 +168,9 @@ function normaliseLock(lock) {
     budget: Math.max(0, Math.floor(Number(lock.budget) || 0)),
     startSpent: Math.max(0, Math.floor(Number(lock.startSpent) || 0)),
     ignore: Array.isArray(lock.ignore) ? lock.ignore : [],
+    // Improved Duelist's Advance: enemies that neither threaten the move nor
+    // stop it, but may still be walked around (movementZones.mjs).
+    exempt: Array.isArray(lock.exempt) ? lock.exempt : [],
     done: !!lock.done,
     bonus: !!lock.bonus,
     resume: lock.bonus ? normaliseLock(lock.resume) : null,
@@ -227,6 +233,7 @@ async function writeSpent(actor, spent) {
     moved: !!spent.moved,
     movement: normaliseLock(spent.movement),
     bonusSources: Array.isArray(spent.bonusSources) ? spent.bonusSources : [],
+    freeAttack: typeof spent.freeAttack === "string" ? spent.freeAttack : null,
   });
 }
 
@@ -359,7 +366,15 @@ export async function grantFreeMovement(actor) {
  */
 export async function lockMovement(
   actor,
-  { mode, budget, startSpent = 0, charge = 0, ignore = [], launch = null },
+  {
+    mode,
+    budget,
+    startSpent = 0,
+    charge = 0,
+    ignore = [],
+    exempt = [],
+    launch = null,
+  },
 ) {
   if (!trackedCombat(actor)) return;
   const spent = getSpent(actor);
@@ -372,6 +387,7 @@ export async function lockMovement(
       budget: Math.max(0, Math.floor(Number(budget) || 0)),
       startSpent: Math.max(0, Math.floor(Number(startSpent) || 0)),
       ignore: Array.isArray(ignore) ? ignore : [],
+      exempt: Array.isArray(exempt) ? exempt : [],
       // A Charge: which charge ability the strip's check button swings.
       launch,
     },
@@ -454,6 +470,7 @@ export async function grantBonusStep(
     around = null,
     toward = null,
     launch = null,
+    ignore = [],
   },
 ) {
   if (!trackedCombat(actor)) return false;
@@ -487,6 +504,8 @@ export async function grantBonusStep(
       around,
       toward,
       launch,
+      // Acrobatic Disengage: the enemies it breaks from (see lockMovement).
+      ignore: Array.isArray(ignore) ? ignore : [],
     },
     bonusSources: source ? [...spent.bonusSources, source] : spent.bonusSources,
   });
@@ -559,8 +578,9 @@ export function isTrackedTurn(actor) {
 /**
  * Movement modes an ability declares outside the actor's own turn
  * (abilityMovement.mjs): Quick Feet's step before a retaliation, Improved
- * Passing Strike's step after one, Lunge Step's step toward an attacker, and
- * Half Pirouette's step around the opponent after a Counterattack or Riposte.
+ * Passing Strike's step after one, Lunge Step's step toward an attacker,
+ * Half Pirouette's step around the opponent after a Counterattack or Riposte,
+ * and Acrobatic Disengage's Disengage after a successful Defense.
  * Movement is otherwise a turn action, so the strip, the locked zone and the
  * drag caps ask isMovementTurn rather than isTrackedTurn, which lets these
  * steps show off-turn without opening Move and Sprint there.
@@ -570,6 +590,7 @@ const OFF_TURN_MODES = new Set([
   "passingReaction",
   "lungeStep",
   "halfPirouette",
+  "acrobaticDisengage",
 ]);
 
 /** Does this actor hold an unfinished off-turn step (Quick Feet and the like)? */
@@ -673,7 +694,32 @@ export async function spendForAttack(actor, { opportunity = false } = {}) {
     await spend(actor, { reactions: 1 });
     return;
   }
+  // Duelist's Advance with three Aim: this Attack is the Free action it buys.
+  if (!opportunity && (await consumeFreeAttack(actor))) return;
   await spend(actor, { actions: 1 });
+}
+
+/**
+ * Duelist's Advance: "Pokud má na cíli tři Míření, může ihned zaútočit jako
+ * Volnou akci." The next plain weapon Attack this round costs no Action
+ * (user ruling 2026-10-14: the plain Attack only, not attack abilities).
+ * `targetId` names who it may be made at, for the hint; the tracker does not
+ * enforce it.
+ *
+ * @param {Actor} actor
+ * @param {string} targetId
+ */
+export async function grantFreeAttack(actor, targetId) {
+  if (!targetId || !trackedCombat(actor)) return;
+  await writeSpent(actor, { ...getSpent(actor), freeAttack: targetId });
+}
+
+/** Spend the free Attack if one is held. True when it was. */
+async function consumeFreeAttack(actor) {
+  const spent = getSpent(actor);
+  if (!spent.freeAttack || !isTrackedTurn(actor)) return false;
+  await writeSpent(actor, { ...spent, freeAttack: null });
+  return true;
 }
 
 /* -------------------------------------------------------------------------- */

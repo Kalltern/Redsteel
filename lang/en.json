@@ -247,7 +247,10 @@
         "DropStance": "Right-click: drop the stance",
         "MoreMovement": "More movement",
         "LungeStep": "Lunge Step",
-        "HalfPirouette": "Half Pirouette step"
+        "HalfPirouette": "Half Pirouette step",
+        "AcrobaticDisengage": "Acrobatic Disengage",
+        "CounterattackSurprise": "Counterattack (Surprise)",
+        "PlusStamina": "+{n} Stamina"
       },
       "ShowArmor": "Show armor by damage type",
       "ShowConditions": "Show conditions",
@@ -1011,7 +1014,7 @@
             },
             "posileniObrany": {
               "label": "Defense Reinforcement",
-              "description": "10 CP; Duelista VIII. Free action, 1 Stamina per Aim sacrificed. Before the Defense roll, may sacrifice any number of Aim and gain +10% on the coming Defense for each. Grants the Defense Reinforcement action; the Aim sacrifice and the Defense bonus are resolved at the table."
+              "description": "10 CP; Duelista VIII. Free action, 1 Stamina per Aim sacrificed. Before the Defense roll, may sacrifice any number of Aim and gain +10% on the coming Defense for each. Automated: the defense dialog offers the sacrifice for Melee Defense."
             },
             "postojMireni": {
               "label": "Duelist's Stance: keeps Aim",
@@ -1023,11 +1026,11 @@
             },
             "oddechMireni": {
               "label": "Respite: Aim +1",
-              "description": "15 CP; Meče V. Manual — resolved at the table."
+              "description": "15 CP; Meče V. Every Rest also grants one Aim: on the target already aimed at, otherwise on the targeted enemy. The Rest action, Veteran's free Rest and the Rests Dragon Sleep buys all count. Automated."
             },
             "akrobatickeOdpoutani": {
               "label": "Acrobatic Disengage",
-              "description": "15 CP; Meče VI. 1 Reaction, 2 Stamina. After a successful Defense, may use the Disengage action as a Reaction. Grants the Acrobatic Disengage action; the move is resolved at the table."
+              "description": "15 CP; Meče VI. 1 Reaction, 2 Stamina. After a successful Defense, may use the Disengage action as a Reaction. Automated: offered on the hotbar after a successful Defense; using it declares the Disengage move."
             },
             "vylUtokSPohybem": {
               "label": "Improved Passing Strike",
@@ -1035,19 +1038,19 @@
             },
             "rafinovanyManevr": {
               "label": "Refined Maneuver: Stamina -2",
-              "description": "15 CP; Duelista IX. Refined Maneuver costs 2 less Stamina. Refined Maneuver (2 actions and 4 Stamina, or 1 action and 12 Stamina): a standard attack. A Critical Hit gains three Aim on the target, a normal hit two, and a miss one. Grants the Refined Perfect Opening action at both action costs, replacing Perfect Opening. The Aim for a landed hit is added when damage is applied; the one Aim on a miss is resolved at the table."
+              "description": "15 CP; Duelista IX. Refined Maneuver costs 2 less Stamina. Refined Maneuver (2 actions and 4 Stamina, or 1 action and 12 Stamina): a standard attack. A Critical Hit gains three Aim on the target, a normal hit two, and a miss one. Grants the Refined Perfect Opening action at both action costs, replacing Perfect Opening. Automated: the Aim for a hit is added when damage is applied, the Aim for a miss at the end of the turn."
             },
             "posledniVypad": {
-              "label": "Final Thrust",
-              "description": "20 CP; Duelista VI, Meče VI. 2 actions, 8 Stamina. Requires four Aim on the target, all lost before the attack. Hit +10%. The hit counts as both a Sneak Attack and a Critical Hit. Ignores Armor. Advantage and Critical Range +3. After a hit, gains two Aim. Killing the opponent refunds one Action. Grants the Final Thrust action; the Aim requirement, the Sneak Attack, the Critical Hit, the Aim gained and the refunded Action are resolved at the table."
+              "label": "Final Strike",
+              "description": "20 CP; Duelista VI, Meče VI. 2 actions, 8 Stamina. Requires four Aim on the target, all lost before the attack. Hit +10%. The hit counts as both a Sneak Attack and a Critical Hit. Ignores Armor. Advantage and Critical Range +3. After a hit, gains two Aim. Killing the opponent refunds one Action. Grants the Final Strike action. Automated: refused without four Aim, which give no hit bonus. Killing or downing the target refunds the Action, and its two Aim are placed on another target from a button on the card."
             },
             "vylDuelistuvKrok": {
               "label": "Improved Duelist's Step",
-              "description": "15 CP; Duelista VII. 1 action, 3 Stamina. Move up to Speed/2 hexes, then gain one Aim on an opponent in range. Moving toward or around the target provokes no Opportunity Attacks. Cannot be combined with movement actions (Move, Sprint, Slow Movement). With three Aim on the target, may attack immediately as a Free action. Grants the Improved Duelist's Advance action, which replaces Duelist's Advance; on your own turn the Speed/2 move is declared automatically, while the Aim and the follow-up attack are resolved at the table."
+              "description": "15 CP; Duelista VII. 1 action, 3 Stamina. Move up to Speed/2 hexes, then gain one Aim on an opponent in range. Moving toward or around the target provokes no Opportunity Attacks. Cannot be combined with movement actions (Move, Sprint, Slow Movement). With three Aim on the target, may attack immediately as a Free action. Grants the Improved Duelist's Advance action, which replaces Duelist's Advance. Automated: on your own turn the move is declared without threat from the target; confirming it grants the Aim, and with three Aim the next plain Attack is a Free action."
             },
             "brilantniProtiutok": {
               "label": "Improved Brilliant Counter",
-              "description": "15 CP; Duelista X. Free action, 0 or 10 Stamina. May take the Counterattack action after a Critical Dodge. For 10 Stamina, may take Counterattack as a Surprise after a successful Defense. A Counterattack following a Critical Defense or Critical Dodge counts as a Surprise (base Hit +20%, plus any other bonuses). Grants the Improved Brilliant Counter action in both forms (free, and for 10 Stamina as a Surprise after an ordinary Defense); when the Counterattack is allowed is resolved at the table."
+              "description": "15 CP; Duelista X. Free action, 0 or 10 Stamina. May take the Counterattack action after a Critical Dodge. For 10 Stamina, may take Counterattack as a Surprise after a successful Defense. A Counterattack following a Critical Defense or Critical Dodge counts as a Surprise (base Hit +20%, plus any other bonuses). Grants the Improved Brilliant Counter action in both forms. Automated: the hotbar offers the Counterattack and its Surprise."
             }
           }
         },
@@ -1518,7 +1521,7 @@
             },
             "oddechMireni": {
               "label": "Respite: Aim +1",
-              "description": "10 CP. Manual — resolved at the table."
+              "description": "10 CP. Every Rest also grants one Aim: on the target already aimed at, otherwise on the targeted enemy. The Rest action, Veteran's free Rest and the Rests Dragon Sleep buys all count. Automated."
             },
             "mireniPoVrhu": {
               "label": "Gains one Aim after a throw",
@@ -1798,7 +1801,7 @@
             },
             "oddechMireni": {
               "label": "Respite: Aim +1",
-              "description": "10 CP; Lukostřelec/Kušník V. Manual — resolved at the table."
+              "description": "10 CP; Lukostřelec/Kušník V. Every Rest also grants one Aim: on the target already aimed at, otherwise on the targeted enemy. The Rest action, Veteran's free Rest and the Rests Dragon Sleep buys all count. Automated."
             },
             "odvetnyVystrel": {
               "label": "Retaliatory Shot",
@@ -1983,23 +1986,23 @@
           "nodes": {
             "stredniZbran": {
               "label": "Medium weapon in off-hand",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Passive. May hold a Medium weapon in the off hand. Without this node only a Light weapon fits there. Automated."
             },
             "bonusDruhaZbran1": {
               "label": "Off-hand Bonus I",
-              "description": "5 CP. Passive. Gains a bonus for the type of weapon in the off hand. Axe: Bleed +10%. Blunt: Penetration +3. Sword: Critical Defense and Critical Dodge chance +3%. Manual — resolved at the table."
+              "description": "5 CP. Passive. While dual wielding, gains a bonus for the type of weapon in the off hand. Axe: Bleed +10% on melee attacks. Blunt: Penetration +3 on melee attacks. Sword: Critical Defense and Critical Dodge chance +3%. Automated."
             },
             "bonusDruhaZbran2": {
               "label": "Off-hand Bonus II",
-              "description": "10 CP; M/T/S V. Passive. Gains a bonus for the type of weapon in the off hand. Defensive Katar and Light: once per day, may reroll a Defense or Dodge roll. Medium: Penetration +1, +1d6 damage on Reckless Strike and +2d4 damage on Charge. Manual — resolved at the table."
+              "description": "10 CP; M/T/S V. Passive. While dual wielding, gains a bonus for the weight of the weapon in the off hand. Defensive Katar and Light: once per day, may reroll a Defense or Dodge roll. Medium: Penetration +1 on melee attacks, +1d6 damage on Reckless Strike and +2d4 damage on Charge. Automated."
             },
             "bonusDruhaZbran3": {
               "label": "Off-hand Bonus III",
-              "description": "10 CP; M/T/S VII. Passive. Gains a bonus for the type of weapon in the off hand. Axe: Critical Range +2 and Critical Damage/Penetration +5. Blunt: Stagger +5%, and staggering an already staggered target may push it back one hex. Sword: Critical Defense and Critical Dodge chance +2%, and Precision +10%. Manual — resolved at the table."
+              "description": "10 CP; M/T/S VII. Passive. While dual wielding, gains a bonus for the type of weapon in the off hand. Axe: Critical Range +2 and Critical Damage/Penetration +5 on melee attacks. Blunt: Stagger +5% on melee attacks, and staggering an already staggered target may push it back one hex. Sword: Critical Defense and Critical Dodge chance +2%, and Precision +10% on melee attacks. After Apply Damage, the push is offered as a Push back button on a chat card for each target that was staggered again. Automated."
             },
             "smrstUtoku": {
               "label": "Flurry of Blows: Hit +5%",
-              "description": "15 CP; D/M V. Manual — resolved at the table."
+              "description": "15 CP; D/M V. Passive. Every attack of Flurry gets Hit +5%. Automated."
             },
             "uhyb5": {
               "label": "Dodge +5%",
@@ -2007,15 +2010,15 @@
             },
             "zatlaceni": {
               "label": "Push Back",
-              "description": "10 CP. Free action, 4 Stamina. Modifies the Attack, Multiple Attack, Counterattack or Charge actions. After the attack resolves, calls a Strength/Dexterity vs Strength/Dexterity Test (with Advantage on a hit); on success pushes the opponent one space in the direction of the attack. The attacker must move too, and that move provokes no Opportunity Attacks. Grants the Push Back action (Strength or Dexterity); the push and the follow-up move are resolved at the table."
+              "description": "10 CP. Free action, 4 Stamina. Modifies the Attack, Multiple Attack, Counterattack or Charge actions. After the attack resolves, calls a Strength/Dexterity vs Strength/Dexterity Test (with Advantage on a hit); on success pushes the opponent one space in the direction of the attack. The attacker must move too, and that move provokes no Opportunity Attacks. Grants the Push Back action (Strength or Dexterity). The attack card offers a Push Back button that rolls the test once the attack is resolved; when the opponent answers and loses, it is pushed one hex and the attacker moves into the vacated hex. Automated."
             },
             "utokPoZteci": {
               "label": "Attack after Charge as Free action",
-              "description": "10 CP; M/T/S V. Manual — resolved at the table."
+              "description": "10 CP; M/T/S V. Passive. After any Charge, hit or miss, may make an Attack as a Free action. Automated."
             },
             "presilaPostih": {
               "label": "Defender's outnumber penalty -5%",
-              "description": "10 CP; M/T/S V. Manual — resolved at the table."
+              "description": "10 CP; M/T/S V. Passive. When defending, the Overwhelm penalty is reduced by 5%. It never turns into a bonus. Automated."
             },
             "vylUtokSPohybem": {
               "label": "Improved Passing Strike",
@@ -2023,11 +2026,11 @@
             },
             "vetrnyPostoj": {
               "label": "Wind Stance: Defense and Hit bonus",
-              "description": "15 CP; D/M VII. Manual — resolved at the table."
+              "description": "15 CP; D/M VII. Passive. After making weapon attacks against two different enemies in one round, on or off your turn, gains Hit +5% and Defense +5% through your next two turns. Automated."
             },
             "ztecSRozseknutim": {
               "label": "Charge with Cleave",
-              "description": "15 CP; M/T/S V. 2 actions, 6 Stamina. Must start at least two hexes from the target. Combines movement with Cleave and strikes two adjacent enemies. Damage +2d4. Cannot be used while fighting from the saddle. Grants the Charge with Cleave action; the approach and the second target are resolved at the table."
+              "description": "15 CP; M/T/S V. 2 actions, 6 Stamina. Must start at least two hexes from the target. Combines movement with Cleave and strikes two adjacent enemies. Damage +2d4. Cannot be used while fighting from the saddle. Grants the Charge with Cleave action: picking it declares the approach, and after the move the swing opens the strike chain for the second target. Automated."
             },
             "odvetnyUder": {
               "label": "Retaliatory Strike / Improved",
@@ -2035,7 +2038,7 @@
             },
             "klamavyUtok": {
               "label": "Feint Attack / Improved",
-              "description": "15 CP; D/M X. Improved Feint Attack (2 actions and 0 Stamina, or 1 action and 8 Stamina): an attack with Advantage. Scores a Critical Hit from a success of +40. Advantage on the Critical Range roll and Critical Range +1. After a hit, may immediately make an Attack against the same target. Grants the Improved Feint Attack action at both action costs; the Advantage, the lowered Critical Hit threshold and the follow-up Attack are resolved at the table."
+              "description": "15 CP; D/M X. Improved Feint Attack (2 actions and 0 Stamina, or 1 action and 8 Stamina): an attack with Advantage that cannot be answered with Riposte, Dragon Strike or any Retaliation action. If Wind Stance is active and the attack hits, may immediately make an Attack against the same target. Grants the Improved Feint Attack action at both action costs. Automated."
             },
             "riposta": {
               "label": "Riposte",
@@ -2942,11 +2945,11 @@
             },
             "metlaIniciativa": {
               "label": "Bane: Initiative +3",
-              "description": "10 CP. Manual — resolved at the table."
+              "description": "10 CP. +3 to the initiative roll when at least one enemy in the encounter is one of your Banes or carries an Expose Weakness mark. Automated."
             },
             "metlaOpakovani": {
               "label": "Bane: one combat reroll",
-              "description": "15 CP. Manual — resolved at the table."
+              "description": "15 CP. Once per Long Rest, reroll a Melee, Shooting, Throw or Ranged Defense roll made against one of your Banes. Automated: offered in the reroll picker only on a roll against a Bane."
             },
             "tkane1": {
               "label": "Survival: Tissues and Substances +50%",
@@ -5263,9 +5266,21 @@
         }
       }
     },
+    "SwordDancer": {
+      "FinalStrikeNeedsAim": "Final Strike needs {needed} Aim on the target; {stacks} held.",
+      "FinalStrikeRefund": "{name} kills with Final Strike and regains one Action.",
+      "FinalStrikeAimOffer": "The target has fallen: {name} may place {stacks} Aim on another enemy.",
+      "FinalStrikeAimButton": "Take {stacks} Aim",
+      "FreeAttack": "Three Aim on {target}: {name} may Attack them as a Free action.",
+      "ReinforceNone": "No Aim sacrificed",
+      "ReinforceOption": "{stacks} Aim: +{bonus}%, {stacks} Stamina",
+      "ReinforceCard": "Defense Reinforcement: {stacks} Aim, +{bonus}%"
+    },
     "Aim": {
       "Swept": "The attack on {target} did not land: {actor} drops from {before} Aim to {after}.",
       "Granted": "The opening stands: {actor} gains {stacks} Aim on {target} ({after} in total).",
+      "RespiteGranted": "{actor} catches their breath: +{stacks} Aim on {target} ({after} in total).",
+      "MissGranted": "The blow missed but the opening stays: {actor} gains {stacks} Aim on {target} ({after} in total).",
       "UnknownTarget": "the target",
       "DefenseBonus": "Aim ({stacks}): +{bonus}",
       "DefenseHint": "Aiming at your attacker ({stacks}): +{bonus} to Melee Defense.",
@@ -5376,6 +5391,27 @@
       "VigilantLabel": "Vigilant Protector",
       "VigilantHint": "{attacker} attacked {ally}: Opportunity Attack. Once per round.",
       "ExtraReaction": "Improved Fast Reaction: +1 Reaction"
+    },
+    "Champion": {
+      "MediumOffhandRefused": "Only a Champion with Medium Weapon in Off-hand may hold a Medium weapon in the off hand.",
+      "WindStance": "Wind Stance",
+      "WindStanceGained": "{name} enters Wind Stance: Hit and Defense +5% for two turns.",
+      "FeintFollowUp": "{name} may make an Attack against {target} as a Free action.",
+      "ChargeFollowUp": "{name} may make an Attack as a Free action after the Charge.",
+      "PushBackTitle": "Push Back",
+      "PushBackButton": "Push Back",
+      "PushBackTooltip": "Roll the Push Back versus Test once the attack is resolved (after any Defense). With Advantage if the attack hit.",
+      "PushBackAdvantage": "With Advantage: the attack hit.",
+      "PushBackNoAdvantage": "Without Advantage: the attack missed.",
+      "PushBackUsed": "Push Back has already been rolled for this attack.",
+      "PushBackNoTarget": "Push Back: this attack card names no target.",
+      "PushBackWon": "{target} is pushed back; {attacker} follows.",
+      "PushBackNoFollow": "{target} is pushed back; {attacker} cannot follow.",
+      "PushBackBlocked": "{target} does not move; {attacker} stays.",
+      "PushBackLost": "{target} holds its ground.",
+      "RestaggerPushTitle": "Off-hand Bonus III: Blunt",
+      "RestaggerPush": "{target} was already staggered: {attacker} may push it back one hex.",
+      "RestaggerPushButton": "Push back"
     },
     "Overwhelm": {
       "Label": "Overwhelm",
@@ -5590,6 +5626,7 @@
     "Versus": {
       "ViaFeature": "{label} ({rating}), by feature",
       "ClickHint": "Left click: roll your best attribute this test allows. Right click: choose the attribute.",
+      "ClickHintMirror": "Left click: answer with the same attribute. Right click: choose the attribute.",
       "Blocked": "Defended",
       "Hit": "Hit",
       "Tie": "Tie, the attack lands",
@@ -7004,7 +7041,7 @@
         "name": "Expert: Traps"
       },
       "FinalThrust": {
-        "name": "Final Thrust"
+        "name": "Final Strike"
       },
       "ForcefulAdvance": {
         "name": "Forceful Advance"

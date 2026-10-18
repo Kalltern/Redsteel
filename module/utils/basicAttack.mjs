@@ -25,6 +25,7 @@ import { renderAttackTagsHtml } from "./opportunityAttacks.mjs";
 import { captureAttackTargets } from "./autoDefense.mjs";
 import { captureAttackPositioning } from "./positioning.mjs";
 import { modifierKeysOf } from "./abilityMovement.mjs";
+import { isPushBackModifier, pushBackStampFor } from "./champion.mjs";
 import { dragonGuardTags } from "./dragonGuard.mjs";
 import { asMakeshiftMelee, isRangedWeapon } from "./makeshift.mjs";
 
@@ -196,6 +197,9 @@ export async function universalAttackLogic({
       const testModifier = Number(mod.system.testModifier) || 0;
 
       if (!testName || testName === "-- Select a Type --") continue;
+      // Zatlačení (Push Back): rolled later from the card's Push Back button,
+      // once the hit is known (champion.mjs; the card carries pushBack).
+      if (isPushBackModifier(mod)) continue;
 
       // Speed test: d12 + Initiative + Speed, higher is better.
       if (isSpeedTest(testName)) {
@@ -599,6 +603,7 @@ export async function universalAttackLogic({
  </div>`
         : "";
 
+    const pushBackStamp = pushBackStampFor(selectedModifiers, versusAgainstFor);
     await ChatMessage.create({
       // Named explicitly rather than left to the bare getSpeaker(), which
       // resolves from whatever token the *client* has selected. Overwhelm keys
@@ -665,6 +670,8 @@ ${
           rerollTokens: getAttackRerollTokens(weapon),
           // Read in Apply Damage by Passing Strike's free step.
           modifierKeys: modifierKeysOf(selectedModifiers),
+          // Zatlačení: the Push Back button rolls this test (champion.mjs).
+          ...(pushBackStamp ? { pushBack: pushBackStamp } : {}),
         },
         attack: {
           type: "attack",

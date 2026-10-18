@@ -1,4 +1,5 @@
 import { COUNTER_TYPES } from "./statusCounterColors.mjs";
+import { actorHasSpecNode } from "../helpers/specialisations.mjs";
 
 /**
  * Overwhelm (Přesila) — being pressed by several enemies at once.
@@ -43,6 +44,29 @@ const MARKER_FLAG = "overwhelmMarker";
 /** -5 per attacker beyond the first, capped at five distinct attackers. */
 export const OVERWHELM_MAX_STACKS = 4;
 export const OVERWHELM_PENALTY_PER_STACK = -5;
+
+/**
+ * Šampion → "Obránce: postih za Přesilu -5%" (presilaPostih): the defender's
+ * Overwhelm penalty is 5 smaller, and never turns into a bonus.
+ */
+const CHAMPION_OVERWHELM_RELIEF = 5;
+
+/**
+ * The Overwhelm penalty this actor actually defends at with `stacks` stacks.
+ * Every place that shows or rolls the penalty (defense dialog counter, roll,
+ * card, marker) reads it here so they all agree.
+ * @param {Actor|null} actor
+ * @param {number} stacks
+ * @returns {number}  zero or negative
+ */
+export function overwhelmPenaltyFor(actor, stacks) {
+  const n = Number(stacks) || 0;
+  const relief =
+    n > 0 && actor && actorHasSpecNode(actor, "champion", "presilaPostih")
+      ? CHAMPION_OVERWHELM_RELIEF
+      : 0;
+  return Math.min(0, n * OVERWHELM_PENALTY_PER_STACK + relief);
+}
 
 const MARKER_IMG = "icons/skills/melee/shield-block-gray-yellow.webp";
 
@@ -214,7 +238,7 @@ async function syncOverwhelmMarker(doc, stacks) {
   }
 
   const label = game.i18n.format("REDSTEEL.Overwhelm.MarkerName", {
-    penalty: stacks * OVERWHELM_PENALTY_PER_STACK,
+    penalty: overwhelmPenaltyFor(actor, stacks),
   });
 
   if (existing) {

@@ -73,6 +73,18 @@ export const MOVEMENT_MODES = {
     icon: "fa-light fa-person-walking-arrow-right",
     labelKey: "REDSTEEL.Bg3Hotbar.Suggest.Disengage",
   },
+  // Acrobatic Disengage (Akrobatické odpoutání, Sword Dancer): the same
+  // Disengage, taken as a Reaction after a successful Defense, so usually on
+  // somebody else's turn (actionTracker.mjs OFF_TURN_MODES). Never a chip:
+  // the ability pays and declares it (abilityMovement.mjs
+  // declareAcrobaticDisengage), so the lock charges nothing.
+  acrobaticDisengage: {
+    budgetFn: (spd) => Math.floor(spd / 2),
+    color: 0xd8c38a,
+    actions: 0,
+    icon: "fa-light fa-person-walking-arrow-right",
+    labelKey: "REDSTEEL.Bg3Hotbar.Suggest.AcrobaticDisengage",
+  },
   // The ones below are never offered as chips: an ability declares them
   // (abilityMovement.mjs). Duelist's Advance (Duelistův krok) walks like Slow
   // Movement, Speed/2 under the ordinary threat rules; the ability pays its
@@ -571,7 +583,7 @@ function enemiesOf(token) {
  * @returns {{engage: Map<string, Set<string>>, threat: Map<string,
  *   Set<string>>, blocked: Set<string>}}
  */
-function threatMaps(token, ignore = [], { free = false } = {}) {
+function threatMaps(token, ignore = [], { free = false, exempt = [] } = {}) {
   const engage = new Map();
   const threat = new Map();
   const blocked = new Set();
@@ -579,6 +591,10 @@ function threatMaps(token, ignore = [], { free = false } = {}) {
   // and closed to the move (it may not go around them or come back).
   const ignored = new Set(ignore ?? []);
   const ignoredRing = new Set();
+  // Enemies a move is exempt from (Improved Duelist's Advance): their own hex
+  // stays blocked, but they neither threaten nor engage, so the move may walk
+  // right around them and is never stopped next to them.
+  const exempted = new Set(exempt ?? []);
   const addTo = (map, key, id) => {
     if (!map.has(key)) map.set(key, new Set());
     map.get(key).add(id);
@@ -597,6 +613,7 @@ function threatMaps(token, ignore = [], { free = false } = {}) {
     blocked.add(offsetKey(at));
     // A free step (Passing Strike): the enemy only blocks its own hex.
     if (free) continue;
+    if (exempted.has(enemy.id)) continue;
     for (const nb of canvas.grid.getAdjacentOffsets(at)) {
       const key = offsetKey(nb);
       if (ignored.has(enemy.id)) {
@@ -639,9 +656,13 @@ export function engagingEnemyIds(token) {
  * @param {{x: number, y: number}[]} points
  * @returns {{i: number, j: number}[]}
  */
-export function pathSwordHexes(token, points, { ignore = [], free = false } = {}) {
+export function pathSwordHexes(
+  token,
+  points,
+  { ignore = [], free = false, exempt = [] } = {},
+) {
   if (!canDraw() || points.length < 2 || free) return [];
-  const { threat } = threatMaps(token, ignore);
+  const { threat } = threatMaps(token, ignore, { exempt });
   const path = canvas.grid.getDirectPath(points);
   const swords = [];
   let prev = null;
@@ -706,7 +727,13 @@ function swordTextStyle() {
 export function computeMovementZone(
   token,
   budget,
-  { ignore = [], free = false, around = null, toward = null } = {},
+  {
+    ignore = [],
+    free = false,
+    around = null,
+    toward = null,
+    exempt = [],
+  } = {},
 ) {
   const zone = new Map();
   const origin = documentOrigin(token);
@@ -724,6 +751,7 @@ export function computeMovementZone(
 
   const { engage, threat, blocked, ignoredRing } = threatMaps(token, ignore, {
     free,
+    exempt,
   });
   const disengaging = (ignore?.length ?? 0) > 0;
   const forbidden = new Set(ignoredRing);
@@ -929,7 +957,10 @@ export function showPreview(actor, mode) {
   if (!def || !canDraw()) return;
   const token = tokenForActor(actor);
   if (!token?.document) return;
-  const ignore = mode === "disengage" ? engagingEnemyIds(token) : [];
+  const ignore =
+    mode === "disengage" || mode === "acrobaticDisengage"
+      ? engagingEnemyIds(token)
+      : [];
   renderZone(
     PREVIEW_LAYER,
     computeMovementZone(token, movementBudget(actor, mode), { ignore }),
@@ -981,6 +1012,7 @@ export function refreshLockedZone() {
     LOCK_LAYER,
     computeMovementZone(token, lockRemaining(token, lock), {
       ignore: lock.ignore ?? [],
+      exempt: lock.exempt ?? [],
       free: !!def.free,
       around: lock.around ?? null,
       toward: lock.toward ?? null,

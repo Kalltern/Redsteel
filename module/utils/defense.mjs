@@ -18,7 +18,12 @@ import {
   getArmigerBranch,
   getWeaponTrainingClass,
 } from "./weaponMaster.mjs";
-import { getAimDefenseBonus, getCalculationCritDefense } from "./aim.mjs";
+import {
+  getAimDefenseBonus,
+  getCalculationCritDefense,
+  getHeldAim,
+  sacrificeAim,
+} from "./aim.mjs";
 import { getBloodSchoolRankBonus } from "../helpers/specialisations.mjs";
 import {
   SECTOR,
@@ -30,11 +35,11 @@ import {
 } from "./positioning.mjs";
 import {
   OVERWHELM_MAX_STACKS,
-  OVERWHELM_PENALTY_PER_STACK,
   attackerTokenIdFromMessage,
   getOverwhelmSources,
   inferAttackerTokenId,
   isOverwhelmTracked,
+  overwhelmPenaltyFor,
   overwhelmSourceName,
   forgetOverwhelmSource,
   recordOverwhelmDefense,
@@ -45,9 +50,14 @@ import {
 // ask the same question a hundred times without drawing a card for it.
 import { resolveVersus } from "./defenseOdds.mjs";
 import { asMakeshiftMelee, isRangedWeapon } from "./makeshift.mjs";
+import { getChampionOffhandMods } from "./champion.mjs";
 
 /** Shadow → Úhyb do zad: the flat penalty for dodging a blow from behind. */
 const BLINDSIDE_DODGE_PENALTY = -20;
+
+/** Sword Dancer → Posílení obrany: % Defense per Aim sacrificed (1 Stamina each). */
+const REINFORCE_PER_AIM = 10;
+const DEFENSE_REINFORCEMENT_KEY = "REDSTEEL.Items.DefenseReinforcement.name";
 
 /** Stamina the Dodge action costs before any discount. */
 const DODGE_STAMINA_COST = 4;
@@ -570,6 +580,7 @@ export async function buildDefenseProfile({
   longReachPenalty = 0,
   useBane = false,
   spellSchool = null,
+  reinforceDefense = 0,
 } = {}) {
   // Magic Defense rolls Channeling and reads no weapon at all, so it is settled
   // before anything below dereferences the context (an NPC mage may carry
@@ -585,7 +596,7 @@ export async function buildDefenseProfile({
         (Number(channeling?.rating) || 0) +
         (Number(channeling?.defense) || 0) +
         bloodSchoolBonus,
-      overwhelmPenalty: overwhelmStacks * OVERWHELM_PENALTY_PER_STACK,
+      overwhelmPenalty: overwhelmPenaltyFor(actor, overwhelmStacks),
     };
     return {
       formula: "@rating + @overwhelmPenalty - 1d100",
@@ -610,7 +621,7 @@ export async function buildDefenseProfile({
     mode === "melee" ? asMakeshiftMelee(context.weapon) : context.weapon;
   const offProps = getOffhandProps(context);
   const baneProfile = getBaneProfile(actor);
-  const overwhelmPenalty = overwhelmStacks * OVERWHELM_PENALTY_PER_STACK;
+  const overwhelmPenalty = overwhelmPenaltyFor(actor, overwhelmStacks);
 
   let formula;
   let rollData;
@@ -685,10 +696,12 @@ export async function buildDefenseProfile({
       specDefense: weaponSpec.defense,
       baneDefense: useBane ? baneProfile.defense : 0,
       aimDefense: aimDefense.bonus,
+      // Defense Reinforcement (Sword Dancer): Aim already sacrificed for it.
+      reinforceDefense: Number(reinforceDefense) || 0,
     };
 
     formula =
-      "@defenseRating + @weaponDefense + @doctrineDefenseBonus + @abilityDefense + @overwhelmPenalty + @longReachPenalty + @specDefense + @baneDefense + @aimDefense - 1d100";
+      "@defenseRating + @weaponDefense + @doctrineDefenseBonus + @abilityDefense + @overwhelmPenalty + @longReachPenalty + @specDefense + @baneDefense + @aimDefense + @reinforceDefense - 1d100";
     skillKey = "meleeDefense";
   } else if (mode === "ranged") {
     const { doctrineCritDefenseBonus, doctrineRangedDefenseBonus } =
@@ -770,6 +783,14 @@ export async function buildDefenseProfile({
   // Úhybu +3%". Dodge only.
   if (mode === "dodge" && getArmigerBranch(actor, "zbrojnos2") === "light") {
     critSuccess += ARMIGER_LIGHT_DODGE_CRIT;
+  }
+
+  // Šampion → Bonus za druhou zbraň I and III, sword in the off hand while
+  // dual wielding: "Kritická obrana a Kritická šance na Úhyb +3% / +2%".
+  // Melee Defense and Dodge only; Ranged Defense takes nothing.
+  if (mode === "melee" || mode === "dodge") {
+    const champion = getChampionOffhandMods(actor);
+    critSuccess += mode === "melee" ? champion.critDefense : champion.critDodge;
   }
 
   // Every rollData term is a flat addend in the formula (they are all "+ @x"),
@@ -1100,6 +1121,9 @@ export async function defenseRoll({
     /** The counter's current value: what this one roll is taken at. */
     const readOverwhelm = (html) =>
       Number(html.find('input[name="overwhelm"]').val()) || 0;
+    /** Aim picked for Defense Reinforcement; Melee Defense only. */
+    const readReinforce = (html) =>
+      Number(html.find('[name="reinforceAim"]').val()) || 0;
 
     const buttons = {
       melee: {
@@ -1112,8 +1136,9 @@ export async function defenseRoll({
             ? -5
             : 0;
           const useBane = html.find('[name="baneDefense"]').is(":checked");
+          const reinforce = readReinforce(html);
 
-          meleeDefense({ overwhelm, longReachPenalty, useBane });
+          meleeDefense({ overwhelm, longReachPenalty, useBane, reinforce });
         },
       },
 
@@ -1137,6 +1162,7 @@ export async function defenseRoll({
           meleeDefense({
             overwhelm,
             useBane,
+            reinforce: readReinforce(html),
             ability: { system: { defense: -10 } },
           });
         },
@@ -1242,6 +1268,7 @@ export async function defenseRoll({
       }
       <div class="rs-overwhelm"></div>
       <div class="rs-aim-defense"></div>
+      ${renderReinforceControl()}
 
         ${
           showLongReach
@@ -1324,7 +1351,7 @@ export async function defenseRoll({
       ? Math.min(Number(input.val()) || 0, OVERWHELM_MAX_STACKS)
       : auto;
 
-    const penalty = current * OVERWHELM_PENALTY_PER_STACK;
+    const penalty = overwhelmPenaltyFor(actor, current);
     const label = game.i18n.localize("REDSTEEL.Overwhelm.Label");
 
     const chips = sources
@@ -1369,9 +1396,10 @@ export async function defenseRoll({
 
       field.val(next).data("dirty", true);
       container.find(".rs-overwhelm-value").text(next);
+      const nextPenalty = overwhelmPenaltyFor(actor, next);
       container
         .find(".rs-overwhelm-penalty")
-        .text(next === 0 ? "" : next * OVERWHELM_PENALTY_PER_STACK);
+        .text(nextPenalty === 0 ? "" : nextPenalty);
     });
 
     container.find(".rs-overwhelm-remove").on("click", async (event) => {
@@ -1437,6 +1465,60 @@ export async function defenseRoll({
     );
   }
 
+  /**
+   * Posílení obrany (Defense Reinforcement): "Před hodem na Obranu může
+   * obětovat libovolný počet Míření a za každé získat na nadcházející Obranu
+   * bonus +10%", 1 Stamina each. Offered to whoever holds the ability and an
+   * aim, whoever it points at, up to what the Stamina pays for. Melee Defense
+   * (Obrana) only: Dodge and Ranged Defense are other defenses in the book.
+   */
+  function reinforceOffer() {
+    const has = actor.items.some(
+      (i) =>
+        i.type === "ability" &&
+        (i.system?.localizationKey === DEFENSE_REINFORCEMENT_KEY ||
+          i.name === "Defense Reinforcement"),
+    );
+    if (!has || !defenderToken) return 0;
+    const stamina = Math.max(0, Number(actor.system.stats?.stamina?.value) || 0);
+    return Math.min(getHeldAim(defenderToken).stacks, stamina);
+  }
+
+  function renderReinforceControl() {
+    const max = reinforceOffer();
+    if (max <= 0) return "";
+    const options = Array.from({ length: max + 1 }, (_, n) =>
+      `<option value="${n}">${
+        n === 0
+          ? game.i18n.localize("REDSTEEL.SwordDancer.ReinforceNone")
+          : game.i18n.format("REDSTEEL.SwordDancer.ReinforceOption", {
+              stacks: n,
+              bonus: n * REINFORCE_PER_AIM,
+            })
+      }</option>`,
+    ).join("");
+    return `
+      <div style="margin-top:6px;">
+        <label>${game.i18n.localize("REDSTEEL.Items.DefenseReinforcement.name")}
+          <select name="reinforceAim">${options}</select>
+        </label>
+      </div>`;
+  }
+
+  /** Sacrifice the Aim and pay its Stamina; returns the stacks actually spent. */
+  async function payReinforcement(count) {
+    const wanted = Math.min(Math.max(0, Number(count) || 0), reinforceOffer());
+    if (wanted <= 0) return 0;
+    const spent = await sacrificeAim(defenderToken, wanted);
+    if (spent > 0) {
+      const stamina = Number(actor.system.stats?.stamina?.value) || 0;
+      await actor.update({
+        "system.stats.stamina.value": Math.max(0, stamina - spent),
+      });
+    }
+    return spent;
+  }
+
   /** A token's name, looked up in the scene this defense is happening on. */
   function tokenName(tokenId) {
     const scene = defenderToken?.parent ?? canvas?.scene ?? null;
@@ -1489,6 +1571,7 @@ export async function defenseRoll({
     overwhelm = null,
     longReachPenalty = 0,
     useBane = false,
+    reinforce = 0,
   } = {}) {
     const resolveWithContext = async (resolvedContext) => {
       // A ranged weapon parries as its makeshift view, so the card name, the
@@ -1505,6 +1588,9 @@ export async function defenseRoll({
       // the dialog), so the tracked value stands.
       const overwhelmStacks = await commitOverwhelm(overwhelm);
       console.log("DEFENSE CONTEXT:", context);
+      // Defense Reinforcement is paid before the roll, and before the profile
+      // reads the aim for the Duelist VII bonus: the sacrificed stacks are gone.
+      const reinforced = await payReinforcement(reinforce);
 
       // Weapon, off-hand, doctrine, spec, Aim and Bane terms: see
       // buildDefenseProfile, which auto-defense scores from as well.
@@ -1518,6 +1604,7 @@ export async function defenseRoll({
         overwhelmStacks,
         longReachPenalty,
         useBane,
+        reinforceDefense: reinforced * REINFORCE_PER_AIM,
       });
       const aimDefense = profile.aimDefense;
 
@@ -1561,6 +1648,7 @@ export async function defenseRoll({
           useBane,
           aimDefense,
           maneuver,
+          reinforced,
         },
       );
     };
@@ -1842,7 +1930,7 @@ export async function defenseRoll({
 
     const settleOverwhelm = async () => {
       overwhelmStacks = await commitOverwhelm(overwhelm);
-      overwhelmPenalty = overwhelmStacks * OVERWHELM_PENALTY_PER_STACK;
+      overwhelmPenalty = overwhelmPenaltyFor(actor, overwhelmStacks);
     };
 
     // ─────────────────────────────
@@ -2023,6 +2111,7 @@ export async function defenseRoll({
       useBane = false,
       aimDefense = null,
       maneuver = null,
+      reinforced = 0,
     } = {},
   ) {
     // Deflect (Odklonění): auto-roll the chance and surface it on the card,
@@ -2136,12 +2225,20 @@ export async function defenseRoll({
               : ""
           }
           <div style="display:flex;justify-content:center;align-items:center;gap:8px;font-size:1.3em;font-weight:bold;">
-            ${overwhelm > 0 ? `<p>${game.i18n.localize("REDSTEEL.Overwhelm.Label")}: ${overwhelm * OVERWHELM_PENALTY_PER_STACK}</p>` : ""}
+            ${overwhelm > 0 ? `<p>${game.i18n.localize("REDSTEEL.Overwhelm.Label")}: ${overwhelmPenaltyFor(actor, overwhelm)}</p>` : ""}
             ${
               aimDefense?.bonus > 0
                 ? `<p>${game.i18n.format("REDSTEEL.Aim.DefenseBonus", {
                     stacks: aimDefense.stacks,
                     bonus: aimDefense.bonus,
+                  })}</p>`
+                : ""
+            }
+            ${
+              reinforced > 0
+                ? `<p>${game.i18n.format("REDSTEEL.SwordDancer.ReinforceCard", {
+                    stacks: reinforced,
+                    bonus: reinforced * REINFORCE_PER_AIM,
                   })}</p>`
                 : ""
             }
@@ -2197,6 +2294,9 @@ export async function defenseRoll({
             attackerTokenId: defendingAgainstId() ?? null,
             defenseKey,
             succeeded: !defenseFailed,
+            // A Critical Defense or Critical Dodge (the contested verdict when
+            // there is one). Improved Brilliant Counter reads it.
+            critical: !defenseFailed && !!criticalDefense,
             // Natural critical failure on this defense's own die (Desperate
             // Effort thresholds included). Apply Damage forces critical degree
             // 4 when this meets a critical hit (applyDamage.mjs).

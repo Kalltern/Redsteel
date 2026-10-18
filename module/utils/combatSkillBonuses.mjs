@@ -29,6 +29,7 @@ import {
   markAimCritFail,
   abilityIgnoresAim,
   getCalculationCritHit,
+  isFinalStrike,
 } from "./aim.mjs";
 import { actorHasSpecNode } from "../helpers/specialisations.mjs";
 import { consumeOpportunityFlag } from "./opportunityAttacks.mjs";
@@ -41,6 +42,12 @@ import {
   WEAPON_TRAINING_MEDIUM_CRIT,
   WEAPON_TRAINING_HEAVY_CRIT,
 } from "./weaponMaster.mjs";
+import {
+  championFlurryHit,
+  championWindStanceHit,
+  getChampionOffhandMods,
+  isFeintAttack,
+} from "./champion.mjs";
 
 const BLEEDING_DAMAGE_TYPES = new Set(["slash", "piercing"]);
 /** Shadow: Aimed Attack +5% (Cílený útok) — hit chance on an aimed attack. */
@@ -550,7 +557,9 @@ export function computeDoctrineBonuses(actor, weapon) {
         d.attack = 15;
       }
     }
-    if (doctrineName === "swordsman" && doctrine.swordsman.value >= 3) {
+    // Swordsman III is the temporary health on a critical defense
+    // (tempHealthGrant.mjs); the hit bonus arrives at IV.
+    if (doctrineName === "swordsman" && doctrine.swordsman.value >= 4) {
       d.attack = 10;
       if (doctrine.swordsman.value >= 5) {
         d.bleed = 25;
@@ -558,7 +567,7 @@ export function computeDoctrineBonuses(actor, weapon) {
     }
     if (doctrineName === "reaver" && doctrine.reaver.value >= 2) {
       d.attack = 10;
-      if (doctrine.reaver.value >= 4) {
+      if (doctrine.reaver.value >= 3) {
         d.critRange = 2;
       }
       if (doctrine.reaver.value >= 7) {
@@ -631,6 +640,9 @@ export function computeDoctrineBonuses(actor, weapon) {
         d.critPen = 5;
         d.critDmg = 5;
       }
+      if (doctrine.archer.value >= 5) {
+        d.rangedDefense = 10;
+      }
       if (doctrine.archer.value >= 6) {
         d.crit = 3;
       }
@@ -641,6 +653,9 @@ export function computeDoctrineBonuses(actor, weapon) {
     }
     if (doctrineName === "arbalest" && doctrine.arbalest.value >= 1) {
       d.attack = 10;
+      if (doctrine.arbalest.value >= 3) {
+        d.rangedDefense = 10;
+      }
       if (doctrine.arbalest.value >= 4) {
         d.critPen = 5;
         d.critDmg = 5;
@@ -676,7 +691,7 @@ export function computeDoctrineBonuses(actor, weapon) {
         d.critRange = 2;
       }
     }
-    if (doctrineName === "juggler" && doctrine.juggler.value >= 3) {
+    if (doctrineName === "juggler" && doctrine.juggler.value >= 1) {
       d.attack = 5;
       if (doctrine.juggler.value >= 2) {
         d.crit = 3;
@@ -978,9 +993,13 @@ export async function getAttackRolls(
   // Aim-neutral ability (Counterattack, Riposte, Retaliatory strike…) banks no
   // bonus from it — resolveAimOnAttack below leaves those stacks untouched, and
   // paying nothing for a bonus is not what the exemption means.
+  // Final Strike pays its four stacks before the swing and banks nothing
+  // from them (user ruling 2026-10-14).
   const aimValue = actor.getFlag("redsteel", "aimCount");
   if (aimValue > 0) {
-    if (!abilityIgnoresAim(ability)) abilityAttack += aimValue * 10;
+    if (!abilityIgnoresAim(ability) && !isFinalStrike(ability)) {
+      abilityAttack += aimValue * 10;
+    }
     await actor.unsetFlag("redsteel", "aimCount");
   }
   // Shadow Calculation reads the aim as it stands before this attack touches
@@ -1014,6 +1033,11 @@ export async function getAttackRolls(
     opportunity: opportunityAttack,
   });
   if (dragonGuard) abilityAttack += DRAGON_GUARD_HIT_BONUS;
+  // Šampion → Smršť útoků: Zásah +5% on each strike of the melee Flurry.
+  abilityAttack += championFlurryHit(actor, ability);
+  // Šampion → Větrný postoj: Zásah +5% on every attack while the stance holds
+  // (its Defense +5% is the wind_stance status's own change).
+  abilityAttack += championWindStanceHit(actor);
 
   // A standalone ranged ability has no weapon to read the skill off, so the
   // ability itself names which ranged skill the attack rolls against. Blank
@@ -1095,6 +1119,11 @@ export async function getAttackRolls(
   if (ws?.gripMode === "two" && ws?.type !== "heavy") {
     tagRollBuckets(attackRoll, "twoHanded");
   }
+  // Final Strike: "Výhoda". An item bias, so it cancels against disadvantage.
+  if (isFinalStrike(ability)) tagRollItemAdvantage(attackRoll, "advantage");
+  // Improved Feint Attack: "Provede útok s Výhodou." The ability's own rule,
+  // for anyone who uses it.
+  if (isFeintAttack(ability)) tagRollItemAdvantage(attackRoll, "advantage");
   await attackRoll.evaluate();
 
   // Desperate Effort shifts the crit thresholds for this attack.
@@ -1110,9 +1139,11 @@ export async function getAttackRolls(
   const critFailure = rollResult >= critFailThreshold;
   // Servant of the Sword: a Riposte always counts as a Critical Hit, unless
   // the dice fumbled (user ruling 2026-10-01).
+  // Sword Dancer's Final Strike counts as a Critical Hit the same way.
   const critSuccess =
     rollResult <= critSuccessThreshold ||
-    (!critFailure && riposteAlwaysCrits(actor, ability));
+    (!critFailure &&
+      (riposteAlwaysCrits(actor, ability) || isFinalStrike(ability)));
 
   // A fumble burns the whole aim even under Sword Dancer's half-loss. The aim
   // was parked before the dice existed, so tag that record now.
@@ -1434,11 +1465,17 @@ export async function getCriticalRolls(
   // weapon-skill crit bonuses beside it.
   const weaponTrainingCrit =
     getWeaponTrainingClass(actor) === "heavy" ? WEAPON_TRAINING_HEAVY_CRIT : 0;
+  // Šampion → Bonus za druhou zbraň III, axe in the off hand: critical damage
+  // and critical penetration +5, carried by every degree the same way.
+  const championOffhand = getChampionOffhandMods(actor, weapon);
+  const championCritDamage = championOffhand.critDamage;
+  const championCritPen = championOffhand.critPenetration;
   const buildCriticalTotals = (degree) => {
     const critDamageTotal =
       (critDamageMapping[degree] ?? 0) +
       weaponSkillCritDmg +
       weaponTrainingCrit +
+      championCritDamage +
       deadlyLungeBonus +
       perBonus +
       actorCritBonus +
@@ -1455,6 +1492,7 @@ export async function getCriticalRolls(
         (weapon?.system.critPenetration || 0) +
         weaponSkillCritPen +
         weaponTrainingCrit +
+        championCritPen +
         doctrineSkillCritPen || 0;
 
     return {
@@ -2344,6 +2382,19 @@ export function getActorCombatModifiers(actor, weapon = null) {
         result.extraEffects[key] = (result.extraEffects[key] ?? 0) + v;
       }
     }
+  }
+
+  // Šampion → Bonus za druhou zbraň I-III: what the off-hand weapon grants a
+  // melee attack while dual wielding (zero otherwise). Folded in here so it
+  // rides the same penetration, crit range and extra-effect paths as the
+  // combat-modifier groups above: bleed and stagger reach getEffectRolls'
+  // dedicated accumulators, precision its extra-effect contributions.
+  const champion = getChampionOffhandMods(actor, weapon);
+  result.penetrationBonus += champion.penetrationBonus;
+  result.critRangeBonus += champion.critRangeBonus;
+  for (const [k, v] of Object.entries(champion.extraEffects)) {
+    const key = k.toLowerCase();
+    result.extraEffects[key] = (result.extraEffects[key] ?? 0) + v;
   }
 
   return result;

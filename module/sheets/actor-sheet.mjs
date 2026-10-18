@@ -1,5 +1,6 @@
 import { prepareActiveEffectCategories } from "../helpers/effects.mjs";
 import {
+  actorHasSpecNode,
   isAutoUnlockNode,
   prepareSpecialisationTrees,
   syncSpecialisationPassive,
@@ -655,6 +656,15 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     // Shields and handheld lights (torches) ONLY in off-hand
     if ((isShield || isHandheldLight(item)) && slot !== "off") return;
 
+    // A Medium weapon in the off hand needs Champion's "Medium weapon in
+    // off-hand" (stredniZbran); everyone else holds only Light there.
+    if (slot === "off" && this._offhandMediumRefused(item)) {
+      ui.notifications.warn(
+        game.i18n.localize("REDSTEEL.Champion.MediumOffhandRefused"),
+      );
+      return;
+    }
+
     const currentMain = weaponSets?.[set]?.main;
     const currentOff = weaponSets?.[set]?.off;
 
@@ -713,6 +723,20 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     });
   }
 
+  /**
+   * Šampion → Střední zbraň v druhé ruce (stredniZbran): only a Champion with
+   * that node may hold a Medium weapon in the off hand. True when this item
+   * would be refused there. Characters only; existing loadouts are left alone,
+   * this is read when something is put into the off hand.
+   * @param {Item} item
+   */
+  _offhandMediumRefused(item) {
+    if (this.actor.type !== "character") return false;
+    if (item?.type !== "weapon" || item.system?.shield) return false;
+    if (item.system?.type !== "medium") return false;
+    return !actorHasSpecNode(this.actor, "champion", "stredniZbran");
+  }
+
   _isEffectivelyTwoHanded(item) {
     if (!item) return false;
     if (item.system.type === "heavy") return true;
@@ -745,7 +769,9 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
     // Shields and handheld lights (torches) are off-hand only; two-handed
     // weapons are main-hand only.
     const allowMain = !isShield && !isLight;
-    const allowOff = !isTwoHanded;
+    // A Medium weapon is offered the off hand only to a Champion with Medium
+    // weapon in off-hand (see _offhandMediumRefused).
+    const allowOff = !isTwoHanded && !this._offhandMediumRefused(item);
     if (!allowMain && !allowOff) return;
 
     const esc = (str) =>
@@ -889,6 +915,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       if (!next[set] || !["main", "off"].includes(hand)) continue;
       if ((isShield || isLight) && hand !== "off") continue;
       if (isTwoHanded && hand !== "main") continue;
+      if (hand === "off" && this._offhandMediumRefused(item)) continue;
 
       const otherHand = hand === "main" ? "off" : "main";
       const blocker = next[set][otherHand]
@@ -3265,6 +3292,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
             source: rollName.trim(),
             chance: skillData.mod,
             result: roll.result,
+            mirror: skillKey,
           });
         }
 

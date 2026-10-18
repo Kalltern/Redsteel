@@ -11,6 +11,7 @@ import {
   resolveInitiativeTies,
   TIEBREAK_FLAG,
 } from "../utils/initiativeTiebreak.mjs";
+import { grimmInitiativeBonus } from "../utils/grimm.mjs";
 
 /**
  * Extend the basic Combat with custom initiative handling.
@@ -55,7 +56,11 @@ export class RedsteelCombat extends Combat {
       // rogue doctrine-7 two-die upgrade) so the two can never drift apart, and
       // so a plain Speed debuff lowers turn order with no extra wiring.
 
-      const rollFormula = buildSpeedTestFormula(actor);
+      // Grimm → Metla: Iniciativa +3, when a Bane is among the enemies.
+      const baneBonus = grimmInitiativeBonus(actor, this, combatant);
+      const rollFormula = baneBonus
+        ? `${buildSpeedTestFormula(actor)} + ${baneBonus}`
+        : buildSpeedTestFormula(actor);
 
       // -----------------------------------------
       // Roll initiative

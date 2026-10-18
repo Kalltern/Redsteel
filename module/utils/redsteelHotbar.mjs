@@ -56,6 +56,7 @@ import {
 } from "./movementZones.mjs";
 import { isSprintAbility, useUtilityAbility } from "./combatAbilities.mjs";
 import { isCharge, isQuickFeet } from "./abilityMovement.mjs";
+import { completeDuelistsAdvance } from "./swordDancer.mjs";
 import { isReactionAbility } from "./opportunityAttacks.mjs";
 import { canTradeWith, requestTrade } from "./trade.mjs";
 import { dropStance, holdStance } from "./stances.mjs";
@@ -3152,12 +3153,16 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
    */
   async #launchCombatSuggestion(chip, { aimed = false, quickFeet = false } = {}) {
     const abilityId = chip.dataset.abilityId;
-    let modifierIds = [];
+    // Modifiers the chip itself names (Improved Brilliant Counter's Surprise).
+    const modifierIds = (chip.dataset.modifierIds ?? "")
+      .split(",")
+      .map((id) => id.trim())
+      .filter(Boolean);
     if (quickFeet && isReactionAbility(this.actor?.items.get(abilityId))) {
       const feet = this.actor.items.find(
         (i) => i.type === "ability" && isQuickFeet(i),
       );
-      if (feet) modifierIds = [feet.id];
+      if (feet && !modifierIds.includes(feet.id)) modifierIds.push(feet.id);
     }
     await this.#launchAbility(abilityId, {
       aimed,
@@ -3386,6 +3391,11 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
         actor.items.get(lock.launch?.abilityId) ??
         actor.items.find((i) => i.type === "ability" && isCharge(i));
       if (charge) await this.#launchAbility(charge.id);
+    }
+    // Duelist's Advance is over: one Aim on an opponent in reach, and with
+    // three the next plain Attack is free (swordDancer.mjs).
+    if (lock?.mode === "duelist" && !lock.done) {
+      await completeDuelistsAdvance(actor);
     }
     // The Quick Feet step is over: swing the retaliation it was declared for,
     // Quick Feet still attached, at the opponent. Only while the turn it

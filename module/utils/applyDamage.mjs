@@ -30,6 +30,8 @@ import {
 import { grantPassingStrikeStep } from "./abilityMovement.mjs";
 import { offerSlipThrough } from "./slipThrough.mjs";
 import { offerHalfPirouette } from "./halfPirouette.mjs";
+import { settleFinalStrikeKill } from "./swordDancer.mjs";
+import { offerChampionRestaggerPush, settleChampionFeint } from "./champion.mjs";
 import { gateVersusPush, resolvePushOnHit } from "./forcedMovement.mjs";
 import {
   cardDeclaredSneak,
@@ -46,6 +48,7 @@ import { gainBlood } from "./bloodPool.mjs";
 import {
   giftOfBloodApplies,
   hasGiftOfBlood,
+  isLivingTarget,
   payGiftOfBlood,
 } from "./giftOfBlood.mjs";
 import { combatantForActor } from "./combatants.mjs";
@@ -846,6 +849,13 @@ export async function applyDamageAsGM(data) {
   const giftOfBloodVictims = [];
   // Targets this Apply Damage killed, for Half Pirouette (halfPirouette.mjs).
   const killedIds = [];
+  // Killed, or newly Downed or Unconscious (a PC dropped to 0 HP, whom Dying
+  // always rides along with): what Final Strike counts as a kill (user ruling
+  // 2026-10-14). killedIds stays dead-only for Half Pirouette.
+  const felledIds = [];
+  // Staggered before this apply and staggered again by it: Off-hand Bonus
+  // III's Blunt push (champion.mjs offerChampionRestaggerPush).
+  const restaggeredIds = [];
   for (const tokenId of targetIds) {
     const tokenDoc = scene.tokens.get(tokenId);
     if (!tokenDoc) {
@@ -857,6 +867,11 @@ export async function applyDamageAsGM(data) {
     if (!actor) continue;
     // Hitting a corpse again kills nobody (Half Pirouette).
     const wasDead = actor.statuses?.has("dead") === true;
+    const wasStaggered = actor.statuses?.has("stagger") === true;
+    // Unconscious is the `incapacitated` status; it replaces Downed at 0 Mind.
+    const wasDowned =
+      actor.statuses?.has("downed") === true ||
+      actor.statuses?.has("incapacitated") === true;
 
     // Bane-aware packet: a target matching the attacker's Bane uses the
     // Bane variant of normal/critical/breakthrough instead of the base one.
@@ -1123,6 +1138,7 @@ export async function applyDamageAsGM(data) {
         castingContext,
       );
       await stampEscapeSource(applied, name, message);
+      if (name === "stagger" && applied && wasStaggered) restaggeredIds.push(tokenId);
 
       // Wounding Impale: Impale applies the Rooted effect; carry the
       // pre-computed Bleeding count (set in getEffectRolls) onto that Root so it
@@ -1262,7 +1278,9 @@ export async function applyDamageAsGM(data) {
     // temporary health or a shield spills no blood, the same line Bleeding and
     // Open Wound draw. Killing the target (the drop to 0 Life) pays once more,
     // per target, since `hpLoss` is already 0 for anyone hit at 0 Life.
-    if (bloodHarvestActive && result.hpLoss > 0) {
+    // The Unliving have no blood to spill, so an undead or a construct feeds
+    // nothing (the same test Dar krve reads).
+    if (bloodHarvestActive && result.hpLoss > 0 && isLivingTarget(actor)) {
       bloodHarvest += BLOOD_HARVEST_PER_TARGET;
       if (Number(result.newHp) <= 0) bloodHarvest += BLOOD_HARVEST_PER_TARGET;
     }
@@ -1295,6 +1313,13 @@ export async function applyDamageAsGM(data) {
         actor.effects?.some((e) => e.statuses?.has("dead")))
     ) {
       killedIds.push(tokenId);
+    }
+    if (
+      (!wasDead && actor.statuses?.has("dead")) ||
+      (!wasDowned &&
+        (actor.statuses?.has("downed") || actor.statuses?.has("incapacitated")))
+    ) {
+      felledIds.push(tokenId);
     }
 
     // Impale: Follow-up Attack when this Impale was the killing blow, whether
@@ -1454,8 +1479,9 @@ export async function applyDamageAsGM(data) {
   // spending it: two on a hit, three on a critical. Runs second so the line
   // above has already settled whatever the attack cost, and this stacks on top
   // of the remainder rather than being overwritten by it.
-  await grantAimOnDamage({
+  const aimGrant = await grantAimOnDamage({
     actor: attacker,
+    felledIds,
     tokenId: attackerTokenIdFromMessage(message),
     sceneId,
     targetIds,
@@ -1479,6 +1505,15 @@ export async function applyDamageAsGM(data) {
   // Půlpirueta (Half Pirouette): a kill, or a landed Counterattack or
   // Riposte, lets the attacker step in and take Aim this turn.
   await offerHalfPirouette(attacker, message, targetIds, killedIds);
+  // Poslední výpad (Final Strike): a kill gives one Action back, and the two
+  // Aim it held back from the fallen target go wherever the player picks.
+  await settleFinalStrikeKill(attacker, message, felledIds, aimGrant?.owed ?? 0);
+  // Vylepšený klamavý útok (Improved Feint Attack): a hit under Wind Stance
+  // makes the next Attack on the same target a Free action. Once per card.
+  await settleChampionFeint(attacker, message, targetIds, scene);
+  // Bonus za druhou zbraň III, Blunt: a re-staggered target may be pushed
+  // back one hex. Offered as a button; nothing moves here.
+  await offerChampionRestaggerPush(attacker, message, restaggeredIds, scene);
 
   // Úder štítem (Shield Bash) and any other PUSH_ON_HIT ability: landing it
   // means the versus Test was won, so each target is pushed straight away from

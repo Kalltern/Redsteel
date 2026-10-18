@@ -3,6 +3,7 @@ import {
   getPendingCalendariaEntries,
 } from "./calendariaIntegration.mjs";
 import { getTopArmorWeight } from "./weaponMaster.mjs";
+import { championLightOffhand } from "./champion.mjs";
 
 /**
  * Reroll resource model.
@@ -357,7 +358,8 @@ export function getFeatureRerollPools(item) {
 /**
  * Reroll pools owned by a specialisation node rather than a feature item. The
  * pool exists while the node is unlocked; `requiresArmor` limits it to a
- * topmost armor class, read at reroll time.
+ * topmost armor class, and `requiresOffhand` to an off-hand weapon weight
+ * (champion.mjs), both read at reroll time.
  */
 export const NODE_REROLL_POOLS = [
   {
@@ -369,6 +371,28 @@ export const NODE_REROLL_POOLS = [
     max: 1,
     requiresArmor: "heavy",
     img: "icons/equipment/chest/breastplate-collared-steel.webp",
+  },
+  {
+    // Grimm → Metla: "1x opakování hodu na Souboj/Střelbu/Vrh/Kryt", against
+    // a Bane only: `requiresToken` is the `bane` token handleRerollClick
+    // (redsteel.mjs) adds when the card was against one (grimm.mjs).
+    spec: "grimm",
+    node: "metlaOpakovani",
+    skillsRaw: "combat, archery, throwing, rangedDefense",
+    max: 1,
+    requiresToken: "bane",
+    img: "icons/magic/death/weapon-sword-skull-purple.webp",
+  },
+  {
+    // Šampion → Bonus za druhou zbraň II, Light weapon or Defensive Katar in
+    // the off hand: "Může 1x za den opakovat hod na Obranu či Úhyb". The
+    // Medium branch is in champion.mjs.
+    spec: "champion",
+    node: "bonusDruhaZbran2",
+    skillsRaw: "meleeDefense, dodge",
+    max: 1,
+    requiresOffhand: "light",
+    img: "icons/weapons/daggers/dagger-curved-guard-blue.webp",
   },
 ];
 
@@ -430,6 +454,8 @@ function getNodeRerollPools(actor) {
       universal: skills.length === 0,
       critFail: hasCritFailKey(def.skillsRaw),
       requiresArmor: def.requiresArmor ?? null,
+      requiresOffhand: def.requiresOffhand ?? null,
+      requiresToken: def.requiresToken ?? null,
       max,
       used,
       remaining: Math.max(0, max - used),
@@ -545,6 +571,17 @@ export function getEligibleRerolls(actor, tokens, { critFailure = false } = {}) 
     // is the topmost layer. Read now, at reroll time.
     const requiredArmor = pool.requiresArmor;
     if (requiredArmor && getTopArmorWeight(actor) !== requiredArmor) {
+      return false;
+    }
+    // A pool tied to the off-hand weapon (Champion's Off-hand Bonus II, Light
+    // branch) is only usable while dual wielding with that weight in the off
+    // hand. "light" also accepts a Defensive Katar. Read now, at reroll time.
+    if (pool.requiresOffhand === "light" && !championLightOffhand(actor)) {
+      return false;
+    }
+    // A pool that only answers a particular kind of roll (Grimm's Bane
+    // reroll needs the `bane` token on the card).
+    if (pool.requiresToken && !tokenSet.has(normalizeTrigger(pool.requiresToken))) {
       return false;
     }
     if (isCombat && pool.combatRemaining <= 0) return false;

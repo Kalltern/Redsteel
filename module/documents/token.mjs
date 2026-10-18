@@ -160,6 +160,9 @@ export class RedsteelToken extends Token {
   /** Enemy ids a declared Disengage broke free from, for the route swords. */
   #pathIgnore = [];
 
+  /** Enemy ids exempt from the threat rules (Improved Duelist's Advance). */
+  #pathExempt = [];
+
   /** A declared free step (Passing Strike): the route carries no swords. */
   #pathFree = false;
 
@@ -210,6 +213,7 @@ export class RedsteelToken extends Token {
         DRAG_PATH_LAYER,
         pathSwordHexes(this, points, {
           ignore: this.#pathIgnore,
+          exempt: this.#pathExempt,
           free: this.#pathFree,
         }),
       );
@@ -226,6 +230,7 @@ export class RedsteelToken extends Token {
     const dragLock =
       this.actor && isMovementTurn(this.actor) ? getMovementLock(this.actor) : null;
     this.#pathIgnore = dragLock?.ignore ?? [];
+    this.#pathExempt = dragLock?.exempt ?? [];
     this.#pathFree = !!MOVEMENT_MODES[dragLock?.mode]?.free && !dragLock?.done;
     this.#dragOriginPoint = this.center
       ? { x: this.center.x, y: this.center.y }
@@ -257,6 +262,7 @@ export class RedsteelToken extends Token {
         this.#movementLayerId,
         computeMovementZone(this, remaining, {
           ignore: lock.ignore ?? [],
+          exempt: lock.exempt ?? [],
           free: !!lockMode.free,
           around: lock.around ?? null,
           toward: lock.toward ?? null,

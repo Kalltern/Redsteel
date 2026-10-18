@@ -167,9 +167,10 @@ function reachOf(actor) {
 /**
  * Living enemies within reach of `point`, nearest first. Enemies = the other
  * side by isHostileSide (movementZones.mjs), which keeps PCs on the party's
- * side whatever their disposition.
+ * side whatever their disposition. Also used by Duelist's Advance
+ * (swordDancer.mjs).
  */
-function aimCandidates(actor, token, point) {
+export function aimCandidates(actor, token, point) {
   const reach = reachOf(actor);
   const hostile = isHostileSide(token.document);
   return (canvas.tokens?.placeables ?? [])
@@ -190,7 +191,7 @@ function aimCandidates(actor, token, point) {
  * candidate, or the player's pick. Null with nobody in reach or the pick
  * dismissed.
  */
-async function pickAimTarget(candidates, label) {
+export async function pickAimTarget(candidates, label) {
   if (!candidates.length) return null;
   const targeted = game.user?.targets?.first?.() ?? null;
   if (targeted && candidates.includes(targeted)) return targeted;

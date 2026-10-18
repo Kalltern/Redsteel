@@ -110,7 +110,7 @@ const ABILITY = {
   FAST_REACTION: A("fAstReaction0001"), // Rychlá reakce
   FEINT_DEX: A("pt6OeaIFk0cAvxla"), // Finta
   FEINT_PER: A("IVNZXVkihp5CK9JV"), // Finta
-  FINAL_THRUST: A("fInalThrust00001"), // Poslední výpad
+  FINAL_STRIKE: A("fInalThrust00001"), // Poslední výpad
   FLAMBERGE_CLEAVE: A("LVAgDFzBKadXMU4A"), // Rozseknutí flambergem
   FLURRY: A("zosOTl8qIL3DISsr"), // Smršť útoků
   FORCEFUL_ADVANCE: A("fOrcefulAdvance1"), // Rázný postup
@@ -872,9 +872,9 @@ export const ABILITY_GRANTS = [
     replaces: [ABILITY.PERFECT_OPENING, ABILITY.PERFECT_OPENING_HASTENED],
   },
   {
-    label: "Sword Dancer: Poslední výpad → Final Thrust",
+    label: "Sword Dancer: Poslední výpad → Final Strike",
     when: specNode("swordDancer", "posledniVypad"),
-    grant: [ABILITY.FINAL_THRUST],
+    grant: [ABILITY.FINAL_STRIKE],
   },
   {
     label: "Sword Dancer: Vylepšený duelistův krok → Duelist's Advance upgrades to Improved Duelist's Advance",

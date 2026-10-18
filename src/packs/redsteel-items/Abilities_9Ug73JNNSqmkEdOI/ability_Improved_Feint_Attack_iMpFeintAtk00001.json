@@ -3,7 +3,7 @@
   "type": "ability",
   "img": "icons/skills/melee/sword-twirl-orange.webp",
   "system": {
-    "description": "<p>An attack with Advantage. Scores a Critical Hit from a success of +40.<br />Advantage on the Critical Range roll and Critical Range +1.<br />After a hit, you may immediately make an Attack against the same target.</p>",
+    "description": "<p>An attack with Advantage. It cannot be answered with Riposte, Dragon Strike or any Retaliation action.</p><p>If Wind Stance is active and the attack hits, you may immediately make an Attack against the same target.</p>",
     "type": "melee",
     "weaponAbility": true,
     "standalone": false,
@@ -97,7 +97,7 @@
     },
     "breakthrough": "",
     "penetration": 0,
-    "critRange": 1,
+    "critRange": 0,
     "critChance": 0,
     "critFail": 0,
     "dmgType1": "",

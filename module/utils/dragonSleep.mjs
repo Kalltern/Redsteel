@@ -18,7 +18,7 @@
  */
 
 import { getActionPools, getSpent, spend, trackedCombat } from "./actionTracker.mjs";
-import { grantManeuverAim } from "./aim.mjs";
+import { grantManeuverAim, grantRespiteAim } from "./aim.mjs";
 
 export const DRAGON_SLEEP_STATUS = "dragon_sleep";
 /** Stamina the stance itself restores. */
@@ -65,6 +65,8 @@ export async function takeDragonSleep(actor) {
   const target = game.user.targets?.first?.() ?? null;
   const aimed = !!(token && target && target.document?.id !== token.id);
   if (aimed) await grantManeuverAim(token, target);
+  // Respite (Oddech: Míření +1): one more Aim for each Rest bought.
+  if (eaten) await grantRespiteAim(actor, eaten);
 
   const lines = [
     game.i18n.format("REDSTEEL.Items.DragonSleep.reactionsGiven", { count: eaten }),
