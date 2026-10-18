@@ -18,6 +18,31 @@
       "NoAimTarget": "V dosahu není žádný nepřítel, na kterého by šlo mířit.",
       "PickPrompt": "Na kterého nepřítele v dosahu získat Míření?"
     },
+    "Hoplite": {
+      "DaringThrowAdjacent": "Troufalý vrh nelze použít, pokud s tebou sousedí nepřítel.",
+      "DaringThrowNoSpear": "Troufalý vrh potřebuje k vržení kopí, trojzubec nebo oštěp.",
+      "OnslaughtNoStamina": "Nedostatek výdrže: Nápor stojí {cost}.",
+      "OnslaughtPrompt": "Zaútočit hned, nebo nejdřív přezbrojit?",
+      "OnslaughtAttack": "Útok ({cost} výdrže)",
+      "OnslaughtSwap": "Přezbrojit na {weapon} a zaútočit ({cost} výdrže)",
+      "OnslaughtFreeAttack": "{name} nepolevuje v náporu: příští Útok v tomto tahu je Volná akce.",
+      "OnslaughtSwapped": "{name} přezbrojí na {weapon}: příští Útok v tomto tahu je Volná akce.",
+      "FreeOpportunity": "{name} čelí blížícímu se cíli {target}: tento Příležitostný útok nestojí Reakci.",
+      "ChargeDefenseNotOpportunity": "Obrana proti zteči modifikuje jen Příležitostný útok. U tohoto útoku byla vynechána.",
+      "ChargeDefenseNoSpear": "Obrana proti zteči vyžaduje kopí nebo trojzubec. U tohoto útoku byla vynechána.",
+      "ChargeDefenseNotCharging": "Obrana proti zteči odpovídá jen na Zteč nebo Běh. U tohoto útoku byla vynechána.",
+      "ChargeStopped": "{name} zastaví Zteč cíle {target}.",
+      "ChargeWasStopped": "Tvou Zteč zastavila Obrana proti zteči: v tomto kole už neudeří.",
+      "DaringThrowTooFar": "Troufalý vrh dolétne nejvýše na {max} hexů; cíl je {distance} hexů daleko.",
+      "DrawLightWeapon": "Vytasit lehkou zbraň",
+      "DrawLightWeaponPrompt": "Kterou lehkou zbraň vzít do hlavní ruky?",
+      "DrawLightWeaponPick": "Vyber, kterou lehkou zbraň vytasit.",
+      "DrewWeapon": "{name} vytasí {weapon} jako Volnou akci.",
+      "MomentumFreeAttack": "{name} se nezastaví: příští Útok v tomto tahu je Volná akce.",
+      "AdvanceStep": "{name} se může pohnout až o dva hexy ve směru útoku na {target}. Pohyb nevyvolává Příležitostný útok.",
+      "AdvanceNoStep": "{name} teď nemůže postoupit.",
+      "ForcefulAdvance": "{name} postoupil: Úder štítem nebo Zteč štítem je v tomto tahu Volná akce."
+    },
     "AllyPass": {
       "Title": "Propustit spojence?",
       "Body": "{mover} chce projít přes pole, na kterém stojí {ally}. Propuštění stojí postavu {ally} její Reakci.",
@@ -248,6 +273,7 @@
         "MoreMovement": "Další pohyby",
         "LungeStep": "Přískok",
         "HalfPirouette": "Krok půlpiruety",
+        "Advance": "Krok postupu",
         "AcrobaticDisengage": "Akrobatické odpoutání",
         "CounterattackSurprise": "Protiútok (Překvapení)",
         "PlusStamina": "+{n} Výdrže"
@@ -928,15 +954,15 @@
             },
             "prilezitostnyUtok": {
               "label": "Příležitostný útok za kolo",
-              "description": "15 CP; Štítonoš V. Ručně — řeší se u stolu."
+              "description": "15 CP; Štítonoš V. Jednou za kolo nestojí Příležitostný útok dřevcovou zbraní s Dlouhým dosahem proti nepříteli, který zkrátil vzdálenost, žádnou Reakci. Dialog Útoku ji odpustí, když poslední pohyb každého cíle v tomto tahu skončil blíž k tobě, než začal, a v tvém dosahu, a oznámí to v chatu. Automatizováno."
             },
             "pripravnyPostoj": {
               "label": "Přípravný postoj",
-              "description": "10 CP; Dřevcová IV. 1 akce, stojí 4 výdrže. Příští Příležitostný útok kopím nebo trojzubcem získá Zásah +20%. Nesčítá se; pohyb nebo útok postoj ruší. Uděluje akci Přípravný postoj; bonus a zrušení postoje se řeší u stolu."
+              "description": "10 CP; Dřevcová IV. 1 akce, stojí 4 výdrže. Příští Příležitostný útok kopím nebo trojzubcem získá Zásah +20%. Nesčítá se; pohyb nebo útok postoj ruší. Uděluje akci Přípravný postoj, která ti dá stav Přípravný postoj, dokud jej ten útok, tvůj vlastní pohyb nebo jiný útok zbraní neukončí. Automatizováno."
             },
             "obranaProtiZteci": {
               "label": "Obrana proti zteči",
-              "description": "5 CP; Štítonoš VI. Volná akce. Modifikuje Příležitostný útok kopím nebo trojzubcem proti Zteči nebo Běhu; při zásahu Zteč zastaví. Zranění +4d4, Průbojnost +4, Kritický rozsah +2; lze zdarma přidat Nabodnutí. Uděluje akci Obrana proti zteči; zastavení Zteče a Nabodnutí zdarma se řeší u stolu."
+              "description": "5 CP; Štítonoš VI. Volná akce. Modifikuje Příležitostný útok kopím nebo trojzubcem proti Zteči nebo Běhu; při zásahu Zteč zastaví a udrží mezeru jednoho hexu. Zranění +4d4, Průbojnost +4, Kritický rozsah +2; lze zdarma přidat Nabodnutí. Uděluje akci Obrana proti zteči. U jiného útoku se s upozorněním vynechá; při Aplikaci zranění skončí pohyb útočníka, jeho úder ze Zteče se zruší a je odsunut zpět na dva hexy. Automatizováno."
             },
             "bleedStun": {
               "label": "Krvácení +20% / Omráčení +10%",
@@ -948,23 +974,23 @@
             },
             "momentum": {
               "label": "Momentum",
-              "description": "15 CP; Štítonoš VIII. Volná akce, stojí 3 výdrže. Jednou za kolo po zabití nebo Kritickém zásahu krátkým mečem, sekerkou, palcátem, kopím nebo trojzubcem (či po zabití Troufalým vrhem) může zaútočit znovu. Uděluje akci Momentum (Hoplita); spouštěč a útok navíc se řeší u stolu."
+              "description": "15 CP; Štítonoš VIII. Volná akce, stojí 3 výdrže. Jednou za kolo po zabití nebo Kritickém zásahu krátkým mečem, sekerkou, palcátem, kopím nebo trojzubcem (či po zabití Troufalým vrhem) může ihned zaútočit znovu. Uděluje akci Momentum (Hoplita). Ve vlastním tahu ji po Aplikaci zranění nabídne lišta na zbytek tahu; použití udělá z příštího Útoku Volnou akci. Automatizováno."
             },
             "postup": {
               "label": "Postup",
-              "description": "5 CP. Volná akce, stojí 1 výdrž. Po zabití se může pohnout až o dva hexy ve směru útoku, aniž by vyvolal Příležitostné útoky. Uděluje akci Postup; pohyb se řeší u stolu."
+              "description": "5 CP. Volná akce, stojí 1 výdrž. Po zabití libovolným útokem se může pohnout až o dva hexy ve směru útoku; po zabití Troufalým vrhem jen tehdy, stál-li cíl nejvýše tři hexy daleko. Pohyb nevyvolává Příležitostné útoky. Uděluje akci Postup. Po Aplikaci zranění ji nabídne lišta na zbytek tahu, ve vlastním tahu i mimo něj; použití udělí krok o dva hexy po linii útoku. Vyzbrojení vrženým kopím se řeší u stolu. Automatizováno."
             },
             "raznyPostup": {
               "label": "Rázný postup",
-              "description": "10 CP; Štítonoš IV. Volná akce. Jednou za kolo po pohybu Postupem může provést Úder štítem nebo Zteč štítem jako Volnou akci. Uděluje akci Rázný postup; Úder štítem či Zteč štítem zdarma se řeší u stolu."
+              "description": "10 CP; Štítonoš IV. Volná akce. Jednou za kolo po pohybu Postupem může provést Úder štítem nebo Zteč štítem jako Volnou akci. Uděluje akci Rázný postup. Když skončí krok Postupu, který se pohnul, a v ruce je štít, nabídne lišta tvé akce se štítem na zbytek tahu bez ceny akce; výdrž se platí dál. Směr k cíli se řeší u stolu. Automatizováno."
             },
             "napor1": {
               "label": "Nápor I",
-              "description": "15 CP; Štítonoš V. Volná akce, stojí 3 výdrže. Jednou za kolo, pokud Úder štítem, Zteč štítem nebo Podseknutí cíl zatlačí či povalí, může zaútočit znovu. Uděluje akci Nápor I; útok navíc se řeší u stolu."
+              "description": "15 CP; Štítonoš V. Volná akce, stojí 3 výdrže. Jednou za kolo, pokud Úder štítem, Zteč štítem nebo Podseknutí cíl odsune či povalí, může ihned zaútočit znovu; před útokem může za Volnou akci přezbrojit na kopí nebo trojzubec za 5 výdrže navíc. Uděluje akci Nápor I. Ve vlastním tahu ji po Aplikaci zranění nabídne lišta na zbytek tahu, když odsun cíl pohnul nebo cíl upadl; použití se zeptá na přezbrojení a udělá z příštího Útoku Volnou akci. Automatizováno."
             },
             "napor2": {
               "label": "Nápor II",
-              "description": "15 CP; Štítonoš VI. Volná akce, stojí 3 výdrže. Jednou za kolo, pokud Úder štítem nebo Zteč štítem cíl nezatlačí, může přezbrojit na lehkou zbraň a zaútočit znovu. Uděluje akci Nápor II; přezbrojení a útok navíc se řeší u stolu."
+              "description": "15 CP; Štítonoš VI. Volná akce, stojí 3 výdrže. Jednou za kolo, pokud Úder štítem nebo Zteč štítem cíl neodsune, může ihned zaútočit znovu; před útokem může za Volnou akci přezbrojit na krátký meč, sekerku nebo palcát za 5 výdrže navíc. Uděluje akci Nápor II. Ve vlastním tahu ji lišta nabídne na zbytek tahu, když odsun cílem nepohnul nebo cíl vyhrál souboj; použití se zeptá na přezbrojení a udělá z příštího Útoku Volnou akci. Automatizováno."
             },
             "hoplitaStance": {
               "label": "Hoplita",
@@ -976,7 +1002,7 @@
             },
             "troufalyVrh": {
               "label": "Troufalý vrh",
-              "description": "15 CP; Dřevcové VII. 1 akce, stojí 8 výdrže. Vrh kopím nebo trojzubcem až na 5 hexů: Zranění +3d8, Průbojnost +6, Průraznost +4d6, Kritický rozsah +5. Uděluje akci Troufalý vrh; hranice Kritického zásahu, zátěž štítu a výměna zbraně se řeší u stolu."
+              "description": "15 CP; Dřevcové VII. 1 akce, stojí 8 výdrže. Vrh kopím nebo trojzubcem až na 5 hexů: Zranění +3d8, Průbojnost +6, Průraznost +4d6, Kritický rozsah +5 a Úspěch o síle +40 či vyšší je Kritický zásah. Poté může jako Volnou akci přezbrojit na lehkou zbraň. Nelze použít, sousedí-li s nepřítelem. Uděluje akci Troufalý vrh. Kopí nebo trojzubec v ruce se vrhá jako dřevcová zbraň: dovednost Vrh se všemi bonusy dřevcových zbraní, bez spotřeby munice. Vedle nepřítele, na víc než 5 hexů nebo bez kopí, trojzubce či oštěpu k vržení je odmítnut a po vrhu nabídne lišta na zbytek tahu lehkou zbraň. Zatížení štítu +50% se řeší u stolu. Automatizováno."
             },
             "penetration2": {
               "label": "Průbojnost +2",
@@ -984,11 +1010,11 @@
             },
             "hexAttack": {
               "label": "Útok přes okupovaný hex",
-              "description": "10 CP; Dřevcové V. Může útočit přes oponentem okupovaný hex. Ručně — řeší se u stolu."
+              "description": "10 CP; Dřevcové V. Může útočit přes oponentem okupovaný hex; kontrola dosahu se na něm už nezastaví. Zběsilý útok a Útok na slabinu přes okupovaný hex dál nelze. Automatizováno."
             },
             "silaObratnost": {
               "label": "Zranění za Sílu i Obratnost",
-              "description": "10 CP; Štítonoš X, Dřevcové X. Ručně — řeší se u stolu."
+              "description": "10 CP; Štítonoš X, Dřevcové X. Zranění zbraní se počítá za Sílu i Obratnost, u zbraní na blízko i vrhacích (ne u luků a kuší). Automatizováno."
             }
           }
         },
@@ -5331,6 +5357,7 @@
     "ForcedMovement": {
       "NoContest": "{source}: po této kartě nebyl nalezen žádný odpovídající versus Test. Použijte ji podle rozhodnutí PJ.",
       "ContestLost": "{source}: cíl vyhrál střet o {gap}. Nic se nestane.",
+      "ContestLostPushed": "{source}: cíl vyhrál střet o {gap}. Dopadne jen první odsun, bez zranění.",
       "PushOnly": "{source}: střet vyhrán o {gap}, méně než {min} potřebných pro zranění. {targets} odstrčen bez zranění.",
       "Rooted": "{name} je Zakořeněný a nelze s ním pohnout.",
       "WrongScene": "Vynucený pohyb vyžaduje, aby PJ sledoval scénu, na které tokeny stojí. Přesuňte je ručně.",

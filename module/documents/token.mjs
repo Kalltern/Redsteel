@@ -5,6 +5,8 @@ import {
   isTrackedTurn,
 } from "../utils/actionTracker.mjs";
 import { isForcedMove } from "../utils/forcedMoveRegistry.mjs";
+// Call time only (an Advance step walked out), never while modules evaluate.
+import { completeHopliteAdvance } from "../utils/hoplite.mjs";
 import {
   MOVEMENT_MODES,
   DRAG_PATH_LAYER,
@@ -266,6 +268,7 @@ export class RedsteelToken extends Token {
           free: !!lockMode.free,
           around: lock.around ?? null,
           toward: lock.toward ?? null,
+          along: lock.along ?? null,
         }),
         { color: lockMode.color, alpha: 0.15 },
         this.document?.id ?? null,
@@ -469,9 +472,16 @@ function endWalkedBonusStep(actor, tokenSpent) {
   const lock = getMovementLock(actor);
   if (!lock?.bonus || lock.done) return;
   if (tokenSpent - lock.startSpent < lock.budget) return;
-  confirmMovement(actor, { tokenSpent }).catch((err) =>
-    console.error("REDSTEEL: Failed to end the bonus step", err),
-  );
+  confirmMovement(actor, { tokenSpent })
+    // Hoplite Advance walked out: Forceful Advance's free shield ability.
+    .then(() =>
+      lock.mode === "advance"
+        ? completeHopliteAdvance(actor, tokenSpent - lock.startSpent)
+        : null,
+    )
+    .catch((err) =>
+      console.error("REDSTEEL: Failed to end the bonus step", err),
+    );
 }
 
 // Reset movementSpent at the start of a new round. Use the canvas tokens

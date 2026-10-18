@@ -910,6 +910,19 @@ REDSTEEL.effectDefinitions = {
     changes: [],
   },
 
+  // "Přípravný postoj" (Prepared Stance, Hoplite): the next Opportunity
+  // Attack with a spear or trident takes +20 Hit, read per attack in
+  // getAttackRolls (utils/hoplite.mjs settlePreparedStance), which also spends
+  // it. No clock: it lasts until spent, or broken by the holder's own move or
+  // any other weapon attack. "Nesčítá se": a second use keeps the one.
+  prepared_stance: {
+    name: "REDSTEEL.Items.PreparedStance.name",
+    img: "icons/skills/melee/shield-block-gray-orange.webp",
+    statuses: ["prepared_stance"],
+    stackBehavior: "ignore",
+    changes: [],
+  },
+
   // "Větrný postoj" (Wind Stance, Champion): weapon attacks against two
   // different enemies in one round (utils/champion.mjs). Defense +5% here,
   // melee Defense only (not Dodge, not ranged); the Hit +5% is per attack, read

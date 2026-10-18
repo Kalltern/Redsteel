@@ -57,6 +57,7 @@ import {
 import { isSprintAbility, useUtilityAbility } from "./combatAbilities.mjs";
 import { isCharge, isQuickFeet } from "./abilityMovement.mjs";
 import { completeDuelistsAdvance } from "./swordDancer.mjs";
+import { completeHopliteAdvance, useDrawLightWeapon } from "./hoplite.mjs";
 import { isReactionAbility } from "./opportunityAttacks.mjs";
 import { canTradeWith, requestTrade } from "./trade.mjs";
 import { dropStance, holdStance } from "./stances.mjs";
@@ -1210,6 +1211,7 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       useCombatSuggestion: this._onUseCombatSuggestion,
       overwatchShot: this._onOverwatchShot,
       overpowerSuggestion: this._onOverpower,
+      drawLightWeapon: this._onDrawLightWeapon,
       vigilantShot: this._onVigilantShot,
       escapeEffect: this._onEscapeEffect,
       applySustainSpell: this._onApplySustainSpell,
@@ -3255,6 +3257,28 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
   }
 
   /**
+   * Daring Throw's "Draw a light weapon" chip (hoplite.mjs): a carried light
+   * weapon goes into the active set's main hand, as a Free action.
+   *
+   * @this {Bg3Hotbar}
+   */
+  static async _onDrawLightWeapon(event, target) {
+    if (isRightClick(event)) return;
+    const chip = target.closest("[data-action=drawLightWeapon]");
+    const actor = this.actor;
+    if (!chip || !actor?.isOwner) return;
+    if (this.#suggestionBusy) return;
+    this.#suggestionBusy = true;
+    try {
+      await useDrawLightWeapon(actor);
+    } finally {
+      setTimeout(() => {
+        this.#suggestionBusy = false;
+      }, PORTRAIT_HOLD_MS);
+    }
+  }
+
+  /**
    * Overpower (Weapon Master): reroll this actor's own die in the contest the
    * chip names and restate it (utils/overpower.mjs).
    *
@@ -3378,10 +3402,14 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     const actor = this.actor;
     if (!actor?.isOwner) return;
     const lock = getMovementLock(actor);
+    const tokenSpent = tokenMovementSpent(tokenForActor(actor));
     // A bonus step hands back the movement it interrupted, less what it walked.
-    await confirmMovement(actor, {
-      tokenSpent: tokenMovementSpent(tokenForActor(actor)),
-    });
+    await confirmMovement(actor, { tokenSpent });
+    // The Hoplite's Advance is over: having moved, Forceful Advance makes a
+    // shield ability free this turn (hoplite.mjs).
+    if (lock?.mode === "advance" && !lock.done) {
+      await completeHopliteAdvance(actor, tokenSpent - (Number(lock.startSpent) || 0));
+    }
     // The Charge approach is over: make its attack, at whatever the player
     // has targeted. The dialog sees the finished Charge move and swings.
     if (lock?.mode === "charge" && !lock.done) {

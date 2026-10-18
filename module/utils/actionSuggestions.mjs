@@ -49,6 +49,16 @@ import { BRACE_KEY, getBraceEffect } from "./brace.mjs";
 import { isHostileSide } from "./movementZones.mjs";
 import { hasWeaponMasterNode } from "./weaponMaster.mjs";
 import { FEINT_ATTACK_KEYS, isFeintAttack } from "./champion.mjs";
+import {
+  forcefulAdvanceItems,
+  isHopliteAdvance,
+  isHopliteMomentum,
+  onslaughtKind,
+  pendingDrawLightWeapon,
+  pendingHopliteOnslaught,
+  pendingHopliteAdvance,
+  pendingHopliteMomentum,
+} from "./hoplite.mjs";
 
 const MODE_ORDER = ["move", "slow", "sprint", "disengage"];
 
@@ -1114,6 +1124,71 @@ function halfPirouetteChips(actor) {
   return [{ ...chip, aimable: false, hint: "" }];
 }
 
+/**
+ * Hoplite (hoplite.mjs), each for the rest of the turn it was earned in:
+ * Momentum after a kill or a Critical Hit with a qualifying weapon, Advance
+ * after a kill (also off turn), Onslaught I / II after a shield blow or Trip,
+ * "Draw a light weapon" after a Daring Throw,
+ * and the shield abilities Forceful Advance made free after an Advance step.
+ * Free actions; Momentum and Advance pay their Stamina when used. Not attacks
+ * (save the shield abilities), so no Aimed Attack on right-click.
+ *
+ * @param {Actor} actor
+ * @returns {object[]}
+ */
+function hopliteChips(actor) {
+  const chips = [];
+  const free = "REDSTEEL.Bg3Hotbar.Suggest.FreeAction";
+  const plain = (item, targetId = null) => ({
+    ...abilityChip(item, free, targetId),
+    aimable: false,
+    hint: "",
+  });
+
+  if (pendingHopliteMomentum(actor)) {
+    const momentum = actor.items.find(
+      (i) => i.type === "ability" && isHopliteMomentum(i),
+    );
+    if (momentum) chips.push(plain(momentum));
+  }
+  if (pendingHopliteAdvance(actor)) {
+    const advance = actor.items.find(
+      (i) => i.type === "ability" && isHopliteAdvance(i),
+    );
+    if (advance) chips.push(plain(advance));
+  }
+  for (const kind of [1, 2]) {
+    if (!pendingHopliteOnslaught(actor, kind)) continue;
+    const onslaught = actor.items.find(
+      (i) => i.type === "ability" && onslaughtKind(i) === kind,
+    );
+    if (onslaught) chips.push(plain(onslaught));
+  }
+  const draw = pendingDrawLightWeapon(actor);
+  if (draw) {
+    const label = game.i18n.localize("REDSTEEL.Hoplite.DrawLightWeapon");
+    const hint =
+      draw.candidates.length === 1
+        ? (draw.candidates[0].localizedName ?? draw.candidates[0].name)
+        : game.i18n.localize("REDSTEEL.Hoplite.DrawLightWeaponPick");
+    const cost = game.i18n.localize(free);
+    chips.push({
+      id: "hoplite-draw-light",
+      kind: "weaponSwap",
+      theme: "melee",
+      costKind: "free",
+      img: draw.candidates[0].img,
+      label,
+      hint,
+      ariaLabel: `${label}, ${cost}`,
+    });
+  }
+  for (const item of forcefulAdvanceItems(actor)) {
+    chips.push(abilityChip(item, free, null));
+  }
+  return chips;
+}
+
 /** Fallback icon of the Overwatch shot, for a status set without the ability. */
 const OVERWATCH_ICON = "icons/skills/ranged/arrows-triple-yellow-red.webp";
 
@@ -1192,7 +1267,8 @@ function combatProvider(actor) {
     ...reactionChips(actor), ...overpowerChips(actor), ...vigilantChips(actor),
     ...overwatchChips(actor), ...impaleFollowupChips(actor),
     ...escapeChips(actor), ...sustainChips(actor), ...stanceChips(actor),
-    ...slipThroughChips(actor), ...halfPirouetteChips(actor)];
+    ...slipThroughChips(actor), ...halfPirouetteChips(actor),
+    ...hopliteChips(actor)];
 }
 
 const PROVIDERS = [movementProvider, combatProvider];

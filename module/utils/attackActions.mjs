@@ -4,6 +4,11 @@ import { autoTickModifier } from "./autoModifiers.mjs";
 import { isOwnTurn } from "./opportunityAttacks.mjs";
 import { spendForAttack } from "./actionTracker.mjs";
 import {
+  claimHopliteFreeOpportunity,
+  filterChargeDefense,
+  hopliteModifierCosts,
+} from "./hoplite.mjs";
+import {
   SECTOR,
   attackSector,
   checkMeleeReach,
@@ -288,8 +293,15 @@ ${
           html[0].querySelectorAll(".attack-modifier-checkbox:checked"),
         ).map((cb) => cb.dataset.abilityId);
 
-        const selectedModifiers = modifierAbilities.filter((mod) =>
-          selectedModifierIds.includes(mod.id),
+        // Hoplite → Charge Defense needs an Opportunity Attack with a spear
+        // or trident at a charging target; otherwise it is dropped with a
+        // notice (hoplite.mjs). Read off the box before anything else runs.
+        const selectedModifiers = filterChargeDefense(
+          actor,
+          modifierAbilities.filter((mod) => selectedModifierIds.includes(mod.id)),
+          {
+            opportunity: html.find('[name="opportunityAttack"]').is(":checked"),
+          },
         );
 
         // ─── Reach (positioning.mjs) ───
@@ -367,16 +379,23 @@ ${
           : await actor.unsetFlag("redsteel", "aimCount");
 
         // ─── Deduct Costs ───
+        // Charge Defense makes a ticked Impale free (hoplite.mjs).
         const paid = await game.redsteel.deductAbilityCost(
           actor,
-          selectedModifiers,
+          hopliteModifierCosts(selectedModifiers),
         );
         if (!paid) return;
 
         // No ability item swings a plain weapon attack, so the hotbar readout
         // is told about it here. The book prices one at 1 Action; declared as
         // an Opportunity Attack it spends the reaction instead.
-        await spendForAttack(actor, { opportunity: useOpportunity });
+        // Hoplite → Příležitostný útok za kolo: once per round, the polearm
+        // Opportunity Attack at an enemy that closed in costs no Reaction.
+        const freeOpportunity =
+          useOpportunity && (await claimHopliteFreeOpportunity(actor, token));
+        if (!freeOpportunity) {
+          await spendForAttack(actor, { opportunity: useOpportunity });
+        }
 
         // ─── Execute Attack ───
         await game.redsteel[fnName]({

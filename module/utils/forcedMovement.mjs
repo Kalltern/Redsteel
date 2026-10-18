@@ -40,6 +40,8 @@
 // touch the other's exports at call time, never while the modules evaluate.
 import { applyDamageAsGM, SOCKET } from "./applyDamage.mjs";
 import { withForcedFlag } from "./forcedMoveRegistry.mjs";
+// Circular too (hoplite.mjs reads versusOutcome); call time only.
+import { offerHopliteOnslaught } from "./hoplite.mjs";
 
 /**
  * Statuses that pin a token in place: pushes, pulls and slides leave it where
@@ -82,9 +84,12 @@ function bearing(from, to) {
 function centerOfDoc(doc) {
   const sizeX = canvas.grid.sizeX ?? canvas.grid.size;
   const sizeY = canvas.grid.sizeY ?? canvas.grid.size;
+  // Stored position, not the live one: the live x/y trail the movement
+  // animation, which stalls while the GM's Foundry tab is in the background,
+  // and a chained push would then test the wrong hexes for blockers.
   return {
-    x: Number(doc.x) + (Number(doc.width ?? 1) * sizeX) / 2,
-    y: Number(doc.y) + (Number(doc.height ?? 1) * sizeY) / 2,
+    x: Number(doc._source?.x ?? doc.x) + (Number(doc.width ?? 1) * sizeX) / 2,
+    y: Number(doc._source?.y ?? doc.y) + (Number(doc.height ?? 1) * sizeY) / 2,
   };
 }
 
@@ -250,8 +255,8 @@ async function placeAlong(tokenDoc, start, path, { teleport = false } = {}) {
     const w = corner
       ? { x: corner.x, y: corner.y }
       : {
-          x: Math.round(Number(tokenDoc.x) + (c.x - start.x)),
-          y: Math.round(Number(tokenDoc.y) + (c.y - start.y)),
+          x: Math.round(Number(tokenDoc._source?.x ?? tokenDoc.x) + (c.x - start.x)),
+          y: Math.round(Number(tokenDoc._source?.y ?? tokenDoc.y) + (c.y - start.y)),
         };
     // Core's "displace" action places without travelling. Only used when this
     // Foundry build defines it; otherwise the token slides there.
@@ -425,10 +430,33 @@ async function dealCollisionDamage(scene, victims, { formula, label, sourceActor
  * `distance` hexes, `collisionDamage` formula (default 1d8, ignores armor).
  * `damageMinMargin`: the card's own damage needs the versus Test won by at
  * least this much; a smaller win pushes without it (see gateVersusPush).
+ * `proneGap`: a won versus Test by at least this much also knocks the target
+ * Prone ("Při rozdílu 50 ... Povalí"), read off the defender's answer.
+ * `contest`: Zteč štítem's two-stage push. The first `distance` hexes land
+ * whatever the contest; the card's damage and effects need the contest won
+ * (gateVersusPush: a lost one pushes the first hexes only, no dialog); a win
+ * pushes `contest.extraDistance` hexes more, unless the first push already
+ * collided. Each stage happens once per target per card (`cardPush` flag),
+ * at Apply Damage or when the answer arrives, whichever comes last.
+ *
+ * A push that collides moves nothing: the mover and whoever it hit take the
+ * collision damage instead (moveAlongHeading).
  */
 export const PUSH_ON_HIT = Object.freeze({
-  "REDSTEEL.Items.ShieldBash.name": { distance: 1 },
-  "REDSTEEL.Items.ShieldBashSmallShield.name": { distance: 1 },
+  // Úder štítem: Apply Damage being pressed is the won contest.
+  "REDSTEEL.Items.ShieldBash.name": { distance: 1, proneGap: 50 },
+  "REDSTEEL.Items.ShieldBashSmallShield.name": { distance: 1, proneGap: 50 },
+  // Zteč štítem: one hex on landing, two more on a won +20% versus Test.
+  "REDSTEEL.Items.ShieldCharge.name": {
+    distance: 1,
+    proneGap: 50,
+    contest: { extraDistance: 2 },
+  },
+  "REDSTEEL.Items.ShieldChargeSmallShield.name": {
+    distance: 1,
+    proneGap: 50,
+    contest: { extraDistance: 2 },
+  },
   // Odstrčení: pushed on any win, the 3d4 only at MoS 25+.
   "REDSTEEL.Items.ShoveStrength.name": { distance: 1, damageMinMargin: 25 },
   "REDSTEEL.Items.ShoveDexterity.name": { distance: 1, damageMinMargin: 25 },
@@ -437,6 +465,8 @@ export const PUSH_ON_HIT = Object.freeze({
 const PUSH_ON_HIT_NAMES = Object.freeze({
   "Shield Bash": "REDSTEEL.Items.ShieldBash.name",
   "Shield Bash (small shield)": "REDSTEEL.Items.ShieldBashSmallShield.name",
+  "Shield Charge": "REDSTEEL.Items.ShieldCharge.name",
+  "Shield Charge (small shield)": "REDSTEEL.Items.ShieldChargeSmallShield.name",
   "Shove (Strength)": "REDSTEEL.Items.ShoveStrength.name",
   "Shove (Dexterity)": "REDSTEEL.Items.ShoveDexterity.name",
 });
@@ -448,35 +478,235 @@ export function pushForCard(message) {
   return (key && PUSH_ON_HIT[key]) || null;
 }
 
+const SYSTEM_ID = "redsteel";
+const PRONE_STATUS = "prone";
+
+/**
+ * Knock a token Prone (the `prone` status, Povalení) unless it already is.
+ * True when it newly went down. GM side.
+ */
+async function knockProne(tokenDoc) {
+  const actor = tokenDoc?.actor;
+  if (!actor || actor.statuses?.has(PRONE_STATUS)) return false;
+  await game.redsteel.applyEffect(actor, PRONE_STATUS);
+  return actor.statuses?.has(PRONE_STATUS) === true;
+}
+
 /**
  * Apply Damage landed a pushing ability: push each target away from the
- * attacker. GM only (called from applyDamageAsGM). Skipped for a target the
+ * attacker. GM only (called from applyDamageAsGM, from the Shield Charge
+ * lost-contest relay and from the answer queue). Skipped for a target the
  * attacker cannot be located against, and for a dead target.
+ *
+ * A plain push (Shield Bash, Shove) pushes on every call, as before: the GM
+ * re-applying a card pushes again (accepted, see the forced-movement notes).
+ * A `contest` push keeps its stages in the card's `cardPush` flag, so each
+ * happens once. `proneGap` is settled once per target (`pushProne` flag).
  *
  * @param {ChatMessage} message        the attack card
  * @param {Scene} scene
  * @param {string[]} targetIds
  * @param {TokenDocument|null} attackerDoc
  * @param {Actor|null} attacker
+ * @param {object} [opts]
+ * @param {boolean} [opts.firstOnly]  a lost contest: the first hexes only
+ * @param {boolean} [opts.answerOnly] the answer queue: nothing a plain push
+ *   would repeat, only the stages that wait on the contest
+ * @returns {Promise<{tokenId: string, moved: number, prone: boolean}[]>} per
+ *   target a push was tried on: hexes it has been moved by this card (a
+ *   contest push counts every stage so far), and whether this call knocked it
+ *   Prone. Empty when the card pushes nothing.
  */
-export async function resolvePushOnHit(message, scene, targetIds, attackerDoc, attacker) {
+export async function resolvePushOnHit(
+  message,
+  scene,
+  targetIds,
+  attackerDoc,
+  attacker,
+  { firstOnly = false, answerOnly = false } = {},
+) {
+  const results = [];
   const push = pushForCard(message);
-  if (!push) return;
+  if (!push) return results;
   if (!attackerDoc) {
     ui.notifications.warn(game.i18n.localize("REDSTEEL.ForcedMovement.NoAttacker"));
-    return;
+    return results;
   }
   const label = message.flags?.redsteel?.rollName ?? "";
+  const outcome = push.contest || push.proneGap ? versusOutcome(message) : null;
+  const won = outcome?.attackerWon === true;
+  const stages = foundry.utils.deepClone(message.getFlag(SYSTEM_ID, "cardPush") ?? {});
+  const proned = foundry.utils.deepClone(message.getFlag(SYSTEM_ID, "pushProne") ?? {});
+  const opts = (distance) => ({
+    distance,
+    collisionDamage: push.collisionDamage,
+    label,
+    sourceActor: attacker,
+  });
+
   for (const id of targetIds) {
     const target = scene.tokens.get(id);
     if (!target || target.id === attackerDoc.id || isDeadToken(target)) continue;
-    await pushToken(target, attackerDoc, {
-      distance: push.distance ?? 1,
-      collisionDamage: push.collisionDamage,
-      label,
-      sourceActor: attacker,
-    });
+    let moved = 0;
+
+    if (push.contest) {
+      const stage = stages[id] ?? { first: null, extra: null };
+      if (stage.first === null && !answerOnly) {
+        const pushed = await pushToken(target, attackerDoc, opts(push.distance ?? 1));
+        stage.first = Number(pushed?.moved) || 0;
+      }
+      // The second stage waits for the first (it starts where that one ended)
+      // and for a won contest. A first push that collided moved nothing, and
+      // the same blocker stands in the way, so the second is not tried.
+      if (stage.first !== null && stage.extra === null && won && !firstOnly) {
+        stage.extra = stage.first > 0
+          ? Number(
+              (await pushToken(target, attackerDoc, opts(push.contest.extraDistance)))
+                ?.moved,
+            ) || 0
+          : 0;
+      }
+      stages[id] = stage;
+      moved = (stage.first ?? 0) + (stage.extra ?? 0);
+    } else if (!answerOnly) {
+      const pushed = await pushToken(target, attackerDoc, opts(push.distance ?? 1));
+      moved = Number(pushed?.moved) || 0;
+    }
+
+    let prone = false;
+    if (push.proneGap && won && outcome.gap >= push.proneGap && !proned[id] && !firstOnly) {
+      proned[id] = true;
+      prone = await knockProne(target);
+    }
+    results.push({ tokenId: target.id, moved, prone });
   }
+
+  if (push.contest) await message.setFlag(SYSTEM_ID, "cardPush", stages);
+  if (push.proneGap) await message.setFlag(SYSTEM_ID, "pushProne", proned);
+  if (!answerOnly) {
+    const applied = new Set(message.getFlag(SYSTEM_ID, "pushTargets") ?? []);
+    for (const r of results) applied.add(r.tokenId);
+    await message.setFlag(SYSTEM_ID, "pushTargets", [...applied]);
+  }
+  return results;
+}
+
+/** Podseknutí, plain and Improved: the attack modifiers that knock Prone. */
+export const TRIP_KEYS = Object.freeze([
+  "REDSTEEL.Items.TripStrength.name",
+  "REDSTEEL.Items.TripDexterity.name",
+  "REDSTEEL.Items.ImprovedTripStrength.name",
+  "REDSTEEL.Items.ImprovedTripDexterity.name",
+]);
+const TRIP_NAMES = Object.freeze([
+  "Trip (Strength)",
+  "Trip (Dexterity)",
+  "Improved Trip (Strength)",
+  "Improved Trip (Dexterity)",
+]);
+
+/** Is this attack modifier a Trip? */
+export function isTripModifier(mod) {
+  return (
+    TRIP_KEYS.includes(mod?.system?.localizationKey) || TRIP_NAMES.includes(mod?.name)
+  );
+}
+
+/** How far back an answer looks for the card it answers. */
+const ANSWER_LOOKBACK = 100;
+
+function speakerTokenDoc(message) {
+  const speaker = message?.speaker ?? {};
+  return game.scenes?.get(speaker.scene)?.tokens?.get(speaker.token) ?? null;
+}
+
+/**
+ * A defender's versus answer arrived (`flags.redsteel.versusFollowup`). Active
+ * GM only, through the queue in hoplite.mjs registerHopliteHooks:
+ *
+ * - Podseknutí: the newest earlier card whose Trip line (`flags.redsteel
+ *   .tripTest`, stamped where the line is rolled) has this margin and source.
+ *   Attacker won: the answering defender goes Prone. Once per card
+ *   (`tripResolved`), first answer wins.
+ * - A pushing card already applied (`pushTargets`) whose own margin line this
+ *   answers: the stages that waited on the contest (Shield Charge's two more
+ *   hexes, Prone at a gap of 50). Not yet applied: nothing, Apply Damage
+ *   reads the answer when it comes.
+ *
+ * Returns what happened, for Hoplite Onslaught, or null.
+ *
+ * @param {ChatMessage} message
+ * @returns {Promise<{card: ChatMessage, attacker: Actor|null,
+ *   pushResults: object[], knockedDownIds: string[]}|null>}
+ */
+export async function resolveVersusAnswer(message) {
+  const followup = message?.flags?.redsteel?.versusFollowup;
+  if (!followup) return null;
+  const messages = game.messages?.contents ?? [];
+  const index = messages.findIndex((m) => m.id === message.id);
+  if (index < 0) return null;
+  const margin = Number(followup.margin);
+  const source = followup.source ?? "";
+  const stop = Math.max(0, index - ANSWER_LOOKBACK);
+
+  for (let i = index - 1; i >= stop; i--) {
+    const card = messages[i];
+    const flags = card.flags?.redsteel ?? {};
+    if (flags.rerolledAway) continue;
+
+    const trip = flags.tripTest;
+    if (trip && Number(trip.margin) === margin && (trip.source ?? "") === source) {
+      if (flags.tripResolved) return null;
+      const outcome = versusOutcomeFor(card, margin, source);
+      if (!outcome) return null;
+      await card.setFlag(SYSTEM_ID, "tripResolved", true);
+      const attackerDoc = speakerTokenDoc(card);
+      const defenderDoc = speakerTokenDoc(message);
+      if (!outcome.attackerWon || !defenderDoc || defenderDoc === attackerDoc) {
+        return null;
+      }
+      const prone = await knockProne(defenderDoc);
+      return {
+        card,
+        attacker: attackerDoc?.actor ?? null,
+        pushResults: [],
+        knockedDownIds: prone ? [defenderDoc.id] : [],
+      };
+    }
+
+    const line = marginLineOf(card);
+    if (!line || line.margin !== margin || line.source !== source) continue;
+    const push = pushForCard(card);
+    if (!push || !(push.contest || push.proneGap)) return null;
+    const applied = flags.pushTargets ?? [];
+    if (!applied.length) return null;
+    const attackerDoc = speakerTokenDoc(card);
+    const scene = attackerDoc?.parent ?? null;
+    if (!scene) return null;
+    const attacker = attackerDoc.actor ?? null;
+    const pushResults = await resolvePushOnHit(card, scene, applied, attackerDoc, attacker, {
+      answerOnly: true,
+    });
+    return {
+      card,
+      attacker,
+      pushResults,
+      knockedDownIds: pushResults.filter((r) => r.prone).map((r) => r.tokenId),
+    };
+  }
+  return null;
+}
+
+/** The first margin line a card posts, or null. */
+function marginLineOf(message) {
+  const html = `${message?.flavor ?? ""}${message?.content ?? ""}`;
+  const span = new DOMParser()
+    .parseFromString(html, "text/html")
+    .querySelector(".mos-followup");
+  if (!span) return null;
+  const margin = Number(span.dataset.margin);
+  if (!Number.isFinite(margin)) return null;
+  return { margin, source: span.dataset.source ?? "" };
 }
 
 /* -------------------------------------------- */
@@ -497,15 +727,18 @@ export async function resolvePushOnHit(message, scene, targetIds, attackerDoc, a
  * @returns {{attackerWon:boolean, gap:number}|null}  null when nobody answered
  */
 export function versusOutcome(message) {
-  const html = `${message?.flavor ?? ""}${message?.content ?? ""}`;
-  const span = new DOMParser()
-    .parseFromString(html, "text/html")
-    .querySelector(".mos-followup");
-  if (!span) return null;
-  const margin = Number(span.dataset.margin);
-  const source = span.dataset.source ?? "";
-  if (!Number.isFinite(margin)) return null;
+  const line = marginLineOf(message);
+  if (!line) return null;
+  return versusOutcomeFor(message, line.margin, line.source);
+}
 
+/**
+ * versusOutcome for one named line of the card (its margin and source), for
+ * a card that posts more than one (a Trip line beside the attack).
+ *
+ * @returns {{attackerWon:boolean, gap:number}|null}
+ */
+export function versusOutcomeFor(message, margin, source = "") {
   const messages = game.messages?.contents ?? [];
   const start = messages.findIndex((m) => m.id === message.id);
   for (let i = messages.length - 1; i > start; i--) {
@@ -534,6 +767,7 @@ export function versusOutcome(message) {
  */
 export async function gateVersusPush(message, targets) {
   const push = pushForCard(message);
+  if (push?.contest) return gateContestPush(message, targets);
   const min = Number(push?.damageMinMargin);
   if (!push || !Number.isFinite(min)) return false;
 
@@ -592,6 +826,73 @@ export async function gateVersusPush(message, targets) {
   return true;
 }
 
+/**
+ * Apply Damage on Zteč štítem (a `contest` push). Runs on the clicking client
+ * before the damage dialog opens.
+ *
+ * - no answer on record: false, the dialog opens and the GM rules the
+ *   damage; the first hex is pushed after it, the rest when the answer comes;
+ * - defender won: no damage, no dialog. The first hex still lands (the book
+ *   pushes it before the Test), relayed to the GM, true;
+ * - attacker won: false, the dialog opens; after the damage both stages are
+ *   pushed and a gap of 50 knocks Prone (resolvePushOnHit).
+ *
+ * @returns {Promise<boolean>} true when the click has been fully handled
+ */
+async function gateContestPush(message, targets) {
+  const source = message.flags?.redsteel?.rollName ?? "";
+  const outcome = versusOutcome(message);
+  if (!outcome) {
+    ui.notifications.info(
+      game.i18n.format("REDSTEEL.ForcedMovement.NoContest", { source }),
+    );
+    return false;
+  }
+  if (outcome.attackerWon) return false;
+
+  const esc = (v) => foundry.utils.escapeHTML(String(v ?? ""));
+  await ChatMessage.create({
+    speaker: { scene: canvas.scene?.id ?? null, actor: null, token: null, alias: source },
+    content: `<p style="text-align:center;">${game.i18n.format(
+      "REDSTEEL.ForcedMovement.ContestLostPushed",
+      { source: esc(source), gap: outcome.gap },
+    )}</p>`,
+  });
+  await requestForcedMovement({
+    op: "cardPush",
+    messageId: message.id,
+    sceneId: canvas.scene?.id ?? null,
+    targetIds: targets.map((t) => t.id),
+    firstOnly: true,
+  });
+  return true;
+}
+
+/**
+ * The relayed lost-contest push (gateContestPush), on the GM: the first
+ * stage only, then Hoplite Onslaught reads what it did.
+ */
+async function runCardPush(p) {
+  const message = game.messages.get(p.messageId);
+  const scene = game.scenes.get(p.sceneId);
+  if (!message || !scene) return null;
+  const attackerDoc = scene.tokens.get(message.speaker?.token ?? "") ?? null;
+  const attacker = attackerDoc?.actor ?? null;
+  const pushResults = await resolvePushOnHit(
+    message,
+    scene,
+    Array.isArray(p.targetIds) ? p.targetIds : [],
+    attackerDoc,
+    attacker,
+    { firstOnly: p.firstOnly === true },
+  );
+  await offerHopliteOnslaught(attacker, message, {
+    pushResults,
+    knockedDownIds: pushResults.filter((r) => r.prone).map((r) => r.tokenId),
+  });
+  return pushResults;
+}
+
 /* -------------------------------------------- */
 /*  SOCKET RELAY                                */
 /* -------------------------------------------- */
@@ -611,6 +912,7 @@ export async function requestForcedMovement(payload) {
 }
 
 async function runForcedMovement(p) {
+  if (p?.op === "cardPush") return runCardPush(p);
   const scene = game.scenes.get(p.sceneId);
   const tokenDoc = scene?.tokens.get(p.tokenId);
   if (!tokenDoc) return null;

@@ -122,7 +122,7 @@ export const GENERATED_SPECS = {
       pohybPoVrhu: { tier: 2, column: 4 },
       presnyVystrel: { tier: 2, column: 5 },
       lehkaZbroj: { tier: 2, column: 6 },
-      bleedStun: { tier: 3, column: 1, passive: { combatModifiers: {"extraEffects": {"bleed": 20, "stun": 15}} } },
+      bleedStun: { tier: 3, column: 1, passive: { combatModifiers: {"extraEffects": {"bleed": 20, "stagger": 15}} } },
       kritRozsah: { tier: 3, column: 2, passive: { combatModifiers: {"critRangeBonus": 2} } },
       kritKryt: { tier: 3, column: 3, passive: { changes: [add("system.combatSkills.rangedDefense.critbonus", 5)] } },
       zmrzacujiciVystrel: { tier: 3, column: 4 },

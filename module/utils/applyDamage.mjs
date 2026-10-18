@@ -32,6 +32,12 @@ import { offerSlipThrough } from "./slipThrough.mjs";
 import { offerHalfPirouette } from "./halfPirouette.mjs";
 import { settleFinalStrikeKill } from "./swordDancer.mjs";
 import { offerChampionRestaggerPush, settleChampionFeint } from "./champion.mjs";
+import {
+  offerHopliteAdvance,
+  offerHopliteMomentum,
+  offerHopliteOnslaught,
+  settleChargeDefense,
+} from "./hoplite.mjs";
 import { gateVersusPush, resolvePushOnHit } from "./forcedMovement.mjs";
 import {
   cardDeclaredSneak,
@@ -856,6 +862,9 @@ export async function applyDamageAsGM(data) {
   // Staggered before this apply and staggered again by it: Off-hand Bonus
   // III's Blunt push (champion.mjs offerChampionRestaggerPush).
   const restaggeredIds = [];
+  // Newly Prone after this apply, and not felled by it (a PC at 0 HP falls
+  // Prone too): Hoplite Onslaught I's "povalí cíl" (hoplite.mjs).
+  const knockedDownIds = [];
   for (const tokenId of targetIds) {
     const tokenDoc = scene.tokens.get(tokenId);
     if (!tokenDoc) {
@@ -872,6 +881,7 @@ export async function applyDamageAsGM(data) {
     const wasDowned =
       actor.statuses?.has("downed") === true ||
       actor.statuses?.has("incapacitated") === true;
+    const wasProne = actor.statuses?.has("prone") === true;
 
     // Bane-aware packet: a target matching the attacker's Bane uses the
     // Bane variant of normal/critical/breakthrough instead of the base one.
@@ -1321,6 +1331,13 @@ export async function applyDamageAsGM(data) {
     ) {
       felledIds.push(tokenId);
     }
+    if (
+      !wasProne &&
+      actor.statuses?.has("prone") &&
+      !felledIds.includes(tokenId)
+    ) {
+      knockedDownIds.push(tokenId);
+    }
 
     // Impale: Follow-up Attack when this Impale was the killing blow, whether
     // or not its Root landed.
@@ -1511,6 +1528,14 @@ export async function applyDamageAsGM(data) {
   // Vylepšený klamavý útok (Improved Feint Attack): a hit under Wind Stance
   // makes the next Attack on the same target a Free action. Once per card.
   await settleChampionFeint(attacker, message, targetIds, scene);
+  // Hoplita (Hoplite): Momentum after a kill or a Critical Hit with a short
+  // sword, hatchet, mace, spear or trident (or a Daring Throw kill), and
+  // Advance after any kill. Each stamps a chip for that turn (hoplite.mjs).
+  await offerHopliteMomentum(attacker, message, targetIds, felledIds, mode);
+  await offerHopliteAdvance(attacker, message, felledIds, scene);
+  // Obrana proti zteči (Charge Defense): the hit stops the charge and keeps
+  // the charger two hexes off. Before the push below reads positions.
+  await settleChargeDefense(attacker, message, targetIds, scene);
   // Bonus za druhou zbraň III, Blunt: a re-staggered target may be pushed
   // back one hex. Offered as a button; nothing moves here.
   await offerChampionRestaggerPush(attacker, message, restaggeredIds, scene);
@@ -1519,13 +1544,23 @@ export async function applyDamageAsGM(data) {
   // means the versus Test was won, so each target is pushed straight away from
   // the attacker. Last, so the push happens after everything above has read
   // where the tokens stood when the blow landed.
-  await resolvePushOnHit(
+  const pushResults = await resolvePushOnHit(
     message,
     scene,
     targetIds,
     attackerTokenId ? (scene?.tokens.get(attackerTokenId) ?? null) : null,
     attacker,
   );
+  // Hoplita → Nápor I / II: a shield blow or Trip that pushed or knocked down
+  // its target, or a shield blow that pushed nothing, offers another attack
+  // this turn (hoplite.mjs). After the push, which it reads.
+  await offerHopliteOnslaught(attacker, message, {
+    pushResults: pushResults ?? [],
+    knockedDownIds: [
+      ...knockedDownIds,
+      ...(pushResults ?? []).filter((r) => r.prone).map((r) => r.tokenId),
+    ],
+  });
 }
 
 function openDamageSelectionDialog(message, targets) {

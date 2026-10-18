@@ -3,7 +3,7 @@
   "type": "ability",
   "img": "icons/skills/melee/shield-block-bash-yellow.webp",
   "system": {
-    "description": "<p>A combination of movement and a shield bash. <br />Triggers a vs Test of Strength +20 against the target's Strength/Dexterity. On attacker's success, pushes the target 1 hex, deals 2d4 damage (ignores Armor) with 35% chance to Stagger. <br />At a MoS of 25 or higher, you may roll an additional +2d4 damage and push the target up to 2 more hexes. <br />At a MoS of 50 or higher, also knocks the target Prone.<br /><br />You must be at least 2 hexes away from the target.</p>",
+    "description": "<p>A combination of movement and a shield bash. <br />Pushes the target 1 hex and triggers a vs Test of Strength +20 against the target's Strength/Dexterity. On attacker's success, pushes the target up to 2 more hexes and deals 4d4 damage (ignores Armor) with 35% chance to Stagger. <br />At a MoS of 50 or higher, also knocks the target Prone.<br /><br />You must be at least 2 hexes away from the target.</p>",
     "type": "melee",
     "weaponAbility": false,
     "standalone": false,
@@ -94,7 +94,7 @@
     "dodge": 0,
     "attack": 0,
     "roll": {
-      "diceBonus": " +2d4"
+      "diceBonus": " +4d4"
     },
     "breakthrough": "",
     "penetration": 100,

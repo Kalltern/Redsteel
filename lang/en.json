@@ -18,6 +18,31 @@
       "NoAimTarget": "No enemy within reach to aim at.",
       "PickPrompt": "Gain Aim on which enemy within reach?"
     },
+    "Hoplite": {
+      "DaringThrowAdjacent": "Daring Throw cannot be used while an enemy stands next to you.",
+      "DaringThrowNoSpear": "Daring Throw needs a spear, trident or javelin to throw.",
+      "OnslaughtNoStamina": "Not enough Stamina: Onslaught costs {cost}.",
+      "OnslaughtPrompt": "Attack again now, or switch weapon first?",
+      "OnslaughtAttack": "Attack ({cost} Stamina)",
+      "OnslaughtSwap": "Switch to {weapon} and attack ({cost} Stamina)",
+      "OnslaughtFreeAttack": "{name} keeps up the onslaught: the next Attack this turn is a Free action.",
+      "OnslaughtSwapped": "{name} switches to {weapon}: the next Attack this turn is a Free action.",
+      "FreeOpportunity": "{name} meets {target} closing in: this Opportunity Attack spends no Reaction.",
+      "ChargeDefenseNotOpportunity": "Charge Defense only modifies an Opportunity Attack. It was left off this attack.",
+      "ChargeDefenseNoSpear": "Charge Defense needs a spear or trident. It was left off this attack.",
+      "ChargeDefenseNotCharging": "Charge Defense only answers a Charge or a Sprint. It was left off this attack.",
+      "ChargeStopped": "{name} stops {target}'s charge.",
+      "ChargeWasStopped": "Your charge was stopped by Charge Defense: it cannot swing this round.",
+      "DaringThrowTooFar": "Daring Throw reaches at most {max} hexes; the target is {distance} away.",
+      "DrawLightWeapon": "Draw a light weapon",
+      "DrawLightWeaponPrompt": "Draw which light weapon into your main hand?",
+      "DrawLightWeaponPick": "Choose which light weapon to draw.",
+      "DrewWeapon": "{name} draws {weapon} as a Free action.",
+      "MomentumFreeAttack": "{name} presses on: the next Attack this turn is a Free action.",
+      "AdvanceStep": "{name} may move up to two hexes in the direction of the attack on {target}. The move provokes no Opportunity Attack.",
+      "AdvanceNoStep": "{name} cannot advance right now.",
+      "ForcefulAdvance": "{name} advanced: a Shield Bash or Shield Charge this turn is a Free action."
+    },
     "AllyPass": {
       "Title": "Let an ally pass?",
       "Body": "{mover} wants to move through the hex {ally} stands on. Letting them pass spends {ally}'s Reaction.",
@@ -248,6 +273,7 @@
         "MoreMovement": "More movement",
         "LungeStep": "Lunge Step",
         "HalfPirouette": "Half Pirouette step",
+        "Advance": "Advance step",
         "AcrobaticDisengage": "Acrobatic Disengage",
         "CounterattackSurprise": "Counterattack (Surprise)",
         "PlusStamina": "+{n} Stamina"
@@ -881,7 +907,7 @@
               "description": "15 CP; M/T/S/D VIII. Improves four weapon actions. Improved Feint (1 action, 5 Stamina): gains Aim on the target and calls a Dexterity/Perception vs Dexterity/Perception Test. On success the opponent has Disadvantage on their next Defense or Dodge and -1 Reaction for two rounds, and loses all their Aim; an Attack following in the same round scores a Critical Hit from a success of +50. Improved Splintering Strike (1 action, 8 Stamina): a furious attack aimed at damaging enemy armor. On a hit it deals damage and lowers the opponent's armor Quality by 4; on a miss, 35% chance to damage the shield. Breakthrough +3d6. Improved Staggering Blow (Free action, 4 Stamina per attack): modifies attack actions, Counterattack and Retaliatory Strike. Deals half damage, Stagger +30%. Cannot be combined with Trip or Impale. Improved Trip (Free action, 5 Stamina per attack): modifies Attack, Multiple Attack, Opportunity Attack or Counterattack. Half damage. After a hit, calls a Strength/Dexterity vs Endurance/Dexterity Test; on success the target is knocked down. +30% on the Test after a Critical Hit. Not usable from the saddle. Cannot be combined with Staggering Blow or Impale. Grants the improved version of each of these actions the character already has, in place of the base action; whatever the base action leaves to the table is still resolved at the table."
             },
             "bleedStun": {
-              "label": "Bleed +10% / Stun +6%",
+              "label": "Bleed +10% / Stagger +6%",
               "description": "10 CP. Automated."
             },
             "critDefRange": {
@@ -928,18 +954,18 @@
             },
             "prilezitostnyUtok": {
               "label": "Opportunity attack per round",
-              "description": "15 CP; Štítonoš V. Manual — resolved at the table."
+              "description": "15 CP; Štítonoš V. Once per round, an Opportunity Attack with a Long Reach polearm against an enemy that closed the distance costs no Reaction. The Attack dialog waives it when every target's last move this turn ended nearer you than it began and within your reach, and says so in chat. Automated."
             },
             "pripravnyPostoj": {
               "label": "Prepared Stance",
-              "description": "10 CP; Dřevcová IV. 1 action, 4 Stamina. The next Opportunity Attack with a spear or trident gains Hit +20%. Does not stack; moving or attacking breaks the stance. Grants the Prepared Stance action; the bonus and breaking the stance are resolved at the table."
+              "description": "10 CP; Dřevcová IV. 1 action, 4 Stamina. The next Opportunity Attack with a spear or trident gains Hit +20%. Does not stack; moving or attacking breaks the stance. Grants the Prepared Stance action, which puts the Prepared Stance status on you until that attack, your own move or any other weapon attack ends it. Automated."
             },
             "obranaProtiZteci": {
               "label": "Defense against Charge",
-              "description": "5 CP; Štítonoš VI. Free action. Modifies an Opportunity Attack with a spear or trident against a Charge or a Sprint; on a hit it stops the Charge. Damage +4d4, Penetration +4, Critical Range +2; Impale may be added at no cost. Grants the Charge Defense action; stopping the Charge and the free Impale are resolved at the table."
+              "description": "5 CP; Štítonoš VI. Free action. Modifies an Opportunity Attack with a spear or trident against a Charge or a Sprint; on a hit it stops the Charge and keeps a one hex gap. Damage +4d4, Penetration +4, Critical Range +2; Impale may be added at no cost. Grants the Charge Defense action. It is dropped from any other attack with a notice; at Apply Damage the charger's move ends, its Charge swing is cancelled and it is pushed back to two hexes. Automated."
             },
             "bleedStun": {
-              "label": "Bleed +20% / Stun +10%",
+              "label": "Bleed +20% / Stagger +10%",
               "description": "15 CP. Automated."
             },
             "kritZasah": {
@@ -948,23 +974,23 @@
             },
             "momentum": {
               "label": "Momentum",
-              "description": "15 CP; Štítonoš VIII. Free action, 3 Stamina. Once per round, after a kill or a Critical Hit with a short sword, hatchet, mace, spear or trident (or a kill with Daring Throw), may attack again. Grants the Momentum (Hoplite) action; the trigger and the extra attack are resolved at the table."
+              "description": "15 CP; Štítonoš VIII. Free action, 3 Stamina. Once per round, after a kill or a Critical Hit with a short sword, hatchet, mace, spear or trident (or a kill with Daring Throw), may attack again at once. Grants the Momentum (Hoplite) action. On your own turn, Apply Damage offers it on the hotbar for the rest of that turn; using it makes the next Attack a Free action. Automated."
             },
             "postup": {
               "label": "Advance",
-              "description": "5 CP. Free action, 1 Stamina. After a kill, may move up to two hexes in the direction of the attack without provoking Opportunity Attacks. Grants the Advance action; the move is resolved at the table."
+              "description": "5 CP. Free action, 1 Stamina. After a kill with any attack, may move up to two hexes in the direction of the attack; after a Daring Throw kill only when the target stood at most three hexes away. The move provokes no Opportunity Attacks. Grants the Advance action. Apply Damage offers it on the hotbar for the rest of that turn, on or off your turn; using it grants a two hex step along the line of the attack. Re-arming with the thrown spear is resolved at the table. Automated."
             },
             "raznyPostup": {
               "label": "Forceful Advance",
-              "description": "10 CP; Štítonoš IV. Free action. Once per round, after moving with Advance, may make a Shield Bash or Shield Charge as a Free action. Grants the Forceful Advance action; the free Shield Bash or Shield Charge is resolved at the table."
+              "description": "10 CP; Štítonoš IV. Free action. Once per round, after moving with Advance, may make a Shield Bash or Shield Charge as a Free action. Grants the Forceful Advance action. Ending an Advance step that moved, with a shield in hand, puts the shield actions you own on the hotbar for that turn at no Action; their Stamina is still paid. The target's direction is resolved at the table. Automated."
             },
             "napor1": {
               "label": "Onslaught I",
-              "description": "15 CP; Štítonoš V. Free action, 3 Stamina. Once per round, if Shield Bash, Shield Charge or Trip pushes or knocks down the target, may attack again. Grants the Onslaught I action; the extra attack is resolved at the table."
+              "description": "15 CP; Štítonoš V. Free action, 3 Stamina. Once per round, if Shield Bash, Shield Charge or Trip pushes or knocks down the target, may attack again at once; before the attack may switch to a spear or trident as a Free action for 5 more Stamina. Grants the Onslaught I action. On your own turn, Apply Damage offers it on the hotbar for that turn when the push moved the target or it fell Prone; using it asks whether to switch weapon, then makes the next Attack a Free action. Automated."
             },
             "napor2": {
               "label": "Onslaught II",
-              "description": "15 CP; Štítonoš VI. Free action, 3 Stamina. Once per round, if Shield Bash or Shield Charge fails to push the target, may switch to a light weapon and attack again. Grants the Onslaught II action; the weapon swap and the extra attack are resolved at the table."
+              "description": "15 CP; Štítonoš VI. Free action, 3 Stamina. Once per round, if Shield Bash or Shield Charge fails to push the target, may attack again at once; before the attack may switch to a short sword, hatchet or mace as a Free action for 5 more Stamina. Grants the Onslaught II action. On your own turn the hotbar offers it for that turn when the push moved nothing or the target won the contest; using it asks whether to switch weapon, then makes the next Attack a Free action. Automated."
             },
             "hoplitaStance": {
               "label": "Hoplite",
@@ -976,7 +1002,7 @@
             },
             "troufalyVrh": {
               "label": "Daring Throw",
-              "description": "15 CP; Dřevcové VII. 1 action, 8 Stamina. Throws a spear or trident up to 5 hexes: Damage +3d8, Penetration +6, Breakthrough +4d6, Critical Range +5. Grants the Daring Throw action; the Critical Hit threshold, the shield strain and the weapon swap are resolved at the table."
+              "description": "15 CP; Dřevcové VII. 1 action, 8 Stamina. Throws a spear or trident up to 5 hexes: Damage +3d8, Penetration +6, Breakthrough +4d6, Critical Range +5, and a success of +40 or better is a Critical Hit. May then switch to a light weapon as a Free action. Cannot be used next to an enemy. Grants the Daring Throw action. The spear or trident in hand is thrown as a polearm throw: the Throwing skill with every polearm bonus kept, and no ammo spent. It is refused next to an enemy, beyond 5 hexes or without a spear, trident or javelin to throw, and after the throw the hotbar offers the light weapon for that turn. Shield strain +50% is resolved at the table. Automated."
             },
             "penetration2": {
               "label": "Penetration +2",
@@ -984,11 +1010,11 @@
             },
             "hexAttack": {
               "label": "Attack through occupied hex",
-              "description": "10 CP; Dřevcové V. Can attack through a hex occupied by an opponent. Manual — resolved at the table."
+              "description": "10 CP; Dřevcové V. Can attack through a hex occupied by an opponent; the reach check no longer stops at one. Reckless Strike and Exploit Weakness still cannot pass an occupied hex. Automated."
             },
             "silaObratnost": {
               "label": "Damage from Strength and Dexterity",
-              "description": "10 CP; Štítonoš X, Dřevcové X. Manual — resolved at the table."
+              "description": "10 CP; Štítonoš X, Dřevcové X. Weapon damage adds both Strength and Dexterity, for melee and thrown weapons (not bows or crossbows). Automated."
             }
           }
         },
@@ -1540,7 +1566,7 @@
               "description": "5 CP. Manual — resolved at the table."
             },
             "bleedStun": {
-              "label": "Bleed +20% / Stun +15%",
+              "label": "Bleed +20% / Stagger +15%",
               "description": "10 CP. Automated."
             },
             "kritRozsah": {
@@ -5331,6 +5357,7 @@
     "ForcedMovement": {
       "NoContest": "{source}: no answering versus Test found after this card. Apply it as the GM rules.",
       "ContestLost": "{source}: the target won the contest by {gap}. Nothing happens.",
+      "ContestLostPushed": "{source}: the target won the contest by {gap}. Only the first push lands, without damage.",
       "PushOnly": "{source}: won the contest by {gap}, below the {min} needed for damage. {targets} pushed without damage.",
       "Rooted": "{name} is Rooted and cannot be moved.",
       "WrongScene": "Forced movement needs the GM to be viewing the scene the tokens are on. Move them by hand.",

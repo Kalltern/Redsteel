@@ -98,6 +98,7 @@ import {
 } from "./utils/defense.mjs";
 import { registerOverwhelmHooks } from "./utils/overwhelm.mjs";
 import { registerChampionHooks } from "./utils/champion.mjs";
+import { registerHopliteHooks } from "./utils/hoplite.mjs";
 import {
   getActionPools,
   getSpent,
@@ -544,6 +545,7 @@ Hooks.once("init", function () {
   registerDefendButton();
   registerOverwhelmHooks();
   registerChampionHooks();
+  registerHopliteHooks();
   registerActionTrackerHooks();
   registerMovementZoneHooks();
   registerAllyPassage();
@@ -2841,6 +2843,46 @@ Hooks.once("ready", async () => {
   }
 
   console.log("Stun → Stagger migration complete");
+});
+// The "Bleed / Omráčení" spec node passives (Hoplite, Weapon Master,
+// Skirmisher bleedStun) were authored as `stun`, but Omráčení is stagger in
+// this system. The definitions are fixed; this carries the copy each unlock
+// wrote into system.activeCombatEffects.spec_<spec>_bleedStun across: the
+// value moves to `extraEffects.stagger` and `stun` goes. Idempotent: once no
+// group carries a non-zero `stun` it finds nothing, so it runs once in effect.
+// Unlinked token actors cannot take a `-=` removal on their ActorDelta
+// (see the possession release in documents/effects.mjs), so there `stun` is
+// set to 0 instead, which no attack reads (getEffectRolls skips 0).
+Hooks.once("ready", async () => {
+  if (!game.user.isGM) return;
+  const SPECS = ["hoplite", "weaponMaster", "skirmisher"];
+
+  async function migrateActor(actor) {
+    if (!actor) return;
+    const groups = actor.system?.activeCombatEffects ?? {};
+    const updates = {};
+    for (const spec of SPECS) {
+      const key = `spec_${spec}_bleedStun`;
+      const stun = Number(groups[key]?.extraEffects?.stun) || 0;
+      if (!stun) continue;
+      const path = `system.activeCombatEffects.${key}.extraEffects`;
+      updates[`${path}.stagger`] = stun;
+      if (actor.isToken) updates[`${path}.stun`] = 0;
+      else updates[`${path}.-=stun`] = null;
+    }
+    if (!Object.keys(updates).length) return;
+    console.log(`Redsteel | bleedStun stun → stagger: ${actor.name}`);
+    await actor.update(updates);
+  }
+
+  // Base actors first, so unlinked tokens that merely inherit the group
+  // already read the fixed one and only token-level copies get written.
+  for (const actor of game.actors.contents) await migrateActor(actor);
+  for (const scene of game.scenes.contents) {
+    for (const token of scene.tokens.contents) {
+      if (!token.actorLink) await migrateActor(token.actor);
+    }
+  }
 });
 // Old spell copies that predate the All-Spells rework. Hand-made NPC spells
 // and anything dragged in from redsteel-items still carry the old mechanics,

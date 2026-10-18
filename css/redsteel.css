@@ -11760,6 +11760,13 @@ body.redsteel-bg3-hotbar #hotbar {
   transform: translateX(-50%);
 }
 
+/* Movement alone, with no combat row to share the air: it takes the centre
+   the combat row would hold. */
+#redsteel-bg3-hotbar .rs-bg3-suggest--centred {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
 /* The bronze hairline along the plate's foot, the resource editor's scored
    rule. */
 #redsteel-bg3-hotbar .rs-bg3-suggest::after {
@@ -11792,6 +11799,9 @@ body.redsteel-bg3-hotbar #hotbar {
   flex: 0 0 124px;
   display: inline-flex;
   align-items: center;
+  /* Core centres a button's contents, which set each chip's icon and text
+     at a different place by the label's length. */
+  justify-content: flex-start;
   gap: 6px;
   width: 124px;
   min-width: 124px;
@@ -11825,6 +11835,9 @@ body.redsteel-bg3-hotbar #hotbar {
   border-color: var(--rs-bg3-accent);
 }
 
+/* A 16px slot, so every label starts at the same place. Shoe prints is
+   wider (1.25em) and overhangs it by a pixel or two each side, which is
+   cheaper than the room a wider slot would take from "Slow Movement". */
 #redsteel-bg3-hotbar .rs-bg3-suggest-icon {
   flex: 0 0 16px;
   width: 16px;
@@ -12166,6 +12179,70 @@ body.redsteel-bg3-hotbar #hotbar {
   height: 40px;
   border: 0;
   border-radius: 1px;
+}
+
+/* A slow breathing glow round every suggestion plate, so an action worth
+   taking catches the eye: the panel's gold round the movement plate, each
+   theme's own colour round the combat plates. On its own layer so the
+   breath animates opacity rather than a box-shadow, the shield aura's
+   recipe. It only paints outside the plate's edge, and the drawer (z-index
+   6) still covers it. */
+#redsteel-bg3-hotbar .rs-bg3-suggest-plate {
+  position: relative;
+  --suggest-glow: var(--plate-glow);
+}
+
+#redsteel-bg3-hotbar .rs-bg3-suggest--movement::before,
+#redsteel-bg3-hotbar .rs-bg3-suggest-plate::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  box-shadow: 0 0 9px 2px var(--suggest-glow);
+  pointer-events: none;
+  animation: rs-bg3-suggest-breathe 3.2s ease-in-out infinite;
+}
+
+@keyframes rs-bg3-suggest-breathe {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Movement wears it stronger (user ruling): a gold edge, a bright tight
+   halo inside a wide glow, and a breath that never fades below half. */
+#redsteel-bg3-hotbar .rs-bg3-suggest--movement {
+  --suggest-glow: rgba(200, 162, 74, 0.85);
+  border-color: var(--rs-bg3-accent);
+}
+
+#redsteel-bg3-hotbar .rs-bg3-suggest--movement::before {
+  box-shadow:
+    0 0 4px 1px rgba(240, 217, 160, 0.7),
+    0 0 16px 4px var(--suggest-glow);
+  animation-name: rs-bg3-suggest-breathe-strong;
+}
+
+@keyframes rs-bg3-suggest-breathe-strong {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #redsteel-bg3-hotbar .rs-bg3-suggest--movement::before,
+  #redsteel-bg3-hotbar .rs-bg3-suggest-plate::before {
+    animation: none;
+    opacity: 0.85;
+  }
 }
 
 /* A combat suggestion's tooltip, dressed as its plate: the plate's dark

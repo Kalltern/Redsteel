@@ -174,6 +174,18 @@ export const MOVEMENT_MODES = {
     icon: "fa-light fa-arrows-spin",
     labelKey: "REDSTEEL.Bg3Hotbar.Suggest.HalfPirouette",
   },
+  // Advance (Postup, Hoplite): up to two hexes "ve směru útoku" after a kill,
+  // on or off the Hoplite's turn (actionTracker.mjs OFF_TURN_MODES). The book
+  // says it provokes no Opportunity Attack (`free`); the lock's `along` keeps
+  // the zone to the line of the attack (computeMovementZone).
+  advance: {
+    budgetFn: () => 2,
+    color: 0xd8c38a,
+    actions: 0,
+    free: true,
+    icon: "fa-light fa-person-walking-arrow-right",
+    labelKey: "REDSTEEL.Bg3Hotbar.Suggest.Advance",
+  },
 };
 
 const PREVIEW_LAYER = "redsteel-move-preview";
@@ -718,6 +730,12 @@ function swordTextStyle() {
  * token than the start: Lunge Step's step toward the attacker. An id that is
  * not on the canvas filters nothing.
  *
+ * `along` ({from, to}, grid offset keys "i,j") keeps only hexes on the line
+ * of an attack: hexes on a shortest path from `from` to `to`, or hexes
+ * whose shortest path from `from` runs through `to` (beyond it). Fixed
+ * points, so a step walked in two drags keeps the same line. The Hoplite's
+ * Advance "ve směru útoku".
+ *
  * @param {Token} token
  * @param {number} budget
  * @returns {Map<string, {i: number, j: number, threatened: boolean,
@@ -733,11 +751,16 @@ export function computeMovementZone(
     around = null,
     toward = null,
     exempt = [],
+    along = null,
   } = {},
 ) {
   const zone = new Map();
   const origin = documentOrigin(token);
   if (!origin) return zone;
+  const alongFrom = along?.from ? parseKey(along.from) : null;
+  const alongTo = along?.to ? parseKey(along.to) : null;
+  const alongSpan =
+    alongFrom && alongTo ? offsetDistance(alongFrom, alongTo) : null;
   const aroundOrigin = around
     ? documentOrigin(canvas.tokens?.get(around))
     : null;
@@ -777,6 +800,14 @@ export function computeMovementZone(
       offsetDistance(parseKey(key), towardOrigin) >= towardFrom
     ) {
       continue;
+    }
+    if (alongSpan !== null) {
+      const hex = parseKey(key);
+      const fromHex = offsetDistance(alongFrom, hex);
+      const hexTo = offsetDistance(hex, alongTo);
+      const between = fromHex + hexTo === alongSpan;
+      const beyond = alongSpan + hexTo === fromHex;
+      if (!between && !beyond) continue;
     }
     zone.set(key, {
       ...parseKey(key),
@@ -1016,6 +1047,7 @@ export function refreshLockedZone() {
       free: !!def.free,
       around: lock.around ?? null,
       toward: lock.toward ?? null,
+      along: lock.along ?? null,
     }),
     { color: def.color, alpha: LOCK_ALPHA },
     token.document.id,

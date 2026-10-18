@@ -3,6 +3,24 @@ import { dragonGuardTags } from "./dragonGuard.mjs";
 import { chargeDistanceAllowed, paidAbilityCost } from "./swordServant.mjs";
 import { isSlipThrough, useSlipThrough } from "./slipThrough.mjs";
 import { isHalfPirouette, useHalfPirouette } from "./halfPirouette.mjs";
+import {
+  chargeWasStopped,
+  daringThrowContext,
+  daringThrowRefusal,
+  filterChargeDefense,
+  hopliteModifierCosts,
+  isPreparedStance,
+  isDaringThrow,
+  isDaringThrowView,
+  isDaringThrowWeapon,
+  isHopliteAdvance,
+  isHopliteMomentum,
+  noteDaringThrow,
+  onslaughtKind,
+  useHopliteAdvance,
+  useHopliteMomentum,
+  useHopliteOnslaught,
+} from "./hoplite.mjs";
 import { DRAGON_SLEEP_STATUS, takeDragonSleep } from "./dragonSleep.mjs";
 import { withRollBias, tagRollSkill, tagRollItemAdvantage } from "./rollAdvantage.mjs";
 import { selectAimedPart, AIMED_PARTS } from "./aimedStrike.mjs";
@@ -93,6 +111,8 @@ import {
   pushBackStampFor,
 } from "./champion.mjs";
 import { throwExplosiveItem } from "./throwExplosive.mjs";
+// Call time only (forcedMovement.mjs reaches back through applyDamage.mjs).
+import { isTripModifier } from "./forcedMovement.mjs";
 import {
   declareAcrobaticDisengage,
   declareChargeMove,
@@ -477,8 +497,12 @@ export async function combatAbilities({
       container.querySelectorAll(".attack-modifier-checkbox:checked"),
     ).map((cb) => cb.dataset.abilityId);
 
-    const selectedModifiers = modifierAbilities.filter((mod) =>
-      selectedModifierIds.includes(mod.id),
+    // Hoplite → Charge Defense is dropped, with a notice, unless this is an
+    // Opportunity Attack with a spear or trident at a charging target.
+    const selectedModifiers = filterChargeDefense(
+      actor,
+      modifierAbilities.filter((mod) => selectedModifierIds.includes(mod.id)),
+      { opportunity: useOpportunity },
     );
 
     // Aimed Strike: resolve body part choice before proceeding.
@@ -536,6 +560,11 @@ export async function combatAbilities({
     ) {
       return;
     }
+    // A Charge that Hoplite's Charge Defense stopped does not swing.
+    if (isCharge(ability) && chargeWasStopped(actor)) {
+      ui.notifications.warn(game.i18n.localize("REDSTEEL.Hoplite.ChargeWasStopped"));
+      return;
+    }
     if (isCharge(ability) && (await declareChargeMove(actor, ability))) {
       if (!keepOpen) dialog?.close();
       return;
@@ -563,6 +592,35 @@ export async function combatAbilities({
     if (isHalfPirouette(ability) && (await useHalfPirouette(actor, ability))) {
       if (!keepOpen) dialog?.close();
       return;
+    }
+
+    // Hoplite: Momentum after a kill or Critical Hit makes the next Attack
+    // free; Advance after a kill grants its two hex step (hoplite.mjs). With
+    // nothing pending each falls through to its plain card.
+    if (isHopliteMomentum(ability) && (await useHopliteMomentum(actor, ability))) {
+      if (!keepOpen) dialog?.close();
+      return;
+    }
+    if (isHopliteAdvance(ability) && (await useHopliteAdvance(actor, ability))) {
+      if (!keepOpen) dialog?.close();
+      return;
+    }
+    // Onslaught I / II after a shield blow or Trip: attack, or switch weapon
+    // and attack, as a Free action (hoplite.mjs).
+    if (onslaughtKind(ability) && (await useHopliteOnslaught(actor, ability))) {
+      if (!keepOpen) dialog?.close();
+      return;
+    }
+
+    // Daring Throw is refused next to a living enemy, beyond 5 hexes, and
+    // without a spear, trident or javelin to throw (hoplite.mjs), before
+    // anything is paid.
+    if (isDaringThrow(ability)) {
+      const refusal = daringThrowRefusal(actor, token, ability);
+      if (refusal) {
+        ui.notifications.warn(refusal);
+        return;
+      }
     }
 
     // Final Strike needs four Aim on its target and is refused without them
@@ -672,7 +730,10 @@ export async function combatAbilities({
 
     // An explosive throw has no weapon to carry attack modifiers, so they are
     // neither applied nor charged for it.
-    const costModifiers = preselectedExplosiveId ? [] : selectedModifiers;
+    // Charge Defense makes a ticked Impale free (hoplite.mjs).
+    const costModifiers = preselectedExplosiveId
+      ? []
+      : hopliteModifierCosts(selectedModifiers);
 
     if (isMultiStrike && multiAttackFirstStrikePaid) {
       // Subsequent multi-attack strike → only pay modifiers
@@ -1350,6 +1411,14 @@ ${
     const tagged = (list) =>
       requiredTag ? list.filter((i) => weaponHasTag(i, requiredTag)) : list;
 
+    // Daring Throw throws a spear, trident or javelin, the melee spear
+    // included (hoplite.mjs), and nothing else.
+    if (isDaringThrow(ability)) {
+      return actor.items.filter(
+        (i) => isDaringThrowWeapon(i) && !isNpcOffhand(i),
+      );
+    }
+
     if (ability.system.type === "melee") {
       return tagged(
         actor.items.filter(
@@ -1392,6 +1461,13 @@ ${
     intent,
     preselectedWeapon = null,
   ) {
+    // Daring Throw resolves its own context: the melee spear is thrown as a
+    // polearm throw (hoplite.mjs daringThrowContext). Everything else as ever.
+    const resolveContext = (selected = null) =>
+      isDaringThrow(ability)
+        ? daringThrowContext(actor, ability, selected)
+        : game.redsteel.resolveWeaponContext(actor, ability, selected);
+
     // Roll an attack/defense once a weapon context is known.
     const runWithWeaponContext = async (weaponContext) => {
       if (!weaponContext) return;
@@ -1403,6 +1479,11 @@ ${
       if (!abilityAllowedForWeapon(ability, weaponContext.weapon)) {
         return ui.notifications.warn(
           `${ability.localizedName ?? ability.name} requires a ${ability.system.requiredWeaponTag} in hand.`,
+        );
+      }
+      if (isDaringThrow(ability) && !isDaringThrowWeapon(weaponContext.weapon)) {
+        return ui.notifications.warn(
+          game.i18n.localize("REDSTEEL.Hoplite.DaringThrowNoSpear"),
         );
       }
 
@@ -1441,15 +1522,13 @@ ${
     // 0. PRESELECTED WEAPON (e.g. multi-attack inline picker)
     // ==================================================
     if (preselectedWeapon) {
-      return runWithWeaponContext(
-        game.redsteel.resolveWeaponContext(actor, ability, preselectedWeapon),
-      );
+      return runWithWeaponContext(resolveContext(preselectedWeapon));
     }
 
     // ==================================================
     // 1. AUTO-RESOLVE VIA ACTIVE WEAPON SET
     // ==================================================
-    const weaponContext = game.redsteel.resolveWeaponContext(actor, ability);
+    const weaponContext = resolveContext();
     if (weaponContext) {
       return runWithWeaponContext(weaponContext);
     }
@@ -1467,9 +1546,7 @@ ${
 
     const handleWeaponSelection = async (weaponIndex) => {
       const weapon = weapons[weaponIndex];
-      return runWithWeaponContext(
-        game.redsteel.resolveWeaponContext(actor, ability, weapon),
-      );
+      return runWithWeaponContext(resolveContext(weapon));
     };
 
     const css = `
@@ -1615,6 +1692,8 @@ ${
     modifierKeys = [],
     // Zatlačení: the deferred Push Back test (champion.mjs pushBackStampFor).
     pushBack = null,
+    // Podseknutí: its versus line (forcedMovement.mjs resolveVersusAnswer).
+    tripTest = null,
   }) {
     let attackHTML = "";
     let damageHTML = "";
@@ -1778,11 +1857,16 @@ ${
           // raw name is the fallback for a hand-made copy that has no key.
           abilityKey: ability?.system?.localizationKey ?? null,
           abilityName: ability?.name ?? null,
+          // The weapon that swung, for Apply Damage readers that care which
+          // (Hoplite Momentum's short sword / hatchet / mace / spear / trident).
+          weaponId: weapon?.id ?? null,
           // The ticked attack modifiers, for the ones that act on the outcome:
           // Passing Strike's free step is granted in Apply Damage.
           modifierKeys,
           // Zatlačení: the Push Back button rolls this test (champion.mjs).
           ...(pushBack ? { pushBack } : {}),
+          // Podseknutí: the answer to this line knocks Prone on a win.
+          ...(tripTest ? { tripTest } : {}),
           // Reroll tokens for the chat reroll picker: "attack" + combat skill +
           // governing attribute (finesse-aware), so e.g. Brawny (str) can reroll
           // a strength melee attack and Nimble (dex) a finesse attack.
@@ -1864,6 +1948,9 @@ ${
     if (multiAttackCount <= 1) {
       await grantChargeFollowUp(actor, ability, message);
     }
+    // Hoplite → Daring Throw: "Může jako Volnou akci přezbrojit na lehkou
+    // zbraň." The hotbar offers the swap for the rest of this turn.
+    await noteDaringThrow(actor, ability, message);
   }
   function buildDamageProfile(systemData) {
     if (!systemData) return { expression: [] };
@@ -1980,7 +2067,10 @@ ${
     let ammo = null;
 
     if (weapon) {
-      const ammoOption = actor.getRequiredAmmoOption?.(weapon);
+      // A melee spear thrown by Daring Throw has no ammo pool (hoplite.mjs).
+      const ammoOption = isDaringThrowView(weapon)
+        ? null
+        : actor.getRequiredAmmoOption?.(weapon);
 
       if (ammoOption) {
         ammo = actor.getEquippedAmmo?.(ammoOption);
@@ -2272,6 +2362,9 @@ ${
     }
 
     let attributeTestHTML = "";
+    // Podseknutí's versus line, for the answer queue (forcedMovement.mjs
+    // resolveVersusAnswer): the margin and source it posts.
+    let tripTest = null;
 
     // Append modifier attribute tests
     for (const mod of selectedModifiers) {
@@ -2320,6 +2413,12 @@ ${renderSpeedTestLine({
       tagRollItemAdvantage(attributeRoll, mod.system.testAdvantage);
       await attributeRoll.evaluate({ async: true });
 
+      if (!tripTest && isTripModifier(mod)) {
+        tripTest = {
+          margin: attributeRoll.total,
+          source: ability.localizedName ?? ability.name,
+        };
+      }
       attributeTestHTML += `
 <tr>
 <td>
@@ -2451,6 +2550,7 @@ ${renderMarginFollowupLine({
       sneakEffect,
       modifierKeys: modifierKeysOf(selectedModifiers),
       pushBack: pushBackStampFor(selectedModifiers, versusAgainstFor),
+      tripTest,
     });
     // ─── AMMO DEDUCTION ───
     if (ammo) {
@@ -2826,6 +2926,13 @@ async function runUtilityAbility(actor, ability, modifiers = []) {
   // Sprint it falls through, so the ordinary card still posts.
   if (isBraceAbility(ability)) {
     await game.redsteel.applyEffect(actor, "brace");
+  }
+
+  // Přípravný postoj (Prepared Stance, Hoplite): paid above; the status holds
+  // the +20 Hit for the next spear or trident Opportunity Attack
+  // (utils/hoplite.mjs). Falls through, so the ordinary card still posts.
+  if (isPreparedStance(ability)) {
+    await game.redsteel.applyEffect(actor, "prepared_stance");
   }
 
   // Běh (Sprint): the movement itself stays manual, but the trade it buys does

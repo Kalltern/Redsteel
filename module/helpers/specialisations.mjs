@@ -391,7 +391,54 @@ const CODE_AUTOMATED_NODES = {
     "dexTests",
     "vylUtokSPohybem",
   ],
-  hoplite: ["nabodnuti", "velkeTvory"],
+  // (hoplite: nabodnuti and velkeTvory are the grants above. The rest is
+  // utils/hoplite.mjs, the Hoplite batch 1 rules. silaObratnost is the
+  // Strength + Dexterity attribute term in utils/weaponFormula.mjs
+  // weaponDamageFormula. hexAttack lets the line pass an opponent in
+  // utils/positioning.mjs checkMeleeReach. troufalyVrh: the refusals
+  // (adjacent enemy, beyond 5 hexes, no spear/trident/javelin) in
+  // utils/combatAbilities.mjs onAbilityChosen, the melee spear thrown as a
+  // polearm throw (utils/hoplite.mjs asDaringThrowView, routed by
+  // weaponSelectionFlow), the +40 margin crit in utils/combatSkillBonuses.mjs
+  // getAttackRolls, the "Draw a light weapon" chip in
+  // utils/actionSuggestions.mjs hopliteChips (shield strain +50% has no
+  // mechanism in the system yet). momentum and postup are stamped by
+  // utils/applyDamage.mjs applyDamageAsGM (offerHopliteMomentum,
+  // offerHopliteAdvance) and used from their chips; postup's step is the
+  // `advance` mode in utils/movementZones.mjs. raznyPostup is
+  // completeHopliteAdvance, from utils/redsteelHotbar.mjs _onConfirmMovement
+  // and documents/token.mjs endWalkedBonusStep, through
+  // utils/actionTracker.mjs grantFreeAbility. napor1 and napor2 are
+  // utils/hoplite.mjs offerHopliteOnslaught, called from utils/applyDamage.mjs
+  // applyDamageAsGM with the push results utils/forcedMovement.mjs
+  // resolvePushOnHit returns and the newly Prone targets, plus the active GM
+  // queue registerHopliteHooks (lost versus Test or Defense, Onslaught II);
+  // the chip's attack or weapon switch is useHopliteOnslaught.
+  // prilezitostnyUtok is utils/hoplite.mjs claimHopliteFreeOpportunity, called
+  // from utils/attackActions.mjs where the plain Attack pays its Reaction.
+  // pripravnyPostoj is the prepared_stance status (helpers/config.mjs), set in
+  // utils/combatAbilities.mjs runUtilityAbility, spent or broken by
+  // utils/hoplite.mjs settlePreparedStance in utils/combatSkillBonuses.mjs
+  // getAttackRolls and by the moveToken hook in registerHopliteHooks.
+  // obranaProtiZteci: filterChargeDefense and hopliteModifierCosts in
+  // utils/attackActions.mjs and utils/combatAbilities.mjs, and
+  // settleChargeDefense from utils/applyDamage.mjs, which ends the charge
+  // through utils/actionTracker.mjs stopMovementLock.)
+  hoplite: [
+    "nabodnuti",
+    "velkeTvory",
+    "silaObratnost",
+    "hexAttack",
+    "troufalyVrh",
+    "momentum",
+    "postup",
+    "raznyPostup",
+    "napor1",
+    "napor2",
+    "prilezitostnyUtok",
+    "pripravnyPostoj",
+    "obranaProtiZteci",
+  ],
   // (vylUtokSPohybem: see swordServant.)
   // utils/champion.mjs — the off-hand reads. stredniZbran is the off-hand
   // equip gate in sheets/actor-sheet.mjs (_offhandMediumRefused).
@@ -800,7 +847,8 @@ const SPEC_DEFS = {
         column: 4,
         x: 60,
         y: 58,
-        passive: cm({ extraEffects: { bleed: 10, stun: 6 } }),
+        // "Krvácení +10% / Omráčení +6%": Omráčení is stagger here.
+        passive: cm({ extraEffects: { bleed: 10, stagger: 6 } }),
       },
       critDefRange: {
         tier: 2,
@@ -878,7 +926,8 @@ const SPEC_DEFS = {
       bleedStun: {
         tier: 1,
         column: 2,
-        passive: cm({ extraEffects: { bleed: 20, stun: 10 } }),
+        // "Krvácení +20% / Omráčení +10%": Omráčení is stagger here.
+        passive: cm({ extraEffects: { bleed: 20, stagger: 10 } }),
       },
       kritZasah: {
         tier: 2,

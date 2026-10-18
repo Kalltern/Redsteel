@@ -2,6 +2,10 @@ import {
   hasWeaponMasterNode,
   PRIMARY_DAMAGE_MULTIPLIER,
 } from "./weaponMaster.mjs";
+import { actorHasSpecNode } from "../helpers/specialisations.mjs";
+
+/** Weapon classes that are swung or thrown (not bows or crossbows). */
+const STR_DEX_CLASSES = ["axe", "sword", "blunt", "polearm"];
 
 /**
  * A die size as it can be spliced straight into a roll formula.
@@ -40,10 +44,12 @@ export function parseDiceSize(raw) {
  * Dice from `system.roll`, plus the attribute the wielder adds: Strength by
  * default, Dexterity for a finesse weapon when the actor owns the Finesse
  * feature, Perception for bows and crossbows and (when it beats Strength) for
- * thrown weapons. Giant adds 1d4 to non-launcher weapons, Weapon Master's
- * primaryDamage multiplies the attribute, and an NPC adds its flat damage
- * bonus instead. Without an actor the formula is "" (nobody to read the
- * attribute off).
+ * thrown weapons. The Hoplite's silaObratnost ("Zranění se počítá za Sílu i
+ * Obratnost") adds Strength AND Dexterity for melee and thrown weapons (user
+ * ruling 2026-10-18). Giant adds 1d4 to non-launcher weapons, Weapon Master's
+ * primaryDamage multiplies the attribute (each of the two, with the Hoplite
+ * node), and an NPC adds its flat damage bonus instead. Without an actor the
+ * formula is "" (nobody to read the attribute off).
  *
  * Also used by the makeshift view (utils/makeshift.mjs) on its overridden
  * system, so a bow swung in melee gets the melee attribute.
@@ -106,11 +112,22 @@ export function weaponDamageFormula(actor, system) {
     // Damage +50% from Primary Attributes (Weapon Master, primaryDamage):
     // whichever attribute this attack adds counts one and a half times,
     // rounded down.
-    const attrTerm =
+    // Hoplite → silaObratnost: Strength + Dexterity, replacing whichever one
+    // attribute was picked above, for every weapon that is not a launcher.
+    const attrs =
       actor.type === "character" &&
-      hasWeaponMasterNode(actor, "primaryDamage")
-        ? `floor(@${attr} * ${PRIMARY_DAMAGE_MULTIPLIER})`
-        : `@${attr}`;
+      STR_DEX_CLASSES.includes(system.class) &&
+      actorHasSpecNode(actor, "hoplite", "silaObratnost")
+        ? ["str", "dex"]
+        : [attr];
+    const primary =
+      actor.type === "character" &&
+      hasWeaponMasterNode(actor, "primaryDamage");
+    const attrTerm = attrs
+      .map((a) =>
+        primary ? `floor(@${a} * ${PRIMARY_DAMAGE_MULTIPLIER})` : `@${a}`,
+      )
+      .join(" + ");
     if (
       hasGiant &&
       system.class !== "crossbow" &&

@@ -35,6 +35,7 @@ import { actorHasSpecNode } from "../helpers/specialisations.mjs";
 import { consumeOpportunityFlag } from "./opportunityAttacks.mjs";
 import { dragonGuardAttack, DRAGON_GUARD_HIT_BONUS } from "./dragonGuard.mjs";
 import { riposteAlwaysCrits } from "./swordServant.mjs";
+import { daringThrowMarginCrit, settlePreparedStance } from "./hoplite.mjs";
 import { thrownEffectiveRange, tokenHexDistance } from "./positioning.mjs";
 import { tokenForActor } from "./movementZones.mjs";
 import {
@@ -902,14 +903,17 @@ export function getAttackCritThresholds(
   } else if (ws.thrown || rangedSkill === "throwing") {
     const knifeMasterCrit = knifeMasterCheck(actor, weapon) ? 2 : 0;
     // No weapon-skill VII crit here: thrown crit chance comes from the
-    // Peltast / Juggler doctrines, so adding it would double-dip.
+    // Peltast / Juggler doctrines, so adding it would double-dip. Daring
+    // Throw's melee spear is a polearm throw and keeps its Polearms crit
+    // (hoplite.mjs asDaringThrowView, user ruling 2026-10-18).
     success =
       skills.combat.criticalSuccessThreshold +
       (ws.critChance ?? 0) +
       qualityCritChance +
       enchantCritChance +
       knifeMasterCrit +
-      doctrineCritBonus;
+      doctrineCritBonus +
+      (ws.daringThrow === true ? Number(weaponSkillCrit) || 0 : 0);
     failure =
       skills.combat.criticalFailureThreshold -
       (ws.critFail ?? 0) -
@@ -1038,6 +1042,9 @@ export async function getAttackRolls(
   // Šampion → Větrný postoj: Zásah +5% on every attack while the stance holds
   // (its Defense +5% is the wind_stance status's own change).
   abilityAttack += championWindStanceHit(actor);
+  // Hoplita → Přípravný postoj: +20 Hit on a spear or trident Opportunity
+  // Attack, which spends the stance; any other weapon attack breaks it.
+  abilityAttack += await settlePreparedStance(actor, weapon, opportunityAttack);
 
   // A standalone ranged ability has no weapon to read the skill off, so the
   // ability itself names which ranged skill the attack rolls against. Blank
@@ -1140,10 +1147,13 @@ export async function getAttackRolls(
   // Servant of the Sword: a Riposte always counts as a Critical Hit, unless
   // the dice fumbled (user ruling 2026-10-01).
   // Sword Dancer's Final Strike counts as a Critical Hit the same way.
+  // Hoplite's Daring Throw: "Snižuje hranici pro Kritický zásah na Úspěch o
+  // síle +40": a margin of 40 or more is a Critical Hit too (hoplite.mjs).
   const critSuccess =
     rollResult <= critSuccessThreshold ||
     (!critFailure &&
-      (riposteAlwaysCrits(actor, ability) || isFinalStrike(ability)));
+      (riposteAlwaysCrits(actor, ability) || isFinalStrike(ability))) ||
+    daringThrowMarginCrit(ability, attackRoll.total, critFailure);
 
   // A fumble burns the whole aim even under Sword Dancer's half-loss. The aim
   // was parked before the dice existed, so tag that record now.
@@ -1451,11 +1461,13 @@ export async function getCriticalRolls(
     .filter((e) => typeof e === "string")
     .map((e) => e.toLowerCase());
   let deadlyLungeBonus = 0;
-  if (actor.system.deadlyLunge) {
-    // Not allowed for thrown weapons
-    if (ws.thrown) return;
-    // Not allowed for bows/crossbows
-    if (["crossbow", "bow"].includes(ws.class)) return;
+  // Not for thrown weapons, bows or crossbows. Only the bonus is skipped: an
+  // early return here used to hand undefined back to every caller.
+  if (
+    actor.system.deadlyLunge &&
+    !ws.thrown &&
+    !["crossbow", "bow"].includes(ws.class)
+  ) {
     if (weaponDamageTypes.includes("piercing")) {
       deadlyLungeBonus = 5;
     }

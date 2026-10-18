@@ -28,6 +28,8 @@ import { modifierKeysOf } from "./abilityMovement.mjs";
 import { isPushBackModifier, pushBackStampFor } from "./champion.mjs";
 import { dragonGuardTags } from "./dragonGuard.mjs";
 import { asMakeshiftMelee, isRangedWeapon } from "./makeshift.mjs";
+// Call time only (forcedMovement.mjs reaches back through applyDamage.mjs).
+import { isTripModifier } from "./forcedMovement.mjs";
 
 export async function universalAttackLogic({
   attackType,
@@ -191,6 +193,9 @@ export async function universalAttackLogic({
     }
 
     let attributeTestHTML = "";
+    // Podseknutí's versus line, for the answer queue (forcedMovement.mjs
+    // resolveVersusAnswer): the margin and source it posts.
+    let tripTest = null;
 
     for (const mod of selectedModifiers) {
       const testName = mod.system.attributeTest;
@@ -237,6 +242,12 @@ export async function universalAttackLogic({
       tagRollItemAdvantage(attributeRoll, mod.system.testAdvantage);
 
       await attributeRoll.evaluate({ async: true });
+      if (!tripTest && isTripModifier(mod)) {
+        tripTest = {
+          margin: attributeRoll.total,
+          source: mod.localizedName ?? mod.name,
+        };
+      }
 
       attributeTestHTML += `
 
@@ -668,10 +679,15 @@ ${
           traitPills: getTraitPills(actor, "attack"),
           attackTags,
           rerollTokens: getAttackRerollTokens(weapon),
+          // The weapon that swung, for Apply Damage readers that care which
+          // (Hoplite Momentum, hoplite.mjs).
+          weaponId: weapon?.id ?? null,
           // Read in Apply Damage by Passing Strike's free step.
           modifierKeys: modifierKeysOf(selectedModifiers),
           // Zatlačení: the Push Back button rolls this test (champion.mjs).
           ...(pushBackStamp ? { pushBack: pushBackStamp } : {}),
+          // Podseknutí: the answer to this line knocks Prone on a win.
+          ...(tripTest ? { tripTest } : {}),
         },
         attack: {
           type: "attack",

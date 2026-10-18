@@ -153,6 +153,26 @@ export function getSpent(actor) {
     // Duelist's Advance: the token a plain Attack may now be made at as a
     // Free action (grantFreeAttack).
     freeAttack: typeof record?.freeAttack === "string" ? record.freeAttack : null,
+    // Forceful Advance (Hoplite): abilities that cost no Action this turn
+    // (grantFreeAbility).
+    freeAbility: normaliseFreeAbility(record?.freeAbility),
+  };
+}
+
+/**
+ * A free-ability grant with every key spelled out, or null. `turn` is the
+ * combat turn it was granted in; it lapses when the turn moves on.
+ */
+function normaliseFreeAbility(grant) {
+  const keys = Array.isArray(grant?.keys)
+    ? grant.keys.filter((k) => typeof k === "string" && k)
+    : [];
+  if (!keys.length) return null;
+  return {
+    keys,
+    targetId:
+      typeof grant.targetId === "string" && grant.targetId ? grant.targetId : null,
+    turn: Number(grant.turn),
   };
 }
 
@@ -172,6 +192,9 @@ function normaliseLock(lock) {
     // stop it, but may still be walked around (movementZones.mjs).
     exempt: Array.isArray(lock.exempt) ? lock.exempt : [],
     done: !!lock.done,
+    // Charge Defense (Hoplite) ended this movement early: a stopped Charge
+    // may not swing (combatAbilities.mjs refuses it).
+    stopped: !!lock.stopped,
     bonus: !!lock.bonus,
     resume: lock.bonus ? normaliseLock(lock.resume) : null,
     resumeMoved: !!lock.resumeMoved,
@@ -180,6 +203,12 @@ function normaliseLock(lock) {
     around: typeof lock.around === "string" && lock.around ? lock.around : null,
     // Lunge Step: the attacker the step must close in on.
     toward: typeof lock.toward === "string" && lock.toward ? lock.toward : null,
+    // Hoplite Advance: the step keeps to the line from `from` through `to`
+    // (grid offset keys "i,j", movementZones.mjs).
+    along:
+      typeof lock.along?.from === "string" && typeof lock.along?.to === "string"
+        ? { from: lock.along.from, to: lock.along.to }
+        : null,
     launch: lock.launch?.abilityId
       ? {
           abilityId: String(lock.launch.abilityId),
@@ -234,6 +263,7 @@ async function writeSpent(actor, spent) {
     movement: normaliseLock(spent.movement),
     bonusSources: Array.isArray(spent.bonusSources) ? spent.bonusSources : [],
     freeAttack: typeof spent.freeAttack === "string" ? spent.freeAttack : null,
+    freeAbility: normaliseFreeAbility(spent.freeAbility),
   });
 }
 
@@ -439,6 +469,28 @@ export async function confirmMovement(actor, { tokenSpent } = {}) {
 }
 
 /**
+ * End this actor's declared movement from outside (Hoplite Charge Defense:
+ * "zastaví Zteč"). The lock is marked done and `stopped`, and its `launch`
+ * is cleared, so the strip's check button fires no Charge swing and the zone
+ * goes away. No refund, nothing else changes. Writes the charger's record, so
+ * run it where that actor can be written (the GM).
+ *
+ * @param {Actor} actor
+ * @returns {Promise<boolean>} whether a lock was stopped
+ */
+export async function stopMovementLock(actor) {
+  if (!trackedCombat(actor)) return false;
+  const spent = getSpent(actor);
+  const lock = spent.movement;
+  if (!lock) return false;
+  await writeSpent(actor, {
+    ...spent,
+    movement: { ...lock, done: true, stopped: true, launch: null },
+  });
+  return true;
+}
+
+/**
  * A step an ability grants on top of the turn's movement: Passing Strike's
  * one hex after a hit. Costs nothing and takes the movement slot only for as
  * long as it lasts. Whatever was locked before (a Move with hexes left, or a
@@ -454,10 +506,13 @@ export async function confirmMovement(actor, { tokenSpent } = {}) {
  * `around` and `launch` are Quick Feet's (abilityMovement.mjs): the opponent
  * the step keeps next to, and the retaliation to fire once it is done.
  * `toward` is Lunge Step's: the attacker the step must close in on.
+ * `along` is the Hoplite Advance's: {from, to} grid offset keys, the zone
+ * keeps only hexes on the line from `from` through `to` (movementZones.mjs).
  *
  * @param {Actor} actor
  * @param {{mode: string, budget: number, startSpent: number, source?: string,
- *   around?: string|null, toward?: string|null, launch?: object|null}} step
+ *   around?: string|null, toward?: string|null, launch?: object|null,
+ *   along?: {from: string, to: string}|null}} step
  * @returns {Promise<boolean>} Whether a step was granted.
  */
 export async function grantBonusStep(
@@ -471,6 +526,7 @@ export async function grantBonusStep(
     toward = null,
     launch = null,
     ignore = [],
+    along = null,
   },
 ) {
   if (!trackedCombat(actor)) return false;
@@ -506,6 +562,7 @@ export async function grantBonusStep(
       launch,
       // Acrobatic Disengage: the enemies it breaks from (see lockMovement).
       ignore: Array.isArray(ignore) ? ignore : [],
+      along,
     },
     bonusSources: source ? [...spent.bonusSources, source] : spent.bonusSources,
   });
@@ -591,6 +648,7 @@ const OFF_TURN_MODES = new Set([
   "lungeStep",
   "halfPirouette",
   "acrobaticDisengage",
+  "advance",
 ]);
 
 /** Does this actor hold an unfinished off-turn step (Quick Feet and the like)? */
@@ -663,6 +721,9 @@ export async function spendForItems(actor, items) {
   let actions = 0;
   let reactions = 0;
   let freeRiposte = false;
+  // Forceful Advance (Hoplite): one listed ability costs no Action, once.
+  const freeAbility = liveFreeAbility(actor);
+  let freeAbilityUsed = false;
   for (const item of list) {
     // The free Riposte covers one use: a second Riposte in the same list (or
     // later this round) pays its Reaction.
@@ -670,11 +731,21 @@ export async function spendForItems(actor, items) {
       freeRiposte = true;
       continue;
     }
+    if (
+      !freeAbilityUsed &&
+      freeAbility?.keys.includes(item?.system?.localizationKey)
+    ) {
+      freeAbilityUsed = true;
+      continue;
+    }
     const cost = costOf(actor, item);
     actions += cost.actions;
     reactions += cost.reactions;
   }
   if (freeRiposte) await markFreeRiposteUsed(actor);
+  if (freeAbilityUsed) {
+    await writeSpent(actor, { ...getSpent(actor), freeAbility: null });
+  }
   await spend(actor, { actions, reactions });
 }
 
@@ -712,6 +783,40 @@ export async function spendForAttack(actor, { opportunity = false } = {}) {
 export async function grantFreeAttack(actor, targetId) {
   if (!targetId || !trackedCombat(actor)) return;
   await writeSpent(actor, { ...getSpent(actor), freeAttack: targetId });
+}
+
+/**
+ * Rázný postup (Forceful Advance, Hoplite): "může jednou za kolo udělat Úder
+ * štítem nebo Zteč štítem jako Volnou akci". The next use of any ability whose
+ * localizationKey is in `keys` costs no Action, on the actor's turn or off
+ * it, for the rest of the combat turn it was granted in. Consumed by
+ * spendForItems (so through deductAbilityCost); the ability's Stamina is
+ * still paid. One grant at a time: a new one replaces the old. `targetId` is
+ * a hint only. Does not touch grantFreeAttack's token.
+ *
+ * @param {Actor} actor
+ * @param {{keys: string[], targetId?: string|null}} grant
+ * @returns {Promise<boolean>} whether it was granted
+ */
+export async function grantFreeAbility(actor, { keys = [], targetId = null } = {}) {
+  const combat = trackedCombat(actor);
+  const grant = normaliseFreeAbility({ keys, targetId, turn: combat?.turn });
+  if (!combat || !grant) return false;
+  await writeSpent(actor, { ...getSpent(actor), freeAbility: grant });
+  return true;
+}
+
+/**
+ * The free-ability grant still usable now (same combat turn), or null.
+ *
+ * @param {Actor} actor
+ * @returns {{keys: string[], targetId: string|null, turn: number}|null}
+ */
+export function liveFreeAbility(actor) {
+  const combat = trackedCombat(actor);
+  const grant = combat ? getSpent(actor).freeAbility : null;
+  if (!grant || grant.turn !== Number(combat.turn)) return null;
+  return grant;
 }
 
 /** Spend the free Attack if one is held. True when it was. */

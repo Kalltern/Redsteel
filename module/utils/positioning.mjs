@@ -42,6 +42,8 @@
  * the defense dialog decides which buttons a back attack leaves on the table.
  */
 
+import { actorHasSpecNode } from "../helpers/specialisations.mjs";
+
 /** The three arcs. Stored on attack cards as these exact strings. */
 export const SECTOR = Object.freeze({
   FRONT: "front",
@@ -527,7 +529,10 @@ function occupantsByHex(exclude) {
  *   2. at distance 2 or more, every hex strictly between the two (the direct
  *      grid path, minus the hexes the attacker and the target cover):
  *      - Extended Lunge wants them all empty, ally or foe;
- *      - an opponent (different disposition) blocks the line;
+ *      - an opponent (different disposition) blocks the line, unless the
+ *        attacker holds the Hoplite's hexAttack node ("Může útočit přes
+ *        oponentem okupovaný hex"); the hex then still counts as occupied
+ *        for the rule below;
  *      - an ally may be struck past, but not with Reckless Strike or Exploit
  *        Weakness, whether chosen as the ability or ticked as a modifier.
  *
@@ -558,6 +563,9 @@ export function checkMeleeReach({
 
   const reach = weaponReach(actor, weapon, ability);
   const lunge = isExtendedLungeAbility(ability);
+  // Hoplite → hexAttack: the line may pass an opponent.
+  const throughOpponents =
+    !!actor && actorHasSpecNode(actor, "hoplite", "hexAttack");
   const noPassThrough =
     forbidsPassThrough(ability) ||
     (modifiers ?? []).some((mod) => forbidsPassThrough(mod));
@@ -611,7 +619,10 @@ export function checkMeleeReach({
           reason: game.i18n.localize("REDSTEEL.Reach.LungeNeedsEmpty"),
         };
       }
-      if (here.some((doc) => doc.disposition !== selfDoc.disposition)) {
+      if (
+        !throughOpponents &&
+        here.some((doc) => doc.disposition !== selfDoc.disposition)
+      ) {
         return {
           ok: false,
           reason: game.i18n.localize("REDSTEEL.Reach.OpponentBlocks"),
