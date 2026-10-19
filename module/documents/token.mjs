@@ -269,6 +269,8 @@ export class RedsteelToken extends Token {
           around: lock.around ?? null,
           toward: lock.toward ?? null,
           along: lock.along ?? null,
+          // Předvoj → Rozražení (bullCharge.mjs).
+          bullCharge: lock.mode === "charge" && !!lock.bullCharge,
         }),
         { color: lockMode.color, alpha: 0.15 },
         this.document?.id ?? null,

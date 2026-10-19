@@ -531,8 +531,12 @@ export async function universalAttackLogic({
       effectModifiers,
     );
 
-    const { allBleedRollResults, effectsRollResults, mechanicalEffects } =
-      effects;
+    const {
+      allBleedRollResults,
+      effectsRollResults,
+      mechanicalEffects,
+      shieldStrain,
+    } = effects;
 
     // ─── Bane ("Metla") packet ───
     // A second reading of the same dice: never re-roll the attack or crit
@@ -715,6 +719,9 @@ ${
           d100: attackRoll.dice.find((d) => d.faces === 100)?.total ?? null,
           damageProfile,
           effects: mechanicalEffects,
+          // Zatížení štítu: the chance a successful Cover against this blow
+          // strains the defender's shield (utils/shieldStrain.mjs).
+          ...(shieldStrain ? { shieldStrain } : {}),
           aimedStrike: aimedPart
             ? { part: aimedPart, su: attackRoll.total }
             : null,

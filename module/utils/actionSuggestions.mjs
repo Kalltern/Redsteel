@@ -49,16 +49,22 @@ import { BRACE_KEY, getBraceEffect } from "./brace.mjs";
 import { isHostileSide } from "./movementZones.mjs";
 import { hasWeaponMasterNode } from "./weaponMaster.mjs";
 import { FEINT_ATTACK_KEYS, isFeintAttack } from "./champion.mjs";
+import { isFreeTheShield, isShieldStrained } from "./shieldStrain.mjs";
+import { retaliationShieldBash } from "./warden.mjs";
 import {
   forcefulAdvanceItems,
   isHopliteAdvance,
-  isHopliteMomentum,
   onslaughtKind,
   pendingDrawLightWeapon,
   pendingHopliteOnslaught,
   pendingHopliteAdvance,
-  pendingHopliteMomentum,
 } from "./hoplite.mjs";
+import { pendingMomentumItem } from "./momentum.mjs";
+import { isAnyTriumph, pendingTriumph } from "./vanguard.mjs";
+import {
+  hasReactionLeft,
+  pendingBullChargeOpportunity,
+} from "./bullCharge.mjs";
 
 const MODE_ORDER = ["move", "slow", "sprint", "disengage"];
 
@@ -434,7 +440,16 @@ function reactionChips(actor) {
     actor,
     IMPROVED_BRILLIANT_COUNTER_SURPRISE_KEY,
   );
-  if (!counter && !retaliatory && !shoves.length && !exploit && !acrobatic) {
+  // Strážce → Úder štítem jako Odvetná akce (warden.mjs).
+  const wardenBash = retaliationShieldBash(actor);
+  if (
+    !counter &&
+    !retaliatory &&
+    !shoves.length &&
+    !exploit &&
+    !acrobatic &&
+    !wardenBash
+  ) {
     return [];
   }
 
@@ -506,6 +521,20 @@ function reactionChips(actor) {
         abilityChip(shove, "REDSTEEL.Bg3Hotbar.Suggest.Reaction", attackerToken.id),
       );
     }
+  }
+  // Strážce: Shield Bash as a Retaliation action, behind Counterattack's gate
+  // (a successful Defense) and only at an attacker standing next to the
+  // Warden, the bash's own reach. Not an attack, so no Aimed Attack.
+  if (
+    wardenBash &&
+    counterattackFits(defense) &&
+    areAdjacent(defenderToken, attackerToken)
+  ) {
+    chips.push({
+      ...abilityChip(wardenBash, "REDSTEEL.Bg3Hotbar.Suggest.Reaction", attackerToken.id),
+      aimable: false,
+      hint: "",
+    });
   }
   // Offered wherever Retaliatory strike would be: after a Defense or a Dodge.
   if (exploit && retaliatoryFits(defense)) {
@@ -1126,7 +1155,8 @@ function halfPirouetteChips(actor) {
 
 /**
  * Hoplite (hoplite.mjs), each for the rest of the turn it was earned in:
- * Momentum after a kill or a Critical Hit with a qualifying weapon, Advance
+ * Momentum after a kill or a Critical Hit with a qualifying weapon (the
+ * doctrine Momentum too, momentum.mjs, on any weapon attack), Advance
  * after a kill (also off turn), Onslaught I / II after a shield blow or Trip,
  * "Draw a light weapon" after a Daring Throw,
  * and the shield abilities Forceful Advance made free after an Advance step.
@@ -1145,12 +1175,8 @@ function hopliteChips(actor) {
     hint: "",
   });
 
-  if (pendingHopliteMomentum(actor)) {
-    const momentum = actor.items.find(
-      (i) => i.type === "ability" && isHopliteMomentum(i),
-    );
-    if (momentum) chips.push(plain(momentum));
-  }
+  const momentum = pendingMomentumItem(actor);
+  if (momentum) chips.push(plain(momentum));
   if (pendingHopliteAdvance(actor)) {
     const advance = actor.items.find(
       (i) => i.type === "ability" && isHopliteAdvance(i),
@@ -1187,6 +1213,56 @@ function hopliteChips(actor) {
     chips.push(abilityChip(item, free, null));
   }
   return chips;
+}
+
+/**
+ * Předvoj → Triumf (vanguard.mjs): offered for the rest of the turn a
+ * Critical Hit or a kill was applied in, on or off the holder's own turn,
+ * while any trigger is left. A Free action; each click pays the item and
+ * spends one trigger. Not an attack, so no Aimed Attack on right-click.
+ *
+ * @param {Actor} actor
+ * @returns {object[]}
+ */
+function triumphChips(actor) {
+  if (!pendingTriumph(actor)) return [];
+  const triumph = actor.items.find(
+    (i) => i.type === "ability" && isAnyTriumph(i),
+  );
+  if (!triumph) return [];
+  return [
+    {
+      ...abilityChip(triumph, "REDSTEEL.Bg3Hotbar.Suggest.FreeAction", null),
+      aimable: false,
+      hint: "",
+    },
+  ];
+}
+
+/**
+ * Uvolnit štít (Free the Shield): offered on the holder's own turn while the
+ * shield is strained (shieldStrain.mjs). Two Actions, paid when used. Not an
+ * attack, so no Aimed Attack on right-click.
+ *
+ * @param {Actor} actor
+ * @returns {object[]}
+ */
+function freeShieldChips(actor) {
+  if (!isTrackedTurn(actor) || !isShieldStrained(actor)) return [];
+  const item = actor.items.find(
+    (i) => i.type === "ability" && isFreeTheShield(i),
+  );
+  if (!item) return [];
+  return [
+    {
+      ...abilityChip(item, "REDSTEEL.Bg3Hotbar.Suggest.TwoActions", null),
+      theme: "melee",
+      // Not a Free action: the tooltip prints the price as a hint instead.
+      costKind: "action",
+      aimable: false,
+      hint: game.i18n.localize("REDSTEEL.Bg3Hotbar.Suggest.TwoActions"),
+    },
+  ];
 }
 
 /** Fallback icon of the Overwatch shot, for a status set without the ability. */
@@ -1253,6 +1329,46 @@ function overwatchChips(actor) {
   ];
 }
 
+/** Icon of the Bull Charge Opportunity Attack chip. */
+const BULL_CHARGE_OA_ICON = "icons/skills/melee/strike-sword-steel-yellow.webp";
+
+/**
+ * Předvoj → Rozražení (bullCharge.mjs): a charger lost the contest running
+ * around this actor and ran on, so this actor gets an Opportunity Attack on
+ * it for that turn. Rides the Overwatch chip's kind: clicking opens the
+ * Attack dialog aimed at the charger with Opportunity Attack ticked, which
+ * pays the Reaction as usual. Gone once answered, or without a Reaction.
+ *
+ * @param {Actor} actor
+ * @returns {object[]}
+ */
+function bullChargeOpportunityChips(actor) {
+  const pending = pendingBullChargeOpportunity(actor);
+  if (!pending) return [];
+  if (!hasReactionLeft(actor)) return [];
+  if (CANNOT_SHOOT.some((s) => actor.statuses?.has(s))) return [];
+  const target = answerableAttacker(pending.tokenId);
+  if (!target) return [];
+  const label = game.i18n.localize("REDSTEEL.BullCharge.OpportunityLabel");
+  const hint = game.i18n.format("REDSTEEL.BullCharge.OpportunityHint", {
+    target: target.name,
+  });
+  return [
+    {
+      id: `bull-charge-oa-${target.id}`,
+      kind: "overwatch",
+      theme: "melee",
+      uuid: "",
+      costKind: "reaction",
+      img: BULL_CHARGE_OA_ICON,
+      label,
+      hint,
+      targetTokenId: target.id,
+      ariaLabel: `${label}: ${hint}`,
+    },
+  ];
+}
+
 /**
  * Combat abilities the actor may use right now, on or off its turn.
  * Suggestions only: an ability missing here can still be used from the
@@ -1265,10 +1381,11 @@ function combatProvider(actor) {
   if (!canvas?.ready) return [];
   return [...riposteChips(actor), ...braceChips(actor), ...lungeStepChips(actor),
     ...reactionChips(actor), ...overpowerChips(actor), ...vigilantChips(actor),
-    ...overwatchChips(actor), ...impaleFollowupChips(actor),
+    ...overwatchChips(actor), ...bullChargeOpportunityChips(actor),
+    ...impaleFollowupChips(actor),
     ...escapeChips(actor), ...sustainChips(actor), ...stanceChips(actor),
     ...slipThroughChips(actor), ...halfPirouetteChips(actor),
-    ...hopliteChips(actor)];
+    ...hopliteChips(actor), ...triumphChips(actor), ...freeShieldChips(actor)];
 }
 
 const PROVIDERS = [movementProvider, combatProvider];

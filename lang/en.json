@@ -1860,47 +1860,47 @@
           "nodes": {
             "ztecPohyb50": {
               "label": "Charge: Movement +50%",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Automated."
             },
             "ztecZraneniHexa": {
               "label": "Charge: +1 damage per hex",
-              "description": "10 CP. Manual — resolved at the table."
+              "description": "10 CP. Automated."
             },
             "ztecPohyb100": {
               "label": "Charge: Movement +100%",
-              "description": "5 CP; M/T/S/D IV. Manual — resolved at the table."
+              "description": "5 CP; M/T/S/D IV. Automated."
             },
             "rozrazeni": {
-              "label": "Breakthrough",
-              "description": "10 CP. Manual — resolved at the table."
+              "label": "Bull Charge",
+              "description": "10 CP. Automated."
             },
             "zatlaceni": {
               "label": "Push Back",
-              "description": "10 CP. Manual — resolved at the table."
+              "description": "10 CP. Automated."
             },
             "ztecSRozseknutim": {
               "label": "Charge with Cleave",
-              "description": "15 CP; P/P/Š V. Manual — resolved at the table."
+              "description": "15 CP; P/P/Š V. Automated."
             },
             "momentumVydrz": {
               "label": "Momentum: Stamina -1",
-              "description": "5 CP; P/P/Š X. Manual — resolved at the table."
+              "description": "5 CP; P/P/Š X. Automated."
             },
             "momentumSpecialni": {
               "label": "Momentum: Special actions",
-              "description": "20 CP; M/T/S/D X. Manual — resolved at the table."
+              "description": "20 CP; M/T/S/D X. Automated."
             },
             "opakovaniUtoku": {
               "label": "Once per day reroll an Attack",
-              "description": "10 CP; P/P/Š V. Manual — resolved at the table."
+              "description": "10 CP; P/P/Š V. Automated."
             },
             "presilaPostih": {
               "label": "Defender's outnumber penalty -5%",
-              "description": "10 CP; M/T/S/D V. Manual — resolved at the table."
+              "description": "10 CP; M/T/S/D V. Automated."
             },
             "triumf": {
               "label": "Triumph / Improved Triumph",
-              "description": "15 CP; P/P/Š X. Manual — resolved at the table."
+              "description": "15 CP; P/P/Š X. Automated."
             },
             "prubojnost2": {
               "label": "Penetration +2",
@@ -1908,27 +1908,27 @@
             },
             "rozseknutiCil": {
               "label": "Cleave: Target +1",
-              "description": "10 CP; P/P/Š V. Manual — resolved at the table."
+              "description": "10 CP; P/P/Š V. Automated."
             },
             "rozseknutiZasah": {
               "label": "Cleave: Hit +5%",
-              "description": "10 CP; P/P/Š VII. Manual — resolved at the table."
+              "description": "10 CP; P/P/Š VII. Automated."
             },
             "bojoveTestySily": {
               "label": "Combat Strength Tests +10%",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Automated."
             },
             "opakovaniTestuSily": {
               "label": "Reroll combat Strength Test for 5 Stamina",
-              "description": "10 CP. Manual — resolved at the table."
+              "description": "10 CP. Automated."
             },
             "zbrojeRychlost": {
               "label": "Armor doesn't reduce Speed or Initiative",
-              "description": "10 CP. Manual — resolved at the table."
+              "description": "10 CP. Automated."
             },
             "ocelovyStisk": {
               "label": "Steel Grip",
-              "description": "10 CP; M/T/S/D V. Manual — resolved at the table."
+              "description": "10 CP; M/T/S/D V. Melee Defense uses the higher of Strength and Dexterity. Automated."
             }
           }
         },
@@ -1942,67 +1942,71 @@
             },
             "redukceBoku": {
               "label": "Flank Reduction II",
-              "description": "5 CP; Štítonoš V. Manual — resolved at the table."
+              "description": "5 CP; Štítonoš V. Attacks from your flank hexes count as attacks from the front: no flank bonus and no flank Sneak Attack. Attacks from behind are unchanged. Automated."
             },
             "zatizeniStitu": {
               "label": "Shield strain -15%",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. The chance that a successful Cover strains your shield is 15% lower. Automated."
             },
             "spolehlivyStit1": {
               "label": "Reliable Shield I",
-              "description": "10 CP; M/T/S/D V. Passive. Sacrificing armor or shield Durability reduces damage by a further 5. Manual — resolved at the table."
+              "description": "10 CP; M/T/S/D V. Passive. Sacrificing armor or shield Durability reduces damage by a further 5 per point. Automated."
             },
             "spolehlivyStit2": {
               "label": "Reliable Shield II",
-              "description": "15 CP; Štítonoš X. Passive. Held shields have one more Durability. Manual — resolved at the table."
+              "description": "15 CP; Štítonoš X. Passive. Your shields have one more Durability. Automated."
             },
             "uderStitemOdveta": {
               "label": "Shield Bash as a Retaliation",
-              "description": "10 CP; Štítonoš VI. Manual — resolved at the table."
+              "description": "10 CP; Štítonoš VI. After a successful Defense you may use Shield Bash against the attacker as a Retaliation action, paid with your Reaction. Automated."
             },
             "uderZraneniA": {
               "label": "Shield Bash/Charge: Damage +1d4",
-              "description": "10 CP. Manual — resolved at the table."
+              "description": "10 CP. Shield Bash and Shield Charge deal 1d4 more damage. Automated."
             },
             "uderZraneniSila": {
               "label": "Shield Bash/Charge: Damage +Str/2",
-              "description": "10 CP; Štítonoš IV. Manual — resolved at the table."
+              "description": "10 CP; Štítonoš IV. Shield Bash and Shield Charge deal extra damage equal to half your Strength, rounded down. Automated."
             },
             "bonusZaStit": {
               "label": "Shield Bonus",
-              "description": "10 CP. Passive. Gains a bonus for the shield held. Small shield: Shield Bash costs 3 less Stamina, Critical Defense +1%, Deflect +15%. Medium shield: Shield Bash has a 10% higher Stagger chance, Deflect +10%. Large shield: combat Strength Tests +10%, Deflect +10%. Manual — resolved at the table."
+              "description": "10 CP. Passive. Gains a bonus for the shield held. Small shield: Shield Bash costs 3 less Stamina, Critical Defense +1%, Deflect +15%. Medium shield: Shield Bash has a 10% higher Stagger chance, Deflect +10%. Large shield: combat Strength Tests +10%, Deflect +10%. A strained shield gives nothing. Automated."
             },
             "uderZraneniB": {
               "label": "Shield Bash/Charge: Damage +1d4",
-              "description": "10 CP; Štítonoš VI. Manual — resolved at the table."
+              "description": "10 CP; Štítonoš VI. Shield Bash and Shield Charge deal 1d4 more damage. Automated."
             },
             "uderSila10": {
               "label": "Shield Bash/Charge: Strength +10%",
-              "description": "10 CP. Manual — resolved at the table."
+              "description": "10 CP. The versus Test of Shield Bash and Shield Charge gains +10%. Automated."
             },
             "dvojityUder": {
               "label": "Double Strike",
-              "description": "10 CP; Štítonoš VIII. Free action, 3 Stamina. Modifies Shield Bash to strike two adjacent opponents. Grants the Double Strike action; the second target is resolved at the table."
+              "description": "10 CP; Štítonoš VIII. Free action, 3 Stamina. Modifies Shield Bash to strike two opponents standing next to each other and next to you. Grants the Double Strike action. Automated."
             },
             "obrannyPostojSpojenci": {
               "label": "Defensive Stance: allies +5% Defense",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. While you hold Defensive Stance, allies next to you gain Defense +5%. Automated."
             },
             "vylObrannyPostoj": {
               "label": "Improved Defensive Stance",
-              "description": "10 CP; Štítonoš VI. 2 actions, 3 Stamina, then 1 per round. Focuses fully on defense. Ranged Defense +10%, Defense +20%, and both flanks reduced while the stance lasts. Keeping the stance up takes two actions. Once per round, may use Armoring or Slow Movement as a Free action. Grants the Improved Defensive Stance action, which replaces Defensive Stance and uses the same stance effect and upkeep; the higher bonuses, the flanks and the free Armoring or Slow Movement are resolved at the table."
+              "description": "10 CP; Štítonoš VI. 2 actions, 3 Stamina, then 1 per round. Focuses fully on defense. Ranged Defense +10%, Defense +20%, and both flanks reduced while the stance lasts. Keeping the stance up takes two actions. Once per round, may use Armoring or Slow Movement as a Free action. Grants the Improved Defensive Stance action, which replaces Defensive Stance. Automated."
             },
             "ochranaVolna": {
               "label": "Protection: once per round as Free action",
-              "description": "20 CP; Štítonoš VIII. Manual — resolved at the table."
+              "description": "20 CP; Štítonoš VIII. Once per round, Guard (Protection) costs no Reaction. Its Stamina is still paid. Automated."
             },
             "protiutokZasah": {
               "label": "Counterattack: Hit +10%",
-              "description": "15 CP; M/T/S/D X. Manual — resolved at the table."
+              "description": "15 CP; M/T/S/D X. Counterattack gains Hit +10%. Automated."
             },
             "vylObrneni": {
               "label": "Improved Armoring",
-              "description": "20 CP; Štítonoš X. 1 action, 10 Stamina. Gains 15 Temporary Health, which protects against Melee and Shooting hits and against suitable magical damage. Temporary Health can be raised to at most 15 this way. Can be used on an adjacent target. Grants the Improved Armoring action; the Temporary Health is resolved at the table."
+              "description": "20 CP; Štítonoš X. 1 action, 10 Stamina. Gains 15 Temporary Health, which protects against Melee and Shooting hits. Temporary Health can be raised to at most 15 this way. Can be used on an adjacent target. Grants the Improved Armoring action. Automated."
+            },
+            "opakovaniKrytu": {
+              "label": "Reroll Cover once per day",
+              "description": "5 CP. Once per day, may reroll a Cover roll. Automated."
             }
           }
         },
@@ -6095,7 +6099,7 @@
       "toxic_shock": "Toxicity is above its maximum. When applied and at the start of every round, deals 25 damage that ignores armor, and a failed Endurance test at -40% causes Stun. Ends when Toxicity falls back to its maximum.",
       "corrupted": "Corruption degree 2 or higher (61+). The character counts as Corrupted, and defense rolls carry a reminder for Light and miracle effects. Synced automatically with Corruption.",
       "possessed": "Controlled by the winner of a Mental Duel, who shares control of the token. Removing this effect ends the possession and restores ownership.",
-      "shield_strain": "The shield stops helping: its Defense, Cover, critical defense, armor and Health bonus drop to 0. Its penalties to Dodge, Initiative and Speed stay.",
+      "shield_strain": "The shield stops helping: its Defense, Cover, critical defense, armor and Health bonus drop to 0. Its penalties to Dodge, Initiative and Speed stay. Free the Shield (2 Actions) clears it.",
       "paralyze": "-40% on every test. Cannot make opportunity attacks. Lasts 3 turns and replaces Stun and Stagger.",
       "blind": "-30% Combat, -50% Archery and Throwing, and -15% Defense, Cover and Dodge. Cannot make opportunity attacks.",
       "dazzled": "-10% Combat and -20% Archery and Throwing. Cannot make opportunity attacks. Lasts 2 turns.",
@@ -6161,7 +6165,8 @@
       "shield_magic": "Absorbs magical damage from a pool of 15 + 4×SK, swallows one oversized hit whole, and blocks effects carried by magical hits. Cannot be dispelled, and replaces the other shields.",
       "shield_elemental": "Absorbs physical damage and one chosen element (Fire, Frost, Lightning, or Acid and Poison) from a pool of 20 + 5×SK. Switching the element costs 3 Mana, paid by hand. Replaces the other shields.",
       "blood_shield": "Absorbs physical damage. Raised when the bearer loses Health to a hit, worth half the Health lost, and further hits add to the pool. Cleared at the start of the next round.",
-      "mental_focus": "+10% to the Mental Duel per stack, attacking and defending. Each use costs 1 Action and adds a stack. Lasts until the start of the next turn."
+      "mental_focus": "+10% to the Mental Duel per stack, attacking and defending. Each use costs 1 Action and adds a stack. Lasts until the start of the next turn.",
+      "protected_by": "An adjacent ally protects this character. On an attack card that names it, the protector may answer with its own Defense or Cover at -10%."
     },
     "MentalDuel": {
       "Focus": {
@@ -6437,7 +6442,8 @@
       "type2": "Extra Effect Type 2",
       "type3": "Extra Effect Type 3",
       "Name": {
-        "shield_strain": "Shield Strain"
+        "shield_strain": "Shield Strain",
+        "protected_by": "Protected"
       }
     },
     "Resync": {
@@ -6695,6 +6701,9 @@
         "alreadyUsed": "Blood Pact has already been used this round.",
         "noMind": "No Mind point left to burn.",
         "reserveFull": "The Blood Reserve has no room left."
+      },
+      "BullCharge": {
+        "name": "Bull Charge"
       },
       "BloodyKiss": {
         "name": "Bloody Kiss"
@@ -7078,6 +7087,9 @@
       },
       "ImprovedArmoring": {
         "name": "Improved Armoring"
+      },
+      "ImprovedTriumph": {
+        "name": "Improved Triumph"
       },
       "ImprovedBrilliantCounter": {
         "name": "Improved Brilliant Counter"
@@ -7702,6 +7714,12 @@
       },
       "MagicWard": {
         "name": "Magic Ward"
+      },
+      "Momentum": {
+        "name": "Momentum"
+      },
+      "Triumph": {
+        "name": "Triumph"
       },
       "MakeshiftHeavyBlunt": {
         "name": "Heavy Makeshift Weapon (Blunt)"
@@ -8963,6 +8981,12 @@
       },
       "ImprovedCharge": {
         "name": "Improved Charge"
+      },
+      "Armoring": {
+        "name": "Armoring"
+      },
+      "FreeTheShield": {
+        "name": "Free the Shield"
       }
     },
     "MonsterBuilder": {
@@ -9721,6 +9745,61 @@
           "augury": "A chance to glimpse a person's future, foretell weather and disasters, and deliver Prophecies."
         }
       }
+    },
+    "Warden": {
+      "StrainOnCard": "{chance}% on a successful Cover",
+      "StrainHeld": "{name}: the shield holds. {effect}: rolled {roll} against {chance}%.",
+      "StrainApplied": "{name}: the shield is strained. {effect}: rolled {roll} against {chance}%. The shield gives no bonuses until it is freed (Free the Shield, 2 Actions).",
+      "FreeShieldNotStrained": "The shield is not strained. There is nothing to free.",
+      "ProtectionNoAlly": "No ally stands next to you. Guard is taken without an automated ally.",
+      "ProtectionPick": "Which adjacent ally do you protect?",
+      "ProtectionPickNone": "No ally",
+      "ProtectionStarted": "{name} protects {ally} until the start of its next turn.",
+      "ProtectionNoGM": "No GM is connected, so the protected ally could not be marked. The Protect button still works.",
+      "ProtectButton": "Protect {ally}",
+      "ProtectTooltip": "{name} answers this attack for {ally} with its own Defense or Cover at {penalty}%.",
+      "ProtectionEnded": "This Protection has ended.",
+      "ProtectionNotAdjacent": "{name} no longer stands next to {ally}.",
+      "ProtectionAnswered": "This protector has already answered this attack.",
+      "ProtectionCardNote": "Protecting {name}",
+      "ArmoringAtCap": "{name} already has {max} Temporary Health or more. Armoring adds nothing.",
+      "ArmoringNoGM": "No GM is connected to grant Temporary Health to that character.",
+      "FreeGuard": "Protection as a Free action: no Reaction spent (once per round).",
+      "FreeStanceAction": "Improved Defensive Stance: this costs no Action (once per round).",
+      "DoubleStrikeBashOnly": "Double Strike only modifies Shield Bash. Untick it to use this ability.",
+      "DoubleStrikeTwoTargets": "Double Strike needs exactly two targeted opponents.",
+      "DoubleStrikeAdjacency": "Double Strike: both targets must be living opponents next to you and next to each other.",
+      "DoubleStrikeCard": "Double Strike: {first} and {second}",
+      "StanceAllyCard": "Warden's stance: Defense +{bonus}",
+      "ArmoringNotAdjacent": "The target is not next to you, so Improved Armoring goes on you.",
+      "ArmoringPick": "Who gains the Temporary Health?"
+    },
+    "Vanguard": {
+      "MomentumFreeAttackOrAbility": "{name} presses on: the next Attack or weapon attack action this turn is a Free action.",
+      "CleaveTooManyTargets": "{ability} strikes at most {max} targets, but {count} are targeted.",
+      "StrengthRerollCost": "{cost} Stamina",
+      "TriumphAtCap": "{name} already has {max} Temporary Health or more. Triumph adds nothing."
+    },
+    "BullCharge": {
+      "NotACharge": "Bull Charge only modifies Charge or Charge with Cleave.",
+      "NoApproach": "Bull Charge modifies a charge's approach, and this charge has none left: the turn's movement is already used.",
+      "EndsOnEnemy": "A Bull Charge cannot end on an enemy's hex.",
+      "NoGM": "No Gamemaster is connected to apply the Bull Charge result to that enemy.",
+      "TitleThrough": "Bull Charge: {charger} charges through {enemy}",
+      "TitleAround": "Bull Charge: {charger} charges around {enemy}",
+      "Side": "{name}: {attribute} {chance}%, roll {roll}, margin {margin}",
+      "ThroughWin": "{charger} breaks through.",
+      "ThroughWinProne": "{charger} breaks through with a Critical Success and knocks {enemy} Prone.",
+      "ThroughLose": "{enemy} holds firm. The charge stops in front of it.",
+      "AroundWin": "{charger} gets past {enemy}.",
+      "AroundStopped": "{enemy} cuts off the way. The charge stops before passing it.",
+      "AroundContinued": "{enemy} cuts off the way, but {charger} runs on. {enemy} may make an Opportunity Attack.",
+      "PromptTitle": "Bull Charge",
+      "PromptBody": "{enemy} won the contest. Stop here, or run on and let {enemy} make an Opportunity Attack?",
+      "Stop": "Stop here",
+      "Continue": "Run on",
+      "OpportunityLabel": "Opportunity Attack",
+      "OpportunityHint": "{target} ran past you with Bull Charge"
     }
   },
   "TYPES": {

@@ -137,7 +137,7 @@ registerTooltip("effect", (ctx) => {
 
   // Each change is shown as a raw stat line; these are GM-facing details.
   const changes = (effect.changes ?? []).map(
-    (c) => `${ttEscape(c.key)} ${ttEscape(modeSymbol(c.mode))} ${ttEscape(c.value)}`,
+    (c) => `${ttEscape(c.key)} ${ttEscape(modeSymbol(c.type ?? c.mode))} ${ttEscape(c.value)}`,
   );
 
   const body = [
@@ -154,7 +154,11 @@ registerTooltip("effect", (ctx) => {
 });
 
 function modeSymbol(mode) {
-  const M = CONST.ACTIVE_EFFECT_MODES;
+  // V14 changes carry `type` ("add", "multiply"...); a legacy numeric `mode`
+  // is mapped onto the same names.
+  const M = { ADD: "add", MULTIPLY: "multiply", OVERRIDE: "override", UPGRADE: "upgrade", DOWNGRADE: "downgrade" };
+  const legacy = { 1: "multiply", 2: "add", 3: "downgrade", 4: "upgrade", 5: "override" };
+  if (typeof mode !== "string") mode = legacy[Number(mode)];
   switch (mode) {
     case M.ADD:
       return "+";

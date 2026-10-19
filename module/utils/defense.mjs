@@ -51,6 +51,11 @@ import {
 import { resolveVersus } from "./defenseOdds.mjs";
 import { asMakeshiftMelee, isRangedWeapon } from "./makeshift.mjs";
 import { getChampionOffhandMods } from "./champion.mjs";
+import { wardenAllyDefenseBonus } from "./warden.mjs";
+import {
+  wardenShieldCritDefense,
+  wardenShieldDeflect,
+} from "./wardenShield.mjs";
 
 /** Shadow → Úhyb do zad: the flat penalty for dodging a blow from behind. */
 const BLINDSIDE_DODGE_PENALTY = -20;
@@ -137,6 +142,9 @@ export function buildAttackPacket(message) {
     // an Opportunity Attack (which cannot be answered in kind) from a blow.
     abilityKey: message.flags?.redsteel?.abilityKey ?? null,
     attackTags: message.flags?.redsteel?.attackTags ?? [],
+    // Zatížení štítu: the strain chance a successful Cover rolls against
+    // (utils/shieldStrain.mjs). Null when the blow carries none.
+    shieldStrain: message.flags.attack.shieldStrain ?? null,
   };
 }
 
@@ -682,7 +690,9 @@ export async function buildDefenseProfile({
       offCrit +
       doctrineCritDefenseBonus +
       weaponSpec.critDefense +
-      (useBane ? baneProfile.critDefense : 0);
+      (useBane ? baneProfile.critDefense : 0) +
+      // Strážce → Bonus za štít, small shield: Kritická obrana +1%.
+      wardenShieldCritDefense(actor);
 
     critFailure = defense.criticalFailureThreshold;
 
@@ -698,10 +708,13 @@ export async function buildDefenseProfile({
       aimDefense: aimDefense.bonus,
       // Defense Reinforcement (Sword Dancer): Aim already sacrificed for it.
       reinforceDefense: Number(reinforceDefense) || 0,
+      // Strážce → Obranný postoj: an adjacent Warden in Defensive Stance
+      // lends +5 (warden.mjs, an aura read now, not an effect).
+      wardenStanceAlly: wardenAllyDefenseBonus(defenderToken),
     };
 
     formula =
-      "@defenseRating + @weaponDefense + @doctrineDefenseBonus + @abilityDefense + @overwhelmPenalty + @longReachPenalty + @specDefense + @baneDefense + @aimDefense + @reinforceDefense - 1d100";
+      "@defenseRating + @weaponDefense + @doctrineDefenseBonus + @abilityDefense + @overwhelmPenalty + @longReachPenalty + @specDefense + @baneDefense + @aimDefense + @reinforceDefense + @wardenStanceAlly - 1d100";
     skillKey = "meleeDefense";
   } else if (mode === "ranged") {
     const { doctrineCritDefenseBonus, doctrineRangedDefenseBonus } =
@@ -836,6 +849,9 @@ export async function defenseRoll({
   attackerTokenId = null,
   attack = null,
   auto = null,
+  // Ochrana (Protection): the ally this defense answers the attack for, when
+  // the protector rolls it from the attack card (utils/protection.mjs).
+  protectedTokenId = null,
 } = {}) {
   // Named by the caller whenever it knows which token is defending. Auto-defense
   // does: it was told by the attack card, and four goblins off one base actor
@@ -1643,12 +1659,15 @@ export async function defenseRoll({
         {
           deflectValue:
             (Number(actor.system.defenseDeflect) || 0) +
-            getArmigerDeflect(actor),
+            getArmigerDeflect(actor) +
+            // Strážce → Bonus za štít: the held shield's Deflect.
+            wardenShieldDeflect(actor),
           defenseKey: "meleeDefense",
           useBane,
           aimDefense,
           maneuver,
           reinforced,
+          wardenStanceAlly: Number(profile.rollData.wardenStanceAlly) || 0,
         },
       );
     };
@@ -1756,8 +1775,9 @@ export async function defenseRoll({
         overwhelmStacks,
         {
           // Ranged Defense had no Deflect source of its own; Zbrojnoš II
-          // (heavy) is the first, so only that is read here.
-          deflectValue: getArmigerDeflect(actor),
+          // (heavy) is the first. Strážce's Bonus za štít is the second: the
+          // held shield's Deflect covers Cover as well as Defense.
+          deflectValue: getArmigerDeflect(actor) + wardenShieldDeflect(actor),
           defenseKey: "rangedDefense",
           useBane,
         },
@@ -2112,6 +2132,7 @@ export async function defenseRoll({
       aimDefense = null,
       maneuver = null,
       reinforced = 0,
+      wardenStanceAlly = 0,
     } = {},
   ) {
     // Deflect (Odklonění): auto-roll the chance and surface it on the card,
@@ -2224,6 +2245,18 @@ export async function defenseRoll({
                 )}</p>`
               : ""
           }
+          ${
+            protectedTokenId
+              ? `<p class="rs-protection-note" style="text-align:center;"><i class="fa-light fa-shield-halved"></i> ${game.i18n.format(
+                  "REDSTEEL.Warden.ProtectionCardNote",
+                  {
+                    name: foundry.utils.escapeHTML(
+                      tokenName(protectedTokenId) ?? "",
+                    ),
+                  },
+                )}</p>`
+              : ""
+          }
           <div style="display:flex;justify-content:center;align-items:center;gap:8px;font-size:1.3em;font-weight:bold;">
             ${overwhelm > 0 ? `<p>${game.i18n.localize("REDSTEEL.Overwhelm.Label")}: ${overwhelmPenaltyFor(actor, overwhelm)}</p>` : ""}
             ${
@@ -2239,6 +2272,13 @@ export async function defenseRoll({
                 ? `<p>${game.i18n.format("REDSTEEL.SwordDancer.ReinforceCard", {
                     stacks: reinforced,
                     bonus: reinforced * REINFORCE_PER_AIM,
+                  })}</p>`
+                : ""
+            }
+            ${
+              wardenStanceAlly > 0
+                ? `<p>${game.i18n.format("REDSTEEL.Warden.StanceAllyCard", {
+                    bonus: wardenStanceAlly,
                   })}</p>`
                 : ""
             }
@@ -2301,6 +2341,10 @@ export async function defenseRoll({
             // Effort thresholds included). Apply Damage forces critical degree
             // 4 when this meets a critical hit (applyDamage.mjs).
             critFailure,
+            // Ochrana: the ally this defense answered the attack for. The
+            // card's defender is still the protector who rolled it; Apply
+            // Damage reads this to find the answer for the ally.
+            ...(protectedTokenId ? { protectedTokenId } : {}),
             attackAbilityKey: attack?.abilityKey ?? null,
             attackTags: Array.isArray(attack?.attackTags) ? attack.attackTags : [],
             combat: game.combat?.started

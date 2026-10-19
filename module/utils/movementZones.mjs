@@ -752,6 +752,7 @@ export function computeMovementZone(
     toward = null,
     exempt = [],
     along = null,
+    bullCharge = false,
   } = {},
 ) {
   const zone = new Map();
@@ -780,18 +781,26 @@ export function computeMovementZone(
   const forbidden = new Set(ignoredRing);
   forbidden.delete(offsetKey(origin));
 
+  // Předvoj → Rozražení (bullCharge.mjs): a Bull Charge may run
+  // through enemy hexes and past them. Entering an enemy's reach no longer
+  // ends the move and the one-step-around rule is lifted (no `engage`), and
+  // enemy hexes are open to pass (no `blocked`) but never an end hex: they
+  // are dropped below, and renderHexes skips occupied hexes anyway. The
+  // threat tint and swords keep the ordinary Opportunity Attack picture.
+  // Allies are unchanged (allyPassage.mjs).
   const found = searchZone({
     origin: offsetKey(origin),
     budget: Math.max(0, Math.floor(Number(budget) || 0)),
     neighbors: (key) =>
       canvas.grid.getAdjacentOffsets(parseKey(key)).map(offsetKey),
-    engage,
+    engage: bullCharge ? new Map() : engage,
     threat,
-    blocked,
+    blocked: bullCharge ? new Set() : blocked,
     forbidden,
     allies: alliesOf(token),
   });
   for (const [key, cell] of found) {
+    if (bullCharge && blocked.has(key)) continue;
     // A Disengage may pass another enemy but not stop next to one.
     if (disengaging && engage.has(key)) continue;
     if (aroundRing && !aroundRing.has(key)) continue;
@@ -1048,6 +1057,7 @@ export function refreshLockedZone() {
       around: lock.around ?? null,
       toward: lock.toward ?? null,
       along: lock.along ?? null,
+      bullCharge: lock.mode === "charge" && !!lock.bullCharge,
     }),
     { color: def.color, alpha: LOCK_ALPHA },
     token.document.id,

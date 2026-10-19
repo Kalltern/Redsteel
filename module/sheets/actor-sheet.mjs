@@ -9,6 +9,7 @@ import { openLearnWindow } from "../utils/learnWindow.mjs";
 import { bindSkillLedgerLayout } from "../utils/skillLedgerLayout.mjs";
 import { openCharacterCreation } from "../utils/characterCreation.mjs";
 import { isHandheldLight } from "../utils/itemLight.mjs";
+import { wardenShieldDurabilityMax } from "../utils/wardenShield.mjs";
 import {
   getDiscountSourceLabel,
   getSpecNodeDiscountConflict,
@@ -1225,7 +1226,8 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
 
     const armor = item.system.armor ?? {};
     const current = Number(armor.durability ?? 0);
-    const max = Number(armor.durabilityMax ?? 0);
+    // Strážce → Spolehlivý štít II: a Warden's shield has one more point.
+    const max = wardenShieldDurabilityMax(item);
 
     const active = index < current;
     const durability = Math.max(
@@ -1835,8 +1837,9 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
         const offDurability = offIsShield
           ? Number(offItem.system.armor?.durability ?? 0)
           : 0;
+        // Strážce → Spolehlivý štít II reads one more (wardenShield.mjs).
         const offDurabilityMax = offIsShield
-          ? Number(offItem.system.armor?.durabilityMax ?? 0)
+          ? wardenShieldDurabilityMax(offItem)
           : 0;
         const offDurabilityPips = [];
         for (let i = 0; i < offDurabilityMax; i++) {

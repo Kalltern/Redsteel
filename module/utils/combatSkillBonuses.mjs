@@ -17,7 +17,7 @@ import {
   rollSpeedTest,
   renderSpeedTestLine,
 } from "./speedTest.mjs";
-import { ATTRIBUTE_KEYS } from "./testRating.mjs";
+import { ATTRIBUTE_KEYS, vanguardStrengthTestBonus } from "./testRating.mjs";
 import {
   renderMarginFollowupLine,
   versusAgainstFor,
@@ -35,7 +35,23 @@ import { actorHasSpecNode } from "../helpers/specialisations.mjs";
 import { consumeOpportunityFlag } from "./opportunityAttacks.mjs";
 import { dragonGuardAttack, DRAGON_GUARD_HIT_BONUS } from "./dragonGuard.mjs";
 import { riposteAlwaysCrits } from "./swordServant.mjs";
-import { daringThrowMarginCrit, settlePreparedStance } from "./hoplite.mjs";
+import {
+  DARING_THROW_SHIELD_STRAIN,
+  daringThrowMarginCrit,
+  isDaringThrow,
+  settlePreparedStance,
+} from "./hoplite.mjs";
+import { isShieldStrainEffect } from "./shieldStrain.mjs";
+import {
+  counterattackHitBonus,
+  isDoubleStrike,
+  isShieldBash,
+  isShieldBashAsRetaliation,
+  shieldBlowDamageExtra,
+  shieldBlowStaggerBonus,
+  shieldBlowTestBonus,
+} from "./warden.mjs";
+import { wardenStrengthTestBonus } from "./wardenShield.mjs";
 import { thrownEffectiveRange, tokenHexDistance } from "./positioning.mjs";
 import { tokenForActor } from "./movementZones.mjs";
 import {
@@ -49,6 +65,11 @@ import {
   getChampionOffhandMods,
   isFeintAttack,
 } from "./champion.mjs";
+import {
+  spendChargeHexDamage,
+  vanguardChargeHexDamage,
+  vanguardCleaveHit,
+} from "./vanguard.mjs";
 
 const BLEEDING_DAMAGE_TYPES = new Set(["slash", "piercing"]);
 /** Shadow: Aimed Attack +5% (Cílený útok) — hit chance on an aimed attack. */
@@ -190,7 +211,7 @@ export async function consumeSneakAttackFlag(actor) {
   await actor.unsetFlag("redsteel", "sneakAccessCounter");
 }
 
-export async function getNonWeaponAbility(actor, ability) {
+export async function getNonWeaponAbility(actor, ability, { modifiers = [] } = {}) {
   const abilityAttributeTestName = ability.system.attributeTest || 0;
   const abilityTestModifier = ability.system.testModifier || 0;
 
@@ -255,8 +276,18 @@ export async function getNonWeaponAbility(actor, ability) {
         actor.type === "npc"
           ? (actor.system.attributes[shortKey]?.mod ?? 0)
           : (actor.system.attributes[shortKey]?.mod ?? 0);
+      // Strážce → Bonus za štít, large shield: combat Strength Tests +10.
+      // Předvoj → Bonus +10% na bojové Testy Síly: +10 more (testRating.mjs).
+      baseValue =
+        Number(baseValue) +
+        wardenStrengthTestBonus(actor, shortKey) +
+        vanguardStrengthTestBonus(actor, shortKey);
     }
-    const totalModifier = Number(baseValue) + Number(abilityTestModifier);
+    // Strážce → Úder štítem a Zteč štítem: Síla +10% (warden.mjs).
+    const totalModifier =
+      Number(baseValue) +
+      Number(abilityTestModifier) +
+      shieldBlowTestBonus(actor, ability);
     // Create the Roll
     const attributeRoll = new Roll(
       `(${totalModifier}) - 1d100`,
@@ -289,6 +320,13 @@ export async function getNonWeaponAbility(actor, ability) {
   }
 
   // --- Custom Effects ---
+  // Strážce → Bonus za štít, medium shield: Shield Bash Stagger +10, carried
+  // as a synthetic modifier so it joins the ability's own chance (the same
+  // trick as the aimed head strike).
+  const staggerBonus = shieldBlowStaggerBonus(actor, ability);
+  const effectModifiers = staggerBonus
+    ? [{ system: { effectType1: "stagger", effects: { extra1: staggerBonus } } }]
+    : [];
   const { allBleedRollResults, effectsRollResults, mechanicalEffects } =
     await game.redsteel.getEffectRolls(
       actor,
@@ -300,7 +338,7 @@ export async function getNonWeaponAbility(actor, ability) {
       0, // critScore
       false, // critSuccess
       ability,
-      [], // selectedModifiers if any
+      effectModifiers,
     );
 
   const system = ability.system || {};
@@ -310,8 +348,17 @@ export async function getNonWeaponAbility(actor, ability) {
   const rollData = actor.getRollData();
   // The parsed formula, never the raw field: a diceBonus of "@penCap" is a
   // flag, and reaches Roll as an unresolvable term that throws on evaluate.
-  const abilityDamageFormula =
+  // Strážce → Úder štítem a Zteč štítem: Zranění +1d4 (twice) and +Síla/2.
+  const baseDamageFormula =
     system.roll.diceBonusFormula ?? system.roll.diceBonus;
+  // Předvoj → Zteč: +1 Zranění za hexu on Shield Charge, one point per hex
+  // its approach walked (vanguard.mjs).
+  const chargeHexes = vanguardChargeHexDamage(actor, ability);
+  const abilityDamageFormula = baseDamageFormula
+    ? `${baseDamageFormula}${shieldBlowDamageExtra(actor, ability)}${
+        chargeHexes > 0 ? ` + ${chargeHexes}` : ""
+      }`
+    : baseDamageFormula;
   if (abilityDamageFormula) {
     damageRoll = new Roll(abilityDamageFormula, rollData);
     await damageRoll.evaluate();
@@ -368,6 +415,25 @@ export async function getNonWeaponAbility(actor, ability) {
   // This path never touches getAttackRolls, so the declared opportunity attack
   // has to be consumed here instead.
   const attackTags = (await consumeOpportunityFlag(actor)) ? ["opportunity"] : [];
+  // Strážce → Úder štítem jako Odvetná akce: off the Warden's turn the bash
+  // is a Retaliation action (warden.mjs), which answers the defense on the
+  // hotbar and cannot itself be answered.
+  if (isShieldBashAsRetaliation(actor, ability)) attackTags.push("retaliation");
+
+  // Strážce → Dvojitý úder: the two opponents the bash strikes, checked
+  // before it was paid (warden.mjs doubleStrikeRefusal).
+  const doubleStrike =
+    isShieldBash(ability) && modifiers.some(isDoubleStrike)
+      ? [...(game.user?.targets ?? [])].map((t) => t.document ?? t)
+      : null;
+  if (doubleStrike?.length) {
+    const names = doubleStrike.map((d) => foundry.utils.escapeHTML(d.name ?? ""));
+    const line = `<p class="rs-double-strike-note">${game.i18n.format(
+      "REDSTEEL.Warden.DoubleStrikeCard",
+      { first: names[0] ?? "", second: names[1] ?? "" },
+    )}</p>`;
+    concatRollAndDescription = `${line}${concatRollAndDescription ?? ""}`;
+  }
 
   // Named from the ability's own actor and token, not the bare getSpeaker()
   // (the client's selected token): a pushing ability (Shield Bash) pushes away
@@ -393,6 +459,11 @@ export async function getNonWeaponAbility(actor, ability) {
         // fallback for a hand-made copy with none.
         abilityKey: ability?.system?.localizationKey ?? null,
         abilityName: ability?.name ?? null,
+        // Dvojitý úder: the two struck tokens (forcedMovement.mjs reads each
+        // one's own versus answer for the Prone).
+        ...(doubleStrike?.length
+          ? { doubleStrike: { targetIds: doubleStrike.map((d) => d.id) } }
+          : {}),
         // Non-weapon ability attack: the generic "attack" token, plus the
         // Test Type it rolled. Shield Bash's Strength test is a Strength
         // test, so Muscular ("str") must be offered next to Lucky.
@@ -447,6 +518,8 @@ ${
 }
 `,
   });
+  // Předvoj → Zteč: +1 Zranění za hexu is cashed once per approach.
+  await spendChargeHexDamage(actor, ability, chargeHexes);
 }
 
 /**
@@ -1039,6 +1112,10 @@ export async function getAttackRolls(
   if (dragonGuard) abilityAttack += DRAGON_GUARD_HIT_BONUS;
   // Šampion → Smršť útoků: Zásah +5% on each strike of the melee Flurry.
   abilityAttack += championFlurryHit(actor, ability);
+  // Strážce → Protiútok: Zásah +10% (warden.mjs).
+  abilityAttack += counterattackHitBonus(actor, ability);
+  // Předvoj → Rozseknutí: Zásah +5% on a Cleave action (vanguard.mjs).
+  abilityAttack += vanguardCleaveHit(actor, ability);
   // Šampion → Větrný postoj: Zásah +5% on every attack while the stance holds
   // (its Defense +5% is the wind_stance status's own change).
   abilityAttack += championWindStanceHit(actor);
@@ -1844,9 +1921,22 @@ export async function getEffectRolls(
   }
   const customEffectRolls = new Map();
 
+  // Zatížení štítu (shield strain) is not an effect on the target: it is a
+  // chance rolled against the defender's shield after a successful Cover
+  // (shieldStrain.mjs). Summed here instead of rolled, so it is never applied
+  // at Apply Damage, and handed back as `shieldStrain` for the attack card.
+  // An AUTO (-1) entry reads as 100%.
+  let shieldStrainChance = 0;
+  let shieldStrainSources = 0;
+
   for (const { name, value } of effectContributions) {
     const key = name.toLowerCase();
     if (fixedEffectNames.includes(key)) continue;
+    if (isShieldStrainEffect(key)) {
+      shieldStrainChance += value === -1 ? 100 : Number(value) || 0;
+      shieldStrainSources += 1;
+      continue;
+    }
     if (customEffectRolls.has(name)) {
       const existing = customEffectRolls.get(name);
 
@@ -1893,6 +1983,23 @@ export async function getEffectRolls(
       roll: d100Roll.total,
       auto: false,
     };
+  }
+
+  // Troufalý vrh (Daring Throw, Hoplite): "Zatížení štítu +50%".
+  if (isDaringThrow(ability)) {
+    shieldStrainChance += DARING_THROW_SHIELD_STRAIN;
+    shieldStrainSources += 1;
+  }
+  const shieldStrain =
+    shieldStrainSources > 0 && shieldStrainChance > 0
+      ? Math.floor(shieldStrainChance)
+      : null;
+  if (shieldStrain) {
+    effectsRollResults += `<p><b>${game.i18n.localize(
+      "REDSTEEL.Effect.Name.shield_strain",
+    )}:</b> ${game.i18n.format("REDSTEEL.Warden.StrainOnCard", {
+      chance: shieldStrain,
+    })}</p>`;
   }
 
   // --- 3b. Wounding Impale ---
@@ -2090,6 +2197,9 @@ In total :(${totalBleeds}) due to Crit score: ${critScore}">
     allBleedRollResults,
     effectsRollResults,
     mechanicalEffects,
+    // Effective Zatížení štítu chance in percent, or null when the attack
+    // carries none (shieldStrain.mjs). Stamped as flags.attack.shieldStrain.
+    shieldStrain,
   };
 }
 

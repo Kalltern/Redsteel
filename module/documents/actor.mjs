@@ -32,6 +32,23 @@ function shieldContribution(value, strained) {
 }
 
 /**
+ * An Active Effect change's type, V14 style ("add", "multiply", "override"...).
+ * V14 stores `type`; a change written with the legacy numeric `mode` (1
+ * multiply, 2 add, 3 downgrade, 4 upgrade, 5 override) is read as that.
+ * Effect definitions used to say `mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.X`,
+ * which is undefined in V14 (the object is keyed by lowercase type), so every
+ * such change was stored as "add": Slow added 0.5 Speed instead of halving it.
+ *
+ * @param {object} change
+ * @returns {string}
+ */
+function changeType(change) {
+  if (typeof change?.type === "string" && change.type) return change.type;
+  const legacy = { 0: "custom", 1: "multiply", 2: "add", 3: "downgrade", 4: "upgrade", 5: "override" };
+  return legacy[Number(change?.mode)] ?? "add";
+}
+
+/**
  * Extend the base Actor document by defining a custom roll data structure which is ideal for the Simple system.
  * @extends {Actor}
  */
@@ -271,6 +288,14 @@ export class RedsteelActor extends Actor {
     // prepared.
     const shieldStrain = this.statuses?.has("shield_strain") ?? false;
 
+    // Předvoj → "Zbroje nesnižují Rychlost ani Iniciativu" (zbrojeRychlost):
+    // worn armor's Initiative and Speed penalties are dropped below (a bonus
+    // still counts). Shields are not armor and keep theirs (the weapon set
+    // block further down). See utils/vanguard.mjs.
+    const armorSpeedFree = actorHasSpecNode(this, "vanguard", "zbrojeRychlost");
+    const armorPenalty = (value) =>
+      armorSpeedFree ? Math.max(0, Number(value) || 0) : value;
+
     // possibly to return here in case armor bonuses stack inapropriately
     let totalArmor = 0;
     for (const item of this.items) {
@@ -296,10 +321,14 @@ export class RedsteelActor extends Actor {
           skill.acrobacy.bonus += item.system.acroPenalty ?? 0;
           skill.athletics.swimming += item.system.swimPenalty ?? 0;
           skill.stealth.bonus += item.system.stealthPenalty ?? 0;
-          secondaryAttribute.ini.bonus += contribution(
-            (item.system.iniPenalty ?? 0) + (q.ini ?? 0),
+          // A shield that comes through here keeps its penalties.
+          const armorOnly = item.system.shield === true ? (v) => v : armorPenalty;
+          secondaryAttribute.ini.bonus += armorOnly(
+            contribution((item.system.iniPenalty ?? 0) + (q.ini ?? 0)),
           );
-          secondaryAttribute.spd.max += contribution(item.system.maxSpeed ?? 0);
+          secondaryAttribute.spd.max += armorOnly(
+            contribution(item.system.maxSpeed ?? 0),
+          );
         } else {
           secondaryAttribute.ini.bonus += contribution(q.ini ?? 0);
         }
@@ -427,39 +456,61 @@ export class RedsteelActor extends Actor {
    * @param {number} base  The freshly derived value to apply the changes to.
    * @returns {number}
    */
+  /**
+   * Does an applied Active Effect set `key` outright (OVERRIDE mode)? The
+   * Speed cap leaves such a value alone (Flying sets Speed 8).
+   *
+   * @param {string} key  Full change key.
+   * @returns {boolean}
+   */
+  _hasOverrideChange(key) {
+    for (const effect of this.appliedEffects ?? []) {
+      for (const change of effect.changes ?? []) {
+        if (change.key === key && changeType(change) === "override") return true;
+      }
+    }
+    return false;
+  }
+
   _replayEffectChanges(key, base) {
     const changes = [];
     for (const effect of this.appliedEffects ?? []) {
       for (const change of effect.changes ?? []) {
         if (change.key !== key) continue;
-        // Foundry's own default when a change carries no explicit priority.
+        // Foundry's own default when a change carries no explicit priority:
+        // V14's CONST.ACTIVE_EFFECT_CHANGE_TYPES maps each type to it.
+        const type = changeType(change);
         changes.push({
           ...change,
-          priority: change.priority ?? change.mode * 10,
+          type,
+          priority:
+            change.priority ?? CONST.ACTIVE_EFFECT_CHANGE_TYPES[type] ?? 20,
         });
       }
     }
     if (!changes.length) return base;
     changes.sort((a, b) => a.priority - b.priority);
 
-    const MODES = CONST.ACTIVE_EFFECT_CHANGE_TYPES;
     let value = Number(base) || 0;
     for (const change of changes) {
       const delta = Number(change.value) || 0;
-      switch (change.mode) {
-        case MODES.ADD:
+      switch (change.type) {
+        case "add":
           value += delta;
           break;
-        case MODES.MULTIPLY:
+        case "subtract":
+          value -= delta;
+          break;
+        case "multiply":
           value *= delta;
           break;
-        case MODES.OVERRIDE:
+        case "override":
           value = delta;
           break;
-        case MODES.UPGRADE:
+        case "upgrade":
           value = Math.max(value, delta);
           break;
-        case MODES.DOWNGRADE:
+        case "downgrade":
           value = Math.min(value, delta);
           break;
         default:
@@ -1236,16 +1287,36 @@ export class RedsteelActor extends Actor {
 
         // Assuming steelGrip and predatorySenses are properties directly on the actor
         if (combatSkill === systemData.combatSkills.meleeDefense) {
-          // Check if the actor has steelGrip enabled
+          // Ocelový stisk (Steel Grip, Předvoj ocelovyStisk): "Umožňuje
+          // využívat Sílu místo Obratnosti na bonus na Obranu". User ruling
+          // 2026-10-19: the higher of Strength and Dexterity, so the node
+          // never lowers Defense (a tie stays on Dexterity). The rank table
+          // is chosen exactly as without it (Ranger rank when there is one),
+          // which the old branch skipped by always reading the Combat table.
           if (systemData.steelGrip) {
-            rate(
-              combatSkill,
-              "rating",
-              melee,
-              combatset1[melee],
-              0,
-              RANK_FROM.combat,
-            );
+            const gripAttr =
+              attributeScore[0].total > attributeScore[combatSkill.id].total
+                ? 0
+                : combatSkill.id;
+            if (ranger > 0) {
+              rate(
+                combatSkill,
+                "rating",
+                ranger,
+                rangerGroup[ranger],
+                gripAttr,
+                RANK_FROM.ranger,
+              );
+            } else {
+              rate(
+                combatSkill,
+                "rating",
+                melee,
+                combatset1[melee],
+                gripAttr,
+                RANK_FROM.combat,
+              );
+            }
           }
           // Check if the actor has predatorySenses enabled
           else if (systemData.predatorySenses) {
@@ -1529,23 +1600,38 @@ export class RedsteelActor extends Actor {
 
     // Calculate speed
     // Fatigue: degree 5+ sets speed to 1; degree 2+ applies a flat -1.
+    //
+    // Hranice Rychlosti (the Speed cap): `spd.max`, 6 in template.json (the
+    // book's "Maximálně však 6", ritualy-wip.md r590), lowered by worn
+    // armor's "Hranice Rychlosti -N" (zbrojnice.md; `maxSpeed`, summed into
+    // spd.max in the armor loop above, kept off for the Předvoj
+    // zbrojeRychlost holder). User ruling 2026-10-19: the cap is hard, no
+    // higher Speed gets past it. Order: the attribute table, value and bonus
+    // are capped first; Fatigue's -1 comes off the capped number (else a
+    // capped character would never feel it); then the Active Effects on
+    // spd.total are replayed (Slow / Root halve, Haste adds) and the result
+    // is capped again, so Haste cannot pass the cap either. A Flight-style
+    // OVERRIDE sets the value outright and is not capped.
     const calcSpd = [0, 3, 3, 4, 4, 4, 5, 6, 6, 6, 6];
+    const capValue = Number(secAttribute.spd.max);
+    const speedCap = Number.isFinite(capValue) ? Math.max(1, capValue) : Infinity;
+    const rawSpd =
+      calcSpd[dex] + secAttribute.spd.value + secAttribute.spd.bonus;
     const baseSpd =
       fatigueDegree >= 5
         ? 1
-        : calcSpd[dex] +
-          secAttribute.spd.value +
-          secAttribute.spd.bonus -
-          (fatigueDegree >= 2 ? 1 : 0);
+        : Math.min(rawSpd, speedCap) - (fatigueDegree >= 2 ? 1 : 0);
     // Speed effects (Slow/Root halve it, Haste adds, Flight overrides) target
     // spd.total, which this calculation has just overwritten — replay them.
+    const speedKey = "system.secondaryAttributes.spd.total";
+    const replayedSpd = this._replayEffectChanges(speedKey, baseSpd);
+    secAttribute.spd.max = speedCap;
     secAttribute.spd.total = Math.max(
       0,
       Math.floor(
-        this._replayEffectChanges(
-          "system.secondaryAttributes.spd.total",
-          baseSpd,
-        ),
+        this._hasOverrideChange(speedKey)
+          ? replayedSpd
+          : Math.min(replayedSpd, speedCap),
       ),
     );
 

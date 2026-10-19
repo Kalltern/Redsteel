@@ -209,7 +209,7 @@ export function bonusSources(actor, key) {
   for (const effect of actor.appliedEffects ?? []) {
     for (const change of effect.changes ?? []) {
       if (change.key !== key) continue;
-      if (change.mode !== CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD) continue;
+      if ((change.type ?? "add") !== "add") continue;
       const value = Number(change.value) || 0;
       if (!value) continue;
       out.push({ name: effect.name ?? effect.label ?? "", value });

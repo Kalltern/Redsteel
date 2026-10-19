@@ -1860,47 +1860,47 @@
           "nodes": {
             "ztecPohyb50": {
               "label": "Zteč: Pohyb +50%",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Automatizováno."
             },
             "ztecZraneniHexa": {
               "label": "Zteč: +1 Zranění za hexu",
-              "description": "10 CP. Ručně — řeší se u stolu."
+              "description": "10 CP. Automatizováno."
             },
             "ztecPohyb100": {
               "label": "Zteč: Pohyb +100%",
-              "description": "5 CP; M/T/S/D IV. Ručně — řeší se u stolu."
+              "description": "5 CP; M/T/S/D IV. Automatizováno."
             },
             "rozrazeni": {
               "label": "Rozražení",
-              "description": "10 CP. Ručně — řeší se u stolu."
+              "description": "10 CP. Automatizováno."
             },
             "zatlaceni": {
               "label": "Zatlačení",
-              "description": "10 CP. Ručně — řeší se u stolu."
+              "description": "10 CP. Automatizováno."
             },
             "ztecSRozseknutim": {
               "label": "Zteč s rozseknutím",
-              "description": "15 CP; P/P/Š V. Ručně — řeší se u stolu."
+              "description": "15 CP; P/P/Š V. Automatizováno."
             },
             "momentumVydrz": {
               "label": "Momentum: Výdrž -1",
-              "description": "5 CP; P/P/Š X. Ručně — řeší se u stolu."
+              "description": "5 CP; P/P/Š X. Automatizováno."
             },
             "momentumSpecialni": {
               "label": "Momentum: Speciální akce",
-              "description": "20 CP; M/T/S/D X. Ručně — řeší se u stolu."
+              "description": "20 CP; M/T/S/D X. Automatizováno."
             },
             "opakovaniUtoku": {
               "label": "1x za den opakovat hod na Útok",
-              "description": "10 CP; P/P/Š V. Ručně — řeší se u stolu."
+              "description": "10 CP; P/P/Š V. Automatizováno."
             },
             "presilaPostih": {
               "label": "Obránce: postih za Přesilu -5%",
-              "description": "10 CP; M/T/S/D V. Ručně — řeší se u stolu."
+              "description": "10 CP; M/T/S/D V. Automatizováno."
             },
             "triumf": {
               "label": "Triumf / Vylepšený triumf",
-              "description": "15 CP; P/P/Š X. Ručně — řeší se u stolu."
+              "description": "15 CP; P/P/Š X. Automatizováno."
             },
             "prubojnost2": {
               "label": "Průbojnost +2",
@@ -1908,27 +1908,27 @@
             },
             "rozseknutiCil": {
               "label": "Rozseknutí: Cíl +1",
-              "description": "10 CP; P/P/Š V. Ručně — řeší se u stolu."
+              "description": "10 CP; P/P/Š V. Automatizováno."
             },
             "rozseknutiZasah": {
               "label": "Rozseknutí: Zásah +5%",
-              "description": "10 CP; P/P/Š VII. Ručně — řeší se u stolu."
+              "description": "10 CP; P/P/Š VII. Automatizováno."
             },
             "bojoveTestySily": {
               "label": "Bojové Testy Síly +10%",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Automatizováno."
             },
             "opakovaniTestuSily": {
               "label": "Za 5 výdrže opakovat bojový Test Síly",
-              "description": "10 CP. Ručně — řeší se u stolu."
+              "description": "10 CP. Automatizováno."
             },
             "zbrojeRychlost": {
               "label": "Zbroje nesnižují Rychlost ani Iniciativu",
-              "description": "10 CP. Ručně — řeší se u stolu."
+              "description": "10 CP. Automatizováno."
             },
             "ocelovyStisk": {
               "label": "Ocelový stisk",
-              "description": "10 CP; M/T/S/D V. Ručně — řeší se u stolu."
+              "description": "10 CP; M/T/S/D V. Obrana používá vyšší ze Síly a Obratnosti. Automatizováno."
             }
           }
         },
@@ -1942,67 +1942,71 @@
             },
             "redukceBoku": {
               "label": "Redukce boku II",
-              "description": "5 CP; Štítonoš V. Ručně — řeší se u stolu."
+              "description": "5 CP; Štítonoš V. Útoky z hexů na tvých bocích se počítají jako útoky zepředu: žádný bonus za bok a žádný Zákeřný útok z boku. Útoky do zad se nemění. Automatizováno."
             },
             "zatizeniStitu": {
               "label": "Zatížení štítu -15%",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Šance, že úspěšný Kryt zatíží tvůj štít, je o 15 % nižší. Automatizováno."
             },
             "spolehlivyStit1": {
               "label": "Spolehlivý štít I",
-              "description": "10 CP; M/T/S/D V. Pasivní. Obětování Života zbroje/štítu snižuje zranění o dalších 5. Ručně — řeší se u stolu."
+              "description": "10 CP; M/T/S/D V. Pasivní. Obětování Života zbroje/štítu snižuje zranění o dalších 5 za každý bod. Automatizováno."
             },
             "spolehlivyStit2": {
               "label": "Spolehlivý štít II",
-              "description": "15 CP; Štítonoš X. Pasivní. Držené štíty mají o jeden život zbroje více. Ručně — řeší se u stolu."
+              "description": "15 CP; Štítonoš X. Pasivní. Tvé štíty mají o jeden život zbroje více. Automatizováno."
             },
             "uderStitemOdveta": {
               "label": "Úder štítem jako Odvetná akce",
-              "description": "10 CP; Štítonoš VI. Ručně — řeší se u stolu."
+              "description": "10 CP; Štítonoš VI. Po úspěšné Obraně můžeš proti útočníkovi použít Úder štítem jako Odvetnou akci, zaplacenou Reakcí. Automatizováno."
             },
             "uderZraneniA": {
               "label": "Úder/Zteč štítem: Zranění +1d4",
-              "description": "10 CP. Ručně — řeší se u stolu."
+              "description": "10 CP. Úder štítem a Zteč štítem způsobují o 1d4 více zranění. Automatizováno."
             },
             "uderZraneniSila": {
               "label": "Úder/Zteč štítem: Zranění +Síla/2",
-              "description": "10 CP; Štítonoš IV. Ručně — řeší se u stolu."
+              "description": "10 CP; Štítonoš IV. Úder štítem a Zteč štítem způsobují navíc zranění ve výši poloviny tvé Síly, zaokrouhleno dolů. Automatizováno."
             },
             "bonusZaStit": {
               "label": "Bonus za štít",
-              "description": "10 CP. Pasivní. Získává bonus za držený štít. Malý štít: Úder štítem levnější o 3 Výdrže, Kritická obrana +1%, Odklonění +15%. Střední štít: Úder štítem má o 10% větší šanci na Omráčení, Odklonění +10%. Velký štít: Bonus do soubojových Testů Síly +10%, Odklonění +10%. Ručně — řeší se u stolu."
+              "description": "10 CP. Pasivní. Získává bonus za držený štít. Malý štít: Úder štítem levnější o 3 Výdrže, Kritická obrana +1%, Odklonění +15%. Střední štít: Úder štítem má o 10% větší šanci na Omráčení, Odklonění +10%. Velký štít: Bonus do soubojových Testů Síly +10%, Odklonění +10%. Zatížený štít nedává nic. Automatizováno."
             },
             "uderZraneniB": {
               "label": "Úder/Zteč štítem: Zranění +1d4",
-              "description": "10 CP; Štítonoš VI. Ručně — řeší se u stolu."
+              "description": "10 CP; Štítonoš VI. Úder štítem a Zteč štítem způsobují o 1d4 více zranění. Automatizováno."
             },
             "uderSila10": {
               "label": "Úder/Zteč štítem: Síla +10%",
-              "description": "10 CP. Ručně — řeší se u stolu."
+              "description": "10 CP. Versus Test Úderu štítem a Zteče štítem získává +10 %. Automatizováno."
             },
             "dvojityUder": {
               "label": "Dvojitý úder",
-              "description": "10 CP; Štítonoš VIII. Volná akce, stojí 3 výdrže. Modifikace Úderu štítem. Umožňuje zasáhnout dva vedle sebe se nacházející oponenty. Uděluje akci Dvojitý úder; druhý cíl se řeší u stolu."
+              "description": "10 CP; Štítonoš VIII. Volná akce, stojí 3 výdrže. Modifikace Úderu štítem: zasáhne dva oponenty, kteří stojí vedle sebe i vedle tebe. Uděluje akci Dvojitý úder. Automatizováno."
             },
             "obrannyPostojSpojenci": {
               "label": "Obranný postoj: Spojenci +5% Obrany",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Dokud držíš Obranný postoj, sousedící spojenci získávají Obranu +5 %. Automatizováno."
             },
             "vylObrannyPostoj": {
               "label": "Vylepšený obranný postoj",
-              "description": "10 CP; Štítonoš VI. 2 akce, stojí 3 výdrže, poté 1 za kolo. Plně se soustředí na obranu. Kryt +10%, Obrana +20% a redukuje oba boky, dokud postoj trvá. Udržování postoje vyžaduje dvě akce. Jednou za kolo může použít Obrnění nebo Pomalý pohyb jako Volnou akci. Uděluje akci Vylepšený obranný postoj, která nahrazuje Obranný postoj a používá stejný efekt postoje i jeho udržování; vyšší bonusy, boky a Obrnění či Pomalý pohyb zdarma se řeší u stolu."
+              "description": "10 CP; Štítonoš VI. 2 akce, stojí 3 výdrže, poté 1 za kolo. Plně se soustředí na obranu. Kryt +10%, Obrana +20% a redukuje oba boky, dokud postoj trvá. Udržování postoje vyžaduje dvě akce. Jednou za kolo může použít Obrnění nebo Pomalý pohyb jako Volnou akci. Uděluje akci Vylepšený obranný postoj, která nahrazuje Obranný postoj. Automatizováno."
             },
             "ochranaVolna": {
               "label": "Ochrana: 1x za kolo Volná akce",
-              "description": "20 CP; Štítonoš VIII. Ručně — řeší se u stolu."
+              "description": "20 CP; Štítonoš VIII. Jednou za kolo nestojí Ochrana žádnou Reakci. Výdrž se platí dál. Automatizováno."
             },
             "protiutokZasah": {
               "label": "Protiútok: Zásah +10%",
-              "description": "15 CP; M/T/S/D X. Ručně — řeší se u stolu."
+              "description": "15 CP; M/T/S/D X. Protiútok získává Zásah +10 %. Automatizováno."
             },
             "vylObrneni": {
               "label": "Vylepšené obrnění",
-              "description": "20 CP; Štítonoš X. 1 akce, stojí 10 výdrže. Získá 15 Dočasných životů. Chrání před zásahy ze Souboje, Střelby a před vhodným magickým zraněním. Takto lze Dočasné životy zvýšit maximálně na 15. Může být použito na sousedící cíl. Uděluje akci Vylepšené obrnění; Dočasné životy se řeší u stolu."
+              "description": "20 CP; Štítonoš X. 1 akce, stojí 10 výdrže. Získá 15 Dočasných životů, které chrání před zásahy ze Souboje a Střelby. Takto lze Dočasné životy zvýšit maximálně na 15. Může být použito na sousedící cíl. Uděluje akci Vylepšené obrnění. Automatizováno."
+            },
+            "opakovaniKrytu": {
+              "label": "Může 1x za den opakovat hod na Kryt",
+              "description": "5 CP. Jednou za den může opakovat hod na Kryt. Automatizováno."
             }
           }
         },
@@ -6095,7 +6099,7 @@
       "toxic_shock": "Toxicita přesahuje maximum. Při uvalení a na začátku každého kola způsobí 25 zranění ignorujících zbroj a neúspěšný test Odolnosti s -40 % způsobí Ochromení. Končí, když Toxicita klesne zpět na maximum.",
       "corrupted": "Stupeň Zkaženosti 2 nebo vyšší (61+). Postava se počítá jako Zkažená a hody na obranu nesou připomínku pro účinky Světla a zázraků. Synchronizuje se automaticky s Korupcí.",
       "possessed": "Ovládán vítězem Mentálního souboje, který sdílí ovládání žetonu. Odstranění tohoto efektu posednutí ukončí a vrátí původní vlastnictví.",
-      "shield_strain": "Štít přestává pomáhat: jeho Obrana, Kryt, kritická obrana, zbroj a bonus k Životům klesají na 0. Jeho postihy k Úhybu, Iniciativě a Rychlosti zůstávají.",
+      "shield_strain": "Štít přestává pomáhat: jeho Obrana, Kryt, kritická obrana, zbroj a bonus k Životům klesají na 0. Jeho postihy k Úhybu, Iniciativě a Rychlosti zůstávají. Akce Uvolnit štít (2 akce) jej zruší.",
       "paralyze": "-40 % na všechny testy. Nemůže provádět příležitostné útoky. Trvá 3 tahy a nahrazuje Ochromení i Omráčení.",
       "blind": "-30 % na Souboj, -50 % na Střelbu a Vrh a -15 % na Obranu, Kryt a Úhyb. Nemůže provádět příležitostné útoky.",
       "dazzled": "-10 % na Souboj a -20 % na Střelbu a Vrh. Nemůže provádět příležitostné útoky. Trvá 2 tahy.",
@@ -6161,7 +6165,8 @@
       "shield_magic": "Pohlcuje magické zranění ze zásoby 15 + 4×SK, jeden větší zásah pohltí celý a blokuje efekty magických zásahů. Nelze ho rozptýlit a nahrazuje ostatní štíty.",
       "shield_elemental": "Pohlcuje fyzické zranění a jeden zvolený živel (Oheň, Mráz, Blesk, nebo Kyselinu a Jed) ze zásoby 20 + 5×SK. Změna živlu stojí 3 many, platí se ručně. Nahrazuje ostatní štíty.",
       "blood_shield": "Pohlcuje fyzické zranění. Vzniká, když nositel ztratí Životy zásahem, v hodnotě poloviny ztracených Životů, a další zásahy zásobu navyšují. Mizí na začátku dalšího kola.",
-      "mental_focus": "+10 % na Mentální souboj za každou úroveň, v útoku i v obraně. Každé použití stojí 1 akci a přidá úroveň. Trvá do začátku dalšího tahu."
+      "mental_focus": "+10 % na Mentální souboj za každou úroveň, v útoku i v obraně. Každé použití stojí 1 akci a přidá úroveň. Trvá do začátku dalšího tahu.",
+      "protected_by": "Sousedící spojenec tuto postavu chrání. Na kartě útoku, která ji jmenuje, může ochránce odpovědět vlastním hodem na Obranu či Kryt s postihem -10 %."
     },
     "MentalDuel": {
       "Focus": {
@@ -6437,7 +6442,8 @@
       "type2": "Extra Efekt typ 2",
       "type3": "Extra Efekt typ 3",
       "Name": {
-        "shield_strain": "Přetížení štítu"
+        "shield_strain": "Přetížení štítu",
+        "protected_by": "Pod ochranou"
       }
     },
     "Resync": {
@@ -6695,6 +6701,9 @@
         "alreadyUsed": "Krvavý pakt už byl v tomto kole použit.",
         "noMind": "Není žádný Mentální život ke spálení.",
         "reserveFull": "Zásoba krve už je plná."
+      },
+      "BullCharge": {
+        "name": "Rozražení"
       },
       "BloodyKiss": {
         "name": "Krvavý polibek"
@@ -7082,6 +7091,9 @@
       },
       "ImprovedArmoring": {
         "name": "Vylepšené obrnění"
+      },
+      "ImprovedTriumph": {
+        "name": "Vylepšený triumf"
       },
       "ImprovedBrilliantCounter": {
         "name": "Vylepšený brilantní protiútok"
@@ -7709,6 +7721,12 @@
       },
       "MagicWard": {
         "name": "Magická ochrana"
+      },
+      "Momentum": {
+        "name": "Momentum"
+      },
+      "Triumph": {
+        "name": "Triumf"
       },
       "MakeshiftHeavyBlunt": {
         "name": "Těžká provizorní zbraň (drtivá)"
@@ -8975,6 +8993,12 @@
       },
       "ImprovedCharge": {
         "name": "Vylepšená zteč"
+      },
+      "Armoring": {
+        "name": "Obrnění"
+      },
+      "FreeTheShield": {
+        "name": "Uvolnit štít"
       }
     },
     "MonsterBuilder": {
@@ -9733,6 +9757,61 @@
           "augury": "Šance nahlédnout do budoucnosti jednotlivce, předpovídat počasí, pohromy a vynášet Věštby."
         }
       }
+    },
+    "Warden": {
+      "StrainOnCard": "{chance} % při úspěšném Krytu",
+      "StrainHeld": "{name}: štít vydržel. {effect}: hod {roll} proti {chance} %.",
+      "StrainApplied": "{name}: štít je zatížen. {effect}: hod {roll} proti {chance} %. Štít neposkytuje žádné bonusy, dokud ho postava neuvolní (Uvolnit štít, 2 akce).",
+      "FreeShieldNotStrained": "Štít není zatížen, není co uvolňovat.",
+      "ProtectionNoAlly": "Vedle tebe nestojí žádný spojenec. Ochrana platí bez automaticky chráněného spojence.",
+      "ProtectionPick": "Kterého sousedícího spojence chráníš?",
+      "ProtectionPickNone": "Žádného",
+      "ProtectionStarted": "{name} chrání postavu {ally} do začátku svého dalšího tahu.",
+      "ProtectionNoGM": "Není připojen žádný GM, chráněného spojence proto nelze označit. Tlačítko Chránit funguje i tak.",
+      "ProtectButton": "Chránit: {ally}",
+      "ProtectTooltip": "{name} odpoví na tento útok za postavu {ally} vlastním hodem na Obranu či Kryt s postihem {penalty} %.",
+      "ProtectionEnded": "Tato Ochrana už skončila.",
+      "ProtectionNotAdjacent": "{name} už nestojí vedle postavy {ally}.",
+      "ProtectionAnswered": "Tento ochránce už na tento útok odpověděl.",
+      "ProtectionCardNote": "Chrání postavu {name}",
+      "ArmoringAtCap": "{name} už má {max} nebo více Dočasných životů. Obrnění nic nepřidá.",
+      "ArmoringNoGM": "Není připojen žádný GM, který by té postavě udělil Dočasné životy.",
+      "FreeGuard": "Ochrana jako Volná akce: bez Reakce (jednou za kolo).",
+      "FreeStanceAction": "Vylepšený obranný postoj: tohle nestojí žádnou akci (jednou za kolo).",
+      "DoubleStrikeBashOnly": "Dvojitý úder modifikuje jen Úder štítem. Pro tuto schopnost ho odškrtni.",
+      "DoubleStrikeTwoTargets": "Dvojitý úder potřebuje přesně dva zacílené oponenty.",
+      "DoubleStrikeAdjacency": "Dvojitý úder: oba cíle musí být živí oponenti vedle tebe a vedle sebe.",
+      "DoubleStrikeCard": "Dvojitý úder: {first} a {second}",
+      "StanceAllyCard": "Postoj Strážce: Obrana +{bonus}",
+      "ArmoringNotAdjacent": "Cíl nestojí vedle tebe, Vylepšené obrnění proto dostaneš ty.",
+      "ArmoringPick": "Kdo získá Dočasné životy?"
+    },
+    "Vanguard": {
+      "MomentumFreeAttackOrAbility": "{name} se nezastaví: příští Útok nebo útočná akce se zbraní v tomto tahu je Volná akce.",
+      "CleaveTooManyTargets": "{ability} může zasáhnout nejvýše {max} cíle. Počet zaměřených cílů: {count}.",
+      "StrengthRerollCost": "{cost} výdrže",
+      "TriumphAtCap": "{name} už má {max} nebo více Dočasných životů. Triumf nic nepřidá."
+    },
+    "BullCharge": {
+      "NotACharge": "Rozražení lze použít jen se Ztečí nebo Ztečí s rozseknutím.",
+      "NoApproach": "Rozražení mění přiblížení Zteče, a tato Zteč už žádné nemá: pohyb v tomto tahu je využit.",
+      "EndsOnEnemy": "Zteč s Rozražením nemůže skončit na hexu nepřítele.",
+      "NoGM": "Není připojen Vypravěč, který by výsledek Rozražení u tohoto nepřítele provedl.",
+      "TitleThrough": "Rozražení: {charger} probíhá skrz nepřítele {enemy}",
+      "TitleAround": "Rozražení: {charger} probíhá okolo nepřítele {enemy}",
+      "Side": "{name}: {attribute} {chance}%, hod {roll}, výsledek {margin}",
+      "ThroughWin": "{charger} se probije.",
+      "ThroughWinProne": "{charger} se probije Kritickým úspěchem a povalí nepřítele {enemy}.",
+      "ThroughLose": "Nepřítel {enemy} odolá. Zteč se před ním zastaví.",
+      "AroundWin": "{charger} proběhne okolo nepřítele {enemy}.",
+      "AroundStopped": "Nepřítel {enemy} zastoupí cestu. Zteč se zastaví dřív, než ho mine.",
+      "AroundContinued": "Nepřítel {enemy} zastoupí cestu, ale {charger} běží dál. Nepřítel {enemy} smí provést Příležitostný útok.",
+      "PromptTitle": "Rozražení",
+      "PromptBody": "Nepřítel {enemy} vyhrál versus Test. Zastavit se, nebo běžet dál a dovolit mu Příležitostný útok?",
+      "Stop": "Zastavit se",
+      "Continue": "Běžet dál",
+      "OpportunityLabel": "Příležitostný útok",
+      "OpportunityHint": "{target} kolem tebe proběhl s Rozražením"
     }
   },
   "TYPES": {

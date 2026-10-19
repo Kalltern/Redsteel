@@ -14,13 +14,20 @@ import {
   isDaringThrowView,
   isDaringThrowWeapon,
   isHopliteAdvance,
-  isHopliteMomentum,
   noteDaringThrow,
   onslaughtKind,
   useHopliteAdvance,
-  useHopliteMomentum,
   useHopliteOnslaught,
 } from "./hoplite.mjs";
+import { isAnyMomentum, momentumStaminaCost, useMomentum } from "./momentum.mjs";
+import { bullChargeRefusal, isBullCharge } from "./bullCharge.mjs";
+import {
+  cleaveTargetRefusal,
+  isAnyTriumph,
+  spendChargeHexDamage,
+  useTriumph,
+  vanguardChargeHexDamage,
+} from "./vanguard.mjs";
 import { DRAGON_SLEEP_STATUS, takeDragonSleep } from "./dragonSleep.mjs";
 import { withRollBias, tagRollSkill, tagRollItemAdvantage } from "./rollAdvantage.mjs";
 import { selectAimedPart, AIMED_PARTS } from "./aimedStrike.mjs";
@@ -111,6 +118,25 @@ import {
   pushBackStampFor,
 } from "./champion.mjs";
 import { throwExplosiveItem } from "./throwExplosive.mjs";
+import {
+  isProtectionAbility,
+  pickProtectedAlly,
+  startProtection,
+} from "./protection.mjs";
+import {
+  freeTheShield,
+  freeTheShieldRefusal,
+  isFreeTheShield,
+} from "./shieldStrain.mjs";
+import { isArmoring, useArmoring } from "./armoring.mjs";
+import {
+  doubleStrikeRefusal,
+  isDoubleStrike,
+  isImprovedArmoring,
+  useImprovedArmoring,
+  wardenAbilityCost,
+  wardenActionCostItems,
+} from "./warden.mjs";
 // Call time only (forcedMovement.mjs reaches back through applyDamage.mjs).
 import { isTripModifier } from "./forcedMovement.mjs";
 import {
@@ -499,7 +525,7 @@ export async function combatAbilities({
 
     // Hoplite → Charge Defense is dropped, with a notice, unless this is an
     // Opportunity Attack with a spear or trident at a charging target.
-    const selectedModifiers = filterChargeDefense(
+    let selectedModifiers = filterChargeDefense(
       actor,
       modifierAbilities.filter((mod) => selectedModifierIds.includes(mod.id)),
       { opportunity: useOpportunity },
@@ -565,9 +591,38 @@ export async function combatAbilities({
       ui.notifications.warn(game.i18n.localize("REDSTEEL.Hoplite.ChargeWasStopped"));
       return;
     }
-    if (isCharge(ability) && (await declareChargeMove(actor, ability))) {
+    // Předvoj → Rozražení (bullCharge.mjs): only on Zteč or Zteč s
+    // rozseknutím, and only while the charge still has its approach to make.
+    // Refused before anything is paid. Ticked on the pick that declares the
+    // approach, it is paid right there and stamped on the charge lock; the
+    // swing afterwards drops it from its modifiers so it is not paid twice.
+    const bullCharge = selectedModifiers.find(isBullCharge) ?? null;
+    const declaringCharge = isCharge(ability) && chargeWouldDeclare(actor);
+    if (bullCharge) {
+      const refusal = bullChargeRefusal(actor, ability, {
+        declaring: declaringCharge,
+      });
+      if (refusal) {
+        ui.notifications.warn(refusal);
+        return;
+      }
+      if (
+        declaringCharge &&
+        !(await game.redsteel.deductAbilityCost(actor, [bullCharge]))
+      ) {
+        return;
+      }
+    }
+    if (
+      isCharge(ability) &&
+      (await declareChargeMove(actor, ability, { bullCharge: !!bullCharge }))
+    ) {
       if (!keepOpen) dialog?.close();
       return;
+    }
+    if (bullCharge) {
+      selectedModifiers = selectedModifiers.filter((m) => m !== bullCharge);
+      intent.modifiers = selectedModifiers;
     }
 
     // Quick Feet (Shadow) steps around the opponent before the retaliation
@@ -594,10 +649,17 @@ export async function combatAbilities({
       return;
     }
 
-    // Hoplite: Momentum after a kill or Critical Hit makes the next Attack
-    // free; Advance after a kill grants its two hex step (hoplite.mjs). With
-    // nothing pending each falls through to its plain card.
-    if (isHopliteMomentum(ability) && (await useHopliteMomentum(actor, ability))) {
+    // Momentum (the doctrine one or the Hoplite's) after a kill or Critical
+    // Hit makes the next Attack free (momentum.mjs); the Hoplite's Advance
+    // after a kill grants its two hex step (hoplite.mjs). With nothing
+    // pending each falls through to its plain card.
+    if (isAnyMomentum(ability) && (await useMomentum(actor, ability))) {
+      if (!keepOpen) dialog?.close();
+      return;
+    }
+    // Předvoj → Triumf: a waiting Critical Hit or kill buys Temporary Health
+    // (vanguard.mjs). With nothing waiting it falls through to its plain card.
+    if (isAnyTriumph(ability) && (await useTriumph(actor, ability))) {
       if (!keepOpen) dialog?.close();
       return;
     }
@@ -617,6 +679,42 @@ export async function combatAbilities({
     // anything is paid.
     if (isDaringThrow(ability)) {
       const refusal = daringThrowRefusal(actor, token, ability);
+      if (refusal) {
+        ui.notifications.warn(refusal);
+        return;
+      }
+    }
+
+    // Strážce → Dvojitý úder: Shield Bash only, at exactly two adjacent
+    // opponents next to each other, refused before anything is paid
+    // (warden.mjs).
+    if (selectedModifiers.some(isDoubleStrike)) {
+      const refusal = doubleStrikeRefusal(actor, token, ability, [
+        ...(game.user?.targets ?? []),
+      ]);
+      if (refusal) {
+        ui.notifications.warn(refusal);
+        return;
+      }
+    }
+
+    // Předvoj → Rozseknutí: Cíl +1. Cleave strikes two targets, three with
+    // the node, refused before anything is paid (vanguard.mjs).
+    {
+      const refusal = cleaveTargetRefusal(actor, token, ability, [
+        ...(game.user?.targets ?? []),
+      ]);
+      if (refusal) {
+        ui.notifications.warn(refusal);
+        return;
+      }
+    }
+
+    // Uvolnit štít (Free the Shield) only does something to a strained
+    // shield, so it is refused before its two Actions are paid
+    // (shieldStrain.mjs).
+    if (isFreeTheShield(ability)) {
+      const refusal = freeTheShieldRefusal(actor);
       if (refusal) {
         ui.notifications.warn(refusal);
         return;
@@ -716,6 +814,16 @@ export async function combatAbilities({
       // Turning ON → cost will be paid
     }
 
+    // Ochrana (Protection, the Guard stance): which adjacent ally it covers is
+    // asked before anything is paid; closing the pick cancels the use
+    // (protection.mjs).
+    let protectedAlly = null;
+    if (ability.system.class === "stance" && isProtectionAbility(ability)) {
+      const pick = await pickProtectedAlly(token);
+      if (!pick) return;
+      protectedAlly = pick.ally;
+    }
+
     // The multi-attack picker (opensMultiAttackPicker, worked out above the
     // reach check): defer cost + attack to the weapon-button click below.
     if (opensMultiAttackPicker) {
@@ -783,6 +891,10 @@ export async function combatAbilities({
         // again from the hotbar (stances.mjs), never the round rollover.
         await markStanceHeld(actor, applied, ability);
         await postStanceCard(actor, ability, "taken");
+        // Ochrana: link the Guard to the ally picked above (protection.mjs).
+        if (protectedAlly) {
+          await startProtection(actor, token, applied, protectedAlly);
+        }
         // Dragon Sleep gives up the Reactions for Rests, restores Stamina and
         // grants an Aim the moment it is taken (dragonSleep.mjs).
         if (ability.system.key === DRAGON_SLEEP_STATUS) await takeDragonSleep(actor);
@@ -840,7 +952,9 @@ export async function combatAbilities({
       const mode = isDefenseRoll ? "defense" : "attack";
       await weaponSelectionFlow(actor, ability, mode, intent, preselectedWeapon);
     } else {
-      await game.redsteel.getNonWeaponAbility(actor, ability);
+      await game.redsteel.getNonWeaponAbility(actor, ability, {
+        modifiers: selectedModifiers,
+      });
     }
     // Duelist's Advance is paid and carded above; its Speed/2 move is
     // declared to the hotbar like a Slow Movement.
@@ -1694,6 +1808,9 @@ ${
     pushBack = null,
     // Podseknutí: its versus line (forcedMovement.mjs resolveVersusAnswer).
     tripTest = null,
+    // Zatížení štítu: the strain chance a successful Cover rolls against
+    // (shieldStrain.mjs), or null.
+    shieldStrain = null,
   }) {
     let attackHTML = "";
     let damageHTML = "";
@@ -1898,6 +2015,9 @@ ${
           d100: attackRoll.dice.find((d) => d.faces === 100)?.total ?? null,
           damageProfile,
           effects: mechanicalEffects,
+          // Zatížení štítu: the chance a successful Cover against this blow
+          // strains the defender's shield (utils/shieldStrain.mjs).
+          ...(shieldStrain ? { shieldStrain } : {}),
           aimedStrike,
           normal: { damage: damageTotal, penetration, halfDamage, penCap },
           critical: {
@@ -2135,6 +2255,17 @@ ${
         ? `(${abilityDamage}) + (${championDice})`
         : championDice;
     }
+    // Předvoj → Zteč: +1 Zranění za hexu, one point per hex the charge
+    // approach walked, as its own term (vanguard.mjs).
+    // A Charge with Cleave chain's later strikes are the same charge.
+    const chargeHexes = vanguardChargeHexDamage(actor, ability, {
+      chainStrike: multiAttackCount > 1,
+    });
+    if (chargeHexes > 0) {
+      abilityDamage = abilityDamage
+        ? `(${abilityDamage}) + ${chargeHexes}`
+        : `${chargeHexes}`;
+    }
     if (weapon) {
       ({
         doctrineBonus,
@@ -2312,7 +2443,12 @@ ${
         }]
       : selectedModifiers;
 
-    const { allBleedRollResults, effectsRollResults, mechanicalEffects } =
+    const {
+      allBleedRollResults,
+      effectsRollResults,
+      mechanicalEffects,
+      shieldStrain,
+    } =
       await game.redsteel.getEffectRolls(
         actor,
         weapon,
@@ -2551,7 +2687,13 @@ ${renderMarginFollowupLine({
       modifierKeys: modifierKeysOf(selectedModifiers),
       pushBack: pushBackStampFor(selectedModifiers, versusAgainstFor),
       tripTest,
+      shieldStrain,
     });
+    // Předvoj → Zteč: +1 Zranění za hexu is cashed once per approach: the
+    // first card of the charge marks it (a chain's later strikes keep it).
+    if (multiAttackCount <= 1) {
+      await spendChargeHexDamage(actor, ability, chargeHexes);
+    }
     // ─── AMMO DEDUCTION ───
     if (ammo) {
       await actor.deductAmmo(ammo);
@@ -2653,7 +2795,17 @@ export async function deductAbilityCost(actor, abilities = []) {
   for (const ability of abilities) {
     // Simple costType system. Riposte: Stamina -4 (Servant of the Sword) is
     // taken off here, where it is paid.
-    tally(drainTotals, ability.system.costType, paidAbilityCost(actor, ability));
+    // Strážce → Bonus za štít (small shield): Shield Bash -3 Stamina.
+    // Předvoj → Momentum: Výdrž -1 (momentum.mjs).
+    tally(
+      drainTotals,
+      ability.system.costType,
+      momentumStaminaCost(
+        actor,
+        ability,
+        wardenAbilityCost(actor, ability, paidAbilityCost(actor, ability)),
+      ),
+    );
 
     const resources = Array.isArray(ability.system.resources)
       ? ability.system.resources
@@ -2722,7 +2874,9 @@ export async function deductAbilityCost(actor, abilities = []) {
   // above for want of Stamina never happened, so it must not show as spent.
   // Attack modifiers ride in this same list and are Free actions in the pack,
   // so the whole list can go through as it stands.
-  await spendForItems(actor, abilities);
+  // Strážce (warden.mjs): Shield Bash as a Retaliation pays the Reaction,
+  // and the once-a-round free Guard / free Armoring drop out of the list.
+  await spendForItems(actor, await wardenActionCostItems(actor, abilities));
 
   return true;
 }
@@ -2934,6 +3088,17 @@ async function runUtilityAbility(actor, ability, modifiers = []) {
   if (isPreparedStance(ability)) {
     await game.redsteel.applyEffect(actor, "prepared_stance");
   }
+
+  // Obrnění (Armoring): paid above; +10 Temporary Health up to 10
+  // (armoring.mjs). Falls through, so the ordinary card still posts.
+  if (isArmoring(ability)) await useArmoring(actor, ability);
+  // Vylepšené obrnění (Improved Armoring, Warden): +15 up to 15 on the user
+  // or one adjacent target (warden.mjs). Falls through as well.
+  if (isImprovedArmoring(ability)) await useImprovedArmoring(actor);
+
+  // Uvolnit štít (Free the Shield): paid above; the strain comes off
+  // (shieldStrain.mjs). Falls through, so the ordinary card still posts.
+  if (isFreeTheShield(ability)) await freeTheShield(actor);
 
   // Běh (Sprint): the movement itself stays manual, but the trade it buys does
   // not — while the runner is moving they are harder to shoot at and wide open

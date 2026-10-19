@@ -34,10 +34,11 @@ import { settleFinalStrikeKill } from "./swordDancer.mjs";
 import { offerChampionRestaggerPush, settleChampionFeint } from "./champion.mjs";
 import {
   offerHopliteAdvance,
-  offerHopliteMomentum,
   offerHopliteOnslaught,
   settleChargeDefense,
 } from "./hoplite.mjs";
+import { offerMomentum } from "./momentum.mjs";
+import { offerTriumph } from "./vanguard.mjs";
 import { gateVersusPush, resolvePushOnHit } from "./forcedMovement.mjs";
 import {
   cardDeclaredSneak,
@@ -64,6 +65,10 @@ import {
   hasWeaponMasterNode,
 } from "./weaponMaster.mjs";
 import { grantFreeRest } from "./veteranRest.mjs";
+import {
+  wardenSacrificeBonus,
+  wardenShieldDurabilityMax,
+} from "./wardenShield.mjs";
 
 export const SOCKET = "system.redsteel";
 
@@ -131,8 +136,11 @@ export function getDurabilityReductionPerPoint(actor, item = null) {
     getArmigerBranch(actor, "zbrojnos1") === "light"
       ? ARMIGER_LIGHT_SACRIFICE_BONUS
       : 0;
+  // Strážce → Spolehlivý štít I: "Obětování Života zbroje/štítu snižuje
+  // zranění o dalších 5" (wardenShield.mjs). Stacks with the Armiger's.
   const context = {
-    value: BASE_DURABILITY_DAMAGE_REDUCTION + armigerBonus,
+    value:
+      BASE_DURABILITY_DAMAGE_REDUCTION + armigerBonus + wardenSacrificeBonus(actor),
     actor,
     item,
   };
@@ -453,7 +461,11 @@ function findAnsweringDefense(attackMessageId, targetTokenId) {
     const flags = messages[i].flags?.redsteel;
     if (!flags?.defense || flags.rerolledAway) continue;
     if (flags.versusAttack?.messageId !== attackMessageId) continue;
-    if (flags.defense.defenderTokenId !== targetTokenId) continue;
+    // Ochrana (utils/protection.mjs): a protector's defense answers for the
+    // ally it protected, not for the protector itself.
+    const answeredFor =
+      flags.defense.protectedTokenId ?? flags.defense.defenderTokenId;
+    if (answeredFor !== targetTokenId) continue;
     return messages[i];
   }
   return null;
@@ -1528,11 +1540,15 @@ export async function applyDamageAsGM(data) {
   // Vylepšený klamavý útok (Improved Feint Attack): a hit under Wind Stance
   // makes the next Attack on the same target a Free action. Once per card.
   await settleChampionFeint(attacker, message, targetIds, scene);
-  // Hoplita (Hoplite): Momentum after a kill or a Critical Hit with a short
-  // sword, hatchet, mace, spear or trident (or a Daring Throw kill), and
-  // Advance after any kill. Each stamps a chip for that turn (hoplite.mjs).
-  await offerHopliteMomentum(attacker, message, targetIds, felledIds, mode);
+  // Momentum after a kill or a Critical Hit: the doctrine one on any weapon
+  // attack, the Hoplite's with a short sword, hatchet, mace, spear or trident
+  // (or a Daring Throw kill). One per round, a chip for that turn
+  // (momentum.mjs). Hoplita (Hoplite): Advance after any kill (hoplite.mjs).
+  await offerMomentum(attacker, message, targetIds, felledIds, mode);
   await offerHopliteAdvance(attacker, message, felledIds, scene);
+  // Předvoj → Triumf: every Critical Hit and every kill is one Triumph the
+  // holder may pay for this turn (vanguard.mjs).
+  await offerTriumph(attacker, message, targetIds, felledIds, mode);
   // Obrana proti zteči (Charge Defense): the hit stops the charge and keeps
   // the charger two hexes off. Before the push below reads positions.
   await settleChargeDefense(attacker, message, targetIds, scene);
@@ -2039,7 +2055,8 @@ function openDamageSelectionDialog(message, targets) {
         const options = items
           .map((item) => {
             const current = Number(item.system.armor?.durability ?? 0);
-            const max = Number(item.system.armor?.durabilityMax ?? 0) || current;
+            // Spolehlivý štít II reads one more on a Warden's shield.
+            const max = wardenShieldDurabilityMax(item) || current;
             const name = item.localizedName ?? item.name;
             return `<option value="${item.id}">${name} (${current}/${max})</option>`;
           })

@@ -61,6 +61,7 @@ import { completeHopliteAdvance, useDrawLightWeapon } from "./hoplite.mjs";
 import { isReactionAbility } from "./opportunityAttacks.mjs";
 import { canTradeWith, requestTrade } from "./trade.mjs";
 import { dropStance, holdStance } from "./stances.mjs";
+import { claimWardenFreeSlowMovement } from "./warden.mjs";
 import { rollEscape } from "./escapeFollowup.mjs";
 import { handleApplyDamage, handleApplyEffects } from "./applyDamage.mjs";
 import { getMiracles, isMiracle } from "./miracles.mjs";
@@ -3372,11 +3373,14 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     try {
       this.#facingUuid = null;
       clearPreview();
+      // Strážce → Vylepšený obranný postoj: once a round Slow Movement may
+      // be a Free action (warden.mjs; shared with Armoring).
+      const free = await claimWardenFreeSlowMovement(actor);
       await lockMovement(actor, {
         mode: "slow",
         budget: movementBudget(actor, "slow"),
         startSpent: tokenMovementSpent(tokenForActor(actor)),
-        charge: 1,
+        charge: free ? 0 : 1,
       });
     } finally {
       this.#suggestionBusy = false;

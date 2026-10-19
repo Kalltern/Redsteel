@@ -3,7 +3,7 @@
   "type": "ability",
   "img": "icons/skills/melee/sword-twirl-orange.webp",
   "system": {
-    "description": "<p>Must start at least two hexes from the target.<br />Combines movement with Cleave and strikes two adjacent enemies.<br />Damage +2d4.<br />Cannot be used while fighting from the saddle.</p>",
+    "description": "<p>Must start at least two hexes from the target.<br />Combines movement with Cleave and strikes two adjacent enemies.<br />Damage +2d4.<br />Additional +2d4 damage if using a Heavy weapon.<br />Cannot be used while fighting from the saddle.</p>",
     "type": "melee",
     "weaponAbility": true,
     "standalone": false,
@@ -93,7 +93,8 @@
     "dodge": 0,
     "attack": 0,
     "roll": {
-      "diceBonus": " +2d4"
+      "diceBonus": " +2d4",
+      "heavyDiceBonus": " +2d4"
     },
     "breakthrough": "",
     "penetration": 0,

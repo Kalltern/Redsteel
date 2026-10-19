@@ -40,6 +40,10 @@
  *
  * What the exception is *worth* is not this file's business. Back stays back;
  * the defense dialog decides which buttons a back attack leaves on the table.
+ *
+ * Redukce boku (Flank Reduction) is the flanks' counterpart: a defender with
+ * the Warden node `redukceBoku` or the `defensive_stance` status reads a flank
+ * blow as a front blow (`flanksReduced`, applied inside `attackSector`).
  */
 
 import { actorHasSpecNode } from "../helpers/specialisations.mjs";
@@ -177,6 +181,27 @@ export function facingAngle(token) {
 /* -------------------------------------------- */
 
 /**
+ * Redukce boku (Flank Reduction). Does this defender treat both flanks as its
+ * front? User ruling 2026-10-19: a blow from a FLANK hex then counts as a
+ * FRONT blow (no +10% flank bonus, no "flank" Sneak Attack clause). The back
+ * stays the back.
+ *
+ * Two sources:
+ *   - Strážce (Warden) node `redukceBoku`, "Redukce boku II", permanent.
+ *   - The `defensive_stance` status, held by Defensive Stance and by every
+ *     upgrade that shares its key (Improved Defensive Stance, Shieldbearer's
+ *     stance). The book: "redukuje oba boky, dokud postoj trvá".
+ *
+ * @param {Actor|null} actor  the defender
+ * @returns {boolean}
+ */
+export function flanksReduced(actor) {
+  if (!actor) return false;
+  if (actor.statuses?.has?.("defensive_stance")) return true;
+  return actorHasSpecNode(actor, "warden", "redukceBoku");
+}
+
+/**
  * Which arc an attacker stands in, as pure geometry. No feature, no exception.
  *
  * Boundaries favour the defender: an attacker exactly on the front/flank line
@@ -187,7 +212,7 @@ export function facingAngle(token) {
  * @param {Token|TokenDocument} attacker
  * @returns {"front"|"flank"|"back"|null}
  */
-export function attackSector(defender, attacker) {
+function geometricSector(defender, attacker) {
   const defenderCenter = centerOf(defender);
   const attackerCenter = centerOf(attacker);
   if (!defenderCenter || !attackerCenter) return null;
@@ -210,6 +235,27 @@ export function attackSector(defender, attacker) {
   if (delta <= 90) return SECTOR.FRONT;
   if (delta <= 150) return SECTOR.FLANK;
   return SECTOR.BACK;
+}
+
+/**
+ * Which arc an attacker stands in, as the rules read it: the geometry above,
+ * with Flank Reduction applied for the defender ({@link flanksReduced}).
+ *
+ * This is the one place the arc is decided. The attack dialogs' Flanking
+ * pill, the Sneak Attack "flank" clause, the sector stamped on every attack
+ * card (captureAttackPositioning) and the defense dialog's live fallback
+ * (resolveDefenseSector) all come through here, so they always agree.
+ *
+ * @param {Token|TokenDocument} defender
+ * @param {Token|TokenDocument} attacker
+ * @returns {"front"|"flank"|"back"|null}
+ */
+export function attackSector(defender, attacker) {
+  const sector = geometricSector(defender, attacker);
+  if (sector === SECTOR.FLANK && flanksReduced(docOf(defender)?.actor)) {
+    return SECTOR.FRONT;
+  }
+  return sector;
 }
 
 /**

@@ -46,10 +46,13 @@ export const OVERWHELM_MAX_STACKS = 4;
 export const OVERWHELM_PENALTY_PER_STACK = -5;
 
 /**
- * Šampion → "Obránce: postih za Přesilu -5%" (presilaPostih): the defender's
- * Overwhelm penalty is 5 smaller, and never turns into a bonus.
+ * Šampion and Předvoj → "Obránce má snížený postih za Přesilu o 5%"
+ * (presilaPostih, the same node id on both trees): the defender's Overwhelm
+ * penalty is 5 smaller, and never turns into a bonus. One relief, even with
+ * both specialisations: it is the same rule bought twice.
  */
 const CHAMPION_OVERWHELM_RELIEF = 5;
+const OVERWHELM_RELIEF_SPECS = ["champion", "vanguard"];
 
 /**
  * The Overwhelm penalty this actor actually defends at with `stacks` stacks.
@@ -62,7 +65,11 @@ const CHAMPION_OVERWHELM_RELIEF = 5;
 export function overwhelmPenaltyFor(actor, stacks) {
   const n = Number(stacks) || 0;
   const relief =
-    n > 0 && actor && actorHasSpecNode(actor, "champion", "presilaPostih")
+    n > 0 &&
+    actor &&
+    OVERWHELM_RELIEF_SPECS.some((spec) =>
+      actorHasSpecNode(actor, spec, "presilaPostih"),
+    )
       ? CHAMPION_OVERWHELM_RELIEF
       : 0;
   return Math.min(0, n * OVERWHELM_PENALTY_PER_STACK + relief);

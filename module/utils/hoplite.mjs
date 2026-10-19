@@ -22,13 +22,16 @@
  *   a Critical Hit (daringThrowMarginCrit, read in combatSkillBonuses.mjs
  *   getAttackRolls). After the card the hotbar offers "Draw a light weapon"
  *   for that turn (noteDaringThrow, useDrawLightWeapon, swapMainWeapon).
- *   Zatížení štítu +50% is not built: the system has no shield strain yet.
+ *   Zatížení štítu +50%: DARING_THROW_SHIELD_STRAIN, added to the strain
+ *   chance the attack card carries (combatSkillBonuses.mjs getEffectRolls,
+ *   rolled on a successful Cover in shieldStrain.mjs).
  * - Momentum (Hoplite): "Při zabití oponenta útokem Krátkým mečem, Sekerkou,
  *   Palcátem, Kopím, Trojzubcem nebo akcí Troufalý vrh může jednou za kolo
  *   ihned znovu zaútočit. Při kritickém zásahu ... může jednou za kolo ihned
- *   znovu zaútočit." Apply Damage stamps the chance (offerHopliteMomentum);
- *   the chip pays the item and makes the next plain Attack free
- *   (actionTracker.mjs grantFreeAttack). Own turn only.
+ *   znovu zaútočit." Apply Damage stamps the chance and the chip pays the
+ *   item and makes the next plain Attack free (actionTracker.mjs
+ *   grantFreeAttack). Own turn only. The flow is shared with the doctrine
+ *   Momentum in momentum.mjs; the weapon list stays here (isMomentumWeapon).
  * - Postup (Advance): "Zabije-li libovolným útokem nepřítele, může se okamžitě
  *   pohnout ve směru útoku až o dvě hexy. Zabije-li cíl vzdálený maximálně
  *   tři hexy akcí Troufalý vrh, může se pohnout ve směru vrhu ... Tento pohyb
@@ -136,6 +139,8 @@ export const ADVANCE_KEY = "REDSTEEL.Items.Advance.name";
 
 /** Daring Throw: "Kritický zásah na Úspěch o síle +40". */
 export const DARING_THROW_CRIT_MARGIN = 40;
+/** Daring Throw: "Zatížení štítu +50%" (shieldStrain.mjs rolls it). */
+export const DARING_THROW_SHIELD_STRAIN = 50;
 /** Daring Throw: "na cíl vzdálený maximálně 5 hex". */
 export const DARING_THROW_MAX_RANGE = 5;
 /** Advance: "až o dvě hexy". */
@@ -172,8 +177,8 @@ const MELEE_CLASSES = ["axe", "sword", "blunt", "polearm"];
 /** A creature in one of these is neither a threat nor a target. */
 const FALLEN_STATUSES = ["dead", "dying", "downed", "unconscious"];
 
-/** Actor flags (all turn-stamped, a stale one reads as nothing pending). */
-const MOMENTUM_FLAG = "hopliteMomentum";
+/** Actor flags (all turn-stamped, a stale one reads as nothing pending).
+ * Momentum's own flag lives in momentum.mjs. */
 const ADVANCE_FLAG = "hopliteAdvance";
 const DRAW_LIGHT_FLAG = "hopliteDrawLight";
 
@@ -211,7 +216,7 @@ export function isHopliteAdvance(ability) {
 }
 
 /** Was this card a Daring Throw? */
-function cardIsDaringThrow(message) {
+export function cardIsDaringThrow(message) {
   const flags = message?.flags?.redsteel ?? {};
   return (
     flags.abilityKey === DARING_THROW_KEY || flags.abilityName === "Daring Throw"
@@ -555,106 +560,14 @@ export async function useDrawLightWeapon(actor) {
 /*  Momentum (Hoplite)                          */
 /* -------------------------------------------- */
 
-/** The once-per-round allowance, noted in the action tracker's round record. */
-function momentumSource(combat) {
-  return `hopliteMomentum.${combat.id}.${combat.round}`;
-}
+// The offer, the chip's pending read and the use moved to momentum.mjs, which
+// runs Momentum (Hoplite) and the doctrine Momentum down one path (one
+// Momentum per round across both). This file keeps the Hoplite qualifier:
+// hasHopliteNode, isHopliteMomentum, isMomentumWeapon and cardIsDaringThrow.
 
+/** Does the actor carry an ability passing `test`? */
 function ownsAbility(actor, test) {
   return actor.items.some((i) => i.type === "ability" && test(i));
-}
-
-/**
- * Apply Damage landed: stamp Momentum when the card felled someone with a
- * short sword, hatchet, mace, spear or trident (or was a Daring Throw), or
- * was applied as a Critical Hit with one of those weapons. The weapon is the
- * card's `weaponId`; the critical is the mode the GM applied (a crit the
- * defense took back is applied as normal damage). Own turn only, once per
- * round, once per card. Runs on the GM applying the damage.
- *
- * @param {Actor|null} attacker
- * @param {ChatMessage} message
- * @param {string[]} targetIds
- * @param {string[]} felledIds
- * @param {string} mode   "normal" | "critical" | "breakthrough"
- */
-export async function offerHopliteMomentum(
-  attacker,
-  message,
-  targetIds = [],
-  felledIds = [],
-  mode = "normal",
-) {
-  if (!attacker || !message) return;
-  if (!hasHopliteNode(attacker, "momentum")) return;
-  if (!ownsAbility(attacker, isHopliteMomentum)) return;
-  const combat = trackedCombat(attacker);
-  if (!combat || !isTrackedTurn(attacker)) return;
-  if (message.getFlag(SYSTEM_ID, "hopliteMomentumOffered")) return;
-  if (getSpent(attacker).bonusSources.includes(momentumSource(combat))) return;
-
-  const selfId = message.speaker?.token ?? null;
-  const weapon = attacker.items.get(message.flags?.redsteel?.weaponId ?? "") ?? null;
-  const killed = felledIds.find((id) => id && id !== selfId) ?? null;
-  const byKill = !!killed && (cardIsDaringThrow(message) || isMomentumWeapon(weapon));
-  const byCrit = mode === "critical" && isMomentumWeapon(weapon);
-  if (!byKill && !byCrit) return;
-
-  const targetTokenId =
-    killed ?? targetIds.find((id) => id && id !== selfId) ?? null;
-  await message.setFlag(SYSTEM_ID, "hopliteMomentumOffered", true);
-  await attacker.setFlag(SYSTEM_ID, MOMENTUM_FLAG, {
-    messageId: message.id,
-    targetTokenId,
-    kill: byKill,
-    combat: turnStamp(combat),
-  });
-}
-
-/** The Momentum this actor may still take this turn, or null. */
-export function pendingHopliteMomentum(actor) {
-  const stored = actor?.getFlag?.(SYSTEM_ID, MOMENTUM_FLAG);
-  const combat = game.combat;
-  if (!stored || !stampIsThisTurn(stored.combat, combat)) return null;
-  if (getSpent(actor).bonusSources.includes(momentumSource(combat))) return null;
-  return stored;
-}
-
-/**
- * Use Momentum on the pending chance: pay the item, note the round's use and
- * make the next plain Attack free. False with nothing pending, so the caller
- * posts the ability's plain card instead.
- *
- * @param {Actor} actor
- * @param {Item} ability
- * @returns {Promise<boolean>}
- */
-export async function useHopliteMomentum(actor, ability) {
-  const pending = pendingHopliteMomentum(actor);
-  if (!pending) return false;
-  const combat = trackedCombat(actor);
-  if (!combat) return false;
-  if (!(await game.redsteel.deductAbilityCost(actor, [ability]))) return true;
-  await actor.unsetFlag(SYSTEM_ID, MOMENTUM_FLAG);
-  await markBonusSource(actor, momentumSource(combat));
-
-  // Who the free Attack is meant for: the one targeted living token, else
-  // the card's victim. A hint only; the tracker does not enforce it.
-  const self = tokenForActor(actor);
-  const targeted = [...(game.user?.targets ?? [])].filter(
-    (t) => t !== self && !isFallen(t.actor),
-  );
-  const targetId =
-    targeted.length === 1 ? targeted[0].id : (pending.targetTokenId ?? "");
-  // grantFreeAttack needs some id to hold the grant; nothing reads it back.
-  await grantFreeAttack(actor, targetId || self?.id || actor.id);
-
-  await postLines(actor, ability.localizedName ?? ability.name, [
-    game.i18n.format("REDSTEEL.Hoplite.MomentumFreeAttack", {
-      name: esc(actor.name),
-    }),
-  ]);
-  return true;
 }
 
 /* -------------------------------------------- */

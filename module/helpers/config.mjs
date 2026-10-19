@@ -54,7 +54,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.globalBonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -10,
       },
     ],
@@ -106,7 +106,7 @@ REDSTEEL.effectDefinitions = {
         // globalBonus, like every other blanket modifier: globalMod itself is
         // rebuilt from zero after effects apply, which wiped this -10.
         key: "system.globalBonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -10,
       },
     ],
@@ -118,22 +118,22 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.effectMods.slow.applyChance",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 40,
       },
       {
         key: "system.effectMods.freeze.applyChance",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 25,
       },
       {
         key: "system.effectMods.burn.applyChance",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -40,
       },
       {
         key: "system.effectMods.chain.applyChance",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 35,
       },
     ],
@@ -156,22 +156,22 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.effectMods.slow.applyChance",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 40,
       },
       {
         key: "system.effectMods.freeze.applyChance",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 25,
       },
       {
         key: "system.effectMods.burn.applyChance",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -40,
       },
       {
         key: "system.effectMods.chain.applyChance",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 35,
       },
     ],
@@ -185,37 +185,37 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.secondaryAttributes.spd.total",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.MULTIPLY,
+        type: "multiply",
         value: 0.5,
       },
       {
         key: "system.combatSkills.throwing.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -5,
       },
       {
         key: "system.combatSkills.meleeDefense.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -5,
       },
       {
         key: "system.combatSkills.rangedDefense.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -5,
       },
       {
         key: "system.combatSkills.dodge.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -30,
       },
       {
         key: "system.combatSkills.combat.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -5,
       },
       {
         key: "system.combatSkills.archery.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -5,
       },
     ],
@@ -227,27 +227,27 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.secondaryAttributes.spd.total",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.MULTIPLY,
+        type: "multiply",
         value: 0.5,
       },
       {
         key: "system.combatSkills.meleeDefense.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -15,
       },
       {
         key: "system.combatSkills.rangedDefense.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -15,
       },
       {
         key: "system.combatSkills.dodge.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -15,
       },
       {
         key: "system.combatSkills.combat.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -15,
       },
     ],
@@ -269,22 +269,22 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.combatSkills.meleeDefense.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -15,
       },
       {
         key: "system.combatSkills.rangedDefense.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -15,
       },
       {
         key: "system.combatSkills.dodge.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -15,
       },
       {
         key: "system.combatSkills.combat.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -15,
       },
     ],
@@ -315,7 +315,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.globalBonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -5,
       },
     ],
@@ -329,7 +329,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.armor.natural.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 0,
       },
     ],
@@ -358,7 +358,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.armor.natural.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -4,
       },
     ],
@@ -372,7 +372,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.globalBonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -25,
       },
     ],
@@ -385,7 +385,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.armor.acid.resistance",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.OVERRIDE,
+        type: "override",
         value: true,
       },
     ],
@@ -399,7 +399,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.armor.fire.resistance",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.OVERRIDE,
+        type: "override",
         value: true,
       },
     ],
@@ -413,7 +413,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.armor.frost.resistance",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.OVERRIDE,
+        type: "override",
         value: true,
       },
     ],
@@ -427,7 +427,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.armor.lightning.resistance",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.OVERRIDE,
+        type: "override",
         value: true,
       },
     ],
@@ -441,7 +441,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.armor.magic.resistance",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.OVERRIDE,
+        type: "override",
         value: true,
       },
     ],
@@ -455,7 +455,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.armor.dark.resistance",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.OVERRIDE,
+        type: "override",
         value: true,
       },
     ],
@@ -619,7 +619,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.effectMods.stagger.immune",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.OVERRIDE,
+        type: "override",
         value: true,
       },
     ],
@@ -637,7 +637,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.effectMods.blind.immune",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.OVERRIDE,
+        type: "override",
         value: true,
       },
     ],
@@ -673,7 +673,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.secondaryAttributes.res.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 5,
       },
     ],
@@ -701,12 +701,12 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.attributes.wil.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -2,
       },
       {
         key: "system.globalBonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -10,
       },
     ],
@@ -875,12 +875,12 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.combatSkills.meleeDefense.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 20,
       },
       {
         key: "system.combatSkills.rangedDefense.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 10,
       },
     ],
@@ -894,6 +894,18 @@ REDSTEEL.effectDefinitions = {
     defaultTurns: 1,
     useDuration: true,
     stackBehavior: "ignore",
+  },
+
+  // "Ochrana" (Protection): the marker on the ally a Guard protects
+  // (utils/protection.mjs). No clock and no changes: the protector's `guard`
+  // effect is what expires, and the active GM takes this marker off when it
+  // does. flags.redsteel.protection names the protectors.
+  protected_by: {
+    name: "REDSTEEL.Effect.Name.protected_by",
+    img: "icons/magic/defensive/shield-barrier-glowing-triangle-blue.webp",
+    statuses: ["protected_by"],
+    stackBehavior: "ignore",
+    changes: [],
   },
 
   // "Dračí stráž" (Servant of the Sword): Hit +10% for retaliations, Riposte
@@ -940,7 +952,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.combatSkills.meleeDefense.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 5,
       },
     ],
@@ -959,12 +971,12 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.combatSkills.meleeDefense.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -10,
       },
       {
         key: "system.combatSkills.dodge.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -10,
       },
     ],
@@ -983,17 +995,17 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.combatSkills.meleeDefense.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 10,
       },
       {
         key: "system.combatSkills.dodge.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 10,
       },
       {
         key: "system.combatSkills.rangedDefense.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 10,
       },
     ],
@@ -1031,12 +1043,12 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.combatSkills.rangedDefense.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 15,
       },
       {
         key: "system.combatSkills.meleeDefense.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -25,
       },
     ],
@@ -1050,12 +1062,12 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.armor.natural.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 0,
       },
       {
         key: "system.dodge.limit.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 0, // dynamic negative penalty
       },
     ],
@@ -1149,22 +1161,22 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.combatSkills.meleeDefense.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -20,
       },
       {
         key: "system.combatSkills.rangedDefense.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -20,
       },
       {
         key: "system.combatSkills.dodge.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -25,
       },
       {
         key: "system.combatSkills.combat.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -20,
       },
     ],
@@ -1208,7 +1220,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.combatSkills.dodge.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -20,
       },
     ],
@@ -1233,12 +1245,12 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.globalBonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -5,
       },
       {
         key: "system.secondaryAttributes.spd.total",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.MULTIPLY,
+        type: "multiply",
         value: 0.5,
       },
     ],
@@ -1320,7 +1332,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.globalBonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -40,
       },
     ],
@@ -1334,32 +1346,32 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.combatSkills.combat.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -30,
       },
       {
         key: "system.combatSkills.archery.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -50,
       },
       {
         key: "system.combatSkills.throwing.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -50,
       },
       {
         key: "system.combatSkills.meleeDefense.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -15,
       },
       {
         key: "system.combatSkills.rangedDefense.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -15,
       },
       {
         key: "system.combatSkills.dodge.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -15,
       },
     ],
@@ -1375,17 +1387,17 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.combatSkills.combat.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -10,
       },
       {
         key: "system.combatSkills.archery.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -20,
       },
       {
         key: "system.combatSkills.throwing.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -20,
       },
     ],
@@ -1401,7 +1413,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.globalBonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -10,
       },
     ],
@@ -1416,7 +1428,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.effectMods.burn.applyChance",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 40,
       },
     ],
@@ -1443,7 +1455,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.armor.natural.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -8,
       },
     ],
@@ -1458,7 +1470,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.globalBonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -10,
       },
     ],
@@ -1491,7 +1503,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.armor.natural.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 0,
       },
     ],
@@ -1569,17 +1581,17 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.globalBonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -20,
       },
       {
         key: "system.attributes.wil.modBonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 20,
       },
       {
         key: "system.skills.mindBending.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 20,
       },
     ],
@@ -1593,12 +1605,12 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.secondaryAttributes.spd.total",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 1,
       },
       {
         key: "system.secondaryAttributes.ini.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 4,
       },
     ],
@@ -1626,7 +1638,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.secondaryAttributes.ini.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 4,
       },
     ],
@@ -1646,7 +1658,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.actionEconomy.reactions",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 1,
       },
     ],
@@ -1667,17 +1679,17 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.rollAdvantage.meleeDefense",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 1,
       },
       {
         key: "system.rollAdvantage.rangedDefense",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 1,
       },
       {
         key: "system.rollAdvantage.dodge",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 1,
       },
     ],
@@ -1691,7 +1703,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.secondaryAttributes.spd.total",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.OVERRIDE,
+        type: "override",
         value: 8,
       },
     ],
@@ -1726,12 +1738,12 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.effectMods.stun.applyChance",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -15,
       },
       {
         key: "system.effectMods.stagger.applyChance",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -15,
       },
     ],
@@ -1754,7 +1766,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.effectMods.bleed.applyChance",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -1000,
       },
     ],
@@ -1769,7 +1781,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.armor.fire.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 2,
       },
     ],
@@ -1783,7 +1795,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.armor.frost.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 2,
       },
     ],
@@ -1797,7 +1809,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.armor.lightning.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 2,
       },
     ],
@@ -1815,12 +1827,12 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.armor.fire.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 10,
       },
       {
         key: "system.effectMods.burn.immune",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.OVERRIDE,
+        type: "override",
         value: true,
       },
     ],
@@ -1836,7 +1848,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.effectMods.wet.immune",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.OVERRIDE,
+        type: "override",
         value: true,
       },
     ],
@@ -1855,7 +1867,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.effectMods.petrify.immune",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.OVERRIDE,
+        type: "override",
         value: true,
       },
     ],
@@ -1874,7 +1886,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.effectMods.disorientation.immune",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.OVERRIDE,
+        type: "override",
         value: true,
       },
     ],
@@ -2059,27 +2071,27 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.secondaryAttributes.spd.total",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.MULTIPLY,
+        type: "multiply",
         value: 0.5,
       },
       {
         key: "system.combatSkills.meleeDefense.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -15,
       },
       {
         key: "system.combatSkills.rangedDefense.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -15,
       },
       {
         key: "system.combatSkills.dodge.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -15,
       },
       {
         key: "system.combatSkills.combat.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -15,
       },
     ],
@@ -2130,17 +2142,17 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.globalBonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -5,
       },
       {
         key: "system.combatSkills.archery.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -50,
       },
       {
         key: "system.combatSkills.throwing.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -50,
       },
     ],
@@ -2200,7 +2212,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.effectMods.burn.applyChance",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 10,
       },
     ],
@@ -2317,7 +2329,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.armor.natural.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -10,
       },
     ],
@@ -2332,7 +2344,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.skills.stealth.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 10,
       },
     ],
@@ -2351,7 +2363,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.secondaryAttributes.ini.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -3,
       },
     ],
@@ -2408,17 +2420,17 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.globalBonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -20,
       },
       {
         key: "system.attributes.wil.modBonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 20,
       },
       {
         key: "system.skills.mindBending.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 20,
       },
     ],
@@ -2449,7 +2461,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.rollAdvantage.attack",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -1,
       },
     ],
@@ -2467,7 +2479,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.rollAdvantage.dodge",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -1,
       },
     ],
@@ -2512,7 +2524,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.secondaryAttributes.res.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 1,
       },
     ],
@@ -2526,7 +2538,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.secondaryAttributes.spd.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 1,
       },
     ],
@@ -2540,17 +2552,17 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.combatSkills.combat.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 5,
       },
       {
         key: "system.combatSkills.archery.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 5,
       },
       {
         key: "system.combatSkills.throwing.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 5,
       },
     ],
@@ -2564,7 +2576,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.combatSkills.meleeDefense.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 5,
       },
     ],
@@ -2578,7 +2590,7 @@ REDSTEEL.effectDefinitions = {
     changes: [
       {
         key: "system.combatSkills.rangedDefense.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 10,
       },
     ],

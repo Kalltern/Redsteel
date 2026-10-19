@@ -534,7 +534,9 @@ export async function resolvePushOnHit(
   }
   const label = message.flags?.redsteel?.rollName ?? "";
   const outcome = push.contest || push.proneGap ? versusOutcome(message) : null;
-  const won = outcome?.attackerWon === true;
+  // Strážce → Dvojitý úder: one card, two defenders, two answers. Each target
+  // is judged on its own answer (versusOutcomeForTarget), not the newest one.
+  const perTarget = !!message.flags?.redsteel?.doubleStrike;
   const stages = foundry.utils.deepClone(message.getFlag(SYSTEM_ID, "cardPush") ?? {});
   const proned = foundry.utils.deepClone(message.getFlag(SYSTEM_ID, "pushProne") ?? {});
   const opts = (distance) => ({
@@ -548,6 +550,9 @@ export async function resolvePushOnHit(
     const target = scene.tokens.get(id);
     if (!target || target.id === attackerDoc.id || isDeadToken(target)) continue;
     let moved = 0;
+    const targetOutcome =
+      perTarget && outcome !== null ? versusOutcomeForTarget(message, target) : outcome;
+    const won = targetOutcome?.attackerWon === true;
 
     if (push.contest) {
       const stage = stages[id] ?? { first: null, extra: null };
@@ -574,7 +579,7 @@ export async function resolvePushOnHit(
     }
 
     let prone = false;
-    if (push.proneGap && won && outcome.gap >= push.proneGap && !proned[id] && !firstOnly) {
+    if (push.proneGap && won && targetOutcome.gap >= push.proneGap && !proned[id] && !firstOnly) {
       proned[id] = true;
       prone = await knockProne(target);
     }
@@ -730,6 +735,40 @@ export function versusOutcome(message) {
   const line = marginLineOf(message);
   if (!line) return null;
   return versusOutcomeFor(message, line.margin, line.source);
+}
+
+/**
+ * versusOutcome as answered by one defender: the newest answer to the card's
+ * margin line whose speaker is this token (or, for a linked actor whose card
+ * names no token, this actor). Null when that defender has not answered.
+ * Used for Dvojitý úder (Warden), where two defenders answer one card.
+ *
+ * @param {ChatMessage} message  the attack card
+ * @param {TokenDocument} target
+ * @returns {{attackerWon:boolean, gap:number}|null}
+ */
+function versusOutcomeForTarget(message, target) {
+  const line = marginLineOf(message);
+  if (!line || !target) return null;
+  const messages = game.messages?.contents ?? [];
+  const start = messages.findIndex((m) => m.id === message.id);
+  for (let i = messages.length - 1; i > start; i--) {
+    const answer = messages[i];
+    const followup = answer.flags?.redsteel?.versusFollowup;
+    if (!followup) continue;
+    if (Number(followup.margin) !== line.margin || (followup.source ?? "") !== line.source) {
+      continue;
+    }
+    const speaker = answer.speaker ?? {};
+    const mine = speaker.token
+      ? speaker.token === target.id
+      : !!target.actorLink && speaker.actor === target.actorId;
+    if (!mine) continue;
+    const total = Number(answer.rolls?.[0]?.total);
+    if (!Number.isFinite(total)) continue;
+    return { attackerWon: total <= 0, gap: Math.abs(total) };
+  }
+  return null;
 }
 
 /**

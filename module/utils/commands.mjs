@@ -277,7 +277,7 @@ export async function applyCommandAsGM({
     if (channeling) {
       changes.push({
         key: "system.combatSkills.channeling.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: 5,
         priority: null,
       });

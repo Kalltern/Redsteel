@@ -4,7 +4,7 @@
 
 const add = (key, value) => ({
   key,
-  mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+  type: "add",
   value,
 });
 
@@ -248,6 +248,9 @@ export const GENERATED_SPECS = {
     // Constellation layout: a heater shield — flat top, sides curving down to a
     // point, one boss at the centre. The six-node shield-bash chain draws the
     // top edge and the five-node cover chain draws the left flank.
+    // opakovaniKrytu (added by hand 2026-10-19, the book's sixth star of the
+    // third row) is a lower boss on the centre line, 20 y-units under the
+    // first and 18 over the two bottom stars.
     layout: "constellation",
     coords: {
       uderZraneniA: [16, 14],
@@ -267,6 +270,7 @@ export const GENERATED_SPECS = {
       protiutokZasah: [67, 78],
       vylObrneni: [56, 86],
       uderStitemOdveta: [50, 48],
+      opakovaniKrytu: [50, 68],
     },
     nodes: {
       kritObranaKryt: { tier: 1, column: 1, passive: { changes: [add("system.combatSkills.meleeDefense.critbonus", 2), add("system.combatSkills.rangedDefense.critbonus", 2)] } },
@@ -286,6 +290,9 @@ export const GENERATED_SPECS = {
       ochranaVolna: { tier: 3, column: 3 },
       protiutokZasah: { tier: 3, column: 4 },
       vylObrneni: { tier: 3, column: 5 },
+      // Hand-added 2026-10-19, specializace-wip.md r659 sixth cell: "Může 1x
+      // za den opakovat hod na Kryt" (NODE_REROLL_POOLS, utils/rerolls.mjs).
+      opakovaniKrytu: { tier: 3, column: 6 },
     },
   },
   champion: {

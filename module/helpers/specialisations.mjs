@@ -51,7 +51,7 @@ import { SPEC_MIRRORS } from "./rankMirrors.mjs";
 /** ActiveEffect ADD change. */
 const add = (key, value) => ({
   key,
-  mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+  type: "add",
   value,
 });
 
@@ -401,9 +401,11 @@ const CODE_AUTOMATED_NODES = {
   // polearm throw (utils/hoplite.mjs asDaringThrowView, routed by
   // weaponSelectionFlow), the +40 margin crit in utils/combatSkillBonuses.mjs
   // getAttackRolls, the "Draw a light weapon" chip in
-  // utils/actionSuggestions.mjs hopliteChips (shield strain +50% has no
-  // mechanism in the system yet). momentum and postup are stamped by
-  // utils/applyDamage.mjs applyDamageAsGM (offerHopliteMomentum,
+  // utils/actionSuggestions.mjs hopliteChips, and its shield strain +50% in
+  // utils/combatSkillBonuses.mjs getEffectRolls (DARING_THROW_SHIELD_STRAIN,
+  // rolled by utils/shieldStrain.mjs). momentum and postup are stamped by
+  // utils/applyDamage.mjs applyDamageAsGM (offerMomentum in
+  // utils/momentum.mjs, shared with the doctrine Momentum, and
   // offerHopliteAdvance) and used from their chips; postup's step is the
   // `advance` mode in utils/movementZones.mjs. raznyPostup is
   // completeHopliteAdvance, from utils/redsteelHotbar.mjs _onConfirmMovement
@@ -424,6 +426,55 @@ const CODE_AUTOMATED_NODES = {
   // utils/attackActions.mjs and utils/combatAbilities.mjs, and
   // settleChargeDefense from utils/applyDamage.mjs, which ends the charge
   // through utils/actionTracker.mjs stopMovementLock.)
+  // (warden batch 1: redukceBoku is utils/positioning.mjs flanksReduced,
+  // applied inside attackSector, so the Flanking pill, the Sneak Attack flank
+  // clause and the sector stamped on attack cards all read a flank blow as a
+  // front one. zatizeniStitu is utils/shieldStrain.mjs effectiveStrainChance,
+  // -15 on the Zatížení štítu roll after a successful Cover. opakovaniKrytu is
+  // a NODE_REROLL_POOLS entry in utils/rerolls.mjs, once a day on a Cover.
+  // Batch 2: uderZraneniA, uderZraneniB, uderZraneniSila and uderSila10 are
+  // utils/warden.mjs shieldBlowDamageExtra / shieldBlowTestBonus, read in
+  // utils/combatSkillBonuses.mjs getNonWeaponAbility for the four shield
+  // blows. bonusZaStit is utils/wardenShield.mjs wardenShieldBonus: the Shield
+  // Bash discount (utils/combatAbilities.mjs deductAbilityCost), Stagger
+  // (getNonWeaponAbility), Critical Defense and Deflect (utils/defense.mjs),
+  // Strength Tests (utils/testRating.mjs versusTestBonus and
+  // getNonWeaponAbility). spolehlivyStit1 is the per-point sacrifice in
+  // utils/applyDamage.mjs getDurabilityReductionPerPoint; spolehlivyStit2 is
+  // wardenShieldDurabilityMax, read by sheets/actor-sheet.mjs and the Apply
+  // Damage dialog. uderStitemOdveta: the chip in utils/actionSuggestions.mjs
+  // reactionChips, the Reaction cost in warden.mjs wardenActionCostItems and
+  // the "retaliation" tag in getNonWeaponAbility. dvojityUder: the Double
+  // Strike grant above plus warden.mjs doubleStrikeRefusal (from
+  // combatAbilities.mjs) and the per-defender answer in
+  // utils/forcedMovement.mjs resolvePushOnHit. obrannyPostojSpojenci is the
+  // aura warden.mjs wardenAllyDefenseBonus in utils/defense.mjs
+  // buildDefenseProfile. vylObrannyPostoj: the item grant above plus the
+  // shared free Armoring (wardenActionCostItems) or Slow Movement
+  // (claimWardenFreeSlowMovement from utils/redsteelHotbar.mjs). ochranaVolna
+  // is wardenActionCostItems on the Guard (utils/protection.mjs).
+  // protiutokZasah is counterattackHitBonus in combatSkillBonuses.mjs
+  // getAttackRolls. vylObrneni: the item grant above plus warden.mjs
+  // useImprovedArmoring through utils/armoring.mjs.)
+  warden: [
+    "redukceBoku",
+    "zatizeniStitu",
+    "opakovaniKrytu",
+    "uderZraneniA",
+    "uderZraneniB",
+    "uderZraneniSila",
+    "uderSila10",
+    "bonusZaStit",
+    "spolehlivyStit1",
+    "spolehlivyStit2",
+    "uderStitemOdveta",
+    "dvojityUder",
+    "obrannyPostojSpojenci",
+    "vylObrannyPostoj",
+    "ochranaVolna",
+    "protiutokZasah",
+    "vylObrneni",
+  ],
   hoplite: [
     "nabodnuti",
     "velkeTvory",
@@ -489,6 +540,52 @@ const CODE_AUTOMATED_NODES = {
     "ztecSRozseknutim",
     "zatlaceni",
     "bonusDruhaZbran3",
+  ],
+  // utils/vanguard.mjs, the Vanguard batch 1 rules (prubojnost2 and
+  // ocelovyStisk are node passives). rozrazeni (batch 2) is the Bull Charge
+  // grant above plus utils/bullCharge.mjs: the refusal and payment in
+  // utils/combatAbilities.mjs, the lock stamp in utils/abilityMovement.mjs
+  // declareChargeMove, the zone in utils/movementZones.mjs, the contests in
+  // its preMoveToken hook, the Opportunity Attack chip in
+  // utils/actionSuggestions.mjs.
+  // ztecPohyb50 / ztecPohyb100 are vanguardChargeBudget, read by
+  // utils/abilityMovement.mjs declareChargeMove. ztecZraneniHexa is
+  // vanguardChargeHexDamage, read by utils/combatAbilities.mjs runAttackMacro
+  // and utils/combatSkillBonuses.mjs getNonWeaponAbility (Shield Charge).
+  // zatlaceni and ztecSRozseknutim are the grants above (Push Back, Charge
+  // with Cleave), item driven like the Champion's. momentumVydrz and
+  // momentumSpecialni are utils/momentum.mjs (momentumStaminaCost in
+  // utils/combatAbilities.mjs deductAbilityCost; useMomentum's paired
+  // free-ability grant, utils/actionTracker.mjs grantFreeAbility).
+  // opakovaniUtoku is a NODE_REROLL_POOLS entry in utils/rerolls.mjs.
+  // presilaPostih is utils/overwhelm.mjs overwhelmPenaltyFor, shared with the
+  // Champion. triumf: the Triumph / Improved Triumph grants above, the
+  // offer in utils/applyDamage.mjs (offerTriumph), the hotbar chip in
+  // utils/actionSuggestions.mjs and useTriumph from utils/combatAbilities.mjs.
+  // rozseknutiCil is cleaveTargetRefusal (utils/combatAbilities.mjs),
+  // rozseknutiZasah vanguardCleaveHit (utils/combatSkillBonuses.mjs
+  // getAttackRolls). bojoveTestySily is utils/testRating.mjs
+  // vanguardStrengthTestBonus. opakovaniTestuSily is the Stamina reroll in
+  // redsteel.mjs handleRerollClick (vanguardStrengthRerollOption).
+  // zbrojeRychlost is documents/actor.mjs (worn armor's Initiative and Speed
+  // penalties dropped).
+  vanguard: [
+    "ztecPohyb50",
+    "ztecZraneniHexa",
+    "ztecPohyb100",
+    "zatlaceni",
+    "ztecSRozseknutim",
+    "momentumVydrz",
+    "momentumSpecialni",
+    "opakovaniUtoku",
+    "presilaPostih",
+    "triumf",
+    "rozseknutiCil",
+    "rozseknutiZasah",
+    "bojoveTestySily",
+    "opakovaniTestuSily",
+    "zbrojeRychlost",
+    "rozrazeni",
   ],
   // (oddechMireni on skirmisher and sharpshooter: see swordDancer.)
   skirmisher: ["utokSPohybem", "oddechMireni"],

@@ -18,6 +18,7 @@
  *            { kind: "doctrine", key: "swordsman", min: 1 } // doctrine value >= min (default 1)
  *            { kind: "weaponSkill", key: "swords", min: 1 } // weapon skill value >= min
  *            { kind: "specNode", spec: "hoplite", node: "nabodnuti" } // node unlocked
+ *            { kind: "ownsShield" }                         // owns any shield (gear)
  *            { kind: "all", of: [trigger, trigger, ...] }   // every sub-trigger holds
  *          For an "item" trigger you must give `name` and/or `uuid`. `type` and
  *          `name` may be combined for extra safety against name collisions.
@@ -70,8 +71,10 @@ const ABILITY = {
   ACCURATE_SHOT: A("buuxxJT0wA3vKJNg"), // Přesný výstřel
   ACROBATIC_DISENGAGE: A("aCroDisengage001"), // Akrobatické odpoutání
   ADVANCE: A("aDvance000000001"), // Postup
+  ARMORING: A("aRmoring00000001"), // Obrnění
   ANTI_LARGE: A("yx2pLONxkiwDfWpo"), // Bonus proti velkým tvorům
   BLOOD_PACT: A("blOodPact0000001"), // Krvavý pakt
+  BULL_CHARGE: A("bReakthrough0001"), // Rozražení (Předvoj); id kept from the first draft
   CATALYST: A("cAtalyst00000001"), // Katalyzátor
   CHARGE: A("2jCzZEc3kXL6zglG"), // Zteč — carries its own Heavy-weapon bonus dice
   CHARGE_DEFENSE: A("cHargeDefense001"), // Obrana proti zteči
@@ -117,6 +120,7 @@ const ABILITY = {
   FUSCINA_ICTUS: A("fUsCinaIctus0001"), // Fuscina Ictus, trojzubec
   FLURRY_OF_THROWS: A("rWVInSjYveJyVonf"), // Vícenásobný vrh
   FRENZIED_THROW: A("RUMZLtefyxVDNA74"), // Zběsilý vrh
+  FREE_THE_SHIELD: A("fReeTheShield001"), // Uvolnit štít (Zatížení štítu)
   GUARD_STANCE: A("n6cK9hKnV52nwOzh"), // Ochrana
   HALF_PIROUETTE: A("fF5ZDZZ8r1XSGjmP"), // Půlpirueta
   HOPLITE_MOMENTUM: A("hOpliteMomentum1"), // Momentum, Hoplita
@@ -148,6 +152,7 @@ const ABILITY = {
   LEG_SWEEP_STR: A("GvpBIkl7tAxx5xrX"), // Nastrčená noha
   LUNGE_STEP: A("lUngeStep0000001"), // Přískok
   MAGIC_WARD: A("jb3WkQ7CKe0E3hW8"), // Magické obrnění
+  MOMENTUM: A("mOmentum00000001"), // Momentum (doktríny)
   MYSTERAS_EYE: A("mYsterasEye00001"), // Mysteřino oko
   MYSTERAS_STEP: A("mYsterasStep0001"), // Mysteřin krok
   MYSTIC_SACRIFICE: A("mYsticSacrific01"), // Mystická oběť
@@ -189,6 +194,8 @@ const ABILITY = {
   SUBJUGATION_I: A("sUbjugation10001"), // Podmanění I
   SUBJUGATION_II: A("sUbjugation20001"), // Podmanění II
   TRIP_DEX: A("kkHN2VhkuN0wIePo"), // Podseknutí
+  TRIUMPH: A("tRiumph000000001"), // Triumf
+  IMPROVED_TRIUMPH: A("iMpTriumph000001"), // Vylepšený triumf
   TRIP_STR: A("lceDlymn87I1aDNX"), // Podseknutí
 };
 
@@ -200,6 +207,7 @@ const weaponSkill = (key, min) => ({ kind: "weaponSkill", key, min });
 const specNode = (spec, node) => ({ kind: "specNode", spec, node });
 const feature = (name) => ({ kind: "item", name, type: "feature" });
 const all = (...of) => ({ kind: "all", of });
+const ownsShield = () => ({ kind: "ownsShield" });
 
 /** Every weapon skill grants the same actions at ranks 1-3. */
 const WEAPON_SKILLS = ["swords", "axes", "blunt", "polearms"];
@@ -226,6 +234,18 @@ export const ABILITY_GRANTS = [
       ABILITY.DEFENSIVE_STANCE,
       ABILITY.FAST_REACTION,
     ],
+  },
+
+  /* ======================================================================
+   * Uvolnit štít (Free the Shield): clears Zatížení štítu (shield strain,
+   * utils/shieldStrain.mjs). The grant system has no status trigger, so
+   * everyone who owns a shield carries it; the ability refuses to run while
+   * the shield is not strained.
+   * ==================================================================== */
+  {
+    label: "Owns a shield → Free the Shield",
+    when: ownsShield(),
+    grant: [ABILITY.FREE_THE_SHIELD],
   },
 
   /* ======================================================================
@@ -298,6 +318,12 @@ export const ABILITY_GRANTS = [
     ],
     replaces: [ABILITY.CHARGE],
   },
+  {
+    // Dovednosti r9, Pikenýr Stupeň X: "Momentum" (utils/momentum.mjs).
+    label: "Pikeman 10 → Momentum",
+    when: doctrine("pikeman", 10),
+    grant: [ABILITY.MOMENTUM],
+  },
 
   /* ======================================================================
    * Šermíř (swordsman)
@@ -326,6 +352,12 @@ export const ABILITY_GRANTS = [
     label: "Swordsman 6 → Flurry",
     when: doctrine("swordsman", 6),
     grant: [ABILITY.FLURRY],
+  },
+  {
+    // Dovednosti r12, Šermíř Stupeň VIII ("25 CP: Momentum").
+    label: "Swordsman 8 → Momentum",
+    when: doctrine("swordsman", 8),
+    grant: [ABILITY.MOMENTUM],
   },
   {
     label: "Swordsman 10 → Riposte",
@@ -357,6 +389,12 @@ export const ABILITY_GRANTS = [
     when: doctrine("reaver", 5),
     grant: [ABILITY.KNOCKDOWN],
   },
+  {
+    // Dovednosti r15, Plenitel Stupeň VIII ("25 CP: Momentum / Zásah +5%").
+    label: "Reaver 8 → Momentum",
+    when: doctrine("reaver", 8),
+    grant: [ABILITY.MOMENTUM],
+  },
 
   /* ======================================================================
    * Štítonoš (shieldbearer)
@@ -386,6 +424,12 @@ export const ABILITY_GRANTS = [
     when: doctrine("shieldbearer", 6),
     grant: [ABILITY.SHIELDBEARER_DEFENSIVE_STANCE],
     replaces: [ABILITY.DEFENSIVE_STANCE],
+  },
+  {
+    // Dovednosti r18, Štítonoš IX: "Obrnění" (utils/armoring.mjs).
+    label: "Shieldbearer 9 → Armoring",
+    when: doctrine("shieldbearer", 9),
+    grant: [ABILITY.ARMORING],
   },
 
   /* ======================================================================
@@ -629,6 +673,16 @@ export const ABILITY_GRANTS = [
     label: "Musketeer 8 → Shove",
     when: doctrine("musketeer", 8),
     grant: [ABILITY.SHOVE_STR, ABILITY.SHOVE_DEX],
+  },
+
+  /* ======================================================================
+   * Jezdec (rider)
+   * ==================================================================== */
+  {
+    // Dovednosti r33, Jezdec Stupeň X ("25 CP; Učitel III: Momentum").
+    label: "Rider 10 → Momentum",
+    when: doctrine("rider", 10),
+    grant: [ABILITY.MOMENTUM],
   },
 
   /* ======================================================================
@@ -952,6 +1006,44 @@ export const ABILITY_GRANTS = [
     grant: [ABILITY.ONSLAUGHT_II],
   },
 
+  /* Předvoj (Vanguard). The Champion's two items, granted the same way; their
+   * behaviour is item driven (champion.mjs, abilityMovement.mjs). */
+  {
+    label: "Vanguard: Zatlačení → Push Back",
+    when: specNode("vanguard", "zatlaceni"),
+    grant: [ABILITY.PUSH_BACK_STR, ABILITY.PUSH_BACK_DEX],
+  },
+  {
+    // The Zteč modifier (utils/bullCharge.mjs).
+    label: "Vanguard: Rozražení → Bull Charge",
+    when: specNode("vanguard", "rozrazeni"),
+    grant: [ABILITY.BULL_CHARGE],
+  },
+  {
+    label: "Vanguard: Zteč s rozseknutím → Charge with Cleave",
+    when: specNode("vanguard", "ztecSRozseknutim"),
+    grant: [ABILITY.CHARGE_WITH_CLEAVE],
+  },
+  {
+    // "Triumf / Vylepšený triumf": the node gives Triumph, or the improved
+    // one to a character who already has Triumph from a doctrine (Plenitel
+    // IX, Jezdec VII in dovednosti.md). Those doctrine ranks grant nothing
+    // themselves yet: they only decide which of the two the node gives
+    // (utils/vanguard.mjs).
+    label: "Vanguard: Triumf → Triumph",
+    when: specNode("vanguard", "triumf"),
+    grant: [ABILITY.TRIUMPH],
+  },
+  ...[
+    ["reaver", 9],
+    ["rider", 7],
+  ].map(([key, rank]) => ({
+    label: `Vanguard: Triumf + ${key} ${rank} → Triumph upgrades to Improved Triumph`,
+    when: all(specNode("vanguard", "triumf"), doctrine(key, rank)),
+    grant: [ABILITY.IMPROVED_TRIUMPH],
+    replaces: [ABILITY.TRIUMPH],
+  })),
+
   /* Strážce (Warden) */
   {
     label: "Warden: Dvojitý úder → Double Strike",
@@ -1116,6 +1208,8 @@ const DEFAULT_ABILITY_CATEGORY = "basic";
  */
 const CATEGORY_BY_KIND_RANK = [
   ["always", "basic"],
+  // Free the Shield is a basic action anyone with a shield may need.
+  ["ownsShield", "basic"],
   ["leadership", "command"],
   ["weaponSkill", "weapon"],
   ["doctrine", "doctrine"],
@@ -1242,6 +1336,14 @@ export function ruleActive(actor, rule) {
   if (w.kind === "specNode") {
     const spec = actor.system?.specialisations?.[w.spec];
     return !!(spec?.active && spec.nodes?.[w.node]);
+  }
+
+  // Inlined rather than imported from shieldStrain.mjs: this file stays
+  // import free. Any shield anywhere in the inventory counts.
+  if (w.kind === "ownsShield") {
+    return actor.items.some(
+      (i) => i.type === "gear" && i.system?.shield === true,
+    );
   }
 
   if (w.kind === "item") {

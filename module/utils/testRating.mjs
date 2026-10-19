@@ -14,6 +14,27 @@
  */
 
 import { actorHasSpecNode } from "../helpers/specialisations.mjs";
+import { wardenStrengthTestBonus } from "./wardenShield.mjs";
+
+/** Předvoj: "Bonus +10% na bojové Testy Síly". */
+const VANGUARD_STRENGTH_TEST_BONUS = 10;
+
+/**
+ * Předvoj → Bonus +10% na bojové Testy Síly (bojoveTestySily): +10 on a
+ * combat Strength Test. Read by versusTestBonus below and by
+ * combatSkillBonuses.mjs getNonWeaponAbility (a Shield Bash's own Strength
+ * Test), the two places the Warden's large-shield bonus is read.
+ *
+ * @param {Actor} actor
+ * @param {string} key  Attribute key.
+ * @returns {number}
+ */
+export function vanguardStrengthTestBonus(actor, key) {
+  if (key !== "str" || !actor) return 0;
+  return actorHasSpecNode(actor, "vanguard", "bojoveTestySily")
+    ? VANGUARD_STRENGTH_TEST_BONUS
+    : 0;
+}
 
 /**
  * Flat bonus to one side of a versus Test, by attribute key.
@@ -24,12 +45,27 @@ import { actorHasSpecNode } from "../helpers/specialisations.mjs";
  * attributeFollowup.mjs). Plain sheet attribute rolls are not contests and do
  * not come through either path.
  *
+ * Strážce → Bonus za štít, large shield: combat Strength Tests +10%
+ * ("Bonus do soubojových Testů Síly +10%"), the same two sides
+ * (wardenShield.mjs).
+ *
+ * Předvoj → "Bonus +10% na bojové Testy Síly" (bojoveTestySily), the same
+ * two sides, on top of the Warden's shield: two sources, they stack. Read
+ * here rather than through vanguard.mjs so this low-level module keeps its
+ * small import list.
+ *
  * @param {Actor} actor
  * @param {string} key  Attribute key ("dex", "str", …).
  * @returns {number}
  */
 export function versusTestBonus(actor, key) {
-  if (!actor || key !== "dex") return 0;
+  if (!actor) return 0;
+  if (key === "str") {
+    return (
+      wardenStrengthTestBonus(actor, key) + vanguardStrengthTestBonus(actor, key)
+    );
+  }
+  if (key !== "dex") return 0;
   return actorHasSpecNode(actor, "swordServant", "dexTests") ? 10 : 0;
 }
 

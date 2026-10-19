@@ -394,6 +394,28 @@ export const NODE_REROLL_POOLS = [
     requiresOffhand: "light",
     img: "icons/weapons/daggers/dagger-curved-guard-blue.webp",
   },
+  {
+    // Strážce (Warden): "Může 1x za den opakovat hod na Kryt". Kryt (Cover)
+    // is the Ranged Defense roll; no shield required by the text.
+    spec: "warden",
+    node: "opakovaniKrytu",
+    skillsRaw: "rangedDefense",
+    max: 1,
+    img: "icons/equipment/shield/heater-steel-boss-red.webp",
+  },
+  {
+    // Předvoj (Vanguard): "Může 1x za den opakovat hod na Zásah". Zásah is
+    // the weapon attack roll: melee (combat), thrown (throwing) and shot
+    // (archery) weapon attacks. A non-weapon ability card (Shield Bash) emits
+    // only "attack" and its test, so it is left out; `requiresToken` keeps
+    // a bare Combat skill test from the sheet out too.
+    spec: "vanguard",
+    node: "opakovaniUtoku",
+    skillsRaw: "combat, archery, throwing",
+    max: 1,
+    requiresToken: "attack",
+    img: "icons/skills/melee/strike-sword-steel-yellow.webp",
+  },
 ];
 
 /** Actor flag holding node pool spend: { "<spec>-<node>": {used, combatUsed} }. */
@@ -778,7 +800,9 @@ function formatPoolScope(pool) {
 export async function pickRerollPool(eligible) {
   const rows = eligible
     .map((pool, i) => {
-      const remaining = `${pool.remaining}/${pool.max}`;
+      // A choice paid in a resource rather than a charge (Předvoj's Stamina
+      // reroll, vanguard.mjs) names its price instead of a count.
+      const remaining = pool.costLabel ?? `${pool.remaining}/${pool.max}`;
       const tag = [
         formatPoolScope(pool),
         pool.critFail ? "crit fail" : null,

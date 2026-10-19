@@ -136,12 +136,12 @@ export async function syncWrathOfBlood(actor, { ignoreId = null } = {}) {
   const changes = [
     {
       key: "system.schools.blood.bonus",
-      mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+      type: "add",
       value: tier,
     },
     {
       key: "system.stats.bloodPool.bonus",
-      mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+      type: "add",
       value: tier * POOL_PER_TIER,
     },
   ];

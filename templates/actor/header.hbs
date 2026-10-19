@@ -259,7 +259,14 @@
           <div class="stat-box" data-tt-kind="secondaryAttribute" data-tt-id="{{key}}">
           {{/if}}
             <div class="stat-box-label">{{localize (lookup @root.config.secondaryAttributes key)}}</div>
+            {{!-- Speed shows its hard cap (Hranice Rychlosti, armor lowers it). --}}
+            {{#if (eq key "spd")}}{{#if attribute.max}}
+            <div class="stat-box-value stat-box-value--ratio">{{attribute.total}}<span class="stat-box-max">/ {{attribute.max}}</span></div>
+            {{else}}
             <div class="stat-box-value">{{attribute.total}}</div>
+            {{/if}}{{else}}
+            <div class="stat-box-value">{{attribute.total}}</div>
+            {{/if}}
           </div>
           {{/each}}
         </div>

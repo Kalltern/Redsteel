@@ -397,6 +397,7 @@ export const SPEC_NODE_PRICES = {
     ochranaVolna: node(20, 0, [rank("doctrines", "shieldbearer", 8)], 1), // Štítonoš VIII
     protiutokZasah: node(15, 0, [{ t: "anyOf", options: [rank("weaponSkills", "swords", 10), rank("weaponSkills", "blunt", 10), rank("weaponSkills", "axes", 10), rank("weaponSkills", "polearms", 10)] }]), // M/T/S/D X
     vylObrneni: node(20, 0, [rank("doctrines", "shieldbearer", 10)]), // Štítonoš X
+    opakovaniKrytu: node(5), // r661 sixth cell: 5 CP, no rank clause
   },
   champion: {
     stredniZbran: node(5, 0, [], 1),

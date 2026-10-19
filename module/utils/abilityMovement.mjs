@@ -56,6 +56,7 @@ import {
 } from "./actionTracker.mjs";
 import { isReactionAbility } from "./opportunityAttacks.mjs";
 import { duelistsAdvanceOpponent } from "./swordDancer.mjs";
+import { vanguardChargeBudget } from "./vanguard.mjs";
 import {
   engagingEnemyIds,
   movementBudget,
@@ -273,20 +274,32 @@ export function chargeWouldDeclare(actor) {
  * @param {Actor} actor
  * @param {Item|null} [ability]  the charge picked; its swing is what the
  *   strip's check button launches at the end of the move
+ * @param {{bullCharge?: boolean}} [options]  Předvoj → Rozražení ticked
+ *   (and paid) with it: the approach may run through and around enemies
+ *   (bullCharge.mjs). The one targeted token is kept as the charge's
+ *   target, which the approach never contests "around".
  * @returns {Promise<boolean>} True when the move was declared and the attack
  *   must wait; false when the attack should go ahead now (out of a tracked
  *   turn, no token, or the turn's movement is already taken, which includes
  *   a Charge move declared earlier).
  */
-export async function declareChargeMove(actor, ability = null) {
+export async function declareChargeMove(
+  actor,
+  ability = null,
+  { bullCharge = false } = {},
+) {
   if (!chargeWouldDeclare(actor)) return false;
   const token = tokenForActor(actor);
+  const targets = [...(game.user?.targets ?? [])].filter((t) => t !== token);
+  const targetId = targets.length === 1 ? targets[0].id : null;
   await lockMovement(actor, {
     mode: "charge",
-    budget: movementBudget(actor, "charge"),
+    // Předvoj → Zteč: Pohyb +50% / +100% (vanguard.mjs).
+    budget: vanguardChargeBudget(actor, movementBudget(actor, "charge")),
     startSpent: tokenMovementSpent(token),
     charge: 0,
-    launch: ability?.id ? { abilityId: ability.id } : null,
+    launch: ability?.id ? { abilityId: ability.id, targetId } : null,
+    bullCharge,
   });
   return true;
 }

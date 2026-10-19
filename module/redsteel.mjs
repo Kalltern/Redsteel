@@ -56,6 +56,11 @@ import { registerCombatAutoSelect } from "./utils/combatAutoSelect.mjs";
 import { registerTempHealthGrant } from "./utils/tempHealthGrant.mjs";
 import { registerFinalStrikeAimButton } from "./utils/swordDancer.mjs";
 import { BANE_REROLL_TOKEN, rollIsAgainstBane } from "./utils/grimm.mjs";
+import {
+  isVanguardStrengthReroll,
+  payVanguardStrengthReroll,
+  vanguardStrengthRerollOption,
+} from "./utils/vanguard.mjs";
 import { registerAdvantageousManeuver } from "./utils/advantageousManeuver.mjs";
 import { registerRedsteelHotbar } from "./utils/redsteelHotbar.mjs";
 import { registerChatCardCollapse } from "./utils/chatCardCollapse.mjs";
@@ -99,6 +104,9 @@ import {
 import { registerOverwhelmHooks } from "./utils/overwhelm.mjs";
 import { registerChampionHooks } from "./utils/champion.mjs";
 import { registerHopliteHooks } from "./utils/hoplite.mjs";
+import { registerShieldStrainHooks } from "./utils/shieldStrain.mjs";
+import { registerProtectionHooks } from "./utils/protection.mjs";
+import { registerArmoringHooks } from "./utils/armoring.mjs";
 import {
   getActionPools,
   getSpent,
@@ -110,6 +118,7 @@ import {
 } from "./utils/actionTracker.mjs";
 import { registerMovementZoneHooks } from "./utils/movementZones.mjs";
 import { registerAllyPassage } from "./utils/allyPassage.mjs";
+import { registerBullChargeHooks } from "./utils/bullCharge.mjs";
 import { registerForcedMovement } from "./utils/forcedMovement.mjs";
 import { registerTrade } from "./utils/trade.mjs";
 import { registerImpaleFollowupHooks } from "./utils/impaleFollowup.mjs";
@@ -546,8 +555,16 @@ Hooks.once("init", function () {
   registerOverwhelmHooks();
   registerChampionHooks();
   registerHopliteHooks();
+  // Warden batch 1: shield strain on a held Cover, Protection (Guard) on an
+  // adjacent ally, Armoring's GM relay.
+  registerShieldStrainHooks();
+  registerProtectionHooks();
+  registerArmoringHooks();
   registerActionTrackerHooks();
   registerMovementZoneHooks();
+  // Předvoj → Rozražení: its preMoveToken hook must run before
+  // allyPassage.mjs's (bullCharge.mjs, "ORDER OF EVENTS").
+  registerBullChargeHooks();
   registerAllyPassage();
   registerForcedMovement();
   registerTrade();
@@ -2167,6 +2184,13 @@ async function handleRerollClick(message, { rerun = null } = {}) {
   const eligible = getEligibleRerolls(actor, tokens, {
     critFailure: wasCritFailure,
   });
+  // Předvoj → Za 5 výdrže může opakovat hod na bojový Test Síly: one more
+  // choice on a combat Strength Test, paid in Stamina, never used up
+  // (vanguard.mjs).
+  const strengthReroll = vanguardStrengthRerollOption(actor, message, {
+    critFailure: wasCritFailure,
+  });
+  if (strengthReroll) eligible.push(strengthReroll);
   if (!eligible.length) {
     ui.notifications.info(
       wasCritFailure
@@ -2180,6 +2204,19 @@ async function handleRerollClick(message, { rerun = null } = {}) {
   if (eligible.length > 1) {
     chosen = await pickRerollPool(eligible);
     if (!chosen) return false; // cancelled
+  }
+
+  // The Stamina reroll has no charge to spend, nothing for Combat Master to
+  // give back and nothing for the calendar to refresh.
+  if (isVanguardStrengthReroll(chosen)) {
+    if (!(await payVanguardStrengthReroll(actor))) return false;
+    if (rerun) {
+      const created = await rerun(chosen.label);
+      await markRerolledAway(message, created);
+    } else {
+      await executeReroll(message, chosen.label);
+    }
+    return true;
   }
 
   const spent = await consumeReroll(actor, chosen.itemId, chosen.poolIndex, {

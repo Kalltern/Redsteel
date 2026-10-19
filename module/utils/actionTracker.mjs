@@ -173,6 +173,9 @@ function normaliseFreeAbility(grant) {
     targetId:
       typeof grant.targetId === "string" && grant.targetId ? grant.targetId : null,
     turn: Number(grant.turn),
+    // Předvoj → Momentum: Speciální akce (momentum.mjs): this grant and the
+    // free Attack are one extra attack, so spending either spends both.
+    pairedAttack: !!grant.pairedAttack,
   };
 }
 
@@ -195,6 +198,13 @@ function normaliseLock(lock) {
     // Charge Defense (Hoplite) ended this movement early: a stopped Charge
     // may not swing (combatAbilities.mjs refuses it).
     stopped: !!lock.stopped,
+    // Předvoj → Rozražení (bullCharge.mjs): a charge approach that may run
+    // through and around enemies, and the enemy token ids already contested
+    // on it (never twice in one charge).
+    bullCharge: !!lock.bullCharge,
+    contested: Array.isArray(lock.contested)
+      ? lock.contested.filter((id) => typeof id === "string" && id)
+      : [],
     bonus: !!lock.bonus,
     resume: lock.bonus ? normaliseLock(lock.resume) : null,
     resumeMoved: !!lock.resumeMoved,
@@ -404,6 +414,7 @@ export async function lockMovement(
     ignore = [],
     exempt = [],
     launch = null,
+    bullCharge = false,
   },
 ) {
   if (!trackedCombat(actor)) return;
@@ -420,6 +431,31 @@ export async function lockMovement(
       exempt: Array.isArray(exempt) ? exempt : [],
       // A Charge: which charge ability the strip's check button swings.
       launch,
+      // A Charge with Rozražení ticked (bullCharge.mjs).
+      bullCharge: !!bullCharge,
+      contested: [],
+    },
+  });
+}
+
+/**
+ * Předvoj → Rozražení: note enemies a Bull Charge has contested, so
+ * the same charge never contests them again (bullCharge.mjs). Only on the
+ * round's charge lock; a no-op on anything else.
+ *
+ * @param {Actor} actor
+ * @param {string[]} tokenIds
+ */
+export async function noteBullChargeContested(actor, tokenIds = []) {
+  if (!trackedCombat(actor) || !tokenIds.length) return;
+  const spent = getSpent(actor);
+  const lock = spent.movement;
+  if (!lock || lock.mode !== "charge" || lock.bonus) return;
+  await writeSpent(actor, {
+    ...spent,
+    movement: {
+      ...lock,
+      contested: [...new Set([...(lock.contested ?? []), ...tokenIds])],
     },
   });
 }
@@ -744,7 +780,12 @@ export async function spendForItems(actor, items) {
   }
   if (freeRiposte) await markFreeRiposteUsed(actor);
   if (freeAbilityUsed) {
-    await writeSpent(actor, { ...getSpent(actor), freeAbility: null });
+    await writeSpent(actor, {
+      ...getSpent(actor),
+      freeAbility: null,
+      // A paired grant (Momentum's extra attack) was the free Attack too.
+      ...(freeAbility.pairedAttack ? { freeAttack: null } : {}),
+    });
   }
   await spend(actor, { actions, reactions });
 }
@@ -792,15 +833,26 @@ export async function grantFreeAttack(actor, targetId) {
  * it, for the rest of the combat turn it was granted in. Consumed by
  * spendForItems (so through deductAbilityCost); the ability's Stamina is
  * still paid. One grant at a time: a new one replaces the old. `targetId` is
- * a hint only. Does not touch grantFreeAttack's token.
+ * a hint only. Does not touch grantFreeAttack's token, unless `pairedAttack`
+ * is set: then the grant and the free Attack are one extra attack (Předvoj,
+ * Momentum: Speciální akce, momentum.mjs), and spending either one clears
+ * the other (spendForItems, consumeFreeAttack).
  *
  * @param {Actor} actor
- * @param {{keys: string[], targetId?: string|null}} grant
+ * @param {{keys: string[], targetId?: string|null, pairedAttack?: boolean}} grant
  * @returns {Promise<boolean>} whether it was granted
  */
-export async function grantFreeAbility(actor, { keys = [], targetId = null } = {}) {
+export async function grantFreeAbility(
+  actor,
+  { keys = [], targetId = null, pairedAttack = false } = {},
+) {
   const combat = trackedCombat(actor);
-  const grant = normaliseFreeAbility({ keys, targetId, turn: combat?.turn });
+  const grant = normaliseFreeAbility({
+    keys,
+    targetId,
+    turn: combat?.turn,
+    pairedAttack,
+  });
   if (!combat || !grant) return false;
   await writeSpent(actor, { ...getSpent(actor), freeAbility: grant });
   return true;
@@ -819,11 +871,18 @@ export function liveFreeAbility(actor) {
   return grant;
 }
 
-/** Spend the free Attack if one is held. True when it was. */
+/**
+ * Spend the free Attack if one is held. True when it was. A free-ability
+ * grant paired with it (Momentum: Speciální akce) goes with it.
+ */
 async function consumeFreeAttack(actor) {
   const spent = getSpent(actor);
   if (!spent.freeAttack || !isTrackedTurn(actor)) return false;
-  await writeSpent(actor, { ...spent, freeAttack: null });
+  await writeSpent(actor, {
+    ...spent,
+    freeAttack: null,
+    ...(spent.freeAbility?.pairedAttack ? { freeAbility: null } : {}),
+  });
   return true;
 }
 

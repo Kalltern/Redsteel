@@ -270,7 +270,7 @@ export class RedsteelActiveEffect extends ActiveEffect {
       for (const status of entry.statuses) {
         gateChanges.push({
           key: `system.effectMods.${status}.immune`,
-          mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+          type: "add",
           value: true,
         });
       }
@@ -1004,7 +1004,7 @@ export class RedsteelActiveEffect extends ActiveEffect {
 
       changes.push({
         key: "system.secondaryAttributes.ini.bonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -penalty,
       });
     }
@@ -1170,7 +1170,7 @@ export class RedsteelActiveEffect extends ActiveEffect {
       // e.g. weaken the target's global bonus by the caster's full SK.
       changes.push({
         key: "system.globalBonus",
-        mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES.ADD,
+        type: "add",
         value: -sk, // swap for -halfSk / -doubleSk as the rule dictates
       });
 
