@@ -588,7 +588,58 @@ const CODE_AUTOMATED_NODES = {
     "rozrazeni",
   ],
   // (oddechMireni on skirmisher and sharpshooter: see swordDancer.)
-  skirmisher: ["utokSPohybem", "oddechMireni"],
+  // prezbrojeni is utils/rearm.mjs rearmFreeStaminaCost: Re-arm as a Free
+  // action costs 6 Stamina instead of 12 (the Re-arm picker, useRearm).
+  // mireniPohyb is utils/aim.mjs keepsAimWhileMoving: breakAimOnAction skips
+  // movement actions (Move, Slow Movement, Sprint, Disengage, charged from
+  // utils/actionTracker.mjs), and checkAimRange skips the aimer's own move.
+  // utils/skirmisher.mjs holds the rest (harcovnikuvUm is the `auto` rank
+  // mirror in helpers/rankMirrors.mjs, painted by the SPEC_MIRRORS loop
+  // below): kryciPostoj is the Covering Stance item (utils/abilityGrants.mjs,
+  // `covering_stance` in helpers/config.mjs), its Cover chip
+  // (utils/actionSuggestions.mjs coverChips), the step and the free Guard
+  // (useCoverStep / completeCoverStep, utils/protection.mjs startProtection);
+  // odvetnyVrh is Retaliatory Throw (granted; half damage, thrown weapons and
+  // the "retaliation" tag in utils/combatAbilities.mjs runAttackMacro, the
+  // chip in utils/actionSuggestions.mjs, Aim-neutral in utils/aim.mjs);
+  // navazujiciVrh is Follow-up Throw (offerFollowUpThrow from
+  // utils/applyDamage.mjs, useFollowUpThrow); mireniPoVrhu and pohybPoVrhu
+  // are onThrowCard (a createChatMessage hook) with the Slow Movement chip;
+  // presnyVystrel is the Accurate Shot (Skirmisher) item granted in
+  // utils/abilityGrants.mjs; lehkaZbroj is lightArmorRestBonus, read by
+  // utils/combatAbilities.mjs, utils/otherActions.mjs, utils/veteranRest.mjs
+  // and utils/dragonSleep.mjs; vrhSRozbehem is runUpBudget and
+  // runUpThrowBonus (the run itself is declared by utils/combatAbilities.mjs
+  // and launched by utils/redsteelHotbar.mjs); zbesilyVrh is
+  // frenziedThrowStrain, summed in utils/combatSkillBonuses.mjs
+  // getEffectRolls. zmrzacujiciVystrel (the 50% `immobilized` roll on a
+  // Crippling Shot) and vylZmrzacujici (the Improved Crippling Shot modifier,
+  // granted in utils/abilityGrants.mjs) are cripplingShotEffects, fed into
+  // getEffectRolls; the `crippled` Speed halving is documents/actor.mjs
+  // _crippledSpeed, the turn order part documents/combat.mjs rollInitiative.
+  skirmisher: [
+    "utokSPohybem",
+    "oddechMireni",
+    "prezbrojeni",
+    "mireniPohyb",
+    "kryciPostoj",
+    "odvetnyVrh",
+    "navazujiciVrh",
+    "mireniPoVrhu",
+    "pohybPoVrhu",
+    "presnyVystrel",
+    "lehkaZbroj",
+    "vrhSRozbehem",
+    "zbesilyVrh",
+    "zmrzacujiciVystrel",
+    "vylZmrzacujici",
+  ],
+  // utils/rearm.mjs — prezbrojeni: Re-arm's Free action at 6 Stamina
+  // (rearmFreeStaminaCost, shared with the Skirmisher node). vylPrezbrojeni:
+  // Improved Sudden Re-arm, granted in utils/abilityGrants.mjs in place of
+  // Sudden Re-arm and run by useSuddenRearm with no Speed contest; offered on
+  // the hotbar by utils/actionSuggestions.mjs suddenRearmChips.
+  ranger: ["prezbrojeni", "vylPrezbrojeni"],
   sharpshooter: ["oddechMireni"],
   // utils/aim.mjs — duelistuvPostoj is the stance itself (one-handed sword,
   // off hand free or holding a fencing dagger), which aimPerks tests as `blade`

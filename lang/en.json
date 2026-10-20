@@ -18,6 +18,47 @@
       "NoAimTarget": "No enemy within reach to aim at.",
       "PickPrompt": "Gain Aim on which enemy within reach?"
     },
+    "Skirmisher": {
+      "AimAfterThrow": "{name} gains 1 Aim on {target} after the throw ({after} in total).",
+      "ThrowSlowLabel": "Slow Movement after the throw",
+      "ThrowSlowHint": "After a throw a Slow Movement is allowed even after moving. It costs its Action.",
+      "CoverLabel": "Cover {ally}",
+      "CoverHint": "{attacker} shoots at {ally}: spend your Reaction, move up to your Speed to stand next to {ally}, then Guard them as a Free action.",
+      "CoverStarted": "{name} moves to cover {ally}. Finish the move next to {ally} and confirm it to take Guard.",
+      "CoverNotAdjacent": "{name} did not end next to {ally}: no Guard.",
+      "FollowUpPrompt": "Re-arm to which thrown weapon?",
+      "FollowUpConfirm": "Re-arm and throw ({cost} Stamina)",
+      "FollowUpKeep": "Keep the weapon in hand",
+      "FollowUpNoThrown": "Follow-up Throw needs a thrown weapon.",
+      "FollowUpReady": "{name} re-arms to {weapon}: the next Attack this turn is a Free action.",
+      "FollowUpReadyKeep": "{name} keeps {weapon} in hand: the next Attack this turn is a Free action.",
+      "RetaliatoryNoThrown": "Retaliatory Throw needs a thrown weapon.",
+      "RetaliatoryHintFull": "Your Cover against {attacker} held: the throw deals full damage.",
+      "RetaliatoryHintHalf": "Your Cover against {attacker} failed: the throw deals half damage.",
+      "RunUpTooShort": "Run Up Throw needs a run of at least {min} hexes; the run covered {walked}.",
+      "LightArmorRest": "Light armor: {name} recovers {amount} more Stamina from the Rest."
+    },
+    "Rearm": {
+      "Title": "Re-arm",
+      "Prompt": "Draw which weapon into your main hand?",
+      "WeaponLabel": "Weapon",
+      "CostAction": "1 Action",
+      "CostFree": "Free action, {cost} Stamina",
+      "CostQuick": "Free action ({feature})",
+      "CharactersOnly": "Only a character with weapon sets can re-arm.",
+      "NoWeapons": "There is no other weapon to draw.",
+      "Rearmed": "{name} re-arms to {weapon} ({cost}).",
+      "SuddenNeedsTarget": "Target the attacker first.",
+      "SuddenNeedsBow": "Sudden Re-arm switches from a bow or crossbow, and neither is in your main hand.",
+      "SuddenNoWeapons": "There is no melee weapon to draw.",
+      "SuddenPrompt": "Draw which melee weapon if you are faster?",
+      "SuddenConfirm": "Re-arm (Reaction, {cost} Stamina)",
+      "SuddenVersus": "Speed Test: {name} {mine} versus {attacker} {theirs}.",
+      "SuddenWin": "{name} is faster and draws {weapon} before the blow lands.",
+      "SuddenLose": "{attacker} is faster: {name} still holds {old}.",
+      "ImprovedRearmed": "{name} switches to {weapon} at once, with no Speed Test.",
+      "SuddenHint": "Attacked by {attacker}: switch weapons before the blow lands."
+    },
     "Hoplite": {
       "DaringThrowAdjacent": "Daring Throw cannot be used while an enemy stands next to you.",
       "DaringThrowNoSpear": "Daring Throw needs a spear, trident or javelin to throw.",
@@ -236,6 +277,8 @@
       },
       "Suggest": {
         "Move": "Move",
+        "CoverStep": "Cover step",
+        "RunUp": "Run Up",
         "SlowMove": "Slow Movement",
         "Sprint": "Sprint",
         "Disengage": "Disengage",
@@ -1052,7 +1095,7 @@
             },
             "oddechMireni": {
               "label": "Respite: Aim +1",
-              "description": "15 CP; Meče V. Every Rest also grants one Aim: on the target already aimed at, otherwise on the targeted enemy. The Rest action, Veteran's free Rest and the Rests Dragon Sleep buys all count. Automated."
+              "description": "15 CP; Meče V. Every Rest also grants one Aim, added to the stacks already held on the aimed target (a Rest does not lose the Aim), otherwise on the targeted enemy. The Rest action, Veteran's free Rest and the Rests Dragon Sleep buys all count. Automated."
             },
             "akrobatickeOdpoutani": {
               "label": "Acrobatic Disengage",
@@ -1190,7 +1233,7 @@
               "description": "10 CP. Manual — resolved at the table."
             },
             "pevnaVule": {
-              "label": "Iron Will",
+              "label": "Strong Will",
               "description": "10 CP; Doktrína VI. Manual — resolved at the table."
             },
             "zbesilyUtokPostih": {
@@ -1519,19 +1562,19 @@
           "nodes": {
             "harcovnikuvUm": {
               "label": "Skirmisher's Craft",
-              "description": "10 CP. Manual — resolved at the table."
+              "description": "10 CP. Every rank of Shieldbearer also counts as a rank of Peltast: the Peltast rank follows Shieldbearer for free, with all its actions and bonuses. Peltast ranks already paid for are kept. Automated."
             },
             "kryciPostoj": {
               "label": "Covering Stance",
-              "description": "5 CP; Štítonoš II. Manual — resolved at the table."
+              "description": "5 CP; Štítonoš II. Grants Covering Stance. While it holds, an enemy shot at an ally offers a Cover chip: the Reaction buys a move of up to Speed hexes that must end next to the ally, then Guard on that ally for free, so the Protect button on the attack card answers the shot with Cover. Automated."
             },
             "odvetnyVrh": {
               "label": "Retaliatory Throw",
-              "description": "10 CP; Štítonoš V. Manual — resolved at the table."
+              "description": "10 CP; Štítonoš V. Grants Retaliatory Throw: after a Cover, a Reaction throw at the attacker for full damage (Cover held) or half (Cover failed). Thrown weapons only, no Aim interaction. Automated."
             },
             "navazujiciVrh": {
               "label": "Follow-up Throw",
-              "description": "10 CP. Manual — resolved at the table."
+              "description": "10 CP. Grants Follow-up Throw: after a kill, re-arm to a thrown weapon for free, and the next Attack this turn is a Free action. Automated."
             },
             "vrh5": {
               "label": "Throwing +5%",
@@ -1539,31 +1582,31 @@
             },
             "prezbrojeni": {
               "label": "Re-arm: -6 Stamina",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Re-arm as a Free action costs 6 Stamina instead of 12. Automated."
             },
             "mireniPohyb": {
               "label": "Keeps Aim while moving",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Moving (Move, Slow Movement, Sprint, Disengage) does not lose a normal Aim, nor does walking out of the target's reach. Automated."
             },
             "oddechMireni": {
               "label": "Respite: Aim +1",
-              "description": "10 CP. Every Rest also grants one Aim: on the target already aimed at, otherwise on the targeted enemy. The Rest action, Veteran's free Rest and the Rests Dragon Sleep buys all count. Automated."
+              "description": "10 CP. Every Rest also grants one Aim, added to the stacks already held on the aimed target (a Rest does not lose the Aim), otherwise on the targeted enemy. The Rest action, Veteran's free Rest and the Rests Dragon Sleep buys all count. Automated."
             },
             "mireniPoVrhu": {
               "label": "Gains one Aim after a throw",
-              "description": "10 CP; Štítonoš IV. Manual — resolved at the table."
+              "description": "10 CP; Štítonoš IV. Every throw with a single target adds one Aim on it. Automated."
             },
             "pohybPoVrhu": {
               "label": "May Slow Move after a throw",
-              "description": "10 CP. Manual — resolved at the table."
+              "description": "10 CP. After a throw on your turn, a Slow Movement is allowed even after moving, offered on the hotbar. It still costs its Action. Automated."
             },
             "presnyVystrel": {
               "label": "Precise Shot: -1 action, -5 Stamina",
-              "description": "10 CP; Štítonoš VIII. Manual — resolved at the table."
+              "description": "10 CP; Štítonoš VIII. Accurate Shot costs 1 Action and 3 Stamina (the Skirmisher's own copy replaces it). Automated."
             },
             "lehkaZbroj": {
               "label": "Light armor: Respite restores +1 Stamina",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. In light armor (the topmost layer), every Rest restores 1 more Stamina: the Rest action, the Rest macro, Veteran's free Rest and the Rests Dragon Sleep buys. Automated."
             },
             "bleedStun": {
               "label": "Bleed +20% / Stagger +15%",
@@ -1579,15 +1622,15 @@
             },
             "zmrzacujiciVystrel": {
               "label": "Crippling Shot: 50% to stop movement",
-              "description": "10 CP; Štítonoš VI. Manual — resolved at the table."
+              "description": "10 CP; Štítonoš VI. A Crippling Shot that hits also has a 50% chance to Immobilize the target (Speed 0 until the end of its next turn), rolled on the attack card. Automated."
             },
             "vylZmrzacujici": {
               "label": "Improved Crippling Shot",
-              "description": "10 CP; Štítonoš VIII. Manual — resolved at the table."
+              "description": "10 CP; Štítonoš VIII. Grants Improved Crippling Shot, a modifier for attacks, retaliations and Opportunity Attacks: on a hit, Crippled (Speed halved rounded up, Dodge -20%, three turns) and a 50% chance to Immobilize. Automated."
             },
             "vrhSRozbehem": {
               "label": "Run Up Throw: Move +50%, Impact +1d6",
-              "description": "5 CP; Štítonoš IV. Manual — resolved at the table."
+              "description": "5 CP; Štítonoš IV. Run Up Throw's run is Speed x1.5 and the throw gains Breakthrough +1d6. Automated."
             },
             "utokSPohybem": {
               "label": "Passing Strike",
@@ -1595,7 +1638,7 @@
             },
             "zbesilyVrh": {
               "label": "Frenzied Throw: Shield strain +25%",
-              "description": "5 CP; Štítonoš V. Manual — resolved at the table."
+              "description": "5 CP; Štítonoš V. Frenzied Throw carries shield strain +25%. Automated."
             }
           }
         },
@@ -1696,11 +1739,11 @@
             },
             "prezbrojeni": {
               "label": "Re-arm: -6 Stamina",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Re-arm as a Free action costs 6 Stamina instead of 12. Automated."
             },
             "vylPrezbrojeni": {
               "label": "Improved Sudden Re-arm",
-              "description": "10 CP. Manual — resolved at the table."
+              "description": "10 CP. Improved Sudden Re-arm replaces Sudden Re-arm: when attacked, a Reaction for 2 Stamina switches any held weapon for another, with no Speed Test. Automated."
             }
           }
         },
@@ -1827,7 +1870,7 @@
             },
             "oddechMireni": {
               "label": "Respite: Aim +1",
-              "description": "10 CP; Lukostřelec/Kušník V. Every Rest also grants one Aim: on the target already aimed at, otherwise on the targeted enemy. The Rest action, Veteran's free Rest and the Rests Dragon Sleep buys all count. Automated."
+              "description": "10 CP; Lukostřelec/Kušník V. Every Rest also grants one Aim, added to the stacks already held on the aimed target (a Rest does not lose the Aim), otherwise on the targeted enemy. The Rest action, Veteran's free Rest and the Rests Dragon Sleep buys all count. Automated."
             },
             "odvetnyVystrel": {
               "label": "Retaliatory Shot",
@@ -6037,6 +6080,7 @@
       "possessed": "Possessed"
     },
     "EffectDesc": {
+      "covering_stance": "While it holds, an enemy shot at an ally offers a Cover reaction: a move of up to Speed hexes that ends next to the ally, then Guard on them as a Free action. Must be held from the hotbar on each of the bearer's turns (1 Action, 1 Stamina).",
       "stagger": "-10% on every test. Cannot make opportunity attacks. Lasts 2 turns, and Stun or Paralyze replace it.",
       "bleed": "Deals 1d4 damage per stack when applied and again at the start of every round. Stacks up to 6 times.",
       "burn": "Deals 3d6 damage when applied and again at the start of every round until removed. The first tick also calls a Resolve test, and a failure causes Panic.",
@@ -6094,7 +6138,9 @@
       "prone": "-20% to Combat, Defense and Cover and -25% Dodge. Holds the bearer at initiative 1 while it lasts.",
       "dying": "Applied at 0 Health. A hidden countdown of rounds (the higher of 2d4) ticks down at every round start, and when it runs out the character bleeds out. Stabilising or healing above 0 Health ends it and leaves +1 Grave Wound.",
       "downed": "Applied with Dying at 0 Health. Loses half the current Mind (rounded up) and falls to initiative 1, and at 0 Mind becomes Incapacitated. Ends once an Endurance or Will test is passed and Health is above 0.",
-      "crippled": "-20% Dodge. Lasts 3 turns.",
+      "crippled": "Speed is halved, rounded up, and -20% Dodge. Lasts through the next three turns.",
+      "crippled_initiative": "Turn order drops to 1 for the next round.",
+      "immobilized": "Speed is 0: no movement at all. Lasts until the end of the next turn.",
       "fatigued": "Stamina is at 0. -5% on every test, Speed is halved and one action is lost (at least one remains). Ends when Stamina rises above 0.",
       "toxic_shock": "Toxicity is above its maximum. When applied and at the start of every round, deals 25 damage that ignores armor, and a failed Endurance test at -40% causes Stun. Ends when Toxicity falls back to its maximum.",
       "corrupted": "Corruption degree 2 or higher (61+). The character counts as Corrupted, and defense rolls carry a reminder for Light and miracle effects. Synced automatically with Corruption.",
@@ -6443,6 +6489,8 @@
       "type3": "Extra Effect Type 3",
       "Name": {
         "shield_strain": "Shield Strain",
+        "crippled_initiative": "Crippled Turn Order",
+        "immobilized": "Immobilized",
         "protected_by": "Protected"
       }
     },
@@ -7897,6 +7945,30 @@
       },
       "Reload": {
         "name": "Reload"
+      },
+      "CoveringStance": {
+        "name": "Covering Stance"
+      },
+      "RetaliatoryThrow": {
+        "name": "Retaliatory Throw"
+      },
+      "FollowUpThrow": {
+        "name": "Follow-up Throw"
+      },
+      "AccurateShotSkirmisher": {
+        "name": "Accurate Shot (Skirmisher)"
+      },
+      "ImprovedCripplingShot": {
+        "name": "Improved Crippling Shot"
+      },
+      "Rearm": {
+        "name": "Re-arm"
+      },
+      "SuddenRearm": {
+        "name": "Sudden Re-arm"
+      },
+      "ImprovedSuddenRearm": {
+        "name": "Improved Sudden Re-arm"
       },
       "Rest": {
         "name": "Rest"

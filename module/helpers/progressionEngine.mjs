@@ -1974,6 +1974,7 @@ export function getMirrorSources(actor, specId = null) {
         from: def.from,
         choices: [...def.choices],
         skill: def.choices.includes(picked) ? picked : null,
+        auto: !!def.auto,
       });
     }
   }
@@ -2046,16 +2047,35 @@ export async function setMirrorChoice(actor, sourceId, skill) {
  * Keep every picked mirror in step: its track at the higher of its own ranks
  * and the source's rank while the node holds, and back at its own ranks with
  * the pick dropped once the node is locked or the specialisation is gone.
+ * An `auto` mirror is picked here the first time its node is found unlocked,
+ * keeping the ranks already paid for as `own`, exactly as a hand pick would.
  * Writes only what differs, so its own update finds nothing left to do.
  */
 export async function syncSkillMirrors(actor) {
-  const stored = actor?.system?.progression?.skillMirrors;
-  if (!stored) return;
+  if (actor?.type !== "character") return;
+  const stored = actor.system?.progression?.skillMirrors ?? {};
   const update = {};
   for (const [spec, nodes] of Object.entries(SPEC_MIRRORS)) {
     for (const [node, def] of Object.entries(nodes)) {
       const id = `spec-${spec}-${node}`;
       const record = stored[id];
+      if (
+        def.auto &&
+        !def.choices.includes(record?.skill) &&
+        actorHasSpecNode(actor, spec, node)
+      ) {
+        const skill = def.choices[0];
+        const own = getTrackRank(actor, def.group, skill);
+        const rank = Math.max(own, getTrackRank(actor, def.group, def.from));
+        const path = `system.${def.group}.${skill}`;
+        if (rank !== own) update[`${path}.value`] = rank;
+        // An untrained track is hidden on the sheet; the copy trains it.
+        if (rank > 0 && actor.system?.[def.group]?.[skill]?.visible === false) {
+          update[`${path}.visible`] = true;
+        }
+        update[`system.progression.skillMirrors.${id}`] = { skill, own };
+        continue;
+      }
       if (!record?.skill || !def.choices.includes(record.skill)) continue;
       const own = Number(record.own) || 0;
       const held = getTrackRank(actor, def.group, record.skill);

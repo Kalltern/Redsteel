@@ -69,6 +69,7 @@ const A = (id) => `Compendium.redsteel.redsteel-items.Item.${id}`;
  * ----------------------------------------------------------------------- */
 const ABILITY = {
   ACCURATE_SHOT: A("buuxxJT0wA3vKJNg"), // Přesný výstřel
+  ACCURATE_SHOT_SKIRMISHER: A("aCcShotSkirm0001"), // Přesný výstřel: -1 akce a -5 Výdrže (Harcovník)
   ACROBATIC_DISENGAGE: A("aCroDisengage001"), // Akrobatické odpoutání
   ADVANCE: A("aDvance000000001"), // Postup
   ARMORING: A("aRmoring00000001"), // Obrnění
@@ -91,6 +92,7 @@ const ABILITY = {
   COMMAND_OPENING: A("cOmmandOpening01"), // Velení: Příležitostný útok reakcí
   COMMAND_MARK: A("cOmmandMark00001"), // Velení: Označení cíle
   COUNTERATTACK: A("JltGA0Wsv6ttCUT6"), // Protiútok
+  COVERING_STANCE: A("cOveringStance01"), // Krycí postoj (Harcovník)
   CRIPPLING_SHOT: A("9WR4lbdssYQVdLoH"), // Zmrzačující výstřel
   CUNNING_STRIKE: A("cUnningStrike001"), // Vypočítavý útok
   DARING_THROW: A("dAringThrow00001"), // Troufalý vrh
@@ -116,6 +118,7 @@ const ABILITY = {
   FINAL_STRIKE: A("fInalThrust00001"), // Poslední výpad
   FLAMBERGE_CLEAVE: A("LVAgDFzBKadXMU4A"), // Rozseknutí flambergem
   FLURRY: A("zosOTl8qIL3DISsr"), // Smršť útoků
+  FOLLOW_UP_THROW: A("fOllowUpThrow001"), // Navazující vrh (Harcovník)
   FORCEFUL_ADVANCE: A("fOrcefulAdvance1"), // Rázný postup
   FUSCINA_ICTUS: A("fUsCinaIctus0001"), // Fuscina Ictus, trojzubec
   FLURRY_OF_THROWS: A("rWVInSjYveJyVonf"), // Vícenásobný vrh
@@ -128,6 +131,7 @@ const ABILITY = {
   IMPALE: A("1xrf1lG6yXNgqXRC"), // Nabodnutí
   IMPROVED_ARMORING: A("iMpArmoring00001"), // Vylepšené obrnění
   IMPROVED_BRILLIANT_COUNTER: A("iMpBrilCount0001"), // Vylepšený brilantní protiútok
+  IMPROVED_CRIPPLING_SHOT: A("iMpCrippling0001"), // Vylepšený zmrzačující výstřel (modifier)
   IMPROVED_BRILLIANT_COUNTER_SURPRISE: A("iMpBrilCountS001"), // Vylepšený brilantní protiútok, za 10 výdrže
   IMPROVED_CHARGE: A("iMprovedCharge01"), // Zteč +1d4 (Služebník meče)
   IMPROVED_DEFENSIVE_STANCE: A("iMpDefStance0001"), // Vylepšený obranný postoj
@@ -145,6 +149,7 @@ const ABILITY = {
   IMPROVED_RETALIATORY_STRIKE: A("iMpRetalStrike01"), // Vylepšený odvetný úder
   IMPROVED_SPLINTERING_STRIKE: A("iMpSplinter00001"), // Vylepšené rozštěpení
   IMPROVED_STAGGERING_BLOW: A("iMpStagger000001"), // Vylepšený omračující úder
+  IMPROVED_SUDDEN_REARM: A("iMpSuddenRearm01"), // Vylepšené náhlé přezbrojení
   IMPROVED_TRIP_DEX: A("iMpTripDex000001"), // Vylepšené podseknutí
   IMPROVED_TRIP_STR: A("iMpTripStr000001"), // Vylepšené podseknutí
   KNOCKDOWN: A("8soGfxXTgjjWZlMq"), // Povalení
@@ -175,8 +180,10 @@ const ABILITY = {
   RECKLESS_STRIKE_REAVER: A("0YDsI6HYQ31hAWHp"), // Zběsilý útok, Plenitel
   REFINED_PERFECT_OPENING: A("rEfPerfOpen00001"), // Rafinovaný manévr (vylepšený), 2 akce
   REFINED_PERFECT_OPENING_HASTENED: A("rEfPerfOpenH0001"), // Rafinovaný manévr (vylepšený), 1 akce
+  REARM: A("rEarm00000000001"), // Přezbrojení
   REST: A("r0zKDZ0Zs2bMiUAu"), // Odpočinek
   RETALIATORY_STRIKE: A("qaPermZFuHuTg5ni"), // Odvetný úder
+  RETALIATORY_THROW: A("rEtalThrow000001"), // Odvetný vrh (Harcovník)
   RIPOSTE: A("WX6uJeqZAqeyykJa"), // Riposta
   RUN_UP_THROW: A("wNvzvMB5p69CON5c"), // Vrh s rozběhem
   SHIELD_BASH: A("6Q935yGVq7NpUIbE"), // Úder štítem
@@ -192,6 +199,7 @@ const ABILITY = {
   SPRINT: A("Xc0SM3CwS9pnT5rY"), // Sprint
   STAGGERING_BLOW: A("DFnAqroELNHfbweO"), // Omračující úder
   SUBJUGATION_I: A("sUbjugation10001"), // Podmanění I
+  SUDDEN_REARM: A("sUddenRearm00001"), // Náhlé přezbrojení
   SUBJUGATION_II: A("sUbjugation20001"), // Podmanění II
   TRIP_DEX: A("kkHN2VhkuN0wIePo"), // Podseknutí
   TRIUMPH: A("tRiumph000000001"), // Triumf
@@ -233,6 +241,8 @@ export const ABILITY_GRANTS = [
       ABILITY.REST,
       ABILITY.DEFENSIVE_STANCE,
       ABILITY.FAST_REACTION,
+      // Přezbrojení, ruzne-info.md r105 (utils/rearm.mjs).
+      ABILITY.REARM,
     ],
   },
 
@@ -549,6 +559,13 @@ export const ABILITY_GRANTS = [
     grant: [ABILITY.CRIPPLING_SHOT],
   },
   {
+    // Dovednosti r51, Lukostřelec Stupeň II: "Zmrzačující výstřel / Náhlé
+    // přezbrojení" (utils/rearm.mjs).
+    label: "Archer 2 → Sudden Re-arm",
+    when: doctrine("archer", 2),
+    grant: [ABILITY.SUDDEN_REARM],
+  },
+  {
     label: "Archer 3 → Exploit Weakness (Ranged)",
     when: doctrine("archer", 3),
     grant: [ABILITY.EXPLOIT_WEAKNESS_RANGED],
@@ -573,6 +590,12 @@ export const ABILITY_GRANTS = [
     grant: [ABILITY.EXPLOIT_WEAKNESS_RANGED],
   },
   {
+    // Dovednosti r54, Kušník Stupeň II: "Útok na slabinu / Náhlé přezbrojení".
+    label: "Arbalest 2 → Sudden Re-arm",
+    when: doctrine("arbalest", 2),
+    grant: [ABILITY.SUDDEN_REARM],
+  },
+  {
     label: "Arbalest 3 → Crippling Shot",
     when: doctrine("arbalest", 3),
     grant: [ABILITY.CRIPPLING_SHOT],
@@ -595,6 +618,12 @@ export const ABILITY_GRANTS = [
     label: "Peltast 2 → Run Up Throw",
     when: doctrine("peltast", 2),
     grant: [ABILITY.RUN_UP_THROW],
+  },
+  {
+    // Dovednosti r57, Peltast Stupeň II: "Vrh s rozběhem / Náhlé přezbrojení".
+    label: "Peltast 2 → Sudden Re-arm",
+    when: doctrine("peltast", 2),
+    grant: [ABILITY.SUDDEN_REARM],
   },
   {
     label: "Peltast 3 → Exploit Weakness",
@@ -631,6 +660,13 @@ export const ABILITY_GRANTS = [
    * Kejklíř (juggler)
    * ==================================================================== */
   {
+    // Dovednosti r60, Kejklíř Stupeň II: "Kritický zásah +3% / Náhlé
+    // přezbrojení".
+    label: "Juggler 2 → Sudden Re-arm",
+    when: doctrine("juggler", 2),
+    grant: [ABILITY.SUDDEN_REARM],
+  },
+  {
     label: "Juggler 3 → Exploit Weakness, Exploit Weakness (Throw)",
     when: doctrine("juggler", 3),
     grant: [ABILITY.EXPLOIT_WEAKNESS, ABILITY.EXPLOIT_WEAKNESS_THROW],
@@ -649,6 +685,13 @@ export const ABILITY_GRANTS = [
     label: "Juggler 9 → Flurry of Throws",
     when: doctrine("juggler", 9),
     grant: [ABILITY.FLURRY_OF_THROWS],
+  },
+  {
+    // Dovednosti r60, Kejklíř Stupeň X: "Odveta / Vylepšený zmrzačující
+    // výstřel" (utils/skirmisher.mjs cripplingShotEffects).
+    label: "Juggler 10 → Improved Crippling Shot",
+    when: doctrine("juggler", 10),
+    grant: [ABILITY.IMPROVED_CRIPPLING_SHOT],
   },
 
   /* ======================================================================
@@ -807,6 +850,48 @@ export const ABILITY_GRANTS = [
     label: "Skirmisher: Útok s pohybem → Passing Strike",
     when: specNode("skirmisher", "utokSPohybem"),
     grant: [ABILITY.PASSING_STRIKE],
+  },
+  {
+    label: "Skirmisher: Krycí postoj → Covering Stance",
+    when: specNode("skirmisher", "kryciPostoj"),
+    grant: [ABILITY.COVERING_STANCE],
+  },
+  {
+    label: "Skirmisher: Odvetný vrh → Retaliatory Throw",
+    when: specNode("skirmisher", "odvetnyVrh"),
+    grant: [ABILITY.RETALIATORY_THROW],
+  },
+  {
+    label: "Skirmisher: Vylepšený zmrzačující výstřel → Improved Crippling Shot",
+    when: specNode("skirmisher", "vylZmrzacujici"),
+    grant: [ABILITY.IMPROVED_CRIPPLING_SHOT],
+  },
+  {
+    label: "Skirmisher: Navazující vrh → Follow-up Throw",
+    when: specNode("skirmisher", "navazujiciVrh"),
+    grant: [ABILITY.FOLLOW_UP_THROW],
+  },
+  // Harcovník → "Přesný výstřel: -1 akce a -5 Výdrže" tunes Accurate Shot, so
+  // the cheaper copy stands in for it only where a doctrine grants the shot
+  // (Archer 5, Arbalest 7, Peltast 7, the same ranks as above).
+  ...[
+    ["archer", 5],
+    ["arbalest", 7],
+    ["peltast", 7],
+  ].map(([key, min]) => ({
+    label: `Skirmisher: Přesný výstřel + ${key} ${min} → Accurate Shot (Skirmisher)`,
+    when: all(specNode("skirmisher", "presnyVystrel"), doctrine(key, min)),
+    grant: [ABILITY.ACCURATE_SHOT_SKIRMISHER],
+    replaces: [ABILITY.ACCURATE_SHOT],
+  })),
+  {
+    // Hraničář → Vylepšené náhlé přezbrojení (specializace-wip.md r324): no
+    // Speed contest, any held weapon, 2 Stamina. Stands in for Sudden Re-arm
+    // from any doctrine (utils/rearm.mjs).
+    label: "Ranger: Vylepšené náhlé přezbrojení → Improved Sudden Re-arm",
+    when: specNode("ranger", "vylPrezbrojeni"),
+    grant: [ABILITY.IMPROVED_SUDDEN_REARM],
+    replaces: [ABILITY.SUDDEN_REARM],
   },
   {
     label: "School of Blood: Krvavý pakt → Blood Pact",

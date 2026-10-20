@@ -58,6 +58,7 @@ import { isSprintAbility, useUtilityAbility } from "./combatAbilities.mjs";
 import { isCharge, isQuickFeet } from "./abilityMovement.mjs";
 import { completeDuelistsAdvance } from "./swordDancer.mjs";
 import { completeHopliteAdvance, useDrawLightWeapon } from "./hoplite.mjs";
+import { completeCoverStep, useSkirmisherChip } from "./skirmisher.mjs";
 import { isReactionAbility } from "./opportunityAttacks.mjs";
 import { canTradeWith, requestTrade } from "./trade.mjs";
 import { dropStance, holdStance } from "./stances.mjs";
@@ -1213,6 +1214,7 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       overwatchShot: this._onOverwatchShot,
       overpowerSuggestion: this._onOverpower,
       drawLightWeapon: this._onDrawLightWeapon,
+      skirmisherSuggestion: this._onSkirmisherSuggestion,
       vigilantShot: this._onVigilantShot,
       escapeEffect: this._onEscapeEffect,
       applySustainSpell: this._onApplySustainSpell,
@@ -3280,6 +3282,28 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
   }
 
   /**
+   * A Skirmisher chip (skirmisher.mjs useSkirmisherChip): Covering Stance's
+   * Cover step toward an ally under fire, or the Slow Movement a throw allows.
+   *
+   * @this {Bg3Hotbar}
+   */
+  static async _onSkirmisherSuggestion(event, target) {
+    if (isRightClick(event)) return;
+    const chip = target.closest("[data-action=skirmisherSuggestion]");
+    const actor = this.actor;
+    if (!chip || !actor?.isOwner) return;
+    if (this.#suggestionBusy) return;
+    this.#suggestionBusy = true;
+    try {
+      await useSkirmisherChip(actor, { ...chip.dataset });
+    } finally {
+      setTimeout(() => {
+        this.#suggestionBusy = false;
+      }, PORTRAIT_HOLD_MS);
+    }
+  }
+
+  /**
    * Overpower (Weapon Master): reroll this actor's own die in the contest the
    * chip names and restate it (utils/overpower.mjs).
    *
@@ -3423,6 +3447,18 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
         actor.items.get(lock.launch?.abilityId) ??
         actor.items.find((i) => i.type === "ability" && isCharge(i));
       if (charge) await this.#launchAbility(charge.id);
+    }
+    // Run Up Throw's run is over: throw, at whatever the player has targeted
+    // (the run's target when the lock kept one). The dialog sees the walked
+    // run and adds its dice (skirmisher.mjs).
+    if (lock?.mode === "runUp" && !lock.done && lock.launch?.abilityId) {
+      await this.#launchAbility(lock.launch.abilityId, {
+        targetId: lock.launch.targetId,
+      });
+    }
+    // Krycí postoj's step is over: Guard on the ally, free (skirmisher.mjs).
+    if (lock?.mode === "coverStep" && !lock.done) {
+      await completeCoverStep(actor);
     }
     // Duelist's Advance is over: one Aim on an opponent in reach, and with
     // three the next plain Attack is free (swordDancer.mjs).

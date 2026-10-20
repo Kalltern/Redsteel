@@ -60,6 +60,19 @@ import {
   pendingHopliteAdvance,
 } from "./hoplite.mjs";
 import { pendingMomentumItem } from "./momentum.mjs";
+import { suddenRearmFits, suddenRearmItem } from "./rearm.mjs";
+import {
+  RETALIATORY_THROW_KEY,
+  coverSource,
+  followUpThrowItem,
+  hasCoveringStance,
+  isFallenToken,
+  pendingFollowUpThrow,
+  pendingThrowSlowMove,
+  retaliatoryThrowItem,
+  sameSide,
+  thrownWeapons,
+} from "./skirmisher.mjs";
 import { isAnyTriumph, pendingTriumph } from "./vanguard.mjs";
 import {
   hasReactionLeft,
@@ -800,6 +813,188 @@ function braceChips(actor) {
 }
 
 /**
+ * Náhlé přezbrojení (Sudden Re-arm), or the Ranger's Improved Sudden Re-arm
+ * (rearm.mjs): "Jako Reakci lze použít pokud je napaden." Offered against the
+ * newest undefended melee attack aimed at this actor (Brace's walk), while a
+ * Reaction is left, the hand holds what the item switches from and there is a
+ * weapon to draw, once per turn. Aimed at the attacker: the chip's launch
+ * targets it, and the Speed contest is rolled against it.
+ *
+ * @param {Actor} actor
+ * @returns {object[]}
+ */
+function suddenRearmChips(actor) {
+  const item = suddenRearmItem(actor);
+  if (!item || !suddenRearmFits(actor, item)) return [];
+  if (getSpent(actor).reactions >= getActionPools(actor).reactions) return [];
+  const tokenIds = actorTokenIds(actor);
+  if (!tokenIds.size) return [];
+  const found = undefendedMeleeAttack(tokenIds);
+  if (!found) return [];
+  const chip = abilityChip(
+    item,
+    "REDSTEEL.Bg3Hotbar.Suggest.Reaction",
+    found.attackerToken.id,
+  );
+  chip.aimable = false;
+  chip.hint = game.i18n.format("REDSTEEL.Rearm.SuddenHint", {
+    attacker: found.attackerToken.name,
+  });
+  return [chip];
+}
+
+/**
+ * Harcovník → Odvetný vrh (Retaliatory Throw, skirmisher.mjs): "Po Krytu
+ * může provést vrh na útočníka". Offered after the actor's newest defense,
+ * when it was a Cover (held or not), rolled this turn and not yet answered by
+ * a retaliation, against an attacker still standing, with a thrown weapon to
+ * hand and a Reaction left. Not against a retaliation itself ("Nevztahuje se
+ * na Odvetné výstřely a Odvety").
+ *
+ * @param {Actor} actor
+ * @returns {object[]}
+ */
+function retaliatoryThrowChips(actor) {
+  const item = retaliatoryThrowItem(actor);
+  if (!item || !thrownWeapons(actor).length) return [];
+  if (getSpent(actor).reactions >= getActionPools(actor).reactions) return [];
+  const tokenIds = actorTokenIds(actor);
+  if (!tokenIds.size) return [];
+  const found = latestDefense(tokenIds);
+  if (!found || found.answered) return [];
+  const { defense } = found;
+  if (defense.defenseKey !== "rangedDefense") return [];
+  if (!defenseIsCurrent(defense, game.combat)) return [];
+  const tags = Array.isArray(defense.attackTags) ? defense.attackTags : [];
+  if (tags.includes("retaliation")) return [];
+  if (defense.attackAbilityKey === RETALIATORY_THROW_KEY) return [];
+  const attackerToken = answerableAttacker(defense.attackerTokenId);
+  if (!attackerToken) return [];
+  const chip = abilityChip(item, "REDSTEEL.Bg3Hotbar.Suggest.Reaction", attackerToken.id);
+  chip.hint = game.i18n.format(
+    defense.succeeded
+      ? "REDSTEEL.Skirmisher.RetaliatoryHintFull"
+      : "REDSTEEL.Skirmisher.RetaliatoryHintHalf",
+    { attacker: attackerToken.name },
+  );
+  return [chip];
+}
+
+/**
+ * Harcovník → Navazující vrh (Follow-up Throw, skirmisher.mjs): a kill this
+ * turn lets the holder re-arm to a thrown weapon and throw. A Free action;
+ * the Stamina is paid when it is used.
+ *
+ * @param {Actor} actor
+ * @returns {object[]}
+ */
+function followUpThrowChips(actor) {
+  const item = followUpThrowItem(actor);
+  if (!item || !pendingFollowUpThrow(actor)) return [];
+  return [abilityChip(item, "REDSTEEL.Bg3Hotbar.Suggest.FreeAction", null)];
+}
+
+/** Icon of the Slow Movement after a throw chip. */
+const THROW_SLOW_ICON = "icons/skills/movement/feet-winged-boots-brown.webp";
+
+/**
+ * Harcovník → Po vrhu může vždy provést Pomalý pohyb (skirmisher.mjs): after
+ * a throw on the holder's own turn, a Slow Movement even though the turn's
+ * movement is used. It costs its Action as ever.
+ *
+ * @param {Actor} actor
+ * @returns {object[]}
+ */
+function throwSlowChips(actor) {
+  if (!pendingThrowSlowMove(actor)) return [];
+  if (getSpent(actor).actions >= getActionPools(actor).actions) return [];
+  const label = game.i18n.localize("REDSTEEL.Skirmisher.ThrowSlowLabel");
+  const hint = game.i18n.localize("REDSTEEL.Skirmisher.ThrowSlowHint");
+  return [
+    {
+      id: "skirmisher-throw-slow",
+      kind: "skirmisher",
+      op: "throwSlow",
+      theme: "ranged",
+      costKind: "action",
+      img: THROW_SLOW_ICON,
+      label,
+      hint,
+      ariaLabel: `${label}: ${hint}`,
+    },
+  ];
+}
+
+/**
+ * Harcovník → Krycí postoj (Covering Stance, skirmisher.mjs): while the
+ * stance holds, the newest enemy ranged or thrown attack card this turn that
+ * targets an ally of the holder offers a Cover chip per ally: the Reaction
+ * buys a Speed-long step that must end next to the ally, then a free Guard
+ * on them. Once per card; a Reaction must be left.
+ *
+ * @param {Actor} actor
+ * @returns {object[]}
+ */
+function coverChips(actor) {
+  if (!hasCoveringStance(actor)) return [];
+  const combat = trackedCombat(actor);
+  if (!combat || isTrackedTurn(actor)) return [];
+  const spent = getSpent(actor);
+  if (spent.reactions >= getActionPools(actor).reactions) return [];
+  const tokenIds = actorTokenIds(actor);
+  const holder = [...tokenIds].map((id) => canvas.tokens?.get(id)).find(Boolean);
+  if (!holder) return [];
+
+  const item = actor.items.find(
+    (i) => i.type === "ability" && i.system?.key === "covering_stance",
+  );
+  const messages = game.messages?.contents ?? [];
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const message = messages[i];
+    if (turnStartMessageId && message.id === turnStartMessageId) break;
+    const attack = message.flags?.attack;
+    if (attack?.type !== "attack" || attack.contested || attack.isSpell) continue;
+    if (message.flags?.redsteel?.rerolledAway) continue;
+    if (!["ranged", "throwing"].includes(attack.attackType)) continue;
+    const attackerId = message.speaker?.token ?? null;
+    if (!attackerId || tokenIds.has(attackerId)) continue;
+    const attacker = canvas.tokens?.get(attackerId);
+    if (!attacker || sameSide(attacker.document, holder.document)) continue;
+    if (spent.bonusSources.includes(coverSource(message.id))) return [];
+    const targets = Array.isArray(attack.targets) ? attack.targets : [];
+    const chips = [];
+    for (const allyId of targets) {
+      if (tokenIds.has(allyId)) continue;
+      const ally = canvas.tokens?.get(allyId);
+      if (!ally || !sameSide(ally.document, holder.document)) continue;
+      if (isFallenToken(ally.document)) continue;
+      const label = game.i18n.format("REDSTEEL.Skirmisher.CoverLabel", { ally: ally.name });
+      const hint = game.i18n.format("REDSTEEL.Skirmisher.CoverHint", {
+        attacker: attacker.name,
+        ally: ally.name,
+      });
+      chips.push({
+        id: `skirmisher-cover-${message.id}-${allyId}`,
+        kind: "skirmisher",
+        op: "cover",
+        messageId: message.id,
+        targetTokenId: allyId,
+        theme: "melee",
+        uuid: item?.uuid ?? "",
+        costKind: "reaction",
+        img: item?.img ?? "icons/skills/melee/shield-block-gray-orange.webp",
+        label,
+        hint,
+        ariaLabel: `${label}: ${hint}`,
+      });
+    }
+    // The newest enemy shot at someone decides.
+    return chips;
+  }
+  return [];
+}
+
+/**
  * Přesílení (Overpower, Weapon Master): a combat contest of this turn that the
  * actor lost by 10 or less, on either side of it, not yet Overpowered by them
  * (utils/overpower.mjs decides all of that). One chip: rerolls the actor's own
@@ -1379,7 +1574,10 @@ function bullChargeOpportunityChips(actor) {
  */
 function combatProvider(actor) {
   if (!canvas?.ready) return [];
-  return [...riposteChips(actor), ...braceChips(actor), ...lungeStepChips(actor),
+  return [...riposteChips(actor), ...braceChips(actor), ...suddenRearmChips(actor),
+    ...coverChips(actor), ...retaliatoryThrowChips(actor), ...followUpThrowChips(actor),
+    ...throwSlowChips(actor),
+    ...lungeStepChips(actor),
     ...reactionChips(actor), ...overpowerChips(actor), ...vigilantChips(actor),
     ...overwatchChips(actor), ...bullChargeOpportunityChips(actor),
     ...impaleFollowupChips(actor),

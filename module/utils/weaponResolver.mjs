@@ -27,6 +27,26 @@ export function appendHeavyWeaponDamage(formula, weapon, sources = []) {
 }
 
 /**
+ * Add one Breakthrough (Průraznost) term to a running sum. Breakthrough is a
+ * dice formula ("1d6", "2d6"), joined with " + " the way getDamageRolls joins
+ * its parts; empty and zero terms are dropped. The old `+= Number(term)`
+ * turned "1d6" plus a modifier into "1d60" and threw a modifier's dice away.
+ *
+ * @param {string|number} sum   the terms so far ("" or 0 for none)
+ * @param {string|number} term  the term to add
+ * @returns {string} "" when there is nothing
+ */
+export function addBreakthroughTerm(sum, term) {
+  const clean = (value) => {
+    const text = String(value ?? "").trim();
+    return text && text !== "0" ? text : "";
+  };
+  const a = clean(sum);
+  const b = clean(term);
+  return a && b ? `${a} + ${b}` : a || b;
+}
+
+/**
  * The freeform tags a weapon carries, lower-cased. `system.tags` is a
  * comma-separated field the GM fills in ("trident, spear") — the same list
  * weapon specialisations and Wounding Impale read.

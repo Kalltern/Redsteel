@@ -39,6 +39,7 @@ import {
 } from "./hoplite.mjs";
 import { offerMomentum } from "./momentum.mjs";
 import { offerTriumph } from "./vanguard.mjs";
+import { offerFollowUpThrow } from "./skirmisher.mjs";
 import { gateVersusPush, resolvePushOnHit } from "./forcedMovement.mjs";
 import {
   cardDeclaredSneak,
@@ -1549,6 +1550,9 @@ export async function applyDamageAsGM(data) {
   // Předvoj → Triumf: every Critical Hit and every kill is one Triumph the
   // holder may pay for this turn (vanguard.mjs).
   await offerTriumph(attacker, message, targetIds, felledIds, mode);
+  // Harcovník → Navazující vrh: a kill lets the holder re-arm and throw this
+  // turn (skirmisher.mjs).
+  await offerFollowUpThrow(attacker, message, felledIds);
   // Obrana proti zteči (Charge Defense): the hit stops the charge and keeps
   // the charger two hexes off. Before the push below reads positions.
   await settleChargeDefense(attacker, message, targetIds, scene);

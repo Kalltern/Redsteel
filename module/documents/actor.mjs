@@ -472,6 +472,21 @@ export class RedsteelActor extends Actor {
     return false;
   }
 
+  /**
+   * Crippled (Zmrzačující výstřel): "Snižuje Pohyb cíle o polovinu
+   * (zaokrouhlenou nahoru)". Halves a finished Speed, rounding up, while the
+   * `crippled` status is on; returns it unchanged otherwise. A multiply 0.5
+   * change cannot round up, hence code (user ruling 2026-10-20).
+   *
+   * @param {number} speed
+   * @returns {number}
+   */
+  _crippledSpeed(speed) {
+    const value = Number(speed) || 0;
+    if (!this.statuses?.has?.("crippled")) return value;
+    return Math.ceil(value / 2);
+  }
+
   _replayEffectChanges(key, base) {
     const changes = [];
     for (const effect of this.appliedEffects ?? []) {
@@ -1626,13 +1641,16 @@ export class RedsteelActor extends Actor {
     const speedKey = "system.secondaryAttributes.spd.total";
     const replayedSpd = this._replayEffectChanges(speedKey, baseSpd);
     secAttribute.spd.max = speedCap;
+    // Crippled (Zmrzačující výstřel, user ruling 2026-10-20) halves the
+    // finished Speed, ROUNDED UP. Order: the effect replay (Slow / Root
+    // multiply, Haste add, Immobilized / Flight override), the cap, the usual
+    // floor, and only then the halving, so a Slowed 5 (2) Crippled is 1.
+    const cappedSpd = this._hasOverrideChange(speedKey)
+      ? replayedSpd
+      : Math.min(replayedSpd, speedCap);
     secAttribute.spd.total = Math.max(
       0,
-      Math.floor(
-        this._hasOverrideChange(speedKey)
-          ? replayedSpd
-          : Math.min(replayedSpd, speedCap),
-      ),
+      this._crippledSpeed(Math.floor(cappedSpd)),
     );
 
     // Calculate resolve from endurance and will
@@ -2132,12 +2150,15 @@ export class RedsteelActor extends Actor {
     // Same Speed as a character: movement allowance and the d12 speed test both
     // read spd.total, so Slow/Root/Haste/Flight land on NPCs unchanged.
     const speed = systemData.secondaryAttributes.spd;
+    // Crippled halves the floored Speed, rounded up (see the character block).
     speed.total = Math.max(
       0,
-      Math.floor(
-        this._replayEffectChanges(
-          "system.secondaryAttributes.spd.total",
-          (Number(speed.value) || 0) + (Number(speed.bonus) || 0),
+      this._crippledSpeed(
+        Math.floor(
+          this._replayEffectChanges(
+            "system.secondaryAttributes.spd.total",
+            (Number(speed.value) || 0) + (Number(speed.bonus) || 0),
+          ),
         ),
       ),
     );

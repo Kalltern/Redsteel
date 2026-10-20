@@ -1,0 +1,125 @@
+{
+  "name": "Covering Stance",
+  "type": "ability",
+  "img": "icons/skills/melee/shield-block-gray-yellow.webp",
+  "system": {
+    "description": "<p>While the stance holds, when an enemy shoots at an ally you may spend your Reaction to move up to your Speed in hexes into the line of the shot, then take Guard on that ally as a Free action.</p><p>Holding the stance costs one Action each turn.</p>",
+    "type": "other",
+    "weaponAbility": false,
+    "standalone": false,
+    "modifiesAttack": false,
+    "multiAttack": false,
+    "typeOptions": [
+      "melee",
+      "ranged"
+    ],
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "classOptions": [
+      "movement",
+      "attack",
+      "defense"
+    ],
+    "resources": [
+      {
+        "mode": "",
+        "amount": "",
+        "type": ""
+      }
+    ],
+    "resourceOptions": {
+      "modes": [
+        "add",
+        "drain"
+      ],
+      "types": []
+    },
+    "testOptions": [
+      "Strength",
+      "Dexterity",
+      "Endurance",
+      "Inteligence",
+      "Will",
+      "Charisma",
+      "Perception"
+    ],
+    "attributeTest": "",
+    "dmgTypes": [
+      "fire",
+      "frost",
+      "lightning",
+      "acid",
+      "poison",
+      "magic",
+      "dark",
+      "physical",
+      "psychic",
+      "blunt",
+      "piercing",
+      "slash"
+    ],
+    "testModifier": 0,
+    "costOptions": [
+      "stamina",
+      "mana",
+      "health",
+      "mental",
+      "fatigue",
+      "inspiration",
+      "holy energy"
+    ],
+    "costType": "stamina",
+    "cost": 2,
+    "perRound": 1,
+    "effects": {
+      "stagger": 0,
+      "bleed": 0,
+      "extra1": 0,
+      "extra2": 0,
+      "extra3": 0
+    },
+    "class": "stance",
+    "actionCost": "1 Action",
+    "defense": 0,
+    "rangedDefense": 0,
+    "dodge": 0,
+    "attack": 0,
+    "roll": {
+      "diceBonus": ""
+    },
+    "breakthrough": "",
+    "penetration": 0,
+    "critRange": 0,
+    "critChance": 0,
+    "critFail": 0,
+    "effectType1": "",
+    "effectType2": "",
+    "effectType3": "",
+    "key": "covering_stance",
+    "localizationKey": "REDSTEEL.Items.CoveringStance.name",
+    "category": "doctrine"
+  },
+  "effects": [],
+  "folder": "9Ug73JNNSqmkEdOI",
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": null,
+    "modifiedTime": null,
+    "lastModifiedBy": null
+  },
+  "ownership": {
+    "default": 0
+  },
+  "_id": "cOveringStance01",
+  "sort": 6670000,
+  "_key": "!items!cOveringStance01"
+}

@@ -660,7 +660,7 @@ REDSTEEL.effectDefinitions = {
   /* -------------------------------------------- */
 
   // "Ďáblův kořen" — the high. The +50 % against pain, fear and madness is a
-  // Nerves bonus: a character Tests Nervy as (res.value + res.bonus) × 10, so
+  // Resolve bonus: a character Tests Resolve (Nervy) as (res.value + res.bonus) × 10, so
   // res.bonus counts in whole 10 % steps and +5 is the +50 % the rules ask for.
   // (An NPC derives res from Willpower and reads res.bonus as raw percent —
   // drugs are taken by player characters, so the character scale wins.) The −1
@@ -931,6 +931,18 @@ REDSTEEL.effectDefinitions = {
     name: "REDSTEEL.Items.PreparedStance.name",
     img: "icons/skills/melee/shield-block-gray-orange.webp",
     statuses: ["prepared_stance"],
+    stackBehavior: "ignore",
+    changes: [],
+  },
+
+  // "Krycí postoj" (Covering Stance, Skirmisher): a marker with no changes of
+  // its own. Held per turn from the hotbar like any maintained stance
+  // (utils/stances.mjs); while it holds, an enemy shot at an ally offers the
+  // Cover chip (utils/skirmisher.mjs).
+  covering_stance: {
+    name: "REDSTEEL.Items.CoveringStance.name",
+    img: "icons/skills/melee/shield-block-gray-yellow.webp",
+    statuses: ["covering_stance"],
     stackBehavior: "ignore",
     changes: [],
   },
@@ -1210,11 +1222,18 @@ REDSTEEL.effectDefinitions = {
       onApply: { custom: "downedStart" },
     },
   },
+  // "Zmrzačující výstřel" (Crippling Shot), user ruling 2026-10-20: Speed
+  // halved ROUNDED UP and Dodge -20% through the target's next three turns.
+  // The halving is not a change here: a multiply 0.5 rounds down, so
+  // documents/actor.mjs halves the finished Speed (ceil) while this status is
+  // on (see the Speed block there for the order). defaultTurns 4, not 3: turn
+  // clocks tick at the bearer's own turn start and the effect is deleted at 0
+  // (documents/effects.mjs), so 4 keeps it through three own turns.
   crippled: {
     name: "Crippled",
     img: "icons/skills/ranged/arrow-strike-apple-orange.webp",
     statuses: ["crippled"],
-    defaultTurns: 3,
+    defaultTurns: 4,
     useDuration: true,
 
     changes: [
@@ -1222,6 +1241,40 @@ REDSTEEL.effectDefinitions = {
         key: "system.combatSkills.dodge.bonus",
         type: "add",
         value: -20,
+      },
+    ],
+  },
+
+  // Crippling Shot's "snižuje mu Pořadí tahu na 1 na 1 kolo": the next
+  // round's initiative roll lands on 1 (documents/combat.mjs rollInitiative,
+  // the dynamic-initiative reroll that runs before the round starts). One
+  // round on the round clock, so it is gone once that round has begun.
+  crippled_initiative: {
+    name: "REDSTEEL.Effect.Name.crippled_initiative",
+    img: "icons/skills/ranged/arrow-strike-apple-orange.webp",
+    statuses: ["crippled_initiative"],
+    defaultRounds: 1,
+    stackBehavior: "refresh",
+    changes: [],
+  },
+
+  // "zbavení veškerého pohybu" (Harcovník → Zmrzačující výstřel: 50%, and
+  // Vylepšený zmrzačující výstřel), user ruling 2026-10-20: Speed 0 until the
+  // end of the target's next turn. defaultTurns 2: the clock ticks at the
+  // bearer's turn start, so it holds through the next turn and is deleted at
+  // the start of the one after.
+  immobilized: {
+    name: "REDSTEEL.Effect.Name.immobilized",
+    img: "icons/magic/control/debuff-chains-ropes-net-white.webp",
+    statuses: ["immobilized"],
+    defaultTurns: 2,
+    useDuration: true,
+    stackBehavior: "refresh",
+    changes: [
+      {
+        key: "system.secondaryAttributes.spd.total",
+        type: "override",
+        value: 0,
       },
     ],
   },

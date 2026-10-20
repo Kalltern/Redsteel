@@ -36,6 +36,29 @@
  * Every one of those perks is weapon-gated: the duellist's blade has to be in
  * hand for any of them to be live. See aimPerks().
  *
+ * Losing a NORMAL Aim (user ruling 2026-10-19): "Ztratí-li se cíl z dosahu, je
+ * použita jiná akce než útočná akce, nebo je-li zaútočeno či Mířeno na jiný
+ * cíl, Míření propadá." Improved Aim (aimPerks().improved, the same weapon-gated
+ * test as Advanced Aim) is exempt from all of it.
+ *   • Attacking another target: resolveAimOnAttack, below. Aiming at another
+ *     target: addAimStackOn (one aim per token, so a switch burns the old one).
+ *   • Another action: breakAimOnAction, called by the action tracker
+ *     (actionTracker.mjs) whenever something that is not an attack costs an
+ *     Action: an ability whose class is not "attack" (aimBreakKind), a spell, a
+ *     stance's upkeep, the Rest macro, and the movement declarations (Move, Slow
+ *     Movement, Sprint, Disengage, and the first undeclared step of the turn).
+ *     Free actions and Reactions never break it, nor do the Aim actions and
+ *     Duelist's Advance, which are themselves ways of aiming.
+ *   • The target leaving range: a moveToken hook on the active GM
+ *     (checkAimRange). Melee only: the reach of the main-hand weapon. Bows,
+ *     crossbows, firearms and thrown weapons carry no maximum range, so a
+ *     ranged aim never lapses this way.
+ *   Harcovník → Při pohybu neztrácí Míření (skirmisher mireniPohyb): movement
+ *   actions, and the aimer's own (not forced) move taking the target out of
+ *   reach, keep the aim. Oddech: Míření +1 (Respite): a Rest (the action, the
+ *   macro, Dragon Sleep) keeps the aim and Respite adds to it (user ruling
+ *   2026-10-20).
+ *
  * Two ways to drive the aim itself, both manual (aim is never granted or burned
  * on roll hooks):
  *   1. Hold ALT with your aimer token selected — a square button appears over
@@ -48,6 +71,8 @@
 
 import { actorHasSpecNode } from "../helpers/specialisations.mjs";
 import { ensureSystemMacros } from "./macroFolders.mjs";
+import { isForcedMove } from "./forcedMoveRegistry.mjs";
+import { isReachChecked, weaponReach } from "./positioning.mjs";
 
 const SYSTEM_ID = "redsteel";
 const FLAG = "aim";
@@ -580,9 +605,12 @@ function hasRespiteAim(actor) {
  * counts (user ruling 2026-10-14): the Rest action, Veteran's free Rest and
  * each Rest Dragon Sleep buys, so the callers pass how many Rests they gave.
  *
- * The Aim goes on the target already aimed at; with no aim held, on the one
- * token the user has targeted. Nothing happens with neither, since there is
- * nobody to aim at.
+ * The Aim is added to the stacks already held on the target aimed at (a Rest
+ * does not break a Respite holder's aim, breakAimOnAction, user ruling
+ * 2026-10-20). With no aim held, on the target an action just broke (a
+ * Dragon Sleep taken by someone whose aim it did break, for instance);
+ * failing both, on the one token the user has targeted. Nothing happens with
+ * none of them, since there is nobody to aim at.
  *
  * @param {Actor} actor
  * @param {number} [rests=1]
@@ -594,6 +622,7 @@ export async function grantRespiteAim(actor, rests = 1) {
 
   const aim = readAim(aimer);
   let targetId = aim?.targetId ?? null;
+  if (!targetId) targetId = takeJustBroken(aimer);
   if (!targetId) {
     const targets = [...(game.user?.targets ?? [])].filter(
       (t) => t.id !== aimer.id,
@@ -689,6 +718,8 @@ const AIM_NEUTRAL_ABILITIES = new Map([
   ["REDSTEEL.Items.FlambergeCleaveAbility.name", "Flamberge Cleave (Ability)"],
   ["REDSTEEL.Items.DoubleThrow.name", "Double Throw"],
   ["REDSTEEL.Items.CunningStrike.name", "Cunning Strike"],
+  // Odvetný vrh (Skirmisher): "nemá žádné interakce s Mířením".
+  ["REDSTEEL.Items.RetaliatoryThrow.name", "Retaliatory Throw"],
 ]);
 
 /**
@@ -1296,6 +1327,265 @@ async function sweepPendingReductions(actor) {
 }
 
 /* -------------------------------------------- */
+/*  Losing a normal Aim                         */
+/* -------------------------------------------- */
+
+/**
+ * The Aim actions themselves, and Duelist's Advance (which moves and then
+ * gains an Aim): paying for any of them never breaks the aim they build on.
+ */
+const AIM_ACTION_KEYS = new Set([
+  "REDSTEEL.Items.AimingMelee.name",
+  "REDSTEEL.Items.AimingRanged.name",
+  "REDSTEEL.Items.ImprovedAiming.name",
+  "REDSTEEL.Items.DuelistsAdvance.name",
+  "REDSTEEL.Items.ImprovedDuelistsAdvance.name",
+]);
+const AIM_ACTION_NAMES = new Set([
+  "Aiming - melee",
+  "Aiming - ranged",
+  "Improved Aiming",
+  "Duelist’s Advance",
+  "Duelist's Advance",
+  "Improved Duelist's Advance",
+]);
+
+/** The plain Attack: an attack, whatever its (empty) class says. */
+const ATTACK_KEYS = new Set([
+  "REDSTEEL.Items.Attack.name",
+  "REDSTEEL.Items.OpportunityAttack.name",
+]);
+
+/**
+ * Movement actions, for Harcovník's "Při pohybu neztrácí Míření": these break
+ * a normal aim like any other non-attack action, but not the Skirmisher's.
+ */
+const MOVEMENT_ACTION_KEYS = new Set([
+  "REDSTEEL.Items.Movement.name",
+  "REDSTEEL.Items.SlowMovement.name",
+  "REDSTEEL.Items.Sprint.name",
+  "REDSTEEL.Items.Disengage.name",
+]);
+const MOVEMENT_ACTION_SYSTEM_KEYS = new Set(["sprint", "disengage"]);
+
+/**
+ * Rests, for Oddech: Míření +1 (user ruling 2026-10-20: "Oddech starts to
+ * increment the actual Aim instead of resetting it to 1"). The Rest action,
+ * and Dragon Sleep, whose whole point is buying Rests. For a Respite holder
+ * these keep the aim, and grantRespiteAim then adds to it.
+ */
+const REST_ACTION_KEYS = new Set([
+  "REDSTEEL.Items.Rest.name",
+  "REDSTEEL.Items.DragonSleep.name",
+]);
+const REST_ACTION_SYSTEM_KEYS = new Set(["dragon_sleep"]);
+
+/**
+ * Does paying for this item, when it costs an Action, break a normal aim?
+ * Null when it does not (an attack, or an aiming action), "movement" for a
+ * movement action, "rest" for a Rest (or Dragon Sleep), "action" for anything
+ * else: a non-attack ability, a spell, a cost line standing in for one (a
+ * stance's upkeep, Re-arm).
+ *
+ * @param {Item|object} item
+ * @returns {null|"movement"|"rest"|"action"}
+ */
+export function aimBreakKind(item) {
+  if (!item) return null;
+  const sys = item.system ?? {};
+  const key = sys.localizationKey ?? "";
+  if (item.type === "spell") return "action";
+  if (sys.class === "attack") return null;
+  if (ATTACK_KEYS.has(key)) return null;
+  if (AIM_ACTION_KEYS.has(key) || AIM_ACTION_NAMES.has(item.name)) return null;
+  if (MOVEMENT_ACTION_KEYS.has(key) || MOVEMENT_ACTION_SYSTEM_KEYS.has(sys.key)) {
+    return "movement";
+  }
+  if (
+    REST_ACTION_KEYS.has(key) ||
+    REST_ACTION_SYSTEM_KEYS.has(sys.key) ||
+    item.name === "Rest"
+  ) {
+    return "rest";
+  }
+  return "action";
+}
+
+/**
+ * Improved Aim, live for whatever the actor has in hand: the same test that
+ * makes Advanced Aim hold an aim through an attack on someone else.
+ *
+ * @param {Actor} actor
+ * @returns {boolean}
+ */
+export function hasImprovedAim(actor) {
+  if (!actor) return false;
+  return !!livePerks(actor).improved;
+}
+
+/** Harcovník → Při pohybu neztrácí Míření. */
+export function keepsAimWhileMoving(actor) {
+  return (
+    actor?.type === "character" &&
+    actorHasSpecNode(actor, "skirmisher", "mireniPohyb")
+  );
+}
+
+/**
+ * What a just-broken aim pointed at, per aimer token, for a few seconds: a
+ * Rest breaks the aim when it is paid and Respite then grants its Aim, and the
+ * grant should land on the target the Rest broke off (grantRespiteAim). Client
+ * memory only; the break and the grant run on the same client in one flow.
+ */
+const justBroken = new Map();
+const JUST_BROKEN_MS = 10_000;
+
+function takeJustBroken(aimer) {
+  const entry = justBroken.get(aimer?.id);
+  justBroken.delete(aimer?.id);
+  if (!entry || Date.now() - entry.at > JUST_BROKEN_MS) return null;
+  return entry.targetId;
+}
+
+/** Every token of this actor on the viewed scene, as TokenDocuments. */
+function actorTokenDocs(actor) {
+  if (actor.isToken) return [actor.token].filter(Boolean);
+  return actor.getActiveTokens?.(false, true) ?? [];
+}
+
+/**
+ * A non-attack action costing an Action was just taken: a normal aim is lost.
+ * Improved Aim keeps it; so does Harcovník's node when the action is movement,
+ * and Respite (Oddech: Míření +1) when the action is a Rest: the Rest's Aim is
+ * then added to the held stacks (user ruling 2026-10-20).
+ * Silent, like every other aim change (the arrow simply goes). Writes only
+ * tokens this user owns, which the acting user always does.
+ *
+ * @param {Actor} actor
+ * @param {{movement?: boolean, rest?: boolean}} [options]  the action was a
+ *   movement action / a Rest
+ */
+export async function breakAimOnAction(actor, { movement = false, rest = false } = {}) {
+  if (!actor) return;
+  if (movement && keepsAimWhileMoving(actor)) return;
+  if (rest && hasRespiteAim(actor)) return;
+  const docs = actorTokenDocs(actor).filter((doc) => readAim(doc)?.targetId);
+  if (!docs.length) return;
+  if (hasImprovedAim(actor)) return;
+  for (const doc of docs) {
+    if (!doc.isOwner) continue;
+    justBroken.set(doc.id, { targetId: readAim(doc).targetId, at: Date.now() });
+    await clearAim(doc);
+  }
+}
+
+/**
+ * The reach a normal aim must stay within, or null when there is nothing to
+ * measure: an NPC (no weapon in hand to read), an empty main hand, or a weapon
+ * with no reach check (bows, crossbows, firearms, thrown weapons, none of which
+ * carry a maximum range).
+ */
+function aimReach(actor) {
+  if (actor?.type !== "character") return null;
+  const weapon = game.redsteel?.resolveWeaponContext?.(actor)?.weapon ?? null;
+  if (!weapon || !isReachChecked(weapon)) return null;
+  return weaponReach(actor, weapon);
+}
+
+/**
+ * The hexes a token covers at `at` (a position: x, y and optionally
+ * elevation, width, height, shape), by default its STORED position. The live
+ * position trails the movement animation (and stalls in a background tab), the
+ * stored one is where the move ends.
+ */
+function offsetsAt(doc, at = doc?._source) {
+  const src = at ?? {};
+  const data = {};
+  for (const key of ["x", "y", "elevation", "width", "height"]) {
+    if (Number.isFinite(Number(src[key]))) data[key] = Number(src[key]);
+  }
+  if (src.shape !== undefined && src.shape !== null) data.shape = src.shape;
+  try {
+    return doc.getOccupiedGridSpaceOffsets?.(data) ?? [];
+  } catch (_error) {
+    return [];
+  }
+}
+
+/**
+ * Hex distance between two tokens of one scene, edge to edge, at their stored
+ * positions unless `at` (token id → position) says otherwise, measured on the
+ * scene's own grid (the GM may be viewing another scene). Null on a gridless
+ * scene or when either footprint is unknown.
+ */
+function storedHexDistance(scene, a, b, at = {}) {
+  const grid = scene?.grid;
+  if (!grid || grid.isGridless) return null;
+  // An override keeps the stored size and shape for whatever it leaves out.
+  const from = offsetsAt(a, { ...a._source, ...(at[a.id] ?? {}) });
+  const to = offsetsAt(b, { ...b._source, ...(at[b.id] ?? {}) });
+  if (!from.length || !to.length) return null;
+  let best = null;
+  for (const f of from) {
+    for (const t of to) {
+      let path;
+      try {
+        path = grid.getDirectPath([
+          grid.getCenterPoint({ i: f.i, j: f.j }),
+          grid.getCenterPoint({ i: t.i, j: t.j }),
+        ]);
+      } catch (_error) {
+        continue;
+      }
+      const distance = Math.max(0, (path?.length ?? 1) - 1);
+      if (best === null || distance < best) best = distance;
+    }
+  }
+  return best;
+}
+
+/**
+ * A token moved: every normal aim it was part of, as aimer or as target, is
+ * lost if this move took the target out of the aimer's reach (within reach
+ * where the move started, beyond it where it ended). A pair already apart
+ * before the move (a Skirmisher who walked off keeping the aim) is left alone.
+ * Runs on the active GM, who can write every token. Harcovník's node keeps
+ * the aim when the aimer itself walked out of reach; a forced move does not
+ * count as walking (only known for moves this client made, which is every
+ * relayed push).
+ *
+ * @param {TokenDocument} moved
+ * @param {object} [movement]  the hook's movement data; `origin` is where the
+ *   moved token started
+ */
+async function checkAimRange(moved, movement = null) {
+  const scene = moved?.parent;
+  if (!scene?.tokens) return;
+  const forced = isForcedMove(moved);
+  const origin = movement?.origin ?? null;
+  for (const aimer of scene.tokens.contents) {
+    const aim = readAim(aimer);
+    if (!aim?.targetId) continue;
+    const aimerMoved = aimer.id === moved.id;
+    if (!aimerMoved && aim.targetId !== moved.id) continue;
+    const target = scene.tokens.get(aim.targetId);
+    const actor = aimer.actor;
+    if (!target || !actor) continue;
+    if (aimerMoved && !forced && keepsAimWhileMoving(actor)) continue;
+    const reach = aimReach(actor);
+    if (reach === null) continue;
+    const distance = storedHexDistance(scene, aimer, target);
+    if (distance === null || distance <= reach) continue;
+    if (origin) {
+      const before = storedHexDistance(scene, aimer, target, { [moved.id]: origin });
+      if (before !== null && before > reach) continue;
+    }
+    if (hasImprovedAim(actor)) continue;
+    await clearAim(aimer);
+  }
+}
+
+/* -------------------------------------------- */
 /*  Macros                                      */
 /* -------------------------------------------- */
 
@@ -1867,6 +2157,17 @@ export function registerAimOverlay() {
     for (const combatant of combat.combatants) {
       await sweepPendingAim(combatant.actor);
     }
+  });
+
+  // A normal aim is lost when its target leaves the aimer's reach, whoever
+  // moved (checkAimRange). `moveToken` fires on every client once a move is
+  // processed; the active GM alone answers it, being the one user who can
+  // clear any token's aim.
+  Hooks.on("moveToken", (tokenDoc, movement) => {
+    if (!game.users.activeGM?.isSelf) return;
+    checkAimRange(tokenDoc, movement).catch((err) =>
+      console.error("Redsteel | Aim range check failed", err),
+    );
   });
 
   // Piggyback on Foundry's core "Highlight Objects" keybinding (ALT by default).

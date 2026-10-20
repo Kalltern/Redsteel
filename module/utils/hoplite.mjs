@@ -116,6 +116,7 @@ import {
   resolveWeaponContext,
 } from "./weaponResolver.mjs";
 import { isHandheldLight } from "./itemLight.mjs";
+import { swapMainWeapon } from "./rearm.mjs";
 import { weaponDamageFormula } from "./weaponFormula.mjs";
 import { canSpendResource } from "./itemResources.mjs";
 // Call time only: forcedMovement.mjs reaches this file through applyDamage.mjs.
@@ -479,46 +480,10 @@ export function pendingDrawLightWeapon(actor) {
   return { ...stored, candidates };
 }
 
-/** Two-handed the way the sheet reads it (actor-sheet.mjs _isEffectivelyTwoHanded). */
-function isTwoHanded(item) {
-  if (!item) return false;
-  return (
-    item.system?.type === "heavy" ||
-    item.system?.gripMode === "two" ||
-    ["crossbow", "bow"].includes(item.system?.class)
-  );
-}
-
-/**
- * Put a weapon into the ACTIVE weapon set's main hand, by the sheet's own
- * rules (actor-sheet.mjs _assignWeaponDirect): shields and torches never go
- * in the main hand, a weapon taken from the off hand leaves it, and a
- * two-handed weapon clears the off hand. Characters only. No Action is
- * charged here; the caller decides what the swap costs. Batch 2 (Onslaught)
- * reuses this.
- *
- * @param {Actor} actor
- * @param {string} itemId
- * @returns {Promise<boolean>} whether the set changed
- */
-export async function swapMainWeapon(actor, itemId) {
-  if (actor?.type !== "character" || !actor.isOwner) return false;
-  const item = actor.items.get(itemId);
-  if (!item || item.type !== "weapon") return false;
-  if (item.system?.shield || isHandheldLight(item)) return false;
-  const set = actor.system.combat?.activeWeaponSet;
-  if (!set) return false;
-  const slots = actor.system.combat?.weaponSets?.[set] ?? {};
-  if (slots.main === itemId) return false;
-
-  const updates = {};
-  if (slots.off === itemId || isTwoHanded(item)) {
-    updates[`system.combat.weaponSets.${set}.off`] = null;
-  }
-  updates[`system.combat.weaponSets.${set}.main`] = itemId;
-  await actor.update(updates);
-  return true;
-}
+// swapMainWeapon (put a weapon in the active set's main hand) lives in
+// rearm.mjs now, shared with the Re-arm family; imported above and
+// re-exported from here so older imports keep working.
+export { swapMainWeapon };
 
 /**
  * The "Draw a light weapon" chip: the only candidate, or the player's pick,

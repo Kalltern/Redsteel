@@ -6,7 +6,7 @@
  * one unlocked per rank of the Leadership skill:
  *
  *   Ranks 1-5, Passive Commands — an aura on every ally within earshot
- *     (Nerves +1, Speed +1, Hit +5%, Melee Defense +5%, Cover +10%). It lasts
+ *     (Resolve +1, Speed +1, Hit +5%, Melee Defense +5%, Cover +10%). It lasts
  *     until the Commander falls or the fight ends, and a new Passive Command
  *     replaces the one before it. These are fully automated here.
  *

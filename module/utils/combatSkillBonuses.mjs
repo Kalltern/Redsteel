@@ -43,6 +43,11 @@ import {
 } from "./hoplite.mjs";
 import { isShieldStrainEffect } from "./shieldStrain.mjs";
 import {
+  accurateShotMarginCrit,
+  cripplingShotEffects,
+  frenziedThrowStrain,
+} from "./skirmisher.mjs";
+import {
   counterattackHitBonus,
   isDoubleStrike,
   isShieldBash,
@@ -1230,7 +1235,9 @@ export async function getAttackRolls(
     rollResult <= critSuccessThreshold ||
     (!critFailure &&
       (riposteAlwaysCrits(actor, ability) || isFinalStrike(ability))) ||
-    daringThrowMarginCrit(ability, attackRoll.total, critFailure);
+    daringThrowMarginCrit(ability, attackRoll.total, critFailure) ||
+    // Přesný výstřel (Accurate Shot): a margin of 30 or more (skirmisher.mjs).
+    accurateShotMarginCrit(ability, attackRoll.total, critFailure);
 
   // A fumble burns the whole aim even under Sword Dancer's half-loss. The aim
   // was parked before the dice existed, so tag that record now.
@@ -1919,6 +1926,11 @@ export async function getEffectRolls(
       effectContributions,
     );
   }
+  // Zmrzačující výstřel / Vylepšený zmrzačující výstřel: crippled, the turn
+  // order part and the 50% immobilize roll (skirmisher.mjs).
+  effectContributions.push(
+    ...cripplingShotEffects(actor, ability, selectedModifiers),
+  );
   const customEffectRolls = new Map();
 
   // Zatížení štítu (shield strain) is not an effect on the target: it is a
@@ -1988,6 +2000,12 @@ export async function getEffectRolls(
   // Troufalý vrh (Daring Throw, Hoplite): "Zatížení štítu +50%".
   if (isDaringThrow(ability)) {
     shieldStrainChance += DARING_THROW_SHIELD_STRAIN;
+    shieldStrainSources += 1;
+  }
+  // Harcovník → Zběsilý vrh: Zatížení štítu +25% (skirmisher.mjs).
+  const frenziedStrain = frenziedThrowStrain(actor, ability);
+  if (frenziedStrain) {
+    shieldStrainChance += frenziedStrain;
     shieldStrainSources += 1;
   }
   const shieldStrain =

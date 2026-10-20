@@ -3,7 +3,9 @@ import {
   forfeitAdvantageOnCritFail,
 } from "./rollAdvantage.mjs";
 import { resetActorRerolls } from "./rerolls.mjs";
-import { grantRespiteAim } from "./aim.mjs";
+import { breakAimOnAction, grantRespiteAim } from "./aim.mjs";
+import { trackedCombat } from "./actionTracker.mjs";
+import { grantLightArmorRest } from "./skirmisher.mjs";
 import { getTraitPills } from "./traitPills.mjs";
 import { gainBloodFromBleed, bloodGainNote } from "./bloodPool.mjs";
 import { isActorInCombat } from "./combatants.mjs";
@@ -161,8 +163,14 @@ export async function restAndRecover() {
     content: chatMessage,
     speaker: ChatMessage.getSpeaker({ actor }),
   });
+  // A Rest is a non-attack action: in a fight it loses a normal Aim, as the
+  // Rest ability does, unless Respite keeps it (aim.mjs). Before Respite, so
+  // its Aim lands after.
+  if (trackedCombat(actor)) await breakAimOnAction(actor, { rest: true });
   // Respite (Oddech: Míření +1): the Rest macro is a Rest too.
   await grantRespiteAim(actor);
+  // Harcovník → Lehká zbroj: +1 Stamina in light armor (skirmisher.mjs).
+  await grantLightArmorRest(actor);
 }
 
 /* -------------------------------------------- */

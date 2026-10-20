@@ -152,8 +152,18 @@ export async function pickProtectedAlly(token) {
  * @param {Token|TokenDocument} token
  * @param {ActiveEffect} effect     the `guard` effect just applied
  * @param {TokenDocument} ally
+ * @param {{coverMessageId?: string|null}} [options]  Krycí postoj
+ *   (skirmisher.mjs): the attack card the Guard was taken against. It was
+ *   posted before the Guard existed, so it is named here to get its Protect
+ *   button all the same.
  */
-export async function startProtection(actor, token, effect, ally) {
+export async function startProtection(
+  actor,
+  token,
+  effect,
+  ally,
+  { coverMessageId = null } = {},
+) {
   const protector = docOf(token);
   const scene = ally?.parent;
   if (!effect || !protector || !ally || !scene) return;
@@ -162,7 +172,10 @@ export async function startProtection(actor, token, effect, ally) {
     protectorTokenId: protector.id,
     sceneId: scene.id,
   };
-  await effect.setFlag(SYSTEM_ID, FLAG, payload);
+  await effect.setFlag(SYSTEM_ID, FLAG, {
+    ...payload,
+    ...(coverMessageId ? { coverMessageId } : {}),
+  });
   await relay({ action: "mark", ...payload });
   await ChatMessage.create({
     speaker: ChatMessage.getSpeaker({ actor, token: protector }),
@@ -310,7 +323,9 @@ function renderProtectButtons(message, html) {
       const since = Number(effect._stats?.createdTime) || 0;
       const posted =
         Number(message._stats?.createdTime) || Number(message.timestamp) || 0;
-      if (since && posted && posted < since) continue;
+      // Krycí postoj: the card the covering Guard was taken against.
+      const covered = effect.getFlag(SYSTEM_ID, FLAG)?.coverMessageId === message.id;
+      if (since && posted && posted < since && !covered) continue;
       offers.push({ protector: doc, ally });
     }
   }
@@ -416,6 +431,15 @@ export function registerProtectionHooks() {
         console.error("Redsteel | Protection cleanup failed", err),
       );
     }
+  });
+
+  // Krycí postoj (skirmisher.mjs): a Guard taken against a card already in
+  // the log names it; every client redraws that card so its Protect button
+  // appears.
+  Hooks.on("updateActiveEffect", (effect, changes) => {
+    const id = changes?.flags?.[SYSTEM_ID]?.[FLAG]?.coverMessageId;
+    const message = id ? game.messages?.get(id) : null;
+    if (message) ui.chat?.updateMessage?.(message);
   });
 
   // Rendered at ready, after the hooks that build the card's Apply Damage and

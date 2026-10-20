@@ -186,6 +186,28 @@ export const MOVEMENT_MODES = {
     icon: "fa-light fa-person-walking-arrow-right",
     labelKey: "REDSTEEL.Bg3Hotbar.Suggest.Advance",
   },
+  // Krycí postoj (Covering Stance, Skirmisher): up to Speed hexes "do dráhy
+  // projektilu" on the shooter's turn, paid with the Reaction by the Cover
+  // chip (skirmisher.mjs). The lock's `around` names the ally the step must
+  // end next to. Ordinary threat rules; the check button applies the Guard.
+  coverStep: {
+    budgetFn: (spd) => spd,
+    color: 0xd8c38a,
+    actions: 0,
+    icon: "fa-light fa-shield-halved",
+    labelKey: "REDSTEEL.Bg3Hotbar.Suggest.CoverStep",
+  },
+  // Vrh s rozběhem (Run Up Throw): the run before the throw, declared like a
+  // Charge (skirmisher.mjs declareRunUp, Speed; x1.5 with the Skirmisher
+  // node, which sets the lock's budget itself). The throw pays its own two
+  // Actions; the check button launches it.
+  runUp: {
+    budgetFn: (spd) => spd,
+    color: 0xd8a04a,
+    actions: 0,
+    icon: "fa-light fa-person-running",
+    labelKey: "REDSTEEL.Bg3Hotbar.Suggest.RunUp",
+  },
 };
 
 const PREVIEW_LAYER = "redsteel-move-preview";

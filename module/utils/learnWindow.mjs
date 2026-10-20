@@ -2530,7 +2530,11 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
    * the star sign, named by the node.
    */
   #buildMirrorPicks(spec) {
-    return getMirrorSources(this.actor, spec).map((source) => ({
+    // An `auto` mirror (Harcovníkův um: Peltast follows Shieldbearer) has
+    // nothing to pick.
+    return getMirrorSources(this.actor, spec)
+      .filter((source) => !source.auto)
+      .map((source) => ({
       id: source.id,
       label: specNodeLabel(source.spec, source.node) ?? source.node,
       badge: game.i18n.format("REDSTEEL.Learn.Mirror.badge", {

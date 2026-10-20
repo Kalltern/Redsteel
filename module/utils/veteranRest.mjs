@@ -21,6 +21,7 @@
 
 import { hasWeaponMasterNode } from "./weaponMaster.mjs";
 import { grantRespiteAim } from "./aim.mjs";
+import { lightArmorRestBonus } from "./skirmisher.mjs";
 
 /** Stamina one Rest restores: the Rest action's amount (otherActions.mjs). */
 export const REST_STAMINA = 5;
@@ -37,10 +38,12 @@ export async function grantFreeRest(actor) {
   const stamina = actor.system.stats?.stamina ?? {};
   const current = Number(stamina.value) || 0;
   const max = Number(stamina.max);
+  // Harcovník → Lehká zbroj: +1 Stamina in light armor (skirmisher.mjs).
+  const restored = REST_STAMINA + lightArmorRestBonus(actor);
   const next =
     Number.isFinite(max) && max > 0
-      ? Math.min(max, current + REST_STAMINA)
-      : current + REST_STAMINA;
+      ? Math.min(max, current + restored)
+      : current + restored;
   if (next !== current) {
     await actor.update({ "system.stats.stamina.value": next });
   }

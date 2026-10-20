@@ -20,6 +20,28 @@ import {
   useHopliteOnslaught,
 } from "./hoplite.mjs";
 import { isAnyMomentum, momentumStaminaCost, useMomentum } from "./momentum.mjs";
+import {
+  isAnySuddenRearm,
+  isRearm,
+  useRearm,
+  useSuddenRearm,
+} from "./rearm.mjs";
+import {
+  accurateShotAimCritRange,
+  declareRunUp,
+  isFollowUpThrow,
+  isRetaliatoryThrow,
+  isThrownWeapon,
+  retaliatoryThrowHalf,
+  retaliatoryThrowRefusal,
+  runUpRefusal,
+  runUpThrowBonus,
+  runUpWouldDeclare,
+  spendRunUp,
+  isRunUpThrow,
+  grantLightArmorRest,
+  useFollowUpThrow,
+} from "./skirmisher.mjs";
 import { bullChargeRefusal, isBullCharge } from "./bullCharge.mjs";
 import {
   cleaveTargetRefusal,
@@ -58,6 +80,7 @@ import {
 import { hasHtmlContent } from "./chatBlocks.mjs";
 import { markStanceHeld, postStanceCard } from "./stances.mjs";
 import {
+  addBreakthroughTerm,
   appendHeavyWeaponDamage,
   filterModifiersByWeapon,
   filterByRequiredWeaponTag,
@@ -672,6 +695,42 @@ export async function combatAbilities({
     if (onslaughtKind(ability) && (await useHopliteOnslaught(actor, ability))) {
       if (!keepOpen) dialog?.close();
       return;
+    }
+    // Přezbrojení (Re-arm) and Náhlé přezbrojení (Sudden Re-arm, and the
+    // Ranger's Improved one): the weapon and the price are picked, paid and
+    // swapped in rearm.mjs, which always handles the click.
+    if (isRearm(ability) && (await useRearm(actor, ability))) {
+      if (!keepOpen) dialog?.close();
+      return;
+    }
+    if (isAnySuddenRearm(ability) && (await useSuddenRearm(actor, ability))) {
+      if (!keepOpen) dialog?.close();
+      return;
+    }
+    // Harcovník → Navazující vrh after a kill: re-arm to a thrown weapon and
+    // make the next Attack free (skirmisher.mjs). With nothing pending it
+    // falls through to its plain card.
+    if (isFollowUpThrow(ability) && (await useFollowUpThrow(actor, ability))) {
+      if (!keepOpen) dialog?.close();
+      return;
+    }
+    // Vrh s rozběhem (Run Up Throw) runs before it throws, the Charge's
+    // two-stage flow: the first pick on the actor's own turn only declares
+    // the run, and the strip's check button throws (skirmisher.mjs).
+    if (isRunUpThrow(ability) && runUpWouldDeclare(actor)) {
+      await declareRunUp(actor, ability);
+      if (!keepOpen) dialog?.close();
+      return;
+    }
+    // A run shorter than two hexes, or a Retaliatory Throw with nothing to
+    // throw, is refused before anything is paid (skirmisher.mjs).
+    {
+      const refusal =
+        runUpRefusal(actor, ability) ?? retaliatoryThrowRefusal(actor, ability);
+      if (refusal) {
+        ui.notifications.warn(refusal);
+        return;
+      }
     }
 
     // Daring Throw is refused next to a living enemy, beyond 5 hexes, and
@@ -1525,6 +1584,11 @@ ${
     const tagged = (list) =>
       requiredTag ? list.filter((i) => weaponHasTag(i, requiredTag)) : list;
 
+    // Odvetný vrh throws a thrown weapon and nothing else (skirmisher.mjs).
+    if (isRetaliatoryThrow(ability)) {
+      return actor.items.filter((i) => isThrownWeapon(i) && !isNpcOffhand(i));
+    }
+
     // Daring Throw throws a spear, trident or javelin, the melee spear
     // included (hoplite.mjs), and nothing else.
     if (isDaringThrow(ability)) {
@@ -1577,10 +1641,18 @@ ${
   ) {
     // Daring Throw resolves its own context: the melee spear is thrown as a
     // polearm throw (hoplite.mjs daringThrowContext). Everything else as ever.
-    const resolveContext = (selected = null) =>
-      isDaringThrow(ability)
-        ? daringThrowContext(actor, ability, selected)
-        : game.redsteel.resolveWeaponContext(actor, ability, selected);
+    // Odvetný vrh: a bow or crossbow in hand is no thrown weapon, so the
+    // picker (thrown weapons only, getAbilityWeapons) asks instead.
+    const resolveContext = (selected = null) => {
+      if (isDaringThrow(ability)) {
+        return daringThrowContext(actor, ability, selected);
+      }
+      const context = game.redsteel.resolveWeaponContext(actor, ability, selected);
+      if (isRetaliatoryThrow(ability) && context && !isThrownWeapon(context.weapon)) {
+        return null;
+      }
+      return context;
+    };
 
     // Roll an attack/defense once a weapon context is known.
     const runWithWeaponContext = async (weaponContext) => {
@@ -2171,7 +2243,10 @@ ${
     longReachPenalty = 0,
     outOfReach = false,
   ) {
-    let totalHalfDamage = Boolean(halfDamage);
+    // Harcovník → Odvetný vrh: half damage after a failed Cover
+    // (skirmisher.mjs).
+    let totalHalfDamage =
+      Boolean(halfDamage) || retaliatoryThrowHalf(actor, ability);
     for (const mod of selectedModifiers) {
       if (mod.system?.roll?.halfDamage) {
         totalHalfDamage = true;
@@ -2228,7 +2303,10 @@ ${
     let doctrineBleedBonus = 0;
     for (const mod of selectedModifiers) {
       abilityAttack += Number(mod.system.attack) || 0;
-      abilityBreakthrough += Number(mod.system.breakthrough) || 0;
+      abilityBreakthrough = addBreakthroughTerm(
+        abilityBreakthrough,
+        mod.system.breakthrough,
+      );
       abilityPenetration += Number(mod.system.penetration) || 0;
       abilityCritRange += Number(mod.system.critRange) || 0;
       abilityCritChance += Number(mod.system.critChance) || 0;
@@ -2265,6 +2343,17 @@ ${
       abilityDamage = abilityDamage
         ? `(${abilityDamage}) + ${chargeHexes}`
         : `${chargeHexes}`;
+    }
+    // Vrh s rozběhem: +1d4 per hex run past the two the item's +2d4 pays,
+    // and the Skirmisher node's +1d6 Breakthrough (skirmisher.mjs).
+    const runUp = runUpThrowBonus(actor, ability);
+    if (runUp?.dice) {
+      abilityDamage = abilityDamage
+        ? `(${abilityDamage}) + (${runUp.dice})`
+        : runUp.dice;
+    }
+    if (runUp?.breakthrough) {
+      abilityBreakthrough = addBreakthroughTerm(abilityBreakthrough, runUp.breakthrough);
     }
     if (weapon) {
       ({
@@ -2369,6 +2458,9 @@ ${
     // S2: fold passive weapon crit-range bonuses (spec nodes) into the crit-range
     // input that getCriticalRolls buckets into critScore.
     doctrineCritRangeBonus += actorMods.critRangeBonus;
+    // Přesný výstřel: Critical Range +1 for each Aim committed to the shot,
+    // read before getAttackRolls consumes it (skirmisher.mjs).
+    doctrineCritRangeBonus += accurateShotAimCritRange(actor, ability);
 
     let {
       attackRoll,
@@ -2673,6 +2765,8 @@ ${renderMarginFollowupLine({
         // Reach and thrown range (positioning.mjs).
         ...(outOfReach ? ["outOfReach"] : []),
         ...(rangePenalty ? ["beyondRange"] : []),
+        // Odvetný vrh is a retaliation (skirmisher.mjs): nothing answers it.
+        ...(isRetaliatoryThrow(ability) ? ["retaliation"] : []),
       ],
       banePacket,
       baneRoll,
@@ -2694,6 +2788,8 @@ ${renderMarginFollowupLine({
     if (multiAttackCount <= 1) {
       await spendChargeHexDamage(actor, ability, chargeHexes);
     }
+    // Vrh s rozběhem: the run is cashed once (skirmisher.mjs).
+    await spendRunUp(actor, ability, runUp);
     // ─── AMMO DEDUCTION ───
     if (ammo) {
       await actor.deductAmmo(ammo);
@@ -3047,6 +3143,9 @@ async function runUtilityAbility(actor, ability, modifiers = []) {
   // Respite (Oddech: Míření +1): a Rest is worth one Aim as well. Both the
   // dialog and the hotbar (useUtilityAbility) come through here.
   if (isRestAbility(ability)) await grantRespiteAim(actor);
+  // Harcovník → Lehká zbroj: the Rest restores 1 more Stamina in light armor
+  // (skirmisher.mjs). The Rest's own 5 came with its cost line.
+  if (isRestAbility(ability)) await grantLightArmorRest(actor);
   // Vstřebání krve (Blood Absorption): cancel the entire Blood Reserve and heal
   // Life equal to the Blood School's Maximum Transfer, but never more Life than
   // was cancelled from the Reserve. Keyed off `system.key` the same way stances

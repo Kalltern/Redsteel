@@ -9,7 +9,10 @@ import { getAttackRerollTokens } from "./rerolls.mjs";
 import { buildBanePacket } from "./baneCombat.mjs";
 import { renderDamageLine, renderDamageTrays } from "./damageLine.mjs";
 import { hasHtmlContent } from "./chatBlocks.mjs";
-import { appendHeavyWeaponDamage } from "./weaponResolver.mjs";
+import {
+  addBreakthroughTerm,
+  appendHeavyWeaponDamage,
+} from "./weaponResolver.mjs";
 import {
   isSpeedTest,
   rollSpeedTest,
@@ -271,7 +274,10 @@ export async function universalAttackLogic({
 
     for (const mod of selectedModifiers) {
       customAttack += Number(mod.system.attack) || 0;
-      customBreakthrough += Number(mod.system.breakthrough) || 0;
+      customBreakthrough = addBreakthroughTerm(
+        customBreakthrough,
+        mod.system.breakthrough,
+      );
       customPenetration += Number(mod.system.penetration) || 0;
       customCritRange += Number(mod.system.critRange) || 0;
       customCritChance += Number(mod.system.critChance) || 0;

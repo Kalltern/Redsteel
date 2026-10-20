@@ -18,6 +18,47 @@
       "NoAimTarget": "V dosahu není žádný nepřítel, na kterého by šlo mířit.",
       "PickPrompt": "Na kterého nepřítele v dosahu získat Míření?"
     },
+    "Skirmisher": {
+      "AimAfterThrow": "{name} získává po vrhu 1 Míření na {target} (celkem {after}).",
+      "ThrowSlowLabel": "Pomalý pohyb po vrhu",
+      "ThrowSlowHint": "Po vrhu je dovolen Pomalý pohyb, i když už byl pohyb použit. Stojí svou akci.",
+      "CoverLabel": "Krýt {ally}",
+      "CoverHint": "{attacker} střílí na {ally}: za Reakci se pohni až o Rychlost hex vedle {ally} a pak použij Ochranu jako Volnou akci.",
+      "CoverStarted": "{name} se přesouvá krýt {ally}. Pohyb ukonči vedle {ally} a potvrď ho, tím získáš Ochranu.",
+      "CoverNotAdjacent": "{name} neskončil vedle {ally}: Ochrana nenastává.",
+      "FollowUpPrompt": "Na kterou vrhací zbraň přezbrojit?",
+      "FollowUpConfirm": "Přezbrojit a vrhnout ({cost} výdrže)",
+      "FollowUpKeep": "Ponechat zbraň v ruce",
+      "FollowUpNoThrown": "Navazující vrh potřebuje vrhací zbraň.",
+      "FollowUpReady": "{name} přezbrojuje na {weapon}: příští Útok v tomto tahu je Volná akce.",
+      "FollowUpReadyKeep": "{name} ponechává v ruce {weapon}: příští Útok v tomto tahu je Volná akce.",
+      "RetaliatoryNoThrown": "Odvetný vrh potřebuje vrhací zbraň.",
+      "RetaliatoryHintFull": "Tvůj Kryt proti {attacker} uspěl: vrh způsobí plné zranění.",
+      "RetaliatoryHintHalf": "Tvůj Kryt proti {attacker} selhal: vrh způsobí poloviční zranění.",
+      "RunUpTooShort": "Vrh s rozběhem potřebuje rozběh alespoň o {min} hexy; rozběh měl {walked}.",
+      "LightArmorRest": "Lehká zbroj: {name} obnovuje z Oddechu o {amount} výdrže více."
+    },
+    "Rearm": {
+      "Title": "Přezbrojení",
+      "Prompt": "Kterou zbraň vzít do hlavní ruky?",
+      "WeaponLabel": "Zbraň",
+      "CostAction": "1 akce",
+      "CostFree": "Volná akce, {cost} výdrže",
+      "CostQuick": "Volná akce ({feature})",
+      "CharactersOnly": "Přezbrojit může jen postava se sadami zbraní.",
+      "NoWeapons": "Není žádná jiná zbraň, na kterou přezbrojit.",
+      "Rearmed": "{name} přezbrojuje na {weapon} ({cost}).",
+      "SuddenNeedsTarget": "Nejprve zacil útočníka.",
+      "SuddenNeedsBow": "Náhlé přezbrojení mění luk či kuši za zbraň, ale v hlavní ruce nemáš ani jedno.",
+      "SuddenNoWeapons": "Není žádná zbraň na blízko, na kterou přezbrojit.",
+      "SuddenPrompt": "Kterou zbraň na blízko vzít, pokud budeš rychlejší?",
+      "SuddenConfirm": "Přezbrojit (reakce, {cost} výdrže)",
+      "SuddenVersus": "Test Rychlosti: {name} {mine} versus {attacker} {theirs}.",
+      "SuddenWin": "{name} je rychlejší a přezbrojuje na {weapon} dřív, než úder dopadne.",
+      "SuddenLose": "{attacker} je rychlejší: {name} stále drží {old}.",
+      "ImprovedRearmed": "{name} okamžitě přezbrojuje na {weapon}, bez Testu Rychlosti.",
+      "SuddenHint": "Útočí na tebe {attacker}: přezbroj, než úder dopadne."
+    },
     "Hoplite": {
       "DaringThrowAdjacent": "Troufalý vrh nelze použít, pokud s tebou sousedí nepřítel.",
       "DaringThrowNoSpear": "Troufalý vrh potřebuje k vržení kopí, trojzubec nebo oštěp.",
@@ -236,6 +277,8 @@
       },
       "Suggest": {
         "Move": "Pohyb",
+        "CoverStep": "Krycí přesun",
+        "RunUp": "Rozběh",
         "SlowMove": "Pomalý pohyb",
         "Sprint": "Běh",
         "Disengage": "Odpoutání",
@@ -1052,7 +1095,7 @@
             },
             "oddechMireni": {
               "label": "Oddech: Míření +1",
-              "description": "15 CP; Meče V. Každý Oddech přinese také jedno Míření: na cíl, na který už míří, jinak na zacíleného nepřítele. Počítá se akce Oddech, Veteránův Oddech zdarma i Oddechy získané Dračím spánkem. Automatizováno."
+              "description": "15 CP; Meče V. Každý Oddech přinese také jedno Míření, přičtené k Míření, které už na cíli drží (Oddech Míření neruší), jinak na zacíleného nepřítele. Počítá se akce Oddech, Veteránův Oddech zdarma i Oddechy získané Dračím spánkem. Automatizováno."
             },
             "akrobatickeOdpoutani": {
               "label": "Akrobatické odpoutání",
@@ -1519,19 +1562,19 @@
           "nodes": {
             "harcovnikuvUm": {
               "label": "Harcovníkův um",
-              "description": "10 CP. Ručně — řeší se u stolu."
+              "description": "10 CP. Každý stupeň doktríny Štítonoš se počítá i jako stupeň doktríny Peltast: stupeň Peltasta zdarma sleduje Štítonoše, se všemi akcemi a bonusy. Zaplacené stupně Peltasta zůstávají. Automatizováno."
             },
             "kryciPostoj": {
               "label": "Krycí postoj",
-              "description": "5 CP; Štítonoš II. Ručně — řeší se u stolu."
+              "description": "5 CP; Štítonoš II. Uděluje Krycí postoj. Dokud trvá, nepřátelská střelba na spojence nabídne čip Krýt: za Reakci pohyb až o Rychlost hex, který musí skončit vedle spojence, a pak zdarma Ochrana na tohoto spojence, takže tlačítko Chránit na kartě útoku odpoví na výstřel Krytem. Automatizováno."
             },
             "odvetnyVrh": {
               "label": "Odvetný vrh",
-              "description": "10 CP; Štítonoš V. Ručně — řeší se u stolu."
+              "description": "10 CP; Štítonoš V. Uděluje Odvetný vrh: po Krytu vrh na útočníka za Reakci, s plným (Kryt uspěl) nebo polovičním (Kryt selhal) zraněním. Jen vrhací zbraně, bez interakce s Mířením. Automatizováno."
             },
             "navazujiciVrh": {
               "label": "Navazující vrh",
-              "description": "10 CP. Ručně — řeší se u stolu."
+              "description": "10 CP. Uděluje Navazující vrh: po zabití zdarma přezbrojí na vrhací zbraň a příští Útok v tomto tahu je Volná akce. Automatizováno."
             },
             "vrh5": {
               "label": "Vrh +5%",
@@ -1539,31 +1582,31 @@
             },
             "prezbrojeni": {
               "label": "Přezbrojení: -6 Výdrže",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Přezbrojení jako Volná akce stojí 6 výdrže místo 12. Automatizováno."
             },
             "mireniPohyb": {
               "label": "Při pohybu neztrácí Míření",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Pohyb (Pohyb, Pomalý pohyb, Běh, Odpoutání) neruší běžné Míření, a to ani když tím cíl vyjde z dosahu. Automatizováno."
             },
             "oddechMireni": {
               "label": "Oddech: Míření +1",
-              "description": "10 CP. Každý Oddech přinese také jedno Míření: na cíl, na který už míří, jinak na zacíleného nepřítele. Počítá se akce Oddech, Veteránův Oddech zdarma i Oddechy získané Dračím spánkem. Automatizováno."
+              "description": "10 CP. Každý Oddech přinese také jedno Míření, přičtené k Míření, které už na cíli drží (Oddech Míření neruší), jinak na zacíleného nepřítele. Počítá se akce Oddech, Veteránův Oddech zdarma i Oddechy získané Dračím spánkem. Automatizováno."
             },
             "mireniPoVrhu": {
               "label": "Po vrhu získává jedno Míření",
-              "description": "10 CP; Štítonoš IV. Ručně — řeší se u stolu."
+              "description": "10 CP; Štítonoš IV. Každý vrh na jediný cíl přidá na tento cíl jedno Míření. Automatizováno."
             },
             "pohybPoVrhu": {
               "label": "Po vrhu může provést Pomalý pohyb",
-              "description": "10 CP. Ručně — řeší se u stolu."
+              "description": "10 CP. Po vrhu ve vlastním tahu je dovolen Pomalý pohyb, i když už byl pohyb použit; panel ho nabídne. Stále stojí svou akci. Automatizováno."
             },
             "presnyVystrel": {
               "label": "Přesný výstřel: -1 akce a -5 Výdrže",
-              "description": "10 CP; Štítonoš VIII. Ručně — řeší se u stolu."
+              "description": "10 CP; Štítonoš VIII. Přesný výstřel stojí 1 akci a 3 výdrže (nahrazuje ho vlastní verze Harcovníka). Automatizováno."
             },
             "lehkaZbroj": {
               "label": "Lehká zbroj: Oddech obnovuje +1 výdrž",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. V lehké zbroji (svrchní vrstva) obnoví každý Oddech o 1 výdrž více: akce Oddech, makro Oddechu, Veteránův Oddech zdarma i Oddechy získané Dračím spánkem. Automatizováno."
             },
             "bleedStun": {
               "label": "Krvácení +20% / Omráčení +15%",
@@ -1579,15 +1622,15 @@
             },
             "zmrzacujiciVystrel": {
               "label": "Zmrzačující výstřel: 50% na zbavení pohybu",
-              "description": "10 CP; Štítonoš VI. Ručně — řeší se u stolu."
+              "description": "10 CP; Štítonoš VI. Zmrzačující výstřel, který zasáhne, má navíc 50% šanci cíl Znehybnit (Rychlost 0 do konce jeho příštího tahu); hází se na kartě útoku. Automatizováno."
             },
             "vylZmrzacujici": {
               "label": "Vylepšený zmrzačující výstřel",
-              "description": "10 CP; Štítonoš VIII. Ručně — řeší se u stolu."
+              "description": "10 CP; Štítonoš VIII. Uděluje Vylepšený zmrzačující výstřel, modifikátor útoků, odvetných akcí a Příležitostných útoků: při zásahu Zmrzačení (Rychlost na polovinu zaokrouhleno nahoru, Úhyb -20 %, tři tahy) a 50% šance Znehybnit. Automatizováno."
             },
             "vrhSRozbehem": {
               "label": "Vrh s rozběhem: Pohyb +50%, Průraznost +1d6",
-              "description": "5 CP; Štítonoš IV. Ručně — řeší se u stolu."
+              "description": "5 CP; Štítonoš IV. Rozběh Vrhu s rozběhem je Rychlost x1,5 a vrh získává Průraznost +1d6. Automatizováno."
             },
             "utokSPohybem": {
               "label": "Útok s pohybem",
@@ -1595,7 +1638,7 @@
             },
             "zbesilyVrh": {
               "label": "Zběsilý vrh: Zatížení štítu +25%",
-              "description": "5 CP; Štítonoš V. Ručně — řeší se u stolu."
+              "description": "5 CP; Štítonoš V. Zběsilý vrh nese Zatížení štítu +25%. Automatizováno."
             }
           }
         },
@@ -1696,11 +1739,11 @@
             },
             "prezbrojeni": {
               "label": "Přezbrojení: -6 Výdrže",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Přezbrojení jako Volná akce stojí 6 výdrže místo 12. Automatizováno."
             },
             "vylPrezbrojeni": {
               "label": "Vylepšené náhlé přezbrojení",
-              "description": "10 CP. Ručně — řeší se u stolu."
+              "description": "10 CP. Vylepšené náhlé přezbrojení nahrazuje Náhlé přezbrojení: při napadení za reakci a 2 výdrže přezbrojí z jakékoli držené zbraně na jinou, bez Testu Rychlosti. Automatizováno."
             }
           }
         },
@@ -1827,7 +1870,7 @@
             },
             "oddechMireni": {
               "label": "Oddech: Míření +1",
-              "description": "10 CP; Lukostřelec/Kušník V. Každý Oddech přinese také jedno Míření: na cíl, na který už míří, jinak na zacíleného nepřítele. Počítá se akce Oddech, Veteránův Oddech zdarma i Oddechy získané Dračím spánkem. Automatizováno."
+              "description": "10 CP; Lukostřelec/Kušník V. Každý Oddech přinese také jedno Míření, přičtené k Míření, které už na cíli drží (Oddech Míření neruší), jinak na zacíleného nepřítele. Počítá se akce Oddech, Veteránův Oddech zdarma i Oddechy získané Dračím spánkem. Automatizováno."
             },
             "odvetnyVystrel": {
               "label": "Odvetný výstřel",
@@ -6037,6 +6080,7 @@
       "possessed": "Posednutý"
     },
     "EffectDesc": {
+      "covering_stance": "Dokud trvá, nepřátelská střelba na spojence nabídne reakci Krýt: pohyb až o Rychlost hex, který musí skončit vedle spojence, a pak Ochranu na něj jako Volnou akci. Udržuje se z panelu v každém tahu nositele (1 akce, 1 výdrž).",
       "stagger": "-10 % na všechny testy. Nemůže provádět příležitostné útoky. Trvá 2 tahy a Ochromení nebo Ochrnutí ho nahradí.",
       "bleed": "Způsobí 1d4 zranění za každý stupeň při uvalení a znovu na začátku každého kola. Sčítá se až do 6 stupňů.",
       "burn": "Způsobí 3d6 zranění při uvalení a znovu na začátku každého kola, dokud není odstraněno. Při prvním zranění se navíc testují Nervy a neúspěch způsobí Paniku.",
@@ -6094,7 +6138,9 @@
       "prone": "-20 % na Souboj, Obranu a Kryt a -25 % na Úhyb. Po dobu trvání drží nositele na iniciativě 1.",
       "dying": "Uvaluje se při 0 Životech. Skrytý odpočet kol (vyšší z 2d4) ubývá na začátku každého kola, a když vyprší, postava vykrvácí. Stabilizace nebo vyléčení nad 0 Životů ho ukončí a zanechá +1 Těžké zranění.",
       "downed": "Uvaluje se spolu s Umírajícím při 0 Životech. Ztrácí polovinu současných Mentálních životů (zaokrouhleno nahoru) a padá na iniciativu 1, při 0 Mentálních životech se stává Vyřazeným. Končí po úspěšném testu Odolnosti nebo Vůle, jakmile jsou Životy nad 0.",
-      "crippled": "-20 % na Úhyb. Trvá 3 tahy.",
+      "crippled": "Rychlost klesá na polovinu, zaokrouhleno nahoru, a -20 % na Úhyb. Trvá po příští tři tahy.",
+      "crippled_initiative": "Pořadí tahu klesá na příští kolo na 1.",
+      "immobilized": "Rychlost je 0: žádný pohyb. Trvá do konce příštího tahu.",
       "fatigued": "Výdrž je na 0. -5 % na všechny testy, Rychlost klesá na polovinu a ztrácí jednu akci (aspoň jedna zůstává). Končí, když Výdrž stoupne nad 0.",
       "toxic_shock": "Toxicita přesahuje maximum. Při uvalení a na začátku každého kola způsobí 25 zranění ignorujících zbroj a neúspěšný test Odolnosti s -40 % způsobí Ochromení. Končí, když Toxicita klesne zpět na maximum.",
       "corrupted": "Stupeň Zkaženosti 2 nebo vyšší (61+). Postava se počítá jako Zkažená a hody na obranu nesou připomínku pro účinky Světla a zázraků. Synchronizuje se automaticky s Korupcí.",
@@ -6443,6 +6489,8 @@
       "type3": "Extra Efekt typ 3",
       "Name": {
         "shield_strain": "Přetížení štítu",
+        "crippled_initiative": "Zmrzačené pořadí tahu",
+        "immobilized": "Znehybněn",
         "protected_by": "Pod ochranou"
       }
     },
@@ -7906,6 +7954,30 @@
       },
       "Reload": {
         "name": "Přebíjení"
+      },
+      "CoveringStance": {
+        "name": "Krycí postoj"
+      },
+      "RetaliatoryThrow": {
+        "name": "Odvetný vrh"
+      },
+      "FollowUpThrow": {
+        "name": "Navazující vrh"
+      },
+      "AccurateShotSkirmisher": {
+        "name": "Přesný výstřel (Harcovník)"
+      },
+      "ImprovedCripplingShot": {
+        "name": "Vylepšený zmrzačující výstřel"
+      },
+      "Rearm": {
+        "name": "Přezbrojení"
+      },
+      "SuddenRearm": {
+        "name": "Náhlé přezbrojení"
+      },
+      "ImprovedSuddenRearm": {
+        "name": "Vylepšené náhlé přezbrojení"
       },
       "Rest": {
         "name": "Oddech"

@@ -104,6 +104,7 @@ import {
 import { registerOverwhelmHooks } from "./utils/overwhelm.mjs";
 import { registerChampionHooks } from "./utils/champion.mjs";
 import { registerHopliteHooks } from "./utils/hoplite.mjs";
+import { registerSkirmisherHooks } from "./utils/skirmisher.mjs";
 import { registerShieldStrainHooks } from "./utils/shieldStrain.mjs";
 import { registerProtectionHooks } from "./utils/protection.mjs";
 import { registerArmoringHooks } from "./utils/armoring.mjs";
@@ -555,6 +556,8 @@ Hooks.once("init", function () {
   registerOverwhelmHooks();
   registerChampionHooks();
   registerHopliteHooks();
+  // Harcovník: Aim and the Slow Movement after a throw card (skirmisher.mjs).
+  registerSkirmisherHooks();
   // Warden batch 1: shield strain on a held Cover, Protection (Guard) on an
   // adjacent ally, Armoring's GM relay.
   registerShieldStrainHooks();

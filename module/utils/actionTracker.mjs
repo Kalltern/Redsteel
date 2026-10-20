@@ -55,6 +55,15 @@ import { combatantForActor } from "./combatants.mjs";
 import { isExploitAsRetaliation } from "./dragonGuard.mjs";
 import { hasFreeRiposte, isRiposte, markFreeRiposteUsed } from "./swordServant.mjs";
 import { isForcedMove } from "./forcedMoveRegistry.mjs";
+import { aimBreakKind, breakAimOnAction } from "./aim.mjs";
+
+/**
+ * Movement declarations that are a non-attack action of their own and so
+ * break a normal Aim when they cost an Action (aim.mjs). A Charge's approach
+ * is part of its attack, and the ability-driven steps are paid (or free)
+ * through their abilities.
+ */
+const AIM_BREAKING_MODES = new Set(["move", "slow", "sprint", "disengage"]);
 
 const SYSTEM_ID = "redsteel";
 const FLAG = "actionTracker";
@@ -358,6 +367,9 @@ export async function noteMovement(actor) {
     actions: spent.actions + 1,
     moved: true,
   });
+  // The undeclared first step is a Move action all the same: a normal Aim
+  // is lost (aim.mjs), save Harcovník's.
+  await breakAimOnAction(actor, { movement: true });
 }
 
 /**
@@ -436,6 +448,13 @@ export async function lockMovement(
       contested: [],
     },
   });
+  // Move, Slow Movement, Sprint or Disengage bought here with an Action is a
+  // non-attack action: a normal Aim is lost (aim.mjs). With charge 0 the
+  // Action was paid by the ability (Sprint, Disengage), which already broke
+  // it through spendForItems, or the move was free.
+  if (charge > 0 && AIM_BREAKING_MODES.has(mode)) {
+    await breakAimOnAction(actor, { movement: true });
+  }
 }
 
 /**
@@ -685,6 +704,8 @@ const OFF_TURN_MODES = new Set([
   "halfPirouette",
   "acrobaticDisengage",
   "advance",
+  // Krycí postoj's step into the line of fire (skirmisher.mjs).
+  "coverStep",
 ]);
 
 /** Does this actor hold an unfinished off-turn step (Quick Feet and the like)? */
@@ -760,6 +781,8 @@ export async function spendForItems(actor, items) {
   // Forceful Advance (Hoplite): one listed ability costs no Action, once.
   const freeAbility = liveFreeAbility(actor);
   let freeAbilityUsed = false;
+  // What the paid Actions were for, for the Aim rule below.
+  const aimBreaks = [];
   for (const item of list) {
     // The free Riposte covers one use: a second Riposte in the same list (or
     // later this round) pays its Reaction.
@@ -777,6 +800,10 @@ export async function spendForItems(actor, items) {
     const cost = costOf(actor, item);
     actions += cost.actions;
     reactions += cost.reactions;
+    if (cost.actions > 0) {
+      const kind = aimBreakKind(item);
+      if (kind) aimBreaks.push(kind);
+    }
   }
   if (freeRiposte) await markFreeRiposteUsed(actor);
   if (freeAbilityUsed) {
@@ -788,6 +815,17 @@ export async function spendForItems(actor, items) {
     });
   }
   await spend(actor, { actions, reactions });
+  // "je použita jiná akce než útočná akce ... Míření propadá" (aim.mjs): an
+  // Action paid for anything but an attack or an aiming action loses a normal
+  // Aim (a Rest keeps a Respite holder's). Free actions and Reactions never
+  // do. Here, before the caller runs the ability, so a grant the ability
+  // makes (Respite's Aim after a Rest, Dragon Sleep's) lands after the loss.
+  if (aimBreaks.length) {
+    await breakAimOnAction(actor, {
+      movement: aimBreaks.every((kind) => kind === "movement"),
+      rest: aimBreaks.every((kind) => kind === "rest"),
+    });
+  }
 }
 
 /**

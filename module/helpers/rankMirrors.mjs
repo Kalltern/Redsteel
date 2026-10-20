@@ -20,6 +20,9 @@
  *
  * Every definition carries `group` (the track group both tracks live in),
  * `from` (the source key) and `choices` (the keys the player may pick).
+ * `auto: true` marks a mirror with one fixed target: nothing is picked, the
+ * engine makes the pick itself as soon as the node is unlocked, and the Learn
+ * window shows no picker for it.
  *
  * Pure data: the engine (progressionEngine.mjs) applies it, and
  * specialisations.mjs reads SPEC_MIRRORS to paint these perks as automated.
@@ -33,6 +36,16 @@ export const SPEC_MIRRORS = {
       group: "weaponSkills",
       from: "polearms",
       choices: ["swords", "axes", "blunt"],
+    },
+  },
+  // Harcovník → Harcovníkův um (specializace-wip.md r221): "Každý stupeň
+  // doktríny Štítonoš zároveň odemyká stejný stupeň doktríny Peltast."
+  skirmisher: {
+    harcovnikuvUm: {
+      group: "doctrines",
+      from: "shieldbearer",
+      choices: ["peltast"],
+      auto: true,
     },
   },
 };

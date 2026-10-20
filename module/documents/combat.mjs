@@ -74,6 +74,14 @@ export class RedsteelCombat extends Combat {
 
       await roll.evaluate();
 
+      // Zmrzačující výstřel: "snižuje mu Pořadí tahu na 1 na 1 kolo". The
+      // `crippled_initiative` status (one round, config.mjs) is still on when
+      // the dynamic-initiative reroll for the next round runs, so that roll
+      // is overridden to 1 after rolling; the round start then clears it.
+      const initiative = actor.statuses?.has("crippled_initiative")
+        ? 1
+        : roll.total;
+
       // -----------------------------------------
       // Store initiative update
       // -----------------------------------------
@@ -82,7 +90,7 @@ export class RedsteelCombat extends Combat {
       // one is dropped (see initiativeTiebreak.mjs).
       updates.push({
         _id: id,
-        initiative: roll.total,
+        initiative,
         [`flags.redsteel.-=${TIEBREAK_FLAG}`]: null,
       });
 
@@ -110,7 +118,7 @@ export class RedsteelCombat extends Combat {
         kind: "initiative",
         label: game.i18n.localize("REDSTEEL.RoundDigest.Initiative"),
         roll,
-        initiative: roll.total,
+        initiative,
         // `img`/`name` are schema fields that may sit empty on a combatant the
         // tracker fills in from the token — fall through rather than render a
         // broken portrait.
