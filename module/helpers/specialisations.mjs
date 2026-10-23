@@ -5,6 +5,7 @@ import {
 } from "./specialisations-generated.mjs";
 import { SPEC_DISCOUNTS } from "./rankDiscounts.mjs";
 import { SPEC_MIRRORS } from "./rankMirrors.mjs";
+import { clearRangerReplacedRanks } from "./rangerApprentice.mjs";
 
 /* ===========================================================================
  * Specialisation talent-tree definitions
@@ -326,8 +327,12 @@ const CODE_AUTOMATED_NODES = {
   // rollInitiative when a Bane (or an Expose Weakness mark) is among the
   // enemies; metlaOpakovani is a node reroll pool in utils/rerolls.mjs
   // NODE_REROLL_POOLS, gated on the `bane` token redsteel.mjs
-  // handleRerollClick adds. metlaVnimani and tkane1/2 stay table rulings.
-  grimm: ["metlaIniciativa", "metlaOpakovani"],
+  // handleRerollClick adds. metlaVnimani is utils/rangerSkills.mjs, read by
+  // sheets/actor-sheet.mjs _onRoll: +10% on a Perception test, or a Survival
+  // test rolled as Tracking, when exactly one token is targeted and it is a
+  // Bane (grimm.mjs isBaneFoe). tkane1/2
+  // stay table rulings: the system has no harvesting of creature tissues.
+  grimm: ["metlaIniciativa", "metlaOpakovani", "metlaVnimani"],
   weaponMaster: [
     "weakSpotPen",
     "vytrvalyValecnik",
@@ -639,7 +644,44 @@ const CODE_AUTOMATED_NODES = {
   // Improved Sudden Re-arm, granted in utils/abilityGrants.mjs in place of
   // Sudden Re-arm and run by useSuddenRearm with no Speed contest; offered on
   // the hotbar by utils/actionSuggestions.mjs suddenRearmChips.
-  ranger: ["prezbrojeni", "vylPrezbrojeni"],
+  // ucednik is helpers/rangerApprentice.mjs: unlocking it clears Combat and
+  // Archery (called from syncSpecialisationPassive below), and
+  // helpers/progressionEngine.mjs closes both tracks in the Learn window, lets
+  // the Ranger rank meet their rank requirements and gives the lower of two
+  // doctrines 3 CP off each rank.
+  // zast is utils/ranger.mjs (the Grudge, offered on the hotbar by
+  // utils/actionSuggestions.mjs) with the Aim floor in utils/aim.mjs.
+  // lovcuvVystrel is utils/abilityGrants.mjs (Hunter's Shot) with its Aim on a
+  // hit in utils/aim.mjs AIM_GRANT_ABILITIES.
+  // expert and mistr are one node reroll pool in utils/rerolls.mjs
+  // NODE_REROLL_POOLS (Master widens it through `upgrade`).
+  // utokDravce is utils/predatorsAttack.mjs: stamped by utils/applyDamage.mjs
+  // after a Melee kill, offered by utils/actionSuggestions.mjs.
+  // dorazeni is utils/abilityGrants.mjs (Finishing Blow, its numbers on the
+  // item) and utils/rangerCombat.mjs (refused off a Bane, asked by
+  // utils/combatAbilities.mjs and utils/attackActions.mjs).
+  // vnimaniStopovani is utils/rangerSkills.mjs, read by sheets/actor-sheet.mjs
+  // _onRoll: +15% on a Perception test and on a Survival test rolled as
+  // Tracking (the third choice of utils/gatherHerbs.mjs promptHerbMode).
+  // pohybVPrirode is utils/rangerSkills.mjs too: the "In nature" toggle the
+  // sheet stamps on a Stealth card, drawn and switched by
+  // registerSituationalPills (registered in module/redsteel.mjs).
+  // dravciSmysly's Advantage half is utils/rangerCombat.mjs: the Ambush / In
+  // nature toggle in both attack dialogs, read by utils/combatSkillBonuses.mjs
+  // getAttackRolls (its passive Active Effect sets system.predatorySenses).
+  ranger: [
+    "prezbrojeni",
+    "vylPrezbrojeni",
+    "ucednik",
+    "zast",
+    "lovcuvVystrel",
+    "expert",
+    "utokDravce",
+    "dorazeni",
+    "mistr",
+    "vnimaniStopovani",
+    "pohybVPrirode",
+  ],
   sharpshooter: ["oddechMireni"],
   // utils/aim.mjs — duelistuvPostoj is the stance itself (one-handed sword,
   // off hand free or holding a fencing dagger), which aimPerks tests as `blade`
@@ -1483,6 +1525,13 @@ function buildSpecialisationTree(actor, specId) {
 export async function syncSpecialisationPassive(actor, specId, nodeId, unlocked) {
   const nodeDef = REDSTEEL.specialisations[specId]?.nodes?.[nodeId];
   if (!nodeDef) return;
+
+  // Ranger - Apprentice wipes Combat and Archery the moment it is unlocked,
+  // from the Learn window and from the sheet's toggle alike. Locking it
+  // again restores nothing (rangerApprentice.mjs).
+  if (unlocked && specId === "ranger" && nodeId === "ucednik") {
+    await clearRangerReplacedRanks(actor);
+  }
 
   const flag = `${specId}.${nodeId}`;
   const groupKey = `spec_${specId}_${nodeId}`;

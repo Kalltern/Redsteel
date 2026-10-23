@@ -22,6 +22,11 @@ import {
 import { previewSneakTrigger, sneakTriggerLabel } from "./sneakTriggers.mjs";
 import { attackOptionIconsHtml } from "./attackOptionIcons.mjs";
 import { asMakeshiftMelee, isRangedWeapon } from "./makeshift.mjs";
+import {
+  finishingBlowRefusal,
+  predatorySensesAvailable,
+  setPredatorySenses,
+} from "./rangerCombat.mjs";
 
 /**
  * @param {object} [options]
@@ -190,6 +195,7 @@ export async function attackActions({ opportunity = false } = {}) {
     opportunityChecked: showOpportunity && opportunity === true,
     longReach: showLongReach,
     longReachClose: !!longReachClose,
+    predatorySenses: predatorySensesAvailable(actor),
   })}
 </div>
 ${
@@ -304,6 +310,19 @@ ${
           },
         );
 
+        // Hraničář → Doražení: only at a single target that is one of the
+        // attacker's Banes, refused before anything is set or paid
+        // (rangerCombat.mjs).
+        {
+          const refusal = finishingBlowRefusal(actor, selectedModifiers, [
+            ...(game.user?.targets ?? []),
+          ]);
+          if (refusal) {
+            ui.notifications.warn(refusal);
+            return;
+          }
+        }
+
         // ─── Reach (positioning.mjs) ───
         // Asked before anything is set, prompted or spent: cancelling leaves
         // the actor exactly as it was. Going ahead anyway stamps the card.
@@ -373,6 +392,13 @@ ${
         useOpportunity
           ? await actor.setFlag("redsteel", "useOpportunityAttack", true)
           : await actor.unsetFlag("redsteel", "useOpportunityAttack");
+
+        // Dravčí smysly: Advantage on this attack, consumed by getAttackRolls
+        // (rangerCombat.mjs).
+        await setPredatorySenses(
+          actor,
+          html.find('[name="predatorySenses"]').is(":checked"),
+        );
 
         aimValue > 0
           ? await actor.setFlag("redsteel", "aimCount", aimValue)

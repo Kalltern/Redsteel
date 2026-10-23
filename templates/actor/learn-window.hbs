@@ -629,6 +629,24 @@
           <div class="rs-create-group-label">{{this.label}}</div>
           <div class="rs-learn-cskills-tiles">
             {{#each this.items}}
+            {{!-- A trait creation drafted: a click gives it back, through the
+                  same edit as the Attributes & Traits tab (refused, with why,
+                  when a purchase depends on it). Racial traits stay put. --}}
+            {{#if (and this.originTraitId @root.creation.editable)}}
+            <div role="button" tabindex="0"
+                 class="rs-create-trait is-{{../kind}} is-removable"
+                 data-action="creationOriginTrait" data-trait="{{this.originTraitId}}"
+                 data-tt-kind="spellCardUuid" data-tt-uuid="{{this.uuid}}" data-card-kind="feature"
+                 aria-label="{{localize "REDSTEEL.Creation.Skills.removeTrait"}}: {{this.name}}">
+              <span class="rs-create-trait-icon"><img src="{{this.img}}" alt=""></span>
+              <span class="rs-create-trait-ribbon">
+                <span class="rs-create-trait-name">{{this.name}}</span>
+                <span class="rs-learn-owned-refund" data-tooltip="{{localize "REDSTEEL.Creation.Skills.removeTrait"}}">
+                  <i class="fas fa-rotate-left"></i>
+                </span>
+              </span>
+            </div>
+            {{else}}
             <div class="rs-create-trait is-{{../kind}}"
                  data-tt-kind="spellCardUuid" data-tt-uuid="{{this.uuid}}" data-card-kind="feature">
               <span class="rs-create-trait-icon"><img src="{{this.img}}" alt=""></span>
@@ -636,6 +654,7 @@
                 <span class="rs-create-trait-name">{{this.name}}</span>
               </span>
             </div>
+            {{/if}}
             {{/each}}
           </div>
         </div>

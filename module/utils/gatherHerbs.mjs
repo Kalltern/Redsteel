@@ -88,10 +88,14 @@ function whisperGM(actor, content) {
 
 /**
  * Ask whether a Herbalism/Survival roll is a plain skill test or a herb
- * gathering attempt.
- * @returns {Promise<"test"|"gather"|null>} null if dismissed.
+ * gathering attempt. With `track` (Survival, for a holder of the Ranger or
+ * Grimm Perception and Tracking node, utils/rangerSkills.mjs) it also offers
+ * Tracking, a Survival test that takes those bonuses.
+ * @param {string} skillName
+ * @param {{track?: boolean}} [options]
+ * @returns {Promise<"test"|"track"|"gather"|null>} null if dismissed.
  */
-export function promptHerbMode(skillName) {
+export function promptHerbMode(skillName, { track = false } = {}) {
   return new Promise((resolve) => {
     let resolved = false;
     const finish = (v) => {
@@ -100,13 +104,22 @@ export function promptHerbMode(skillName) {
     };
     new Dialog({
       title: `${skillName}`,
-      content: `<p style="text-align:center;">Are you testing the skill, or gathering herbs?</p>`,
+      content: track
+        ? `<p style="text-align:center;">${game.i18n.localize("REDSTEEL.Tracking.Prompt")}</p>`
+        : `<p style="text-align:center;">Are you testing the skill, or gathering herbs?</p>`,
       buttons: {
         test: {
           icon: '<i class="fas fa-dice-d20"></i>',
           label: "Test skill",
           callback: () => finish("test"),
         },
+        ...(track && {
+          track: {
+            icon: '<i class="fas fa-paw"></i>',
+            label: game.i18n.localize("REDSTEEL.Tracking.Track"),
+            callback: () => finish("track"),
+          },
+        }),
         gather: {
           icon: '<i class="fas fa-seedling"></i>',
           label: "Gather herbs",

@@ -416,6 +416,28 @@ export const NODE_REROLL_POOLS = [
     requiresToken: "attack",
     img: "icons/skills/melee/strike-sword-steel-yellow.webp",
   },
+  {
+    // Hraničář → Hraničář - Expert (specializace-wip.md r308): "Umožňuje 1x
+    // za den opakovat hod na Zásah nebo Střelbu": the melee (combat) and shot
+    // (archery) weapon attack rolls, not throws. `requiresToken` keeps a
+    // bare Combat or Archery skill test from the sheet out.
+    // Hraničář - Mistr (r310) widens the same once-a-day pool: "lze nyní
+    // uplatnit na Zásah, Střelbu, Obranu nebo Kryt (Včetně Kritického
+    // neúspěchu)". `upgrade` swaps in its skills and tokens while the mistr
+    // node is unlocked too; the pool id and its spend stay the Expert's, so
+    // it is still one use a day in total.
+    spec: "ranger",
+    node: "expert",
+    skillsRaw: "combat, archery",
+    max: 1,
+    requiresToken: "attack",
+    img: "icons/weapons/bows/longbow-leather-green.webp",
+    upgrade: {
+      node: "mistr",
+      skillsRaw: "combat, archery, meleeDefense, rangedDefense, critfail",
+      requiresToken: ["attack", "defense"],
+    },
+  },
 ];
 
 /** Actor flag holding node pool spend: { "<spec>-<node>": {used, combatUsed} }. */
@@ -454,30 +476,52 @@ async function setNodePoolState(actor, def, state) {
   });
 }
 
+/**
+ * The skills and tokens a node pool answers right now: its own, or its
+ * `upgrade`'s while the upgrade node is unlocked as well (Ranger Expert →
+ * Master). The node and pool id are always the base definition's.
+ */
+function effectiveNodePool(actor, def) {
+  const upgrade = def.upgrade;
+  if (upgrade && hasNode(actor, { spec: def.spec, node: upgrade.node })) {
+    return {
+      labelNode: upgrade.node,
+      skillsRaw: upgrade.skillsRaw ?? def.skillsRaw,
+      requiresToken: upgrade.requiresToken ?? def.requiresToken ?? null,
+    };
+  }
+  return {
+    labelNode: def.node,
+    skillsRaw: def.skillsRaw,
+    requiresToken: def.requiresToken ?? null,
+  };
+}
+
 /** Pool descriptors for every node pool the actor has unlocked. */
 function getNodeRerollPools(actor) {
   return NODE_REROLL_POOLS.filter((def) => hasNode(actor, def)).map((def) => {
     const max = def.max;
     const state = getNodePoolState(actor, def);
     const used = Math.min(max, state.used);
-    const combatMax = parseCombatMax(def.skillsRaw);
+    const live = effectiveNodePool(actor, def);
+    const combatMax = parseCombatMax(live.skillsRaw);
     const combatUsed = Math.min(used, state.combatUsed);
-    const skills = parseSkillList(def.skillsRaw);
+    const skills = parseSkillList(live.skillsRaw);
     const itemId = nodePoolId(def);
     return {
       itemId,
       poolIndex: 0,
       key: `${itemId}:0`,
       label: game.i18n.localize(
-        `REDSTEEL.Actor.Specialisations.${def.spec}.nodes.${def.node}.label`,
+        `REDSTEEL.Actor.Specialisations.${def.spec}.nodes.${live.labelNode}.label`,
       ),
       img: def.img,
       skills,
       universal: skills.length === 0,
-      critFail: hasCritFailKey(def.skillsRaw),
+      critFail: hasCritFailKey(live.skillsRaw),
       requiresArmor: def.requiresArmor ?? null,
       requiresOffhand: def.requiresOffhand ?? null,
-      requiresToken: def.requiresToken ?? null,
+      requiresToken: live.requiresToken,
       max,
       used,
       remaining: Math.max(0, max - used),
@@ -602,9 +646,11 @@ export function getEligibleRerolls(actor, tokens, { critFailure = false } = {}) 
       return false;
     }
     // A pool that only answers a particular kind of roll (Grimm's Bane
-    // reroll needs the `bane` token on the card).
-    if (pool.requiresToken && !tokenSet.has(normalizeTrigger(pool.requiresToken))) {
-      return false;
+    // reroll needs the `bane` token on the card). A list is any-of (Ranger
+    // Master: an attack or a defense card).
+    if (pool.requiresToken) {
+      const required = [pool.requiresToken].flat();
+      if (!required.some((t) => tokenSet.has(normalizeTrigger(t)))) return false;
     }
     if (isCombat && pool.combatRemaining <= 0) return false;
     if (pool.universal) return true;

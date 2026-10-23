@@ -29,6 +29,14 @@ const OPTIONS = [
     hint: "REDSTEEL.AttackDialog.PolearmPenaltyHint",
     cls: "penalty",
   },
+  {
+    // Hraničář → Dravčí smysly: Advantage on the attack in the first round
+    // of an ambush or a fight in the wild (rangerCombat.mjs).
+    name: "predatorySenses",
+    img: "icons/magic/nature/stealth-hide-eyes-green.webp",
+    label: "REDSTEEL.AttackDialog.PredatorySenses",
+    hint: "REDSTEEL.AttackDialog.PredatorySensesHint",
+  },
 ];
 
 /**
@@ -39,6 +47,8 @@ const OPTIONS = [
  * @param {boolean} [state.opportunityChecked]  Opportunity Attack opens ticked.
  * @param {boolean} state.longReach    Show the polearm penalty toggle at all.
  * @param {boolean} state.longReachClose  Polearm penalty opens ticked.
+ * @param {boolean} [state.predatorySenses]  Show the Ambush / In nature toggle
+ *   (rangerCombat.mjs predatorySensesAvailable). Never opens ticked.
  * @returns {string}
  */
 export function attackOptionIconsHtml({
@@ -48,6 +58,7 @@ export function attackOptionIconsHtml({
   opportunityChecked = false,
   longReach,
   longReachClose,
+  predatorySenses = false,
 }) {
   const checked = {
     sneakAttack: sneak,
@@ -55,7 +66,11 @@ export function attackOptionIconsHtml({
     opportunityAttack: opportunityChecked,
     longReachPenalty: longReachClose,
   };
-  const shown = { opportunityAttack: opportunity, longReachPenalty: longReach };
+  const shown = {
+    opportunityAttack: opportunity,
+    longReachPenalty: longReach,
+    predatorySenses,
+  };
   return OPTIONS.filter((o) => shown[o.name] ?? true)
     .map((o) => {
       const label = game.i18n.localize(o.label);

@@ -383,7 +383,7 @@ export const PROGRESSION_TRACKS = {
     key: "ranger",
     section: "combat",
     ranks: [
-      { cost: 5, currency: "cp", requires: [{ t: "specNode", spec: "ranger", node: "apprentice" }] },
+      { cost: 5, currency: "cp", requires: [{ t: "specNode", spec: "ranger", node: "ucednik" }] },
       { cost: 10, currency: "cp", requires: [] },
       { cost: 10, currency: "cp", requires: [{ t: "anyRank", group: "doctrines", min: 2 }, { t: "teacher", tier: 1 }] },
       { cost: 15, currency: "cp", requires: [] },

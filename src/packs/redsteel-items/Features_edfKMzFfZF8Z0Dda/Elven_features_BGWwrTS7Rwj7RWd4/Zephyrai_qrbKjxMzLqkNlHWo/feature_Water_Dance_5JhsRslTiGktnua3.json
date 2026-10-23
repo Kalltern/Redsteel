@@ -1,0 +1,109 @@
+{
+  "folder": "qrbKjxMzLqkNlHWo",
+  "name": "Water Dance",
+  "type": "feature",
+  "img": "icons/magic/water/wave-water-blue.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.WaterDance.name",
+    "description": "<p>You swim faster than other folk and have Advantage on Swimming tests. You can walk across calm water.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "feature",
+    "cost": {
+      "cp": null,
+      "sp": 10
+    }
+  },
+  "effects": [
+    {
+      "name": "Water Dance",
+      "origin": "Item.5JhsRslTiGktnua3",
+      "img": "icons/magic/water/wave-water-blue.webp",
+      "_id": "jwWbj3FDInUWdHhO",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.rollAdvantage.swimming",
+            "value": 1,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
+      "disabled": false,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {
+        "statuscounter": {
+          "value": 1,
+          "config": {
+            "type": "default"
+          },
+          "visible": false
+        },
+        "tos": {
+          "actorTurns": null
+        }
+      },
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!5JhsRslTiGktnua3.jwWbj3FDInUWdHhO"
+    }
+  ],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": null,
+    "modifiedTime": null,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "ownership": {
+    "default": 0,
+    "rs3mzx7WZdtEmvH2": 3,
+    "exQfSubzwCCs5h8v": 3,
+    "UHjN0KQ8w8ZxibJg": 3
+  },
+  "sort": 100000,
+  "_id": "5JhsRslTiGktnua3",
+  "_key": "!items!5JhsRslTiGktnua3"
+}

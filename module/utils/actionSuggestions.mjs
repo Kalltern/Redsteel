@@ -33,6 +33,8 @@ import { hasDragonSleep } from "./dragonSleep.mjs";
 import { hasFreeRiposte } from "./swordServant.mjs";
 import { isSlipThrough, pendingSlipThrough } from "./slipThrough.mjs";
 import { isHalfPirouette, pendingHalfPirouette } from "./halfPirouette.mjs";
+import { grudgeState, isGrudge } from "./ranger.mjs";
+import { isPredatorsAttack, pendingPredatorsAttack } from "./predatorsAttack.mjs";
 import { resolveWeaponContext } from "./weaponResolver.mjs";
 import { hasImpaleFollowup, IMPALE_FOLLOWUP_KEY } from "./impaleFollowup.mjs";
 import { OVERWATCH_KEY, overwatchTrigger } from "./overwatch.mjs";
@@ -1349,6 +1351,42 @@ function halfPirouetteChips(actor) {
 }
 
 /**
+ * Hraničář → Zášť (Grudge, ranger.mjs): offered while the Grudge may be
+ * declared (round 1, none yet) or picked anew (its target is dead). A Free
+ * action; the Stamina, 2 or 5, is paid when it is used. Not an attack, so no
+ * Aimed Attack on right-click.
+ *
+ * @param {Actor} actor
+ * @returns {object[]}
+ */
+function grudgeChips(actor) {
+  if (!grudgeState(actor)) return [];
+  const grudge = actor.items.find((i) => i.type === "ability" && isGrudge(i));
+  if (!grudge) return [];
+  const chip = abilityChip(grudge, "REDSTEEL.Bg3Hotbar.Suggest.FreeAction", null);
+  return [{ ...chip, aimable: false, hint: "" }];
+}
+
+/**
+ * Hraničář → Útok dravce (Predator's Attack, predatorsAttack.mjs): offered
+ * for the rest of the turn a Melee attack killed someone in. A Free action;
+ * the Stamina is paid when it is used. Not an attack itself, so no Aimed
+ * Attack on right-click.
+ *
+ * @param {Actor} actor
+ * @returns {object[]}
+ */
+function predatorsAttackChips(actor) {
+  if (!pendingPredatorsAttack(actor)) return [];
+  const item = actor.items.find(
+    (i) => i.type === "ability" && isPredatorsAttack(i),
+  );
+  if (!item) return [];
+  const chip = abilityChip(item, "REDSTEEL.Bg3Hotbar.Suggest.FreeAction", null);
+  return [{ ...chip, aimable: false, hint: "" }];
+}
+
+/**
  * Hoplite (hoplite.mjs), each for the rest of the turn it was earned in:
  * Momentum after a kill or a Critical Hit with a qualifying weapon (the
  * doctrine Momentum too, momentum.mjs, on any weapon attack), Advance
@@ -1583,6 +1621,7 @@ function combatProvider(actor) {
     ...impaleFollowupChips(actor),
     ...escapeChips(actor), ...sustainChips(actor), ...stanceChips(actor),
     ...slipThroughChips(actor), ...halfPirouetteChips(actor),
+    ...grudgeChips(actor), ...predatorsAttackChips(actor),
     ...hopliteChips(actor), ...triumphChips(actor), ...freeShieldChips(actor)];
 }
 

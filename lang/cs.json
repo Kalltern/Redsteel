@@ -18,6 +18,42 @@
       "NoAimTarget": "V dosahu není žádný nepřítel, na kterého by šlo mířit.",
       "PickPrompt": "Na kterého nepřítele v dosahu získat Míření?"
     },
+    "Grudge": {
+      "Refused": "Zášť můžeš vyhlásit jen v prvním kole boje, nebo znovu, až je její cíl mrtvý.",
+      "NeedTarget": "Zaměř právě jednoho živého nepřítele, vůči kterému chceš chovat Zášť.",
+      "Declared": "{name} chová Zášť vůči {target} ({cost} Výdrže).",
+      "DeclaredAim": "{name} chová Zášť vůči {target} ({cost} Výdrže) a získává na něj Míření."
+    },
+    "Tracking": {
+      "Prompt": "Testuješ dovednost, stopuješ, nebo sbíráš byliny?",
+      "Track": "Stopovat",
+      "CardTitle": "{skill} (Stopování)"
+    },
+    "Situational": {
+      "InNature": "V přírodě +{value}%",
+      "InNatureHint": "Hraničář, Pohyb v přírodě: Plížení +15% při pohybu v divočině. Zapíná ho ten, kdo hází, nebo GM.",
+      "Adjusted": "SÚ {base}, s aktivními bonusy {adjusted}: {result}",
+      "Success": "Úspěch",
+      "Failure": "Neúspěch"
+    },
+    "RangerApprentice": {
+      "Cleared": "{name} se učí dovednost Hraničář. Propadají stupně {ranks} a CP za ně utracené se vrací."
+    },
+    "FinishingBlow": {
+      "NotBane": "Doražení vyžaduje právě jeden cíl, a to takový, na který máš Metlu."
+    },
+    "PredatorsAttack": {
+      "NothingPending": "Útok dravce můžeš použít jen v tahu, ve kterém jsi zabil oponenta útokem na blízko.",
+      "NoRanged": "Útok dravce potřebuje luk nebo kuši, na kterou přezbrojíš.",
+      "Prompt": "Na který luk nebo kuši přezbrojit?",
+      "Confirm": "Přezbrojit ({cost} Výdrže)",
+      "Keep": "Ponechat zbraň v ruce",
+      "ChoicePrompt": "Vystřelit, nebo přebít kuši?",
+      "Shoot": "Vystřelit",
+      "Reload": "Přebít",
+      "ReadyShoot": "{name} sahá po zbrani {weapon}: další Útok v tomto tahu je Volná akce.",
+      "ReadyReload": "{name} sahá po zbrani {weapon}: další Přebíjení v tomto tahu je Volná akce."
+    },
     "Skirmisher": {
       "AimAfterThrow": "{name} získává po vrhu 1 Míření na {target} (celkem {after}).",
       "ThrowSlowLabel": "Pomalý pohyb po vrhu",
@@ -1647,31 +1683,31 @@
           "nodes": {
             "ucednik": {
               "label": "Hraničář - Učedník",
-              "description": "0 CP. Ručně — řeší se u stolu."
+              "description": "0 CP. Odemyká dovednost Hraničář, která se pro požadavky počítá jako Souboj a Střelba; odemčení vynuluje Souboj a Střelbu a zavře je pro nákup, a máš-li dvě Doktríny, nižší z nich stojí o 3 CP méně za stupeň. Automatizováno."
             },
             "zast": {
               "label": "Zášť",
-              "description": "10 CP; Hraničář II. Ručně — řeší se u stolu."
+              "description": "10 CP; Hraničář II. Zášť: v prvním kole označíš jednoho nepřítele a dokud žije, držíš na něm vždy alespoň jedno Míření, a po jeho smrti si můžeš za 5 Výdrže zvolit nový cíl. Automatizováno."
             },
             "lovcuvVystrel": {
               "label": "Lovcův výstřel",
-              "description": "10 CP. Ručně — řeší se u stolu."
+              "description": "10 CP. Lovcův výstřel: obyčejná střelba, která ti při zásahu dá jedno Míření na cíl a při Kritickém zásahu dvě. Automatizováno."
             },
             "expert": {
               "label": "Hraničář - Expert",
-              "description": "15 CP; Hraničář V. Ručně — řeší se u stolu."
+              "description": "15 CP; Hraničář V. Jednou za den můžeš opakovat hod na Zásah nebo Střelbu, nabízí ho výběr opakování. Automatizováno."
             },
             "utokDravce": {
               "label": "Útok dravce",
-              "description": "15 CP; Hraničář VIII. Ručně — řeší se u stolu."
+              "description": "15 CP; Hraničář VIII. Útok dravce: po zabití útokem na blízko ve svém tahu zdarma přezbrojíš na luk nebo kuši a jako Volnou akci vystřelíš nebo přebiješ. Automatizováno."
             },
             "dorazeni": {
               "label": "Doražení",
-              "description": "15 CP. Ručně — řeší se u stolu."
+              "description": "15 CP. Doražení: modifikátor útoku jen na cíl, na který máš Metlu, dává Šanci na Kritický zásah +10%, Kritický rozsah +3 a Ověření +10%. Automatizováno."
             },
             "mistr": {
               "label": "Hraničář - Mistr",
-              "description": "5 CP; Hraničář a Doktrína X. Ručně — řeší se u stolu."
+              "description": "5 CP; Hraničář a Doktrína X. Denní opakování hodu z Hraničáře - Experta platí i na Obranu a Kryt, včetně Kritického neúspěchu. Automatizováno."
             },
             "metlaPrubojnost": {
               "label": "Metla: Průbojnost +3",
@@ -1715,15 +1751,15 @@
             },
             "vnimaniStopovani": {
               "label": "Vnímání a Stopování +15%",
-              "description": "10 SP; Přežití II. Ručně — řeší se u stolu."
+              "description": "10 SP; Přežití II. +15% na testy Vnímání a na testy Přežití hozené jako Stopování. Automatizováno."
             },
             "dravciSmysly": {
               "label": "Dravčí smysly",
-              "description": "10 CP. Ručně — řeší se u stolu."
+              "description": "10 CP. Vnímání nahrazuje Obratnost u bonusu na Obranu a přepínač Přepadení / V přírodě v dialozích útoku ti v prvním kole dává Výhodu na útok. Automatizováno."
             },
             "pohybVPrirode": {
               "label": "Pohyb v přírodě: Plížení +15%",
-              "description": "5 SP; Plížení IV. Ručně — řeší se u stolu."
+              "description": "5 SP; Plížení IV. Tvoje karty Plížení nesou přepínač V přírodě, který po zapnutí přičte 15 ke stupni úspěchu. Automatizováno."
             },
             "slevaPlizeni": {
               "label": "Sleva 3 SP za stupeň Plížení",
@@ -3014,7 +3050,7 @@
             },
             "metlaVnimani": {
               "label": "Metla: Vnímání a Stopování +10%",
-              "description": "10 SP; Přežití II. Ručně — řeší se u stolu."
+              "description": "10 SP; Přežití II. +10% na testy Vnímání a na testy Přežití hozené jako Stopování, je-li tvým jediným cílem Metla. Automatizováno."
             },
             "metlaIniciativa": {
               "label": "Metla: Iniciativa +3",
@@ -4923,6 +4959,7 @@
         "acquire": "Získat dovednost",
         "previewHint": "Jen náhled. Získáš ji knihou vedle ní v nabídce.",
         "refundSkill": "Vrátit všechny stupně (vrátí ji do seznamu)",
+        "removeTrait": "Vrátit tento rys",
         "dockEmpty": "Klikni na jméno dovednosti a uvidíš zde její stupně.",
         "pipBuy": "Kliknutím koupíš všechny stupně až po tento.",
         "pipRefund": "Kliknutím vrátíš všechny stupně až po tento.",
@@ -5063,7 +5100,13 @@
         "raisesLimitNote": "* zvyšuje i hranici daného atributu.",
         "derivedSkills": "Odvozené dovednosti",
         "spent": "Utracené body",
-        "limit": "Fyzická hranice"
+        "limit": "Fyzická hranice",
+        "Dex": {
+          "finesseTitle": "Finesní zbraně",
+          "finesse": "Postavy s vysokou Obratností obvykle bojují finesními zbraněmi. Odbornost Finesa ti u těchto zbraní dovolí použít Obratnost místo Síly pro Zásah i Zranění, takže útočíš přesněji a způsobíš víc zranění. Doporučené zbraně:",
+          "dodgeTitle": "Úhyb",
+          "dodge": "Úhyb je skvělý nástroj Obratnosti. Jeho hodnota vychází z tvého stupně Akrobacie a každý bod Obratnosti mu přidá +3 %. V boji je to lepší forma obrany, kterou platíš Výdrží."
+        }
       },
       "pointsRemaining": "Zbývající body {remaining} / {budget}",
       "traitPointsRemaining": "Zbývající rysové body {remaining} / {total}",
@@ -5193,6 +5236,138 @@
     },
     "Resource": {
       "NotEnough": "Nedostatek: {resource}."
+    },
+    "Material": {
+      "Label": "Materiál",
+      "None": "Žádný",
+      "Missing": "(chybí)",
+      "Refresh": "Obnovit materiál ze zdroje",
+      "Refreshed": "Materiál {name} byl obnoven.",
+      "NotFound": "Materiál „{key}“ nebyl nalezen ve světě ani v žádném kompendiu.",
+      "DuplicateKey": "Klíč „{key}“ už používá jiný materiál ({other}). Předměty hledají materiál podle klíče, takže se použije jen jeden z nich.",
+      "EditorHint": "Bonusy materiálu se sčítají se základními hodnotami předmětu, kvalitou i očarováním. Zaškrtni, na co lze materiál použít.",
+      "EffectSlotsHint": "Tři pozice efektů sdílí všechny sloupce. Každý sloupec si pro každou pozici určuje vlastní šanci.",
+      "Section": {
+        "general": "Obecné",
+        "effectSlots": "Pozice efektů"
+      },
+      "Column": {
+        "weapon": "Zbraň",
+        "offhand": "Druhá ruka",
+        "armor": "Zbroj",
+        "shield": "Štít"
+      },
+      "Category": {
+        "metal": "Kov",
+        "wood": "Dřevo",
+        "cloth": "Látka",
+        "leather": "Kůže",
+        "other": "Jiné"
+      },
+      "FIELDS": {
+        "key": {
+          "label": "Klíč",
+          "hint": "Stálá identita, na kterou předměty odkazují. Když ho necháš prázdný, vyplní se z názvu."
+        },
+        "category": {
+          "label": "Kategorie"
+        },
+        "appliesTo": {
+          "label": "Určeno pro"
+        },
+        "slotType": {
+          "label": "Efekt {n}"
+        },
+        "slotName": {
+          "label": "Vlastní název {n}"
+        },
+        "slotUnset": {
+          "label": "Efekt {n} (nenastaven)"
+        },
+        "attack": {
+          "label": "Útok"
+        },
+        "defense": {
+          "label": "Obrana"
+        },
+        "damageBonus": {
+          "label": "Bonus k poškození"
+        },
+        "damageRoll": {
+          "label": "Kostky poškození"
+        },
+        "penetration": {
+          "label": "Průbojnost"
+        },
+        "critRange": {
+          "label": "Kritický rozsah"
+        },
+        "critChance": {
+          "label": "Kritický úspěch"
+        },
+        "critDefense": {
+          "label": "Kritická obrana"
+        },
+        "critDamage": {
+          "label": "Kritické poškození"
+        },
+        "critDodge": {
+          "label": "Kritický úhyb"
+        },
+        "dodge": {
+          "label": "Úhyb"
+        },
+        "breakthroughRoll": {
+          "label": "Kostky průrazu"
+        },
+        "damageTypeMode": {
+          "label": "Režim typu poškození"
+        },
+        "damageTypes": {
+          "label": "Typy poškození"
+        },
+        "armorValue": {
+          "label": "Zbroj"
+        },
+        "rangedDefense": {
+          "label": "Kryt"
+        },
+        "rangedCritDefense": {
+          "label": "Kritický kryt"
+        },
+        "healthBonus": {
+          "label": "Životy"
+        },
+        "resist": {
+          "label": "Odolnosti"
+        },
+        "effectResist": {
+          "label": "Šance na postižení efektem",
+          "hint": "Se znaménkem, přičítá se k šanci, že nositele efekt postihne: -5 ji sníží o 5 %."
+        },
+        "bashEffects": {
+          "label": "Úder štítem"
+        }
+      },
+      "Resist": {
+        "acid": "Kyselina",
+        "fire": "Oheň",
+        "frost": "Mráz",
+        "lightning": "Blesk",
+        "magic": "Magie",
+        "dark": "Temnota",
+        "poison": "Jed",
+        "holy": "Svatost"
+      },
+      "Effect": {
+        "stagger": "Omráčení",
+        "stun": "Ochromení",
+        "bleed": "Krvácení",
+        "slow": "Zpomalení",
+        "poison": "Otrava",
+        "burn": "Podpálení",
+        "freeze": "Zmražení"
+      }
     },
     "Enchantment": {
       "Itemisation": "Kategorie předmětu",
@@ -5533,6 +5708,8 @@
       "OpportunityHint": "útok mimo vlastní tah, vyvolaný pohybem, sesíláním nebo střelbou sousedního nepřítele.",
       "PolearmPenalty": "Postih dřevcové zbraně",
       "PolearmPenaltyHint": "-5 při boji zblízka se zbraní s dlouhým dosahem.",
+      "PredatorySenses": "Přepadení / V přírodě",
+      "PredatorySensesHint": "Dravčí smysly ti dávají Výhodu na tento útok v prvním kole přepadení nebo boje v přírodě.",
       "Shoot": "Vystřelit",
       "MakeshiftMelee": "Útok zblízka",
       "MakeshiftSuffix": "(provizorní)"
@@ -7041,6 +7218,26 @@
       "Borgor": {
         "name": "Borgor"
       },
+      "WaterDance": {
+        "name": "Vodní tanec",
+        "description": "<p>Plaveš rychleji než ostatní a máš Výhodu na testy Plavání. Dokážeš chodit po klidné hladině.</p>"
+      },
+      "CalmWaters": {
+        "name": "Klidná hladina",
+        "description": "<p>Nervy +1, pokud jsi v blízkosti vodního toku nebo větší vodní plochy (do 250 m nebo na dohled), nebo pokud jsi pod efektem Mokrý.</p><p>Bonus za Mokrý se uplatní sám. U vody zapni efekt Calm Waters: Near Water; během efektu Mokrý se nepočítá, takže se oba bonusy nikdy nesčítají.</p>"
+      },
+      "GiftOfCalistea": {
+        "name": "Dar Calistei",
+        "description": "<p>Dokážete rozpoznat otrávené nebo zkažené kapaliny.</p>"
+      },
+      "SeaBreath": {
+        "name": "Mořský dech",
+        "description": "<p>Bonus +10 % do Pijáctví a jednou za den můžeš opakovat hod na Pijáctví. Toxicita +10.</p>"
+      },
+      "BondWithWater": {
+        "name": "Spojení s vodou",
+        "description": "<p>Všechna kouzla Školy Vody mají o +3 % větší šanci na Kritický úspěch a bonus +3 do Kritického rozsahu.</p>"
+      },
       "ElvenGrace": {
         "name": "Elfí ladnost"
       },
@@ -7403,7 +7600,7 @@
       },
       "FastReaction": {
         "name": "Rychlá reakce",
-        "description": "<p>Vrháte se do dalšího střetu o kus dřív než ostatní. Získáváte +4 k Iniciativě až do začátku svého příštího tahu, takže vám bonus zůstává i ve chvíli, kdy se na začátku dalšího kola znovu určuje pořadí tahů.</p><p>Kumulativní: vydáte-li akci ve stejném kole dvakrát, je bonus +8. Iniciativa je i tak omezena na 15.</p>",
+        "description": "<p>Vrháš se do dalšího střetu o kus dřív než ostatní. Získáváš +4 k Iniciativě až do začátku svého příštího tahu, takže ti bonus zůstává i ve chvíli, kdy se na začátku dalšího kola znovu určuje pořadí tahů.</p><p>Kumulativní: vydáš-li akci ve stejném kole dvakrát, je bonus +8. Iniciativa je i tak omezena na 15.</p>",
         "result": "Iniciativa {gained}, nyní {total}. Stupňů: {stacks}.",
         "capped": "Iniciativa je již na svém stropu, část bonusu se tedy ztratila."
       },
@@ -7978,6 +8175,18 @@
       },
       "ImprovedSuddenRearm": {
         "name": "Vylepšené náhlé přezbrojení"
+      },
+      "Grudge": {
+        "name": "Zášť"
+      },
+      "HuntersShot": {
+        "name": "Lovcův výstřel"
+      },
+      "PredatorsAttack": {
+        "name": "Útok dravce"
+      },
+      "FinishingBlow": {
+        "name": "Doražení"
       },
       "Rest": {
         "name": "Oddech"
@@ -9681,6 +9890,7 @@
         "locked": "Pro postup v této dovednosti zvyš stupeň dovednosti {skill}"
       },
       "creationCap": "Tvorba postavy: na úrovni {level} lze dosáhnout nejvýše stupně {rank}.",
+      "replacedByRanger": "Nahrazeno Hraničářem",
       "WeaponMaster": {
         "title": "Mistr zbraní",
         "ranks": "Další zbraňová dovednost (jakákoli kromě nejvyšší): stupně I až IV jsou zdarma, každý další stupeň stojí 5 CP a nevyžaduje Učitele."
@@ -9905,7 +10115,8 @@
       "spell": "Kouzlo",
       "condition": "Stav",
       "recipe": "Recept",
-      "enchantment": "Očarování"
+      "enchantment": "Očarování",
+      "material": "Materiál"
     }
   }
 }

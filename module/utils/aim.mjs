@@ -435,11 +435,66 @@ async function setAim(token, targetId, stacks) {
   await doc.setFlag(SYSTEM_ID, FLAG, { targetId, stacks: capped, stamp });
 }
 
-/** Drop the aim entirely. */
+/**
+ * Drop the aim entirely, unless a Grudge holds it: Hraničář → Zášť, "Toto
+ * Míření přetrvává, dokud je cíl Zášti naživu". While the Grudge target
+ * lives the aimer never falls below one Aim on it (user ruling 2026-10-22):
+ * spending, breaking or losing the aim leaves that one stack behind, and an
+ * aim moved onto someone else snaps back to it once that aim is gone.
+ * Every path that empties an aim ends here (setAim at 0 included), so this is
+ * the one place the floor has to live. See ranger.mjs.
+ */
 async function clearAim(token) {
   const doc = tokenDoc(token);
-  if (!doc?.getFlag(SYSTEM_ID, FLAG)) return;
+  const aim = doc?.getFlag(SYSTEM_ID, FLAG);
+  if (!aim) return;
+  const grudgeId = livingGrudgeTarget(doc);
+  if (grudgeId) {
+    if (aim.targetId === grudgeId && aim.stacks === 1) return;
+    await doc.setFlag(SYSTEM_ID, FLAG, {
+      targetId: grudgeId,
+      stacks: 1,
+      stamp: (aim.stamp ?? 0) + 1,
+    });
+    return;
+  }
   await doc.unsetFlag(SYSTEM_ID, FLAG);
+}
+
+/** Token flag holding a ranger's Grudge: { targetId, combatId }. */
+export const GRUDGE_FLAG = "grudge";
+
+/**
+ * The Grudge target this aimer still holds a floor on: the flagged token, on
+ * the aimer's own scene, without the `dead` status. Dying or Downed is still
+ * alive. Null when there is none.
+ *
+ * @param {TokenDocument|Token} token
+ * @returns {string|null}
+ */
+export function livingGrudgeTarget(token) {
+  const doc = tokenDoc(token);
+  const targetId = doc?.getFlag(SYSTEM_ID, GRUDGE_FLAG)?.targetId ?? null;
+  if (!targetId) return null;
+  const target = doc.parent?.tokens?.get(targetId);
+  if (!target || target.actor?.statuses?.has("dead")) return null;
+  return targetId;
+}
+
+/**
+ * Put the Grudge floor in place on a token that holds no aim at all: one
+ * stack on the living Grudge target. An aim already held, on anyone, is left
+ * alone; clearAim restores the floor once it is gone.
+ *
+ * @param {TokenDocument|Token} token
+ * @returns {Promise<boolean>} true when the stack was placed
+ */
+export async function applyGrudgeFloor(token) {
+  const doc = tokenDoc(token);
+  const grudgeId = livingGrudgeTarget(doc);
+  if (!grudgeId || readAim(doc)) return false;
+  await setAim(doc, grudgeId, 1);
+  return true;
 }
 
 /**
@@ -801,6 +856,12 @@ const AIM_GRANT_ABILITIES = new Map([
   [
     FINAL_STRIKE_KEY,
     { name: "Final Strike", normal: 2, critical: 2, retarget: true },
+  ],
+  // Hraničář → Lovcův výstřel: "Při Kritickém zásahu získá na cíl dvě Míření
+  // a při obyčejném zásahu jedno Míření". Nothing on a miss.
+  [
+    "REDSTEEL.Items.HuntersShot.name",
+    { name: "Hunter's Shot", normal: 1, critical: 2 },
   ],
 ]);
 

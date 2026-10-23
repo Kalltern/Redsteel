@@ -3,6 +3,13 @@ import { dragonGuardTags } from "./dragonGuard.mjs";
 import { chargeDistanceAllowed, paidAbilityCost } from "./swordServant.mjs";
 import { isSlipThrough, useSlipThrough } from "./slipThrough.mjs";
 import { isHalfPirouette, useHalfPirouette } from "./halfPirouette.mjs";
+import { isGrudge, useGrudge } from "./ranger.mjs";
+import { isPredatorsAttack, usePredatorsAttack } from "./predatorsAttack.mjs";
+import {
+  finishingBlowRefusal,
+  predatorySensesAvailable,
+  setPredatorySenses,
+} from "./rangerCombat.mjs";
 import {
   chargeWasStopped,
   daringThrowContext,
@@ -568,6 +575,9 @@ export async function combatAbilities({
       aimedStrikePart,
       modifiers: selectedModifiers,
       longReachPenalty,
+      // Hraničář → Dravčí smysly: the Ambush / In nature toggle
+      // (rangerCombat.mjs).
+      predatorySenses: html.find('[name="predatorySenses"]').is(":checked"),
     };
     const isDefenseRoll = ability.system.class === "defense";
     const keepOpen = container.querySelector("#keep-open")?.checked;
@@ -672,6 +682,22 @@ export async function combatAbilities({
       return;
     }
 
+    // Hraničář → Zášť (Grudge): declared in round 1, or anew once its
+    // target is dead (ranger.mjs). Always handled there: a refusal is a
+    // notification, never the plain card.
+    if (isGrudge(ability) && (await useGrudge(actor, ability))) {
+      if (!keepOpen) dialog?.close();
+      return;
+    }
+    // Hraničář → Útok dravce (Predator's Attack) after a Melee kill this
+    // turn: re-arm to a bow or crossbow, then a free shot or Reload
+    // (predatorsAttack.mjs). Always handled there; with nothing pending it
+    // refuses with a notification.
+    if (isPredatorsAttack(ability) && (await usePredatorsAttack(actor, ability))) {
+      if (!keepOpen) dialog?.close();
+      return;
+    }
+
     // Momentum (the doctrine one or the Hoplite's) after a kill or Critical
     // Hit makes the next Attack free (momentum.mjs); the Hoplite's Advance
     // after a kill grants its two hex step (hoplite.mjs). With nothing
@@ -749,6 +775,19 @@ export async function combatAbilities({
     // (warden.mjs).
     if (selectedModifiers.some(isDoubleStrike)) {
       const refusal = doubleStrikeRefusal(actor, token, ability, [
+        ...(game.user?.targets ?? []),
+      ]);
+      if (refusal) {
+        ui.notifications.warn(refusal);
+        return;
+      }
+    }
+
+    // Hraničář → Doražení (Finishing Blow): only at a single target that is
+    // one of the attacker's Banes, refused before anything is paid
+    // (rangerCombat.mjs).
+    {
+      const refusal = finishingBlowRefusal(actor, selectedModifiers, [
         ...(game.user?.targets ?? []),
       ]);
       if (refusal) {
@@ -1299,6 +1338,7 @@ export async function combatAbilities({
     opportunity: showOpportunity,
     longReach: showLongReach,
     longReachClose: !!longReachClose,
+    predatorySenses: predatorySensesAvailable(actor),
   })}
 </div>
 ${
@@ -1832,6 +1872,9 @@ ${
     } else {
       await actor.unsetFlag("redsteel", "aimedPart");
     }
+
+    // Dravčí smysly: Advantage on the attack, consumed by getAttackRolls.
+    await setPredatorySenses(actor, !!intent.predatorySenses);
   }
 
   async function postUniversalStyleAttackChat({
@@ -2388,7 +2431,8 @@ ${
 
     const offPen = weaponContext?.isDualWield
       ? Number(
-          weaponContext.offWeapon?.system?.offhandProperties?.penetration,
+          (weaponContext.offWeapon?.system?.offhandTotals ??
+            weaponContext.offWeapon?.system?.offhandProperties)?.penetration,
         ) || 0
       : 0;
     const actorMods = game.redsteel.getActorCombatModifiers(actor, weapon);
@@ -2412,6 +2456,12 @@ ${
     const qualityPen = weapon
       ? Number(weapon.system.qualityMods?.penetration) || 0
       : 0;
+    // Enchantments and the material applied to this weapon, read next to its
+    // quality exactly as basicAttack.mjs does. getCriticalRolls never reads
+    // them itself, so an ability that skipped them here lost both.
+    const enchantMods = weapon?.system?.enchantMods ?? {};
+    const enchantPen = Number(enchantMods.penetration) || 0;
+    const enchantCritRange = Number(enchantMods.critRange) || 0;
     // Rogue VIII/X sneak penetration — see the note in basicAttack.mjs: it
     // belongs to the Sneak Attack, not to a critical, so it rides the base sum
     // rather than buildCriticalTotals.
@@ -2451,13 +2501,14 @@ ${
         abilityPenetration +
         weakSpotPen +
         actorMods.penetrationBonus +
+        enchantPen +
         qualityPen +
         improvedAimPen +
         sneakPenetration,
     );
     // S2: fold passive weapon crit-range bonuses (spec nodes) into the crit-range
     // input that getCriticalRolls buckets into critScore.
-    doctrineCritRangeBonus += actorMods.critRangeBonus;
+    doctrineCritRangeBonus += actorMods.critRangeBonus + enchantCritRange;
     // Přesný výstřel: Critical Range +1 for each Aim committed to the shot,
     // read before getAttackRolls consumes it (skirmisher.mjs).
     doctrineCritRangeBonus += accurateShotAimCritRange(actor, ability);
@@ -2741,10 +2792,9 @@ ${renderMarginFollowupLine({
       // A character-granted Breakthrough (Giantslayer) has to show on the card
       // too, otherwise the roll exists in the flags — and the Breakthrough radio
       // appears in the apply dialog — while the card itself hides the number.
-      showBreakthrough: Boolean(
-        (weapon ? weapon.system.breakthrough : abilityBreakthrough) ||
-          actorMods.breakthroughRolls.length,
-      ),
+      // Any source opens Breakthrough now (getDamageRolls), so show it
+      // whenever one was rolled.
+      showBreakthrough: String(breakthroughRollResult ?? "").trim() !== "",
       allBleedRollResults,
       effectsRollResults,
       rollName,

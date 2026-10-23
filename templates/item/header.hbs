@@ -235,6 +235,30 @@
               {{/each}}
             </select>
           </div>
+
+          {{!-- Material (utils/materials.mjs). The select is unnamed so the form
+                submit never writes it; the sheet's change listener stores the key
+                and a frozen snapshot together. --}}
+          <div class="grid-span-1">
+            <label for="weapon-material">{{localize "REDSTEEL.Material.Label"}}:</label>
+            <div class="material-select-row">
+              <select id="weapon-material" data-material-select {{#unless editable}}disabled{{/unless}}>
+                {{#each materialChoices as |choice|}}
+                  <option value="{{choice.key}}" {{#if choice.selected}}selected{{/if}}>
+                    {{choice.label}}
+                  </option>
+                {{/each}}
+              </select>
+              {{#if (and editable materialKey)}}
+                <a class="material-refresh" data-action="refreshMaterial" title="{{localize 'REDSTEEL.Material.Refresh'}}">
+                  <i class="fa-solid fa-rotate"></i>
+                </a>
+              {{/if}}
+            </div>
+          </div>
+          {{#if materialSummary}}
+            <p class="hint material-summary grid-span-2">{{materialSummary}}</p>
+          {{/if}}
         {{/if}}
 
         {{!-- Ability-only fields --}}
@@ -469,6 +493,30 @@
             {{/each}}
           </select>
         </div>
+
+        {{!-- Material (utils/materials.mjs). The select is unnamed so the form
+              submit never writes it; the sheet's change listener stores the key
+              and a frozen snapshot together. --}}
+        <div class="grid-span-1">
+          <label for="gear-material">{{localize "REDSTEEL.Material.Label"}}:</label>
+          <div class="material-select-row">
+            <select id="gear-material" data-material-select {{#unless editable}}disabled{{/unless}}>
+              {{#each materialChoices as |choice|}}
+                <option value="{{choice.key}}" {{#if choice.selected}}selected{{/if}}>
+                  {{choice.label}}
+                </option>
+              {{/each}}
+            </select>
+            {{#if (and editable materialKey)}}
+              <a class="material-refresh" data-action="refreshMaterial" title="{{localize 'REDSTEEL.Material.Refresh'}}">
+                <i class="fa-solid fa-rotate"></i>
+              </a>
+            {{/if}}
+          </div>
+        </div>
+        {{#if materialSummary}}
+          <p class="hint material-summary grid-span-2">{{materialSummary}}</p>
+        {{/if}}
 
       </div>
     {{/if}}

@@ -18,6 +18,42 @@
       "NoAimTarget": "No enemy within reach to aim at.",
       "PickPrompt": "Gain Aim on which enemy within reach?"
     },
+    "Grudge": {
+      "Refused": "Grudge can only be declared in the first round of a fight, or anew once its target is dead.",
+      "NeedTarget": "Target exactly one living enemy to hold a Grudge against.",
+      "Declared": "{name} holds a Grudge against {target} ({cost} Stamina).",
+      "DeclaredAim": "{name} holds a Grudge against {target} ({cost} Stamina) and takes Aim on them."
+    },
+    "Tracking": {
+      "Prompt": "Are you testing the skill, tracking, or gathering herbs?",
+      "Track": "Track",
+      "CardTitle": "{skill} (Tracking)"
+    },
+    "Situational": {
+      "InNature": "In nature +{value}%",
+      "InNatureHint": "Ranger, In nature: Stealth +15% while moving in the wild. The roller or the GM switches it on.",
+      "Adjusted": "Margin {base}, with the active bonuses {adjusted}: {result}",
+      "Success": "Success",
+      "Failure": "Failure"
+    },
+    "RangerApprentice": {
+      "Cleared": "{name} takes up the Ranger skill: {ranks} cleared, and the CP spent on them returns."
+    },
+    "FinishingBlow": {
+      "NotBane": "Finishing Blow needs exactly one target, and it must be one of your Banes."
+    },
+    "PredatorsAttack": {
+      "NothingPending": "Predator's Attack follows a kill made with a Melee attack this turn.",
+      "NoRanged": "Predator's Attack needs a bow or crossbow to re-arm to.",
+      "Prompt": "Re-arm to which bow or crossbow?",
+      "Confirm": "Re-arm ({cost} Stamina)",
+      "Keep": "Keep the weapon in hand",
+      "ChoicePrompt": "Shoot, or Reload the crossbow?",
+      "Shoot": "Shoot",
+      "Reload": "Reload",
+      "ReadyShoot": "{name} takes up {weapon}: the next Attack this turn is a Free action.",
+      "ReadyReload": "{name} takes up {weapon}: the next Reload this turn is a Free action."
+    },
     "Skirmisher": {
       "AimAfterThrow": "{name} gains 1 Aim on {target} after the throw ({after} in total).",
       "ThrowSlowLabel": "Slow Movement after the throw",
@@ -1647,31 +1683,31 @@
           "nodes": {
             "ucednik": {
               "label": "Ranger - Apprentice",
-              "description": "0 CP. Manual — resolved at the table."
+              "description": "0 CP. Unlocks the Ranger skill, which counts as Combat and Archery for requirements; unlocking it clears Combat and Archery and closes them to purchase, and with two doctrines the lower one costs 3 CP less per rank. Automated."
             },
             "zast": {
               "label": "Grudge",
-              "description": "10 CP; Hraničář II. Manual — resolved at the table."
+              "description": "10 CP; Hraničář II. Grudge: in the first round you mark one enemy and hold at least one Aim on it while it lives, and once it is dead you may mark a new one for 5 Stamina. Automated."
             },
             "lovcuvVystrel": {
               "label": "Hunter's Shot",
-              "description": "10 CP. Manual — resolved at the table."
+              "description": "10 CP. Hunter's Shot: a plain shot that gives one Aim on the target on a hit and two on a Critical Hit. Automated."
             },
             "expert": {
               "label": "Ranger - Expert",
-              "description": "15 CP; Hraničář V. Manual — resolved at the table."
+              "description": "15 CP; Hraničář V. Once a day you may reroll a Melee or Shooting attack roll, offered in the reroll picker. Automated."
             },
             "utokDravce": {
               "label": "Predator's Attack",
-              "description": "15 CP; Hraničář VIII. Manual — resolved at the table."
+              "description": "15 CP; Hraničář VIII. Predator's Attack: after a Melee kill on your turn you re-arm to a bow or crossbow for free and shoot or Reload as a Free action. Automated."
             },
             "dorazeni": {
               "label": "Finishing Blow",
-              "description": "15 CP. Manual — resolved at the table."
+              "description": "15 CP. Finishing Blow: an attack modifier, allowed only against a Bane target, that gives Critical Hit chance +10%, Critical Range +3 and Precision +10%. Automated."
             },
             "mistr": {
               "label": "Ranger - Master",
-              "description": "5 CP; Hraničář a Doktrína X. Manual — resolved at the table."
+              "description": "5 CP; Hraničář a Doktrína X. The Expert's daily reroll also covers Defense and Ranged Defense rolls, Critical Failures included. Automated."
             },
             "metlaPrubojnost": {
               "label": "Bane: Penetration +3",
@@ -1715,15 +1751,15 @@
             },
             "vnimaniStopovani": {
               "label": "Perception and Tracking +15%",
-              "description": "10 SP; Přežití II. Manual — resolved at the table."
+              "description": "10 SP; Přežití II. +15% on Perception tests and on Survival tests rolled as Tracking. Automated."
             },
             "dravciSmysly": {
               "label": "Predatory Senses",
-              "description": "10 CP. Manual — resolved at the table."
+              "description": "10 CP. Perception replaces Dexterity for the Defense bonus, and the attack dialogs' Ambush / In nature toggle gives Advantage on attacks in the first round. Automated."
             },
             "pohybVPrirode": {
               "label": "In nature: Stealth +15%",
-              "description": "5 SP; Plížení IV. Manual — resolved at the table."
+              "description": "5 SP; Plížení IV. Your Stealth cards carry an In nature toggle that adds 15 to the margin when switched on. Automated."
             },
             "slevaPlizeni": {
               "label": "3 SP discount per Stealth rank",
@@ -3014,7 +3050,7 @@
             },
             "metlaVnimani": {
               "label": "Bane: Perception and Tracking +10%",
-              "description": "10 SP; Přežití II. Manual — resolved at the table."
+              "description": "10 SP; Přežití II. +10% on Perception tests and on Survival tests rolled as Tracking while your one target is a Bane. Automated."
             },
             "metlaIniciativa": {
               "label": "Bane: Initiative +3",
@@ -4923,6 +4959,7 @@
         "acquire": "Acquire skill",
         "previewHint": "Preview only. Use the book beside it in the roster to acquire it.",
         "refundSkill": "Give back every rank (returns it to the roster)",
+        "removeTrait": "Give back this trait",
         "dockEmpty": "Click a skill's name to see its ranks here.",
         "pipBuy": "Click to buy every rank up to this one.",
         "pipRefund": "Click to give back every rank down to this one.",
@@ -5063,7 +5100,13 @@
         "raisesLimitNote": "* also raises that attribute's limit.",
         "derivedSkills": "Derived skills",
         "spent": "Points spent",
-        "limit": "Physical limit"
+        "limit": "Physical limit",
+        "Dex": {
+          "finesseTitle": "Finesse weapons",
+          "finesse": "Characters with high Dexterity tend to fight with finesse weapons. The Finesse feature lets them use Dexterity instead of Strength for Hit and Damage with these weapons, so they strike more precisely and deal more damage. Suggested weapons:",
+          "dodgeTitle": "Dodge",
+          "dodge": "Dodge is a great Dexterity tool. Its rating comes from your Acrobacy rank, and every point of Dexterity adds +3% to it. In combat it is a superior form of defense, paid for with Stamina."
+        }
       },
       "pointsRemaining": "Points remaining {remaining} / {budget}",
       "traitPointsRemaining": "Trait points remaining {remaining} / {total}",
@@ -5193,6 +5236,138 @@
     },
     "Resource": {
       "NotEnough": "Not enough {resource}."
+    },
+    "Material": {
+      "Label": "Material",
+      "None": "None",
+      "Missing": "(missing)",
+      "Refresh": "Refresh the material from its source",
+      "Refreshed": "Material {name} refreshed.",
+      "NotFound": "Material \"{key}\" was not found in the world or in any compendium.",
+      "DuplicateKey": "Another material ({other}) already uses the key \"{key}\". Items find their material by key, so only one of them will be used.",
+      "EditorHint": "A material's bonuses stack on top of the item's base stats, quality and enchantments. Tick what the material can be used for.",
+      "EffectSlotsHint": "The three effect slots are shared by every column. Each column sets its own chance for each slot.",
+      "Section": {
+        "general": "General",
+        "effectSlots": "Effect slots"
+      },
+      "Column": {
+        "weapon": "Weapon",
+        "offhand": "Off hand",
+        "armor": "Armor",
+        "shield": "Shield"
+      },
+      "Category": {
+        "metal": "Metal",
+        "wood": "Wood",
+        "cloth": "Cloth",
+        "leather": "Leather",
+        "other": "Other"
+      },
+      "FIELDS": {
+        "key": {
+          "label": "Key",
+          "hint": "The stable identity items point at. Filled in from the name when left blank."
+        },
+        "category": {
+          "label": "Category"
+        },
+        "appliesTo": {
+          "label": "Applies to"
+        },
+        "slotType": {
+          "label": "Effect {n}"
+        },
+        "slotName": {
+          "label": "Custom name {n}"
+        },
+        "slotUnset": {
+          "label": "Effect {n} (unset)"
+        },
+        "attack": {
+          "label": "Attack"
+        },
+        "defense": {
+          "label": "Defense"
+        },
+        "damageBonus": {
+          "label": "Damage bonus"
+        },
+        "damageRoll": {
+          "label": "Damage dice"
+        },
+        "penetration": {
+          "label": "Penetration"
+        },
+        "critRange": {
+          "label": "Crit range"
+        },
+        "critChance": {
+          "label": "Crit chance"
+        },
+        "critDefense": {
+          "label": "Crit defense"
+        },
+        "critDamage": {
+          "label": "Crit damage"
+        },
+        "critDodge": {
+          "label": "Crit dodge"
+        },
+        "dodge": {
+          "label": "Dodge"
+        },
+        "breakthroughRoll": {
+          "label": "Breakthrough dice"
+        },
+        "damageTypeMode": {
+          "label": "Damage type mode"
+        },
+        "damageTypes": {
+          "label": "Damage types"
+        },
+        "armorValue": {
+          "label": "Armor"
+        },
+        "rangedDefense": {
+          "label": "Ranged defense"
+        },
+        "rangedCritDefense": {
+          "label": "Ranged crit defense"
+        },
+        "healthBonus": {
+          "label": "Health bonus"
+        },
+        "resist": {
+          "label": "Resistances"
+        },
+        "effectResist": {
+          "label": "Chance to be affected",
+          "hint": "Signed, added to the wearer's chance to suffer the effect: -5 lowers it by 5%."
+        },
+        "bashEffects": {
+          "label": "Shield Bash"
+        }
+      },
+      "Resist": {
+        "acid": "Acid",
+        "fire": "Fire",
+        "frost": "Frost",
+        "lightning": "Lightning",
+        "magic": "Magic",
+        "dark": "Dark",
+        "poison": "Poison",
+        "holy": "Holy"
+      },
+      "Effect": {
+        "stagger": "Stagger",
+        "stun": "Stun",
+        "bleed": "Bleed",
+        "slow": "Slow",
+        "poison": "Poison",
+        "burn": "Burn",
+        "freeze": "Freeze"
+      }
     },
     "Enchantment": {
       "Itemisation": "Itemisation",
@@ -5533,6 +5708,8 @@
       "OpportunityHint": "attack made outside your own turn, triggered by an adjacent enemy's movement, casting or shooting.",
       "PolearmPenalty": "Polearm penalty",
       "PolearmPenaltyHint": "-5 when fighting at close range with a long-reach weapon.",
+      "PredatorySenses": "Ambush / In nature",
+      "PredatorySensesHint": "Predatory Senses give Advantage on this attack in the first round of an ambush or of a fight in the wild.",
       "Shoot": "Shoot",
       "MakeshiftMelee": "Melee attack",
       "MakeshiftSuffix": "(makeshift)"
@@ -7037,6 +7214,26 @@
       "Borgor": {
         "name": "Borgor"
       },
+      "WaterDance": {
+        "name": "Water Dance",
+        "description": "<p>You swim faster than other folk and have Advantage on Swimming tests. You can walk across calm water.</p>"
+      },
+      "CalmWaters": {
+        "name": "Calm Waters",
+        "description": "<p>Resolve +1 while you are near a watercourse or a larger body of water (within 250 m or in sight), or while you are Wet.</p><p>The Wet bonus applies on its own. Near water, enable the effect Calm Waters: Near Water; it stops counting while you are Wet, so the two never stack.</p>"
+      },
+      "GiftOfCalistea": {
+        "name": "Gift of Calistea",
+        "description": "<p>You can recognise poisoned or spoiled liquids.</p>"
+      },
+      "SeaBreath": {
+        "name": "Sea Breath",
+        "description": "<p>You get a +10% bonus to Drinking and can reroll Drinking once per day. Toxicity +10.</p>"
+      },
+      "BondWithWater": {
+        "name": "Bond with Water",
+        "description": "<p>All Water School spells have +3% chance of a Critical Success and +3 Critical Range.</p>"
+      },
       "ElvenGrace": {
         "name": "Elven Grace"
       },
@@ -7969,6 +8166,18 @@
       },
       "ImprovedSuddenRearm": {
         "name": "Improved Sudden Re-arm"
+      },
+      "Grudge": {
+        "name": "Grudge"
+      },
+      "HuntersShot": {
+        "name": "Hunter's Shot"
+      },
+      "PredatorsAttack": {
+        "name": "Predator's Attack"
+      },
+      "FinishingBlow": {
+        "name": "Finishing Blow"
       },
       "Rest": {
         "name": "Rest"
@@ -9669,6 +9878,7 @@
         "locked": "Increase level of {skill} skill to advance in this one"
       },
       "creationCap": "Character creation: level {level} allows ranks up to {rank}.",
+      "replacedByRanger": "Replaced by Ranger",
       "WeaponMaster": {
         "title": "Weapon Master",
         "ranks": "A further weapon skill (any but the highest): ranks I to IV are free, every later rank costs 5 CP, and no Teacher is needed."
@@ -9893,7 +10103,8 @@
       "spell": "Spell",
       "condition": "Condition",
       "recipe": "Recipe",
-      "enchantment": "Enchantment"
+      "enchantment": "Enchantment",
+      "material": "Material"
     }
   }
 }

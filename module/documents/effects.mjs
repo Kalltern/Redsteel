@@ -28,6 +28,31 @@ import {
 } from "../utils/roundDigest.mjs";
 
 export class RedsteelActiveEffect extends ActiveEffect {
+  /**
+   * Status-conditional effects (first user: the Zephyrai perk Calm Waters).
+   * `flags.redsteel.requiresStatus: "<status id>"` applies the effect only while
+   * its actor carries that status; `flags.redsteel.suppressedByStatus` stops it
+   * applying while the actor does (a manual fallback that must not stack with
+   * the automatic copy). Read off the actor's effects, not actor.statuses: that
+   * set is rebuilt during the same applyActiveEffects pass that asks this.
+   * Adding or removing the status re-prepares the actor, so no hook is needed.
+   */
+  get isSuppressed() {
+    if (super.isSuppressed) return true;
+    const flags = this.flags?.redsteel;
+    const needs = flags?.requiresStatus;
+    const blockedBy = flags?.suppressedByStatus;
+    if (!needs && !blockedBy) return false;
+    const actor =
+      this.parent instanceof Actor ? this.parent : this.parent?.parent;
+    if (!(actor instanceof Actor)) return false;
+    const has = (id) =>
+      actor.effects.contents.some((e) => !e.disabled && e.statuses?.has(id));
+    if (needs && !has(needs)) return true;
+    if (blockedBy && has(blockedBy)) return true;
+    return false;
+  }
+
   /* -------------------------------------------- */
   /*  CHANGE STRUCTURE                            */
   /* -------------------------------------------- */

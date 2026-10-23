@@ -64,6 +64,13 @@ const ROLL_GROUPS = [
 const CATEGORY_BUCKETS = ["attack", "twoHanded", "cheatDeath"];
 
 /**
+ * Sub-skills: plain numbers stored on a parent skill (athletics.swimming,
+ * acting.blend), rolled from the sheet under their own key, so they get a
+ * bucket of their own (Zephyrai Water Dance grants swimming advantage).
+ */
+const SUB_SKILL_BUCKETS = ["swimming", "blend"];
+
+/**
  * Initialise `system.rollAdvantage` with a 0 bucket for `all` and for every
  * rollable skill/attribute key, so ADD-mode Active Effects have a numeric leaf
  * to accumulate onto. Call from Actor#prepareBaseData (before effects apply).
@@ -72,6 +79,7 @@ const CATEGORY_BUCKETS = ["attack", "twoHanded", "cheatDeath"];
 export function seedRollAdvantage(system) {
   const adv = { all: 0 };
   for (const bucket of CATEGORY_BUCKETS) adv[bucket] = 0;
+  for (const bucket of SUB_SKILL_BUCKETS) adv[bucket] = 0;
   for (const group of ROLL_GROUPS) {
     for (const key of Object.keys(system?.[group] ?? {})) {
       // First writer wins; never clobber a real skill key with a later group.

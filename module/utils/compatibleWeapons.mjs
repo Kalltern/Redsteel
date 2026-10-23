@@ -14,6 +14,14 @@
 
 import { FEATURE_PACK_ID } from "../helpers/progressionEngine.mjs";
 import { registerTooltip, ttEscape, ttFrame } from "./tooltips.mjs";
+import { getWeaponTags } from "./weaponResolver.mjs";
+
+/**
+ * The catalog key of the finesse weapons (system.finesse), the ones the
+ * Finesse feature fights on Dexterity. Not a track id; the creation window's
+ * Dexterity info lists them.
+ */
+export const FINESSE_WEAPONS = "finesse";
 
 /**
  * The skill a weapon class is fought with (the sheet's weapon skills; bows and
@@ -217,6 +225,8 @@ async function buildCatalog() {
             "system.doctrines",
             "system.offhandProperties.doctrines",
             "system.localizationKey",
+            "system.finesse",
+            "system.tags",
             // The weapon tooltip's stat block (weaponStats).
             "system.roll",
             "system.attack",
@@ -278,6 +288,16 @@ async function buildCatalog() {
     }
     out.set(path, layOut(byGrip, "skill"));
   }
+
+  // Finesse weapons, by how they are held. The makeshift stand-ins (tagged
+  // "makeshift") are no weapon to suggest.
+  const finesse = Object.fromEntries(WEAPON_GRIPS.map((grip) => [grip, []]));
+  for (const entry of weapons) {
+    const system = entry.system ?? {};
+    if (!system.finesse || getWeaponTags(entry).includes("makeshift")) continue;
+    finesse[weaponGrip(system)].push(row(entry, WEAPON_CLASS_SKILL[system.class] ?? null));
+  }
+  out.set(FINESSE_WEAPONS, layOut(finesse, "skill"));
   return out;
 }
 
@@ -314,6 +334,7 @@ export function compatibleWeaponsPill(trackId, className = "") {
 
 /** A track's localized name, for the list tooltip's subtitle. */
 function trackName(trackId) {
+  if (trackId === FINESSE_WEAPONS) return game.i18n.localize("REDSTEEL.Item.Weapon.FIELDS.finesse.label");
   const [group, key] = trackId.split(".");
   const labelKey = `REDSTEEL.Actor.Character.${group}.${key}.label`;
   return game.i18n.has(labelKey, false) ? game.i18n.localize(labelKey) : key;

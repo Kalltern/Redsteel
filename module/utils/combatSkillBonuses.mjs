@@ -56,9 +56,14 @@ import {
   shieldBlowStaggerBonus,
   shieldBlowTestBonus,
 } from "./warden.mjs";
-import { wardenStrengthTestBonus } from "./wardenShield.mjs";
+import { heldShield, wardenStrengthTestBonus } from "./wardenShield.mjs";
+import {
+  materialBashModifiers,
+  readMaterialSnapshot,
+} from "./materials.mjs";
 import { thrownEffectiveRange, tokenHexDistance } from "./positioning.mjs";
 import { tokenForActor } from "./movementZones.mjs";
+import { consumePredatorySenses } from "./rangerCombat.mjs";
 import {
   getWeaponTrainingClass,
   WEAPON_TRAINING_MEDIUM_CRIT,
@@ -332,6 +337,13 @@ export async function getNonWeaponAbility(actor, ability, { modifiers = [] } = {
   const effectModifiers = staggerBonus
     ? [{ system: { effectType1: "stagger", effects: { extra1: staggerBonus } } }]
     : [];
+  // The held shield's material adds its Shield Bash effects the same way
+  // (utils/materials.mjs). No shield or no material adds nothing.
+  if (isShieldBash(ability)) {
+    effectModifiers.push(
+      ...materialBashModifiers(readMaterialSnapshot(heldShield(actor))),
+    );
+  }
   const { allBleedRollResults, effectsRollResults, mechanicalEffects } =
     await game.redsteel.getEffectRolls(
       actor,
@@ -875,7 +887,11 @@ export function getWeaponAttackBonus(actor, weapon, offWeapon = null) {
   parts.spec = Number(getWeaponSpecBonuses(actor, weapon).attack) || 0;
   // Only offhandProperties.attack, matching getOffhandProps at roll time — the
   // off hand's quality mods feed defense, not attack.
-  parts.offhand = Number(offWeapon?.system?.offhandProperties?.attack) || 0;
+  parts.offhand =
+    Number(
+      (offWeapon?.system?.offhandTotals ?? offWeapon?.system?.offhandProperties)
+        ?.attack,
+    ) || 0;
   parts.total =
     parts.weapon +
     parts.quality +
@@ -1213,6 +1229,14 @@ export async function getAttackRolls(
   // Improved Feint Attack: "Provede útok s Výhodou." The ability's own rule,
   // for anyone who uses it.
   if (isFeintAttack(ability)) tagRollItemAdvantage(attackRoll, "advantage");
+  // Hraničář → Dravčí smysly: "Výhoda na Útok (Souboj i Střelba) v prvním
+  // kole boje při přepadení nebo při boji v přírodě", declared on the attack
+  // dialog's Ambush / In nature toggle (rangerCombat.mjs). The flag is
+  // consumed on any attack; a throw (Vrh) is neither, so it gains nothing.
+  const predatorySenses = await consumePredatorySenses(actor);
+  if (predatorySenses && !ws.thrown && abilityRangedSkill !== "throwing") {
+    tagRollItemAdvantage(attackRoll, "advantage");
+  }
   await attackRoll.evaluate();
 
   // Desperate Effort shifts the crit thresholds for this attack.
@@ -1414,25 +1438,19 @@ export async function getDamageRolls(
   const damageTotal =
     Math.floor(damageRoll.total ?? 0) + (sneakDeclared ? sneakTotal : 0);
 
-  // If the weapon has breakthrough — or the character was granted some — roll
-  // it. Character-granted dice (Giantslayer) do not need the weapon to carry a
-  // Breakthrough value of its own, so they can open the formula by themselves;
-  // the ability and offhand contributions still only ride along on a formula
-  // that already exists.
+  // Breakthrough (Průraznost) from every source adds to the attack, whether
+  // or not the weapon carries any of its own (user ruling 2026-10-21): the
+  // weapon, character-granted dice (Giantslayer), enchantments, the ability
+  // and its modifiers, and the off hand each open the formula by themselves.
   let breakthroughRollResult = "";
   const breakthroughParts = [];
   if (ws.breakthrough) breakthroughParts.push(`${ws.breakthrough}`);
   breakthroughParts.push(...(actorMods.breakthroughRolls ?? []));
-  // Breakthrough dice granted by an enchantment on this weapon. Like the
-  // character-granted dice above they can open the formula on their own: the
-  // enchantment is what gives the blade the property in the first place.
   breakthroughParts.push(...(weaponEnchant.breakthroughRolls ?? []));
+  if (abilityBreakthrough) breakthroughParts.push(`${abilityBreakthrough}`);
+  if (offProps?.breakthrough) breakthroughParts.push(`${offProps.breakthrough}`);
 
   if (breakthroughParts.length) {
-    if (abilityBreakthrough) breakthroughParts.push(`${abilityBreakthrough}`);
-    if (offProps?.breakthrough) {
-      breakthroughParts.push(`${offProps.breakthrough}`);
-    }
     let breakthroughFormula = breakthroughParts.join(" + ");
     breakthroughFormula = breakthroughFormula.replace(/\s*\+\s*$/, "");
     breakthroughFormula = breakthroughFormula.replace(
@@ -1576,6 +1594,8 @@ export async function getCriticalRolls(
       perBonus +
       actorCritBonus +
       (weapon?.system.critDamage || 0) +
+      // Enchantments and the material on this weapon (documents/item.mjs).
+      (Number(weapon?.system?.enchantMods?.critDamage) || 0) +
       damageTotal +
       doctrineCritDmg;
 
@@ -1880,6 +1900,18 @@ export async function getEffectRolls(
     collectExtrasFromSource(
       weaponContext.offWeapon.system.offhandProperties,
       offProps.effects,
+      effectContributions,
+    );
+  }
+  // The off-hand weapon's material: its custom effect slots are named on the
+  // material, so they are collected from their own block (utils/materials.mjs).
+  const offMaterialExtras = getOffhandProps(weaponContext)
+    ? weaponContext.offWeapon.system.offhandMaterialExtras
+    : null;
+  if (offMaterialExtras) {
+    collectExtrasFromSource(
+      offMaterialExtras,
+      offMaterialExtras.effects,
       effectContributions,
     );
   }
@@ -2397,7 +2429,10 @@ function getOffhandProps(weaponContext) {
   if (!weaponContext?.isDualWield || !weaponContext.offWeapon) {
     return null;
   }
-  return weaponContext.offWeapon.system.offhandProperties ?? null;
+  // offhandTotals = offhandProperties + the material's off-hand column
+  // (documents/item.mjs); the fallback covers an item prepared before it.
+  const system = weaponContext.offWeapon.system;
+  return system.offhandTotals ?? system.offhandProperties ?? null;
 }
 
 /**

@@ -659,7 +659,8 @@ export async function buildDefenseProfile({
       actor.type === "character" ? 0 : mainDefense + offDefense;
     const mainCrit =
       (Number(weapon.system.critDefense) || 0) +
-      (Number(mainQuality.critDefense) || 0);
+      (Number(mainQuality.critDefense) || 0) +
+      (Number(mainEnchant.critDefense) || 0);
     const offCrit =
       (Number(offProps?.critDefense) || 0) +
       (Number(offQuality.critDefense) || 0);
@@ -743,7 +744,10 @@ export async function buildDefenseProfile({
     skillKey = "rangedDefense";
   } else if (mode === "dodge") {
     const offQuality = getOffhandQualityMods(context);
-    const mainDodge = Number(weapon.system.dodge) || 0;
+    // Enchantments and the material on the main-hand weapon, beside its own value.
+    const mainDodge =
+      (Number(weapon.system.dodge) || 0) +
+      (Number(weapon.system.enchantMods?.dodge) || 0);
     const offDodge = Number(offProps?.dodge) || 0;
     const offCritDodge =
       (Number(offProps?.critDodge) || 0) + (Number(offQuality.critDodge) || 0);
@@ -2515,7 +2519,10 @@ function getOffhandProps(weaponContext) {
   if (!weaponContext?.isDualWield || !weaponContext.offWeapon) {
     return null;
   }
-  return weaponContext.offWeapon.system.offhandProperties ?? null;
+  // offhandTotals = offhandProperties + the material's off-hand column
+  // (documents/item.mjs); the fallback covers an item prepared before it.
+  const system = weaponContext.offWeapon.system;
+  return system.offhandTotals ?? system.offhandProperties ?? null;
 }
 
 /**

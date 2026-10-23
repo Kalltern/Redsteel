@@ -942,10 +942,12 @@ export function explainUnbuyable(actor, trackId, rank, { teacherGiven = false, w
   const price = track?.ranks?.[rank - 1] ?? null;
   if (!track || !price) return [game.i18n.localize("REDSTEEL.Learn.cannotBuy")];
   const lines = [];
-  const { mirror, capped } = getRankState(actor, trackId, rank);
+  const { mirror, capped, lockReason } = getRankState(actor, trackId, rank);
   if (mirror) {
     lines.push(game.i18n.format("REDSTEEL.Learn.Mirror.locked", { skill: trackLabel(mirror.group, mirror.from) }));
   }
+  // A track closed outright (Ranger - Apprentice closes Combat and Archery).
+  if (lockReason) lines.push(lockReason);
   if (capped) {
     lines.push(
       game.i18n.format("REDSTEEL.Learn.creationCap", { level: getWallet(actor).level, rank: roman(capped) }),
@@ -2448,8 +2450,13 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
         polarityByName.get(item.name) ??
         (item.system?.starsign ? "neutral" : null);
       const expandKey = `trait-${item.id}`;
+      // A trait creation drafted (step 1 or the Attributes & Traits tab) is
+      // a copy of a pack trait; its pack id is what the origin editor takes.
+      // Race-granted and hand-dropped traits have none and stay put.
+      const originSource = item.getFlag?.("redsteel", "creationOrigin") ? item._stats?.compendiumSource : null;
       const entry = {
         uuid: item.uuid,
+        originTraitId: originSource ? originSource.split(".").pop() : null,
         name: item.localizedName ?? item.name,
         img: item.img,
         description: item.localizedDescription ?? "",
@@ -4455,11 +4462,8 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
 
   /** One rank column of a track. */
   async #buildCell(trackId, rank) {
-    const { state, price, requirements, mirror, capped } = getRankState(
-      this.actor,
-      trackId,
-      rank,
-    );
+    const { state, price, requirements, mirror, capped, lockReason } =
+      getRankState(this.actor, trackId, rank);
 
     // The Requirements row prints every rank's clauses, including the ranks
     // `getRankState` never gets as far as testing: an owned or a blocked rank
@@ -4496,6 +4500,8 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
         }),
       );
     }
+    // A track closed outright (Ranger - Apprentice closes Combat and Archery).
+    if (lockReason) reasons.push(lockReason);
 
     const currency = price?.currency ?? null;
     // The price this character pays, a skill's discount included. The discount

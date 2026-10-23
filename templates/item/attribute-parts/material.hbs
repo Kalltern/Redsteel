@@ -1,0 +1,503 @@
+{{! Attributes Tab — Material (utils/materials.mjs) }}
+<section
+  class="tab attributes {{tab.cssClass}}"
+  data-group="primary"
+  data-tab="attributes"
+>
+
+  <div class="resource">
+
+    <p class="hint">{{localize "REDSTEEL.Material.EditorHint"}}</p>
+
+    {{!-- =====================
+         GENERAL
+    ====================== --}}
+    <h3 class="enchantment-heading">{{localize
+        "REDSTEEL.Material.Section.general"
+      }}</h3>
+
+    <div class="grid grid-3col">
+      <div class="grid-span-1">
+        <label class="resource-label" title="{{localize
+            'REDSTEEL.Material.FIELDS.key.hint'
+          }}">{{localize "REDSTEEL.Material.FIELDS.key.label"}}</label>
+        <input
+          type="text"
+          name="system.key"
+          value="{{system.key}}"
+          data-dtype="String"
+          placeholder="e.g. blackbone"
+        />
+      </div>
+
+      <div class="grid-span-1">
+        <label for="material-category">{{localize
+            "REDSTEEL.Material.FIELDS.category.label"
+          }}</label>
+        <select name="system.category" id="material-category">
+          {{#each system.categoryOptions as |categoryOption|}}
+            <option value="{{categoryOption}}"
+              {{#if (eq ../system.category categoryOption)}}selected{{/if}}>
+              {{localize (concat "REDSTEEL.Material.Category." categoryOption)}}
+            </option>
+          {{/each}}
+        </select>
+      </div>
+    </div>
+
+    <label class="resource-label">{{localize
+        "REDSTEEL.Material.FIELDS.appliesTo.label"
+      }}</label>
+    <div class="grid grid-4col">
+      <div class="grid-span-1">
+        <label class="checkbox">
+          <input
+            type="checkbox"
+            name="system.appliesTo.weapon"
+            {{checked system.appliesTo.weapon}}
+          />
+          {{localize "REDSTEEL.Material.Column.weapon"}}
+        </label>
+      </div>
+      <div class="grid-span-1">
+        <label class="checkbox">
+          <input
+            type="checkbox"
+            name="system.appliesTo.offhand"
+            {{checked system.appliesTo.offhand}}
+          />
+          {{localize "REDSTEEL.Material.Column.offhand"}}
+        </label>
+      </div>
+      <div class="grid-span-1">
+        <label class="checkbox">
+          <input
+            type="checkbox"
+            name="system.appliesTo.armor"
+            {{checked system.appliesTo.armor}}
+          />
+          {{localize "REDSTEEL.Material.Column.armor"}}
+        </label>
+      </div>
+      <div class="grid-span-1">
+        <label class="checkbox">
+          <input
+            type="checkbox"
+            name="system.appliesTo.shield"
+            {{checked system.appliesTo.shield}}
+          />
+          {{localize "REDSTEEL.Material.Column.shield"}}
+        </label>
+      </div>
+    </div>
+
+    {{!-- =====================
+         EFFECT SLOTS
+    ====================== --}}
+    <h3 class="enchantment-heading">{{localize
+        "REDSTEEL.Material.Section.effectSlots"
+      }}</h3>
+    <p class="hint">{{localize "REDSTEEL.Material.EffectSlotsHint"}}</p>
+
+    <div class="grid grid-3col">
+      {{#each materialSlots as |slot|}}
+        <div class="grid-span-1">
+          <label class="resource-label">{{localize
+              "REDSTEEL.Material.FIELDS.slotType.label"
+              n=slot.n
+            }}</label>
+          <select name="system.effectType{{slot.n}}">
+            <option value="">{{localize "REDSTEEL.UI.selectType"}}</option>
+            {{#each @root.system.effectTypes as |effectType|}}
+              <option value="{{effectType}}"
+                {{#if (eq slot.type effectType)}}selected{{/if}}>
+                {{effectType}}
+              </option>
+            {{/each}}
+          </select>
+        </div>
+
+        {{#if slot.isCustom}}
+          <div class="grid-span-1">
+            <label class="resource-label">{{localize
+                "REDSTEEL.Material.FIELDS.slotName.label"
+                n=slot.n
+              }}</label>
+            <input
+              type="text"
+              name="system.effectName{{slot.n}}"
+              value="{{slot.name}}"
+              data-dtype="String"
+            />
+          </div>
+          <div class="grid-span-1 effect-row"></div>
+        {{else}}
+          <div class="grid-span-2 effect-row"></div>
+        {{/if}}
+      {{/each}}
+    </div>
+
+    {{!-- =====================
+         WEAPON COLUMN
+    ====================== --}}
+    <h3 class="enchantment-heading">{{localize
+        "REDSTEEL.Material.Column.weapon"
+      }}</h3>
+
+    <div class="grid grid-4col">
+      {{#each materialNumbers.weaponMain as |entry|}}
+        <div class="grid-span-1">
+          <label class="resource-label">{{localize
+              (concat "REDSTEEL.Material.FIELDS." entry.field ".label")
+            }}</label>
+          <input
+            type="number"
+            name="system.weapon.{{entry.field}}"
+            value="{{entry.value}}"
+            data-dtype="Number"
+          />
+        </div>
+      {{/each}}
+
+      <div class="grid-span-1">
+        <label class="resource-label">{{localize
+            "REDSTEEL.Material.FIELDS.damageRoll.label"
+          }}</label>
+        <input
+          type="text"
+          name="system.weapon.damageRoll"
+          value="{{system.weapon.damageRoll}}"
+          data-dtype="String"
+          placeholder="e.g. 1d4"
+        />
+      </div>
+
+      <div class="grid-span-1">
+        <label class="resource-label">{{localize
+            "REDSTEEL.Material.FIELDS.breakthroughRoll.label"
+          }}</label>
+        <input
+          type="text"
+          name="system.weapon.breakthroughRoll"
+          value="{{system.weapon.breakthroughRoll}}"
+          data-dtype="String"
+          placeholder="e.g. 2d6"
+        />
+      </div>
+
+      {{#each materialNumbers.weaponCrit as |entry|}}
+        <div class="grid-span-1">
+          <label class="resource-label">{{localize
+              (concat "REDSTEEL.Material.FIELDS." entry.field ".label")
+            }}</label>
+          <input
+            type="number"
+            name="system.weapon.{{entry.field}}"
+            value="{{entry.value}}"
+            data-dtype="Number"
+          />
+        </div>
+      {{/each}}
+
+      <div class="grid-span-1">
+        <label for="material-damage-type-mode">{{localize
+            "REDSTEEL.Material.FIELDS.damageTypeMode.label"
+          }}</label>
+        <select
+          name="system.weapon.damageTypeMode"
+          id="material-damage-type-mode"
+        >
+          <option value="" {{#unless system.weapon.damageTypeMode}}selected{{/unless}}>
+            {{localize "REDSTEEL.Enchantment.DamageTypeMode.none"}}
+          </option>
+          <option value="expand"
+            {{#if (eq system.weapon.damageTypeMode "expand")}}selected{{/if}}>
+            {{localize "REDSTEEL.Enchantment.DamageTypeMode.expand"}}
+          </option>
+          <option value="override"
+            {{#if (eq system.weapon.damageTypeMode "override")}}selected{{/if}}>
+            {{localize "REDSTEEL.Enchantment.DamageTypeMode.override"}}
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <label class="resource-label">{{localize
+        "REDSTEEL.Material.FIELDS.damageTypes.label"
+      }}</label>
+    <div class="grid grid-3col">
+      {{#each materialDamageTypeSlots as |slot|}}
+        <div class="grid-span-1">
+          <select name="system.weapon.damageTypes.{{slot.index}}">
+            <option value="">{{localize "REDSTEEL.UI.selectType"}}</option>
+            {{#each @root.system.dmgTypes as |dmgType|}}
+              <option value="{{dmgType}}"
+                {{#if (eq slot.value dmgType)}}selected{{/if}}>
+                {{dmgType}}
+              </option>
+            {{/each}}
+          </select>
+        </div>
+      {{/each}}
+    </div>
+
+    <div class="grid grid-4col">
+      <div class="grid-span-1">
+        <label class="resource-label">{{localize
+            "REDSTEEL.Material.Effect.stagger"
+          }}</label>
+        <input
+          type="number"
+          name="system.weapon.effects.stagger"
+          value="{{system.weapon.effects.stagger}}"
+          data-dtype="Number"
+        />
+      </div>
+      <div class="grid-span-1">
+        <label class="resource-label">{{localize
+            "REDSTEEL.Material.Effect.bleed"
+          }}</label>
+        <input
+          type="number"
+          name="system.weapon.effects.bleed"
+          value="{{system.weapon.effects.bleed}}"
+          data-dtype="Number"
+        />
+      </div>
+      {{#each materialSlots as |slot|}}
+        <div class="grid-span-1">
+          <label class="resource-label">{{slot.label}}</label>
+          <input
+            type="number"
+            name="system.weapon.effects.extra{{slot.n}}"
+            value="{{slot.weapon}}"
+            data-dtype="Number"
+          />
+        </div>
+      {{/each}}
+    </div>
+
+    {{!-- =====================
+         OFF-HAND COLUMN
+    ====================== --}}
+    <h3 class="enchantment-heading">{{localize
+        "REDSTEEL.Material.Column.offhand"
+      }}</h3>
+
+    <div class="grid grid-4col">
+      {{#each materialNumbers.offhandMain as |entry|}}
+        <div class="grid-span-1">
+          <label class="resource-label">{{localize
+              (concat "REDSTEEL.Material.FIELDS." entry.field ".label")
+            }}</label>
+          <input
+            type="number"
+            name="system.offhand.{{entry.field}}"
+            value="{{entry.value}}"
+            data-dtype="Number"
+          />
+        </div>
+      {{/each}}
+
+      <div class="grid-span-1">
+        <label class="resource-label">{{localize
+            "REDSTEEL.Material.FIELDS.damageRoll.label"
+          }}</label>
+        <input
+          type="text"
+          name="system.offhand.damageRoll"
+          value="{{system.offhand.damageRoll}}"
+          data-dtype="String"
+          placeholder="e.g. 1d4"
+        />
+      </div>
+
+      <div class="grid-span-1">
+        <label class="resource-label">{{localize
+            "REDSTEEL.Material.FIELDS.breakthroughRoll.label"
+          }}</label>
+        <input
+          type="text"
+          name="system.offhand.breakthroughRoll"
+          value="{{system.offhand.breakthroughRoll}}"
+          data-dtype="String"
+          placeholder="e.g. 2d6"
+        />
+      </div>
+
+      {{#each materialNumbers.offhandCrit as |entry|}}
+        <div class="grid-span-1">
+          <label class="resource-label">{{localize
+              (concat "REDSTEEL.Material.FIELDS." entry.field ".label")
+            }}</label>
+          <input
+            type="number"
+            name="system.offhand.{{entry.field}}"
+            value="{{entry.value}}"
+            data-dtype="Number"
+          />
+        </div>
+      {{/each}}
+    </div>
+
+    <div class="grid grid-4col">
+      <div class="grid-span-1">
+        <label class="resource-label">{{localize
+            "REDSTEEL.Material.Effect.stagger"
+          }}</label>
+        <input
+          type="number"
+          name="system.offhand.effects.stagger"
+          value="{{system.offhand.effects.stagger}}"
+          data-dtype="Number"
+        />
+      </div>
+      <div class="grid-span-1">
+        <label class="resource-label">{{localize
+            "REDSTEEL.Material.Effect.bleed"
+          }}</label>
+        <input
+          type="number"
+          name="system.offhand.effects.bleed"
+          value="{{system.offhand.effects.bleed}}"
+          data-dtype="Number"
+        />
+      </div>
+      {{#each materialSlots as |slot|}}
+        <div class="grid-span-1">
+          <label class="resource-label">{{slot.label}}</label>
+          <input
+            type="number"
+            name="system.offhand.effects.extra{{slot.n}}"
+            value="{{slot.offhand}}"
+            data-dtype="Number"
+          />
+        </div>
+      {{/each}}
+    </div>
+
+    {{!-- =====================
+         ARMOR COLUMN
+    ====================== --}}
+    <h3 class="enchantment-heading">{{localize
+        "REDSTEEL.Material.Column.armor"
+      }}</h3>
+
+    <div class="grid grid-4col">
+      {{#each materialNumbers.armor as |entry|}}
+        <div class="grid-span-1">
+          <label class="resource-label">{{localize
+              (concat "REDSTEEL.Material.FIELDS." entry.field ".label")
+            }}</label>
+          <input
+            type="number"
+            name="system.armor.{{entry.field}}"
+            value="{{entry.value}}"
+            data-dtype="Number"
+          />
+        </div>
+      {{/each}}
+    </div>
+
+    <label class="resource-label">{{localize
+        "REDSTEEL.Material.FIELDS.resist.label"
+      }}</label>
+    <div class="grid grid-8col">
+      {{#each system.armor.resist as |value key|}}
+        <div class="grid-span-1">
+          <label>
+            {{localize (concat "REDSTEEL.Material.Resist." key)}}
+          </label>
+          <input
+            type="number"
+            name="system.armor.resist.{{key}}"
+            value="{{value}}"
+            data-dtype="Number"
+          />
+        </div>
+      {{/each}}
+    </div>
+
+    <label class="resource-label" title="{{localize
+        'REDSTEEL.Material.FIELDS.effectResist.hint'
+      }}">{{localize "REDSTEEL.Material.FIELDS.effectResist.label"}}</label>
+    <div class="grid grid-4col">
+      {{#each system.armor.effectResist as |value key|}}
+        <div class="grid-span-1">
+          <label>
+            {{localize (concat "REDSTEEL.Material.Effect." key)}}
+          </label>
+          <input
+            type="number"
+            name="system.armor.effectResist.{{key}}"
+            value="{{value}}"
+            data-dtype="Number"
+          />
+        </div>
+      {{/each}}
+    </div>
+
+    {{!-- =====================
+         SHIELD COLUMN
+    ====================== --}}
+    <h3 class="enchantment-heading">{{localize
+        "REDSTEEL.Material.Column.shield"
+      }}</h3>
+
+    <div class="grid grid-4col">
+      {{#each materialNumbers.shield as |entry|}}
+        <div class="grid-span-1">
+          <label class="resource-label">{{localize
+              (concat "REDSTEEL.Material.FIELDS." entry.field ".label")
+            }}</label>
+          <input
+            type="number"
+            name="system.shield.{{entry.field}}"
+            value="{{entry.value}}"
+            data-dtype="Number"
+          />
+        </div>
+      {{/each}}
+    </div>
+
+    <label class="resource-label">{{localize
+        "REDSTEEL.Material.FIELDS.bashEffects.label"
+      }}</label>
+    <div class="grid grid-4col">
+      <div class="grid-span-1">
+        <label class="resource-label">{{localize
+            "REDSTEEL.Material.Effect.stagger"
+          }}</label>
+        <input
+          type="number"
+          name="system.shield.bashEffects.stagger"
+          value="{{system.shield.bashEffects.stagger}}"
+          data-dtype="Number"
+        />
+      </div>
+      <div class="grid-span-1">
+        <label class="resource-label">{{localize
+            "REDSTEEL.Material.Effect.bleed"
+          }}</label>
+        <input
+          type="number"
+          name="system.shield.bashEffects.bleed"
+          value="{{system.shield.bashEffects.bleed}}"
+          data-dtype="Number"
+        />
+      </div>
+      {{#each materialSlots as |slot|}}
+        <div class="grid-span-1">
+          <label class="resource-label">{{slot.label}}</label>
+          <input
+            type="number"
+            name="system.shield.bashEffects.extra{{slot.n}}"
+            value="{{slot.bash}}"
+            data-dtype="Number"
+          />
+        </div>
+      {{/each}}
+    </div>
+
+  </div>
+</section>

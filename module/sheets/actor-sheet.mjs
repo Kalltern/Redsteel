@@ -18,6 +18,13 @@ import { getTraitPills } from "../utils/traitPills.mjs";
 import { AIMED_PARTS } from "../utils/aimedStrike.mjs";
 import { gatherHerbs, promptHerbMode } from "../utils/gatherHerbs.mjs";
 import {
+  bonusLinesHtml,
+  canTrack,
+  perceptionTrackingBonuses,
+  SITUATIONAL_FLAG,
+  situationalToggles,
+} from "../utils/rangerSkills.mjs";
+import {
   tagRollSkill,
   applyDesperateCrit,
   forfeitAdvantageOnCritFail,
@@ -3125,6 +3132,9 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
 
     // Herbalism / Survival can either test the skill or gather herbs. Ask first;
     // gathering takes over entirely via its own dialog (no chat roll message).
+    // A Ranger or Grimm with the Perception and Tracking node may also roll
+    // Survival as Tracking (utils/rangerSkills.mjs).
+    let tracking = false;
     if (
       dataset.roll &&
       dataset.rollType === "skill" &&
@@ -3133,7 +3143,9 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       const skillName = game.i18n.localize(
         `REDSTEEL.Actor.Character.skills.${dataset.label}.label`,
       );
-      const mode = await promptHerbMode(skillName);
+      const mode = await promptHerbMode(skillName, {
+        track: dataset.label === "survival" && canTrack(this.actor),
+      });
       if (mode === null) return; // dismissed
       if (mode === "gather") {
         return gatherHerbs(
@@ -3142,7 +3154,8 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
           this.actor.system.skills[dataset.label],
         );
       }
-      // mode === "test" → fall through to the normal skill roll below.
+      tracking = mode === "track";
+      // mode === "test" / "track" → fall through to the normal skill roll below.
     }
 
     if (dataset.roll) {
@@ -3192,9 +3205,33 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
                   : `REDSTEEL.Actor.Character.skills.${skillKey}.label`,
           )}`
         : "";
+      // Survival rolled as Tracking says so in its title.
+      if (tracking) {
+        label = ` ${game.i18n.format("REDSTEEL.Tracking.CardTitle", {
+          skill: label.trim(),
+        })}`;
+      }
       const rollName = label;
 
-      const roll = new Roll(dataset.roll, this.actor.getRollData());
+      // Hraničář / Grimm: Perception and Tracking bonuses, baked into the
+      // formula so the margin, the versus line and rerolls all carry them
+      // (utils/rangerSkills.mjs). Each one is named on the card below.
+      const situationalBonuses = perceptionTrackingBonuses(this.actor, {
+        rollType: dataset.rollType,
+        key: dataset.label,
+        tracking,
+      });
+      const bonusTotal = situationalBonuses.reduce((sum, b) => sum + b.value, 0);
+      const rollFormula = bonusTotal
+        ? `${dataset.roll} + ${bonusTotal}`
+        : dataset.roll;
+      // Pohyb v přírodě: the Stealth card's "In nature" toggle.
+      const situational = situationalToggles(this.actor, {
+        rollType: dataset.rollType,
+        key: dataset.label,
+      });
+
+      const roll = new Roll(rollFormula, this.actor.getRollData());
       // Tag the roll with its skill/attribute key so per-skill advantage
       // buckets (features/buffs) apply on top of the actor-wide bias.
       if (isSkillRoll) tagRollSkill(roll, skillKey);
@@ -3289,11 +3326,13 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
         // ability and spell cards already use.
         const isVersusTest = dataset.rollType === "attribute";
         let flavorBody = `<p class="rs-card-headline"><b>${label}</b></p>`;
+        // The Perception and Tracking bonuses already in the formula.
+        flavorBody += bonusLinesHtml(situationalBonuses);
         if (isVersusTest) {
           flavorBody += renderMarginFollowupLine({
             margin: roll.total,
             source: rollName.trim(),
-            chance: skillData.mod,
+            chance: bonusTotal ? Number(skillData.mod) + bonusTotal : skillData.mod,
             result: roll.result,
             mirror: skillKey,
           });
@@ -3318,8 +3357,13 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
               // new margin instead of dropping it (see executeReroll).
               ...(isVersusTest && {
                 versusTest: true,
-                versusChance: skillData.mod,
+                versusChance: bonusTotal
+                  ? Number(skillData.mod) + bonusTotal
+                  : skillData.mod,
               }),
+              // Situational toggles the roller or GM may switch on the card
+              // (utils/rangerSkills.mjs registerSituationalPills).
+              ...(situational && { [SITUATIONAL_FLAG]: situational }),
             },
           },
         });

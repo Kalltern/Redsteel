@@ -1369,7 +1369,8 @@
       "recipe",
       "enchantment",
       "spellbook",
-      "scroll"
+      "scroll",
+      "material"
     ],
     "htmlFields": ["description"],
     "templates": {
@@ -1383,6 +1384,7 @@
       "templates": ["base"],
       "class": "",
       "tags": "",
+      "material": "",
       "classOptions": [
         "axe",
         "blunt",
@@ -1481,6 +1483,7 @@
     },
     "gear": {
       "templates": ["base"],
+      "material": "",
       "equipped": false,
       "layerOptions": ["Accessory", "Bottom", "Middle", "Top"],
       "armorWeight": "",
@@ -1705,6 +1708,104 @@
         "slash"
       ],
       "effectOptions": ["and", "or"]
+    },
+    "material": {
+      "templates": ["base"],
+      "key": "",
+      "category": "metal",
+      "categoryOptions": ["metal", "wood", "cloth", "leather", "other"],
+      "appliesTo": {
+        "weapon": false,
+        "offhand": false,
+        "armor": false,
+        "shield": false
+      },
+      "effectType1": "",
+      "effectType2": "",
+      "effectType3": "",
+      "effectName1": "",
+      "effectName2": "",
+      "effectName3": "",
+      "weapon": {
+        "attack": 0,
+        "defense": 0,
+        "damageBonus": 0,
+        "damageRoll": "",
+        "penetration": 0,
+        "critRange": 0,
+        "critChance": 0,
+        "critDefense": 0,
+        "critDamage": 0,
+        "dodge": 0,
+        "breakthroughRoll": "",
+        "damageTypeMode": "",
+        "damageTypes": [],
+        "effects": {
+          "stagger": 0,
+          "bleed": 0,
+          "extra1": 0,
+          "extra2": 0,
+          "extra3": 0
+        }
+      },
+      "offhand": {
+        "attack": 0,
+        "defense": 0,
+        "damageRoll": "",
+        "penetration": 0,
+        "critRange": 0,
+        "critDefense": 0,
+        "critDodge": 0,
+        "dodge": 0,
+        "breakthroughRoll": "",
+        "effects": {
+          "stagger": 0,
+          "bleed": 0,
+          "extra1": 0,
+          "extra2": 0,
+          "extra3": 0
+        }
+      },
+      "armor": {
+        "armorValue": 0,
+        "defense": 0,
+        "rangedDefense": 0,
+        "critDefense": 0,
+        "rangedCritDefense": 0,
+        "healthBonus": 0,
+        "resist": {
+          "acid": 0,
+          "fire": 0,
+          "frost": 0,
+          "lightning": 0,
+          "magic": 0,
+          "dark": 0,
+          "poison": 0,
+          "holy": 0
+        },
+        "effectResist": {
+          "stagger": 0,
+          "stun": 0,
+          "bleed": 0,
+          "slow": 0,
+          "poison": 0,
+          "burn": 0,
+          "freeze": 0
+        }
+      },
+      "shield": {
+        "defense": 0,
+        "rangedDefense": 0,
+        "critDefense": 0,
+        "rangedCritDefense": 0,
+        "bashEffects": {
+          "stagger": 0,
+          "bleed": 0,
+          "extra1": 0,
+          "extra2": 0,
+          "extra3": 0
+        }
+      }
     },
     "item": {
       "templates": ["base"],

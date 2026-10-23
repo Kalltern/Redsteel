@@ -1,0 +1,122 @@
+{
+  "folder": "qrbKjxMzLqkNlHWo",
+  "name": "Sea Breath",
+  "type": "feature",
+  "img": "icons/consumables/drinks/alcohol-beer-stein-wooden-metal-brown.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.SeaBreath.name",
+    "description": "<p>You get a +10% bonus to Drinking and can reroll Drinking once per day. Toxicity +10.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": [
+        {
+          "label": "",
+          "skillsRaw": "drinking",
+          "max": 1,
+          "used": 0
+        }
+      ]
+    },
+    "option": "feature",
+    "cost": {
+      "cp": null,
+      "sp": 30
+    }
+  },
+  "effects": [
+    {
+      "name": "Sea Breath",
+      "origin": "Item.2wMnzH0Al5qymTHW",
+      "img": "icons/consumables/drinks/alcohol-beer-stein-wooden-metal-brown.webp",
+      "_id": "lFT2ZmmWXksV0wCa",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.skills.drinking.bonus",
+            "value": 10,
+            "priority": null,
+            "type": "add"
+          },
+          {
+            "key": "system.stats.toxicity.bonus",
+            "value": 10,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
+      "disabled": false,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {
+        "statuscounter": {
+          "value": 1,
+          "config": {
+            "type": "default"
+          },
+          "visible": false
+        },
+        "tos": {
+          "actorTurns": null
+        }
+      },
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "14.363",
+        "systemId": "redsteel",
+        "systemVersion": "0.8.1",
+        "lastModifiedBy": null,
+        "createdTime": null,
+        "modifiedTime": null
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!2wMnzH0Al5qymTHW.lFT2ZmmWXksV0wCa"
+    }
+  ],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": null,
+    "modifiedTime": null,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "ownership": {
+    "default": 0,
+    "rs3mzx7WZdtEmvH2": 3,
+    "exQfSubzwCCs5h8v": 3,
+    "UHjN0KQ8w8ZxibJg": 3
+  },
+  "sort": 400000,
+  "_id": "2wMnzH0Al5qymTHW",
+  "_key": "!items!2wMnzH0Al5qymTHW"
+}

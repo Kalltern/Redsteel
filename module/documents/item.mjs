@@ -12,6 +12,15 @@ import {
   parseDiceSize,
   weaponDamageFormula,
 } from "../utils/weaponFormula.mjs";
+// Materials ride on the enchantment summing below as one extra entry.
+// materials.mjs never imports this file, so there is no cycle.
+import {
+  readMaterialSnapshot,
+  materialWeaponEntry,
+  materialGearEntry,
+  buildOffhandTotals,
+  materialOffhandExtras,
+} from "../utils/materials.mjs";
 
 /**
  * Stat block of the "Improvised shield" compendium item
@@ -295,6 +304,15 @@ export function gearEnchantMods(entries) {
     "poison",
     "holy",
   ];
+  const effectResistTypes = [
+    "stagger",
+    "stun",
+    "bleed",
+    "slow",
+    "poison",
+    "burn",
+    "freeze",
+  ];
   const mods = {
     armorValue: 0,
     defense: 0,
@@ -303,10 +321,18 @@ export function gearEnchantMods(entries) {
     rangedCritDefense: 0,
     healthBonus: 0,
     resist: Object.fromEntries(resistTypes.map((type) => [type, 0])),
+    // Signed "chance to be affected" per effect id, read at the Apply Damage
+    // applyChance sites. Only materials author it today; absent reads as 0.
+    effectResist: Object.fromEntries(
+      effectResistTypes.map((type) => [type, 0]),
+    ),
   };
 
   for (const entry of entries) {
     const m = entry?.mods ?? {};
+    for (const type of effectResistTypes) {
+      mods.effectResist[type] += Number(m.effectResist?.[type]) || 0;
+    }
     mods.armorValue += Number(m.armorValue) || 0;
     mods.defense += Number(m.defense) || 0;
     mods.rangedDefense += Number(m.rangedDefense) || 0;
@@ -520,11 +546,40 @@ export class RedsteelItem extends Item {
       // a second derived modifier block, summed from the snapshots the drop
       // handler stored on this item, and read next to `qualityMods` at every
       // combat-math site. Base fields stay untouched.
+      // The material (utils/materials.mjs) joins the sum as one more entry,
+      // read from its frozen snapshot. Its off-hand column is folded into the
+      // derived offhandTotals block the off-hand combat read sites use.
+      const snap = readMaterialSnapshot(this);
       const enchantments = readEnchantments(this);
-      this.system.enchantMods =
-        this.type === "weapon"
-          ? weaponEnchantMods(enchantments)
-          : gearEnchantMods(enchantments);
+      if (this.type === "weapon") {
+        const matEntry = materialWeaponEntry(snap);
+        this.system.enchantMods = weaponEnchantMods(
+          matEntry ? [...enchantments, matEntry] : enchantments,
+        );
+        this.system.offhandTotals = buildOffhandTotals(
+          this.system.offhandProperties,
+          snap,
+        );
+        this.system.offhandMaterialExtras = materialOffhandExtras(snap);
+      } else {
+        const matEntry = materialGearEntry(snap, !!this.system.shield);
+        this.system.enchantMods = gearEnchantMods(
+          matEntry ? [...enchantments, matEntry] : enchantments,
+        );
+      }
+      this.system.materialKey = snap?.key ?? "";
+    }
+
+    // Material option list, rebuilt every prepare like every other option
+    // list in this file: template.json alone never reaches stored documents.
+    if (this.type === "material") {
+      this.system.categoryOptions = [
+        "metal",
+        "wood",
+        "cloth",
+        "leather",
+        "other",
+      ];
     }
 
     // The enchantment editor's "required weapon class" dropdown. Same list the
@@ -629,7 +684,9 @@ export class RedsteelItem extends Item {
       // Enchantments reuse the shared combatEffects tab, whose dropdowns read
       // this list. It is rebuilt on every prepare, so template.json alone would
       // never reach the sheet.
-      this.type === "enchantment"
+      this.type === "enchantment" ||
+      // Materials pick their three shared effect slots from the same list.
+      this.type === "material"
     ) {
       this.system.effectTypes = [
         "custom",

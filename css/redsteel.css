@@ -4810,6 +4810,54 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   color: #2b2410;
 }
 
+/* Situational toggle on a skill card (Ranger's "In nature" on Stealth,
+   utils/rangerSkills.mjs): a squared stone plate with a bronze rim, a hollow
+   diamond while off and a filled one, on a bronze plate, while on. */
+.trait-pill.rs-situational-pill {
+  border-radius: 2px;
+  background: #1f1c17;
+  color: #a8987a;
+  border: 1px solid #6b5a36;
+}
+
+.trait-pill.rs-situational-pill::before {
+  content: "\25C7";
+  margin-right: 5px;
+}
+
+.trait-pill.rs-situational-pill.is-toggle {
+  cursor: pointer;
+}
+
+.trait-pill.rs-situational-pill.is-toggle:hover {
+  border-color: #c8a84b;
+  color: #e0c98a;
+  background: #2a251c;
+}
+
+.trait-pill.rs-situational-pill.is-active {
+  background: #8a7238;
+  color: #1a160e;
+  border-color: #c8a84b;
+}
+
+.trait-pill.rs-situational-pill.is-active::before {
+  content: "\25C6";
+}
+
+/* The roll total redrawn with the active toggles added. */
+.dice-roll .dice-total.rs-situational-total {
+  color: #c8a84b;
+}
+
+/* The margin the active toggles make, under the pills. */
+.rs-situational-note {
+  margin: 0 0 6px;
+  text-align: center;
+  font-size: 12px;
+  color: #c8a84b;
+}
+
 /* Bane attack result dialog (opened from the .bane-pill).
    Two label/value columns whose row counts differ — the normal block has 3-4
    rows, the critical block 5. As plain grid items each column stretched to the
@@ -8775,6 +8823,32 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   background: rgba(0, 0, 0, 0.45);
   border: 1px solid rgba(181, 151, 80, 0.45);
   border-radius: 8px;
+}
+
+/* Material row on weapon/gear headers (utils/materials.mjs): the select and
+   its Refresh icon share one line; the summary sits under the grid row. */
+.redsteel .sheet-header-item .material-select-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.redsteel .sheet-header-item .material-select-row select {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.redsteel .sheet-header-item .material-refresh {
+  flex: 0 0 auto;
+  cursor: pointer;
+  color: #c9b26b;
+}
+
+.redsteel .sheet-header-item .material-summary {
+  margin: 0;
+  font-size: 0.85em;
+  color: #c9b26b;
+  text-align: center;
 }
 
 /* Race item sheet: choice-group editor */
@@ -18942,7 +19016,8 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
 }
 
 /* A bought feature clicks to show its description in the Info column. */
-.rs-learn .rs-learn-cskills .rs-create-trait.is-feature {
+.rs-learn .rs-learn-cskills .rs-create-trait.is-feature,
+.rs-learn .rs-learn-cskills .rs-create-trait.is-removable {
   cursor: pointer;
 }
 
@@ -21985,13 +22060,16 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
 }
 
 /* A picked trait keeps its place in the left list, see-through; clicking it
-   gives it back. */
-.rs-create .rs-create-origin .rs-create-trait.is-selected {
+   gives it back. The same in step 3's Attributes & Traits tab. */
+.rs-create .rs-create-origin .rs-create-trait.is-selected,
+.rs-create .rs-learn-cskills-origin .rs-create-trait.is-selected {
   opacity: 0.4;
 }
 
 .rs-create .rs-create-origin .rs-create-trait.is-selected:hover,
-.rs-create .rs-create-origin .rs-create-trait.is-selected:focus-visible {
+.rs-create .rs-create-origin .rs-create-trait.is-selected:focus-visible,
+.rs-create .rs-learn-cskills-origin .rs-create-trait.is-selected:hover,
+.rs-create .rs-learn-cskills-origin .rs-create-trait.is-selected:focus-visible {
   opacity: 0.6;
 }
 
@@ -22023,6 +22101,39 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   padding: 0 0 0 16px;
   font-size: 13px;
   color: var(--rs-create-text);
+}
+
+/* Dexterity's finesse weapons: icon and name, two to a row; hover shows the
+   weapon's stats. */
+.rs-create .rs-create-info-weapons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px 10px;
+  margin: 2px 0 8px;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+  color: var(--rs-create-text);
+}
+
+.rs-create .rs-create-info-weapons li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  cursor: help;
+}
+
+.rs-create .rs-create-info-weapons img {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--rs-create-bronze);
+  object-fit: cover;
+}
+
+.rs-create .rs-create-info-weapons li:hover span {
+  color: var(--rs-create-gold);
 }
 
 /* -------- info panel -------- */

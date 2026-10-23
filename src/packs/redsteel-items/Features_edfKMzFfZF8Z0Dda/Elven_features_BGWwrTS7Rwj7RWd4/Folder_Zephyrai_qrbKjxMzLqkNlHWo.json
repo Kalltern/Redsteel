@@ -1,0 +1,21 @@
+{
+  "type": "Item",
+  "folder": "BGWwrTS7Rwj7RWd4",
+  "name": "Zephyrai",
+  "color": null,
+  "sorting": "a",
+  "_id": "qrbKjxMzLqkNlHWo",
+  "description": "",
+  "sort": 0,
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "lastModifiedBy": null
+  },
+  "_key": "!folders!qrbKjxMzLqkNlHWo"
+}

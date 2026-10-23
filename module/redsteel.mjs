@@ -85,6 +85,11 @@ import { registerTraitChoices } from "./utils/traitChoices.mjs";
 import { registerSpellbookHooks } from "./utils/spellbook.mjs";
 import { registerScrollHooks } from "./utils/spellScrolls.mjs";
 import {
+  getMaterialChoices,
+  refreshMaterialCopies,
+  registerMaterialHooks,
+} from "./utils/materials.mjs";
+import {
   registerCalendariaIntegration,
   scheduleRerollRefresh,
   processDueEntries,
@@ -105,6 +110,8 @@ import { registerOverwhelmHooks } from "./utils/overwhelm.mjs";
 import { registerChampionHooks } from "./utils/champion.mjs";
 import { registerHopliteHooks } from "./utils/hoplite.mjs";
 import { registerSkirmisherHooks } from "./utils/skirmisher.mjs";
+import { registerRangerHooks } from "./utils/ranger.mjs";
+import { registerSituationalPills } from "./utils/rangerSkills.mjs";
 import { registerShieldStrainHooks } from "./utils/shieldStrain.mjs";
 import { registerProtectionHooks } from "./utils/protection.mjs";
 import { registerArmoringHooks } from "./utils/armoring.mjs";
@@ -532,6 +539,8 @@ Hooks.once("init", function () {
   game.redsteel.openRaceChoicesDialog = openRaceChoicesDialog;
   game.redsteel.initializeRaceChoices = initializeRaceChoices;
   game.redsteel.convertNpcMovement = convertNpcMovement;
+  game.redsteel.getMaterialChoices = getMaterialChoices;
+  game.redsteel.refreshMaterialCopies = refreshMaterialCopies;
   // Coinage: the roster is the GM's, and these are how anything charges it.
   game.redsteel.currency = {
     roster: getRoster,
@@ -555,6 +564,12 @@ Hooks.once("init", function () {
   registerDefendButton();
   registerOverwhelmHooks();
   registerChampionHooks();
+  // Hraničář → Zášť: the Grudge flag is dropped with its encounter
+  // (ranger.mjs).
+  registerRangerHooks();
+  // Hraničář → Pohyb v přírodě: the "In nature" toggle on a Stealth card
+  // (rangerSkills.mjs).
+  registerSituationalPills();
   registerHopliteHooks();
   // Harcovník: Aim and the Slow Movement after a throw card (skirmisher.mjs).
   registerSkirmisherHooks();
@@ -599,6 +614,9 @@ Hooks.once("init", function () {
   registerTraitChoices();
   registerSpellbookHooks();
   registerScrollHooks();
+  // Materials: key fill on create, registry cache, GM re-snapshot on edit
+  // (utils/materials.mjs).
+  registerMaterialHooks();
   registerCalendariaIntegration();
   registerCanvasZoom();
   registerDeadTokenAppearance();
@@ -1714,6 +1732,9 @@ const REROLL_CARRIED_FLAGS = [
   "pushBack",
   "pushBackRolled",
   "pushBackTest",
+  // Situational toggles (Ranger's "In nature" on Stealth, rangerSkills.mjs):
+  // the reroll keeps what was switched on and adds it to the new margin.
+  "situational",
 ];
 
 /**

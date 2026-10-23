@@ -120,13 +120,16 @@ const ABILITY = {
   FLURRY: A("zosOTl8qIL3DISsr"), // Smršť útoků
   FOLLOW_UP_THROW: A("fOllowUpThrow001"), // Navazující vrh (Harcovník)
   FORCEFUL_ADVANCE: A("fOrcefulAdvance1"), // Rázný postup
+  FINISHING_BLOW: A("fInishingBlow001"), // Doražení (Hraničář, modifier)
   FUSCINA_ICTUS: A("fUsCinaIctus0001"), // Fuscina Ictus, trojzubec
   FLURRY_OF_THROWS: A("rWVInSjYveJyVonf"), // Vícenásobný vrh
   FRENZIED_THROW: A("RUMZLtefyxVDNA74"), // Zběsilý vrh
   FREE_THE_SHIELD: A("fReeTheShield001"), // Uvolnit štít (Zatížení štítu)
+  GRUDGE: A("gRudge0000000001"), // Zášť (Hraničář)
   GUARD_STANCE: A("n6cK9hKnV52nwOzh"), // Ochrana
   HALF_PIROUETTE: A("fF5ZDZZ8r1XSGjmP"), // Půlpirueta
   HOPLITE_MOMENTUM: A("hOpliteMomentum1"), // Momentum, Hoplita
+  HUNTERS_SHOT: A("hUntersShot00001"), // Lovcův výstřel (Hraničář)
   IMBROCCATA_EXPLOIT_WEAKNESS: A("q8A63eX3waqHl4KX"), // Útok na slabinu, rapír
   IMPALE: A("1xrf1lG6yXNgqXRC"), // Nabodnutí
   IMPROVED_ARMORING: A("iMpArmoring00001"), // Vylepšené obrnění
@@ -171,6 +174,7 @@ const ABILITY = {
   PIKEMAN_CHARGE: A("cghhodlLxiU69WLO"), // Zteč: Průbojnost +5 — also carries Heavy dice
   POLEARM_CLEAVE: A("PPV4asgA1ESKgD26"), // Daleké rozseknutí
   PRECISE_INCANTATION: A("pRecIncant000001"), // Precizní inkantace
+  PREDATORS_ATTACK: A("pRedatorsAtk0001"), // Útok dravce (Hraničář)
   PREPARED_STANCE: A("pRepStance000001"), // Přípravný postoj
   PUSH_BACK_DEX: A("pUshBackDex00001"), // Zatlačení
   PUSH_BACK_STR: A("pUshBackStr00001"), // Zatlačení
@@ -892,6 +896,36 @@ export const ABILITY_GRANTS = [
     when: specNode("ranger", "vylPrezbrojeni"),
     grant: [ABILITY.IMPROVED_SUDDEN_REARM],
     replaces: [ABILITY.SUDDEN_REARM],
+  },
+  {
+    // Hraničář → Zášť (specializace-wip.md r312): one Aim held on the chosen
+    // enemy while it lives; a new target once it is dead (utils/ranger.mjs,
+    // the Aim floor in utils/aim.mjs).
+    label: "Ranger: Zášť → Grudge",
+    when: specNode("ranger", "zast"),
+    grant: [ABILITY.GRUDGE],
+  },
+  {
+    // Hraničář → Lovcův výstřel (r314): a plain shot, one Aim on the target
+    // on a hit, two on a Critical Hit (utils/aim.mjs AIM_GRANT_ABILITIES).
+    label: "Ranger: Lovcův výstřel → Hunter's Shot",
+    when: specNode("ranger", "lovcuvVystrel"),
+    grant: [ABILITY.HUNTERS_SHOT],
+  },
+  {
+    // Hraničář → Útok dravce (r316): after a Melee kill, re-arm to a bow or
+    // crossbow and shoot or Reload as a Free action (utils/predatorsAttack.mjs).
+    label: "Ranger: Útok dravce → Predator's Attack",
+    when: specNode("ranger", "utokDravce"),
+    grant: [ABILITY.PREDATORS_ATTACK],
+  },
+  {
+    // Hraničář → Doražení (r318): attack modifier against a Bane target,
+    // Critical Hit +10%, Critical Range +3, Ověření +10% (refused off a Bane
+    // in utils/combatAbilities.mjs and utils/attackActions.mjs).
+    label: "Ranger: Doražení → Finishing Blow",
+    when: specNode("ranger", "dorazeni"),
+    grant: [ABILITY.FINISHING_BLOW],
   },
   {
     label: "School of Blood: Krvavý pakt → Blood Pact",

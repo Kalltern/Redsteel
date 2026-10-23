@@ -357,7 +357,8 @@ export async function universalAttackLogic({
     const mainPen = Number(weapon.system.penetration) || 0;
     const offPen = resolvedContext?.isDualWield
       ? Number(
-          resolvedContext.offWeapon?.system?.offhandProperties?.penetration,
+          (resolvedContext.offWeapon?.system?.offhandTotals ??
+            resolvedContext.offWeapon?.system?.offhandProperties)?.penetration,
         ) || 0
       : 0;
     const actorMods = game.redsteel.getActorCombatModifiers(actor, weapon);
@@ -833,7 +834,8 @@ export async function rangedAttack(options = {}) {
     attackType: "ranged",
     flavorLabel: (weapon) =>
       `Ranged attack with ${weapon.localizedName ?? weapon.name}`,
-    showBreakthrough: false,
+    // Shown whenever a Breakthrough was rolled (damageLine hides an empty one).
+    showBreakthrough: true,
     weaponFilter: (i) =>
       i.type === "weapon" && ["bow", "crossbow"].includes(i.system.class),
     context: options.context ?? null,

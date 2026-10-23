@@ -1259,6 +1259,36 @@ export async function postCritFailPrompt(
   });
 }
 
+/**
+ * Racial features that sharpen one school's criticals ("Spojení s vodou": all
+ * Water School spells +3 % critical chance and +3 critical range). Read at cast
+ * time, like SCHOOL_CRIT_RANGE_NODES, because the bonus is school-scoped.
+ * Ownership is matched by the feature's English name, as elsewhere.
+ */
+const FEATURE_SCHOOL_CRITS = [
+  { feature: "Bond with Water", schools: ["water"], chance: 3, range: 3 },
+];
+
+function featureSchoolCrit(actor, school, field) {
+  if (!school) return 0;
+  return FEATURE_SCHOOL_CRITS.reduce(
+    (sum, entry) =>
+      entry.schools.includes(school) &&
+      actor?.items?.some((i) => i.type === "feature" && i.name === entry.feature)
+        ? sum + entry[field]
+        : sum,
+    0,
+  );
+}
+
+/** The cast's Critical Success threshold: channeling's plus school features. */
+function getCastCritSuccessThreshold(actor, spell) {
+  return (
+    (actor.system.combatSkills.channeling.criticalSuccessThreshold ?? 0) +
+    featureSchoolCrit(actor, spell?.system?.type, "chance")
+  );
+}
+
 export async function performAttackRoll(
   actor,
   spell,
@@ -1292,8 +1322,7 @@ export async function performAttackRoll(
     };
   }
 
-  const critSuccessThreshold =
-    actor.system.combatSkills.channeling.criticalSuccessThreshold;
+  const critSuccessThreshold = getCastCritSuccessThreshold(actor, spell);
   const critFailureThreshold = getCastCritFailThreshold(actor, {
     hastenedCast,
   });
@@ -1580,7 +1609,9 @@ ${renderMarginFollowupLine({
   // Water spell.
   const critScoreRoll = new Roll(`1d20`);
   await critScoreRoll.evaluate();
-  const schoolCritRange = getSchoolCritRangeBonus(actor, spell.system.type);
+  const schoolCritRange =
+    getSchoolCritRangeBonus(actor, spell.system.type) +
+    featureSchoolCrit(actor, spell.system.type, "range");
   const critScoreResult =
     critScoreRoll.total + (actor.system.critRangeCast || 0) + schoolCritRange;
 
@@ -1968,7 +1999,7 @@ ${renderMarginFollowupLine({
         // do: `d100 >= null` is always true).
         criticalSuccessThreshold: miracle
           ? 0
-          : actor.system.combatSkills.channeling.criticalSuccessThreshold,
+          : getCastCritSuccessThreshold(actor, spell),
         criticalFailureThreshold: miracle
           ? 101
           : getCastCritFailThreshold(actor, { hastenedCast }),

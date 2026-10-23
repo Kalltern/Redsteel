@@ -94,7 +94,12 @@ import {
 import { SPEC_ICONS } from "../helpers/specialisations.mjs";
 import { getRaceChoiceGroups } from "./race.mjs";
 import { registerTooltip, ttFrame } from "./tooltips.mjs";
-import { compatibleWeaponsPill, loadCompatibleWeapons } from "./compatibleWeapons.mjs";
+import {
+  compatibleWeaponsPill,
+  FINESSE_WEAPONS,
+  getCompatibleWeapons,
+  loadCompatibleWeapons,
+} from "./compatibleWeapons.mjs";
 
 /**
  * Racial features listed in the info panel, by compendium id → {title, img,
@@ -1294,6 +1299,8 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     await Promise.all([
       this.#loadRaces().then(() => this.#loadRacialFeatures()),
       this.#loadTraits(),
+      // Dexterity's info lists the finesse weapons (#dexterityHtml).
+      loadCompatibleWeapons(),
     ]);
     if (this.#draft.step === 2) await ladders;
     else ladders.catch((err) => console.warn("Redsteel | Creation: doctrine ladders failed", err));
@@ -1575,7 +1582,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
         frame(
           i18n.localize(CONFIG.REDSTEEL.attributes?.[k] ?? k),
           meta,
-          desc + this.#derivedSkillsHtml(k),
+          desc + (k === "dex" ? this.#dexterityHtml() : "") + this.#derivedSkillsHtml(k),
         ),
       );
     }
@@ -2039,6 +2046,38 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
       `<ul class="rs-create-info-skills">${names
         .map((name) => `<li>${escapeHtml(name)}</li>`)
         .join("")}</ul>`
+    );
+  }
+
+  /**
+   * What a high Dexterity is for (user request 2026-10-22): finesse weapons
+   * with the Finesse feature, every one of them listed with its stats on
+   * hover (compatibleWeapon), then Dodge, Acrobatics' defense.
+   */
+  #dexterityHtml() {
+    const i18n = game.i18n;
+    const subtitle = (key) => `<h4 class="rs-create-info-subtitle">${escapeHtml(i18n.localize(key))}</h4>`;
+    const text = (key) => `<p>${escapeHtml(i18n.localize(key))}</p>`;
+    const groups = getCompatibleWeapons(FINESSE_WEAPONS)?.groups ?? [];
+    const weapons = groups
+      .map(
+        ({ label, weapons: list }) =>
+          `<div class="rs-create-group-label">${escapeHtml(i18n.localize(`REDSTEEL.Creation.Doctrine.Group.${label}`))}</div>` +
+          `<ul class="rs-create-info-weapons">${list
+            .map(
+              (weapon) =>
+                `<li data-tt-kind="compatibleWeapon" data-tt-id="${escapeHtml(weapon.id)}" data-tt-track="${FINESSE_WEAPONS}">` +
+                `<img src="${escapeHtml(weapon.img)}" alt=""><span>${escapeHtml(weapon.name)}</span></li>`,
+            )
+            .join("")}</ul>`,
+      )
+      .join("");
+    return (
+      subtitle("REDSTEEL.Creation.Info.Dex.finesseTitle") +
+      text("REDSTEEL.Creation.Info.Dex.finesse") +
+      weapons +
+      subtitle("REDSTEEL.Creation.Info.Dex.dodgeTitle") +
+      text("REDSTEEL.Creation.Info.Dex.dodge")
     );
   }
 

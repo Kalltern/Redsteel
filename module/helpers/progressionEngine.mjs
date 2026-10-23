@@ -19,6 +19,11 @@ import {
   SPEC_PRICES,
 } from "./specPrices.mjs";
 import { SPEC_NODE_PRICES } from "./specNodePrices.mjs";
+import {
+  isReplacedByRanger,
+  rangerDoctrineDiscount,
+  requirementRank,
+} from "./rangerApprentice.mjs";
 import { REDSTEEL } from "./config.mjs";
 import { clearBaneChoice } from "./banes.mjs";
 import { ABILITY_GRANTS } from "../utils/abilityGrants.mjs";
@@ -648,7 +653,10 @@ export function evaluateRequirement(actor, req, trackId, rank) {
       met = Number(actor.system?.attributes?.[req.key]?.total ?? 0) >= req.min;
       break;
     case "rank":
-      met = getTrackRank(actor, req.group, req.key) >= req.min;
+      // Ranger - Apprentice: the Ranger rank stands in for Combat and
+      // Archery here (rangerApprentice.mjs). "anyRank" on combatSkills needs
+      // nothing extra: the Ranger track is in that group already.
+      met = requirementRank(actor, req.group, req.key) >= req.min;
       break;
     case "anyRank":
       met = getBestRankInGroup(actor, req.group) >= req.min;
@@ -806,6 +814,16 @@ export function getRankState(actor, trackId, rank) {
   // (rankMirrors.mjs), so every rank above the one held stays locked.
   const mirror = getActiveMirrors(actor).get(trackId);
   if (mirror) return { state: "locked", price, requirements: null, mirror };
+  // Ranger - Apprentice: "Znemožňuje získávat stupně dovedností Souboj a
+  // Střelba" while the node is unlocked (rangerApprentice.mjs).
+  if (isReplacedByRanger(actor, trackId)) {
+    return {
+      state: "locked",
+      price,
+      requirements: null,
+      lockReason: game.i18n.localize("REDSTEEL.Learn.replacedByRanger"),
+    };
+  }
   // Character creation caps every track at the level's rank (Úrovně table).
   const cap = getCreationRankCap(actor);
   if (cap !== null && rank > cap) {
@@ -1698,6 +1716,27 @@ export function getDiscountSources(actor) {
       add(`spec-${spec}-${node}`, def, def.skill ?? null, { kind: "spec", spec, node });
     }
   }
+  // Ranger - Apprentice: the lower of two (or more) doctrines, 3 CP off each
+  // rank (rangerApprentice.mjs). Derived from the ranks held, so it is never
+  // picked and never "takes" a doctrine away from another source's picker:
+  // `derived` keeps it out of getDiscountChoiceOptions and
+  // findOtherDiscountOn. On a doctrine that already carries a discount the
+  // larger one counts (getSkillDiscounts), so the two never stack.
+  const ranger = rangerDoctrineDiscount(actor);
+  if (ranger) {
+    sources.push({
+      id: "spec-ranger-ucednik",
+      amount: ranger.amount,
+      currency: ranger.currency,
+      group: "doctrines",
+      skill: ranger.key,
+      choices: null,
+      kind: "spec",
+      spec: "ranger",
+      node: "ucednik",
+      derived: true,
+    });
+  }
   return sources;
 }
 
@@ -1849,6 +1888,7 @@ function findOtherDiscountOn(actor, group, skill, exceptId) {
   return (
     getDiscountSources(actor).find(
       (source) =>
+        !source.derived &&
         source.group === group &&
         source.skill === skill &&
         source.id !== exceptId,
@@ -1895,7 +1935,10 @@ export function getDiscountChoiceOptions(actor, sourceId, sources = getDiscountS
     sources
       .filter(
         (entry) =>
-          entry.id !== sourceId && entry.skill && entry.group === source.group,
+          !entry.derived &&
+          entry.id !== sourceId &&
+          entry.skill &&
+          entry.group === source.group,
       )
       .map((entry) => entry.skill),
   );

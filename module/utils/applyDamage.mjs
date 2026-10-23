@@ -1,4 +1,5 @@
 import { grantImpaleKill, stampImpaleRoot } from "./impaleFollowup.mjs";
+import { getGearEffectResist } from "./materials.mjs";
 import { stampEscapeSource } from "./escapeFollowup.mjs";
 import {
   evaluateDmgVsArmor,
@@ -30,6 +31,7 @@ import {
 import { grantPassingStrikeStep } from "./abilityMovement.mjs";
 import { offerSlipThrough } from "./slipThrough.mjs";
 import { offerHalfPirouette } from "./halfPirouette.mjs";
+import { offerPredatorsAttack } from "./predatorsAttack.mjs";
 import { settleFinalStrikeKill } from "./swordDancer.mjs";
 import { offerChampionRestaggerPush, settleChampionFeint } from "./champion.mjs";
 import {
@@ -1106,8 +1108,11 @@ export async function applyDamageAsGM(data) {
       // A refused Sneak Attack loses its effect-chance bonus too, deducted the
       // same way a target's own resistance is: the d100 already rolled stands,
       // only the threshold it is measured against comes down.
+      // Worn armour's material adds its signed "chance to be affected" here,
+      // never as an Active Effect (utils/materials.mjs).
       const targetMod =
         (actor.system.effectMods?.[name]?.applyChance || 0) +
+        getGearEffectResist(actor, name) +
         sneakSign * (Number(attack.sneak?.effectChance) || 0);
       const stackMod = actor.system.effectMods?.[name]?.stackMod || 0;
 
@@ -1535,6 +1540,10 @@ export async function applyDamageAsGM(data) {
   // Půlpirueta (Half Pirouette): a kill, or a landed Counterattack or
   // Riposte, lets the attacker step in and take Aim this turn.
   await offerHalfPirouette(attacker, message, targetIds, killedIds);
+  // Hraničář → Útok dravce: a Melee kill on the holder's own turn lets them
+  // re-arm to a bow or crossbow and shoot or Reload this turn
+  // (predatorsAttack.mjs).
+  await offerPredatorsAttack(attacker, message, killedIds);
   // Poslední výpad (Final Strike): a kill gives one Action back, and the two
   // Aim it held back from the fallen target go wherever the player picks.
   await settleFinalStrikeKill(attacker, message, felledIds, aimGrant?.owed ?? 0);
@@ -1817,6 +1826,7 @@ function openDamageSelectionDialog(message, targets) {
             // effect-chance bonus, so the box ticks itself the same way here.
             const targetMod =
               (t.actor.system.effectMods?.[name]?.applyChance || 0) +
+              getGearEffectResist(t.actor, name) +
               sneakSign * (Number(attack.sneak?.effectChance) || 0);
 
             // NPC body-part overrides (e.g. exposed limb → extra bleed chance).

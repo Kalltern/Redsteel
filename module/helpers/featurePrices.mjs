@@ -43,7 +43,7 @@
  *   readingTier  for reading: first (full price) | additional (any further
  *     language, once a first is owned)
  *
- * 249 features. Clause kinds: {'anyOf': 23, 'anyRank': 27, 'attr': 29, 'attrCompare': 2, 'countRank': 1, 'feature': 88, 'featurePrefix': 8, 'featureTeacher': 14, 'flag': 13, 'gm': 8, 'notFlag': 1, 'race': 83, 'rank': 144, 'secAttr': 1, 'spec': 13, 'specNode': 1}.
+ * 254 features. Clause kinds: {'anyOf': 23, 'anyRank': 27, 'attr': 31, 'attrCompare': 2, 'countRank': 1, 'feature': 88, 'featurePrefix': 8, 'featureTeacher': 14, 'flag': 13, 'gm': 8, 'notFlag': 1, 'race': 88, 'rank': 145, 'secAttr': 1, 'spec': 13, 'specNode': 1}.
  */
 
 // MAGIC GATE (user ruling 2026-09-11): every feature in the magic section also
@@ -240,6 +240,13 @@ export const FEATURE_PRICES = {
   "mA8rfhtgbuF17UCb": { name: "Elven talent: First Aid", section: "racial", folder: "Elven talent: *Skill*", cost: 20, currency: "sp", requires: [{ t: "race", races: ["Eldarai"] }, { t: "rank", group: "skills", key: "firstAid", min: 1 }], bookRow: 531, group: "elvenTalent", skill: "firstAid" },
   "hR0vG8wha0K0qaSc": { name: "Elven talent: Pickpocketing", section: "racial", folder: "Elven talent: *Skill*", cost: 20, currency: "sp", requires: [{ t: "race", races: ["Eldarai"] }, { t: "rank", group: "skills", key: "pickpocketing", min: 1 }], bookRow: 531, group: "elvenTalent", skill: "pickpocketing" },
   "YRZnTgxGjmLBMTjv": { name: "Elven talent: Stealth", section: "racial", folder: "Elven talent: *Skill*", cost: 20, currency: "sp", requires: [{ t: "race", races: ["Eldarai"] }, { t: "rank", group: "skills", key: "stealth", min: 1 }], bookRow: 531, group: "elvenTalent", skill: "stealth" },
+  // Zephyrai subrace perks (Odbornosti r561-r569). The book lists them under
+  // "Elfské reflexy", but like Elven talent they ask only for the subrace.
+  "5JhsRslTiGktnua3": { name: "Water Dance", section: "racial", folder: "Zephyrai", cost: 10, currency: "sp", requires: [{ t: "race", races: ["Zephyrai"] }], bookRow: 561 },
+  "n7Z0bVf0HNL2aEKS": { name: "Calm Waters", section: "racial", folder: "Zephyrai", cost: 15, currency: "sp", requires: [{ t: "race", races: ["Zephyrai"] }], bookRow: 563 },
+  "CGRt41PyOUnv400O": { name: "Gift of Calistea", section: "racial", folder: "Zephyrai", cost: 10, currency: "sp", requires: [{ t: "race", races: ["Zephyrai"] }, { t: "attr", key: "per", min: 4 }], bookRow: 565 },
+  "2wMnzH0Al5qymTHW": { name: "Sea Breath", section: "racial", folder: "Zephyrai", cost: 30, currency: "sp", requires: [{ t: "race", races: ["Zephyrai"] }, { t: "attr", key: "end", min: 4 }], bookRow: 567 },
+  "DV5yn6YRNved3B1k": { name: "Bond with Water", section: "racial", folder: "Zephyrai", cost: 5, currency: "cp", requires: [{ t: "race", races: ["Zephyrai"] }, { t: "rank", group: "schools", key: "water", min: 1 }], bookRow: 569 },
   "c5DHom4e78vouQZc": { name: "Feather footed", section: "racial", folder: "Halfling features", cost: 20, currency: "sp", requires: [{ t: "race", races: ["Halfling"] }, { t: "rank", group: "skills", key: "stealth", min: 1 }], bookRow: 620 },
   "0Akfh0JsfEe287n8": { name: "Foodie", section: "racial", folder: "Halfling features", cost: 10, currency: "sp", requires: [{ t: "race", races: ["Halfling"] }], bookRow: 612 },
   "DEskBhfXxupDKXpO": { name: "Graceful step", section: "racial", folder: "Halfling features", cost: 5, currency: "cp", requires: [{ t: "race", races: ["Halfling"] }, { t: "attr", key: "dex", min: 4 }], bookRow: 610 },

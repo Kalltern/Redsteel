@@ -695,7 +695,11 @@ export class RedsteelActor extends Actor {
             (Number(mainQuality.defense) || 0) +
             (Number(mainEnchant.defense) || 0);
         if (isDualWield) {
-          const offProps = offHand.system.offhandProperties ?? {};
+          // Material off-hand column included (utils/materials.mjs).
+          const offProps =
+            offHand.system.offhandTotals ??
+            offHand.system.offhandProperties ??
+            {};
           const offQuality = offHand.system.offhandQualityMods ?? {};
           weaponDefense +=
             (Number(offProps.defense) || 0) + (Number(offQuality.defense) || 0);

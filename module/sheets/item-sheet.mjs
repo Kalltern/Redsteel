@@ -28,6 +28,14 @@ import {
 } from "../utils/itemIdentify.mjs";
 import { resourceLabel } from "../utils/itemResources.mjs";
 import {
+  buildMaterialSnapshot,
+  describeMaterialColumn,
+  findMaterialByKey,
+  getMaterialChoices,
+  materialSlotLabel,
+  readMaterialSnapshot,
+} from "../utils/materials.mjs";
+import {
   parseAttributeKeys,
   versusAgainstFor,
 } from "../utils/attributeFollowup.mjs";
@@ -89,6 +97,7 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
       takeOutScroll: this._takeOutScroll,
       resyncItem: this._resyncItem,
       undoResync: this._undoResync,
+      refreshMaterial: this._refreshMaterial,
     },
     form: {
       submitOnChange: true,
@@ -217,6 +226,9 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
       template:
         "systems/redsteel/templates/item/attribute-parts/enchantment.hbs",
     },
+    attributesMaterial: {
+      template: "systems/redsteel/templates/item/attribute-parts/material.hbs",
+    },
     enchantments: {
       template: "systems/redsteel/templates/item/enchantments.hbs",
     },
@@ -279,6 +291,9 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
         break;
       case "enchantment":
         options.parts.push("attributesEnchantment", "combatEffects");
+        break;
+      case "material":
+        options.parts.push("attributesMaterial");
         break;
       case "spell":
         options.parts.push("attributesSpell", "combatEffects", "attributesVariants");
@@ -414,6 +429,82 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
   /** @override */
   async _preparePartContext(partId, context) {
     switch (partId) {
+      case "header":
+        // The Material dropdown beside Quality on weapon and gear sheets.
+        if (this.item.type === "weapon" || this.item.type === "gear") {
+          await this._prepareMaterialContext(context);
+        }
+        break;
+      case "attributesMaterial": {
+        context.tab = context.tabs[partId];
+        const sys = this.item.system;
+        // One row per shared effect slot; each column's chance input is
+        // labelled with the effect the slot names.
+        context.materialSlots = [1, 2, 3].map((n) => ({
+          n,
+          type: sys[`effectType${n}`] ?? "",
+          name: sys[`effectName${n}`] ?? "",
+          isCustom: String(sys[`effectType${n}`] ?? "").toLowerCase() === "custom",
+          label:
+            materialSlotLabel(sys, n) ||
+            game.i18n.format("REDSTEEL.Material.FIELDS.slotUnset.label", { n }),
+          weapon: sys.weapon?.effects?.[`extra${n}`] ?? 0,
+          offhand: sys.offhand?.effects?.[`extra${n}`] ?? 0,
+          bash: sys.shield?.bashEffects?.[`extra${n}`] ?? 0,
+        }));
+        // Three damage-type slots, normalized like the enchantment editor's:
+        // a sheet submit can hand the array back as an index-keyed object.
+        const raw = sys.weapon?.damageTypes;
+        const stored = Array.isArray(raw) ? raw : Object.values(raw ?? {});
+        context.materialDamageTypeSlots = [0, 1, 2].map((index) => ({
+          index,
+          value: stored[index] ?? "",
+        }));
+        // The plain number inputs of each column, in display order.
+        const numbers = (column, fields) =>
+          fields.map((field) => ({ field, value: sys[column]?.[field] ?? 0 }));
+        context.materialNumbers = {
+          weaponMain: numbers("weapon", [
+            "attack",
+            "defense",
+            "dodge",
+            "penetration",
+            "damageBonus",
+          ]),
+          weaponCrit: numbers("weapon", [
+            "critRange",
+            "critChance",
+            "critDefense",
+            "critDamage",
+          ]),
+          offhandMain: numbers("offhand", [
+            "attack",
+            "defense",
+            "dodge",
+            "penetration",
+          ]),
+          offhandCrit: numbers("offhand", [
+            "critRange",
+            "critDefense",
+            "critDodge",
+          ]),
+          armor: numbers("armor", [
+            "armorValue",
+            "defense",
+            "rangedDefense",
+            "healthBonus",
+            "critDefense",
+            "rangedCritDefense",
+          ]),
+          shield: numbers("shield", [
+            "defense",
+            "rangedDefense",
+            "critDefense",
+            "rangedCritDefense",
+          ]),
+        };
+        break;
+      }
       case "attributesFeature":
         context.tab = context.tabs[partId];
         // One entry per reroll pool, normalized with its array index for the
@@ -486,7 +577,13 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
         // The applied snapshots, plus the derived total the combat math reads,
         // so the tab can show both the list and what it all adds up to.
         context.enchantmentEntries = this._getEnchantmentArray();
-        context.enchantMods = this.item.system.enchantMods ?? {};
+        // Re-summed from the enchantments alone: system.enchantMods also
+        // carries the item's material (utils/materials.mjs), which is not an
+        // enchantment and has its own line in the header.
+        context.enchantMods =
+          this.item.type === "weapon"
+            ? weaponEnchantMods(readEnchantments(this.item))
+            : gearEnchantMods(readEnchantments(this.item));
         context.enchantSlot = this.item.type === "weapon" ? "weapon" : "gear";
         if (game.user.isGM) {
           // The GM identification block. Display only: the real numbers the
@@ -741,6 +838,7 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
         case "attributesCondition":
         case "attributesRecipe":
         case "attributesEnchantment":
+        case "attributesMaterial":
         case "attributesSpellbook":
         case "attributesScroll":
           tab.id = "attributes";
@@ -812,9 +910,144 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
       });
     });
 
+    // The Material dropdown is unnamed for the same reason: the form submit
+    // never writes it. A pick stores the key and a fresh snapshot together.
+    root?.querySelectorAll("select[data-material-select]").forEach((select) => {
+      select.addEventListener("change", (event) => {
+        event.stopPropagation();
+        this._onChangeMaterial(event.currentTarget.value);
+      });
+    });
+
     // You may want to add other special handling here
     // Foundry comes with a large number of utility classes, e.g. SearchFilter
     // That you may want to implement yourself.
+  }
+
+  /* -------------------------------------------- */
+  /*  Materials (utils/materials.mjs)             */
+  /* -------------------------------------------- */
+
+  /**
+   * Header context for the Material row: the choices that fit this item's
+   * column, "None" first, and the current material kept in the list even when
+   * its source is gone ("(missing)"), plus a one-line summary of what the
+   * stored snapshot adds.
+   * @param {object} context
+   */
+  async _prepareMaterialContext(context) {
+    const item = this.item;
+    const snap = readMaterialSnapshot(item);
+    const isWeapon = item.type === "weapon";
+    const isShield = !isWeapon && !!item.system.shield;
+    const fits = (entry) =>
+      isWeapon
+        ? entry.appliesTo?.weapon || entry.appliesTo?.offhand
+        : isShield
+          ? entry.appliesTo?.shield
+          : entry.appliesTo?.armor;
+
+    let all = [];
+    try {
+      all = await getMaterialChoices();
+    } catch (err) {
+      console.warn("Redsteel | Materials: could not list materials", err);
+    }
+
+    const current = String(item.system.material ?? "") || snap?.key || "";
+    const choices = all
+      .filter(fits)
+      .map((entry) => ({ key: entry.key, label: entry.name }))
+      .sort((a, b) => a.label.localeCompare(b.label, game.i18n.lang));
+    if (current && !choices.some((entry) => entry.key === current)) {
+      const known = all.find((entry) => entry.key === current);
+      choices.push({
+        key: current,
+        label: known
+          ? known.name
+          : `${snap?.name || current} ${game.i18n.localize("REDSTEEL.Material.Missing")}`,
+      });
+    }
+
+    context.materialChoices = [
+      { key: "", label: game.i18n.localize("REDSTEEL.Material.None") },
+      ...choices,
+    ].map((entry) => ({ ...entry, selected: entry.key === current }));
+    context.materialKey = current;
+
+    let summary = "";
+    if (isWeapon) {
+      const parts = [describeMaterialColumn(snap, "weapon")];
+      if (item.system.offhand) {
+        const off = describeMaterialColumn(snap, "offhand");
+        if (off) {
+          parts.push(
+            `${game.i18n.localize("REDSTEEL.Material.Column.offhand")}: ${off}`,
+          );
+        }
+      }
+      summary = parts.filter(Boolean).join(" · ");
+    } else {
+      summary = describeMaterialColumn(snap, isShield ? "shield" : "armor");
+    }
+    context.materialSummary = summary;
+  }
+
+  /**
+   * A pick in the Material dropdown: one update writing the key and a fresh
+   * snapshot, or clearing both for "None".
+   * @param {string} key
+   */
+  async _onChangeMaterial(key) {
+    if (!this.isEditable) return;
+    if (!key) {
+      await this.item.update({
+        "system.material": "",
+        "flags.redsteel.-=material": null,
+      });
+      return;
+    }
+    const doc = await findMaterialByKey(key);
+    if (!doc) {
+      ui.notifications.warn(
+        game.i18n.format("REDSTEEL.Material.NotFound", { key }),
+      );
+      this.render();
+      return;
+    }
+    await this.item.update({
+      "system.material": key,
+      "flags.redsteel.material": buildMaterialSnapshot(doc),
+    });
+  }
+
+  /**
+   * The Refresh button beside the Material dropdown: re-snapshot this one item
+   * from its source material. Needed for items inside compendiums, and after a
+   * material in a locked pack was edited.
+   *
+   * @this RedsteelItemSheet
+   * @protected
+   */
+  static async _refreshMaterial() {
+    if (!this.isEditable) return;
+    const key =
+      String(this.item.system.material ?? "") ||
+      readMaterialSnapshot(this.item)?.key ||
+      "";
+    if (!key) return;
+    const doc = await findMaterialByKey(key);
+    if (!doc) {
+      ui.notifications.warn(
+        game.i18n.format("REDSTEEL.Material.NotFound", { key }),
+      );
+      return;
+    }
+    const snapshot = buildMaterialSnapshot(doc);
+    await this.item.update({ "flags.redsteel.material": snapshot });
+    ui.notifications.info(
+      game.i18n.format("REDSTEEL.Material.Refreshed", { name: snapshot.name }),
+    );
   }
 
   /**************
