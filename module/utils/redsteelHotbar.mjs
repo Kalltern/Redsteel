@@ -64,6 +64,7 @@ import { isReactionAbility } from "./opportunityAttacks.mjs";
 import { canTradeWith, requestTrade } from "./trade.mjs";
 import { dropStance, holdStance } from "./stances.mjs";
 import { claimWardenFreeSlowMovement } from "./warden.mjs";
+import { targetLockItem } from "./sharpshooter.mjs";
 import { rollEscape } from "./escapeFollowup.mjs";
 import { handleApplyDamage, handleApplyEffects } from "./applyDamage.mjs";
 import { getMiracles, isMiracle } from "./miracles.mjs";
@@ -2566,6 +2567,20 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
         this.actor &&
         tokenDoc?.actor?.uuid === this.actor.uuid &&
         "movementSpent" in (changed?.flags?.redsteel ?? {})
+      ) {
+        return this.#rerender();
+      }
+      // The bound actor's aim, and Target Lock's per-aim marker, decide
+      // whether the Target Lock chip is offered (sharpshooter.mjs). Only for
+      // a Target Lock holder, so ordinary aiming does not redraw the panel.
+      const redsteelFlags = Object.keys(changed?.flags?.redsteel ?? {});
+      if (
+        this.actor &&
+        tokenDoc?.actor?.uuid === this.actor.uuid &&
+        targetLockItem(this.actor) &&
+        redsteelFlags.some((key) =>
+          ["aim", "-=aim", "targetLockTried", "-=targetLockTried"].includes(key),
+        )
       ) {
         return this.#rerender();
       }

@@ -490,13 +490,17 @@ async function setAim(token, targetId, stacks) {
   const stamp = (prev?.stamp ?? 0) + 1;
   // A Shooting Stance round hold belongs to the target it was spent on; a new
   // target starts unspent. Written explicitly, since setFlag merges objects.
-  const roundHold =
-    prev?.targetId === targetId ? (prev?.roundHold ?? null) : null;
+  const sameTarget = prev?.targetId === targetId;
+  const roundHold = sameTarget ? (prev?.roundHold ?? null) : null;
+  // Stacks earned onto a held aim after the shots (a miss grant) outlive
+  // the round; see keepAfterHold in sweepMissGrants.
+  const keepAfterHold = roundHold ? (prev?.keepAfterHold ?? null) : null;
   await doc.setFlag(SYSTEM_ID, FLAG, {
     targetId,
     stacks: capped,
     stamp,
     roundHold,
+    keepAfterHold,
   });
 }
 
@@ -1177,7 +1181,13 @@ export async function resolveAimOnAttack({
     actor.statuses?.has(SHOOTING_STANCE_STATUS) &&
     isShootingWeapon(weapon)
   ) {
-    await tokenDoc(aimer)?.setFlag(SYSTEM_ID, FLAG, { roundHold: roundKey });
+    const doc = tokenDoc(aimer);
+    await doc?.setFlag(SYSTEM_ID, FLAG, { roundHold: roundKey });
+    // A shot has gone since the last Aim action: Target Lock follows an Aim
+    // action, not an attack, and the held aim's stamp did not move.
+    if (doc?.getFlag(SYSTEM_ID, AIM_ACTION_FLAG) !== undefined) {
+      await doc.unsetFlag(SYSTEM_ID, AIM_ACTION_FLAG);
+    }
     return;
   }
 
@@ -1471,7 +1481,19 @@ async function sweepMissGrants(actor) {
     if (!aimer) continue;
     const aim = readAim(aimer);
     const before = aim?.targetId === entry.targetId ? (aim.stacks ?? 0) : 0;
-    const after = Math.min(MAX_STACKS, before + (Number(entry.stacks) || 0));
+    const earned = Math.max(0, Number(entry.stacks) || 0);
+    const after = Math.min(MAX_STACKS, before + earned);
+    // Landing on a Shooting Stance hold: these stacks were earned after the
+    // shots, so they survive the round end that spends the rest, even when
+    // the held aim is already at four.
+    if (aim?.roundHold && aim.targetId === entry.targetId && earned > 0) {
+      await tokenDoc(aimer)?.setFlag(SYSTEM_ID, FLAG, {
+        keepAfterHold: Math.min(
+          MAX_STACKS,
+          (Number(aim.keepAfterHold) || 0) + earned,
+        ),
+      });
+    }
     if (after <= before) continue;
     await setAim(aimer, entry.targetId, after);
 
@@ -2386,13 +2408,28 @@ export function registerAimOverlay() {
     for (const combatant of combat.combatants) {
       await sweepPendingAim(combatant.actor);
     }
-    // Shooting Stance: an aim held for a round that is over has been spent.
+    // Shooting Stance: an aim held for a round that is over has been spent,
+    // all but the stacks a missed shot earned onto it after the shots
+    // (keepAfterHold), which start the new round unheld. After the sweep
+    // above, so this round's miss grants are already counted in.
     if ("round" in changed) {
       const key = `${combat.id}:${combat.round}`;
       for (const combatant of combat.combatants) {
         const doc = combatant.token;
-        const hold = readAim(doc)?.roundHold;
-        if (hold && hold !== key) await clearAim(doc);
+        const aim = readAim(doc);
+        if (!aim?.roundHold || aim.roundHold === key) continue;
+        const keep = Math.min(aim.stacks ?? 0, Number(aim.keepAfterHold) || 0);
+        if (keep > 0) {
+          await doc.setFlag(SYSTEM_ID, FLAG, {
+            targetId: aim.targetId,
+            stacks: keep,
+            stamp: (aim.stamp ?? 0) + 1,
+            roundHold: null,
+            keepAfterHold: null,
+          });
+        } else {
+          await clearAim(doc);
+        }
       }
     }
   });
