@@ -1,6 +1,7 @@
 import {
   autoDefenseLongReachPenalty,
   buildDefenseProfile,
+  canDodge,
   canMagicDefend,
   defenseRoll,
   getDodgeStaminaCost,
@@ -183,7 +184,7 @@ export async function pickBestDefense(
 
   const stamina = Number(actor.system?.stats?.stamina?.value) || 0;
   // The same price dodgeDefense charges (Zbrojnoš II light takes 1 off).
-  if (stamina >= getDodgeStaminaCost(actor)) {
+  if (canDodge(actor) && stamina >= getDodgeStaminaCost(actor)) {
     for (const weapon of candidateWeapons(actor)) {
       candidates.push({ mode: "dodge", weapon });
     }
@@ -331,9 +332,8 @@ export async function resolveAutoDefense(message) {
   // would defend twice against one attack.
   if (flag.suppressAutoDefense) return skip("rerolled attack");
 
-  // A fumble is blocked by the versus rules whatever the defender rolls, so the
-  // roll can only cost them stamina and an Overwhelm slot for nothing.
-  if (flag.criticalFailure === true) return skip("attack fumbled");
+  // A fumbled attack is still defended (user ruling 2026-10-23): the defense
+  // card carries criticalFailure, so the versus rules still block the blow.
 
   const targets = [...new Set(flag.targets ?? [])];
   if (!targets.length) return skip("attacker had nothing targeted");

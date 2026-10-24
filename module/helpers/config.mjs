@@ -224,11 +224,13 @@ REDSTEEL.effectDefinitions = {
     name: "Root",
     img: "icons/magic/nature/root-vine-entwined-thorns.webp",
     statuses: ["root"],
+    // Book r1462: "Pohyb snížen na 0". Movement only, not Speed: the d12
+    // speed test and initiative keep the full value (Actor#movementSpeed).
     changes: [
       {
-        key: "system.secondaryAttributes.spd.total",
+        key: "system.movementMultiplier",
         type: "multiply",
-        value: 0.5,
+        value: 0,
       },
       {
         key: "system.combatSkills.meleeDefense.bonus",
@@ -241,9 +243,10 @@ REDSTEEL.effectDefinitions = {
         value: -15,
       },
       {
-        key: "system.combatSkills.dodge.bonus",
-        type: "add",
-        value: -15,
+        // Book r1462: "nemůže používat Úhyb" (defense.mjs canDodge).
+        key: "system.cannotDodge",
+        type: "override",
+        value: true,
       },
       {
         key: "system.combatSkills.combat.bonus",
@@ -717,10 +720,10 @@ REDSTEEL.effectDefinitions = {
   /*  Strike spells (Lindarovy údery)             */
   /*                                              */
   /*  Free-action caster buffs that ride the next */
-  /*  weapon attack. They share the weaponEnchant */
+  /*  weapon attack. They share the "strike"      */
   /*  exclusive group (so a new strike overwrites */
-  /*  the previous one, and none stacks with a    */
-  /*  weapon enchant), and carry consumeOnAttack  */
+  /*  the previous one) but sit beside a weapon   */
+  /*  enchant like Dark Weapon, and carry consumeOnAttack */
   /*  so the createChatMessage hook in redsteel.  */
   /*  mjs removes them after one attack lands or   */
   /*  misses. Unlike the *_weapon enchants these   */
@@ -736,7 +739,7 @@ REDSTEEL.effectDefinitions = {
     img: "icons/magic/lightning/fist-unarmed-strike-blue-green.webp",
     statuses: ["lightning_strike"],
     combatModifiers: {
-      exclusiveGroup: "weaponEnchant",
+      exclusiveGroup: "strike",
       consumeOnAttack: true,
       damageTypeMode: "override",
       damageTypes: ["magic", "lightning"],
@@ -751,7 +754,7 @@ REDSTEEL.effectDefinitions = {
     img: "icons/magic/fire/projectile-smoke-swirl-red.webp",
     statuses: ["fire_strike"],
     combatModifiers: {
-      exclusiveGroup: "weaponEnchant",
+      exclusiveGroup: "strike",
       consumeOnAttack: true,
       damageTypeMode: "override",
       damageTypes: ["magic", "fire"],
@@ -766,7 +769,7 @@ REDSTEEL.effectDefinitions = {
     img: "icons/magic/water/strike-weapon-blade-ice-blue.webp",
     statuses: ["frost_strike"],
     combatModifiers: {
-      exclusiveGroup: "weaponEnchant",
+      exclusiveGroup: "strike",
       consumeOnAttack: true,
       damageTypeMode: "override",
       damageTypes: ["magic", "frost"],
@@ -781,7 +784,7 @@ REDSTEEL.effectDefinitions = {
     img: "icons/magic/acid/projectile-stream-bubbles.webp",
     statuses: ["venomous_strike"],
     combatModifiers: {
-      exclusiveGroup: "weaponEnchant",
+      exclusiveGroup: "strike",
       consumeOnAttack: true,
       damageTypeMode: "override",
       damageTypes: ["magic", "poison"],
@@ -796,7 +799,7 @@ REDSTEEL.effectDefinitions = {
     img: "icons/magic/fire/dagger-rune-enchant-blue-gray.webp",
     statuses: ["enchanted_strike"],
     combatModifiers: {
-      exclusiveGroup: "weaponEnchant",
+      exclusiveGroup: "strike",
       consumeOnAttack: true,
       damageTypeMode: "override",
       damageTypes: ["magic"],
@@ -813,7 +816,7 @@ REDSTEEL.effectDefinitions = {
     // damageRoll (1d4 + SK/2) is baked per-cast in applyStrikeEffect; the caster
     // also takes Corruption +2 there. Only the static parts live here.
     combatModifiers: {
-      exclusiveGroup: "weaponEnchant",
+      exclusiveGroup: "strike",
       consumeOnAttack: true,
       penetrationBonus: 2,
       damageTypeMode: "override",
@@ -828,9 +831,9 @@ REDSTEEL.effectDefinitions = {
     // Binding Strike has no passive attack modifier — its whole effect is a
     // contested Will+SK*2 vs Str/End test resolved when the attack is consumed
     // (see resolveBindingStrike in redsteel.mjs). It still occupies the
-    // weaponEnchant slot so it can't stack with other enhancements.
+    // strike slot so it can't stack with another strike.
     combatModifiers: {
-      exclusiveGroup: "weaponEnchant",
+      exclusiveGroup: "strike",
       consumeOnAttack: true,
     },
     stackBehavior: "ignore",
@@ -842,7 +845,7 @@ REDSTEEL.effectDefinitions = {
     // No damage-type change — keeps the weapon's own type. damageRoll (1d4 +
     // Body SK/2) is baked per-cast in applyStrikeEffect.
     combatModifiers: {
-      exclusiveGroup: "weaponEnchant",
+      exclusiveGroup: "strike",
       consumeOnAttack: true,
       extraEffects: {
         stun: 15,
@@ -856,7 +859,7 @@ REDSTEEL.effectDefinitions = {
   // held, getEffectRolls adds one guaranteed Bleeding to the attack packet
   // (bonusStacks), and the createChatMessage consume hook in redsteel.mjs
   // deletes it once the attack card is posted. Deliberately NOT part of the
-  // weaponEnchant exclusiveGroup and without the consumeOnAttack flag: those
+  // strike exclusiveGroup and without the consumeOnAttack flag: those
   // belong to the spell strike family, which is consumed one-per-attack by a
   // different path and must not compete with this charge.
   blood_strike: {
@@ -2120,12 +2123,13 @@ REDSTEEL.effectDefinitions = {
         damageProfile: { expression: ["dark", "and", "blunt"] },
       },
     },
-    // Rooted: same penalties as the built-in `root` effect.
+    // Rooted: same penalties as the built-in `root` effect (movement 0,
+    // Speed untouched).
     changes: [
       {
-        key: "system.secondaryAttributes.spd.total",
+        key: "system.movementMultiplier",
         type: "multiply",
-        value: 0.5,
+        value: 0,
       },
       {
         key: "system.combatSkills.meleeDefense.bonus",
@@ -2138,9 +2142,10 @@ REDSTEEL.effectDefinitions = {
         value: -15,
       },
       {
-        key: "system.combatSkills.dodge.bonus",
-        type: "add",
-        value: -15,
+        // Book r1462: "nemůže používat Úhyb" (defense.mjs canDodge).
+        key: "system.cannotDodge",
+        type: "override",
+        value: true,
       },
       {
         key: "system.combatSkills.combat.bonus",

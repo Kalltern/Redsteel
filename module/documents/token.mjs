@@ -414,8 +414,9 @@ export class RedsteelToken extends Token {
   #getMovementAllowance() {
     const actor = this.actor;
     if (!actor) return 0;
-    // Characters and NPCs both carry `spd`; movement is its total.
-    return actor.system.secondaryAttributes?.spd?.total ?? 0;
+    // Characters and NPCs both carry `spd`; movement is its total, scaled by
+    // the movement multiplier (Root).
+    return actor.movementSpeed ?? actor.system.secondaryAttributes?.spd?.total ?? 0;
   }
 
   #isActiveCombatant() {

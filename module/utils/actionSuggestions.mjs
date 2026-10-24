@@ -15,6 +15,7 @@ import {
   getActionPools,
   getMovementLock,
   getSpent,
+  isArmedLock,
   isMovementTurn,
   isTrackedTurn,
   trackedCombat,
@@ -114,24 +115,48 @@ function movementProvider(actor) {
       remaining,
       budget,
     });
-    return [
-      {
-        id: `movement-${lock.mode}`,
-        mode: lock.mode,
-        icon: def.icon,
-        label,
-        costLabel: "",
-        hexLabel,
-        locked: true,
-        remaining,
-        budget,
-        ariaLabel: `${game.i18n.localize("REDSTEEL.Bg3Hotbar.Suggest.Locked")}: ${label}, ${hexLabel}`,
-      },
-    ];
+    const locked = {
+      id: `movement-${lock.mode}`,
+      mode: lock.mode,
+      icon: def.icon,
+      label,
+      costLabel: "",
+      hexLabel,
+      locked: true,
+      remaining,
+      budget,
+      ariaLabel: `${game.i18n.localize("REDSTEEL.Bg3Hotbar.Suggest.Locked")}: ${label}, ${hexLabel}`,
+    };
+    // The turn-start default Move (armTurnMovement): shown as declared, but
+    // the other modes stay in its drawer until the first step pays for it.
+    if (isArmedLock(lock)) {
+      const others = movementModeChips(actor).filter((c) => c.mode !== "move");
+      if (others.length) return [{ ...locked, more: others }];
+    }
+    return [locked];
   }
 
+  if (getSpent(actor).moved) return [];
+  const chips = movementModeChips(actor);
+
+  // Move is the one used most, so it stands alone and the rest (Slow
+  // Movement, Sprint, Disengage) ride inside it as `more`, rolled out on
+  // demand from the strip's drawer (user ruling). Without Move there is
+  // nothing to fold behind, so the chips stay as they are.
+  const move = chips.find((c) => c.mode === "move");
+  const others = chips.filter((c) => c.mode !== "move");
+  if (move && others.length) return [{ ...move, more: others }];
+  return chips;
+}
+
+/**
+ * One unlocked chip per movement mode the actor can still afford this turn.
+ *
+ * @param {Actor} actor
+ * @returns {object[]}
+ */
+function movementModeChips(actor) {
   const spent = getSpent(actor);
-  if (spent.moved) return [];
   const left = getActionPools(actor).actions - spent.actions;
 
   const chips = [];
@@ -161,14 +186,6 @@ function movementProvider(actor) {
       ariaLabel: `${label}, ${cost}, ${hexLabel}`,
     });
   }
-
-  // Move is the one used most, so it stands alone and the rest (Slow
-  // Movement, Sprint, Disengage) ride inside it as `more`, rolled out on
-  // demand from the strip's drawer (user ruling). Without Move there is
-  // nothing to fold behind, so the chips stay as they are.
-  const move = chips.find((c) => c.mode === "move");
-  const others = chips.filter((c) => c.mode !== "move");
-  if (move && others.length) return [{ ...move, more: others }];
   return chips;
 }
 
@@ -1639,12 +1656,14 @@ const PROVIDERS = [movementProvider, combatProvider];
 export function prepareSuggestions(actor, { facing = false } = {}) {
   if (!actor?.isOwner || !trackedCombat(actor)) return [];
   // Slow Movement's facing step: the player turns the token and confirms
-  // before the move is declared. Only while nothing is locked yet, and only
-  // on the actor's own turn (the strip dropping it is what ends the step).
+  // before the move is declared. Only while nothing is locked yet (the
+  // unpaid turn-start Move counts as nothing), and only on the actor's own
+  // turn (the strip dropping it is what ends the step).
+  const held = getMovementLock(actor);
   if (
     facing &&
     isTrackedTurn(actor) &&
-    !getMovementLock(actor) &&
+    (!held || isArmedLock(held)) &&
     !getSpent(actor).moved
   ) {
     const def = MOVEMENT_MODES.slow;

@@ -251,9 +251,13 @@ export const NO_OPPORTUNITY_ATTACK_STATUSES = [
 const FA_FAMILY = ["Font Awesome 6 Pro", "Font Awesome 6 Free", "FontAwesome"];
 const SWORD_GLYPH = "";
 
-/** Speed, read exactly as token.mjs reads its movement allowance. */
+/** Movement, read exactly as token.mjs reads its movement allowance. */
 function actorSpeed(actor) {
-  return Number(actor?.system?.secondaryAttributes?.spd?.total ?? 0) || 0;
+  return (
+    Number(
+      actor?.movementSpeed ?? actor?.system?.secondaryAttributes?.spd?.total ?? 0,
+    ) || 0
+  );
 }
 
 /**

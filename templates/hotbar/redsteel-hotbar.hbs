@@ -117,6 +117,30 @@
       </span>
     </button>
     {{/inline}}
+    {{!-- The declared movement. Clicking it does nothing, so it is a box
+          rather than a button, which is what lets the confirm check sit
+          inside its right end: a button cannot hold a button. --}}
+    {{#*inline "rsLockedChip"}}
+    <div
+      class="rs-bg3-suggest-chip locked"
+      data-suggestion-id="{{chip.id}}"
+      data-suggestion-mode="{{chip.mode}}"
+      role="group"
+      aria-label="{{chip.ariaLabel}}"
+    >
+      <i class="{{chip.icon}} rs-bg3-suggest-icon" aria-hidden="true"></i>
+      <span class="rs-bg3-suggest-text">
+        <span class="rs-bg3-suggest-name">{{chip.label}}</span>
+        <span class="rs-bg3-suggest-meta">{{chip.hexLabel}}</span>
+      </span>
+      <button
+        type="button"
+        class="rs-bg3-suggest-confirm"
+        data-action="confirmMovement"
+        aria-label="{{localize "REDSTEEL.Bg3Hotbar.Suggest.Confirm"}}"
+      ><i class="fa-solid fa-check" aria-hidden="true"></i></button>
+    </div>
+    {{/inline}}
     {{!-- Any chip, whichever plate it lands on. --}}
     {{#*inline "rsSuggestChip"}}
     {{#if chip.facing}}
@@ -338,28 +362,27 @@
       <img class="rs-bg3-suggest-img" src="{{chip.img}}" alt="" />
     </button>
     {{else if chip.locked}}
-    {{!-- The declared movement. Clicking it does nothing, so it is a box
-          rather than a button, which is what lets the confirm check sit
-          inside its right end: a button cannot hold a button. --}}
-    <div
-      class="rs-bg3-suggest-chip locked"
-      data-suggestion-id="{{chip.id}}"
-      data-suggestion-mode="{{chip.mode}}"
-      role="group"
-      aria-label="{{chip.ariaLabel}}"
-    >
-      <i class="{{chip.icon}} rs-bg3-suggest-icon" aria-hidden="true"></i>
-      <span class="rs-bg3-suggest-text">
-        <span class="rs-bg3-suggest-name">{{chip.label}}</span>
-        <span class="rs-bg3-suggest-meta">{{chip.hexLabel}}</span>
-      </span>
+    {{#if chip.more}}
+    {{!-- The unpaid turn-start Move: declared, with the other movements
+          still in the » drawer until the first step. --}}
+    <div class="rs-bg3-suggest-movegroup">
+      {{> rsLockedChip chip=chip}}
       <button
         type="button"
-        class="rs-bg3-suggest-confirm"
-        data-action="confirmMovement"
-        aria-label="{{localize "REDSTEEL.Bg3Hotbar.Suggest.Confirm"}}"
-      ><i class="fa-solid fa-check" aria-hidden="true"></i></button>
+        class="rs-bg3-suggest-more-toggle{{#if @root.movementExpanded}} open{{/if}}"
+        data-action="toggleMovementMore"
+        aria-expanded="{{#if @root.movementExpanded}}true{{else}}false{{/if}}"
+        aria-label="{{localize "REDSTEEL.Bg3Hotbar.Suggest.MoreMovement"}}"
+      ><i class="fa-solid fa-angles-up" aria-hidden="true"></i></button>
+      <div class="rs-bg3-suggest-more{{#if @root.movementExpanded}} open{{/if}}">
+        {{#each chip.more as |m|}}
+        {{> rsMoveChip chip=m}}
+        {{/each}}
+      </div>
     </div>
+    {{else}}
+    {{> rsLockedChip chip=chip}}
+    {{/if}}
     {{else if chip.more}}
     {{!-- Move, with the other movements folded behind the » tab. The drawer
           rolls up above the strip rather than widening it, so

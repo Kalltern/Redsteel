@@ -157,6 +157,10 @@ export class RedsteelActor extends Actor {
     // Seed the advantage/disadvantage buckets before Active Effects apply, so
     // ADD-mode effects from features/buffs accumulate onto numeric leaves.
     seedRollAdvantage(system);
+
+    // Movement scale for MULTIPLY-mode effects (Root sets it to 0). Seeded here,
+    // before effects apply, and never overwritten by derived data.
+    system.movementMultiplier = 1;
   }
 
   /**
@@ -485,6 +489,21 @@ export class RedsteelActor extends Actor {
     const value = Number(speed) || 0;
     if (!this.statuses?.has?.("crippled")) return value;
     return Math.ceil(value / 2);
+  }
+
+  /**
+   * Hexes a plain Move allows: Speed scaled by `system.movementMultiplier`
+   * (Root sets it to 0), rounded up like Crippled. Every movement reader uses
+   * this; the d12 speed test keeps reading spd.total.
+   * @returns {number}
+   */
+  get movementSpeed() {
+    const speed = Number(this.system?.secondaryAttributes?.spd?.total) || 0;
+    const multiplier = Number(this.system?.movementMultiplier ?? 1);
+    return Math.max(
+      0,
+      Math.ceil(speed * (Number.isFinite(multiplier) ? multiplier : 1)),
+    );
   }
 
   _replayEffectChanges(key, base) {
@@ -1628,7 +1647,7 @@ export class RedsteelActor extends Actor {
     // higher Speed gets past it. Order: the attribute table, value and bonus
     // are capped first; Fatigue's -1 comes off the capped number (else a
     // capped character would never feel it); then the Active Effects on
-    // spd.total are replayed (Slow / Root halve, Haste adds) and the result
+    // spd.total are replayed (Slow halves, Haste adds) and the result
     // is capped again, so Haste cannot pass the cap either. A Flight-style
     // OVERRIDE sets the value outright and is not capped.
     const calcSpd = [0, 3, 3, 4, 4, 4, 5, 6, 6, 6, 6];
@@ -1640,7 +1659,7 @@ export class RedsteelActor extends Actor {
       fatigueDegree >= 5
         ? 1
         : Math.min(rawSpd, speedCap) - (fatigueDegree >= 2 ? 1 : 0);
-    // Speed effects (Slow/Root halve it, Haste adds, Flight overrides) target
+    // Speed effects (Slow halves it, Haste adds, Flight overrides) target
     // spd.total, which this calculation has just overwritten — replay them.
     const speedKey = "system.secondaryAttributes.spd.total";
     const replayedSpd = this._replayEffectChanges(speedKey, baseSpd);
@@ -2152,7 +2171,7 @@ export class RedsteelActor extends Actor {
         (Number(systemData.sneakDamageBonus) || 0),
     );
     // Same Speed as a character: movement allowance and the d12 speed test both
-    // read spd.total, so Slow/Root/Haste/Flight land on NPCs unchanged.
+    // read spd.total, so Slow/Haste/Flight land on NPCs unchanged (Root scales movement only, see movementSpeed).
     const speed = systemData.secondaryAttributes.spd;
     // Crippled halves the floored Speed, rounded up (see the character block).
     speed.total = Math.max(

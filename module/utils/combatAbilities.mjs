@@ -884,6 +884,11 @@ export async function combatAbilities({
           targets: [...(game.user?.targets ?? [])],
         });
         if (!reach.ok) {
+          // A blocked Extended Lunge is refused, never confirmed past.
+          if (reach.hard) {
+            ui.notifications.warn(reach.reason);
+            return;
+          }
           if (!(await confirmOutOfReach(reach.reason))) return;
           intent.outOfReach = true;
         }
@@ -2222,45 +2227,52 @@ ${
       }
     }
 
-    // 2️⃣ Ability authority
-    if (abilityProfile.expression.length > 0) {
-      return abilityProfile;
+    // 2️⃣ Actor enchant + weapon enchant layers. Same rule as basicAttack.mjs
+    // resolveDamageProfile, so a plain Attack and a weapon ability with the same
+    // blade can never disagree: a cast weapon-enchant spell (Fire Weapon) on the
+    // actor and the enchantments/material on the weapon itself are unioned, and
+    // only the base types are dropped, only when either layer says "override".
+    // The base is the ability's own types when it names any, else the weapon's.
+    const actorMods = actor
+      ? game.redsteel.getActorCombatModifiers(actor, weapon)
+      : null;
+    const actorTypes = (actorMods?.damageTypes ?? []).map((t) =>
+      String(t).toLowerCase(),
+    );
+    const weaponEnchant = weapon?.system?.enchantMods ?? {};
+    const weaponEnchantTypes = (weaponEnchant.damageTypes ?? []).map((t) =>
+      String(t).toLowerCase(),
+    );
+
+    if (actorTypes.length || weaponEnchantTypes.length) {
+      const baseProfile = abilityProfile.expression.length
+        ? abilityProfile
+        : weaponProfile;
+      const baseTypes = (baseProfile.expression ?? []).filter(
+        (t) => t !== "and" && t !== "or",
+      );
+      const overrides =
+        actorMods?.damageTypeMode === "override" ||
+        weaponEnchant.damageTypeMode === "override";
+
+      // default to expand
+      const finalTypes = overrides ? [] : [...baseTypes];
+      for (const type of [...actorTypes, ...weaponEnchantTypes]) {
+        if (type && !finalTypes.includes(type)) finalTypes.push(type);
+      }
+
+      const newExpression = [];
+      finalTypes.forEach((type, index) => {
+        if (index > 0) newExpression.push("or");
+        newExpression.push(type);
+      });
+
+      return { expression: newExpression };
     }
 
-    // 3️⃣ Actor enchant authority
-    if (actor) {
-      const actorMods = game.redsteel.getActorCombatModifiers(actor, weapon);
-
-      if (actorMods?.damageTypes?.length) {
-        const baseExpression = weaponProfile.expression ?? [];
-        const baseTypes = baseExpression.filter(
-          (t) => t !== "and" && t !== "or",
-        );
-
-        const enchantTypes = actorMods.damageTypes.map((t) => t.toLowerCase());
-
-        let finalTypes;
-
-        if (actorMods.damageTypeMode === "override") {
-          finalTypes = enchantTypes;
-        } else {
-          // expand
-          finalTypes = [...baseTypes];
-          for (const type of enchantTypes) {
-            if (!finalTypes.includes(type)) {
-              finalTypes.push(type);
-            }
-          }
-        }
-
-        const newExpression = [];
-        finalTypes.forEach((type, index) => {
-          if (index > 0) newExpression.push("or");
-          newExpression.push(type);
-        });
-
-        return { expression: newExpression };
-      }
+    // 3️⃣ Ability authority
+    if (abilityProfile.expression.length > 0) {
+      return abilityProfile;
     }
 
     // 4️⃣ Weapon fallback

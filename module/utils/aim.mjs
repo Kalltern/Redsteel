@@ -2064,7 +2064,8 @@ const ICON_ARMOR = ""; // fa-shield-halved
 function getTokenStats(token) {
   const sys = token?.actor?.system ?? {};
   const armor = Math.round(sys.armor?.total ?? 0);
-  const movement = sys.secondaryAttributes?.spd?.total ?? 0;
+  const movement =
+    token?.actor?.movementSpeed ?? sys.secondaryAttributes?.spd?.total ?? 0;
   return { movement: Math.round(movement), armor };
 }
 

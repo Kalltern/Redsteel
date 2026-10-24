@@ -272,6 +272,8 @@ export function attackSector(defender, attacker) {
 export function canDefendFromBehind(actor) {
   if (!actor) return false;
   if (actor.system?.backstabDefense === true) return true;
+  // Blindside Dodge is a dodge: lost while Dodge is blocked (Root).
+  if (actor.system?.cannotDodge === true) return false;
   const shadow = actor.system?.specialisations?.shadow;
   return !!(shadow?.active && shadow.nodes?.backDodge);
 }
@@ -568,7 +570,8 @@ function occupantsByHex(exclude) {
 /**
  * Can this melee swing reach every target, and along a legal line?
  *
- * Never a hard block: the caller asks the player (`confirmOutOfReach`) and
+ * Not a hard block, except a blocked Extended Lunge (`hard: true`, refused
+ * outright): otherwise the caller asks the player (`confirmOutOfReach`) and
  * stamps the card if they go ahead anyway. Checked, in order, per target:
  *
  *   1. distance beyond reach. The farthest offender is reported.
@@ -591,7 +594,7 @@ function occupantsByHex(exclude) {
  * @param {Item|null} [args.ability]
  * @param {Item[]} [args.modifiers]
  * @param {Array<Token|TokenDocument>} [args.targets]
- * @returns {{ok:true}|{ok:false, reason:string}}
+ * @returns {{ok:true}|{ok:false, hard?:boolean, reason:string}}
  */
 export function checkMeleeReach({
   actor,
@@ -659,9 +662,13 @@ export function checkMeleeReach({
       if (covered.has(key)) continue;
       const here = occupants.get(key);
       if (!here?.length) continue;
+      // Extended Lunge is led only through empty hexes (user ruling
+      // 2026-10-23): a hard refusal with no "attack anyway", so a blocked
+      // lunge can never bank a flank or back arc.
       if (lunge) {
         return {
           ok: false,
+          hard: true,
           reason: game.i18n.localize("REDSTEEL.Reach.LungeNeedsEmpty"),
         };
       }

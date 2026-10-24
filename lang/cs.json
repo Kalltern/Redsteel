@@ -5689,6 +5689,10 @@
       "DeniedHeadline": "Kritický neúspěch!",
       "BackstabDenied": "Proti útoku zezadu se nelze bránit."
     },
+    "TurnMovement": {
+      "PickFirst": "Nejdřív si na liště vyber pohyb: Pohyb, Pomalý pohyb, Běh nebo Odpoutání.",
+      "NotYourTurn": "Nejsi na tahu, takže se teď nemůžeš pohnout."
+    },
     "Reach": {
       "OutOfReach": "Mimo dosah: vzdálenost {distance}, dosah {reach}",
       "LungeNeedsEmpty": "Daleký výpad vyžaduje prázdnou hexu mezi tebou a cílem",
@@ -5836,6 +5840,7 @@
     },
     "Defense": {
       "BlindsideDodge": "Úhyb do zad",
+      "CannotDodge": "Zakořeněný: nemůžeš uhýbat.",
       "BlindsideDodgeRoll": "Úhyb do zad se zbraní {weapon}",
       "BadDodge": "Špatný úhyb!",
       "BadDodgeNote": "Hod překonal limit úhybu ({limit}): tento úhyb se počítá jako přesah 0.",
@@ -6189,7 +6194,7 @@
       },
       "rooted": {
         "label": "Zakořeněný",
-        "desc": "Zakořeněné postavě klesne Rychlost na polovinu a má -15 % k útoku, obraně i uhýbání, dokud efekt trvá."
+        "desc": "Zakořeněná postava se nemůže pohnout (pohyb 0), nemůže uhýbat a má -15 % k útoku i obraně, dokud efekt trvá."
       },
       "fatigue": {
         "label": "Únava",
@@ -6265,7 +6270,7 @@
       "wet": "Útoky mají vyšší šanci způsobit Zpomalení (+40 %), Zmražení (+25 %) a Řetězení (+35 %) a nižší šanci způsobit Hoření (-40 %).",
       "freeze": "Způsobí 4d6 zranění při uvalení a znovu na začátku každého kola, dokud není odstraněno. Útoky navíc mají vyšší šanci způsobit Zpomalení (+40 %), Zmražení (+25 %) a Řetězení (+35 %) a nižší šanci způsobit Hoření (-40 %).",
       "slow": "Rychlost klesá na polovinu. -30 % na Úhyb a -5 % na Souboj, Střelbu, Vrh, Obranu a Kryt. Trvá 3 tahy.",
-      "root": "Rychlost klesá na polovinu a posunutí, přitažení ani odsunutí s cílem nepohne. -15 % na Souboj, Obranu, Kryt a Úhyb. Zakořenění z Krvavého nabodnutí při skončení způsobí uložené Krvácení.",
+      "root": "Pohyb je 0 a posunutí, přitažení ani odsunutí s cílem nepohne. Nemůže uhýbat. -15 % na Souboj, Obranu a Kryt. Zakořenění z Krvavého nabodnutí při skončení způsobí uložené Krvácení.",
       "shadowbound": "Způsobí 2d6 zranění při uvalení a znovu na začátku každého kola, dokud není odstraněno. -15 % na Souboj, Obranu, Kryt a Úhyb.",
       "poison": "Způsobí 2d6 zranění při nakažení a znovu na začátku každého kola. -5 % na všechny testy. Opětovné uvalení obnoví 3 kola bez okamžitého zranění navíc.",
       "corrosion": "-4 ke Zbroji za každý stupeň. Sčítá se prakticky bez omezení.",
@@ -6361,7 +6366,7 @@
       "coagulation": "Každé Krvácení na nositeli vydrží už jen jedno kolo. Trvá tolik kol, kolik činí Síla kouzla Krve sesilatele (SK).",
       "poisoned_blood": "Způsobí 1d6 + SK Temného a Jedového zranění při uvalení a na začátku každého z dalších 3 kol, ignoruje základní zbroj. SK je Síla kouzla Krve sesilatele.",
       "skin_cracking": "Způsobí SK/4 Krvácení (zaokrouhleno nahoru, aspoň 1) při uvalení a na začátku každého z dalších 2 kol. Každé Krvácení, které se nevejde pod strop 6, způsobí místo toho 1d8 zranění.",
-      "demonic_grasp": "Při uvalení a na začátku každého z dalších 3 kol způsobí SK×4 Temného a Drtivého zranění ignorujícího základní zbroj a 2 Krvácení. Zároveň drží na místě: Rychlost klesá na polovinu a -15 % na Souboj, Obranu, Kryt a Úhyb.",
+      "demonic_grasp": "Při uvalení a na začátku každého z dalších 3 kol způsobí SK×4 Temného a Drtivého zranění ignorujícího základní zbroj a 2 Krvácení. Zároveň drží na místě: pohyb je 0, nemůže uhýbat a -15 % na Souboj, Obranu a Kryt.",
       "spectral_weapon": "Útoky zbraní přidávají k typu zranění Magii. Zabírá místo pro očarování zbraně.",
       "magic_rope": "Sesilatelovo vyvolané lano. Vyslané na cíl postaví Vůli + SK sesilatele proti Síle nebo Obratnosti a při výhře cíl Zakoření. Prohraný souboj lano zničí.",
       "insect_swarm": "Na začátku každého kola způsobí 1d4 zranění ignorujících zbroj a neúspěšný test Nervů pak způsobí Paniku. -5 % na všechny testy a -50 % na Střelbu a Vrh.",

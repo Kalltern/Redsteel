@@ -2548,7 +2548,11 @@ export function getActorCombatModifiers(actor, weapon = null) {
 
     if (group.damageTypes?.length) {
       result.damageTypes.push(...group.damageTypes);
-      result.damageTypeMode = group.damageTypeMode ?? result.damageTypeMode;
+      // "override" is sticky: a strike held beside a weapon enchant still
+      // replaces the weapon's own type, whichever group was written first.
+      if (group.damageTypeMode && result.damageTypeMode !== "override") {
+        result.damageTypeMode = group.damageTypeMode;
+      }
     }
 
     if (group.extraEffects) {

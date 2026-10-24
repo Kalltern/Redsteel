@@ -68,6 +68,18 @@ const DEFENSE_REINFORCEMENT_KEY = "REDSTEEL.Items.DefenseReinforcement.name";
 const DODGE_STAMINA_COST = 4;
 
 /**
+ * May this actor Dodge at all? Zakořenění (Root, book r1462): "nemůže používat
+ * Úhyb", set by the effect's `system.cannotDodge` override. Gates the dialog
+ * buttons, the roll itself and NPC auto-defense.
+ *
+ * @param {Actor} actor
+ * @returns {boolean}
+ */
+export function canDodge(actor) {
+  return actor?.system?.cannotDodge !== true;
+}
+
+/**
  * Stamina this actor pays for the Dodge action. Mistr zbraní → Zbrojnoš II,
  * light armor: "Akce Úhyb stojí o 1 méně Výdrže". Read at roll time, so it
  * follows whatever armor is worn now. Never below 0.
@@ -1012,7 +1024,9 @@ export async function defenseRoll({
   );
   const isBackAttack = positionSector === SECTOR.BACK;
   const hasBlindsideDodge =
-    hasBackDodgeNode && (isBackAttack || positionSector === null);
+    hasBackDodgeNode &&
+    canDodge(actor) &&
+    (isBackAttack || positionSector === null);
 
   /* -------------------------------------------- */
   /*  SHARED CSS                                  */
@@ -1203,14 +1217,16 @@ export async function defenseRoll({
       };
     }
 
-    buttons.dodge = {
-      label: "Dodge",
-      callback: (html) => {
-        const overwhelm = readOverwhelm(html);
-        const useBane = html.find('[name="baneDefense"]').is(":checked");
-        dodgeDefense({ overwhelm, useBane });
-      },
-    };
+    if (canDodge(actor)) {
+      buttons.dodge = {
+        label: "Dodge",
+        callback: (html) => {
+          const overwhelm = readOverwhelm(html);
+          const useBane = html.find('[name="baneDefense"]').is(":checked");
+          dodgeDefense({ overwhelm, useBane });
+        },
+      };
+    }
 
     if (hasBlindsideDodge) {
       buttons.blindsideDodge = {
@@ -1833,6 +1849,12 @@ export async function defenseRoll({
     useBane = false,
     blindside = false,
   } = {}) {
+    // Every way in (dialog, dodge ability, auto-defense) lands here.
+    if (!canDodge(actor)) {
+      ui.notifications.warn(game.i18n.localize("REDSTEEL.Defense.CannotDodge"));
+      return;
+    }
+
     const resolveWithContext = async (context) => {
       const weapon = context.weapon;
 

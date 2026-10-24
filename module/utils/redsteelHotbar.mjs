@@ -35,6 +35,7 @@ import {
   confirmMovement,
   getActionPools,
   getMovementLock,
+  isArmedLock,
   getSpent,
   lockMovement,
   markBonusSource,
@@ -427,15 +428,16 @@ const CONDITIONS = [
     colour: "rgb(116, 119, 126)",
     derived: (sys) => sys.detection,
   },
-  // Movement allowance, 1:1 with Speed, and the reason the Speed cell in the
-  // attribute row is free to print the speed-test total instead. Read off
-  // `spd.total`, so Slow / Root / Haste / Flight are already in the number.
+  // Movement allowance, and the reason the Speed cell in the attribute row is
+  // free to print the speed-test total instead. Read off Actor#movementSpeed,
+  // so Slow / Haste / Flight (on Speed) and Root (on movement) are in it.
   // No `hide`: a creature that cannot move is exactly when you want to see 0.
   {
     key: "movement",
     icon: "fa-sharp fa-thin fa-foot-wing",
     colour: "rgb(86, 121, 149)",
-    derived: (sys) => sys.secondaryAttributes?.spd?.total,
+    derived: (sys, actor) =>
+      actor?.movementSpeed ?? sys.secondaryAttributes?.spd?.total,
   },
 ];
 
@@ -1716,7 +1718,7 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       let row;
 
       if (entry.derived) {
-        const value = entry.derived(sys);
+        const value = entry.derived(sys, actor);
         if (value === undefined || value === null) continue;
         row = { ...entry, value: Number(value) || 0, ratio: false };
       } else {
@@ -2957,7 +2959,9 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
 
     const actor = this.actor;
     if (!actor?.isOwner) return;
-    if (getMovementLock(actor)) return;
+    // The unpaid turn-start Move may still be swapped for another mode.
+    const held = getMovementLock(actor);
+    if (held && !isArmedLock(held)) return;
 
     const mode = chip.dataset.suggestionMode;
     if (!["move", "slow", "sprint", "disengage"].includes(mode)) return;
@@ -3391,7 +3395,9 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
   static async _onConfirmFacing(event) {
     if (isRightClick(event)) return;
     const actor = this.actor;
-    if (!actor?.isOwner || getMovementLock(actor)) return;
+    if (!actor?.isOwner) return;
+    const held = getMovementLock(actor);
+    if (held && !isArmedLock(held)) return;
     if (this.#suggestionBusy) return;
     this.#suggestionBusy = true;
     try {

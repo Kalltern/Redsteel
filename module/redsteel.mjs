@@ -125,6 +125,7 @@ import {
   setSpent,
 } from "./utils/actionTracker.mjs";
 import { registerMovementZoneHooks } from "./utils/movementZones.mjs";
+import { registerTurnMovementHooks } from "./utils/turnMovement.mjs";
 import { registerAllyPassage } from "./utils/allyPassage.mjs";
 import { registerBullChargeHooks } from "./utils/bullCharge.mjs";
 import { registerForcedMovement } from "./utils/forcedMovement.mjs";
@@ -580,6 +581,9 @@ Hooks.once("init", function () {
   registerArmoringHooks();
   registerActionTrackerHooks();
   registerMovementZoneHooks();
+  // Turn-start default Move and the undeclared-drag refusal. Its
+  // preMoveToken hook runs before Bull Charge's and ally passage's.
+  registerTurnMovementHooks();
   // Předvoj → Rozražení: its preMoveToken hook must run before
   // allyPassage.mjs's (bullCharge.mjs, "ORDER OF EVENTS").
   registerBullChargeHooks();

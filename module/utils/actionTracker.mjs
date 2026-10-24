@@ -204,6 +204,10 @@ function normaliseLock(lock) {
     // stop it, but may still be walked around (movementZones.mjs).
     exempt: Array.isArray(lock.exempt) ? lock.exempt : [],
     done: !!lock.done,
+    // The turn-start default Move (armTurnMovement): declared for the player
+    // but not yet paid. The first step pays its Action (noteMovement); until
+    // then the strip still offers the other modes.
+    armed: !!lock.armed,
     // Charge Defense (Hoplite) ended this movement early: a stopped Charge
     // may not swing (combatAbilities.mjs refuses it).
     stopped: !!lock.stopped,
@@ -362,10 +366,13 @@ export async function noteMovement(actor) {
   const spent = getSpent(actor);
   if (spent.moved) return;
 
+  // The first step of an armed default Move pays for it and settles it.
+  const lock = spent.movement;
   await writeSpent(actor, {
     ...spent,
     actions: spent.actions + 1,
     moved: true,
+    movement: lock?.armed ? { ...lock, armed: false } : lock,
   });
   // The undeclared first step is a Move action all the same: a normal Aim
   // is lost (aim.mjs), save Harcovník's.
@@ -707,6 +714,51 @@ const OFF_TURN_MODES = new Set([
   // Krycí postoj's step into the line of fire (skirmisher.mjs).
   "coverStep",
 ]);
+
+/**
+ * Is this the turn-start default Move, still unpaid and switchable?
+ *
+ * @param {object|null} lock  from getMovementLock
+ */
+export function isArmedLock(lock) {
+  return !!lock?.armed && !lock.done;
+}
+
+/**
+ * Turn start (turnMovement.mjs): pre-declare a plain Move for the actor whose
+ * turn it now is, as though the player had clicked it (user ruling
+ * 2026-10-24). `lock` is the Move to arm, or null when the actor starts next
+ * to an enemy and must pick a movement themselves.
+ *
+ * Nothing is charged here: the Action is paid by the first step
+ * (noteMovement), so a turn spent standing still costs no movement. Picking
+ * another mode from the strip replaces the armed lock (lockMovement).
+ *
+ * Only a lock left over from an off-turn step (Quick Feet and the like) gives
+ * way, together with the `moved` mark it set; that step was free and never
+ * this turn's movement. Any other lock, or a `moved` with no lock, means this
+ * turn's movement already happened (the GM stepped back a turn), so it is
+ * left alone.
+ *
+ * @param {Actor} actor
+ * @param {{mode: string, budget: number, startSpent: number}|null} lock
+ * @returns {Promise<boolean>} whether anything was written
+ */
+export async function armTurnMovement(actor, lock) {
+  const combat = trackedCombat(actor);
+  if (!combat || !isActorsTurn(actor, combat)) return false;
+  const spent = getSpent(actor);
+  const held = spent.movement;
+  if (held && !OFF_TURN_MODES.has(held.mode)) return false;
+  if (!held && spent.moved) return false;
+  if (!held && !lock) return false;
+  await writeSpent(actor, {
+    ...spent,
+    moved: false,
+    movement: lock ? { ...lock, armed: true } : null,
+  });
+  return true;
+}
 
 /** Does this actor hold an unfinished off-turn step (Quick Feet and the like)? */
 export function hasOffTurnStep(actor) {

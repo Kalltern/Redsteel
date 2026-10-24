@@ -416,9 +416,10 @@ export async function applyPostCastEffects(
  *   - dark_strike:  +1d4 + SK/2 bonus damage, and Corruption +2 on the caster.
  *   - binding_strike: the Will + SK*2 test value for the on-hit contested root.
  *
- * A new strike replaces any enhancement already in the weaponEnchant group
- * ("cannot be combined with other attack enhancement"): the old effect document
- * is deleted and the group is (re)written here as the final, authoritative step.
+ * A new strike replaces any strike already in the "strike" group ("cannot be
+ * combined with other attack enhancement"): the old effect document is deleted
+ * and the group is (re)written here as the final, authoritative step. Weapon
+ * enchants (Dark Weapon, Fire Weapon...) live in "weaponEnchant" and stay put.
  * Writing the group explicitly last sidesteps a race where the replaced
  * effect's own delete cleanup could otherwise wipe the freshly-applied group.
  *
@@ -434,11 +435,11 @@ async function applyStrikeEffect(actor, spell) {
   if (actor.effects.some((e) => e.statuses?.has(strikeId))) return;
 
   const def = CONFIG.REDSTEEL.effectDefinitions[strikeId];
-  const groupKey = def?.combatModifiers?.exclusiveGroup ?? "weaponEnchant";
+  const groupKey = def?.combatModifiers?.exclusiveGroup ?? "strike";
   const school = spell.system?.type ?? null;
 
-  // Remove any other enhancement in the same exclusive group (a previous strike
-  // or a weapon enchant), document and all, so nothing stacks.
+  // Remove any previous strike in the same exclusive group, document and all,
+  // so two strikes never stack.
   const stale = actor.effects.filter((e) => {
     const sid = e.getFlag("core", "statusId");
     if (!sid || sid === strikeId) return false;

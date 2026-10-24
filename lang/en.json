@@ -5689,6 +5689,10 @@
       "DeniedHeadline": "Critical Failure!",
       "BackstabDenied": "No defense is possible against an attack from behind."
     },
+    "TurnMovement": {
+      "PickFirst": "Pick a movement on the bar first: Move, Slow Movement, Sprint or Disengage.",
+      "NotYourTurn": "It is not your turn, so you cannot move now."
+    },
     "Reach": {
       "OutOfReach": "Out of reach: {distance} hexes, reach {reach}",
       "LungeNeedsEmpty": "Extended Lunge needs an empty hex between you and the target",
@@ -5836,6 +5840,7 @@
     },
     "Defense": {
       "BlindsideDodge": "Blindside Dodge",
+      "CannotDodge": "Rooted: you cannot Dodge.",
       "BlindsideDodgeRoll": "Blindside Dodge with {weapon}",
       "BadDodge": "Bad Dodge!",
       "BadDodgeNote": "The die beat the dodge limit ({limit}): this dodge counts as a margin of 0.",
@@ -6189,7 +6194,7 @@
       },
       "rooted": {
         "label": "Rooted",
-        "desc": "A rooted character has their Speed halved and suffers -15% to attacks, defense and dodge until the effect ends."
+        "desc": "A rooted character cannot move (movement 0), cannot Dodge and suffers -15% to attacks and defense until the effect ends."
       },
       "fatigue": {
         "label": "Fatigue",
@@ -6265,7 +6270,7 @@
       "wet": "Attacks are more likely to inflict Slow (+40%), Freeze (+25%) and Chain (+35%), and less likely to inflict Burn (-40%).",
       "freeze": "Deals 4d6 damage when applied and again at the start of every round until removed. Attacks are also more likely to inflict Slow (+40%), Freeze (+25%) and Chain (+35%), and less likely to inflict Burn (-40%).",
       "slow": "Speed is halved. -30% Dodge and -5% to Combat, Archery, Throwing, Defense and Cover. Lasts 3 turns.",
-      "root": "Speed is halved, and pushes, pulls and slides cannot move the target. -15% to Combat, Defense, Cover and Dodge. A Root from Wounding Impale inflicts its stored Bleed when it ends.",
+      "root": "Movement is 0, and pushes, pulls and slides cannot move the target. Cannot Dodge. -15% to Combat, Defense and Cover. A Root from Wounding Impale inflicts its stored Bleed when it ends.",
       "shadowbound": "Deals 2d6 damage when applied and again at the start of every round until removed. -15% to Combat, Defense, Cover and Dodge.",
       "poison": "Deals 2d6 damage when contracted and again at the start of every round. -5% on every test. Re-applying refreshes the 3 rounds without an extra immediate tick.",
       "corrosion": "-4 Armor per stack. Stacks with no practical limit.",
@@ -6361,7 +6366,7 @@
       "coagulation": "Every Bleed on the bearer lasts only one more round. Lasts rounds equal to the caster's Blood Spell Power (SK).",
       "poisoned_blood": "Deals 1d6 + SK Dark and Poison damage when applied and at the start of each of the next 3 rounds, ignoring base armor. SK is the caster's Blood Spell Power.",
       "skin_cracking": "Inflicts SK/4 Bleed (rounded up, at least 1) when applied and at the start of each of the next 2 rounds. Each Bleed that does not fit under the cap of 6 deals 1d8 damage instead.",
-      "demonic_grasp": "Deals SK×4 Dark and Blunt damage ignoring base armor and inflicts 2 Bleed, when applied and at the start of each of the next 3 rounds. Also roots: Speed is halved and -15% to Combat, Defense, Cover and Dodge.",
+      "demonic_grasp": "Deals SK×4 Dark and Blunt damage ignoring base armor and inflicts 2 Bleed, when applied and at the start of each of the next 3 rounds. Also roots: movement is 0, no Dodge, and -15% to Combat, Defense and Cover.",
       "spectral_weapon": "Weapon attacks add Magic to their damage type. Takes the weapon enchantment slot.",
       "magic_rope": "The caster's summoned rope. Sent at a target, it pits the caster's Will + SK against Strength or Dexterity and Roots the target on a win. Losing the contest destroys the rope.",
       "insect_swarm": "Deals 1d4 damage ignoring armor at the start of every round, then a failed Resolve test causes Panic. -5% on every test and -50% Archery and Throwing.",
