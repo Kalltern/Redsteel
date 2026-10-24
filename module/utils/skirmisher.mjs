@@ -62,7 +62,7 @@ import {
   markBonusSource,
   trackedCombat,
 } from "./actionTracker.mjs";
-import { abilityIgnoresAim, grantAimStacks } from "./aim.mjs";
+import { abilityIgnoresAim, grantAimStacks, sharpshooterNode } from "./aim.mjs";
 import { notePaidStamina } from "./enduringWarrior.mjs";
 import {
   isHostileSide,
@@ -98,6 +98,8 @@ const ACCURATE_SHOT = Object.freeze([
 ]);
 /** "Snižuje hranici pro Kritický zásah na Úspěch o síle +30." */
 export const ACCURATE_SHOT_CRIT_MARGIN = 30;
+/** Ostrostřelec → Přesný výstřel: "Hranice -5%" (sharpshooter.mjs). */
+const SHARPSHOOTER_MARGIN_CUT = 5;
 
 const RUN_UP_THROW = Object.freeze({
   key: "REDSTEEL.Items.RunUpThrow.name",
@@ -529,13 +531,43 @@ export function isAccurateShot(ability) {
   return ACCURATE_SHOT.some(({ key, name }) => isKeyed(ability, key, name));
 }
 
-/** A margin of 30 or more is a Critical Hit (never on a fumble). */
-export function accurateShotMarginCrit(ability, margin, critFailure) {
-  return (
-    isAccurateShot(ability) &&
-    !critFailure &&
-    Number(margin) >= ACCURATE_SHOT_CRIT_MARGIN
-  );
+/**
+ * A margin of 30 or more is a Critical Hit (never on a fumble). Ostrostřelec
+ * → Přesný výstřel lowers it to 25 for a bow or crossbow shot: pass the
+ * attacker and the weapon of the roll for that (left out, no node is read).
+ *
+ * @param {Item|null} ability
+ * @param {number} margin
+ * @param {boolean} critFailure
+ * @param {Actor|null} [actor]
+ * @param {Item|null} [weapon]
+ */
+export function accurateShotMarginCrit(
+  ability,
+  margin,
+  critFailure,
+  actor = null,
+  weapon = null,
+) {
+  if (!isAccurateShot(ability) || critFailure) return false;
+  const cut = sharpshooterNode(actor, "presnyVystrel", weapon)
+    ? SHARPSHOOTER_MARGIN_CUT
+    : 0;
+  return Number(margin) >= ACCURATE_SHOT_CRIT_MARGIN - cut;
+}
+
+/**
+ * Ostrostřelec → Přesný výstřel: "Kritický rozsah Výhoda": Accurate Shot
+ * from a bow or crossbow rolls its Critical Range die with Advantage
+ * (combatSkillBonuses.mjs getCriticalRolls `critAdvantage`).
+ *
+ * @param {Actor} actor
+ * @param {Item|null} ability
+ * @param {Item|null} weapon  the weapon of the roll
+ * @returns {boolean}
+ */
+export function accurateShotCritAdvantage(actor, ability, weapon) {
+  return isAccurateShot(ability) && sharpshooterNode(actor, "presnyVystrel", weapon);
 }
 
 /**
@@ -702,6 +734,8 @@ const IMPROVED_CRIPPLING_SHOT = Object.freeze({
 });
 /** "šance 50% na zbavení veškerého pohybu". */
 export const IMMOBILIZE_CHANCE = 50;
+/** Ostrostřelec → "Zmrzačující výstřel: 35% na zbavení pohybu". */
+export const SHARPSHOOTER_IMMOBILIZE_CHANCE = 35;
 
 /** Is this Crippling Shot (the action)? */
 export function isCripplingShot(ability) {
@@ -728,13 +762,18 @@ export function isImprovedCripplingShot(ability) {
  * - Vylepšený zmrzačující výstřel (specializace-wip.md r229), the modifier:
  *   `crippled` and the 50% `immobilized` roll on any attack it rides on. Its
  *   text has no turn order part.
+ * - Ostrostřelec → Zmrzačující výstřel: 35% na zbavení pohybu (r479): the
+ *   same `immobilized` roll at 35%, with a bow or crossbow. Sources do not
+ *   add up: the best chance rolls once.
  *
  * @param {Actor} actor
  * @param {Item|null} ability
  * @param {Item[]} [modifiers]
+ * @param {Item|null} [weapon]  the weapon of the roll, for the Sharpshooter
+ *   node's bow or crossbow (left out: the one in hand)
  * @returns {Array<{name: string, value: number}>}
  */
-export function cripplingShotEffects(actor, ability, modifiers = []) {
+export function cripplingShotEffects(actor, ability, modifiers = [], weapon = undefined) {
   const base = isCripplingShot(ability);
   const improved =
     isImprovedCripplingShot(ability) ||
@@ -742,9 +781,13 @@ export function cripplingShotEffects(actor, ability, modifiers = []) {
   if (!base && !improved) return [];
   const out = [{ name: "crippled", value: -1 }];
   if (base) out.push({ name: "crippled_initiative", value: -1 });
-  if (improved || hasSkirmisherNode(actor, "zmrzacujiciVystrel")) {
-    out.push({ name: "immobilized", value: IMMOBILIZE_CHANCE });
-  }
+  const chance = Math.max(
+    improved || hasSkirmisherNode(actor, "zmrzacujiciVystrel") ? IMMOBILIZE_CHANCE : 0,
+    sharpshooterNode(actor, "zmrzacujiciVystrel", weapon)
+      ? SHARPSHOOTER_IMMOBILIZE_CHANCE
+      : 0,
+  );
+  if (chance > 0) out.push({ name: "immobilized", value: chance });
   return out;
 }
 

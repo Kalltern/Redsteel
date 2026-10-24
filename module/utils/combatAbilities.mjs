@@ -35,6 +35,7 @@ import {
 } from "./rearm.mjs";
 import {
   accurateShotAimCritRange,
+  accurateShotCritAdvantage,
   declareRunUp,
   isFollowUpThrow,
   isRetaliatoryThrow,
@@ -49,6 +50,15 @@ import {
   grantLightArmorRest,
   useFollowUpThrow,
 } from "./skirmisher.mjs";
+import {
+  aimPrecisionModifier,
+  coverOptionAvailable,
+  isRetaliatoryShot,
+  isTargetLock,
+  retaliatoryShotRefusal,
+  setAttackCover,
+  useTargetLock,
+} from "./sharpshooter.mjs";
 import { bullChargeRefusal, isBullCharge } from "./bullCharge.mjs";
 import {
   cleaveTargetRefusal,
@@ -140,7 +150,11 @@ import {
 import { setupDialogTabs } from "./dialogTabMemory.mjs";
 import { getCommandTargets, runCommand } from "./commands.mjs";
 import { isTrackedTurn, spendForItems } from "./actionTracker.mjs";
-import { attackOptionIconsHtml } from "./attackOptionIcons.mjs";
+import {
+  attackOptionIconsHtml,
+  readAttackCover,
+  wireCoverToggles,
+} from "./attackOptionIcons.mjs";
 import {
   championAbilityDamage,
   grantChargeFollowUp,
@@ -567,6 +581,7 @@ export async function combatAbilities({
       aimedStrikePart = await selectAimedPart();
     }
 
+    const isDefenseRoll = ability.system.class === "defense";
     const intent = {
       aim: aimValue,
       sneak: useSneak,
@@ -578,8 +593,10 @@ export async function combatAbilities({
       // Hraničář → Dravčí smysly: the Ambush / In nature toggle
       // (rangerCombat.mjs).
       predatorySenses: html.find('[name="predatorySenses"]').is(":checked"),
+      // Cover the target stands behind (sharpshooter.mjs): an attack's
+      // only, never written for a defense.
+      cover: isDefenseRoll ? null : readAttackCover(container),
     };
-    const isDefenseRoll = ability.system.class === "defense";
     const keepOpen = container.querySelector("#keep-open")?.checked;
 
     // A Command lands on the targeted tokens, so the allies have to be picked
@@ -740,6 +757,14 @@ export async function combatAbilities({
       if (!keepOpen) dialog?.close();
       return;
     }
+    // Ostrostřelec → Zacílení (Target Lock) after an Aim action: pay it, the
+    // Perception test and the Aim (sharpshooter.mjs). Always handled there;
+    // with nothing to lock onto it refuses with a notification.
+    if (isTargetLock(ability)) {
+      await useTargetLock(actor, ability, rollUtilityTest);
+      if (!keepOpen) dialog?.close();
+      return;
+    }
     // Vrh s rozběhem (Run Up Throw) runs before it throws, the Charge's
     // two-stage flow: the first pick on the actor's own turn only declares
     // the run, and the strip's check button throws (skirmisher.mjs).
@@ -752,7 +777,10 @@ export async function combatAbilities({
     // throw, is refused before anything is paid (skirmisher.mjs).
     {
       const refusal =
-        runUpRefusal(actor, ability) ?? retaliatoryThrowRefusal(actor, ability);
+        runUpRefusal(actor, ability) ??
+        retaliatoryThrowRefusal(actor, ability) ??
+        // Odvetný výstřel needs a bow or crossbow in hand (sharpshooter.mjs).
+        retaliatoryShotRefusal(actor, ability);
       if (refusal) {
         ui.notifications.warn(refusal);
         return;
@@ -1344,6 +1372,7 @@ export async function combatAbilities({
     longReach: showLongReach,
     longReachClose: !!longReachClose,
     predatorySenses: predatorySensesAvailable(actor),
+    cover: coverOptionAvailable(actor, activeWeapon ?? null),
   })}
 </div>
 ${
@@ -1468,6 +1497,8 @@ ${
 
       // Open the tab this player last used, and remember every switch
       setupDialogTabs(html, "combat-abilities");
+      // Half / Full cover: at most one ticked (attackOptionIcons.mjs).
+      wireCoverToggles(root);
 
       // Ability selection
       html.find(".ability-choice").click(async (event) => {
@@ -1871,6 +1902,10 @@ ${
     } else {
       await actor.unsetFlag("redsteel", "aimCount");
     }
+
+    // Cover: consumed by getAttackRolls or the explosive throw
+    // (sharpshooter.mjs consumeAttackCover).
+    await setAttackCover(actor, intent.cover ?? null);
 
     if (intent.aimedStrikePart) {
       await actor.setFlag("redsteel", "aimedPart", intent.aimedStrikePart);
@@ -2524,6 +2559,10 @@ ${
     // Přesný výstřel: Critical Range +1 for each Aim committed to the shot,
     // read before getAttackRolls consumes it (skirmisher.mjs).
     doctrineCritRangeBonus += accurateShotAimCritRange(actor, ability);
+    // Ostrostřelec → Míření: Ověření +5% per Aim committed to the shot, read
+    // here for the same reason (sharpshooter.mjs); it rides into the effects
+    // roll below.
+    const aimPrecision = aimPrecisionModifier(actor, weapon, ability);
 
     let {
       attackRoll,
@@ -2536,6 +2575,8 @@ ${
       opportunityAttack,
       dragonGuard,
       rangePenalty,
+      coverTag,
+      overwatchShot,
     } = await game.redsteel.getAttackRolls(
       actor,
       weapon,
@@ -2581,11 +2622,14 @@ ${
       penetration,
       doctrineCritDmg,
       doctrineSkillCritPen,
+      // Ostrostřelec → Přesný výstřel: the Critical Range die with Advantage
+      // on Accurate Shot (skirmisher.mjs).
+      { critAdvantage: accurateShotCritAdvantage(actor, ability, weapon) },
     );
 
     // Head aimed attack injects stagger +20% and precision +10% as a synthetic
     // modifier so both bonuses appear in the roll results and chat message.
-    const effectModifiers = aimedPart === "head"
+    const headModifiers = aimedPart === "head"
       ? [...selectedModifiers, {
           system: {
             effectType1: "stagger",
@@ -2597,6 +2641,10 @@ ${
           },
         }]
       : selectedModifiers;
+    // Míření: Ověření +5% rides in the same way (captured above).
+    const effectModifiers = aimPrecision
+      ? [...headModifiers, aimPrecision]
+      : headModifiers;
 
     const {
       allBleedRollResults,
@@ -2827,8 +2875,15 @@ ${renderMarginFollowupLine({
         // Reach and thrown range (positioning.mjs).
         ...(outOfReach ? ["outOfReach"] : []),
         ...(rangePenalty ? ["beyondRange"] : []),
-        // Odvetný vrh is a retaliation (skirmisher.mjs): nothing answers it.
-        ...(isRetaliatoryThrow(ability) ? ["retaliation"] : []),
+        // Cover and the Overwatch shot bonus, already in the roll
+        // (sharpshooter.mjs).
+        ...(coverTag ? [coverTag] : []),
+        ...(overwatchShot ? ["overwatchShot"] : []),
+        // Odvetný vrh and Odvetný výstřel are retaliations (skirmisher.mjs,
+        // sharpshooter.mjs): nothing answers them.
+        ...(isRetaliatoryThrow(ability) || isRetaliatoryShot(ability)
+          ? ["retaliation"]
+          : []),
       ],
       banePacket,
       baneRoll,

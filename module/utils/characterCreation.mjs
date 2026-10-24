@@ -2,48 +2,70 @@
  * Character Creation window, a full screen in steps:
  *   1. Origin: name, race (and its racial choices), the attribute point buy,
  *      the trait buy.
- *   2. Doctrine: the combat doctrine(s) the character trains in, and one
+ *   2. Birth: Faith, Sinfulness and Appearance (Víra, Hříšnost, Vzhled), each
+ *      1d4 plus the race's modifier (CREATION_RACES `birth`), rolled once and
+ *      locked into the draft; Fortune's favour (Přízeň štěstěny: one stat
+ *      reroll OR advantage on the Starsign) and the trait rerolls
+ *      (TRAIT_REROLLS); and, for a character Born under a Star, the Starsign
+ *      (STARSIGN_TABLE), which becomes one of the character's traits.
+ *   3. Doctrine: the combat doctrine(s) the character trains in, and one
  *      magical doctrine for a character with Magic potential. A sub-step of
- *      step 2 ("details", shown as 2.5) then shows the combat skill each
+ *      step 3 ("details", shown as 3.5) then shows the combat skill each
  *      doctrine fights with (the Peltast chooses), asks for the weapon skill
  *      each combat doctrine trains with and, with a magical doctrine, the
  *      school of magic (user ruling 2026-10-10: magical doctrine first, then
  *      its school; a temperament sets it). Further schools are bought in
- *      step 3.
- *   3. Skills and features: NOT this window. It is the Learn window running in
+ *      step 4.
+ *   4. Skills and features: NOT this window. It is the Learn window running in
  *      creation mode (isCreationSkillsStep), which carries Back and Finish.
  * An info panel beside them describes whatever the player last hovered or
  * clicked. Rules: "Pravidla pro ToS V12.1 (WIP).xlsx" → "Tvorba postavy".
  *
  * Everything the player picks is a DRAFT kept at `flags.redsteel.creationDraft`
  * on the actor, so closing the screen loses nothing. Nothing touches the
- * character's real data until Next on step 2 (#applyOrigin), which in one go:
+ * character's real data until Next on step 3 (#applyOrigin), which in one go:
  * swaps in the race item (choice effects enabled/disabled in the data itself),
- * copies the traits, writes the attribute values and the name, pays unspent
+ * copies the traits (the Starsign and the Mage sign's grant among them,
+ * flagged `creationBirth`), writes the attribute values, the rolled Faith,
+ * Sinfulness and Appearance and the name, pays unspent
  * trait points out as SP, adds the chosen doctrines to the character's skills
  * (shown on the sheet, tracked in the Learn window, and rank I bought with its
- * teacher: user ruling 2026-10-10, refunded in step 3 if unwanted), and moves
- * the draft to step 3. The race and the
+ * teacher: user ruling 2026-10-10, refunded in step 4 if unwanted), and moves
+ * the draft to step 4. The race and the
  * trait copies carry `flags.redsteel.creationOrigin`, and the draft records
  * what was paid out (`applied`), so Back and Next again replaces exactly what
  * the previous apply wrote. Finish in the Learn window
  * (finishCharacterCreation) clears both the draft and `creationPending`.
  *
  * Draft shape (fixed, no deletable keys):
- *   { step: number,             the step on screen (1..STEP_COUNT)
+ *   { version: 2,               DRAFT_VERSION. A stored draft without it is
+ *                               from before the Birth step: readDraft moves
+ *                               its step 2 and up one on (draftStep)
+ *     step: number,             the step on screen (1..STEP_COUNT)
  *     name: string|null,
  *     race: string|null,        CREATION_RACES key
  *     choices: string[][],      per choice group index: chosen effect ids
  *                               in the order taken (the oldest gives way)
  *     spend: {str..per},        points bought on top of the base 1
  *     traits: string[],         compendium ids from TRAIT_PRICES
+ *     birth: {                  the Birth step, every roll locked in:
+ *       dice: {fth, sin, vis},    the raw 1d4 (1..4) per stat, null until
+ *                                 rolled; the value is die + race modifier
+ *       favour: null|"fth"|"sin"|"vis"|"advantage",  what Fortune's favour
+ *                                 was spent on
+ *       traitRerolls: string[],   TRAIT_REROLLS trait ids whose reroll is used
+ *       born: boolean,            Born under a Star taken
+ *       starRolls: number[],      the d100 rolls (none, one, or two with
+ *                                 advantage)
+ *       star: string|null },      the chosen sign's compendium id, one the
+ *                                 rolls map to (STARSIGN_TABLE)
  *     doctrines: string[],      doctrine keys (system.doctrines), the
- *                               magical one (picked on 2.5) included
- *     school: string|null,      CREATION_SCHOOLS key, picked on 2.5
+ *                               magical one (picked on 3.5) included
+ *     school: string|null,      CREATION_SCHOOLS key, picked on 3.5
  *     weapons: {doctrine: weaponSkill},  the free weapon picks (fixed ones,
  *                               FIXED_WEAPONS, are never stored)
  *     combatSkill: "combat"|"archery"|null,  the Peltast's combat skill
- *     stage: "doctrines"|"details",  which half of step 2 is on screen
+ *     stage: "doctrines"|"details",  which half of step 3 is on screen
  *     applied: null|{           what the last origin apply wrote:
  *       traitSp: number,          SP paid out for unspent trait points
  *       doctrines: string[],      doctrine keys it made visible
@@ -81,7 +103,7 @@ import {
 } from "../helpers/progressionEngine.mjs";
 import { PROGRESSION_TRACKS } from "../helpers/progression.mjs";
 import { TEMPERAMENT_SCHOOLS } from "../helpers/rankDiscounts.mjs";
-import { SPELL_PACK_ID, SPELL_RANK_MIN_SCHOOL } from "./spellbook.mjs";
+import { SPELL_PACK_ID, SPELL_RANK_MIN_SCHOOL, grantStartingSpells } from "./spellbook.mjs";
 // Import cycle with learnWindow.mjs (it imports this module's creation
 // exports): fine, as neither module uses the other's exports at top level.
 import {
@@ -122,11 +144,13 @@ const CACHE = {
   traits: null,
   racialFeatures: null,
   ladders: null,
-  // The same ladders for the skills 2.5 offers, by track id.
+  // The same ladders for the skills 3.5 offers, by track id.
   skillLadders: null,
   // The spells each school opens, by school rank (buildSchoolSpells).
   schoolSpells: null,
   weapons: null,
+  // The Starsigns of STARSIGN_TABLE, by compendium id.
+  signs: null,
 };
 
 /** A description as HTML (enrichHTML), or "" when there is none. */
@@ -312,16 +336,103 @@ const MAX_TRAITS = 15;
 /** Every unspent trait point is worth this many SP at Finish. */
 const SP_PER_TRAIT_POINT = 5;
 
-/** The steps: 1 Origin, 2 Doctrine, 3 Skills and features (the Learn window). */
-const STEP_COUNT = 3;
+/** The steps, by number. Compare a draft's step against these, never a literal. */
+const STEP_ORIGIN = 1;
+const STEP_BIRTH = 2;
+const STEP_DOCTRINE = 3;
+/** Skills and features: the Learn window in creation mode (its banner reads it). */
+export const STEP_SKILLS = 4;
+
+/** The steps: 1 Origin, 2 Birth, 3 Doctrine, 4 Skills and features (the Learn window). */
+export const STEP_COUNT = STEP_SKILLS;
 
 /** The steps this window renders itself; the last one lives in the Learn window. */
-const WINDOW_STEPS = 2;
+const WINDOW_STEPS = STEP_DOCTRINE;
+
+/**
+ * The draft's numbering version. Drafts stored before the Birth step have no
+ * version: their step 2 (Doctrine) and 3 (the Learn window) read one higher.
+ */
+const DRAFT_VERSION = 2;
+
+/** Each step's title on the title bar (3.5 has its own, Step2b). */
+const STEP_TITLE_KEYS = {
+  [STEP_ORIGIN]: "REDSTEEL.Creation.Step1.title",
+  [STEP_BIRTH]: "REDSTEEL.Creation.Birth.title",
+  [STEP_DOCTRINE]: "REDSTEEL.Creation.Step2.title",
+};
 
 /** The Magic potential trait: it opens the magical doctrines. */
 const MAGIC_POTENTIAL_ID = "abUe5QntVOFVUDgC";
 
-/** Doctrine blocks on step 2, in the Learn window's order. */
+/** Latent Magic Potential, the book's "Limited magic potential". */
+const LATENT_MAGIC_ID = "RRTkAG4V4PQA2WHW";
+
+/** The stats rolled on the Birth step: Faith, Sinfulness, Appearance. */
+const BIRTH_KEYS = ["fth", "sin", "vis"];
+
+/**
+ * Traits that give one reroll of a Birth stat during creation, on top of
+ * Fortune's favour: trait id → the stat it rerolls. Pious (Zbožný, a Faith
+ * reroll) is not built yet; it becomes one more entry here once it is.
+ */
+const TRAIT_REROLLS = {
+  GvNvyDHIZrbC6bKa: "vis", // Pretty (Pohledný)
+  NAy5FTVv6r4k3hPg: "vis", // Gorgeous (Nádherný)
+};
+
+/** The Mage sign: it raises the character's magic potential one degree. */
+const MAGE_SIGN_ID = "FaHSlL4rkfkzAaMm";
+
+/**
+ * The Starsign table (Tvorba postavy): d100 → sign, each sign a feature in
+ * the pack redsteel.redsteel-items, folder Starsigns.
+ */
+const STARSIGN_TABLE = [
+  { min: 1, max: 2, id: "NlyT4Xzzr2Dan03V" }, // Adventurer (Dobrodruh)
+  { min: 3, max: 4, id: "FaHSlL4rkfkzAaMm" }, // Mage (Mág)
+  { min: 5, max: 6, id: "IEdk0QmhKXXc4wXD" }, // Scholar (Učenec)
+  { min: 7, max: 8, id: "bWQfsulVbk6XAN2N" }, // Druid (Druid)
+  { min: 9, max: 10, id: "AZBVJg0dWC9aqRXp" }, // Hearth (Ohniště)
+  { min: 11, max: 12, id: "sKECBjg1h0HpJFei" }, // Cat (Kočka)
+  { min: 13, max: 14, id: "kBevjb5uSK1yMcqE" }, // Tower (Věž)
+  { min: 15, max: 16, id: "trLSvRh4UkC6SCHl" }, // Trickster (Podvodník)
+  { min: 17, max: 19, id: "UNFvmuGj1GPQL1n3" }, // Alchemist (Alchemista)
+  { min: 20, max: 22, id: "GaIi1BMTv1upG16e" }, // Lovers (Milenci)
+  { min: 23, max: 25, id: "35W7W1y64LNrFuP3" }, // Rock (Skála)
+  { min: 26, max: 28, id: "xVi8P7aEIvl2VhzA" }, // Warrior (Válečník)
+  { min: 29, max: 31, id: "8KFYCBoGDLVDWCHW" }, // Marksman (Ostrostřelec)
+  { min: 32, max: 34, id: "OjYFlK6wlA0TEVe2" }, // Smith (Kovář)
+  { min: 35, max: 37, id: "Mq2AfmE0Atkb6Ar0" }, // Shadow (Stín)
+  { min: 38, max: 40, id: "9GCGN1Qpd8CrY5VY" }, // North Star (Severka)
+  { min: 41, max: 43, id: "Nqn5Yl2GQjYVDink" }, // Owl (Sova)
+  { min: 44, max: 46, id: "7AzYcp9CrAaepEYm" }, // Acrobat (Akrobat)
+  { min: 47, max: 49, id: "bAz4DgQcG0CeolyJ" }, // Bull (Býk)
+  { min: 50, max: 52, id: "iXMOUNzbmebnZ24q" }, // Priest (Kněz)
+  { min: 53, max: 55, id: "uAEFTI5yEA41vYfq" }, // Horse (Kůň)
+  { min: 56, max: 58, id: "TjqOIHdURzkUpNEo" }, // Fish (Ryba)
+  { min: 59, max: 61, id: "xCnfg87eScbDj9yo" }, // Dog (Pes)
+  { min: 62, max: 64, id: "KZXVvP57ycNuK84V" }, // Heart (Srdce)
+  { min: 65, max: 67, id: "bjB9yrEpXoUu1JvJ" }, // Mirror (Zrcadlo)
+  { min: 68, max: 70, id: "CdD7jfHJd7uh8JmM" }, // Devil (Ďábel)
+  { min: 71, max: 73, id: "P5GWgPO2TqLAg6C3" }, // Thief (Zloděj)
+  { min: 74, max: 76, id: "ytypPHCemCYVHS39" }, // Atronach (Atronach)
+  { min: 77, max: 79, id: "VaeeR8ulm56QCCBr" }, // Hen (Slepice)
+  { min: 80, max: 82, id: "EaErNy1nvS1QThvA" }, // Butterfly (Motýl)
+  { min: 83, max: 85, id: "j5JRBlaxUx5FiUMu" }, // Bat (Netopýr)
+  { min: 86, max: 88, id: "SZQJfF7yUekrLsk7" }, // Dice (Kostky)
+  { min: 89, max: 91, id: "skO1OMSRikGcPq30" }, // Fairy (Víla)
+  { min: 92, max: 94, id: "bFXMqEo8GSpua79e" }, // Dead Eye (Mrtvé oko)
+  { min: 95, max: 97, id: "nTJ7BslG2MYB51f3" }, // Snake (Had)
+  { min: 98, max: 100, id: "dSNyQ41b2ARAyt95" }, // Fire Eye (Ohnivé oko)
+];
+
+/** The sign a d100 result lands on, or null. */
+function starsignFor(roll) {
+  return STARSIGN_TABLE.find((row) => roll >= row.min && roll <= row.max)?.id ?? null;
+}
+
+/** Doctrine blocks on step 3, in the Learn window's order. */
 const DOCTRINE_KIND_ORDER = ["melee", "ranged", "special", "magical"];
 
 /**
@@ -335,7 +446,7 @@ const HIDDEN_DOCTRINES = new Set(["cordinas", "musketeer", "rider", "monk", "ele
 /** A doctrine card with no ability to show as its crest. */
 const DOCTRINE_FALLBACK_CREST = "icons/svg/sword.svg";
 
-/** The schools of magic 2.5 offers a magical doctrine (user ruling 2026-10-01). */
+/** The schools of magic 3.5 offers a magical doctrine (user ruling 2026-10-01). */
 const CREATION_SCHOOLS = ["fire", "water", "air", "earth", "spirit", "body", "darkness"];
 
 /**
@@ -359,7 +470,7 @@ const WEAPON_SKILL_KEYS = ["swords", "axes", "blunt", "polearms"];
 const FIXED_WEAPONS = { pikeman: "polearms", swordsman: "swords", duelist: "swords" };
 
 /**
- * Each skill card's crest on 2.5 and in the info panel (core Foundry icons
+ * Each skill card's crest on 3.5 and in the info panel (core Foundry icons
  * the item packs already use), with the doctrine kind whose accent it wears.
  */
 const SKILL_CARDS = {
@@ -430,7 +541,7 @@ function weaponDoctrines(doctrines) {
 }
 
 /**
- * True when step 2's details half (2.5) has something to ask: a weapon pick
+ * True when step 3's details half (3.5) has something to ask: a weapon pick
  * that is not fixed, the Peltast's combat skill, or a magical doctrine's
  * school. Fixed combat skills alone ask nothing.
  */
@@ -448,7 +559,7 @@ function weaponFor(draft, key) {
 }
 
 /**
- * Every track id the draft's step 2 picks bring into step 3, in buying order:
+ * Every track id the draft's step 3 picks bring into step 4, in buying order:
  * Channeling and the school (with a magical doctrine; Channeling first, so a
  * temperament's school has already come with it), the weapon and combat
  * skills, then the doctrines (a doctrine's rank may ask for a skill's).
@@ -564,22 +675,93 @@ function isAddChange(change) {
   return change?.mode === undefined || change?.mode === null || Number(change.mode) === 2;
 }
 
+/** A blank Birth step: nothing rolled, nothing spent. */
+function emptyBirth() {
+  return {
+    dice: Object.fromEntries(BIRTH_KEYS.map((k) => [k, null])),
+    favour: null,
+    traitRerolls: [],
+    born: false,
+    starRolls: [],
+    star: null,
+  };
+}
+
+/** The draft race's modifier to one Birth stat (0 for none). */
+function birthModifier(draft, k) {
+  return Number(RACE_BY_KEY.get(draft.race)?.birth?.[k]) || 0;
+}
+
+/** "+1", "-2", "+0": a modifier as the formula reads it. */
+function signedModifier(n) {
+  const value = Number(n) || 0;
+  return value < 0 ? String(value) : `+${value}`;
+}
+
+/**
+ * What the Mage sign adds (book: no magic potential → Limited; Limited →
+ * Magic potential), derived from the draft every time, never stored as a pick:
+ *   grant       the trait id the sign gives, or null
+ *   supersedes  the drafted trait the grant replaces (Latent, upgraded to
+ *               Magic potential), whose copy is then not created; it stays in
+ *               draft.traits, so its trait points stay as the player bought them
+ * Every built race can hold magic potential, so the book's "cannot have it:
+ * reroll" clause needs no code.
+ * @returns {{grant: string|null, supersedes: string|null}}
+ */
+function birthGrants(draft) {
+  const none = { grant: null, supersedes: null };
+  if (!draft.birth?.born || draft.birth.star !== MAGE_SIGN_ID) return none;
+  if (draft.traits.includes(MAGIC_POTENTIAL_ID)) return none;
+  if (draft.traits.includes(LATENT_MAGIC_ID)) return { grant: MAGIC_POTENTIAL_ID, supersedes: LATENT_MAGIC_ID };
+  return { grant: LATENT_MAGIC_ID, supersedes: null };
+}
+
+/**
+ * The traits the draft gives the character, counted against MAX_TRAITS: the
+ * drafted ones, the Starsign (counted from Born under a Star on, before it is
+ * rolled) and the Mage sign's grant when it adds an item (an upgrade replaces
+ * one instead).
+ */
+function draftTraitCount(draft) {
+  const { grant, supersedes } = birthGrants(draft);
+  return draft.traits.length + (draft.birth?.born ? 1 : 0) + (grant && !supersedes ? 1 : 0);
+}
+
+/** Every Birth stat rolled. */
+function birthRolled(draft) {
+  return BIRTH_KEYS.every((k) => draft.birth.dice[k] !== null);
+}
+
+/**
+ * A stored draft's step in today's numbering: a draft from before the Birth
+ * step (no version) reads its step 2 and up one higher. 0 when unset.
+ */
+function draftStep(raw) {
+  const step = Math.floor(Number(raw?.step));
+  if (!Number.isFinite(step)) return 0;
+  const legacy = !(Number(raw?.version) >= DRAFT_VERSION);
+  return legacy && step >= STEP_BIRTH ? step + 1 : step;
+}
+
 /** A blank draft. */
 function emptyDraft() {
   return {
-    step: 1,
+    version: DRAFT_VERSION,
+    step: STEP_ORIGIN,
     // Identity: null keeps the actor's own name.
     name: null,
     race: null,
     choices: [],
     spend: Object.fromEntries(ATTRIBUTE_KEYS.map((k) => [k, 0])),
     traits: [],
+    birth: emptyBirth(),
     doctrines: [],
     school: null,
     weapons: {},
     combatSkill: null,
     stage: "doctrines",
-    // What the last origin apply wrote; null until step 2's Next.
+    // What the last origin apply wrote; null until step 3's Next.
     applied: null,
   };
 }
@@ -588,8 +770,8 @@ function emptyDraft() {
 function readDraft(actor) {
   const raw = actor?.getFlag?.("redsteel", "creationDraft") ?? {};
   const draft = emptyDraft();
-  const step = Math.floor(Number(raw.step));
-  if (step >= 1 && step <= STEP_COUNT) draft.step = step;
+  const step = draftStep(raw);
+  if (step >= STEP_ORIGIN && step <= STEP_COUNT) draft.step = step;
   if (typeof raw.name === "string" && raw.name.trim()) draft.name = raw.name.trim();
   const doctrines = Array.isArray(raw.doctrines) ? raw.doctrines : Object.values(raw.doctrines ?? {});
   draft.doctrines = [
@@ -612,6 +794,7 @@ function readDraft(actor) {
   }
   const traits = Array.isArray(raw.traits) ? raw.traits : Object.values(raw.traits ?? {});
   draft.traits = [...new Set(traits.filter((id) => typeof id === "string" && TRAIT_PRICES[id]))];
+  draft.birth = readBirth(raw.birth);
   // A pick only counts for a drafted doctrine that asks the question.
   const asked = new Set(weaponDoctrines(draft.doctrines).filter((key) => !FIXED_WEAPONS[key]));
   if (raw.weapons && typeof raw.weapons === "object") {
@@ -643,6 +826,36 @@ function readDraft(actor) {
 }
 
 /**
+ * The stored Birth step, tidied into its fixed shape: dice 1..4 or null, the
+ * favour one of its spends, trait rerolls only from TRAIT_REROLLS, at most two
+ * d100 rolls (none without Born under a Star), and the sign only one of those
+ * the rolls land on (the only one, with a single roll).
+ */
+function readBirth(raw) {
+  const birth = emptyBirth();
+  if (!raw || typeof raw !== "object") return birth;
+  for (const k of BIRTH_KEYS) {
+    const die = Number(raw.dice?.[k]);
+    if (raw.dice?.[k] !== null && Number.isInteger(die) && die >= 1 && die <= 4) birth.dice[k] = die;
+  }
+  if ([...BIRTH_KEYS, "advantage"].includes(raw.favour)) birth.favour = raw.favour;
+  const rerolls = Array.isArray(raw.traitRerolls) ? raw.traitRerolls : Object.values(raw.traitRerolls ?? {});
+  birth.traitRerolls = [...new Set(rerolls.filter((id) => typeof id === "string" && TRAIT_REROLLS[id]))];
+  birth.born = raw.born === true;
+  if (birth.born) {
+    const rolls = Array.isArray(raw.starRolls) ? raw.starRolls : Object.values(raw.starRolls ?? {});
+    birth.starRolls = rolls
+      .map((n) => Number(n))
+      .filter((n) => Number.isInteger(n) && n >= 1 && n <= 100)
+      .slice(0, 2);
+    const signs = birth.starRolls.map(starsignFor);
+    if (signs.length === 1) birth.star = signs[0];
+    else if (typeof raw.star === "string" && signs.includes(raw.star)) birth.star = raw.star;
+  }
+  return birth;
+}
+
+/**
  * A compendium feature's data, ready to create on an actor, or null. The same
  * copy progressionEngine.mjs makes when a feature is bought: the copy records
  * the uuid it came from.
@@ -662,11 +875,19 @@ async function featureCopyData(featureId) {
  * The attribute values the origin writes (flat update keys): each attribute
  * starts at 1, plus the points bought. Racial and trait bonuses arrive through
  * their Active Effects, not here. Shared by the apply and the footer preview.
+ * Faith, Sinfulness and Appearance are the Birth die plus the draft race's
+ * modifier (a result below 0 stands, user ruling), written only once rolled:
+ * a draft from before the Birth step leaves the actor's own values alone.
  */
 function originAttributeUpdate(draft) {
   const update = {};
   for (const k of ATTRIBUTE_KEYS) {
     update[`system.attributes.${k}.value`] = 1 + draft.spend[k];
+  }
+  for (const k of BIRTH_KEYS) {
+    const die = draft.birth?.dice?.[k];
+    if (die === null || die === undefined) continue;
+    update[`system.secondaryAttributes.${k}.value`] = die + birthModifier(draft, k);
   }
   return update;
 }
@@ -708,6 +929,12 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
       pickWeapon: CharacterCreationWindow._onPickWeapon,
       pickCombatSkill: CharacterCreationWindow._onPickCombatSkill,
       pickSchool: CharacterCreationWindow._onPickSchool,
+      rollBirth: CharacterCreationWindow._onRollBirth,
+      rerollBirth: CharacterCreationWindow._onRerollBirth,
+      toggleBorn: CharacterCreationWindow._onToggleBorn,
+      rollStarsign: CharacterCreationWindow._onRollStarsign,
+      pickStarsign: CharacterCreationWindow._onPickStarsign,
+      resetBirth: CharacterCreationWindow._onResetBirth,
       closeScreen: CharacterCreationWindow._onCloseScreen,
     },
   };
@@ -722,6 +949,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
         ".rs-create-build .rs-create-scroll",
         ".rs-create-info .rs-create-scroll",
         ".rs-create-details .rs-create-scroll",
+        ".rs-create-birth .rs-create-scroll",
       ],
     },
   };
@@ -730,7 +958,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     super(options);
     this.actor = options.actor ?? null;
     this.#draft = readDraft(this.actor);
-    // Step 3 is the Learn window (openCharacterCreation routes there); should
+    // Step 4 is the Learn window (openCharacterCreation routes there); should
     // this window be opened on it anyway, it shows its own last step.
     if (this.#draft.step > WINDOW_STEPS) this.#draft.step = WINDOW_STEPS;
   }
@@ -798,8 +1026,17 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
 
   /** Delegated change listener for the name field, bound once. */
   #boundChange = null;
-  /** Guards the origin apply (Next on step 2) against a double click. */
+  /** Guards the origin apply (Next on step 3) against a double click. */
   #applying = false;
+
+  /** Guards the Birth step's rolls against a double click. */
+  #rolling = false;
+
+  /**
+   * The Starsigns by compendium id ({id, uuid, label, img, description}),
+   * loaded once (CACHE.signs).
+   */
+  #signs = null;
 
   /**
    * Trait copies (featureCopyData) by trait id, each a promise fetched once:
@@ -1087,7 +1324,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
       return new Map(loaded.filter(Boolean));
     })();
     this.#traits = await CACHE.traits;
-    // Each trait's card for the creationFeature tooltip (step 3's Attributes &
+    // Each trait's card for the creationFeature tooltip (step 4's Attributes &
     // Traits tab shows it on hover).
     for (const trait of this.#traits.values()) {
       if (!FEATURE_TIPS.has(trait.id)) {
@@ -1095,6 +1332,44 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
       }
     }
     return this.#traits;
+  }
+
+  /**
+   * The Starsigns of STARSIGN_TABLE from the pack index, name and description
+   * in the active language, read once per session.
+   */
+  async #loadSigns() {
+    if (this.#signs) return this.#signs;
+    CACHE.signs ??= (async () => {
+      const pack = game.packs.get(FEATURE_PACK_ID);
+      let index = null;
+      try {
+        index = pack
+          ? await pack.getIndex({ fields: ["img", "system.localizationKey", "system.description"] })
+          : null;
+      } catch (err) {
+        console.warn(`Redsteel | Creation: could not index ${FEATURE_PACK_ID}`, err);
+      }
+      const loaded = await Promise.all(
+        STARSIGN_TABLE.map(async ({ id }) => {
+          const entry = index?.get(id);
+          if (!entry) {
+            console.warn(`Redsteel | Creation: Starsign ${id} not found in ${FEATURE_PACK_ID}.`);
+            return null;
+          }
+          const { name, text } = localizedNameAndText(entry);
+          return [id, { id, uuid: getFeatureUuid(id), label: name, img: entry.img, description: await enrichText(text) }];
+        }),
+      );
+      return new Map(loaded.filter(Boolean));
+    })();
+    this.#signs = await CACHE.signs;
+    return this.#signs;
+  }
+
+  /** A trait's or Starsign's localized name, for a warning. */
+  #featureLabel(id) {
+    return this.#traits?.get(id)?.label ?? this.#signs?.get(id)?.label ?? TRAIT_PRICES[id]?.name ?? id;
   }
 
   /* ---------------------------------------- */
@@ -1111,7 +1386,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
   }
 
   /**
-   * One trait tile as step 1 and step 3's Attributes & Traits tab draw it: a
+   * One trait tile as step 1 and step 4's Attributes & Traits tab draw it: a
    * positive trait the points cannot pay, a full list, or a second
    * temperament leave it disabled.
    */
@@ -1245,7 +1520,8 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
       remaining: budget - spent,
       traitPoints,
       traitRemaining: traitPoints - traitSpent,
-      traitCount: draft.traits.length,
+      // The Starsign and the Mage sign's grant count too (draftTraitCount).
+      traitCount: draftTraitCount(draft),
       requirementMet: !entry?.requires?.trait || draft.traits.includes(entry.requires.trait),
     };
   }
@@ -1290,8 +1566,8 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
 
   /**
    * Every compendium read the screen needs, side by side (and once per
-   * session, CACHE). The doctrine ladders are only needed on step 2:
-   * elsewhere they keep loading in the background, and a step-2 render waits
+   * session, CACHE). The doctrine ladders are only needed on step 3:
+   * elsewhere they keep loading in the background, and a step-3 render waits
    * for them.
    */
   async #loadAll() {
@@ -1299,10 +1575,11 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     await Promise.all([
       this.#loadRaces().then(() => this.#loadRacialFeatures()),
       this.#loadTraits(),
+      this.#loadSigns(),
       // Dexterity's info lists the finesse weapons (#dexterityHtml).
       loadCompatibleWeapons(),
     ]);
-    if (this.#draft.step === 2) await ladders;
+    if (this.#draft.step === STEP_DOCTRINE) await ladders;
     else ladders.catch((err) => console.warn("Redsteel | Creation: doctrine ladders failed", err));
     CACHE.done = true;
   }
@@ -1328,7 +1605,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
         loadingText: game.i18n.localize("REDSTEEL.Creation.loading"),
       });
     }
-    // Everything is cached by now, so these return at once; the step-2 render
+    // Everything is cached by now, so these return at once; the step-3 render
     // still waits for the doctrine ladders if they are the last thing out.
     await this.#loadAll();
 
@@ -1431,18 +1708,18 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     this.#infoHtml = this.#buildInfo(state);
     if (!this.#info || !this.#infoHtml.has(this.#info)) {
       this.#info =
-        draft.step === 2 && draft.doctrines.length
+        draft.step === STEP_DOCTRINE && draft.doctrines.length
           ? `doctrine:${draft.doctrines[0]}`
           : draft.race
             ? `race:${draft.race}`
             : null;
     }
 
-    // Step 2: the doctrines, in blocks by kind. The magical doctrines need the
+    // Step 3: the doctrines, in blocks by kind. The magical doctrines need the
     // Magic potential trait (drafted, or already on the character) and stay
     // listed but greyed out without it.
     const step = draft.step;
-    const isDetails = step === 2 && draft.stage === "details";
+    const isDetails = step === STEP_DOCTRINE && draft.stage === "details";
     const magicOpen = this.#hasMagicPotential();
     const doctrineKinds = DOCTRINE_KIND_ORDER.map((kind) => ({
       kind,
@@ -1454,8 +1731,8 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
         .sort((a, b) => a.label.localeCompare(b.label, i18n.lang)),
     })).filter((block) => block.doctrines.length);
     const details = isDetails ? this.#buildDetails(editable) : null;
-    // 2.5's info row opens on what was picked there (the first taken card),
-    // never on a step 2 doctrine left over from the card before.
+    // 3.5's info row opens on what was picked there (the first taken card),
+    // never on a step 3 doctrine left over from the card before.
     if (details && !/^(skill|school):/.test(this.#info ?? "")) {
       const cards = details.groups.flatMap((group) => group.cards);
       const first = cards.find((card) => card.selected) ?? cards[0];
@@ -1468,16 +1745,18 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
       editable,
       hasRace,
       step,
-      isStep1: step === 1,
-      // Step 2's first half (the doctrine and school cards); isDetails is 2.5.
-      isStep2: step === 2 && !isDetails,
+      isStep1: step === STEP_ORIGIN,
+      isBirth: step === STEP_BIRTH,
+      birth: step === STEP_BIRTH ? this.#buildBirth(editable) : null,
+      // Step 3's first half (the doctrine and school cards); isDetails is 3.5.
+      isDoctrine: step === STEP_DOCTRINE && !isDetails,
       isDetails,
       details,
-      stepTitle: i18n.localize(isDetails ? "REDSTEEL.Creation.Step2b.title" : `REDSTEEL.Creation.Step${step}.title`),
+      stepTitle: i18n.localize(isDetails ? "REDSTEEL.Creation.Step2b.title" : STEP_TITLE_KEYS[step]),
       stepOf: i18n.format("REDSTEEL.Creation.stepOf", { n: step, total: STEP_COUNT }),
-      // 2.5 sits halfway between steps 2 and 3.
+      // 3.5 sits halfway between steps 3 and 4.
       progress: Math.round(((isDetails ? step + 0.5 : step) / STEP_COUNT) * 100),
-      isFirstStep: step === 1,
+      isFirstStep: step === STEP_ORIGIN,
       doctrineKinds,
       magicOpen,
       selectedDoctrines: draft.doctrines.map((key) => this.#doctrineLabel(key)),
@@ -1587,7 +1866,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
       );
     }
 
-    // Doctrines (step 2): kind, what rank I costs once points are handed out,
+    // Doctrines (step 3): kind, what rank I costs once points are handed out,
     // and for a magical one, that it needs Magic potential.
     for (const key of this.#doctrineKeys()) {
       const trackId = `doctrines.${key}`;
@@ -1631,7 +1910,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
       );
     }
 
-    // Schools (2.5): the crest, what sets or gates it, and all ten ranks.
+    // Schools (3.5): the crest, what sets or gates it, and all ten ranks.
     const temperament = this.#temperamentSchool();
     for (const key of CREATION_SCHOOLS) {
       const head =
@@ -1656,7 +1935,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
       );
     }
 
-    // The skills 2.5 offers as cards: kind, what rank I costs, all ten ranks.
+    // The skills 3.5 offers as cards: kind, what rank I costs, all ten ranks.
     for (const [trackId, card] of Object.entries(SKILL_CARDS)) {
       const [group] = trackId.split(".");
       const facts = [
@@ -1734,7 +2013,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
           `</div>`
         );
       };
-      // Inline (2.5's wide info row, user ruling 2026-10-10): each ability
+      // Inline (3.5's wide info row, user ruling 2026-10-10): each ability
       // prints its description under its name, read without a hover.
       // Otherwise the name alone, its card on hover.
       const body = [
@@ -1765,9 +2044,9 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
   }
 
   /**
-   * The info panel's weapons block for a 2.5 skill card: the "Compatible
+   * The info panel's weapons block for a 3.5 skill card: the "Compatible
    * weapons" pill, which lists on click every weapon the skill covers
-   * (compatibleWeapons.mjs; the catalog is in by step 2). "" for a skill with
+   * (compatibleWeapons.mjs; the catalog is in by step 3). "" for a skill with
    * no weapons of its own (Combat, Archery, Channeling).
    */
   #skillWeaponsHtml(trackId) {
@@ -1786,7 +2065,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
   }
 
   /**
-   * One skill card for 2.5: a weapon skill or a combat skill, picked for
+   * One skill card for 3.5: a weapon skill or a combat skill, picked for
    * `owner` (the doctrine, or the school for Channeling). `fixedText` marks the
    * one the owner is bound to; `shut` greys out the others beside it.
    */
@@ -1816,7 +2095,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
   }
 
   /**
-   * One doctrine card for the step 2 grid.
+   * One doctrine card for the step 3 grid.
    * `action` is the click it carries; `locked` greys it out under a padlock.
    */
   #doctrineCard(key, { editable, action = "toggleDoctrine", selected, locked = false } = {}) {
@@ -1839,7 +2118,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
   }
 
   /**
-   * Step 2.5, one plate of cards in blocks: per combat doctrine that trains
+   * Step 3.5, one plate of cards in blocks: per combat doctrine that trains
    * with a weapon skill, the four weapon skills (a fixed one taken, the rest
    * greyed out); per doctrine with a combat skill, Combat and Archery the same
    * way (the Peltast chooses); Channeling alone for a magical doctrine.
@@ -1908,7 +2187,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
   }
 
   /**
-   * The school cards for 2.5: with a temperament its school is taken and the
+   * The school cards for 3.5: with a temperament its school is taken and the
    * rest are shut, else exactly one may be picked.
    */
   #schoolCards(editable) {
@@ -1973,7 +2252,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
   }
 
   /**
-   * Bring the draft's magical doctrine and school in line before step 2 is
+   * Bring the draft's magical doctrine and school in line before step 3 is
    * left: no magical doctrine without Magic potential, at most one with it,
    * and the school as #school() reads it (none without a magical doctrine).
    * Weapon picks for doctrines no longer drafted go, and so does the
@@ -1992,6 +2271,12 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     if (!draft.doctrines.includes(COMBAT_SKILL_CHOICE)) draft.combatSkill = null;
   }
 
+  /** Without Magic potential (the Mage sign's grant counts), no magical doctrine stays drafted. */
+  #dropMagicalWithoutPotential() {
+    if (this.#hasMagicPotential()) return;
+    this.#draft.doctrines = this.#draft.doctrines.filter((key) => !isMagicalDoctrine(key));
+  }
+
   /**
    * A weapon skill the doctrine can train with: one its weapons are fought
    * with (user ruling 2026-10-06: a Reaver takes no Swords or Polearms). Read
@@ -2004,7 +2289,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     return !allowed?.size || allowed.has(weapon);
   }
 
-  /** What 2.5 still lacks, as true when something is unanswered. */
+  /** What 3.5 still lacks, as true when something is unanswered. */
   #detailsIncomplete() {
     const draft = this.#draft;
     if (
@@ -2119,9 +2404,9 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     // released in _onClose.
     if (!this.#boundInfo) {
       this.#boundInfo = (event) => {
-        // Step 2 (and 2.5) describes only what is clicked (user ruling
+        // Step 3 (and 3.5) describes only what is clicked (user ruling
         // 2026-10-06): sweeping the pointer over the cards must not swap it.
-        if (event.type === "pointerover" && this.#draft.step === 2) return;
+        if (event.type === "pointerover" && this.#draft.step === STEP_DOCTRINE) return;
         const source = event.target?.closest?.("[data-info]");
         if (source && root.contains(source)) this.#showInfo(source.dataset.info);
       };
@@ -2192,11 +2477,15 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
   /**
    * Magic potential is drafted, or the character already has it. Once the
    * origin was applied, the actor's own flag may come from a trait creation
-   * wrote and the player has dropped since, so only the draft counts.
+   * wrote and the player has dropped since, so only the draft counts. The
+   * Mage sign's upgrade of Latent Magic Potential gives it too (birthGrants).
    */
-  #hasMagicPotential() {
-    const draft = this.#draft;
-    return draft.traits.includes(MAGIC_POTENTIAL_ID) || (!draft.applied && !!this.actor?.system?.magicPotential);
+  #hasMagicPotential(draft = this.#draft) {
+    return (
+      draft.traits.includes(MAGIC_POTENTIAL_ID) ||
+      birthGrants(draft).grant === MAGIC_POTENTIAL_ID ||
+      (!draft.applied && !!this.actor?.system?.magicPotential)
+    );
   }
 
   /** The name the character will have: the draft's, else the actor's own. */
@@ -2407,13 +2696,15 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
       // Taking back a negative trait takes back the points it gave. That may
       // leave the budget negative (user ruling 2026-10-06): allowed here, and
       // Next refuses until it is settled (#originProblem, Warn.traitOverspent).
-      if (id === MAGIC_POTENTIAL_ID && !(await this.#confirmDropMagic())) return;
+      const losesMagic = this.#losesMagic(this.#draft, id);
+      if (losesMagic && !(await this.#confirmDropMagic())) return;
       this.#draft.traits = traits.filter((t) => t !== id);
-      if (id === MAGIC_POTENTIAL_ID) {
+      if (losesMagic) {
         this.#draft.doctrines = this.#draft.doctrines.filter((k) => !isMagicalDoctrine(k));
       }
     } else {
-      if (traits.length >= MAX_TRAITS) {
+      // The Starsign and the Mage sign's grant count too (draftTraitCount).
+      if (draftTraitCount({ ...this.#draft, traits: [...traits, id] }) > MAX_TRAITS) {
         ui.notifications.warn(
           game.i18n.format("REDSTEEL.Creation.Warn.traitLimit", { max: MAX_TRAITS }),
         );
@@ -2447,6 +2738,18 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
    * The dialog carries rs-create-confirm, which lifts it above this screen.
    * @returns {Promise<boolean>} true to go ahead.
    */
+  /**
+   * Giving back trait `id` costs the draft its Magic potential: Magic
+   * potential itself (unless the Mage sign then upgrades a drafted Latent
+   * Magic Potential), or Latent Magic Potential while the Mage sign upgrades
+   * it.
+   */
+  #losesMagic(draft, id) {
+    const after = { ...draft, traits: draft.traits.filter((t) => t !== id) };
+    if (id === MAGIC_POTENTIAL_ID) return birthGrants(after).grant !== MAGIC_POTENTIAL_ID;
+    return this.#hasMagicPotential(draft) && !this.#hasMagicPotential(after);
+  }
+
   async #confirmDropMagic() {
     const draft = this.#draft;
     const magical = draft.doctrines.filter((k) => isMagicalDoctrine(k));
@@ -2466,14 +2769,14 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
   static async _onBack(event) {
     event.preventDefault();
     if (!this.actor?.isOwner) return;
-    // From 2.5 back to the doctrine cards.
-    if (this.#draft.step === 2 && this.#draft.stage === "details") {
+    // From 3.5 back to the doctrine cards.
+    if (this.#draft.step === STEP_DOCTRINE && this.#draft.stage === "details") {
       this.#draft.stage = "doctrines";
       this.#info = null;
       await this.#commit();
       return;
     }
-    if (this.#draft.step <= 1) return;
+    if (this.#draft.step <= STEP_ORIGIN) return;
     this.#draft.step -= 1;
     this.#info = null;
     await this.#commit();
@@ -2481,17 +2784,19 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
 
   /**
    * On to the next step, once the current one is in order. Leaving Origin
-   * also lets go of any magical doctrine the character can no longer take
-   * (Magic potential dropped since). Next on this window's last step writes
-   * the origin to the character and opens step 3 in the Learn window.
+   * or Birth also lets go of any magical doctrine the character can no longer
+   * take (Magic potential dropped since; the Mage sign's grant counts as
+   * Magic potential). Birth is left only with every stat rolled and, Born
+   * under a Star, the sign chosen. Next on this window's last step writes
+   * the origin to the character and opens step 4 in the Learn window.
    * @this {CharacterCreationWindow}
    */
   static async _onNext(event) {
     event.preventDefault();
     if (!this.actor?.isOwner) return;
-    // Step 2's doctrine cards: on to 2.5 when it has something to ask, else
+    // Step 3's doctrine cards: on to 3.5 when it has something to ask, else
     // straight to the apply.
-    if (this.#draft.step === WINDOW_STEPS && this.#draft.stage !== "details") {
+    if (this.#draft.step === STEP_DOCTRINE && this.#draft.stage !== "details") {
       if (this.#draft.doctrines.filter(isMainDoctrine).length !== 1) {
         ui.notifications.warn(game.i18n.localize("REDSTEEL.Creation.Doctrine.pickOne"));
         return;
@@ -2503,11 +2808,11 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
         await this.#commit();
         return;
       }
-    } else if (this.#draft.step >= WINDOW_STEPS && this.#detailsIncomplete()) {
+    } else if (this.#draft.step >= STEP_DOCTRINE && this.#detailsIncomplete()) {
       ui.notifications.warn(game.i18n.localize("REDSTEEL.Creation.Warn.detailsIncomplete"));
       return;
     }
-    if (this.#draft.step >= WINDOW_STEPS) {
+    if (this.#draft.step >= STEP_DOCTRINE) {
       if (this.#applying) return;
       this.#applying = true;
       try {
@@ -2518,7 +2823,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
       }
       return;
     }
-    if (this.#draft.step === 1) {
+    if (this.#draft.step === STEP_ORIGIN) {
       const problem = this.#originProblem(this.#compute());
       if (problem) {
         ui.notifications.warn(
@@ -2526,11 +2831,29 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
         );
         return;
       }
-      if (!this.#hasMagicPotential()) {
-        this.#draft.doctrines = this.#draft.doctrines.filter(
-          (key) => getLearnSection(`doctrines.${key}`) !== "magical",
-        );
+      this.#dropMagicalWithoutPotential();
+      this.#draft.stage = "doctrines";
+    }
+    if (this.#draft.step === STEP_BIRTH) {
+      if (this.#rolling) return;
+      // Checked against the rolls as stored (a GM reset holds; see #birthAction).
+      await this.#saving;
+      this.#draft.birth = readDraft(this.actor).birth;
+      const birth = this.#draft.birth;
+      const i18n = game.i18n;
+      if (!birthRolled(this.#draft)) {
+        ui.notifications.warn(i18n.format("REDSTEEL.Creation.Birth.Warn.rollFirst", this.#birthStatNames()));
+        return;
       }
+      if (birth.born && !birth.star) {
+        ui.notifications.warn(
+          i18n.localize(birth.starRolls.length ? "REDSTEEL.Creation.Birth.Warn.pickSign" : "REDSTEEL.Creation.Birth.Warn.signFirst"),
+        );
+        return;
+      }
+      // The Mage sign may have opened (or, with a trait given back since,
+      // closed) Magic potential.
+      this.#dropMagicalWithoutPotential();
       this.#draft.stage = "doctrines";
     }
     this.#draft.step += 1;
@@ -2570,7 +2893,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
   }
 
   /**
-   * 2.5: the school of the magical doctrine (exactly one: another replaces
+   * 3.5: the school of the magical doctrine (exactly one: another replaces
    * it, the taken one clears). A temperament's school cannot be changed.
    * @this {CharacterCreationWindow}
    */
@@ -2588,7 +2911,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     await this.#commit();
   }
 
-  /** 2.5: the weapon skill one doctrine trains with. @this {CharacterCreationWindow} */
+  /** 3.5: the weapon skill one doctrine trains with. @this {CharacterCreationWindow} */
   static async _onPickWeapon(event, target) {
     event.preventDefault();
     if (!this.actor?.isOwner) return;
@@ -2603,7 +2926,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     await this.#commit();
   }
 
-  /** 2.5: the Peltast's combat skill. @this {CharacterCreationWindow} */
+  /** 3.5: the Peltast's combat skill. @this {CharacterCreationWindow} */
   static async _onPickCombatSkill(event, target) {
     event.preventDefault();
     if (!this.actor?.isOwner) return;
@@ -2639,7 +2962,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     }
     if (!state.requirementMet) return { key: `REDSTEEL.Creation.Requires.${state.entry.key}` };
     if (state.traitRemaining < 0) return { key: "REDSTEEL.Creation.Warn.traitOverspent" };
-    if (draft.traits.length > MAX_TRAITS) {
+    if (state.traitCount > MAX_TRAITS) {
       return { key: "REDSTEEL.Creation.Warn.traitLimit", data: { max: MAX_TRAITS } };
     }
     return null;
@@ -2649,6 +2972,348 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
   static _onCloseScreen(event) {
     event.preventDefault();
     this.close();
+  }
+
+  /* ---------------------------------------- */
+  /*  Step 2: Birth                           */
+  /* ---------------------------------------- */
+
+  /** The Birth stats' names ({fth, sin, vis}), as the sheet labels them. */
+  #birthStatNames() {
+    return Object.fromEntries(
+      BIRTH_KEYS.map((k) => [k, game.i18n.localize(CONFIG.REDSTEEL.secondaryAttributes?.[k] ?? k)]),
+    );
+  }
+
+  /**
+   * The Birth step's context: a card per stat (die, race modifier, value and
+   * the rerolls that apply to it), Fortune's favour, and the Starsign panel.
+   * Every reroll is listed with the reason it cannot be used, if any.
+   */
+  #buildBirth(editable) {
+    const i18n = game.i18n;
+    const L = (key) => i18n.localize(`REDSTEEL.Creation.Birth.${key}`);
+    const F = (key, data) => i18n.format(`REDSTEEL.Creation.Birth.${key}`, data);
+    const draft = this.#draft;
+    const birth = draft.birth;
+    const names = this.#birthStatNames();
+    const favourSpent = birth.favour
+      ? birth.favour === "advantage"
+        ? L("favourSpentAdvantage")
+        : F("favourSpentStat", { stat: names[birth.favour] ?? birth.favour })
+      : null;
+
+    const stats = BIRTH_KEYS.map((k) => {
+      const die = birth.dice[k];
+      const rolled = die !== null;
+      const mod = birthModifier(draft, k);
+      const notRolled = rolled ? null : L("Spent.notRolled");
+      const rerolls = [
+        {
+          source: "favour",
+          label: L("rerollFavour"),
+          reason: birth.favour ? F("Spent.favour", { spent: favourSpent }) : notRolled,
+        },
+      ];
+      // A trait's reroll is offered while the trait is drafted; one already
+      // used stays listed as spent, even with the trait given back.
+      for (const [traitId, stat] of Object.entries(TRAIT_REROLLS)) {
+        if (stat !== k) continue;
+        const used = birth.traitRerolls.includes(traitId);
+        if (!used && !draft.traits.includes(traitId)) continue;
+        const trait = this.#featureLabel(traitId);
+        rerolls.push({
+          source: traitId,
+          label: F("rerollTrait", { trait }),
+          reason: used ? F("Spent.trait", { trait }) : notRolled,
+        });
+      }
+      for (const reroll of rerolls) reroll.disabled = !editable || !!reroll.reason;
+      return {
+        key: k,
+        name: names[k],
+        meaning: L(`Meaning.${k}`),
+        formula: F("formula", { mod: signedModifier(mod) }),
+        rolled,
+        die,
+        value: rolled ? die + mod : null,
+        valueText: rolled ? F("valueLine", { die, mod: signedModifier(mod), value: die + mod }) : L("notRolled"),
+        rerolls,
+      };
+    });
+
+    const rolledSigns = birth.starRolls.map((roll) => {
+      const id = starsignFor(roll);
+      const sign = this.#signs?.get(id);
+      return {
+        id,
+        roll,
+        rollText: F("d100", { n: roll }),
+        label: sign?.label ?? id,
+        img: sign?.img ?? "icons/svg/mystery-man.svg",
+        uuid: sign?.uuid ?? getFeatureUuid(id),
+        description: sign?.description ?? "",
+        selected: birth.star === id,
+      };
+    });
+    const choosing = birth.starRolls.length === 2 && !birth.star;
+    for (const sign of rolledSigns) {
+      sign.pickable = editable && choosing;
+      sign.passed = !!birth.star && !sign.selected;
+    }
+    const canRollSign = editable && birth.born && !birth.starRolls.length;
+    return {
+      stats,
+      rolled: birthRolled(draft),
+      canRoll: editable,
+      rollAllLabel: F("rollAll", names),
+      favourHelp: F("favourHelp", names),
+      favourState: favourSpent ?? L("favourUnused"),
+      favourUsed: !!birth.favour,
+      born: birth.born,
+      bornDisabled: !editable || birth.starRolls.length > 0,
+      bornReason: birth.starRolls.length ? L("bornLocked") : null,
+      showSignButtons: birth.born && !birth.starRolls.length,
+      canRollSign,
+      canRollAdvantage: canRollSign && !birth.favour,
+      advantageReason: birth.favour ? F("Spent.favour", { spent: favourSpent }) : null,
+      signs: rolledSigns,
+      choosing,
+      isGM: !!game.user?.isGM,
+      canReset:
+        BIRTH_KEYS.some((k) => birth.dice[k] !== null) ||
+        !!birth.favour ||
+        birth.traitRerolls.length > 0 ||
+        birth.born,
+    };
+  }
+
+  /**
+   * One chat card for a Birth roll, visible to all: the title first (the
+   * chat card collapse reads exactly one title element), then a line each,
+   * then every die as Foundry draws a roll, so Dice So Nice throws them all.
+   */
+  async #postBirthCard(title, lines, rolls) {
+    try {
+      const flavor =
+        `<p class="rs-card-headline"><b><i class="fa-light fa-star"></i> ${escapeHtml(title)}</b></p>` +
+        lines.map((line) => `<p>${escapeHtml(line)}</p>`).join("");
+      const content = (await Promise.all(rolls.map((roll) => roll.render()))).join("");
+      await ChatMessage.create({
+        speaker: ChatMessage.getSpeaker({ actor: this.actor }),
+        flavor,
+        content,
+        rolls,
+      });
+    } catch (err) {
+      // The roll is already locked into the draft; only the card failed.
+      console.error("Redsteel | Creation: the Birth chat card could not be posted", err);
+    }
+  }
+
+  /** One stat's chat line: "Faith: 1d4 (3) +0 = 3". */
+  #birthStatLine(k, names = this.#birthStatNames()) {
+    const die = this.#draft.birth.dice[k];
+    const mod = birthModifier(this.#draft, k);
+    return game.i18n.format("REDSTEEL.Creation.Birth.Chat.statLine", {
+      stat: names[k],
+      die,
+      mod: signedModifier(mod),
+      value: die + mod,
+    });
+  }
+
+  /**
+   * Run one Birth action at a time (#rolling guards against a double click),
+   * on the Birth step only, and on the rolls as stored on the actor: earlier
+   * writes land first, then the stored Birth replaces the working copy, so
+   * a window left open elsewhere can never roll a stat that is already
+   * rolled, and a GM reset holds.
+   * @param {() => Promise<void>} action
+   */
+  async #birthAction(action) {
+    if (!this.actor?.isOwner || this.#rolling || this.#draft.step !== STEP_BIRTH) return;
+    this.#rolling = true;
+    try {
+      await this.#saving;
+      this.#draft.birth = readDraft(this.actor).birth;
+      await action();
+    } finally {
+      this.#rolling = false;
+    }
+  }
+
+  /**
+   * Roll Faith, Sinfulness and Appearance, each 1d4, all on one chat card.
+   * Only stats not yet rolled are rolled: a roll is never taken back.
+   * @this {CharacterCreationWindow}
+   */
+  static async _onRollBirth(event) {
+    event.preventDefault();
+    await this.#birthAction(async () => {
+      const keys = BIRTH_KEYS.filter((k) => this.#draft.birth.dice[k] === null);
+      if (!keys.length) return;
+      const rolls = await Promise.all(keys.map(() => new Roll("1d4").evaluate()));
+      keys.forEach((k, i) => {
+        this.#draft.birth.dice[k] = rolls[i].total;
+      });
+      // Locked into the draft before anything else happens.
+      await this.#commit();
+      const names = this.#birthStatNames();
+      await this.#postBirthCard(
+        game.i18n.localize("REDSTEEL.Creation.Birth.Chat.statsTitle"),
+        keys.map((k) => this.#birthStatLine(k, names)),
+        rolls,
+      );
+    });
+  }
+
+  /**
+   * Reroll one stat through Fortune's favour (data-source "favour") or a
+   * trait's reroll (data-source = the trait id). The new die stands, even
+   * when worse.
+   * @this {CharacterCreationWindow}
+   */
+  static async _onRerollBirth(event, target) {
+    event.preventDefault();
+    const el = target?.closest?.("[data-stat]");
+    const k = el?.dataset.stat;
+    const source = el?.dataset.source;
+    await this.#birthAction(async () => {
+      const birth = this.#draft.birth;
+      if (!BIRTH_KEYS.includes(k) || birth.dice[k] === null) return;
+      let reason;
+      if (source === "favour") {
+        if (birth.favour) return;
+        reason = game.i18n.localize("REDSTEEL.Creation.Birth.favour");
+      } else if (TRAIT_REROLLS[source] === k) {
+        if (birth.traitRerolls.includes(source) || !this.#draft.traits.includes(source)) return;
+        reason = this.#featureLabel(source);
+      } else {
+        return;
+      }
+      const roll = await new Roll("1d4").evaluate();
+      const mod = birthModifier(this.#draft, k);
+      const old = birth.dice[k] + mod;
+      birth.dice[k] = roll.total;
+      if (source === "favour") birth.favour = k;
+      else birth.traitRerolls = [...birth.traitRerolls, source];
+      await this.#commit();
+      const names = this.#birthStatNames();
+      await this.#postBirthCard(
+        game.i18n.localize("REDSTEEL.Creation.Birth.Chat.rerollTitle"),
+        [
+          game.i18n.format("REDSTEEL.Creation.Birth.Chat.rerollLine", {
+            stat: names[k],
+            reason,
+            old,
+            new: roll.total + mod,
+          }),
+          this.#birthStatLine(k, names),
+        ],
+        [roll],
+      );
+    });
+  }
+
+  /**
+   * Born under a Star: taken (refused with the trait list full, as the sign
+   * counts as a trait) or given back, but only before the sign is rolled.
+   * @this {CharacterCreationWindow}
+   */
+  static async _onToggleBorn(event) {
+    event.preventDefault();
+    await this.#birthAction(async () => {
+      const birth = this.#draft.birth;
+      if (birth.starRolls.length) {
+        ui.notifications.warn(game.i18n.localize("REDSTEEL.Creation.Birth.bornLocked"));
+        return;
+      }
+      if (birth.born) {
+        birth.born = false;
+        birth.star = null;
+      } else {
+        if (draftTraitCount(this.#draft) >= MAX_TRAITS) {
+          ui.notifications.warn(game.i18n.format("REDSTEEL.Creation.Warn.traitLimit", { max: MAX_TRAITS }));
+          return;
+        }
+        birth.born = true;
+      }
+      await this.#commit();
+    });
+  }
+
+  /**
+   * Roll the Starsign: one d100, or with advantage (data-advantage, spending
+   * Fortune's favour) two, of which the player picks one. Two rolls landing
+   * on the same sign leave nothing to pick.
+   * @this {CharacterCreationWindow}
+   */
+  static async _onRollStarsign(event, target) {
+    event.preventDefault();
+    const advantage = target?.closest?.("[data-advantage]")?.dataset.advantage === "true";
+    await this.#birthAction(async () => {
+      const birth = this.#draft.birth;
+      if (!birth.born || birth.starRolls.length) return;
+      if (advantage && birth.favour) return;
+      const rolls = await Promise.all((advantage ? [1, 2] : [1]).map(() => new Roll("1d100").evaluate()));
+      birth.starRolls = rolls.map((roll) => roll.total);
+      const signs = birth.starRolls.map(starsignFor);
+      if (advantage) birth.favour = "advantage";
+      birth.star = signs.length === 1 || signs[0] === signs[1] ? signs[0] : null;
+      await this.#commit();
+      const i18n = game.i18n;
+      const lines = birth.starRolls.map((n, i) =>
+        i18n.format("REDSTEEL.Creation.Birth.Chat.signLine", {
+          n,
+          sign: this.#signs?.get(signs[i])?.label ?? signs[i],
+        }),
+      );
+      if (advantage) lines.push(i18n.localize("REDSTEEL.Creation.Birth.Chat.signAdvantage"));
+      await this.#postBirthCard(i18n.localize("REDSTEEL.Creation.Birth.Chat.signTitle"), lines, rolls);
+    });
+  }
+
+  /** With advantage: take one of the two signs, for good. @this {CharacterCreationWindow} */
+  static async _onPickStarsign(event, target) {
+    event.preventDefault();
+    const id = target?.closest?.("[data-sign]")?.dataset.sign;
+    await this.#birthAction(async () => {
+      const birth = this.#draft.birth;
+      if (birth.star || birth.starRolls.length !== 2) return;
+      if (!birth.starRolls.map(starsignFor).includes(id)) return;
+      birth.star = id;
+      await this.#commit();
+    });
+  }
+
+  /**
+   * The GM clears every Birth roll (dice, Fortune's favour, trait rerolls,
+   * Born under a Star and the sign), after a confirmation. Only the Birth
+   * part of the stored draft is written, so whatever the player changed
+   * elsewhere since this window opened is left alone.
+   * @this {CharacterCreationWindow}
+   */
+  static async _onResetBirth(event) {
+    event.preventDefault();
+    if (!game.user?.isGM) return;
+    await this.#birthAction(async () => {
+      const i18n = game.i18n;
+      const confirmed = await foundry.applications.api.DialogV2.confirm({
+        classes: ["rs-create-confirm"],
+        window: { title: i18n.localize("REDSTEEL.Creation.Birth.resetTitle") },
+        content: `<p>${escapeHtml(i18n.format("REDSTEEL.Creation.Birth.resetContent", { name: this.actor.name }))}</p>`,
+        rejectClose: false,
+      });
+      if (confirmed !== true) return;
+      this.#draft.birth = emptyBirth();
+      const actor = this.actor;
+      this.#saving = this.#saving
+        .then(() => actor.update({ "flags.redsteel.creationDraft.birth": emptyBirth() }))
+        .catch((err) => console.error("Redsteel | Creation: could not reset the Birth rolls", err));
+      await this.#saving;
+      this.render();
+    });
   }
 
   /* ---------------------------------------- */
@@ -2677,12 +3342,14 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
 
   /**
    * The item data the origin creates: the race (its choice effects enabled
-   * for the picks, disabled otherwise) and a copy of every drafted trait, all
-   * marked creationOrigin. Used by the apply and by the footer preview, so
-   * the two cannot drift.
+   * for the picks, disabled otherwise), a copy of every drafted trait, and
+   * the Birth step's items (the Starsign, and the Mage sign's grant, which
+   * takes the place of a drafted Latent Magic Potential it upgrades), all
+   * marked creationOrigin, the Birth ones creationBirth too. Used by the
+   * apply, the footer preview and step 4's trait editor, so they cannot drift.
    * @returns {Promise<{raceData: object, traitData: object[], missing: string|null}>}
-   *   `missing`: the first drafted trait whose copy could not be made
-   *   (traitData then leaves it out).
+   *   `missing`: the first drafted trait or Birth item whose copy could not
+   *   be made (traitData then leaves it out).
    */
   async #buildOriginItems(state, draft = this.#draft) {
     const raceData = state.doc.toObject();
@@ -2697,13 +3364,26 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
       if (choiceIds.has(effect._id)) effect.disabled = !chosen.has(effect._id);
     }
 
-    // All trait copies fetched at once.
-    const copies = await Promise.all(draft.traits.map((id) => this.#traitCopy(id)));
-    const missing = draft.traits.find((id, i) => !copies[i]) ?? null;
-    const traitData = copies.filter(Boolean);
+    // All trait copies fetched at once; a trait the Mage sign upgrades is
+    // left out (its grant comes instead).
+    const { grant, supersedes } = birthGrants(draft);
+    const traitIds = draft.traits.filter((id) => id !== supersedes);
+    const birthIds = [
+      ...(draft.birth.born && draft.birth.star ? [draft.birth.star] : []),
+      ...(grant ? [grant] : []),
+    ];
+    const ids = [...traitIds, ...birthIds];
+    const copies = await Promise.all(ids.map((id) => this.#traitCopy(id)));
+    const missing = ids.find((id, i) => !copies[i]) ?? null;
+    const traitData = [];
+    copies.forEach((data, i) => {
+      if (!data) return;
+      markOrigin(data);
+      if (i >= traitIds.length) data.flags.redsteel.creationBirth = true;
+      traitData.push(data);
+    });
 
     markOrigin(raceData);
-    for (const data of traitData) markOrigin(data);
     return { raceData, traitData, missing };
   }
 
@@ -2771,11 +3451,11 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
   }
 
   /* ---------------------------------------- */
-  /*  Step 3: the Attributes & Traits tab     */
+  /*  Step 4: the Attributes & Traits tab     */
   /* ---------------------------------------- */
 
   /*
-   * Step 3 (the Learn window) edits attributes and traits in place (user
+   * Step 4 (the Learn window) edits attributes and traits in place (user
    * ruling 2026-10-11) through an instance of this window that is never
    * rendered: getOriginEditor() keeps one per actor. Every edit is checked
    * against an unsaved clone of the character as the edit would leave it
@@ -2848,15 +3528,17 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
       const price = TRAIT_PRICES[key];
       if (!price || !this.#traits?.has(key)) return refuse();
       if (next.traits.includes(key)) {
-        next.traits = next.traits.filter((t) => t !== key);
         // Without Magic potential no magical doctrine or school is drafted
-        // (one with a rank bought is caught by the clone check below).
-        if (key === MAGIC_POTENTIAL_ID) {
+        // (one with a rank bought is caught by the clone check below). The
+        // Mage sign's grant counts as Magic potential (#losesMagic).
+        if (this.#losesMagic(this.#draft, key)) {
           next.doctrines = next.doctrines.filter((k) => !isMagicalDoctrine(k));
           next.school = null;
         }
+        next.traits = next.traits.filter((t) => t !== key);
       } else {
-        if (next.traits.length >= MAX_TRAITS) {
+        // The Starsign and the Mage sign's grant count too (draftTraitCount).
+        if (draftTraitCount({ ...next, traits: [...next.traits, key] }) > MAX_TRAITS) {
           return refuse(i18n.format("REDSTEEL.Creation.Warn.traitLimit", { max: MAX_TRAITS }));
         }
         if (price.cost > 0 && price.cost > before.traitRemaining) {
@@ -2899,7 +3581,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
       if (built.missing) {
         return refuse(
           i18n.format("REDSTEEL.Creation.Warn.traitMissing", {
-            name: this.#traits?.get(built.missing)?.label ?? built.missing,
+            name: this.#featureLabel(built.missing),
           }),
         );
       }
@@ -2964,10 +3646,10 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
   }
 
   /**
-   * Validate the draft, then write the origin to the actor and open step 3.
+   * Validate the draft, then write the origin to the actor and open step 4.
    * Safe to run again after Back: it replaces exactly what the previous run
    * wrote (the creationOrigin items, the trait SP payout, the doctrines it
-   * made visible), and leaves ranks and features bought in step 3 alone.
+   * made visible), and leaves ranks and features bought in step 4 alone.
    */
   async #applyOrigin() {
     const i18n = game.i18n;
@@ -3007,7 +3689,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     const { raceData, traitData, missing } = await this.#buildOriginItems(state, draft);
     if (missing) {
       return warn("REDSTEEL.Creation.Warn.traitMissing", {
-        name: this.#traits?.get(missing)?.label ?? TRAIT_PRICES[missing]?.name ?? missing,
+        name: this.#featureLabel(missing),
       });
     }
 
@@ -3019,7 +3701,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     await actor.createEmbeddedDocuments("Item", [raceData, ...traitData]);
 
     // 4. Attributes, the SP payout for unspent trait points, and the draft
-    // moved on to step 3. The payout replaces the previous apply's, so it
+    // moved on to step 4. The payout replaces the previous apply's, so it
     // never stacks.
     const leftover = Math.max(0, state.traitRemaining);
     const traitSp = leftover * SP_PER_TRAIT_POINT;
@@ -3028,7 +3710,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     const identity = this.#identity();
     // A pick a previous apply bought rank I in and that is no longer chosen
     // gives that rank back (and the teacher with it), so it reads as unranked
-    // below. Only when rank I is all it holds: a rank bought on top in step 3
+    // below. Only when rank I is all it holds: a rank bought on top in step 4
     // keeps the track. Doctrines first, as they may ask for a skill's rank.
     const wanted = new Set(draftTrackIds(draft));
     const stale = (previous?.autoRanks ?? [])
@@ -3067,7 +3749,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
       (key) => !combatSkills.includes(key) && unranked("combatSkills", key),
     );
     const nextDraft = foundry.utils.deepClone(draft);
-    nextDraft.step = STEP_COUNT;
+    nextDraft.step = STEP_SKILLS;
     nextDraft.applied = { traitSp, doctrines: [...draft.doctrines], schools, weapons, combatSkills, channeling };
     const update = {
       ...getLedgerMaterializeUpdate(actor),
@@ -3118,7 +3800,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     // 6. Rank I in every pick, with its teacher (acquireCreationRank). The
     // ones bought here are recorded, so a later apply that drops the pick
     // gives that rank back. A rank the points cannot cover is left to the
-    // roster in step 3, and said so.
+    // roster in step 4, and said so.
     const { bought, failed } = await acquireCreationRanks(actor, addedIds);
     const autoRanks = [...new Set([...(previous?.autoRanks ?? []).filter((id) => wanted.has(id)), ...bought])];
     await actor.update({ "flags.redsteel.creationDraft.applied.autoRanks": autoRanks });
@@ -3139,7 +3821,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
       );
     }
 
-    // 7. On to step 3: the Learn window, on the Combat tab.
+    // 7. On to step 4: the Learn window, on the Combat tab.
     await this.close();
     openLearnWindow(actor, { tab: "combat" });
   }
@@ -3155,7 +3837,7 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
  */
 export function openCharacterCreation(actor) {
   if (!actor) return null;
-  // Step 3 is the Learn window in creation mode.
+  // Step 4 is the Learn window in creation mode.
   if (isCreationSkillsStep(actor)) return openLearnWindow(actor, { tab: "combat" });
   const existing = foundry.applications.instances.get(`redsteel-creation-${actor.id}`);
   if (existing) {
@@ -3166,7 +3848,7 @@ export function openCharacterCreation(actor) {
 }
 
 /* -------------------------------------------- */
-/*  Step 3: the Learn window's creation mode    */
+/*  Step 4: the Learn window's creation mode    */
 /* -------------------------------------------- */
 
 /**
@@ -3215,7 +3897,7 @@ function originBreaks(actor, clone) {
   return lines;
 }
 
-/** The never-rendered creation windows step 3's Attributes & Traits tab edits through. */
+/** The never-rendered creation windows step 4's Attributes & Traits tab edits through. */
 const ORIGIN_EDITORS = new Map();
 
 /**
@@ -3235,17 +3917,18 @@ export async function getOriginEditor(actor) {
 }
 
 /**
- * True while the character is in creation and on step 3, the Learn window.
+ * True while the character is in creation and on step 4, the Learn window.
  * The Learn window reads this on every render to show its creation banner.
  * @param {Actor} actor
  */
 export function isCreationSkillsStep(actor) {
-  return isInCreation(actor) && Number(actor.getFlag("redsteel", "creationDraft")?.step) === 3;
+  // draftStep reads a draft from before the Birth step in today's numbering.
+  return isInCreation(actor) && draftStep(actor.getFlag("redsteel", "creationDraft")) === STEP_SKILLS;
 }
 
 /**
- * The track ids whose rank I teacher creation unlocked (step 2's picks and
- * step 3's acquire button), so giving rank I back takes the teacher back too.
+ * The track ids whose rank I teacher creation unlocked (step 3's picks and
+ * step 4's acquire button), so giving rank I back takes the teacher back too.
  * Kept beside the draft, not in it: readDraft keeps only the draft's own keys.
  */
 const CREATION_TEACHERS_FLAG = "creationTeachers";
@@ -3326,8 +4009,8 @@ async function acquireCreationRanks(actor, trackIds) {
 }
 
 /**
- * Back from step 3: the draft returns to step 2 (its 2.5 half when that has
- * questions) and the creation window opens on it. Nothing step 3 bought is
+ * Back from step 4: the draft returns to step 3 (its 3.5 half when that has
+ * questions) and the creation window opens on it. Nothing step 4 bought is
  * undone.
  * @param {Actor} actor
  */
@@ -3335,8 +4018,11 @@ export async function returnToOrigin(actor) {
   if (!actor?.isOwner) return;
   const draft = readDraft(actor);
   await actor.update({
-    "flags.redsteel.creationDraft.step": WINDOW_STEPS,
-    // Back lands on 2.5 when it has something to ask, else on the cards.
+    "flags.redsteel.creationDraft.step": STEP_DOCTRINE,
+    // A partial write: the version goes with it, so the step reads in
+    // today's numbering (draftStep).
+    "flags.redsteel.creationDraft.version": DRAFT_VERSION,
+    // Back lands on 3.5 when it has something to ask, else on the cards.
     "flags.redsteel.creationDraft.stage": draftHasDetails(draft) ? "details" : "doctrines",
   });
   openCharacterCreation(actor);
@@ -3346,7 +4032,7 @@ export async function returnToOrigin(actor) {
 const FINISH_REFILLED_POOLS = ["health", "stamina", "mana", "mind"];
 
 /**
- * Finish from step 3: the character leaves creation. Refused while more points
+ * Finish from step 4: the character leaves creation. Refused while more points
  * are spent than the character has; unspent points are fine (book rule).
  * Notifications only, never a dialog: the Learn window is a full screen and a
  * dialog would open underneath it.
@@ -3376,5 +4062,18 @@ export async function finishCharacterCreation(actor) {
     "flags.redsteel.-=creationPending": null,
   });
   ui.notifications.info(game.i18n.format("REDSTEEL.Creation.Learn.finished", { name: actor.name }));
+  // Every spell the character's schools reach comes with them (user ruling
+  // 2026-10-24): wild magic innate, the rest written into their grimoire.
+  // Ranks and the Blood specialisation gate it exactly as in play.
+  const spells = await grantStartingSpells(actor);
+  const count = spells.innate + spells.written;
+  if (count) {
+    const key = spells.written ? "spellsGranted" : "spellsInnate";
+    ui.notifications.info(game.i18n.format(`REDSTEEL.Creation.Learn.${key}`, {
+      name: actor.name,
+      count,
+      written: spells.written,
+    }));
+  }
   return true;
 }

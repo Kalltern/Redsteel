@@ -682,7 +682,49 @@ const CODE_AUTOMATED_NODES = {
     "vnimaniStopovani",
     "pohybVPrirode",
   ],
-  sharpshooter: ["oddechMireni"],
+  // Ostrostřelec (Sharpshooter): every node needs a bow or crossbow in hand,
+  // tested by utils/aim.mjs sharpshooterNode. oddechMireni: see swordDancer.
+  // utils/aim.mjs: mireniPomalyPohyb (a Slow Movement keeps the Aim,
+  // breakAimOnAction), zmenaCile (once a round a hand-moved Aim carries every
+  // stack, addAimStackOn), redukceMireni (the aim reduction profile in
+  // aimPerks), mireniPoMinuti (one Aim owed on a missed shot,
+  // recordMissGrant).
+  // utils/sharpshooter.mjs holds the rest: zacileni is the Target Lock item
+  // (utils/abilityGrants.mjs), its chip (utils/actionSuggestions.mjs
+  // targetLockChips) and useTargetLock (from utils/combatAbilities.mjs);
+  // strazStrelba is overwatchShotBonus, ignorujeKryt is consumeAttackCover
+  // (both read in utils/combatSkillBonuses.mjs getAttackRolls; the cover
+  // toggles in utils/attackOptionIcons.mjs); mireniOvereni is
+  // aimPrecisionModifier (read by utils/basicAttack.mjs and
+  // utils/combatAbilities.mjs before getAttackRolls clears aimCount);
+  // streleckyPostoj is shootingStanceDefense (utils/defense.mjs);
+  // odvetnyVystrel is the Retaliatory Shot item (utils/abilityGrants.mjs),
+  // its chip (utils/actionSuggestions.mjs retaliatoryShotChips) and the
+  // "retaliation" tag (utils/combatAbilities.mjs).
+  // zmrzacujiciVystrel (the 35% `immobilized` roll) and presnyVystrel
+  // (accurateShotMarginCrit, accurateShotCritAdvantage) are
+  // utils/skirmisher.mjs, beside the Skirmisher's own nodes of those names.
+  // tesnyZasah is a NODE_REROLL_POOLS entry in utils/rerolls.mjs (no daily
+  // limit, closeMarginGap; its Stamina paid in module/redsteel.mjs
+  // handleRerollClick). primarniZraneni is utils/weaponFormula.mjs.
+  // pozadavkyLuku stays manual: weapon requirements are not modelled.
+  sharpshooter: [
+    "oddechMireni",
+    "mireniPomalyPohyb",
+    "zmenaCile",
+    "redukceMireni",
+    "mireniPoMinuti",
+    "zacileni",
+    "zmrzacujiciVystrel",
+    "presnyVystrel",
+    "strazStrelba",
+    "streleckyPostoj",
+    "ignorujeKryt",
+    "mireniOvereni",
+    "odvetnyVystrel",
+    "tesnyZasah",
+    "primarniZraneni",
+  ],
   // utils/aim.mjs — duelistuvPostoj is the stance itself (one-handed sword,
   // off hand free or holding a fencing dagger), which aimPerks tests as `blade`
   // and every perk below gates on; mireniRedukce upgrades the Duelist II aim

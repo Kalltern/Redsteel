@@ -53,6 +53,10 @@ import { asMakeshiftMelee, isRangedWeapon } from "./makeshift.mjs";
 import { getChampionOffhandMods } from "./champion.mjs";
 import { wardenAllyDefenseBonus } from "./warden.mjs";
 import {
+  isShootingAttackCard,
+  shootingStanceDefense,
+} from "./sharpshooter.mjs";
+import {
   wardenShieldCritDefense,
   wardenShieldDeflect,
 } from "./wardenShield.mjs";
@@ -157,6 +161,9 @@ export function buildAttackPacket(message) {
     // Zatížení štítu: the strain chance a successful Cover rolls against
     // (utils/shieldStrain.mjs). Null when the blow carries none.
     shieldStrain: message.flags.attack.shieldStrain ?? null,
+    // A Shooting attack (bow or crossbow): Střelecký postoj's Dodge bonus
+    // answers only these (utils/sharpshooter.mjs).
+    shooting: isShootingAttackCard(message),
   };
 }
 
@@ -601,6 +608,9 @@ export async function buildDefenseProfile({
   useBane = false,
   spellSchool = null,
   reinforceDefense = 0,
+  // The attack answered is a Shooting one (the attack packet's `shooting`):
+  // Střelecký postoj's Dodge bonus reads it (utils/sharpshooter.mjs).
+  shootingAttack = false,
 } = {}) {
   // Magic Defense rolls Channeling and reads no weapon at all, so it is settled
   // before anything below dereferences the context (an NPC mage may carry
@@ -749,10 +759,16 @@ export async function buildDefenseProfile({
       abilityDefense,
       overwhelmPenalty,
       baneDefense: useBane ? baneProfile.defense : 0,
+      // Ostrostřelec → Střelecký postoj: Cover +10% more while the stance
+      // holds, with a bow or crossbow in hand. The stance's own +10 is its
+      // status change, already in the rating (utils/sharpshooter.mjs).
+      shootingStance: shootingStanceDefense(actor, "ranged", {
+        weapon: context?.weapon ?? null,
+      }),
     };
 
     formula =
-      "@defenseRating + @doctrineRangedDefenseBonus + @abilityDefense + @overwhelmPenalty + @baneDefense - 1d100";
+      "@defenseRating + @doctrineRangedDefenseBonus + @abilityDefense + @overwhelmPenalty + @baneDefense + @shootingStance - 1d100";
     skillKey = "rangedDefense";
   } else if (mode === "dodge") {
     const offQuality = getOffhandQualityMods(context);
@@ -781,10 +797,17 @@ export async function buildDefenseProfile({
       abilityDefense,
       overwhelmPenalty,
       baneDefense: useBane ? baneProfile.defense : 0,
+      // Střelecký postoj: Dodge +10% against a Shooting attack, +5% more
+      // with the Sharpshooter node and a bow or crossbow in hand
+      // (utils/sharpshooter.mjs).
+      shootingStance: shootingStanceDefense(actor, "dodge", {
+        shootingAttack,
+        weapon: context?.weapon ?? null,
+      }),
     };
 
     formula =
-      "@dodgeRating + @weaponDodge + @abilityDefense + @overwhelmPenalty + @baneDefense - 1d100";
+      "@dodgeRating + @weaponDodge + @abilityDefense + @overwhelmPenalty + @baneDefense + @shootingStance - 1d100";
     skillKey = "dodge";
     // Read the same way isBadDodge reads it; a limit of 0 or less means none.
     dodgeLimit = Number(actor.system?.dodgeLimit?.total);
@@ -1772,6 +1795,7 @@ export async function defenseRoll({
         attackerTokenId: defendingAgainstId(),
         overwhelmStacks,
         useBane,
+        shootingAttack: attack?.shooting === true,
       });
 
       const criticalSuccessThreshold = profile.critSuccess;
@@ -1881,6 +1905,7 @@ export async function defenseRoll({
         attackerTokenId: defendingAgainstId(),
         overwhelmStacks,
         useBane,
+        shootingAttack: attack?.shooting === true,
       });
 
       const criticalSuccessThreshold = profile.critSuccess;

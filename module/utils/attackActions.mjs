@@ -20,7 +20,12 @@ import {
   weaponReach,
 } from "./positioning.mjs";
 import { previewSneakTrigger, sneakTriggerLabel } from "./sneakTriggers.mjs";
-import { attackOptionIconsHtml } from "./attackOptionIcons.mjs";
+import {
+  attackOptionIconsHtml,
+  readAttackCover,
+  wireCoverToggles,
+} from "./attackOptionIcons.mjs";
+import { coverOptionAvailable, setAttackCover } from "./sharpshooter.mjs";
 import { asMakeshiftMelee, isRangedWeapon } from "./makeshift.mjs";
 import {
   finishingBlowRefusal,
@@ -196,6 +201,8 @@ export async function attackActions({ opportunity = false } = {}) {
     longReach: showLongReach,
     longReachClose: !!longReachClose,
     predatorySenses: predatorySensesAvailable(actor),
+    // Half / Full cover, for a shot or a throw (sharpshooter.mjs).
+    cover: coverOptionAvailable(actor, activeWeapon ?? null),
   })}
 </div>
 ${
@@ -404,6 +411,10 @@ ${
           ? await actor.setFlag("redsteel", "aimCount", aimValue)
           : await actor.unsetFlag("redsteel", "aimCount");
 
+        // Cover the target stands behind: consumed by the attack, and only a
+        // shot or a throw pays it (sharpshooter.mjs consumeAttackCover).
+        await setAttackCover(actor, readAttackCover(html[0]));
+
         // ─── Deduct Costs ───
         // Charge Defense makes a ticked Impale free (hoplite.mjs).
         const paid = await game.redsteel.deductAbilityCost(
@@ -470,6 +481,8 @@ ${
     default: Object.keys(buttons)[0],
 
     render: (html) => {
+      // Half / Full cover: at most one ticked (attackOptionIcons.mjs).
+      wireCoverToggles(html[0]);
       // The set titles are the switch: clicking the inactive one swaps to it.
       html.find(".weapon-loadout-label[data-set]").on("click", async (ev) => {
         const setId = Number(ev.currentTarget.dataset.set);

@@ -331,10 +331,14 @@ export function variantChildIds(rows) {
   return children;
 }
 
-let wildSpells = null;
-async function loadWildSpells() {
-  if (wildSpells) return wildSpells;
-  const bySchool = new Map();
+/**
+ * Every spell a character can learn, as book entries plus their uuid: no
+ * divine miracles and no variants. Read once per session, like the wild list.
+ */
+let learnableSpells = null;
+async function loadLearnableSpells() {
+  if (learnableSpells) return learnableSpells;
+  const list = [];
   const pack = game.packs.get(SPELL_PACK_ID);
   if (pack) {
     try {
@@ -349,16 +353,26 @@ async function loadWildSpells() {
       for (const entry of rows) {
         if (entry.system?.option === "divine") continue;
         if (children.has(entry._id)) continue;
-        if (String(entry.system?.rank ?? "").toLowerCase() !== "wild") continue;
-        const school = String(entry.system?.type ?? "");
-        if (!school) continue;
+        if (!entry.system?.type) continue;
         const uuid = entry.uuid ?? `Compendium.${SPELL_PACK_ID}.Item.${entry._id}`;
-        if (!bySchool.has(school)) bySchool.set(school, []);
-        bySchool.get(school).push(uuid);
+        list.push(makeEntry(entry, uuid));
       }
     } catch (err) {
       console.warn(`Redsteel | Spellbook: could not index ${SPELL_PACK_ID}`, err);
     }
+  }
+  learnableSpells = list;
+  return list;
+}
+
+let wildSpells = null;
+async function loadWildSpells() {
+  if (wildSpells) return wildSpells;
+  const bySchool = new Map();
+  for (const entry of await loadLearnableSpells()) {
+    if (String(entry.rank).toLowerCase() !== "wild") continue;
+    if (!bySchool.has(entry.school)) bySchool.set(entry.school, []);
+    bySchool.get(entry.school).push(entry.uuid);
   }
   wildSpells = bySchool;
   return bySchool;
@@ -630,6 +644,71 @@ export async function forgetSpell(actor, uuid) {
   }
   await actor.deleteEmbeddedDocuments("Item", [item.id]);
   return { ok: true, reason: null };
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Starting spells                                                           */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Hand a newly created character every spell their schools reach (user ruling
+ * 2026-10-24, replacing the book's "memorise them with Paměť at creation").
+ *
+ * The same gate as everywhere else decides what is reachable, so the rank cap
+ * of the character's level and the Blood specialisation both hold: a school at
+ * rank III gives its wild magic and nothing more. Wild magic arrives innate,
+ * as it does in play; every other reachable spell is written into the
+ * character's first unbound grimoire, or into a new one in their name when
+ * they carry none. Writing is free and memorising stays a 1 SP purchase, so the SP economy
+ * is untouched. Spells the character already knows are left alone.
+ *
+ * Called once, from finishCharacterCreation.
+ *
+ * @returns {Promise<{innate: number, written: number}>} How many spells the
+ *   character now starts with, by the way they arrived.
+ */
+export async function grantStartingSpells(actor) {
+  if (!actor?.isOwner) return { innate: 0, written: 0 };
+  const known = getKnownSpells(actor);
+  const toWrite = [];
+  let innate = 0;
+  for (const entry of await loadLearnableSpells()) {
+    if (!checkSpellRank(actor, entry.school, entry.rank).ok) continue;
+    if (String(entry.rank).toLowerCase() === "wild") {
+      innate += 1;
+      continue;
+    }
+    const held = known.get(entry.uuid);
+    if (held && (held.books.length || held.memorised)) continue;
+    toWrite.push(entry);
+  }
+
+  // A book created or updated here fires the hooks in registerSpellbookHooks,
+  // whose sync projects the new entries. With nothing to write, nothing fires,
+  // so the wild magic is projected by the explicit sync below; when a hook's
+  // sync is already running, that call steps aside for it.
+  if (toWrite.length) {
+    // A bound book (capacity above 0) may not have the room, so only an
+    // ordinary unbound grimoire takes the list.
+    const book = getSpellbooks(actor).find((item) => !(Number(item.system?.capacity) > 0));
+    if (book) {
+      await book.update({ "system.spells": [...getBookEntries(book), ...toWrite] });
+    } else {
+      const owner = actor.name;
+      await actor.createEmbeddedDocuments("Item", [{
+        name: game.i18n.format("REDSTEEL.Learn.Spells.bookName", { name: owner }),
+        type: "spellbook",
+        img: SPELLBOOK_IMG,
+        system: {
+          capacity: 0,
+          spells: toWrite,
+          description: game.i18n.format("REDSTEEL.Learn.Spells.bookDescription", { name: owner }),
+        },
+      }]);
+    }
+  }
+  await syncSpellbooks(actor);
+  return { innate, written: toWrite.length };
 }
 
 /* -------------------------------------------------------------------------- */

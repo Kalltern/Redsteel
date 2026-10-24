@@ -80,6 +80,7 @@ import {
   vanguardChargeHexDamage,
   vanguardCleaveHit,
 } from "./vanguard.mjs";
+import { consumeAttackCover, overwatchShotBonus } from "./sharpshooter.mjs";
 
 const BLEEDING_DAMAGE_TYPES = new Set(["slash", "piercing"]);
 /** Shadow: Aimed Attack +5% (Cílený útok) — hit chance on an aimed attack. */
@@ -1143,6 +1144,10 @@ export async function getAttackRolls(
   // Hoplita → Přípravný postoj: +20 Hit on a spear or trident Opportunity
   // Attack, which spends the stance; any other weapon attack breaks it.
   abilityAttack += await settlePreparedStance(actor, weapon, opportunityAttack);
+  // Ostrostřelec → Stráž: Střelba +10% on the Overwatch Opportunity Attack
+  // shot (sharpshooter.mjs). Reported back so the card can name it.
+  const overwatchShot = overwatchShotBonus(actor, weapon, opportunityAttack);
+  abilityAttack += overwatchShot;
 
   // A standalone ranged ability has no weapon to read the skill off, so the
   // ability itself names which ranged skill the attack rolls against. Blank
@@ -1150,6 +1155,13 @@ export async function getAttackRolls(
   const abilityRangedSkill = weapon
     ? ""
     : String(ability?.system?.rangedSkill ?? "");
+
+  // Cover the target stands behind (Poloviční kryt -30%, Plný kryt -60%),
+  // declared in the attack dialog and consumed here on every attack; only a
+  // shot or a throw pays it. Ostrostřelec → Ignoruje poloviční kryt
+  // (sharpshooter.mjs). The tag names it on the card.
+  const cover = await consumeAttackCover(actor, weapon, abilityRangedSkill);
+  abilityAttack += cover.penalty;
 
   const crit = getAttackCritThresholds(actor, weapon, {
     doctrineCritBonus,
@@ -1260,8 +1272,9 @@ export async function getAttackRolls(
     (!critFailure &&
       (riposteAlwaysCrits(actor, ability) || isFinalStrike(ability))) ||
     daringThrowMarginCrit(ability, attackRoll.total, critFailure) ||
-    // Přesný výstřel (Accurate Shot): a margin of 30 or more (skirmisher.mjs).
-    accurateShotMarginCrit(ability, attackRoll.total, critFailure);
+    // Přesný výstřel (Accurate Shot): a margin of 30 or more, 25 with
+    // Ostrostřelec's node and a bow or crossbow (skirmisher.mjs).
+    accurateShotMarginCrit(ability, attackRoll.total, critFailure, actor, weapon);
 
   // A fumble burns the whole aim even under Sword Dancer's half-loss. The aim
   // was parked before the dice existed, so tag that record now.
@@ -1278,6 +1291,10 @@ export async function getAttackRolls(
     opportunityAttack,
     dragonGuard,
     rangePenalty,
+    // Runtime attack tags (sharpshooter.mjs): the cover this attack paid,
+    // and the Overwatch shot bonus.
+    coverTag: cover.tag,
+    overwatchShot: overwatchShot > 0,
   };
 }
 
@@ -1518,6 +1535,10 @@ export async function getCriticalRolls(
   penetration,
   doctrineCritDmg,
   doctrineSkillCritPen,
+  // Ostrostřelec → Přesný výstřel: the Critical Range d20 rolled with
+  // Advantage (skirmisher.mjs accurateShotCritAdvantage). Optional, so every
+  // caller that passes nothing keeps the plain d20.
+  { critAdvantage = false } = {},
 ) {
   // CRITICAL SCORE ROLL (only in flavor text)
   const offProps = getOffhandProps(weaponContext);
@@ -1538,7 +1559,7 @@ export async function getCriticalRolls(
       doctrineCritRangeBonus +
       (offProps?.critRange || 0) +
       failedAttack || 0;
-  const critScoreRollFormula = `${critRange} + 1d20`;
+  const critScoreRollFormula = `${critRange} + ${critAdvantage ? "2d20kh" : "1d20"}`;
   const critScoreRoll = new Roll(critScoreRollFormula);
   await critScoreRoll.evaluate();
   const critScoreResult = critScoreRoll.total;
@@ -1961,7 +1982,7 @@ export async function getEffectRolls(
   // Zmrzačující výstřel / Vylepšený zmrzačující výstřel: crippled, the turn
   // order part and the 50% immobilize roll (skirmisher.mjs).
   effectContributions.push(
-    ...cripplingShotEffects(actor, ability, selectedModifiers),
+    ...cripplingShotEffects(actor, ability, selectedModifiers, weapon),
   );
   const customEffectRolls = new Map();
 

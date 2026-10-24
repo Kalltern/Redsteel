@@ -13,6 +13,9 @@
  *   traitPoints  Rysové body.
  *   requires     optional; `{ trait: <compendium id> }` = that trait must be
  *                among the drafted traits.
+ *   birth        `{ fth, sin, vis }`: the race's modifier to the 1d4 rolled for
+ *                Faith, Sinfulness and Appearance on the Birth step (Víra,
+ *                Hříšnost, Vzhled). A race without it counts 0 for each.
  */
 
 /** Race groups, in the order the window lists them. */
@@ -32,6 +35,7 @@ export const CREATION_RACES = [
     labelKey: "REDSTEEL.Items.Human.name",
     limits: { str: 5, dex: 5, end: 5, int: 5, wil: 5, cha: 6, per: 5 },
     traitPoints: 15,
+    birth: { fth: 0, sin: 1, vis: -2 },
   },
   // Půlčík
   {
@@ -41,6 +45,7 @@ export const CREATION_RACES = [
     labelKey: "REDSTEEL.Items.Halfling.name",
     limits: { str: 3, dex: 5, end: 5, int: 5, wil: 6, cha: 6, per: 5 },
     traitPoints: 14,
+    birth: { fth: -1, sin: 1, vis: -2 },
   },
   // Trpaslík — Vardur (the compendium item named "Dwarf" is Vardur: it carries
   // Odolnost +2 and Magic armor +4)
@@ -51,6 +56,7 @@ export const CREATION_RACES = [
     labelKey: "REDSTEEL.Creation.Race.Vardur",
     limits: { str: 5, dex: 4, end: 6, int: 5, wil: 5, cha: 4, per: 4 },
     traitPoints: 13,
+    birth: { fth: -1, sin: 1, vis: -2 },
   },
   // Trpaslík — Borgor
   {
@@ -60,6 +66,7 @@ export const CREATION_RACES = [
     labelKey: "REDSTEEL.Items.Borgor.name",
     limits: { str: 5, dex: 4, end: 5, int: 5, wil: 5, cha: 4, per: 4 },
     traitPoints: 13,
+    birth: { fth: -1, sin: 1, vis: -2 },
   },
   // Elf — Eldarai
   {
@@ -69,6 +76,7 @@ export const CREATION_RACES = [
     labelKey: "REDSTEEL.Items.Eldarai.name",
     limits: { str: 4, dex: 5, end: 4, int: 5, wil: 4, cha: 5, per: 5 },
     traitPoints: 14,
+    birth: { fth: -1, sin: 0, vis: -1 },
   },
   // Elf — Lomerai
   {
@@ -78,6 +86,7 @@ export const CREATION_RACES = [
     labelKey: "REDSTEEL.Items.Lomerai.name",
     limits: { str: 4, dex: 5, end: 4, int: 5, wil: 4, cha: 4, per: 5 },
     traitPoints: 12,
+    birth: { fth: -1, sin: 0, vis: -1 },
   },
   // Elf — Ornerai
   {
@@ -87,6 +96,7 @@ export const CREATION_RACES = [
     labelKey: "REDSTEEL.Items.Ornerai.name",
     limits: { str: 4, dex: 6, end: 4, int: 5, wil: 4, cha: 4, per: 6 },
     traitPoints: 12,
+    birth: { fth: -1, sin: 0, vis: -1 },
   },
   // Elf — Zephyrai
   {
@@ -96,6 +106,7 @@ export const CREATION_RACES = [
     labelKey: "REDSTEEL.Items.Zephyrai.name",
     limits: { str: 4, dex: 5, end: 4, int: 5, wil: 4, cha: 4, per: 5 },
     traitPoints: 13,
+    birth: { fth: -1, sin: 0, vis: -1 },
   },
   // Elf — Ikarai
   {
@@ -105,6 +116,7 @@ export const CREATION_RACES = [
     labelKey: "REDSTEEL.Items.Ikarai.name",
     limits: { str: 5, dex: 5, end: 4, int: 5, wil: 4, cha: 4, per: 5 },
     traitPoints: 12,
+    birth: { fth: -1, sin: 0, vis: -1 },
   },
   // Elf — Mornerai
   {
@@ -114,6 +126,7 @@ export const CREATION_RACES = [
     labelKey: "REDSTEEL.Items.Mornerai.name",
     limits: { str: 4, dex: 5, end: 4, int: 5, wil: 5, cha: 4, per: 5 },
     traitPoints: 11,
+    birth: { fth: -1, sin: 0, vis: -1 },
   },
   // Elf — Kernerai
   {
@@ -123,6 +136,7 @@ export const CREATION_RACES = [
     labelKey: "REDSTEEL.Items.Kernerai.name",
     limits: { str: 4, dex: 5, end: 5, int: 5, wil: 4, cha: 4, per: 5 },
     traitPoints: 11,
+    birth: { fth: -1, sin: 0, vis: -1 },
   },
   // Elf — Arenai (Podmínka: musí mít rys Magický potenciál)
   {
@@ -132,6 +146,7 @@ export const CREATION_RACES = [
     labelKey: "REDSTEEL.Items.Arenai.name",
     limits: { str: 4, dex: 5, end: 4, int: 6, wil: 5, cha: 4, per: 5 },
     traitPoints: 11,
+    birth: { fth: -1, sin: 0, vis: -1 },
     requires: { trait: "abUe5QntVOFVUDgC" },
   },
 ];

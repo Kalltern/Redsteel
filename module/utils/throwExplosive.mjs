@@ -10,6 +10,8 @@ import { getAttackRerollTokens } from "./rerolls.mjs";
 import { resolveAimOnAttack } from "./aim.mjs";
 import { captureAttackTargets } from "./autoDefense.mjs";
 import { captureAttackPositioning } from "./positioning.mjs";
+import { consumeAttackCover } from "./sharpshooter.mjs";
+import { renderAttackTagsHtml } from "./opportunityAttacks.mjs";
 
 /** Local copy of the damage-profile builder used across the attack pipeline. */
 function buildDamageProfile(systemData) {
@@ -170,6 +172,12 @@ export async function throwExplosiveItem(
     attackBonus += 10;
     await actor.unsetFlag("redsteel", "useFlankingAttack");
   }
+
+  // Cover the target stands behind: a throw takes the same situational
+  // penalties as a shot (zbrojnice.md r257, sharpshooter.mjs).
+  const cover = await consumeAttackCover(actor, null, "throwing");
+  attackBonus += cover.penalty;
+  const attackTags = cover.tag ? [cover.tag] : [];
 
   // Sneak attack and aimed-part targeting don't apply to explosives, but
   // clear them so they can't leak into a later attack.
@@ -344,7 +352,7 @@ margin: 0 auto;
 </div>
 
 <p style="text-align:center; font-size:14px;">
-${s.aimed ? "Single target" : "Area effect"}
+${s.aimed ? "Single target" : "Area effect"}${renderAttackTagsHtml(attackTags)}
 </p>
 
 <p class="rs-card-headline"><b>
@@ -376,6 +384,7 @@ ${damageLine}
         // Thrown explosive is a consumable, not a weapon-skill attack — generic
         // "attack" token only so attribute pools don't wrongly attach.
         rerollTokens: getAttackRerollTokens(),
+        attackTags,
       },
 
       attack: {

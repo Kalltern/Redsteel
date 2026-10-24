@@ -3,6 +3,7 @@ import {
   PRIMARY_DAMAGE_MULTIPLIER,
 } from "./weaponMaster.mjs";
 import { actorHasSpecNode } from "../helpers/specialisations.mjs";
+import { sharpshooterNode } from "./aim.mjs";
 
 /** Weapon classes that are swung or thrown (not bows or crossbows). */
 const STR_DEX_CLASSES = ["axe", "sword", "blunt", "polearm"];
@@ -48,8 +49,9 @@ export function parseDiceSize(raw) {
  * Obratnost") adds Strength AND Dexterity for melee and thrown weapons (user
  * ruling 2026-10-18). Giant adds 1d4 to non-launcher weapons, Weapon Master's
  * primaryDamage multiplies the attribute (each of the two, with the Hoplite
- * node), and an NPC adds its flat damage bonus instead. Without an actor the
- * formula is "" (nobody to read the attribute off).
+ * node), and so does Ostrostřelec's primarniZraneni for a bow or crossbow;
+ * an NPC adds its flat damage bonus instead. Without an actor the formula is
+ * "" (nobody to read the attribute off).
  *
  * Also used by the makeshift view (utils/makeshift.mjs) on its overridden
  * system, so a bow swung in melee gets the melee attribute.
@@ -120,9 +122,13 @@ export function weaponDamageFormula(actor, system) {
       actorHasSpecNode(actor, "hoplite", "silaObratnost")
         ? ["str", "dex"]
         : [attr];
+    // Ostrostřelec → Zranění +50% za Primární Vlastnosti: the same term for
+    // this weapon when it is a bow or crossbow (sharpshooterNode, aim.mjs).
+    // Either source alone makes it x1.5; both never stack.
     const primary =
       actor.type === "character" &&
-      hasWeaponMasterNode(actor, "primaryDamage");
+      (hasWeaponMasterNode(actor, "primaryDamage") ||
+        sharpshooterNode(actor, "primarniZraneni", { system }));
     const attrTerm = attrs
       .map((a) =>
         primary ? `floor(@${a} * ${PRIMARY_DAMAGE_MULTIPLIER})` : `@${a}`,

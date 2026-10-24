@@ -4,6 +4,7 @@ import {
 } from "./calendariaIntegration.mjs";
 import { getTopArmorWeight } from "./weaponMaster.mjs";
 import { championLightOffhand } from "./champion.mjs";
+import { sharpshooterNode } from "./aim.mjs";
 
 /**
  * Reroll resource model.
@@ -360,6 +361,18 @@ export function getFeatureRerollPools(item) {
  * pool exists while the node is unlocked; `requiresArmor` limits it to a
  * topmost armor class, and `requiresOffhand` to an off-hand weapon weight
  * (champion.mjs), both read at reroll time.
+ *
+ * Optional fields for a pool that is not a daily charge (Ostrostřelec → Těsný
+ * zásah):
+ *   max: null            no limit: nothing is counted or stored, the picker
+ *                        and the Features tab show `costLabel` instead
+ *   staminaCost: n       Stamina paid each time it is used (redsteel.mjs
+ *                        handleRerollClick)
+ *   sharpshooterWeapon   only with a bow or crossbow in hand (aim.mjs
+ *                        sharpshooterNode on this node)
+ *   closeMargin: n       only when the card's margins were n or less apart
+ *                        (closeMarginGap); needs the card, so callers that
+ *                        pass no `message` never see the pool
  */
 export const NODE_REROLL_POOLS = [
   {
@@ -438,7 +451,58 @@ export const NODE_REROLL_POOLS = [
       requiresToken: ["attack", "defense"],
     },
   },
+  {
+    // Ostrostřelec → Těsný zásah (specializace-wip.md r498): "Volná akce ·
+    // Výdrž 1 · Může opakovat hod na Střelbu či Kryt, pokud byl rozdíl síly
+    // úspěchu 10 nebo méně." The holder's own Shooting attack card (bow or
+    // crossbow: the "archery" token) or Cover defense card, no daily limit,
+    // 1 Stamina a use, a bow or crossbow in hand. `requiresToken` keeps a
+    // bare Archery skill test from the sheet out.
+    spec: "sharpshooter",
+    node: "tesnyZasah",
+    skillsRaw: "archery, rangedDefense",
+    max: null,
+    staminaCost: 1,
+    sharpshooterWeapon: true,
+    closeMargin: 10,
+    requiresToken: ["attack", "defense"],
+    img: "icons/skills/ranged/arrow-strike-apple-orange.webp",
+  },
 ];
+
+/**
+ * How far apart the two margins of a combat card were, as a positive number,
+ * or null when the card is not one this can read (Těsný zásah's condition).
+ *
+ * - A defense card: the gap of the versus Test it resolved. A defense that
+ *   answered no attack card has no gap.
+ * - An attack card: the gap on the newest defense card answering it; with
+ *   no defense, the attack's own margin (between -10 and +10 reads as 10 or
+ *   less).
+ *
+ * @param {ChatMessage|null} message
+ * @returns {number|null}
+ */
+export function closeMarginGap(message) {
+  if (!message) return null;
+  const flags = message.flags?.redsteel ?? {};
+  if (flags.defense) {
+    const gap = Number(flags.versus?.gap);
+    return flags.versus && Number.isFinite(gap) ? Math.abs(gap) : null;
+  }
+  const attack = message.flags?.attack;
+  if (attack?.type !== "attack") return null;
+  const messages = game.messages?.contents ?? [];
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const other = messages[i].flags?.redsteel ?? {};
+    if (!other.defense || other.rerolledAway) continue;
+    if (other.versusAttack?.messageId !== message.id) continue;
+    const gap = Number(other.versus?.gap);
+    if (Number.isFinite(gap)) return Math.abs(gap);
+  }
+  const margin = Number(attack.margin ?? message.rolls?.[0]?.total);
+  return Number.isFinite(margin) ? Math.abs(margin) : null;
+}
 
 /** Actor flag holding node pool spend: { "<spec>-<node>": {used, combatUsed} }. */
 const NODE_REROLL_FLAG = "nodeRerolls";
@@ -500,9 +564,11 @@ function effectiveNodePool(actor, def) {
 /** Pool descriptors for every node pool the actor has unlocked. */
 function getNodeRerollPools(actor) {
   return NODE_REROLL_POOLS.filter((def) => hasNode(actor, def)).map((def) => {
-    const max = def.max;
+    // No limit (`max: null`): nothing counted, never runs out.
+    const unlimited = def.max == null;
+    const max = unlimited ? Infinity : def.max;
     const state = getNodePoolState(actor, def);
-    const used = Math.min(max, state.used);
+    const used = unlimited ? 0 : Math.min(max, state.used);
     const live = effectiveNodePool(actor, def);
     const combatMax = parseCombatMax(live.skillsRaw);
     const combatUsed = Math.min(used, state.combatUsed);
@@ -522,6 +588,21 @@ function getNodeRerollPools(actor) {
       requiresArmor: def.requiresArmor ?? null,
       requiresOffhand: def.requiresOffhand ?? null,
       requiresToken: live.requiresToken,
+      spec: def.spec,
+      node: def.node,
+      sharpshooterWeapon: !!def.sharpshooterWeapon,
+      closeMargin: def.closeMargin ?? null,
+      unlimited,
+      staminaCost: Math.max(0, Number(def.staminaCost) || 0),
+      // An unlimited pool names its price instead of a count (the picker and
+      // the Features tab read `costLabel`).
+      ...(unlimited
+        ? {
+            costLabel: game.i18n.format("REDSTEEL.Reroll.UnlimitedCost", {
+              cost: Math.max(0, Number(def.staminaCost) || 0),
+            }),
+          }
+        : {}),
       max,
       used,
       remaining: Math.max(0, max - used),
@@ -620,10 +701,16 @@ export function getActorRerollPools(actor) {
  * @param {Actor} actor
  * @param {string|string[]} [tokens]  One or more roll tokens (a bare skill key
  *   is accepted for backward compatibility, e.g. "alchemy").
- * @param {{critFailure?: boolean}} [options]  Whether the test being rerolled
- *   was a natural Critical Failure.
+ * @param {{critFailure?: boolean, message?: ChatMessage|null}} [options]
+ *   Whether the test being rerolled was a natural Critical Failure, and the
+ *   card being rerolled (a `closeMargin` pool reads it; without one such a
+ *   pool is never eligible).
  */
-export function getEligibleRerolls(actor, tokens, { critFailure = false } = {}) {
+export function getEligibleRerolls(
+  actor,
+  tokens,
+  { critFailure = false, message = null } = {},
+) {
   const list = Array.isArray(tokens) ? tokens : [tokens];
   const normalized = list.map((t) => normalizeTrigger(t)).filter(Boolean);
   const tokenSet = new Set(normalized);
@@ -652,6 +739,15 @@ export function getEligibleRerolls(actor, tokens, { critFailure = false } = {}) 
       const required = [pool.requiresToken].flat();
       if (!required.some((t) => tokenSet.has(normalizeTrigger(t)))) return false;
     }
+    // Ostrostřelec's pool needs a bow or crossbow in hand, read now.
+    if (pool.sharpshooterWeapon && !sharpshooterNode(actor, pool.node)) {
+      return false;
+    }
+    // Těsný zásah: only when the margins were close enough on this card.
+    if (pool.closeMargin != null) {
+      const gap = closeMarginGap(message);
+      if (gap === null || gap > pool.closeMargin) return false;
+    }
     if (isCombat && pool.combatRemaining <= 0) return false;
     if (pool.universal) return true;
     return pool.skills.some((s) => tokenSet.has(s));
@@ -671,6 +767,8 @@ export async function consumeReroll(actor, itemId, poolIndex, { combat = false }
   if (isNodeRerollId(itemId)) {
     const def = findNodePoolDef(itemId);
     if (!def || !hasNode(actor, def)) return false;
+    // No limit: there is no charge to spend.
+    if (def.max == null) return true;
     const state = getNodePoolState(actor, def);
     if (state.used >= def.max) return false;
     await setNodePoolState(actor, def, {
@@ -727,6 +825,8 @@ export async function refundReroll(actor, itemId, poolIndex, { combat = false } 
   if (isNodeRerollId(itemId)) {
     const def = findNodePoolDef(itemId);
     if (!def || !hasNode(actor, def)) return false;
+    // No limit: nothing was spent, nothing to give back.
+    if (def.max == null) return false;
     const state = getNodePoolState(actor, def);
     if (state.used <= 0) return false;
     await setNodePoolState(actor, def, {
@@ -772,7 +872,8 @@ export async function refundReroll(actor, itemId, poolIndex, { combat = false } 
 export async function toggleRerollCharge(actor, itemId, poolIndex) {
   if (isNodeRerollId(itemId)) {
     const def = findNodePoolDef(itemId);
-    if (!def) return;
+    // No limit: no charges to toggle.
+    if (!def || def.max == null) return;
     const { used, combatUsed } = getNodePoolState(actor, def);
     // Same cycle as an item pool: spend one, wrap back to full.
     await setNodePoolState(

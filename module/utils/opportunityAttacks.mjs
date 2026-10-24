@@ -149,6 +149,12 @@ const ATTACK_TAG_KEYS = {
   // Reach and thrown range (positioning.mjs).
   outOfReach: "REDSTEEL.Reach.TagOutOfReach",
   beyondRange: "REDSTEEL.Reach.TagBeyondRange",
+  // Cover the target stood behind, and the Overwatch shot (sharpshooter.mjs).
+  halfCover: "REDSTEEL.Cover.TagHalf",
+  fullCover: "REDSTEEL.Cover.TagFull",
+  halfCoverIgnored: "REDSTEEL.Cover.TagHalfIgnored",
+  fullCoverAsHalf: "REDSTEEL.Cover.TagFullAsHalf",
+  overwatchShot: "REDSTEEL.Sharpshooter.TagOverwatchShot",
 };
 
 /** Chat-card chip for the tags on an attack. */

@@ -74,6 +74,22 @@
       "RunUpTooShort": "Vrh s rozběhem potřebuje rozběh alespoň o {min} hexy; rozběh měl {walked}.",
       "LightArmorRest": "Lehká zbroj: {name} obnovuje z Oddechu o {amount} výdrže více."
     },
+    "Sharpshooter": {
+      "RetaliatoryHintMissed": "{attacker} po tobě vystřelil a minul: vystřel zpět.",
+      "RetaliatoryHintAlly": "{attacker} vystřelil na {ally}: vystřel zpět.",
+      "RetaliatoryNoBow": "Odvetný výstřel vyžaduje v ruce luk nebo kuši.",
+      "TargetLockHint": "Po Míření: Test Vnímání s postihem -30 % o jedno Míření navíc na {target}.",
+      "TargetLockNothing": "Není na co zacílit: Zacílení navazuje přímo na akci Míření s lukem nebo kuší v ruce, jednou za každé Míření.",
+      "TargetLockSuccess": "{name} se zacílí na {target}: jedno Míření navíc (celkem {after}).",
+      "TargetLockFail": "{name}: zacílení na {target} se nepovedlo.",
+      "TagOverwatchShot": "Výstřel ze Stráže +10 %"
+    },
+    "Cover": {
+      "TagHalf": "Poloviční kryt −30 %",
+      "TagFull": "Plný kryt −60 %",
+      "TagHalfIgnored": "Poloviční kryt ignorován",
+      "TagFullAsHalf": "Plný kryt jako poloviční −30 %"
+    },
     "Rearm": {
       "Title": "Přezbrojení",
       "Prompt": "Kterou zbraň vzít do hlavní ruky?",
@@ -1838,27 +1854,27 @@
           "nodes": {
             "mireniPomalyPohyb": {
               "label": "Při Pomalém pohybu neztrácí Míření",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. S lukem nebo kuší v ruce neztrácíš Míření při Pomalém pohybu. Automatizováno."
             },
             "zmenaCile": {
               "label": "Změna cíle Míření 1x za kolo zdarma",
-              "description": "5 CP; Lukostřelec/Kušník V. Ručně — řeší se u stolu."
+              "description": "5 CP; Lukostřelec/Kušník V. Jednou za kolo můžeš Míření ručně přesunout na jiný cíl a přeneseš všechna Míření. Je to Volná akce a žádné Míření nepřidá. Vyžaduje luk nebo kuši v ruce. Automatizováno."
             },
             "zacileni": {
               "label": "Zacílení",
-              "description": "10 CP. Ručně — řeší se u stolu."
+              "description": "10 CP. Získáš Zacílení (Volná akce, 2 výdrže): po akci Míření Test Vnímání s postihem -30 %, při úspěchu jedno Míření navíc na stejný cíl. Panel ho nabídne jednou za každé Míření, s lukem nebo kuší v ruce. Automatizováno."
             },
             "redukceMireni": {
               "label": "Redukce Míření po zásahu",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. S lukem nebo kuší v ruce tě zásah mířeného cíle stojí jedno Míření, Kritický zásah žádné a minutí všechna. Automatizováno."
             },
             "mireniPoMinuti": {
               "label": "Míření po minutí Střelbou",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Když mineš Střelbou z luku nebo kuše, získáš na konci tahu jedno Míření na svůj cíl. Automatizováno."
             },
             "zmrzacujiciVystrel": {
               "label": "Zmrzačující výstřel: 35% na zbavení pohybu",
-              "description": "10 CP; Lukostřelec/Kušník VII. Ručně — řeší se u stolu."
+              "description": "10 CP; Lukostřelec/Kušník VII. Zmrzačující výstřel z luku nebo kuše má navíc 35% šanci zbavit cíl pohybu (bez pohybu do konce jeho dalšího tahu). Automatizováno."
             },
             "bleed1": {
               "label": "Krvácení +5%",
@@ -1873,20 +1889,20 @@
               "description": "5 CP. Automatizováno."
             },
             "presnyVystrel": {
-              "label": "Přesný výstřel: Krit. rozsah Výhoda",
-              "description": "10 CP; Lukostřelec/Kušník VII. Ručně — řeší se u stolu."
+              "label": "Přesný výstřel: Krit. rozsah Výhoda, Hranice -5",
+              "description": "10 CP; Lukostřelec/Kušník VII. Přesný výstřel z luku nebo kuše hází kostku Kritického rozsahu s Výhodou a Kritický zásah je už při Úspěchu o síle +25 místo +30. Automatizováno."
             },
             "strazStrelba": {
               "label": "Stráž: Střelba +10%",
-              "description": "10 CP; Lukostřelec/Kušník VIII. Ručně — řeší se u stolu."
+              "description": "10 CP; Lukostřelec/Kušník VIII. Příležitostný útok z luku nebo kuše během Stráže má Střelbu +10 %. Automatizováno."
             },
             "streleckyPostoj": {
               "label": "Střelecký postoj: Úhyb +5%, Kryt +10%",
-              "description": "10 CP; Lukostřelec/Kušník X. Ručně — řeší se u stolu."
+              "description": "10 CP; Lukostřelec/Kušník X. Dokud trvá Střelecký postoj a máš v ruce luk nebo kuši: Kryt +10 % navíc a Úhyb proti Střelbě +5 % navíc. Automatizováno."
             },
             "ignorujeKryt": {
               "label": "Ignoruje poloviční kryt",
-              "description": "5 CP; Lukostřelec/Kušník X. Plný kryt se počítá jako poloviční. Ručně — řeší se u stolu."
+              "description": "5 CP; Lukostřelec/Kušník X. Plný kryt se počítá jako poloviční. Střelba z luku nebo kuše nemá postih za poloviční kryt a plný kryt stojí -30 % místo -60 %. Kryt se volí v dialogu útoku. Automatizováno."
             },
             "strelba5": {
               "label": "Střelba +5%",
@@ -1898,7 +1914,7 @@
             },
             "mireniOvereni": {
               "label": "Míření: Ověření +5%",
-              "description": "10 CP; Lukostřelec/Kušník VI. Vázáno na Míření — zatím ručně. Ručně — řeší se u stolu."
+              "description": "10 CP; Lukostřelec/Kušník VI. Každé Míření vložené do výstřelu z luku nebo kuše přidá Ověření +5 %. Automatizováno."
             },
             "pozadavkyLuku": {
               "label": "Požadavky na luky a kuše -1",
@@ -1910,11 +1926,11 @@
             },
             "odvetnyVystrel": {
               "label": "Odvetný výstřel",
-              "description": "20 CP; Lukostřelec/Kušník VIII. Ručně — řeší se u stolu."
+              "description": "20 CP; Lukostřelec/Kušník VIII. Získáš Odvetný výstřel (Reakce, 2 výdrže): panel nabídne výstřel na nepřítele, který tě Střelbou minul nebo který střílel po spojenci. Nevztahuje se na jiný Odvetný výstřel, Odvetu ani Odvetný vrh. Vyžaduje luk nebo kuši v ruce. Automatizováno."
             },
             "tesnyZasah": {
               "label": "Těsný zásah",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Můžeš opakovat vlastní hod na Střelbu nebo Kryt, pokud byl rozdíl síly úspěchu 10 nebo méně (Volná akce, 1 výdrž, bez denního omezení). Nabízí se ve výběru opakování hodu, s lukem nebo kuší v ruce. Automatizováno."
             },
             "kritRozsah": {
               "label": "Kritický rozsah +2",
@@ -1926,7 +1942,7 @@
             },
             "primarniZraneni": {
               "label": "Zranění +50% za Primární Vlastnosti",
-              "description": "10 CP. Ručně — řeší se u stolu."
+              "description": "10 CP. Luky a kuše přičítají Vnímání ke Zranění jedenapůlkrát (zaokrouhleno dolů). Automatizováno."
             },
             "kryt10": {
               "label": "Kryt +10%",
@@ -4933,13 +4949,68 @@
       "Step3": {
         "title": "Dovednosti a odbornosti"
       },
+      "Birth": {
+        "title": "Zrození",
+        "advice": "Hoď si, co ti osud nadělil do vínku. Hody platí: návrat zpět ani změna rasy je nepřehodí, s rasou se mění jen její úprava.",
+        "rollAll": "Hodit na {fth}, {sin} a {vis}",
+        "Meaning": {
+          "fth": "Tvé pouto k bohům; otevírá zázraky a zkouší se proti svaté i nesvaté moci.",
+          "sin": "Jak snadno podléháš pokušení a zkáze.",
+          "vis": "Jak tě vidí ostatní; utváří první dojem a svádění."
+        },
+        "formula": "1d4 + rasová úprava ({mod})",
+        "value": "Hodnota",
+        "valueLine": "Padlo {die}, {mod} = {value}",
+        "notRolled": "Zatím nehozeno",
+        "rerollFavour": "Přehodit (Přízeň štěstěny)",
+        "rerollTrait": "Přehodit ({trait})",
+        "Spent": {
+          "notRolled": "Nejdřív hoď.",
+          "favour": "Přízeň štěstěny už je využitá. {spent}.",
+          "trait": "Přehod z rysu {trait} už je využitý."
+        },
+        "favour": "Přízeň štěstěny",
+        "favourHelp": "Jednou během tvorby: přehoď {fth}, {sin} nebo {vis} (platí nový hod, i když je horší), nebo si hoď na Hvězdu s výhodou. Když využiješ jedno, přijdeš o druhé.",
+        "favourUnused": "Nevyužitá",
+        "favourSpentStat": "Využitá na přehod: {stat}",
+        "favourSpentAdvantage": "Využitá na výhodu při hodu na Hvězdu",
+        "starHeading": "Hvězda",
+        "born": "Narozen pod Hvězdou",
+        "bornKind": "Neutrální rys, 0 bodů",
+        "bornText": "Narodit se pod určitou Hvězdou může být dar i prokletí.",
+        "bornNote": "Tvé znamení se stane jedním z tvých rysů a počítá se do limitu rysů.",
+        "bornLocked": "Na znamení už je hozeno, Hvězda zůstává.",
+        "rollSign": "Hodit na Hvězdu",
+        "rollSignAdvantage": "Hodit s výhodou (využije Přízeň štěstěny)",
+        "pickOne": "Hozeno s výhodou: klikni na znamení, které si bereš. Volba je konečná.",
+        "d100": "d100: {n}",
+        "Chat": {
+          "statsTitle": "Zrození",
+          "statLine": "{stat}: na 1d4 padlo {die}, {mod} = {value}",
+          "rerollTitle": "Zrození: přehod",
+          "rerollLine": "{stat}: přehod ({reason}), {old} → {new}",
+          "signTitle": "Hvězda",
+          "signLine": "d100 {n}: {sign}",
+          "signAdvantage": "Hozeno s výhodou (Přízeň štěstěny): vybírá se jedno ze dvou znamení."
+        },
+        "Warn": {
+          "rollFirst": "Nejdřív hoď na {fth}, {sin} a {vis}.",
+          "signFirst": "Narodil ses pod Hvězdou: nejdřív hoď na své znamení.",
+          "pickSign": "Nejdřív si vyber jedno ze dvou znamení."
+        },
+        "reset": "Vynulovat hody",
+        "resetTitle": "Vynulovat hody zrození",
+        "resetContent": "Smaže všechny hody postavy {name} na tomto kroku: Víru, Hříšnost a Vzhled, Přízeň štěstěny, přehody z rysů i Hvězdu. Hráč pak hází znovu."
+      },
       "Learn": {
         "levelCap": "Úroveň {level}: stupně nejvýše do {rank}",
         "convert": "CP na SP",
         "convertMax": "max. {n}",
         "convertHint": "Až polovinu CP lze převést na SP, nikdy naopak. Po dokončení postavy už převod změnit nejde.",
         "noStarting": "Vypravěč této postavě ještě nezadal počáteční CP a SP. Udělá to ve Správě družiny.",
-        "finished": "Postava {name} je hotová."
+        "finished": "Postava {name} je hotová.",
+        "spellsInnate": "Postava {name} začíná s divokou magií svých škol (počet kouzel: {count}) a umí ji zpaměti.",
+        "spellsGranted": "Postava {name} začíná se všemi kouzly svých škol, na která dosáhne (počet: {count}). Divokou magii umí zpaměti, ostatní kouzla (počet: {written}) má zapsaná v grimoáru."
       },
       "Skills": {
         "character": "Postava",
@@ -5716,7 +5787,11 @@
       "PredatorySensesHint": "Dravčí smysly ti dávají Výhodu na tento útok v prvním kole přepadení nebo boje v přírodě.",
       "Shoot": "Vystřelit",
       "MakeshiftMelee": "Útok zblízka",
-      "MakeshiftSuffix": "(provizorní)"
+      "MakeshiftSuffix": "(provizorní)",
+      "HalfCover": "Poloviční kryt",
+      "HalfCoverHint": "-30 % ke Střelbě nebo Vrhu na cíl za polovičním krytem.",
+      "FullCover": "Plný kryt",
+      "FullCoverHint": "-60 % ke Střelbě nebo Vrhu na cíl za plným krytem."
     },
     "Miracle": {
       "Tag": "Zázrak",
@@ -5859,7 +5934,8 @@
       "Free": "Přehozeno bez spotřebování přehozu.",
       "PatientGone": "Pacient tohoto pokusu už na scéně není.",
       "PromptRetired": "Přehozeno",
-      "KeptByCombatMaster": "Kritický úspěch: Mistr: Souboj si přehoz ponechává."
+      "KeptByCombatMaster": "Kritický úspěch: Mistr: Souboj si přehoz ponechává.",
+      "UnlimitedCost": "{cost} výdrže, bez omezení"
     },
     "RollTriggers": {
       "Hint": "Odděleno čárkami. Štítky se zobrazí v chatu, když padne odpovídající hod. Vlastnosti piš zkratkou (str, res). Přidej -gm k jakémukoli spouštěči (universal-gm, str-based-gm) a jeho štítek uvidí jen GM. long-rest zobrazí štítek na kartě dlouhého odpočinku postavy (universal na ni nedosáhne).",
@@ -6262,6 +6338,7 @@
       "possessed": "Posednutý"
     },
     "EffectDesc": {
+      "shooting_stance": "Kryt +10 % a Úhyb +10 % proti Střelbě. Míření se počítá na všechny útoky v tomto kole a jedna Stráž za kolo je Volná akce. Udržuje se z panelu v každém tahu nositele (Volná akce, 1 výdrž); pohyb postoj ruší.",
       "covering_stance": "Dokud trvá, nepřátelská střelba na spojence nabídne reakci Krýt: pohyb až o Rychlost hex, který musí skončit vedle spojence, a pak Ochranu na něj jako Volnou akci. Udržuje se z panelu v každém tahu nositele (1 akce, 1 výdrž).",
       "stagger": "-10 % na všechny testy. Nemůže provádět příležitostné útoky. Trvá 2 tahy a Ochromení nebo Ochrnutí ho nahradí.",
       "bleed": "Způsobí 1d4 zranění za každý stupeň při uvalení a znovu na začátku každého kola. Sčítá se až do 6 stupňů.",
@@ -8165,6 +8242,18 @@
       },
       "FollowUpThrow": {
         "name": "Navazující vrh"
+      },
+      "RetaliatoryShot": {
+        "name": "Odvetný výstřel",
+        "description": "<p>Můžeš vystřelit po oponentovi, který tě Střelbou minul nebo který střílel po tvém spojenci.</p><p>Nevztahuje se na jiný Odvetný výstřel, Odvetu ani Odvetný vrh.</p>"
+      },
+      "ShootingStance": {
+        "name": "Střelecký postoj",
+        "description": "<p>Postoj dává bonus +10 % na Kryt a +10 % na Úhyb proti Střelbě. Míření se počítá na všechny útoky, které provedeš ve stejném kole. Jednou za kolo můžeš použít Stráž nebo Míření jako Volnou akci.</p><p>Postoj můžeš zrušit jako Volnou akci a ruší ho i pohyb. Udržování postoje je Volná akce. Tuto akci nelze použít při boji ze sedla.</p>"
+      },
+      "TargetLock": {
+        "name": "Zacílení",
+        "description": "<p>Po akci Míření můžeš Testovat Vnímání (-30 %). Při úspěchu získáš jedno Míření navíc na stejný cíl.</p>"
       },
       "AccurateShotSkirmisher": {
         "name": "Přesný výstřel (Harcovník)"

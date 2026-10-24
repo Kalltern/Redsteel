@@ -74,6 +74,22 @@
       "RunUpTooShort": "Run Up Throw needs a run of at least {min} hexes; the run covered {walked}.",
       "LightArmorRest": "Light armor: {name} recovers {amount} more Stamina from the Rest."
     },
+    "Sharpshooter": {
+      "RetaliatoryHintMissed": "{attacker} shot at you and missed: shoot back.",
+      "RetaliatoryHintAlly": "{attacker} shot at {ally}: shoot back.",
+      "RetaliatoryNoBow": "Retaliatory Shot needs a bow or crossbow in hand.",
+      "TargetLockHint": "After your Aim: test Perception at -30% for one more Aim on {target}.",
+      "TargetLockNothing": "Nothing to lock onto: Target Lock follows straight on from an Aim action with a bow or crossbow in hand, once per Aim action.",
+      "TargetLockSuccess": "{name} locks onto {target}: one more Aim ({after} in total).",
+      "TargetLockFail": "{name} fails to lock onto {target}.",
+      "TagOverwatchShot": "Overwatch shot +10%"
+    },
+    "Cover": {
+      "TagHalf": "Half cover −30%",
+      "TagFull": "Full cover −60%",
+      "TagHalfIgnored": "Half cover ignored",
+      "TagFullAsHalf": "Full cover counts as half −30%"
+    },
     "Rearm": {
       "Title": "Re-arm",
       "Prompt": "Draw which weapon into your main hand?",
@@ -1838,27 +1854,27 @@
           "nodes": {
             "mireniPomalyPohyb": {
               "label": "Keeps Aim during Slow Move",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. With a bow or crossbow in hand, a Slow Movement does not lose the Aim. Automated."
             },
             "zmenaCile": {
               "label": "Change Aim target once per round free",
-              "description": "5 CP; Lukostřelec/Kušník V. Manual — resolved at the table."
+              "description": "5 CP; Lukostřelec/Kušník V. Once a round, moving the Aim to another target by hand carries every stack over. It is a Free action and adds no stack. Needs a bow or crossbow in hand. Automated."
             },
             "zacileni": {
               "label": "Target Lock",
-              "description": "10 CP. Manual — resolved at the table."
+              "description": "10 CP. Grants Target Lock (Free action, 2 Stamina): after an Aim action, a Perception test at -30% for one more Aim on the same target. Offered on the hotbar once per Aim action, with a bow or crossbow in hand. Automated."
             },
             "redukceMireni": {
               "label": "Aim reduction after a hit",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. With a bow or crossbow in hand, a hit on the aimed target costs one Aim, a Critical Hit none and a miss all of it. Automated."
             },
             "mireniPoMinuti": {
               "label": "Gains Aim after a missed shot",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. A missed shot with a bow or crossbow gives one Aim on its target at the end of the turn. Automated."
             },
             "zmrzacujiciVystrel": {
               "label": "Crippling Shot: 35% to stop movement",
-              "description": "10 CP; Lukostřelec/Kušník VII. Manual — resolved at the table."
+              "description": "10 CP; Lukostřelec/Kušník VII. Crippling Shot from a bow or crossbow also rolls 35% to immobilize the target (no movement until the end of its next turn). Automated."
             },
             "bleed1": {
               "label": "Bleed +5%",
@@ -1873,20 +1889,20 @@
               "description": "5 CP. Automated."
             },
             "presnyVystrel": {
-              "label": "Precise Shot: Crit Range Advantage",
-              "description": "10 CP; Lukostřelec/Kušník VII. Manual — resolved at the table."
+              "label": "Accurate Shot: Crit Range Advantage, threshold -5",
+              "description": "10 CP; Lukostřelec/Kušník VII. Accurate Shot from a bow or crossbow rolls its Critical Range die with Advantage, and a margin of 25 instead of 30 is already a Critical Hit. Automated."
             },
             "strazStrelba": {
               "label": "Guard: Shooting +10%",
-              "description": "10 CP; Lukostřelec/Kušník VIII. Manual — resolved at the table."
+              "description": "10 CP; Lukostřelec/Kušník VIII. An Opportunity Attack shot with a bow or crossbow while Overwatch holds gets Shooting +10%. Automated."
             },
             "streleckyPostoj": {
               "label": "Shooting Stance: Dodge +5%, Cover +10%",
-              "description": "10 CP; Lukostřelec/Kušník X. Manual — resolved at the table."
+              "description": "10 CP; Lukostřelec/Kušník X. While Shooting Stance holds and a bow or crossbow is in hand: Cover +10% more, and Dodge against Shooting +5% more. Automated."
             },
             "ignorujeKryt": {
               "label": "Ignores half cover",
-              "description": "5 CP; Lukostřelec/Kušník X. Full cover counts as half. Manual — resolved at the table."
+              "description": "5 CP; Lukostřelec/Kušník X. Full cover counts as half. A shot with a bow or crossbow takes no penalty for half cover, and full cover costs -30% instead of -60%. The cover is picked in the attack dialog. Automated."
             },
             "strelba5": {
               "label": "Shooting +5%",
@@ -1898,7 +1914,7 @@
             },
             "mireniOvereni": {
               "label": "Aiming: Precision +5%",
-              "description": "10 CP; Lukostřelec/Kušník VI. Tied to Aiming — manual for now. Manual — resolved at the table."
+              "description": "10 CP; Lukostřelec/Kušník VI. Each Aim committed to a shot from a bow or crossbow adds Precision +5%. Automated."
             },
             "pozadavkyLuku": {
               "label": "Bow and crossbow requirements -1",
@@ -1910,11 +1926,11 @@
             },
             "odvetnyVystrel": {
               "label": "Retaliatory Shot",
-              "description": "20 CP; Lukostřelec/Kušník VIII. Manual — resolved at the table."
+              "description": "20 CP; Lukostřelec/Kušník VIII. Grants Retaliatory Shot (Reaction, 2 Stamina): the hotbar offers a shot at an enemy whose Shooting missed you, or who shot at an ally. Not against another Retaliatory Shot, a Retaliation or a Retaliatory Throw. Needs a bow or crossbow in hand. Automated."
             },
             "tesnyZasah": {
               "label": "Close Hit",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Reroll your own Shooting or Cover roll when the margins were 10 or less apart (Free action, 1 Stamina, no daily limit). Offered in the Re-Roll picker, with a bow or crossbow in hand. Automated."
             },
             "kritRozsah": {
               "label": "Critical Range +2",
@@ -1926,7 +1942,7 @@
             },
             "primarniZraneni": {
               "label": "Damage +50% from Primary Attributes",
-              "description": "10 CP. Manual — resolved at the table."
+              "description": "10 CP. Bows and crossbows add Perception one and a half times to damage (rounded down). Automated."
             },
             "kryt10": {
               "label": "Ranged Cover +10%",
@@ -4933,13 +4949,68 @@
       "Step3": {
         "title": "Skills and features"
       },
+      "Birth": {
+        "title": "Birth",
+        "advice": "Roll what fate gave you at birth. The rolls stand: going back or changing your race never rerolls them, only the race modifier follows your race.",
+        "rollAll": "Roll {fth}, {sin} and {vis}",
+        "Meaning": {
+          "fth": "Your bond to the gods; it opens miracles and is tested against holy and unholy power.",
+          "sin": "How easily you give in to temptation and corruption.",
+          "vis": "How others see you; it shapes first impressions and seduction."
+        },
+        "formula": "1d4 + race modifier ({mod})",
+        "value": "Value",
+        "valueLine": "Rolled {die}, {mod} = {value}",
+        "notRolled": "Not rolled yet",
+        "rerollFavour": "Reroll (Fortune's favour)",
+        "rerollTrait": "Reroll ({trait})",
+        "Spent": {
+          "notRolled": "Roll first.",
+          "favour": "Fortune's favour is already used. {spent}.",
+          "trait": "The reroll from {trait} is already used."
+        },
+        "favour": "Fortune's favour",
+        "favourHelp": "Once during creation: reroll one of {fth}, {sin} or {vis} (the new roll stands, even if worse), or roll your Starsign with advantage. Using one gives up the other.",
+        "favourUnused": "Unused",
+        "favourSpentStat": "Spent on a reroll of {stat}",
+        "favourSpentAdvantage": "Spent on advantage for the Starsign",
+        "starHeading": "Starsign",
+        "born": "Born under a Star",
+        "bornKind": "Neutral trait, 0 points",
+        "bornText": "Being born under a particular Star can be a gift or a curse.",
+        "bornNote": "Your sign becomes one of your traits and counts toward the trait limit.",
+        "bornLocked": "Your sign is rolled, so the Star stays.",
+        "rollSign": "Roll the Starsign",
+        "rollSignAdvantage": "Roll with advantage (spends Fortune's favour)",
+        "pickOne": "Rolled with advantage: click the sign you take. The choice is final.",
+        "d100": "d100: {n}",
+        "Chat": {
+          "statsTitle": "Birth",
+          "statLine": "{stat}: 1d4 rolled {die}, {mod} = {value}",
+          "rerollTitle": "Birth: reroll",
+          "rerollLine": "{stat} rerolled through {reason}: {old} → {new}",
+          "signTitle": "Starsign",
+          "signLine": "d100 {n}: {sign}",
+          "signAdvantage": "Rolled with advantage (Fortune's favour): one of the two signs is chosen."
+        },
+        "Warn": {
+          "rollFirst": "Roll {fth}, {sin} and {vis} first.",
+          "signFirst": "You are born under a Star: roll your Starsign first.",
+          "pickSign": "Pick one of the two signs first."
+        },
+        "reset": "Reset the rolls",
+        "resetTitle": "Reset the birth rolls",
+        "resetContent": "Clear every roll {name} made on this step: Faith, Sinfulness and Appearance, Fortune's favour, the trait rerolls and the Starsign. The player then rolls again."
+      },
       "Learn": {
         "levelCap": "Level {level}: ranks up to {rank}",
         "convert": "CP to SP",
         "convertMax": "max {n}",
         "convertHint": "Up to half of your CP may become SP, never the other way round. Locked once the character is finished.",
         "noStarting": "The GM has not set this character's starting CP and SP yet. They do that in Party Management.",
-        "finished": "{name} is ready."
+        "finished": "{name} is ready.",
+        "spellsInnate": "{name} starts with the wild magic of their schools ({count} spells), known by heart.",
+        "spellsGranted": "{name} starts with {count} spells of their schools: wild magic known by heart, the other {written} written in their grimoire."
       },
       "Skills": {
         "character": "Character",
@@ -5716,7 +5787,11 @@
       "PredatorySensesHint": "Predatory Senses give Advantage on this attack in the first round of an ambush or of a fight in the wild.",
       "Shoot": "Shoot",
       "MakeshiftMelee": "Melee attack",
-      "MakeshiftSuffix": "(makeshift)"
+      "MakeshiftSuffix": "(makeshift)",
+      "HalfCover": "Half cover",
+      "HalfCoverHint": "-30% to a shot or a throw at a target behind half cover.",
+      "FullCover": "Full cover",
+      "FullCoverHint": "-60% to a shot or a throw at a target behind full cover."
     },
     "Miracle": {
       "Tag": "Miracle",
@@ -5859,7 +5934,8 @@
       "Free": "Rerolled without spending a reroll.",
       "PatientGone": "The patient of this attempt is no longer on the scene.",
       "PromptRetired": "Rerolled",
-      "KeptByCombatMaster": "Critical Success: Master: Combat keeps the reroll."
+      "KeptByCombatMaster": "Critical Success: Master: Combat keeps the reroll.",
+      "UnlimitedCost": "{cost} Stamina, no limit"
     },
     "RollTriggers": {
       "Hint": "Comma-separated. Pills appear in chat when a matching roll is made. Write attributes by their short key (str, res). Add -gm to any trigger (universal-gm, str-based-gm) and only the GM sees its pill. long-rest shows the pill on the character's Long Rest card (universal does not reach it).",
@@ -6262,6 +6338,7 @@
       "possessed": "Possessed"
     },
     "EffectDesc": {
+      "shooting_stance": "Cover +10%, and Dodge +10% against Shooting. Aim counts for every attack made this round, and one Overwatch a round is a Free action. Must be held from the hotbar on each of the bearer's turns (a Free action, 1 Stamina); moving ends it.",
       "covering_stance": "While it holds, an enemy shot at an ally offers a Cover reaction: a move of up to Speed hexes that ends next to the ally, then Guard on them as a Free action. Must be held from the hotbar on each of the bearer's turns (1 Action, 1 Stamina).",
       "stagger": "-10% on every test. Cannot make opportunity attacks. Lasts 2 turns, and Stun or Paralyze replace it.",
       "bleed": "Deals 1d4 damage per stack when applied and again at the start of every round. Stacks up to 6 times.",
@@ -8156,6 +8233,18 @@
       },
       "FollowUpThrow": {
         "name": "Follow-up Throw"
+      },
+      "RetaliatoryShot": {
+        "name": "Retaliatory Shot",
+        "description": "<p>Shoot at an opponent whose Shooting missed you, or who shot at one of your allies.</p><p>Does not answer another Retaliatory Shot, a Retaliation or a Retaliatory Throw.</p>"
+      },
+      "ShootingStance": {
+        "name": "Shooting Stance",
+        "description": "<p>The stance gives +10% to Cover and +10% to Dodge against Shooting. Aim counts for every attack you make in the same round. Once per round you may use Overwatch or Aim as a Free action.</p><p>The stance can be dropped as a Free action, and ends when you move. Holding it is a Free action. It cannot be used while fighting from the saddle.</p>"
+      },
+      "TargetLock": {
+        "name": "Target Lock",
+        "description": "<p>After an Aim action, test Perception at -30%. On a success you gain one more Aim on the same target.</p>"
       },
       "AccurateShotSkirmisher": {
         "name": "Accurate Shot (Skirmisher)"

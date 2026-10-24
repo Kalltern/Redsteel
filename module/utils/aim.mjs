@@ -179,6 +179,50 @@ export function hasDuelistOffHand(context) {
   return off.system?.offhandProperties?.doctrines?.duelist === true;
 }
 
+/** Bows and crossbows: the weapons Střelba (Shooting) is rolled with. */
+export function isShootingWeapon(weapon) {
+  const cls = weapon?.system?.class;
+  return cls === "bow" || cls === "crossbow";
+}
+
+/**
+ * Ostrostřelec (Sharpshooter) — is this node live right now? Every node of the
+ * tree needs a bow or crossbow in hand (user ruling 2026-10-24). `weapon` is
+ * the weapon of the roll when the caller knows it (null for "none"); left out,
+ * whatever the actor holds in its main hand now is read.
+ *
+ * @param {Actor} actor
+ * @param {string} node
+ * @param {Item|null} [weapon]
+ * @returns {boolean}
+ */
+export function sharpshooterNode(actor, node, weapon = undefined) {
+  if (actor?.type !== "character") return false;
+  if (!actorHasSpecNode(actor, "sharpshooter", node)) return false;
+  const held =
+    weapon === undefined
+      ? (game.redsteel?.resolveWeaponContext?.(actor)?.weapon ?? null)
+      : weapon;
+  return isShootingWeapon(held);
+}
+
+/**
+ * Střelecký postoj (Shooting Stance): "Míření se počítá na všechny útoky
+ * provedené ve stejném kole". While the stance holds and a bow or crossbow
+ * shoots, an attack on the aimed target spends nothing; the aim is marked with
+ * the round instead and lapses when that round ends (see the updateCombat hook
+ * in registerAimOverlay). The status is applied by the generic stance flow
+ * (combatAbilities.mjs, stances.mjs); utils/sharpshooter.mjs has the rest.
+ */
+const SHOOTING_STANCE_STATUS = "shooting_stance";
+
+/** The round an aim is held for, as "<combatId>:<round>", or null outside combat. */
+function currentRoundKey() {
+  const combat = game.combat;
+  if (!combat?.started) return null;
+  return `${combat.id}:${combat.round}`;
+}
+
 /**
  * Aim-reduction profiles. All three share the same base — a hit on the aimed
  * target costs one stack instead of the whole bonus, a critical hit costs none —
@@ -238,6 +282,10 @@ function mergeReduction(profiles) {
  *   maneuver  — Advantageous Maneuver. A successful melee defense can buy one Aim
  *               on the attacker for Stamina, offered on the defense card. See
  *               utils/advantageousManeuver.mjs.
+ *   retarget  — Ostrostřelec's Change Aim target. Once a round, moving the aim
+ *               by hand carries every stack across. See addAimStackOn.
+ *
+ * Ostrostřelec's perks gate on a bow or crossbow instead (sharpshooterNode).
  */
 function aimPerks(actor, weapon, context = null) {
   if (!actor || !weapon) return {};
@@ -254,6 +302,10 @@ function aimPerks(actor, weapon, context = null) {
     profiles.push(REDUCTION_SERVANT);
   if (blade && node("swordDancer", "mireniRedukce"))
     profiles.push(REDUCTION_DANCER);
+  // Ostrostřelec → Redukce Míření po zásahu: the base profile, for a bow or
+  // crossbow.
+  if (sharpshooterNode(actor, "redukceMireni", weapon))
+    profiles.push(REDUCTION_BASE);
 
   return {
     improved:
@@ -267,6 +319,9 @@ function aimPerks(actor, weapon, context = null) {
     maneuver:
       (blade && node("swordDancer", "vyhodnyManevr")) ||
       (broadsword && node("swordServant", "vyhodnyManevr")),
+    // Ostrostřelec → "Může změnit cíl Míření jednou za kolo jako Volnou
+    // akci": see addAimStackOn.
+    retarget: sharpshooterNode(actor, "zmenaCile", weapon),
   };
 }
 
@@ -431,8 +486,18 @@ async function setAim(token, targetId, stacks) {
   const capped = Math.min(MAX_STACKS, Math.max(0, Math.round(stacks)));
   if (capped <= 0) return clearAim(token);
 
-  const stamp = (doc.getFlag(SYSTEM_ID, FLAG)?.stamp ?? 0) + 1;
-  await doc.setFlag(SYSTEM_ID, FLAG, { targetId, stacks: capped, stamp });
+  const prev = doc.getFlag(SYSTEM_ID, FLAG);
+  const stamp = (prev?.stamp ?? 0) + 1;
+  // A Shooting Stance round hold belongs to the target it was spent on; a new
+  // target starts unspent. Written explicitly, since setFlag merges objects.
+  const roundHold =
+    prev?.targetId === targetId ? (prev?.roundHold ?? null) : null;
+  await doc.setFlag(SYSTEM_ID, FLAG, {
+    targetId,
+    stacks: capped,
+    stamp,
+    roundHold,
+  });
 }
 
 /**
@@ -504,7 +569,7 @@ export async function applyGrudgeFloor(token) {
  * - Different target → switching burns all prior stacks; reset to 1. Duelist's
  *   Stance carries all but one across instead, so a switch costs a single stack.
  */
-async function addAimStackOn(token, target, perks = null) {
+async function addAimStackOn(token, target, perks = null, { manual = false } = {}) {
   if (!token || !target) return;
   if (target.id === token.id) return; // a token cannot aim at itself
 
@@ -513,6 +578,17 @@ async function addAimStackOn(token, target, perks = null) {
   if (aim?.targetId === target.id) {
     if (aim.stacks >= MAX_STACKS) return; // already capped
     await setAim(token, target.id, aim.stacks + 1);
+    if (manual) await noteAimAction(token);
+    return;
+  }
+
+  // Ostrostřelec → Change Aim target, once a round: an aim moved by hand
+  // carries every stack across and adds none, being the Free action of
+  // changing the target rather than an Aim action. Grants that land on
+  // another token (Hunter's Shot, a Sneak Attack) never spend it.
+  if (manual && aim?.targetId && perks?.retarget && retargetFree(token)) {
+    await setAim(token, target.id, aim.stacks ?? 1);
+    await markRetarget(token);
     return;
   }
 
@@ -520,6 +596,61 @@ async function addAimStackOn(token, target, perks = null) {
   const carried =
     aim?.targetId && perks?.keepsAim ? Math.max(0, (aim.stacks ?? 0) - 1) : 0;
   await setAim(token, target.id, 1 + carried);
+  if (manual) await noteAimAction(token);
+}
+
+/**
+ * Token flag: the round Change Aim target was last used in, as
+ * "<combatId>:<round>". Outside combat there are no rounds and it is always
+ * free.
+ */
+const RETARGET_FLAG = "aimRetarget";
+
+function retargetFree(token) {
+  const key = currentRoundKey();
+  if (!key) return true;
+  return tokenDoc(token)?.getFlag(SYSTEM_ID, RETARGET_FLAG) !== key;
+}
+
+async function markRetarget(token) {
+  const key = currentRoundKey();
+  const doc = tokenDoc(token);
+  if (!key || !doc) return;
+  await doc.setFlag(SYSTEM_ID, RETARGET_FLAG, key);
+}
+
+/**
+ * Token flag: the aim `stamp` a stack added by hand (the ALT button, the Add
+ * Aim macro) produced, i.e. the player's last Aim action. Read by Target Lock
+ * (Ostrostřelec → Zacílení, "Po akci Míření"; utils/sharpshooter.mjs).
+ */
+const AIM_ACTION_FLAG = "aimAction";
+
+async function noteAimAction(token) {
+  const doc = tokenDoc(token);
+  const aim = readAim(doc);
+  if (!doc || !aim) return;
+  await doc.setFlag(SYSTEM_ID, AIM_ACTION_FLAG, aim.stamp ?? 0);
+}
+
+/**
+ * The Aim action Target Lock may follow: the aim this token holds, as long as
+ * nothing has touched it since a stack was added by hand. Any later change to
+ * the aim (another stack, an attack spending it, Target Lock's own stack)
+ * bumps the stamp and closes the offer. Null when there is none, or the aim is
+ * already at four.
+ *
+ * @param {TokenDocument|Token} token
+ * @returns {{targetId: string, stacks: number, stamp: number}|null}
+ */
+export function lastAimAction(token) {
+  const doc = tokenDoc(token);
+  const aim = readAim(doc);
+  if (!doc || !aim?.targetId) return null;
+  if ((aim.stacks ?? 0) >= MAX_STACKS) return null;
+  const stamp = doc.getFlag(SYSTEM_ID, AIM_ACTION_FLAG);
+  if (!Number.isFinite(stamp) || stamp !== (aim.stamp ?? 0)) return null;
+  return { targetId: aim.targetId, stacks: aim.stacks ?? 0, stamp };
 }
 
 /**
@@ -945,12 +1076,18 @@ async function writeMissOwed(actor, queue) {
 }
 
 /** Park the miss grant an ability owes, if it owes one and has a target. */
-async function recordMissGrant(actor, aimer, ability, targetId) {
+async function recordMissGrant(actor, aimer, ability, targetId, weapon = null) {
   const grant = aimGrantForAbility(
     ability?.system?.localizationKey ?? null,
     ability?.name ?? null,
   );
-  if (!(grant?.miss > 0) || !targetId) return;
+  // Ostrostřelec → "Získává jedno Míření, pokud minul cíl Střelbou": every
+  // shot from a bow or crossbow owes one Aim on a miss, on top of whatever
+  // the ability itself owes.
+  const stacks =
+    (Number(grant?.miss) || 0) +
+    (sharpshooterNode(actor, "mireniPoMinuti", weapon) ? 1 : 0);
+  if (!(stacks > 0) || !targetId) return;
   const doc = tokenDoc(aimer);
   await writeMissOwed(actor, [
     ...readMissOwed(actor),
@@ -958,7 +1095,7 @@ async function recordMissGrant(actor, aimer, ability, targetId) {
       sceneId: doc?.parent?.id ?? canvas?.scene?.id ?? null,
       tokenId: doc?.id ?? null,
       targetId,
-      stacks: grant.miss,
+      stacks,
     },
   ]);
 }
@@ -1026,8 +1163,23 @@ export async function resolveAimOnAttack({
   const sneakTargetId = struckAimed ? aim.targetId : (targetIds[0] ?? null);
 
   // Perfect Opening's one Aim on a miss is owed from now on, and cancelled by
-  // Apply Damage if the blow lands.
-  await recordMissGrant(actor, aimer, ability, sneakTargetId);
+  // Apply Damage if the blow lands. So is Ostrostřelec's.
+  await recordMissGrant(actor, aimer, ability, sneakTargetId, weapon);
+
+  // Shooting Stance: the aim counts for every attack made this round, so a
+  // shot at the aimed target spends nothing. The aim is marked with the round
+  // and lapses when it ends (registerAimOverlay's updateCombat hook). Outside
+  // combat there is no round to hold it for, and it is spent as usual.
+  const roundKey = currentRoundKey();
+  if (
+    struckAimed &&
+    roundKey &&
+    actor.statuses?.has(SHOOTING_STANCE_STATUS) &&
+    isShootingWeapon(weapon)
+  ) {
+    await tokenDoc(aimer)?.setFlag(SYSTEM_ID, FLAG, { roundHold: roundKey });
+    return;
+  }
 
   let pending = null;
 
@@ -1428,6 +1580,8 @@ const MOVEMENT_ACTION_KEYS = new Set([
   "REDSTEEL.Items.Disengage.name",
 ]);
 const MOVEMENT_ACTION_SYSTEM_KEYS = new Set(["sprint", "disengage"]);
+/** Slow Movement, for Ostrostřelec's "Při Pomalém pohybu neztrácí Míření". */
+const SLOW_MOVEMENT_KEY = "REDSTEEL.Items.SlowMovement.name";
 
 /**
  * Rests, for Oddech: Míření +1 (user ruling 2026-10-20: "Oddech starts to
@@ -1449,7 +1603,10 @@ const REST_ACTION_SYSTEM_KEYS = new Set(["dragon_sleep"]);
  * stance's upkeep, Re-arm).
  *
  * @param {Item|object} item
- * @returns {null|"movement"|"rest"|"action"}
+ * "slow" is Slow Movement, a movement action Ostrostřelec can keep an aim
+ * through.
+ *
+ * @returns {null|"movement"|"slow"|"rest"|"action"}
  */
 export function aimBreakKind(item) {
   if (!item) return null;
@@ -1459,6 +1616,7 @@ export function aimBreakKind(item) {
   if (sys.class === "attack") return null;
   if (ATTACK_KEYS.has(key)) return null;
   if (AIM_ACTION_KEYS.has(key) || AIM_ACTION_NAMES.has(item.name)) return null;
+  if (key === SLOW_MOVEMENT_KEY) return "slow";
   if (MOVEMENT_ACTION_KEYS.has(key) || MOVEMENT_ACTION_SYSTEM_KEYS.has(sys.key)) {
     return "movement";
   }
@@ -1522,13 +1680,20 @@ function actorTokenDocs(actor) {
  * Silent, like every other aim change (the arrow simply goes). Writes only
  * tokens this user owns, which the acting user always does.
  *
+ * Ostrostřelec keeps it through Slow Movement.
+ *
  * @param {Actor} actor
- * @param {{movement?: boolean, rest?: boolean}} [options]  the action was a
- *   movement action / a Rest
+ * @param {{movement?: boolean, slow?: boolean, rest?: boolean}} [options]  the
+ *   action was a movement action / Slow Movement / a Rest
  */
-export async function breakAimOnAction(actor, { movement = false, rest = false } = {}) {
+export async function breakAimOnAction(
+  actor,
+  { movement = false, slow = false, rest = false } = {},
+) {
   if (!actor) return;
   if (movement && keepsAimWhileMoving(actor)) return;
+  // Ostrostřelec → Při Pomalém pohybu neztrácí Míření (bow or crossbow).
+  if (slow && sharpshooterNode(actor, "mireniPomalyPohyb")) return;
   if (rest && hasRespiteAim(actor)) return;
   const docs = actorTokenDocs(actor).filter((doc) => readAim(doc)?.targetId);
   if (!docs.length) return;
@@ -1656,7 +1821,7 @@ export async function addAimStack() {
   if (!token) return;
   const target = game.user.targets.first();
   if (!target) return;
-  await addAimStackOn(token, target, livePerks(token.actor));
+  await addAimStackOn(token, target, livePerks(token.actor), { manual: true });
 }
 
 /** Remove a stack from the acting token's current aim. */
@@ -2001,7 +2166,9 @@ function makeAimButton(target) {
     if (event.button === 2) {
       await removeAimStackOn(aimer, target);
     } else if (event.button === 0) {
-      await addAimStackOn(aimer, target, livePerks(aimer.actor));
+      await addAimStackOn(aimer, target, livePerks(aimer.actor), {
+        manual: true,
+      });
     }
     // setFlag fires updateToken → refreshAimOverlay → updateButtonStates().
     // Update immediately too so the label responds without waiting on the hook.
@@ -2218,6 +2385,15 @@ export function registerAimOverlay() {
     if (!("turn" in changed) && !("round" in changed)) return;
     for (const combatant of combat.combatants) {
       await sweepPendingAim(combatant.actor);
+    }
+    // Shooting Stance: an aim held for a round that is over has been spent.
+    if ("round" in changed) {
+      const key = `${combat.id}:${combat.round}`;
+      for (const combatant of combat.combatants) {
+        const doc = combatant.token;
+        const hold = readAim(doc)?.roundHold;
+        if (hold && hold !== key) await clearAim(doc);
+      }
     }
   });
 

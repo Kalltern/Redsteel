@@ -33,6 +33,7 @@ import { dragonGuardTags } from "./dragonGuard.mjs";
 import { asMakeshiftMelee, isRangedWeapon } from "./makeshift.mjs";
 // Call time only (forcedMovement.mjs reaches back through applyDamage.mjs).
 import { isTripModifier } from "./forcedMovement.mjs";
+import { aimPrecisionModifier } from "./sharpshooter.mjs";
 
 export async function universalAttackLogic({
   attackType,
@@ -368,6 +369,10 @@ export async function universalAttackLogic({
       weapon,
       resolvedContext,
     );
+    // Ostrostřelec → Míření: Ověření +5% per Aim committed to the shot. The
+    // same flag, read at the same point, for the same reason
+    // (sharpshooter.mjs); it rides into the effects roll below.
+    const aimPrecision = aimPrecisionModifier(actor, weapon);
     // Mistr zbraní: "Útok na slabinu: Průbojnost +10". A basic attack only ever
     // reaches the Weak Spot family through a modifier — the throwing versions —
     // since the standalone ones are abilities and go through combatAbilities.
@@ -462,6 +467,8 @@ export async function universalAttackLogic({
       opportunityAttack,
       dragonGuard,
       rangePenalty,
+      coverTag,
+      overwatchShot,
     } = attackData;
     // Runtime tags only; they travel to the chat card. Dragon Guard's +10% is
     // already in the roll (getAttackRolls), the chip says why.
@@ -473,6 +480,10 @@ export async function universalAttackLogic({
       // roll as -20%).
       ...(outOfReach ? ["outOfReach"] : []),
       ...(rangePenalty ? ["beyondRange"] : []),
+      // Cover and the Overwatch shot bonus, already in the roll
+      // (sharpshooter.mjs).
+      ...(coverTag ? [coverTag] : []),
+      ...(overwatchShot ? ["overwatchShot"] : []),
     ];
     const aimedPartDef = aimedPart ? AIMED_PARTS[aimedPart] : null;
     if (aimedPartDef) {
@@ -515,7 +526,7 @@ export async function universalAttackLogic({
     // ─── Effects Roll ───
     // Head aimed attack injects stagger +20% and precision +10% as a synthetic
     // modifier so both bonuses appear in the roll results and chat message.
-    const effectModifiers = aimedPart === "head"
+    const headModifiers = aimedPart === "head"
       ? [...selectedModifiers, {
           system: {
             effectType1: "stagger",
@@ -524,6 +535,10 @@ export async function universalAttackLogic({
           },
         }]
       : selectedModifiers;
+    // Míření: Ověření +5% rides in the same way (captured above).
+    const effectModifiers = aimPrecision
+      ? [...headModifiers, aimPrecision]
+      : headModifiers;
 
     const effects = await game.redsteel.getEffectRolls(
       actor,

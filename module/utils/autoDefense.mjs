@@ -16,6 +16,7 @@ import {
 import { deniesDefense, resolveDefenseSector } from "./positioning.mjs";
 import { getRollBias, withRollBias } from "./rollAdvantage.mjs";
 import { isRangedWeapon } from "./makeshift.mjs";
+import { isShootingAttackCard } from "./sharpshooter.mjs";
 
 /**
  * NPC auto-defense: an attack card posted against a targeted NPC answers itself.
@@ -242,6 +243,7 @@ export async function pickBestDefense(
       overwhelmStacks,
       longReachPenalty: mode === "melee" ? longReachPenalty : 0,
       spellSchool: attack?.spellSchool ?? null,
+      shootingAttack: attack?.shooting === true,
     });
     const bias = getRollBias(biasData, profile.skillKey);
 
@@ -371,6 +373,9 @@ export async function resolveAutoDefense(message) {
     positioning: flag.positioning ?? null,
     // Tulák IX's lowered critical threshold on a Weak Spot action, if any.
     criticalGap: flag.criticalGap ?? null,
+    // A Shooting attack (bow or crossbow), for Střelecký postoj's Dodge
+    // bonus (utils/sharpshooter.mjs).
+    shooting: isShootingAttackCard(message),
   };
 
   const category = defenseCategory(flag.attackType);

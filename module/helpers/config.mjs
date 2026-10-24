@@ -950,6 +950,27 @@ REDSTEEL.effectDefinitions = {
     changes: [],
   },
 
+  // "Střelecký postoj" (Shooting Stance, Archer X / Arbalest X): Cover +10%
+  // here. Dodge +10% against Shooting only, and the Sharpshooter node's
+  // extra Cover +10% / Dodge +5%, are read at roll time
+  // (utils/sharpshooter.mjs shootingStanceDefense in utils/defense.mjs).
+  // Held per turn from the hotbar with a free upkeep (utils/stances.mjs),
+  // broken by the holder's own move; Aim counting for the whole round is
+  // utils/aim.mjs, keyed off this status id.
+  shooting_stance: {
+    name: "REDSTEEL.Items.ShootingStance.name",
+    img: "icons/weapons/bows/shortbow-recurve-red.webp",
+    statuses: ["shooting_stance"],
+    stackBehavior: "ignore",
+    changes: [
+      {
+        key: "system.combatSkills.rangedDefense.bonus",
+        type: "add",
+        value: 10,
+      },
+    ],
+  },
+
   // "Větrný postoj" (Wind Stance, Champion): weapon attacks against two
   // different enemies in one round (utils/champion.mjs). Defense +5% here,
   // melee Defense only (not Dodge, not ranged); the Hit +5% is per attack, read

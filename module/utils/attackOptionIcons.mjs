@@ -37,6 +37,23 @@ const OPTIONS = [
     label: "REDSTEEL.AttackDialog.PredatorySenses",
     hint: "REDSTEEL.AttackDialog.PredatorySensesHint",
   },
+  {
+    // Cover the target stands behind (zbrojnice.md r248, sharpshooter.mjs):
+    // a shot or a throw only. Half and full are two toggles of which at most
+    // one is on (wireCoverToggles); neither on is no cover.
+    name: "halfCover",
+    img: "icons/environment/wilderness/terrain-rocks-brown.webp",
+    label: "REDSTEEL.AttackDialog.HalfCover",
+    hint: "REDSTEEL.AttackDialog.HalfCoverHint",
+    cls: "penalty",
+  },
+  {
+    name: "fullCover",
+    img: "icons/magic/lightning/barrier-wall-shield-gray.webp",
+    label: "REDSTEEL.AttackDialog.FullCover",
+    hint: "REDSTEEL.AttackDialog.FullCoverHint",
+    cls: "penalty",
+  },
 ];
 
 /**
@@ -49,6 +66,8 @@ const OPTIONS = [
  * @param {boolean} state.longReachClose  Polearm penalty opens ticked.
  * @param {boolean} [state.predatorySenses]  Show the Ambush / In nature toggle
  *   (rangerCombat.mjs predatorySensesAvailable). Never opens ticked.
+ * @param {boolean} [state.cover]  Show the Half cover / Full cover toggles
+ *   (sharpshooter.mjs coverOptionAvailable). Never open ticked.
  * @returns {string}
  */
 export function attackOptionIconsHtml({
@@ -59,6 +78,7 @@ export function attackOptionIconsHtml({
   longReach,
   longReachClose,
   predatorySenses = false,
+  cover = false,
 }) {
   const checked = {
     sneakAttack: sneak,
@@ -70,6 +90,8 @@ export function attackOptionIconsHtml({
     opportunityAttack: opportunity,
     longReachPenalty: longReach,
     predatorySenses,
+    halfCover: cover,
+    fullCover: cover,
   };
   return OPTIONS.filter((o) => shown[o.name] ?? true)
     .map((o) => {
@@ -82,4 +104,35 @@ export function attackOptionIconsHtml({
   </label>`;
     })
     .join("");
+}
+
+/**
+ * Keep the two cover toggles exclusive: ticking one unticks the other, and
+ * clicking the ticked one again clears the cover. Call from the dialog's
+ * render with its root element.
+ *
+ * @param {HTMLElement|null} root
+ */
+export function wireCoverToggles(root) {
+  const boxes = ["halfCover", "fullCover"]
+    .map((name) => root?.querySelector(`input[name="${name}"]`))
+    .filter(Boolean);
+  for (const box of boxes) {
+    box.addEventListener("change", () => {
+      if (!box.checked) return;
+      for (const other of boxes) if (other !== box) other.checked = false;
+    });
+  }
+}
+
+/**
+ * The cover the dialog declares: "full", "half" or null.
+ *
+ * @param {HTMLElement|null} root
+ * @returns {"half"|"full"|null}
+ */
+export function readAttackCover(root) {
+  if (root?.querySelector('input[name="fullCover"]')?.checked) return "full";
+  if (root?.querySelector('input[name="halfCover"]')?.checked) return "half";
+  return null;
 }

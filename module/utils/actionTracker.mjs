@@ -55,6 +55,8 @@ import { combatantForActor } from "./combatants.mjs";
 import { isExploitAsRetaliation } from "./dragonGuard.mjs";
 import { hasFreeRiposte, isRiposte, markFreeRiposteUsed } from "./swordServant.mjs";
 import { isForcedMove } from "./forcedMoveRegistry.mjs";
+import { isOverwatchAbility } from "./overwatch.mjs";
+import { SHOOTING_STANCE_STATUS } from "./sharpshooter.mjs";
 import { aimBreakKind, breakAimOnAction } from "./aim.mjs";
 
 /**
@@ -460,7 +462,7 @@ export async function lockMovement(
   // Action was paid by the ability (Sprint, Disengage), which already broke
   // it through spendForItems, or the move was free.
   if (charge > 0 && AIM_BREAKING_MODES.has(mode)) {
-    await breakAimOnAction(actor, { movement: true });
+    await breakAimOnAction(actor, { movement: true, slow: mode === "slow" });
   }
 }
 
@@ -802,6 +804,8 @@ export function costOf(actor, item) {
   // turn is the reaction reading of that spell).
   // Servant of the Sword: one Riposte per round is a Free action.
   if (isRiposte(item) && hasFreeRiposte(actor)) return none;
+  // Střelecký postoj: one Overwatch per round is a Free action.
+  if (isOverwatchAbility(item) && hasFreeStanceOverwatch(actor)) return none;
   if (parsed.reaction && !onTurn) return { actions: 0, reactions: 1 };
   // Dragon Guard: Exploit Weakness swung off-turn is a Retaliation action,
   // paid with the Reaction rather than its two Actions.
@@ -830,6 +834,8 @@ export async function spendForItems(actor, items) {
   let actions = 0;
   let reactions = 0;
   let freeRiposte = false;
+  // Střelecký postoj: one Overwatch a round costs no Action.
+  let freeOverwatch = false;
   // Forceful Advance (Hoplite): one listed ability costs no Action, once.
   const freeAbility = liveFreeAbility(actor);
   let freeAbilityUsed = false;
@@ -840,6 +846,14 @@ export async function spendForItems(actor, items) {
     // later this round) pays its Reaction.
     if (!freeRiposte && isRiposte(item) && hasFreeRiposte(actor)) {
       freeRiposte = true;
+      continue;
+    }
+    if (
+      !freeOverwatch &&
+      isOverwatchAbility(item) &&
+      hasFreeStanceOverwatch(actor)
+    ) {
+      freeOverwatch = true;
       continue;
     }
     if (
@@ -858,6 +872,7 @@ export async function spendForItems(actor, items) {
     }
   }
   if (freeRiposte) await markFreeRiposteUsed(actor);
+  if (freeOverwatch) await markBonusSource(actor, STANCE_OVERWATCH_SOURCE);
   if (freeAbilityUsed) {
     await writeSpent(actor, {
       ...getSpent(actor),
@@ -874,10 +889,35 @@ export async function spendForItems(actor, items) {
   // makes (Respite's Aim after a Rest, Dragon Sleep's) lands after the loss.
   if (aimBreaks.length) {
     await breakAimOnAction(actor, {
-      movement: aimBreaks.every((kind) => kind === "movement"),
+      movement: aimBreaks.every(
+        (kind) => kind === "movement" || kind === "slow",
+      ),
+      slow: aimBreaks.every((kind) => kind === "slow"),
       rest: aimBreaks.every((kind) => kind === "rest"),
     });
   }
+}
+
+/**
+ * Střelecký postoj (Shooting Stance): "Jednou za kolo může použít Stráž nebo
+ * Míření jako Volnou akci." The round's free use is marked in this round's
+ * record (`bonusSources`), so it lapses with the round like every other
+ * spend. Aim actions are never charged by this tracker, so only Overwatch
+ * needs the allowance; its Stamina is still paid.
+ */
+const STANCE_OVERWATCH_SOURCE = "shootingStanceOverwatch";
+
+/**
+ * Is this round's free Overwatch still there: the stance held, in a tracked
+ * encounter, and not yet used this round.
+ *
+ * @param {Actor} actor
+ * @returns {boolean}
+ */
+export function hasFreeStanceOverwatch(actor) {
+  if (!actor?.statuses?.has(SHOOTING_STANCE_STATUS)) return false;
+  if (!trackedCombat(actor)) return false;
+  return !getSpent(actor).bonusSources.includes(STANCE_OVERWATCH_SOURCE);
 }
 
 /**

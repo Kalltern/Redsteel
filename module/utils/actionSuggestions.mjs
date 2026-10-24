@@ -78,6 +78,15 @@ import {
 } from "./skirmisher.mjs";
 import { isAnyTriumph, pendingTriumph } from "./vanguard.mjs";
 import {
+  RETALIATORY_SHOT_KEY,
+  isShootingAttackCard,
+  pendingTargetLock,
+  retaliatoryShotAnswers,
+  retaliatoryShotItem,
+} from "./sharpshooter.mjs";
+import { sharpshooterNode } from "./aim.mjs";
+import { attackerTokenIdFromMessage } from "./overwhelm.mjs";
+import {
   hasReactionLeft,
   pendingBullChargeOpportunity,
 } from "./bullCharge.mjs";
@@ -913,6 +922,126 @@ function followUpThrowChips(actor) {
   return [abilityChip(item, "REDSTEEL.Bg3Hotbar.Suggest.FreeAction", null)];
 }
 
+/**
+ * Ostrostřelec → Odvetný výstřel (Retaliatory Shot, sharpshooter.mjs):
+ * "Může vystřelit po oponentovi, který ho střelbou minul nebo který střílel
+ * po spojenci." Off the holder's turn, with a Reaction left and a bow or
+ * crossbow in hand, the newest Shooting attack card this turn by an enemy
+ * that either targeted the holder and missed (its own roll failed, or the
+ * holder's defense against that card held) or targeted one of the holder's
+ * allies. Not against a retaliation, a Retaliatory Shot or a Retaliatory
+ * Throw ("Nevztahuje se na jiný Odvetný výstřel, Odvetu nebo Odvetný vrh").
+ * Gone once the holder has posted a Retaliatory Shot after that card.
+ *
+ * @param {Actor} actor
+ * @returns {object[]}
+ */
+function retaliatoryShotChips(actor) {
+  const item = retaliatoryShotItem(actor);
+  if (!item || !sharpshooterNode(actor, "odvetnyVystrel")) return [];
+  if (!trackedCombat(actor) || isTrackedTurn(actor)) return [];
+  if (getSpent(actor).reactions >= getActionPools(actor).reactions) return [];
+  const tokenIds = actorTokenIds(actor);
+  const holder = [...tokenIds].map((id) => canvas.tokens?.get(id)).find(Boolean);
+  if (!holder) return [];
+  const combat = game.combat;
+
+  const messages = game.messages?.contents ?? [];
+  // Attack cards the holder's own defense held against, seen walking back
+  // (a defense card is newer than the attack it answers).
+  const heldAgainst = new Set();
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const message = messages[i];
+    if (turnStartMessageId && message.id === turnStartMessageId) break;
+    const flags = message.flags?.redsteel ?? {};
+    if (flags.rerolledAway) continue;
+
+    const defense = flags.defense;
+    if (defense) {
+      const answered = flags.versusAttack?.messageId;
+      if (answered && defense.succeeded === true && tokenIds.has(defense.defenderTokenId)) {
+        heldAgainst.add(answered);
+      }
+      continue;
+    }
+
+    const speakerId = attackerTokenIdFromMessage(message);
+    // The holder already shot back after anything older.
+    if (
+      tokenIds.has(speakerId) &&
+      (flags.abilityKey === RETALIATORY_SHOT_KEY ||
+        flags.abilityName === "Retaliatory Shot")
+    ) {
+      return [];
+    }
+
+    if (!isShootingAttackCard(message) || !retaliatoryShotAnswers(message)) continue;
+    if (!speakerId || tokenIds.has(speakerId)) continue;
+    const attacker = answerableAttacker(speakerId);
+    if (!attacker || sameSide(attacker.document, holder.document)) continue;
+    // Reload mid-turn: no turn boundary known, so only the shooter whose turn
+    // it is counts.
+    if (!turnStartMessageId && combat?.combatant?.tokenId !== speakerId) continue;
+
+    const attack = message.flags.attack;
+    const targets = Array.isArray(attack.targets) ? attack.targets : [];
+    let hint = null;
+    if (targets.some((id) => tokenIds.has(id))) {
+      const missed =
+        attack.criticalFailure === true ||
+        Number(attack.margin) < 0 ||
+        heldAgainst.has(message.id);
+      if (missed) {
+        hint = game.i18n.format("REDSTEEL.Sharpshooter.RetaliatoryHintMissed", {
+          attacker: attacker.name,
+        });
+      }
+    }
+    if (!hint) {
+      const ally = targets
+        .filter((id) => !tokenIds.has(id))
+        .map((id) => canvas.tokens?.get(id))
+        .find((t) => t && sameSide(t.document, holder.document));
+      if (ally) {
+        hint = game.i18n.format("REDSTEEL.Sharpshooter.RetaliatoryHintAlly", {
+          attacker: attacker.name,
+          ally: ally.name,
+        });
+      }
+    }
+    if (!hint) continue;
+    const chip = abilityChip(item, "REDSTEEL.Bg3Hotbar.Suggest.Reaction", attacker.id);
+    chip.hint = hint;
+    return [chip];
+  }
+  return [];
+}
+
+/**
+ * Ostrostřelec → Zacílení (Target Lock, sharpshooter.mjs): after an Aim
+ * action, a Perception test at -30% for one more Aim on the same target.
+ * Offered once per Aim action while the aim is untouched; a Free action, the
+ * Stamina is paid when it is used.
+ *
+ * @param {Actor} actor
+ * @returns {object[]}
+ */
+function targetLockChips(actor) {
+  const pending = pendingTargetLock(actor);
+  if (!pending) return [];
+  const target = pending.token.document?.parent?.tokens?.get(pending.targetId);
+  if (!target) return [];
+  const chip = abilityChip(
+    pending.item,
+    "REDSTEEL.Bg3Hotbar.Suggest.FreeAction",
+    pending.targetId,
+  );
+  chip.hint = game.i18n.format("REDSTEEL.Sharpshooter.TargetLockHint", {
+    target: target.name,
+  });
+  return [chip];
+}
+
 /** Icon of the Slow Movement after a throw chip. */
 const THROW_SLOW_ICON = "icons/skills/movement/feet-winged-boots-brown.webp";
 
@@ -1632,6 +1761,7 @@ function combatProvider(actor) {
   return [...riposteChips(actor), ...braceChips(actor), ...suddenRearmChips(actor),
     ...coverChips(actor), ...retaliatoryThrowChips(actor), ...followUpThrowChips(actor),
     ...throwSlowChips(actor),
+    ...retaliatoryShotChips(actor), ...targetLockChips(actor),
     ...lungeStepChips(actor),
     ...reactionChips(actor), ...overpowerChips(actor), ...vigilantChips(actor),
     ...overwatchChips(actor), ...bullChargeOpportunityChips(actor),

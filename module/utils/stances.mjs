@@ -28,6 +28,20 @@ const HELD_FLAG = "stanceHeld";
 const ABILITY_FLAG = "stanceAbilityId";
 
 /**
+ * Stances (by `system.key`) whose upkeep is a Free action even though taking
+ * them up costs Actions. Střelecký postoj: "Udržování postoje je Volná akce"
+ * (utils/sharpshooter.mjs); its per-round Stamina is still paid.
+ */
+const FREE_UPKEEP_STANCES = new Set(["shooting_stance"]);
+
+/** The action cost of holding this stance for one more turn. */
+function upkeepActionCost(ability) {
+  return FREE_UPKEEP_STANCES.has(ability?.system?.key)
+    ? "Free action"
+    : ability.system.actionCost;
+}
+
+/**
  * The stance ability behind this effect: the one recorded when it was taken
  * up, else the actor's stance ability whose key is one of the effect's
  * statuses (a status toggled by hand from the HUD). When several share a key
@@ -128,7 +142,7 @@ async function rollUpkeep(ability) {
  */
 export function holdCostLabel(ability) {
   const parts = [];
-  const actions = Number(parseActionCost(ability.system.actionCost).actions) || 0;
+  const actions = Number(parseActionCost(upkeepActionCost(ability)).actions) || 0;
   if (actions > 0) {
     parts.push(
       game.i18n.localize(
@@ -168,7 +182,7 @@ export async function holdStance(actor, effectId) {
       costType: ability.system.costType || "stamina",
       cost: upkeep,
       resources: [],
-      actionCost: ability.system.actionCost,
+      actionCost: upkeepActionCost(ability),
     },
   };
   const paid = await game.redsteel.deductAbilityCost(actor, [upkeepItem]);

@@ -1,4 +1,6 @@
-{{!-- Character Creation — step 1 (Origin): race, attributes, traits, info.
+{{!-- Character Creation: step 1 (Origin): race, attributes, traits, info;
+     step 2 (Birth): Faith, Sinfulness, Appearance and the Starsign;
+     step 3 (Doctrine) and its 3.5 half (weapons and magic).
 
      ApplicationV2 requires each template part to render exactly ONE root
      element, so the title bar, the columns and the footer all live inside
@@ -26,7 +28,7 @@
   </button>
   {{/inline}}
 
-  {{!-- One doctrine or school card (step 2, and the magical doctrine on 2.5):
+  {{!-- One doctrine or school card (step 3, and the magical doctrine on 3.5):
         its crest (an image, or a glyph for a school), its kind and its name.
         Its ranks and abilities are read in the info panel on click. Taken: gold frame and seal. Locked: greyed out under a padlock. Fixed
         (a temperament's school): taken, with the reason at its foot. Shut:
@@ -74,14 +76,139 @@
   </header>
   <div class="rs-create-progress"><div class="rs-create-progress-fill" style="width: {{progress}}%"></div></div>
 
-  <div class="rs-create-columns {{#if isStep2}}is-doctrine-step{{/if}}{{#if isDetails}}is-details-step{{/if}}">
+  <div class="rs-create-columns {{#if isDoctrine}}is-doctrine-step{{/if}}{{#if isDetails}}is-details-step{{/if}}{{#if isBirth}}is-birth-step{{/if}}">
 
-    {{#if isStep2}}
-    {{!-- Step 2 — Doctrine: every combat doctrine the character may train
+    {{#if isBirth}}
+    {{!-- Step 2, Birth: one plate. The three stat cards side by side (each
+          1d4 + the race modifier, rolled once and locked; their rerolls on
+          the card), Fortune's favour, then the Starsign: the Born under a
+          Star card, its roll buttons, and the rolled sign card(s). A
+          disabled button sits in a span carrying its reason, since a
+          disabled button shows no tooltip. --}}
+    <section class="rs-create-panel rs-create-birth">
+      <h2 class="rs-create-panel-title">{{localize "REDSTEEL.Creation.Birth.title"}}</h2>
+      <div class="rs-create-scroll">
+        <p class="rs-create-doctrine-advice">{{localize "REDSTEEL.Creation.Birth.advice"}}</p>
+
+        <div class="rs-create-birth-stats">
+          {{#each birth.stats}}
+          <div class="rs-create-birth-stat is-{{this.key}} {{#if this.rolled}}is-rolled{{/if}}">
+            <span class="rs-create-birth-name">{{this.name}}</span>
+            <span class="rs-dc-rule"></span>
+            <p class="rs-create-birth-meaning">{{this.meaning}}</p>
+            <span class="rs-create-birth-formula">{{this.formula}}</span>
+            <div class="rs-create-birth-roll">
+              <span class="rs-create-birth-die" aria-label="1d4">{{#if this.rolled}}{{this.die}}{{else}}?{{/if}}</span>
+              <span class="rs-create-birth-result">
+                <span class="rs-create-birth-result-label">{{localize "REDSTEEL.Creation.Birth.value"}}</span>
+                <b class="rs-create-birth-value">{{#if this.rolled}}{{this.value}}{{else}}?{{/if}}</b>
+              </span>
+            </div>
+            <span class="rs-create-birth-calc">{{this.valueText}}</span>
+            <div class="rs-create-birth-rerolls">
+              {{#each this.rerolls}}
+              <span class="rs-create-birth-reroll-wrap" {{#if this.reason}}data-tooltip="{{this.reason}}"{{/if}}>
+                <button type="button" class="rs-create-btn rs-create-birth-reroll"
+                        data-action="rerollBirth" data-stat="{{../key}}" data-source="{{this.source}}"
+                        {{#if this.disabled}}disabled{{/if}}>
+                  <i class="fa-solid fa-dice"></i> {{this.label}}
+                </button>
+              </span>
+              {{/each}}
+            </div>
+          </div>
+          {{/each}}
+        </div>
+
+        {{#unless birth.rolled}}
+        <div class="rs-create-birth-actions">
+          <button type="button" class="rs-create-btn is-primary" data-action="rollBirth"
+                  {{#unless birth.canRoll}}disabled{{/unless}}>
+            <i class="fa-solid fa-dice"></i> {{birth.rollAllLabel}}
+          </button>
+        </div>
+        {{/unless}}
+
+        {{!-- Fortune's favour: what it offers, and what it was spent on. --}}
+        <div class="rs-create-birth-favour {{#if birth.favourUsed}}is-spent{{/if}}">
+          <span class="rs-create-birth-favour-label"><i class="fa-solid fa-clover"></i> {{localize "REDSTEEL.Creation.Birth.favour"}}</span>
+          <span class="rs-create-birth-favour-help">{{birth.favourHelp}}</span>
+          <span class="rs-create-birth-favour-state">{{birth.favourState}}</span>
+        </div>
+
+        <div class="rs-create-group-label">{{localize "REDSTEEL.Creation.Birth.starHeading"}}</div>
+        <div class="rs-create-birth-star">
+          <div class="rs-create-birth-born-wrap" {{#if birth.bornReason}}data-tooltip="{{birth.bornReason}}"{{/if}}>
+            <div role="button" tabindex="0"
+                 class="rs-create-birth-born {{#if birth.born}}is-selected{{/if}} {{#if birth.bornDisabled}}is-locked{{/if}}"
+                 {{#unless birth.bornDisabled}}data-action="toggleBorn"{{/unless}}
+                 aria-pressed="{{#if birth.born}}true{{else}}false{{/if}}"
+                 {{#if birth.bornDisabled}}aria-disabled="true"{{/if}}>
+              <span class="rs-create-birth-born-seal"><i class="fa-solid fa-star"></i></span>
+              <span class="rs-create-birth-born-text">
+                <span class="rs-create-birth-born-name">{{localize "REDSTEEL.Creation.Birth.born"}}
+                  <span class="rs-create-birth-born-kind">{{localize "REDSTEEL.Creation.Birth.bornKind"}}</span></span>
+                <span class="rs-create-birth-born-quote">{{localize "REDSTEEL.Creation.Birth.bornText"}}</span>
+                <span class="rs-create-birth-born-note">{{localize "REDSTEEL.Creation.Birth.bornNote"}}</span>
+              </span>
+              {{#if birth.born}}<span class="rs-dc-seal">{{localize "REDSTEEL.Creation.Doctrine.chosen"}}</span>{{/if}}
+            </div>
+          </div>
+
+          {{#if birth.showSignButtons}}
+          <div class="rs-create-birth-actions">
+            <button type="button" class="rs-create-btn is-primary" data-action="rollStarsign" data-advantage="false"
+                    {{#unless birth.canRollSign}}disabled{{/unless}}>
+              <i class="fa-solid fa-star"></i> {{localize "REDSTEEL.Creation.Birth.rollSign"}}
+            </button>
+            <span class="rs-create-birth-reroll-wrap" {{#if birth.advantageReason}}data-tooltip="{{birth.advantageReason}}"{{/if}}>
+              <button type="button" class="rs-create-btn" data-action="rollStarsign" data-advantage="true"
+                      {{#unless birth.canRollAdvantage}}disabled{{/unless}}>
+                <i class="fa-solid fa-clover"></i> {{localize "REDSTEEL.Creation.Birth.rollSignAdvantage"}}
+              </button>
+            </span>
+          </div>
+          {{/if}}
+
+          {{#if birth.choosing}}<p class="rs-create-doctrine-advice rs-create-birth-pick">{{localize "REDSTEEL.Creation.Birth.pickOne"}}</p>{{/if}}
+
+          {{#if birth.signs.length}}
+          <div class="rs-create-birth-signs">
+            {{#each birth.signs}}
+            <div class="rs-create-birth-sign {{#if this.selected}}is-selected{{/if}} {{#if this.passed}}is-passed{{/if}} {{#if this.pickable}}is-pickable{{/if}}"
+                 data-sign="{{this.id}}"
+                 {{#if this.pickable}}role="button" tabindex="0" data-action="pickStarsign"{{/if}}>
+              <img class="rs-create-birth-sign-icon" src="{{this.img}}" alt=""
+                   data-tt-kind="spellCardUuid" data-tt-uuid="{{this.uuid}}" data-card-kind="feature">
+              <div class="rs-create-birth-sign-body">
+                <div class="rs-create-birth-sign-head">
+                  <span class="rs-create-birth-sign-name">{{this.label}}</span>
+                  <span class="rs-create-birth-sign-roll">{{this.rollText}}</span>
+                </div>
+                <div class="rs-create-birth-sign-desc">{{{this.description}}}</div>
+              </div>
+              {{#if this.selected}}<span class="rs-dc-seal">{{localize "REDSTEEL.Creation.Doctrine.chosen"}}</span>{{/if}}
+            </div>
+            {{/each}}
+          </div>
+          {{/if}}
+        </div>
+
+        {{#if birth.isGM}}
+        <div class="rs-create-birth-gm">
+          <button type="button" class="rs-create-btn" data-action="resetBirth" {{#unless birth.canReset}}disabled{{/unless}}>
+            <i class="fa-solid fa-rotate-left"></i> {{localize "REDSTEEL.Creation.Birth.reset"}}
+          </button>
+        </div>
+        {{/if}}
+      </div>
+    </section>
+    {{else if isDoctrine}}
+    {{!-- Step 3, Doctrine: every combat doctrine the character may train
           in, by kind, then the schools of magic (exactly one; Magic potential
           needed, greyed out without it; a temperament sets it). Taking one
           adds it to the character's skills; no rank is bought here. The
-          magical doctrine is picked on 2.5. --}}
+          magical doctrine is picked on 3.5. --}}
     <section class="rs-create-panel rs-create-doctrines">
       <h2 class="rs-create-panel-title">{{localize "REDSTEEL.Creation.Doctrine.heading"}}</h2>
       <div class="rs-create-scroll">
@@ -99,7 +226,7 @@
       </div>
     </section>
     {{else if isDetails}}
-    {{!-- Step 2.5 — Weapons and magic: one plate of cards, a block per
+    {{!-- Step 3.5, Weapons and magic: one plate of cards, a block per
           question, along the bottom of the screen; the info panel runs
           across the top (user ruling 2026-10-10). Each combat doctrine's
           weapon skill (a fixed one taken, the others greyed out), each
@@ -270,13 +397,15 @@
 
     {{/if}}
 
-    {{!-- Info --}}
+    {{!-- Info (not on Birth: its cards carry their own text) --}}
+    {{#unless isBirth}}
     <aside class="rs-create-panel rs-create-info">
       <h2 class="rs-create-panel-title">{{localize "REDSTEEL.Creation.Info.title"}}</h2>
       <div class="rs-create-scroll">
         {{#if infoHtml}}{{{infoHtml}}}{{else if (and isStep1 (not hasRace))}}<p class="rs-create-race-prompt is-info">{{localize "REDSTEEL.Creation.raceStartHereInfo"}}</p>{{else}}<p class="rs-create-hint">{{localize "REDSTEEL.Creation.Info.empty"}}</p>{{/if}}
       </div>
     </aside>
+    {{/unless}}
 
   </div>
 
@@ -302,7 +431,7 @@
         {{localize "REDSTEEL.Creation.close"}}
       </button>
       {{!-- Next on the last step of this screen writes the origin and opens
-            step 3, the Learn window, which carries Finish. --}}
+            step 4, the Learn window, which carries Finish. --}}
       <button type="button" class="rs-create-btn is-primary" data-action="next" {{#unless editable}}disabled{{/unless}}>
         {{localize "REDSTEEL.Creation.next"}} &rarr;
       </button>

@@ -18769,9 +18769,9 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   margin: 0;
 }
 
-/* --- Learn window: character creation, the step 3 screen ----------------- */
+/* --- Learn window: character creation, the step 4 screen ----------------- */
 
-/* While a character is in step 3 the Learn window drops its own layout (hero,
+/* While a character is in step 4 the Learn window drops its own layout (hero,
    tabs, grid) and shows the creation window's instead: title bar, three
    columns, footer. The wrapper wears .rs-create, so the creation window's
    body, title bar, panel, tile and footer rules apply; their colours are
@@ -22060,7 +22060,7 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
 }
 
 /* A picked trait keeps its place in the left list, see-through; clicking it
-   gives it back. The same in step 3's Attributes & Traits tab. */
+   gives it back. The same in step 4's Attributes & Traits tab. */
 .rs-create .rs-create-origin .rs-create-trait.is-selected,
 .rs-create .rs-learn-cskills-origin .rs-create-trait.is-selected {
   opacity: 0.4;
@@ -22397,7 +22397,7 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   }
 }
 
-/* -------- step 2: doctrine choice -------- */
+/* -------- step 3: doctrine choice -------- */
 
 /* Two columns on this step: the doctrines, then the info panel. */
 .rs-create .rs-create-columns.is-doctrine-step {
@@ -22430,7 +22430,7 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   padding: 10px 4px 6px;
 }
 
-/* Step 2.5: the question blocks side by side, the row centred in the
+/* Step 3.5: the question blocks side by side, the row centred in the
    plate both ways. */
 .rs-create .rs-create-details .rs-create-scroll {
   display: flex;
@@ -22686,7 +22686,476 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   opacity: 0.45;
 }
 
-/* -------- step 2.5: weapons and magic -------- */
+/* -------- step 2: birth -------- */
+
+/* One plate, no info panel: the cards carry their own text. Its content
+   keeps a readable width, centred, on a wide screen; on a short one the
+   plate scrolls (.rs-create-scroll). */
+.rs-create .rs-create-columns.is-birth-step {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.rs-create .rs-create-birth .rs-create-scroll > * {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1240px;
+  margin-inline: auto;
+}
+
+.rs-create .rs-create-birth .rs-create-scroll > .rs-create-doctrine-advice {
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+/* The three stats side by side, each a stone plate like a doctrine card:
+   bronze frame, inner hairline, dark ground. */
+.rs-create .rs-create-birth-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.rs-create .rs-create-birth-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: clamp(12px, 1.8vh, 22px) 14px 14px;
+  border: 2px solid var(--rs-create-bronze);
+  outline: 1px solid rgba(156, 123, 69, 0.28);
+  outline-offset: -7px;
+  background: linear-gradient(to bottom, #1b1915, #0d0c0a 70%);
+  box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.85), 0 3px 10px rgba(0, 0, 0, 0.55);
+  text-align: center;
+  color: var(--rs-create-text);
+}
+
+.rs-create .rs-create-birth-name {
+  font-size: clamp(15px, min(1.1vw, 2vh), 22px);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #e8dcc0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.rs-create .rs-create-birth-stat .rs-dc-rule {
+  margin: 0 0 2px;
+}
+
+.rs-create .rs-create-birth-meaning {
+  margin: 0;
+  max-width: 34em;
+  font-size: 13px;
+  font-style: italic;
+  line-height: 1.35;
+  color: var(--rs-create-text);
+}
+
+.rs-create .rs-create-birth-formula {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--rs-create-bronze-lit);
+}
+
+/* The die, a square plate with its face large, then the value it makes. */
+.rs-create .rs-create-birth-roll {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  margin: 4px 0 0;
+}
+
+.rs-create .rs-create-birth-die {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: clamp(54px, min(4vw, 8vh), 84px);
+  height: clamp(54px, min(4vw, 8vh), 84px);
+  border: 2px solid var(--rs-create-bronze);
+  background: #0a0908;
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.9), 0 0 0 3px #0d0c0a, 0 0 0 4px var(--rs-create-bronze);
+  font-size: clamp(28px, min(2.2vw, 4.4vh), 46px);
+  line-height: 1;
+  color: var(--rs-create-dim);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.rs-create .rs-create-birth-stat.is-rolled .rs-create-birth-die {
+  border-color: var(--rs-create-gold);
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.9), 0 0 0 3px #0d0c0a, 0 0 0 4px var(--rs-create-bronze-lit),
+    0 0 16px rgba(230, 200, 120, 0.22);
+  color: var(--rs-create-gold);
+}
+
+.rs-create .rs-create-birth-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.rs-create .rs-create-birth-result-label {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--rs-create-dim);
+}
+
+.rs-create .rs-create-birth-value {
+  font-size: clamp(24px, min(1.8vw, 3.4vh), 36px);
+  font-weight: normal;
+  line-height: 1;
+  color: #e8e4da;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.rs-create .rs-create-birth-calc {
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--rs-create-dim);
+}
+
+/* The rerolls that apply to the stat, one full width row each. The span
+   around each carries the reason a spent one is greyed out. */
+.rs-create .rs-create-birth-rerolls {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+.rs-create .rs-create-birth-reroll-wrap {
+  display: block;
+}
+
+.rs-create .rs-create-birth-reroll {
+  width: 100%;
+  min-width: 0;
+  padding: 5px 10px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+
+/* A row of buttons under the cards: roll everything, roll the sign. */
+.rs-create .rs-create-birth-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-block: 14px 4px;
+}
+
+.rs-create .rs-create-birth-actions .rs-create-btn i,
+.rs-create .rs-create-birth-reroll i,
+.rs-create .rs-create-birth-gm .rs-create-btn i {
+  margin-right: 4px;
+}
+
+/* Fortune's favour: one line on a dark plate, its name, what it offers,
+   then what it was spent on. */
+.rs-create .rs-create-birth-favour {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px 16px;
+  margin-top: 14px;
+  padding: 9px 14px;
+  border: 2px solid var(--rs-create-bronze);
+  background: rgba(12, 12, 11, 0.75);
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.8);
+}
+
+.rs-create .rs-create-birth-favour-label {
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--rs-create-gold);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.rs-create .rs-create-birth-favour-help {
+  font-size: 13px;
+  font-style: italic;
+  line-height: 1.35;
+  color: var(--rs-create-text);
+}
+
+.rs-create .rs-create-birth-favour-state {
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  color: var(--rs-create-gold);
+}
+
+.rs-create .rs-create-birth-favour.is-spent .rs-create-birth-favour-state {
+  font-style: italic;
+  color: #a58a6a;
+}
+
+.rs-create .rs-create-birth .rs-create-scroll > .rs-create-group-label {
+  margin-top: 18px;
+}
+
+/* Born under a Star: a stone plate with a square star seal, the book line
+   beside it; taken, it lights up like a taken doctrine card. */
+.rs-create .rs-create-birth-born {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-sizing: border-box;
+  max-width: 720px;
+  margin: 8px auto 0;
+  padding: 12px 16px;
+  border: 2px solid var(--rs-create-bronze);
+  outline: 1px solid rgba(156, 123, 69, 0.28);
+  outline-offset: -7px;
+  background: linear-gradient(to bottom, #1b1915, #0d0c0a 70%);
+  box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.85), 0 3px 10px rgba(0, 0, 0, 0.55);
+  color: var(--rs-create-text);
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.rs-create .rs-create-birth-born:hover,
+.rs-create .rs-create-birth-born:focus-visible {
+  border-color: var(--rs-create-bronze-lit);
+  outline-color: rgba(156, 123, 69, 0.5);
+}
+
+.rs-create .rs-create-birth-born.is-selected {
+  border-color: var(--rs-create-gold);
+  outline-color: rgba(230, 200, 120, 0.55);
+  box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.8), 0 0 22px rgba(230, 200, 120, 0.22),
+    0 8px 20px rgba(0, 0, 0, 0.7);
+}
+
+.rs-create .rs-create-birth-born.is-locked {
+  cursor: default;
+}
+
+.rs-create .rs-create-birth-born.is-locked:not(.is-selected):hover {
+  border-color: var(--rs-create-bronze);
+  outline-color: rgba(156, 123, 69, 0.28);
+}
+
+.rs-create .rs-create-birth-born-seal {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border: 2px solid var(--rs-create-bronze);
+  background: #0a0908;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.9);
+  font-size: 20px;
+  color: var(--rs-create-dim);
+}
+
+.rs-create .rs-create-birth-born.is-selected .rs-create-birth-born-seal {
+  border-color: var(--rs-create-gold);
+  color: var(--rs-create-gold);
+  text-shadow: 0 0 10px rgba(230, 200, 120, 0.45);
+}
+
+.rs-create .rs-create-birth-born-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.rs-create .rs-create-birth-born-name {
+  font-size: 15px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #e8dcc0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.rs-create .rs-create-birth-born.is-selected .rs-create-birth-born-name {
+  color: var(--rs-create-gold);
+}
+
+.rs-create .rs-create-birth-born-kind {
+  margin-left: 8px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: #bf931d;
+}
+
+.rs-create .rs-create-birth-born-quote {
+  font-size: 13px;
+  font-style: italic;
+  color: var(--rs-create-text);
+}
+
+.rs-create .rs-create-birth-born-note {
+  font-size: 12px;
+  color: var(--rs-create-dim);
+}
+
+.rs-create .rs-create-birth-pick {
+  margin-top: 10px;
+  text-align: center;
+}
+
+/* The rolled sign(s): one plate each, the sign's icon in a square bronze
+   frame, its name and d100 roll, then its text. With two, they stand side
+   by side and a click takes one; the other then dims. */
+.rs-create .rs-create-birth-signs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr));
+  gap: 14px;
+  max-width: 1100px;
+  margin: 14px auto 0;
+}
+
+.rs-create .rs-create-birth-signs:has(> :only-child) {
+  max-width: 720px;
+}
+
+.rs-create .rs-create-birth-sign {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+  padding: 16px;
+  border: 2px solid var(--rs-create-bronze);
+  outline: 1px solid rgba(156, 123, 69, 0.28);
+  outline-offset: -7px;
+  background: linear-gradient(to bottom, #1b1915, #0d0c0a 70%);
+  box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.85), 0 3px 10px rgba(0, 0, 0, 0.55);
+  color: var(--rs-create-text);
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.rs-create .rs-create-birth-sign.is-pickable {
+  cursor: pointer;
+}
+
+.rs-create .rs-create-birth-sign.is-pickable:hover,
+.rs-create .rs-create-birth-sign.is-pickable:focus-visible {
+  transform: translateY(-3px);
+  border-color: var(--rs-create-bronze-lit);
+  outline-color: rgba(156, 123, 69, 0.5);
+  box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.85), 0 10px 22px rgba(0, 0, 0, 0.7);
+}
+
+.rs-create .rs-create-birth-sign.is-selected {
+  border-color: var(--rs-create-gold);
+  outline-color: rgba(230, 200, 120, 0.55);
+  box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.8), 0 0 22px rgba(230, 200, 120, 0.22),
+    0 8px 20px rgba(0, 0, 0, 0.7);
+}
+
+.rs-create .rs-create-birth-sign.is-passed > * {
+  filter: grayscale(1) brightness(0.55);
+}
+
+.rs-create .rs-create-birth-sign-icon {
+  flex: 0 0 auto;
+  width: 72px;
+  height: 72px;
+  max-width: none;
+  border: 2px solid var(--rs-create-bronze-lit);
+  border-radius: 0;
+  object-fit: cover;
+  box-shadow: 0 0 0 3px #0d0c0a, 0 0 0 4px var(--rs-create-bronze);
+  cursor: help;
+}
+
+.rs-create .rs-create-birth-sign.is-selected .rs-create-birth-sign-icon {
+  border-color: var(--rs-create-gold);
+}
+
+.rs-create .rs-create-birth-sign-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.rs-create .rs-create-birth-sign-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(81, 66, 38, 0.6);
+}
+
+.rs-create .rs-create-birth-sign-name {
+  font-size: 16px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #e8dcc0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.rs-create .rs-create-birth-sign.is-selected .rs-create-birth-sign-name {
+  color: var(--rs-create-gold);
+}
+
+.rs-create .rs-create-birth-sign-roll {
+  flex: 0 0 auto;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--rs-create-bronze-lit);
+}
+
+.rs-create .rs-create-birth-sign-desc {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--rs-create-text);
+}
+
+.rs-create .rs-create-birth-sign-desc p {
+  margin: 0 0 4px;
+}
+
+.rs-create .rs-create-birth-sign-desc hr {
+  margin: 6px 0;
+  border: none;
+  border-top: 1px solid rgba(81, 66, 38, 0.6);
+}
+
+/* The GM's reset, out of the way at the foot of the plate. */
+.rs-create .rs-create-birth-gm {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.rs-create .rs-create-birth-gm .rs-create-btn {
+  min-width: 0;
+  padding: 5px 12px;
+  font-size: 12px;
+}
+
+/* A narrow window: the stat cards stack. */
+@media (max-width: 900px) {
+  .rs-create .rs-create-birth-stats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rs-create .rs-create-birth-favour {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* -------- step 3.5: weapons and magic -------- */
 
 /* One column (user rulings 2026-10-10/11): the info panel across the top,
    filling every pixel the cards leave (it scrolls when its text runs
@@ -22795,7 +23264,7 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   gap: 2px 44px;
 }
 
-/* A school rank's spells in the 2.5 info row: a small label, then each
+/* A school rank's spells in the 3.5 info row: a small label, then each
    spell as icon and name, its card on hover. */
 .rs-create .rs-create-rank-spells {
   display: flex;
@@ -22834,7 +23303,7 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   border: 1px solid #3a3226;
 }
 
-/* A rank's ability in the 2.5 info row: icon and name, its description
+/* A rank's ability in the 3.5 info row: icon and name, its description
    printed under it, read in place rather than on hover. */
 .rs-create .rs-create-rank-ability.is-inline {
   display: flex;

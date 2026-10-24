@@ -188,6 +188,7 @@ const ABILITY = {
   REST: A("r0zKDZ0Zs2bMiUAu"), // Odpočinek
   RETALIATORY_STRIKE: A("qaPermZFuHuTg5ni"), // Odvetný úder
   RETALIATORY_THROW: A("rEtalThrow000001"), // Odvetný vrh (Harcovník)
+  RETALIATORY_SHOT: A("rEtalShot0000001"), // Odvetný výstřel (Ostrostřelec)
   RIPOSTE: A("WX6uJeqZAqeyykJa"), // Riposta
   RUN_UP_THROW: A("wNvzvMB5p69CON5c"), // Vrh s rozběhem
   SHIELD_BASH: A("6Q935yGVq7NpUIbE"), // Úder štítem
@@ -195,6 +196,7 @@ const ABILITY = {
   SHIELD_CHARGE: A("rkM1ONas7GM6M97p"), // Zteč štítem
   SHIELD_CHARGE_SMALL: A("lL6kkZUPwQem7PJX"), // Zteč štítem, malý štít
   SHIELDBEARER_DEFENSIVE_STANCE: A("Z5uFEQqLBQXvsjDq"), // Obranný postoj: Ignoruje Průraznost
+  SHOOTING_STANCE: A("sHootingStance01"), // Střelecký postoj
   SHOVE_DEX: A("eM1CMfrwZeMl1X8O"), // Odstrčení
   SHOVE_STR: A("quN6stREoJF84H84"), // Odstrčení
   SLIP_THROUGH: A("sLipThrough00001"), // Prosmýknutí
@@ -205,6 +207,7 @@ const ABILITY = {
   SUBJUGATION_I: A("sUbjugation10001"), // Podmanění I
   SUDDEN_REARM: A("sUddenRearm00001"), // Náhlé přezbrojení
   SUBJUGATION_II: A("sUbjugation20001"), // Podmanění II
+  TARGET_LOCK: A("tArgetLock000001"), // Zacílení (Ostrostřelec)
   TRIP_DEX: A("kkHN2VhkuN0wIePo"), // Podseknutí
   TRIUMPH: A("tRiumph000000001"), // Triumf
   IMPROVED_TRIUMPH: A("iMpTriumph000001"), // Vylepšený triumf
@@ -584,6 +587,13 @@ export const ABILITY_GRANTS = [
     when: doctrine("archer", 7),
     grant: [ABILITY.OVERWATCH],
   },
+  {
+    // Dovednosti, Lukostřelec Stupeň X: "Střelecký postoj" (ruzne-info.md
+    // r270; utils/sharpshooter.mjs).
+    label: "Archer 10 → Shooting Stance",
+    when: doctrine("archer", 10),
+    grant: [ABILITY.SHOOTING_STANCE],
+  },
 
   /* ======================================================================
    * Kušník (arbalest)
@@ -613,6 +623,13 @@ export const ABILITY_GRANTS = [
     label: "Arbalest 7 → Accurate Shot",
     when: doctrine("arbalest", 7),
     grant: [ABILITY.ACCURATE_SHOT],
+  },
+  {
+    // Dovednosti, Kušník Stupeň X: "Střelecký postoj" (ruzne-info.md r270;
+    // utils/sharpshooter.mjs).
+    label: "Arbalest 10 → Shooting Stance",
+    when: doctrine("arbalest", 10),
+    grant: [ABILITY.SHOOTING_STANCE],
   },
 
   /* ======================================================================
@@ -874,6 +891,20 @@ export const ABILITY_GRANTS = [
     label: "Skirmisher: Navazující vrh → Follow-up Throw",
     when: specNode("skirmisher", "navazujiciVrh"),
     grant: [ABILITY.FOLLOW_UP_THROW],
+  },
+  {
+    // Ostrostřelec → Odvetný výstřel (specializace-wip.md r496): the hotbar
+    // chip and the "retaliation" tag (utils/sharpshooter.mjs).
+    label: "Sharpshooter: Odvetný výstřel → Retaliatory Shot",
+    when: specNode("sharpshooter", "odvetnyVystrel"),
+    grant: [ABILITY.RETALIATORY_SHOT],
+  },
+  {
+    // Ostrostřelec → Zacílení (r494): after an Aim action, Perception -30%
+    // for one more Aim (utils/sharpshooter.mjs useTargetLock).
+    label: "Sharpshooter: Zacílení → Target Lock",
+    when: specNode("sharpshooter", "zacileni"),
+    grant: [ABILITY.TARGET_LOCK],
   },
   // Harcovník → "Přesný výstřel: -1 akce a -5 Výdrže" tunes Accurate Shot, so
   // the cheaper copy stands in for it only where a doctrine grants the shot

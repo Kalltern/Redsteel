@@ -110,6 +110,12 @@ import { registerOverwhelmHooks } from "./utils/overwhelm.mjs";
 import { registerChampionHooks } from "./utils/champion.mjs";
 import { registerHopliteHooks } from "./utils/hoplite.mjs";
 import { registerSkirmisherHooks } from "./utils/skirmisher.mjs";
+import { registerSharpshooterHooks } from "./utils/sharpshooter.mjs";
+import {
+  canSpendResource,
+  resourceLabel,
+  spendResource,
+} from "./utils/itemResources.mjs";
 import { registerRangerHooks } from "./utils/ranger.mjs";
 import { registerSituationalPills } from "./utils/rangerSkills.mjs";
 import { registerShieldStrainHooks } from "./utils/shieldStrain.mjs";
@@ -574,6 +580,9 @@ Hooks.once("init", function () {
   registerHopliteHooks();
   // Harcovník: Aim and the Slow Movement after a throw card (skirmisher.mjs).
   registerSkirmisherHooks();
+  // Ostrostřelec: Shooting Stance broken by the holder's own move, Target
+  // Lock's per-aim marker (sharpshooter.mjs).
+  registerSharpshooterHooks();
   // Warden batch 1: shield strain on a held Cover, Protection (Guard) on an
   // adjacent ally, Armoring's GM relay.
   registerShieldStrainHooks();
@@ -2211,6 +2220,9 @@ async function handleRerollClick(message, { rerun = null } = {}) {
 
   const eligible = getEligibleRerolls(actor, tokens, {
     critFailure: wasCritFailure,
+    // Ostrostřelec → Těsný zásah reads the card's margins (rerolls.mjs
+    // closeMarginGap).
+    message,
   });
   // Předvoj → Za 5 výdrže může opakovat hod na bojový Test Síly: one more
   // choice on a combat Strength Test, paid in Stamina, never used up
@@ -2247,6 +2259,33 @@ async function handleRerollClick(message, { rerun = null } = {}) {
     return true;
   }
 
+  // A node pool may cost Stamina a use (Ostrostřelec → Těsný zásah). Checked
+  // before the charge is spent, paid once it has been.
+  const staminaCost = Math.max(0, Number(chosen.staminaCost) || 0);
+  if (staminaCost > 0 && !canSpendResource(actor, "stamina", staminaCost)) {
+    ui.notifications.warn(
+      game.i18n.format("REDSTEEL.Resource.NotEnough", {
+        resource: resourceLabel("stamina"),
+      }),
+    );
+    return false;
+  }
+
+  // A pool with no limit has no charge to spend, nothing for Combat Master
+  // to give back and nothing for the calendar to refresh.
+  if (chosen.unlimited) {
+    if (staminaCost > 0 && !(await spendResource(actor, "stamina", staminaCost))) {
+      return false;
+    }
+    if (rerun) {
+      const created = await rerun(chosen.label);
+      await markRerolledAway(message, created);
+    } else {
+      await executeReroll(message, chosen.label);
+    }
+    return true;
+  }
+
   const spent = await consumeReroll(actor, chosen.itemId, chosen.poolIndex, {
     combat: isCombat,
   });
@@ -2254,6 +2293,7 @@ async function handleRerollClick(message, { rerun = null } = {}) {
     ui.notifications.warn("That reroll is already spent.");
     return false;
   }
+  if (staminaCost > 0) await spendResource(actor, "stamina", staminaCost);
 
   // Combat Master (Mistr boje): a reroll of an attack (Zásah, Střelba, Vrh),
   // a Melee Defense (Obrana) or a Ranged Defense (Kryt) is not spent when the

@@ -113,6 +113,8 @@ import {
   isCreationSkillsStep,
   releaseCreationTeacher,
   returnToOrigin,
+  STEP_COUNT,
+  STEP_SKILLS,
 } from "./characterCreation.mjs";
 import { SPEC_GROUPS, SPEC_PRICES } from "../helpers/specPrices.mjs";
 import {
@@ -1918,7 +1920,7 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     const starting = actor.system?.progression?.starting ?? {};
     const unset = (value) => value === null || value === undefined || value === "";
     return {
-      stepOf: game.i18n.format("REDSTEEL.Creation.stepOf", { n: 3, total: 3 }),
+      stepOf: game.i18n.format("REDSTEEL.Creation.stepOf", { n: STEP_SKILLS, total: STEP_COUNT }),
       title: game.i18n.localize("REDSTEEL.Creation.Step3.title"),
       level: wallet.level,
       capRoman: roman(getCreationRankCap(actor)),
