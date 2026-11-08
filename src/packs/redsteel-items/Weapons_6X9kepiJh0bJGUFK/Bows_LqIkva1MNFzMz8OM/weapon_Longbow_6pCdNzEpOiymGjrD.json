@@ -95,11 +95,11 @@
     ],
     "effectTypes": [],
     "roll": {
-      "diceNum": 5,
-      "diceSize": "8k5",
+      "diceNum": 8,
+      "diceSize": "6k5",
       "diceBonus": "2"
     },
-    "penetration": 8,
+    "penetration": 10,
     "breakthrough": "",
     "sneakDamage": "3d6",
     "finesse": false,

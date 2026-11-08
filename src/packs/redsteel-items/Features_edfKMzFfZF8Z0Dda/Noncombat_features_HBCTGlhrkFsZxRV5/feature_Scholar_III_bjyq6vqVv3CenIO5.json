@@ -1,0 +1,92 @@
+{
+  "folder": "HBCTGlhrkFsZxRV5",
+  "name": "Scholar III",
+  "type": "feature",
+  "img": "icons/sundries/books/book-embossed-bound-brown.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.ScholarIII.name",
+    "description": "<p>Critical Failure chance on non-combat skills reduced by 2%.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "feature",
+    "cost": {
+      "cp": null,
+      "sp": 0
+    }
+  },
+  "effects": [
+    {
+      "name": "Scholar III",
+      "origin": "Item.bjyq6vqVv3CenIO5",
+      "img": "icons/sundries/books/book-embossed-bound-brown.webp",
+      "_id": "mI6fpFa1fiYvoBDd",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.skillCritFailBonus",
+            "value": -2,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
+      "disabled": false,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {
+        "statuscounter": {
+          "value": 1,
+          "config": {
+            "type": "default"
+          },
+          "visible": false
+        }
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!bjyq6vqVv3CenIO5.mI6fpFa1fiYvoBDd"
+    }
+  ],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.15.0",
+    "createdTime": null,
+    "modifiedTime": null,
+    "lastModifiedBy": null
+  },
+  "_id": "bjyq6vqVv3CenIO5",
+  "_key": "!items!bjyq6vqVv3CenIO5"
+}

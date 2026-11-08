@@ -26,9 +26,18 @@
  *   Dodge until the start of the slipper's next turn.
  */
 
-import { withRollBias, tagRollSkill } from "./rollAdvantage.mjs";
+import {
+  withRollBias,
+  tagRollSkill,
+  markHopelessNatural,
+} from "./rollAdvantage.mjs";
 import { versusTestBonus } from "./testRating.mjs";
-import { renderVersusOutcome } from "./attributeFollowup.mjs";
+import {
+  renderVersusOutcome,
+  testCritBounds,
+  contestSide,
+} from "./attributeFollowup.mjs";
+import { resolveVersus } from "./defenseOdds.mjs";
 import { teleportToken } from "./forcedMovement.mjs";
 import { isCharge } from "./abilityMovement.mjs";
 
@@ -193,9 +202,36 @@ export async function useSlipThrough(actor, ability) {
     roll = new Roll(`${mine} - 1d100 - (${theirs} - 1d100)`, withRollBias({}, actor));
     tagRollSkill(roll, "dex");
     await roll.evaluate();
-    // A tie goes to the slipper, who called the test.
-    won = roll.total >= 0;
-    lines.push(renderVersusOutcome(roll.total));
+    // Settled as a defense is, with the slipper in the attacker's place: they
+    // called the test, so a tie is theirs.
+    const myDie = roll.dice[0]?.total ?? null;
+    const theirDie = roll.dice[1]?.total ?? null;
+    const mySide = contestSide(mine, myDie, testCritBounds(actor, "dex"));
+    const theirSide = contestSide(
+      theirs,
+      theirDie,
+      testCritBounds(target.actor, "dex"),
+    );
+    if (mySide.hopeless) markHopelessNatural(roll);
+    if (mySide.hopeless || theirSide.hopeless) {
+      roll._total = mySide.margin - theirSide.margin;
+    }
+    const verdict = resolveVersus(
+      {
+        margin: mySide.margin,
+        d100: myDie,
+        criticalSuccess: mySide.success,
+        criticalFailure: mySide.failure,
+      },
+      {
+        defenseTotal: theirSide.margin,
+        defenseD100: theirDie,
+        defenseCrit: theirSide.success,
+        defenseCritFailure: theirSide.failure,
+      },
+    );
+    won = !verdict.blocked;
+    lines.push(renderVersusOutcome(verdict, { side: "attack" }));
   }
 
   if (won) {
@@ -216,7 +252,7 @@ export async function useSlipThrough(actor, ability) {
   const flavor = `<p class="rs-card-headline"><b>${label} vs ${foundry.utils.escapeHTML(
     target.name,
   )}</b></p>
-${lines.map((l) => (l.startsWith("<p") ? l : `<p style="text-align:center;">${l}</p>`)).join("")}`;
+${lines.map((l) => (l.startsWith("<") ? l : `<p style="text-align:center;">${l}</p>`)).join("")}`;
   const speaker = ChatMessage.getSpeaker({ actor, token: token.document });
   if (roll) {
     await roll.toMessage({

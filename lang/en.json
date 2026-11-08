@@ -84,6 +84,108 @@
       "TargetLockFail": "{name} fails to lock onto {target}.",
       "TagOverwatchShot": "Overwatch shot +10%"
     },
+    "Veneficus": {
+      "ManaKill": "{name} kills in melee: the next spell costs {amount} Mana less.",
+      "FollowUpSpell": "{name} kills with a magically empowered attack: the next spell of {schools} gains +{bonus}% Channeling.",
+      "VeteranOption": "Magic Veteran, degrees given up:",
+      "VeteranTooltip": "Give up any number of Critical degrees. Each one given up eases your next spell's Difficulty by 10.",
+      "VeteranPreviewNote": "Magic Veteran: degree {from} → {to}",
+      "VeteranPaid": "{name} gives up {degrees} Critical degree(s): the next spell's Difficulty is eased by {amount}.",
+      "VeteranAlreadyPaid": "Magic Veteran was already paid on this card: the degree is lowered, the next spell gains nothing more.",
+      "StaminaAsMana": "Stamina as Mana",
+      "StaminaAsManaTooltip": "Melee actions paid with mana: this use's melee Stamina cost is paid from Mana instead, 1:1.",
+      "LindarChargeLabel": "Lindar's Charge",
+      "LindarChargeReady": "{name} follows {spell} through: the next Attack this turn is a Free action.",
+      "LindarChargeReadyCharge": "{name} follows {spell} through: the next Attack this turn is a Free action and counts as a Charge.",
+      "LindarChargeHint": "After {spell}: attack as a Free action.",
+      "LindarChargeHintTarget": "After {spell}: attack {target} as a Free action.",
+      "LindarChargeHintCharge": "After {spell}: attack as a Free action. A melee swing counts as a Charge.",
+      "LindarChargeHintChargeTarget": "After {spell}: attack {target} as a Free action. A melee swing counts as a Charge.",
+      "TagLindarCharge": "Lindar's Charge",
+      "TagLindarChargeCharge": "Lindar's Charge: counts as Charge",
+      "MomentumOpened": "{name} gains Magic Momentum: one spell of one Action may be cast as a Free action this round, at half damage. Use the hotbar chip to cast it.",
+      "MomentumHint": "Click to cast a spell of one Action as a Free action this round. It deals half damage.",
+      "MomentumHintArmed": "Armed: your next spell of one Action this round is a Free action and deals half damage. Click to open the cast dialog again.",
+      "MomentumCast": "Magic Momentum: {name} casts {spell} as a Free action. It deals half damage.",
+      "MomentumHalfForced": "Cast with Magic Momentum: this spell deals half damage.",
+      "ReinforceArmed": "{name} draws on magic: Advantage on the next Strength or Dexterity versus Test.",
+      "ReinforceAlready": "Magic Reinforcement is already prepared. It is spent by the next Strength or Dexterity versus Test.",
+      "AimNeedsTarget": "Magic Aiming needs exactly one targeted creature other than yourself.",
+      "AimUsedThisRound": "Magic Aiming was already used this round.",
+      "AimGained": "{name} gains 1 Aim on {target} ({after} in total)."
+    },
+    "MancerPassive": {
+      "TagChance": "{node}: {effect} +{chance}%",
+      "TagStacks": "{node}: {effect} +{stacks} stack",
+      "TagRange": "{node}: reach +1.5 m",
+      "Effect": {
+        "stagger": "Stagger",
+        "slow": "Slow",
+        "freeze": "Freeze",
+        "bleed": "Bleed",
+        "poison": "Poison",
+        "burn": "Burn",
+        "stun": "Stun",
+        "corrosion": "Corrosion"
+      }
+    },
+    "MancerLock": {
+      "cast": "{spell} needs {node}."
+    },
+    "Elymas": {
+      "FocusedDefense": "Focused Defense",
+      "FocusedDefenseReaction": "Focused Defense: Reaction +1",
+      "FocusedDefenseDescription": "Until the start of your next turn: Magic Defense +{bonus}%, a spell from a flank loses its flank bonus against you, and you may answer a spell cast into your back with Magic Defense, without the bonus.",
+      "FocusedTaken": "{name} focuses on Magic Defense: +{bonus}% until the start of their next turn.",
+      "FocusedCrit": "Critical Success of Magic Defense +10%.",
+      "FocusedReaction": "Reaction +1.",
+      "FocusedReduction": "Damage from spells is halved.",
+      "FocusedCardBonus": "Focused Defense: +{bonus}",
+      "FlankCancelled": "Focused Defense cancels the flank: +{bonus}",
+      "AreaDefenseCovers": "Area defense: this roll also answers for {names}.",
+      "EchoEarned": "Magic Echo: the next spell costs {pct}% less Mana.",
+      "DamageReduced": "Focused Defense: magic damage halved",
+      "CounterHint": "Cast an offensive spell of one Action at {target} (highest rank: {rank}). Costs your Reaction.",
+      "CounterHintFree": "Cast an offensive spell of one Action at {target} (highest rank: {rank}). The first one this round is a Free action.",
+      "CounterNoSpell": "You have no offensive spell of one Action up to {rank} rank to counterattack with.",
+      "CounterVariantUnfit": "That variant cannot be a Magic Counterattack: it has to be an offensive spell of one Action within your rank.",
+      "CounterTag": "Magic Counterattack",
+      "CounterTagFree": "Magic Counterattack (Free action)",
+      "CounterTagAttack": "Magic ATK +{bonus}"
+    },
+    "Incantator": {
+      "TagNoFocus": "No focus item {penalty}%, Critical Failure +{fail}%",
+      "TagCatalyst": "Catalyst: Critical Success +{success}%, Critical Failure +{fail}%",
+      "TagFocus": "Focus: Magic ATK +{attack}, Critical Success +{crit}%",
+      "TagFocusRange": "Focus item: Critical Range +{range}",
+      "WaveEarned": "Wave of Energy: the next spell costs {amount} Mana less.",
+      "QuickFocusNoMana": "Quick Focus needs {cost} Mana.",
+      "QuickFocusCap": "Quick Focus can be used at most {max} times a round.",
+      "QuickFocusBanked": "{name} gathers focus for {cost} Mana: the next spell gets +{banked} Focus.",
+      "QuickFocusLine": "Quick Focus: +{count}",
+      "CatalystOption": "Catalyst",
+      "CatalystHint": "Catalyst: this cast has Critical Success +15% and Critical Failure +5%.",
+      "PreciseWhere": "Precise Incantation is used from the chat: the button on your spell card rerolls a failed effect roll, and the button on a target's answer forces them to roll again.",
+      "StabilizeWhere": "Source Stabilization is offered when you accept a Critical Failure of Channeling.",
+      "StabilizeDrawn": "The Critical Failure rolled {roll}:",
+      "StabilizeAsk": "Source Stabilization: take it, roll to shift it one degree, or pay Mana and choose.",
+      "StabilizeAccept": "Accept as rolled",
+      "StabilizeRoll": "Roll 1d100 (1-50 milder, 51-100 worse)",
+      "StabilizePayLower": "Pay {cost} Mana: one degree milder",
+      "StabilizePayRaise": "Pay {cost} Mana: one degree worse",
+      "StabilizeRolledLower": "{name} rolls {die}: the degree is one step milder.",
+      "StabilizeRolledRaise": "{name} rolls {die}: the degree is one step worse.",
+      "StabilizePaidLower": "{name} pays {cost} Mana: the degree is one step milder.",
+      "StabilizePaidRaise": "{name} pays {cost} Mana: the degree is one step worse.",
+      "StabilizeNoMana": "Not enough Mana: Source Stabilization costs {cost}.",
+      "StabilizeEdge": "There is no degree further that way, so the rolled one stands.",
+      "PreciseNoMana": "Not enough Mana: Precise Incantation costs {cost}.",
+      "PreciseRowNote": "Precise Incantation, was {from}",
+      "PreciseRerolled": "{name} pays {cost} Mana for Precise Incantation: {effect} rerolled, {from} → {to}.",
+      "PreciseEffectButton": "Precise Incantation: {effect} ({cost} Mana)",
+      "PreciseForceButton": "Precise Incantation: force reroll ({cost} Mana)",
+      "NoGM": "No GM is connected to make the reroll."
+    },
     "Cover": {
       "TagHalf": "Half cover −30%",
       "TagFull": "Full cover −60%",
@@ -118,8 +220,6 @@
       "OnslaughtPrompt": "Attack again now, or switch weapon first?",
       "OnslaughtAttack": "Attack ({cost} Stamina)",
       "OnslaughtSwap": "Switch to {weapon} and attack ({cost} Stamina)",
-      "OnslaughtFreeAttack": "{name} keeps up the onslaught: the next Attack this turn is a Free action.",
-      "OnslaughtSwapped": "{name} switches to {weapon}: the next Attack this turn is a Free action.",
       "FreeOpportunity": "{name} meets {target} closing in: this Opportunity Attack spends no Reaction.",
       "ChargeDefenseNotOpportunity": "Charge Defense only modifies an Opportunity Attack. It was left off this attack.",
       "ChargeDefenseNoSpear": "Charge Defense needs a spear or trident. It was left off this attack.",
@@ -1181,7 +1281,7 @@
           "nodes": {
             "apprentice": {
               "label": "School of Blood - Apprentice",
-              "description": "5 CP. Passive. Unlocks learning apprentice School of Blood spells. Once per day, may reroll a Blood Manipulation roll. Blood Pool capacity +10 automated; school rank and reroll manual. Partially automated."
+              "description": "5 CP. Passive. Unlocks learning apprentice School of Blood spells. Once per day, may reroll a Blood Manipulation roll. Blood Pool capacity +10 and the reroll automated; school rank manual. Partially automated."
             },
             "spellPower1": {
               "label": "Spell Power +2",
@@ -1549,59 +1649,59 @@
           "nodes": {
             "magProtiutok": {
               "label": "Magic Counterattack",
-              "description": "10 CP; Škola IV. Manual — resolved at the table."
+              "description": "10 CP; Škola IV. After your Magic Defense holds against a spell, a Magic Counterattack chip shows on the hotbar for the rest of that turn. It targets the caster and opens the cast dialog with only your offensive spells of one Action up to Apprentice rank. The cast costs your Reaction and its Mana as usual, and the card is tagged Magic Counterattack. Automated."
             },
             "mpExpert": {
               "label": "Magic Counterattack: Expert",
-              "description": "10 CP; Škola VI. Manual — resolved at the table."
+              "description": "10 CP; Škola VI. Magic Counterattack may use spells up to Expert rank. Automated."
             },
             "mpUtok10": {
               "label": "MC: Magic Attack +10% for Apprentice",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. A Magic Counterattack with an Apprentice spell gets Magic ATK +10%. Automated."
             },
             "mpVolnaAkce": {
               "label": "One MC per round as Free action",
-              "description": "10 CP; Elymas V. Manual — resolved at the table."
+              "description": "10 CP; Elymas V. Your first Magic Counterattack each round is a Free action instead of a Reaction. Automated."
             },
             "mpKritNeuspech": {
               "label": "MC: Critical failure -5%",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. A Magic Counterattack cast has 5% less chance of a Critical Failure on its Channeling die. Automated."
             },
             "mpMistr": {
               "label": "Magic Counterattack: Master",
-              "description": "10 CP; Škola IX. Manual — resolved at the table."
+              "description": "10 CP; Škola IX. Magic Counterattack may use spells up to Master rank. Automated."
             },
             "soustredenaObrana": {
               "label": "Focused Defense",
-              "description": "10 CP. Manual — resolved at the table."
+              "description": "10 CP. A hotbar chip on your turn, 1 Action: until the start of your next turn, Magic Defense +15%, a spell from a flank loses its flank bonus against you, and you may answer a spell cast into your back with Magic Defense (without the +15%). Automated."
             },
             "soKrit": {
               "label": "FD: Magic Defense crit +10%",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. While Focused Defense holds, Critical Success of Magic Defense +10%. Automated."
             },
             "soReakce": {
               "label": "FD: Reaction +1",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. While Focused Defense holds, you have one more Reaction. Automated."
             },
             "soRedukce": {
               "label": "FD: Magic damage reduction 50%",
-              "description": "10 CP; Elymas V. Manual — resolved at the table."
+              "description": "10 CP; Elymas V. While Focused Defense holds, Apply Damage halves the damage a spell card deals you, on top of the Half Damage box. Automated."
             },
             "magObranaMana": {
               "label": "Magic Defense: free, Crit +3%",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Your Magic Defense costs no Mana whatever the spell's rank, and its Critical Success is 3% higher. Automated."
             },
             "opakovaniUsmernovani": {
               "label": "Once per day reroll Channeling",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Once a day, reroll a Channeling roll: your spell cast card or Magic Defense card, not a Critical Failure. While it is left, the Re-Roll button on those cards spends it. Automated."
             },
             "rozsahObrany": {
               "label": "Magic Defense range +1.5m",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Your Magic Defense also answers for every ally next to you that the same spell targeted: one roll for all of you, the same rule as the Area Defense feature. Automated."
             },
             "magickaOzvena": {
               "label": "Magic Echo",
-              "description": "5 CP; Elymas V. Manual — resolved at the table."
+              "description": "5 CP; Elymas V. A Critical Magic Defense makes your next spell cost 50% less Mana, after other discounts, rounded down. Automated."
             },
             "modifikatorMany": {
               "label": "Mana modifier 5",
@@ -1805,43 +1905,43 @@
           "nodes": {
             "ohniskovyPredmet": {
               "label": "Focus item: Critical Range +5",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. While a focus item is in use (a gear or weapon marked Focus item and equipped or held, a carried item marked Focus item, or the grimoire with Wise Book), the critical degree d20 of your casts gets +5. Automated."
             },
             "soustredeni": {
               "label": "Focus: Magic Attack +5%, Crit +1%",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Each Focus spent on a cast gives its Magic ATK +5 and its Critical Success +1%. Focus from Quick Focus counts too. Automated."
             },
             "rychleSoustredeni": {
               "label": "Quick Focus",
-              "description": "10 CP; Incantator V. Free action, 15 Mana. Gains one Focus, at most twice per round. Grants the Quick Focus action; the Focus is resolved at the table."
+              "description": "10 CP; Incantator V. Free action, 15 Mana. Using Quick Focus banks one Focus for your next cast, at most twice a round. The cast dialog shows what is banked. Banked in combat, it lapses when that turn ends. Automated."
             },
             "precizniInkantace": {
               "label": "Precise Incantation",
-              "description": "15 CP; Incantator V. Free action. Pays the spell's cost again to reroll its effect roll, or to force the opponent to reroll their test to resist the effect. Does not apply to the Mental Duel. Grants the Precise Incantation action; the reroll and its cost are resolved at the table."
+              "description": "15 CP; Incantator V. Free action, the spell's Mana cost. Your spell card offers a button for each failed effect roll that rerolls it once. When a target wins the versus Test against your spell, their answer offers a button that forces them to roll again. Not for the Mental Duel or Blood spells. Automated."
             },
             "moudraKniha": {
               "label": "Wise Book",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Any grimoire you own counts as a focus item. Casting the grimoire's spells without memorising them is how grimoires already work. Automated."
             },
             "vlnaEnergie": {
               "label": "Wave of Energy",
-              "description": "10 CP; Incantator IV. Manual — resolved at the table."
+              "description": "10 CP; Incantator IV. When a cast is a Critical Success, your next spell costs as much Mana less as the spell just cast, at least 5. Automated."
             },
             "dvojnasobnaMana": {
               "label": "Magic attacks cost defender double mana",
-              "description": "0 CP. Manual — resolved at the table."
+              "description": "0 CP. Magic Defense against your spells costs the defender twice the Mana. A defender whose Magic Defense costs nothing still pays nothing. Automated."
             },
             "stabilizaceZdroje": {
               "label": "Source Stabilization",
-              "description": "15 CP. Free action. On a critical Channeling failure, rolls 1d100 to lower (1-50) or raise (51-100) its degree by one, or pays 10% of maximum Mana to choose the direction. Grants the Source Stabilization action; the degree shift is resolved at the table."
+              "description": "15 CP. Free action. When you accept a Critical Failure of Channeling, you see the drawn result and choose: take it, roll 1d100 to shift it one degree milder (1-50) or worse (51-100), or pay 10% of your maximum Mana to pick the direction. Automated."
             },
             "katalyzator": {
               "label": "Catalyst",
-              "description": "10 CP. Free action. Before a casting Test, raises the Critical Success chance by 15% and the Critical Failure chance by 5%. Grants the Catalyst action; the changed chances are resolved at the table."
+              "description": "10 CP. Free action. The cast dialog has a Catalyst toggle: Critical Success +15% and Critical Failure +5% for that cast. Using the Catalyst item opens the dialog with it ticked. Automated."
             },
             "dlouhyOdpocinek": {
               "label": "Long rest: 50 mana",
-              "description": "15 CP; Incantator X. Manual — resolved at the table."
+              "description": "15 CP; Incantator X. A Long Rest restores at least 50 Mana. Automated."
             },
             "modifikatorMany": {
               "label": "Mana modifier 14",
@@ -2180,19 +2280,19 @@
             },
             "navazujiciKouzlo": {
               "label": "Follow-up Spell",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. A kill with an attack that was magically empowered when it was rolled (a held strike spell, or a spell weapon empowerment such as Fire Weapon) gives +10% Channeling to your next spell of the empowering spell's school, once per attack card. Automated."
             },
             "postihZbroje": {
               "label": "Armor Channeling penalty -5%",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Each worn armor piece's Channeling penalty is 5 less, never past 0 for that piece. Stacks with the Veneficus IV doctrine perk, which takes off another 5. Automated."
             },
             "magickyVeteran": {
               "label": "Magic Veteran",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Free action. When you apply a Critical Hit, the Apply Damage dialog lets you give up any number of its degrees. Each degree given up eases your next spell's Difficulty by 10, once per attack card. Automated."
             },
             "slevaMany": {
               "label": "Melee kill: -2 mana on next spell",
-              "description": "5 CP; Veneficus V. Manual — resolved at the table."
+              "description": "5 CP; Veneficus V. When Apply Damage from your melee weapon attack kills a target (dead, or newly Downed or Unconscious), your next spell costs 2 Mana less per target killed. Automated."
             },
             "magickeKz": {
               "label": "Magic Armor +3",
@@ -2200,27 +2300,27 @@
             },
             "soubojZaManu": {
               "label": "Melee actions paid with mana",
-              "description": "5 CP; Veneficus VII. Manual — resolved at the table."
+              "description": "5 CP; Veneficus VII. The Combat Abilities dialog shows a Stamina as Mana toggle. While it is on, a melee ability's Stamina cost (and that of its melee modifiers) is paid from Mana instead, 1:1. You choose it per use; an ability launched straight from a hotbar chip pays Stamina. Automated."
             },
             "lindaruvVypad1": {
               "label": "Lindar's Charge I",
-              "description": "10 CP; Škola VI. Pull, Quick pull, Relocation, Teleportation, Dark pull and Shadowstep cost 6 less Mana and roll Channeling at +10%; the Gnosis spells Shift, Swap and Spatial Leap join them once those spells exist. The free action attack after one of these spells is resolved at the table."
+              "description": "10 CP; Škola VI. Pull, Quick pull, Relocation, Teleportation, Dark pull and Shadowstep cost 6 less Mana and roll Channeling at +10%; the Gnosis spells Shift, Swap and Spatial Leap join them once those spells exist. After a successful cast of one of them on your own turn in combat, your next Attack this turn is a Free action, offered as a Lindar's Charge chip on the hotbar. Automated."
             },
             "lindaruvVypad2": {
               "label": "Lindar's Charge II",
-              "description": "10 CP; Veneficus V. Manual — resolved at the table."
+              "description": "10 CP; Veneficus V. The free Attack of Lindar's Charge I counts as a Charge when it is a melee swing: Hit +10% and Damage +2d4, +2d4 more with a Heavy weapon (Improved Charge's numbers if you hold it), plus the charge dice of Off-hand Bonus II. The attack card is tagged as a Charge. Automated."
             },
             "usmernovani5": {
               "label": "Melee/Shooting: Channeling +5%",
-              "description": "0 CP; Veneficus X. Manual — resolved at the table."
+              "description": "0 CP; Veneficus X. Channeling +5%. Automated."
             },
             "magickaZbran": {
               "label": "Magic Weapon",
-              "description": "10 CP; Veneficus V. Manual — resolved at the table."
+              "description": "10 CP; Veneficus V. Two spell weapon empowerments can be held at once: their damage adds up, both effects roll, and the attack can use either element. A third replaces the older one. Automated."
             },
             "magickePosileni": {
               "label": "Magic Reinforcement",
-              "description": "10 CP. Manual — resolved at the table."
+              "description": "10 CP. Grants the Magic Reinforcement action (Free action, 8 Mana): your next Strength or Dexterity versus Test, whether you call it or answer one, rolls with Advantage. It cannot be prepared twice. Automated."
             },
             "modifikatorMany": {
               "label": "Mana modifier 2",
@@ -2228,19 +2328,19 @@
             },
             "magickeMireni": {
               "label": "Magic Aiming",
-              "description": "10 CP. Manual — resolved at the table."
+              "description": "10 CP. Grants the Magic Aiming action (Free action, 5 Mana): one Aim on your single targeted creature. Once per round in combat. Automated."
             },
             "mireniObtiznost": {
               "label": "Aiming: Difficulty -5%",
-              "description": "0 CP; Veneficus VII. Manual — resolved at the table."
+              "description": "0 CP; Veneficus VII. A spell cast at the token you aim at has its Difficulty eased by 5 per Aim stack (never past 0). Automated."
             },
             "magickeMomentum": {
               "label": "Magic Momentum",
-              "description": "15 CP. Manual — resolved at the table."
+              "description": "15 CP. Free action. Landing a weapon attack, or knocking a target Prone with a melee action, opens one free spell for the round (one per round in total, whichever opened it). To use it, click the Magic Momentum chip on the hotbar: the next spell you cast that costs exactly one Action then costs no Action and deals half damage. A spell cast without the chip pays its Action and deals full damage. Automated."
             },
             "lindarovyUdery": {
               "label": "Lindar's Strikes",
-              "description": "5 CP; Veneficus IV. Manual — resolved at the table."
+              "description": "5 CP; Veneficus IV. Fire strike, Frost strike, Lightning strike, Venomous strike, Enchanted strike, Dark strike and Empower strike (and Binding strike, which the system counts among the strike spells) are always cast without a Channeling evaluation: a fumbled Channeling roll cannot critically fail them, and the strike is applied whatever the margin. Automated."
             }
           }
         },
@@ -2507,19 +2607,19 @@
           "nodes": {
             "ucednik": {
               "label": "Astramancer: Apprentice",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Automated. Unlocks learning and casting the spell Rune of discharge."
             },
             "expert": {
               "label": "Astramancer: Expert",
-              "description": "5 CP; Škola Vzduchu VI. Manual — resolved at the table."
+              "description": "5 CP; Škola Vzduchu VI. Automated. Unlocks learning and casting the spells Lightning rune, Red lightning and Green lightning."
             },
             "mistr": {
               "label": "Astramancer: Master",
-              "description": "5 CP; Škola Vzduchu VIII. Manual — resolved at the table."
+              "description": "5 CP; Škola Vzduchu VIII. Automated. Unlocks learning and casting the spells Lightning orb and Blue lightning."
             },
             "velmistr": {
               "label": "Astramancer: Grandmaster",
-              "description": "5 CP; Škola Vzduchu X. Manual — resolved at the table."
+              "description": "5 CP; Škola Vzduchu X. Automated. Unlocks learning and casting the spell Harold's quiver."
             },
             "stunResist": {
               "label": "Chance to be Stunned -10%",
@@ -2531,7 +2631,7 @@
             },
             "bleskovySok": {
               "label": "Lightning Shock",
-              "description": "15 CP; Astramancer: Expert. Manual — resolved at the table."
+              "description": "15 CP; Astramancer: Expert. Automated. Offensive Air spells gain a 15/20/25/30% chance (by spell rank, Apprentice/Expert/Master/Grandmaster; Wild counts as Apprentice) to Stagger for two turns, added to any Stagger chance the spell already has."
             },
             "omraceniKrit": {
               "label": "Stun +100% from 2nd-degree Crit",
@@ -2542,8 +2642,8 @@
               "description": "5 SP; Astramancer: Expert. Manual — resolved at the table."
             },
             "kulovyBlesk": {
-              "label": "Ball Lightning: Stun +15%",
-              "description": "5 CP; Astramancer: Mistr. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+              "label": "Ball Lightning: Stagger +15%",
+              "description": "5 CP; Astramancer: Mistr. Automated. Lightning ball gains +15% chance to Stagger."
             },
             "retezovyBlesk": {
               "label": "Chain Lightning: Target +1",
@@ -2745,19 +2845,19 @@
           "nodes": {
             "ucednik": {
               "label": "Cryomancer: Apprentice",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Automated. Unlocks learning and casting the spell Hypothermia."
             },
             "expert": {
               "label": "Cryomancer: Expert",
-              "description": "5 CP; Škola Vody VI. Manual — resolved at the table."
+              "description": "5 CP; Škola Vody VI. Automated. Unlocks learning and casting the spells Ice barrage, Ice armor and Sapphira's fist."
             },
             "mistr": {
               "label": "Cryomancer: Master",
-              "description": "5 CP; Škola Vody VIII. Manual — resolved at the table."
+              "description": "5 CP; Škola Vody VIII. Automated. Unlocks learning and casting the spells Ice block, Ice orb and Sapphira's kiss."
             },
             "velmistr": {
               "label": "Cryomancer: Grandmaster",
-              "description": "5 CP; Škola Vody X. Manual — resolved at the table."
+              "description": "5 CP; Škola Vody X. Automated. Unlocks learning and casting the spells Blizzard and Ice wall."
             },
             "ledoveUlomky": {
               "label": "Ice Shards",
@@ -2789,19 +2889,19 @@
             },
             "hlubokyMraz1": {
               "label": "Deep Frost I",
-              "description": "15 CP; Cryomancer: Expert. Manual — resolved at the table."
+              "description": "15 CP; Cryomancer: Expert. Automated. Offensive Water spells gain a 15/20/25/35% chance (by spell rank, Apprentice/Expert/Master/Grandmaster; Wild counts as Apprentice) to Slow for three turns."
             },
             "hlubokyMraz2": {
               "label": "Deep Frost II",
-              "description": "15 CP; Cryomancer: Mistr. Manual — resolved at the table."
+              "description": "15 CP; Cryomancer: Mistr. Automated. Offensive Water spells gain a 10/15/20/25% chance (by spell rank, Apprentice/Expert/Master/Grandmaster; Wild counts as Apprentice) to Freeze."
             },
             "hlubokyMraz3": {
               "label": "Deep Frost III",
-              "description": "15 CP; Cryomancer: Velmistr. Manual — resolved at the table."
+              "description": "15 CP; Cryomancer: Velmistr. Automated. Offensive Water spells gain +45% chance to Slow (three turns) and +20% chance to Freeze."
             },
             "ostryLed": {
               "label": "Sharp Ice",
-              "description": "5 CP; Cryomancer: Expert. Manual — resolved at the table."
+              "description": "5 CP; Cryomancer: Expert. Automated. Offensive Water spells that deal Piercing damage gain a 30% chance to cause Bleeding."
             }
           }
         },
@@ -2810,19 +2910,19 @@
           "nodes": {
             "ucednik": {
               "label": "Entomancer: Apprentice",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Automated. Unlocks learning and casting the spells Repellent and Acid spit."
             },
             "expert": {
               "label": "Entomancer: Expert",
-              "description": "5 CP; Škola Země VI. Manual — resolved at the table."
+              "description": "5 CP; Škola Země VI. Automated. Unlocks learning and casting the spells Insect swarm, Insectile adhesion, Poisoned weapon and Cobweb."
             },
             "mistr": {
               "label": "Entomancer: Master",
-              "description": "5 CP; Škola Země VIII. Manual — resolved at the table."
+              "description": "5 CP; Škola Země VIII. Automated. Unlocks learning and casting the spells Greater Swarm of insects, Stinger and Cocoon."
             },
             "velmistr": {
               "label": "Entomancer: Grandmaster",
-              "description": "5 CP; Škola Země X. Manual — resolved at the table."
+              "description": "5 CP; Škola Země X. Automated. Unlocks learning and casting the spell Metamorphosis."
             },
             "feromony": {
               "label": "Pheromones",
@@ -2830,7 +2930,7 @@
             },
             "jedovatyHmyz": {
               "label": "Venomous Insects",
-              "description": "15 SP; Travič II. Manual — resolved at the table."
+              "description": "15 SP; Travič II. Automated. Insect swarm, Greater Swarm of insects and Metamorphosis count as poison-based spells for Poisoner I and II. On its own this node gives no Poison chance."
             },
             "jedResist1": {
               "label": "Chance to resist poison +10%",
@@ -2842,11 +2942,11 @@
             },
             "leptavaKyselina1": {
               "label": "Caustic Acid I",
-              "description": "5 CP; Entomancer: Expert. Manual — resolved at the table."
+              "description": "5 CP; Entomancer: Expert. Automated. Earth spells that deal Acid damage gain +15% chance to corrode armor (Corrosion)."
             },
             "leptavaKyselina2": {
               "label": "Caustic Acid II",
-              "description": "10 CP. Manual — resolved at the table."
+              "description": "10 CP. Automated. When an Acid Earth spell corrodes armor, it destroys 4 more armor (one more Corrosion stack)."
             },
             "protijed": {
               "label": "Antidote: Chance +25%",
@@ -2858,11 +2958,11 @@
             },
             "travic1": {
               "label": "Poisoner I",
-              "description": "10 CP; Entomancer: Učedník. Manual — resolved at the table."
+              "description": "10 CP; Entomancer: Učedník. Automated. Offensive Earth spells that deal Poison or Acid damage gain a 20/30/35/45% chance (by spell rank, Apprentice/Expert/Master/Grandmaster; Wild counts as Apprentice) to Poison."
             },
             "travic2": {
               "label": "Poisoner II",
-              "description": "15 CP; Entomancer: Expert. Manual — resolved at the table."
+              "description": "15 CP; Entomancer: Expert. Automated. Offensive Earth spells that deal Poison or Acid damage gain a further 25/35/40/50% chance (by spell rank, Apprentice/Expert/Master/Grandmaster; Wild counts as Apprentice) to Poison."
             },
             "travic3": {
               "label": "Poisoner III",
@@ -2870,7 +2970,7 @@
             },
             "toxiny": {
               "label": "Toxins",
-              "description": "15 CP; Entomancer: Mistr. Manual — resolved at the table."
+              "description": "15 CP; Entomancer: Mistr. Automated. Poison started by your Earth spells lasts one round longer and deals 1d6 more damage on each tick. A Poison already on the target keeps its own damage."
             },
             "kyselinovaStrela": {
               "label": "Acid Bolt: Armor -2",
@@ -2887,19 +2987,19 @@
           "nodes": {
             "ucednik": {
               "label": "Geomancer: Apprentice",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Automated. Unlocks learning and casting the spell Shattering rock."
             },
             "expert": {
               "label": "Geomancer: Expert",
-              "description": "5 CP; Škola Země VI. Manual — resolved at the table."
+              "description": "5 CP; Škola Země VI. Automated. Unlocks learning and casting the spells Stalagmite, Tremor and Devouring Earth."
             },
             "mistr": {
               "label": "Geomancer: Master",
-              "description": "5 CP; Škola Země VIII. Manual — resolved at the table."
+              "description": "5 CP; Škola Země VIII. Automated. Unlocks learning and casting the spells Stone circle, Urhan's sight and Steelskin."
             },
             "velmistr": {
               "label": "Geomancer: Grandmaster",
-              "description": "5 CP; Škola Země X. Manual — resolved at the table."
+              "description": "5 CP; Škola Země X. Automated. Unlocks learning and casting the spells Earthquake and Flower of death."
             },
             "kz2": {
               "label": "Armor +2",
@@ -2915,7 +3015,7 @@
             },
             "regeneraceVydrze": {
               "label": "Regeneration: restores 2d4 Stamina",
-              "description": "5 CP; Geomancer: Expert. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+              "description": "5 CP; Geomancer: Expert. Automated. Regeneration you cast also restores 2d4 Stamina on each tick."
             },
             "kamennaKuze": {
               "label": "Stone Skin: sacrifice armor to Stun",
@@ -2934,16 +3034,16 @@
               "description": "5 CP. Automated."
             },
             "omracujiciRany1": {
-              "label": "Stunning Wounds I",
-              "description": "15 CP; Geomancer: Expert. Manual — resolved at the table."
+              "label": "Staggering Wounds I",
+              "description": "15 CP; Geomancer: Expert. Automated. Offensive Earth spells gain a 10/15/20/25% chance (by spell rank, Apprentice/Expert/Master/Grandmaster; Wild counts as Apprentice) to Stagger for two turns. Stacks with Staggering Wounds II."
             },
             "omracujiciRany2": {
-              "label": "Stunning Wounds II",
-              "description": "15 CP; Geomancer: Mistr. Manual — resolved at the table."
+              "label": "Staggering Wounds II",
+              "description": "15 CP; Geomancer: Mistr. Automated. Offensive Earth spells gain a 10/15/20/25% chance (by spell rank, Apprentice/Expert/Master/Grandmaster; Wild counts as Apprentice) to Stagger for two turns. Stacks with Staggering Wounds I."
             },
             "omracujiciRany3": {
-              "label": "Stunning Wounds III",
-              "description": "20 CP; Geomancer: Velmistr. Manual — resolved at the table."
+              "label": "Staggering Wounds III",
+              "description": "20 CP; Geomancer: Velmistr. Automated. Stagger caused by your Earth spells lasts one turn longer."
             },
             "pevnyKrok": {
               "label": "Firm Step",
@@ -2951,7 +3051,7 @@
             },
             "urhanovaSila": {
               "label": "Urhan's Strength",
-              "description": "10 CP; Geomancer: Expert. Manual — resolved at the table."
+              "description": "10 CP; Geomancer: Expert. Automated. When your spell Staggers a target that is already Staggered, it is also knocked Prone."
             }
           }
         },
@@ -3684,19 +3784,19 @@
           "nodes": {
             "ucednik": {
               "label": "Pyromancer: Apprentice",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Automated. Unlocks learning and casting the spell Fan of sparks."
             },
             "expert": {
               "label": "Pyromancer: Expert",
-              "description": "5 CP; Škola Ohně VI. Manual — resolved at the table."
+              "description": "5 CP; Škola Ohně VI. Automated. Unlocks learning and casting the spells Protection from Heat, Melt Metal and Devouring Fire."
             },
             "mistr": {
               "label": "Pyromancer: Master",
-              "description": "5 CP; Škola Ohně VIII. Manual — resolved at the table."
+              "description": "5 CP; Škola Ohně VIII. Automated. Unlocks learning and casting the spells Relgar's Wrath, Glowing Heat and Relgar's Rune."
             },
             "velmistr": {
               "label": "Pyromancer: Grandmaster",
-              "description": "5 CP; Škola Ohně X. Manual — resolved at the table."
+              "description": "5 CP; Škola Ohně X. Automated. Unlocks learning and casting the spells Meteor Shower and Magmatic Shield."
             },
             "overeni": {
               "label": "School of Fire: Precision +15%",
@@ -3716,7 +3816,7 @@
             },
             "podpaleniPanika": {
               "label": "Ignition causes no Panic Test",
-              "description": "15 SP. Manual — resolved at the table."
+              "description": "15 SP. Automated. Burning never makes you take a Resolve test for Panic."
             },
             "ohnivaAura": {
               "label": "Fire Aura: Ignite +5%",
@@ -3724,7 +3824,7 @@
             },
             "ohnivyStit": {
               "label": "Fire Shield: Penetration +3, Damage +1d4",
-              "description": "5 CP; Pyromancer: Expert. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+              "description": "5 CP; Pyromancer: Expert. Automated. Flame Shield rolls +1d4 damage with Penetration +3."
             },
             "podpaleniKrit": {
               "label": "Ignite +100% from 3rd-degree Crit",
@@ -3732,11 +3832,11 @@
             },
             "divokyOhen1": {
               "label": "Wildfire I",
-              "description": "15 CP; Pyromancer: Expert. Manual — resolved at the table."
+              "description": "15 CP; Pyromancer: Expert. Automated. Offensive Fire spells gain a 5/10/15/20% chance (by spell rank, Apprentice/Expert/Master/Grandmaster; Wild counts as Apprentice) to Burn."
             },
             "divokyOhen2": {
               "label": "Wildfire II",
-              "description": "15 CP; Pyromancer: Mistr. Manual — resolved at the table."
+              "description": "15 CP; Pyromancer: Mistr. Automated. Offensive Fire spells gain +10% chance to Burn. The +1.5 m reach is shown on the cast card and measured at the table."
             },
             "barevnyOhen1": {
               "label": "Colored Fire I",
@@ -3826,19 +3926,19 @@
           "nodes": {
             "ucednik": {
               "label": "Vitamancer: Apprentice",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Automated. Unlocks learning and casting the spells Disorientation and Stabilization."
             },
             "expert": {
               "label": "Vitamancer: Expert",
-              "description": "5 CP; Škola Ducha/Těla VI. Manual — resolved at the table."
+              "description": "5 CP; Škola Ducha/Těla VI. Automated. Unlocks learning and casting the spells Mass disorientation and Lorina's guard."
             },
             "mistr": {
               "label": "Vitamancer: Master",
-              "description": "5 CP; Škola Ducha/Těla VIII. Manual — resolved at the table."
+              "description": "5 CP; Škola Ducha/Těla VIII. Automated. Unlocks learning and casting the spells Lorik's arrows and Lorina's bond."
             },
             "velmistr": {
               "label": "Vitamancer: Grandmaster",
-              "description": "5 CP; Škola Ducha/Těla X. Manual — resolved at the table."
+              "description": "5 CP; Škola Ducha/Těla X. Automated. Unlocks learning and casting the spells Lorik's rune and Cycle of life."
             },
             "kritRozsah": {
               "label": "Spirit and Body: Critical Range +2",
@@ -3850,11 +3950,11 @@
             },
             "ochromeni1": {
               "label": "School of Spirit: Stun +5%",
-              "description": "5 CP; Vitamancer: Expert. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+              "description": "5 CP; Vitamancer: Expert. Automated. Spirit spells that already roll Stun gain +5% to that chance."
             },
             "ochromeni2": {
               "label": "School of Spirit: Stun +5%",
-              "description": "5 CP; Vitamancer: Mistr. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+              "description": "5 CP; Vitamancer: Mistr. Automated. Spirit spells that already roll Stun gain +5% to that chance."
             },
             "zivoty5": {
               "label": "Health +5",
@@ -4278,7 +4378,11 @@
             "ratingLabel": "Ranged Attack"
           },
           "channeling": {
-            "label": "Channeling"
+            "label": "Channeling",
+            "attack": "Magic Attack",
+            "attackHint": "Flat bonus added to the Magic Attack of every spell this creature casts.",
+            "defense": "Magic Defense",
+            "defenseHint": "Flat bonus added to this creature's Magic Defense rolls."
           },
           "bloodManipulation": {
             "label": "Blood Manipulation"
@@ -4439,6 +4543,10 @@
       }
     },
     "Item": {
+      "Focus": {
+        "label": "Focus item",
+        "hint": "A focus item channels magic more safely. A caster with the Incantator doctrine casts without one at -10% and with Critical Failure +2%. Counts while equipped, held in the active weapon set, or carried."
+      },
       "Tabs": {
         "Attributes": "Attributes",
         "Description": "Description",
@@ -4449,6 +4557,33 @@
         "OffHand": "Offhand",
         "Variants": "Variants",
         "Light": "Light"
+      },
+      "EffectSlots": {
+        "builtIn": "Chance on Hit",
+        "extra": "Extra Effects",
+        "effect": "Effect",
+        "chance": "Chance %",
+        "customName": "Custom Name"
+      },
+      "EffectType": {
+        "custom": "Custom",
+        "bleed": "Bleed",
+        "blind": "Blind",
+        "burn": "Burn",
+        "chain": "Chain",
+        "dispell": "Dispel",
+        "fear": "Fear",
+        "freeze": "Freeze",
+        "paralyze": "Paralyze",
+        "poison": "Poison",
+        "precision": "Precision",
+        "root": "Root",
+        "shield_strain": "Shield Strain",
+        "shield_break": "Shield Break",
+        "slow": "Slow",
+        "stagger": "Stagger",
+        "stun": "Stun",
+        "vulnerable": "Vulnerable"
       },
       "Light": {
         "hint": "While this item is equipped it emits light from the owner's token. If several equipped items emit light, the one with the largest radius is used. Leave Dim and Bright at 0 for no light.",
@@ -4494,6 +4629,27 @@
         }
       },
       "Weapon": {
+        "BonusHint": "Added by quality, material and enchantments.",
+        "Section": {
+          "properties": "Properties",
+          "critical": "Critical",
+          "doctrines": "Doctrines",
+          "offhand": "Off Hand Attack"
+        },
+        "Class": {
+          "axe": "Axe",
+          "blunt": "Blunt",
+          "sword": "Sword",
+          "polearm": "Polearm",
+          "bow": "Bow",
+          "crossbow": "Crossbow",
+          "firearm": "Firearm"
+        },
+        "Type": {
+          "light": "Light",
+          "medium": "Medium",
+          "heavy": "Heavy"
+        },
         "FIELDS": {
           "offhand": {
             "label": "Can be held offhand"
@@ -4594,6 +4750,16 @@
         }
       },
       "Gear": {
+        "Layer": {
+          "Accessory": "Accessory",
+          "Bottom": "Bottom",
+          "Middle": "Middle",
+          "Top": "Top"
+        },
+        "Section": {
+          "whileEquipped": "While Equipped",
+          "resistances": "Resistances"
+        },
         "FIELDS": {
           "armor": {
             "label": "Armor"
@@ -4750,6 +4916,7 @@
           },
           "heavyDamage": {
             "label": "Heavy weapon damage",
+            "short": "Heavy Damage",
             "hint": "Extra damage dice added only when this ability is used with a Heavy weapon."
           },
           "attributeTest": {
@@ -4795,7 +4962,67 @@
           },
           "resourceCost": {
             "label": "Resource Cost"
+          },
+          "resourceType": {
+            "label": "Resource"
+          },
+          "resourceMode": {
+            "label": "Mode"
+          },
+          "resourceAmount": {
+            "label": "Amount"
           }
+        },
+        "Section": {
+          "test": "Test",
+          "resources": "Other Resource Costs"
+        },
+        "Class": {
+          "movement": "Movement",
+          "attack": "Attack",
+          "defense": "Defense",
+          "stance": "Stance",
+          "command": "Command"
+        },
+        "Type": {
+          "melee": "Melee",
+          "ranged": "Ranged",
+          "other": "Other"
+        },
+        "Cost": {
+          "stamina": "Stamina",
+          "mana": "Mana",
+          "health": "Health",
+          "mind": "Mind",
+          "fatigue": "Fatigue",
+          "holy energy": "Holy Energy",
+          "blood": "Blood"
+        },
+        "Test": {
+          "strength": "Strength",
+          "dexterity": "Dexterity",
+          "endurance": "Endurance",
+          "inteligence": "Intelligence",
+          "will": "Will",
+          "charisma": "Charisma",
+          "perception": "Perception",
+          "leadership": "Leadership",
+          "channeling": "Channeling",
+          "speed": "Speed"
+        },
+        "Resource": {
+          "Health": "Health",
+          "Stamina": "Stamina",
+          "Mana": "Mana",
+          "Mind": "Mind",
+          "Toxicity": "Toxicity",
+          "Corruption": "Corruption",
+          "TemporaryHealth": "Temporary Health",
+          "TemporaryHealthMagic": "Magic Temporary Health"
+        },
+        "Mode": {
+          "add": "Add",
+          "drain": "Drain"
         }
       },
       "Spell": {
@@ -4832,6 +5059,14 @@
           "uncontested": {
             "label": "Uncontested",
             "hint": "Nothing rolls against this cast: no defense, no attribute test, no damage aimed at a target. Hides Magic ATK, and skips the channeling roll entirely when No Channeling Evaluation is used."
+          },
+          "magicAttack": {
+            "label": "Magic Attack",
+            "hint": "The spell's own Magic Attack. Added to the Magic ATK on the card, or replaces it when Fixed Magic Attack is ticked. It never changes the chance to cast."
+          },
+          "magicAttackFixed": {
+            "label": "Fixed Magic Attack",
+            "hint": "The spell's Magic Attack is the exact number on the card. The cast margin and every other Magic Attack bonus are ignored."
           },
           "vsTest": {
             "label": "VS Test"
@@ -5041,6 +5276,8 @@
       "Details": {
         "weaponsAdvice": "Choose the weapon each doctrine will train with. Hover a card to see all ten of its ranks.",
         "weaponFor": "{doctrine}: weapon skill",
+        "weaponForOptional": "{doctrine}: weapon skill (optional)",
+        "weaponOptionalAdvice": "A magical or ranged doctrine needs no weapon skill. Pick one if you want it, or leave it empty; click a picked card again to put it down.",
         "spellsOpen": "Spells ({n})",
         "schoolFor": "{doctrine}: school of magic",
         "schoolKind": "School of magic",
@@ -5055,8 +5292,8 @@
       },
       "Doctrine": {
         "heading": "Combat doctrine",
-        "advice": "Pick the one melee or ranged doctrine your character trains in. It joins your skills, and you distribute points into it afterwards. Rogue may be taken beside it. Further doctrines can be learned later.",
-        "pickOne": "Pick one melee or ranged doctrine.",
+        "advice": "Pick the one melee or ranged doctrine your character trains in. It joins your skills, and you distribute points into it afterwards. Rogue may be taken beside it. With Magic potential, a magical doctrine can replace it or sit beside it. Further doctrines can be learned later.",
+        "pickOne": "Pick one melee or ranged doctrine. With Magic potential, a magical doctrine will do instead.",
         "needsMagic": "Requires the Magic potential trait.",
         "schoolsHeading": "Schools of magic",
         "temperamentSchool": "Set by your temperament.",
@@ -5632,7 +5869,8 @@
         "Hit": "Command: Break the Line",
         "Defense": "Command: Hold the Line",
         "Cover": "Command: Shields Up"
-      }
+      },
+      "TooManyTargets": "This Command reaches {limit} ally at most."
     },
     "BloodStrike": {
       "OpenWoundOption": "Open Wound — spend {cost} Life from the Blood Reserve for 1 Bleed",
@@ -5666,6 +5904,24 @@
       "StaminaTooLow": "{name} has {stamina} Stamina — {cost} is needed per Aim sacrificed.",
       "Applied": "{name} tears the wound wide on {targets}, sacrificing {aim} Aim for {stamina} Stamina."
     },
+    "DamagePreview": {
+      "Damage": "{amount} damage",
+      "Hp": "{amount} HP",
+      "HpOf": "{value}/{max} HP",
+      "TempHp": "{amount} temp HP",
+      "TempHpMagic": "{amount} magic temp HP",
+      "Incoming": "Incoming {amount}",
+      "Shield": "Shield −{amount}",
+      "Armor": "Armor −{amount}",
+      "PenCap": "Penetration cap −{amount}",
+      "Resistance": "Resistance −{amount}",
+      "Immunity": "Immunity −{amount}",
+      "Vulnerability": "Vulnerability +{amount}",
+      "Halved": "Half Damage −{amount}",
+      "Durability": "Durability −{amount}",
+      "Remaining": "Remaining: {hp}, {tempHp}",
+      "ShieldLeft": "{amount} shield"
+    },
     "SneakLedger": {
       "Refused": "Sneak Attack not applied to {targets} — already spent on them this round ({lost} removed).",
       "Granted": "Critical Hit counts as a Sneak Attack against {targets} (+{gained}).",
@@ -5690,7 +5946,11 @@
         "root": "rooted",
         "blind": "blinded",
         "dazzled": "dazzled",
-        "panic": "panicking"
+        "panic": "panicking",
+        "pikemanHunter": "inside the long weapon's reach",
+        "brigandRepeat": "second shot at the same target",
+        "underhanded": "Staggered target, 6 Stamina",
+        "mauling": "Mauling"
       }
     },
     "EnduringWarrior": {
@@ -5920,7 +6180,9 @@
       "BadDodge": "Bad Dodge!",
       "BadDodgeNote": "The die beat the dodge limit ({limit}): this dodge counts as a margin of 0.",
       "BloodSchoolBonus": "School of Blood defense: +{bonus}",
-      "MagicDefenseCost": "Magic defense: {rank} (-{cost} Mana)"
+      "MagicDefenseCost": "Magic defense: {rank} (-{cost} Mana)",
+      "MagicDefenseTitle": "Magic Defense ({rank})",
+      "WildSpellBonus": "Wild magic: +{bonus}"
     },
     "AutoDefense": {
       "Label": "Auto-defense",
@@ -5962,11 +6224,26 @@
       "Blocked": "Defended",
       "Hit": "Hit",
       "Tie": "Tie, the attack lands",
-      "Detail": "Attack {attack} vs Defense {defense} ({gap})",
+      "TieInitiator": "Tie, the initiator wins",
+      "Won": "Won",
+      "Lost": "Lost",
+      "HopelessNatural": "Negative chance: the natural {die} is only a common success, MoS 0.",
+      "CriticalWin": "Critical Win",
+      "CriticalLoss": "Critical Loss",
+      "NaturalOwn": "Rolled a natural {die}, margins ignored.",
+      "NaturalOpposing": "Opposing roll was a natural {die}, margins ignored.",
+      "DeniedOnDiceOwn": "Both critical, lower die wins. Rolled {own} against {opposing}.",
+      "DeniedOnDiceInitiator": "Both critical on the same {die}, the initiator wins the tie.",
+      "ByMargin": "{outcome} by {mos} MoS",
+      "ByNatural": "{outcome} by a natural {die}",
+      "Detail": "Attack {attack} vs Defense {defense}",
       "CriticalDefense": "Critical Defense",
       "CriticalDodge": "Critical Dodge",
       "CriticalHit": "Critical Hit",
-      "DeniedOnDice": "Both critical, so margins are ignored. Attack rolled {attack}, defense rolled {defense}.",
+      "NaturalAttack": "Attack rolled a natural {die}, margins ignored.",
+      "NaturalDefense": "Defense rolled a natural {die}, margins ignored.",
+      "DeniedOnDice": "Both critical, lower die wins. Attack rolled {attack}, defense rolled {defense}.",
+      "DeniedOnDiceTie": "Both critical on the same {die}, the attack wins the tie.",
       "DialogAttackMargin": "Answering an attack of margin {margin}",
       "OwnMargin": "Own margin {own} vs {opposing}"
     },
@@ -6424,7 +6701,7 @@
       "haste": "+1 Speed and +4 Initiative. The extra action is resolved at the table.",
       "fast_reaction": "+4 Initiative per stack, counted in the next round's initiative roll. Expires at the start of the bearer's next turn.",
       "flight": "Flying. Speed is set to 8.",
-      "restoration": "Heals 2d6 + 1 Health when applied and at the start of every round, three heals in total. Does not stop Bleed.",
+      "restoration": "Heals 2d6 + 1 Health when applied and at the start of each of the next 2 rounds, three heals in total. Does not stop Bleed.",
       "resist_stun": "-15% chance to be Stunned or Staggered.",
       "resist_bleed": "Removes all Bleed when applied, and attacks cannot inflict Bleed while it lasts.",
       "protection_warmth": "+2 Fire armor. Cannot coexist with Protection from Heat.",
@@ -6441,17 +6718,17 @@
       "air_shield": "30% + SK chance to deflect projectiles and half damage from ranged and thrown attacks, both rolled by hand.",
       "sanguine_blade": "Weapon attacks have +50% chance to Bleed. Takes the weapon enchantment slot.",
       "coagulation": "Every Bleed on the bearer lasts only one more round. Lasts rounds equal to the caster's Blood Spell Power (SK).",
-      "poisoned_blood": "Deals 1d6 + SK Dark and Poison damage when applied and at the start of each of the next 3 rounds, ignoring base armor. SK is the caster's Blood Spell Power.",
-      "skin_cracking": "Inflicts SK/4 Bleed (rounded up, at least 1) when applied and at the start of each of the next 2 rounds. Each Bleed that does not fit under the cap of 6 deals 1d8 damage instead.",
-      "demonic_grasp": "Deals SK×4 Dark and Blunt damage ignoring base armor and inflicts 2 Bleed, when applied and at the start of each of the next 3 rounds. Also roots: movement is 0, no Dodge, and -15% to Combat, Defense and Cover.",
+      "poisoned_blood": "Deals 1d6 + SK Dark and Poison damage when applied and at the start of each of the next 4 rounds, ignoring base armor. SK is the caster's Blood Spell Power.",
+      "skin_cracking": "Inflicts SK/4 Bleed (rounded up, at least 1) when applied and at the start of each of the next 3 rounds. Each Bleed that does not fit under the cap of 6 deals 1d8 damage instead.",
+      "demonic_grasp": "Deals SK×4 Dark and Blunt damage ignoring base armor and inflicts 2 Bleed, when applied and at the start of each of the next 4 rounds. Also roots: movement is 0, no Dodge, and -15% to Combat, Defense and Cover.",
       "spectral_weapon": "Weapon attacks add Magic to their damage type. Takes the weapon enchantment slot.",
       "magic_rope": "The caster's summoned rope. Sent at a target, it pits the caster's Will + SK against Strength or Dexterity and Roots the target on a win. Losing the contest destroys the rope.",
       "insect_swarm": "Deals 1d4 damage ignoring armor at the start of every round, then a failed Resolve test causes Panic. -5% on every test and -50% Archery and Throwing.",
-      "dark_curse": "Deals 1d6 + SK Magic and Dark damage when applied and at the start of the next round, ignoring base armor. SK is the caster's Darkness Spell Power.",
-      "burning_mark": "Deals 2d6 + SK/2 Magic and Fire damage when applied and at the start of each of the next 2 rounds, ignoring base armor. +10% chance to catch Burn from other sources. SK is the caster's Fire Spell Power.",
-      "hypothermia": "Deals 1d6 + SK/2 Magic and Frost damage when applied and at the start of each of the next 2 rounds, ignoring base armor. SK is the caster's Water Spell Power.",
-      "black_itch": "Deals 1d4 Magic and Dark damage when applied and at the start of every round, ignoring base armor, and the damage taken is also gained as Corruption. Ticks SK/2 + 1 times (at least twice), SK being the caster's Darkness Spell Power.",
-      "blight_bomb": "Deals 3d6 + SK/2 Dark and Poison damage when applied and at the start of each of the next 5 rounds, ignoring base armor. SK is the caster's Blood Spell Power. The explosion on death is resolved at the table.",
+      "dark_curse": "Deals 1d6 + SK Magic and Dark damage when applied and at the start of each of the next 2 rounds, ignoring base armor. SK is the caster's Darkness Spell Power.",
+      "burning_mark": "Deals 2d6 + SK/2 Magic and Fire damage when applied and at the start of each of the next 3 rounds, ignoring base armor. +10% chance to catch Burn from other sources. SK is the caster's Fire Spell Power.",
+      "hypothermia": "Deals 1d6 + SK/2 Magic and Frost damage when applied and at the start of each of the next 3 rounds, ignoring base armor. SK is the caster's Water Spell Power.",
+      "black_itch": "Deals 1d4 Magic and Dark damage when applied and at the start of every round, ignoring base armor, and the damage taken is also gained as Corruption. Lasts SK/2 + 1 rounds, so it ticks SK/2 + 2 times, SK being the caster's Darkness Spell Power.",
+      "blight_bomb": "Deals 3d6 + SK/2 Dark and Poison damage when applied and at the start of each of the next 6 rounds, ignoring base armor. SK is the caster's Blood Spell Power. The explosion on death is resolved at the table.",
       "eluviels_touch": "Heals 2 + SK Health when applied and at the start of every round until removed. SK is the caster's Body Spell Power.",
       "entropy": "-10 Armor. Lasts SK/2 + 1 rounds of the caster's Darkness Spell Power. The damage for each point of Armor actually reduced is resolved at the table.",
       "shadow_form": "+10% Stealth. The 20% chance to avoid physical damage is resolved at the table.",
@@ -6750,7 +7027,8 @@
         "shield_strain": "Shield Strain",
         "crippled_initiative": "Crippled Turn Order",
         "immobilized": "Immobilized",
-        "protected_by": "Protected"
+        "protected_by": "Protected",
+        "hooked": "Hooked"
       }
     },
     "Resync": {
@@ -7037,7 +7315,8 @@
         "name": "Broadsword"
       },
       "Butcher": {
-        "name": "Butcher"
+        "name": "Butcher",
+        "description": "<p>A Critical Hit with a Military Cleaver, a Two-handed Cleaver or a Light weapon has +100% Bleed chance.</p>"
       },
       "CalendulaAlba": {
         "name": "Calendula Alba"
@@ -7776,6 +8055,13 @@
       "Giantslayer": {
         "name": "Giantslayer"
       },
+      "Oak": {
+        "name": "Oak",
+        "pill": "+30% on tests against Pain."
+      },
+      "Slayer": {
+        "name": "Slayer"
+      },
       "Gills": {
         "name": "Gills"
       },
@@ -8245,6 +8531,14 @@
       "TargetLock": {
         "name": "Target Lock",
         "description": "<p>After an Aim action, test Perception at -30%. On a success you gain one more Aim on the same target.</p>"
+      },
+      "MagicReinforcement": {
+        "name": "Magic Reinforcement",
+        "description": "<p>You gain Advantage on your next combat versus Test of Strength or Dexterity.</p>"
+      },
+      "MagicAiming": {
+        "name": "Magic Aiming",
+        "description": "<p>You gain one Aim on the target. It can be used only once per round.</p>"
       },
       "AccurateShotSkirmisher": {
         "name": "Accurate Shot (Skirmisher)"
@@ -9362,6 +9656,386 @@
       },
       "FreeTheShield": {
         "name": "Free the Shield"
+      },
+      "AcrobaticDefenseII": {
+        "name": "Acrobatic defense II",
+        "description": "<p>While your top armor layer is Light, your Dodge gains Deflect +20%.</p>"
+      },
+      "AcrobaticDefenseIII": {
+        "name": "Acrobatic defense III",
+        "description": "<p>Dodge +10%. Critical Dodge chance +4%. Removes the Dodge success limit.</p>"
+      },
+      "AcrobatI": {
+        "name": "Acrobat I",
+        "description": "<p>While Prone, once per round you may use a Free action for an Acrobatics Test (Very Hard). On a success you gain 1 Action. You may also test Speed (Very Hard); on a success your turn order is not reduced to 1.</p>"
+      },
+      "AcrobatII": {
+        "name": "Acrobat II",
+        "description": "<p>When you would be knocked Prone, you may test Acrobatics (-60%). On a success you avoid the effect and move one hex back. This movement does not provoke an Opportunity Attack.</p>"
+      },
+      "SafeStep": {
+        "name": "Safe Step",
+        "description": "<p>During a Slow Movement past an opponent you may test Stealth (Legendary). On a success you provoke no Opportunity Attack; on a failure you cannot defend against it.</p>"
+      },
+      "LimbBreaker": {
+        "name": "Limb Breaker",
+        "description": "<p>An Aimed Attack that lands on the arms, legs or head deals +2d4 damage.</p>"
+      },
+      "EstocI": {
+        "name": "Estoc I",
+        "description": "<p>With an Estoc you gain the Agile Counter action for 2 Stamina: after a successful Dodge you may strike back for half damage.</p>"
+      },
+      "EstocII": {
+        "name": "Estoc II",
+        "description": "<p>With an Estoc you gain Estoc Lunge, a modifier for Attack, Counterattack and Agile Counter costing 5 Stamina that raises the reach by one hex. Agile Counter now deals full damage.</p>"
+      },
+      "ExoticWeaponsI": {
+        "name": "Exotic Weapons I",
+        "description": "<p>With a Katar and a Defensive Katar you gain the Trip action, which can modify attacks in an attempt to knock the target Prone.</p>"
+      },
+      "ExoticWeaponsII": {
+        "name": "Exotic Weapons II",
+        "description": "<p>With a Katar and a Defensive Katar you gain the Mauling action: for 3 Stamina per round you gain bonuses against a Prone target.</p>"
+      },
+      "Tenacity": {
+        "name": "Tenacity",
+        "description": "<p>When you take a Critical Hit, you may spend Mind Points to lower its degree by one for each Mind Point spent.</p>"
+      },
+      "MountedArcherI": {
+        "name": "Mounted Archer I",
+        "description": "<p>You may use the Archer, Crossbowman, Peltast and Juggler doctrines while fighting from the saddle.</p>"
+      },
+      "MountedArcherII": {
+        "name": "Mounted Archer II",
+        "description": "<p>Removes the Archery penalties for Canter and Gallop.</p>"
+      },
+      "OneEyedWarrior": {
+        "name": "One-Eyed Warrior",
+        "description": "<p>Reduces your penalty to Defense, Cover, Hit, Throwing and Archery by 5%.</p>"
+      },
+      "BreathControl": {
+        "name": "Breath Control",
+        "description": "<p>You endure a Choke one round longer. Holding your breath lasts 2 rounds longer. The Rest action restores 1 more Stamina.</p>"
+      },
+      "SmithsBlow": {
+        "name": "Smith's Blow",
+        "description": "<p>Penetration +1. An Aimed Attack on the head has Advantage on the Stagger chance. Does not apply to shooting or throwing.</p>"
+      },
+      "PikemanHunter": {
+        "name": "Pikeman Hunter",
+        "description": "<p>With a shortsword, hatchet or dagger you gain +10% Hit against opponents wielding a Long Reach weapon, and the hit counts as a Sneak Attack.</p>"
+      },
+      "MasterOfThrowing": {
+        "name": "Master of Throwing",
+        "description": "<p>Throwing +10%.</p>"
+      },
+      "ResilientMetabolism": {
+        "name": "Resilient Metabolism",
+        "description": "<p>35% chance of immunity to tier 1 poisons, 25% to tier 2 and 5% to tier 3. When you exceed your Toxicity limit, test Endurance (Very Hard); on a success Toxic Shock lasts only one round and Toxicity drops to the limit. Poison Armor +5.</p>"
+      },
+      "EagleEye": {
+        "name": "Eagle Eye",
+        "description": "<p>With firearms you ignore Half Cover and treat Full Cover as Half Cover. Firing +5%.</p>"
+      },
+      "Squire": {
+        "name": "Squire",
+        "description": "<p>With a Broadsword and a shield, a free hand or a second weapon, the margin needed for a Critical Hit drops by 10.</p>"
+      },
+      "GunslingerI": {
+        "name": "Gunslinger I",
+        "description": "<p>A flintlock pistol gains Firing and Critical Hit bonuses from the Duelist doctrine instead of Musketeer, and +5% Firing. Off-hand flintlock pistol Firing penalty reduced by 5%.</p>"
+      },
+      "GunslingerII": {
+        "name": "Gunslinger II",
+        "description": "<p>With a flintlock pistol you may use Quick Reload: a Free action for 10 Stamina that speeds up Reload by one action, once per round.</p>"
+      },
+      "GunslingerIII": {
+        "name": "Gunslinger III",
+        "description": "<p>With a sword you may use Quick Shot, a Free action for 3 Stamina: when you kill an opponent in melee you may immediately re-arm to a flintlock pistol and fire.</p>"
+      },
+      "GunslingerIV": {
+        "name": "Gunslinger IV",
+        "description": "<p>With a sword and a flintlock pistol you may use Follow-up Shot, a Free action for 3 Stamina: after a melee hit you may immediately fire at the same target with +20% Firing. After a Critical Hit the shot is a guaranteed hit.</p>"
+      },
+      "LastStep": {
+        "name": "Last Step",
+        "description": "<p>Whenever you move, you may pay 10 Stamina for an extra movement. This movement may provoke an Opportunity Attack.</p>"
+      },
+      "LastChance": {
+        "name": "Last Chance",
+        "description": "<p>During a Multiattack or a Flurry of Throws with throwing knives, your last throw gains +3% Critical Hit, and a further +3% for each throw that missed the same target.</p>"
+      },
+      "SlingerI": {
+        "name": "Slinger I",
+        "description": "<p>Sling hits aimed at the head have +20% Stagger chance and +4d4 damage.</p>"
+      },
+      "SlingerII": {
+        "name": "Slinger II",
+        "description": "<p>Sling attacks aimed at the head have their hit penalty reduced by 10%. The Sling has +10% Stagger chance.</p>"
+      },
+      "SwapPlaces": {
+        "name": "Swap Places",
+        "description": "<p>If you end a move next to an ally, or stand next to one and take a movement action, you may swap places for 2 Stamina and both your Reactions, without provoking Opportunity Attacks.</p>"
+      },
+      "BrutalBlow": {
+        "name": "Brutal Blow",
+        "description": "<p>Attacks have Breakthrough +1d6. Does not apply to shooting.</p>"
+      },
+      "RapidAdaptationII": {
+        "name": "Rapid adaptation II",
+        "description": "<p>You gain +10% Hit (at most +20%) each time an enemy defends or dodges. A successful hit resets the bonus.</p>"
+      },
+      "RapidFire": {
+        "name": "Rapid Fire",
+        "description": "<p>With a Dwarven Crossbow you may use Rapid Fire, a Free action for 3 Stamina that lets a Multiattack cost only one action.</p>"
+      },
+      "Axeman": {
+        "name": "Axeman",
+        "description": "<p>Unlocks the Hooking action. With heavy axes, Cleave gains +5% Hit. With a bardiche, Cleave may strike an extra target if at least one original target was not hit. With a long axe you unlock Polearm Cleave.</p>"
+      },
+      "VolleyOfShots": {
+        "name": "Volley of Shots",
+        "description": "<p>Off-hand flintlock pistol Firing penalty reduced by 5%. You may use Volley of Shots (2 actions, 8 Stamina): fire up to four times at -5% Firing at one or more targets, limited by your loaded flintlock pistols.</p>"
+      },
+      "DeadlyLungeII": {
+        "name": "Deadly Lunge II",
+        "description": "<p>Light and Medium weapons with Piercing damage gain +5 Critical Damage and Critical Penetration. Does not apply to bows, crossbows, throwing axes, javelins, throwing knives or firearms.</p>"
+      },
+      "EasyReload": {
+        "name": "Easy Reload",
+        "description": "<p>With a Hand Crossbow, the Quick Reload action costs 6 Stamina less.</p>"
+      },
+      "FencingDaggerI": {
+        "name": "Fencing Dagger I",
+        "description": "<p>With a fencing dagger in the off hand you gain Deflect +10%, and a Critical Defense raises your Temporary Health by 5. This source can raise Temporary Health to at most 10.</p>"
+      },
+      "FencingDaggerII": {
+        "name": "Fencing Dagger II",
+        "description": "<p>With a fencing dagger in the off hand your retaliation actions gain +10% Hit, and once per day you may reroll a Defense.</p>"
+      },
+      "UnderhandedFighting": {
+        "name": "Underhanded Fighting",
+        "description": "<p>After a successful hit on a Staggered target you may pay 6 Stamina to turn the attack into a Sneak Attack.</p>"
+      },
+      "StrayBlow": {
+        "name": "Stray Blow",
+        "description": "<p>With a flail, a Critical Failure on an Attack becomes a hit dealing half damage to the target (odd roll) or to you (even roll). Attacks made with a flail cannot be answered with a Riposte.</p>"
+      },
+      "BrigandI": {
+        "name": "Brigand I",
+        "description": "<p>With a Hand Crossbow, each rank of the Duelist or Shieldbearer doctrine also counts as a rank of Crossbowman, with all its actions and bonuses, and counts as Crossbowman for requirements. Off-hand Hand Crossbow Archery penalty reduced by 5%.</p>"
+      },
+      "BrigandII": {
+        "name": "Brigand II",
+        "description": "<p>A Hand Crossbow shot at a target you already attacked or shot this round counts as a Sneak Attack.</p>"
+      },
+      "BrigandIII": {
+        "name": "Brigand III",
+        "description": "<p>With a sword and a Hand Crossbow you may use Follow-up Shot, a Free action for 3 Stamina: after a melee hit you may immediately shoot the same target with +20% Archery. After a Critical Hit the shot is a guaranteed hit.</p>"
+      },
+      "FlawlessPlan": {
+        "name": "Flawless Plan",
+        "description": "<p>At the start of a fight you may test Tactics (Hard). On a success a chosen ally gains one extra Reaction, usable once in this fight. Alternatively test Tactics (Legendary) to give that Reaction to the whole party.</p>"
+      },
+      "CombatReadiness": {
+        "name": "Combat Readiness",
+        "description": "<p>You may raise your own or any ally's turn order for the whole fight by half your Tactics. Once per fight, by one tactician only.</p>"
+      },
+      "LongPrayer": {
+        "name": "Long Prayer",
+        "description": "<p>Once every five days you may spend a day in silent prayer, with a Faith x 2 + 10% chance to lose an Insanity point. After a success you can lose another this way only a month later.</p>"
+      },
+      "GoodEstimate": {
+        "name": "Good Estimate",
+        "description": "<p>Once per day you may reroll any non-combat skill. The reroll has its Critical Failure chance reduced by 10%.</p>"
+      },
+      "Expertise": {
+        "name": "Expertise",
+        "description": "<p>You gain +2% Critical Success in one non-combat skill of your choice.</p>"
+      },
+      "Gambler": {
+        "name": "Gambler",
+        "description": "<p>+10% on Luck Tests related to gambling; you may reroll such a Test twice per day.</p>"
+      },
+      "Rider": {
+        "name": "Rider",
+        "description": "<p>Riding +5%. You may reroll Riding twice per day. Critical Failure chance reduced by 3%.</p>"
+      },
+      "CalmMind": {
+        "name": "Calm Mind",
+        "description": "<p>Once every ten days you may try to lose an Insanity point through meditation, with a 20% chance. After a success you can try again only a month later.</p>"
+      },
+      "Beloved": {
+        "name": "Beloved",
+        "description": "<p>Once per day you may reroll a Charisma Test or any skill derived from it, including a Critical Failure.</p>"
+      },
+      "Swordsmith": {
+        "name": "Swordsmith",
+        "description": "<p>You can craft military weapons. Smithing +10% when crafting weapons.</p>"
+      },
+      "Armorer": {
+        "name": "Armorer",
+        "description": "<p>You can craft armor. Smithing +10% when crafting armor.</p>"
+      },
+      "Mentor": {
+        "name": "Mentor",
+        "description": "<p>Shortens your students' training by 2 or 5 days.</p>"
+      },
+      "TrapMaster": {
+        "name": "Trap Master",
+        "description": "<p>Detection +4. Critical Failure chance on Traps reduced by 3%.</p>"
+      },
+      "MightyGrip": {
+        "name": "Mighty Grip",
+        "description": "<p>Once per day you may reroll a Strength test.</p>"
+      },
+      "Seafarer": {
+        "name": "Seafarer",
+        "description": "<p>Sailing +5%. You may reroll Sailing twice per day. Critical Failure chance reduced by 3%.</p>"
+      },
+      "SeaWolf": {
+        "name": "Sea Wolf",
+        "description": "<p>At sea or in water you may choose between the original roll and a reroll on Strength, Dexterity, Athletics and Acrobatics tests.</p>"
+      },
+      "MindOverBody": {
+        "name": "Mind Over Body",
+        "description": "<p>You may spend 3 Mind Points to avoid gaining a degree of Fatigue.</p>"
+      },
+      "CleansingPain": {
+        "name": "Cleansing Pain",
+        "description": "<p>When you take a Grave Wound you have a Faith x 5% chance to lose an Insanity point. After a success you can lose another this way only a month later.</p>"
+      },
+      "SpellReplication": {
+        "name": "Spell Replication",
+        "description": "<p>After a successful magical defense against an unknown spell you may, as a Free action, make an Arcana Test (Normal, Advanced, Hard or Very Hard by spell tier). On a success you have a basis for Researching that spell.</p>"
+      },
+      "AlchemicalAnalysis": {
+        "name": "Alchemical Analysis",
+        "description": "<p>With an alchemical product and suitable equipment you may try to learn its composition and method through research. The product is destroyed. Usually 3 successes are needed, usually Hard difficulty.</p>"
+      },
+      "VigilantCommander": {
+        "name": "Vigilant Commander",
+        "description": "<p>Active Commands can be used as a Reaction. A Passive Command can be changed as a Free action.</p>"
+      },
+      "Leader": {
+        "name": "Leader",
+        "description": "<p>Your Passive Commands now grant an additional effect.</p>"
+      },
+      "DoubleOrder": {
+        "name": "Double Order",
+        "description": "<p>An Active Command can be used on two targets. Critical Failure chance -3%.</p>"
+      },
+      "AnimalCompanion": {
+        "name": "Animal Companion",
+        "description": "<p>Animals will not normally attack you or the party near you.</p>"
+      },
+      "VeilTracker": {
+        "name": "Veil Tracker",
+        "description": "<p>Mental Duel +2d8 when resisting aspect demons. Dreamwalker +20% in the Escape, with a heightened sense of direction there. Entering the Escape through Dreamwalker costs 2 Mind Points less.</p>"
+      },
+      "Training": {
+        "name": "Training",
+        "description": "<p>Raises a chosen primary attribute by one point. Can be taken repeatedly.</p>"
+      },
+      "QuickLearner": {
+        "name": "Quick Learner",
+        "description": "<p>Learning skills is 1 day faster; learning languages, reading and writing is 5 days faster.</p>"
+      },
+      "ScholarIII": {
+        "name": "Scholar III",
+        "description": "<p>Critical Failure chance on non-combat skills reduced by 2%.</p>"
+      },
+      "SeasonedBrawler": {
+        "name": "Seasoned Brawler",
+        "description": "<p>Your unarmed damage is increased by 1.</p>"
+      },
+      "IllusionExpert": {
+        "name": "Illusion Expert",
+        "description": "<p>+20% when Disbelieving an illusion.</p>"
+      },
+      "ThiefExpert": {
+        "name": "Thief Expert",
+        "description": "<p>When you are the target of Pickpocketing, its Difficulty rises by 40% and you gain +30% on the Perception Test to notice the pickpocket.</p>"
+      },
+      "Katar": {
+        "name": "Katar"
+      },
+      "DefensiveKatar": {
+        "name": "Defensive Katar",
+        "description": "<p>Cannot be used in the main hand. In the off hand: Cover +20%.</p>"
+      },
+      "Estoc": {
+        "name": "Estoc"
+      },
+      "TwoHandedSabre": {
+        "name": "Two handed Sabre"
+      },
+      "TwoHandedCleaver": {
+        "name": "Two handed Cleaver"
+      },
+      "Trident": {
+        "name": "Trident"
+      },
+      "HandCrossbow": {
+        "name": "Hand Crossbow"
+      },
+      "DwarvenCrossbow": {
+        "name": "Dwarven Crossbow"
+      },
+      "Sling": {
+        "name": "Sling"
+      },
+      "KipUp": {
+        "name": "Kip Up",
+        "description": "<p>While Prone, once per round: Acrobatics Test (Very Hard). On a success you gain 1 Action. Then test Speed (Very Hard); on a success your turn order is not reduced to 1.</p>"
+      },
+      "AgileCounter": {
+        "name": "Agile Counter",
+        "description": "<p>A retaliation attack after a successful Dodge, dealing half damage. Does not apply to retaliation actions, Opportunity Attacks or Shield Bash. Cannot be used on your own turn. Has no interactions with Aiming. Estoc only.</p>"
+      },
+      "EstocLunge": {
+        "name": "Estoc Lunge",
+        "description": "<p>Modifies Attack, Counterattack and Agile Counter. Raises the reach of the attack by one hex. Estoc only.</p>"
+      },
+      "Mauling": {
+        "name": "Mauling",
+        "description": "<p>Modifies an attack on a Prone target: Hit +10%, Bleed +40%, and a hit counts as a Sneak Attack. The target cannot stand while you hold it (Strength versus Test). Ends if you defend against another attacker. Katar only.</p>"
+      },
+      "Hooking": {
+        "name": "Hooking",
+        "description": "<p>After a failed attack or Counterattack on an opponent with a shield: Strength versus Test. On a success the opponent loses 1 Reaction and has Defense -10% for two rounds. Hatchet, War Axe, War Pick and Long Axe only.</p>"
+      },
+      "SwapPlacesAction": {
+        "name": "Swap Places",
+        "description": "<p>Target an adjacent ally. You swap places, each spending a Reaction, without provoking Opportunity Attacks.</p>"
+      },
+      "LastStepAction": {
+        "name": "Last Step",
+        "description": "<p>An extra movement of up to your Speed. It may provoke Opportunity Attacks.</p>"
+      },
+      "SafeStepAction": {
+        "name": "Safe Step",
+        "description": "<p>During a Slow Movement: Stealth Test (Legendary). On a success the opponents next to you do not threaten this movement. On a failure you cannot defend against their Opportunity Attacks.</p>"
+      },
+      "FlawlessPlanAction": {
+        "name": "Flawless Plan",
+        "description": "<p>At the start of a fight: Tactics Test (Hard) gives one target ally one extra Reaction, or Tactics Test (Legendary) gives it to the whole party. It can be used once in this fight.</p>"
+      },
+      "CombatReadinessAction": {
+        "name": "Combat Readiness",
+        "description": "<p>Raise your own or a targeted ally's turn order for the whole fight by half your Tactics. Once per fight, by one tactician only.</p>"
+      },
+      "LongPrayerAction": {
+        "name": "Long Prayer",
+        "description": "<p>A day of silent prayer: Faith x 2 + 10% chance to lose an Insanity point. Once every five days, a month after a success.</p>"
+      },
+      "CalmMindAction": {
+        "name": "Calm Mind",
+        "description": "<p>Meditation with a 20% chance to lose an Insanity point. Once every ten days, a month after a success.</p>"
+      },
+      "MultiattackRapidFire": {
+        "name": "Multiattack (Rapid Fire)",
+        "description": "<p>Multiattack for one action, 3 Stamina dearer. Dwarven Crossbow only.</p>"
       }
     },
     "MonsterBuilder": {
@@ -9728,6 +10402,7 @@
         "owned": "Held",
         "locked": "Out of reach",
         "needsRank": "Needs school rank {n}",
+        "needsNode": "Needs {node}",
         "outOfReach": "Written, but out of reach",
         "search": "Search spells",
         "filters": "Filters",
@@ -9780,7 +10455,8 @@
           "rank": "The school rank is too low, rank {n} is needed.",
           "full": "The grimoire is full.",
           "notOwner": "You do not own this character.",
-          "innate": "Wild magic cannot be forgotten: the school rank is what grants it."
+          "innate": "Wild magic cannot be forgotten: the school rank is what grants it.",
+          "mancer": "This spell needs {node}."
         },
         "innate": "Innate",
         "innateHint": "Wild magic. It comes with the school's first rank, costs nothing, and cannot be given back."
@@ -10027,7 +10703,13 @@
           "language": "Requires a language granted by the GM.",
           "schoolOrSpecialisation": "Requires a school or a specialisation granted by the GM.",
           "traumaticEvent": "Only after a traumatic experience, at the GM's discretion.",
-          "vardur": "Vardur dwarves only, the GM confirms it."
+          "vardur": "Vardur dwarves only, the GM confirms it.",
+          "missingEye": "Only with a lost eye, at the GM's discretion.",
+          "firearms1": "Firearms I. Firearms are not in the system yet, so the GM decides.",
+          "firearms5": "Firearms V. Firearms are not in the system yet, so the GM decides.",
+          "pious": "Only for a pious character, at the GM's discretion.",
+          "teachingSkill3": "Teaching III. Teaching is not a tracked skill, so the GM decides.",
+          "attributeBelow3": "The chosen attribute must be below 3."
         },
         "Tip": {
           "noRank": "Must not have any rank in {tracks}.",
@@ -10176,6 +10858,47 @@
       "Continue": "Run on",
       "OpportunityLabel": "Opportunity Attack",
       "OpportunityHint": "{target} ran past you with Bull Charge"
+    },
+    "FeatureAction": {
+      "Success": "Success ({margin})",
+      "Failure": "Failure ({margin})",
+      "OneTarget": "Target exactly one other token.",
+      "NotProne": "Only while Prone.",
+      "OncePerRound": "Already used this round.",
+      "OncePerFight": "Already used in this fight.",
+      "NeedsCombat": "Only during a fight.",
+      "NoShield": "The target holds no shield.",
+      "KipUpTest": "Acrobatics (Very Hard): {result}",
+      "KipUpAction": "You gain 1 Action.",
+      "KipUpSpeedKept": "Speed (Very Hard) {total}: your turn order stays.",
+      "KipUpSpeedLost": "Speed (Very Hard) {total}: turn order drops to 1.",
+      "HookingTest": "Strength versus {name}: {margin}",
+      "HookingWin": "{name} loses 1 Reaction and is Hooked.",
+      "HookingLose": "{name} keeps the shield free.",
+      "Swapped": "You swap places with {name}.",
+      "LastStep": "Extra movement: up to {hexes} hexes.",
+      "SafeStepTest": "Stealth (Legendary): {result}",
+      "SafeStepWin": "No Opportunity Attacks from the opponents next to you.",
+      "SafeStepLose": "You cannot defend against their Opportunity Attacks.",
+      "FlawlessPlanPrompt": "Who gets the extra Reaction?",
+      "FlawlessPlanAlly": "Targeted ally (Hard)",
+      "FlawlessPlanParty": "Whole party (Legendary)",
+      "FlawlessPlanTest": "Tactics: {result}",
+      "FlawlessPlanWin": "One extra Reaction this fight: {names}.",
+      "CombatReadiness": "{name}: turn order +{bonus} for this fight.",
+      "TooSoon": "Last attempt {days} days ago, the wait is {wait}. The GM rules on this one.",
+      "ReliefChance": "Chance {chance}%.",
+      "ReliefWin": "Rolled {roll}: one Insanity point is gone.",
+      "ReliefLose": "Rolled {roll}: nothing changes.",
+      "TenacityPrompt": "{name} took a degree {degree} Critical Hit. Mind Points to spend, one degree each:",
+      "AcrobatPrompt": "{name} is about to be knocked Prone. Test Acrobatics (-60%)?",
+      "AcrobatTest": "Acrobatics (-60%): {result}",
+      "MindOverBodyPrompt": "{name} gains a degree of Fatigue. Spend 3 Mind Points to avoid it?",
+      "ChooseSkill": "Choose a non-combat skill",
+      "ChooseAttribute": "Choose a primary attribute",
+      "StrayTarget": "Stray Blow: an odd roll. The Critical Failure strikes the target for half damage.",
+      "StraySelf": "Stray Blow: an even roll. The Critical Failure strikes the attacker for half damage.",
+      "MaulingProne": "Mauling needs a Prone target."
     }
   },
   "TYPES": {

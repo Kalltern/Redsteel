@@ -65,7 +65,8 @@
  *   every character; their results feed both Onslaughts.
  *   Both: the chip asks "attack" or "switch to <weapon> and attack" (user
  *   ruling 2026-10-18, "offer the swap"), pays 3 or 3 + 5 Stamina, swaps with
- *   swapMainWeapon and makes the next plain Attack free (grantFreeAttack).
+ *   swapMainWeapon, makes the next plain Attack free (grantFreeAttack) and
+ *   opens the Attack dialog at the same target.
  *   Own turn only, once per round each, once per card.
  *
  * - Příležitostný útok za kolo (prilezitostnyUtok, user ruling 2026-10-18):
@@ -119,6 +120,7 @@ import { isHandheldLight } from "./itemLight.mjs";
 import { swapMainWeapon } from "./rearm.mjs";
 import { weaponDamageFormula } from "./weaponFormula.mjs";
 import { canSpendResource } from "./itemResources.mjs";
+import { openMagicMomentumOnProne } from "./veneficus.mjs";
 // Call time only: forcedMovement.mjs reaches this file through applyDamage.mjs.
 import {
   pushToken,
@@ -915,6 +917,13 @@ async function settleVersusAnswer(message) {
     pushResults: settled.pushResults,
     knockedDownIds: settled.knockedDownIds,
   });
+  // Veneficus → Magické momentum: a Trip or a shield push answered with a
+  // knock-down opens the round's free spell (veneficus.mjs).
+  await openMagicMomentumOnProne(
+    settled.attacker,
+    settled.card,
+    settled.knockedDownIds ?? [],
+  );
 }
 
 /**
@@ -969,8 +978,9 @@ function onslaughtSwapWeapons(actor, kind) {
  * Use Onslaught I or II on the pending chance. The player picks a plain
  * attack, or a switch to one of the carried weapons first (offered only when
  * the Stamina covers both). Pays the item, and 5 more Stamina for a switch,
- * in one deductAbilityCost call, swaps, notes the round's use and makes the
- * next plain Attack free. False with nothing pending, so the plain card posts.
+ * in one deductAbilityCost call, swaps, notes the round's use, makes the next
+ * plain Attack free and opens the Attack dialog for it. False with nothing
+ * pending, so the plain card posts.
  *
  * @param {Actor} actor
  * @param {Item} ability
@@ -995,25 +1005,28 @@ export async function useHopliteOnslaught(actor, ability) {
   const swaps = canSpendResource(actor, costType, base + ONSLAUGHT_SWAP_STAMINA)
     ? onslaughtSwapWeapons(actor, kind)
     : [];
-  const picked = await foundry.applications.api.DialogV2.wait({
-    window: { title: label },
-    content: `<p>${game.i18n.localize("REDSTEEL.Hoplite.OnslaughtPrompt")}</p>`,
-    buttons: [
-      {
-        action: "attack",
-        label: game.i18n.format("REDSTEEL.Hoplite.OnslaughtAttack", { cost: base }),
-        default: true,
-      },
-      ...swaps.map((w) => ({
-        action: w.id,
-        label: game.i18n.format("REDSTEEL.Hoplite.OnslaughtSwap", {
-          weapon: w.localizedName ?? w.name,
-          cost: base + ONSLAUGHT_SWAP_STAMINA,
-        }),
-      })),
-    ],
-    rejectClose: false,
-  });
+  // Nothing to switch to leaves nothing to ask.
+  const picked = swaps.length
+    ? await foundry.applications.api.DialogV2.wait({
+        window: { title: label },
+        content: `<p>${game.i18n.localize("REDSTEEL.Hoplite.OnslaughtPrompt")}</p>`,
+        buttons: [
+          {
+            action: "attack",
+            label: game.i18n.format("REDSTEEL.Hoplite.OnslaughtAttack", { cost: base }),
+            default: true,
+          },
+          ...swaps.map((w) => ({
+            action: w.id,
+            label: game.i18n.format("REDSTEEL.Hoplite.OnslaughtSwap", {
+              weapon: w.localizedName ?? w.name,
+              cost: base + ONSLAUGHT_SWAP_STAMINA,
+            }),
+          })),
+        ],
+        rejectClose: false,
+      })
+    : "attack";
   if (!picked) return true;
   const weapon = picked === "attack" ? null : swaps.find((w) => w.id === picked);
   if (picked !== "attack" && !weapon) return true;
@@ -1038,18 +1051,14 @@ export async function useHopliteOnslaught(actor, ability) {
   const self = tokenForActor(actor);
   // grantFreeAttack needs some id to hold the grant; nothing reads it back.
   await grantFreeAttack(actor, pending.targetTokenId || self?.id || actor.id);
-  const target = canvas.tokens?.get(pending.targetTokenId);
-  const names = {
-    name: esc(actor.name),
-    target: esc(target?.name ?? ""),
-    weapon: esc(weapon?.localizedName ?? weapon?.name ?? ""),
-  };
-  await postLines(actor, label, [
-    game.i18n.format(
-      weapon ? "REDSTEEL.Hoplite.OnslaughtSwapped" : "REDSTEEL.Hoplite.OnslaughtFreeAttack",
-      names,
-    ),
-  ]);
+  // "ihned znovu zaútočit": straight into the Attack dialog at the same target,
+  // whose plain Attack spends the free one. The dialog reads the acting token
+  // from control.
+  canvas.tokens?.get(pending.targetTokenId)?.setTarget(true, { releaseOthers: true });
+  if (self && canvas.tokens?.controlled[0] !== self) {
+    self.control({ releaseOthers: true });
+  }
+  await game.redsteel.attackActions();
   return true;
 }
 

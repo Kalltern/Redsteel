@@ -1,0 +1,49 @@
+{
+  "folder": "HBCTGlhrkFsZxRV5",
+  "name": "Vigilant Commander",
+  "type": "feature",
+  "img": "icons/skills/social/intimidation-impressing.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.VigilantCommander.name",
+    "description": "<p>Active Commands can be used as a Reaction. A Passive Command can be changed as a Free action.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "feature",
+    "cost": {
+      "cp": null,
+      "sp": 25
+    }
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.15.0",
+    "createdTime": null,
+    "modifiedTime": null,
+    "lastModifiedBy": null
+  },
+  "_id": "MFLhBfIPzv2NL07o",
+  "_key": "!items!MFLhBfIPzv2NL07o"
+}

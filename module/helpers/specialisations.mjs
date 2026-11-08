@@ -5,6 +5,14 @@ import {
 } from "./specialisations-generated.mjs";
 import { SPEC_DISCOUNTS } from "./rankDiscounts.mjs";
 import { SPEC_MIRRORS } from "./rankMirrors.mjs";
+import { MANCER_SPELLS } from "./mancerSpells.mjs";
+import {
+  MANCER_DAMAGE_NODES,
+  MANCER_EFFECT_NODES,
+  MANCER_HOOKED_NODES,
+  MANCER_STACK_NODES,
+  MANCER_TRIGGER_NODES,
+} from "./mancerPassives.mjs";
 import { clearRangerReplacedRanks } from "./rangerApprentice.mjs";
 
 /* ===========================================================================
@@ -209,6 +217,25 @@ export const EFFECT_DURATION_NODES = [
     schools: ["blood"],
     turns: 1,
   },
+  // Geomancer "Omračující rány III": Omráčení from Earth spells +1 turn
+  // (stagger, 2 → 3 turns).
+  {
+    spec: "geomancer",
+    node: "omracujiciRany3",
+    effect: "stagger",
+    schools: ["earth"],
+    turns: 1,
+  },
+  // Entomancer "Toxiny": Otrávení lasts one round longer (poison, 3 → 4
+  // rounds); its +1d6 damage is in helpers/mancerPassives.mjs
+  // MANCER_TRIGGER_NODES.
+  {
+    spec: "entomancer",
+    node: "toxiny",
+    effect: "poison",
+    schools: ["earth"],
+    rounds: 1,
+  },
 ];
 
 /**
@@ -250,6 +277,7 @@ const CODE_AUTOMATED_NODES = {
   // utils/alchemy.mjs — the craft roll (advantage, critical-failure relief,
   // duplication, guaranteed success, ingredient discount) and the crafted
   // potion's stored numbers (toxicity, healing dice, stop-bleed chance).
+  // traskavice is the Cracker's +4d6 (PRODUCT_BOON_ITEMS, applyProductBoons).
   alchemist: [
     ...["lek", "jed", "pet", "olej", "mast", "droga"].flatMap((fam) => [
       `${fam}Duplikace1`,
@@ -265,6 +293,7 @@ const CODE_AUTOMATED_NODES = {
     "lecZastaveni2",
     "garantovanyUspech",
     "meneIngredienci",
+    "traskavice",
   ],
   // utils/combatSkillBonuses.mjs reads the node when the attack is rolled (the
   // sneak dice are pre-rolled and parked on the card even with the box
@@ -791,8 +820,108 @@ const CODE_AUTOMATED_NODES = {
   // documents/actor.mjs (armour penalty, Lindar) + utils/castSpell.mjs
   // (Lindar's strikes) + utils/lindarCharge.mjs with
   // utils/magicSkillBonuses.mjs (Lindar's Charge: 6 Mana off the cast cost and
-  // +10% Channeling on the nine named movement spells).
-  veneficus: ["postihZbroje", "lindar", "lindarovyUdery", "lindaruvVypad1"],
+  // +10% Channeling on the nine named movement spells). lindaruvVypad1's free
+  // Attack after one of those spells and lindaruvVypad2's Charge on it are
+  // utils/veneficus.mjs (grantLindarCharge from utils/castSpell.mjs
+  // applyPostCastEffects; the chip in utils/actionSuggestions.mjs; the
+  // Charge's Hit and dice in utils/basicAttack.mjs, armed in
+  // utils/attackActions.mjs).
+  // utils/veneficus.mjs with utils/nextSpellBonus.mjs (what the next spell is
+  // owed): slevaMany and navazujiciKouzlo are paid from utils/applyDamage.mjs
+  // on a kill (the empowering schools stamped on the attack card); magickyVeteran
+  // is the Apply Damage dialog's give-up control (utils/applyDamage.mjs).
+  // soubojZaManu is the Combat Abilities dialog's Stamina as Mana toggle
+  // (utils/combatAbilities.mjs deductAbilityCost).
+  // magickePosileni and magickeMireni are the Magic Reinforcement and Magic
+  // Aiming items (utils/abilityGrants.mjs, utils/veneficus.mjs; the
+  // Advantage taken at every versus Test roll site).
+  // magickeMomentum is opened in utils/veneficus.mjs (weapon hit, melee
+  // knock-down), armed from its hotbar chip and spent in
+  // utils/actionTracker.mjs (armMagicMomentum, spendForItems); its half
+  // damage is forced in utils/applyDamage.mjs.
+  // magickaZbran is documents/effects.mjs _applyCombatModifiers (two spell
+  // weapon empowerments at once). mireniObtiznost is utils/aim.mjs
+  // spellAimEase, read in utils/castSpell.mjs performCast.
+  veneficus: [
+    "postihZbroje",
+    "lindar",
+    "lindarovyUdery",
+    "lindaruvVypad1",
+    "lindaruvVypad2",
+    "navazujiciKouzlo",
+    "magickyVeteran",
+    "slevaMany",
+    "soubojZaManu",
+    "magickePosileni",
+    "magickeMireni",
+    "magickeMomentum",
+    "magickaZbran",
+    "mireniObtiznost",
+  ],
+  // utils/elymas.mjs holds every Elymas node read, with thin call sites:
+  // magObranaMana (no Mana, Critical +3) and the Focused Defense family in
+  // the magic profile and dialog of utils/defense.mjs (soustredenaObrana's
+  // +15, flank cancel and Magic Defense from behind; soKrit's Critical +10);
+  // soustredenaObrana is taken from its hotbar chip
+  // (utils/actionSuggestions.mjs, the focused_defense status in
+  // helpers/config.mjs); soReakce is the focused_defense_reaction status;
+  // soRedukce halves spell damage in utils/applyDamage.mjs. magickaOzvena is
+  // paid on the Magic Defense card (utils/defense.mjs, and its reroll in
+  // redsteel.mjs) into utils/nextSpellBonus.mjs, read by
+  // utils/lindarCharge.mjs getLindarSpellCost. opakovaniUsmernovani is a
+  // node pool in utils/rerolls.mjs, reached from cast and Magic Defense cards
+  // (redsteel.mjs). The Magic Counterattack nodes (magProtiutok, mpExpert,
+  // mpMistr, mpUtok10, mpVolnaAkce, mpKritNeuspech) are its hotbar chip, the
+  // filtered cast dialog (utils/magicSkillBonuses.mjs) and the cast itself
+  // (utils/castSpell.mjs performCast). rozsahObrany is the Area defense cover
+  // on the Magic Defense card, read by utils/applyDamage.mjs
+  // findAnsweringDefense. modifikatorMany is a passive.
+  elymas: [
+    "magObranaMana",
+    "soustredenaObrana",
+    "soKrit",
+    "soReakce",
+    "soRedukce",
+    "magickaOzvena",
+    "opakovaniUsmernovani",
+    "magProtiutok",
+    "mpExpert",
+    "mpMistr",
+    "mpUtok10",
+    "mpVolnaAkce",
+    "mpKritNeuspech",
+    "rozsahObrany",
+  ],
+  // utils/incantator.mjs holds every Incantator node read, with
+  // utils/focusItem.mjs for "is a focus in use" (the `focus` checkbox on gear,
+  // weapon and item sheets). ohniskovyPredmet's Critical Range, soustredeni's
+  // per-Focus Magic ATK and Critical Success, and katalyzator's dialog toggle
+  // and thresholds are the cast in utils/magicSkillBonuses.mjs (threaded by
+  // utils/castSpell.mjs performCast); rychleSoustredeni is the Quick Focus
+  // item (utils/combatAbilities.mjs dispatch), banked into the next cast's
+  // Focus; vlnaEnergie pays into utils/nextSpellBonus.mjs from performCast;
+  // dvojnasobnaMana is stamped on the cast card and multiplies the Magic
+  // Defense price in utils/defense.mjs; dlouhyOdpocinek is the Long Rest in
+  // utils/otherActions.mjs; stabilizaceZdroje is the crit fail prompt's
+  // Accept in redsteel.mjs; precizniInkantace is the chat buttons on the cast
+  // card and on a versus answer that resisted it (the answer names its card
+  // through utils/attributeFollowup.mjs). moudraKniha makes the grimoire a
+  // focus (utils/focusItem.mjs); its other half, casting from the grimoire
+  // without memorising, is how utils/spellbook.mjs already projects a
+  // grimoire's spells, so nothing more is built for it. modifikatorMany is a
+  // passive.
+  incantator: [
+    "ohniskovyPredmet",
+    "soustredeni",
+    "rychleSoustredeni",
+    "precizniInkantace",
+    "moudraKniha",
+    "vlnaEnergie",
+    "dvojnasobnaMana",
+    "stabilizaceZdroje",
+    "katalyzator",
+    "dlouhyOdpocinek",
+  ],
   // utils/magicSkillBonuses.mjs — the curse path.
   maleficarum: ["zakleti"],
   // utils/abilityGrants.mjs (Blood Pact) + utils/applyDamage.mjs (Blood Shield)
@@ -853,6 +982,33 @@ for (const [spec, nodes] of Object.entries(SPEC_MIRRORS)) {
   for (const node of Object.keys(nodes)) {
     (CODE_AUTOMATED_NODES[spec] ??= []).push(node);
   }
+}
+
+// The mancer rank nodes (Učedník / Expert / Mistr / Velmistr of Astramancer,
+// Cryomancer, Entomancer, Geomancer, Pyromancer, Vitamancer): each locks the
+// signature spells it names. The table is helpers/mancerSpells.mjs
+// (mancerSpellLock); utils/spellbook.mjs refuses to project, write or memorise
+// a locked spell, utils/learnWindow.mjs shows it out of reach, and
+// utils/castSpell.mjs (castSpell, quickCastSpell) refuses to cast it.
+for (const { spec, node } of MANCER_SPELLS) {
+  (CODE_AUTOMATED_NODES[spec] ??= []).push(node);
+}
+
+// The mancer school passives, all tables in helpers/mancerPassives.mjs:
+// effect chances, extra stacks and the Flame Shield damage are read by
+// utils/magicSkillBonuses.mjs (calculateAttackBonuses, finalizeRollsAndPostChat)
+// with the stacks applied in utils/applyDamage.mjs; the trigger bonuses
+// (Toxiny damage, Regeneration Stamina) by documents/effects.mjs
+// _applySingleEffect; the hooked nodes name their own file (burning panic in
+// documents/effects.mjs, Urhanova síla in utils/applyDamage.mjs).
+for (const { spec, node } of [
+  ...MANCER_EFFECT_NODES,
+  ...MANCER_STACK_NODES,
+  ...MANCER_DAMAGE_NODES,
+  ...MANCER_TRIGGER_NODES,
+  ...MANCER_HOOKED_NODES,
+]) {
+  (CODE_AUTOMATED_NODES[spec] ??= []).push(node);
 }
 
 /** True if the node is automated by code outside its own definition. */
@@ -1272,6 +1428,8 @@ coords: {
       // blood pool capacity (+10/+10/+20/+50). Expert, Master and Grandmaster
       // each also carry "Škola Krve: Magický útok +5%" and "Magická obrana proti
       // kouzlům Školy Krve +5%", read at roll time by getBloodSchoolRankBonus.
+      // Apprentice's once-a-day Blood Manipulation reroll is a node pool in
+      // utils/rerolls.mjs NODE_REROLL_POOLS.
       apprentice: {
         tier: 1,
         column: 1,

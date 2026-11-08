@@ -913,8 +913,8 @@ table tr td:nth-child(3) {
 
 .redsteel .sheet-header-item .profile-img {
   flex: 0 0 120px;
-  height: 216px;
-  margin-bottom: 10px;
+  width: 120px;
+  height: 120px;
   object-fit: cover;
   border: 3px solid #5f5843; /* gold border */
 }
@@ -8851,6 +8851,466 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   text-align: center;
 }
 
+/* -------------------------------------------- */
+/*  Item sheet form                              */
+/*  The title block every item type shares, then */
+/*  the sections, plates and field rows the      */
+/*  weapon tabs are built from. All of it comes  */
+/*  from the character sheet's own materials:    */
+/*  recessed stat plates, serif labels, bronze   */
+/*  rules.                                       */
+/* -------------------------------------------- */
+
+/* Name: a title on a bronze rule, not a boxed field. */
+.application.redsteel.item .sheet-header-item .document-name {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #514226;
+}
+
+.application.redsteel.item .sheet-header-item .document-name > input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 32px;
+  padding: 0 2px;
+  border: none;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: #e2cf9f;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 20px;
+  text-align: left;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+/* The localization key: only an icon until opened. */
+.application.redsteel.item .rs-item-key {
+  flex: 0 0 auto;
+}
+
+.application.redsteel.item .rs-item-key > summary {
+  display: block;
+  padding: 2px 4px;
+  color: #6f685a;
+  cursor: pointer;
+  list-style: none;
+}
+
+.application.redsteel.item .rs-item-key > summary::-webkit-details-marker {
+  display: none;
+}
+
+.application.redsteel.item .rs-item-key--set > summary {
+  color: #c9b26b;
+}
+
+.application.redsteel.item .rs-item-key > summary:hover,
+.application.redsteel.item .rs-item-key[open] > summary {
+  color: #e6c878;
+}
+
+.application.redsteel.item .rs-item-key > input {
+  position: absolute;
+  top: calc(100% + 3px);
+  left: 0;
+  right: 0;
+  z-index: 5;
+  width: 100%;
+  text-align: left;
+}
+
+/* Tabs stay on one line. */
+.application.redsteel.item .window-content nav.tabs[data-group="primary"] {
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  gap: 2px;
+}
+
+.application.redsteel.item .window-content nav.tabs[data-group="primary"] > a {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+/* Every field on an item sheet is sunk into the plate. :where keeps this at
+   low specificity, so the bare inputs of a stat plate stay bare. */
+.application.redsteel.item .window-content select,
+.application.redsteel.item :where(.window-content > .tab) input:where([type="text"], [type="number"]),
+.application.redsteel.item :where(.window-content > .tab) textarea {
+  border: 1.5px solid #292c2b;
+  border-radius: 0;
+  background-color: #0e0e0d;
+  box-shadow:
+    inset 0 2px 4px rgb(0 0 0 / 70%),
+    0 1px 2px rgb(0 0 0);
+  color: #d6c9a8;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 13px;
+}
+
+.application.redsteel.item .window-content select,
+.application.redsteel.item :where(.window-content > .tab) input:where([type="text"], [type="number"]) {
+  height: 28px;
+}
+
+.application.redsteel.item .window-content select:hover,
+.application.redsteel.item .window-content select:focus,
+.application.redsteel.item :where(.window-content > .tab) input:where([type="text"], [type="number"]):focus,
+.application.redsteel.item :where(.window-content > .tab) textarea:focus {
+  border-color: #514226;
+}
+
+/* Weapon and gear header: portrait and title, then the stat strip across the
+   width. */
+.redsteel .sheet-header-item--plated {
+  flex-wrap: wrap;
+  flex: 0 0 auto;
+}
+
+/* Flex, not grid: a shield or accessory has fewer facts and they share the
+   row. Material comes last and gets the extra width, because it shares its
+   cell with the Refresh icon. */
+.rs-item-facts {
+  display: flex;
+  gap: 6px;
+}
+
+.rs-item-facts > .rs-field {
+  flex: 1 1 0;
+}
+
+.rs-item-facts > .rs-field:last-child {
+  flex-grow: 1.4;
+}
+
+.redsteel .sheet-header-item--plated .material-summary {
+  margin-top: 6px;
+  text-align: left;
+}
+
+.rs-item-stats {
+  flex: 0 0 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin: 6px 5px 0;
+  max-width: calc(100% - 10px);
+}
+
+.rs-item-stats--gear {
+  grid-template-columns: minmax(0, 1.3fr) repeat(2, minmax(0, 1fr)) minmax(0, 1.3fr);
+}
+
+.rs-item-stats--ability {
+  grid-template-columns: minmax(0, 1.2fr) repeat(3, minmax(0, 1fr)) minmax(0, 1.2fr);
+}
+
+/* A stat plate: the sheet's recessed iron box, with the input engraved in it. */
+.rs-plate {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  padding: 4px 4px 2px;
+  border: 1px solid rgb(45 40 32);
+  background-color: rgba(14, 12, 9, 0.5);
+  background-image: radial-gradient(
+    ellipse at 50% 42%,
+    rgba(60, 54, 42, 0.1),
+    rgba(6, 5, 4, 0.22)
+  );
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.5),
+    inset 0 -1px 0 rgba(170, 154, 122, 0.06);
+}
+
+.rs-plate > label {
+  max-width: 100%;
+  margin: 0;
+  overflow: hidden;
+  color: #aeaeae;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 12px;
+  font-weight: normal;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Cambria, not Georgia: Georgia's old-style digits bounce along a row. */
+.application.redsteel.item .rs-plate input {
+  width: 100%;
+  height: 26px;
+  padding: 0;
+  border: none;
+  border-bottom: 1px solid transparent;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: #d6bc8c;
+  font-family: Cambria, "Times New Roman", Times, serif;
+  font-size: 18px;
+  font-variant-numeric: lining-nums;
+  text-align: center;
+  text-shadow: 0 -1px 1px rgba(0, 0, 0, 0.85);
+}
+
+.application.redsteel.item .rs-plate input:hover,
+.application.redsteel.item .rs-plate input:focus {
+  border-bottom-color: #58513f;
+  outline: none;
+  box-shadow: none;
+}
+
+.application.redsteel.item .rs-plate input::-webkit-inner-spin-button,
+.application.redsteel.item .rs-plate input::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+/* A plate that can hold a phrase: "Free Action". */
+.application.redsteel.item .rs-plate--word input {
+  font-size: 14px;
+}
+
+/* What quality, material and enchantments add to the base value. */
+.rs-plate-mod {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  color: #c9b26b;
+  font-family: Cambria, "Times New Roman", Times, serif;
+  font-size: 12px;
+  font-variant-numeric: lining-nums;
+  line-height: 1;
+}
+
+.rs-plate-formula {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  color: #8f8672;
+  font-family: Cambria, "Times New Roman", Times, serif;
+  font-size: 16px;
+}
+
+.application.redsteel.item .rs-plate-formula input {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 54px;
+}
+
+/* The number an item is judged by: two rows tall, larger digits. */
+.rs-plate--hero {
+  grid-row: span 2;
+}
+
+.rs-plate--hero > input,
+.rs-plate--hero > .rs-plate-formula {
+  margin: auto 0;
+}
+
+.application.redsteel.item .rs-plate--hero input {
+  height: 36px;
+  font-size: 26px;
+}
+
+.application.redsteel.item .rs-plate--hero .rs-plate-formula input {
+  flex: 0 1 48px;
+  max-width: none;
+}
+
+/* The damage modifier can run long: "+5+2d6". */
+.application.redsteel.item .rs-plate--hero .rs-plate-formula input[name="system.roll.diceBonus"] {
+  flex-basis: 92px;
+  text-align: left;
+}
+
+/* The cost's resource sits under its amount. */
+.application.redsteel.item .rs-plate--hero > select {
+  width: 100%;
+  margin-bottom: 2px;
+}
+
+/* Tab body: labelled sections on the sheet ground. */
+.application.redsteel.item .window-content > .tab.active {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 6px 2px;
+  overflow-y: auto;
+}
+
+.rs-section {
+  margin-bottom: 12px;
+}
+
+.rs-section:last-child {
+  margin-bottom: 0;
+}
+
+.redsteel .rs-section-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 7px;
+  padding: 0;
+  border: none;
+  color: #c9b26b;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 14px;
+  font-weight: normal;
+  line-height: 1.3;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.redsteel .rs-section-head::after {
+  content: "";
+  flex: 1 1 auto;
+  height: 1px;
+  background: #514226;
+}
+
+.rs-plate-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.rs-plate-grid--2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.rs-plate-grid--3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.rs-plate-grid--6 {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+/* A labelled field: label above, input or select below. */
+.rs-field {
+  min-width: 0;
+}
+
+.rs-field > label {
+  display: block;
+  margin: 0 0 2px;
+  overflow: hidden;
+  color: #aeaeae;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 12px;
+  font-weight: normal;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rs-field > input,
+.rs-field > select,
+.rs-field .material-select-row > select {
+  width: 100%;
+}
+
+.rs-field-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.rs-field-row--flush {
+  margin-top: 0;
+}
+
+.rs-field-row > .rs-field {
+  flex: 1 1 0;
+}
+
+.rs-field-row > .rs-field--wide {
+  flex-grow: 2;
+}
+
+/* Wide enough for type, and/or, type on one line; further slots wrap. */
+.rs-field-row > .rs-field--chain {
+  flex: 0 0 310px;
+}
+
+/* The damage type chain: type, and/or, type, ... wrapping if it fills up. */
+.rs-damage-chain {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.application.redsteel.item .rs-damage-chain > select {
+  flex: 0 1 122px;
+  min-width: 96px;
+}
+
+.application.redsteel.item .rs-damage-chain > select.rs-damage-join {
+  flex: 0 0 56px;
+  min-width: 0;
+}
+
+/* Fixed cells, so a long doctrine name cannot push the columns around. */
+.rs-toggle-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.rs-toggle-grid > .rs-toggle {
+  display: flex;
+  min-width: 0;
+}
+
+/* The effect slots: one row per slot, column headings on top. */
+.rs-effect-table {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) 76px minmax(0, 1.3fr);
+  gap: 5px 6px;
+  align-items: center;
+}
+
+.rs-resource-table {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 5px 6px;
+  align-items: center;
+}
+
+.rs-resource-table > input {
+  width: 100%;
+  text-align: center;
+}
+
+.rs-effect-table-head {
+  color: #aeaeae;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 12px;
+}
+
+.rs-effect-table > input {
+  width: 100%;
+  text-align: center;
+}
+
+.rs-offhand-formula {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 7px;
+  color: #d6bc8c;
+  font-family: Cambria, "Times New Roman", Times, serif;
+}
+
 /* Race item sheet: choice-group editor */
 .race-choices-heading {
   margin: 10px 0 2px;
@@ -13124,11 +13584,13 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
 }
 
 /* Success / failure pair already used by the alchemy announcements. */
-.rs-versus.is-blocked .rs-versus-outcome {
+.rs-versus.is-blocked .rs-versus-outcome,
+.rs-versus.is-won .rs-versus-outcome {
   color: #9fbf7e;
 }
 
-.rs-versus.is-hit .rs-versus-outcome {
+.rs-versus.is-hit .rs-versus-outcome,
+.rs-versus.is-lost .rs-versus-outcome {
   color: #c0706a;
 }
 
@@ -13163,6 +13625,16 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   font-size: 11px;
   font-style: italic;
   opacity: 0.7;
+}
+
+/* A natural critical on a negative chance: the dice box sum no longer adds up,
+   so the card says why (redsteel.mjs). */
+.rs-hopeless-note {
+  margin: 4px 0;
+  text-align: center;
+  font-size: 12px;
+  font-style: italic;
+  opacity: 0.8;
 }
 
 /* NPC auto-defense: this card rolled itself, nobody clicked Defend. */
@@ -14031,21 +14503,24 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
    flags.attack and sits in the card at every level, hidden by the base rule at
    the bottom of this section and revealed only when collapsed. */
 
-/* Compact: the title row, the versus block and the roll boxes stay. The rest of
-   the outcome detail carried in the flavor (crit banner, damage line, effects
-   table, description) goes, and the trait and Bane pills sit in that same run
-   of siblings and go with it. The damage-type footer is named separately
-   because it is not part of the flavor at all: redsteel.mjs inserts it as a
-   sibling AFTER .message-content. */
+/* Compact: the title row, the versus block, a spell's stat pills and the roll
+   boxes stay. The rest of the outcome detail carried in the flavor (crit banner,
+   damage line, effects table, description) goes, and the trait and Bane pills
+   sit in that same run of siblings and go with it. .rs-fold-fallback is the
+   description of a spell with nothing else to say for itself, put there by
+   markDescriptionFallback() in the module. The damage-type footer is named
+   separately because it is not part of the flavor at all: redsteel.mjs inserts
+   it as a sibling AFTER .message-content. */
 .chat-message.rs-card--compact
   .flavor-text
-  > *:not(:first-child):not(.rs-versus),
+  > *:not(:first-child):not(.rs-versus):not(.action-tag):not(.rs-fold-fallback),
 .chat-message.rs-card--compact .redsteel-damage-footer {
   display: none !important;
 }
 
 /* Collapsed: the title row, whichever of the versus block and the summary the
-   card has, and the action buttons. Everything else goes.
+   card has, a spell's stat pills (or its description, when it has neither pills
+   nor a summary) and the action buttons. Everything else goes.
 
    The buttons stay because a folded card must still be answerable. Defend in
    particular is the whole point of an attack card for the person being swung
@@ -14075,7 +14550,7 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   > *:not(.button-container):not(.rs-rerolled-note):not(.rs-fold-keep),
 .chat-message.rs-card--collapsed
   .flavor-text
-  > *:not(:first-child):not(.rs-versus):not(.rs-card-summary):not(.rs-fold-keep),
+  > *:not(:first-child):not(.rs-versus):not(.rs-card-summary):not(.rs-fold-keep):not(.action-tag):not(.rs-fold-fallback),
 .chat-message.rs-card--collapsed .redsteel-damage-footer {
   display: none !important;
 }
@@ -14131,17 +14606,73 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
 }
 
 .rs-card-summary-detail {
-  font-size: 12px;
-  opacity: 0.75;
+  font-size: 14px;
+  font-weight: bold;
+  opacity: 0.9;
 }
 
 /* What landed. A touch brighter than the margin line, because on a folded card
    this is the part someone is actually looking for. */
 .rs-card-summary-effects {
   margin-top: 2px;
-  font-size: 12px;
+  font-size: 14px;
+  font-weight: bold;
   color: #c8a84b;
-  opacity: 0.85;
+  opacity: 0.9;
+}
+
+/* A shortened card is read at a glance, so what it keeps reads a size up. The
+   summary above only ever shows here and carries this in its own rules. These
+   two also appear on an open card, where they stay small under the outcome. */
+.chat-message.rs-card--compact .rs-versus-detail,
+.chat-message.rs-card--collapsed .rs-versus-detail,
+.chat-message.rs-card--compact .rs-versus-note,
+.chat-message.rs-card--collapsed .rs-versus-note {
+  font-size: 14px;
+  font-weight: bold;
+  font-style: normal;
+  opacity: 0.9;
+}
+
+/* The pills are bare spans in the flavor, so they wrap as text unless told
+   otherwise and a second row sits on top of the first. Centred under the title
+   they read as one block with the summary and the description below them. */
+.chat-message.rs-card--compact .flavor-text,
+.chat-message.rs-card--collapsed .flavor-text {
+  text-align: center;
+}
+
+.chat-message.rs-card--compact .flavor-text > .action-tag,
+.chat-message.rs-card--collapsed .flavor-text > .action-tag {
+  display: inline-block;
+  margin: 4px 2px 0;
+  font-size: 0.75rem;
+  font-weight: normal;
+}
+
+/* The description a fold keeps for a spell with no summary: the summary's frame
+   around the text alone, because the fold has no room for a table heading. */
+.chat-message.rs-card--compact .rs-fold-fallback,
+.chat-message.rs-card--collapsed .rs-fold-fallback {
+  margin: 8px 0 4px;
+  background: none;
+  border: none;
+  border-top: 1px solid rgba(200, 168, 75, 0.25);
+  border-bottom: 1px solid rgba(200, 168, 75, 0.25);
+}
+
+.chat-message.rs-card--compact .rs-fold-fallback th,
+.chat-message.rs-card--collapsed .rs-fold-fallback th {
+  display: none;
+}
+
+.chat-message.rs-card--compact .rs-fold-fallback td,
+.chat-message.rs-card--collapsed .rs-fold-fallback td {
+  padding: 6px 2px;
+  font-size: 13px;
+  font-weight: normal;
+  text-align: left;
+  background: none;
 }
 
 /* The card takes its bottom breathing room from the content block. With that
@@ -23578,6 +24109,7 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   white-space: nowrap;
 }
 .redsteel.item .rs-versus-against__opt input {
+  --checkbox-size: 14px;
   margin: 0;
   width: 14px;
   height: 14px;

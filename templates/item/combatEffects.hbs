@@ -5,177 +5,43 @@
   data-tab="combatEffects"
 >
 
-  <div class="grid grid-3col">
-
-    {{!-- -------------------------
-         Built-in effects
-    -------------------------- --}}
-
-    <div class="grid-span-1 effect-row">
-      <label class="resource-label" data-tt-kind="weaponField" data-tt-id="stagger">
-        {{localize "REDSTEEL.Item.Weapon.FIELDS.stagger.label"}}
-      </label>
-      <input
-        type="number"
-        name="system.effects.stagger"
-        value="{{system.effects.stagger}}"
-        data-dtype="Number"
-      />
+  <div class="rs-section">
+    <h3 class="rs-section-head">{{localize "REDSTEEL.Item.EffectSlots.builtIn"}}</h3>
+    <div class="rs-plate-grid rs-plate-grid--2">
+      <div class="rs-plate">
+        <label data-tt-kind="weaponField" data-tt-id="stagger">{{localize "REDSTEEL.Item.Weapon.FIELDS.stagger.label"}}</label>
+        <input type="number" name="system.effects.stagger" value="{{system.effects.stagger}}" data-dtype="Number" />
+      </div>
+      <div class="rs-plate">
+        <label data-tt-kind="weaponField" data-tt-id="bleed">{{localize "REDSTEEL.Item.Weapon.FIELDS.bleed.label"}}</label>
+        <input type="number" name="system.effects.bleed" value="{{system.effects.bleed}}" data-dtype="Number" />
+      </div>
     </div>
-
-    <div class="grid-span-1 effect-row">
-      <label class="resource-label" data-tt-kind="weaponField" data-tt-id="bleed">
-        {{localize "REDSTEEL.Item.Weapon.FIELDS.bleed.label"}}
-      </label>
-      <input
-        type="number"
-        name="system.effects.bleed"
-        value="{{system.effects.bleed}}"
-        data-dtype="Number"
-      />
-    </div>
-
-    <div class="grid-span-1 effect-row">
-    </div>
-    {{!-- -------------------------
-         Customizable effect slot #1
-    -------------------------- --}}
-    <div class="grid-span-1">
-      <label class="resource-label">{{localize "REDSTEEL.Effect.type1"}}</label>
-      <select name="system.effectType1">
-        <option value="">-- Select a type --</option>
-        {{#each system.effectTypes as |effectType|}}
-          <option value="{{effectType}}"
-            {{#if (eq ../system.effectType1 effectType)}}selected{{/if}}>
-            {{effectType}}
-          </option>
-        {{/each}}
-      </select>
-    </div>
-
-    <div class="grid-span-1">
-      <label class="resource-label">
-        {{localize "REDSTEEL.Item.Weapon.FIELDS.extra1.label"}}
-      </label>
-      <input
-        type="number"
-        name="system.effects.extra1"
-        value="{{system.effects.extra1}}"
-        data-dtype="Number"
-      />
-    </div>
-
- {{#if (eq system.effectType1 "custom")}}
-     <div class="grid-span-1">
-      <label class="resource-label">
-        {{localize "REDSTEEL.Effect.Custom.name1"}}
-      </label>
-      <input
-        type="text"
-        name="system.effects.effectName1"
-        value="{{system.effects.effectName1}}"
-        data-dtype="text"
-      />
-    </div>
-{{/if}}
-
-{{#unless (eq system.effectType1 "custom")}}
-    <div class="grid-span-1 effect-row">
-    </div>
-{{/unless}}
-    {{!-- -------------------------
-         Customizable effect slot #2
-    -------------------------- --}}
-    <div class="grid-span-1">
-      <label class="resource-label">{{localize "REDSTEEL.Effect.type2"}}</label>
-      <select name="system.effectType2">
-        <option value="">-- Select a type --</option>
-        {{#each system.effectTypes as |effectType|}}
-          <option value="{{effectType}}"
-            {{#if (eq ../system.effectType2 effectType)}}selected{{/if}}>
-            {{effectType}}
-          </option>
-        {{/each}}
-      </select>
-    </div>
-
-    <div class="grid-span-1">
-      <label class="resource-label">
-        {{localize "REDSTEEL.Item.Weapon.FIELDS.extra2.label"}}
-      </label>
-      <input
-        type="number"
-        name="system.effects.extra2"
-        value="{{system.effects.extra2}}"
-        data-dtype="Number"
-      />
-    </div>
-
- {{#if (eq system.effectType2 "custom")}}
-     <div class="grid-span-1">
-      <label class="resource-label">
-        {{localize "REDSTEEL.Effect.Custom.name2"}}
-      </label>
-      <input
-        type="text"
-        name="system.effects.effectName2"
-        value="{{system.effects.effectName2}}"
-        data-dtype="text"
-      />
-    </div>
-{{/if}}
-
-{{#unless (eq system.effectType2 "custom")}}
-    <div class="grid-span-1 effect-row">
-    </div>
-{{/unless}}
-
-    {{!-- -------------------------
-         Customizable effect slot #3
-    -------------------------- --}}
-    <div class="grid-span-1">
-      <label class="resource-label">{{localize "REDSTEEL.Effect.type3"}}</label>
-      <select name="system.effectType3">
-        <option value="">-- Select a type --</option>
-        {{#each system.effectTypes as |effectType|}}
-          <option value="{{effectType}}"
-            {{#if (eq ../system.effectType3 effectType)}}selected{{/if}}>
-            {{effectType}}
-          </option>
-        {{/each}}
-      </select>
-    </div>
-
-    <div class="grid-span-1">
-      <label class="resource-label">
-        {{localize "REDSTEEL.Item.Weapon.FIELDS.extra3.label"}}
-      </label>
-      <input
-        type="number"
-        name="system.effects.extra3"
-        value="{{system.effects.extra3}}"
-        data-dtype="Number"
-      />
-    </div>
-
- {{#if (eq system.effectType3 "custom")}}
-     <div class="grid-span-1">
-      <label class="resource-label">
-        {{localize "REDSTEEL.Effect.Custom.name3"}}
-      </label>
-      <input
-        type="text"
-        name="system.effects.effectName3"
-        value="{{system.effects.effectName3}}"
-        data-dtype="text"
-      />
-    </div>
-{{/if}}
-
-{{#unless (eq system.effectType3 "custom")}}
-    <div class="grid-span-1 effect-row">
-    </div>
-{{/unless}}
-
   </div>
+
+  <div class="rs-section">
+    <h3 class="rs-section-head">{{localize "REDSTEEL.Item.EffectSlots.extra"}}</h3>
+    <div class="rs-effect-table">
+      <span class="rs-effect-table-head">{{localize "REDSTEEL.Item.EffectSlots.effect"}}</span>
+      <span class="rs-effect-table-head">{{localize "REDSTEEL.Item.EffectSlots.chance"}}</span>
+      <span class="rs-effect-table-head">{{localize "REDSTEEL.Item.EffectSlots.customName"}}</span>
+      {{#each effectSlots as |slot|}}
+        <select name="{{slot.typeField}}" aria-label="{{localize 'REDSTEEL.Item.EffectSlots.effect'}} {{slot.n}}">
+          <option value="">{{localize "REDSTEEL.UI.selectType"}}</option>
+          {{#each @root.effectTypeChoices as |choice|}}
+            <option value="{{choice.key}}" {{#if (eq slot.type choice.key)}}selected{{/if}}>
+              {{choice.label}}
+            </option>
+          {{/each}}
+        </select>
+        <input type="number" name="{{slot.chanceField}}" value="{{slot.chance}}" data-dtype="Number" />
+        {{#if slot.isCustom}}
+          <input type="text" name="{{slot.nameField}}" value="{{slot.name}}" data-dtype="text" />
+        {{else}}
+          <span class="rs-effect-table-blank"></span>
+        {{/if}}
+      {{/each}}
+    </div>
+  </div>
+
 </section>

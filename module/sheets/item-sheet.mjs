@@ -74,6 +74,7 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
   /** @override */
   static DEFAULT_OPTIONS = {
     classes: ["redsteel", "item"],
+    position: { width: 620 },
     actions: {
       onEditImage: this._onEditImage,
       viewDoc: this._viewEffect,
@@ -105,6 +106,20 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
     // Custom property that's merged into `this.options`
     dragDrop: [{ dragSelector: "[data-drag]", dropSelector: null }],
   };
+
+  /* -------------------------------------------- */
+
+  /**
+   * Weapon and gear sheets open at a fixed height: the Attributes tab is the
+   * longest page, and an auto height would make the window jump with every tab.
+   * @override
+   */
+  _initializeApplicationOptions(options) {
+    const initialized = super._initializeApplicationOptions(options);
+    const height = { weapon: 850, gear: 810, ability: 850 }[initialized.document?.type];
+    if (height) initialized.position = { ...initialized.position, height };
+    return initialized;
+  }
 
   /* -------------------------------------------- */
 
@@ -165,9 +180,6 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
     },
     description: {
       template: "systems/redsteel/templates/item/description.hbs",
-    },
-    doctrines: {
-      template: "systems/redsteel/templates/item/doctrines.hbs",
     },
     combatEffects: {
       template: "systems/redsteel/templates/item/combatEffects.hbs",
@@ -283,7 +295,7 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
         options.parts.push("attributesAbility", "combatEffects");
         break;
       case "weapon":
-        options.parts.push("attributesWeapon", "doctrines", "combatEffects");
+        options.parts.push("attributesWeapon", "combatEffects");
         if (this.item.system.offhand) {
           options.parts.push("attributesOffhand");
         }
@@ -434,6 +446,8 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
         if (this.item.type === "weapon" || this.item.type === "gear") {
           await this._prepareMaterialContext(context);
         }
+        if (this.item.type === "weapon") this._prepareWeaponStatContext(context);
+        if (this.item.type === "gear") this._prepareGearStatContext(context);
         break;
       case "attributesMaterial": {
         context.tab = context.tabs[partId];
@@ -545,19 +559,31 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
         );
         break;
       }
-      case "attributesItem":
       case "attributesGear":
+        context.tab = context.tabs[partId];
+        this._prepareGearStatContext(context);
+        break;
+      case "attributesItem":
       case "attributesAmmunition":
       case "attributesConsumable":
       case "attributesAbility":
       case "attributesCondition":
-      case "doctrines":
-      case "combatEffects":
       case "attributesWeapon":
-      case "attributesOffhand":
       case "attributesSpell":
         // Necessary for preserving active tab on re-render
         context.tab = context.tabs[partId];
+        break;
+      case "combatEffects":
+        context.tab = context.tabs[partId];
+        this._prepareEffectSlotContext(context, this.item.system, "system.");
+        break;
+      case "attributesOffhand":
+        context.tab = context.tabs[partId];
+        this._prepareEffectSlotContext(
+          context,
+          this.item.system.offhandProperties ?? {},
+          "system.offhandProperties.",
+        );
         break;
       case "attributesEnchantment": {
         context.tab = context.tabs[partId];
@@ -868,10 +894,6 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
           tab.id = "effects";
           tab.label += "Effects";
           break;
-        case "doctrines":
-          tab.id = "doctrines";
-          tab.label += "Doctrines";
-          break;
         case "combatEffects":
           tab.id = "combatEffects";
           tab.label += "combatEffects";
@@ -922,6 +944,92 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
     // You may want to add other special handling here
     // Foundry comes with a large number of utility classes, e.g. SearchFilter
     // That you may want to implement yourself.
+  }
+
+  /**
+   * The weapon header's stat strip. The inputs bind the stored base values, so
+   * what quality, material and enchantments add is shown beside them, summed
+   * the way the combat read sites sum them. "" means nothing to show. A player
+   * looking at an unidentified item must not read its enchantments off these
+   * figures, so only quality, which the sheet shows anyway, counts for them.
+   * @param {object} context
+   */
+  _prepareWeaponStatContext(context) {
+    const { roll, qualityMods: quality } = this.item.system;
+    const magic = context.identifyHidden ? {} : (this.item.system.enchantMods ?? {});
+    context.weaponBonus = {
+      damage: signedBonus([quality?.damage, magic.damageBonus], magic.damageRolls),
+      penetration: signedBonus([quality?.penetration, magic.penetration]),
+      attack: signedBonus([quality?.attack, magic.attack]),
+      defense: signedBonus([quality?.defense, magic.defense]),
+      dodge: signedBonus([magic.dodge]),
+      breakthrough: signedBonus([], magic.breakthroughRolls),
+    };
+    // A modifier that carries its own sign ("-1", "+5+2d6") needs no joiner.
+    context.damageJoiner = /^\s*[+-]/.test(String(roll?.diceBonus ?? "")) ? "" : "+";
+  }
+
+  /**
+   * The gear counterpart of {@link _prepareWeaponStatContext}, for the header
+   * strip and the Attributes tab. Quality's critical defense only exists on the
+   * shield column, summed where a shield's totals are built (documents/item.mjs).
+   * @param {object} context
+   */
+  _prepareGearStatContext(context) {
+    const quality = this.item.system.qualityMods;
+    const magic = context.identifyHidden ? {} : (this.item.system.enchantMods ?? {});
+    context.gearBonus = {
+      armor: signedBonus([magic.armorValue]),
+      defense: signedBonus([quality?.defense, magic.defense]),
+      rangedDefense: signedBonus([quality?.rangedDefense, magic.rangedDefense]),
+      critDefense: signedBonus([quality?.critDefense, magic.critDefense]),
+      rangedCritDefense: signedBonus([quality?.rangedCritDefense, magic.rangedCritDefense]),
+      ini: signedBonus([quality?.ini]),
+      healthBonus: signedBonus([magic.healthBonus]),
+      resist: Object.fromEntries(
+        Object.entries(magic.resist ?? {}).map(([type, value]) => [type, signedBonus([value])]),
+      ),
+    };
+  }
+
+  /**
+   * The three customizable effect slots, as rows for the effect table on the
+   * Combat Effects and Offhand tabs. A slot's fields sit under `prefix`, so one
+   * row of markup serves both the weapon's own block and offhandProperties.
+   * @param {object} context
+   * @param {object} source   The block holding effectType<n> and effects
+   * @param {string} prefix   The form path of that block
+   */
+  _prepareEffectSlotContext(context, source, prefix) {
+    context.effectSlots = [1, 2, 3].map((n) => {
+      const type = source[`effectType${n}`] ?? "";
+      return {
+        n,
+        type,
+        isCustom: type === "custom",
+        typeField: `${prefix}effectType${n}`,
+        chance: source.effects?.[`extra${n}`],
+        chanceField: `${prefix}effects.extra${n}`,
+        name: source.effects?.[`effectName${n}`],
+        nameField: `${prefix}effects.effectName${n}`,
+      };
+    });
+    // Base nouns first ("Bleed", not the status "Bleeding"); the rest of the
+    // list is named by the status effect it applies.
+    const label = (key) => {
+      const own = `REDSTEEL.Item.EffectType.${key}`;
+      if (game.i18n.has(own)) return game.i18n.localize(own);
+      const status = CONFIG.statusEffects.find((entry) => entry.id === key);
+      return game.i18n.localize(status?.name ?? key);
+    };
+    const [custom, ...rest] = (this.item.system.effectTypes ?? []).map((key) => ({
+      key,
+      label: label(key),
+    }));
+    context.effectTypeChoices = [
+      custom,
+      ...rest.sort((a, b) => a.label.localeCompare(b.label, game.i18n.lang)),
+    ].filter(Boolean);
   }
 
   /* -------------------------------------------- */
@@ -2069,4 +2177,16 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
 function fmtSigned(value) {
   const n = Number(value) || 0;
   return n > 0 ? `+${n}` : String(n);
+}
+
+/**
+ * A stat plate's bonus figure: "+3", "-1", "+3+1d6". "" when nothing is added.
+ * @param {Array<number|undefined>} values   Flat amounts to sum.
+ * @param {string[]} [rolls]                 Dice added on top.
+ */
+function signedBonus(values, rolls = []) {
+  const sum = values.reduce((total, value) => total + (Number(value) || 0), 0);
+  const parts = sum ? [fmtSigned(sum)] : [];
+  for (const roll of rolls) parts.push(/^[+-]/.test(roll) ? roll : `+${roll}`);
+  return parts.join("");
 }

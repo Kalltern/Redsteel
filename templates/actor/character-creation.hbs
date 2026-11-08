@@ -235,7 +235,7 @@
     <section class="rs-create-panel rs-create-details">
       <h2 class="rs-create-panel-title">{{localize "REDSTEEL.Creation.Step2b.title"}}</h2>
       <div class="rs-create-scroll">
-        <p class="rs-create-doctrine-advice">{{localize "REDSTEEL.Creation.Details.weaponsAdvice"}}</p>
+        {{#if details.askWeapons}}<p class="rs-create-doctrine-advice">{{localize "REDSTEEL.Creation.Details.weaponsAdvice"}}</p>{{/if}}
         <div class="rs-create-detail-groups">
           {{#each details.groups}}
           <div class="rs-create-doctrine-block">

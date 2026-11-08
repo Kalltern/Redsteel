@@ -31,13 +31,13 @@
   },
   "effects": [
     {
-      "name": "Speedy advantage !",
+      "name": "Swift striker",
       "origin": "Item.8on1VznNBYzQnuDz",
       "img": "icons/weapons/daggers/dagger-straight-blue.webp",
       "duration": {
-        "value": 1,
-        "units": "rounds",
-        "expiry": "turnStart",
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
         "expired": false
       },
       "_id": "Ed4Gsr6Ual3Orkmw",
@@ -59,6 +59,9 @@
       "statuses": [],
       "sort": 0,
       "flags": {
+        "redsteel": {
+          "requiresLightWeapons": true
+        },
         "statuscounter": {
           "value": 1,
           "config": {
@@ -82,7 +85,7 @@
         "modifiedTime": null
       },
       "start": null,
-      "showIcon": 1,
+      "showIcon": 0,
       "folder": null,
       "_key": "!items.effects!8on1VznNBYzQnuDz.Ed4Gsr6Ual3Orkmw"
     }

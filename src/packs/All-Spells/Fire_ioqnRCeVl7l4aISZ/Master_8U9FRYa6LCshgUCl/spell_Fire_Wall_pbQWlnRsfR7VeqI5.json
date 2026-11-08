@@ -115,6 +115,8 @@
       "diceBonus": "10+(@spellPower*5)"
     },
     "penetration": 15,
+    "magicAttack": 0,
+    "magicAttackFixed": false,
     "dmgType1": "magic",
     "bool2": "and",
     "dmgType2": "fire",

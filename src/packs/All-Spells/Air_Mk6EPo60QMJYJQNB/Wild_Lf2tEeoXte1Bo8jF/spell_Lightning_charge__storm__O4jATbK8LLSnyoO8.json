@@ -103,6 +103,8 @@
       "diceBonus": "@spellPower"
     },
     "penetration": 0,
+    "magicAttack": 0,
+    "magicAttackFixed": false,
     "dmgType1": "physical",
     "bool2": "or",
     "dmgType2": "magic",

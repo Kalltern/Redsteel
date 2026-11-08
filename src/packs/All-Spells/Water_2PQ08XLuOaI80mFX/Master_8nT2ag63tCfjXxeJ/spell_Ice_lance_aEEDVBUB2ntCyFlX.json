@@ -98,6 +98,8 @@
       "diceBonus": "@spellPower*4"
     },
     "penetration": 20,
+    "magicAttack": 0,
+    "magicAttackFixed": false,
     "dmgType1": "magic",
     "bool2": "and",
     "dmgType2": "frost",

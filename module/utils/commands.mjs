@@ -129,13 +129,31 @@ export async function clearCommandsBy(commanderUuid = null) {
  * is targeted — call this *before* anything is spent.
  * @returns {Token[]|null}
  */
-export function getCommandTargets() {
+export function getCommandTargets(ability = null, actor = null) {
   const targets = [...(game.user.targets ?? [])].filter((t) => t?.id);
   if (!targets.length) {
     ui.notifications.warn(loc("NoTargets"));
     return null;
   }
+  // Dvojitý rozkaz: an Active Command reaches two allies instead of one.
+  if (ability && actor && !isAuraCommand(ability)) {
+    const limit = hasFeature(actor, "Double Order") ? 2 : 1;
+    if (targets.length > limit) {
+      ui.notifications.warn(loc("TooManyTargets", { limit }));
+      return null;
+    }
+  }
   return targets;
+}
+
+/** Bdělý velitel, read by the action tracker. */
+export function hasVigilantCommander(actor) {
+  return hasFeature(actor, "Vigilant Commander");
+}
+
+/** A Passive Command: an aura rather than an order to one ally. */
+export function isAuraCommand(ability) {
+  return !!COMMANDS[ability?.system?.key]?.aura;
 }
 
 /**

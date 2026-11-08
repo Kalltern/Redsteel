@@ -60,9 +60,10 @@
             "type": "add"
           },
           {
-            "key": "",
-            "value": "",
-            "type": "add"
+            "key": "system.dodgeLimit.bonus",
+            "value": 30,
+            "type": "add",
+            "priority": null
           }
         ]
       },

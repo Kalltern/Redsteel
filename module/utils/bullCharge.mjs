@@ -83,7 +83,9 @@ import { isForcedMove } from "./forcedMoveRegistry.mjs";
 import { isHostileSide } from "./movementZones.mjs";
 import { isCharge } from "./abilityMovement.mjs";
 import { resolveTestRating, versusTestBonus } from "./testRating.mjs";
+import { resolveVersus } from "./defenseOdds.mjs";
 import {
+  capHopelessNatural,
   forfeitAdvantageOnCritFail,
   tagRollSkill,
   withRollBias,
@@ -330,8 +332,13 @@ async function rollSide(actor, key, chance) {
   const crit =
     d100 !== null &&
     attr?.criticalSuccessThreshold != null &&
+    !capHopelessNatural(roll, attr.criticalSuccessThreshold) &&
     d100 <= attr.criticalSuccessThreshold;
-  return { roll, key, chance, d100, margin: roll.total, crit };
+  const critFailure =
+    d100 !== null &&
+    attr?.criticalFailureThreshold != null &&
+    d100 >= attr.criticalFailureThreshold;
+  return { roll, key, chance, d100, margin: roll.total, crit, critFailure };
 }
 
 /**
@@ -352,7 +359,27 @@ async function rollContest(charger, enemy) {
   const theirs = best
     ? await rollSide(enemy, best.key, best.rating)
     : { key: "str", chance: 0, d100: null, margin: -Infinity, crit: false };
-  return { mine, theirs, won: mine.margin >= theirs.margin };
+  // Settled as a defense is, with the charger in the attacker's place.
+  const verdict = resolveVersus(
+    {
+      margin: mine.margin,
+      d100: mine.d100,
+      criticalSuccess: mine.crit,
+      criticalFailure: mine.critFailure,
+    },
+    {
+      defenseTotal: theirs.margin,
+      defenseD100: theirs.d100,
+      defenseCrit: theirs.crit,
+      defenseCritFailure: theirs.critFailure === true,
+    },
+  );
+  return {
+    // Two opposing naturals deny each other: the winner's is no critical.
+    mine: { ...mine, crit: mine.crit && !verdict.onDice },
+    theirs,
+    won: !verdict.blocked,
+  };
 }
 
 function sideLine(name, side) {

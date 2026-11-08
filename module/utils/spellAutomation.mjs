@@ -23,6 +23,7 @@
  */
 
 import { getSpellPower } from "./spellPower.mjs";
+import { renderVersusOutcome, settleOpposedRolls } from "./attributeFollowup.mjs";
 
 const SOCKET = "system.redsteel";
 
@@ -296,7 +297,11 @@ export async function resolveBloodGiftAsGM({
 
     const casterRoll = await new Roll(`${casterTest} - 1d100`).evaluate();
     const targetRoll = await new Roll(`${targetTest} - 1d100`).evaluate();
-    const casterWins = casterRoll.total >= targetRoll.total;
+    const verdict = settleOpposedRolls(
+      { roll: casterRoll, actor: caster, skillKey: "wil" },
+      { roll: targetRoll, actor: target, skillKey: "end" },
+    );
+    const casterWins = !verdict.blocked;
 
     // "At most one" on a failure — a caster carrying a single Bleeding gives
     // that one either way.
@@ -321,6 +326,7 @@ export async function resolveBloodGiftAsGM({
             ${targetHTML}
           </div>
         </div>
+        ${renderVersusOutcome(verdict, { side: "attack" })}
         <p style="text-align:center; font-size:16px;">
           <b>${target.name} receives ${stacks} Bleeding</b>
           ${casterWins ? "" : ` <span style="opacity:.8;">(resisted — ${pool} carried)</span>`}
@@ -447,11 +453,17 @@ export async function resolveMagicRopeAsGM({
     const target = scene.tokens.get(tokenId)?.actor;
     if (!target) continue;
 
-    const targetTest = Math.max(attrTest(target, "str"), attrTest(target, "dex"));
+    const targetKey =
+      attrTest(target, "str") >= attrTest(target, "dex") ? "str" : "dex";
+    const targetTest = attrTest(target, targetKey);
 
     const casterRoll = await new Roll(`${casterTest} - 1d100`).evaluate();
     const targetRoll = await new Roll(`${targetTest} - 1d100`).evaluate();
-    const casterWins = casterRoll.total >= targetRoll.total;
+    const verdict = settleOpposedRolls(
+      { roll: casterRoll, actor: caster, skillKey: "wil" },
+      { roll: targetRoll, actor: target, skillKey: targetKey },
+    );
+    const casterWins = !verdict.blocked;
     const wideMargin = casterWins && casterRoll.total >= 50;
 
     let outcome;
@@ -500,6 +512,7 @@ export async function resolveMagicRopeAsGM({
             ${targetHTML}
           </div>
         </div>
+        ${renderVersusOutcome(verdict, { side: "attack" })}
         <p style="text-align:center; font-size:16px;"><b>${outcome}</b></p>`,
     });
   }

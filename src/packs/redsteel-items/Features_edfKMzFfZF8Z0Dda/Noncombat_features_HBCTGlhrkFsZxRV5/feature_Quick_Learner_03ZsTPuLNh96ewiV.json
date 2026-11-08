@@ -1,0 +1,49 @@
+{
+  "folder": "HBCTGlhrkFsZxRV5",
+  "name": "Quick Learner",
+  "type": "feature",
+  "img": "icons/sundries/books/book-embossed-bound-brown.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.QuickLearner.name",
+    "description": "<p>Learning skills is 1 day faster; learning languages, reading and writing is 5 days faster.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "feature",
+    "cost": {
+      "cp": null,
+      "sp": 5
+    }
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.15.0",
+    "createdTime": null,
+    "modifiedTime": null,
+    "lastModifiedBy": null
+  },
+  "_id": "03ZsTPuLNh96ewiV",
+  "_key": "!items!03ZsTPuLNh96ewiV"
+}

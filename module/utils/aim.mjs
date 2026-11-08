@@ -206,6 +206,32 @@ export function sharpshooterNode(actor, node, weapon = undefined) {
   return isShootingWeapon(held);
 }
 
+/** Veneficus → Míření: Obtížnost -5%: Difficulty eased per Aim stack. */
+const SPELL_AIM_EASE_PER_STACK = 5;
+
+/**
+ * Veneficus → "Míření: Obtížnost -5%" (user ruling 2026-10-25): a spell cast
+ * at the token this caster aims at eases its Difficulty by 5 per Aim stack.
+ * An empty reticle counts as the aimed target, as it does for attacks
+ * (resolveAimOnAttack). Must be read BEFORE the cast pays its Action, since a
+ * spell is a non-attack action and breaks a normal aim (castSpell.mjs
+ * performCast). The result goes into the cast's difficultyBonus, so the usual
+ * clamp at 0 applies.
+ *
+ * @param {Actor} actor  the caster
+ * @returns {number}
+ */
+export function spellAimEase(actor) {
+  if (actor?.type !== "character") return 0;
+  if (!actorHasSpecNode(actor, "veneficus", "mireniObtiznost")) return 0;
+  const aim = readAim(getAimerToken(actor));
+  if (!aim?.targetId) return 0;
+  const targetIds = [...(game.user?.targets ?? [])].map((t) => t.id);
+  if (targetIds.length && !targetIds.includes(aim.targetId)) return 0;
+  const stacks = Math.min(MAX_STACKS, Math.max(0, aim.stacks ?? 0));
+  return stacks * SPELL_AIM_EASE_PER_STACK;
+}
+
 /**
  * Střelecký postoj (Shooting Stance): "Míření se počítá na všechny útoky
  * provedené ve stejném kole". While the stance holds and a bow or crossbow

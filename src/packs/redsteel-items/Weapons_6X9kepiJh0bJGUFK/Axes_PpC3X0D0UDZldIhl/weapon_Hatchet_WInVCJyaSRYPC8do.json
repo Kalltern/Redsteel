@@ -98,9 +98,9 @@
     ],
     "effectTypes": [],
     "roll": {
-      "diceNum": 2,
+      "diceNum": 3,
       "diceSize": "6",
-      "diceBonus": "3"
+      "diceBonus": "1"
     },
     "penetration": 6,
     "breakthrough": "",

@@ -103,6 +103,8 @@
       "diceBonus": "@spellPower*2"
     },
     "penetration": 8,
+    "magicAttack": 0,
+    "magicAttackFixed": false,
     "dmgType1": "magic",
     "bool2": "and",
     "dmgType2": "lightning",

@@ -103,6 +103,8 @@
       "diceBonus": ""
     },
     "penetration": 0,
+    "magicAttack": 15,
+    "magicAttackFixed": false,
     "dmgType1": "",
     "bool2": "",
     "dmgType2": "",

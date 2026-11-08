@@ -81,7 +81,7 @@
       ]
     },
     "isOffensive": true,
-    "uncontested": true,
+    "uncontested": false,
     "sustained": false,
     "difficulty": -15,
     "cost": 10,
@@ -98,6 +98,8 @@
       "diceBonus": ""
     },
     "penetration": 0,
+    "magicAttack": 10,
+    "magicAttackFixed": false,
     "dmgType1": "",
     "bool2": "",
     "dmgType2": "",

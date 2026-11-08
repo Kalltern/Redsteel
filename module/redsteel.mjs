@@ -23,6 +23,8 @@ import {
   renderMarginFollowupLine,
   renderVersusOutcome,
   renderOwnMargin,
+  judgeVersusAnswer,
+  settleOpposedRolls,
   settleVersusLoss,
   settleBreakFree,
   loadVersusIndex,
@@ -47,7 +49,11 @@ import {
   formatPrice,
 } from "./utils/currency.mjs";
 import { registerRollModifier } from "./utils/rollModifier.mjs";
-import { forfeitAdvantageOnCritFail } from "./utils/rollAdvantage.mjs";
+import {
+  forfeitAdvantageOnCritFail,
+  capHopelessNatural,
+  isHopelessNatural,
+} from "./utils/rollAdvantage.mjs";
 import { initTooltips } from "./utils/tooltips.mjs";
 import { registerCoreTooltipProviders } from "./utils/tooltipProviders.mjs";
 import { registerFormulaDisplay } from "./utils/formulaDisplay.mjs";
@@ -82,6 +88,7 @@ import {
 } from "./utils/abilityGrants.mjs";
 import { registerRaceGrants } from "./utils/raceGrants.mjs";
 import { registerTraitChoices } from "./utils/traitChoices.mjs";
+import { registerFeatureActions } from "./utils/featureActions.mjs";
 import { registerSpellbookHooks } from "./utils/spellbook.mjs";
 import { registerScrollHooks } from "./utils/spellScrolls.mjs";
 import {
@@ -111,6 +118,7 @@ import { registerChampionHooks } from "./utils/champion.mjs";
 import { registerHopliteHooks } from "./utils/hoplite.mjs";
 import { registerSkirmisherHooks } from "./utils/skirmisher.mjs";
 import { registerSharpshooterHooks } from "./utils/sharpshooter.mjs";
+import { registerVeneficusHooks } from "./utils/veneficus.mjs";
 import {
   canSpendResource,
   resourceLabel,
@@ -250,6 +258,10 @@ import {
   resumeMentalDuel,
 } from "./utils/mentalDuel.mjs";
 import { getSpellPower } from "./utils/spellPower.mjs";
+import {
+  registerSpellMagicAttackSetting,
+  syncSpellMagicAttack,
+} from "./utils/spellMagicAttackSync.mjs";
 import { registerTabVisibilityConfig } from "./utils/tabVisibility.mjs";
 import {
   getBaneProfile,
@@ -292,7 +304,14 @@ import {
   refundReroll,
   getRerollTokensForSkill,
   pickRerollPool,
+  channelingRerollTokens,
+  isNodeRerollId,
 } from "./utils/rerolls.mjs";
+import { settleMagicEcho } from "./utils/elymas.mjs";
+import {
+  registerIncantatorHooks,
+  stabilizeCritFail,
+} from "./utils/incantator.mjs";
 import {
   openRacePicker,
   openRaceChoicesDialog,
@@ -583,6 +602,11 @@ Hooks.once("init", function () {
   // Ostrostřelec: Shooting Stance broken by the holder's own move, Target
   // Lock's per-aim marker (sharpshooter.mjs).
   registerSharpshooterHooks();
+  // Veneficus: the empowering schools on a weapon attack card and Magic
+  // Momentum's half-damage stamp on a cast card (veneficus.mjs).
+  registerVeneficusHooks();
+  // Incantator: Precise Incantation's chat buttons and its GM relay.
+  registerIncantatorHooks();
   // Warden batch 1: shield strain on a held Cover, Protection (Guard) on an
   // adjacent ally, Armoring's GM relay.
   registerShieldStrainHooks();
@@ -616,6 +640,7 @@ Hooks.once("init", function () {
   registerCustomConditions();
   registerFirstAidHealing();
   registerMentalDuelSetting();
+  registerSpellMagicAttackSetting();
   registerLongRestRations();
   registerCreationStarting();
   registerCurrency();
@@ -625,6 +650,7 @@ Hooks.once("init", function () {
   registerTemperamentSchools();
   registerRaceGrants();
   registerTraitChoices();
+  registerFeatureActions();
   registerSpellbookHooks();
   registerScrollHooks();
   // Materials: key fill on create, registry cache, GM re-snapshot on edit
@@ -1270,6 +1296,9 @@ Hooks.once("ready", () => ensureAimMacros());
 // A player's initiative roll hands tied turn orders to the GM to separate.
 Hooks.once("ready", () => registerInitiativeTiebreakSocket());
 
+// Spell copies already on actors predate system.magicAttack (one-shot, GM only).
+Hooks.once("ready", () => syncSpellMagicAttack());
+
 /* -------------------------------------------- */
 /*  Hooks for Dynamic initiative if enabled     */
 /* -------------------------------------------- */
@@ -1538,11 +1567,16 @@ async function _resolveBindingStrikeAsGM({
           ? target.system.attributes?.[key]?.value
           : target.system.attributes?.[key]?.mod) ?? 0,
       );
-    const targetMod = Math.max(attr("str"), attr("end"));
+    const targetKey = attr("str") >= attr("end") ? "str" : "end";
+    const targetMod = attr(targetKey);
 
     const casterRoll = await new Roll(`${casterTest} - 1d100`).evaluate();
     const targetRoll = await new Roll(`${targetMod} - 1d100`).evaluate();
-    const casterWins = casterRoll.total >= targetRoll.total;
+    const verdict = settleOpposedRolls(
+      { roll: casterRoll, actor: caster, skillKey: "wil" },
+      { roll: targetRoll, actor: target, skillKey: targetKey },
+    );
+    const casterWins = !verdict.blocked;
 
     if (casterWins) {
       await game.redsteel.applyEffect(target, "root", { caster });
@@ -1566,6 +1600,7 @@ async function _resolveBindingStrikeAsGM({
             ${targetHTML}
           </div>
         </div>
+        ${renderVersusOutcome(verdict, { side: "attack" })}
         <p style="text-align:center; font-size:16px;">
           <b>${casterWins ? `${target.name} is Rooted!` : `${target.name} resists.`}</b>
         </p>`,
@@ -1748,6 +1783,23 @@ const REROLL_CARRIED_FLAGS = [
   // Situational toggles (Ranger's "In nature" on Stealth, rangerSkills.mjs):
   // the reroll keeps what was switched on and adds it to the new margin.
   "situational",
+  // Veneficus (veneficus.mjs): the schools that empowered the blow, read on
+  // a kill by Navazující kouzlo, and Magic Momentum's half damage.
+  "empoweredSchools",
+  "magicMomentumHalf",
+  // A spell card's raw Difficulty (Magic Defense against a Wild spell) and
+  // the flank bonus inside its Magic ATK (Elymas Focused Defense), and an
+  // Elymas Magic Counterattack's stamp (utils/elymas.mjs).
+  "spellDifficulty",
+  "magicFlankBonus",
+  "magicCounterattack",
+  // Incantator (utils/incantator.mjs): the Magic Defense price multiplier,
+  // Precise Incantation's price and the effect rows it already rerolled, and
+  // a versus answer it already forced to reroll.
+  "defenderManaMultiplier",
+  "preciseIncantation",
+  "preciseRerolled",
+  "preciseForced",
 ];
 
 /**
@@ -1774,8 +1826,9 @@ function buildAttackRerollFlag(message, roll, { critSuccess, critFailure }) {
   const attack = foundry.utils.deepClone(source);
   // A spell card contests its Magic ATK, which sits a flat bonus above the cast
   // roll (see finalizeRollsAndPostChat). The reroll only re-evaluates the roll,
-  // so the bonus is added back on.
-  attack.margin = roll.total + (Number(source.attackBonus) || 0);
+  // so the bonus is added back on. A fixed Magic ATK stands as it was.
+  attack.margin =
+    source.fixedMagicAttack ?? roll.total + (Number(source.attackBonus) || 0);
   attack.criticalSuccess = critSuccess;
   attack.criticalFailure = critFailure;
   attack.d100 = d100;
@@ -1827,6 +1880,15 @@ function buildDefenseRerollParts(
   { critSuccess, critFailure, d100 },
 ) {
   const flags = message.flags?.redsteel ?? {};
+  // A Magic Defense card has no reroll tokens and keeps its record apart
+  // (defense.mjs rollMagicDefense): restated on its own terms below.
+  if (flags.magicDefense) {
+    return buildMagicDefenseRerollParts(message, roll, {
+      critSuccess,
+      critFailure,
+      d100,
+    });
+  }
   const isDefense =
     Array.isArray(flags.rerollTokens) && flags.rerollTokens.includes("defense");
   if (!isDefense) return { flags: {}, badDodge: false, html: "" };
@@ -1908,6 +1970,52 @@ function buildDefenseRerollParts(
 }
 
 /**
+ * Restate a Magic Defense card for a rerolled die: the same attack contested
+ * again, the record (`magicDefense`) rewritten for the new verdict, and
+ * Elymas Magická ozvěna paid if the new die makes it a Critical Magic
+ * Defense the old one was not.
+ *
+ * @returns {Promise<{flags: object, badDodge: false, html: string}>}
+ */
+async function buildMagicDefenseRerollParts(
+  message,
+  roll,
+  { critSuccess, critFailure, d100 },
+) {
+  const flags = message.flags?.redsteel ?? {};
+  const record = flags.magicDefense;
+  const defender = ChatMessage.getSpeakerActor(message.speaker ?? {});
+  const versus = renderVersusBlock(record.versusAttack ?? null, {
+    defenseTotal: roll.total,
+    defenseD100: d100,
+    defenseCrit: critSuccess,
+    defenseCritFailure: critFailure,
+  });
+  const defenseFailed = versus.versus ? !versus.versus.blocked : roll.total < 0;
+  const criticalDefense = versus.versus
+    ? versus.versus.critical === "defense"
+    : critSuccess;
+  const critical = !defenseFailed && !!criticalDefense;
+  const echoNote =
+    criticalDefense && !record.critical && defender
+      ? await settleMagicEcho(defender)
+      : "";
+  return {
+    flags: {
+      ...(versus.versus ? { versus: versus.versus } : {}),
+      magicDefense: {
+        ...record,
+        succeeded: !defenseFailed,
+        critical,
+        critFailure,
+      },
+    },
+    badDodge: false,
+    html: `${versus.html}${echoNote}`,
+  };
+}
+
+/**
  * Retire the card a reroll replaced: its margin is no longer the one in play,
  * so its Defend / Apply Damage / claim buttons would resolve a roll that has
  * been thrown away. Rendering-side only — the card and its dice stay in the log.
@@ -1922,6 +2030,9 @@ async function markRerolledAway(source, replacement) {
     !!source.flags?.redsteel?.versusTest ||
     !!source.flags?.redsteel?.versusFollowup ||
     !!source.flags?.redsteel?.firstAidCard ||
+    // A Magic Defense card's verdict feeds Apply Damage and the Elymas
+    // Magic Counterattack chip, so the replaced one must stop counting.
+    !!source.flags?.redsteel?.magicDefense ||
     Array.isArray(source.flags?.redsteel?.rerollTokens);
   if (!carriesButtons) return;
   const isAuthor = source.isAuthor ?? source.author?.id === game.user.id;
@@ -1959,7 +2070,12 @@ async function executeReroll(
   // forfeits it here too. Read the die only after.
   forfeitAdvantageOnCritFail(roll, criticalFailureThreshold);
   const d100Result = roll.dice?.[0]?.total ?? roll.total; // works with 2d100kl/kh
-  const critSuccess = d100Result <= criticalSuccessThreshold;
+  // A versus answer's formula also subtracts the opposing margin, so it settles
+  // a natural on a negative chance in judgeVersusAnswer instead.
+  const hopeless =
+    !message.getFlag("redsteel", "versusFollowup") &&
+    capHopelessNatural(roll, criticalSuccessThreshold);
+  const critSuccess = !hopeless && d100Result <= criticalSuccessThreshold;
   // A spell cast also fumbles on a margin of -25 or worse. That kind stays
   // rerollable (the gate in the reroll handler reads the die alone).
   const spellCritFail = message.getFlag("redsteel", "spellCritFail");
@@ -1984,7 +2100,7 @@ async function executeReroll(
     critSuccess,
     critFailure,
   });
-  const defenseParts = buildDefenseRerollParts(message, roll, {
+  const defenseParts = await buildDefenseRerollParts(message, roll, {
     critSuccess,
     critFailure,
     d100: d100Result,
@@ -2007,7 +2123,8 @@ async function executeReroll(
 
   // Every reroll says what paid for it, including when nothing did: the free
   // path is reached by cards the pool picker cannot scope (spell and magic
-  // defense cards), and the table should see that it cost no charge.
+  // defense cards, unless a node pool answers Channeling on them), and the
+  // table should see that it cost no charge.
   const sourceText = sourceLabel
     ? game.i18n.format("REDSTEEL.Reroll.Used", { source: sourceLabel })
     : game.i18n.localize("REDSTEEL.Reroll.Free");
@@ -2020,15 +2137,29 @@ async function executeReroll(
   // A versus Test card states who won. The reroll builds a fresh flavor, so
   // restate it against the new total rather than leaving the old verdict.
   const versusFollowup = message.getFlag("redsteel", "versusFollowup");
-  let followupOutcome = versusFollowup
-    ? renderOwnMargin(roll, versusFollowup) + renderVersusOutcome(roll.total)
+  const judged = versusFollowup
+    ? judgeVersusAnswer(roll, versusFollowup, {
+        success: criticalSuccessThreshold,
+        failure: criticalFailureThreshold,
+      })
+    : null;
+  let followupOutcome = judged
+    ? renderVersusOutcome(judged.verdict, {
+        detail: renderOwnMargin(roll, versusFollowup),
+      })
     : "";
+  if (judged) {
+    carried.versusFollowup = judged.followup;
+    // The verdict says what a critical did. A second headline would claim one
+    // that the other side's natural denied.
+    flavorText = "";
+  }
   // A versus Test that costs the loser (Distraction's Reaction) is charged or
   // refunded when the reroll flips who won.
   if (versusFollowup?.onLose) {
     const settled = await settleVersusLoss(
       ChatMessage.getSpeakerActor(message.speaker),
-      versusFollowup,
+      carried.versusFollowup,
       roll.total,
     );
     carried.versusFollowup = settled.followup;
@@ -2036,7 +2167,9 @@ async function executeReroll(
   }
   // Break Free: the formula holds both sides' dice, so this reroll already
   // rolled the whole contest again; a win now deletes the binding effect.
-  followupOutcome += await settleBreakFree(versusFollowup, roll.total);
+  if (judged) {
+    followupOutcome += await settleBreakFree(carried.versusFollowup, roll.total);
+  }
   const rescuedNote = rescued
     ? `<p style="text-align:center; font-size:12px; opacity:0.8;"><i class="fa-light fa-sparkles"></i> Cast succeeded on the reroll — caster effects applied.</p>`
     : "";
@@ -2053,6 +2186,11 @@ async function executeReroll(
         chance: versusChance ?? null,
         result: roll.result,
         mirror: message.getFlag("redsteel", "skill") ?? null,
+        natural: {
+          die: d100Result,
+          success: hopeless ? 0 : criticalSuccessThreshold,
+          failure: criticalFailureThreshold,
+        },
       })
     : "";
 
@@ -2177,7 +2315,33 @@ async function applyPendingCast(pendingCast, roll, critSuccess) {
  *
  * @returns {Promise<boolean>} true when a charge was spent and the roll redone.
  */
-async function handleRerollClick(message, { rerun = null } = {}) {
+/**
+ * Does the roller of this Channeling card (a cast or a Magic Defense) hold a
+ * node reroll pool that can reroll it now? Only a node pool switches the card
+ * off the free Re-Roll, so a character with a universal feature pool and no
+ * such node keeps the free path these cards always had.
+ *
+ * @param {ChatMessage} message
+ * @returns {boolean}
+ */
+function channelingNodeReroll(message) {
+  const tokens = channelingRerollTokens(message);
+  if (!tokens) return false;
+  const actor = ChatMessage.getSpeakerActor(message.speaker);
+  if (!actor) return false;
+  const d100 =
+    message.rolls?.[0]?.dice?.[0]?.total ?? message.rolls?.[0]?.total;
+  const cft = Number(message.flags?.redsteel?.criticalFailureThreshold);
+  const critFailure = Number.isFinite(cft) && d100 >= cft;
+  return getEligibleRerolls(actor, tokens, { critFailure, message }).some(
+    (pool) => isNodeRerollId(pool.itemId),
+  );
+}
+
+async function handleRerollClick(
+  message,
+  { rerun = null, tokens: tokenOverride = null } = {},
+) {
   // Who spends the reroll: the actor who made the roll when the message
   // carries one. Older/actorless messages fall back to the clicking user's
   // controlled token (must be owned — this is how a GM picks the character),
@@ -2204,9 +2368,13 @@ async function handleRerollClick(message, { rerun = null } = {}) {
   const skillKey =
     message.getFlag("redsteel", "skill") ??
     message.rolls?.[0]?.options?.redsteel?.skill;
-  const tokens = Array.isArray(stored)
-    ? [...stored]
-    : getRerollTokensForSkill(actor, skillKey);
+  // A caller may name the tokens itself: a Channeling card (a cast, a Magic
+  // Defense) carries neither flag (rerolls.mjs channelingRerollTokens).
+  const tokens = Array.isArray(tokenOverride)
+    ? [...tokenOverride]
+    : Array.isArray(stored)
+      ? [...stored]
+      : getRerollTokensForSkill(actor, skillKey);
   // Grimm's Bane reroll answers only a roll made against a Bane (grimm.mjs).
   if (rollIsAgainstBane(actor, message)) tokens.push(BANE_REROLL_TOKEN);
   const isCombat = tokens.some((t) => t === "attack" || t === "defense");
@@ -2409,12 +2577,18 @@ Hooks.on("renderChatMessageHTML", (message, html, data) => {
         // Skill/attribute/combat-skill test cards carry a `skill` flag; weapon
         // attack and defense cards carry a `rerollTokens` array. Both go through
         // the reroll-resource picker. Anything else (spell/magic defense cards)
-        // keeps the existing free Re-Roll.
+        // keeps the existing free Re-Roll, unless the roller holds a node pool
+        // that answers a Channeling roll (Elymas "1x za den opakovat hod na
+        // Usměrňování", rerolls.mjs): then the picker spends it.
         if (
           message.getFlag("redsteel", "skill") ||
           message.getFlag("redsteel", "rerollTokens")
         ) {
           await handleRerollClick(message);
+        } else if (channelingNodeReroll(message)) {
+          await handleRerollClick(message, {
+            tokens: channelingRerollTokens(message),
+          });
         } else {
           await executeReroll(message, null);
         }
@@ -3064,6 +3238,180 @@ Hooks.once("ready", async () => {
     }
   }
 });
+// Weapon copies taken from redsteel-items before its damage was corrected to
+// zbrojnice.md (row in brackets). Each path maps [old wrong value, book value];
+// a field is only rewritten while it still holds the old value, so a copy the
+// GM edited on purpose keeps its edit and a fixed copy is never touched again.
+const LEGACY_WEAPON_FIXES = {
+  // [r35] Řemdih
+  Flail: { "system.roll.diceSize": ["8", "6"] },
+  // [r38] Cep
+  "Two handed flail": {
+    "system.roll.diceNum": [2, 3],
+    "system.roll.diceSize": ["8", "6"],
+  },
+  // [r39] the "+2" displayed as "4d6++2"
+  "Great hammer": { "system.roll.diceBonus": ["+2", "2"] },
+  // [r28] Bardyše
+  Bardiche: { "system.roll.diceBonus": ["2", "0"] },
+  // [r24] Sekerka
+  Hatchet: {
+    "system.roll.diceNum": [2, 3],
+    "system.roll.diceBonus": ["3", "1"],
+  },
+  // [r25] Válečná sekera
+  "War axe": {
+    "system.roll.diceNum": [2, 3],
+    "system.roll.diceBonus": ["3", "1"],
+  },
+  // [r26] Válečný krumpáč
+  "War pick": {
+    "system.roll.diceBonus": ["1", "2"],
+    "system.offhandProperties.diceBonus": ["+2+1d8", "+1d6+1"],
+    "system.offhandProperties.penetration": [1, 3],
+  },
+  // [r12] Vojenský sekáček
+  "Military Cleaver": {
+    "system.penetration": [7, 5],
+    "system.offhandProperties.diceBonus": ["+1d6+3", "+1d6+2"],
+  },
+  // [r67] Dlouhý luk
+  Longbow: {
+    "system.roll.diceNum": [5, 8],
+    "system.roll.diceSize": ["8k5", "6k5"],
+    "system.penetration": [8, 10],
+  },
+};
+Hooks.once("ready", async () => {
+  if (!game.user.isGM) return;
+
+  async function migrateItem(item) {
+    if (item?.type !== "weapon") return;
+    const fix = LEGACY_WEAPON_FIXES[item.name];
+    if (!fix) return;
+    const update = {};
+    for (const [path, [from, to]] of Object.entries(fix)) {
+      if (String(foundry.utils.getProperty(item._source, path)) === String(from)) {
+        update[path] = to;
+      }
+    }
+    if (foundry.utils.isEmpty(update)) return;
+    console.log(
+      `Redsteel | Weapon damage → zbrojnice.md: ${item.parent?.name ?? "world"} / ${item.name}`,
+    );
+    await item.update(update);
+  }
+
+  async function migrateActor(actor) {
+    if (!actor) return;
+    for (const item of actor.items.contents) await migrateItem(item);
+  }
+
+  for (const item of game.items.contents) await migrateItem(item);
+  // Base actors first, so unlinked tokens that merely inherit the weapon
+  // already read the fixed item and only genuine token-level copies get written.
+  for (const actor of game.actors.contents) await migrateActor(actor);
+  for (const scene of game.scenes.contents) {
+    for (const token of scene.tokens.contents) {
+      if (!token.actorLink) await migrateActor(token.actor);
+    }
+  }
+});
+
+/**
+ * Swift Striker's effect shipped as a one-round temporary effect, which drew a
+ * token icon and ignored the weapon in hand. A pack edit never reaches a copy a
+ * character already owns, so rewrite those to the passive, Light-only version.
+ * Idempotent: a copy carrying the flag is skipped.
+ */
+Hooks.once("ready", async () => {
+  if (!game.user.isGM) return;
+
+  async function migrateItem(item) {
+    if (item?.type !== "feature") return;
+    if (!["swift striker", "speedy advantage"].includes(item.name?.toLowerCase())) return;
+    for (const effect of item.effects.contents) {
+      if (effect.getFlag("redsteel", "requiresLightWeapons")) continue;
+      console.log(`Redsteel | Swift Striker → passive: ${item.parent?.name ?? "world"}`);
+      await effect.update({
+        name: "Swift striker",
+        duration: { value: null, units: "seconds", expiry: null },
+        showIcon: CONST.ACTIVE_EFFECT_SHOW_ICON.NEVER,
+        "flags.redsteel.requiresLightWeapons": true,
+      });
+    }
+  }
+
+  async function migrateActor(actor) {
+    if (!actor) return;
+    for (const item of actor.items.contents) await migrateItem(item);
+  }
+
+  for (const item of game.items.contents) await migrateItem(item);
+  for (const actor of game.actors.contents) await migrateActor(actor);
+  for (const scene of game.scenes.contents) {
+    for (const token of scene.tokens.contents) {
+      if (!token.actorLink) await migrateActor(token.actor);
+    }
+  }
+});
+
+/**
+ * Acrobatic Defense's effect shipped with a blank change where the Dodge limit
+ * belonged, so the limit stayed at 50 instead of 80. A pack edit never reaches a
+ * copy a character already owns, so write the +30 into those. Idempotent: a copy
+ * already carrying the limit is skipped.
+ */
+Hooks.once("ready", async () => {
+  if (!game.user.isGM) return;
+
+  const LIMIT_KEY = "system.dodgeLimit.bonus";
+
+  async function migrateItem(item) {
+    if (item?.type !== "feature") return;
+    if (
+      item.system?.localizationKey !== "REDSTEEL.Items.AcrobaticDefense.name" &&
+      item.name?.toLowerCase() !== "acrobatic defense"
+    ) {
+      return;
+    }
+    for (const effect of item.effects.contents) {
+      const source = effect.toObject();
+      // V14 stores changes under system.changes; older data kept them top-level.
+      const path = Array.isArray(source.system?.changes)
+        ? "system.changes"
+        : "changes";
+      const changes = foundry.utils.getProperty(source, path);
+      if (!Array.isArray(changes)) continue;
+      if (changes.some((c) => c.key === LIMIT_KEY)) continue;
+      console.log(
+        `Redsteel | Acrobatic Defense → Dodge limit 80: ${item.parent?.name ?? "world"}`,
+      );
+      await effect.update({
+        [path]: [
+          ...changes.filter((c) => c.key),
+          { key: LIMIT_KEY, value: 30, type: "add", priority: null },
+        ],
+      });
+    }
+  }
+
+  async function migrateActor(actor) {
+    if (!actor) return;
+    for (const item of actor.items.contents) await migrateItem(item);
+  }
+
+  for (const item of game.items.contents) await migrateItem(item);
+  // Base actors first, so unlinked tokens that merely inherit the feature
+  // already read the fixed effect and only genuine token-level copies get written.
+  for (const actor of game.actors.contents) await migrateActor(actor);
+  for (const scene of game.scenes.contents) {
+    for (const token of scene.tokens.contents) {
+      if (!token.actorLink) await migrateActor(token.actor);
+    }
+  }
+});
+
 /** Spell school keys that can own a crit-fail table (mirrors template.json). */
 const MAGIC_SCHOOLS = [
   "fire",
@@ -3189,7 +3537,12 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
       const formula = `1d20 + ${modifier}`;
       const roll = await new Roll(formula).evaluate();
 
-      await table.draw({ roll });
+      // Incantator → Stabilizace zdroje: the holder sees the drawn degree and
+      // may shift it one step (utils/incantator.mjs). Everyone else draws as
+      // before.
+      if (!(await stabilizeCritFail(actor, table, roll))) {
+        await table.draw({ roll });
+      }
 
       // Disable button after use
       target.dataset.disabled = "true";
@@ -3703,6 +4056,20 @@ Hooks.on("preCreateActor", (actor) => {
   console.log(`Redsteel | Converted movement → Speed on import: ${actor.name}`);
 });
 
+// A natural critical on a negative chance reads as a dice box whose sum looks
+// wrong, so the card says why. Written once here rather than by every emitter.
+Hooks.on("renderChatMessageHTML", (message, html) => {
+  const roll = message.rolls?.find(isHopelessNatural);
+  const flavor = html.querySelector(".flavor-text");
+  if (!roll || !flavor) return;
+  const note = document.createElement("p");
+  note.classList.add("rs-hopeless-note");
+  note.textContent = game.i18n.format("REDSTEEL.Versus.HopelessNatural", {
+    die: roll.dice.find((d) => d.faces === 100)?.total,
+  });
+  flavor.appendChild(note);
+});
+
 Hooks.on("renderChatMessageHTML", (message, html) => {
   // GM-only pills (a "-gm" trigger such as "universal-gm") travel on the
   // message for everyone but are drawn only on the GM's client.
@@ -3958,7 +4325,14 @@ Hooks.on("deleteCombat", async (combat) => {
 // Fast Reaction (and the Improved half) expire at the start of the actor's own
 // next turn. When the encounter ends, or the combatant leaves it, before that
 // turn comes, nothing would ever tick them down, so they are cleared here.
-const TURN_ORDER_ONLY_STATUSES = ["fast_reaction", "improved_fast_reaction"];
+// Elymas Focused Defense and its extra Reaction (utils/elymas.mjs) are the
+// same kind: one turn, gone at the holder's next turn start.
+const TURN_ORDER_ONLY_STATUSES = [
+  "fast_reaction",
+  "improved_fast_reaction",
+  "focused_defense",
+  "focused_defense_reaction",
+];
 
 async function clearTurnOrderEffects(actor) {
   const ids = (actor?.effects?.contents ?? [])

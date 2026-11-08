@@ -1,0 +1,53 @@
+{
+  "folder": "HBCTGlhrkFsZxRV5",
+  "name": "Expertise",
+  "type": "feature",
+  "img": "icons/skills/trades/academics-investigation-puzzles.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.Expertise.name",
+    "description": "<p>You gain +2% Critical Success in one non-combat skill of your choice.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "feature",
+    "cost": {
+      "cp": null,
+      "sp": 0
+    }
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {
+    "redsteel": {
+      "skillCritChoice": 2
+    }
+  },
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.15.0",
+    "createdTime": null,
+    "modifiedTime": null,
+    "lastModifiedBy": null
+  },
+  "_id": "L0IZDSQoFYtlavWF",
+  "_key": "!items!L0IZDSQoFYtlavWF"
+}

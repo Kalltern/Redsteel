@@ -1,0 +1,142 @@
+{
+  "folder": "qIzwWf8fbs2twvmh",
+  "name": "Two handed Cleaver",
+  "type": "weapon",
+  "img": "icons/weapons/swords/sword-guard-red.webp",
+  "system": {
+    "description": "",
+    "class": "sword",
+    "tags": "two handed cleaver",
+    "classOptions": [
+      "axe",
+      "blunt",
+      "sword",
+      "polearm",
+      "bow",
+      "crossbow",
+      "firearm"
+    ],
+    "equipped": false,
+    "twoHandGrip": false,
+    "longReach": false,
+    "gripMode": "one",
+    "offhand": false,
+    "npcOffhand": false,
+    "type": "heavy",
+    "typeOptions": [
+      "light",
+      "medium",
+      "heavy"
+    ],
+    "weight": 0,
+    "attack": 8,
+    "defense": 3,
+    "critRange": 2,
+    "critChance": 0,
+    "critFail": 0,
+    "critDefense": 0,
+    "critDodge": 0,
+    "critDamage": 0,
+    "critPenetration": 0,
+    "dodge": 0,
+    "offhandProperties": {
+      "diceBonus": "",
+      "penetration": 0,
+      "attack": 0,
+      "defense": 0,
+      "critRange": 0,
+      "critChance": 0,
+      "critFail": 0,
+      "critDefense": 0,
+      "critDodge": 0,
+      "dodge": 0,
+      "breakthrough": "",
+      "sneakDamage": "",
+      "effects": {
+        "stagger": 0,
+        "bleed": 0,
+        "extra1": 0,
+        "extra2": 0,
+        "extra3": 0,
+        "stun": 0
+      },
+      "doctrines": {
+        "dimakerus": false,
+        "duelist": false,
+        "monk": false,
+        "rogue": false
+      },
+      "effectType1": "",
+      "effectType2": "",
+      "effectType3": ""
+    },
+    "doctrines": {
+      "cavalry": false,
+      "dimakerus": false,
+      "duelist": false,
+      "monk": false,
+      "pikeman": false,
+      "reaver": false,
+      "rogue": false,
+      "shieldbearer": false,
+      "swordsman": true,
+      "archer": false,
+      "arbalest": false,
+      "peltast": false,
+      "juggler": false
+    },
+    "effects": {
+      "stagger": 0,
+      "bleed": 45,
+      "extra1": 0,
+      "extra2": 0,
+      "extra3": 0
+    },
+    "effectOptions": [
+      "and",
+      "or"
+    ],
+    "effectTypes": [],
+    "roll": {
+      "diceNum": 5,
+      "diceSize": "6",
+      "diceBonus": "2"
+    },
+    "penetration": 6,
+    "breakthrough": "",
+    "sneakDamage": "",
+    "finesse": false,
+    "sharp": true,
+    "thrown": false,
+    "dmgType1": "physical",
+    "bool2": "and",
+    "dmgType2": "slash",
+    "bool3": "",
+    "dmgType3": "",
+    "bool4": "",
+    "dmgType4": "",
+    "effectType1": "",
+    "effectType2": "",
+    "effectType3": "",
+    "localizationKey": "REDSTEEL.Items.TwoHandedCleaver.name"
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": "Item.TYAlXCMHotKRHBYM",
+    "duplicateSource": "Item.AXlRPiIkr2XRycc9",
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "redsteel",
+    "systemVersion": "0.8.1",
+    "createdTime": 1777294848035,
+    "modifiedTime": 1777294848035,
+    "lastModifiedBy": "UHjN0KQ8w8ZxibJg"
+  },
+  "_id": "bkB9i8Kcbu3IehYl",
+  "_key": "!items!bkB9i8Kcbu3IehYl"
+}

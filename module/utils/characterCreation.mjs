@@ -94,6 +94,7 @@ import {
   evaluateRequirements,
   getOwnedFeatures,
   hasTeacher,
+  isTeacherClause,
   isInCreation,
   purchaseRank,
   readItemFeatureCost,
@@ -541,6 +542,15 @@ function weaponDoctrines(doctrines) {
 }
 
 /**
+ * True when the doctrine's weapon pick may be left empty (user ruling
+ * 2026-11-03): beside a magical doctrine, or for a ranged doctrine (the
+ * Peltast, the Juggler), a weapon skill is not needed.
+ */
+function weaponOptional(draft, key) {
+  return getLearnSection(`doctrines.${key}`) === "ranged" || draft.doctrines.some((k) => isMagicalDoctrine(k));
+}
+
+/**
  * True when step 3's details half (3.5) has something to ask: a weapon pick
  * that is not fixed, the Peltast's combat skill, or a magical doctrine's
  * school. Fixed combat skills alone ask nothing.
@@ -623,6 +633,15 @@ const COMPANION_DOCTRINE = "rogue";
 /** A melee or ranged doctrine: not Rogue, not magical. Creation takes one. */
 function isMainDoctrine(key) {
   return key !== COMPANION_DOCTRINE && !isMagicalDoctrine(key);
+}
+
+/**
+ * True when step 3 can be left: one melee or ranged doctrine, or none beside
+ * a magical doctrine (user ruling 2026-11-03: a mage need not train to fight).
+ */
+function doctrinePickComplete(doctrines) {
+  const main = doctrines.filter(isMainDoctrine).length;
+  return main === 1 || (main === 0 && doctrines.some((key) => isMagicalDoctrine(key)));
 }
 
 /**
@@ -2131,8 +2150,13 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
       const fixed = FIXED_WEAPONS[key] ?? null;
       const chosen = weaponFor(draft, key);
       const doctrine = this.#doctrineLabel(key);
+      const optional = !fixed && weaponOptional(draft, key);
       groups.push({
-        label: i18n.format("REDSTEEL.Creation.Details.weaponFor", { doctrine }),
+        label: i18n.format(
+          optional ? "REDSTEEL.Creation.Details.weaponForOptional" : "REDSTEEL.Creation.Details.weaponFor",
+          { doctrine },
+        ),
+        advice: optional ? i18n.localize("REDSTEEL.Creation.Details.weaponOptionalAdvice") : "",
         cards: WEAPON_SKILL_KEYS.map((weapon) => {
           const trackId = `weaponSkills.${weapon}`;
           const allowed = this.#weaponAllowed(key, weapon);
@@ -2183,7 +2207,10 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
         cards: this.#schoolCards(editable),
       });
     }
-    return { groups: groups.filter((group) => group.cards.length) };
+    return {
+      groups: groups.filter((group) => group.cards.length),
+      askWeapons: weaponDoctrines(draft.doctrines).length > 0,
+    };
   }
 
   /**
@@ -2295,7 +2322,8 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     if (
       weaponDoctrines(draft.doctrines).some((key) => {
         const weapon = weaponFor(draft, key);
-        return !weapon || !this.#weaponAllowed(key, weapon);
+        if (!weapon) return !weaponOptional(draft, key);
+        return !this.#weaponAllowed(key, weapon);
       })
     ) {
       return true;
@@ -2797,11 +2825,11 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     // Step 3's doctrine cards: on to 3.5 when it has something to ask, else
     // straight to the apply.
     if (this.#draft.step === STEP_DOCTRINE && this.#draft.stage !== "details") {
-      if (this.#draft.doctrines.filter(isMainDoctrine).length !== 1) {
+      this.#settleMagic();
+      if (!doctrinePickComplete(this.#draft.doctrines)) {
         ui.notifications.warn(game.i18n.localize("REDSTEEL.Creation.Doctrine.pickOne"));
         return;
       }
-      this.#settleMagic();
       if (draftHasDetails(this.#draft)) {
         this.#draft.stage = "details";
         this.#info = null;
@@ -2862,10 +2890,11 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
   }
 
   /**
-   * Take or drop a doctrine. Exactly one melee or ranged doctrine (user ruling
+   * Take or drop a doctrine. One melee or ranged doctrine (user ruling
    * 2026-10-06: a second comes later, through the Learn window): taking
    * another replaces it. Rogue toggles on its own and may sit beside it. At
-   * most one magical doctrine, the same way, and only with Magic potential.
+   * most one magical doctrine, the same way, and only with Magic potential;
+   * it may stand in for the melee or ranged one (doctrinePickComplete).
    * @this {CharacterCreationWindow}
    */
   static async _onToggleDoctrine(event, target) {
@@ -2922,7 +2951,10 @@ export class CharacterCreationWindow extends HandlebarsApplicationMixin(Applicat
     if (!weaponDoctrines(this.#draft.doctrines).includes(doctrine)) return;
     if (!this.#weaponAllowed(doctrine, weapon)) return;
     this.#info = `skill:weaponSkills.${weapon}`;
-    this.#draft.weapons = { ...this.#draft.weapons, [doctrine]: weapon };
+    const weapons = { ...this.#draft.weapons, [doctrine]: weapon };
+    // An optional pick clicked again is put down.
+    if (this.#draft.weapons[doctrine] === weapon && weaponOptional(this.#draft, doctrine)) delete weapons[doctrine];
+    this.#draft.weapons = weapons;
     await this.#commit();
   }
 
@@ -3865,7 +3897,7 @@ function originBreaks(actor, clone) {
   const lines = [];
   const unmet = (results) =>
     results
-      .filter((result) => !result.met && !result.advisory && result.req?.t !== "teacher")
+      .filter((result) => !result.met && !result.advisory && !isTeacherClause(result.req))
       .map((result) => describeRequirement(result.req))
       .filter(Boolean);
   for (const [trackId, track] of Object.entries(PROGRESSION_TRACKS)) {
@@ -3927,9 +3959,11 @@ export function isCreationSkillsStep(actor) {
 }
 
 /**
- * The track ids whose rank I teacher creation unlocked (step 3's picks and
- * step 4's acquire button), so giving rank I back takes the teacher back too.
- * Kept beside the draft, not in it: readDraft keeps only the draft's own keys.
+ * The teachers creation unlocked (step 3's picks and step 4's diamonds), one
+ * entry per rank as "<trackId>@<rank>", so giving a rank back takes its
+ * teacher back too. A bare track id is rank I, as drafts from before every
+ * rank came with its teacher wrote it. Kept beside the draft, not in it:
+ * readDraft keeps only the draft's own keys.
  */
 const CREATION_TEACHERS_FLAG = "creationTeachers";
 
@@ -3938,47 +3972,64 @@ function creationTeachers(actor) {
   return Array.isArray(list) ? list.filter((id) => typeof id === "string") : [];
 }
 
+function parseCreationTeacher(entry) {
+  const at = entry.lastIndexOf("@");
+  if (at < 0) return { trackId: entry, rank: 1 };
+  return { trackId: entry.slice(0, at), rank: Number(entry.slice(at + 1)) || 1 };
+}
+
 /**
- * Buy rank I of a track during creation (user ruling 2026-10-10: a skill
- * taken at creation comes with its first trainer): unlock the rank I teacher
+ * Buy one rank of a track during creation, the next one up (user rulings:
+ * 2026-10-10 a skill taken at creation comes with its first trainer;
+ * 2026-10-27 every rank bought in creation comes with its trainer, so the
+ * player never clicks a teacher before Finish): unlock that rank's teacher
  * if missing, then buy through the engine's own purchaseRank. A rank the
  * engine still refuses (other requirements, the wallet) takes the teacher
- * back. True when the track holds rank I afterwards.
+ * back. True when the track holds the rank afterwards.
  * @param {Actor} actor
  * @param {string} trackId
+ * @param {number} [rank]
  */
-export async function acquireCreationRank(actor, trackId) {
+export async function acquireCreationRank(actor, trackId, rank = 1) {
   const track = PROGRESSION_TRACKS[trackId];
   if (!track || !actor?.isOwner) return false;
-  if (getTrackRank(actor, track.group, track.key) >= 1) return true;
-  const granted = !hasTeacher(actor, trackId, 1);
-  if (granted) await setTeacher(actor, trackId, 1, true);
-  const bought = await purchaseRank(actor, trackId, 1);
+  const held = getTrackRank(actor, track.group, track.key);
+  if (held >= rank) return true;
+  if (held !== rank - 1) return false;
+  const granted = !hasTeacher(actor, trackId, rank);
+  if (granted) await setTeacher(actor, trackId, rank, true);
+  const bought = await purchaseRank(actor, trackId, rank);
   if (!bought) {
-    if (granted) await setTeacher(actor, trackId, 1, false);
+    if (granted) await setTeacher(actor, trackId, rank, false);
     return false;
   }
   if (granted) {
-    await actor.setFlag("redsteel", CREATION_TEACHERS_FLAG, [...new Set([...creationTeachers(actor), trackId])]);
+    await actor.setFlag("redsteel", CREATION_TEACHERS_FLAG, [
+      ...new Set([...creationTeachers(actor), `${trackId}@${rank}`]),
+    ]);
   }
   return true;
 }
 
 /**
- * After ranks were given back in creation: a track left with no rank loses
- * the rank I teacher creation unlocked for it. No-op for a track that still
- * holds a rank or whose teacher came from elsewhere.
+ * After ranks were given back in creation: every rank above the one the
+ * track still holds loses the teacher creation unlocked for it. No-op for a
+ * teacher that came from elsewhere (the GM, lessons).
  * @param {Actor} actor
  * @param {string} trackId
  */
 export async function releaseCreationTeacher(actor, trackId) {
   const track = PROGRESSION_TRACKS[trackId];
   if (!track || !actor?.isOwner) return;
-  if (getTrackRank(actor, track.group, track.key) >= 1) return;
+  const held = getTrackRank(actor, track.group, track.key);
   const list = creationTeachers(actor);
-  if (!list.includes(trackId)) return;
-  await setTeacher(actor, trackId, 1, false);
-  await actor.setFlag("redsteel", CREATION_TEACHERS_FLAG, list.filter((id) => id !== trackId));
+  const released = list.filter((entry) => {
+    const { trackId: id, rank } = parseCreationTeacher(entry);
+    return id === trackId && rank > held;
+  });
+  if (!released.length) return;
+  for (const entry of released) await setTeacher(actor, trackId, parseCreationTeacher(entry).rank, false);
+  await actor.setFlag("redsteel", CREATION_TEACHERS_FLAG, list.filter((entry) => !released.includes(entry)));
 }
 
 /**

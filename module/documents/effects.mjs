@@ -11,7 +11,14 @@ import {
   creditGiftOfBloodFromEffect,
 } from "../utils/giftOfBlood.mjs";
 import { STATE_GATED_IMMUNITIES } from "../helpers/specialisations-generated.mjs";
-import { getEffectDurationBonus } from "../helpers/specialisations.mjs";
+import {
+  actorHasSpecNode,
+  getEffectDurationBonus,
+} from "../helpers/specialisations.mjs";
+import {
+  applyMancerTriggerBonuses,
+  burnSkipsPanic,
+} from "../helpers/mancerPassives.mjs";
 import {
   isFloorEffect,
   syncFloorInitiative,
@@ -26,6 +33,7 @@ import {
   postRoundEntry,
   afterRoundDigest,
 } from "../utils/roundDigest.mjs";
+import { wieldsOnlyLightWeapons } from "../utils/weaponMaster.mjs";
 
 export class RedsteelActiveEffect extends ActiveEffect {
   /**
@@ -36,13 +44,17 @@ export class RedsteelActiveEffect extends ActiveEffect {
    * the automatic copy). Read off the actor's effects, not actor.statuses: that
    * set is rebuilt during the same applyActiveEffects pass that asks this.
    * Adding or removing the status re-prepares the actor, so no hook is needed.
+   * `flags.redsteel.requiresLightWeapons` applies it only while the hands hold
+   * nothing but Light weapons (Swift Striker); swapping weapons updates the
+   * actor, which re-prepares it the same way.
    */
   get isSuppressed() {
     if (super.isSuppressed) return true;
     const flags = this.flags?.redsteel;
     const needs = flags?.requiresStatus;
     const blockedBy = flags?.suppressedByStatus;
-    if (!needs && !blockedBy) return false;
+    const needsLight = flags?.requiresLightWeapons;
+    if (!needs && !blockedBy && !needsLight) return false;
     const actor =
       this.parent instanceof Actor ? this.parent : this.parent?.parent;
     if (!(actor instanceof Actor)) return false;
@@ -50,6 +62,7 @@ export class RedsteelActiveEffect extends ActiveEffect {
       actor.effects.contents.some((e) => !e.disabled && e.statuses?.has(id));
     if (needs && !has(needs)) return true;
     if (blockedBy && has(blockedBy)) return true;
+    if (needsLight && !wieldsOnlyLightWeapons(actor)) return true;
     return false;
   }
 
@@ -713,23 +726,108 @@ export class RedsteelActiveEffect extends ActiveEffect {
     await syncCombatFloorInitiative(combat);
   }
 
-  static async _applyCombatModifiers(actor, combatModifiers) {
+  /**
+   * The spell-made weapon empowerments ("magické posílení zbraně"): the ones
+   * Veneficus → Magická zbraň lets stand two at a time. Whetstone shares their
+   * exclusive group but is no spell, so it stays one of a kind.
+   */
+  static MAGIC_WEAPON_ENCHANTS = new Set([
+    "ice_weapon",
+    "lightning_weapon",
+    "fire_weapon",
+    "poisoned_weapon",
+    "acid_weapon",
+    "dark_weapon",
+    "spectral_weapon",
+    "sanguine_blade",
+  ]);
+
+  /**
+   * Write an effect's combat-modifier group onto the actor.
+   *
+   * Each group is tagged with the effect it came from (`sourceEffect`), so
+   * removing an effect only clears the group it actually wrote: before the
+   * tag, an effect that had been replaced in its exclusive group cleared its
+   * replacement's modifiers when it expired. The replaced effect's own
+   * document is deleted here too, so its icon does not outlive its bonus.
+   *
+   * Veneficus → Magická zbraň: "Umožňuje zkombinovat dvě magické posílení
+   * zbraně". Two spell weapon empowerments stand at once, the newer in a
+   * second slot (`weaponEnchant2`); a third pushes the older one out.
+   * getActorCombatModifiers sums every group, so damage adds up, both
+   * effects roll, and both damage types join the attack (expand mode), which
+   * lets the attacker pick the better element at Apply Damage.
+   *
+   * @param {Actor} actor
+   * @param {object} combatModifiers  the definition's combatModifiers
+   * @param {string|null} [effectId]  the status id applying them
+   */
+  static async _applyCombatModifiers(actor, combatModifiers, effectId = null) {
     const group = combatModifiers.exclusiveGroup ?? "default";
 
     const current = foundry.utils.deepClone(
       actor.system.activeCombatEffects ?? {},
     );
+    const entry = { ...combatModifiers, sourceEffect: effectId };
+    const second = `${group}2`;
+    // Effects whose groups this write pushes out; their documents go too.
+    const displaced = [];
 
-    // Remove any existing modifier in same exclusive group
-    if (current[group]) {
-      delete current[group];
+    const magic = (id) => RedsteelActiveEffect.MAGIC_WEAPON_ENCHANTS.has(id);
+    const twoEnchants =
+      group === "weaponEnchant" &&
+      magic(effectId) &&
+      actor.type === "character" &&
+      actorHasSpecNode(actor, "veneficus", "magickaZbran");
+    const heldId = current[group]?.sourceEffect ?? null;
+
+    if (
+      twoEnchants &&
+      heldId &&
+      heldId !== effectId &&
+      magic(heldId)
+    ) {
+      const secondId = current[second]?.sourceEffect ?? null;
+      if (secondId && secondId !== effectId) {
+        // A third empowerment: the older of the two held gives way.
+        displaced.push(heldId);
+        current[group] = current[second];
+      }
+      current[second] = entry;
+    } else {
+      if (heldId && heldId !== effectId) displaced.push(heldId);
+      current[group] = entry;
+      // The second slot holds on only while the node allows two. A recast of
+      // the one sitting there keeps a single copy; without the node (it was
+      // untoggled) whatever is left there gives way like the first slot.
+      const secondId = current[second]?.sourceEffect ?? null;
+      if (current[second] && (secondId === effectId || !twoEnchants)) {
+        if (secondId && secondId !== effectId) displaced.push(secondId);
+        current[second] = null;
+      }
     }
 
-    current[group] = combatModifiers;
+    // Remove the keys left empty, then write the rest.
+    const updates = { "system.activeCombatEffects": current };
+    for (const [key, value] of Object.entries(current)) {
+      if (value === null) {
+        delete current[key];
+        updates[`system.activeCombatEffects.-=${key}`] = null;
+      }
+    }
+    await actor.update(updates);
 
-    await actor.update({
-      "system.activeCombatEffects": current,
-    });
+    // After the write, so the displaced effect's _onDelete finds its group
+    // already gone and leaves the new one alone.
+    for (const id of displaced) {
+      const stale = actor.effects.filter((e) => e.statuses?.has(id));
+      if (stale.length) {
+        await actor.deleteEmbeddedDocuments(
+          "ActiveEffect",
+          stale.map((e) => e.id),
+        );
+      }
+    }
   }
 
   static async _removeCombatModifiers(actor, effectId) {
@@ -737,12 +835,20 @@ export class RedsteelActiveEffect extends ActiveEffect {
     if (!def?.combatModifiers) return;
 
     const group = def.combatModifiers.exclusiveGroup ?? "default";
+    const groups = actor.system.activeCombatEffects ?? {};
 
-    console.log("Removing group:", group);
+    // Only the slots this effect wrote (an untagged group is from before the
+    // tag, or a strike written by castSpell.mjs: cleared as it always was).
+    const updates = {};
+    for (const key of [group, `${group}2`]) {
+      const held = groups[key];
+      if (!held) continue;
+      if (held.sourceEffect && held.sourceEffect !== effectId) continue;
+      updates[`system.activeCombatEffects.-=${key}`] = null;
+    }
+    if (!Object.keys(updates).length) return;
 
-    await actor.update({
-      [`system.activeCombatEffects.-=${group}`]: null,
-    });
+    await actor.update(updates);
   }
   /**
    * Effects whose change is worth a fixed amount *per stack*.
@@ -1113,17 +1219,14 @@ export class RedsteelActiveEffect extends ActiveEffect {
     }
 
     // Black Itch — 1d4/round for SK/2 + 1 rounds. Only the duration scales;
-    // the damage is flat. defaultRounds is "ticks - 1", so SK/2 + 1 ticks
-    // means a roundsDuration of SK/2.
-    // Floored at 1, not 0: a roundsDuration of 0 never writes
-    // flags.redsteel.rounds (see the `roundsDuration > 0` guards below), so
-    // nothing would count the effect down and a Darkness SK under 2 would
-    // leave a permanent DoT on the target. One extra tick beats forever.
+    // the damage is flat. The round counter starts at the stated duration and
+    // the onApply tick comes on top, so SK/2 + 1 rounds is SK/2 + 2 ticks.
+    // The + 1 also keeps it above 0: a roundsDuration of 0 never writes
+    // flags.redsteel.rounds and would leave a permanent DoT on the target.
     if (effectId === "black_itch" && sourceCaster) {
-      roundsDuration = Math.max(
-        1,
-        getSpellPower(sourceCaster, school ?? "darkness", { multiplier: 0.5 }),
-      );
+      roundsDuration =
+        getSpellPower(sourceCaster, school ?? "darkness", { multiplier: 0.5 }) +
+        1;
     }
 
     // Entropy — the −10 Armor is fixed (in the definition's changes); the mark
@@ -1209,6 +1312,16 @@ export class RedsteelActiveEffect extends ActiveEffect {
     }
 
     // ============================================
+    // MANCER TRIGGER BONUSES
+    // ============================================
+    // Toxiny (+1d6 on the Poison an Earth spell of the holder starts) and
+    // Regenerace: Obnovuje 2d4 Výdrže (Stamina on each Regeneration tick).
+    // Baked into the cloned triggers, so like the SK blocks above it reaches
+    // only an effect this application creates. Table in
+    // helpers/mancerPassives.mjs.
+    applyMancerTriggerBonuses(sourceCaster, effectId, school, triggers);
+
+    // ============================================
     // SPECIALISATION DURATION BONUSES
     // ============================================
     // Last step before the effect is written, so it lengthens whatever the
@@ -1254,8 +1367,12 @@ export class RedsteelActiveEffect extends ActiveEffect {
 
         // A custom condition edited while it was already on someone re-applies
         // its text too, so the effect on the actor is never a stale copy of a
-        // definition that has since changed. Built-ins carry neither field.
-        if (def.description) updates.description = def.description;
+        // definition that has since changed. A built-in that carries a
+        // description (the Oak potion) names a lang key; custom text passes
+        // through localize unchanged.
+        if (def.description) {
+          updates.description = game.i18n.localize(def.description);
+        }
         if (def.rollTriggersRaw) {
           updates["flags.redsteel.rollTriggersRaw"] = def.rollTriggersRaw;
         }
@@ -1455,10 +1572,14 @@ export class RedsteelActiveEffect extends ActiveEffect {
       name: game.i18n.localize(def.name),
       img: def.img,
       changes,
-      // Only when the definition carries one: a built-in effect has no
+      // Only when the definition carries one: most built-in effects have no
       // description, and writing an empty string would blank the one the
-      // status entry supplied.
-      ...(def.description && { description: def.description }),
+      // status entry supplied. A built-in's description is a lang key (Oak's
+      // reminder pill reads it); a custom condition's own text passes through
+      // localize unchanged.
+      ...(def.description && {
+        description: game.i18n.localize(def.description),
+      }),
 
       flags: {
         core: {
@@ -1490,7 +1611,7 @@ export class RedsteelActiveEffect extends ActiveEffect {
     // COMBAT MODIFIER INTEGRATION
     // --------------------------------------------
     if (def.combatModifiers) {
-      await this._applyCombatModifiers(actor, def.combatModifiers);
+      await this._applyCombatModifiers(actor, def.combatModifiers, effectId);
     }
     if (effectId === "expose_weakness" && sourceCaster) {
       await created.setFlag("redsteel", "baneMarkedBy", sourceCaster.id);
@@ -1703,6 +1824,9 @@ export class RedsteelActiveEffect extends ActiveEffect {
 
     const actor = this.parent;
     if (!actor) return;
+    // Pyromancer → Podpálení nevyvolává Test Nervů na Paniku: a burning
+    // holder never rolls it (helpers/mancerPassives.mjs).
+    if (burnSkipsPanic(actor)) return;
     const resolve = actor.system.secondaryAttributes.res?.total ?? 0;
 
     const roll = await new Roll(`${resolve * 10} - 1d100`).roll();
@@ -2506,6 +2630,25 @@ export class RedsteelActiveEffect extends ActiveEffect {
       label: `${this.name} – Healing`,
       roll,
     });
+
+    // Regenerace: Obnovuje 2d4 Výdrže — baked into the trigger when a
+    // Geomancer holding the node cast it (helpers/mancerPassives.mjs).
+    if (trigger.stamina) {
+      const staminaRoll = await new Roll(String(trigger.stamina)).evaluate();
+      const staminaPath = "system.stats.stamina.value";
+      const staminaNow = Number(foundry.utils.getProperty(actor, staminaPath)) || 0;
+      const staminaMax = Number(foundry.utils.getProperty(actor, "system.stats.stamina.max"));
+      const staminaNext =
+        staminaMax > 0
+          ? Math.min(staminaMax, staminaNow + staminaRoll.total)
+          : staminaNow + staminaRoll.total;
+      await actor.update({ [staminaPath]: staminaNext });
+      await postRoundEntry(actor, {
+        kind: "healing",
+        label: `${this.name} – Stamina`,
+        roll: staminaRoll,
+      });
+    }
   }
   async _handleChannelingDrain() {
     const actor = this.parent;

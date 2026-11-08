@@ -82,6 +82,17 @@
       />
       <span>{{localize "REDSTEEL.Item.Spell.FIELDS.uncontested.label"}}</span>
     </label>
+    <label
+      class='rs-toggle'
+      data-tooltip='{{localize "REDSTEEL.Item.Spell.FIELDS.magicAttackFixed.hint"}}'
+    >
+      <input
+        type='checkbox'
+        name='system.magicAttackFixed'
+        {{#if system.magicAttackFixed}}checked{{/if}}
+      />
+      <span>{{localize "REDSTEEL.Item.Spell.FIELDS.magicAttackFixed.label"}}</span>
+    </label>
     <label class='rs-toggle'>
       <input
         type='checkbox'

@@ -61,6 +61,13 @@ import {
 } from "./sharpshooter.mjs";
 import { bullChargeRefusal, isBullCharge } from "./bullCharge.mjs";
 import {
+  offersStaminaAsMana,
+  paysStaminaAsMana,
+  takeMagicReinforcement,
+  useVeneficusAbility,
+} from "./veneficus.mjs";
+import { useIncantatorAbility } from "./incantator.mjs";
+import {
   cleaveTargetRefusal,
   isAnyTriumph,
   spendChargeHexDamage,
@@ -85,6 +92,14 @@ import {
   sneakTriggerLabel,
 } from "./sneakTriggers.mjs";
 import { renderDamageTrays } from "./damageLine.mjs";
+import {
+  agileCounterFullDamage,
+  maulingRefusal,
+  noRiposteWeapon,
+  squireCriticalGap,
+  strayBlow,
+} from "./featureCombat.mjs";
+import { runFeatureAction } from "./featureActions.mjs";
 import { ruleActive } from "./abilityGrants.mjs";
 import { getAttackRerollTokens } from "./rerolls.mjs";
 import { buildBanePacket } from "./baneCombat.mjs";
@@ -128,6 +143,7 @@ import {
   versusLossFor,
   renderMarginFollowupLine,
   versusAgainstFor,
+  versusNatural,
 } from "./attributeFollowup.mjs";
 import {
   SECTOR,
@@ -598,12 +614,17 @@ export async function combatAbilities({
       cover: isDefenseRoll ? null : readAttackCover(container),
     };
     const keepOpen = container.querySelector("#keep-open")?.checked;
+    // Veneficus → Soubojové akce za manu: this use's melee Stamina is paid in
+    // Mana (deductAbilityCost). The box is only drawn for node holders.
+    const staminaAsMana = !!container.querySelector('[name="staminaAsMana"]')
+      ?.checked;
+    const costOptions = { staminaAsMana };
 
     // A Command lands on the targeted tokens, so the allies have to be picked
     // before anything is spent — resolved up here, ahead of the cost.
     let commandTargets = null;
     if (ability.system.class === "command") {
-      commandTargets = getCommandTargets();
+      commandTargets = getCommandTargets(ability, actor);
       if (!commandTargets) return;
     }
 
@@ -658,7 +679,7 @@ export async function combatAbilities({
       }
       if (
         declaringCharge &&
-        !(await game.redsteel.deductAbilityCost(actor, [bullCharge]))
+        !(await game.redsteel.deductAbilityCost(actor, [bullCharge], costOptions))
       ) {
         return;
       }
@@ -765,6 +786,21 @@ export async function combatAbilities({
       if (!keepOpen) dialog?.close();
       return;
     }
+    // Veneficus → Magické posílení and Magické míření: refused before
+    // anything is paid when already armed, with no single target, or used
+    // this round; otherwise paid and run there (veneficus.mjs).
+    if (await useVeneficusAbility(actor, ability, token)) {
+      if (!keepOpen) dialog?.close();
+      return;
+    }
+    // Incantator → Quick Focus is paid (15 Mana) and banked there, refused
+    // with a notification past its cap; Catalyst opens the cast dialog with
+    // its toggle ticked; Precise Incantation and Source Stabilization act on
+    // chat cards and only say where (incantator.mjs).
+    if (await useIncantatorAbility(actor, ability, token)) {
+      if (!keepOpen) dialog?.close();
+      return;
+    }
     // Vrh s rozběhem (Run Up Throw) runs before it throws, the Charge's
     // two-stage flow: the first pick on the actor's own turn only declares
     // the run, and the strip's check button throws (skirmisher.mjs).
@@ -815,9 +851,10 @@ export async function combatAbilities({
     // one of the attacker's Banes, refused before anything is paid
     // (rangerCombat.mjs).
     {
-      const refusal = finishingBlowRefusal(actor, selectedModifiers, [
-        ...(game.user?.targets ?? []),
-      ]);
+      const targets = [...(game.user?.targets ?? [])];
+      const refusal =
+        finishingBlowRefusal(actor, selectedModifiers, targets) ??
+        maulingRefusal(selectedModifiers, targets);
       if (refusal) {
         ui.notifications.warn(refusal);
         return;
@@ -976,11 +1013,16 @@ export async function combatAbilities({
 
     if (isMultiStrike && multiAttackFirstStrikePaid) {
       // Subsequent multi-attack strike → only pay modifiers
-      paid = await game.redsteel.deductAbilityCost(actor, costModifiers);
+      paid = await game.redsteel.deductAbilityCost(
+        actor,
+        costModifiers,
+        costOptions,
+      );
       // Enduring Warrior refunds half the ability on a miss, whichever strike
       // of the chain missed, so every strike's card carries the ability's own
-      // Stamina on top of what its modifiers just paid.
-      if (paid) {
+      // Stamina on top of what its modifiers just paid. Stamina the chain paid
+      // in Mana (Soubojové akce za manu) is no Stamina to refund.
+      if (paid && !(staminaAsMana && paysStaminaAsMana(actor, ability))) {
         notePaidStamina(
           actor,
           peekPaidStamina(actor) + abilityStaminaCost(actor, ability),
@@ -988,10 +1030,11 @@ export async function combatAbilities({
       }
     } else {
       // First strike (or normal ability) → pay ability + modifiers once
-      paid = await game.redsteel.deductAbilityCost(actor, [
-        ability,
-        ...costModifiers,
-      ]);
+      paid = await game.redsteel.deductAbilityCost(
+        actor,
+        [ability, ...costModifiers],
+        costOptions,
+      );
       if (isMultiStrike) multiAttackFirstStrikePaid = true;
     }
     if (!paid) return;
@@ -1276,6 +1319,17 @@ export async function combatAbilities({
   `,
     )
     .join("");
+  // Veneficus → Soubojové akce za manu: a per-use choice to pay a melee
+  // ability's Stamina in Mana instead, 1:1, offered to node holders only.
+  const staminaAsManaHtml = offersStaminaAsMana(actor)
+    ? `
+<label class="pill" data-tooltip="${foundry.utils.escapeHTML(
+        game.i18n.localize("REDSTEEL.Veneficus.StaminaAsManaTooltip"),
+      )}">
+  <input type="checkbox" name="staminaAsMana" />
+  <span>${game.i18n.localize("REDSTEEL.Veneficus.StaminaAsMana")}</span>
+</label>`
+    : "";
   const keepOpen = game.settings.get("redsteel", "keepAbilityDialogOpen");
   // Pre-select the Aim radio from any stacks already aimed at the current target.
   const preAim = game.redsteel.getAimStacks?.(token) ?? 0;
@@ -1383,6 +1437,11 @@ ${
 <div class="attack-modifiers">
   ${modifierCheckboxHtml}
 </div>
+${
+  staminaAsManaHtml
+    ? `<div class="form-group attack-options-row">${staminaAsManaHtml}</div>`
+    : ""
+}
 <hr>
 
 
@@ -1953,6 +2012,7 @@ ${
     critAsSneak = false,
     // Computed by the caller, where the ticked modifiers are still in scope.
     sneakTriggers = [],
+    noRiposte = false,
     criticalGap = null,
     sneakRoll = null,
     sneakTotal = 0,
@@ -2165,6 +2225,9 @@ ${
           // action by a rank-9 Rogue crits 20 lower than the usual 60. Null
           // means "use the standard gap" (defense.mjs falls back to 60).
           criticalGap,
+          // The round it was thrown in: Zbojník II asks what was swung at when.
+          round: game.combat?.started ? game.combat.round : null,
+          ...(noRiposte ? { noRiposte: true } : {}),
           criticalSuccess: critSuccess,
           criticalFailure: critFailure,
           d100: attackRoll.dice.find((d) => d.faces === 100)?.total ?? null,
@@ -2336,7 +2399,8 @@ ${
     // Harcovník → Odvetný vrh: half damage after a failed Cover
     // (skirmisher.mjs).
     let totalHalfDamage =
-      Boolean(halfDamage) || retaliatoryThrowHalf(actor, ability);
+      (Boolean(halfDamage) && !agileCounterFullDamage(actor, ability)) ||
+      retaliatoryThrowHalf(actor, ability);
     for (const mod of selectedModifiers) {
       if (mod.system?.roll?.halfDamage) {
         totalHalfDamage = true;
@@ -2527,6 +2591,7 @@ ${
     const sneakTriggers = attackerSneakTriggers(actor, {
       ability,
       modifiers: selectedModifiers,
+      weapon,
     });
     // Tulák IX → "Útok/Vrh na slabinu: snížená hranice": a Weak Spot action by
     // a rank-9 Rogue crits 20 lower than the usual 60.
@@ -2537,7 +2602,7 @@ ${
       weakSpotAction &&
       ruleActive(actor, { when: { kind: "doctrine", key: "rogue", min: 9 } })
         ? 40
-        : null;
+        : squireCriticalGap(actor, weapon);
     // Floored at 0: Penetration is what gets through armor, so a bad weapon can
     // lose all of it but never turn into extra protection for the target.
     const penetration = Math.max(
@@ -2564,6 +2629,7 @@ ${
     // roll below.
     const aimPrecision = aimPrecisionModifier(actor, weapon, ability);
 
+    let strayTag = null;
     let {
       attackRoll,
       rollName,
@@ -2589,6 +2655,13 @@ ${
       longReachPenalty,
       ability,
     );
+
+    // Zbloudilá rána: the fumble still lands, for half damage.
+    const stray = strayBlow(actor, weapon, attackRoll, critFailure);
+    if (stray) {
+      strayTag = stray.tag;
+      totalHalfDamage = true;
+    }
 
     const {
       damageRoll,
@@ -2750,7 +2823,11 @@ ${renderSpeedTestLine({
       );
       tagRollSkill(attributeRoll, skillKey);
       tagRollItemAdvantage(attributeRoll, mod.system.testAdvantage);
+      // Veneficus → Magické posílení: Advantage on a Strength or Dexterity
+      // versus Test, spent by it (veneficus.mjs).
+      await takeMagicReinforcement(actor, attributeRoll, skillKey);
       await attributeRoll.evaluate({ async: true });
+      const natural = versusNatural(actor, skillKey, attributeRoll);
 
       if (!tripTest && isTripModifier(mod)) {
         tripTest = {
@@ -2769,6 +2846,7 @@ ${renderMarginFollowupLine({
   onLose: versusLossFor(mod),
   against: versusAgainstFor(mod),
   heading: mod.localizedName ?? mod.name,
+  natural,
 })}
 </td>
 </tr>
@@ -2812,8 +2890,11 @@ ${renderSpeedTestLine({
       // applies; null (unresolved test name) falls back to the actor-wide bucket.
       tagRollSkill(attributeRoll, testSkillKey);
       tagRollItemAdvantage(attributeRoll, ability.system.testAdvantage);
+      // Veneficus → Magické posílení (veneficus.mjs).
+      await takeMagicReinforcement(actor, attributeRoll, testSkillKey);
 
       await attributeRoll.evaluate({ async: true });
+      const natural = versusNatural(actor, testSkillKey, attributeRoll);
 
       concatRollAndDescription += `
 
@@ -2823,6 +2904,7 @@ ${renderMarginFollowupLine({
   chance: totalModifier,
   result: attributeRoll.result,
   against: versusAgainstFor(ability),
+  natural,
 })}
 `;
     }
@@ -2866,12 +2948,14 @@ ${renderMarginFollowupLine({
       halfDamage: totalHalfDamage,
       penCap,
       attributeTestHTML,
+      noRiposte: noRiposteWeapon(actor, weapon),
       aimedStrike: aimedPart
         ? { part: aimedPart, su: attackRoll.total }
         : null,
       attackTags: [
         ...(opportunityAttack ? ["opportunity"] : []),
         ...dragonGuardTags(dragonGuard, actor, ability),
+        ...(strayTag ? [strayTag] : []),
         // Reach and thrown range (positioning.mjs).
         ...(outOfReach ? ["outOfReach"] : []),
         ...(rangePenalty ? ["beyondRange"] : []),
@@ -2975,7 +3059,11 @@ function longestReachWeapon(actor, weapons, ability) {
   return best;
 }
 
-export async function deductAbilityCost(actor, abilities = []) {
+export async function deductAbilityCost(
+  actor,
+  abilities = [],
+  { staminaAsMana = false } = {},
+) {
   if (!Array.isArray(abilities)) abilities = [abilities];
 
   const drainTotals = {};
@@ -3006,13 +3094,21 @@ export async function deductAbilityCost(actor, abilities = []) {
   // 1. Collect all drains and adds
   // ---------------------------------
   for (const ability of abilities) {
+    // Veneficus → Soubojové akce za manu (user ruling 2026-10-25): with the
+    // dialog's toggle on, a melee ability's Stamina cost is drained from Mana
+    // instead, 1:1 (veneficus.mjs paysStaminaAsMana). Only the drain moves:
+    // what it costs is settled first, the discounts below included.
+    const asMana = staminaAsMana && paysStaminaAsMana(actor, ability);
+    const drainPool = (rawType) =>
+      asMana && normalizeResourceKey(rawType) === "stamina" ? "mana" : rawType;
+
     // Simple costType system. Riposte: Stamina -4 (Servant of the Sword) is
     // taken off here, where it is paid.
     // Strážce → Bonus za štít (small shield): Shield Bash -3 Stamina.
     // Předvoj → Momentum: Výdrž -1 (momentum.mjs).
     tally(
       drainTotals,
-      ability.system.costType,
+      drainPool(ability.system.costType),
       momentumStaminaCost(
         actor,
         ability,
@@ -3027,7 +3123,7 @@ export async function deductAbilityCost(actor, abilities = []) {
     for (const res of resources) {
       const { type, mode, amount } = res;
       if (!type || !mode) continue;
-      if (mode === "drain") tally(drainTotals, type, amount);
+      if (mode === "drain") tally(drainTotals, drainPool(type), amount);
       if (mode === "add") tally(addTotals, type, amount);
     }
   }
@@ -3200,7 +3296,10 @@ async function rollUtilityTest(actor, item) {
   const roll = new Roll(`(${total}) - 1d100`, withRollBias({}, actor));
   tagRollSkill(roll, skillKey);
   tagRollItemAdvantage(roll, item.system.testAdvantage);
+  // Veneficus → Magické posílení (veneficus.mjs).
+  await takeMagicReinforcement(actor, roll, skillKey);
   await roll.evaluate();
+  const natural = versusNatural(actor, skillKey, roll);
 
   return {
     roll,
@@ -3211,6 +3310,7 @@ async function rollUtilityTest(actor, item) {
       chance: total,
       result: roll.result,
       against: versusAgainstFor(item),
+      natural,
     }),
   };
 }
@@ -3257,6 +3357,8 @@ function isRestAbility(ability) {
 }
 
 async function runUtilityAbility(actor, ability, modifiers = []) {
+  // Odbornosti that are actions of their own (featureActions.mjs).
+  if (await runFeatureAction(actor, ability)) return;
   // Respite (Oddech: Míření +1): a Rest is worth one Aim as well. Both the
   // dialog and the hotbar (useUtilityAbility) come through here.
   if (isRestAbility(ability)) await grantRespiteAim(actor);

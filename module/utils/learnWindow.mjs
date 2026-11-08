@@ -44,6 +44,7 @@ import {
   getRankState,
   getUnmetPrerequisites,
   hasTeacher,
+  isTeacherClause,
   getLearnSection,
   getTrackRank,
   getBestRankInGroup,
@@ -142,9 +143,11 @@ import {
   variantChildIds,
   writeSpell,
 } from "./spellbook.mjs";
+import { mancerLockLabel, mancerSpellLock } from "../helpers/mancerSpells.mjs";
 // Two parsers read an action cost: spellbook's answers what it is (actions,
 // free, reaction), and this one answers how to print it. The card needs both.
 import {
+  formatSpellMagicAttack,
   formatSpellRange,
   spellRangeMeters,
   parseActionCost as formatActionCost,
@@ -752,6 +755,29 @@ function teacherHint(isGM, unlocked) {
   ].join(" ");
 }
 
+/** One Teacher clause as its badge in the Requirements row. */
+function teacherChip(trackId, rank, result) {
+  const isGM = game.user.isGM;
+  const tier = Number(result.req.tier) || 0;
+  const unlocked = !!result.met;
+  // The badge's own colour already says whether the teacher has been found,
+  // so a sentence repeating it is noise. What the reader needs is what the
+  // requirement means — plus, for a GM, that the badge is a control.
+  const why = game.i18n.format("REDSTEEL.Learn.Req.Tip.teacher", {
+    tier: roman(tier),
+  });
+  const hint = trackId ? teacherHint(isGM, unlocked) : "";
+  return {
+    teacher: true,
+    trackId,
+    rank,
+    tier,
+    roman: roman(tier),
+    cls: `${unlocked ? "is-unlocked" : "is-locked"}${isGM ? " is-gm" : ""}`,
+    tooltip: [why, hint].filter(Boolean).join(" "),
+  };
+}
+
 /**
  * One rank's requirements as the chips the Requirements row prints.
  *
@@ -766,7 +792,6 @@ function teacherHint(isGM, unlocked) {
  * model) never block, so they are dimmed whatever they say.
  */
 function requirementChips(trackId, rank, results) {
-  const isGM = game.user.isGM;
   const out = [];
 
   for (const result of results ?? []) {
@@ -776,23 +801,24 @@ function requirementChips(trackId, rank, results) {
     if (req.t === "teacher") {
       // Weapon Master waives the Teacher on a further weapon skill: no badge.
       if (result.waived) continue;
-      const tier = Number(req.tier) || 0;
-      const unlocked = !!result.met;
-      // The badge's own colour already says whether the teacher has been found,
-      // so a sentence repeating it is noise. What the reader needs is what the
-      // requirement means — plus, for a GM, that the badge is a control.
-      const why = game.i18n.format("REDSTEEL.Learn.Req.Tip.teacher", {
-        tier: roman(tier),
-      });
-      const hint = trackId ? teacherHint(isGM, unlocked) : "";
+      out.push(teacherChip(trackId, rank, result));
+      continue;
+    }
+
+    // "Teacher / Talent": the Teacher half keeps its badge, or nobody could
+    // grant it, and the rest of the choice follows it as a plain chip.
+    const teacherOption = trackId && isTeacherClause(req) && result.options?.find((o) => o.req.t === "teacher");
+    if (teacherOption) {
+      if (teacherOption.waived) continue;
+      out.push(teacherChip(trackId, rank, teacherOption));
+      const or = game.i18n.localize("REDSTEEL.Learn.Req.or");
+      const rest = result.options.filter((o) => o !== teacherOption);
       out.push({
-        teacher: true,
-        trackId,
-        rank,
-        tier,
-        roman: roman(tier),
-        cls: `${unlocked ? "is-unlocked" : "is-locked"}${isGM ? " is-gm" : ""}`,
-        tooltip: [why, hint].filter(Boolean).join(" "),
+        teacher: false,
+        teacherAlternative: true,
+        text: `${or.trimStart()}${rest.map((o) => describeRequirement(o.req)).join(or)}`,
+        tooltip: rest.map((o) => explainRequirement(o.req)).join(or),
+        cls: result.advisory ? "is-advisory" : rest.some((o) => o.met) ? "is-met" : "is-unmet",
       });
       continue;
     }
@@ -958,7 +984,7 @@ export function explainUnbuyable(actor, trackId, rank, { teacherGiven = false, w
   // Every clause, whatever getRankState stopped at, so the list is complete.
   for (const result of evaluateRequirements(actor, price.requires, trackId, rank).results) {
     if (result.met || result.advisory) continue;
-    if (teacherGiven && result.req?.t === "teacher") continue;
+    if (teacherGiven && isTeacherClause(result.req)) continue;
     const line = describeRequirement(result.req);
     if (line && !lines.includes(line)) lines.push(line);
   }
@@ -2116,7 +2142,7 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
    * one held reads as the whole path up to it, since its diamond buys every
    * rank on the way: locked when any rank on the way is (requirements, a
    * mirror, the creation cap), poor when the path costs more than the points
-   * left, otherwise available. Rank I's Teacher never locks it: buying rank I
+   * left, otherwise available. A Teacher never locks a rank: buying the rank
    * unlocks it (acquireCreationRank). A rank the book does not sell is "none".
    */
   #creationPips(trackId) {
@@ -2163,7 +2189,7 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
         pip.refundable = !mirrored && !(forced && rank === 1);
       } else {
         if (!pathLocked) {
-          const own = explainUnbuyable(actor, trackId, rank, { teacherGiven: rank === 1, withCost: false });
+          const own = explainUnbuyable(actor, trackId, rank, { teacherGiven: true, withCost: false });
           if (own.length) {
             pathLocked = true;
             for (const line of own) if (!pathReasons.includes(line)) pathReasons.push(line);
@@ -2232,7 +2258,9 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
           lines.push(chip);
         }
       }
-      rows.push({ ...pip, grants: cell.grants, value, lines, reqChips: cell.reqChips });
+      // No Teacher badge: buying a rank in creation brings its teacher.
+      const reqChips = (cell.reqChips ?? []).filter((chip) => !chip.teacher && !chip.teacherAlternative);
+      rows.push({ ...pip, grants: cell.grants, value, lines, reqChips });
     }
 
     // The weapon catalog first, so the note can carry its pill.
@@ -3373,6 +3401,8 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
             // ARMOR_IGNORING_PENETRATION), so the card reads the tag off the
             // number instead of off the prose (user ruling 2026-09-21).
             "system.penetration",
+            "system.magicAttack",
+            "system.magicAttackFixed",
             // What casting adds to or drains from a pool besides its mana
             // cost: Corruption, chiefly. The card prints it beside the cost
             // rather than leaving it buried in the prose (user ruling
@@ -3430,6 +3460,8 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
             // flattened once here.
             resources: spellResourceList(entry.system?.resources),
             penetration: Number(entry.system?.penetration) || 0,
+            magicAttack: Number(entry.system?.magicAttack) || 0,
+            magicAttackFixed: entry.system?.magicAttackFixed === true,
             // template.json defaults isOffensive to true, so an entry that never
             // stored the field reads as offensive, the way the item itself does.
             offensive: entry.system?.isOffensive !== false,
@@ -3605,6 +3637,10 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       .filter((row) => (merged ? heldKeys.includes(row.school) : row.school === activeSchool))
       .map((row) => {
         const gate = checkSpellRank(actor, row.school, row.rank);
+        // A mancer rank node the spell needs on top of the school rank
+        // (helpers/mancerSpells.mjs); null when there is none or it is held.
+        const mancerLock = mancerSpellLock(actor, row);
+        const allowed = gate.ok && !mancerLock;
         const record = known.get(row.uuid) ?? null;
         const isInnateSpell = !!record?.innate;
         const isMemorised = !!record?.memorised;
@@ -3620,7 +3656,7 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
               ? "written"
               : isHeld
                 ? "owned"
-                : gate.ok
+                : allowed
                   ? "available"
                   : "locked";
         const action = parseActionCost(row.actionCost, row.sustained);
@@ -3748,6 +3784,15 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
             ),
           );
         }
+        if (row.magicAttack) {
+          tileTags.push(
+            cell(
+              "magicAttack",
+              "REDSTEEL.Item.Spell.FIELDS.magicAttack.label",
+              formatSpellMagicAttack(row),
+            ),
+          );
+        }
         // Concentration and Sustained say themselves: the tag only exists
         // when the spell has the property, so a "Yes" beside it is a word
         // wasted and a "No" is never printed (user ruling 2026-09-20).
@@ -3781,10 +3826,21 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
         const writtenElsewhere = isWritten && !inActiveBook;
         // The GM writes and memorises past the gate: they are the one who
         // hands a character a spell the table agreed on.
-        const reachable = gate.ok || isGM;
-        const needs = game.i18n.format("REDSTEEL.Learn.Spells.needsRank", {
+        const reachable = allowed || isGM;
+        const needsRank = game.i18n.format("REDSTEEL.Learn.Spells.needsRank", {
           n: gate.required,
         });
+        // A spell out of reach for both reasons names both.
+        const needsNode = mancerLock
+          ? game.i18n.format("REDSTEEL.Learn.Spells.needsNode", {
+              node: mancerLockLabel(mancerLock),
+            })
+          : "";
+        const needs = !mancerLock
+          ? needsRank
+          : gate.ok
+            ? needsNode
+            : `${needsRank} · ${needsNode}`;
         const canWrite = reachable && !!activeBook && !inActiveBook;
         const canMemorise = reachable && !isMemorised && !isInnateSpell;
         const writeTooltip = inActiveBook
@@ -3827,7 +3883,9 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
           innate: isInnateSpell,
           required: gate.required,
           needs,
-          showLock: state === "locked",
+          // A mancer-locked spell carries the lock even when a grimoire
+          // already holds it: it stays in the book but cannot be cast.
+          showLock: state === "locked" || !!mancerLock,
           inActiveBook,
           // Projected onto the actor, so castable. The status filter reads
           // this one.
@@ -4193,7 +4251,8 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
   /**
    * Say why a write, an erase or a memorisation was refused. Every reason the
    * spellbook module gives back is a lang key under
-   * REDSTEEL.Learn.Spells.Warn; only the rank one carries a number.
+   * REDSTEEL.Learn.Spells.Warn; only the rank one carries a number, and the
+   * mancer one names the specialisation node the spell needs.
    */
   #warnSpell(result) {
     const reason = result?.reason;
@@ -4202,7 +4261,9 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     ui.notifications.warn(
       reason === "rank"
         ? game.i18n.format(key, { n: result.required ?? 0 })
-        : game.i18n.localize(key),
+        : reason === "mancer"
+          ? game.i18n.format(key, { node: mancerLockLabel(result.lock) })
+          : game.i18n.localize(key),
     );
   }
 
@@ -5991,8 +6052,8 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     const start = getTrackRank(actor, track.group, track.key);
     try {
       for (let r = start + 1; r <= rank; r++) {
-        // Rank I comes with its Teacher (acquireCreationRank).
-        const bought = r === 1 ? await acquireCreationRank(actor, trackId) : await purchaseRank(actor, trackId, r);
+        // Every rank comes with its Teacher (acquireCreationRank).
+        const bought = await acquireCreationRank(actor, trackId, r);
         if (!bought) break;
         last = r;
       }
@@ -6003,12 +6064,12 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     if (last) this.#lastPurchase = { trackId, at: Date.now() };
     // Name what stood in the way of the first rank that failed.
     if (!last) {
-      ui.notifications.warn(unbuyableWarning(actor, trackId, start + 1, { teacherGiven: start === 0 }));
+      ui.notifications.warn(unbuyableWarning(actor, trackId, start + 1, { teacherGiven: true }));
     } else if (last < rank) {
       ui.notifications.warn(
         game.i18n.format("REDSTEEL.Creation.Skills.stoppedAt", {
           rank: roman(last),
-          reason: unbuyableWarning(actor, trackId, last + 1),
+          reason: unbuyableWarning(actor, trackId, last + 1, { teacherGiven: true }),
         }),
       );
     }
@@ -6073,6 +6134,7 @@ export class LearnWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     await refundRank(this.actor, trackId);
+    if (isCreationSkillsStep(this.actor)) await releaseCreationTeacher(this.actor, trackId);
     this.render();
   }
 }

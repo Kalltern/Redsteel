@@ -251,3 +251,44 @@ export function forfeitAdvantageOnCritFail(roll, failureThreshold) {
   roll.options.redsteel = { ...(roll.options.redsteel ?? {}), advantageForfeit: true };
   return true;
 }
+
+/** Whether this roll landed a natural critical on a negative chance. */
+export function isHopelessNatural(roll) {
+  return roll?.options?.redsteel?.hopelessNatural === true;
+}
+
+/** Tag a roll so its chat card can say why the numbers read as they do. */
+export function markHopelessNatural(roll) {
+  roll.options ??= {};
+  roll.options.redsteel = { ...(roll.options.redsteel ?? {}), hopelessNatural: true };
+}
+
+/**
+ * A natural critical on a negative chance is no critical (user ruling
+ * 2026-10-31): it is a common success with a Margin of Success of 0.
+ *
+ * Mutates an evaluated `chance - 1d100` roll in place, as the advantage forfeit
+ * does, so `roll.total` and everything that reads the margin afterwards agree.
+ * The chance is read back off the roll itself, which is why this only works on
+ * a formula holding a single test: a versus answer also subtracts the opposing
+ * margin, and settles this in attributeFollowup.mjs contestSide instead.
+ *
+ * Call it after forfeitAdvantageOnCritFail, with the FINAL success threshold.
+ * Safe to call twice on one roll.
+ *
+ * @param {Roll} roll  an evaluated roll
+ * @param {number} successThreshold  die result at or below which is a critical
+ * @returns {boolean} true when the roll is no critical: treat it as not one
+ */
+export function capHopelessNatural(roll, successThreshold) {
+  if (isHopelessNatural(roll)) return true;
+  const die = roll?.dice?.find((d) => d.faces === 100);
+  if (!die || successThreshold == null || successThreshold === "") return false;
+  const threshold = Number(successThreshold);
+  if (!Number.isFinite(threshold) || die.total > threshold) return false;
+  if (roll.total + die.total >= 0) return false;
+
+  roll._total = 0;
+  markHopelessNatural(roll);
+  return true;
+}

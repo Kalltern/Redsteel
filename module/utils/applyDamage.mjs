@@ -1,4 +1,6 @@
 import { grantImpaleKill, stampImpaleRoot } from "./impaleFollowup.mjs";
+import { restaggerKnocksProne } from "../helpers/mancerPassives.mjs";
+import { focusedMagicHalving } from "./elymas.mjs";
 import { getGearEffectResist } from "./materials.mjs";
 import { stampEscapeSource } from "./escapeFollowup.mjs";
 import {
@@ -52,9 +54,11 @@ import {
   countAdjacentEnemies,
   matchSneakTrigger,
   sneakTriggerLabel,
+  sneakTriggerStamina,
   targetActsLaterThanAttacker,
 } from "./sneakTriggers.mjs";
 import { gainBlood } from "./bloodPool.mjs";
+import { acrobatEvade, tenacityDegree } from "./featureActions.mjs";
 import {
   giftOfBloodApplies,
   hasGiftOfBlood,
@@ -72,6 +76,15 @@ import {
   wardenSacrificeBonus,
   wardenShieldDurabilityMax,
 } from "./wardenShield.mjs";
+import {
+  canMagicVeteran,
+  isMagicMomentumHalf,
+  openMagicMomentumOnProne,
+  sanitizeMagicVeteran,
+  settleMagicVeteran,
+  settleVeneficusDamage,
+  stampEnchantSchool,
+} from "./veneficus.mjs";
 
 export const SOCKET = "system.redsteel";
 
@@ -189,6 +202,9 @@ function evaluateAttackDamage({
   durabilityPoints = 0,
   perPoint = 0,
   halfDamage,
+  // Elymas soRedukce on a focused target (elymas.mjs focusedMagicHalving):
+  // one more halving on top of the half damage box, so the two multiply.
+  magicHalving = 0,
 }) {
   const damageProfile = attack.damageProfile ?? { expression: [] };
   const hp = actor.system.stats.health.value;
@@ -220,7 +236,12 @@ function evaluateAttackDamage({
     // spell half-damage checkbox) OR the attack itself is inherently half (e.g.
     // Flurry's `@Half`). Must be `||`, not `??`: the dialog value is always a
     // boolean, so `false ?? …` would short-circuit and drop the attack's flag.
-    halfDamage: Boolean(halfDamage) || Boolean(selectedAttack.halfDamage),
+    //
+    // Passed as a count of halvings: Elymas Focused Defense's magic damage
+    // reduction is one more (`magicHalving`), applied at the same step.
+    halfDamage:
+      (Boolean(halfDamage) || Boolean(selectedAttack.halfDamage) ? 1 : 0) +
+      Math.max(0, Number(magicHalving) || 0),
     penCap: selectedAttack.penCap ?? false,
   });
 
@@ -256,6 +277,7 @@ function evaluateAttackDamage({
     shieldLoss: base.shieldLoss,
     shieldPoolSpent: base.shieldPoolSpent,
     shieldBroke: base.shieldBroke,
+    breakdown: base.breakdown,
     activeShield,
     durabilityReduction,
     durabilityPointsUsed: pointsUsed,
@@ -338,8 +360,34 @@ function sneakPromotionForTarget(attack, tokenDoc, attackerTokenId, mode) {
     overwhelmSources: getOverwhelmSources(tokenDoc).length,
     adjacentEnemies: countAdjacentEnemies(tokenDoc),
     targetActsLater: targetActsLaterThanAttacker(tokenDoc?.id, attackerTokenId),
+    repeatTarget:
+      triggers.includes("brigandRepeat") &&
+      swungAtBefore(attack, attackerTokenId, tokenDoc?.id),
+    attackerStamina:
+      Number(
+        canvas.scene?.tokens?.get(attackerTokenId)?.actor?.system?.stats?.stamina?.value,
+      ) || 0,
     mode,
   });
+}
+
+/**
+ * Zbojník II: did this attacker already swing at this target this round, on a
+ * card older than the one being applied? Read off the log, like overwhelm.
+ */
+function swungAtBefore(attack, attackerTokenId, targetTokenId) {
+  const round = game.combat?.started ? game.combat.round : null;
+  if (round == null || !attackerTokenId || !targetTokenId) return false;
+  const cards = (game.messages?.contents ?? []).filter((m) => {
+    const card = m.flags?.attack;
+    return (
+      card?.round === round &&
+      m.speaker?.token === attackerTokenId &&
+      !m.flags?.redsteel?.rerolledAway &&
+      (card.targets ?? []).some((t) => (t?.tokenId ?? t?.id ?? t) === targetTokenId)
+    );
+  });
+  return cards.length >= 2;
 }
 
 /** Whether this blow is promoted to a Sneak Attack against this target. */
@@ -422,6 +470,9 @@ function shiftSneakOnAttack(attack, sign) {
  *   free Rest, applied last to whatever degree was resolved, see
  *   {@link applyVeteranDegree}.
  *
+ * - `giveUp` (Veneficus → Magický veterán): degrees the attacker gives up for
+ *   an easier next spell, taken off after Veteran, never below 0.
+ *
  * Both the preview dialog and the GM apply call this, so the number shown can
  * never disagree with the number applied.
  */
@@ -429,13 +480,29 @@ function resolveDegreeForTarget(
   effAttack,
   selectedDegree,
   overridden,
-  { forcedDegree = null, veteran = false } = {},
+  { forcedDegree = null, veteran = false, giveUp = 0 } = {},
 ) {
   let degree;
   if (overridden) degree = selectedDegree;
   else if (forcedDegree !== null) degree = forcedDegree;
   else degree = effAttack.critical?.degree ?? selectedDegree;
-  return veteran ? applyVeteranDegree(degree) : degree;
+  if (veteran) degree = applyVeteranDegree(degree);
+  return applyMagicVeteranDegree(degree, giveUp);
+}
+
+/**
+ * Magický veterán: "může snížit stupeň Kritického zásahu o libovolný počet".
+ * Like Veteran, a degree that is not a positive number is left alone.
+ *
+ * @param {number|null} degree
+ * @param {number} giveUp
+ * @returns {number|null}
+ */
+function applyMagicVeteranDegree(degree, giveUp) {
+  const n = Number(degree);
+  const cut = Math.max(0, Math.round(Number(giveUp) || 0));
+  if (!cut || degree === null || !Number.isFinite(n) || n <= 0) return degree;
+  return Math.max(0, n - cut);
 }
 
 /* -------------------------------------------- */
@@ -453,6 +520,11 @@ const CRIT_FAIL_DEFENSE_DEGREE = 4;
  * null. A card retired by a reroll is skipped: its replacement (if it carries
  * the same flags) is the one that counts.
  *
+ * A Magic Defense card keeps its record under `magicDefense` (defense.mjs
+ * rollMagicDefense) and answers for its defender and for every ally its Area
+ * defense covered (`coveredTokenIds`, Elymas rozsahObrany / the Area defense
+ * feature): one roll for all of them.
+ *
  * @param {string} attackMessageId
  * @param {string} targetTokenId
  * @returns {ChatMessage|null}
@@ -462,14 +534,46 @@ function findAnsweringDefense(attackMessageId, targetTokenId) {
   const messages = game.messages?.contents ?? [];
   for (let i = messages.length - 1; i >= 0; i--) {
     const flags = messages[i].flags?.redsteel;
-    if (!flags?.defense || flags.rerolledAway) continue;
-    if (flags.versusAttack?.messageId !== attackMessageId) continue;
+    if (!flags || flags.rerolledAway) continue;
+    const answer = defenseAnswer(flags);
+    if (!answer) continue;
+    if (answer.packet?.messageId !== attackMessageId) continue;
+    if (!answer.answersFor.includes(targetTokenId)) continue;
+    return messages[i];
+  }
+  return null;
+}
+
+/**
+ * The parts of a defense card the critical-failure ruling reads, for a weapon
+ * defense card (`defense`, `versusAttack`) and a Magic Defense card
+ * (`magicDefense`, its `versusAttack` inside) alike. Null for anything else.
+ *
+ * @param {object} flags  `flags.redsteel` of the card
+ * @returns {{record: object, packet: object|null, answersFor: string[]}|null}
+ */
+function defenseAnswer(flags) {
+  if (flags?.defense) {
     // Ochrana (utils/protection.mjs): a protector's defense answers for the
     // ally it protected, not for the protector itself.
-    const answeredFor =
-      flags.defense.protectedTokenId ?? flags.defense.defenderTokenId;
-    if (answeredFor !== targetTokenId) continue;
-    return messages[i];
+    return {
+      record: flags.defense,
+      packet: flags.versusAttack ?? null,
+      answersFor: [
+        flags.defense.protectedTokenId ?? flags.defense.defenderTokenId,
+      ],
+    };
+  }
+  if (flags?.magicDefense) {
+    const record = flags.magicDefense;
+    return {
+      record,
+      packet: record.versusAttack ?? null,
+      answersFor: [
+        record.defenderTokenId,
+        ...(Array.isArray(record.coveredTokenIds) ? record.coveredTokenIds : []),
+      ].filter(Boolean),
+    };
   }
   return null;
 }
@@ -492,13 +596,14 @@ function critFailForcedDegree(message, effAttack, attacker, targetTokenId) {
   if (!options.length) return null;
   const defense = findAnsweringDefense(message?.id, targetTokenId);
   const flags = defense?.flags?.redsteel;
-  if (flags?.defense?.critFailure !== true) return null;
+  const answer = flags ? defenseAnswer(flags) : null;
+  if (answer?.record?.critFailure !== true) return null;
   if (flags?.versus?.critical !== "hit") return null;
   // Both sides have to have rolled it: the defender's fumble alone already
   // makes the verdict a critical hit (defenseOdds.mjs), so without the
   // attacker's own natural critical the blow keeps its rolled degree.
   const attackCrit =
-    flags.versusAttack?.criticalSuccess ?? message?.flags?.attack?.criticalSuccess;
+    answer.packet?.criticalSuccess ?? message?.flags?.attack?.criticalSuccess;
   if (attackCrit !== true) return null;
   const offered = Math.max(...options.map((o) => Number(o.degree) || 0));
   return Math.max(
@@ -649,11 +754,12 @@ async function applyDamageToTargets(
   selectedEffects,
   criticalDegree = null,
   durabilitySpend = {},
-  halfDamage = false,
+  halfDamage = {},
   degreeOverridden = false,
   openWound = {},
   laceration = {},
   veteran = false,
+  magicVeteran = 0,
 ) {
   const data = {
     type: "applyDamage",
@@ -669,6 +775,7 @@ async function applyDamageToTargets(
     openWound,
     laceration,
     veteran,
+    magicVeteran,
   };
 
   if (game.user.isGM) {
@@ -793,7 +900,11 @@ function resolveBleedStacks(
 export async function applyDamageAsGM(data) {
   const { messageId, mode, targetIds, sceneId, selectedEffects } = data;
   const durabilitySpend = data.durabilitySpend ?? {};
-  const halfDamage = data.halfDamage ?? false;
+  // tokenId -> true for targets the dialog halved. Veneficus → Magické
+  // momentum: a spell cast free by it deals half damage to every target, read
+  // off the card here whatever the dialog sent (veneficus.mjs).
+  const halfDamageRequest = data.halfDamage ?? {};
+  const momentumHalf = isMagicMomentumHalf(game.messages.get(data.messageId));
   const degreeOverridden = data.degreeOverridden ?? false;
   const openWound = data.openWound ?? {};
   const lacerationRequest = data.laceration ?? {};
@@ -833,6 +944,15 @@ export async function applyDamageAsGM(data) {
     mode === "critical" &&
     hasWeaponMasterNode(attacker, "veteran1");
   let veteranUsed = false;
+  // Magický veterán — the degrees asked for, re-checked here (the payload
+  // comes off the socket). `magicVeteranGiven` is the most any target
+  // actually lost, which is what the next spell's Difficulty is paid on.
+  const magicVeteranAsked = sanitizeMagicVeteran(
+    attacker,
+    data.magicVeteran,
+    mode,
+  );
+  let magicVeteranGiven = 0;
   const openWoundVictims = [];
   // Tržná rána — tokenId → Aim actually sacrificed, handed to resolveAimOnDamage
   // once the loop is done so it can charge the hit nothing further.
@@ -942,13 +1062,28 @@ export async function applyDamageAsGM(data) {
       degreeOverridden,
       { forcedDegree },
     );
-    const degreeForTarget = resolveDegreeForTarget(
+    const degreeBeforeMagicVeteran = resolveDegreeForTarget(
       effAttack,
       selectedCriticalDegree,
       degreeOverridden,
       { forcedDegree, veteran: veteranActive },
     );
+    const degreeResolved = resolveDegreeForTarget(
+      effAttack,
+      selectedCriticalDegree,
+      degreeOverridden,
+      { forcedDegree, veteran: veteranActive, giveUp: magicVeteranAsked },
+    );
+    // Houževnatost: the victim may spend Mind Points to soften the critical.
+    const degreeForTarget =
+      mode === "critical" ? await tenacityDegree(actor, degreeResolved) : degreeResolved;
     if (veteranActive && Number(degreeBeforeVeteran) > 0) veteranUsed = true;
+    if (mode === "critical") {
+      magicVeteranGiven = Math.max(
+        magicVeteranGiven,
+        (Number(degreeBeforeMagicVeteran) || 0) - (Number(degreeForTarget) || 0),
+      );
+    }
     const selectedAttack =
       mode === "critical"
         ? getCriticalAttackData(effAttack, degreeForTarget)
@@ -975,6 +1110,10 @@ export async function applyDamageAsGM(data) {
       }
     }
 
+    const halfDamage = momentumHalf || halfDamageRequest[tokenId] === true;
+    // Elymas soRedukce: a focused target halves a spell's damage once more
+    // (elymas.mjs), read off the target here whatever the dialog sent.
+    const magicHalving = focusedMagicHalving(actor, message);
     const result = evaluateAttackDamage({
       attack,
       selectedAttack,
@@ -982,6 +1121,7 @@ export async function applyDamageAsGM(data) {
       durabilityPoints,
       perPoint,
       halfDamage,
+      magicHalving,
     });
 
     if (
@@ -998,6 +1138,7 @@ export async function applyDamageAsGM(data) {
         selectedAttack: suggestedAttack,
         actor,
         halfDamage,
+        magicHalving,
       });
       // Compare without durability so both columns measure the same thing
       const selectedBaseResult = evaluateAttackDamage({
@@ -1005,6 +1146,7 @@ export async function applyDamageAsGM(data) {
         selectedAttack,
         actor,
         halfDamage,
+        magicHalving,
       });
 
       criticalOverrideRows.push({
@@ -1071,7 +1213,7 @@ export async function applyDamageAsGM(data) {
     // Krvavý štít (Blood Shield perk): losing Life to a hit raises a physical
     // shield worth half the Life just lost, until the end of the round. Applied
     // after the drain above so it never touches the shield that soaked this hit.
-    await maybeApplyBloodShield(actor, hpBeforeDamage - Number(result.newHp), {
+    await maybeApplyBloodShield(actor, Number(result.hpLoss), {
       damageClass: result.damageClass,
       canBleed: "bleed" in (message.flags.attack.effects || {}),
     });
@@ -1154,7 +1296,9 @@ export async function applyDamageAsGM(data) {
           criticalDegree: degreeForTarget,
         });
       } else {
-        stacks += stackMod;
+        // bonusStacks: the caster's extra stacks on this effect (Leptavá
+        // kyselina II, helpers/mancerPassives.mjs), stamped on the card.
+        stacks += stackMod + (Number(effect?.bonusStacks) || 0);
       }
 
       if (stacks <= 0) continue;
@@ -1167,6 +1311,17 @@ export async function applyDamageAsGM(data) {
       );
       await stampEscapeSource(applied, name, message);
       if (name === "stagger" && applied && wasStaggered) restaggeredIds.push(tokenId);
+      // Urhanova síla: a Staggered target Staggered again by the holder's
+      // spell is knocked Prone as well (helpers/mancerPassives.mjs).
+      if (
+        name === "stagger" &&
+        applied &&
+        wasStaggered &&
+        castingContext.school &&
+        restaggerKnocksProne(castingContext.caster)
+      ) {
+        await applyEffectToActor(actor, "prone", 1, castingContext);
+      }
 
       // Wounding Impale: Impale applies the Rooted effect; carry the
       // pre-computed Bleeding count (set in getEffectRolls) onto that Root so it
@@ -1329,6 +1484,14 @@ export async function applyDamageAsGM(data) {
           // be able to disagree with it.
           const why = sneakTriggerLabel(sneakReason);
           sneakVictimsGranted.push(why ? `${actor.name} (${why})` : actor.name);
+          // Zákeřný boj buys its sneak: charged only once it really landed.
+          const sneakPrice = sneakTriggerStamina(sneakReason);
+          if (sneakPrice && attacker) {
+            const stamina = Number(attacker.system?.stats?.stamina?.value) || 0;
+            await attacker.update({
+              "system.stats.stamina.value": Math.max(0, stamina - sneakPrice),
+            });
+          }
         } else sneakVictimsSpent.push(actor.name);
       }
     }
@@ -1490,6 +1653,12 @@ export async function applyDamageAsGM(data) {
     });
   }
 
+  // Magický veterán — the degrees actually given up ease the next spell's
+  // Difficulty by 10 each, once per card (veneficus.mjs).
+  if (magicVeteranGiven > 0 && attacker) {
+    await settleMagicVeteran(attacker, message, magicVeteranGiven);
+  }
+
   if (criticalOverrideRows.length) {
     await notifyCriticalDegreeOverride({
       message,
@@ -1562,6 +1731,10 @@ export async function applyDamageAsGM(data) {
   // Harcovník → Navazující vrh: a kill lets the holder re-arm and throw this
   // turn (skirmisher.mjs).
   await offerFollowUpThrow(attacker, message, felledIds);
+  // Veneficus: a melee kill takes 2 Mana off the next spell, a kill with an
+  // empowered attack adds Channeling to the next spell of that school, and a
+  // weapon hit opens Magic Momentum (veneficus.mjs).
+  await settleVeneficusDamage(attacker, message, { felledIds });
   // Obrana proti zteči (Charge Defense): the hit stops the charge and keeps
   // the charger two hexes off. Before the push below reads positions.
   await settleChargeDefense(attacker, message, targetIds, scene);
@@ -1583,20 +1756,29 @@ export async function applyDamageAsGM(data) {
   // Hoplita → Nápor I / II: a shield blow or Trip that pushed or knocked down
   // its target, or a shield blow that pushed nothing, offers another attack
   // this turn (hoplite.mjs). After the push, which it reads.
+  const allKnockedDown = [
+    ...knockedDownIds,
+    ...(pushResults ?? []).filter((r) => r.prone).map((r) => r.tokenId),
+  ];
   await offerHopliteOnslaught(attacker, message, {
     pushResults: pushResults ?? [],
-    knockedDownIds: [
-      ...knockedDownIds,
-      ...(pushResults ?? []).filter((r) => r.prone).map((r) => r.tokenId),
-    ],
+    knockedDownIds: allKnockedDown,
   });
+  // Veneficus → Magické momentum: a target knocked Prone by a melee action
+  // opens the round's free spell (veneficus.mjs).
+  await openMagicMomentumOnProne(attacker, message, allKnockedDown);
 }
 
 function openDamageSelectionDialog(message, targets) {
   const attack = message.flags.attack;
   const effects = attack.effects || {};
   let mode = "normal";
-  let halfDamage = false;
+  // Veneficus → Magické momentum: a spell cast free by it is halved, ticked
+  // and locked on every target (the GM reads the card again on apply).
+  const momentumHalf = isMagicMomentumHalf(message);
+  // tokenId -> true for targets the spell only half hurts.
+  const halfDamageState = {};
+  const isHalved = (target) => momentumHalf || !!halfDamageState[target.id];
   let criticalDegree = attack.critical?.degree ?? 0;
   let degreeTouched = false;
   const hasCritical = attack.critical !== "" && attack.critical !== undefined;
@@ -1617,6 +1799,23 @@ function openDamageSelectionDialog(message, targets) {
   /** Whether Veteran lowers the degree right now (critical mode, toggled on). */
   const veteranOn = () => canVeteran && veteran && mode === "critical";
 
+  // Magický veterán (Veneficus): the attacker gives up any number of degrees,
+  // each easing their next spell's Difficulty by 10. Offered to whoever owns
+  // the attacker, like Laceration, when the card offers a critical degree.
+  const canMagicVet =
+    hasCritical &&
+    criticalOptions.length > 0 &&
+    canMagicVeteran(degreeActor) &&
+    !!degreeActor?.isOwner;
+  const magicVetMax = Math.max(
+    0,
+    ...criticalOptions.map((o) => Number(o.degree) || 0),
+  );
+  let magicVeteran = 0;
+  /** Degrees Magic Veteran gives up right now (critical mode only). */
+  const magicVeteranOn = () =>
+    canMagicVet && mode === "critical" ? magicVeteran : 0;
+
   /** The critical-failure ruling's degree for this target, or null. */
   const forcedDegreeFor = (target, effAttack) =>
     critFailForcedDegree(message, effAttack, degreeActor, target.id);
@@ -1624,12 +1823,19 @@ function openDamageSelectionDialog(message, targets) {
   /**
    * This target's degree, the same call the GM apply makes. `withVeteran`
    * false gives the degree before Veteran, which is what the toggle reads to
-   * know whether there is anything left to lower.
+   * know whether there is anything left to lower. `withMagic` false leaves
+   * Magic Veteran's given-up degrees out.
    */
-  const degreeFor = (target, effAttack, withVeteran = veteranOn()) =>
+  const degreeFor = (
+    target,
+    effAttack,
+    withVeteran = veteranOn(),
+    withMagic = true,
+  ) =>
     resolveDegreeForTarget(effAttack, criticalDegree, degreeTouched, {
       forcedDegree: forcedDegreeFor(target, effAttack),
       veteran: withVeteran,
+      giveUp: withMagic ? magicVeteranOn() : 0,
     });
 
   // tokenId -> { itemId, points } for targets sacrificing durability
@@ -1699,7 +1905,7 @@ function openDamageSelectionDialog(message, targets) {
         resolveAttackForTarget(attack, t.actor),
         previewSneakSign(t),
       );
-      return !(Number(degreeFor(t, effAttack, false)) > 0);
+      return !(Number(degreeFor(t, effAttack, false, false)) > 0);
     });
 
   const renderPreview = () =>
@@ -1765,23 +1971,113 @@ function openDamageSelectionDialog(message, targets) {
         const perPoint = spend?.itemId
           ? getDurabilityReductionPerPoint(t.actor, t.actor.items.get(spend.itemId))
           : 0;
+        // Elymas soRedukce: a focused target takes half of a spell's damage
+        // again (elymas.mjs), shown beside the half damage box below.
+        const magicHalving = focusedMagicHalving(t.actor, message);
         const result = evaluateAttackDamage({
           attack: effAttack,
           selectedAttack,
           actor: t.actor,
           durabilityPoints: spend?.points ?? 0,
           perPoint,
-          halfDamage,
+          halfDamage: isHalved(t),
+          magicHalving,
         });
 
-        const durabilityNote = result.durabilityReduction
-          ? ` <em>(−${result.durabilityReduction} from ${result.durabilityPointsUsed} durability)</em>`
+        // What lands, with the temporary pools named: a blow soaked whole by
+        // temporary health is not a blow that did nothing.
+        const previewText = (key, data) =>
+          game.i18n.format(`REDSTEEL.DamagePreview.${key}`, data);
+        const totalDamage =
+          result.tempHpLoss + result.tempHpMagicLoss + result.finalDamage;
+        const poolParts = [
+          [result.tempHpLoss, "TempHp"],
+          [result.tempHpMagicLoss, "TempHpMagic"],
+        ]
+          .filter(([amount]) => amount > 0)
+          .map(([amount, key]) => previewText(key, { amount }));
+        const damageSplit = poolParts.length
+          ? ` (${[
+              ...poolParts,
+              ...(result.finalDamage > 0
+                ? [previewText("Hp", { amount: result.finalDamage })]
+                : []),
+            ].join(", ")})`
           : "";
 
-        const gmPreview = game.user.isGM
+        // Where the rest of the blow went, in the order it was resolved.
+        const { breakdown } = result;
+        const reductions = [
+          [result.shieldLoss, "Shield"],
+          [breakdown.armor, "Armor"],
+          [breakdown.capped, "PenCap"],
+          [
+            Math.abs(breakdown.modifier),
+            breakdown.modifier < 0
+              ? "Vulnerability"
+              : breakdown.finalModifier === 0
+                ? "Immunity"
+                : "Resistance",
+          ],
+          [breakdown.halved, "Halved"],
+          [result.durabilityReduction, "Durability"],
+        ]
+          .filter(([amount]) => amount > 0)
+          .map(([amount, key]) => previewText(key, { amount }));
+        const breakdownLine = reductions.length
+          ? `<div style="margin-left:15px; font-size:12px;">${[
+              previewText("Incoming", { amount: breakdown.incoming }),
+              ...reductions,
+            ].join(", ")}</div>`
+          : "";
+
+        // Manual half-damage toggle, spells only. Weapon attacks that halve
+        // damage carry system.roll.halfDamage, but a spell's halving is
+        // situational (partial save, cover) and differs target to target, so
+        // the GM sets it here. The cast card flags itself isSpell for exactly
+        // this. A spell cast free by Magic Momentum is halved by rule: ticked
+        // and locked.
+        const halfDamagePill = attack.isSpell
+          ? `<label class="pill" style="margin-left:6px;"${
+              momentumHalf
+                ? ` data-tooltip="${foundry.utils.escapeHTML(
+                    game.i18n.localize("REDSTEEL.Veneficus.MomentumHalfForced"),
+                  )}"`
+                : ""
+            }>
+              <input type="checkbox" name="halfdamage-${t.id}" ${isHalved(t) ? "checked" : ""} ${momentumHalf ? "disabled" : ""}>
+              <span>${game.i18n.localize("REDSTEEL.Item.Spell.FIELDS.halfDamage.label")}</span>
+            </label>${
+              magicHalving
+                ? ` <span class="pill" style="margin-left:6px;">${game.i18n.localize(
+                    "REDSTEEL.Elymas.DamageReduced",
+                  )}</span>`
+                : ""
+            }`
+          : "";
+
+        // The target's state after the blow, for whoever may read its sheet.
+        const shieldAfter = result.activeShield
+          ? `, ${previewText("ShieldLeft", {
+              amount: Math.max(
+                0,
+                result.activeShield.value - (result.shieldPoolSpent ?? 0),
+              ),
+            })}`
+          : "";
+        const tempMagicAfter =
+          result.newTempHpMagic > 0 || result.tempHpMagicLoss > 0
+            ? `, ${previewText("TempHpMagic", { amount: result.newTempHpMagic })}`
+            : "";
+        const resultPreview = t.actor.isOwner
           ? `<div style="margin-left:15px;">
-               Remaining: <strong>${result.newHp}/${t.actor.system.stats.health.max} HP</strong>,
-               ${result.newTempHp} temp HP
+               ${previewText("Remaining", {
+                 hp: `<strong>${previewText("HpOf", {
+                   value: result.newHp,
+                   max: t.actor.system.stats.health.max,
+                 })}</strong>`,
+                 tempHp: previewText("TempHp", { amount: result.newTempHp }),
+               })}${tempMagicAfter}${shieldAfter}
              </div>`
           : "";
 
@@ -2001,11 +2297,21 @@ function openDamageSelectionDialog(message, targets) {
             : "";
         const veteranNote = (() => {
           if (!veteranOn()) return "";
-          const before = degreeFor(t, effAttack, false);
-          const after = degreeFor(t, effAttack, true);
+          const before = degreeFor(t, effAttack, false, false);
+          const after = degreeFor(t, effAttack, true, false);
           if (before === after) return "";
           return `<div style="margin-left:15px; font-size:12px; color:#c8a84b;">${game.i18n.format(
             "REDSTEEL.Veteran.PreviewNote",
+            { from: before, to: after },
+          )}</div>`;
+        })();
+        const magicVeteranNote = (() => {
+          if (!magicVeteranOn()) return "";
+          const before = degreeFor(t, effAttack, veteranOn(), false);
+          const after = degreeFor(t, effAttack);
+          if (before === after) return "";
+          return `<div style="margin-left:15px; font-size:12px; color:#c8a84b;">${game.i18n.format(
+            "REDSTEEL.Veneficus.VeteranPreviewNote",
             { from: before, to: after },
           )}</div>`;
         })();
@@ -2032,10 +2338,13 @@ function openDamageSelectionDialog(message, targets) {
         return `
     <li>
       ${t.name}${baneMarker}${baneCritNote}${sneakMarker} →
-      <strong>${result.finalDamage} HP</strong>${durabilityNote}
-      ${gmPreview}
+      <strong>${previewText("Damage", { amount: totalDamage })}</strong>${damageSplit}
+      ${halfDamagePill}
+      ${breakdownLine}
+      ${resultPreview}
       ${critFailNote}
       ${veteranNote}
+      ${magicVeteranNote}
       ${aimedStrikeLabel}
       ${effectPreview}
       ${lacerationRow}
@@ -2143,17 +2452,24 @@ function openDamageSelectionDialog(message, targets) {
                 </div>`
               : ""
           }
+          ${
+            canMagicVet
+              ? `<div class="attack-options-row" style="margin-top:6px;">
+                  <label data-tooltip="${foundry.utils.escapeHTML(
+                    game.i18n.localize("REDSTEEL.Veneficus.VeteranTooltip"),
+                  )}">
+                    ${game.i18n.localize("REDSTEEL.Veneficus.VeteranOption")}
+                    <select name="magicVeteran">
+                      ${Array.from(
+                        { length: magicVetMax + 1 },
+                        (_, n) => `<option value="${n}">${n}</option>`,
+                      ).join("")}
+                    </select>
+                  </label>
+                </div>`
+              : ""
+          }
         </fieldset>
-        <!-- Manual half-damage toggle, spells only. Weapon attacks that halve
-             damage carry system.roll.halfDamage, but a spell's halving is
-             situational (partial save, cover), so the GM sets it here. The
-             cast card flags itself isSpell for exactly this. -->
-        <div class="attack-options-row" ${attack.isSpell ? "" : 'style="display:none;"'}>
-          <label class="pill">
-            <input type="checkbox" name="halfDamage" ${halfDamage ? "checked" : ""}>
-            <span>${game.i18n.localize("REDSTEEL.Item.Spell.FIELDS.halfDamage.label")}</span>
-          </label>
-        </div>
         ${renderDurabilityControls()}
         <div class="open-wound-status">${renderOpenWoundStatus()}</div>
 
@@ -2249,11 +2565,12 @@ function openDamageSelectionDialog(message, targets) {
               selectedEffects,
               mode === "critical" ? criticalDegree : null,
               durabilitySpend,
-              halfDamage,
+              halfDamageState,
               degreeTouched,
               openWound,
               laceration,
               veteranOn(),
+              magicVeteranOn(),
             );
           },
         },
@@ -2318,6 +2635,17 @@ function openDamageSelectionDialog(message, targets) {
           });
         };
 
+        // Half-damage pills sit in the same rebuilt preview too. Halving moves
+        // the hit off Life or back onto it, so the whole preview follows.
+        const bindHalfDamage = () => {
+          html.find('input[name^="halfdamage-"]').on("change", (ev) => {
+            const tokenId = ev.target.name.slice("halfdamage-".length);
+            if (ev.target.checked) halfDamageState[tokenId] = true;
+            else delete halfDamageState[tokenId];
+            refreshPreview();
+          });
+        };
+
         // Veteran is disabled while no target has a degree to give up, and
         // switched off with it so a stale tick cannot buy a Rest.
         const syncVeteranToggle = () => {
@@ -2339,15 +2667,47 @@ function openDamageSelectionDialog(message, targets) {
             );
         };
 
+        // Magický veterán offers 0..D, D the highest degree any target is at
+        // before it (Veteran already taken off). A choice above a new, lower
+        // D comes down with it.
+        const syncMagicVeteranSelect = () => {
+          if (!canMagicVet) return;
+          const select = html.find('select[name="magicVeteran"]');
+          const top = Math.min(
+            magicVetMax,
+            Math.max(
+              0,
+              ...targets.map((t) => {
+                const effAttack = shiftSneakOnAttack(
+                  resolveAttackForTarget(attack, t.actor),
+                  previewSneakSign(t),
+                );
+                return Number(degreeFor(t, effAttack, veteranOn(), false)) || 0;
+              }),
+            ),
+          );
+          magicVeteran = Math.min(magicVeteran, top);
+          select.html(
+            Array.from(
+              { length: top + 1 },
+              (_, n) =>
+                `<option value="${n}" ${n === magicVeteran ? "selected" : ""}>${n}</option>`,
+            ).join(""),
+          );
+        };
+
         const refreshPreview = () => {
           syncVeteranToggle();
+          syncMagicVeteranSelect();
           html.find(".damage-preview").html(renderPreview());
           bindOpenWound();
           bindLaceration();
+          bindHalfDamage();
           html.find(".open-wound-status").html(renderOpenWoundStatus());
         };
 
         syncVeteranToggle();
+        syncMagicVeteranSelect();
         html.find('input[name="veteran"]').on("change", (ev) => {
           veteran = ev.target.checked;
           refreshPreview();
@@ -2355,6 +2715,7 @@ function openDamageSelectionDialog(message, targets) {
 
         bindOpenWound();
         bindLaceration();
+        bindHalfDamage();
 
         const updateCriticalDegreeVisibility = () => {
           html
@@ -2377,9 +2738,10 @@ function openDamageSelectionDialog(message, targets) {
           degreeTouched = true;
           refreshPreview();
         });
-        // Spell-only manual half damage (see the note in the dialog content).
-        html.find('input[name="halfDamage"]').on("change", (ev) => {
-          halfDamage = ev.target.checked;
+        // Magický veterán: the degrees given up, clamped per target in the
+        // preview exactly as the GM apply clamps them.
+        html.find('select[name="magicVeteran"]').on("change", (ev) => {
+          magicVeteran = Math.max(0, Math.round(Number(ev.target.value) || 0));
           refreshPreview();
         });
 
@@ -2398,6 +2760,8 @@ function openDamageSelectionDialog(message, targets) {
       },
     },
     {
+      // Wide enough for "12 damage (5 temp HP, 7 HP)" and its pill on one line.
+      width: 460,
       height: "auto",
     },
   ).render(true);
@@ -2631,6 +2995,8 @@ async function applyEffectToActor(
   stacks = 1,
   { caster = null, school = null } = {},
 ) {
+  // Akrobat II: a knock-down the victim may roll out of.
+  if (effectId === "prone" && (await acrobatEvade(actor))) return;
   if (!resolveEffectDefinition(effectId)) {
     console.warn(
       `Effect ${effectId} matches neither CONFIG.REDSTEEL.effectDefinitions nor a world Condition item`,
@@ -2824,19 +3190,35 @@ export async function applyEffectsAsGM(data) {
         continue;
       }
 
-      let stacks = 1;
+      // Leptavá kyselina II's extra stacks ride on the card
+      // (helpers/mancerPassives.mjs), the same as on the Apply Damage path.
+      let stacks = 1 + (Number(effectData.bonusStacks) || 0);
 
       if (effectId === "bleed") {
         stacks = effectData.stacks ?? 0;
       }
 
+      // Read before the apply, for Urhanova síla below.
+      const wasStaggered = actor.statuses?.has("stagger") === true;
       const applied = await applyEffectToActor(
         actor,
         effectId,
         stacks,
         castingContext,
       );
+      if (
+        effectId === "stagger" &&
+        applied &&
+        wasStaggered &&
+        castingContext.school &&
+        restaggerKnocksProne(castingContext.caster)
+      ) {
+        await applyEffectToActor(actor, "prone", 1, castingContext);
+      }
       await stampEscapeSource(applied, effectId, message);
+      // Veneficus → Navazující kouzlo: a spell weapon empowerment remembers
+      // the school that cast it (veneficus.mjs).
+      await stampEnchantSchool(applied, effectId, castingContext.school);
 
       // Wounding Impale: Impale applies the Rooted effect; carry the pre-computed
       // Bleeding count onto that Root so it fires when the Root is removed (see

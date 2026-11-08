@@ -31,6 +31,8 @@
  * the spell bonus pipeline (magicSkillBonuses.mjs) already import from each
  * other, the same reason strikes.mjs stands alone.
  */
+import { nextSpellManaDiscount } from "./nextSpellBonus.mjs";
+
 export const LINDAR_CHARGE_SPELLS = new Set([
   "Pull",
   "Quick pull",
@@ -83,6 +85,26 @@ export function getLindarChannelingBonus(actor, spell) {
 }
 
 /**
+ * A spell's cast cost for this actor before anything the NEXT spell is owed:
+ * its own cost less Lindar's Charge where that applies. Incantator's Precise
+ * Incantation pays this again ("zaplatit cenu kouzla", utils/incantator.mjs).
+ *
+ * @param {Actor} actor
+ * @param {Item} spell
+ * @returns {number}
+ */
+export function getBaseSpellManaCost(actor, spell) {
+  const baseCost = Number(spell?.system?.cost) || 0;
+  const lindarCut =
+    spell?.system?.type !== "blood" &&
+    hasLindarCharge(actor) &&
+    isLindarChargeSpell(spell)
+      ? LINDAR_CHARGE_MANA_DISCOUNT
+      : 0;
+  return Math.max(0, baseCost - lindarCut);
+}
+
+/**
  * Effective Mana cost of a spell for this actor.
  *
  * The discount applies to the CAST cost only ("sleva 6 many na seslání") and
@@ -96,13 +118,11 @@ export function getLindarChannelingBonus(actor, spell) {
  * @returns {number} the cost to charge, floored at 0.
  */
 export function getLindarSpellCost(actor, spell) {
-  const baseCost = Number(spell?.system?.cost) || 0;
-  if (
-    spell?.system?.type !== "blood" &&
-    hasLindarCharge(actor) &&
-    isLindarChargeSpell(spell)
-  ) {
-    return Math.max(0, baseCost - LINDAR_CHARGE_MANA_DISCOUNT);
-  }
-  return baseCost;
+  const cost = getBaseSpellManaCost(actor, spell);
+  // Veneficus → "Zabije-li cíl Soubojem, sleva 2 many na příští kouzlo" and
+  // Elymas → Magická ozvěna's 50% (nextSpellBonus.mjs), taken off what Lindar
+  // left. Read here because this is the one cost every Mana site reads
+  // (dialog row, tooltip, deductMana).
+  const owed = nextSpellManaDiscount(actor, spell, cost);
+  return Math.max(0, cost - owed);
 }

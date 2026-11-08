@@ -56,6 +56,8 @@ import { isExploitAsRetaliation } from "./dragonGuard.mjs";
 import { hasFreeRiposte, isRiposte, markFreeRiposteUsed } from "./swordServant.mjs";
 import { isForcedMove } from "./forcedMoveRegistry.mjs";
 import { isOverwatchAbility } from "./overwatch.mjs";
+import { hasVigilantCommander, isAuraCommand } from "./commands.mjs";
+import { spendFlawlessPlan } from "./featureActions.mjs";
 import { SHOOTING_STANCE_STATUS } from "./sharpshooter.mjs";
 import { aimBreakKind, breakAimOnAction } from "./aim.mjs";
 
@@ -312,6 +314,7 @@ export async function spend(actor, { actions = 0, reactions = 0 } = {}) {
     actions: spent.actions + Math.max(0, actions),
     reactions: spent.reactions + Math.max(0, reactions),
   });
+  if (reactions > 0) await spendFlawlessPlan(actor);
 }
 
 /**
@@ -807,6 +810,12 @@ export function costOf(actor, item) {
   // Střelecký postoj: one Overwatch per round is a Free action.
   if (isOverwatchAbility(item) && hasFreeStanceOverwatch(actor)) return none;
   if (parsed.reaction && !onTurn) return { actions: 0, reactions: 1 };
+  // Bdělý velitel: an Active Command off-turn is a Reaction, a Passive Command
+  // a Free action.
+  if (item.system?.class === "command" && hasVigilantCommander(actor)) {
+    if (isAuraCommand(item)) return none;
+    if (!onTurn) return { actions: 0, reactions: 1 };
+  }
   // Dragon Guard: Exploit Weakness swung off-turn is a Retaliation action,
   // paid with the Reaction rather than its two Actions.
   if (!onTurn && isExploitAsRetaliation(actor, item)) {
@@ -839,6 +848,12 @@ export async function spendForItems(actor, items) {
   // Forceful Advance (Hoplite): one listed ability costs no Action, once.
   const freeAbility = liveFreeAbility(actor);
   let freeAbilityUsed = false;
+  // Veneficus → Magické momentum: the round's one spell of exactly one Action
+  // that costs none. Spells only, so no other grant above is ever spent by it.
+  // Opt-in ("může"): only while the player armed it from the hotbar chip, so
+  // an unarmed cast after a hit pays its Action and deals full damage.
+  const momentumOpen = hasMagicMomentum(actor) && isMagicMomentumArmed(actor);
+  let freeMomentumSpell = null;
   // What the paid Actions were for, for the Aim rule below.
   const aimBreaks = [];
   for (const item of list) {
@@ -863,6 +878,15 @@ export async function spendForItems(actor, items) {
       freeAbilityUsed = true;
       continue;
     }
+    if (
+      momentumOpen &&
+      !freeMomentumSpell &&
+      isMomentumSpell(item) &&
+      isOneActionCost(costOf(actor, item))
+    ) {
+      freeMomentumSpell = item;
+      continue;
+    }
     const cost = costOf(actor, item);
     actions += cost.actions;
     reactions += cost.reactions;
@@ -873,6 +897,7 @@ export async function spendForItems(actor, items) {
   }
   if (freeRiposte) await markFreeRiposteUsed(actor);
   if (freeOverwatch) await markBonusSource(actor, STANCE_OVERWATCH_SOURCE);
+  if (freeMomentumSpell) await spendMagicMomentum(actor, freeMomentumSpell);
   if (freeAbilityUsed) {
     await writeSpent(actor, {
       ...getSpent(actor),
@@ -918,6 +943,167 @@ export function hasFreeStanceOverwatch(actor) {
   if (!actor?.statuses?.has(SHOOTING_STANCE_STATUS)) return false;
   if (!trackedCombat(actor)) return false;
   return !getSpent(actor).bonusSources.includes(STANCE_OVERWATCH_SOURCE);
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Veneficus → Magické momentum                                              */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * "Po zásahu útokem zbraní může jednou za kolo seslat jednoakcové kouzlo
+ * jako Volnou akci. Pokud Povalí cíl soubojovou akcí, může jednou za kolo
+ * seslat jednoakcové kouzlo jako Volnou akci. Takto seslaná kouzla dělají
+ * pouze poloviční zranění." User ruling 2026-10-25: one free spell per round
+ * in total, opened by either trigger.
+ *
+ * The triggers are read in veneficus.mjs (on the GM applying the damage); it
+ * opens the allowance here. Open is an actor flag stamped with the round
+ * (`flags.redsteel.magicMomentum`), written by the GM; used is this round's
+ * tracker record (`bonusSources`), written by the caster when spendForItems
+ * spends it. Both lapse with the round, like every other spend here.
+ */
+const MAGIC_MOMENTUM_FLAG = "magicMomentum";
+/**
+ * The player chose to use this round's free spell (the hotbar chip,
+ * veneficus.mjs useVeneficusChip): `flags.redsteel.magicMomentumArmed`,
+ * stamped with the combat, the round and the turn it was armed in. Arming
+ * spends nothing; the armed cast does, and disarms it. A stamp from another
+ * round or combat reads as unarmed, so it lapses with the round.
+ */
+const MAGIC_MOMENTUM_ARMED_FLAG = "magicMomentumArmed";
+
+/** The round's use of the free spell, in this round's record. */
+function magicMomentumSource(combat) {
+  return `magicMomentum.${combat.id}.${combat.round}`;
+}
+
+/**
+ * Open this round's free spell. False when there is no tracked combat, it is
+ * already open, or this round's was already cast.
+ *
+ * @param {Actor} actor
+ * @returns {Promise<boolean>} whether it was opened now
+ */
+export async function openMagicMomentum(actor) {
+  const combat = trackedCombat(actor);
+  if (!combat || !actor?.isOwner) return false;
+  if (getSpent(actor).bonusSources.includes(magicMomentumSource(combat))) {
+    return false;
+  }
+  const stored = actor.getFlag(SYSTEM_ID, MAGIC_MOMENTUM_FLAG);
+  if (stored?.combat === combat.id && Number(stored.round) === Number(combat.round)) {
+    return false;
+  }
+  await actor.setFlag(SYSTEM_ID, MAGIC_MOMENTUM_FLAG, {
+    combat: combat.id,
+    round: combat.round,
+  });
+  return true;
+}
+
+/**
+ * Is this round's free spell open and not yet cast?
+ *
+ * @param {Actor} actor
+ * @returns {boolean}
+ */
+export function hasMagicMomentum(actor) {
+  const combat = trackedCombat(actor);
+  if (!combat) return false;
+  const stored = actor.getFlag(SYSTEM_ID, MAGIC_MOMENTUM_FLAG);
+  if (!stored || stored.combat !== combat.id) return false;
+  if (Number(stored.round) !== Number(combat.round)) return false;
+  return !getSpent(actor).bonusSources.includes(magicMomentumSource(combat));
+}
+
+/**
+ * Arm this round's free spell: the next spell of exactly one Action is the
+ * free one. False with no open, unused allowance.
+ *
+ * @param {Actor} actor
+ * @returns {Promise<boolean>}
+ */
+export async function armMagicMomentum(actor) {
+  const combat = trackedCombat(actor);
+  if (!combat || !actor?.isOwner || !hasMagicMomentum(actor)) return false;
+  if (isMagicMomentumArmed(actor)) return true;
+  await actor.setFlag(SYSTEM_ID, MAGIC_MOMENTUM_ARMED_FLAG, {
+    combat: combat.id,
+    round: combat.round,
+    turn: combat.turn,
+  });
+  return true;
+}
+
+/**
+ * Is the free spell armed for this round?
+ *
+ * @param {Actor} actor
+ * @returns {boolean}
+ */
+export function isMagicMomentumArmed(actor) {
+  const combat = trackedCombat(actor);
+  if (!combat) return false;
+  const stored = actor.getFlag(SYSTEM_ID, MAGIC_MOMENTUM_ARMED_FLAG);
+  return (
+    !!stored &&
+    stored.combat === combat.id &&
+    Number(stored.round) === Number(combat.round)
+  );
+}
+
+/** A spell (never a miracle, which is no spell for any of this). */
+function isMomentumSpell(item) {
+  return item?.type === "spell" && item.system?.option !== "divine";
+}
+
+/** Exactly one Action, nothing else ("jednoakcové kouzlo"). */
+function isOneActionCost(cost) {
+  return cost.actions === 1 && cost.reactions === 0;
+}
+
+/**
+ * The spell Magic Momentum made free, by caster, for the cast card about to
+ * be posted on this same client (veneficus.mjs stampMomentumCast stamps it
+ * for half damage). In memory: the card follows the spend within the same
+ * cast, and an entry older than a minute is a cast that never posted.
+ */
+const momentumCasts = new Map();
+const MOMENTUM_CAST_TTL_MS = 60_000;
+
+async function spendMagicMomentum(actor, spell) {
+  const combat = trackedCombat(actor);
+  if (!combat) return;
+  await markBonusSource(actor, magicMomentumSource(combat));
+  if (actor.getFlag(SYSTEM_ID, MAGIC_MOMENTUM_ARMED_FLAG)) {
+    await actor.unsetFlag(SYSTEM_ID, MAGIC_MOMENTUM_ARMED_FLAG);
+  }
+  momentumCasts.set(actor.uuid, { spellId: spell.id, at: Date.now() });
+  ui.notifications.info(
+    game.i18n.format("REDSTEEL.Veneficus.MomentumCast", {
+      name: actor.name,
+      spell: spell.localizedName ?? spell.name,
+    }),
+  );
+}
+
+/**
+ * Was this caster's spell just made free by Magic Momentum? Spends the note.
+ *
+ * @param {string} actorUuid
+ * @param {string} spellId
+ * @returns {boolean}
+ */
+export function takeMagicMomentumCast(actorUuid, spellId) {
+  const noted = momentumCasts.get(actorUuid);
+  if (!noted) return false;
+  if (Date.now() - noted.at >= MOMENTUM_CAST_TTL_MS) {
+    momentumCasts.delete(actorUuid);
+    return false;
+  }
+  if (noted.spellId !== spellId) return false;
+  momentumCasts.delete(actorUuid);
+  return true;
 }
 
 /**

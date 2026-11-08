@@ -1,0 +1,44 @@
+{
+  "folder": "kBTvOEaKqi0Q4Q17",
+  "name": "Recipe: Oak",
+  "type": "recipe",
+  "img": "icons/consumables/potions/bottle-round-corked-orange.webp",
+  "system": {
+    "description": "<p>Effect - Dulls pain, +30% on rolls against Pain. Ignores the penalties for grave wounds<br />Duration - 3 hours<br />Toxicity - 8<br />Production bonus - +15% -&gt; 1 dose<br />Ingredients - Strong alcohol, Al, Pa, Smokeweed</p>",
+    "outputType": "potion",
+    "purpose": "buff",
+    "resultUuid": "Compendium.redsteel.redsteel-items.Item.tgpAUX0c7NiQ2RwC",
+    "substances": {
+      "yliaster": 0,
+      "bezoardicum": 0,
+      "alkahest": 1,
+      "qudat": 0,
+      "panacea": 1,
+      "verdigris": 0
+    },
+    "specialIngredient": {
+      "name": "Smokeweed",
+      "uuid": ""
+    },
+    "base": "strongAlcohol"
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.15.0",
+    "createdTime": 1793749553395,
+    "modifiedTime": 1793749553395,
+    "lastModifiedBy": null
+  },
+  "_id": "lGMF7UXLecLpovMW",
+  "_key": "!items!lGMF7UXLecLpovMW"
+}

@@ -29,6 +29,7 @@ import {
   withRollBias,
   tagRollSkill,
   forfeitAdvantageOnCritFail,
+  capHopelessNatural,
 } from "./rollAdvantage.mjs";
 import { actorHasSpecNode } from "../helpers/specialisations.mjs";
 
@@ -1055,11 +1056,12 @@ async function rollAlchemyTest(actor, stationKey, mods, difficulty = 0) {
   // A fumbling first die forfeits advantage; read the die only after.
   forfeitAdvantageOnCritFail(roll, critFail);
   const d100 = roll.dice?.[0]?.total ?? total - roll.total;
+  const hopeless = capHopelessNatural(roll, critSucc);
 
   return {
     d100,
     margin: roll.total,
-    critSuccess: d100 <= critSucc,
+    critSuccess: !hopeless && d100 <= critSucc,
     critFailure: d100 >= critFail,
     success: roll.total >= 0 && !(d100 >= critFail),
     advantage,

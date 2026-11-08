@@ -25,6 +25,7 @@ import {
   consumeRestOrTempHealthUpdate,
   registerVeteranRestButton,
 } from "./veteranRest.mjs";
+import { FENCING_DAGGER_TEMP_HEALTH, fencingDaggerDeflect } from "./featureCombat.mjs";
 
 /** Defense cards that may carry the button, keyed by `defenseKey`. */
 const ELIGIBLE_DEFENSE_KEYS = new Set(["meleeDefense", "rangedDefense"]);
@@ -95,6 +96,12 @@ export function getDefenseTempHealth(actor, weapon) {
     result.sources.push(
       game.i18n.localize("REDSTEEL.TempHealth.SourceSwordsman"),
     );
+  }
+
+  // Šermířská dýka I, with the same ceiling of 10 this file already applies.
+  if (fencingDaggerDeflect(actor) > 0) {
+    result.amount += FENCING_DAGGER_TEMP_HEALTH;
+    result.sources.push(game.i18n.localize("REDSTEEL.Items.FencingDaggerI.name"));
   }
 
   return result;

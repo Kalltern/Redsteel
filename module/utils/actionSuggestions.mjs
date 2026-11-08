@@ -36,7 +36,7 @@ import { isSlipThrough, pendingSlipThrough } from "./slipThrough.mjs";
 import { isHalfPirouette, pendingHalfPirouette } from "./halfPirouette.mjs";
 import { grudgeState, isGrudge } from "./ranger.mjs";
 import { isPredatorsAttack, pendingPredatorsAttack } from "./predatorsAttack.mjs";
-import { resolveWeaponContext } from "./weaponResolver.mjs";
+import { resolveWeaponContext, weaponHasTag } from "./weaponResolver.mjs";
 import { hasImpaleFollowup, IMPALE_FOLLOWUP_KEY } from "./impaleFollowup.mjs";
 import { OVERWATCH_KEY, overwatchTrigger } from "./overwatch.mjs";
 import { holdCostLabel, isStanceHeld, maintainedStances } from "./stances.mjs";
@@ -90,6 +90,8 @@ import {
   hasReactionLeft,
   pendingBullChargeOpportunity,
 } from "./bullCharge.mjs";
+import { veneficusChips } from "./veneficus.mjs";
+import { elymasChips } from "./elymas.mjs";
 
 const MODE_ORDER = ["move", "slow", "sprint", "disengage"];
 
@@ -258,8 +260,11 @@ const UNANSWERABLE_ATTACK_KEYS = new Set([
 ]);
 
 /** Every retaliation this strip offers; posting any one answers the defense. */
+const AGILE_COUNTER_KEY = "REDSTEEL.Items.AgileCounter.name";
+
 const RETALIATION_KEYS = new Set([
   COUNTERATTACK_KEY,
+  AGILE_COUNTER_KEY,
   RETALIATORY_KEY,
   IMPROVED_RETALIATORY_KEY,
   ...SHOVE_KEYS,
@@ -391,6 +396,12 @@ function attackIsAnswerable(defense) {
  * Counterattack (Protiútok): only after a SUCCESSFUL Defense. Dodge does not
  * count.
  */
+/** Mrštný protiútok: after a Dodge that held, with an Estoc in hand. */
+function agileCounterFits(actor, defense) {
+  if (defense.defenseKey !== "dodge" || defense.succeeded !== true) return false;
+  return weaponHasTag(resolveWeaponContext(actor)?.weapon, "estoc");
+}
+
 function counterattackFits(defense) {
   return defense.defenseKey === "meleeDefense" && defense.succeeded === true;
 }
@@ -483,7 +494,9 @@ function reactionChips(actor) {
   );
   // Strážce → Úder štítem jako Odvetná akce (warden.mjs).
   const wardenBash = retaliationShieldBash(actor);
+  const agile = abilityByKey(actor, AGILE_COUNTER_KEY);
   if (
+    !agile &&
     !counter &&
     !retaliatory &&
     !shoves.length &&
@@ -512,6 +525,11 @@ function reactionChips(actor) {
 
   const chips = [];
   const critical = defense.critical === true;
+  if (agile && agileCounterFits(actor, defense)) {
+    chips.push(
+      abilityChip(agile, "REDSTEEL.Bg3Hotbar.Suggest.Reaction", attackerToken.id),
+    );
+  }
   if (
     counter &&
     (counterattackFits(defense) || (brilliant && criticalDodge(defense)))
@@ -678,6 +696,8 @@ function riposteChips(actor) {
     // Improved Feint Attack "nelze reagovat Ripostou, Dračím výpadem"
     // (champion.mjs): neither chip is offered against it.
     if (isFeintAttack(flags.redsteel?.abilityKey ?? null)) return [];
+    // Zbloudilá rána: a flail cannot be riposted.
+    if (attack.noRiposte) return [];
     // Not a melee exchange: the same split autoDefense.mjs defenseCategory
     // makes (ranged, thrown and magic are answered at range).
     if (["ranged", "throwing", "magic"].includes(attack.attackType)) return [];
@@ -1769,7 +1789,11 @@ function combatProvider(actor) {
     ...escapeChips(actor), ...sustainChips(actor), ...stanceChips(actor),
     ...slipThroughChips(actor), ...halfPirouetteChips(actor),
     ...grudgeChips(actor), ...predatorsAttackChips(actor),
-    ...hopliteChips(actor), ...triumphChips(actor), ...freeShieldChips(actor)];
+    ...hopliteChips(actor), ...triumphChips(actor), ...freeShieldChips(actor),
+    // Veneficus: Lindar's Charge and Magic Momentum (veneficus.mjs).
+    ...veneficusChips(actor),
+    // Elymas: Focused Defense and Magic Counterattack (elymas.mjs).
+    ...elymasChips(actor)];
 }
 
 const PROVIDERS = [movementProvider, combatProvider];

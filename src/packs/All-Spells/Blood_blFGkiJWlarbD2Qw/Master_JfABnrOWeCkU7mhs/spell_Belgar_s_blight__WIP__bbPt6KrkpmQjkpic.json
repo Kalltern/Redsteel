@@ -87,7 +87,7 @@
       ]
     },
     "isOffensive": true,
-    "uncontested": true,
+    "uncontested": false,
     "sustained": false,
     "difficulty": -20,
     "cost": 4,
@@ -105,6 +105,8 @@
       "diceBonus": "@spellPower"
     },
     "penetration": 0,
+    "magicAttack": 15,
+    "magicAttackFixed": false,
     "dmgType1": "",
     "bool2": "",
     "dmgType2": "",

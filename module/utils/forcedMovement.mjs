@@ -42,6 +42,8 @@ import { applyDamageAsGM, SOCKET } from "./applyDamage.mjs";
 import { withForcedFlag } from "./forcedMoveRegistry.mjs";
 // Circular too (hoplite.mjs reads versusOutcome); call time only.
 import { offerHopliteOnslaught } from "./hoplite.mjs";
+import { openMagicMomentumOnProne } from "./veneficus.mjs";
+import { versusAnswerOutcome } from "./attributeFollowup.mjs";
 
 /**
  * Statuses that pin a token in place: pushes, pulls and slides leave it where
@@ -478,6 +480,13 @@ export function pushForCard(message) {
   return (key && PUSH_ON_HIT[key]) || null;
 }
 
+/** The push an ability item lands with, or null. Same lookup as pushForCard. */
+export function pushForAbility(ability) {
+  const key =
+    ability?.system?.localizationKey || PUSH_ON_HIT_NAMES[ability?.name] || null;
+  return (key && PUSH_ON_HIT[key]) || null;
+}
+
 const SYSTEM_ID = "redsteel";
 const PRONE_STATUS = "prone";
 
@@ -766,7 +775,7 @@ function versusOutcomeForTarget(message, target) {
     if (!mine) continue;
     const total = Number(answer.rolls?.[0]?.total);
     if (!Number.isFinite(total)) continue;
-    return { attackerWon: total <= 0, gap: Math.abs(total) };
+    return versusAnswerOutcome(followup, total);
   }
   return null;
 }
@@ -786,8 +795,7 @@ export function versusOutcomeFor(message, margin, source = "") {
     if (Number(followup.margin) !== margin || (followup.source ?? "") !== source) continue;
     const total = Number(messages[i].rolls?.[0]?.total);
     if (!Number.isFinite(total)) continue;
-    // A dead tie goes to the initiator.
-    return { attackerWon: total <= 0, gap: Math.abs(total) };
+    return versusAnswerOutcome(followup, total);
   }
   return null;
 }
@@ -925,10 +933,16 @@ async function runCardPush(p) {
     attacker,
     { firstOnly: p.firstOnly === true },
   );
+  const knockedDownIds = pushResults
+    .filter((r) => r.prone)
+    .map((r) => r.tokenId);
   await offerHopliteOnslaught(attacker, message, {
     pushResults,
-    knockedDownIds: pushResults.filter((r) => r.prone).map((r) => r.tokenId),
+    knockedDownIds,
   });
+  // Veneficus → Magické momentum: a melee knock-down opens the round's free
+  // spell (veneficus.mjs).
+  await openMagicMomentumOnProne(attacker, message, knockedDownIds);
   return pushResults;
 }
 

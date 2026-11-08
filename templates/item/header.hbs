@@ -1,4 +1,4 @@
-<header class="sheet-header-item">
+<header class="sheet-header-item{{#if (or (eq item.type "weapon") (eq item.type "gear") (eq item.type "ability"))}} sheet-header-item--plated{{/if}}">
 
   {{!-- =====================
        PROFILE IMAGE & NAME
@@ -22,14 +22,20 @@
         <input name="name" type="text" value="{{item.name}}" placeholder="{{localize 'REDSTEEL.UI.name'}}" />
       {{/if}}
       {{!-- The key can name the item, so a player never sees it on an
-            unidentified one. --}}
+            unidentified one. Tucked behind an icon: it matters only while
+            authoring, and it lights up when one is set. --}}
       {{#unless identifyHidden}}
-        <input
-          name="system.localizationKey"
-          type="text"
-          value="{{system.localizationKey}}"
-          placeholder="{{localize 'REDSTEEL.UI.localizationKey'}}"
-        />
+        <details class="rs-item-key{{#if system.localizationKey}} rs-item-key--set{{/if}}">
+          <summary data-tooltip="{{localize 'REDSTEEL.UI.localizationKey'}}">
+            <i class="fa-solid fa-language"></i>
+          </summary>
+          <input
+            name="system.localizationKey"
+            type="text"
+            value="{{system.localizationKey}}"
+            placeholder="{{localize 'REDSTEEL.UI.localizationKey'}}"
+          />
+        </details>
       {{/unless}}
     </div>
     {{!-- =====================
@@ -130,295 +136,124 @@
             <input type="checkbox" name="system.rations" {{checked system.rations}} />
             <span>{{localize "REDSTEEL.Item.Item.FIELDS.rations.label"}}</span>
           </label>
+          {{!-- Ohniskový předmět (utils/focusItem.mjs). --}}
+          <label class="rs-toggle" data-tooltip="{{localize 'REDSTEEL.Item.Focus.hint'}}">
+            <input type="checkbox" name="system.focus" {{checked system.focus}} />
+            <span>{{localize "REDSTEEL.Item.Focus.label"}}</span>
+          </label>
         </div>
       </div>
     {{/if}}
 
     {{!-- =====================
-         WEAPON & ABILITY
+         WEAPON
     ====================== --}}
-    {{#if (or (eq item.type "weapon") (eq item.type "ability"))}}
-      <div class="grid-2col">
-
-        {{!-- Weapon dice fields --}}
-        {{#if (eq item.type "weapon")}}
-          <div class="grid-span-1">
-            <label for="damage-dice" data-tt-kind="weaponField" data-tt-id="diceNum">{{localize "REDSTEEL.Item.Weapon.FIELDS.diceNum.label"}}:</label>
-            <input
-              type="text"
-              name="system.roll.diceNum"
-              value="{{system.roll.diceNum}}"
-              data-dtype="Number"
-            />
-          </div>
-
-          <div class="grid-span-1">
-            <label class="resource-label" data-tt-kind="weaponField" data-tt-id="dieSize">{{localize "REDSTEEL.Item.Weapon.FIELDS.dieSize.label"}}</label>
-            <input
-              type="text"
-              name="system.roll.diceSize"
-              value="{{system.roll.diceSize}}"
-              data-dtype="String"
-            />
-          </div>
-        {{/if}}
-
-        {{!-- Shared fields --}}
-        <div class="grid-span-1">
-          <label class="resource-label" data-tt-kind="weaponField" data-tt-id="rollMod">{{localize "REDSTEEL.Item.Weapon.FIELDS.rollMod.label"}}</label>
-          <input
-            type="text"
-            name="system.roll.diceBonus"
-            value="{{system.roll.diceBonus}}"
-            data-dtype="String"
-            placeholder="e.g. +5+2d6"
-          />
+    {{#if (eq item.type "weapon")}}
+      <div class="rs-item-facts">
+        <div class="rs-field">
+          <label for="weapon-class" data-tt-kind="weaponField" data-tt-id="weaponClass">{{localize "REDSTEEL.UI.weaponClass"}}</label>
+          <select name="system.class" id="weapon-class">
+            <option value="">{{localize "REDSTEEL.UI.selectClass"}}</option>
+            {{#each system.classOptions as |classOption|}}
+              <option value="{{classOption}}" {{#if (eq ../system.class classOption)}}selected{{/if}}>
+                {{localize (concat "REDSTEEL.Item.Weapon.Class." classOption)}}
+              </option>
+            {{/each}}
+          </select>
         </div>
-
-        {{#if (eq item.type "ability")}}
-          <div class="grid-span-1">
-            <label class="resource-label">{{localize "REDSTEEL.Item.Ability.FIELDS.heavyDamage.label"}}</label>
-            <input
-              type="text"
-              name="system.roll.heavyDiceBonus"
-              value="{{system.roll.heavyDiceBonus}}"
-              data-dtype="String"
-              placeholder="e.g. +2d4"
-              title="{{localize "REDSTEEL.Item.Ability.FIELDS.heavyDamage.hint"}}"
-            />
-          </div>
-        {{/if}}
-
-        <div class="grid-span-1">
-          <label class="resource-label" data-tt-kind="weaponField" data-tt-id="penetration">{{localize "REDSTEEL.Item.Weapon.FIELDS.penetration.label"}}</label>
-          <input
-            type="number"
-            name="system.penetration"
-            value="{{system.penetration}}"
-            data-dtype="Number"
-          />
+        <div class="rs-field">
+          <label for="weapon-type" data-tt-kind="weaponField" data-tt-id="weaponType">{{localize "REDSTEEL.UI.weaponType"}}</label>
+          <select name="system.type" id="weapon-type">
+            <option value="">{{localize "REDSTEEL.UI.selectType"}}</option>
+            {{#each system.typeOptions as |typeOption|}}
+              <option value="{{typeOption}}" {{#if (eq ../system.type typeOption)}}selected{{/if}}>
+                {{localize (concat "REDSTEEL.Item.Weapon.Type." typeOption)}}
+              </option>
+            {{/each}}
+          </select>
         </div>
-
-        {{!-- Weapon-only fields --}}
-        {{#if (eq item.type "weapon")}}
-          <div class="grid-span-1">
-            <label for="weapon-class" data-tt-kind="weaponField" data-tt-id="weaponClass">{{localize "REDSTEEL.UI.weaponClass"}}:</label>
-            <select name="system.class" id="weapon-class">
-              <option value="">{{localize "REDSTEEL.UI.selectClass"}}</option>
-              {{#each system.classOptions as |classOption|}}
-                <option value="{{classOption}}" {{#if (eq ../system.class classOption)}}selected{{/if}}>
-                  {{classOption}}
+        <div class="rs-field">
+          <label for="weapon-quality" data-tt-kind="weaponField" data-tt-id="quality">{{localize "REDSTEEL.Item.Weapon.FIELDS.quality.label"}}</label>
+          <select name="system.quality" id="weapon-quality">
+            {{#each system.qualityChoices as |label key|}}
+              <option value="{{key}}" {{#if (eq ../system.quality key)}}selected{{/if}}>
+                {{label}}
+              </option>
+            {{/each}}
+          </select>
+        </div>
+        {{!-- Material (utils/materials.mjs). The select is unnamed so the form
+              submit never writes it; the sheet's change listener stores the key
+              and a frozen snapshot together. --}}
+        <div class="rs-field">
+          <label for="weapon-material">{{localize "REDSTEEL.Material.Label"}}</label>
+          <div class="material-select-row">
+            <select id="weapon-material" data-material-select {{#unless editable}}disabled{{/unless}}>
+              {{#each materialChoices as |choice|}}
+                <option value="{{choice.key}}" {{#if choice.selected}}selected{{/if}}>
+                  {{choice.label}}
                 </option>
               {{/each}}
             </select>
-          </div>
-
-          <div class="grid-span-1">
-            <label for="weapon-type" data-tt-kind="weaponField" data-tt-id="weaponType">{{localize "REDSTEEL.UI.weaponType"}}:</label>
-            <select name="system.type" id="weapon-type">
-              <option value="">{{localize "REDSTEEL.UI.selectType"}}</option>
-              {{#each system.typeOptions as |typeOption|}}
-                <option value="{{typeOption}}" {{#if (eq ../system.type typeOption)}}selected{{/if}}>
-                  {{typeOption}}
-                </option>
-              {{/each}}
-            </select>
-          </div>
-
-          <div class="grid-span-1">
-            <label for="weapon-quality" data-tt-kind="weaponField" data-tt-id="quality">{{localize "REDSTEEL.Item.Weapon.FIELDS.quality.label"}}:</label>
-            <select name="system.quality" id="weapon-quality">
-              {{#each system.qualityChoices as |label key|}}
-                <option value="{{key}}" {{#if (eq ../system.quality key)}}selected{{/if}}>
-                  {{label}}
-                </option>
-              {{/each}}
-            </select>
-          </div>
-
-          {{!-- Material (utils/materials.mjs). The select is unnamed so the form
-                submit never writes it; the sheet's change listener stores the key
-                and a frozen snapshot together. --}}
-          <div class="grid-span-1">
-            <label for="weapon-material">{{localize "REDSTEEL.Material.Label"}}:</label>
-            <div class="material-select-row">
-              <select id="weapon-material" data-material-select {{#unless editable}}disabled{{/unless}}>
-                {{#each materialChoices as |choice|}}
-                  <option value="{{choice.key}}" {{#if choice.selected}}selected{{/if}}>
-                    {{choice.label}}
-                  </option>
-                {{/each}}
-              </select>
-              {{#if (and editable materialKey)}}
-                <a class="material-refresh" data-action="refreshMaterial" title="{{localize 'REDSTEEL.Material.Refresh'}}">
-                  <i class="fa-solid fa-rotate"></i>
-                </a>
-              {{/if}}
-            </div>
-          </div>
-          {{#if materialSummary}}
-            <p class="hint material-summary grid-span-2">{{materialSummary}}</p>
-          {{/if}}
-        {{/if}}
-
-        {{!-- Ability-only fields --}}
-        {{#if (eq item.type "ability")}}
-          <div class="grid-span-1">
-            <label for="ability-class">{{localize "REDSTEEL.UI.abilityClass"}}:</label>
-            <select name="system.class" id="ability-class">
-              <option value="">{{localize "REDSTEEL.UI.selectClass"}}</option>
-              {{#each system.classOptions as |classOption|}}
-                <option value="{{classOption}}" {{#if (eq ../system.class classOption)}}selected{{/if}}>
-                  {{classOption}}
-                </option>
-              {{/each}}
-            </select>
-          </div>
-
-          <div class="grid-span-1">
-            <label for="ability-category">{{localize "REDSTEEL.Item.Ability.FIELDS.category.label"}}:</label>
-            <select name="system.category" id="ability-category">
-              {{#each system.categoryOptions as |categoryOption|}}
-                <option value="{{categoryOption}}" {{#if (eq ../system.category categoryOption)}}selected{{/if}}>
-                  {{localize (concat "REDSTEEL.Actor.Abilities.Category." categoryOption)}}
-                </option>
-              {{/each}}
-            </select>
-          </div>
-
-          <div class="grid-span-1">
-            <label for="ability-type">{{localize "REDSTEEL.UI.abilityType"}}:</label>
-            <select name="system.type" id="ability-type">
-              <option value="">{{localize "REDSTEEL.UI.selectType"}}</option>
-              {{#each system.typeOptions as |typeOption|}}
-                <option value="{{typeOption}}" {{#if (eq ../system.type typeOption)}}selected{{/if}}>
-                  {{typeOption}}
-                </option>
-              {{/each}}
-            </select>
-          </div>
-
-          {{#if system.standalone}}
-            {{#if (eq system.type "ranged")}}
-              <div class="grid-span-1">
-                <label for="ability-ranged-skill" title="{{localize "REDSTEEL.Item.Ability.FIELDS.rangedSkill.hint"}}">{{localize "REDSTEEL.Item.Ability.FIELDS.rangedSkill.label"}}:</label>
-                <select name="system.rangedSkill" id="ability-ranged-skill">
-                  <option value="">{{localize "REDSTEEL.UI.selectType"}}</option>
-                  {{#each system.rangedSkillOptions as |skillOption|}}
-                    <option value="{{skillOption}}" {{#if (eq ../system.rangedSkill skillOption)}}selected{{/if}}>
-                      {{skillOption}}
-                    </option>
-                  {{/each}}
-                </select>
-              </div>
+            {{#if (and editable materialKey)}}
+              <a class="material-refresh" data-action="refreshMaterial" title="{{localize 'REDSTEEL.Material.Refresh'}}">
+                <i class="fa-solid fa-rotate"></i>
+              </a>
             {{/if}}
-          {{/if}}
+          </div>
+        </div>
+      </div>
+      {{#if materialSummary}}
+        <p class="hint material-summary">{{materialSummary}}</p>
+      {{/if}}
+    {{/if}}
 
-          <div class="grid-span-1">
-            <label for="cost-type">{{localize "REDSTEEL.UI.costType"}}:</label>
-            <select name="system.costType" id="cost-type">
+    {{!-- =====================
+         ABILITY
+    ====================== --}}
+    {{#if (eq item.type "ability")}}
+      <div class="rs-item-facts">
+        <div class="rs-field">
+          <label for="ability-class">{{localize "REDSTEEL.UI.abilityClass"}}</label>
+          <select name="system.class" id="ability-class">
+            <option value="">{{localize "REDSTEEL.UI.selectClass"}}</option>
+            {{#each system.classOptions as |option|}}
+              <option value="{{option}}" {{#if (eq ../system.class option)}}selected{{/if}}>{{localize (concat "REDSTEEL.Item.Ability.Class." option)}}</option>
+            {{/each}}
+          </select>
+        </div>
+        <div class="rs-field">
+          <label for="ability-category">{{localize "REDSTEEL.Item.Ability.FIELDS.category.label"}}</label>
+          <select name="system.category" id="ability-category">
+            {{#each system.categoryOptions as |categoryOption|}}
+              <option value="{{categoryOption}}" {{#if (eq ../system.category categoryOption)}}selected{{/if}}>
+                {{localize (concat "REDSTEEL.Actor.Abilities.Category." categoryOption)}}
+              </option>
+            {{/each}}
+          </select>
+        </div>
+        <div class="rs-field">
+          <label for="ability-type">{{localize "REDSTEEL.UI.abilityType"}}</label>
+          <select name="system.type" id="ability-type">
+            <option value="">{{localize "REDSTEEL.UI.selectType"}}</option>
+            {{#each system.typeOptions as |option|}}
+              <option value="{{option}}" {{#if (eq ../system.type option)}}selected{{/if}}>{{localize (concat "REDSTEEL.Item.Ability.Type." option)}}</option>
+            {{/each}}
+          </select>
+        </div>
+        {{#if (and system.standalone (eq system.type "ranged"))}}
+          <div class="rs-field">
+            <label for="ability-ranged-skill" title="{{localize "REDSTEEL.Item.Ability.FIELDS.rangedSkill.hint"}}">{{localize "REDSTEEL.Item.Ability.FIELDS.rangedSkill.label"}}</label>
+            <select name="system.rangedSkill" id="ability-ranged-skill">
               <option value="">{{localize "REDSTEEL.UI.selectType"}}</option>
-              {{#each system.costOptions as |costOption|}}
-                <option value="{{costOption}}" {{#if (eq ../system.costType costOption)}}selected{{/if}}>
-                  {{costOption}}
+              {{#each system.rangedSkillOptions as |skillOption|}}
+                <option value="{{skillOption}}" {{#if (eq ../system.rangedSkill skillOption)}}selected{{/if}}>
+                  {{localize (concat "REDSTEEL.Actor.Character.combatSkills." skillOption ".label")}}
                 </option>
               {{/each}}
             </select>
-          </div>
-
-          <div class="grid-span-1">
-            <label for="test-type">{{localize "REDSTEEL.UI.testType"}}:</label>
-            <select name="system.attributeTest" id="test-type">
-              <option value="">{{localize "REDSTEEL.UI.selectType"}}</option>
-              {{#each system.testOptions as |testOption|}}
-                <option value="{{testOption}}" {{#if (eq ../system.attributeTest testOption)}}selected{{/if}}>
-                  {{testOption}}
-                </option>
-              {{/each}}
-            </select>
-          </div>
-
-          <div class="grid-span-1">
-            <label class="resource-label">{{localize "REDSTEEL.Item.Spell.FIELDS.cost.label"}}</label>
-            <input type="text" name="system.cost" value="{{system.cost}}" data-dtype="Number"/>
-          </div>
-
-          <div class="grid-span-1">
-            <label class="resource-label">{{localize "REDSTEEL.UI.testModifier"}}</label>
-            <input type="text" name="system.testModifier" value="{{system.testModifier}}" data-dtype="Number"/>
-          </div>
-
-          <div class="grid-span-1">
-            <label class="resource-label" title="{{localize "REDSTEEL.Item.Ability.FIELDS.versusAgainst.hint"}}">
-              {{localize "REDSTEEL.Item.Ability.FIELDS.versusAgainst.label"}}
-            </label>
-            <div class="rs-versus-against">
-              {{#each versusAgainstOptions as |opt|}}
-                <label class="rs-versus-against__opt" data-tooltip="{{opt.label}}">
-                  <input type="checkbox" data-versus-against="{{opt.key}}" {{checked opt.checked}} {{#unless ../editable}}disabled{{/unless}} />{{opt.abbr}}
-                </label>
-              {{/each}}
-            </div>
-          </div>
-
-          <div class="grid-span-1">
-            <label for="test-advantage">{{localize "REDSTEEL.Item.Ability.FIELDS.testAdvantage.label"}}:</label>
-            <select name="system.testAdvantage" id="test-advantage">
-              <option value="">{{localize "REDSTEEL.Item.Ability.FIELDS.testAdvantage.none"}}</option>
-              <option value="advantage" {{#if (eq system.testAdvantage "advantage")}}selected{{/if}}>{{localize "REDSTEEL.Item.Ability.FIELDS.testAdvantage.advantage"}}</option>
-              <option value="disadvantage" {{#if (eq system.testAdvantage "disadvantage")}}selected{{/if}}>{{localize "REDSTEEL.Item.Ability.FIELDS.testAdvantage.disadvantage"}}</option>
-            </select>
-          </div>
-
-          <div class="grid-span-2 rs-toggle-row">
-            <label class="rs-toggle">
-              <input type="checkbox" name="system.weaponAbility" {{#if system.weaponAbility}}checked{{/if}} />
-              <span>{{localize "REDSTEEL.Item.Ability.FIELDS.weaponAbility.label"}}</span>
-            </label>
-
-            <label class="rs-toggle">
-              <input type="checkbox" name="system.standalone" {{#if system.standalone}}checked{{/if}} />
-              <span>{{localize "REDSTEEL.Item.Ability.FIELDS.standalone.label"}}</span>
-            </label>
-
-            <label class="rs-toggle">
-              <input type="checkbox" name="system.modifiesAttack" {{#if system.modifiesAttack}}checked{{/if}} />
-              <span>{{localize "REDSTEEL.Item.Ability.FIELDS.modifiesAttack.label"}}</span>
-            </label>
-
-            <label class="rs-toggle">
-              <input type="checkbox" name="system.multiAttack" {{#if system.multiAttack}}checked{{/if}} />
-              <span>{{localize "REDSTEEL.Item.Ability.FIELDS.multiAttack.label"}}</span>
-            </label>
-
-            {{#if (eq system.type "ranged")}}
-            <label class="rs-toggle" title="{{localize "REDSTEEL.Item.Ability.FIELDS.throwsExplosives.hint"}}">
-              <input type="checkbox" name="system.throwsExplosives" {{#if system.throwsExplosives}}checked{{/if}} />
-              <span>{{localize "REDSTEEL.Item.Ability.FIELDS.throwsExplosives.label"}}</span>
-            </label>
-            {{/if}}
-
-            <label class="rs-toggle" title="{{localize "REDSTEEL.Item.Ability.FIELDS.opportunityAttack.hint"}}">
-              <input type="checkbox" name="system.opportunityAttack" {{#if system.opportunityAttack}}checked{{/if}} />
-              <span>{{localize "REDSTEEL.Item.Ability.FIELDS.opportunityAttack.label"}}</span>
-            </label>
-          </div>
-
-          <div class="grid-span-2">
-            <label class="resource-label" title="{{localize "REDSTEEL.Item.Ability.FIELDS.requiredWeaponTag.hint"}}">
-              {{localize "REDSTEEL.Item.Ability.FIELDS.requiredWeaponTag.label"}}
-            </label>
-            <input type="text" name="system.requiredWeaponTag" value="{{system.requiredWeaponTag}}"
-              placeholder="{{localize "REDSTEEL.Item.Ability.FIELDS.requiredWeaponTag.hint"}}" />
-          </div>
-
-          {{!-- Extra melee reach in hexes (positioning.mjs weaponReach). --}}
-          <div class="grid-span-1">
-            <label class="resource-label">{{localize "REDSTEEL.Reach.ReachBonus"}}</label>
-            <input type="number" name="system.reachBonus" value="{{system.reachBonus}}" min="0" step="1" data-dtype="Number"/>
           </div>
         {{/if}}
-
       </div>
     {{/if}}
 
@@ -426,54 +261,22 @@
          GEAR
     ====================== --}}
     {{#if (eq item.type "gear")}}
-      <div class="grid grid-2col">
-
-        <div class="grid-span-2 rs-toggle-row">
-          <label class="rs-toggle">
-            <input type="checkbox" name="system.shield" {{#if system.shield}}checked{{/if}} />
-            <span>{{localize "REDSTEEL.Item.Gear.FIELDS.shield.label"}}</span>
-          </label>
-
-          {{#unless system.shield}}
-            <label class="rs-toggle">
-              <input type="checkbox" name="system.helmet" {{#if system.helmet}}checked{{/if}} />
-              <span>{{localize "REDSTEEL.Item.Gear.FIELDS.helmet.label"}}</span>
-            </label>
-          {{/unless}}
-        </div>
-
-        <div class="grid-span-1">
-          <label class="resource-label">{{localize "REDSTEEL.Item.Gear.FIELDS.armor.label"}}</label>
-          <input type="text" name="system.armor.value" value="{{system.armor.value}}" data-dtype="Number"/>
-        </div>
-
-        <div class="grid-span-1">
-          <label class="resource-label">{{localize "REDSTEEL.Item.Gear.FIELDS.durability.label"}}</label>
-          <input type="text" name="system.armor.durability" value="{{system.armor.durability}}" data-dtype="Number"/>
-        </div>
-
-        <div class="grid-span-1">
-          <label class="resource-label">{{localize "REDSTEEL.Item.Gear.FIELDS.durabilityMax.label"}}</label>
-          <input type="text" name="system.armor.durabilityMax" value="{{system.armor.durabilityMax}}" data-dtype="Number"/>
-        </div>
-
-
+      <div class="rs-item-facts">
         {{#unless system.shield}}
-          <div class="grid-span-1">
-            <label for="gear-layer">{{localize "REDSTEEL.UI.gearLayer"}}:</label>
+          <div class="rs-field">
+            <label for="gear-layer">{{localize "REDSTEEL.UI.gearLayer"}}</label>
             <select name="system.layer" id="gear-layer">
               <option value="">{{localize "REDSTEEL.UI.selectLayer"}}</option>
               {{#each system.layerOptions as |layerOption|}}
                 <option value="{{layerOption}}" {{#if (eq ../system.layer layerOption)}}selected{{/if}}>
-                  {{layerOption}}
+                  {{localize (concat "REDSTEEL.Item.Gear.Layer." layerOption)}}
                 </option>
               {{/each}}
             </select>
           </div>
-
           {{#unless (eq system.layer "Accessory")}}
-            <div class="grid-span-1">
-              <label for="gear-armor-weight">{{localize "REDSTEEL.Item.Gear.FIELDS.armorWeight.label"}}:</label>
+            <div class="rs-field">
+              <label for="gear-armor-weight">{{localize "REDSTEEL.Item.Gear.FIELDS.armorWeight.label"}}</label>
               <select name="system.armorWeight" id="gear-armor-weight">
                 <option value="" {{#unless system.armorWeight}}selected{{/unless}}>{{localize "REDSTEEL.Item.Gear.FIELDS.armorWeight.none"}}</option>
                 <option value="light" {{#if (eq system.armorWeight "light")}}selected{{/if}}>{{localize "REDSTEEL.Item.Gear.FIELDS.armorWeight.light"}}</option>
@@ -482,9 +285,8 @@
             </div>
           {{/unless}}
         {{/unless}}
-
-        <div class="grid-span-1">
-          <label for="gear-quality">{{localize "REDSTEEL.Item.Gear.FIELDS.quality.label"}}:</label>
+        <div class="rs-field">
+          <label for="gear-quality">{{localize "REDSTEEL.Item.Gear.FIELDS.quality.label"}}</label>
           <select name="system.quality" id="gear-quality">
             {{#each system.qualityChoices as |label key|}}
               <option value="{{key}}" {{#if (eq ../system.quality key)}}selected{{/if}}>
@@ -493,12 +295,11 @@
             {{/each}}
           </select>
         </div>
-
         {{!-- Material (utils/materials.mjs). The select is unnamed so the form
               submit never writes it; the sheet's change listener stores the key
               and a frozen snapshot together. --}}
-        <div class="grid-span-1">
-          <label for="gear-material">{{localize "REDSTEEL.Material.Label"}}:</label>
+        <div class="rs-field">
+          <label for="gear-material">{{localize "REDSTEEL.Material.Label"}}</label>
           <div class="material-select-row">
             <select id="gear-material" data-material-select {{#unless editable}}disabled{{/unless}}>
               {{#each materialChoices as |choice|}}
@@ -514,10 +315,26 @@
             {{/if}}
           </div>
         </div>
-        {{#if materialSummary}}
-          <p class="hint material-summary grid-span-2">{{materialSummary}}</p>
-        {{/if}}
-
+      </div>
+      {{#if materialSummary}}
+        <p class="hint material-summary">{{materialSummary}}</p>
+      {{/if}}
+      <div class="rs-toggle-row">
+        <label class="rs-toggle">
+          <input type="checkbox" name="system.shield" {{#if system.shield}}checked{{/if}} />
+          <span>{{localize "REDSTEEL.Item.Gear.FIELDS.shield.label"}}</span>
+        </label>
+        {{#unless system.shield}}
+          <label class="rs-toggle">
+            <input type="checkbox" name="system.helmet" {{#if system.helmet}}checked{{/if}} />
+            <span>{{localize "REDSTEEL.Item.Gear.FIELDS.helmet.label"}}</span>
+          </label>
+        {{/unless}}
+        {{!-- Ohniskový předmět (utils/focusItem.mjs). --}}
+        <label class="rs-toggle" data-tooltip="{{localize 'REDSTEEL.Item.Focus.hint'}}">
+          <input type="checkbox" name="system.focus" {{checked system.focus}} />
+          <span>{{localize "REDSTEEL.Item.Focus.label"}}</span>
+        </label>
       </div>
     {{/if}}
 
@@ -759,12 +576,178 @@
           <input type="text" name="system.cost" value="{{system.cost}}" data-dtype="Number"/>
         </div>
 
-        {{!-- Offensive / Uncontested / Sustained / Healing live under
-              "Spell properties" on the Variants tab. --}}
+        <div class="grid-span-1">
+          <label class="resource-label" data-tooltip="{{localize "REDSTEEL.Item.Spell.FIELDS.magicAttack.hint"}}">{{localize "REDSTEEL.Item.Spell.FIELDS.magicAttack.label"}}</label>
+          <input type="text" name="system.magicAttack" value="{{system.magicAttack}}" data-dtype="Number" placeholder="0"/>
+        </div>
+
+        {{!-- Offensive / Uncontested / Sustained / Healing / Fixed Magic Attack
+              live under "Spell properties" on the Variants tab. --}}
 
       </div>
     {{/if}}
 
   </div>
+
+  {{!-- The numbers an item is judged by stay in view on every tab. Each
+        input is the stored base value; the small figure beside it is what
+        quality, material and enchantments add on top. --}}
+  {{#if (eq item.type "weapon")}}
+  <div class="rs-item-stats">
+    <div class="rs-plate rs-plate--hero">
+      <label>{{localize "REDSTEEL.Item.Ability.FIELDS.damage.label"}}</label>
+      <div class="rs-plate-formula">
+        <input type="text" name="system.roll.diceNum" value="{{system.roll.diceNum}}" data-dtype="Number"
+          aria-label="{{localize 'REDSTEEL.Item.Weapon.FIELDS.diceNum.label'}}" data-tt-kind="weaponField" data-tt-id="diceNum" />
+        <span>d</span>
+        <input type="text" name="system.roll.diceSize" value="{{system.roll.diceSize}}" data-dtype="String"
+          aria-label="{{localize 'REDSTEEL.Item.Weapon.FIELDS.dieSize.label'}}" data-tt-kind="weaponField" data-tt-id="dieSize" />
+        {{#if damageJoiner}}<span>{{damageJoiner}}</span>{{/if}}
+        <input type="text" name="system.roll.diceBonus" value="{{system.roll.diceBonus}}" data-dtype="String" placeholder="0"
+          aria-label="{{localize 'REDSTEEL.Item.Weapon.FIELDS.rollMod.label'}}" data-tt-kind="weaponField" data-tt-id="rollMod" />
+      </div>
+      {{#if weaponBonus.damage}}<span class="rs-plate-mod" data-tooltip="{{localize 'REDSTEEL.Item.Weapon.BonusHint'}}">{{weaponBonus.damage}}</span>{{/if}}
+    </div>
+    <div class="rs-plate">
+      <label data-tt-kind="weaponField" data-tt-id="attack">{{localize "REDSTEEL.Item.Weapon.FIELDS.attack.label"}}</label>
+      <input type="text" name="system.attack" value="{{system.attack}}" data-dtype="Number" />
+      {{#if weaponBonus.attack}}<span class="rs-plate-mod" data-tooltip="{{localize 'REDSTEEL.Item.Weapon.BonusHint'}}">{{weaponBonus.attack}}</span>{{/if}}
+    </div>
+    <div class="rs-plate">
+      <label data-tt-kind="weaponField" data-tt-id="defense">{{localize "REDSTEEL.Item.Weapon.FIELDS.defense.label"}}</label>
+      <input type="text" name="system.defense" value="{{system.defense}}" data-dtype="Number" />
+      {{#if weaponBonus.defense}}<span class="rs-plate-mod" data-tooltip="{{localize 'REDSTEEL.Item.Weapon.BonusHint'}}">{{weaponBonus.defense}}</span>{{/if}}
+    </div>
+    <div class="rs-plate">
+      <label data-tt-kind="weaponField" data-tt-id="dodge">{{localize "REDSTEEL.Item.Weapon.FIELDS.dodge.label"}}</label>
+      <input type="text" name="system.dodge" value="{{system.dodge}}" data-dtype="Number" />
+      {{#if weaponBonus.dodge}}<span class="rs-plate-mod" data-tooltip="{{localize 'REDSTEEL.Item.Weapon.BonusHint'}}">{{weaponBonus.dodge}}</span>{{/if}}
+    </div>
+    <div class="rs-plate">
+      <label data-tt-kind="weaponField" data-tt-id="penetration">{{localize "REDSTEEL.Item.Weapon.FIELDS.penetration.label"}}</label>
+      <input type="number" name="system.penetration" value="{{system.penetration}}" data-dtype="Number" />
+      {{#if weaponBonus.penetration}}<span class="rs-plate-mod" data-tooltip="{{localize 'REDSTEEL.Item.Weapon.BonusHint'}}">{{weaponBonus.penetration}}</span>{{/if}}
+    </div>
+    <div class="rs-plate">
+      <label data-tt-kind="weaponField" data-tt-id="breakthrough">{{localize "REDSTEEL.Item.Weapon.FIELDS.breakthrough.label"}}</label>
+      <input type="text" name="system.breakthrough" value="{{system.breakthrough}}" data-dtype="String" placeholder="2d6" />
+      {{#if weaponBonus.breakthrough}}<span class="rs-plate-mod" data-tooltip="{{localize 'REDSTEEL.Item.Weapon.BonusHint'}}">{{weaponBonus.breakthrough}}</span>{{/if}}
+    </div>
+    <div class="rs-plate">
+      <label data-tt-kind="weaponField" data-tt-id="sneakDamage">{{localize "REDSTEEL.Item.Weapon.FIELDS.sneakDamage.label"}}</label>
+      <input type="text" name="system.sneakDamage" value="{{system.sneakDamage}}" data-dtype="String" placeholder="2d6" />
+    </div>
+  </div>
+  {{/if}}
+  {{#if (eq item.type "gear")}}
+  <div class="rs-item-stats rs-item-stats--gear">
+    <div class="rs-plate rs-plate--hero">
+      <label>{{localize "REDSTEEL.Item.Gear.FIELDS.armor.label"}}</label>
+      <input type="text" name="system.armor.value" value="{{system.armor.value}}" data-dtype="Number" />
+      {{#if gearBonus.armor}}<span class="rs-plate-mod" data-tooltip="{{localize 'REDSTEEL.Item.Weapon.BonusHint'}}">{{gearBonus.armor}}</span>{{/if}}
+    </div>
+    <div class="rs-plate">
+      <label>{{localize "REDSTEEL.Item.Gear.FIELDS.defense.label"}}</label>
+      <input type="text" name="system.defense" value="{{system.defense}}" data-dtype="Number" />
+      {{#if gearBonus.defense}}<span class="rs-plate-mod" data-tooltip="{{localize 'REDSTEEL.Item.Weapon.BonusHint'}}">{{gearBonus.defense}}</span>{{/if}}
+    </div>
+    <div class="rs-plate">
+      <label>{{localize "REDSTEEL.Item.Gear.FIELDS.critDefense.label"}}</label>
+      <input type="text" name="system.critDefense" value="{{system.critDefense}}" data-dtype="Number" />
+      {{#if gearBonus.critDefense}}<span class="rs-plate-mod" data-tooltip="{{localize 'REDSTEEL.Item.Weapon.BonusHint'}}">{{gearBonus.critDefense}}</span>{{/if}}
+    </div>
+    <div class="rs-plate rs-plate--hero">
+      <label>{{localize "REDSTEEL.Item.Gear.FIELDS.durability.label"}}</label>
+      <div class="rs-plate-formula">
+        <input type="text" name="system.armor.durability" value="{{system.armor.durability}}" data-dtype="Number"
+          aria-label="{{localize 'REDSTEEL.Item.Gear.FIELDS.durability.label'}}" />
+        <span>/</span>
+        <input type="text" name="system.armor.durabilityMax" value="{{system.armor.durabilityMax}}" data-dtype="Number"
+          aria-label="{{localize 'REDSTEEL.Item.Gear.FIELDS.durabilityMax.label'}}" />
+      </div>
+    </div>
+    <div class="rs-plate">
+      <label>{{localize "REDSTEEL.Item.Gear.FIELDS.rangedDefense.label"}}</label>
+      <input type="text" name="system.rangedDefense" value="{{system.rangedDefense}}" data-dtype="Number" />
+      {{#if gearBonus.rangedDefense}}<span class="rs-plate-mod" data-tooltip="{{localize 'REDSTEEL.Item.Weapon.BonusHint'}}">{{gearBonus.rangedDefense}}</span>{{/if}}
+    </div>
+    <div class="rs-plate">
+      <label>{{localize "REDSTEEL.Item.Gear.FIELDS.rangedCritDefense.label"}}</label>
+      <input type="text" name="system.rangedCritDefense" value="{{system.rangedCritDefense}}" data-dtype="Number" />
+      {{#if gearBonus.rangedCritDefense}}<span class="rs-plate-mod" data-tooltip="{{localize 'REDSTEEL.Item.Weapon.BonusHint'}}">{{gearBonus.rangedCritDefense}}</span>{{/if}}
+    </div>
+  </div>
+  {{/if}}
+  {{#if (eq item.type "ability")}}
+  {{!-- Six plates between the two heroes. A defense or stance is judged by what
+        it protects, anything else by what it hits with; Heavy Damage moves to
+        the Attributes tab when the first set fills the strip. --}}
+  <div class="rs-item-stats rs-item-stats--ability">
+    {{#if (or (eq system.class "defense") (eq system.class "stance"))}}
+      <div class="rs-plate rs-plate--hero">
+        <label>{{localize "REDSTEEL.Item.Weapon.FIELDS.defense.label"}}</label>
+        <input type="text" name="system.defense" value="{{system.defense}}" data-dtype="Number" />
+      </div>
+      <div class="rs-plate">
+        <label>{{localize "REDSTEEL.Item.Gear.FIELDS.rangedDefense.label"}}</label>
+        <input type="text" name="system.rangedDefense" value="{{system.rangedDefense}}" data-dtype="Number" />
+      </div>
+      <div class="rs-plate">
+        <label>{{localize "REDSTEEL.Item.Weapon.FIELDS.dodge.label"}}</label>
+        <input type="text" name="system.dodge" value="{{system.dodge}}" data-dtype="Number" />
+      </div>
+      <div class="rs-plate">
+        <label data-tt-kind="weaponField" data-tt-id="rollMod">{{localize "REDSTEEL.Item.Ability.FIELDS.damage.label"}}</label>
+        <input type="text" name="system.roll.diceBonus" value="{{system.roll.diceBonus}}" data-dtype="String" placeholder="0" />
+      </div>
+    {{else}}
+      <div class="rs-plate rs-plate--hero">
+        <label data-tt-kind="weaponField" data-tt-id="rollMod">{{localize "REDSTEEL.Item.Ability.FIELDS.damage.label"}}</label>
+        <input type="text" name="system.roll.diceBonus" value="{{system.roll.diceBonus}}" data-dtype="String" placeholder="0" />
+      </div>
+      <div class="rs-plate">
+        <label>{{localize "REDSTEEL.Item.Weapon.FIELDS.attack.label"}}</label>
+        <input type="text" name="system.attack" value="{{system.attack}}" data-dtype="Number" />
+      </div>
+      <div class="rs-plate">
+        <label data-tt-kind="weaponField" data-tt-id="penetration">{{localize "REDSTEEL.Item.Weapon.FIELDS.penetration.label"}}</label>
+        <input type="number" name="system.penetration" value="{{system.penetration}}" data-dtype="Number" />
+      </div>
+      <div class="rs-plate">
+        <label>{{localize "REDSTEEL.Item.Weapon.FIELDS.breakthrough.label"}}</label>
+        <input type="text" name="system.breakthrough" value="{{system.breakthrough}}" data-dtype="String" placeholder="2d6" />
+      </div>
+    {{/if}}
+    <div class="rs-plate rs-plate--hero">
+      <label>{{localize "REDSTEEL.Item.Spell.FIELDS.cost.label"}}</label>
+      <input type="text" name="system.cost" value="{{system.cost}}" data-dtype="Number" />
+      <select name="system.costType" id="cost-type" aria-label="{{localize 'REDSTEEL.UI.costType'}}">
+        <option value="">{{localize "REDSTEEL.UI.selectType"}}</option>
+        {{#each system.costOptions as |costOption|}}
+          <option value="{{costOption}}" {{#if (eq ../system.costType costOption)}}selected{{/if}}>{{localize (concat "REDSTEEL.Item.Ability.Cost." costOption)}}</option>
+        {{/each}}
+      </select>
+    </div>
+    <div class="rs-plate rs-plate--word">
+      <label>{{localize "REDSTEEL.Item.Ability.FIELDS.actionCost.label"}}</label>
+      <input type="text" name="system.actionCost" value="{{system.actionCost}}" data-dtype="String" placeholder="2 | R" />
+    </div>
+    <div class="rs-plate">
+      <label>{{localize "REDSTEEL.Item.Spell.FIELDS.perRound.label"}}</label>
+      <input type="text" name="system.perRound" value="{{system.perRound}}" data-dtype="String" />
+    </div>
+    {{#if (or (eq system.class "defense") (eq system.class "stance"))}}
+      <div class="rs-plate">
+        <label data-tt-kind="weaponField" data-tt-id="penetration">{{localize "REDSTEEL.Item.Weapon.FIELDS.penetration.label"}}</label>
+        <input type="number" name="system.penetration" value="{{system.penetration}}" data-dtype="Number" />
+      </div>
+    {{else}}
+      <div class="rs-plate">
+        <label title="{{localize "REDSTEEL.Item.Ability.FIELDS.heavyDamage.hint"}}">{{localize "REDSTEEL.Item.Ability.FIELDS.heavyDamage.short"}}</label>
+        <input type="text" name="system.roll.heavyDiceBonus" value="{{system.roll.heavyDiceBonus}}" data-dtype="String" placeholder="+2d4" />
+      </div>
+    {{/if}}
+  </div>
+  {{/if}}
 
 </header>

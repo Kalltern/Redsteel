@@ -20,6 +20,7 @@ import {
   weaponReach,
 } from "./positioning.mjs";
 import { previewSneakTrigger, sneakTriggerLabel } from "./sneakTriggers.mjs";
+import { maulingRefusal } from "./featureCombat.mjs";
 import {
   attackOptionIconsHtml,
   readAttackCover,
@@ -32,6 +33,7 @@ import {
   predatorySensesAvailable,
   setPredatorySenses,
 } from "./rangerCombat.mjs";
+import { armLindarChargeAttack, pendingLindarCharge } from "./veneficus.mjs";
 
 /**
  * @param {object} [options]
@@ -321,9 +323,10 @@ ${
         // attacker's Banes, refused before anything is set or paid
         // (rangerCombat.mjs).
         {
-          const refusal = finishingBlowRefusal(actor, selectedModifiers, [
-            ...(game.user?.targets ?? []),
-          ]);
+          const targets = [...(game.user?.targets ?? [])];
+          const refusal =
+            finishingBlowRefusal(actor, selectedModifiers, targets) ??
+            maulingRefusal(selectedModifiers, targets);
           if (refusal) {
             ui.notifications.warn(refusal);
             return;
@@ -430,9 +433,17 @@ ${
         // Opportunity Attack at an enemy that closed in costs no Reaction.
         const freeOpportunity =
           useOpportunity && (await claimHopliteFreeOpportunity(actor, token));
+        // Veneficus → Lindarův výpad: read before the spend, which may use the
+        // free Attack a Lindar spell put in the slot (veneficus.mjs).
+        // An explosive throw never reaches the attack roll that spends it.
+        const lindarCharge =
+          useOpportunity || fnName === "throwExplosive"
+            ? null
+            : pendingLindarCharge(actor);
         if (!freeOpportunity) {
           await spendForAttack(actor, { opportunity: useOpportunity });
         }
+        await armLindarChargeAttack(actor, lindarCharge);
 
         // ─── Execute Attack ───
         await game.redsteel[fnName]({

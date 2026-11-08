@@ -30,6 +30,7 @@ const SPEED_UPS = [
   { name: "Studiousness", key: "REDSTEEL.Items.Studiousness.name", days: 1 },
   { name: "Starsign: Scholar", key: "REDSTEEL.Items.StarsignScholar.name", days: 1 },
   { name: "Willingness to learn", key: "REDSTEEL.Items.WillingnessToLearn.name", days: 1 },
+  { name: "Quick Learner", key: "REDSTEEL.Items.QuickLearner.name", days: 1 },
 ];
 
 const ROMAN = ["0", "I", "II", "III", "IV", "V"];

@@ -4,6 +4,7 @@ import {
   withRollBias,
   applyDesperateCrit,
   forfeitAdvantageOnCritFail,
+  capHopelessNatural,
 } from "./rollAdvantage.mjs";
 import {
   getBloodSchoolRankBonus,
@@ -12,11 +13,13 @@ import {
 } from "../helpers/specialisations.mjs";
 import { hasHtmlContent } from "./chatBlocks.mjs";
 import { getStrikeId } from "./strikes.mjs";
+import { getMancerCastBonuses, mancerCastTags } from "../helpers/mancerPassives.mjs";
 import { DIVINE_SCHOOL, isMiracle } from "./miracles.mjs";
 import {
   getLindarChannelingBonus,
   getLindarSpellCost,
 } from "./lindarCharge.mjs";
+import { nextSpellChanneling } from "./nextSpellBonus.mjs";
 import { getMaxCritDegree } from "./combatSkillBonuses.mjs";
 import {
   isSpeedTest,
@@ -31,6 +34,7 @@ import { attackBonusFor, captureAttackPositioning } from "./positioning.mjs";
 import {
   renderMarginFollowupLine,
   versusAgainstFor,
+  versusNatural,
 } from "./attributeFollowup.mjs";
 import {
   BLOOD_PAYMENT_COST,
@@ -43,6 +47,18 @@ import {
   HASTENED_CAST_DIFFICULTY,
   hasHastenedCast,
 } from "./hastenedCast.mjs";
+import { counterattackCastMods } from "./elymas.mjs";
+import {
+  bankedQuickFocus,
+  defenderManaMultiplier,
+  hasCatalyst,
+  incantatorCastBonus,
+  incantatorCastCrit,
+  incantatorCastTags,
+  incantatorCritRange,
+  incantatorMagicAttack,
+  preciseIncantationCost,
+} from "./incantator.mjs";
 
 // --- Helper for Dialogs (CSS Injection) ---
 function _injectDialogCSS() {
@@ -275,11 +291,38 @@ export function getUniqueSpellSchools(actor) {
 /**
  * Handles the complete dialog flow: School Selection -> Spell Selection (with Ranks/Tabs).
  * @param {object} actor - The Foundry actor object.
+ * @param {{filter?: ((spell: Item) => boolean)|null}} [options] - `filter`
+ *   narrows the dialog to the spells it accepts (Elymas Magic Counterattack,
+ *   utils/elymas.mjs counterattackSpellFits); a school with none left drops
+ *   out of the school picker.
  * @returns {Promise<object | null>} - A promise that resolves with the selected spell item, or null if canceled.
  */
-export function showSpellSelectionDialogs(actor) {
+export function showSpellSelectionDialogs(
+  actor,
+  { filter = null, catalyst = false } = {},
+) {
   _injectDialogCSS();
-  const schools = Array.from(getUniqueSpellSchools(actor));
+  // Incantator → Rychlé soustředění: Focus banked for the next cast
+  // (utils/incantator.mjs). Added to the Focus box when the cast is made, so
+  // the chances below count it too.
+  const bankedFocus = bankedQuickFocus(actor);
+  const passes = (spell) => typeof filter !== "function" || filter(spell);
+  const schools =
+    typeof filter === "function"
+      ? [
+          ...new Set(
+            actor.items
+              .filter(
+                (i) =>
+                  i.type === "spell" &&
+                  !isMiracle(i) &&
+                  i.system.type &&
+                  passes(i),
+              )
+              .map((i) => i.system.type),
+          ),
+        ]
+      : Array.from(getUniqueSpellSchools(actor));
 
   if (schools.length === 0) {
     ui.notifications.warn("This actor has no spells with defined schools.");
@@ -294,7 +337,10 @@ export function showSpellSelectionDialogs(actor) {
 
       const allSpells = actor.items.filter(
         (i) =>
-          i.type === "spell" && i.system.type === schoolName && !isMiracle(i),
+          i.type === "spell" &&
+          i.system.type === schoolName &&
+          !isMiracle(i) &&
+          passes(i),
       );
 
       // Define Ranks (now lowercase) and Group Spells
@@ -355,9 +401,10 @@ export function showSpellSelectionDialogs(actor) {
               resourceCosts = resourceCosts || "-";
 
               const difficulty = Number(spell.system.difficulty) || 0;
-              // Initial chance assumes 0 focus; the focus input recalculates
-              // this live (see recalcCastChances in the render handler).
-              const castChance = getCastChance(actor, spell, 0);
+              // Initial chance assumes 0 focus (plus any banked Quick Focus);
+              // the focus input recalculates this live (see
+              // recalcCastChances in the render handler).
+              const castChance = getCastChance(actor, spell, bankedFocus);
 
               return `
                 <tr class="spell-choice ability-choice table-row" data-spell-id="${spell.id}">
@@ -431,6 +478,23 @@ export function showSpellSelectionDialogs(actor) {
            </label>`
         : "";
 
+      // Incantator → Katalyzátor: Critical Success +15%, Critical Failure
+      // +5% for this cast, owners only (utils/incantator.mjs). Ticked already
+      // when the Catalyst item opened this dialog.
+      const catalystOption = hasCatalyst(actor)
+        ? `<label class="catalyst-cast"
+             title="${game.i18n.localize("REDSTEEL.Incantator.CatalystHint")}">
+             <input type="checkbox" name="catalyst"${catalyst ? " checked" : ""}>
+             ${game.i18n.localize("REDSTEEL.Incantator.CatalystOption")}
+           </label>`
+        : "";
+      const quickFocusLine = bankedFocus
+        ? `<span class="quick-focus-banked">${game.i18n.format(
+            "REDSTEEL.Incantator.QuickFocusLine",
+            { count: bankedFocus },
+          )}</span>`
+        : "";
+
       const dialogContent = `
   <form class="spell-dialog-form">
 
@@ -459,6 +523,8 @@ export function showSpellSelectionDialogs(actor) {
         </label>
         ${bloodPaymentOption}
         ${hastenedCastOption}
+        ${catalystOption}
+        ${quickFocusLine}
            </div>
        </div>
 
@@ -487,7 +553,8 @@ export function showSpellSelectionDialogs(actor) {
           // 2.b Recalculate the Cast Chance column whenever Focus changes, so
           // it always reflects the value that will go into the roll.
           const recalcCastChances = () => {
-            const focus = Number(html.find('input[name="focus"]').val() || 0);
+            const focus =
+              Number(html.find('input[name="focus"]').val() || 0) + bankedFocus;
             // Blood Payment buys Difficulty, so it moves the printed chance the
             // same way Focus does. Show it before the player commits.
             const difficultyBonus =
@@ -612,6 +679,9 @@ export function showSpellSelectionDialogs(actor) {
             const hastenedCast = html
               .find('input[name="hastenedCast"]')
               .is(":checked");
+            const catalystCast = html
+              .find('input[name="catalyst"]')
+              .is(":checked");
 
             spellDialog.close();
             resolve({
@@ -621,6 +691,7 @@ export function showSpellSelectionDialogs(actor) {
               ignoreChanneling,
               bloodPayment,
               hastenedCast,
+              catalyst: catalystCast,
             });
           });
         },
@@ -980,6 +1051,13 @@ export function calculateAttackBonuses(actor, spell) {
   // it in the cast dialog — so one line covers both the roll and the
   // number the player sees before committing.
   attackBonus += getLindarChannelingBonus(actor, spell);
+  // Veneficus → Navazující kouzlo: +10% Channeling owed to the next spell of
+  // the school whose empowered attack made a kill (nextSpellBonus.mjs). Spent
+  // by performCast; read here so the cast dialog's odds show it too.
+  attackBonus += nextSpellChanneling(actor, spell);
+  // Incantator doctrine without a focus item: -10 on a non-Wild cast
+  // (utils/incantator.mjs), here so the dialog's chance shows it too.
+  attackBonus += incantatorCastBonus(actor, spell);
 
   const rankBonusTables = {
     fire: {
@@ -1083,6 +1161,14 @@ export function calculateAttackBonuses(actor, spell) {
   }
 
   applySchoolTraitBonus(actor, spell, effectModifiers);
+
+  // The mancer school passives (Bleskový šok, Hluboký mráz, Travič, Divoký
+  // oheň, Omračující rány, …): effect chances by school and spell rank, data in
+  // helpers/mancerPassives.mjs. Strikes are left out as the Hex leaves them.
+  const mancer = getMancerCastBonuses(actor, spell, { strike: !!getStrikeId(spell) });
+  for (const [effect, value] of Object.entries(mancer.modifiers)) {
+    applyEffect(effectModifiers, effect, value);
+  }
 
   return {
     attackBonus,
@@ -1197,15 +1283,23 @@ export function isUncontestedSpell(spell) {
 
 /**
  * The channeling Critical Failure threshold for one cast. Hastened Cast pulls
- * it 5 lower (96 → 91), which is its +5% Critical Failure price. The chat card
- * stores the same figure so a reroll judges the new die on the same terms.
+ * it 5 lower (96 → 91), which is its +5% Critical Failure price. Elymas
+ * "Magický protiútok: Kritický neúspěch -5%" pushes a counterattack cast's 5
+ * higher (`critFailEase`, utils/elymas.mjs counterattackCastMods), never past
+ * 101, where no die fumbles. The chat card stores the same figure so a reroll
+ * judges the new die on the same terms.
  * @param {Actor} actor
- * @param {{hastenedCast?: boolean}} [options]
+ * @param {{hastenedCast?: boolean, critFailEase?: number}} [options]
  * @returns {number}
  */
-function getCastCritFailThreshold(actor, { hastenedCast = false } = {}) {
+function getCastCritFailThreshold(
+  actor,
+  { hastenedCast = false, critFailEase = 0 } = {},
+) {
   const base = actor.system.combatSkills.channeling.criticalFailureThreshold;
-  return hastenedCast ? base - HASTENED_CAST_CRIT_FAIL : base;
+  const threshold = hastenedCast ? base - HASTENED_CAST_CRIT_FAIL : base;
+  const ease = Number(critFailEase) || 0;
+  return ease ? Math.min(101, threshold + ease) : threshold;
 }
 
 /**
@@ -1281,11 +1375,16 @@ function featureSchoolCrit(actor, school, field) {
   );
 }
 
-/** The cast's Critical Success threshold: channeling's plus school features. */
-function getCastCritSuccessThreshold(actor, spell) {
+/**
+ * The cast's Critical Success threshold: channeling's plus school features,
+ * plus `bonus` (Incantator's Soustředění and Katalyzátor, utils/incantator.mjs
+ * incantatorCastCrit).
+ */
+function getCastCritSuccessThreshold(actor, spell, bonus = 0) {
   return (
     (actor.system.combatSkills.channeling.criticalSuccessThreshold ?? 0) +
-    featureSchoolCrit(actor, spell?.system?.type, "chance")
+    featureSchoolCrit(actor, spell?.system?.type, "chance") +
+    (Number(bonus) || 0)
   );
 }
 
@@ -1300,7 +1399,17 @@ export async function performAttackRoll(
     ignoreChanneling = false,
     difficultyBonus = 0,
     hastenedCast = false,
+    // Elymas Magic Counterattack (utils/elymas.mjs counterattackCastMods).
+    critFailEase = 0,
+    // Incantator → Katalyzátor (utils/incantator.mjs).
+    catalyst = false,
   } = options;
+  // Incantator: Soustředění, Katalyzátor and the missing focus shift both
+  // thresholds of this cast (utils/incantator.mjs).
+  const incantatorCrit = incantatorCastCrit(actor, spell, {
+    focusSpent,
+    catalyst,
+  });
   const effectiveDifficulty = getEffectiveDifficulty(
     spell,
     focusSpent,
@@ -1322,9 +1431,14 @@ export async function performAttackRoll(
     };
   }
 
-  const critSuccessThreshold = getCastCritSuccessThreshold(actor, spell);
+  const critSuccessThreshold = getCastCritSuccessThreshold(
+    actor,
+    spell,
+    incantatorCrit.successBonus,
+  );
   const critFailureThreshold = getCastCritFailThreshold(actor, {
     hastenedCast,
+    critFailEase: critFailEase + incantatorCrit.failEase,
   });
 
   // Blood spells cast off the higher of channeling and Blood Manipulation; all
@@ -1346,14 +1460,16 @@ export async function performAttackRoll(
   // A fumbling first die forfeits advantage; read the die only after.
   forfeitAdvantageOnCritFail(attackRoll, critFailT);
   const rollResult = attackRoll.dice[0].total;
-  const displayCritSuccess = rollResult <= critSuccessT;
+  // A natural critical on a negative chance is a common success of margin 0.
+  const hopeless = capHopelessNatural(attackRoll, critSuccessT);
+  const displayCritSuccess = !hopeless && rollResult <= critSuccessT;
   const displayCritFailure = rollResult >= critFailT;
 
   let critSuccess = false;
   let critFailure = false;
 
   if (!ignoreChanneling) {
-    critSuccess = rollResult <= critSuccessT;
+    critSuccess = displayCritSuccess;
     // Natural fumble, or a margin of -25 or worse. A miracle is not a
     // pass/fail Test, so only its die can fumble; a natural Critical Success
     // never fumbles, however hopeless the odds were.
@@ -1397,7 +1513,23 @@ export async function finalizeRollsAndPostChat(
     // caller hands it over yet, so the positioning map on a spell card is empty
     // for now and the defense falls back to live facing.
     token = null,
+    // Elymas Magic Counterattack: `{defenseMessageId, attackerTokenId, free}`
+    // when this cast is one (castSpell.mjs performCast), else null.
+    counterattack = null,
+    // Incantator → Katalyzátor was ticked for this cast.
+    catalyst = false,
+    // Extra lines for the card (Incantator's Vlna energie, castSpell.mjs).
+    cardNotes = "",
   } = options;
+  // Incantator threshold shifts, the same figures performAttackRoll used, so
+  // the card's stored thresholds judge a reroll on the same terms.
+  const incantatorCrit = incantatorCastCrit(actor, spell, {
+    focusSpent,
+    catalyst,
+  });
+  // Magic ATK +10 for an Apprentice spell (mpUtok10) and the eased Critical
+  // Failure (mpKritNeuspech), both 0 on any other cast (utils/elymas.mjs).
+  const counterMods = counterattackCastMods(actor, spell, counterattack);
   const {
     attackRoll,
     critSuccess,
@@ -1454,16 +1586,15 @@ export async function finalizeRollsAndPostChat(
   ) {
     // Resolves skills and combat skills too, not just attributes — the Test Type
     // dropdown offers Leadership and Channeling alongside the seven attributes.
-    const { value: selectedAttributeModifier } = resolveTestRating(
-      actor,
-      spellAttributeTestName,
-    );
+    const { value: selectedAttributeModifier, skillKey: testSkillKey } =
+      resolveTestRating(actor, spellAttributeTestName);
 
     const attributeRoll = new Roll(
       `(${selectedAttributeModifier} + ${spellTestModifier}) - 1d100`,
       withRollBias({ ...rollData }, actor),
     );
     await attributeRoll.evaluate({ async: true });
+    const natural = versusNatural(actor, testSkillKey, attributeRoll);
 
     // Roll modifier separately for display
     const modifierRoll = new Roll(
@@ -1480,18 +1611,29 @@ ${renderMarginFollowupLine({
   chance: modifierRoll.total,
   result: attributeRoll.result,
   against: versusAgainstFor(spell),
+  natural,
 })}
 `;
 
     concatRollAndDescription += attributeString;
     attributeTestRoll = attributeRoll;
   }
+  // The mancer passives this cast earns (helpers/mancerPassives.mjs): extra
+  // damage dice and Penetration (Ohnivý štít), extra stacks on an effect it
+  // rolls (Leptavá kyselina II), and the card tags naming every bonus.
+  const mancerBonuses = miracle
+    ? getMancerCastBonuses(null, spell)
+    : getMancerCastBonuses(actor, spell, { strike: !!getStrikeId(spell) });
+
   // --- DAMAGE ROLL ---
   let damageFormula = spell.system.formula || "1d6";
   damageFormula = damageFormula.replace(
     /@(\w+\.\w+\.\w+|\w+)/g,
     (_, key) => rollData[key] || 0,
   );
+  if (mancerBonuses.dice.length) {
+    damageFormula = `${damageFormula} + ${mancerBonuses.dice.join(" + ")}`;
+  }
 
   const damageRoll = new Roll(damageFormula, actor.system);
   await damageRoll.evaluate();
@@ -1528,8 +1670,10 @@ ${renderMarginFollowupLine({
     // Names a perk can inject without the spell authoring an extraN slot for
     // them. Anything not listed here only survives when the spell itself
     // declares it (effectTypeN / effectNameN), so a perk-only effect would be
-    // silently dropped — that is why "hex" (Maleficarum's Hexing) is here.
-    const builtinEffects = ["burn", "slow", "stagger", "bleed", "hex"];
+    // silently dropped — that is why "hex" (Maleficarum's Hexing) is here,
+    // and "freeze" / "poison" (Hluboký mráz II–III, Travič I–II,
+    // helpers/mancerPassives.mjs).
+    const builtinEffects = ["burn", "slow", "stagger", "bleed", "hex", "freeze", "poison"];
 
     if (builtinEffects.includes(key)) {
       finalEffectName = key.toLowerCase();
@@ -1583,8 +1727,10 @@ ${renderMarginFollowupLine({
     const rollValue = d100Roll.total;
     const successText = rollValue <= totalEffectValue ? " SUCCESS" : "";
 
+    // Tagged so Incantator's Precise Incantation can redraw this one row
+    // after a reroll (utils/incantator.mjs).
     effectsRollResults += `
-    <p><b>|${effectName}|</b>
+    <p data-rs-effect="${effectName}"><b>|${effectName}|</b>
     ${rollValue} < ${totalEffectValue}% ${successText}</p>
   `;
 
@@ -1592,6 +1738,14 @@ ${renderMarginFollowupLine({
       chance: totalEffectValue,
       roll: rollValue,
     };
+  }
+
+  // Leptavá kyselina II: extra stacks on an effect the cast rolled, read by
+  // both Apply paths (utils/applyDamage.mjs) on top of the usual one.
+  for (const [effectName, extra] of Object.entries(mancerBonuses.stacks)) {
+    if (mechanicalEffects[effectName]) {
+      mechanicalEffects[effectName].bonusStacks = extra;
+    }
   }
 
   // 1.a Start channeling automatically for any spell with a per-round upkeep,
@@ -1612,8 +1766,12 @@ ${renderMarginFollowupLine({
   const schoolCritRange =
     getSchoolCritRangeBonus(actor, spell.system.type) +
     featureSchoolCrit(actor, spell.system.type, "range");
+  // Incantator → Ohniskový předmět: Critical Range +5 with a focus in use.
   const critScoreResult =
-    critScoreRoll.total + (actor.system.critRangeCast || 0) + schoolCritRange;
+    critScoreRoll.total +
+    (actor.system.critRangeCast || 0) +
+    schoolCritRange +
+    (isMiracle(spell) ? 0 : incantatorCritRange(actor));
 
   // Degree 1 starts at a roll of 1 (Různé info r388), as for weapon crits.
   let critScore = 0;
@@ -1633,7 +1791,8 @@ ${renderMarginFollowupLine({
   // template.json on 2026-09-21, and a spell stored before that carries no
   // key at all — the bare addition wrote NaN into the attack flag, which
   // the apply path then read as the packet's penetration.
-  const spellPenetration = Number(spell.system.penetration) || 0;
+  const spellPenetration =
+    (Number(spell.system.penetration) || 0) + mancerBonuses.penetration;
   const critBonusPenetration = critBonusDamage + spellPenetration;
   const actorCritBonus = Number(actor.system.critDamage) || 0;
   const critDamageTotal = critBonusDamage + actorCritBonus + damageTotal;
@@ -1648,25 +1807,41 @@ ${renderMarginFollowupLine({
   // Computed once here: it is both stamped onto the card below and read for the
   // flank bonus.
   const attackPositioning = captureAttackPositioning(token?.document ?? token);
+  // The spell's own Magic Attack. Normally a bonus on Magic ATK alone, never on
+  // the cast itself. A fixed one ("always counts as a Magic Attack of 20") IS
+  // the number: the cast margin and every other bonus stop mattering.
+  const spellMagicAttack = Number(spell.system.magicAttack) || 0;
+  const fixedMagicAttack = spell.system.magicAttackFixed
+    ? spellMagicAttack
+    : null;
   // A card carries ONE Magic ATK number, so a per-target bonus cannot be
   // expressed on a multi-target spell. Only a cast that positioned exactly one
   // target takes an arc bonus at all.
   const positionedSectors = Object.values(attackPositioning);
   const magicFlankBonus =
-    showMagicAttack && positionedSectors.length === 1
+    showMagicAttack && fixedMagicAttack === null && positionedSectors.length === 1
       ? attackBonusFor(positionedSectors[0])
       : 0;
   // Magic ATK is the cast margin plus the caster's flat magic attack bonuses. A
   // Blood spell adds +5 per School of Blood rank (Expert, Master, Grandmaster),
   // and a single-target cast into a flank adds the arc bonus.
   // A miracle is not channeled, so only the flank carries over: its Faith
-  // bonuses are already inside the roll (rollMiracleAttack).
-  const magicAttackBonus = miracle
-    ? magicFlankBonus
-    : (actor.system.combatSkills.channeling.attack || 0) +
-      (spell.system.type === "blood" ? getBloodSchoolRankBonus(actor) : 0) +
-      magicFlankBonus;
-  const attack = attackRoll ? attackRoll.total + magicAttackBonus : null;
+  // bonuses are already inside the roll (rollMiracleAttack). The spell's own
+  // bonus rides on top of either.
+  // An Elymas Magic Counterattack with an Apprentice spell adds +10
+  // (mpUtok10); a miracle is never one.
+  const magicAttackBonus =
+    (miracle
+      ? magicFlankBonus
+      : (actor.system.combatSkills.channeling.attack || 0) +
+        (spell.system.type === "blood" ? getBloodSchoolRankBonus(actor) : 0) +
+        magicFlankBonus +
+        counterMods.attackBonus +
+        // Incantator → Soustředění: +5 per Focus spent on the cast.
+        incantatorMagicAttack(actor, { focusSpent })) + spellMagicAttack;
+  const attack = attackRoll
+    ? (fixedMagicAttack ?? attackRoll.total + magicAttackBonus)
+    : null;
   // Resolve the `{{…spellPower…}}` placeholders with the same evaluator the
   // sheet cards use, BEFORE Handlebars sees the string. Two reasons: it floors
   // SK divisions the way the rulebook does (the `math` helper alone does not),
@@ -1725,6 +1900,22 @@ ${renderMarginFollowupLine({
       }
       <span class="action-tag actionCost ">Actions:${spell.system.actionCost}</span>
       `
+    : "";
+
+  // Elymas Magic Counterattack: tagged whether or not the tag row above shows
+  // (it is skipped for a spell of Difficulty 0).
+  const counterattackTag = counterattack
+    ? `<span class="action-tag magicCounterattack ">${game.i18n.localize(
+        counterattack.free
+          ? "REDSTEEL.Elymas.CounterTagFree"
+          : "REDSTEEL.Elymas.CounterTag",
+      )}${
+        counterMods.attackBonus
+          ? ` ${game.i18n.format("REDSTEEL.Elymas.CounterTagAttack", {
+              bonus: counterMods.attackBonus,
+            })}`
+          : ""
+      }</span>`
     : "";
 
   const hasDamage = typeof damageTotal === "number" && damageTotal > 0;
@@ -1899,9 +2090,19 @@ ${renderMarginFollowupLine({
       // back to `rolls[0]`, which in that case is the damage roll and would be
       // read as a wildly good attack.
       margin: attack,
+      // A cast's natural critical settles a defense as a weapon's does. The
+      // die alone: a margin of -25 fumbles the cast, not the contest. A cast
+      // not judged on its margin carries none, as it carries no crit packet.
+      ...(!ignoreChanneling && {
+        criticalSuccess: critSuccess === true,
+        criticalFailure: displayCritFailure === true,
+      }),
+      d100: attackRoll?.dice?.find((d) => d.faces === 100)?.total ?? null,
       // How far Magic ATK sits above the cast roll. A reroll re-evaluates only
       // the roll, so buildAttackRerollFlag adds this back onto the new total.
       attackBonus: magicAttackBonus,
+      // A fixed Magic ATK does not move with the die, so a reroll keeps it.
+      fixedMagicAttack,
       // Who it was aimed at, captured from the caster's targets while they still
       // exist — targets are per-user and live, the card is not.
       targets: captureAttackTargets(),
@@ -1965,12 +2166,15 @@ ${renderMarginFollowupLine({
             }" width="36" height="36">
             <span>${spell.localizedName ?? spell.name}</span>
         </div>
-        ${tags}
+        ${tags}${counterattackTag}${incantatorCastTags(actor, spell, {
+          focusSpent,
+          catalyst,
+        })}${mancerCastTags(mancerBonuses)}
         <hr>
         ${critBanner}
         ${
           hasHtmlContent(renderedDescription)
-            ? `<table style="width: 100%; text-align: left; font-size: 15px;">
+            ? `<table class="rs-card-description" style="width: 100%; text-align: left; font-size: 15px;">
             <tr><th>Description:</th></tr>
             <tr><td>${renderedDescription}</td></tr>
         </table>`
@@ -1979,6 +2183,7 @@ ${renderMarginFollowupLine({
         ${damageTable}
         ${critPenTable}
         ${effectsTable}
+        ${cardNotes}
         `,
     flags: {
       redsteel: {
@@ -1987,6 +2192,31 @@ ${renderMarginFollowupLine({
         // Magic Defense against this card is priced by the spell's rank, so
         // the Defend dialog names the cost up front instead of asking.
         spellRank: spell.system.rank || "wild",
+        // Magic Defense against a Wild spell adds its positive Difficulty
+        // (defense.mjs wildSpellDefenseBonus), so the raw figure rides along.
+        spellDifficulty: Number(spell.system.difficulty) || 0,
+        // The flank bonus inside this card's Magic ATK, which Elymas Focused
+        // Defense cancels for the defender stood in that flank.
+        magicFlankBonus,
+        // Incantator → Magické útoky stojí obránce dvakrát více many: the
+        // defender's Magic Defense price is multiplied (defense.mjs).
+        ...(defenderManaMultiplier(actor) > 1 && {
+          defenderManaMultiplier: defenderManaMultiplier(actor),
+        }),
+        // Incantator → Precizní inkantace: what paying the spell again costs,
+        // which is also what makes the card offer it (utils/incantator.mjs).
+        ...(preciseIncantationCost(actor, spell) !== null && {
+          preciseIncantation: { cost: preciseIncantationCost(actor, spell) },
+        }),
+        // Elymas Magic Counterattack: the Magic Defense card it answered,
+        // which spends that card's counterattack chip (utils/elymas.mjs).
+        ...(counterattack && {
+          magicCounterattack: {
+            defenseMessageId: counterattack.defenseMessageId ?? null,
+            attackerTokenId: counterattack.attackerTokenId ?? null,
+            free: !!counterattack.free,
+          },
+        }),
         casterUuid: actor.uuid,
         // Which spell and which round this card is: the hotbar's sustain
         // Apply chip finds this round's card of a held spell by them.
@@ -1999,10 +2229,17 @@ ${renderMarginFollowupLine({
         // do: `d100 >= null` is always true).
         criticalSuccessThreshold: miracle
           ? 0
-          : getCastCritSuccessThreshold(actor, spell),
+          : getCastCritSuccessThreshold(
+              actor,
+              spell,
+              incantatorCrit.successBonus,
+            ),
         criticalFailureThreshold: miracle
           ? 101
-          : getCastCritFailThreshold(actor, { hastenedCast }),
+          : getCastCritFailThreshold(actor, {
+              hastenedCast,
+              critFailEase: counterMods.critFailEase + incantatorCrit.failEase,
+            }),
         traitPills: getTraitPills(actor, "attack"),
         // A channeling-judged cast can fumble on its margin (-25). A reroll
         // re-judges the new margin and re-prompts from this.

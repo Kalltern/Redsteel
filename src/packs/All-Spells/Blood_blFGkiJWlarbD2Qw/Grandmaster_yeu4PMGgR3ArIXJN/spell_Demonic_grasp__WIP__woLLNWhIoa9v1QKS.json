@@ -105,6 +105,8 @@
       "diceBonus": ""
     },
     "penetration": 100,
+    "magicAttack": 0,
+    "magicAttackFixed": false,
     "dmgType1": "dark",
     "bool2": "and",
     "dmgType2": "blunt",

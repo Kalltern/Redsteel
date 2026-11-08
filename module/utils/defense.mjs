@@ -3,11 +3,13 @@ import {
   withRollBias,
   applyDesperateCrit,
   forfeitAdvantageOnCritFail,
+  capHopelessNatural,
   tagRollSkill,
 } from "./rollAdvantage.mjs";
 import { getDefenseRerollTokens } from "./rerolls.mjs";
 import { getBaneProfile } from "./baneCombat.mjs";
 import { buildTempHealthGrantFlag } from "./tempHealthGrant.mjs";
+import { acrobaticDeflect, fencingDaggerDeflect } from "./featureCombat.mjs";
 import { buildVeteranRestFlag } from "./veteranRest.mjs";
 import { buildManeuverFlag } from "./advantageousManeuver.mjs";
 import {
@@ -25,6 +27,15 @@ import {
   sacrificeAim,
 } from "./aim.mjs";
 import { getBloodSchoolRankBonus } from "../helpers/specialisations.mjs";
+import {
+  areaDefenseCovers,
+  coveredNames,
+  elymasMagicDefense,
+  focusedBackSpellDefense,
+  isSpellPacket,
+  magicDefenseManaCost,
+  settleMagicEcho,
+} from "./elymas.mjs";
 import {
   SECTOR,
   deniesDefense,
@@ -144,6 +155,18 @@ export function buildAttackPacket(message) {
     // The spell's rank sets the Magic Defense Mana price. Absent on weapon
     // attacks and older spell cards, which keep the rank picker.
     spellRank: message.flags?.redsteel?.spellRank ?? null,
+    // A spell card (Elymas Focused Defense answers spells from behind).
+    isSpell: message.flags.attack.isSpell === true,
+    // The spell's own Difficulty: Magic Defense against a Wild spell adds the
+    // positive part (wildSpellDefenseBonus). Absent on older cards.
+    spellDifficulty: message.flags?.redsteel?.spellDifficulty ?? null,
+    // The flank bonus baked into this spell's Magic ATK, which Elymas Focused
+    // Defense cancels (utils/elymas.mjs). 0 when there was none.
+    magicFlankBonus: message.flags?.redsteel?.magicFlankBonus ?? 0,
+    // Incantator "Magické útoky stojí obránce dvakrát více many": the
+    // caster's card multiplies the Magic Defense price. 1 when absent.
+    defenderManaMultiplier:
+      Number(message.flags?.redsteel?.defenderManaMultiplier) || 1,
     // Where each target stood when the blow was thrown, keyed by token id
     // (utils/positioning.mjs). Absent on cards written before positioning
     // existed and on attacks that named no target, and the defense falls back
@@ -303,37 +326,72 @@ export function renderVersusBlock(
   });
   if (!verdict) return { html: "", versus: null };
 
-  const { attackMargin: knownAttackMargin, gap, blocked, critical, onDice } =
-    verdict;
+  const {
+    attackMargin: knownAttackMargin,
+    gap,
+    blocked,
+    critical,
+    onDice,
+    natural,
+  } = verdict;
   const attackD100 = attack?.d100 ?? null;
 
-  const outcome = critical
-    ? game.i18n.localize(
-        critical === "defense"
-          ? dodge
-            ? "REDSTEEL.Versus.CriticalDodge"
-            : "REDSTEEL.Versus.CriticalDefense"
-          : "REDSTEEL.Versus.CriticalHit",
-      )
-    : !onDice && gap === 0
-      ? game.i18n.localize("REDSTEEL.Versus.Tie")
-      : game.i18n.localize(
-          blocked ? "REDSTEEL.Versus.Blocked" : "REDSTEEL.Versus.Hit",
-        );
+  const result = game.i18n.localize(
+    critical
+      ? critical === "defense"
+        ? dodge
+          ? "REDSTEEL.Versus.CriticalDodge"
+          : "REDSTEEL.Versus.CriticalDefense"
+        : "REDSTEEL.Versus.CriticalHit"
+      : blocked
+        ? "REDSTEEL.Versus.Blocked"
+        : "REDSTEEL.Versus.Hit",
+  );
+
+  // The headline names what decided it: the gap between the margins, or the
+  // die when a natural critical made the margins irrelevant. A blow nobody
+  // could answer has a natural critical and no die, so it just reads Critical.
+  const outcome =
+    natural?.die != null
+      ? game.i18n.format("REDSTEEL.Versus.ByNatural", {
+          outcome: result,
+          die: natural.die,
+        })
+      : natural
+        ? result
+        : gap === 0
+          ? game.i18n.localize("REDSTEEL.Versus.Tie")
+          : game.i18n.format("REDSTEEL.Versus.ByMargin", {
+              outcome: result,
+              mos: Math.abs(gap),
+            });
 
   const detail = game.i18n.format("REDSTEEL.Versus.Detail", {
     attack: knownAttackMargin,
     defense: defenseTotal,
-    gap: gap > 0 ? `+${gap}` : gap,
   });
 
   // The margin line is actively misleading when the dice decided it, so say
-  // so rather than leaving a +53 sitting under a "Hit".
-  const diceNote = onDice
-    ? `<div class="rs-versus-note">${game.i18n.format(
-        "REDSTEEL.Versus.DeniedOnDice",
-        { attack: attackD100, defense: defenseD100 },
-      )}</div>`
+  // so rather than leaving it sitting unexplained under the headline.
+  const diceText = onDice
+    ? attackD100 === defenseD100
+      ? game.i18n.format("REDSTEEL.Versus.DeniedOnDiceTie", {
+          die: attackD100,
+        })
+      : game.i18n.format("REDSTEEL.Versus.DeniedOnDice", {
+          attack: attackD100,
+          defense: defenseD100,
+        })
+    : natural?.die != null
+      ? game.i18n.format(
+          natural.side === "attack"
+            ? "REDSTEEL.Versus.NaturalAttack"
+            : "REDSTEEL.Versus.NaturalDefense",
+          { die: natural.die },
+        )
+      : "";
+  const diceNote = diceText
+    ? `<div class="rs-versus-note">${diceText}</div>`
     : "";
 
   // Coloured from the defender's point of view, because this is the
@@ -565,6 +623,37 @@ function magicRankLabel(rank) {
 }
 
 /**
+ * What this actor pays for Magic Defense at this rank: the table's price,
+ * times the multiplier the answered card carries (Incantator
+ * dvojnasobnaMana: 2), or nothing with Elymas "Magická obrana: Nestojí manu"
+ * (utils/elymas.mjs), which wins over the multiplier.
+ *
+ * @param {Actor} actor
+ * @param {string} rank
+ * @param {object|null} [attack]  the packet being answered
+ */
+function magicDefensePrice(actor, rank, attack = null) {
+  const multiplier = Math.max(1, Number(attack?.defenderManaMultiplier) || 1);
+  return magicDefenseManaCost(
+    actor,
+    (MAGIC_DEFENSE_COST[rank] ?? 0) * multiplier,
+  );
+}
+
+/**
+ * Divoká magie (user ruling): Magic Defense against a Wild spell adds that
+ * spell's positive Difficulty to the defense rating. A Difficulty of 0 or
+ * below adds nothing, and any other rank adds nothing.
+ *
+ * @param {object|null} attack  packet from buildAttackPacket
+ * @returns {number}
+ */
+export function wildSpellDefenseBonus(attack) {
+  if (String(attack?.spellRank ?? "").toLowerCase() !== "wild") return 0;
+  return Math.max(0, Number(attack?.spellDifficulty) || 0);
+}
+
+/**
  * Everything a defense roll is made of, up to but not including the die.
  *
  * One builder for both uses: the defense closures in {@link defenseRoll} roll
@@ -591,6 +680,8 @@ function magicRankLabel(rank) {
  * @param {boolean} [params.useBane=false]
  * @param {string|null} [params.spellSchool]  school of the spell being answered
  *   ("magic" only, for the Blood school bonus)
+ * @param {object|null} [params.attack]  the packet being answered ("magic"
+ *   only: the Wild spell Difficulty bonus and Elymas Focused Defense read it)
  * @returns {Promise<{formula: string, rollData: object, rating: number,
  *   critSuccess: number, critFailure: number,
  *   skillKey: "meleeDefense"|"rangedDefense"|"dodge",
@@ -611,36 +702,58 @@ export async function buildDefenseProfile({
   // The attack answered is a Shooting one (the attack packet's `shooting`):
   // Střelecký postoj's Dodge bonus reads it (utils/sharpshooter.mjs).
   shootingAttack = false,
+  attack = null,
 } = {}) {
   // Magic Defense rolls Channeling and reads no weapon at all, so it is settled
   // before anything below dereferences the context (an NPC mage may carry
-  // none). NPCs have no `channeling.defense` field — doctrine bonuses are a
-  // character thing — hence the Number guard rather than a NaN rating.
+  // none). An NPC's `channeling.defense` is a flat number typed on its sheet
+  // (a character's comes from doctrine); actors created before the field
+  // existed lack it, hence the Number guard rather than a NaN rating.
   if (mode === "magic") {
     const channeling = actor.system.combatSkills.channeling;
     // School of Blood ranks only harden the defender against Blood spells.
     const bloodSchoolBonus =
       spellSchool === "blood" ? getBloodSchoolRankBonus(actor) : 0;
+    const wildSpellBonus = wildSpellDefenseBonus(attack);
+    // Elymas: Focused Defense's +15 and flank cancel, and the crit bonuses
+    // (utils/elymas.mjs). The arc is read the way the dialog reads it.
+    const sector =
+      attack || attackerTokenId
+        ? resolveDefenseSector({ defenderToken, attackerTokenId, attack })
+        : null;
+    const elymas = elymasMagicDefense(actor, { attack, sector });
     const rollData = {
       rating:
         (Number(channeling?.rating) || 0) +
         (Number(channeling?.defense) || 0) +
-        bloodSchoolBonus,
+        bloodSchoolBonus +
+        wildSpellBonus +
+        elymas.focusedBonus +
+        elymas.flankCancel,
       overwhelmPenalty: overwhelmPenaltyFor(actor, overwhelmStacks),
     };
+    // Magic Defense is a Channeling Test modified by the defense bonus (user
+    // ruling), so it has Channeling's natural criticals: die only, no -25
+    // margin fumble (that belongs to a cast). An actor whose Channeling has
+    // no thresholds (an NPC from before the derivation) never crits.
+    const successBase = Number(channeling?.criticalSuccessThreshold);
+    const failureBase = Number(channeling?.criticalFailureThreshold);
     return {
       formula: "@rating + @overwhelmPenalty - 1d100",
       rollData,
       rating: rollData.rating + rollData.overwhelmPenalty,
-      // Channeling defense has no crits of its own: the contest is decided on
-      // margins, so these thresholds can never be reached.
-      critSuccess: 0,
-      critFailure: 101,
+      critSuccess:
+        (Number.isFinite(successBase) ? successBase : 0) + elymas.critBonus,
+      critFailure:
+        Number.isFinite(failureBase) && failureBase > 0 ? failureBase : 101,
       // Rolled untagged, so only the global advantage bucket applies.
       skillKey: null,
       dodgeLimit: null,
       aimDefense: null,
       bloodSchoolBonus,
+      wildSpellBonus,
+      focusedBonus: elymas.focusedBonus,
+      flankCancel: elymas.flankCancel,
     };
   }
 
@@ -1027,7 +1140,16 @@ export async function defenseRoll({
   // posted outright as the critical failure the rules say it is. Deliberately
   // before the ability and auto-defense branches, so a reaction ability and an
   // NPC defending itself are denied on the same terms a player is.
-  if (deniesDefense(positionSector, actor)) {
+  //
+  // Elymas Focused Defense is the one exception for a spell: "Umožňuje obranu
+  // proti kouzlům seslaným do zad", Magic Defense only and without its +15
+  // (utils/elymas.mjs). A weapon blow from behind is still denied.
+  const focusedBackSpell =
+    positionSector === SECTOR.BACK &&
+    canMagicDefend(actor) &&
+    !actor.system?.priest &&
+    focusedBackSpellDefense(actor, attack);
+  if (deniesDefense(positionSector, actor) && !focusedBackSpell) {
     await postDeniedDefense({
       actor,
       token: defenderToken,
@@ -1101,6 +1223,8 @@ export async function defenseRoll({
   /*  Overwrite the logic if the ability is given */
   /* -------------------------------------------- */
   if (ability) {
+    // From behind, a focused mage answers a spell with Magic Defense alone.
+    if (focusedBackSpell) return spellDefense();
     if (ability.system?.rangedDefense != null) {
       return rangedDefense({ ability, weapon });
     }
@@ -1152,6 +1276,9 @@ export async function defenseRoll({
   // Overwhelm still records the attacker, the versus block still contests the
   // attack, and the card comes out identical bar the auto marker.
   if (auto) {
+    // A focused mage answering a spell from behind has Magic Defense left,
+    // whatever else the card asked for.
+    if (focusedBackSpell) return spellDefense();
     // An NPC with Blindside Dodge being hit from behind has exactly one legal
     // answer, whatever the card asked for. Everything without the node was
     // already turned away by the deny gate above — bar a future
@@ -1279,7 +1406,7 @@ export async function defenseRoll({
         label: knownRank
           ? game.i18n.format("REDSTEEL.Defense.MagicDefenseCost", {
               rank: magicRankLabel(knownRank),
-              cost: MAGIC_DEFENSE_COST[knownRank],
+              cost: magicDefensePrice(actor, knownRank, attack),
             })
           : "Magic defense",
         callback: (html) => {
@@ -1298,9 +1425,15 @@ export async function defenseRoll({
     // Shadow's node passes the deny gate and arrives here with no blindside
     // button to keep, and stripping the rest would hand it an empty dialog.
     // Such a defender keeps the full set until the feature says otherwise.
-    if (isBackAttack && buttons.blindsideDodge) {
+    //
+    // Elymas Focused Defense against a spell from behind keeps Magic Defense
+    // (and Blindside Dodge, for a defender who also has that) and nothing
+    // else, for the same reason: it buys one answer, not the whole set.
+    if (isBackAttack && (buttons.blindsideDodge || focusedBackSpell)) {
+      const keep = new Set(["blindsideDodge"]);
+      if (focusedBackSpell) keep.add("spell");
       for (const key of Object.keys(buttons)) {
-        if (key !== "blindsideDodge") delete buttons[key];
+        if (!keep.has(key)) delete buttons[key];
       }
     }
 
@@ -1704,7 +1837,8 @@ export async function defenseRoll({
             (Number(actor.system.defenseDeflect) || 0) +
             getArmigerDeflect(actor) +
             // Strážce → Bonus za štít: the held shield's Deflect.
-            wardenShieldDeflect(actor),
+            wardenShieldDeflect(actor) +
+            fencingDaggerDeflect(actor),
           defenseKey: "meleeDefense",
           useBane,
           aimDefense,
@@ -1951,7 +2085,10 @@ export async function defenseRoll({
         overwhelmStacks,
         {
           badDodge,
-          deflectValue: Number(actor.system.dodgeDeflect) || 0,
+          deflectValue:
+            (Number(actor.system.dodgeDeflect) || 0) +
+            acrobaticDeflect(actor) +
+            fencingDaggerDeflect(actor),
           defenseKey: "dodge",
           useBane,
         },
@@ -2065,7 +2202,8 @@ export async function defenseRoll({
     // ─────────────────────────────
 
     const rollMagicDefense = async (rank) => {
-      const cost = MAGIC_DEFENSE_COST[rank] ?? 0;
+      // Elymas "Nestojí manu" prices every rank at 0 (utils/elymas.mjs).
+      const cost = magicDefensePrice(actor, rank, attack);
       const level = magicRankLabel(rank);
       const mana = actor.system.stats.mana.value ?? 0;
 
@@ -2082,16 +2220,23 @@ export async function defenseRoll({
 
       await settleOverwhelm();
 
-      // Channeling, its doctrine defense and the Blood school bonus: see
-      // buildDefenseProfile, which auto-defense scores from as well.
+      const attackerId = defendingAgainstId() ?? null;
+
+      // Channeling, its doctrine defense, the Blood school bonus, the Wild
+      // spell Difficulty and the Elymas bonuses: see buildDefenseProfile,
+      // which auto-defense scores from as well.
       const profile = await buildDefenseProfile({
         actor,
         mode: "magic",
         context: null,
+        defenderToken,
+        attackerTokenId: attackerId,
         overwhelmStacks,
         spellSchool: attack?.spellSchool ?? null,
+        attack,
       });
-      const { bloodSchoolBonus } = profile;
+      const { bloodSchoolBonus, wildSpellBonus, focusedBonus, flankCancel } =
+        profile;
 
       const roll = new Roll(
         profile.formula,
@@ -2101,22 +2246,73 @@ export async function defenseRoll({
 
       await roll.evaluate();
 
-      // Channeling defense posts no crit thresholds of its own, so the
-      // contest rests on margins here too.
+      // Channeling's natural criticals, judged the way a weapon defense card
+      // judges its own (createDefenseChatMessage): Desperate Effort shifts the
+      // thresholds, a fumbling first die forfeits advantage, and a natural
+      // critical on a negative chance is a common success of margin 0. Die
+      // only: the -25 margin fumble is a cast's, not a defense's.
+      const { successThreshold, failureThreshold } = applyDesperateCrit(
+        roll,
+        profile.critSuccess,
+        profile.critFailure,
+      );
+      forfeitAdvantageOnCritFail(roll, failureThreshold);
+      const d100 = roll.dice.find((d) => d.faces === 100)?.total ?? null;
+      const critSuccess =
+        d100 !== null &&
+        !capHopelessNatural(roll, successThreshold) &&
+        d100 <= successThreshold;
+      const critFailure = d100 !== null && d100 >= failureThreshold;
+
       const versus = resolveVersusAttack({
         defenseTotal: roll.total,
-        defenseD100: roll.dice.find((d) => d.faces === 100)?.total ?? null,
-        defenseCrit: false,
+        defenseD100: d100,
+        defenseCrit: critSuccess,
+        defenseCritFailure: critFailure,
       });
+
+      // The contest when this answered a card, the roll's own margin when it
+      // was launched from the hotbar (the weapon defense card's rule).
+      const defenseFailed = versus.versus
+        ? !versus.versus.blocked
+        : roll.total < 0;
+      const criticalDefense = versus.versus
+        ? versus.versus.critical === "defense"
+        : critSuccess;
+
+      // Elymas Magická ozvěna: a Critical Magic Defense leaves 50% off the
+      // next spell's Mana.
+      const echoNote = criticalDefense ? await settleMagicEcho(actor) : "";
+
+      // Elymas rozsahObrany / Area defense: this one roll also answers the
+      // card for the allies next to the defender that the spell targeted.
+      const coveredTokenIds = areaDefenseCovers(
+        actor,
+        defenderToken,
+        attack,
+        attackerId,
+      );
+
+      const title = game.i18n.format("REDSTEEL.Defense.MagicDefenseTitle", {
+        rank: level,
+      });
+      const line = (text) => `<p style="text-align:center">${text}</p>`;
 
       await roll.toMessage({
         speaker: ChatMessage.getSpeaker({ actor }),
         flavor: `
         <div style="display:flex;align-items:center;gap:8px;font-weight:bold;">
           <img src="icons/magic/defensive/shield-barrier-blades-teal.webp" width="36" height="36">
-          <span>Magic Defense (${level})</span>
+          <span>${title}</span>
         </div>
-
+        <hr>
+        <p class="rs-card-headline"><b>${
+          critSuccess
+            ? game.i18n.localize("REDSTEEL.Fold.CriticalSuccess")
+            : critFailure
+              ? game.i18n.localize("REDSTEEL.Fold.CriticalFailure")
+              : ""
+        }</b></p>
         ${
           auto
             ? `<p class="rs-auto-defense-note"><i class="fa-light fa-bolt-auto"></i> ${game.i18n.localize(
@@ -2124,15 +2320,57 @@ export async function defenseRoll({
               )}</p>`
             : ""
         }
-        ${overwhelmStacks > 0 ? `<p style="text-align:center">${game.i18n.localize("REDSTEEL.Overwhelm.Label")}: ${overwhelmPenalty}</p>` : ""}
-        ${bloodSchoolBonus > 0 ? `<p style="text-align:center">${game.i18n.format("REDSTEEL.Defense.BloodSchoolBonus", { bonus: bloodSchoolBonus })}</p>` : ""}
+        ${overwhelmStacks > 0 ? line(`${game.i18n.localize("REDSTEEL.Overwhelm.Label")}: ${overwhelmPenalty}`) : ""}
+        ${bloodSchoolBonus > 0 ? line(game.i18n.format("REDSTEEL.Defense.BloodSchoolBonus", { bonus: bloodSchoolBonus })) : ""}
+        ${wildSpellBonus > 0 ? line(game.i18n.format("REDSTEEL.Defense.WildSpellBonus", { bonus: wildSpellBonus })) : ""}
+        ${focusedBonus > 0 ? line(game.i18n.format("REDSTEEL.Elymas.FocusedCardBonus", { bonus: focusedBonus })) : ""}
+        ${flankCancel > 0 ? line(game.i18n.format("REDSTEEL.Elymas.FlankCancelled", { bonus: flankCancel })) : ""}
+        ${
+          coveredTokenIds.length
+            ? line(
+                game.i18n.format("REDSTEEL.Elymas.AreaDefenseCovers", {
+                  names: coveredNames(defenderToken, coveredTokenIds),
+                }),
+              )
+            : ""
+        }
         ${versus.html}
+        ${echoNote}
         `,
         flags: {
           redsteel: {
+            rollName: title,
+            // A reroll judges its new die against these (redsteel.mjs
+            // executeReroll), the Desperate Effort shift included.
+            criticalSuccessThreshold: successThreshold,
+            criticalFailureThreshold: failureThreshold,
             traitPills: getTraitPills(actor, "defense"),
             ...(auto ? { autoDefense: true } : {}),
             versus: versus.versus,
+            // Who answered whom and whether it held. Its own key rather than
+            // `defense`, which the weapon reactions (Counterattack, Overpower,
+            // Brace, Shield Strain ...) read as a weapon defense. Read by Apply
+            // Damage (findAnsweringDefense: the critical-failure degree and
+            // Area defense's covered allies), the Elymas Magic Counterattack
+            // chip and the reroll, which restates it for the new die.
+            magicDefense: {
+              defenderTokenId: defenderToken?.id ?? null,
+              attackerTokenId: attackerId,
+              succeeded: !defenseFailed,
+              critical: !defenseFailed && !!criticalDefense,
+              critFailure,
+              spellAttack: isSpellPacket(attack),
+              coveredTokenIds,
+              // The attack answered, kept whole so a reroll contests it again.
+              versusAttack: versus.versus ? (attack ?? null) : null,
+              combat: game.combat?.started
+                ? {
+                    id: game.combat.id,
+                    round: game.combat.round,
+                    turn: game.combat.turn,
+                  }
+                : null,
+            },
           },
         },
       });
@@ -2150,17 +2388,14 @@ export async function defenseRoll({
     new Dialog({
       title: "Magic defense",
       content: `<p>Select your Magic defense level:</p>`,
-      buttons: Object.entries(MAGIC_DEFENSE_COST).reduce(
-        (buttons, [rank, cost]) => {
-          buttons[rank] = {
-            label: `${magicRankLabel(rank)} (-${cost} Mana)`,
-            callback: () => rollMagicDefense(rank),
-          };
+      buttons: Object.keys(MAGIC_DEFENSE_COST).reduce((buttons, rank) => {
+        buttons[rank] = {
+          label: `${magicRankLabel(rank)} (-${magicDefensePrice(actor, rank, attack)} Mana)`,
+          callback: () => rollMagicDefense(rank),
+        };
 
-          return buttons;
-        },
-        {},
-      ),
+        return buttons;
+      }, {}),
       default: "wild",
     }).render(true);
   }
@@ -2210,7 +2445,9 @@ export async function defenseRoll({
     // A fumbling first die forfeits advantage; read the die only after.
     forfeitAdvantageOnCritFail(roll, failureThreshold);
     const rollResult = roll.dice[0].total;
-    const critSuccess = rollResult <= successThreshold;
+    const critSuccess =
+      !capHopelessNatural(roll, successThreshold) &&
+      rollResult <= successThreshold;
     const critFailure = rollResult >= failureThreshold;
 
     const armorTable = renderArmorTable(actor);

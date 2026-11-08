@@ -6,7 +6,7 @@ import {
   defenseRoll,
   getDodgeStaminaCost,
 } from "./defense.mjs";
-import { defenseWinChance } from "./defenseOdds.mjs";
+import { CRITICAL_HIT_WEIGHT, defenseOutcomes } from "./defenseOdds.mjs";
 import {
   attackerTokenIdFromMessage,
   getOverwhelmSources,
@@ -138,8 +138,12 @@ function mainWeapon(actor) {
  * have to notice that.
  *
  * The score is the exact chance, out of 10000, that this defense wins the
- * versus Test against *this* attack (defenseOdds.mjs → defenseWinChance). The
- * attack is already rolled, so its margin and crit flags are facts, not
+ * versus Test against *this* attack, less the chance it loses by enough to
+ * hand the blow a critical hit (defenseOdds.mjs → defenseOutcomes). Failing
+ * is not all one outcome: against a strong blow, a dodge at -25 whose only
+ * hope is a natural critical can block a little more often than the shield,
+ * yet concede the critical hit on nearly every other die, where the shield
+ * mostly loses by less than 60. The attack is already rolled, so its margin and crit flags are facts, not
  * averages, and each option is scored with the numbers its real roll would be
  * made of (defense.mjs → buildDefenseProfile): Overwhelm as it will stand once
  * this attacker is recorded, the Long Reach penalty, the NPC's own advantage
@@ -244,13 +248,19 @@ export async function pickBestDefense(
       longReachPenalty: mode === "melee" ? longReachPenalty : 0,
       spellSchool: attack?.spellSchool ?? null,
       shootingAttack: attack?.shooting === true,
+      // Magic only: the Wild spell Difficulty bonus and Elymas Focused
+      // Defense read the packet (defense.mjs buildDefenseProfile).
+      attack,
     });
     const bias = getRollBias(biasData, profile.skillKey);
+    const { blocked, criticalHit } = defenseOutcomes(profile, attack, bias);
 
     options.push({
       mode,
       weapon,
-      score: defenseWinChance(profile, attack, bias),
+      blocked,
+      criticalHit,
+      score: blocked - CRITICAL_HIT_WEIGHT * criticalHit,
     });
   }
 
@@ -259,10 +269,11 @@ export async function pickBestDefense(
   console.debug(
     "Redsteel | auto-defense odds",
     defenderToken?.name ?? actor.name,
-    options.map(({ mode, weapon, score }) => ({
+    options.map(({ mode, weapon, blocked, criticalHit }) => ({
       mode,
       weapon: weapon?.name ?? null,
-      pct: score / 100,
+      blockPct: blocked / 100,
+      critHitPct: criticalHit / 100,
     })),
   );
 
@@ -369,6 +380,15 @@ export async function resolveAutoDefense(message) {
     criticalFailure: flag.criticalFailure === true,
     d100: flag.d100 ?? null,
     spellSchool: message.flags?.redsteel?.spellSchool ?? null,
+    // The same spell fields the Defend button's packet carries
+    // (defense.mjs buildAttackPacket): the rank, the Wild spell Difficulty
+    // bonus, and what Elymas Focused Defense reads.
+    spellRank: message.flags?.redsteel?.spellRank ?? null,
+    spellDifficulty: message.flags?.redsteel?.spellDifficulty ?? null,
+    magicFlankBonus: message.flags?.redsteel?.magicFlankBonus ?? 0,
+    defenderManaMultiplier:
+      Number(message.flags?.redsteel?.defenderManaMultiplier) || 1,
+    isSpell: flag.isSpell === true,
     // Where each target stood when the blow was thrown (utils/positioning.mjs).
     positioning: flag.positioning ?? null,
     // Tulák IX's lowered critical threshold on a Weak Spot action, if any.

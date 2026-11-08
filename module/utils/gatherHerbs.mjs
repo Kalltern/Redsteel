@@ -36,6 +36,7 @@ import {
   withRollBias,
   tagRollSkill,
   forfeitAdvantageOnCritFail,
+  capHopelessNatural,
 } from "./rollAdvantage.mjs";
 
 const PACK_ID = "redsteel.redsteel-items";
@@ -187,9 +188,10 @@ export async function gatherHerbs(actor, skillKey, skillData) {
     // A fumbling first die forfeits advantage; read the die only after.
     forfeitAdvantageOnCritFail(roll, critFail);
     const d100 = roll.dice?.[0]?.total ?? rating - roll.total;
+    const hopeless = capHopelessNatural(roll, critSucc);
     state.d100 = d100;
     state.margin = roll.total;
-    state.critSuccess = d100 <= critSucc;
+    state.critSuccess = !hopeless && d100 <= critSucc;
     state.critFailure = d100 >= critFail;
     const y = herbYieldForMargin(
       state.margin,

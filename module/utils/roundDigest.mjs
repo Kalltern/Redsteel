@@ -238,7 +238,11 @@ export async function postRoundEntry(actor, options = {}) {
     messageData = {},
   } = options;
 
+  // A GM-only roll never rides on the card: the card's rolls reach every client,
+  // and Dice So Nice throws them on everybody's screen.
+  const secretRoll = gm && !!roll;
   if (
+    !secretRoll &&
     collectRoundEntry(actor, {
       kind,
       label,
@@ -260,7 +264,9 @@ export async function postRoundEntry(actor, options = {}) {
   const resolvedFlavor = flavor ?? label;
   if (resolvedFlavor) base.flavor = resolvedFlavor;
 
-  if (roll) await roll.toMessage(base);
+  // toMessage applies a visibility mode over messageData, and without one the
+  // client's default ("public") wipes the whisper and blind set by the caller.
+  if (roll) await roll.toMessage(base, secretRoll ? { messageMode: "blind" } : {});
   else await ChatMessage.create({ ...base, content: content ?? note });
 
   return false;

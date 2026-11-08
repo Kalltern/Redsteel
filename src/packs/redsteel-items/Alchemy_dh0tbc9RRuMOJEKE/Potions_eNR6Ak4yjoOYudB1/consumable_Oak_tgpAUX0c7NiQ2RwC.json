@@ -1,0 +1,58 @@
+{
+  "folder": "eNR6Ak4yjoOYudB1",
+  "name": "Oak",
+  "type": "consumable",
+  "img": "icons/consumables/potions/bottle-round-corked-orange.webp",
+  "system": {
+    "description": "<p>Effect - Dulls pain, +30% on rolls against Pain. Ignores the penalties for grave wounds<br />Duration - 3 hours<br />Toxicity - 8<br />Production bonus - +15% -&gt; 1 dose<br />Ingredients - Strong alcohol, Al, Pa, Smokeweed</p>",
+    "options": [
+      "potion",
+      "explosive",
+      "misc",
+      "first aid",
+      "poison"
+    ],
+    "types": [
+      "mana",
+      "health",
+      "stamina"
+    ],
+    "quantity": 1,
+    "option": "potion",
+    "roll": {
+      "diceNum": 0,
+      "diceSize": "6",
+      "diceBonus": "0"
+    },
+    "type": "",
+    "toxicity": 8,
+    "bleed": 0,
+    "localizationKey": "REDSTEEL.Items.Oak.name",
+    "difficulty": 15
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {
+    "redsteel": {
+      "statusEffects": [
+        "oak"
+      ]
+    }
+  },
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.15.0",
+    "createdTime": 1793749553395,
+    "modifiedTime": 1793749553395,
+    "lastModifiedBy": null
+  },
+  "_id": "tgpAUX0c7NiQ2RwC",
+  "_key": "!items!tgpAUX0c7NiQ2RwC"
+}

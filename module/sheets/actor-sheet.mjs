@@ -28,6 +28,8 @@ import {
   tagRollSkill,
   applyDesperateCrit,
   forfeitAdvantageOnCritFail,
+  capHopelessNatural,
+  isHopelessNatural,
 } from "../utils/rollAdvantage.mjs";
 import {
   getActorRerollPools,
@@ -3276,9 +3278,10 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
           if (forfeitAdvantageOnCritFail(roll, failureThreshold)) {
             d100Result = roll.dice[0]?.total;
           }
+          // A natural critical on a negative chance is no critical.
           const criticalMessage = this.evaluateCriticalSuccess(
             d100Result,
-            successThreshold,
+            capHopelessNatural(roll, successThreshold) ? 0 : successThreshold,
             failureThreshold,
           );
           console.log(
@@ -3335,6 +3338,11 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
             chance: bonusTotal ? Number(skillData.mod) + bonusTotal : skillData.mod,
             result: roll.result,
             mirror: skillKey,
+            natural: {
+              die: d100Result,
+              success: isHopelessNatural(roll) ? 0 : criticalSuccessThreshold,
+              failure: criticalFailureThreshold,
+            },
           });
         }
 

@@ -1278,7 +1278,9 @@
           "critbonus": 0,
           "critfailpenalty": 0,
           "value": 0,
-          "bonus": 0
+          "bonus": 0,
+          "attack": 0,
+          "defense": 0
         },
         "bloodManipulation": {
           "rating": 0,
@@ -1385,6 +1387,7 @@
       "class": "",
       "tags": "",
       "material": "",
+      "focus": false,
       "classOptions": [
         "axe",
         "blunt",
@@ -1485,6 +1488,7 @@
       "templates": ["base"],
       "material": "",
       "equipped": false,
+      "focus": false,
       "layerOptions": ["Accessory", "Bottom", "Middle", "Top"],
       "armorWeight": "",
       "armorWeightOptions": ["", "light", "heavy"],
@@ -1811,7 +1815,8 @@
       "templates": ["base"],
       "quantity": 1,
       "rations": false,
-      "difficulty": 0
+      "difficulty": 0,
+      "focus": false
     },
     "spellbook": {
       "templates": ["base"],
@@ -2026,6 +2031,8 @@
       "cost": 0,
       "perRound": 0,
       "penetration": 0,
+      "magicAttack": 0,
+      "magicAttackFixed": false,
       "manualNotes": "",
       "variants": []
     }

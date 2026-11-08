@@ -1,8 +1,10 @@
 import {
   tagRollSkill,
   forfeitAdvantageOnCritFail,
+  capHopelessNatural,
 } from "./rollAdvantage.mjs";
 import { resetActorRerolls } from "./rerolls.mjs";
+import { longRestMana } from "./incantator.mjs";
 import { breakAimOnAction, grantRespiteAim } from "./aim.mjs";
 import { trackedCombat } from "./actionTracker.mjs";
 import { grantLightArmorRest } from "./skirmisher.mjs";
@@ -361,6 +363,8 @@ function longRestDefaults(actor) {
     mana = elymasRank >= 5 ? maxMana : Math.floor(maxMana / 2);
   } else if (incantatorRank > 0) {
     mana = incantatorRank >= 9 ? 40 : incantatorRank >= 5 ? 30 : 20;
+    // Incantator → Dlouhý odpočinek 50 many (utils/incantator.mjs).
+    mana = longRestMana(actor, mana);
   } else if (veneficusRank > 0) {
     mana = maxMana;
   }
@@ -1291,8 +1295,11 @@ async function performFirstAid(
   let healRoll = null;
 
   const isCritFail = d100 >= criticalFailureThreshold;
-  const isCritSuccess = d100 <= criticalSuccessThreshold;
-  const failed = isCritFail || firstAidRoll.total <= 0;
+  // A natural on a negative chance is a success of margin 0, which this test
+  // would otherwise read as a failure.
+  const hopeless = capHopelessNatural(firstAidRoll, criticalSuccessThreshold);
+  const isCritSuccess = !hopeless && d100 <= criticalSuccessThreshold;
+  const failed = isCritFail || (firstAidRoll.total <= 0 && !hopeless);
 
   if (isCritFail) {
     critStatus =
@@ -1300,7 +1307,7 @@ async function performFirstAid(
 
     // The injury never benefits from a salve — only from the botcher's reach.
     healRoll = new Roll(`2d4${bonus}`);
-  } else if (firstAidRoll.total <= 0) {
+  } else if (failed) {
     healRoll = null;
   } else {
     if (isCritSuccess || firstAidRoll.total >= 60) {

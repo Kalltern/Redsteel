@@ -610,6 +610,50 @@ REDSTEEL.effectDefinitions = {
     stackBehavior: "ignore",
   },
 
+  // "Kat" (Slayer potion) — Ověření +15% on the DRINKER's attacks for 15
+  // minutes. Precision is an attack extra effect, so it rides the same
+  // combatModifiers.extraEffects path weapon quality and the Champion off-hand
+  // bonus use, on every attack (melee, thrown and archery alike: the rule names
+  // no weapon). Own exclusiveGroup for the same reason as giantslayer above: it
+  // must stack with a weapon enchant and with Giantslayer itself. No duration
+  // flag — the 15-minute clock is fiction the GM tracks.
+  slayer: {
+    name: "REDSTEEL.Items.Slayer.name",
+    img: "icons/consumables/potions/bottle-round-corked-red.webp",
+    statuses: ["slayer"],
+
+    combatModifiers: {
+      exclusiveGroup: "slayer",
+      extraEffects: {
+        precision: 15,
+      },
+    },
+    stackBehavior: "ignore",
+  },
+
+  // "Dub" (Oak potion) — dulls pain for three hours. "Ignoruje postihy za VZ"
+  // is automated: the ignoreGraveWoundPenalty capability flag makes
+  // _prepareGlobalMod (actor.mjs) skip the −5% per grave wound. Pain tests are
+  // not a roll kind of their own (the book's Pain test is an Endurance test, and
+  // table rulings read pain as a Resolve matter, see devils_root below), so the
+  // +30% vs Pain is a reminder pill on both rolls rather than a number: the GM
+  // adds it when the test is against pain. No duration flag, removed by hand.
+  oak: {
+    name: "REDSTEEL.Items.Oak.name",
+    img: "icons/consumables/potions/bottle-round-corked-orange.webp",
+    statuses: ["oak"],
+    description: "REDSTEEL.Items.Oak.pill",
+    rollTriggersRaw: "end, res",
+    changes: [
+      {
+        key: "system.ignoreGraveWoundPenalty",
+        type: "override",
+        value: true,
+      },
+    ],
+    stackBehavior: "ignore",
+  },
+
   // "Hora" (Mountain potion) — two hours of outright immunity to Omráčení, not
   // a resist_stun-style reduction of the chance: the rules say immunity, so it
   // writes the boolean isImmuneToEffect checks before the status can ever be
@@ -1043,6 +1087,41 @@ REDSTEEL.effectDefinitions = {
         key: "system.combatSkills.rangedDefense.bonus",
         type: "add",
         value: 10,
+      },
+    ],
+  },
+
+  // "Soustředěná obrana" (Focused Defense, Elymas): Magic Defense +15% except
+  // against a spell from behind, flanks cancelled, and Magic Defense allowed
+  // against a spell from behind. No `changes`: all of it is per defense, read
+  // in the magic profile (utils/elymas.mjs, utils/defense.mjs). Taken on the
+  // holder's turn from the hotbar chip and gone at the start of their next
+  // turn (defaultTurns 1, user ruling).
+  focused_defense: {
+    name: "REDSTEEL.Elymas.FocusedDefense",
+    img: "icons/magic/defensive/shield-barrier-deflect-teal.webp",
+    statuses: ["focused_defense"],
+    defaultTurns: 1,
+    useDuration: true,
+    stackBehavior: "ignore",
+    changes: [],
+  },
+
+  // "Soustředěná obrana: Reakce +1" (Elymas soReakce): the extra Reaction
+  // half of Focused Defense, the improved_fast_reaction pattern. Applied with
+  // the stance and tagged to end with it (utils/elymas.mjs).
+  focused_defense_reaction: {
+    name: "REDSTEEL.Elymas.FocusedDefenseReaction",
+    img: "icons/magic/defensive/shield-barrier-glowing-triangle-teal-purple.webp",
+    statuses: ["focused_defense_reaction"],
+    defaultTurns: 1,
+    useDuration: true,
+    stackBehavior: "ignore",
+    changes: [
+      {
+        key: "system.actionEconomy.reactions",
+        type: "add",
+        value: 1,
       },
     ],
   },
@@ -1787,7 +1866,8 @@ REDSTEEL.effectDefinitions = {
     stackBehavior: "ignore",
   },
 
-  // "Obnovení" — heal over time with a fixed duration.
+  // "Obnovení" — heal over time with a fixed duration. Two rounds:
+  // 1 heal onApply + 2 onRoundStart heals.
   restoration: {
     name: "Restoration",
     img: "icons/svg/regen.svg",
@@ -2077,8 +2157,8 @@ REDSTEEL.effectDefinitions = {
     name: "Poisoned blood",
     img: "icons/magic/death/skull-poison-green.webp",
     statuses: ["poisoned_blood"],
-    // 1 tick onApply + 3 onRoundStart ticks = four rounds of damage.
-    defaultRounds: 3,
+    // Four rounds: 1 tick onApply + 4 onRoundStart ticks.
+    defaultRounds: 4,
     useDuration: true,
     stackBehavior: "refresh",
     triggers: {
@@ -2106,8 +2186,8 @@ REDSTEEL.effectDefinitions = {
     name: "Skin cracking",
     img: "icons/skills/wounds/injury-triple-slash-bleed.webp",
     statuses: ["skin_cracking"],
-    // 1 tick onApply + 2 onRoundStart ticks = three rounds of Bleeding.
-    defaultRounds: 2,
+    // Three rounds: 1 tick onApply + 3 onRoundStart ticks of Bleeding.
+    defaultRounds: 3,
     useDuration: true,
     stackBehavior: "refresh",
     triggers: {
@@ -2125,9 +2205,9 @@ REDSTEEL.effectDefinitions = {
     name: "Demonic grasp",
     img: "icons/magic/unholy/strike-hand-glow-pink.webp",
     statuses: ["demonic_grasp"],
-    // 1 tick onApply + 3 onRoundStart ticks = "up to four rounds" of damage
+    // "Up to four rounds": 1 tick onApply + 4 onRoundStart ticks of damage
     // and Bleeding application; Root lasts until the effect is removed.
-    defaultRounds: 3,
+    defaultRounds: 4,
     useDuration: true,
     stackBehavior: "refresh",
     triggers: {
@@ -2244,8 +2324,9 @@ REDSTEEL.effectDefinitions = {
     name: "Dark curse",
     img: "icons/magic/unholy/orb-stone-pink.webp",
     statuses: ["dark_curse"],
-    // 1 tick onApply + 1 onRoundStart tick = two rounds of damage.
-    defaultRounds: 1,
+    // Two rounds: 1 tick onApply + 2 onRoundStart ticks (the counter starts
+    // at the stated duration, the apply tick is extra).
+    defaultRounds: 2,
     useDuration: true,
     stackBehavior: "refresh",
     triggers: {
@@ -2270,8 +2351,8 @@ REDSTEEL.effectDefinitions = {
     name: "Burning Mark",
     img: "icons/magic/fire/orb-vortex.webp",
     statuses: ["burning_mark"],
-    // 1 tick onApply + 2 onRoundStart ticks = three rounds of damage.
-    defaultRounds: 2,
+    // Three rounds: 1 tick onApply + 3 onRoundStart ticks.
+    defaultRounds: 3,
     useDuration: true,
     stackBehavior: "refresh",
     triggers: {
@@ -2304,7 +2385,7 @@ REDSTEEL.effectDefinitions = {
     name: "Hypothermia",
     img: "icons/magic/water/barrier-ice-water-cube.webp",
     statuses: ["hypothermia"],
-    defaultRounds: 2, // three rounds of damage
+    defaultRounds: 3, // three rounds: 1 tick onApply + 3 onRoundStart ticks
     useDuration: true,
     stackBehavior: "refresh",
     triggers: {
@@ -2328,7 +2409,7 @@ REDSTEEL.effectDefinitions = {
     name: "Black Itch",
     img: "icons/skills/wounds/illness-disease-glowing-green.webp",
     statuses: ["black_itch"],
-    defaultRounds: 1, // overwritten with SK/2 at apply time
+    defaultRounds: 1, // overwritten with SK/2 + 1 at apply time
     useDuration: true,
     stackBehavior: "refresh",
     triggers: {
@@ -2356,7 +2437,7 @@ REDSTEEL.effectDefinitions = {
     name: "Blight bomb",
     img: "icons/magic/death/skull-poison-green.webp",
     statuses: ["blight_bomb"],
-    defaultRounds: 5, // six rounds of damage
+    defaultRounds: 6, // six rounds: 1 tick onApply + 6 onRoundStart ticks
     useDuration: true,
     stackBehavior: "refresh",
     triggers: {
@@ -2549,6 +2630,24 @@ REDSTEEL.effectDefinitions = {
 
   // Aimed Strike — applied to the TARGET when an aimed hit lands on Legs.
   // Grants disadvantage on dodge rolls.
+  // Hákování (Sekerník): the shield dragged aside. The lost Reaction is spent
+  // once by featureActions.mjs.
+  hooked: {
+    name: "REDSTEEL.Effect.Name.hooked",
+    img: "icons/skills/melee/shield-damaged-broken-orange.webp",
+    statuses: ["hooked"],
+    defaultRounds: 2,
+    useDuration: true,
+    changes: [
+      {
+        key: "system.combatSkills.meleeDefense.bonus",
+        type: "add",
+        value: -10,
+      },
+    ],
+    stackBehavior: "refresh",
+  },
+
   maimed_legs: {
     name: "Leg Injury",
     img: "icons/commodities/leather/boot-torn-tan.webp",

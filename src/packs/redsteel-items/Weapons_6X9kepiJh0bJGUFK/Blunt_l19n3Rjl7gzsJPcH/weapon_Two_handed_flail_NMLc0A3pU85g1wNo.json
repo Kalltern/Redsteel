@@ -98,8 +98,8 @@
     ],
     "effectTypes": [],
     "roll": {
-      "diceNum": 2,
-      "diceSize": "8",
+      "diceNum": 3,
+      "diceSize": "6",
       "diceBonus": "2"
     },
     "penetration": 12,

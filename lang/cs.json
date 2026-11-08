@@ -84,6 +84,108 @@
       "TargetLockFail": "{name}: zacílení na {target} se nepovedlo.",
       "TagOverwatchShot": "Výstřel ze Stráže +10 %"
     },
+    "Veneficus": {
+      "ManaKill": "{name} zabíjí v Souboji: příští kouzlo stojí o {amount} many méně.",
+      "FollowUpSpell": "{name} zabíjí magicky posíleným útokem: příští kouzlo školy {schools} získá Usměrňování +{bonus} %.",
+      "VeteranOption": "Magický veterán, vzdané stupně:",
+      "VeteranTooltip": "Vzdej se libovolného počtu stupňů Kritického zásahu. Každý vzdaný stupeň sníží Obtížnost tvého příštího kouzla o 10.",
+      "VeteranPreviewNote": "Magický veterán: stupeň {from} → {to}",
+      "VeteranPaid": "{name} se vzdává stupňů Kritického zásahu ({degrees}): Obtížnost příštího kouzla se sníží o {amount}.",
+      "VeteranAlreadyPaid": "Magický veterán už byl na této kartě zaplacen: stupeň se sníží, příští kouzlo už nic dalšího nezíská.",
+      "StaminaAsMana": "Výdrž za manu",
+      "StaminaAsManaTooltip": "Soubojové akce za manu: cenu Výdrže této soubojové akce zaplatíš manou, 1:1.",
+      "LindarChargeLabel": "Lindarův výpad",
+      "LindarChargeReady": "{name} navazuje na {spell}: příští Útok v tomto tahu je Volná akce.",
+      "LindarChargeReadyCharge": "{name} navazuje na {spell}: příští Útok v tomto tahu je Volná akce a počítá se jako Zteč.",
+      "LindarChargeHint": "Po kouzle {spell}: zaútoč Volnou akcí.",
+      "LindarChargeHintTarget": "Po kouzle {spell}: zaútoč na {target} Volnou akcí.",
+      "LindarChargeHintCharge": "Po kouzle {spell}: zaútoč Volnou akcí. Útok v Souboji se počítá jako Zteč.",
+      "LindarChargeHintChargeTarget": "Po kouzle {spell}: zaútoč na {target} Volnou akcí. Útok v Souboji se počítá jako Zteč.",
+      "TagLindarCharge": "Lindarův výpad",
+      "TagLindarChargeCharge": "Lindarův výpad: počítá se jako Zteč",
+      "MomentumOpened": "{name} získává Magické momentum: v tomto kole může seslat jedno jednoakcové kouzlo jako Volnou akci, s polovičním zraněním. Sešli ho přes čip na hotbaru.",
+      "MomentumHint": "Klikni a sešli v tomto kole jednoakcové kouzlo jako Volnou akci. Dělá poloviční zranění.",
+      "MomentumHintArmed": "Připraveno: tvé příští jednoakcové kouzlo v tomto kole je Volná akce a dělá poloviční zranění. Kliknutím znovu otevřeš okno sesílání.",
+      "MomentumCast": "Magické momentum: {name} sesílá {spell} jako Volnou akci. Dělá poloviční zranění.",
+      "MomentumHalfForced": "Sesláno Magickým momentem: kouzlo dělá poloviční zranění.",
+      "ReinforceArmed": "{name} čerpá z magie: Výhoda na příští versus Test Síly nebo Obratnosti.",
+      "ReinforceAlready": "Magické posílení je už připravené. Spotřebuje ho příští versus Test Síly nebo Obratnosti.",
+      "AimNeedsTarget": "Magické míření potřebuje přesně jeden zacílený cíl kromě tebe.",
+      "AimUsedThisRound": "Magické míření už bylo v tomto kole použito.",
+      "AimGained": "{name} získává 1 Míření na {target} (celkem {after})."
+    },
+    "MancerPassive": {
+      "TagChance": "{node}: {effect} +{chance}%",
+      "TagStacks": "{node}: {effect} +{stacks}×",
+      "TagRange": "{node}: rozsah +1,5 m",
+      "Effect": {
+        "stagger": "Omráčení",
+        "slow": "Zpomalení",
+        "freeze": "Zmražení",
+        "bleed": "Krvácení",
+        "poison": "Otrávení",
+        "burn": "Podpálení",
+        "stun": "Ochromení",
+        "corrosion": "Koroze"
+      }
+    },
+    "MancerLock": {
+      "cast": "Na kouzlo {spell} potřebuješ {node}."
+    },
+    "Elymas": {
+      "FocusedDefense": "Soustředěná obrana",
+      "FocusedDefenseReaction": "Soustředěná obrana: Reakce +1",
+      "FocusedDefenseDescription": "Do začátku tvého dalšího tahu: Magická obrana +{bonus} %, kouzlo z boku proti tobě ztrácí bonus za bok a na kouzlo seslané do zad můžeš odpovědět Magickou obranou, ale bez bonusu.",
+      "FocusedTaken": "{name} se soustředí na Magickou obranu: +{bonus} % do začátku svého dalšího tahu.",
+      "FocusedCrit": "Kritický úspěch Magické obrany +10 %.",
+      "FocusedReaction": "Reakce +1.",
+      "FocusedReduction": "Zranění od kouzel je poloviční.",
+      "FocusedCardBonus": "Soustředěná obrana: +{bonus}",
+      "FlankCancelled": "Soustředěná obrana ruší bok: +{bonus}",
+      "AreaDefenseCovers": "Plošná obrana: tento hod platí i pro {names}.",
+      "EchoEarned": "Magická ozvěna: příští kouzlo stojí o {pct} % many méně.",
+      "DamageReduced": "Soustředěná obrana: magické zranění poloviční",
+      "CounterHint": "Sešli na {target} útočné kouzlo za jednu akci (nejvyšší stupeň: {rank}). Stojí tě Reakci.",
+      "CounterHintFree": "Sešli na {target} útočné kouzlo za jednu akci (nejvyšší stupeň: {rank}). První v tomto kole je Volná akce.",
+      "CounterNoSpell": "Nemáš žádné útočné kouzlo za jednu akci do stupně {rank}, které by se hodilo k protiútoku.",
+      "CounterVariantUnfit": "Tato varianta nemůže být Magickým protiútokem: musí to být útočné kouzlo za jednu akci v rámci tvého stupně.",
+      "CounterTag": "Magický protiútok",
+      "CounterTagFree": "Magický protiútok (Volná akce)",
+      "CounterTagAttack": "Magický útok +{bonus}"
+    },
+    "Incantator": {
+      "TagNoFocus": "Bez ohniskového předmětu {penalty} %, Kritický neúspěch +{fail} %",
+      "TagCatalyst": "Katalyzátor: Kritický úspěch +{success} %, Kritický neúspěch +{fail} %",
+      "TagFocus": "Soustředění: Magický útok +{attack}, Kritický úspěch +{crit} %",
+      "TagFocusRange": "Ohniskový předmět: Kritický rozsah +{range}",
+      "WaveEarned": "Vlna energie: příští kouzlo stojí o {amount} many méně.",
+      "QuickFocusNoMana": "Rychlé soustředění potřebuje {cost} many.",
+      "QuickFocusCap": "Rychlé soustředění lze použít nejvýše {max}x za kolo.",
+      "QuickFocusBanked": "{name} se soustředí za {cost} many: příští kouzlo získá Soustředění +{banked}.",
+      "QuickFocusLine": "Rychlé soustředění: +{count}",
+      "CatalystOption": "Katalyzátor",
+      "CatalystHint": "Katalyzátor: toto seslání má Kritický úspěch +15 % a Kritický neúspěch +5 %.",
+      "PreciseWhere": "Precizní inkantaci použiješ v chatu: tlačítko na kartě tvého kouzla přehodí neúspěšný hod na efekt a tlačítko na odpovědi cíle ho donutí házet znovu.",
+      "StabilizeWhere": "Stabilizace zdroje se nabídne, když přijmeš Kritický neúspěch Usměrňování.",
+      "StabilizeDrawn": "Na Kritickém neúspěchu padlo {roll}:",
+      "StabilizeAsk": "Stabilizace zdroje: přijmi ho, hoď si na posun o jeden stupeň, nebo zaplať manu a vyber si.",
+      "StabilizeAccept": "Přijmout, jak padlo",
+      "StabilizeRoll": "Hodit 1d100 (1-50 mírnější, 51-100 horší)",
+      "StabilizePayLower": "Zaplatit {cost} many: o stupeň mírnější",
+      "StabilizePayRaise": "Zaplatit {cost} many: o stupeň horší",
+      "StabilizeRolledLower": "{name} hází {die}: stupeň je o jeden mírnější.",
+      "StabilizeRolledRaise": "{name} hází {die}: stupeň je o jeden horší.",
+      "StabilizePaidLower": "{name} platí {cost} many: stupeň je o jeden mírnější.",
+      "StabilizePaidRaise": "{name} platí {cost} many: stupeň je o jeden horší.",
+      "StabilizeNoMana": "Nedostatek many: Stabilizace zdroje stojí {cost}.",
+      "StabilizeEdge": "Tím směrem už další stupeň není, takže platí ten, který padl.",
+      "PreciseNoMana": "Nedostatek many: Precizní inkantace stojí {cost}.",
+      "PreciseRowNote": "Precizní inkantace, původně {from}",
+      "PreciseRerolled": "{name} platí {cost} many za Precizní inkantaci: {effect} přehozeno, {from} → {to}.",
+      "PreciseEffectButton": "Precizní inkantace: {effect} ({cost} many)",
+      "PreciseForceButton": "Precizní inkantace: vynutit nový hod ({cost} many)",
+      "NoGM": "Není připojen žádný GM, který by hod provedl."
+    },
     "Cover": {
       "TagHalf": "Poloviční kryt −30 %",
       "TagFull": "Plný kryt −60 %",
@@ -118,8 +220,6 @@
       "OnslaughtPrompt": "Zaútočit hned, nebo nejdřív přezbrojit?",
       "OnslaughtAttack": "Útok ({cost} výdrže)",
       "OnslaughtSwap": "Přezbrojit na {weapon} a zaútočit ({cost} výdrže)",
-      "OnslaughtFreeAttack": "{name} nepolevuje v náporu: příští Útok v tomto tahu je Volná akce.",
-      "OnslaughtSwapped": "{name} přezbrojí na {weapon}: příští Útok v tomto tahu je Volná akce.",
       "FreeOpportunity": "{name} čelí blížícímu se cíli {target}: tento Příležitostný útok nestojí Reakci.",
       "ChargeDefenseNotOpportunity": "Obrana proti zteči modifikuje jen Příležitostný útok. U tohoto útoku byla vynechána.",
       "ChargeDefenseNoSpear": "Obrana proti zteči vyžaduje kopí nebo trojzubec. U tohoto útoku byla vynechána.",
@@ -1181,7 +1281,7 @@
           "nodes": {
             "apprentice": {
               "label": "Škola Krve - Učedník",
-              "description": "5 CP. Pasivní. Odemyká možnost naučit se učednická kouzla Školy Krve. Může 1x za den opakovat hod na Manipulaci s krví. Kapacita Zásoby krve +10 automatizována; stupeň Školy a opakování hodu ručně. Částečně automatizováno."
+              "description": "5 CP. Pasivní. Odemyká možnost naučit se učednická kouzla Školy Krve. Může 1x za den opakovat hod na Manipulaci s krví. Kapacita Zásoby krve +10 a opakování hodu automatizovány; stupeň Školy ručně. Částečně automatizováno."
             },
             "spellPower1": {
               "label": "Síla kouzla +2",
@@ -1549,59 +1649,59 @@
           "nodes": {
             "magProtiutok": {
               "label": "Magický protiútok",
-              "description": "10 CP; Škola IV. Ručně — řeší se u stolu."
+              "description": "10 CP; Škola IV. Když tvoje Magická obrana proti kouzlu uspěje, objeví se na hotbaru do konce toho tahu čip Magický protiútok. Zaměří sesilatele a otevře dialog seslání jen s tvými útočnými kouzly za jednu akci do Učednického stupně. Seslání tě stojí Reakci a manu jako obvykle a karta je označena jako Magický protiútok. Automatizováno."
             },
             "mpExpert": {
               "label": "Magický protiútok: Expert",
-              "description": "10 CP; Škola VI. Ručně — řeší se u stolu."
+              "description": "10 CP; Škola VI. Magický protiútok může použít kouzla až do Expertního stupně. Automatizováno."
             },
             "mpUtok10": {
               "label": "MP: Magický útok +10% pro Učedníka",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Magický protiútok Učednickým kouzlem má Magický útok +10 %. Automatizováno."
             },
             "mpVolnaAkce": {
               "label": "Jeden MP za kolo jako Volná akce",
-              "description": "10 CP; Elymas V. Ručně — řeší se u stolu."
+              "description": "10 CP; Elymas V. Tvůj první Magický protiútok v každém kole je Volná akce místo Reakce. Automatizováno."
             },
             "mpKritNeuspech": {
               "label": "MP: Kritický neúspěch -5%",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Seslání Magického protiútoku má o 5 % nižší šanci na Kritický neúspěch na kostce Usměrňování. Automatizováno."
             },
             "mpMistr": {
               "label": "Magický protiútok: Mistr",
-              "description": "10 CP; Škola IX. Ručně — řeší se u stolu."
+              "description": "10 CP; Škola IX. Magický protiútok může použít kouzla až do Mistrovského stupně. Automatizováno."
             },
             "soustredenaObrana": {
               "label": "Soustředěná obrana",
-              "description": "10 CP. Ručně — řeší se u stolu."
+              "description": "10 CP. Čip na hotbaru ve tvém tahu, 1 akce: do začátku tvého dalšího tahu máš Magickou obranu +15 %, kouzlo z boku proti tobě ztrácí bonus za bok a na kouzlo seslané do zad můžeš odpovědět Magickou obranou (bez +15 %). Automatizováno."
             },
             "soKrit": {
               "label": "SO: Kritický úspěch Mag. obrany +10%",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Během Soustředěné obrany máš Kritický úspěch Magické obrany +10 %. Automatizováno."
             },
             "soReakce": {
               "label": "SO: Reakce +1",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Během Soustředěné obrany máš o jednu Reakci navíc. Automatizováno."
             },
             "soRedukce": {
               "label": "SO: Redukce magického zranění 50%",
-              "description": "10 CP; Elymas V. Ručně — řeší se u stolu."
+              "description": "10 CP; Elymas V. Během Soustředěné obrany ti okno Aplikovat zranění sníží zranění z karty kouzla na polovinu, navíc k zaškrtávátku Poloviční zranění. Automatizováno."
             },
             "magObranaMana": {
               "label": "Magická obrana: Nestojí manu, Krit +3%",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Tvoje Magická obrana nestojí žádnou manu bez ohledu na stupeň kouzla a její Kritický úspěch je o 3 % vyšší. Automatizováno."
             },
             "opakovaniUsmernovani": {
               "label": "1x za den opakovat hod na Usměrňování",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Jednou za den můžeš opakovat hod na Usměrňování: svou kartu seslání kouzla nebo Magické obrany, ne Kritický neúspěch. Dokud ho máš, spotřebuje ho tlačítko Re-Roll na těchto kartách. Automatizováno."
             },
             "rozsahObrany": {
               "label": "Rozsah Magické obrany +1,5m",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Tvoje Magická obrana platí i pro každého spojence vedle tebe, na kterého míří stejné kouzlo: jeden hod pro všechny, stejné pravidlo jako odbornost Plošná obrana. Automatizováno."
             },
             "magickaOzvena": {
               "label": "Magická ozvěna",
-              "description": "5 CP; Elymas V. Ručně — řeší se u stolu."
+              "description": "5 CP; Elymas V. Po Kritické Magické obraně stojí tvoje příští kouzlo o 50 % many méně, po ostatních slevách a zaokrouhleno dolů. Automatizováno."
             },
             "modifikatorMany": {
               "label": "Modifikátor many 5",
@@ -1805,43 +1905,43 @@
           "nodes": {
             "ohniskovyPredmet": {
               "label": "Ohniskový předmět: Kritický rozsah +5",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Když používáš ohniskový předmět (nasazený nebo držený předmět či zbraň označenou jako Ohniskový předmět, předmět s tímto označením u sebe, nebo grimoár s Moudrou knihou), kostka d20 na stupeň kritického zásahu tvého kouzla má +5. Automatizováno."
             },
             "soustredeni": {
               "label": "Soustředění: Mag. útok +5%, Krit +1%",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Každé Soustředění vynaložené na seslání dává Magický útok +5 a Kritický úspěch +1 %. Počítá se i Soustředění z Rychlého soustředění. Automatizováno."
             },
             "rychleSoustredeni": {
               "label": "Rychlé soustředění",
-              "description": "10 CP; Incantator V. Volná akce, stojí 15 many. Získá jedno Soustředění, nejvýše dvakrát za kolo. Uděluje akci Rychlé soustředění; Soustředění se řeší u stolu."
+              "description": "10 CP; Incantator V. Volná akce, 15 many. Rychlé soustředění ti uschová jedno Soustředění pro příští seslání, nejvýše dvakrát za kolo. Dialog seslání ukáže, kolik máš uschováno. Uschované v boji propadne na konci toho tahu. Automatizováno."
             },
             "precizniInkantace": {
               "label": "Precizní inkantace",
-              "description": "15 CP; Incantator V. Volná akce. Opětovným zaplacením ceny kouzla může přehodit hod na jeho efekt, nebo donutit oponenta přehodit test odolání efektu. Neplatí pro Mentální souboj. Uděluje akci Precizní inkantace; přehození a jeho cena se řeší u stolu."
+              "description": "15 CP; Incantator V. Volná akce, cena many kouzla. Karta tvého kouzla nabídne u každého neúspěšného hodu na efekt tlačítko, které ho jednou přehodí. Když cíl vyhraje versus Test proti tvému kouzlu, jeho odpověď nabídne tlačítko, které ho donutí házet znovu. Neplatí pro Mentální souboj ani kouzla Školy Krve. Automatizováno."
             },
             "moudraKniha": {
               "label": "Moudrá kniha",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Každý tvůj grimoár se počítá jako ohniskový předmět. Sesílání kouzel z grimoáru bez zapamatování už grimoáry umí. Automatizováno."
             },
             "vlnaEnergie": {
               "label": "Vlna energie",
-              "description": "10 CP; Incantator IV. Ručně — řeší se u stolu."
+              "description": "10 CP; Incantator IV. Když je seslání Kritický úspěch, tvoje příští kouzlo stojí o tolik many méně, kolik stálo právě seslané, nejméně o 5. Automatizováno."
             },
             "dvojnasobnaMana": {
               "label": "Mag. útoky stojí obránce 2x many",
-              "description": "0 CP. Ručně — řeší se u stolu."
+              "description": "0 CP. Magická obrana proti tvým kouzlům stojí obránce dvakrát více many. Obránce, jehož Magická obrana nic nestojí, dál neplatí nic. Automatizováno."
             },
             "stabilizaceZdroje": {
               "label": "Stabilizace zdroje",
-              "description": "15 CP. Volná akce. Při kritickém neúspěchu Usměrňování hodí 1d100 a sníží (1-50) nebo zvýší (51-100) jeho stupeň o jedna, nebo zaplatí 10% maximální many a směr si zvolí. Uděluje akci Stabilizace zdroje; posun stupně se řeší u stolu."
+              "description": "15 CP. Volná akce. Když přijmeš Kritický neúspěch Usměrňování, uvidíš vylosovaný výsledek a vybereš si: přijmout ho, hodit 1d100 na posun o stupeň mírnější (1-50) nebo horší (51-100), nebo zaplatit 10 % své maximální many a směr si zvolit. Automatizováno."
             },
             "katalyzator": {
               "label": "Katalyzátor",
-              "description": "10 CP. Volná akce. Před Testem sesílání zvýší šanci na Kritický úspěch o 15% a na Kritický neúspěch o 5%. Uděluje akci Katalyzátor; změněné šance se řeší u stolu."
+              "description": "10 CP. Volná akce. Dialog seslání má přepínač Katalyzátor: Kritický úspěch +15 % a Kritický neúspěch +5 % pro toto seslání. Předmět Katalyzátor otevře dialog s přepínačem zaškrtnutým. Automatizováno."
             },
             "dlouhyOdpocinek": {
               "label": "Dlouhý odpočinek 50 many",
-              "description": "15 CP; Incantator X. Ručně — řeší se u stolu."
+              "description": "15 CP; Incantator X. Dlouhý odpočinek ti obnoví nejméně 50 many. Automatizováno."
             },
             "modifikatorMany": {
               "label": "Modifikátor many 14",
@@ -2180,19 +2280,19 @@
             },
             "navazujiciKouzlo": {
               "label": "Navazující kouzlo",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Zabití útokem, který byl při hodu magicky posílen (držený úder nebo magické posílení zbraně, třeba Ohnivá zbraň), dá +10 % na Usměrňování tvého příštího kouzla ze Školy posilujícího kouzla, jednou za kartu útoku. Automatizováno."
             },
             "postihZbroje": {
               "label": "Usměrňování za zbroj: postih -5%",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Postih na Usměrňování od každého nošeného kusu zbroje je o 5 nižší, u daného kusu nikdy pod 0. Sčítá se s výhodou doktríny Veneficus IV, která ubere dalších 5. Automatizováno."
             },
             "magickyVeteran": {
               "label": "Magický veterán",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Volná akce. Když aplikuješ Kritický zásah, okno Aplikovat zranění ti dovolí vzdát se libovolného počtu jeho stupňů. Každý vzdaný stupeň sníží Obtížnost tvého příštího kouzla o 10, jednou za kartu útoku. Automatizováno."
             },
             "slevaMany": {
               "label": "Zabití Soubojem: -2 many na kouzlo",
-              "description": "5 CP; Veneficus V. Ručně — řeší se u stolu."
+              "description": "5 CP; Veneficus V. Když Aplikovat zranění z tvého útoku zbraní v Souboji zabije cíl (mrtvý, nebo nově Vyřazený či v Bezvědomí), stojí tvé příští kouzlo o 2 many méně za každý zabitý cíl. Automatizováno."
             },
             "magickeKz": {
               "label": "Magické Kz +3",
@@ -2200,27 +2300,27 @@
             },
             "soubojZaManu": {
               "label": "Soubojové akce za manu",
-              "description": "5 CP; Veneficus VII. Ručně — řeší se u stolu."
+              "description": "5 CP; Veneficus VII. Okno bojových schopností nabízí přepínač Výdrž za manu. Když je zapnutý, cenu Výdrže soubojové schopnosti (i jejích soubojových modifikátorů) zaplatíš manou, 1:1. Volíš při každém použití; schopnost spuštěná přímo čipem z hotbaru platí Výdrží. Automatizováno."
             },
             "lindaruvVypad1": {
               "label": "Lindarův výpad I",
-              "description": "10 CP; Škola VI. Přitáhnutí, Rychlé přitáhnutí, Přemístění, Teleportace, Temné přitáhnutí a Stínokrok stojí o 6 many méně a hází Usměrňování s +10%; gnostická kouzla Posunutí, Výměna a Prostorový skok se přidají, až budou vytvořena. Útok Volnou akcí po některém z těchto kouzel se řeší u stolu."
+              "description": "10 CP; Škola VI. Přitáhnutí, Rychlé přitáhnutí, Přemístění, Teleportace, Temné přitáhnutí a Stínokrok stojí o 6 many méně a hází Usměrňování s +10%; gnostická kouzla Posunutí, Výměna a Prostorový skok se přidají, až budou vytvořena. Po úspěšném seslání některého z nich ve vlastním tahu v boji je tvůj příští Útok v tomto tahu Volná akce, nabízená čipem Lindarův výpad na hotbaru. Automatizováno."
             },
             "lindaruvVypad2": {
               "label": "Lindarův výpad II",
-              "description": "10 CP; Veneficus V. Ručně — řeší se u stolu."
+              "description": "10 CP; Veneficus V. Volný Útok z Lindarova výpadu I se při útoku v Souboji počítá jako Zteč: Zásah +10 % a Zranění +2d4, s Těžkou zbraní o dalších +2d4 (hodnoty Vylepšené zteče, pokud ji máš), k tomu kostky za Zteč z Bonusu za druhou zbraň II. Karta útoku je označena jako Zteč. Automatizováno."
             },
             "usmernovani5": {
               "label": "Souboj/Střelba: Usměrňování +5%",
-              "description": "0 CP; Veneficus X. Ručně — řeší se u stolu."
+              "description": "0 CP; Veneficus X. Usměrňování +5 %. Automatizováno."
             },
             "magickaZbran": {
               "label": "Magická zbraň",
-              "description": "10 CP; Veneficus V. Ručně — řeší se u stolu."
+              "description": "10 CP; Veneficus V. Najednou můžeš držet dvě magická posílení zbraně: jejich zranění se sčítá, hází se na efekty obou a útok může použít kterýkoli z elementů. Třetí posílení nahradí to starší. Automatizováno."
             },
             "magickePosileni": {
               "label": "Magické posílení",
-              "description": "10 CP. Ručně — řeší se u stolu."
+              "description": "10 CP. Dává akci Magické posílení (Volná akce, 8 many): tvůj příští versus Test Síly nebo Obratnosti, ať ho vyvoláš, nebo na něj odpovídáš, hodíš s Výhodou. Nelze ji připravit dvakrát. Automatizováno."
             },
             "modifikatorMany": {
               "label": "Modifikátor many 2",
@@ -2228,19 +2328,19 @@
             },
             "magickeMireni": {
               "label": "Magické míření",
-              "description": "10 CP. Ručně — řeší se u stolu."
+              "description": "10 CP. Dává akci Magické míření (Volná akce, 5 many): jedno Míření na tvůj jediný zacílený cíl. V boji jednou za kolo. Automatizováno."
             },
             "mireniObtiznost": {
               "label": "Míření: Obtížnost -5%",
-              "description": "0 CP; Veneficus VII. Ručně — řeší se u stolu."
+              "description": "0 CP; Veneficus VII. Kouzlo seslané na žeton, na který míříš, má Obtížnost sníženou o 5 za každé Míření (nikdy pod 0). Automatizováno."
             },
             "magickeMomentum": {
               "label": "Magické momentum",
-              "description": "15 CP. Ručně — řeší se u stolu."
+              "description": "15 CP. Volná akce. Zásah útokem zbraní nebo Povalení cíle soubojovou akcí ti otevře jedno kouzlo zdarma pro dané kolo (celkem jedno za kolo, ať ho otevřelo cokoli). Použiješ ho kliknutím na čip Magické momentum na hotbaru: tvé příští kouzlo, které stojí přesně jednu akci, pak nestojí žádnou akci a dělá jen poloviční zranění. Kouzlo seslané bez čipu zaplatí svou akci a dělá plné zranění. Automatizováno."
             },
             "lindarovyUdery": {
               "label": "Lindarovy údery",
-              "description": "5 CP; Veneficus IV. Ručně — řeší se u stolu."
+              "description": "5 CP; Veneficus IV. Ohnivý úder, Ledový úder, Bleskový úder, Jedovatý úder, Magický úder, Temný úder a Posílení úderu (a také Svazující úder, který systém počítá mezi údery) se vždy sesílají bez vyhodnocení Usměrňování: kritický neúspěch hodu na Usměrňování je nezmaří a úder se použije bez ohledu na rozdíl. Automatizováno."
             }
           }
         },
@@ -2507,19 +2607,19 @@
           "nodes": {
             "ucednik": {
               "label": "Astramancer: Učedník",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Automatizováno. Odemyká možnost naučit se a sesílat učednické kouzlo: Rozbuška."
             },
             "expert": {
               "label": "Astramancer: Expert",
-              "description": "5 CP; Škola Vzduchu VI. Ručně — řeší se u stolu."
+              "description": "5 CP; Škola Vzduchu VI. Automatizováno. Odemyká možnost naučit se a sesílat expertní kouzla: Blesková runa, Červený blesk a Zelený blesk."
             },
             "mistr": {
               "label": "Astramancer: Mistr",
-              "description": "5 CP; Škola Vzduchu VIII. Ručně — řeší se u stolu."
+              "description": "5 CP; Škola Vzduchu VIII. Automatizováno. Odemyká možnost naučit se a sesílat mistrovská kouzla: Bleskový orb a Modrý blesk."
             },
             "velmistr": {
               "label": "Astramancer: Velmistr",
-              "description": "5 CP; Škola Vzduchu X. Ručně — řeší se u stolu."
+              "description": "5 CP; Škola Vzduchu X. Automatizováno. Odemyká možnost naučit se a sesílat velmistrovské kouzlo: Haroldův toulec."
             },
             "stunResist": {
               "label": "Snížená šance být Omráčen o 10%",
@@ -2531,7 +2631,7 @@
             },
             "bleskovySok": {
               "label": "Bleskový šok",
-              "description": "15 CP; Astramancer: Expert. Ručně — řeší se u stolu."
+              "description": "15 CP; Astramancer: Expert. Automatizováno. Útočná kouzla Školy Vzduchu mají 15/20/25/30% (podle stupně kouzla, učednická/expertní/mistrovská/velmistrovská; divoká jako učednická) šanci na Omráčení na dva tahy, přičtenou k vlastní šanci kouzla."
             },
             "omraceniKrit": {
               "label": "Omráčení +100% od 2. st. Krit. zásahu",
@@ -2543,7 +2643,7 @@
             },
             "kulovyBlesk": {
               "label": "Kulový blesk: Omráčení +15%",
-              "description": "5 CP; Astramancer: Mistr. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+              "description": "5 CP; Astramancer: Mistr. Automatizováno. Kulový blesk má o 15% větší šanci na Omráčení."
             },
             "retezovyBlesk": {
               "label": "Řetězový blesk: Cíl +1",
@@ -2745,19 +2845,19 @@
           "nodes": {
             "ucednik": {
               "label": "Cryomancer: Učedník",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Automatizováno. Odemyká možnost naučit se a sesílat učednické kouzlo: Podchlazení."
             },
             "expert": {
               "label": "Cryomancer: Expert",
-              "description": "5 CP; Škola Vody VI. Ručně — řeší se u stolu."
+              "description": "5 CP; Škola Vody VI. Automatizováno. Odemyká možnost naučit se a sesílat expertní kouzla: Ledová salva, Ledová zbroj a Saphiřina pěst."
             },
             "mistr": {
               "label": "Cryomancer: Mistr",
-              "description": "5 CP; Škola Vody VIII. Ručně — řeší se u stolu."
+              "description": "5 CP; Škola Vody VIII. Automatizováno. Odemyká možnost naučit se a sesílat mistrovská kouzla: Ledová kostka, Ledový orb a Saphiřin polibek."
             },
             "velmistr": {
               "label": "Cryomancer: Velmistr",
-              "description": "5 CP; Škola Vody X. Ručně — řeší se u stolu."
+              "description": "5 CP; Škola Vody X. Automatizováno. Odemyká možnost naučit se a sesílat velmistrovská kouzla: Blizard a Ledová stěna."
             },
             "ledoveUlomky": {
               "label": "Ledové úlomky",
@@ -2789,19 +2889,19 @@
             },
             "hlubokyMraz1": {
               "label": "Hluboký mráz I",
-              "description": "15 CP; Cryomancer: Expert. Ručně — řeší se u stolu."
+              "description": "15 CP; Cryomancer: Expert. Automatizováno. Útočná kouzla Školy Vody mají 15/20/25/35% (podle stupně kouzla, učednická/expertní/mistrovská/velmistrovská; divoká jako učednická) šanci na Zpomalení na tři tahy."
             },
             "hlubokyMraz2": {
               "label": "Hluboký mráz II",
-              "description": "15 CP; Cryomancer: Mistr. Ručně — řeší se u stolu."
+              "description": "15 CP; Cryomancer: Mistr. Automatizováno. Útočná kouzla Školy Vody mají 10/15/20/25% (podle stupně kouzla, učednická/expertní/mistrovská/velmistrovská; divoká jako učednická) šanci na Zmražení."
             },
             "hlubokyMraz3": {
               "label": "Hluboký mráz III",
-              "description": "15 CP; Cryomancer: Velmistr. Ručně — řeší se u stolu."
+              "description": "15 CP; Cryomancer: Velmistr. Automatizováno. Útočná kouzla Školy Vody mají o 45% větší šanci na Zpomalení (tři tahy) a o 20% větší šanci na Zmražení."
             },
             "ostryLed": {
               "label": "Ostrý led",
-              "description": "5 CP; Cryomancer: Expert. Ručně — řeší se u stolu."
+              "description": "5 CP; Cryomancer: Expert. Automatizováno. Útočná kouzla Školy Vody s Bodným zraněním mají 30% šanci na Krvácení."
             }
           }
         },
@@ -2810,19 +2910,19 @@
           "nodes": {
             "ucednik": {
               "label": "Entomancer: Učedník",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Automatizováno. Odemyká možnost naučit se a sesílat učednická kouzla: Repelent a Kyselinový plivanec."
             },
             "expert": {
               "label": "Entomancer: Expert",
-              "description": "5 CP; Škola Země VI. Ručně — řeší se u stolu."
+              "description": "5 CP; Škola Země VI. Automatizováno. Odemyká možnost naučit se a sesílat expertní kouzla: Roj hmyzu, Hmyzí přilnavost, Otrávená zbraň a Pavučina."
             },
             "mistr": {
               "label": "Entomancer: Mistr",
-              "description": "5 CP; Škola Země VIII. Ručně — řeší se u stolu."
+              "description": "5 CP; Škola Země VIII. Automatizováno. Odemyká možnost naučit se a sesílat mistrovská kouzla: Hejno hmyzu, Žihadlo a Kukla."
             },
             "velmistr": {
               "label": "Entomancer: Velmistr",
-              "description": "5 CP; Škola Země X. Ručně — řeší se u stolu."
+              "description": "5 CP; Škola Země X. Automatizováno. Odemyká možnost naučit se a sesílat velmistrovské kouzlo: Metamorfóza."
             },
             "feromony": {
               "label": "Feromony",
@@ -2830,7 +2930,7 @@
             },
             "jedovatyHmyz": {
               "label": "Jedovatý hmyz",
-              "description": "15 SP; Travič II. Ručně — řeší se u stolu."
+              "description": "15 SP; Travič II. Automatizováno. Roj hmyzu, Hejno hmyzu a Metamorfóza se pro Travič I a II počítají jako kouzla založená na jedu. Samotný uzel šanci na Otrávení nedává."
             },
             "jedResist1": {
               "label": "Šance na odolání jedu +10%",
@@ -2842,11 +2942,11 @@
             },
             "leptavaKyselina1": {
               "label": "Leptavá kyselina I",
-              "description": "5 CP; Entomancer: Expert. Ručně — řeší se u stolu."
+              "description": "5 CP; Entomancer: Expert. Automatizováno. Kouzla Školy Země s Kyselinovým zraněním mají o 15% větší šanci na poškození Kz (Koroze)."
             },
             "leptavaKyselina2": {
               "label": "Leptavá kyselina II",
-              "description": "10 CP. Ručně — řeší se u stolu."
+              "description": "10 CP. Automatizováno. Když kyselinové kouzlo Školy Země poškodí zbroj, zničí o 4 Kz více (jeden stupeň Koroze navíc)."
             },
             "protijed": {
               "label": "Protijed: Šance +25%",
@@ -2858,11 +2958,11 @@
             },
             "travic1": {
               "label": "Travič I",
-              "description": "10 CP; Entomancer: Učedník. Ručně — řeší se u stolu."
+              "description": "10 CP; Entomancer: Učedník. Automatizováno. Útočná kouzla Školy Země s Jedovým nebo Kyselinovým zraněním mají 20/30/35/45% (podle stupně kouzla, učednická/expertní/mistrovská/velmistrovská; divoká jako učednická) šanci na Otrávení."
             },
             "travic2": {
               "label": "Travič II",
-              "description": "15 CP; Entomancer: Expert. Ručně — řeší se u stolu."
+              "description": "15 CP; Entomancer: Expert. Automatizováno. Útočná kouzla Školy Země s Jedovým nebo Kyselinovým zraněním mají o 25/35/40/50% (podle stupně kouzla, učednická/expertní/mistrovská/velmistrovská; divoká jako učednická) větší šanci na Otrávení."
             },
             "travic3": {
               "label": "Travič III",
@@ -2870,7 +2970,7 @@
             },
             "toxiny": {
               "label": "Toxiny",
-              "description": "15 CP; Entomancer: Mistr. Ručně — řeší se u stolu."
+              "description": "15 CP; Entomancer: Mistr. Automatizováno. Otrávení, které způsobí tvá kouzla Školy Země, trvá o jedno kolo déle a při každém tiku způsobí o 1d6 větší zranění. Otrávení, které už na cíli je, si ponechá svoje zranění."
             },
             "kyselinovaStrela": {
               "label": "Kyselinová střela: Zbroj -2 Kz",
@@ -2887,19 +2987,19 @@
           "nodes": {
             "ucednik": {
               "label": "Geomancer: Učedník",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Automatizováno. Odemyká možnost naučit se a sesílat učednické kouzlo: Tříštivý kámen."
             },
             "expert": {
               "label": "Geomancer: Expert",
-              "description": "5 CP; Škola Země VI. Ručně — řeší se u stolu."
+              "description": "5 CP; Škola Země VI. Automatizováno. Odemyká možnost naučit se a sesílat expertní kouzla: Stalagmit, Otřes a Hlad země."
             },
             "mistr": {
               "label": "Geomancer: Mistr",
-              "description": "5 CP; Škola Země VIII. Ručně — řeší se u stolu."
+              "description": "5 CP; Škola Země VIII. Automatizováno. Odemyká možnost naučit se a sesílat mistrovská kouzla: Kamenný kruh, Urhanův zrak a Ocelová kůže."
             },
             "velmistr": {
               "label": "Geomancer: Velmistr",
-              "description": "5 CP; Škola Země X. Ručně — řeší se u stolu."
+              "description": "5 CP; Škola Země X. Automatizováno. Odemyká možnost naučit se a sesílat velmistrovská kouzla: Zemětřesení a Květ smrti."
             },
             "kz2": {
               "label": "Kz +2",
@@ -2915,7 +3015,7 @@
             },
             "regeneraceVydrze": {
               "label": "Regenerace: Obnovuje 2d4 Výdrže",
-              "description": "5 CP; Geomancer: Expert. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+              "description": "5 CP; Geomancer: Expert. Automatizováno. Regenerace, kterou sešleš, obnoví při každém tiku navíc 2d4 Výdrže."
             },
             "kamennaKuze": {
               "label": "Kamenná kůže: Obětování zbroje Omráčí",
@@ -2935,15 +3035,15 @@
             },
             "omracujiciRany1": {
               "label": "Omračující rány I",
-              "description": "15 CP; Geomancer: Expert. Ručně — řeší se u stolu."
+              "description": "15 CP; Geomancer: Expert. Automatizováno. Útočná kouzla Školy Země mají 10/15/20/25% (podle stupně kouzla, učednická/expertní/mistrovská/velmistrovská; divoká jako učednická) šanci na Omráčení na dva tahy. Sčítá se s Omračujícími ranami II."
             },
             "omracujiciRany2": {
               "label": "Omračující rány II",
-              "description": "15 CP; Geomancer: Mistr. Ručně — řeší se u stolu."
+              "description": "15 CP; Geomancer: Mistr. Automatizováno. Útočná kouzla Školy Země mají 10/15/20/25% (podle stupně kouzla, učednická/expertní/mistrovská/velmistrovská; divoká jako učednická) šanci na Omráčení na dva tahy. Sčítá se s Omračujícími ranami I."
             },
             "omracujiciRany3": {
               "label": "Omračující rány III",
-              "description": "20 CP; Geomancer: Velmistr. Ručně — řeší se u stolu."
+              "description": "20 CP; Geomancer: Velmistr. Automatizováno. Omráčení způsobené tvými kouzly Školy Země trvá o jeden tah déle."
             },
             "pevnyKrok": {
               "label": "Pevný krok",
@@ -2951,7 +3051,7 @@
             },
             "urhanovaSila": {
               "label": "Urhanova síla",
-              "description": "10 CP; Geomancer: Expert. Ručně — řeší se u stolu."
+              "description": "10 CP; Geomancer: Expert. Automatizováno. Když tvé kouzlo Omráčí cíl, který už Omráčený je, cíl je navíc Povalen."
             }
           }
         },
@@ -3684,19 +3784,19 @@
           "nodes": {
             "ucednik": {
               "label": "Pyromancer: Učedník",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Automatizováno. Odemyká možnost naučit se a sesílat učednické kouzlo: Vějíř jisker."
             },
             "expert": {
               "label": "Pyromancer: Expert",
-              "description": "5 CP; Škola Ohně VI. Ručně — řeší se u stolu."
+              "description": "5 CP; Škola Ohně VI. Automatizováno. Odemyká možnost naučit se a sesílat expertní kouzla: Ochrana před žárem, Roztavení a Stravující oheň."
             },
             "mistr": {
               "label": "Pyromancer: Mistr",
-              "description": "5 CP; Škola Ohně VIII. Ručně — řeší se u stolu."
+              "description": "5 CP; Škola Ohně VIII. Automatizováno. Odemyká možnost naučit se a sesílat mistrovská kouzla: Relgarův hněv, Rozžhavení a Relgarova runa."
             },
             "velmistr": {
               "label": "Pyromancer: Velmistr",
-              "description": "5 CP; Škola Ohně X. Ručně — řeší se u stolu."
+              "description": "5 CP; Škola Ohně X. Automatizováno. Odemyká možnost naučit se a sesílat velmistrovská kouzla: Déšť meteorů a Magmatický štít."
             },
             "overeni": {
               "label": "Škola Ohně: Ověření +15%",
@@ -3716,7 +3816,7 @@
             },
             "podpaleniPanika": {
               "label": "Podpálení nevyvolává Test na Paniku",
-              "description": "15 SP. Ručně — řeší se u stolu."
+              "description": "15 SP. Automatizováno. Když hoříš, nikdy neházíš Test Nervů na Paniku."
             },
             "ohnivaAura": {
               "label": "Ohnivá aura: Podpálení +5%",
@@ -3724,7 +3824,7 @@
             },
             "ohnivyStit": {
               "label": "Ohnivý štít: Průbojnost +3, Zranění +1d4",
-              "description": "5 CP; Pyromancer: Expert. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+              "description": "5 CP; Pyromancer: Expert. Automatizováno. Ohnivý štít hází zranění o 1d4 vyšší s Průbojností +3."
             },
             "podpaleniKrit": {
               "label": "Podpálení +100% od 3. st. Krit. zásahu",
@@ -3732,11 +3832,11 @@
             },
             "divokyOhen1": {
               "label": "Divoký oheň I",
-              "description": "15 CP; Pyromancer: Expert. Ručně — řeší se u stolu."
+              "description": "15 CP; Pyromancer: Expert. Automatizováno. Útočná kouzla Školy Ohně mají 5/10/15/20% (podle stupně kouzla, učednická/expertní/mistrovská/velmistrovská; divoká jako učednická) šanci na Podpálení."
             },
             "divokyOhen2": {
               "label": "Divoký oheň II",
-              "description": "15 CP; Pyromancer: Mistr. Ručně — řeší se u stolu."
+              "description": "15 CP; Pyromancer: Mistr. Automatizováno. Útočná kouzla Školy Ohně mají o 10% větší šanci na Podpálení. Rozsah +1,5 m ukazuje karta seslání, měří se u stolu."
             },
             "barevnyOhen1": {
               "label": "Barevný oheň I",
@@ -3826,19 +3926,19 @@
           "nodes": {
             "ucednik": {
               "label": "Vitamancer: Učedník",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Automatizováno. Odemyká možnost naučit se a sesílat učednická kouzla: Dezorientace a Stabilizace."
             },
             "expert": {
               "label": "Vitamancer: Expert",
-              "description": "5 CP; Škola Ducha/Těla VI. Ručně — řeší se u stolu."
+              "description": "5 CP; Škola Ducha/Těla VI. Automatizováno. Odemyká možnost naučit se a sesílat expertní kouzla: Plošná dezorientace a Lořina stráž."
             },
             "mistr": {
               "label": "Vitamancer: Mistr",
-              "description": "5 CP; Škola Ducha/Těla VIII. Ručně — řeší se u stolu."
+              "description": "5 CP; Škola Ducha/Těla VIII. Automatizováno. Odemyká možnost naučit se a sesílat mistrovská kouzla: Lorikovy šípy a Lořino pouto."
             },
             "velmistr": {
               "label": "Vitamancer: Velmistr",
-              "description": "5 CP; Škola Ducha/Těla X. Ručně — řeší se u stolu."
+              "description": "5 CP; Škola Ducha/Těla X. Automatizováno. Odemyká možnost naučit se a sesílat velmistrovská kouzla: Lorikova runa a Kolo života."
             },
             "kritRozsah": {
               "label": "Škola Ducha a Těla: Kritický rozsah +2",
@@ -3850,11 +3950,11 @@
             },
             "ochromeni1": {
               "label": "Škola Ducha: Ochromení +5%",
-              "description": "5 CP; Vitamancer: Expert. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+              "description": "5 CP; Vitamancer: Expert. Automatizováno. Kouzla Školy Ducha, která už mají šanci na Ochromení, ji mají o 5% větší."
             },
             "ochromeni2": {
               "label": "Škola Ducha: Ochromení +5%",
-              "description": "5 CP; Vitamancer: Mistr. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+              "description": "5 CP; Vitamancer: Mistr. Automatizováno. Kouzla Školy Ducha, která už mají šanci na Ochromení, ji mají o 5% větší."
             },
             "zivoty5": {
               "label": "Životy +5",
@@ -4278,7 +4378,11 @@
             "ratingLabel": "Útok na dálku"
           },
           "channeling": {
-            "label": "Usměrňování"
+            "label": "Usměrňování",
+            "attack": "Magický útok",
+            "attackHint": "Pevný bonus k Magickému útoku každého kouzla, které tento tvor sešle.",
+            "defense": "Magická obrana",
+            "defenseHint": "Pevný bonus k hodům tohoto tvora na Magickou obranu."
           },
           "bloodManipulation": {
             "label": "Manipulace s krví"
@@ -4439,6 +4543,10 @@
       }
     },
     "Item": {
+      "Focus": {
+        "label": "Ohniskový předmět",
+        "hint": "Skrze ohniskový předmět usměrňuješ magii bezpečněji. Čaroděj s doktrínou Incantator bez něj čaruje s postihem -10 % a Kritickým neúspěchem +2 %. Počítá se, když je nasazený, v aktivní sadě zbraní nebo u sebe."
+      },
       "Tabs": {
         "Attributes": "Vlastnosti",
         "Description": "Popis",
@@ -4449,6 +4557,33 @@
         "OffHand": "Druhá ruka",
         "Variants": "Varianty",
         "Light": "Světlo"
+      },
+      "EffectSlots": {
+        "builtIn": "Šance při zásahu",
+        "extra": "Další efekty",
+        "effect": "Efekt",
+        "chance": "Šance %",
+        "customName": "Vlastní název"
+      },
+      "EffectType": {
+        "custom": "Vlastní",
+        "bleed": "Krvácení",
+        "blind": "Oslepení",
+        "burn": "Podpálení",
+        "chain": "Řetěz",
+        "dispell": "Rozptýlení",
+        "fear": "Strach",
+        "freeze": "Zmražení",
+        "paralyze": "Paralýza",
+        "poison": "Jed",
+        "precision": "Ověření",
+        "root": "Zakořenění",
+        "shield_strain": "Zátěž štítu",
+        "shield_break": "Rozbití štítu",
+        "slow": "Zpomalení",
+        "stagger": "Omráčení",
+        "stun": "Ochromení",
+        "vulnerable": "Zranitelnost"
       },
       "Light": {
         "hint": "Pokud je tento předmět vybaven, vyzařuje z žetonu vlastníka světlo. Vyzařuje-li světlo více vybavených předmětů, použije se ten s největším dosahem. Pro žádné světlo ponechte Tlumené i Jasné na 0.",
@@ -4494,6 +4629,27 @@
         }
       },
       "Weapon": {
+        "BonusHint": "Přidává kvalita, materiál a očarování.",
+        "Section": {
+          "properties": "Vlastnosti",
+          "critical": "Kritický zásah",
+          "doctrines": "Doktríny",
+          "offhand": "Útok druhou rukou"
+        },
+        "Class": {
+          "axe": "Sekera",
+          "blunt": "Tupá",
+          "sword": "Meč",
+          "polearm": "Dřevcová",
+          "bow": "Luk",
+          "crossbow": "Kuše",
+          "firearm": "Palná"
+        },
+        "Type": {
+          "light": "Lehká",
+          "medium": "Střední",
+          "heavy": "Těžká"
+        },
         "FIELDS": {
           "offhand": {
             "label": "Může být drženo v druhé ruce"
@@ -4594,6 +4750,16 @@
         }
       },
       "Gear": {
+        "Layer": {
+          "Accessory": "Doplněk",
+          "Bottom": "Spodní",
+          "Middle": "Střední",
+          "Top": "Vrchní"
+        },
+        "Section": {
+          "whileEquipped": "Při nošení",
+          "resistances": "Odolnosti"
+        },
         "FIELDS": {
           "armor": {
             "label": "KZ"
@@ -4750,6 +4916,7 @@
           },
           "heavyDamage": {
             "label": "Zranění těžkou zbraní",
+            "short": "Těžká zbraň",
             "hint": "Dodatečné kostky zranění, které se přičtou pouze při použití této akce s Těžkou zbraní."
           },
           "attributeTest": {
@@ -4795,7 +4962,67 @@
           },
           "resourceCost": {
             "label": "Spotřeba munice"
+          },
+          "resourceType": {
+            "label": "Zdroj"
+          },
+          "resourceMode": {
+            "label": "Režim"
+          },
+          "resourceAmount": {
+            "label": "Množství"
           }
+        },
+        "Section": {
+          "test": "Test",
+          "resources": "Další ceny ve zdrojích"
+        },
+        "Class": {
+          "movement": "Pohyb",
+          "attack": "Útok",
+          "defense": "Obrana",
+          "stance": "Postoj",
+          "command": "Velení"
+        },
+        "Type": {
+          "melee": "Na blízko",
+          "ranged": "Na dálku",
+          "other": "Jiné"
+        },
+        "Cost": {
+          "stamina": "Výdrž",
+          "mana": "Mana",
+          "health": "Životy",
+          "mind": "Mentální životy",
+          "fatigue": "Únava",
+          "holy energy": "Svatá energie",
+          "blood": "Krev"
+        },
+        "Test": {
+          "strength": "Síla",
+          "dexterity": "Obratnost",
+          "endurance": "Odolnost",
+          "inteligence": "Inteligence",
+          "will": "Vůle",
+          "charisma": "Charisma",
+          "perception": "Vnímání",
+          "leadership": "Velení",
+          "channeling": "Usměrňování",
+          "speed": "Rychlost"
+        },
+        "Resource": {
+          "Health": "Životy",
+          "Stamina": "Výdrž",
+          "Mana": "Mana",
+          "Mind": "Mentální životy",
+          "Toxicity": "Toxicita",
+          "Corruption": "Korupce",
+          "TemporaryHealth": "Dočasné životy",
+          "TemporaryHealthMagic": "Magické dočasné životy"
+        },
+        "Mode": {
+          "add": "Přidat",
+          "drain": "Vysát"
         }
       },
       "Spell": {
@@ -4832,6 +5059,14 @@
           "uncontested": {
             "label": "Bez obrany",
             "hint": "Proti tomuto seslání se nic nehází: žádná obrana, žádný test vlastnosti, žádné zranění mířené na cíl. Skryje Magic ATK a při volbě Bez vyhodnocení kanálování zcela vynechá hod na kanálování."
+          },
+          "magicAttack": {
+            "label": "Magický útok",
+            "hint": "Vlastní Magický útok kouzla. Přičte se k Magickému útoku na kartě, nebo ho nahradí, pokud je zaškrtnutý Pevný Magický útok. Nikdy nemění šanci na seslání."
+          },
+          "magicAttackFixed": {
+            "label": "Pevný Magický útok",
+            "hint": "Magický útok kouzla je přesně číslo na kartě. Síla úspěchu seslání a všechny ostatní bonusy na Magický útok se ignorují."
           },
           "vsTest": {
             "label": "Versus test"
@@ -5041,6 +5276,8 @@
       "Details": {
         "weaponsAdvice": "Vyber zbraň, se kterou bude každá doktrína cvičit. Najeď na kartu a uvidíš všech deset jejích stupňů.",
         "weaponFor": "{doctrine}: zbraňová dovednost",
+        "weaponForOptional": "{doctrine}: zbraňová dovednost (nepovinná)",
+        "weaponOptionalAdvice": "Magická doktrína ani doktrína na dálku zbraňovou dovednost nepotřebuje. Můžeš si nějakou vybrat, nebo volbu nechat prázdnou; opětovným kliknutím na vybranou kartu ji zrušíš.",
         "spellsOpen": "Kouzla ({n})",
         "schoolFor": "{doctrine}: škola magie",
         "schoolKind": "Škola magie",
@@ -5055,8 +5292,8 @@
       },
       "Doctrine": {
         "heading": "Bojová doktrína",
-        "advice": "Vyber jednu doktrínu pro boj zblízka nebo na dálku, ve které se tvá postava cvičí. Přidá se k tvým dovednostem a body do ní rozdělíš později. Vedle ní si můžeš vzít Tuláka. Další doktríny se dají naučit později.",
-        "pickOne": "Vyber jednu doktrínu pro boj zblízka nebo na dálku.",
+        "advice": "Vyber jednu doktrínu pro boj zblízka nebo na dálku, ve které se tvá postava cvičí. Přidá se k tvým dovednostem a body do ní rozdělíš později. Vedle ní si můžeš vzít Tuláka. S Magickým potenciálem ji může nahradit magická doktrína, nebo si ji můžeš vzít vedle ní. Další doktríny se dají naučit později.",
+        "pickOne": "Vyber jednu doktrínu pro boj zblízka nebo na dálku. S Magickým potenciálem stačí místo ní magická doktrína.",
         "needsMagic": "Vyžaduje rys Magický potenciál.",
         "schoolsHeading": "Školy magie",
         "temperamentSchool": "Určeno tvým temperamentem.",
@@ -5632,7 +5869,8 @@
         "Hit": "Velení: Prolomte řadu",
         "Defense": "Velení: Držte řadu",
         "Cover": "Velení: Štíty vzhůru"
-      }
+      },
+      "TooManyTargets": "Toto velení dosáhne nejvýše na tento počet spojenců: {limit}."
     },
     "BloodStrike": {
       "OpenWoundOption": "Otevřená rána — obětovat {cost} životy ze Zásoby krve za 1 Krvácení",
@@ -5666,6 +5904,24 @@
       "StaminaTooLow": "{name} má {stamina} výdrže — na každé obětované Míření jsou potřeba {cost}.",
       "Applied": "{name} rozšiřuje ránu na cíli {targets}, obětuje {aim} Míření za {stamina} výdrže."
     },
+    "DamagePreview": {
+      "Damage": "{amount} zranění",
+      "Hp": "životy {amount}",
+      "HpOf": "{value}/{max} životů",
+      "TempHp": "dočasné životy {amount}",
+      "TempHpMagic": "magické dočasné životy {amount}",
+      "Incoming": "Příchozí {amount}",
+      "Shield": "Štít −{amount}",
+      "Armor": "Zbroj −{amount}",
+      "PenCap": "Strop průbojnosti −{amount}",
+      "Resistance": "Odolnost −{amount}",
+      "Immunity": "Imunita −{amount}",
+      "Vulnerability": "Zranitelnost +{amount}",
+      "Halved": "Poloviční zranění −{amount}",
+      "Durability": "Životy zbroje −{amount}",
+      "Remaining": "Zbývá: {hp}, {tempHp}",
+      "ShieldLeft": "štít {amount}"
+    },
     "SneakLedger": {
       "Refused": "Zákeřný útok se na cíl {targets} nepoužil — v tomto kole už byl proti němu vyčerpán (odebráno: {lost}).",
       "Granted": "Kritický zásah se proti cíli {targets} počítá jako Zákeřný útok (+{gained}).",
@@ -5690,7 +5946,11 @@
         "root": "zakořeněn",
         "blind": "oslepen",
         "dazzled": "oslněn",
-        "panic": "v panice"
+        "panic": "v panice",
+        "pikemanHunter": "uvnitř dosahu dlouhé zbraně",
+        "brigandRepeat": "druhý výstřel na stejný cíl",
+        "underhanded": "Omráčený cíl, 6 Výdrže",
+        "mauling": "Drásání"
       }
     },
     "EnduringWarrior": {
@@ -5920,7 +6180,9 @@
       "BadDodge": "Špatný úhyb!",
       "BadDodgeNote": "Hod překonal limit úhybu ({limit}): tento úhyb se počítá jako přesah 0.",
       "BloodSchoolBonus": "Obrana proti Škole Krve: +{bonus}",
-      "MagicDefenseCost": "Magická obrana: {rank} (-{cost} many)"
+      "MagicDefenseCost": "Magická obrana: {rank} (-{cost} many)",
+      "MagicDefenseTitle": "Magická obrana ({rank})",
+      "WildSpellBonus": "Divoká magie: +{bonus}"
     },
     "AutoDefense": {
       "Label": "Automatická obrana",
@@ -5962,11 +6224,26 @@
       "Blocked": "Ubráněno",
       "Hit": "Zásah",
       "Tie": "Shoda, útok prochází",
-      "Detail": "Útok {attack} vs Obrana {defense} ({gap})",
+      "TieInitiator": "Shoda, vítězí iniciátor",
+      "Won": "Vyhráno",
+      "Lost": "Prohráno",
+      "HopelessNatural": "Záporná šance: přirozená {die} je jen obyčejný úspěch, SÚ 0.",
+      "CriticalWin": "Kritická výhra",
+      "CriticalLoss": "Kritická prohra",
+      "NaturalOwn": "Hozena přirozená {die}, SÚ se ignoruje.",
+      "NaturalOpposing": "Protivník hodil přirozenou {die}, SÚ se ignoruje.",
+      "DeniedOnDiceOwn": "Oba kritické, vyhrává nižší hod. Hozeno {own} proti {opposing}.",
+      "DeniedOnDiceInitiator": "Oba kritické se stejným hodem {die}, shodu vyhrává iniciátor.",
+      "ByMargin": "{outcome} o {mos} SÚ",
+      "ByNatural": "{outcome} přirozenou {die}",
+      "Detail": "Útok {attack} vs Obrana {defense}",
       "CriticalDefense": "Kritická obrana",
       "CriticalDodge": "Kritický úhyb",
       "CriticalHit": "Kritický zásah",
-      "DeniedOnDice": "Oba kritické, síla úspěchu se ignoruje. Útok hodil {attack}, obrana {defense}.",
+      "NaturalAttack": "Útok hodil přirozenou {die}, SÚ se ignoruje.",
+      "NaturalDefense": "Obrana hodila přirozenou {die}, SÚ se ignoruje.",
+      "DeniedOnDice": "Oba kritické, vyhrává nižší hod. Útok hodil {attack}, obrana {defense}.",
+      "DeniedOnDiceTie": "Oba kritické se stejným hodem {die}, shodu vyhrává útok.",
       "DialogAttackMargin": "Obrana proti útoku o síle {margin}",
       "OwnMargin": "Vlastní SÚ {own} vs {opposing}"
     },
@@ -6424,7 +6701,7 @@
       "haste": "+1 k Rychlosti a +4 k Iniciativě. Akce navíc se řeší u stolu.",
       "fast_reaction": "+4 k Iniciativě za každý stupeň, počítá se do hodu na iniciativu v dalším kole. Vyprší na začátku dalšího tahu nositele.",
       "flight": "Létá. Rychlost je nastavena na 8.",
-      "restoration": "Vyléčí 2d6 + 1 Životů při uvalení a na začátku každého kola, celkem třikrát. Nezastaví Krvácení.",
+      "restoration": "Vyléčí 2d6 + 1 Životů při uvalení a na začátku každého z dalších 2 kol, celkem třikrát. Nezastaví Krvácení.",
       "resist_stun": "-15 % šance na Ochromení a Omráčení.",
       "resist_bleed": "Při uvalení odstraní veškeré Krvácení a po dobu trvání útoky nemohou Krvácení způsobit.",
       "protection_warmth": "+2 ke zbroji proti Ohni. Nelze kombinovat s Ochranou před žárem.",
@@ -6441,17 +6718,17 @@
       "air_shield": "30 % + SK šance odrazit projektily a poloviční zranění od střelby a vrhu, obojí se hází ručně.",
       "sanguine_blade": "Útoky zbraní mají +50 % šanci na Krvácení. Zabírá místo pro očarování zbraně.",
       "coagulation": "Každé Krvácení na nositeli vydrží už jen jedno kolo. Trvá tolik kol, kolik činí Síla kouzla Krve sesilatele (SK).",
-      "poisoned_blood": "Způsobí 1d6 + SK Temného a Jedového zranění při uvalení a na začátku každého z dalších 3 kol, ignoruje základní zbroj. SK je Síla kouzla Krve sesilatele.",
-      "skin_cracking": "Způsobí SK/4 Krvácení (zaokrouhleno nahoru, aspoň 1) při uvalení a na začátku každého z dalších 2 kol. Každé Krvácení, které se nevejde pod strop 6, způsobí místo toho 1d8 zranění.",
-      "demonic_grasp": "Při uvalení a na začátku každého z dalších 3 kol způsobí SK×4 Temného a Drtivého zranění ignorujícího základní zbroj a 2 Krvácení. Zároveň drží na místě: pohyb je 0, nemůže uhýbat a -15 % na Souboj, Obranu a Kryt.",
+      "poisoned_blood": "Způsobí 1d6 + SK Temného a Jedového zranění při uvalení a na začátku každého z dalších 4 kol, ignoruje základní zbroj. SK je Síla kouzla Krve sesilatele.",
+      "skin_cracking": "Způsobí SK/4 Krvácení (zaokrouhleno nahoru, aspoň 1) při uvalení a na začátku každého z dalších 3 kol. Každé Krvácení, které se nevejde pod strop 6, způsobí místo toho 1d8 zranění.",
+      "demonic_grasp": "Při uvalení a na začátku každého z dalších 4 kol způsobí SK×4 Temného a Drtivého zranění ignorujícího základní zbroj a 2 Krvácení. Zároveň drží na místě: pohyb je 0, nemůže uhýbat a -15 % na Souboj, Obranu a Kryt.",
       "spectral_weapon": "Útoky zbraní přidávají k typu zranění Magii. Zabírá místo pro očarování zbraně.",
       "magic_rope": "Sesilatelovo vyvolané lano. Vyslané na cíl postaví Vůli + SK sesilatele proti Síle nebo Obratnosti a při výhře cíl Zakoření. Prohraný souboj lano zničí.",
       "insect_swarm": "Na začátku každého kola způsobí 1d4 zranění ignorujících zbroj a neúspěšný test Nervů pak způsobí Paniku. -5 % na všechny testy a -50 % na Střelbu a Vrh.",
-      "dark_curse": "Způsobí 1d6 + SK Magického a Temného zranění při uvalení a na začátku dalšího kola, ignoruje základní zbroj. SK je Síla kouzla Temnoty sesilatele.",
-      "burning_mark": "Způsobí 2d6 + SK/2 Magického a Ohnivého zranění při uvalení a na začátku každého z dalších 2 kol, ignoruje základní zbroj. +10 % šance chytit Hoření z jiných zdrojů. SK je Síla kouzla Ohně sesilatele.",
-      "hypothermia": "Způsobí 1d6 + SK/2 Magického a Mrazivého zranění při uvalení a na začátku každého z dalších 2 kol, ignoruje základní zbroj. SK je Síla kouzla Vody sesilatele.",
-      "black_itch": "Způsobí 1d4 Magického a Temného zranění při uvalení a na začátku každého kola, ignoruje základní zbroj, a utržené zranění se připíše i jako Korupce. Působí SK/2 + 1krát (aspoň dvakrát), kde SK je Síla kouzla Temnoty sesilatele.",
-      "blight_bomb": "Způsobí 3d6 + SK/2 Temného a Jedového zranění při uvalení a na začátku každého z dalších 5 kol, ignoruje základní zbroj. SK je Síla kouzla Krve sesilatele. Výbuch při smrti se řeší u stolu.",
+      "dark_curse": "Způsobí 1d6 + SK Magického a Temného zranění při uvalení a na začátku každého z dalších 2 kol, ignoruje základní zbroj. SK je Síla kouzla Temnoty sesilatele.",
+      "burning_mark": "Způsobí 2d6 + SK/2 Magického a Ohnivého zranění při uvalení a na začátku každého z dalších 3 kol, ignoruje základní zbroj. +10 % šance chytit Hoření z jiných zdrojů. SK je Síla kouzla Ohně sesilatele.",
+      "hypothermia": "Způsobí 1d6 + SK/2 Magického a Mrazivého zranění při uvalení a na začátku každého z dalších 3 kol, ignoruje základní zbroj. SK je Síla kouzla Vody sesilatele.",
+      "black_itch": "Způsobí 1d4 Magického a Temného zranění při uvalení a na začátku každého kola, ignoruje základní zbroj, a utržené zranění se připíše i jako Korupce. Trvá SK/2 + 1 kol, takže působí SK/2 + 2krát, kde SK je Síla kouzla Temnoty sesilatele.",
+      "blight_bomb": "Způsobí 3d6 + SK/2 Temného a Jedového zranění při uvalení a na začátku každého z dalších 6 kol, ignoruje základní zbroj. SK je Síla kouzla Krve sesilatele. Výbuch při smrti se řeší u stolu.",
       "eluviels_touch": "Vyléčí 2 + SK Životů při uvalení a na začátku každého kola, dokud není odstraněn. SK je Síla kouzla Těla sesilatele.",
       "entropy": "-10 ke Zbroji. Trvá SK/2 + 1 kol podle Síly kouzla Temnoty sesilatele. Zranění za každý skutečně snížený bod Zbroje se řeší u stolu.",
       "shadow_form": "+10 % na Plížení. 20% šance vyhnout se fyzickému zranění se řeší u stolu.",
@@ -6750,7 +7027,8 @@
         "shield_strain": "Přetížení štítu",
         "crippled_initiative": "Zmrzačené pořadí tahu",
         "immobilized": "Znehybněn",
-        "protected_by": "Pod ochranou"
+        "protected_by": "Pod ochranou",
+        "hooked": "Zaháknutý"
       }
     },
     "Resync": {
@@ -7037,7 +7315,8 @@
         "name": "Široký meč"
       },
       "Butcher": {
-        "name": "Řezník"
+        "name": "Řezník",
+        "description": "<p>Kritický zásah Vojenským sekáčkem, Obouručním sekáčkem nebo Lehkou zbraní má zvýšenou šanci na Krvácení o +100%.</p>"
       },
       "CalendulaAlba": {
         "name": "Calendula Alba"
@@ -7731,7 +8010,7 @@
         "name": "Rozseknutí flambergem (schopnost)"
       },
       "FleshRending": {
-        "name": "Drásání"
+        "name": "Trhání masa"
       },
       "Flurry": {
         "name": "Smršť útoků"
@@ -7779,6 +8058,13 @@
       },
       "Giantslayer": {
         "name": "Obrobijce"
+      },
+      "Oak": {
+        "name": "Dub",
+        "pill": "+30% na hody proti Bolesti."
+      },
+      "Slayer": {
+        "name": "Kat"
       },
       "Gills": {
         "name": "Žábry"
@@ -8254,6 +8540,14 @@
       "TargetLock": {
         "name": "Zacílení",
         "description": "<p>Po akci Míření můžeš Testovat Vnímání (-30 %). Při úspěchu získáš jedno Míření navíc na stejný cíl.</p>"
+      },
+      "MagicReinforcement": {
+        "name": "Magické posílení",
+        "description": "<p>Získáš Výhodu na nadcházející soubojový versus Test Síly či Obratnosti.</p>"
+      },
+      "MagicAiming": {
+        "name": "Magické míření",
+        "description": "<p>Získáš na cíl jedno Míření. Lze použít pouze jednou za kolo.</p>"
       },
       "AccurateShotSkirmisher": {
         "name": "Přesný výstřel (Harcovník)"
@@ -9374,6 +9668,386 @@
       },
       "FreeTheShield": {
         "name": "Uvolnit štít"
+      },
+      "AcrobaticDefenseII": {
+        "name": "Akrobatická obrana II",
+        "description": "<p>Pokud je tvá vrchní vrstva zbroje Lehká, získáváš při Úhybu Odklonění +20%.</p>"
+      },
+      "AcrobaticDefenseIII": {
+        "name": "Akrobatická obrana III",
+        "description": "<p>Úhyb +10%. Šance na Kritický úspěch Úhybu +4%. Ruší hranici úspěchu pro Úhyb.</p>"
+      },
+      "AcrobatI": {
+        "name": "Akrobat I",
+        "description": "<p>Pokud jsi Povalený, můžeš jednou za kolo použít Volnou akci na Test Akrobacie (Velmi těžký), při úspěchu získáš 1 Akci. Dodatečně můžeš Testovat Rychlost (Velmi těžký), při úspěchu se ti nesnižuje Pořadí tahu na 1.</p>"
+      },
+      "AcrobatII": {
+        "name": "Akrobat II",
+        "description": "<p>Máš-li být Povalen, můžeš Testovat Akrobacii (-60%), při úspěchu se efektu Povalení vyhneš a pohneš se o jednu hexu dozadu. Tento pohyb nevyvolá příležitostný útok.</p>"
+      },
+      "SafeStep": {
+        "name": "Bezpečný krok",
+        "description": "<p>Při Pomalém pohybu okolo oponenta můžeš Testovat Plížení (Legendární), při úspěchu nevyvoláš Příležitostný útok, při neúspěchu se nemůžeš bránit.</p>"
+      },
+      "LimbBreaker": {
+        "name": "Bijec končetin",
+        "description": "<p>Cílený útok, který zasáhne ruce, nohy nebo hlavu, způsobí dodatečné zranění +2d4.</p>"
+      },
+      "EstocI": {
+        "name": "Estoc I",
+        "description": "<p>Při používání Estocu získáváš akci Mrštný protiútok za 2 Výdrže, kterou lze používat po úspěšném Úhybu a která způsobuje poloviční zranění.</p>"
+      },
+      "EstocII": {
+        "name": "Estoc II",
+        "description": "<p>Při používání Estocu získáváš akci Výpad estocem, modifikaci Útoku, Protiútoku a Mrštného protiútoku za 5 Výdrže, která zvyšuje dosah o jednu hexu. Akce Mrštný protiútok způsobuje plné zranění.</p>"
+      },
+      "ExoticWeaponsI": {
+        "name": "Exotické zbraně I",
+        "description": "<p>Při používání kataru s obranným katarem získáváš akci Podseknutí, kterou můžeš modifikovat útoky ve snaze Povalit cíl, výměnou za menší šanci na zásah a poloviční zranění.</p>"
+      },
+      "ExoticWeaponsII": {
+        "name": "Exotické zbraně II",
+        "description": "<p>Při používání kataru s obranným katarem získáváš akci Drásání, skrze kterou za 3 Výdrže za kolo získáváš bonusy na Povalený cíl.</p>"
+      },
+      "Tenacity": {
+        "name": "Houževnatost",
+        "description": "<p>Pokud jsi Kriticky zasažen, můžeš vyčerpat Mentální životy, abys snížil stupeň kritického zásahu o jeden za každý vyčerpaný Mentální život.</p>"
+      },
+      "MountedArcherI": {
+        "name": "Jízdní střelec I",
+        "description": "<p>Umožňuje využívat doktríny Lukostřelce, Kušníka, Peltasta a Kejklíře při boji ze sedla.</p>"
+      },
+      "MountedArcherII": {
+        "name": "Jízdní střelec II",
+        "description": "<p>Odstraňuje postihy do Střelby za Cval a Trysk.</p>"
+      },
+      "OneEyedWarrior": {
+        "name": "Jednooký válečník",
+        "description": "<p>Snižuje postih na Obranu, Kryt, Zásah, Vrh a Střelbu o 5%.</p>"
+      },
+      "BreathControl": {
+        "name": "Kontrola dechu",
+        "description": "<p>Vydržíš ve Chvatu o jedno kolo déle. Zadržení dechu +2 kola. Akce Oddech doplňuje o 1 Výdrž více.</p>"
+      },
+      "SmithsBlow": {
+        "name": "Kovářova rána",
+        "description": "<p>Průbojnost +1, při zásahu hlavy máš Výhodu na Omráčení. Neuplatňuje se na střelbu ani vrh.</p>"
+      },
+      "PikemanHunter": {
+        "name": "Lovec pikenýrů",
+        "description": "<p>Při používání krátkého meče, sekerky nebo dýky získáváš bonus +10% na Zásah proti oponentům se zbraní s Dlouhým dosahem a zásah se počítá jako Zákeřný.</p>"
+      },
+      "MasterOfThrowing": {
+        "name": "Mistr vrhu",
+        "description": "<p>Vrh +10%.</p>"
+      },
+      "ResilientMetabolism": {
+        "name": "Odolný metabolismus",
+        "description": "<p>Šance 35% na imunitu proti jedům 1. stupně, 25% proti jedům 2. stupně a 5% proti jedům 3. stupně. Při překročení hranice Toxicity Testuješ Odolnost (Velmi těžký), při úspěchu trvá Toxický šok pouze jedno kolo a Toxicita se sníží na limit. Jedovaté Kz +5.</p>"
+      },
+      "EagleEye": {
+        "name": "Orlí oko",
+        "description": "<p>Při používání palných zbraní ignoruješ Poloviční kryt a snižuješ Plný kryt na Poloviční kryt. Palba +5%.</p>"
+      },
+      "Squire": {
+        "name": "Panoš",
+        "description": "<p>Při používání Širokého meče se štítem, volnou rukou nebo druhou zbraní se hranice pro Kritický zásah snižuje o 10.</p>"
+      },
+      "GunslingerI": {
+        "name": "Pistolník I",
+        "description": "<p>Křesadlová pistole získává bonusy na Palbu a šanci na Kritický zásah z doktríny Duelista, místo doktríny Mušketýr. Křesadlová pistole získává +5% na Palbu. Snižuje postih na Palbu pro Křesadlové pistole držené ve vedlejší ruce o 5%.</p>"
+      },
+      "GunslingerII": {
+        "name": "Pistolník II",
+        "description": "<p>Při používání Křesadlové pistole můžeš používat akci Rychlé přebíjení, Volnou akci za 10 Výdrže. Jednou za kolo urychlí akci Přebíjení o jednu akci.</p>"
+      },
+      "GunslingerIII": {
+        "name": "Pistolník III",
+        "description": "<p>Při používání meče můžeš používat akci Rychlý výstřel, Volnou akci za 3 Výdrže. Zabiješ-li oponenta útokem (Souboj), můžeš okamžitě přezbrojit na Křesadlovou pistoli a vystřelit.</p>"
+      },
+      "GunslingerIV": {
+        "name": "Pistolník IV",
+        "description": "<p>Při používání meče společně s Křesadlovou pistolí můžeš používat akci Navazující výstřel, Volnou akci za 3 Výdrže. Při úspěšném zásahu (Souboj) můžeš okamžitě vystřelit na stejný cíl s bonusem +20% na Palbu. Po Kritickém zásahu je výstřel garantovaný zásah.</p>"
+      },
+      "LastStep": {
+        "name": "Poslední krok",
+        "description": "<p>Můžeš za 10 Výdrže udělat dodatečný pohyb kdykoliv se pohneš. Tento pohyb může vyvolat Příležitostný útok.</p>"
+      },
+      "LastChance": {
+        "name": "Poslední šance",
+        "description": "<p>Při Vícenásobném útoku nebo Vícenásobném vrhu vrhacím nožem získáváš bonus +3% na Kritický zásah posledním vrhem a další 3% za každý proti stejnému cíli minutý vrh.</p>"
+      },
+      "SlingerI": {
+        "name": "Práče I",
+        "description": "<p>Zásahy Prakem cílené do hlavy mají zvýšenou šanci na Omráčení o +20% a zranění o +4d4.</p>"
+      },
+      "SlingerII": {
+        "name": "Práče II",
+        "description": "<p>Útoky Prakem cílené do hlavy mají snížený postih na zásah o 10%. Prak má zvýšenou šanci na Omráčení o +10%.</p>"
+      },
+      "SwapPlaces": {
+        "name": "Prohození",
+        "description": "<p>Ukončíš-li pohyb vedle spojence, nebo pokud se vedle spojence nacházíš a provedeš pohybovou akci, můžete se za cenu reakcí prohodit bez vyvolání Příležitostných útoků za cenu 2 Výdrže.</p>"
+      },
+      "BrutalBlow": {
+        "name": "Brutální rána",
+        "description": "<p>Útoky mají Průraznost +1d6. Neaplikuje se na střelbu.</p>"
+      },
+      "RapidAdaptationII": {
+        "name": "Rychlá adaptace II",
+        "description": "<p>Dostáváš bonus +10% do Zásahu (Maximálně však +20%) pokaždé, když se nepřítel ubrání nebo uhne. Při úspěšném zásahu se bonus resetuje.</p>"
+      },
+      "RapidFire": {
+        "name": "Rychlá střelba",
+        "description": "<p>Při používání Trpasličí kuše můžeš používat akci Rychlá střelba, Volnou akci za 3 Výdrže. Modifikuje Vícenásobný útok, který nyní stojí pouze jednu akci.</p>"
+      },
+      "Axeman": {
+        "name": "Sekerník",
+        "description": "<p>Odemyká akci Hákování. Při používání těžkých seker získává akce Rozseknutí bonus +5% na Zásah. Při používání bardiche může akce Rozseknutí zasáhnout dodatečný cíl, pokud alespoň jeden původní cíl útoku nebyl zasažen. Při používání dlouhé sekery odemyká akci Daleké rozseknutí.</p>"
+      },
+      "VolleyOfShots": {
+        "name": "Smršť výstřelů",
+        "description": "<p>Snižuje postih na Palbu pro křesadlové pistole držené ve vedlejší ruce o 5%. Umožňuje použít akci Smršť výstřelů (2 akce, 8 Výdrže): až čtyřikrát vystřelit s postihem -5% na Palbu na jeden či více cílů. Počet výstřelů je limitován počtem dostupných nabitých křesadlových pistolí.</p>"
+      },
+      "DeadlyLungeII": {
+        "name": "Smrtící výpad II",
+        "description": "<p>Lehké a Střední zbraně disponující typem zranění Bodné získávají bonus +5 do Kritického zranění a Kritické Průbojnosti. Nevztahuje se na Luky, Kuše, Vrhací sekery, Vrhací oštěpy, Vrhací nože ani Palné zbraně.</p>"
+      },
+      "EasyReload": {
+        "name": "Snadné přebíjení",
+        "description": "<p>Při používání Jednoruční kuše je akce Rychlé přebíjení zlevněna o 6 Výdrže.</p>"
+      },
+      "FencingDaggerI": {
+        "name": "Šermířská dýka I",
+        "description": "<p>Při používání šermířské dýky v druhé ruce získáváš Odklonění +10% a Kritická obrana zvyšuje Dočasné životy o 5. Maximálně lze z tohoto zdroje zvýšit Dočasné životy na 10.</p>"
+      },
+      "FencingDaggerII": {
+        "name": "Šermířská dýka II",
+        "description": "<p>Při používání šermířské dýky v druhé ruce získávají odvetné akce bonus +10% na Zásah a můžeš 1x za den opakovat hod na Obranu.</p>"
+      },
+      "UnderhandedFighting": {
+        "name": "Zákeřný boj",
+        "description": "<p>Po úspěšném zásahu Omráčeného cíle můžeš za 6 Výdrže posílit útok na Zákeřný.</p>"
+      },
+      "StrayBlow": {
+        "name": "Zbloudilá rána",
+        "description": "<p>Při používání řemdihu mění výsledek Kritického neúspěchu Útoku na zásah, který způsobí poloviční zranění cíli (Lichý hod) nebo útočníkovi (Sudý hod). Na útoky vedené řemdihem nelze používat akci Riposta.</p>"
+      },
+      "BrigandI": {
+        "name": "Zbojník I",
+        "description": "<p>Při používání Jednoruční kuše se každý stupeň doktríny Duelista či Štítonoš počítá zároveň jako stupeň doktríny Kušník, se všemi akcemi a bonusy. Pro účely požadavků se doktrína Duelista či Štítonoš počítá jako doktrína Kušník. Snižuje postih na Střelbu pro Jednoruční kuše držené ve vedlejší ruce o 5%.</p>"
+      },
+      "BrigandII": {
+        "name": "Zbojník II",
+        "description": "<p>Výstřel z Jednoruční kuše na cíl, na který jsi již v tomto kole zaútočil nebo vystřelil, se počítá jako Zákeřný.</p>"
+      },
+      "BrigandIII": {
+        "name": "Zbojník III",
+        "description": "<p>Při používání meče společně s Jednoruční kuší můžeš používat akci Navazující výstřel, Volnou akci za 3 Výdrže. Při úspěšném zásahu (Souboj) můžeš okamžitě vystřelit na stejný cíl s bonusem +20% na Střelbu. Po kritickém úspěchu je Zásah garantován.</p>"
+      },
+      "FlawlessPlan": {
+        "name": "Bezchybný plán",
+        "description": "<p>Na začátku souboje můžeš Testovat Taktiku (Těžká). Při úspěchu dáváš vybranému spojenci jednorázovou Reakci navíc. Alternativně můžeš Testovat Taktiku (Legendární), abys dal Reakci celé družině. Tato Reakce může být použita pouze jednou za tento souboj.</p>"
+      },
+      "CombatReadiness": {
+        "name": "Bojová připravenost",
+        "description": "<p>Umožňuje sobě nebo libovolnému spojenci zvýšit Pořadí tahu na celý souboj o Taktika/2. Lze použít jednou za souboj, pouze jedním taktikem.</p>"
+      },
+      "LongPrayer": {
+        "name": "Dlouhá modlitba",
+        "description": "<p>Můžeš jednou za pět dnů strávit den v tichých modlitbách, šance Víra x 2 + 10% na zbavení se bodu šílenství. Při úspěchu se můžeš takto zbavit dalšího bodu šílenství až za měsíc.</p>"
+      },
+      "GoodEstimate": {
+        "name": "Dobrý odhad",
+        "description": "<p>Můžeš 1x za den opakovat hod na libovolnou nebojovou dovednost. Takto opakovaný hod má sníženou šanci na Kritický neúspěch o 10%.</p>"
+      },
+      "Expertise": {
+        "name": "Expertíza",
+        "description": "<p>Získáváš +2% na Kritický úspěch do jedné zvolené nebojové dovednosti.</p>"
+      },
+      "Gambler": {
+        "name": "Gambler",
+        "description": "<p>Bonus +10% na Testy Štěstí týkající se hazardu, můžeš dvakrát za den opakovat hod.</p>"
+      },
+      "Rider": {
+        "name": "Jezdec",
+        "description": "<p>Bonus +5% do Jezdectví, můžeš 2x za den opakovat hod na Jezdectví a šance na Kritické selhání je snížena o 3%.</p>"
+      },
+      "CalmMind": {
+        "name": "Klidná mysl",
+        "description": "<p>Jednou za deset dní se můžeš skrze meditaci pokusit zbavit bodu šílenství, šance 20%. Pokud se úspěšně zbavíš bodu, můžeš se o další meditaci pokusit až za měsíc.</p>"
+      },
+      "Beloved": {
+        "name": "Lidem milovaný",
+        "description": "<p>Můžeš 1x za den opakovat hod na Test Charismy nebo libovolné odvozené dovednosti (Včetně Kritického neúspěchu).</p>"
+      },
+      "Swordsmith": {
+        "name": "Mečíř",
+        "description": "<p>Umožňuje vyrábět vojenské zbraně, Kovářství +10% při výrobě zbraní.</p>"
+      },
+      "Armorer": {
+        "name": "Zbrojíř",
+        "description": "<p>Umožňuje vyrábět zbroje, Kovářství +10% při výrobě zbrojí.</p>"
+      },
+      "Mentor": {
+        "name": "Mentor",
+        "description": "<p>Zkracuje výuku tvých žáků o 2 nebo 5 dní.</p>"
+      },
+      "TrapMaster": {
+        "name": "Mistr pastí",
+        "description": "<p>Zvyšuje Detekci o +4. Snižuje šanci na Kritické selhání Pastí o 3%.</p>"
+      },
+      "MightyGrip": {
+        "name": "Mocné sevření",
+        "description": "<p>Můžeš 1x za den opakovat hod na Sílu.</p>"
+      },
+      "Seafarer": {
+        "name": "Mořeplavec",
+        "description": "<p>Bonus +5% do Mořeplavby, můžeš 2x za den opakovat hod na Mořeplavbu a šance na Kritické selhání je snížena o 3%.</p>"
+      },
+      "SeaWolf": {
+        "name": "Mořský vlk",
+        "description": "<p>Nacházíš-li se na moři či ve vodě, můžeš si vybrat mezi původním a opakovaným hodem při Testech Síly, Obratnosti, Atletiky a Akrobacie.</p>"
+      },
+      "MindOverBody": {
+        "name": "Mysl nad tělem",
+        "description": "<p>Můžeš vyčerpat 3 Mentální životy, aby ses vyhnul získání stupně Únavy.</p>"
+      },
+      "CleansingPain": {
+        "name": "Očišťující bolest",
+        "description": "<p>Pokud získáš Vážné zranění, máš šanci Víra x 5% na zbavení se bodu šílenství. Při úspěchu se můžeš takto zbavit dalšího bodu šílenství až za měsíc.</p>"
+      },
+      "SpellReplication": {
+        "name": "Replikace kouzel",
+        "description": "<p>V případě úspěšné magické obrany proti neznámému kouzlu můžeš, jako Volnou akci, provést Test Arcany (Normální, Pokročilý, Těžký, Velmi těžký podle stupně kouzla). Při úspěchu máš podklad pro Výzkum tohoto kouzla.</p>"
+      },
+      "AlchemicalAnalysis": {
+        "name": "Rozbor alchemie",
+        "description": "<p>Máš-li k dispozici alchemistický výrobek a vhodné vybavení, můžeš se pokusit skrze výzkum zjistit složení a postup výroby. Výrobek je při výzkumu zničen. Obvykle jsou zapotřebí 3 úspěchy, obtížnost obvykle Těžká.</p>"
+      },
+      "VigilantCommander": {
+        "name": "Bdělý velitel",
+        "description": "<p>Aktivní velení lze používat jako Reakci. Pasivní velení lze změnit za Volnou akci.</p>"
+      },
+      "Leader": {
+        "name": "Vůdce",
+        "description": "<p>Pasivní velení nyní dává dodatečný efekt.</p>"
+      },
+      "DoubleOrder": {
+        "name": "Dvojitý rozkaz",
+        "description": "<p>Aktivní velení lze použít na dva cíle. Šance na kritický neúspěch -3%.</p>"
+      },
+      "AnimalCompanion": {
+        "name": "Společník zvířat",
+        "description": "<p>Zvířata za normálních okolností nebudou napadat tebe ani družinu v tvé blízkosti.</p>"
+      },
+      "VeilTracker": {
+        "name": "Stopař za Závojem",
+        "description": "<p>Mentální souboj +2d8 při odolávání aspektovým démonům. Chodec ve snu +20% nacházíš-li se v Úniku. Zvýšený orientační smysl v Úniku. Průnik do Úniku skrze Chodce ve snu je o 2 Mentální životy levnější.</p>"
+      },
+      "Training": {
+        "name": "Trénink",
+        "description": "<p>Umožňuje zvýšit zvolenou primární vlastnost o jeden bod. Lze brát opakovaně.</p>"
+      },
+      "QuickLearner": {
+        "name": "Učenlivý",
+        "description": "<p>Učení se dovednostem je o 1 den rychlejší, učení se jazyků, čtení a psaní je o 5 dní rychlejší.</p>"
+      },
+      "ScholarIII": {
+        "name": "Učenec III",
+        "description": "<p>Snižuje šanci na Kritický neúspěch nebojových dovedností o 2%.</p>"
+      },
+      "SeasonedBrawler": {
+        "name": "Zkušený rváč",
+        "description": "<p>Zvyšuje způsobované zranění v souboji beze zbraně o 1.</p>"
+      },
+      "IllusionExpert": {
+        "name": "Znalec iluzí",
+        "description": "<p>Bonus +20% na Popření iluze.</p>"
+      },
+      "ThiefExpert": {
+        "name": "Znalec zlodějů",
+        "description": "<p>Je-li cílem Kapsářství, zvyšuje Obtížnost Kapsářství o 40% a získáváš bonus +30% na Test Vnímání na všimnutí si kapsáře.</p>"
+      },
+      "Katar": {
+        "name": "Katar"
+      },
+      "DefensiveKatar": {
+        "name": "Obranný katar",
+        "description": "<p>Tuto zbraň nelze používat v hlavní ruce. V druhé ruce Kryt +20%.</p>"
+      },
+      "Estoc": {
+        "name": "Estoc"
+      },
+      "TwoHandedSabre": {
+        "name": "Obouruční šavle"
+      },
+      "TwoHandedCleaver": {
+        "name": "Obouruční sekáček"
+      },
+      "Trident": {
+        "name": "Trojzubec"
+      },
+      "HandCrossbow": {
+        "name": "Jednoruční kuše"
+      },
+      "DwarvenCrossbow": {
+        "name": "Trpasličí kuše"
+      },
+      "Sling": {
+        "name": "Prak"
+      },
+      "KipUp": {
+        "name": "Akrobatický výskok",
+        "description": "<p>Pokud jsi Povalený, jednou za kolo: Test Akrobacie (Velmi těžký). Při úspěchu získáš 1 Akci. Poté Test Rychlosti (Velmi těžký), při úspěchu se ti nesnižuje Pořadí tahu na 1.</p>"
+      },
+      "AgileCounter": {
+        "name": "Mrštný protiútok",
+        "description": "<p>Po úspěšném Úhybu můžeš okamžitě provést protiútok, který způsobuje poloviční zranění. Nevztahuje se na odvetné akce, Příležitostné útoky a Úder štítem. Nelze provést ve svém tahu. Nemá žádné interakce s Mířením. Pouze při používání Estocu.</p>"
+      },
+      "EstocLunge": {
+        "name": "Výpad estocem",
+        "description": "<p>Modifikuje Útok, Protiútok a Mrštný protiútok. Zvýší dosah útoku o jednu hexu. Pouze při používání Estocu.</p>"
+      },
+      "Mauling": {
+        "name": "Drásání",
+        "description": "<p>Modifikuje útok na Povalený cíl: Zásah +10%, Krvácení +40% a zásah se počítá jako Zákeřný. Zabraňuje cíli vstát (Versus Test Síly). Brání-li ses útoku jiného cíle, je Drásání ukončeno. Pouze pro Katar.</p>"
+      },
+      "Hooking": {
+        "name": "Hákování",
+        "description": "<p>Po neúspěšném útoku či Protiútoku na oponenta se štítem vyvolá versus Test Síly. Při úspěchu oponent ztrácí 1 Reakci a má sníženou Obranu o -10% na dvě kola. Pouze pro Sekerku, Válečnou sekeru, Válečný krumpáč a Dlouhou sekeru.</p>"
+      },
+      "SwapPlacesAction": {
+        "name": "Prohození",
+        "description": "<p>Zaměř sousedního spojence. Prohodíte se za cenu vašich Reakcí bez vyvolání Příležitostných útoků.</p>"
+      },
+      "LastStepAction": {
+        "name": "Poslední krok",
+        "description": "<p>Dodatečný pohyb až o tvou Rychlost. Může vyvolat Příležitostný útok.</p>"
+      },
+      "SafeStepAction": {
+        "name": "Bezpečný krok",
+        "description": "<p>Při Pomalém pohybu: Test Plížení (Legendární). Při úspěchu tě oponenti vedle tebe při tomto pohybu neohrožují. Při neúspěchu se proti jejich Příležitostným útokům nemůžeš bránit.</p>"
+      },
+      "FlawlessPlanAction": {
+        "name": "Bezchybný plán",
+        "description": "<p>Na začátku souboje: Test Taktiky (Těžký) dá zaměřenému spojenci jednu Reakci navíc, nebo Test Taktiky (Legendární) ji dá celé družině. Lze ji použít jednou za tento souboj.</p>"
+      },
+      "CombatReadinessAction": {
+        "name": "Bojová připravenost",
+        "description": "<p>Zvyšuje tobě nebo zaměřenému spojenci Pořadí tahu na celý souboj o Taktika/2. Jednou za souboj, pouze jedním taktikem.</p>"
+      },
+      "LongPrayerAction": {
+        "name": "Dlouhá modlitba",
+        "description": "<p>Den v tichých modlitbách: šance Víra x 2 + 10% na zbavení se bodu šílenství. Jednou za pět dnů, po úspěchu za měsíc.</p>"
+      },
+      "CalmMindAction": {
+        "name": "Klidná mysl",
+        "description": "<p>Meditace, šance 20% na zbavení se bodu šílenství. Jednou za deset dní, po úspěchu za měsíc.</p>"
+      },
+      "MultiattackRapidFire": {
+        "name": "Vícenásobný útok (Rychlá střelba)",
+        "description": "<p>Vícenásobný útok za jednu akci, o 3 Výdrže dražší. Pouze pro Trpasličí kuši.</p>"
       }
     },
     "MonsterBuilder": {
@@ -9740,6 +10414,7 @@
         "owned": "Drženo",
         "locked": "Mimo dosah",
         "needsRank": "Vyžaduje stupeň školy {n}",
+        "needsNode": "Vyžaduje {node}",
         "outOfReach": "Zapsáno, ale mimo dosah",
         "search": "Hledat kouzla",
         "filters": "Filtry",
@@ -9792,7 +10467,8 @@
           "rank": "Stupeň školy je příliš nízký, je potřeba stupeň {n}.",
           "full": "Grimoár je plný.",
           "notOwner": "Tuto postavu nevlastníš.",
-          "innate": "Divokou magii nelze zapomenout, uděluje ji stupeň školy."
+          "innate": "Divokou magii nelze zapomenout, uděluje ji stupeň školy.",
+          "mancer": "Na toto kouzlo potřebuješ {node}."
         },
         "innate": "Vrozená",
         "innateHint": "Divoká magie. Přichází s prvním stupněm školy, nic nestojí a nelze ji vrátit."
@@ -10039,7 +10715,13 @@
           "language": "Vyžaduje jazyk udělený vypravěčem.",
           "schoolOrSpecialisation": "Vyžaduje školu nebo specializaci udělenou vypravěčem.",
           "traumaticEvent": "Pouze po traumatickém zážitku, dle uvážení vypravěče.",
-          "vardur": "Pouze trpaslíci Vardur, potvrzuje vypravěč."
+          "vardur": "Pouze trpaslíci Vardur, potvrzuje vypravěč.",
+          "missingEye": "Pouze se ztraceným okem, dle uvážení vypravěče.",
+          "firearms1": "Palné zbraně I. Palné zbraně zatím v systému nejsou, rozhoduje vypravěč.",
+          "firearms5": "Palné zbraně V. Palné zbraně zatím v systému nejsou, rozhoduje vypravěč.",
+          "pious": "Pouze pro zbožnou postavu, dle uvážení vypravěče.",
+          "teachingSkill3": "Učitelství III. Učitelství není sledovaná dovednost, rozhoduje vypravěč.",
+          "attributeBelow3": "Zvolená vlastnost musí být nižší než 3."
         },
         "Tip": {
           "noRank": "Nesmí mít žádný stupeň v: {tracks}.",
@@ -10188,6 +10870,47 @@
       "Continue": "Běžet dál",
       "OpportunityLabel": "Příležitostný útok",
       "OpportunityHint": "{target} kolem tebe proběhl s Rozražením"
+    },
+    "FeatureAction": {
+      "Success": "Úspěch ({margin})",
+      "Failure": "Neúspěch ({margin})",
+      "OneTarget": "Zaměř právě jeden jiný token.",
+      "NotProne": "Pouze pokud jsi Povalený.",
+      "OncePerRound": "V tomto kole už použito.",
+      "OncePerFight": "V tomto souboji už použito.",
+      "NeedsCombat": "Pouze během souboje.",
+      "NoShield": "Cíl nedrží štít.",
+      "KipUpTest": "Akrobacie (Velmi těžký): {result}",
+      "KipUpAction": "Získáváš 1 Akci.",
+      "KipUpSpeedKept": "Rychlost (Velmi těžký) {total}: Pořadí tahu se nesnižuje.",
+      "KipUpSpeedLost": "Rychlost (Velmi těžký) {total}: Pořadí tahu klesá na 1.",
+      "HookingTest": "Síla versus {name}: {margin}",
+      "HookingWin": "{name} ztrácí 1 Reakci a je zaháknutý.",
+      "HookingLose": "{name} si udržel štít.",
+      "Swapped": "Prohazuješ se s postavou {name}.",
+      "LastStep": "Dodatečný pohyb: až {hexes} hex.",
+      "SafeStepTest": "Plížení (Legendární): {result}",
+      "SafeStepWin": "Oponenti vedle tebe nevyvolají Příležitostný útok.",
+      "SafeStepLose": "Proti jejich Příležitostným útokům se nemůžeš bránit.",
+      "FlawlessPlanPrompt": "Kdo dostane Reakci navíc?",
+      "FlawlessPlanAlly": "Zaměřený spojenec (Těžký)",
+      "FlawlessPlanParty": "Celá družina (Legendární)",
+      "FlawlessPlanTest": "Taktika: {result}",
+      "FlawlessPlanWin": "Jedna Reakce navíc v tomto souboji: {names}.",
+      "CombatReadiness": "{name}: Pořadí tahu +{bonus} na tento souboj.",
+      "TooSoon": "Poslední pokus před {days} dny, čekací doba je {wait}. Rozhoduje vypravěč.",
+      "ReliefChance": "Šance {chance}%.",
+      "ReliefWin": "Hod {roll}: bod šílenství zmizel.",
+      "ReliefLose": "Hod {roll}: nic se nemění.",
+      "TenacityPrompt": "{name} utrpěl Kritický zásah {degree}. stupně. Kolik Mentálních životů vyčerpat, jeden za stupeň:",
+      "AcrobatPrompt": "{name} má být Povalen. Testovat Akrobacii (-60%)?",
+      "AcrobatTest": "Akrobacie (-60%): {result}",
+      "MindOverBodyPrompt": "{name} získává stupeň Únavy. Vyčerpat 3 Mentální životy a vyhnout se mu?",
+      "ChooseSkill": "Zvol nebojovou dovednost",
+      "ChooseAttribute": "Zvol primární vlastnost",
+      "StrayTarget": "Zbloudilá rána: lichý hod. Kritický neúspěch zasahuje cíl polovičním zraněním.",
+      "StraySelf": "Zbloudilá rána: sudý hod. Kritický neúspěch zasahuje útočníka polovičním zraněním.",
+      "MaulingProne": "Drásání vyžaduje Povalený cíl."
     }
   },
   "TYPES": {

@@ -1,0 +1,92 @@
+{
+  "folder": "NHaSpGKlxSYECai3",
+  "name": "Underhanded Fighting",
+  "type": "feature",
+  "img": "icons/skills/melee/strike-blade-blood-red.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.UnderhandedFighting.name",
+    "description": "<p>After a successful hit on a Staggered target you may pay 6 Stamina to turn the attack into a Sneak Attack.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "feature",
+    "cost": {
+      "cp": 10,
+      "sp": null
+    }
+  },
+  "effects": [
+    {
+      "name": "Underhanded Fighting",
+      "origin": "Item.zVNz4a94nkpGWDuU",
+      "img": "icons/skills/melee/strike-blade-blood-red.webp",
+      "_id": "2lDyeBPaqZNwwBcy",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.underhandedFighting",
+            "value": true,
+            "priority": null,
+            "type": "override"
+          }
+        ]
+      },
+      "disabled": false,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {
+        "statuscounter": {
+          "value": 1,
+          "config": {
+            "type": "default"
+          },
+          "visible": false
+        }
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!zVNz4a94nkpGWDuU.2lDyeBPaqZNwwBcy"
+    }
+  ],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.15.0",
+    "createdTime": null,
+    "modifiedTime": null,
+    "lastModifiedBy": null
+  },
+  "_id": "zVNz4a94nkpGWDuU",
+  "_key": "!items!zVNz4a94nkpGWDuU"
+}

@@ -6,352 +6,133 @@
 >
   {{! As you add new fields, add them in here! }}
 
-  <div class="resource">
-    <label class="resource-label">{{localize
-        "REDSTEEL.Item.Weapon.FIELDS.rollFormula.label"
-      }}:</label>
-    <span>{{system.offhandProperties.formula}}</span>
-
-    <div class="grid grid-4col">
-
-      
-        <div class="grid-span-1">
-          <label class="resource-label" data-tt-kind="weaponField" data-tt-id="rollMod">{{localize "REDSTEEL.Item.Weapon.FIELDS.rollMod.label"}}</label>
-          <input
-            type="text"
-            name="system.offhandProperties.diceBonus"
-            value="{{system.offhandProperties.diceBonus}}"
-            data-dtype="String"
-            placeholder="e.g. +5+2d6"
-          />
-        </div>
-
-        <div class="grid-span-1">
-          <label class="resource-label" data-tt-kind="weaponField" data-tt-id="penetration">{{localize "REDSTEEL.Item.Weapon.FIELDS.penetration.label"}}</label>
-          <input
-            type="number"
-            name="system.offhandProperties.penetration"
-            value="{{system.offhandProperties.penetration}}"
-            data-dtype="Number"
-            placeholder="e.g. 2"
-          />
-        </div>
-        <div class="grid-span-1">
-        <label class="resource-label" data-tt-kind="weaponField" data-tt-id="attack">{{localize
-            "REDSTEEL.Item.Weapon.FIELDS.attack.label"
-          }}</label>
-        <input
-          type="number"
-          name="system.offhandProperties.attack"
-          value="{{system.offhandProperties.attack}}"
-          data-dtype="Number"
-        />
+  <div class="rs-section">
+    <h3 class="rs-section-head">{{localize "REDSTEEL.Item.Weapon.Section.offhand"}}</h3>
+    {{#if system.offhandProperties.formula}}
+      <p class="rs-offhand-formula">
+        <span class="resource-label">{{localize "REDSTEEL.Item.Weapon.FIELDS.rollFormula.label"}}</span>
+        <span>{{system.offhandProperties.formula}}</span>
+      </p>
+    {{/if}}
+    <div class="rs-plate-grid">
+      <div class="rs-plate">
+        <label data-tt-kind="weaponField" data-tt-id="rollMod">{{localize "REDSTEEL.Item.Weapon.FIELDS.rollMod.label"}}</label>
+        <input type="text" name="system.offhandProperties.diceBonus" value="{{system.offhandProperties.diceBonus}}" data-dtype="String" placeholder="0" />
       </div>
-      <div class="grid-span-1">
-        <label class="resource-label" data-tt-kind="weaponField" data-tt-id="defense">{{localize
-            "REDSTEEL.Item.Weapon.FIELDS.defense.label"
-          }}</label>
-        <input
-          type="number"
-          name="system.offhandProperties.defense"
-          value="{{system.offhandProperties.defense}}"
-          data-dtype="Number"
-        />
+      <div class="rs-plate">
+        <label data-tt-kind="weaponField" data-tt-id="penetration">{{localize "REDSTEEL.Item.Weapon.FIELDS.penetration.label"}}</label>
+        <input type="number" name="system.offhandProperties.penetration" value="{{system.offhandProperties.penetration}}" data-dtype="Number" />
       </div>
-
-      <div class="grid-span-1">
-        <label class="resource-label" data-tt-kind="weaponField" data-tt-id="critRange">{{localize
-            "REDSTEEL.Item.Weapon.FIELDS.critRange.label"
-          }}</label>
-        <input
-          type="number"
-          name="system.offhandProperties.critRange"
-          value="{{system.offhandProperties.critRange}}"
-          data-dtype="Number"
-        />
+      <div class="rs-plate">
+        <label data-tt-kind="weaponField" data-tt-id="attack">{{localize "REDSTEEL.Item.Weapon.FIELDS.attack.label"}}</label>
+        <input type="number" name="system.offhandProperties.attack" value="{{system.offhandProperties.attack}}" data-dtype="Number" />
       </div>
-
-      <div class="grid-span-1">
-        <label class="resource-label" data-tt-kind="weaponField" data-tt-id="critChance">{{localize
-            "REDSTEEL.Item.Weapon.FIELDS.critChance.label"
-          }}</label>
-        <input
-          type="number"
-          name="system.offhandProperties.critChance"
-          value="{{system.offhandProperties.critChance}}"
-          data-dtype="Number"
-        />
+      <div class="rs-plate">
+        <label data-tt-kind="weaponField" data-tt-id="defense">{{localize "REDSTEEL.Item.Weapon.FIELDS.defense.label"}}</label>
+        <input type="number" name="system.offhandProperties.defense" value="{{system.offhandProperties.defense}}" data-dtype="Number" />
       </div>
-
-      <div class="grid-span-1">
-        <label class="resource-label" data-tt-kind="weaponField" data-tt-id="critFail">{{localize
-            "REDSTEEL.Item.Weapon.FIELDS.critFail.label"
-          }}</label>
-        <input
-          type="number"
-          name="system.offhandProperties.critFail"
-          value="{{system.offhandProperties.critFail}}"
-          data-dtype="Number"
-        />
-      </div>
-
-      <div class="grid-span-1">
-        <label class="resource-label" data-tt-kind="weaponField" data-tt-id="critDefense">{{localize
-            "REDSTEEL.Item.Weapon.FIELDS.critDefense.label"
-          }}</label>
-        <input
-          type="number"
-          name="system.offhandProperties.critDefense"
-          value="{{system.offhandProperties.critDefense}}"
-          data-dtype="Number"
-        />
-      </div>
-      <div class="grid-span-1">
-        <label class="resource-label" data-tt-kind="weaponField" data-tt-id="critDodge">{{localize
-            "REDSTEEL.Item.Weapon.FIELDS.critDodge.label"
-          }}</label>
-        <input
-          type="number"
-          name="system.offhandProperties.critDodge"
-          value="{{system.offhandProperties.critDodge}}"
-          data-dtype="Number"
-        />
-      </div>
-
-      <div class="grid-span-1">
-        <label class="resource-label" data-tt-kind="weaponField" data-tt-id="dodge">{{localize
-            "REDSTEEL.Item.Weapon.FIELDS.dodge.label"
-          }}</label>
-        <input
-          type="number"
-          name="system.offhandProperties.dodge"
-          value="{{system.offhandProperties.dodge}}"
-          data-dtype="Number"
-        />
-      </div>
-
-      <div class="grid-span-1">
-        <label class="resource-label" data-tt-kind="weaponField" data-tt-id="breakthrough">{{localize
-            "REDSTEEL.Item.Weapon.FIELDS.breakthrough.label"
-          }}</label>
-        <input
-          type="text"
-          name="system.offhandProperties.breakthrough"
-          value="{{system.offhandProperties.breakthrough}}"
-          data-dtype="String"
-          placeholder="e.g. 2d6"
-        />
-      </div>
-      <div class="grid-span-1">
-        <label class="resource-label" data-tt-kind="weaponField" data-tt-id="sneakDamage">{{localize
-            "REDSTEEL.Item.Weapon.FIELDS.sneakDamage.label"
-          }}</label>
-        <input
-          type="text"
-          name="system.offhandProperties.sneakDamage"
-          value="{{system.offhandProperties.sneakDamage}}"
-          data-dtype="String"
-          placeholder="e.g. 2d6"
-        />
-      </div>
-      <div class="grid-span-2"></div>
-
     </div>
-
+    <div class="rs-field-row">
+      <div class="rs-field">
+        <label data-tt-kind="weaponField" data-tt-id="breakthrough">{{localize "REDSTEEL.Item.Weapon.FIELDS.breakthrough.label"}}</label>
+        <input type="text" name="system.offhandProperties.breakthrough" value="{{system.offhandProperties.breakthrough}}" data-dtype="String" placeholder="e.g. 2d6" />
+      </div>
+      <div class="rs-field">
+        <label data-tt-kind="weaponField" data-tt-id="sneakDamage">{{localize "REDSTEEL.Item.Weapon.FIELDS.sneakDamage.label"}}</label>
+        <input type="text" name="system.offhandProperties.sneakDamage" value="{{system.offhandProperties.sneakDamage}}" data-dtype="String" placeholder="e.g. 2d6" />
+      </div>
+    </div>
   </div>
- <div class="rs-toggle-row">
 
-  <label class="rs-toggle">
-    <input type="checkbox" name="system.offhandProperties.doctrines.dimakerus" {{checked system.offhandProperties.doctrines.dimakerus}} />
-    <span>{{localize "dimakerus"}}</span>
-  </label>
-
-  <label class="rs-toggle">
-    <input type="checkbox" name="system.offhandProperties.doctrines.duelist" {{checked system.offhandProperties.doctrines.duelist}} />
-    <span>{{localize "duelist"}}</span>
-  </label>
-
-  <label class="rs-toggle">
-    <input type="checkbox" name="system.offhandProperties.doctrines.monk" {{checked system.offhandProperties.doctrines.monk}} />
-    <span>{{localize "monk"}}</span>
-  </label>
-
-  <label class="rs-toggle">
-    <input type="checkbox" name="system.offhandProperties.doctrines.rogue" {{checked system.offhandProperties.doctrines.rogue}} />
-    <span>{{localize "rogue"}}</span>
-  </label>
-</div>
-<div class="grid grid-3col">
-
-    {{!-- -------------------------
-         Built-in effects
-    -------------------------- --}}
-
-    <div class="grid-span-1 effect-row">
-      <label class="resource-label" data-tt-kind="weaponField" data-tt-id="stagger">
-        {{localize "REDSTEEL.Item.Weapon.FIELDS.stagger.label"}}
-      </label>
-      <input
-        type="number"
-        name="system.offhandProperties.effects.stagger"
-        value="{{system.offhandProperties.effects.stagger}}"
-        data-dtype="Number"
-      />
+  <div class="rs-section">
+    <h3 class="rs-section-head">{{localize "REDSTEEL.Item.Weapon.Section.critical"}}</h3>
+    <div class="rs-plate-grid rs-plate-grid--6">
+      <div class="rs-plate">
+        <label data-tt-kind="weaponField" data-tt-id="critRange">{{localize "REDSTEEL.Item.Weapon.FIELDS.critRange.label"}}</label>
+        <input type="number" name="system.offhandProperties.critRange" value="{{system.offhandProperties.critRange}}" data-dtype="Number" />
+      </div>
+      <div class="rs-plate">
+        <label data-tt-kind="weaponField" data-tt-id="critChance">{{localize "REDSTEEL.Item.Weapon.FIELDS.critChance.label"}}</label>
+        <input type="number" name="system.offhandProperties.critChance" value="{{system.offhandProperties.critChance}}" data-dtype="Number" />
+      </div>
+      <div class="rs-plate">
+        <label data-tt-kind="weaponField" data-tt-id="critDefense">{{localize "REDSTEEL.Item.Weapon.FIELDS.critDefense.label"}}</label>
+        <input type="number" name="system.offhandProperties.critDefense" value="{{system.offhandProperties.critDefense}}" data-dtype="Number" />
+      </div>
+      <div class="rs-plate">
+        <label data-tt-kind="weaponField" data-tt-id="critDodge">{{localize "REDSTEEL.Item.Weapon.FIELDS.critDodge.label"}}</label>
+        <input type="number" name="system.offhandProperties.critDodge" value="{{system.offhandProperties.critDodge}}" data-dtype="Number" />
+      </div>
+      <div class="rs-plate">
+        <label data-tt-kind="weaponField" data-tt-id="critFail">{{localize "REDSTEEL.Item.Weapon.FIELDS.critFail.label"}}</label>
+        <input type="number" name="system.offhandProperties.critFail" value="{{system.offhandProperties.critFail}}" data-dtype="Number" />
+      </div>
+      <div class="rs-plate">
+        <label data-tt-kind="weaponField" data-tt-id="dodge">{{localize "REDSTEEL.Item.Weapon.FIELDS.dodge.label"}}</label>
+        <input type="number" name="system.offhandProperties.dodge" value="{{system.offhandProperties.dodge}}" data-dtype="Number" />
+      </div>
     </div>
-
-    <div class="grid-span-1 effect-row">
-      <label class="resource-label" data-tt-kind="weaponField" data-tt-id="bleed">
-        {{localize "REDSTEEL.Item.Weapon.FIELDS.bleed.label"}}
-      </label>
-      <input
-        type="number"
-        name="system.offhandProperties.effects.bleed"
-        value="{{system.offhandProperties.effects.bleed}}"
-        data-dtype="Number"
-      />
-    </div>
-
-    <div class="grid-span-1 effect-row">
-    </div>
-    {{!-- -------------------------
-         Customizable effect slot #1
-    -------------------------- --}}
-    <div class="grid-span-1">
-      <label class="resource-label">{{localize "REDSTEEL.Effect.type1"}}</label>
-      <select name="system.offhandProperties.effectType1">
-        <option value="">-- Select a type --</option>
-        {{#each system.effectTypes as |effectType|}}
-          <option value="{{effectType}}"
-            {{#if (eq ../system.offhandProperties.effectType1 effectType)}}selected{{/if}}>
-            {{effectType}}
-          </option>
-        {{/each}}
-      </select>
-    </div>
-
-    <div class="grid-span-1">
-      <label class="resource-label">
-        {{localize "REDSTEEL.Item.Weapon.FIELDS.extra1.label"}}
-      </label>
-      <input
-        type="number"
-        name="system.offhandProperties.effects.extra1"
-        value="{{system.offhandProperties.effects.extra1}}"
-        data-dtype="Number"
-      />
-    </div>
-
- {{#if (eq system.offhandProperties.effectType1 "custom")}}
-     <div class="grid-span-1">
-      <label class="resource-label">
-        {{localize "REDSTEEL.Effect.Custom.name1"}}
-      </label>
-      <input
-        type="text"
-        name="system.offhandProperties.effects.effectName1"
-        value="{{system.offhandProperties.effects.effectName1}}"
-        data-dtype="text"
-      />
-    </div>
-{{/if}}
-
-{{#unless (eq system.offhandProperties.effectType1 "custom")}}
-    <div class="grid-span-1 effect-row">
-    </div>
-{{/unless}}
-    {{!-- -------------------------
-         Customizable effect slot #2
-    -------------------------- --}}
-    <div class="grid-span-1">
-      <label class="resource-label">{{localize "REDSTEEL.Effect.type2"}}</label>
-      <select name="system.offhandProperties.effectType2">
-        <option value="">-- Select a type --</option>
-        {{#each system.effectTypes as |effectType|}}
-          <option value="{{effectType}}"
-            {{#if (eq ../system.offhandProperties.effectType2 effectType)}}selected{{/if}}>
-            {{effectType}}
-          </option>
-        {{/each}}
-      </select>
-    </div>
-
-    <div class="grid-span-1">
-      <label class="resource-label">
-        {{localize "REDSTEEL.Item.Weapon.FIELDS.extra2.label"}}
-      </label>
-      <input
-        type="number"
-        name="system.offhandProperties.effects.extra2"
-        value="{{system.offhandProperties.effects.extra2}}"
-        data-dtype="Number"
-      />
-    </div>
-
- {{#if (eq system.offhandProperties.effectType2 "custom")}}
-     <div class="grid-span-1">
-      <label class="resource-label">
-        {{localize "REDSTEEL.Effect.Custom.name2"}}
-      </label>
-      <input
-        type="text"
-        name="system.offhandProperties.effects.effectName2"
-        value="{{system.offhandProperties.effects.effectName2}}"
-        data-dtype="text"
-      />
-    </div>
-{{/if}}
-
-{{#unless (eq system.offhandProperties.effectType2 "custom")}}
-    <div class="grid-span-1 effect-row">
-    </div>
-{{/unless}}
-
-    {{!-- -------------------------
-         Customizable effect slot #3
-    -------------------------- --}}
-    <div class="grid-span-1">
-      <label class="resource-label">{{localize "REDSTEEL.Effect.type3"}}</label>
-      <select name="system.offhandProperties.effectType3">
-        <option value="">-- Select a type --</option>
-        {{#each system.effectTypes as |effectType|}}
-          <option value="{{effectType}}"
-            {{#if (eq ../system.offhandProperties.effectType3 effectType)}}selected{{/if}}>
-            {{effectType}}
-          </option>
-        {{/each}}
-      </select>
-    </div>
-
-    <div class="grid-span-1">
-      <label class="resource-label">
-        {{localize "REDSTEEL.Item.Weapon.FIELDS.extra3.label"}}
-      </label>
-      <input
-        type="number"
-        name="system.offhandProperties.effects.extra3"
-        value="{{system.offhandProperties.effects.extra3}}"
-        data-dtype="Number"
-      />
-    </div>
-
- {{#if (eq system.offhandProperties.effectType3 "custom")}}
-     <div class="grid-span-1">
-      <label class="resource-label">
-        {{localize "REDSTEEL.Effect.Custom.name3"}}
-      </label>
-      <input
-        type="text"
-        name="system.offhandProperties.effects.effectName3"
-        value="{{system.offhandProperties.effects.effectName3}}"
-        data-dtype="text"
-      />
-    </div>
-{{/if}}
-
-{{#unless (eq system.offhandProperties.effectType3 "custom")}}
-    <div class="grid-span-1 effect-row">
-    </div>
-{{/unless}}
-
   </div>
+
+  <div class="rs-section">
+    <h3 class="rs-section-head">{{localize "REDSTEEL.Item.Weapon.Section.doctrines"}}</h3>
+    <div class="rs-toggle-grid">
+      <label class="rs-toggle">
+        <input type="checkbox" name="system.offhandProperties.doctrines.dimakerus" {{checked system.offhandProperties.doctrines.dimakerus}} />
+        <span>{{localize "REDSTEEL.Actor.Character.doctrines.dimakerus.label"}}</span>
+      </label>
+      <label class="rs-toggle">
+        <input type="checkbox" name="system.offhandProperties.doctrines.duelist" {{checked system.offhandProperties.doctrines.duelist}} />
+        <span>{{localize "REDSTEEL.Actor.Character.doctrines.duelist.label"}}</span>
+      </label>
+      <label class="rs-toggle">
+        <input type="checkbox" name="system.offhandProperties.doctrines.monk" {{checked system.offhandProperties.doctrines.monk}} />
+        <span>{{localize "REDSTEEL.Actor.Character.doctrines.monk.label"}}</span>
+      </label>
+      <label class="rs-toggle">
+        <input type="checkbox" name="system.offhandProperties.doctrines.rogue" {{checked system.offhandProperties.doctrines.rogue}} />
+        <span>{{localize "REDSTEEL.Actor.Character.doctrines.rogue.label"}}</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="rs-section">
+    <h3 class="rs-section-head">{{localize "REDSTEEL.Item.EffectSlots.builtIn"}}</h3>
+    <div class="rs-plate-grid rs-plate-grid--2">
+      <div class="rs-plate">
+        <label data-tt-kind="weaponField" data-tt-id="stagger">{{localize "REDSTEEL.Item.Weapon.FIELDS.stagger.label"}}</label>
+        <input type="number" name="system.offhandProperties.effects.stagger" value="{{system.offhandProperties.effects.stagger}}" data-dtype="Number" />
+      </div>
+      <div class="rs-plate">
+        <label data-tt-kind="weaponField" data-tt-id="bleed">{{localize "REDSTEEL.Item.Weapon.FIELDS.bleed.label"}}</label>
+        <input type="number" name="system.offhandProperties.effects.bleed" value="{{system.offhandProperties.effects.bleed}}" data-dtype="Number" />
+      </div>
+    </div>
+  </div>
+
+  <div class="rs-section">
+    <h3 class="rs-section-head">{{localize "REDSTEEL.Item.EffectSlots.extra"}}</h3>
+    <div class="rs-effect-table">
+      <span class="rs-effect-table-head">{{localize "REDSTEEL.Item.EffectSlots.effect"}}</span>
+      <span class="rs-effect-table-head">{{localize "REDSTEEL.Item.EffectSlots.chance"}}</span>
+      <span class="rs-effect-table-head">{{localize "REDSTEEL.Item.EffectSlots.customName"}}</span>
+      {{#each effectSlots as |slot|}}
+        <select name="{{slot.typeField}}" aria-label="{{localize 'REDSTEEL.Item.EffectSlots.effect'}} {{slot.n}}">
+          <option value="">{{localize "REDSTEEL.UI.selectType"}}</option>
+          {{#each @root.effectTypeChoices as |choice|}}
+            <option value="{{choice.key}}" {{#if (eq slot.type choice.key)}}selected{{/if}}>
+              {{choice.label}}
+            </option>
+          {{/each}}
+        </select>
+        <input type="number" name="{{slot.chanceField}}" value="{{slot.chance}}" data-dtype="Number" />
+        {{#if slot.isCustom}}
+          <input type="text" name="{{slot.nameField}}" value="{{slot.name}}" data-dtype="text" />
+        {{else}}
+          <span class="rs-effect-table-blank"></span>
+        {{/if}}
+      {{/each}}
+    </div>
+  </div>
+
 </section>

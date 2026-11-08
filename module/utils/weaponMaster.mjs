@@ -76,6 +76,23 @@ export function getActiveMainWeaponWeight(actor) {
 }
 
 /**
+ * True when every weapon in hand is Light, and there is at least one (Swift
+ * Striker). Both hands of the active set count for a character; an NPC has no
+ * sets, so all its weapons do. A shield or a torch is no weapon here.
+ * @param {Actor} actor
+ */
+export function wieldsOnlyLightWeapons(actor) {
+  let held = actor?.items?.contents ?? [];
+  if (actor?.type === "character") {
+    const combat = actor.system.combat;
+    const set = combat?.activeWeaponSet ? combat.weaponSets?.[combat.activeWeaponSet] : null;
+    held = [set?.main, set?.off].map((id) => (id ? actor.items.get(id) : null));
+  }
+  const weapons = held.filter((item) => item?.type === "weapon" && !item.system?.shield);
+  return weapons.length > 0 && weapons.every((weapon) => weapon.system?.type === "light");
+}
+
+/**
  * Which Armiger branch applies right now: "light" | "heavy" | null.
  * @param {Actor} actor
  * @param {"zbrojnos1"|"zbrojnos2"} nodeId

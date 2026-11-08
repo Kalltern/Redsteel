@@ -1,0 +1,58 @@
+{
+  "folder": "eNR6Ak4yjoOYudB1",
+  "name": "Slayer",
+  "type": "consumable",
+  "img": "icons/consumables/potions/bottle-round-corked-red.webp",
+  "system": {
+    "description": "<p>Effect - Precision +15%<br />Duration - 15 minutes<br />Toxicity - 14<br />Production bonus - -20% -&gt; 1 dose<br />Ingredients - Strong alcohol, Be, Qu, Ve</p>",
+    "options": [
+      "potion",
+      "explosive",
+      "misc",
+      "first aid",
+      "poison"
+    ],
+    "types": [
+      "mana",
+      "health",
+      "stamina"
+    ],
+    "quantity": 1,
+    "option": "potion",
+    "roll": {
+      "diceNum": 0,
+      "diceSize": "6",
+      "diceBonus": "0"
+    },
+    "type": "",
+    "toxicity": 14,
+    "bleed": 0,
+    "localizationKey": "REDSTEEL.Items.Slayer.name",
+    "difficulty": -20
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {
+    "redsteel": {
+      "statusEffects": [
+        "slayer"
+      ]
+    }
+  },
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.15.0",
+    "createdTime": 1793749553395,
+    "modifiedTime": 1793749553395,
+    "lastModifiedBy": null
+  },
+  "_id": "X4kfml0PySBS10Pe",
+  "_key": "!items!X4kfml0PySBS10Pe"
+}

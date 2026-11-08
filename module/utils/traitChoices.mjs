@@ -114,6 +114,51 @@ function openEffectChoice(item, group, effects) {
 }
 
 /**
+ * A feature that names its stat on arrival: Expertíza picks a non-combat skill
+ * (`flags.redsteel.skillCritChoice`, the Critical Success it adds) and Trénink a
+ * primary attribute (`flags.redsteel.attributeChoice`, the points it adds). The
+ * pick becomes a real Active Effect on the item, so it behaves like any other
+ * passive buff and leaves with the item.
+ * @param {Item} item
+ */
+async function runStatChoice(item) {
+  const flags = item.flags?.redsteel ?? {};
+  const asSkill = Number(flags.skillCritChoice) || 0;
+  const asAttribute = Number(flags.attributeChoice) || 0;
+  if (!asSkill && !asAttribute) return;
+
+  const system = item.parent.system;
+  const options = asSkill
+    ? Object.keys(system.skills ?? {}).map((key) => [
+        key,
+        game.i18n.localize(`REDSTEEL.Actor.Character.skills.${key}.label`),
+      ])
+    : Object.keys(system.attributes ?? {}).map((key) => [
+        key,
+        game.i18n.localize(`REDSTEEL.Actor.Character.Attribute.${key.capitalize()}.long`),
+      ]);
+  options.sort((a, b) => a[1].localeCompare(b[1]));
+  const prompt = game.i18n.localize(
+    `REDSTEEL.FeatureAction.${asSkill ? "ChooseSkill" : "ChooseAttribute"}`,
+  );
+  const picked = await foundry.applications.api.DialogV2.prompt({
+    window: { title: item.localizedName ?? item.name },
+    content: `<p>${prompt}</p><select name="pick">${options
+      .map(([key, label]) => `<option value="${key}">${label}</option>`)
+      .join("")}</select>`,
+    ok: { callback: (_event, button) => button.form.elements.pick.value },
+    rejectClose: false,
+  });
+  if (!picked) return;
+  const change = asSkill
+    ? { key: `system.skills.${picked}.critbonus`, type: "add", value: asSkill }
+    : { key: `system.attributes.${picked}.bonus`, type: "add", value: asAttribute };
+  await item.createEmbeddedDocuments("ActiveEffect", [
+    { name: item.name, img: item.img, transfer: true, changes: [change] },
+  ]);
+}
+
+/**
  * Run every choice a freshly created trait item asks for, one after another.
  * @param {Item} item
  */
@@ -130,6 +175,8 @@ async function runTraitChoices(item) {
   for (const [group, effects] of groups) {
     await openEffectChoice(item, group, effects);
   }
+
+  await runStatChoice(item);
 
   if (item.flags?.redsteel?.hatedEnemyTrait) {
     const picked = await openHatedEnemyPicker(item);

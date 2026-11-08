@@ -22,33 +22,114 @@ import {
   payBloodPayment,
 } from "./bloodPool.mjs";
 import { spendForItems } from "./actionTracker.mjs";
+import { spellAimEase } from "./aim.mjs";
+import {
+  consumeNextSpellBonus,
+  nextSpellDifficulty,
+} from "./nextSpellBonus.mjs";
 import {
   HASTENED_CAST_DIFFICULTY,
   hasHastenedCast,
 } from "./hastenedCast.mjs";
 import { isMiracle, pickMiracle, rollMiracleAttack } from "./miracles.mjs";
+import { grantLindarCharge } from "./veneficus.mjs";
+import {
+  counterattackCastMods,
+  counterattackSpellFits,
+  payMagicCounterattack,
+} from "./elymas.mjs";
+import {
+  bankedQuickFocus,
+  settleWaveOfEnergy,
+  takeQuickFocus,
+} from "./incantator.mjs";
+import { mancerLockLabel, mancerSpellLock } from "../helpers/mancerSpells.mjs";
 
 export { getStrikeId };
 
-export async function castSpell() {
+/**
+ * Refuse a spell this character may not cast because a mancer rank node names
+ * it and they lack the node (helpers/mancerSpells.mjs, user ruling
+ * 2026-11-03). NPCs are never refused.
+ *
+ * Read by the two casts of an owned spell, castSpell and quickCastSpell,
+ * before anything is paid, rather than in performCast: a spell scroll also
+ * runs through performCast, and breaking a seal is open to anybody (see
+ * utils/spellScrolls.mjs castFromScroll), the same way it skips the school
+ * rank. A variant is gated through its parent, which is what castSpell reads.
+ *
+ * @returns {boolean} True when the cast was refused.
+ */
+function refuseMancerLocked(actor, spell) {
+  const lock = mancerSpellLock(actor, spell);
+  if (!lock) return false;
+  ui.notifications.warn(
+    game.i18n.format("REDSTEEL.MancerLock.cast", {
+      spell: spell.localizedName ?? spell.name,
+      node: mancerLockLabel(lock),
+    }),
+  );
+  return true;
+}
+
+/**
+ * The cast dialog flow: school, spell, variant, then performCast.
+ *
+ * @param {{spellFilter?: ((spell: Item) => boolean)|null,
+ *   counterattack?: object|null, catalyst?: boolean}} [options]
+ *   `spellFilter` narrows the spell list; `counterattack` marks the cast as an
+ *   Elymas Magic Counterattack (utils/elymas.mjs useElymasChip); `catalyst`
+ *   opens the dialog with Incantator's Catalyst ticked (the Catalyst item,
+ *   utils/incantator.mjs). All absent from the macro and the hotbar, which
+ *   cast normally. Anything that is not a plain options object (an event
+ *   handed over by a click binding) is ignored.
+ */
+export async function castSpell(options = {}) {
+  const opts =
+    options && typeof options === "object" && !(options instanceof Event)
+      ? options
+      : {};
+  const spellFilter =
+    typeof opts.spellFilter === "function" ? opts.spellFilter : null;
+  const counterattack = opts.counterattack ?? null;
+
   const context = game.redsteel.selectToken({ notifyFallback: true });
   if (!context) return;
 
   const { actor, token } = context;
-  const result = await game.redsteel.showSpellSelectionDialogs(actor);
+  const result = await game.redsteel.showSpellSelectionDialogs(actor, {
+    filter: spellFilter,
+    catalyst: opts.catalyst === true,
+  });
   if (!result) {
     ui.notifications.info("Spell casting canceled.");
     return;
   }
+  if (refuseMancerLocked(actor, result.spell)) return;
 
-  const { freeCast, focusSpent, ignoreChanneling, bloodPayment, hastenedCast } =
-    result;
+  const {
+    freeCast,
+    focusSpent,
+    ignoreChanneling,
+    bloodPayment,
+    hastenedCast,
+    catalyst,
+  } = result;
 
   // If the spell has linked variants, let the player choose which version to
   // cast. Resolves with the parent spell itself when no valid variants exist.
   const spell = await game.redsteel.showVariantSelectionDialog(result.spell);
   if (!spell) {
     ui.notifications.info("Spell casting canceled.");
+    return;
+  }
+
+  // A variant is a spell of its own: it has to fit the filter too (a Magic
+  // Counterattack variant of another rank or action cost does not).
+  if (counterattack && !counterattackSpellFits(actor, spell)) {
+    ui.notifications.warn(
+      game.i18n.localize("REDSTEEL.Elymas.CounterVariantUnfit"),
+    );
     return;
   }
 
@@ -59,6 +140,8 @@ export async function castSpell() {
     ignoreChanneling,
     bloodPayment,
     hastenedCast,
+    counterattack,
+    catalyst,
   });
 }
 
@@ -96,9 +179,16 @@ export async function castMiracle() {
  * reader's own Channeling (see utils/spellScrolls.mjs). It rides on
  * `bonuses.attackBonus`, so the chat card's breakdown states it.
  *
+ * `counterattack` marks an Elymas Magic Counterattack
+ * (`{defenseMessageId, attackerTokenId}`, utils/elymas.mjs): it is paid with
+ * the Reaction, or the round's free one (mpVolnaAkce), instead of the spell's
+ * own action cost, and the card is tagged and takes the counterattack nodes.
+ *
  * @param {{token?: Token|null, freeCast?: boolean, focusSpent?: number,
  *   ignoreChanneling?: boolean, bloodPayment?: boolean, hastenedCast?: boolean,
- *   extraAttackBonus?: number}} [options]
+ *   extraAttackBonus?: number, counterattack?: object|null,
+ *   catalyst?: boolean}} [options]  `catalyst`: Incantator's Catalyst was
+ *   ticked (utils/incantator.mjs).
  * @returns {Promise<boolean>} False when the cast never happened (not enough
  *   mana/blood), true otherwise.
  */
@@ -113,8 +203,15 @@ export async function performCast(
     bloodPayment = false,
     hastenedCast = false,
     extraAttackBonus = 0,
+    counterattack = null,
+    catalyst = false,
   } = {},
 ) {
+  // Incantator → Rychlé soustředění: Focus banked by Quick Focus joins this
+  // cast's Focus (and so everything Focus feeds: Difficulty, Soustředění's
+  // bonuses). Read now, spent once the cast is paid for (utils/incantator.mjs).
+  const quickFocus = isMiracle(spell) ? 0 : bankedQuickFocus(actor);
+  focusSpent = (Number(focusSpent) || 0) + quickFocus;
   // Lindar's Strikes (veneficus tree): while unlocked, strike spells never
   // trigger channeling evaluation — cast as though "No Channeling Evaluation"
   // were ticked, so a fumbled channeling roll can't crit-fail the strike.
@@ -185,21 +282,39 @@ export async function performCast(
     }
   }
 
+  // Veneficus: Difficulty eased by the Aim on the target (aim.mjs
+  // spellAimEase) and by Magic Veteran's given-up Critical degrees
+  // (nextSpellBonus.mjs). The Aim is read here, before spendForItems below
+  // charges the Action: a spell is a non-attack action and breaks a normal
+  // aim.
+  const veneficusDifficulty =
+    spellAimEase(actor) + nextSpellDifficulty(actor, spell);
+
   if (!freeCast) {
     const ok = await game.redsteel.deductMana(actor, spell);
     if (!ok) return false;
   }
+  if (quickFocus) await takeQuickFocus(actor);
 
   // Tick the hotbar's action readout. After the mana gate, so a cast nobody
   // could pay for costs no actions either; a free cast still takes the
   // caster's turn, so it is charged all the same. A spell whose cost line
   // offers "Reaction" spends the reaction when cast outside its own turn.
-  await spendForItems(actor, spell);
+  // An Elymas Magic Counterattack pays its own price instead: 1 Reaction, or
+  // the round's free one (utils/elymas.mjs payMagicCounterattack).
+  let counter = null;
+  if (counterattack) {
+    const { free } = await payMagicCounterattack(actor);
+    counter = { ...counterattack, free };
+  } else {
+    await spendForItems(actor, spell);
+  }
 
   if (payingBlood) payingBlood = await payBloodPayment(actor);
   const difficultyBonus =
     (payingBlood ? BLOOD_PAYMENT_DIFFICULTY : 0) +
-    (hastening ? HASTENED_CAST_DIFFICULTY : 0);
+    (hastening ? HASTENED_CAST_DIFFICULTY : 0) +
+    veneficusDifficulty;
 
   // Mentální zteč is declared "při seslání" — before the cast is rolled, not
   // after it lands. The Mind is burned here and parked on the caster; the
@@ -207,6 +322,10 @@ export async function performCast(
   await offerMentalCharge(actor, spell);
 
   const bonuses = game.redsteel.calculateAttackBonuses(actor, spell);
+
+  // The cast happened: what the next spell was owed (Mana in deductMana,
+  // Channeling in the bonuses just read, Difficulty above) is spent now.
+  await consumeNextSpellBonus(actor, spell);
 
   // A miracle is not channeled: every channeling bonus stays off its roll,
   // which is Faith instead (rollMiracleAttack). Damage and effect bonuses
@@ -228,8 +347,22 @@ export async function performCast(
         spell,
         bonuses.attackBonus,
         focusSpent,
-        { ignoreChanneling, difficultyBonus, hastenedCast: hastening },
+        {
+          ignoreChanneling,
+          difficultyBonus,
+          hastenedCast: hastening,
+          // Elymas mpKritNeuspech: a counterattack fumbles 5% less.
+          critFailEase: counter
+            ? counterattackCastMods(actor, spell, counter).critFailEase
+            : 0,
+          catalyst,
+        },
       );
+
+  // Incantator → Vlna energie: a Critical Success cast leaves its cost off
+  // the next spell (utils/incantator.mjs). Settled before the card so the
+  // card can say so.
+  const waveNote = await settleWaveOfEnergy(actor, spell, attackResults);
 
   await game.redsteel.finalizeRollsAndPostChat(
     actor,
@@ -246,6 +379,9 @@ export async function performCast(
       // against (utils/positioning.mjs). Without it a spell card stamps no
       // arcs and a cast into a flank takes no bonus.
       token,
+      counterattack: counter,
+      catalyst,
+      cardNotes: waveNote,
     },
   );
 
@@ -295,6 +431,7 @@ export async function quickCastSpell(spellUuid, spellName = "") {
     ui.notifications.warn(`You do not own ${actor.name}.`);
     return;
   }
+  if (refuseMancerLocked(actor, spell)) return;
 
   // Prefer the token the player actually has selected (that is the one the rest
   // of the pipeline treats as the caster), but only when it belongs to the
@@ -401,6 +538,9 @@ export async function applyPostCastEffects(
     await maybeStartMentalDuel(actor, token, spell, attackResults, {
       ignoreChanneling,
     });
+    // Veneficus → Lindarův výpad: a landed Lindar spell grants a free Attack
+    // this turn, a Charge with Lindarův výpad II (veneficus.mjs).
+    await grantLindarCharge(actor, spell, token);
   }
 }
 
@@ -464,6 +604,9 @@ async function applyStrikeEffect(actor, spell) {
   const updates = {
     name: spell.localizedName ?? spell.name ?? applied.name,
     "flags.redsteel.consumeOnAttack": true,
+    // Veneficus → Navazující kouzlo: the school whose spell empowers the
+    // attack this strike rides on (veneficus.mjs empoweringSchools).
+    ...(school && { "flags.redsteel.empowerSchool": school }),
   };
 
   // Strikes that add 1d4 + SK/2 bonus damage, baked from this caster's SK in the

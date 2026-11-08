@@ -610,7 +610,10 @@ export function checkMeleeReach({
   const selfDoc = docOf(token);
   if (!selfDoc) return { ok: true };
 
-  const reach = weaponReach(actor, weapon, ability);
+  // A ticked modifier can add reach too (Výpad estocem).
+  const reach =
+    weaponReach(actor, weapon, ability) +
+    (modifiers ?? []).reduce((sum, mod) => sum + (Number(mod?.system?.reachBonus) || 0), 0);
   const lunge = isExtendedLungeAbility(ability);
   // Hoplite → hexAttack: the line may pass an opponent.
   const throughOpponents =

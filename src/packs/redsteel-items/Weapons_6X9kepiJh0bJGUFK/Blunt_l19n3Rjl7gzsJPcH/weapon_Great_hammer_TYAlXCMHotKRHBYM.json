@@ -101,7 +101,7 @@
     "roll": {
       "diceNum": 4,
       "diceSize": "6",
-      "diceBonus": "+2"
+      "diceBonus": "2"
     },
     "penetration": 20,
     "breakthrough": "3d6",

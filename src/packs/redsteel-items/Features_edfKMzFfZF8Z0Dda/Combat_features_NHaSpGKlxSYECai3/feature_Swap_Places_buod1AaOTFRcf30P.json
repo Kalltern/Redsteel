@@ -1,0 +1,49 @@
+{
+  "folder": "NHaSpGKlxSYECai3",
+  "name": "Swap Places",
+  "type": "feature",
+  "img": "icons/skills/movement/figure-running-gray.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.SwapPlaces.name",
+    "description": "<p>If you end a move next to an ally, or stand next to one and take a movement action, you may swap places for 2 Stamina and both your Reactions, without provoking Opportunity Attacks.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "feature",
+    "cost": {
+      "cp": 5,
+      "sp": null
+    }
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.15.0",
+    "createdTime": null,
+    "modifiedTime": null,
+    "lastModifiedBy": null
+  },
+  "_id": "buod1AaOTFRcf30P",
+  "_key": "!items!buod1AaOTFRcf30P"
+}

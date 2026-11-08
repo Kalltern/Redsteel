@@ -6,186 +6,67 @@
 >
   {{! As you add new fields, add them in here! }}
 
-  <div class="resource">
-    <div class="grid grid-4col">
-      <div class="grid-span-1">
-        <label class="resource-label">{{localize
-            "REDSTEEL.Item.Gear.FIELDS.rangedCritDefense.label"
-          }}</label>
-        <input
-          type="text"
-          name="system.rangedCritDefense"
-          value="{{system.rangedCritDefense}}"
-          data-dtype="Number"
-        />
+  <div class="rs-section">
+    <h3 class="rs-section-head">{{localize "REDSTEEL.Item.Gear.Section.whileEquipped"}}</h3>
+    <div class="rs-plate-grid">
+      <div class="rs-plate">
+        <label>{{localize "REDSTEEL.Item.Gear.FIELDS.dodgePenalty.label"}}</label>
+        <input type="text" name="system.dodgePenalty" value="{{system.dodgePenalty}}" data-dtype="Number" />
       </div>
       {{#unless system.shield}}
-        <div class="grid-span-1">
-          <label class="resource-label">{{localize
-              "REDSTEEL.Item.Gear.FIELDS.iniPenalty.label"
-            }}</label>
-          <input
-            type="text"
-            name="system.iniPenalty"
-            value="{{system.iniPenalty}}"
-            data-dtype="Number"
-          />
-        </div>
+      <div class="rs-plate">
+        <label>{{localize "REDSTEEL.Item.Gear.FIELDS.iniPenalty.label"}}</label>
+        <input type="text" name="system.iniPenalty" value="{{system.iniPenalty}}" data-dtype="Number" />
+        {{#if gearBonus.ini}}<span class="rs-plate-mod" data-tooltip="{{localize 'REDSTEEL.Item.Weapon.BonusHint'}}">{{gearBonus.ini}}</span>{{/if}}
+      </div>
+      <div class="rs-plate">
+        <label>{{localize "REDSTEEL.Item.Gear.FIELDS.acroPenalty.label"}}</label>
+        <input type="text" name="system.acroPenalty" value="{{system.acroPenalty}}" data-dtype="Number" />
+      </div>
+      <div class="rs-plate">
+        <label>{{localize "REDSTEEL.Item.Gear.FIELDS.swimPenalty.label"}}</label>
+        <input type="text" name="system.swimPenalty" value="{{system.swimPenalty}}" data-dtype="Number" />
+      </div>
+      <div class="rs-plate">
+        <label>{{localize "REDSTEEL.Item.Gear.FIELDS.castPenalty.label"}}</label>
+        <input type="text" name="system.castPenalty" value="{{system.castPenalty}}" data-dtype="Number" />
+      </div>
+      <div class="rs-plate">
+        <label>{{localize "REDSTEEL.Item.Gear.FIELDS.stealthPenalty.label"}}</label>
+        <input type="text" name="system.stealthPenalty" value="{{system.stealthPenalty}}" data-dtype="Number" />
+      </div>
         {{#if system.helmet}}
-          <div class="grid-span-1">
-            <label class="resource-label">{{localize
-                "REDSTEEL.Item.Gear.FIELDS.perPenalty.label"
-              }}</label>
-            <input
-              type="text"
-              name="system.perPenalty"
-              value="{{system.perPenalty}}"
-              data-dtype="Number"
-            />
-          </div>
+      <div class="rs-plate">
+        <label>{{localize "REDSTEEL.Item.Gear.FIELDS.perPenalty.label"}}</label>
+        <input type="text" name="system.perPenalty" value="{{system.perPenalty}}" data-dtype="Number" />
+      </div>
+      <div class="rs-plate">
+        <label>{{localize "REDSTEEL.Item.Gear.FIELDS.archeryPenalty.label"}}</label>
+        <input type="text" name="system.archeryPenalty" value="{{system.archeryPenalty}}" data-dtype="Number" />
+      </div>
         {{/if}}
-        <div class="grid-span-1">
-          <label class="resource-label">{{localize
-              "REDSTEEL.Item.Gear.FIELDS.acroPenalty.label"
-            }}</label>
-          <input
-            type="text"
-            name="system.acroPenalty"
-            value="{{system.acroPenalty}}"
-            data-dtype="Number"
-          />
-        </div>
-      {{/unless}}
-      <div class="grid-span-1">
-        <label class="resource-label">{{localize
-            "REDSTEEL.Item.Gear.FIELDS.critDefense.label"
-          }}</label>
-        <input
-          type="text"
-          name="system.critDefense"
-          value="{{system.critDefense}}"
-          data-dtype="Number"
-        />
+      <div class="rs-plate">
+        <label>{{localize "REDSTEEL.Item.Gear.FIELDS.maxSpeed.label"}}</label>
+        <input type="text" name="system.maxSpeed" value="{{system.maxSpeed}}" data-dtype="Number" />
       </div>
-      <div class="grid-span-1">
-        <label class="resource-label">{{localize
-            "REDSTEEL.Item.Gear.FIELDS.rangedDefense.label"
-          }}</label>
-        <input
-          type="text"
-          name="system.rangedDefense"
-          value="{{system.rangedDefense}}"
-          data-dtype="Number"
-        />
+      <div class="rs-plate">
+        <label>{{localize "REDSTEEL.Item.Gear.FIELDS.healthBonus.label"}}</label>
+        <input type="text" name="system.healthBonus" value="{{system.healthBonus}}" data-dtype="Number" />
+        {{#if gearBonus.healthBonus}}<span class="rs-plate-mod" data-tooltip="{{localize 'REDSTEEL.Item.Weapon.BonusHint'}}">{{gearBonus.healthBonus}}</span>{{/if}}
       </div>
-      <div class="grid-span-1">
-        <label class="resource-label">{{localize
-            "REDSTEEL.Item.Gear.FIELDS.defense.label"
-          }}</label>
-        <input
-          type="text"
-          name="system.defense"
-          value="{{system.defense}}"
-          data-dtype="Number"
-        />
-      </div>
-      <div class="grid-span-1">
-        <label class="resource-label">{{localize
-            "REDSTEEL.Item.Gear.FIELDS.dodgePenalty.label"
-          }}</label>
-        <input
-          type="text"
-          name="system.dodgePenalty"
-          value="{{system.dodgePenalty}}"
-          data-dtype="Number"
-        />
-      </div>
-      {{#unless system.shield}}
-        <div class="grid-span-1">
-          <label class="resource-label">{{localize
-              "REDSTEEL.Item.Gear.FIELDS.swimPenalty.label"
-            }}</label>
-          <input
-            type="text"
-            name="system.swimPenalty"
-            value="{{system.swimPenalty}}"
-            data-dtype="Number"
-          />
-        </div>
-
-        <div class="grid-span-1">
-          <label class="resource-label">{{localize
-              "REDSTEEL.Item.Gear.FIELDS.castPenalty.label"
-            }}</label>
-          <input
-            type="text"
-            name="system.castPenalty"
-            value="{{system.castPenalty}}"
-            data-dtype="Number"
-          />
-        </div>
-        <div class="grid-span-1">
-          <label class="resource-label">{{localize
-              "REDSTEEL.Item.Gear.FIELDS.stealthPenalty.label"
-            }}</label>
-          <input
-            type="text"
-            name="system.stealthPenalty"
-            value="{{system.stealthPenalty}}"
-            data-dtype="Number"
-          />
-        </div>
-        {{#if system.helmet}}
-          <div class="grid-span-1">
-            <label class="resource-label">{{localize
-                "REDSTEEL.Item.Gear.FIELDS.archeryPenalty.label"
-              }}</label>
-            <input
-              type="text"
-              name="system.archeryPenalty"
-              value="{{system.archeryPenalty}}"
-              data-dtype="Number"
-            />
-          </div>
-        {{/if}}
-        <div class="grid-span-1">
-          <label class="resource-label">{{localize
-              "REDSTEEL.Item.Gear.FIELDS.maxSpeed.label"
-            }}</label>
-          <input
-            type="text"
-            name="system.maxSpeed"
-            value="{{system.maxSpeed}}"
-            data-dtype="Number"
-          />
-        </div>
-        <div class="grid-span-1">
-          <label class="resource-label">{{localize
-              "REDSTEEL.Item.Gear.FIELDS.healthBonus.label"
-            }}</label>
-          <input
-            type="text"
-            name="system.healthBonus"
-            value="{{system.healthBonus}}"
-            data-dtype="Number"
-          />
-        </div>
       {{/unless}}
     </div>
-    <hr />
-    <div class="grid grid-8col">
+  </div>
+
+  <div class="rs-section">
+    <h3 class="rs-section-head">{{localize "REDSTEEL.Item.Gear.Section.resistances"}}</h3>
+    <div class="rs-plate-grid">
       {{#each system.armor as |armor key|}}
         {{#unless (or (eq key "value") (or (eq key "durability") (eq key "durabilityMax")))}}
-          <div class="grid-span-1">
-            <label>
-              {{localize (concat "REDSTEEL.Item.Gear.FIELDS." key ".label")}}
-            </label>
-            <input
-              type="text"
-              name="system.armor.{{key}}.value"
-              value="{{armor.value}}"
-              data-dtype="Number"
-            />
+          <div class="rs-plate">
+            <label>{{localize (concat "REDSTEEL.Item.Gear.FIELDS." key ".label")}}</label>
+            <input type="text" name="system.armor.{{key}}.value" value="{{armor.value}}" data-dtype="Number" />
+            {{#if (lookup ../gearBonus.resist key)}}<span class="rs-plate-mod" data-tooltip="{{localize 'REDSTEEL.Item.Weapon.BonusHint'}}">{{lookup ../gearBonus.resist key}}</span>{{/if}}
           </div>
         {{/unless}}
       {{/each}}

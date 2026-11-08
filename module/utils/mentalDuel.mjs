@@ -7,7 +7,8 @@ import {
   pickRerollPool,
 } from "./rerolls.mjs";
 import { scheduleRerollRefresh } from "./calendariaIntegration.mjs";
-import { forfeitAdvantageOnCritFail } from "./rollAdvantage.mjs";
+import { forfeitAdvantageOnCritFail, capHopelessNatural } from "./rollAdvantage.mjs";
+import { resolveVersus as resolveCombatVersus } from "./defenseOdds.mjs";
 import {
   getActionPools,
   getSpent,
@@ -240,9 +241,6 @@ function assaultDrain(actor) {
  */
 
 const { ApplicationV2 } = foundry.applications.api;
-
-// Extra Mind drained when the winner crits / wins decisively.
-const CRITICAL_MARGIN = 60;
 
 // One duel window per client at a time (tracked so re-opens don't stack).
 let activeDuel = null;
@@ -762,11 +760,13 @@ async function rollSide({ rating, critSuccess, critFailure }) {
   // A picker advantage is forfeit on a fumbling first die.
   forfeitAdvantageOnCritFail(roll, critFailure);
   const raw = roll.dice[0].total;
+  // A natural critical on a negative chance is a common success of margin 0.
+  const hopeless = capHopelessNatural(roll, critSuccess);
   return {
     roll,
     raw,
     margin: roll.total,
-    critSuccess: raw <= critSuccess,
+    critSuccess: !hopeless && raw <= critSuccess,
     critFailure: raw >= critFailure,
   };
 }
@@ -824,32 +824,31 @@ function hasDuelReroll(actor, critFailure) {
 }
 
 /**
- * Resolve a versus test from the attacker's (invoker's) perspective. Critical
- * interaction mirrors Combat: a Critical success outranks a normal result, a
- * Critical failure is outranked by any non-crit-failure, ties go to the
- * attacker, and otherwise the higher margin wins.
+ * Resolve a versus test from the attacker's (invoker's) perspective, by the
+ * combat rule itself ("Interakce Kritických (ne)úspěchů se vyhodnocuje stejně,
+ * jako v Souboji"): defenseOdds.mjs settles it, so two opposing naturals fall to
+ * the lower die and neither counts as critical.
  *
- * The exchange is symmetric: whoever loses the round pays the Mind, so the
- * decisive check is read from the winner's side whichever side that is.
+ * The exchange is symmetric: whoever loses the round pays the Mind, and a
+ * critical verdict either way drains the extra point.
  * @returns {{attackerWins: boolean, critical: boolean}}
  */
 function resolveVersus(att, def) {
-  const tier = (r) => (r.critSuccess ? 2 : r.critFailure ? 0 : 1);
-  const at = tier(att);
-  const dt = tier(def);
-
-  const attackerWins = at !== dt ? at > dt : att.margin >= def.margin;
-
-  const winner = attackerWins ? att : def;
-  const loser = attackerWins ? def : att;
-
-  // Decisive win → drains an extra Mind point.
-  const critical =
-    winner.critSuccess ||
-    loser.critFailure ||
-    winner.margin - loser.margin >= CRITICAL_MARGIN;
-
-  return { attackerWins, critical };
+  const verdict = resolveCombatVersus(
+    {
+      margin: att.margin,
+      d100: att.raw,
+      criticalSuccess: att.critSuccess,
+      criticalFailure: att.critFailure,
+    },
+    {
+      defenseTotal: def.margin,
+      defenseD100: def.raw,
+      defenseCrit: def.critSuccess,
+      defenseCritFailure: def.critFailure,
+    },
+  );
+  return { attackerWins: !verdict.blocked, critical: verdict.critical !== null };
 }
 
 /**

@@ -253,6 +253,19 @@ function isEmptyPillValue(value) {
  * @param {boolean} [positive]  Optional flag (concentration pill only) so the
  *   template/CSS can style a "Yes" value without matching localized text.
  */
+/**
+ * A spell's own Magic Attack as printed: "+10" for a bonus, a bare "20" for a
+ * fixed value, "" for a spell that has none.
+ *
+ * @param {object} system  A spell's system data, or a row carrying the same keys.
+ * @returns {string}
+ */
+export function formatSpellMagicAttack(system = {}) {
+  const value = Number(system.magicAttack) || 0;
+  if (!value) return "";
+  return system.magicAttackFixed || value < 0 ? `${value}` : `+${value}`;
+}
+
 function pill(key, labelKey, value, always = false, positive) {
   if (!always && isEmptyPillValue(value)) return null;
   const built = { key, label: game.i18n.localize(labelKey), value };
@@ -479,6 +492,14 @@ export function buildSpellPills(system = {}, kind = "spell") {
         ),
       );
     }
+    // The spell's own Magic Attack. Empty at 0, like every other pill.
+    pills.push(
+      pill(
+        "magicAttack",
+        "REDSTEEL.Item.Spell.FIELDS.magicAttack.label",
+        formatSpellMagicAttack(system),
+      ),
+    );
     // The spell's damage types, joined by their stored and/or connectors.
     // Emits nothing when dmgType1 is empty, same as every other pill.
     pills.push(

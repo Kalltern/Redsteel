@@ -18,8 +18,11 @@ import { hasDuelistOffHand } from "./aim.mjs";
 
 /** Weapon tags each doctrine accepts. Seeded from the compendium's ticks. */
 export const DOCTRINE_WEAPON_TAGS = {
-  pikeman: ["bac-de-corbin", "glaive", "halberd", "spear"],
-  swordsman: ["broadsword", "flamberge", "longsword", "military cleaver", "sabre", "shortsword"],
+  pikeman: ["bac-de-corbin", "glaive", "halberd", "spear", "trident"],
+  swordsman: [
+    "broadsword", "estoc", "flamberge", "longsword", "military cleaver", "sabre",
+    "shortsword", "two handed cleaver", "two handed sabre",
+  ],
   reaver: [
     "bardiche", "flail", "great hammer", "hatchet", "long axe", "mace",
     "two handed flail", "war axe", "war hammer", "war pick",
@@ -27,18 +30,18 @@ export const DOCTRINE_WEAPON_TAGS = {
   shieldbearer: [
     "baton", "broadsword", "dagger", "fencing dagger", "flail", "hatchet",
     "javelin", "mace", "military cleaver", "rapier", "sabre", "shortsword",
-    "spear", "throwing axe", "war axe", "war hammer", "war pick",
+    "spear", "throwing axe", "trident", "war axe", "war hammer", "war pick",
   ],
   dimakerus: [
     "baton", "broadsword", "dagger", "flail", "hatchet", "mace",
     "military cleaver", "rapier", "sabre", "shortsword", "throwing axe",
     "war axe", "war hammer", "war pick",
   ],
-  duelist: ["broadsword", "dagger", "military cleaver", "rapier", "sabre", "shortsword"],
-  monk: ["staff"],
+  duelist: ["broadsword", "dagger", "estoc", "military cleaver", "rapier", "sabre", "shortsword"],
+  monk: ["katar", "staff"],
   archer: ["hunting bow", "longbow", "reflex bow"],
-  arbalest: ["crossbow", "heavy crossbow"],
-  peltast: ["javelin", "throwing axe"],
+  arbalest: ["crossbow", "dwarven crossbow", "hand crossbow", "heavy crossbow"],
+  peltast: ["javelin", "sling", "throwing axe"],
   juggler: ["throwing axe", "throwing knife"],
 };
 

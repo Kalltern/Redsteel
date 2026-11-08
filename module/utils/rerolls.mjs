@@ -224,9 +224,10 @@ export function getRerollTokensForSkill(actor, skillKey) {
   const skill = actor?.system?.skills?.[key];
   if (skill && Number.isFinite(Number(skill.id))) {
     const attr = ATTR_BY_INDEX[Number(skill.id)] ?? null;
-    if (attr) return [norm, attrGroupToken(attr)];
+    // "noncombat" is what Dobrý odhad's pool names: every ordinary skill.
+    if (attr) return [norm, attrGroupToken(attr), "noncombat"];
   }
-  return [norm];
+  return skill ? [norm, "noncombat"] : [norm];
 }
 
 /**
@@ -244,6 +245,31 @@ export function getAttackRerollTokens(weapon = null) {
   if (cls === "bow" || cls === "crossbow") combatKey = "archery";
   else if (weapon.system?.thrown === true) combatKey = "throwing";
   return ["attack", combatKey];
+}
+
+/**
+ * The reroll tokens a Channeling card emits, or null for any other card.
+ *
+ * A spell cast judged on its Channeling margin (the card carries
+ * `spellCritFail`, so not a miracle and not "No Channeling Evaluation") and a
+ * Magic Defense card (`magicDefense`, which is a Channeling Test modified by
+ * the defense bonus, user ruling) both emit "channeling", the token a sheet
+ * Channeling test emits too. Neither carries `rerollTokens`: they keep the
+ * free Re-Roll unless a node pool answers them (redsteel.mjs).
+ *
+ * @param {ChatMessage|null} message
+ * @returns {string[]|null}
+ */
+export function channelingRerollTokens(message) {
+  const flags = message?.flags?.redsteel ?? {};
+  if (flags.magicDefense) return ["channeling"];
+  // A Blood spell is cast with Manipulace s krví, not Channeling
+  // (magicSkillBonuses.mjs getCastRating), so its cast card emits
+  // "bloodManipulation", even when Magická krev lets the Channeling rating
+  // stand in (Škola Krve - Učedník's reroll answers it).
+  if (flags.spellCritFail?.spellType === "blood") return ["bloodManipulation"];
+  if (flags.spellCritFail) return ["channeling"];
+  return null;
 }
 
 /**
@@ -467,6 +493,29 @@ export const NODE_REROLL_POOLS = [
     closeMargin: 10,
     requiresToken: ["attack", "defense"],
     img: "icons/skills/ranged/arrow-strike-apple-orange.webp",
+  },
+  {
+    // Elymas (specializace-wip.md r179): "Může 1x za den opakovat hod na
+    // Usměrňování". A Channeling roll: the holder's spell cast card and
+    // Magic Defense card (channelingRerollTokens), and a Channeling test
+    // from the sheet. Not a Critical Failure.
+    spec: "elymas",
+    node: "opakovaniUsmernovani",
+    skillsRaw: "channeling",
+    max: 1,
+    img: "icons/magic/defensive/shield-barrier-blades-teal.webp",
+  },
+  {
+    // Škola Krve - Učedník (specializace-wip.md r1641): "Může 1x za den
+    // opakovat hod na Manipulaci s krví". Blood Manipulation is the Blood
+    // spell casting roll: the holder's Blood cast card (channelingRerollTokens
+    // emits "bloodManipulation" for it), and a Blood Manipulation test from
+    // the sheet. Not a Critical Failure.
+    spec: "bloodSchool",
+    node: "apprentice",
+    skillsRaw: "bloodManipulation",
+    max: 1,
+    img: "icons/skills/wounds/blood-cells-vessel-red.webp",
   },
 ];
 

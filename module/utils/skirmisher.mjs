@@ -57,6 +57,7 @@ import {
   getSpent,
   grantBonusStep,
   grantFreeAttack,
+  isArmedLock,
   isTrackedTurn,
   lockMovement,
   markBonusSource,
@@ -591,6 +592,14 @@ export function lightArmorRestBonus(actor) {
 }
 
 /**
+ * Every extra point of Stamina a Rest restores: Lehká zbroj and Kontrola dechu
+ * (Breath Control, an Active Effect on system.restStaminaBonus).
+ */
+export function restStaminaExtra(actor) {
+  return lightArmorRestBonus(actor) + (Number(actor?.system?.restStaminaBonus) || 0);
+}
+
+/**
  * Add Lehká zbroj's Stamina for `rests` Rests whose own Stamina was already
  * paid elsewhere (the Rest ability, the Rest macro), with a line in chat.
  *
@@ -598,7 +607,7 @@ export function lightArmorRestBonus(actor) {
  * @param {number} [rests=1]
  */
 export async function grantLightArmorRest(actor, rests = 1) {
-  const bonus = lightArmorRestBonus(actor) * Math.max(0, rests);
+  const bonus = restStaminaExtra(actor) * Math.max(0, rests);
   if (!(bonus > 0)) return;
   const stamina = actor.system?.stats?.stamina ?? {};
   const current = Number(stamina.value) || 0;
@@ -606,7 +615,10 @@ export async function grantLightArmorRest(actor, rests = 1) {
   const next = Number.isFinite(max) && max > 0 ? Math.min(max, current + bonus) : current + bonus;
   if (next === current) return;
   await actor.update({ "system.stats.stamina.value": next });
-  await postLines(actor, game.i18n.localize("REDSTEEL.Actor.Specialisations.skirmisher.nodes.lehkaZbroj.label"), [
+  const source = lightArmorRestBonus(actor)
+    ? "REDSTEEL.Actor.Specialisations.skirmisher.nodes.lehkaZbroj.label"
+    : "REDSTEEL.Items.BreathControl.name";
+  await postLines(actor, game.i18n.localize(source), [
     L("LightArmorRest", { name: esc(actor.name), amount: next - current }),
   ]);
 }
@@ -628,10 +640,14 @@ export function runUpBudget(actor) {
     : base;
 }
 
-/** Would picking Run Up Throw now declare its run (as a Charge does)? */
+/**
+ * Would picking Run Up Throw now declare its run (as a Charge does)? The
+ * unpaid turn-start Move (isArmedLock) gives way to it.
+ */
 export function runUpWouldDeclare(actor) {
   if (!actor || !isTrackedTurn(actor)) return false;
-  if (getMovementLock(actor) || getSpent(actor).moved) return false;
+  const held = getMovementLock(actor);
+  if ((held && !isArmedLock(held)) || getSpent(actor).moved) return false;
   return !!tokenForActor(actor);
 }
 

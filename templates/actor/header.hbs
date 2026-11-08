@@ -822,6 +822,19 @@
           <label class="resource-label" data-tt-kind="skill" data-tt-id="channeling">{{localize "REDSTEEL.Actor.Character.combatSkills.channeling.label"}}</label>
           <input type="text" name="system.combatSkills.channeling.value" value="{{system.combatSkills.channeling.value}}" class="attribute-score" data-dtype="Number" />
         </div>
+
+        {{!-- Flat Magic Attack / Magic Defense bonuses, the NPC stand-in for a
+              character's doctrine bonuses. Read by the spell card (Magic ATK)
+              and by buildDefenseProfile (Magic Defense rating). --}}
+        <div class="attribute-armor">
+          <label class="resource-label" data-tooltip="{{localize "REDSTEEL.Actor.Character.combatSkills.channeling.attackHint"}}">{{localize "REDSTEEL.Actor.Character.combatSkills.channeling.attack"}}</label>
+          <input type="text" name="system.combatSkills.channeling.attack" value="{{system.combatSkills.channeling.attack}}" class="attribute-score" data-dtype="Number" placeholder="0" />
+        </div>
+
+        <div class="attribute-armor">
+          <label class="resource-label" data-tooltip="{{localize "REDSTEEL.Actor.Character.combatSkills.channeling.defenseHint"}}">{{localize "REDSTEEL.Actor.Character.combatSkills.channeling.defense"}}</label>
+          <input type="text" name="system.combatSkills.channeling.defense" value="{{system.combatSkills.channeling.defense}}" class="attribute-score" data-dtype="Number" placeholder="0" />
+        </div>
         {{/if}}
 
         {{#if system.bloodMage}}

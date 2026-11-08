@@ -1,0 +1,94 @@
+{
+  "folder": "NHaSpGKlxSYECai3",
+  "name": "Resilient Metabolism",
+  "type": "feature",
+  "img": "icons/consumables/potions/potion-bottle-skull-label-poison-teal.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.ResilientMetabolism.name",
+    "description": "<p>35% chance of immunity to tier 1 poisons, 25% to tier 2 and 5% to tier 3. When you exceed your Toxicity limit, test Endurance (Very Hard); on a success Toxic Shock lasts only one round and Toxicity drops to the limit. Poison Armor +5.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [
+      "end"
+    ],
+    "rollTriggersRaw": "end",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "feature",
+    "cost": {
+      "cp": 10,
+      "sp": null
+    }
+  },
+  "effects": [
+    {
+      "name": "Resilient Metabolism",
+      "origin": "Item.UR0Jo5lGEPvISl7A",
+      "img": "icons/consumables/potions/potion-bottle-skull-label-poison-teal.webp",
+      "_id": "cALwn2HETigsrykz",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.armor.poison.bonus",
+            "value": 5,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
+      "disabled": false,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {
+        "statuscounter": {
+          "value": 1,
+          "config": {
+            "type": "default"
+          },
+          "visible": false
+        }
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!UR0Jo5lGEPvISl7A.cALwn2HETigsrykz"
+    }
+  ],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.15.0",
+    "createdTime": null,
+    "modifiedTime": null,
+    "lastModifiedBy": null
+  },
+  "_id": "UR0Jo5lGEPvISl7A",
+  "_key": "!items!UR0Jo5lGEPvISl7A"
+}

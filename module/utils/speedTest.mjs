@@ -17,7 +17,7 @@
  */
 
 import { withRollBias, tagRollItemAdvantage } from "./rollAdvantage.mjs";
-import { FLOOR_STATUSES } from "./floorInitiative.mjs";
+import { FLOOR_STATUSES, isFloorExempt } from "./floorInitiative.mjs";
 import { actorHasSpecNode } from "../helpers/specialisations.mjs";
 import { renderVersusTestBlock } from "./attributeFollowup.mjs";
 
@@ -66,7 +66,11 @@ export function buildSpeedTestFormula(actor, { ignoreFloor = false } = {}) {
   // flat 1 — each independently, since either can be applied on its own. Same
   // list the turn-order clamp in floorInitiative.mjs enforces, so a re-roll and
   // the tracker can never disagree.
-  if (!ignoreFloor && FLOOR_STATUSES.some((s) => hasFloorStatus(actor, s))) {
+  if (
+    !ignoreFloor &&
+    !isFloorExempt(actor) &&
+    FLOOR_STATUSES.some((s) => hasFloorStatus(actor, s))
+  ) {
     return "1";
   }
 

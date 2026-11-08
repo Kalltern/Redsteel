@@ -1,0 +1,49 @@
+{
+  "folder": "HBCTGlhrkFsZxRV5",
+  "name": "Combat Readiness",
+  "type": "feature",
+  "img": "icons/magic/time/clock-stopwatch-white-blue.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.CombatReadiness.name",
+    "description": "<p>You may raise your own or any ally's turn order for the whole fight by half your Tactics. Once per fight, by one tactician only.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "feature",
+    "cost": {
+      "cp": null,
+      "sp": 20
+    }
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.15.0",
+    "createdTime": null,
+    "modifiedTime": null,
+    "lastModifiedBy": null
+  },
+  "_id": "5U3TG5ZdAfrY4e3z",
+  "_key": "!items!5U3TG5ZdAfrY4e3z"
+}

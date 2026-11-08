@@ -1,0 +1,56 @@
+{
+  "folder": "HBCTGlhrkFsZxRV5",
+  "name": "Beloved",
+  "type": "feature",
+  "img": "icons/skills/social/intimidation-impressing.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.Beloved.name",
+    "description": "<p>Once per day you may reroll a Charisma Test or any skill derived from it, including a Critical Failure.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": [
+        {
+          "label": "",
+          "skillsRaw": "cha-based, critfail",
+          "max": 1,
+          "used": 0
+        }
+      ]
+    },
+    "option": "feature",
+    "cost": {
+      "cp": null,
+      "sp": 0
+    }
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.15.0",
+    "createdTime": null,
+    "modifiedTime": null,
+    "lastModifiedBy": null
+  },
+  "_id": "ZsNnm59BzJuOzGGr",
+  "_key": "!items!ZsNnm59BzJuOzGGr"
+}

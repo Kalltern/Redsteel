@@ -179,7 +179,10 @@ export class RedsteelActor extends Actor {
     // Grave wounds
     const gw = system.stats?.graveWounds ?? {};
     const graveWounds = 5 * (gw.value ?? 0) - 3 * (gw.treated ?? 0);
-    if (graveWounds > 0) {
+    // "Ignoruje postihy za VZ" (Oak potion): a capability flag written by an
+    // Active Effect, read here after effects have applied. The wounds stay on
+    // the sheet and still count toward death; only the Success penalty lifts.
+    if (graveWounds > 0 && !system.ignoreGraveWoundPenalty) {
       system.globalMod -= graveWounds;
     }
 
@@ -340,10 +343,14 @@ export class RedsteelActor extends Actor {
           (item.system.armor.value ?? 0) + (ench.armorValue ?? 0),
         );
         combatSkill.meleeDefense.critbonus += contribution(
-          (item.system.critDefense ?? 0) + (ench.critDefense ?? 0),
+          (item.system.critDefense ?? 0) +
+            (q.critDefense ?? 0) +
+            (ench.critDefense ?? 0),
         );
         combatSkill.rangedDefense.critbonus += contribution(
-          (item.system.rangedCritDefense ?? 0) + (ench.rangedCritDefense ?? 0),
+          (item.system.rangedCritDefense ?? 0) +
+            (q.rangedCritDefense ?? 0) +
+            (ench.rangedCritDefense ?? 0),
         );
         combatSkill.dodge.bonus += contribution(item.system.dodgePenalty ?? 0);
         // Channeling (cast) penalty from this armor piece, reduced by the
@@ -1785,7 +1792,8 @@ export class RedsteelActor extends Actor {
     stat.insanity.max = wil + stat.insanity.bonus + stat.insanity.base;
 
     // Calculate trap detection skill
-    systemData.detection = per + systemData.skills.traps.value * 2;
+    systemData.detection =
+      per + systemData.skills.traps.value * 2 + (Number(systemData.detectionBonus) || 0);
 
     // Calculate Health, systemData.healthBonus comes from Armor
     const ironMuscles = systemData.ironMuscles ? str : 0;
@@ -2101,6 +2109,18 @@ export class RedsteelActor extends Actor {
     calculateSkillThresholds(systemData.skills);
     calculateSkillThresholds(systemData.combatSkills);
     calculateSkillThresholds(systemData.attributes);
+
+    // Učenec III: an AE-fed band shift for non-combat skills only, so it cannot
+    // sit in globalCritFailBonus, which also reaches combat and attributes.
+    const skillCritFailBonus = Number(systemData.skillCritFailBonus) || 0;
+    if (skillCritFailBonus) {
+      for (const skill of Object.values(systemData.skills)) {
+        skill.criticalFailureThreshold = Math.min(
+          100,
+          skill.criticalFailureThreshold - skillCritFailBonus,
+        );
+      }
+    }
 
     // Global thresholds based on luck.value
     this.criticalSuccessThreshold = Math.max(

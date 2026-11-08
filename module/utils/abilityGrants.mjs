@@ -60,6 +60,8 @@
  * do not translate literally to the English item names).
  */
 
+import { brigandArbalestRank } from "./featureCombat.mjs";
+
 /** Ability compendium UUID from a bare item id. */
 const A = (id) => `Compendium.redsteel.redsteel-items.Item.${id}`;
 
@@ -68,6 +70,19 @@ const A = (id) => `Compendium.redsteel.redsteel-items.Item.${id}`;
  * they implement in the comment where the two names do not line up.
  * ----------------------------------------------------------------------- */
 const ABILITY = {
+  AGILE_COUNTER: A("4zO0uhYafJtP6wNa"), // Mrštný protiútok (Estoc I)
+  CALM_MIND: A("KYcHqtpVGWInybYR"), // Klidná mysl
+  COMBAT_READINESS: A("zsxA9cvb1jWR8KPn"), // Bojová připravenost
+  ESTOC_LUNGE: A("rSwe8ARPFDGt6uTu"), // Výpad estocem (Estoc II)
+  FLAWLESS_PLAN: A("YV7sicjjMXEuC64S"), // Bezchybný plán
+  HOOKING: A("RmDxW0uQFqvc0N4t"), // Hákování (Sekerník)
+  KIP_UP: A("kanFWb3Ho0dxqWON"), // Akrobat I
+  LAST_STEP: A("7wW8MEEbcJISURAB"), // Poslední krok
+  LONG_PRAYER: A("y9emVZ4FtLlm25lB"), // Dlouhá modlitba
+  MAULING: A("nsapiFDHssUybKhW"), // Drásání (Exotické zbraně II)
+  MULTIATTACK_RAPID_FIRE: A("eOSwNPSznlnecL2x"), // Rychlá střelba
+  SAFE_STEP: A("E86PpdlgRPc6SY26"), // Bezpečný krok
+  SWAP_PLACES: A("ZKncTi2hUrTFe6h1"), // Prohození
   ACCURATE_SHOT: A("buuxxJT0wA3vKJNg"), // Přesný výstřel
   ACCURATE_SHOT_SKIRMISHER: A("aCcShotSkirm0001"), // Přesný výstřel: -1 akce a -5 Výdrže (Harcovník)
   ACROBATIC_DISENGAGE: A("aCroDisengage001"), // Akrobatické odpoutání
@@ -159,6 +174,8 @@ const ABILITY = {
   LEG_SWEEP_DEX: A("Z4ZES1CFCCd82YMn"), // Nastrčená noha
   LEG_SWEEP_STR: A("GvpBIkl7tAxx5xrX"), // Nastrčená noha
   LUNGE_STEP: A("lUngeStep0000001"), // Přískok
+  MAGIC_AIMING: A("mAgicAiming00001"), // Magické míření (Veneficus)
+  MAGIC_REINFORCEMENT: A("mAgicReinforce01"), // Magické posílení (Veneficus)
   MAGIC_WARD: A("jb3WkQ7CKe0E3hW8"), // Magické obrnění
   MOMENTUM: A("mOmentum00000001"), // Momentum (doktríny)
   MYSTERAS_EYE: A("mYsterasEye00001"), // Mysteřino oko
@@ -822,6 +839,26 @@ export const ABILITY_GRANTS = [
     when: feature("Fuscina Ictus"),
     grant: [ABILITY.FUSCINA_ICTUS],
   },
+  ...[
+    ["Acrobat I", [ABILITY.KIP_UP]],
+    ["Safe Step", [ABILITY.SAFE_STEP]],
+    ["Estoc I", [ABILITY.AGILE_COUNTER]],
+    ["Estoc II", [ABILITY.ESTOC_LUNGE]],
+    ["Exotic Weapons I", [ABILITY.TRIP_STR, ABILITY.TRIP_DEX]],
+    ["Exotic Weapons II", [ABILITY.MAULING]],
+    ["Last Step", [ABILITY.LAST_STEP]],
+    ["Swap Places", [ABILITY.SWAP_PLACES]],
+    ["Rapid Fire", [ABILITY.MULTIATTACK_RAPID_FIRE]],
+    ["Axeman", [ABILITY.HOOKING, ABILITY.POLEARM_CLEAVE]],
+    ["Flawless Plan", [ABILITY.FLAWLESS_PLAN]],
+    ["Combat Readiness", [ABILITY.COMBAT_READINESS]],
+    ["Long Prayer", [ABILITY.LONG_PRAYER]],
+    ["Calm Mind", [ABILITY.CALM_MIND]],
+  ].map(([name, grant]) => ({
+    label: `${name} → its action`,
+    when: feature(name),
+    grant,
+  })),
 
   /* ======================================================================
    * Specializace (specialisation nodes)
@@ -905,6 +942,21 @@ export const ABILITY_GRANTS = [
     label: "Sharpshooter: Zacílení → Target Lock",
     when: specNode("sharpshooter", "zacileni"),
     grant: [ABILITY.TARGET_LOCK],
+  },
+  {
+    // Veneficus → Magické posílení (specializace-wip.md r763): 8 Mana for
+    // Advantage on the next combat Strength or Dexterity versus Test
+    // (utils/veneficus.mjs useMagicReinforcement).
+    label: "Veneficus: Magické posílení → Magic Reinforcement",
+    when: specNode("veneficus", "magickePosileni"),
+    grant: [ABILITY.MAGIC_REINFORCEMENT],
+  },
+  {
+    // Veneficus → Magické míření (r765): 5 Mana for one Aim on the target,
+    // once per round (utils/veneficus.mjs useMagicAiming).
+    label: "Veneficus: Magické míření → Magic Aiming",
+    when: specNode("veneficus", "magickeMireni"),
+    grant: [ABILITY.MAGIC_AIMING],
   },
   // Harcovník → "Přesný výstřel: -1 akce a -5 Výdrže" tunes Accurate Shot, so
   // the cheaper copy stands in for it only where a doctrine grants the shot
@@ -1474,7 +1526,9 @@ export function ruleActive(actor, rule) {
   if (w.kind === "doctrine") {
     const doc = actor.system?.doctrines?.[w.key];
     if (!doc) return false;
-    return Number(doc.value ?? 0) >= Number(w.min ?? 1);
+    // Zbojník I: Duelist or Shieldbearer ranks are Crossbowman ranks too.
+    const mirrored = w.key === "arbalest" ? brigandArbalestRank(actor) : 0;
+    return Math.max(Number(doc.value ?? 0), mirrored) >= Number(w.min ?? 1);
   }
 
   if (w.kind === "weaponSkill") {

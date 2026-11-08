@@ -29,7 +29,19 @@
  * is easy to do by accident, the book's list is first copied to
  * `flags.redsteel.spellbookArchive` on the actor, where the Learn window shows
  * it and can write the book back.
+ *
+ * MANCER SIGNATURE SPELLS. The six mancer specialisations' rank nodes each
+ * lock the spells they name (helpers/mancerSpells.mjs, user ruling
+ * 2026-11-03). That lock sits on top of the school rank gate and is read
+ * wherever the rank gate is (isReachable): a locked spell is not projected,
+ * cannot be written or memorised, and its book copy leaves the actor on the
+ * next sync, while the grimoire entry stays so the spell returns with the
+ * node. A memorised copy stays, as it does when a rank is lost; the cast gate
+ * in utils/castSpell.mjs is what stops it, and any hand-dragged copy, from
+ * being thrown. NPCs are never locked.
  */
+
+import { mancerSpellLock } from "../helpers/mancerSpells.mjs";
 
 /** The compendium every learnable spell is read from. */
 export const SPELL_PACK_ID = "redsteel.All-Spells";
@@ -274,6 +286,17 @@ export function checkSpellRank(actor, school, rank) {
   return { ok: held >= required, required, held, blood: false };
 }
 
+/**
+ * Whether this character may hold a book entry's spell: the school rank gate
+ * and, on top of it, the mancer rank node that names the spell, if any
+ * (helpers/mancerSpells.mjs). `entry` is a book entry or anything else with
+ * `uuid`, `name`, `school` and `rank`.
+ */
+function isReachable(actor, entry) {
+  if (!checkSpellRank(actor, entry.school, entry.rank).ok) return false;
+  return !mancerSpellLock(actor, entry);
+}
+
 /* -------------------------------------------------------------------------- */
 /*  Projection                                                                */
 /* -------------------------------------------------------------------------- */
@@ -386,7 +409,11 @@ async function innateSpellUuids(actor) {
     // The same gate the rest of this file uses, so Blood follows its
     // specialisation rather than a rank it does not have.
     if (!checkSpellRank(actor, school, "wild").ok) continue;
-    for (const uuid of uuids) wanted.add(uuid);
+    for (const uuid of uuids) {
+      // A mancer node may name a wild spell too (none does today).
+      if (mancerSpellLock(actor, { uuid })) continue;
+      wanted.add(uuid);
+    }
   }
   return wanted;
 }
@@ -417,13 +444,14 @@ export async function syncSpellbooks(actor) {
      * copied onto the actor: holding a grandmaster's stolen grimoire does not
      * make a grandmaster of the thief. The entry is untouched, so the spell
      * appears the moment the school rank catches up (the updateActor hook in
-     * registerSpellbookHooks runs this again when it does).
+     * registerSpellbookHooks runs this again when it does). A mancer node the
+     * spell needs and the character lacks holds it back the same way.
      */
     const written = new Map();
     for (const book of getSpellbooks(actor)) {
       for (const entry of getBookEntries(book)) {
         if (written.has(entry.uuid)) continue;
-        if (!checkSpellRank(actor, entry.school, entry.rank).ok) continue;
+        if (!isReachable(actor, entry)) continue;
         written.set(entry.uuid, { entry, bookId: book.id });
       }
     }
@@ -562,6 +590,12 @@ export async function writeSpell(actor, book, uuid, { ignoreRank = false } = {})
   if (!gate.ok && !ignoreRank && !game.user.isGM) {
     return { ok: false, reason: "rank", required: gate.required };
   }
+  // The mancer node is held to the same terms: a scroll may still write the
+  // spell down, and the sync keeps it off the actor until the node is bought.
+  const lock = mancerSpellLock(actor, source);
+  if (lock && !ignoreRank && !game.user.isGM) {
+    return { ok: false, reason: "mancer", lock };
+  }
 
   const entries = getBookEntries(book);
   if (entries.some((entry) => entry.uuid === uuid)) return { ok: true, reason: null };
@@ -601,6 +635,10 @@ export async function memoriseSpell(actor, uuid, { book = null } = {}) {
   if (!gate.ok && !game.user.isGM) {
     return { ok: false, reason: "rank", required: gate.required };
   }
+  const lock = mancerSpellLock(actor, source);
+  if (lock && !game.user.isGM) {
+    return { ok: false, reason: "mancer", lock };
+  }
 
   const existing = actor.items.contents.find((item) => getSpellIdentity(item) === uuid);
   if (existing) {
@@ -635,7 +673,7 @@ export async function forgetSpell(actor, uuid) {
   // follows, which keeps the two from disagreeing on the next sync.
   const inBook = getSpellbooks(actor).some((book) =>
     getBookEntries(book).some(
-      (entry) => entry.uuid === uuid && checkSpellRank(actor, entry.school, entry.rank).ok,
+      (entry) => entry.uuid === uuid && isReachable(actor, entry),
     ),
   );
   if (inBook || !isManaged(item)) {
@@ -673,7 +711,7 @@ export async function grantStartingSpells(actor) {
   const toWrite = [];
   let innate = 0;
   for (const entry of await loadLearnableSpells()) {
-    if (!checkSpellRank(actor, entry.school, entry.rank).ok) continue;
+    if (!isReachable(actor, entry)) continue;
     if (String(entry.rank).toLowerCase() === "wild") {
       innate += 1;
       continue;

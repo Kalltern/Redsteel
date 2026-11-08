@@ -50,6 +50,7 @@ import {
   getMovementLock,
   getSpent,
   grantBonusStep,
+  isArmedLock,
   isTrackedTurn,
   lockMovement,
   trackedCombat,
@@ -257,12 +258,15 @@ export function isCharge(ability) {
 /**
  * Would picking a charge now declare its approach (declareChargeMove), rather
  * than swing straight away? The moment the charge's starting distance counts.
+ * The unpaid turn-start Move (isArmedLock) is no movement yet: the charge
+ * replaces it, as picking another mode from the strip does.
  *
  * @param {Actor} actor
  */
 export function chargeWouldDeclare(actor) {
   if (!actor || !isTrackedTurn(actor)) return false;
-  if (getMovementLock(actor) || getSpent(actor).moved) return false;
+  const held = getMovementLock(actor);
+  if ((held && !isArmedLock(held)) || getSpent(actor).moved) return false;
   return !!tokenForActor(actor);
 }
 

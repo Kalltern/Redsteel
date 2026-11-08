@@ -1,0 +1,92 @@
+{
+  "folder": "NHaSpGKlxSYECai3",
+  "name": "Acrobatic defense II",
+  "type": "feature",
+  "img": "icons/skills/movement/feet-winged-sandals-tan.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.AcrobaticDefenseII.name",
+    "description": "<p>While your top armor layer is Light, your Dodge gains Deflect +20%.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "feature",
+    "cost": {
+      "cp": 10,
+      "sp": null
+    }
+  },
+  "effects": [
+    {
+      "name": "Acrobatic defense II",
+      "origin": "Item.cb1mjiblI6c0gGlk",
+      "img": "icons/skills/movement/feet-winged-sandals-tan.webp",
+      "_id": "95DyuW1YOMzYK3jy",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.acrobaticDeflect",
+            "value": true,
+            "priority": null,
+            "type": "override"
+          }
+        ]
+      },
+      "disabled": false,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {
+        "statuscounter": {
+          "value": 1,
+          "config": {
+            "type": "default"
+          },
+          "visible": false
+        }
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!cb1mjiblI6c0gGlk.95DyuW1YOMzYK3jy"
+    }
+  ],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.15.0",
+    "createdTime": null,
+    "modifiedTime": null,
+    "lastModifiedBy": null
+  },
+  "_id": "cb1mjiblI6c0gGlk",
+  "_key": "!items!cb1mjiblI6c0gGlk"
+}

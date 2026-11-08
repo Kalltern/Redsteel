@@ -90,7 +90,21 @@ export function isFloorEffect(effect) {
  * @param {string} [options.ignoreId]  Effect id to treat as already gone.
  * @returns {boolean}
  */
+/**
+ * Akrobat I: a kept Speed test holds the turn order through this one fall. The
+ * flag names the Prone effect it was rolled for, so a later fall, or a second
+ * floor status beside it, floors the actor as usual.
+ */
+export function isFloorExempt(actor, { ignoreId = null } = {}) {
+  const exempt = actor?.getFlag?.("redsteel", "floorExempt");
+  if (!exempt) return false;
+  return !actor.effects?.some(
+    (e) => e.id !== exempt && e.id !== ignoreId && isFloorEffect(e),
+  );
+}
+
 export function isFloored(actor, { ignoreId = null } = {}) {
+  if (isFloorExempt(actor, { ignoreId })) return false;
   if (!actor) return false;
   return actor.effects.some((e) => e.id !== ignoreId && isFloorEffect(e));
 }

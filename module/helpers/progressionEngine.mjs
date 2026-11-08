@@ -277,6 +277,15 @@ export function hasTeacher(actor, trackId, rank) {
   return !!teachers?.[track.group]?.[track.key]?.[rankKey(rank)];
 }
 
+/**
+ * True when finding a trainer settles this clause: a Teacher, or the book's
+ * "Teacher / Talent" choice.
+ */
+export function isTeacherClause(req) {
+  if (req?.t === "teacher") return true;
+  return req?.t === "anyOf" && (req.options ?? []).some((o) => o.t === "teacher");
+}
+
 /** Grant or revoke the teacher for ONE rank. GM only; callers must check. */
 export async function setTeacher(actor, trackId, rank, found) {
   const track = PROGRESSION_TRACKS[trackId];
@@ -631,12 +640,14 @@ function hasFeature(actor, name) {
  *
  * @returns {{met: boolean, advisory: boolean, req: object}} `advisory` marks a
  *   requirement that is displayed but must never block: the fiction ones the
- *   system cannot see.
+ *   system cannot see. An "anyOf" also carries each option's own result in
+ *   `options`, for the Learn window's teacher badge.
  */
 export function evaluateRequirement(actor, req, trackId, rank) {
   let advisory = ADVISORY.has(req.t);
   let met = false;
   let waived = false;
+  let optionResults;
 
   switch (req.t) {
     case "teacher":
@@ -744,6 +755,7 @@ export function evaluateRequirement(actor, req, trackId, rank) {
       // "A / Zvláštní příležitost": when the sheet cannot show A, the GM may
       // still rule the other way in, so the group is shown but never blocks.
       if (!met && options.some((o) => o.advisory)) advisory = true;
+      optionResults = options;
       break;
     }
     default:
@@ -752,7 +764,7 @@ export function evaluateRequirement(actor, req, trackId, rank) {
       break;
   }
 
-  return { met, advisory, req, waived };
+  return { met, advisory, req, waived, options: optionResults };
 }
 
 /**

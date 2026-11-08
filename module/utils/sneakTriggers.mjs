@@ -43,6 +43,8 @@ import { actorHasSpecNode } from "../helpers/specialisations.mjs";
 import { SECTOR, areAdjacent, attackSector } from "./positioning.mjs";
 import { isWeakSpotAttack } from "./weakSpot.mjs";
 import { getOverwhelmSources } from "./overwhelm.mjs";
+import { isPikemanHunterWeapon, MAULING_KEY, wieldsLongReach } from "./featureCombat.mjs";
+import { weaponHasTag } from "./weaponResolver.mjs";
 
 /** Shorthand for a Rogue doctrine gate. */
 const ROGUE = (min) => ({ when: { kind: "doctrine", key: "rogue", min } });
@@ -131,6 +133,30 @@ export const SNEAK_TRIGGERS = [
   { key: "blind", capability: ROGUE(2), status: "blind" },
   { key: "dazzled", capability: ROGUE(2), status: "dazzled" },
   { key: "panic", capability: ROGUE(2), status: "panic" },
+  // Exotické zbraně II: Drásání, a modifier the player ticked and paid for.
+  { key: "mauling", maulingModifier: true, capability: null, status: "prone" },
+  // Lovec pikenýrů: a short blade inside a long weapon's reach.
+  {
+    key: "pikemanHunter",
+    capability: { flag: "pikemanHunter" },
+    weaponTest: isPikemanHunterWeapon,
+    test: (ctx) => wieldsLongReach(ctx.targetActor),
+  },
+  // Zbojník II: a Hand Crossbow shot at a target already attacked this round.
+  {
+    key: "brigandRepeat",
+    capability: { flag: "brigand", min: 2 },
+    weaponTest: (actor, weapon) => weaponHasTag(weapon, "hand crossbow"),
+    test: (ctx) => ctx.repeatTarget === true,
+  },
+  // Zákeřný boj: 6 Stamina to sneak a Staggered target. Last, so a clause that
+  // costs nothing is always the one that fires.
+  {
+    key: "underhanded",
+    capability: { flag: "underhandedFighting" },
+    status: "stagger",
+    stamina: 6,
+  },
 ];
 
 /** Every trigger keyed by its key, for reading one back off a card. */
@@ -147,6 +173,9 @@ function hasCapability(actor, trigger) {
   if (capability.spec) {
     return actorHasSpecNode(actor, capability.spec, capability.node);
   }
+  if (capability.flag) {
+    return (Number(actor.system?.[capability.flag]) || 0) >= (capability.min ?? 1);
+  }
   return ruleActive(actor, capability);
 }
 
@@ -161,11 +190,12 @@ function hasCapability(actor, trigger) {
  * @param {object} [opts]
  * @param {Item|null} [opts.ability]   the ability being used, if any
  * @param {Item[]} [opts.modifiers]    attack modifiers ticked in the dialog
+ * @param {Item|null} [opts.weapon]    the weapon swung, for `weaponTest` clauses
  * @returns {string[]}
  */
 export function attackerSneakTriggers(
   actor,
-  { ability = null, modifiers = [] } = {},
+  { ability = null, modifiers = [], weapon = null } = {},
 ) {
   if (!actor) return [];
 
@@ -178,6 +208,13 @@ export function attackerSneakTriggers(
 
   return SNEAK_TRIGGERS.filter((trigger) => {
     if (trigger.weakSpot && !isWeakSpot) return false;
+    if (trigger.weaponTest && !trigger.weaponTest(actor, weapon)) return false;
+    if (
+      trigger.maulingModifier &&
+      !(modifiers ?? []).some((m) => m?.system?.localizationKey === MAULING_KEY)
+    ) {
+      return false;
+    }
     return hasCapability(actor, trigger);
   }).map((trigger) => trigger.key);
 }
@@ -196,6 +233,8 @@ export function attackerSneakTriggers(
  * @param {number} ctx.overwhelmSources  attackers the victim defended against
  * @param {number} ctx.adjacentEnemies   enemies in the victim's neighbouring hexes
  * @param {boolean} ctx.targetActsLater  victim's initiative is below the attacker's
+ * @param {boolean} [ctx.repeatTarget]   the attacker already swung at it this round
+ * @param {number} [ctx.attackerStamina] for clauses with a `stamina` price
  * @param {string} ctx.mode              "normal" | "critical" | "breakthrough"
  * @returns {string|null} the trigger key
  */
@@ -205,6 +244,7 @@ export function matchSneakTrigger(ctx) {
 
   for (const trigger of SNEAK_TRIGGERS) {
     if (!owned.has(trigger.key)) continue;
+    if (trigger.stamina && Number(ctx.attackerStamina) < trigger.stamina) continue;
     if (trigger.status) {
       if (ctx.targetActor?.statuses?.has(trigger.status)) return trigger.key;
       continue;
@@ -306,8 +346,14 @@ export function previewSneakTrigger(
       targetDoc?.id,
       attackerDoc?.id,
     ),
+    attackerStamina: Number(actor.system?.stats?.stamina?.value) || 0,
     mode: "normal",
   });
+}
+
+/** Stamina this clause charges the attacker when it fires, or 0. */
+export function sneakTriggerStamina(key) {
+  return BY_KEY.get(key)?.stamina ?? 0;
 }
 
 /** Localized name of a trigger, for the chat line that names the reason. */

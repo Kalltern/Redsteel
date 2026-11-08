@@ -3,7 +3,7 @@
   "type": "spell",
   "img": "icons/svg/mystery-man.svg",
   "system": {
-    "description": "<p>Heals the target 2d6 + 1 HP each round for three rounds.</p><p>Does not stop Bleeding. Recasting extends the effect.</p>",
+    "description": "<p>Heals the target 2d6 + 1 HP each round for two rounds.</p><p>Does not stop Bleeding. Recasting extends the effect.</p>",
     "options": [
       "divine",
       "magic"
@@ -98,6 +98,8 @@
       "diceBonus": ""
     },
     "penetration": 0,
+    "magicAttack": 0,
+    "magicAttackFixed": false,
     "dmgType1": "",
     "bool2": "",
     "dmgType2": "",

@@ -1,5 +1,6 @@
 import { BANE_TYPES, getActorBanes } from "../helpers/banes.mjs";
 import { actorHasSpecNode } from "../helpers/specialisations.mjs";
+import { isHopelessNatural } from "./rollAdvantage.mjs";
 import {
   critScoreToDegree,
   getMaxCritDegree,
@@ -297,7 +298,8 @@ export function computeBaneVariant(profile, bane) {
   const { dice, base } = bane;
 
   const baneSu = dice.su + profile.attack;
-  const baneCritSuccess = dice.die <= dice.critThreshold + profile.critChance;
+  const baneCritSuccess =
+    !dice.hopeless && dice.die <= dice.critThreshold + profile.critChance;
 
   const failedRecovery = dice.su < 0 && baneSu >= 0 ? 5 : 0;
   const baneCritScoreResult =
@@ -522,6 +524,8 @@ export async function buildBanePacket({
     dice: {
       su: attackRoll.total,
       die: attackRoll.dice[0].total,
+      // A natural on a negative chance is no critical on either reading.
+      hopeless: isHopelessNatural(attackRoll),
       critThreshold: criticalSuccessThreshold,
       critScoreResult,
     },

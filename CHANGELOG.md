@@ -5,6 +5,20 @@ GitHub.
 
 ## Unreleased
 
+- The remaining combat and non-combat Odbornosti from the rulebook: 76 new features
+  with prices and requirements in the Learn window, plus their actions and hooks
+- New weapons: Katar, Defensive Katar, Estoc, Two handed Sabre, Two handed Cleaver,
+  Trident, Hand Crossbow, Dwarven Crossbow and Sling
+- Acrobatic Defense now really raises the Dodge limit to 80
+- Rapid Adaptation is automated
+- New potions Oak and Slayer, with recipes: Oak lifts the grave wound penalty and
+  reminds about +30% vs Pain on Endurance and Resolve cards, Slayer adds Precision
+  +15% to attacks
+- Spells have their own Magic Attack: a bonus on the card's Magic ATK, or a fixed
+  value that replaces it
+- Character creation: a magical doctrine no longer needs a melee or ranged doctrine
+  beside it
+
 ## 0.15.0
 
 - Specialisations automated: Champion, Hoplite, Warden, Vanguard, Skirmisher,

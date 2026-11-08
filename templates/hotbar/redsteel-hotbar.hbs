@@ -323,6 +323,49 @@
     >
       <img class="rs-bg3-suggest-img" src="{{chip.img}}" alt="" />
     </button>
+    {{else if (eq chip.kind "veneficus")}}
+    {{!-- Veneficus (veneficus.mjs): Lindar's Charge opens the Attack dialog
+          at the spell's target for the free Attack (op "lindarCharge");
+          Magic Momentum opens the cast dialog for the round's free spell
+          (op "momentum"). --}}
+    <button
+      type="button"
+      class="rs-bg3-suggest-chip ability"
+      data-action="veneficusSuggestion"
+      data-suggestion-id="{{chip.id}}"
+      data-op="{{chip.op}}"
+      {{#if chip.targetTokenId}}data-target-token-id="{{chip.targetTokenId}}"{{/if}}
+      data-tt-kind="bg3Suggest"
+      data-tt-theme="{{chip.theme}}"
+      data-tt-title="{{chip.label}}"
+      data-tt-hint="{{chip.hint}}"
+      data-tt-cost="{{chip.costKind}}"
+      aria-label="{{chip.ariaLabel}}"
+    >
+      <img class="rs-bg3-suggest-img" src="{{chip.img}}" alt="" />
+    </button>
+    {{else if (eq chip.kind "elymas")}}
+    {{!-- Elymas (elymas.mjs): Focused Defense for 1 Action on the holder's
+          turn (op "focusedDefense"); Magic Counterattack after a Magic
+          Defense that held, cast at the attacker (op "counterattack"). --}}
+    <button
+      type="button"
+      class="rs-bg3-suggest-chip ability"
+      data-action="elymasSuggestion"
+      data-suggestion-id="{{chip.id}}"
+      data-op="{{chip.op}}"
+      {{#if chip.messageId}}data-message-id="{{chip.messageId}}"{{/if}}
+      {{#if chip.targetTokenId}}data-target-token-id="{{chip.targetTokenId}}"{{/if}}
+      data-tt-kind="bg3Suggest"
+      data-tt-theme="{{chip.theme}}"
+      data-tt-title="{{chip.label}}"
+      data-tt-hint="{{chip.hint}}"
+      {{#if chip.hint2}}data-tt-hint2="{{chip.hint2}}"{{/if}}
+      data-tt-cost="{{chip.costKind}}"
+      aria-label="{{chip.ariaLabel}}"
+    >
+      <img class="rs-bg3-suggest-img" src="{{chip.img}}" alt="" />
+    </button>
     {{else if (eq chip.kind "overpower")}}
     {{!-- Overpower (Weapon Master): the actor lost a contest this turn by 10
           or less. Click rerolls their own die and restates the contest. --}}

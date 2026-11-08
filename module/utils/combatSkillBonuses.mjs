@@ -3,6 +3,7 @@ import {
   withRollBias,
   applyDesperateCrit,
   forfeitAdvantageOnCritFail,
+  capHopelessNatural,
   tagRollBuckets,
   tagRollItemAdvantage,
 } from "./rollAdvantage.mjs";
@@ -21,8 +22,9 @@ import { ATTRIBUTE_KEYS, vanguardStrengthTestBonus } from "./testRating.mjs";
 import {
   renderMarginFollowupLine,
   versusAgainstFor,
+  versusNatural,
 } from "./attributeFollowup.mjs";
-import { abilityAllowedForWeapon } from "./weaponResolver.mjs";
+import { abilityAllowedForWeapon, weaponHasTag } from "./weaponResolver.mjs";
 import { doctrineAppliesToWeapon } from "./doctrineWeapons.mjs";
 import {
   resolveAimOnAttack,
@@ -81,6 +83,24 @@ import {
   vanguardCleaveHit,
 } from "./vanguard.mjs";
 import { consumeAttackCover, overwatchShotBonus } from "./sharpshooter.mjs";
+import { takeMagicReinforcement } from "./veneficus.mjs";
+// Call time only: forcedMovement.mjs reaches this file through applyDamage.mjs.
+import { pushForAbility } from "./forcedMovement.mjs";
+import {
+  axemanCleaveHit,
+  brigandArbalestRank,
+  butcherBleed,
+  deadlyLungeTwoBonus,
+  fencingDaggerRetaliationHit,
+  locationDamageTerms,
+  noteSwing,
+  pikemanHunterHit,
+  rapidAdaptationHit,
+  slingerHeadEase,
+  slingerStagger,
+  smithsBlowPenetration,
+  smithsBlowStaggerAdvantage,
+} from "./featureCombat.mjs";
 
 const BLEEDING_DAMAGE_TYPES = new Set(["slash", "piercing"]);
 /** Shadow: Aimed Attack +5% (Cílený útok) — hit chance on an aimed attack. */
@@ -305,7 +325,11 @@ export async function getNonWeaponAbility(actor, ability, { modifiers = [] } = {
       withRollBias({}, actor),
     );
     tagRollItemAdvantage(attributeRoll, ability.system.testAdvantage);
+    // Veneficus → Magické posílení: Advantage on a Strength or Dexterity
+    // versus Test, spent by it (veneficus.mjs).
+    await takeMagicReinforcement(actor, attributeRoll, testSkillKey);
     await attributeRoll.evaluate();
+    const natural = versusNatural(actor, testSkillKey, attributeRoll);
 
     attributeTestRoll = attributeRoll;
 
@@ -319,6 +343,7 @@ export async function getNonWeaponAbility(actor, ability, { modifiers = [] } = {
       chance: totalModifier,
       result: attributeRoll.result,
       against: versusAgainstFor(ability),
+      natural,
     });
   }
 
@@ -586,7 +611,18 @@ export async function getDoctrineBonuses(actor, weapon) {
  */
 export function computeDoctrineBonuses(actor, weapon) {
   // Doctrine bonuses
-  const doctrine = actor.system.doctrines;
+  // Zbojník I: with a Hand Crossbow, Duelist or Shieldbearer ranks are
+  // Crossbowman ranks. Only this weapon's view of the doctrines changes.
+  const mirroredArbalest = weaponHasTag(weapon, "hand crossbow")
+    ? brigandArbalestRank(actor)
+    : 0;
+  const doctrine =
+    mirroredArbalest > Number(actor.system.doctrines?.arbalest?.value ?? 0)
+      ? {
+          ...actor.system.doctrines,
+          arbalest: { ...actor.system.doctrines.arbalest, value: mirroredArbalest },
+        }
+      : actor.system.doctrines;
   const ws = weapon?.system ?? {};
   // Kept apart from doctrineBleedBonus, which the branches below assign rather
   // than accumulate: this one stacks on top of whatever rank the doctrine has
@@ -1124,6 +1160,8 @@ export async function getAttackRolls(
     if (partDef && actorHasSpecNode(actor, "shadow", "aimedAttack")) {
       abilityAttack += SHADOW_AIMED_ATTACK_BONUS;
     }
+    // Práče II: the Sling's head shot.
+    abilityAttack += slingerHeadEase(actor, weapon, aimedPart);
     await actor.unsetFlag("redsteel", "aimedPart");
   }
   // Dragon Guard (Servant of the Sword): Hit +10% for a retaliation, a
@@ -1138,6 +1176,13 @@ export async function getAttackRolls(
   abilityAttack += counterattackHitBonus(actor, ability);
   // Předvoj → Rozseknutí: Zásah +5% on a Cleave action (vanguard.mjs).
   abilityAttack += vanguardCleaveHit(actor, ability);
+  // Lovec pikenýrů and Šermířská dýka II (featureCombat.mjs).
+  abilityAttack += pikemanHunterHit(actor, weapon);
+  abilityAttack += axemanCleaveHit(actor, weapon, ability);
+  abilityAttack += fencingDaggerRetaliationHit(actor, ability);
+  // Rychlá adaptace, read off this fight's cards.
+  const rapidAdaptation = rapidAdaptationHit(actor);
+  abilityAttack += rapidAdaptation;
   // Šampion → Větrný postoj: Zásah +5% on every attack while the stance holds
   // (its Defense +5% is the wind_stance status's own change).
   abilityAttack += championWindStanceHit(actor);
@@ -1220,6 +1265,9 @@ export async function getAttackRolls(
   if (aimedPart) {
     rollName += ` → ${AIMED_PARTS[aimedPart]?.label ?? aimedPart}`;
   }
+  if (rapidAdaptation) {
+    rollName += ` (${game.i18n.localize("REDSTEEL.Items.RapidAdaptationI.name")} +${rapidAdaptation}%)`;
+  }
   const rollData = {
     combatSkills: actor.system.combatSkills,
     weaponAttack: ws.attack || 0,
@@ -1261,6 +1309,7 @@ export async function getAttackRolls(
   // A fumbling first die forfeits advantage; read the die only after.
   forfeitAdvantageOnCritFail(attackRoll, critFailThreshold);
   const rollResult = attackRoll.dice[0].total;
+  const hopeless = capHopelessNatural(attackRoll, critSuccessThreshold);
   const critFailure = rollResult >= critFailThreshold;
   // Servant of the Sword: a Riposte always counts as a Critical Hit, unless
   // the dice fumbled (user ruling 2026-10-01).
@@ -1268,7 +1317,7 @@ export async function getAttackRolls(
   // Hoplite's Daring Throw: "Snižuje hranici pro Kritický zásah na Úspěch o
   // síle +40": a margin of 40 or more is a Critical Hit too (hoplite.mjs).
   const critSuccess =
-    rollResult <= critSuccessThreshold ||
+    (!hopeless && rollResult <= critSuccessThreshold) ||
     (!critFailure &&
       (riposteAlwaysCrits(actor, ability) || isFinalStrike(ability))) ||
     daringThrowMarginCrit(ability, attackRoll.total, critFailure) ||
@@ -1279,6 +1328,9 @@ export async function getAttackRolls(
   // A fumble burns the whole aim even under Sword Dancer's half-loss. The aim
   // was parked before the dice existed, so tag that record now.
   if (critFailure) await markAimCritFail(actor);
+
+  // What the damage and effect steps of this swing need (featureCombat.mjs).
+  noteSwing(actor, { part: aimedPart, margin: attackRoll.total, critSuccess });
 
   return {
     attackRoll,
@@ -1410,11 +1462,22 @@ export async function getDamageRolls(
     damageFormula += ` + (${coating.formula})`;
   }
   if (specDamage.damageDice > 0) damageFormula += ` + ${specDamage.damageDice}d4`;
+  // Bijec končetin, Práče I: a landed Aimed Attack (featureCombat.mjs).
+  for (const term of locationDamageTerms(actor, weapon)) {
+    damageFormula += ` + ${term}`;
+  }
   damageFormula += ")";
   damageFormula = damageFormula.replace(/\s*\+\s*$/, "");
   damageFormula = damageFormula.replace(/@([\w.]+)/g, (_, key) => {
     return foundry.utils.getProperty(rollData, key) ?? 0;
   });
+  // The x1.5 attribute term (weaponFormula.mjs) keeps its @attribute until now,
+  // so it arrives as "floor(7 * 1.5)". The card prints the formula, so the
+  // resolved 10 goes in instead.
+  damageFormula = damageFormula.replace(
+    /floor\(\s*(-?[\d.]+)\s*\*\s*([\d.]+)\s*\)/g,
+    (_, value, multiplier) => Math.floor(Number(value) * Number(multiplier)),
+  );
 
   const damageRoll = new Roll(damageFormula, actor.system);
   await damageRoll.evaluate();
@@ -1595,6 +1658,7 @@ export async function getCriticalRolls(
       deadlyLungeBonus = 5;
     }
   }
+  deadlyLungeBonus += deadlyLungeTwoBonus(actor, ws, weaponDamageTypes);
   // Weapon Training (Weapon Master, vycvikSeZbrani), heavy class: critical
   // damage and critical penetration +5, carried by every degree like the
   // weapon-skill crit bonuses beside it.
@@ -1829,7 +1893,8 @@ export async function getEffectRolls(
     const abilityBonus = abilityEffects[effectName] || 0;
     const offValue = offProps?.effects?.[effectName] || 0;
     const coatingValue = coatingEffects[effectName] || 0;
-    const actorModValue = effectName === "stagger" ? actorModStagger : 0;
+    const actorModValue =
+      effectName === "stagger" ? actorModStagger + slingerStagger(actor, weapon) : 0;
     const enchantValue = effectName === "stagger" ? enchantStagger : 0;
     let totalBaseValue =
       baseValue +
@@ -1878,7 +1943,10 @@ export async function getEffectRolls(
           continue;
         }
 
-        const d100Roll = new Roll("1d100");
+        // Kovářova rána: Advantage on the Stagger chance of a head hit.
+        const d100Roll = new Roll(
+          smithsBlowStaggerAdvantage(actor, weapon) ? "2d100kl" : "1d100",
+        );
         await d100Roll.evaluate();
         const roundedModifiedValue = Math.floor(modifiedEffectValue);
         const displayName =
@@ -1937,10 +2005,20 @@ export async function getEffectRolls(
     );
   }
   if (ability?.system?.effects) {
+    // A pushing ability with a `proneGap` (Shield Bash: Prone at MoS 50+)
+    // knocks Prone itself once the defender's answer shows the gap
+    // (forcedMovement.mjs resolvePushOnHit). A Prone slot authored on the item
+    // would offer it ticked on every bash, so it is dropped here, which also
+    // covers copies already embedded on actors.
+    const abilityExtras = [];
     collectExtrasFromSource(
       ability.system,
       ability.system.effects,
-      effectContributions,
+      abilityExtras,
+    );
+    const proneByGap = !!pushForAbility(ability)?.proneGap;
+    effectContributions.push(
+      ...abilityExtras.filter((e) => !(proneByGap && e.name === "prone")),
     );
   }
   if (coating?.effects) {
@@ -2181,6 +2259,7 @@ export async function getEffectRolls(
       (weaponEffects.bleed || 0) +
       ammoBleed +
       deepSlash +
+      butcherBleed(actor, weapon, critSuccess) +
       actorBleedBonus +
       actorModBleed +
       enchantBleed +
@@ -2426,7 +2505,10 @@ export function applyToHp(
   const poolLoss = Math.min(pool, damage);
   damage -= poolLoss;
 
-  const hpLoss = Math.min(hp, damage);
+  // Life keeps falling below 0. `hpLoss` counts only the Life that was above 0,
+  // for everything asking whether a blow reached Life; a target already at 0 or
+  // less reads 0 there, and `newHp` and `totalHpLoss` carry the blow in full.
+  const hpLoss = Math.max(0, Math.min(hp, damage));
 
   // `tempHpLoss` stays the physical figure so existing callers and chat
   // output keep their meaning; the magical pool reports separately.
@@ -2439,8 +2521,8 @@ export function applyToHp(
     tempHpLoss,
     tempHpMagicLoss,
     damageClass,
-    totalHpLoss: hpLoss + poolLoss,
-    newHp: Math.max(hp - hpLoss, 0),
+    totalHpLoss: damage + poolLoss,
+    newHp: hp - damage,
     newTempHp: (Number(tempHp) || 0) - tempHpLoss,
     newTempHpMagic: (Number(tempHpMagic) || 0) - tempHpMagicLoss,
   };
@@ -2583,6 +2665,8 @@ export function getActorCombatModifiers(actor, weapon = null) {
       }
     }
   }
+
+  result.penetrationBonus += smithsBlowPenetration(actor, weapon);
 
   // Šampion → Bonus za druhou zbraň I-III: what the off-hand weapon grants a
   // melee attack while dual wielding (zero otherwise). Folded in here so it
@@ -2793,9 +2877,11 @@ export function evaluateDmgVsArmor({
   // heavy armor it exists to defeat — 20 damage / 13 pen vs armor 30 came out
   // at 0 instead of 13.
   baseDamage = Math.max(baseDamage, effectivePenetration);
+  const damageAfterArmor = baseDamage;
   if (penCap) {
     baseDamage = Math.min(baseDamage, effectivePenetration);
   }
+  const damageAfterCap = baseDamage;
 
   /* 4. Specialized Armor Reduction */
   let specializedReduction = 0;
@@ -2809,6 +2895,7 @@ export function evaluateDmgVsArmor({
     specializedReduction = Math.max(specializedReduction, typeArmor);
   }
 
+  const damageBeforeSpecialized = baseDamage;
   baseDamage = Math.max(baseDamage - specializedReduction, 0);
 
   /* 5. Build damage type modifiers */
@@ -2866,9 +2953,14 @@ export function evaluateDmgVsArmor({
 
   /* 9. Apply modifier to base damage */
   let finalDamage = Math.floor(baseDamage * finalModifier);
+  const damageAfterModifier = finalDamage;
 
-  /* 10. External half damage */
-  if (halfDamage) {
+  /* 10. External half damage. A count of halvings is accepted as well as a
+     boolean: the Apply Damage dialog's half damage box and Elymas Focused
+     Defense's magic damage reduction each halve once (applyDamage.mjs). */
+  const halvings =
+    halfDamage === true ? 1 : Math.max(0, Math.floor(Number(halfDamage) || 0));
+  for (let i = 0; i < halvings; i++) {
     finalDamage = Math.floor(finalDamage * 0.5);
   }
 
@@ -2877,6 +2969,21 @@ export function evaluateDmgVsArmor({
     shieldLoss,
     shieldPoolSpent: poolSpent,
     shieldBroke: shieldApplies && poolSpent >= shieldPool,
+    // What each step took off, for the Apply Damage preview. Read top to
+    // bottom they add up exactly: incoming − shieldLoss − armor − capped −
+    // modifier − halved is the damage that reaches the pools. `modifier` is
+    // negative when a vulnerability adds damage.
+    breakdown: {
+      incoming: Number(damage) || 0,
+      armor:
+        damageAfterShield -
+        damageAfterArmor +
+        (damageBeforeSpecialized - baseDamage),
+      capped: damageAfterArmor - damageAfterCap,
+      modifier: baseDamage - damageAfterModifier,
+      finalModifier,
+      halved: damageAfterModifier - finalDamage,
+    },
     ...applyToHp(finalDamage, hp, tempHp, tempHpMagic, damageClass),
   };
 }

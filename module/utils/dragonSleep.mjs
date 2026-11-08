@@ -19,7 +19,7 @@
 
 import { getActionPools, getSpent, spend, trackedCombat } from "./actionTracker.mjs";
 import { grantManeuverAim, grantRespiteAim } from "./aim.mjs";
-import { lightArmorRestBonus } from "./skirmisher.mjs";
+import { restStaminaExtra } from "./skirmisher.mjs";
 
 export const DRAGON_SLEEP_STATUS = "dragon_sleep";
 /** Stamina the stance itself restores. */
@@ -52,7 +52,7 @@ export async function takeDragonSleep(actor) {
   const stamina = actor.system.stats?.stamina ?? {};
   // Harcovník → Lehká zbroj: each Rest +1 Stamina in light armor
   // (skirmisher.mjs).
-  const gain = OWN_STAMINA + eaten * (REST_STAMINA + lightArmorRestBonus(actor));
+  const gain = OWN_STAMINA + eaten * (REST_STAMINA + restStaminaExtra(actor));
   const current = Number(stamina.value) || 0;
   const max = Number(stamina.max);
   const next = Number.isFinite(max) && max > 0

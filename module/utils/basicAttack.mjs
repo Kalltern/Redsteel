@@ -4,6 +4,7 @@ import { AIMED_PARTS } from "./aimedStrike.mjs";
 import { getImprovedAimPenetration } from "./aim.mjs";
 import { getWeakSpotPenetration, isWeakSpotAttack } from "./weakSpot.mjs";
 import { attackerSneakTriggers } from "./sneakTriggers.mjs";
+import { noRiposteWeapon, squireCriticalGap, strayBlow } from "./featureCombat.mjs";
 import { ruleActive } from "./abilityGrants.mjs";
 import { getAttackRerollTokens } from "./rerolls.mjs";
 import { buildBanePacket } from "./baneCombat.mjs";
@@ -23,6 +24,7 @@ import {
   renderMarginFollowupLine,
   versusLossFor,
   versusAgainstFor,
+  versusNatural,
 } from "./attributeFollowup.mjs";
 import { renderAttackTagsHtml } from "./opportunityAttacks.mjs";
 import { captureAttackTargets } from "./autoDefense.mjs";
@@ -34,6 +36,10 @@ import { asMakeshiftMelee, isRangedWeapon } from "./makeshift.mjs";
 // Call time only (forcedMovement.mjs reaches back through applyDamage.mjs).
 import { isTripModifier } from "./forcedMovement.mjs";
 import { aimPrecisionModifier } from "./sharpshooter.mjs";
+import {
+  takeLindarChargeBonus,
+  takeMagicReinforcement,
+} from "./veneficus.mjs";
 
 export async function universalAttackLogic({
   attackType,
@@ -244,8 +250,12 @@ export async function universalAttackLogic({
       );
       tagRollSkill(attributeRoll, skillKey);
       tagRollItemAdvantage(attributeRoll, mod.system.testAdvantage);
+      // Veneficus → Magické posílení: Advantage on a Strength or Dexterity
+      // versus Test, spent by it (veneficus.mjs).
+      await takeMagicReinforcement(actor, attributeRoll, skillKey);
 
       await attributeRoll.evaluate({ async: true });
+      const natural = versusNatural(actor, skillKey, attributeRoll);
       if (!tripTest && isTripModifier(mod)) {
         tripTest = {
           margin: attributeRoll.total,
@@ -265,6 +275,7 @@ export async function universalAttackLogic({
       onLose: versusLossFor(mod),
       against: versusAgainstFor(mod),
       heading: mod.localizedName ?? mod.name,
+      natural,
     })}
     </td>
     </tr>
@@ -312,6 +323,16 @@ export async function universalAttackLogic({
         ui.notifications.warn(`Out of ${ammoOption}!`);
         return;
       }
+    }
+    // Veneficus → Lindarův výpad: this is the free Attack after a Lindar
+    // spell. With Lindarův výpad II a melee swing counts as a Charge: the
+    // Charge's Hit and dice ride on it, and the card says so (veneficus.mjs).
+    const lindarCharge = await takeLindarChargeBonus(actor, weapon, attackType);
+    if (lindarCharge?.attack) customAttack += lindarCharge.attack;
+    if (lindarCharge?.damage) {
+      customDamage = customDamage
+        ? `(${customDamage}) + ${lindarCharge.damage}`
+        : lindarCharge.damage;
     }
     console.log(
       "Raw damage fields:",
@@ -409,6 +430,7 @@ export async function universalAttackLogic({
     const sneakTriggers = attackerSneakTriggers(actor, {
       ability: null,
       modifiers: selectedModifiers,
+      weapon,
     });
     // Tulák IX → "Útok/Vrh na slabinu: snížená hranice": a Weak Spot action by
     // a rank-9 Rogue crits 20 lower than the usual 60.
@@ -419,7 +441,7 @@ export async function universalAttackLogic({
       weakSpotAction &&
       ruleActive(actor, { when: { kind: "doctrine", key: "rogue", min: 9 } })
         ? 40
-        : null;
+        : squireCriticalGap(actor, weapon);
     // Floored at 0: Penetration is what gets through armor, so a bad weapon can
     // lose all of it but never turn into extra protection for the target.
     const penetration = Math.max(
@@ -484,7 +506,15 @@ export async function universalAttackLogic({
       // (sharpshooter.mjs).
       ...(coverTag ? [coverTag] : []),
       ...(overwatchShot ? ["overwatchShot"] : []),
+      // Lindar's Charge, and with II "counts as a Charge" (veneficus.mjs).
+      ...(lindarCharge?.tag ? [lindarCharge.tag] : []),
     ];
+    // Zbloudilá rána: the fumble still lands, for half damage.
+    const stray = strayBlow(actor, weapon, attackRoll, critFailure);
+    if (stray) {
+      halfDamage = true;
+      attackTags.push(stray.tag);
+    }
     const aimedPartDef = aimedPart ? AIMED_PARTS[aimedPart] : null;
     if (aimedPartDef) {
       if (concatDescription) concatDescription += "<br>";
@@ -736,6 +766,9 @@ ${
           // action by a rank-9 Rogue crits 20 lower than the usual 60. Null
           // means "use the standard gap" (defense.mjs falls back to 60).
           criticalGap,
+          // The round it was thrown in: Zbojník II asks what was swung at when.
+          round: game.combat?.started ? game.combat.round : null,
+          ...(noRiposteWeapon(actor, weapon) ? { noRiposte: true } : {}),
           criticalSuccess: critSuccess,
           criticalFailure: critFailure,
           d100: attackRoll.dice.find((d) => d.faces === 100)?.total ?? null,

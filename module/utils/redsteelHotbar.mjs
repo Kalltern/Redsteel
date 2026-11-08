@@ -60,6 +60,8 @@ import { isCharge, isQuickFeet } from "./abilityMovement.mjs";
 import { completeDuelistsAdvance } from "./swordDancer.mjs";
 import { completeHopliteAdvance, useDrawLightWeapon } from "./hoplite.mjs";
 import { completeCoverStep, useSkirmisherChip } from "./skirmisher.mjs";
+import { useVeneficusChip } from "./veneficus.mjs";
+import { useElymasChip } from "./elymas.mjs";
 import { isReactionAbility } from "./opportunityAttacks.mjs";
 import { canTradeWith, requestTrade } from "./trade.mjs";
 import { dropStance, holdStance } from "./stances.mjs";
@@ -1218,6 +1220,8 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       overpowerSuggestion: this._onOverpower,
       drawLightWeapon: this._onDrawLightWeapon,
       skirmisherSuggestion: this._onSkirmisherSuggestion,
+      veneficusSuggestion: this._onVeneficusSuggestion,
+      elymasSuggestion: this._onElymasSuggestion,
       vigilantShot: this._onVigilantShot,
       escapeEffect: this._onEscapeEffect,
       applySustainSpell: this._onApplySustainSpell,
@@ -2659,6 +2663,10 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       const flags = message?.flags ?? {};
       return !!(
         flags.redsteel?.defense ||
+        // Elymas (elymas.mjs): a Magic Defense card opens the Magic
+        // Counterattack chip, and the counterattack's cast card spends it.
+        flags.redsteel?.magicDefense ||
+        flags.redsteel?.magicCounterattack ||
         flags.redsteel?.abilityKey ||
         flags.attack ||
         flags.effects
@@ -3315,6 +3323,52 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     this.#suggestionBusy = true;
     try {
       await useSkirmisherChip(actor, { ...chip.dataset });
+    } finally {
+      setTimeout(() => {
+        this.#suggestionBusy = false;
+      }, PORTRAIT_HOLD_MS);
+    }
+  }
+
+  /**
+   * A Veneficus chip (veneficus.mjs useVeneficusChip): Lindar's Charge opens
+   * the Attack dialog for the free Attack after a Lindar spell, Magic
+   * Momentum opens the cast dialog for the round's free spell.
+   *
+   * @this {Bg3Hotbar}
+   */
+  static async _onVeneficusSuggestion(event, target) {
+    if (isRightClick(event)) return;
+    const chip = target.closest("[data-action=veneficusSuggestion]");
+    const actor = this.actor;
+    if (!chip || !actor?.isOwner) return;
+    if (this.#suggestionBusy) return;
+    this.#suggestionBusy = true;
+    try {
+      await useVeneficusChip(actor, { ...chip.dataset });
+    } finally {
+      setTimeout(() => {
+        this.#suggestionBusy = false;
+      }, PORTRAIT_HOLD_MS);
+    }
+  }
+
+  /**
+   * An Elymas chip (elymas.mjs useElymasChip): Focused Defense is taken for
+   * 1 Action; Magic Counterattack opens the cast dialog at the attacker with
+   * only the spells that fit.
+   *
+   * @this {Bg3Hotbar}
+   */
+  static async _onElymasSuggestion(event, target) {
+    if (isRightClick(event)) return;
+    const chip = target.closest("[data-action=elymasSuggestion]");
+    const actor = this.actor;
+    if (!chip || !actor?.isOwner) return;
+    if (this.#suggestionBusy) return;
+    this.#suggestionBusy = true;
+    try {
+      await useElymasChip(actor, { ...chip.dataset });
     } finally {
       setTimeout(() => {
         this.#suggestionBusy = false;

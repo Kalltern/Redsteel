@@ -1,0 +1,92 @@
+{
+  "folder": "HBCTGlhrkFsZxRV5",
+  "name": "Double Order",
+  "type": "feature",
+  "img": "icons/skills/social/intimidation-impressing.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.DoubleOrder.name",
+    "description": "<p>An Active Command can be used on two targets. Critical Failure chance -3%.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "feature",
+    "cost": {
+      "cp": null,
+      "sp": 35
+    }
+  },
+  "effects": [
+    {
+      "name": "Double Order",
+      "origin": "Item.WGYDL8qPSLNi2h21",
+      "img": "icons/skills/social/intimidation-impressing.webp",
+      "_id": "FlpeuJoYJaKsqvW6",
+      "type": "base",
+      "system": {
+        "changes": [
+          {
+            "key": "system.skills.leadership.critfailpenalty",
+            "value": -3,
+            "priority": null,
+            "type": "add"
+          }
+        ]
+      },
+      "disabled": false,
+      "duration": {
+        "value": null,
+        "units": "seconds",
+        "expiry": null,
+        "expired": false
+      },
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "flags": {
+        "statuscounter": {
+          "value": 1,
+          "config": {
+            "type": "default"
+          },
+          "visible": false
+        }
+      },
+      "start": null,
+      "showIcon": 1,
+      "folder": null,
+      "_key": "!items.effects!WGYDL8qPSLNi2h21.FlpeuJoYJaKsqvW6"
+    }
+  ],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.15.0",
+    "createdTime": null,
+    "modifiedTime": null,
+    "lastModifiedBy": null
+  },
+  "_id": "WGYDL8qPSLNi2h21",
+  "_key": "!items!WGYDL8qPSLNi2h21"
+}

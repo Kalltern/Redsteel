@@ -1,278 +1,210 @@
 {{! Attributes Tab }}
 <section
-  class='tab attributes {{tab.cssClass}}'
-  data-group='primary'
-  data-tab='attributes'
+  class="tab attributes {{tab.cssClass}}"
+  data-group="primary"
+  data-tab="attributes"
 >
   {{! As you add new fields, add them in here! }}
-  <div class='grid grid-4col'>
 
-           <div class="grid-span-1">
-        <label class="resource-label">{{localize
-            "REDSTEEL.Item.Spell.FIELDS.headerActions.label"
-          }}</label>
-        
-        <input
-          type="text"
-          placeholder="e.g. 2 | R"
-          name="system.actionCost"
-          value="{{system.actionCost}}"
-          data-dtype="String"
-        />
-         </div>
-
-                <div class="grid-span-1">
-        <label class="resource-label">{{localize
-            "REDSTEEL.Item.Spell.FIELDS.perRound.label"
-          }}</label>
-        
-        <input
-          type="text"
-          name="system.perRound"
-          value="{{system.perRound}}"
-          data-dtype="String"
-        />
-         </div>
-          {{#if (or (eq system.class "defense") (eq system.class "stance"))}}
-          {{#if  (eq system.class "stance")}}
-            <div class="grid-span-1">
-        <label class="resource-label">{{localize
-            "REDSTEEL.Item.Weapon.FIELDS.key.label"
-          }}</label>
-        <input
-          type="text"
-          name="system.key"
-          value="{{system.key}}"
-          data-dtype="text"
-        />
-      </div>
-       {{/if}}
-
-      <div class="grid-span-1">
-        <label class="resource-label">{{localize
-            "REDSTEEL.Item.Weapon.FIELDS.defense.label"
-          }}</label>
-        <input
-          type="text"
-          name="system.defense"
-          value="{{system.defense}}"
-          data-dtype="Number"
-        />
-      </div>
-
-      <div class="grid-span-1">
-        <label class="resource-label">{{localize
-            "REDSTEEL.Item.Gear.FIELDS.rangedDefense.label"
-          }}</label>
-        <input
-          type="text"
-          name="system.rangedDefense"
-          value="{{system.rangedDefense}}"
-          data-dtype="Number"
-        />
-      </div>
-
-            <div class="grid-span-1">
-        <label class="resource-label">{{localize
-            "REDSTEEL.Item.Weapon.FIELDS.dodge.label"
-          }}</label>
-        <input
-          type="text"
-          name="system.dodge"
-          value="{{system.dodge}}"
-          data-dtype="Number"
-        />
-      </div>
-       {{/if}}
+  <div class="rs-section">
+    <h3 class="rs-section-head">{{localize "REDSTEEL.Item.Weapon.Section.properties"}}</h3>
+    <div class="rs-toggle-row">
+      <label class="rs-toggle">
+        <input type="checkbox" name="system.weaponAbility" {{checked system.weaponAbility}} />
+        <span>{{localize "REDSTEEL.Item.Ability.FIELDS.weaponAbility.label"}}</span>
+      </label>
+      <label class="rs-toggle">
+        <input type="checkbox" name="system.standalone" {{checked system.standalone}} />
+        <span>{{localize "REDSTEEL.Item.Ability.FIELDS.standalone.label"}}</span>
+      </label>
+      <label class="rs-toggle">
+        <input type="checkbox" name="system.modifiesAttack" {{checked system.modifiesAttack}} />
+        <span>{{localize "REDSTEEL.Item.Ability.FIELDS.modifiesAttack.label"}}</span>
+      </label>
+      <label class="rs-toggle">
+        <input type="checkbox" name="system.multiAttack" {{checked system.multiAttack}} />
+        <span>{{localize "REDSTEEL.Item.Ability.FIELDS.multiAttack.label"}}</span>
+      </label>
+      {{#if (eq system.type "ranged")}}
+      <label class="rs-toggle" title="{{localize "REDSTEEL.Item.Ability.FIELDS.throwsExplosives.hint"}}">
+        <input type="checkbox" name="system.throwsExplosives" {{checked system.throwsExplosives}} />
+        <span>{{localize "REDSTEEL.Item.Ability.FIELDS.throwsExplosives.label"}}</span>
+      </label>
+      {{/if}}
+      <label class="rs-toggle" title="{{localize "REDSTEEL.Item.Ability.FIELDS.opportunityAttack.hint"}}">
+        <input type="checkbox" name="system.opportunityAttack" {{checked system.opportunityAttack}} />
+        <span>{{localize "REDSTEEL.Item.Ability.FIELDS.opportunityAttack.label"}}</span>
+      </label>
+    </div>
+    <div class="rs-field-row">
       {{#unless (or (eq system.class "defense") (eq system.class "stance"))}}
-            <div class="grid-span-1">
-        <label class="resource-label">{{localize
-            "REDSTEEL.Item.Weapon.FIELDS.breakthrough.label"
-          }}</label>
-        <input
-          type="text"
-          name="system.breakthrough"
-          value="{{system.breakthrough}}"
-          data-dtype="String"
-          placeholder="e.g. 2d6"
-        />
+        <div class="rs-field rs-field--chain">
+          <label>{{localize "REDSTEEL.Item.Spell.FIELDS.headerType.label"}}</label>
+          {{! The chain grows as it is filled, like the weapon sheet's. }}
+          <div class="rs-damage-chain">
+            <select name="system.dmgType1" id="dmg-type-1">
+              <option value="">{{localize "REDSTEEL.UI.selectType"}}</option>
+              {{#each system.dmgTypes as |dmgType|}}
+                <option value="{{dmgType}}" {{#if (eq ../system.dmgType1 dmgType)}}selected{{/if}}>
+                  {{localize (concat "REDSTEEL.Bg3Hotbar.DamageType." dmgType)}}
+                </option>
+              {{/each}}
+            </select>
+            {{#if (or system.dmgType1 system.dmgType2)}}
+            <select class="rs-damage-join" name="system.bool2" id="effect-bool-2">
+              <option value="">–</option>
+              {{#each system.effectOptions as |bool|}}
+                <option value="{{bool}}" {{#if (eq ../system.bool2 bool)}}selected{{/if}}>
+                  {{localize (concat "REDSTEEL.Item.Spell.dmgJoin." bool)}}
+                </option>
+              {{/each}}
+            </select>
+            <select name="system.dmgType2" id="dmg-type-2">
+              <option value="">{{localize "REDSTEEL.UI.selectType"}}</option>
+              {{#each system.dmgTypes as |dmgType|}}
+                <option value="{{dmgType}}" {{#if (eq ../system.dmgType2 dmgType)}}selected{{/if}}>
+                  {{localize (concat "REDSTEEL.Bg3Hotbar.DamageType." dmgType)}}
+                </option>
+              {{/each}}
+            </select>
+            {{/if}}
+            {{#if (or system.dmgType2 system.dmgType3)}}
+            <select class="rs-damage-join" name="system.bool3" id="effect-bool-3">
+              <option value="">–</option>
+              {{#each system.effectOptions as |bool|}}
+                <option value="{{bool}}" {{#if (eq ../system.bool3 bool)}}selected{{/if}}>
+                  {{localize (concat "REDSTEEL.Item.Spell.dmgJoin." bool)}}
+                </option>
+              {{/each}}
+            </select>
+            <select name="system.dmgType3" id="dmg-type-3">
+              <option value="">{{localize "REDSTEEL.UI.selectType"}}</option>
+              {{#each system.dmgTypes as |dmgType|}}
+                <option value="{{dmgType}}" {{#if (eq ../system.dmgType3 dmgType)}}selected{{/if}}>
+                  {{localize (concat "REDSTEEL.Bg3Hotbar.DamageType." dmgType)}}
+                </option>
+              {{/each}}
+            </select>
+            {{/if}}
+          </div>
+        </div>
+      {{/unless}}
+      <div class="rs-field">
+        <label title="{{localize "REDSTEEL.Item.Ability.FIELDS.requiredWeaponTag.hint"}}">{{localize "REDSTEEL.Item.Ability.FIELDS.requiredWeaponTag.label"}}</label>
+        <input type="text" name="system.requiredWeaponTag" value="{{system.requiredWeaponTag}}" />
       </div>
-
-
-        <div class="grid-span-1">
-        <label class="resource-label">{{localize
-            "REDSTEEL.Item.Weapon.FIELDS.attack.label"
-          }}</label>
-        <input
-          type="text"
-          name="system.attack"
-          value="{{system.attack}}"
-          data-dtype="Number"
-        />
+      {{! Extra melee reach in hexes (positioning.mjs weaponReach). }}
+      <div class="rs-field">
+        <label>{{localize "REDSTEEL.Reach.ReachBonus"}}</label>
+        <input type="number" name="system.reachBonus" value="{{system.reachBonus}}" min="0" step="1" data-dtype="Number" />
       </div>
-
-      <div class="grid-span-1">
-        <label class="resource-label">{{localize
-            "REDSTEEL.Item.Weapon.FIELDS.critRange.label"
-          }}</label>
-        <input
-          type="text"
-          name="system.critRange"
-          value="{{system.critRange}}"
-          data-dtype="Number"
-        />
-      </div>
-
-      <div class="grid-span-1">
-        <label class="resource-label">{{localize
-            "REDSTEEL.Item.Weapon.FIELDS.critChance.label"
-          }}</label>
-        <input
-          type="text"
-          name="system.critChance"
-          value="{{system.critChance}}"
-          data-dtype="Number"
-        />
-      </div>
-
-      <div class="grid-span-1">
-        <label class="resource-label">{{localize
-            "REDSTEEL.Item.Weapon.FIELDS.critFail.label"
-          }}</label>
-        <input
-          type="text"
-          name="system.critFail"
-          value="{{system.critFail}}"
-          data-dtype="Number"
-        />
-      </div>
-
-<div class="grid-span-4">
-<label class="resource-label">{{localize
-     "REDSTEEL.Item.Spell.FIELDS.headerType.label"
-  }}</label></div>
-
-<select name="system.dmgType1" id="dmg-type-1">
-  <option value="">-- Select a type --</option>
-  {{#each system.dmgTypes as |dmgType|}}
-    <option value="{{dmgType}}" {{#if (eq ../system.dmgType1 dmgType)}}selected{{/if}}>
-      {{dmgType}}
-    </option>
-  {{/each}}
-</select>
-
-<select name="system.bool2" id="effect-bool-2">
-  <option value="">-- Select a type --</option>
-  {{#each system.effectOptions as |bool|}}
-    <option value="{{bool}}" {{#if (eq ../system.bool2 bool)}}selected{{/if}}>
-      {{bool}}
-    </option>
-  {{/each}}
-</select> 
-
-<select name="system.dmgType2" id="dmg-type-2">
-  <option value="">-- Select a type --</option>
-  {{#each system.dmgTypes as |dmgType|}}
-    <option value="{{dmgType}}" {{#if (eq ../system.dmgType2 dmgType)}}selected{{/if}}>
-      {{dmgType}}
-    </option>
-  {{/each}}
-</select>
-
-<select name="system.bool3" id="effect-bool-3">
-  <option value="">-- Select a type --</option>
-  {{#each system.effectOptions as |bool|}}
-    <option value="{{bool}}" {{#if (eq ../system.bool3 bool)}}selected{{/if}}>
-      {{bool}}
-    </option>
-  {{/each}}
-</select>
-
-<select name="system.dmgType3" id="dmg-type-3">
-  <option value="">-- Select a type --</option>
-  {{#each system.dmgTypes as |dmgType|}}
-    <option value="{{dmgType}}" {{#if (eq ../system.dmgType3 dmgType)}}selected{{/if}}>
-      {{dmgType}}
-    </option>
-  {{/each}}
-</select>
-
-
-<div class="grid-span-4">
-<label class="resource-label">Other Resource costs</label>
-</div>
-
-<div class="grid-span-2">
-<label class="resource-label">Resource type</label>
-<select name="system.resources.0.type" id="resource0Type">
-  <option value="">-- Select a type --</option>
-  {{#each system.resourceOptions.types as |resourceType|}}
-    <option value="{{resourceType}}" {{#if (eq ../system.resources.0.type resourceType)}}selected{{/if}}>
-      {{resourceType}}
-    </option>
-  {{/each}}
-</select>
-</div>
-
-<div class="grid-span-1">
-<label class="resource-label">Mode</label>
-<select name="system.resources.0.mode" id="resource0Mode">
-  <option value="">-- Select a type --</option>
-  {{#each system.resourceOptions.modes as |AddOrBurn|}}
-    <option value="{{AddOrBurn}}" {{#if (eq ../system.resources.0.mode AddOrBurn)}}selected{{/if}}>
-      {{AddOrBurn}}
-    </option>
-  {{/each}}
-</select>
-</div>
-
-<div class="grid-span-1">
-  <label class="resource-label">Amount</label>
-  <input
-    type="text"
-    name="system.resources.0.amount"
-    value="{{system.resources.0.amount}}"
-    data-dtype="Number"
-  />
-</div>
-
-<div class="grid-span-2">
-  <select name="system.resources.1.type" id="resource1Type">
-    <option value="">-- Select a type --</option>
-    {{#each system.resourceOptions.types as |resourceType|}}
-      <option
-        value="{{resourceType}}"
-        {{#if (eq ../system.resources.1.type resourceType)}}selected{{/if}}
-      >
-        {{resourceType}}
-      </option>
-    {{/each}}
-  </select>
-</div>
-
-<div class="grid-span-1">
-  <select name="system.resources.1.mode" id="resource1Mode">
-    <option value="">-- Select a type --</option>
-    {{#each system.resourceOptions.modes as |AddOrBurn|}}
-      <option
-        value="{{AddOrBurn}}"
-        {{#if (eq ../system.resources.1.mode AddOrBurn)}}selected{{/if}}
-      >
-        {{AddOrBurn}}
-      </option>
-    {{/each}}
-  </select>
-</div>
-
-<div class="grid-span-1">
-  <input
-    type="text"
-    name="system.resources.1.amount"
-    value="{{system.resources.1.amount}}"
-    data-dtype="Number"
-  />
-</div>
-
-  {{/unless}}
+      {{#if (eq system.class "stance")}}
+        <div class="rs-field">
+          <label>{{localize "REDSTEEL.Item.Weapon.FIELDS.key.label"}}</label>
+          <input type="text" name="system.key" value="{{system.key}}" data-dtype="text" />
+        </div>
+      {{/if}}
+      {{#if (or (eq system.class "defense") (eq system.class "stance"))}}
+        <div class="rs-field">
+          <label title="{{localize "REDSTEEL.Item.Ability.FIELDS.heavyDamage.hint"}}">{{localize "REDSTEEL.Item.Ability.FIELDS.heavyDamage.short"}}</label>
+          <input type="text" name="system.roll.heavyDiceBonus" value="{{system.roll.heavyDiceBonus}}" data-dtype="String" placeholder="+2d4" />
+        </div>
+      {{/if}}
+    </div>
   </div>
+
+  <div class="rs-section">
+    <h3 class="rs-section-head">{{localize "REDSTEEL.Item.Ability.Section.test"}}</h3>
+    <div class="rs-field-row rs-field-row--flush">
+      <div class="rs-field">
+        <label for="test-type">{{localize "REDSTEEL.UI.testType"}}</label>
+        <select name="system.attributeTest" id="test-type">
+          <option value="">{{localize "REDSTEEL.UI.selectType"}}</option>
+          {{#each system.testOptions as |testOption|}}
+            <option value="{{testOption}}" {{#if (eq ../system.attributeTest testOption)}}selected{{/if}}>{{localize (concat "REDSTEEL.Item.Ability.Test." testOption)}}</option>
+          {{/each}}
+        </select>
+      </div>
+      <div class="rs-field">
+        <label>{{localize "REDSTEEL.UI.testModifier"}}</label>
+        <input type="text" name="system.testModifier" value="{{system.testModifier}}" data-dtype="Number" />
+      </div>
+      <div class="rs-field">
+        <label for="test-advantage">{{localize "REDSTEEL.Item.Ability.FIELDS.testAdvantage.label"}}</label>
+        <select name="system.testAdvantage" id="test-advantage">
+          <option value="">{{localize "REDSTEEL.Item.Ability.FIELDS.testAdvantage.none"}}</option>
+          <option value="advantage" {{#if (eq system.testAdvantage "advantage")}}selected{{/if}}>{{localize "REDSTEEL.Item.Ability.FIELDS.testAdvantage.advantage"}}</option>
+          <option value="disadvantage" {{#if (eq system.testAdvantage "disadvantage")}}selected{{/if}}>{{localize "REDSTEEL.Item.Ability.FIELDS.testAdvantage.disadvantage"}}</option>
+        </select>
+      </div>
+    </div>
+    <div class="rs-field-row">
+      <div class="rs-field">
+        <label title="{{localize "REDSTEEL.Item.Ability.FIELDS.versusAgainst.hint"}}">{{localize "REDSTEEL.Item.Ability.FIELDS.versusAgainst.label"}}</label>
+        <div class="rs-versus-against">
+          {{#each versusAgainstOptions as |opt|}}
+            <label class="rs-versus-against__opt" data-tooltip="{{opt.label}}">
+              <input type="checkbox" data-versus-against="{{opt.key}}" {{checked opt.checked}} {{#unless ../editable}}disabled{{/unless}} />{{opt.abbr}}
+            </label>
+          {{/each}}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {{#unless (or (eq system.class "defense") (eq system.class "stance"))}}
+    <div class="rs-section">
+      <h3 class="rs-section-head">{{localize "REDSTEEL.Item.Weapon.Section.critical"}}</h3>
+      <div class="rs-plate-grid rs-plate-grid--3">
+        <div class="rs-plate">
+          <label>{{localize "REDSTEEL.Item.Weapon.FIELDS.critRange.label"}}</label>
+          <input type="text" name="system.critRange" value="{{system.critRange}}" data-dtype="Number" />
+        </div>
+        <div class="rs-plate">
+          <label>{{localize "REDSTEEL.Item.Weapon.FIELDS.critChance.label"}}</label>
+          <input type="text" name="system.critChance" value="{{system.critChance}}" data-dtype="Number" />
+        </div>
+        <div class="rs-plate">
+          <label>{{localize "REDSTEEL.Item.Weapon.FIELDS.critFail.label"}}</label>
+          <input type="text" name="system.critFail" value="{{system.critFail}}" data-dtype="Number" />
+        </div>
+      </div>
+    </div>
+
+    <div class="rs-section">
+      <h3 class="rs-section-head">{{localize "REDSTEEL.Item.Ability.Section.resources"}}</h3>
+      <div class="rs-resource-table">
+        <span class="rs-effect-table-head">{{localize "REDSTEEL.Item.Ability.FIELDS.resourceType.label"}}</span>
+        <span class="rs-effect-table-head">{{localize "REDSTEEL.Item.Ability.FIELDS.resourceMode.label"}}</span>
+        <span class="rs-effect-table-head">{{localize "REDSTEEL.Item.Ability.FIELDS.resourceAmount.label"}}</span>
+        <select name="system.resources.0.type" id="resource0Type" aria-label="{{localize "REDSTEEL.Item.Ability.FIELDS.resourceType.label"}}">
+          <option value="">{{localize "REDSTEEL.UI.selectType"}}</option>
+          {{#each system.resourceOptions.types as |resourceType|}}
+            <option value="{{resourceType}}" {{#if (eq ../system.resources.0.type resourceType)}}selected{{/if}}>{{localize (concat "REDSTEEL.Item.Ability.Resource." resourceType)}}</option>
+          {{/each}}
+        </select>
+        <select name="system.resources.0.mode" id="resource0Mode" aria-label="{{localize "REDSTEEL.Item.Ability.FIELDS.resourceMode.label"}}">
+          <option value="">{{localize "REDSTEEL.UI.selectType"}}</option>
+          {{#each system.resourceOptions.modes as |resourceMode|}}
+            <option value="{{resourceMode}}" {{#if (eq ../system.resources.0.mode resourceMode)}}selected{{/if}}>{{localize (concat "REDSTEEL.Item.Ability.Mode." resourceMode)}}</option>
+          {{/each}}
+        </select>
+        <input type="text" name="system.resources.0.amount" value="{{system.resources.0.amount}}" data-dtype="Number" aria-label="{{localize "REDSTEEL.Item.Ability.FIELDS.resourceAmount.label"}}" />
+        <select name="system.resources.1.type" id="resource1Type" aria-label="{{localize "REDSTEEL.Item.Ability.FIELDS.resourceType.label"}}">
+          <option value="">{{localize "REDSTEEL.UI.selectType"}}</option>
+          {{#each system.resourceOptions.types as |resourceType|}}
+            <option value="{{resourceType}}" {{#if (eq ../system.resources.1.type resourceType)}}selected{{/if}}>{{localize (concat "REDSTEEL.Item.Ability.Resource." resourceType)}}</option>
+          {{/each}}
+        </select>
+        <select name="system.resources.1.mode" id="resource1Mode" aria-label="{{localize "REDSTEEL.Item.Ability.FIELDS.resourceMode.label"}}">
+          <option value="">{{localize "REDSTEEL.UI.selectType"}}</option>
+          {{#each system.resourceOptions.modes as |resourceMode|}}
+            <option value="{{resourceMode}}" {{#if (eq ../system.resources.1.mode resourceMode)}}selected{{/if}}>{{localize (concat "REDSTEEL.Item.Ability.Mode." resourceMode)}}</option>
+          {{/each}}
+        </select>
+        <input type="text" name="system.resources.1.amount" value="{{system.resources.1.amount}}" data-dtype="Number" aria-label="{{localize "REDSTEEL.Item.Ability.FIELDS.resourceAmount.label"}}" />
+      </div>
+    </div>
+  {{/unless}}
+
 </section>

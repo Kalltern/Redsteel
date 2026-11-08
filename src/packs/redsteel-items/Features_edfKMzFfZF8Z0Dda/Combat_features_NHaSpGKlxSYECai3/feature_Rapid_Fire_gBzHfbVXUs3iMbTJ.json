@@ -1,0 +1,49 @@
+{
+  "folder": "NHaSpGKlxSYECai3",
+  "name": "Rapid Fire",
+  "type": "feature",
+  "img": "icons/weapons/crossbows/crossbow-slotted.webp",
+  "system": {
+    "localizationKey": "REDSTEEL.Items.RapidFire.name",
+    "description": "<p>With a Dwarven Crossbow you may use Rapid Fire, a Free action for 3 Stamina that lets a Multiattack cost only one action.</p>",
+    "options": [
+      "feature",
+      "trait",
+      "priest"
+    ],
+    "rollTriggers": [],
+    "rollTriggersRaw": "",
+    "statusEffects": [],
+    "statusEffectsRaw": "",
+    "reroll": {
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
+    },
+    "option": "feature",
+    "cost": {
+      "cp": 0,
+      "sp": null
+    }
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.363",
+    "systemId": "redsteel",
+    "systemVersion": "0.15.0",
+    "createdTime": null,
+    "modifiedTime": null,
+    "lastModifiedBy": null
+  },
+  "_id": "gBzHfbVXUs3iMbTJ",
+  "_key": "!items!gBzHfbVXUs3iMbTJ"
+}

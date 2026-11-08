@@ -37,6 +37,7 @@ import {
   isBadDodge,
   renderVersusBlock,
 } from "./defense.mjs";
+import { isHopelessNatural } from "./rollAdvantage.mjs";
 
 /** localizationKey of the Overpower ability (the item kept its old key). */
 export const OVERPOWER_KEY = "REDSTEEL.Items.Overpowering.name";
@@ -229,7 +230,9 @@ export async function restateDefense(data) {
   if (!roll) return;
   const d100 = roll.dice?.[0]?.total ?? null;
   const critSuccess =
-    d100 != null && d100 <= Number(flags.criticalSuccessThreshold);
+    d100 != null &&
+    d100 <= Number(flags.criticalSuccessThreshold) &&
+    !isHopelessNatural(roll);
   const critFailure =
     d100 != null && d100 >= Number(flags.criticalFailureThreshold);
 

@@ -40,7 +40,7 @@
     "critPenetration": 0,
     "dodge": 0,
     "offhandProperties": {
-      "diceBonus": "+1d6+3",
+      "diceBonus": "+1d6+2",
       "penetration": 0,
       "attack": 0,
       "defense": 0,
@@ -102,7 +102,7 @@
       "diceSize": "6",
       "diceBonus": "1"
     },
-    "penetration": 7,
+    "penetration": 5,
     "breakthrough": "",
     "sneakDamage": "",
     "finesse": false,

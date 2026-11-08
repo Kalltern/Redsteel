@@ -5,6 +5,7 @@ import {
   tagRollBuckets,
   applyDesperateCrit,
   forfeitAdvantageOnCritFail,
+  capHopelessNatural,
 } from "./rollAdvantage.mjs";
 import { getAttackRerollTokens } from "./rerolls.mjs";
 import { resolveAimOnAttack } from "./aim.mjs";
@@ -213,7 +214,9 @@ export async function throwExplosiveItem(
   // A fumbling first die forfeits advantage; read the die only after.
   forfeitAdvantageOnCritFail(attackRoll, critFailThreshold);
   const rollResult = attackRoll.dice[0].total;
-  const critSuccess = rollResult <= critSuccessThreshold;
+  const critSuccess =
+    !capHopelessNatural(attackRoll, critSuccessThreshold) &&
+    rollResult <= critSuccessThreshold;
   const critFailure = rollResult >= critFailThreshold;
 
   // ─── Damage roll ───

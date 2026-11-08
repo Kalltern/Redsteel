@@ -38,7 +38,12 @@ export const CRITICAL_GAP = 60;
  * @param {boolean} params.defenseCrit   natural critical success on defense
  * @param {boolean} params.defenseCritFailure natural critical failure on defense
  * @returns {{attackMargin: number, gap: number, blocked: boolean,
- *   critical: "defense"|"hit"|null, onDice: boolean}|null}
+ *   critical: "defense"|"hit"|null, onDice: boolean,
+ *   natural: {side: "attack"|"defense", die: number|null,
+ *   other: number|null}|null}|null}
+ *   `natural` is the die that settled it when the margins did not, so the card
+ *   can name it, with `other` the opposing die. Null whenever the margins
+ *   decided.
  */
 export function resolveVersus(
   attack,
@@ -76,6 +81,15 @@ export function resolveVersus(
   let blocked;
   let critical = null; // "defense" | "hit" | null
   let onDice = false;
+  let natural = null; // the die that settled it, when the margins did not
+
+  // `side` rolled the die: a fumble settles the contest from the fumbler's own
+  // die, which is the number the card has to name.
+  const naturalDie = (side) => ({
+    side,
+    die: side === "attack" ? attackD100 : defenseD100,
+    other: side === "attack" ? defenseD100 : attackD100,
+  });
 
   if (naturalForDefense && naturalForAttack) {
     // Two natural criticals pulling opposite ways deny each other, and the
@@ -83,15 +97,18 @@ export function resolveVersus(
     if (attackD100 != null && defenseD100 != null) {
       blocked = defenseD100 < attackD100;
       onDice = true;
+      natural = naturalDie(blocked ? "defense" : "attack");
     } else {
       blocked = gap > 0;
     }
   } else if (naturalForDefense) {
     blocked = true;
     critical = "defense";
+    natural = naturalDie(defenseCrit ? "defense" : "attack");
   } else if (naturalForAttack) {
     blocked = false;
     critical = "hit";
+    natural = naturalDie(attackCrit ? "attack" : "defense");
   } else if (gap >= CRITICAL_GAP) {
     blocked = true;
     critical = "defense";
@@ -102,7 +119,7 @@ export function resolveVersus(
     blocked = gap > 0;
   }
 
-  return { attackMargin, gap, blocked, critical, onDice };
+  return { attackMargin, gap, blocked, critical, onDice, natural };
 }
 
 /**
@@ -133,8 +150,17 @@ export function dieWeights(bias) {
 }
 
 /**
- * The exact chance this defense beats an attack that has already been rolled,
- * as an integer out of 10000.
+ * How much a critical hit conceded counts against a defense, in blocks. A
+ * critical hit is the plain hit plus the weapon's critical damage and
+ * penetration, so losing by 60 is strictly worse than losing by 1, and a
+ * defense that only ever fails by a little can beat one that blocks slightly
+ * more often but gives the blow its critical nearly every time.
+ */
+export const CRITICAL_HIT_WEIGHT = 1;
+
+/**
+ * The exact odds of each outcome that matters when this defense answers an
+ * attack that has already been rolled, as integers out of 10000.
  *
  * Walks every face the kept die can show and asks {@link resolveVersus} the
  * same question the card will ask, with the same inputs the card will have.
@@ -155,18 +181,22 @@ export function dieWeights(bias) {
  *   Bad Dodge, whose margin is capped at 0
  * @param {object} attack  the rolled attack, as {@link resolveVersus} reads it
  * @param {number} [bias=0] net advantage bias for this roll
- * @returns {number} 0..10000
+ * @returns {{blocked: number, criticalHit: number}} each 0..10000
  */
-export function defenseWinChance(profile, attack, bias = 0) {
+export function defenseOutcomes(profile, attack, bias = 0) {
   const weights = dieWeights(bias);
   const rating = Number(profile?.rating) || 0;
   const critSuccess = Number(profile?.critSuccess);
   const critFailure = Number(profile?.critFailure);
   const dodgeLimit = Number(profile?.dodgeLimit);
 
-  let won = 0;
+  let blocked = 0;
+  let criticalHit = 0;
   for (let die = 1; die <= 100; die++) {
-    let margin = rating - die;
+    // A natural critical on a negative chance is a common success of margin 0
+    // (rollAdvantage.mjs capHopelessNatural).
+    const hopeless = rating < 0 && die <= critSuccess;
+    let margin = hopeless ? 0 : rating - die;
     // Same rule as defense.mjs → isBadDodge / badDodgeMargin: read off the raw
     // die, and only ever pulls a margin down to 0, never up.
     if (dodgeLimit > 0 && die > dodgeLimit) margin = Math.min(0, margin);
@@ -174,10 +204,11 @@ export function defenseWinChance(profile, attack, bias = 0) {
     const verdict = resolveVersus(attack, {
       defenseTotal: margin,
       defenseD100: die,
-      defenseCrit: die <= critSuccess,
+      defenseCrit: !hopeless && die <= critSuccess,
       defenseCritFailure: die >= critFailure,
     });
-    if (verdict?.blocked) won += weights[die];
+    if (verdict?.blocked) blocked += weights[die];
+    else if (verdict?.critical === "hit") criticalHit += weights[die];
   }
-  return won;
+  return { blocked, criticalHit };
 }

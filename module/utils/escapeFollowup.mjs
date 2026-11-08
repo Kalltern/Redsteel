@@ -22,6 +22,7 @@ import {
   promptAttributeFollowup,
   parseAttributeKeys,
   versusAgainstForName,
+  readLineNatural,
 } from "./attributeFollowup.mjs";
 import { spend } from "./actionTracker.mjs";
 
@@ -94,6 +95,7 @@ export function readMarginLine(message) {
     chance,
     source: el.dataset.source ?? "",
     onLose: el.dataset.onLose ?? null,
+    natural: readLineNatural(el),
     // Attributes the test lets the bound creature answer with (empty = any).
     against: parseAttributeKeys(
       el.dataset.against || versusAgainstForName(el.dataset.source),
@@ -147,6 +149,7 @@ export async function rollEscape(actor, effectId) {
   promptAttributeFollowup(line.margin, line.source, {
     onLose: line.onLose,
     against: line.against,
+    natural: line.natural,
     actor,
     onRolled: () => spend(actor, { actions: 1 }),
     contest:

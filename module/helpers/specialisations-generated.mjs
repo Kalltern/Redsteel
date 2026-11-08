@@ -346,7 +346,7 @@ export const GENERATED_SPECS = {
       soubojZaManu: { tier: 1, column: 7 },
       lindaruvVypad1: { tier: 2, column: 1 },
       lindaruvVypad2: { tier: 2, column: 2, requires: ["lindaruvVypad1"] },
-      usmernovani5: { tier: 2, column: 3 },
+      usmernovani5: { tier: 2, column: 3, passive: { changes: [add("system.combatSkills.channeling.bonus", 5)] } },
       magickaZbran: { tier: 2, column: 4 },
       magickePosileni: { tier: 2, column: 5 },
       modifikatorMany: { tier: 2, column: 6, passive: { changes: [add("system.stats.mana.bonus", 2)] } },

@@ -155,6 +155,13 @@ const ATTACK_TAG_KEYS = {
   halfCoverIgnored: "REDSTEEL.Cover.TagHalfIgnored",
   fullCoverAsHalf: "REDSTEEL.Cover.TagFullAsHalf",
   overwatchShot: "REDSTEEL.Sharpshooter.TagOverwatchShot",
+  // Zbloudilá rána (featureCombat.mjs).
+  strayTarget: "REDSTEEL.FeatureAction.StrayTarget",
+  straySelf: "REDSTEEL.FeatureAction.StraySelf",
+  // The free Attack after a Lindar spell, and with Lindarův výpad II the one
+  // that counts as a Charge (veneficus.mjs).
+  lindarCharge: "REDSTEEL.Veneficus.TagLindarCharge",
+  lindarChargeCharge: "REDSTEEL.Veneficus.TagLindarChargeCharge",
 };
 
 /** Chat-card chip for the tags on an attack. */

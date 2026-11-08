@@ -29,6 +29,9 @@
  *     announcement if there was one, then the margin, the damage, and the
  *     effects that landed. It is in the card at every level and revealed by CSS
  *     only while folded.
+ *   - `.action-tag`, a spell card's stat pills, at both folded levels. A spell
+ *     with no summary keeps its description as well, so a fold always says what
+ *     the spell did (see markDescriptionFallback).
  *   - `.button-container`, so a folded card is still answerable. Defend is the
  *     whole point of an attack card for the person being swung at, and a card
  *     that folds itself on a round tick must not take that away.
@@ -411,6 +414,21 @@ function buildFoldSummary(message) {
   return summary;
 }
 
+/**
+ * A spell with no summary line says nothing about what it did once folded: its
+ * pills only describe the cast. It keeps its description instead (user ruling
+ * 2026-10-31). Decided per render, after the summary is in place, because a
+ * description is only worth carving out of the fold when no outcome speaks for
+ * the spell.
+ */
+function markDescriptionFallback(root) {
+  const flavor = root.querySelector(".flavor-text");
+  const description = flavor?.querySelector(":scope > .rs-card-description");
+  if (!description) return;
+  const hasOutcome = flavor.querySelector(":scope > .rs-card-summary");
+  description.classList.toggle("rs-fold-fallback", !hasOutcome);
+}
+
 function applyLevel(root, level) {
   root.classList.toggle("rs-card--compact", level === LEVEL.COMPACT);
   root.classList.toggle("rs-card--collapsed", level === LEVEL.COLLAPSED);
@@ -517,8 +535,11 @@ export function registerChatCardCollapse() {
     // renders: the element is rebuilt each time.
     if (!root.querySelector(".rs-card-summary")) {
       const summary = buildFoldSummary(message);
-      if (summary) title.after(summary);
+      // A spell's pills stay against its name, the way the open card has them.
+      const pills = root.querySelectorAll(".flavor-text > .action-tag");
+      if (summary) (pills[pills.length - 1] ?? title).after(summary);
     }
+    markDescriptionFallback(root);
 
     // The element is rebuilt on every render, so the guard only has to stop a
     // second binding within one element, not across renders.

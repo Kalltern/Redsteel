@@ -21,9 +21,13 @@ import {
   withRollBias,
   tagRollSkill,
   forfeitAdvantageOnCritFail,
+  capHopelessNatural,
+  markHopelessNatural,
 } from "./rollAdvantage.mjs";
 import { spend, getSpent, setSpent } from "./actionTracker.mjs";
 import { versusTestBonus } from "./testRating.mjs";
+import { takeMagicReinforcement } from "./veneficus.mjs";
+import { resolveVersus, CRITICAL_GAP } from "./defenseOdds.mjs";
 
 /**
  * Abilities whose versus Test costs the loser something, keyed by
@@ -114,6 +118,120 @@ function attributeLabel(key) {
 }
 
 /**
+ * The natural critical range of whatever an actor tested. A natural 1 and a
+ * natural 100 are absolute (book), so those are the floor for anything without
+ * a range of its own.
+ *
+ * @param {Actor} actor
+ * @param {string|null} skillKey  The bucket from resolveTestRating, or an
+ *   attribute key.
+ * @returns {{success: number, failure: number}}
+ */
+export function testCritBounds(actor, skillKey) {
+  const system = actor?.system ?? {};
+  const stat =
+    system.combatSkills?.[skillKey] ??
+    system.skills?.[skillKey] ??
+    system.attributes?.[skillKey];
+  return {
+    success: stat?.criticalSuccessThreshold ?? 1,
+    failure: stat?.criticalFailureThreshold ?? 100,
+  };
+}
+
+/**
+ * A posted roll's natural reading, for `natural` on renderMarginFollowupLine.
+ * Call it straight after evaluating and before reading the margin: a natural
+ * critical on a negative chance sets the margin to 0 (capHopelessNatural), and
+ * the line then carries a range that no die can reach.
+ *
+ * @param {Actor} actor
+ * @param {string|null} skillKey
+ * @param {Roll} roll  The evaluated test.
+ * @returns {{die: number|null, success: number, failure: number}}
+ */
+export function versusNatural(actor, skillKey, roll) {
+  const bounds = testCritBounds(actor, skillKey);
+  return {
+    die: roll.dice?.[0]?.total ?? null,
+    success: capHopelessNatural(roll, bounds.success) ? 0 : bounds.success,
+    failure: bounds.failure,
+  };
+}
+
+/** Which natural critical a die is, read against a range. */
+export function naturalCritical(die, { success = 1, failure = 100 } = {}) {
+  return {
+    success: die != null && die <= success,
+    failure: die != null && die >= failure,
+  };
+}
+
+/**
+ * One side of a contest rolled in a shared formula, from its chance and die: a
+ * natural critical on a negative chance is a common success with a margin of 0.
+ *
+ * @param {number} chance
+ * @param {number|null} die
+ * @param {{success?: number, failure?: number}} [bounds]
+ * @returns {{margin: number, success: boolean, failure: boolean,
+ *   hopeless: boolean}}
+ */
+export function contestSide(chance, die, bounds = {}) {
+  const critical = naturalCritical(die, bounds);
+  const hopeless = chance < 0 && critical.success;
+  return {
+    margin: hopeless ? 0 : chance - die,
+    success: critical.success && !hopeless,
+    failure: critical.failure,
+    hopeless,
+  };
+}
+
+/**
+ * Settle two sides that each rolled their own `chance - 1d100` by the combat
+ * rule, the initiator in the attacker's place. For a contest the system rolls
+ * whole (the spell contests), where nobody clicks a margin line.
+ *
+ * @param {{roll: Roll, actor: Actor|null, skillKey: string}} initiator
+ * @param {{roll: Roll, actor: Actor|null, skillKey: string}} contester
+ * @returns {object} The resolveVersus verdict. `blocked` means the contester won.
+ */
+export function settleOpposedRolls(initiator, contester) {
+  const read = ({ roll, actor, skillKey }) => {
+    const natural = versusNatural(actor, skillKey, roll);
+    return { natural, ...naturalCritical(natural.die, natural) };
+  };
+  const mine = read(initiator);
+  const theirs = read(contester);
+  return resolveVersus(
+    {
+      margin: initiator.roll.total,
+      d100: mine.natural.die,
+      criticalSuccess: mine.success,
+      criticalFailure: mine.failure,
+    },
+    {
+      defenseTotal: contester.roll.total,
+      defenseD100: theirs.natural.die,
+      defenseCrit: theirs.success,
+      defenseCritFailure: theirs.failure,
+    },
+  );
+}
+
+/** The natural reading a margin line carries, or null on an older line. */
+export function readLineNatural(el) {
+  const die = Number(el.dataset.die);
+  if (el.dataset.die == null || !Number.isFinite(die)) return null;
+  return {
+    die,
+    success: Number(el.dataset.critSuccess),
+    failure: Number(el.dataset.critFailure),
+  };
+}
+
+/**
  * The gilded versus Test panel with the clickable margin that opens the
  * contest. Kept here next to its click handler so the markup and the handler
  * cannot drift apart. Every margin a card posts (ability, modifier, spell,
@@ -133,6 +251,10 @@ function attributeLabel(key) {
  * @param {string} [data.heading] Optional line above the margin, only to
  *   tell several panels on one card apart (a modifier's name). Never the
  *   test name or chance: the roller already knows both.
+ * @param {{die: number|null, success: number, failure: number}} [data.natural]
+ *   The posted die and its critical range (versusNatural). A natural critical
+ *   settles the contest as it does in combat, and the contester's client only
+ *   has this line to read it from.
  * @returns {string} HTML.
  */
 export function renderMarginFollowupLine({
@@ -144,6 +266,7 @@ export function renderMarginFollowupLine({
   against = null,
   mirror = null,
   heading = "",
+  natural = null,
 }) {
   const tooltip = [
     chance != null ? `Test chance ${chance}%` : null,
@@ -160,7 +283,10 @@ export function renderMarginFollowupLine({
   const mirrorAttr = ATTRIBUTE_KEYS.includes(mirror)
     ? ` data-mirror="${mirror}"`
     : "";
-  const line = `<span class="mos-followup" data-margin="${margin}" data-source="${source ?? ""}"${loseAttr}${chanceAttr}${againstAttr}${mirrorAttr} data-tooltip="${tooltip}"><span class="rs-vs-test__label">Margin of Success</span><span class="rs-vs-test__value">${margin}</span></span>`;
+  const naturalAttr = Number.isFinite(natural?.die)
+    ? ` data-die="${natural.die}" data-crit-success="${natural.success ?? 1}" data-crit-failure="${natural.failure ?? 100}"`
+    : "";
+  const line = `<span class="mos-followup" data-margin="${margin}" data-source="${source ?? ""}"${loseAttr}${chanceAttr}${againstAttr}${mirrorAttr}${naturalAttr} data-tooltip="${tooltip}"><span class="rs-vs-test__label">Margin of Success</span><span class="rs-vs-test__value">${margin}</span></span>`;
   return renderVersusTestBlock({ heading, line });
 }
 
@@ -291,15 +417,21 @@ export function wireAttributeFollowups(html) {
       ),
     );
     el.dataset.tooltip = baked.join("<br>");
+    // The card the line sits on, so the answer can name what it answered
+    // (Incantator's Precise Incantation forces a resisted spell's answer to
+    // be rerolled, utils/incantator.mjs).
+    const origin = el.closest("[data-message-id]")?.dataset?.messageId ?? null;
     const open = (autoPick) => {
       const margin = Number(el.dataset.margin);
       if (Number.isNaN(margin)) return;
       promptAttributeFollowup(margin, el.dataset.source ?? "", {
+        origin,
         onLose: el.dataset.onLose ?? null,
         against: parseAttributeKeys(
           el.dataset.against || versusAgainstForName(el.dataset.source),
         ),
         mirror: el.dataset.mirror ?? null,
+        natural: readLineNatural(el),
         autoPick,
       });
     };
@@ -337,6 +469,11 @@ export function wireAttributeFollowups(html) {
  *   asking (a left click on the chat margin). A single choice never asks.
  * @param {string|null} [options.mirror]  The attribute the posted roll tested
  *   (data-mirror). autoPick rolls it instead of the highest when allowed.
+ * @param {{die: number, success: number, failure: number}|null} [options.natural]
+ *   The posted roll's natural reading, from the line. A `contest` rolls a new
+ *   die for that side and only reads the range from it.
+ * @param {string|null} [options.origin]  Id of the card whose line was
+ *   answered, stamped on the answer's `versusFollowup.origin`.
  */
 export function promptAttributeFollowup(
   margin,
@@ -348,7 +485,9 @@ export function promptAttributeFollowup(
     contest = null,
     against = null,
     mirror = null,
+    natural = null,
     autoPick = false,
+    origin = null,
   } = {},
 ) {
   if (!actor) {
@@ -388,6 +527,8 @@ export function promptAttributeFollowup(
           onLose,
           onRolled,
           contest,
+          natural,
+          origin,
         ),
     };
   }
@@ -431,6 +572,7 @@ export function promptAttributeFollowup(
  * @param {number} margin  The original margin of success.
  * @param {Function|null} [onRolled]  Awaited after the card is posted.
  * @param {object|null} [contest]  See promptAttributeFollowup.
+ * @param {object|null} [natural]  See promptAttributeFollowup.
  */
 async function rollAttributeFollowup(
   actor,
@@ -441,6 +583,8 @@ async function rollAttributeFollowup(
   onLose = null,
   onRolled = null,
   contest = null,
+  natural = null,
+  origin = null,
 ) {
   const label = attributeLabel(key);
   const fresh = Number.isFinite(contest?.chance);
@@ -460,46 +604,41 @@ async function rollAttributeFollowup(
     withRollBias({}, actor),
   );
   tagRollSkill(roll, key);
+  // Veneficus → Magické posílení: Advantage on answering a Strength or
+  // Dexterity versus Test, spent by it (veneficus.mjs).
+  await takeMagicReinforcement(actor, roll, key);
   await roll.evaluate();
 
   // Primary attribute rolls honour critical thresholds (based on the raw d100).
   const attr = actor.system.attributes[key];
   // A fumbling first die forfeits advantage; read the die only after.
   forfeitAdvantageOnCritFail(roll, attr?.criticalFailureThreshold);
-  const d100 = roll.dice[0]?.total;
-  let criticalMessage = "";
-  if (d100 != null) {
-    if (
-      attr?.criticalSuccessThreshold != null &&
-      d100 <= attr.criticalSuccessThreshold
-    ) {
-      criticalMessage = "Critical Success!";
-    } else if (
-      attr?.criticalFailureThreshold != null &&
-      d100 >= attr.criticalFailureThreshold
-    ) {
-      criticalMessage = "Critical Failure!";
-    }
-  }
 
   const rollName = `${label} Test vs ${vsLabel}`;
-  const settled = await settleVersusLoss(
-    actor,
+  // The verdict says what a critical did, so the card prints no separate
+  // Critical line: two natural criticals deny each other and neither stands.
+  const judged = judgeVersusAnswer(
+    roll,
     {
       margin,
       source,
       ...(onLose && { onLose }),
       ...(fresh && { chance: contest.chance }),
       ...(contest?.effectUuid && { breakFree: contest.effectUuid }),
+      ...(natural && { natural }),
+      ...(origin && { origin }),
     },
-    roll.total,
+    {
+      success: attr?.criticalSuccessThreshold,
+      failure: attr?.criticalFailureThreshold,
+    },
   );
+  const settled = await settleVersusLoss(actor, judged.followup, roll.total);
   const freedNote = await settleBreakFree(settled.followup, roll.total);
-  let flavor = `<p class="rs-card-headline"><b>${rollName}</b></p>
-${renderOwnMargin(roll, settled.followup)}${renderVersusOutcome(roll.total)}${settled.note}${freedNote}`;
-  if (criticalMessage) {
-    flavor += `<hr><p class="rs-card-headline"><b>${criticalMessage}</b></p>`;
-  }
+  const flavor = `<p class="rs-card-headline"><b>${rollName}</b></p>
+${renderVersusOutcome(judged.verdict, {
+  detail: renderOwnMargin(roll, settled.followup),
+})}${settled.note}${freedNote}`;
 
   await roll.toMessage({
     speaker: ChatMessage.getSpeaker({ actor }),
@@ -525,56 +664,218 @@ ${renderOwnMargin(roll, settled.followup)}${renderVersusOutcome(roll.total)}${se
 }
 
 /**
- * The "Wins / Loses the contest by N" line under a versus Test. The total
- * already *is* the gap between the two margins, so it is reported as such;
- * several rules read that difference (Odstrčení at 25+, jousting at 30 and
- * 60). A dead tie goes to whoever posted the original roll.
+ * Settle a contester's answer exactly as a defense is settled (user ruling
+ * 2026-10-31): the initiator stands where the attacker does, so a tie is theirs,
+ * a natural critical is absolute, two opposing naturals fall to the lower die,
+ * and a gap of 60 is critical. The verdict is defenseOdds.mjs resolveVersus,
+ * which is what stops combat and versus Tests drifting apart.
  *
- * @param {number} total  The contester's roll total.
+ * A line posted before it carried a die reads as a plain margin on that side,
+ * so the contester's own natural still counts.
+ *
+ * A natural critical on a negative chance is read here rather than in the roll
+ * layer, because this formula also subtracts the opposing margin. The total is
+ * then rewritten to the real gap, so everything reading it afterwards agrees.
+ *
+ * @param {Roll} roll         The contester's evaluated roll.
+ * @param {object} followup   The `versusFollowup` flag.
+ * @param {{success?: number, failure?: number}} [own]  Contester's critical range.
+ * @returns {{verdict: object, followup: object}} The flag with `won` and
+ *   `critical` stamped, which is what every reader of the result goes by.
+ */
+export function judgeVersusAnswer(roll, followup, own = {}) {
+  const theirs = opposingSide(roll, followup);
+  const base = Number.isFinite(theirs.margin) ? theirs.margin : 0;
+  // The formula holds the opposing margin as it rolled, not as it was settled.
+  const rolled = Number.isFinite(theirs.rolled) ? theirs.rolled : base;
+  const myDie = roll.dice?.[0]?.total ?? null;
+  const mine = contestSide(rolled + roll.total + myDie, myDie, {
+    success: own.success ?? undefined,
+    failure: own.failure ?? undefined,
+  });
+  if (mine.hopeless) markHopelessNatural(roll);
+  if (mine.hopeless || theirs.hopeless) roll._total = mine.margin - base;
+  const verdict = resolveVersus(
+    {
+      margin: base,
+      d100: theirs.die,
+      criticalSuccess: theirs.success,
+      criticalFailure: theirs.failure,
+    },
+    {
+      defenseTotal: mine.margin,
+      defenseD100: myDie,
+      defenseCrit: mine.success,
+      defenseCritFailure: mine.failure,
+    },
+  );
+  return {
+    verdict,
+    followup: {
+      ...followup,
+      won: verdict.blocked,
+      critical: verdict.critical !== null,
+    },
+  };
+}
+
+/**
+ * Who took a versus answer, and by how much, for everything downstream that
+ * reads the result rather than the card. A card posted before `won` was stamped
+ * falls back on the margins.
+ *
+ * A natural critical counts as the full 60 it stands level with, so a push that
+ * wants a gap of 50 still gets it. A natural that overturned the margins leaves
+ * no gap worth quoting: the winner was behind.
+ *
+ * @param {object} followup  The `versusFollowup` flag.
+ * @param {number} total     The contester's roll total.
+ * @returns {{attackerWon: boolean, gap: number}}
+ */
+export function versusAnswerOutcome(followup, total) {
+  const won = typeof followup?.won === "boolean" ? followup.won : total > 0;
+  const margins = Math.abs(total);
+  const agrees = won === total > 0;
+  const gap = followup?.critical
+    ? Math.max(margins, CRITICAL_GAP)
+    : agrees
+      ? margins
+      : 0;
+  return { attackerWon: !won, gap };
+}
+
+/**
+ * The "Won by 18 MoS" block under a versus Test, or the die when a natural
+ * critical made the margins irrelevant. Several rules read the gap (Odstrčení
+ * at 25+, jousting at 30 and 60). A dead tie goes to whoever posted the roll.
+ *
+ * Built as a `.rs-versus` block so it reads like a defense card and survives
+ * the chat card fold the same way.
+ *
+ * @param {object} verdict  From resolveVersus.
+ * @param {object} [options]
+ * @param {"attack"|"defense"} [options.side]  Whose card this is. The contester
+ *   answering a line is "defense"; Slip Through's card is the initiator's.
+ * @param {string} [options.detail]  Line under the outcome, see renderOwnMargin.
  * @returns {string} HTML.
  */
-export function renderVersusOutcome(total) {
-  const gap = Math.abs(total);
-  const outcome =
-    total > 0
-      ? `<b>Wins</b> the contest by ${gap}.`
-      : total < 0
-        ? `<b>Loses</b> the contest by ${gap}.`
-        : "<b>Tie</b>, so the initiator wins.";
-  return `<p style="text-align:center;">${outcome}</p>`;
+export function renderVersusOutcome(
+  verdict,
+  { side = "defense", detail = "" } = {},
+) {
+  const { gap, blocked, critical, onDice, natural } = verdict;
+  const won = side === "defense" ? blocked : !blocked;
+  const result = game.i18n.localize(
+    critical
+      ? won
+        ? "REDSTEEL.Versus.CriticalWin"
+        : "REDSTEEL.Versus.CriticalLoss"
+      : won
+        ? "REDSTEEL.Versus.Won"
+        : "REDSTEEL.Versus.Lost",
+  );
+  const tied = !natural && gap === 0;
+
+  const outcome = natural
+    ? game.i18n.format("REDSTEEL.Versus.ByNatural", {
+        outcome: result,
+        die: natural.die,
+      })
+    : tied
+      ? game.i18n.localize("REDSTEEL.Versus.TieInitiator")
+      : game.i18n.format("REDSTEEL.Versus.ByMargin", {
+          outcome: result,
+          mos: Math.abs(gap),
+        });
+
+  const mine = natural?.side === side;
+  const noteText = !natural
+    ? ""
+    : !onDice
+      ? game.i18n.format(
+          mine ? "REDSTEEL.Versus.NaturalOwn" : "REDSTEEL.Versus.NaturalOpposing",
+          { die: natural.die },
+        )
+      : natural.die === natural.other
+        ? game.i18n.format("REDSTEEL.Versus.DeniedOnDiceInitiator", {
+            die: natural.die,
+          })
+        : game.i18n.format("REDSTEEL.Versus.DeniedOnDiceOwn", {
+            own: mine ? natural.die : natural.other,
+            opposing: mine ? natural.other : natural.die,
+          });
+  const note = noteText
+    ? `<div class="rs-versus-note">${noteText}</div>`
+    : "";
+
+  const state = critical
+    ? won
+      ? "is-critical-defense"
+      : "is-critical-hit"
+    : tied
+      ? "is-tied"
+      : won
+        ? "is-won"
+        : "is-lost";
+  return `<div class="rs-versus ${state}"><div class="rs-versus-outcome">${outcome}</div>${detail}${note}</div>`;
+}
+
+/**
+ * The side the contester answered. A fresh contest rolled the initiator's die
+ * in the same formula (its second 1d100), so their side is read off that die.
+ *
+ * @param {Roll} roll         The contester's evaluated roll.
+ * @param {object} followup   The `versusFollowup` flag ({margin, chance?, natural?}).
+ * @returns {{margin: number, die: number|null, success: boolean,
+ *   failure: boolean, hopeless?: boolean, rolled?: number}} A NaN margin when
+ *   it cannot be read. `rolled` is a fresh contest's margin before settling.
+ */
+function opposingSide(roll, followup) {
+  const natural = followup?.natural ?? {};
+  if (Number.isFinite(followup?.chance)) {
+    const die = roll.dice?.[1]?.total;
+    if (!Number.isFinite(die)) {
+      return { margin: NaN, die: null, success: false, failure: false };
+    }
+    return {
+      die,
+      rolled: followup.chance - die,
+      ...contestSide(followup.chance, die, natural),
+    };
+  }
+  const die = natural.die ?? null;
+  return {
+    margin: Number(followup?.margin),
+    die,
+    ...naturalCritical(die, natural),
+  };
 }
 
 /**
  * The contester's own margin beside the one they answered, so a later reroll
  * by the initiator can be read against it at a glance instead of being worked
- * back out of the gap. A fresh contest rolled the initiator's die in the same
- * formula (its second 1d100), so their margin is read off that die.
+ * back out of the gap.
  *
  * @param {Roll} roll         The contester's evaluated roll.
  * @param {object} followup   The `versusFollowup` flag ({margin, chance?}).
  * @returns {string} HTML, or "" when the opposing margin cannot be read.
  */
 export function renderOwnMargin(roll, followup) {
-  let opposing = Number(followup?.margin);
-  if (Number.isFinite(followup?.chance)) {
-    const theirDie = roll.dice?.[1]?.total;
-    if (!Number.isFinite(theirDie)) return "";
-    opposing = followup.chance - theirDie;
-  }
+  const opposing = opposingSide(roll, followup).margin;
   if (!Number.isFinite(opposing)) return "";
   const text = game.i18n.format("REDSTEEL.Versus.OwnMargin", {
     own: roll.total + opposing,
     opposing,
   });
-  return `<p style="text-align:center;">${text}</p>`;
+  return `<div class="rs-versus-detail">${text}</div>`;
 }
 
 /**
  * Charge (or hand back) what the loser of a versus Test forfeits.
  *
  * Runs on the contester's own client against their own actor, so ordinary
- * ownership covers the tracker write. The contester is the target, and a
- * total at or below 0 means the initiator won (a tie goes to the initiator).
+ * ownership covers the tracker write. The contester is the target, and whether
+ * they lost is the settled answer, not just the margins (versusAnswerOutcome).
  * `reactionLost` on the followup flag remembers the charge, so a reroll that
  * flips the result refunds it and one that flips it back charges again, never
  * twice.
@@ -586,7 +887,7 @@ export function renderOwnMargin(roll, followup) {
  */
 export async function settleVersusLoss(actor, followup, total) {
   if (followup?.onLose !== "reaction") return { followup, note: "" };
-  const lost = total <= 0;
+  const lost = versusAnswerOutcome(followup, total).attackerWon;
   const was = !!followup.reactionLost;
   if (actor && lost && !was) await spend(actor, { reactions: 1 });
   if (actor && !lost && was) {
@@ -613,7 +914,8 @@ export async function settleVersusLoss(actor, followup, total) {
  * @returns {Promise<string>} The note for the card, or "".
  */
 export async function settleBreakFree(followup, total) {
-  if (!followup?.breakFree || total <= 0) return "";
+  if (!followup?.breakFree) return "";
+  if (versusAnswerOutcome(followup, total).attackerWon) return "";
   const effect = fromUuidSync(followup.breakFree);
   if (!effect) return "";
   const name = game.i18n.localize(effect.name);

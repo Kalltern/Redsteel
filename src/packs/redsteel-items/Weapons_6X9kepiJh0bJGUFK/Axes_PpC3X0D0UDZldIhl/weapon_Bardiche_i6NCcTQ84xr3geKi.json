@@ -100,7 +100,7 @@
     "roll": {
       "diceNum": 5,
       "diceSize": "8",
-      "diceBonus": "2"
+      "diceBonus": "0"
     },
     "penetration": 7,
     "breakthrough": "",

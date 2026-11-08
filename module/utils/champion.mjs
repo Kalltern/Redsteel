@@ -66,13 +66,14 @@ import {
   teleportToken,
   versusOutcome,
 } from "./forcedMovement.mjs";
-import { renderMarginFollowupLine } from "./attributeFollowup.mjs";
+import { renderMarginFollowupLine, versusNatural } from "./attributeFollowup.mjs";
 import { resolveTestRating } from "./testRating.mjs";
 import {
   tagRollItemAdvantage,
   tagRollSkill,
   withRollBias,
 } from "./rollAdvantage.mjs";
+import { takeMagicReinforcement } from "./veneficus.mjs";
 
 /* -------------------------------------------- */
 /*  Rule constants                              */
@@ -650,9 +651,13 @@ async function rollPushBack(message) {
   const roll = new Roll(`(${chance}) - 1d100`, withRollBias({}, actor));
   tagRollSkill(roll, skillKey);
   tagRollItemAdvantage(roll, hit ? "advantage" : null);
+  // Veneficus → Magické posílení: one more Advantage on a Strength or
+  // Dexterity versus Test, spent by it (veneficus.mjs).
+  await takeMagicReinforcement(actor, roll, skillKey);
   await roll.evaluate();
 
   const source = stamp.source ?? "";
+  const natural = versusNatural(actor, skillKey, roll);
   const advantageLine = game.i18n.localize(
     hit ? "REDSTEEL.Champion.PushBackAdvantage" : "REDSTEEL.Champion.PushBackNoAdvantage",
   );
@@ -667,6 +672,7 @@ ${renderMarginFollowupLine({
   result: roll.result,
   against: stamp.against || PUSH_BACK_AGAINST,
   heading: esc(source),
+  natural,
 })}`;
 
   await roll.toMessage({
@@ -682,6 +688,8 @@ ${renderMarginFollowupLine({
         skill: skillKey,
         versusTest: true,
         versusChance: chance,
+        criticalSuccessThreshold: natural.success,
+        criticalFailureThreshold: natural.failure,
         pushBackTest: {
           attackMessageId: message.id,
           attackerTokenId: attackerDoc.id,

@@ -52,6 +52,7 @@ import {
   withRollBias,
   tagRollSkill,
   forfeitAdvantageOnCritFail,
+  capHopelessNatural,
 } from "./rollAdvantage.mjs";
 import {
   getRerollTokensForSkill,
@@ -371,13 +372,14 @@ export async function rollArcana(actor, difficulty) {
   // A fumbling first die forfeits advantage; read the die only after.
   forfeitAdvantageOnCritFail(roll, critFailure);
   const d100 = roll.dice?.[0]?.total ?? total - roll.total;
+  const hopeless = capHopelessNatural(roll, critSuccess);
 
   return {
     d100,
     margin: roll.total,
     rating,
     difficulty: Number(difficulty) || 0,
-    critSuccess: d100 <= critSuccess,
+    critSuccess: !hopeless && d100 <= critSuccess,
     critFailure: d100 >= critFailure,
     success: roll.total >= 0 && !(d100 >= critFailure),
   };
