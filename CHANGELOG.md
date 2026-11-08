@@ -5,6 +5,14 @@ GitHub.
 
 ## Unreleased
 
+## 0.16.0
+
+- Specialisations automated: Sharpshooter, Veneficus, Elymas and Incantator;
+  Mancer schools started (rank nodes lock signature spells, school passives)
+- Character creation: a Birth step with locked stat and Starsign rolls, race
+  modifiers and creation time trait grants; reachable starting spells are granted
+  on Finish
+- Aim earned from a miss is kept after holding a stance
 - The remaining combat and non-combat Odbornosti from the rulebook: 76 new features
   with prices and requirements in the Learn window, plus their actions and hooks
 - New weapons: Katar, Defensive Katar, Estoc, Two handed Sabre, Two handed Cleaver,
