@@ -8,10 +8,11 @@
  * šanci na způsobení Omráčení na dva tahy."
  *
  * Every table here is data; the readers are:
- *   - MANCER_EFFECT_NODES, MANCER_STACK_NODES, MANCER_DAMAGE_NODES:
- *     utils/magicSkillBonuses.mjs (calculateAttackBonuses feeds the effect
- *     chances into the cast's effectModifiers, finalizeRollsAndPostChat adds
- *     the damage, penetration and stacks and prints the card tags).
+ *   - MANCER_EFFECT_NODES, MANCER_STACK_NODES, MANCER_DAMAGE_NODES,
+ *     MANCER_ARMOR_NODES, MANCER_RANGE_NODES, MANCER_NOTE_NODES:
+ *     utils/magicSkillBonuses.mjs (calculateAttackBonuses feeds the effect chances into the cast's
+ *     effectModifiers, finalizeRollsAndPostChat adds the damage, penetration,
+ *     stacks and extra armor damage and prints the card tags).
  *   - MANCER_TRIGGER_NODES: documents/effects.mjs (_applySingleEffect bakes
  *     the extra damage / Stamina into the effect the holder's spell creates).
  *   - MANCER_HOOKED_NODES: nodes whose code is a single check in another file,
@@ -51,6 +52,21 @@ export const VENOMOUS_INSECT_SPELLS = [
   { id: "ODDbWcMph5XxYqaz", name: "Metamorphosis" }, // Metamorfóza
 ];
 
+/** Ohnivá aura (Fire, Expert, range Caster). */
+export const FIERY_AURA_SPELL = { id: "tDAGO4o4a0M93UIt", name: "Fiery Aura" };
+/** Kyselinová střela (Earth; rolls Corrosion through effectType1). */
+export const ACID_BOLT_SPELL = { id: "oDL1c5pJC3yLpKMg", name: "Acid bolt" };
+/** Jedová sprška (Earth breath cone). */
+export const POISON_SPRAY_SPELL = { id: "2yp4HO3agdSxD8H6", name: "Poison spray" };
+/**
+ * Protijed: the Earth Antivenom and the Body Antidote carry the same book
+ * text, so both are treated the same.
+ */
+export const ANTIVENOM_SPELLS = [
+  { id: "YrB0ZQw1qx6bz5H6", name: "Antivenom" },
+  { id: "zqtXUtlAfFNo7Hny", name: "Antidote" },
+];
+
 /**
  * Effect chance nodes.
  *
@@ -62,7 +78,9 @@ export const VENOMOUS_INSECT_SPELLS = [
  *   poisonBased   the spell deals poison or acid, or is a Venomous Insects
  *                 spell while the caster holds jedovatyHmyz
  *   onlyIfRolled  only raises an effect the spell itself rolls
- *   effect        status id (CONFIG.REDSTEEL.effectDefinitions)
+ *   effect        status id (CONFIG.REDSTEEL.effectDefinitions), or "chain"
+ *                 (Řetězení), "dispel" or "clearStagger" (Rušivá kouzla),
+ *                 which are no statuses (see their entries)
  *   chances       [apprentice, expert, master, grandmaster], or
  *   chance        one flat value
  *   rangeTag      also prints the "+1.5 m" tag (Divoký oheň II)
@@ -98,6 +116,25 @@ export const MANCER_EFFECT_NODES = [
   { spec: "vitamancer", node: "ochromeni2", schools: ["spirit"], onlyIfRolled: true, effect: "stun", chance: 5 },
   // Kulový blesk: Omráčení +15%.
   { spec: "astramancer", node: "kulovyBlesk", spells: [{ id: "RsYfsuXqYWXCYrRn", name: "Lightning ball" }], effect: "stagger", chance: 15 }, // Kulový blesk
+  // r877 Řetězení: útočná kouzla Školy Vzduchu, šance na Řetězení +35%
+  // (+35% více proti Mokrému cíli). "chain" is no status: Apply Damage turns
+  // a ticked row into the chain offer (utils/mancerFollowups.mjs
+  // offerChaining) and never applies it as an effect. The Wet bonus is
+  // chainWetBonus, read by the Apply Damage preview only.
+  { spec: "astramancer", node: "retezeni", schools: ["air"], offensive: true, effect: "chain", chance: 35 },
+  // r879 Dvojité řetězení: šance na Řetězení +15%, a landed chain hops once
+  // more (mancerFollowups.mjs claimMancerFollowup).
+  { spec: "astramancer", node: "dvojiteRetezeni", schools: ["air"], offensive: true, effect: "chain", chance: 15 },
+  // r1601 Rušivá kouzla: "Všechna útočná kouzla Školy Ducha a Protikouzlo
+  // mají +25% šanci na zrušení většiny magických efektů. Kouzla Školy Těla
+  // mají šanci +25% zrušit Omráčení." Neither row is a status: a ticked row
+  // is resolved by both Apply paths before the card's other effects on that
+  // target (utils/applyDamage.mjs resolveDisruptiveRows). Dispel deletes the
+  // target's spell-made effects; Clear Stagger deletes its Stagger. The Body
+  // row reaches every Body spell, not only offensive ones. Protikouzlo's
+  // part is its card tag (MANCER_NOTE_NODES below).
+  { spec: "vitamancer", node: "rusivaKouzla", schools: ["spirit"], offensive: true, effect: "dispel", chance: 25 },
+  { spec: "vitamancer", node: "rusivaKouzla", schools: ["body"], effect: "clearStagger", chance: 25 },
 ];
 
 /**
@@ -107,6 +144,74 @@ export const MANCER_EFFECT_NODES = [
  */
 export const MANCER_STACK_NODES = [
   { spec: "entomancer", node: "leptavaKyselina2", schools: ["earth"], damageTypes: ["acid"], effect: "corrosion", stacks: 1 },
+];
+
+/**
+ * Extra armor damage on an effect the spell itself rolls: `armor` (negative)
+ * is added on top of the effect's own armor loss per stack gained
+ * (documents/effects.mjs, Corrosion -4 Az a stack), stamped on the card as
+ * the effect's `bonusArmor` and passed on by both Apply paths
+ * (utils/applyDamage.mjs).
+ * r1015 "Kyselinová střela: Dodatečné poškození zbroje -2 Kz".
+ */
+export const MANCER_ARMOR_NODES = [
+  { spec: "entomancer", node: "kyselinovaStrela", spells: [ACID_BOLT_SPELL], effect: "corrosion", armor: -2 },
+];
+
+/**
+ * Reach added to one spell, printed as the "+1.5 m" card tag. A breath's
+ * reach is only a card label (utils/spellCards.mjs) and no cone is placed, so
+ * like Divoký oheň II the reach is a tag for the table.
+ * r1015 "Jedová sprška: Oblast +1,5m".
+ */
+export const MANCER_RANGE_NODES = [
+  { spec: "entomancer", node: "jedovaSprska", spells: [POISON_SPRAY_SPELL] },
+];
+
+/** Řetězový blesk (Air, Master). */
+export const CHAIN_LIGHTNING_SPELL = { id: "6tmWw4LBu2plnlRT", name: "Chain lightning" };
+
+/**
+ * Spell tweaks the system cannot simulate, printed as a card tag for the
+ * table, like MANCER_RANGE_NODES. The tag text is the node's own label.
+ *   - Řetězový blesk "Cíl +1": the target cap itself is enforced at cast
+ *     (utils/mancerFollowups.mjs spellTargetCapRefusal); the tag reminds the
+ *     table of the extra target.
+ *   - Bleskové tornádo: the caster steers the tornado; nothing moves it.
+ *   - Cyklon "Pohyb +2 hexy": the trapped target is moved by hand.
+ *   - Pád pírka: the fall speed is the caster's call at the table.
+ *   - Vitamancer (r1576, r1579): Stabilizace "Šance +20%", Lorikovo kopí
+ *     "Může jednou změnit směr", Lořino pouto "Potlačuje vyřazení", Magická
+ *     stěna "Omráčení je nahrazen Ochromením" and Ochránce's +100% Health
+ *     on Bariéra / Pohyblivá bariéra are the table's to apply. Ochránce's
+ *     +50% on the three shields is code (documents/effects.mjs). Rušivá
+ *     kouzla's tag on Protikouzlo reminds the table of its dispel chance.
+ */
+export const MANCER_NOTE_NODES = [
+  { spec: "astramancer", node: "retezovyBlesk", spells: [CHAIN_LIGHTNING_SPELL] },
+  { spec: "astramancer", node: "bleskoveTornado", spells: [{ id: "KzGnfIKSzywBPSYG", name: "Lightning tornado" }] }, // Bleskové tornádo
+  {
+    spec: "astramancer",
+    node: "cyklonPohyb",
+    spells: [
+      { id: "wJZk56NUwBiZeowm", name: "Cyclone" }, // Cyklon
+      { id: "esiBJjncf27psJ48", name: "Cyclone (reaction)" },
+    ],
+  },
+  { spec: "astramancer", node: "padPirka", spells: [{ id: "VTRyOjac7ueNrdSD", name: "Feather fall" }] }, // Pád pírka
+  { spec: "vitamancer", node: "stabilizace", spells: [{ id: "kC8ivAu54ZmUDWc1", name: "Stabilization" }] }, // Stabilizace
+  { spec: "vitamancer", node: "lorikovoKopi", spells: [{ id: "b27vy7aWB4YpoZ1R", name: "Lorik's spear" }] }, // Lorikovo kopí
+  { spec: "vitamancer", node: "lorinoPouto", spells: [{ id: "TNSdSFAUN8G3FJnb", name: "Lorina's bond" }] }, // Lořino pouto
+  { spec: "vitamancer", node: "magickaStena", spells: [{ id: "VJqy6z6FFwG6g63o", name: "Mystical wall" }] }, // Magická stěna
+  {
+    spec: "vitamancer",
+    node: "ochrance",
+    spells: [
+      { id: "96HAOmiMMAwNP25t", name: "Barrier" }, // Bariéra
+      { id: "TIxSNaM84xUaya5O", name: "Mobile barrier" }, // Pohyblivá bariéra
+    ],
+  },
+  { spec: "vitamancer", node: "rusivaKouzla", spells: [{ id: "spJHgIWzpbHaDnpp", name: "Counterspell" }] }, // Protikouzlo
 ];
 
 /**
@@ -145,6 +250,38 @@ export const MANCER_HOOKED_NODES = [
   { spec: "geomancer", node: "urhanovaSila" },
   // Read by the poisonBased filter above (r1045 Jedovatý hmyz).
   { spec: "entomancer", node: "jedovatyHmyz" },
+  // utils/mancerFollowups.mjs spellTargetCapRefusal, asked by
+  // utils/castSpell.mjs performCast: Ice lance takes three targets, not two
+  // (r967 Ledové kopí).
+  { spec: "cryomancer", node: "ledoveKopi" },
+  // utils/mancerFollowups.mjs offerIceShards, called by utils/applyDamage.mjs
+  // applyDamageAsGM: a kill by the holder's Frost Water spell splits its
+  // excess damage among the neighbours (r987 Ledové úlomky).
+  { spec: "cryomancer", node: "ledoveUlomky" },
+  // utils/mancerFollowups.mjs sacrificeStoneSkin, called by
+  // utils/applyDamage.mjs applyDamageAsGM: sacrificing the holder's Stone Skin
+  // Staggers the neighbours the wearer picks (r1064 Kamenná kůže).
+  { spec: "geomancer", node: "kamennaKuze" },
+  // utils/mancerFollowups.mjs firmStepAdvantage, called by
+  // utils/attributeFollowup.mjs rollAttributeFollowup: Advantage on the answer
+  // to Roots, Quicksand and a Prone test. The system has no Difficult Terrain
+  // to waive (r1087 Pevný krok, lead ruling 2026-11-17).
+  { spec: "geomancer", node: "pevnyKrok" },
+  // utils/mancerFollowups.mjs fieryAuraBurnBonus, asked by
+  // utils/applyDamage.mjs openDamageSelectionDialog: a hostile target near
+  // the holder's Fiery Aura takes Burn at +15% instead of +10% (r1501 Ohnivá
+  // aura). The aura itself is put on the caster by applyFieryAura, called by
+  // utils/castSpell.mjs applyPostCastEffects.
+  { spec: "pyromancer", node: "ohnivaAura" },
+  // documents/effects.mjs _resolveAntivenomCure: the holder's Antivenom /
+  // Antidote cures Poison at +25% (r1012 Protijed). The cast card carries the
+  // antivenom effect (utils/magicSkillBonuses.mjs finalizeRollsAndPostChat).
+  { spec: "entomancer", node: "protijed" },
+  // utils/mancerFollowups.mjs offerPoisonerRedirect, called by
+  // utils/applyDamage.mjs applyDamageAsGM and applyEffectsAsGM: Poison from
+  // the holder's Earth spell on an already Poisoned target may go to a
+  // neighbour instead (r1041 Travič III).
+  { spec: "entomancer", node: "travic3" },
 ];
 
 /* -------------------------------------------------------------------------- */
@@ -236,6 +373,7 @@ function entryChance(entry, spell) {
  * @returns {{
  *   modifiers: Record<string, number>,
  *   stacks: Record<string, number>,
+ *   armor: Record<string, number>,
  *   dice: string[],
  *   penetration: number,
  *   tags: {spec: string, node: string, kind: string, effect?: string,
@@ -243,7 +381,7 @@ function entryChance(entry, spell) {
  * }}
  */
 export function getMancerCastBonuses(actor, spell, { strike = false } = {}) {
-  const result = { modifiers: {}, stacks: {}, dice: [], penetration: 0, tags: [] };
+  const result = { modifiers: {}, stacks: {}, armor: {}, dice: [], penetration: 0, tags: [] };
   if (!actor || actor.type !== "character" || spell?.type !== "spell") return result;
 
   const authored = authoredSpellEffects(spell);
@@ -267,6 +405,25 @@ export function getMancerCastBonuses(actor, spell, { strike = false } = {}) {
     if (!base) continue;
     result.stacks[entry.effect] = (result.stacks[entry.effect] ?? 0) + entry.stacks;
     result.tags.push({ spec: entry.spec, node: entry.node, kind: "stacks", effect: entry.effect, stacks: entry.stacks });
+  }
+
+  for (const entry of MANCER_ARMOR_NODES) {
+    if (!entryApplies(actor, spell, entry, { strike })) continue;
+    // Only an effect the spell itself rolls or lands.
+    const base = authored[entry.effect] ?? 0;
+    if (!(base > 0 || base === -1)) continue;
+    result.armor[entry.effect] = (result.armor[entry.effect] ?? 0) + entry.armor;
+    result.tags.push({ spec: entry.spec, node: entry.node, kind: "node" });
+  }
+
+  for (const entry of MANCER_RANGE_NODES) {
+    if (!entryApplies(actor, spell, entry, { strike })) continue;
+    result.tags.push({ spec: entry.spec, node: entry.node, kind: "range" });
+  }
+
+  for (const entry of MANCER_NOTE_NODES) {
+    if (!entryApplies(actor, spell, entry, { strike })) continue;
+    result.tags.push({ spec: entry.spec, node: entry.node, kind: "node" });
   }
 
   for (const entry of MANCER_DAMAGE_NODES) {
@@ -315,8 +472,9 @@ export function mancerCastTags(bonuses) {
         });
       } else if (tag.kind === "range") {
         text = game.i18n.format("REDSTEEL.MancerPassive.TagRange", { node });
-      } else if (tag.kind === "damage") {
-        // The node's own label already reads "Penetration +3, Damage +1d4".
+      } else if (tag.kind === "damage" || tag.kind === "node") {
+        // The node's own label already says it ("Penetration +3, Damage
+        // +1d4", "Additional armor damage -2").
         text = node;
       }
       return `<span class="action-tag mancer ">${foundry.utils.escapeHTML(String(text))}</span>`;
@@ -359,4 +517,21 @@ export function restaggerKnocksProne(caster) {
 /** Podpálení nevyvolává Test Nervů na Paniku: the burning holder is spared. */
 export function burnSkipsPanic(actor) {
   return hasMancerNode(actor, "pyromancer", "podpaleniPanika");
+}
+
+/**
+ * Stone Skin's armored test: "An unarmored target gains 15 armor and 1 armor
+ * durability. An already armored one gains 2." Armored = equipped gear on the
+ * Bottom, Middle or Top layer. Read by documents/effects.mjs _handleStoneSkin
+ * (the armor) and utils/mancerFollowups.mjs getStoneSkinDurability (the
+ * durability), so the two cannot disagree. Here because both files already
+ * import this one.
+ */
+export function wearsStoneSkinArmor(actor) {
+  return (actor?.items?.contents ?? []).some(
+    (item) =>
+      item.type === "gear" &&
+      item.system?.equipped === true &&
+      ["Bottom", "Middle", "Top"].includes(item.system?.layer),
+  );
 }

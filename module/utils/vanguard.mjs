@@ -291,13 +291,23 @@ export function isCombatStrengthTest(message) {
  *
  * @param {Actor} actor
  * @param {ChatMessage} message
- * @param {{critFailure?: boolean}} [options]
+ * @param {{critFailure?: boolean, combatStrength?: boolean|null}} [options]
+ *   `combatStrength` answers the question for a versus Test panel inside a
+ *   card (marginReroll.mjs), whose card flags describe the card, not the test.
  * @returns {object|null}
  */
-export function vanguardStrengthRerollOption(actor, message, { critFailure = false } = {}) {
+export function vanguardStrengthRerollOption(
+  actor,
+  message,
+  { critFailure = false, combatStrength = null } = {},
+) {
   if (critFailure) return null;
   if (!hasVanguardNode(actor, "opakovaniTestuSily")) return null;
-  if (!isCombatStrengthTest(message)) return null;
+  const isCombatStrength =
+    typeof combatStrength === "boolean"
+      ? combatStrength
+      : isCombatStrengthTest(message);
+  if (!isCombatStrength) return null;
   return {
     itemId: STRENGTH_REROLL_ID,
     poolIndex: 0,

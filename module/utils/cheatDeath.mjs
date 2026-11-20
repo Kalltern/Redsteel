@@ -26,18 +26,31 @@
  * The roll itself runs on the clicking owner's client so their dice and their
  * roll bias (Guardian Angel's advantage) show; everything that edits effects,
  * statuses or combatants is relayed to the active GM.
+ *
+ * Hibernace (Vitamancer, r1603): "Jednou za měsíc místo smrti uvede do stavu
+ * hibernace a získá jedno VZ. Pokud by však takto překročil hranici VZ,
+ * umírá. V hibernaci setrvá 1d4 dnů." A holder gets a third button on the
+ * player card, whether or not Cheat Death is open to them, once per
+ * HIBERNATION_COOLDOWN_DAYS (`flags.redsteel.hibernation.lastUsed`). The
+ * Hibernation status has no timer: the GM removes it when the rolled days
+ * (`flags.redsteel.hibernation.wakeAt` on the effect) have passed. Nothing
+ * wakes the sleeper early.
  */
 
 import { withRollBias, tagRollBuckets } from "./rollAdvantage.mjs";
 import { secondsPerDay } from "./calendariaIntegration.mjs";
 import { clearBleedEffects } from "./otherActions.mjs";
 import { combatantsForActor } from "./combatants.mjs";
+import { hasMancerNode } from "../helpers/mancerPassives.mjs";
 
 const SOCKET = "system.redsteel";
 const SOCKET_TYPE = "cheatDeath";
 
 /** In-world days between two uses. */
 const COOLDOWN_DAYS = 10;
+
+/** Hibernace: "jednou za měsíc", read as 30 in-world days. */
+const HIBERNATION_COOLDOWN_DAYS = 30;
 
 const L = (key) => game.i18n.localize(`REDSTEEL.CheatDeath.${key}`);
 const F = (key, data) => game.i18n.format(`REDSTEEL.CheatDeath.${key}`, data);
@@ -104,6 +117,22 @@ export function getEligibility(actor) {
     return { ok: false, reason: "wounds" };
   }
   return { ok: true };
+}
+
+/**
+ * Whether a Hibernace holder may hibernate instead of dying right now: the
+ * node is unlocked and the last hibernation is at least
+ * HIBERNATION_COOLDOWN_DAYS ago (or never). The Grave Wound limit is judged
+ * when it is taken (applyHibernation), where passing it means death.
+ * @param {Actor} actor
+ * @returns {boolean}
+ */
+export function canHibernate(actor) {
+  if (!hasMancerNode(actor, "vitamancer", "hibernace")) return false;
+  const lastUsed = actor.getFlag("redsteel", "hibernation.lastUsed");
+  if (lastUsed == null || !Number.isFinite(Number(lastUsed))) return true;
+  const readyAt = Number(lastUsed) + HIBERNATION_COOLDOWN_DAYS * secondsPerDay();
+  return game.time.worldTime >= readyAt;
 }
 
 /** GMs plus every user who owns the actor. */
@@ -205,6 +234,11 @@ async function onConfirm(actor, button) {
         : `<p>${L("IneligibleWounds")}</p>`;
     buttons = [["cheatDeathAccept", L("AcceptButton")]];
   }
+  // Hibernace: offered beside Cheat Death, eligible or not.
+  if (canHibernate(actor)) {
+    body += `<p>${L("HibernateOffer")}</p>`;
+    buttons.push(["cheatDeathHibernate", L("HibernateButton")]);
+  }
 
   await ChatMessage.create({
     speaker: ChatMessage.getSpeaker({ actor }),
@@ -287,6 +321,11 @@ async function onAccept(actor) {
   await requestGM("applyDeath", actor);
 }
 
+async function onHibernate(actor) {
+  if (!(await claimDecision(actor))) return;
+  await requestGM("applyHibernation", actor);
+}
+
 /* -------------------------------------------- */
 /*  Step 4: outcome (active GM)                  */
 /* -------------------------------------------- */
@@ -308,6 +347,7 @@ async function handleGM({ action, actorUuid }) {
   }
   if (action === "applyDeath") await applyDeath(actor, dying);
   else if (action === "applySuccess") await applySuccess(actor, dying);
+  else if (action === "applyHibernation") await applyHibernation(actor, dying);
 }
 
 async function applyDeath(actor, dying) {
@@ -379,6 +419,70 @@ async function applySuccess(actor, dying) {
   });
 }
 
+/**
+ * Hibernace: instead of dying, the holder sleeps for 1d4 days and gains one
+ * Grave Wound. Re-checked here, because the request comes off the socket: no
+ * node, or a hibernation less than a month ago, means death, as an ineligible
+ * Cheat Death does (onAttempt). Passing the Grave Wound limit means death too.
+ */
+async function applyHibernation(actor, dying) {
+  const gw = actor.system.stats?.graveWounds ?? {};
+  const wounds = Number(gw.value) || 0;
+  const available = canHibernate(actor);
+  if (!available || wounds + 1 > (Number(gw.max) || 0)) {
+    await ChatMessage.create({
+      speaker: ChatMessage.getSpeaker({ actor }),
+      content: `
+        <div class="redsteel-dying">
+          <p>${F(available ? "HibernateTooWounded" : "HibernateUnavailable", {
+            name: actor.name,
+          })}</p>
+        </div>`,
+    });
+    await applyDeath(actor, dying);
+    return;
+  }
+
+  await actor.update({
+    "flags.redsteel.hibernation.lastUsed": game.time.worldTime,
+    "system.stats.graveWounds.value": wounds + 1,
+  });
+
+  await dying.setFlag("redsteel", "endedBy", "hibernation");
+  await dying.delete();
+
+  // Bleeding and Burning stop, as on a Cheat Death success (applySuccess).
+  await clearBleedEffects(actor);
+  const burns = actor.effects.filter((e) => hasStatus(e, "burn"));
+  for (const burn of burns) await burn.delete();
+
+  if (actor.getFlag("redsteel", "firstAidPause")) {
+    await actor.unsetFlag("redsteel", "firstAidPause");
+  }
+
+  await actor.update({ "system.stats.health.value": 1 });
+
+  const daysRoll = await new Roll("1d4").evaluate();
+  const days = daysRoll.total;
+  const effect = await game.redsteel.applyEffect(actor, "hibernation");
+  if (effect) {
+    await effect.setFlag(
+      "redsteel",
+      "hibernation.wakeAt",
+      game.time.worldTime + days * secondsPerDay(),
+    );
+  }
+
+  await ChatMessage.create({
+    speaker: ChatMessage.getSpeaker({ actor }),
+    content: `
+      <div class="redsteel-dying">
+        <p><b>${F("HibernateTitle", { name: actor.name, days })}</b></p>
+        <p>${L("HibernateBody")}</p>
+      </div>`,
+  });
+}
+
 /* -------------------------------------------- */
 /*  Registration                                 */
 /* -------------------------------------------- */
@@ -391,6 +495,7 @@ function resolveActor(message) {
 const OWNER_ACTIONS = {
   cheatDeathAttempt: onAttempt,
   cheatDeathAccept: onAccept,
+  cheatDeathHibernate: onHibernate,
 };
 
 /**

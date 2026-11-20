@@ -54,6 +54,7 @@
  */
 
 import { actorHasSpecNode } from "../helpers/specialisations.mjs";
+import { isInPlaceRerollUpdate } from "./rerollInPlace.mjs";
 import { isCharge } from "./abilityMovement.mjs";
 import { grantFreeAttack, trackedCombat } from "./actionTracker.mjs";
 import { isHostileSide } from "./movementZones.mjs";
@@ -412,6 +413,16 @@ export function registerChampionHooks() {
       .catch((err) => console.error("Redsteel | Wind Stance tracking failed", err))
       // Same single writer, same queue: a defender's answer to a Push Back
       // test is settled after any card that arrived before it.
+      .then(() => resolvePushBackAnswer(message))
+      .catch((err) => console.error("Redsteel | Push Back resolution failed", err));
+  });
+  // A Push Back answer rerolled in place (rerollInPlace.mjs) is read again,
+  // as its replacement card used to be: a settled push stays settled.
+  Hooks.on("updateChatMessage", (message, changed) => {
+    if (!game.users.activeGM?.isSelf) return;
+    if (!isInPlaceRerollUpdate(changed)) return;
+    if (!message.flags?.[SYSTEM_ID]?.versusFollowup) return;
+    queue = queue
       .then(() => resolvePushBackAnswer(message))
       .catch((err) => console.error("Redsteel | Push Back resolution failed", err));
   });

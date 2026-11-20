@@ -213,6 +213,7 @@
       "cheatDeath": {
         "bonus": 0
       },
+      "woundHealDays": 30,
       "sneakDamageBonus": 0,
       "critDamage": 0,
       "critPenetration": 0,

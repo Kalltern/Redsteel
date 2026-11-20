@@ -7,9 +7,12 @@ import { SPEC_DISCOUNTS } from "./rankDiscounts.mjs";
 import { SPEC_MIRRORS } from "./rankMirrors.mjs";
 import { MANCER_SPELLS } from "./mancerSpells.mjs";
 import {
+  MANCER_ARMOR_NODES,
   MANCER_DAMAGE_NODES,
   MANCER_EFFECT_NODES,
   MANCER_HOOKED_NODES,
+  MANCER_NOTE_NODES,
+  MANCER_RANGE_NODES,
   MANCER_STACK_NODES,
   MANCER_TRIGGER_NODES,
 } from "./mancerPassives.mjs";
@@ -82,7 +85,8 @@ const cm = (combatModifiers) => ({ combatModifiers });
  * Consumed in utils/magicSkillBonuses.mjs (spell crit path).
  */
 export const CRIT_DEGREE_TRIGGERS = [
-  { spec: "astramancer", node: "omraceniKrit", effect: "stun", minDegree: 2, mode: "boost" },
+  // Omráčení +100%: Omráčení is Stagger in this system.
+  { spec: "astramancer", node: "omraceniKrit", effect: "stagger", minDegree: 2, mode: "boost" },
   { spec: "cryomancer", node: "zmrazeniKrit", effect: "freeze", minDegree: 4, mode: "boost" },
   { spec: "pyromancer", node: "podpaleniKrit", effect: "burn", minDegree: 3, mode: "boost" },
   { spec: "geomancer", node: "povaleni", effect: "prone", minDegree: 3, mode: "force" },
@@ -941,6 +945,29 @@ const CODE_AUTOMATED_NODES = {
   // Manipulation, and helpers/specNodePrices.mjs lets Channeling ranks meet the
   // rank nodes' Blood Manipulation requirements.
   bloodSchool: ["krvavyPakt", "krvavyStit", "hnevKrve", "krvavaPlatba", "darKrve", "expert", "master", "grandmaster", "magickaKrev"],
+  // utils/applyDamage.mjs applyEffectToActor offers it when a new Stagger
+  // lands on the holder with 10 Mana or more; utils/mancerFollowups.mjs
+  // offerLightningResilience posts the owner's card and
+  // resolveLightningResilienceAsGM pays the Mana and removes the Stagger.
+  astramancer: ["bleskovaOdolnost"],
+  vitamancer: [
+    // documents/effects.mjs: Ochránce's +50% Health on Shield, Magic Shield
+    // and Elemental Shield (its Barrier tags are in helpers/mancerPassives.mjs
+    // MANCER_NOTE_NODES), Sdílená ochrana's half-value shield for the caster,
+    // Magický štít absorbing Holy damage, and Obnovení removing one Bleed
+    // when it ends.
+    "ochrance",
+    "sdilenaOchrana",
+    "magickyStit",
+    "obnoveniKrvaceni",
+    // utils/cheatDeath.mjs: Hibernace, the third button on the Cheat Death
+    // card (onConfirm, applyHibernation).
+    "hibernace",
+    // utils/otherActions.mjs magesRest: Mágův odpočinek's Meditation test and
+    // half a Long Rest of Mana, once a game day; its button is the Redsteel
+    // hotbar's magesRest action (utils/redsteelHotbar.mjs ACTION_BUTTONS).
+    "maguvOdpocinek",
+  ],
 };
 
 // Crit-degree triggers and state-gated immunities are already declared as data
@@ -995,15 +1022,24 @@ for (const { spec, node } of MANCER_SPELLS) {
 }
 
 // The mancer school passives, all tables in helpers/mancerPassives.mjs:
-// effect chances, extra stacks and the Flame Shield damage are read by
+// effect chances, extra stacks, extra armor damage (Kyselinová střela), the
+// reach tag (Jedová sprška), the note tags (Řetězový blesk, Bleskové tornádo,
+// Cyklon, Pád pírka, and Vitamancer's Stabilizace, Lorikovo kopí, Lořino
+// pouto, Magická stěna, Ochránce's barriers, Rušivá kouzla's Protikouzlo) and
+// the Flame Shield damage are read by
 // utils/magicSkillBonuses.mjs (calculateAttackBonuses, finalizeRollsAndPostChat)
-// with the stacks applied in utils/applyDamage.mjs; the trigger bonuses
-// (Toxiny damage, Regeneration Stamina) by documents/effects.mjs
+// with the stacks and armor applied in utils/applyDamage.mjs (Řetězení's
+// Chain row turned into the chain offer of utils/mancerFollowups.mjs, Rušivá
+// kouzla's Dispel and Clear Stagger rows resolved by resolveDisruptiveRows); the trigger
+// bonuses (Toxiny damage, Regeneration Stamina) by documents/effects.mjs
 // _applySingleEffect; the hooked nodes name their own file (burning panic in
 // documents/effects.mjs, Urhanova síla in utils/applyDamage.mjs).
 for (const { spec, node } of [
   ...MANCER_EFFECT_NODES,
   ...MANCER_STACK_NODES,
+  ...MANCER_ARMOR_NODES,
+  ...MANCER_RANGE_NODES,
+  ...MANCER_NOTE_NODES,
   ...MANCER_DAMAGE_NODES,
   ...MANCER_TRIGGER_NODES,
   ...MANCER_HOOKED_NODES,

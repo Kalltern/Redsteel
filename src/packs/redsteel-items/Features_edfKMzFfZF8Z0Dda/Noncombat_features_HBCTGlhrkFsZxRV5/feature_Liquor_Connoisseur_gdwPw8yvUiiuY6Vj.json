@@ -16,12 +16,17 @@
     "statusEffects": [],
     "statusEffectsRaw": "",
     "reroll": {
-      "name": "Drinking",
-      "active": [
-        false,
-        false
-      ],
-      "value": 2
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": [
+        {
+          "label": "",
+          "skillsRaw": "drinking",
+          "max": 2,
+          "used": 0
+        }
+      ]
     },
     "option": "feature",
     "cost": {

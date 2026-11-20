@@ -1,5 +1,5 @@
 import { grantImpaleKill, stampImpaleRoot } from "./impaleFollowup.mjs";
-import { restaggerKnocksProne } from "../helpers/mancerPassives.mjs";
+import { hasMancerNode, restaggerKnocksProne } from "../helpers/mancerPassives.mjs";
 import { focusedMagicHalving } from "./elymas.mjs";
 import { getGearEffectResist } from "./materials.mjs";
 import { stampEscapeSource } from "./escapeFollowup.mjs";
@@ -85,6 +85,19 @@ import {
   settleVeneficusDamage,
   stampEnchantSchool,
 } from "./veneficus.mjs";
+import {
+  STONE_SKIN_DURABILITY,
+  chainWetBonus,
+  claimMancerFollowup,
+  fieryAuraBurnBonus,
+  getStoneSkinDurability,
+  offerChaining,
+  offerIceShards,
+  offerLightningResilience,
+  offerPoisonerRedirect,
+  sacrificeStoneSkin,
+  stoneSkinLabel,
+} from "./mancerFollowups.mjs";
 
 export const SOCKET = "system.redsteel";
 
@@ -776,6 +789,9 @@ async function applyDamageToTargets(
     laceration,
     veteran,
     magicVeteran,
+    // Who clicked Apply Damage. The GM can apply from a player's card, and
+    // the GM's "<player> applied N damage" toast must not credit the player.
+    requestedBy: game.user.id,
   };
 
   if (game.user.isGM) {
@@ -909,6 +925,9 @@ export async function applyDamageAsGM(data) {
   const openWound = data.openWound ?? {};
   const lacerationRequest = data.laceration ?? {};
   const message = game.messages.get(messageId);
+  // Ledové úlomky: a shard card whose offer another click already spent
+  // lands nothing (mancerFollowups.mjs).
+  if (!(await claimMancerFollowup(message))) return;
 
   const attack = message.flags.attack;
   // Damage has been applied from this card: Enduring Warrior's "Missed"
@@ -990,6 +1009,12 @@ export async function applyDamageAsGM(data) {
   const giftOfBloodVictims = [];
   // Targets this Apply Damage killed, for Half Pirouette (halfPirouette.mjs).
   const killedIds = [];
+  // Of those, the damage past 0 Life each one took, for Ledové úlomky
+  // (mancerFollowups.mjs offerIceShards).
+  const iceShardKills = [];
+  // Targets whose Chain row was ticked: half the damage each was dealt and
+  // its Penetration, for Řetězení (mancerFollowups.mjs offerChaining).
+  const chainVictims = [];
   // Killed, or newly Downed or Unconscious (a PC dropped to 0 HP, whom Dying
   // always rides along with): what Final Strike counts as a kill (user ruling
   // 2026-10-14). killedIds stays dead-only for Half Pirouette.
@@ -1095,8 +1120,20 @@ export async function applyDamageAsGM(data) {
     let durabilityItem = null;
     let durabilityPoints = 0;
     let perPoint = 0;
+    // Stone Skin's own point, sacrificed like an item's (mancerFollowups.mjs).
+    let stoneSkinEffect = null;
 
-    if (spend?.itemId && actor.type === "character") {
+    if (spend?.itemId === STONE_SKIN_DURABILITY && actor.type === "character") {
+      const stoneSkin = getStoneSkinDurability(actor);
+      durabilityPoints = Math.min(
+        Math.max(0, Math.floor(Number(spend.points) || 0)),
+        stoneSkin.available,
+      );
+      if (durabilityPoints > 0) {
+        stoneSkinEffect = stoneSkin.effect;
+        perPoint = getDurabilityReductionPerPoint(actor, null);
+      }
+    } else if (spend?.itemId && actor.type === "character") {
       durabilityItem = actor.items.get(spend.itemId);
       const available = Number(
         durabilityItem?.system.armor?.durability ?? 0,
@@ -1163,12 +1200,20 @@ export async function applyDamageAsGM(data) {
       .find((user) => user?.name);
     const authorIsGM = author?.isGM;
 
+    const durabilitySourceName = stoneSkinEffect
+      ? stoneSkinLabel()
+      : durabilityItem?.name;
     const durabilityNote =
       result.durabilityPointsUsed > 0
-        ? ` (${result.durabilityReduction} damage absorbed by ${result.durabilityPointsUsed} durability from ${durabilityItem?.name})`
+        ? ` (${result.durabilityReduction} damage absorbed by ${result.durabilityPointsUsed} durability from ${durabilitySourceName})`
         : "";
 
-    if (game.user.isGM && author && !authorIsGM) {
+    if (
+      game.user.isGM &&
+      author &&
+      !authorIsGM &&
+      data.requestedBy !== game.user.id
+    ) {
       ui.notifications.info(
         `${author.name} applied ${result.totalHpLoss} damage to ${actor.name}${durabilityNote}`,
       );
@@ -1226,6 +1271,11 @@ export async function applyDamageAsGM(data) {
         "system.armor.durability": Math.max(0, remaining),
       });
     }
+    // Stone Skin spent its point (the effect and its armor stay); Kamenná
+    // kůže then offers to Stagger the wearer's neighbours.
+    if (stoneSkinEffect && result.durabilityPointsUsed > 0) {
+      await sacrificeStoneSkin(actor, tokenDoc, stoneSkinEffect, scene);
+    }
 
     // NPC body-part overrides for the aimed location (e.g. extra bleed on exposed limbs).
     const aimedStrikeForEffects = attack.aimedStrike;
@@ -1235,6 +1285,14 @@ export async function applyDamageAsGM(data) {
       : { armorMod: 0, staggerMod: 0, bleedMod: 0, precisionMod: 0 };
 
     const effects = message.flags.attack.effects || {};
+    // Rušivá kouzla: Dispel and Clear Stagger first, so a Dispel never strips
+    // what this card is about to apply (resolveDisruptiveRows).
+    await resolveDisruptiveRows(
+      actor,
+      tokenDoc,
+      effects,
+      selectedEffects?.[tokenId] || [],
+    );
     // Whether this hit drew blood on its own — Open Wound below only pays out
     // when it did not.
     let bleedLanded = false;
@@ -1246,7 +1304,9 @@ export async function applyDamageAsGM(data) {
       // decided in openDamageSelectionDialog's preview (which is where the
       // bonus is added, and which sets each checkbox's default), not here.
       // Adding it to `targetMod` again would be a no-op that reads as though
-      // this path enforced the chance.
+      // this path enforced the chance. Ohnivá aura's Burn bonus is left out
+      // for the same reason (fieryAuraBurnBonus, the preview only), and so is
+      // Řetězení's Wet bonus (chainWetBonus).
       // A refused Sneak Attack loses its effect-chance bonus too, deducted the
       // same way a target's own resistance is: the d100 already rolled stands,
       // only the threshold it is measured against comes down.
@@ -1261,6 +1321,24 @@ export async function applyDamageAsGM(data) {
       const allowedEffectsForTarget = selectedEffects?.[tokenId] || [];
 
       if (!allowedEffectsForTarget.includes(name)) continue;
+
+      // Řetězení: Chain is no status. A ticked row becomes the chain offer
+      // after the loop, carrying half of this target's damage (before armor)
+      // and the same Penetration (mancerFollowups.mjs offerChaining).
+      if (name === "chain") {
+        const chainDamage = Math.floor((Number(selectedAttack?.damage) || 0) / 2);
+        if (chainDamage > 0) {
+          chainVictims.push({
+            tokenId,
+            damage: chainDamage,
+            penetration: Number(selectedAttack?.penetration) || 0,
+          });
+        }
+        continue;
+      }
+
+      // Rušivá kouzla's rows were resolved before this loop.
+      if (DISRUPTIVE_ROWS.includes(name)) continue;
 
       if (isImmuneToEffect(actor, name)) {
         console.log(`GM: ${actor.name} is immune to ${name} — skipped`);
@@ -1303,12 +1381,20 @@ export async function applyDamageAsGM(data) {
 
       if (stacks <= 0) continue;
       if (name === "bleed") bleedLanded = true;
-      const applied = await applyEffectToActor(
-        actor,
-        name,
-        stacks,
-        castingContext,
-      );
+      // Travič III: whether the target was already Poisoned, read before the
+      // apply (mancerFollowups.mjs offerPoisonerRedirect).
+      const poisonBefore = name === "poison" ? poisonStateOf(actor) : null;
+      const applied = await applyEffectToActor(actor, name, stacks, {
+        ...castingContext,
+        ...(name === "corrosion" && {
+          bonusArmor: Number(effect?.bonusArmor) || 0,
+        }),
+      });
+      if (poisonBefore?.effect && !message.flags?.redsteel?.poisonerRedirect) {
+        await offerPoisonerRedirect(castingContext, message, scene, tokenDoc, {
+          addedStack: poisonStateOf(actor).stacks > poisonBefore.stacks,
+        });
+      }
       await stampEscapeSource(applied, name, message);
       if (name === "stagger" && applied && wasStaggered) restaggeredIds.push(tokenId);
       // Urhanova síla: a Staggered target Staggered again by the holder's
@@ -1504,6 +1590,10 @@ export async function applyDamageAsGM(data) {
         actor.effects?.some((e) => e.statuses?.has("dead")))
     ) {
       killedIds.push(tokenId);
+      iceShardKills.push({
+        tokenId,
+        excess: hpBeforeDamage > 0 ? Math.max(0, -Number(result.newHp)) : 0,
+      });
     }
     if (
       (!wasDead && actor.statuses?.has("dead")) ||
@@ -1709,6 +1799,13 @@ export async function applyDamageAsGM(data) {
   // Půlpirueta (Half Pirouette): a kill, or a landed Counterattack or
   // Riposte, lets the attacker step in and take Aim this turn.
   await offerHalfPirouette(attacker, message, targetIds, killedIds);
+  // Kryomancer → Ledové úlomky: a kill by the holder's Frost Water spell
+  // offers its excess damage to the neighbours, one card per victim
+  // (mancerFollowups.mjs).
+  await offerIceShards(castingContext, message, scene, iceShardKills);
+  // Astramancer → Řetězení: a ticked Chain row offers to chain the bolt on to
+  // a target the caster picks, one card per victim (mancerFollowups.mjs).
+  await offerChaining(castingContext, message, scene, chainVictims);
   // Hraničář → Útok dravce: a Melee kill on the holder's own turn lets them
   // re-arm to a bow or crossbow and shoot or Reload this turn
   // (predatorsAttack.mjs).
@@ -1778,7 +1875,19 @@ function openDamageSelectionDialog(message, targets) {
   const momentumHalf = isMagicMomentumHalf(message);
   // tokenId -> true for targets the spell only half hurts.
   const halfDamageState = {};
-  const isHalved = (target) => momentumHalf || !!halfDamageState[target.id];
+  // Half damage this target takes whatever the box says: Magic Momentum, or
+  // the selected packet carries it itself (Flurry's `@Half`, read by
+  // evaluateAttackDamage off `selectedAttack.halfDamage`). Its box is ticked
+  // and locked. Called only from the preview, after getSelectedAttack exists.
+  const inherentHalf = (target) =>
+    momentumHalf || !!getSelectedAttack(target)?.halfDamage;
+  const isHalved = (target) =>
+    inherentHalf(target) || !!halfDamageState[target.id];
+  // "tokenId|effect" -> boolean, for effect boxes the user ticked or cleared
+  // (per target or from the All targets row). Unset boxes follow the roll.
+  // Kept here so a rebuilt preview (mode, durability, half damage) does not
+  // throw the choice away.
+  const effectOverride = {};
   let criticalDegree = attack.critical?.degree ?? 0;
   let degreeTouched = false;
   const hasCritical = attack.critical !== "" && attack.critical !== undefined;
@@ -1840,9 +1949,16 @@ function openDamageSelectionDialog(message, targets) {
 
   // tokenId -> { itemId, points } for targets sacrificing durability
   const durabilityState = {};
+  // `stoneSkin`: Stone Skin's own point, offered beside the items
+  // (mancerFollowups.mjs). A target with only that still gets a row.
   const durabilityTargets = targets
-    .map((t) => ({ token: t, actor: t.actor, items: getDurabilityItems(t.actor) }))
-    .filter((entry) => entry.items.length > 0);
+    .map((t) => ({
+      token: t,
+      actor: t.actor,
+      items: getDurabilityItems(t.actor),
+      stoneSkin: getStoneSkinDurability(t.actor).available,
+    }))
+    .filter((entry) => entry.items.length > 0 || entry.stoneSkin > 0);
 
   // Otevřená rána (Open Wound, Cordinas IV) — offered per target to whoever is
   // applying the attack, but paid for out of the attacker's Blood Reserve, so
@@ -1968,8 +2084,14 @@ function openDamageSelectionDialog(message, targets) {
         })();
 
         const spend = durabilityState[t.id];
+        // Stone Skin reads no item, exactly as the GM apply resolves it.
         const perPoint = spend?.itemId
-          ? getDurabilityReductionPerPoint(t.actor, t.actor.items.get(spend.itemId))
+          ? getDurabilityReductionPerPoint(
+              t.actor,
+              spend.itemId === STONE_SKIN_DURABILITY
+                ? null
+                : t.actor.items.get(spend.itemId),
+            )
           : 0;
         // Elymas soRedukce: a focused target takes half of a spell's damage
         // again (elymas.mjs), shown beside the half damage box below.
@@ -2031,21 +2153,27 @@ function openDamageSelectionDialog(message, targets) {
             ].join(", ")}</div>`
           : "";
 
-        // Manual half-damage toggle, spells only. Weapon attacks that halve
-        // damage carry system.roll.halfDamage, but a spell's halving is
-        // situational (partial save, cover) and differs target to target, so
-        // the GM sets it here. The cast card flags itself isSpell for exactly
-        // this. A spell cast free by Magic Momentum is halved by rule: ticked
-        // and locked.
-        const halfDamagePill = attack.isSpell
-          ? `<label class="pill" style="margin-left:6px;"${
+        // Manual half-damage toggle, on every attack (user ruling 2026-11-17):
+        // halving is situational (partial save, cover) and differs target to
+        // target, so the GM sets it here. An attack that is half already (the
+        // packet's own halfDamage, or Magic Momentum) shows it ticked and
+        // locked, with the reason as the tooltip.
+        const halfLocked = inherentHalf(t);
+        const halfTooltip = halfLocked
+          ? game.i18n.localize(
               momentumHalf
-                ? ` data-tooltip="${foundry.utils.escapeHTML(
-                    game.i18n.localize("REDSTEEL.Veneficus.MomentumHalfForced"),
-                  )}"`
-                : ""
-            }>
-              <input type="checkbox" name="halfdamage-${t.id}" ${isHalved(t) ? "checked" : ""} ${momentumHalf ? "disabled" : ""}>
+                ? "REDSTEEL.Veneficus.MomentumHalfForced"
+                : "REDSTEEL.DamagePreview.HalfInherent",
+            )
+          : "";
+        const halfDamagePill = `<label class="pill" style="margin-left:6px;${
+          halfLocked ? " opacity:0.6;" : ""
+        }"${
+          halfTooltip
+            ? ` data-tooltip="${foundry.utils.escapeHTML(halfTooltip)}"`
+            : ""
+        }>
+              <input type="checkbox" name="halfdamage-${t.id}" ${isHalved(t) ? "checked" : ""} ${halfLocked ? "disabled" : ""}>
               <span>${game.i18n.localize("REDSTEEL.Item.Spell.FIELDS.halfDamage.label")}</span>
             </label>${
               magicHalving
@@ -2053,8 +2181,7 @@ function openDamageSelectionDialog(message, targets) {
                     "REDSTEEL.Elymas.DamageReduced",
                   )}</span>`
                 : ""
-            }`
-          : "";
+            }`;
 
         // The target's state after the blow, for whoever may read its sheet.
         const shieldAfter = result.activeShield
@@ -2120,10 +2247,16 @@ function openDamageSelectionDialog(message, targets) {
 
             // Mirrors the GM apply path: a refused Sneak Attack also loses its
             // effect-chance bonus, so the box ticks itself the same way here.
+            // Ohnivá aura's Burn bonus on a hostile target near the aura is
+            // decided here alone, like the Bane bonus below: the GM path only
+            // reads its targetMod for bleed (mancerFollowups.mjs). Řetězení's
+            // +35% against a Wet target is the same (chainWetBonus).
             const targetMod =
               (t.actor.system.effectMods?.[name]?.applyChance || 0) +
               getGearEffectResist(t.actor, name) +
-              sneakSign * (Number(attack.sneak?.effectChance) || 0);
+              sneakSign * (Number(attack.sneak?.effectChance) || 0) +
+              fieryAuraBurnBonus(t, name) +
+              chainWetBonus(t, name);
 
             // NPC body-part overrides (e.g. exposed limb → extra bleed chance).
             let npcBonus = 0;
@@ -2150,7 +2283,10 @@ function openDamageSelectionDialog(message, targets) {
                 { amount: headLoss },
               )})</em>`;
             }
-            let success = effect.roll <= modifiedChance;
+            // An auto effect (chance -1, no roll) always lands: compared as a
+            // roll, `null <= -1` came out false and left its box unticked.
+            // Bleed decides its own below either way.
+            let success = effect.auto ? true : effect.roll <= modifiedChance;
 
             if (name === "bleed") {
               // No health damage (e.g. fully absorbed by temp HP) → no bleed.
@@ -2194,12 +2330,18 @@ function openDamageSelectionDialog(message, targets) {
                 ? "AUTO"
                 : `${effect.roll} < ${displayChance}%`;
 
+            // A box the user set (here or from All targets) keeps its tick;
+            // the roll only decides the default.
+            const overrideKey = `${t.id}|${name}`;
+            const ticked =
+              overrideKey in effectOverride ? effectOverride[overrideKey] : success;
+
             return `
       <div style="margin-left:15px;">
         <label>
           <input type="checkbox"
                  name="effect-${t.id}-${name}"
-                 ${success ? "checked" : ""}>
+                 ${ticked ? "checked" : ""}>
           ${name.toUpperCase()} →
           ${rollLine}${extraInfo}
         </label>
@@ -2354,6 +2496,32 @@ function openDamageSelectionDialog(message, targets) {
       })
       .join("");
 
+  // All targets row (2+ targets): one Half Damage box and one box per effect,
+  // each setting that choice on every target at once. Each box's own tick
+  // (on, off or mixed) is read back off the per-target boxes by
+  // syncAllTargets after every rebuild. "all-" names keep them out of the
+  // per-target "effect-" / "halfdamage-" selectors and the Apply collection.
+  const effectNames = Object.keys(effects);
+  const renderAllTargetsControls = () => {
+    if (targets.length < 2) return "";
+    const box = (name, label) =>
+      `<label class="pill" style="margin-right:6px;"><input type="checkbox" name="${name}"> <span>${label}</span></label>`;
+    return `
+      <fieldset class="rs-all-targets">
+        <legend>${game.i18n.localize("REDSTEEL.DamagePreview.AllTargets")}</legend>
+        ${box(
+          "all-halfdamage",
+          game.i18n.localize("REDSTEEL.Item.Spell.FIELDS.halfDamage.label"),
+        )}
+        ${effectNames
+          .map((name) =>
+            box(`all-effect-${name}`, foundry.utils.escapeHTML(name.toUpperCase())),
+          )
+          .join("")}
+      </fieldset>
+    `;
+  };
+
   const renderOpenWoundStatus = () => {
     if (!canOpenWounds) return "";
     const reserve = openWoundReserve();
@@ -2373,7 +2541,7 @@ function openDamageSelectionDialog(message, targets) {
     if (!durabilityTargets.length) return "";
 
     const rows = durabilityTargets
-      .map(({ token, actor, items }) => {
+      .map(({ token, actor, items, stoneSkin }) => {
         const perPoint = getDurabilityReductionPerPoint(actor);
         const options = items
           .map((item) => {
@@ -2383,7 +2551,10 @@ function openDamageSelectionDialog(message, targets) {
             const name = item.localizedName ?? item.name;
             return `<option value="${item.id}">${name} (${current}/${max})</option>`;
           })
-          .join("");
+          .join("") +
+          (stoneSkin > 0
+            ? `<option value="${STONE_SKIN_DURABILITY}">${stoneSkinLabel()} (${stoneSkin}/1)</option>`
+            : "");
 
         return `
           <div style="margin-bottom:4px;">
@@ -2472,6 +2643,7 @@ function openDamageSelectionDialog(message, targets) {
         </fieldset>
         ${renderDurabilityControls()}
         <div class="open-wound-status">${renderOpenWoundStatus()}</div>
+        ${renderAllTargetsControls()}
 
         <ul class="damage-preview">
           ${renderPreview()}
@@ -2646,6 +2818,69 @@ function openDamageSelectionDialog(message, targets) {
           });
         };
 
+        // Effect boxes are rebuilt with the preview too; a tick or a clear is
+        // remembered in effectOverride. Effect names may contain hyphens.
+        const bindEffects = () => {
+          html.find('input[name^="effect-"]').on("change", (ev) => {
+            const parts = ev.target.name.split("-");
+            effectOverride[`${parts[1]}|${parts.slice(2).join("-")}`] =
+              ev.target.checked;
+            syncAllTargets();
+          });
+        };
+
+        /** Set an All targets box from the enabled per-target boxes. */
+        const syncAllBox = (allName, boxes) => {
+          const input = html.find(`input[name="${allName}"]`);
+          if (!input.length) return;
+          const open = boxes.filter((el) => !el.disabled);
+          const on = open.filter((el) => el.checked).length;
+          input.prop("disabled", open.length === 0);
+          input.prop(
+            "checked",
+            open.length ? on === open.length : boxes.some((el) => el.checked),
+          );
+          input.prop("indeterminate", on > 0 && on < open.length);
+          input.closest("label").css("opacity", open.length ? "" : 0.6);
+        };
+
+        const syncAllTargets = () => {
+          if (targets.length < 2) return;
+          syncAllBox(
+            "all-halfdamage",
+            html.find('input[name^="halfdamage-"]').toArray(),
+          );
+          for (const name of effectNames) {
+            syncAllBox(
+              `all-effect-${name}`,
+              targets
+                .map((t) => html.find(`input[name="effect-${t.id}-${name}"]`)[0])
+                .filter(Boolean),
+            );
+          }
+        };
+
+        // The All targets boxes are outside the preview: bound once. A locked
+        // (already half) or immune target is left as it is.
+        html.find('input[name="all-halfdamage"]').on("change", (ev) => {
+          for (const t of targets) {
+            if (inherentHalf(t)) continue;
+            if (ev.target.checked) halfDamageState[t.id] = true;
+            else delete halfDamageState[t.id];
+          }
+          refreshPreview();
+        });
+        for (const name of effectNames) {
+          html.find(`input[name="all-effect-${name}"]`).on("change", (ev) => {
+            for (const t of targets) {
+              const box = html.find(`input[name="effect-${t.id}-${name}"]`)[0];
+              if (!box || box.disabled) continue;
+              effectOverride[`${t.id}|${name}`] = ev.target.checked;
+            }
+            refreshPreview();
+          });
+        }
+
         // Veteran is disabled while no target has a degree to give up, and
         // switched off with it so a stale tick cannot buy a Rest.
         const syncVeteranToggle = () => {
@@ -2703,6 +2938,8 @@ function openDamageSelectionDialog(message, targets) {
           bindOpenWound();
           bindLaceration();
           bindHalfDamage();
+          bindEffects();
+          syncAllTargets();
           html.find(".open-wound-status").html(renderOpenWoundStatus());
         };
 
@@ -2716,6 +2953,8 @@ function openDamageSelectionDialog(message, targets) {
         bindOpenWound();
         bindLaceration();
         bindHalfDamage();
+        bindEffects();
+        syncAllTargets();
 
         const updateCriticalDegreeVisibility = () => {
           html
@@ -2745,15 +2984,19 @@ function openDamageSelectionDialog(message, targets) {
           refreshPreview();
         });
 
-        for (const { token, items } of durabilityTargets) {
+        for (const { token, items, stoneSkin } of durabilityTargets) {
           const select = html.find(`select[name="durability-item-${token.id}"]`);
 
           select.on("change", () => {
             const itemId = select.val();
             const item = items.find((i) => i.id === itemId) ?? null;
+            const pickedStoneSkin =
+              itemId === STONE_SKIN_DURABILITY && stoneSkin > 0;
 
-            // Picking an item always sacrifices exactly one durability point.
-            durabilityState[token.id] = item ? { itemId, points: 1 } : null;
+            // Picking an item (or Stone Skin) always sacrifices exactly one
+            // durability point.
+            durabilityState[token.id] =
+              item || pickedStoneSkin ? { itemId, points: 1 } : null;
             refreshPreview();
           });
         }
@@ -2993,7 +3236,7 @@ async function applyEffectToActor(
   actor,
   effectId,
   stacks = 1,
-  { caster = null, school = null } = {},
+  { caster = null, school = null, bonusArmor = 0 } = {},
 ) {
   // Akrobat II: a knock-down the victim may roll out of.
   if (effectId === "prone" && (await acrobatEvade(actor))) return;
@@ -3007,11 +3250,37 @@ async function applyEffectToActor(
     return;
   }
 
-  return await game.redsteel.applyEffect(actor, effectId, {
+  // Blesková odolnost: read before the apply, so only a NEW Stagger offers it.
+  const wasStaggered =
+    effectId === "stagger" && actor.statuses?.has("stagger") === true;
+  const applied = await game.redsteel.applyEffect(actor, effectId, {
     stacks,
     caster,
     school,
+    // Kyselinová střela's extra armor damage (Corrosion only), off the card.
+    ...(bonusArmor && { bonusArmor }),
   });
+  // Astramancer → Blesková odolnost: the holder may spend 10 Mana to shake
+  // the new Stagger off, through an owner's card (mancerFollowups.mjs).
+  if (
+    effectId === "stagger" &&
+    !wasStaggered &&
+    applied &&
+    hasMancerNode(actor, "astramancer", "bleskovaOdolnost") &&
+    (Number(actor.system?.stats?.mana?.value) || 0) >= 10
+  ) {
+    await offerLightningResilience(actor, applied);
+  }
+  return applied;
+}
+
+/** The actor's Poison and its stacks, or nulls (Travič III, below). */
+function poisonStateOf(actor) {
+  const effect = actor?.effects?.contents.find((e) => e.statuses?.has("poison")) ?? null;
+  return {
+    effect,
+    stacks: effect ? Number(effect.getFlag("redsteel", "stacks")) || 1 : 0,
+  };
 }
 
 /**
@@ -3023,6 +3292,102 @@ function getCastingContext(message) {
   const flags = message?.flags?.redsteel ?? {};
   const caster = flags.casterUuid ? fromUuidSync(flags.casterUuid) : null;
   return { caster, school: flags.spellSchool ?? null };
+}
+
+/* -------------------------------------------- */
+/*  Rušivá kouzla (Vitamancer)                  */
+/* -------------------------------------------- */
+
+/**
+ * The card rows Rušivá kouzla adds (helpers/mancerPassives.mjs). Neither is a
+ * status: both Apply paths resolve a ticked one here and skip it in their
+ * effect loop.
+ */
+const DISRUPTIVE_ROWS = ["dispel", "clearStagger"];
+
+/**
+ * Statuses a Dispel never takes away, even when a spell made them: the brink
+ * of death, lying down and Hibernation are states, not spells.
+ */
+const DISPEL_SPARED_STATUSES = [
+  "dying",
+  "downed",
+  "dead",
+  "prone",
+  "incapacitated",
+  "hibernation",
+];
+
+/**
+ * Resolve the target's ticked Dispel / Clear Stagger rows before the card's
+ * other effects land on it, so a Dispel never strips what this same card is
+ * about to apply. Immunity and Magic Shield do not stop either row.
+ *
+ *   dispel        deletes every effect a spell made (flags.redsteel.castBy,
+ *                 stamped by documents/effects.mjs only for an explicit spell
+ *                 caster), except a shield marked not dispellable and the
+ *                 statuses in DISPEL_SPARED_STATUSES.
+ *   clearStagger  deletes the target's Stagger.
+ *
+ * Each posts one plain chat line when it removed something.
+ *
+ * @param {Actor} actor
+ * @param {TokenDocument} tokenDoc
+ * @param {object} effects   The card's effect rows.
+ * @param {string[]} ticked  The rows ticked for this target.
+ */
+async function resolveDisruptiveRows(actor, tokenDoc, effects, ticked) {
+  const speaker = ChatMessage.getSpeaker({ token: tokenDoc, actor });
+
+  if (ticked.includes("dispel") && effects?.dispel) {
+    const spellMade = actor.effects.contents.filter((e) => {
+      const castBy = e.getFlag("redsteel", "castBy");
+      if (typeof castBy !== "string" || !castBy) return false;
+      if (e.getFlag("redsteel", "shield")?.dispellable === false) return false;
+      return !DISPEL_SPARED_STATUSES.some((status) => e.statuses?.has(status));
+    });
+    const ids = new Set(spellMade.map((e) => e.id));
+    // A condition's sub-effects go with it (the deleteActiveEffect hook in
+    // documents/effects.mjs), so they are not deleted, or counted, twice.
+    const doomed = spellMade.filter(
+      (e) => !ids.has(e.getFlag("redsteel", "conditionParent")),
+    );
+    if (doomed.length) {
+      await actor.deleteEmbeddedDocuments(
+        "ActiveEffect",
+        doomed.map((e) => e.id),
+      );
+      await ChatMessage.create({
+        speaker,
+        content: `<div style="text-align:center;">${game.i18n.format(
+          "REDSTEEL.MancerPassive.Dispelled",
+          {
+            target: foundry.utils.escapeHTML(actor.name),
+            count: doomed.length,
+          },
+        )}</div>`,
+      });
+    }
+  }
+
+  if (ticked.includes("clearStagger") && effects?.clearStagger) {
+    const staggers = actor.effects.contents.filter((e) =>
+      e.statuses?.has("stagger"),
+    );
+    if (staggers.length) {
+      await actor.deleteEmbeddedDocuments(
+        "ActiveEffect",
+        staggers.map((e) => e.id),
+      );
+      await ChatMessage.create({
+        speaker,
+        content: `<div style="text-align:center;">${game.i18n.format(
+          "REDSTEEL.MancerPassive.StaggerCleared",
+          { target: foundry.utils.escapeHTML(actor.name) },
+        )}</div>`,
+      });
+    }
+  }
 }
 
 /* -------------------------------------------- */
@@ -3062,7 +3427,10 @@ export async function handleApplyEffects(messageId) {
 }
 
 function openEffectSelectionDialog(message, targets) {
-  const effects = message.flags.effects || {};
+  // Řetězení's Chain row needs damage: it is only offered by Apply Damage.
+  const effects = Object.fromEntries(
+    Object.entries(message.flags.effects || {}).filter(([name]) => name !== "chain"),
+  );
 
   const renderPreview = () =>
     targets
@@ -3169,6 +3537,8 @@ export async function applyEffectsAsGM(data) {
   const { messageId, targetIds, sceneId, selectedEffects } = data;
 
   const message = game.messages.get(messageId);
+  // Kamenná kůže: its Stagger card is used once (mancerFollowups.mjs).
+  if (!(await claimMancerFollowup(message))) return;
   const effects = message.flags?.effects || {};
   const scene = game.scenes.get(sceneId);
   const castingContext = getCastingContext(message);
@@ -3181,7 +3551,12 @@ export async function applyEffectsAsGM(data) {
     if (!actor) continue;
 
     const allowedEffects = selectedEffects?.[tokenId] || [];
+    // Rušivá kouzla: Dispel and Clear Stagger first, as on Apply Damage.
+    await resolveDisruptiveRows(actor, tokenDoc, effects, allowedEffects);
     for (const effectId of allowedEffects) {
+      // Řetězení's Chain needs damage (Apply Damage only), never an effect.
+      if (effectId === "chain") continue;
+      if (DISRUPTIVE_ROWS.includes(effectId)) continue;
       const effectData = effects[effectId];
       if (!effectData) continue;
 
@@ -3200,12 +3575,20 @@ export async function applyEffectsAsGM(data) {
 
       // Read before the apply, for Urhanova síla below.
       const wasStaggered = actor.statuses?.has("stagger") === true;
-      const applied = await applyEffectToActor(
-        actor,
-        effectId,
-        stacks,
-        castingContext,
-      );
+      // And for Travič III (mancerFollowups.mjs offerPoisonerRedirect).
+      const poisonBefore = effectId === "poison" ? poisonStateOf(actor) : null;
+      const applied = await applyEffectToActor(actor, effectId, stacks, {
+        ...castingContext,
+        ...(effectId === "corrosion" && {
+          bonusArmor: Number(effectData.bonusArmor) || 0,
+        }),
+      });
+      // A redirect card itself never offers another redirect.
+      if (poisonBefore?.effect && !message.flags?.redsteel?.poisonerRedirect) {
+        await offerPoisonerRedirect(castingContext, message, scene, tokenDoc, {
+          addedStack: poisonStateOf(actor).stacks > poisonBefore.stacks,
+        });
+      }
       if (
         effectId === "stagger" &&
         applied &&

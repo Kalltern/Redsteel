@@ -45,7 +45,7 @@
           },
           {
             "key": "system.secondaryAttributes.spd.max",
-            "value": -5,
+            "value": -1,
             "priority": null,
             "type": "add"
           },

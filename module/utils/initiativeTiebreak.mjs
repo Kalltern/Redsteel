@@ -23,7 +23,10 @@
  */
 
 import { buildSpeedTestFormula, tagSpeedTest } from "./speedTest.mjs";
-import { collectRoundEntry } from "./roundDigest.mjs";
+import {
+  collectRoundEntry,
+  diceSoNiceSkipsInitiative,
+} from "./roundDigest.mjs";
 
 const SOCKET = "system.redsteel";
 const SOCKET_TYPE = "resolveInitiativeTies";
@@ -253,9 +256,15 @@ async function reportTies(lines) {
   ]) {
     if (!subset.length) continue;
     const rolls = subset.flatMap((l) => l.rolls);
+    // Turn order dice: Dice So Nice's "Disabled for Initiative rolls" applies
+    // to them too, through its documented per-message skip flag.
     const data = {
       speaker,
       content: `<p class="rs-card-headline"><b>${label}</b></p><ul>${render(subset)}</ul>`,
+      flags: {
+        core: { initiativeRoll: true },
+        ...(diceSoNiceSkipsInitiative() && { "dice-so-nice": { skip: true } }),
+      },
     };
     if (rolls.length) data.rolls = rolls;
     if (whisper) data.whisper = whisper;

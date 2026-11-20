@@ -68,7 +68,7 @@
       "extra3": 0
     },
     "roll": {
-      "diceBonus": ""
+      "diceBonus": "@Half"
     },
     "penetration": null,
     "class": "attack",

@@ -107,6 +107,7 @@ import { usePotion } from "./utils/usePotion.mjs";
 import { usePoison, clearWeaponCoating } from "./utils/usePoison.mjs";
 import {
   badDodgeMargin,
+  buildAttackPacket,
   defenseRoll,
   isBadDodge,
   registerDefendButton,
@@ -119,6 +120,10 @@ import { registerHopliteHooks } from "./utils/hoplite.mjs";
 import { registerSkirmisherHooks } from "./utils/skirmisher.mjs";
 import { registerSharpshooterHooks } from "./utils/sharpshooter.mjs";
 import { registerVeneficusHooks } from "./utils/veneficus.mjs";
+import {
+  registerMancerFollowupHooks,
+  resolveLightningResilienceAsGM,
+} from "./utils/mancerFollowups.mjs";
 import {
   canSpendResource,
   resourceLabel,
@@ -213,9 +218,11 @@ import {
   restAndRecover,
   longRest,
   firstAid,
+  magesRest,
   registerFirstAidHealing,
   advanceCombatFirstAid,
 } from "./utils/otherActions.mjs";
+import { syncSpecialisationPassive } from "./helpers/specialisations.mjs";
 import {
   addAimStack,
   removeAimStack,
@@ -307,6 +314,22 @@ import {
   channelingRerollTokens,
   isNodeRerollId,
 } from "./utils/rerolls.mjs";
+import {
+  applyPanelReroll,
+  confirmSupersede,
+  holdPanel,
+  panelRerollContext,
+  primaryPanelId,
+  releasePanel,
+} from "./utils/marginReroll.mjs";
+import {
+  cardMarginAnswers,
+  flashRecentReroll,
+  renderHistory,
+  replaceRollRegions,
+  rerollsInPlace,
+  writeRerollInPlace,
+} from "./utils/rerollInPlace.mjs";
 import { settleMagicEcho } from "./utils/elymas.mjs";
 import {
   registerIncantatorHooks,
@@ -447,6 +470,8 @@ Hooks.once("init", function () {
     RedsteelActiveEffect.applyEffect.bind(RedsteelActiveEffect);
   game.redsteel.adjustEffectAmount =
     RedsteelActiveEffect.adjustEffectAmount.bind(RedsteelActiveEffect);
+  game.redsteel.removeEffectStacks =
+    RedsteelActiveEffect.removeStacks.bind(RedsteelActiveEffect);
   game.redsteel.applyZeroHealthState = applyZeroHealthState;
   game.redsteel.endDyingIfHealed = endDyingIfHealed;
   game.redsteel.endDownedIfRecovered = endDownedIfRecovered;
@@ -472,6 +497,8 @@ Hooks.once("init", function () {
   game.redsteel.restAndRecover = restAndRecover;
   game.redsteel.environmentalDamage = environmentalDamage;
   game.redsteel.longRest = longRest;
+  // Vitamancer → Mágův odpočinek: the once-a-day Meditation test (otherActions.mjs).
+  game.redsteel.magesRest = magesRest;
   game.redsteel.spellDefense = spellDefense;
   game.redsteel.attackActions = attackActions;
   game.redsteel.meleeAttack = meleeAttack;
@@ -605,6 +632,9 @@ Hooks.once("init", function () {
   // Veneficus: the empowering schools on a weapon attack card and Magic
   // Momentum's half-damage stamp on a cast card (veneficus.mjs).
   registerVeneficusHooks();
+  // Kryomancer / Geomancer: the Ice Shards and Stone Skin card buttons
+  // (mancerFollowups.mjs).
+  registerMancerFollowupHooks();
   // Incantator: Precise Incantation's chat buttons and its GM relay.
   registerIncantatorHooks();
   // Warden batch 1: shield strain on a held Cover, Protection (Guard) on an
@@ -1077,52 +1107,61 @@ Hooks.once("ready", () => {
     // ------------------------
     // GM AUTHORITY ACTIONS
     // ------------------------
+    // Only the active GM handles these: every connected GM receives the
+    // socket, so a plain isGM gate landed a player's request once per GM.
 
     if (data.type === "applyDamage") {
-      if (!game.user.isGM) return;
+      if (!game.users.activeGM?.isSelf) return;
       await applyDamageAsGM(data);
     }
 
     if (data.type === "applyEffects") {
-      if (!game.user.isGM) return;
+      if (!game.users.activeGM?.isSelf) return;
       await applyEffectsAsGM(data);
     }
 
     // Velení: a Commander buffing allies they do not own.
     if (data.type === "commandApply") {
-      if (!game.user.isGM) return;
+      if (!game.users.activeGM?.isSelf) return;
       await applyCommandAsGM(data);
     }
 
     if (data.type === "applyHealing") {
-      if (!game.user.isGM) return;
+      if (!game.users.activeGM?.isSelf) return;
       await applyHealingAsGM(data);
     }
 
     if (data.type === "mentalDuelApply") {
-      if (!game.user.isGM) return;
+      if (!game.users.activeGM?.isSelf) return;
       await applyMentalDuelLossAsGM(data);
     }
 
     if (data.type === "bindingStrike") {
-      if (!game.user.isGM) return;
+      if (!game.users.activeGM?.isSelf) return;
       await _resolveBindingStrikeAsGM(data);
     }
 
     // Scripted spells that touch actors the caster may not own.
     if (data.type === "woundExchange") {
-      if (!game.user.isGM) return;
+      if (!game.users.activeGM?.isSelf) return;
       await resolveWoundExchangeAsGM(data);
     }
 
     if (data.type === "bloodGift") {
-      if (!game.user.isGM) return;
+      if (!game.users.activeGM?.isSelf) return;
       await resolveBloodGiftAsGM(data);
     }
 
     if (data.type === "magicRope") {
-      if (!game.user.isGM) return;
+      if (!game.users.activeGM?.isSelf) return;
       await resolveMagicRopeAsGM(data);
+    }
+
+    // Astramancer → Blesková odolnost: a player spends 10 Mana to shake off
+    // a Stagger (utils/mancerFollowups.mjs).
+    if (data.type === "lightningResilience") {
+      if (!game.users.activeGM?.isSelf) return;
+      await resolveLightningResilienceAsGM(data);
     }
 
     // Not GM-gated: every client decides for itself whether to show the duel.
@@ -1304,7 +1343,7 @@ Hooks.once("ready", () => syncSpellMagicAttack());
 /* -------------------------------------------- */
 Hooks.once("ready", () => {
   game.socket.on("system.redsteel", async (data) => {
-    if (!game.user.isGM) return;
+    if (!game.users.activeGM?.isSelf) return;
 
     if (data.type === "dynamicInitiativeNextRound") {
       const combat = game.combats.get(data.combatId);
@@ -1872,14 +1911,22 @@ function buildAttackRerollFlag(message, roll, { critSuccess, critFailure }) {
  * new die — which is also what decides whether the defender may still claim
  * Temporary Health or buy an Advantageous Maneuver off this card.
  *
+ * `versusAttack` replaces the stored attack: a defense re-judged because the
+ * attack it answered was rerolled in place keeps its own die and contests
+ * the attack's new numbers (rejudgeDefensesFor).
+ *
  * @returns {{flags: object, html: string}}
  */
 function buildDefenseRerollParts(
   message,
   roll,
   { critSuccess, critFailure, d100 },
+  { versusAttack: answeredOverride = null } = {},
 ) {
-  const flags = message.flags?.redsteel ?? {};
+  const stored = message.flags?.redsteel ?? {};
+  const flags = answeredOverride
+    ? { ...stored, versusAttack: answeredOverride }
+    : stored;
   // A Magic Defense card has no reroll tokens and keeps its record apart
   // (defense.mjs rollMagicDefense): restated on its own terms below.
   if (flags.magicDefense) {
@@ -1970,6 +2017,87 @@ function buildDefenseRerollParts(
 }
 
 /**
+ * An attack card was rerolled in place: every defense already rolled against
+ * it is judged again (user ruling 2026-11-19). The defender's die stands; only
+ * the comparison with the attack's new numbers changes. Each defense card is
+ * rewritten in place and stamped `rejudgedAt`, which code reading a defense's
+ * outcome treats like a reroll (rerollInPlace.mjs isInPlaceRerollUpdate).
+ *
+ * Active GM only: the defense cards often belong to someone else.
+ *
+ * @param {ChatMessage} attackMessage  The attack card, already updated.
+ */
+async function rejudgeDefensesFor(attackMessage) {
+  const attack = attackMessage?.flags?.attack;
+  if (attack?.type !== "attack") return;
+  const packet = buildAttackPacket(attackMessage);
+  for (const defense of game.messages?.contents ?? []) {
+    const flags = defense.flags?.redsteel ?? {};
+    if (flags.rerolledAway) continue;
+    // A Magic Defense keeps the attack it answered inside its own record.
+    const record = flags.magicDefense ?? null;
+    const answered = record ? record.versusAttack : flags.versusAttack;
+    if (answered?.messageId !== attackMessage.id) continue;
+    const roll = defense.rolls?.[0];
+    const d100 = roll?.dice?.[0]?.total ?? null;
+    if (!roll || d100 === null) continue;
+
+    const cst = Number(flags.criticalSuccessThreshold);
+    const cft = Number(flags.criticalFailureThreshold);
+    const critSuccess =
+      !isHopelessNatural(roll) && Number.isFinite(cst) && d100 <= cst;
+    const critFailure = Number.isFinite(cft) && d100 >= cft;
+    const versusAttack = { ...answered, ...packet };
+    const parts = record
+      ? await buildMagicDefenseRerollParts(
+          defense,
+          roll,
+          { critSuccess, critFailure, d100 },
+          { versusAttack },
+        )
+      : buildDefenseRerollParts(
+          defense,
+          roll,
+          { critSuccess, critFailure, d100 },
+          { versusAttack },
+        );
+    const headline = critSuccess
+      ? record
+        ? game.i18n.localize("REDSTEEL.Fold.CriticalSuccess")
+        : "Critical Success!"
+      : critFailure
+        ? record
+          ? game.i18n.localize("REDSTEEL.Fold.CriticalFailure")
+          : "Critical Failure!"
+        : parts.badDodge
+          ? game.i18n.localize("REDSTEEL.Defense.BadDodge")
+          : "";
+    const note = `<p class="rs-reroll-history"><i class="fa-light fa-rotate"></i> ${game.i18n.localize("REDSTEEL.Reroll.Rejudged")}</p>`;
+    const live = `${headline ? `<p class="rs-card-headline"><b>${headline}</b></p>` : ""}${parts.html}${note}${renderHistory(flags.rerollHistory ?? [])}`;
+
+    const update = {
+      flavor: replaceRollRegions(defense.flavor, live),
+      [`flags.redsteel.rejudgedAt`]: Date.now(),
+    };
+    for (const [key, value] of Object.entries(parts.flags)) {
+      update[`flags.redsteel.${key}`] = value;
+    }
+    await defense.update(update);
+  }
+}
+
+Hooks.on("updateChatMessage", (message, changed) => {
+  if (!game.users.activeGM?.isSelf) return;
+  if (message.flags?.attack?.type !== "attack") return;
+  if (!foundry.utils.hasProperty(changed ?? {}, "flags.redsteel.rerollHistory")) {
+    return;
+  }
+  rejudgeDefensesFor(message).catch((err) =>
+    console.error("Redsteel | Re-judging the defenses failed", err),
+  );
+});
+
+/**
  * Restate a Magic Defense card for a rerolled die: the same attack contested
  * again, the record (`magicDefense`) rewritten for the new verdict, and
  * Elymas Magická ozvěna paid if the new die makes it a Critical Magic
@@ -1981,9 +2109,14 @@ async function buildMagicDefenseRerollParts(
   message,
   roll,
   { critSuccess, critFailure, d100 },
+  { versusAttack: answeredOverride = null } = {},
 ) {
   const flags = message.flags?.redsteel ?? {};
-  const record = flags.magicDefense;
+  // A Magic Defense re-judged against its spell's in-place reroll contests
+  // the spell's new numbers (rejudgeDefensesFor).
+  const record = answeredOverride
+    ? { ...flags.magicDefense, versusAttack: answeredOverride }
+    : flags.magicDefense;
   const defender = ChatMessage.getSpeakerActor(message.speaker ?? {});
   const versus = renderVersusBlock(record.versusAttack ?? null, {
     defenseTotal: roll.total,
@@ -2194,6 +2327,41 @@ async function executeReroll(
       })
     : "";
 
+  // A card that opts in is rewritten where it stands (utils/rerollInPlace.mjs):
+  // same id, its description and buttons kept, only what the die decided
+  // replaced.
+  if (rerollsInPlace(message)) {
+    // A spell card's Magic ATK: fixed, or the cast roll plus its bonus.
+    const magicAttackFlag = message.getFlag("redsteel", "magicAttack");
+    const magicAttack = magicAttackFlag
+      ? (magicAttackFlag.fixed ?? roll.total + (Number(magicAttackFlag.bonus) || 0))
+      : null;
+    await writeRerollInPlace(message, roll, {
+      magicAttack,
+      sourceLabel,
+      kept: keptText,
+      live: `${followupOutcome}${flavorText ? `<p class="rs-card-headline"><b>${flavorText}</b></p>` : ""}${defenseParts.html}${versusNote}${rescuedNote}`,
+      flags: {
+        ...carried,
+        ...defenseParts.flags,
+        ...(pendingCast ? { pendingCast: rescued ? null : pendingCast } : {}),
+        ...extraFlags,
+      },
+      attackFlag,
+    });
+    if (spellCritFail) {
+      await retireCritFailPrompts(message.id);
+      const caster = await fromUuid(message.getFlag("redsteel", "casterUuid") ?? "");
+      if (critFailure && caster) {
+        await postCritFailPrompt(caster, {
+          ...spellCritFail,
+          sourceMessageId: message.id,
+        });
+      }
+    }
+    return message;
+  }
+
   const created = await roll.toMessage({
     speaker: message.speaker ?? ChatMessage.getSpeaker({ user: game.user }),
     flavor: `<p class="rs-card-headline"><b><i class="fa-light fa-dice-d20"></i> ${rollName} <i class="fa-light fa-dice-d20"></i><hr></b></p>${followupOutcome}
@@ -2340,8 +2508,29 @@ function channelingNodeReroll(message) {
 
 async function handleRerollClick(
   message,
-  { rerun = null, tokens: tokenOverride = null } = {},
+  {
+    rerun = null,
+    tokens: tokenOverride = null,
+    // A versus Test panel inside the card (marginReroll.mjs): it rolls and
+    // rewrites itself, `inPlace(label, {onCritSuccess})`, instead of a new
+    // card. It names its own Critical Failure and whether it is a combat
+    // Strength Test, since the card's first roll is not the test.
+    inPlace = null,
+    critFailure: critFailureOverride = null,
+    combatStrength = null,
+  } = {},
 ) {
+  // Spend-and-roll, once a reroll is paid for: in place, a rerun of the whole
+  // attempt (old card retired), or the generic new card.
+  const runReroll = async (label, options = {}) => {
+    if (inPlace) return inPlace(label, options);
+    if (rerun) {
+      const created = await rerun(label);
+      await markRerolledAway(message, created);
+      return;
+    }
+    await executeReroll(message, label, options);
+  };
   // Who spends the reroll: the actor who made the roll when the message
   // carries one. Older/actorless messages fall back to the clicking user's
   // controlled token (must be owned — this is how a GM picks the character),
@@ -2384,7 +2573,10 @@ async function handleRerollClick(
   // Lucky) — see getEligibleRerolls.
   const d100 = message.rolls?.[0]?.dice?.[0]?.total ?? message.rolls?.[0]?.total;
   const cft = Number(message.flags?.redsteel?.criticalFailureThreshold);
-  const wasCritFailure = Number.isFinite(cft) && d100 >= cft;
+  const wasCritFailure =
+    typeof critFailureOverride === "boolean"
+      ? critFailureOverride
+      : Number.isFinite(cft) && d100 >= cft;
 
   const eligible = getEligibleRerolls(actor, tokens, {
     critFailure: wasCritFailure,
@@ -2397,6 +2589,7 @@ async function handleRerollClick(
   // (vanguard.mjs).
   const strengthReroll = vanguardStrengthRerollOption(actor, message, {
     critFailure: wasCritFailure,
+    combatStrength,
   });
   if (strengthReroll) eligible.push(strengthReroll);
   if (!eligible.length) {
@@ -2418,12 +2611,7 @@ async function handleRerollClick(
   // give back and nothing for the calendar to refresh.
   if (isVanguardStrengthReroll(chosen)) {
     if (!(await payVanguardStrengthReroll(actor))) return false;
-    if (rerun) {
-      const created = await rerun(chosen.label);
-      await markRerolledAway(message, created);
-    } else {
-      await executeReroll(message, chosen.label);
-    }
+    await runReroll(chosen.label);
     return true;
   }
 
@@ -2445,12 +2633,7 @@ async function handleRerollClick(
     if (staminaCost > 0 && !(await spendResource(actor, "stamina", staminaCost))) {
       return false;
     }
-    if (rerun) {
-      const created = await rerun(chosen.label);
-      await markRerolledAway(message, created);
-    } else {
-      await executeReroll(message, chosen.label);
-    }
+    await runReroll(chosen.label);
     return true;
   }
 
@@ -2483,12 +2666,8 @@ async function handleRerollClick(
       }
     : null;
 
-  if (rerun) {
-    const created = await rerun(chosen.label);
-    await markRerolledAway(message, created);
-  } else {
-    await executeReroll(message, chosen.label, { onCritSuccess });
-  }
+  // A rerun re-runs the whole attempt and never had the refund hook.
+  await runReroll(chosen.label, rerun ? {} : { onCritSuccess });
 
   // Scheduled after the reroll so a charge Combat Master gave back never gets
   // a calendar refresh it no longer needs.
@@ -2541,7 +2720,8 @@ Hooks.on("renderChatMessageHTML", (message, html, data) => {
   }
 
   // Check if the current user is the one who made the roll
-  if (game.user.id === message.author?.id) {
+  const isAuthor = game.user.id === message.author?.id;
+  if (isAuthor) {
     // Add logic to check if the message is a roll message and create a reroll button
     // Match 1d100 tests as well as advantage/disadvantage variants (2d100kl/kh)
     const hasTestRoll = message.rolls?.some((r) => /\d+d100/i.test(r.formula));
@@ -2580,6 +2760,19 @@ Hooks.on("renderChatMessageHTML", (message, html, data) => {
         // keeps the existing free Re-Roll, unless the roller holds a node pool
         // that answers a Channeling roll (Elymas "1x za den opakovat hod na
         // Usměrňování", rerolls.mjs): then the picker spends it.
+        // An ability card whose only roll is its Test Type: the card's roll is
+        // that panel's test, so its Re-Roll is the panel's (marginReroll.mjs).
+        const primaryPanel = primaryPanelId(message);
+        if (primaryPanel) {
+          await rerollPanel(message, primaryPanel);
+          return;
+        }
+        // A card rerolled in place moves its own margin: anyone who already
+        // answered it is asked about first (rerollInPlace.mjs).
+        if (rerollsInPlace(message)) {
+          const answered = cardMarginAnswers(message).length;
+          if (answered && !(await confirmSupersede(answered))) return;
+        }
         if (
           message.getFlag("redsteel", "skill") ||
           message.getFlag("redsteel", "rerollTokens")
@@ -2594,7 +2787,12 @@ Hooks.on("renderChatMessageHTML", (message, html, data) => {
         }
       });
     }
+  }
 
+  // Apply Damage shows for the roller and for any GM, so the GM can resolve a
+  // player's attack card with the GM's own targets (handleApplyDamage reads
+  // game.user.targets and applies directly when the clicker is the GM).
+  if (isAuthor || game.user.isGM) {
     // Only create Apply Damage if this is an attack message. A card the system
     // already applied itself (forced-movement collisions) gets none, so it
     // cannot land twice.
@@ -2620,6 +2818,9 @@ Hooks.on("renderChatMessageHTML", (message, html, data) => {
         await handleApplyDamage(message.id);
       });
     }
+  }
+
+  if (isAuthor) {
     // --- Apply Healing (heal cards carry a `heal` flag, never an `attack`) ---
     if (message.flags?.heal) {
       let buttonContainer = html.querySelector(".button-container");
@@ -2642,7 +2843,15 @@ Hooks.on("renderChatMessageHTML", (message, html, data) => {
       });
     }
     // --- Apply Effects (ONLY if no attack but has effects) ---
-    if (!message.flags?.attack && message.flags?.effects) {
+    // Kamenná kůže's card carries its Stagger as `effects` for the GM relay
+    // but has a button of its own (mancerFollowups.mjs), and so does Travič
+    // III's Poison redirect card.
+    if (
+      !message.flags?.attack &&
+      message.flags?.effects &&
+      !message.flags?.redsteel?.stoneSkinSacrifice &&
+      !message.flags?.redsteel?.poisonerRedirect
+    ) {
       const effects = message.flags.effects;
 
       if (Object.keys(effects).length > 0) {
@@ -2822,6 +3031,95 @@ Hooks.once("ready", async () => {
   for (const scene of game.scenes.contents) {
     for (const token of scene.tokens.contents) {
       if (!token.actorLink) await migrateActor(token.actor);
+    }
+  }
+});
+
+// Astramancer's "Snížená šance být Omráčen" node lowered the chance to be
+// Stunned, but the book's Omráčení is Stagger in this system. The node's
+// passive now targets effectMods.stagger (helpers/specialisations-generated.mjs);
+// this rewrites the copies already made on unlock (actors, their owned items,
+// world items, unlinked tokens) and renames them to the node's new label.
+// Idempotent: once run, nothing matches.
+Hooks.once("ready", async () => {
+  if (!game.user.isGM) return;
+
+  const SPEC_NODE = "astramancer.stunResist";
+  const OLD_KEY = "system.effectMods.stun.applyChance";
+  const NEW_KEY = "system.effectMods.stagger.applyChance";
+  const label = game.i18n.localize(
+    "REDSTEEL.Actor.Specialisations.astramancer.nodes.stunResist.label",
+  );
+
+  async function migrateEffects(effects) {
+    for (const effect of effects) {
+      if (effect.getFlag("redsteel", "specNode") !== SPEC_NODE) continue;
+      const source = effect.toObject();
+      // V14 stores changes under system.changes; older data kept them top-level.
+      const path = Array.isArray(source.system?.changes)
+        ? "system.changes"
+        : "changes";
+      const changes = foundry.utils.getProperty(source, path);
+      if (!Array.isArray(changes)) continue;
+      if (!changes.some((c) => c.key === OLD_KEY)) continue;
+
+      for (const change of changes) {
+        if (change.key === OLD_KEY) change.key = NEW_KEY;
+      }
+      console.log(
+        `Redsteel | stunResist stun → stagger: ${effect.parent?.name} / ${effect.name}`,
+      );
+      await effect.update({ [path]: changes, name: label });
+    }
+  }
+
+  async function migrateActor(actor) {
+    if (!actor) return;
+    await migrateEffects(actor.effects.contents);
+    for (const item of actor.items.contents) {
+      await migrateEffects(item.effects.contents);
+    }
+  }
+
+  for (const item of game.items.contents) {
+    await migrateEffects(item.effects.contents);
+  }
+  // Base actors first, so unlinked tokens that merely inherit an effect already
+  // read the fixed key and only genuine token-level copies get written.
+  for (const actor of game.actors.contents) await migrateActor(actor);
+  for (const scene of game.scenes.contents) {
+    for (const token of scene.tokens.contents) {
+      if (!token.actorLink) await migrateActor(token.actor);
+    }
+  }
+});
+
+// Vitamancer's Rychlá léčba (system.woundHealDays -10) and Sebekontrola
+// (Poison resistance) gained passive Active Effects
+// (helpers/specialisations-generated.mjs) after characters had already
+// unlocked them; the unlock is what makes the effect, so those characters have
+// none. This makes it for every holder (world actors, then unlinked tokens).
+// Idempotent: syncSpecialisationPassive skips a node whose effect exists.
+Hooks.once("ready", async () => {
+  if (game.user.id !== game.users.activeGM?.id) return;
+
+  const NODES = ["rychlaLecba", "sebekontrola"];
+  async function backfill(actor) {
+    if (actor?.type !== "character") return;
+    const held = actor.system.specialisations?.vitamancer?.nodes ?? {};
+    for (const node of NODES) {
+      if (held[node]) {
+        await syncSpecialisationPassive(actor, "vitamancer", node, true);
+      }
+    }
+  }
+
+  // Base actors first, so an unlinked token that inherits the new effect
+  // already finds it and writes nothing to its delta.
+  for (const actor of game.actors.contents) await backfill(actor);
+  for (const scene of game.scenes.contents) {
+    for (const token of scene.tokens.contents) {
+      if (!token.actorLink) await backfill(token.actor);
     }
   }
 });
@@ -4363,7 +4661,67 @@ Hooks.on("deleteCombatant", async (combatant) => {
 Hooks.on("renderChatMessageHTML", (message, html) => {
   wireAttributeFollowups(html);
   wireSpeedFollowups(html);
+  wirePanelRerolls(message, html);
+  flashRecentReroll(message, html);
 });
+
+/**
+ * The small reroll icon on a versus Test panel inside a bigger card
+ * (marginReroll.mjs): rolls that one test again and rewrites the panel, the
+ * card's other rolls untouched. The roller and the GM see it; a card that
+ * was itself rerolled away loses it.
+ *
+ * @param {ChatMessage} message
+ * @param {HTMLElement} html
+ */
+function wirePanelRerolls(message, html) {
+  const icons = html.querySelectorAll(".rs-mos-reroll");
+  if (!icons.length) return;
+  const allowed =
+    (message.isAuthor || game.user.isGM) &&
+    !message.getFlag("redsteel", "rerolledAway");
+  for (const icon of icons) {
+    if (!allowed) {
+      icon.remove();
+      continue;
+    }
+    icon.addEventListener("click", async (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      await rerollPanel(message, icon.dataset.panel);
+    });
+  }
+}
+
+/**
+ * Reroll one versus Test panel of a card, in place (marginReroll.mjs): ask
+ * first when someone already answered it, then spend through the picker.
+ *
+ * @param {ChatMessage} message
+ * @param {string} panelId
+ */
+async function rerollPanel(message, panelId) {
+  if (!holdPanel(panelId)) return;
+  try {
+    const context = panelRerollContext(message, panelId);
+    if (!context) return;
+    if (
+      context.answers.length &&
+      !(await confirmSupersede(context.answers.length))
+    ) {
+      return;
+    }
+    await handleRerollClick(message, {
+      tokens: context.tokens,
+      critFailure: context.critFailure,
+      combatStrength: context.combatStrength,
+      inPlace: (label, options) =>
+        applyPanelReroll(message, panelId, label, options),
+    });
+  } finally {
+    releasePanel(panelId);
+  }
+}
 
 // On token deploy, apply status effects granted by the actor's trait features.
 // Only the creating user runs this, to avoid duplicate application.

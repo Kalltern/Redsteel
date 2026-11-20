@@ -5,7 +5,7 @@
   "img": "icons/commodities/biological/organ-brain-pink-purple.webp",
   "system": {
     "localizationKey": "REDSTEEL.Items.Genius.name",
-    "description": "<p>Intelligence attribute cap +1.<br data-start=\"1232\" data-end=\"1235\" />Skills derived from Intelligence (except Channeling) +5%.<br data-start=\"1292\" data-end=\"1295\" /><span style=\"color:rgb(239, 230, 216);font-family:Signika, 'Palatino Linotype', sans-serif;font-size:14px;font-style:normal;font-variant-ligatures:normal;font-variant-caps:normal;font-weight:400;letter-spacing:normal;orphans:2;text-align:start;text-indent:0px;text-transform:none;widows:2;word-spacing:0px;-webkit-text-stroke-width:0px;white-space:normal;background-color:rgba(12, 12, 12, 0.9);text-decoration-thickness:initial;text-decoration-style:initial;text-decoration-color:initial;display:inline !important;float:none\">May reroll a inteligence based skill once per day.</span></p>",
+    "description": "<p>Intelligence attribute cap +1.<br data-start=\"1232\" data-end=\"1235\" />Skills derived from Intelligence (except Channeling) +5%.<br data-start=\"1292\" data-end=\"1295\" /><span style=\"color:rgb(239, 230, 216);font-family:Signika, 'Palatino Linotype', sans-serif;font-size:14px;font-style:normal;font-variant-ligatures:normal;font-variant-caps:normal;font-weight:400;letter-spacing:normal;orphans:2;text-align:start;text-indent:0px;text-transform:none;widows:2;word-spacing:0px;-webkit-text-stroke-width:0px;white-space:normal;background-color:rgba(12, 12, 12, 0.9);text-decoration-thickness:initial;text-decoration-style:initial;text-decoration-color:initial;display:inline !important;float:none\">May reroll an intelligence based skill twice per day.</span></p>",
     "options": [
       "feature",
       "trait",
@@ -23,7 +23,7 @@
         {
           "label": "Intelligence-based skill",
           "skillsRaw": "int-based",
-          "max": 1,
+          "max": 2,
           "used": 0
         }
       ]

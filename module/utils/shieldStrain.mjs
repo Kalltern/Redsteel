@@ -34,6 +34,7 @@
  */
 
 import { actorHasSpecNode } from "../helpers/specialisations.mjs";
+import { isInPlaceRerollUpdate } from "./rerollInPlace.mjs";
 
 const SYSTEM_ID = "redsteel";
 
@@ -232,6 +233,15 @@ export function registerShieldStrainHooks() {
   let queue = Promise.resolve();
   Hooks.on("createChatMessage", (message) => {
     if (!game.users.activeGM?.isSelf) return;
+    queue = queue
+      .then(() => rollShieldStrain(message))
+      .catch((err) => console.error("Redsteel | Shield strain roll failed", err));
+  });
+  // A Cover rerolled in place (rerollInPlace.mjs) that now holds rolls the
+  // strain as its replacement card used to; one already rolled stays.
+  Hooks.on("updateChatMessage", (message, changed) => {
+    if (!game.users.activeGM?.isSelf) return;
+    if (!isInPlaceRerollUpdate(changed)) return;
     queue = queue
       .then(() => rollShieldStrain(message))
       .catch((err) => console.error("Redsteel | Shield strain roll failed", err));

@@ -3,7 +3,7 @@
   "type": "feature",
   "img": "icons/skills/melee/swords-parry-block-blue.webp",
   "system": {
-    "description": "<p>May reroll a Combat, Shooting, or Throw roll once per day.</p>",
+    "description": "<p>May reroll an attack (melee, ranged or thrown), a Melee Defense or a Ranged Defense test once per day.</p>",
     "options": [
       "feature",
       "trait",
@@ -20,7 +20,7 @@
       "pools": [
         {
           "label": "",
-          "skillsRaw": "combat, archery, throwing",
+          "skillsRaw": "combat, archery, throwing, meleeDefense, rangedDefense",
           "max": 1,
           "used": 0
         }

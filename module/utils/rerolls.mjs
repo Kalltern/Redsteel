@@ -234,17 +234,40 @@ export function getRerollTokensForSkill(actor, skillKey) {
  * The reroll tokens a weapon attack card emits: "attack" and the combat skill
  * it uses (combat/archery/throwing). No attribute token is emitted — an
  * attribute-scoped pool must never pay for an attack; the pool has to be
- * universal or list "attack" / the combat skill itself.
+ * universal or list "attack" / the combat skill itself (Silák's cell note:
+ * "včetně Útoku v Souboji" is its "combat" entry).
+ *
+ * A finesse weapon, melee or thrown, used by a character with the Finesse
+ * feature also emits "finesse": Mrštný's note rerolls "Útok pokud má Finesu".
+ *
+ * A throw rated on Perception emits "perceptionthrow", for Orlí smysly ("Test
+ * Vnímání nebo odvozené dovednosti"; Vrh is a Perception skill). A throw is
+ * on Perception unless the Finesse rating replaces it, by the same test the
+ * attack formula uses (combatSkillBonuses.mjs: a finesse weapon and a Finesse
+ * rating above the plain one).
  * @param {Item|null} weapon
+ * @param {Actor|null} [actor]  The attacker, read for the Finesse feature.
  * @returns {string[]}
  */
-export function getAttackRerollTokens(weapon = null) {
+export function getAttackRerollTokens(weapon = null, actor = null) {
   if (!weapon) return ["attack"];
   const cls = weapon.system?.class;
   let combatKey = "combat";
   if (cls === "bow" || cls === "crossbow") combatKey = "archery";
   else if (weapon.system?.thrown === true) combatKey = "throwing";
-  return ["attack", combatKey];
+  const tokens = ["attack", combatKey];
+  const finesseWeapon = weapon.system?.finesse === true;
+  if (finesseWeapon && actor?.system?.finesse === true) {
+    tokens.push("finesse");
+  }
+  if (combatKey === "throwing") {
+    const combat = actor?.system?.combatSkills?.combat ?? {};
+    const onFinesse =
+      finesseWeapon &&
+      Number(combat.finesseRating) > Number(combat.rating);
+    if (!onFinesse) tokens.push("perceptionthrow");
+  }
+  return tokens;
 }
 
 /**
@@ -733,6 +756,17 @@ export function getActorRerollPools(actor) {
   return sortByActorOrder(actor, out);
 }
 
+const CHOLERIC_KEY = "REDSTEEL.Items.Choleric.name";
+
+/** Whether the actor carries the Choleric temperament trait. */
+function isCholeric(actor) {
+  return (actor?.items?.contents ?? []).some(
+    (i) =>
+      i.type === "feature" &&
+      (i.system?.localizationKey === CHOLERIC_KEY || i.name === "Choleric"),
+  );
+}
+
 /**
  * Pools that can be spent to reroll a test emitting the given tokens: any pool
  * with `remaining > 0` that is universal or lists one of the (normalized)
@@ -764,6 +798,10 @@ export function getEligibleRerolls(
   const normalized = list.map((t) => normalizeTrigger(t)).filter(Boolean);
   const tokenSet = new Set(normalized);
   const isCombat = normalized.some((t) => COMBAT_TOKENS.has(t));
+
+  // Cholerik: "Nemůže opakovat hody na Testy Nervů". No pool, universal ones
+  // included, rerolls a Resolve test for a Choleric character.
+  if (tokenSet.has("res") && isCholeric(actor)) return [];
 
   return getActorRerollPools(actor).filter((pool) => {
     if (pool.remaining <= 0) return false;
@@ -1042,8 +1080,8 @@ export async function pickRerollPool(eligible) {
  * Restore every reroll the actor owns to ready (used = 0). Called on Long Rest.
  *
  * When the Calendaria integration is enabled, a pool under an active
- * crit-failure lockout (spent rerolling a natural Critical Failure — 7 days,
- * 5 for Lucky with Untiring Luck) is skipped here: the crit-failure lockout
+ * crit-failure lockout (Lucky spent rerolling a natural Critical Failure:
+ * 7 days, 5 with Untiring Luck) is skipped here: the crit-failure lockout
  * survives Long Rest by design, and only clears when the scheduled Calendaria
  * refresh fires. With the integration disabled, behavior is unchanged.
  *

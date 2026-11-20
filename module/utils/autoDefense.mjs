@@ -47,7 +47,7 @@ const MELEE_CLASSES = ["axe", "sword", "blunt", "polearm"];
  * it would quietly spend their stamina and their Overwhelm slot. The GM finishes
  * these by hand.
  */
-const BLOCKING_STATUSES = ["dying", "downed", "incapacitated", "dead"];
+const BLOCKING_STATUSES = ["dying", "downed", "incapacitated", "dead", "hibernation"];
 
 /**
  * Token ids the attacking user had targeted, for the card being posted.

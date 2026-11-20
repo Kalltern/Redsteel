@@ -22,6 +22,7 @@ import {
 import { resolveTestRating } from "./testRating.mjs";
 import {
   renderMarginFollowupLine,
+  marginPanelData,
   versusLossFor,
   versusAgainstFor,
   versusNatural,
@@ -276,6 +277,7 @@ export async function universalAttackLogic({
       against: versusAgainstFor(mod),
       heading: mod.localizedName ?? mod.name,
       natural,
+      panel: marginPanelData(attributeRoll, skillKey),
     })}
     </td>
     </tr>
@@ -652,10 +654,14 @@ export async function universalAttackLogic({
       : critFailure
         ? "Critical Failure!"
         : "";
-    const critBanner = critLabel
-      ? `<p class="rs-card-headline"><b>${critLabel}</b></p>
- <hr>`
-      : "";
+    // Marked as read off the die and always present, so a reroll in place
+    // (rerollInPlace.mjs) writes its own banner in the same spot.
+    const critBanner = `<div class="rs-roll-dep">${
+      critLabel
+        ? `<p class="rs-card-headline"><b>${critLabel}</b></p>
+<hr>`
+        : ""
+    }</div>`;
 
     // Skip the Description table entirely when there is nothing to put in it.
     const hasDescription = hasHtmlContent(concatDescription);
@@ -684,7 +690,7 @@ export async function universalAttackLogic({
 <div class="dual-roll">
   <div class="roll-column">
     <div class="roll-label">Margin of Success</div>
-    ${attackHTML}
+    <div class="rs-roll-html">${attackHTML}</div>
   </div>
   <div class="roll-column">
     <div class="roll-label">Damage Roll</div>
@@ -734,7 +740,9 @@ ${
           criticalFailureThreshold,
           traitPills: getTraitPills(actor, "attack"),
           attackTags,
-          rerollTokens: getAttackRerollTokens(weapon),
+          rerollTokens: getAttackRerollTokens(weapon, actor),
+          // A chat Re-Roll rewrites this card in place (rerollInPlace.mjs).
+          inPlaceReroll: true,
           // The weapon that swung, for Apply Damage readers that care which
           // (Hoplite Momentum, hoplite.mjs).
           weaponId: weapon?.id ?? null,

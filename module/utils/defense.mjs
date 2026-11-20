@@ -2306,7 +2306,7 @@ export async function defenseRoll({
           <span>${title}</span>
         </div>
         <hr>
-        <p class="rs-card-headline"><b>${
+        <p class="rs-card-headline rs-roll-dep"><b>${
           critSuccess
             ? game.i18n.localize("REDSTEEL.Fold.CriticalSuccess")
             : critFailure
@@ -2334,12 +2334,13 @@ export async function defenseRoll({
               )
             : ""
         }
-        ${versus.html}
-        ${echoNote}
+        <div class="rs-roll-dep">${versus.html}${echoNote}</div>
         `,
         flags: {
           redsteel: {
             rollName: title,
+            // A chat Re-Roll rewrites this card in place (rerollInPlace.mjs).
+            inPlaceReroll: true,
             // A reroll judges its new die against these (redsteel.mjs
             // executeReroll), the Desperate Effort shift included.
             criticalSuccessThreshold: successThreshold,
@@ -2506,7 +2507,7 @@ export async function defenseRoll({
           <span>${rollName}</span>
         </div>
         <hr>
-        <p class="rs-card-headline"><b>
+        <p class="rs-card-headline rs-roll-dep"><b>
           ${
             critSuccess
               ? "Critical Success!"
@@ -2520,7 +2521,7 @@ export async function defenseRoll({
         </b></p>
           ${
             badDodge && roll.total > 0
-              ? `<p class="rs-bad-dodge-note">${game.i18n.format(
+              ? `<p class="rs-bad-dodge-note rs-roll-dep">${game.i18n.format(
                   "REDSTEEL.Defense.BadDodgeNote",
                   { limit: Number(actor.system?.dodgeLimit?.total) || 0 },
                 )}</p>`
@@ -2571,9 +2572,9 @@ export async function defenseRoll({
                 : ""
             }
           </div>
-       ${versus.html}
+       <div class="rs-roll-dep">${versus.html}</div>
        ${deflectHTML}
-       ${armorTable}
+       <div class="rs-roll-dep">${armorTable}</div>
       `,
       flags: {
         redsteel: {
@@ -2585,6 +2586,9 @@ export async function defenseRoll({
           // skill + its governing attribute (dodge→dex, ranged→per, melee→dex
           // unless steelGrip/predatorySenses flips it).
           rerollTokens: getDefenseRerollTokens(defenseKey),
+          // A chat Re-Roll rewrites this card in place (rerollInPlace.mjs):
+          // the attack keeps answering to the same defense card.
+          inPlaceReroll: true,
           // Rolled by the NPC itself rather than by a person clicking Defend.
           // The card already says so in words (rs-auto-defense-note); the flag
           // is what lets the chat log fold these away by default, since nobody

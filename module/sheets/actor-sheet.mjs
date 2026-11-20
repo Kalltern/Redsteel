@@ -3241,6 +3241,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
 
       let d100Result = roll.dice[0]?.total; // Extract the d100 result
       let skillData = null;
+      let critHeadline = "";
       // Only evaluate critical status if it's a skill or combat skill roll
       if (isSkillRoll) {
         // Retrieve the skill data based on the roll type
@@ -3293,9 +3294,11 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
             failureThreshold,
           );
 
-          // Modify the label to include critical success/failure indication
+          // The critical line sits under the title as its own paragraph,
+          // marked as read off the die (`rs-roll-dep`): a reroll in place
+          // (utils/rerollInPlace.mjs) drops it and writes the new one.
           if (criticalMessage) {
-            label += `<hr><p class="rs-card-headline"><b>${criticalMessage}</b></p>`;
+            critHeadline = `<hr class="rs-roll-dep"><p class="rs-card-headline rs-roll-dep"><b>${criticalMessage}</b></p>`;
           }
           console.log(`Critical Message: ${criticalMessage}`);
         } else {
@@ -3328,7 +3331,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
         // Síly/Odolnosti") and rolls against this number. Same mechanism the
         // ability and spell cards already use.
         const isVersusTest = dataset.rollType === "attribute";
-        let flavorBody = `<p class="rs-card-headline"><b>${label}</b></p>`;
+        let flavorBody = `<p class="rs-card-headline"><b>${label}</b></p>${critHeadline}`;
         // The Perception and Tracking bonuses already in the formula.
         flavorBody += bonusLinesHtml(situationalBonuses);
         if (isVersusTest) {
@@ -3361,6 +3364,9 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
               criticalSuccessThreshold, // Store critical success threshold
               criticalFailureThreshold, // Store critical failure threshold
               traitPills,
+              // A chat Re-Roll rewrites this card instead of posting a new
+              // one (utils/rerollInPlace.mjs).
+              inPlaceReroll: true,
               // Lets a reroll rebuild the clickable versus-Test line for the
               // new margin instead of dropping it (see executeReroll).
               ...(isVersusTest && {

@@ -44,6 +44,7 @@ import {
   takeQuickFocus,
 } from "./incantator.mjs";
 import { mancerLockLabel, mancerSpellLock } from "../helpers/mancerSpells.mjs";
+import { applyFieryAura, spellTargetCapRefusal } from "./mancerFollowups.mjs";
 
 export { getStrikeId };
 
@@ -190,7 +191,7 @@ export async function castMiracle() {
  *   catalyst?: boolean}} [options]  `catalyst`: Incantator's Catalyst was
  *   ticked (utils/incantator.mjs).
  * @returns {Promise<boolean>} False when the cast never happened (not enough
- *   mana/blood), true otherwise.
+ *   mana/blood, too many targets for Ice lance), true otherwise.
  */
 export async function performCast(
   actor,
@@ -207,6 +208,18 @@ export async function performCast(
     catalyst = false,
   } = {},
 ) {
+  // Ice lance takes two targets, three with Ledové kopí; Chain lightning
+  // five, six with Řetězový blesk: too many targeted is refused before
+  // anything is paid. Here rather than in castSpell, so a quick cast and a
+  // scroll are held to it too (utils/mancerFollowups.mjs).
+  const targetRefusal = spellTargetCapRefusal(actor, token, spell, [
+    ...(game.user?.targets ?? []),
+  ]);
+  if (targetRefusal) {
+    ui.notifications.warn(targetRefusal);
+    return false;
+  }
+
   // Incantator → Rychlé soustředění: Focus banked by Quick Focus joins this
   // cast's Focus (and so everything Focus feeds: Difficulty, Soustředění's
   // bonuses). Read now, spent once the cast is paid for (utils/incantator.mjs).
@@ -535,6 +548,8 @@ export async function applyPostCastEffects(
   // sides already assume.
   if (succeeded || ignoreChanneling) {
     await applyCasterEffects(actor, spell);
+    // Fiery Aura's marker status on its caster (mancerFollowups.mjs).
+    await applyFieryAura(actor, spell);
     await maybeStartMentalDuel(actor, token, spell, attackResults, {
       ignoreChanneling,
     });

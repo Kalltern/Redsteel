@@ -40,6 +40,34 @@
 /** Quiet period after the last entry before the card posts. */
 const DEBOUNCE_MS = 1500;
 
+/** Digest lines that are turn order rolls. */
+const INITIATIVE_KINDS = new Set(["initiative", "tiebreak"]);
+
+/**
+ * Dice So Nice's world option "Disabled for Initiative rolls" is on.
+ * @returns {boolean}
+ */
+export function diceSoNiceSkipsInitiative() {
+  if (!game.modules.get("dice-so-nice")?.active) return false;
+  try {
+    return game.settings.get("dice-so-nice", "disabledForInitiative") === true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Keep every die of a roll out of the 3D animation. Dice So Nice's documented
+ * way to skip single dice: `hidden` on a die result (its Roll API page). Call
+ * before the roll goes into a chat message; the chat tooltip is unaffected.
+ * @param {Roll} roll
+ */
+export function hideFromDiceSoNice(roll) {
+  for (const die of roll?.dice ?? []) {
+    for (const result of die.results ?? []) result.hidden = true;
+  }
+}
+
 /** Shorter quiet period once round processing reports itself finished. */
 const FINISH_MS = 250;
 
@@ -308,9 +336,17 @@ async function _postCard(round, entries) {
   // Line order and roll order must match one-for-one — the render hook zips
   // core's roll boxes onto the slots by index.
   const rolls = [];
+  // The card is one message, so Dice So Nice's "Disabled for Initiative rolls"
+  // (it skips a message flagged as an initiative roll) never reached the turn
+  // order dice riding on it. Those dice are hidden one by one instead; the
+  // round's damage ticks on the same card still roll.
+  const hideInitiative = diceSoNiceSkipsInitiative();
   for (const group of groups) {
     for (const line of group.lines) {
       if (line.roll) {
+        if (hideInitiative && INITIATIVE_KINDS.has(line.kind)) {
+          hideFromDiceSoNice(line.roll);
+        }
         line.rollIndex = rolls.length;
         rolls.push(line.roll);
       }
@@ -326,6 +362,14 @@ async function _postCard(round, entries) {
   if (rolls.length) {
     data.rolls = rolls;
     data.sound = CONFIG.sounds?.dice;
+    // Nothing but turn order on the card: skip it whole (Dice So Nice's
+    // documented per-message flag) rather than throw a tray of hidden dice.
+    const onlyInitiative = groups.every((group) =>
+      group.lines.every((line) => !line.roll || INITIATIVE_KINDS.has(line.kind)),
+    );
+    if (hideInitiative && onlyInitiative) {
+      data.flags["dice-so-nice"] = { skip: true };
+    }
   }
 
   await ChatMessage.create(data);

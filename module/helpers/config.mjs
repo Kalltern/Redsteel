@@ -1688,6 +1688,17 @@ REDSTEEL.effectDefinitions = {
     },
   },
 
+  // "Hibernace" (Vitamancer, utils/cheatDeath.mjs applyHibernation): taken
+  // instead of death, 1d4 days. No timer: the roll is stamped on the effect
+  // (flags.redsteel.hibernation.wakeAt) and the GM removes it. Healing does
+  // not end it, and a Dispel leaves it (utils/applyDamage.mjs).
+  hibernation: {
+    name: "Hibernation",
+    img: "icons/magic/control/sleep-bubble-purple.webp",
+    statuses: ["hibernation"],
+    stackBehavior: "ignore",
+  },
+
   // "Utišení", "Morganin bič" — school/spellcasting disabled.
   silenced: {
     name: "Silenced",
@@ -2083,6 +2094,41 @@ REDSTEEL.effectDefinitions = {
     img: "icons/svg/aura.svg",
     statuses: ["insect_repellent"],
     stackBehavior: "ignore",
+  },
+
+  // "Ohnivá aura" (Fiery Aura) — a 6 m area around the caster, for SK hours:
+  // insects stay out, and enemies inside are 10% more likely to catch
+  // Burning (15% with the Pyromancer's Ohnivá aura node). Put on the caster
+  // by a successful cast (utils/mancerFollowups.mjs applyFieryAura); the
+  // Burning bonus is read per target in the Apply Damage preview
+  // (fieryAuraBurnBonus). SK hours is no round clock, so no timer: the GM
+  // removes it when the hours run out.
+  fiery_aura: {
+    name: "Fiery Aura",
+    img: "icons/svg/fire.svg",
+    statuses: ["fiery_aura"],
+    stackBehavior: "ignore",
+  },
+
+  // "Protijed" (Antivenom / Antidote) — "Cures Poison, with a 100%, 75% or
+  // 50% chance depending on its potency, and prevents new Poisoning for SK
+  // rounds." The cure is rolled when this lands (documents/effects.mjs
+  // _resolveAntivenomCure, potency = the Poison's stacks); this effect is the
+  // ward, and its SK-round duration is set there too.
+  antivenom: {
+    name: "Antivenom",
+    img: "icons/consumables/potions/bottle-conical-corked-yellow.webp",
+    statuses: ["antivenom"],
+    defaultRounds: 1, // fallback only — real duration = SK rounds
+    useDuration: true,
+    changes: [
+      {
+        key: "system.effectMods.poison.immune",
+        type: "override",
+        value: true,
+      },
+    ],
+    stackBehavior: "refresh",
   },
 
   // "Ohnivý štít" (Flame Shield) — the aura hurts anyone attacking its bearer

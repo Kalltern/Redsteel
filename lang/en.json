@@ -126,11 +126,58 @@
         "poison": "Poison",
         "burn": "Burn",
         "stun": "Stun",
-        "corrosion": "Corrosion"
-      }
+        "corrosion": "Corrosion",
+        "chain": "Chaining",
+        "dispel": "Dispel",
+        "clearStagger": "Clear Stagger"
+      },
+      "Dispelled": "{target}: {count} magical effects dispelled.",
+      "StaggerCleared": "{target}: Stagger cleared."
     },
     "MancerLock": {
       "cast": "{spell} needs {node}."
+    },
+    "MancerFollowups": {
+      "TooManyTargets": "{spell} hits at most {max} targets, but {count} are targeted.",
+      "IceShardsTitle": "Ice Shards",
+      "IceShardsOffer": "Ice Shards: {excess} excess damage from {target}",
+      "IceShardsButton": "Split the shards",
+      "IceShardsPrompt": "Split up to {excess} excess damage from {target} among the adjacent targets. Each share is a new Frost hit, reduced by that target's own armor and resistances.",
+      "IceShardsRemaining": "Remaining: {left}",
+      "IceShardsTooMuch": "The shares add up to {total}, but there is only {excess} excess damage to split.",
+      "IceShardsNothing": "No damage was assigned. The shards can still be split.",
+      "IceShardsHit": "{target} takes {damage} Frost damage (a shard from {source}).",
+      "StoneSkin": "Stone Skin",
+      "StoneSkinTitle": "Stone Skin sacrificed",
+      "StoneSkinSacrificed": "Stone Skin sacrificed by {name}: stagger adjacent enemies.",
+      "StoneSkinButton": "Stagger neighbours",
+      "StoneSkinPrompt": "Pick the neighbours of {name} to Stagger.",
+      "StoneSkinNothing": "Nobody was picked. The Stagger can still be used.",
+      "NoNeighbours": "Nobody stands next to {target}.",
+      "WrongScene": "Open the scene this happened on first.",
+      "TokenGone": "That token is no longer on its scene.",
+      "NoGM": "A GM must be connected to resolve this.",
+      "PoisonerTitle": "Poisoner III",
+      "PoisonerOffer": "{name} is already Poisoned: the Poison may go to an adjacent target instead.",
+      "PoisonerButton": "Redirect Poison",
+      "PoisonerPrompt": "Pick the neighbour of {name} to Poison instead.",
+      "ChainTitle": "Chaining",
+      "ChainOffer": "Chaining: the bolt can jump from {target}",
+      "ChainButton": "Chain the bolt",
+      "ChainPrompt": "Pick the target the bolt jumps to from {target}. It deals half the damage with the same Penetration.",
+      "ChainNoTargets": "Nobody the bolt can jump to stands within 3 hexes of {target}.",
+      "ChainHit": "The bolt jumps from {source} to {target}: {damage} damage, Penetration {penetration}.",
+      "LightningResilienceTitle": "Lightning Resilience",
+      "LightningResilienceOffer": "{name} is Staggered and can spend 10 Mana to shake it off.",
+      "LightningResilienceButton": "Spend 10 Mana",
+      "LightningResilienceGone": "{name} is no longer Staggered.",
+      "LightningResilienceNoMana": "{name} does not have 10 Mana.",
+      "LightningResilienceSpent": "{name} spends 10 Mana and shakes off the Stagger.",
+      "AntivenomCure": "Antivenom on {name}: rolled {roll} against {chance}%. The Poison is cured.",
+      "AntivenomFail": "Antivenom on {name}: rolled {roll} against {chance}%. The Poison holds.",
+      "AlreadyUsed": "This has already been used.",
+      "Apply": "Apply",
+      "Cancel": "Cancel"
     },
     "Elymas": {
       "FocusedDefense": "Focused Defense",
@@ -277,7 +324,13 @@
       "GMOnly": "Only the GM can confirm a death.",
       "NotOwner": "You don't control this character.",
       "Stale": "This Cheat Death decision is no longer pending.",
-      "NoGM": "No GM is connected to resolve Cheat Death."
+      "NoGM": "No GM is connected to resolve Cheat Death.",
+      "HibernateOffer": "Hibernation may be entered instead of death: 1d4 days asleep and one Grave Wound. If that Wound passes the limit, death follows.",
+      "HibernateButton": "Hibernate",
+      "HibernateTooWounded": "{name} cannot take another Grave Wound. Hibernation fails.",
+      "HibernateUnavailable": "{name} cannot hibernate again yet.",
+      "HibernateTitle": "{name} falls into hibernation for {days} days and gains a Grave Wound.",
+      "HibernateBody": "Healing cannot wake them, and a probe shows they are still alive. The GM removes Hibernation once the days have passed."
     },
     "Trade": {
       "Title": "Trade",
@@ -416,7 +469,8 @@
         "party": "Party management",
         "firstAid": "First aid",
         "effects": "Effect manager",
-        "miracle": "Miracles"
+        "miracle": "Miracles",
+        "magesRest": "Mage's Rest"
       },
       "ActionTracker": {
         "title": "Actions & Reactions",
@@ -2622,24 +2676,24 @@
               "description": "5 CP; Škola Vzduchu X. Automated. Unlocks learning and casting the spell Harold's quiver."
             },
             "stunResist": {
-              "label": "Chance to be Stunned -10%",
+              "label": "Chance to be Staggered -10%",
               "description": "15 SP. Automated."
             },
             "bleskovaOdolnost": {
               "label": "Lightning Resilience",
-              "description": "10 CP; Astramancer: Mistr. Manual — resolved at the table."
+              "description": "10 CP; Astramancer: Mistr. Automated. When a new Stagger lands on the holder and they have 10 Mana, a card lets them spend it to remove the Stagger."
             },
             "bleskovySok": {
               "label": "Lightning Shock",
               "description": "15 CP; Astramancer: Expert. Automated. Offensive Air spells gain a 15/20/25/30% chance (by spell rank, Apprentice/Expert/Master/Grandmaster; Wild counts as Apprentice) to Stagger for two turns, added to any Stagger chance the spell already has."
             },
             "omraceniKrit": {
-              "label": "Stun +100% from 2nd-degree Crit",
+              "label": "Stagger +100% from 2nd-degree Crit",
               "description": "5 CP. Automated."
             },
             "padPirka": {
               "label": "Feather Fall: control fall speed",
-              "description": "5 SP; Astramancer: Expert. Manual — resolved at the table."
+              "description": "5 SP; Astramancer: Expert. Automated. The Feather fall card carries a tag reminding the table that the caster controls the fall speed."
             },
             "kulovyBlesk": {
               "label": "Ball Lightning: Stagger +15%",
@@ -2647,7 +2701,7 @@
             },
             "retezovyBlesk": {
               "label": "Chain Lightning: Target +1",
-              "description": "5 CP; Astramancer: Mistr. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+              "description": "5 CP; Astramancer: Mistr. Automated. Chain lightning strikes up to six targets instead of five, and its card carries a tag saying so."
             },
             "overeni": {
               "label": "School of Air: Precision +10%",
@@ -2655,15 +2709,15 @@
             },
             "retezeni": {
               "label": "Chaining",
-              "description": "10 CP; Astramancer: Učedník. Manual — resolved at the table."
+              "description": "10 CP; Astramancer: Učedník. Automated. Offensive Air spells gain a 35% chance to Chain (+35% against a Wet target), which sends half the damage with the same Penetration to a target the caster picks within 3 hexes."
             },
             "dvojiteRetezeni": {
               "label": "Double Chaining",
-              "description": "15 CP; Astramancer: Velmistr. Manual — resolved at the table."
+              "description": "15 CP; Astramancer: Velmistr. Automated. Chain chance +15%, and a chained bolt jumps once more to a new target, still at half the original damage."
             },
             "bleskoveTornado": {
               "label": "Lightning Tornado: caster-controlled",
-              "description": "5 CP; Astramancer: Mistr. Manual — resolved at the table."
+              "description": "5 CP; Astramancer: Mistr. Automated. The Lightning tornado card carries a tag reminding the table that the caster steers the tornado."
             },
             "kritRozsah": {
               "label": "School of Air: Critical Range +2",
@@ -2671,7 +2725,7 @@
             },
             "cyklonPohyb": {
               "label": "Cyclone: Movement +2 hexes",
-              "description": "15 SP; Astramancer: Expert. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+              "description": "15 SP; Astramancer: Expert. Automated. The Cyclone card carries a tag reminding the table that the trapped target moves 2 more hexes."
             }
           }
         },
@@ -2861,11 +2915,11 @@
             },
             "ledoveUlomky": {
               "label": "Ice Shards",
-              "description": "10 CP; Cryomancer: Expert. Manual — resolved at the table."
+              "description": "10 CP; Cryomancer: Expert. Automated. When your Water spell that deals Frost damage kills a target, a card lets you split the damage past 0 Life among the targets next to it. Each share is a new Frost hit their own armor and resistances reduce."
             },
             "ledoveKopi": {
               "label": "Ice Lance: hits up to three targets",
-              "description": "5 CP; Cryomancer: Mistr. Manual — resolved at the table."
+              "description": "5 CP; Cryomancer: Mistr. Automated. Ice lance hits up to three targets instead of two. Casting it at more targets is refused."
             },
             "freezeResist": {
               "label": "Chance to be Frozen -15%",
@@ -2950,7 +3004,7 @@
             },
             "protijed": {
               "label": "Antidote: Chance +25%",
-              "description": "5 SP; Entomancer: Expert. Manual — resolved at the table."
+              "description": "5 SP; Entomancer: Expert. Automated. Your Antivenom (Earth) and Antidote (Body) cure Poison at a 25% higher chance. The cure is rolled when the effect is applied to the target."
             },
             "pavouciSplh": {
               "label": "Spider Climb",
@@ -2966,7 +3020,7 @@
             },
             "travic3": {
               "label": "Poisoner III",
-              "description": "10 CP. Manual — resolved at the table."
+              "description": "10 CP. Automated. When your School of Earth spell Poisons a target that is already Poisoned, a card offers to Poison one adjacent target instead. The target keeps the Poison it had and gives back the stack it just gained. Ignoring the card keeps the stack."
             },
             "toxiny": {
               "label": "Toxins",
@@ -2974,11 +3028,11 @@
             },
             "kyselinovaStrela": {
               "label": "Acid Bolt: Armor -2",
-              "description": "5 CP; Entomancer: Expert. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+              "description": "5 CP; Entomancer: Expert. Automated. Corrosion from your Acid bolt destroys 2 more armor per stack gained, on top of its own 4."
             },
             "jedovaSprska": {
               "label": "Poison Spray: Area +1.5m",
-              "description": "5 CP; Entomancer: Expert. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+              "description": "5 CP; Entomancer: Expert. Automated. The cast card of your Poison spray shows the extra 1.5 m of reach, measured at the table."
             }
           }
         },
@@ -3018,8 +3072,8 @@
               "description": "5 CP; Geomancer: Expert. Automated. Regeneration you cast also restores 2d4 Stamina on each tick."
             },
             "kamennaKuze": {
-              "label": "Stone Skin: sacrifice armor to Stun",
-              "description": "5 CP; Geomancer: Expert. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+              "label": "Stone Skin: sacrifice armor to Stagger",
+              "description": "5 CP; Geomancer: Expert. Automated. An unarmored target of your Stone Skin may sacrifice its 1 armor durability in the Apply Damage window. A card then lets them Stagger the neighbours they pick."
             },
             "kamennaZed": {
               "label": "Stone Wall: hexes need not connect",
@@ -3047,7 +3101,7 @@
             },
             "pevnyKrok": {
               "label": "Firm Step",
-              "description": "25 SP; Geomancer: Mistr. Manual — resolved at the table."
+              "description": "25 SP; Geomancer: Mistr. Automated. Advantage on the versus Test that answers Roots, Quicksand or a Prone test (Trip, Shield Bash, Shield Charge). The system has no Difficult Terrain, so there is no penalty to waive."
             },
             "urhanovaSila": {
               "label": "Urhan's Strength",
@@ -3820,7 +3874,7 @@
             },
             "ohnivaAura": {
               "label": "Fire Aura: Ignite +5%",
-              "description": "5 CP; Pyromancer: Expert. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+              "description": "5 CP; Pyromancer: Expert. Automated. Your Fiery Aura gives enemies within 6 m of you +15% chance to be set Burning instead of +10%. The Apply Damage dialog adds it to the Burn chance."
             },
             "ohnivyStit": {
               "label": "Fire Shield: Penetration +3, Damage +1d4",
@@ -3962,7 +4016,7 @@
             },
             "rychlaLecba": {
               "label": "Grave wounds heal 10 days faster",
-              "description": "15 SP. Manual — resolved at the table."
+              "description": "15 SP. Automated. A Grave Wound heals on its own 10 days sooner, in 20 days instead of 30."
             },
             "bleedResist": {
               "label": "Chance to Bleed -10%",
@@ -3970,51 +4024,51 @@
             },
             "obnoveniKrvaceni": {
               "label": "Restoration: removes a Bleed when it ends",
-              "description": "5 CP; Vitamancer: Expert. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+              "description": "5 CP; Vitamancer: Expert. Automated. When your Restoration ends, it removes one Bleed stack."
             },
             "stabilizace": {
               "label": "Stabilization: Chance +20%",
-              "description": "10 SP; Vitamancer: Expert. Manual — resolved at the table."
+              "description": "10 SP; Vitamancer: Expert. Automated. The Stabilization card carries a tag reminding the table of the +20% chance."
             },
             "lorikovoKopi": {
               "label": "Lorik's Spear: may change direction",
-              "description": "5 CP; Vitamancer: Mistr. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+              "description": "5 CP; Vitamancer: Mistr. Automated. The Lorik's spear card carries a tag reminding the table that the spear may change direction once."
             },
             "lorinoPouto": {
-              "label": "Lora's Bond: suppresses incapacitation",
-              "description": "5 CP; Vitamancer: Mistr. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+              "label": "Lora's Bond: suppresses Incapacitated",
+              "description": "5 CP; Vitamancer: Mistr. Automated. The Lorina's bond card carries a tag reminding the table that the bond suppresses Incapacitated."
             },
             "maguvOdpocinek": {
               "label": "Mage's Rest",
-              "description": "10 CP; Vitamancer: Učedník. Manual — resolved at the table."
+              "description": "10 CP; Vitamancer: Učedník. Automated. Once a game day, a Meditation test from the hotbar button restores half the Mana a Long Rest would."
             },
             "sdilenaOchrana": {
               "label": "Shared Protection",
-              "description": "20 CP; Vitamancer: Expert. Manual — resolved at the table."
+              "description": "20 CP; Vitamancer: Expert. Automated. Casting Shield, Magic Shield or Elemental Shield on someone else gives you the same shield at half value, unless you already have a shield."
             },
             "sebekontrola": {
               "label": "Self-Control",
-              "description": "5 CP; Vitamancer: Mistr. Manual — resolved at the table."
+              "description": "5 CP; Vitamancer: Mistr. Partially automated. Your chance to be Poisoned drops by 10%; the bonus against disease, slower ageing, holding your breath 2 rounds longer and feigning death stay with the table."
             },
             "ochrance": {
-              "label": "Protector",
-              "description": "30 CP; Vitamancer: Expert. Manual — resolved at the table."
+              "label": "Protector: shields +50%, barriers +100%",
+              "description": "30 CP; Vitamancer: Expert. Automated. Shield, Magic Shield and Elemental Shield gain 50% more Health; Barrier and Mobile barrier +100% is shown on their cards."
             },
             "rusivaKouzla": {
-              "label": "Disruptive Spells",
-              "description": "15 CP; Vitamancer: Mistr. Manual — resolved at the table."
+              "label": "Disruptive Spells: Dispel or Clear Stagger +25%",
+              "description": "15 CP; Vitamancer: Mistr. Automated. Offensive Spirit spells gain a 25% chance to Dispel most magical effects on the target, Body spells a 25% chance to clear Stagger, and the Counterspell card carries a reminder tag."
             },
             "hibernace": {
               "label": "Hibernation",
-              "description": "15 CP; Vitamancer: Velmistr. Manual — resolved at the table."
+              "description": "15 CP; Vitamancer: Velmistr. Automated. Once a month the Cheat Death card offers Hibernation instead of death: 1d4 days asleep and one Grave Wound, or death if that passes the Grave Wound limit."
             },
             "magickyStit": {
               "label": "Magic Shield: absorbs Holy damage too",
-              "description": "5 CP; Vitamancer: Mistr. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+              "description": "5 CP; Vitamancer: Mistr. Automated. Your Magic Shield also absorbs Holy damage."
             },
             "magickaStena": {
-              "label": "Magic Wall: Stun becomes Daze",
-              "description": "5 CP; Vitamancer: Mistr. Tied to a specific spell/action — manual for now. Manual — resolved at the table."
+              "label": "Magic Wall: Stagger becomes Stun",
+              "description": "5 CP; Vitamancer: Mistr. Automated. The Mystical wall card carries a tag reminding the table that its Stagger becomes Stun."
             }
           }
         }
@@ -5905,6 +5959,8 @@
       "Applied": "{name} tears the wound wide on {targets}, sacrificing {aim} Aim for {stamina} Stamina."
     },
     "DamagePreview": {
+      "AllTargets": "All targets",
+      "HalfInherent": "This attack already deals half damage.",
       "Damage": "{amount} damage",
       "Hp": "{amount} HP",
       "HpOf": "{value}/{max} HP",
@@ -6197,7 +6253,16 @@
       "PatientGone": "The patient of this attempt is no longer on the scene.",
       "PromptRetired": "Rerolled",
       "KeptByCombatMaster": "Critical Success: Master: Combat keeps the reroll.",
-      "UnlimitedCost": "{cost} Stamina, no limit"
+      "UnlimitedCost": "{cost} Stamina, no limit",
+      "PanelTooltip": "Reroll this test",
+      "PanelRerolled": "Rerolled with {source} (was {old}).",
+      "PanelRerolledFree": "Rerolled (was {old}).",
+      "PanelMissing": "This test can no longer be rerolled.",
+      "PanelAnsweredTitle": "Already answered",
+      "PanelAnsweredContent": "Answers to this margin: {count}. They will be marked superseded and must be rolled again. What they already applied is not undone.",
+      "PanelAnswersUnreachable": "Answers that could not be marked superseded: {count}. Ask the GM.",
+      "CritChanged": "The reroll changed the critical result. The damage line above belongs to the first roll; the GM settles the critical damage.",
+      "Rejudged": "Judged again: the attack was rerolled."
     },
     "RollTriggers": {
       "Hint": "Comma-separated. Pills appear in chat when a matching roll is made. Write attributes by their short key (str, res). Add -gm to any trigger (universal-gm, str-based-gm) and only the GM sees its pill. long-rest shows the pill on the character's Long Rest card (universal does not reach it).",
@@ -6748,7 +6813,8 @@
       "shield_elemental": "Absorbs physical damage and one chosen element (Fire, Frost, Lightning, or Acid and Poison) from a pool of 20 + 5×SK. Switching the element costs 3 Mana, paid by hand. Replaces the other shields.",
       "blood_shield": "Absorbs physical damage. Raised when the bearer loses Health to a hit, worth half the Health lost, and further hits add to the pool. Cleared at the start of the next round.",
       "mental_focus": "+10% to the Mental Duel per stack, attacking and defending. Each use costs 1 Action and adds a stack. Lasts until the start of the next turn.",
-      "protected_by": "An adjacent ally protects this character. On an attack card that names it, the protector may answer with its own Defense or Cover at -10%."
+      "protected_by": "An adjacent ally protects this character. On an attack card that names it, the protector may answer with its own Defense or Cover at -10%.",
+      "hibernation": "Asleep instead of dead for 1d4 days. It rolls no automatic defense and healing does not wake it; a probe shows it is still alive. The GM removes it once the days have passed."
     },
     "MentalDuel": {
       "Focus": {
@@ -7353,7 +7419,7 @@
       },
       "CombatGeniusII": {
         "name": "Combat Genius II",
-        "description": "<p>May reroll a Combat, Shooting, or Throw roll once per day (including a Critical Failure).</p>"
+        "description": "<p>May reroll an attack (melee, ranged or thrown), a Melee Defense or a Ranged Defense test once per day (including a Critical Failure).</p>"
       },
       "CommandAdvance": {
         "name": "Command: Advance"
@@ -10899,6 +10965,15 @@
       "StrayTarget": "Stray Blow: an odd roll. The Critical Failure strikes the target for half damage.",
       "StraySelf": "Stray Blow: an even roll. The Critical Failure strikes the attacker for half damage.",
       "MaulingProne": "Mauling needs a Prone target."
+    },
+    "MagesRest": {
+      "Title": "Mage's Rest",
+      "NoNode": "{name} does not know Mage's Rest.",
+      "AlreadyUsed": "Mage's Rest has already been used today.",
+      "Success": "{name} meditates and restores {amount} Mana.",
+      "Failure": "{name} fails the Meditation test. Today's Mage's Rest is spent.",
+      "CritSuccess": "Critical success!",
+      "CritFailure": "Critical failure!"
     }
   },
   "TYPES": {

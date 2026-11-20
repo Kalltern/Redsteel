@@ -4,6 +4,7 @@ import {
 } from "../utils/speedTest.mjs";
 import {
   collectRoundEntry,
+  diceSoNiceSkipsInitiative,
   openRoundDigest,
   finishRoundDigest,
 } from "../utils/roundDigest.mjs";
@@ -147,6 +148,10 @@ export class RedsteelCombat extends Combat {
 
           flags: {
             "core.initiativeRoll": true,
+            // This override replaces core's rollInitiative, so Dice So Nice's
+            // "Disabled for Initiative rolls" never recognised these messages.
+            // Its documented per-message skip flag says it outright.
+            ...(diceSoNiceSkipsInitiative() && { "dice-so-nice.skip": true }),
           },
         },
         messageOptions,

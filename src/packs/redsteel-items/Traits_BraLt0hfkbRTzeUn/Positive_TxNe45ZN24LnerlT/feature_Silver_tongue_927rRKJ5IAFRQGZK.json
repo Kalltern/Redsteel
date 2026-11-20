@@ -5,7 +5,7 @@
   "img": "icons/commodities/biological/tongue-blue.webp",
   "system": {
     "localizationKey": "REDSTEEL.Items.SilverTongue.name",
-    "description": "<p>Charisma attribute cap +1.<br data-start=\"1469\" data-end=\"1472\" />Persuasion, Music, Acting, Command, Deception, Intimidation, and Seduction +5%.</p><p>May reroll a charisma based skill once per day.</p>",
+    "description": "<p>Charisma attribute cap +1.<br data-start=\"1469\" data-end=\"1472\" />Persuasion, Music, Acting, Command, Deception, Intimidation, and Seduction +5%.</p><p>May reroll a charisma based skill twice per day.</p>",
     "options": [
       "feature",
       "trait",
@@ -31,7 +31,7 @@
         {
           "label": "Charisma-based skill",
           "skillsRaw": "cha-based",
-          "max": 1,
+          "max": 2,
           "used": 0
         }
       ]

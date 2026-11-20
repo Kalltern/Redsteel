@@ -134,16 +134,18 @@ function dueTimestamp(days) {
 }
 
 /**
- * Days a single grave wound takes to heal on its own. Future healing buffs
- * (e.g. a Regeneration feature) set `system.woundHealDays` via an Active
- * Effect change — this is a feature-flag key, deliberately not part of
- * template.json, so it's read with a safe fallback.
+ * Days a single grave wound takes to heal on its own. `system.woundHealDays`
+ * is 30 in template.json so an Active Effect can add to it (Vitamancer's
+ * Rychlá léčba: -10). Read with the same 30 fallback for an actor without the
+ * field, and never below one day however much is taken off.
  * @param {Actor} actor
  * @returns {number}
  */
 function getWoundHealDays(actor) {
-  const d = Number(actor.system.woundHealDays);
-  return Number.isFinite(d) && d > 0 ? d : 30;
+  const raw = actor.system.woundHealDays;
+  // Number(null) and Number("") read as 0, which is a missing field, not 0 days.
+  const d = raw === null || raw === "" ? NaN : Number(raw);
+  return Number.isFinite(d) ? Math.max(1, d) : 30;
 }
 
 /* -------------------------------------------- */
@@ -194,7 +196,8 @@ function* iterCharacterActors() {
  * @param {{itemId:string, poolIndex:number, label:string}} pool  Descriptor
  *   from {@link module:utils/rerolls.getEligibleRerolls}.
  * @param {{critFailure?:boolean}} [options]  Whether the roll this reroll is
- *   replacing was itself a natural Critical Failure (7-day lockout).
+ *   replacing was itself a natural Critical Failure (a 7-day lockout when
+ *   the pool is Lucky's).
  */
 export async function scheduleRerollRefresh(actor, pool, { critFailure = false } = {}) {
   try {
@@ -211,12 +214,14 @@ export async function scheduleRerollRefresh(actor, pool, { critFailure = false }
       (i) => i.system?.localizationKey === "REDSTEEL.Items.UntiringLuck.name",
     );
 
-    // Any pool spent rerolling a natural Critical Failure is locked out for a
-    // week; Untiring Luck shortens Lucky's lockout to 5 days.
+    // Only Lucky (Šťastlivec) pays for rerolling a natural Critical Failure:
+    // "na 7 dní ztrácí možnost opakovat hod", 5 days with Untiring Luck. Every
+    // other critfail pool (Master skills, Combat Genius II, …) refreshes the
+    // next day like any reroll (user ruling 2026-11-19).
     let days = 1;
     let lockout = false;
-    if (critFailure) {
-      days = isLucky && isUntiring ? 5 : 7;
+    if (critFailure && isLucky) {
+      days = isUntiring ? 5 : 7;
       lockout = true;
     }
 

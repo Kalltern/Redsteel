@@ -126,11 +126,58 @@
         "poison": "Otrávení",
         "burn": "Podpálení",
         "stun": "Ochromení",
-        "corrosion": "Koroze"
-      }
+        "corrosion": "Koroze",
+        "chain": "Řetězení",
+        "dispel": "Rozptýlení",
+        "clearStagger": "Zrušení Omráčení"
+      },
+      "Dispelled": "{target}: rozptýlené magické efekty: {count}.",
+      "StaggerCleared": "{target}: Omráčení zrušeno."
     },
     "MancerLock": {
       "cast": "Na kouzlo {spell} potřebuješ {node}."
+    },
+    "MancerFollowups": {
+      "TooManyTargets": "{spell}: nejvýše cílů {max}, zaměřeno je {count}.",
+      "IceShardsTitle": "Ledové úlomky",
+      "IceShardsOffer": "Ledové úlomky: {excess} přebytečného zranění z cíle {target}",
+      "IceShardsButton": "Rozdělit úlomky",
+      "IceShardsPrompt": "Rozděl až {excess} přebytečného zranění z cíle {target} mezi sousední cíle. Každý podíl je nový zásah Mrazem, který snižuje zbroj a odolnosti zasaženého.",
+      "IceShardsRemaining": "Zbývá: {left}",
+      "IceShardsTooMuch": "Podíly dávají dohromady {total}, ale rozdělit můžeš jen {excess} přebytečného zranění.",
+      "IceShardsNothing": "Nepřidělil jsi žádné zranění. Úlomky můžeš rozdělit i později.",
+      "IceShardsHit": "{target} utrpí {damage} zranění Mrazem (úlomek z cíle {source}).",
+      "StoneSkin": "Kamenná kůže",
+      "StoneSkinTitle": "Kamenná kůže obětována",
+      "StoneSkinSacrificed": "Kamenná kůže obětována ({name}): Omrač sousední nepřátele.",
+      "StoneSkinButton": "Omráčit sousedy",
+      "StoneSkinPrompt": "Vyber sousedy cíle {name}, které chceš Omráčit.",
+      "StoneSkinNothing": "Nikdo nebyl vybrán. Omráčení můžeš použít i později.",
+      "NoNeighbours": "Vedle cíle {target} nikdo nestojí.",
+      "WrongScene": "Nejdřív otevři scénu, kde se to stalo.",
+      "TokenGone": "Ten token už na své scéně není.",
+      "NoGM": "K vyřešení musí být připojen GM.",
+      "PoisonerTitle": "Travič III",
+      "PoisonerOffer": "{name} už je Otrávený: Otrávení může místo toho přejít na sousední cíl.",
+      "PoisonerButton": "Přesměrovat Otrávení",
+      "PoisonerPrompt": "Vyber souseda cíle {name}, kterého chceš Otrávit místo něj.",
+      "ChainTitle": "Řetězení",
+      "ChainOffer": "Řetězení: blesk může přeskočit z cíle {target}",
+      "ChainButton": "Poslat blesk dál",
+      "ChainPrompt": "Vyber cíl, na který blesk přeskočí z cíle {target}. Způsobí poloviční zranění se stejnou Průbojností.",
+      "ChainNoTargets": "Do 3 hexů od cíle {target} nestojí nikdo, na koho by blesk mohl přeskočit.",
+      "ChainHit": "Blesk přeskočil z cíle {source} na cíl {target}: {damage} zranění, Průbojnost {penetration}.",
+      "LightningResilienceTitle": "Blesková odolnost",
+      "LightningResilienceOffer": "Omráčení na {name}: za 10 Many ho můžeš setřást.",
+      "LightningResilienceButton": "Utratit 10 Many",
+      "LightningResilienceGone": "Omráčení na {name} už skončilo.",
+      "LightningResilienceNoMana": "{name} nemá 10 Many.",
+      "LightningResilienceSpent": "{name} utrácí 10 Many a setřásá Omráčení.",
+      "AntivenomCure": "Protijed na {name}: hozeno {roll} proti {chance} %. Otrávení je vyléčeno.",
+      "AntivenomFail": "Protijed na {name}: hozeno {roll} proti {chance} %. Otrávení přetrvává.",
+      "AlreadyUsed": "Tohle už bylo použito.",
+      "Apply": "Použít",
+      "Cancel": "Zrušit"
     },
     "Elymas": {
       "FocusedDefense": "Soustředěná obrana",
@@ -277,7 +324,13 @@
       "GMOnly": "Smrt může potvrdit jen PJ.",
       "NotOwner": "Tuto postavu neovládáš.",
       "Stale": "Toto rozhodnutí o Obelstění smrti už není aktuální.",
-      "NoGM": "Není připojen žádný PJ, který by Obelstění smrti vyřešil."
+      "NoGM": "Není připojen žádný PJ, který by Obelstění smrti vyřešil.",
+      "HibernateOffer": "Místo smrti můžeš upadnout do Hibernace: 1d4 dnů spánku a jedno Vážné zranění. Pokud tím překročíš hranici Vážných zranění, umíráš.",
+      "HibernateButton": "Hibernovat",
+      "HibernateTooWounded": "Postava {name} už nesnese další Vážné zranění. Hibernace selhala.",
+      "HibernateUnavailable": "Postava {name} zatím nemůže znovu hibernovat.",
+      "HibernateTitle": "Postava {name} upadá do hibernace (dnů: {days}) a získává Vážné zranění.",
+      "HibernateBody": "Léčení ji neprobudí a sonda odhalí, že je stále naživu. Až dny uplynou, PJ Hibernaci odstraní."
     },
     "Trade": {
       "Title": "Obchod",
@@ -416,7 +469,8 @@
         "party": "Správa družiny",
         "firstAid": "První pomoc",
         "effects": "Správce efektů",
-        "miracle": "Zázraky"
+        "miracle": "Zázraky",
+        "magesRest": "Mágův odpočinek"
       },
       "ActionTracker": {
         "title": "Akce a Reakce",
@@ -2627,7 +2681,7 @@
             },
             "bleskovaOdolnost": {
               "label": "Blesková odolnost",
-              "description": "10 CP; Astramancer: Mistr. Ručně — řeší se u stolu."
+              "description": "10 CP; Astramancer: Mistr. Automatizováno. Když tě nově Omráčí a máš aspoň 10 Many, karta ti nabídne je utratit a Omráčení setřást."
             },
             "bleskovySok": {
               "label": "Bleskový šok",
@@ -2639,7 +2693,7 @@
             },
             "padPirka": {
               "label": "Pád pírka: Rychlost pádu dle vůle",
-              "description": "5 SP; Astramancer: Expert. Ručně — řeší se u stolu."
+              "description": "5 SP; Astramancer: Expert. Automatizováno. Karta Pádu pírka nese štítek, který stolu připomene, že rychlost pádu řídíš ty."
             },
             "kulovyBlesk": {
               "label": "Kulový blesk: Omráčení +15%",
@@ -2647,7 +2701,7 @@
             },
             "retezovyBlesk": {
               "label": "Řetězový blesk: Cíl +1",
-              "description": "5 CP; Astramancer: Mistr. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+              "description": "5 CP; Astramancer: Mistr. Automatizováno. Řetězový blesk zasáhne až šest cílů místo pěti a jeho karta to připomene štítkem."
             },
             "overeni": {
               "label": "Škola Vzduchu: Ověření +10%",
@@ -2655,15 +2709,15 @@
             },
             "retezeni": {
               "label": "Řetězení",
-              "description": "10 CP; Astramancer: Učedník. Ručně — řeší se u stolu."
+              "description": "10 CP; Astramancer: Učedník. Automatizováno. Útočná kouzla Školy Vzduchu mají 35% šanci na Řetězení (proti Mokrému cíli o 35% víc), které pošle polovinu zranění se stejnou Průbojností na cíl do 3 hexů, který si vybereš."
             },
             "dvojiteRetezeni": {
               "label": "Dvojité řetězení",
-              "description": "15 CP; Astramancer: Velmistr. Ručně — řeší se u stolu."
+              "description": "15 CP; Astramancer: Velmistr. Automatizováno. Šance na Řetězení +15% a blesk přeskočí ještě na jeden nový cíl, pořád za polovinu původního zranění."
             },
             "bleskoveTornado": {
               "label": "Bleskové tornádo: Pohyb dle sesilatele",
-              "description": "5 CP; Astramancer: Mistr. Ručně — řeší se u stolu."
+              "description": "5 CP; Astramancer: Mistr. Automatizováno. Karta Bleskového tornáda nese štítek, který stolu připomene, že tornádo řídíš ty."
             },
             "kritRozsah": {
               "label": "Škola Vzduchu: Kritický rozsah +2",
@@ -2671,7 +2725,7 @@
             },
             "cyklonPohyb": {
               "label": "Cyklon: Pohyb +2 hexy",
-              "description": "15 SP; Astramancer: Expert. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+              "description": "15 SP; Astramancer: Expert. Automatizováno. Karta Cyklonu nese štítek, který stolu připomene, že chycený cíl se pohne o 2 hexy víc."
             }
           }
         },
@@ -2861,11 +2915,11 @@
             },
             "ledoveUlomky": {
               "label": "Ledové úlomky",
-              "description": "10 CP; Cryomancer: Expert. Ručně — řeší se u stolu."
+              "description": "10 CP; Cryomancer: Expert. Automatizováno. Když tvé kouzlo Školy Vody se zraněním Mrazem zabije cíl, karta ti nabídne rozdělit zranění pod 0 Životů mezi cíle vedle něj. Každý podíl je nový zásah Mrazem, který snižuje jejich vlastní zbroj a odolnosti."
             },
             "ledoveKopi": {
               "label": "Ledové kopí: Zasahuje až tři cíle",
-              "description": "5 CP; Cryomancer: Mistr. Ručně — řeší se u stolu."
+              "description": "5 CP; Cryomancer: Mistr. Automatizováno. Ledové kopí zasáhne až tři cíle místo dvou. Seslání na víc cílů se odmítne."
             },
             "freezeResist": {
               "label": "Snížená šance na Zmražení o 15%",
@@ -2950,7 +3004,7 @@
             },
             "protijed": {
               "label": "Protijed: Šance +25%",
-              "description": "5 SP; Entomancer: Expert. Ručně — řeší se u stolu."
+              "description": "5 SP; Entomancer: Expert. Automatizováno. Tvůj Protijed (Škola Země i Škola Těla) léčí Otrávení s šancí vyšší o 25 %. Léčba se hází, když se efekt použije na cíl."
             },
             "pavouciSplh": {
               "label": "Pavoučí šplh",
@@ -2966,7 +3020,7 @@
             },
             "travic3": {
               "label": "Travič III",
-              "description": "10 CP. Ručně — řeší se u stolu."
+              "description": "10 CP. Automatizováno. Když tvé kouzlo Školy Země Otráví cíl, který už Otrávený je, karta ti nabídne místo toho Otrávit jeden sousední cíl. Cíl si své Otrávení ponechá a vrátí stupeň, který právě získal. Když kartu nepoužiješ, stupeň mu zůstane."
             },
             "toxiny": {
               "label": "Toxiny",
@@ -2974,11 +3028,11 @@
             },
             "kyselinovaStrela": {
               "label": "Kyselinová střela: Zbroj -2 Kz",
-              "description": "5 CP; Entomancer: Expert. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+              "description": "5 CP; Entomancer: Expert. Automatizováno. Koroze z tvé Kyselinové střely zničí za každý získaný stupeň o 2 Kz více, navíc k vlastním 4."
             },
             "jedovaSprska": {
               "label": "Jedová sprška: Oblast +1,5m",
-              "description": "5 CP; Entomancer: Expert. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+              "description": "5 CP; Entomancer: Expert. Automatizováno. Karta seslání tvé Jedové spršky ukazuje dosah +1,5 m, měří se u stolu."
             }
           }
         },
@@ -3019,7 +3073,7 @@
             },
             "kamennaKuze": {
               "label": "Kamenná kůže: Obětování zbroje Omráčí",
-              "description": "5 CP; Geomancer: Expert. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+              "description": "5 CP; Geomancer: Expert. Automatizováno. Cíl bez zbroje pod tvou Kamennou kůží může v okně Aplikovat zranění obětovat její 1 Život zbroje. Karta mu pak dovolí Omráčit sousedy, které si vybere."
             },
             "kamennaZed": {
               "label": "Kamenná zeď: Hexy nemusí navazovat",
@@ -3047,7 +3101,7 @@
             },
             "pevnyKrok": {
               "label": "Pevný krok",
-              "description": "25 SP; Geomancer: Mistr. Ručně — řeší se u stolu."
+              "description": "25 SP; Geomancer: Mistr. Automatizováno. Výhoda na versus Test, kterým odpovídáš na Kořeny, Tekutý písek nebo Test proti Povalení (Podseknutí, Úder štítem, Zteč štítem). Systém nemá Těžký terén, takže není co rušit."
             },
             "urhanovaSila": {
               "label": "Urhanova síla",
@@ -3820,7 +3874,7 @@
             },
             "ohnivaAura": {
               "label": "Ohnivá aura: Podpálení +5%",
-              "description": "5 CP; Pyromancer: Expert. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+              "description": "5 CP; Pyromancer: Expert. Automatizováno. Tvá Ohnivá aura dává nepřátelům do 6 m od tebe šanci na Podpálení +15 % místo +10 %. Okno Aplikovat zranění ji přičte k šanci na Podpálení."
             },
             "ohnivyStit": {
               "label": "Ohnivý štít: Průbojnost +3, Zranění +1d4",
@@ -3962,7 +4016,7 @@
             },
             "rychlaLecba": {
               "label": "Vážná zranění se léčí o 10 dnů rychleji",
-              "description": "15 SP. Ručně — řeší se u stolu."
+              "description": "15 SP. Automatizováno. Vážné zranění se samo zahojí o 10 dnů dříve, za 20 dnů místo 30."
             },
             "bleedResist": {
               "label": "Snížená šance na Krvácení o 10%",
@@ -3970,51 +4024,51 @@
             },
             "obnoveniKrvaceni": {
               "label": "Obnovení: Po skončení zruší Krvácení",
-              "description": "5 CP; Vitamancer: Expert. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+              "description": "5 CP; Vitamancer: Expert. Automatizováno. Když tvé Obnovení skončí, odstraní jedno Krvácení."
             },
             "stabilizace": {
               "label": "Stabilizace: Šance +20%",
-              "description": "10 SP; Vitamancer: Expert. Ručně — řeší se u stolu."
+              "description": "10 SP; Vitamancer: Expert. Automatizováno. Karta Stabilizace nese štítek, který stolu připomene šanci +20%."
             },
             "lorikovoKopi": {
               "label": "Lorikovo kopí: Může změnit směr",
-              "description": "5 CP; Vitamancer: Mistr. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+              "description": "5 CP; Vitamancer: Mistr. Automatizováno. Karta Lorikova kopí nese štítek, který stolu připomene, že kopí může jednou změnit směr."
             },
             "lorinoPouto": {
               "label": "Lořino pouto: Potlačuje vyřazení",
-              "description": "5 CP; Vitamancer: Mistr. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+              "description": "5 CP; Vitamancer: Mistr. Automatizováno. Karta Lořina pouta nese štítek, který stolu připomene, že pouto potlačuje vyřazení."
             },
             "maguvOdpocinek": {
               "label": "Mágův odpočinek",
-              "description": "10 CP; Vitamancer: Učedník. Ručně — řeší se u stolu."
+              "description": "10 CP; Vitamancer: Učedník. Automatizováno. Jednou za herní den ti Test Meditace z tlačítka na liště obnoví polovinu many, kterou by doplnil Dlouhý odpočinek."
             },
             "sdilenaOchrana": {
               "label": "Sdílená ochrana",
-              "description": "20 CP; Vitamancer: Expert. Ručně — řeší se u stolu."
+              "description": "20 CP; Vitamancer: Expert. Automatizováno. Když sešleš Štít, Magický štít nebo Elementární štít na někoho jiného, získáš stejný štít o poloviční hodnotě, pokud už nějaký štít nemáš."
             },
             "sebekontrola": {
               "label": "Sebekontrola",
-              "description": "5 CP; Vitamancer: Mistr. Ručně — řeší se u stolu."
+              "description": "5 CP; Vitamancer: Mistr. Částečně automatizováno. Šance na tvé Otrávení klesá o 10%; bonus proti nemocem, pomalejší stárnutí, zadržení dechu o 2 kola déle a předstírání smrti řeší stůl."
             },
             "ochrance": {
-              "label": "Ochránce",
-              "description": "30 CP; Vitamancer: Expert. Ručně — řeší se u stolu."
+              "label": "Ochránce: štíty +50%, bariéry +100%",
+              "description": "30 CP; Vitamancer: Expert. Automatizováno. Štít, Magický štít a Elementární štít mají o 50% více životů; +100% Bariéry a Pohyblivé bariéry ukazují jejich karty."
             },
             "rusivaKouzla": {
-              "label": "Rušivá kouzla",
-              "description": "15 CP; Vitamancer: Mistr. Ručně — řeší se u stolu."
+              "label": "Rušivá kouzla: Rozptýlení či zrušení Omráčení +25%",
+              "description": "15 CP; Vitamancer: Mistr. Automatizováno. Útočná kouzla Školy Ducha mají 25% šanci rozptýlit většinu magických efektů na cíli, kouzla Školy Těla 25% šanci zrušit Omráčení a karta Protikouzla nese připomínající štítek."
             },
             "hibernace": {
               "label": "Hibernace",
-              "description": "15 CP; Vitamancer: Velmistr. Ručně — řeší se u stolu."
+              "description": "15 CP; Vitamancer: Velmistr. Automatizováno. Jednou za měsíc ti karta Obelstění smrti nabídne místo smrti Hibernaci: 1d4 dnů spánku a jedno Vážné zranění, nebo smrt, pokud by tím Vážná zranění překročila hranici."
             },
             "magickyStit": {
               "label": "Magický štít: Absorbuje i Svaté zranění",
-              "description": "5 CP; Vitamancer: Mistr. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+              "description": "5 CP; Vitamancer: Mistr. Automatizováno. Tvůj Magický štít pohlcuje i Svaté zranění."
             },
             "magickaStena": {
               "label": "Magická stěna: Omráčení → Ochromení",
-              "description": "5 CP; Vitamancer: Mistr. Vázáno na konkrétní kouzlo/akci — zatím ručně. Ručně — řeší se u stolu."
+              "description": "5 CP; Vitamancer: Mistr. Automatizováno. Karta Magické stěny nese štítek, který stolu připomene, že její Omráčení se mění v Ochromení."
             }
           }
         }
@@ -5905,6 +5959,8 @@
       "Applied": "{name} rozšiřuje ránu na cíli {targets}, obětuje {aim} Míření za {stamina} výdrže."
     },
     "DamagePreview": {
+      "AllTargets": "Všechny cíle",
+      "HalfInherent": "Tento útok už způsobuje poloviční zranění.",
       "Damage": "{amount} zranění",
       "Hp": "životy {amount}",
       "HpOf": "{value}/{max} životů",
@@ -6197,7 +6253,16 @@
       "PatientGone": "Pacient tohoto pokusu už na scéně není.",
       "PromptRetired": "Přehozeno",
       "KeptByCombatMaster": "Kritický úspěch: Mistr: Souboj si přehoz ponechává.",
-      "UnlimitedCost": "{cost} výdrže, bez omezení"
+      "UnlimitedCost": "{cost} výdrže, bez omezení",
+      "PanelTooltip": "Přehodit tento test",
+      "PanelRerolled": "Přehozeno pomocí: {source} (předtím {old}).",
+      "PanelRerolledFree": "Přehozeno (předtím {old}).",
+      "PanelMissing": "Tento test už nelze přehodit.",
+      "PanelAnsweredTitle": "Už zodpovězeno",
+      "PanelAnsweredContent": "Odpovědi na tento rozdíl: {count}. Budou označeny jako neplatné a je potřeba hodit znovu. Co už způsobily, se nevrací.",
+      "PanelAnswersUnreachable": "Odpovědi, které nešlo označit jako neplatné: {count}. Požádej GM.",
+      "CritChanged": "Přehoz změnil kritický výsledek. Řádek zranění výše patří k prvnímu hodu; kritické zranění určí GM.",
+      "Rejudged": "Posouzeno znovu: útok byl přehozen."
     },
     "RollTriggers": {
       "Hint": "Odděleno čárkami. Štítky se zobrazí v chatu, když padne odpovídající hod. Vlastnosti piš zkratkou (str, res). Přidej -gm k jakémukoli spouštěči (universal-gm, str-based-gm) a jeho štítek uvidí jen GM. long-rest zobrazí štítek na kartě dlouhého odpočinku postavy (universal na ni nedosáhne).",
@@ -6748,7 +6813,8 @@
       "shield_elemental": "Pohlcuje fyzické zranění a jeden zvolený živel (Oheň, Mráz, Blesk, nebo Kyselinu a Jed) ze zásoby 20 + 5×SK. Změna živlu stojí 3 many, platí se ručně. Nahrazuje ostatní štíty.",
       "blood_shield": "Pohlcuje fyzické zranění. Vzniká, když nositel ztratí Životy zásahem, v hodnotě poloviny ztracených Životů, a další zásahy zásobu navyšují. Mizí na začátku dalšího kola.",
       "mental_focus": "+10 % na Mentální souboj za každou úroveň, v útoku i v obraně. Každé použití stojí 1 akci a přidá úroveň. Trvá do začátku dalšího tahu.",
-      "protected_by": "Sousedící spojenec tuto postavu chrání. Na kartě útoku, která ji jmenuje, může ochránce odpovědět vlastním hodem na Obranu či Kryt s postihem -10 %."
+      "protected_by": "Sousedící spojenec tuto postavu chrání. Na kartě útoku, která ji jmenuje, může ochránce odpovědět vlastním hodem na Obranu či Kryt s postihem -10 %.",
+      "hibernation": "Místo smrti spí 1d4 dnů. Nehází automatickou obranu a léčení ho neprobudí; sonda odhalí, že je stále naživu. Až dny uplynou, PJ efekt odstraní."
     },
     "MentalDuel": {
       "Focus": {
@@ -7354,7 +7420,7 @@
       },
       "CombatGeniusII": {
         "name": "Bojový génius II",
-        "description": "<p>Umožňuje 1x za den opakovat hod na Souboj, Střelbu nebo Vrh, včetně Kritického neúspěchu.</p>"
+        "description": "<p>Umožňuje 1x za den opakovat hod na Zásah, Obranu, Kryt, Střelbu nebo Vrh, včetně Kritického neúspěchu.</p>"
       },
       "CommandAdvance": {
         "name": "Velení: Vpřed"
@@ -10911,6 +10977,15 @@
       "StrayTarget": "Zbloudilá rána: lichý hod. Kritický neúspěch zasahuje cíl polovičním zraněním.",
       "StraySelf": "Zbloudilá rána: sudý hod. Kritický neúspěch zasahuje útočníka polovičním zraněním.",
       "MaulingProne": "Drásání vyžaduje Povalený cíl."
+    },
+    "MagesRest": {
+      "Title": "Mágův odpočinek",
+      "NoNode": "Postava {name} neovládá Mágův odpočinek.",
+      "AlreadyUsed": "Mágův odpočinek je dnes už využitý.",
+      "Success": "Postava {name} medituje a obnovuje si {amount} Many.",
+      "Failure": "Postava {name} neuspěla v Testu Meditace. Dnešní Mágův odpočinek je využitý.",
+      "CritSuccess": "Kritický úspěch!",
+      "CritFailure": "Kritický neúspěch!"
     }
   },
   "TYPES": {

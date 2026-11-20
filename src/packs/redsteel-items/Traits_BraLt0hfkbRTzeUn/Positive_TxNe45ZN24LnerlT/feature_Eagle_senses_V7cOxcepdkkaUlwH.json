@@ -5,7 +5,7 @@
   "img": "icons/magic/perception/eye-ringed-glow-angry-red.webp",
   "system": {
     "localizationKey": "REDSTEEL.Items.EagleSenses.name",
-    "description": "<p>Perception attribute cap +1.<br data-start=\"1637\" data-end=\"1640\" />Perception Tests +5%, Shooting +5% and may reroll a roll once per day.<br data-start=\"1709\" data-end=\"1712\" /><span style=\"color:rgb(239, 230, 216);font-family:Signika, 'Palatino Linotype', sans-serif;font-size:14px;font-style:normal;font-variant-ligatures:normal;font-variant-caps:normal;font-weight:400;letter-spacing:normal;orphans:2;text-align:start;text-indent:0px;text-transform:none;widows:2;word-spacing:0px;-webkit-text-stroke-width:0px;white-space:normal;background-color:rgba(12, 12, 12, 0.9);text-decoration-thickness:initial;text-decoration-style:initial;text-decoration-color:initial;display:inline !important;float:none\">May reroll a perception based skill once per day.</span></p>",
+    "description": "<p>Perception attribute cap +1.<br />Perception Tests +5%, Shooting +5%.<br />Once per day may reroll a Perception test, a perception based skill, a Shooting attack, a Throw made on Perception or a Ranged Defense test.<br />Once per day may reroll a Perception test.</p>",
     "options": [
       "feature",
       "trait",
@@ -25,8 +25,14 @@
       "pools": [
         {
           "label": "Perception-based skill",
-          "skillsRaw": "per-based, archery, combatcap1",
-          "max": 2,
+          "skillsRaw": "per-based, archery, rangedDefense, perception-throw",
+          "max": 1,
+          "used": 0
+        },
+        {
+          "label": "Perception test",
+          "skillsRaw": "per",
+          "max": 1,
           "used": 0
         }
       ]

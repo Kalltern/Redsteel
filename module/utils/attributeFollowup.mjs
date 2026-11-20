@@ -27,6 +27,7 @@ import {
 import { spend, getSpent, setSpent } from "./actionTracker.mjs";
 import { versusTestBonus } from "./testRating.mjs";
 import { takeMagicReinforcement } from "./veneficus.mjs";
+import { firmStepAdvantage } from "./mancerFollowups.mjs";
 import { resolveVersus, CRITICAL_GAP } from "./defenseOdds.mjs";
 
 /**
@@ -255,6 +256,14 @@ export function readLineNatural(el) {
  *   The posted die and its critical range (versusNatural). A natural critical
  *   settles the contest as it does in combat, and the contester's client only
  *   has this line to read it from.
+ * @param {{id: string, skill: string|null, bucket: string|null,
+ *   itemBias: number}|null} [data.panel]  marginPanelData of the test, for a
+ *   panel that sits inside a bigger card (an attack's modifier, an ability's or
+ *   a spell's Test Type). It gets its own reroll icon, which rolls this test
+ *   again and rewrites the panel in place (marginReroll.mjs). A card whose
+ *   whole roll is this test (a sheet roll) passes none: the card's Re-Roll is
+ *   that reroll.
+ * @param {string} [data.note]  A line under the margin ("Rerolled with …").
  * @returns {string} HTML.
  */
 export function renderMarginFollowupLine({
@@ -267,6 +276,8 @@ export function renderMarginFollowupLine({
   mirror = null,
   heading = "",
   natural = null,
+  panel = null,
+  note = "",
 }) {
   const tooltip = [
     chance != null ? `Test chance ${chance}%` : null,
@@ -286,8 +297,39 @@ export function renderMarginFollowupLine({
   const naturalAttr = Number.isFinite(natural?.die)
     ? ` data-die="${natural.die}" data-crit-success="${natural.success ?? 1}" data-crit-failure="${natural.failure ?? 100}"`
     : "";
-  const line = `<span class="mos-followup" data-margin="${margin}" data-source="${source ?? ""}"${loseAttr}${chanceAttr}${againstAttr}${mirrorAttr}${naturalAttr} data-tooltip="${tooltip}"><span class="rs-vs-test__label">Margin of Success</span><span class="rs-vs-test__value">${margin}</span></span>`;
-  return renderVersusTestBlock({ heading, line });
+  // A panel inside a bigger card names its test, so its own reroll can roll
+  // the same test again (needs the chance too).
+  const rerollable = panel?.id && chance != null;
+  const panelAttr = rerollable
+    ? ` data-panel="${panel.id}" data-skill="${panel.skill ?? ""}" data-bucket="${panel.bucket ?? ""}" data-item-bias="${Number(panel.itemBias) || 0}"`
+    : "";
+  const icon = rerollable
+    ? `<a class="rs-mos-reroll" data-panel="${panel.id}" data-tooltip="${game.i18n.localize("REDSTEEL.Reroll.PanelTooltip")}"><i class="fa-light fa-rotate"></i></a>`
+    : "";
+  const line = `<span class="mos-followup" data-margin="${margin}" data-source="${source ?? ""}"${loseAttr}${chanceAttr}${againstAttr}${mirrorAttr}${naturalAttr}${panelAttr} data-tooltip="${tooltip}"><span class="rs-vs-test__label">Margin of Success</span><span class="rs-vs-test__value">${margin}</span></span>${icon}`;
+  return renderVersusTestBlock({ heading, line, note });
+}
+
+/**
+ * The `panel` argument of renderMarginFollowupLine for a test rolled inside a
+ * bigger card: a fresh id plus what rolling it again needs. Call it on the
+ * evaluated roll.
+ *
+ * @param {Roll} roll  The evaluated test.
+ * @param {string|null} skillKey  The bucket the test resolved against
+ *   (resolveTestRating), read for the reroll pools and critical range.
+ * @returns {{id: string, skill: string|null, bucket: string|null, itemBias: number}}
+ */
+export function marginPanelData(roll, skillKey) {
+  const tags = roll?.options?.redsteel ?? {};
+  return {
+    id: foundry.utils.randomID(),
+    skill: skillKey ?? tags.skill ?? null,
+    // The advantage bucket the roll was actually tagged with, which some
+    // emitters leave off: the reroll repeats the roll, not a corrected one.
+    bucket: tags.skill ?? null,
+    itemBias: Number(tags.itemBias) || 0,
+  };
 }
 
 /**
@@ -383,13 +425,15 @@ export function renderAgainstAttr(against) {
  * @param {object} data
  * @param {string} data.heading  Optional, e.g. a modifier's name.
  * @param {string} data.line     The clickable contest span.
+ * @param {string} [data.note]    A small line under it ("Rerolled with …").
  * @returns {string} HTML.
  */
-export function renderVersusTestBlock({ heading, line }) {
+export function renderVersusTestBlock({ heading, line, note = "" }) {
   return `<div class="rs-vs-test">
   <div class="rs-vs-test__eyebrow">Versus Test</div>
   ${heading ? `<div class="rs-vs-test__heading">${heading}</div>` : ""}
   <div class="rs-vs-test__line">${line}</div>
+  ${note ? `<div class="rs-vs-test__note">${note}</div>` : ""}
 </div>`;
 }
 
@@ -433,6 +477,7 @@ export function wireAttributeFollowups(html) {
         mirror: el.dataset.mirror ?? null,
         natural: readLineNatural(el),
         autoPick,
+        panel: el.dataset.panel ?? null,
       });
     };
     el.addEventListener("click", () => open(true));
@@ -474,6 +519,9 @@ export function wireAttributeFollowups(html) {
  *   die for that side and only reads the range from it.
  * @param {string|null} [options.origin]  Id of the card whose line was
  *   answered, stamped on the answer's `versusFollowup.origin`.
+ * @param {string|null} [options.panel]  The answered panel's id (data-panel),
+ *   stamped as `versusFollowup.panel`, so rerolling that panel finds its
+ *   answers (marginReroll.mjs).
  */
 export function promptAttributeFollowup(
   margin,
@@ -488,6 +536,7 @@ export function promptAttributeFollowup(
     natural = null,
     autoPick = false,
     origin = null,
+    panel = null,
   } = {},
 ) {
   if (!actor) {
@@ -529,6 +578,7 @@ export function promptAttributeFollowup(
           contest,
           natural,
           origin,
+          panel,
         ),
     };
   }
@@ -585,6 +635,7 @@ async function rollAttributeFollowup(
   contest = null,
   natural = null,
   origin = null,
+  panel = null,
 ) {
   const label = attributeLabel(key);
   const fresh = Number.isFinite(contest?.chance);
@@ -607,6 +658,9 @@ async function rollAttributeFollowup(
   // Veneficus → Magické posílení: Advantage on answering a Strength or
   // Dexterity versus Test, spent by it (veneficus.mjs).
   await takeMagicReinforcement(actor, roll, key);
+  // Geomancer → Pevný krok: Advantage on answering Roots, Quicksand or a
+  // Prone test (mancerFollowups.mjs). Spends nothing.
+  firmStepAdvantage(actor, roll, origin, { margin, source });
   await roll.evaluate();
 
   // Primary attribute rolls honour critical thresholds (based on the raw d100).
@@ -627,6 +681,7 @@ async function rollAttributeFollowup(
       ...(contest?.effectUuid && { breakFree: contest.effectUuid }),
       ...(natural && { natural }),
       ...(origin && { origin }),
+      ...(panel && { panel }),
     },
     {
       success: attr?.criticalSuccessThreshold,
@@ -635,10 +690,12 @@ async function rollAttributeFollowup(
   );
   const settled = await settleVersusLoss(actor, judged.followup, roll.total);
   const freedNote = await settleBreakFree(settled.followup, roll.total);
+  // The verdict is read off the die: marked so a reroll in place replaces it
+  // (utils/rerollInPlace.mjs).
   const flavor = `<p class="rs-card-headline"><b>${rollName}</b></p>
-${renderVersusOutcome(judged.verdict, {
+<div class="rs-roll-dep">${renderVersusOutcome(judged.verdict, {
   detail: renderOwnMargin(roll, settled.followup),
-})}${settled.note}${freedNote}`;
+})}${settled.note}${freedNote}</div>`;
 
   await roll.toMessage({
     speaker: ChatMessage.getSpeaker({ actor }),
@@ -657,6 +714,8 @@ ${renderVersusOutcome(judged.verdict, {
         criticalFailureThreshold: attr?.criticalFailureThreshold,
         // Lets a reroll restate who won against the new total (see executeReroll).
         versusFollowup: settled.followup,
+        // A chat Re-Roll rewrites this card in place (rerollInPlace.mjs).
+        inPlaceReroll: true,
       },
     },
   });

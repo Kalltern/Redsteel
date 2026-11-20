@@ -11,6 +11,9 @@ import { grantLightArmorRest } from "./skirmisher.mjs";
 import { getTraitPills } from "./traitPills.mjs";
 import { gainBloodFromBleed, bloodGainNote } from "./bloodPool.mjs";
 import { isActorInCombat } from "./combatants.mjs";
+import { withRollBias } from "./rollAdvantage.mjs";
+import { secondsPerDay } from "./calendariaIntegration.mjs";
+import { hasMancerNode } from "../helpers/mancerPassives.mjs";
 
 export async function delayTurn() {
   const combat = game.combat;
@@ -311,34 +314,20 @@ function collectLongRestCandidates() {
 }
 
 /**
- * The values a Long Rest would apply to this actor at face value, before any
- * per-actor override — the amounts the roster dialog previews and the normal
- * (non-advanced) rest applies outright. Pulled out of `applyLongRest` so both
- * paths share one set of formulas.
+ * The Mana a Long Rest restores this actor, before any GM override. Read by
+ * longRestDefaults and by Mágův odpočinek (magesRest), which restores half of
+ * it.
  *
+ * Everyone refills the whole pool (user ruling 2026-11-17, over the book's
+ * "obnovuje manu dle Doktríny", r753; it matches Usměrňování I's "Dlouhý
+ * odpočinek 100% many", r89). The doctrine amounts below are kept as a floor
+ * so none of them can ever rest for less, but today none of them beats a full
+ * refill.
  * @param {Actor} actor
- * @returns {{nourishingEffect: ActiveEffect|null, health: number, stamina: number,
- *   mana: number, mind: number, fatigue: number, toxicity: number, rations: number}}
+ * @returns {number}
  */
-function longRestDefaults(actor) {
+export function longRestManaFor(actor) {
   const system = actor.system;
-
-  const nourishingEffect = actor.effects.find((e) =>
-    e.statuses?.has("nourishing_rest"),
-  );
-  const regenMultiplier = nourishingEffect ? 2 : 1;
-
-  // `longRestHealthBonus` is a flat extra set by Active Effects — Starsign:
-  // Rock grants +2. It is added after the Nourishing Rest multiplier, so the
-  // starsign is worth the same 2 health whether or not the rest was nourishing.
-  const longRestHealthBonus = Number(system.longRestHealthBonus) || 0;
-  const endurance = Number(system.attributes?.end?.total) || 0;
-  const health = (10 + endurance * 2) * regenMultiplier + longRestHealthBonus;
-
-  const toxicity = (5 + endurance * 2) * regenMultiplier;
-
-  const stamina = system.stats?.stamina?.max ?? 0;
-
   // Doctrines exist only on the character template. The dialog previews every
   // roster entry, so an NPC companion or selected token must read as rank 0
   // rather than throw and stop the dialog from opening.
@@ -368,6 +357,39 @@ function longRestDefaults(actor) {
   } else if (veneficusRank > 0) {
     mana = maxMana;
   }
+  return Math.max(mana, maxMana);
+}
+
+/**
+ * The values a Long Rest would apply to this actor at face value, before any
+ * per-actor override — the amounts the roster dialog previews and the normal
+ * (non-advanced) rest applies outright. Pulled out of `applyLongRest` so both
+ * paths share one set of formulas.
+ *
+ * @param {Actor} actor
+ * @returns {{nourishingEffect: ActiveEffect|null, health: number, stamina: number,
+ *   mana: number, mind: number, fatigue: number, toxicity: number, rations: number}}
+ */
+function longRestDefaults(actor) {
+  const system = actor.system;
+
+  const nourishingEffect = actor.effects.find((e) =>
+    e.statuses?.has("nourishing_rest"),
+  );
+  const regenMultiplier = nourishingEffect ? 2 : 1;
+
+  // `longRestHealthBonus` is a flat extra set by Active Effects — Starsign:
+  // Rock grants +2. It is added after the Nourishing Rest multiplier, so the
+  // starsign is worth the same 2 health whether or not the rest was nourishing.
+  const longRestHealthBonus = Number(system.longRestHealthBonus) || 0;
+  const endurance = Number(system.attributes?.end?.total) || 0;
+  const health = (10 + endurance * 2) * regenMultiplier + longRestHealthBonus;
+
+  const toxicity = (5 + endurance * 2) * regenMultiplier;
+
+  const stamina = system.stats?.stamina?.max ?? 0;
+
+  const mana = longRestManaFor(actor);
 
   // A stat the actor's template does not carry comes back null, meaning "not
   // part of this rest": the NPC template has no fatigue, and writing one onto it
@@ -1019,6 +1041,96 @@ async function applyLongRest(actor, { eatRations = false, overrides = null } = {
     content: chatMessage,
     speaker: ChatMessage.getSpeaker({ actor }),
     flags: traitPills.length ? { redsteel: { traitPills } } : {},
+  });
+}
+
+/* -------------------------------------------- */
+/*  Mágův odpočinek (Vitamancer)                */
+/* -------------------------------------------- */
+
+/**
+ * Mágův odpočinek (r1593): "Umožňuje jednou za den v klidném prostředí
+ * provést Test Meditace (krátký odpočinek), která doplní 50% many, kterou by
+ * doplnil Dlouhý odpočinek." A Meditation test; a pass restores half of
+ * longRestManaFor, capped at max Mana. Pass or fail, the game day is spent
+ * (`flags.redsteel.magesRest.lastDay`, the worldTime day number). The calm
+ * surroundings are the table's call.
+ *
+ * Runs on the owner's client: it only writes the owner's own actor.
+ *
+ * @param {Actor} [actorArg]  Defaults to the selected token's actor.
+ */
+export async function magesRest(actorArg = null) {
+  const actor =
+    actorArg ?? game.redsteel.selectToken({ notifyFallback: true })?.actor;
+  if (!actor) return;
+
+  if (!hasMancerNode(actor, "vitamancer", "maguvOdpocinek")) {
+    ui.notifications.warn(
+      game.i18n.format("REDSTEEL.MagesRest.NoNode", { name: actor.name }),
+    );
+    return;
+  }
+
+  const today = Math.floor(game.time.worldTime / secondsPerDay());
+  const lastDay = actor.getFlag("redsteel", "magesRest.lastDay");
+  if (lastDay != null && Number(lastDay) === today) {
+    ui.notifications.warn(game.i18n.localize("REDSTEEL.MagesRest.AlreadyUsed"));
+    return;
+  }
+  // Spent before the roll, so a second click cannot test twice.
+  await actor.setFlag("redsteel", "magesRest.lastDay", today);
+
+  const skill = actor.system.skills?.meditation ?? {};
+  const rating = Number(skill.rating ?? 0);
+  const critSucc = Number(skill.criticalSuccessThreshold ?? 0);
+  const critFail = Number(skill.criticalFailureThreshold ?? 101);
+
+  const roll = new Roll(`${rating} - 1d100`, withRollBias({}, actor));
+  tagRollSkill(roll, "meditation");
+  await roll.evaluate();
+  // A fumbling first die forfeits advantage; read the die only after.
+  forfeitAdvantageOnCritFail(roll, critFail);
+  const d100 = roll.dice?.[0]?.total ?? rating - roll.total;
+  const hopeless = capHopelessNatural(roll, critSucc);
+  const critSuccess = !hopeless && d100 <= critSucc;
+  const critFailure = d100 >= critFail;
+  const passed = critSuccess || (!critFailure && roll.total >= 0);
+
+  let restored = 0;
+  if (passed) {
+    const half = Math.floor(longRestManaFor(actor) / 2);
+    const current = Number(actor.system.stats?.mana?.value) || 0;
+    const max = Number(actor.system.stats?.mana?.max) || 0;
+    const next = Math.min(max, current + half);
+    restored = Math.max(0, next - current);
+    if (restored > 0) {
+      await actor.update({ "system.stats.mana.value": next });
+    }
+  }
+
+  const crit = critSuccess
+    ? game.i18n.localize("REDSTEEL.MagesRest.CritSuccess")
+    : critFailure
+      ? game.i18n.localize("REDSTEEL.MagesRest.CritFailure")
+      : "";
+  const outcome = passed
+    ? game.i18n.format("REDSTEEL.MagesRest.Success", {
+        name: actor.name,
+        amount: restored,
+      })
+    : game.i18n.format("REDSTEEL.MagesRest.Failure", { name: actor.name });
+
+  await roll.toMessage({
+    speaker: ChatMessage.getSpeaker({ actor }),
+    flavor: `<p class="rs-card-headline"><b><i class="fa-light fa-spa"></i> ${game.i18n.localize(
+      "REDSTEEL.MagesRest.Title",
+    )}</b></p>
+      ${crit ? `<p><b>${crit}</b></p>` : ""}
+      <p>${outcome}</p>`,
+    flags: {
+      redsteel: { type: "magesRest", actorUuid: actor.uuid, passed, restored },
+    },
   });
 }
 
@@ -2314,7 +2426,7 @@ export function registerFirstAidHealing() {
 
   Hooks.once("ready", () => {
     game.socket.on(SOCKET, async (data) => {
-      if (!game.user.isGM) return;
+      if (!game.users.activeGM?.isSelf) return;
 
       if (data.type === "applyFirstAidHeal") {
         await applyFirstAidHealAsGM(data);

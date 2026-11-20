@@ -88,12 +88,12 @@ export const RANK_EFFECTS = {
     [{ t: "text", key: "REDSTEEL.Learn.Effect.smrstUtoku" }, { t: "mod", label: "REDSTEEL.Actor.Character.combatSkills.meleeDefense.label", value: 5, pct: true }, { t: "mod", label: "REDSTEEL.Actor.Character.combatSkills.rangedDefense.label", value: 5, pct: true }], // II
     [{ t: "text", key: "REDSTEEL.Learn.Effect.odvetnyUder" }], // III
     [{ t: "mod", label: "REDSTEEL.Learn.Stat.bleed", value: 10, pct: true }, { t: "mod", label: "REDSTEEL.Learn.Stat.stagger", value: 5, pct: true }], // IV
-    [{ t: "mod", label: "REDSTEEL.Learn.Stat.attack", value: 1 }], // V
+    [{ t: "mod", label: "REDSTEEL.Actor.Character.combatSkills.meleeDefense.label", value: 5, pct: true }, { t: "text", key: "REDSTEEL.Learn.Effect.vetrnyPostoj" }], // V
     [{ t: "text", key: "REDSTEEL.Learn.Effect.protiutok" }, { t: "text", key: "REDSTEEL.Learn.Effect.pulpirueta" }], // VI
-    [{ t: "mod", label: "REDSTEEL.Actor.Character.combatSkills.meleeDefense.label", value: 5, pct: true }, { t: "text", key: "REDSTEEL.Learn.Effect.vetrnyPostoj" }], // VII
+    [{ t: "text", key: "REDSTEEL.Learn.Effect.jedenOdvetnyUderZaKoloJakoVolnaAkce" }], // VII
     [{ t: "text", key: "REDSTEEL.Learn.Effect.klamavyUtok" }], // VIII
     [{ t: "mod", label: "REDSTEEL.Learn.Stat.hit", value: 5, pct: true }, { t: "text", key: "REDSTEEL.Learn.Effect.utokSPohybem" }], // IX
-    [{ t: "text", key: "REDSTEEL.Learn.Effect.jedenOdvetnyUderZaKoloJakoVolnaAkce" }], // X
+    [{ t: "mod", label: "REDSTEEL.Learn.Stat.attack", value: 1 }], // X
   ],
   "doctrines.duelist": [
     [{ t: "text", key: "REDSTEEL.Learn.Effect.vylepseneMireni" }], // I

@@ -16,12 +16,10 @@
     "statusEffects": [],
     "statusEffectsRaw": "",
     "reroll": {
-      "name": "Magic potential",
-      "active": [
-        false,
-        false
-      ],
-      "value": 1
+      "name": "",
+      "active": [],
+      "value": 0,
+      "pools": []
     },
     "option": "trait"
   },

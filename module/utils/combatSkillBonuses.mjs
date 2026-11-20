@@ -21,6 +21,7 @@ import {
 import { ATTRIBUTE_KEYS, vanguardStrengthTestBonus } from "./testRating.mjs";
 import {
   renderMarginFollowupLine,
+  marginPanelData,
   versusAgainstFor,
   versusNatural,
 } from "./attributeFollowup.mjs";
@@ -344,6 +345,7 @@ export async function getNonWeaponAbility(actor, ability, { modifiers = [] } = {
       result: attributeRoll.result,
       against: versusAgainstFor(ability),
       natural,
+      panel: marginPanelData(attributeRoll, testSkillKey),
     });
   }
 
@@ -720,7 +722,8 @@ export function computeDoctrineBonuses(actor, weapon) {
         d.bleed = 10;
         d.stagger = 5;
       }
-      if (doctrine.dimakerus.value >= 7) {
+      // Dimakerus V: Obrana +5% (stacks on rank II's +5).
+      if (doctrine.dimakerus.value >= 5) {
         d.defense = 10;
       }
       if (doctrine.dimakerus.value >= 9) {

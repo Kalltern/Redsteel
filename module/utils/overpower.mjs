@@ -201,6 +201,11 @@ export async function useOverpower(actor, defenseMessageId) {
     attackMessageId: created.id,
     usedBy: used,
     actorName: actor.name,
+    // An attack card rerolled in place (rerollInPlace.mjs) has every defense
+    // against it re-judged by the active GM (redsteel.mjs
+    // rejudgeDefensesFor); restating it here too would race that write.
+    // Only the record of who overpowered goes on the defense card.
+    onlyUsedBy: created.id === attackCard.id,
   };
   if (canWrite(defenseCard)) await restateDefense(payload);
   else game.socket.emit(SOCKET, payload);
@@ -224,6 +229,12 @@ export async function restateDefense(data) {
   const defenseCard = game.messages.get(data.defenseMessageId);
   const attackCard = game.messages.get(data.attackMessageId);
   if (!defenseCard || !attackCard || !canWrite(defenseCard)) return;
+  if (data.onlyUsedBy) {
+    await defenseCard.update({
+      "flags.redsteel.overpowerUsedBy": data.usedBy ?? [],
+    });
+    return;
+  }
 
   const flags = defenseCard.flags.redsteel ?? {};
   const roll = defenseCard.rolls?.[0];

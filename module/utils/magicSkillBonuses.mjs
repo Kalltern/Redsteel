@@ -13,7 +13,12 @@ import {
 } from "../helpers/specialisations.mjs";
 import { hasHtmlContent } from "./chatBlocks.mjs";
 import { getStrikeId } from "./strikes.mjs";
-import { getMancerCastBonuses, mancerCastTags } from "../helpers/mancerPassives.mjs";
+import {
+  ANTIVENOM_SPELLS,
+  getMancerCastBonuses,
+  mancerCastTags,
+} from "../helpers/mancerPassives.mjs";
+import { matchesPackSpell } from "../helpers/mancerSpells.mjs";
 import { DIVINE_SCHOOL, isMiracle } from "./miracles.mjs";
 import {
   getLindarChannelingBonus,
@@ -33,6 +38,7 @@ import { captureAttackTargets } from "./autoDefense.mjs";
 import { attackBonusFor, captureAttackPositioning } from "./positioning.mjs";
 import {
   renderMarginFollowupLine,
+  marginPanelData,
   versusAgainstFor,
   versusNatural,
 } from "./attributeFollowup.mjs";
@@ -1612,6 +1618,7 @@ ${renderMarginFollowupLine({
   result: attributeRoll.result,
   against: versusAgainstFor(spell),
   natural,
+  panel: marginPanelData(attributeRoll, testSkillKey),
 })}
 `;
 
@@ -1672,11 +1679,17 @@ ${renderMarginFollowupLine({
     // declares it (effectTypeN / effectNameN), so a perk-only effect would be
     // silently dropped — that is why "hex" (Maleficarum's Hexing) is here,
     // and "freeze" / "poison" (Hluboký mráz II–III, Travič I–II,
-    // helpers/mancerPassives.mjs).
-    const builtinEffects = ["burn", "slow", "stagger", "bleed", "hex", "freeze", "poison"];
+    // helpers/mancerPassives.mjs), and "chain" (Řetězení, the same table;
+    // no status, Apply Damage turns it into the chain offer), and "dispel" /
+    // "clearStagger" (Rušivá kouzla, the same table; no statuses, both Apply
+    // paths resolve them, utils/applyDamage.mjs resolveDisruptiveRows).
+    const builtinEffects = ["burn", "slow", "stagger", "bleed", "hex", "freeze", "poison", "chain", "dispel", "clearStagger"];
 
     if (builtinEffects.includes(key)) {
-      finalEffectName = key.toLowerCase();
+      // The key matched the list exactly, so it already is the name.
+      // Lowercasing it would turn "clearStagger" into a name the perk
+      // modifier (effectModifiers.clearStagger) is never filed under.
+      finalEffectName = key;
     } else if (key.startsWith("extra")) {
       const index = key.replace("extra", "");
       const typeValue = spell.system[`effectType${index}`] || "";
@@ -1746,6 +1759,33 @@ ${renderMarginFollowupLine({
     if (mechanicalEffects[effectName]) {
       mechanicalEffects[effectName].bonusStacks = extra;
     }
+  }
+  // Kyselinová střela: extra armor damage (negative) on top of the effect's
+  // own per stack, passed to applyEffect by both Apply paths.
+  for (const [effectName, armor] of Object.entries(mancerBonuses.armor)) {
+    if (mechanicalEffects[effectName]) {
+      mechanicalEffects[effectName].bonusArmor = armor;
+    }
+  }
+
+  // Antivenom / Antidote: the ward lands on the targets the way an authored
+  // auto effect (-1) does, so the card's Apply Effects hands it out. The cure
+  // roll is the effect's own (documents/effects.mjs). Gated like the caster
+  // side (castSpell.mjs applyPostCastEffects): a landed cast, or one not
+  // judged on its margin.
+  if (
+    (castSucceeded || ignoreChanneling) &&
+    !mechanicalEffects.antivenom &&
+    ANTIVENOM_SPELLS.some((ref) => matchesPackSpell(spell, ref))
+  ) {
+    effectsRollResults += `
+    <p><b>|antivenom|</b></p>
+  `;
+    mechanicalEffects.antivenom = {
+      chance: -1,
+      roll: null,
+      auto: true,
+    };
   }
 
   // 1.a Start channeling automatically for any spell with a per-round upkeep,
@@ -2034,7 +2074,7 @@ ${renderMarginFollowupLine({
               ? game.i18n.localize("REDSTEEL.Miracle.AttackLabel")
               : "Margin of Success"
           }</div>
-    ${attackHTML}`
+    <div class="rs-roll-html">${attackHTML}</div>`
         : miracle
           ? `<div class="roll-label">${game.i18n.localize(
               "REDSTEEL.Miracle.Tag",
@@ -2150,10 +2190,14 @@ ${renderMarginFollowupLine({
       : critFailure
         ? "Critical Failure!"
         : "";
-  const critBanner = critLabel
-    ? `<p class="rs-card-headline"><b>${critLabel}</b></p>
+  // Marked as read off the die and always present, so a reroll in place
+  // (rerollInPlace.mjs) writes its own banner in the same spot.
+  const critBanner = `<div class="rs-roll-dep">${
+    critLabel
+      ? `<p class="rs-card-headline"><b>${critLabel}</b></p>
         <hr>`
-    : "";
+      : ""
+  }</div>`;
 
   const castCard = await ChatMessage.create({
     speaker: ChatMessage.getSpeaker({ actor }),
@@ -2218,6 +2262,13 @@ ${renderMarginFollowupLine({
           },
         }),
         casterUuid: actor.uuid,
+        // A chat Re-Roll rewrites this card in place (rerollInPlace.mjs).
+        // Magic ATK sits `bonus` above the cast roll, or is `fixed`: what the
+        // reroll needs to restate the card's Magic ATK tag.
+        inPlaceReroll: true,
+        ...(attackRoll && {
+          magicAttack: { bonus: magicAttackBonus, fixed: fixedMagicAttack },
+        }),
         // Which spell and which round this card is: the hotbar's sustain
         // Apply chip finds this round's card of a held spell by them.
         spellId: spell.id,

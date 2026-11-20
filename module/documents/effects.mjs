@@ -18,6 +18,8 @@ import {
 import {
   applyMancerTriggerBonuses,
   burnSkipsPanic,
+  hasMancerNode,
+  wearsStoneSkinArmor,
 } from "../helpers/mancerPassives.mjs";
 import {
   isFloorEffect,
@@ -879,7 +881,11 @@ export class RedsteelActiveEffect extends ActiveEffect {
     if (!scaled) return;
 
     const stacks = this.getFlag("redsteel", "stacks") ?? 1;
-    const value = scaled.perStack * stacks;
+    // flags.redsteel.bonusArmor: Kyselinová střela's extra, summed per landing
+    // (_applySingleEffect). Removing stacks leaves it as it is.
+    const value =
+      scaled.perStack * stacks +
+      (Number(this.getFlag("redsteel", "bonusArmor")) || 0);
 
     const changes = this.changes.map((c) => {
       if (c.key === scaled.key) {
@@ -889,6 +895,109 @@ export class RedsteelActiveEffect extends ActiveEffect {
     });
 
     await this.update({ changes });
+  }
+
+  /**
+   * Take stacks off an effect, deleting it at zero. Unlike adjustEffectAmount
+   * this always walks `flags.redsteel.stacks`, even on an effect whose counter
+   * shows its clock (Poison). Travič III's redirect hands a dose back with it
+   * (utils/mancerFollowups.mjs). GM only, like every other effect write here.
+   *
+   * @param {ActiveEffect|null} effect
+   * @param {number} [count=1]
+   */
+  static async removeStacks(effect, count = 1) {
+    if (!effect || !(count > 0)) return;
+    const stacks = Number(effect.getFlag("redsteel", "stacks")) || 1;
+    const remaining = stacks - count;
+    if (remaining <= 0) {
+      await effect.delete();
+      return;
+    }
+    await effect.update({
+      "flags.redsteel.stacks": remaining,
+      "flags.statuscounter.value": effect.counterAmountWith({ stacks: remaining }),
+    });
+    await effect.updateStackScaledChanges();
+  }
+
+  /** Protijed's cure chance by the Poison's stacks: 1, 2, 3+. */
+  static ANTIVENOM_CURE_CHANCE = [100, 75, 50];
+
+  /**
+   * The three cast shields (Štít, Magický štít, Elementární štít), the ones
+   * Vitamancer's Ochránce grows and Sdílená ochrana copies. Krvavý štít is a
+   * talent, not a cast, and is left out.
+   */
+  static CAST_SHIELDS = ["shield_physical", "shield_magic", "shield_elemental"];
+
+  /**
+   * Vitamancer → Sdílená ochrana (r1595): casting a shield on someone else
+   * gives the caster the same shield at half its value, free. Book: the copy
+   * "is not compatible with other shields", so a caster who already holds a
+   * cast shield gets no copy rather than losing theirs to a smaller one
+   * (lead ruling 2026-11-17). Runs after the target's shield exists, so the
+   * half is read off the pool the target actually got.
+   *
+   * @param {Actor} actor  the shield's target
+   * @param {string} effectId
+   * @param {object} options  the apply options (caster, school, poolOverride)
+   * @param {ActiveEffect|null} applied  the target's shield
+   */
+  static async _grantSharedShield(actor, effectId, options, applied) {
+    if (!applied || !this.CAST_SHIELDS.includes(effectId)) return;
+    // A copy (or any explicit pool) never spawns a copy of its own.
+    if (options?.poolOverride != null) return;
+    const caster = options?.caster ?? null;
+    if (!caster || caster.uuid === actor?.uuid) return;
+    if (!hasMancerNode(caster, "vitamancer", "sdilenaOchrana")) return;
+    const hasShield = caster.effects.contents.some((e) =>
+      this.CAST_SHIELDS.some((id) => e.statuses?.has(id)),
+    );
+    if (hasShield) return;
+    const pool = Math.floor((Number(applied.getFlag("redsteel", "stacks")) || 0) / 2);
+    if (pool <= 0) return;
+    await this._applySingleEffect(caster, effectId, {
+      caster,
+      school: options?.school ?? null,
+      poolOverride: pool,
+    });
+  }
+
+  /**
+   * Protijed / Antivenom's cure, rolled by _applySingleEffect before the ward
+   * lands. "100%, 75% or 50% chance depending on its potency": potency is the
+   * Poison's stack count (lead ruling 2026-11-17). The Entomancer's
+   * "Protijed: Šance +25%" (r1012) adds 25 for the caster who holds it.
+   * Posts the d100 as a plain line, no roll card, so the card folding in
+   * chatCardCollapse.mjs has nothing to misread.
+   *
+   * @param {Actor} actor   Who the antivenom was applied to.
+   * @param {Actor|null} caster
+   */
+  static async _resolveAntivenomCure(actor, caster) {
+    const poison = actor.effects.find((e) => e.statuses?.has("poison"));
+    if (!poison) return;
+    const table = RedsteelActiveEffect.ANTIVENOM_CURE_CHANCE;
+    const stacks = Math.max(1, Number(poison.getFlag("redsteel", "stacks")) || 1);
+    let chance = table[Math.min(stacks, table.length) - 1];
+    if (hasMancerNode(caster, "entomancer", "protijed")) chance += 25;
+
+    const roll = await new Roll("1d100").evaluate();
+    const cured = roll.total <= chance;
+    if (cured) await poison.delete();
+
+    const key = cured ? "AntivenomCure" : "AntivenomFail";
+    await ChatMessage.create({
+      speaker: ChatMessage.getSpeaker({ actor }),
+      content: `<p>${foundry.utils.escapeHTML(
+        game.i18n.format(`REDSTEEL.MancerFollowups.${key}`, {
+          name: actor.name,
+          roll: roll.total,
+          chance,
+        }),
+      )}</p>`,
+    });
   }
 
   async _onActorTurnStart() {
@@ -914,7 +1023,9 @@ export class RedsteelActiveEffect extends ActiveEffect {
   static async applyEffect(actor, effectId, options = {}) {
     const resolved = resolveEffectDefinition(effectId);
     if (!resolved?.def?.subStatuses?.length) {
-      return this._applySingleEffect(actor, effectId, options);
+      const applied = await this._applySingleEffect(actor, effectId, options);
+      await this._grantSharedShield(actor, effectId, options, applied);
+      return applied;
     }
 
     const key = `${actor.uuid}|${resolved.id}`;
@@ -992,6 +1103,10 @@ export class RedsteelActiveEffect extends ActiveEffect {
       caster = null,
       school = null,
       poolOverride = null,
+      // Extra armor on a stack-scaled armor effect, on top of its per-stack
+      // value (Kyselinová střela: the holder's Acid bolt corrodes 2 more).
+      // Only lands with a stack actually gained; see updateStackScaledChanges.
+      bonusArmor = 0,
     } = {},
   ) {
     const resolved = resolveEffectDefinition(effectId);
@@ -1071,6 +1186,19 @@ export class RedsteelActiveEffect extends ActiveEffect {
     const sourceCaster =
       caster ?? canvas.tokens.controlled[0]?.actor ?? game.user.character;
 
+    // Protijed / Antivenom: "Cures Poison, with a 100%, 75% or 50% chance
+    // depending on its potency, and prevents new Poisoning for SK rounds."
+    // Potency is the Poison's stack count (lead ruling 2026-11-17); the cure
+    // is rolled on every application, new ward or refreshed one, before the
+    // ward itself (its immunity change) is written below.
+    if (effectId === "antivenom") {
+      await this._resolveAntivenomCure(actor, sourceCaster);
+      roundsDuration = Math.max(
+        1,
+        getSpellPower(sourceCaster, school ?? "earth") || 0,
+      );
+    }
+
     // Odhalení slabiny ("Expose Weakness") — marking is driven by the status
     // effect itself so it works no matter how it arrives (ability effect
     // list, status effect manager, manual toggle). Namespace indirection
@@ -1109,16 +1237,36 @@ export class RedsteelActiveEffect extends ActiveEffect {
       // below would otherwise read as "no explicit pool" and collapse to the SK
       // formula). Otherwise an explicit `stacks` (a GM granting a pool by hand,
       // or a spell passing a fixed size) wins over that formula.
+      // Vitamancer → Ochránce (r1599): the holder's Shield, Magic Shield and
+      // Elemental Shield have 50% more Health. Only the SK formula grows: an
+      // override (Krvavý štít, Sdílená ochrana's copy, already half of a grown
+      // pool) and a pool granted by hand stay as given.
+      const protector =
+        RedsteelActiveEffect.CAST_SHIELDS.includes(effectId) &&
+        hasMancerNode(caster, "vitamancer", "ochrance")
+          ? 1.5
+          : 1;
       const scaled =
         poolOverride != null
           ? poolOverride
           : stacks > 1
             ? stacks
-            : base +
-              perSpellPower *
-                (sourceCaster
-                  ? getSpellPower(sourceCaster, school ?? "spirit")
-                  : 0);
+            : (base +
+                perSpellPower *
+                  (sourceCaster
+                    ? getSpellPower(sourceCaster, school ?? "spirit")
+                    : 0)) *
+              protector;
+      // Vitamancer → Magický štít (r1579): the holder's Magic Shield absorbs
+      // Holy damage too, in either form (shieldAbsorbs reads matchTypes as an
+      // OR on top of the class).
+      if (
+        effectId === "shield_magic" &&
+        hasMancerNode(caster, "vitamancer", "magickyStit") &&
+        !(shieldConfig.matchTypes ?? []).includes("holy")
+      ) {
+        shieldConfig.matchTypes = [...(shieldConfig.matchTypes ?? []), "holy"];
+      }
       initialStacks = Math.max(0, Math.min(Math.floor(scaled), maxStacks));
     }
 
@@ -1471,6 +1619,14 @@ export class RedsteelActiveEffect extends ActiveEffect {
         if (appliedStacks > 0) {
           updates["flags.redsteel.stacks"] = newStacks;
 
+          // Kyselinová střela's extra armor rides on the effect and adds up
+          // per landing, so it goes when the Corrosion does.
+          if (bonusArmor && RedsteelActiveEffect.STACK_SCALED_CHANGES[effectId]) {
+            updates["flags.redsteel.bonusArmor"] =
+              (Number(existing.getFlag("redsteel", "bonusArmor")) || 0) +
+              Number(bonusArmor);
+          }
+
           // A shield that stacks (Krvavý štít) must keep its absorb config in
           // sync, and (re)writes it here so an effect that was created without
           // one — e.g. toggled straight from the token HUD — still soaks damage
@@ -1526,6 +1682,32 @@ export class RedsteelActiveEffect extends ActiveEffect {
     // the caster who caused it.
     if (school === "blood" && sourceCaster) {
       redsteelFlags[BLOOD_SOURCE_FLAG] = sourceCaster.uuid;
+    }
+
+    // Who cast the spell that made this effect: only an explicit casting
+    // context (a spell card), never the controlled-token fallback, so a weapon
+    // hit or a HUD toggle stays unstamped. Read by Rušivá kouzla's Dispel
+    // (utils/applyDamage.mjs) to tell magical effects from the rest, and by
+    // Obnovení's Bleed removal below (_onDelete).
+    if (caster?.uuid) {
+      redsteelFlags.castBy = caster.uuid;
+    }
+
+    // Stone Skin's one point of armor durability, sacrificed in the Apply
+    // Damage dialog while the wearer is unarmored, and who cast it, for
+    // Kamenná kůže (utils/mancerFollowups.mjs). Only a new Stone Skin gets
+    // it: the re-apply path above and _handleStoneSkin never touch it.
+    // Kyselinová střela: the extra armor of the first landing (the re-stack
+    // path above adds later ones to the same flag).
+    if (bonusArmor && RedsteelActiveEffect.STACK_SCALED_CHANGES[effectId]) {
+      redsteelFlags.bonusArmor = Number(bonusArmor);
+    }
+
+    if (effectId === "stone_skin") {
+      redsteelFlags.stoneSkin = {
+        durability: 1,
+        casterUuid: sourceCaster?.uuid ?? null,
+      };
     }
 
     // Derived, not a literal check on the definition: an effect the
@@ -1918,12 +2100,8 @@ export class RedsteelActiveEffect extends ActiveEffect {
     // ----------------------------------
     // Check armor
     // ----------------------------------
-    const hasArmor = actor.items.some(
-      (item) =>
-        item.type === "gear" &&
-        item.system?.equipped === true &&
-        ["Bottom", "Middle", "Top"].includes(item.system?.layer),
-    );
+    // Shared with the durability read (utils/mancerFollowups.mjs).
+    const hasArmor = wearsStoneSkinArmor(actor);
 
     const armorBonus = hasArmor ? 2 : 15;
 
@@ -2155,6 +2333,19 @@ export class RedsteelActiveEffect extends ActiveEffect {
     // toast (every strike replaced or consumed spammed the whole table). The
     // user who deleted the effect necessarily owns the parent actor — deleting
     // an embedded document requires it — so let only that client clean up.
+    // Vitamancer → Obnovení (r1573): "Po skončení zruší jedno Krvácení". When
+    // a Restoration cast by the holder ends, one Bleed stack goes with it. A
+    // recast only refreshes the effect, so it never lands here. The deleting
+    // user owns the actor (see below), so only that client writes.
+    if (effectId === "restoration" && game.user.id === userId) {
+      const castBy = this.getFlag("redsteel", "castBy");
+      const restorer = castBy ? fromUuidSync(castBy) : null;
+      if (hasMancerNode(restorer, "vitamancer", "obnoveniKrvaceni")) {
+        const bleed = actor.effects.contents.find((e) => e.statuses?.has("bleed"));
+        if (bleed) await RedsteelActiveEffect.removeStacks(bleed, 1);
+      }
+    }
+
     if (game.user.id === userId) {
       await RedsteelActiveEffect._removeCombatModifiers(actor, effectId);
     }
@@ -2250,8 +2441,16 @@ export class RedsteelActiveEffect extends ActiveEffect {
     // Cheat Death (cheatDeath.mjs) stamps `endedBy` right before deleting:
     //   "death"      the character died: no Wound, no resolve test.
     //   "cheatDeath" survived by Cheat Death: no Wound, resolve test still due.
+    //   "hibernation" Vitamancer's Hibernace: cheatDeath.mjs adds its own
+    //                 Wound and posts its own card; nothing here, so the Wound
+    //                 is not paid twice and no test is asked of a sleeper.
     const endedBy = this.getFlag("redsteel", "endedBy");
-    if (effectId === "dying" && game.user.id === userId && endedBy !== "death") {
+    if (
+      effectId === "dying" &&
+      game.user.id === userId &&
+      endedBy !== "death" &&
+      endedBy !== "hibernation"
+    ) {
       let header;
       if (endedBy === "cheatDeath") {
         header = `<p><b>${game.i18n.format("REDSTEEL.CheatDeath.ResolveHeader", { name: actor.name })}</b></p>`;

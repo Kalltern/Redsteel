@@ -4,7 +4,7 @@
   "type": "feature",
   "img": "icons/weapons/swords/sword-runed-glowing.webp",
   "system": {
-    "description": "<p>Advanced specialization in a weapon type. On acquiring, choose a weapon Tag in the feature's attributes tab. Bonuses apply automatically to any weapon whose Tags include your chosen tag.<br />To Hit +5%, Melee Defense +5%, Critical Hit chance +3%, Damage +1d4.<br />May reroll a Combat, Shooting, or Throw roll once per day.<br />Can be taken multiple times for different tags.</p>",
+    "description": "<p>Advanced specialization in a weapon type. On acquiring, choose a weapon Tag in the feature's attributes tab. Bonuses apply automatically to any weapon whose Tags include your chosen tag.<br />To Hit +5%, Melee Defense +5%, Critical Hit chance +3%, Damage +1d4.<br />May reroll an attack (melee, ranged or thrown), a Melee Defense or a Ranged Defense test once per day.<br />Can be taken multiple times for different tags.</p>",
     "options": [
       "feature",
       "trait",
@@ -17,7 +17,7 @@
       "pools": [
         {
           "label": "",
-          "skillsRaw": "combat, archery, throwing",
+          "skillsRaw": "combat, archery, throwing, meleeDefense, rangedDefense",
           "max": 1,
           "used": 0
         }

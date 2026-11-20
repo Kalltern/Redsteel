@@ -92,6 +92,7 @@
  */
 
 import { actorHasSpecNode } from "../helpers/specialisations.mjs";
+import { isInPlaceRerollUpdate } from "./rerollInPlace.mjs";
 import {
   getMovementLock,
   getSpent,
@@ -940,13 +941,24 @@ export function registerHopliteHooks() {
     breakPreparedStanceOnMove(tokenDoc, user);
   });
   let queue = Promise.resolve();
-  Hooks.on("createChatMessage", (message) => {
-    if (!game.users.activeGM?.isSelf) return;
+  const settle = (message) => {
     queue = queue
       .then(() => settleVersusAnswer(message))
       .catch((err) => console.error("Redsteel | Versus push or Trip failed", err))
       .then(() => noteOnslaughtAnswer(message))
       .catch((err) => console.error("Redsteel | Onslaught tracking failed", err));
+  };
+  Hooks.on("createChatMessage", (message) => {
+    if (!game.users.activeGM?.isSelf) return;
+    settle(message);
+  });
+  // An answer rerolled in place (rerollInPlace.mjs) is read again, exactly as
+  // the replacement card it used to post was: what already settled stays.
+  Hooks.on("updateChatMessage", (message, changed) => {
+    if (!game.users.activeGM?.isSelf) return;
+    if (!isInPlaceRerollUpdate(changed)) return;
+    if (!message.flags?.[SYSTEM_ID]?.versusFollowup) return;
+    settle(message);
   });
 }
 

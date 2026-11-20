@@ -142,6 +142,7 @@ import { captureAttackTargets } from "./autoDefense.mjs";
 import {
   versusLossFor,
   renderMarginFollowupLine,
+  marginPanelData,
   versusAgainstFor,
   versusNatural,
 } from "./attributeFollowup.mjs";
@@ -2102,10 +2103,14 @@ ${critHTML}
       : critFailure
         ? "Critical Failure!"
         : "";
-    const critBanner = critLabel
-      ? `<p class="rs-card-headline"><b>${critLabel}</b></p>
+    // Marked as read off the die and always present, so a reroll in place
+    // (rerollInPlace.mjs) writes its own banner in the same spot.
+    const critBanner = `<div class="rs-roll-dep">${
+      critLabel
+        ? `<p class="rs-card-headline"><b>${critLabel}</b></p>
 <hr>`
-      : "";
+        : ""
+    }</div>`;
 
     // Skip the Description table entirely when there is nothing to put in it —
     // an attack with no description and no test rolls shouldn't show an empty
@@ -2137,7 +2142,7 @@ ${critHTML}
 <div class="dual-roll">
   <div class="roll-column">
     <div class="roll-label">Margin of Success</div>
-    ${attackHTML}
+    <div class="rs-roll-html">${attackHTML}</div>
   </div>
   <div class="roll-column">
     <div class="roll-label">Damage Roll</div>
@@ -2199,10 +2204,11 @@ ${
           ...(pushBack ? { pushBack } : {}),
           // Podseknutí: the answer to this line knocks Prone on a win.
           ...(tripTest ? { tripTest } : {}),
-          // Reroll tokens for the chat reroll picker: "attack" + combat skill +
-          // governing attribute (finesse-aware), so e.g. Brawny (str) can reroll
-          // a strength melee attack and Nimble (dex) a finesse attack.
-          rerollTokens: getAttackRerollTokens(weapon),
+          // Reroll tokens for the chat reroll picker: "attack" + combat skill,
+          // plus "finesse" for a Finesse wielder's finesse weapon (rerolls.mjs).
+          rerollTokens: getAttackRerollTokens(weapon, actor),
+          // A chat Re-Roll rewrites this card in place (rerollInPlace.mjs).
+          inPlaceReroll: true,
         },
         attack: {
           type: "attack",
@@ -2847,6 +2853,7 @@ ${renderMarginFollowupLine({
   against: versusAgainstFor(mod),
   heading: mod.localizedName ?? mod.name,
   natural,
+  panel: marginPanelData(attributeRoll, skillKey),
 })}
 </td>
 </tr>
@@ -2905,6 +2912,7 @@ ${renderMarginFollowupLine({
   result: attributeRoll.result,
   against: versusAgainstFor(ability),
   natural,
+  panel: marginPanelData(attributeRoll, testSkillKey),
 })}
 `;
     }

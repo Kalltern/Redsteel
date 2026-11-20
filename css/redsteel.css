@@ -4956,6 +4956,52 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   color: #f7e3b0;
 }
 
+/* A panel inside a bigger card rerolls on its own (marginReroll.mjs): a small
+   bronze icon beside the margin, quiet until hovered so the number stays the
+   thing people click. */
+.chat-message .rs-vs-test .rs-mos-reroll {
+  display: inline-block;
+  margin-left: 8px;
+  vertical-align: top;
+  font-size: 12px;
+  color: #8b6914;
+  cursor: pointer;
+  opacity: 0.75;
+}
+
+.chat-message .rs-vs-test .rs-mos-reroll:hover {
+  color: #e0c165;
+  opacity: 1;
+}
+
+.rs-vs-test__note {
+  margin-top: 3px;
+  font-size: 11px;
+  font-style: italic;
+  color: #a08a5a;
+}
+
+/* A card rerolled in place (rerollInPlace.mjs): the history line under its
+   verdicts, and a short gilded glow so the table notices a card that changed
+   where it stands instead of arriving at the bottom of the log. */
+.chat-message .rs-reroll-history {
+  margin: 4px 0 0;
+  text-align: center;
+  font-size: 11px;
+  font-style: italic;
+  color: #a08a5a;
+}
+
+@keyframes rs-reroll-flash {
+  0% { box-shadow: 0 0 0 0 rgba(224, 193, 101, 0); }
+  25% { box-shadow: 0 0 10px 2px rgba(224, 193, 101, 0.75); }
+  100% { box-shadow: 0 0 0 0 rgba(224, 193, 101, 0); }
+}
+
+.chat-message.rs-reroll-flash {
+  animation: rs-reroll-flash 1.6s ease-out 2;
+}
+
 /* Attribute follow-up dialog: stack the choices as a vertical list */
 .attribute-followup-dialog .dialog-buttons {
   display: flex;
@@ -14510,10 +14556,20 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
    description of a spell with nothing else to say for itself, put there by
    markDescriptionFallback() in the module. The damage-type footer is named
    separately because it is not part of the flavor at all: redsteel.mjs inserts
-   it as a sibling AFTER .message-content. */
+   it as a sibling AFTER .message-content.
+
+   div.rs-roll-dep and .rs-reroll-live are see-through in both folded states.
+   They are the reroll-in-place markers (utils/rerollInPlace.mjs) and wrap the
+   versus block on defense and answer cards, so hiding them as ordinary flavor
+   children would fold a defense down to its title. Their children get the same
+   keep list one level down instead. */
 .chat-message.rs-card--compact
   .flavor-text
-  > *:not(:first-child):not(.rs-versus):not(.action-tag):not(.rs-fold-fallback),
+  > *:not(:first-child):not(.rs-versus):not(.action-tag):not(.rs-fold-fallback):not(.rs-reroll-live):not(div.rs-roll-dep),
+.chat-message.rs-card--compact
+  .flavor-text
+  :is(.rs-reroll-live, div.rs-roll-dep)
+  > *:not(.rs-versus):not(.action-tag):not(.rs-fold-fallback):not(.rs-reroll-live):not(div.rs-roll-dep),
 .chat-message.rs-card--compact .redsteel-damage-footer {
   display: none !important;
 }
@@ -14550,7 +14606,11 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   > *:not(.button-container):not(.rs-rerolled-note):not(.rs-fold-keep),
 .chat-message.rs-card--collapsed
   .flavor-text
-  > *:not(:first-child):not(.rs-versus):not(.rs-card-summary):not(.rs-fold-keep):not(.action-tag):not(.rs-fold-fallback),
+  > *:not(:first-child):not(.rs-versus):not(.rs-card-summary):not(.rs-fold-keep):not(.action-tag):not(.rs-fold-fallback):not(.rs-reroll-live):not(div.rs-roll-dep),
+.chat-message.rs-card--collapsed
+  .flavor-text
+  :is(.rs-reroll-live, div.rs-roll-dep)
+  > *:not(.rs-versus):not(.rs-card-summary):not(.rs-fold-keep):not(.action-tag):not(.rs-fold-fallback):not(.rs-reroll-live):not(div.rs-roll-dep),
 .chat-message.rs-card--collapsed .redsteel-damage-footer {
   display: none !important;
 }

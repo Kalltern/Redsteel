@@ -5,7 +5,7 @@
   "img": "icons/equipment/hand/glove-tooled-leather-brown.webp",
   "system": {
     "localizationKey": "REDSTEEL.Items.FreeHandI.name",
-    "description": "<p>If one hand is free, Dodge +5%, may reroll a Dodge once per day, and gains +1d6 damage.</p>",
+    "description": "<p>If one hand is free, Dodge +5%, may reroll an attack once per day, and gains +1d6 damage.</p>",
     "options": [
       "feature",
       "trait",
@@ -24,7 +24,7 @@
       "pools": [
         {
           "label": "",
-          "skillsRaw": "dodge",
+          "skillsRaw": "attack",
           "max": 1,
           "used": 0
         }

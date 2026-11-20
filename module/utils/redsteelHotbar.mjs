@@ -70,6 +70,7 @@ import { targetLockItem } from "./sharpshooter.mjs";
 import { rollEscape } from "./escapeFollowup.mjs";
 import { handleApplyDamage, handleApplyEffects } from "./applyDamage.mjs";
 import { getMiracles, isMiracle } from "./miracles.mjs";
+import { hasMancerNode } from "../helpers/mancerPassives.mjs";
 
 /**
  * The combat plates, left to right: red melee, yellow ranged, blue spells,
@@ -295,6 +296,17 @@ const ACTION_BUTTONS = [
     when: (actor) => getMiracles(actor).length > 0,
   },
   { key: "firstAid", api: "firstAid", icon: "fa-light fa-staff-snake" },
+  // Vitamancer → Mágův odpočinek: only a holder sees it, and it rests the
+  // character the bar is drawn for (`passActor`), not whichever token happens
+  // to be selected, so a pinned party member rests themself
+  // (utils/otherActions.mjs magesRest).
+  {
+    key: "magesRest",
+    api: "magesRest",
+    icon: "fa-light fa-moon",
+    passActor: true,
+    when: (actor) => hasMancerNode(actor, "vitamancer", "maguvOdpocinek"),
+  },
 ];
 
 /**
@@ -2677,10 +2689,14 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
         if (isCombatCard(message)) this.#rerender();
       });
     }
-    // A reroll retires a card by marking it `rerolledAway`: the Escape and
-    // sustain Apply chips follow that mark to the replacement.
+    // A reroll retires a card by marking it `rerolledAway`, and the Escape and
+    // sustain Apply chips follow that mark to the replacement; a card rerolled
+    // in place (rerollInPlace.mjs) changes under the same id instead.
     add("updateChatMessage", (_message, changed) => {
-      if (foundry.utils.hasProperty(changed ?? {}, "flags.redsteel.rerolledAway")) {
+      if (
+        foundry.utils.hasProperty(changed ?? {}, "flags.redsteel.rerolledAway") ||
+        foundry.utils.hasProperty(changed ?? {}, "flags.redsteel.rerollHistory")
+      ) {
         this.#rerender();
       }
     });
@@ -2789,7 +2805,7 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       console.warn("Redsteel |", `game.redsteel.${button.api} is missing`);
       return;
     }
-    return fn();
+    return button.passActor ? fn(this.actor ?? null) : fn();
   }
 
   /** @this {Bg3Hotbar} */

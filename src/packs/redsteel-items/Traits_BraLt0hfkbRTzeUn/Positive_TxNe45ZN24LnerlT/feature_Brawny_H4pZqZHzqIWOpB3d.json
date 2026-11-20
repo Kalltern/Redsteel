@@ -5,7 +5,7 @@
   "img": "icons/creatures/mammals/bull-horns-eyes-glowin-orange.webp",
   "system": {
     "localizationKey": "REDSTEEL.Items.Brawny.name",
-    "description": "<p>Strength attribute cap +1, Hit Points +5, Athletics +5%.<br data-start=\"913\" data-end=\"916\" />May reroll a strength based skill once per day.</p>",
+    "description": "<p>Strength attribute cap +1, Hit Points +5, Athletics +5%.<br />May reroll a Strength test, a strength based skill or a melee attack once per day.</p>",
     "options": [
       "feature",
       "trait",
@@ -24,7 +24,7 @@
       "pools": [
         {
           "label": "Strength-based skill",
-          "skillsRaw": "str-based",
+          "skillsRaw": "str-based, combat",
           "max": 1,
           "used": 0
         }
