@@ -21,9 +21,11 @@
  *   r1041 Travič III (entomancer `travic3`): "Pokud by měl být již Otrávený
  *         cíl být znovu Otráven, může místo toho Otrávit sousedící cíl."
  *   r877  Řetězení (astramancer `retezeni`): offensive Air spells, +35% chance
- *         to Chain, +35% more against a Wet target. The chained bolt deals
- *         half damage, same Penetration, to a target within 4,5 m the caster
- *         picks.
+ *         to Chain. The chained bolt deals half damage, same Penetration, to
+ *         a target within 4,5 m the caster picks. Its "+35% against a Wet
+ *         target" is the general rule (ruzne-info r1365), already added by
+ *         the Wet status's own effectMods.chain change, so nothing here adds
+ *         it again.
  *   r879  Dvojité řetězení (astramancer `dvojiteRetezeni`): +15% chance, and a
  *         chain hits one more target; no target twice.
  *         Blesková odolnost (astramancer `bleskovaOdolnost`): free action, 10
@@ -37,8 +39,6 @@
  *     scroll, so the cap is a property of the spell.
  *   - offerIceShards, offerChaining: utils/applyDamage.mjs applyDamageAsGM,
  *     after the loop.
- *   - chainWetBonus: utils/applyDamage.mjs openDamageSelectionDialog (the
- *     Chain box's default tick).
  *   - offerLightningResilience: utils/applyDamage.mjs applyEffectToActor,
  *     shared by applyDamageAsGM and applyEffectsAsGM.
  *   - resolveLightningResilienceAsGM: the card's button on the GM, and the
@@ -663,23 +663,6 @@ export function fieryAuraBurnBonus(targetToken, effectName) {
   return best;
 }
 
-/** Řetězení (r877): "+35% více proti Mokrému cíli". */
-const CHAIN_WET_BONUS = 35;
-
-/**
- * The Chain chance a Wet target adds (Řetězení). 0 for any other effect.
- * Like fieryAuraBurnBonus, only the Apply Damage preview reads it, where the
- * Chain box's default is decided.
- *
- * @param {Token|TokenDocument|null} targetToken
- * @param {string} effectName
- * @returns {number}
- */
-export function chainWetBonus(targetToken, effectName) {
-  if (effectName !== "chain") return 0;
-  return targetToken?.actor?.statuses?.has("wet") ? CHAIN_WET_BONUS : 0;
-}
-
 /**
  * A landed Fiery Aura puts its marker status on the caster
  * (castSpell.mjs applyPostCastEffects, the caster effects' gate).
@@ -730,7 +713,9 @@ export async function offerPoisonerRedirect(
   if (!hasMancerNode(caster, "entomancer", "travic3")) return;
   // Adjacency is asked of the grid on screen; on another scene the click
   // asks again.
-  if (canvas.scene?.id === scene.id && !neighbourTokens(scene, tokenDoc).length) return;
+  if (canvas.scene?.id === scene.id && !poisonerCandidates(scene, tokenDoc, caster).length) {
+    return;
+  }
 
   const flags = message.flags?.redsteel ?? {};
   await ChatMessage.create({
@@ -757,6 +742,15 @@ export async function offerPoisonerRedirect(
       effects: { [POISON_STATUS]: {} },
     },
   });
+}
+
+/**
+ * Who the Poison may go to: the victim's neighbours, never the caster's own
+ * token (the pick list pre-selects its first row, and the caster often
+ * stands next to the victim). Same exclusion as chainCandidates.
+ */
+function poisonerCandidates(scene, victim, caster) {
+  return neighbourTokens(scene, victim).filter((t) => !isCasterToken(t, caster));
 }
 
 /** Pick the one neighbour to Poison. Resolves its token id, or null. */
@@ -815,7 +809,8 @@ async function redirectPoison(message, button) {
     ui.notifications.warn(L("WrongScene"));
     return;
   }
-  const neighbours = neighbourTokens(scene, victim);
+  const caster = data.casterUuid ? fromUuidSync(data.casterUuid) : null;
+  const neighbours = poisonerCandidates(scene, victim, caster);
   if (!neighbours.length) {
     ui.notifications.info(F("NoNeighbours", { target: victim.name }));
     return;

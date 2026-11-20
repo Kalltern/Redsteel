@@ -74,6 +74,8 @@ export const ANTIVENOM_SPELLS = [
  *   schools       the spell's school must be one of these
  *   spells        or: only these pack spells ({id, name})
  *   offensive     only offensive, non-healing spells
+ *   supportive    only spells that deal no damage (or heal) and are not
+ *                 marked offensive
  *   damageTypes   the spell deals one of these damage types (dmgType1..4)
  *   poisonBased   the spell deals poison or acid, or is a Venomous Insects
  *                 spell while the caster holds jedovatyHmyz
@@ -119,8 +121,9 @@ export const MANCER_EFFECT_NODES = [
   // r877 Řetězení: útočná kouzla Školy Vzduchu, šance na Řetězení +35%
   // (+35% více proti Mokrému cíli). "chain" is no status: Apply Damage turns
   // a ticked row into the chain offer (utils/mancerFollowups.mjs
-  // offerChaining) and never applies it as an effect. The Wet bonus is
-  // chainWetBonus, read by the Apply Damage preview only.
+  // offerChaining) and never applies it as an effect. The Wet bonus is not
+  // the node's: it restates the general rule (ruzne-info r1365, r1421), and
+  // the Wet status's own Active Effect already adds effectMods.chain +35.
   { spec: "astramancer", node: "retezeni", schools: ["air"], offensive: true, effect: "chain", chance: 35 },
   // r879 Dvojité řetězení: šance na Řetězení +15%, a landed chain hops once
   // more (mancerFollowups.mjs claimMancerFollowup).
@@ -131,10 +134,13 @@ export const MANCER_EFFECT_NODES = [
   // is resolved by both Apply paths before the card's other effects on that
   // target (utils/applyDamage.mjs resolveDisruptiveRows). Dispel deletes the
   // target's spell-made effects; Clear Stagger deletes its Stagger. The Body
-  // row reaches every Body spell, not only offensive ones. Protikouzlo's
-  // part is its card tag (MANCER_NOTE_NODES below).
+  // row is for supportive Body spells only (user ruling 2026-11-20): never a
+  // spell that deals damage, and at apply time never on a target hostile to
+  // the caster (applyDamage.mjs resolveDisruptiveRows), which catches the
+  // debuffs (Weakness, Fatigue, Malaise...) the pack data cannot tell apart.
+  // Protikouzlo's part is its card tag (MANCER_NOTE_NODES below).
   { spec: "vitamancer", node: "rusivaKouzla", schools: ["spirit"], offensive: true, effect: "dispel", chance: 25 },
-  { spec: "vitamancer", node: "rusivaKouzla", schools: ["body"], effect: "clearStagger", chance: 25 },
+  { spec: "vitamancer", node: "rusivaKouzla", schools: ["body"], supportive: true, effect: "clearStagger", chance: 25 },
 ];
 
 /**
@@ -345,6 +351,14 @@ function entryApplies(actor, spell, entry, { strike = false } = {}) {
     if (system.isOffensive !== true || system.isHealing) return false;
   }
   const types = damageTypesOf(spell);
+  // A supportive row skips any spell that hurts: marked offensive, or dealing
+  // damage of some type without healing. The pack marks no Body spell
+  // offensive, so the damage types are what catch Pressure strike, Shockwave
+  // and Shatter bones.
+  if (entry.supportive) {
+    if (system.isOffensive === true) return false;
+    if (types.length && !system.isHealing) return false;
+  }
   if (entry.damageTypes && !entry.damageTypes.some((type) => types.includes(type))) {
     return false;
   }

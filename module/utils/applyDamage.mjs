@@ -87,7 +87,6 @@ import {
 } from "./veneficus.mjs";
 import {
   STONE_SKIN_DURABILITY,
-  chainWetBonus,
   claimMancerFollowup,
   fieryAuraBurnBonus,
   getStoneSkinDurability,
@@ -1292,6 +1291,7 @@ export async function applyDamageAsGM(data) {
       tokenDoc,
       effects,
       selectedEffects?.[tokenId] || [],
+      castingContext.caster,
     );
     // Whether this hit drew blood on its own — Open Wound below only pays out
     // when it did not.
@@ -1305,8 +1305,7 @@ export async function applyDamageAsGM(data) {
       // bonus is added, and which sets each checkbox's default), not here.
       // Adding it to `targetMod` again would be a no-op that reads as though
       // this path enforced the chance. Ohnivá aura's Burn bonus is left out
-      // for the same reason (fieryAuraBurnBonus, the preview only), and so is
-      // Řetězení's Wet bonus (chainWetBonus).
+      // for the same reason (fieryAuraBurnBonus, the preview only).
       // A refused Sneak Attack loses its effect-chance bonus too, deducted the
       // same way a target's own resistance is: the d100 already rolled stands,
       // only the threshold it is measured against comes down.
@@ -2249,14 +2248,14 @@ function openDamageSelectionDialog(message, targets) {
             // effect-chance bonus, so the box ticks itself the same way here.
             // Ohnivá aura's Burn bonus on a hostile target near the aura is
             // decided here alone, like the Bane bonus below: the GM path only
-            // reads its targetMod for bleed (mancerFollowups.mjs). Řetězení's
-            // +35% against a Wet target is the same (chainWetBonus).
+            // reads its targetMod for bleed (mancerFollowups.mjs). A Wet
+            // target's +35% to be Chained arrives through effectMods.chain
+            // (the Wet status's own change), like any other status modifier.
             const targetMod =
               (t.actor.system.effectMods?.[name]?.applyChance || 0) +
               getGearEffectResist(t.actor, name) +
               sneakSign * (Number(attack.sneak?.effectChance) || 0) +
-              fieryAuraBurnBonus(t, name) +
-              chainWetBonus(t, name);
+              fieryAuraBurnBonus(t, name);
 
             // NPC body-part overrides (e.g. exposed limb → extra bleed chance).
             let npcBonus = 0;
@@ -3319,6 +3318,34 @@ const DISPEL_SPARED_STATUSES = [
 ];
 
 /**
+ * Whether the target stands on the opposite side from the caster: Friendly
+ * against Hostile, by token disposition (Neutral and Secret are no side), as
+ * Ohnivá aura reads it (mancerFollowups.mjs). The caster's token is its
+ * unlinked token, else its token on the target's scene, else its prototype.
+ * No caster means no side, so nothing is hostile.
+ *
+ * @param {Actor|null} caster
+ * @param {TokenDocument} tokenDoc
+ * @returns {boolean}
+ */
+function isHostileToCaster(caster, tokenDoc) {
+  if (!caster || !tokenDoc) return false;
+  const { FRIENDLY, HOSTILE } = CONST.TOKEN_DISPOSITIONS;
+  const side = (disposition) =>
+    disposition === FRIENDLY ? 1 : disposition === HOSTILE ? -1 : 0;
+  const casterToken =
+    caster.token ??
+    tokenDoc.parent?.tokens?.contents.find(
+      (t) => t.actorLink && t.actorId === caster.id,
+    ) ??
+    null;
+  const casterSide = side(
+    casterToken?.disposition ?? caster.prototypeToken?.disposition,
+  );
+  return casterSide * side(tokenDoc.disposition) < 0;
+}
+
+/**
  * Resolve the target's ticked Dispel / Clear Stagger rows before the card's
  * other effects land on it, so a Dispel never strips what this same card is
  * about to apply. Immunity and Magic Shield do not stop either row.
@@ -3327,7 +3354,8 @@ const DISPEL_SPARED_STATUSES = [
  *                 stamped by documents/effects.mjs only for an explicit spell
  *                 caster), except a shield marked not dispellable and the
  *                 statuses in DISPEL_SPARED_STATUSES.
- *   clearStagger  deletes the target's Stagger.
+ *   clearStagger  deletes the target's Stagger. Supportive only (user ruling
+ *                 2026-11-20): a target hostile to the caster keeps it.
  *
  * Each posts one plain chat line when it removed something.
  *
@@ -3335,8 +3363,9 @@ const DISPEL_SPARED_STATUSES = [
  * @param {TokenDocument} tokenDoc
  * @param {object} effects   The card's effect rows.
  * @param {string[]} ticked  The rows ticked for this target.
+ * @param {Actor|null} [caster]  The card's caster (getCastingContext).
  */
-async function resolveDisruptiveRows(actor, tokenDoc, effects, ticked) {
+async function resolveDisruptiveRows(actor, tokenDoc, effects, ticked, caster = null) {
   const speaker = ChatMessage.getSpeaker({ token: tokenDoc, actor });
 
   if (ticked.includes("dispel") && effects?.dispel) {
@@ -3370,7 +3399,11 @@ async function resolveDisruptiveRows(actor, tokenDoc, effects, ticked) {
     }
   }
 
-  if (ticked.includes("clearStagger") && effects?.clearStagger) {
+  if (
+    ticked.includes("clearStagger") &&
+    effects?.clearStagger &&
+    !isHostileToCaster(caster, tokenDoc)
+  ) {
     const staggers = actor.effects.contents.filter((e) =>
       e.statuses?.has("stagger"),
     );
@@ -3552,7 +3585,13 @@ export async function applyEffectsAsGM(data) {
 
     const allowedEffects = selectedEffects?.[tokenId] || [];
     // Rušivá kouzla: Dispel and Clear Stagger first, as on Apply Damage.
-    await resolveDisruptiveRows(actor, tokenDoc, effects, allowedEffects);
+    await resolveDisruptiveRows(
+      actor,
+      tokenDoc,
+      effects,
+      allowedEffects,
+      castingContext.caster,
+    );
     for (const effectId of allowedEffects) {
       // Řetězení's Chain needs damage (Apply Damage only), never an effect.
       if (effectId === "chain") continue;

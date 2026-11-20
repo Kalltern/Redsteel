@@ -14,6 +14,7 @@ import {
   getInitiationBonus,
   promptMentalCharge,
 } from "./mentalDuel.mjs";
+import { stampMindBendingTarget } from "./mindBending.mjs";
 import {
   BLOOD_PAYMENT_COST,
   BLOOD_PAYMENT_DIFFICULTY,
@@ -773,6 +774,9 @@ async function maybeStartMentalDuel(
 
   // A landed Mind Bending strains the target whether or not the duel starts.
   await applyMentalStrain(targetToken);
+  // Remember whose strain this is, so dropping the spell from the hotbar can
+  // lift it again (mindBending.mjs).
+  await stampMindBendingTarget(actor, targetToken);
 
   // 35% to initiate, plus the Mentalist "Zahájení +10%" chain; a Critical
   // success forces it (100%) and needs no help from either perk or Mind.

@@ -44,6 +44,7 @@ import {
   trackedCombat,
 } from "./actionTracker.mjs";
 import { prepareSuggestions, vigilantSource } from "./actionSuggestions.mjs";
+import { cancelMindBending } from "./mindBending.mjs";
 import { useOverpower } from "./overpower.mjs";
 import {
   clearLockedZone,
@@ -1238,6 +1239,7 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       escapeEffect: this._onEscapeEffect,
       applySustainSpell: this._onApplySustainSpell,
       stanceSuggestion: this._onStanceSuggestion,
+      cancelMindBending: this._onCancelMindBending,
       toggleMovementMore: this._onToggleMovementMore,
       confirmMovement: this._onConfirmMovement,
       rotateFacing: this._onRotateFacing,
@@ -2641,6 +2643,14 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     // The Roll Modifier picker being armed, changed or cleared.
     add("redsteelRollModifier", () => this.#rerender());
 
+    // A Mental Duel starting or ending decides whether the Mind Bending
+    // cancel chip is offered (mindBending.mjs reads this world setting).
+    for (const hook of ["createSetting", "updateSetting"]) {
+      add(hook, (setting) => {
+        if (setting?.key === "redsteel.mentalDuelActive") this.#rerender();
+      });
+    }
+
     for (const hook of [
       "createActiveEffect",
       "updateActiveEffect",
@@ -3166,6 +3176,25 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       const { effectId } = chip.dataset;
       if (isRightClick(event)) await dropStance(actor, effectId);
       else await holdStance(actor, effectId);
+    } finally {
+      this.#suggestionBusy = false;
+    }
+  }
+
+  /**
+   * Mind Bending held by the bound actor: let it go (mindBending.mjs). Free;
+   * the panel redraws on the effect deletion, which takes the chip away.
+   *
+   * @this {Bg3Hotbar}
+   */
+  static async _onCancelMindBending(event, _target) {
+    if (isRightClick(event)) return;
+    const actor = this.actor;
+    if (!actor?.isOwner) return;
+    if (this.#suggestionBusy) return;
+    this.#suggestionBusy = true;
+    try {
+      await cancelMindBending(actor);
     } finally {
       this.#suggestionBusy = false;
     }

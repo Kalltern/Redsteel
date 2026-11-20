@@ -92,6 +92,7 @@ import {
 } from "./bullCharge.mjs";
 import { veneficusChips } from "./veneficus.mjs";
 import { elymasChips } from "./elymas.mjs";
+import { mindBendingCancelState } from "./mindBending.mjs";
 
 const MODE_ORDER = ["move", "slow", "sprint", "disengage"];
 
@@ -1448,6 +1449,40 @@ function stanceChips(actor) {
 }
 
 /**
+ * Mind Bending held by the caster, as one free chip on the magic plate: click
+ * lets the concentration go, dropping the caster's penalty and Slow Movement
+ * and lifting the target's Mental Strain (mindBending.mjs). Offered on or off
+ * the caster's turn, but not while a duel between the two is running (user
+ * ruling 2026-11-20): the duel keeps the book's own exits.
+ *
+ * @param {Actor} actor
+ * @returns {object[]}
+ */
+function mindBendingChips(actor) {
+  const state = mindBendingCancelState(actor);
+  if (!state) return [];
+  const label = game.i18n.localize("REDSTEEL.Bg3Hotbar.Suggest.MindBendingDrop");
+  const hint = state.targetName
+    ? game.i18n.format("REDSTEEL.Bg3Hotbar.Suggest.MindBendingDropHint", {
+        target: state.targetName,
+      })
+    : game.i18n.localize("REDSTEEL.Bg3Hotbar.Suggest.MindBendingDropHintNoTarget");
+  return [
+    {
+      id: `mindBending-${state.effect.id}`,
+      kind: "mindBending",
+      theme: "magic",
+      effectId: state.effect.id,
+      img: state.img,
+      label,
+      hint,
+      costKind: "free",
+      ariaLabel: `${label}: ${hint}`,
+    },
+  ];
+}
+
+/**
  * Keep the turn boundary Riposte reads. Registered once at init.
  */
 export function registerSuggestionHooks() {
@@ -1787,6 +1822,7 @@ function combatProvider(actor) {
     ...overwatchChips(actor), ...bullChargeOpportunityChips(actor),
     ...impaleFollowupChips(actor),
     ...escapeChips(actor), ...sustainChips(actor), ...stanceChips(actor),
+    ...mindBendingChips(actor),
     ...slipThroughChips(actor), ...halfPirouetteChips(actor),
     ...grudgeChips(actor), ...predatorsAttackChips(actor),
     ...hopliteChips(actor), ...triumphChips(actor), ...freeShieldChips(actor),

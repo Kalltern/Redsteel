@@ -264,6 +264,7 @@ import {
   refreshPossessedActorTokens,
   resumeMentalDuel,
 } from "./utils/mentalDuel.mjs";
+import { handleMindBendingCancel } from "./utils/mindBending.mjs";
 import { getSpellPower } from "./utils/spellPower.mjs";
 import {
   registerSpellMagicAttackSetting,
@@ -1202,6 +1203,12 @@ Hooks.once("ready", () => {
     // Mental Strain on a target the caster doesn't own — active GM applies it.
     if (data.type === "mentalStrainApply") {
       await handleMentalStrainApply(data);
+    }
+
+    // Mind Bending dropped by a caster who can't write to the target — the
+    // active GM lifts the target's Mental Strain (mindBending.mjs).
+    if (data.type === "mindBendingCancel") {
+      await handleMindBendingCancel(data);
     }
 
     // Not GM-gated: every client rebuilds the possessed token's sprite locally.
