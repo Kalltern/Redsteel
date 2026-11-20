@@ -156,6 +156,15 @@
         "Intro": "The Mental Duel did not start. Exhaust 1 Mind (you have {mind}) to roll the initiation again at <b>{chance}%</b>? Once a round.",
         "Reroll": "Spend 1 Mind to roll the initiation again ({chance}%)",
         "Skip": "Let it go"
+      },
+      "StrainCancel": {
+        "Title": "Mental Strain",
+        "Card": "Mental Strain cancels the Concentration and stances of {target}: {list}."
+      },
+      "Telepathy": {
+        "Title": "Telepathy",
+        "Card": "{caster} opens a hidden telepathic channel to {target}.",
+        "CardNoTarget": "{caster} opens a hidden telepathic channel."
       }
     },
     "MancerFollowups": {
@@ -491,7 +500,8 @@
         "firstAid": "First aid",
         "effects": "Effect manager",
         "miracle": "Miracles",
-        "magesRest": "Mage's Rest"
+        "magesRest": "Mage's Rest",
+        "meditation": "Meditation"
       },
       "ActionTracker": {
         "title": "Actions & Reactions",
@@ -3197,11 +3207,11 @@
             },
             "meditaceMZ2": {
               "label": "Meditation restores 2 Mental health",
-              "description": "5 SP; Meditace I. Manual — resolved at the table."
+              "description": "5 SP; Meditace I. The daily Meditation restores 2 Mind. Automated."
             },
             "meditaceMZ3": {
               "label": "Meditation restores 3 Mental health",
-              "description": "10 SP. Manual — resolved at the table."
+              "description": "10 SP. The daily Meditation restores 3 Mind. Automated."
             },
             "mzMeditace": {
               "label": "Mental health +1 / Meditation +5%",
@@ -3507,15 +3517,15 @@
             },
             "meditace2": {
               "label": "Meditation restores 2 Mental health",
-              "description": "5 SP; Meditace I. Manual — resolved at the table."
+              "description": "5 SP; Meditace I. The daily Meditation restores 2 Mind. Automated."
             },
             "meditace3": {
               "label": "Meditation restores 3 Mental health",
-              "description": "15 SP. Manual — resolved at the table."
+              "description": "15 SP. The daily Meditation restores 3 Mind. Automated."
             },
             "meditace4": {
               "label": "Meditation restores 4 Mental health",
-              "description": "15 SP; Kontramág: Expert. Manual — resolved at the table."
+              "description": "15 SP; Kontramág: Expert. The daily Meditation restores 4 Mind. Automated."
             },
             "vynucenySouboj": {
               "label": "Forced Mental Duel -20%",
@@ -3746,27 +3756,27 @@
             },
             "telepat1": {
               "label": "Telepath I",
-              "description": "15 SP; Mentalist: Expert. Manual — resolved at the table."
+              "description": "15 SP; Mentalist: Expert. Telepathy costs no Mana, no Action and no Channeling test, and only a hidden card tells the GM, you and the target's owner. Automated."
             },
             "telepat2": {
               "label": "Telepath II",
-              "description": "5 SP; Telepath I + Mentalist: Master. Manual — resolved at the table."
+              "description": "5 SP; Telepath I + Mentalist: Master. Telepathic link costs half, paid once for every token you target. Automated."
             },
             "vytizeniKoncentrace": {
               "label": "Strain: cancels Conc.",
-              "description": "5 CP; Mentalist: Apprentice. Manual — resolved at the table."
+              "description": "5 CP; Mentalist: Apprentice. When your Mental Strain lands on a target, it cancels the target's channelled spells, its stances and its own Mind Bending, once per landing. Automated."
             },
             "vytizeniReakce": {
               "label": "Strain: -1 Reaction",
-              "description": "5 CP; Strain: cancels Conc. + Mentalist: Expert. Manual — resolved at the table."
+              "description": "5 CP; Strain: cancels Conc. + Mentalist: Expert. Your Mental Strain takes 1 Reaction from the target while it lasts. Automated."
             },
             "vytizeniZakerne": {
               "label": "Strain: attacks are Sneak",
-              "description": "5 CP; Strain: -1 Reaction. Manual — resolved at the table."
+              "description": "5 CP; Strain: -1 Reaction. While your Mental Strain lasts, attacks on the target count as Sneak Attacks. Automated."
             },
             "vytizeniAkce": {
               "label": "Strain: -1 Action",
-              "description": "5 CP; Strain: attacks are Sneak + Mentalist: Master. Manual — resolved at the table."
+              "description": "5 CP; Strain: attacks are Sneak + Mentalist: Master. Your Mental Strain takes 1 Action from the target while it lasts. Automated."
             },
             "vysati": {
               "label": "Drain",
@@ -3786,11 +3796,11 @@
             },
             "meditace2": {
               "label": "Meditation +2 MH",
-              "description": "5 SP; Meditation I. Manual — resolved at the table."
+              "description": "5 SP; Meditation I. The daily Meditation restores 2 Mind. Automated."
             },
             "meditace3": {
               "label": "Meditation +3 MH",
-              "description": "15 SP; Meditation +2 MH. Manual — resolved at the table."
+              "description": "15 SP; Meditation +2 MH. The daily Meditation restores 3 Mind. Automated."
             },
             "mzMeditace": {
               "label": "+1 MH / Meditation +5%",
@@ -6041,7 +6051,8 @@
         "pikemanHunter": "inside the long weapon's reach",
         "brigandRepeat": "second shot at the same target",
         "underhanded": "Staggered target, 6 Stamina",
-        "mauling": "Mauling"
+        "mauling": "Mauling",
+        "mentalStrain": "under Mental Strain"
       }
     },
     "EnduringWarrior": {
@@ -11078,6 +11089,15 @@
       "AlreadyUsed": "Mage's Rest has already been used today.",
       "Success": "{name} meditates and restores {amount} Mana.",
       "Failure": "{name} fails the Meditation test. Today's Mage's Rest is spent.",
+      "CritSuccess": "Critical success!",
+      "CritFailure": "Critical failure!"
+    },
+    "Meditation": {
+      "Title": "Meditation",
+      "NotCharacter": "{name} has no Meditation skill. Only characters can meditate.",
+      "AlreadyUsed": "Meditation has already been used today.",
+      "Success": "{name} meditates and restores {amount} Mind.",
+      "Failure": "{name} fails the Meditation test. Today's Meditation is spent.",
       "CritSuccess": "Critical success!",
       "CritFailure": "Critical failure!"
     }

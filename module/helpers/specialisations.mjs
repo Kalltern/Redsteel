@@ -848,6 +848,29 @@ const CODE_AUTOMATED_NODES = {
     // (its click and right-click): holding Mind Bending costs nothing, so no
     // Hold chip is offered and the spell never lapses.
     "soubojUdrzovani",
+    // utils/mentalist.mjs (applyStrainUpgrades, called from
+    // utils/mentalDuel.mjs applyMentalStrain): the caster's strain upgrades
+    // stamped on the target's Mental Strain. vytizeniKoncentrace cancels the
+    // target's channelled spells, stances and Mind Bending when the strain
+    // lands; vytizeniReakce / vytizeniAkce put -1 Reaction / -1 Action on the
+    // strain; vytizeniZakerne is the "mentalStrain" clause in
+    // utils/sneakTriggers.mjs.
+    "vytizeniKoncentrace",
+    "vytizeniReakce",
+    "vytizeniZakerne",
+    "vytizeniAkce",
+    // utils/otherActions.mjs meditate (MEDITATION_MIND_NODES): the daily
+    // Meditation restores 2 / 3 Mind; its button is the Redsteel hotbar's
+    // meditation action (utils/redsteelHotbar.mjs ACTION_BUTTONS).
+    "meditace2",
+    "meditace3",
+    // utils/mentalist.mjs castHiddenTelepathy, called from utils/castSpell.mjs
+    // castSpell and quickCastSpell: telepat1's Telepathy is free, rolls
+    // nothing and posts only a whispered card. telepat2 is
+    // utils/lindarCharge.mjs getBaseSpellManaCost: Telepathic link at half
+    // cost, paid per targeted token.
+    "telepat1",
+    "telepat2",
   ],
   // documents/actor.mjs (armour penalty, Lindar) + utils/castSpell.mjs
   // (Lindar's strikes) + utils/lindarCharge.mjs with
@@ -996,6 +1019,12 @@ const CODE_AUTOMATED_NODES = {
     // hotbar's magesRest action (utils/redsteelHotbar.mjs ACTION_BUTTONS).
     "maguvOdpocinek",
   ],
+  // utils/otherActions.mjs meditate (MEDITATION_MIND_NODES): the daily
+  // Meditation restores 2 / 3 Mind (gnostic) or 2 / 3 / 4 Mind (countermage),
+  // the highest node held; its button is the Redsteel hotbar's meditation
+  // action (utils/redsteelHotbar.mjs ACTION_BUTTONS).
+  gnostic: ["meditaceMZ2", "meditaceMZ3"],
+  countermage: ["meditace2", "meditace3", "meditace4"],
 };
 
 // Crit-degree triggers and state-gated immunities are already declared as data

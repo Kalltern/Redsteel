@@ -156,6 +156,15 @@
         "Intro": "Mentální souboj nezačal. Vyčerpáš 1 MŽ (máš {mind}) a hodíš na zahájení znovu na <b>{chance} %</b>? Jednou za kolo.",
         "Reroll": "Vyčerpat 1 MŽ a hodit na zahájení znovu ({chance} %)",
         "Skip": "Nechat být"
+      },
+      "StrainCancel": {
+        "Title": "Mentální vytížení",
+        "Card": "Mentální vytížení ruší Koncentraci a postoje cíle {target}: {list}."
+      },
+      "Telepathy": {
+        "Title": "Telepatie",
+        "Card": "{caster} skrytě otevírá telepatický kanál k cíli {target}.",
+        "CardNoTarget": "{caster} skrytě otevírá telepatický kanál."
       }
     },
     "MancerFollowups": {
@@ -491,7 +500,8 @@
         "firstAid": "První pomoc",
         "effects": "Správce efektů",
         "miracle": "Zázraky",
-        "magesRest": "Mágův odpočinek"
+        "magesRest": "Mágův odpočinek",
+        "meditation": "Meditace"
       },
       "ActionTracker": {
         "title": "Akce a Reakce",
@@ -3197,11 +3207,11 @@
             },
             "meditaceMZ2": {
               "label": "Meditace obnovuje 2 Mentální životy",
-              "description": "5 SP; Meditace I. Ručně — řeší se u stolu."
+              "description": "5 SP; Meditace I. Denní Meditace ti obnoví 2 MŽ. Automatizováno."
             },
             "meditaceMZ3": {
               "label": "Meditace obnovuje 3 Mentální životy",
-              "description": "10 SP. Ručně — řeší se u stolu."
+              "description": "10 SP. Denní Meditace ti obnoví 3 MŽ. Automatizováno."
             },
             "mzMeditace": {
               "label": "Mentální životy +1 / Meditace +5%",
@@ -3507,15 +3517,15 @@
             },
             "meditace2": {
               "label": "Meditace obnovuje 2 Mentální životy",
-              "description": "5 SP; Meditace I. Ručně — řeší se u stolu."
+              "description": "5 SP; Meditace I. Denní Meditace ti obnoví 2 MŽ. Automatizováno."
             },
             "meditace3": {
               "label": "Meditace obnovuje 3 Mentální životy",
-              "description": "15 SP. Ručně — řeší se u stolu."
+              "description": "15 SP. Denní Meditace ti obnoví 3 MŽ. Automatizováno."
             },
             "meditace4": {
               "label": "Meditace obnovuje 4 Mentální životy",
-              "description": "15 SP; Kontramág: Expert. Ručně — řeší se u stolu."
+              "description": "15 SP; Kontramág: Expert. Denní Meditace ti obnoví 4 MŽ. Automatizováno."
             },
             "vynucenySouboj": {
               "label": "Vynucený Mentální souboj -20%",
@@ -3746,27 +3756,27 @@
             },
             "telepat1": {
               "label": "Telepat I",
-              "description": "15 SP; Mentalista: Expert. Ručně — řeší se u stolu."
+              "description": "15 SP; Mentalista: Expert. Telepatii sesíláš bez Many, bez Akce a bez Testu Usměrňování a dozví se o ní jen GM, ty a vlastník cíle ze skryté karty. Automatizováno."
             },
             "telepat2": {
               "label": "Telepat II",
-              "description": "5 SP; Telepat I + Mentalista: Mistr. Ručně — řeší se u stolu."
+              "description": "5 SP; Telepat I + Mentalista: Mistr. Telepatické pouto stojí polovinu a platíš ho za každý zacílený token. Automatizováno."
             },
             "vytizeniKoncentrace": {
               "label": "Vytížení: ruší Konc.",
-              "description": "5 CP; Mentalista: Učedník. Ručně — řeší se u stolu."
+              "description": "5 CP; Mentalista: Učedník. Když tvé Mentální vytížení dopadne na cíl, zruší jeho udržovaná kouzla, jeho postoje i jeho vlastní Mentální souboj, jednou za každé dopadnutí. Automatizováno."
             },
             "vytizeniReakce": {
               "label": "Vytížení: -1 Reakce",
-              "description": "5 CP; Vytížení: ruší Konc. + Mentalista: Expert. Ručně — řeší se u stolu."
+              "description": "5 CP; Vytížení: ruší Konc. + Mentalista: Expert. Tvé Mentální vytížení bere cíli po dobu trvání 1 Reakci. Automatizováno."
             },
             "vytizeniZakerne": {
               "label": "Vytížení: útoky Zákeřné",
-              "description": "5 CP; Vytížení: -1 Reakce. Ručně — řeší se u stolu."
+              "description": "5 CP; Vytížení: -1 Reakce. Dokud na cíli trvá tvé Mentální vytížení, útoky na něj se počítají jako Zákeřné. Automatizováno."
             },
             "vytizeniAkce": {
               "label": "Vytížení: -1 Akce",
-              "description": "5 CP; Vytížení: útoky Zákeřné + Mentalista: Mistr. Ručně — řeší se u stolu."
+              "description": "5 CP; Vytížení: útoky Zákeřné + Mentalista: Mistr. Tvé Mentální vytížení bere cíli po dobu trvání 1 Akci. Automatizováno."
             },
             "vysati": {
               "label": "Vysátí",
@@ -3786,11 +3796,11 @@
             },
             "meditace2": {
               "label": "Meditace +2 MŽ",
-              "description": "5 SP; Meditace I. Ručně — řeší se u stolu."
+              "description": "5 SP; Meditace I. Denní Meditace ti obnoví 2 MŽ. Automatizováno."
             },
             "meditace3": {
               "label": "Meditace +3 MŽ",
-              "description": "15 SP; Meditace +2 MŽ. Ručně — řeší se u stolu."
+              "description": "15 SP; Meditace +2 MŽ. Denní Meditace ti obnoví 3 MŽ. Automatizováno."
             },
             "mzMeditace": {
               "label": "+1 MŽ / Meditace +5%",
@@ -6041,7 +6051,8 @@
         "pikemanHunter": "uvnitř dosahu dlouhé zbraně",
         "brigandRepeat": "druhý výstřel na stejný cíl",
         "underhanded": "Omráčený cíl, 6 Výdrže",
-        "mauling": "Drásání"
+        "mauling": "Drásání",
+        "mentalStrain": "pod mentálním vytížením"
       }
     },
     "EnduringWarrior": {
@@ -11090,6 +11101,15 @@
       "AlreadyUsed": "Mágův odpočinek je dnes už využitý.",
       "Success": "Postava {name} medituje a obnovuje si {amount} Many.",
       "Failure": "Postava {name} neuspěla v Testu Meditace. Dnešní Mágův odpočinek je využitý.",
+      "CritSuccess": "Kritický úspěch!",
+      "CritFailure": "Kritický neúspěch!"
+    },
+    "Meditation": {
+      "Title": "Meditace",
+      "NotCharacter": "{name} nemá dovednost Meditace. Meditovat mohou jen postavy.",
+      "AlreadyUsed": "Meditace je dnes už využitá.",
+      "Success": "Postava {name} medituje a obnovuje si {amount} MŽ.",
+      "Failure": "Postava {name} neuspěla v Testu Meditace. Dnešní Meditace je využitá.",
       "CritSuccess": "Kritický úspěch!",
       "CritFailure": "Kritický neúspěch!"
     }

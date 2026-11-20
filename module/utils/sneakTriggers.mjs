@@ -89,6 +89,22 @@ export const SNEAK_TRIGGERS = [
     capability: NODE("shadow", "outnumberSneak"),
     test: (ctx) => ctx.overwhelmSources >= 2,
   },
+  // Mentalist → Vytížení: útoky Zákeřné (vytizeniZakerne). The node belongs
+  // to whoever strained the target, so every attacker owns the clause, like
+  // the back clause below; it fires when the target's Mental Strain carries
+  // the upgrade (utils/mentalist.mjs applyStrainUpgrades). Ahead of the back
+  // clause because it is the bought-for reason, behind the Shadow nodes
+  // because those are the attacker's own.
+  {
+    key: "mentalStrain",
+    capability: null,
+    test: (ctx) =>
+      !!ctx.targetActor?.effects?.contents?.some(
+        (e) =>
+          e.statuses?.has("mental_strain") &&
+          e.getFlag?.("redsteel", "strainUpgrades")?.sneak === true,
+      ),
+  },
   // Záda — a blow from behind is a Sneak Attack for everyone, no doctrine
   // needed (table ruling). Rogue II only adds the flank below.
   {

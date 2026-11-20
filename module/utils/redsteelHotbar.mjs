@@ -308,6 +308,17 @@ const ACTION_BUTTONS = [
     passActor: true,
     when: (actor) => hasMancerNode(actor, "vitamancer", "maguvOdpocinek"),
   },
+  // Meditace: the once-a-day Meditation test that restores Mind, open to
+  // every character (only characters have the Meditation skill). Rests the
+  // character the bar is drawn for, like Mage's Rest
+  // (utils/otherActions.mjs meditate).
+  {
+    key: "meditation",
+    api: "meditate",
+    icon: "fa-light fa-om",
+    passActor: true,
+    when: (actor) => actor?.type === "character",
+  },
 ];
 
 /**

@@ -380,7 +380,7 @@ export async function holdMindBending(actor) {
  * free drop takes them. GM side (the lapse hook runs on the active GM).
  * @param {Actor} actor - the caster.
  */
-export async function lapseMindBending(actor) {
+export async function lapseMindBending(actor, { silent = false } = {}) {
   const effect = mindBendingEffect(actor);
   if (!effect) return;
   const targetUuid = effect.getFlag("redsteel", MIND_BENDING_TARGET_FLAG) || null;
@@ -408,7 +408,10 @@ export async function lapseMindBending(actor) {
       ),
     );
   }
-  await postUpkeepCard(actor, img, lines);
+  // `silent`: a caller that ended the spell for another reason (Mentalist
+  // strain cancelling Concentration, mentalist.mjs) posts its own card; this
+  // one would wrongly blame unpaid upkeep.
+  if (!silent) await postUpkeepCard(actor, img, lines);
 }
 
 /**

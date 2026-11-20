@@ -14,6 +14,7 @@ import { isActorInCombat } from "./combatants.mjs";
 import { withRollBias } from "./rollAdvantage.mjs";
 import { secondsPerDay } from "./calendariaIntegration.mjs";
 import { hasMancerNode } from "../helpers/mancerPassives.mjs";
+import { actorHasSpecNode } from "../helpers/specialisations.mjs";
 
 export async function delayTurn() {
   const combat = game.combat;
@@ -1130,6 +1131,129 @@ export async function magesRest(actorArg = null) {
       <p>${outcome}</p>`,
     flags: {
       redsteel: { type: "magesRest", actorUuid: actor.uuid, passed, restored },
+    },
+  });
+}
+
+/* -------------------------------------------- */
+/*  Meditace (daily Mind restore)               */
+/* -------------------------------------------- */
+
+/**
+ * The nodes that raise how much Mind the daily Meditation restores. The
+ * highest held wins; they are not summed. Without any of them it is 1.
+ *   mentalist meditace2 / meditace3 ("Meditace +2 MŽ", "+3 MŽ")
+ *   gnostic meditaceMZ2 / meditaceMZ3 ("Meditace obnovuje 2 / 3 Mentální životy")
+ *   countermage meditace2 / meditace3 / meditace4 (2 / 3 / 4)
+ */
+export const MEDITATION_MIND_NODES = [
+  { spec: "mentalist", node: "meditace2", amount: 2 },
+  { spec: "mentalist", node: "meditace3", amount: 3 },
+  { spec: "gnostic", node: "meditaceMZ2", amount: 2 },
+  { spec: "gnostic", node: "meditaceMZ3", amount: 3 },
+  { spec: "countermage", node: "meditace2", amount: 2 },
+  { spec: "countermage", node: "meditace3", amount: 3 },
+  { spec: "countermage", node: "meditace4", amount: 4 },
+];
+
+/** Mind the daily Meditation restores for this actor. */
+function meditationMindAmount(actor) {
+  let amount = 1;
+  for (const { spec, node, amount: n } of MEDITATION_MIND_NODES) {
+    if (actorHasSpecNode(actor, spec, node)) amount = Math.max(amount, n);
+  }
+  return amount;
+}
+
+/**
+ * Meditace, the general rule (ruzne-info.md r510): "Jednou za den může skrze
+ * Test Meditace obnovit jeden Mentální život." A Meditation test; a pass
+ * restores 1 Mind (more with MEDITATION_MIND_NODES) to
+ * `system.stats.mind.value`, capped at the derived maximum. Burned Mind
+ * (`stats.mind.burned`) is never touched: it lowers the maximum and stays
+ * until a ritual or potion gives it back. Pass or fail, the game day is
+ * spent (`flags.redsteel.meditation.lastDay`, the worldTime day number),
+ * before the roll, so a second click cannot test twice. The same shape as
+ * magesRest above.
+ *
+ * Characters only: `system.skills` (and so the Meditation skill) exists on
+ * characters alone.
+ *
+ * Runs on the owner's client: it only writes the owner's own actor.
+ *
+ * @param {Actor} [actorArg]  Defaults to the selected token's actor.
+ */
+export async function meditate(actorArg = null) {
+  const actor =
+    actorArg ?? game.redsteel.selectToken({ notifyFallback: true })?.actor;
+  if (!actor) return;
+  const name = foundry.utils.escapeHTML(actor.name ?? "");
+
+  if (actor.type !== "character") {
+    ui.notifications.warn(
+      game.i18n.format("REDSTEEL.Meditation.NotCharacter", { name }),
+    );
+    return;
+  }
+
+  const today = Math.floor(game.time.worldTime / secondsPerDay());
+  const lastDay = actor.getFlag("redsteel", "meditation.lastDay");
+  if (lastDay != null && Number(lastDay) === today) {
+    ui.notifications.warn(game.i18n.localize("REDSTEEL.Meditation.AlreadyUsed"));
+    return;
+  }
+  // Spent before the roll, so a second click cannot test twice.
+  await actor.setFlag("redsteel", "meditation.lastDay", today);
+
+  const skill = actor.system.skills?.meditation ?? {};
+  const rating = Number(skill.rating ?? 0);
+  const critSucc = Number(skill.criticalSuccessThreshold ?? 0);
+  const critFail = Number(skill.criticalFailureThreshold ?? 101);
+
+  const roll = new Roll(`${rating} - 1d100`, withRollBias({}, actor));
+  tagRollSkill(roll, "meditation");
+  await roll.evaluate();
+  // A fumbling first die forfeits advantage; read the die only after.
+  forfeitAdvantageOnCritFail(roll, critFail);
+  const d100 = roll.dice?.[0]?.total ?? rating - roll.total;
+  const hopeless = capHopelessNatural(roll, critSucc);
+  const critSuccess = !hopeless && d100 <= critSucc;
+  const critFailure = d100 >= critFail;
+  const passed = critSuccess || (!critFailure && roll.total >= 0);
+
+  let restored = 0;
+  if (passed) {
+    const amount = meditationMindAmount(actor);
+    const current = Number(actor.system.stats?.mind?.value) || 0;
+    const max = Number(actor.system.stats?.mind?.max) || 0;
+    const next = Math.max(current, Math.min(max, current + amount));
+    restored = next - current;
+    if (restored > 0) {
+      await actor.update({ "system.stats.mind.value": next });
+    }
+  }
+
+  const crit = critSuccess
+    ? game.i18n.localize("REDSTEEL.Meditation.CritSuccess")
+    : critFailure
+      ? game.i18n.localize("REDSTEEL.Meditation.CritFailure")
+      : "";
+  const outcome = passed
+    ? game.i18n.format("REDSTEEL.Meditation.Success", {
+        name,
+        amount: restored,
+      })
+    : game.i18n.format("REDSTEEL.Meditation.Failure", { name });
+
+  await roll.toMessage({
+    speaker: ChatMessage.getSpeaker({ actor }),
+    flavor: `<p class="rs-card-headline"><b><i class="fa-light fa-om"></i> ${game.i18n.localize(
+      "REDSTEEL.Meditation.Title",
+    )}</b></p>
+      ${crit ? `<p><b>${crit}</b></p>` : ""}
+      <p>${outcome}</p>`,
+    flags: {
+      redsteel: { type: "meditation", actorUuid: actor.uuid, passed, restored },
     },
   });
 }

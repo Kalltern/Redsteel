@@ -32,6 +32,11 @@
  * other, the same reason strikes.mjs stands alone.
  */
 import { nextSpellManaDiscount } from "./nextSpellBonus.mjs";
+import { actorHasSpecNode } from "../helpers/specialisations.mjs";
+import { matchesPackSpell } from "../helpers/mancerSpells.mjs";
+
+/** The pack spell Telepathic link (Telepatické pouto), for Telepat II. */
+const TELEPATHIC_LINK = { id: "Ee95pq1nkqjsvM3Y", name: "Telepathic link" };
 
 export const LINDAR_CHARGE_SPELLS = new Set([
   "Pull",
@@ -95,6 +100,20 @@ export function getLindarChannelingBonus(actor, spell) {
  */
 export function getBaseSpellManaCost(actor, spell) {
   const baseCost = Number(spell?.system?.cost) || 0;
+  // Mentalist → Telepat II (telepat2, book r1404): "Kouzlo Telepatické pouto
+  // je o polovinu levnější a lze ho seslat na více cílů zároveň (cena za každý
+  // cíl)." Half the cost, rounded up, once per token the casting user targets
+  // (at least one). The cost shown (the cast dialog row, the tooltip) and the
+  // cost spent (deductMana) agree because all three Mana sites read this
+  // function through getLindarSpellCost. What the extra targets get is
+  // narrative; only the price is counted here.
+  if (
+    actorHasSpecNode(actor, "mentalist", "telepat2") &&
+    matchesPackSpell(spell, TELEPATHIC_LINK)
+  ) {
+    const targets = Math.max(1, Number(game.user?.targets?.size) || 0);
+    return Math.ceil(baseCost / 2) * targets;
+  }
   const lindarCut =
     spell?.system?.type !== "blood" &&
     hasLindarCharge(actor) &&

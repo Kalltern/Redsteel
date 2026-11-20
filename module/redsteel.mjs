@@ -220,6 +220,7 @@ import {
   longRest,
   firstAid,
   magesRest,
+  meditate,
   registerFirstAidHealing,
   advanceCombatFirstAid,
 } from "./utils/otherActions.mjs";
@@ -517,6 +518,8 @@ Hooks.once("init", function () {
   game.redsteel.longRest = longRest;
   // Vitamancer → Mágův odpočinek: the once-a-day Meditation test (otherActions.mjs).
   game.redsteel.magesRest = magesRest;
+  // Meditace: the once-a-day Meditation test that restores Mind (otherActions.mjs).
+  game.redsteel.meditate = meditate;
   game.redsteel.spellDefense = spellDefense;
   game.redsteel.attackActions = attackActions;
   game.redsteel.meleeAttack = meleeAttack;

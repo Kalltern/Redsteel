@@ -16,6 +16,7 @@ import {
   trackedCombat,
 } from "./actionTracker.mjs";
 import { burnMindPoints } from "./mindPoints.mjs";
+import { applyStrainUpgrades, strainUpgradesOf } from "./mentalist.mjs";
 
 // Only a winner who can Dominate may seize control: an actor (PC or NPC) that
 // holds the Mentalist "Domination" (ovladnuti) node.
@@ -2212,8 +2213,9 @@ export async function openMentalDuel(attacker, defender, { broadcast = true } = 
       await game.settings.set("redsteel", "mentalDuelActive", next);
     }
     // "Mentální souboj vyvolává efekt Mentální vytížení" — covers duels opened
-    // without a Mind Bending cast (macro, monsters). No-op if already strained.
-    await applyMentalStrain(bTok);
+    // without a Mind Bending cast (macro, monsters). No-op if already strained
+    // and the attacker holds none of the Mentalist strain upgrades.
+    await applyMentalStrain(bTok, { casterUuid: aTok.document.uuid });
   }
 
   if (activeDuel?.rendered) await activeDuel.close();
@@ -2227,26 +2229,71 @@ export async function openMentalDuel(attacker, defender, { broadcast = true } = 
  * Put Mental Strain ("Mentální vytížení") on a duel's target. Mind Bending
  * strains the target on any successful cast, duel or not, and the caster rarely
  * owns the target, so a non-owner relays to the active GM.
+ *
+ * The caster's Mentalist strain upgrades (vytizeniKoncentrace, vytizeniReakce,
+ * vytizeniZakerne, vytizeniAkce) are stamped on the strain after it exists,
+ * newly applied or already there (utils/mentalist.mjs applyStrainUpgrades).
+ * The Concentration cancel ends the target's Mind Bending through
+ * mindBending.mjs lapseMindBending, which is GM side, so an owner who is not
+ * a GM relays a cast carrying that upgrade to the active GM when one is
+ * connected.
+ *
  * @param {Token|TokenDocument} target
+ * @param {{casterUuid?: string|null}} [options]  `casterUuid`: the caster's
+ *   TOKEN document uuid (an Actor uuid is accepted too). Without it no
+ *   upgrades are read.
  */
-export async function applyMentalStrain(target) {
+export async function applyMentalStrain(target, { casterUuid = null } = {}) {
   const doc = target?.document ?? target;
   const actor = doc?.actor;
   if (!actor) return;
-  if (actor.statuses?.has("mental_strain")) return;
+  const caster = strainCasterOf(casterUuid);
+  const upgrades = strainUpgradesOf(caster?.actor ?? null);
+  const strained = actor.statuses?.has("mental_strain");
+  if (strained && !Object.keys(upgrades).length) return;
 
-  if (game.user.isGM || actor.isOwner) {
-    await game.redsteel.applyEffect(actor, "mental_strain");
+  const relayForGM =
+    !game.user.isGM && !!upgrades.concentration && !!game.users.activeGM;
+  if (game.user.isGM || (actor.isOwner && !relayForGM)) {
+    if (!strained) await game.redsteel.applyEffect(actor, "mental_strain");
+    if (caster?.actor) {
+      await applyStrainUpgrades(actor, caster.actor, {
+        casterTokenUuid: caster.tokenUuid,
+      });
+    }
     return;
   }
-  game.socket.emit(SOCKET, { type: "mentalStrainApply", tokenUuid: doc.uuid });
+  game.socket.emit(SOCKET, {
+    type: "mentalStrainApply",
+    tokenUuid: doc.uuid,
+    casterUuid: casterUuid ?? null,
+  });
+}
+
+/**
+ * The caster behind a strain uuid: its actor, and its token uuid when the
+ * uuid named a token (the Mind Bending duel check in mentalist.mjs needs it).
+ * @param {string|null} uuid
+ * @returns {{actor: Actor, tokenUuid: string|null}|null}
+ */
+function strainCasterOf(uuid) {
+  if (!uuid) return null;
+  let doc = null;
+  try {
+    doc = fromUuidSync(uuid);
+  } catch (err) {
+    doc = null;
+  }
+  if (!doc) return null;
+  if (doc.documentName === "Actor") return { actor: doc, tokenUuid: null };
+  return doc.actor ? { actor: doc.actor, tokenUuid: doc.uuid } : null;
 }
 
 /** Socket receiver: the active GM applies a relayed Mental Strain. */
 export async function handleMentalStrainApply(data) {
   if (game.user.id !== game.users.activeGM?.id) return;
   const doc = fromUuidSync(data.tokenUuid);
-  if (doc) await applyMentalStrain(doc);
+  if (doc) await applyMentalStrain(doc, { casterUuid: data.casterUuid ?? null });
 }
 
 /**

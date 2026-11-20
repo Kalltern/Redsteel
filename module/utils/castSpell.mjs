@@ -49,7 +49,7 @@ import {
 import { mancerLockLabel, mancerSpellLock } from "../helpers/mancerSpells.mjs";
 import { applyFieryAura, spellTargetCapRefusal } from "./mancerFollowups.mjs";
 import { createSpellZone, placeSpellArea, spellArea } from "./spellArea.mjs";
-import { offerPersistentEffort } from "./mentalist.mjs";
+import { castHiddenTelepathy, offerPersistentEffort } from "./mentalist.mjs";
 import { areAdjacent } from "./positioning.mjs";
 import { actorHasSpecNode } from "../helpers/specialisations.mjs";
 
@@ -138,6 +138,13 @@ export async function castSpell(options = {}) {
     ui.notifications.warn(
       game.i18n.localize("REDSTEEL.Elymas.CounterVariantUnfit"),
     );
+    return;
+  }
+
+  // Mentalist → Telepat I: a holder's Telepathy is a hidden free action with
+  // no Mana, no Channeling roll and no table card. Handled whole here, before
+  // performCast takes any cost, action or roll (utils/mentalist.mjs).
+  if (!isMiracle(spell) && (await castHiddenTelepathy(actor, spell, token))) {
     return;
   }
 
@@ -481,6 +488,11 @@ export async function quickCastSpell(spellUuid, spellName = "") {
     controlled?.actor?.id === actor.id
       ? controlled
       : (actor.getActiveTokens()[0] ?? null);
+
+  // Mentalist → Telepat I, as in castSpell: handled before anything is paid.
+  if (!isMiracle(spell) && (await castHiddenTelepathy(actor, spell, token))) {
+    return true;
+  }
 
   return performCast(actor, spell, { token });
 }
@@ -830,7 +842,11 @@ async function maybeStartMentalDuel(
   }
 
   // A landed Mind Bending strains the target whether or not the duel starts.
-  await applyMentalStrain(targetToken);
+  // The caster's token is passed so its Mentalist strain upgrades ride along
+  // (utils/mentalist.mjs applyStrainUpgrades).
+  await applyMentalStrain(targetToken, {
+    casterUuid: casterToken.document?.uuid ?? actor.uuid,
+  });
   // Remember whose strain this is, so dropping the spell from the hotbar can
   // lift it again (mindBending.mjs).
   await stampMindBendingTarget(actor, targetToken);
