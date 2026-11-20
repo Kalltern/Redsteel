@@ -197,7 +197,7 @@ export function isShootingWeapon(weapon) {
  * @returns {boolean}
  */
 export function sharpshooterNode(actor, node, weapon = undefined) {
-  if (actor?.type !== "character") return false;
+  if (!actor) return false;
   if (!actorHasSpecNode(actor, "sharpshooter", node)) return false;
   const held =
     weapon === undefined
@@ -222,7 +222,7 @@ const SPELL_AIM_EASE_PER_STACK = 5;
  * @returns {number}
  */
 export function spellAimEase(actor) {
-  if (actor?.type !== "character") return 0;
+  if (!actor) return 0;
   if (!actorHasSpecNode(actor, "veneficus", "mireniObtiznost")) return 0;
   const aim = readAim(getAimerToken(actor));
   if (!aim?.targetId) return 0;
@@ -357,10 +357,11 @@ function aimPerks(actor, weapon, context = null) {
  *
  * Weapon-gated like every other Aim perk on these trees: the duellist's blade
  * (Sword Dancer) or a two-handed sword (Servant of the Sword) has to be the thing
- * that turned the blow aside. Character-only, as spec nodes are.
+ * that turned the blow aside. Characters and NPCs alike, through the nodes
+ * they hold.
  */
 export function hasAdvantageousManeuver(actor, weapon = null, context = null) {
-  if (actor?.type !== "character") return false;
+  if (!actor) return false;
   return !!aimPerks(actor, weapon, context).maneuver;
 }
 
@@ -1692,10 +1693,7 @@ export function hasImprovedAim(actor) {
 
 /** Harcovník → Při pohybu neztrácí Míření. */
 export function keepsAimWhileMoving(actor) {
-  return (
-    actor?.type === "character" &&
-    actorHasSpecNode(actor, "skirmisher", "mireniPohyb")
-  );
+  return !!actor && actorHasSpecNode(actor, "skirmisher", "mireniPohyb");
 }
 
 /**

@@ -142,9 +142,9 @@ const L = (key, data) =>
 /*  Shared                                      */
 /* -------------------------------------------- */
 
-/** Does this character hold this Skirmisher node? */
+/** Does this actor (character or NPC) hold this Skirmisher node? */
 export function hasSkirmisherNode(actor, node) {
-  return actor?.type === "character" && actorHasSpecNode(actor, SPEC, node);
+  return !!actor && actorHasSpecNode(actor, SPEC, node);
 }
 
 function isKeyed(item, key, englishName) {
@@ -240,7 +240,7 @@ async function onThrowCard(message, userId) {
   const flags = message?.flags?.[SYSTEM_ID] ?? {};
   if (flags.rerolledFrom || flags.rerolledAway) return;
   const { scene, token, actor } = cardAttacker(message);
-  if (actor?.type !== "character" || !actor.isOwner) return;
+  if (!actor?.isOwner) return;
   const aimNode = hasSkirmisherNode(actor, "mireniPoVrhu");
   const moveNode = hasSkirmisherNode(actor, "pohybPoVrhu");
   if (!aimNode && !moveNode) return;

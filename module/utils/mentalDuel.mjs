@@ -15,24 +15,81 @@ import {
   spend,
   trackedCombat,
 } from "./actionTracker.mjs";
+import { burnMindPoints } from "./mindPoints.mjs";
 
-// Only a winner who can Dominate may seize control: any NPC, or a player
-// character who has unlocked the Mentalist "Domination" (ovladnuti) perk.
+// Only a winner who can Dominate may seize control: an actor (PC or NPC) that
+// holds the Mentalist "Domination" (ovladnuti) node.
 function canDominate(actor) {
-  return (
-    actor?.type === "npc" || actorHasSpecNode(actor, "mentalist", "ovladnuti")
-  );
+  return !!actor && actorHasSpecNode(actor, "mentalist", "ovladnuti");
 }
 
-// Only a winner who has learned Drain may feed on the broken mind: any NPC, or
-// a player character with the Mentalist "Drain" (vysati) perk. Same convention
-// as canDominate — NPCs have no spec trees, so they are assumed capable.
+// Only a winner who has learned Drain may feed on the broken mind: an actor
+// (PC or NPC) that holds the Mentalist "Drain" (vysati) node. NPCs get it the
+// same way as characters, through the node on their Specialisations tab.
 function canDrain(actor) {
-  return actor?.type === "npc" || actorHasSpecNode(actor, "mentalist", "vysati");
+  return !!actor && actorHasSpecNode(actor, "mentalist", "vysati");
 }
 
 // Mind restored to the victor by Drain.
 const DRAIN_MIND_GAIN = 2;
+
+// Vysátí: "získat bonus na zahájení příštího Mentálního souboje +30%". Parked on
+// the drainer as an actor flag and spent by their next initiation roll
+// (castSpell.mjs), which caps it at MD_CHARGE_CAP.
+const DRAIN_INITIATION_BONUS = 30;
+
+/* -------------------------------------------- */
+/*  Mentalist duel window nodes                 */
+/* -------------------------------------------- */
+
+// Each is open to any actor (PC or NPC) holding the node, same as
+// canDominate/canDrain.
+
+/** Mentalistův úprk: burn 1 Mind to end the running duel at once. */
+function canEscape(actor) {
+  return !!actor && actorHasSpecNode(actor, "mentalist", "mentalistuvUprk");
+}
+
+/** Výboj mysli: once a duel, burn 1 Mind for +30% for the rest of it. */
+function canBurst(actor) {
+  return !!actor && actorHasSpecNode(actor, "mentalist", "vybojMysli");
+}
+
+/** Zoufalý vzdor: on a lost duel, burn 2 Mind to shrug the loss off. */
+function hasDefiance(actor) {
+  return !!actor && actorHasSpecNode(actor, "mentalist", "zoufalyVzdor");
+}
+
+/** Čtení mysli: the winner may read the loser's memories. */
+function canReadMind(actor) {
+  return !!actor && actorHasSpecNode(actor, "mentalist", "cteniMysli");
+}
+
+/** Pokročilé čtení mysli: Domination or Drain may follow the reading. */
+function hasAdvancedReading(actor) {
+  return !!actor && actorHasSpecNode(actor, "mentalist", "pokrocileCteni");
+}
+
+/** Mind burned by Mentalist's Escape and by Mind Burst. */
+const ESCAPE_BURN = 1;
+const BURST_BURN = 1;
+
+/** Mental Duel bonus Mind Burst gives its side, on attack and defence. */
+const MD_BURST_BONUS = 30;
+
+/** Mind burned by Desperate Defiance, and the Mind the loser keeps. */
+const DEFIANCE_BURN = 2;
+const DEFIANCE_KEEPS = 1;
+
+/**
+ * The loser sits at 0 Mind, so the burn is paid out of the ceiling alone: the
+ * derived maximum must stay at least DEFIANCE_KEEPS after it shrinks by
+ * DEFIANCE_BURN, or there would be no room left for the Mind it keeps.
+ */
+function canAffordDefiance(actor) {
+  const max = Number(actor?.system?.stats?.mind?.max) || 0;
+  return max >= DEFIANCE_BURN + DEFIANCE_KEEPS;
+}
 
 /* -------------------------------------------- */
 /*  Usilovná koncentrace (Focused Concentration) */
@@ -74,6 +131,13 @@ export const MD_BASE_INITIATION = 35;
  */
 export const MD_CHARGE_CAP = 75;
 
+/**
+ * Mentalist "Dotek: +30% na zahájení" (soubojDotek): a caster standing next to
+ * the target adds this to the initiation chance (castSpell.mjs). Unlike the
+ * charge, it is not bound by {@link MD_CHARGE_CAP}.
+ */
+export const MD_TOUCH_BONUS = 30;
+
 /** Each step of the "Zahájení +10%" chain, and each Mind burned, is worth this. */
 const MD_INITIATION_STEP = 10;
 
@@ -86,8 +150,8 @@ const MD_INITIATION_NODES = [
 
 /**
  * Sum of the Mentalist "Mentální souboj: Šance na zahájení +10%" chain, which
- * stacks cumulatively. NPCs have no spec trees and get nothing here — an NPC
- * mentalist's initiation chance is whatever the GM's own numbers say.
+ * stacks cumulatively. Characters and NPCs alike get it through the nodes they
+ * hold (the GM grants an NPC's nodes on its Specialisations tab).
  * @param {Actor} actor
  * @returns {number} percentage points added to the initiation chance.
  */
@@ -100,12 +164,10 @@ export function getInitiationBonus(actor) {
   );
 }
 
-// Mentální zteč (Mental Charge) — a Free Action open to any NPC or to a
-// character holding the node, the same NPC convention as canDominate/canDrain.
+// Mentální zteč (Mental Charge) — a Free Action open to any actor (PC or NPC)
+// holding the node, same as canDominate/canDrain.
 function canMentalCharge(actor) {
-  return (
-    actor?.type === "npc" || actorHasSpecNode(actor, "mentalist", "mentalniZtec")
-  );
+  return !!actor && actorHasSpecNode(actor, "mentalist", "mentalniZtec");
 }
 
 /**
@@ -205,19 +267,15 @@ const MD_ASSAULT_PENALTY = -40;
 /** Mind the assault drains on top of the normal loss, per assault node held. */
 const MD_ASSAULT_DRAIN = 1;
 
-// Mentální nápor is open to any NPC or to a character holding the node — same
-// NPC convention as canDominate/canDrain.
+// Mentální nápor is open to any actor (PC or NPC) holding the node, same as
+// canDominate/canDrain.
 function canMentalAssault(actor) {
-  return (
-    actor?.type === "npc" || actorHasSpecNode(actor, "mentalist", "soubojMZ1")
-  );
+  return !!actor && actorHasSpecNode(actor, "mentalist", "soubojMZ1");
 }
 
 /**
  * Extra Mind an assault drains on a win: one point, two once the follow-up
- * node ("Nápor: úspěch ubírá o 1 MŽ více") is taken. Unlike access to the
- * assault itself, the upgrade is NOT assumed for NPCs — two extra Mind is most
- * of a small pool, so an NPC assault stays at the base drain.
+ * node ("Nápor: úspěch ubírá o 1 MŽ více") is taken, by a PC or an NPC alike.
  * @param {Actor} actor
  */
 function assaultDrain(actor) {
@@ -336,6 +394,7 @@ const MENTAL_DUEL_CSS = `
 }
 .rs-md-mind b { color: #fff; font-size: 16px; }
 .rs-md-rating { font-size: 11px; opacity: 0.7; }
+.rs-md-burst-note { font-size: 11px; color: #e0c878; }
 .rs-md-vs {
   align-self: center;
   font-size: 18px;
@@ -462,6 +521,45 @@ const MENTAL_DUEL_CSS = `
   background: linear-gradient(#265046, #142925);
   box-shadow: 0 0 8px -2px #4fd3ac;
 }
+.rs-md-burst,
+.rs-md-escape {
+  padding: 5px 6px;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 6px;
+  border: 1px solid #5a4a2a;
+  background: linear-gradient(#24211c, #151310);
+  color: #ddd2b4;
+  cursor: pointer;
+}
+.rs-md-burst i,
+.rs-md-escape i { color: #c9a227; }
+.rs-md-burst:hover:not(:disabled),
+.rs-md-escape:hover:not(:disabled) {
+  background: linear-gradient(#332e25, #1c1915);
+  box-shadow: 0 0 8px -2px #c9a227;
+}
+.rs-md-burst:disabled,
+.rs-md-escape:disabled { opacity: 0.4; cursor: not-allowed; }
+.rs-md-read,
+.rs-md-defy {
+  display: inline-block;
+  margin: 10px 3px 0;
+  padding: 7px 14px;
+  font-weight: bold;
+  border-radius: 6px;
+  border: 1px solid #8b6914;
+  background: linear-gradient(#2a2620, #1c1a16);
+  color: #f0e4b8;
+  cursor: pointer;
+}
+.rs-md-read:hover:not(:disabled),
+.rs-md-defy:hover:not(:disabled) {
+  background: linear-gradient(#3a342a, #221f19);
+  box-shadow: 0 0 8px -2px #c9a227;
+}
+.rs-md-read:disabled,
+.rs-md-defy:disabled { opacity: 0.4; cursor: not-allowed; }
 .rs-md-possess-note {
   margin-top: 8px;
   font-size: 12px;
@@ -736,6 +834,12 @@ function buildSide(token) {
     color: getOwnerColor(token),
     mindValue: Math.max(0, Number(mind.value) || 0),
     mindMax: Math.max(0, Number(mind.max) || 0),
+    // A dead side is out of the duel whatever its Mind (Vysátí may still feed
+    // on it).
+    dead: !!actor.statuses?.has("dead"),
+    // Mind Burst bonus folded into `rating`; set by the window, which knows
+    // the duel's anchor (see MentalDuelApp#_addBurst).
+    burst: 0,
     rating: skill.rating,
     critSuccess: skill.critSuccess,
     critFailure: skill.critFailure,
@@ -914,7 +1018,34 @@ export class MentalDuelApp extends ApplicationV2 {
       return `<div class="rs-md-banner">${game.i18n.localize("REDSTEEL.MentalDuel.Window.TokenGone")}</div>
         <div class="rs-md-footer"><button type="button" class="rs-md-end rs-md-close">${game.i18n.localize("REDSTEEL.MentalDuel.Window.Close")}</button></div>`;
     }
-    return this._buildHTML(buildSide(aTok), buildSide(bTok));
+    const a = this._addBurst(buildSide(aTok), "a");
+    const b = this._addBurst(buildSide(bTok), "b");
+    return this._buildHTML(a, b);
+  }
+
+  /**
+   * Read a per-duel state the GM parked on the anchor token, keyed to this
+   * pair so a stale value from another duel never counts.
+   * @param {string} flag  mdBurst, mdDefiance or mdReading
+   */
+  _anchorState(flag) {
+    const anchor = this._token(this._aUuid)?.document;
+    const state = anchor?.getFlag("redsteel", flag) ?? null;
+    if (!state) return null;
+    return state.pairKey === rpsPairKey(this._aUuid, this._bUuid) ? state : null;
+  }
+
+  /**
+   * Výboj mysli: fold the side's +30% into its rating, for the arena display
+   * and for both rolls of an exchange (attack and defence alike).
+   * @param {object} side  a buildSide snapshot
+   * @param {"a"|"b"} role
+   */
+  _addBurst(side, role) {
+    const bonus = this._anchorState("mdBurst")?.[role] ? MD_BURST_BONUS : 0;
+    side.burst = bonus;
+    side.rating += bonus;
+    return side;
   }
 
   _replaceHTML(result, content) {
@@ -927,23 +1058,79 @@ export class MentalDuelApp extends ApplicationV2 {
     const aPct = total > 0 ? (a.mindValue / total) * 100 : 50;
     const bPct = 100 - aPct;
 
-    const ended = a.mindValue <= 0 || b.mindValue <= 0;
+    // A side is out at 0 Mind, or dead: "Pokud je zabit cíl, se kterým vede
+    // Mentální souboj, může Vysátí rovněž použít."
+    const ended = a.mindValue <= 0 || b.mindValue <= 0 || a.dead || b.dead;
     // The GM must officially start the Mind Bending before either side may
     // attack. Until then the arena shows but the attack buttons stay locked.
     const started = this._isStarted();
     // An exchange waiting on rerolls locks both attack buttons until it settles.
     const pending = ended ? null : this._pendingState();
+    const esc = (v) => foundry.utils.escapeHTML(String(v ?? ""));
     let banner = "";
     if (ended) {
-      const winner = a.mindValue > 0 ? a : b.mindValue > 0 ? b : null;
+      // One side dead: the living side wins, whatever the Mind says.
+      const winner =
+        a.dead !== b.dead
+          ? a.dead
+            ? b
+            : a
+          : a.dead
+            ? null
+            : a.mindValue > 0
+              ? a
+              : b.mindValue > 0
+                ? b
+                : null;
       const loser = winner === a ? b : a;
       if (!winner) {
         banner = `<div class="rs-md-banner">${game.i18n.localize("REDSTEEL.MentalDuel.Window.Draw")}</div>`;
       } else {
+        const winnerRole = winner === a ? "a" : "b";
+        const loserRole = winner === a ? "b" : "a";
+        const canControlWinner = winner.actor.isOwner || game.user.isGM;
+        const canControlLoser = loser.actor.isOwner || game.user.isGM;
+        const loserDead = loser.dead;
         const possessed = !!loser.actor.getFlag("redsteel", "possession");
+        // Zoufalý vzdor: a loser who can pay decides first; until then the
+        // winner's choices wait.
+        const defiancePending =
+          !loserDead &&
+          !possessed &&
+          hasDefiance(loser.actor) &&
+          canAffordDefiance(loser.actor) &&
+          !this._anchorState("mdDefiance");
+        // Čtení mysli under way (possession ends any reading).
+        const reading =
+          !loserDead && !possessed && !defiancePending
+            ? this._anchorState("mdReading")
+            : null;
+        // Pokročilé čtení mysli: Domination or Drain may follow the reading.
+        const afterReading = !reading || hasAdvancedReading(winner.actor);
+
         let action = "";
-        if (possessed) {
-          action = `<div class="rs-md-possess-note">
+        let drain = "";
+        let read = "";
+        if (defiancePending) {
+          action = `<div class="rs-md-possess-note">${game.i18n.format(
+            "REDSTEEL.MentalDuel.Defiance.Waiting",
+            { loser: esc(loser.name) },
+          )}</div>`;
+          if (canControlLoser) {
+            action += `<button type="button" class="rs-md-defy"
+                data-role="${loserRole}" data-decision="defy"
+                title="${esc(game.i18n.format("REDSTEEL.MentalDuel.Defiance.Hint", {
+                  burn: DEFIANCE_BURN,
+                  keeps: DEFIANCE_KEEPS,
+                }))}">
+                <i class="fas fa-fire"></i> ${game.i18n.format("REDSTEEL.MentalDuel.Defiance.Button", { burn: DEFIANCE_BURN })}</button>
+              <button type="button" class="rs-md-defy"
+                data-role="${loserRole}" data-decision="accept">
+                ${game.i18n.localize("REDSTEEL.MentalDuel.Defiance.Accept")}</button>`;
+          }
+        } else {
+          if (possessed) {
+            action = `<div class="rs-md-possess-note">
             <i class="fas fa-hand-sparkles"></i> ${game.i18n.format(
               "REDSTEEL.MentalDuel.Window.PossessedNote",
               {
@@ -952,23 +1139,24 @@ export class MentalDuelApp extends ApplicationV2 {
                 status: game.i18n.localize("REDSTEEL.EffectName.possessed"),
               },
             )}</div>`;
-        } else if (game.user.isGM) {
-          // Seizing control is a GM-only action, and only for a winner who can
-          // Dominate (any NPC, or a PC with the Domination perk).
-          action = canDominate(winner.actor)
-            ? `<button type="button" class="rs-md-possess"
+          } else if (game.user.isGM && !loserDead && afterReading) {
+            // Seizing control is a GM-only action, and only for a winner who
+            // can Dominate (a PC or NPC holding the Domination node). A dead
+            // mind cannot be seized.
+            action = canDominate(winner.actor)
+              ? `<button type="button" class="rs-md-possess"
                 data-winner-uuid="${winner.tokenDoc.uuid}"
                 data-loser-uuid="${loser.tokenDoc.uuid}">
                 <i class="fas fa-hand-sparkles"></i> ${game.i18n.localize("REDSTEEL.MentalDuel.Window.Seize")}</button>`
-            : `<div class="rs-md-possess-note">
+              : `<div class="rs-md-possess-note">
                 ${game.i18n.format("REDSTEEL.MentalDuel.Window.NoDomination", { winner: winner.name })}</div>`;
-        }
-        // Drain (Vysátí) — the victor feeds on the broken mind, recovering
-        // Mind and ending the duel. Offered to the winner's own players as
-        // well as the GM, since it only heals the winner.
-        const drain =
-          (winner.actor.isOwner || game.user.isGM) && canDrain(winner.actor)
-            ? `<button type="button" class="rs-md-drain"
+          }
+          // Drain (Vysátí) — the victor feeds on the broken mind: the loser
+          // dies, the victor recovers Mind and the duel ends. Offered to the
+          // winner's own players as well as the GM.
+          drain =
+            canControlWinner && canDrain(winner.actor) && afterReading
+              ? `<button type="button" class="rs-md-drain"
                 data-winner-uuid="${winner.tokenDoc.uuid}"
                 data-loser-uuid="${loser.tokenDoc.uuid}"
                 data-anchor-uuid="${this._aUuid}">
@@ -976,14 +1164,48 @@ export class MentalDuelApp extends ApplicationV2 {
                   "REDSTEEL.MentalDuel.Window.DrainButton",
                   { loser: loser.name, amount: DRAIN_MIND_GAIN },
                 )}</button>`
-            : "";
+              : "";
+          // Čtení mysli — a slow reading of the loser's memories that ends
+          // with the loser unconscious. Not on a dead or possessed mind.
+          if (reading) {
+            read = `<div class="rs-md-possess-note"><i class="fas fa-book-open"></i> ${game.i18n.format(
+              "REDSTEEL.MentalDuel.Reading.InProgress",
+              { winner: esc(winner.name), loser: esc(loser.name) },
+            )}</div>`;
+            if (canControlWinner) {
+              read += `<button type="button" class="rs-md-read"
+                data-role="${winnerRole}" data-stage="finish">
+                <i class="fas fa-book"></i> ${game.i18n.localize("REDSTEEL.MentalDuel.Reading.Finish")}</button>`;
+            }
+          } else if (
+            !loserDead &&
+            !possessed &&
+            canControlWinner &&
+            canReadMind(winner.actor)
+          ) {
+            read = `<button type="button" class="rs-md-read"
+                data-role="${winnerRole}" data-stage="start"
+                title="${esc(game.i18n.localize("REDSTEEL.MentalDuel.Reading.Hint"))}">
+                <i class="fas fa-book-open"></i> ${game.i18n.localize("REDSTEEL.MentalDuel.Reading.Button")}</button>`;
+          }
+        }
 
+        const headline = loserDead
+          ? game.i18n.format("REDSTEEL.MentalDuel.Window.LoserDead", {
+              winner: esc(winner.name),
+              loser: esc(loser.name),
+            })
+          : game.i18n.format("REDSTEEL.MentalDuel.Window.Breaks", {
+              winner: winner.name,
+              loser: loser.name,
+            });
+        // A reading under way leads; otherwise its button follows the others.
+        const choices = reading
+          ? `${read}${action}${drain}`
+          : `${action}${drain}${read}`;
         banner = `<div class="rs-md-banner"><i class="fas fa-crown"></i>
-             ${game.i18n.format("REDSTEEL.MentalDuel.Window.Breaks", {
-               winner: winner.name,
-               loser: loser.name,
-             })}
-             ${action}${drain}</div>`;
+             ${headline}
+             ${choices}</div>`;
       }
     }
 
@@ -996,6 +1218,14 @@ export class MentalDuelApp extends ApplicationV2 {
           max: s.mindMax,
         })}</div>
         <div class="rs-md-rating">${s.ratingLabel} ${s.rating >= 0 ? "+" : ""}${s.rating}%</div>
+        ${
+          s.burst
+            ? `<div class="rs-md-burst-note"><i class="fas fa-bolt-lightning"></i> ${game.i18n.format(
+                "REDSTEEL.MentalDuel.Burst.Active",
+                { bonus: s.burst },
+              )}</div>`
+            : ""
+        }
       </div>`;
 
     const attackBtn = (s, role) => {
@@ -1074,6 +1304,64 @@ export class MentalDuelApp extends ApplicationV2 {
       </button>`;
     };
 
+    // Shared lock for the Mind-burning Free Actions (Výboj mysli, Mentalistův
+    // úprk): the duel must be running, the exchange settled, the side's own
+    // turn reached and a Mind point left to burn. Returns the tooltip reason
+    // when locked, or null when the button may be pressed.
+    const burnLock = (s) => {
+      const canControl = s.actor.isOwner || game.user.isGM;
+      const key = !canControl
+        ? "REDSTEEL.MentalDuel.Window.Reason.NotYours"
+        : ended
+          ? "REDSTEEL.MentalDuel.Window.Reason.Over"
+          : !started
+            ? "REDSTEEL.MentalDuel.Window.Reason.NotStarted"
+            : pending
+              ? "REDSTEEL.MentalDuel.Window.Reason.Pending"
+              : s.mindValue < 1
+                ? "REDSTEEL.MentalDuel.Window.Reason.NoMind"
+                : !this._turnReached(s)
+                  ? "REDSTEEL.MentalDuel.Window.Reason.WaitTurn"
+                  : null;
+      return key ? game.i18n.localize(key) : null;
+    };
+
+    // Výboj mysli — once a duel, burn 1 Mind for +30% on attack and defence
+    // for the rest of it. Only shown to a side holding the node.
+    const burstBtn = (s, role) => {
+      if (!canBurst(s.actor)) return "";
+      const lock = s.burst
+        ? game.i18n.localize("REDSTEEL.MentalDuel.Burst.Used")
+        : burnLock(s);
+      const reason =
+        lock ??
+        game.i18n.format("REDSTEEL.MentalDuel.Burst.Hint", {
+          burn: BURST_BURN,
+          bonus: MD_BURST_BONUS,
+        });
+      return `<button type="button" class="rs-md-burst" data-role="${role}"
+        ${lock ? "disabled" : ""} title="${esc(reason)}">
+        <i class="fas fa-bolt-lightning"></i> ${game.i18n.format("REDSTEEL.MentalDuel.Burst.Button", { burn: BURST_BURN })}
+      </button>`;
+    };
+
+    // Mentalistův úprk — burn 1 Mind and end the duel at once. Either side
+    // may use it; only shown to a side holding the node.
+    const escapeBtn = (s, role) => {
+      if (!canEscape(s.actor)) return "";
+      const lock = burnLock(s);
+      const reason =
+        lock ??
+        game.i18n.format("REDSTEEL.MentalDuel.Escape.Hint", { burn: ESCAPE_BURN });
+      return `<button type="button" class="rs-md-escape" data-role="${role}"
+        ${lock ? "disabled" : ""} title="${esc(reason)}">
+        <i class="fas fa-person-running"></i> ${game.i18n.format("REDSTEEL.MentalDuel.Escape.Button", { burn: ESCAPE_BURN })}
+      </button>`;
+    };
+
+    const sideActions = (s, role) =>
+      `${attackBtn(s, role)}${assaultBtn(s, role)}${focusBtn(s, role)}${burstBtn(s, role)}${escapeBtn(s, role)}`;
+
     return `
       <div class="rs-md-arena">
         ${sideHtml(a)}
@@ -1092,8 +1380,8 @@ export class MentalDuelApp extends ApplicationV2 {
       ${!ended && !started ? this._buildStartHTML() : ""}
 
       <div class="rs-md-actions">
-        <div class="rs-md-side-actions">${attackBtn(a, "a")}${assaultBtn(a, "a")}${focusBtn(a, "a")}</div>
-        <div class="rs-md-side-actions">${attackBtn(b, "b")}${assaultBtn(b, "b")}${focusBtn(b, "b")}</div>
+        <div class="rs-md-side-actions">${sideActions(a, "a")}</div>
+        <div class="rs-md-side-actions">${sideActions(b, "b")}</div>
       </div>
 
       ${pending ? this._buildPendingHTML(a, b, pending) : ""}
@@ -1147,6 +1435,13 @@ export class MentalDuelApp extends ApplicationV2 {
     if (!game.user.isGM) return;
     const anchor = this._token(this._aUuid)?.document;
     if (!anchor) return;
+    // A fresh duel starts with no Mind Burst, Defiance decision or reading
+    // left over from an earlier one.
+    for (const flag of ["mdBurst", "mdDefiance", "mdReading"]) {
+      if (anchor.getFlag("redsteel", flag) !== undefined) {
+        await anchor.unsetFlag("redsteel", flag);
+      }
+    }
     await anchor.setFlag(
       "redsteel",
       "mdStarted",
@@ -1324,6 +1619,31 @@ export class MentalDuelApp extends ApplicationV2 {
       requestDrain(winnerUuid, loserUuid, anchorUuid);
     });
 
+    // Mentalist window nodes: every one is settled by the active GM, who owns
+    // the anchor's flags and the other side's actor. Disabled on click so a
+    // double click sends one request; the GM re-checks everything anyway.
+    const duelRequest = (selector, type, extra = () => ({})) =>
+      content.querySelectorAll(selector).forEach((btn) =>
+        btn.addEventListener("click", (ev) => {
+          const button = ev.currentTarget;
+          button.disabled = true;
+          requestDuelNodeAction(type, {
+            anchorUuid: this._aUuid,
+            bUuid: this._bUuid,
+            role: button.dataset.role,
+            ...extra(button),
+          });
+        }),
+      );
+    duelRequest(".rs-md-escape", "mentalDuelEscape");
+    duelRequest(".rs-md-burst", "mentalDuelBurst");
+    duelRequest(".rs-md-defy", "mentalDuelDefiance", (button) => ({
+      decision: button.dataset.decision,
+    }));
+    duelRequest(".rs-md-read", "mentalDuelRead", (button) => ({
+      stage: button.dataset.stage,
+    }));
+
     // --- Pending exchange: reroll / accept / GM resolve ---
     const anchorUuid = this._aUuid;
     content.querySelectorAll(".rs-md-pending-reroll").forEach((btn) =>
@@ -1478,6 +1798,11 @@ export class MentalDuelApp extends ApplicationV2 {
     // system.skills.mindBending.bonus, which would also boost the warded
     // actor's own attacks.
     if (defender.actor.statuses?.has("mind_ward")) defender.rating += 20;
+
+    // Výboj mysli — +30% to the side that burst, attacking or defending. In
+    // `rating` before pack(), so a reroll from the stored state keeps it.
+    this._addBurst(attacker, role);
+    this._addBurst(defender, role === "a" ? "b" : "a");
 
     // Mentální nápor — the attacker's own test takes the penalty; the extra
     // drain is settled by the GM when the exchange resolves.
@@ -1783,14 +2108,16 @@ export class MentalDuelApp extends ApplicationV2 {
     dispatchRps(this._aUuid, { kind: "coinToss", bUuid: this._bUuid, round });
   }
 
-  /** True once either side has been reduced to 0 Mind. */
+  /** True once either side has been reduced to 0 Mind, or is dead. */
   _isEnded() {
     const a = this._token(this._aUuid)?.actor;
     const b = this._token(this._bUuid)?.actor;
     if (!a || !b) return false;
     return (
       (Number(a.system.stats?.mind?.value) || 0) <= 0 ||
-      (Number(b.system.stats?.mind?.value) || 0) <= 0
+      (Number(b.system.stats?.mind?.value) || 0) <= 0 ||
+      !!a.statuses?.has("dead") ||
+      !!b.statuses?.has("dead")
     );
   }
 
@@ -1982,18 +2309,28 @@ export function closeMentalDuel() {
  * Tear the duel down for everyone: clear the world state it parked on the
  * anchor token, drop the resume marker, and close every client's window.
  * World settings are GM-only, so this must run on a GM client.
+ *
+ * Returns the settings write, so a caller that awaits it (Mind Bending's
+ * upkeep lapse, mindBending.mjs) reads no running duel afterwards. Callers
+ * that ignore it behave as before.
  * @param {string} anchorUuid - TOKEN document uuid of the duel anchor (side a).
+ * @returns {Promise<*>}
  */
-function endDuelEverywhere(anchorUuid) {
+export function endDuelEverywhere(anchorUuid) {
   // Clear any lingering RPS gamble, pending exchange + started state.
   const anchorDoc = anchorUuid ? fromUuidSync(anchorUuid) : null;
   anchorDoc?.unsetFlag("redsteel", "mdRps");
   anchorDoc?.unsetFlag("redsteel", "mdPending");
   anchorDoc?.unsetFlag("redsteel", "mdStarted");
+  // ...and the Mentalist per-duel state (Mind Burst, Defiance, reading).
+  anchorDoc?.unsetFlag("redsteel", "mdBurst");
+  anchorDoc?.unsetFlag("redsteel", "mdDefiance");
+  anchorDoc?.unsetFlag("redsteel", "mdReading");
   // Clear the persisted "active duel" marker so it won't resume.
-  game.settings.set("redsteel", "mentalDuelActive", null);
+  const written = game.settings.set("redsteel", "mentalDuelActive", null);
   game.socket.emit(SOCKET, { type: "closeMentalDuel" });
   closeMentalDuel();
+  return written;
 }
 
 /* -------------------------------------------- */
@@ -2626,19 +2963,47 @@ function requestDrain(winnerUuid, loserUuid, anchorUuid) {
     return;
   }
   const data = { winnerUuid, loserUuid, anchorUuid };
-  if (game.user.id === gm.id) applyDrainAsGM(data);
+  if (game.user.id === gm.id) handleMentalDuelDrain(data);
   else game.socket.emit(SOCKET, { type: "mentalDuelDrain", ...data });
 }
 
 /** Socket entry point: only the active GM (single authority) applies it. */
 export async function handleMentalDuelDrain(data) {
   if (game.user.id !== game.users.activeGM?.id) return;
-  await applyDrainAsGM(data);
+  // Queued with the duel's other actions, and claimed by clearing mdStarted
+  // first: Drain now kills, so a double click or two clients at once must
+  // never pay it twice (+4 Mind) or race a pending Desperate Defiance.
+  await queueRoundAction(data.anchorUuid, async () => {
+    const anchor = fromUuidSync(data.anchorUuid);
+    if (!anchor) return;
+    const otherUuid =
+      data.winnerUuid === data.anchorUuid ? data.loserUuid : data.winnerUuid;
+    const pairKey = rpsPairKey(data.anchorUuid, otherUuid);
+    if (anchor.getFlag("redsteel", "mdStarted") !== pairKey) return;
+    const loserActor = fromUuidSync(data.loserUuid)?.actor ?? null;
+    const loserDead = !!loserActor?.statuses?.has("dead");
+    if (
+      loserActor &&
+      !loserDead &&
+      hasDefiance(loserActor) &&
+      canAffordDefiance(loserActor) &&
+      !pairFlag(anchor, "mdDefiance", pairKey)
+    ) {
+      return; // the loser has not decided on Desperate Defiance yet
+    }
+    await anchor.unsetFlag("redsteel", "mdStarted");
+    await applyDrainAsGM(data);
+  });
 }
 
 /**
  * Authoritative drain. Runs on the active GM: restores the winner's Mind
- * (clamped to their maximum), announces it, then ends the duel for everyone.
+ * (clamped to their maximum), kills the loser, parks the +30% on the winner's
+ * next initiation roll, announces it, then ends the duel for everyone.
+ *
+ * Book: "Vyhraje-li Mentální souboj, může oponenta zabít, obnovit si dva
+ * vyčerpané Mentální životy a získat bonus na zahájení příštího Mentálního
+ * souboje +30%."
  * @param {{winnerUuid: string, loserUuid: string, anchorUuid: string}} data
  */
 async function applyDrainAsGM({ winnerUuid, loserUuid, anchorUuid }) {
@@ -2658,6 +3023,18 @@ async function applyDrainAsGM({ winnerUuid, loserUuid, anchorUuid }) {
   await adjustMind(winnerActor, DRAIN_MIND_GAIN);
   const gained = (Number(winnerActor.system.stats?.mind?.value) || 0) - before;
 
+  // The drained mind dies (the same call applyDamage.mjs makes for a kill).
+  if (loserActor && !loserActor.statuses.has("dead")) {
+    await loserActor.toggleStatusEffect("dead", { active: true, overlay: true });
+  }
+
+  // +30% on the drainer's next initiation roll, spent there (castSpell.mjs).
+  await winnerActor.setFlag(
+    "redsteel",
+    "drainInitiationBonus",
+    DRAIN_INITIATION_BONUS,
+  );
+
   const loserName =
     loserActor?.name ?? game.i18n.localize("REDSTEEL.MentalDuel.Drain.BrokenMind");
   await ChatMessage.create({
@@ -2676,11 +3053,295 @@ async function applyDrainAsGM({ winnerUuid, loserUuid, anchorUuid }) {
                 loser: loserName,
               })
         }</p>
+        <p style="opacity:.85;font-size:12px;">${game.i18n.format(
+          "REDSTEEL.MentalDuel.Drain.NextInitiation",
+          { bonus: DRAIN_INITIATION_BONUS, cap: MD_CHARGE_CAP },
+        )}</p>
       </div>`,
   });
 
   endDuelEverywhere(anchorUuid);
 }
+
+/* -------------------------------------------- */
+/*  Mentalist window nodes (GM-authoritative)   */
+/* -------------------------------------------- */
+
+/**
+ * Route a Mentalist node action from the duel window (Mentalistův úprk, Výboj
+ * mysli, Zoufalý vzdor, Čtení mysli) to the active GM: each writes the anchor
+ * token's flags, another side's actor or the world setting, so it runs there,
+ * locally when we are that GM, otherwise over the system socket.
+ * @param {string} type  mentalDuelEscape | mentalDuelBurst |
+ *   mentalDuelDefiance | mentalDuelRead
+ * @param {{anchorUuid: string, bUuid: string, role: "a"|"b"}} data
+ */
+function requestDuelNodeAction(type, data) {
+  const gm = game.users.activeGM;
+  if (!gm) {
+    ui.notifications.warn(game.i18n.localize("REDSTEEL.MentalDuel.Notify.NoGMAction"));
+    activeDuel?.render();
+    return;
+  }
+  const payload = { ...data, userId: game.user.id };
+  const handler = DUEL_NODE_HANDLERS[type];
+  if (!handler) return;
+  if (game.user.id === gm.id) handler(payload);
+  else game.socket.emit(SOCKET, { type, ...payload });
+}
+
+/**
+ * Resolve the duel a node request names, as the GM sees it. Null when the
+ * tokens are gone, the role is not a side, or the requesting user does not
+ * control that side.
+ */
+function duelNodeContext({ anchorUuid, bUuid, role, userId }) {
+  const anchor = anchorUuid ? fromUuidSync(anchorUuid) : null;
+  const bDoc = bUuid ? fromUuidSync(bUuid) : null;
+  if (!anchor?.actor || !bDoc?.actor) return null;
+  if (role !== "a" && role !== "b") return null;
+  const side = role === "a" ? anchor : bDoc;
+  const other = role === "a" ? bDoc : anchor;
+  const user = game.users.get(userId);
+  if (!user || (!user.isGM && !side.actor.testUserPermission(user, "OWNER"))) {
+    return null;
+  }
+  const mindOf = (doc) => Number(doc.actor.system.stats?.mind?.value) || 0;
+  return {
+    anchor,
+    anchorUuid,
+    pairKey: rpsPairKey(anchorUuid, bUuid),
+    role,
+    side,
+    other,
+    actor: side.actor,
+    otherActor: other.actor,
+    name: side.name ?? side.actor.name,
+    otherName: other.name ?? other.actor.name,
+    mind: mindOf(side),
+    otherMind: mindOf(other),
+    dead: !!side.actor.statuses?.has("dead"),
+    otherDead: !!other.actor.statuses?.has("dead"),
+  };
+}
+
+/** A per-duel anchor flag, or null when it belongs to another pairing. */
+function pairFlag(anchor, flag, pairKey) {
+  const state = anchor.getFlag("redsteel", flag) ?? null;
+  return state?.pairKey === pairKey ? state : null;
+}
+
+/** Post a centred one-line node card for an actor. */
+function postNodeCard(actor, icon, html, extra = {}) {
+  return ChatMessage.create({
+    speaker: ChatMessage.getSpeaker({ actor }),
+    content: `
+      <div style="text-align:center;">
+        <p><i class="fas ${icon}"></i> ${html}</p>
+      </div>`,
+    ...extra,
+  });
+}
+
+/**
+ * Mentalistův úprk — "Může spálit jeden Mentální život a okamžitě ukončit
+ * probíhající Mentální souboj." Either side may use it while the duel runs.
+ */
+async function applyEscapeAsGM(data) {
+  const ctx = duelNodeContext(data);
+  if (!ctx || !canEscape(ctx.actor)) return;
+  const { anchor, pairKey } = ctx;
+  if (anchor.getFlag("redsteel", "mdStarted") !== pairKey) return;
+  if (pairFlag(anchor, "mdPending", pairKey)) return;
+  if (ctx.dead || ctx.otherDead || ctx.otherMind <= 0) return;
+  if (ctx.mind < ESCAPE_BURN) return;
+
+  // Shut the duel first: a second click queued behind this one finds it
+  // over and burns nothing.
+  await anchor.unsetFlag("redsteel", "mdStarted");
+  const burnt = await burnMindPoints(ctx.actor, ESCAPE_BURN);
+  if (!burnt) {
+    await anchor.setFlag("redsteel", "mdStarted", pairKey);
+    return;
+  }
+  await postNodeCard(
+    ctx.actor,
+    "fa-person-running",
+    game.i18n.format("REDSTEEL.MentalDuel.Escape.Card", {
+      name: foundry.utils.escapeHTML(ctx.name),
+      burn: burnt,
+    }),
+  );
+  endDuelEverywhere(ctx.anchorUuid);
+}
+
+/**
+ * Výboj mysli — "Jednou za Mentální souboj může spálit jeden Mentální život a
+ * získat po zbytek souboje bonus +30% na Mentální souboj." Marked per side on
+ * the anchor; the window folds it into that side's rating.
+ */
+async function applyBurstAsGM(data) {
+  const ctx = duelNodeContext(data);
+  if (!ctx || !canBurst(ctx.actor)) return;
+  const { anchor, pairKey, role } = ctx;
+  if (anchor.getFlag("redsteel", "mdStarted") !== pairKey) return;
+  if (pairFlag(anchor, "mdPending", pairKey)) return;
+  if (ctx.dead || ctx.otherDead || ctx.otherMind <= 0) return;
+  if (ctx.mind < BURST_BURN) return;
+
+  const raw = anchor.getFlag("redsteel", "mdBurst") ?? null;
+  const state = raw?.pairKey === pairKey ? raw : null;
+  if (state?.[role]) return; // once a duel
+  // setFlag merges objects, so a stale state from another pairing has to go
+  // before this pairing's is written over it.
+  if (raw && !state) await anchor.unsetFlag("redsteel", "mdBurst");
+
+  const burnt = await burnMindPoints(ctx.actor, BURST_BURN);
+  if (!burnt) return;
+  await anchor.setFlag("redsteel", "mdBurst", {
+    ...(state ?? {}),
+    pairKey,
+    [role]: true,
+  });
+  await postNodeCard(
+    ctx.actor,
+    "fa-bolt-lightning",
+    game.i18n.format("REDSTEEL.MentalDuel.Burst.Card", {
+      name: foundry.utils.escapeHTML(ctx.name),
+      burn: burnt,
+      bonus: MD_BURST_BONUS,
+    }),
+  );
+}
+
+/**
+ * Zoufalý vzdor — "Prohraje-li Mentální souboj, může Spálit dva Mentální
+ * životy, aby se zcela vyhnul následkům prohraného souboje a zůstal při vědomí
+ * s jedním Mentálním životem."
+ *
+ * The loser sits at 0 Mind, so the burn is paid from the ceiling: burned +2
+ * and the value set to 1, in one update. "accept" records the decision so the
+ * winner's banner opens.
+ */
+async function applyDefianceAsGM(data) {
+  const ctx = duelNodeContext(data);
+  if (!ctx || !hasDefiance(ctx.actor)) return;
+  const { anchor, pairKey, actor } = ctx;
+  if (anchor.getFlag("redsteel", "mdStarted") !== pairKey) return;
+  // Only a real loss: this side broken and alive, the other side standing.
+  if (ctx.dead || ctx.mind > 0) return;
+  if (ctx.otherDead || ctx.otherMind <= 0) return;
+  if (actor.getFlag("redsteel", "possession")) return;
+  if (pairFlag(anchor, "mdDefiance", pairKey)) return; // already decided
+
+  if (data.decision === "accept") {
+    await anchor.setFlag("redsteel", "mdDefiance", {
+      pairKey,
+      decision: "accepted",
+    });
+    return;
+  }
+  if (data.decision !== "defy" || !canAffordDefiance(actor)) return;
+
+  const burned = Number(actor.system.stats?.mind?.burned) || 0;
+  await actor.update({
+    "system.stats.mind.burned": burned + DEFIANCE_BURN,
+    "system.stats.mind.value": DEFIANCE_KEEPS,
+  });
+  await postNodeCard(
+    actor,
+    "fa-fire",
+    game.i18n.format("REDSTEEL.MentalDuel.Defiance.Card", {
+      name: foundry.utils.escapeHTML(ctx.name),
+      burn: DEFIANCE_BURN,
+      keeps: DEFIANCE_KEEPS,
+    }),
+  );
+  endDuelEverywhere(ctx.anchorUuid);
+}
+
+/**
+ * Čtení mysli — "Vyhraje-li Mentální souboj, může prohlížet vzpomínky
+ * oponenta. ... Jakmile s průzkumem vzpomínek končí, upadá oponent do
+ * bezvědomí." Stage "start" marks the reading on the anchor and tells the GM
+ * and the reader's owners; stage "finish" knocks the loser out and ends the
+ * duel. Pokročilé čtení mysli lets Domination or Drain take the reading's
+ * place (the window shows them during it; either one skips this finish).
+ */
+async function applyReadingAsGM(data) {
+  const ctx = duelNodeContext(data);
+  if (!ctx || !canReadMind(ctx.actor)) return;
+  const { anchor, pairKey, actor, otherActor } = ctx;
+  if (anchor.getFlag("redsteel", "mdStarted") !== pairKey) return;
+  // The reader won: standing, the other side broken but alive and unclaimed.
+  if (ctx.dead || ctx.mind <= 0) return;
+  if (ctx.otherDead || ctx.otherMind > 0) return;
+  if (otherActor.getFlag("redsteel", "possession")) return;
+
+  const winner = foundry.utils.escapeHTML(ctx.name);
+  const loser = foundry.utils.escapeHTML(ctx.otherName);
+  const reading = pairFlag(anchor, "mdReading", pairKey);
+
+  if (data.stage === "start") {
+    if (reading) return;
+    // A loser who can still defy decides first.
+    if (
+      hasDefiance(otherActor) &&
+      canAffordDefiance(otherActor) &&
+      !pairFlag(anchor, "mdDefiance", pairKey)
+    ) {
+      return;
+    }
+    await anchor.setFlag("redsteel", "mdReading", { pairKey });
+    const whisper = [
+      ...game.users.filter((u) => u.isGM).map((u) => u.id),
+      ...game.users
+        .filter((u) => !u.isGM && actor.testUserPermission(u, "OWNER"))
+        .map((u) => u.id),
+    ];
+    await postNodeCard(
+      actor,
+      "fa-book-open",
+      game.i18n.format("REDSTEEL.MentalDuel.Reading.Card", { winner, loser }),
+      { whisper },
+    );
+    return;
+  }
+
+  if (data.stage !== "finish" || !reading) return;
+  // Clear it first: a second Finish queued behind this one finds no reading.
+  await anchor.unsetFlag("redsteel", "mdReading");
+  await game.redsteel.applyEffect(otherActor, "incapacitated");
+  await postNodeCard(
+    actor,
+    "fa-book",
+    game.i18n.format("REDSTEEL.MentalDuel.Reading.FinishCard", { winner, loser }),
+  );
+  endDuelEverywhere(ctx.anchorUuid);
+}
+
+/**
+ * Socket entry points for the window nodes. Only the active GM applies them,
+ * one at a time per duel (the same queue the exchanges use), so a double
+ * click or two clients at once can never burn or apply twice.
+ */
+function gmNodeHandler(apply) {
+  return (data) => {
+    if (game.user.id !== game.users.activeGM?.id) return;
+    return queueRoundAction(data?.anchorUuid, () => apply(data));
+  };
+}
+export const handleMentalDuelEscape = gmNodeHandler(applyEscapeAsGM);
+export const handleMentalDuelBurst = gmNodeHandler(applyBurstAsGM);
+export const handleMentalDuelDefiance = gmNodeHandler(applyDefianceAsGM);
+export const handleMentalDuelRead = gmNodeHandler(applyReadingAsGM);
+
+const DUEL_NODE_HANDLERS = {
+  mentalDuelEscape: handleMentalDuelEscape,
+  mentalDuelBurst: handleMentalDuelBurst,
+  mentalDuelDefiance: handleMentalDuelDefiance,
+  mentalDuelRead: handleMentalDuelRead,
+};
 
 /** Socket entry point: only the active GM (single authority) applies it. */
 export async function handleMentalDuelPossess(data) {

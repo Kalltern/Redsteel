@@ -117,7 +117,6 @@ export function weaponDamageFormula(actor, system) {
     // Hoplite → silaObratnost: Strength + Dexterity, replacing whichever one
     // attribute was picked above, for every weapon that is not a launcher.
     const attrs =
-      actor.type === "character" &&
       STR_DEX_CLASSES.includes(system.class) &&
       actorHasSpecNode(actor, "hoplite", "silaObratnost")
         ? ["str", "dex"]
@@ -126,9 +125,8 @@ export function weaponDamageFormula(actor, system) {
     // this weapon when it is a bow or crossbow (sharpshooterNode, aim.mjs).
     // Either source alone makes it x1.5; both never stack.
     const primary =
-      actor.type === "character" &&
-      (hasWeaponMasterNode(actor, "primaryDamage") ||
-        sharpshooterNode(actor, "primarniZraneni", { system }));
+      hasWeaponMasterNode(actor, "primaryDamage") ||
+      sharpshooterNode(actor, "primarniZraneni", { system });
     const attrTerm = attrs
       .map((a) =>
         primary ? `floor(@${a} * ${PRIMARY_DAMAGE_MULTIPLIER})` : `@${a}`,

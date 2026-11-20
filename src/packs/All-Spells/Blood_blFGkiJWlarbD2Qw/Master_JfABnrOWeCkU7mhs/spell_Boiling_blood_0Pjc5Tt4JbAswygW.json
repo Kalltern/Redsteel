@@ -128,7 +128,15 @@
     "effectType2": "",
     "effectType3": "",
     "manualNotes": "",
-    "vsTest": true
+    "vsTest": true,
+    "area": {
+      "shape": "burst",
+      "size": 1,
+      "angle": 0,
+      "targets": "enemies",
+      "linger": true,
+      "rounds": ""
+    }
   },
   "effects": [],
   "folder": "JfABnrOWeCkU7mhs",

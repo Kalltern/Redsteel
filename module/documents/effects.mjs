@@ -779,7 +779,6 @@ export class RedsteelActiveEffect extends ActiveEffect {
     const twoEnchants =
       group === "weaponEnchant" &&
       magic(effectId) &&
-      actor.type === "character" &&
       actorHasSpecNode(actor, "veneficus", "magickaZbran");
     const heldId = current[group]?.sourceEffect ?? null;
 

@@ -140,7 +140,15 @@
     "effectType3": "",
     "manualNotes": "",
     "vsTest": false,
-    "breath": true
+    "breath": true,
+    "area": {
+      "shape": "cone",
+      "size": 3,
+      "angle": 45,
+      "targets": "all",
+      "linger": false,
+      "rounds": ""
+    }
   },
   "effects": [],
   "folder": "PAKdG8hF5etFCq16",

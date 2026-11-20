@@ -40,7 +40,11 @@ const REPLACED = Object.freeze({
 const DOCTRINE_DISCOUNT_CP = 3;
 const ROMAN = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
 
-/** Has the actor unlocked Ranger - Apprentice? */
+/**
+ * Has the actor unlocked Ranger - Apprentice? Characters only, on purpose:
+ * the node wipes bought skill ranks and discounts doctrine CP, neither of
+ * which an NPC has.
+ */
 export function hasRangerApprentice(actor) {
   return actor?.type === "character" && actorHasSpecNode(actor, SPEC, NODE);
 }
@@ -95,6 +99,11 @@ export function rangerDoctrineDiscount(actor) {
  * @param {Actor} actor
  */
 export async function clearRangerReplacedRanks(actor) {
+  // Characters only. An NPC can hold the node (granted on its sheet by the
+  // GM), but NPC combat skills are its stat block, not bought ranks: never
+  // wipe them. hasRangerApprentice is character-only too; this guard stays
+  // even if that one ever opens up.
+  if (actor?.type !== "character") return;
   if (!hasRangerApprentice(actor) || !actor.isOwner) return;
   const cleared = [];
   const update = {};

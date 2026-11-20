@@ -130,7 +130,15 @@
     "testModifier": "",
     "versusAgainst": "end",
     "manualNotes": "",
-    "vsTest": true
+    "vsTest": true,
+    "area": {
+      "shape": "burst",
+      "size": 1,
+      "angle": 0,
+      "targets": "enemies",
+      "linger": true,
+      "rounds": ""
+    }
   },
   "effects": [],
   "folder": "Yee9AI8JHYKBHLNT",

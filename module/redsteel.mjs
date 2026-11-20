@@ -151,6 +151,7 @@ import { registerForcedMovement } from "./utils/forcedMovement.mjs";
 import { registerTrade } from "./utils/trade.mjs";
 import { registerImpaleFollowupHooks } from "./utils/impaleFollowup.mjs";
 import { registerOverwatchHooks } from "./utils/overwatch.mjs";
+import { registerSpellAreaHooks } from "./utils/spellArea.mjs";
 import { registerSuggestionHooks } from "./utils/actionSuggestions.mjs";
 import { registerBraceHooks } from "./utils/brace.mjs";
 import { buildVeteranRestFlag } from "./utils/veteranRest.mjs";
@@ -259,17 +260,32 @@ import {
   handleMentalDuelRound,
   handleMentalDuelPossess,
   handleMentalDuelDrain,
+  handleMentalDuelEscape,
+  handleMentalDuelBurst,
+  handleMentalDuelDefiance,
+  handleMentalDuelRead,
   handleMentalStrainApply,
   handlePossessionRender,
   refreshPossessedActorTokens,
   resumeMentalDuel,
 } from "./utils/mentalDuel.mjs";
-import { handleMindBendingCancel } from "./utils/mindBending.mjs";
+import {
+  handleMindBendingCancel,
+  registerMindBendingUpkeepHooks,
+} from "./utils/mindBending.mjs";
 import { getSpellPower } from "./utils/spellPower.mjs";
 import {
   registerSpellMagicAttackSetting,
   syncSpellMagicAttack,
 } from "./utils/spellMagicAttackSync.mjs";
+import {
+  registerSpellAreaSyncSetting,
+  syncSpellAreas,
+} from "./utils/spellAreaSync.mjs";
+import {
+  registerFeatureResyncSetting,
+  resyncOwnedFeatures,
+} from "./utils/featureResync.mjs";
 import { registerTabVisibilityConfig } from "./utils/tabVisibility.mjs";
 import {
   getBaneProfile,
@@ -463,6 +479,7 @@ Hooks.once("init", function () {
   game.redsteel.selectToken = selectToken;
   game.redsteel.statusEffectManager = statusEffectManager;
   game.redsteel.monsterBuilder = monsterBuilder;
+  game.redsteel.resyncOwnedFeatures = resyncOwnedFeatures;
   game.redsteel.openLearnWindow = openLearnWindow;
   game.redsteel.partyManagement = openPartyManagement;
   game.redsteel.getActorCombatModifiers = getActorCombatModifiers;
@@ -656,11 +673,17 @@ Hooks.once("init", function () {
   registerTrade();
   registerImpaleFollowupHooks();
   registerOverwatchHooks();
+  // Area spells: hex placement, auto-targets, lingering zones, and the
+  // spellAreaPlacement world setting.
+  registerSpellAreaHooks();
   registerSuggestionHooks();
   registerBraceHooks();
   registerOverpowerHooks();
   registerEnduringWarrior();
   registerStanceHooks();
+  // Mind Bending's 1 Action a round upkeep lapses on an unpaid turn
+  // (mindBending.mjs), on the same turn boundary as the stances above.
+  registerMindBendingUpkeepHooks();
   registerStatusCounterColors();
   registerAutoDefense();
   registerWrathOfBlood();
@@ -672,6 +695,8 @@ Hooks.once("init", function () {
   registerFirstAidHealing();
   registerMentalDuelSetting();
   registerSpellMagicAttackSetting();
+  registerSpellAreaSyncSetting();
+  registerFeatureResyncSetting();
   registerLongRestRations();
   registerCreationStarting();
   registerCurrency();
@@ -1200,6 +1225,21 @@ Hooks.once("ready", () => {
       await handleMentalDuelDrain(data);
     }
 
+    // Mentalist window nodes (Escape, Mind Burst, Desperate Defiance, Mind
+    // Reading) — only the active GM applies them (utils/mentalDuel.mjs).
+    if (data.type === "mentalDuelEscape") {
+      await handleMentalDuelEscape(data);
+    }
+    if (data.type === "mentalDuelBurst") {
+      await handleMentalDuelBurst(data);
+    }
+    if (data.type === "mentalDuelDefiance") {
+      await handleMentalDuelDefiance(data);
+    }
+    if (data.type === "mentalDuelRead") {
+      await handleMentalDuelRead(data);
+    }
+
     // Mental Strain on a target the caster doesn't own — active GM applies it.
     if (data.type === "mentalStrainApply") {
       await handleMentalStrainApply(data);
@@ -1344,6 +1384,12 @@ Hooks.once("ready", () => registerInitiativeTiebreakSocket());
 
 // Spell copies already on actors predate system.magicAttack (one-shot, GM only).
 Hooks.once("ready", () => syncSpellMagicAttack());
+
+// Spell copies already on actors predate system.area (per version, GM only).
+Hooks.once("ready", () => syncSpellAreas());
+
+// Owned features and traits predate the reroll pool rework (one-shot, GM only).
+Hooks.once("ready", () => resyncOwnedFeatures());
 
 /* -------------------------------------------- */
 /*  Hooks for Dynamic initiative if enabled     */
@@ -2474,7 +2520,9 @@ async function applyPendingCast(pendingCast, roll, critSuccess) {
       critSuccess: pendingCast.ignoreChanneling ? false : critSuccess,
       displayCritSuccess: critSuccess,
     },
-    { focusSpent: pendingCast.focusSpent ?? 0 },
+    // The placed area rides on the card, so a rescued cast can still leave
+    // its zone (utils/spellArea.mjs).
+    { focusSpent: pendingCast.focusSpent ?? 0, area: pendingCast.area ?? null },
   );
   return true;
 }
@@ -3118,6 +3166,33 @@ Hooks.once("ready", async () => {
       if (held[node]) {
         await syncSpecialisationPassive(actor, "vitamancer", node, true);
       }
+    }
+  }
+
+  // Base actors first, so an unlinked token that inherits the new effect
+  // already finds it and writes nothing to its delta.
+  for (const actor of game.actors.contents) await backfill(actor);
+  for (const scene of game.scenes.contents) {
+    for (const token of scene.tokens.contents) {
+      if (!token.actorLink) await backfill(token.actor);
+    }
+  }
+});
+
+// Mentalist's Postih na Úspěch -10% (soubojPostih) gained a passive Active
+// Effect (helpers/specialisations-generated.mjs, live only while the caster
+// carries mind_bending_caster) after actors had already unlocked it. Same
+// backfill as the Vitamancer one above, for PCs and NPCs alike, since NPCs
+// hold specialisation nodes too. Idempotent: syncSpecialisationPassive skips
+// a node whose effect exists.
+Hooks.once("ready", async () => {
+  if (game.user.id !== game.users.activeGM?.id) return;
+
+  async function backfill(actor) {
+    if (!actor) return;
+    const held = actor.system.specialisations?.mentalist?.nodes ?? {};
+    if (held.soubojPostih) {
+      await syncSpecialisationPassive(actor, "mentalist", "soubojPostih", true);
     }
   }
 

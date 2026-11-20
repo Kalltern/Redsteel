@@ -44,7 +44,7 @@ import {
   trackedCombat,
 } from "./actionTracker.mjs";
 import { prepareSuggestions, vigilantSource } from "./actionSuggestions.mjs";
-import { cancelMindBending } from "./mindBending.mjs";
+import { cancelMindBending, holdMindBending } from "./mindBending.mjs";
 import { useOverpower } from "./overpower.mjs";
 import {
   clearLockedZone,
@@ -1240,6 +1240,7 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       applySustainSpell: this._onApplySustainSpell,
       stanceSuggestion: this._onStanceSuggestion,
       cancelMindBending: this._onCancelMindBending,
+      mindBendingHold: this._onMindBendingHold,
       toggleMovementMore: this._onToggleMovementMore,
       confirmMovement: this._onConfirmMovement,
       rotateFacing: this._onRotateFacing,
@@ -3201,6 +3202,32 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
   }
 
   /**
+   * Mind Bending's upkeep on the caster's turn, one chip like a held stance:
+   * click pays this turn's 1 Action, right-click drops the spell
+   * (mindBending.mjs). Right-click arrives from #onContextMenu, as for the
+   * stance chip. While the duel the spell holds is running the drop is
+   * closed: cancelMindBending finds nothing to drop then and does nothing.
+   * The panel redraws on the effect's update or deletion, which is what
+   * takes the chip away.
+   *
+   * @this {Bg3Hotbar}
+   */
+  static async _onMindBendingHold(event, target) {
+    const chip = target.closest("[data-action=mindBendingHold]");
+    const actor = this.actor;
+    if (!chip || !actor?.isOwner) return;
+    // A second click landing before the flag is written would pay twice.
+    if (this.#suggestionBusy) return;
+    this.#suggestionBusy = true;
+    try {
+      if (isRightClick(event)) await cancelMindBending(actor);
+      else await holdMindBending(actor);
+    } finally {
+      this.#suggestionBusy = false;
+    }
+  }
+
+  /**
    * A combat suggestion chip: open the Combat Abilities dialog with this
    * ability already chosen, so the attack runs through the dialog's own flow.
    *
@@ -3707,6 +3734,15 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       event.preventDefault();
       event.stopPropagation();
       return Bg3Hotbar._onStanceSuggestion.call(this, event, stanceChip);
+    }
+
+    // Mind Bending's Hold chip right-clicked: drop the spell (closed while
+    // the duel it holds is running).
+    const holdChip = event.target.closest?.("[data-action=mindBendingHold]");
+    if (holdChip) {
+      event.preventDefault();
+      event.stopPropagation();
+      return Bg3Hotbar._onMindBendingHold.call(this, event, holdChip);
     }
 
     // An attack chip right-clicked: the same attack, aimed at a body part.

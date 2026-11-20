@@ -54,6 +54,7 @@ import {
   hasHastenedCast,
 } from "./hastenedCast.mjs";
 import { counterattackCastMods } from "./elymas.mjs";
+import { setUserTargets, zoneOccupantIds } from "./spellArea.mjs";
 import {
   bankedQuickFocus,
   defenderManaMultiplier,
@@ -1526,6 +1527,8 @@ export async function finalizeRollsAndPostChat(
     catalyst = false,
     // Extra lines for the card (Incantator's Vlna energie, castSpell.mjs).
     cardNotes = "",
+    // The placed spell area (utils/spellArea.mjs placeSpellArea), or null.
+    area = null,
   } = options;
   // Incantator threshold shifts, the same figures performAttackRoll used, so
   // the card's stored thresholds judge a reroll on the same terms.
@@ -2262,6 +2265,14 @@ ${renderMarginFollowupLine({
           },
         }),
         casterUuid: actor.uuid,
+        // Where the spell's area was placed (utils/spellArea.mjs).
+        ...(area && {
+          spellArea: {
+            shape: area.shape,
+            cells: area.cells,
+            sceneId: area.sceneId,
+          },
+        }),
         // A chat Re-Roll rewrites this card in place (rerollInPlace.mjs).
         // Magic ATK sits `bonus` above the cast roll, or is `fixed`: what the
         // reroll needs to restate the card's Magic ATK tag.
@@ -2320,6 +2331,8 @@ ${renderMarginFollowupLine({
               casterUuid: actor.uuid,
               focusSpent,
               ignoreChanneling,
+              // A rescued lingering spell still leaves its zone.
+              area: area ?? null,
             },
           }),
       },
@@ -2338,6 +2351,8 @@ ${renderMarginFollowupLine({
     });
   }
   //tables -> Flag: "redsteel.critTable: fire"
+  // The card, so performCast can tie a lingering zone to it.
+  return castCard;
 }
 
 /**
@@ -2441,6 +2456,14 @@ export async function resolveChannelingTick(actor, effect) {
   }
 
   const focusSpent = data.rollContext?.focusSpent ?? 0;
+
+  // A held spell with a zone on this scene strikes whoever stands in it now
+  // (utils/spellArea.mjs). Matched by this Channeling's id. No zone: the
+  // targets stay as the caster has them.
+  const zone = canvas?.scene?.regions?.contents?.find(
+    (r) => r.getFlag("redsteel", "spellZone")?.channelingEffectId === effect.id,
+  );
+  if (zone) setUserTargets(zoneOccupantIds(zone, actor, { spell }));
 
   const options = {
     freeCast: true,

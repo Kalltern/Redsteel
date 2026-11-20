@@ -139,7 +139,15 @@
     "effectType2": "",
     "effectType3": "",
     "manualNotes": "",
-    "vsTest": false
+    "vsTest": false,
+    "area": {
+      "shape": "burst",
+      "size": 1,
+      "angle": 0,
+      "targets": "all",
+      "linger": false,
+      "rounds": ""
+    }
   },
   "effects": [],
   "folder": "8U9FRYa6LCshgUCl",

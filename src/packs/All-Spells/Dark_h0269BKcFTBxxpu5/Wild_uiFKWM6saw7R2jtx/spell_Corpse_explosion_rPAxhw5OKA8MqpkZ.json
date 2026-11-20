@@ -122,7 +122,15 @@
     "effectType2": "",
     "effectType3": "",
     "manualNotes": "",
-    "vsTest": false
+    "vsTest": false,
+    "area": {
+      "shape": "burst",
+      "size": 0,
+      "angle": 0,
+      "targets": "all",
+      "linger": false,
+      "rounds": ""
+    }
   },
   "effects": [],
   "folder": "uiFKWM6saw7R2jtx",

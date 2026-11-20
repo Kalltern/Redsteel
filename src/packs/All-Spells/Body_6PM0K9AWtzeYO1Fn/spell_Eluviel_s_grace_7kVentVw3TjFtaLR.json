@@ -117,7 +117,16 @@
     },
     "effectType1": "custom",
     "manualNotes": "",
-    "vsTest": false
+    "vsTest": false,
+    "area": {
+      "shape": "burst",
+      "size": 0,
+      "angle": 0,
+      "targets": "all",
+      "includeCaster": true,
+      "linger": true,
+      "rounds": "spellPower"
+    }
   },
   "effects": [],
   "folder": "6PM0K9AWtzeYO1Fn",

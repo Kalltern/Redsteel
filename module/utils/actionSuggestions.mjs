@@ -92,7 +92,14 @@ import {
 } from "./bullCharge.mjs";
 import { veneficusChips } from "./veneficus.mjs";
 import { elymasChips } from "./elymas.mjs";
-import { mindBendingCancelState } from "./mindBending.mjs";
+import {
+  MIND_BENDING_ICON,
+  hasFreeUpkeep,
+  isMindBendingDuelRunning,
+  isMindBendingHeld,
+  mindBendingCancelState,
+  mindBendingEffect,
+} from "./mindBending.mjs";
 
 const MODE_ORDER = ["move", "slow", "sprint", "disengage"];
 
@@ -1455,10 +1462,52 @@ function stanceChips(actor) {
  * the caster's turn, but not while a duel between the two is running (user
  * ruling 2026-11-20): the duel keeps the book's own exits.
  *
+ * Upkeep (user ruling 2026-11-20): on the caster's own turn in a tracked
+ * encounter, while this round is not paid yet and the caster lacks Mentalist
+ * → Udržování -1 Akce, a Hold chip stands in its place, the way a held stance
+ * asks (stances.mjs): click pays 1 Action, right-click drops the spell. While
+ * the duel the spell holds is running, right-click does nothing (the duel
+ * ends only by its own rules), but the Hold chip still shows: an unpaid turn
+ * lets the spell lapse and ends that duel (mindBending.mjs).
+ *
  * @param {Actor} actor
  * @returns {object[]}
  */
 function mindBendingChips(actor) {
+  const effect = mindBendingEffect(actor);
+  if (!effect) return [];
+  const combat = trackedCombat(actor);
+  if (
+    combat &&
+    isTrackedTurn(actor) &&
+    !hasFreeUpkeep(actor) &&
+    !isMindBendingHeld(effect, combat)
+  ) {
+    const label = game.i18n.localize("REDSTEEL.Bg3Hotbar.Suggest.MindBendingHold");
+    const hint = game.i18n.format("REDSTEEL.Bg3Hotbar.Suggest.MindBendingHoldHint", {
+      cost: game.i18n.localize("REDSTEEL.Bg3Hotbar.Suggest.OneAction"),
+    });
+    const hint2 = game.i18n.localize(
+      isMindBendingDuelRunning(actor)
+        ? "REDSTEEL.Bg3Hotbar.Suggest.MindBendingHoldDuelHint"
+        : "REDSTEEL.Bg3Hotbar.Suggest.MindBendingHoldDropHint",
+    );
+    return [
+      {
+        id: `mindBendingHold-${effect.id}`,
+        kind: "mindBendingHold",
+        theme: "magic",
+        effectId: effect.id,
+        img: effect.img || MIND_BENDING_ICON,
+        label,
+        hint,
+        hint2,
+        costKind: "action",
+        ariaLabel: `${label}: ${hint} ${hint2}`,
+      },
+    ];
+  }
+
   const state = mindBendingCancelState(actor);
   if (!state) return [];
   const label = game.i18n.localize("REDSTEEL.Bg3Hotbar.Suggest.MindBendingDrop");

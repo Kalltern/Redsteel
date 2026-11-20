@@ -2938,3 +2938,21 @@ REDSTEEL.statusEffects = Object.entries(REDSTEEL.effectDefinitions).map(
     img: def.img,
   }),
 );
+
+/**
+ * Spell areas (utils/spellArea.mjs): the shapes a spell's `system.area.shape`
+ * may take and who its placement starts out targeting. Value → label key, read
+ * by the spell sheet's Area row. The blank shape is "no area".
+ */
+REDSTEEL.spellAreaShapes = {
+  "": "REDSTEEL.SpellArea.ShapeNone",
+  burst: "REDSTEEL.SpellArea.ShapeBurst",
+  aura: "REDSTEEL.SpellArea.ShapeAura",
+  cone: "REDSTEEL.SpellArea.ShapeCone",
+  line: "REDSTEEL.SpellArea.ShapeLine",
+};
+
+REDSTEEL.spellAreaTargets = {
+  all: "REDSTEEL.SpellArea.TargetsAll",
+  enemies: "REDSTEEL.SpellArea.TargetsEnemies",
+};

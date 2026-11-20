@@ -913,7 +913,23 @@ export const GENERATED_SPECS = {
       mzMeditace: { tier: 6, column: 3, requires: ["meditace3", "expert"], passive: { changes: [add("system.stats.mind.bonus", 1), add("system.skills.meditation.bonus", 5)] } },
       // duel-upkeep chain, off Expert
       soubojUdrzovani: { tier: 7, column: 1, requires: ["expert"] },
-      soubojPostih: { tier: 7, column: 2, requires: ["soubojUdrzovani", "mistr"] },
+      // Halves Mind Bending's -20% Success while the caster debuff is on: the
+      // AE is suppressed without mind_bending_caster (requiresStatus,
+      // documents/effects.mjs isSuppressed). The two -10s undo half of that
+      // debuff's +20s on Will and on the duel skill.
+      soubojPostih: {
+        tier: 7,
+        column: 2,
+        requires: ["soubojUdrzovani", "mistr"],
+        passive: {
+          changes: [
+            add("system.globalBonus", 10),
+            add("system.attributes.wil.modBonus", -10),
+            add("system.skills.mindBending.bonus", -10),
+          ],
+          flags: { requiresStatus: "mind_bending_caster" },
+        },
+      },
       // telepath chain, off Expert
       telepat1: { tier: 8, column: 1, requires: ["expert"] },
       telepat2: { tier: 8, column: 2, requires: ["telepat1", "mistr"] },

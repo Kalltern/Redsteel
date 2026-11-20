@@ -131,7 +131,16 @@
       "effect4": 0
     },
     "manualNotes": "",
-    "vsTest": false
+    "vsTest": false,
+    "area": {
+      "shape": "burst",
+      "size": 8,
+      "angle": 0,
+      "targets": "all",
+      "includeCaster": true,
+      "linger": true,
+      "rounds": "2"
+    }
   },
   "effects": [],
   "folder": "4ZlNvWGr8HLJA8SI",

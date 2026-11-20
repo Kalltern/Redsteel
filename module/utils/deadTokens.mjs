@@ -52,13 +52,14 @@ function isDeadEffect(effect) {
  * Whether the actor is dead, read from the effect collection so a caller can
  * exclude an effect that is mid-deletion — at `deleteActiveEffect` time the
  * actor's derived `statuses` set has not necessarily been rebuilt yet (same
- * reason `isFloored` in floorInitiative.mjs does this).
+ * reason `isFloored` in floorInitiative.mjs does this). Exported for
+ * spellArea.mjs, which leaves the dead out of an area's targets.
  * @param {Actor}  actor
  * @param {object} [options]
  * @param {string} [options.ignoreId] Effect id to treat as already gone.
  * @returns {boolean}
  */
-function isActorDead(actor, { ignoreId = null } = {}) {
+export function isActorDead(actor, { ignoreId = null } = {}) {
   if (!actor) return false;
   return actor.effects.some((e) => e.id !== ignoreId && isDeadEffect(e));
 }

@@ -507,7 +507,7 @@ export function pendingMagicCounterattack(actor) {
  * @returns {object[]}
  */
 export function elymasChips(actor) {
-  if (actor?.type !== "character") return [];
+  if (!actor) return [];
   const chips = [];
   if (
     hasElymasNode(actor, "soustredenaObrana") &&

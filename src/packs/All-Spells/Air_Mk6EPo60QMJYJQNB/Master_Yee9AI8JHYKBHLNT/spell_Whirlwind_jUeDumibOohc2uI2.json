@@ -130,7 +130,15 @@
     "testModifier": "@spellPower*3",
     "versusAgainst": "str,dex",
     "manualNotes": "",
-    "vsTest": true
+    "vsTest": true,
+    "area": {
+      "shape": "burst",
+      "size": 5,
+      "angle": 0,
+      "targets": "all",
+      "linger": true,
+      "rounds": ""
+    }
   },
   "effects": [],
   "folder": "Yee9AI8JHYKBHLNT",

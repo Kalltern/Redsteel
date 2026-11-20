@@ -133,7 +133,15 @@
     "effectType2": "custom",
     "effectType3": "",
     "manualNotes": "",
-    "vsTest": true
+    "vsTest": true,
+    "area": {
+      "shape": "burst",
+      "size": 1,
+      "angle": 0,
+      "targets": "all",
+      "linger": false,
+      "rounds": ""
+    }
   },
   "effects": [],
   "folder": "RfarOk3lRCFYD6hb",

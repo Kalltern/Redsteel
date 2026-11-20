@@ -137,6 +137,27 @@
     "MancerLock": {
       "cast": "Na kouzlo {spell} potřebuješ {node}."
     },
+    "MindBendingUpkeep": {
+      "Title": "Mentální souboj",
+      "Held": "Udržuje kouzlo (1 akce).",
+      "Lapsed": "Kouzlo vyprchává: v tomto tahu nebylo zaplaceno jeho udržování.",
+      "LapsedDuel": "Mentální souboj, který kouzlo drželo, končí.",
+      "LapsedStrain": "Z cíle {target} mizí Mentální vytížení.",
+      "LapsedStillStrained": "Cíl {target} zůstává pod Mentálním vytížením z jiného zdroje."
+    },
+    "Mentalist": {
+      "MentalStrike": {
+        "Title": "Mentální úder",
+        "Card": "{name} si zabitím obnovuje 1 MŽ.",
+        "CardFull": "{name} zabíjí Mentálním úderem, ale MŽ má už na maximu."
+      },
+      "PersistentEffort": {
+        "Title": "Vytrvalá snaha",
+        "Intro": "Mentální souboj nezačal. Vyčerpáš 1 MŽ (máš {mind}) a hodíš na zahájení znovu na <b>{chance} %</b>? Jednou za kolo.",
+        "Reroll": "Vyčerpat 1 MŽ a hodit na zahájení znovu ({chance} %)",
+        "Skip": "Nechat být"
+      }
+    },
     "MancerFollowups": {
       "TooManyTargets": "{spell}: nejvýše cílů {max}, zaměřeno je {count}.",
       "IceShardsTitle": "Ledové úlomky",
@@ -526,6 +547,10 @@
         "MindBendingDroppedNoTarget": "Ukončuješ kouzlo Mentální souboj.",
         "MindBendingDroppedStillStrained": "Ukončuješ kouzlo Mentální souboj. Cíl {target} zůstává pod Mentálním vytížením z jiného zdroje.",
         "MindBendingNoGM": "Není připojen žádný GM, který by z cíle sňal Mentální vytížení.",
+        "MindBendingHold": "Udržet kouzlo Mentální souboj",
+        "MindBendingHoldHint": "Kliknutí: udržet kouzlo ({cost})",
+        "MindBendingHoldDropHint": "Pravé tlačítko: ukončit kouzlo",
+        "MindBendingHoldDuelHint": "Kouzlo teď ukončit nemůžeš: probíhající souboj skončí jen podle svých pravidel.",
         "MoreMovement": "Další pohyby",
         "LungeStep": "Přískok",
         "HalfPirouette": "Krok půlpiruety",
@@ -934,6 +959,9 @@
         "warnLocked": "Nejdříve odemkni propojený předchozí uzel.",
         "warnDependents": "Na tomto uzlu závisí jiný odemčený uzel — nejdříve zamkni ten.",
         "warnAutoNode": "Tento uzel je součástí specializace a nelze jej zamknout ručně.",
+        "npcPickerTitle": "Specializace",
+        "npcPickerHint": "Jen pro PJ. Zaškrtnutím získá NPC všechny uzly specializace; kliknutím na uzel ve stromu ho odebereš.",
+        "lockOr": " nebo ",
         "shadow": {
           "label": "Stín",
           "summary": "Zabiják ze tmy. Smrtelnější zákeřné útoky, krvácivé rány, jistota v plížení a metly lovce.",
@@ -3634,15 +3662,15 @@
           "nodes": {
             "ucednik": {
               "label": "Mentalista: Učedník",
-              "description": "5 CP. Ručně — řeší se u stolu."
+              "description": "5 CP. Odemyká možnost naučit se a sesílat učednická kouzla: Dezorientace a Mentální souboj. Automatizováno."
             },
             "expert": {
               "label": "Mentalista: Expert",
-              "description": "5 CP; Škola Ducha VI. Ručně — řeší se u stolu."
+              "description": "5 CP; Škola Ducha VI. Odemyká možnost naučit se a sesílat expertní kouzla: Provokace, Rozkaz a Šálení mysli. Automatizováno."
             },
             "mistr": {
               "label": "Mentalista: Mistr",
-              "description": "5 CP; Škola Ducha VIII. Ručně — řeší se u stolu."
+              "description": "5 CP; Škola Ducha VIII. Odemyká možnost naučit se a sesílat mistrovská kouzla: Mentální úder a Plošná dezorientace. Automatizováno."
             },
             "velmistr": {
               "label": "Mentalista: Velmistr",
@@ -3650,11 +3678,11 @@
             },
             "vytrvalaSnaha": {
               "label": "Vytrvalá snaha",
-              "description": "5 CP; Mentalista: Učedník. Ručně — řeší se u stolu."
+              "description": "5 CP; Mentalista: Učedník. Jednou za kolo, když hod na zahájení Mentálního souboje selže, můžeš vyčerpat 1 MŽ a hodit znovu se stejnou šancí. Automatizováno."
             },
             "mentalniUder": {
               "label": "Úder: zabití = +1 MŽ",
-              "description": "10 CP; Mentalista: Velmistr. Ručně — řeší se u stolu."
+              "description": "10 CP; Mentalista: Velmistr. Zabiješ-li cíl Mentálním úderem, obnovíš si 1 MŽ, jednou za seslání. Automatizováno."
             },
             "mentalniZtec": {
               "label": "Mentální zteč",
@@ -3662,7 +3690,7 @@
             },
             "soubojDotek": {
               "label": "Dotek: +30% na zahájení",
-              "description": "5 SP; Mentální zteč. Ručně — řeší se u stolu."
+              "description": "5 SP; Mentální zteč. Stojíš-li vedle cíle, máš +30 % na zahájení Mentálního souboje. Automatizováno."
             },
             "soubojZahajeni1": {
               "label": "Zahájení +10% I",
@@ -3682,23 +3710,23 @@
             },
             "mentalistuvUprk": {
               "label": "Mentalistův úprk",
-              "description": "5 CP; Mentalista: Učedník. Ručně — řeší se u stolu."
+              "description": "5 CP; Mentalista: Učedník. Volná akce v okně souboje: spálíš 1 MŽ a okamžitě ukončíš probíhající Mentální souboj. Automatizováno."
             },
             "vybojMysli": {
               "label": "Výboj mysli",
-              "description": "5 CP; Mentalistův úprk + Mentalista: Expert. Ručně — řeší se u stolu."
+              "description": "5 CP; Mentalistův úprk + Mentalista: Expert. Volná akce v okně souboje, jednou za souboj: spálíš 1 MŽ a po zbytek souboje získáš +30 % na Mentální souboj. Automatizováno."
             },
             "zoufalyVzdor": {
               "label": "Zoufalý vzdor",
-              "description": "10 CP; Výboj mysli + Mentalista: Velmistr. Ručně — řeší se u stolu."
+              "description": "10 CP; Výboj mysli + Mentalista: Velmistr. Prohraješ-li Mentální souboj, můžeš spálit 2 MŽ, zcela se vyhnout následkům prohry a zůstat při vědomí s 1 MŽ (maximum MŽ musí být aspoň 3). Automatizováno."
             },
             "soubojUdrzovani": {
               "label": "Udržování: -1 Akce",
-              "description": "10 CP; Mentalista: Expert. Ručně — řeší se u stolu."
+              "description": "10 CP; Mentalista: Expert. Udržování kouzla Mentální souboj tě nestojí žádnou akci za kolo, takže kouzlo nikdy nevyprchá kvůli nezaplacenému udržování. Automatizováno."
             },
             "soubojPostih": {
               "label": "Postih na Úspěch -10%",
-              "description": "10 CP; Udržování: -1 Akce + Mentalista: Mistr. Ručně — řeší se u stolu."
+              "description": "10 CP; Udržování: -1 Akce + Mentalista: Mistr. Dokud udržuješ kouzlo Mentální souboj, je jeho postih na Úspěch -10 % místo -20 %. Automatizováno."
             },
             "mentalniSouboj10a": {
               "label": "Mentální souboj +10% I",
@@ -3742,7 +3770,7 @@
             },
             "vysati": {
               "label": "Vysátí",
-              "description": "5 CP; Mentalista: Učedník. Po zlomení mysli v mentálním souboji můžeš poraženého vysát: obnovíš si 2 body Mysli a souboj končí."
+              "description": "5 CP; Mentalista: Učedník. Vyhraješ-li Mentální souboj, nebo zemře-li v něm oponent, můžeš ho vysát: oponent umírá, obnovíš si 2 MŽ a příští zahájení Mentálního souboje má +30 %, nejvýše však 75 %. Automatizováno."
             },
             "ovladnuti": {
               "label": "Ovládnutí",
@@ -3750,11 +3778,11 @@
             },
             "cteniMysli": {
               "label": "Čtení mysli",
-              "description": "15 SP; Ovládnutí + Mentalista: Mistr. Ručně — řeší se u stolu."
+              "description": "15 SP; Ovládnutí + Mentalista: Mistr. Vyhraješ-li Mentální souboj, můžeš prohlížet vzpomínky oponenta. Jakmile čtení ukončíš, oponent upadá do bezvědomí. Automatizováno."
             },
             "pokrocileCteni": {
               "label": "Pokročilé čtení mysli",
-              "description": "10 SP; Čtení mysli. Ručně — řeší se u stolu."
+              "description": "10 SP; Čtení mysli. Během Čtení mysli můžeš místo bezvědomí oponenta přejít do Ovládnutí nebo Vysátí. Automatizováno."
             },
             "meditace2": {
               "label": "Meditace +2 MŽ",
@@ -6072,6 +6100,40 @@
       "ShootMove": "Pohyb v hlídané oblasti: {target}. Vystřelte jako příležitostný útok.",
       "ShootCast": "Sesílání v hlídané oblasti: {target}. Vystřelte jako příležitostný útok."
     },
+    "SpellArea": {
+      "PickArea": "{spell}: posuň oblast po mapě a kliknutím ji umísti (pravé tlačítko nebo Esc ruší).",
+      "PickOrigin": "{spell}: klikni na hex, ze kterého kužel vychází (pravé tlačítko nebo Esc ruší).",
+      "PickDirection": "{spell}: namiř oblast kurzorem a kliknutím ji potvrď (pravé tlačítko nebo Esc ruší).",
+      "OutOfRange": "Mimo dosah: {spell} dosáhne na {range} hexů.",
+      "ConfirmTitle": "{spell}: počet cílů {count}",
+      "ClickToToggle": "Kliknutím na token na mapě ho přidáš nebo odebereš. Enter sešle, Esc ruší.",
+      "Cast": "Seslat",
+      "Cancel": "Zrušit",
+      "Cancelled": "Kouzlo zrušeno, nic se nezaplatilo.",
+      "NoCanvas": "Sesilatel nemá na této scéně žádný token, oblast nejde umístit. Zaměř cíle ručně.",
+      "NoGM": "Trvalá oblast kouzla potřebuje připojeného GM, který ji vyznačí na mapě.",
+      "ZoneName": "{spell} ({caster})",
+      "SettingName": "Umísťování oblastí kouzel",
+      "SettingHint": "Při seslání plošného kouzla umístí sesilatel jeho tvar na hexovou mřížku a všichni uvnitř jsou zaměřeni. Vypnuto: plošná kouzla se zaměřují ručně.",
+      "Area": "Oblast",
+      "Shape": "Tvar",
+      "ShapeNone": "Žádný",
+      "ShapeBurst": "Výbuch",
+      "ShapeAura": "Aura (kolem sesilatele)",
+      "ShapeCone": "Kužel",
+      "ShapeLine": "Přímka",
+      "Size": "Velikost (hexy)",
+      "SizeHint": "Výbuch a aura: počet prstenců kolem středového hexu (0 je jediný hex). Kužel: hloubka v hexech, výchozí hex se počítá jako 1. Přímka: délka v hexech. 1 hex = 1,5 m.",
+      "Angle": "Úhel kužele (°)",
+      "Targets": "Výchozí cíle",
+      "TargetsAll": "Všichni uvnitř",
+      "TargetsEnemies": "Jen nepřátelé",
+      "IncludeCaster": "Zahrnuje sesilatele",
+      "IncludeCasterHint": "Pro léčivé a očistné oblasti: když stojíš uvnitř, jsi zacílen i ty a můžeš se kliknutím přidat nebo odebrat jako kdokoli jiný.",
+      "Linger": "Zůstává na mapě",
+      "Rounds": "Kola zóny",
+      "RoundsHint": "Kolik kol zóna zůstane na mapě: číslo nebo vzorec se stejným tokenem Síly kouzla, jaký používají popisy. Prázdné: dokud kouzlo neskončí nebo ji GM neodstraní."
+    },
     "Positioning": {
       "Label": "Postavení v boji",
       "Front": "zepředu",
@@ -6840,7 +6902,7 @@
         "PossessedNote": "{winner} ovládl mysl postavy {loser}. Pro propuštění odstraň ze žetonu stav „{status}“.",
         "Seize": "Ovládnout",
         "NoDomination": "{winner} nemá schopnost Ovládnutí a nemůže převzít kontrolu.",
-        "DrainButton": "Vysát: {loser} (+{amount} Mysl)",
+        "DrainButton": "Vysát a zabít: {loser} (+{amount} Mysl)",
         "Breaks": "{winner} zlomil vůli postavy {loser}.",
         "MindValue": "Mysl <b>{value}</b> / {max}",
         "Reason": {
@@ -6850,7 +6912,8 @@
           "Pending": "Jedna výměna ještě není uzavřená",
           "AlreadyAttacked": "V tomto kole už proběhl útok",
           "WaitTurn": "Počkej si v tomto kole na svůj tah",
-          "Attack": "Za Volnou akci zaútoč"
+          "Attack": "Za Volnou akci zaútoč",
+          "NoMind": "Nezbývá ti Mysl ke spálení"
         },
         "Attacks": "{name} útočí",
         "EndHintGM": "Ukončit souboj pro všechny",
@@ -6858,7 +6921,8 @@
         "End": "Ukončit souboj",
         "Start": "Zahájit Mentální souboj",
         "StartNote": "Dokud souboj nezahájíš, nemůže útočit žádná strana.",
-        "WaitingForGM": "Čeká se, až Vypravěč zahájí Mentální souboj…"
+        "WaitingForGM": "Čeká se, až Vypravěč zahájí Mentální souboj…",
+        "LoserDead": "Postava {loser} je mrtvá. {winner} vítězí v souboji."
       },
       "Charge": {
         "Title": "Mentální zteč",
@@ -6880,7 +6944,10 @@
         "Result": "Šance na zahájení: <b>{chance} %</b>, padlo {roll} →",
         "Begins": "Souboj začíná!",
         "NotTriggered": "Nezahájen",
-        "MayAccept": "Cíl může souboj stále dobrovolně přijmout."
+        "MayAccept": "Cíl může souboj stále dobrovolně přijmout.",
+        "Touch": "Dotek +{bonus} %",
+        "Drain": "Vysátí +{bonus} %",
+        "PersistentEffort": "Vytrvalá snaha: za 1 vyčerpaný bod Mysli se na zahájení hází znovu."
       },
       "Assault": {
         "AlreadyUsed": "Mentální nápor už byl v tomto kole použit",
@@ -6951,8 +7018,36 @@
       },
       "Drain": {
         "BrokenMind": "zlomená mysl",
-        "Card": "<b>{winner}</b> vysává: <b>{loser}</b>. Obnoveno <b>+{amount}</b> Mysli.",
-        "CardFull": "<b>{winner}</b> vysává: <b>{loser}</b>, ale Mysl už má plnou. Nic nezískává."
+        "Card": "<b>{winner}</b> vysává: <b>{loser}</b> umírá. Obnoveno <b>+{amount}</b> Mysli.",
+        "CardFull": "<b>{winner}</b> vysává: <b>{loser}</b> umírá. Mysl už je plná, nic nezískává.",
+        "NextInitiation": "Příští zahájení Mentálního souboje: +{bonus} % (nejvýše na {cap} %)."
+      },
+      "Burst": {
+        "Button": "Výboj mysli (spálit {burn} Mysl)",
+        "Hint": "Volná akce, jednou za souboj: spal {burn} Mysl a získáš +{bonus} % na útok i obranu po zbytek souboje.",
+        "Used": "Výboj mysli už byl v tomto souboji použit",
+        "Active": "Výboj mysli +{bonus} %",
+        "Card": "<b>{name}</b> spaluje {burn} Mysl ve Výboji mysli: +{bonus} % na Mentální souboj po zbytek souboje."
+      },
+      "Escape": {
+        "Button": "Úprk (spálit {burn} Mysl)",
+        "Hint": "Volná akce: spal {burn} Mysl a okamžitě ukonči Mentální souboj.",
+        "Card": "<b>{name}</b> spaluje {burn} Mysl a vytrhává se z Mentálního souboje."
+      },
+      "Defiance": {
+        "Waiting": "Čeká se, jak se rozhodne {loser} (Zoufalý vzdor).",
+        "Button": "Zoufalý vzdor (spálit {burn} Mysli)",
+        "Hint": "Spal {burn} Mysli, zcela se vyhni následkům prohraného souboje a zůstaň při vědomí s {keeps} Myslí.",
+        "Accept": "Přijmout porážku",
+        "Card": "<b>{name}</b> spaluje {burn} Mysli v Zoufalém vzdoru, vyhýbá se následkům prohraného souboje a zůstává při vědomí s {keeps} Myslí."
+      },
+      "Reading": {
+        "Button": "Číst mysl",
+        "Hint": "Prohledej vzpomínky poraženého. Je to pomalý a zmatený proces. Jakmile skončí, poražený upadá do bezvědomí.",
+        "InProgress": "{winner} čte vzpomínky postavy {loser}.",
+        "Finish": "Ukončit čtení",
+        "Card": "<b>{winner}</b> čte vzpomínky postavy <b>{loser}</b>.",
+        "FinishCard": "<b>{winner}</b> končí se čtením vzpomínek postavy <b>{loser}</b>, která upadá do bezvědomí."
       },
       "Possession": {
         "AlreadyPossessed": "{name} už je posednutý.",
@@ -6990,7 +7085,8 @@
         "StakeTooLow": "{name} potřebuje na sázku víc než 1 bod Mysli.",
         "NoGMSeize": "K Ovládnutí musí být připojen Vypravěč.",
         "NoGMDrain": "K vysátí zlomené mysli musí být připojen Vypravěč.",
-        "NoDrain": "{name} se nenaučil Vysátí."
+        "NoDrain": "{name} se nenaučil Vysátí.",
+        "NoGMAction": "K tomu musí být připojen Vypravěč."
       }
     },
     "TraitPill": {
@@ -7124,6 +7220,9 @@
       "NoBackup": "U tohoto předmětu není co vracet zpět.",
       "NoPermission": "Nemáš oprávnění upravovat tento předmět.",
       "UnknownTime": "dřívějšího data"
+    },
+    "FeatureResync": {
+      "Done": "Podle aktuálních pravidel aktualizováno {items} odborností a rysů u {actors} postav. Každou změnu lze vrátit na listu předmětu přes „Vrátit sesynchronizování“."
     },
     "Items": {
       "ImprovedExploitWeakness": {

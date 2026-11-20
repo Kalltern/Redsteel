@@ -35,6 +35,75 @@
         />
          </div>
 
+        {{!-- Area: placed on the hex grid at cast time (utils/spellArea.mjs).
+              Sizes are hex counts; 1 hex = 1.5 m. --}}
+        <div class="grid-span-4">
+        <label class="resource-label">{{localize "REDSTEEL.SpellArea.Area"}}</label>
+        </div>
+
+        <div class="grid-span-1">
+        <label class="resource-label">{{localize "REDSTEEL.SpellArea.Shape"}}</label>
+        <select name="system.area.shape">
+          {{#each config.spellAreaShapes as |label key|}}
+            <option value="{{key}}" {{#if (eq ../system.area.shape key)}}selected{{/if}}>{{localize label}}</option>
+          {{/each}}
+        </select>
+        </div>
+
+        <div class="grid-span-1">
+        <label class="resource-label" data-tooltip="{{localize 'REDSTEEL.SpellArea.SizeHint'}}">{{localize "REDSTEEL.SpellArea.Size"}}</label>
+        <input
+          type="number"
+          min="0"
+          step="1"
+          name="system.area.size"
+          value="{{system.area.size}}"
+          data-dtype="Number"
+        />
+        </div>
+
+        {{#if (eq system.area.shape "cone")}}
+        <div class="grid-span-1">
+        <label class="resource-label">{{localize "REDSTEEL.SpellArea.Angle"}}</label>
+        <input
+          type="number"
+          min="0"
+          name="system.area.angle"
+          value="{{system.area.angle}}"
+          data-dtype="Number"
+        />
+        </div>
+        {{/if}}
+
+        <div class="grid-span-1">
+        <label class="resource-label">{{localize "REDSTEEL.SpellArea.Targets"}}</label>
+        <select name="system.area.targets">
+          {{#each config.spellAreaTargets as |label key|}}
+            <option value="{{key}}" {{#if (eq ../system.area.targets key)}}selected{{/if}}>{{localize label}}</option>
+          {{/each}}
+        </select>
+        </div>
+
+        <div class="grid-span-1">
+        <label class="resource-label" data-tooltip="{{localize 'REDSTEEL.SpellArea.IncludeCasterHint'}}">{{localize "REDSTEEL.SpellArea.IncludeCaster"}}</label>
+        <input type="checkbox" name="system.area.includeCaster" {{checked system.area.includeCaster}} />
+        </div>
+
+        <div class="grid-span-1">
+        <label class="resource-label">{{localize "REDSTEEL.SpellArea.Linger"}}</label>
+        <input type="checkbox" name="system.area.linger" {{checked system.area.linger}} />
+        </div>
+
+        <div class="grid-span-1">
+        <label class="resource-label" data-tooltip="{{localize 'REDSTEEL.SpellArea.RoundsHint'}}">{{localize "REDSTEEL.SpellArea.Rounds"}}</label>
+        <input
+          type="text"
+          name="system.area.rounds"
+          value="{{system.area.rounds}}"
+          data-dtype="String"
+        />
+        </div>
+
 {{#if (eq item.system.option "magic")}}
         <div class="grid-span-1">
           <label for="spell-class">Class:</label>

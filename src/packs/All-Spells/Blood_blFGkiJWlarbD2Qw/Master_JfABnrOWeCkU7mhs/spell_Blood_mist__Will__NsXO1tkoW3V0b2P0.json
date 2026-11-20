@@ -128,7 +128,15 @@
     "effectType2": "",
     "effectType3": "",
     "manualNotes": "",
-    "vsTest": true
+    "vsTest": true,
+    "area": {
+      "shape": "burst",
+      "size": 8,
+      "angle": 0,
+      "targets": "all",
+      "linger": true,
+      "rounds": "spellPower + 2"
+    }
   },
   "effects": [],
   "folder": "JfABnrOWeCkU7mhs",

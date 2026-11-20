@@ -804,7 +804,9 @@ const CODE_AUTOMATED_NODES = {
     "brilantniProtiutok",
   ],
   // utils/mentalDuel.mjs — ovladnuti unlocks "Seize control" on the winner's
-  // banner; vysati unlocks "Drain" (+2 Mind to the victor, ends the duel);
+  // banner; vysati unlocks "Drain" (the loser dies, +2 Mind to the victor, the
+  // duel ends, also against a dead opponent, and +30% is parked on the
+  // victor's next initiation roll in utils/castSpell.mjs, capped at 75%);
   // soubojMZ1 puts the "Nápor" button beside the attack button and soubojMZ2
   // upgrades what a landed Nápor drains.
   // The soubojZahajeni chain feeds the initiation chance rolled in
@@ -820,6 +822,32 @@ const CODE_AUTOMATED_NODES = {
     "soubojZahajeni4",
     "soubojMZ1",
     "soubojMZ2",
+    // utils/castSpell.mjs (maybeStartMentalDuel, the initiation roll):
+    // soubojDotek adds +30% when the caster stands next to the target;
+    // vytrvalaSnaha offers a reroll of a failed initiation for 1 Mind, once a
+    // round, through the prompt in utils/mentalist.mjs (offerPersistentEffort).
+    "soubojDotek",
+    "vytrvalaSnaha",
+    // utils/mentalDuel.mjs (the duel window, settled by the GM):
+    // mentalistuvUprk is the side button that burns 1 Mind to end the duel;
+    // vybojMysli the side button that burns 1 Mind for +30% for the rest of
+    // the duel; zoufalyVzdor the loser's choice to burn 2 Mind and stay at 1;
+    // cteniMysli the winner's "Read mind" that ends with the loser
+    // unconscious; pokrocileCteni keeps Seize and Drain open during it.
+    "mentalistuvUprk",
+    "vybojMysli",
+    "zoufalyVzdor",
+    "cteniMysli",
+    "pokrocileCteni",
+    // utils/mentalist.mjs (settleMentalStrikeKill, called from
+    // utils/applyDamage.mjs): a kill with Mental strike gives 1 Mind back,
+    // once per card.
+    "mentalniUder",
+    // utils/mindBending.mjs (the per-round upkeep and its lapse hook) with
+    // utils/actionSuggestions.mjs (the Hold chip) and utils/redsteelHotbar.mjs
+    // (its click and right-click): holding Mind Bending costs nothing, so no
+    // Hold chip is offered and the spell never lapses.
+    "soubojUdrzovani",
   ],
   // documents/actor.mjs (armour penalty, Lindar) + utils/castSpell.mjs
   // (Lindar's strikes) + utils/lindarCharge.mjs with
@@ -1012,8 +1040,10 @@ for (const [spec, nodes] of Object.entries(SPEC_MIRRORS)) {
 }
 
 // The mancer rank nodes (Učedník / Expert / Mistr / Velmistr of Astramancer,
-// Cryomancer, Entomancer, Geomancer, Pyromancer, Vitamancer): each locks the
-// signature spells it names. The table is helpers/mancerSpells.mjs
+// Cryomancer, Entomancer, Geomancer, Pyromancer, Vitamancer) and the
+// Mentalist rank nodes (Učedník / Expert / Mistr; Velmistr's spells are not
+// in the pack): each locks the signature spells it names, and a spell named
+// by several nodes opens with any of them. The table is helpers/mancerSpells.mjs
 // (mancerSpellLock); utils/spellbook.mjs refuses to project, write or memorise
 // a locked spell, utils/learnWindow.mjs shows it out of reach, and
 // utils/castSpell.mjs (castSpell, quickCastSpell) refuses to cast it.
@@ -1785,9 +1815,15 @@ export async function syncSpecialisationPassive(actor, specId, nodeId, unlocked)
       );
     }
     if (actor.system.activeCombatEffects?.[groupKey]) {
-      await actor.update({
-        [`system.activeCombatEffects.-=${groupKey}`]: null,
-      });
+      // An unlinked token keeps its data in an ActorDelta, where a "-=" key
+      // deletion silently does nothing. Write null there instead: every
+      // reader skips a null group (getActorCombatModifiers `if (!group)`),
+      // and the re-add check below treats null as absent.
+      await actor.update(
+        actor.isToken
+          ? { [`system.activeCombatEffects.${groupKey}`]: null }
+          : { [`system.activeCombatEffects.-=${groupKey}`]: null },
+      );
     }
     return;
   }
@@ -1800,7 +1836,14 @@ export async function syncSpecialisationPassive(actor, specId, nodeId, unlocked)
         changes: foundry.utils.deepClone(passive.changes),
         disabled: false,
         transfer: false,
-        flags: { redsteel: { specNode: flag } },
+        // A node's own flags (e.g. requiresStatus, read by
+        // RedsteelActiveEffect#isSuppressed) ride alongside specNode.
+        flags: {
+          redsteel: {
+            ...foundry.utils.deepClone(passive.flags ?? {}),
+            specNode: flag,
+          },
+        },
       },
     ]);
   }

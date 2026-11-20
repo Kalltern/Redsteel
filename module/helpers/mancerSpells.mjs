@@ -1,10 +1,17 @@
 /**
- * Mancer signature spells: the rank nodes of the six mancer specialisations
- * that lock the spells they name.
+ * Signature spells: the rank nodes of the six mancer specialisations and of
+ * the Mentalist that lock the spells they name.
  *
  * Source: docs/rules-source/rules/specializace-wip.md, e.g. "Pyromancer:
  * Expert · Pasivní · Odemyká možnost naučit se a sesílat expertní kouzla:
  * Ochrana před žárem, Roztavení a Stravující oheň".
+ *
+ * The Mentalist rank nodes lock theirs on the same strict terms (user ruling
+ * 2026-11-20).
+ *
+ * A spell may be named by more than one node (Disorientation is both
+ * Vitamancer's and the Mentalist's Apprentice spell). It opens when the actor
+ * holds ANY of them.
  *
  * Rules (user ruling 2026-11-03, rules as written):
  *   - Without the node a character can neither learn nor cast the spell. The
@@ -14,7 +21,7 @@
  *     (utils/castSpell.mjs).
  *   - The node gates the spell on top of the school rank its own spell rank
  *     asks for (checkSpellRank); it never replaces that gate.
- *   - NPCs have no specialisations and are never locked.
+ *   - NPCs are never locked, even when they hold specialisation nodes.
  *
  * The book names the spells in Czech and the pack in English, so every entry
  * was matched by its description, mana, difficulty and range in
@@ -29,7 +36,7 @@
  * paint these nodes as automated.
  */
 
-/** Every mancer rank node and the spells it unlocks. */
+/** Every mancer and Mentalist rank node and the spells it unlocks. */
 export const MANCER_SPELLS = [
   // Astramancer (School of Air)
   { spec: "astramancer", node: "ucednik", spells: [
@@ -147,16 +154,42 @@ export const MANCER_SPELLS = [
     { id: "vvtE2FCrJPrS2IK6", name: "Lorik's rune" }, // Lorikova runa
     { id: "ZZfOeEDQo37rQoI0", name: "Cycle of life" }, // Kolo života
   ] },
+
+  // Mentalist (School of Spirit)
+  { spec: "mentalist", node: "ucednik", spells: [
+    { id: "Hn3sjzJ7YHfKQzI3", name: "Disorientation" }, // Dezorientace
+    { id: "XsMSuA2dnS62MsPk", name: "Mind Bending" }, // Mentální souboj
+  ] },
+  { spec: "mentalist", node: "expert", spells: [
+    { id: "istplZ5dhlV8xRVk", name: "Provocation" }, // Provokace
+    { id: "NOq0Tx16rU41wiod", name: "Order" }, // Rozkaz
+    { id: "uzbVJKcJ6v5JWS7o", name: "Confuse reason" }, // Šálení mysli
+  ] },
+  { spec: "mentalist", node: "mistr", spells: [
+    { id: "FX5L3udPT0TM49af", name: "Mental strike" }, // Mentální úder
+    { id: "OpZ4E5fzRwXTlEnf", name: "Mass disorientation" }, // Plošná dezorientace
+  ] },
+  // No velmistr entry: its book spells, Falešná vzpomínka and Mágova ochrana,
+  // are not in the All-Spells pack yet, so that node stays a table ruling.
 ];
 
-/** Pack id → {spec, node}, and lowercased English name → {spec, node}. */
+/**
+ * Pack id → [{spec, node}], and lowercased English name → [{spec, node}].
+ * Arrays, because one spell can be gated by several nodes; table order is
+ * kept, so the first gate is the one listed first above.
+ */
 const BY_ID = new Map();
 const BY_NAME = new Map();
+function addGate(map, key, gate) {
+  const list = map.get(key) ?? [];
+  if (!list.some((g) => g.spec === gate.spec && g.node === gate.node)) list.push(gate);
+  map.set(key, list);
+}
 for (const { spec, node, spells } of MANCER_SPELLS) {
   for (const spell of spells) {
     for (const entry of [spell, ...(spell.variants ?? [])]) {
-      BY_ID.set(entry.id, { spec, node });
-      BY_NAME.set(entry.name.toLowerCase(), { spec, node });
+      addGate(BY_ID, entry.id, { spec, node });
+      addGate(BY_NAME, entry.name.toLowerCase(), { spec, node });
     }
   }
 }
@@ -169,7 +202,7 @@ function compendiumId(uuid) {
 }
 
 /**
- * Which mancer node a spell needs, whoever is casting it, or null.
+ * Every node that opens a spell, whoever is casting it; empty when none does.
  *
  * Reads the compendium source first: the `uuid` of a book entry or a Learn
  * window row, the spellbook module's `flags.redsteel.spellSource.uuid`, the
@@ -180,10 +213,10 @@ function compendiumId(uuid) {
  * dragged in from somewhere else.
  *
  * @param {Item|object} spell  A spell Item, or plain data with `uuid`/`name`.
- * @returns {{spec: string, node: string}|null}
+ * @returns {{spec: string, node: string}[]}
  */
-export function getMancerGate(spell) {
-  if (!spell) return null;
+export function getSpellGates(spell) {
+  if (!spell) return [];
   const sources = [
     spell.uuid,
     spell.flags?.redsteel?.spellSource?.uuid,
@@ -191,10 +224,20 @@ export function getMancerGate(spell) {
   ];
   for (const uuid of sources) {
     const id = compendiumId(uuid);
-    if (id && BY_ID.has(id)) return BY_ID.get(id);
+    if (id && BY_ID.has(id)) return [...BY_ID.get(id)];
   }
   const name = typeof spell.name === "string" ? spell.name.trim().toLowerCase() : "";
-  return (name && BY_NAME.get(name)) || null;
+  return name && BY_NAME.has(name) ? [...BY_NAME.get(name)] : [];
+}
+
+/**
+ * The first node that opens a spell (getSpellGates), or null.
+ *
+ * @param {Item|object} spell  A spell Item, or plain data with `uuid`/`name`.
+ * @returns {{spec: string, node: string}|null}
+ */
+export function getMancerGate(spell) {
+  return getSpellGates(spell)[0] ?? null;
 }
 
 /**
@@ -218,27 +261,46 @@ export function matchesPackSpell(spell, entry) {
 }
 
 /**
- * Whether this actor is locked out of a spell by a mancer rank node.
+ * Whether this actor is locked out of a spell by a rank node.
  *
  * @param {Actor} actor
  * @param {Item|object} spell  A spell Item, or plain data with `uuid`/`name`.
- * @returns {{spec: string, node: string}|null}  null when the spell is
- *   allowed: an NPC, a spell no mancer node names, or the node is unlocked on
- *   an active specialisation.
+ * @returns {{spec: string, node: string, alternatives: {spec: string, node: string}[]}|null}
+ *   null when the spell is allowed: an NPC, a spell no node names, or ANY of
+ *   its nodes is unlocked on an active specialisation. Otherwise the first
+ *   gate, with every gate that would open it in `alternatives`.
  */
 export function mancerSpellLock(actor, spell) {
   if (!actor || actor.type !== "character") return null;
-  const gate = getMancerGate(spell);
-  if (!gate) return null;
-  const spec = actor.system?.specialisations?.[gate.spec];
-  if (spec?.active && spec?.nodes?.[gate.node]) return null;
-  return gate;
+  const gates = getSpellGates(spell);
+  if (!gates.length) return null;
+  const open = gates.some((gate) => {
+    const spec = actor.system?.specialisations?.[gate.spec];
+    return !!(spec?.active && spec?.nodes?.[gate.node]);
+  });
+  if (open) return null;
+  return { spec: gates[0].spec, node: gates[0].node, alternatives: gates };
 }
 
-/** The node a lock names, in the reader's language ("Pyromancer: Expert"). */
+/** One node's label, in the reader's language ("Pyromancer: Expert"). */
+function nodeLabel(gate) {
+  return game.i18n.localize(
+    `REDSTEEL.Actor.Specialisations.${gate.spec}.nodes.${gate.node}.label`,
+  );
+}
+
+/**
+ * The node a lock names, in the reader's language ("Pyromancer: Expert"), or
+ * every node that would open it ("Vitamancer: Apprentice or Mentalist:
+ * Apprentice").
+ */
 export function mancerLockLabel(lock) {
   if (!lock) return "";
-  return game.i18n.localize(
-    `REDSTEEL.Actor.Specialisations.${lock.spec}.nodes.${lock.node}.label`,
-  );
+  const alternatives = Array.isArray(lock.alternatives) ? lock.alternatives : [];
+  if (alternatives.length > 1) {
+    return alternatives
+      .map(nodeLabel)
+      .join(game.i18n.localize("REDSTEEL.Actor.Specialisations.lockOr"));
+  }
+  return nodeLabel(lock);
 }

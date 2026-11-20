@@ -194,7 +194,7 @@ export function rearmCandidates(actor, { melee = false } = {}) {
  */
 export function rearmFreeStaminaCost(actor) {
   const discounted =
-    actor?.type === "character" &&
+    !!actor &&
     REARM_DISCOUNT_NODES.some(([spec, node]) => actorHasSpecNode(actor, spec, node));
   return Math.max(0, REARM_FREE_STAMINA - (discounted ? REARM_NODE_DISCOUNT : 0));
 }

@@ -5300,6 +5300,89 @@ body.theme-dark input:not([readonly]):not([type="checkbox"]) {
   overflow-x: auto;
 }
 
+/* NPC Specialisations picker (GM only): a stone plate above the sub-tabs,
+   one checkbox row per specialisation in a fixed-cell grid. */
+.redsteel .npc-spec-picker {
+  margin-top: 8px;
+  padding: 8px 12px 10px;
+  background: rgba(10, 10, 9, 0.55);
+  border: 1px solid #3a3226;
+  border-top: 1px solid #8a6f3e;
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.6);
+}
+
+.redsteel .npc-spec-picker-title {
+  margin: 0 0 2px;
+  padding: 0 0 3px;
+  border-bottom: 1px solid #4f422b;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.05em;
+  font-weight: normal;
+  letter-spacing: 0.04em;
+  color: #c9a96a;
+}
+
+.redsteel .npc-spec-picker-hint {
+  margin: 4px 0 8px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.8em;
+  font-style: italic;
+  color: #8f877a;
+}
+
+.redsteel .npc-spec-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 3px 12px;
+}
+
+.redsteel .npc-spec-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 1px 0;
+  cursor: pointer;
+  color: #b9b0a0;
+  text-decoration: none;
+}
+
+.redsteel .npc-spec-box {
+  position: relative;
+  flex: 0 0 12px;
+  width: 12px;
+  height: 12px;
+  border: 1px solid #6b5a3a;
+  background: #121110;
+}
+
+.redsteel .npc-spec-option.active .npc-spec-box::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  background: #c9a96a;
+}
+
+.redsteel .npc-spec-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.85em;
+}
+
+.redsteel .npc-spec-option:hover {
+  color: #d7c697;
+}
+
+.redsteel .npc-spec-option:hover .npc-spec-box {
+  border-color: #a8884f;
+}
+
+.redsteel .npc-spec-option.active {
+  color: #e0cfa3;
+}
+
 .redsteel .spec-tree-wrap {
   /* Sized by content so a wide tree can overflow the pane horizontally;
      small trees still stretch and center */

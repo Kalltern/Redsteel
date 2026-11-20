@@ -117,7 +117,15 @@
     },
     "manualNotes": "",
     "vsTest": false,
-    "breath": true
+    "breath": true,
+    "area": {
+      "shape": "line",
+      "size": 5,
+      "angle": 0,
+      "targets": "all",
+      "linger": true,
+      "rounds": ""
+    }
   },
   "effects": [],
   "folder": "yQKWKFaPqrfuldp0",

@@ -151,7 +151,15 @@
     ],
     "manualNotes": "",
     "vsTest": true,
-    "breath": true
+    "breath": true,
+    "area": {
+      "shape": "line",
+      "size": 5,
+      "angle": 0,
+      "targets": "all",
+      "linger": false,
+      "rounds": ""
+    }
   },
   "effects": [],
   "folder": "ELAMhHkr77jkNbi6",

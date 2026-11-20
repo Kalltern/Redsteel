@@ -119,9 +119,9 @@ const L = (key, data) =>
 /*  Shared                                      */
 /* -------------------------------------------- */
 
-/** Does this character hold this Veneficus node? */
+/** Does this actor (character or NPC) hold this Veneficus node? */
 export function hasVeneficusNode(actor, node) {
-  return actor?.type === "character" && actorHasSpecNode(actor, SPEC, node);
+  return !!actor && actorHasSpecNode(actor, SPEC, node);
 }
 
 function isKeyed(item, key, englishName) {
@@ -313,7 +313,7 @@ export function isMagicMomentumHalf(message) {
  * @param {{felledIds?: string[]}} [options]
  */
 export async function settleVeneficusDamage(attacker, message, { felledIds = [] } = {}) {
-  if (attacker?.type !== "character" || !message?.flags?.attack) return;
+  if (!attacker || !message?.flags?.attack) return;
   if (isSpellCard(message)) return;
   const selfId = message.speaker?.token ?? null;
   const killed = [...new Set(felledIds.filter((id) => id && id !== selfId))];
@@ -489,7 +489,7 @@ export function paysStaminaAsMana(actor, ability) {
  * @param {Token|TokenDocument|null} [casterToken]
  */
 export async function grantLindarCharge(actor, spell, casterToken = null) {
-  if (actor?.type !== "character" || !hasLindarCharge(actor)) return;
+  if (!actor || !hasLindarCharge(actor)) return;
   if (!isLindarChargeSpell(spell) || spell?.system?.option === "divine") return;
   const combat = trackedCombat(actor);
   if (!combat || !isTrackedTurn(actor)) return;
@@ -768,7 +768,7 @@ export async function useVeneficusAbility(actor, ability, token) {
  * @returns {object[]}
  */
 export function veneficusChips(actor) {
-  if (actor?.type !== "character" || !isTrackedTurn(actor)) return [];
+  if (!actor || !isTrackedTurn(actor)) return [];
   const chips = [];
   const lindar = pendingLindarCharge(actor);
   if (lindar) {

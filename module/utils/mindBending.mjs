@@ -17,12 +17,29 @@
  * spell lands (castSpell.mjs maybeStartMentalDuel). A caster effect with no
  * stamp (cast before the stamp existed, or applied by hand) drops only the
  * caster's own debuffs; the target's Mental Strain is then left to the GM.
+ *
+ * Upkeep (user ruling 2026-11-20): in a started combat, holding the spell
+ * costs the caster 1 Action every round, before AND during the Mental Duel it
+ * started. The turn it is cast counts as paid (castSpell.mjs stamps it). On
+ * each of the caster's later turns the hotbar offers a Hold chip; a turn that
+ * ends unpaid lets the spell lapse, and a duel it holds ends with it. The paid
+ * turn is stamped on the caster effect (`flags.redsteel.mindBendingHeld =
+ * {combat, round}`), the same way stances.mjs stamps a held stance: one turn
+ * per combatant per round, so a stamp from another combat or round simply
+ * reads as "not held yet". Mentalist → Udržování -1 Akce (soubojUdrzovani)
+ * makes the upkeep free: no Hold chip and no lapse. PCs and NPCs alike.
  */
 
 import { SOCKET } from "./applyDamage.mjs";
+import { spend, trackedCombat } from "./actionTracker.mjs";
+import { actorHasSpecNode } from "../helpers/specialisations.mjs";
+import { endDuelEverywhere } from "./mentalDuel.mjs";
 
 /** Flag on the caster's `mind_bending_caster` effect: the target TOKEN uuid. */
 export const MIND_BENDING_TARGET_FLAG = "mindBendingTarget";
+
+/** Flag on the caster's `mind_bending_caster` effect: the paid turn. */
+const HELD_FLAG = "mindBendingHeld";
 
 /** The caster's side of the spell: dropped together. */
 const CASTER_STATUSES = ["mind_bending_caster", "slow_movement"];
@@ -31,7 +48,7 @@ const CASTER_STATUSES = ["mind_bending_caster", "slow_movement"];
 const TARGET_STATUS = "mental_strain";
 
 /** The spell's icon, used when the caster effect has none. */
-const MIND_BENDING_ICON = "icons/magic/control/hypnosis-mesmerism-eye.webp";
+export const MIND_BENDING_ICON = "icons/magic/control/hypnosis-mesmerism-eye.webp";
 
 /**
  * The caster's live `mind_bending_caster` effect, or null.
@@ -88,6 +105,29 @@ function duelRunningBetween(actor, targetUuid) {
 }
 
 /**
+ * True while the duel this caster's Mind Bending holds is running (between
+ * the caster and its stamped target; with no stamp, any duel the caster is
+ * in). The Hold chip reads this to close its right-click drop.
+ * @param {Actor} actor
+ */
+export function isMindBendingDuelRunning(actor) {
+  const effect = mindBendingEffect(actor);
+  if (!effect) return false;
+  const targetUuid = effect.getFlag("redsteel", MIND_BENDING_TARGET_FLAG) || null;
+  return duelRunningBetween(actor, targetUuid);
+}
+
+/** The display name of a token uuid, or null. */
+function targetNameOf(targetUuid) {
+  if (!targetUuid) return null;
+  try {
+    return fromUuidSync(targetUuid)?.name ?? null;
+  } catch (err) {
+    return null;
+  }
+}
+
+/**
  * What the cancel chip needs to know, or null when there is nothing to drop
  * (no caster effect) or a duel between the two is still running.
  * @param {Actor} actor
@@ -98,14 +138,7 @@ export function mindBendingCancelState(actor) {
   if (!effect) return null;
   const targetUuid = effect.getFlag("redsteel", MIND_BENDING_TARGET_FLAG) || null;
   if (duelRunningBetween(actor, targetUuid)) return null;
-  let targetName = null;
-  if (targetUuid) {
-    try {
-      targetName = fromUuidSync(targetUuid)?.name ?? null;
-    } catch (err) {
-      targetName = null;
-    }
-  }
+  const targetName = targetNameOf(targetUuid);
   return { effect, targetUuid, targetName, img: effect.img || MIND_BENDING_ICON };
 }
 
@@ -167,19 +200,17 @@ async function liftTargetStrain(targetUuid, casterUuid) {
 }
 
 /**
- * Drop Mind Bending: delete the caster's own debuffs and lift the target's
- * Mental Strain (relayed to the active GM when the user cannot write to the
- * target). Free; no action is spent.
+ * Take the spell down: lift the target's Mental Strain (relayed to the active
+ * GM when the user cannot write to the target), then delete the caster's own
+ * debuffs. Shared by the free drop (cancelMindBending) and the upkeep lapse
+ * (lapseMindBending).
  * @param {Actor} actor - the caster.
- * @returns {Promise<boolean>} false when there was nothing to drop.
+ * @param {string|null} targetUuid - the stamped target TOKEN uuid.
+ * @returns {Promise<{stillHeld: boolean}>} whether the target stays strained
+ *   by another source (read before anything is deleted, for the notice only;
+ *   the write side checks again where it runs).
  */
-export async function cancelMindBending(actor) {
-  if (!actor?.isOwner) return false;
-  const state = mindBendingCancelState(actor);
-  if (!state) return false;
-  const { targetUuid, targetName } = state;
-  // Read before anything is deleted, for the notice only; the write side
-  // checks again where it runs.
+async function removeMindBending(actor, targetUuid) {
   const stillHeld = !!targetUuid && strainStillHeld(targetUuid, actor.uuid);
 
   // The target first: once the caster effect is gone the stamp goes with it.
@@ -211,6 +242,22 @@ export async function cancelMindBending(actor) {
     .filter((e) => CASTER_STATUSES.some((s) => e.statuses?.has(s)))
     .map((e) => e.id);
   if (ids.length) await actor.deleteEmbeddedDocuments("ActiveEffect", ids);
+  return { stillHeld };
+}
+
+/**
+ * Drop Mind Bending: delete the caster's own debuffs and lift the target's
+ * Mental Strain (relayed to the active GM when the user cannot write to the
+ * target). Free; no action is spent.
+ * @param {Actor} actor - the caster.
+ * @returns {Promise<boolean>} false when there was nothing to drop.
+ */
+export async function cancelMindBending(actor) {
+  if (!actor?.isOwner) return false;
+  const state = mindBendingCancelState(actor);
+  if (!state) return false;
+  const { targetUuid, targetName } = state;
+  const { stillHeld } = await removeMindBending(actor, targetUuid);
 
   let notice;
   if (!targetName) {
@@ -233,4 +280,164 @@ export async function handleMindBendingCancel(data) {
   if (game.user.id !== game.users.activeGM?.id) return;
   if (!data?.targetUuid) return;
   await liftTargetStrain(data.targetUuid, data.casterUuid);
+}
+
+/* -------------------------------------------- */
+/*  Upkeep: 1 Action a round                    */
+/* -------------------------------------------- */
+
+/**
+ * Was the spell paid for in the given round of this combat (cast or held)?
+ * @param {ActiveEffect} effect - the caster's `mind_bending_caster` effect.
+ * @param {Combat} combat
+ * @param {number} [round] - defaults to the combat's current round.
+ */
+export function isMindBendingHeld(effect, combat, round = combat?.round) {
+  const stamp = effect?.getFlag?.("redsteel", HELD_FLAG);
+  if (!stamp || !combat) return false;
+  return stamp.combat === combat.id && Number(stamp.round) === Number(round);
+}
+
+/**
+ * Mentalist → Udržování -1 Akce (soubojUdrzovani): holding Mind Bending costs
+ * nothing, so there is no Hold chip and the spell never lapses.
+ * @param {Actor} actor
+ */
+export function hasFreeUpkeep(actor) {
+  return !!actor && actorHasSpecNode(actor, "mentalist", "soubojUdrzovani");
+}
+
+/**
+ * Stamp the caster's Mind Bending as paid for this round of the encounter it
+ * fights in. Outside a started encounter nothing is stamped: there is no
+ * upkeep there, and the first turn of a fight asks.
+ * @param {Actor} actor
+ */
+export async function markMindBendingHeld(actor) {
+  const effect = mindBendingEffect(actor);
+  const combat = trackedCombat(actor);
+  if (!effect || !combat) return;
+  await effect.setFlag("redsteel", HELD_FLAG, {
+    combat: combat.id,
+    round: combat.round,
+  });
+}
+
+/**
+ * The upkeep chat card, in the stance card's shape (stances.mjs
+ * postStanceCard): the spell's icon and name, then what happened.
+ * @param {Actor} actor
+ * @param {string} img
+ * @param {string[]} lines - already localized and escaped.
+ */
+async function postUpkeepCard(actor, img, lines) {
+  const title = game.i18n.localize("REDSTEEL.MindBendingUpkeep.Title");
+  await ChatMessage.create({
+    speaker: ChatMessage.getSpeaker({ actor }),
+    flavor: `
+<span style="display:inline-flex; align-items:center;">
+  <img src="${img}" width="36" height="36" style="margin-right:8px;">
+  <strong>${title}</strong>
+</span>
+<hr>
+<div style="text-align:center; font-size:16px;">
+  <strong>${lines[0] ?? ""}</strong>
+  ${lines
+    .slice(1)
+    .map((line) => `<div style="font-size:14px; opacity:0.8;">${line}</div>`)
+    .join("")}
+</div>
+`,
+  });
+}
+
+/**
+ * Pay this turn's upkeep: 1 Action through the tracker (which never refuses a
+ * use), stamp the turn, post a short card. Nothing to pay with the free
+ * upkeep node, outside a started encounter, or when this round is already
+ * paid (a second click from another window).
+ * @param {Actor} actor - the caster.
+ * @returns {Promise<boolean>} whether the spell is held this round.
+ */
+export async function holdMindBending(actor) {
+  if (!actor?.isOwner) return false;
+  const effect = mindBendingEffect(actor);
+  const combat = trackedCombat(actor);
+  if (!effect || !combat) return false;
+  if (hasFreeUpkeep(actor) || isMindBendingHeld(effect, combat)) return true;
+  await spend(actor, { actions: 1 });
+  await markMindBendingHeld(actor);
+  await postUpkeepCard(actor, effect.img || MIND_BENDING_ICON, [
+    game.i18n.localize("REDSTEEL.MindBendingUpkeep.Held"),
+  ]);
+  return true;
+}
+
+/**
+ * A turn ended without the upkeep paid: the spell lapses. A duel it holds is
+ * ended first, and awaited, so the strain check below no longer counts it.
+ * Then the target's Mental Strain and the caster's debuffs go exactly as the
+ * free drop takes them. GM side (the lapse hook runs on the active GM).
+ * @param {Actor} actor - the caster.
+ */
+export async function lapseMindBending(actor) {
+  const effect = mindBendingEffect(actor);
+  if (!effect) return;
+  const targetUuid = effect.getFlag("redsteel", MIND_BENDING_TARGET_FLAG) || null;
+  const img = effect.img || MIND_BENDING_ICON;
+  const targetName = targetNameOf(targetUuid);
+
+  let duelEnded = false;
+  if (duelRunningBetween(actor, targetUuid)) {
+    await endDuelEverywhere(activeDuel()?.attackerUuid ?? null);
+    duelEnded = true;
+  }
+
+  const { stillHeld } = await removeMindBending(actor, targetUuid);
+
+  const esc = (s) => foundry.utils.escapeHTML(String(s ?? ""));
+  const lines = [game.i18n.localize("REDSTEEL.MindBendingUpkeep.Lapsed")];
+  if (duelEnded) lines.push(game.i18n.localize("REDSTEEL.MindBendingUpkeep.LapsedDuel"));
+  if (targetName) {
+    lines.push(
+      game.i18n.format(
+        stillHeld
+          ? "REDSTEEL.MindBendingUpkeep.LapsedStillStrained"
+          : "REDSTEEL.MindBendingUpkeep.LapsedStrain",
+        { target: esc(targetName) },
+      ),
+    );
+  }
+  await postUpkeepCard(actor, img, lines);
+}
+
+/**
+ * A caster's turn ended without the upkeep paid: Mind Bending lapses. Only a
+ * forward step counts (a GM stepping the tracker back must not strip anyone),
+ * and only the active GM writes, so it happens once. Same test as
+ * stances.mjs registerStanceHooks.
+ *
+ * `combatTurnChange(combat, prior, current)` fires on every client after the
+ * Combat update; `prior`/`current` are CombatHistoryData (round, turn,
+ * combatantId, tokenId).
+ */
+export function registerMindBendingUpkeepHooks() {
+  Hooks.on("combatTurnChange", async (combat, prior, current) => {
+    const gm = game.users.activeGM;
+    if (!gm || gm.id !== game.user.id) return;
+    if (!combat?.started || !prior?.combatantId) return;
+    const forward =
+      Number(current?.round) > Number(prior.round) ||
+      (Number(current?.round) === Number(prior.round) &&
+        Number(current?.turn) > Number(prior.turn));
+    if (!forward) return;
+
+    const actor = combat.combatants.get(prior.combatantId)?.actor;
+    if (!actor) return;
+    const effect = mindBendingEffect(actor);
+    if (!effect) return;
+    if (hasFreeUpkeep(actor)) return;
+    if (isMindBendingHeld(effect, combat, prior.round)) return;
+    await lapseMindBending(actor);
+  });
 }

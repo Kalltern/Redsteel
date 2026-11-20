@@ -147,7 +147,15 @@
     "testModifier": "",
     "manualNotes": "",
     "vsTest": false,
-    "breath": true
+    "breath": true,
+    "area": {
+      "shape": "cone",
+      "size": 3,
+      "angle": 45,
+      "targets": "all",
+      "linger": true,
+      "rounds": ""
+    }
   },
   "effects": [],
   "folder": "UxjnWqOZrypZl1NP",

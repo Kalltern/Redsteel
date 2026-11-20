@@ -130,7 +130,15 @@
     "testModifier": "",
     "manualNotes": "",
     "vsTest": false,
-    "breath": true
+    "breath": true,
+    "area": {
+      "shape": "cone",
+      "size": 4,
+      "angle": 90,
+      "targets": "all",
+      "linger": false,
+      "rounds": ""
+    }
   },
   "effects": [],
   "folder": "XCC7CG5LovD3hSXR",

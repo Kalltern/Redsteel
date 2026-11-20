@@ -1,6 +1,7 @@
 import { grantImpaleKill, stampImpaleRoot } from "./impaleFollowup.mjs";
 import { hasMancerNode, restaggerKnocksProne } from "../helpers/mancerPassives.mjs";
 import { focusedMagicHalving } from "./elymas.mjs";
+import { settleMentalStrikeKill } from "./mentalist.mjs";
 import { getGearEffectResist } from "./materials.mjs";
 import { stampEscapeSource } from "./escapeFollowup.mjs";
 import {
@@ -1802,6 +1803,9 @@ export async function applyDamageAsGM(data) {
   // offers its excess damage to the neighbours, one card per victim
   // (mancerFollowups.mjs).
   await offerIceShards(castingContext, message, scene, iceShardKills);
+  // Mentalista → Mentální úder: a kill with the holder's Mental strike gives
+  // 1 Mind back, once per card (mentalist.mjs).
+  await settleMentalStrikeKill(castingContext, message, killedIds);
   // Astramancer → Řetězení: a ticked Chain row offers to chain the bolt on to
   // a target the caster picks, one card per victim (mancerFollowups.mjs).
   await offerChaining(castingContext, message, scene, chainVictims);

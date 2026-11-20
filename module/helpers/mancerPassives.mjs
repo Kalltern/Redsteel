@@ -396,7 +396,7 @@ function entryChance(entry, spell) {
  */
 export function getMancerCastBonuses(actor, spell, { strike = false } = {}) {
   const result = { modifiers: {}, stacks: {}, armor: {}, dice: [], penetration: 0, tags: [] };
-  if (!actor || actor.type !== "character" || spell?.type !== "spell") return result;
+  if (!actor || spell?.type !== "spell") return result;
 
   const authored = authoredSpellEffects(spell);
   for (const entry of MANCER_EFFECT_NODES) {
@@ -493,7 +493,9 @@ export function mancerCastTags(bonuses) {
       }
       return `<span class="action-tag mancer ">${foundry.utils.escapeHTML(String(text))}</span>`;
     })
-    .join("");
+    // A space between pills: each pill is nowrap, so without one the whole
+    // row is a single unbreakable word that pushes the chat card wider.
+    .join(" ");
 }
 
 /**

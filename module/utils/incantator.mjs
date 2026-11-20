@@ -240,7 +240,8 @@ export function incantatorCastTags(
   }
   return tags
     .map((t) => `<span class="action-tag incantator ">${esc(t)}</span>`)
-    .join("");
+    // Space-separated so the row can wrap (each pill is nowrap).
+    .join(" ");
 }
 
 /**

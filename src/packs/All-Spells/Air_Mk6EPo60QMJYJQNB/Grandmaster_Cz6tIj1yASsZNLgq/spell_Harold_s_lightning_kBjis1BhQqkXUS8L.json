@@ -129,7 +129,15 @@
     "attributeTest": "",
     "testModifier": "",
     "manualNotes": "",
-    "vsTest": false
+    "vsTest": false,
+    "area": {
+      "shape": "aura",
+      "size": 5,
+      "angle": 0,
+      "targets": "enemies",
+      "linger": false,
+      "rounds": ""
+    }
   },
   "effects": [],
   "folder": "Cz6tIj1yASsZNLgq",

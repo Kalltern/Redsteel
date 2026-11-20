@@ -114,7 +114,15 @@
       "effect4": "0"
     },
     "manualNotes": "",
-    "vsTest": false
+    "vsTest": false,
+    "area": {
+      "shape": "burst",
+      "size": 10,
+      "angle": 0,
+      "targets": "all",
+      "linger": true,
+      "rounds": "2 + spellPower"
+    }
   },
   "effects": [],
   "folder": "pwmVRgAOpIMg3gH9",

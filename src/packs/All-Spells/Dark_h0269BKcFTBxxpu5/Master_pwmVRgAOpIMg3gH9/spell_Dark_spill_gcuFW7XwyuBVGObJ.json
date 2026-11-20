@@ -122,7 +122,15 @@
     "effectType2": "",
     "effectType3": "",
     "manualNotes": "",
-    "vsTest": false
+    "vsTest": false,
+    "area": {
+      "shape": "burst",
+      "size": 2,
+      "angle": 0,
+      "targets": "all",
+      "linger": true,
+      "rounds": "spellPower"
+    }
   },
   "effects": [],
   "folder": "pwmVRgAOpIMg3gH9",

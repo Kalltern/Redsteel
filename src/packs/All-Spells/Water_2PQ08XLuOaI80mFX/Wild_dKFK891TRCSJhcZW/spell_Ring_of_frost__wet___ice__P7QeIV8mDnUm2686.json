@@ -129,7 +129,15 @@
     "attributeTest": "",
     "testModifier": "",
     "manualNotes": "",
-    "vsTest": false
+    "vsTest": false,
+    "area": {
+      "shape": "aura",
+      "size": 2,
+      "angle": 0,
+      "targets": "all",
+      "linger": true,
+      "rounds": ""
+    }
   },
   "effects": [],
   "folder": "dKFK891TRCSJhcZW",

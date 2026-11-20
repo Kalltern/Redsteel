@@ -137,6 +137,27 @@
     "MancerLock": {
       "cast": "{spell} needs {node}."
     },
+    "MindBendingUpkeep": {
+      "Title": "Mind Bending",
+      "Held": "Holds the spell (1 Action).",
+      "Lapsed": "The spell lapses: its upkeep was not paid this turn.",
+      "LapsedDuel": "The Mental Duel it held ends.",
+      "LapsedStrain": "Mental Strain lifts from {target}.",
+      "LapsedStillStrained": "{target} stays under Mental Strain from another source."
+    },
+    "Mentalist": {
+      "MentalStrike": {
+        "Title": "Mental strike",
+        "Card": "{name} regains 1 Mind from the kill.",
+        "CardFull": "{name} kills with Mental strike, but their Mind is already full."
+      },
+      "PersistentEffort": {
+        "Title": "Persistent Effort",
+        "Intro": "The Mental Duel did not start. Exhaust 1 Mind (you have {mind}) to roll the initiation again at <b>{chance}%</b>? Once a round.",
+        "Reroll": "Spend 1 Mind to roll the initiation again ({chance}%)",
+        "Skip": "Let it go"
+      }
+    },
     "MancerFollowups": {
       "TooManyTargets": "{spell} hits at most {max} targets, but {count} are targeted.",
       "IceShardsTitle": "Ice Shards",
@@ -526,6 +547,10 @@
         "MindBendingDroppedNoTarget": "You let Mind Bending go.",
         "MindBendingDroppedStillStrained": "You let Mind Bending go. {target} stays under Mental Strain from another source.",
         "MindBendingNoGM": "No GM is connected to lift Mental Strain from the target.",
+        "MindBendingHold": "Hold Mind Bending",
+        "MindBendingHoldHint": "Click: keep holding the spell ({cost})",
+        "MindBendingHoldDropHint": "Right-click: drop the spell",
+        "MindBendingHoldDuelHint": "You cannot drop the spell now: the running duel ends only by its own rules.",
         "MoreMovement": "More movement",
         "LungeStep": "Lunge Step",
         "HalfPirouette": "Half Pirouette step",
@@ -934,6 +959,9 @@
         "warnLocked": "Unlock the connected previous node first.",
         "warnDependents": "Another unlocked node depends on this one — lock that one first.",
         "warnAutoNode": "This node comes with the specialisation and cannot be locked by hand.",
+        "npcPickerTitle": "Specialisations",
+        "npcPickerHint": "GM only. Ticking a specialisation grants all its nodes; click a node in the tree to remove it.",
+        "lockOr": " or ",
         "shadow": {
           "label": "Shadow",
           "summary": "A killer from the dark. Deadlier sneak attacks, bleeding wounds, sure footing in stealth and a hunter's banes.",
@@ -3634,15 +3662,15 @@
           "nodes": {
             "ucednik": {
               "label": "Mentalist: Apprentice",
-              "description": "5 CP. Manual — resolved at the table."
+              "description": "5 CP. Unlocks learning and casting the spells Disorientation and Mind Bending. Automated."
             },
             "expert": {
               "label": "Mentalist: Expert",
-              "description": "5 CP; Škola Ducha VI. Manual — resolved at the table."
+              "description": "5 CP; Škola Ducha VI. Unlocks learning and casting the spells Provocation, Order and Confuse reason. Automated."
             },
             "mistr": {
               "label": "Mentalist: Master",
-              "description": "5 CP; Škola Ducha VIII. Manual — resolved at the table."
+              "description": "5 CP; Škola Ducha VIII. Unlocks learning and casting the spells Mental strike and Mass disorientation. Automated."
             },
             "velmistr": {
               "label": "Mentalist: Grandmaster",
@@ -3650,11 +3678,11 @@
             },
             "vytrvalaSnaha": {
               "label": "Persistent Effort",
-              "description": "5 CP; Mentalist: Apprentice. Manual — resolved at the table."
+              "description": "5 CP; Mentalist: Apprentice. Once a round, when the roll to start a Mental Duel fails, exhaust 1 Mind to roll it again at the same chance. Automated."
             },
             "mentalniUder": {
               "label": "Strike: kill = +1 MH",
-              "description": "10 CP; Mentalist: Grandmaster. Manual — resolved at the table."
+              "description": "10 CP; Mentalist: Grandmaster. A kill with Mental strike restores 1 Mind, once per cast. Automated."
             },
             "mentalniZtec": {
               "label": "Mental Charge",
@@ -3662,7 +3690,7 @@
             },
             "soubojDotek": {
               "label": "Touch: +30% to initiate",
-              "description": "5 SP; Mental Charge. Manual — resolved at the table."
+              "description": "5 SP; Mental Charge. +30% chance to start a Mental Duel while you stand next to the target. Automated."
             },
             "soubojZahajeni1": {
               "label": "Initiation +10% I",
@@ -3682,23 +3710,23 @@
             },
             "mentalistuvUprk": {
               "label": "Mentalist's Escape",
-              "description": "5 CP; Mentalist: Apprentice. Manual — resolved at the table."
+              "description": "5 CP; Mentalist: Apprentice. A Free Action in the duel window: burn 1 Mind to end the Mental Duel at once. Automated."
             },
             "vybojMysli": {
               "label": "Mind Burst",
-              "description": "5 CP; Mentalist's Escape + Mentalist: Expert. Manual — resolved at the table."
+              "description": "5 CP; Mentalist's Escape + Mentalist: Expert. A Free Action in the duel window, once a duel: burn 1 Mind for +30% to the Mental Duel for the rest of it. Automated."
             },
             "zoufalyVzdor": {
               "label": "Desperate Defiance",
-              "description": "10 CP; Mind Burst + Mentalist: Grandmaster. Manual — resolved at the table."
+              "description": "10 CP; Mind Burst + Mentalist: Grandmaster. On losing a Mental Duel, burn 2 Mind to avoid its consequences entirely and stay conscious with 1 Mind (your Mind maximum must be at least 3). Automated."
             },
             "soubojUdrzovani": {
               "label": "Upkeep: -1 Action",
-              "description": "10 CP; Mentalist: Expert. Manual — resolved at the table."
+              "description": "10 CP; Mentalist: Expert. Holding Mind Bending costs you no Action each round, so the spell never lapses for want of upkeep. Automated."
             },
             "soubojPostih": {
               "label": "Success penalty -10%",
-              "description": "10 CP; Upkeep: -1 Action + Mentalist: Master. Manual — resolved at the table."
+              "description": "10 CP; Upkeep: -1 Action + Mentalist: Master. While you hold Mind Bending, its Success penalty on you is -10% instead of -20%. Automated."
             },
             "mentalniSouboj10a": {
               "label": "Mental Duel +10% I",
@@ -3742,7 +3770,7 @@
             },
             "vysati": {
               "label": "Drain",
-              "description": "5 CP; Mentalist: Apprentice. After breaking a mind in a Mental Duel, drain the loser to restore 2 Mind and end the duel."
+              "description": "5 CP; Mentalist: Apprentice. After winning a Mental Duel, or when the opponent dies in it, drain the loser: they die, you restore 2 Mind and your next duel initiation gets +30%, to a maximum of 75%. Automated."
             },
             "ovladnuti": {
               "label": "Domination",
@@ -3750,11 +3778,11 @@
             },
             "cteniMysli": {
               "label": "Mind Reading",
-              "description": "15 SP; Domination + Mentalist: Master. Manual — resolved at the table."
+              "description": "15 SP; Domination + Mentalist: Master. After winning a Mental Duel, read the loser's memories. When you finish, the loser falls unconscious. Automated."
             },
             "pokrocileCteni": {
               "label": "Advanced Mind Reading",
-              "description": "10 SP; Mind Reading. Manual — resolved at the table."
+              "description": "10 SP; Mind Reading. During Mind Reading you may still turn to Domination or Drain instead of leaving the loser unconscious. Automated."
             },
             "meditace2": {
               "label": "Meditation +2 MH",
@@ -6072,6 +6100,40 @@
       "ShootMove": "{target} moved in the watched area. Shoot as an Opportunity Attack.",
       "ShootCast": "{target} cast in the watched area. Shoot as an Opportunity Attack."
     },
+    "SpellArea": {
+      "PickArea": "{spell}: move the area over the board and click to place it (right click or Esc cancels).",
+      "PickOrigin": "{spell}: click the hex the cone starts from (right click or Esc cancels).",
+      "PickDirection": "{spell}: point the area with the cursor and click to fix it (right click or Esc cancels).",
+      "OutOfRange": "Out of range: {spell} reaches {range} hexes.",
+      "ConfirmTitle": "{spell}: {count} targets",
+      "ClickToToggle": "Click a token on the board to add or remove it. Enter casts, Esc cancels.",
+      "Cast": "Cast",
+      "Cancel": "Cancel",
+      "Cancelled": "Spell cancelled. Nothing was spent.",
+      "NoCanvas": "The caster has no token on this scene, so the area cannot be placed. Target by hand.",
+      "NoGM": "A lasting spell area needs a GM online to mark it on the map.",
+      "ZoneName": "{spell} ({caster})",
+      "SettingName": "Spell area placement",
+      "SettingHint": "When an area spell is cast, the caster places its shape on the hex grid and everyone inside is targeted. Off: area spells are targeted by hand.",
+      "Area": "Area",
+      "Shape": "Shape",
+      "ShapeNone": "None",
+      "ShapeBurst": "Burst",
+      "ShapeAura": "Aura (around the caster)",
+      "ShapeCone": "Cone",
+      "ShapeLine": "Line",
+      "Size": "Size (hexes)",
+      "SizeHint": "Burst and aura: rings around the centre hex (0 is a single hex). Cone: depth in hexes, the origin hex counts as 1. Line: length in hexes. 1 hex = 1.5 m.",
+      "Angle": "Cone angle (°)",
+      "Targets": "Initial targets",
+      "TargetsAll": "Everyone inside",
+      "TargetsEnemies": "Enemies only",
+      "IncludeCaster": "Includes the caster",
+      "IncludeCasterHint": "For healing and cleansing areas: the caster is targeted too when standing inside, and can be clicked on or off like anyone else.",
+      "Linger": "Stays on the map",
+      "Rounds": "Zone rounds",
+      "RoundsHint": "How many rounds the zone stays on the map: a number or a formula with the same Spell Power token the descriptions use. Empty: until the spell ends or the GM removes it."
+    },
     "Positioning": {
       "Label": "Positioning",
       "Front": "from the front",
@@ -6840,7 +6902,7 @@
         "PossessedNote": "{loser} is possessed by {winner}. Remove the “{status}” token status to release them.",
         "Seize": "Seize control",
         "NoDomination": "{winner} lacks the Domination perk and cannot seize control.",
-        "DrainButton": "Drain {loser} (+{amount} Mind)",
+        "DrainButton": "Drain and kill {loser} (+{amount} Mind)",
         "Breaks": "{winner} breaks {loser}'s will.",
         "MindValue": "Mind <b>{value}</b> / {max}",
         "Reason": {
@@ -6850,7 +6912,8 @@
           "Pending": "An exchange is still open",
           "AlreadyAttacked": "Already attacked this round",
           "WaitTurn": "Wait for your turn this round",
-          "Attack": "Spend a Free Action to attack"
+          "Attack": "Spend a Free Action to attack",
+          "NoMind": "No Mind left to burn"
         },
         "Attacks": "{name} attacks",
         "EndHintGM": "End the duel for everyone",
@@ -6858,7 +6921,8 @@
         "End": "End duel",
         "Start": "Start Mind Bending",
         "StartNote": "Neither side can attack until you start.",
-        "WaitingForGM": "Waiting for the GM to start the Mind Bending…"
+        "WaitingForGM": "Waiting for the GM to start the Mind Bending…",
+        "LoserDead": "{loser} is dead. {winner} wins the duel."
       },
       "Charge": {
         "Title": "Mental Charge",
@@ -6880,7 +6944,10 @@
         "Result": "Chance to start: <b>{chance}%</b>, rolled {roll} →",
         "Begins": "Duel begins!",
         "NotTriggered": "Not triggered",
-        "MayAccept": "The target may still voluntarily accept."
+        "MayAccept": "The target may still voluntarily accept.",
+        "Touch": "Touch +{bonus}%",
+        "Drain": "Drain +{bonus}%",
+        "PersistentEffort": "Persistent Effort: 1 Mind exhausted to roll the initiation again."
       },
       "Assault": {
         "AlreadyUsed": "Already used Mental Assault this round",
@@ -6951,8 +7018,36 @@
       },
       "Drain": {
         "BrokenMind": "the broken mind",
-        "Card": "<b>{winner}</b> drains <b>{loser}</b>: <b>+{amount}</b> Mind restored.",
-        "CardFull": "<b>{winner}</b> drains <b>{loser}</b>, but is already at full Mind. Nothing is gained."
+        "Card": "<b>{winner}</b> drains <b>{loser}</b>, who dies: <b>+{amount}</b> Mind restored.",
+        "CardFull": "<b>{winner}</b> drains <b>{loser}</b>, who dies. Mind is already full, so none is gained.",
+        "NextInitiation": "Next Mental Duel initiation: +{bonus}% (no higher than {cap}%)."
+      },
+      "Burst": {
+        "Button": "Mind Burst (burn {burn} Mind)",
+        "Hint": "Free Action, once a duel: burn {burn} Mind for +{bonus}% on attack and defence for the rest of the duel.",
+        "Used": "Mind Burst already used this duel",
+        "Active": "Mind Burst +{bonus}%",
+        "Card": "<b>{name}</b> burns {burn} Mind in a Mind Burst: +{bonus}% to the Mental Duel for the rest of it."
+      },
+      "Escape": {
+        "Button": "Escape (burn {burn} Mind)",
+        "Hint": "Free Action: burn {burn} Mind and end the Mental Duel at once.",
+        "Card": "<b>{name}</b> burns {burn} Mind and tears free of the Mental Duel."
+      },
+      "Defiance": {
+        "Waiting": "Waiting for {loser} to decide on Desperate Defiance.",
+        "Button": "Desperate Defiance (burn {burn} Mind)",
+        "Hint": "Burn {burn} Mind to avoid the lost duel entirely and stay conscious with {keeps} Mind.",
+        "Accept": "Accept defeat",
+        "Card": "<b>{name}</b> burns {burn} Mind in Desperate Defiance, shrugs off the lost duel and stays conscious with {keeps} Mind."
+      },
+      "Reading": {
+        "Button": "Read mind",
+        "Hint": "Search the loser's memories. It is a slow and confused process. When it ends, the loser falls unconscious.",
+        "InProgress": "{winner} is reading {loser}'s memories.",
+        "Finish": "Finish reading",
+        "Card": "<b>{winner}</b> reads <b>{loser}</b>'s memories.",
+        "FinishCard": "<b>{winner}</b> finishes reading <b>{loser}</b>'s memories. <b>{loser}</b> falls unconscious."
       },
       "Possession": {
         "AlreadyPossessed": "{name} is already possessed.",
@@ -6990,7 +7085,8 @@
         "StakeTooLow": "{name} needs more than 1 Mind to stake on the gamble.",
         "NoGMSeize": "A GM must be connected to seize control.",
         "NoGMDrain": "A GM must be connected to drain the broken mind.",
-        "NoDrain": "{name} has not learned Drain."
+        "NoDrain": "{name} has not learned Drain.",
+        "NoGMAction": "A GM must be connected for that."
       }
     },
     "TraitPill": {
@@ -7124,6 +7220,9 @@
       "NoBackup": "There is no re-sync to undo for this item.",
       "NoPermission": "You do not have permission to modify this item.",
       "UnknownTime": "an earlier date"
+    },
+    "FeatureResync": {
+      "Done": "Updated {items} features and traits on {actors} characters to the current ruleset. Each one can be undone from its sheet with \"Undo re-sync\"."
     },
     "Items": {
       "ImprovedExploitWeakness": {

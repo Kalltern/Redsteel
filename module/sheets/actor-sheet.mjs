@@ -321,6 +321,7 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       toggleAmmoEquipped: this._toggleAmmoEquipped,
       toggleArmorDurability: this._toggleArmorDurability,
       toggleSpecNode: this._toggleSpecNode,
+      toggleNpcSpec: this._toggleNpcSpec,
       openCurrencyConfig: this._openCurrencyConfig,
       setInventoryFilter: this._setInventoryFilter,
       setSpellRank: this._setSpellRank,
@@ -366,10 +367,17 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
    * Toggle a specialisation talent-tree node. Unlocking requires all linked
    * prerequisite nodes to be unlocked; locking is blocked while another
    * unlocked node still depends on this one.
+   *
+   * NPCs: GM only, and free. No prerequisite, dependent or discount checks:
+   * the GM ticks a whole specialisation on (_toggleNpcSpec) and clicks single
+   * nodes off here.
    */
   static async _toggleSpecNode(event) {
     const target = event.target.closest("[data-action='toggleSpecNode']");
     if (!target || !this.isEditable) return;
+
+    const isNpc = this.actor.type === "npc";
+    if (isNpc && !game.user.isGM) return;
 
     const specId = target.dataset.spec;
     const nodeId = target.dataset.node;
@@ -390,7 +398,9 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
       this.actor.system.specialisations?.[specId]?.nodes ?? {};
     const unlocked = !!unlockedNodes[nodeId];
 
-    if (!unlocked) {
+    if (isNpc) {
+      // NPC nodes are granted freely by the GM: nothing to check.
+    } else if (!unlocked) {
       const requirementsMet = (nodeDef.requires ?? []).every(
         (r) => !!unlockedNodes[r],
       );
@@ -454,9 +464,68 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
         if (!applied) {
           ui.notifications.info(game.i18n.localize("REDSTEEL.Banes.PickLater"));
         }
+      } else if (isNpc) {
+        // Unlinked NPC tokens keep their data in an ActorDelta, where a
+        // "-=" key deletion (clearBaneChoice) silently does nothing. Write
+        // a concrete empty pick instead.
+        await this.actor.update({
+          [`system.specialisations.${specId}.baneChoices.${nodeId}`]: [],
+        });
       } else {
         await clearBaneChoice(this.actor, specId, nodeId);
       }
+    }
+  }
+
+  /**
+   * NPC Specialisations picker (GM only). Ticking a specialisation turns it
+   * on together with EVERY node of its tree, free of charge; unticking turns
+   * it off with every node. Single nodes are then removed by clicking them in
+   * the tree (_toggleSpecNode).
+   *
+   * Every key is written as a concrete value (true / false / []): most NPCs
+   * are unlinked token actors (ActorDelta), where "-=" deletions and
+   * wholesale object replacement silently do nothing.
+   *
+   * Bane nodes get no picker on the bulk tick. A bane node with no stored
+   * pick re-opens its picker when clicked in the tree.
+   */
+  static async _toggleNpcSpec(event) {
+    const target = event.target.closest("[data-action='toggleNpcSpec']");
+    if (!target || !this.isEditable) return;
+    if (!game.user.isGM || this.actor.type !== "npc") return;
+
+    const specId = target.dataset.spec;
+    const specDef = CONFIG.REDSTEEL.specialisations?.[specId];
+    if (!specDef) return;
+
+    // One bulk write plus a passive sync per node takes a moment; ignore
+    // further clicks until it is done so two runs never interleave.
+    if (this._npcSpecBusy) return;
+    this._npcSpecBusy = true;
+    try {
+      const actor = this.actor;
+      const specData = actor.system.specialisations?.[specId] ?? {};
+      const turnOn = !specData.active;
+      const nodeIds = Object.keys(specDef.nodes ?? {});
+      const base = `system.specialisations.${specId}`;
+
+      const update = { [`${base}.active`]: turnOn };
+      for (const nodeId of nodeIds) {
+        update[`${base}.nodes.${nodeId}`] = turnOn;
+      }
+      if (!turnOn) {
+        for (const nodeId of Object.keys(specData.baneChoices ?? {})) {
+          update[`${base}.baneChoices.${nodeId}`] = [];
+        }
+      }
+      await actor.update(update);
+
+      for (const nodeId of nodeIds) {
+        await syncSpecialisationPassive(actor, specId, nodeId, turnOn);
+      }
+    } finally {
+      this._npcSpecBusy = false;
     }
   }
 
@@ -1711,6 +1780,9 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
         );
         break;
       case "npc":
+        // Specialisations: GM only. The GM grants nodes there; players
+        // never see an NPC's tree.
+        if (game.user.isGM) options.parts.push("specialisations");
         options.parts.push(
           "biography",
           "inventory",
@@ -2040,6 +2112,27 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
         context.specTrees = prepareSpecialisationTrees(this.actor);
         context.activeSpecSubtab =
           this.tabGroups["specialisations-subtabs"] ?? null;
+        // NPCs: the GM's picker that turns whole specialisations on/off.
+        if (this.actor.type === "npc") {
+          const owned = this.actor.system.specialisations ?? {};
+          context.npcSpecEditor = true;
+          context.npcSpecList = Object.entries(
+            CONFIG.REDSTEEL.specialisations ?? {},
+          )
+            .map(([id, def]) => ({
+              id,
+              label: game.i18n.localize(def.label),
+              active: !!owned[id]?.active,
+            }))
+            .sort((a, b) => a.label.localeCompare(b.label, game.i18n.lang));
+          // The remembered sub-tab may belong to a specialisation the GM just
+          // unticked: fall back to the first tree so one is always shown.
+          if (
+            !context.specTrees.some((t) => t.id === context.activeSpecSubtab)
+          ) {
+            context.activeSpecSubtab = null;
+          }
+        }
         break;
       case "alchemy": {
         context.tab = context.tabs[partId];
@@ -2440,7 +2533,10 @@ export class RedsteelActorSheet extends api.HandlebarsApplicationMixin(
         case "specialisations": {
           tab.id = "specialisations";
           tab.label += "Specialisations";
-          // Only show the tab when at least one specialisation is active
+          // Only show the tab when at least one specialisation is active.
+          // NPCs (GM only) always show it: the picker that turns
+          // specialisations on lives there.
+          if (this.actor.type === "npc") break;
           const specs = this.actor.system.specialisations ?? {};
           const anyActive = Object.keys(
             CONFIG.REDSTEEL.specialisations ?? {},

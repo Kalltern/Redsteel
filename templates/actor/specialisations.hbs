@@ -5,6 +5,32 @@
 >
   <div class="specialisations-box">
 
+    {{#if npcSpecEditor}}
+      <!-- NPC only, GM only: turn whole specialisations on/off -->
+      <div class="npc-spec-picker">
+        <h3 class="npc-spec-picker-title">
+          {{localize "REDSTEEL.Actor.Specialisations.npcPickerTitle"}}
+        </h3>
+        <p class="npc-spec-picker-hint">
+          {{localize "REDSTEEL.Actor.Specialisations.npcPickerHint"}}
+        </p>
+        <div class="npc-spec-picker-grid">
+          {{#each npcSpecList as |spec|}}
+            <a
+              class="npc-spec-option {{#if spec.active}}active{{/if}}"
+              data-action="toggleNpcSpec"
+              data-spec="{{spec.id}}"
+              role="checkbox"
+              aria-checked="{{#if spec.active}}true{{else}}false{{/if}}"
+            >
+              <span class="npc-spec-box"></span>
+              <span class="npc-spec-label">{{spec.label}}</span>
+            </a>
+          {{/each}}
+        </div>
+      </div>
+    {{/if}}
+
     <!-- Sub-tab navigation: one entry per active specialisation -->
     <nav class="tabs" data-group="specialisations-subtabs" data-action="tab">
       {{#each specTrees as |tree index|}}

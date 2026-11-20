@@ -142,7 +142,15 @@
     "vsTest": true,
     "attributeTest": "will",
     "testModifier": "@spellPower*3",
-    "versusAgainst": "dex,end"
+    "versusAgainst": "dex,end",
+    "area": {
+      "shape": "burst",
+      "size": 1,
+      "angle": 0,
+      "targets": "all",
+      "linger": true,
+      "rounds": "spellPower"
+    }
   },
   "effects": [],
   "folder": "JBcANv6vENmYO1qP",

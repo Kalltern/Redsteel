@@ -9,12 +9,14 @@ import { resolveSpellAutomation } from "./spellAutomation.mjs";
 import { getStrikeId } from "./strikes.mjs";
 import {
   MD_BASE_INITIATION,
+  MD_CHARGE_CAP,
+  MD_TOUCH_BONUS,
   applyMentalCharge,
   applyMentalStrain,
   getInitiationBonus,
   promptMentalCharge,
 } from "./mentalDuel.mjs";
-import { stampMindBendingTarget } from "./mindBending.mjs";
+import { markMindBendingHeld, stampMindBendingTarget } from "./mindBending.mjs";
 import {
   BLOOD_PAYMENT_COST,
   BLOOD_PAYMENT_DIFFICULTY,
@@ -46,6 +48,10 @@ import {
 } from "./incantator.mjs";
 import { mancerLockLabel, mancerSpellLock } from "../helpers/mancerSpells.mjs";
 import { applyFieryAura, spellTargetCapRefusal } from "./mancerFollowups.mjs";
+import { createSpellZone, placeSpellArea, spellArea } from "./spellArea.mjs";
+import { offerPersistentEffort } from "./mentalist.mjs";
+import { areAdjacent } from "./positioning.mjs";
+import { actorHasSpecNode } from "../helpers/specialisations.mjs";
 
 export { getStrikeId };
 
@@ -209,6 +215,22 @@ export async function performCast(
     catalyst = false,
   } = {},
 ) {
+  // An area spell is placed on the hex grid first, and everyone inside it
+  // targeted (utils/spellArea.mjs). Backing out spends nothing. Without a
+  // canvas, a caster token or the setting, it is cast on hand-picked targets
+  // as before (`skipped`).
+  let placed = null;
+  if (spellArea(spell)) {
+    placed = await placeSpellArea(actor, spell, token);
+    if (!placed) {
+      ui.notifications.info(
+        game.i18n.localize("REDSTEEL.SpellArea.Cancelled"),
+      );
+      return false;
+    }
+    if (placed.skipped) placed = null;
+  }
+
   // Ice lance takes two targets, three with Ledové kopí; Chain lightning
   // five, six with Řetězový blesk: too many targeted is refused before
   // anything is paid. Here rather than in castSpell, so a quick cast and a
@@ -378,7 +400,7 @@ export async function performCast(
   // card can say so.
   const waveNote = await settleWaveOfEnergy(actor, spell, attackResults);
 
-  await game.redsteel.finalizeRollsAndPostChat(
+  const castCard = await game.redsteel.finalizeRollsAndPostChat(
     actor,
     spell,
     bonuses,
@@ -396,6 +418,8 @@ export async function performCast(
       counterattack: counter,
       catalyst,
       cardNotes: waveNote,
+      // The placed area, stamped on the card (and its pendingCast).
+      area: placed,
     },
   );
 
@@ -406,6 +430,8 @@ export async function performCast(
     token,
     focusSpent,
     ignoreChanneling,
+    area: placed,
+    castMessageId: castCard?.id ?? null,
   });
 
   return true;
@@ -508,14 +534,22 @@ async function resolveMacroSpell(uuid, name) {
  * @param {Item} spell - The spell that was cast.
  * @param {object} attackResults - Result of performAttackRoll, or a reroll
  *   shaped the same way.
- * @param {{token?: Token|null, focusSpent?: number, ignoreChanneling?: boolean}}
- *   [options]
+ * @param {{token?: Token|null, focusSpent?: number, ignoreChanneling?: boolean,
+ *   area?: object|null, castMessageId?: string|null}} [options]  `area` is
+ *   the placed spell area (utils/spellArea.mjs placeSpellArea), null when the
+ *   spell has none or was targeted by hand; `castMessageId` the cast card.
  */
 export async function applyPostCastEffects(
   actor,
   spell,
   attackResults,
-  { token = null, focusSpent = 0, ignoreChanneling = false } = {},
+  {
+    token = null,
+    focusSpent = 0,
+    ignoreChanneling = false,
+    area = null,
+    castMessageId = null,
+  } = {},
 ) {
   const succeeded = spellCastSucceeded(attackResults);
 
@@ -540,7 +574,25 @@ export async function applyPostCastEffects(
   // Channeling upkeep is the one thing still bound to the margin: a cast that
   // never landed has nothing to sustain, and skipping the channeling
   // evaluation says nothing about whether upkeep should start.
-  if (succeeded) await startChannelingForSpell(actor, spell, { focusSpent });
+  const channelingEffect = succeeded
+    ? await startChannelingForSpell(actor, spell, { focusSpent })
+    : null;
+
+  // A lingering area spell that landed leaves its zone on the map, tied to
+  // the Channeling just started so it ends with it; any other area spell
+  // that landed shows its zone to everyone until the turn ends
+  // (utils/spellArea.mjs).
+  if (area && (succeeded || ignoreChanneling)) {
+    const linger = spellArea(spell)?.linger === true;
+    await createSpellZone({
+      actor,
+      spell,
+      area,
+      castMessageId,
+      channelingEffectId: linger ? (channelingEffect?.id ?? null) : null,
+      flash: !linger,
+    });
+  }
 
   // Caster effects and the Mind Bending duel ride the same gate as the strikes
   // and the automation above. With "No Channeling Evaluation" there is no
@@ -549,6 +601,11 @@ export async function applyPostCastEffects(
   // sides already assume.
   if (succeeded || ignoreChanneling) {
     await applyCasterEffects(actor, spell);
+    // Mind Bending's 1 Action a round upkeep: the turn it is cast counts as
+    // paid. Stamped only inside a started encounter (mindBending.mjs).
+    if (readCasterEffects(spell).includes("mind_bending_caster")) {
+      await markMindBendingHeld(actor);
+    }
     // Fiery Aura's marker status on its caster (mancerFollowups.mjs).
     await applyFieryAura(actor, spell);
     await maybeStartMentalDuel(actor, token, spell, attackResults, {
@@ -783,7 +840,18 @@ async function maybeStartMentalDuel(
   const crit =
     attackResults?.critSuccess || attackResults?.displayCritSuccess;
   const perkBonus = crit ? 0 : getInitiationBonus(actor);
-  const perkChance = crit ? 100 : MD_BASE_INITIATION + perkBonus;
+  // Mentalist "Dotek: +30% na zahájení" (soubojDotek): a caster standing next
+  // to the target adds 30%. Not bound by the 75% ceiling, which belongs to
+  // Mentální zteč and Vysátí only.
+  const touchBonus =
+    !crit &&
+    actorHasSpecNode(actor, "mentalist", "soubojDotek") &&
+    areAdjacent(casterToken, targetToken)
+      ? MD_TOUCH_BONUS
+      : 0;
+  const perkChance = crit
+    ? 100
+    : MD_BASE_INITIATION + perkBonus + touchBonus;
 
   // Mentální zteč was paid before the roll (see offerMentalCharge). Spend the
   // parked value here, whichever route reached this point, and clear it so the
@@ -792,7 +860,27 @@ async function maybeStartMentalDuel(
   if (actor.getFlag("redsteel", "mentalCharge") !== undefined) {
     await actor.unsetFlag("redsteel", "mentalCharge");
   }
-  const chance = crit ? 100 : applyMentalCharge(perkChance, charged);
+  // The charge's 75% ceiling never pulls a chance that Touch already lifted
+  // past it back down.
+  const chargedChance = crit
+    ? 100
+    : Math.max(perkChance, applyMentalCharge(perkChance, charged));
+
+  // Vysátí: the last drain left +30% on the next initiation, again never past
+  // 75%. Spent by this roll whether or not it opens the duel; a Critical
+  // success needs no help and leaves it for the next one.
+  const drainOwed =
+    Number(actor.getFlag("redsteel", "drainInitiationBonus")) || 0;
+  let drainBonus = 0;
+  if (!crit && drainOwed > 0) {
+    drainBonus =
+      Math.max(
+        chargedChance,
+        Math.min(MD_CHARGE_CAP, chargedChance + drainOwed),
+      ) - chargedChance;
+    await actor.unsetFlag("redsteel", "drainInitiationBonus");
+  }
+  const chance = crit ? 100 : chargedChance + drainBonus;
 
   const breakdown = crit
     ? game.i18n.localize("REDSTEEL.MentalDuel.Initiation.CritBreakdown") +
@@ -810,24 +898,41 @@ async function maybeStartMentalDuel(
               bonus: perkBonus,
             })
           : null,
+        touchBonus
+          ? game.i18n.format("REDSTEEL.MentalDuel.Initiation.Touch", {
+              bonus: touchBonus,
+            })
+          : null,
         charged
           ? game.i18n.format("REDSTEEL.MentalDuel.Initiation.Charge", {
-              bonus: chance - perkChance,
+              bonus: chargedChance - perkChance,
               amount: charged,
+            })
+          : null,
+        drainOwed > 0
+          ? game.i18n.format("REDSTEEL.MentalDuel.Initiation.Drain", {
+              bonus: drainBonus,
             })
           : null,
       ]
         .filter(Boolean)
         .join(" · ");
 
-  const roll = await new Roll("1d100").evaluate();
-  const initiated = roll.total <= chance;
-
-  await ChatMessage.create({
-    speaker: ChatMessage.getSpeaker({ actor }),
-    flavor: `<b>${game.i18n.localize("REDSTEEL.MentalDuel.Initiation.Title")}</b>`,
-    rolls: [roll],
-    content: `
+  // One initiation card. A Persistent Effort reroll posts a second one of the
+  // same shape, marked as the reroll.
+  const rollInitiation = async ({ reroll = false } = {}) => {
+    const roll = await new Roll("1d100").evaluate();
+    const initiated = roll.total <= chance;
+    await ChatMessage.create({
+      speaker: ChatMessage.getSpeaker({ actor }),
+      flavor: `<b>${game.i18n.localize("REDSTEEL.MentalDuel.Initiation.Title")}</b>`,
+      rolls: [roll],
+      content: `
+      ${
+        reroll
+          ? `<p style="text-align:center;font-size:11px;opacity:.8;">${game.i18n.localize("REDSTEEL.MentalDuel.Initiation.PersistentEffort")}</p>`
+          : ""
+      }
       <p style="text-align:center;">
         ${game.i18n.format("REDSTEEL.MentalDuel.Initiation.Result", {
           chance,
@@ -845,7 +950,17 @@ async function maybeStartMentalDuel(
           ? ""
           : `<p style="text-align:center;font-size:11px;opacity:.8;">${game.i18n.localize("REDSTEEL.MentalDuel.Initiation.MayAccept")}</p>`
       }`,
-  });
+    });
+    return { roll, initiated };
+  };
+
+  let { roll, initiated } = await rollInitiation();
+
+  // Mentalist "Vytrvalá snaha": a failed roll may be thrown again for 1 Mind,
+  // once a round (once per cast outside combat), against the same chance.
+  if (!initiated && (await offerPersistentEffort(actor, chance))) {
+    ({ roll, initiated } = await rollInitiation({ reroll: true }));
+  }
 
   if (initiated) {
     game.redsteel.openMentalDuel(casterToken, targetToken);
