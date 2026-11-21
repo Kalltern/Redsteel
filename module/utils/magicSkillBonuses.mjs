@@ -54,7 +54,7 @@ import {
   hasHastenedCast,
 } from "./hastenedCast.mjs";
 import { counterattackCastMods } from "./elymas.mjs";
-import { setUserTargets, zoneOccupantIds } from "./spellArea.mjs";
+import { setUserTargets, trapCardWhisper, zoneOccupantIds } from "./spellArea.mjs";
 import {
   bankedQuickFocus,
   defenderManaMultiplier,
@@ -1529,7 +1529,16 @@ export async function finalizeRollsAndPostChat(
     cardNotes = "",
     // The placed spell area (utils/spellArea.mjs placeSpellArea), or null.
     area = null,
+    // A trap going off (utils/spellArea.mjs detonateTrap):
+    // `{targetIds, walkerId, notice}`. Its damage, effects and any versus
+    // Test are rolled now; the margin is the cast's, handed in as
+    // `attackResults`.
+    trap = null,
   } = options;
+  // A trap's own cast shows only its description and margin: what it does
+  // is rolled when something walks into it (user ruling 2026-11-21).
+  const trapCast = area?.shape === "trap";
+  const trapDetonation = Array.isArray(trap?.targetIds) ? trap : null;
   // Incantator threshold shifts, the same figures performAttackRoll used, so
   // the card's stored thresholds judge a reroll on the same terms.
   const incantatorCrit = incantatorCastCrit(actor, spell, {
@@ -1574,7 +1583,8 @@ export async function finalizeRollsAndPostChat(
   let concatRollAndDescription = spell.system.description;
   console.log(`Spell Description:`, concatRollAndDescription);
   let attributeTestRoll = null;
-  if (isSpeedTest(spellAttributeTestName)) {
+  // A trap's versus Test is against whoever sets it off, so not at the cast.
+  if (!trapCast && isSpeedTest(spellAttributeTestName)) {
     // Speed test: d12 + Initiative + Speed, higher is better.
     const speedRoll = await rollSpeedTest(actor, {
       modifier: spellTestModifier,
@@ -1590,6 +1600,7 @@ export async function finalizeRollsAndPostChat(
     });
     attributeTestRoll = speedRoll;
   } else if (
+    !trapCast &&
     spellAttributeTestName &&
     spellAttributeTestName !== "-- Select a Type --"
   ) {
@@ -1961,7 +1972,8 @@ ${renderMarginFollowupLine({
       }</span>`
     : "";
 
-  const hasDamage = typeof damageTotal === "number" && damageTotal > 0;
+  // A trap's cast card carries no damage: it is rolled when the trap goes off.
+  const hasDamage = !trapCast && typeof damageTotal === "number" && damageTotal > 0;
   // Healing spells reuse the damage roll as the heal amount but post a Heal
   // card (Apply Healing button) instead of an attack card. No crit bonus.
   const isHealing = !!spell.system.isHealing && hasDamage;
@@ -2023,7 +2035,7 @@ ${renderMarginFollowupLine({
     : "";
 
   let rollName = spell.localizedName ?? spell.name;
-  const hasEffects = effectsRollResults.trim().length > 0;
+  const hasEffects = !trapCast && effectsRollResults.trim().length > 0;
   const effectsTable = hasEffects
     ? `
   <table style="width: 100%; text-align: center; font-size: 15px;">
@@ -2036,7 +2048,7 @@ ${renderMarginFollowupLine({
   const hasPenetration = spellPenetration > 0;
   // Critical Score is only meaningful on a critical success (not on failures)
   const hasCrit = (ignoreChanneling ? displayCritSuccess : critSuccess) === true;
-  const showTable = hasPenetration || hasCrit;
+  const showTable = !trapCast && (hasPenetration || hasCrit);
   const headers = [
     hasPenetration ? "<th>Penetration</th>" : "",
     hasCrit ? "<th>Critical Score</th>" : "",
@@ -2148,7 +2160,8 @@ ${renderMarginFollowupLine({
       fixedMagicAttack,
       // Who it was aimed at, captured from the caster's targets while they still
       // exist — targets are per-user and live, the card is not.
-      targets: captureAttackTargets(),
+      // A trap going off hits whoever stood in its blast, not the GM's targets.
+      targets: trapDetonation ? trapDetonation.targetIds : captureAttackTargets(),
       // Where each target stood when the blow was thrown (utils/positioning.mjs).
       // The defense reads this rather than live facing, because a reaction can
       // resolve after everyone has moved.
@@ -2174,7 +2187,7 @@ ${renderMarginFollowupLine({
   if (isHealing) {
     healFlag = { total: damageTotal };
   }
-  if (Object.keys(mechanicalEffects).length > 0) {
+  if (!trapCast && Object.keys(mechanicalEffects).length > 0) {
     effectsFlag = mechanicalEffects;
   }
 
@@ -2202,10 +2215,16 @@ ${renderMarginFollowupLine({
       : ""
   }</div>`;
 
+  // A trap's card: public for a party caster, kept from the players for an
+  // enemy's until it goes off (utils/spellArea.mjs trapCardWhisper; the
+  // detonation reposts it for everyone).
+  const trapWhisper = area?.shape === "trap" ? trapCardWhisper(actor) : null;
+
   const castCard = await ChatMessage.create({
     speaker: ChatMessage.getSpeaker({ actor }),
     content,
     rolls: rolls,
+    ...(trapWhisper && { whisper: trapWhisper }),
     flavor: `
           <div style="display:flex; align-items:center; justify-content:left; gap:8px; font-weight:bold;">
             <img src="${spell.img}" title="${
@@ -2213,6 +2232,11 @@ ${renderMarginFollowupLine({
             }" width="36" height="36">
             <span>${spell.localizedName ?? spell.name}</span>
         </div>
+        ${
+          trapDetonation?.notice
+            ? `<p class="rs-trap-trigger rs-fold-keep"><b>${trapDetonation.notice}</b></p>`
+            : ""
+        }
         ${tags}${counterattackTag}${incantatorCastTags(actor, spell, {
           focusSpent,
           catalyst,
@@ -2265,6 +2289,10 @@ ${renderMarginFollowupLine({
           },
         }),
         casterUuid: actor.uuid,
+        // A trap going off: who walked into it (utils/spellArea.mjs).
+        ...(trapDetonation && {
+          trapDetonation: { walkerId: trapDetonation.walkerId ?? null },
+        }),
         // Where the spell's area was placed (utils/spellArea.mjs).
         ...(area && {
           spellArea: {

@@ -62,6 +62,23 @@
         />
         </div>
 
+        {{#if (eq system.area.shape "trap")}}
+        <div class="grid-span-1">
+        <label class="resource-label" data-tooltip="{{localize 'REDSTEEL.SpellArea.StopsHint'}}">{{localize "REDSTEEL.SpellArea.Stops"}}</label>
+        <input type="checkbox" name="system.area.stops" {{checked system.area.stops}} />
+        </div>
+
+        <div class="grid-span-1">
+        <label class="resource-label">{{localize "REDSTEEL.SpellArea.MayBorder"}}</label>
+        <input type="checkbox" name="system.area.mayBorder" {{checked system.area.mayBorder}} />
+        </div>
+
+        <div class="grid-span-1">
+        <label class="resource-label" data-tooltip="{{localize 'REDSTEEL.SpellArea.DecoyHint'}}">{{localize "REDSTEEL.SpellArea.Decoy"}}</label>
+        <input type="checkbox" name="system.area.decoy" {{checked system.area.decoy}} />
+        </div>
+        {{/if}}
+
         {{#if (eq system.area.shape "cone")}}
         <div class="grid-span-1">
         <label class="resource-label">{{localize "REDSTEEL.SpellArea.Angle"}}</label>
@@ -103,6 +120,28 @@
           data-dtype="String"
         />
         </div>
+
+        <div class="grid-span-1">
+        <label class="resource-label" data-tooltip="{{localize 'REDSTEEL.SpellArea.MoveHint'}}">{{localize "REDSTEEL.SpellArea.Move"}}</label>
+        <select name="system.area.move">
+          {{#each config.spellAreaMoves as |label key|}}
+            <option value="{{key}}" {{#if (eq ../system.area.move key)}}selected{{/if}}>{{localize label}}</option>
+          {{/each}}
+        </select>
+        </div>
+
+        {{#if system.area.move}}
+        <div class="grid-span-1">
+        <label class="resource-label">{{localize "REDSTEEL.SpellArea.MoveHexes"}}</label>
+        <input
+          type="number"
+          name="system.area.moveHexes"
+          value="{{system.area.moveHexes}}"
+          data-dtype="Number"
+          min="0"
+        />
+        </div>
+        {{/if}}
 
 {{#if (eq item.system.option "magic")}}
         <div class="grid-span-1">

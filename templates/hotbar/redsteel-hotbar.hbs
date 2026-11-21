@@ -235,6 +235,25 @@
     >
       <img class="rs-bg3-suggest-img" src="{{chip.img}}" alt="" />
     </button>
+    {{else if (eq chip.kind "zoneSteer")}}
+    {{!-- A steered spell zone of the bound actor's: click, then click the
+          board to move the area up to its hexes per round (spellArea.mjs).
+          Free, once per round; gone once it has moved. --}}
+    <button
+      type="button"
+      class="rs-bg3-suggest-chip ability"
+      data-action="steerSpellZone"
+      data-suggestion-id="{{chip.id}}"
+      data-region-id="{{chip.regionId}}"
+      data-tt-kind="bg3Suggest"
+      data-tt-theme="{{chip.theme}}"
+      data-tt-title="{{chip.label}}"
+      data-tt-hint="{{chip.hint}}"
+      data-tt-cost="{{chip.costKind}}"
+      aria-label="{{chip.ariaLabel}}"
+    >
+      <img class="rs-bg3-suggest-img" src="{{chip.img}}" alt="" />
+    </button>
     {{else if (eq chip.kind "mindBendingHold")}}
     {{!-- Mind Bending's upkeep on the caster's turn, one chip like a held
           stance: click pays this turn's 1 Action, right-click drops the spell

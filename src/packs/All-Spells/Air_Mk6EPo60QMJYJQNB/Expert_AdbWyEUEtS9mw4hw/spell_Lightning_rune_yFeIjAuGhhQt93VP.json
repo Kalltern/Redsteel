@@ -129,7 +129,21 @@
     "attributeTest": "",
     "testModifier": "",
     "manualNotes": "The first target's Magic Defense is ignored. Let them roll their defense and disregard the result manually until this is automated.",
-    "vsTest": false
+    "vsTest": false,
+    "area": {
+      "shape": "trap",
+      "size": 0,
+      "angle": 0,
+      "targets": "all",
+      "includeCaster": false,
+      "linger": false,
+      "rounds": "",
+      "move": "",
+      "moveHexes": 0,
+      "stops": false,
+      "mayBorder": false,
+      "decoy": false
+    }
   },
   "effects": [],
   "folder": "AdbWyEUEtS9mw4hw",

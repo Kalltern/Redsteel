@@ -402,6 +402,25 @@ export async function performCast(
         },
       );
 
+  // A trap keeps its cast for later: the margin is this roll's, but damage,
+  // effects and any versus Test are rolled when something walks in
+  // (utils/spellArea.mjs detonateTrap). Plain data, as it lives in a flag.
+  if (placed?.shape === "trap") {
+    placed.trapCast = {
+      attackRoll: attackResults.attackRoll?.toJSON?.() ?? null,
+      critSuccess: !!attackResults.critSuccess,
+      critFailure: !!attackResults.critFailure,
+      displayCritSuccess: !!attackResults.displayCritSuccess,
+      displayCritFailure: !!attackResults.displayCritFailure,
+      bonuses: JSON.parse(JSON.stringify(bonuses ?? {})),
+      focusSpent,
+      ignoreChanneling,
+      bloodPayment: !!payingBlood,
+      hastenedCast: !!hastening,
+      catalyst: !!catalyst,
+    };
+  }
+
   // Incantator → Vlna energie: a Critical Success cast leaves its cost off
   // the next spell (utils/incantator.mjs). Settled before the card so the
   // card can say so.
@@ -595,14 +614,16 @@ export async function applyPostCastEffects(
   // that landed shows its zone to everyone until the turn ends
   // (utils/spellArea.mjs).
   if (area && (succeeded || ignoreChanneling)) {
+    // A trap leaves its hidden zone until something walks into it.
+    const trap = area.shape === "trap";
     const linger = spellArea(spell)?.linger === true;
     await createSpellZone({
       actor,
       spell,
       area,
       castMessageId,
-      channelingEffectId: linger ? (channelingEffect?.id ?? null) : null,
-      flash: !linger,
+      channelingEffectId: linger && !trap ? (channelingEffect?.id ?? null) : null,
+      flash: !linger && !trap,
     });
   }
 

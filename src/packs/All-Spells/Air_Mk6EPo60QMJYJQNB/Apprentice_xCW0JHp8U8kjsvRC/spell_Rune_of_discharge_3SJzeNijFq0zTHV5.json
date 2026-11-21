@@ -129,7 +129,21 @@
     "attributeTest": "",
     "testModifier": "",
     "manualNotes": "",
-    "vsTest": false
+    "vsTest": false,
+    "area": {
+      "shape": "trap",
+      "size": 0,
+      "angle": 0,
+      "targets": "all",
+      "includeCaster": false,
+      "linger": false,
+      "rounds": "",
+      "move": "",
+      "moveHexes": 0,
+      "stops": true,
+      "mayBorder": false,
+      "decoy": false
+    }
   },
   "effects": [],
   "folder": "xCW0JHp8U8kjsvRC",

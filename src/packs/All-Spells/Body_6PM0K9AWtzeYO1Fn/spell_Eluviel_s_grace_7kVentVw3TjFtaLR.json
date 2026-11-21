@@ -125,7 +125,9 @@
       "targets": "all",
       "includeCaster": true,
       "linger": true,
-      "rounds": "spellPower"
+      "rounds": "spellPower / 2",
+      "move": "",
+      "moveHexes": 0
     }
   },
   "effects": [],

@@ -129,7 +129,9 @@
       "angle": 0,
       "targets": "all",
       "linger": true,
-      "rounds": ""
+      "rounds": "",
+      "move": "steer",
+      "moveHexes": 1
     }
   },
   "effects": [],

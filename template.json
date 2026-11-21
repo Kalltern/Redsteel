@@ -2034,7 +2034,12 @@
         "targets": "all",
         "includeCaster": false,
         "linger": false,
-        "rounds": ""
+        "rounds": "",
+        "move": "",
+        "moveHexes": 0,
+        "stops": false,
+        "mayBorder": false,
+        "decoy": false
       },
       "sustained": false,
       "difficulty": 0,

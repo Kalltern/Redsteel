@@ -131,7 +131,21 @@
     "effectType2": "",
     "effectType3": "",
     "manualNotes": "",
-    "vsTest": false
+    "vsTest": false,
+    "area": {
+      "shape": "trap",
+      "size": 0,
+      "angle": 0,
+      "targets": "all",
+      "includeCaster": false,
+      "linger": false,
+      "rounds": "",
+      "move": "",
+      "moveHexes": 0,
+      "stops": false,
+      "mayBorder": false,
+      "decoy": true
+    }
   },
   "effects": [],
   "folder": "yQKWKFaPqrfuldp0",

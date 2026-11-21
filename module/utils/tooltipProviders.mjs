@@ -210,6 +210,24 @@ registerTooltip("text", ({ dataset }) => {
 });
 
 /* -------------------------------------------- */
+/*  specTag — a cast card's spec pill           */
+/* -------------------------------------------- */
+
+// The passive at its highest level as the title, every benefit of its levels
+// as one line each (helpers/specPills.mjs).
+registerTooltip("specTag", ({ dataset }) => {
+  const lines = String(dataset.ttLines ?? "")
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
+  if (!lines.length) return null;
+  return ttFrame({
+    title: dataset.ttTitle ?? "",
+    body: lines.map((l) => `<div class="tt-desc">${ttEscape(l)}</div>`).join(""),
+  });
+});
+
+/* -------------------------------------------- */
 /*  Shared localization helper                  */
 /* -------------------------------------------- */
 

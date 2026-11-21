@@ -11,9 +11,10 @@
  *
  *   burst  the placed hex plus `size` rings around it (size 0 = one hex);
  *   aura   the caster's own hexes plus `size` rings, nothing to place;
- *   cone   Breath: an origin hex within the spell's range, then a cone
- *          `size` hexes deep (the origin counts as 1), snapped to the grid:
- *          45° widens 1, 2, 3 a row, 90° widens 1, 3, 5 (see coneCells);
+ *   cone   Breath: starts next to the caster along its facing, the wheel
+ *          turns it (and the token), Shift + wheel moves it one hex out;
+ *          `size` hexes deep (the first hex counts as 1), snapped to the
+ *          grid: 45° widens 1, 2, 3 a row, 90° widens 1, 3, 5 (coneCells);
  *   line   a beam of `size` hexes from next to the caster towards the cursor.
  *
  * PLACEMENT
@@ -50,6 +51,18 @@
  * the whole table sees where it hit (user ruling 2026-11-20): in combat it
  * lasts until the turn changes (`expires.endOfTurn`), outside combat for
  * FLASH_SECONDS (`expires.at`, a GM clock time set when the GM creates it).
+ *
+ * MOVING ZONES (user rulings 2026-11-21)
+ * -------------
+ * A lasting burst with `area.move` keeps its centre and size in the flag
+ * (`move, moveHexes, origin, size, startRound, movedRound`) and is rebuilt
+ * around a new centre by the active GM:
+ *   random  drifts by itself at each round top, one 1d6 per hex, clockwise
+ *           from the top hex, with a chat line of the rolls (the tornadoes);
+ *   steer   the caster moves it up to `moveHexes` with a hotbar chip
+ *           (actionSuggestions.mjs), free, once per combat round.
+ * Damage to whoever stands in a moving zone stays a table step until zone
+ * triggers are built.
  */
 
 import { isHostileSide } from "./movementZones.mjs";
@@ -65,8 +78,11 @@ const SETTING = "spellAreaPlacement";
 /** Socket message types (the active GM runs both). */
 const MSG_CREATE = "spellZoneCreate";
 const MSG_DELETE = "spellZoneDelete";
+const MSG_MOVE = "spellZoneMove";
 
-const SHAPES = new Set(["burst", "aura", "cone", "line"]);
+const SHAPES = new Set(["burst", "aura", "cone", "line", "trap"]);
+/** How a lasting burst zone moves: by the caster's chip, or on its own. */
+const MOVES = new Set(["steer", "random"]);
 
 /** Bronze: the palette is grayscale and gold, never red. */
 const ZONE_COLOR = "#a0703c";
@@ -162,7 +178,7 @@ function distanceFrom(casterCells, cell) {
  * The seed hexes plus `rings` rings around them, seeds first. Breadth-first
  * over the grid's adjacency, so ring n is exactly the hexes n steps away.
  */
-function growCells(seeds, rings) {
+function growCells(seeds, rings, grid = canvas.grid) {
   const seen = new Set();
   const cells = [];
   let frontier = [];
@@ -176,7 +192,7 @@ function growCells(seeds, rings) {
   for (let ring = 0; ring < rings; ring++) {
     const next = [];
     for (const cell of frontier) {
-      for (const n of canvas.grid.getAdjacentOffsets({ i: cell.i, j: cell.j })) {
+      for (const n of grid.getAdjacentOffsets({ i: cell.i, j: cell.j })) {
         const k = cellKey(n);
         if (seen.has(k)) continue;
         seen.add(k);
@@ -393,12 +409,14 @@ export function setUserTargets(ids) {
  *
  * @param {Item} spell
  * @returns {{shape: string, size: number, angle: number, targets: string,
- *   includeCaster: boolean, linger: boolean, rounds: string}|null}
+ *   includeCaster: boolean, linger: boolean, rounds: string,
+ *   move: ""|"steer"|"random", moveHexes: number}|null}
  */
 export function spellArea(spell) {
   const area = spell?.system?.area;
   const shape = String(area?.shape ?? "").trim();
   if (!SHAPES.has(shape)) return null;
+  const move = MOVES.has(area.move) ? area.move : "";
   return {
     shape,
     size: Math.max(0, Math.floor(Number(area.size) || 0)),
@@ -407,6 +425,13 @@ export function spellArea(spell) {
     includeCaster: area.includeCaster === true,
     linger: area.linger === true,
     rounds: area.rounds == null ? "" : String(area.rounds).trim(),
+    move,
+    moveHexes: move ? Math.max(0, Math.floor(Number(area.moveHexes) || 0)) : 0,
+    // Traps (shape "trap"): stop the walker, may sit next to another trap,
+    // show an image of the caster.
+    stops: area.stops === true,
+    mayBorder: area.mayBorder === true,
+    decoy: area.decoy === true,
   };
 }
 
@@ -431,7 +456,9 @@ function zoneRounds(actor, spell, rounds) {
       value = 0;
     }
   }
-  return Number.isFinite(value) && value > 0 ? Math.floor(value) : 0;
+  // A halved Spell Power of 1 is 0.5: floored it would read as "no limit",
+  // so any positive result lasts at least one round.
+  return Number.isFinite(value) && value > 0 ? Math.max(1, Math.floor(value)) : 0;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -586,59 +613,153 @@ async function placeBurst({ area, range, casterCells, label }) {
   return state ? { cells: state.cells, origin: state.origin, direction: null } : null;
 }
 
-/** Cone: first the origin hex, then the bearing. */
-async function placeCone({ area, range, casterDoc, casterCells, label }) {
-  const ownKeys = new Set(casterCells.map(cellKey));
-  const casterCentre = casterDoc.object?.center ?? canvas.grid.getCenterPoint(casterCells[0]);
+/** Facing (token rotation, 0 = south) to a canvas bearing, and back. */
+const rotationToBearing = (rotation) => ((((Number(rotation) || 0) + 90) % 360) + 360) % 360;
+const bearingToRotation = (b) => ((((b - 90) % 360) + 360) % 360);
 
-  // Phase A: the origin, with the cone pointing away from the caster.
-  ui.notifications.info(
-    game.i18n.format("REDSTEEL.SpellArea.PickOrigin", { spell: label }),
-  );
-  const cache = new Map();
-  const first = await interact((point) => {
-    const origin = canvas.grid.getOffset(point);
-    const k = cellKey(origin);
-    if (cache.has(k)) return cache.get(k);
-    const distance = distanceFrom(casterCells, origin);
-    const own = ownKeys.has(k);
-    const tooFar = range !== null && distance > range;
-    const direction = bearing(casterCentre, canvas.grid.getCenterPoint(origin));
-    const result = {
-      cells: coneCells(origin, direction, area.size, area.angle),
-      valid: !own && distance >= 1 && !tooFar,
-      reason: tooFar
-        ? game.i18n.format("REDSTEEL.SpellArea.OutOfRange", {
-            spell: label,
-            range,
-          })
-        : null,
-      origin: { i: origin.i, j: origin.j },
-      direction,
-    };
-    cache.set(k, result);
-    return result;
-  });
-  if (!first) return null;
+/**
+ * Cone: it starts at the caster, facing the way the token faces (user
+ * ruling 2026-11-21). The mouse wheel turns it and the token's facing with
+ * it; Shift + wheel pushes the first hex one hex further out and back. A
+ * click (or Enter) casts, right click or Escape cancels and restores the
+ * facing.
+ *
+ * Positions: a wide cone (over 60°) is a wedge aimed out of a face, six
+ * positions. A narrow cone is a 1-2-3 triangle, which always leans to one
+ * side of the face hex it starts from; it gets twelve positions, each face
+ * leaning anticlockwise then clockwise, so a wheel tick turns it about 30°.
+ * The token faces the face hex the cone starts from.
+ */
+async function placeCone({ area, casterDoc, casterCells, label }) {
+  const board = document.getElementById("board");
+  if (!board || !canvas?.ready) return null;
+  const own = new Set(casterCells.map(cellKey));
+  const centrePoint = casterDoc.object?.center ?? canvas.grid.getCenterPoint(casterCells[0]);
+  const centreCell = canvas.grid.getOffset(centrePoint);
+  const faces = faceBearings(centreCell);
+  if (faces.length !== 6) return null;
 
-  // Phase B: the cone follows the cursor's bearing from the origin's centre.
-  ui.notifications.info(
-    game.i18n.format("REDSTEEL.SpellArea.PickDirection", { spell: label }),
+  const narrow = area.angle <= 60;
+  const positions = narrow
+    ? faces.flatMap((face) => [
+        { face, aim: (face + 330) % 360 },
+        { face, aim: (face + 30) % 360 },
+      ])
+    : faces.map((face) => ({ face, aim: face }));
+
+  const startRotation = Number(casterDoc.rotation) || 0;
+  const startFace = nearestBearing(faces, rotationToBearing(startRotation));
+  // Start on the token's face, leaning clockwise for a narrow cone.
+  let index = positions.findIndex(
+    (p) => p.face === startFace && (!narrow || p.aim === (startFace + 30) % 360),
   );
-  const origin = first.origin;
-  const originCentre = canvas.grid.getCenterPoint(origin);
-  let last = first.direction;
-  const second = await interact((point) => {
-    if (Math.hypot(point.x - originCentre.x, point.y - originCentre.y) >= 1) {
-      last = bearing(originCentre, point);
+  if (index < 0) index = 0;
+  let gap = 0;
+
+  const build = () => {
+    const { face, aim } = positions[index];
+    // The first hex: out of the caster's own hexes along the face, then the gap.
+    let origin = { i: centreCell.i, j: centreCell.j };
+    for (let guard = 0; own.has(cellKey(origin)) && guard < 20; guard++) {
+      origin = stepToward(origin, face);
     }
-    return {
-      cells: coneCells(origin, last, area.size, area.angle),
-      valid: true,
-      direction: last,
+    for (let g = 0; g < gap; g++) origin = stepToward(origin, face);
+    return { cells: coneCells(origin, aim, area.size, area.angle), origin, direction: aim, face };
+  };
+
+  // The token's facing follows the cone, written a beat after the wheel
+  // stops so a fast spin is one update.
+  let facingTimer = null;
+  let writtenRotation = startRotation;
+  const writeFacing = (rotation) => {
+    if (rotation === writtenRotation) return;
+    writtenRotation = rotation;
+    casterDoc.update({ rotation }).catch((err) =>
+      console.error("Redsteel | Cone facing update failed", err),
+    );
+  };
+  const queueFacing = (face) => {
+    clearTimeout(facingTimer);
+    facingTimer = setTimeout(() => writeFacing(bearingToRotation(face)), 150);
+  };
+
+  ui.notifications.info(game.i18n.format("REDSTEEL.SpellArea.PickConeAim", { spell: label }));
+  const overlay = createOverlay({ breathe: true });
+  let state = build();
+  overlay.draw(state.cells, true);
+  queueFacing(state.face);
+
+  return new Promise((resolve) => {
+    let timer = null;
+    let wheelLock = 0;
+    const finish = (confirmed) => {
+      window.removeEventListener("wheel", onWheel, { capture: true });
+      window.removeEventListener("pointerdown", onPointer, true);
+      window.removeEventListener("contextmenu", onContext, true);
+      window.removeEventListener("keydown", onKey, true);
+      clearTimeout(timer);
+      clearTimeout(facingTimer);
+      overlay.destroy();
+      if (!confirmed) {
+        writeFacing(startRotation);
+        return resolve(null);
+      }
+      writeFacing(bearingToRotation(state.face));
+      resolve({
+        cells: state.cells,
+        origin: state.origin,
+        direction: state.direction,
+        restoreFacing: () => writeFacing(startRotation),
+      });
     };
+    const onWheel = (event) => {
+      if (event.target !== board) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      // Shift + wheel comes through as a sideways scroll in some browsers.
+      const delta = event.deltaY || event.deltaX;
+      if (!delta) return;
+      // One step per notch: touchpads send a stream of small deltas.
+      const now = performance.now();
+      if (now < wheelLock) return;
+      wheelLock = now + 90;
+      if (event.shiftKey) {
+        const next = delta < 0 ? 1 : 0;
+        if (next === gap) return;
+        gap = next;
+      } else {
+        index = (index + (delta > 0 ? 1 : -1) + positions.length) % positions.length;
+      }
+      state = build();
+      overlay.draw(state.cells, true);
+      queueFacing(state.face);
+    };
+    const onPointer = (event) => {
+      if (event.target !== board) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      finish(event.button === 0);
+    };
+    const onContext = (event) => {
+      if (event.target !== board) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    };
+    const onKey = (event) => {
+      if (event.key !== "Escape" && event.key !== "Enter") return;
+      const el = event.target;
+      if (event.key === "Enter" &&
+          (el?.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(el?.tagName))) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      finish(event.key === "Enter");
+    };
+    window.addEventListener("wheel", onWheel, { capture: true, passive: false });
+    window.addEventListener("pointerdown", onPointer, true);
+    window.addEventListener("contextmenu", onContext, true);
+    window.addEventListener("keydown", onKey, true);
+    timer = setTimeout(() => finish(false), PLACEMENT_TIMEOUT);
   });
-  return second ? { cells: second.cells, origin, direction: second.direction } : null;
 }
 
 /** Line: from next to the caster towards the cursor. */
@@ -884,8 +1005,26 @@ export async function placeSpellArea(actor, spell, token = null) {
     case "line":
       placed = await placeLine(ctx);
       break;
+    case "trap":
+      placed = await placeTrap(ctx);
+      break;
   }
   if (!placed?.cells?.length) return null;
+
+  // A trap is aimed at nobody yet: no confirm step, and the card goes out
+  // with no targets (the trap's victims are chosen when it goes off).
+  if (area.shape === "trap") {
+    setUserTargets([]);
+    return {
+      sceneId: canvas.scene.id,
+      shape: "trap",
+      cells: placed.cells,
+      origin: placed.origin,
+      direction: null,
+      targetIds: [],
+      decoyTile: area.decoy ? decoyTileData(casterDoc, placed.origin) : null,
+    };
+  }
 
   const targetIds = await confirmTargets({
     actor,
@@ -894,7 +1033,11 @@ export async function placeSpellArea(actor, spell, token = null) {
     cells: placed.cells,
     label,
   });
-  if (!targetIds) return null;
+  if (!targetIds) {
+    // Backing out of the targets undoes a cone's turn of the token too.
+    placed.restoreFacing?.();
+    return null;
+  }
 
   return {
     sceneId: canvas.scene.id,
@@ -929,17 +1072,31 @@ export async function createSpellZone({
 }) {
   const scene = game.scenes.get(area?.sceneId);
   if (!scene || !area.cells?.length) return null;
-  // The viewed scene's grid when it is that scene, else the scene's own.
-  const grid = canvas?.scene?.id === scene.id ? canvas.grid : scene.grid;
+  const grid = gridFor(scene);
   if (typeof grid?.getVertices !== "function") return null;
+  const shapes = regionShapes(grid, area.cells);
 
-  const shapes = area.cells.map((cell) => ({
-    type: "polygon",
-    hole: false,
-    points: grid.getVertices({ i: cell.i, j: cell.j }).flatMap((p) => [p.x, p.y]),
-  }));
+  // A lasting burst that moves keeps its centre and size, so it can be
+  // rebuilt one hex over (moveZone). Only bursts: a moved cone or beam would
+  // need its bearing as well, and no moving spell is one.
+  const spellInfo = spellArea(spell);
+  const movable =
+    !flash && spellInfo?.move && spellInfo.moveHexes > 0 &&
+    area.shape === "burst" && area.origin
+      ? {
+          move: spellInfo.move,
+          moveHexes: spellInfo.moveHexes,
+          origin: { i: area.origin.i, j: area.origin.j },
+          size: spellInfo.size,
+        }
+      : null;
 
   const combat = game.combat;
+  // The round it was made in: a drifting zone first moves at the next round
+  // top, and a round rewound to before it never moves it again.
+  if (movable && combat?.started) {
+    movable.startRound = { combatId: combat.id, round: combat.round };
+  }
   let expires = null;
   if (flash) {
     expires = combat?.started
@@ -953,15 +1110,31 @@ export async function createSpellZone({
   }
 
   const spellName = spell.localizedName ?? spell.name;
+  // A trap is hidden from the other side. A party caster's trap is seen by
+  // every player (the players are the party, user ruling 2026-11-21); an
+  // enemy's only by the GM and whoever owns that caster.
+  const isTrap = area.shape === "trap";
+  const ownership = { default: CONST.DOCUMENT_OWNERSHIP_LEVELS.NONE };
+  if (isTrap) {
+    const casterToken =
+      scene.tokens?.contents?.find((d) => d.actor?.uuid === actor.uuid) ?? null;
+    const enemyCaster = casterSide(actor, casterToken);
+    for (const user of game.users.contents) {
+      if (user.isGM) continue;
+      if (!enemyCaster || actor.testUserPermission?.(user, "OWNER")) {
+        ownership[user.id] = CONST.DOCUMENT_OWNERSHIP_LEVELS.OBSERVER;
+      }
+    }
+  }
   const data = {
-    name: game.i18n.format("REDSTEEL.SpellArea.ZoneName", {
-      spell: spellName,
-      caster: actor.name,
-    }),
+    name: game.i18n.format(
+      isTrap ? "REDSTEEL.SpellArea.TrapZoneName" : "REDSTEEL.SpellArea.ZoneName",
+      { spell: spellName, caster: actor.name },
+    ),
     color: ZONE_COLOR,
     shapes,
-    visibility: CONST.REGION_VISIBILITY.ALWAYS,
-    ownership: { default: CONST.DOCUMENT_OWNERSHIP_LEVELS.NONE },
+    visibility: isTrap ? CONST.REGION_VISIBILITY.OBSERVER : CONST.REGION_VISIBILITY.ALWAYS,
+    ownership,
     flags: {
       [SYSTEM_ID]: {
         [ZONE_FLAG]: {
@@ -973,11 +1146,231 @@ export async function createSpellZone({
           cells: area.cells.map(({ i, j }) => ({ i, j })),
           flash,
           expires,
+          // Moving zones: {move, moveHexes, origin, size}, plus `movedRound`
+          // ({combatId, round}) once it has moved in a round.
+          ...(movable ?? {}),
+          // Traps: {blast, stops, decoy, tileId}; set off by detonateTrap.
+          ...(isTrap && {
+            trap: {
+              blast: spellInfo?.size ?? 0,
+              stops: spellInfo?.stops === true,
+              decoy: spellInfo?.decoy === true,
+              tileId: null,
+              // The cast to finish when it goes off (castSpell.mjs trapCast).
+              cast: area.trapCast ?? null,
+            },
+          }),
         },
       },
     },
   };
-  return toGM(MSG_CREATE, { sceneId: scene.id, data });
+  return toGM(MSG_CREATE, {
+    sceneId: scene.id,
+    data,
+    decoyTile: isTrap ? (area.decoyTile ?? null) : null,
+  });
+}
+
+/** A scene's grid: the live canvas one when it is the viewed scene. */
+function gridFor(scene) {
+  return canvas?.scene?.id === scene?.id && canvas.grid ? canvas.grid : scene?.grid;
+}
+
+/** One polygon per hex, the Region shapes of a zone. */
+function regionShapes(grid, cells) {
+  return cells.map((cell) => ({
+    type: "polygon",
+    hole: false,
+    points: grid.getVertices({ i: cell.i, j: cell.j }).flatMap((p) => [p.x, p.y]),
+  }));
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Moving zones                                                              */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Rebuild a moving zone around a new centre. Active GM only (Regions are
+ * GM documents). `round` stamps the round it moved in, which is what holds
+ * a steered zone to once a round and a drifting one to one drift a round.
+ */
+async function moveZone(region, origin, round = null) {
+  const info = region?.getFlag?.(SYSTEM_ID, ZONE_FLAG);
+  const scene = region?.parent;
+  const grid = gridFor(scene);
+  if (!info?.move || !origin || typeof grid?.getVertices !== "function") return;
+  const cells = growCells([origin], Number(info.size) || 0, grid);
+  await region.update({
+    shapes: regionShapes(grid, cells),
+    [`flags.${SYSTEM_ID}.${ZONE_FLAG}.origin`]: { i: origin.i, j: origin.j },
+    [`flags.${SYSTEM_ID}.${ZONE_FLAG}.cells`]: cells,
+    ...(round ? { [`flags.${SYSTEM_ID}.${ZONE_FLAG}.movedRound`]: round } : {}),
+  });
+}
+
+/** Did this zone already move in the given combat round? */
+function movedThisRound(info, combat) {
+  return (
+    !!combat &&
+    info?.movedRound?.combatId === combat.id &&
+    Number(info.movedRound.round) === Number(combat.round)
+  );
+}
+
+/**
+ * The six neighbours of a hex in reading order for a 1d6: clockwise from the
+ * top hex (the one at or just past north). Index 0 is a roll of 1.
+ */
+function clockwiseNeighbours(grid, cell) {
+  const centre = grid.getCenterPoint(cell);
+  return grid
+    .getAdjacentOffsets({ i: cell.i, j: cell.j })
+    .map((n) => {
+      const p = grid.getCenterPoint(n);
+      // Canvas y points down, so north is -90 degrees; shift it to 0.
+      const compass = ((bearing(centre, p) + 90) % 360 + 360) % 360;
+      return { cell: { i: n.i, j: n.j }, compass: Math.round(compass * 1000) / 1000, p };
+    })
+    .sort((a, b) => a.compass - b.compass);
+}
+
+/**
+ * Random drift at the top of a round (Burning Tornado, Lightning tornado):
+ * one 1d6 per hex, counting clockwise from the top hex. A step whose hex lies
+ * off the scene is skipped. Posts one chat line with the rolls. Active GM.
+ */
+async function driftZone(region, combat) {
+  const info = region.getFlag(SYSTEM_ID, ZONE_FLAG);
+  const scene = region.parent;
+  const grid = gridFor(scene);
+  if (!info?.origin || typeof grid?.getAdjacentOffsets !== "function") return;
+  const rect = scene.dimensions?.sceneRect;
+
+  let at = { i: info.origin.i, j: info.origin.j };
+  const rolls = [];
+  let skipped = false;
+  for (let step = 0; step < (Number(info.moveHexes) || 0); step++) {
+    const roll = await new Roll("1d6").evaluate();
+    rolls.push(roll);
+    const next = clockwiseNeighbours(grid, at)[roll.total - 1];
+    if (!next) continue;
+    if (rect && !rect.contains(next.p.x, next.p.y)) {
+      skipped = true;
+      continue;
+    }
+    at = next.cell;
+  }
+  await moveZone(region, at, { combatId: combat.id, round: combat.round });
+
+  const lines = [
+    `<p>${game.i18n.format("REDSTEEL.SpellArea.DriftRolls", {
+      rolls: rolls.map((r) => r.total).join(", "),
+    })}</p>`,
+  ];
+  if (skipped) lines.push(`<p>${game.i18n.localize("REDSTEEL.SpellArea.DriftEdge")}</p>`);
+  await ChatMessage.create({
+    speaker: { alias: game.i18n.format("REDSTEEL.SpellArea.DriftTitle", { spell: info.spellName }) },
+    content: lines.join(""),
+    rolls,
+  });
+}
+
+/** Drift every random-moving zone of this combat once for its new round. */
+async function driftZones(combat) {
+  for (const scene of game.scenes.contents) {
+    for (const region of scene.regions?.contents ?? []) {
+      const info = region.getFlag(SYSTEM_ID, ZONE_FLAG);
+      if (info?.move !== "random") continue;
+      // Only zones made in this combat; a zone made outside one does not
+      // know which round tops belong to it.
+      if (info.expires?.combatId !== combat.id) continue;
+      // Forward only: past the round it was made in and the last it moved in.
+      const last = Math.max(
+        info.startRound?.combatId === combat.id ? Number(info.startRound.round) || 0 : 0,
+        info.movedRound?.combatId === combat.id ? Number(info.movedRound.round) || 0 : 0,
+      );
+      if (Number(combat.round) <= last) continue;
+      await driftZone(region, combat);
+    }
+  }
+}
+
+/**
+ * The steered zones this actor may move now, on the viewed scene: its own
+ * zones marked `steer` that have not moved this round. Outside a started
+ * combat there is no round to count, so they can always move.
+ *
+ * @param {Actor} actor
+ * @returns {{regionId: string, spellName: string, spellId: string,
+ *   moveHexes: number}[]}
+ */
+export function steerableZones(actor) {
+  if (!actor || !canvas?.scene) return [];
+  const combat = game.combat?.started ? game.combat : null;
+  const out = [];
+  for (const region of canvas.scene.regions?.contents ?? []) {
+    const info = region.getFlag(SYSTEM_ID, ZONE_FLAG);
+    if (info?.move !== "steer" || info.casterUuid !== actor.uuid) continue;
+    if (movedThisRound(info, combat)) continue;
+    out.push({
+      regionId: region.id,
+      spellName: info.spellName,
+      spellId: info.spellId,
+      moveHexes: Number(info.moveHexes) || 0,
+    });
+  }
+  return out;
+}
+
+/**
+ * The caster moves a steered zone: it follows the cursor within its hexes
+ * per round of where it stands, a click drops it there (the GM moves the
+ * Region). Free; once per combat round.
+ *
+ * @param {Actor} actor
+ * @param {string} regionId  On the viewed scene.
+ * @returns {Promise<boolean>} Whether a move was sent.
+ */
+export async function steerSpellZone(actor, regionId) {
+  const region = canvas?.scene?.regions?.get(regionId);
+  const info = region?.getFlag(SYSTEM_ID, ZONE_FLAG);
+  if (!actor || !info?.origin || info.move !== "steer" || info.casterUuid !== actor.uuid) {
+    return false;
+  }
+  const combat = game.combat?.started ? game.combat : null;
+  if (movedThisRound(info, combat)) return false;
+
+  const hexes = Number(info.moveHexes) || 0;
+  const label = info.spellName;
+  ui.notifications.info(
+    game.i18n.format("REDSTEEL.SpellArea.PickMove", { spell: label, hexes }),
+  );
+  const from = { i: info.origin.i, j: info.origin.j };
+  const cache = new Map();
+  const state = await interact((point) => {
+    const centre = canvas.grid.getOffset(point);
+    const k = cellKey(centre);
+    if (cache.has(k)) return cache.get(k);
+    const valid = hexDistance(from, centre) <= hexes;
+    const result = {
+      cells: growCells([centre], Number(info.size) || 0),
+      valid,
+      reason: valid
+        ? null
+        : game.i18n.format("REDSTEEL.SpellArea.MoveTooFar", { spell: label, hexes }),
+      origin: { i: centre.i, j: centre.j },
+    };
+    cache.set(k, result);
+    return result;
+  });
+  if (!state || cellKey(state.origin) === cellKey(from)) return false;
+  await toGM(MSG_MOVE, {
+    sceneId: canvas.scene.id,
+    regionId,
+    origin: state.origin,
+    round: combat ? { combatId: combat.id, round: combat.round } : null,
+  });
+  return true;
 }
 
 /**
@@ -1034,6 +1427,12 @@ async function handleGM({ type, payload }) {
       expires.at = Date.now() + Number(expires.seconds) * 1000;
       delete expires.seconds;
     }
+    // A Decoy's image is a Tile everyone sees; the trap Region records it.
+    if (payload.decoyTile) {
+      const [tile] = await scene.createEmbeddedDocuments("Tile", [payload.decoyTile]);
+      const trap = payload.data.flags?.[SYSTEM_ID]?.[ZONE_FLAG]?.trap;
+      if (tile && trap) trap.tileId = tile.id;
+    }
     const created = await scene.createEmbeddedDocuments("Region", [payload.data]);
     for (const region of created ?? []) scheduleTimedZone(region);
     return created;
@@ -1042,6 +1441,17 @@ async function handleGM({ type, payload }) {
     const scene = game.scenes.get(payload.sceneId);
     const region = scene?.regions?.get(payload.regionId);
     if (region?.getFlag(SYSTEM_ID, ZONE_FLAG)) return region.delete();
+  }
+  if (type === MSG_MOVE) {
+    const scene = game.scenes.get(payload.sceneId);
+    const region = scene?.regions?.get(payload.regionId);
+    const info = region?.getFlag(SYSTEM_ID, ZONE_FLAG);
+    if (info?.move !== "steer" || !payload.origin) return;
+    // A second request for the same round (two clicks racing) is dropped.
+    const round = payload.round ?? null;
+    if (round && info.movedRound?.combatId === round.combatId &&
+        Number(info.movedRound.round) === Number(round.round)) return;
+    return moveZone(region, payload.origin, round);
   }
 }
 
@@ -1060,6 +1470,280 @@ function scheduleTimedZone(region) {
   setTimeout(remove, Math.max(0, at - Date.now()));
 }
 
+/* -------------------------------------------------------------------------- */
+/*  Traps                                                                     */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Who reads a trap's cast card before it goes off: null (everyone) for a
+ * party caster, whose allies are the players (user ruling 2026-11-21); for
+ * an enemy caster the GMs, the caster's owners and whoever cast it.
+ *
+ * @param {Actor} actor
+ * @returns {string[]|null} User ids to whisper to, or null for a public card.
+ */
+export function trapCardWhisper(actor) {
+  const token =
+    canvas?.scene?.tokens?.contents?.find((d) => d.actor?.uuid === actor?.uuid) ?? null;
+  if (!casterSide(actor, token)) return null;
+  return [
+    ...new Set([
+      game.user.id,
+      ...game.users.contents
+        .filter((u) => u.isGM || actor?.testUserPermission?.(u, "OWNER"))
+        .map((u) => u.id),
+    ]),
+  ];
+}
+
+/** The trap zones on a scene. */
+function trapZonesOn(scene) {
+  return (scene?.regions?.contents ?? []).filter(
+    (r) => r.getFlag(SYSTEM_ID, ZONE_FLAG)?.trap,
+  );
+}
+
+/**
+ * Trap: one empty hex within range, not on or (unless the spell allows it)
+ * next to another trap. The rule reads every trap on the scene, the
+ * caster's or not: the book says "another trap".
+ */
+async function placeTrap({ area, range, casterCells, label }) {
+  ui.notifications.info(game.i18n.format("REDSTEEL.SpellArea.PickTrap", { spell: label }));
+  const trapKeys = new Set();
+  for (const region of trapZonesOn(canvas.scene)) {
+    for (const cell of region.getFlag(SYSTEM_ID, ZONE_FLAG).cells ?? []) trapKeys.add(cellKey(cell));
+  }
+  const occupied = new Set();
+  for (const doc of canvas.scene.tokens.contents) {
+    for (const cell of occupiedOffsets(doc)) occupied.add(cellKey(cell));
+  }
+  const cache = new Map();
+  const state = await interact((point) => {
+    const cell = canvas.grid.getOffset(point);
+    const k = cellKey(cell);
+    if (cache.has(k)) return cache.get(k);
+    let reason = null;
+    const distance = distanceFrom(casterCells, cell);
+    if (range !== null && distance > range) {
+      reason = game.i18n.format("REDSTEEL.SpellArea.OutOfRange", { spell: label, range });
+    } else if (occupied.has(k)) {
+      reason = game.i18n.localize("REDSTEEL.SpellArea.TrapOccupied");
+    } else if (
+      trapKeys.has(k) ||
+      (!area.mayBorder &&
+        canvas.grid
+          .getAdjacentOffsets({ i: cell.i, j: cell.j })
+          .some((n) => trapKeys.has(cellKey(n))))
+    ) {
+      reason = game.i18n.localize("REDSTEEL.SpellArea.TrapAdjacent");
+    }
+    const result = {
+      cells: [{ i: cell.i, j: cell.j }],
+      valid: !reason,
+      reason,
+      origin: { i: cell.i, j: cell.j },
+    };
+    cache.set(k, result);
+    return result;
+  });
+  return state ? { cells: state.cells, origin: state.origin, direction: null } : null;
+}
+
+/** Tile data for a Decoy: the caster's token image, centred on the hex. */
+function decoyTileData(casterDoc, cell) {
+  const centre = canvas.grid.getCenterPoint(cell);
+  const w = casterDoc.object?.w ?? canvas.grid.sizeX;
+  const h = casterDoc.object?.h ?? canvas.grid.sizeY;
+  return {
+    texture: { src: casterDoc.texture?.src },
+    x: Math.round(centre.x - w / 2),
+    y: Math.round(centre.y - h / 2),
+    width: Math.round(w),
+    height: Math.round(h),
+    rotation: casterDoc.rotation ?? 0,
+  };
+}
+
+/**
+ * The hexes a token entered on a move, in walking order: each leg between
+ * waypoints along the grid's direct path, without the hexes it started on.
+ */
+function enteredCells(doc, movement, grid) {
+  const points = [movement?.origin, ...(movement?.passed?.waypoints ?? [])].filter(
+    (p) => p && Number.isFinite(p.x) && Number.isFinite(p.y),
+  );
+  const out = [];
+  let prev = null;
+  for (const p of points) {
+    let here = [];
+    try {
+      here = doc.getOccupiedGridSpaceOffsets({ x: p.x, y: p.y }) ?? [];
+    } catch (_error) {
+      here = [];
+    }
+    if (!here.length) continue;
+    if (prev) {
+      let path = [];
+      try {
+        path =
+          grid.getDirectPath([grid.getCenterPoint(prev[0]), grid.getCenterPoint(here[0])]) ?? [];
+      } catch (_error) {
+        path = [];
+      }
+      for (const c of path.slice(1)) out.push({ i: c.i, j: c.j });
+      // A big token also covers the rest of its hexes at each stop.
+      for (const c of here.slice(1)) out.push({ i: c.i, j: c.j });
+    }
+    prev = here;
+  }
+  return out;
+}
+
+/** The traps a move ran into, in the order it reached them. */
+function trapsCrossed(doc, movement) {
+  const scene = doc?.parent;
+  const traps = trapZonesOn(scene);
+  if (!traps.length) return [];
+  const byCell = new Map();
+  for (const region of traps) {
+    for (const cell of region.getFlag(SYSTEM_ID, ZONE_FLAG).cells ?? []) {
+      byCell.set(cellKey(cell), region);
+    }
+  }
+  const hits = [];
+  const seen = new Set();
+  for (const cell of enteredCells(doc, movement, gridFor(scene))) {
+    const region = byCell.get(cellKey(cell));
+    if (!region || seen.has(region.id)) continue;
+    seen.add(region.id);
+    hits.push({ region, cell, info: region.getFlag(SYSTEM_ID, ZONE_FLAG) });
+  }
+  return hits;
+}
+
+/**
+ * Set a trap off (active GM): remove it, then post its cast card for
+ * everyone with whoever stands in its blast targeted, the walker always
+ * among them (user ruling 2026-11-21: the card was rolled when cast and shown
+ * only to the caster and GM until now). Defend and Apply Damage then run on
+ * it as on any spell card.
+ */
+async function detonateTrap(region, walker) {
+  const info = region.getFlag(SYSTEM_ID, ZONE_FLAG);
+  const scene = region.parent;
+  const grid = gridFor(scene);
+  const trapCell = info?.cells?.[0];
+  if (!info?.trap || !trapCell) return;
+
+  const blast = new Set(
+    growCells([trapCell], Number(info.trap.blast) || 0, grid).map(cellKey),
+  );
+  const victims = scene.tokens.contents.filter((t) => {
+    if (isActorDead(t.actor)) return false;
+    let cells = [];
+    try {
+      cells = t.getOccupiedGridSpaceOffsets() ?? [];
+    } catch (_error) {
+      cells = [];
+    }
+    return cells.some((c) => blast.has(cellKey(c)));
+  });
+  if (!victims.some((t) => t.id === walker.id)) victims.unshift(walker);
+
+  // Gone first, so a second move landing meanwhile cannot set it off again.
+  if (info.trap.tileId) await scene.tiles?.get(info.trap.tileId)?.delete();
+  await region.delete();
+
+  const notice = game.i18n.format("REDSTEEL.SpellArea.TrapTriggered", {
+    spell: info.spellName,
+    target: walker.name,
+  });
+  // The full card is rolled now (user ruling 2026-11-21): damage, effects and
+  // any versus Test fresh, the margin from the cast. finalizeRollsAndPostChat
+  // builds it exactly as a cast would, aimed at the victims.
+  const caster = fromUuidSync(info.casterUuid);
+  const spell = caster?.items?.get(info.spellId) ?? null;
+  const cast = info.trap.cast;
+  const attackResults = trapAttackResults(cast, game.messages.get(info.castMessageId));
+  if (!caster || !spell || !attackResults || !game.redsteel?.finalizeRollsAndPostChat) {
+    await ChatMessage.create({ content: `<p><b>${notice}</b></p>` });
+    return;
+  }
+  await game.redsteel.finalizeRollsAndPostChat(caster, spell, cast.bonuses ?? {}, attackResults, {
+    focusSpent: cast.focusSpent ?? 0,
+    ignoreChanneling: !!cast.ignoreChanneling,
+    bloodPayment: !!cast.bloodPayment,
+    hastenedCast: !!cast.hastenedCast,
+    catalyst: !!cast.catalyst,
+    trap: { targetIds: victims.map((t) => t.id), walkerId: walker.id, notice },
+  });
+}
+
+/**
+ * The cast's margin for a trap going off. The cast card's own roll wins when
+ * it has changed since (a chat Re-Roll rewrites the card in place); its
+ * criticals are then read off the card's stored thresholds.
+ */
+function trapAttackResults(cast, castCard) {
+  if (!cast) return null;
+  const stored = cast.attackRoll ? Roll.fromData(cast.attackRoll) : null;
+  const live = castCard?.rolls?.[0] ?? null;
+  const results = {
+    attackRoll: stored,
+    critSuccess: !!cast.critSuccess,
+    critFailure: !!cast.critFailure,
+    displayCritSuccess: !!cast.displayCritSuccess,
+    displayCritFailure: !!cast.displayCritFailure,
+  };
+  if (live && (!stored || live.total !== stored.total)) {
+    const flags = castCard.flags?.[SYSTEM_ID] ?? {};
+    const die = live.dice?.find((d) => d.faces === 100)?.total ?? live.dice?.[0]?.total;
+    results.attackRoll = live;
+    results.displayCritSuccess = Number.isFinite(die) && die <= Number(flags.criticalSuccessThreshold);
+    results.displayCritFailure = Number.isFinite(die) && die >= Number(flags.criticalFailureThreshold);
+    results.critSuccess = !cast.ignoreChanneling && results.displayCritSuccess;
+    results.critFailure = !cast.ignoreChanneling && results.displayCritFailure;
+  }
+  return results.attackRoll ? results : null;
+}
+
+/**
+ * After a move (every client): find the traps it ran into. The walker's own
+ * client stops the rest of a walk at a trap that stops it (only the mover
+ * may); the active GM sets the traps off and puts the walker back on a
+ * stopping trap's hex when its leg carried it past.
+ */
+function onTokenMoved(doc, movement, operation, user) {
+  if (operation?.redsteelTrapReturn) return;
+  if (isActorDead(doc?.actor)) return;
+  const hits = trapsCrossed(doc, movement);
+  if (!hits.length) return;
+  const stopAt = hits.findIndex((h) => h.info.trap?.stops);
+  const fired = stopAt >= 0 ? hits.slice(0, stopAt + 1) : hits;
+
+  if (stopAt >= 0 && user?.id === game.user.id && movement?.pending?.waypoints?.length) {
+    try {
+      doc.stopMovement?.();
+    } catch (err) {
+      console.error("Redsteel | Trap could not stop the movement", err);
+    }
+  }
+  if (!isActiveGM()) return;
+
+  (async () => {
+    for (const hit of fired) await detonateTrap(hit.region, doc);
+    if (stopAt < 0) return;
+    const cell = fired.at(-1).cell;
+    const on = (doc.getOccupiedGridSpaceOffsets?.() ?? []).some(
+      (c) => cellKey(c) === cellKey(cell),
+    );
+    if (on) return;
+    const point = gridFor(doc.parent).getTopLeftPoint(cell);
+    await doc.update({ x: point.x, y: point.y }, { redsteelTrapReturn: true });
+  })().catch((err) => console.error("Redsteel | Trap failed to go off", err));
+}
+
 /** The Channeling status, read the way magicSkillBonuses.mjs reads it. */
 function isChannelingEffect(effect) {
   return (
@@ -1074,7 +1758,7 @@ function isChannelingEffect(effect) {
 
 /** Registered once at init. */
 export function registerSpellAreaHooks() {
-  game.redsteel.spellArea = { placeSpellArea, zoneOccupantIds };
+  game.redsteel.spellArea = { placeSpellArea, zoneOccupantIds, steerSpellZone };
 
   game.settings.register(SYSTEM_ID, SETTING, {
     name: "REDSTEEL.SpellArea.SettingName",
@@ -1103,12 +1787,27 @@ export function registerSpellAreaHooks() {
     if (!roundChanged && changed?.turn === undefined) return;
     const round = Number(combat.round) || 0;
     const turn = Number(combat.turn) || 0;
+    // Expiry first, so a tornado on its last round top is removed rather
+    // than moved; then the survivors drift.
     deleteZones((info) => {
       const ex = info.expires;
       if (ex?.combatId !== combat.id) return false;
       if (ex.endOfTurn) return round !== Number(ex.round) || turn !== Number(ex.turn);
       return roundChanged && round >= Number(ex.round);
-    }).catch((err) => console.error("Redsteel | Spell zone expiry failed", err));
+    })
+      .then(() => (roundChanged ? driftZones(combat) : null))
+      .catch((err) => console.error("Redsteel | Spell zone expiry failed", err));
+  });
+
+  // A token walking into a trap sets it off (every client looks; the mover
+  // stops, the GM detonates).
+  Hooks.on("moveToken", onTokenMoved);
+
+  // A trap removed by hand takes its Decoy image with it.
+  Hooks.on("deleteRegion", (region) => {
+    if (!isActiveGM()) return;
+    const tileId = region.getFlag?.(SYSTEM_ID, ZONE_FLAG)?.trap?.tileId;
+    if (tileId) region.parent?.tiles?.get(tileId)?.delete().catch(() => {});
   });
 
   // ... or with its combat.
@@ -1127,7 +1826,7 @@ export function registerSpellAreaHooks() {
       }
     }
     game.socket.on(SOCKET, (data) => {
-      if (data?.type !== MSG_CREATE && data?.type !== MSG_DELETE) return;
+      if (![MSG_CREATE, MSG_DELETE, MSG_MOVE].includes(data?.type)) return;
       handleGM(data).catch((err) =>
         console.error("Redsteel | Spell zone socket request failed", err),
       );

@@ -100,6 +100,7 @@ import {
   mindBendingCancelState,
   mindBendingEffect,
 } from "./mindBending.mjs";
+import { steerableZones } from "./spellArea.mjs";
 
 const MODE_ORDER = ["move", "slow", "sprint", "disengage"];
 
@@ -1531,6 +1532,38 @@ function mindBendingChips(actor) {
   ];
 }
 
+/** Fallback icon of the move-zone chip, for a spell no longer to be found. */
+const STEER_ZONE_ICON = "icons/magic/fire/beam-jet-stream-spiral-yellow.webp";
+
+/**
+ * A steered spell zone of this actor's (Fire Rain, Hailstorm, Choking cloud,
+ * Greater Swarm): click to move it up to its hexes per round (spellArea.mjs
+ * steerSpellZone). Free, on or off the caster's turn, once per round; the
+ * chip goes once the zone has moved this round.
+ *
+ * @param {Actor} actor
+ * @returns {object[]}
+ */
+function zoneSteerChips(actor) {
+  return steerableZones(actor).map((zone) => {
+    const spell = actor.items.get(zone.spellId) ?? game.items.get(zone.spellId) ?? null;
+    const spellName = spell?.localizedName ?? spell?.name ?? zone.spellName;
+    const label = game.i18n.format("REDSTEEL.SpellArea.ChipLabel", { spell: spellName });
+    const hint = game.i18n.format("REDSTEEL.SpellArea.ChipHint", { hexes: zone.moveHexes });
+    return {
+      id: `zoneSteer-${zone.regionId}`,
+      kind: "zoneSteer",
+      theme: "magic",
+      regionId: zone.regionId,
+      img: spell?.img || STEER_ZONE_ICON,
+      label,
+      hint,
+      costKind: "free",
+      ariaLabel: `${label}: ${hint}`,
+    };
+  });
+}
+
 /**
  * Keep the turn boundary Riposte reads. Registered once at init.
  */
@@ -1872,6 +1905,8 @@ function combatProvider(actor) {
     ...impaleFollowupChips(actor),
     ...escapeChips(actor), ...sustainChips(actor), ...stanceChips(actor),
     ...mindBendingChips(actor),
+    // Steered spell zones: move the area once a round (spellArea.mjs).
+    ...zoneSteerChips(actor),
     ...slipThroughChips(actor), ...halfPirouetteChips(actor),
     ...grudgeChips(actor), ...predatorsAttackChips(actor),
     ...hopliteChips(actor), ...triumphChips(actor), ...freeShieldChips(actor),

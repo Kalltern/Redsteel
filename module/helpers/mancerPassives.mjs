@@ -38,6 +38,7 @@
  */
 
 import { matchesPackSpell } from "./mancerSpells.mjs";
+import { pillGroupOf, specPillsHtml } from "./specPills.mjs";
 
 /** Rank → index into a `chances` array. Wild takes the Apprentice value. */
 const RANK_INDEX = { wild: 0, apprentice: 0, expert: 1, master: 2, grandmaster: 3 };
@@ -456,8 +457,8 @@ export function getMancerCastBonuses(actor, spell, { strike = false } = {}) {
 }
 
 /**
- * The cast card's tags for these bonuses, one `action-tag` span per node,
- * the way the Incantator's cast tags are printed.
+ * The cast card's tags for these bonuses: one pill per passive at its highest
+ * level, each benefit listed on hover (helpers/specPills.mjs).
  */
 export function mancerCastTags(bonuses) {
   const tags = bonuses?.tags ?? [];
@@ -468,8 +469,7 @@ export function mancerCastTags(bonuses) {
     const key = `REDSTEEL.MancerPassive.Effect.${effect}`;
     return game.i18n.has(key) ? game.i18n.localize(key) : effect;
   };
-  return tags
-    .map((tag) => {
+  const entries = tags.map((tag) => {
       const node = nodeLabel(tag);
       let text = "";
       if (tag.kind === "chance") {
@@ -491,11 +491,9 @@ export function mancerCastTags(bonuses) {
         // +1d4", "Additional armor damage -2").
         text = node;
       }
-      return `<span class="action-tag mancer ">${foundry.utils.escapeHTML(String(text))}</span>`;
-    })
-    // A space between pills: each pill is nowrap, so without one the whole
-    // row is a single unbreakable word that pushes the chat card wider.
-    .join(" ");
+      return { ...pillGroupOf(node, tag.node), text };
+    });
+  return specPillsHtml(entries, "mancer");
 }
 
 /**

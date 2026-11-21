@@ -132,7 +132,21 @@
     "effectType2": "",
     "effectType3": "",
     "manualNotes": "When the trap triggers, roll this spell manually for 0 mana cost and disregard the channeling test.",
-    "vsTest": false
+    "vsTest": false,
+    "area": {
+      "shape": "trap",
+      "size": 0,
+      "angle": 0,
+      "targets": "all",
+      "includeCaster": false,
+      "linger": false,
+      "rounds": "",
+      "move": "",
+      "moveHexes": 0,
+      "stops": false,
+      "mayBorder": true,
+      "decoy": false
+    }
   },
   "effects": [],
   "folder": "Fxz9y7e2dSJqjeq0",

@@ -49,6 +49,7 @@ import { trackedCombat } from "./actionTracker.mjs";
 import { hasFocusItem } from "./focusItem.mjs";
 import { getBaseSpellManaCost } from "./lindarCharge.mjs";
 import { addNextSpellBonus } from "./nextSpellBonus.mjs";
+import { pillGroupOf, specPillsHtml } from "../helpers/specPills.mjs";
 
 const SYSTEM_ID = "redsteel";
 const SPEC = "incantator";
@@ -238,10 +239,11 @@ export function incantatorCastTags(
   if (incantatorCritRange(actor)) {
     tags.push(L("TagFocusRange", { range: FOCUS_CRIT_RANGE }));
   }
-  return tags
-    .map((t) => `<span class="action-tag incantator ">${esc(t)}</span>`)
-    // Space-separated so the row can wrap (each pill is nowrap).
-    .join(" ");
+  // One pill per passive, its benefits on hover (helpers/specPills.mjs).
+  return specPillsHtml(
+    tags.map((text) => ({ ...pillGroupOf(text), text })),
+    "incantator",
+  );
 }
 
 /**

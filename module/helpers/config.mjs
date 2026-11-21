@@ -2950,9 +2950,17 @@ REDSTEEL.spellAreaShapes = {
   aura: "REDSTEEL.SpellArea.ShapeAura",
   cone: "REDSTEEL.SpellArea.ShapeCone",
   line: "REDSTEEL.SpellArea.ShapeLine",
+  trap: "REDSTEEL.SpellArea.ShapeTrap",
 };
 
 REDSTEEL.spellAreaTargets = {
   all: "REDSTEEL.SpellArea.TargetsAll",
   enemies: "REDSTEEL.SpellArea.TargetsEnemies",
+};
+
+/** How a lasting burst zone moves (utils/spellArea.mjs). */
+REDSTEEL.spellAreaMoves = {
+  "": "REDSTEEL.SpellArea.MoveNone",
+  steer: "REDSTEEL.SpellArea.MoveSteer",
+  random: "REDSTEEL.SpellArea.MoveRandom",
 };

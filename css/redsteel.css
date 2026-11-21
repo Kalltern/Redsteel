@@ -14793,6 +14793,19 @@ body.redsteel-bg3-hotbar .rs-bg3-skill-picker .rs-bg3-pick-rating {
   font-weight: normal;
 }
 
+/* A pill wider than the card (a long spec node label such as "Disruptive
+   Spells: Dispel or Clear Stagger +25%") wraps inside itself instead of
+   pushing the card past its border. As an inline block it only breaks when
+   it alone is wider than the line; shorter pills still move down whole. */
+.chat-message .flavor-text > .action-tag {
+  display: inline-block;
+  max-width: 100%;
+  box-sizing: border-box;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  vertical-align: top;
+}
+
 /* The description a fold keeps for a spell with no summary: the summary's frame
    around the text alone, because the fold has no room for a table heading. */
 .chat-message.rs-card--compact .rs-fold-fallback,

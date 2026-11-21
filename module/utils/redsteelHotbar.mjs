@@ -45,6 +45,7 @@ import {
 } from "./actionTracker.mjs";
 import { prepareSuggestions, vigilantSource } from "./actionSuggestions.mjs";
 import { cancelMindBending, holdMindBending } from "./mindBending.mjs";
+import { steerSpellZone } from "./spellArea.mjs";
 import { useOverpower } from "./overpower.mjs";
 import {
   clearLockedZone,
@@ -1251,6 +1252,7 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       applySustainSpell: this._onApplySustainSpell,
       stanceSuggestion: this._onStanceSuggestion,
       cancelMindBending: this._onCancelMindBending,
+      steerSpellZone: this._onSteerSpellZone,
       mindBendingHold: this._onMindBendingHold,
       toggleMovementMore: this._onToggleMovementMore,
       confirmMovement: this._onConfirmMovement,
@@ -2630,6 +2632,14 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
       }
     });
 
+    // A spell zone made, moved or removed changes the move-zone chips
+    // (actionSuggestions.mjs zoneSteerChips).
+    for (const hook of ["createRegion", "updateRegion", "deleteRegion"]) {
+      add(hook, (region) => {
+        if (region?.flags?.redsteel?.spellZone?.move === "steer") this.#rerender();
+      });
+    }
+
     // A different scene means a different set of tokens to read, and a board
     // element that may have been rebuilt under the deselect listener.
     add("canvasReady", () => {
@@ -3207,6 +3217,27 @@ export class Bg3Hotbar extends foundry.applications.api.HandlebarsApplicationMix
     this.#suggestionBusy = true;
     try {
       await cancelMindBending(actor);
+    } finally {
+      this.#suggestionBusy = false;
+    }
+  }
+
+  /**
+   * A steered spell zone of the bound actor's: pick where it moves on the
+   * board (spellArea.mjs). The panel redraws on the Region update, which
+   * takes the chip away for the rest of the round.
+   *
+   * @this {Bg3Hotbar}
+   */
+  static async _onSteerSpellZone(event, target) {
+    if (isRightClick(event)) return;
+    const actor = this.actor;
+    const regionId = target.closest("[data-region-id]")?.dataset.regionId;
+    if (!actor?.isOwner || !regionId) return;
+    if (this.#suggestionBusy) return;
+    this.#suggestionBusy = true;
+    try {
+      await steerSpellZone(actor, regionId);
     } finally {
       this.#suggestionBusy = false;
     }

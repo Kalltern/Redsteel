@@ -129,7 +129,9 @@
       "angle": 0,
       "targets": "all",
       "linger": true,
-      "rounds": "spellPower"
+      "rounds": "spellPower / 2",
+      "move": "",
+      "moveHexes": 0
     }
   },
   "effects": [],

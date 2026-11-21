@@ -135,8 +135,10 @@
       "size": 1,
       "angle": 0,
       "targets": "all",
-      "linger": false,
-      "rounds": ""
+      "linger": true,
+      "rounds": "4",
+      "move": "random",
+      "moveHexes": 2
     }
   },
   "effects": [],
